@@ -20,7 +20,7 @@ Debug::~Debug() {
 
 
 void Debug::InitializeHist() {
-	if (m_isr_debug && m_fsrmode != 2) {
+	if (m_isr_debug && HasISR()) {
 		if (!ATOOLS::DirectoryExists(m_debugDIR_ISR)) {
 			ATOOLS::MakeDir(m_debugDIR_ISR);
 		}
@@ -41,7 +41,7 @@ void Debug::InitializeHist() {
 		m_histograms_ISR["jacweight"]  = new Histogram(0, 0, 2, 100);
   		m_histograms2d["Form_Factor_FS_Angle"] = new Histogram_2D(0, 0, 30., 60 , 0.99, 1.01, 60 );
 	}
-	if (m_fsr_debug && m_fsrmode != 0) {
+	if (m_fsr_debug && HasFSR()) {
 
 		if (!ATOOLS::DirectoryExists(m_debugDIR_FSR)) {
 			ATOOLS::MakeDir(m_debugDIR_FSR);
@@ -135,7 +135,7 @@ void Debug::InitializeHist() {
 }
 
 void Debug::FillHist(const Vec4D_Vector &plab, YFS::ISR *p_isr, YFS::FSR *p_fsr, double W) {
-	if (m_fsr_debug && m_fsrmode != 0) {
+	if (m_fsr_debug && HasFSR()) {
 		Vec4D_Vector FSRPhotons = p_fsr->p_dipole->GetPhotons();
 		Vec4D photonSumFSR = p_fsr->p_dipole->GetPhotonSum();
 		double sq = (p_fsr->m_dipole[0] + p_fsr->m_dipole[1]).Abs2();
@@ -236,7 +236,7 @@ void Debug::FillHist(const Vec4D_Vector &plab, YFS::ISR *p_isr, YFS::FSR *p_fsr,
 		// }
 		// else m_histograms_FSR["Cutflow"]->Insert(0,W);
 	}
-	if (m_isr_debug && m_fsrmode != 2) {
+	if (m_isr_debug && HasISR()) {
 		Vec4D_Vector ISRPhotons = p_isr->GetPhotons();
 		m_histograms_ISR["v"]->Insert(p_isr->m_v,W);
 		m_histograms_ISR["K0"]->Insert(p_isr->m_photonSum[0],W);
@@ -294,7 +294,7 @@ void Debug::FillHist(const std::string &name, const double &x, const double &y, 
 void Debug::WriteHistograms() {
 	Histogram * histo;
 	string name;
-	if (m_fsr_debug && m_fsrmode != 0) {
+	if (m_fsr_debug && HasFSR()) {
 		for (map<string, Histogram *>::iterator hit = m_histograms_FSR.begin();
 		        hit != m_histograms_FSR.end(); hit++) {
 			histo = hit->second;
@@ -305,7 +305,7 @@ void Debug::WriteHistograms() {
 			delete histo;
 		}
 	}
-	if (m_isr_debug && m_fsrmode != 2) {
+	if (m_isr_debug && HasISR()) {
 		for (map<string, Histogram *>::iterator hit = m_histograms_ISR.begin();
 		        hit != m_histograms_ISR.end(); hit++) {
 			histo = hit->second;

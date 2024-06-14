@@ -65,9 +65,6 @@ void ISR::NPhotons() {
     return;
   }
   m_nbar = m_gp * log(m_v / m_isrcut);
-  if(m_fixed_photons!=-1) {
-    m_n = m_fixed_photons;
-  }
   if (m_nbar < 0 ) {
     msg_Error() << METHOD << "Warning: ISR photon average is less than 0" << std::endl;
   }
@@ -122,7 +119,6 @@ void ISR::GenerateAngles()
     double del1 = (2. - eps) * pow((eps / (2 - eps)), rn); // 1-beta*cos
     double del2 = 2. - del1;  // 1+beta*cos
     double costhg = (del2 - del1) / (2.*m_beta);
-    double sinthg = sqrt(del1 * del2 - m_am2 * costhg * costhg);
     // symmetrization
     if (ran->Get() < 0.5) {
       double a = del1;
@@ -155,7 +151,6 @@ void ISR::GeneratePhotonMomentum() {
   if (m_n != 0) {
     Vec4D_Vector photons;
     GenerateAngles();
-    double ms = m_mass2 / m_s;
     m_w = m_v;
     m_photon = {m_w,
                 m_w * sin(m_theta) * cos(m_phi) ,

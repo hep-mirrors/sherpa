@@ -4,9 +4,6 @@
 #include "YFS/Main/YFS_Base.H"
 #include "YFS/NLO/Virtual.H"
 #include "YFS/NLO/Real.H"
-#include "YFS/NLO/RealReal.H"
-#include "YFS/NLO/RealVirtual.H"
-#include "YFS/Main/Griffin_Interface.H"
 #include "YFS/Main/YFS_Form_Factor.H"
 #include "YFS/Main/Define_Dipoles.H"
 #include "ATOOLS/Math/Histogram_2D.H"
@@ -30,10 +27,7 @@ public:
 
   YFS::Virtual     *p_virt;
   YFS::Real        *p_real;
-  YFS::RealReal    *p_realreal;
-  YFS::RealVirtual *p_realvirt;
   YFS::Define_Dipoles *p_nlodipoles;
-  Griffin::Griffin_Interface *p_griffin;
   YFS::YFS_Form_Factor *p_yfsFormFact;
   PHASIC::Single_Process *p_born;
   YFS::Define_Dipoles *p_dipoles;
@@ -50,29 +44,23 @@ public:
   void Init(Flavour_Vector &flav, Vec4D_Vector &plab, Vec4D_Vector &born);
   void InitializeVirtual(const PHASIC::Process_Info& pi);
   void InitializeReal(const PHASIC::Process_Info& pi);
-  void InitializeRealReal(const PHASIC::Process_Info& pi);
-  void InitializeRealVirtual(const PHASIC::Process_Info& pi);
   double CalculateVirtual();
   double CalculateReal();
-  double CalculateReal(Vec4D k);
+  double CalculateReal(Vec4D k, int submode=0);
   void MakeHardMomenta();
   void MapMomenta(ATOOLS::Vec4D_Vector &p, ATOOLS::Vec4D &k);
-  void MapInitial(ATOOLS::Vec4D_Vector &p, ATOOLS::Vec4D &k);
-  void MapMomenta(ATOOLS::Vec4D_Vector &p, ATOOLS::Vec4D &k, ATOOLS::Vec4D &kk);
   void CheckMassReg();
-  void CheckMassRegRV(const ATOOLS::Vec4D_Vector &p);
   double CalculateNLO();
   bool CheckPhotonForReal(const Vec4D &k);
-  bool CheckPhotonCollinear(const Vec4D_Vector &p, const Vec4D &k);
   void CheckMasses(Vec4D_Vector &p, int realmode=0);
   bool CheckMomentumConservation(Vec4D_Vector p);
   void CheckRealSub(Vec4D k);
-  void CheckRealRealSub(Vec4D k,Vec4D kk);
   void RandomRotate(Vec4D &k);
 
   inline void SetBorn(double b) { m_born = b;}
   inline void SetMomentum(Vec4D_Vector &p) { m_plab = p;}
   inline void SetBornProc(PHASIC::Single_Process *p) {p_born = p;}
+
 };
 
 

@@ -60,11 +60,11 @@ Dipole::Dipole(ATOOLS::Flavour_Vector const &fl, ATOOLS::Vec4D_Vector const &mom
     m_momenta.push_back(v);
     m_oldmomenta.push_back(v);
     m_newmomenta.push_back(v);
-    m_eikmomentum.push_back(v);
     m_beams.push_back(v);
     m_ghost.push_back(v);
   }
   for (auto &v : born) m_bornmomenta.push_back(v);
+  m_eikmomentum = m_bornmomenta;
   if (ty == dipoletype::code::initial) {
     if(fl[0].IsAnti()) m_thetai = -1;
     else m_thetai = 1;
@@ -125,6 +125,11 @@ void Dipole::PrintInfo() {
         << "Momentum of " << m_names[i] << " = " << m_momenta[i] << std::endl;
   }
   std::cout << "Invarinat mass " << " = " << (m_momenta[0]+m_momenta[1]).Mass() << std::endl;
+  std::cout << "Number of Photons " << " = " << (m_dipolePhotons).size() << std::endl
+            << "with four momentum :"<<std::endl;
+  for(const auto &k: m_dipolePhotons){
+    std::cout<<k<<std::endl;
+  }
   if(m_type==dipoletype::final){
     std::string isres = (m_resonance)?"Yes":"No";
     std::cout << "Is Resonance: "<< isres << std::endl;
@@ -135,6 +140,7 @@ void Dipole::PrintInfo() {
 void Dipole::Boost() {
   if (Type() == dipoletype::initial) {
     m_dipolePhotonsEEX=m_dipolePhotons;
+    m_eikmomentum = m_bornmomenta;
     if (m_dipolePhotons.size() == 0) {
       DEBUG_FUNC("No ISR Photons, skipping boost");
       for (int i = 0; i < 2; ++i) m_newmomenta[i]=m_bornmomenta[i];
@@ -153,8 +159,8 @@ void Dipole::Boost() {
     double lamCM = 0.5*sqrt(SqLam(Q.Abs2(),m1*m1,m2*m2)/Q.Abs2());
     double E1 = lamCM*sqrt(1+m1*m1/sqr(lamCM));
     double E2 = lamCM*sqrt(1+m2*m2/sqr(lamCM));
-    m_newmomenta[0] = {E1, 0, 0, -lamCM};
-    m_newmomenta[1] = {E2, 0, 0, lamCM};
+    m_newmomenta[0] = {E1, 0, 0, lamCM};
+    m_newmomenta[1] = {E2, 0, 0, -lamCM};
     m_ranPhi = ran->Get()*2.*M_PI;
     // sqr(1.+2.*t/s)
     double s = (m_newmomenta[0]+m_newmomenta[1]).Abs2();
@@ -186,6 +192,7 @@ void Dipole::Boost() {
     }
     m_ranPhi = ran->Get()*2.*M_PI;
     // sqr(1.+2.*t/s)
+    // m_eikmomentum = m_momenta;
     double s = (m_bornmomenta[0]+m_bornmomenta[1]).Abs2();
     double t = (m_beams[0]-m_bornmomenta[0]).Abs2();
     m_ranTheta = acos(1.+2.*t/s);
@@ -206,13 +213,13 @@ void Dipole::Boost() {
       }
     }
     m_photonSum*=0.;
-    m_dipolePhotonsEEX.clear();
+    // m_dipolePhotonsEEX.clear();
     for (auto &k : m_dipolePhotons) {
       // Boost(k);
+      // m_dipolePhotonsEEX.push_back(k);
       p_Pboost->Boost(k);
       p_rotate->RotateBack(k);
       p_boost->BoostBack(k);
-      m_dipolePhotonsEEX.push_back(k);
       m_photonSum+=k;
     }
     if (p_rotate) delete p_rotate;
@@ -296,12 +303,12 @@ void Dipole::AddPhotonsToDipole(ATOOLS::Vec4D_Vector &Photons) {
     return;
   }
   else {
-    for (auto &k : Photons) AddPhotonsToDipole(k);
+    for (auto &k : Photons) AddPhotonToDipole(k);
   }
   DEBUG_FUNC("Photons added to this dipole " << this << "\n " << m_dipolePhotons);
 }
 
-void Dipole::AddPhotonsToDipole(ATOOLS::Vec4D &k){
+void Dipole::AddPhotonToDipole(ATOOLS::Vec4D &k){
   m_dipolePhotons.push_back(k);
   m_photonSum +=k;
 }
@@ -325,18 +332,21 @@ void Dipole::AddToGhosts(ATOOLS::Vec4D &p) {
 
 double Dipole::EEX(const int betaorder){
   double real=0;
-  if(m_dipolePhotons.size()==0) return real;
-  if(Type()==dipoletype::final)  m_eikmomentum = m_newmomenta;
-  else m_eikmomentum = m_bornmomenta;
-  // CalculateGamma();
+  if(m_dipolePhotonsEEX.size()==0) return real;
+  // if(Type()==dipoletype::final)  m_eikmomentum = m_momenta;
+  // else m_eikmomentum = m_bornmomenta;
+  CalculateGamma();
+  int i = 0;
   m_betaorder = betaorder;
   if(betaorder >= 1 && Type()!=dipoletype::ifi) {
     for(auto &k: m_dipolePhotonsEEX){
-     real += Beta1(k)/Eikonal(k);
+     real += Beta1(k, i)/Eikonal(k);
+     i++;
     }
   }
+  // m_betaorder = betaorder-1;
   if(betaorder >= 2 ) {
-    for (int j = 1; j < m_dipolePhotons.size(); j++) {
+    for (int j = 1; j < m_dipolePhotonsEEX.size(); j++) {
       for (int i = 0; i < j; i++) {
         Vec4D k1 = m_dipolePhotonsEEX[j];
         Vec4D k2 = m_dipolePhotonsEEX[i];
@@ -345,8 +355,8 @@ double Dipole::EEX(const int betaorder){
       }
     }
   }
-  m_betaorder = betaorder;
-  if(betaorder >= 3 && Type()==dipoletype::initial){
+  // m_betaorder = betaorder-2;
+  if(betaorder >= 3){
     for (int j = 1; j < m_dipolePhotonsEEX.size(); j++) {
       for (int i = 0; i < j; i++) {
         for (int k = 0; k < i; k++) {
@@ -357,6 +367,7 @@ double Dipole::EEX(const int betaorder){
           double eik2 = Eikonal(k2);
           double eik3 = Eikonal(k3);
           real += Beta3(k1,k2,k3)/eik1/eik2/eik3;
+          m_betaorder = betaorder;
         }
       }
     }
@@ -367,7 +378,7 @@ double Dipole::EEX(const int betaorder){
   return real;//+virt;
 }
 
-double Dipole::Beta1(const Vec4D &k){
+double Dipole::Beta1(const Vec4D &k, int i){
   double b1=0;
   if(Type()==dipoletype::initial) {
   //   // beta11
@@ -380,7 +391,7 @@ double Dipole::Beta1(const Vec4D &k){
     // if(m_betaorder==2) b1 = Hard(k)*(1+0.5*deli-0.25*deli)*(1+delf)-Eikonal(k);
     if(m_betaorder==2) b1 = Hard(k)*(1+deli)-Eikonal(k)*(1.+deli)*(1+delf);
     else if(m_betaorder==3) b1 = Hard(k)*(1+deli+0.5*deli*deli)-Eikonal(k)*(1+delf+0.5*delf*delf)*(1+deli+0.5*deli*deli);
-    else b1 = (Hard(k)-Eikonal(k))*(1+deli);
+    else b1 = Hard(k,i)-Eikonal(k);
   }
   else{
     b1 = Hard(k)-Eikonal(k);
@@ -391,7 +402,7 @@ double Dipole::Beta1(const Vec4D &k){
 double Dipole::Beta2(const Vec4D &k1, const Vec4D &k2){
   double eik1 = Eikonal(k1);
   double eik2 = Eikonal(k2);
-  // m_betaorder-=1;
+  m_betaorder-=1;
   return Hard(k1,k2)
                 -eik1*(Beta1(k2))
                 -eik2*(Beta1(k1))
@@ -407,43 +418,53 @@ double Dipole::Beta3(const Vec4D &k1, const Vec4D &k2, const Vec4D &k3){
   if(Type()!=dipoletype::initial) return 0;
   if(Type()==dipoletype::initial) del = deli;
   else del = delf;
-  //reset the order to calculate 
+  // reset the order to calculate 
   // one order lower
-  // b3+=Hard(k1,k2,k3);
-  // b3+=-eik2*eik3*Beta1(k1);
-  // // m_betaorder=2;
-  // b3+=-eik1*eik3*Beta1(k2);
-  // // m_betaorder=2;
-  // b3+=-eik1*eik2*Beta1(k3);
-  // // m_betaorder=3;
-  // b3+=-eik1*Beta2(k3,k2);
-  // m_betaorder=3;
-  // b3+=-eik2*Beta2(k3,k1);
-  // m_betaorder=3;
-  // b3+=-eik3*Beta2(k1,k2);
-  // b3+=-eik1*eik2*eik3;
-  // return b3;
-  return Hard(k1,k2,k3)
-                -eik2*eik3*Beta1(k1)
-                -eik1*eik3*Beta1(k2)
-                -eik1*eik2*Beta1(k3)
-                -eik1*Beta2(k3,k2)
-                -eik2*Beta2(k3,k1)
-                -eik3*Beta2(k1,k2)
-                -eik1*eik2*eik3;
+  m_betaorder=2;
+  b3+=Hard(k1,k2,k3);
+  b3+=-eik2*eik3*Beta1(k1);
+  m_betaorder=2;
+  b3+=-eik1*eik3*Beta1(k2);
+  m_betaorder=2;
+  b3+=-eik1*eik2*Beta1(k3);
+  m_betaorder=1;
+  b3+=-eik1*Beta2(k3,k2);
+  m_betaorder=1;
+  b3+=-eik2*Beta2(k3,k1);
+  m_betaorder=1;
+  b3+=-eik3*Beta2(k1,k2);
+  b3+=-eik1*eik2*eik3;
+  return b3;
+  // return Hard(k1,k2,k3)
+  //               -eik2*eik3*Beta1(k1)
+  //               -eik1*eik3*Beta1(k2)
+  //               -eik1*eik2*Beta1(k3)
+  //               -eik1*Beta2(k3,k2)
+  //               -eik2*Beta2(k3,k1)
+  //               -eik3*Beta2(k1,k2)
+  //               -eik1*eik2*eik3;
 }
 
 double Dipole::VirtualEEX(const int betaorder){
-  if(betaorder==1)  return 0.5*m_gamma;
-  else if(betaorder==2) return 0.5*m_gamma + 0.125*m_gamma*m_gamma;
-  else if(betaorder==3) return 0.5*m_gamma + 0.125*m_gamma*m_gamma + pow(m_gamma,3)/48;
-  return 0;
+  double virt{0};
+  // For ISR+FSR virtuals are taken in for ISRxFSR not ISR+FSR
+  if(betaorder==1)  virt =  0.5*m_gamma;
+  else if(betaorder==2) virt = 0.5*m_gamma + 0.125*m_gamma*m_gamma;
+  else if(betaorder==3) virt = 0.5*m_gamma + 0.125*m_gamma*m_gamma + pow(m_gamma,3)/48;
+  return virt;
 }
 
-double Dipole::Hard(const Vec4D &k){
+double Dipole::Hard(const Vec4D &k, int i){
   double p1p2 = m_eikmomentum[0]*m_eikmomentum[1];
   double a = k*m_eikmomentum[0]/p1p2;
   double b = k*m_eikmomentum[1]/p1p2;
+  // if(Type()==dipoletype::final){
+  //   PRINT_VAR(a);
+  //   a = m_pk1[i];
+  //   PRINT_VAR(a);
+  //   b = m_pk2[i];
+
+  // }
   double ap = a/(1.+a+b);
   double bp = b/(1.+a+b);
   double delta = 0;
@@ -471,9 +492,6 @@ double Dipole::Hard(const Vec4D &k){
     }
     return 0.5*Eikonal(k)*(sqr(1-ap)+sqr(1-bp))*(1+delta);
   }
-  // else if (Type() == dipoletype::ifi) {
-  //   return -2*Eikonal(k)*((sqr(1-ap)+sqr(1-b))+(sqr(1-a)+sqr(1-bp)));
-  // }
   return 0;
 }
 
@@ -632,28 +650,18 @@ bool Dipole::IsDecayAllowed(){
 }
 
 
-double Dipole::Eikonal(Vec4D k, Vec4D p1, Vec4D p2) {
-  // Vec4D eik;
-  // if(Type()==dipoletype::initial){
-  //   eik+=m_thetai*m_Qi*p1/(p1*k);
-  //   eik+=m_thetaj*m_Qj*p2/(p2*k);
-  // }
-  // else if(Type()==dipoletype::final){
-  //   eik+=m_thetai*m_Qi*p1/(p1*k);
-  //   eik+=m_thetaj*m_Qj*p2/(p2*k);
-  // }
-  // return m_alp/(4 * M_PI * M_PI)*eik*eik;
+double Dipole::Eikonal(const Vec4D &k,const Vec4D &p1,const Vec4D &p2) {
   return m_QiQj*m_thetaij*m_alp / (4 * M_PI * M_PI) * (p1 / (p1 * k) - p2 / (p2 * k)).Abs2();
 }
 
-double Dipole::EikonalMassless(Vec4D k, Vec4D p1, Vec4D p2) {
+double Dipole::EikonalMassless(const Vec4D &k,const Vec4D &p1, const Vec4D &p2) {
   return m_QiQj*m_thetaij*m_alp / (4 * M_PI * M_PI) * (-2.*p1*p2 / ((p1 * k)*(p2 * k)));
 }
 
 
-double Dipole::Eikonal(Vec4D k) {
-  Vec4D p1 = m_bornmomenta[0];
-  Vec4D p2 = m_bornmomenta[1];
+double Dipole::Eikonal(const Vec4D &k) {
+  Vec4D p1 = m_eikmomentum[0];
+  Vec4D p2 = m_eikmomentum[1];
   return m_QiQj*m_thetaij*m_alp / (4 * M_PI * M_PI) * (p1 / (p1 * k) - p2 / (p2 * k)).Abs2();
 }
 

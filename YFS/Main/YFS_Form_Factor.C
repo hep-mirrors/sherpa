@@ -39,17 +39,15 @@ double YFS_Form_Factor::BVR_full(double p1p2, double E1, double E2,
   if ( mode == 0 ) {
     t2 = p1p2 * A4(p1p2, E1, E2, Mas1, Mas2);
   }
-  else {
+  else if(mode==1) {
     // alpi = 1./137.03599976000001/M_PI;
-    if (sqr(Mas1) / p1p2 > 1e-10 && sqr(Mas2) / p1p2 > 1e-10  ) {
-      AA4 = A4(p1p2, E1, E2, Mas1, Mas2);
-      t2 = AA4 * p1p2;
-      // t1 = (p1p2*A(p1p2,Mas1,Mas2)-1.)*log(4*(E1*E2/Mas1/Mas2));
+    t1 = (p1p2 * A(p1p2, Mas1, Mas2)) * log(4 * sqr(Kmax / MasPhot));
+    t2 = p1p2 * A4(p1p2, E1, E2, Mas1, Mas2);
+    
     }
     else {
       AA4 = A4(p1p2, E1, E2, Mas1, Mas2);
       t2 = AA4 * p1p2;
-    }
   }
   double t3 = Mas1 * Mas1 * A4_eq(E1, Mas1) + Mas2 * Mas2 * A4_eq(E2, Mas2);
   if (IsBad(t1) || IsBad(t2) || IsBad(t3)) {
@@ -90,9 +88,9 @@ double YFS_Form_Factor::BR_full(Vec4D p1, Vec4D p2, double omega) {
 
 
 double YFS_Form_Factor::BVR_cru(double p1p2, double E1, double E2,
-                                double Mas1, double Mas2, double Kmax, double MasPhot) {
+                                double Mas1, double Mas2, double Kmax) {
   // m_btilcru = m_alpi*(p1p2*BVR_A(p1p2,Mas1,Mas2))
-  double t1 = (p1p2 * A(p1p2, Mas1, Mas2)) * log(4.*sqr(Kmax / MasPhot));
+  double t1 = (p1p2 * A(p1p2, Mas1, Mas2)) * log(4.*sqr(Kmax / m_photonMass));
   double t2 = p1p2 * A4(p1p2, E1, E2, Mas1, Mas2);
   if (IsBad(t1) || IsBad(t2)) {
     msg_Error() << METHOD << "\n" << "YFS Form Factor is NaN"

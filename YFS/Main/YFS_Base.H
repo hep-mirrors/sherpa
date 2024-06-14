@@ -4,21 +4,20 @@
 #include "ATOOLS/Math/Vector.H"
 #include "ATOOLS/Math/MathTools.H"
 #include "ATOOLS/Phys/Flavour.H"
-#include "ATOOLS/Org/Run_Parameter.H" 
+#include "ATOOLS/Org/Run_Parameter.H"
 
 
 using namespace ATOOLS;
 
 namespace YFS {
-  struct submode {
-    enum code {
-      off        = 0,
-      local       = 1,
-      global       = 2
-    };
+struct submode {
+  enum code {
+    off        = 0,
+    local       = 1,
+    global       = 2
   };
-
-  struct yfsmode {
+};
+struct yfsmode {
   enum code {
     off       = 0,
     isr       = 1,
@@ -44,18 +43,17 @@ std::istream &operator>>(std::istream &str, wgt::code &sm);
 std::ostream &operator<<(std::ostream &str, const yfsmode::code &sm);
 std::ostream &operator<<(std::ostream &str, const wgt::code &sm);
 
+class YFS_Base {
+protected:
 
-  class YFS_Base { 
-  protected:
+  double m_exponent, m_xmax;
+  bool   m_on;
 
-    double m_exponent, m_xmax;
-    bool   m_on;
+public:
+  YFS_Base();
+  virtual ~YFS_Base();
 
-  public:
-    YFS_Base();
-    virtual ~YFS_Base();
-
-    bool On() const   { return m_on;   }
+  bool On() const   { return m_on;   }
 
   double m_mass2[2];
   double m_s;
@@ -79,14 +77,15 @@ std::ostream &operator<<(std::ostream &str, const wgt::code &sm);
   submode::code m_submode;
   yfsmode::code m_mode;
 
-    void RegisterSettings();
-    void RegisterDefaults();
-    double Eikonal(const Vec4D &k, const Vec4D &p1, const Vec4D &p2);
-    double EikonalMassless(const Vec4D &k, const Vec4D &p1, const Vec4D &p2);
-    inline bool  HasISR()   const {return (m_mode != yfsmode::off && m_mode != yfsmode::fsr); }
-    inline bool  HasFSR()   const {return (m_mode != yfsmode::off && m_mode != yfsmode::isr); }
 
-  };
+  void RegisterSettings();
+  void RegisterDefaults();
+  double Eikonal(const Vec4D &k, const Vec4D &p1, const Vec4D &p2);
+  double EikonalMassless(const Vec4D &k, const Vec4D &p1, const Vec4D &p2);
+  inline bool  HasISR()   const {return (m_mode != yfsmode::off && m_mode != yfsmode::fsr); }
+  inline bool  HasFSR()   const {return (m_mode != yfsmode::off && m_mode != yfsmode::isr); }
+
+};
 }
 
 #endif

@@ -60,7 +60,7 @@ namespace YFS {
       void Dipole_IF(ATOOLS::Flavour_Vector const &fl, ATOOLS::Vec4D_Vector const &mom, ATOOLS::Vec4D_Vector const &born);
       void CleanInParticles();
       void CleanOutParticles();
-      void Get4Mom(ATOOLS::Flavour_Vector const &fl,ATOOLS::Vec4D_Vector mom, std::vector<int> v);
+      // void Get4Mom(ATOOLS::Flavour_Vector const &fl,ATOOLS::Vec4D_Vector mom, std::vector<int> v);
       void Get4Mom(ATOOLS::Flavour_Vector const &fl,ATOOLS::Vec4D_Vector mom);
       bool CheckMasses();
       void IsResonant(YFS::Dipole &D);
@@ -69,7 +69,7 @@ namespace YFS {
       double CalculateRealSubEEX(const Vec4D &k);
       double CalculateVirtualSub();
       double CalculateRealVirtualSub(const Vec4D & k);
-      double CalculateEEXReal(const Vec4D & k);
+      double CalculateEEX();
       double CalculateEEXVirtual();
       double CalculateEEX(const Vec4D & k1, const Vec4D & k2);
       double CalculateFlux(const Vec4D &k);

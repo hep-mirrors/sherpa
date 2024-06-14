@@ -5,13 +5,9 @@
 #include "YFS/Main/ISR.H"
 #include "YFS/Main/FSR.H"
 #include "YFS/Main/Coulomb.H"
-#include "YFS/Main/Semi.H"
 #include "YFS/Tools/Debug.H"
-#include "YFS/NLO/Virtual_ff.H"
-#include "YFS/NLO/EEX.H"
 #include "YFS/NLO/NLO_Base.H"
 #include "BEAM/Main/Beam_Base.H"
-#include "YFS/Main/Semi.H"
 #include "BEAM/Main/Beam_Spectra_Handler.H"
 #include "MODEL/Main/Model_Base.H"
 #include "YFS/Main/Define_Dipoles.H"
@@ -25,17 +21,14 @@
 #include <iostream>
 #include <fstream>
 namespace ATOOLS { class Blob_Data_Base; }
-// namespace BEAM   { class Beam_Base;      }
 namespace YFS    {class Real_ff;         }
 namespace YFS    {class Coulomb;         }
-// namespace YFS    {class ISR;         }
-// namespace PHASIC {class Tree_ME2_Base;         }
-namespace OpenLoops {class OpenLoops_Interface; }
 
 
 namespace YFS {
 
     class YFS_Handler : public YFS_Base {
+
     public:
          // constructor
         YFS_Handler();

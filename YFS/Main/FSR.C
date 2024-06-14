@@ -307,7 +307,7 @@ bool FSR::MakeFSR() {
   p_dipole->AddToGhosts(m_r2);
   for (int i = 0; i < 2; ++i) {
     p_dipole->SetMomentum(i, m_dipole[i]);
-    // p_dipole->SetEikMomentum(i, m_dipole[i]);
+    p_dipole->SetEikMomentum(i, m_dipole[i]);
   }
   m_photonSumPreBoost = m_photonSum;
   if (m_cut != 0) return true;
@@ -361,7 +361,7 @@ bool FSR::F() {
     if (m_eikonal_mode == 1) {
       m_f    = Eikonal(m_photons[i]);
       m_fbar = EikonalInterferance(m_photons[i]);
-      // m_fbar *= m_sprim/m_sQ;
+      m_fbar *= m_sprim/m_sQ;
       // m_fbar = m_alpi / (2  * M_PI) * m_fbarvec[i];
 
     }
@@ -487,12 +487,13 @@ void FSR::HidePhotons() {
   for (size_t i = 0; i < ph.size(); ++i)
   {
     m_photonSum += ph[i];
-    m_yini.push_back(ph[i].E()*del1[i] / sqrt(m_sprim));
-    m_zini.push_back(ph[i].E()*del2[i] / sqrt(m_sprim));
+    m_yini.push_back(ph[i].E()*del1[i]);
+    m_zini.push_back(ph[i].E()*del2[i]);
   }
   p_dipole->SetNPhoton(ph.size());
   m_photons = ph;
   p_dipole->AddPhotonsToDipole(m_photons);
+  p_dipole->SetSudakovs(m_yini,m_zini);
 }
 
 void FSR::HidePhotons(Vec4D_Vector &k){

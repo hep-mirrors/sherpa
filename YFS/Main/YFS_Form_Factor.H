@@ -18,7 +18,7 @@ public:
     double BVR_full(ATOOLS::Vec4D p1, ATOOLS::Vec4D p2, double omega);
     double BR_full(ATOOLS::Vec4D p1, ATOOLS::Vec4D p2, double omega);
     double BVR_cru(double p1p2, double E1, double E2,
-                   double Mas1, double Mas2, double Kmax, double MasPhot);
+                   double Mas1, double Mas2, double Kmax);
     double BVR_cru(ATOOLS::Vec4D p1, ATOOLS::Vec4D p2, double E2);
     double A(double p1p2, double mass1, double mass2);
     double A(ATOOLS::Vec4D p1, ATOOLS::Vec4D p2);
