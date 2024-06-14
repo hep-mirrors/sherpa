@@ -13,13 +13,13 @@ using namespace PHASIC;
 using namespace ATOOLS;
 
 ISR_Channels::ISR_Channels(Phase_Space_Handler *const psh,
-			     const std::string &name) :
+           const std::string &name) :
   Multi_Channel(name), p_psh(psh), m_keyid("ISR"),
   p_isrhandler(p_psh->GetISRHandler()),
   p_yfshandler(p_psh->GetYFSHandler()),
   m_isrmode(p_isrhandler->Mode())
 {
-  if(p_yfshandler->Mode()==YFS::yfsmode::isr){
+  if(p_yfshandler->HasISR()){
     m_isrmode = PDF::isrmode::lepton_lepton;
     for (size_t i=0;i<2;i++) m_isrtype[i] = PDF::isrtype::yfs;
     for (double spexp=0.5;spexp<=1.5;spexp+=0.5) m_spexponents.insert(spexp);
@@ -41,10 +41,10 @@ bool ISR_Channels::MakeChannels()
     return true;
   case PDF::isrmode::hadron_hadron:
     for (std::set<double>::iterator spit=m_spexponents.begin();
-	 spit!=m_spexponents.end();spit++) {
+   spit!=m_spexponents.end();spit++) {
       for (std::set<double>::iterator yit=m_yexponents.begin();
-	   yit!=m_yexponents.end();yit++) {
-	m_isrparams.push_back(Channel_Info(channel_type::simple,(*spit),(*yit)));
+     yit!=m_yexponents.end();yit++) {
+  m_isrparams.push_back(Channel_Info(channel_type::simple,(*spit),(*yit)));
       }
     }
     break;
@@ -54,13 +54,13 @@ bool ISR_Channels::MakeChannels()
     break;
   case PDF::isrmode::lepton_lepton:
     m_isrparams.push_back(Channel_Info(channel_type::leadinglog,
-				       p_psh->Process()->ISR()->Exponent(1),
-				       1.00000001,1.));
+               p_psh->Process()->ISR()->Exponent(1),
+               1.00000001,1.));
     break;
   case PDF::isrmode::unknown:
   default:
     msg_Error()<<"Error in "<<METHOD<<": unknown isr mode.\n"
-	       <<"   Continue without channels and hope for the best.\n";
+         <<"   Continue without channels and hope for the best.\n";
     return true;
   }
   CheckForStructuresFromME();
@@ -70,8 +70,8 @@ bool ISR_Channels::MakeChannels()
 void ISR_Channels::CheckForStructuresFromME() {
   if (!p_psh->Process()) {
     msg_Error()<<"Warning in "<<METHOD<<":\n"
-	       <<"   Phase space handler has no process information.\n"
-	       <<"   This looks like a potential bug, will exit.\n";
+         <<"   Phase space handler has no process information.\n"
+         <<"   This looks like a potential bug, will exit.\n";
     THROW(fatal_error,"No process information in phase space handler.")
   }
   std::set<double>    thresholds;
@@ -93,10 +93,10 @@ void ISR_Channels::CheckForStructuresFromME() {
       if (ATOOLS::IsZero(masses[i])) continue;
       fromFSR = true;
       for (std::set<double>::iterator yit=m_yexponents.begin();
-	   yit!=m_yexponents.end();yit++) {
-	m_isrparams.push_back(Channel_Info(type,masses[i],2.,(*yit)));
+     yit!=m_yexponents.end();yit++) {
+  m_isrparams.push_back(Channel_Info(type,masses[i],2.,(*yit)));
       }
-      if(p_yfshandler->Mode()!=YFS::yfsmode::off){
+      if(p_yfshandler->HasISR()){
         m_isrparams.push_back(Channel_Info(type,masses[i],2.));
       }
       break;
@@ -104,20 +104,20 @@ void ISR_Channels::CheckForStructuresFromME() {
       if (ATOOLS::IsZero(masses[i])) continue;
       if (ATOOLS::IsZero(widths[i])) continue;
       if (types[i]==-1) {
-	p_psh->SetOSMass(masses[i]);
-	onshellresonance = true;
+  p_psh->SetOSMass(masses[i]);
+  onshellresonance = true;
       }
       fromFSR = true;
       for (std::set<double>::iterator yit=m_yexponents.begin();
-	   yit!=m_yexponents.end();yit++) {
-	m_isrparams.push_back(Channel_Info(type,masses[i],widths[i],(*yit)));
+     yit!=m_yexponents.end();yit++) {
+  m_isrparams.push_back(Channel_Info(type,masses[i],widths[i],(*yit)));
       }
-      if(p_yfshandler->Mode()!=YFS::yfsmode::off){
+      if(p_yfshandler->HasISR()){
         m_isrparams.push_back(Channel_Info(type,masses[i],widths[i]));
       }
       break;
     case channel_type::simple:
-      ifp_yfshandler->Mode()!=YFS::yfsmode::off{
+      if(p_yfshandler->HasISR()){
         m_isrparams.push_back(Channel_Info(type,1.,1));
       }
       break;
@@ -137,9 +137,9 @@ void ISR_Channels::CheckForStructuresFromME() {
       double mass = flav.Mass();
       if (ATOOLS::IsZero(mass)) continue;
       for (std::set<double>::iterator yit=m_yexponents.begin();
-	   yit!=m_yexponents.end();yit++) {
-	m_isrparams.push_back(Channel_Info(channel_type::resonance,
-					   mass,flav.Width(),(*yit)));
+     yit!=m_yexponents.end();yit++) {
+  m_isrparams.push_back(Channel_Info(channel_type::resonance,
+             mass,flav.Width(),(*yit)));
       }
     }
   }
@@ -149,11 +149,11 @@ bool ISR_Channels::CreateChannels()
 {
   size_t collmode =
     1*size_t(m_isrtype[0]!=PDF::isrtype::intact &&
-	     m_isrtype[0]!=PDF::isrtype::unknown) +
+       m_isrtype[0]!=PDF::isrtype::unknown) +
     2*size_t(m_isrtype[1]!=PDF::isrtype::intact &&
-	     m_isrtype[1]!=PDF::isrtype::unknown);
+       m_isrtype[1]!=PDF::isrtype::unknown);
   if(m_isrtype[0]==PDF::isrtype::yfs) collmode = 4;
-  if(p_yfshandler->Mode()==YFS::yfsmode::isr) collmode = 4;
+  if(p_yfshandler->HasISR()) collmode = 4;
   if (m_isrparams.size() < 1 || collmode==0) return 0;
   for (size_t i=0;i<m_isrparams.size();i++) {
     switch (m_isrparams[i].type) {
@@ -174,8 +174,8 @@ bool ISR_Channels::CreateChannels()
     case channel_type::unknown:
     default:
       msg_Error()<<"Error in "<<METHOD<<":\n"
-		 <<"   tried to construct channel for unknown type.\n"
-		 <<"   Will ignore this channel and hope for the best.\n";
+     <<"   tried to construct channel for unknown type.\n"
+     <<"   Will ignore this channel and hope for the best.\n";
     }
   }
   return true;
@@ -185,7 +185,7 @@ void ISR_Channels::AddSimplePole(const size_t & chno,const size_t & mode) {
   double spexp = m_isrparams[chno].parameters[0];
   double yexp  = m_isrparams[chno].parameters.size()>1?m_isrparams[chno].parameters[1]:0.;
   if (mode==3 && (m_isrmode==PDF::isrmode::hadron_hadron ||
-		  m_isrmode==PDF::isrmode::lepton_lepton)) {
+      m_isrmode==PDF::isrmode::lepton_lepton)) {
     if (dabs(yexp)<1.e-3) {
       Add(new Simple_Pole_Uniform(spexp,m_keyid,p_psh->GetInfo(),mode));
       Add(new Simple_Pole_Central(spexp,m_keyid,p_psh->GetInfo(),mode));
@@ -217,7 +217,7 @@ void ISR_Channels::AddResonance(const size_t & chno,const size_t & mode) {
   double width = m_isrparams[chno].parameters[1];
   double yexp  = m_isrparams[chno].parameters.size()>2?m_isrparams[chno].parameters[2]:0.;
   if (mode==3 && (m_isrmode==PDF::isrmode::hadron_hadron ||
-		  m_isrmode==PDF::isrmode::lepton_lepton)) {
+      m_isrmode==PDF::isrmode::lepton_lepton)) {
     if (dabs(yexp)<1.e-3) {
       Add(new Resonance_Uniform(mass,width,m_keyid,p_psh->GetInfo(),mode));
       Add(new Resonance_Central(mass,width,m_keyid,p_psh->GetInfo(),mode));
@@ -250,7 +250,7 @@ void ISR_Channels::AddThreshold(const size_t & chno,const size_t & mode) {
   double spexp = m_isrparams[chno].parameters[1];
   double yexp  = m_isrparams[chno].parameters.size()>2?m_isrparams[chno].parameters[2]:0.;
   if (mode==3 && (m_isrmode==PDF::isrmode::hadron_hadron ||
-	       m_isrmode==PDF::isrmode::lepton_lepton)) {
+         m_isrmode==PDF::isrmode::lepton_lepton)) {
     if (yexp==0.0) {
       Add(new Threshold_Uniform(mass,spexp,m_keyid,p_psh->GetInfo(),mode));
       Add(new Threshold_Central(mass,spexp,m_keyid,p_psh->GetInfo(),mode));

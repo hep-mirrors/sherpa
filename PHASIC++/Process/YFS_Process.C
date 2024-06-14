@@ -84,43 +84,17 @@ void YFS_Process::Init(const Process_Info &pi,
       rpi.m_mincpl[i] += rpi.m_fi.m_nlocpl[i];
     }
     rpi.m_fi.m_ps.push_back(Subprocess_Info(kf_photon, "", ""));
-    // rpi.m_megenerator = rpi.m_rsmegenerator;
-    // p_realproc = InitProcess(rpi,nlo_type::born, false);
-    // p_realproc->FillProcessMap(p_apmap);
-    // // p_ampl = new CreateAmplitude(p_realproc->Selected()->GetSubevtList()->back());
-    // p_realproc->InitScale();
-    // p_realproc->SetLookUp(false);
-    // p_realproc->SetParent(this);
-    // p_realproc->SetSelected(this);
-
     p_yfs->p_nlo->InitializeReal(rpi);
     p_yfs->SetNLOType(nlo_type::real);
   }
   if (pi.Has(nlo_type::loop)) {
-    vpi.m_fi.SetNLOType(nlo_type::loop);
+    vpi.m_fi.SetNLOType(nlo_type::born);
     Process_Base::Init(vpi, beam, isr, yfs);
-    p_virtproc = InitProcess(vpi, nlo_type::loop, false);
+    p_virtproc = InitProcess(vpi, nlo_type::born, false);
     p_virtproc->FillProcessMap(p_apmap);
     p_yfs->p_nlo->InitializeVirtual(vpi);
     p_yfs->SetNLOType(nlo_type::loop);
   }
-  if (pi.Has(nlo_type::rvirt)) {
-    Process_Info rvpi(pi);
-    p_realvirtproc = InitProcess(rvpi, nlo_type::born, false);
-    rvpi.m_fi.m_ps.push_back(Subprocess_Info(kf_photon, "", ""));
-    p_yfs->p_nlo->InitializeRealVirtual(rvpi);
-    // p_yfs->p_nlo->InitializeVirtual(vpi);
-  }
-  if (pi.Has(nlo_type::realreal)) {
-    Process_Info rrpi(pi);
-    p_realrealproc = InitProcess(rrpi, nlo_type::born, false);
-    rrpi.m_fi.m_ps.push_back(Subprocess_Info(kf_photon, "", ""));
-    rrpi.m_fi.m_ps.push_back(Subprocess_Info(kf_photon, "", ""));
-    p_yfs->p_nlo->InitializeRealReal(rrpi);
-    // p_yfs->InitializeVirtual(vpi);
-  }
-
-  // p_bornproc->FillProcessMap(p_apmap);
   p_bornproc->SetLookUp(false);
   // p_bornproc->SetParent(p_bornproc);
   p_bornproc->SetSelected(this);
@@ -157,28 +131,27 @@ bool YFS_Process::CalculateTotalXSec(const std::string &resultpath,
   p_int->ReadResults();
   exh->AddTerminatorObject(p_int);
   double var(p_int->TotalVar());
-  // if (create) {
-    msg_Info() << METHOD << "(): Calculate xs for '"
-               // << m_name << "' (" << (p_gen ? p_gen->Name() : "") << ")" << std::endl;
-               << m_name <<  std::endl;
-    double totalxsborn(psh->Integrate() / rpa->Picobarn());
-    if (!IsEqual(totalxsborn, p_int->TotalResult())) {
-      msg_Error() << "Result of PS-Integrator and summation do not coincide!\n"
-                  << "  '" << m_name << "': " << totalxsborn
-                  << " vs. " << p_int->TotalResult() << std::endl;
+  msg_Info() << METHOD << "(): Calculate xs for '"
+             // << m_name << "' (" << (p_gen ? p_gen->Name() : "") << ")" << std::endl;
+             << m_name <<  std::endl;
+  double totalxsborn(psh->Integrate() / rpa->Picobarn());
+  if (!IsEqual(totalxsborn, p_int->TotalResult())) {
+    msg_Error() << "Result of PS-Integrator and summation do not coincide!\n"
+                << "  '" << m_name << "': " << totalxsborn
+                << " vs. " << p_int->TotalResult() << std::endl;
     }
-    if (p_int->Points()) {
-      p_int->SetTotal();
-      if (var == p_int->TotalVar()) {
-        exh->RemoveTerminatorObject(p_int);
-        return 1;
-      }
-      p_int->StoreResults();
+  if (p_int->Points()) {
+    p_int->SetTotal();
+    if (var == p_int->TotalVar()) {
       exh->RemoveTerminatorObject(p_int);
       return 1;
     }
+    p_int->StoreResults();
     exh->RemoveTerminatorObject(p_int);
-    return 0;
+    return 1;
+    }
+  exh->RemoveTerminatorObject(p_int);
+  return 0;
 }
 
 
@@ -263,7 +236,6 @@ void YFS_Process::OneRealEvent(){
     p_realproc->Integrator()->SetMomenta(bornmom);
     p_realproc->Selector()->Trigger(bornmom);
     ATOOLS::Weights_Map  wgtmap = p_realproc->Integrator()->Process()->Differential(bornmom, Variations_Mode::all);
-    // PRINT_VAR(p_realproc->Integrator()->Process()->m_last);
   }
 }
 

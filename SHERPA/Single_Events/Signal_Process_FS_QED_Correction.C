@@ -71,7 +71,7 @@ Signal_Process_FS_QED_Correction::Signal_Process_FS_QED_Correction(
   // Force Photons++ to be off if YFS ISR is switched on.
   // In principle they can be combined but that will
   // require some tweaks - A.Price
-  if(p_mehandler->GetYFS()->GetMode()==1) m_on=false;
+  if(p_mehandler->GetYFS()->Mode()!=YFS::yfsmode::off) m_on=false;
   if (m_on && m_qed) m_name += p_sphotons->SoftQEDGenerator();
   else               m_name += "None";
 }
