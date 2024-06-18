@@ -1,0 +1,40 @@
+block sminputs
+	1  127.9       # aEWM1
+	2  1.16637e-05 # Gf
+	3  0.1184      # aS
+
+block yukawa
+	1  0.00504     # ymdo
+	2  0.00255     # ymup
+	3  0.101       # yms
+	4  1.27        # ymc
+	5  4.7         # ymb
+	6  172         # ymt
+	11 0.000511    # yme
+	13 0.10566     # ymm
+	15 1.777       # ymtau
+
+block ckmblock
+	1  0.227736    # cabi
+
+block mass
+	23 91.1876     # MZ
+	11 0.000511    # Me
+	13 0.10566     # MMU
+	15 1.777       # MTA
+	2  0.00255     # MU
+	4  1.27        # MC
+	6  172         # MT
+	1  0.00504     # MD
+	3  0.101       # MS
+	5  4.7         # MB
+	25 125         # MH
+
+block qcdd6
+	1  1.0       # LAMBDAG
+	2  2.0       # LAMBDAQ
+
+decay 	23 2.4952      # WZ
+decay 	24 2.085       # WW
+decay 	6  1.50833649  # WT
+decay 	25 0.00407     # WH

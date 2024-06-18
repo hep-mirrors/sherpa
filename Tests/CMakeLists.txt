@@ -157,3 +157,8 @@ if(SHERPA_ENABLE_CATCH2)
   # Add unit tests
   add_subdirectory(Unit)
 endif()
+
+if(SHERPA_ENABLE_UFO)
+  # Add UFO tests
+  add_subdirectory(End2End/UFO)
+endif()

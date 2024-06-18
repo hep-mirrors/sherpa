@@ -1,0 +1,2 @@
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/run_all.py.in ${CMAKE_CURRENT_BINARY_DIR}/run_all.py @ONLY)
+file(COPY Models DESTINATION ${CMAKE_CURRENT_BINARY_DIR})

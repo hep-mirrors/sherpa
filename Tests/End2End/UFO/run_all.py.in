@@ -1,0 +1,144 @@
+#!@PYTHON@
+import os
+import sys
+import shutil
+from string import Template
+sys.path.append('@SHERPA_Python_SITEARCH@')
+from ufo_interface.parser import main as ufo
+import Sherpa
+
+
+class test_process:
+    def __init__(self, inpart, outpart, model, threshold=1e-9, orders=None, npoints=100):
+        self.inpart = inpart
+        self.outpart = outpart
+        self.model = model
+        self.cms = 2000.0
+        self.threshold = threshold
+        self.orders = orders if orders is not None else {}
+        self.npoints = npoints
+
+    def __str__(self):
+        return f"Process: {' '.join(self.inpart)} -> {' '.join(self.outpart)}"
+
+
+def generate_models(model_names, overwrite=False):
+    for model in model_names:
+        path = f"Models/{model}"
+        if not overwrite and os.path.exists(os.path.join(path, '.sherpa')):
+            print(f"Model {model} already exists, skipping")
+            continue
+        # Remove the .sherpa directory if it exists
+        shutil.rmtree(os.path.join(path, '.sherpa'), True)
+        # Generate the model
+        ufo([path, '--auto_convert'])
+
+
+def get_processes(model):
+    processes = []
+    for folder in os.listdir(f"TestProcesses/{model}"):
+        parts = folder.split('_')
+        inpart = parts[0:2]
+        outpart = parts[2:]
+        processes.append(test_process(inpart, outpart, model))
+    return processes
+
+
+def run(process):
+    with open('Sherpa.yaml.template', 'r') as f:
+        template = f.read()
+    template = Template(template)
+
+    subtitutions = {
+        'process': ' '.join(process.inpart) + ' -> ' + ' '.join(process.outpart),
+        'model': process.model,
+        'ufo_param_card': f'ParamCards/param_card_{process.model}.dat',
+        'beam1': process.inpart[0],
+        'beam2': process.inpart[1],
+        'beam1_energy': process.cms/2.0,
+        'beam2_energy': process.cms/2.0,
+        'orders': process.orders,
+    }
+    with open('Sherpa.yaml', 'w') as f:
+        f.write(template.substitute(subtitutions))
+
+    sys.srgv = ['Sherpa', 'Sherpa.yaml']
+    generator = Sherpa.Sherpa(len(sys.argv), sys.argv)
+    generator.InitializeTheRun()
+    me_calc = Sherpa.MEProcess(generator)
+
+    nflav = len(process.inpart) + len(process.outpart)
+    for fl in process.inpart:
+        me_calc.AddInFlav(int(fl))
+    for fl in process.outpart:
+        me_calc.AddOutFlav(int(fl))
+    me_calc.Initialize()
+
+    me_file = f'TestProcesses/{process.model}/{"_".join(process.inpart)}_{"_".join(process.outpart)}'
+    deviation = []
+    with open(me_file + "/mg_results.dat", 'r') as f:
+        for line in f:
+            momenta = line.strip().split()
+            if not len(momenta)-1 == 4*nflav:
+                raise RuntimeError("Invalid number of momenta")
+
+            for i in range(nflav):
+                me_calc.SetMomentum(i, float(momenta[4*i]), float(momenta[4*i+1]),
+                                    float(momenta[4*i+2]), float(momenta[4*i+3]))
+
+            expected = float(momenta[-1])
+            calculated = me_calc.CSMatrixElement()
+            deviation.append((calculated - expected)/expected)
+            print(f"Expected: {expected}, Calculated: {calculated}, Deviation: {deviation[-1]}")
+
+    max_deviation = max(deviation)
+    min_deviation = min(deviation)
+    passed = max([abs(max_deviation), abs(min_deviation)]) < process.threshold
+    if passed:
+        passed = "\033[32mPASSED\033[0m"
+    else:
+        passed = "\033[31mFAILED\033[0m"
+    return passed
+
+
+def main():
+    # models = ['mssm', 'qagc', 'qcd_d6']
+    models = ['mssm']
+    generate_models(models, True)
+
+    processes = []
+    for model in models:
+        processes.extend(get_processes(model))
+    print("Found {} processes".format(len(processes)))
+
+    # Sort processes by initial state particles
+    processes.sort(key=lambda x: x.inpart)
+
+    for process in processes:
+        print("       {}".format(process), end='\r')
+        try:
+            # Suppress Sherpa output
+            old_stdout = os.dup(1)
+            old_stderr = os.dup(2)
+            stdout_file = open('stdout.log', 'a')
+            stderr_file = open('stderr.log', 'a')
+
+            os.dup2(stdout_file.fileno(), 1)
+            os.dup2(stderr_file.fileno(), 2)
+            passed = run(process)
+        except Exception as e:
+            passed = "\033[31mERROR!\033[0m"
+            print(f"Error running process: {process}")
+            print(e)
+        finally:
+            # Restore stdout and stderr
+            os.dup2(old_stdout, 1)
+            os.dup2(old_stderr, 2)
+            stdout_file.close()
+            stderr_file.close()
+
+            print(f"{passed}")
+
+
+if __name__ == '__main__':
+    main()
