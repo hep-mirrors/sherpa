@@ -5,27 +5,51 @@
 #include "ATOOLS/Org/My_MPI.H"
 #include "ATOOLS/Org/Scoped_Settings.H"
 
-#include <algorithm>
-#include <cctype>
 #include <sys/stat.h>
 #include <iterator>
-#include <regex>
-#include <string>
 
-// The regular expression is brought outside the function in order to avoid
-// compiling it multiple times during each call to 'count_no_escape'
-std::regex ansi_reg("\033((\\[((\\d+;)*\\d+)?[A-DHJKMRcf-ilmnprsu])|\\(|\\))");
-
-// Count the number of characters, ignoring ANSII escape sequences
 std::string::iterator::difference_type count_no_escape(std::string const &str) {
-  std::string::iterator::difference_type result = 0;
-  std::for_each(
-      std::sregex_token_iterator(str.begin(), str.end(), ansi_reg, -1),
-      std::sregex_token_iterator(),
-      [&result](std::sregex_token_iterator::value_type const &e) {
-        std::string tmp(e);
-        result += std::count_if(tmp.begin(), tmp.end(), isprint);
-      });
+  std::string::iterator::difference_type result {0};
+  bool within_ansii_escape_seq {false};
+  for (const char& c : str) {
+    if (!within_ansii_escape_seq) {
+      if (c == '\033') {
+        within_ansii_escape_seq = true;
+      }
+      else {
+        result++;
+      }
+    }
+    else {
+      switch (c) {
+        case 'A':
+        case 'B':
+        case 'C':
+        case 'D':
+        case 'H':
+        case 'J':
+        case 'K':
+        case 'M':
+        case 'R':
+        case 'c':
+        case 'f':
+        case 'g':
+        case 'h':
+        case 'i':
+        case 'l':
+        case 'm':
+        case 'n':
+        case 'p':
+        case 'r':
+        case 's':
+        case 'u': {
+        within_ansii_escape_seq = false;
+        }
+        default:
+        break;
+      }
+    }
+  }
   return result;
 }
 
