@@ -293,7 +293,7 @@ void Hadron_Remnant::MakeLongitudinalMomenta(ParticleMomMap *ktmap,const bool & 
   for (Particle  const * pit : m_spectators) {
     remnant_masses += Max(pit->Flav().HadMass(), m_LambdaQCD);
   }
-  if (remnant_masses > m_residualE)
+  if (remnant_masses > m_residualE && m_resenergyWarnings++<5)
     msg_Debugging() << METHOD << ": Warning, HadMasses of remnants = "
                 << remnant_masses << " vs. residual energy = " << m_residualE << "\n";
   for (auto part : m_spectators) {
@@ -373,7 +373,9 @@ bool Hadron_Remnant::TestExtract(const Flavour &flav,const Vec4D &mom) {
   DEBUG_FUNC("");
   // Is flavour element of flavours allowed by PDF?
   if (p_partons->find(flav)==p_partons->end()) {
-    msg_Error()<<METHOD<<": flavour "<<flav<<" not found.\n";
+    if (m_extractionErrors++<5) {
+      msg_Error()<<METHOD<<": flavour "<<flav<<" not found.\n";
+    }
     return false;
   }
   if (mom[0] < flav.HadMass()) {
@@ -384,17 +386,18 @@ bool Hadron_Remnant::TestExtract(const Flavour &flav,const Vec4D &mom) {
   // Still enough energy for parton and its remnant quark?
   // We're checking for the remnant masses as well, so the stretching onto the
   // mass-shell works out later.
-  double required_energy = EstimateRequiredEnergy()
-      + mom[0] + Max(flav.HadMass(), m_LambdaQCD);
+  double required_energy = MinRequiredEnergy(mom[0], flav);
   if (required_energy>m_residualE) {
-      msg_Debugging()<<METHOD<<": not enough energy for remnants, E_{required} "
-                <<mom[0]<<" > E_{in beam} = "<<m_residualE<<".\n";
+    msg_Debugging()<<METHOD<<": not enough energy for remnants, E_{required} "
+		   <<mom[0]<<" > E_{in beam} = "<<m_residualE<<".\n";
     return false;
   }
   // Still enough energy?  And in range?
   double x = mom[0]/m_residualE;
   if (x<p_pdf->XMin() || x>p_pdf->XMax()) {
-    msg_Error()<<METHOD<<": out of limits, x = "<<x<<".\n";
+    if (m_extractionErrors++<5) {
+      msg_Error()<<METHOD<<": out of limits, x = "<<x<<".\n";
+    }
     return false;
   }
   msg_Debugging()<<flav<<" with mom = "<<mom<<" can be extracted.\n";

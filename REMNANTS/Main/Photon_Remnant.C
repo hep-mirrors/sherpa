@@ -93,19 +93,22 @@ bool Photon_Remnant::TestExtract(const Flavour &flav, const Vec4D &mom) {
   // This respects the masses of all current remnants in m_spectator,
   // the energy of the extracted parton and potentially the mass of its antiflavour.
   // For the case of gluons, this is not necessary, but its HadMass() is zero anyway.
-  double required_energy =
-      EstimateRequiredEnergy(!flav.IsQuark() && !m_valence)
-      + mom[0] + Max(flav.HadMass(), m_LambdaQCD);
+  double required_energy = MinRequiredEnergy(mom[0], flav);
   if (m_residualE < required_energy) {
-    msg_Debugging() << METHOD << ": not enough energy to accomodate particle mass. \n";
+    //msg_Out()<<METHOD<<": not enough energy for remnants, E_{required} "
+    //	     <<mom[0]<<" > E_{in beam} = "<<required_energy<<" < "<<m_residualE<<".\n";
+    //msg_Debugging() << METHOD << ": not enough energy to accomodate particle mass. \n";
     return false;
   }
   // Still in range?
   double x = mom[0] / m_residualE;
   if (x < p_pdf->XMin() || x > p_pdf->XMax()) {
-    msg_Error() << METHOD << ": out of limits, x = " << x << ".\n";
+    if (m_extractionErrors++<5) {
+      msg_Error() << METHOD << ": out of limits, x = " << x << ".\n";
+    }
     return false;
   }
+  //msg_Out()<<flav<<" with mom = "<<mom<<" can be extracted.\n";
   return true;
 }
 
@@ -141,12 +144,14 @@ void Photon_Remnant::MakeLongitudinalMomenta(ParticleMomMap *ktmap,
   for (Particle  const * pit : m_spectators) {
     remnant_masses += Max(pit->Flav().HadMass(), m_LambdaQCD);
   }
-  if (remnant_masses > m_residualE)
+  if (remnant_masses > m_residualE && m_resenergyWarnings++<5)
     msg_Error() << METHOD << ": Warning, HadMasses of remnants = "
                     << remnant_masses << " vs. residual energy = " << m_residualE << "\n";
   for (auto part : m_spectators) {
     if (availMom[0] < 0)
-      msg_Error() << METHOD << ": Negative Energy in Remnants! \n";
+      if (m_extractionErrors++<5) {
+	msg_Error() << METHOD << ": Negative Energy in Remnants! \n";
+      }
     if (part == m_spectators.back()) {
       part->SetMomentum(availMom);
     } else {

@@ -44,6 +44,9 @@ namespace REMNANTS {
     bool TestExtract(const ATOOLS::Flavour &flav,const ATOOLS::Vec4D &mom) final;
     void Reset(const bool & resc=false,const bool & DIS=false) final;
     
+    inline double MinRequiredEnergy(const double energy, const ATOOLS::Flavour &flav) {
+      return ( EstimateRequiredEnergy()+energy+ATOOLS::Max(flav.HadMass(), m_LambdaQCD) );
+    }
     inline ATOOLS::Particle * GetRecoiler()            { return p_recoiler; }
     inline ATOOLS::Particle * GetSpectator()           { return p_spectator; }
   };

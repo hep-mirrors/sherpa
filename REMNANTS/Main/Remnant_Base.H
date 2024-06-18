@@ -44,7 +44,8 @@ namespace REMNANTS {
     Colour_Generator * p_colours;
 
     double m_residualE, m_scale2;
-    
+
+    long int m_extractionErrors, m_resenergyWarnings;
     rtp::code FixType(ATOOLS::Flavour & flav);
   public:
     Remnant_Base(const ATOOLS::Flavour & flav,const size_t & beam,
@@ -65,6 +66,7 @@ namespace REMNANTS {
     virtual void SetResidualEnergy(const double & E=-1.) {
       m_residualE = (E>=0.) ? E : p_beam->OutMomentum(m_tag)[0];
     }
+    virtual inline double MinRequiredEnergy(const double energy, const ATOOLS::Flavour &flav) { return 0.; }
     
     inline rtp::code                  Type() const       { return m_type; }
     inline size_t                     Beam() const       { return m_beam; }
