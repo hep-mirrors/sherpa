@@ -366,6 +366,49 @@ int ME_Generator_Base::ShiftMassesDIS(Cluster_Amplitude *const ampl, Vec4D cms) 
   msg_Debugging()<<"Momentum conservation: "<<MomSum(ampl)<<".\n";
   breit.Invert();
 
+  /// shifted in momentum will be a bit of the z axis, so construct a new one that is
+  /// aligned and push recoil to hadronic final state
+  Vec4D pStrongOutBefore(0,0,0,0);
+  for (size_t i(ampl->NIn());i<ampl->Legs().size();++i) {
+    if(ampl->Leg(i)->Flav().Strong()) pStrongOutBefore += ampl->Leg(i)->Mom();
+  }
+  Vec4D pStrongInBefore;
+  for(size_t i=0; i<ampl->NIn(); i++) {
+    if(ampl->Leg(i)->Flav().Strong()) pStrongInBefore = -ampl->Leg(i)->Mom();
+  }
+  /// hadronic final state should have finite mass, otherwise we had a
+  /// we should be in a 2->2 case with massless partons, and never arrive here
+  if(!IsZero(pStrongInBefore[1]/pStrongInBefore[0],1e-6) || !IsZero(pStrongInBefore[2]/pStrongInBefore[0],1e-6)) {
+    if(IsZero(pStrongOutBefore.Abs2())) msg_Error()<<METHOD<<": Additional shift needed"
+                                                   <<" but m2_qcd_final = "<<pStrongOutBefore.Abs2()<<" ~ 0.\n";
+    /// might assume positive z for hadronic IS?
+    const double m2 = pStrongInBefore.Abs2();
+    const double inOutProd = pStrongInBefore*pStrongOutBefore;
+    const double eDiff = pStrongOutBefore[0]-pStrongInBefore[0];
+    const double zDiff = pStrongOutBefore[3]-pStrongInBefore[3];
+    double newPz = (inOutProd-m2)/(eDiff+zDiff);
+    newPz *= zDiff - eDiff * sqrt(1+m2*(sqr(zDiff)-sqr(eDiff))/sqr(inOutProd-m2));
+    newPz /= eDiff - zDiff;
+    const Vec4D newInMom(sqrt(sqr(newPz)+m2),0,0,newPz);
+
+    Poincare oldHCM(pStrongOutBefore);
+    Poincare newHCM(pStrongOutBefore-pStrongInBefore+newInMom);
+
+    for(size_t i=0; i<ampl->Legs().size(); i++) {
+      if(i < ampl->NIn()) {
+        if(ampl->Leg(i)->Flav().Strong()) ampl->Leg(i)->SetMom(-newInMom);
+      }
+      else if(ampl->Leg(i)->Flav().Strong()) {
+        Vec4D p = ampl->Leg(i)->Mom();
+        oldHCM.Boost(p);
+        newHCM.BoostBack(p);
+        ampl->Leg(i)->SetMom(p);
+      }
+    }
+  }
+  msg_Debugging()<<"In real breit frame: "<<*ampl<<"\n";
+  msg_Debugging()<<"Momentum conservation: "<<MomSum(ampl)<<".\n";
+
   double Ein = 0;
   for(size_t i=0; i<ampl->NIn(); i++) {
     Vec4D p = ampl->Leg(i)->Mom();
