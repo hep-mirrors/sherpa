@@ -223,7 +223,7 @@ bool Kinematics_Generator::TransverseKinematicsHH() {
     if (scale < 1.e-3) {
       if (m_errors<5) {
       msg_Error()<<"Warning: "
-		 <<METHOD<<"unable to create the breakup kinematics";
+		 <<METHOD<<" unable to create the breakup kinematics";
       msg_Debugging()<<" for "
 		     << p_remnants[0]->GetExtracted()[0] << " and "
 		     << p_remnants[1]->GetExtracted()[0]
