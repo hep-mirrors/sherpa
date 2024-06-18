@@ -217,7 +217,7 @@ class lorentz_visitor(ast.NodeVisitor):
         if func_name == 'P':
             return MakeMomentum(args)
         elif func_name == 'complex':
-            return complex(*args)
+            return args[0]+sympy.I*args[1]
         elif func_name in LORENTZMAPPING:
             args = self.to_symbol(args, func_name)
             func = LORENTZMAPPING[func_name]
