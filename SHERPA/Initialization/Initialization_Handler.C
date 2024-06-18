@@ -231,8 +231,8 @@ void Initialization_Handler::RegisterDefaults()
   pss["PDF_FAC"].SetDefault(1.0);
   pss["SCALE_FACTOR"].SetDefault(1.);
   pss["MASS_THRESHOLD"].SetDefault(0.0);
-  pss["FORCED_DECAYS"].SetDefault(true);
-  pss["FORCED_GLUON_SCALING"].SetDefault(-3./2.);
+  pss["FORCED_IS_QUARK_SPLITTING"].SetDefault(true);
+  pss["FORCED_SPLITTING_GLUON_SCALING"].SetDefault(3./2.);
   s["VIRTUAL_EVALUATION_FRACTION"].SetDefault(1.0);
   pss["RECO_CHECK"].SetDefault(0);
   pss["MAXEM"].SetDefault(std::numeric_limits<size_t>::max());
