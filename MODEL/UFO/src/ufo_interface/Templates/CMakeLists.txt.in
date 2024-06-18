@@ -34,7 +34,7 @@ SET(SHERPA-MC_DIR ${SHERPA_ROOT_DIR})
 find_package(SHERPA-MC REQUIRED)
 
 add_library(Sherpa${PROJECT_NAME} SHARED ${LORENTZ_FILES} ${MODEL_FILES} ${COLOR_FILES})
-target_link_libraries(Sherpa${PROJECT_NAME} PRIVATE ${PROJECT_NAME}_options PUBLIC SHERPA::ModelMain)
+target_link_libraries(Sherpa${PROJECT_NAME} PRIVATE ${PROJECT_NAME}_options PUBLIC SHERPA::ModelMain SHERPA::ModelUFO SHERPA::METoolsMain SHERPA::METoolsCurrents SHERPA::METoolsExplicit SHERPA::ToolsPhys SHERPA::ToolsOrg)
 set_source_files_properties(${LORENTZ_FILES} PROPERTIES COMPILE_OPTIONS ${LORENTZ_FLAGS})
 set_source_files_properties(${MODEL_FILES} PROPERTIES COMPILE_OPTIONS ${MODEL_FLAGS})
 

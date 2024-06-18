@@ -1,14 +1,16 @@
-from importlib.machinery import SourceFileLoader
 import argparse
 import os
-from .model_writer import ModelWriter
-from .lorentz_writer import LorentzWriter
-from pathlib import Path
-import subprocess
-from .message import error, warning, progress
 import re
-from . import s_color
+import sys
+import subprocess
 import time
+from importlib.machinery import SourceFileLoader
+from pathlib import Path
+
+from . import s_color
+from .lorentz_writer import LorentzWriter
+from .message import error, progress, warning
+from .model_writer import ModelWriter
 
 
 class Sherpa:
@@ -19,7 +21,7 @@ class Sherpa:
         self.install_dir = self.root_dir + '/../../lib/SHERPA-MC/'
 
 
-def parse_args():
+def parse_args(args):
     sherpa = Sherpa()
     parser = argparse.ArgumentParser(description='Generate a Sherpa model from a UFO model')
     parser.add_argument('ufo_path', type=str,
@@ -30,7 +32,7 @@ def parse_args():
                         default=sherpa.root_dir,
                         help='Path to Sherpa cmake config files')
     parser.add_argument('--output_dir', type=str,
-                        default='.sherpa',
+                        default=None,
                         help='Path to write the Sherpa model')
     parser.add_argument('--install_dir', type=str,
                         default=sherpa.install_dir,
@@ -41,7 +43,10 @@ def parse_args():
     parser.add_argument('--lorentz_flags', type=str,
                         default=sherpa.lorentz_flags,
                         help='Flags to compile the lorentz files')
-    return parser.parse_args()
+    parser.add_argument('--auto_convert', action='store_true',
+                        help='Automatically convert python2 UFO models to python3',
+                        default=False)
+    return parser.parse_args(args)
 
 
 def check_color(color, particles):
@@ -98,9 +103,23 @@ def build_model(src_dir, install_dir, ncore):
     os.chdir(pwd)
 
 
-def try_import(ufo_path):
+def fix_param_writer(path):
+    print(path)
+    with open(path / 'write_param_card.py', 'r') as f:
+        lines = f.readlines()
+    with open(path / 'write_param_card.py', 'w') as f:
+        if lines[0] != 'import functools\n':
+            f.write('import functools\n')
+        for line in lines:
+            if 'need_writing.sort(self.order_param)' in line:
+                line = line.replace('self.order_param', 'key=functools.cmp_to_key(self.order_param)')
+            f.write(line)
+
+
+def try_import(ufo_path, auto_convert=False):
     try:
         ufo_src = SourceFileLoader("ufo", ufo_path.as_posix())
+        fix_param_writer(Path(ufo_src.path).parent)
         ufo_mod = ufo_src.load_module("ufo")
     except FileNotFoundError:
         error(f'UFO model not found at {ufo_path}.')
@@ -108,7 +127,10 @@ def try_import(ufo_path):
         return
     except ModuleNotFoundError:
         warning(f'UFO model at {ufo_path} may be written in python 2.')
-        response = input('Would you like to convert to python3? (y/n): ')
+        if not auto_convert:
+            response = input('Would you like to convert to python3? (y/n): ')
+        else:
+            response = 'y'
         if response.lower()[0] == 'y':
             model_name = ufo_path.parts[-2] + '_py3'
             new_path = ufo_path.parent.parent / model_name
@@ -121,15 +143,23 @@ def try_import(ufo_path):
     return ufo_mod
 
 
-def main():
-    args = parse_args()
+def write_param_card(model_name, ufo_mod):
+    writer = ufo_mod.write_param_card.ParamCardWriter(f'param_{model_name}.dat', generic=True)
+    del writer
+
+
+def main(args):
+    args = parse_args(args)
     ufo_path = Path(args.ufo_path) / '__init__.py'
-    ufo_mod = try_import(ufo_path)
+    ufo_mod = try_import(ufo_path, args.auto_convert)
 
     model_name = ufo_path.parts[-2]
 
     progress(f'Preparing output directory for {model_name}')
-    out_dir = args.output_dir
+    if args.output_dir is None:
+        out_dir = Path(args.ufo_path) / '.sherpa'
+    else:
+        out_dir = Path(args.output_dir)
     prepare_output_dir(out_dir)
 
     progress(f'Checking model {model_name}')
@@ -176,6 +206,9 @@ def main():
     progress(f'Compiling model {model_name}')
     build_model(out_dir, args.install_dir, args.ncore)
 
+    progress(f'Writing out parameter card to param_{model_name}.dat')
+    write_param_card(model_name, ufo_mod)
+
 
 if __name__ == '__main__':
-    main()
+    main(sys.argv[1:])

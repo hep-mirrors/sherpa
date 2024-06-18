@@ -61,7 +61,6 @@ class ModelWriter:
 
     def _write_parameters(self, parameters):
         for parameter in parameters:
-            progress(f"Calculating parameter: {parameter.name}")
             if is_external(parameter):
                 self._params += self._write_external_param(parameter)
             elif is_internal(parameter):
@@ -97,7 +96,8 @@ class ModelWriter:
     def _write_couplings(self, couplings):
         fmt = 'p_complexconstants->insert(std::make_pair(std::string("{0}"), {1}));\n'
         fmt += 'DEBUG_VAR((*p_complexconstants)["{0}"]);\n'
-        for coupling in couplings:
+        for i, coupling in enumerate(couplings):
+            print(f"Writing couplings: {float(i)/len(couplings)*100:0.2f}% finished", end='\r')
             self._params += fmt.format(coupling.name, calc_parameter(coupling.value))
 
     def _write_vertices(self, vertices, orders):

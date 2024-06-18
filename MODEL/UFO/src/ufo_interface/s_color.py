@@ -151,7 +151,7 @@ class s_color(object):
         return ret
 
     def write(self, path):
-        with open(path+"/"+self.c_name(), "w") as outfile:
+        with open(path / self.c_name(), "w") as outfile:
             outfile.write(color_calc_template.substitute(color_name        = self.name(),
                                                          array_declaration = self.array_declaration_string(),
                                                          array_init        = self.array_init_string(),
