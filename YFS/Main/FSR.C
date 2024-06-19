@@ -415,8 +415,8 @@ bool FSR::YFS_FORM(){
   double YFS_IR = -2.*m_alpi*abs(m_QF2)*(m_q1q2*p_fsrFormFact->A(m_dipole[0],m_dipole[1])-1.)*log(1/Delta);
 
   if (m_use_crude) {
-    m_BtiXcru = p_fsrFormFact->BVR_cru(m_r1 * m_r2, m_r1[0], m_r2[0], m_r1.Mass(), m_r2.Mass(), m_Emin, m_photonMass);
-    m_BtiQcru = p_fsrFormFact->BVR_cru(m_r1 * m_r2, Eqq, Eqq, m_r1.Mass(), m_r2.Mass(), m_EminQ, m_photonMass);
+    m_BtiXcru = p_fsrFormFact->BVR_cru(m_r1 * m_r2, m_r1[0], m_r2[0], m_r1.Mass(), m_r2.Mass(), m_Emin);
+    m_BtiQcru = p_fsrFormFact->BVR_cru(m_r1 * m_r2, Eqq, Eqq, m_r1.Mass(), m_r2.Mass(), m_EminQ);
   }
   else {
      if(m_tchannel){
