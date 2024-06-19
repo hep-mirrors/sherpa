@@ -1,5 +1,7 @@
 add_subdirectory(Main)
 add_subdirectory(NLO)
 add_subdirectory(CEEX)
-add_subdirectory(Griffin)
+if (SHERPA_ENABLE_GRIFFIN) 
+	add_subdirectory(Griffin)
+endif()
 add_subdirectory(Tools)

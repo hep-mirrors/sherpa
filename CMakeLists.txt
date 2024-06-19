@@ -68,6 +68,7 @@ option(SHERPA_ENABLE_TESTING                 "Enables testing." OFF)
 option(SHERPA_ENABLE_UFO                     "Enables installation of UFO interfaces." OFF)
 option(SHERPA_ENABLE_VERSIONING              "Enables versioned installation." OFF)
 option(SHERPA_ENABLE_ALPHAQEDHAD             "Enables hadronic contribution to alphaqed." OFF)
+option(SHERPA_ENABLE_GRIFFIN                 "Enables hadronic contribution to alphaqed." OFF)
 
 set(HEPMC_MIN_VERSION "3.0.0")
 set(RIVET_MIN_VERSION "3.0.0")
@@ -710,7 +711,7 @@ DIMTools DIMShower DIMGauge DIMLorentz DIMMain
 CSMain CSCalculators CSShowers CSTools
 DireTools DireShower DireGauge DireLorentz DireMain
 PhasicScales Comix  ComixPhasespace ComixAmplitude
-YFSCEEX YFSGriffin  YFSMain YFSNLO  YFSTools 
+YFSCEEX  YFSMain YFSNLO  YFSTools 
 PhasicMain PhasicChannels PhasicProcess PhasicSelectors PhasicEnhance PhasicDecays
 Amegic DipoleSubtraction Amplitude AmegicPSGen
 String Zfunctions
@@ -735,6 +736,10 @@ if (SHERPA_ENABLE_HEPMC3)
   if (SHERPA_ENABLE_HEPMC3_ROOT)
     target_link_libraries(Sherpa PRIVATE SherpaHepMC3Output  ${HEPMC3_ROOTIO_LIB} )
   endif()
+endif()
+
+if (SHERPA_ENABLE_GRIFFIN)
+  list( APPEND target_link_libraries YFSGriffin)
 endif()
 
 install(TARGETS Sherpa DESTINATION ${CMAKE_INSTALL_BINDIR} COMPONENT libs)
@@ -960,6 +965,7 @@ $<IF:$<BOOL:${SHERPA_ENABLE_MCFM}>,#define MCFM_PATH \"${MCFM_PATH}\",/* #undef 
 $<IF:$<BOOL:${SHERPA_ENABLE_EWSUD}>,#define USING__EWSud \"1\",/* #undef USING__EWSud */>\n\n\
 /* using  hadronic contribution to alphaqed */\n\
 $<IF:$<BOOL:${SHERPA_ENABLE_ALPHAQEDHAD}>,#define USING__HADALPHAQED \"1\",/* #undef USING__HADALPHAQED */>\n\n\
+$<IF:$<BOOL:${SHERPA_ENABLE_GRIFFIN}>,#define USING__GRIFFIN \"1\",/* #undef USING__GRIFFIN */>\n\n\
 #endif")
 file(GENERATE OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/ATOOLS/Org/CXXFLAGS_PACKAGES.H CONTENT "${CXXFLAGS_PACKAGES_H_CONTENT}")
 ########################################################################

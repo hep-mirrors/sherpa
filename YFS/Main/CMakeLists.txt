@@ -1,7 +1,6 @@
 set(Main_SOURCES Coulomb.C
                  Define_Dipoles.C
                  FSR.C
-                 Griffin_Interface.C
                  ISR.C
                  Semi.C
                  YFS_Base.C
@@ -11,13 +10,17 @@ set(Main_SOURCES Coulomb.C
 set(Main_HEADERS Coulomb.H
                  Define_Dipoles.H
                  FSR.H
-                 Griffin_Interface.H
                  ISR.H
                  Semi.H
                  YFS_Base.H
                  YFS_Form_Factor.H
                  YFS_Handler.H)
 
+
+if (SHERPA_ENABLE_GRIFFIN) 
+    list(APPEND Main_SOURCES Griffin_Interface.C)
+    list(APPEND Main_HEADERS Griffin_Interface.H)
+endif()
 
 sherpa_create_git_info(Main)
  
