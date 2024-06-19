@@ -8,6 +8,7 @@
 #include "PHASIC++/Channels/Rambo.H"
 #include "PHASIC++/Process/Process_Info.H"
 #include "PHASIC++/Process/Single_Process.H"
+#include "PHASIC++/Process/YFS_Process.H"
 
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Phys/Blob.H"
@@ -33,7 +34,7 @@ Phase_Space_Handler::Phase_Space_Handler(Process_Integrator *proc,double error,
                                          const std::string eobs,
                                          const std::string efunc): m_name(proc->Process()->Name()), p_process(proc), p_active(proc),
       p_integrator(NULL), p_beamhandler(proc->Beam()), m_pspoint(Phase_Space_Point(this)),
-      p_isrhandler(proc->ISR()), p_flavours(proc->Process()->Flavours()),
+      p_isrhandler(proc->ISR()), p_yfshandler(proc->YFS()), p_flavours(proc->Process()->Flavours()),
       m_nin(proc->NIn()), m_nout(proc->NOut()), m_nvec(m_nin + m_nout),
       m_initialized(false), m_sintegrator(0), m_killedpoints(0),
       m_printpspoint(false), m_enhanceObs(eobs), m_enhanceFunc(efunc) {
@@ -173,6 +174,7 @@ Weight_Info *Phase_Space_Handler::OneEvent(Process_Base *const proc,
   if (proc==NULL) THROW(fatal_error,"No process.");
   Process_Integrator *cur(proc->Integrator());
   p_isrhandler->SetRunMode(1);
+  if(p_yfshandler) p_yfshandler->SetRunMode(1);
   auto wgtmap = Differential(cur, varmode, (psmode::code)mode);
   if (wgtmap.IsZero() || IsBad(wgtmap.Nominal()))
     return NULL;

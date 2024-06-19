@@ -27,7 +27,8 @@ namespace EXTAMP{
 
   bool External_ME_Interface::Initialize(MODEL::Model_Base *const model,
 					 BEAM::Beam_Spectra_Handler *const beam,
-					 PDF::ISR_Handler *const isr)
+					 PDF::ISR_Handler *const isr,
+					 YFS::YFS_Handler *const yfs)
   {
 
     /* Pure virtual in PHASIC::ME_Generator_Base. Store beam, isr, and
@@ -37,6 +38,7 @@ namespace EXTAMP{
 
     p_beam = beam;
     p_isr  = isr;
+    p_yfs  = yfs;
     return true;
   }
 
@@ -67,7 +69,7 @@ namespace EXTAMP{
        External_ME_Interface::InstantiatePartonicProcess(PHASIC::Process_Info). */
 
     EXTAMP::Process_Group *newproc = new EXTAMP::Process_Group();
-    newproc->Init(pi,p_beam,p_isr);
+    newproc->Init(pi,p_beam,p_isr,p_yfs);
     newproc->ConstructProcesses();
     newproc->SetGenerator(this);
 

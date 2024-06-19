@@ -16,6 +16,7 @@ Reconnections
 AhadicMain AhadicTools AhadicFormation AhadicDecays 
 Amisic AmisicTools AmisicPerturbative 
 PhotonsMain PhotonsTools PhotonsPhaseSpace PhotonsMEs PhotonsPhotonSplitter
+YFSCEEX YFSMain YFSNLO  YFSTools
 Remnants  RemnantsTools 
 MCatNLOMain MCatNLOCalculators MCatNLOShowers MCatNLOTools 
 DIMTools DIMShower DIMGauge DIMLorentz DIMMain 

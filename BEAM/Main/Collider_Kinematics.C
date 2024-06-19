@@ -31,6 +31,9 @@ void Collider_Kinematics::InitSystem() {
 
   m_on = (m_mode != collidermode::monochromatic);
   m_x[0] = m_x[1] = 0.;
+  if (p_beams[0]->Type() == beamspectrum::Fixed_Target){
+    m_on = false;
+  }
   m_LabBoost = Poincare(p_beams[0]->InMomentum() + p_beams[1]->InMomentum());
   m_CMSBoost = Poincare(p_beams[0]->OutMomentum() + p_beams[1]->OutMomentum());
 }

@@ -29,7 +29,8 @@ namespace HIGGS {
     // member functions
     bool Initialize(MODEL::Model_Base *const model,
 		    BEAM::Beam_Spectra_Handler *const beam,
-		    PDF::ISR_Handler *const isr);
+		    PDF::ISR_Handler *const isr,
+		    YFS::YFS_Handler *const yfs);
     PHASIC::Process_Base *InitializeProcess(const PHASIC::Process_Info &pi, bool add);
     int  PerformTests();
     bool NewLibraries();
@@ -73,7 +74,8 @@ void Higgs_Interface::RegisterDefaults() const
 
 bool Higgs_Interface::Initialize(MODEL::Model_Base *const model,
                                  BEAM::Beam_Spectra_Handler *const beam,
-                                 PDF::ISR_Handler *const isrhandler)
+                                 PDF::ISR_Handler *const isrhandler,
+                                 YFS::YFS_Handler *const yfshandler)
 {
   p_model=model;
   Higgs_Tree::SetModel(p_model);

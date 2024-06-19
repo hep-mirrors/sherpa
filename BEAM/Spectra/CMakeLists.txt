@@ -1,11 +1,13 @@
 set(Spectra_SOURCES Monochromatic.C
                     Laser_Backscattering.C
                     EPA.C
+                    Fixed_Target.C
                     DM_beam.C)
 
 set(Spectra_HEADERS Monochromatic.H
                     Laser_Backscattering.H
                     EPA.H
+                    Fixed_Target.H
                     DM_beam.H)
 
 sherpa_create_git_info(Spectra)

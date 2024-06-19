@@ -11,7 +11,8 @@ set(Process_SOURCES Subprocess_Info.C
                     Massive_Kernels.C
                     KP_Terms.C
                     ME_Generators.C
-                    ME_Generator_Base.C)
+                    ME_Generator_Base.C
+                    YFS_Process.C)
 
 set(Process_HEADERS Subprocess_Info.H
                     Process_Info.H
@@ -27,7 +28,8 @@ set(Process_HEADERS Subprocess_Info.H
                     Massive_Kernels.H
                     KP_Terms.H
                     ME_Generators.H
-                    ME_Generator_Base.H)
+                    ME_Generator_Base.H
+                    YFS_Process.H)
 
 sherpa_create_git_info(Process)
  

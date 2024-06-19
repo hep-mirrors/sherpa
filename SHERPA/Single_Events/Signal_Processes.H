@@ -16,6 +16,7 @@ namespace SHERPA {
     Matrix_Element_Handler    *p_mehandler;
     ATOOLS::Variations        *p_variations;
     REMNANTS::Remnant_Base    *p_remnants[2];
+    YFS::YFS_Handler          *p_yfshandler;
 
     double m_overweight;
     int m_cmode;

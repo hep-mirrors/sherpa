@@ -99,6 +99,14 @@ respective keywords are
 :option:`HT`
   Visible transverse energy cut
 
+:option:`E`
+    energy cut
+
+:option:`Polar_Angle`
+    Polar Angle cut in radians. An optional
+    boolean can be provided to switch to degrees
+    e.g [<keyword>, <flavour code>, <min value>, <max value>, <radians>]
+
 
 .. _Two particle selectors:
 

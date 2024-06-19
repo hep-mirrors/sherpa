@@ -78,7 +78,7 @@ operator()(const External_ME_Args& args) const
 {
   if(args.m_source.length() &&
      args.m_source != "Recola") return NULL;
-
+ 
   int amptype = Recola_Interface::GetAmpType();
   int id = Recola_Interface::RegisterProcess(args, amptype);
   if (id<=0) return NULL;

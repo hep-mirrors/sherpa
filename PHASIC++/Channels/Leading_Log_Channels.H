@@ -20,6 +20,8 @@ namespace PHASIC {
     void GenerateWeight(const int & mode=0);
   };
   
+  ////////////////////////////////////////////////////////////////////////
+
   class Leading_Log_Forward: public ISR_Channel_Base {
   protected :
     double m_beta, m_factor, m_yexponent;
@@ -35,6 +37,8 @@ namespace PHASIC {
     void GenerateWeight(const int & mode=0);
   };
   
+  ////////////////////////////////////////////////////////////////////////
+
   class Leading_Log_Backward: public ISR_Channel_Base {
   protected :
     double m_beta, m_factor, m_yexponent;
@@ -50,6 +54,8 @@ namespace PHASIC {
     void GenerateWeight(const int & mode=0);
   };
 
+  ////////////////////////////////////////////////////////////////////////
+
   class Leading_Log_Central: public ISR_Channel_Base {
   protected:
     double m_beta, m_factor;
@@ -61,6 +67,22 @@ namespace PHASIC {
     Leading_Log_Central(const double beta,const double factor,
 			const std::string cinfo,ATOOLS::Integration_Info *info,
 			const size_t mode=0);
+    void GeneratePoint(const double *rans);
+    void GenerateWeight(const int & mode=0);
+  };
+
+  ////////////////////////////////////////////////////////////////////////
+
+  class Leading_Log_YFS: public ISR_Channel_Base {
+  protected:
+    double m_beta, m_factor;
+    bool   m_zchannel;
+    size_t m_mode;
+    ATOOLS::Info_Key m_spkey, m_xkey, m_sgridkey;
+    ATOOLS::Info_Key m_kp1key, m_kp2key;
+  public:
+    Leading_Log_YFS(const double beta,const double factor,
+      const std::string cinfo,ATOOLS::Integration_Info *info);
     void GeneratePoint(const double *rans);
     void GenerateWeight(const int & mode=0);
   };
