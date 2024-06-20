@@ -371,7 +371,7 @@ void Standard_Model::FixEWParameters()
                                        +ToString(abs(csin2thetaW.imag()),
                                                  msg->Precision())+" i"
                                      :"")<<std::endl;
-  msg_Info()<<"                vev              = "<<cvev.real()
+  msg_Info()<<"                vev             = "<<cvev.real()
             <<(cvev.imag()!=0.?(cvev.imag()>0?" + ":" - ")
                                        +ToString(abs(cvev.imag()),
                                                  msg->Precision())+" i"
