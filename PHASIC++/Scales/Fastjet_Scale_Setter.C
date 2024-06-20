@@ -77,6 +77,7 @@ Fastjet_Scale_Setter::Fastjet_Scale_Setter
   Scale_Setter_Base(args), m_tagset(this),
   p_jdef(NULL)
 {
+  rpa->gen.AddCitation(1,"FastJet is published under \\cite{Cacciari:2011ma}.");
   std::string jtag(args.m_scale);
   size_t pos(jtag.find("FASTJET["));
   if (pos==std::string::npos)

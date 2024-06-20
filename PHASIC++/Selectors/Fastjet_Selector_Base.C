@@ -11,6 +11,8 @@ Fastjet_Selector_Base::Fastjet_Selector_Base(const std::string& name,
   Selector_Base(name, proc),
   m_eekt(0), p_jdef(0)
 {
+  rpa->gen.AddCitation(1, "FastJet is published under \\cite{Cacciari:2011ma}.");
+
   // parameter/mode settings
   const auto algo = s["Algorithm"]          .SetDefault("")  .Get<std::string>();
   const auto reco = s["RecombinationScheme"].SetDefault("E") .Get<std::string>();

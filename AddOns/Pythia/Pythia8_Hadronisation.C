@@ -21,6 +21,8 @@ public:
   Pythia8_Hadronisation(const string& shower)
   {
     PRINT_INFO("Initialising Pythia8 hadronisation interface");
+    rpa->gen.AddCitation(
+        1, "The Pythia8 library is described in \\cite{Bierlich:2022pfr}.");
 
     // Initialise Pythia object
     m_pythia.readString("ProcessLevel:all = off");

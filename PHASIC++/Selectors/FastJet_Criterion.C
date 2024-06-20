@@ -22,6 +22,8 @@ namespace PHASIC {
 
     FastJet_Jet_Criterion(const std::string &args)
     {
+      rpa->gen.AddCitation(
+          1, "FastJet is published under \\cite{Cacciari:2011ma}.");
       std::string jtag(args);
       size_t pos(jtag.find("FASTJET["));
       if (pos==std::string::npos)

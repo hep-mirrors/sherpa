@@ -181,6 +181,8 @@ bool Recola::Recola_Interface::Initialize(MODEL::Model_Base *const model,
           PDF::ISR_Handler *const isr,
           YFS::YFS_Handler *const yfs)
 {
+  rpa->gen.AddCitation(
+      1, "The Recola library is described in \\cite{Denner:2017wsf}.");
   msg_Info()<<"Initialising Recola generator from "<<s_recolaprefix<<endl;
   Settings& s = Settings::GetMainSettings();
   //This check could be added if a different model from the SM wants to be used
