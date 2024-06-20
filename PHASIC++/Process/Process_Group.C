@@ -198,8 +198,8 @@ bool Process_Group::CalculateTotalXSec(const std::string &resultpath,
     if (m_pinfo.Has(nlo_type::loop)) namestring+="+"+m_pinfo.m_loopgenerator;
     namestring+=")";
   }
-  msg_Info()<<METHOD<<"(): Calculate xs for '"
-            <<m_resname<<"' "<<namestring<<std::endl;
+  msg_Info()<<"Calculating xs for '"
+            <<m_resname<<"' "<<namestring<<" ...\n";
   double totalxs(psh->Integrate()/rpa->Picobarn());
   if (!IsEqual(totalxs,p_int->TotalResult())) {
     msg_Error()<<"Result of PS-Integrator and summation do not coincide!\n"

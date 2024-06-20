@@ -65,8 +65,7 @@ double Running_AlphaQED::PiGamma(const Flavour & fl,double scale) {
 
 void Running_AlphaQED::PrintSummary()
 {
-  msg_Info()<<METHOD<<"() {\n  Setting \\alpha according to EW scheme"
+  msg_Info()<<"Set \\alpha according to EW scheme"
             <<"\n  1/\\alpha(0)   = "<<1./m_alpha0
-            <<"\n  1/\\alpha(def) = "<<1./m_defval;
-  msg_Info()<<"\n}"<<std::endl;
+            <<"\n  1/\\alpha(def) = "<<1./m_defval<<"\n";
 }

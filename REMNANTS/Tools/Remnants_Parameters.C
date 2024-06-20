@@ -152,7 +152,7 @@ void Remnants_Parameters::SetLeptonDefaults()
 
 void Remnants_Parameters::Init()
 {
-  msg_Out() << METHOD << "\n";
+  msg_Debugging() << METHOD << "\n";
   Scoped_Settings data = Settings::GetMainSettings()["REMNANTS"];
   for (const auto& pid : data.GetKeys()) {
     kf_code             kf = ToType<kf_code>(pid);

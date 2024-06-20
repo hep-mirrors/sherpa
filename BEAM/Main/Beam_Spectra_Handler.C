@@ -19,6 +19,7 @@ Beam_Spectra_Handler::Beam_Spectra_Handler()
     : p_kinematics(NULL), p_weight(NULL), m_beammode(beammode::collider),
       m_collidermode(collidermode::monochromatic), m_mode(0),
       m_polarisation(0) {
+  msg_Info() << "Initializing beam spectra ...\n";
   for (size_t i = 0; i < 2; i++)
     p_BeamBase[i] = nullptr;
   // simple check for remotely sensible beam parameters
@@ -29,6 +30,14 @@ Beam_Spectra_Handler::Beam_Spectra_Handler()
   if (!InitTheBeams() || !InitTheKinematics() || !InitTheWeight())
     THROW(fatal_error, "Bad spectra in BEAM_SPECTRA_HANDLER.");
   m_on = p_kinematics->On();
+
+  msg_Info() << "  Type: " << m_type << endl
+             << "  Beam 1: " << p_BeamBase[0]->Beam()
+             << " (enabled = " << p_BeamBase[0]->On() << ", "
+             << "momentum = " << p_BeamBase[0]->InMomentum() << ")" << endl
+             << "  Beam 2: " << p_BeamBase[1]->Beam()
+             << " (enabled = " << p_BeamBase[0]->On() << ", "
+             << "momentum = " << p_BeamBase[1]->InMomentum() << ")" << endl;
 }
 
 Beam_Spectra_Handler::~Beam_Spectra_Handler() {
@@ -131,17 +140,6 @@ bool Beam_Spectra_Handler::InitTheWeight() {
 void Beam_Spectra_Handler::FixPositions() {
   for (short int beam=0;beam<2;beam++) p_BeamBase[beam]->FixPosition();
 }
-
-void Beam_Spectra_Handler::Output() {
-  msg_Info() << "Beam_Spectra_Handler: type = " << m_type << endl
-             << "    for " << p_BeamBase[0]->Beam()
-             << " (on = " << p_BeamBase[0]->On() << ", "
-             << "p = " << p_BeamBase[0]->InMomentum() << ")" << endl
-             << "    and " << p_BeamBase[1]->Beam()
-             << " (on = " << p_BeamBase[0]->On() << ", "
-             << "p = " << p_BeamBase[1]->InMomentum() << ")." << endl;
-}
-
 
 // TODO: Improve this handling for rescattering etc.
 bool Beam_Spectra_Handler::CheckConsistency(ATOOLS::Flavour *_beams,

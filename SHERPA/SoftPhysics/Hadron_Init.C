@@ -8,7 +8,7 @@ using namespace ATOOLS;
 using namespace std;
 
 void Hadron_Init::Init() {
-  msg_Info()<<METHOD<<"(): Initializing kf table for hadrons.\n";
+  msg_Info()<<"Initializing hadron particle information ...\n";
 
   // ##########################################################################
   // ##########################################################################

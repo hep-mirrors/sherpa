@@ -69,8 +69,6 @@ namespace BEAM {
       return (*p_weight)();
     }
 
-    void   Output();
-
     // possible deprecated methods
     int             Polarisation()        { return m_polarisation; }
     bool   CheckConsistency(ATOOLS::Flavour *,ATOOLS::Flavour *);
@@ -165,10 +163,6 @@ namespace BEAM {
     \fn bool Beam_Spectra_Handler::CheckConsistency(ATOOLS::Flavour *)
     This checks whether the flavours match the bunches of the two BeamBases. If this is the case,
     true is returned.
-  */
-  /*!
-    \fn void Beam_Spectra_Handler::Output()
-    Some control output of the type and name of this Handler and the setup of the BeamBases.
   */
   /*!
     \fn bool Beam_Spectra_Handler::MakeBeams(ATOOLS::Vec4D *,double,double);

@@ -164,6 +164,7 @@ bool Comix::Initialize(MODEL::Model_Base *const model,
 		       PDF::ISR_Handler *const isrhandler,
 		       YFS::YFS_Handler *const yfshandler)
 {
+  msg_Info() << "Initializing Comix ..." << '\n';
   RegisterDefaults();
 
   p_model=model;

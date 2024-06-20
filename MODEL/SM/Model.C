@@ -122,7 +122,7 @@ void Standard_Model::FixEWParameters()
   double MW=Flavour(kf_Wplus).Mass(), GW=Flavour(kf_Wplus).Width();
   double MZ=Flavour(kf_Z).Mass(), GZ=Flavour(kf_Z).Width();
   double MH=Flavour(kf_h0).Mass(), GH=Flavour(kf_h0).Width();
-  std::string ewschemename(""),ewrenschemename("");
+  std::string ewschemename;
   switch (ewscheme) {
   case ew_scheme::UserDefined:
     // all SM parameters given explicitly
@@ -363,22 +363,19 @@ void Standard_Model::FixEWParameters()
     break;
   }
 
-  msg_Info()<<METHOD<<"() {"<<std::endl;
-  msg_Info()<<"  Input scheme: "<<ewscheme<<std::endl;
-  msg_Info()<<"                "<<ewschemename<<std::endl;
+  msg_Info()<<"Fixed electroweak parameters\n";
+  msg_Info()<<"  Input scheme: "<<ewschemename<<std::endl;
   msg_Info()<<"  Ren. scheme:  "<<ewrenscheme<<std::endl;
-  msg_Info()<<"                "<<ewrenschemename<<std::endl;
   msg_Info()<<"  Parameters:   sin^2(\\theta_W) = "<<csin2thetaW.real()
             <<(csin2thetaW.imag()!=0.?(csin2thetaW.imag()>0?" + ":" - ")
                                        +ToString(abs(csin2thetaW.imag()),
                                                  msg->Precision())+" i"
                                      :"")<<std::endl;
-  msg_Info()<<"                vev             = "<<cvev.real()
+  msg_Info()<<"                vev              = "<<cvev.real()
             <<(cvev.imag()!=0.?(cvev.imag()>0?" + ":" - ")
                                        +ToString(abs(cvev.imag()),
                                                  msg->Precision())+" i"
                                      :"")<<std::endl;
-  msg_Info()<<"}"<<std::endl;
   aqed->PrintSummary();
   p_complexconstants->insert(make_pair(string("ccos2_thetaW"),ccos2thetaW));
   p_complexconstants->insert(make_pair(string("csin2_thetaW"),csin2thetaW));

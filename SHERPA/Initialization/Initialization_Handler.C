@@ -702,7 +702,6 @@ bool Initialization_Handler::InitializeTheBeams()
 {
   if (p_beamspectra) { delete p_beamspectra; p_beamspectra = NULL; }
   p_beamspectra = new Beam_Spectra_Handler();
-  p_beamspectra->Output();
   return 1;
 }
 
@@ -730,18 +729,18 @@ bool Initialization_Handler::InitializeThePDFs()
   DefineBunchFlavours(settings);
   // Initialisation of PDF sets
   for (size_t i=1;i<4;++i) InitISRHandler((isr::id)(i),settings);
-  msg_Info()<<"ISR handling:"<<endl;
+  msg_Info()<<"Initializing PDFs ..."<<endl;
   bool needs_resc = settings["BEAM_RESCATTERING"].Get<string>()!=string("None");
   for (size_t pid=1;pid<4;pid++) {
     PDF::isr::id pc;
     if (pid==1) {
-      msg_Info()<<"    PDFs for hard scattering:              "; pc = PDF::isr::hard_process;
+      msg_Info()<<"  Hard scattering:    "; pc = PDF::isr::hard_process;
     }
     if (pid==2) {
-      msg_Info()<<"    PDFs for multiple parton interactions: "; pc = PDF::isr::hard_subprocess;
+      msg_Info()<<"  MPI:                "; pc = PDF::isr::hard_subprocess;
     }
     if (pid==3 && needs_resc) {
-      msg_Info()<<"    PDFs for beam re-scattering:           "; pc = PDF::isr::bunch_rescatter;
+      msg_Info()<<"  Beam re-scattering: "; pc = PDF::isr::bunch_rescatter;
     }
     if (pid!=3 || (pid==3 && needs_resc)) {
       for (size_t beam=0;beam<2;beam++) {
@@ -971,18 +970,18 @@ bool Initialization_Handler::InitializeTheRemnants() {
       new Remnant_Handler(m_isrhandlers[isr::bunch_rescatter],p_yfshandler,p_beamspectra,
 			  m_bunchtags[isr::bunch_rescatter]);
   }
-  msg_Info()<<"Remnant_Handlers:\n"
-	    <<"    hard process: "
-	    <<m_remnanthandlers[isr::hard_process]->GetRemnant(0)->GetBeam()->Bunch(0)<<": "
-	    <<m_remnanthandlers[isr::hard_process]->GetRemnant(0)->Type()<<" + "
-	    <<m_remnanthandlers[isr::hard_process]->GetRemnant(1)->GetBeam()->Bunch(0)<<": "
-	    <<m_remnanthandlers[isr::hard_process]->GetRemnant(1)->Type()<<"\n";
+  msg_Info()<<"Initializing remnants ...\n"
+	    <<"  Hard process: "
+	    <<m_remnanthandlers[isr::hard_process]->GetRemnant(0)->GetBeam()->Bunch(0)<<" ("
+	    <<m_remnanthandlers[isr::hard_process]->GetRemnant(0)->Type()<<") + "
+	    <<m_remnanthandlers[isr::hard_process]->GetRemnant(1)->GetBeam()->Bunch(0)<<" ("
+	    <<m_remnanthandlers[isr::hard_process]->GetRemnant(1)->Type()<<")\n";
   if (m_remnanthandlers.find(isr::bunch_rescatter)!=m_remnanthandlers.end())
-    msg_Info()<<"    rescattering: "
-	      <<m_remnanthandlers[isr::bunch_rescatter]->GetRemnant(0)->GetBeam()->Bunch(1)<<": "
-	      <<m_remnanthandlers[isr::bunch_rescatter]->GetRemnant(0)->Type()<<" + "
-	      <<m_remnanthandlers[isr::bunch_rescatter]->GetRemnant(1)->GetBeam()->Bunch(1)<<": "
-	      <<m_remnanthandlers[isr::bunch_rescatter]->GetRemnant(1)->Type()<<"\n";
+    msg_Info()<<"  Rescattering: "
+	      <<m_remnanthandlers[isr::bunch_rescatter]->GetRemnant(0)->GetBeam()->Bunch(1)<<" ("
+	      <<m_remnanthandlers[isr::bunch_rescatter]->GetRemnant(0)->Type()<<") + "
+	      <<m_remnanthandlers[isr::bunch_rescatter]->GetRemnant(1)->GetBeam()->Bunch(1)<<" ("
+	      <<m_remnanthandlers[isr::bunch_rescatter]->GetRemnant(1)->Type()<<")\n";
   return true;
 }
 
@@ -1000,6 +999,7 @@ bool Initialization_Handler::InitializeTheHardDecays()
 
 bool Initialization_Handler::InitializeTheMatrixElements()
 {
+  msg_Info()<<"Initializing matrix elements for the hard processes ...\n";
 #ifdef USING__EWSud
   // in case that KFACTOR=EWSud is used we need to be ready when the ME handler
   // sets up the KFactor setters
@@ -1013,8 +1013,6 @@ bool Initialization_Handler::InitializeTheMatrixElements()
   auto ret = p_mehandler->InitializeProcesses(p_beamspectra,
                                               m_isrhandlers[isr::hard_process],
                                               p_yfshandler);
-  msg_Info()<<"Initialized the Matrix_Element_Handler for the hard processes."
-            <<endl;
   return ret==1;
 }
 
@@ -1023,6 +1021,7 @@ bool Initialization_Handler::InitializeTheShowers()
   ///////////////////////////////////////////////////////////
   // define up to three shower handlers ...
   ///////////////////////////////////////////////////////////
+  msg_Info()<<"Initializing showers ...\n";
   std::vector<isr::id> isrtypes;
   isrtypes.push_back(isr::hard_process);
   isrtypes.push_back(isr::hard_subprocess);
@@ -1041,7 +1040,6 @@ bool Initialization_Handler::InitializeTheShowers()
     }
   }
   as->SetActiveAs(isr::hard_process);
-  msg_Info()<<"Shower_Handler initialised.\n"<<endl;
   return 1;
 }
 
@@ -1063,10 +1061,10 @@ bool Initialization_Handler::InitializeTheUnderlyingEvents()
     as->SetActiveAs(isr::hard_process);
     m_mihandlers[id] = mih;
   }
-  msg_Info()<<"Underlying event/multiple interactions handler:\n";
+  msg_Info()<<"Underlying event/multiple interactions initialized\n";
   for (size_t i=0; i<isrtypes.size(); ++i) {
     MI_Handler * mih = m_mihandlers[isrtypes[i]];
-    msg_Info()<<"    MI["<<isrtypes[i]<<"]: on = "<<mih->On()<<" "
+    msg_Info()<<"  MI["<<isrtypes[i]<<"]: on = "<<mih->On()<<" "
 	      <<"(type = "<<mih->Type()<<", "<<mih->Name()<<")\n";
   }
   return true;
@@ -1097,22 +1095,27 @@ bool Initialization_Handler::InitializeTheSoftCollisions()
 					   m_schandlers[isr::bunch_rescatter]);
     }
   }
-  msg_Info()<<"Soft-collision handlers:\n";
+  bool did_print_header {false};
   for (size_t i=0;i<isrtypes.size();i++) {
-    if (m_schandlers[isrtypes[i]]!=NULL)
-      msg_Info()<<"    Type["<<isrtypes[i]<<"]: "
+    if (m_schandlers[isrtypes[i]]!=NULL) {
+      if (!did_print_header) {
+        msg_Info()<<"Soft-collision handlers:\n";
+        did_print_header = true;
+      }
+      msg_Info()<<"  Type["<<isrtypes[i]<<"]: "
 		<<m_schandlers[isrtypes[i]]->Soft_CollisionModel()<<"\n";
+    }
   }
   return true;
 }
 
 bool Initialization_Handler::InitializeTheBeamRemnants()
 {
+  msg_Info()<<"Initializing the beam remnants ...\n";
   if (p_beamremnants)  delete p_beamremnants;
   p_beamremnants = new Beam_Remnant_Handler(p_beamspectra,
 					    m_remnanthandlers[isr::hard_process],
 					    m_schandlers[isr::hard_subprocess]);
-  msg_Info()<<"Initialized the Beam_Remnant_Handler."<<endl;
   return 1;
 }
 
@@ -1144,7 +1147,7 @@ bool Initialization_Handler::InitializeTheFragmentation()
   if (p_fragmentation==NULL)
     THROW(fatal_error, "  Fragmentation model '"+fragmentationmodel+"' not found.");
   as->SetActiveAs(isr::hard_process);
-  msg_Info()<<"Initialized the Fragmentation_Handler."<<endl;
+  msg_Info()<<"Initialized fragmentation\n";
   return 1;
 }
 
@@ -1165,8 +1168,8 @@ bool Initialization_Handler::InitializeTheHadronDecays()
   else {
     THROW(fatal_error,"Hadron decay model '"+decmodel+"' not implemented.");
   }
-  msg_Info()<<"Initialized the Hadron_Decay_Handler, Decay model = "
-            <<decmodel<<endl;
+  msg_Info()<<"Initialized hadron decays (model = "
+            <<decmodel<<")\n";
   return true;
 }
 
@@ -1176,7 +1179,7 @@ bool Initialization_Handler::InitializeTheSoftPhotons()
   p_softphotons = new Soft_Photon_Handler(p_mehandler);
   if (p_harddecays) p_harddecays->SetSoftPhotonHandler(p_softphotons);
   if (p_hdhandler)  p_hdhandler->SetSoftPhotonHandler(p_softphotons);
-  msg_Info()<<"Initialized the Soft_Photon_Handler."<<endl;
+  msg_Info()<<"Initialized soft photons"<<endl;
   return true;
 }
 
@@ -1230,7 +1233,7 @@ bool Initialization_Handler::InitializeTheReweighting(Variations_Mode mode)
   if (p_mehandler)
     p_mehandler->InitializeTheReweighting(mode);
   if (mode != Variations_Mode::nominal_only)
-    msg_Info()<<"Initialized the Reweighting."<<endl;
+    msg_Info()<<"Initialized on-the-fly reweighting"<<endl;
   return true;
 }
 

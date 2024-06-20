@@ -416,16 +416,13 @@ std::vector<double> One_Running_AlphaS::Thresholds(double q12,double q22)
 void One_Running_AlphaS::PrintSummary()
 {
   if (p_pdf) {
-    msg_Info()<<METHOD<<"() {\n  Setting \\alpha_s according to PDF\n";
+    msg_Info()<<"Set \\alpha_s according to PDF\n";
   }
   else {
-    msg_Info()<<METHOD<<"() {\n  Setting \\alpha_s according to user input\n";
+    msg_Info()<<"Set \\alpha_s according to user input\n";
   }
-  msg_Info()<<"  perturbative order "<<m_order
-            <<"\n  \\alpha_s(M_Z) = "<<m_as_MZ;
-  // msg_Info<<"\n  quark masses = { ";
-  // for (int i(0);i<m_nth-1;++i) msg_Info()<<sqrt(masses[i])<<" ";
-  msg_Info()<<"\n}"<<std::endl;
+  msg_Info()<<"  Perturbative order: "<<m_order<<'\n'
+            <<"  \\alpha_s(M_Z) = "<<m_as_MZ<<'\n';
 }
 
 

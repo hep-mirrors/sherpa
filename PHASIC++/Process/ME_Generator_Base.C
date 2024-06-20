@@ -138,7 +138,7 @@ void ME_Generator_Base::SetPSMasses()
   Flavour_Vector mf;
   for (Flavour_Set::iterator fit(m_psmass.begin());fit!=m_psmass.end();++fit)
     if (fit->Mass(true)!=fit->Mass(false)) mf.push_back(*fit);
-  msg_Info()<<METHOD<<"(): Massive PS flavours for "<<m_name<<": "
+  msg_Info()<<"Massive PS flavours for "<<m_name<<": "
                     <<mf<<std::endl;
 }
 

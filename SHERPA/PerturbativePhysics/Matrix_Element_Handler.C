@@ -128,7 +128,7 @@ Matrix_Element_Handler::Matrix_Element_Handler(MODEL::Model_Base *model):
     ran->SetSeedStorageIncrement(incr);
   }
   m_pilotrunenabled = ran->CanRestoreStatus() && (m_eventmode != 0);
-  msg_Info()<<METHOD<<"(): Set pilot run mode to "<<m_pilotrunenabled<<".\n";
+  msg_Debugging()<<"Pilot run mode: "<<m_pilotrunenabled<<"\n";
 }
 
 Matrix_Element_Handler::~Matrix_Element_Handler()
@@ -564,27 +564,27 @@ int Matrix_Element_Handler::InitializeProcesses(
   double retime(ATOOLS::rpa->gen.Timer().RealTime());
   double etime(ATOOLS::rpa->gen.Timer().UserTime());
   size_t rss(GetCurrentRSS());
-  msg_Info()<<" done ( "<<rss/(1<<20)<<" MB, "
-	    <<FormatTime(size_t(retime-rbtime))<<" / "
-	    <<FormatTime(size_t(etime-btime))<<" )."<<std::endl;
+  msg_Info()<<" done ("<<rss/(1<<20)<<" MB, "
+	    <<FormatTime(size_t(retime-rbtime))<<"/"
+	    <<FormatTime(size_t(etime-btime))<<")"<<std::endl;
   if (m_procs.empty() && m_gens.size()>0)
     THROW(normal_exit,"No hard process found");
-  msg_Info()<<METHOD<<"(): Performing tests "<<std::flush;
+  msg_Info()<<"Performing tests "<<std::flush;
   rbtime=retime;
   btime=etime;
   int res(m_gens.PerformTests());
   retime=ATOOLS::rpa->gen.Timer().RealTime();
   etime=ATOOLS::rpa->gen.Timer().UserTime();
   rss=GetCurrentRSS();
-  msg_Info()<<" done ( "<<rss/(1<<20)<<" MB, "
-	    <<FormatTime(size_t(retime-rbtime))<<" / "
-	    <<FormatTime(size_t(etime-btime))<<" )."<<std::endl;
+  msg_Info()<<" done ("<<rss/(1<<20)<<" MB, "
+	    <<FormatTime(size_t(retime-rbtime))<<"/"
+	    <<FormatTime(size_t(etime-btime))<<")"<<std::endl;
   msg_Debugging()<<METHOD<<"(): Processes {\n";
   msg_Debugging()<<"  m_procs:\n";
   for (size_t i(0);i<m_procs.size();++i)
     msg_Debugging()<<"    "<<m_procs[i]->Name()<<" -> "<<m_procs[i]<<"\n";
   msg_Debugging()<<"}\n";
-  msg_Info()<<METHOD<<"(): Initializing scales"<<std::flush;
+  msg_Info()<<"Initializing scales"<<std::flush;
   rbtime=retime;
   btime=etime;
   My_In_File::OpenDB(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Sherpa/");
@@ -597,9 +597,9 @@ int Matrix_Element_Handler::InitializeProcesses(
   retime=ATOOLS::rpa->gen.Timer().RealTime();
   etime=ATOOLS::rpa->gen.Timer().UserTime();
   rss=GetCurrentRSS();
-  msg_Info()<<" done ( "<<rss/(1<<20)<<" MB, "
-	    <<FormatTime(size_t(retime-rbtime))<<" / "
-	    <<FormatTime(size_t(etime-btime))<<" )."<<std::endl;
+  msg_Info()<<" done ("<<rss/(1<<20)<<" MB, "
+	    <<FormatTime(size_t(retime-rbtime))<<"/"
+	    <<FormatTime(size_t(etime-btime))<<")"<<std::endl;
   if (m_gens.NewLibraries()) {
     if (rpa->gen.Variable("SHERPA_CPP_PATH")=="") {
       THROW(normal_exit,"Source code created. Run './makelibs' to compile.");
@@ -624,9 +624,9 @@ void Matrix_Element_Handler::BuildProcesses()
 {
   Settings& s = Settings::GetMainSettings();
   // init processes
-  msg_Info()<<METHOD<<"(): "<<m_gens.size()<<" ME generators, "
-	    <<s["PROCESSES"].GetItems().size()<<" process blocks."<<std::endl;
-  msg_Info()<<METHOD<<"(): Setting up processes "<<std::flush;
+  msg_Info()<<"Building processes ("<<m_gens.size()<<" ME generators, "
+	    <<s["PROCESSES"].GetItems().size()<<" process blocks) ...\n";
+  msg_Info()<<"Setting up processes "<<std::flush;
   if (msg_LevelIsTracking()) msg_Info()<<"\n";
   if (!m_gens.empty() && s["PROCESSES"].GetItemsCount() == 0) {
     if (!msg_LevelIsTracking()) msg_Info()<<"\n";
