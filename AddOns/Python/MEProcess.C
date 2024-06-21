@@ -184,7 +184,7 @@ void MEProcess::AddInFlav(const int &id)
   ATOOLS::Flavour flav(id>0?id:-id, id>0 ? true : false);
   p_amp->CreateLeg(ATOOLS::Vec4D(), flav);
   p_amp->SetNIn(p_amp->NIn()+1);
-  PHASIC::Process_Base::SortFlavours(p_amp);
+  // PHASIC::Process_Base::SortFlavours(p_amp);
   m_inpdgs.push_back(id);
   m_flavs.push_back(flav);
   m_nin+=1;
@@ -195,7 +195,7 @@ void MEProcess::AddOutFlav(const int &id)
   msg_Debugging()<<METHOD<<"(): "<<id<<std::endl;
   ATOOLS::Flavour flav(id>0?id:-id, id>0 ? false : true);
   p_amp->CreateLeg(ATOOLS::Vec4D(), flav);
-  PHASIC::Process_Base::SortFlavours(p_amp);
+  // PHASIC::Process_Base::SortFlavours(p_amp);
   m_outpdgs.push_back(id);
   m_flavs.push_back(flav);
   m_nout+=1;
@@ -208,7 +208,7 @@ void MEProcess::AddInFlav(const int &id, const int &col1, const int &col2)
   p_amp->CreateLeg(ATOOLS::Vec4D(), flav,
                    ATOOLS::ColorID(col1, col2));
   p_amp->SetNIn(p_amp->NIn()+1);
-  PHASIC::Process_Base::SortFlavours(p_amp);
+  // PHASIC::Process_Base::SortFlavours(p_amp);
   m_inpdgs.push_back(id);
   m_flavs.push_back(flav);
   m_nin+=1;
@@ -220,7 +220,7 @@ void MEProcess::AddOutFlav(const int &id, const int &col1, const int &col2)
   ATOOLS::Flavour flav(id>0?id:-id, id>0 ? false : true);
   p_amp->CreateLeg(ATOOLS::Vec4D(), flav,
                    ATOOLS::ColorID(col1, col2));
-  PHASIC::Process_Base::SortFlavours(p_amp);
+  // PHASIC::Process_Base::SortFlavours(p_amp);
   m_outpdgs.push_back(id);
   m_flavs.push_back(flav);
   m_nout+=1;
