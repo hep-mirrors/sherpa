@@ -94,10 +94,6 @@ def run(process):
     max_deviation = max(deviation)
     min_deviation = min(deviation)
     passed = max([abs(max_deviation), abs(min_deviation)]) < process.threshold
-    if passed:
-        passed = "\033[32mPASSED\033[0m"
-    else:
-        passed = "\033[31mFAILED\033[0m"
     return passed
 
 
@@ -112,6 +108,7 @@ def main():
 
     # Sort processes by initial state particles
     processes.sort(key=lambda x: x.inpart)
+    nfailed = 0
 
     for process in processes:
         print("       {}".format(process), end='\r')
@@ -125,18 +122,24 @@ def main():
             os.dup2(stdout_file.fileno(), 1)
             os.dup2(stderr_file.fileno(), 2)
             passed = run(process)
+            if not passed:
+                nfailed += 1
         except Exception as e:
-            passed = "\033[31mERROR!\033[0m"
             print(f"Error running process: {process}")
             print(e)
+            passed = False
         finally:
             # Restore stdout and stderr
             os.dup2(old_stdout, 1)
             os.dup2(old_stderr, 2)
             stdout_file.close()
             stderr_file.close()
+            if passed:
+                print("\033[32mPASSED\033[0m")
+            else:
+                print("\033[31mFAILED\033[0m")
 
-            print(f"{passed}")
+    return nfailed
 
 
 if __name__ == '__main__':
