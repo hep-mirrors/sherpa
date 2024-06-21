@@ -9,7 +9,7 @@ import Sherpa
 
 
 class test_process:
-    def __init__(self, inpart, outpart, model, threshold=1e-9, orders=None, npoints=100):
+    def __init__(self, inpart, outpart, model, threshold=5e-6, orders=None, npoints=100):
         self.inpart = inpart
         self.outpart = outpart
         self.model = model
@@ -102,8 +102,7 @@ def run(process):
 
 
 def main():
-    # models = ['mssm', 'qagc', 'qcd_d6']
-    models = ['mssm']
+    models = ['mssm', 'qagc', 'qcd_d6']
     generate_models(models, True)
 
     processes = []
