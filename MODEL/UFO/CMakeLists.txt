@@ -20,4 +20,12 @@ install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/src/
 install(PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/bin/Sherpa-generate-model
         DESTINATION ${CMAKE_INSTALL_BINDIR})
 
+if(SHERPA_ENABLE_TESTING)
+add_custom_target(ufo_python_tests
+        COMMAND ${Python_EXECUTABLE} -m unittest discover -v
+        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests)
+enable_testing()
+add_test(NAME ufo_python_tests COMMAND ${CMAKE_COMMAND} --build . --target ufo_python_tests)
+endif()
+
 endif()
