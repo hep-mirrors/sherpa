@@ -27,6 +27,7 @@ namespace UFO{
 
     ATOOLS::rpa->gen.AddCitation(1,"Sherpa's BSM features are published under \\cite{Hoche:2014kca}.");
     ATOOLS::rpa->gen.AddCitation(1,"The UFO model format is published under \\cite{Degrande:2011ua}.");
+    ATOOLS::rpa->gen.AddCitation(1,"The UFO 2.0 model format is published under \\cite{Darme:2023jdn}.");
   }
 
   UFO_Model::~UFO_Model(){
