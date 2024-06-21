@@ -4,8 +4,8 @@ PARTICLE_FMT += '{0}, {1}, {2}, {3}, {4}, {5}, {6}, {7}, {8}, {9}'
 
 def _is_majorana(particle):
     if particle.spin != 2:
-        return 0
-    return 1 if particle.name == particle.antiname else 0
+        return False
+    return True if particle.name == particle.antiname else False
 
 
 def _is_self_conjugate(particle):

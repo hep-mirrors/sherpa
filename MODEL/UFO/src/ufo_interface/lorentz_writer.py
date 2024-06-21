@@ -40,12 +40,12 @@ FORM_FACTOR_DECL = '''
 '''
 
 
-def _get_current_in(spin, index, key):
+def _get_current_in(spin, index, key, ferm_partner):
     impl = ""
     if spin % 2 != 0:
         impl += f'const {TYPE_DICT[spin]}<SType> & j{index} = *(jj[{key}]->Get<{TYPE_DICT[spin]}<SType>>());\n'
     else:
-        impl += (f'const {TYPE_DICT[spin]}<SType> & j{index} = ((jj[{key}]->Get<{TYPE_DICT[spin]}<SType>>())->B() == -1 ? '
+        impl += (f'const {TYPE_DICT[spin]}<SType> & j{index} = ((jj[{key}]->Get<{TYPE_DICT[spin]}<SType>>())->B() == {ferm_partner} ? '
                  f'(*(jj[{key}]->Get<{TYPE_DICT[spin]}<SType>>())) : (*(jj[{key}]->Get<{TYPE_DICT[spin]}<SType>>())).CConj());\n')
     if spin == 1:
         impl += f'const SComplex & j{index}0 = j{index}[0];\n'
@@ -132,6 +132,18 @@ class _LorentzImpl:
         self.ff_impl = ''
         self.ff_decl = ''
 
+        # Collect the flow of fermion lines, assuming that the lines connect
+        # consecutive pairs of fermions.
+        self.ferm_partner = {}
+        current_pair = []
+        for index, spin in enumerate(self._spins):
+            if spin % 2 == 0:
+                current_pair.append(index)
+                if len(current_pair) == 2:
+                    self.ferm_partner[current_pair[0]] = current_pair[1]
+                    current_pair = []
+        print(self._spins, self.ferm_partner)
+
     def __call__(self):
         for i, (rotation, expr) in enumerate(self._rotations):
             self._handle_rotation(i, rotation, expr)
@@ -153,7 +165,10 @@ class _LorentzImpl:
         for i, spin in enumerate(self._spins):
             if i == index:
                 continue
-            header += _get_current_in(spin, i, rotation[i])
+
+            ferm_partner = 1 if (i in self.ferm_partner.keys()) else -1
+            print(f'ferm_partner: {ferm_partner}, i: {i}, keys: {self.ferm_partner.keys()}')
+            header += _get_current_in(spin, i, rotation[i], ferm_partner)
             if self._need_mom:
                 header += _get_mom_in(i, rotation[i])
         header += _get_current_out(self._spins[index], index)
