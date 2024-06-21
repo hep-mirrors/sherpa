@@ -142,7 +142,6 @@ class _LorentzImpl:
                 if len(current_pair) == 2:
                     self.ferm_partner[current_pair[0]] = current_pair[1]
                     current_pair = []
-        print(self._spins, self.ferm_partner)
 
     def __call__(self):
         for i, (rotation, expr) in enumerate(self._rotations):
@@ -167,7 +166,6 @@ class _LorentzImpl:
                 continue
 
             ferm_partner = 1 if (i in self.ferm_partner.keys()) else -1
-            print(f'ferm_partner: {ferm_partner}, i: {i}, keys: {self.ferm_partner.keys()}')
             header += _get_current_in(spin, i, rotation[i], ferm_partner)
             if self._need_mom:
                 header += _get_mom_in(i, rotation[i])

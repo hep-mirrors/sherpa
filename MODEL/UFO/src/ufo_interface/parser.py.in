@@ -6,6 +6,8 @@ import subprocess
 import time
 from importlib.machinery import SourceFileLoader
 from pathlib import Path
+import multiprocessing
+from functools import partial
 
 from . import s_color
 from .lorentz_writer import LorentzWriter
@@ -148,6 +150,13 @@ def write_param_card(model_name, ufo_mod):
     del writer
 
 
+def gen_color(color, out_dir):
+    scolor = s_color.s_color(color)
+    progress(f'Writing color file for color {scolor.name()}')
+    scolor.write(out_dir)
+    return f'{scolor.name()}.C'
+
+
 def main(args):
     args = parse_args(args)
     ufo_path = Path(args.ufo_path) / '__init__.py'
@@ -176,12 +185,9 @@ def main(args):
     start = time.time()
     colors = set(sum([vert.color for vert in ufo_mod.all_vertices], []))
     colors = [color for color in colors if color != '1']
-    color_files = []
-    for color in colors:
-        scolor = s_color.s_color(color)
-        progress(f'Writing color file for color {scolor.name()}')
-        scolor.write(out_dir)
-        color_files.append(f'{scolor.name()}.C')
+    gen_color_func = partial(gen_color, out_dir=out_dir)
+    with multiprocessing.Pool(args.ncore) as pool:
+        color_files = pool.map(gen_color_func, colors)
     end = time.time()
     progress(f'Color factor calculation took {end-start} seconds')
 

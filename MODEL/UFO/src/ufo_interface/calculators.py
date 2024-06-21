@@ -30,15 +30,6 @@ color_dict = {
 }
 
 
-# Definition from:
-# https://codegolf.stackexchange.com/questions/250596/remove-redundant-parentheses
-def remove_duplicate_parens(string):
-    for _ in string:
-        string = regex.sub(r'(\(|^)\K(\((((?2)|[^()])*)\))(?=\)|$)', r'\3',
-                           string)
-    return string
-
-
 def ensuring_matching_parens(string):
     while string.count('(') != string.count(')'):
         string += ')'
@@ -159,7 +150,7 @@ class color_visitor(ast.NodeVisitor):
 def calc_parameter(parameter):
     visitor = param_visitor()
     visitor.visit(ast.parse(parameter))
-    return ensuring_matching_parens(remove_duplicate_parens(visitor.value))
+    return ensuring_matching_parens(visitor.value)
 
 
 def calc_color(color):
@@ -167,4 +158,4 @@ def calc_color(color):
         return 'Color_Function(cf::None)'
     visitor = color_visitor()
     visitor.visit(ast.parse(color))
-    return ensuring_matching_parens(remove_duplicate_parens(visitor.value))
+    return ensuring_matching_parens(visitor.value)
