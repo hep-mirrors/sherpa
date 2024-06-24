@@ -48,6 +48,11 @@ def parse_args(args):
     parser.add_argument('--auto_convert', action='store_true',
                         help='Automatically convert python2 UFO models to python3',
                         default=False)
+    parser.add_argument('--overwrite', action='store_true',
+                        help='Overwrite the output directory',
+                        default=False)
+    parser.add_argument('--nmax', type=int, default=4,
+                        help='Maximum number of particles in a vertex')
     return parser.parse_args(args)
 
 
@@ -82,14 +87,14 @@ def check_model(model_name, ufo_mod):
     return True
 
 
-def prepare_output_dir(path):
-    if os.path.exists(path):
+def prepare_output_dir(path, overwrite=False):
+    if os.path.exists(path) and not overwrite:
         warning(f'Output directory {path} already exists.')
         # Ask if we should overwrite
         if input('Overwrite? (y/n): ').lower()[0] != 'y':
             exit(-1)
     else:
-        os.makedirs(path)
+        os.makedirs(path, exist_ok=True)
 
 
 def build_model(src_dir, install_dir, ncore):
@@ -169,7 +174,7 @@ def main(args):
         out_dir = Path(args.ufo_path) / '.sherpa'
     else:
         out_dir = Path(args.output_dir)
-    prepare_output_dir(out_dir)
+    prepare_output_dir(out_dir, args.overwrite)
 
     progress(f'Checking model {model_name}')
     # Check if the model is valid
@@ -183,7 +188,8 @@ def main(args):
 
     # Calculate time for color factor
     start = time.time()
-    colors = set(sum([vert.color for vert in ufo_mod.all_vertices], []))
+    colors = set(sum([vert.color for vert in ufo_mod.all_vertices
+                      if len(vert.particles) <= args.nmax], []))
     colors = [color for color in colors if color != '1']
     gen_color_func = partial(gen_color, out_dir=out_dir)
     with multiprocessing.Pool(args.ncore) as pool:
@@ -193,7 +199,7 @@ def main(args):
 
     start = time.time()
     progress(f'Writing lorentz files for {model_name}')
-    lorentz_writer = LorentzWriter(out_dir)
+    lorentz_writer = LorentzWriter(out_dir, args.nmax)
     lorentz_writer.write_all(ufo_mod.all_lorentz, args.ncore)
     end = time.time()
     progress(f'Lorentz factor calculation took {end-start} seconds')
@@ -204,6 +210,7 @@ def main(args):
         'model_flags': args.model_flags,
         'lorentz_flags': args.lorentz_flags,
         'color_files': color_files,
+        'nmax': args.nmax,
     }
     progress(f'Writing model {model_name}')
     model_writer = ModelWriter(model_name, ufo_mod, opts)
@@ -214,6 +221,8 @@ def main(args):
 
     progress(f'Writing out parameter card to param_{model_name}.dat')
     write_param_card(model_name, ufo_mod)
+
+    progress(f'Finished writing model {model_name} to {out_dir}')
 
 
 if __name__ == '__main__':

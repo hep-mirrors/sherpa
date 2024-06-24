@@ -93,8 +93,10 @@ def _get_mom_out(key, all_keys):
     return impl
 
 
-def _filter_lorentz(struct):
-    if any(spin < 0 or spin >= 5 for spin in struct.spins):
+def _filter_lorentz(struct, nmax):
+    if len(struct.spins) > nmax:
+        return False
+    if any(spin < 0 or spin >= 4 for spin in struct.spins):
         return False
     return True
 
@@ -195,12 +197,13 @@ class _LorentzImpl:
 
 
 class LorentzWriter:
-    def __init__(self, path):
+    def __init__(self, path, nmax):
         lorentz_template = pkgutil.get_data(__name__,
                                             "Templates/lorentz_calc_template.C")
         lorentz_template = lorentz_template.decode('utf-8')
         self._template = Template(lorentz_template)
         self._path = Path(path) if not isinstance(path, Path) else path
+        self._nmax = nmax
 
     def _get_impl(self, struct):
         lorentz_impl = _LorentzImpl(struct)
@@ -208,7 +211,8 @@ class LorentzWriter:
         return lorentz_impl.impl, lorentz_impl.ff_impl, lorentz_impl.ff_decl
 
     def write_all(self, structs, ncores):
-        structs = filter(_filter_lorentz, structs)
+        structs = filter(lambda struct: _filter_lorentz(struct, self._nmax),
+                         structs)
         with multiprocessing.Pool(ncores) as pool:
             pool.map(self.write, structs)
 
