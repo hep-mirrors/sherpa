@@ -10,6 +10,15 @@ from .message import progress
 import time
 
 
+def order_sort(order):
+    if order == 'QCD':
+        return (0, order)
+    elif order == 'QED':
+        return (1, order)
+    else:
+        return (2, order)
+
+
 class ModelWriter:
     def __init__(self, name, ufo, opts):
         self._lorentz_files = []
@@ -101,20 +110,23 @@ class ModelWriter:
             self._params += fmt.format(coupling.name, calc_parameter(coupling.value))
 
     def _write_vertices(self, vertices, orders):
-        hierachy = [order.name for order in orders]
+        hierarchy = sorted([order.name for order in orders], key=order_sort)
+        assert (hierarchy[0] == 'QCD' and hierarchy[1] == 'QED')
         func_name = 'void vertices_{}() {{\n'
         for idx, chunk in enumerate(chunk_vertices(vertices, 10)):
             self._calls += f'vertices_{idx}();\n'
             self._implementation += func_name.format(idx)
-            self._implementation += vertex_implementation(chunk, hierachy)
+            self._implementation += vertex_implementation(chunk, hierarchy)
 
         # Fill the order key getter
         self._index_of_order_key = ""
-        for idx, order in enumerate(hierachy):
+        for idx, order in enumerate(hierarchy):
             self._index_of_order_key += f'\n      if (key == "{order}") return {idx};'
 
     def _get_lorentz_files(self, structs):
-        structs = filter(_filter_lorentz, structs)
+        structs = filter(lambda struct: _filter_lorentz(struct,
+                                                        self._opts["nmax"]),
+                         structs)
         for struct in structs:
             self._lorentz_files.append(f'{struct.name}.C')
 
