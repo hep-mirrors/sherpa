@@ -3,9 +3,12 @@ import os
 import sys
 import shutil
 from string import Template
+import subprocess
 sys.path.append('@SHERPA_Python_SITEARCH@')
-from ufo_interface.parser import main as ufo
 import Sherpa
+
+
+exe = '@CMAKE_INSTALL_PREFIX@/bin/Sherpa-generate-model'
 
 
 class test_process:
@@ -22,25 +25,28 @@ class test_process:
         return f"Process: {' '.join(self.inpart)} -> {' '.join(self.outpart)}"
 
 
-def generate_models(model_names, overwrite=False):
-    for model in model_names:
-        path = f"Models/{model}"
+def generate_models(models, overwrite=False):
+    for model in models:
+        path = f"Models/{model[0]}"
         if not overwrite and os.path.exists(os.path.join(path, '.sherpa')):
-            print(f"Model {model} already exists, skipping")
+            print(f"Model {model[0]} already exists, skipping")
             continue
         # Remove the .sherpa directory if it exists
         shutil.rmtree(os.path.join(path, '.sherpa'), True)
         # Generate the model
-        ufo([path, '--auto_convert'])
+        run_args = [exe, path, '--auto_convert']
+        if 'nmax' in model[1]:
+            run_args.append(f'--nmax={model[1]["nmax"]}')
+        subprocess.run(run_args, check=True)
 
 
-def get_processes(model):
+def get_processes(model, orders=None):
     processes = []
     for folder in os.listdir(f"TestProcesses/{model}"):
         parts = folder.split('_')
         inpart = parts[0:2]
         outpart = parts[2:]
-        processes.append(test_process(inpart, outpart, model))
+        processes.append(test_process(inpart, outpart, model, orders=orders))
     return processes
 
 
@@ -98,12 +104,16 @@ def run(process):
 
 
 def main():
-    models = ['mssm', 'qagc', 'qcd_d6']
+    models = [['mssm', {'nmax': 8}],
+              ['qagc', {'nmax': 8}],
+              ['qcd_d6', {}]]
     generate_models(models, True)
 
     processes = []
     for model in models:
-        processes.extend(get_processes(model))
+        if model[0] == 'qcd_d6':
+            orders = "{'D6Q': 0}"
+        processes.extend(get_processes(model[0], orders=orders))
     print("Found {} processes".format(len(processes)))
 
     # Sort processes by initial state particles
