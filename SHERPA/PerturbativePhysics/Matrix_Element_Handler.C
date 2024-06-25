@@ -50,7 +50,7 @@ void Matrix_Element_Handler::RegisterDefaults()
   s["EVENT_SEED_INCREMENT"].SetDefault(1);
   s["GENERATE_RESULT_DIRECTORY"].SetDefault(true);
 
-  s["COLOUR_SCHEME"]
+  s["COLOR_SCHEME"]
     .SetDefault(0)
     .SetReplacementList(cls::ColorSchemeTags());
 
@@ -698,7 +698,7 @@ void Matrix_Element_Handler::ReadFinalStateMultiIndependentProcessSettings(
   const auto couplings = s["COUPLINGS"].GetVector<std::string>();
   args.pi.m_coupling = MakeString(couplings);
   args.pi.m_kfactor = s["KFACTOR"].Get<std::string>();
-  args.pi.m_cls = (cls::scheme)s["COLOUR_SCHEME"].Get<int>();
+  args.pi.m_cls = (cls::scheme)s["COLOR_SCHEME"].Get<int>();
   args.pi.m_hls = (hls::scheme)s["HELICITY_SCHEME"].Get<int>();
   std::vector<long int> nodecaykfcs{ proc["No_Decay"].GetVector<long int>() };
   for (const auto& kfc : nodecaykfcs)
@@ -824,6 +824,8 @@ void Matrix_Element_Handler::ReadFinalStateMultiSpecificProcessSettings(
     else if (subkey == "Y_Cut")              ExtractMPvalues(value, range, nf, args.pbi.m_vycut);
     else if (subkey == "Min_N_Quarks")       ExtractMPvalues(value, range, nf, args.pbi.m_vnminq);
     else if (subkey == "Max_N_Quarks")       ExtractMPvalues(value, range, nf, args.pbi.m_vnmaxq);
+    else if (subkey == "Color_Scheme")       ExtractMPvalues(value, range, nf, args.pbi.m_vcls);
+    else if (subkey == "Helicity_Scheme")    ExtractMPvalues(value, range, nf, args.pbi.m_vhls);
     else if (subkey == "Print_Graphs")       ExtractMPvalues(value, range, nf, args.pbi.m_vgpath);
     else if (subkey == "Name_Suffix")        ExtractMPvalues(value, range, nf, args.pbi.m_vaddname);
     else if (subkey == "Special")            ExtractMPvalues(value, range, nf, args.pbi.m_vspecial);
@@ -1016,6 +1018,8 @@ void Matrix_Element_Handler::BuildSingleProcessList(
         cpi.m_selectors = args.pbi.m_selectors;
 	if (GetMPvalue(args.pbi.m_vnmaxq,nfs,pnid,di)) cpi.m_nmaxq=di;
 	if (GetMPvalue(args.pbi.m_vnminq,nfs,pnid,di)) cpi.m_nminq=di;
+	if (GetMPvalue(args.pbi.m_vcls,nfs,pnid,di)) cpi.m_cls=(cls::scheme)di;
+	if (GetMPvalue(args.pbi.m_vhls,nfs,pnid,di)) cpi.m_hls=(hls::scheme)di;
 	if (GetMPvalue(args.pbi.m_vamegicmhv,nfs,pnid,di)) cpi.m_amegicmhv=di;
 	if (GetMPvalue(args.pbi.m_vntchan,nfs,pnid,di)) cpi.m_ntchan=di;
 	if (GetMPvalue(args.pbi.m_vmtchan,nfs,pnid,di)) cpi.m_mtchan=di;

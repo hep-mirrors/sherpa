@@ -232,6 +232,22 @@ example would be
 
 .. _proc_Scales:
 
+Color_Scheme
+=========
+
+Sets a process-specific color scheme.  For the corresponding syntax see
+:ref:`COLOR_SCHEME`.
+
+.. _Color_Scheme:
+
+Helicity_Scheme
+=========
+
+Sets a process-specific helicity scheme.  For the corresponding syntax see
+:ref:`HELICITY_SCHEME`.
+
+.. _Helicity_Scheme:
+
 Scales
 ======
 
