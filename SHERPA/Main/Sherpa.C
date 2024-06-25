@@ -404,10 +404,10 @@ void Sherpa::DrawLogo(const bool& shouldprintversioninfo)
 
   msg_Info() << Frame_Line{"                                                                            "};
   msg_Info() << Frame_Line{"         Authors:  Enrico Bothmann, Lois Flower, Christian Gutschow,        "};
-  msg_Info() << Frame_Line{"                   Stefan Hoeche, Mareen Hoppe, Max Knobbe, Frank Krauss,   "};
-  msg_Info() << Frame_Line{"                   Peter Meinzinger, Davide Napoletano, Alan Price,         "};
-  msg_Info() << Frame_Line{"                   Daniel Reichelt, Marek Schoenherr, Steffen Schumann,     "};
-  msg_Info() << Frame_Line{"                   Frank Siegert                                            "};
+  msg_Info() << Frame_Line{"                   Stefan Hoeche, Mareen Hoppe, Joshua Isaacson,            "};
+  msg_Info() << Frame_Line{"                   Max Knobbe, Frank Krauss, Peter Meinzinger,              "};
+  msg_Info() << Frame_Line{"                   Davide Napoletano, Alan Price, Daniel Reichelt,          "};
+  msg_Info() << Frame_Line{"                   Marek Schoenherr, Steffen Schumann, Frank Siegert        "};
   msg_Info() << Frame_Line{"  Former Authors:  Gurpreet Singh Chahal, Timo Fischer, Tanju Gleisberg,    "};
   msg_Info() << Frame_Line{"                   Hendrik Hoeth, Johannes Krause, Silvan Kuttimalai,       "};
   msg_Info() << Frame_Line{"                   Ralf Kuhn, Thomas Laubrich, Sebastian Liebschner,        "};
