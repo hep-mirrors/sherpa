@@ -48,5 +48,4 @@ SELECTORS: [
   # Insert phase space cuts here
 ]
 
-UFO_PARAMS: |
-${ufo_params}
+UFO_PARAM_CARD: ${param_card}

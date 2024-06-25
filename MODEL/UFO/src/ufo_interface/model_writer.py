@@ -19,6 +19,17 @@ def order_sort(order):
         return (2, order)
 
 
+def _physical_particle(particle):
+    if particle.GhostNumber != 0:
+        return False
+    false_values = [0, 0.0, 'False', False]
+    for key, value in particle.__dict__.items():
+        if 'gold' in key.lower():
+            if value in false_values:
+                return False
+    return True
+
+
 class ModelWriter:
     def __init__(self, name, ufo, opts):
         self._lorentz_files = []
@@ -49,6 +60,28 @@ class ModelWriter:
         self._get_lorentz_files(self._ufo.all_lorentz)
         self._write_cmakelists()
         self._write_model()
+
+    def write_run_card(self, filename):
+        order_dict = ', '.join([f'{order.name}: Any'
+                                for order in self._ufo.all_orders])
+        order_statement = f'Order: {{{order_dict}}}'
+
+        all_particles = [p.pdg_code for p in filter(_physical_particle,
+                                                    self._ufo.all_particles)]
+        all_particles = ', '.join([str(p) for p in all_particles])
+
+        template = pkgutil.get_data(__name__, "Templates/Sherpa.yaml.in")
+        template = template.decode('utf-8')
+        template = Template(template)
+        substitution = {
+            'model_name': self._name,
+            'order_statement': order_statement,
+            'all_particles': all_particles,
+            'param_card': f'param_{self._name}.dat',
+        }
+
+        with open(filename, 'w') as output:
+            output.write(template.safe_substitute(substitution))
 
     def _write_external_param(self, parameter):
         fmt = 'double {0} = p_dataread->GetEntry<double>("{1}", {2}, 0.0);\n'

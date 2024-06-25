@@ -222,6 +222,13 @@ def main(args):
     progress(f'Writing out parameter card to param_{model_name}.dat')
     write_param_card(model_name, ufo_mod)
 
+    filename = f'Sherpa_{model_name}.yaml'
+    while os.path.exists(filename):
+        model_name += '_'
+        filename = f'Sherpa_{model_name}.yaml'
+    progress(f'Writing out example run card to {filename}')
+    model_writer.write_run_card(filename)
+
     progress(f'Finished writing model {model_name} to {out_dir}')
 
 
