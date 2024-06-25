@@ -9,6 +9,9 @@ import Sherpa
 
 
 exe = '@CMAKE_INSTALL_PREFIX@/bin/Sherpa-generate-model'
+models = {'mssm': {'nmax': 8},
+          'qagc': {'nmax': 8},
+          'qcd_d6': {}}
 
 
 class test_process:
@@ -25,19 +28,18 @@ class test_process:
         return f"Process: {' '.join(self.inpart)} -> {' '.join(self.outpart)}"
 
 
-def generate_models(models, overwrite=False):
-    for model in models:
-        path = f"Models/{model[0]}"
-        if not overwrite and os.path.exists(os.path.join(path, '.sherpa')):
-            print(f"Model {model[0]} already exists, skipping")
-            continue
-        # Remove the .sherpa directory if it exists
-        shutil.rmtree(os.path.join(path, '.sherpa'), True)
-        # Generate the model
-        run_args = [exe, path, '--auto_convert']
-        if 'nmax' in model[1]:
-            run_args.append(f'--nmax={model[1]["nmax"]}')
-        subprocess.run(run_args, check=True)
+def generate_model(model, overwrite=False):
+    path = f"Models/{model}"
+    if not overwrite and os.path.exists(os.path.join(path, '.sherpa')):
+        print(f"Model {model} already exists, skipping")
+        return
+    # Remove the .sherpa directory if it exists
+    shutil.rmtree(os.path.join(path, '.sherpa'), True)
+    # Generate the model
+    run_args = [exe, path, '--auto_convert']
+    if 'nmax' in models[model]:
+        run_args.append(f'--nmax={models[model]["nmax"]}')
+    subprocess.run(run_args, check=True)
 
 
 def get_processes(model, orders=None):
@@ -68,7 +70,7 @@ def run(process):
     with open('Sherpa.yaml', 'w') as f:
         f.write(template.substitute(subtitutions))
 
-    sys.srgv = ['Sherpa', 'Sherpa.yaml']
+    sys.argv = ['Sherpa', 'Sherpa.yaml']
     generator = Sherpa.Sherpa(len(sys.argv), sys.argv)
     generator.InitializeTheRun()
     me_calc = Sherpa.MEProcess(generator)
@@ -103,23 +105,20 @@ def run(process):
     return passed
 
 
-def main():
-    models = [['mssm', {'nmax': 8}],
-              ['qagc', {'nmax': 8}],
-              ['qcd_d6', {}]]
-    generate_models(models, True)
+def main(model_name):
+    generate_model(model_name, True)
 
     processes = []
-    for model in models:
-        orders = None
-        if model[0] == 'qcd_d6':
-            orders = "{'D6Q': 0}"
-        processes.extend(get_processes(model[0], orders=orders))
+    nfailed = 0
+    print("Running model: {}".format(model_name))
+    orders = None
+    if model_name == 'qcd_d6':
+        orders = "{'D6Q': 0}"
+    processes = get_processes(model_name, orders=orders)
     print("Found {} processes".format(len(processes)))
 
     # Sort processes by initial state particles
     processes.sort(key=lambda x: x.inpart)
-    nfailed = 0
 
     for process in processes:
         print("       {}".format(process), end='\r')
@@ -148,8 +147,10 @@ def main():
     if nfailed == 0:
         os.remove('ufo_test.log')
 
-    return nfailed
+    if nfailed > 0:
+        return -1
+    return 0
 
 
 if __name__ == '__main__':
-    main()
+    main(sys.argv[1])
