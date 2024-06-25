@@ -115,7 +115,10 @@ def fix_param_writer(path):
     with open(path / 'write_param_card.py', 'r') as f:
         lines = f.readlines()
     with open(path / 'write_param_card.py', 'w') as f:
-        if lines[0] != 'import functools\n':
+        future_imports = 0
+        while lines[future_imports].startswith('from __future__'):
+            future_imports += 1
+        if lines[future_imports] != 'import functools\n':
             f.write('import functools\n')
         for line in lines:
             if 'need_writing.sort(self.order_param)' in line:

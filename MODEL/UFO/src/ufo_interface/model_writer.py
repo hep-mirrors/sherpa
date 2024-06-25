@@ -25,7 +25,7 @@ def _physical_particle(particle):
     false_values = [0, 0.0, 'False', False]
     for key, value in particle.__dict__.items():
         if 'gold' in key.lower():
-            if value in false_values:
+            if value not in false_values:
                 return False
     return True
 
