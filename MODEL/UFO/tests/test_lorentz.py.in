@@ -5,10 +5,9 @@ from sympy.tensor.array.expressions import ArraySymbol
 import sympy
 import numpy as np
 import sys
-import os
 
-# Add the src directory to the Python path
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'src')))
+# Add the path to the SHERPA Python sitearch directory
+sys.path.append('@SHERPA_Python_SITEARCH@')
 
 from ufo_interface import lorentz_algebra
 from ufo_interface import lorentz_simplify

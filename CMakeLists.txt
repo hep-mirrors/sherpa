@@ -963,6 +963,9 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/MODEL/UFO/bin/Sherpa-generate-model.i
 if (NOT SHERPA_ENABLE_PYTHON AND SHERPA_ENABLE_TESTING)
     message(FATAL_ERROR "SHERPA: UFO model generation tests requires Python Addons!")
 endif()
+if(SHERPA_ENABLE_TESTING)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/MODEL/UFO/tests/test_lorentz.py.in ${CMAKE_CURRENT_BINARY_DIR}/Tests/UFO/test_lorentz.py @ONLY)
+endif()
 endif()
 install(EXPORT SHERPATargets DESTINATION ${CMAKE_INSTALL_DATADIR}/SHERPA-MC)
 

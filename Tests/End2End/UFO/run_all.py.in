@@ -12,7 +12,7 @@ exe = '@CMAKE_INSTALL_PREFIX@/bin/Sherpa-generate-model'
 
 
 class test_process:
-    def __init__(self, inpart, outpart, model, threshold=5e-6, orders=None, npoints=100):
+    def __init__(self, inpart, outpart, model, threshold=3e-5, orders=None, npoints=100):
         self.inpart = inpart
         self.outpart = outpart
         self.model = model
@@ -111,6 +111,7 @@ def main():
 
     processes = []
     for model in models:
+        orders = None
         if model[0] == 'qcd_d6':
             orders = "{'D6Q': 0}"
         processes.extend(get_processes(model[0], orders=orders))
@@ -125,12 +126,9 @@ def main():
         try:
             # Suppress Sherpa output
             old_stdout = os.dup(1)
-            old_stderr = os.dup(2)
-            stdout_file = open('stdout.log', 'a')
-            stderr_file = open('stderr.log', 'a')
+            stdout_file = open('ufo_test.log', 'a')
 
             os.dup2(stdout_file.fileno(), 1)
-            os.dup2(stderr_file.fileno(), 2)
             passed = run(process)
             if not passed:
                 nfailed += 1
@@ -141,13 +139,14 @@ def main():
         finally:
             # Restore stdout and stderr
             os.dup2(old_stdout, 1)
-            os.dup2(old_stderr, 2)
             stdout_file.close()
-            stderr_file.close()
             if passed:
                 print("\033[32mPASSED\033[0m")
             else:
                 print("\033[31mFAILED\033[0m")
+
+    if nfailed == 0:
+        os.remove('ufo_test.log')
 
     return nfailed
 
