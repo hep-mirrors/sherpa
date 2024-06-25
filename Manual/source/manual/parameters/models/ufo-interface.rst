@@ -9,13 +9,12 @@ made available to Sherpa by running
 where ``<path-to-ufo-model>`` specifies the location of the directory
 where the UFO model can be found. UFO support must be enabled using
 the :option:`-DSHERPA_ENABLE_UFO=ON` option of the configure script, as
-described in :ref:`Installation`. This requires Python version 2.6 or
-later and an installation of SCons. Furthermore, the configure option
-:option:`-DSHERPA_ENABLE_PYTHON=ON` needs to be included.
+described in :ref:`Installation`. This requires Python version 3.5 or
+later.
 
 The above command generates source code for the UFO model, compiles
 it, and installs the corresponding library, making it available for
-event generation. Python, SCons, and the UFO model directory are not
+event generation. Python and the UFO model directory are not
 required for event generation once the above command has
 finished. Note that the installation directory for the created library
 and the paths to Sherpa libraries and headers are predetermined
@@ -32,15 +31,15 @@ Please run
 
 for information on the relevant command line arguments.
 
-An example configuration file will be written to the working directory
-while the model is generated with ``Sherpa-generate-model``. This
-config file shows the syntax for the respective model parameters and
-can be used as a template. It is also possible to use an external
-parameter file by specifying the path to the file with the switch
-:option:`UFO_PARAM_CARD` in the configuration file or on the command
-line. Relative and absolute file paths are allowed. This option allows
-it to use the native UFO parameter cards, as used by MadGraph for
-example.
+An example configuration file and parameter card will be written
+to the working directory while the model is generated with
+``Sherpa-generate-model``. This config file shows the syntax for the
+respective model parameters and can be used as a template. It is also
+possible to use an external parameter file by specifying the path to
+the file with the switch :option:`UFO_PARAM_CARD` in the configuration
+file or on the command line. Relative and absolute file paths are allowed.
+This option allows it to use the native UFO parameter cards, produced by FeynRules and
+as used by MadGraph for example.
 
 Note that the use of the SM :option:`PARTICLE_DATA` switches
 :option:`Mass`, :option:`Massive`, :option:`Width`, and
@@ -66,6 +65,12 @@ you plan to study. In such a case it is advised to restrict the number of
 external particles in Lorentz and color functions to the default of
 ``--nmax 4``. Of course you can increase that number if higher-point vertices
 are needed.
+
+Extending Sherpa to include partial support for UFO2.0:cite:`Darme:2023jdn`, Sherpa now has the ability to
+handle models that include form factors in the vertices. Currently, the interface
+does not support form factors that are directly defined in the model file. Instead,
+they need to be defined in a separate file, compiled into a shared library, and
+loaded at runtime.
 
 For more details on the
 Sherpa interface to FeynRules please consult
