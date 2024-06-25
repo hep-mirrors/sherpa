@@ -388,11 +388,11 @@ transversely polarized cross sections, for details see section
 Beside this, user-specified cross sections can be produced as described
 in section :ref:`Custom polarized cross sections`.
 Weight names for automatically provided cross sections have the form
-``PolWeight_ReferenceSystem.particle1.polarization1_particle2.polarzation2...``
+``PolWeight_ReferenceSystem.particle1.polarization1_particle2.polarization2...``
 with ``+`` denoting right(plus)-, ``-`` left-handed (minus) and ``0`` longitudinal polarization. 
 For a right(+)-handed :math:`\mathrm{W}^+` boson and left(-)-handed :math:`\mathrm{W}^+` boson
 in :math:`\mathrm{W}^+\mathrm{W}^+` scattering, 
-the weight name becomes PolWeight.W+.+_W+.-. The sequence of the particles
+the weight name becomes PolWeight_ReferenceSystem.W+.+_W+.-. The sequence of the particles
 in the weight name corresponds to Sherpa's internal particle ordering
 which can be obtained from the ordering in the process printed out
 when Sherpa starts running. The ``ReferenceSystem`` denotes the reference system
@@ -403,15 +403,16 @@ called ``PolWeight_ReferenceSystem.int``.
 Polarized cross sections in SHERPA can currently be calculated at fixed leading
 order, LO+PS and in merged calculations. Furthermore, polarized NLO QCD corrections
 on the VB production part (not on the decays) can be simulated approximately by
-neglecting effects of virtual corrections on polarization fractions. This is currently
-only possible on particle level using SHERPA's MC@NLO implementation for matching
-NLO hard matrix elements to the parton shower. Note that the resulting unpolarized
+neglecting effects of virtual corrections as well as ultra-soft and ultra-collinear
+contributions below the parton shower IR cut-off on polarization fractions. This is currently 
+only possible on particle level using SHERPA's MC@NLO implementation for matching NLO 
+hard matrix elements to the parton shower. Note that the resulting unpolarized
 prediction which is also used to compute the polarized cross sections from the 
 polarization fractions contains all NLO QCD corrections. 
 
 More details about the definition of polarization for intermediate 
 VBs and the implementation in Sherpa than covered by this manual entry can be found 
-in     .
+in :cite:`Hoppe:2023uux`.
 
 .. contents::
    :local:
@@ -424,7 +425,7 @@ General procedure
 .. index:: General procedure
 
 The definition of polarization for particles in intermediate states is only 
-possible for processes which can be factorised into a production and decay of them. 
+possible for processes which can be factorized into a production and decay of them. 
 To neglect possible not-fully-resonant diagrams (i.e. diagrams where not each final state
 decay product particle comes from the decay of a resonant intermediate particle), 
 for which this factorization and the definition of polarization for intermediate particles
@@ -491,7 +492,7 @@ The polarization vectors of massive VBs are implemented according to
 :cite:`Dittmaier1998nn`, equation (3.19). Specifically, the polarization vectors 
 are expressed in terms of Weyl spinors. For that, an arbitrary light-like vector
 needs to be chosen. The definition of VB polarization
-is not unambiguous. It can be specified by the options described in the following 
+is not unambiguous. It can be specified by the following options described in the subsequent 
 sections: 
 :option:`Pol_Cross_Section:Spin_Basis` and 
 :option:`Pol_Cross_Section:Reference_System`.  
