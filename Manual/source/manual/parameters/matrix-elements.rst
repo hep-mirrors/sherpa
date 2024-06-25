@@ -96,6 +96,28 @@ set :option:`OVERWEIGHT_THRESHOLD: <maxweight>` to cap the maximal over-weight
 ``w/max`` taken into account.
 
 
+.. _COLOR_SCHEME:
+
+COLOR_SCHEME
+============
+
+.. index:: COLOR_SCHEME
+
+This parameter specifies how to perform the color algebra in hard matrix elemens.
+The available options are :option:`0` for the generator-specific default,
+:option:`1` for sum, and :option:`2` for sampling.
+
+.. _HELICITY_SCHEME:
+
+HELICITY_SCHEME
+===============
+
+.. index:: HELICITY_SCHEME
+
+This parameter specifies how to perform the helicity algebra in hard matrix elemens.
+The available options are :option:`0` for the generator-specific default,
+:option:`1` for sum, and :option:`2` for sampling.
+
 .. _SCALES:
 
 SCALES
