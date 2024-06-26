@@ -98,7 +98,7 @@ void ATOOLS::OutputContainers(std::ostream &str) {
 
   for (;kfit!=s_kftable.end();++kfit) {
     Flavour flav(kfit->first);
-    if (!flav.IsHadron() && flav.IsGroup() && flav.Kfcode()!=0) {
+    if (!flav.IsHadron() && flav.IsGroup() && flav.Kfcode()!=0 && flav.Size()!=0) {
       for (int j=0; j < (flav.Size() - 1) / constituents_per_row + 1; j++) {
         line.str("");
         if (j==0) {
