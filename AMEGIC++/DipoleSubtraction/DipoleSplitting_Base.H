@@ -45,6 +45,7 @@ namespace AMEGIC {
     ATOOLS::NLO_subevt *p_subevt;
     PDF::NLOMC_Base *p_nlomc;
     ATOOLS::Recoil_Definition *p_recoil;
+    void CalcVectors(ATOOLS::Vec4D&,ATOOLS::Vec4D&);
     void CalcVectors(ATOOLS::Vec4D&,ATOOLS::Vec4D&,double);
   public:
     DipoleSplitting_Base(ATOOLS::sbt::subtype st, ATOOLS::spt::splittingtype ft,

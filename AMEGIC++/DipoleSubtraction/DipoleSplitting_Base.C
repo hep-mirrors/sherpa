@@ -97,6 +97,24 @@ void DipoleSplitting_Base::CalcVectors(Vec4D& p1, Vec4D& p2, double B)
   m_pfactors.push_back((B-1.)/B);
 }
 
+void DipoleSplitting_Base::CalcVectors(Vec4D& p1, Vec4D& p2)
+{
+  m_dpollist.clear();
+  m_pfactors.clear();
+
+  Vec3D pv(p2);
+  Vec3D ptp=Vec3D(p1)-(p1[0]/p2[0])*pv;
+  Vec3D ptt=cross(ptp,pv);
+
+  m_dpollist.push_back(Vec4D(0.,ptt/ptt.Abs()));
+  m_pfactors.push_back(1.);
+
+  Vec4D vh(0.,ptp/ptp.Abs());
+  m_dpollist.push_back(vh);
+  m_pfactors.push_back(1.);
+}
+
+
 double DipoleSplitting_Base::GetR(const Vec4D* mom,const Vec4D* LOmom)
 {
   double ptijk=2.*(m_ptij*m_pj)*(m_ptk*m_pj)/(m_ptij*m_ptk);
