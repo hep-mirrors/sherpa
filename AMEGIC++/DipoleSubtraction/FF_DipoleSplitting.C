@@ -54,8 +54,6 @@ void FF_DipoleSplitting::SetMomenta(const Vec4D* mom)
     zi=1.0-(1.0-zi)*(1.0-m_yijk);
     zj=1.0-(1.0-zj)*(1.0-m_yijk);
   }
-//   m_pt1   =     m_zi*m_pi;
-//   m_pt2   = -1.*m_zj*m_pj;
   m_pt1   =     m_zi*m_pi-m_zj*m_pj;
   m_pt2   =     m_ptij;
 
@@ -78,11 +76,17 @@ void FF_DipoleSplitting::SetMomenta(const Vec4D* mom)
     break;
   case spt::g2qq:
     m_sff = 1.;
-    m_av  = m_sff - zi*(1.-zi) - zj*(1.-zj);
+    m_sff *= zi;
+    m_av  = m_sff - zi*(zi*(1.-zi) + zj*(1.-zj));
     break;
   case spt::g2gg:
     m_sff = 1./(1.-m_zi*(1.-m_yijk))+1./(1.-m_zj*(1.-m_yijk))-2.;
-    m_av  = m_sff + ( zi*(1.-zi) + zj*(1.-zj) ) / 2.; //< CS eq. 5.9
+    m_sff *= zi;
+    m_av  = m_sff + zi*( zi*(1.-zi) + zj*(1.-zj) ) / 2.; //< CS eq. 5.9
+    if (m_subtype==subscheme::Alaric) {
+      m_sff = zi;
+      m_av = m_sff - zi*(zi*(1.-zi));
+    }
     break;
   case spt::none:
     THROW(fatal_error, "Splitting type not set.");
@@ -100,6 +104,7 @@ void FF_DipoleSplitting::SetMomenta(const Vec4D* mom)
 }
 
 void FF_DipoleSplitting::SetMomentaAlaric(const ATOOLS::Vec4D* mom) {
+  DEBUG_FUNC("");
   PHASIC::Ant_Args ff;
   auto* ampl = Cluster_Amplitude::New();
   for (int i = 0; i <= m_m; ++i) {
@@ -110,13 +115,16 @@ void FF_DipoleSplitting::SetMomentaAlaric(const ATOOLS::Vec4D* mom) {
 
   ampl->Delete();
   PHASIC::ClusterAntenna(ff, m_i, m_j, m_k, 0.);
-  DEBUG_VAR(ff.m_p);
+
+  m_pi = ff.m_pi;
+  m_pj = ff.m_pj;
+  m_pk = ff.m_pk;
+
+  m_zi = ff.m_z;
+  m_zj = 1.-ff.m_z;
 
   m_yijk = (m_pi*m_pk)/(m_pj*(m_pi+m_pk)); //< corresponds to v_{i,ab} in CS, eq. 5.169
   m_a = m_yijk;
-  DEBUG_VAR(m_yijk);
-  DEBUG_VAR(m_pi[0]/m_pj[0]);
-  DEBUG_VAR(ff.m_z/(1.-ff.m_z));
 
   m_ptk  = ff.m_p[m_k];
   m_ptij = ff.m_pijt;
@@ -126,12 +134,12 @@ void FF_DipoleSplitting::SetMomentaAlaric(const ATOOLS::Vec4D* mom) {
   m_kt2  = p_nlomc?p_nlomc->KT2(*p_subevt,m_zi,m_yijk,m_Q2):
                   m_Q2*m_yijk*m_zi*m_zj;
 
-  m_pt1   =     m_zi*m_pi-m_zj*m_pj;
-  m_pt2   =     m_ptij;
+  Vec4D pi(ff.m_pi), pk(ff.m_pk), pj(ff.m_pj), n(ff.m_n);
+  m_pt1   =     (n*pi) / (pi*pj) * pj - n;
+  m_pt2   =     ff.m_pijt;
 
   switch (m_ftype) {
   case spt::soft: {
-    Vec4D pi(ff.m_pi), pk(ff.m_pk), pj(ff.m_pj), n(ff.m_n);
     double sij(pi*pj), sik(pi*pk), skj(pj*pk);
     double D(sij*(pk*n)+skj*(pi*n));
     double A(2*sik/(sij*skj));
@@ -149,12 +157,12 @@ void FF_DipoleSplitting::SetMomentaAlaric(const ATOOLS::Vec4D* mom) {
     m_av  = m_sff;
     break;
   case spt::g2qq:
-    m_sff = 1.; //< CS eq. 5.185
-    m_av  = m_sff - 4.*ff.m_z*(1.-ff.m_z);
+    m_sff = 1.*ff.m_z; //< CS eq. 5.185
+    m_av  = m_sff - ff.m_z*4.*ff.m_z*(1.-ff.m_z);
     break;
   case spt::g2gg:
-    m_sff = m_yijk/ff.m_z-1.+(1.-ff.m_z)/ff.m_z; //< CS eq. 5.186
-    m_av  = m_sff + ff.m_z*(1-ff.m_z);
+    m_sff = 1*ff.m_z; //m_yijk/ff.m_z-1.+(1.-ff.m_z)/ff.m_z; //< CS eq. 5.186
+    m_av  = m_sff + ff.m_z*ff.m_z*(1-ff.m_z);
     break;
   case spt::none:
     THROW(fatal_error, "Splitting type not set.");
@@ -188,12 +196,19 @@ void FF_DipoleSplitting::CalcDiPolarizations()
   case spt::q2qg:
   case spt::q2gq:
     return;
+  case spt::soft:
+    CalcVectors(m_pt1,m_pt2);
+    break;
   case spt::g2qq:
-    CalcVectors(m_pt1,m_pt2,m_sff/(2.*(zi*(1.-zi)+zj*(1.-zj))));
+    CalcVectors(m_pt1,m_pt2,m_sff/zi/(2.*(zi*(1.-zi)+zj*(1.-zj)))/4.);
     break;
-  case spt::g2gg:
-    CalcVectors(m_pt1,m_pt2,-m_sff/(zi*(1.-zi)+zj*(1.-zj)));
+  case spt::g2gg: {
+    double B = -m_sff/zi/(zi*(1.-zi)+zj*(1.-zj))/2.;
+    CalcVectors(m_pt1,m_pt2,B);
+    m_pfactors[0] = 0;
+    m_pfactors[1] = -1/B;
     break;
+  }
   case spt::none:
     THROW(fatal_error, "Splitting type not set.");
   case spt::s2sg:
