@@ -965,6 +965,16 @@ if (NOT SHERPA_ENABLE_PYTHON AND SHERPA_ENABLE_TESTING)
 endif()
 if(SHERPA_ENABLE_TESTING)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/MODEL/UFO/tests/test_lorentz.py.in ${CMAKE_CURRENT_BINARY_DIR}/Tests/UFO/test_lorentz.py @ONLY)
+
+file(DOWNLOAD https://zenodo.org/records/12533470/files/TestProcesses.tar.gz?download=1 ${CMAKE_CURRENT_BINARY_DIR}/Tests/End2End/UFO/TestProcesses.tar.gz)
+add_custom_target( unZipTestProcesses ALL)
+add_custom_command(TARGET unZipTestProcesses PRE_BUILD
+     COMMAND ${CMAKE_COMMAND} -E remove_directory ${CMAKE_CURRENT_BINARY_DIR}/Tests/End2End/UFO/TestProcesses
+     COMMAND ${CMAKE_COMMAND} -E tar xzf ${CMAKE_CURRENT_BINARY_DIR}/Tests/End2End/UFO/TestProcesses.tar.gz
+     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/Tests/End2End/UFO
+     DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/Tests/End2End/UFO/TestProcesses.tar.gz
+     COMMENT "Unpacking UFO Test Processes"
+     VERBATIM)
 endif()
 endif()
 install(EXPORT SHERPATargets DESTINATION ${CMAKE_INSTALL_DATADIR}/SHERPA-MC)
