@@ -2,7 +2,6 @@
 #include "METOOLS/Currents/C_Scalar.H"
 #include "METOOLS/Currents/C_Spinor.H"
 #include "METOOLS/Currents/C_Vector.H"
-#include "METOOLS/Currents/C_RaritaSchwinger.H"
 #include "METOOLS/Explicit/Vertex.H"
 #include "METOOLS/Explicit/Form_Factor.H"
 #include "MODEL/Main/Single_Vertex.H"
