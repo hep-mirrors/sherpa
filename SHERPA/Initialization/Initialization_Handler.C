@@ -13,7 +13,6 @@
 #include "SHERPA/Main/Filter.H"
 #include "PHASIC++/Scales/Core_Scale_Setter.H"
 #include "MODEL/Main/Model_Base.H"
-#include "MODEL/Main/Running_AlphaS.H"
 #include "METOOLS/Currents/C_Spinor.H"
 #include "PDF/Main/Structure_Function.H"
 #include "PDF/Main/Intact.H"

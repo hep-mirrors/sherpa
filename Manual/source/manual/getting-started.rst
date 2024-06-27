@@ -467,21 +467,18 @@ generator(s). The Sherpa output will look like:
    Set \alpha according to EW scheme
      1/\alpha(0)   = 128.802
      1/\alpha(def) = 128.802
-   Set \alpha_s according to PDF
-     Perturbative order: 2
-     \alpha_s(M_Z) = 0.118
-   Set \alpha_s according to PDF
-     Perturbative order: 2
-     \alpha_s(M_Z) = 0.118
+   Particle data:
+   [...]
+   Initializing showers ...
+   Initializing matrix elements for the hard processes ...
+   Building processes (3 ME generators, 1 process blocks) ...
+   Setting up processes ........ done (59 MB, 0s/0s)
+   Performing tests ........ done (60 MB, 0s/0s)
    [...]
    Initializing hadron particle information ...
    Initialized fragmentation
    Initialized hadron decays (model = HADRONS++)
    Initialized soft photons
-   [...]
-   Building processes (3 ME generators, 1 process blocks) ...
-   Setting up processes ........ done (59 MB, 0s/0s)
-   Performing tests ........ done (60 MB, 0s/0s)
    [...]
 
 Then Sherpa will start to integrate the cross sections. The output
