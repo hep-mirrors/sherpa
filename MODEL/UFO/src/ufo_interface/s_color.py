@@ -1,4 +1,3 @@
-from __future__ import division 
 from .color_structures import T, replacer_T, f, Identity, IdentityG
 from .tensor import color_key
 from string import Template

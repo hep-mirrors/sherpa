@@ -1,4 +1,3 @@
-from __future__ import division 
 from copy import deepcopy, copy
 from .ufo_exception import ufo_exception
 from .py_to_cpp import c_string_from_num
