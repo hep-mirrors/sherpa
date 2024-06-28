@@ -116,7 +116,7 @@ namespace SHERPA {
 RootNtuple_Reader::RootNtuple_Reader(const Input_Arguments &args,int exact,int ftype) :
   Event_Reader_Base(args), m_ftype(ftype), m_otype(0),
   m_evtid(0), m_subevtid(0), m_evtcnt(0), m_entries(0), m_evtpos(0),
-  p_isr(args.p_isr), m_sargs(NULL,"",""), m_kargs(""), m_xf1(0.), m_xf2(0.)
+  p_isr(args.p_isr), p_yfs(args.p_yfs), m_sargs(NULL,"",""), m_kargs(""), m_xf1(0.), m_xf2(0.)
 {
   Settings& s = Settings::GetMainSettings();
   Common_Root_Settings().RegisterDefaults();
@@ -556,7 +556,7 @@ bool RootNtuple_Reader::ReadInFullEvent(Blob_List * blobs)
 	for (int i=0;i<p_vars->m_nparticle;++i)
 	  pi.m_fi.m_ps.push_back(Subprocess_Info(flav[i+2]));
 	m_sargs.p_proc=m_procs[info] = new Dummy_Process();
-	m_sargs.p_proc->Init(pi,NULL,p_isr,NULL,1);
+	m_sargs.p_proc->Init(pi,NULL,p_isr,p_yfs,1);
 	m_sargs.p_proc->SetMaxOrder
 	  (0,p_vars->m_oqcd-(p_vars->m_type[0]=='S'?1:0));
 	m_sargs.m_nout=p_vars->m_nparticle;

@@ -572,7 +572,7 @@ bool Initialization_Handler::InitializeTheFramework(int nr)
       THROW(missing_module,"Cannot load input library Sherpa"+libname+"Input.");
     p_evtreader = Event_Reader_Base::Getter_Function::GetObject
       (m_evtform,Input_Arguments(s.GetPath(), infile,
-				 p_model, m_isrhandlers[isr::hard_process]));
+				 p_model, m_isrhandlers[isr::hard_process], p_yfshandler));
     if (p_evtreader==NULL) THROW(fatal_error,"Event reader not found");
     msg_Events()<<"SHERPA will read in the events."<<std::endl
   		<<"   The full framework is not needed."<<std::endl;
