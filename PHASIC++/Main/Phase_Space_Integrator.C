@@ -234,6 +234,7 @@ bool Phase_Space_Integrator::AddPoint(const double value)
       p_psh->Process()->InitWeightHistogram();
       p_psh->Process()->EndOptimize();
       m_lotime = ATOOLS::rpa->gen.Timer().RealTime();
+      fotime    = true;
     }
     double time = ATOOLS::rpa->gen.Timer().RealTime();
     double timeest=0.;
