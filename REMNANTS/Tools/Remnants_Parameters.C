@@ -368,11 +368,13 @@ std::ostream& REMNANTS::operator<<(std::ostream&                os,
                                    const REMNANTS::matter_form& f)
 {
   switch (f) {
+    case matter_form::none: return os << "None";
     case matter_form::single_gaussian: return os << "Single_Gaussian";
     case matter_form::double_gaussian: return os << "Double_Gaussian";
     case matter_form::unknown: return os << "Unknown";
+    default: break;
   }
-  return os;
+  return os << "Undefined";
 }
 
 std::ostream& REMNANTS::operator<<(std::ostream&             os,
