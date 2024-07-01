@@ -82,7 +82,11 @@ If desired, you can also specify spectra for beamstrahlung through
   corresponding code. See details below.
 
 :option:`Pomeron`
-  This enables the Proton--Pomeron flux, see details below.
+  This enables the Proton--Pomeron flux for diffractive jet production, see
+  details below.
+
+:option:`Reggeon`
+  This enables the Proton--Reggeon flux, see details below.
 
 The ``BEAM_SMIN`` and ``BEAM_SMAX`` parameters may be used to specify
 the minimum/maximum fraction of cms energy squared after
@@ -199,23 +203,43 @@ The Pomeron flux is implemented as used in :cite`H1:2006zyl` :cite:`Goharipour:2
 
 where :math:`t` is the squared transferred four-momentum and :math:`\alpha` is assumed to be
 linear, :math:`\alpha_\mathbb{P}\left(t\right) = \alpha\left(0\right) + \alpha^\prime t`. The default values are set
-to the ones obtained in Fit A in :cite:`Goharipour:2018yov` and can each be changed like so:
+to the ones obtained in Fit A in :cite:`H1:2006zyl` and can each be changed like so:
 
 .. code-block:: yaml
 
     Pomeron:
-      tMax: 1.e12
+      tMax: 1.
       xMax: 1.
-      A: 1.0
-      B: 7.0
-      Alpha_intercept: 1.0938
-      Alpha_slope: 0.0
+      xMin: 0.
+      B: 5.5
+      Alpha_intercept: 1.111
+      Alpha_slope: 0.06
 
 where ``Alpha_intercept`` and ``Alpha_slope`` are :math:`\alpha\left(0\right)` and :math:`\alpha^\prime`, respectively.
 Please note that ``tMax`` is the absolute value, i.e. a positive number.
 ``xMax`` denotes the fraction of the proton momentum taken by the Pomeron.
 
 Other fluxes can be implemented upon request.
+
+Reggeon
+-------
+
+The Reggeon flux, defined in complete analogy to the Pomeron flux above.
+Default values taken from :cite:`H1:2006zyl`, set to:
+
+.. code-block:: yaml
+
+    Reggeon:
+      tMax: 1.
+      xMax: 1.
+      xMin: 0.
+      B: 1.6
+      Alpha_intercept: 0.5
+      Alpha_slope: 0.3
+      n: 1.4e-3
+
+The parameter ``n`` is the relative normalization of the Reggeon flux with
+respect to the Pomeron flux.
 
 .. _Beam Polarization:
 

@@ -482,6 +482,10 @@ choices or easily implement a user defined scale.
   all final state particles, i.e. contrary to ``H_T2`` ``H_TM2`` takes
   particle masses into account.
 
+:option:`hH_T2`
+  Square of the scalar sum of the transverse energies of
+  all QCD final state particles.
+
 :option:`H_TY2(<factor>,<exponent>)`
   Square of the scalar sum of the transverse momenta of all final state particles
   weighted by their rapidity distance from the final state boost vector. Thus,

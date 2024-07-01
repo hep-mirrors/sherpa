@@ -73,6 +73,11 @@ They can be configured with the following parameters.
     terms. Possible options are 0 ("mixed choice"), 1 ("eta choice"), or
     2 ("beta choice", default).
 
+  :option:`H1Sherpa`
+    Built-in library for the pomeron PDF from the 2006 Diffractive PDF fit
+    by the H1 collaboration :cite:`H1:2006zyl`. Has the PDF sets ``FitA`` and
+    ``FitB``.
+
   :option:`None`
     No PDF. Fixed beam energy.
 
