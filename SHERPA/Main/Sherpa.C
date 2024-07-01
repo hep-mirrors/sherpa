@@ -413,11 +413,14 @@ void Sherpa::DrawLogo(const bool& shouldprintversioninfo)
   msg_Info() << Frame_Line{"                   Ralf Kuhn, Thomas Laubrich, Sebastian Liebschner,        "};
   msg_Info() << Frame_Line{"                   Andreas Schaelicke, Holger Schulz, Jan Winter            "};
   msg_Info() << Frame_Line{"                                                                            "};
-  msg_Info() << Frame_Line{"This program uses a lot of genuine and original research work by other      "};
-  msg_Info() << Frame_Line{"people. Users are encouraged to refer to the various original publications. "};
+  MyStrStream citation;
+  citation << "Users are kindly asked to cite " << om::bold
+           << "SciPost Phys 7 (2019) 3, 034" << om::reset << ".";
+  msg_Info() << Frame_Line{citation.str()};
   msg_Info() << Frame_Line{"                                                                            "};
-  msg_Info() << Frame_Line{"Users are kindly asked to refer to the documentation published under        "};
-  msg_Info() << Frame_Line{"SciPost Phys 7 (2019) 3, 034.                                               "};
+  msg_Info() << Frame_Line{"This program uses a lot of genuine and original research work by others.    "};
+  msg_Info() << Frame_Line{"Users are encouraged to also cite the various original publications.        "};
+  msg_Info() << Frame_Line{"                                                                            "};
   msg_Info() << Frame_Footer{};
   rpa->gen.PrintGitVersion(msg->Info(), shouldprintversioninfo);
   rpa->gen.AddCitation
