@@ -12,6 +12,7 @@ namespace AHADIC {
     std::vector<double> variation_weights;
     std::vector<double> tmp_variation_weights;
     double WeightFunction(const double & kt);
+    double Select_kt(const double ktmax);
     double Gaussian(const double, const double);
     double Erf(const double, const double);
   public:
@@ -28,7 +29,8 @@ namespace AHADIC {
     std::vector<double>& get_variationweights() {
       return variation_weights;
     };
-
+    void kt_accepted(double);
+    void kt_rejected(double);
     void accepted() {
       for(int i{0}; i<variation_weights.size(); ++i)
 	variation_weights[i] *= tmp_variation_weights[i];

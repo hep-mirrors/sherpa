@@ -56,13 +56,13 @@ Constituents::Constituents(bool diquarks, bool debug) :
     double sssup  = v_sssup[i];
     double sp1sup = v_sp1sup[i];
 
-    if(debug) {
-      sfrac  = v_sfrac[0];
-      bfrac  = v_bfrac[0];
-      qssup  = v_qssup[0];
-      sssup  = v_sssup[0];
-      sp1sup = v_sp1sup[0];
-    }
+    // if(debug) {
+    //   sfrac  = v_sfrac[0];
+    //   bfrac  = v_bfrac[0];
+    //   qssup  = v_qssup[0];
+    //   sssup  = v_sssup[0];
+    //   sp1sup = v_sp1sup[0];
+    // }
 
     total  = 2.*(2.*udfrac+sfrac);
     total += bfrac*ud0*(1.+2.*qssup+3.*sp1sup*(3.+2.*qssup+sssup));

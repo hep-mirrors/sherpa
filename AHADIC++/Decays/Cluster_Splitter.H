@@ -66,19 +66,19 @@ namespace AHADIC {
 	}
       }
 
-      // std::cout << "DEBUG: PROB: " << m_type[0] << " "
-      // 		<< m_nsplit << " "
-      // 		<< m_z[0] << " "
-      // 		<< tmp_variation_weights << " "
-      // 		<< variation_weights
-      // 		<< std::endl;
+      std::cout << "DEBUG: PROB: " << m_type[0] << " "
+		<< m_nsplit << " "
+		<< m_z[0] << " "
+		<< tmp_variation_weights << " "
+		<< variation_weights
+		<< std::endl;
 
-      // std::cout << "DEBUG: PROB: " << m_type[1] << " "
-      // 		<< m_nsplit << " "
-      // 		<< m_z[1] << " "
-      // 		<< tmp_variation_weights << " "
-      // 		<< variation_weights
-      // 		<< std::endl;
+      std::cout << "DEBUG: PROB: " << m_type[1] << " "
+		<< m_nsplit << " "
+		<< m_z[1] << " "
+		<< tmp_variation_weights << " "
+		<< variation_weights
+		<< std::endl;
 
       reset_var_weights();
     }

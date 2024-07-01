@@ -48,6 +48,18 @@ namespace AHADIC {
     void   accept_splitting() {
       for(int i{0}; i<variation_weights.size(); ++i)
 	variation_weights[i] *= tmp_variation_weights[i];
+      std::cout << "DEBUG: PROB: " << 21 << " "
+		<< 0 << " "
+		<< m_z[0] << " "
+		<< tmp_variation_weights << " "
+		<< variation_weights
+		<< std::endl;
+      std::cout << "DEBUG: PROB: " << 21 << " "
+		<< 1 << " "
+		<< m_z[1] << " "
+		<< tmp_variation_weights << " "
+		<< variation_weights
+		<< std::endl;
     }
 
     void reset_var_weights() {

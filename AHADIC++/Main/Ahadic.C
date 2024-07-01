@@ -119,8 +119,8 @@ Return_Value::code Ahadic::Hadronize(Blob_List * blobs)
   auto & wgtmap = (*blob)["WeightsMap"]->Get<Weights_Map>();
   const bool found {wgtmap.find("AHADIC") == wgtmap.end() ? false : true};
 
-  // std::cout << "DEBUG: TOTAL_WEIGHT "
-  // 	    << wgts_cluster << std::endl;
+  std::cout << "DEBUG: TOTAL_WEIGHT (";
+	    // << wgts_cluster << std::endl;
 
   if(wgts_cluster.size() == wgts_gluons.size() &&
      wgts_soft.size() == wgts_flavs.size()
@@ -136,6 +136,9 @@ Return_Value::code Ahadic::Hadronize(Blob_List * blobs)
       wgt*=wgts_flavs[i];
       wgt*=wgts_kt[i];
       wgt*=wgts_soft[i];
+      std::cout <<wgt;
+      if(i<wgts_cluster.size()-1)
+	std::cout <<",";
       if(i==0 && wgt != 1.0)
 	std::cout << "THIS SHOULD NOT HAPPEN " << wgt << std::endl;
       if(std::isnan(wgt)) {
@@ -176,7 +179,7 @@ Return_Value::code Ahadic::Hadronize(Blob_List * blobs)
     msg_Out()<<"Could not use AHADIC variations.\n";
     msg_Out()<<"Cluster and Gluon have differing number of variations\n";
   }
-
+  std::cout <<")" << std::endl;
   // Can probably be removed since already reset at the beginning
   // m_softclusters.reset_variationweights();
   // m_singletchecker.reset_variationweights();
