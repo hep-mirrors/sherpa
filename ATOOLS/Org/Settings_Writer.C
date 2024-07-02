@@ -33,7 +33,7 @@ void Settings_Writer::WriteSettings(Settings& s)
           [&keys](const std::pair<Settings_Keys,
                                   std::set<Settings::Defaults_Value>> &pair) {
             return keys.IsBeginningOf(pair.first) ||
-                   pair.first.EndsWithParentIndexFor(keys);
+                   pair.first.IsParentScopeOfItem(keys);
           });
 
       if (it == s.m_usedvalues.end()) {
@@ -86,7 +86,7 @@ void Settings_Writer::WriteSettings(Settings& s)
 
     // put all values for the table rows in `vals`, if a value has multiple
     // entries, then these are separated by "-- AND --"; begin with the defaults
-    vals.push_back(s.m_defaults[keysetpair.first.IndizesRemoved()]);
+    vals.push_back(s.m_defaults[keysetpair.first.IndicesRemoved()]);
 
     // replace defaults with file provided defaults in the case of
     // Decaydata.yaml, which is outside of user control
@@ -102,10 +102,15 @@ void Settings_Writer::WriteSettings(Settings& s)
     }
 
     // take into account other alternative defaults
-    const auto otherdefaultsit = s.m_otherscalardefaults.find(keysetpair.first.IndizesRemoved());
-    for (const auto& v : s.m_otherscalardefaults[keysetpair.first.IndizesRemoved()]) {
-      if (!vals.back().empty())
+    const auto otherdefaultsit = s.m_otherscalardefaults.find(keysetpair.first.IndicesRemoved());
+    for (const auto& v : s.m_otherscalardefaults[keysetpair.first.IndicesRemoved()]) {
+      if (!vals.back().empty()) {
+        if (vals.back().back() == String_Vector{v}) {
+          // do not add the same value more than once
+          continue;
+        }
         vals.back().push_back({"-- AND --"});
+      }
       vals.back().push_back({v});
     }
 
@@ -129,7 +134,9 @@ void Settings_Writer::WriteSettings(Settings& s)
     }
 
     if (iscustomised) {
-      vals.push_back(s.m_overrides[keysetpair.first.IndizesRemoved()]);
+      if (s.m_overrides.find(keysetpair.first.IndicesRemoved()) !=
+          s.m_overrides.end())
+        vals.push_back(s.m_overrides[keysetpair.first.IndicesRemoved()]);
       Settings_Keys keys{ keysetpair.first };
       for (auto it = s.m_yamlreaders.rbegin();
            it != s.m_yamlreaders.rend();
@@ -241,7 +248,7 @@ void Settings_Writer::WriteSettings(Settings& s)
        << " separated by an \"`-- AND --`\" line.\n\n";
 
   file << "| parameter | default value | override by SHERPA";
-  const auto files = s.GetConfigFiles();
+  const auto files = s.GetUserConfigFiles();
   for (const auto& f : files)
      file << " | " << f;
   file << " | command line | final value |\n";

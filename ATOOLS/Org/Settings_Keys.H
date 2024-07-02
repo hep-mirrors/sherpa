@@ -53,11 +53,11 @@ namespace ATOOLS {
 
     std::string Name() const;
 
-    std::vector<std::string> IndizesRemoved() const;
-    bool ContainsNoIndizes() const;
+    std::vector<std::string> IndicesRemoved() const;
+    bool ContainsNoIndices() const;
 
     bool IsBeginningOf(const Settings_Keys&) const;
-    bool EndsWithParentIndexFor(const Settings_Keys&) const;
+    bool IsParentScopeOfItem(const Settings_Keys&) const;
 
     friend std::ostream& operator<<(std::ostream&, const Settings_Keys&);
 

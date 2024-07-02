@@ -55,7 +55,7 @@ namespace EWSud {
     Coeff_Value lsZCoeff();
 
     /// calculate SSC l(s) coefficients
-    Coeff_Value lsLogROverSCoeffs(const Two_Leg_Indizes&);
+    Coeff_Value lsLogROverSCoeffs(const Two_Leg_Indices&);
 
     /// calculate l_C(s) coefficients
     Coeff_Value lsCCoeff();
