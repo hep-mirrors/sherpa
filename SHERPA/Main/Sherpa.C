@@ -389,11 +389,11 @@ void Sherpa::DrawLogo(const bool& shouldprintversioninfo)
   msg_Info() << Frame_Line{logo.str()}; logo.str("");
   logo << om::green << "                .----" << om::reset << "@@." << om::red << "   +" << om::reset << "#-";
   msg_Info() << Frame_Line{logo.str()}; logo.str("");
-  logo << om::green << "               .-----" << om::reset << "+@@." << om::red << " +**" << om::reset << "@-" << "        " << version.str();
+  logo << om::green << "               .-----" << om::reset << "+@@." << om::red << " +**" << om::reset << "@-" << "         " << version.str();
   msg_Info() << Frame_Line{logo.str()}; logo.str("");
   logo << om::blue  << "       :" << om::reset << "-" << om::green << "     .-------" << om::reset << "@@@" << om::red << "+***" << om::reset << "#@-";
   msg_Info() << Frame_Line{logo.str()}; logo.str("");
-  logo << om::blue  << "      :=" << om::reset << "#*" << om::green << "   .--------" << om::reset << "+@" << om::red << "+*****" << om::reset << "@@-" << "        Monte Carlo event generator";
+  logo << om::blue  << "      :=" << om::reset << "#*" << om::green << "   .--------" << om::reset << "+@" << om::red << "+*****" << om::reset << "@@-" << "       Monte Carlo event generator";
   msg_Info() << Frame_Line{logo.str()}; logo.str("");
   logo << om::blue  << "     :===" << om::reset << "@*" << om::green << " .----------" << om::red << "+******" << om::reset << "#@@-";
   msg_Info() << Frame_Line{logo.str()}; logo.str("");

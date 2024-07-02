@@ -1041,7 +1041,7 @@ $<IF:$<BOOL:${SHERPA_ENABLE_BINRELOC}>,#define ENABLE_BINRELOC \"1\",/* #undef E
 /* Sherpa version */\n\
 #define SHERPA_VERSION \"${SHERPA_VERSION_MAJOR}\"\n\n\
 /* Sherpa version name */\n\
-#define SHERPA_NAME \"Dhaulagiri\"\n\n\
+#define SHERPA_NAME \"Erebus\"\n\n\
 /* Sherpa version code */\n\
 #define SHERPA_VERSION_CODE ${SHERPA_VERSION_CODE}\n\n\
 /* Using colour */\n\
