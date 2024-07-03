@@ -244,7 +244,7 @@ endif()
 ########################################################################
 
 find_program(GIT NAMES git)
-if (GIT AND EXISTS ".git")
+if (GIT AND EXISTS "${CMAKE_SOURCE_DIR}/.git")
   execute_process(COMMAND ${GIT} rev-parse --abbrev-ref HEAD
                   WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
                   OUTPUT_VARIABLE GITURL
@@ -266,7 +266,7 @@ define_property(
   FULL_DOCS "Source files found by the sherpa_create_git_info macro go here"
 )
 macro(sherpa_create_git_info name)
-  if (GIT AND EXISTS ".git")
+  if (GIT AND EXISTS "${CMAKE_SOURCE_DIR}/.git")
     execute_process(COMMAND ${GIT} status -s --untracked-files=no .
                   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
                   OUTPUT_VARIABLE GITCLEAN
