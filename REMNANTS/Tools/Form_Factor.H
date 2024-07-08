@@ -11,6 +11,7 @@ namespace REMNANTS {
   private:
     ATOOLS::Flavour   m_flav;
     matter_form       m_form;
+    double m_GeV_fm;
     double m_fraction1, m_radius1, m_radius2, m_softexp;
 
     void SetDefaults(const ATOOLS::Flavour & flav);

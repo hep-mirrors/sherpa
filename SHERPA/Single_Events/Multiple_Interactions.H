@@ -29,13 +29,12 @@ namespace SHERPA {
     bool BeamsViable();
     bool ExtractISInfo(ATOOLS::Blob * blob);
     void SwitchPerturbativeInputsToMIs();
-    void ExtractMPIStartingConditions(ATOOLS::Blob * blob);
     bool CheckMIHandlers();
     bool CheckForMinBias();
     bool CheckForMPIs();
     bool CheckForRescatter();
     void FixMaxEnergies(const bool & updateResidualE=false);
-    bool TestHardScatter();
+    bool TestHardScatter(ATOOLS::Blob * blob);
     ATOOLS::Return_Value::code InitMinBias();
     bool                       InitMPIs();
     ATOOLS::Return_Value::code InitRescatter();

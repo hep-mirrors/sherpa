@@ -17,9 +17,9 @@ using namespace ATOOLS;
 
 Remnant_Handler::Remnant_Handler(PDF::ISR_Handler* isr, YFS::YFS_Handler *yfs,
                                  BEAM::Beam_Spectra_Handler* beam_handler,
-                                 const std::array<size_t, 2>& tags)
-    : m_id(isr->Id()), m_tags(tags), p_softblob(nullptr), m_check(true), m_output(false), m_fails(0)
-{
+		const std::array<size_t, 2>& tags)
+    : m_id(isr->Id()), m_tags(tags), p_softblob(nullptr), m_invGeV2fm(rpa->hBar()*rpa->c()*1.e12),
+  m_check(true), m_output(false), m_fails(0) {
   rempars = new Remnants_Parameters();
   rempars->Init();
   p_remnants = {nullptr, nullptr};
@@ -192,7 +192,7 @@ bool Remnant_Handler::ExtractShowerInitiators(Blob *const showerblob) {
   return true;
 }
 
-void Remnant_Handler::ConnectColours(ATOOLS::Blob *const showerblob) {
+bool Remnant_Handler::ConnectColours(ATOOLS::Blob *const showerblob) {
   // After each showering step, we try to compensate some of the colours.
   // In the absence of multiple parton interactions this will not involve
   // anything complicated with colours.  In each step, the shower initiators
@@ -202,7 +202,7 @@ void Remnant_Handler::ConnectColours(ATOOLS::Blob *const showerblob) {
   // of the shower initiators and, possibly, spectators will be added to a
   // stack which will in turn partially replace the new colours.  This is
   // handled in the Colour_Generator.
-  m_colours.ConnectColours(showerblob);
+  return m_colours.ConnectColours(showerblob);
 }
 
 Return_Value::code Remnant_Handler::MakeBeamBlobs(Blob_List* const bloblist,
@@ -303,26 +303,33 @@ bool Remnant_Handler::CheckBeamBreakup()
     if (!p_remnants[beam]->GetBlob()->MomentumConserved() ||
         !p_remnants[beam]->GetBlob()->CheckColour()) {
       ok = false;
-      if (m_output)
-        msg_Error() << "Error in " << METHOD << ": "
-                    << "colour or four-momentum not conserved in beamblob:\n"
-                    << (*p_remnants[beam]->GetBlob()) << "\n";
+      //if (m_output) {
+      msg_Error() << "Error in " << METHOD << ": "
+		  << "colour or four-momentum not conserved in softblob:\n"
+		  << (*p_remnants[beam]->GetBlob()) << "\n";
+      p_remnants[0]->Output();
+      p_remnants[1]->Output();
+      exit(1);
+      //}
     }
   }
-  if (!p_softblob)
-    return ok;
+  if (!p_softblob) return ok;
   if (!p_softblob->MomentumConserved() || !p_softblob->CheckColour()) {
     ok = false;
-    if (m_output)
+    if (m_output) {
       msg_Error() << "Error in " << METHOD << ": "
-                  << "colour or four-momentum not conserved in softblob:\n"
-                  << (*p_softblob) << "\n";
+		  << "colour or four-momentum not conserved in softblob:\n"
+		  << (*p_softblob) << "\n";
+      p_remnants[0]->Output();
+      p_remnants[1]->Output();
+      exit(1);
+    }
   }
   return ok;
 }
 
 void Remnant_Handler::SetImpactParameter(const double & b) {
-  Vec4D  pos = b/2.*Vec4D(0.,1.,0.,0.);
+  Vec4D  pos = (b*m_invGeV2fm)/2. * Vec4D(0.,1.,0.,0.);
   for (size_t i=0;i<2;i++) p_remnants[i]->SetPosition((i==0?1.:-1.) * pos);
 }
 

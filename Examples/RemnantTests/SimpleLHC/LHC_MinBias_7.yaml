@@ -9,30 +9,31 @@ BEAM_ENERGIES:    3500
 EVENT_TYPE:          MinimumBias
 ME_GENERATORS:       None
 SOFT_COLLISIONS:     Amisic
+FRAGMENTATION:       Ahadic
+
 
 AMISIC:
   PT_0:              2.05
   PT_Min:            2.25
   MU_R_FACTOR:       0.5
   MU_F_FACTOR:       1.0
-  nPT_bins:          20
-  nB_bins:           10  # only relevant for x_Dependent_Gaussian
+  nB_bins:           50  # only relevant for x_Dependent_Gaussian
 
 REMNANTS:
   2212:
-    MATTER_FORM:        x_Dependent_Gaussian # Single_Gaussian  # 
+    MATTER_FORM:        Double_Gaussian # x_Dependent_Gaussian # 
     MATTER_RADIUS_1:    0.86;
     MATTER_RADIUS_2:    0.35;
     MATTER_FRACTION_1:  0.5;
 
 
 COLOUR_RECONNECTIONS:
-  MODE:        On
+  MODE:        Off
 
 ANALYSIS: Rivet
 RIVET:
   --analyses: [ATLAS_2010_S8918562, ATLAS_2011_S8994773, ATLAS_2012_I1084540, TOTEM_2012_I1115294, CMS_2011_S8978280, CMS_2011_S9120041, CMS_2011_S9215166]
 
 # ATLAS_2010_S8894728, 
-ANALYSIS_OUTPUT: xDep
+ANALYSIS_OUTPUT: Double2
 

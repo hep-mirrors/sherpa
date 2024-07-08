@@ -76,7 +76,7 @@ Soft_Collision_Handler::GenerateMinimumBiasEvent(ATOOLS::Blob_List* blobs)
     outcome = p_shrimps->InitMinBiasEvent(blobs);
     break;
   case scmode::amisic:
-    outcome = p_amisic->InitMinBiasEvent();
+    outcome = p_amisic->InitMinBiasEvent(blobs);
     break;
   case scmode::none:
     outcome = 0;
@@ -113,6 +113,7 @@ Soft_Collision_Handler::GenerateBunchRescatter(ATOOLS::Blob_List * blobs) {
   Blob * soft;
   switch (outcome) {
   case 1:
+    msg_Out()<<"WTF?\n"; exit(1);
     soft = new Blob();
     soft->SetType(btp::Soft_Collision);
     soft->AddStatus(blob_status::needs_beamRescatter);

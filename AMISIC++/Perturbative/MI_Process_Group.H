@@ -17,7 +17,7 @@ namespace AMISIC {
     std::string        m_name;
     scale_scheme       m_muR_scheme;
     double             m_muR_fac, m_muF_fac;
-    double             m_lastxs, m_pt02, m_scale, m_pref;
+    double             m_lastxs, m_pt02, m_shat, m_that, m_uhat, m_scale, m_pref;
 
     MODEL::One_Running_AlphaS * p_alphaS;
     MODEL::Running_AlphaQED * p_alpha;
@@ -28,8 +28,7 @@ namespace AMISIC {
 
     virtual double Coupling() const=0;
     virtual double SoftCorrection(const double & pt2) const;
-    virtual void   PreCalculate(const double & shat,const double & that,
-				const double & uhat);
+    virtual void   PreCalculate();
   public:
     MI_Process_Group(const std::string & name);
     virtual ~MI_Process_Group();

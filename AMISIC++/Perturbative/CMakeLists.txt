@@ -4,8 +4,7 @@ set(Perturbative_SOURCES Single_Collision_Handler.C
                          MI_Process.C
                          MI_Integrator.C
                          QCD_Processes.C
-                         QED_Processes.C
-                         Sudakov_Argument.C)
+                         QED_Processes.C)
 
 set(Perturbative_HEADERS Single_Collision_Handler.H
                          MI_Processes.H
@@ -13,8 +12,7 @@ set(Perturbative_HEADERS Single_Collision_Handler.H
                          MI_Process.H
                          MI_Integrator.H
                          QCD_Processes.H
-                         QED_Processes.H
-                         Sudakov_Argument.H)
+                         QED_Processes.H)
 
 sherpa_create_git_info(Perturbative)
  

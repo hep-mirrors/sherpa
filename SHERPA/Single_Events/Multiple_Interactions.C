@@ -44,7 +44,8 @@ std::string Multiple_Interactions::MakeNameSpec() {
 bool Multiple_Interactions::CheckMIHandlers() {
   for (MI_Handler_Map::iterator mihit=p_mihandlers->begin();
        mihit!=p_mihandlers->end();mihit++) {
-    if (mihit->second->Type()!=0) {
+    if (mihit->second->Generator()!=MI_Handler::genID::none &&
+	mihit->second->Generator()!=MI_Handler::genID::unknown) {
       for (size_t i=0;i<2;i++) {
 	if (mihit->second->Remnants()->GetRemnant(i)==NULL) return false;
       }
@@ -61,10 +62,21 @@ bool Multiple_Interactions::CheckForMinBias() {
   if (p_bloblist->empty()) THROW(fatal_error, "Empty bloblist - this is odd.");
   if (p_bloblist->size()==1) {
     Blob * signal = (*p_bloblist)[0];
-    if (signal->Type()==ATOOLS::btp::Soft_Collision &&
-	signal->Has(ATOOLS::blob_status::needs_minBias)) return true;
+    if (signal->Has(ATOOLS::blob_status::needs_minBias) &&
+	signal->Type()==ATOOLS::btp::Soft_Collision) return true;
   }
   return false;
+}
+
+bool Multiple_Interactions::CheckForMPIs() {
+  ////////////////////////////////////////////////////////////////////////////
+  // In MPI events we need a signal event that has already been filled.
+  // We check for stray blobs that need still need showering later.
+  ////////////////////////////////////////////////////////////////////////////
+  if (p_bloblist->empty()) THROW(fatal_error,"Empty bloblist - this is odd.");
+  if (!m_newevent[0]) return false;
+  Blob * blob = p_bloblist->FindFirst(btp::Signal_Process);
+  return (blob && !blob->Has(blob_status::needs_signal));
 }
 
 Return_Value::code Multiple_Interactions::InitMinBias() {
@@ -91,7 +103,7 @@ Return_Value::code Multiple_Interactions::InitMinBias() {
   // delete the former, and inform the remnants about the impact parameter
   // of the collision
   ////////////////////////////////////////////////////////////////////////////
-  p_lastblob = p_activeMI->GenerateHardProcess(true);
+  p_lastblob = p_activeMI->GenerateHardProcess(MI_Handler::typeID::minbias,signal);
   if (p_lastblob) {
     Blob * signal         = (*p_bloblist)[0];
     Particle_Vector * ins = p_lastblob->InParticles();
@@ -120,23 +132,14 @@ Return_Value::code Multiple_Interactions::InitMinBias() {
     delete p_lastblob;
     p_activeMI->Remnants()->SetImpactParameter(p_activeMI->ImpactParameter());
     m_newevent[0] = false;
+    //msg_Out()<<"=== "<<METHOD<<"(2) keeps |"<<signal<<"|, "<<Blob::Counter<<"\n";
     return Return_Value::Success;
   }
   ////////////////////////////////////////////////////////////////////////////
   // No meaningful first scatter in MinBias event produced - ask for new event
   ////////////////////////////////////////////////////////////////////////////
+  //msg_Out()<<"\n=== "<<METHOD<<" new event for |"<<signal<<"|\n"; exit(1);
   return Return_Value::New_Event;
-}
-
-bool Multiple_Interactions::CheckForMPIs() {
-  ////////////////////////////////////////////////////////////////////////////
-  // In MPI events we need a signal event that has already been filled.
-  // We check for stray blobs that need still need showering later.
-  ////////////////////////////////////////////////////////////////////////////
-  if (p_bloblist->empty()) THROW(fatal_error,"Empty bloblist - this is odd.");
-  if (!m_newevent[0]) return false;
-  Blob * blob = p_bloblist->FindFirst(btp::Signal_Process);
-  return (blob && !blob->Has(blob_status::needs_signal));
 }
 
 bool Multiple_Interactions::InitMPIs() {
@@ -145,6 +148,7 @@ bool Multiple_Interactions::InitMPIs() {
   ////////////////////////////////////////////////////////////////////////////
   if (!m_newevent[0] ||
       p_mihandlers->find(PDF::isr::hard_subprocess)==p_mihandlers->end() ||
+      (*p_mihandlers)[PDF::isr::hard_subprocess]->IsMinBias() ||
       !(*p_mihandlers)[PDF::isr::hard_subprocess]->On()) {
     m_newevent[0] = false;
     return false;
@@ -157,43 +161,18 @@ bool Multiple_Interactions::InitMPIs() {
   p_activeMI = (*p_mihandlers)[PDF::isr::hard_subprocess];
   FixMaxEnergies();
   SwitchPerturbativeInputsToMIs();
-  Blob * blob = p_bloblist->FindFirst(btp::Signal_Process);
-  ExtractMPIStartingConditions(blob);
-  p_activeMI->InitialiseMPIs(m_ptmax_fac*m_ptmax,m_x[0],m_x[1],m_scale);
-  blob->SetPosition(p_activeMI->SelectPositionForScatter());
-  Blob * showerblob = blob->OutParticle(0)->DecayBlob();
-  if (showerblob) showerblob->SetPosition(p_activeMI->SelectPositionForScatter());
-  p_activeMI->Remnants()->SetImpactParameter(p_activeMI->ImpactParameter());
-  m_newevent[0] = false;
-  return true;
-}
-
-void Multiple_Interactions::ExtractMPIStartingConditions(ATOOLS::Blob * blob) {
-  ////////////////////////////////////////////////////////////////////////////
-  // Extracting relevant information to start MPIs from the *** first ***
-  // signal blob in the event (I assume we will be able to produce hard DPIs):
-  // m_ptmax  = maximal pt allowed for the MPIs (possibly modified by external
-  //            factor): Trivially the factorization scale - plus the
-  //	        renormalization scale if the two do not coincide.
-  // m_x[0,1] = Bjorken-x of the two incoming particles.
-  // m_scale  = factorisation scale of the process.
-  // The latter two are used if we have x (and scale)-dependent hadron radii.
-  ////////////////////////////////////////////////////////////////////////////
-  Blob_Data_Base * facinfo = (*blob)["Factorization_Scale"];
-  Blob_Data_Base * reninfo = (*blob)["Renormalization_Scale"];
-  if (facinfo==NULL || reninfo==NULL)
-    THROW(fatal_error,"No starting scale info in signal blob");
-  double ptfac = sqrt(facinfo->Get<double>());
-  double ptren = sqrt(reninfo->Get<double>());
-  m_ptmax = ptfac+(!IsZero(ptfac-ptren)?ptren:0.);
-  m_scale = ptfac;
-  for (size_t i=0;i<2;i++) {
-    m_x[i] = ( blob->InParticle(i)->Momentum()[0]/
-	       p_activeMI->Remnants()->GetRemnant(i)->GetBeam()
-	       ->InMomentum()[0] );
+  Blob * signal = p_bloblist->FindFirst(btp::Signal_Process);
+  //msg_Out()<<"\n=== "<<METHOD<<" starts with |"<<signal<<"|, "<<Blob::Counter<<"\n";
+  if (p_activeMI->GenerateHardProcess(MI_Handler::typeID::MPI,signal)) {
+    p_activeMI->Remnants()->SetImpactParameter(p_activeMI->ImpactParameter());
+    Blob * shower = signal->OutParticle(0)->DecayBlob();
+    if (shower) shower->SetPosition(signal->Position());
+    m_newevent[0] = false;
+    //msg_Out()<<"\n=== "<<METHOD<<" successful for |"<<signal<<"|, "<<Blob::Counter<<"\n";
+    return true;
   }
+  return false;
 }
-
 
 bool Multiple_Interactions::CheckForRescatter() {
   ////////////////////////////////////////////////////////////////////////////
@@ -226,44 +205,17 @@ ATOOLS::Return_Value::code Multiple_Interactions::InitRescatter() {
   // scatter blob into soft collision blob, add required information to the
   // latter, delete the former.  If no scatter found, delete soft blob.
   ////////////////////////////////////////////////////////////////////////////
-  Blob * blob = p_bloblist->FindLast(ATOOLS::btp::Soft_Collision);
-  p_lastblob  = p_activeMI->GenerateHardProcess();
-  if (p_lastblob && m_bbr_veto) {
-    delete p_lastblob;
-    return Return_Value::New_Event;
-  }
-  if (p_lastblob) {
-    Particle_Vector * ins = p_lastblob->InParticles();
-    while (!ins->empty()) {
-      blob->AddToInParticles(p_lastblob->RemoveInParticle(ins->back()));
-    }
-    Particle_Vector * outs = p_lastblob->OutParticles();
-    while (!outs->empty()) {
-      blob->AddToOutParticles(p_lastblob->RemoveOutParticle(outs->back()));
-    }
-    blob->SetStatus(blob_status::code(p_lastblob->Status()) |
-		    blob_status::needs_beamRescatter);
-    blob->SetType(p_lastblob->Type());
-    blob->SetId(p_lastblob->Id());
-    blob->SetTypeSpec(p_lastblob->TypeSpec());
-    blob->SetPosition(p_lastblob->Position());
-    blob->AddData("Renormalization_Scale",
-		    new Blob_Data<double>((*p_lastblob)["Renormalization_Scale"]
-					  ->Get<double>()));
-    blob->AddData("Factorization_Scale",
-		    new Blob_Data<double>((*p_lastblob)["Factorization_Scale"]
-					  ->Get<double>()));
-    blob->AddData("Resummation_Scale",
-		    new Blob_Data<double>((*p_lastblob)["Resummation_Scale"]
-					  ->Get<double>()));
-    delete p_lastblob;
+  Blob * soft = p_bloblist->FindLast(ATOOLS::btp::Soft_Collision);
+  if (p_activeMI->GenerateHardProcess(MI_Handler::typeID::rescatter,soft)) {
+    if (m_bbr_veto) return Return_Value::New_Event;
     m_newevent[0] = m_newevent[1] = false;
     return Return_Value::Success;
   }
   ////////////////////////////////////////////////////////////////////////////
   // No meaningful first scatter in MinBias event produced - ask for new event
   ////////////////////////////////////////////////////////////////////////////
-  p_bloblist->Delete(blob);
+  //msg_Out()<<"=== "<<METHOD<<" deletes |"<<soft<<"|\n";
+  p_bloblist->Delete(soft);
   return Return_Value::Nothing;
 }
 
@@ -304,11 +256,11 @@ void Multiple_Interactions::SwitchPerturbativeInputsToMIs() {
 
 Return_Value::code Multiple_Interactions::Treat(Blob_List *bloblist) {
   ////////////////////////////////////////////////////////////////////////////
-  // Check for - and if necessary initialise - Minimum Bias, bunch rescattering,
-  // and MPIs.  Return nothing if there is no suitable MI_Handler left.
-  // The initialisation will either lead to a first blob to be copied into the
-  // signal (MinBias) or the definition of suitable starting conditions, impact
-  // parameters etc. (MPIs and Rescattering).
+  // Check for - and if necessary initialise - Minimum Bias, bunch
+  // rescattering, and MPIs.  Return nothing if there is no suitable
+  // MI_Handler left.  The initialisation will either lead to a first blob
+  // to be copied into the signal (MinBias) or the definition of suitable
+  // starting conditions, impact parameters etc. (MPIs and Rescattering).
   ////////////////////////////////////////////////////////////////////////////
   p_bloblist = bloblist;
   if (CheckForMinBias())                 return InitMinBias();
@@ -330,44 +282,60 @@ Return_Value::code Multiple_Interactions::Treat(Blob_List *bloblist) {
   ////////////////////////////////////////////////////////////////////////////
   Blob * lastShower = p_bloblist->FindLast(btp::Shower);
   if (lastShower && lastShower->Has(blob_status::needs_beams)) {
-    p_activeMI->ConnectColours(p_bloblist->FindLast(btp::Shower));
+    if (!p_activeMI->ConnectColours(p_bloblist->FindLast(btp::Shower)))
+      return Return_Value::New_Event;
   }
   ////////////////////////////////////////////////////////////////////////////
   // Try to produce a hard scattering blob and test if this works.
   ////////////////////////////////////////////////////////////////////////////
-  p_lastblob = p_activeMI->GenerateHardProcess();
-  if (p_lastblob) {
+  //msg_Out()<<"\n=== "<<METHOD<<": trying to add hard process to "
+  //<<Blob::Counter()<<"/"<<Particle::Counter()<<".\n";
+  Blob * blob = new Blob();
+  //msg_Out()<<"=== "<<METHOD<<": inits |"<<blob<<"|, "
+  //<<Blob::Counter()<<"/"<<Particle::Counter()<<".\n";
+  if (p_activeMI->GenerateHardProcess(MI_Handler::typeID::MPI,blob)) {
+    //msg_Out()<<"=== "<<METHOD<<": before test for |"<<blob<<"|.\n";
     //////////////////////////////////////////////////////////////////////////
     // Check that the partons can be extracted from remnant - mainly a
     // confirmation that the remnant has enough energy to accommodate
     // the extra parton.
     //////////////////////////////////////////////////////////////////////////
-    if (!TestHardScatter()) {
-      delete p_lastblob;
+    if (!TestHardScatter(blob)) {
+      delete blob;
+      //msg_Out()<<"=== "<<METHOD<<"(fail) deletes |"<<blob<<"|, now "
+      //<<Blob::Counter()<<"/"<<Particle::Counter()<<"\n";
       return Return_Value::Retry_Event;
     }
+    //msg_Out()<<"=== "<<METHOD<<": past test, rescatter = "
+    //	     <<(p_activeMI->Id()==PDF::isr::bunch_rescatter)<<"\n";
     if (p_activeMI->Id()==PDF::isr::bunch_rescatter)
-      p_lastblob->AddStatus(blob_status::needs_beamRescatter);
-    p_bloblist->push_back(p_lastblob);
+      blob->AddStatus(blob_status::needs_beamRescatter);
+    p_bloblist->push_back(blob);
+    //msg_Out()<<"=== "<<METHOD<<" adds |"<<blob<<"| to event, now "
+    //<<Blob::Counter()<<"/"<<Particle::Counter()<<"\n";
     return Return_Value::Success;
   }
   //////////////////////////////////////////////////////////////////////////
   // If we have reached the end of MPI production with a meaningful event,
   // we can stop here.
   //////////////////////////////////////////////////////////////////////////
-  if (p_activeMI->Done()) return Return_Value::Nothing;
+  else if (p_activeMI->Done()) {
+    delete blob;
+    //msg_Out()<<"=== "<<METHOD<<"(done) deletes |"<<blob<<"|, now "
+    //<<Blob::Counter()<<"/"<<Particle::Counter()<<"\n";
+    return Return_Value::Nothing;
+  }
   //////////////////////////////////////////////////////////////////////////
-  // If it is a MinBias event where the event handler didn't manage to produce a
-  // first scatter (i.e. the first blob still needs a signal) then we have to
-  // produce a new event.
+  // If it is a MinBias event where the event handler didn't manage to
+  // produce a first scatter (i.e. the first blob still needs a signal).
   //////////////////////////////////////////////////////////////////////////
   return Return_Value::New_Event;
 }
 
-bool Multiple_Interactions::TestHardScatter() {
-  for (size_t i=0;i<(size_t)p_lastblob->NInP();++i) {
+bool Multiple_Interactions::TestHardScatter(Blob * blob) {
+  for (size_t i=0;i<(size_t)blob->NInP();++i) {
     if (!p_activeMI->Remnants()->GetRemnant(i)->
-	TestExtract(p_lastblob->InParticle(i))) {
+	TestExtract(blob->InParticle(i))) {
       return false;
     }
   }

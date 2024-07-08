@@ -52,7 +52,7 @@ namespace REMNANTS {
     ~Colour_Generator() = default;
 
     void Initialize(Remnant_Handler * remnants);
-    void ConnectColours(ATOOLS::Blob *const showerblob);
+    bool ConnectColours(ATOOLS::Blob *const showerblob);
     void AddColour(const size_t& beam, const size_t& pos,
                    ATOOLS::Particle* part);
     int  NextColour(const size_t& beam, const size_t& pos);

@@ -3,6 +3,8 @@
 
 #include "AMISIC++/Perturbative/MI_Processes.H"
 #include "AMISIC++/Tools/Over_Estimator.H"
+#include "AMISIC++/Tools/Interaction_Probability.H"
+#include "AMISIC++/Tools/Matter_Overlap.H"
 #include "AMISIC++/Tools/NonPerturbative_XSecs.H"
 #include "ATOOLS/Phys/Blob.H"
 #include "ATOOLS/Math/Histogram.H"
@@ -14,18 +16,22 @@ namespace AMISIC {
   private:
     evt_type::code m_evttype;
     std::array<std::shared_ptr<REMNANTS::Remnant_Base>, 2> p_remnants;
-    MI_Processes                          * p_processes;
-    MI_Integrator                         * p_integrator;
-    Hadronic_XSec_Calculator              * p_xsecs;
-    Over_Estimator                        * p_overestimator;
-    NonPerturbative_XSecs                 * p_soft;
+    MI_Processes             * p_processes;
+    MI_Integrator            * p_integrator;
+    Hadronic_XSec_Calculator * p_xsecs;
+    Over_Estimator           * p_overestimator;
+    Interaction_Probability  * p_pint;
+    NonPerturbative_XSecs    * p_soft;
 
-    MI_Process      * p_proc;
-    double            m_pt2, m_pt2min;
-    double            m_S, m_lastpt2, m_residualx1, m_residualx2, m_Ycms;
-    double            m_xt, m_ymax, m_yvol, m_y3, m_y4;
-    double            m_shat, m_that, m_uhat, m_x1, m_x2, m_muf2, m_mur2;
+    MI_Process * p_proc;
+    double       m_pt2, m_pt2min, m_b, m_bfac, m_fb;
+    double       m_S, m_lastpt2, m_residualx1, m_residualx2, m_Ycms;
+    bool         m_done;
     std::list<ATOOLS::Blob *> m_prefabs;
+
+    double MakeHardScatterBlob(ATOOLS::Blob * blob);
+    bool   SelectPT2();
+    void   CopyPrefabricatedBlob(ATOOLS::Blob * blob);
 
     bool m_ana;
     std::map<std::string, ATOOLS::Histogram*> m_histos;
@@ -34,18 +40,21 @@ namespace AMISIC {
     void AnalyseWeight(const double & weight);
     void Analyse(const double & pt2,ATOOLS::Blob * blob);
 
-    bool SelectPT2();
   public:
     Single_Collision_Handler();
     ~Single_Collision_Handler();
 
     void Init(
-	      MI_Processes * processes, Over_Estimator * overestimator);
+	      MI_Processes * processes, Over_Estimator * overestimator,
+	      Interaction_Probability * pint,Matter_Overlap * overlap);
     void Init(REMNANTS::Remnant_Handler * remnant_handler,
 	      NonPerturbative_XSecs * soft);
     void UpdateSandY(double s, double y);
-    void PrefabricateBlob();
-    ATOOLS::Blob * NextScatter(const bool & force);
+    void Reset();
+    bool PrefabricateBlob();
+    bool FirstMinBiasScatter(ATOOLS::Blob * first);
+    bool FirstMPI(ATOOLS::Blob * signal);
+    bool NextScatter(ATOOLS::Blob * blob);
 
     inline void SetResidualX(const double & E1, const double & E2) {
       m_residualx1 = E1/InMomentum(0)[0];
@@ -58,6 +67,7 @@ namespace AMISIC {
     inline void SetPosition(const size_t & beam,const ATOOLS::Vec4D & pos) {
       p_remnants[beam]->SetPosition(pos);
     }
+    inline void SetDone(const bool & done) { m_done = done; }
     inline void AddPrefabricatedBlob(ATOOLS::Blob * blob) {
       m_prefabs.push_back(blob);
     }
@@ -67,16 +77,11 @@ namespace AMISIC {
     inline ATOOLS::Vec4D InMomentum(const size_t & beam) const {
       return p_remnants[beam]->InMomentum();
     }
-    inline const double B() const {
-      return sqrt(ATOOLS::dabs((p_remnants[0]->Position()-
-				p_remnants[1]->Position()).Abs2()));
-    }
-    inline const double & muF2()    const { return m_muf2; }
-    inline const double&  muR2() const { return m_mur2; }
+    inline const double & B()       const { return m_b; }
+    inline const double & BFac()    const { return m_bfac; }
     inline const double & LastPT2() const { return m_lastpt2; }
     inline const double & PT2()     const { return m_pt2; }
-    inline const double & Y3()      const { return m_y3; }
-    inline const double & Y4()      const { return m_y4; }
+    inline const bool   & Done()    const { return m_done; }
 
     void Test(const double & Q2,const long int & n);
   };

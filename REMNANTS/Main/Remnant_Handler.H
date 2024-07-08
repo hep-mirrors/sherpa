@@ -41,7 +41,8 @@ namespace REMNANTS {
 
     std::set<ATOOLS::Blob *> m_treatedshowerblobs;
 
-    bool m_check, m_output;
+    double   m_invGeV2fm;
+    bool     m_check, m_output;
     long int m_fails;
 
     void InitializeRemnants(PDF::ISR_Handler* isr,YFS::YFS_Handler *yfs,
@@ -64,7 +65,7 @@ namespace REMNANTS {
 
     bool ExtractShowerInitiators(ATOOLS::Blob *const showerblob);
     bool Extract(ATOOLS::Particle * part,const unsigned int beam);
-    void ConnectColours(ATOOLS::Blob *const showerblob);
+    bool ConnectColours(ATOOLS::Blob *const showerblob);
     void Reset();
 
     ATOOLS::Return_Value::code MakeBeamBlobs(ATOOLS::Blob_List* const blobs,

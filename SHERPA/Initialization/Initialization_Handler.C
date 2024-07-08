@@ -1106,7 +1106,12 @@ bool Initialization_Handler::InitializeTheUnderlyingEvents()
   for (isr::id id : isrtypes) {
     MI_Handler * mih = m_mihandlers[id];
     msg_Info() << "    MI[" << id << "]: on = " << mih->On() << " "
-               << "(type = " << mih->Type() << ", " << mih->Name() << ")\n";
+               << "(type = " ;
+    if (mih->Generator()==MI_Handler::genID::none)         msg_Out()<<"None, ";
+    else if ( mih->Generator()==MI_Handler::genID::amisic)  msg_Out()<<"Amisic, ";
+    else if (mih->Generator()==MI_Handler::genID::shrimps) msg_Out()<<"Shrimps, ";
+    else                                       msg_Out()<<"Unkown, ";
+    msg_Info() <<  mih->Name() << ")\n";
   }
   return true;
 }

@@ -2,6 +2,7 @@
 #include "AMISIC++/Tools/MI_Parameters.H"
 #include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Math/Gauss_Integrator.H"
+#include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/Exception.H"
 
@@ -41,7 +42,7 @@ Matter_Overlap::Matter_Overlap() :
   // distributions of the hadron form factors ~pi^{-3/2} times the pi^2 from
   // the time-integrated overlap when they collide.
   ///////////////////////////////////////////////////////////////////////////
-  m_norm(1./M_PI)
+  m_norm(1./M_PI), m_invGeV2fm(rpa->hBar()*rpa->c()*1.e12)
 {
   ///////////////////////////////////////////////////////////////////////////
   // This is a default initialization of default values.  Apart from the
@@ -56,25 +57,10 @@ Matter_Overlap::Matter_Overlap() :
     m_rnorm[i]    = (i==0) ? 1./m_radius2[i] : 0.;
     m_fraction[i] = (i==0) ? 1. : 0.;
   }
-  m_maxradius  = m_radius[0]; m_maxradius2 = sqr(m_maxradius);
+  m_maxradius  = m_radius[0];
 }
 
 Matter_Overlap::~Matter_Overlap() { if (p_bbins) delete p_bbins; }
-
-void Matter_Overlap::Initialize(Remnant_Handler * const rh,
-				PDF::ISR_Handler * const isr) {
-  for (size_t i=0;i<2;i++) {
-    p_ffs[i]  = rh->GetFormFactor(i);
-    m_form[i] = p_ffs[i]->GetForm();
-  }
-  InitializeFFParams(isr);
-  Output(CalculateIntegral());
-  p_bbins = ( m_dynamic ?
-	      new axis(size_t((*mipars)("nB_bins")), 0., m_bmax,
-		       axis_mode::linear) :
-	      nullptr );
-
-}
 
 double Matter_Overlap::operator()(double b) {
   ///////////////////////////////////////////////////////////////////////////
@@ -83,12 +69,16 @@ double Matter_Overlap::operator()(double b) {
   ///////////////////////////////////////////////////////////////////////////
   double b2 = b*b; 
   if (m_dynamic || (m_form[0]==matter_form::single_gaussian &&
-		    m_form[1]==matter_form::single_gaussian ))
-    return m_norm * m_rnorm[0] * exp(-b2/m_radius2[0]);
+		    m_form[1]==matter_form::single_gaussian )) {
+    double effradius2 = ( sqr(m_kradius) *
+			  (m_dynamic ? m_dynradius2 : m_radius2[0]) ); 
+    return m_norm/effradius2 * exp(-b2/effradius2);
+  }
   double result = 0.;
   for (size_t i=0;i<4;i++)
-    result += (m_rnorm[i]>0) ? m_rnorm[i] * exp(-b2/m_radius2[i]) : 0.;
-  return m_norm * result;
+    result += ( (m_rnorm[i]<=0.) ? 0. :
+		m_rnorm[i] * exp(-b2/(sqr(m_kradius)* m_radius2[i])) );
+  return m_norm/sqr(m_kradius) * result;
 }
 
 double Matter_Overlap::MaxValue(const double & b) {
@@ -98,38 +88,59 @@ double Matter_Overlap::MaxValue(const double & b) {
   // with R_max^2 = R_{max,1}^2 + R_{max,2}^2.
   ///////////////////////////////////////////////////////////////////////////
   if (!m_dynamic) return (*this)(b);
-  return ( m_norm / (sqr(p_ffs[0]->Radius1())+sqr(p_ffs[1]->Radius1())) *
-	   exp(-sqr(b)/m_maxradius2) );
+  return ( m_norm/(sqr(m_kradius*m_fixradius))*
+	   exp(-sqr(b/(m_kradius*m_maxradius)) ));
 }
 
-double Matter_Overlap::SelectB(const bool & mode) const {
+double Matter_Overlap::SelectB() const {
   ///////////////////////////////////////////////////////////////////////////
   // Algorithm:
   // 1. select a radius R according to matter content:
   // 2. Select b according to d^2b O(b) = d b^2 exp(-b^2/R^2).
   ///////////////////////////////////////////////////////////////////////////
-  double b, radius, rand = ran->Get();
-  for (size_t i=3;i>=0;i--) {
-    rand -= m_fraction[i];
-    if (rand<=0.) { radius =m_radius[i]; break; }
+  double radius = m_radius[0], b=0.;
+  if (m_dynamic) radius = sqrt(m_dynradius2);
+  else {
+    double rand = ran->Get();
+    for (size_t i=3;i>=0;i--) {
+      rand -= m_fraction[i];
+      if (rand<=1.e-6) { radius = m_radius[i]; break; }
+    }
   }
-  b = sqrt(-log(Max(1.e-12,ran->Get())))*radius;
+  do { b = sqrt(-log(Max(1.e-12,ran->Get())))*radius; } while(b>=m_bmax);
   return b;
 }
 
-Vec4D Matter_Overlap::SelectPositionForScatter(const double & B) const {
+Vec4D Matter_Overlap::
+SelectPositionForScatter(const double & B,
+			 const double & x0, const double & Q20,
+			 const double & x1, const double & Q21) const {
   ///////////////////////////////////////////////////////////////////////////
   // 
   ///////////////////////////////////////////////////////////////////////////
-  double b[2], cosphi2;
+  double b0, b1, cosphi2;
   size_t trials = 0;
   do {
-    for (size_t i=0;i<2;i++) b[i] = p_ffs[i]->B();
-    cosphi2 = (sqr(b[0])-sqr(b[1])-sqr(B))/(2.*b[1]*B);
+    b0      = p_ffs[0]->B(x0,Q20);
+    b1      = p_ffs[1]->B(x1,Q21);
+    cosphi2 = (sqr(b0)-sqr(b1)-sqr(B))/(2.*b1*B);
   } while ( (cosphi2>1. || cosphi2<-1.) && (++trials)<10000);
-  if (trials>=9999) { b[1] = B/2.; cosphi2 = -1.; }
+  if (trials>=9999) { b1 = B/2.; cosphi2 = -1.; }
   double sinphi2 = (ran->Get()>0.5?-1.:1.)*sqrt(1.-sqr(cosphi2));
-  return Vec4D(0.,B/2.+b[1]*cosphi2,b[1]*sinphi2,0.);
+  return m_invGeV2fm*Vec4D(0.,B/2.+b1*cosphi2,b1*sinphi2,0.);
+}
+
+void Matter_Overlap::Initialize(Remnant_Handler * const rh,
+				PDF::ISR_Handler * const isr) {
+  for (size_t i=0;i<2;i++) {
+    p_ffs[i]  = rh->GetFormFactor(i);
+    m_form[i] = p_ffs[i]->GetForm();
+  }
+  InitializeFFParams(isr);
+  Output(CalculateIntegral());
+  size_t nbins = size_t((*mipars)("nB_bins"));
+  double bmin  = 0.001*m_radius[0];
+  p_bbins = new axis(nbins, bmin, m_bmax, axis_mode::log);
 }
 
 void Matter_Overlap::InitializeFFParams(PDF::ISR_Handler * const isr) {
@@ -169,7 +180,8 @@ void Matter_Overlap::InitializeStaticFFParams() {
     for (size_t j=0;j<2;j++)
       radius[i][j] = ( j==0 ? p_ffs[i]->Radius1() : p_ffs[i]->Radius2() );
   }
-  double minR = 1.e6;
+  double minR  = 1.e6;
+  m_fixradius = 0.;
   for (size_t i=0;i<2;i++) {
     for (size_t j=0;j<2;j++) {
       m_fraction[2*i+j] = ( (i==0 ? fraction[i] : 1.-fraction[i] ) *
@@ -178,9 +190,12 @@ void Matter_Overlap::InitializeStaticFFParams() {
       m_radius[2*i+j]   = sqrt(m_radius2[2*i+j]);
       m_rnorm[2*i+j]    = ( radius[0][i] > 0. && radius[1][j]>0. ?
 			    m_fraction[2*i+j]/m_radius2[2*i+j] : 0. );
+      if (m_rnorm[2*i+j]<=0.) continue;
       if (m_radius[2*i+j] < minR && m_radius[2*i+j]>0.) minR = m_radius[2*i+j];
+      if (m_fixradius < m_radius[2*i+j]) m_fixradius = m_radius[2*i+j]; 
     }
   }
+  m_dynradius2 = m_radius2[0];
   m_bstep = minR/100.;
 }
   
@@ -193,16 +208,15 @@ void Matter_Overlap::InitializeDynamicFFParams(PDF::ISR_Handler * const isr) {
   // a radius that increases with smaller x.
   ///////////////////////////////////////////////////////////////////////////
   m_dynamic    = true;
-  m_radius2[0] = sqr(m_kradius)*( sqr(p_ffs[0]->Radius1())+
-				  sqr(p_ffs[1]->Radius1()) );
-  m_radius[0]  = sqrt(m_radius2[0]);
+  m_radius2[0] = sqr(p_ffs[0]->Radius1())+sqr(p_ffs[1]->Radius1());
+  m_radius[0]  = m_fixradius = sqrt(m_radius2[0]);
   m_rnorm[0]   = 1./m_radius2[0];  
   m_bstep      = Min(1.,m_radius[0])/100.;
   for (size_t i=0;i<2;i++) {
     m_xmin[i] = isr->XMin(0); m_xmax[i] = isr->XMax(0);
   } 
-  FixDynamicRadius(isr->XMin(0),isr->XMin(1));
-  SetMaxRadius(m_radius[0]);
+  FixDynamicRadius(m_xmin[0],m_xmin[1]);
+  m_maxradius = sqrt(m_dynradius2);
 }
 
 void Matter_Overlap::FixDynamicRadius(const double & x1,  const double & x2,
@@ -213,13 +227,8 @@ void Matter_Overlap::FixDynamicRadius(const double & x1,  const double & x2,
   // spirit of Eq. (CS, 11).
   ///////////////////////////////////////////////////////////////////////////
   if (!m_dynamic) return;
-  m_radius2[0] = ( (x1<m_xmin[0] || x1>m_xmax[0] ||
-		    x2<m_xmin[1] || x2>m_xmax[1]) ?
-		  m_maxradius :
-		  (sqr(p_ffs[0]->Radius(x1,Q21))+
-		   sqr(p_ffs[1]->Radius(x2,Q22)))*sqr(m_kradius) );
-  m_radius[0]  = sqrt(m_radius2[0]);
-  m_rnorm[0]   = 1./m_radius2[0];  
+  m_dynradius2 = (sqr(p_ffs[0]->Radius(Max(m_xmin[0],Min(m_xmax[0],x1)),Q21))+
+		  sqr(p_ffs[1]->Radius(Max(m_xmin[1],Min(m_xmax[1],x2)),Q22)) );
 }
 
 
@@ -252,21 +261,27 @@ void Matter_Overlap::Output(const double & check) {
   msg_Info()<<"   "<<std::string(77,'-')<<"\n"
 	    <<"   | Matter_Overlap:"<<std::string(59,' ')<<"|\n"
 	    <<"   | Integral up to b_max = "
-	    <<std::setprecision(6)<<std::setw(8)<<m_bmax<<" fm yields "
+	    <<std::setprecision(6)<<std::setw(8)<<(m_bmax*m_invGeV2fm)<<" fm yields "
 	    <<std::setprecision(6)<<std::setw(8)<<check<<"."
 	    <<std::string(23,' ')<<"|\n";
   for (size_t i=0;i<2;i++) {
     msg_Info()<<"   | "<<std::setw(20)<<m_form[i]<<", R_1 = "
-	      <<std::setprecision(4)<<std::setw(6)<<p_ffs[0]->Radius1()<<" fm";
+	      <<std::setprecision(4)<<std::setw(6)
+	      <<(p_ffs[0]->Radius1()*m_invGeV2fm)<<" fm";
     if (m_form[i]==matter_form::double_gaussian) {
       msg_Info()<<", f_1 = "<<std::setprecision(4)<<std::setw(6)
 		<<p_ffs[i]->Fraction1()<<", "
 		<<"R_2 = "<<std::setprecision(4)<<std::setw(6)
-		<<p_ffs[i]->Radius2()<<" fm"
+		<<(p_ffs[i]->Radius2()*m_invGeV2fm)<<" fm"
 		<<std::string(6,' ')<<"|\n";
     }
     else msg_Info()<<std::string(37,' ')<<"|\n";
   }
+  if (m_dynamic)
+    msg_Info()<<"   | Maximal x-dependent radius: "
+	      <<std::setprecision(4)<<std::setw(6)<<m_maxradius<<" 1/GeV = "
+	      <<std::setprecision(4)<<std::setw(6)<<(m_maxradius*m_invGeV2fm)<<" fm. "
+	      <<std::string(20,' ')<<"|\n";
   msg_Info()<<"   "<<std::string(77,'-')<<"\n\n";
 }
 

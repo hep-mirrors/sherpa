@@ -1,4 +1,5 @@
 #include "REMNANTS/Tools/Form_Factor.H"
+#include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Scoped_Settings.H"
 #include "ATOOLS/Org/Exception.H"
 
@@ -8,25 +9,30 @@ using namespace ATOOLS;
 
 Form_Factor::Form_Factor(const Flavour & flav) :
   m_flav(flav), m_form(matter_form::single_gaussian),
+  m_GeV_fm(rpa->hBar()*rpa->c()*1.e12), 
   m_radius1(1.), m_radius2(0.), m_fraction1(1.), m_softexp(0.)
-  
 {
   Initialise();
 }
 
 void Form_Factor::Initialise()
 {
+  /////////////////////////////////////////////////////////////////////////////
+  // Radii given in fm - must be translated into 1/GeV
+  /////////////////////////////////////////////////////////////////////////////  
   m_form        = rempars->Matter_Form(m_flav);
-  m_radius1     = rempars->Get(m_flav,"MATTER_RADIUS_1");
+  m_radius1     = rempars->Get(m_flav,"MATTER_RADIUS_1")/m_GeV_fm;
   m_fraction1   = 1.;
   if (m_form==matter_form::double_gaussian) {
-    m_radius2   = rempars->Get(m_flav,"MATTER_RADIUS_2");
+    m_radius2   = rempars->Get(m_flav,"MATTER_RADIUS_2")/m_GeV_fm;
     m_fraction1 = rempars->Get(m_flav,"MATTER_FRACTION_1");
   }
   else if (m_form==matter_form::x_dependent_gaussian) {
     m_softexp  = rempars->Get(m_flav,"SOFT_EXPONENT");
   }
-  msg_Out()<<METHOD<<"("<<m_flav<<"): R = "<<m_radius1<<", expo = "<<m_softexp<<".\n";
+  msg_Out()<<METHOD<<"("<<m_flav<<"): "
+	   <<"R = "<<m_radius1<<" 1/GeV = "<<(m_radius1*m_GeV_fm)<<" fm, "
+	   <<"expo = "<<m_softexp<<".\n";
 }
 
 double Form_Factor::B(const double & x, const double & Q2) {

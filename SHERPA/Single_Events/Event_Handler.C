@@ -121,6 +121,8 @@ void Event_Handler::PrintGenericEventStructure()
 
 void Event_Handler::Reset()
 {
+  msg_Out()<<"===================================================================\n"
+	   <<METHOD<<"\n";
   m_sblobs.Clear();
   for (Phase_Iterator pit=p_phases->begin();pit!=p_phases->end();++pit)
     (*pit)->CleanUp();
@@ -224,6 +226,10 @@ bool Event_Handler::AnalyseEvent() {
 }
 
 int Event_Handler::IterateEventPhases(eventtype::code & mode) {
+  msg_Out()<<"\n\n\n"
+	   <<"===================================================================\n"
+	   <<"===================================================================\n"
+	   <<"===================================================================\n";
   Phase_Iterator pit=p_phases->begin();
   int retry = 0;
   bool hardps = true, filter = p_filter!=NULL;

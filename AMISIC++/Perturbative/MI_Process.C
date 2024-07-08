@@ -60,8 +60,8 @@ XS_Base::~XS_Base() = default;
 MI_Process::MI_Process(const std::vector<Flavour>& flavs)
     : m_name(flavs[0].IDName() + " " + flavs[1].IDName() + " --> " +
              flavs[2].IDName() + " " + flavs[3].IDName()),
-      m_stretcher(Momenta_Stretcher(std::string("AMISIC: ") + m_name)),
-      p_me2(NULL), m_Emin((*mipars)("E_min")),
+      m_stretcher(Momenta_Stretcher(std::string("AMISIC: ")+m_name)),p_me2(NULL),
+  m_Emin((*mipars)("E_min")),m_sumInMasses(0.), m_sumOutMasses(0.),
       m_masslessIS((flavs[0].Kfcode() < 4 || flavs[0].Kfcode() == 21) &&
                    (flavs[1].Kfcode() < 4 || flavs[1].Kfcode() == 21))
 {
@@ -93,7 +93,10 @@ bool MI_Process::MakeKinematics(
         MI_Integrator*                                         integrator,
         std::array<std::shared_ptr<REMNANTS::Remnant_Base>, 2> remnants)
 {
-  if (!AllowedKinematics(sqrt(integrator->SHat()))) return false;
+  if (!AllowedKinematics(sqrt(integrator->SHat()))) {
+    //msg_Out()<<"   --> "<<METHOD<<"("<<m_name<<") not allowed.\n";
+    return false;
+  }
   ///////////////////////////////////////////////////////////////////////////
   // Until now only have massless initial state partons.
   ///////////////////////////////////////////////////////////////////////////
@@ -107,17 +110,24 @@ bool MI_Process::MakeKinematics(
   if (m_flavs[2].Kfcode() == 5 || m_flavs[2].Kfcode() == 4) {
     Vec4D    cms = m_momenta[0] + m_momenta[1];
     Poincare scattercms(cms);
-    for (size_t i = 2; i < m_momenta.size(); i++)
-      scattercms.Boost(m_momenta[i]);
-    if (!m_stretcher.ZeroThem(2, m_momenta) ||
-        !m_stretcher.MassThem(2, m_momenta, m_masses))
+    for (size_t i=2;i<m_momenta.size();i++) scattercms.Boost(m_momenta[i]);
+    if (!m_stretcher.ZeroThem(2,m_momenta) ||
+        !m_stretcher.MassThem(2,m_momenta,m_masses)) {
+      //msg_Out()<<"   --> "<<METHOD<<"("<<m_name<<") couldn't boost.\n";
       return false;
+    }
     for (size_t i = 2; i < m_momenta.size(); i++)
       scattercms.BoostBack(m_momenta[i]);
   }
-  return (m_momenta[0][0] > Max(m_flavs[0].HadMass(), m_Emin) &&
-          m_momenta[1][0] > Max(m_flavs[1].HadMass(), m_Emin) &&
-          AllowedRemnants(remnants));
+  if (!AllowedRemnants(remnants)) {
+    //msg_Out()<<"   --> "<<METHOD<<"("<<m_name<<") no remnants for:\n"
+    //	     <<"       "
+    //	     <<m_momenta[0]<<" from "<<(*remnants)[0]->InMomentum()<<"\n"
+    //	     <<"       "
+    //	     <<m_momenta[1]<<" from "<<(*remnants)[1]->InMomentum()<<"\n";
+    return false;
+  }
+  return true;
 }
 
 const bool MI_Process::AllowedRemnants(
@@ -126,12 +136,7 @@ const bool MI_Process::AllowedRemnants(
   ///////////////////////////////////////////////////////////////////////////
   // Make sure there is enough energy left in the remnants
   ///////////////////////////////////////////////////////////////////////////
-  // msg_Out()<<"   * "<<METHOD<<" for "
-  //	   <<m_flavs[0]<<" ("<<m_momenta[0][0]<<" vs. "
-  //	   <<(*remnants)[0]->ResidualE()<<") and "
-  //	   <<m_flavs[1]<<" ("<<m_momenta[1][0]<<" vs. "
-  //	   <<(*remnants)[1]->ResidualE()<<").\n";
-  return (remnants[0]->TestExtract(m_flavs[0], m_momenta[0]) &&
+  return ( remnants[0]->TestExtract(m_flavs[0], m_momenta[0]) &&
           remnants[1]->TestExtract(m_flavs[1], m_momenta[1]));
 }
 
@@ -159,10 +164,6 @@ void MI_Process::MasslessISKinematics(MI_Integrator* integrator)
   ///////////////////////////////////////////////////////////////////////////
   m_momenta[0] = (E + p) / 2. * Vec4D(1, 0, 0, 1);
   m_momenta[1] = (E - p) / 2. * Vec4D(1, 0, 0, -1);
-  // msg_Out()<<"   * "<<METHOD<<"(y1,2 = "<<y3<<", "<<y4<<", pt^2 = "<<pt2<<"):
-  // "
-  //	   <<"x1 = "<<(2.*m_momenta[0][0]/rpa->gen.Ecms())<<", "
-  //	   <<"x2 = "<<(2.*m_momenta[1][0]/rpa->gen.Ecms())<<".\n";
 }
 
 Particle* MI_Process::GetParticle(const size_t& i)

@@ -9,29 +9,27 @@ using namespace AMISIC;
 using namespace ATOOLS;
 
 //////////////////////////////////////////////////////////////////////////////
-// All equations in this file refer to 
-// Sjostrand-van der Zijl, PRD 36 (1987) 2019 or
-// Corke-Sjostrand, JHEP 05 (2011) 009.
-// The main difference between the two is the treatment of the b-dependence,
-// which here effectively boils down to the origin and value of bfac, the
-// impact-parameter dependent enhancement factor.
-// The main trick here is to fix the maximal prefactor m_pref such that the
-// approximate cross section is larger than the actual one (given by the sum 
-// of cross sections of all included parton-level processes), over all 
-// transverse momenta.  We observe that the cross section dsigma/dp_T^2 
-// falls quickly with the transverse momentum squared p_T^2, suggesting a 
-// logarithmic binning in p_T^2.
+// This encodes a quick'n'dirty overestimator for the Sudakov form factor.
+// The main trick is to construct an approximate cross section that is
+// larger than the actual one (given by the sum of cross sections of all
+// included parton-level processes), over all transverse momenta.
+// As they are driven by t-channel exchange, usually as factors 1/|t|^2
+// which is normalised in the IR by replacing 1/|t|^2 -> 1/(|t|+pt_0^2)^2
+// we assume a form of N/(|t|+pt_0^2/4) and fix N.  We also observe that
+// the cross section dsigma/dp_T^2 falls quickly with the transverse
+// momentum squared p_T^2, suggesting a  logarithmic binning in p_T^2.
 // This is achieved in the FixMaximum method.
 /////////////////////////////////////////////////////////////////////////////
 
 Over_Estimator::Over_Estimator() :
-  m_muR_fac(1.), m_muF_fac(1.), m_pref(0.), m_bfac(1.), p_prefs(nullptr)
+  m_muR_fac(1.), m_muF_fac(1.), m_pref(0.), m_bfac(1.), m_npt2bins(1000),
+  p_prefs(nullptr)
 {}
 
 Over_Estimator::~Over_Estimator() { if (p_prefs) delete p_prefs; }
 
-void Over_Estimator::Initialize(PDF::ISR_Handler * isr,MI_Processes * procs,
-				axis * sbins,axis * pt2bins) {
+void Over_Estimator::
+Initialize(PDF::ISR_Handler * isr,MI_Processes * procs,axis * sbins) {
   ///////////////////////////////////////////////////////////////////////////
   // Inheriting all relevant inputs from the MI_Processes which we aim to
   // over-estimate.  
@@ -47,36 +45,31 @@ void Over_Estimator::Initialize(PDF::ISR_Handler * isr,MI_Processes * procs,
     m_xmin[i] = Max(1.e-6,p_pdf[i]->XMin());
     m_xmax[i] = Max(1.-1.e-6,p_pdf[i]->XMax());
   }
-  FixMaximum(procs,sbins,pt2bins);
+  FixMaximum(procs,sbins);
   Output();
 }
 
-void Over_Estimator::
-UpdateS(const double & s,const double & xsnd,const double & pt02) {
+void Over_Estimator::UpdateS(const double & s,const double & pt02) {
   ////////////////////////////////////////////////////////////////////////////
   // Updating to new variable centre-of-mass energy if necessary, and fixing a
   // suitable overestimating prefactor by interpolation in the look-up tables.
-  // The non-diffractive cross section will have been calculated during the 
-  // update of the MI_Processes.
   ////////////////////////////////////////////////////////////////////////////
-  m_s    = s;
-  m_xsnd = xsnd;
+  m_pref = (*p_prefs)(m_s=s);
   m_pt02 = pt02;
-  m_pref = (*p_prefs)(m_s);
 }
 
-void Over_Estimator::
-FixMaximum(MI_Processes * procs,axis * sbins,axis * pt2bins) {
+void Over_Estimator::FixMaximum(MI_Processes * procs,axis * sbins) {
   ////////////////////////////////////////////////////////////////////////////
   // Looping over all relevant s values from the Sudakov tables in the 
   // MI_Processes to fill a look-up table of maxima.
   ////////////////////////////////////////////////////////////////////////////
   p_prefs    = new OneDim_Table(*sbins);
   for (size_t sbin=0;sbin<sbins->m_nbins;sbin++) {
-    m_s      = sbins->x(sbin);
-    m_pt02   = mipars->CalculatePT02(m_s);
+    m_s    = sbins->x(sbin);
+    m_pt02 = mipars->CalculatePT02(m_s);
+    double ratioN  = pow(m_s/m_pt02,1./double(m_npt2bins));
     double maxpref = 0.;
-    for (size_t bin=0;bin<pt2bins->m_nbins;bin++) {
+    for (size_t i=0;i<m_npt2bins;i++) {
       ///////////////////////////////////////////////////////////////////////
       // The actual value of p_T^2 for the bin, giving the maximal rapidity 
       // range through s' = x_1 x_2 s = 4 p_T^2 cosh (Delta y), where Delta y 
@@ -85,12 +78,12 @@ FixMaximum(MI_Processes * procs,axis * sbins,axis * pt2bins) {
       // very crude and massively overestimated rapidity volume both partons
       // can occupy.
       ///////////////////////////////////////////////////////////////////////
-      double pt2    = pt2bins->x(bin);
+      double pt2    = m_pt02 * pow(ratioN,i);
       double xt     = sqrt(4.*pt2/m_s);
       if (xt*xt > m_xmax[0]*m_xmax[1]) continue;
       double yvol   = sqr(2.*log(1./xt*(1.+sqrt(1.-xt*xt))));
       double approx = ApproxME(pt2,xt);
-      double exact  = (*procs)(4.*pt2,-2.*pt2,-2.*pt2,xt,xt,false);
+      double exact  = (*procs)(4.*pt2,-2.*pt2,-2.*pt2,xt,xt);
       ///////////////////////////////////////////////////////////////////////
       // In both the approximate and the exact ME we factor out an appoximated,
       // regularised (with m_pt02) t-channel propagator and the rapidity
@@ -98,7 +91,7 @@ FixMaximum(MI_Processes * procs,axis * sbins,axis * pt2bins) {
       // approximation is always larger than the exact calculation.
       ///////////////////////////////////////////////////////////////////////
       double test   = Max(approx,exact)*yvol*sqr(pt2+m_pt02/4.);
-      if (test > maxpref) maxpref = test;
+      if (test > maxpref) { maxpref = test; }
     }
     p_prefs->Fill(sbin,maxpref);
     if (sbins->m_nbins==1) m_pref = maxpref;
@@ -144,18 +137,19 @@ double Over_Estimator::operator()(const double & pt2,const double & yvol) {
   // not present in the true differential cross section calculated by the
   // MI_Processes.
   //////////////////////////////////////////////////////////////////////////
+  double myvol = sqr(log(m_s/(4.*pt2)*sqr(1.+sqrt(1.-4.*pt2/m_s))));
   return m_pref/(yvol * sqr(pt2+m_pt02/4.));
 }
 
 double Over_Estimator::TrialPT2(const double & Q2) {
   ///////////////////////////////////////////////////////////////////////////
   // Produce an overestimated q2 by solving for q2
-  // random * exp[-int_{ptmin^2}^{Q2} dpt2 prefb/(pt2+pt02/4)^2] =
-  //          exp[-int_{ptmin2}^{pt2} dpt2 prefb/(pt2+pt02/4)^2]
+  // random = exp[-int_{q^2}^{Q2} dpt2 prefb/(pt2+pt02/4)^2]
   ///////////////////////////////////////////////////////////////////////////
   double Q2tilde = Q2+m_pt02/4.;
-  double prefb   = m_pref*m_bfac/m_xsnd;
-  return prefb * Q2tilde/(prefb-Q2tilde*log(Max(1.e-12,ran->Get()))) - m_pt02/4.;
+  double prefb   = m_pref*m_bfac;
+  return ( prefb * Q2tilde/(prefb-Q2tilde*log(Max(1.e-12,ran->Get()))) -
+	   m_pt02/4. );
 }
 
 void Over_Estimator::Output() {

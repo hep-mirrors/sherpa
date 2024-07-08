@@ -76,6 +76,7 @@ namespace AMISIC {
     // the partonic phase space and the (renormalised) non-diffractive cross
     // section
     //////////////////////////////////////////////////////////////////////////
+    inline OneDim_Table * GetXSratio() { return p_xsratio; }
     inline double XSratio(const double & s=-1.) { return (*p_xsratio)(s); }
     //////////////////////////////////////////////////////////////////////////
     // Hard cross section

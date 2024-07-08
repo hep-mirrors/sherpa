@@ -232,7 +232,7 @@ CalculateXSratios(MI_Processes * processes,axis * sbins)
   p_xshard     = new OneDim_Table(*sbins);
   for (size_t sbin=0;sbin<sbins->m_nbins;sbin++) {
     double s      = sbins->x(sbin);
-    double xshard = processes->SigmaTot(false,s);
+    double xshard = processes->TotalCrossSection(s,sbin==0);
     (*this)(s);
     p_xshard->Fill(sbin, xshard);
     p_xsratio->Fill(sbin, xshard/(XSndNorm() * XSnd()));

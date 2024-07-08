@@ -36,34 +36,42 @@ MI_Process_Group::~MI_Process_Group() {
 
 double MI_Process_Group::
 operator()(const double & shat,const double & that,const double & uhat) {
+  ///////////////////////////////////////////////////////////////////////////
   // This calculates dsigma/dpt^2 in units of 1/GeV^4
   // It is given by
-  // pi/shat^2 * f_1(x_1) f_2(x_2) * alpha_{S,QED}^2 |ME|^2 * [pt^2/(pt^2+pt0^2)]^2
+  // pi/shat^2 * f_1(x_1) f_2(x_2) * alpha_{S,QED}^2 *
+  //             |ME|^2 * [pt^2/(pt^2+pt0^2)]^2
   // where the last term regularises the t/u-channel singluarities
-  PreCalculate(shat,that,uhat);
-  double tot  = 0.;
+  ///////////////////////////////////////////////////////////////////////////
+  m_shat = shat; m_that = that; m_uhat = uhat;
+  PreCalculate();
+  double tot  = 0., Ehat = sqrt(m_shat);
   for (list<MI_Process * >::iterator mit=m_processes.begin();
        mit!=m_processes.end();mit++) {
+    if (!(*mit)->AllowedKinematics(Ehat)) continue;
     tot += ( ATOOLS::Max(0.,p_pdf[0]->GetXPDF((*mit)->Flav(0))) *
 	     ATOOLS::Max(0.,p_pdf[1]->GetXPDF((*mit)->Flav(1))) ) * (**mit)();
   }
   if (std::isnan(tot)) tot = 0.;
-  m_lastxs = ( m_pref/sqr(shat) * Coupling() *
-	       SoftCorrection(that*uhat/shat) * tot );
+  m_lastxs = ( m_pref/sqr(m_shat) * Coupling() *
+	       SoftCorrection(m_that*m_uhat/m_shat) * tot );
   return m_lastxs;
 }
 
-void MI_Process_Group::
-PreCalculate(const double & shat,const double & that,const double & uhat) {
+void MI_Process_Group::PreCalculate() {
+  ///////////////////////////////////////////////////////////////////////////
   // Calculating the squared MEs depending on the Mandelstam variables.
   // They do not include couplings, flux factors, pdf's, and are in units of 1.
+  ///////////////////////////////////////////////////////////////////////////
   for (list<XS_Base * >::iterator xsit=m_me2s.begin();
        xsit!=m_me2s.end();xsit++)
-    (*xsit)->Calc(shat,that,uhat);
+    (*xsit)->Calc(m_shat,m_that,m_uhat);
 }
 
 double MI_Process_Group::SoftCorrection(const double & pt2) const {
+  ///////////////////////////////////////////////////////////////////////////
   // Getting rid of the t/u-channel singularities
+  ///////////////////////////////////////////////////////////////////////////
   return sqr(pt2/(pt2+m_pt02));
 }
 
@@ -75,20 +83,24 @@ void MI_Process_Group::Output() const {
 }
 
 MI_Process * MI_Process_Group::SelectProcess() {
+  ///////////////////////////////////////////////////////////////////////////
   // Selects a process according to the relative differential cross sections
   // at the given kinematic configuration.
-  double tot = 0.;
+  ///////////////////////////////////////////////////////////////////////////
+  double tot = 0., Ehat = sqrt(m_shat);
   for (list<MI_Process *>::iterator mipit=m_processes.begin();
        mipit!=m_processes.end();mipit++) {
-    MI_Process * mip = (*mipit);
-    tot += (p_pdf[0]->GetXPDF(mip->Flav(0)) *
-	    p_pdf[1]->GetXPDF(mip->Flav(1)) * (*mip)());
+    if (!(*mipit)->AllowedKinematics(Ehat)) continue;
+    tot += (Max(0., p_pdf[0]->GetXPDF((*mipit)->Flav(0))) *
+	    Max(0., p_pdf[1]->GetXPDF((*mipit)->Flav(1))) * (**mipit)());
   }
   tot *= ran->Get();
-  for (auto mipit : m_processes) {
-    tot -= (p_pdf[0]->GetXPDF(mipit->Flav(0)) *
-	    p_pdf[1]->GetXPDF(mipit->Flav(1)) * (*mipit)());
-    if (tot<=0.) return mipit;
+  for (list<MI_Process *>::iterator mipit=m_processes.begin();
+       mipit!=m_processes.end();mipit++) {
+    if (!(*mipit)->AllowedKinematics(Ehat)) continue;
+    tot -= (Max(0., p_pdf[0]->GetXPDF((*mipit)->Flav(0))) *
+	    Max(0., p_pdf[1]->GetXPDF((*mipit)->Flav(1))) * (**mipit)());
+    if (tot<=0.) return (*mipit);
   }
   return m_processes.back();
 }

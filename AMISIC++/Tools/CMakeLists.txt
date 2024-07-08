@@ -23,6 +23,6 @@ set(Tools_HEADERS MI_Parameters.H
                   Lookup_Tables.H)
 
 sherpa_create_git_info(Tools)
- 
+
 add_library(AmisicTools SHARED ${Tools_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
 sherpa_handle_shared_library(AmisicTools AmisicTools)

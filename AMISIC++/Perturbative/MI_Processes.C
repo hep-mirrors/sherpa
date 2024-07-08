@@ -16,8 +16,7 @@ using namespace std;
 MI_Processes::MI_Processes() :
   ME_Generator_Base("Amisic"),
   m_integrator(MI_Integrator(this)),
-  p_xsecs(NULL), p_overlap(NULL),
-  m_dynamic(false) {}
+  p_xsecs(NULL), m_fm2GeV2(sqr(rpa->hBar()*rpa->c()*1.e12)) {}
 
 MI_Processes::~MI_Processes() {
   while (!m_groups.empty()) {
@@ -67,18 +66,9 @@ bool MI_Processes::Initialize(MODEL::Model_Base* const          model,
   InitializeAllProcesses();
   m_integrator.Initialize(isr);
   ///////////////////////////////////////////////////////////////////////////
-  // ... if "dynamic" matter overlap, check that the hard cross section is
-  // reproduced, thereby fixing maximal values in the process etc..
+  // ... and integrate away.
   ///////////////////////////////////////////////////////////////////////////
-  if (m_dynamic) {
-    msg_Info()<<"   | "
-	      <<"The integration will take some time for "
-	      <<"dynamic matter overlaps."<<std::string(10,' ')<<"|\n";
-    (*p_xsecs)(m_S);
-    if (!CheckCrossSection())
-      THROW(critical_error,
-	    "Cross sections with and without matter overlap do not coincide.")
-  }
+  (*p_xsecs)(m_S);
   msg_Info()<<"   "<<std::string(77,'-')<<"\n\n";
   ///////////////////////////////////////////////////////////////////////////
   // Mass scheme for the subsequent parton shower.
@@ -129,7 +119,7 @@ bool MI_Processes::InitializeAllProcesses() {
   return true;
 }
 
-double MI_Processes::operator()(const bool & withOverlap) {
+double MI_Processes::operator()() {
   ///////////////////////////////////////////////////////////////////////////
   // Assuming the mandelstam parameters etc. have already been determined
   // in the integrator, we can just call extract them.
@@ -139,12 +129,12 @@ double MI_Processes::operator()(const bool & withOverlap) {
   double uhat = m_integrator.UHat();
   double x1   = m_integrator.X(0);
   double x2   = m_integrator.X(1);
-  return (*this)(shat,that,uhat,x1,x2,withOverlap);
+  return (*this)(shat,that,uhat,x1,x2);
 }
 
 double MI_Processes::
 operator()(const double & shat,const double & that,const double & uhat,
-	   const double & x1,const double & x2,const bool & withOverlap) {
+	   const double & x1,const double & x2) {
   ///////////////////////////////////////////////////////////////////////////
   // Return the total parton-level scattering cross section, summed over all
   // contributing processes.  This implicitly assumes that the PDFs have
@@ -167,61 +157,54 @@ operator()(const double & shat,const double & that,const double & uhat,
     mig->SetScale(m_muR2);
     m_lastxs += (*mig)(shat,that,uhat);
   }
-  if (m_dynamic && withOverlap) {
-    p_overlap->FixDynamicRadius(x1,x2,m_muF2,m_muF2);
-    m_lastxs *= (*p_overlap)(m_b);
-  }
   return m_lastxs;
 }
 
-Blob * MI_Processes::FillHardScatterBlob() {
+int MI_Processes::FillHardScatterBlob(Blob *&  blob,const double & pt2veto) {
   ///////////////////////////////////////////////////////////////////////////
   // Selecting a process for the hard collision and, if allowed, returning
   // a new blob for the perturbative scatter, filled with scales and incoming
   // and outgoing particles.
   ///////////////////////////////////////////////////////////////////////////
   MI_Process * proc = SelectProcess();
+  if (proc==nullptr) msg_Error()<<"Warning in "<<METHOD<<": no proc selected.\n";
   if (proc==nullptr ||
       !proc->MakeKinematics(&m_integrator,p_remnants) ||
-      !proc->SetColours()) return nullptr;
-  Blob * blob = new Blob();
-  blob->SetType(btp::Hard_Collision);
-  blob->SetStatus(blob_status::needs_showers);
-  blob->SetId();
+      !proc->SetColours()) return 0;
+  if (pt2veto>0. && m_integrator.PT2()>pt2veto) return -1;
+  array<int,2> inflavs;
+  for (size_t i=0;i<2;i++) {
+    Particle * part = proc->GetParticle(i);
+    blob->AddToInParticles(part);
+    inflavs[i] = (part->Flav().IsAnti() ? -1 : 1) * part->Flav().Kfcode();
+  }
+  for (size_t i=2;i<4;i++) blob->AddToOutParticles(proc->GetParticle(i));
   blob->AddData("WeightsMap",new Blob_Data<Weights_Map>({}));
   blob->AddData("Renormalization_Scale",new Blob_Data<double>(m_muR2));
   blob->AddData("Factorization_Scale",new Blob_Data<double>(m_muF2));
   blob->AddData("Resummation_Scale",new Blob_Data<double>(Max(m_muR2,m_muF2)));
-  for (size_t i=0;i<2;i++) blob->AddToInParticles(proc->GetParticle(i));
-  for (size_t i=2;i<4;i++) blob->AddToOutParticles(proc->GetParticle(i));
-  return blob;
+  PDF_Info info(inflavs[0],inflavs[1],
+		m_integrator.X(0),m_integrator.X(1),
+		m_muF2,m_muF2);
+  blob->AddData("PDFInfo",new Blob_Data<PDF_Info>(info));
+  return 1;
 }
 
-bool MI_Processes::CheckCrossSection() {
+double MI_Processes::TotalCrossSection(const double & s,const bool & output) {
   ///////////////////////////////////////////////////////////////////////////
   // Calculate the hard cross section first, by iterating over the pt2 bins
   ///////////////////////////////////////////////////////////////////////////
-  m_xshard      = m_integrator(m_S,false,false);
-  double d0     = m_integrator.Uncertainty();
-  double xsMO   = m_integrator(m_S,true,true);
-  double dMO    = m_integrator.Uncertainty();
-  double dxsecs = dabs(m_xshard-xsMO)/sqrt(sqr(d0)+sqr(dMO));
-  msg_Info()<<"   "<<std::string(77,'-')<<"\n"
-	    <<"   | "<<METHOD<<":"<<std::string(42,' ')<<"|\n"
-	    <<"   | hard cross section with and without matter overlap:"
-	    <<std::string(23,' ')<<"|\n"
-	    <<"   | xs_pert = "<<std::setprecision(4)<<std::setw(10)
-	    <<(m_xshard*rpa->Picobarn()/1.e9)<<" mb "
-	    <<"+- "<<std::setprecision(0)<<std::setw(3)<<(100.*d0/m_xshard)
-	    <<"% vs. "
-	    <<"xs(overlap) = "<<std::setprecision(4)<<std::setw(10)
-	    <<(xsMO*rpa->Picobarn()/1.e9)<<" mb "
-	    <<"+- "<<std::setprecision(0)<<std::setw(3)<<(100.*dMO/xsMO)
-	    <<"%.  |\n"
-	    <<"   | --> Relative difference in cross sections = "
-	    <<std::setprecision(2)<<std::setw(4)<<dxsecs<<" sigma."
-	    <<std::string(19,' ')<<"|\n";
-  return (dxsecs<2.);
+  m_xshard      = m_integrator(s,nullptr,0.);
+  if (output) {
+    msg_Info()<<"   "<<std::string(77,'-')<<"\n"
+	      <<"   | "<<METHOD<<": xs_pert = "
+	      <<std::setprecision(4)<<std::setw(10)
+	      <<(m_xshard*rpa->Picobarn()/1.e9)<<" mb "
+	      <<"+- "<<std::setprecision(0)<<std::setw(3)
+	      <<(100.*m_integrator.Uncertainty()/m_xshard)
+	      <<"%."<<std::string(9,' ')<<"|\n";
+  }
+  return m_xshard;
 }
 
 void MI_Processes::

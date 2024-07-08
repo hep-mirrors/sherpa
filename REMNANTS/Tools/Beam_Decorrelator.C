@@ -60,7 +60,6 @@ bool Beam_Decorrelator::operator()(Blob * softblob) {
 
 bool Beam_Decorrelator::MustEmit(Particle * pi, Particle * pj) {
   // Checks if the partons must emit a soft gluon, for conditions see above.
-  //msg_Out()<<METHOD<<": "<<pi->Number()<<" & "<<pj->Number()<<"\n";
   if (pi->Beam() < 0 && pj->Beam() < 0 ||
       pi->Info()=='I' || pj->Info()=='I')
     return false;
@@ -145,11 +144,8 @@ bool Beam_Decorrelator::MakeKinematics(Vec4D & pi,Vec4D & pj,Vec4D & pk) {
     alpha = m_mspect2/(m_Q2*(1.-beta));
   }
   if (dabs(beta-y)<1.e-12) beta=y;
-  //msg_Out()<<METHOD<<"(x = "<<x<<", 1-y = "<<(1-y)<<", kt2 = "<<m_kt2<<"): "
-  //	   <<"alpha, beta = "<<alpha<<", "<<beta<<"\n";
   // Simple kinematics checks on parameters
   if (y<0 || y>beta || alpha<0. || alpha>1.+1.e-6) {
-    //msg_Out()<<"      ---> Limits killed it.\n";
     return false;
   }
   double E = m_Q/2.;
@@ -163,15 +159,6 @@ bool Beam_Decorrelator::MakeKinematics(Vec4D & pi,Vec4D & pj,Vec4D & pk) {
       !IsZero(dabs((pi+pj+pk).Abs2()) - m_Q2) ||
       !(pi[0]>0.) || !(pj[0]>0.) || !(pk[0]>0.) ||
       (pi+pj).Abs2()<m_minMbeam2 || (pj+pk).Abs2()<m_minMspect2) {
-    //msg_Out()<<"      ---> Vector checks:\n"
-    //	     <<"      pi,j,k = "
-    //	     <<dabs(pi.Abs2())-m_mbeam2<<", "
-    //	     <<dabs(pj.Abs2())<<", "
-    //	     <<dabs(pk.Abs2())-m_mspect2<<"\n"
-    //	     <<"      Q2 = "<<IsZero(dabs((pi+pj+pk).Abs2()) - m_Q2)<<", "
-    //	     <<"mins = "<<((pi+pj).Abs2()>m_minMbeam2)<<" (beam), "
-    //	     <<((pj+pk).Abs2()>m_minMspect2)<<" (spect) : "
-    //	     <<(pj+pk).Abs2()<<" > "<<m_minMspect2<<"\n";
     return false;
   }
   return true;
@@ -191,14 +178,12 @@ FillSoftEmission(ATOOLS::Vec4D & pi,ATOOLS::Vec4D & pj,ATOOLS::Vec4D & pk) {
   p_beam->SetMomentum(pi);
   p_spect->SetMomentum(pk);
   size_t index = (p_beam->GetFlow(1)>0 && p_spect->GetFlow(2)>0)?1:2;
-  //msg_Out()<<METHOD<<":\n"<<(*p_beam)<<"\n"<<(*p_spect)<<"\n";
   p_beam->SetFlow(index,-1);
   // adding a soft gluon, adjusting its number and colours
   Particle * gluon = new Particle(-1,Flavour(kf_gluon),pj,'B');
   gluon->SetFlow(3-index,p_beam->GetFlow(index));
   gluon->SetFlow(index,p_spect->GetFlow(3-index));
   gluon->SetNumber();
-  //msg_Out()<<"Now:\n"<<(*p_beam)<<"\n"<<(*p_spect)<<"\n"<<(*gluon)<<"\n";
   m_softgluons.push_back(gluon);
   return true;
 }
