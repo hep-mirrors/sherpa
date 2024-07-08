@@ -2,9 +2,8 @@
 #define AMISIC_Main_Amisic_H
 
 #include "AMISIC++/Perturbative/Single_Collision_Handler.H"
-#include "AMISIC++/Perturbative/Sudakov_Argument.H"
 #include "AMISIC++/Tools/Over_Estimator.H"
-#include "AMISIC++/Tools/Impact_Parameter.H"
+#include "AMISIC++/Tools/Interaction_Probability.H"
 #include "AMISIC++/Tools/Hadronic_XSec_Calculator.H"
 #include "AMISIC++/Tools/MI_Parameters.H"
 #include "BEAM/Main/Beam_Spectra_Handler.H"
@@ -52,35 +51,34 @@ namespace AMISIC {
   private:
     Matter_Overlap           m_mo;
     MI_Processes             m_processes;
-    Sudakov_Argument         m_sudakovarg;
     Hadronic_XSec_Calculator m_xsecs;
     Over_Estimator           m_overestimator;
-    Impact_Parameter         m_impact;
+    Interaction_Probability  m_pint;
     Single_Collision_Handler m_singlecollision;
 
     mitype m_type;
     bool         m_variable_s, m_variable_b;
     axis       * p_sbins;
     double       m_sigmaND_norm, m_b, m_bfac, m_S, m_Y, m_pt2;
-
-    bool         m_isMinBias, m_isFirst, m_ana;
-    double       m_f;
-    size_t       m_nscatters;
-    unsigned long int m_Nscat, m_Nev;
-    std::map<std::string,ATOOLS::Histogram *> m_histos;
+    bool         m_isMinBias, m_isFirst;
 
     void InitParametersAndType(PDF::ISR_Handler *const isr,
 			       REMNANTS::Remnant_Handler * remnant_handler);
     void UpdateForNewS();
-    void SetFirstB(const double & b=-1.);
-    void SetB(const double & x1=-1.,const double & x2=-1.,
-	      const double & scale=-1.);
+    bool FirstMinBias(ATOOLS::Blob * blob);
+    bool FirstMPI(ATOOLS::Blob * blob);
+    void AddInformationToBlob(ATOOLS::Blob * blob);
+    void SetB(const double & x1,const double & x2,const double & scale);
     void CreateAmplitudeLegs(ATOOLS::Cluster_Amplitude * ampl,
 			     ATOOLS::Blob * blob);
-    void FillAmplitudeSettings(ATOOLS::Cluster_Amplitude * ampl);
+
+    bool              m_ana;
+    size_t            m_nscatters;
+    unsigned long int m_Nscat, m_Nev;
+    std::map<std::string,ATOOLS::Histogram *> m_histos;
     void InitAnalysis();
     void FinishAnalysis();
-    void Analyse(const bool & last);
+    void Analyse(const bool & last,ATOOLS::Blob * blob=nullptr);
     void Test();
  public:
     Amisic();
@@ -93,22 +91,21 @@ namespace AMISIC {
 
     bool InitMPIs(const double & ptmax,const double & x1,const double & x2,
 		  const double & scale);
+    bool InitMinBiasEvent(ATOOLS::Blob_List * blobs);
+    bool InitRescatterEvent();
     bool VetoEvent(const double & scale=-1.) const;
-    int  InitMinBiasEvent();
-    int  InitRescatterEvent();
+
+    bool GenerateScatter(const size_t & type,ATOOLS::Blob * blob);
+    ATOOLS::Cluster_Amplitude * ClusterConfiguration(ATOOLS::Blob * blob);
 
     void Reset();
     void CleanUpMinBias();
     void Update(const PDF::ISR_Handler *isr);
-    ATOOLS::Blob * GenerateScatter(const bool & force=false);
-    ATOOLS::Cluster_Amplitude * ClusterConfiguration(ATOOLS::Blob * blob);
-
     inline void SetMaxEnergies(const double & E0,const double & E1) {
       m_singlecollision.SetResidualX(E0,E1);
     }
-    inline void SetMaxScale(const double & scale) {
-      m_pt2 = ATOOLS::sqr(scale);
-      m_singlecollision.SetLastPT2(m_pt2);
+    inline void SetMaxScale2(const double & scale2) {
+      m_singlecollision.SetLastPT2(m_pt2 = scale2);
     }
     inline void SetMassMode(const int & mode) {
       m_processes.SetMassMode(mode);
@@ -120,11 +117,10 @@ namespace AMISIC {
       m_singlecollision.SetPosition(beam,pos);
     }
     inline void CalculateImpact() {
-      m_b    = m_singlecollision.B();
-      m_bfac = ATOOLS::Max(0.,m_impact(m_S, m_b));
+      exit(1);
     }
     inline ATOOLS::Vec4D SelectPositionForScatter(const double & b) const {
-      return m_impact.SelectPositionForScatter(b);
+      exit(1);
     }
     inline const double ScaleMin()    const { return (*mipars)("pt_min"); }
     inline const double ScaleMax()    const { return sqrt(m_pt2); }
@@ -133,7 +129,10 @@ namespace AMISIC {
     inline double Mass(const ATOOLS::Flavour &fl) const {
       return m_processes.Mass(fl);
     }
-    inline void CleanUp()                   { m_isFirst = true; }
+    inline void CleanUp() {
+      m_singlecollision.Reset();
+      m_isFirst = true;
+    }
   };
 
 }

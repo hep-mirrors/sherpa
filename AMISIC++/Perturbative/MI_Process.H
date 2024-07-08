@@ -52,30 +52,29 @@ namespace AMISIC {
     double                       m_Emin, m_sumInMasses, m_sumOutMasses;
     bool                         m_masslessIS;
 
+    const bool AllowedRemnants(std::array<std::shared_ptr<REMNANTS::Remnant_Base>, 2> remnants)
+            const;
+    void MasslessISKinematics(MI_Integrator* integrator);
+  public:
+    explicit MI_Process(const std::vector<ATOOLS::Flavour>& flavs);
+    ~MI_Process();
+    ///////////////////////////////////////////////////////////////////////////
+    // Creating four-vectors for a legal phase space point, checking for its
+    // viability re remnants, masses, PDF limits, etc..
+///////////////////////////////////////////////////////////////////////////
+    bool MakeKinematics(
+            MI_Integrator*                                         integrator,
+            std::array<std::shared_ptr<REMNANTS::Remnant_Base>, 2>  remnants);
     ///////////////////////////////////////////////////////////////////////////
     // Making sure that the c.m. energy of the scatter is larger than the
     // IS or FS sum of masses.
     ///////////////////////////////////////////////////////////////////////////
-    inline const bool AllowedKinematics(const double& Ehat) const
-    {
-      return (m_sumInMasses < Ehat && m_sumOutMasses < Ehat);
+    inline const bool AllowedKinematics(const double & Ehat) const {
+      return (m_sumInMasses<Ehat && m_sumOutMasses<Ehat);
     }
-    const bool AllowedRemnants(
-            std::array<std::shared_ptr<REMNANTS::Remnant_Base>, 2> remnants)
-            const;
-    void MasslessISKinematics(MI_Integrator* integrator);
 
-  public:
-    explicit MI_Process(const std::vector<ATOOLS::Flavour>& flavs);
-    ~MI_Process();
-
-    inline void SetME2(XS_Base* me2) { p_me2 = me2; }
-
-    bool MakeKinematics(
-            MI_Integrator*                                         integrator,
-            std::array<std::shared_ptr<REMNANTS::Remnant_Base>, 2> remnants);
-
-    ATOOLS::Particle*             GetParticle(const size_t& i);
+    ATOOLS::Particle * GetParticle(const size_t & i);
+    inline void SetME2(XS_Base * me2) { p_me2 = me2; }
     inline const ATOOLS::Flavour& Flav(const size_t& i) const
     {
       return m_flavs[i];

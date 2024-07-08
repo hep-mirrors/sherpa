@@ -5,7 +5,7 @@ BEAMS:            2212
 BEAM_ENERGIES:    3500
 MI_HANDLER:       Amisic
 SHOWER_GENERATOR: CSS
-FRAGMENTATION:    None
+FRAGMENTATION:    Ahadic
 
 # matrix-element calculation
 ME_GENERATORS:
@@ -29,10 +29,17 @@ REMNANTS:
     BEAM_SPECTATOR_Q2:        0.77; 
     BEAM_SPECTATOR_KTMAX:     1.0;
     BEAM_SPECTATOR_KTEXPO:    5.0;
-    MATTER_FORM: Double_Gaussian # Single or Double
-    RADIUS_1:   0.75
-    RADIUS_2:   1.5
-    FRACTION_1: 0.7
+    MATTER_FORM:        Double_Gaussian # x_Dependent_Gaussian # 
+    MATTER_RADIUS_1:    0.86;
+    MATTER_RADIUS_2:    0.35;
+    MATTER_FRACTION_1:  0.5;
+
+AMISIC:
+  PT_0:              2.05
+  PT_Min:            2.25
+  MU_R_FACTOR:       0.5
+  MU_F_FACTOR:       1.0
+  nB_bins:           50  # only relevant for x_Dependent_Gaussian
 
 ALPHAS(MZ): 0.1188
 ORDER_ALPHAS: 1
@@ -53,5 +60,5 @@ SELECTORS:
 
 ANALYSIS: Rivet
 RIVET:
-  --analyses: [ATLAS_2011_S9131140]
+  --analyses: [ATLAS_2011_S9131140,ATLAS_2014_I1315949]
 ANALYSIS_OUTPUT: test

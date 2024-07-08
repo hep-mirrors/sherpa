@@ -64,6 +64,7 @@ namespace REMNANTS {
                           const bool& copy = true) = 0;
     virtual void MakeSpectator(ATOOLS::Particle* parton, Colour_Generator* colours) {}
     virtual ATOOLS::Vec4D IncomingMomentum();
+virtual void Output();
 
     virtual void Reset(const bool & resc=false,const bool & DIS=false);
     virtual void SetResidualEnergy(const double & E=-1.) {

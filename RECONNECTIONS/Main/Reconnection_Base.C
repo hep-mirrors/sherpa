@@ -64,7 +64,8 @@ bool Reconnection_Base::BalanceColours() {
   if (m_cols[0].size()!=m_cols[1].size()) return false;
   list<unsigned int> replacers[2];
   for (size_t i=0;i<2;i++) {
-    for (map<unsigned int, Particle * >::iterator cit=m_cols[i].begin();cit!=m_cols[i].end();cit++) {
+    for (map<unsigned int, Particle * >::iterator cit=m_cols[i].begin();
+	 cit!=m_cols[i].end();cit++) {
       if (m_cols[1-i].find(cit->first)==m_cols[1-i].end()) 
 	replacers[i].push_back(cit->first);
     }
@@ -82,7 +83,8 @@ bool Reconnection_Base::BalanceColours() {
     for (size_t i=0;i<2;i++) replacers[i].pop_front();
   }
   for (size_t i=0;i<2;i++) {
-    for (map<unsigned int, Particle * >::iterator cit=m_cols[i].begin();cit!=m_cols[i].end();cit++) {
+    for (map<unsigned int, Particle * >::iterator cit=m_cols[i].begin();
+	 cit!=m_cols[i].end();cit++) {
       if (m_cols[1-i].find(cit->first)==m_cols[1-i].end()) 
 	replacers[i].push_back(cit->first);
     }
@@ -114,7 +116,8 @@ void Reconnection_Base::HarvestParticleInfo(ATOOLS::Particle * part) {
   // form its outgoing particles.
   copy->SetDecayBlob(part->DecayBlob());
   copy->SetProductionBlob(NULL);
-  //msg_Out()<<"* |"<<copy<<"| ("<<copy->Number()<<"): "<<copy->Momentum()<<" @ "<<copy->XProd()
+  //msg_Out()<<"* |"<<copy<<"| ("<<copy->Number()<<"): "
+  //        <<copy->Momentum()<<" @ "<<copy->XProd()
   //	   <<" ["<<copy->ProductionBlob()<<"]\n";
 }
 
