@@ -1051,7 +1051,7 @@ bool Initialization_Handler::InitializeTheShowers()
     as->SetActiveAs(id);
     if (m_showerhandlers.find(id) != m_showerhandlers.end())
       delete m_showerhandlers[id];
-    m_showerhandlers[id] = new Shower_Handler(p_model, m_isrhandlers[id], id);
+    m_showerhandlers[id] = new Shower_Handler(p_model, m_isrhandlers[id], id-1);
     m_showerhandlers[id]->SetRemnants(m_remnanthandlers[id]);
     m_isrhandlers[id]->SetRemnants(m_remnanthandlers[id]->GetRemnants());
   }
