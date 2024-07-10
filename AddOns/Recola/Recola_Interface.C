@@ -163,7 +163,7 @@ void Recola::Recola_Interface::RegisterDefaults() const
   s["RECOLA_AMPTYPE"].SetDefault(1);
   s["RECOLA_PHOTON_MASS"].SetDefault(0.1);
   s["RECOLA_MASS_REG"].SetDefault(false);
-  s["RECOLA_USE_DECAY"].SetDefault(1);
+  s["RECOLA_USE_DECAY"].SetDefault(0);
   // find RECOLA installation prefix with several overwrite options
   char *var=NULL;
   s_recolaprefix = rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Recola";
