@@ -203,10 +203,15 @@ void FF_DipoleSplitting::CalcDiPolarizations()
     CalcVectors(m_pt1,m_pt2,m_sff/zi/(2.*(zi*(1.-zi)+zj*(1.-zj))));
     break;
   case spt::g2gg: {
-    double B = -m_sff/zi/(zi*(1.-zi)+zj*(1.-zj));
-    CalcVectors(m_pt1,m_pt2,B);
-    m_pfactors[0] = 0;
-    m_pfactors[1] = -1/B;
+    if(m_subtype!=subscheme::Alaric) {
+      CalcVectors(m_pt1,m_pt2,-m_sff/zi/(zi*(1.-zi)+zj*(1.-zj)));
+    }
+    else {
+      double B = -m_sff/zi/(zi*(1.-zi)+zj*(1.-zj));
+      CalcVectors(m_pt1,m_pt2,B);
+      m_pfactors[0] = 0;
+      m_pfactors[1] = -1/B;
+    }
     break;
   }
   case spt::none:
