@@ -1,5 +1,4 @@
 #include "PHASIC++/Process/Massive_Kernels.H"
-
 #include "ATOOLS/Math/MathTools.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Message.H"
@@ -157,7 +156,7 @@ void Massive_Kernels::CalcVS(ist::itype type,double s,double mj,double mk)
 }
 
 void Massive_Kernels::CalcVNS(ist::itype type,double s,double mj,double mk,
-                              bool ini)
+                              double sjKt,double skKt, double mKt2,bool ini)
 // V^NS
 {
   DEBUG_FUNC(type<<": s="<<s<<", mj="<<mj<<", mk="<<mk<<", ini="<<ini);
@@ -168,17 +167,17 @@ void Massive_Kernels::CalcVNS(ist::itype type,double s,double mj,double mk,
   case ist::q:
   case ist::Q:
   case ist::sG:
-    CalcVNSq(s,mj,mk);
+    CalcVNSq(s,mj,mk,sjKt,skKt,mKt2);
     break;
   case ist::g:
-    CalcVNSg(s,mk,ini);
+    CalcVNSg(s,mk,sjKt,skKt,mKt2,ini);
     break;
   case ist::sQ:
     CalcVNSs(s,mj,mk);
     break;
   case ist::V:
     if      (m_Vsubmode==0) CalcVNSs(s,mj,mk);
-    else if (m_Vsubmode==1) CalcVNSq(s,mj,mk);
+    else if (m_Vsubmode==1) CalcVNSq(s,mj,mk,sjKt,skKt,mKt2);
     break;
   default:
     THROW(fatal_error,"Unknown splitting type.");
@@ -187,10 +186,23 @@ void Massive_Kernels::CalcVNS(ist::itype type,double s,double mj,double mk,
   msg_Debugging()<<"VNS="<<m_VNS<<std::endl;
 }
 
-void Massive_Kernels::CalcVNSq(double s,double mj,double mk)
+void Massive_Kernels::CalcVNSq(double s,double mj,double mk,double sjKt,
+                               double skKt,double mKt2)
 // V^NS_q as defined in (6.21)-(6.23)
 {
-  if (mj==0.&&mk==0.) return;
+  if (mj==0.&&mk==0.) {
+    if(m_subtype!=subscheme::Alaric) return;
+    else {
+      double rho = skKt/s;
+      double kap = mKt2/sjKt;
+      double tau = -s/sjKt;
+      m_VNS = -2*(-0.5*((2*kap + log(sqr(kap)))*(log((2*kap)/(1 + 2*kap)) - log(1 + 1/(1 + 2*kap)))) +
+                 (rho + log(-rho))*(log((2*rho)/(1 + 2*rho)) - log(1 + 1/(1 + 2*rho))) +
+                 log(((1 + kap)*tau/4.)/(1 + rho)) - DiLog(1 + 1/kap) + DiLog(1 + 1/rho));
+      m_VNS += DiLog(1.-2.*s*mKt2/(sjKt*skKt));
+      m_VNS -= 6. - sqr(M_PI)/2.;
+    }
+  }
   else if (mj==0.) {
     double Q2=s+sqr(mj)+sqr(mk);
     double Q=sqrt(Q2);
@@ -231,7 +243,8 @@ void Massive_Kernels::CalcVNSq(double s,double mj,double mk)
   }
 }
 
-void Massive_Kernels::CalcVNSg(double s,double mk,bool ini)
+void Massive_Kernels::CalcVNSg(double s,double mk,double sjKt,double skKt,
+                               double mKt2,bool ini)
 // V^NS_g as defined in Eqs.(6.24) and (6.26);
 // Q_aux-terms canceled with Gamma_g
 {
@@ -251,6 +264,16 @@ void Massive_Kernels::CalcVNSg(double s,double mk,bool ini)
       }
     }
     m_VNS*=4./3.*m_TRbyCA;
+    if(m_subtype!=subscheme::Alaric) return;
+    else {
+      double rho = skKt/s;
+      double kap = mKt2/sjKt;
+      double tau = -s/sjKt;
+      m_VNS= -2*(-0.5*((2*kap + log(sqr(kap)))*(log((2*kap)/(1 + 2*kap)) - log(1 + 1/(1 + 2*kap)))) +
+                 (rho + log(-rho))*(log((2*rho)/(1 + 2*rho)) - log(1 + 1/(1 + 2*rho))) +
+                 log(((1 + kap)*tau)/(1 + rho)) - DiLog(1 + 1/kap) + DiLog(1 + 1/rho));
+      m_VNS += DiLog(1.-2.*s*mKt2/(sjKt*skKt));
+    }
   }
   else {
     bool simplev=ini||IsEqual(m_kappa,2./3.);
@@ -645,12 +668,13 @@ void Massive_Kernels::CalcAs(double mu2, double s,double mj,double mk)
 }
 
 void Massive_Kernels::Calculate(ist::itype type, double mu2, double s,
-                                double mj, double mk,
-                                bool inij, bool inik, bool mode)
+                                double mj, double mk, double sjKt,
+                                double skKt,  double mKt2, bool inij,
+                                bool inik, bool mode)
 {
   DEBUG_FUNC(type);
   CalcVS(type,s,mj,mk);
-  CalcVNS(type,s,mj,mk,inij);
+  CalcVNS(type,s,mj,mk,sjKt,skKt,mKt2,inij);
   CalcGamma(type,mu2,s,mj);
   CalcgKterm(type,mu2,s,mj,mode);
   CalcAterms(type,mu2,s,mj,mk,inij,inik);

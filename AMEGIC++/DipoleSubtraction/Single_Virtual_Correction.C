@@ -19,6 +19,7 @@
 #include "ATOOLS/Org/Scoped_Settings.H"
 
 #include "PHASIC++/Process/Virtual_ME2_Base.H"
+#include "PHASIC++/Channels/Antenna_Kinematics.H"
 
 using namespace AMEGIC;
 using namespace PHASIC;
@@ -73,6 +74,9 @@ Single_Virtual_Correction::Single_Virtual_Correction() :
   m_pspfsrecscheme = s["DIPOLES"]["PFF_FS_RECOIL_SCHEME"].Get<size_t>();
   m_pspissplscheme = s["DIPOLES"]["PFF_IS_SPLIT_SCHEME"].Get<size_t>();
   m_pspfssplscheme = s["DIPOLES"]["PFF_FS_SPLIT_SCHEME"].Get<size_t>();
+  p_recoil=RecoilDefinition_Getter::GetObject
+    (Settings::GetMainSettings()["RECOIL_DEFINITION"]
+     .Get<std::string>(),RecoilDefinition_Key());
   static bool addcite(false);
   if (!addcite) {
     addcite=true;
@@ -752,11 +756,33 @@ double Single_Virtual_Correction::Calc_I(const ATOOLS::sbt::subtype st,
       bool inii = partonlist[i]<m_nin;
       bool inik = partonlist[k]<m_nin;
 
+      double siKt, skKt, mKt2;
+
+      /// this bit is only needed for alaric
+      PHASIC::Ant_Args ff;
+      auto* ampl = Cluster_Amplitude::New();
+      ampl->SetNIn(2);
+      for (int idx = 0; idx <= mom.size(); ++idx) {
+        ff.m_p.push_back(mom[idx]);
+        ampl->CreateLeg(i<2?-mom[idx]:mom[idx],i<2?m_flavs[idx].Bar():m_flavs[idx]);
+      }
+      Vec4D Kt = p_recoil->Recoil(ampl);
+      ampl->Delete();
+      mKt2 = Kt.Abs2();
+      siKt = 2.*mom[partonlist[i]]*Kt;
+      skKt = 2.*mom[partonlist[k]]*Kt;
+      /// should we only do it then?
+      
       // I_ik
       double splf(0.),splf1(0.),splf2(0.);
       if (dsij[i][k]!=0.) {
-        kernel->Calculate(typei,mur2,sik,mi,mk,inii,inik,m_drmode);
-        splf  += kernel->I_Fin() * dsij[i][k];
+        // double z = ATOOLS::ran->Get();
+        // Vec4D n = Kt - (1-z)*mom[partonlist[i]];
+        // double mcL = 0;//mom[partonlist[k]]*n/(2.*n.Abs2());
+
+        kernel->Calculate(typei,mur2,sik,mi,mk,
+                          siKt,skKt,mKt2,inii,inik,m_drmode);
+        splf  += (kernel->I_Fin()) * dsij[i][k];
         splf1 += kernel->I_E1() * dsij[i][k];
         splf2 += kernel->I_E2() * dsij[i][k];
         msg_Debugging()<<"I_"<<partonlist[i]<<partonlist[k]
@@ -768,8 +794,13 @@ double Single_Virtual_Correction::Calc_I(const ATOOLS::sbt::subtype st,
       }
       // I_ki
       if (dsij[k][i]!=0.) {
-        kernel->Calculate(typek,mur2,sik,mk,mi,inik,inii,m_drmode);
-        splf  += kernel->I_Fin() * dsij[k][i];
+        // double z = ATOOLS::ran->Get();
+        // Vec4D n = Kt - (1-z)*mom[partonlist[k]];
+        // double mcL = 0;//mom[partonlist[k]]*n/(2.*n.Abs2());
+        
+        kernel->Calculate(typek,mur2,sik,mk,mi,
+                          skKt,siKt,mKt2,inik,inii,m_drmode);
+        splf  += (kernel->I_Fin()) * dsij[k][i];
         splf1 += kernel->I_E1() * dsij[k][i];
         splf2 += kernel->I_E2() * dsij[k][i];
         msg_Debugging()<<"I_"<<partonlist[k]<<partonlist[i]

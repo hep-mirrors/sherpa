@@ -5,7 +5,9 @@
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/My_Limits.H"
+#include "ATOOLS/Math/Poincare.H"
 #include "PHASIC++/Channels/Antenna_Kinematics.H"
+#include "PHASIC++/Channels/CSS_Kinematics.H"
 
 using namespace ATOOLS;
 using namespace AMEGIC;
@@ -107,43 +109,87 @@ void FF_DipoleSplitting::SetMomentaAlaric(const ATOOLS::Vec4D* mom) {
   DEBUG_FUNC("");
   PHASIC::Ant_Args ff;
   auto* ampl = Cluster_Amplitude::New();
+  ampl->SetNIn(2);
   for (int i = 0; i <= m_m; ++i) {
     ff.m_p.push_back(mom[i]);
     ampl->CreateLeg(i<2?-mom[i]:mom[i],i<2?p_subevt->p_fl[i].Bar():p_subevt->p_fl[i]);
   }
   ff.m_b=p_recoil->RecoilTags(ampl);
+  PHASIC::ClusterAntenna(ff, m_i, m_j, m_k, 0.);
+  
+  Vec4D n;
+  if(m_ftype==spt::soft) {
+    m_pi = ff.m_pi;
+    m_pj = ff.m_pj;
+    m_pk = ff.m_pk;
+
+    m_zi = ff.m_z;
+    m_zj = 1.-ff.m_z;
+
+    m_yijk = (m_pi*m_pk)/(m_pj*(m_pi+m_pk)); //< corresponds to v_{i,ab} in CS, eq. 5.169
+    m_a = m_yijk;
+
+    m_ptk  = ff.m_p[m_k];
+    m_ptij = ff.m_pijt;
+
+    m_Q2 = (m_pi+m_pj+m_pk).Abs2();
+    // für Fixed_Order erstmal egal // wird mittels Getter gelöst, später
+    m_kt2  = p_nlomc?p_nlomc->KT2(*p_subevt,m_zi,m_yijk,m_Q2):
+      m_Q2*m_yijk*m_zi*m_zj;
+
+    n = ff.m_n;
+    m_pt1   =     (n*m_pi) / (m_pi*m_pj) * m_pj - n;
+    m_pt2   =     m_ptij;
+  }
+  else {
+    Vec4D pij = mom[m_i]+mom[m_j], K(0.,0.,0.,0.);
+    int nk(0);
+    for(size_t i(0);i<ampl->Legs().size();++i) {
+      if(ff.m_b[i]&2 && i!=m_i && i!=m_j) {
+        K += mom[i];
+        ++nk;
+      }
+    }
+    double Q2((pij+K).Abs2()), K2(K.Abs2());
+    int mode = 0; // ?? what does it do?
+    PHASIC::Kin_Args ffdip=PHASIC::ClusterFFDipole(0,0,0,K2,mom[m_i],mom[m_j],K,mode);
+    if (ffdip.m_stat<0) {
+      msg_Error()<<METHOD<<": Clustering failed in subtraction.\n";
+    }
+
+    if(nk>1) {
+      Poincare oldcms(K), newcms(ff.m_pk);
+      newcms.Invert();
+      for(size_t i(0);i<ampl->Legs().size();++i) {
+        if(ff.m_b[i]&2 && i!=m_i && i!=m_j) {
+          ampl->Leg(i)->SetMom(newcms*(oldcms*ampl->Leg(i)->Mom()));
+        }
+      }
+    }
+    
+    m_pi = mom[m_i];
+    m_pj = mom[m_j];
+    m_pk = mom[m_k];
+
+    m_ptij = ffdip.m_pi; //ampl->Leg(m_i)->Mom(); // ????
+    m_ptk = ampl->Leg(m_k)->Mom();
+
+    n = ff.m_nb;
+    m_zi = m_pi*n/((m_pi+m_pj)*n);
+    m_zj = 1.-m_zi;
+
+    m_pt1   =     m_zi*m_pi-m_zj*m_pj;
+    m_pt2   =     m_ptij;
+  }
 
   ampl->Delete();
-  PHASIC::ClusterAntenna(ff, m_i, m_j, m_k, 0.);
-
-  m_pi = ff.m_pi;
-  m_pj = ff.m_pj;
-  m_pk = ff.m_pk;
-
-  m_zi = ff.m_z;
-  m_zj = 1.-ff.m_z;
-
-  m_yijk = (m_pi*m_pk)/(m_pj*(m_pi+m_pk)); //< corresponds to v_{i,ab} in CS, eq. 5.169
-  m_a = m_yijk;
-
-  m_ptk  = ff.m_p[m_k];
-  m_ptij = ff.m_pijt;
-
-  m_Q2 = (m_pi+m_pj+m_pk).Abs2();
-  // für Fixed_Order erstmal egal // wird mittels Getter gelöst, später
-  m_kt2  = p_nlomc?p_nlomc->KT2(*p_subevt,m_zi,m_yijk,m_Q2):
-                  m_Q2*m_yijk*m_zi*m_zj;
-
-  Vec4D pi(ff.m_pi), pk(ff.m_pk), pj(ff.m_pj), n(ff.m_n);
-  m_pt1   =     (n*pi) / (pi*pj) * pj - n;
-  m_pt2   =     ff.m_pijt;
-
+  
   switch (m_ftype) {
   case spt::soft: {
-    double sij(pi*pj), sik(pi*pk), skj(pj*pk);
-    double D(sij*(pk*n)+skj*(pi*n));
+    double sij(m_pi*m_pj), sik(m_pi*m_pk), skj(m_pj*m_pk);
+    double D(sij*(m_pk*n)+skj*(m_pi*n));
     double A(2*sik/(sij*skj));
-    A*=sij*skj*(pi*n)/D;
+    A*=sij*skj*(m_pi*n)/D;
     m_sff = A;
     m_av  = m_sff;
     break;
@@ -177,6 +223,7 @@ void FF_DipoleSplitting::SetMomentaAlaric(const ATOOLS::Vec4D* mom) {
   }
   if (m_kt2<(p_nlomc?p_nlomc->KT2Min(0):0.0)) m_av=1.0;
   m_mom = ff.m_p;
+  DEBUG_VAR(m_ftype<<" "<<m_sff<<" "<<m_av);
 }
 
 double FF_DipoleSplitting::GetValue()

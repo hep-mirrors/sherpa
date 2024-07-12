@@ -48,9 +48,11 @@ namespace PHASIC {
 
     void CalcVS(ATOOLS::ist::itype type, double s, double mj, double mk);
     void CalcVNS(ATOOLS::ist::itype type, double s, double mj, double mk,
-                 bool ini);
-    void CalcVNSq(double s, double mj, double mk);
-    void CalcVNSg(double s, double mk, bool ini);
+                 double sjKt, double skKt, double mKt2, bool ini);
+    void CalcVNSq(double s, double mj, double mk,
+                  double sjKt, double skKt, double mKt2);
+    void CalcVNSg(double s, double mk, double sjKt, double skKt,
+                  double mKt2, bool ini);
     void CalcVNSs(double s, double mj, double mk);
     void CalcGamma(ATOOLS::ist::itype type, double mu2, double s, double m);
     void CalcgKterm(ATOOLS::ist::itype type, double mu2, double s, double mj,
@@ -80,8 +82,8 @@ namespace PHASIC {
     inline void   SetCollinearVFFSplitting(int csm) { m_collVFF=csm; }
 
     void Calculate(ATOOLS::ist::itype t, double mu2, double s,
-                   double mj, double mk,
-                   bool inij, bool inik, bool mode);
+                   double mj, double mk, double sjKt, double skKt,
+                   double mKt2, bool inij, bool inik, bool mode);
 
     double I_Fin();
     double I_E1();
@@ -139,7 +141,7 @@ namespace PHASIC {
 
     inline void   SetCpls(std::vector<double> cpls) { m_cpls=cpls; }
     inline double Cpl(size_t i)                     { return m_cpls[i]; }
-
+    
     inline double NC() const                        { return m_NC; }
     inline double CF() const                        { return m_CF; }
     inline double CA() const                        { return m_CA; }
