@@ -51,6 +51,7 @@ namespace AMISIC {
       return (*p_diffxsec)(s,b);
     }
     inline double fb(const double & s,const double & b) {
+      if ((*this)(s,b)<=1.e-12) return -1.;
       return (*p_diffxsec)(s,b)/p_procs->GetXSecs()->XSratio(s);
     }
     //////////////////////////////////////////////////////////////////////////

@@ -100,7 +100,8 @@ double Matter_Overlap::SelectB() const {
   ///////////////////////////////////////////////////////////////////////////
   double radius = m_radius[0], b=0.;
   if (m_dynamic) radius = sqrt(m_dynradius2);
-  else {
+  else if (m_form[0]==matter_form::double_gaussian ||
+	   m_form[1]==matter_form::double_gaussian) {
     double rand = ran->Get();
     for (size_t i=3;i>=0;i--) {
       rand -= m_fraction[i];
