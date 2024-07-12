@@ -18,6 +18,28 @@ void Recoil_Definition::ShowSyntax(const int mode)
 
 namespace ATOOLS {
 
+  class Recoil_InitialState: public Recoil_Definition {
+  public:
+
+    Vec4D Recoil(const Cluster_Amplitude *ampl)
+    {
+      Vec4D rec;
+      for (size_t i(0);i<ampl->NIn();++i)
+	rec+=ampl->Leg(i)->Mom();
+      return rec;
+    }
+
+    std::vector<int> RecoilTags(const Cluster_Amplitude *ampl)
+    {
+      if (!ampl) return std::vector<int>(4);
+      std::vector<int> tags(ampl->Legs().size(),0);
+      for (size_t i(0);i<ampl->NIn();++i) tags[i]=3;
+      return tags;
+    }
+
+  };// end of class Recoil_FinalState
+
+  
   class Recoil_FinalState: public Recoil_Definition {
   public:
 
@@ -61,6 +83,18 @@ namespace ATOOLS {
   };// end of class Recoil_EWFinalState
 
 }
+
+DECLARE_GETTER(Recoil_InitialState,"InitialState",
+	       Recoil_Definition,RecoilDefinition_Key);
+Recoil_Definition *ATOOLS::Getter
+<Recoil_Definition,RecoilDefinition_Key,Recoil_InitialState>::
+operator()(const RecoilDefinition_Key &key) const
+{ return new Recoil_InitialState(); }
+
+void Getter<Recoil_Definition,RecoilDefinition_Key,Recoil_InitialState>::
+PrintInfo(std::ostream &str,const size_t width) const
+{ str<<"complete initial state"; }
+
 
 DECLARE_GETTER(Recoil_FinalState,"FinalState",
 	       Recoil_Definition,RecoilDefinition_Key);

@@ -32,6 +32,7 @@ namespace AMEGIC {
     std::vector<std::vector<double> > m_dsijqcd,m_dsijew;
     std::vector<std::vector<double> > m_Q2ij;
 
+    ATOOLS::Recoil_Definition  * p_recoil;
     Single_Virtual_Correction        * p_partner;
     Single_LOProcess                 * p_LO_process;
     PHASIC::Massive_Kernels          * p_kernel_qcd, * p_kernel_ew;
