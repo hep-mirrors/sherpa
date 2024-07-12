@@ -289,18 +289,13 @@ bool Amisic::GenerateScatter(const size_t & type,Blob * blob) {
   return nullptr;
   // old version below
   /*if (!m_singlecollision.Done()) {
-    //msg_Out()<<"*** "<<METHOD<<"("<<type<<") for "<<blob->Id()<<" |"<<blob<<"| ,"
-    //	     <<Blob::Counter()<<"/"<<Particle::Counter()<<"\n";
-    //     <<(*blob)<<"\n";
     bool outcome = false;
     switch (type) {
     case 3:
-      outcome = ( (blob->Type()==btp::Signal_Process) ?
-		  FirstMPI(blob) :
-		  m_singlecollision.NextScatter(blob) );
+      outcome = ((blob->Type()==btp::Signal_Process) ?
+		 FirstMPI(blob) : m_singlecollision.NextScatter(blob) );
       break;
     case 2:
-      msg_Out()<<METHOD<<": rescatter not yet implemented.\n";
       exit(1);
       break;
     case 1:
@@ -313,22 +308,12 @@ bool Amisic::GenerateScatter(const size_t & type,Blob * blob) {
     if (outcome) {
       AddInformationToBlob(blob);
       if (m_singlecollision.Done() && m_ana) {
-	msg_Out()<<"*** "<<METHOD<<"(1) with "<<m_nscatters<<"\n";
 	Analyse(true);
       }
-      //msg_Out()<<"*** "<<METHOD<<" successful for blob |"<<blob<<"|, "
-      //       <<Blob::Counter()<<"/"<<Particle::Counter()<<"\n";
       return true;
     }
-    //msg_Out()<<"*** "<<METHOD<<" couldn't add to the blob |"<<blob<<"|, "
-    //	     <<Blob::Counter()<<"/"<<Particle::Counter()<<"\n";
-    msg_Out()<<"*** "<<METHOD<<"(2) with "<<m_nscatters<<"\n";
     if (m_ana) Analyse(true);
   }
-  //else {
-  //msg_Out()<<"*** "<<METHOD<<" already done, obsolete blob |"<<blob<<"|, "
-  //	     <<Blob::Counter()<<"/"<<Particle::Counter()<<"\n";
-  //}
   return false;
 }
 

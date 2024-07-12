@@ -23,14 +23,16 @@ namespace AMISIC {
     Interaction_Probability  * p_pint;
     NonPerturbative_XSecs    * p_soft;
 
-    MI_Process * p_proc;
-    double       m_pt2, m_pt2min, m_b, m_bfac, m_fb;
-    double       m_S, m_lastpt2, m_residualx1, m_residualx2, m_Ycms;
-    bool         m_done;
-    std::list<ATOOLS::Blob *> m_prefabs;
+    MI_Process   * p_proc;
+    double         m_pt2, m_pt2min, m_b, m_bfac, m_fb;
+    double         m_S, m_lastpt2, m_nextpt2, m_residualx1, m_residualx2, m_Ycms;
+    bool           m_done;
+    ATOOLS::Blob * m_nextblob;
+    std::map<double, ATOOLS::Blob *> m_prefabs;
 
     double MakeHardScatterBlob(ATOOLS::Blob * blob);
-    bool   SelectPT2();
+    void   DefinePossibleNext();
+    int    SelectPT2();
     void   CopyPrefabricatedBlob(ATOOLS::Blob * blob);
 
     bool m_ana;
@@ -51,7 +53,6 @@ namespace AMISIC {
 	      NonPerturbative_XSecs * soft);
     void UpdateSandY(double s, double y);
     void Reset();
-    bool PrefabricateBlob();
     bool FirstMinBiasScatter(ATOOLS::Blob * first);
     bool FirstMPI(ATOOLS::Blob * signal);
     bool NextScatter(ATOOLS::Blob * blob);
@@ -68,8 +69,8 @@ namespace AMISIC {
       p_remnants[beam]->SetPosition(pos);
     }
     inline void SetDone(const bool & done) { m_done = done; }
-    inline void AddPrefabricatedBlob(ATOOLS::Blob * blob) {
-      m_prefabs.push_back(blob);
+    inline void AddPrefabricatedBlob(const double & pt2,ATOOLS::Blob * blob) {
+      m_prefabs[pt2] = blob;
     }
     inline ATOOLS::Vec4D Position(const size_t & beam) const {
       return p_remnants[beam]->Position();

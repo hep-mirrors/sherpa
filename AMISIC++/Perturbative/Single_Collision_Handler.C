@@ -47,11 +47,14 @@ void Single_Collision_Handler::Init(REMNANTS::Remnant_Handler * remnant_handler,
 }
 
 void Single_Collision_Handler::Reset() {
-  while (!m_prefabs.empty()) {
-    delete m_prefabs.back();
-    m_prefabs.pop_back();
+  for (map<double,Blob *>::iterator mit=m_prefabs.begin();
+       mit!=m_prefabs.end();mit++) {
+    delete mit->second;
   }
-  m_done = false;
+  m_prefabs.clear();
+  m_nextblob = nullptr;
+  m_nextpt2  = -1.;
+  m_done     = false;
 }
 
 bool Single_Collision_Handler::PrefabricateBlob() {
@@ -68,112 +71,164 @@ bool Single_Collision_Handler::PrefabricateBlob() {
 }
 
 bool Single_Collision_Handler::FirstMPI(Blob * signal) {
-  //msg_Out()<<"  * "<<METHOD<<": |"<<signal<<"|\n";
   double pt2_1  = sqr((*signal)["MI_Scale"]->Get<double>());
   double x1     = (*signal)["PDFInfo"]->Get<PDF_Info>().m_x1;
   double x2     = (*signal)["PDFInfo"]->Get<PDF_Info>().m_x2;
   p_overlap->FixDynamicRadius(x1,x2,pt2_1,pt2_1);
-  //msg_Out()<<"  * "<<METHOD<<"(pt^2 = "<<pt2_1<<", x1 = "<<x1<<", x2 = "<<x2<<"): "
-  //	   <<"R = "<<sqrt(p_overlap->DynamicRadius2())<<".\n";
   while (true) {
-    m_b     = p_overlap->SelectB();
-    m_fb    = p_pint->fb(m_S,m_b);
-    m_bfac  = m_fb * p_overlap->MaxValue(m_b);
+    m_b         = p_overlap->SelectB();
+    m_fb        = p_pint->fb(m_S,m_b);
+    m_bfac      = m_fb * p_overlap->MaxValue(m_b);
     p_overestimator->SetBFac(m_bfac);
-    m_pt2   = m_S/4.;
-    //msg_Out()<<"  * "<<METHOD<<" starts veto cycle: b = "<<m_b<<", "
-    //<<"bfac = "<<m_bfac<<"\n";
-    while (SelectPT2()) {
-      Blob * second = new Blob();
-      msg_Out()<<"  * "<<METHOD<<" inits |"<<second<<"|, "
-	       <<Blob::Counter()<<"/"<<Particle::Counter()<<"\n";
-      int fill      = p_processes->FillHardScatterBlob(second,pt2_1);
-      // New blob (second) was successfull filled and fulfils requirements that
-      // its pt^2 < pt^2_1, the pt^2 of the signal blob.
-      // We store the new blob now to get it off the shelf in the NextScatter call.
-      if (fill==1) {
-	m_prefabs.push_back(second);
-	m_lastpt2 = m_pt2;
-	//msg_Out()<<"  * "<<METHOD<<" ends veto cycle ("<<m_done<<"): "
-	//	 <<"|"<<second<<"|, "<<Blob::Counter()<<"/"<<Particle::Counter()<<"\n";
+    m_pt2       = m_S/4.;
+    bool reject = false;
+    while (!reject) {
+      Blob * second;
+      int fill;
+      switch (SelectPT2()) {
+      case 1:
+	////////////////////////////////////////////////////////////////////////
+	// pt^2 is smaller than the pt^2 of the hardest pre-fabricated blob,
+	// we will copy it over and remove it from the (ordered) list.  This
+	// has not been implemented yet due to interplay with first blob.
+	////////////////////////////////////////////////////////////////////////
+	msg_Error()<<METHOD<<" results in a biased minbias event - not implemented yet.\n";
+	exit(1);
+      case 0:
+	////////////////////////////////////////////////////////////////////////
+	// pt^2 is harder than the pt^2 of the hardest pre-fabricated blob,
+	// or such a blob doesn't exist.  Will check if we can fill a
+	// hard scatter blob, if successful we can stop.
+	////////////////////////////////////////////////////////////////////////
+	second  = new Blob();
+	fill    = p_processes->FillHardScatterBlob(second,pt2_1);
+	if (fill==1) {
+	  /////////////////////////////////////////////////////////////////////////
+	  // New blob (second) was successfull filled and fulfils requirements that
+	  // its pt^2 < pt^2_1, the pt^2 of the signal blob.  We store the new blob
+	  // now to get it off the shelf in the NextScatter call.
+	  /////////////////////////////////////////////////////////////////////////
+	  m_prefabs[m_pt2] = second;
+	  m_lastpt2        = m_pt2;
+	  m_done           = false;
+	  return true;
+	}
+	else {
+	  /////////////////////////////////////////////////////////////////////////
+	  // New blob (second) couldn't be created and needs to be deleted.
+	  /////////////////////////////////////////////////////////////////////////
+	  delete second;
+	  ///////////////////////////////////////////////////////////////////////
+	  // Kinematics of new blob will have to be vetoed, as its pt^2 > pt^2_1,
+	  //which
+	 means we have to select a new impact parameter b.
+	  ///////////////////////////////////////////////////////////////////////
+	  if (fill==-1) reject = true;
+	}
+	break;
+      case -1:
+      default:
+	////////////////////////////////////////////////////////////////////////
+	// pt^2 is smaller than pt2min.  Will stop and deal with it at end
+	// of method.
+	////////////////////////////////////////////////////////////////////////
+	m_lastpt2 = 0.;
+	m_done    = true;
 	return true;
       }
-      // New blob (second) couldn't be created and needs to be deleted.
-      else {
-	delete second;
-	//msg_Out()<<"  * "<<METHOD<<" deletes |"<<second<<"|, "
-	//	 <<Blob::Counter()<<"/"<<Particle::Counter()<<"\n";
-	second = nullptr;
-	// Kinematics of new blob had to be vetoed, as its pt^2 > pt^2_1, which
-	// means we have to select a new impact parameter b.
-	if (fill==-1) break;
-      }
-    }
-    if (m_pt2<m_pt2min) {
-      m_lastpt2 = 0.;
-      m_done    = true;
-      //msg_Out()<<"  * "<<METHOD<<" ends veto cycle ("<<m_done<<"): |no blob|\n";
-      return true;
     }
   }
   return true;
 }
 
 bool Single_Collision_Handler::FirstMinBiasScatter(Blob * first) {
+  ///////////////////////////////////////////////////////////////////////////
+  // Start the Min bias event by continuing to select a (new) hardest scatter
+  // and the associated impact parameter of the two colliding hadronic systems
+  // until the implicit Sudakov rejection,  which is achieve by a hit-or-miss
+  // method, accepts it.  In this process, either a pt^2 smaller than the
+  // cut-off is selected or a first MPI blob (i.e. the second min bias blob)
+  // with pt^2 smaller than the signal process scale may be filled and added
+  // to the list of pre-fabricated blobs, to be taken off the shelf in the
+  // NextScatter method.
+  ///////////////////////////////////////////////////////////////////////////
   bool done = false;
   while (!done) {
+    first->ClearAllData();
+    first->DeleteOwnedParticles();
     double pt2_1 = MakeHardScatterBlob(first);
     p_overlap->FixDynamicRadius(p_integrator->X(0),p_integrator->X(1));
-    m_b          = p_overlap->SelectB();
-    m_fb         = p_pint->fb(m_S,m_b);
-    m_bfac       = m_fb * p_overlap->MaxValue(m_b);
-    //msg_Out()<<"  * "<<METHOD<<"(pt^2 = "<<pt2_1<<"): "
-    //	     <<"R = "<<sqrt(p_overlap->DynamicRadius2())<<".\n";
+    do {
+      m_b  = p_overlap->SelectB();
+      m_fb = p_pint->fb(m_S,m_b);
+    } while (m_fb<=0.);
+    m_bfac        = m_fb * p_overlap->MaxValue(m_b);
     p_overestimator->SetBFac(m_bfac);
-    m_pt2        = m_S/4.;
-    while (SelectPT2()) {
-      Blob * second  = new Blob();
-      //msg_Out()<<"  * "<<METHOD<<" inits |"<<second<<"|, "
-      //       <<Blob::Counter()<<"/"<<Particle::Counter()<<"\n";
-      int fill       = p_processes->FillHardScatterBlob(second,pt2_1);
-      // New blob (second) was successfull filled and fulfils requirements that
-      // its pt^2 < pt^2_1, the pt^2 of the signal blob.
-      // We store the new blob now to get it off the shelf in the NextScatter call.
-      if (fill==1) {
-	m_prefabs.push_back(second);
-	m_lastpt2 = m_pt2;
-	m_done    = false;
-	done      = true;
-	break;
-      }
-      // New blob (second) couldn't be created and needs to be deleted.
-      else {
-	delete second;
-	//msg_Out()<<"  * "<<METHOD<<" deletes |"<<second<<"|, "
-	//	 <<Blob::Counter()<<"/"<<Particle::Counter()<<"\n";
-	second = nullptr;
-	// Kinematics of new blob had to be vetoed, as its pt^2 > pt^2_1, which
-	// means we have to try a new starting event.
-	if (fill==-1) {
-	  first->ClearAllData();
-	  first->DeleteOwnedParticles();
-	  break;
+    m_pt2         = m_S/4.;
+    bool reject   = false;
+    Blob * second = nullptr;
+    while (!reject && !done) {
+      int fill;
+      switch (SelectPT2()) {
+      case 1:
+	////////////////////////////////////////////////////////////////////////
+	// pt^2 is smaller than the pt^2 of the hardest pre-fabricated blob,
+	// we will copy it over and remove it from the (ordered) list.  This
+	// has not been implemented yet due to interplay with first blob.
+      ////////////////////////////////////////////////////////////////////////
+	msg_Error()<<METHOD<<" results in a biased minbias event - not implemented yet.\n";
+	exit(1);
+      case 0:
+	////////////////////////////////////////////////////////////////////////
+	// pt^2 is harder than the pt^2 of the hardest pre-fabricated blob,
+	// or such a blob doesn't exist.  Will check if we can fill a
+	// hard scatter blob, if successful we can stop.
+	////////////////////////////////////////////////////////////////////////
+	second  = new Blob();
+	fill    = p_processes->FillHardScatterBlob(second,pt2_1);
+	if (fill==1) {
+	  /////////////////////////////////////////////////////////////////////////
+	  // New blob (second) was successfull filled and fulfils requirements that
+	  // its pt^2 < pt^2_1, the pt^2 of the signal blob.  We store the new blob
+	  // now to get it off the shelf in the NextScatter call.
+	  /////////////////////////////////////////////////////////////////////////
+	  m_prefabs[m_pt2] = second;
+	  m_lastpt2        = m_pt2;
+	  m_done           = false;
+	  done             = true;
 	}
-      }
-      if (m_pt2<m_pt2min) {
+	else {
+	  /////////////////////////////////////////////////////////////////////////
+	  // New blob (second) couldn't be created and needs to be deleted.
+	  /////////////////////////////////////////////////////////////////////////
+	  delete second;
+	  ///////////////////////////////////////////////////////////////////////
+	  // Kinematics of new blob will have to be vetoed, as its pt^2 > pt^2_1,
+	// which means we have to select a new impact parameter b.
+	  ///////////////////////////////////////////////////////////////////////
+	  if (fill==-1) reject = true;
+	}
+	break;
+      case -1:
+      default:
+	////////////////////////////////////////////////////////////////////////
+	// pt^2 is smaller than pt2min.  Will stop and deal with it at end
+	// of method.
+	////////////////////////////////////////////////////////////////////////
 	m_lastpt2 = 0.;
 	m_done = done = true;
 	break;
       }
     }
-  };
+  }
+  ///////////////////////////////////////////////////////////////////////////////
   // Updating the new "signal" blob of the min bias event and adding the last
   // bits of relevant information.
+  ///////////////////////////////////////////////////////////////////////////////
   first->SetType(btp::Hard_Collision);
   first->SetStatus(blob_status::needs_showers);
   first->AddData("Trials",new Blob_Data<size_t>(1));
   first->AddData("Weight_Norm",new Blob_Data<double>(p_xsecs->XSnd()));
-  msg_Out()<<METHOD<<"(first):\n"<<(*first)<<"\n";
   return true;
 }
 
@@ -201,50 +256,69 @@ bool Single_Collision_Handler::NextScatter(Blob * blob) {
   // - either use (one of) the pre-fabricated blob(s), or
   // - generate the next pt^2 with the Sudakov-like hit-or-miss method
   //   and create a new blob based on the associated kinematics
-  // - if successful, return a filled (at the moment 2->2 only) scattering blob
+  // - if successful, return a filled (at the moment 2->2 only)
+  //   scattering blob
   ///////////////////////////////////////////////////////////////////////////
   if (m_done) return false;
-  if (!m_prefabs.empty()) {
-    //msg_Out()<<"  * "<<METHOD<<" copies blob: "
-    //	     <<"|"<<m_prefabs.front()<<"| --> |"<<blob<<"|, "
-    //	     <<Blob::Counter()<<"/"<<Particle::Counter()<<".\n";
-    CopyPrefabricatedBlob(blob);
-    blob->SetType(btp::Hard_Collision);
-    blob->SetStatus(blob_status::needs_showers);
-    msg_Out()<<METHOD<<"(prefab):\n"<<(*blob)<<"\n";
-    return true;
-  }
-  m_pt2        = m_lastpt2;
-  //msg_Out()<<"  * "<<METHOD<<" starting veto cycle (pt^2 = "<<m_pt2<<"): "
-  //	   <<"b = "<<m_b<<", bfac = "<<m_bfac<<"\n";
-  while (SelectPT2()) {
-        if (m_pt2<m_pt2min) {
-        //msg_Out()<<"  * "<<METHOD<<": no blob |"<<blob<<"|, "
-      //       <<Blob::Counter()<<"/"<<Particle::Counter()<<" for "<<m_pt2<<"\n";
-      m_done = true;
-      return false;
-        }
-    int fill = p_processes->FillHardScatterBlob(blob,m_lastpt2);
-    if (fill==1) {
-      //msg_Out()<<"  * "<<METHOD<<": blob for "<<m_pt2<<": |"<<blob<<"|, "
-      //       <<Blob::Counter()<<"/"<<Particle::Counter()<<"\n";
+  m_pt2 = m_lastpt2;
+  DefinePossibleNext();
+  int fill;
+  bool run = true;
+  while (run) {
+    switch (SelectPT2()) {
+    case 1:
+      ////////////////////////////////////////////////////////////////////////
+      // pt^2 is smaller than the pt^2 of the hardest pre-fabricated blob,
+      // we will copy it over and remove it from the (ordered) list.
+      ////////////////////////////////////////////////////////////////////////
+      CopyPrefabricatedBlob(blob);
+      m_prefabs.erase(--m_prefabs.end());
+      m_lastpt2 = m_pt2;
+      return true;
+    case 0:
+      ////////////////////////////////////////////////////////////////////////
+      // pt^2 is harder than the pt^2 of the hardest pre-fabricated blob,
+      // or such a blob doesn't exist.  Will check
+        if we can fill a
+        //hard scatter blob, if successful we can stop.
+      ////////////////////////////////////////////////////////////////////////
+         fill = p_processes->FillHardScatterBlob(blob,m_lastpt2);
+      if (fill==1) {
+
         m_lastpt2 = m_pt2;
       blob->SetType(btp::Hard_Collision);
       blob->SetStatus(blob_status::needs_showers);
-      msg_Out()<<METHOD<<"(new one):\n"<<(*blob)<<"\n";
-      return true;
-    }
-    else {
-      if (fill==-1) THROW(fatal_error,"mismatched sequence of pt^2");
+      blob->SetId();
+	return true;
+      }
+      else {
+	if (fill==-1) THROW(fatal_error,"mismatched sequence of pt^2");
+      }
+      break;
+    case -1:
+    default:
+      ////////////////////////////////////////////////////////////////////////
+      // pt^2 is smaller than pt2min.  Will stop and deal with it at end
+      // of method.
+      ////////////////////////////////////////////////////////////////////////
+      run = false;
+      break;
     }
   }
-  //msg_Out()<<"  * "<<METHOD<<": no blob |"<<blob<<"|, "
-  //	   <<Blob::Counter()<<"/"<<Particle::Counter()<<" for "<<m_pt2<<"\n";
-  m_done = true;
+  if (m_pt2<m_pt2min) m_done = true;
   return false;
 }
 
-bool Single_Collision_Handler::SelectPT2() {
+void Single_Collision_Handler::DefinePossibleNext() {
+  m_nextpt2  = -1.;
+  m_nextblob = nullptr;
+  if (!m_prefabs.empty()) {
+    m_nextpt2  = (--m_prefabs.end())->first;
+    m_nextblob = (--m_prefabs.end())->second;
+  }
+}
+
+int Single_Collision_Handler::SelectPT2() {
   ///////////////////////////////////////////////////////////////////////////
   // Generate a trial kinematics, starting from m_lastpt2
   // - produces a trial pt2 based on a fast and crude overestimator (in
@@ -256,38 +330,38 @@ bool Single_Collision_Handler::SelectPT2() {
   // - accept or reject the kinematics with a hit-or-miss of true over
   //   overestimated differential cross section dsigma/dpt2
   ///////////////////////////////////////////////////////////////////////////
-  double wt=0.;
-  do {
+  while (true) {
     m_pt2 = p_overestimator->TrialPT2(m_pt2);
-    if (m_pt2<=m_pt2min) return false;
+    if (m_pt2<=m_pt2min)  return -1;
+    if (m_pt2<=m_nextpt2) { m_pt2 = m_nextpt2; return 1; }
     if (!p_integrator->MakeKinematics(m_pt2,m_S)) continue;
     p_overlap->FixDynamicRadius(p_integrator->X(0),p_integrator->X(1));
-    wt = ( (*p_processes)()/(*p_overestimator)(m_pt2,p_integrator->Yvol()) *
-	   (*p_overlap)(m_b)/m_bfac );
+    double wt = ( (*p_processes)()/(*p_overestimator)(m_pt2,p_integrator->Yvol()) *
+		  (*p_overlap)(m_b)/m_bfac );
     if (m_ana) AnalyseWeight(wt);
-  } while (wt<ran->Get());
-  return true;
+    if (wt>=ran->Get()) break;
+  }
+  return 0;
 }
 
-void Single_Collision_Handler::CopyPrefabricatedBlob(ATOOLS::Blob * blob) {
-  if (m_prefabs.empty()) return;
-  Particle_Vector * parts = m_prefabs.front()->InParticles();
+void Single_Collision_Handler::CopyPrefabricatedBlob(Blob * blob) {
+  if (m_prefabs.empty() || m_nextblob==nullptr) return;
+  Particle_Vector * parts = m_nextblob->InParticles();
   while (!parts->empty()) {
     Particle * part = parts->back();
     part->SetDecayBlob(nullptr);
     blob->AddToInParticles(part);
     parts->pop_back();
   }
-  parts = m_prefabs.front()->OutParticles();
+  parts = m_nextblob->OutParticles();
   while (!parts->empty()) {
     Particle * part = parts->back();
     part->SetProductionBlob(nullptr);
     blob->AddToOutParticles(part);
     parts->pop_back();
   }
-  for (String_BlobDataBase_Map::const_iterator sdit=
-	 m_prefabs.front()->GetData().begin();
-       sdit!=m_prefabs.front()->GetData().end();sdit++) {
+  for (String_BlobDataBase_Map::const_iterator sdit=m_nextblob->GetData().begin();
+       sdit!=m_nextblob->GetData().end();sdit++) {
     if (sdit->first!="WeightsMap")
       blob->AddData(sdit->first,sdit->second->ClonePtr());
   }
@@ -295,11 +369,7 @@ void Single_Collision_Handler::CopyPrefabricatedBlob(ATOOLS::Blob * blob) {
   blob->SetTypeSpec("AMISIC++ 1.1");
   blob->SetType(btp::Hard_Collision);
   blob->SetStatus(blob_status::needs_showers);
-  Blob * del = m_prefabs.front();
-  delete m_prefabs.front();
-  //msg_Out()<<"  * "<<METHOD<<" deletes |"<<del<<"|, "
-  //	   <<Blob::Counter()<<"/"<<Particle::Counter()<<"\n";
-  m_prefabs.pop_front();
+  delete m_nextblob;
 }
 
 void Single_Collision_Handler::UpdateSandY(double s, double y) {

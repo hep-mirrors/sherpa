@@ -103,6 +103,7 @@ Return_Value::code Multiple_Interactions::InitMinBias() {
   // delete the former, and inform the remnants about the impact parameter
   // of the collision
   ////////////////////////////////////////////////////////////////////////////
+  Blob * signal = (*p_bloblist)[0];
   p_lastblob = p_activeMI->GenerateHardProcess(MI_Handler::typeID::minbias,signal);
   if (p_lastblob) {
     Blob * signal         = (*p_bloblist)[0];
@@ -132,13 +133,11 @@ Return_Value::code Multiple_Interactions::InitMinBias() {
     delete p_lastblob;
     p_activeMI->Remnants()->SetImpactParameter(p_activeMI->ImpactParameter());
     m_newevent[0] = false;
-    //msg_Out()<<"=== "<<METHOD<<"(2) keeps |"<<signal<<"|, "<<Blob::Counter<<"\n";
     return Return_Value::Success;
   }
   ////////////////////////////////////////////////////////////////////////////
   // No meaningful first scatter in MinBias event produced - ask for new event
   ////////////////////////////////////////////////////////////////////////////
-  //msg_Out()<<"\n=== "<<METHOD<<" new event for |"<<signal<<"|\n"; exit(1);
   return Return_Value::New_Event;
 }
 
@@ -162,13 +161,11 @@ bool Multiple_Interactions::InitMPIs() {
   FixMaxEnergies();
   SwitchPerturbativeInputsToMIs();
   Blob * signal = p_bloblist->FindFirst(btp::Signal_Process);
-  //msg_Out()<<"\n=== "<<METHOD<<" starts with |"<<signal<<"|, "<<Blob::Counter<<"\n";
   if (p_activeMI->GenerateHardProcess(MI_Handler::typeID::MPI,signal)) {
     p_activeMI->Remnants()->SetImpactParameter(p_activeMI->ImpactParameter());
     Blob * shower = signal->OutParticle(0)->DecayBlob();
     if (shower) shower->SetPosition(signal->Position());
     m_newevent[0] = false;
-    //msg_Out()<<"\n=== "<<METHOD<<" successful for |"<<signal<<"|, "<<Blob::Counter<<"\n";
     return true;
   }
   return false;
@@ -214,7 +211,6 @@ ATOOLS::Return_Value::code Multiple_Interactions::InitRescatter() {
   ////////////////////////////////////////////////////////////////////////////
   // No meaningful first scatter in MinBias event produced - ask for new event
   ////////////////////////////////////////////////////////////////////////////
-  //msg_Out()<<"=== "<<METHOD<<" deletes |"<<soft<<"|\n";
   p_bloblist->Delete(soft);
   return Return_Value::Nothing;
 }
@@ -288,13 +284,9 @@ Return_Value::code Multiple_Interactions::Treat(Blob_List *bloblist) {
   ////////////////////////////////////////////////////////////////////////////
   // Try to produce a hard scattering blob and test if this works.
   ////////////////////////////////////////////////////////////////////////////
-  //msg_Out()<<"\n=== "<<METHOD<<": trying to add hard process to "
   //<<Blob::Counter()<<"/"<<Particle::Counter()<<".\n";
   Blob * blob = new Blob();
-  //msg_Out()<<"=== "<<METHOD<<": inits |"<<blob<<"|, "
-  //<<Blob::Counter()<<"/"<<Particle::Counter()<<".\n";
   if (p_activeMI->GenerateHardProcess(MI_Handler::typeID::MPI,blob)) {
-    //msg_Out()<<"=== "<<METHOD<<": before test for |"<<blob<<"|.\n";
     //////////////////////////////////////////////////////////////////////////
     // Check that the partons can be extracted from remnant - mainly a
     // confirmation that the remnant has enough energy to accommodate
@@ -302,17 +294,12 @@ Return_Value::code Multiple_Interactions::Treat(Blob_List *bloblist) {
     //////////////////////////////////////////////////////////////////////////
     if (!TestHardScatter(blob)) {
       delete blob;
-      //msg_Out()<<"=== "<<METHOD<<"(fail) deletes |"<<blob<<"|, now "
-      //<<Blob::Counter()<<"/"<<Particle::Counter()<<"\n";
+      return Return_Value::Success;
       return Return_Value::Retry_Event;
     }
-    //msg_Out()<<"=== "<<METHOD<<": past test, rescatter = "
-    //	     <<(p_activeMI->Id()==PDF::isr::bunch_rescatter)<<"\n";
     if (p_activeMI->Id()==PDF::isr::bunch_rescatter)
       blob->AddStatus(blob_status::needs_beamRescatter);
     p_bloblist->push_back(blob);
-    //msg_Out()<<"=== "<<METHOD<<" adds |"<<blob<<"| to event, now "
-    //<<Blob::Counter()<<"/"<<Particle::Counter()<<"\n";
     return Return_Value::Success;
   }
   //////////////////////////////////////////////////////////////////////////
@@ -321,8 +308,6 @@ Return_Value::code Multiple_Interactions::Treat(Blob_List *bloblist) {
   //////////////////////////////////////////////////////////////////////////
   else if (p_activeMI->Done()) {
     delete blob;
-    //msg_Out()<<"=== "<<METHOD<<"(done) deletes |"<<blob<<"|, now "
-    //<<Blob::Counter()<<"/"<<Particle::Counter()<<"\n";
     return Return_Value::Nothing;
   }
   //////////////////////////////////////////////////////////////////////////
