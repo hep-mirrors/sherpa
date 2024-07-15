@@ -51,6 +51,10 @@ namespace SHERPA {
 
     void MPISync();
 
+    // This entails costly operations and should not be done too often (e.g.
+    // only after a successful run).
+    void MPISyncXSAndErrMaps();
+
   public:
 
     Event_Handler();
@@ -77,6 +81,11 @@ namespace SHERPA {
     ATOOLS::Weights_Map TotalXS();
     ATOOLS::Weights_Map TotalErr();
     ATOOLS::Uncertain<double> TotalNominalXS();
+    ATOOLS::Uncertain<double> TotalNominalXSMPI();
+
+    // These are only valid after calling MPISyncXSAndErrMaps().
+    ATOOLS::Weights_Map TotalXSMPI();
+    ATOOLS::Weights_Map TotalErrMPI();
 
     std::string CurrentProcess() const;
 
