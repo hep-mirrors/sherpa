@@ -597,6 +597,11 @@ void Event_Handler::MPISync()
       mpi->Allreduce(&m_maxweight, 1, MPI_DOUBLE, MPI_MAX);
   }
 #endif
+}
+
+void Event_Handler::MPISyncXSAndErrMaps()
+{
+  MPISync();
   m_mwgtmapsum = m_wgtmapsum;
   m_mwgtmapsumsqr = m_wgtmapsumsqr;
 #ifdef USING__MPI
@@ -640,6 +645,34 @@ Uncertain<double> Event_Handler::TotalNominalXS()
   return {xs, sqrt(numerator / (m_n - 1) / (m_n * m_n))};
 }
 
+Uncertain<double> Event_Handler::TotalNominalXSMPI()
+{
+  MPISync();
+  if (m_mn == 0.0)
+    return {0.0, 0.0};
+
+  double sum_nominal {m_wgtmapsum.Nominal()};
+#ifdef USING__MPI
+  if (mpi->Size() > 1)
+    mpi->Allreduce(&sum_nominal, 1, MPI_DOUBLE, MPI_SUM);
+#endif
+  const double xs {sum_nominal / m_mn};
+  if (m_mn <= 1)
+    return {xs, xs};
+
+  double sumsqr_nominal {m_wgtmapsumsqr.Nominal()};
+#ifdef USING__MPI
+  if (mpi->Size() > 1)
+    mpi->Allreduce(&sumsqr_nominal, 1, MPI_DOUBLE, MPI_SUM);
+#endif
+  if (ATOOLS::IsEqual(sumsqr_nominal * m_mn, sum_nominal * sum_nominal, 1.0e-6))
+    return {xs, 0.0};
+
+  const double numerator {sumsqr_nominal * m_mn - sum_nominal * sum_nominal};
+  return {xs, sqrt(numerator / (m_mn - 1) / (m_mn * m_mn))};
+}
+
+
 Weights_Map Event_Handler::TotalXS()
 {
   if (m_n==0.0) return 0.0;
@@ -652,6 +685,20 @@ Weights_Map Event_Handler::TotalErr()
   auto numerator = m_wgtmapsumsqr*m_n - m_wgtmapsum*m_wgtmapsum;
   numerator.SetZeroIfCloseToZero(1.0e-6);
   return sqrt(numerator/(m_n-1)/(m_n*m_n));
+}
+
+Weights_Map Event_Handler::TotalXSMPI()
+{
+  if (m_mn==0.0) return 0.0;
+  return m_mwgtmapsum/m_mn;
+}
+
+Weights_Map Event_Handler::TotalErrMPI()
+{
+  if (m_mn<=1) return TotalXSMPI();
+  auto numerator = m_mwgtmapsumsqr*m_mn - m_mwgtmapsum*m_mwgtmapsum;
+  numerator.SetZeroIfCloseToZero(1.0e-6);
+  return sqrt(numerator/(m_mn-1)/(m_mn*m_mn));
 }
 
 void Event_Handler::WriteRNGStatus
