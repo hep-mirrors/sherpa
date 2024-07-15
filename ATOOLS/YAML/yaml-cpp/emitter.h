@@ -1,5 +1,5 @@
-#ifndef EMITTER_H_62B23520_7C8E_11DE_8A39_0800200C9A66
-#define EMITTER_H_62B23520_7C8E_11DE_8A39_0800200C9A66
+#ifndef ATOOLS_YAML_EMITTER_H_62B23520_7C8E_11DE_8A39_0800200C9A66
+#define ATOOLS_YAML_EMITTER_H_62B23520_7C8E_11DE_8A39_0800200C9A66
 
 #if defined(_MSC_VER) ||                                            \
     (defined(__GNUC__) && (__GNUC__ == 3 && __GNUC_MINOR__ >= 4) || \
@@ -278,4 +278,4 @@ inline Emitter& operator<<(Emitter& emitter, _Precision precision) {
 }
 }  // namespace SHERPA_YAML
 
-#endif  // EMITTER_H_62B23520_7C8E_11DE_8A39_0800200C9A66
+#endif  // ATOOLS_YAML_EMITTER_H_62B23520_7C8E_11DE_8A39_0800200C9A66
