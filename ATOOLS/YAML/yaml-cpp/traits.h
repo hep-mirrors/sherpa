@@ -1,5 +1,5 @@
-#ifndef TRAITS_H_62B23520_7C8E_11DE_8A39_0800200C9A66
-#define TRAITS_H_62B23520_7C8E_11DE_8A39_0800200C9A66
+#ifndef ATOOLS_YAML_TRAITS_H_62B23520_7C8E_11DE_8A39_0800200C9A66
+#define ATOOLS_YAML_TRAITS_H_62B23520_7C8E_11DE_8A39_0800200C9A66
 
 #if defined(_MSC_VER) ||                                            \
     (defined(__GNUC__) && (__GNUC__ == 3 && __GNUC_MINOR__ >= 4) || \
@@ -103,7 +103,6 @@ struct disable_if_c<true, T> {};
 
 template <class Cond, class T = void>
 struct disable_if : public disable_if_c<Cond::value, T> {};
-}
 
 template <typename S, typename T>
 struct is_streamable {
@@ -132,4 +131,5 @@ struct streamable_to_string<Key, false> {
     return "";
   }
 };
-#endif  // TRAITS_H_62B23520_7C8E_11DE_8A39_0800200C9A66
+}
+#endif  // ATOOLS_YAML_TRAITS_H_62B23520_7C8E_11DE_8A39_0800200C9A66
