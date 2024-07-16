@@ -35,7 +35,7 @@ void FF_DipoleSplitting::SetMomenta(const Vec4D* mom)
   m_pj = mom[m_j];
   m_pk = mom[m_k];
 
-  if (m_subtype==subscheme::Alaric && m_ftype==spt::soft)
+  if (m_subtype==subscheme::Alaric);// && m_ftype==spt::soft)
     return SetMomentaAlaric(mom);
 
   m_yijk = m_pi*m_pj/(m_pi*m_pj+m_pj*m_pk+m_pk*m_pi);
@@ -142,48 +142,43 @@ void FF_DipoleSplitting::SetMomentaAlaric(const ATOOLS::Vec4D* mom) {
     m_pt2   =     m_ptij;
   }
   else {
-    Vec4D pij = mom[m_i]+mom[m_j], K(0.,0.,0.,0.);
-    int nk(0);
-    for(size_t i(0);i<ampl->Legs().size();++i) {
-      if(ff.m_b[i]&2 && i!=m_i && i!=m_j) {
-        K += mom[i];
-        ++nk;
-      }
+    Vec4D K(0.,0.,0.,0.);
+    for(size_t i(ampl->NIn());i<ampl->Legs().size();++i) {
+      if(i!=m_i && i!=m_j) K += mom[i];
     }
-    double Q2((pij+K).Abs2()), K2(K.Abs2());
+    double K2(K.Abs2());
     int mode = 0; // ?? what does it do?
     PHASIC::Kin_Args ffdip=PHASIC::ClusterFFDipole(0,0,0,K2,mom[m_i],mom[m_j],K,mode);
     if (ffdip.m_stat<0) {
       msg_Error()<<METHOD<<": Clustering failed in subtraction.\n";
-    }
-
-    if(nk>1) {
-      Poincare oldcms(K), newcms(ff.m_pk);
-      newcms.Invert();
-      for(size_t i(0);i<ampl->Legs().size();++i) {
-        if(ff.m_b[i]&2 && i!=m_i && i!=m_j) {
-          ampl->Leg(i)->SetMom(newcms*(oldcms*ampl->Leg(i)->Mom()));
-        }
-      }
     }
     
     m_pi = mom[m_i];
     m_pj = mom[m_j];
     m_pk = mom[m_k];
 
-    m_ptij = ffdip.m_pi; //ampl->Leg(m_i)->Mom(); // ????
-    m_ptk = ampl->Leg(m_k)->Mom();
+    m_ptij = ffdip.m_pi;
+    m_ptk = ffdip.m_pk; 
 
-    n = ff.m_nb;
+    n = ffdip.m_nb;
+
     m_zi = m_pi*n/((m_pi+m_pj)*n);
     m_zj = 1.-m_zi;
 
     m_pt1   =     m_zi*m_pi-m_zj*m_pj;
     m_pt2   =     m_ptij;
+
+    /// TODO: correct?
+    m_yijk = m_pi*m_pj/(m_pi*m_pj+m_pj*m_pk+m_pk*m_pi);
+    m_a = m_yijk;
+
+    // m_ptk  = 1./(1.-m_yijk)*m_pk;
+    // m_ptij = m_pi+m_pj-m_yijk/(1.-m_yijk)*m_pk;
   }
 
   ampl->Delete();
-  
+
+  double zi(m_zi), zj(m_zj);
   switch (m_ftype) {
   case spt::soft: {
     double sij(m_pi*m_pj), sik(m_pi*m_pk), skj(m_pj*m_pk);
@@ -195,20 +190,21 @@ void FF_DipoleSplitting::SetMomentaAlaric(const ATOOLS::Vec4D* mom) {
     break;
   }
   case spt::q2qg:
-    m_sff = ff.m_z*(1.-ff.m_z); //< CS eq. 5.183
+    m_sff = zi*(1.-zi);
     m_av  = m_sff;
     break;
   case spt::q2gq:
-    m_sff = ff.m_z*ff.m_z; //< CS eq. 5.183
+    m_sff = zi*zi;
     m_av  = m_sff;
     break;
   case spt::g2qq:
-    m_sff = 1.*ff.m_z; //< CS eq. 5.185
-    m_av  = m_sff - ff.m_z*4.*ff.m_z*(1.-ff.m_z);
+    m_sff = 1.;
+    m_sff *= zi;
+    m_av  = m_sff - zi*(zi*(1.-zi) + zj*(1.-zj));
     break;
   case spt::g2gg:
-    m_sff = 1*ff.m_z; //m_yijk/ff.m_z-1.+(1.-ff.m_z)/ff.m_z; //< CS eq. 5.186
-    m_av  = m_sff + ff.m_z*ff.m_z*(1-ff.m_z);
+      m_sff = zi;
+      m_av = m_sff - zi*(zi*(1.-zi));
     break;
   case spt::none:
     THROW(fatal_error, "Splitting type not set.");
