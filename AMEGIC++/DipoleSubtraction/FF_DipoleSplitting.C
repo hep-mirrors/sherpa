@@ -123,6 +123,7 @@ void FF_DipoleSplitting::SetMomentaAlaric(const ATOOLS::Vec4D* mom) {
     m_pj = ff.m_pj;
     m_pk = ff.m_pk;
 
+    m_mom = ff.m_p;
     m_zi = ff.m_z;
     m_zj = 1.-ff.m_z;
 

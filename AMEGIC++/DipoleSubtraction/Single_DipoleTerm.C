@@ -632,8 +632,6 @@ double Single_DipoleTerm::operator()(const ATOOLS::Vec4D * mom,
 
   ResetLastXS();
   p_LO_process->ResetLastXS();
-  p_dipole->SetMomenta(mom);
-  p_dipole->CalcDiPolarizations();
   SetLOMomenta(mom,cms);
 
   ((_mode&2)?p_LO_process->Partner():p_LO_process)->SetSubevtList(p_subevtlist);
