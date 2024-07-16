@@ -195,11 +195,12 @@ void Massive_Kernels::CalcVNSq(double s,double mj,double mk,double sjKt,
     else {
       double rho = skKt/s;
       double kap = mKt2/sjKt;
-      double tau = -s/sjKt;
-      m_VNS = -2*(-0.5*((2*kap + log(sqr(kap)))*(log((2*kap)/(1 + 2*kap)) - log(1 + 1/(1 + 2*kap)))) +
-                 (rho + log(-rho))*(log((2*rho)/(1 + 2*rho)) - log(1 + 1/(1 + 2*rho))) +
-                 log(((1 + kap)*tau/4.)/(1 + rho)) - DiLog(1 + 1/kap) + DiLog(1 + 1/rho));
+      double tau = s/sjKt;
+      
+      m_VNS = -2*((rho + log(-rho))*log(rho*tau) + (-1 - rho + log(-(1/rho)))*log((1 + rho)*tau) + DiLog(1 + 1/rho));
+      m_VNS += 4-sqr(M_PI)/6.;
       m_VNS += DiLog(1.-2.*s*mKt2/(sjKt*skKt));
+      m_VNS += 0.5*sqr(log(skKt/sjKt));
       m_VNS -= 6. - sqr(M_PI)/2.;
     }
   }
