@@ -171,7 +171,7 @@ def handle_mult(left, right):
     for index, dummy_index in dummy_indices.items():
         result *= METRIC[index, dummy_index]
         repeated.remove(index)
-    result *= right.name[*ridx]
+    result *= right.name[tuple(ridx)]
     for index, dummy_index in dummy_indices.items():
         result = sympy.Sum(result, (dummy_index, 0, 3), (index, 0, 3))
 
@@ -221,7 +221,7 @@ class lorentz_visitor(ast.NodeVisitor):
         elif func_name in LORENTZMAPPING:
             args = self.to_symbol(args, func_name)
             func = LORENTZMAPPING[func_name]
-            return func[*args]
+            return func[tuple(args)]
         else:
             if len(args) == 0:
                 raise ValueError(f'No arguments for form factor: {func_name}')
