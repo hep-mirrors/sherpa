@@ -3,7 +3,6 @@
 
 using namespace ATOOLS;
 using namespace BEAM;
-using namespace std;
 
 Monochromatic::Monochromatic(const Flavour _beam,const double _energy,
 			     const double _polarisation,const int _dir)

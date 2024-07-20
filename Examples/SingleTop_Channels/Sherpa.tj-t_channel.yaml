@@ -11,7 +11,8 @@ ME_GENERATORS: [Comix, Amegic, OpenLoops]
 # scales
 # CORESCALE SingleTop:
 #   use Mandelstam \hat{t} for s-channel 2->2 core process
-CORE_SCALE: SingleTop
+MEPS:
+  CORE_SCALE: SingleTop
 
 # disable hadronic W decays
 HARD_DECAYS:

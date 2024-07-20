@@ -71,6 +71,7 @@ namespace PHASIC {
     double HT() const;
     double HTMprime() const;
     double HTprime() const;
+    double hHT() const;
 
     ATOOLS::Vec4D PSum() const;
 

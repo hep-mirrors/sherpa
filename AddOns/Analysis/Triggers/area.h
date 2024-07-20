@@ -62,7 +62,7 @@ class Cjet_area : public Cjet{
 };
 
 /**
- * \class Csiscone_area
+ * \class Carea
  * class for the computation of jet areas.
  * 
  * This is the class user should use whenever you want to compute
@@ -95,7 +95,7 @@ class Carea : public Csiscone{
    *                    is always IR safe, and also boost invariant (default)
    * \param _hard_only  when this is set on, only hard jets are computed
    *                    and not the purely ghosted jets (default: false)
-   * \return the jets together with their areas
+   * \return the number of jets (including pure-ghost ones if they are included)
    */
   int compute_areas(std::vector<Cmomentum> &_particles, double _radius, double _f, 
 		    int _n_pass_max=0, Esplit_merge_scale _split_merge_scale=SM_pttilde,
@@ -107,7 +107,7 @@ class Carea : public Csiscone{
    * Note that the pt_min is not allowed here soince the jet-area determination involves soft 
    * particles/jets and thus is used internally.
    * See compute_areas for paramters definition.
-   * \return the jets together with their active areas
+   * \return the number of jets (including pure-ghost ones if they are included)
    */
   int compute_active_areas(std::vector<Cmomentum> &_particles, double _radius, double _f, 
 			   int _n_pass_max=0, Esplit_merge_scale _split_merge_scale=SM_pttilde,
@@ -119,7 +119,6 @@ class Carea : public Csiscone{
    * Note that the pt_min is not allowed here soince the jet-area determination involves soft 
    * particles/jets and thus is used internally.
    * See compute_areas for paramters definition.
-   * \return the jets together with their passive areas
    */
   int compute_passive_areas(std::vector<Cmomentum> &_particles, double _radius, double _f, 
 			    int _n_pass_max=0, Esplit_merge_scale _split_merge_scale=SM_pttilde);

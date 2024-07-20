@@ -10,7 +10,7 @@ namespace BEAM {
 class Weight_Base {
 protected:
   Kinematics_Base *p_kinematics;
-  std::array<Beam_Base *, 2> p_beams;
+  std::array<Beam_Base*, 2> p_beams;
   double m_weight;
   std::string m_keyid;
 

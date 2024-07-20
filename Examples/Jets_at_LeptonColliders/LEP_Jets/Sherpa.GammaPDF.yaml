@@ -1,8 +1,8 @@
 BEAMS:         [22, 22]
 BEAM_ENERGIES: [45.6, 45.6]
 
-PDF_LIBRARY: GRVSherpa
-PDF_SET: GRVLO
+PDF_LIBRARY: SASGSherpa
+PDF_SET: SAS2M
 ME_GENERATORS: [Comix]
 HADRON_DECAYS:
   Max_Proper_Lifetime: 100
@@ -14,7 +14,7 @@ PARTICLE_DATA: {5: {Massive: true}}
 
 PROCESSES:
 - 93 93 -> 5 -5:
-    Order: {QCD: Any, EW: 2}
+    Order: {QCD: 2, EW: 0}
 
 SELECTORS:
 - [Mass, 13, -13, 10., 10000000.]

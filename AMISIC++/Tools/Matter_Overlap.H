@@ -10,17 +10,17 @@
 namespace AMISIC {
   class Matter_Overlap : public ATOOLS::Function_Base {
   private:
-    overlap_form::code m_overlapform;
+    overlap_form m_overlapform;
     double m_bstep, m_bmax, m_norm, m_integral;
     double m_radius[4], m_radius2[4], m_rnorm[4], m_fraction[4];
-    
+
     void InitializeFormFactors(REMNANTS::Remnant_Handler * remnant_handler);
     void CalculateIntegral();
  public:
     Matter_Overlap();
     ~Matter_Overlap();
 
-    void   Initialize(REMNANTS::Remnant_Handler * remnant_handler);    
+    void   Initialize(REMNANTS::Remnant_Handler * remnant_handler);
     double operator()(double b);
     double SelectB(const bool & mode=false) const;
 

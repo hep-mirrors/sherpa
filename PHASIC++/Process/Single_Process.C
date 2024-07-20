@@ -1,4 +1,4 @@
-#include "PHASIC++/Process/Single_Process.H"
+ #include "PHASIC++/Process/Single_Process.H"
 
 #include "PHASIC++/Process/ME_Generator_Base.H"
 #include "PHASIC++/Process/MCatNLO_Process.H"
@@ -272,6 +272,16 @@ void Single_Process::AddISR(ATOOLS::Cluster_Sequence_Info &csi,
             const ATOOLS::Cluster_Sequence_Info * const nominalcsi)
 {
   DEBUG_FUNC(Name());
+  if(p_int->YFS()->Mode()!=YFS::yfsmode::off){
+    //need to set born for YFS subtraction
+    p_int->YFS()->SetBorn(m_lastxs);
+    p_int->YFS()->GenerateWeight();
+    double yfsW = p_int->YFS()->GetWeight();
+    if(IsBad(yfsW)){
+      msg_Error()<<"YFS Weight is "<<yfsW<<std::endl;
+    } 
+    csi.AddWeight(yfsW);
+  }
   if (p_int->ISR()) {
     // add external PDF weight (before clustering)
     double pdfext(p_int->ISR()->PDFWeight(0,
@@ -539,7 +549,6 @@ Weights_Map Single_Process::Differential(const Vec4D_Vector& p,
   Scale_Setter_Base* scales {ScaleSetter(1)};
 
   Partonic(p, varmode);
-
   double nominal {0.0};
   double facscale {0.0};
 
@@ -555,7 +564,6 @@ Weights_Map Single_Process::Differential(const Vec4D_Vector& p,
     m_csi = ClusterSequenceInfo(scales->Amplitudes(), facscale);
     m_csi.AddFlux(m_lastflux);
 
-    // update results
     nominal = m_lastxs + NfSchemeConversionTerms() - m_lastbxs * m_csi.m_ct;
     m_lastb = m_lastbxs;
     if (m_use_biweight) {
@@ -564,6 +572,7 @@ Weights_Map Single_Process::Differential(const Vec4D_Vector& p,
       m_lastb *= prefac;
     }
 
+    // update results
     if (p_mc != nullptr && m_dsweight && m_pinfo.Has(nlo_type::vsub)) {
       // calculate DADS term for MC@NLO: one PS point, many dipoles
       m_mewgtinfo.m_type |= mewgttype::DADS;
@@ -610,7 +619,6 @@ Weights_Map Single_Process::Differential(const Vec4D_Vector& p,
     }
 
   } else {
-
     const auto triggers = Selector()->CombinedResults();
 
     for (int i {0}; i < GetSubevtList()->size(); ++i) {
@@ -1176,6 +1184,9 @@ bool Single_Process::CalculateTotalXSec(const std::string &resultpath,
       }
     }
   }
+  if(p_int->YFS()->Mode()!=YFS::yfsmode::off){
+    p_int->YFS()->SetFlavours(m_flavs);
+  }
   psh->CreateIntegrators();
   psh->InitCuts();
   p_int->SetResultPath(resultpath);
@@ -1300,54 +1311,5 @@ Cluster_Amplitude *Single_Process::Cluster
       msg_Debugging()<<*ampl<<"\n";
     return ampls.front()->CopyAll();
   }
-  Cluster_Amplitude *ampl(Cluster_Amplitude::New());
-  ampl->SetNIn(m_nin);
-  ampl->SetOrderQCD(m_maxcpl[0]);
-  ampl->SetOrderEW(m_maxcpl[1]);
-  ampl->SetProc(this);
-  ampl->SetMS(p_gen);
-  ampl->SetProcs(p_apmap);
-  if (p_int->ColorIntegrator()==NULL) {
-    for (size_t i(0);i<m_nin+m_nout;++i)
-      ampl->CreateLeg(i<m_nin?-p_int->Momenta()[i]:p_int->Momenta()[i],
-		      i<m_nin?m_flavs[i].Bar():m_flavs[i]);
-    std::vector<int> tids, atids;
-    for (size_t i(0);i<ampl->Legs().size();++i)
-      if (ampl->Leg(i)->Flav().StrongCharge()>0) {
-	tids.push_back(i);
-	if (ampl->Leg(i)->Flav().StrongCharge()==8)
-	  atids.push_back(i);
-	else ampl->Leg(i)->SetCol(ColorID(ampl->Leg(i)->Col().m_i,0));
-      }
-      else if (ampl->Leg(i)->Flav().StrongCharge()<0) {
-	ampl->Leg(i)->SetCol(ColorID(0,ampl->Leg(i)->Col().m_j));
-	atids.push_back(i);
-      }
-      else {
-	ampl->Leg(i)->SetCol(ColorID(0,0));
-      }
-    while (true) {
-      std::shuffle(atids.begin(),atids.end(),*ran);
-      size_t i(0);
-      for (;i<atids.size();++i) if (atids[i]==tids[i]) break;
-      if (i==atids.size()) break;
-    }
-    for (size_t i(0);i<tids.size();++i) {
-      int cl(Flow::Counter());
-      ampl->Leg(tids[i])->SetCol(ColorID(cl,ampl->Leg(tids[i])->Col().m_j));
-      ampl->Leg(atids[i])->SetCol(ColorID(ampl->Leg(atids[i])->Col().m_i,cl));
-    }
-  }
-  else {
-    Int_Vector ci(p_int->ColorIntegrator()->I());
-    Int_Vector cj(p_int->ColorIntegrator()->J());
-    for (size_t i(0);i<m_nin+m_nout;++i)
-      ampl->CreateLeg(i<m_nin?-p_int->Momenta()[i]:p_int->Momenta()[i],
-		      i<m_nin?m_flavs[i].Bar():m_flavs[i],
-		      ColorID(ci[i],cj[i]));
-  }
-  ampl->SetMuF2(ScaleSetter(1)->Scale(stp::fac));
-  ampl->SetMuR2(ScaleSetter(1)->Scale(stp::ren));
-  ampl->SetMuQ2(ScaleSetter(1)->Scale(stp::res));
-  return ampl;
+  return nullptr;
 }

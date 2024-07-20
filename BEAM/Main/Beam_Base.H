@@ -9,7 +9,7 @@ namespace BEAM {
 
   class Beam_Base {
   protected:
-    beamspectrum::code           m_type;
+    beamspectrum                 m_type;
     ATOOLS::Flavour              m_beam;
     ATOOLS::Vec4D                m_lab, m_position;
     std::vector<ATOOLS::Flavour> m_bunches;
@@ -19,9 +19,9 @@ namespace BEAM {
     double             m_energy, m_polarisation;
     double             m_x, m_Q2, m_weight;
     bool               m_on;
-    
+
   public:
-    Beam_Base(beamspectrum::code type,const ATOOLS::Flavour& _beam,
+    Beam_Base(beamspectrum type,const ATOOLS::Flavour& _beam,
 	      const double _energy,const double _polarisation,
 	      const int _dir, int mode = 0);
     virtual ~Beam_Base() = default;
@@ -29,8 +29,8 @@ namespace BEAM {
     virtual Beam_Base * Copy()                                     = 0;
     virtual bool        CalculateWeight(const double,const double) = 0;
     virtual void FixPosition() {}
-    virtual inline const beamspectrum::code & Type()                      const { return m_type; }
-    virtual inline const size_t             & NBunches()                  const { return m_Nbunches; } 
+    virtual inline const beamspectrum & Type()                            const { return m_type; }
+    virtual inline const size_t             & NBunches()                  const { return m_Nbunches; }
     virtual inline const ATOOLS::Flavour    & Beam()                      const { return m_beam; }
     virtual inline const ATOOLS::Flavour    & Bunch(const size_t & i=0)   const { return m_bunches[i]; }
     virtual inline const ATOOLS::Flavour    & Remnant()                   const { return m_beam; }
@@ -39,7 +39,7 @@ namespace BEAM {
     virtual inline const ATOOLS::Vec4D & Position()                       const { return m_position; }
     virtual inline const std::vector<ATOOLS::Flavour> & Bunches()         const { return m_bunches; }
     virtual inline const std::vector<ATOOLS::Vec4D> & OutMomenta()        const { return m_vecouts; }
-    
+
     virtual inline const double & Energy()       const { return m_energy; }
     virtual inline const double & Polarisation() const { return m_polarisation; }
     virtual inline double Weight(ATOOLS::Flavour fl=kf_none) { return m_weight; }

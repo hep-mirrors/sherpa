@@ -31,7 +31,8 @@ namespace AMEGIC {
     // member functions
     bool Initialize(MODEL::Model_Base *const model,
 		    BEAM::Beam_Spectra_Handler *const beamhandler,
-		    PDF::ISR_Handler *const isrhandler);
+		    PDF::ISR_Handler *const isrhandler,
+		    YFS::YFS_Handler *const yfshandler);
     PHASIC::Process_Base *InitializeProcess(const PHASIC::Process_Info &pi,
                                             bool add);
     int PerformTests();
@@ -68,15 +69,13 @@ void Amegic::DrawLogo(std::ostream &ostr)
   ostr<<"+-----------------------------------------+\n";
   ostr<<"| please cite: JHEP 0202:044,2002         |\n";
   ostr<<"+-----------------------------------------+\n";
-  rpa->gen.AddCitation
-    (1,"Amegic is published under \\cite{Krauss:2001iv}.");
 }
 
 Amegic::Amegic():
   ME_Generator_Base("Amegic"),
   p_mmodel(NULL), p_amodel(NULL)
 {
-  DrawLogo(msg->Info());
+  rpa->gen.AddCitation(1, "Amegic is published under \\cite{Krauss:2001iv}.");
   p_testmoms=NULL;
   p_gen=this;
 }
@@ -88,7 +87,8 @@ Amegic::~Amegic()
 
 bool Amegic::Initialize(MODEL::Model_Base *const model,
 			BEAM::Beam_Spectra_Handler *const beamhandler,
-			PDF::ISR_Handler *const isrhandler)
+			PDF::ISR_Handler *const isrhandler,
+			YFS::YFS_Handler *const yfshandler)
 {
   Settings& s = Settings::GetMainSettings();
   Scoped_Settings amegicsettings{ s["AMEGIC"] };
@@ -103,6 +103,7 @@ bool Amegic::Initialize(MODEL::Model_Base *const model,
   p_amodel = new Amegic_Model(model);
   p_int->SetBeam(beamhandler);
   p_int->SetISR(isrhandler);
+  p_int->SetYFS(yfshandler);
   SetPSMasses();
 
   AMEGIC::Process_Base::SetGauge(amegicsettings["DEFAULT_GAUGE"].Get<int>());
@@ -147,7 +148,7 @@ PHASIC::Process_Base *Amegic::InitializeProcess(const PHASIC::Process_Info &pi,
   if (oneisgroup) {
     newxs = new AMEGIC::Process_Group();
     newxs->SetGenerator(this);
-    newxs->Init(pi,p_int->Beam(),p_int->ISR());
+    newxs->Init(pi,p_int->Beam(),p_int->ISR(),p_int->YFS());
     if (!newxs->Get<AMEGIC::Process_Group>()->
 	InitAmplitude(p_amodel,&top)) {
       msg_Debugging()<<METHOD<<"(): Init failed for '"
@@ -169,7 +170,7 @@ PHASIC::Process_Base *Amegic::InitializeProcess(const PHASIC::Process_Info &pi,
     newxs = GetProcess(pi);
     if (!newxs) return NULL;
     newxs->SetGenerator(this);
-    newxs->Init(pi,p_int->Beam(),p_int->ISR());
+    newxs->Init(pi,p_int->Beam(),p_int->ISR(),p_int->YFS());
     p_testmoms = new Vec4D[newxs->NIn()+newxs->NOut()];
     if (!p_pinfo) {
       p_pinfo = Translate(pi);

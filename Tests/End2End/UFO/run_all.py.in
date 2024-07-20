@@ -1,0 +1,156 @@
+#!@PYTHON@
+import os
+import sys
+import shutil
+from string import Template
+import subprocess
+sys.path.append('@SHERPA_Python_SITEARCH@')
+import Sherpa
+
+
+exe = '@CMAKE_INSTALL_PREFIX@/bin/Sherpa-generate-model'
+models = {'mssm': {'nmax': 8},
+          'qagc': {'nmax': 8},
+          'qcd_d6': {}}
+
+
+class test_process:
+    def __init__(self, inpart, outpart, model, threshold=3e-5, orders=None, npoints=100):
+        self.inpart = inpart
+        self.outpart = outpart
+        self.model = model
+        self.cms = 2000.0
+        self.threshold = threshold
+        self.orders = orders if orders is not None else {}
+        self.npoints = npoints
+
+    def __str__(self):
+        return f"Process: {' '.join(self.inpart)} -> {' '.join(self.outpart)}"
+
+
+def generate_model(model, overwrite=False):
+    path = f"Models/{model}"
+    if not overwrite and os.path.exists(os.path.join(path, '.sherpa')):
+        print(f"Model {model} already exists, skipping")
+        return
+    # Remove the .sherpa directory if it exists
+    shutil.rmtree(os.path.join(path, '.sherpa'), True)
+    # Generate the model
+    run_args = [exe, path, '--auto_convert']
+    if 'nmax' in models[model]:
+        run_args.append(f'--nmax={models[model]["nmax"]}')
+    subprocess.run(run_args, check=True)
+
+
+def get_processes(model, orders=None):
+    processes = []
+    for folder in os.listdir(f"TestProcesses/{model}"):
+        parts = folder.split('_')
+        inpart = parts[0:2]
+        outpart = parts[2:]
+        processes.append(test_process(inpart, outpart, model, orders=orders))
+    return processes
+
+
+def run(process):
+    with open('Sherpa.yaml.template', 'r') as f:
+        template = f.read()
+    template = Template(template)
+
+    subtitutions = {
+        'process': ' '.join(process.inpart) + ' -> ' + ' '.join(process.outpart),
+        'model': process.model,
+        'ufo_param_card': f'ParamCards/param_card_{process.model}.dat',
+        'beam1': process.inpart[0],
+        'beam2': process.inpart[1],
+        'beam1_energy': process.cms/2.0,
+        'beam2_energy': process.cms/2.0,
+        'orders': process.orders,
+    }
+    with open('Sherpa.yaml', 'w') as f:
+        f.write(template.substitute(subtitutions))
+
+    sys.argv = ['Sherpa', 'Sherpa.yaml']
+    generator = Sherpa.Sherpa(len(sys.argv), sys.argv)
+    generator.InitializeTheRun()
+    me_calc = Sherpa.MEProcess(generator)
+
+    nflav = len(process.inpart) + len(process.outpart)
+    for fl in process.inpart:
+        me_calc.AddInFlav(int(fl))
+    for fl in process.outpart:
+        me_calc.AddOutFlav(int(fl))
+    me_calc.Initialize()
+
+    me_file = f'TestProcesses/{process.model}/{"_".join(process.inpart)}_{"_".join(process.outpart)}'
+    deviation = []
+    with open(me_file + "/mg_results.dat", 'r') as f:
+        for line in f:
+            momenta = line.strip().split()
+            if not len(momenta)-1 == 4*nflav:
+                raise RuntimeError("Invalid number of momenta")
+
+            for i in range(nflav):
+                me_calc.SetMomentum(i, float(momenta[4*i]), float(momenta[4*i+1]),
+                                    float(momenta[4*i+2]), float(momenta[4*i+3]))
+
+            expected = float(momenta[-1])
+            calculated = me_calc.CSMatrixElement()
+            deviation.append((calculated - expected)/expected)
+            print(f"Expected: {expected}, Calculated: {calculated}, Deviation: {deviation[-1]}")
+
+    max_deviation = max(deviation)
+    min_deviation = min(deviation)
+    passed = max([abs(max_deviation), abs(min_deviation)]) < process.threshold
+    return passed
+
+
+def main(model_name):
+    generate_model(model_name, True)
+
+    processes = []
+    nfailed = 0
+    print("Running model: {}".format(model_name))
+    orders = None
+    if model_name == 'qcd_d6':
+        orders = "{'D6Q': 0}"
+    processes = get_processes(model_name, orders=orders)
+    print("Found {} processes".format(len(processes)))
+
+    # Sort processes by initial state particles
+    processes.sort(key=lambda x: x.inpart)
+
+    for process in processes:
+        print("       {}".format(process), end='\r')
+        try:
+            # Suppress Sherpa output
+            old_stdout = os.dup(1)
+            stdout_file = open('ufo_test.log', 'a')
+
+            os.dup2(stdout_file.fileno(), 1)
+            passed = run(process)
+            if not passed:
+                nfailed += 1
+        except Exception as e:
+            print(f"Error running process: {process}")
+            print(e)
+            passed = False
+        finally:
+            # Restore stdout and stderr
+            os.dup2(old_stdout, 1)
+            stdout_file.close()
+            if passed:
+                print("\033[32mPASSED\033[0m")
+            else:
+                print("\033[31mFAILED\033[0m")
+
+    if nfailed == 0:
+        os.remove('ufo_test.log')
+
+    if nfailed > 0:
+        return -1
+    return 0
+
+
+if __name__ == '__main__':
+    main(sys.argv[1])

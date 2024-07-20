@@ -28,7 +28,8 @@ namespace BLACKHAT {
     // member functions
     bool Initialize(MODEL::Model_Base *const model,
 		    BEAM::Beam_Spectra_Handler *const beam,
-		    PDF::ISR_Handler *const isr);
+		    PDF::ISR_Handler *const isr,
+        YFS::YFS_Handler *const yfs);
     PHASIC::Process_Base *InitializeProcess(const PHASIC::Process_Info &pi, bool add);
     int  PerformTests();
     bool NewLibraries();
@@ -59,7 +60,8 @@ BlackHat_Interface::~BlackHat_Interface()
 
 bool BlackHat_Interface::Initialize(MODEL::Model_Base *const model,
                                     BEAM::Beam_Spectra_Handler *const beam,
-                                    PDF::ISR_Handler *const isrhandler)
+                                    PDF::ISR_Handler *const isrhandler,
+                                    YFS::YFS_Handler *const yfs)
 {
   if (p_interface==NULL) {
     rpa->gen.AddCitation(1,"The BlackHat library is described in \\cite{Berger:2008sj}.");

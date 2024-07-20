@@ -152,7 +152,7 @@ void Remnants_Parameters::SetLeptonDefaults()
 
 void Remnants_Parameters::Init()
 {
-  msg_Out() << METHOD << "\n";
+  msg_Debugging() << METHOD << "\n";
   Scoped_Settings data = Settings::GetMainSettings()["REMNANTS"];
   for (const auto& pid : data.GetKeys()) {
     kf_code             kf = ToType<kf_code>(pid);
@@ -259,11 +259,11 @@ double Remnants_Parameters::Get(const ATOOLS::Flavour& flav,
       m_actuals[flav]->params.find(keyword) != m_actuals[flav]->params.end())
     return m_actuals[flav]->params[keyword];
   else if (m_defaults.find(flav) != m_defaults.end() &&
-           m_defaults[flav]->params.find(keyword) !=
-                   m_defaults[flav]->params.end())
+           m_defaults[flav]->params.find(keyword) != m_defaults[flav]->params.end())
     return m_defaults[flav]->params[keyword];
-  THROW(fatal_error, "Keyword " + keyword + " not found for " + flav.IDName());
-  return 0.;
+  else if (flav.IsBaryon()) return m_defaults[kf_p_plus]->params[keyword];
+  else if (flav.IsMeson())  return m_defaults[kf_pi_plus]->params[keyword];
+  return m_defaults[kf_e]->params[keyword];
 }
 
 primkT_form Remnants_Parameters::KT_Form(const ATOOLS::Flavour& flav)
@@ -274,8 +274,9 @@ primkT_form Remnants_Parameters::KT_Form(const ATOOLS::Flavour& flav)
     return m_defaults[flav]->kT_form;
   else if (flav==Flavour(kf_none))
     return primkT_form::none;
-  THROW(fatal_error, "Keyword kT_form not found for " + flav.IDName());
-  return primkT_form::undefined;
+  else if (flav.IsBaryon()) return m_defaults[kf_p_plus]->kT_form;
+  else if (flav.IsMeson())  return m_defaults[kf_pi_plus]->kT_form;
+  return m_defaults[kf_e]->kT_form;
 }
 
 primkT_recoil Remnants_Parameters::KT_Recoil(const ATOOLS::Flavour& flav)
@@ -286,8 +287,9 @@ primkT_recoil Remnants_Parameters::KT_Recoil(const ATOOLS::Flavour& flav)
     return m_defaults[flav]->kT_recoil;
   else if (flav==Flavour(kf_none))
     return primkT_recoil::none;
-  THROW(fatal_error, "Keyword kT_recoil not found for " + flav.IDName());
-  return primkT_recoil::undefined;
+  else if (flav.IsBaryon()) return m_defaults[kf_p_plus]->kT_recoil;
+  else if (flav.IsMeson())  return m_defaults[kf_pi_plus]->kT_recoil;
+  return m_defaults[kf_e]->kT_recoil;
 }
 
 matter_form Remnants_Parameters::Matter_Form(const ATOOLS::Flavour& flav)
@@ -298,8 +300,9 @@ matter_form Remnants_Parameters::Matter_Form(const ATOOLS::Flavour& flav)
     return m_defaults[flav]->m_form;
   else if (flav==Flavour(kf_none))
     return matter_form::none;
-  THROW(fatal_error, "Keyword matter_form not found for " + flav.IDName());
-  return matter_form::unknown;
+  else if (flav.IsBaryon()) return m_defaults[kf_p_plus]->m_form;
+  else if (flav.IsMeson())  return m_defaults[kf_pi_plus]->m_form;
+  return m_defaults[kf_e]->m_form;
 }
 
 void Remnants_Parameters::Output()
@@ -365,11 +368,13 @@ std::ostream& REMNANTS::operator<<(std::ostream&                os,
                                    const REMNANTS::matter_form& f)
 {
   switch (f) {
+    case matter_form::none: return os << "None";
     case matter_form::single_gaussian: return os << "Single_Gaussian";
     case matter_form::double_gaussian: return os << "Double_Gaussian";
     case matter_form::unknown: return os << "Unknown";
+    default: break;
   }
-  return os;
+  return os << "Undefined";
 }
 
 std::ostream& REMNANTS::operator<<(std::ostream&             os,

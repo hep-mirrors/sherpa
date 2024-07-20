@@ -10,6 +10,7 @@
 
 namespace BEAM { class Beam_Spectra_Handler; }
 namespace PDF  { class ISR_Handler; }
+namespace YFS  { class YFS_Handler; }
 
 namespace PHASIC {
   class Phase_Space_Handler;
@@ -36,6 +37,7 @@ namespace PHASIC {
     Phase_Space_Handler             * p_pshandler;
     BEAM::Beam_Spectra_Handler      * p_beamhandler;
     PDF::ISR_Handler                * p_isrhandler;
+    YFS::YFS_Handler                * p_yfshandler;
     ATOOLS::Vec4D_Vector            & p_moms;
     Cut_Data                        * p_cuts;
     Multi_Channel  * p_beamchannels, * p_isrchannels, * p_fsrchannels;

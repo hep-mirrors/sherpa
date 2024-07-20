@@ -23,18 +23,19 @@ CS_MCatNLO::CS_MCatNLO(PDF::ISR_Handler *const _isr,
   p_mcatnlo(NULL), p_cluster(NULL), p_gamma(NULL)
 {
   Settings& s = Settings::GetMainSettings();
+  auto pss = s["SHOWER"], nlopss = s["MC@NLO"];
   m_subtype=subscheme::CSS;
-  m_psmode=s["NLO_CSS_PSMODE"].Get<int>();
+  m_psmode=nlopss["PSMODE"].Get<int>();
   if (m_psmode) msg_Info()<<METHOD<<"(): Set PS mode "<<m_psmode<<".\n";
-  m_maxweight=s["NLO_CSS_MAXWEIGHT"].SetDefault(1.0e3).Get<double>();
-  m_maxem=s["NLO_CSS_MAXEM"].Get<int>();
+  m_maxweight=nlopss["MAXWEIGHT"].SetDefault(1.0e3).Get<double>();
+  m_maxem=nlopss["MAXEM"].Get<int>();
   SF_Lorentz::SetKappa(s["DIPOLES"]["KAPPA"].Get<double>());
 
   p_mcatnlo = new Shower(_isr,0);
   p_next = new All_Singlets();
   p_cluster = new CS_Cluster_Definitions(p_mcatnlo,1);
   p_gamma = new CS_Gamma(this,p_mcatnlo,p_cluster);
-  p_gamma->SetOEF(s["CSS_OEF"].Get<double>());
+  p_gamma->SetOEF(pss["OEF"].Get<double>());
   p_mcatnlo->SetGamma(p_gamma);
   m_kt2min[1]=p_mcatnlo->GetSudakov()->ISPT2Min();
   m_kt2min[0]=p_mcatnlo->GetSudakov()->FSPT2Min();

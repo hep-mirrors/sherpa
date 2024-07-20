@@ -17,34 +17,39 @@ using namespace ATOOLS;
 using namespace std;
 
 MI_Handler::MI_Handler(MODEL::Model_Base *model,
-		       PDF::ISR_Handler *isr,
+		       PDF::ISR_Handler *isr, YFS::YFS_Handler *yfs,
                        REMNANTS::Remnant_Handler * remnant_handler) :
-  p_isr(isr), m_id(p_isr->Id()), p_remnants(remnant_handler),
+  p_isr(isr), p_yfs(yfs), m_id(p_isr->Id()), p_remnants(remnant_handler),
   p_amisic(NULL), p_shrimps(NULL), p_ampl(NULL),
   p_proc(NULL), p_shower(NULL), m_on(true), m_stop(false),
   m_firstrescatter((m_id==PDF::isr::bunch_rescatter) ? true : false),
   m_type(typeID::none), m_name("None")
 {
   Settings& s = Settings::GetMainSettings();
-  m_name      = s["MI_HANDLER"].SetDefault("Amisic").UseNoneReplacements().Get<string>();
-  string scm  = s["SOFT_COLLISIONS"].SetDefault("None").UseNoneReplacements().Get<string>();
+  m_name      = s["MI_HANDLER"].Get<string>();
+  string scm  = s["SOFT_COLLISIONS"].Get<string>();
   if (m_id==PDF::isr::bunch_rescatter) {
     string resc = s["BEAM_RESCATTERING"].Get<string>();
     scm = m_name = resc;
   }
-  if (isr->Mode() != PDF::isrmode::hadron_hadron || m_name=="None") {
+  // Pomerons and Reggeons are hadrons, but don't have Multiple Interactions
+  if (isr->Mode() != PDF::isrmode::hadron_hadron || m_name == "None" ||
+      isr->Flav(0).Kfcode() == kf_pomeron ||
+      isr->Flav(1).Kfcode() == kf_pomeron ||
+      isr->Flav(0).Kfcode() == kf_reggeon ||
+      isr->Flav(1).Kfcode() == kf_reggeon) {
     m_name = "None";
     m_on   = false;
-  }
-  else {
+  } else {
     if (m_name==string("Amisic"))  InitAmisic(model);
     if ((scm==string("Shrimps") && p_amisic==NULL) ||
 	m_name==string("Shrimps")) InitShrimps(model);
   }
-  msg_Out()<<METHOD<<"(id = "<<m_id<<", name = "<<m_name<<", type = "<<m_type<<")\n";
+  msg_Out()<<"Multiple interactions initialized\n"
+           <<"  id = "<<m_id<<", name = "<<m_name<<", type = "<<m_type<<"\n";
 }
 
-MI_Handler::~MI_Handler() 
+MI_Handler::~MI_Handler()
 {
   if (p_amisic!=NULL)  { delete p_amisic;  p_amisic  = NULL; }
   if (p_shrimps!=NULL) { delete p_shrimps; p_shrimps = NULL; }
@@ -54,7 +59,7 @@ void MI_Handler::InitAmisic(MODEL::Model_Base *model)
 {
   p_amisic    = new AMISIC::Amisic();
   p_amisic->SetOutputPath(rpa->gen.Variable("SHERPA_RUN_PATH")+"/");
-  if (!p_amisic->Initialize(model,p_isr,p_remnants)) {
+  if (!p_amisic->Initialize(model,p_isr,p_yfs,p_remnants)) {
     msg_Error()<<METHOD<<"(): Cannot initialize MPI generator. \n"
 	       <<"Continue without MPIs and hope for the best.\n";
     delete p_amisic; p_amisic=NULL;
@@ -68,7 +73,7 @@ void MI_Handler::InitShrimps(MODEL::Model_Base *model)
   m_type = typeID::shrimps;
 }
 
-bool MI_Handler::InitialiseMPIs(const double & scale) 
+bool MI_Handler::InitialiseMPIs(const double & scale)
 {
   if (m_type==typeID::amisic) return p_amisic->InitMPIs(p_isr, scale);
   return true;

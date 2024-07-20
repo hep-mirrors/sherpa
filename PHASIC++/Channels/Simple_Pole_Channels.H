@@ -94,5 +94,20 @@ namespace PHASIC {
     void GeneratePoint(const double *rans);
     void GenerateWeight(const int & mode=0);
   };
+
+  ////////////////////////////////////////////////////////////////////////
+
+  class Simple_Pole_YFS: public ISR_Channel_Base {
+  protected :
+    double m_sexponent;
+    bool m_zchannel;
+    size_t m_mode;
+    ATOOLS::Info_Key m_spkey, m_xkey, m_sgridkey;
+  public :
+    Simple_Pole_YFS(const double exponent, const std::string cinfo,
+      ATOOLS::Integration_Info *info);
+    void GeneratePoint(const double *rans);
+    void GenerateWeight(const int & mode=0);
+    };
 }
 #endif

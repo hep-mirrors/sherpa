@@ -1,19 +1,22 @@
-#include "BEAM/Main/Beam_Parameters.H"
-#include "BEAM/Main/Beam_Base.H"
-#include "BEAM/Spectra/Monochromatic.H"
-#include "BEAM/Spectra/Laser_Backscattering.H"
-#include "BEAM/Spectra/EPA.H"
-#include "BEAM/Spectra/DM_beam.H"
-#include "ATOOLS/Phys/KF_Table.H"
 #include "ATOOLS/Org/Exception.H"
-#include "ATOOLS/Org/My_Limits.H"
 #include "ATOOLS/Org/Message.H"
+#include "ATOOLS/Phys/KF_Table.H"
+#include "BEAM/Main/Beam_Base.H"
+#include "BEAM/Main/Beam_Parameters.H"
+#include "BEAM/Spectra/DM_beam.H"
+#include "BEAM/Spectra/Fixed_Target.H"
+#include "BEAM/Spectra/EPA.H"
+#include "BEAM/Spectra/Laser_Backscattering.H"
+#include "BEAM/Spectra/Monochromatic.H"
+#include "BEAM/Spectra/Pomeron.H"
+#include "BEAM/Spectra/Reggeon.H"
 
 using namespace ATOOLS;
 using namespace BEAM;
-using namespace std;
 
-std::ostream& BEAM::operator<<(std::ostream& ostr, const beammode::code bmode) {
+using string = std::string;
+
+std::ostream& BEAM::operator<<(std::ostream& ostr, const beammode bmode) {
   switch (bmode) {
   case beammode::relic_density:
     return ostr<<"Relic Density calculation";
@@ -21,13 +24,15 @@ std::ostream& BEAM::operator<<(std::ostream& ostr, const beammode::code bmode) {
     return ostr<<"Collider";
   case beammode::DM_annihilation:
     return ostr<<"Dark Matter annihilation";
+  case beammode::Fixed_Target:
+    return ostr<<"Fixed Target annihilation";
   default:
     break;
   }
   return ostr<<"Undefined";
 }
 
-std::ostream& BEAM::operator<<(std::ostream& ostr, const collidermode::code cmode) {
+std::ostream& BEAM::operator<<(std::ostream& ostr, const collidermode cmode) {
   switch (cmode) {
   case collidermode::monochromatic:
     return ostr<<"no spectra";
@@ -43,16 +48,22 @@ std::ostream& BEAM::operator<<(std::ostream& ostr, const collidermode::code cmod
   return ostr<<"Undefined";
 }
 
-std::ostream& BEAM::operator<<(std::ostream& ostr, const beamspectrum::code spect) {
+std::ostream& BEAM::operator<<(std::ostream& ostr, const beamspectrum spect) {
   switch (spect) {
   case beamspectrum::monochromatic:
     return ostr<<"Monochromatic";
   case beamspectrum::EPA:
     return ostr<<"Equivalent Photons";
+  case beamspectrum::Pomeron:
+    return ostr<<"Pomeron";
+  case beamspectrum::Reggeon:
+    return ostr << "Reggeon";
   case beamspectrum::laser_backscattering:
     return ostr<<"Laser Backscattering";
   case beamspectrum::DM:
     return ostr<<"Dark Matter";
+  case beamspectrum::Fixed_Target:
+    return ostr<<"Fixed Target";
   default:
     break;
   }
@@ -65,7 +76,7 @@ Beam_Parameters::Beam_Parameters() :
   RegisterDefaults();
 }
 
-Beam_Parameters::~Beam_Parameters() {}
+Beam_Parameters::~Beam_Parameters() = default;
 
 void Beam_Parameters::RegisterDefaults()
 {
@@ -73,6 +84,8 @@ void Beam_Parameters::RegisterDefaults()
   RegisterDarkMatterDefaults();
   RegisterLaserDefaults();
   RegisterEPADefaults();
+  RegisterPomeronDefaults();
+  RegisterReggeonDefaults();
 }
 
 Beam_Base * Beam_Parameters::InitSpectrum(const size_t & num) {
@@ -87,14 +100,19 @@ Beam_Base * Beam_Parameters::InitSpectrum(const size_t & num) {
     return InitializeSimpleCompton(num);
   case beamspectrum::EPA :
     return InitializeEPA(num);
+  case beamspectrum::Pomeron :
+    return InitializePomeron(num);
+  case beamspectrum::Reggeon: return InitializeReggeon(num);
   case beamspectrum::DM :
     return InitializeDM_beam(num);
+  case beamspectrum::Fixed_Target :
+    return InitializeFixed_Target(num);
   default :
     break;
   }
-  msg_Error()<<"Warning in Beam_Initialization::SpecifySpectra :"<<endl
-	     <<"   No beam spectrum specified for beam "<<num+1<<endl
-	     <<"   Will initialize monochromatic beam."<<endl;
+  msg_Error() << "Warning in Beam_Initialization::SpecifySpectra :\n"
+              << "   No beam spectrum specified for beam " << num + 1
+              << "\n   Will initialize monochromatic beam.\n";
   return InitializeMonochromatic(num);
 }
 
@@ -113,9 +131,9 @@ Beam_Base * Beam_Parameters::InitializeLaserBackscattering(int num)
     msg_Error()<<"Error in Beam_Initialization::SpecifySpectra :\n"
 	       <<"   Tried to initialize Laser_Backscattering for "
 	       <<beam_particle<<".\n";
-    return NULL;
+    return nullptr;
   }
-  double beam_energy        = (*this)("BEAM_ENERGIES",num); 
+  double beam_energy        = (*this)("BEAM_ENERGIES",num);
   double beam_polarization  = (*this)("BEAM_POLARIZATIONS",num);
   double laser_energy       = (*this)("E_LASER",num);
   double laser_polarization = (*this)("P_LASER",num);
@@ -135,9 +153,9 @@ Beam_Base * Beam_Parameters::InitializeSimpleCompton(int num)
     msg_Error()<<"Error in Beam_Initialization::SpecifySpectra :\n"
 	       <<"   Tried to initialize Simple_Compton for "
 	       <<beam_particle<<".\n";
-    return NULL;
+    return nullptr;
   }
-  double beam_energy        = (*this)("BEAM_ENERGIES",num); 
+  double beam_energy        = (*this)("BEAM_ENERGIES",num);
   double beam_polarization  = (*this)("BEAM_POLARIZATIONS",num);
   double laser_energy       = (*this)("E_LASER",num);
   double laser_polarization = (*this)("P_LASER",num);
@@ -153,15 +171,42 @@ Beam_Base * Beam_Parameters::InitializeEPA(int num)
   if (beam_particle.Kfcode()!=kf_p_plus &&
       beam_particle.Kfcode()!=kf_e &&
       !beam_particle.IsIon()) {
-    msg_Error()<<"Error in Beam_Initialization::SpecifySpectra:\n"<<endl
-               <<"   Tried to initialize EPA for "<<beam_particle<<".\n"
-	       <<"   This option is not available (yet).\n";
-    return NULL;
+    msg_Error() << "Error in Beam_Initialization::SpecifySpectra:\n"
+                << "   Tried to initialize EPA for " << beam_particle << ".\n"
+                << "   This option is not available (yet).\n";
+    return nullptr;
   }
-  double beam_energy = (*this)("BEAM_ENERGIES",num); 
+  double beam_energy = (*this)("BEAM_ENERGIES",num);
   if (beam_particle.IsIon()) beam_energy *= beam_particle.GetAtomicNumber();
   double beam_polarization = (*this)("BEAM_POLARIZATIONS",num);
   return new EPA(beam_particle,beam_energy,beam_polarization,1-2*num);
+}
+
+Beam_Base * Beam_Parameters::InitializePomeron(int num)
+{
+  Flavour beam_particle     = GetFlavour("BEAMS",num);
+  if (beam_particle.Kfcode()!=kf_p_plus) {
+    msg_Error() << "Error in Beam_Initialization::SpecifySpectra:\n"
+                <<"   Tried to initialize Pomeron for "<<beam_particle<<".\n"
+                <<"   This option is not available.\n";
+    return nullptr;
+  }
+  double beam_energy = (*this)("BEAM_ENERGIES",num);
+  return new Pomeron(beam_particle,beam_energy,0.,1-2*num);
+}
+
+Beam_Base* Beam_Parameters::InitializeReggeon(int num)
+{
+  Flavour beam_particle = GetFlavour("BEAMS", num);
+  if (beam_particle.Kfcode() != kf_p_plus) {
+    msg_Error() << "Error in Beam_Initialization::SpecifySpectra:\n"
+                << "   Tried to initialize Reggeon for " << beam_particle
+                << ".\n"
+                << "   This option is not available.\n";
+    return nullptr;
+  }
+  double beam_energy = (*this)("BEAM_ENERGIES", num);
+  return new Reggeon(beam_particle, beam_energy, 0., 1 - 2 * num);
 }
 
 Beam_Base * Beam_Parameters::InitializeDM_beam(int num)
@@ -174,8 +219,16 @@ Beam_Base * Beam_Parameters::InitializeDM_beam(int num)
 		     formfactor,relativistic,1-2*num);
 }
 
+Beam_Base * Beam_Parameters::InitializeFixed_Target(int num)
+{
+  double beam_energy        = (*this)("BEAM_ENERGIES",num);
+  double beam_polarization  = (*this)("BEAM_POLARIZATIONS",num);
+  Flavour beam_particle    = GetFlavour("BEAMS",num);
+  return new Fixed_Target(beam_particle,beam_energy,beam_polarization,1-2*num);
+}
+
 const Flavour Beam_Parameters::GetFlavour(const std::string & tag,const size_t & pos) {
-  vector<int> beam{ m_settings[tag].GetVector<int>() };
+  std::vector<int> beam{m_settings[tag].GetVector<int>()};
   if (beam.size() != 1 && beam.size() != 2)
     THROW(fatal_error, "Specify either one or two values for `BEAMS'.");
   int flav{ (pos == 0) ? beam.front() : beam.back() };
@@ -187,33 +240,33 @@ const Flavour Beam_Parameters::GetFlavour(const std::string & tag,const size_t &
 
 const std::string Beam_Parameters::String(const string & tag,const int & pos) const {
   if (pos<0) return m_settings[tag].Get<string>();
-  vector<string> params{ m_settings[tag].GetVector<string>() };
+  std::vector<string> params{m_settings[tag].GetVector<string>()};
   if (pos>1 || pos>params.size()-1) {
     string message = string("Parameter number mismatch for tag = ")+tag+string(" at pos = ")+ToString(pos);
     THROW(fatal_error, message);
   }
-  return (pos==0)?params.front():params.back();      
+  return (pos==0)?params.front():params.back();
 }
 
 const double Beam_Parameters::operator()(const string & tag,const int & pos) const {
   if (pos<0) return m_settings[tag].Get<double>();
-  vector<double> params{ m_settings[tag].GetVector<double>() };
+  std::vector<double> params{m_settings[tag].GetVector<double>()};
   if (!(tag=="BEAM_ENERGIES" || tag=="BEAM_POLARIZATIONS") &&
       (pos>1 || pos>params.size()-1)) {
     string message = string("Parameter number mismatch for tag = ")+tag+string(" at pos = ")+ToString(pos);
     THROW(fatal_error, message);
   }
-  return (pos==0)?params.front():params.back();      
+  return (pos==0)?params.front():params.back();
 }
 
 const int Beam_Parameters::Switch(const string & tag,const int & pos) const {
   if (pos<0) return m_settings[tag].Get<int>();
-  vector<int> params{ m_settings[tag].GetVector<int>() };
+  std::vector<int> params{m_settings[tag].GetVector<int>()};
   if (pos>1 || pos>params.size()-1)  {
     string message = string("Parameter number mismatch for tag = ")+tag+string(" at pos = ")+ToString(pos);
     THROW(fatal_error, message);
   }
-  return (pos==0)?params.front():params.back();      
+  return (pos==0)?params.front():params.back();
 }
 
 const bool Beam_Parameters::On(const string & tag) const {
@@ -226,7 +279,7 @@ void Beam_Parameters::RegisterDefaultBeams() {
   // with i=1,2 as alternatives for BEAMS, BEAM_SPECTRA, and BEAM_ENERGIES. We
   // do not advertise this in the manual, it's only to make conversion of run
   // cards less error-prone.
-  const auto defmode  = string("Collider"); 
+  const auto defmode  = string("Collider");
   const auto beammode = m_settings["BEAM_MODE"].SetDefault(defmode).Get<string>();
   const auto defbeam = 0;
   const auto beam1 = m_settings["BEAM_1"].SetDefault(defbeam).Get<int>();
@@ -256,7 +309,32 @@ void Beam_Parameters::RegisterDarkMatterDefaults() {
   m_settings["RELIC_DENSITY_EMAX"].SetDefault(1.e6).Get<double>();
 }
 
-void Beam_Parameters::RegisterEPADefaults() {}
+void Beam_Parameters::RegisterEPADefaults() {
+  // EPA defaults are declared in the class itself as the form factor is
+  // beam-flavour dependent.
+}
+
+void Beam_Parameters::RegisterPomeronDefaults() {
+  m_settings["Pomeron"]["tMax"].SetDefault(1.);
+  m_settings["Pomeron"]["xMax"].SetDefault(1.);
+  m_settings["Pomeron"]["xMin"].SetDefault(0.);
+  // taken from H1 2006 Fit B, hep-ex/0606004
+  m_settings["Pomeron"]["B"].SetDefault(5.5);
+  m_settings["Pomeron"]["Alpha_intercept"].SetDefault(1.111);
+  m_settings["Pomeron"]["Alpha_slope"].SetDefault(0.06);
+}
+
+void Beam_Parameters::RegisterReggeonDefaults()
+{
+  m_settings["Reggeon"]["tMax"].SetDefault(1.);
+  m_settings["Reggeon"]["xMax"].SetDefault(1.);
+  m_settings["Reggeon"]["xMin"].SetDefault(0.);
+  // taken from H1 2006 Fit B, hep-ex/0606004
+  m_settings["Reggeon"]["B"].SetDefault(1.6);
+  m_settings["Reggeon"]["Alpha_intercept"].SetDefault(0.5);
+  m_settings["Reggeon"]["Alpha_slope"].SetDefault(0.3);
+  m_settings["Reggeon"]["n"].SetDefault(1.4e-3);
+}
 
 void Beam_Parameters::RegisterLaserDefaults() {
   m_settings["E_LASER"].SetDefault(0.0);
@@ -267,22 +345,24 @@ void Beam_Parameters::RegisterLaserDefaults() {
 }
 
 bool Beam_Parameters::SpecifyMode() {
-  bool okay(true);
   string mode = m_settings["BEAM_MODE"].Get<string>();
   if      (mode==string("Relic_Density"))
-    m_beammode = beammode::relic_density; 
+    m_beammode = beammode::relic_density;
   else if (mode==string("Collider"))
     m_beammode = beammode::collider;
   else if (mode==string("DM_Annihilation"))
     m_beammode = beammode::DM_annihilation;
+  else if (mode==string("Fixed_Target"))
+    m_beammode = beammode::Fixed_Target;
   else
     m_beammode = beammode::unknown;
   return (m_beammode!=beammode::unknown);
 }
 
 bool Beam_Parameters::SpecifySpectra() {
-  vector<string> beam_spectra{ m_settings["BEAM_SPECTRA"].GetVector<string>() };
-  if (beam_spectra.size() == 0 || beam_spectra.size() > 2)
+  std::vector<string> beam_spectra{
+          m_settings["BEAM_SPECTRA"].GetVector<string>()};
+  if (beam_spectra.empty() || beam_spectra.size() > 2)
     THROW(fatal_error, "Specify either one or two values for `BEAM_SPECTRA'.");
   for (short int num=0;num<2;num++) {
     string bs{ (num == 0) ? beam_spectra.front() : beam_spectra.back() };
@@ -296,8 +376,14 @@ bool Beam_Parameters::SpecifySpectra() {
       m_beamspec[num] = beamspectrum::simple_Compton;
     else if (bs == "EPA")
       m_beamspec[num] = beamspectrum::EPA;
+    else if (bs == "Pomeron")
+      m_beamspec[num] = beamspectrum::Pomeron;
+    else if (bs == "Reggeon")
+      m_beamspec[num] = beamspectrum::Reggeon;
     else if (bs == "DM_beam")
       m_beamspec[num] = beamspectrum::DM;
+    else if (bs == "Fixed_Target")
+      m_beamspec[num] = beamspectrum::Fixed_Target;
     else
       m_beamspec[num] = beamspectrum::unknown;
   }

@@ -37,22 +37,20 @@ void Return_Value::PrintSingleStatistics(std::ostream &str,
 					 const Counter_Map &map)
 {
   if (!map.empty()){
-    str<<"  "<<type<<" {"<<endl;
+    str<<"  "<<type<<":\n";
     for (Counter_Map::const_iterator it=map.begin();it!=map.end();it++) {
       unsigned long int calls(s_call_counter[it->first]);
       str<<"    From \""<<it->first<<"\": "<<it->second<<" ("
-	 <<calls<<") -> ";
-      if (calls>0) str<<((it->second*1000)/calls)/10.0<<" %";
-      else str<<it->second<<".";
-      str<<endl;
+	 <<calls<<")";
+      if (calls>0) str<<" -> "<<((it->second*1000)/calls)/10.0<<" %";
+      str<<'\n';
     }
-    str<<"  }"<<endl;
   }
 }
 
 void Return_Value::PrintStatistics(std::ostream &str)
 {
-  str<<METHOD<<"(): Statistics {"<<endl;
+  str<<"Event generation statistics:\n";
   str<<"  Generated events: "<<rpa->gen.NumberOfGeneratedEvents()<<endl;
   PrintSingleStatistics(str,"Errors",s_error_counter);
   PrintSingleStatistics(str,"Warnings",s_warning_counter);
@@ -60,7 +58,6 @@ void Return_Value::PrintStatistics(std::ostream &str)
   PrintSingleStatistics(str,"Retried events",s_retry_event_counter);
   PrintSingleStatistics(str,"Retried phases",s_retry_phase_counter);
   PrintSingleStatistics(str,"Retried methods",s_retry_method_counter);
-  str<<"}"<<endl;
 }
 
 void Return_Value::IncWarning(const std::string & name) {

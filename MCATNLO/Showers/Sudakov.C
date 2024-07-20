@@ -22,8 +22,8 @@ Sudakov::Sudakov(PDF::ISR_Handler *isr,const int qed) :
   m_ewmode=qed;
   p_pdf = new PDF::PDF_Base*[2];
   for (int i=0;i<2; i++) p_pdf[i] = isr->PDF(i);
-  Settings& s = Settings::GetMainSettings();
-  m_scalescheme = s["CSS_SCALE_SCHEME"].Get<int>();
+  auto pss = Settings::GetMainSettings()["SHOWER"];
+  m_scalescheme = pss["SCALE_SCHEME"].Get<int>();
 }
 
 Sudakov::~Sudakov() 
@@ -305,7 +305,7 @@ bool Sudakov::Generate(Parton * split)
     SelectOne();
     split->SetSpect(p_spect=p_selected->SelectSpec());
     m_flspec = p_spect->GetFlavour();
-    p_selected->ColorPoint(split);
+    // p_selected->ColorPoint(split);
     m_z = Z();
     double k0sq(p_split->GetType()==pst::IS?m_k0sqi:m_k0sqf);
     if (p_selected->GetFlavourA().IsGluon() &&

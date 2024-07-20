@@ -5,6 +5,7 @@
 #include <string>
 #include <iostream>
 #include <fstream>
+#include <sstream>
 #include <map>
 #include <set>
 #include "ATOOLS/Org/STL_Tools.H"
@@ -78,12 +79,56 @@ namespace ATOOLS {
 
   };// end of struct tm
 
+  struct fm {
+
+    enum code {
+      upperleft = 0,
+      upperright,
+      horizontal,
+      vertical,
+      lowerleft,
+      lowerright,
+      centerleft,
+      centerright
+    };
+
+  };// end of struct fm
+
   std::ostream &operator<<(std::ostream &str,const bm::code modifier); 
   std::ostream &operator<<(std::ostream &str,const om::code modifier);
 
   std::ostream &operator<<(std::ostream &str,const mm modifier); 
 
   std::ostream &operator<<(std::ostream &str,const tm::code modifier); 
+
+  std::ostream &operator<<(std::ostream &str,const fm::code modifier); 
+
+  struct Frame_Header {
+    Frame_Header(int width = 80) : m_width {width} {}
+    int m_width;
+  };
+
+  struct Frame_Footer {
+    Frame_Footer(int width = 80) : m_width {width} {}
+    int m_width;
+  };
+
+  struct Frame_Separator {
+    Frame_Separator(int width = 80) : m_width {width} {}
+    int m_width;
+  };
+
+  struct Frame_Line {
+    Frame_Line(const std::string &s, int width = 80)
+        : m_textline{s}, m_width{width} {}
+    std::string m_textline;
+    int m_width;
+  };
+
+  std::ostream &operator<<(std::ostream &str, Frame_Header f);
+  std::ostream &operator<<(std::ostream &str, Frame_Footer f);
+  std::ostream &operator<<(std::ostream &str, Frame_Separator f);
+  std::ostream &operator<<(std::ostream &str, const Frame_Line &f);
 
   class Indentation;
 

@@ -1,8 +1,11 @@
 #include "PHASIC++/Selectors/Fastjet_Selector_Base.H"
 
 namespace PHASIC {
+  enum class boostframe { lab = 0, hcm = 1, breit = 2 };
+
   class Fastjet_Finder : public Fastjet_Selector_Base {
     int m_nb, m_nb2;
+    boostframe m_frame;
 
   public:
     Fastjet_Finder(Process_Base* const proc, ATOOLS::Scoped_Settings s,
@@ -31,8 +34,20 @@ Fastjet_Finder::Fastjet_Finder(Process_Base* const proc, Scoped_Settings s,
                                int nb, int nb2):
   Fastjet_Selector_Base("FastjetFinder", proc, s),
   m_nb(nb), m_nb2(nb2)
-{}
-
+{
+  std::string default_frame =
+          proc->Flavours()[0].IsLepton() && rpa->gen.Beam2().IsHadron()
+                  ? "Breit"
+                  : "Lab";
+  std::string frame = s["Frame"].SetDefault(default_frame).Get<std::string>();
+  if (frame == "Lab") m_frame = boostframe::lab;
+  else if (frame == "HCM")
+    m_frame = boostframe::hcm;
+  else if (frame == "Breit")
+    m_frame = boostframe::breit;
+  else
+    THROW(fatal_error, "Unknown boost frame \"" + frame + "\".");
+}
 
 bool Fastjet_Finder::Trigger(Selector_List &sl)
 {
@@ -42,29 +57,39 @@ bool Fastjet_Finder::Trigger(Selector_List &sl)
 
   std::vector<ATOOLS::Vec4D> p(sl.size());
   for (size_t i(0);i<p.size();++i) p[i]=sl[i].Momentum();
-  if (sl[0].Flavour().IsLepton()&&rpa->gen.Beam2().IsHadron()) {
-    msg_Debugging()<<METHOD<<"(): Boost to Breit frame {\n";
-    Vec4D pp(rpa->gen.PBeam(1)), qq(p[0]-p[2]);
-    Poincare cms(pp+qq);
-    double Q2(-qq.Abs2()), x(Q2/(2.0*pp*qq)), E(sqrt(Q2)/(2.0*x));
-    Vec4D P(sqrt(E*E+pp.Abs2()),0.0,0.0,-E);
-    Vec4D q(0.0,0.0,0.0,2.0*x*E);
+  if (sl[0].Flavour().IsLepton() && rpa->gen.Beam2().IsHadron() &&
+      m_frame != boostframe::lab) {
+    msg_Debugging() << METHOD << "(): Boost to chosen frame {\n";
+    Vec4D    pp(rpa->gen.PBeam(1)), qq(p[0] - p[2]);
+    Poincare cms(pp + qq);
+    double   Q2(-qq.Abs2()), x(Q2 / (2.0 * pp * qq)), E(sqrt(Q2) / (2.0 * x));
+    Vec4D    P(sqrt(E * E + pp.Abs2()), 0.0, 0.0, -E);
+    Vec4D    q(0.0, 0.0, 0.0, 2.0 * x * E);
     cms.Boost(pp);
     cms.Boost(qq);
-    Poincare zrot(pp,-Vec4D::ZVEC);
+    Poincare zrot(pp, -Vec4D::ZVEC);
     zrot.Rotate(pp);
     zrot.Rotate(qq);
-    Poincare breit(P+q);
-    breit.BoostBack(pp);
-    breit.BoostBack(qq);
-    if (!IsEqual(pp,P,1.0e-3) || !IsEqual(qq,q,1.0e-3))
-      msg_Error()<<METHOD<<"(): Boost error."<<std::endl;
-    for (int i(0);i<p.size();++i) {
-      msg_Debugging()<<"  "<<i<<": "<<p[i];
-      cms.Boost(p[i]);
-      zrot.Rotate(p[i]);
-      breit.BoostBack(p[i]);
-      msg_Debugging()<<" -> "<<p[i]<<"\n";
+    if (m_frame == boostframe::hcm) {
+      for (int i(0); i < p.size(); ++i) {
+        msg_Debugging() << "  " << i << ": " << p[i];
+        cms.Boost(p[i]);
+        zrot.Rotate(p[i]);
+        msg_Debugging() << " -> " << p[i] << "\n";
+      }
+    } else {
+      Poincare breit(P + q);
+      breit.BoostBack(pp);
+      breit.BoostBack(qq);
+      if (!IsEqual(pp, P, 1.0e-3) || !IsEqual(qq, q, 1.0e-3))
+        msg_Error() << METHOD << "(): Boost error." << std::endl;
+      for (int i(0); i < p.size(); ++i) {
+        msg_Debugging() << "  " << i << ": " << p[i];
+        cms.Boost(p[i]);
+        zrot.Rotate(p[i]);
+        breit.BoostBack(p[i]);
+        msg_Debugging() << " -> " << p[i] << "\n";
+      }
     }
     msg_Debugging()<<"}\n";
   }

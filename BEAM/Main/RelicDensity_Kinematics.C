@@ -2,9 +2,8 @@
 
 using namespace BEAM;
 using namespace ATOOLS;
-using namespace std;
 
-RelicDensity_Kinematics::RelicDensity_Kinematics(std::array<Beam_Base *, 2> beams) :
+RelicDensity_Kinematics::RelicDensity_Kinematics(std::array<Beam_Base*, 2> beams) :
   Kinematics_Base(beams) {
   InitIntegration();
 }
@@ -22,7 +21,7 @@ void RelicDensity_Kinematics::InitIntegration() {
 }
 
 void RelicDensity_Kinematics::AssignKeys(Integration_Info *const info) {
-  m_sprimekey.Assign(m_keyid+string("s'"),5,0,info);
+  m_sprimekey.Assign(m_keyid + std::string("s'"), 5, 0, info);
   SetLimits();
 }
 

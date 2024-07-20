@@ -3,7 +3,8 @@ BEAM_ENERGIES: 6500
 
 ME_GENERATORS: [Comix, Amegic, OpenLoops]
 
-CORE_SCALE: VAR{Abs2(p[2]+p[3]+p[4])}
+MEPS:
+  CORE_SCALE: VAR{Abs2(p[2]+p[3]+p[4])}
 
 PARTICLE_DATA:
   5: {Massive: true}

@@ -4,7 +4,7 @@
 Hadronization
 *************
 
-The hadronization setup covers the fragmentation of partons into
+The hadronisation setup covers the fragmentation of partons into
 primordial hadrons as well as the decays of unstable hadrons into
 stable final states.
 
@@ -33,18 +33,18 @@ The ``FRAGMENTATION`` parameter sets the fragmentation module to be
 employed during event generation.
 
 * The default is :option:`Ahadic`, enabling Sherpa's native
-  hadronization model AHADIC++ :cite:`Chahal2022rid`, based on
+  hadronisation model AHADIC++ :cite:`Chahal2022rid`, based on
   the cluster fragmentation model introduced in :cite:`Field1982dg`,
   :cite:`Webber1983if`, :cite:`Gottschalk1986bv`, and :cite:`Marchesini1987cf`.
 
-* The hadronization can be disabled with the value :option:`None`.
+* The hadronisation can be disabled with the value :option:`None`.
 
-* To evaluate uncertainties stemming from the hadronization, Sherpa
+* To evaluate uncertainties stemming from the hadronisation, Sherpa
   also provides an interface to the Lund string fragmentation in
-  Pythia 8.3 :cite:`Sjostrand2015` by using the setting
+  Pythia 8.3 :cite:`Bierlich:2022pfr` by using the setting
   :option:`Pythia8`.  In this case, the standard Pythia settings
   can be used to steer the behaviour of the Lund string,
-  see :cite:`Sjostrand2015`. They are specified in their usual
+  see :cite:`Bierlich:2022pfr`. They are specified in their usual
   form in Pythia in a dedicated settings block. Additionally
   a choice can be made to let Pythia directly handle hadron
   decays via the :option:`DECAYS` setting (separate from the

@@ -6,7 +6,7 @@
 namespace BEAM {
 class Collider_Weight : public Weight_Base {
 private:
-  collidermode::code m_mode;
+  collidermode m_mode;
   ATOOLS::Info_Key m_sprimekey, m_ykey, m_xkey;
 
 public:

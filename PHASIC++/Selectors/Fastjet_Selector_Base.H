@@ -15,7 +15,7 @@ namespace PHASIC {
     ~Fastjet_Selector_Base();
 
   protected:
-    double m_ptmin, m_etmin, m_delta_r, m_f, m_eta, m_y;
+    double m_ptmin, m_etmin, m_delta_r, m_eta, m_y;
     int m_nj, m_eekt;
     fjcore::JetDefinition * p_jdef;
 

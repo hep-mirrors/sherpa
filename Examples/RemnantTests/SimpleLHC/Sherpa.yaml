@@ -8,7 +8,8 @@ ERROR: 0.99
 FRAGMENTATION: Ahadic
 
 # scales, tags for scale variations
-CORE_SCALE: VAR{Abs2(p[2]+p[3])}
+MEPS:
+  CORE_SCALE: VAR{Abs2(p[2]+p[3])}
 
 # me generator settings
 ME_GENERATORS: Comix

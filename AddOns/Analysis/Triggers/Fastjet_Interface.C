@@ -4,6 +4,7 @@
 #include "ATOOLS/Phys/Fastjet_Helpers.H"
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/Exception.H"
+#include "ATOOLS/Org/Run_Parameter.H"
 
 using namespace ANALYSIS;
 using namespace ATOOLS;
@@ -26,7 +27,10 @@ public:
 		    const size_t &njets,const double &ptmin,
 		    const double &etamax,const size_t btag):
     Trigger_Base(inlist,outlist), m_jdef(jdef),
-    m_njets(njets), m_btag(btag), m_ptmin(ptmin), m_etamax(etamax) {}
+    m_njets(njets), m_btag(btag), m_ptmin(ptmin), m_etamax(etamax)
+  {
+    rpa->gen.AddCitation(1, "FastJet is published under \\cite{Cacciari:2011ma}.");
+  }
 
   ~Fastjet_Interface()
   {

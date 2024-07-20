@@ -4,7 +4,7 @@
 Command Line Options
 ####################
 
-The available command line options for Sherpa.
+The available command line options for Sherpa (given either in long form (starting with two hyphen) or, alternatively in a short-hand form) include:
 
 .. option:: --run-data, -f <file>
 
@@ -44,7 +44,7 @@ The available command line options for Sherpa.
 .. option:: --me-generators, -m <generators>
 
    Set the matrix element generator list to ``<generators>``, see
-   :REF:`ME_GENERATORS`. If you specify more than on generator, use the
+   :REF:`ME_GENERATORS`. If you specify more than one generator, use the
    YAML sequence syntax, e.g. :option:`-m '[Amegic, Comix]'`.
 
 .. option:: --mi-handler, -M <handler>
@@ -88,7 +88,7 @@ The available command line options for Sherpa.
 
 .. option:: --event-output, -o <level>
 
-   Set output level for event generation ``<level>``, see
+   Set output level used during event generation ``<level>``, see
    :REF:`OUTPUT`.
 
 .. option:: --log-file, -l <logfile>
@@ -104,11 +104,11 @@ The available command line options for Sherpa.
 
    Switch to non-batch mode, see :REF:`BATCH_MODE`.
 
-.. option:: -I
+.. option:: --enable-init-only, -I
 
    Only initialize the run, i.e. writes out the ``Process`` directory, if
    necessary writes out the libraries for AMEGIC++ and quits the run,
-   see :ref:`Running Sherpa`.
+   see :ref:`Running Sherpa` and :ref:`INIT_ONLY`.
 
 .. option:: --print-version-info, -V
 
@@ -125,7 +125,16 @@ The available command line options for Sherpa.
 .. option:: 'PARAMETER: Value'
 
    Set the value of a parameter, see :ref:`Parameters`.
+   Equivalent input forms are ``PARAMETER:Value`` (without a space)
+   and ``PARAMETER=Value``; these forms can normally be used
+   without quotation marks.
+   Just as for any other command line option, the setting takes precedence
+   over corresponding settings defined in runcards.
+   You can also set nested settings or settings that expect lists of values;
+   see :ref:`Input structure` for more details.
 
 .. option:: 'Tags: {TAG: Value}'
 
    Set the value of a tag, see :ref:`Tags`.
+   More than one tag can be specified using
+   ``'Tags: {TAG1: Value1, TAG2: Value2, ...}'``.

@@ -21,7 +21,8 @@ void cjkhogrid_(int &, double &, double &, double *);
 }
 
 CJKph_Fortran_Interface::CJKph_Fortran_Interface(const ATOOLS::Flavour _bunch,
-                                                 const std::string _set) {
+                                                 const std::string _set)
+    : Photon_PDF_Base(_bunch, _set, 5) {
   m_xmin = 1.e-5;
   m_xmax = 1.;
   m_q2min = 1;
@@ -99,60 +100,16 @@ void CJKph_Fortran_Interface::CalculateSpec(const double &_x,
                   << "   path " << m_path << " not found." << std::endl;
   }
 
-  m_g = pdf[5];
-  m_d = pdf[6];
-  m_u = pdf[7];
-  m_s = pdf[8];
-  m_c = pdf[9];
-  m_b = pdf[10];
-}
-
-double CJKph_Fortran_Interface::GetXPDF(const ATOOLS::Flavour &infl) {
-  double value = 0.;
-
-  if (infl.Kfcode() == kf_gluon)
-    value = m_g;
-  else if (infl.Kfcode() == kf_d)
-    value = m_d;
-  else if (infl.Kfcode() == kf_u)
-    value = m_u;
-  else if (infl.Kfcode() == kf_s)
-    value = m_s;
-  else if (infl.Kfcode() == kf_c)
-    value = m_c;
-  else if (infl.Kfcode() == kf_b)
-    value = m_b;
-
-  // There seems to be an error in the CJK2 script: it outputs x*PDF, not
-  // x*PDF/alfa as given in the header. This means that the multiplication below
-  // is not necessary for the CJK2 set.
+  double fac = 1.0;
   if (m_set != std::string("CJK2LO"))
-    value *= MODEL::s_model->ScalarFunction(std::string("alpha_QED"), 0);
+    fac *= MODEL::s_model->ScalarFunction(std::string("alpha_QED"), 0);
 
-  return m_rescale * value;
-}
-
-double CJKph_Fortran_Interface::GetXPDF(const kf_code &kf, bool anti) {
-  double value = 0.;
-
-  if (kf == kf_gluon)
-    value = m_g;
-  else if (kf == kf_d)
-    value = m_d;
-  else if (kf == kf_u)
-    value = m_u;
-  else if (kf == kf_s)
-    value = m_s;
-  else if (kf == kf_c)
-    value = m_c;
-  else if (kf == kf_b)
-    value = m_b;
-
-  // See above
-  if (m_set != std::string("CJK2LO"))
-    value *= MODEL::s_model->ScalarFunction(std::string("alpha_QED"), 0);
-
-  return m_rescale * value;
+  m_g = pdf[5] * fac;
+  m_d = pdf[6] * fac;
+  m_u = pdf[7] * fac;
+  m_s = pdf[8] * fac;
+  m_c = pdf[9] * fac;
+  m_b = pdf[10] * fac;
 }
 
 DECLARE_PDF_GETTER(CJKph_Getter);

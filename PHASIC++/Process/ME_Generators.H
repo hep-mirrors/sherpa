@@ -7,6 +7,7 @@
 namespace MODEL    { class Model_Base; }
 namespace BEAM     { class Beam_Spectra_Handler; }
 namespace PDF      { class ISR_Handler; }
+namespace YFS      { class YFS_Handler; }
 namespace REMNANTS { class Remnant_Handler; }
 
 namespace PHASIC   {
@@ -22,6 +23,7 @@ namespace PHASIC   {
 
     BEAM::Beam_Spectra_Handler *p_beam;
     PDF::ISR_Handler           *p_isr;
+    YFS::YFS_Handler           *p_yfs;
 
   public:
 
@@ -30,7 +32,8 @@ namespace PHASIC   {
 
     bool InitializeGenerators(MODEL::Model_Base *model,
                               BEAM::Beam_Spectra_Handler *beam,
-                              PDF::ISR_Handler *isr);
+                              PDF::ISR_Handler *isr,
+                              YFS::YFS_Handler *yfs);
     int PerformTests();
     bool NewLibraries();
 

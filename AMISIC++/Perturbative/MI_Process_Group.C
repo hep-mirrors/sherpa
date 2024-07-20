@@ -63,7 +63,7 @@ PreCalculate(const double & shat,const double & that,const double & uhat) {
   // Calculating the squared MEs depending on the Mandelstam variables.
   // They do not include couplings, flux factors, pdf's, and are in units of 1.
   for (list<XS_Base * >::iterator xsit=m_me2s.begin();
-       xsit!=m_me2s.end();xsit++) 
+       xsit!=m_me2s.end();xsit++)
     (*xsit)->Calc(shat,that,uhat);
 }
 
@@ -75,9 +75,9 @@ double MI_Process_Group::SoftCorrection(const double & pt2) const {
 double MI_Process_Group::Scale(const double & pt2) const {
   // Default scale, including an IR regularisation - maybe we should get more choices.
   switch (m_muR_scheme) {
-  case scale_scheme::code::PT_with_Raps:
+  case scale_scheme::PT_with_Raps:
     THROW(fatal_error,"Scale scheme PT_with_Rapidities not implemented yet.");
-  case scale_scheme::code::PT:
+  case scale_scheme::PT:
   default:
     return (pt2+m_pt02);
   }
@@ -86,7 +86,7 @@ double MI_Process_Group::Scale(const double & pt2) const {
 void MI_Process_Group::Output() const {
   msg_Out()<<"Group: "<<Name()<<":\n";
   for (list<MI_Process * >::const_iterator mit=m_processes.begin();
-       mit!=m_processes.end();mit++) 
+       mit!=m_processes.end();mit++)
     msg_Out()<<"   *** "<<(*mit)->Name()<<"\n";
 }
 
@@ -395,7 +395,7 @@ MI_QG_QGamma_Processes::MI_QG_QGamma_Processes() :
     m_processes.back()->SetME2(qg_qgam);
   }
 }
-  
+
 double MI_QG_QGamma_Processes::Coupling(const double & scale) const {
   return ( (*p_alphaS)(m_muR_fac*Scale(Max(m_pt02,m_scale))) *
 	   (*p_alpha)(Max(m_pt02,Scale(m_scale)) ));

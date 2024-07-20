@@ -7,70 +7,74 @@
 
 using namespace REMNANTS;
 using namespace ATOOLS;
-using namespace std;
-
 
 Beam_Decorrelator::Beam_Decorrelator() : m_on(false) {}
 
-Beam_Decorrelator::~Beam_Decorrelator() {}
-
 void Beam_Decorrelator::
 Initialize(Remnant_Handler * const rhandler) {
+  // Registering defaults
+  auto s = Settings::GetMainSettings()["BEAM_DECORRELATOR"];
+  s["SOFT_X_EXPONENT"].SetDefault(-2.0);
+  s["SOFT_ETA_RANGE"].SetDefault(10.);
+  s["SOFT_MASS"].SetDefault(7.5);
+  s["DELTA_MASS"].SetDefault(0.1);
+
   p_rhandler = rhandler;
-  Scoped_Settings s = Settings::GetMainSettings()["REMNANTS"];
   m_on   = s["BEAM_DECORRELATOR"].SetDefault(0).Get<bool>();
   if (m_on &&
       (p_rhandler->Type()==strat::DIS1 || p_rhandler->Type()==strat::DIS2)) {
     // TODO: do the same for hh collisions?
     p_kperpGenerator = p_rhandler->GetKPerp();
-    m_expo    = s["SOFT_X_EXPONENT"].SetDefault(-2.0).Get<double>();
-    m_xiP     = m_expo+1;
-    m_invxiP  = 1./m_xiP;
-    m_maxeta  = dabs(s["SOFT_ETA_RANGE"].SetDefault(10.).Get<double>());
-    m_mass2   = sqr(s["SOFT_MASS"].SetDefault(7.5).Get<double>());
-    m_deltaM  = s["DELTA_MASS"].SetDefault(0.1).Get<double>();
-    m_on      = (m_maxeta>0. && m_mass2>0.);
+
+    m_expo   = s["SOFT_X_EXPONENT"].Get<double>();
+    m_xiP    = m_expo + 1;
+    m_invxiP = 1. / m_xiP;
+    m_maxeta = dabs(s["SOFT_ETA_RANGE"].Get<double>());
+    m_mass2  = sqr(s["SOFT_MASS"].Get<double>());
+    m_deltaM = s["DELTA_MASS"].Get<double>();
+    m_on     = (m_maxeta > 0. && m_mass2 > 0.);
   }
 }
 
 bool Beam_Decorrelator::operator()(Blob * softblob) {
   if (!m_on) return true;
   p_softblob = softblob;
-  //msg_Out()<<"------------------------------------------------------\n"
-  //	   <<METHOD<<" for "<<softblob->NOutP()<<" particles.\n"
-  //	   <<(*p_softblob)<<"\n";
   // Check for pairs of partons; if they are colour-correlated and involve
-  // * one beam and one FS parton, with |eta| < maxeta (TODO: not sure here?) 
+  // * one beam and one FS parton, with |eta| < maxeta (TODO: not sure here?)
   // * two beam partons from different beams
-  // and if their mass is larger than the minimal mass m_mass2, they
-  // will emit a soft gluon to be decorrelated in colour.
-  for (size_t i=0;i<p_softblob->NOutP()-1;i++) {
-    for (size_t j=i+1;j<p_softblob->NOutP();j++) {
-      if (MustEmit(p_softblob->OutParticle(i),
-		   p_softblob->OutParticle(j))) SoftEmission();
+  // and if their mass is larger than the minimal mass m_mass2, they will emit a
+  // soft gluon to be decorrelated in colour.
+  for (int i = 0; i < p_softblob->NOutP() - 1; i++) {
+    for (int j = i + 1; j < p_softblob->NOutP(); j++) {
+      if (MustEmit(p_softblob->OutParticle(i), p_softblob->OutParticle(j)))
+        SoftEmission();
     }
   }
   // Add the produced soft gluons to the blob.
-  bool out=!m_softgluons.empty();
   while (!m_softgluons.empty()) {
     p_softblob->AddToOutParticles(m_softgluons.back());
     m_softgluons.pop_back();
   }
-  //msg_Out()<<"going out with "<<p_softblob->NOutP()<<"\n"<<(*p_softblob)<<"\n";
   return true;
 }
 
 bool Beam_Decorrelator::MustEmit(Particle * pi, Particle * pj) {
   // Checks if the partons must emit a soft gluon, for conditions see above.
   //msg_Out()<<METHOD<<": "<<pi->Number()<<" & "<<pj->Number()<<"\n";
-  if (pi->Beam()<0 && pj->Beam()<0 ||
-      pi->Info()=='I' || pj->Info()=='I') return false;
+  if (pi->Beam() < 0 && pj->Beam() < 0 ||
+      pi->Info()=='I' || pj->Info()=='I')
+    return false;
   // Ignore parton pairs that are not colour-correlated
-  if (!((pi->GetFlow(1)==pj->GetFlow(2) && pi->GetFlow(1)!=0) ||
-	(pi->GetFlow(2)==pj->GetFlow(1) && pi->GetFlow(2)!=0))) return false;
-  if (pi->Info()=='B' || pj->Info()=='F' ||      
-      pi->Momentum()[0]>pj->Momentum()[0]) { p_beam = pi; p_spect = pj; }
-  else {p_beam = pj; p_spect = pi; }
+  if (!((pi->GetFlow(1) == pj->GetFlow(2) && pi->GetFlow(1) != 0) ||
+        (pi->GetFlow(2) == pj->GetFlow(1) && pi->GetFlow(2) != 0)))
+    return false;
+  if (pi->Info()=='B' || pj->Info()=='F' || pi->Momentum()[0] > pj->Momentum()[0]) {
+    p_beam  = pi;
+    p_spect = pj;
+  } else {
+    p_beam  = pj;
+    p_spect = pi;
+  }
   m_pbeam  = p_beam->Momentum();
   m_pspect = p_spect->Momentum();
   m_Q2     = (m_pspect+m_pbeam).Abs2();
@@ -115,7 +119,8 @@ bool Beam_Decorrelator::DefineKinematics(Vec4D & pi,Vec4D & pj,Vec4D & pk) {
   do {
     m_x     = pow(ran->Get()*(1-poweps)+poweps,m_invxiP);
     m_ktvec = p_kperpGenerator->KT(p_beam,m_Q2*m_x);
-  } while (!MakeKinematics(pi,pj,pk) && (trials--)>0);
+    trials--;
+  } while (!MakeKinematics(pi,pj,pk) && trials > 0);
   if (trials<=0)
     msg_Tracking()<<METHOD<<": couldn't construct kinematics.\n";
   return (trials>0);

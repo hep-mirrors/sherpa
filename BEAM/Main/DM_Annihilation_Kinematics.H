@@ -11,7 +11,7 @@ namespace BEAM {
 
     void InitIntegration();
   public:
-    DM_Annihilation_Kinematics(std::array<Beam_Base *, 2> beams);
+    DM_Annihilation_Kinematics(std::array<Beam_Base*, 2> beams);
     ~DM_Annihilation_Kinematics() = default;
 
     void AssignKeys(ATOOLS::Integration_Info *const info);

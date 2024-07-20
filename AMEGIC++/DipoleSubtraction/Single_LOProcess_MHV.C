@@ -34,8 +34,9 @@ using namespace std;
 Single_LOProcess_MHV::Single_LOProcess_MHV(const Process_Info &pi,
                                            BEAM::Beam_Spectra_Handler *const beam,
                                            PDF::ISR_Handler *const isr,
+                                           YFS::YFS_Handler *const yfs,
                                            const ATOOLS::sbt::subtype& st) :
-  Single_LOProcess(pi, beam, isr, st)
+  Single_LOProcess(pi, beam, isr, yfs, st)
 {
   m_ownamps = false;
   m_emitgluon = false;

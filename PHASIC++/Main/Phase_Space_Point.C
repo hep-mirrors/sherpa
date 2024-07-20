@@ -33,6 +33,7 @@ Phase_Space_Point::~Phase_Space_Point() {
 void Phase_Space_Point::Init() {
   p_beamhandler = p_pshandler->GetBeamSpectra();
   p_isrhandler = p_pshandler->GetISRHandler();
+  p_yfshandler = p_pshandler->GetYFSHandler();
   m_nin = p_pshandler->Process()->Process()->NIn();
   m_nout = p_pshandler->Process()->Process()->NOut();
   m_nvec = m_nin + m_nout;
@@ -84,7 +85,13 @@ void Phase_Space_Point::InitFixedIncomings() {
     if (p_beamhandler->On() || p_isrhandler->On() != 0)
       return;
     for (int i = 0; i < 2; ++i) {
-      m_ISmoms[i] = p_beamhandler->GetBeam(i)->InMomentum();
+      if(p_beamhandler->BeamMode()==BEAM::beammode::Fixed_Target){
+        // Need out momentum for Fixed target
+        m_ISmoms[i] = p_beamhandler->GetBeam(i)->OutMomentum();
+      }
+      else{
+        m_ISmoms[i] = p_beamhandler->GetBeam(i)->InMomentum();
+      }
     }
     m_sprime = m_fixedsprime = (m_ISmoms[0] + m_ISmoms[1]).Abs2();
     m_Eprime = sqrt(m_sprime);
@@ -101,6 +108,11 @@ void Phase_Space_Point::InitCuts(Process_Integrator *const process) {
   process->Process()->BuildCuts(p_cuts);
   if (process->NIn() > 1) {
     m_smin = ATOOLS::Max(sqr(process->ISRThreshold()), p_cuts->Smin());
+    if (process->Process()->Flavours()[2].Kfcode() == kf_instanton) {
+      Settings& s = Settings::GetMainSettings();
+      m_smin = sqr(s["INSTANTON_MIN_MASS"].Get<double>());
+      process->ISR()->SetFixedSprimeMax(sqr(s["INSTANTON_MAX_MASS"].Get<double>()));
+    }
     process->ISR()->SetFixedSprimeMin(m_smin);
     process->Beam()->SetSprimeMin(m_smin);
   }
@@ -128,7 +140,7 @@ bool Phase_Space_Point::operator()(Process_Integrator *const process,
       return false;
     }
   }
-  DefineFSRKinematics();
+  if(p_yfshandler->Mode()==YFS::yfsmode::off) DefineFSRKinematics();
   CorrectMomenta();
   return true;
 }
@@ -175,13 +187,6 @@ bool Phase_Space_Point::DefineISRKinematics(Process_Integrator *const process) {
       p_isrhandler->SetLimits(m_beamykey[2]);
       if (!p_isrhandler->CheckMasses())
         return false;
-      if (m_nin == 2 && m_nout == 1 &&
-          process->Process()->Selected()->Flavours()[2].Kfcode() == kf_instanton) {
-        if (p_pshandler->Active()->Process()->SPrimeMin() > 0.)
-          m_isrspkey[0] = p_pshandler->Active()->Process()->SPrimeMin();
-        if (p_pshandler->Active()->Process()->SPrimeMax() > 0.)
-          m_isrspkey[1] = p_pshandler->Active()->Process()->SPrimeMax();
-      }
       m_isrspkey[4] = sqr(m_osmass);
       p_isrchannels->GeneratePoint();
     }
@@ -192,6 +197,26 @@ bool Phase_Space_Point::DefineISRKinematics(Process_Integrator *const process) {
                              p_pshandler->Active()->Process()->Flavours()[1])
                              ? 2.0
                              : 1.0;
+  }
+  if(p_yfshandler->HasISR()){
+    p_isrchannels->GeneratePoint();
+    p_yfshandler->SetLimits(m_smin);
+    DefineFSRKinematics();
+    p_yfshandler->SetBornMomenta(p_moms);
+    // p_yfshandler->SetFlavours(p_pshandler->Active()->Process()->Flavours());
+    m_sprime = m_osmass ? m_isrspkey[4] : m_isrspkey[3];
+    p_yfshandler->SetMomenta(p_moms);
+    p_yfshandler->SetSprime(m_sprime);
+    if(!p_yfshandler->MakeYFS(p_moms)) return 0;
+    DefineFSRKinematics();
+    p_yfshandler->SetMomenta(p_moms);
+    return(p_yfshandler->CalculateFSR());
+  }
+  else if(p_yfshandler->Mode()==YFS::yfsmode::fsr){
+    DefineFSRKinematics();
+    p_yfshandler->SetBornMomenta(p_moms);
+    return(p_yfshandler->CalculateFSR(p_moms));
+
   }
   return p_isrhandler->MakeISR(m_sprime, m_isrykey[2], p_moms,
                                process->Process()->Selected()->Flavours());
@@ -207,6 +232,7 @@ void Phase_Space_Point::CorrectMomenta() {
   if (m_nin!=2 || (m_nin==2 && m_nout==1 &&
        p_pshandler->Active()->Process()->Flavours()[2].Kfcode()==kf_instanton))
     return;
+  if(p_yfshandler->Mode()==YFS::yfsmode::isr) return;
   Vec4D  momsum(0.,0.,0.,0.);
   size_t imax(0);
   double Emax(0.0);

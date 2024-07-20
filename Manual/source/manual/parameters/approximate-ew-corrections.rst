@@ -29,7 +29,7 @@ real-emission contributions. However, both methods qualify for a rather straight
 inclusion of the dominant EW corrections in state-of-the-art matrix-element plus
 parton-shower simulations.
 
-In the following we will discuss how to enable the calculation of thew EWSud
+In the following we will discuss how to enable the calculation of the EWSud
 and EWVirt corrections, and what options are available to steer their
 evaluation, beginning with EWVirt.
 
@@ -68,9 +68,7 @@ Note that the respective associated contribution must be listed
 in the process setting :ref:`Associated_Contributions`.
 
 The additional event weights can then be written into the event
-output.  However, this is currently only supported for
-``HepMC_GenEvent`` and ``HepMC_Short`` with versions >=2.06 and
-``HEPMC_USE_NAMED_WEIGHTS: true``.  The alternative event weight names
+output. The alternative event weight names
 are either ``ASSOCIATED_CONTRIBUTIONS.<contrib>``,
 ``ASSOCIATED_CONTRIBUTIONS.MULTI<contrib>``,
 or ``ASSOCIATED_CONTRIBUTIONS.EXP<contrib>``
@@ -104,7 +102,7 @@ NLL EWSud corrections, while the latter first exponentiates the corrections
 prior to applying it to the nominal event weight, thus giving a resummed NLL
 result.
 
-In order for the ``EWSud`` corrections to make sense, goldstone bosons need
+In order for the ``EWSud`` corrections to make sense, Goldstone bosons need
 to be made available. This is achieved by ensuring that the following is set
 
 .. code-block:: yaml
@@ -146,7 +144,7 @@ calculation, along with their default values:
   high-energy limit. This result is thus only expected to match exact EW
   corrections only when all invariants are larger than this
   threshold. Conversely a lower value, say 1, would apply the correction more
-  uniformily at the price of violating the thretically sound region where these
+  uniformly at the price of violating the theoretically sound region where these
   corrections are derived, but is seen to better reproduce the effect of exact
   EW corrections across kinematical distributions.
 
@@ -157,7 +155,7 @@ calculation, along with their default values:
   where :math:`\hat s` is the Mandelstam variable for the partonic process,
   see :cite:`Bothmann2021led`. Note that depending on the value of
   :option:`THRESHOLD` these may become numerically significant. For lower threshold
-  values, it is reccomended to leave this option `true`, as default.
+  values, it is recommended to leave this option `true`, as default.
 
 .. index:: CLUSTERING_THRESHOLD
 
@@ -198,7 +196,7 @@ expert users.
 
 .. index:: COEFF_REMODED_LIST
 
-* :option:`COEFF_REMOVED_LIST` list of logarithic coefficients that can be
+* :option:`COEFF_REMOVED_LIST` list of logarithmic coefficients that can be
   ignored, defaults to empty, meaning that all coefficients are included. The
   available options are: `LSC`, `Z`, `SSC`, `C`, `Yuk`, `PR` and `I`. See
   :cite:`Bothmann2020sxm` for further details.

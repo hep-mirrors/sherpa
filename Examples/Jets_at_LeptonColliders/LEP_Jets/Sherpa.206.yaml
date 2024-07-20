@@ -9,8 +9,8 @@ HADRON_DECAYS:
 
 PROCESSES:
 - 11 -11 -> 93 93 93{2}:
-    CKKW: 7.
-    Order: {QCD: Any, EW: 2}
+    CKKW: 7
+    Order: {QCD: 0, EW: 2}
 
 ANALYSIS: Rivet
 ANALYSIS_OUTPUT: Analysis

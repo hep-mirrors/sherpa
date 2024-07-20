@@ -81,16 +81,16 @@ namespace PDF {
     - \frac{\beta_H^2}{32}
     \left[\frac{1+3x^2}{1-x}\log(x) + 4(1+x)\log(1-x)+5+x\right]\\
     - \frac{\beta_H^3}{384}
-	    \left[\vphantom{\frac32}
-	          (1+x)\left(6\mbox{\rm Li}_2(x)+12\log^2(1-x)-3\pi^2\right) \right.\\
-	    \;\;\;\;\;\;\;\; 
-	          + \frac{1}{1-1x}\left(\frac{3(1+8x+3x^2)}{2}\log(x)
-		                        + 6(x+5)(1-x)\log(1-x)
-					+12(1+x^2)\log(x)\log(1-x) \right.\\
-	     \;\;\;\;\;\;\;\;\;\;\;\;\;\;\;\;\;\left.\left.				       
-					+12(1+x^2)\log(x)\log(1-x)
-					-\frac{1+7x^2}{2}\log^2(x)
-					+\frac{39-24x-15x^2}{4}\right)\right]\,,
+      \left[\vphantom{\frac32}
+            (1+x)\left(6\mbox{\rm Li}_2(x)+12\log^2(1-x)-3\pi^2\right) \right.\\
+      \;\;\;\;\;\;\;\; 
+            + \frac{1}{1-1x}\left(\frac{3(1+8x+3x^2)}{2}\log(x)
+                            + 6(x+5)(1-x)\log(1-x)
+          +12(1+x^2)\log(x)\log(1-x) \right.\\
+       \;\;\;\;\;\;\;\;\;\;\;\;\;\;\;\;\;\left.\left.              
+          +12(1+x^2)\log(x)\log(1-x)
+          -\frac{1+7x^2}{2}\log^2(x)
+          +\frac{39-24x-15x^2}{4}\right)\right]\,,
     \end{array}
     \f]
     where a number of choices are possible for the various \f$\beta\f$.
@@ -105,9 +105,9 @@ namespace PDF {
     \zeta = \left\{
             \begin{array}{l} 0 \\ 1 \\ \mbox{\rm else}\end{array}
             \begin{array}{l}  \beta = \beta_e\,,\;\; \beta_H = \beta_S = \eta\,,\\
-	                      \beta = \beta_S = \beta_e\,,\;\; \beta_H = \eta\,,\\
-	                      \beta = \beta_S = \beta_H = \beta_e\,.
-	    \end{array}\right.
+                        \beta = \beta_S = \beta_e\,,\;\; \beta_H = \eta\,,\\
+                        \beta = \beta_S = \beta_H = \beta_e\,.
+      \end{array}\right.
     \f]
     The above expression for \f$f(x,Q^2)\f$ is valid for
     \f[ 

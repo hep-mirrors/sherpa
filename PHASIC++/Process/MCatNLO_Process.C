@@ -59,7 +59,9 @@ MCatNLO_Process::~MCatNLO_Process()
 
 void MCatNLO_Process::Init(const Process_Info &pi,
 			  BEAM::Beam_Spectra_Handler *const beam,
-			   PDF::ISR_Handler *const isr,const int mode)
+			   PDF::ISR_Handler *const isr,
+			   YFS::YFS_Handler *const yfs,
+			   const int mode)
 {
   RegisterDefaults();
   Scoped_Settings s{ Settings::GetMainSettings()["MC@NLO"] };
@@ -71,7 +73,7 @@ void MCatNLO_Process::Init(const Process_Info &pi,
   else if (pi.m_fi.m_nlocpl[0]==1. && pi.m_fi.m_nlocpl[1]==0.)
     cpi.m_fi.m_ps.push_back(Subprocess_Info(kf_jet,"",""));
   else THROW(not_implemented,"Cannot do NLO QCD+EW yet.");
-  Process_Base::Init(cpi,beam,isr);
+  Process_Base::Init(cpi,beam,isr,yfs);
   m_pinfo.m_fi.SetNLOType(pi.m_fi.NLOType());
   Process_Info npi(m_pinfo);
   npi.m_fi.m_ps.pop_back();
@@ -108,7 +110,7 @@ void MCatNLO_Process::Init(const Process_Info &pi,
   p_rproc->SetParent(this);
   p_bproc->FillProcessMap(p_apmap);
   p_rproc->FillProcessMap(p_apmap);
-  m_psmode   = Settings::GetMainSettings()["NLO_CSS_PSMODE"].Get<int>();
+  m_psmode   = s["PSMODE"].Get<int>();
   m_hpsmode  = s["HPSMODE"].Get<int>();
   if (m_hpsmode == -1) {
     if (m_pinfo.m_ckkw&1) m_hpsmode=0;
@@ -182,8 +184,8 @@ bool MCatNLO_Process::InitSubtermInfo()
       NLO_subevt *sub((*subs)[j]);
       for (size_t ij(0);ij<sub->m_n;++ij)
 	for (size_t k(0);k<sub->m_n;++k)
-	  if (k!=ij && sub->p_fl[k]==sub->p_fl[sub->m_kt] && 
-	      sub->p_fl[ij]==sub->p_fl[sub->m_ijt]) {
+          if (k != ij && sub->p_fl[k] == sub->p_fl[sub->m_kt] &&
+              sub->p_fl[ij]==sub->p_fl[sub->m_ijt]) {
 	    m_iinfo[sub->m_pname].insert(IDip_ID(ij,k));
 	  }
       m_dinfo[subs->back()->m_pname].insert(*sub);
@@ -404,7 +406,7 @@ Cluster_Amplitude *MCatNLO_Process::GetAmplitude()
   int mm(gen->SetMassMode(1));
   int stat(gen->ShiftMasses(ampl));
   if (stat<0) {
-    msg_Error()<<METHOD<<"(): Mass shift failed."<<std::endl;
+    msg_Tracking() << METHOD << "(): Mass shift failed." << std::endl;
     gen->SetMassMode(mm);
     return NULL;
   }
@@ -682,8 +684,8 @@ void MCatNLO_Process::InitPSHandler
 }
 
 bool MCatNLO_Process::CalculateTotalXSec(const std::string &resultpath,
-					const bool create) 
-{ 
+                                         const bool         create)
+{
   Vec4D_Vector p(p_rsproc->NIn()+p_rsproc->NOut());
   Cluster_Amplitude *ampl(Cluster_Amplitude::New());
   for (int i(0);i<p.size();++i)

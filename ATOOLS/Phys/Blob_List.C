@@ -489,10 +489,11 @@ Blob_List Blob_List::Copy() const
 
 void Blob_List::PrintMomFailStatistics(std::ostream &str)
 {
-  str<<"Blob_List: Momentum Fail Statistics {\n";
+  if (s_momfails.empty())
+    return;
+  str<<"Momentum fail statistics:\n";
   for (std::map<btp::code,long unsigned int>::iterator fit=s_momfails.begin();
        fit!=s_momfails.end();fit++) {
     str<<"  "<<fit->first<<": "<<fit->second<<" fails\n";
   }
-  str<<"}\n";
 }

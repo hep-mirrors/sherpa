@@ -64,6 +64,7 @@ namespace AMEGIC {
    Single_LOProcess(const PHASIC::Process_Info &pi,
                     BEAM::Beam_Spectra_Handler *const beam,
                     PDF::ISR_Handler *const isr,
+                    YFS::YFS_Handler *const yfs,
                     const ATOOLS::sbt::subtype& st);
     ~Single_LOProcess();
 

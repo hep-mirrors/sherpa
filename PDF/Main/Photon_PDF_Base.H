@@ -9,7 +9,6 @@ class Photon_PDF_Base : public PDF_Base {
 protected:
   bool m_include_photon_in_photon;
   double m_d, m_u, m_s, m_c, m_b, m_g, m_t, m_ph;
-  int m_nf;
   int m_iset;
 public:
   Photon_PDF_Base(const ATOOLS::Flavour, const std::string _set, int nf);

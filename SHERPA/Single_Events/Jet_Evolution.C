@@ -102,7 +102,7 @@ Return_Value::code Jet_Evolution::Treat(Blob_List *bloblist) {
     found = false;
     for (size_t i = 0; i < bloblist->size(); ++i) {
       Blob *meblob = (*bloblist)[i];
-      if (meblob->Has(blob_status::needs_showers) &&	  
+      if (meblob->Has(blob_status::needs_showers) &&
           meblob->Type() != btp::Hard_Decay) {
 	piIter = SelectInterface(meblob);
         switch (AttachShowers(meblob, bloblist, piIter->second)) {
@@ -148,8 +148,10 @@ Return_Value::code Jet_Evolution::Treat(Blob_List *bloblist) {
   Blob *showerblob = bloblist->FindLast(btp::Shower);
   if (showerblob!=NULL && showerblob->Has(blob_status::needs_beams)) {
     Blob * meblob = showerblob->InParticle(0)->ProductionBlob();
+    REMNANTS::Remnant_Handler * remnants =
+      SelectInterface(meblob)->second->RemnantHandler();
     if (meblob->Type()!=btp::Hadron_Decay &&
-	!p_remnants->ExtractShowerInitiators(showerblob))
+	!remnants->ExtractShowerInitiators(showerblob))
       return Return_Value::New_Event;
   }
   return Return_Value::Nothing;
@@ -160,6 +162,7 @@ PertInterfaceIter Jet_Evolution::SelectInterface(Blob * blob) {
   string tag("");
   switch (int(blob->Type())) {
   case (int(btp::Signal_Process)):
+  case (int(btp::Hard_Decay)):
     tag = string("SignalMEs");
     MODEL::as->SetActiveAs(PDF::isr::hard_process);
     break;
@@ -209,6 +212,11 @@ Jet_Evolution::AttachShowers(Blob *blob, Blob_List *bloblist,
   if (stat == Return_Value::New_Event || stat == Return_Value::Retry_Event) {
     pertinterface->CleanUp();
     return stat;
+  }
+  if (blob->Type() == ::btp::Signal_Process) {
+    for (int i=0; i<2; ++i) {
+      p_remnants->GetRemnant(i)->Reset();
+    }
   }
   if (blob->Type() != ::btp::Hadron_Decay) {
     msg_Debugging() << METHOD << "(): Setting scale for MI {\n";

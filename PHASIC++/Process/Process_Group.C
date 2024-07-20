@@ -198,8 +198,8 @@ bool Process_Group::CalculateTotalXSec(const std::string &resultpath,
     if (m_pinfo.Has(nlo_type::loop)) namestring+="+"+m_pinfo.m_loopgenerator;
     namestring+=")";
   }
-  msg_Info()<<METHOD<<"(): Calculate xs for '"
-            <<m_resname<<"' "<<namestring<<std::endl;
+  msg_Info()<<"Calculating xs for '"
+            <<m_resname<<"' "<<namestring<<" ...\n";
   double totalxs(psh->Integrate()/rpa->Picobarn());
   if (!IsEqual(totalxs,p_int->TotalResult())) {
     msg_Error()<<"Result of PS-Integrator and summation do not coincide!\n"
@@ -292,7 +292,7 @@ bool Process_Group::ConstructProcess(Process_Info &pi)
   Process_Base *proc(GetProcess(cpi));
   if (!proc) return false;
   proc->SetGenerator(Generator());
-  proc->Init(pi,p_int->Beam(),p_int->ISR());
+  proc->Init(pi,p_int->Beam(),p_int->ISR(),p_int->YFS());
   if (!Initialize(proc)) {
     msg_Debugging()<<METHOD<<"(): Init failed for '"
 		   <<proc->Name()<<"'\n";

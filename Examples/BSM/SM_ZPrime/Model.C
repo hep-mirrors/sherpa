@@ -91,7 +91,7 @@ Standard_Model_Zprime::Standard_Model_Zprime() :
 bool Standard_Model_Zprime::ModelInit()
 {
   FixZprimeParameters();
-  Standard_Model::ModelInit();
+  return Standard_Model::ModelInit();
 }
 
 
@@ -127,12 +127,6 @@ void Standard_Model_Zprime::InitZprimeVertices()
   Kabbala g1("g_1",sqrt(4.*M_PI*ScalarConstant("alpha_QED")));
   Kabbala g2("g_1/\\cos\\theta_W", g1.Value()/costW.Value());
 
-<<<<<<< HEAD
-  Kabbala PL("P_L",ScalarConstant("Zp_cpl_L"));
-  Kabbala PR("P_R",ScalarConstant("Zp_cpl_R"));
-
-=======
->>>>>>> bcdf56de60e1167a5c903794ce67615ad83b97c7
   // the parameter specifying the LR model
   // - sqrt(2.) will describe a totally LR-symm model
   // - sqrt(2./3.) describes an E6-inspired model

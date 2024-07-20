@@ -34,6 +34,8 @@ namespace ATOOLS {
   enum class Variations_Mode { all, nominal_only };
   std::ostream& operator<<(std::ostream&, const Variations_Type&);
 
+  enum class Variations_Name_Type { weight_name_convention, human_readable };
+
   class Variations;
   struct QCD_Variation_Params;
   struct Qcut_Variation_Params;
@@ -94,9 +96,11 @@ namespace ATOOLS {
     QCD_Variation_Params& Parameters(size_t i) { return *m_parameters_vector[i]; }
     Qcut_Variation_Params& Qcut_Parameters(size_t i) { return m_qcut_parameters_vector[i]; }
     std::string
-        GetVariationNameAt(Variations::Parameters_Vector::size_type,
-            Variations_Type type=Variations_Type::qcd,
-            Variations_Source source=Variations_Source::all) const;
+    GetVariationNameAt(Variations::Parameters_Vector::size_type,
+                       Variations_Type type = Variations_Type::qcd,
+                       Variations_Source source = Variations_Source::all,
+                       Variations_Name_Type name_type =
+                           Variations_Name_Type::weight_name_convention) const;
     size_t Size(Variations_Type t=Variations_Type::qcd) const;
     bool HasVariations() const {
       for (const auto t : ManagedVariationTypes())
@@ -217,7 +221,10 @@ namespace ATOOLS {
 #endif
 
     bool IsTrivial() const;
-    std::string Name(Variations_Source source=ATOOLS::Variations_Source::all) const;
+    std::string
+    Name(Variations_Source source = ATOOLS::Variations_Source::all,
+         Variations_Name_Type name_type =
+             ATOOLS::Variations_Name_Type::weight_name_convention) const;
 
     const double m_muR2fac, m_muF2fac;
     const double m_showermuR2enabled, m_showermuF2enabled;

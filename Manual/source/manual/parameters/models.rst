@@ -10,10 +10,11 @@ The main switch ``MODEL`` sets the model that Sherpa uses throughout
 the simulation run. The default is :option:`SM`, the built-in Standard
 Model implementation of Sherpa. For BSM simulations, Sherpa offers an
 option to use the Universal FeynRules Output Format (UFO)
-:cite:`Degrande2011ua`.
+:cite:`Degrande2011ua`, :cite:`Darme:2023jdn`.
 
 Please note: AMEGIC can only be used for the built-in models (SM and
-HEFT). For anything else, please use Comix.
+HEFT). For anything else, please use Comix. For more details on the
+Sherpa capabilities to simulate BSM physics see :cite:`Hoeche2014kca`.
 
 .. contents::
    :local:

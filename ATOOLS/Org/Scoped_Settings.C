@@ -66,12 +66,12 @@ void Scoped_Settings::DeclareMatrixSettingsWithEmptyDefault(
 
 bool Scoped_Settings::HasDefault() const
 {
-  return m_rootsettings->HasDefault(m_scopes.IndizesRemoved());
+  return m_rootsettings->HasDefault(m_scopes.IndicesRemoved());
 }
 
 Scoped_Settings& Scoped_Settings::ResetDefault()
 {
-  m_rootsettings->ResetDefault(m_scopes.IndizesRemoved());
+  m_rootsettings->ResetDefault(m_scopes.IndicesRemoved());
   return *this;
 }
 

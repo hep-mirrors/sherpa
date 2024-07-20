@@ -39,7 +39,7 @@ Authors
 
 
 Sherpa was written by the Sherpa Team, see
-`<sherpa-team.gitlab.io>`_.
+`<https://sherpa-team.gitlab.io/team.html>`_.
 
 
 .. _Copying:

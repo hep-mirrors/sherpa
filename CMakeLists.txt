@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.12.0 FATAL_ERROR)
 project(SHERPA-MC LANGUAGES C  CXX)
 #The complicated way to set the version is used to assure the simple
 #replacement of version variable with sed will not break the CMakeLists.txt
-set(EXTERNAL_VERSION_STRING "3.0.0beta1")
+set(EXTERNAL_VERSION_STRING "3.0.0")
 string(REPLACE "."  ";" EXTERNAL_VERSION_LIST "${EXTERNAL_VERSION_STRING}")
 list(GET EXTERNAL_VERSION_LIST 0 SHERPA_VERSION_MAJOR)
 list(GET EXTERNAL_VERSION_LIST 1 SHERPA_VERSION_MINOR)
@@ -82,7 +82,7 @@ if (HEPMC3_DIR AND HepMC3_DIR)
   endif()
 elseif (HEPMC3_DIR)
   message(WARNING "Please use -DHepMC3_DIR instead of -DHEPMC3_DIR. Will use the value found in HEPMC3_DIR to set HepMC3_DIR.")
-  set(HepMC3_DIR "${HEPMC3_DIR}" CACHE)
+  set(HepMC3_DIR "${HEPMC3_DIR}" CACHE FILEPATH "HepMC3 installation directory" FORCE)
 endif()
 unset(HEPMC3_DIR CACHE)
 ########################################################################
@@ -155,10 +155,17 @@ get_filename_component (CXX_COMPILER_NAME ${CMAKE_CXX_COMPILER} NAME)
 message(STATUS "SHERPA: CXX_COMPILER_NAME=${CXX_COMPILER_NAME}  CMAKE_CXX_COMPILER_ID=${CMAKE_CXX_COMPILER_ID}   CMAKE_CXX_COMPILER_VERSION=${CMAKE_CXX_COMPILER_VERSION}")
 
 if(CMAKE_SYSTEM_NAME MATCHES Darwin)
-#-flat_namespace
-  set(CMAKE_SHARED_LIBRARY_CREATE_Fortran_FLAGS "${CMAKE_SHARED_LIBRARY_CREATE_Fortran_FLAGS}  -single_module -undefined dynamic_lookup")
-  set(CMAKE_SHARED_LIBRARY_CREATE_C_FLAGS "${CMAKE_SHARED_LIBRARY_CREATE_C_FLAGS}  -single_module -undefined dynamic_lookup")
-  set(CMAKE_SHARED_LIBRARY_CREATE_CXX_FLAGS "${CMAKE_SHARED_LIBRARY_CREATE_CXX_FLAGS} -single_module -undefined dynamic_lookup")
+  set(DARWIN_SHARED_LIBRARY_CREATE_FLAGS "-undefined dynamic_lookup")
+  include(CheckLinkerFlagRegex)
+  check_linker_flag_regex("-single_module" CXX "ld: warning: .* is obsolete" SINGLE_MODULE_FLAG_IS_NOT_OBSOLETE)
+  if (SINGLE_MODULE_FLAG_IS_NOT_OBSOLETE)
+    set(DARWIN_SHARED_LIBRARY_CREATE_FLAGS "-single_module ${DARWIN_SHARED_LIBRARY_CREATE_FLAGS}")
+  endif()
+  unset(SINGLE_MODULE_FLAG_IS_NOT_OBSOLETE)
+  set(CMAKE_SHARED_LIBRARY_CREATE_Fortran_FLAGS "${CMAKE_SHARED_LIBRARY_CREATE_Fortran_FLAGS} ${DARWIN_SHARED_LIBRARY_CREATE_FLAGS}")
+  set(CMAKE_SHARED_LIBRARY_CREATE_C_FLAGS "${CMAKE_SHARED_LIBRARY_CREATE_C_FLAGS} ${DARWIN_SHARED_LIBRARY_CREATE_FLAGS}")
+  set(CMAKE_SHARED_LIBRARY_CREATE_CXX_FLAGS "${CMAKE_SHARED_LIBRARY_CREATE_CXX_FLAGS} ${DARWIN_SHARED_LIBRARY_CREATE_FLAGS}")
+  unset(DARWIN_SHARED_LIBRARY_CREATE_FLAGS)
 endif()
 
 message(STATUS "SHERPA: CMAKE_EXE_LINKER_FLAGS=${CMAKE_EXE_LINKER_FLAGS}")
@@ -237,7 +244,7 @@ endif()
 ########################################################################
 
 find_program(GIT NAMES git)
-if (GIT AND EXISTS ".git")
+if (GIT AND EXISTS "${CMAKE_SOURCE_DIR}/.git")
   execute_process(COMMAND ${GIT} rev-parse --abbrev-ref HEAD
                   WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
                   OUTPUT_VARIABLE GITURL
@@ -259,7 +266,7 @@ define_property(
   FULL_DOCS "Source files found by the sherpa_create_git_info macro go here"
 )
 macro(sherpa_create_git_info name)
-  if (GIT AND EXISTS ".git")
+  if (GIT AND EXISTS "${CMAKE_SOURCE_DIR}/.git")
     execute_process(COMMAND ${GIT} status -s --untracked-files=no .
                   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
                   OUTPUT_VARIABLE GITCLEAN
@@ -467,6 +474,7 @@ if (SHERPA_ENABLE_LHAPDF)
 else()
   set(SHERPA_ENABLE_INSTALL_LHAPDF OFF)
 endif()
+
 message(STATUS "SHERPA: LHAPDF_VERSION=${LHAPDF_VERSION} LHAPDF_LIBRARIES=${LHAPDF_LIBRARIES} LHAPDF_INCLUDE_DIRS=${LHAPDF_INCLUDE_DIRS}")
 
 add_subdirectory(AHADIC++)
@@ -490,6 +498,7 @@ if (SHERPA_ENABLE_INTERNAL_PDFS)
   add_subdirectory(PDF/GRS)
   add_subdirectory(PDF/GRV)
   add_subdirectory(PDF/CJK)
+  add_subdirectory(PDF/H1)
   add_subdirectory(PDF/CT14)
   add_subdirectory(PDF/SASG)
 endif()
@@ -503,6 +512,7 @@ add_subdirectory(PDF/SAL)
 add_subdirectory(RECONNECTIONS)
 add_subdirectory(REMNANTS)
 add_subdirectory(SHRiMPS)
+add_subdirectory(YFS)
 IF (SHERPA_ENABLE_MCFM)
   find_package(MCFM NAMES mcfm QUIET)
   if (NOT MCFM_FOUND)
@@ -549,7 +559,7 @@ endif()
 add_subdirectory(SHERPA)
 
 set( IDIRS  AHADIC++ AMEGIC++ AMISIC++ ATOOLS BEAM COMIX CSSHOWER++ DIM DIRE EXTAMP EXTRA_XS HADRONS++
-METOOLS MCATNLO MODEL PHASIC++ PHOTONS++ PDF RECONNECTIONS REMNANTS SHRiMPS SHERPA)
+METOOLS MCATNLO MODEL PHASIC++ PHOTONS++  PDF RECONNECTIONS REMNANTS SHRiMPS SHERPA YFS)
 
 if (SHERPA_ENABLE_MANUAL)
   add_subdirectory(Manual)
@@ -615,8 +625,6 @@ foreach ( IDIR ${IDIRS} )
                              PATTERN "*EXTAMP/Example*" EXCLUDE
                              PATTERN "*MODEL/AQGC*" EXCLUDE
                              PATTERN "*MODEL/MUED*" EXCLUDE
-                             PATTERN "*MODEL/SM/*" EXCLUDE
-                             PATTERN "*MODEL/SM" EXCLUDE
                              PATTERN "*MODEL/SMDM*" EXCLUDE
                              PATTERN "*MODEL/SMGold*" EXCLUDE
                              PATTERN "*MODEL/TauPi*" EXCLUDE
@@ -658,7 +666,6 @@ if (SHERPA_ENABLE_INTERNAL_PDFS)
 endif()
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/ATOOLS/Math/Sobol/21201${SOBOL_EXT} DESTINATION  ${CMAKE_INSTALL_DATADIR}/SHERPA-MC${VERSIONING}/Sobol COMPONENT doc  )
 install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/COMIX/Main/init_nlo.sh DESTINATION ${CMAKE_INSTALL_BINDIR} PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE )
-install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/SHERPA/Run/get_bibtex DESTINATION  ${CMAKE_INSTALL_DATADIR}/SHERPA-MC${VERSIONING} COMPONENT doc PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE )
 install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/SHERPA/Run/plot_graphs DESTINATION  ${CMAKE_INSTALL_DATADIR}/SHERPA-MC${VERSIONING} COMPONENT doc PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE )
 install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/PDF/NNPDF/NNPDF31_nnlo_as_0118_mc.tar.bz2 DESTINATION  ${CMAKE_INSTALL_DATADIR}/SHERPA-MC${VERSIONING} COMPONENT doc  )
 install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/COPYING ${CMAKE_CURRENT_SOURCE_DIR}/LICENCE DESTINATION  ${CMAKE_INSTALL_DATADIR}/SHERPA-MC${VERSIONING} COMPONENT doc PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ WORLD_READ )
@@ -697,6 +704,7 @@ DIMTools DIMShower DIMGauge DIMLorentz DIMMain
 CSMain CSCalculators CSShowers CSTools
 DireTools DireShower DireGauge DireLorentz DireMain
 PhasicScales Comix  ComixPhasespace ComixAmplitude
+YFSCEEX  YFSMain YFSNLO  YFSTools 
 PhasicMain PhasicChannels PhasicProcess PhasicSelectors PhasicEnhance PhasicDecays
 Amegic DipoleSubtraction Amplitude AmegicPSGen
 String Zfunctions
@@ -949,7 +957,7 @@ file(GENERATE OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/ATOOLS/Org/CXXFLAGS_PACKAGES.H 
 ########################################################################
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/AMEGIC++/Main/makelibs.in ${CMAKE_CURRENT_BINARY_DIR}/AMEGIC++/Main/makelibs @ONLY)
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/AMEGIC++/Main/makelibs    DESTINATION  ${CMAKE_INSTALL_DATADIR}/SHERPA-MC COMPONENT doc PERMISSIONS  OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE )
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/SHERPA/Run/Sherpa-config.in ${CMAKE_CURRENT_BINARY_DIR}/SHERPA/Run/Sherpa-config @ONLY)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/SHERPA/Run/Sherpa-config.in ${CMAKE_CURRENT_BINARY_DIR}/SHERPA/Run/Sherpa${VERSIONING}-config @ONLY)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/Examples/Userhook/CMakeLists.txt.in ${CMAKE_CURRENT_BINARY_DIR}/Examples/Userhook/CMakeLists.txt @ONLY)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/EXTAMP/Example/madgraph/CMakeLists.txt.in ${CMAKE_CURRENT_BINARY_DIR}/EXTAMP/Example/madgraph/CMakeLists.txt @ONLY)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/EXTAMP/Example/subtraction/CMakeLists.txt.in ${CMAKE_CURRENT_BINARY_DIR}/EXTAMP/Example/subtraction/CMakeLists.txt @ONLY)
@@ -957,10 +965,25 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/Examples/V_plus_Bs/LHC_Wbb/CMakeLists
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/Examples/V_plus_Jets/LHC_WJets/CMakeLists.txt.in ${CMAKE_CURRENT_BINARY_DIR}/Examples/V_plus_Jets/LHC_WJets/CMakeLists.txt @ONLY)
 
 if (SHERPA_ENABLE_UFO)
-  configure_file(${CMAKE_CURRENT_SOURCE_DIR}/MODEL/UFO/sconstruct_template.in ${CMAKE_CURRENT_BINARY_DIR}/MODEL/UFO/sconstruct_template @ONLY)
-  configure_file(${CMAKE_CURRENT_SOURCE_DIR}/MODEL/UFO/Sherpa-generate-model.in ${CMAKE_CURRENT_BINARY_DIR}/MODEL/UFO/Sherpa-generate-model @ONLY)
-  install(FILES ${CMAKE_CURRENT_BINARY_DIR}/MODEL/UFO/Sherpa-generate-model DESTINATION  ${CMAKE_INSTALL_BINDIR} PERMISSIONS  OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE )
-  install(FILES ${CMAKE_CURRENT_BINARY_DIR}/MODEL/UFO/sconstruct_template DESTINATION ${SHERPA_Python_SITEARCH}/ufo_interface/  COMPONENT python PERMISSIONS  OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE )
+SET(SHERPA_CMAKE_CONFIG_DIR ${CMAKE_INSTALL_PREFIX}/share/SHERPA-MC/)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/MODEL/UFO/src/ufo_interface/parser.py.in ${CMAKE_CURRENT_BINARY_DIR}/MODEL/UFO/src/ufo_interface/parser.py @ONLY)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/MODEL/UFO/bin/Sherpa-generate-model.in ${CMAKE_CURRENT_BINARY_DIR}/MODEL/UFO/bin/Sherpa-generate-model @ONLY)
+if (NOT SHERPA_ENABLE_PYTHON AND SHERPA_ENABLE_TESTING)
+    message(FATAL_ERROR "SHERPA: UFO model generation tests requires Python Addons!")
+endif()
+if(SHERPA_ENABLE_TESTING)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/MODEL/UFO/tests/test_lorentz.py.in ${CMAKE_CURRENT_BINARY_DIR}/Tests/UFO/test_lorentz.py @ONLY)
+
+file(DOWNLOAD https://zenodo.org/records/12533470/files/TestProcesses.tar.gz?download=1 ${CMAKE_CURRENT_BINARY_DIR}/Tests/End2End/UFO/TestProcesses.tar.gz)
+add_custom_target( unZipTestProcesses ALL)
+add_custom_command(TARGET unZipTestProcesses PRE_BUILD
+     COMMAND ${CMAKE_COMMAND} -E remove_directory ${CMAKE_CURRENT_BINARY_DIR}/Tests/End2End/UFO/TestProcesses
+     COMMAND ${CMAKE_COMMAND} -E tar xzf ${CMAKE_CURRENT_BINARY_DIR}/Tests/End2End/UFO/TestProcesses.tar.gz
+     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/Tests/End2End/UFO
+     DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/Tests/End2End/UFO/TestProcesses.tar.gz
+     COMMENT "Unpacking UFO Test Processes"
+     VERBATIM)
+endif()
 endif()
 install(EXPORT SHERPATargets DESTINATION ${CMAKE_INSTALL_DATADIR}/SHERPA-MC)
 
@@ -1019,7 +1042,7 @@ $<IF:$<BOOL:${SHERPA_ENABLE_BINRELOC}>,#define ENABLE_BINRELOC \"1\",/* #undef E
 /* Sherpa version */\n\
 #define SHERPA_VERSION \"${SHERPA_VERSION_MAJOR}\"\n\n\
 /* Sherpa version name */\n\
-#define SHERPA_NAME \"Dhaulagiri\"\n\n\
+#define SHERPA_NAME \"Erebus\"\n\n\
 /* Sherpa version code */\n\
 #define SHERPA_VERSION_CODE ${SHERPA_VERSION_CODE}\n\n\
 /* Using colour */\n\

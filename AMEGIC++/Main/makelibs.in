@@ -14,17 +14,19 @@ print_help(){
   echo "         -j [N] allow N compilations at once" && \
   echo "         -m create one library per process" && \
   echo "         -i set include path" && \
+  echo "         -r relax requirement on SHERPA-MCConfig.cmake location, build against any installation with matching version." && \
   echo "         -h display this help and exit" && echo
 }
 
 defaults(){
   JOBS=2
   LIBMODE=2
+  PATHOPT="NO_DEFAULT_PATH"
 }
 
 defaults;
 
-while getopts hmcnoj:i: OPT
+while getopts hmcnorj:i: OPT
 do
   case $OPT in
   c) CLEAN=TRUE ;;
@@ -33,6 +35,7 @@ do
   j) JOBS=$OPTARG ;;
   m) LIBMODE=1 ;;
   i) IPATH=$OPTARG ;;
+  r) PATHOPT="" ;;
   h) print_help && exit 0 ;;
   \?)
     shift `expr $OPTIND - 1`
@@ -101,7 +104,7 @@ for J in $DIRS ; do
     echo "
 project(${libname} LANGUAGES C CXX)
 cmake_minimum_required(VERSION 3.11.0)
-find_package(SHERPA-MC PATHS ${SHERPA_CMAKE_PATH} REQUIRED)
+find_package(SHERPA-MC PATHS ${SHERPA_CMAKE_PATH} REQUIRED ${PATHOPT})
 include(\"GNUInstallDirs\")
 set(lib${libname}_la_SOURCES  ${sources})
 add_library( ${libname} SHARED \${lib${libname}_la_SOURCES})

@@ -16,6 +16,7 @@ void Settings_Writer::WriteSettings(Settings& s)
   // check for settings that have not been used
   MyStrStream unused;
   bool did_find_unused {false};
+  std::map<std::string, std::set<std::string>> unused_toplevel_keys;
   for (const auto& reader : s.m_yamlreaders) {
     // Ignore Decaydata.yaml, which is not under the control of the user,
     // and would just clutter the not-used section of the Settings report,
@@ -29,9 +30,12 @@ void Settings_Writer::WriteSettings(Settings& s)
       // used, too
       const auto it = std::find_if(
           s.m_usedvalues.begin(), s.m_usedvalues.end(),
-          [&keys](
-              const std::pair<Settings_Keys, std::set<Settings::Defaults_Value>>
-                  &pair) { return pair.first.IsBeginningOf(keys); });
+          [&keys](const std::pair<Settings_Keys,
+                                  std::set<Settings::Defaults_Value>> &pair) {
+            return keys.IsBeginningOf(pair.first) ||
+                   pair.first.IsParentScopeOfItem(keys);
+          });
+
       if (it == s.m_usedvalues.end()) {
         did_find_unused = true;
         if (!did_print_file_header) {
@@ -39,14 +43,14 @@ void Settings_Writer::WriteSettings(Settings& s)
           did_print_file_header = true;
         }
         unused << "- ";
-        for (int i {0}; i < keys.size(); i++) {
-          if (!keys[i].IsIndex()) {
-            if (i != 0)
-              unused << ':';
-            unused << keys[i].GetName();
-          }
-        }
+        unused << keys << " = ";
+        const auto vals = reader->GetFlattenedStringVectorWithDelimiters(keys);
+        if (vals.size() == 1)
+          unused << vals[0];
+        else
+          unused << vals;
         unused << '\n';
+        unused_toplevel_keys[reader->Name()].insert(keys[0].GetName());
       }
     }
     if (did_print_file_header)
@@ -54,9 +58,21 @@ void Settings_Writer::WriteSettings(Settings& s)
   }
   unused << '\n';
   if (did_find_unused) {
-    msg_Error() << "WARNING: Some settings that have been defined in the input\n"
-                << "files and/or the command line have not been used. For more\n"
-                << "details, see the Settings Report.\n";
+    msg_Info()
+        << om::brown << om::bold << "WARNING" << om::reset
+        << ": Some settings that have been defined in the input files and/or\n"
+        << "  the command line have not been used. The following top-level settings\n"
+        << "  have not been used or include subsettings that have not been used:\n";
+    for (const auto &kv : unused_toplevel_keys) {
+      msg_Out() << "  - " << kv.first << ": ";
+      for (const auto &key : kv.second)
+        msg_Out() << key << " ";
+      msg_Out() << "\n";
+    }
+    msg_Out()
+        << "  For more details, inspect the Settings Report: Run `make` within\n"
+        << "  the Settings_Report directory (requires `pandoc` to be installed),\n"
+        << "  then open 'Settings_Report.html' with your browser.\n";
   }
 
 
@@ -70,7 +86,7 @@ void Settings_Writer::WriteSettings(Settings& s)
 
     // put all values for the table rows in `vals`, if a value has multiple
     // entries, then these are separated by "-- AND --"; begin with the defaults
-    vals.push_back(s.m_defaults[keysetpair.first.IndizesRemoved()]);
+    vals.push_back(s.m_defaults[keysetpair.first.IndicesRemoved()]);
 
     // replace defaults with file provided defaults in the case of
     // Decaydata.yaml, which is outside of user control
@@ -86,10 +102,15 @@ void Settings_Writer::WriteSettings(Settings& s)
     }
 
     // take into account other alternative defaults
-    const auto otherdefaultsit = s.m_otherscalardefaults.find(keysetpair.first.IndizesRemoved());
-    for (const auto& v : s.m_otherscalardefaults[keysetpair.first.IndizesRemoved()]) {
-      if (!vals.back().empty())
+    const auto otherdefaultsit = s.m_otherscalardefaults.find(keysetpair.first.IndicesRemoved());
+    for (const auto& v : s.m_otherscalardefaults[keysetpair.first.IndicesRemoved()]) {
+      if (!vals.back().empty()) {
+        if (vals.back().back() == String_Vector{v}) {
+          // do not add the same value more than once
+          continue;
+        }
         vals.back().push_back({"-- AND --"});
+      }
       vals.back().push_back({v});
     }
 
@@ -113,13 +134,15 @@ void Settings_Writer::WriteSettings(Settings& s)
     }
 
     if (iscustomised) {
-      vals.push_back(s.m_overrides[keysetpair.first.IndizesRemoved()]);
+      if (s.m_overrides.find(keysetpair.first.IndicesRemoved()) !=
+          s.m_overrides.end())
+        vals.push_back(s.m_overrides[keysetpair.first.IndicesRemoved()]);
       Settings_Keys keys{ keysetpair.first };
       for (auto it = s.m_yamlreaders.rbegin();
            it != s.m_yamlreaders.rend();
            ++it) {
         auto new_vals =
-          (*it)->GetFlattenedStringVectorWithDelimiters(keys, "{{", "}}");
+          (*it)->GetFlattenedStringVectorWithDelimiters(keys);
         int maxdim = 0, curdim = 0;
         for (const auto& val : new_vals) {
           if (val == "{{") {
@@ -225,7 +248,7 @@ void Settings_Writer::WriteSettings(Settings& s)
        << " separated by an \"`-- AND --`\" line.\n\n";
 
   file << "| parameter | default value | override by SHERPA";
-  const auto files = s.GetConfigFiles();
+  const auto files = s.GetUserConfigFiles();
   for (const auto& f : files)
      file << " | " << f;
   file << " | command line | final value |\n";
