@@ -30,8 +30,8 @@ Shower::Shower(PDF::ISR_Handler* isr, const int qcd, const int qed, int type)
   double is_as_fac{ pss["IS_AS_FAC"].Get<double>() };
   double is_pdf_fac{ pss["PDF_FAC"].Get<double>() };
   const double mth{ pss["MASS_THRESHOLD"].Get<double>() };
-  bool   forced_decays{ pss["FORCED_DECAYS"].Get<bool>() };
-  double forced_decays_gluon_scaling{ pss["FORCED_GLUON_SCALING"].Get<double>() };
+  bool   forced_splittings{ pss["FORCED_IS_QUARK_SPLITTING"].Get<bool>() };
+  double forced_splittings_gluon_scaling{ pss["FORCED_SPLITTING_GLUON_SCALING"].Get<double>() };
   m_reweight          = pss["REWEIGHT"].Get<bool>();
   m_maxreweightfactor = pss["MAX_REWEIGHT_FACTOR"].Get<double>();
   m_kscheme           = pss["KIN_SCHEME"].Get<int>();
@@ -65,7 +65,7 @@ Shower::Shower(PDF::ISR_Handler* isr, const int qcd, const int qed, int type)
   m_sudakov.SetCoupling(MODEL::s_model,k0sqi,k0sqf,is_as_fac,fs_as_fac,gsplit_fac);
   m_sudakov.SetReweightScaleCutoff(
       pss["REWEIGHT_SCALE_CUTOFF"].Get<double>());
-  m_sudakov.SetForcedHQDecays(forced_decays,forced_decays_gluon_scaling);
+  m_sudakov.SetForcedHQSplittings(forced_splittings,forced_splittings_gluon_scaling);
   m_kinFF.SetEvolScheme(evol-100*(evol/100));
   m_kinFI.SetEvolScheme(evol-100*(evol/100));
   m_kinIF.SetEvolScheme(evol/100);
@@ -253,7 +253,7 @@ int Shower::MakeKinematics
     }
   }
   Parton *pi(new Parton((stype&1)?fla:flb,
-                        split->ForcedDecay()?split->Momentum():split->LT()*split->Momentum(),
+                        split->ForcedSplitting()?split->Momentum():split->LT()*split->Momentum(),
                         split->GetType()));
   if (stype&1) pi->SetBeam(split->Beam());
   if (stat==1) {
@@ -280,11 +280,11 @@ int Shower::MakeKinematics
   pi->SetLT(split->LT());
   SetSplitInfo(peo,pso,split,pi,pj,stype);
   split->GetSing()->AddParton(pj);
-  if (stype) split->GetSing()->BoostAllFS(pi,pj,spect,split->ForcedDecay());
+  if (stype) split->GetSing()->BoostAllFS(pi,pj,spect,split->ForcedSplitting());
   int ustat(UpdateDaughters(split,pi,pj,jcv,mode));
   if (ustat<=0 || (split->GetSing()->GetLeft() &&
 		   !(split->GetSing()->GetSplit()->Stat()&part_status::code::decayed))) {
-    if (stype) split->GetSing()->BoostBackAllFS(pi,pj,spect,split->ForcedDecay());
+    if (stype) split->GetSing()->BoostBackAllFS(pi,pj,spect,split->ForcedSplitting());
     delete pi;
     pj->DeleteAll();
     split->SetMomentum(peo);

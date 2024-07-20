@@ -11,7 +11,8 @@ TAGS:
   QCUT: 30
 
 # scales
-CORE_SCALE: VAR{Abs2(p[2]+p[3]+p[4]+p[5])}
+MEPS:
+  CORE_SCALE: VAR{Abs2(p[2]+p[3]+p[4]+p[5])}
 EXCLUSIVE_CLUSTER_MODE: 1
 
 # solves problem with dipole QED modeling

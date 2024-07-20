@@ -16,6 +16,8 @@ namespace ATOOLS { class QCD_Variation_Params; }
 
 namespace PDF { class ISR_Handler; }
 
+namespace YFS { class YFS_Handler; }
+
 namespace MODEL { class Model_Base; }
 
 namespace PHASIC { class Scale_Setter_Base; }
@@ -47,6 +49,7 @@ namespace SHERPA {
     PHASIC::KFactor_Setter_Arguments m_kargs;
     std::map<RR_Process_Info,PHASIC::Process_Base*> m_procs;
     PDF::ISR_Handler *p_isr;
+    YFS::YFS_Handler *p_yfs;
     double m_ecms, m_xf1, m_xf2;
     std::string m_treename;
 

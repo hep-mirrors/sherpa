@@ -8,6 +8,51 @@
 #include <sys/stat.h>
 #include <iterator>
 
+std::string::iterator::difference_type count_no_escape(std::string const &str) {
+  std::string::iterator::difference_type result {0};
+  bool within_ansii_escape_seq {false};
+  for (const char& c : str) {
+    if (!within_ansii_escape_seq) {
+      if (c == '\033') {
+        within_ansii_escape_seq = true;
+      }
+      else {
+        result++;
+      }
+    }
+    else {
+      switch (c) {
+        case 'A':
+        case 'B':
+        case 'C':
+        case 'D':
+        case 'H':
+        case 'J':
+        case 'K':
+        case 'M':
+        case 'R':
+        case 'c':
+        case 'f':
+        case 'g':
+        case 'h':
+        case 'i':
+        case 'l':
+        case 'm':
+        case 'n':
+        case 'p':
+        case 'r':
+        case 's':
+        case 'u': {
+        within_ansii_escape_seq = false;
+        }
+        default:
+        break;
+      }
+    }
+  }
+  return result;
+}
+
 namespace ATOOLS {
   Message *msg(NULL);
 }
@@ -88,6 +133,58 @@ std::ostream &ATOOLS::operator<<(std::ostream &str,const tm::code modifier)
   }
   return str;
 }
+
+std::ostream &ATOOLS::operator<<(std::ostream &str,const fm::code modifier) 
+{
+  switch (modifier) {
+  case fm::upperleft: return str<<(msg->Modifiable()?"┌":"+");
+  case fm::upperright: return str<<(msg->Modifiable()?"┐":"+");
+  case fm::horizontal: return str<<(msg->Modifiable()?"─":"-");
+  case fm::vertical: return str<<(msg->Modifiable()?"│":"|");
+  case fm::lowerleft: return str<<(msg->Modifiable()?"└":"+");
+  case fm::lowerright: return str<<(msg->Modifiable()?"┘":"+");
+  case fm::centerleft: return str<<(msg->Modifiable()?"├":"+");
+  case fm::centerright: return str<<(msg->Modifiable()?"┤":"+");
+  }
+  return str;
+}
+
+std::ostream &ATOOLS::operator<<(std::ostream &str, Frame_Header f)
+{
+  str << fm::upperleft;
+  for (int i {0}; i < f.m_width - 2; i++)
+    str << fm::horizontal;
+  str << fm::upperright << '\n';
+  return str;
+}
+
+std::ostream &ATOOLS::operator<<(std::ostream &str, Frame_Footer f)
+{
+  str << fm::lowerleft;
+  for (int i {0}; i < f.m_width - 2; i++)
+    str << fm::horizontal;
+  str << fm::lowerright << '\n';
+  return str;
+}
+
+std::ostream &ATOOLS::operator<<(std::ostream &str, Frame_Separator f)
+{
+  str << fm::centerleft;
+  for (int i {0}; i < f.m_width - 2; i++)
+    str << fm::horizontal;
+  str << fm::centerright << '\n';
+  return str;
+}
+
+std::ostream &ATOOLS::operator<<(std::ostream &str, const Frame_Line &f)
+{
+  str << fm::vertical << ' ';
+  int correction{static_cast<int>(f.m_textline.size() - count_no_escape(f.m_textline))};
+  str << std::left << std::setw(f.m_width - 4 + correction) << f.m_textline;
+  str << ' ' << fm::vertical << '\n';
+  return str;
+}
+
 
 
 indentbuf::indentbuf(std::streambuf* basebuf) :

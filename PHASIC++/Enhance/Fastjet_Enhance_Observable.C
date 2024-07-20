@@ -2,6 +2,7 @@
 
 #include "PHASIC++/Enhance/Enhance_Observable_Base.H"
 #include "ATOOLS/Math/Algebra_Interpreter.H"
+#include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Phys/Fastjet_Helpers.H"
 
 namespace PHASIC {
@@ -67,6 +68,7 @@ Fastjet_Enhance_Observable::Fastjet_Enhance_Observable
 (const Enhance_Arguments &args): Enhance_Observable_Base(args),
   p_jdef(NULL)
 {
+  rpa->gen.AddCitation(1,"FastJet is published under \\cite{Cacciari:2011ma}.");
   std::string jtag(args.m_enhance);
   size_t pos(jtag.find("FASTJET["));
   if (pos==std::string::npos)

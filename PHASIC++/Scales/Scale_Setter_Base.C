@@ -28,7 +28,7 @@ Scale_Setter_Base::Scale_Setter_Base
   m_l1(0), m_l2(0)
 {
   Settings& s = Settings::GetMainSettings();
-  s["CORE_SCALE"].SetDefault("Default");
+  s["MEPS"]["CORE_SCALE"].SetDefault("Default");
   for (size_t i(0);i<stp::size;++i) m_scale[i]=sqr(rpa->gen.Ecms());
   if (p_proc) {
     m_nin=p_proc->NIn();
@@ -162,6 +162,16 @@ Vec4D Scale_Setter_Base::PSum() const
   return sum;
 }
 
+double Scale_Setter_Base::hHT() const
+{
+  // hadronic H_T
+  double htj(0.0);
+  for (size_t i(m_nin);i<m_p.size();++i)
+    if (p_proc->Flavours()[i].Strong())
+      htj+=m_p[i].PPerp();
+  return htj;
+}
+
 double Scale_Setter_Base::CalculateScale
 (const ATOOLS::Vec4D_Vector &p,const size_t mode)
 {
@@ -184,7 +194,7 @@ double Scale_Setter_Base::CalculateScale
       }
     }
     p_cpls->Calculate();
-    return m_scale[stp::fac];    
+    return m_scale[stp::fac];
   }
   if (p_subs==NULL) {
     m_p.resize(p.size());
@@ -216,7 +226,7 @@ double Scale_Setter_Base::CalculateScale
       p_proc->Caller()->SetFlavours(Flavour_Vector(sub->p_fl,&sub->p_fl[sub->m_n]));
       Calculate(Vec4D_Vector(m_p),mode);
       p_proc->Caller()->SetFlavours(tmp);
-      
+
       if (i+1==p_subs->size()) m_escale=m_scale;
       size_t ssz(Min(sub->m_mu2.size(),m_scale.size()));
       for (size_t j(0);j<ssz;++j) sub->m_mu2[j]=m_scale[j];

@@ -10,6 +10,7 @@ Standard Model
 .. index:: VEV
 .. index:: CKM_Lambda
 .. index:: EW_SCHEME
+.. index:: EW_REN_SCHEME
 .. index:: CKM_Order
 .. index:: CKM_Cabibbo
 .. index:: CKM_A
@@ -116,6 +117,13 @@ All ``Gmu``-derived schemes, where the EW coupling is a derived quantity,
 possess an ambiguity on how to construct a real EW coupling in the
 complex mass scheme. Several conventions are implemented and can
 be accessed through ``GMU_CMS_AQED_CONVENTION``.
+
+In general, for NLO EW calculations, the EW renormalisation scheme has 
+to be defined as well. By default, it is set to the EW input parameter 
+scheme set through ``EW_SCHEME``. If needed, however, it can also be 
+set to a different scheme using ``EW_REN_SCHEME`` using the above 
+options. Irrespective of how the EW renormalisation scheme is set, 
+the setting is then communicated automatically to the EW loop provider.
 
 To account for quark mixing the CKM matrix elements have to be
 assigned.  For this purpose the Wolfenstein parameterisation

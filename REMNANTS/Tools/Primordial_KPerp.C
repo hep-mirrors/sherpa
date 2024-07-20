@@ -9,7 +9,6 @@
 
 using namespace REMNANTS;
 using namespace ATOOLS;
-using namespace std;
 
 Primordial_KPerp::Primordial_KPerp() : m_analysis(false) { }
 
@@ -18,10 +17,10 @@ Primordial_KPerp::~Primordial_KPerp() {
 }
 
 void Primordial_KPerp::Initialize(Remnant_Handler * rhandler) {
-  msg_Out()<<METHOD<<"\n";
+  msg_Out()<<"Initializing primordial transverse momentum ...\n";
   for (size_t beam=0;beam<2;beam++) {
     m_beamflav          = rhandler->GetRemnant(beam)->Flav();
-    msg_Out()<<METHOD<<"("<<beam<<"): flav = "<<m_beamflav<<", "<<m_beamflav.Kfcode()<<"\n";
+    msg_Debugging()<<METHOD<<"("<<beam<<"): flav = "<<m_beamflav<<", "<<m_beamflav.Kfcode()<<"\n";
     m_form[beam]        = rempars->KT_Form(m_beamflav);
     m_recoil[beam]      = rempars->KT_Recoil(m_beamflav);
     if (m_form[beam]==primkT_form::none) continue;
@@ -73,7 +72,7 @@ CreateBreakupKinematics(const size_t & beam,ParticleMomMap * ktmap,const double 
   if (m_analysis) {
     for (ParticleMomMap::iterator pmmit=p_ktmap->begin();
 	 pmmit!=p_ktmap->end();pmmit++)
-      m_histos[string("KT_before")]->Insert(sqrt(dabs(pmmit->second.Abs2())));
+      m_histos[std::string("KT_before")]->Insert(sqrt(dabs(pmmit->second.Abs2())));
   }
   // making sure the transverse momenta add up to 0.
   BalanceKT(kt_Show,E_Show,kt_Spec,E_Spec);
@@ -106,7 +105,7 @@ void Primordial_KPerp::BalanceKT(const Vec4D & kt_Show,const double & E_Show,
   if (m_analysis) {
     for (ParticleMomMap::iterator pmmit=p_ktmap->begin();
 	 pmmit!=p_ktmap->end();pmmit++) {
-      m_histos[string("KT_after")]->Insert(sqrt(dabs(pmmit->second.Abs2())));
+      m_histos[std::string("KT_after")]->Insert(sqrt(dabs(pmmit->second.Abs2())));
     }
   }
 }
@@ -191,17 +190,17 @@ double Primordial_KPerp::LimitedWeight(const double & kt) const {
 }
 
 void Primordial_KPerp::InitAnalysis() {
-  m_histos[string("KT_before")]  = new Histogram(0,0,20,200);
-  m_histos[string("KT_after")]   = new Histogram(0,0,20,200);
+  m_histos[std::string("KT_before")]  = new Histogram(0,0,20,200);
+  m_histos[std::string("KT_after")]   = new Histogram(0,0,20,200);
 }
 
 void Primordial_KPerp::FinishAnalysis() {
   Histogram * histo;
-  string name;
-  for (map<string,Histogram *>::iterator
+  std::string name;
+  for (std::map<std::string,Histogram *>::iterator
 	 hit=m_histos.begin();hit!=m_histos.end();hit++) {
     histo = hit->second;
-    name  = string("Remnant_Analysis/")+hit->first+string(".dat");
+    name  = std::string("Remnant_Analysis/")+hit->first+std::string(".dat");
     histo->Finalize();
     histo->Output(name);
     delete histo;

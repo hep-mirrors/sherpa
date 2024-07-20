@@ -36,7 +36,7 @@ MI_Parameters::MI_Parameters() :
     = s["PT_Min"].SetDefault(m_parameters[string("pt_min(ref)")]).Get<double>();
   m_parameters[string("pt_0")]
     = s["PT_0"].SetDefault(pt_0).Get<double>();
-  m_scalescheme = s["MU_R_SCHEME"].SetDefault("PT").Get<scale_scheme::code>();
+  m_scalescheme = s["MU_R_SCHEME"].SetDefault("PT").Get<scale_scheme>();
   m_parameters[string("RenScale_Factor")]
     = s["MU_R_FACTOR"].SetDefault(0.5).Get<double>();
   m_parameters[string("FacScale_Factor")]
@@ -71,46 +71,44 @@ double MI_Parameters::operator()(const string& keyword) const
   THROW(fatal_error,"Keyword not found in MI_Parameters.");
 }
 
-std::ostream& AMISIC::operator<<(std::ostream& s, const overlap_form::code& f)
+std::ostream& AMISIC::operator<<(std::ostream& s, const overlap_form& f)
 {
   switch (f) {
-    case overlap_form::code::Single_Gaussian: return s << "Single_Gaussian";
-    case overlap_form::code::Double_Gaussian: return s << "Double_Gaussian";
-    case overlap_form::code::unknown: return s << "Unknown";
-    }
+    case overlap_form::Single_Gaussian: return s << "Single_Gaussian";
+    case overlap_form::Double_Gaussian: return s << "Double_Gaussian";
+    case overlap_form::unknown: return s << "Unknown";
+  }
   return s;
 }
 
-std::istream& AMISIC::operator>>(std::istream& s, overlap_form::code& f)
+std::istream& AMISIC::operator>>(std::istream& s, overlap_form& f)
 {
   std::string tag;
   s >> tag;
-  if (tag == "Single_Gaussian")
-    f = overlap_form::code::Single_Gaussian;
+  if (tag == "Single_Gaussian") f = overlap_form::Single_Gaussian;
   else if (tag == "Double_Gaussian")
-    f = overlap_form::code::Double_Gaussian;
+    f = overlap_form::Double_Gaussian;
   else
     THROW(fatal_error, "Unknown overlap form \"" + tag + "\"");
   return s;
 }
 
-std::ostream& AMISIC::operator<<(std::ostream& os, const scale_scheme::code& sc)
+std::ostream& AMISIC::operator<<(std::ostream& os, const scale_scheme& sc)
 {
   switch (sc) {
-    case scale_scheme::code::PT:           return os << "PT";
-    case scale_scheme::code::PT_with_Raps: return os << "PT modified with rapidities";
+    case scale_scheme::PT: return os << "PT";
+    case scale_scheme::PT_with_Raps: return os << "PT modified with rapidities";
   }
   return os;
 }
 
-std::istream& AMISIC::operator>>(std::istream& is, scale_scheme::code& sc)
+std::istream& AMISIC::operator>>(std::istream& is, scale_scheme& sc)
 {
   std::string tag;
   is >> tag;
-  if (tag == "PT")
-    sc = scale_scheme::code::PT;
+  if (tag == "PT") sc = scale_scheme::PT;
   else if (tag == "PT_with_Raps")
-    sc = scale_scheme::code::PT_with_Raps;
+    sc = scale_scheme::PT_with_Raps;
   else
     THROW(fatal_error, "Unknown scale scheme \"" + tag + "\"");
   return is;

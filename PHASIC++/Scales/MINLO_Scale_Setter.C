@@ -88,8 +88,8 @@ MINLO_Scale_Setter::MINLO_Scale_Setter
   m_dr = metssettings["DELTA_R"].Get<double>();
   m_muf2min = metssettings["MUF2_MIN"].Get<double>();
   if (core == "") {
-    core =
-      s["CORE_SCALE"].GetScalarWithOtherDefault<std::string>("VAR{H_TM2/4}");
+    core = metssettings["CORE_SCALE"].GetScalarWithOtherDefault<std::string>(
+        "VAR{H_TM2/4}");
   }
   if (metssettings["ALLOW_CORE"].IsSetExplicitly()) {
     const auto cores = metssettings["ALLOW_CORE"].GetVector<std::string>();

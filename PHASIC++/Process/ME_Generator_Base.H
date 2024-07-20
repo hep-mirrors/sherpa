@@ -7,6 +7,7 @@
 namespace ATOOLS { class Cluster_Amplitude; }
 namespace BEAM { class Beam_Spectra_Handler; }
 namespace PDF { class ISR_Handler; }
+namespace YFS { class YFS_Handler; }
 namespace MODEL { class Model_Base; }
 namespace REMNANTS { class Remnant_Handler; }
 
@@ -29,6 +30,9 @@ namespace PHASIC {
     template <typename T>
     void SetParameter(const std::string& param, const T& def);
 
+    int ShiftMassesDefault(ATOOLS::Cluster_Amplitude *const ampl, ATOOLS::Vec4D cms);
+    int ShiftMassesDIS(ATOOLS::Cluster_Amplitude *const ampl, ATOOLS::Vec4D cms);
+
   protected:
 
     int  m_massmode;
@@ -45,7 +49,8 @@ namespace PHASIC {
     // member functions
     virtual bool Initialize(MODEL::Model_Base* const,
 			    BEAM::Beam_Spectra_Handler* const,
-			    PDF::ISR_Handler* const) = 0;
+			    PDF::ISR_Handler* const,
+			    YFS::YFS_Handler* const) = 0;
 
     virtual Process_Base *InitializeProcess(const Process_Info &pi,
                                             bool add)=0;

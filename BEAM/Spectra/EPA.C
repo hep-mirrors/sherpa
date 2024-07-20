@@ -16,7 +16,7 @@ using namespace ATOOLS;
 EPA::EPA(const Flavour _beam, const double _energy, const double _pol,
          const int _dir) :
   Beam_Base(beamspectrum::EPA, _beam, _energy, _pol, _dir),
-  m_mass(_beam.Mass(true)), m_gamma(_energy/m_mass), m_charge(_beam.Charge()),
+  m_mass(_beam.Mass(true)), m_charge(_beam.Charge()), m_gamma(_energy / m_mass),
   m_minR(Max(1.e-6,_beam.Radius())), m_maxR(10.*m_minR)
 {
   Settings &s = Settings::GetMainSettings();
@@ -34,6 +34,17 @@ EPA::EPA(const Flavour _beam, const double _energy, const double _pol,
   if (q2Max.size() != 1 && q2Max.size() != 2)
     THROW(fatal_error, "Specify either one or two values for `EPA:Q2Max'.");
   m_q2Max = (_dir > 0) ? q2Max.front() : q2Max.back();
+
+  std::vector<double> q2Min{s["EPA"]["Q2Min"].GetVector<double>()};
+  if (q2Min.size() != 1 && q2Min.size() != 2)
+    THROW(fatal_error, "Specify either one or two values for `EPA:Q2Min'.");
+  m_q2Min = (_dir > 0) ? q2Min.front() : q2Min.back();
+
+  std::vector<double> xmin{s["EPA"]["xMin"].GetTwoVector<double>()};
+  m_xmin = (_dir > 0) ? xmin.front() : xmin.back();
+
+  std::vector<double> xmax{s["EPA"]["xMax"].GetTwoVector<double>()};
+  m_xmax = (_dir > 0) ? xmax.front() : xmax.back();
 
   std::vector<double> pt_min{s["EPA"]["PTMin"].GetVector<double>()};
   if (pt_min.size() != 1 && pt_min.size() != 2)
@@ -70,11 +81,12 @@ EPA::EPA(const Flavour _beam, const double _energy, const double _pol,
   }
 }
 
-EPA::~EPA() {}
-
-void EPA::RegisterDefaults() {
+void EPA::RegisterDefaults() const {
   Settings &s = Settings::GetMainSettings();
   s["EPA"]["Q2Max"].SetDefault(3.0);
+  s["EPA"]["Q2Min"].SetDefault(-1.);
+  s["EPA"]["xMax"].SetDefault(1.);
+  s["EPA"]["xMin"].SetDefault(0.);
   s["EPA"]["PTMin"].SetDefault(0.0);
   s["EPA"]["Form_Factor"].SetDefault(m_beam.FormFactor());
   s["EPA"]["AlphaQED"].SetDefault(0.0072992701);
@@ -112,7 +124,7 @@ double EPA::CosInt::GetCosInt(double X) {
   return integrator.Integrate(X, 100000., 1.e-4, 1);
 }
 
-double EPA::phi(double x, double qq) {
+double EPA::phi(double x, double qq) const {
   if (m_beam.Kfcode() == kf_p_plus) {
     const double a = 7.16;
     const double b = -3.96;
@@ -140,7 +152,6 @@ double EPA::phi(double x, double qq) {
     CosInt Ci;
     // do form factor dependent calculation
     switch (m_formfactor) {
-    // switch (2) {
     case 0: // point-like form factor
       f = log(1. + (1. / (x * x))) / 2. + 1. / (1. + (1. / (x * x))) / 2. -
           1. / 2.;
@@ -185,12 +196,12 @@ double EPA::phi(double x, double qq) {
     default:
       THROW(fatal_error, "Unknown ion form factor chosen");
     }
-    return (double)f;
+    return f;
   }
   return 0.;
 }
 
-void EPA::selfTest(std::string filename) {
+void EPA::selfTest(const std::string& filename) {
   std::ofstream debugOutput;
   debugOutput.open(filename.c_str());
 
@@ -239,7 +250,7 @@ bool EPA::CalculateWeight(double x, double q2) {
   const double alpha = m_aqed;
   m_x = x;
   m_Q2 = q2;
-  if (x > 1. - m_mass / 2. / m_energy) {
+  if (x > 1. - m_mass / 2. / m_energy || x > m_xmax || x < m_xmin) {
     m_weight = 0.0;
     return true;
   }
@@ -248,6 +259,7 @@ bool EPA::CalculateWeight(double x, double q2) {
     // compare hep-ph/9610406 and hep-ph/9310350
     double q2min = sqr(m_mass * m_x) / (1 - m_x);
     double q2max = Min(q2min + sqr(m_energy) * (1 - m_x) * sqr(m_theta_max),m_q2Max);
+    q2min = Max(sqr(m_mass * m_x) / (1 - m_x), m_q2Min);
     double f = alpha / M_PI / 2 / m_x *
                ((1 + sqr(1 - m_x)) * log(q2max / q2min) -
                 2 * sqr(m_mass * m_x) * (1 / q2min - 1 / q2max));
@@ -271,7 +283,7 @@ bool EPA::CalculateWeight(double x, double q2) {
                     << ") = " << f << ", "
                     << "energy = " << m_energy << ", "
                     << "mass = " << m_mass << ".\n";
-    return 1;
+    return true;
   } else if (m_beam.Kfcode() == kf_p_plus) {
     const double qz = 0.71;
     double f, qmi, qma;

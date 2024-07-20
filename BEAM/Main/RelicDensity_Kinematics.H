@@ -10,12 +10,12 @@ namespace BEAM {
 
     void InitIntegration();
   public:
-    RelicDensity_Kinematics(std::array<Beam_Base *, 2> beams);
+    RelicDensity_Kinematics(std::array<Beam_Base*, 2> beams);
     ~RelicDensity_Kinematics() = default;
 
     void AssignKeys(ATOOLS::Integration_Info *const info);
     void SetLimits();
-    inline const double Sprime() { return m_sprimekey[3]; }
+    inline double Sprime() { return m_sprimekey[3]; }
     bool operator()(ATOOLS::Vec4D_Vector& moms);
   };
 }

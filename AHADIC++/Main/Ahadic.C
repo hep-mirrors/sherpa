@@ -20,6 +20,7 @@ Ahadic::Ahadic(string shower) :
   m_gluondecayer(Gluon_Decayer(&m_cluster_list, &m_softclusters)),
   m_clusterdecayer(Cluster_Decayer(&m_cluster_list, &m_softclusters))
 {
+  rpa->gen.AddCitation(1, "Ahadic is described in \\cite{Chahal:2022rid}.");
   ReadMassParameters();
   hadpars = new Hadronisation_Parameters();
   hadpars->Init(shower);

@@ -5,6 +5,7 @@
 #include "ATOOLS/Org/Scoped_Settings.H"
 #include "ATOOLS/Math/Function_Base.H"
 #include "ATOOLS/Math/Poincare.H"
+#include "ATOOLS/Math/BreitBoost.H"
 #include "ATOOLS/Phys/Flavour.H"
 #include "MODEL/Main/Model_Base.H"
 #include "REMNANTS/Main/Remnant_Handler.H"
@@ -91,6 +92,15 @@ void ME_Generator_Base::SetPSMasses()
     defpsmassless.push_back(kf_s);
     defpsmassless.push_back(kf_gluon);
     defpsmassless.push_back(kf_photon);
+    // in a DIS-like setup, always respect massive flag of lepton
+    if(rpa->gen.Beam2().IsLepton() && !rpa->gen.Beam2().IsMassive()
+       && rpa->gen.Beam1().IsHadron()) {
+        defpsmassless.push_back(rpa->gen.Beam2().Kfcode());
+    }
+    else if(rpa->gen.Beam1().IsLepton() && !rpa->gen.Beam1().IsMassive()
+            && rpa->gen.Beam2().IsHadron()) {
+        defpsmassless.push_back(rpa->gen.Beam1().Kfcode());
+    }
     for (size_t i(0);i<allflavs.size();++i) {
       if (allflavs[i].IsDummy()) continue;
       size_t kf(allflavs[i].Kfcode());
@@ -138,7 +148,7 @@ void ME_Generator_Base::SetPSMasses()
   Flavour_Vector mf;
   for (Flavour_Set::iterator fit(m_psmass.begin());fit!=m_psmass.end();++fit)
     if (fit->Mass(true)!=fit->Mass(false)) mf.push_back(*fit);
-  msg_Info()<<METHOD<<"(): Massive PS flavours for "<<m_name<<": "
+  msg_Info()<<"Massive PS flavours for "<<m_name<<": "
                     <<mf<<std::endl;
 }
 
@@ -219,10 +229,60 @@ namespace PHASIC {
     }
   };// end of class ShiftMasses_Energy
 
+  class ShiftMasses_DIS: public Function_Base {
+  private:
+    std::vector<double>::size_type m_nentries;
+    std::vector<double> m_m2, m_xy2, m_z;
+    double m_pZplus, m_pZminus, m_pZreserve;
+  public:
+    ShiftMasses_DIS(Mass_Selector *const ms,
+                         Cluster_Amplitude *const ampl)
+    {
+      const int nin = ampl->NIn();
+      m_nentries = ampl->Legs().size()-nin;
+      m_xy2.reserve(m_nentries);
+      m_m2.reserve(m_nentries);
+      m_z.reserve(m_nentries);
+      m_pZplus = 0;
+      m_pZminus = 0;
+      for(int i {nin}; i<ampl->Legs().size(); i++) {
+        if(ampl->Leg(i)->Flav().Strong()) {
+          const Vec4D mom = ampl->Leg(i)->Mom();
+          m_xy2.push_back(sqr(mom[1])+sqr(mom[2]));
+          m_z.push_back(mom[3]);
+          m_m2.push_back(ms->Mass2(ampl->Leg(i)->Flav()));
+          if(mom[3] > 0) m_pZplus += abs(mom[3]);
+          else           m_pZminus += abs(mom[3]);
+        }
+      }
+      m_nentries = m_m2.size();
+      m_pZreserve = std::min(m_pZplus,m_pZminus);
+    }
+
+    double scaledZ(double z, double xi) {
+      /// scale the z-component such that the overall  p_z of the final state
+      /// is conserved (given by DIS kinematics), and preserve the relative
+      /// p_z ordering in both hemispheres
+      double totZ = z > 0 ? m_pZplus : m_pZminus;
+      double frac = z/totZ;
+      return (1-xi)*frac*(totZ-m_pZreserve) + xi*z;
+    }
+
+    virtual double operator()(double xi)
+    {
+      const double xi2=xi*xi;
+      double E=0.0;
+      for (size_t i {0}; i < m_nentries; ++i) {
+        E+=sqrt(xi2*m_xy2[i]+sqr(scaledZ(m_z[i],xi))+m_m2[i]);
+      }
+      return E;
+    }
+  };// end of class ShiftMasses_DIS
 }// end of namespace PHASIC
 
 int ME_Generator_Base::ShiftMasses(Cluster_Amplitude *const ampl)
 {
+  /// first figure out if ampl has a flavour we want to shift on-shell
   if (m_psmass.empty()) return 0;
   bool run=false;
   Vec4D cms;
@@ -232,7 +292,19 @@ int ME_Generator_Base::ShiftMasses(Cluster_Amplitude *const ampl)
 	m_psmass.end()) run=true;
   }
   if (!run) return 1;
+  /// if so treat DIS as special case
+  if(ampl->NIn() <= 1 ||
+     (!(ampl->Leg(0)->Flav().IsLepton() && ampl->Leg(1)->Flav().Strong()) &&
+      !(ampl->Leg(0)->Flav().Strong() && ampl->Leg(1)->Flav().IsLepton()) ) ) {
+    return ShiftMassesDefault(ampl, cms);
+  }
+  else {
+    return ShiftMassesDIS(ampl, cms);
+  }
+}
 
+int ME_Generator_Base::ShiftMassesDefault(Cluster_Amplitude *const ampl, Vec4D cms)
+{
   DEBUG_FUNC(m_name);
   msg_Debugging()<<"Before shift: "<<*ampl<<"\n";
   Poincare boost(cms);
@@ -265,13 +337,183 @@ int ME_Generator_Base::ShiftMasses(Cluster_Amplitude *const ampl)
     ampl->Leg(i)->SetMom(boost*p);
   }
   for (int i = 0; i < 2; i++) {
-    if (p_remnant != NULL && !(p_remnant->GetRemnant(ampl->Leg(i)->Mom()[3] < 0.0 ? 0 : 1)
-              ->TestExtract(ampl->Leg(i)->Flav().Bar(), -ampl->Leg(i)->Mom())))
+    if (rpa->gen.PBunch(ampl->Leg(i)->Mom()[3] < 0.0 ? 0 : 1)[0] <
+        -ampl->Leg(i)->Mom()[0])
       return -1;
   }
-  msg_Debugging() << "After shift: " << *ampl << "\n";
+  msg_Debugging()<<"After shift: "<<*ampl<<"\n";
   return 1;
 }
+
+
+/// convenience function
+Vec4D MomSum(Cluster_Amplitude *const ampl) {
+  Vec4D ret(0,0,0,0);
+  for(auto l: ampl->Legs()) ret += l->Mom();
+  return ret;
+}
+
+int ME_Generator_Base::ShiftMassesDIS(Cluster_Amplitude *const ampl, Vec4D cms) {
+  DEBUG_FUNC(m_name);
+  msg_Debugging()<<"Before shift: "<<*ampl<<"\n";
+  /// currently assume leg 0 is the electron/QCD siglet
+  /// is this ever wrong?
+  const Vec4D pLepIn = ampl->Leg(0)->Mom();
+
+  BreitBoost breit(ampl);
+  breit.Apply(ampl);
+  msg_Debugging()<<"In Breit frame: "<<*ampl<<"\n";
+  msg_Debugging()<<"Momentum conservation: "<<MomSum(ampl)<<".\n";
+  breit.Invert();
+
+  /// shifted in momentum will be a bit of the z axis, so construct a new one that is
+  /// aligned and push recoil to hadronic final state
+  Vec4D pStrongOutBefore(0,0,0,0);
+  for (size_t i(ampl->NIn());i<ampl->Legs().size();++i) {
+    if(ampl->Leg(i)->Flav().Strong()) pStrongOutBefore += ampl->Leg(i)->Mom();
+  }
+  Vec4D pStrongInBefore;
+  for(size_t i=0; i<ampl->NIn(); i++) {
+    if(ampl->Leg(i)->Flav().Strong()) pStrongInBefore = -ampl->Leg(i)->Mom();
+  }
+  /// hadronic final state should have finite mass, otherwise we had a
+  /// we should be in a 2->2 case with massless partons, and never arrive here
+  if(!IsZero(pStrongInBefore[1]/pStrongInBefore[0],1e-6) || !IsZero(pStrongInBefore[2]/pStrongInBefore[0],1e-6)) {
+    if(IsZero(pStrongOutBefore.Abs2())) msg_Error()<<METHOD<<": Additional shift needed"
+                                                   <<" but m2_qcd_final = "<<pStrongOutBefore.Abs2()<<" ~ 0.\n";
+    /// might assume positive z for hadronic IS?
+    const double m2 = pStrongInBefore.Abs2();
+    const double inOutProd = pStrongInBefore*pStrongOutBefore;
+    const double eDiff = pStrongOutBefore[0]-pStrongInBefore[0];
+    const double zDiff = pStrongOutBefore[3]-pStrongInBefore[3];
+    double newPz = (inOutProd-m2)/(eDiff+zDiff);
+    newPz *= zDiff - eDiff * sqrt(1+m2*(sqr(zDiff)-sqr(eDiff))/sqr(inOutProd-m2));
+    newPz /= eDiff - zDiff;
+    const Vec4D newInMom(sqrt(sqr(newPz)+m2),0,0,newPz);
+
+    Poincare oldHCM(pStrongOutBefore);
+    Poincare newHCM(pStrongOutBefore-pStrongInBefore+newInMom);
+
+    for(size_t i=0; i<ampl->Legs().size(); i++) {
+      if(i < ampl->NIn()) {
+        if(ampl->Leg(i)->Flav().Strong()) ampl->Leg(i)->SetMom(-newInMom);
+      }
+      else if(ampl->Leg(i)->Flav().Strong()) {
+        Vec4D p = ampl->Leg(i)->Mom();
+        oldHCM.Boost(p);
+        newHCM.BoostBack(p);
+        ampl->Leg(i)->SetMom(p);
+      }
+    }
+  }
+  msg_Debugging()<<"In real breit frame: "<<*ampl<<"\n";
+  msg_Debugging()<<"Momentum conservation: "<<MomSum(ampl)<<".\n";
+
+  double Ein = 0;
+  for(size_t i=0; i<ampl->NIn(); i++) {
+    Vec4D p = ampl->Leg(i)->Mom();
+    if(ampl->Leg(i)->Flav().Strong()) {
+      p[0]=-sqrt(Mass2(ampl->Leg(i)->Flav())+p.PSpat2());
+      Ein = -p[0];
+    }
+    ampl->Leg(i)->SetMom(p);
+  }
+
+  ShiftMasses_DIS etot(this,ampl);
+  // need at least the energy to produce all masses
+  // while preserving pZ
+  double EoutMin = 0;
+  for(size_t i=ampl->NIn(); i<ampl->Legs().size(); i++) {
+    if(ampl->Leg(i)->Flav().Strong()) {
+      EoutMin += sqrt(Mass2(ampl->Leg(i)->Flav()) +
+                      sqr(etot.scaledZ(ampl->Leg(i)->Mom()[3],0)));
+    }
+  }
+  if(!IsEqual(Ein,EoutMin) && Ein < EoutMin) {
+    msg_Debugging()<<"Not enough energy, Ein = "<<Ein
+                   <<" vs "<<EoutMin<<".\n";
+    return -1;
+  }
+  double xi(etot.WDBSolve(Ein,0.0,1.0));
+  if (!IsEqual(etot(xi),Ein,rpa->gen.Accu())) {
+      if (m_massmode==0) xi=etot.WDBSolve(Ein,1.0,2.0);
+      if (!IsEqual(etot(xi),Ein,rpa->gen.Accu())) {
+        msg_Error()<<"No solution found for mass shift "
+                   <<etot(xi)<<" vs. "<<Ein<<".\n";
+        return -1;
+      }
+  }
+  for (size_t i(ampl->NIn());i<ampl->Legs().size();++i) {
+    Vec4D p = ampl->Leg(i)->Mom();
+    if(ampl->Leg(i)->Flav().Strong()) {
+      p[1] *= xi;
+      p[2] *= xi;
+      p[3] = etot.scaledZ(p[3],xi);
+      p[0] = sqrt(Mass2(ampl->Leg(i)->Flav())+p.PSpat2());
+    }
+    ampl->Leg(i)->SetMom(p);
+  }
+  msg_Debugging()<<"After shift (xi = "<<xi<<") in Breit frame: "<<*ampl<<"\n";
+  msg_Debugging()<<"Momentum conservation: "<<MomSum(ampl)<<".\n";
+  msg_Debugging()<<"DIS variables: Q2 = "<<breit.Q2()<<" vs "<<BreitBoost(ampl).Q2()
+                 <<" and x = "<<breit.x()<<" vs "<<BreitBoost(ampl).x()<<".\n";
+  breit.Apply(ampl);
+  msg_Debugging()<<"After boost back: "<<*ampl<<"\n";
+  msg_Debugging()<<"Momentum conservation: "<<MomSum(ampl)<<".\n";
+  msg_Debugging()<<"DIS variables: Q2 = "<<breit.Q2()<<" vs "<<BreitBoost(ampl).Q2()
+                 <<" and x = "<<breit.x()<<" vs "<<BreitBoost(ampl).x()<<".\n";
+  /// shifted in momentum will be a bit of the z axis, so construct a new one that is
+  /// aligned and push recoil to hadronic final state
+  Vec4D pStrongOut(0,0,0,0);
+  for (size_t i(ampl->NIn());i<ampl->Legs().size();++i) {
+    if(ampl->Leg(i)->Flav().Strong()) pStrongOut += ampl->Leg(i)->Mom();
+  }
+  Vec4D pStrongIn;
+  for(size_t i=0; i<ampl->NIn(); i++) {
+    if(ampl->Leg(i)->Flav().Strong()) pStrongIn = -ampl->Leg(i)->Mom();
+  }
+  /// hadronic final state should have finite mass, otherwise we had a
+  /// we should be in a 2->2 case with massless partons, and never arrive here
+  if(!IsZero(pStrongOut.Abs2())) {
+    /// might assume positive z for hadronic IS?
+    const double m2 = pStrongIn.Abs2();
+    const double inOutProd = pStrongIn*pStrongOut;
+    const double eDiff = pStrongOut[0]-pStrongIn[0];
+    const double zDiff = pStrongOut[3]-pStrongIn[3];
+    double newPz = (inOutProd-m2)/(eDiff+zDiff);
+    newPz *= zDiff - eDiff * sqrt(1+m2*(sqr(zDiff)-sqr(eDiff))/sqr(inOutProd-m2));
+    newPz /= eDiff - zDiff;
+    const Vec4D newInMom(sqrt(sqr(newPz)+m2),0,0,newPz);
+
+    Poincare oldHCM(pStrongOut);
+    Poincare newHCM(pStrongOut-pStrongIn+newInMom);
+
+    for(size_t i=0; i<ampl->Legs().size(); i++) {
+      if(i < ampl->NIn()) {
+        if(ampl->Leg(i)->Flav().Strong()) ampl->Leg(i)->SetMom(-newInMom);
+        else                              ampl->Leg(i)->SetMom(pLepIn);
+      }
+      else if(ampl->Leg(i)->Flav().Strong()) {
+        Vec4D p = ampl->Leg(i)->Mom();
+        oldHCM.Boost(p);
+        newHCM.BoostBack(p);
+        ampl->Leg(i)->SetMom(p);
+      }
+    }
+  }
+  msg_Debugging()<<"After full shift: "<<*ampl<<"\n";
+  msg_Debugging()<<"Momentum conservation: "<<MomSum(ampl)<<".\n";
+  if(!IsZero(MomSum(ampl).PSpat(),1e-6)) {
+    msg_Error()<<"Mass shift could not be completed. "
+               <<"Momentum conseravtion fails by "<<MomSum(ampl)<<"\n";
+    return -1;
+  }
+  msg_Debugging()<<"Finished DIS mass shift with Q2 = "
+                 <<breit.Q2()<<" vs "<<BreitBoost(ampl).Q2()<<" and x = "
+                 <<breit.x()<<" vs "<<BreitBoost(ampl).x()<<".\n";
+  return 1;
+}
+
 
 double ME_Generator_Base::Mass(const ATOOLS::Flavour &fl) const
 {

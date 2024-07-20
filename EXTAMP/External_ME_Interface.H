@@ -19,6 +19,7 @@ namespace EXTAMP {
 
     BEAM::Beam_Spectra_Handler* p_beam;
     PDF::ISR_Handler* p_isr;
+    YFS::YFS_Handler* p_yfs;
 
   public :
 
@@ -48,7 +49,8 @@ namespace EXTAMP {
     /* Pure virtual from PHASIC::ME_Generator_Base. Initialize this class. */
     virtual bool Initialize(MODEL::Model_Base *const model,
 			    BEAM::Beam_Spectra_Handler *const beam,
-			    PDF::ISR_Handler *const isr);
+			    PDF::ISR_Handler *const isr,
+			    YFS::YFS_Handler *const yfs);
 
     /* Use getter to load an external matrix element */
     static PHASIC::Tree_ME2_Base* 

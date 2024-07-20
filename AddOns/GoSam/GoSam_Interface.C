@@ -107,7 +107,8 @@ void GoSam_Interface::RegisterDefaults() const
 
 bool GoSam_Interface::Initialize(MODEL::Model_Base *const model,
                                  BEAM::Beam_Spectra_Handler *const beam,
-                                 PDF::ISR_Handler *const isr)
+                                 PDF::ISR_Handler *const isr,
+                                 YFS::YFS_Handler *const yfs)
 {
   msg_Info()<<"Initialising GoSam generator from "<<s_gosamprefix<<endl;
   Settings& s = Settings::GetMainSettings();

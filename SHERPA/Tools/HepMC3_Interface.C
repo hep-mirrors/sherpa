@@ -327,6 +327,8 @@ HepMC3_Interface::HepMC3_Interface() :
   generator.version = std::string(SHERPA_VERSION)+"."+std::string(SHERPA_SUBVERSION);
   generator.description = "Used generator";
   m_runinfo->tools().push_back(generator);
+  rpa->gen.AddCitation(
+      1, "The HepMC3 library is described in \\cite{Buckley:2019xhk}.");
 }
 
 HepMC3_Interface::~HepMC3_Interface()

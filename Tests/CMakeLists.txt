@@ -121,7 +121,7 @@ if(SHERPA_ENABLE_RIVET)
     macro(run_var NN a b c d)
       add_test(
         NAME Main${test}partC${NN} 
-        COMMAND Sherpa SCALE_VARIATIONS:None RSF:=${a} FSF:=${b} -A Explicit__ME.MUR=${c}__ME.MUF=${d}__LHAPDF=93300
+        COMMAND Sherpa SCALE_VARIATIONS:None RSF:=${a} FSF:=${b} -A Explicit__MUR=${c}__MUF=${d}__LHAPDF=93300
           ${PROJECT_SOURCE_DIR}/Examples/CI/FO_Z_Variations/Base.yaml
           ${PROJECT_SOURCE_DIR}/Examples/CI/FO_Z_Variations/${order}.yaml
         WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${test}
@@ -146,7 +146,7 @@ if(SHERPA_ENABLE_RIVET)
       )
     set_tests_properties(Main${test}partD PROPERTIES
       ENVIRONMENT "${STANDARDENVIRONMENT}"
-      DEPENDS Main${test}partC1 Main${test}partC2 Main${test}partC3 Main${test}partC4 Main${test}partC5 Main${test}partC6 Main${test}partC7)
+      DEPENDS "Main${test}partB;Main${test}partC1;Main${test}partC2;Main${test}partC3;Main${test}partC4;Main${test}partC5;Main${test}partC6;Main${test}partC7")
   endmacro()
   declare_variations_test(LO)
   declare_variations_test(NLO)
@@ -156,4 +156,9 @@ endif()
 if(SHERPA_ENABLE_CATCH2)
   # Add unit tests
   add_subdirectory(Unit)
+endif()
+
+if(SHERPA_ENABLE_UFO)
+  # Add UFO tests
+  add_subdirectory(End2End/UFO)
 endif()

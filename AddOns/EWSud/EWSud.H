@@ -68,7 +68,7 @@ namespace EWSud {
     _cluster_l1,
   };
 
-  using Two_Leg_Indizes = std::array<size_t, 2>;
+  using Two_Leg_Indices = std::array<size_t, 2>;
   using Leg_Index_Set = std::set<size_t>;
   // NOTE: the following map can not be unordered, since it is being used as a
   // key and therefore needs to support comparison operations

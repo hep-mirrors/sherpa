@@ -95,6 +95,8 @@ Rivet_Interface::Rivet_Interface(const std::string &outpath,
   if (m_outpath.rfind('/')!=std::string::npos)
     MakeDir(m_outpath.substr(0,m_outpath.rfind('/')), true);
 
+  rpa->gen.AddCitation(
+      1, "The Rivet toolkit is described in \\cite{Bierlich:2019rhm}.");
 }
 
 Rivet_Interface::~Rivet_Interface()

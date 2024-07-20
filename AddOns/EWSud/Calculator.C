@@ -448,7 +448,7 @@ Coeff_Value Calculator::lsZCoeff()
 }
 
 Coeff_Value
-Calculator::lsLogROverSCoeffs(const Two_Leg_Indizes& indizes)
+Calculator::lsLogROverSCoeffs(const Two_Leg_Indices& indizes)
 {
   Coeff_Value coeff{0.0};
   const auto& base_ampl = m_ampls.BaseAmplitude(m_current_spincombination);

@@ -374,7 +374,7 @@ int Sudakov::Generate(Parton *split,Parton *spect,
 
   while (t>=Max(t0,kt2win)) {
     t=ProduceT(t);
-    p_split->SetForcedDecay(false);
+    p_split->SetForcedSplitting(false);
     if (m_forced_splittings &&
 	p_split->GetType()==pst::IS &&
 	t<sqr(p_split->GetFlavour().HadMass()) && t>Max(t0,kt2win)) {
@@ -386,7 +386,7 @@ int Sudakov::Generate(Parton *split,Parton *spect,
 	} while (pow(z/m_zmax,m_gluon_xscaling_in_forced_splittings)<ran->Get());
 	phi   = 2.*M_PI*ran->Get();
 	split->SetSpect(p_spect);
-	split->SetForcedDecay(true);
+	split->SetForcedSplitting(true);
 	split->IncForcedTrials();
 	if (split->ForcedTrials()>10) {
 	  split->SetKtStart(0.0);

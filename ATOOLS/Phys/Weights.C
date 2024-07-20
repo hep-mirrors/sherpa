@@ -20,14 +20,14 @@ bool Weights::IsZero() const
   return true;
 }
 
-std::string Weights::Name(size_t i, Variations_Source source) const
-{
+std::string Weights::Name(size_t i, Variations_Source source,
+                          Variations_Name_Type name_type) const {
   if (i == 0) {
     return "Nominal";
   } else if (type == Variations_Type::custom) {
     return names[i];
   } else {
-    return s_variations->GetVariationNameAt(i - 1, type, source);
+    return s_variations->GetVariationNameAt(i - 1, type, source, name_type);
   }
 }
 

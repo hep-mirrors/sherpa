@@ -5,7 +5,7 @@
 
 using namespace BEAM;
 
-Beam_Base::Beam_Base(beamspectrum::code _type, const ATOOLS::Flavour& _beam,
+Beam_Base::Beam_Base(beamspectrum _type, const ATOOLS::Flavour& _beam,
                      const double _energy, const double _polarisation,
                      const int _dir, int mode) :
   m_type(_type), m_Nbunches(1), m_beam(_beam), m_position(ATOOLS::Vec4D(0.,0.,0.,0.)),

@@ -83,7 +83,8 @@ namespace ML5 {
     // member functions
     bool Initialize(MODEL::Model_Base *const model,
 		    BEAM::Beam_Spectra_Handler *const beam,
-		    PDF::ISR_Handler *const isr)
+		    PDF::ISR_Handler *const isr,
+		    YFS::YFS_Handler *const yfs)
     {
       RegisterDefaults();
       Settings &s=Settings::GetMainSettings();

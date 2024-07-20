@@ -226,9 +226,9 @@ int Kinematics_IF::MakeKinematics
 (Parton *const split,const double & ma2,const double & mi2,
  const ATOOLS::Flavour &fli,Parton *&pc,const int mode)
 {
-  if (split->ForcedDecay()) {
+  if (split->ForcedSplitting()) {
     Kin_Args args(0,split->ZTest(),split->Phi(),split->Kin());
-    return MakeForcedDecayKinematics(split,pc,args,mode);
+    return MakeForcedSplittingKinematics(split,pc,args,mode);
   }
   Parton *b(NULL);
   for (PLiter pit(split->GetSing()->begin());pit!=split->GetSing()->end();++pit)
@@ -321,9 +321,9 @@ int Kinematics_II::MakeKinematics
 (Parton *const split,const double & ma2,const double & mi2,
  const ATOOLS::Flavour &newfl,Parton *&pc,const int mode)
 {
-  if (split->ForcedDecay()) {
+  if (split->ForcedSplitting()) {
     Kin_Args args(0,split->ZTest(),split->Phi(),split->Kin());
-    return MakeForcedDecayKinematics(split,pc,args,mode);
+    return MakeForcedSplittingKinematics(split,pc,args,mode);
   }
   Parton * spect = split->GetSpect();
   Vec4D p1 = split->Momentum(), p2 = spect->Momentum();
@@ -352,7 +352,7 @@ int Kinematics_II::MakeKinematics
 }
 
 int Kinematics_Base::
-MakeForcedDecayKinematics(Parton *const split,Parton *&pnew,Kin_Args & args,const int mode) const {
+MakeForcedSplittingKinematics(Parton *const split,Parton *&pnew,Kin_Args & args,const int mode) const {
   Vec4D p1_t      = split->Momentum(), p2_t = Vec4D(0.,0.,0.,0.);
   for (PLiter plit=split->GetSing()->begin();plit!=split->GetSing()->end();plit++) {
     if ((*plit)->GetType()==pst::FS) p2_t += (*plit)->Momentum();

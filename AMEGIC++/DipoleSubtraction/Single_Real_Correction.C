@@ -107,7 +107,7 @@ int Single_Real_Correction::InitAmplitude(Amegic_Model * model,Topology* top,
 
   Process_Info rinfo(m_pinfo);
   rinfo.m_fi.m_nlotype=nlo_type::real;
-  p_tree_process->PHASIC::Process_Base::Init(rinfo,p_int->Beam(),p_int->ISR());
+  p_tree_process->PHASIC::Process_Base::Init(rinfo,p_int->Beam(),p_int->ISR(),p_int->YFS());
   p_tree_process->SetTestMoms(p_testmoms);
   p_tree_process->SetPrintGraphs(rinfo.m_gpath);
 

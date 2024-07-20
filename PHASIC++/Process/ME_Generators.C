@@ -59,20 +59,22 @@ bool ME_Generators::LoadGenerator(const std::string &name)
     pop_back();
     return false;
   }
-  if (!back()->Initialize(p_model,p_beam,p_isr)) return false;
+  if (!back()->Initialize(p_model,p_beam,p_isr,p_yfs)) return false;
   back()->SetGenerators(this);
   return true;
 }
 
 bool ME_Generators::InitializeGenerators(MODEL::Model_Base *model,
                                          BEAM::Beam_Spectra_Handler *beam,
-                                         PDF::ISR_Handler *isr)
+                                         PDF::ISR_Handler *isr,
+                                         YFS::YFS_Handler *yfs)
 {
   p_isr=isr;
+  p_yfs=yfs;
   p_beam=beam;
   p_model=model;
   for (ME_Generators::const_iterator mit=begin(); mit!=end(); ++mit) {
-    if (!(*mit)->Initialize(model,beam,isr)) return false;
+    if (!(*mit)->Initialize(model,beam,isr,yfs)) return false;
     (*mit)->SetGenerators(this);
   }
   return true;

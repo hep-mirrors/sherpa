@@ -24,7 +24,8 @@ namespace EXTAMP {
     Dipole_Wrapper_Process(const RS_Process& rsproc,
 			   EXTAMP::CS_Dipole* dipole,
 			   BEAM::Beam_Spectra_Handler* beam,
-			   PDF::ISR_Handler* isr);
+			   PDF::ISR_Handler* isr,
+			   YFS::YFS_Handler* yfs);
 
     /* Calc dipole kinematics without evaluating dipole. Also perform
        trigger and set corresponding flag of NLO_subevt */

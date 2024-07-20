@@ -110,6 +110,7 @@ namespace ATOOLS {
 
     std::string GetPath();
     String_Vector GetConfigFiles();
+    String_Vector GetUserConfigFiles();
 
   private:
 
@@ -249,7 +250,7 @@ namespace ATOOLS {
   void Settings::SetDefaultMatrix(const Settings_Keys& keys,
                                   const std::vector<std::vector<T> >& values)
   {
-    SetDefaultMatrix(keys.IndizesRemoved(), values);
+    SetDefaultMatrix(keys.IndicesRemoved(), values);
   }
 
   template <typename T>
@@ -303,7 +304,7 @@ namespace ATOOLS {
       }
       stringvalues.push_back(stringvaluerow);
     }
-    const std::vector<std::string> keys{ settings_keys.IndizesRemoved() };
+    const std::vector<std::string> keys{ settings_keys.IndicesRemoved() };
     const auto it = m_overrides.find(keys);
     if (it != m_overrides.end()) {
       if (it->second != stringvalues) {
@@ -320,7 +321,8 @@ namespace ATOOLS {
   template <typename T>
   T Settings::GetScalar(const Settings_Keys& settings_keys)
   {
-    Defaults_Key keys{ settings_keys.IndizesRemoved() };
+    Defaults_Key keys{ settings_keys.IndicesRemoved() };
+    Settings_Keys used_synonym_settings_keys;
     std::string defaultvalue;
     defaultvalue = GetScalarDefault(keys, m_defaults);
     std::string value;
@@ -336,7 +338,8 @@ namespace ATOOLS {
             synonym_settings_keys.back() = synonym;
             value = reader->GetScalar<std::string>(synonym_settings_keys);
             if (!value.empty()) {
-              keys = synonym_settings_keys.IndizesRemoved();
+              used_synonym_settings_keys = synonym_settings_keys;
+              keys = synonym_settings_keys.IndicesRemoved();
               break;
             }
           }
@@ -349,17 +352,26 @@ namespace ATOOLS {
       value = defaultvalue;
     }
     const auto convertedvalue = Convert<T>(settings_keys, value);
-    if (value.empty())
-      m_usedvalues[settings_keys].insert(String_Matrix{{""}});
-    else
-      m_usedvalues[settings_keys].insert(String_Matrix{{ToString<T>(convertedvalue)}});
+    if (value.empty()) {
+      if (!used_synonym_settings_keys.empty())
+        m_usedvalues[used_synonym_settings_keys].insert(String_Matrix{{""}});
+      else
+        m_usedvalues[settings_keys].insert(String_Matrix{{""}});
+    }
+    else {
+      if (!used_synonym_settings_keys.empty())
+        m_usedvalues[used_synonym_settings_keys].insert(String_Matrix{{ToString<T>(convertedvalue)}});
+      else
+        m_usedvalues[settings_keys].insert(String_Matrix{{ToString<T>(convertedvalue)}});
+    }
     return Convert<T>(settings_keys, value);
   }
 
   template <typename T>
   std::vector<T> Settings::GetVector(const Settings_Keys& settings_keys)
   {
-    Defaults_Key keys{ settings_keys.IndizesRemoved() };
+    Defaults_Key keys{ settings_keys.IndicesRemoved() };
+    Settings_Keys used_synonym_settings_keys;
     String_Vector defaultvalues;
     defaultvalues = GetVectorDefault(keys, m_defaults);
     std::vector<std::string> values;
@@ -375,7 +387,8 @@ namespace ATOOLS {
             synonym_settings_keys.back() = synonym;
             values = reader->GetVector<std::string>(synonym_settings_keys);
             if (!values.empty()) {
-              keys = synonym_settings_keys.IndizesRemoved();
+              used_synonym_settings_keys = synonym_settings_keys;
+              keys = synonym_settings_keys.IndicesRemoved();
               break;
             }
           }
@@ -394,10 +407,18 @@ namespace ATOOLS {
       convertedvalues.push_back(Convert<T>(settings_keys, *it));
       convertedstringvalues.push_back(ToString<T>(convertedvalues.back()));
     }
-    if (values.empty())
-      m_usedvalues[settings_keys].insert(String_Matrix{{}});
-    else
-      m_usedvalues[settings_keys].insert(String_Matrix{convertedstringvalues});
+    if (values.empty()) {
+      if (!used_synonym_settings_keys.empty())
+        m_usedvalues[used_synonym_settings_keys].insert(String_Matrix{{}});
+      else
+        m_usedvalues[settings_keys].insert(String_Matrix{{}});
+    }
+    else {
+      if (!used_synonym_settings_keys.empty())
+        m_usedvalues[used_synonym_settings_keys].insert(String_Matrix{convertedstringvalues});
+      else
+        m_usedvalues[settings_keys].insert(String_Matrix{convertedstringvalues});
+    }
     return convertedvalues;
   }
 
@@ -405,7 +426,8 @@ namespace ATOOLS {
   std::vector<std::vector<T> > Settings::GetMatrix(
       const Settings_Keys& settings_keys)
   {
-    Defaults_Key keys{ settings_keys.IndizesRemoved() };
+    Defaults_Key keys{ settings_keys.IndicesRemoved() };
+    Settings_Keys used_synonym_settings_keys;
     String_Matrix defaultvalues;
     defaultvalues = GetMatrixDefault(keys, m_defaults);
     String_Matrix values;
@@ -421,7 +443,8 @@ namespace ATOOLS {
             synonym_settings_keys.back() = synonym;
             values = reader->GetMatrix<std::string>(synonym_settings_keys);
             if (!values.empty()) {
-              keys = synonym_settings_keys.IndizesRemoved();
+              used_synonym_settings_keys = synonym_settings_keys;
+              keys = synonym_settings_keys.IndicesRemoved();
               break;
             }
           }
@@ -444,7 +467,10 @@ namespace ATOOLS {
       convertedvalues.push_back(convertedvaluerow);
       convertedstringvalues.push_back(convertedstringvaluerow);
     }
-    m_usedvalues[settings_keys].insert(convertedstringvalues);
+    if (!used_synonym_settings_keys.empty())
+      m_usedvalues[used_synonym_settings_keys].insert(convertedstringvalues);
+    else
+      m_usedvalues[settings_keys].insert(convertedstringvalues);
     return convertedvalues;
   }
 
@@ -452,7 +478,7 @@ namespace ATOOLS {
   T Settings::GetScalarWithOtherDefault(const Settings_Keys& settings_keys,
                                         const T& otherdefault)
   {
-    const Defaults_Key keys{ settings_keys.IndizesRemoved() };
+    const Defaults_Key keys{ settings_keys.IndicesRemoved() };
     // temporarily replace m_defaults entry before calling GetScalar
     const auto it = m_defaults.find(keys);
     String_Matrix oldvalue;
@@ -477,7 +503,7 @@ namespace ATOOLS {
   void Settings::SetReplacementList(const Settings_Keys& settings_keys,
                                     const std::map<std::string, T>& list)
   {
-    const Defaults_Key keys{ settings_keys.IndizesRemoved() };
+    const Defaults_Key keys{ settings_keys.IndicesRemoved() };
     const auto it = m_replacements.find(keys);
     if (m_replacements.find(keys) != m_replacements.end())
       if (list != it->second)

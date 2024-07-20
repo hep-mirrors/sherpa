@@ -74,7 +74,7 @@ void MyTiming::PrintTime()
     double stime=(currenttms.tms_stime-starttms.tms_stime)/clk_tck;
     double cutime=(currenttms.tms_cutime-starttms.tms_cutime)/clk_tck;
     double cstime=(currenttms.tms_cstime-starttms.tms_cstime)/clk_tck;
-    msg_Info()<<" (User: "<<FormatTime((size_t)utime)<<", System: "
+    msg_Info()<<"  (User: "<<FormatTime((size_t)utime)<<", System: "
 	      <<FormatTime((size_t)stime)<<", Children User: "
 	      <<FormatTime((size_t)cutime)<<", Children System: "
 	      <<FormatTime((size_t)cstime)<<")\n";

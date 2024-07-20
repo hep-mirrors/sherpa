@@ -134,6 +134,8 @@ CS Shower options
 .. index:: MASS_THRESHOLD
 .. index:: EVOLUTION_SCHEME
 .. index:: SCALE_SCHEME
+.. index:: FORCED_IS_QUARK_SPLITTING
+.. index:: FORCED_SPLITTING_GLUON_SCALING
 
 By default, only QCD splitting functions are enabled in the CS shower.
 If you also want to allow for photon splittings, you can enable them
@@ -192,3 +194,9 @@ Additionally,
 the CS shower allows to disable splittings at scales below the
 on-shell mass of heavy quarks. The upper limit for the corresponding
 heavy quark mass is set using :option:`SHOWER:MASS_THRESHOLD`.
+
+Likewise, by default the CS shower forces heavy quarks to be produced 
+from gluon splittings below their mass threshold. This behaviour can 
+be steered using :option:`SHOWER:FORCED_IS_QUARK_SPLITTING`.
+Its precise kinematics are governed by :option:`SHOWER:FORCED_SPLITTING_GLUON_SCALING`.
+

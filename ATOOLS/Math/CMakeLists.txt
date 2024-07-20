@@ -7,6 +7,7 @@ set(Math_SOURCES MathTools.C
                  Function_Base.C
                  Poincare.C
                  ZAlign.C
+                 BreitBoost.C
                  Vector.C
                  Matrix.C
                  Gauss_Integrator.C
@@ -29,6 +30,7 @@ set(Math_HEADERS MathTools.H
                  Function_Base.H
                  Poincare.H
                  ZAlign.H
+                 BreitBoost.H
                  Vec3.H
                  Vec4.H
                  Vector.H

@@ -406,7 +406,11 @@ double MEPS_Scale_Setter::Calculate
   p_sproc=p_proc->Caller()->Get<Single_Process>();
   ampl->SetLKF(1.0);
   int mm(p_proc->Caller()->Generator()->SetMassMode(m_nproc?0:1));
-  if (!m_nproc) p_proc->Caller()->Generator()->ShiftMasses(ampl);
+  if (!m_nproc && p_proc->Caller()->Generator()->ShiftMasses(ampl)!=1) {
+    p_proc->Caller()->Generator()->SetMassMode(mm);
+    ampl->Delete();
+    return sqrt(-1);
+  }
   Cluster(ampl,ampls,1);
   p_proc->Caller()->Generator()->SetMassMode(mm);
   if (ampls.empty()) {
@@ -416,6 +420,7 @@ double MEPS_Scale_Setter::Calculate
     if (m_nproc) ampl->SetOrderQCD(ampl->OrderQCD()+1);
     m_ampls.push_back(ampl);
     msg_Debugging()<<"Rescue: "<<*ampl<<"\n";
+    ampl->Delete();
     return SetScales(m_ampls.back());
   }
   ampl->Delete();

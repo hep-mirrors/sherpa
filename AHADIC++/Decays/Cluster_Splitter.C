@@ -133,17 +133,8 @@ bool Cluster_Splitter::MakeLongitudinalMomentaZ() {
 bool Cluster_Splitter::MakeLongitudinalMomentaZSimple() {
   bool mustrecalc = false;
   for (size_t i=0;i<2;i++) m_z[i]  = m_zselector(m_zmin[i],m_zmax[i],i);
-  for (size_t i=0;i<2;i++) {
-    m_R2[i] = m_z[i]*(1.-m_z[1-i])*m_Q2-m_kt2;
-    //This is a difference w.r.t. master
-    if (m_R2[i]<m_mdec2[i]+m_kt2) {
-      m_R2[i] = m_mdec2[i]+m_kt2;  //(ran->Get()>0.5?m_mdec2[i]:m_m2min[i])+m_kt2;
-      mustrecalc = true;
-    }
-  }
-  // another check: bool allowed = (m_R12>m_minQ_12 && m_R21>m_minQ_22);
-  bool ok = (m_R2[0]>m_mdec2[0]+m_kt2) && (m_R2[1]>m_mdec2[1]+m_kt2);
-  return (ok && (mustrecalc?RecalculateZs():true));
+  for (size_t i=0;i<2;i++) m_R2[i] = m_z[i]*(1.-m_z[1-i])*m_Q2-m_kt2;
+  return (m_R2[0]>=m_mdec2[0]+m_kt2) && (m_R2[1]>=m_mdec2[1]+m_kt2);
 }
 
 double Cluster_Splitter::
@@ -246,21 +237,6 @@ bool Cluster_Splitter::FillParticlesInLists() {
     else if (shuffle)  UpdateAndFillCluster(i);
     else p_cluster_list->push_back(p_out[i]);
   }
-  /*
-  if (shuffle>0)
-    msg_Out()<<METHOD<<" shuffled momenta:\n"
-	     <<m_cms<<" -> "<<(m_newmom[0]+m_newmom[1])<<"\n = "<<m_newmom[0]<<" + "<<m_newmom[1]<<"\n";
-  else {
-    msg_Out()<<METHOD<<" didn't shuffle momenta:\n"
-	     <<m_cms<<"("<<sqrt(m_cms.Abs2())<<") -> \n"<<(*p_out[0])<<(*p_out[1]);
-    double mass1_0 = sqrt(((*p_out[0])[0]->Momentum()+(*p_out[0])[1]->Momentum()).Abs2());
-    double mass2_0 = sqrt(((*p_out[1])[0]->Momentum()+(*p_out[1])[1]->Momentum()).Abs2());
-    double mass1_1 = sqrt(((*p_out[0])[0]->Momentum()+(*p_out[1])[0]->Momentum()).Abs2());
-    double mass2_1 = sqrt(((*p_out[0])[1]->Momentum()+(*p_out[1])[1]->Momentum()).Abs2());
-    msg_Out()<<"--> mass shuffle "<<mass1_0<<" + "<<mass2_0<<" --> "
-	     <<mass1_1<<" + "<<mass2_1<<"\n\n";
-  }
-  */
   return true;
 }
 

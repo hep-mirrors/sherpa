@@ -57,6 +57,7 @@ std::ostream &ATOOLS::operator<<(std::ostream &str,const nlo_mode::code &c)
   else if (c==nlo_mode::fixedorder) return str<<"fixedorder";
   else if (c==nlo_mode::powheg)     return str<<"powheg";
   else if (c==nlo_mode::mcatnlo)    return str<<"mcatnlo";
+  else if (c==nlo_mode::yfs)    return str<<"YFS";
   return str<<"unknown";
 }
 
@@ -70,6 +71,8 @@ std::istream &ATOOLS::operator>>(std::istream &str,nlo_mode::code &c)
   else if (tag.find("1")!=std::string::npos)           c=nlo_mode::fixedorder;
   else if (tag.find("MC@NLO")!=std::string::npos)      c=nlo_mode::mcatnlo;
   else if (tag.find("3")!=std::string::npos)           c=nlo_mode::mcatnlo;
+  else if (tag.find("YFS")!=std::string::npos)         c=nlo_mode::yfs;
+  else if (tag.find("4")!=std::string::npos)           c=nlo_mode::yfs;
   else                                                 c=nlo_mode::unknown;
   return str;
 }

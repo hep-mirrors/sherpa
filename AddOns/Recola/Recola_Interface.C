@@ -35,6 +35,9 @@ bool           Recola::Recola_Interface::s_compute_poles = false;
 size_t         Recola::Recola_Interface::s_vmode = 0;
 int            Recola::Recola_Interface::s_ewscheme = 3;
 int            Recola::Recola_Interface::s_amptype = 1;
+bool           Recola::Recola_Interface::s_mass_reg = 0;
+double         Recola::Recola_Interface::s_photon_mass = 0.1;
+bool           Recola::Recola_Interface::s_use_decay = 0;
 
   
 std::map<size_t,PHASIC::Process_Info> Recola::Recola_Interface::s_procmap;
@@ -157,6 +160,9 @@ void Recola::Recola_Interface::RegisterDefaults() const
   s["RECOLA_COLLIER_CACHE"].SetDefault(-1);
   s["RECOLA_VMODE"].SetDefault(0);
   s["RECOLA_AMPTYPE"].SetDefault(1);
+  s["RECOLA_PHOTON_MASS"].SetDefault(0.1);
+  s["RECOLA_MASS_REG"].SetDefault(false);
+  s["RECOLA_USE_DECAY"].SetDefault(false);
   // find RECOLA installation prefix with several overwrite options
   char *var=NULL;
   s_recolaprefix = rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Recola";
@@ -172,8 +178,11 @@ void Recola::Recola_Interface::RegisterDefaults() const
 
 bool Recola::Recola_Interface::Initialize(MODEL::Model_Base *const model,
           BEAM::Beam_Spectra_Handler *const beam,
-          PDF::ISR_Handler *const isr)
+          PDF::ISR_Handler *const isr,
+          YFS::YFS_Handler *const yfs)
 {
+  rpa->gen.AddCitation(
+      1, "The Recola library is described in \\cite{Denner:2017wsf}.");
   msg_Info()<<"Initialising Recola generator from "<<s_recolaprefix<<endl;
   Settings& s = Settings::GetMainSettings();
   //This check could be added if a different model from the SM wants to be used
@@ -198,7 +207,28 @@ bool Recola::Recola_Interface::Initialize(MODEL::Model_Base *const model,
   set_output_file_rcl(recolaOutput.c_str());
   s_vmode = s["RECOLA_VMODE"].Get<int>();
   msg_Tracking()<<METHOD<<"(): Set V-mode to "<<s_vmode<<endl;
-
+  s_photon_mass = s["RECOLA_PHOTON_MASS"].Get<double>();
+  s_use_decay   = s["RECOLA_USE_DECAY"].Get<bool>();
+  s_mass_reg = s["RECOLA_MASS_REG"].Get<bool>();
+  if(!s_mass_reg && yfs->Mode()!=YFS::yfsmode::off){ 
+    THROW(fatal_error, "Dimensional regularization is not supported for YFS. Use RECOLA_MASS_REG: 1");
+  }
+  if(s_mass_reg){
+    s_photon_mass = s["RECOLA_PHOTON_MASS"].Get<double>();
+    if(s_photon_mass != yfs->m_photonMass){
+      msg_Error()<<"Mismatch between YFS and Recola photon mass"
+                 <<"\n mass in YFS = "<<yfs->m_photonMass
+                 <<"\n mass in RECOLA = "<<s_photon_mass<<endl;
+      THROW(fatal_error,"Mismatch in photon mass regulator");
+        msg_Error()<<"Mismatch between YFS and Recola photon mass"
+                   <<"\n mass in YFS = "<<yfs->m_photonMass
+                   <<"\n mass in RECOLA = "<<s_photon_mass<<endl;
+        THROW(fatal_error,"Mismatch in photon mass regulator");
+    }
+    
+    set_dynamic_settings_rcl(1);
+    use_mass_reg_soft_rcl(s_photon_mass);
+  }
   
   if (s_vmode&2) THROW(fatal_error,"Inclusion of I operator not implemented.");
 
@@ -289,7 +319,7 @@ bool Recola::Recola_Interface::Initialize(MODEL::Model_Base *const model,
                         Flavour(kf_c).Width(),Flavour(kf_b).Width(),
                         Flavour(kf_t).Width()); 
   
-  s_fixed_flav=Recola_Interface::GetDefaultFlav()+10; 
+  s_fixed_flav=Recola_Interface::GetDefaultFlav()+10;
   return true;
 }
 
@@ -307,9 +337,8 @@ int Recola::Recola_Interface::RegisterProcess(const External_ME_Args& args,
   msg_Debugging()<<"ProcIndex = " <<procIndex <<"\n"; 
   msg_Debugging()<<"process string = "<<process2Recola(args.Flavours())<<"\n";
   
-    
   string procstring(process2Recola(args.Flavours()));
-  define_process_rcl(procIndex, procstring.c_str(), "NLO");
+  define_process_rcl(procIndex, procstring.c_str(), "LO");
   
   
   Settings& s = Settings::GetMainSettings();
@@ -326,7 +355,6 @@ int Recola::Recola_Interface::RegisterProcess(const External_ME_Args& args,
   }
   else
     select_gs_power_BornAmpl_rcl(procIndex,args.m_orders[0]);
-      
   return procIndex;
 }
     
@@ -334,6 +362,26 @@ size_t Recola::Recola_Interface::RegisterProcess(const Process_Info& pi,
         int amptype)
 {
   DEBUG_FUNC("");
+  std::string decayprocess;
+    if(s_use_decay) {
+      decayprocess = particle2Recola(pi.m_ii.m_ps[0].m_fl.IDName())
+                    + " " + particle2Recola(pi.m_ii.m_ps[1].m_fl.IDName()) + " -> ";
+      for(auto dec: pi.m_fi.m_ps ){
+        if(dec.m_ps.size() != 0){
+          decayprocess+= particle2Recola(dec.m_fl.IDName());
+          decayprocess+="(";
+          for (int i = 0; i < dec.m_ps.size(); ++i)
+          {
+            decayprocess+= particle2Recola(dec.m_ps[i].m_fl);
+            if(i==0) decayprocess+=" ";
+          }
+          decayprocess+=")";
+        }
+        else{
+          decayprocess+= particle2Recola(dec.m_fl.IDName())+" ";
+        }
+      }
+    }
   increaseProcIndex();
   msg_Debugging()<<"Recola_Interface::RegisterProcess called\n";
   int procIndex(getProcIndex());
@@ -348,9 +396,8 @@ size_t Recola::Recola_Interface::RegisterProcess(const Process_Info& pi,
   }
 
   // define process in Recola, at this stage always 'NLO'
-  define_process_rcl(procIndex,process2Recola(pi).c_str(),"NLO");
-  
-  
+  if(s_use_decay) define_process_rcl(procIndex,decayprocess.c_str(),"NLO");
+  else define_process_rcl(procIndex,process2Recola(pi).c_str(),"NLO");
   s_interference[procIndex]=false;
   Settings& s = Settings::GetMainSettings();
   
@@ -467,7 +514,6 @@ void Recola::Recola_Interface::GenerateProcesses(const double& alpha, const doub
                                           const double& muR2)
 {
   DEBUG_FUNC("");
-  
   Settings& s = Settings::GetMainSettings();
   ew_scheme::code ewscheme = s["EW_SCHEME"].Get<ew_scheme::code>();
   ew_scheme::code ewrenscheme = s["EW_REN_SCHEME"].Get<ew_scheme::code>();

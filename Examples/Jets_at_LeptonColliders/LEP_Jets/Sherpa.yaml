@@ -7,4 +7,4 @@ ORDER_ALPHAS: 1
 PROCESSES:
 - 11 -11 -> 93 93 93{3}:
     CKKW: pow(10,-2.25/2.00)*E_CMS
-    Order: {QCD: Any, EW: 2}
+    Order: {QCD: 0, EW: 2}

@@ -6,8 +6,8 @@ using namespace AMISIC;
 using namespace std;
 
 axis::axis(const size_t & nbins,const double & xmin,const double & xmax,
-	   const axis_mode::code & mode) :
-  m_nbins(nbins), m_xmin(xmin), m_xmax(xmax), m_mode(mode)
+           const axis_mode& mode)
+    : m_nbins(nbins), m_xmin(xmin), m_xmax(xmax), m_mode(mode)
 {
   if (m_nbins == 1) m_xstep = 1.;
   else if (m_mode==axis_mode::linear) {

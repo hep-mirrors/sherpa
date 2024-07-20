@@ -58,10 +58,10 @@ namespace MODEL {
                     -5/3-\log(m^2/s)\;& \;\mbox{\rm if}\;& \; 4m^2/s<10^{-3}\\
                     1/3-(1+2m^2/s)
                     \left[2+\sqrt{1-4m^2/s}\cdot
-		          \log\frac{1-\sqrt{1-4m^2/s}}{1+\sqrt{1-4m^2/s}}\right]
+              \log\frac{1-\sqrt{1-4m^2/s}}{1+\sqrt{1-4m^2/s}}\right]
                     \;&\;\mbox{\rm if}\;&\; 4m^2/s<1\\
                     0\;& \;\mbox{\rm if}\;& \; 4m^2/s\ge 1
-		    \end{array} \right.\f]
+        \end{array} \right.\f]
   */
   /*!
     \fn Running_AlphaQED::Running_AlphaQED(const double);

@@ -73,7 +73,7 @@ Settings_Keys::Settings_Keys(const std::vector<std::string>& strings)
 std::string Settings_Keys::Name() const
 {
   MyStrStream s;
-  auto keys = IndizesRemoved();
+  auto keys = IndicesRemoved();
   for (const auto& key : keys)
     s << key << ":";
   auto name = s.str();
@@ -83,7 +83,7 @@ std::string Settings_Keys::Name() const
     return name;
 }
 
-std::vector<std::string> Settings_Keys::IndizesRemoved() const
+std::vector<std::string> Settings_Keys::IndicesRemoved() const
 {
   std::vector<std::string> filtered_keys;
   filtered_keys.reserve(size());
@@ -93,7 +93,7 @@ std::vector<std::string> Settings_Keys::IndizesRemoved() const
   return filtered_keys;
 }
 
-bool Settings_Keys::ContainsNoIndizes() const
+bool Settings_Keys::ContainsNoIndices() const
 {
   const_iterator it{ std::find_if(begin(), end(),
       [](const Setting_Key& k) { return k.IsIndex(); }) };
@@ -110,6 +110,17 @@ bool Settings_Keys::IsBeginningOf(const Settings_Keys& other) const
     }
   }
   return true;
+}
+
+bool Settings_Keys::IsParentScopeOfItem(const Settings_Keys& other) const
+{
+  if (size() + 1 == other.size() && other.back().IsIndex()) {
+    return IsBeginningOf(other);
+  }
+  if (size() + 2 == other.size() && other.back().IsIndex() && (other.end()-2)->IsIndex()) {
+    return IsBeginningOf(other);
+  }
+  return false;
 }
 
 std::ostream& ATOOLS::operator<<(std::ostream& s, const Settings_Keys& k)

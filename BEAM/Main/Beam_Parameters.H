@@ -9,47 +9,44 @@
 #include "ATOOLS/Org/Info_Key.H"
 
 namespace BEAM {
-  struct beammode {
-    enum code {
-      unknown              = 0,
-      relic_density        = 1,
-      collider             = 2,
-      DM_annihilation      = 10
-    };
+  enum class beammode {
+    unknown              = 0,
+    relic_density        = 1,
+    collider             = 2,
+    DM_annihilation      = 10,
+    Fixed_Target         = 12
   };
-  std::ostream& operator<<(std::ostream&,const beammode::code mode);
+  std::ostream& operator<<(std::ostream&,const beammode mode);
 
-  struct beamspectrum {
-    enum code {
-      monochromatic        = 0,
-      Gaussian             = 1,
-      laser_backscattering = 2,
-      simple_Compton       = 3,
-      EPA                  = 4,
-      DM                   = 10,
-      spectrum_reader      = 20,
-      unknown              = 99
-    };
+  enum class beamspectrum {
+    monochromatic        = 0,
+    Gaussian             = 1,
+    laser_backscattering = 2,
+    simple_Compton       = 3,
+    EPA                  = 4,
+    Pomeron              = 5,
+    Reggeon              = 6,
+    DM                   = 10,
+    Fixed_Target         = 12,
+    unknown              = 99
   };
-  std::ostream& operator<<(std::ostream&,const beamspectrum::code spect);
+  std::ostream& operator<<(std::ostream&,const beamspectrum spect);
 
-  struct collidermode {
-    enum code {
-      monochromatic = 0,
-      spectral_1    = 1,
-      spectral_2    = 2,
-      both_spectral = 3,
-      unknown       = 99
-    };
+  enum class collidermode {
+    monochromatic = 0,
+    spectral_1    = 1,
+    spectral_2    = 2,
+    both_spectral = 3,
+    unknown       = 99
   };
-  std::ostream& operator<<(std::ostream&,const collidermode::code mode);
+  std::ostream& operator<<(std::ostream&,const collidermode mode);
 
-  
+
   class Beam_Base;
   class Beam_Parameters {
   private:
-    beammode::code     m_beammode;
-    beamspectrum::code m_beamspec[2];
+    beammode m_beammode;
+    std::array<beamspectrum, 2> m_beamspec;
 
     ATOOLS::Settings & m_settings;
 
@@ -57,9 +54,11 @@ namespace BEAM {
     void RegisterDefaultBeams();
     void RegisterLaserDefaults();
     void RegisterEPADefaults();
+    void RegisterPomeronDefaults();
+    void RegisterReggeonDefaults();
     void RegisterDarkMatterDefaults();
     void InitializeFlav(kf_code flav);
-    void SetBeamMode();
+
     Beam_Base * InitializeSimpleCompton(int);
     /*!
       Characteristic parameters for laser back scattering are read in and the spectrum is
@@ -77,7 +76,10 @@ namespace BEAM {
     */
     Beam_Base * InitializeMonochromatic(int);
     Beam_Base * InitializeEPA(int);
+    Beam_Base * InitializePomeron(int);
+    Beam_Base*  InitializeReggeon(int);
     Beam_Base * InitializeDM_beam(int);
+    Beam_Base * InitializeFixed_Target(int);
   public:
     Beam_Parameters();
     ~Beam_Parameters();
@@ -100,11 +102,11 @@ namespace BEAM {
     const double          operator()(const std::string & tag,const int & pos=-1) const;
     const int             Switch(const std::string & tag,const int & pos=-1) const;
     const bool            On(const std::string & tag) const;
-    
-    const inline beammode::code     GetMode() const { return m_beammode; }
-    const inline beamspectrum::code GetSpectrum(const size_t & pos) const {
+
+    inline beammode     GetMode() const { return m_beammode; }
+    inline beamspectrum GetSpectrum(const size_t & pos) const {
       if (pos==0 || pos==1) return m_beamspec[pos];
-      return beamspectrum::unknown; 
+      return beamspectrum::unknown;
     }
   };
 }

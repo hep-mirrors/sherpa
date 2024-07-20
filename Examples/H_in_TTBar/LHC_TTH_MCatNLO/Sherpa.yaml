@@ -3,7 +3,8 @@ BEAM_ENERGIES: 6500
 
 ME_GENERATORS: [Comix, Amegic, OpenLoops]
 
-CORE_SCALE: VAR{sqr(175+125/2)}
+MEPS:
+  CORE_SCALE: VAR{sqr(175+125/2)}
 
 PARTICLE_DATA:
   5: {Yukawa: 4.92}

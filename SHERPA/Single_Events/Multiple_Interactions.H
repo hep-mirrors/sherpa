@@ -20,25 +20,26 @@ namespace SHERPA {
 
     std::set<ATOOLS::Blob *> m_ISblobs;
     bool m_vetoed, m_newevent[2];
+    bool m_bbr_veto;
 
     ATOOLS::Return_Value::code m_result;
     void   Reset();
-    bool   CheckBlobList();    
+    bool   CheckBlobList();
     bool   BeamsViable();
     bool   ExtractISInfo(ATOOLS::Blob * blob);
     void   SwitchPerturbativeInputsToMIs();
     double ExtractMPIStartingScale(ATOOLS::Blob * blob);
 
     std::string MakeNameSpec();
-    
-    bool CheckMIHandlers();    
+
+    bool CheckMIHandlers();
     bool CheckForMinBias();
     bool CheckForMPIs();
     bool CheckForRescatter();
     void FixMaxEnergies(const bool & updateResidualE=false);
     bool TestHardScatter();
-    ATOOLS::Return_Value::code InitMinBias(); 
-    bool                       InitMPIs(); 
+    ATOOLS::Return_Value::code InitMinBias();
+    bool                       InitMPIs();
     ATOOLS::Return_Value::code InitRescatter();
   public:
     Multiple_Interactions(MI_Handler_Map *);

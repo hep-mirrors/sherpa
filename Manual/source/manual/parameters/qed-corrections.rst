@@ -206,3 +206,36 @@ QED Corrections to Hadron Decays
 
 If the Photons module is switched on, all hadron decays are corrected for higher
 order QED effects.
+
+QED Corrections for Lepton-Lepton Collisions
+============================================
+
+The YFS resummation can be enabled for lepton-lepton scattering
+by setting :option:`MODE` to :option:`ISR`.
+
+
+The options are
+
+.. contents::
+   :local:
+
+
+.. _BETA:
+
+BETA
+----
+Higher order matrix element corrections can be
+included by setting :option:`BETA` to either
+:option:`1/2` to the desired order of accuray.
+For example :option:`BETA: 0` disables all higer-order
+corrections:cite:`Jadach:2000ir`
+
+
+.. _COULOMB:
+
+COULOMB
+-------
+The Coulomb threshold corrections :cite:`Bardin:1993mc` :cite:`Fadin:1993kg`
+to the :math:`W^+W^-` threshold can be included with :option:`COULOMB: True`.
+Double counting of the virtual corrections with the YFS form-factor
+is avoided by using analytical subtraction in the threshold limit :cite:`Krauss:2022ajk`.

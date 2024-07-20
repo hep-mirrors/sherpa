@@ -7,6 +7,7 @@ set(Explicit_SOURCES C_Object.C
                      Dipole_Kinematics.C
                      Dipole_Color.C
                      Dipole_Terms.C
+                     Form_Factor.C
                      Vertex.C)
 
 set(Explicit_HEADERS C_Object.H
@@ -19,6 +20,7 @@ set(Explicit_HEADERS C_Object.H
                      Dipole_Kinematics.H
                      Dipole_Color.H
                      Dipole_Terms.H
+                     Form_Factor.H
                      Vertex.H)
 
 sherpa_create_git_info(Explicit)

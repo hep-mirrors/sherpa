@@ -11,7 +11,7 @@
 #define PROFILE__Soft_Collision_Handler
 #endif
 #ifdef PROFILE__Soft_Collision_Handler
-#include "prof.hh" 
+#include "prof.hh"
 #else
 #define PROFILE_HERE
 #endif
@@ -29,9 +29,8 @@ Soft_Collision_Handler(AMISIC::Amisic * amisic,SHRIMPS::Shrimps * shrimps,
 {
   Settings& s = Settings::GetMainSettings();
   m_dir     = s.GetPath();
-  m_scmodel = (m_bunch_rescatter ?
-	       s["BEAM_RESCATTERING"].SetDefault("None").UseNoneReplacements().Get<string>() :
-	       s["SOFT_COLLISIONS"].SetDefault("None").UseNoneReplacements().Get<string>() );
+  m_scmodel   = (m_bunch_rescatter ? s["BEAM_RESCATTERING"].Get<string>()
+                                   : s["SOFT_COLLISIONS"].Get<string>());
   if (m_scmodel==string("Shrimps")) {
     m_mode    = scmode::shrimps;
     p_shrimps = shrimps;
@@ -47,25 +46,23 @@ Soft_Collision_Handler(AMISIC::Amisic * amisic,SHRIMPS::Shrimps * shrimps,
   else if (m_scmodel==string("None")) return;
   THROW(critical_error,"Soft_Collision model not implemented.");
 }
-   
-Soft_Collision_Handler::~Soft_Collision_Handler() 
+
+Soft_Collision_Handler::~Soft_Collision_Handler()
 {
   exh->RemoveTerminatorObject(this);
 }
 
 void Soft_Collision_Handler::CleanUp() {
   switch (m_mode) {
-  case scmode::shrimps: 
-    p_shrimps->CleanUp();
-    break;
-  case scmode::amisic:
+    case scmode::shrimps: p_shrimps->CleanUp(); break;
+    case scmode::amisic:
     p_amisic->CleanUpMinBias();
     break;
   case scmode::none:
   default:
     break;
   }
-} 
+}
 
 void Soft_Collision_Handler::PrepareTerminate() {}
 
@@ -75,13 +72,9 @@ Soft_Collision_Handler::GenerateMinimumBiasEvent(ATOOLS::Blob_List* blobs)
   PROFILE_HERE;
   int outcome(-1);
   switch (m_mode) {
-  case scmode::shrimps: 
-    outcome = p_shrimps->InitMinBiasEvent(blobs);
-    break;
-  case scmode::amisic: 
-    outcome = p_amisic->InitMinBiasEvent();
-    break;
-  case scmode::none:
+    case scmode::shrimps: outcome = p_shrimps->InitMinBiasEvent(blobs); break;
+    case scmode::amisic: outcome = p_amisic->InitMinBiasEvent(); break;
+    case scmode::none:
     outcome = 0;
     break;
   default:
@@ -102,10 +95,9 @@ ATOOLS::Return_Value::code
 Soft_Collision_Handler::GenerateBunchRescatter(ATOOLS::Blob_List * blobs) {
   int outcome(-1);
   switch (m_mode) {
-  case scmode::shrimps: 
-    THROW(fatal_error, "not yet available for SHRiMPS.  Will exit the run.");
-  case scmode::amisic:
-    outcome = p_amisic->InitRescatterEvent();
+    case scmode::shrimps:
+      THROW(fatal_error, "not yet available for SHRiMPS.  Will exit the run.");
+    case scmode::amisic: outcome = p_amisic->InitRescatterEvent();
     break;
   case scmode::none:
     outcome = 0;
@@ -124,16 +116,15 @@ Soft_Collision_Handler::GenerateBunchRescatter(ATOOLS::Blob_List * blobs) {
   case 0:
     return Return_Value::Nothing;
   default: break;
-  }  
+  }
   return Return_Value::Nothing;
 }
 
 void Soft_Collision_Handler::SetPosition(const size_t & beam,const Vec4D & pos) {
   switch (m_mode) {
-  case scmode::shrimps: 
-    THROW(fatal_error, "not yet available for SHRiMPS.  Will exit the run.");
-  case scmode::amisic:
-    p_amisic->SetPosition(beam,pos);
+    case scmode::shrimps:
+      THROW(fatal_error, "not yet available for SHRiMPS.  Will exit the run.");
+    case scmode::amisic: p_amisic->SetPosition(beam,pos);
     break;
   case scmode::none:
   default:
