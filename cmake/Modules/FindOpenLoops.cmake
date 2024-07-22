@@ -32,7 +32,10 @@ else()
   find_path(OPENLOOPS_PREFIX proclib/channels_public.rinfo PATH_SUFFIXES . lib/openloops lib64/openloops )
   find_library(OPENLOOPS_LIBRARY NAMES openloops PATH_SUFFIXES .  lib lib64  lib/openloops/lib lib64/openloops/lib)
 endif()
-
+if (EXISTS "${OPENLOOPS_PREFIX}/pyol/config/default.cfg")
+  file(READ ${OPENLOOPS_PREFIX}/pyol/config/default.cfg defaultcfgstr)
+  string(REGEX REPLACE ".*release = ([0-9]+\\.[0-9]+\\.[0-9]+).*" "\\1"  OPENLOOPS_VERSION "${defaultcfgstr}")
+endif()
 mark_as_advanced(OPENLOOPS_INCLUDE_DIR OPENLOOPS_LIBRARY OPENLOOPS_PREFIX)
 include(FindPackageHandleStandardArgs)
 FIND_PACKAGE_HANDLE_STANDARD_ARGS(OpenLoops REQUIRED_VARS  OPENLOOPS_LIBRARY OPENLOOPS_PREFIX
