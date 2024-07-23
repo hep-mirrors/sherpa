@@ -53,12 +53,6 @@ event.  Their respective keywords are
   are the flavour ``<kf>`` to be isolated against massless partons
   and the isolation cone parameters.
 
-:option:`[NJ, <N>, <algo>, <min value>, <max value>]`
-  NJettiness from :cite:`Stewart2010tn`, where ``<algo>`` specifies
-  the jet finding algorithm to determine the hard jet directions and
-  ``<N>`` is their multiplicity.
-  ``algo=kt|antikt|cambridge,PT:<ptmin>,R:<dR>[,[ETA:<etamax>,Y:<ymax>]]``
-
 .. _One particle selectors:
 
 One particle selectors
@@ -323,6 +317,40 @@ are added with a relative sign as constituents, i.e. a jet containing
 b and anti-b is not tagged.  Note that only ``<epression>``,
 ``<algorithm>``, ``<n>`` and ``<ptmin>`` are relevant when using the
 lepton-lepton collider algorithms.
+
+:option:`NJettiness`
+  NJettiness from :cite:`Stewart2010tn`. Selects all phase space points
+  that have a value of ``NJettiness`` larger than a specified minimum value.
+
+.. code-block:: yaml
+
+   - NJettiness:
+       N: <N>
+       TauN: <Taucut>
+
+where ``<N>`` specifies the number of hard directions -- jets -- that
+are required, and ``<Taucut>`` the minimum value that the observable
+is allowed to have to be considered a valid phase space point.
+In the current implementation, it uses the ``Fastjets`` implementation of
+the ``antikt`` algorithm to find ``<N>`` pseudojet, which are then
+used to compute the minima that determine the final value of ``NJetttiness``.
+Note, that in the case of Hadron Colliders, the beam are added internally as
+additional ``jets``.
+
+For example, in the case of vector boson plus jet setup, with ``0.1`` GeV
+0-Jettiness cut, one would use something along the lines of
+
+.. code-block:: yaml
+
+   PROCESSES:
+   - 93 93 -> 11 -11 93:
+     Order: {QCD:1,EW:2}
+   SELECTORS:
+   - [Mass, 11, -11, 75.,125.]
+   - NJettiness:
+       N: 0
+       TauN: 0.1
+
 
 .. _Isolation selector:
 
