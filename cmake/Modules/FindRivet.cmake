@@ -97,7 +97,7 @@ if (RIVET_VERSION VERSION_GREATER_EQUAL 4.0.0)
     set(RIVET4 1)
     set(RIVET_YODA_MIN_VERSION "2.0.0")
     set(RIVET_HEPMC3_MIN_VERSION "3.2.6")    
-    set(RIVET_MKHTML_ARGS "  ")
+    set(RIVET_MKHTML_ARGS )
 else()
     set(RIVET4 0)
     set(RIVET_YODA_MIN_VERSION "1.8.0")
@@ -111,7 +111,9 @@ mark_as_advanced(RIVET_INCLUDE_DIR RIVET_LIBRARY RIVET_EXE RIVET_CONFIG_LIBS_STR
                                RIVET_CONFIG_CPPFLAGS_STRING 
                                RIVET_CONFIG_CPPFLAGS_DIRS
                                RIVET_CONFIG_LIBS
-                               RIVET_CONFIG_LIB_DIRS)
+                               RIVET_CONFIG_LIB_DIRS
+                               RIVET_MKHTML_ARGS
+                               )
 include(FindPackageHandleStandardArgs)
 FIND_PACKAGE_HANDLE_STANDARD_ARGS(Rivet HANDLE_COMPONENTS REQUIRED_VARS RIVET_INCLUDE_DIR RIVET_LIBRARY 
                                RIVET_DATA_PATH
@@ -121,7 +123,6 @@ FIND_PACKAGE_HANDLE_STANDARD_ARGS(Rivet HANDLE_COMPONENTS REQUIRED_VARS RIVET_IN
                                RIVET_CONFIG_LIBS
                                RIVET_CONFIG_LIB_DIRS
                                RIVET4
-                               RIVET_MKHTML_ARGS
                                RIVET_YODA_MIN_VERSION
                                RIVET_HEPMC3_MIN_VERSION
                                VERSION_VAR RIVET_VERSION
