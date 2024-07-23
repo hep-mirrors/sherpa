@@ -32,16 +32,25 @@ else()
   find_path(OPENLOOPS_PREFIX proclib/channels_public.rinfo PATH_SUFFIXES . lib/openloops lib64/openloops )
   find_library(OPENLOOPS_LIBRARY NAMES openloops PATH_SUFFIXES .  lib lib64  lib/openloops/lib lib64/openloops/lib)
 endif()
+find_path(OPENLOOPS_INCLUDE_DIR openloops.mod PATH_SUFFIXES include/openloops/lib_src/openloops/mod/)
 if (EXISTS "${OPENLOOPS_PREFIX}/pyol/config/default.cfg")
   file(READ ${OPENLOOPS_PREFIX}/pyol/config/default.cfg defaultcfgstr)
   string(REGEX REPLACE ".*release = ([0-9]+\\.[0-9]+\\.[0-9]+).*" "\\1"  OPENLOOPS_VERSION "${defaultcfgstr}")
 endif()
 mark_as_advanced(OPENLOOPS_INCLUDE_DIR OPENLOOPS_LIBRARY OPENLOOPS_PREFIX)
 include(FindPackageHandleStandardArgs)
-FIND_PACKAGE_HANDLE_STANDARD_ARGS(OpenLoops REQUIRED_VARS  OPENLOOPS_LIBRARY OPENLOOPS_PREFIX
+FIND_PACKAGE_HANDLE_STANDARD_ARGS(OpenLoops REQUIRED_VARS  OPENLOOPS_LIBRARY OPENLOOPS_INCLUDE_DIR OPENLOOPS_PREFIX
                                   VERSION_VAR OPENLOOPS_VERSION
                                   )
 set(OPENLOOPS_LIBRARIES ${OPENLOOPS_LIBRARY})
 get_filename_component(OPENLOOPS_LIBRARY_DIR ${OPENLOOPS_LIBRARY} PATH)
+
+if(OPENLOOPS_FOUND AND NOT TARGET OpenLoops::OpenLoops)
+    add_library( OpenLoops::OpenLoops UNKNOWN IMPORTED)
+    set_target_properties( OpenLoops::OpenLoops PROPERTIES
+        IMPORTED_LOCATION "${OPENLOOPS_LIBRARY}"
+        INTERFACE_INCLUDE_DIRECTORIES "${OPENLOOPS_INCLUDE_DIR}"
+    )
+endif()
 
 mark_as_advanced(OpenLoops_FOUND)
