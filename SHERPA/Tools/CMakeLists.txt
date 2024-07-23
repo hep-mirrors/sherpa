@@ -3,7 +3,7 @@ set(Tools_SOURCES Output_Base.C
                   Output_LHEF.C
                   Userhook_Base.C
                   Analysis_Interface.C)
-if (HEPMC3_REQUIRED)
+if (HepMC3_FOUND)
   list(APPEND Tools_SOURCES HepMC3_Interface.C)
 endif()
 
