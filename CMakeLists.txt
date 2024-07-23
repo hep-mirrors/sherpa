@@ -915,7 +915,7 @@ $<IF:$<BOOL:${SHERPA_ENABLE_ROOT}>,#define USING__ROOT \"1\",/* #undef USING__RO
 /* using Rivet */\n\
 $<IF:$<BOOL:${SHERPA_ENABLE_RIVET}>,#define USING__RIVET \"1\",/* #undef USING__RIVET */>\n\n\
 /* using RIVET4 */\n\
-$<IF:$<BOOL:$<VERSION_GREATER_EQUAL:${RIVET_VERSION>,4.0.0>>,#define USING__RIVET4 \"1\",/* #undef USING__RIVET4 */>\n\n\
+$<IF:$<BOOL:$<VERSION_GREATER_EQUAL:${RIVET_VERSION},4.0.0>>,#define USING__RIVET4 \"1\",/* #undef USING__RIVET4 */>\n\n\
 /* using BLACKHAT */\n\
 $<IF:$<BOOL:${SHERPA_ENABLE_BLACKHAT}>,#define USING__BLACKHAT \"1\",/* #undef USING__BLACKHAT */>\n\n\
 /* BLACKHAT directory */\n\
