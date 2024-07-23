@@ -96,7 +96,7 @@ endif()
 if (RIVET_VERSION VERSION_GREATER_EQUAL 4.0.0)
     set(RIVET4 1)
     set(RIVET_YODA_MIN_VERSION "2.0.0")
-    set(RIVET_HEPMC3_MIN_VERSION "3.2.7")    
+    set(RIVET_HEPMC3_MIN_VERSION "3.2.6")    
     set(RIVET_MKHTML_ARGS "--mc-errs")
 
 else()
