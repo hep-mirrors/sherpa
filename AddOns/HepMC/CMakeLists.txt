@@ -2,7 +2,7 @@
  set(foo_HEADERS Output_HepMC3.H)
  sherpa_create_git_info(foo)
 
-if (HEPMC3_REQUIRED)
+if (HEPMC3_FOUND)
   set(SherpaHepMC3Output_SOURCES  Output_HepMC3.C)
   list(TRANSFORM SherpaHepMC3Output_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../HepMC/")
   list(APPEND SherpaHepMC3Output_SOURCES ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C)
