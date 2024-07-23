@@ -94,12 +94,10 @@ if (RIVET_CONFIG_EXE)
 endif()
 
 if (RIVET_VERSION VERSION_GREATER_EQUAL 4.0.0)
-    set(RIVET4 1)
     set(RIVET_YODA_MIN_VERSION "2.0.0")
     set(RIVET_HEPMC3_MIN_VERSION "3.2.6")    
     set(RIVET_MKHTML_ARGS )
 else()
-    set(RIVET4 0)
     set(RIVET_YODA_MIN_VERSION "1.8.0")
     set(RIVET_HEPMC3_MIN_VERSION "3.2.3")
     set(RIVET_MKHTML_ARGS "--mc-errs")
@@ -122,7 +120,6 @@ FIND_PACKAGE_HANDLE_STANDARD_ARGS(Rivet HANDLE_COMPONENTS REQUIRED_VARS RIVET_IN
                                RIVET_CONFIG_CPPFLAGS_DIRS
                                RIVET_CONFIG_LIBS
                                RIVET_CONFIG_LIB_DIRS
-                               RIVET4
                                RIVET_YODA_MIN_VERSION
                                RIVET_HEPMC3_MIN_VERSION
                                VERSION_VAR RIVET_VERSION
