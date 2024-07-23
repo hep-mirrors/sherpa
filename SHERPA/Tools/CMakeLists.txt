@@ -24,10 +24,6 @@ add_library(SherpaTools SHARED ${Tools_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_
 sherpa_handle_shared_library(SherpaTools SherpaTools)
 
 if (HEPMC3_REQUIRED)
-  target_link_libraries(SherpaTools PRIVATE ${HEPMC3_LIB})
-  target_include_directories(SherpaTools PRIVATE ${HEPMC3_INCLUDE_DIR})
-  if (SHERPA_ENABLE_HEPMC3_ROOT)
-    target_link_libraries(SherpaTools PRIVATE ${HEPMC3_ROOTIO_LIB})
-  endif()
+  target_link_libraries(SherpaTools PRIVATE HepMC3::HepMC3 ${HepMC3_rootIO})
 endif()
 

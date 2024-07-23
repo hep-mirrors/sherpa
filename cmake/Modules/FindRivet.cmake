@@ -93,6 +93,21 @@ if (RIVET_CONFIG_EXE)
                   OUTPUT_STRIP_TRAILING_WHITESPACE) 
 endif()
 
+if (RIVET_VERSION VERSION_GREATER_EQUAL 4.0.0)
+    set(RIVET4 1)
+    set(RIVET_YODA_MIN_VERSION "2.0.0")
+    set(RIVET_HEPMC3_MIN_VERSION "3.2.7")    
+    set(RIVET_MKHTML_ARGS "--mc-errs")
+
+else()
+    set(RIVET4 0)
+    set(RIVET_YODA_MIN_VERSION "1.8.0")
+    set(RIVET_HEPMC3_MIN_VERSION "3.2.3")
+    set(RIVET_MKHTML_ARGS "")
+endif()
+message(STATUS "SHERPA: WARNING: YODA with RIVET_YODA_MIN_VERSION=${RIVET_YODA_MIN_VERSION} will be requested by Rivet.")
+find_package(YODA ${RIVET_YODA_MIN_VERSION} REQUIRED)
+
 mark_as_advanced(RIVET_INCLUDE_DIR RIVET_LIBRARY RIVET_EXE RIVET_CONFIG_LIBS_STRING 
                                RIVET_CONFIG_CPPFLAGS_STRING 
                                RIVET_CONFIG_CPPFLAGS_DIRS
@@ -106,6 +121,10 @@ FIND_PACKAGE_HANDLE_STANDARD_ARGS(Rivet HANDLE_COMPONENTS REQUIRED_VARS RIVET_IN
                                RIVET_CONFIG_CPPFLAGS_DIRS
                                RIVET_CONFIG_LIBS
                                RIVET_CONFIG_LIB_DIRS
+                               RIVET4
+                               RIVET_MKHTML_ARGS
+                               RIVET_YODA_MIN_VERSION
+                               RIVET_HEPMC3_MIN_VERSION
                                VERSION_VAR RIVET_VERSION
                                )
 
@@ -113,7 +132,25 @@ set(RIVET_LIBRARIES ${RIVET_LIBRARY})
 get_filename_component(RIVET_LIBRARY_DIRS ${RIVET_LIBRARY} PATH)
 get_filename_component(RIVET_ANALYSIS_PATH ${RIVET_LIBRARY} PATH)
 set(RIVET_ANALYSIS_PATH ${RIVET_ANALYSIS_PATH}/Rivet)
-
 set(RIVET_INCLUDE_DIRS ${RIVET_INCLUDE_DIR})
+
+
+
+if(RIVET_FOUND AND NOT TARGET Rivet::Rivet)
+    add_library(Rivet::Rivet UNKNOWN IMPORTED)
+    if (RIVET_VERSION VERSION_GREATER_EQUAL 4.0.0)
+      set_target_properties(Rivet::Rivet PROPERTIES
+        IMPORTED_LOCATION "${RIVET_LIBRARY}"
+        INTERFACE_INCLUDE_DIRECTORIES "${RIVET_INCLUDE_DIR};${RIVET_CONFIG_CPPFLAGS_DIRS}"
+        INTERFACE_COMPILE_FEATURES cxx_std_17
+      )
+  else()
+      set_target_properties(Rivet::Rivet PROPERTIES
+        IMPORTED_LOCATION "${RIVET_LIBRARY}"
+        INTERFACE_INCLUDE_DIRECTORIES "${RIVET_INCLUDE_DIR};${RIVET_CONFIG_CPPFLAGS_DIRS}"
+        INTERFACE_COMPILE_FEATURES cxx_std_14
+      )
+  endif()
+endif()
 
 mark_as_advanced(RIVET_FOUND)

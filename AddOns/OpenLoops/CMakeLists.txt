@@ -19,4 +19,4 @@ sherpa_create_git_info(OpenLoops)
  
 add_library(SherpaOpenLoops SHARED ${OpenLoops_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
 sherpa_handle_shared_library(SherpaOpenLoops SherpaOpenLoops)
-target_link_libraries(SherpaOpenLoops PRIVATE ${OPENLOOPS_LIBRARY} )
+target_link_libraries(SherpaOpenLoops PRIVATE OpenLoops::OpenLoops )

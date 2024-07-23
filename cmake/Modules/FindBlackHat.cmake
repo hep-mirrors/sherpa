@@ -61,7 +61,17 @@ include(FindPackageHandleStandardArgs)
 FIND_PACKAGE_HANDLE_STANDARD_ARGS(BlackHat REQUIRED_VARS BLACKHAT_INCLUDE_DIR BLACKHAT_LIBRARIES BLACKHAT_PATH BLACKHAT_LIBRARIES_ALL
                                   VERSION_VAR BLACKHAT_VERSION 
                                  )
-
+if(BlackHat_FOUND)
+add_library(BlackHat::BlackHatAll INTERFACE IMPORTED)
+  foreach(fl IN LISTS ALLBHTOFIND)
+    add_library( BlackHat::${fl} UNKNOWN IMPORTED)
+    set_target_properties( BlackHat::${fl} PROPERTIES
+        IMPORTED_LOCATION "${BLACKHAT_LIBRARY_${fl}}"
+        INTERFACE_INCLUDE_DIRECTORIES "${BLACKHAT_INCLUDE_DIR}"
+    )
+  target_link_libraries( BlackHat::BlackHatAll INTERFACE BlackHat::${fl})
+  endforeach()
+endif()
 
 set(BLACKHAT_INCLUDE_DIRS ${BLACKHAT_INCLUDE_DIR})
 
