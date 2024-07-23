@@ -8,7 +8,7 @@ RUN  yum -y  install  dnf-plugins-core \
                       openmpi environment-modules  openmpi-devel  \
                       doxygen catch-devel \
                       python3 python3-devel swig python3-matplotlib \
-                      python3-sympy && yum -y clean all
+                      python3-sympy && yum -y clean all 
 # Packages coming from HEPrpms ->
 RUN  dnf -y copr enable averbyts/HEPrpms &&  yum -y  install  gosam  fastjet fastjet-devel  YODA-devel Rivet-devel Rivet Rivet-devel qd qd-devel \
                       blackhat-devel blackhat recola MCFM MG5_aMC openloops \
