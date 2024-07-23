@@ -251,7 +251,7 @@ Couplings EWGroupConstants::Ipm(const Flavour& flav,
       return Couplings{};
     }
     return {
-	    {kf_chi, (isplus ? 1.0 : -1.0) / (2.0 * m_sw)}, // I_\chi^\pm
+	    {kf_chi, (isplus ? 1 : -1) / (2.0 * m_sw)}, // I_\chi^\pm
 	    {kf_h0, {0.0, -1.0 / (2.0 * m_sw)}}             // I_H^\pm
     };
   } else if (std::abs(signed_kf) == kf_Wplus) {
@@ -259,18 +259,18 @@ Couplings EWGroupConstants::Ipm(const Flavour& flav,
     if (isplus != flav.IsAnti()) {
       return Couplings{};
     }
-    return {{kf_photon, isplus ? 1.0 : -1.0},
-            {kf_Z, (isplus ? 1.0 : -1.0) * m_cw / m_sw}};
+    return {{kf_photon, isplus ? 1 : -1},
+            {kf_Z, (isplus ? 1 : -1) * m_cw / m_sw}};
   } else if (signed_kf == kf_chi) {
-    return {{(isplus ? 1.0 : -1.0) * kf_phiplus, (isplus ? -1.0 : 1.0) / (2.0 * m_sw)}};
+    return {{(isplus ? 1 : -1) * kf_phiplus, (isplus ? -1.0 : 1.0) / (2.0 * m_sw)}};
   } else if (signed_kf == kf_Z) {
     // cf. (B.22), (B.26) and (B.27)
-    return {{(isplus ? 1.0 : -1.0) * kf_Wplus,
+    return {{(isplus ? 1 : -1) * kf_Wplus,
              (isplus ? -1.0 : 1.0) * m_cw / m_sw}};
   } else if (signed_kf == kf_photon) {
-    return {{(isplus ? 1.0 : -1.0) * kf_Wplus, (isplus ? -1.0 : 1.0)}};
+    return {{(isplus ? 1 : -1) * kf_Wplus, (isplus ? -1.0 : 1.0)}};
   } else if (signed_kf == kf_h0){
-    return {{(isplus ? 1.0 : -1.0) * kf_phiplus, {0.0, 1.0 / (2.0 * m_sw)}}};
+    return {{(isplus ? 1 : -1) * kf_phiplus, {0.0, 1.0 / (2.0 * m_sw)}}};
   } else if (signed_kf == kf_gluon) {
     return Couplings{};
   } else {
