@@ -1,0 +1,17 @@
+# Sherpa configuration template for UFO tests
+BEAMS: [${beam1}, ${beam2}]
+BEAM_ENERGIES: [${beam1_energy}, ${beam2_energy}]
+MODEL: ${model}
+UFO_PARAM_CARD: ${ufo_param_card}
+SCALES: VAR{sqr(E_CMS)}
+PDF_LIBRARY: None
+SHOWER_GENERATOR: None
+FRAGMENTATION: None
+ME_GENERATORS: [Comix]
+WIDTH_SCHEME: Fixed
+COUPLINGS:
+    - "Alpha_QCD -1"
+
+PROCESSES:
+- ${process}:
+    Order: ${orders}

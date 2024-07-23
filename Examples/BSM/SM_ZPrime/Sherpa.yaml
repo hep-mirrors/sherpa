@@ -5,7 +5,9 @@ SHERPA_LDADD: SherpaSMZprime
 MODEL: SMZprime
 
 PARTICLE_DATA:
-  32: {Mass: 1000, Width: 0}
+  32:
+    Mass: 1000
+    Width: 50
 
 Zprime:
   Zp_cpl_L: 0.3

@@ -55,9 +55,10 @@ namespace EXTAMP {
 
   void RS_Process::Init(const PHASIC::Process_Info &pi,
 			BEAM::Beam_Spectra_Handler *const beamhandler,
-			PDF::ISR_Handler *const isrhandler,const int mode)
+			PDF::ISR_Handler *const isrhandler,
+			YFS::YFS_Handler *const yfshandler, const int mode)
   {
-    PHASIC::Process_Base::Init(pi, beamhandler, isrhandler, mode);
+    PHASIC::Process_Base::Init(pi, beamhandler, isrhandler, yfshandler, mode);
 
     /* Create Dipole wrapper procs, PHASIC::Process_Base::Init() needs
        to be called first */
@@ -65,7 +66,8 @@ namespace EXTAMP {
       m_dipole_wrappers.
 	push_back(new Dipole_Wrapper_Process(*this,m_dipoles[i],
 					     Integrator()->Beam(),
-					     Integrator()->ISR()));
+					     Integrator()->ISR(),
+					     Integrator()->YFS()));
 
     /* Now set properties of NLO_subevts properly. This is done by the
        dipole wrapper procs since their flavour ordering must be used

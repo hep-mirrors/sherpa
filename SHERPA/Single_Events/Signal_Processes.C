@@ -24,12 +24,12 @@ using namespace PHASIC;
 using namespace std;
 
 Signal_Processes::Signal_Processes(Matrix_Element_Handler* mehandler)
-    : p_mehandler(mehandler), m_overweight(0.0)
+    : p_mehandler(mehandler), p_remnants(mehandler->GetISR()->GetRemnants()),
+      m_overweight(0.0)
 {
   m_name="Signal_Processes";
   m_type=eph::Perturbative;
-  p_remnants[0]=mehandler->GetISR()->GetRemnant(0);
-  p_remnants[1]=mehandler->GetISR()->GetRemnant(1);
+  p_yfshandler = mehandler->GetYFS();
   if (p_remnants[0]==NULL || p_remnants[1]==NULL)
     THROW(critical_error,"No beam remnant handler found.");
   Scoped_Settings metssettings{
@@ -57,11 +57,11 @@ Return_Value::code Signal_Processes::Treat(Blob_List * bloblist)
           THROW(fatal_error,"Internal error");
         (*blob)["Trials"]->Set(0.0);
         m_overweight=Max(overweight,0.0);
-        return Return_Value::Success; 
+        return Return_Value::Success;
       }
       if (p_mehandler->GenerateOneEvent() &&
           FillBlob(bloblist,blob)) {
-        return Return_Value::Success; 
+        return Return_Value::Success;
       }
       else return Return_Value::New_Event;
     }
@@ -129,8 +129,15 @@ bool Signal_Processes::FillBlob(Blob_List *const bloblist,Blob *const blob)
   const DecayInfo_Vector &decs(proc->DecayInfos());
   blob->AddData("Decay_Info",new Blob_Data<DecayInfo_Vector>(decs));
   for (unsigned int i=0;i<proc->NIn();i++) {
-    particle = new Particle(0,proc->Flavours()[i],
-			    proc->Integrator()->Momenta()[i]);
+    // Pass born momenta to in if using YFS
+    if(p_yfshandler->Mode()!=YFS::yfsmode::off){
+      particle = new Particle(0,proc->Flavours()[i],
+  			    p_yfshandler->BornMomenta()[i]);
+    }
+    else{
+      particle = new Particle(0,proc->Flavours()[i],
+              proc->Integrator()->Momenta()[i]);
+    }
     particle->SetNumber(0);
     particle->SetStatus(part_status::decayed);
     particle->SetInfo('G');
@@ -139,20 +146,6 @@ bool Signal_Processes::FillBlob(Blob_List *const bloblist,Blob *const blob)
       particle->SetFlow(1,ampl->Leg(i)->Col().m_j);
       particle->SetFlow(2,ampl->Leg(i)->Col().m_i);
     }
-    /* Due to the swapping of the partons in symmetric setups in the
-     * ISR_Handler, the index `i` might not be the correct index for the
-     * remnant. An easy way to check whether the IS states were swapped is to
-     * check if they fulfill the coordinate convention of sherpa and change the
-     * index, if they don't. */
-    size_t remnant_index = proc->Integrator()->Momenta()[0][3] > 0. ? i : 1 - i;
-    if (p_remnants[remnant_index] != NULL) {
-      if (proc->NIn() > 1) {
-        p_remnants[remnant_index]->Reset();
-        if (!p_remnants[remnant_index]->TestExtract(particle))
-          success = false;
-      }
-    } else
-      THROW(fatal_error, "No remnant found.");
   }
   for (unsigned int i=proc->NIn();
        i<proc->NIn()+proc->NOut();i++) {
@@ -196,6 +189,48 @@ bool Signal_Processes::FillBlob(Blob_List *const bloblist,Blob *const blob)
       NLO_subevtlist* nlos=proc->GetSubevtList();
       if (nlos) (*nlos) *= weightfactor;
     }
+  }
+  if(p_yfshandler->HasFSR()!=0){
+    // Add the fsr corrected final states
+      Particle_Vector out = blob->GetOutParticles();
+      Particle_Vector yfsout = p_yfshandler->m_particles;
+      ATOOLS::ParticleMomMap yfsoutMap = p_yfshandler->m_outparticles;
+      if(out.size()!=(yfsout.size()-2)){
+        msg_Error()<<METHOD<<" Missmatch in outparitcles for YFS"<<std::endl
+                            <<"Born Out size = "<< out.size()<<std::endl
+                            <<"YFS Out size = "<< yfsout.size()<<std::endl;
+      }
+      for(int i=0; i<out.size(); i++){
+        blob->OutParticle(i)->SetMomentum(yfsoutMap[yfsout[i+2]]); // remove born momenta
+      }
+    }
+  if (p_yfshandler->Mode()!=YFS::yfsmode::off) {
+    // blob->SetStatus(blob_status::needs_yfs);
+    ATOOLS::Vec4D_Vector isrphotons = p_yfshandler->GetISRPhotons();
+    ATOOLS::Vec4D_Vector fsrphotons;
+    Particle *particle;
+    if (p_yfshandler->HasFSR()) {
+      fsrphotons = p_yfshandler->GetFSRPhotons();
+    }
+    if (p_yfshandler->FillBlob()) {
+      for (int i = 0; i < isrphotons.size(); ++i)
+      {
+        particle = new Particle(-1, Flavour(22),
+                                isrphotons[i]);
+        particle->SetNumber(0);
+        particle->SetInfo('S');
+        blob->AddToOutParticles(particle);
+      }
+      for (int i = 0; i < fsrphotons.size(); ++i)
+      {
+        particle = new Particle(-1, Flavour(22),
+                                fsrphotons[i]);
+        particle->SetNumber(0);
+        particle->SetInfo('S');
+        blob->AddToOutParticles(particle);
+      }
+    }
+    p_yfshandler->SplitPhotons(blob);
   }
 
   blob->AddData("WeightsMap",new Blob_Data<Weights_Map>(winfo.m_weightsmap));
@@ -262,14 +297,15 @@ bool Signal_Processes::FillBlob(Blob_List *const bloblist,Blob *const blob)
     blob->AddData("ATensor",
                   new Blob_Data<METOOLS::Amplitude2_Tensor_SP>(atensor));
   }
+  if(p_yfshandler->Mode()!=YFS::yfsmode::off){
+    p_yfshandler->YFSDebug(p_mehandler->Sum()*rpa->Picobarn());
+  }
   return success;
 }
 
-void Signal_Processes::CleanUp(const size_t & mode) 
-{ 
+void Signal_Processes::CleanUp(const size_t& mode)
+{
   if (m_overweight>0.0) return;
 }
 
-void Signal_Processes::Finish(const std::string &) 
-{
-}
+void Signal_Processes::Finish(const std::string&) {}

@@ -20,6 +20,7 @@
 #include "PHASIC++/Main/Process_Integrator.H"
 #include "PHASIC++/Main/Phase_Space_Handler.H"
 #include "PHASIC++/Process/MCatNLO_Process.H"
+#include "PHASIC++/Process/YFS_Process.H"
 #include "PHASIC++/Process/ME_Generator_Base.H"
 #include "SHERPA/PerturbativePhysics/Shower_Handler.H"
 #include "ATOOLS/Org/Scoped_Settings.H"
@@ -49,7 +50,7 @@ void Matrix_Element_Handler::RegisterDefaults()
   s["EVENT_SEED_INCREMENT"].SetDefault(1);
   s["GENERATE_RESULT_DIRECTORY"].SetDefault(true);
 
-  s["COLOUR_SCHEME"]
+  s["COLOR_SCHEME"]
     .SetDefault(0)
     .SetReplacementList(cls::ColorSchemeTags());
 
@@ -127,7 +128,7 @@ Matrix_Element_Handler::Matrix_Element_Handler(MODEL::Model_Base *model):
     ran->SetSeedStorageIncrement(incr);
   }
   m_pilotrunenabled = ran->CanRestoreStatus() && (m_eventmode != 0);
-  msg_Info()<<METHOD<<"(): Set pilot run mode to "<<m_pilotrunenabled<<".\n";
+  msg_Debugging()<<"Pilot run mode: "<<m_pilotrunenabled<<"\n";
 }
 
 Matrix_Element_Handler::~Matrix_Element_Handler()
@@ -343,15 +344,32 @@ std::vector<Process_Base*> Matrix_Element_Handler::InitializeSingleProcess
 {
   std::vector<Process_Base*> procs;
   if (pi.m_fi.NLOType()==nlo_type::lo) {
-    Process_Base *proc(m_gens.InitializeProcess(pi, true));
-    if (proc) {
-      m_procs.push_back(proc);
-      procs.push_back(proc);
-      if (pmap==NULL) {
-	m_pmaps.push_back(new NLOTypeStringProcessMap_Map());
-	pmap=m_pmaps.back();
+    if(p_yfs->Mode()!=YFS::yfsmode::off){
+      // else Process_Base *proc(m_gens.InitializeProcess(pi, true));
+      if(!pi.m_fi.IsGroup()) {
+        YFS_Process *proc = new YFS_Process(m_gens,pmap);
+        proc->Init(pi,p_beam,p_isr, p_yfs,1);
+        m_procs.push_back(proc);
+        procs.push_back(proc);
       }
-      m_procs.back()->FillProcessMap(pmap);
+      else{
+        Process_Base *proc(m_gens.InitializeProcess(pi, true));
+        m_procs.push_back(proc);
+        procs.push_back(proc);
+      }
+      p_yfs->SetFlavours(pi.ExtractFlavours());
+    }
+    else{
+      Process_Base *proc(m_gens.InitializeProcess(pi, true));
+      if (proc) {
+        m_procs.push_back(proc);
+        procs.push_back(proc);
+        if (pmap==NULL) {
+  	m_pmaps.push_back(new NLOTypeStringProcessMap_Map());
+  	pmap=m_pmaps.back();
+        }
+        m_procs.back()->FillProcessMap(pmap);
+      }
     }
     return procs;
   }
@@ -364,7 +382,7 @@ std::vector<Process_Base*> Matrix_Element_Handler::InitializeSingleProcess
 	pmap=m_pmaps.back();
       }
       MCatNLO_Process *proc=new MCatNLO_Process(m_gens,pmap);
-      proc->Init(pi,p_beam,p_isr);
+      proc->Init(pi,p_beam,p_isr,p_yfs);
       if ((*proc)[0]==NULL) {
 	delete proc;
 	return procs;
@@ -373,6 +391,18 @@ std::vector<Process_Base*> Matrix_Element_Handler::InitializeSingleProcess
         THROW(fatal_error,"Shower needs to be set for MC@NLO");
       proc->SetShower(p_shower->GetShower());
       proc->SetNLOMC(p_nlomc);
+      m_procs.push_back(proc);
+      procs.push_back(proc);
+      return procs;
+    }
+    else if (m_nlomode==nlo_mode::yfs){
+      m_hasnlo=4;
+      if (pmap==NULL) {
+         m_pmaps.push_back(new NLOTypeStringProcessMap_Map());
+         pmap=m_pmaps.back();
+      }
+      YFS_Process *proc = new YFS_Process(m_gens,pmap);
+      proc->Init(pi,p_beam,p_isr, p_yfs,1);
       m_procs.push_back(proc);
       procs.push_back(proc);
       return procs;
@@ -509,11 +539,13 @@ void Matrix_Element_Handler::CheckInitialStateOrdering(const Process_Info& pi)
 }
 
 int Matrix_Element_Handler::InitializeProcesses(
-  BEAM::Beam_Spectra_Handler* beam, PDF::ISR_Handler* isr)
+  BEAM::Beam_Spectra_Handler* beam, PDF::ISR_Handler* isr,
+  YFS::YFS_Handler *yfs)
 {
   p_beam=beam;
   p_isr=isr;
-  if (!m_gens.InitializeGenerators(p_model,beam,isr)) return false;
+  p_yfs=yfs;
+  if (!m_gens.InitializeGenerators(p_model,beam,isr,yfs)) return false;
   m_gens.SetRemnant(p_remnants);
   Settings& s = Settings::GetMainSettings();
   int initonly=s["INIT_ONLY"].Get<int>();
@@ -532,27 +564,27 @@ int Matrix_Element_Handler::InitializeProcesses(
   double retime(ATOOLS::rpa->gen.Timer().RealTime());
   double etime(ATOOLS::rpa->gen.Timer().UserTime());
   size_t rss(GetCurrentRSS());
-  msg_Info()<<" done ( "<<rss/(1<<20)<<" MB, "
-	    <<FormatTime(size_t(retime-rbtime))<<" / "
-	    <<FormatTime(size_t(etime-btime))<<" )."<<std::endl;
+  msg_Info()<<" done ("<<rss/(1<<20)<<" MB, "
+	    <<FormatTime(size_t(retime-rbtime))<<"/"
+	    <<FormatTime(size_t(etime-btime))<<")"<<std::endl;
   if (m_procs.empty() && m_gens.size()>0)
     THROW(normal_exit,"No hard process found");
-  msg_Info()<<METHOD<<"(): Performing tests "<<std::flush;
+  msg_Info()<<"Performing tests "<<std::flush;
   rbtime=retime;
   btime=etime;
   int res(m_gens.PerformTests());
   retime=ATOOLS::rpa->gen.Timer().RealTime();
   etime=ATOOLS::rpa->gen.Timer().UserTime();
   rss=GetCurrentRSS();
-  msg_Info()<<" done ( "<<rss/(1<<20)<<" MB, "
-	    <<FormatTime(size_t(retime-rbtime))<<" / "
-	    <<FormatTime(size_t(etime-btime))<<" )."<<std::endl;
+  msg_Info()<<" done ("<<rss/(1<<20)<<" MB, "
+	    <<FormatTime(size_t(retime-rbtime))<<"/"
+	    <<FormatTime(size_t(etime-btime))<<")"<<std::endl;
   msg_Debugging()<<METHOD<<"(): Processes {\n";
   msg_Debugging()<<"  m_procs:\n";
   for (size_t i(0);i<m_procs.size();++i)
     msg_Debugging()<<"    "<<m_procs[i]->Name()<<" -> "<<m_procs[i]<<"\n";
   msg_Debugging()<<"}\n";
-  msg_Info()<<METHOD<<"(): Initializing scales"<<std::flush;
+  msg_Info()<<"Initializing scales"<<std::flush;
   rbtime=retime;
   btime=etime;
   My_In_File::OpenDB(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Sherpa/");
@@ -565,9 +597,9 @@ int Matrix_Element_Handler::InitializeProcesses(
   retime=ATOOLS::rpa->gen.Timer().RealTime();
   etime=ATOOLS::rpa->gen.Timer().UserTime();
   rss=GetCurrentRSS();
-  msg_Info()<<" done ( "<<rss/(1<<20)<<" MB, "
-	    <<FormatTime(size_t(retime-rbtime))<<" / "
-	    <<FormatTime(size_t(etime-btime))<<" )."<<std::endl;
+  msg_Info()<<" done ("<<rss/(1<<20)<<" MB, "
+	    <<FormatTime(size_t(retime-rbtime))<<"/"
+	    <<FormatTime(size_t(etime-btime))<<")"<<std::endl;
   if (m_gens.NewLibraries()) {
     if (rpa->gen.Variable("SHERPA_CPP_PATH")=="") {
       THROW(normal_exit,"Source code created. Run './makelibs' to compile.");
@@ -592,9 +624,9 @@ void Matrix_Element_Handler::BuildProcesses()
 {
   Settings& s = Settings::GetMainSettings();
   // init processes
-  msg_Info()<<METHOD<<"(): "<<m_gens.size()<<" ME generators, "
-	    <<s["PROCESSES"].GetItems().size()<<" process blocks."<<std::endl;
-  msg_Info()<<METHOD<<"(): Setting up processes "<<std::flush;
+  msg_Info()<<"Building processes ("<<m_gens.size()<<" ME generators, "
+	    <<s["PROCESSES"].GetItems().size()<<" process blocks) ...\n";
+  msg_Info()<<"Setting up processes "<<std::flush;
   if (msg_LevelIsTracking()) msg_Info()<<"\n";
   if (!m_gens.empty() && s["PROCESSES"].GetItemsCount() == 0) {
     if (!msg_LevelIsTracking()) msg_Info()<<"\n";
@@ -666,7 +698,7 @@ void Matrix_Element_Handler::ReadFinalStateMultiIndependentProcessSettings(
   const auto couplings = s["COUPLINGS"].GetVector<std::string>();
   args.pi.m_coupling = MakeString(couplings);
   args.pi.m_kfactor = s["KFACTOR"].Get<std::string>();
-  args.pi.m_cls = (cls::scheme)s["COLOUR_SCHEME"].Get<int>();
+  args.pi.m_cls = (cls::scheme)s["COLOR_SCHEME"].Get<int>();
   args.pi.m_hls = (hls::scheme)s["HELICITY_SCHEME"].Get<int>();
   std::vector<long int> nodecaykfcs{ proc["No_Decay"].GetVector<long int>() };
   for (const auto& kfc : nodecaykfcs)
@@ -792,6 +824,8 @@ void Matrix_Element_Handler::ReadFinalStateMultiSpecificProcessSettings(
     else if (subkey == "Y_Cut")              ExtractMPvalues(value, range, nf, args.pbi.m_vycut);
     else if (subkey == "Min_N_Quarks")       ExtractMPvalues(value, range, nf, args.pbi.m_vnminq);
     else if (subkey == "Max_N_Quarks")       ExtractMPvalues(value, range, nf, args.pbi.m_vnmaxq);
+    else if (subkey == "Color_Scheme")       ExtractMPvalues(value, range, nf, args.pbi.m_vcls);
+    else if (subkey == "Helicity_Scheme")    ExtractMPvalues(value, range, nf, args.pbi.m_vhls);
     else if (subkey == "Print_Graphs")       ExtractMPvalues(value, range, nf, args.pbi.m_vgpath);
     else if (subkey == "Name_Suffix")        ExtractMPvalues(value, range, nf, args.pbi.m_vaddname);
     else if (subkey == "Special")            ExtractMPvalues(value, range, nf, args.pbi.m_vspecial);
@@ -984,6 +1018,8 @@ void Matrix_Element_Handler::BuildSingleProcessList(
         cpi.m_selectors = args.pbi.m_selectors;
 	if (GetMPvalue(args.pbi.m_vnmaxq,nfs,pnid,di)) cpi.m_nmaxq=di;
 	if (GetMPvalue(args.pbi.m_vnminq,nfs,pnid,di)) cpi.m_nminq=di;
+	if (GetMPvalue(args.pbi.m_vcls,nfs,pnid,di)) cpi.m_cls=(cls::scheme)di;
+	if (GetMPvalue(args.pbi.m_vhls,nfs,pnid,di)) cpi.m_hls=(hls::scheme)di;
 	if (GetMPvalue(args.pbi.m_vamegicmhv,nfs,pnid,di)) cpi.m_amegicmhv=di;
 	if (GetMPvalue(args.pbi.m_vntchan,nfs,pnid,di)) cpi.m_ntchan=di;
 	if (GetMPvalue(args.pbi.m_vmtchan,nfs,pnid,di)) cpi.m_mtchan=di;

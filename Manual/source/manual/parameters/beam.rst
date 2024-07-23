@@ -63,8 +63,8 @@ If desired, you can also specify spectra for beamstrahlung through
   This can be used to describe the
   backscattering of a laser beam off initial leptons. The energy
   distribution of the emerging photon beams is modelled by the CompAZ
-  parametrization, see :cite:`Zarnecki2002qr`.  Note that this
-  parametrization is valid only for the proposed TESLA photon
+  parameterisation, see :cite:`Zarnecki2002qr`.  Note that this
+  parameterisation is valid only for the proposed TESLA photon
   collider, as various assumptions about the laser parameters and the
   initial lepton beam energy have been made. See details below.
 
@@ -76,16 +76,17 @@ If desired, you can also specify spectra for beamstrahlung through
 :option:`EPA`
   This enables the equivalent photon approximation for colliding
   protons, see :cite:`Archibald2008aa`. The resulting beam particles
-  are photons that follow a dipole form factor parametrization,
+  are photons that follow a dipole form factor parameterisation,
   cf. :cite:`Budnev1974de`.  The authors would like to
   thank T. Pierzchala for his help in implementing and testing the
   corresponding code. See details below.
 
-:option:`Spectrum_Reader`
-  A user defined spectrum is used to describe the energy spectrum
-  of the assumed new beam particles. The name of the corresponding
-  spectrum file needs to be given through the keywords
-  ``SPECTRUM_FILES``.
+:option:`Pomeron`
+  This enables the Proton--Pomeron flux for diffractive jet production, see
+  details below.
+
+:option:`Reggeon`
+  This enables the Proton--Reggeon flux, see details below.
 
 The ``BEAM_SMIN`` and ``BEAM_SMAX`` parameters may be used to specify
 the minimum/maximum fraction of cms energy squared after
@@ -106,7 +107,7 @@ Laser Backscattering
 .. index:: LASER_NONLINEARITY
 
 The energy distribution of the photon beams is modelled by the CompAZ
-parametrisation, see :cite:`Zarnecki2002qr`, with various assumptions
+parameterisation, see :cite:`Zarnecki2002qr`, with various assumptions
 valid only for the proposed TESLA photon collider. The laser energies
 can be set by ``E_LASER``. ``P_LASER`` sets their polarisations,
 defaulting to ``0.``.  Both settings can either be set to a single
@@ -154,12 +155,12 @@ The usual rules for yaml structure apply, c.f. :ref:`Input structure`.
 
     Q^2_{max,kin} = \frac{(m_e x)^2}{1-x} + E_e^2 (1-x) \theta^2_{max}
 
-  with :math:`m_e` is the electron mass, :math:`E_e` the electron energy,
+  with :math:`m_e` the electron mass, :math:`E_e` the electron energy,
   :math:`x` the energy fraction that the photon carries and
   :math:`\theta_{max}` the maximum electron deflection angle, see below.
 
 :option:`ThetaMax`
-  Parameter of the EPA spectrum of an electron beam, c.f. :cite:`Frixione:1993yw`.
+  Parameter of the EPA spectrum of an electron beam, cf. :cite:`Frixione:1993yw`.
   Describes the maximum angle of the electron deflection, which
   translates to the maximum virtuality in the photon spectrum. It defaults to ``0.3``.
 
@@ -188,6 +189,57 @@ The usual rules for yaml structure apply, c.f. :ref:`Input structure`.
 single values that are then applied to both beams, or to a list of two
 values, for the respective beams.
 
+Pomeron
+-------
+
+The Pomeron flux is implemented as used in :cite`H1:2006zyl` :cite:`Goharipour:2018yov` :cite:`H1:2006uea` and, integrating out the momentum transfer, is given by
+
+.. math::
+
+    f_{\mathbb{P}}(x) = \int^0_{-t_\mathrm{max}} A_\mathbb{P} \frac{e^{B_\mathbb{P} t}}{{x}_\mathbb{P}^{2 \alpha_\mathbb{P}\left(t\right) -1}}
+    = A_\mathbb{P} x^{1 - 2 \alpha\left(0\right)}
+    \frac{1-\mathrm{e}^{-B_\mathbb{P} t_\mathrm{max}} x^{2 \alpha^\prime t_\mathrm{max}}}
+         {B_\mathbb{P} - 2 \alpha^\prime \mathrm{log}(x)}
+
+where :math:`t` is the squared transferred four-momentum and :math:`\alpha` is assumed to be
+linear, :math:`\alpha_\mathbb{P}\left(t\right) = \alpha\left(0\right) + \alpha^\prime t`. The default values are set
+to the ones obtained in Fit A in :cite:`H1:2006zyl` and can each be changed like so:
+
+.. code-block:: yaml
+
+    Pomeron:
+      tMax: 1.
+      xMax: 1.
+      xMin: 0.
+      B: 5.5
+      Alpha_intercept: 1.111
+      Alpha_slope: 0.06
+
+where ``Alpha_intercept`` and ``Alpha_slope`` are :math:`\alpha\left(0\right)` and :math:`\alpha^\prime`, respectively.
+Please note that ``tMax`` is the absolute value, i.e. a positive number.
+``xMax`` denotes the fraction of the proton momentum taken by the Pomeron.
+
+Other fluxes can be implemented upon request.
+
+Reggeon
+-------
+
+The Reggeon flux, defined in complete analogy to the Pomeron flux above.
+Default values taken from :cite:`H1:2006zyl`, set to:
+
+.. code-block:: yaml
+
+    Reggeon:
+      tMax: 1.
+      xMax: 1.
+      xMin: 0.
+      B: 1.6
+      Alpha_intercept: 0.5
+      Alpha_slope: 0.3
+      n: 1.4e-3
+
+The parameter ``n`` is the relative normalization of the Reggeon flux with
+respect to the Pomeron flux.
 
 .. _Beam Polarization:
 
@@ -196,7 +248,7 @@ Beam Polarization
 
 Sherpa can also provide cross-sections for polarized beams.
 These calculations can only be provided using the  ``AMEGIC`` ME generator.
-The value for the beam polarization can be given as a percenatage e.g. 80 or in decimal form e.g. 0.8 .
+The value for the beam polarization can be given as a percentage e.g. 80 or in decimal form e.g. 0.8 .
 The flavour of :option:`BEAM_1/BEAM_2` follows the definition given to  :option:`BEAMS`.
 
 .. code-block:: yaml
@@ -204,3 +256,4 @@ The flavour of :option:`BEAM_1/BEAM_2` follows the definition given to  :option:
    POLARIZATION:
      BEAM_1: 0.8
      BEAM_2: -0.3
+

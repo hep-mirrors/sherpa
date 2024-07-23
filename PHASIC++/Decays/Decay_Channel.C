@@ -400,12 +400,13 @@ GenerateKinematics(ATOOLS::Vec4D_Vector& momenta, bool anti,
 
 void Decay_Channel::PrintMaxKinFailStatistics(std::ostream &str)
 {
-  str<<"Decay_Channel: Kinematics max fail statistics {\n";
+  if (s_kinmaxfails.empty())
+    return;
+  str<<"Decay channel kinematics max fail statistics:\n";
   for (std::map<std::string,double>::iterator fit=s_kinmaxfails.begin();
        fit!=s_kinmaxfails.end();fit++) {
     str<<"  "<<fit->first<<" maximal fail by "<<fit->second<<".\n";
   }
-  str<<"}\n";
 }
 
 

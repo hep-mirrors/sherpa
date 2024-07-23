@@ -79,16 +79,17 @@ void Output_LHEF::Header()
 
   m_outstream<<"<LesHouchesEvents version=\"1.0\">"<<std::endl;
   m_outstream<<"<header>"<<std::endl;
-  m_outstream<<"<!-- "<<std::endl; 
+  m_outstream<<"<!-- "<<std::endl;
   m_outstream<<"# created by SHERPA "<<SHERPA_VERSION<<"."<<SHERPA_SUBVERSION
              <<endl;
   for (const auto& file : files) {
+    if (file.rfind("Decaydata.yaml") != std::string::npos) continue;
     My_In_File infile{ path, file };
     if (infile.Open()) {
       m_outstream<<"# Run data extracted from : "<<file<<std::endl;
       m_outstream<<"--> "<<std::endl;
       m_outstream<<"<SHRunCard> "<<std::endl;
-      m_outstream<<infile->rdbuf();
+      m_outstream<<infile.FileContent();
       m_outstream<<"</SHRunCard> "<<std::endl;
     }
   }
@@ -104,7 +105,7 @@ void Output_LHEF::Header()
   double EBMUP2 = rpa->gen.PBeam(1)[0];
 
   int IDWTUP{ s["LHEF_IDWTUP"].Get<int>() };
-  if (IDWTUP==0) IDWTUP=ToType<int>(rpa->gen.Variable("EVENT_GENERATION_MODE"))==0?1:3; 
+  if (IDWTUP==0) IDWTUP=ToType<int>(rpa->gen.Variable("EVENT_GENERATION_MODE"))==0?1:3;
   int NPRUP = 1;
   int PDFGUP1 = 0;
   int PDFGUP2 = 0;
@@ -127,7 +128,7 @@ void Output_LHEF::Header()
   m_outstream<<std::setw(18)<<m_xs<<" "
 	     <<std::setw(18)<<m_xserr<<" "
 	     <<std::setw(18)<<m_max<<" "
-	     <<std::setw(4)<<NPRUP<<std::endl; 
+	     <<std::setw(4)<<NPRUP<<std::endl;
   m_outstream<<"</init>"<<std::endl;
 }
 

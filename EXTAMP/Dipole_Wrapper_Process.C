@@ -14,7 +14,8 @@ using namespace EXTAMP;
 Dipole_Wrapper_Process::Dipole_Wrapper_Process(const RS_Process& rsproc,
 					       CS_Dipole* dipole,
 					       BEAM::Beam_Spectra_Handler* beam,
-					       PDF::ISR_Handler* isr) : p_dipole(dipole)
+					       PDF::ISR_Handler* isr,
+					       YFS::YFS_Handler* yfs) : p_dipole(dipole)
 
 {
   /* Follow sherpa convetions here and set i<j */
@@ -32,7 +33,7 @@ Dipole_Wrapper_Process::Dipole_Wrapper_Process(const RS_Process& rsproc,
      initialized through the framework like other procs. This
      re-orders flavours according to Sherpa conventions (reordering is
      also applied to the Process_Info instance). */
-  PHASIC::Process_Base::Init(rsproc.Info(), beam, isr, 0);
+  PHASIC::Process_Base::Init(rsproc.Info(), beam, isr, yfs, 0);
 
   /* Not done in any of the PHASIC base classes */
   m_mincpl = rsproc.Info().m_mincpl;

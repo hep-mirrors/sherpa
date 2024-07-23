@@ -10,6 +10,7 @@ namespace PDF {
       intact  = 0,
       lepton  = 1,
       hadron  = 2,
+      yfs     = 3,
       unknown = 99
     };
   };

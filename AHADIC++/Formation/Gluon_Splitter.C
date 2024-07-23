@@ -7,7 +7,7 @@ using namespace AHADIC;
 using namespace ATOOLS;
 
 Gluon_Splitter::~Gluon_Splitter() {
-  msg_Info()<<METHOD<<" with "<<m_kin_fails<<" kinematic fails.\n";
+  msg_Debugging()<<METHOD<<" with "<<m_kin_fails<<" kinematic fails.\n";
 }
 
 

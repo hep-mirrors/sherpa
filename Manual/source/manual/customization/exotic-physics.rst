@@ -7,28 +7,27 @@ Exotic physics
 
 It is possible to add your own models to Sherpa in a straightforward way.
 To illustrate, a simple example has been included in the directory
-``Examples/Models/SM_ZPrime``, showing how to add a Z-prime boson to
+``Examples/BSM/SM_ZPrime``, showing how to add a Z-prime boson to
 the Standard Model.
 
 The important features of this example include:
 
-* The ``SM_Zprime.C`` file.
+* The ``Model.C`` file.
 
-  This file contains the initialisation of the Z-prime boson. The
-  properties of the Z-prime are set here, such as mass, width,
-  electromagnetic charge, spin etc.
-
-* The ``Interaction_Model_SM_Zprime.C`` file.
-
-  This file contains the definition of the Z-prime boson's interactions.
-  The right- and left-handed couplings to each of the fermions are
-  set here.
+  This file contains the initialisation of the Z-prime boson and the definition
+  of the Z-prime boson's interactions. The remaining physics settings are
+  inherited from the internal standard model implementation.
+  The properties of the Z-prime are set here, such as mass, width,
+  electromagnetic charge, spin etc as well as the right- and left-handed
+  couplings to each of the fermions are set there.
 
 * An example ``Makefile``.
 
   This shows how to compile the sources above into a shared library.
 
-* The line ``SHERPA_LDADD: SMZprime`` in the config file.
+* The example run card ``Sherpa.yaml``. Note in particular:
+
+* The line ``SHERPA_LDADD: SherpaSMZprime`` in the config file.
 
   This line tells Sherpa to load the extra libraries created from the
   `*.C` files above.
@@ -47,12 +46,19 @@ The important features of this example include:
          Width: 50
 
   These lines show how you can overrule the choices you made for the
-  properties of the new particle in the :file:`SM_Zprime.C` file. For
+  properties of the new particle in the :file:`Model.C` file. For
   more information on changing parameters in Sherpa, see :ref:`Input
   structure` and :ref:`Parameters`.
 
-* The lines ``Zp_cpl_L: 0.3`` and ``Zp_cpl_R: 0.6`` set the couplings
-  to left and right handed fermions in the config file.
+* The lines
+
+  .. code-block:: yaml
+
+     Zprime:
+       Zp_cpl_L: 0.3
+       Zp_cpl_R: 0.6
+
+  set the couplings to left and right handed fermions.
 
 To use this model, create the libraries for Sherpa to use by running
 

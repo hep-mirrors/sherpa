@@ -8,7 +8,7 @@ PDF_LIBRARY: None
 PROCESSES:
 - 11 -11 -> 93 93 93{1}:
     CKKW: 5.
-    Order: {QCD: Any, EW: 2}
+    Order: {QCD: 0, EW: 2}
 
 ANALYSIS: Rivet
 ANALYSIS_OUTPUT: Analysis

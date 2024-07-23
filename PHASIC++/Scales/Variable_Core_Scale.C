@@ -29,9 +29,9 @@ namespace PHASIC {
 		  ATOOLS::Algebra_Interpreter &mu2calc,
 		  const size_t &n);
 
-    std::string   ReplaceTags(std::string &expr) const;    
-    ATOOLS::Term *ReplaceTags(ATOOLS::Term *term) const;    
-    
+    std::string   ReplaceTags(std::string &expr) const;
+    ATOOLS::Term *ReplaceTags(ATOOLS::Term *term) const;
+
     void AssignId(ATOOLS::Term *term);
 
   };// end of class Scale_Setter_Base
@@ -57,7 +57,7 @@ Variable_Core_Scale::Variable_Core_Scale
     }
     tag=tag.substr(pos+1);
     pos=tag.find('}');
-    if (pos==std::string::npos) 
+    if (pos==std::string::npos)
       THROW(fatal_error,"Invalid scale '"+args.m_scale+"'");
     std::string ctag(tag.substr(0,pos));
     tag=tag.substr(pos+1);
@@ -90,7 +90,7 @@ PDF::Cluster_Param Variable_Core_Scale::Calculate(Cluster_Amplitude *const ampl)
 
 void Variable_Core_Scale::SetScale
 (const std::string &mu2tag,Algebra_Interpreter &mu2calc,const size_t &n)
-{ 
+{
   if (mu2tag=="" || mu2tag=="0") THROW(fatal_error,"No scale specified");
   msg_Debugging()<<METHOD<<"(): Core scale '"<<mu2tag<<"' {\n";
   msg_Indent();
@@ -99,7 +99,8 @@ void Variable_Core_Scale::SetScale
   mu2calc.AddTag("H_TMp2","1.0");
   mu2calc.AddTag("H_Tp2","1.0");
   mu2calc.AddTag("N_FS","1.0");
-  for (size_t i=0;i<n;++i) 
+  mu2calc.AddTag("hH_T2", "1.0");
+  for (size_t i=0;i<n;++i)
     mu2calc.AddTag("p["+ToString(i)+"]",ToString(Vec4D()));
   mu2calc.Interprete(mu2tag);
   if (msg_LevelIsDebugging()) mu2calc.PrintEquation();
@@ -160,6 +161,15 @@ Term *Variable_Core_Scale::ReplaceTags(Term *term) const
     term->Set((double)(p_ampl->Legs().size()-p_ampl->NIn()));
     return term;
   }
+  case 0: {
+    double hht(0.0);
+    for (size_t i(p_ampl->NIn());
+         i<p_ampl->Legs().size();++i)
+      if (p_ampl->Leg(i)->Flav().Strong())
+        hht+=p_ampl->Leg(i)->Mom().MPerp();
+    term->Set(sqr(hht));
+    return term;
+  }
   }
   return term;
 }
@@ -171,6 +181,7 @@ void Variable_Core_Scale::AssignId(Term *term)
   else if (term->Tag()=="H_TMp2") term->SetId(6);
   else if (term->Tag()=="H_Tp2") term->SetId(7);
   else if (term->Tag()=="N_FS") term->SetId(8);
+  else if (term->Tag()=="hH_T2") term->SetId(0);
   else {
   term->SetId(100+ToType<int>
 	      (term->Tag().substr
@@ -191,6 +202,6 @@ operator()(const Core_Scale_Arguments &args) const
 void ATOOLS::Getter<Core_Scale_Setter,Core_Scale_Arguments,
 		    Variable_Core_Scale>::
 PrintInfo(std::ostream &str,const size_t width) const
-{ 
-  str<<"variable core scale"; 
+{
+  str<<"variable core scale";
 }

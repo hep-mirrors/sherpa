@@ -16,6 +16,7 @@
 #include "SHERPA/Tools/Analysis_Interface.H"
 #include "SHERPA/Tools/Output_Base.H"
 #include "SHERPA/Tools/Definitions.H"
+#include "YFS/Main/YFS_Handler.H"
 
 #include <map>
 #include <string>
@@ -44,7 +45,7 @@ namespace SHERPA {
     std::string m_evtform;
     std::set<std::string> m_pdflibs;
     std::map<PDF::isr::id, std::array<std::string, 2> >  m_defsets;
-    std::map<PDF::isr::id, std::vector<size_t> > m_bunchtags;
+    std::map<PDF::isr::id, std::array<size_t, 2> > m_bunchtags;
 
     ATOOLS::Flavour m_bunch_particles[2];
 
@@ -70,6 +71,7 @@ namespace SHERPA {
     Output_Vector                  m_outputs;
     ATOOLS::Variations           * p_variations;
     Filter                       * p_filter;
+    YFS::YFS_Handler            * p_yfshandler;
 
     void ShowParameterSyntax();
     void CheckVersion();
@@ -95,6 +97,7 @@ namespace SHERPA {
     bool InitializeTheFilter();
     bool InitializeTheAnalyses();
     bool InitializeTheReweighting(ATOOLS::Variations_Mode);
+    bool InitializeTheYFS();
 
     void RegisterDefaults();
     bool CheckBeamISRConsistency();
@@ -120,6 +123,7 @@ namespace SHERPA {
     Output_Vector                    * GetOutputs()                         { return &m_outputs; }
     MODEL::Model_Base                * GetModel()                     const { return p_model; }
     PDF::ISR_Handler_Map             * GetISRHandlers()                     { return &m_isrhandlers; }
+    YFS::YFS_Handler             * GetYFSHandler()                  { return p_yfshandler;    }
     BEAM::Beam_Spectra_Handler       * GetBeamSpectraHandler()        const { return p_beamspectra; }
     Hard_Decay_Handler               * GetHardDecayHandler()          const { return p_harddecays; }
     const Shower_Handler_Map         & GetShowerHandlers()            const { return m_showerhandlers; }
@@ -162,7 +166,7 @@ namespace SHERPA {
     - the parton shower in the initial and final state,
     - the handling of the beam remnants,
     - the fragmentation
-    
+
     These modules are later on taken by the main steering class, Sherpa, and put into
     corresponding Event_Phase_Handlers. After termination of the run, they are all deleted.
   */

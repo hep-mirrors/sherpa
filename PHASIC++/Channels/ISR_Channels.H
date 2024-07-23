@@ -3,15 +3,16 @@
 
 #include "PDF/Main/ISR_Handler.H"
 #include "PHASIC++/Channels/Multi_Channel.H"
+#include "YFS/Main/YFS_Handler.H"
 
 namespace PHASIC {
   class Phase_Space_Handler;
-  
   class ISR_Channels: public Multi_Channel {
   private:
     Phase_Space_Handler * p_psh;
     std::string           m_keyid;
     PDF::ISR_Handler    * p_isrhandler;
+    YFS::YFS_Handler    * p_yfshandler;
     PDF::isrmode::code    m_isrmode;
     PDF::isrtype::code    m_isrtype[2];
     channelinfos          m_isrparams;

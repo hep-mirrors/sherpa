@@ -18,14 +18,8 @@ Photon_Remnant(PDF::PDF_Base *pdf, const size_t & beam, const size_t & tag) :
   p_ff = new Form_Factor(pdf->Bunch());
 }
 
-Particle *Photon_Remnant::MakeParticle(const Flavour &flav) {
-  Particle *part = new Particle(-1, flav, Vec4D(0., 0., 0., 0.), 'B');
-  part->SetNumber();
-  part->SetBeam(m_beam);
-  return part;
-}
-
-bool Photon_Remnant::FillBlob(ParticleMomMap *ktmap, const bool &copy) {
+bool Photon_Remnant::FillBlob(Colour_Generator* colours, ParticleMomMap* ktmap, const bool& copy)
+{
   if (m_extracted.empty()) {
     msg_Error() << METHOD
               << ": No remnants have been extracted, please check. \n";
@@ -34,20 +28,23 @@ bool Photon_Remnant::FillBlob(ParticleMomMap *ktmap, const bool &copy) {
   // In the photon, there needs to be at least one quark-antiquark pair,
   // this is tracked with the m_valence flag. Of these two, the antiquark will
   // be used as the recoiler later-on.
-  MakeRemnants();
+  MakeRemnants(colours);
   msg_Debugging() << METHOD << ": Filling blob with remnants, extracted = "
                   << m_extracted << ", \n and spectators = " << m_spectators
                   << "\n";
   FindRecoiler();
   // Possibly adjust final pending colours with extra gluons - in prinicple one may have
   // to check that they are not singlets ....
-  CompensateColours();
+  CompensateColours(colours);
   // Assume all remnant bases already produced a beam blob = p_beamblob
-  MakeLongitudinalMomenta(ktmap, copy);
+  if (!MakeLongitudinalMomenta(ktmap, copy)) {
+    msg_Debugging() << METHOD << ": Cannot put all particles on mass-shell, returning false.\n";
+    return false;
+  }
   if (!p_beamblob->CheckColour(true)) {
     msg_Error()<<"   * Error in "<<METHOD<<" (illegal colour) for \n"
 	       <<(*p_beamblob)<<"\n";
-    p_colours->Output();
+    colours->Output();
     return false;
   }
   return true;
@@ -85,31 +82,16 @@ bool Photon_Remnant::TestExtract(const Flavour &flav, const Vec4D &mom) {
     msg_Error() << METHOD << ": flavour " << flav << " not found.\n";
     return false;
   }
-  if (mom[0] < flav.HadMass()) {
-    msg_Debugging() << METHOD << ": parton too soft, mass = " << flav.HadMass()
-                    << " and energy = " << mom[0] << "\n";
-    return false;
-  }
-  // This respects the masses of all current remnants in m_spectator,
-  // the energy of the extracted parton and potentially the mass of its antiflavour.
-  // For the case of gluons, this is not necessary, but its HadMass() is zero anyway.
-  double required_energy =
-      EstimateRequiredEnergy(!flav.IsQuark() && !m_valence)
-      + mom[0] + Max(flav.HadMass(), m_LambdaQCD);
-  if (m_residualE < required_energy) {
-    msg_Debugging() << METHOD << ": not enough energy to accomodate particle mass. \n";
-    return false;
-  }
   // Still in range?
   double x = mom[0] / m_residualE;
   if (x < p_pdf->XMin() || x > p_pdf->XMax()) {
-    msg_Error() << METHOD << ": out of limits, x = " << x << ".\n";
+    msg_Tracking() << METHOD << ": out of limits, x = " << x << ".\n";
     return false;
   }
   return true;
 }
 
-void Photon_Remnant::MakeLongitudinalMomenta(ParticleMomMap *ktmap,
+bool Photon_Remnant::MakeLongitudinalMomenta(ParticleMomMap *ktmap,
                                              const bool &copy) {
   // Calculate the total momentum that so far has been extracted through
   // the shower initiators and use it to determine the still available
@@ -141,16 +123,17 @@ void Photon_Remnant::MakeLongitudinalMomenta(ParticleMomMap *ktmap,
   for (Particle  const * pit : m_spectators) {
     remnant_masses += Max(pit->Flav().HadMass(), m_LambdaQCD);
   }
-  if (remnant_masses > m_residualE)
-    msg_Error() << METHOD << ": Warning, HadMasses of remnants = "
-                    << remnant_masses << " vs. residual energy = " << m_residualE << "\n";
+  if (remnant_masses > availMom[0]) {
+    msg_Debugging() << METHOD
+                    << ": Warning, HadMasses of remnants = " << remnant_masses
+                    << " vs. residual energy = " << availMom[0] << "\n";
+    return false;
+  }
   for (auto part : m_spectators) {
-    if (availMom[0] < 0)
-      msg_Error() << METHOD << ": Negative Energy in Remnants! \n";
     if (part == m_spectators.back()) {
       part->SetMomentum(availMom);
     } else {
-      part->SetMomentum(SelectZ(part->Flav(), availMom[0], remnant_masses) * availMom);
+      part->SetMomentum(SelectZ(part->Flav(), availMom[0], remnant_masses)*availMom);
       availMom -= part->Momentum();
       remnant_masses -= Max(part->Flav().HadMass(), m_LambdaQCD);
     }
@@ -165,6 +148,7 @@ void Photon_Remnant::MakeLongitudinalMomenta(ParticleMomMap *ktmap,
       p_beamblob->AddToOutParticles(part);
     (*ktmap)[part] = Vec4D();
   }
+  return true;
 }
 
 double Photon_Remnant::SelectZ(const Flavour &flav, double restmom,
@@ -190,7 +174,8 @@ double Photon_Remnant::SelectZ(const Flavour &flav, double restmom,
   return z;
 }
 
-void Photon_Remnant::MakeSpectator(Particle *parton) {
+void Photon_Remnant::MakeSpectator(Particle* parton, Colour_Generator* colours)
+{
   /* The remnant is constructed from the extracted shower initiators.
    * If it is a quark, we only have to generate the corresponding antiparticle.
    * If it is a gluon, we do nothing for the moment, but will later make sure,
@@ -203,13 +188,14 @@ void Photon_Remnant::MakeSpectator(Particle *parton) {
   int i = (p_spectator->Flav().IsAnti()?2:1);
   p_spectator->SetFlow(i, -1);
   p_spectator->SetPosition(parton->XProd());
-  p_colours->AddColour(m_beam,i-1,p_spectator);
+  colours->AddColour(m_beam, i - 1, p_spectator);
   m_spectators.push_front(p_spectator);
   if (!m_valence)
     m_valence = true;
 }
 
-void Photon_Remnant::MakeRemnants() {
+void Photon_Remnant::MakeRemnants(Colour_Generator* colours)
+{
   if (m_valence)
     return;
   Particle * part;
@@ -224,36 +210,12 @@ void Photon_Remnant::MakeRemnants() {
   int factor = 1;
   for (int i = 1; i < 3; i++) {
     part = MakeParticle(factor * quark);
-    part->SetFlow(i, p_colours->NextColour(m_beam,i-1));
+    part->SetFlow(i, colours->NextColour(m_beam, i - 1));
     part->SetPosition(m_position+(*p_ff)());
     m_spectators.push_front(part);
     factor *= -1;
   }
   m_valence = true;
-}
-
-void Photon_Remnant::CompensateColours() {
-  while (!p_colours->Colours(m_beam,0).empty() &&
-         !p_colours->Colours(m_beam,1).empty() &&
-         p_colours->Colours(m_beam,0)!=p_colours->Colours(m_beam,1)) {
-    Particle * gluon = MakeParticle(Flavour(kf_gluon));
-    for (size_t i=0;i<2;i++) gluon->SetFlow(i+1,p_colours->NextColour(m_beam,i));
-    gluon->SetPosition(m_position+(*p_ff)());
-    m_spectators.push_back(gluon);
-  }
-}
-
-double Photon_Remnant::EstimateRequiredEnergy(bool needs_valence_quarks) const
-{
-  double masses = 0.;
-  for (Particle const * pit : m_spectators) {
-    masses += Max(pit->Flav().HadMass(), m_LambdaQCD);
-  }
-  if (needs_valence_quarks) {
-    masses += 2 * Flavour(kf_s).HadMass();
-  }
-  // Adding lambda_QCD for the gluon that might be added later in CompensateColours()
-  return masses + m_LambdaQCD;
 }
 
 void Photon_Remnant::FindRecoiler() {

@@ -1,0 +1,239 @@
+import argparse
+import os
+import re
+import sys
+import subprocess
+import time
+from importlib.machinery import SourceFileLoader
+from pathlib import Path
+import multiprocessing
+from functools import partial
+
+from . import s_color
+from .lorentz_writer import LorentzWriter
+from .message import error, progress, warning
+from .model_writer import ModelWriter
+
+
+class Sherpa:
+    def __init__(self):
+        self.model_flags = '-g -O0 -fno-var-tracking'
+        self.lorentz_flags = '-g -O2 -ffast-math'
+        self.root_dir = '@SHERPA_CMAKE_CONFIG_DIR@'
+        self.install_dir = self.root_dir + '/../../lib/SHERPA-MC/'
+
+
+def parse_args(args):
+    sherpa = Sherpa()
+    parser = argparse.ArgumentParser(description='Generate a Sherpa model from a UFO model')
+    parser.add_argument('ufo_path', type=str,
+                        help='Path to the UFO model')
+    parser.add_argument('--ncore', type=int, default=os.cpu_count(),
+                        help='Number of cores to use')
+    parser.add_argument('--root_dir', type=str,
+                        default=sherpa.root_dir,
+                        help='Path to Sherpa cmake config files')
+    parser.add_argument('--output_dir', type=str,
+                        default=None,
+                        help='Path to write the Sherpa model')
+    parser.add_argument('--install_dir', type=str,
+                        default=sherpa.install_dir,
+                        help='Path to Sherpa cmake config files')
+    parser.add_argument('--model_flags', type=str,
+                        default=sherpa.model_flags,
+                        help='Flags to compile the model')
+    parser.add_argument('--lorentz_flags', type=str,
+                        default=sherpa.lorentz_flags,
+                        help='Flags to compile the lorentz files')
+    parser.add_argument('--auto_convert', action='store_true',
+                        help='Automatically convert python2 UFO models to python3',
+                        default=False)
+    parser.add_argument('--overwrite', action='store_true',
+                        help='Overwrite the output directory',
+                        default=False)
+    parser.add_argument('--nmax', type=int, default=4,
+                        help='Maximum number of particles in a vertex')
+    return parser.parse_args(args)
+
+
+def check_color(color, particles):
+    new_color = color
+    pattern = r'Identity\(({}),(\d+)\)'
+    replacement = r'Identity(\2,\1)'
+    replacement_oct = r'IdentityG(\1,\2)'
+
+    # Collect all anti-fundamental indices
+    af_idxs = [i+1 for i, p in enumerate(particles) if p.color == -3]
+    for idx in af_idxs:
+        new_color = re.sub(pattern.format(idx), replacement, new_color)
+
+    # Collect all octet indices
+    oc_inds = [i+1 for i, p in enumerate(particles) if p.color == 8]
+    for idx in oc_inds[::-1]:
+        new_color = re.sub(pattern.format(idx), replacement_oct, new_color)
+
+    return new_color
+
+
+def check_model(model_name, ufo_mod):
+    if model_name[0].isdigit():
+        error(f'Model name {model_name} cannot start with a number')
+        return False
+
+    if model_name in ["SM", "HEFT", "TauPi"]:
+        error(f'Model name {model_name} is reserved. Please rename UFO directory')
+        return False
+
+    return True
+
+
+def prepare_output_dir(path, overwrite=False):
+    if os.path.exists(path) and not overwrite:
+        warning(f'Output directory {path} already exists.')
+        # Ask if we should overwrite
+        if input('Overwrite? (y/n): ').lower()[0] != 'y':
+            exit(-1)
+    else:
+        os.makedirs(path, exist_ok=True)
+
+
+def build_model(src_dir, install_dir, ncore):
+    pwd = os.getcwd()
+    os.chdir(src_dir)
+    cmake_config_args = ['cmake', '-S', '.', '-B', 'build',
+                         f'-DCMAKE_INSTALL_PREFIX={install_dir}']
+    subprocess.run(cmake_config_args)
+    cmake_build_args = ['cmake', '--build', 'build', '--', f'-j{ncore}']
+    subprocess.run(cmake_build_args)
+    cmake_install_args = ['cmake', '--install', 'build']
+    subprocess.run(cmake_install_args)
+    os.chdir(pwd)
+
+
+def fix_param_writer(path):
+    print(path)
+    with open(path / 'write_param_card.py', 'r') as f:
+        lines = f.readlines()
+    with open(path / 'write_param_card.py', 'w') as f:
+        future_imports = 0
+        while lines[future_imports].startswith('from __future__'):
+            future_imports += 1
+        if lines[future_imports] != 'import functools\n':
+            f.write('import functools\n')
+        for line in lines:
+            if 'need_writing.sort(self.order_param)' in line:
+                line = line.replace('self.order_param', 'key=functools.cmp_to_key(self.order_param)')
+            f.write(line)
+
+
+def try_import(ufo_path, auto_convert=False):
+    try:
+        ufo_src = SourceFileLoader("ufo", ufo_path.as_posix())
+        fix_param_writer(Path(ufo_src.path).parent)
+        ufo_mod = ufo_src.load_module("ufo")
+    except FileNotFoundError:
+        error(f'UFO model not found at {ufo_path}.')
+        error('Please check the path and try again.')
+        return
+    except ModuleNotFoundError:
+        warning(f'UFO model at {ufo_path} may be written in python 2.')
+        if not auto_convert:
+            response = input('Would you like to convert to python3? (y/n): ')
+        else:
+            response = 'y'
+        if response.lower()[0] == 'y':
+            model_name = ufo_path.parts[-2] + '_py3'
+            new_path = ufo_path.parent.parent / model_name
+            print(f'Writing python3 model to {new_path}')
+            # TODO: Update to different method for when 2to3 is removed
+            subprocess.run(['2to3', '-W', ufo_path.parent.as_posix(),
+                            '-o', new_path, '-n', '--no-diffs'])
+            ufo_mod = try_import(new_path / '__init__.py')
+
+    return ufo_mod
+
+
+def write_param_card(model_name, ufo_mod):
+    writer = ufo_mod.write_param_card.ParamCardWriter(f'param_{model_name}.dat', generic=True)
+    del writer
+
+
+def gen_color(color, out_dir):
+    scolor = s_color.s_color(color)
+    progress(f'Writing color file for color {scolor.name()}')
+    scolor.write(out_dir)
+    return f'{scolor.name()}.C'
+
+
+def main(args):
+    args = parse_args(args)
+    ufo_path = Path(args.ufo_path) / '__init__.py'
+    ufo_mod = try_import(ufo_path, args.auto_convert)
+
+    model_name = ufo_path.parts[-2]
+
+    progress(f'Preparing output directory for {model_name}')
+    if args.output_dir is None:
+        out_dir = Path(args.ufo_path) / '.sherpa'
+    else:
+        out_dir = Path(args.output_dir)
+    prepare_output_dir(out_dir, args.overwrite)
+
+    progress(f'Checking model {model_name}')
+    # Check if the model is valid
+    if not check_model(model_name, ufo_mod):
+        return
+
+    # Ensure color is in the correct format
+    for vert in ufo_mod.all_vertices:
+        for i, color in enumerate(vert.color):
+            vert.color[i] = check_color(color, vert.particles)
+
+    # Calculate time for color factor
+    start = time.time()
+    colors = set(sum([vert.color for vert in ufo_mod.all_vertices
+                      if len(vert.particles) <= args.nmax], []))
+    colors = [color for color in colors if color != '1']
+    gen_color_func = partial(gen_color, out_dir=out_dir)
+    with multiprocessing.Pool(args.ncore) as pool:
+        color_files = pool.map(gen_color_func, colors)
+    end = time.time()
+    progress(f'Color factor calculation took {end-start} seconds')
+
+    start = time.time()
+    progress(f'Writing lorentz files for {model_name}')
+    lorentz_writer = LorentzWriter(out_dir, args.nmax)
+    lorentz_writer.write_all(ufo_mod.all_lorentz, args.ncore)
+    end = time.time()
+    progress(f'Lorentz factor calculation took {end-start} seconds')
+
+    opts = {
+        'root_dir': args.root_dir,
+        'install_dir': args.install_dir,
+        'model_flags': args.model_flags,
+        'lorentz_flags': args.lorentz_flags,
+        'color_files': color_files,
+        'nmax': args.nmax,
+    }
+    progress(f'Writing model {model_name}')
+    model_writer = ModelWriter(model_name, ufo_mod, opts)
+    model_writer.write(out_dir)
+
+    progress(f'Compiling model {model_name}')
+    build_model(out_dir, args.install_dir, args.ncore)
+
+    progress(f'Writing out parameter card to param_{model_name}.dat')
+    write_param_card(model_name, ufo_mod)
+
+    filename = f'Sherpa_{model_name}.yaml'
+    while os.path.exists(filename):
+        model_name += '_'
+        filename = f'Sherpa_{model_name}.yaml'
+    progress(f'Writing out example run card to {filename}')
+    model_writer.write_run_card(filename)
+
+    progress(f'Finished writing model {model_name} to {out_dir}')
+
+
+if __name__ == '__main__':
+    main(sys.argv[1:])

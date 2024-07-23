@@ -122,7 +122,7 @@ The following sub-settings exist:
 
 ``NPOWER``
   The power of two, by which the number of points increases with every step of the
-  optmization.
+  optimisation.
 
 ``NOPT``
   The number of optimization cycles.

@@ -46,10 +46,9 @@ std::ostream &PDF::operator<<(std::ostream &s, const PDF::isrmode::code mode) {
 }
 
 ISR_Handler::ISR_Handler(std::array<ISR_Base *, 2> isrbase, const isr::id &id)
-    : m_id(id), m_rmode(0), m_swap(0), m_info_lab(8), m_info_cms(8),
-      m_freezePDFforLowQ(false) {
-  p_isrbase[0] = isrbase[0];
-  p_isrbase[1] = isrbase[1];
+    : p_isrbase(isrbase), m_id(id), m_rmode(0), m_swap(0), m_info_lab(8),
+      m_info_cms(8), m_freezePDFforLowQ(false)
+{
   Settings &s = Settings::GetMainSettings();
   m_freezePDFforLowQ = s["FREEZE_PDF_FOR_LOW_Q"].SetDefault(false).Get<bool>();
   if (s_nozeropdf < 0) {
@@ -385,16 +384,6 @@ double ISR_Handler::PDFWeight(const int mode, Vec4D p1, Vec4D p2, double Q12,
   // cmode & 1 -> include first PDF; cmode & 2 -> include second PDF
   if ((cmode == 1 && PDF(0) == nullptr) || (cmode == 2 && PDF(1) == nullptr))
     return 1.0;
-  const auto include_both_pdfs = (cmode == 3);
-  // Checking remnant kinematics only makes sense when both PDFs are included;
-  // NOTE: the check is done here because CheckRemnantKinematics internally
-  // calls the PDF’s CalculateSpec, which overwrites its m_Q member; we don't
-  // want this to happen after the following switch-statement, where this is
-  // set in preparation of the p_isrbase[i]->Weight(fl) calls that get the PDF
-  // values below
-  const auto has_nonexistent_or_correct_remnant_kinematics =
-      (!include_both_pdfs || (CheckRemnantKinematics(fl1, x1, 0, false) &&
-                              CheckRemnantKinematics(fl2, x2, 1, false)));
   switch (cmode) {
   case 3:
     if (x1 > p_isrbase[0]->PDF()->RescaleFactor() ||
@@ -427,31 +416,22 @@ double ISR_Handler::PDFWeight(const int mode, Vec4D p1, Vec4D p2, double Q12,
   default:
     return 0.;
   }
-  if (has_nonexistent_or_correct_remnant_kinematics) {
-    double f1 = (cmode & 1) ? p_isrbase[0]->Weight(fl1) : 1.0;
-    double f2 = (cmode & 2) ? p_isrbase[1]->Weight(fl2) : 1.0;
-    m_xf1 = x1 * f1;
-    m_xf2 = x2 * f2;
-    msg_IODebugging() << "  PDF1: " << rpa->gen.Beam1() << " -> " << fl1
-                      << " at (" << x1 << "," << sqrt(Q12) << ") -> "
-                      << om::bold << f1 << om::reset << "\n";
-    msg_IODebugging() << "  PDF2: " << rpa->gen.Beam2() << " -> " << fl2
-                      << " at (" << x2 << "," << sqrt(Q22) << ") -> "
-                      << om::bold << f2 << om::reset << "\n";
-    msg_IODebugging() << "  Weight: " << f1 * f2 << std::endl;
-    if (IsBad(f1 * f2))
-      return 0.0;
-    if (s_nozeropdf && f1 * f2 == 0.0)
-      return pow(std::numeric_limits<double>::min(), 0.25);
-    if (mode & 8) {
-      if (mode & 2)
-        return f1;
-      if (mode & 4)
-        return f2;
-    }
-    return f1 * f2;
-  }
-  return 0.;
+  double f1 = (cmode & 1) ? p_isrbase[0]->Weight(fl1) : 1.0;
+  double f2 = (cmode & 2) ? p_isrbase[1]->Weight(fl2) : 1.0;
+  m_xf1 = x1 * f1;
+  m_xf2 = x2 * f2;
+  msg_IODebugging() << "  PDF1: " << rpa->gen.Beam1() << " -> " << fl1
+                    << " at (" << x1 << "," << sqrt(Q12) << ") -> "
+                    << om::bold << f1 << om::reset << "\n";
+  msg_IODebugging() << "  PDF2: " << rpa->gen.Beam2() << " -> " << fl2
+                    << " at (" << x2 << "," << sqrt(Q22) << ") -> "
+                    << om::bold << f2 << om::reset << "\n";
+  msg_IODebugging() << "  Weight: " << f1 * f2 << std::endl;
+  if (IsBad(f1 * f2))
+    return 0.0;
+  if (s_nozeropdf && f1 * f2 == 0.0)
+    return pow(std::numeric_limits<double>::min(), 0.25);
+  return f1 * f2;
 }
 
 double ISR_Handler::Flux(const Vec4D &p1, const Vec4D &p2) {
@@ -492,26 +472,6 @@ bool ISR_Handler::BoostInLab(Vec4D *p, const size_t n) {
     m_cmsboost.BoostBack(p[i]);
   }
   return true;
-}
-
-REMNANTS::Remnant_Base *ISR_Handler::GetRemnant(const size_t beam) const {
-  return beam < 2 ? p_remnants[beam] : nullptr;
-}
-
-bool ISR_Handler::CheckRemnantKinematics(const ATOOLS::Flavour &fl, double &x,
-                                         int beam, bool swapped) {
-  if (x > p_isrbase[beam]->PDF()->RescaleFactor())
-    return false;
-  if (m_rmode == 0)
-    return true;
-  p_remnants[beam]->Reset();
-  double pp(beam == 0 ? x * p_beam[0]->OutMomentum().PPlus()
-                      : x * p_beam[1]->OutMomentum().PMinus());
-  double pm(sqr(fl.Mass()));
-  pm /= pp;
-  Vec4D mom((pp + pm) / 2.0, 0.0, 0.0,
-            beam == 0 ? (pp - pm) / 2.0 : (pm - pp) / 2.0);
-  return p_remnants[beam]->TestExtract(fl, mom);
 }
 
 void ISR_Handler::Reset(const size_t i) const {}

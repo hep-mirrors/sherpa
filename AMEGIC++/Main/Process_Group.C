@@ -48,12 +48,14 @@ PHASIC::Process_Base *AMEGIC::Process_Group::GetProcess(const PHASIC::Process_In
   if (pi.m_fi.m_nlotype&nlo_type::vsub ||
       pi.m_fi.m_nlotype&nlo_type::loop ||
       pi.m_fi.m_nlotype&nlo_type::born) typechk++;
-  if (typechk>1)
+  if (typechk>1 && pi.m_nlomode!=nlo_mode::yfs)
     THROW(fatal_error,"NLO_Parts 'RS' and 'BVI' must be assigned separately!");
 
   nlo_type::code nlotype=pi.m_fi.m_nlotype;
   // QCD/EW subtraction
-  if (nlotype!=nlo_type::lo) {
+  // dont do for YFS!
+  // if(pi.m_nlomode!=nlo_mode::yfs){
+  if (nlotype!=nlo_type::lo && pi.m_nlomode!=nlo_mode::yfs) {
     if (nlotype&nlo_type::real || nlotype&nlo_type::rsub) {
       Single_Real_Correction *src = new Single_Real_Correction();
       if (!(nlotype&nlo_type::real)) src->SetNoTree(true);
@@ -68,7 +70,7 @@ PHASIC::Process_Base *AMEGIC::Process_Group::GetProcess(const PHASIC::Process_In
     }
   }
   // LO processes
-  else if (nlotype==nlo_type::lo || nlotype==nlo_type::real) {
+  else if (nlotype==nlo_type::lo || nlotype==nlo_type::real || pi.m_nlomode==nlo_mode::yfs) {
     if (pi.m_amegicmhv>0) {
       if (pi.m_amegicmhv==10 ||
           pi.m_amegicmhv==12) return new Single_Process_External();

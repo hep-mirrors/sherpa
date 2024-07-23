@@ -1,0 +1,50 @@
+# general settings
+EVENTS: 10k
+EVENT_GENERATION_MODE: Weighted
+EVENT_DISPLAY_INTERVAL: 100
+BATCH_MODE: 7
+
+# set up beams for LHC 13 TeV run
+BEAMS: 2212
+BEAM_ENERGIES: 6500
+
+# exclude tau (15) from (massless) lepton container (90)
+PARTICLE_DATA:
+  6:
+    Width:  0
+    Stable: 0
+  15:
+    Massive: 1
+
+# pp -> ttbar+jets
+PROCESSES:
+- 93 93 -> 6 -6 93{1}:
+    Order: {QCD: 2, EW: 0}
+    CKKW:  20
+
+HARD_DECAYS:
+  Enabled: true
+  Mass_Smearing: 0
+
+ANALYSIS: Rivet
+RIVET:
+  --analyses:
+    - ATLAS_2016_I1468168
+    - ATLAS_2017_I1495243
+    - ATLAS_2017_I1614149
+    - ATLAS_2018_I1646686
+    - ATLAS_2018_I1656578
+    - ATLAS_2018_I1705857
+    - ATLAS_2018_I1707015
+    - ATLAS_2019_I1750330
+    - ATLAS_2019_I1759875
+    - ATLAS_2020_I1801434
+    - ATLAS_2022_I2077575
+    - ATLAS_2022_I2152933
+    - ATLAS_2023_I2648096
+    - CMS_2018_I1620050
+    - CMS_2018_I1703993
+    - CMS_2019_I1753720
+    - MC_TTBAR:TTMODE=ALLHAD
+    - MC_TTBAR:TTMODE=ONELEP
+    - MC_TTBAR:TTMODE=TWOLEP

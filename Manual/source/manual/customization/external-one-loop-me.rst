@@ -22,7 +22,7 @@ integration and PDF weights for hadron collisions. Sherpa will provide
 sets of four-momenta and request for a specific parton level process
 the helicity and colour summed one-loop matrix element (more specific:
 the coefficients of the Laurent series in the dimensional
-regularization parameter epsilon up to the order epsilon^0).
+regularisation parameter epsilon up to the order epsilon^0).
 
 An example setup for interfacing such an external one-loop code,
 following the Binoth Les Houches interface proposal

@@ -32,6 +32,13 @@ PDF_Defaults::PDF_Defaults()
 
   m_deflib[kf_photon] = "SASGSherpa";
   m_defset[kf_photon] = "SAS1M";
+
+  m_deflib[kf_pomeron] = "H1Sherpa";
+  m_defset[kf_pomeron] = "FitB";
+#ifdef USING__LHAPDF
+  m_deflib[kf_reggeon] = "LHAPDFSherpa";
+  m_defset[kf_reggeon] = "GRVPI0";
+#endif
 }
 
 std::ostream &PDF::operator<<(std::ostream &ostr,const PDF::PDF_AS_Info &asi)

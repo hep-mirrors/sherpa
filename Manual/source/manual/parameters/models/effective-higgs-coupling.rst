@@ -16,7 +16,7 @@ configuring ``MODEL: HEFT``.
 The effective coupling of gluons to the Higgs boson, g_ggH, can be
 calculated either for a finite top-quark mass or in the limit of an
 infinitely heavy top using the switch ``FINITE_TOP_MASS: true`` or
-``FINITE_TOP_MASS: false``, respectively. Similarily, the
+``FINITE_TOP_MASS: false``, respectively. Similarly, the
 photon-photon-Higgs coupling, g_ppH, can be calculated both for finite
 top and/or W masses or in the infinite mass limit using the switches
 ``FINITE_TOP_MASS`` and ``FINITE_W_MASS``. The default choice for both

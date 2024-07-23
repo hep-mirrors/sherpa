@@ -60,10 +60,19 @@ bool Beam_Channels::MakeChannels() {
                     << "   Will not initialize integration over spectra.\n";
       }
       break;
+    case beammode::Fixed_Target:
+      if(!DefineColliderChannels()) {
+        msg_Error() << "Error in " << METHOD << " for collider set-up:\n"
+                    << "   Don't know how to deal with combination of beamspectra: "
+                    << m_beamtype[0] << " + " << m_beamtype[1] << ".\n"
+                    << "   Will not initialize integration over spectra.\n";
+      }
+      // CheckForStructuresFromME();
+      break;
     case beammode::unknown:
     default:
       msg_Error() << "Error in " << METHOD << ":\n"
-                  << "   Unknown beam type.\n"
+                  << "   Unknown beam type: "<< m_beammode<< "\n"
                   << "   Will not initialize integration over spectra.\n";
       return false;
   }
@@ -74,6 +83,9 @@ bool Beam_Channels::DefineColliderChannels() {
   // default collider setup - no spectra
   if (m_beamtype[0] == beamspectrum::monochromatic &&
       m_beamtype[1] == beamspectrum::monochromatic)
+    return true;
+  if (m_beamtype[0] == beamspectrum::Fixed_Target &&
+      m_beamtype[1] == beamspectrum::Fixed_Target)
     return true;
   // one or two laser backscattering spectra with monochromatic beams
   if ((m_beamtype[0] == beamspectrum::monochromatic &&
@@ -91,29 +103,20 @@ bool Beam_Channels::DefineColliderChannels() {
     CheckForStructuresFromME();
     return true;
   }
-  // one or two EPA spectra with monochromatic beams
-  // currently our EPA is completely collinear, with real photons:
-  // - todo: add proper EPA, with virtual photons and a physical deflection angle of
-  //         the emitters.
-  if ((m_beamtype[0] == beamspectrum::monochromatic &&
-       m_beamtype[1] == beamspectrum::EPA) ||
-      (m_beamtype[0] == beamspectrum::EPA &&
-       m_beamtype[1] == beamspectrum::monochromatic) ||
-      (m_beamtype[0] == beamspectrum::EPA &&
-       m_beamtype[1] == beamspectrum::EPA)) {
-    double exponent = (int(m_beamtype[0] == beamspectrum::EPA) +
-                       int(m_beamtype[1] == beamspectrum::EPA)) * 0.5;
+  // one or two EPA/Pomeron spectra with monochromatic beams.
+  // currently our EPA is completely collinear, with real photons.
+  bool beam0_is_on = m_beamtype[0] == beamspectrum::EPA ||
+                     m_beamtype[0] == beamspectrum::Pomeron ||
+                     m_beamtype[0] == beamspectrum::Reggeon;
+  bool beam1_is_on = m_beamtype[1] == beamspectrum::EPA ||
+                     m_beamtype[1] == beamspectrum::Pomeron ||
+                     m_beamtype[1] == beamspectrum::Reggeon;
+  if (beam0_is_on || beam1_is_on) {
+    double exponent = (int(beam0_is_on) +
+                       int(beam1_is_on)) * 0.5;
     m_beamparams.push_back(Channel_Info(channel_type::simple, exponent));
     CheckForStructuresFromME();
     return true;
-  }
-  if (m_beamtype[0] == beamspectrum::spectrum_reader ||
-      m_beamtype[1] == beamspectrum::spectrum_reader) {
-    msg_Error() << "Warning in " << METHOD << ":\n"
-                << "   Beam spectra from spectrum reader - "
-                << "will have to find a way to parse relevant information.\n"
-                << "   Will pretend  a simple pole is good enough.\n";
-    m_beamparams.push_back(Channel_Info(channel_type::simple, 0.5));
   }
   return true;
 }

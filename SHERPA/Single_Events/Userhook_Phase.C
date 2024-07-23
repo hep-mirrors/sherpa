@@ -18,10 +18,15 @@ Userhook_Phase::Userhook_Phase(Sherpa* sherpa):
   m_type=eph::Userhook;
   InitializeHooks(sherpa);
 
-  for (Userhook_Vector::iterator it=m_userhooks.begin(); it!=m_userhooks.end(); ++it) {
-    m_name+=(*it)->Name()+"+";
+  if (m_userhooks.empty()) {
+    m_name="None";
   }
-  if (m_name.length()>0) m_name.pop_back();
+  else {
+    for (Userhook_Vector::iterator it=m_userhooks.begin(); it!=m_userhooks.end(); ++it) {
+      m_name+=(*it)->Name()+"+";
+    }
+    if (m_name.length()>0) m_name.pop_back();
+  }
 }
 
 Userhook_Phase::~Userhook_Phase()

@@ -97,7 +97,7 @@ void PDF_Electron::CalculateSpec(const double& x, const double& Q2)
       ((1.+x)*(6.*Li+12.*sqr(log(1.-x))-3.*M_PI*M_PI)+
        1./(1.-x)*(1.5*(1.+8.*x+3.*x*x)*log(x)+6.*(x+5.)*(1.-x)*log(1.-x)+
        12.*(1.+x*x)*log(x)*log(1.-x)-(.5+3.5*x*x)*sqr(log(x))+
-		  .25*(39.-24.*x-15.*x*x)));                
+      .25*(39.-24.*x-15.*x*x)));                
   } 
 
   m_xpdf = x * (S*pow(1.-x,m_beta/2.-1.)+(h0+h1+h2));  

@@ -21,8 +21,8 @@
 // along with this program; if not, write to the Free Software               //
 // Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA //
 //                                                                           //
-// $Revision:: 219                                                          $//
-// $Date:: 2008-04-03 15:21:00 +0200 (Thu, 03 Apr 2008)                     $//
+// $Revision::                                                              $//
+// $Date::                                                                  $//
 ///////////////////////////////////////////////////////////////////////////////
 
 #ifndef __SISCONE_H__
@@ -78,6 +78,27 @@ class Csiscone : public Cstable_cones, public Csplit_merge{
 		   Esplit_merge_scale _split_merge_scale=SM_pttilde);
 
   /**
+   * compute the jets from a given particle set.
+   * We are doing multiple passes such pass n_pass looks for jets among 
+   * all particles not put into jets during previous passes.
+   * By default the number of passes is infinite (0). 
+   * \param _particles   list of particles
+   * \param _radius      cone radius
+   * \param _n_pass_max  maximum number of passes (0=full search)
+   * \param _ptmin       minimum pT of the protojets
+   * \param _ordering_scale    the ordering scale to decide which stable
+   *                           cone is removed
+   *
+   * Note that the Csplit_merge::SM_var2_hardest_cut_off cut is not
+   * used in the progressive removal variant.
+   * 
+   * \return the number of jets found.
+   */
+  int compute_jets_progressive_removal(std::vector<Cmomentum> &_particles, double _radius, 
+				       int _n_pass_max=0, double _ptmin=0.0,
+				       Esplit_merge_scale _ordering_scale=SM_pttilde);
+
+  /**
    * recompute the jets with a different overlap parameter.
    * we use the same particles and R as in the preceeding call.
    * \param _f           shared energy threshold for splitting&merging
@@ -92,14 +113,42 @@ class Csiscone : public Cstable_cones, public Csplit_merge{
   int recompute_jets(double _f, double _ptmin = 0.0,
 		     Esplit_merge_scale _split_merge_scale=SM_pttilde);
 
-  /// list of protocones found pass-by-pass
+  /// list of protocones found pass-by-pass (not filled by compute_jets_progressive_removal)
   std::vector<std::vector<Cmomentum> > protocones_list;
 
   // random number initialisation
   static bool init_done;      ///< check random generator initialisation
 
+#ifdef DEBUG_STABLE_CONES
+  int nb_hash_cones_total, nb_hash_occupied_total;
+#endif
+
+  /**
+   * A call to this function modifies the stream
+   * used to print banners (by default cout).
+   *
+   * Please note that if you distribute 3rd party code
+   * that links with SISCone, that 3rd party code must not
+   * use this call turn off the printing of thw banner
+   * by default. This requirement reflects the spirit of
+   * clause 2c of the GNU Public License (v2), under which
+   * SISCone is distributed.
+   */
+  static void set_banner_stream(std::ostream * ostr) {_banner_ostr = ostr;}
+
+  /**
+   * returns a pointer to the stream to be used to print banners
+   * (cout by default)
+   */
+  static std::ostream * banner_stream() {return _banner_ostr;}
+
  private:
   bool rerun_allowed;         ///< is recompute_jets allowed ?
+  static std::ostream * _banner_ostr; ///< stream to use for banners
+
+  /// ensure things are initialised
+  void _initialise_if_needed();
+
 };
 
   
@@ -110,8 +159,8 @@ class Csiscone : public Cstable_cones, public Csplit_merge{
 /** 
  * return SISCone package name.
  * This is nothing but "SISCone", it is a replacement to the
- * PACKAGE_NAME string defined in config.h and which is not
- * public by default.
+ * SISCONE_PACKAGE_NAME string defined in config.h and which is not
+ * guaranteed to be public.
  * \return the SISCone name as a string
  */
 std::string siscone_package_name();

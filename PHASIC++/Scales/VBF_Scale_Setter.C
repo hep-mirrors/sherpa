@@ -125,7 +125,7 @@ VBF_Scale_Setter::VBF_Scale_Setter
     s_csmode=s["MEPS_COLORSET_MODE"].GetScalarWithOtherDefault<int>(2);
     s_core=s["CORE_SCALE"].GetScalarWithOtherDefault<std::string>("Default");
     s_nfgsplit=Settings::GetMainSettings()["DIPOLES"]["NF_GSPLIT"].Get<int>();
-    s_kfac = Settings::GetMainSettings()["CSS_KFACTOR_SCHEME"].Get<int>();
+    s_kfac = Settings::GetMainSettings()["SHOWER"]["KFACTOR_SCHEME"].Get<int>();
   }
   m_scale.resize(2*stp::size);
   std::string tag(args.m_scale);

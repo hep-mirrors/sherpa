@@ -1,0 +1,31 @@
+# general settings
+EVENT_GENERATION_MODE: Weighted
+EVENTS: 10k
+EVENT_DISPLAY_INTERVAL: 100
+BATCH_MODE: 7
+
+AMISIC:
+  nS_bins: 4
+
+BEAMS:         [11, -11]
+BUNCHES:       22
+BEAM_ENERGIES: 103.0
+BEAM_SPECTRA:  EPA
+PDF_LIBRARY:   GRVSherpa
+PDF_SET:       GRVLO
+
+SCALES: METS{MU_F2}{MU_R2}{MU_Q2}
+
+PROCESSES:
+- 93 93 -> 93 -93:
+    Order: {QCD: 2, EW: 0}
+
+SELECTORS:
+- [PT, 93, 5.0, E_CMS]
+
+ANALYSIS: Rivet
+RIVET:
+  --analyses:
+    - OPAL_2003_I611415
+    - OPAL_2008_I754316
+    - L3_2004_I661114

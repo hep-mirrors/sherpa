@@ -56,6 +56,9 @@ Term *Tag_Setter::ReplaceTags(Term *term) const
   case 10:
     term->Set(sqr(p_setter->PTM()));
     return term;
+  case 0:
+    term->Set(sqr(p_setter->hHT()));
+    return term;
   }
   return term;
 }
@@ -72,6 +75,7 @@ void Tag_Setter::AssignId(Term *term)
   else if (term->Tag()=="P_SUM") term->SetId(8);
   else if (term->Tag()=="TAUB") term->SetId(9);
   else if (term->Tag()=="P_TM2") term->SetId(10);
+  else if (term->Tag()=="hH_T2") term->SetId(0);
   else {
     term->SetId(100+ToType<int>
 		(term->Tag().substr
@@ -100,7 +104,7 @@ namespace PHASIC {
       for (size_t i(p_setter->NIn());i<p.size();++i) psum+=p[i];
       double yboost((psum/(double)(p.size()-p_setter->NIn())).Y());
       double hty(0.0);
-      for (size_t i(p_setter->NIn());i<p.size();++i) 
+      for (size_t i(p_setter->NIn());i<p.size();++i)
         hty+=p[i].PPerp()*exp(htyfac*pow(std::abs(p[i].Y()-yboost),htyexp));
       Term *res(Term::New(sqr(hty)));
       interpreter->AddTerm(res);
@@ -527,12 +531,13 @@ void Tag_Setter::SetTags(Algebra_Interpreter *const calc)
   calc->AddTag("P_TM2","1.0");
   calc->AddTag("P_SUM","(1.0,0.0,0.0,0.0)");
   calc->AddTag("TAUB","1.0");
+  calc->AddTag("hH_T2", "1.0");
   calc->AddFunction(new H_TY2(p_setter));
   calc->AddFunction(new Dressed_H_Tp2(p_setter));
   calc->AddFunction(new Dressed_H_Tln2(p_setter));
   calc->AddFunction(new Dressed_MPerp2(p_setter));
   for (size_t i=0;i<p_setter->Scales().size();++i)
     calc->AddTag("MU_"+ToString(i)+"2","1.0");
-  for (size_t i=0;i<p_setter->NIn()+p_setter->NOut();++i) 
+  for (size_t i=0;i<p_setter->NIn()+p_setter->NOut();++i)
     calc->AddTag("p["+ToString(i)+"]",ToString(Vec4D()));
 }

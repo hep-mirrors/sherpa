@@ -19,9 +19,9 @@ MCatNLO::MCatNLO(const NLOMC_Key &key):
   p_gamma = new Gamma(this,p_mcatnlo);
   p_mcatnlo->SetGamma(p_gamma);
   p_mcatnlo->Init(key.p_model,key.p_isr);
-  Settings& s = Settings::GetMainSettings();
-  m_psmode=s["NLO_CSS_PSMODE"].Get<int>();
-  m_wcheck=s["NLO_CSS_WEIGHT_CHECK"].Get<int>();
+  auto nlopss = Settings::GetMainSettings()["MC@NLO"];
+  m_psmode=nlopss["PSMODE"].Get<int>();
+  m_wcheck=nlopss["WEIGHT_CHECK"].Get<int>();
   for (int i(0);i<2;++i) m_kt2min[i]=p_mcatnlo->TMin(i);
 }
 

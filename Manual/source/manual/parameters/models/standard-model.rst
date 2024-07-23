@@ -10,6 +10,7 @@ Standard Model
 .. index:: VEV
 .. index:: CKM_Lambda
 .. index:: EW_SCHEME
+.. index:: EW_REN_SCHEME
 .. index:: CKM_Order
 .. index:: CKM_Cabibbo
 .. index:: CKM_A
@@ -33,7 +34,7 @@ Standard Model
 The SM inputs for the electroweak sector can be given in nine
 different schemes, that correspond to different choices of which SM
 physics parameters are considered fixed and which are derived from the
-given quantities. The electro-weak coupling is by default fixed, unless its
+given quantities. The electroweak coupling is by default fixed, unless its
 running has been enabled (cf. :ref:`COUPLINGS`).
 The input schemes are selected through the ``EW_SCHEME`` parameter, whose
 default is :option:`Gmu`. The following options are provided:
@@ -117,8 +118,15 @@ possess an ambiguity on how to construct a real EW coupling in the
 complex mass scheme. Several conventions are implemented and can
 be accessed through ``GMU_CMS_AQED_CONVENTION``.
 
+In general, for NLO EW calculations, the EW renormalisation scheme has 
+to be defined as well. By default, it is set to the EW input parameter 
+scheme set through ``EW_SCHEME``. If needed, however, it can also be 
+set to a different scheme using ``EW_REN_SCHEME`` using the above 
+options. Irrespective of how the EW renormalisation scheme is set, 
+the setting is then communicated automatically to the EW loop provider.
+
 To account for quark mixing the CKM matrix elements have to be
-assigned.  For this purpose the Wolfenstein parametrization
+assigned.  For this purpose the Wolfenstein parameterisation
 :cite:`Wolfenstein1983yz` is employed. The order of expansion in the
 lambda parameter is defined through
 
@@ -133,7 +141,7 @@ matrix.  The parameter convention for higher expansion terms reads:
 
 
 * ``Order: 1``, the ``Cabibbo`` subsetting has to be set, it
-  parametrizes lambda and has the default value :option:`0.22537`.
+  parameterises lambda and has the default value :option:`0.22537`.
 
 * ``Order: 2``, in addition the value of ``CKM_A`` has to be set, its
   default is :option:`0.814`.
@@ -155,7 +163,7 @@ The CKM matrix elements V_ij can also be read in using
 
 Complex values can be given by providing two values: ``<V_ij> -> [Re,
 Im]``.  Values not explicitly given are taken from the afore computed
-Wolfenstein parametrisation. Setting ``CKM: {Output: true}`` enables
+Wolfenstein parameterisation. Setting ``CKM: {Output: true}`` enables
 an output of the CKM matrix.
 
 The remaining parameter to fully specify the Standard Model is the

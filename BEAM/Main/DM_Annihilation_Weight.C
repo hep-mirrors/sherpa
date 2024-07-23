@@ -4,7 +4,6 @@
 
 using namespace BEAM;
 using namespace ATOOLS;
-using namespace std;
 
 DM_Annihilation_Weight::DM_Annihilation_Weight(Kinematics_Base * kinematics) :
   Weight_Base(kinematics), m_relativistic(true)
@@ -25,8 +24,8 @@ DM_Annihilation_Weight::~DM_Annihilation_Weight() {}
 void DM_Annihilation_Weight::AssignKeys(Integration_Info *const info) {
   m_sprimekey.Assign(m_keyid+std::string("s'"),5,0,info);
   // TODO: Unsure about correct implementation of the chosen convention, see Collider_Kinematics.C
-  m_xkey.Assign(m_keyid+string("xDM"),3,0,info);
-  m_cosxikey.Assign(m_keyid+string("cosXi"),3,0,info);
+  m_xkey.Assign(m_keyid + std::string("xDM"), 3, 0, info);
+  m_cosxikey.Assign(m_keyid + std::string("cosXi"), 3, 0, info);
 }
 
 bool DM_Annihilation_Weight::Calculate(const double & scale) {

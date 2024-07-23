@@ -16,12 +16,12 @@ Installation
 
 
 Sherpa is distributed as a tarred and gzipped file named
-:samp:`SHERPA-MC-{<VERSION>}.tar.gz`, and can be unpacked in the
+:samp:`sherpa-{<VERSION>}.tar.gz`, and can be unpacked in the
 current working directory with
 
 .. code-block:: shell-session
 
-   $ tar -zxf SHERPA-MC-<VERSION>.tar.gz
+   $ tar -zxf sherpa-<VERSION>.tar.gz
 
 Alternatively, it can also be accessed via Git through the location
 specified on the download page.
@@ -44,7 +44,7 @@ you use the distribution tarball:
 
 .. code-block:: shell-session
 
-   $ cd SHERPA-MC-<VERSION>/
+   $ cd sherpa-<VERSION>/
    $ cmake -S . -B <builddir> [+ optional configuration options described below]
    $ cmake --build <builddir> [other build options, e.g. -j 8]
    $ cmake --install <builddir>
@@ -121,9 +121,10 @@ For a complete list of possible configuration options
 (and their correct capitalisation),
 run ``cmake -LA``.
 
-The Sherpa package has successfully been compiled, installed and
-tested on Arch, SuSE, RedHat / Scientific Linux and Debian / Ubuntu Linux/ Mac OS X
-systems using the GNU compilers collection, clang and Intel OneAPI 2022.
+The Sherpa package has successfully been compiled, installed and tested
+on various Linux distributions
+(Arch Linux, SUSE Linux, RHEL, Scientific Linux, Debian, Ubuntu) and on macOS,
+using the GNU Compiler Collection (GCC), Clang and Intel OneAPI 2022.
 
 If you have multiple compilers installed on your system, you can use
 shell environment variables to specify which of these are to be
@@ -135,20 +136,22 @@ used. A list of the available variables is printed with
 
 in the Sherpa top level directory and looking at the last
 lines. Depending on the shell you are using, you can set these
-variables e.g. with export (bash) or setenv (csh).  Examples:
+variables e.g. with export (bash) or setenv (csh). For example,
+to use a specific versioned GCC installation, you could run
+before calling ``cmake``:
 
 .. code-block:: bash
 
-   export CXX=g++-11
-   export CC=gcc-11
-   export CPP=cpp-11
+   export CXX=g++-13
+   export CC=gcc-13
+   export CPP=cpp-13
 
 
 Installation on Cray XE6 / XK7
 ==============================
 
 Sherpa has been installed successfully on Cray XE6 and Cray XK7.  The
-following configure command should be used
+following configure command should be used:
 
 .. code-block:: shell-session
 
@@ -179,26 +182,15 @@ Sherpa can then be run with
 
    $ qsub -A <account> -n <nofcores> -t 60 --mode c16 <prefix>/bin/Sherpa -lrun.log
 
-MacOS Installation
+macOS Installation
 ==================
 
-Installation on macOS has been tested with the native clang compiler and the native ``make``, installed through the Xcode Command Line Tools,
-and the package ``cmake``, installed through `Homebrew <https://brew.sh/>`_. With this setup it runs analogously to the usual installation procedure.
-
-Please be aware of the following
-issues which have come up on Mac installations before:
-
-* On 10.4 and 10.5 only gfortran is supported, and you will have
-  to install it e.g. from HPC
-
-* Make sure that you don’t have two versions of g++ and libstdc++
-  installed and being used inconsistently. This appeared e.g. when the
-  gcc suite was installed through Fink to get gfortran. This caused
-  Sherpa to use the native MacOS compilers but link the libstdc++ from
-  Fink (which is located in /sw/lib). You can find out which libraries
-  are used by Sherpa by running ``otool -L bin/Sherpa``
-
-* Depending on your setup, it might be necessary to set the ``DYLD_LIBRARY_PATH`` to include ``$INSTALL_PREFIX/lib/SHERPA-MC``.
+The installation on macOS works analogously to an installation
+on a GNU/Linux system.
+You might need to ensure first that the Xcode Command Line Tools are installed.
+Other missing command line tools
+can be installed through a package manager like `Homebrew <https://brew.sh/>`_
+or `MacPorts <https://www.macports.org>`_.
 
 .. _Running Sherpa:
 
@@ -213,10 +205,10 @@ defined by several parameters, which can all be listed in a common
 file, or data card (Parameters can be alternatively specified on the
 command line; more details are given in :ref:`Input structure`).  This
 steering file is called ``Sherpa.yaml`` and some example setups
-(i.e. ``Sherpa.yaml`` files) are distributed with the current version
-of Sherpa. They can be found in the directory
-``<prefix>/share/SHERPA-MC/Examples/``, and descriptions of some of
-their key features can be found in the section :ref:`Examples`.
+(i.e. ``Sherpa.yaml`` files) are distributed with Sherpa.
+They can be found in the directory ``<prefix>/share/SHERPA-MC/Examples/``,
+and descriptions of some of their key features can be found
+in the section :ref:`Examples`.
 
 .. note:: It is not in general possible to reuse steering files from
    previous Sherpa versions. Often there are small changes in the
@@ -290,9 +282,10 @@ information on and examples of how to run Sherpa using AMEGIC++, see
 
 If the internal hard-coded matrix elements or Comix are used, and
 AMEGIC++ is not, an initialization run is not needed, and Sherpa will
-calculate the cross sections and generate events during the first run.
+calculate the cross sections and generate events during the first run
+already.
 
-As the cross sections are integrated, the integration over phase space
+As the cross sections get integrated, the integration over phase space
 is optimized to arrive at an efficient event generation.  Subsequently
 events are generated if a number of events is passed to the optional
 argument :option:`--events` or set in the :file:`Sherpa.yaml` file with the
@@ -403,7 +396,7 @@ In the ``PROCESSES`` list of the steering file this translates into
 
 Fixing the order of electroweak
 couplings to :option:`2`, matrix elements of all partonic subprocesses
-for Drell-Yan production without any and with up to two extra QCD
+for Drell-Yan production without any and with up to five extra QCD
 parton emissions will be generated.  Proton--proton collisions are
 considered at beam energies of 6.5 TeV.
 Model parameters and couplings can all be defined in
@@ -429,10 +422,15 @@ a short and simple
 
    PROCESSES:
    - 93 93 -> 11 -11 93{1}:
-     Order: {QCD: 0, EW: 2}
-     CKKW: 20
+       Order: {QCD: 0, EW: 2}
+       CKKW: 20
 
-for now. Then you can go ahead and start Sherpa for the first time by running the
+for now.
+In addition, remove the :option:`ASSOCIATED_CONTRIBUTIONS_VARIATIONS` listing,
+since these can no longer be calculated after modifying :option:`PROCESSES`.
+You might also need to remove (or install) PDFs that are not available
+on your system from the :option:`PDF_VARIATIONS` listing.
+Then you can go ahead and start Sherpa for the first time by running the
 
 .. code-block:: shell-session
 
@@ -448,92 +446,77 @@ generator(s). The Sherpa output will look like:
 
 .. code-block:: console
 
-   Welcome to Sherpa, <user name> on <host name>. Initialization of framework underway.
+   Welcome to Sherpa, <user name> on <host name>.
+   Initialization of framework underway ...
    [...]
-   Random::SetSeed(): Seed set to 1234
+   Seed: 1234
    [...]
-   Beam_Spectra_Handler :
-      type = Monochromatic*Monochromatic
-      for    P+  ((4000,0,0,4000))
-      and    P+  ((4000,0,0,-4000))
-   PDF set 'ct14nn' loaded for beam 1 (P+).
-   PDF set 'ct14nn' loaded for beam 2 (P+).
-   Initialized the ISR.
-   Standard_Model::FixEWParameters() {
-     Input scheme: 2
-                   alpha(m_Z) scheme, input: 1/\alphaQED(m_Z), m_W, m_Z, m_h, widths
-     Ren. scheme:  2
-                   alpha(m_Z)
-     Parameters:   sin^2(\theta_W) = 0.222928 - 0.00110708 i
-                   vev              = 243.034 - 3.75492 i
-   }
-   Running_AlphaQED::PrintSummary() {
-     Setting \alpha according to EW scheme
+   Initializing beam spectra ...
+     Type: Collider Setup
+     Beam 1: P+ (enabled = 0, momentum = (6500,0,0,6500))
+     Beam 2: P+ (enabled = 0, momentum = (6500,0,0,-6500))
+   Initializing PDFs ...
+     Hard scattering:    PDF4LHC21_40_pdfas + PDF4LHC21_40_pdfas
+     MPI:                PDF4LHC21_40_pdfas + PDF4LHC21_40_pdfas
+   [...]
+   Fixed electroweak parameters
+     Input scheme: alpha(mZ)-mZ-sin(theta_W) scheme, input: 1/\alphaQED(m_Z), sin^2(theta_W), m_Z, m_h, widths
+     Ren. scheme:  alphamZsW
+     Parameters:   sin^2(\theta_W) = 0.23113
+                   vev              = 246.16 - 3.36725 i
+   Set \alpha according to EW scheme
      1/\alpha(0)   = 128.802
      1/\alpha(def) = 128.802
-   }
-   One_Running_AlphaS::PrintSummary() {
-     Setting \alpha_s according to PDF
-     perturbative order 2
-     \alpha_s(M_Z) = 0.118
-   }
+   Particle data:
    [...]
-   Hadron_Init::Init(): Initializing kf table for hadrons.
-   Initialized the Fragmentation_Handler.
-   Initialized the Soft_Collision_Handler.
-   Initialized the Shower_Handler.
+   Initializing showers ...
+   Initializing matrix elements for the hard processes ...
+   Building processes (3 ME generators, 1 process blocks) ...
+   Setting up processes ........ done (59 MB, 0s/0s)
+   Performing tests ........ done (60 MB, 0s/0s)
    [...]
-   Matrix_Element_Handler::BuildProcesses(): Looking for processes .. done
-   Matrix_Element_Handler::InitializeProcesses(): Performing tests .. done
-   Matrix_Element_Handler::InitializeProcesses(): Initializing scales  done
-   Initialized the Matrix_Element_Handler for the hard processes.
-   Primordial_KPerp::Primordial_KPerp() {
-     scheme = 0
-     beam 1: P+, mean = 1.1, sigma = 0.914775
-     beam 2: P+, mean = 1.1, sigma = 0.914775
-   }
-   Initialized the Beam_Remnant_Handler.
-   Hadron_Decay_Map::Read:   Initializing HadronDecays.dat. This may take some time.
-   Initialized the Hadron_Decay_Handler, Decay model = Hadrons
+   Initializing hadron particle information ...
+   Initialized fragmentation
+   Initialized hadron decays (model = HADRONS++)
+   Initialized soft photons
    [...]
-   R
 
 Then Sherpa will start to integrate the cross sections. The output
 will look like:
 
 .. code-block:: console
 
-   Process_Group::CalculateTotalXSec(): Calculate xs for '2_2__j__j__e-__e+' (Comix)
-   Starting the calculation at 11:58:56. Lean back and enjoy ... .
-   822.035 pb +- ( 16.9011 pb = 2.05601 % ) 5000 ( 11437 -> 43.7 % )
-   full optimization:  ( 0s elapsed / 22s left ) [11:58:56]
-   841.859 pb +- ( 11.6106 pb = 1.37916 % ) 10000 ( 18153 -> 74.4 % )
-   full optimization:  ( 0s elapsed / 21s left ) [11:58:57]
-   ...
+   Calculating xs for '2_2__j__j__e-__e+' (Comix) ...
+   Integration parameters: n_{min} = 5000, N_{opt} = 10, N_{max} = 1, exponent = 0.5
+   Starting the calculation at 09:43:52. Lean back and enjoy ... .
+   1630.48 pb +- ( 54.9451 pb = 3.36988 % ) 5000 ( 5029 -> 99.4 % )
+   full optimization:  ( 0s elapsed / 5s left ) [09:43:52]
+   1692.37 pb +- ( 46.7001 pb = 2.75945 % ) 12071 ( 12133 -> 99.5 % )
+   full optimization:  ( 0s elapsed / 5s left ) [09:43:52]
+   [...]
 
 The first line here displays the process which is being calculated. In
-this example, the integration is for the 2->2 process, parton, parton
--> electron, positron. The matrix element generator used is displayed
+this example, the integration is for the :math:`2 \to 2` process, parton, parton
+:math:`\to` electron, positron. The matrix element generator used is displayed
 after the process.  As the integration progresses, summary lines are
-displayed, like the one shown above. The current estimate of the cross
+displayed, like the ones shown above. The current estimate of the cross
 section is displayed, along with its statistical error estimate. The
-number of phase space points calculated is displayed after this
-(:option:`10000` in this example), and the efficiency is displayed
-after that. On the line below, the time elapsed is shown, and an
-estimate of the total time till the optimisation is complete.  In
-square brackets is an output of the system clock.
+number of phase space points calculated is displayed after this,
+and the efficiency is displayed after that. On the line below, the time
+elapsed is shown, and an estimate of the total time till the optimisation
+is complete.  In square brackets is an output of the system clock.
 
 When the integration is complete, the output will look like:
 
 .. code-block:: console
 
-   ...
-   852.77 pb +- ( 0.337249 pb = 0.0395475 % ) 300000 ( 313178 -> 98.8 % )
-   integration time:  ( 19s elapsed / 0s left ) [12:01:35]
-   852.636 pb +- ( 0.330831 pb = 0.038801 % ) 310000 ( 323289 -> 98.8 % )
-   integration time:  ( 19s elapsed / 0s left ) [12:01:35]
-   2_2__j__j__e-__e+ : 852.636 pb +- ( 0.330831 pb = 0.038801 % )  exp. eff: 13.4945 %
-     reduce max for 2_2__j__j__e-__e+ to 0.607545 ( eps = 0.001 )
+   [...]
+   1677.75 pb +- ( 1.74538 pb = 0.104031 % ) 374118 ( 374198 -> 100 % )
+   full optimization:  ( 4s elapsed / 1s left ) [09:43:56]
+   1677.01 pb +- ( 1.36991 pb = 0.0816873 % ) 534076 ( 534157 -> 99.9 % )
+   integration time:   ( 5s elapsed / 0s left ) [09:43:58]
+   2_2__j__j__e-__e+ : 1677.01 pb +- ( 1.36991 pb = 0.0816873 % )  exp. eff: 20.6675 %
+     reduce max for 2_2__j__j__e-__e+ to 1 ( eps = 0.001 -> exp. eff 0.206675 ) 
 
 with the final cross section result and its statistical error displayed.
 
@@ -548,16 +531,21 @@ output looks like:
 
 .. code-block:: console
 
-   Event 10000 ( 72 s total ) = 1.20418e+07 evts/day
-   In Event_Handler::Finish : Summarizing the run may take some time.
-   +----------------------------------------------------+
-   |                                                    |
-   |  Total XS is 900.147 pb +- ( 8.9259 pb = 0.99 % )  |
-   |                                                    |
-   +----------------------------------------------------+
+   [...]
+     Event 100 ( 1 s total ) = 1.12208e+07 evts/day                    
+   Summarizing the run may take some time ...
+   +----------------------------------------------------------------------------+
+   | Nominal or variation name     XS [pb]      RelDev  AbsErr [pb]      RelErr |
+   +----------------------------------------------------------------------------+
+   | Nominal                       1739.79         0 %      171.304      9.84 % |
+   | ME & PS: MUR=0.5 MUF=0.5      1635.61     -5.98 %      187.894     11.48 % |
+   | ME & PS: MUR=2 MUF=2          2261.57     29.99 %      387.031     17.11 % |
+   | [<results for other variations>]                                           |
+   +----------------------------------------------------------------------------+
 
 A summary of the number of events generated is displayed, with the
-total cross section for the process.
+total cross section for the process and possible systematic variations
+:cite:`Bothmann2016nao` and :ref:`Input structure`.
 
 The generated events are not stored into a file by default; for
 details on how to store the events see :ref:`Event output formats`.
@@ -628,7 +616,7 @@ tree-level, detailed in :cite:`Hoeche2009rj`, :cite:`Hoeche2009xc`,
 :cite:`Carli2009cg`, is implemented in Sherpa.
 
 How to setup a multijet merged calculation is detailed in most
-:ref:`Examples`, eg. :ref:`LHC_WJets`, :ref:`LHC_ZJets` or
+:ref:`Examples`, e.g. :ref:`LHC_WJets`, :ref:`LHC_ZJets` or
 :ref:`TopsJets`.
 
 
@@ -691,11 +679,14 @@ run should be used, e.g.
 
 .. code-block:: console
 
-   +-----------------------------------------------------+
-   |                                                     |
-   |  Total XS is 1612.17 pb +- ( 8.48908 pb = 0.52 % )  |
-   |                                                     |
-   +-----------------------------------------------------+
+   +----------------------------------------------------------------------------+
+   | Nominal or variation name     XS [pb]      RelDev  AbsErr [pb]      RelErr |
+   +----------------------------------------------------------------------------+
+   | Nominal                       1739.79         0 %      171.304      9.84 % |
+   | ME & PS: MUR=0.5 MUF=0.5      1635.61     -5.98 %      187.894     11.48 % |
+   | ME & PS: MUR=2 MUF=2          2261.57     29.99 %      387.031     17.11 % |
+   | [<results for other variations>]                                           |
+   +----------------------------------------------------------------------------+
 
 Note that the Monte Carlo error quoted for the total cross section is
 determined during event generation. It, therefore, might differ

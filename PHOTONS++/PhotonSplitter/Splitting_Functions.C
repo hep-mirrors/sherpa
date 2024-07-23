@@ -1,4 +1,5 @@
 #include "PHOTONS++/PhotonSplitter/Splitting_Functions.H"
+#include "MODEL/Main/Model_Base.H"
 
 #include "PHOTONS++/Main/Photons.H" // DO NOT MOVE THIS TO THE HEADER. CAUSES CIRCULAR DEPENDENCIES
 #include "ATOOLS/Math/Random.H"
@@ -31,6 +32,7 @@ Splitting_Function::Splitting_Function(ATOOLS::Particle * splitter, int fla,
   
   // possiblity to enhance splitting here by multiplying alpha 
   m_alpha = PHOTONS::Photons::s_alpha*m_enhancefac;
+  if(IsZero(m_alpha)) m_alpha = MODEL::s_model->ScalarConstant("alpha_QED");
 };
 
 double Splitting_Function::Lambda(const double &a, const double &b, const double &c) const

@@ -22,7 +22,7 @@ html_sidebars = {
 }
 
 html_theme_options = {
-    'logo': 'images/SherpaLogo.jpg',
+    'logo': 'images/sherpa-logo.png',
     'logo_name': True,
     'logo_text_align': 'center',
 }

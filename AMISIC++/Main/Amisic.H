@@ -8,8 +8,8 @@
 #include "AMISIC++/Tools/MI_Parameters.H"
 #include "BEAM/Main/Beam_Spectra_Handler.H"
 #include "PDF/Main/ISR_Handler.H"
+#include "YFS/Main/YFS_Handler.H"
 #include "ATOOLS/Phys/Blob_List.H"
-#include "ATOOLS/Org/File_IO_Base.H"
 #include "ATOOLS/Math/Histogram.H"
 #include <map>
 #include <string>
@@ -53,7 +53,7 @@ namespace AMISIC {
     Impact_Parameter           m_impact;
     Single_Collision_Handler   m_singlecollision;
 
-    mitype::code m_type;
+    mitype m_type;
     bool         m_variable_s;
     double       m_sigmaND_norm;
     double       m_b, m_bfac, m_S, m_Y, m_pt2;
@@ -76,6 +76,7 @@ namespace AMISIC {
 
     bool Initialize(MODEL::Model_Base *const model,
 		    PDF::ISR_Handler *const isr,
+		    YFS::YFS_Handler *const yfs,
                     REMNANTS::Remnant_Handler * remnant_handler);
 
     bool InitMPIs(PDF::ISR_Handler *const isr, const double & scale);

@@ -48,7 +48,7 @@ Single_DipoleTerm::Single_DipoleTerm(const Process_Info &pinfo,
   p_realint(pint)
 {
   DEBUG_FUNC(m_stype<<"[("<<pi<<","<<pj<<");"<<pk<<"]");
-  PHASIC::Process_Base::Init(pinfo, pint->Beam(), pint->ISR());
+  PHASIC::Process_Base::Init(pinfo, pint->Beam(), pint->ISR(), pint->YFS());
   AMEGIC::Process_Base::Init();
 
   auto dipolesettings = Settings::GetMainSettings()["DIPOLES"];
@@ -132,11 +132,13 @@ Single_DipoleTerm::Single_DipoleTerm(const Process_Info &pinfo,
       p_LO_process = new Single_LOProcess_External(lopi,
                                                    p_int->Beam(),
                                                    p_int->ISR(),
+                                                   p_int->YFS(),
                                                    m_stype);
     else if (CF.MHVCalculable(lopi))
       p_LO_process = new Single_LOProcess_MHV(lopi,
                                               p_int->Beam(),
                                               p_int->ISR(),
+                                              p_int->YFS(),
                                               m_stype);
     if (lopi.m_amegicmhv==2) { m_valid=false; return; }
   }
@@ -144,6 +146,7 @@ Single_DipoleTerm::Single_DipoleTerm(const Process_Info &pinfo,
     p_LO_process = new Single_LOProcess(lopi,
                                         p_int->Beam(),
                                         p_int->ISR(),
+                                        p_int->YFS(),
                                         m_stype);
   if (!p_LO_process) THROW(fatal_error,"LO process unknown");
 

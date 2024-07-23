@@ -74,7 +74,7 @@ Variable_Scale_Setter::Variable_Scale_Setter
     tag=tag.substr(pos+1);
   }
   if (core == "") {
-    core = s["CORE_SCALE"].Get<std::string>();
+    core = s["MEPS"]["CORE_SCALE"].Get<std::string>();
   }
   p_core=Core_Scale_Getter::GetObject(core,Core_Scale_Arguments(p_proc,core));
   if (p_core==NULL) THROW(fatal_error,"Invalid core scale '"+core+"'");

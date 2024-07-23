@@ -416,16 +416,15 @@ std::vector<double> One_Running_AlphaS::Thresholds(double q12,double q22)
 void One_Running_AlphaS::PrintSummary()
 {
   if (p_pdf) {
-    msg_Info()<<METHOD<<"() {\n  Setting \\alpha_s according to PDF\n";
+    msg_Tracking()<<"Set \\alpha_s according to PDF\n"
+                  <<"  Perturbative order: "<<m_order<<'\n'
+                  <<"  \\alpha_s(M_Z) = "<<m_as_MZ<<endl;
   }
   else {
-    msg_Info()<<METHOD<<"() {\n  Setting \\alpha_s according to user input\n";
+    msg_Info()<<"Set \\alpha_s according to user input\n"
+              <<"  Perturbative order: "<<m_order<<'\n'
+              <<"  \\alpha_s(M_Z) = "<<m_as_MZ<<endl;
   }
-  msg_Info()<<"  perturbative order "<<m_order
-            <<"\n  \\alpha_s(M_Z) = "<<m_as_MZ;
-  // msg_Info<<"\n  quark masses = { ";
-  // for (int i(0);i<m_nth-1;++i) msg_Info()<<sqrt(masses[i])<<" ";
-  msg_Info()<<"\n}"<<std::endl;
 }
 
 
@@ -550,7 +549,7 @@ void Running_AlphaS::SetActiveAs(PDF::isr::id id)
 {
   AlphasMap::iterator it=m_alphas.find(id);
   if (it==m_alphas.end()) {
-    THROW(fatal_error, "Internal Error");
+    THROW(fatal_error, "Internal Error in Running_AlphaS::SetActiveAs");
   }
   else {
     p_active=it->second;

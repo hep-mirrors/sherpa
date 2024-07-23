@@ -1,0 +1,25 @@
+# collider setup
+BEAMS:  [11, -11]
+BEAM_ENERGIES: [7., 4.]
+
+# model parameters
+ALPHAS(MZ): 0.1188
+ORDER_ALPHAS: 1
+PARTICLE_DATA:
+  4: {Massive: 1}
+  5: {Massive: 1}
+  11: {Massive: 1}
+MASSIVE_PS: 3
+
+PROCESSES:
+- 11 -11 -> 93 93:
+    Order: {QCD: 0, EW: 2}
+- 11 -11 -> 4 -4:
+    Order: {QCD: 0, EW: 2}
+- 11 -11 -> 5 -5:
+    Order: {QCD: 0, EW: 2}
+
+PDF_LIBRARY: None
+
+YFS:
+    MODE: ISR

@@ -14,7 +14,7 @@ different components of event generation.
 .. index:: RUNDATA
 
 These have to be specified in a configuration file which by default is
-named :file:`Sherpa.yaml` in the current working directory.  If you
+named :file:`Sherpa.yaml` residing in the current working directory.  If you
 want to use a different setup directory for your Sherpa run, you have
 to specify it on the command line as :option:`-p \<dir\>` or
 ``'PATH: <dir>'`` (including the quotes).
@@ -31,7 +31,7 @@ Note that you can also pass filenames using the legacy syntax
 :option:`-f \<file\>` or ``'RUNDATA: [<file1>, <file2>]'``.
 However, this is deprecated.
 Use positional arguments instead. Mixing this legacy syntax and positional
-arguments for specifying configuration files is undefined behaviour.
+arguments for specifying configuration files yields undefined behaviour.
 
 Sherpa’s configuration files are written in the `YAML <https://yaml.org>`_
 format.
@@ -77,7 +77,7 @@ An example would be a sequence of two scale variations:
    - 0.25
    - 4.00
 
-In block style, each sequential items is prepended with a single dash.
+In block style, each sequential item is prepended with a single dash.
 Equivalently, the snippet can be rewritten in flow style using square brackets
 (line breaks are completely optional then, and are omitted here):
 
@@ -126,6 +126,23 @@ Note that we have used flow style here,
 because block style would require line breaks,
 which are difficult to deal with on the command line.
 
+For scalar (i.e. single-valued) settings, you can use a more convenient
+syntax on the command line, where the levels are separated with a colon:
+
+.. code-block:: shell-session
+
+   $ <prefix>/bin/Sherpa KEYWORD1:value1 KEYWORD2:value2 ...
+   $ <prefix>/bin/Sherpa HARD_DECAYS:Enabled:false
+
+As this syntax needs no space after the colon,
+you can normally suppress quotation marks as we did here.
+For non-nested scalar settings, there is yet another possibility,
+using an equal sign instead of a colon:
+
+.. code-block:: shell-session
+
+   $ <prefix>/bin/Sherpa KEYWORD1=value1 KEYWORD2=value2 ...
+
 All over Sherpa, particles are defined by the particle code proposed
 by the PDG. These codes and the particle properties will be listed
 during each run with ``OUTPUT: 2`` for the elementary particles and
@@ -133,9 +150,9 @@ during each run with ``OUTPUT: 2`` for the elementary particles and
 characterized by a minus sign in front of their code, e.g. a mu- has
 code ``13``, while a mu+ has ``-13``.
 
-All quantities have to be specified in units of GeV and
+All dimensionful quantities need to be specified in units of GeV and
 millimeter. The same units apply to all numbers in the event output
-(momenta, vertex positions).  Scattering cross sections are denoted in
+(momenta, vertex positions).  Scattering cross sections are quoted in
 pico-barn in the output.
 
 There are a few extra features for an easier handling of the parameter

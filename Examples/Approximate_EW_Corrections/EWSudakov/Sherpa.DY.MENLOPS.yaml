@@ -8,7 +8,8 @@ BEAM_ENERGIES: 6500
 # matrix-element calculation
 ME_GENERATORS: [Amegic, Comix, OpenLoops]
 
-CORE_SCALE: VAR{sqr(91.2)}{sqr(91.2)}{sqr(91.2)}
+MEPS:
+  CORE_SCALE: VAR{sqr(91.2)}{sqr(91.2)}{sqr(91.2)}
 
 VARIATIONS:
   - EWsud

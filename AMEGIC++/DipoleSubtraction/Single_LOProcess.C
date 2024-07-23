@@ -6,6 +6,7 @@
 #include "AMEGIC++/Phasespace/Phase_Space_Generator.H"
 #include "BEAM/Main/Beam_Spectra_Handler.H"
 #include "PDF/Main/ISR_Handler.H"
+#include "YFS/Main/YFS_Handler.H"
 
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Shell_Tools.H"
@@ -20,6 +21,7 @@ using namespace AMEGIC;
 using namespace PHASIC;
 using namespace MODEL;
 using namespace PDF;
+using namespace YFS;
 using namespace BEAM;
 using namespace ATOOLS;
 using namespace std;
@@ -34,6 +36,7 @@ using namespace std;
 Single_LOProcess::Single_LOProcess(const Process_Info &pi,
                                    BEAM::Beam_Spectra_Handler *const beam,
                                    PDF::ISR_Handler *const isr,
+                                   YFS::YFS_Handler *const yfs,
                                    const ATOOLS::sbt::subtype& st) :
   m_gen_str(2), m_ptypename(""), m_libname(""), m_pslibname(""),
   m_stype(st), m_emit(-1), m_spect(-1),
@@ -63,7 +66,7 @@ Single_LOProcess::Single_LOProcess(const Process_Info &pi,
     msg_Info()<<METHOD<<"(): "<<om::red
 	      <<"Sorting flavors!\n"<<om::reset;    
   }
-  PHASIC::Process_Base::Init(pi, beam, isr, !ord);
+  PHASIC::Process_Base::Init(pi, beam, isr, yfs, !ord);
   AMEGIC::Process_Base::Init();
 
   m_rsmap.resize(m_nin+m_nout);

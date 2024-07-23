@@ -48,7 +48,7 @@ RESULT_DIRECTORY
 .. index:: RESULT_DIRECTORY
 
 This parameter specifies the name of the directory which is used by
-Sherpa to store integration results and phasespace mappings. The
+Sherpa to store integration results and phase-space mappings. The
 default is ``Results/``.  It can also be set using the command line
 parameter :option:`-r`, see :ref:`Command line`. The directory will be
 created automatically, unless the option
@@ -96,6 +96,28 @@ set :option:`OVERWEIGHT_THRESHOLD: <maxweight>` to cap the maximal over-weight
 ``w/max`` taken into account.
 
 
+.. _COLOR_SCHEME:
+
+COLOR_SCHEME
+============
+
+.. index:: COLOR_SCHEME
+
+This parameter specifies how to perform the color algebra in hard matrix elemens.
+The available options are :option:`0` for the generator-specific default,
+:option:`1` for sum, and :option:`2` for sampling.
+
+.. _HELICITY_SCHEME:
+
+HELICITY_SCHEME
+===============
+
+.. index:: HELICITY_SCHEME
+
+This parameter specifies how to perform the helicity algebra in hard matrix elemens.
+The available options are :option:`0` for the generator-specific default,
+:option:`1` for sum, and :option:`2` for sampling.
+
 .. _SCALES:
 
 SCALES
@@ -103,8 +125,8 @@ SCALES
 
 .. index:: SCALES
 
-This parameter specifies how to compute the renormalization and
-factorization scale and potential additional scales.
+This parameter specifies how to compute the renormalisation and
+factorisation scale and potential additional scales.
 
 .. note::
 
@@ -142,7 +164,7 @@ If the final state of your hard scattering process contains QCD
 partons, their kinematics fix the resummation scale for subsequent
 emissions (cf. the description of the :option:`METS` scale setter
 below).  With the CS Shower, you can instead specify your own
-resummation scale also in such a case: Set ``CSS_RESPECT_Q2: true``
+resummation scale also in such a case: Set ``SHOWER:RESPECT_Q2: true``
 and use the third argument to specify your resummation scale as above.
 
 .. note::
@@ -179,7 +201,7 @@ The scale setter options which are currently available are
 
      SCALES: VAR{Abs2(p[2]+p[3])}
 
-  Renormalization and factorization scales can be chosen differently.
+  Renormalisation and factorisation scales can be chosen differently.
   For example in Drell-Yan + jet production one could set
 
   .. code-block:: yaml
@@ -197,7 +219,7 @@ The scale setter options which are currently available are
   that final state partons are replaced with jets, if applicable (a
   parton might not pass the jet criteria and get "lost"). In
   particular, the indices of the initial state partons and all EW
-  particles are uneffected. Jet momenta can then be accessed as
+  particles are unaffected. Jet momenta can then be accessed as
   described in :ref:`Predefined scale tags` through the identifiers
   ``p[i]``, and the nodal values of the clustering sequence can be
   used through ``MU_n2``.  The syntax is
@@ -210,15 +232,13 @@ The scale setter options which are currently available are
   Therein the parameters of the jet algorithm to be used to define the
   jets are given as a comma separated list of
 
-  * the jet algorithm ``A:kt,antikt,cambridge,siscone`` (default
-    ``antikt``)
+  * the jet algorithm ``A:kt,antikt,cambridge`` (default
+    ``kt``)
 
   * phase space restrictions, i.e. ``PT:<min-pt>``, ``ET:<min-et>``,
     ``Eta:<max-eta>``, ``Y:<max-rap>`` (otherwise unrestricted)
 
   * radial parameter ``R:<rad-param>`` (default ``0.4``)
-
-  * f-parameter for Siscone ``f:<f-param>`` (default ``0.75``)
 
   * recombination scheme ``C:E,pt,pt2,Et,Et2,BIpt,BIpt2``
     (default ``E``)
@@ -281,10 +301,10 @@ The scale setter options which are currently available are
      during clustering and the lowest invariant mass in the core process.
 
 
-:option:`VBF`                                                                                                                                                                                                                                                                                                                
+:option:`VBF`
   Very similar to the :option:`METS` scale setter and thus also applicable in multi-leg merged setups, but
   catering specifically to topologies with two colour-separated parton lines like in VBF/VBS
-  processes for the incoming quarks. 
+  processes for the incoming quarks.
 
 
 
@@ -326,7 +346,7 @@ by the parton shower:
    two subsequent branchings are unordered in terms of the parton shower
    evolution parameter. That defines the core process.
 
-2. A freely choosable scale in the core process, ``CORE_SCALE``.
+2. A freely selectable scale in the core process, ``CORE_SCALE``.
 
 These are then defined to calculate ``MU_R2`` from the core scale and the
 individual clustering scales such that:
@@ -343,7 +363,7 @@ The definition of ``MU_F2`` and ``MU_Q2`` are passed directly on from the core s
 
 The functional form of the core scale can be defined by the user in the ``MEPS``
 settings block as follows:
-  
+
 .. code-block:: yaml
 
    MEPS:
@@ -378,7 +398,7 @@ Possible choices for the core scale setter are:
 
 :option:`Photons`
   Core scale setter for photon(s)+jets production.
-  Sets the following scales for the possible core process:
+  Sets the following scales for the possible core processes:
 
     - :math:`\gamma\gamma`: :math:`\mu_f=\mu_r=\mu_q=m_{\gamma\gamma}`
     - :math:`\gamma j`: :math:`\mu_f=\mu_r=\mu_q=p_{\perp,\gamma}`
@@ -389,7 +409,7 @@ Possible choices for the core scale setter are:
 Unordered cluster histories are by default not allowed. Instead, if during
 clustering a new smaller scale is encountered, the previous maximal scale
 will be used, or alternatively a user-defined scale specified, e.g.
-  
+
 .. code-block:: yaml
 
    MEPS:
@@ -448,7 +468,7 @@ choices or easily implement a user defined scale.
   these parton momenta will be replaced by the jet momenta ordered in
   transverse momenta. For example the process u ub -> e- e+ G G will
   have the electron and the positron at positions ``p[2]`` and
-  ``p[3]`` and the gluons on postions ``p[4]`` and ``p[5]``. However,
+  ``p[3]`` and the gluons on positions ``p[4]`` and ``p[5]``. However,
   when finding jets first, the electrons will still be at ``p[2]`` and
   ``p[3]`` while the harder jet will be at ``p[4]`` and the softer one
   at ``p[5]``.
@@ -461,6 +481,10 @@ choices or easily implement a user defined scale.
   Square of the scalar sum of the transverse energies of
   all final state particles, i.e. contrary to ``H_T2`` ``H_TM2`` takes
   particle masses into account.
+
+:option:`hH_T2`
+  Square of the scalar sum of the transverse energies of
+  all QCD final state particles.
 
 :option:`H_TY2(<factor>,<exponent>)`
   Square of the scalar sum of the transverse momenta of all final state particles
@@ -485,7 +509,7 @@ choices or easily implement a user defined scale.
   Implements a version of ``H_Tp2`` which dresses charged particles first.
   The parameter ``<recombination-method>`` can take the following values:
   ``Cone``, ``kt``, ``CA`` or ``antikt``, while ``<dR>`` is
-  the respecitve algorithm's angular distance parameter.
+  the respective algorithm's angular distance parameter.
 
 :option:`TAU_B2`
   Square of the beam thrust.
@@ -524,17 +548,14 @@ infrared safe w.r.t. to the radiation of an extra parton. Infrared safe
 
 * sum of transverse quantities of all partons (e.g. ``H_T2``)
 
-* any quantity refering to jets, constructed by an IR safe
+* any quantity referring to jets, constructed by an IR safe
   jet algorithm, see below.
 
 
 Not infrared safe are
 
 * any function of momenta of specific partons
-* for processes with hadrons in the initial state:
-
-any quantity that depends on parton momenta along the beam axis,
-including the initial state partons itself
+* for processes with hadrons in the initial state: any quantity that depends on parton momenta along the beam axis, including the initial state partons itself.
 
 Since the total number of partons is different for different pieces of
 the NLO calculation any explicit reference to a parton momentum will
@@ -622,13 +643,13 @@ on the command line. Currently available options are
   If for example the process ``g g -> h g`` in effective theory is computed,
   one could think of evaluating two powers of the strong coupling at the Higgs mass scale
   and one power at the transverse momentum squared of the gluon.
-  Assuming the Higgs mass to be 120 GeV, the corresponding reweighting would read
+  Assuming the Higgs mass to be 125 GeV, the corresponding reweighting would read
 
   .. code-block:: yaml
 
      SCALES:    VAR{...}{PPerp2(p[3])}
      COUPLINGS: "Alpha_QCD 1"
-     KFACTOR:   VAR{sqr(Alpha_QCD(sqr(120))/Alpha_QCD(MU_12))}
+     KFACTOR:   VAR{sqr(Alpha_QCD(sqr(125))/Alpha_QCD(MU_12))}
 
   As can be seen from this example, scales are referred to as :kbd:`MU_<i>2`,
   where :kbd:`<i>` is replaced with the appropriate number.
@@ -675,7 +696,7 @@ Options are:
 :option:`QCD`
   Only QCD infrared divergences will be subtracted.
   This is the default as most users will be familiar with this
-  setting corresponding to the abililities of older Sherpa
+  setting corresponding to the abilities of older Sherpa
   versions.
 
 :option:`QED`
@@ -733,7 +754,7 @@ The following parameters can be customised:
   Specifies the above dipole alpha only for FF, FI, IF, or II dipoles, respectively.
 
 :option:`AMIN`
-  Specifies the cutoff of real correction terms in the infrared reagion
+  Specifies the cutoff of real correction terms in the infrared region
   to avoid numerical problems with the subtraction. The default is 1.e-8.
 
 :option:`NF_GSPLIT`

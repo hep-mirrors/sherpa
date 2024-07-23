@@ -79,7 +79,7 @@ void Settings::DeclareVectorSettingsWithEmptyDefault(
     const Settings_Keys& scopekeys)
 {
   for (const auto& key : keys) {
-    std::vector<std::string> fullkey{ scopekeys.IndizesRemoved() };
+    std::vector<std::string> fullkey{ scopekeys.IndicesRemoved() };
     fullkey.push_back(key);
     SetDefaultMatrix(fullkey, String_Matrix{{}});
   }
@@ -96,7 +96,7 @@ void Settings::DeclareMatrixSettingsWithEmptyDefault(
     const Settings_Keys& scopekeys)
 {
   for (const auto& key : keys) {
-    std::vector<std::string> fullkey{ scopekeys.IndizesRemoved() };
+    std::vector<std::string> fullkey{ scopekeys.IndicesRemoved() };
     fullkey.push_back(key);
     SetDefaultMatrix(fullkey, String_Matrix{});
   }
@@ -128,7 +128,7 @@ std::vector<std::string> Settings::GetKeys(const Settings_Keys& scopekeys)
     std::vector<std::string> yamlkeys{ reader->GetKeys(scopekeys) };
     if (!yamlkeys.empty()) {
       keys.insert(keys.end(), yamlkeys.begin(), yamlkeys.end());
-      if (!scopekeys.ContainsNoIndizes()) {
+      if (!scopekeys.ContainsNoIndices()) {
         // we do not want to merge keys from different YAML documents when we
         // are somehow within a YAML sequence, since we do not have a clear
         // correspondence between elements of different sequences
@@ -157,15 +157,20 @@ std::string Settings::GetPath()
 
 String_Vector Settings::GetConfigFiles()
 {
+  String_Vector ret {GetUserConfigFiles()};
+  ret.insert(ret.begin(), rpa->gen.Variable("SHERPA_SHARE_PATH")+"/Decaydata.yaml");
+  return ret;
+}
+
+String_Vector Settings::GetUserConfigFiles()
+{
   auto s = (*this)["RUNDATA"];
   if (FileExists(GetPath() + "Sherpa.yaml")) {
     s.SetDefault("Sherpa.yaml");
   } else {
     s.SetDefault(std::vector<std::string>{});
   }
-  String_Vector ret=s.GetVector<std::string>();
-  ret.insert(ret.begin(), rpa->gen.Variable("SHERPA_SHARE_PATH")+"/Decaydata.yaml");
-  return ret;
+  return s.GetVector<std::string>();
 }
 
 bool Settings::IsScalar(const Settings_Keys& keys)
@@ -275,6 +280,7 @@ void Settings::ReplaceTags(std::string& value)
     for (auto const& defaulttag : m_tags) {
       if (defaulttag.first == tag) {
         value.replace(begin_pos, end_pos - begin_pos + 1, defaulttag.second);
+        m_usedvalues[{"TAGS", tag}].insert({{defaulttag.second}});
         found = true;
         break;
       }
@@ -301,7 +307,7 @@ void Settings::SetDefault(const Settings_Keys& keys, const char* value)
 std::string Settings::ApplyReplacements(const Settings_Keys& settings_keys,
                                         const std::string& value)
 {
-  const std::vector<std::string> keys{ settings_keys.IndizesRemoved() };
+  const std::vector<std::string> keys{ settings_keys.IndicesRemoved() };
   const auto it = m_replacements.find(keys);
   if (it == m_replacements.end())
     return value;
@@ -316,7 +322,7 @@ std::string Settings::ApplyReplacements(const Settings_Keys& settings_keys,
 void Settings::SetDefaultSynonyms(const Settings_Keys& settings_keys,
                                   const std::vector<std::string>& synonyms)
 {
-  const Defaults_Key keys{ settings_keys.IndizesRemoved() };
+  const Defaults_Key keys{ settings_keys.IndicesRemoved() };
   const auto it = m_defaultsynonyms.find(keys);
   if (m_defaultsynonyms.find(keys) != m_defaultsynonyms.end())
     if (synonyms != it->second)
@@ -328,7 +334,7 @@ void Settings::SetDefaultSynonyms(const Settings_Keys& settings_keys,
 bool Settings::IsDefaultSynonym(const Settings_Keys& settings_keys,
                                 const std::string& value)
 {
-  const std::vector<std::string> keys{ settings_keys.IndizesRemoved() };
+  const std::vector<std::string> keys{ settings_keys.IndicesRemoved() };
   const auto it = m_defaultsynonyms.find(keys);
   if (it == m_defaultsynonyms.end())
     return false;
@@ -339,7 +345,7 @@ bool Settings::IsDefaultSynonym(const Settings_Keys& settings_keys,
 void Settings::SetSynonyms(const Settings_Keys& settings_keys,
                            const std::vector<std::string>& synonyms)
 {
-  const Defaults_Key keys{ settings_keys.IndizesRemoved() };
+  const Defaults_Key keys{ settings_keys.IndicesRemoved() };
   const auto it = m_synonyms.find(keys);
   if (m_synonyms.find(keys) != m_synonyms.end())
     if (synonyms != it->second)

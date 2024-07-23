@@ -20,8 +20,8 @@
 // along with this program; if not, write to the Free Software               //
 // Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA //
 //                                                                           //
-// $Revision:: 195                                                          $//
-// $Date:: 2008-01-15 21:30:58 +0100 (Tue, 15 Jan 2008)                     $//
+// $Revision::                                                              $//
+// $Date::                                                                  $//
 ///////////////////////////////////////////////////////////////////////////////
 
 /*******************************************************
@@ -350,9 +350,10 @@ int Cstable_cones::update_cone(){
  * pass the last test: stability with quadtree intersection
  ************************************************************************/
 int Cstable_cones::proceed_with_stability(){
-  int i;
+  int i; // ,n;
   hash_element *elm;
 
+  //n=0;
   for (i=0;i<=hc->mask;i++){
     // test ith cell of the hash array
     elm = hc->hash_array[i];
@@ -364,12 +365,18 @@ int Cstable_cones::proceed_with_stability(){
 	// stability is not ensured by all pairs of "edges" already browsed
 #ifdef USE_QUADTREE_FOR_STABILITY_TEST
 	//  => testing stability with quadtree intersection
-	if (quadtree->circle_intersect(elm->eta, elm->phi, R2)==elm->ref)
+	if (quadtree->circle_intersect(elm->eta, elm->phi, R2)==elm->ref){
 #else
 	//  => testing stability with the particle-list intersection
-	if (circle_intersect(elm->eta, elm->phi)==elm->ref)
+	if (circle_intersect(elm->eta, elm->phi)==elm->ref){
 #endif
+	  // add it to the list of protocones
+	  // note that in its present form, we do not allocate the 
+	  // 4-vector components of the momentum. There's no need to
+	  // do it here as it will be recomputed in
+	  //   Csplit_merge::add_protocones
 	  protocones.push_back(Cmomentum(elm->eta, elm->phi, elm->ref));
+	}
       }
       
       // jump to the next one
@@ -380,6 +387,11 @@ int Cstable_cones::proceed_with_stability(){
   // free hash
   // we do that at this level because hash eats rather a lot of memory
   // we want to free it before running the split/merge algorithm
+#ifdef DEBUG_STABLE_CONES
+  nb_hash_cones = hc->n_cones;
+  nb_hash_occupied = hc->n_occupied_cells;
+#endif
+
   delete hc;
   hc=NULL;
 
@@ -806,11 +818,11 @@ Creference Cstable_cones::circle_intersect(double cx, double cy){
  *  - v        particle to test
  * return true if inside, false if outside
  *****************************************************************************/
-inline bool Cstable_cones::is_inside(Cmomentum *centre, Cmomentum *v){
+inline bool Cstable_cones::is_inside(Cmomentum *centre_in, Cmomentum *v){
   double dx, dy;
 
-  dx = centre->eta - v->eta;
-  dy = fabs(centre->phi - v->phi);
+  dx = centre_in->eta - v->eta;
+  dy = fabs(centre_in->phi - v->phi);
   if (dy>M_PI) 
     dy -= twopi;
       

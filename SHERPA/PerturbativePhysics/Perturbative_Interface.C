@@ -88,15 +88,15 @@ Perturbative_Interface::~Perturbative_Interface()
     campl->Delete();
   }
   if (m_fails_Moms>0 || m_fails_Ampls>0 || m_fails_Masses>0) {
-    msg_Out()<<"Perturbative Interface(";
-    if (p_me) msg_Out()<<"Matrix Elements      ";
+    msg_Out()<<"Perturbative Interface (";
+    if (p_me) msg_Out()<<"Matrix Elements";
     else if (p_mi) msg_Out()<<"Multiple Interactions";
-    else if (p_hd) msg_Out()<<"Hard Decays          ";
-    else if (p_sc) msg_Out()<<"Soft Collisions      ";
+    else if (p_hd) msg_Out()<<"Hard Decays";
+    else if (p_sc) msg_Out()<<"Soft Collisions";
     msg_Out()<<"):";
-    if (m_fails_Moms>0)   { msg_Out()<<" "<<m_fails_Moms<<" momentum fails"; }
-    if (m_fails_Ampls>0)  { msg_Out()<<" "<<m_fails_Ampls<<" ampl fails"; }
-    if (m_fails_Masses>0) { msg_Out()<<" "<<m_fails_Masses<<" mass fails"; }
+    if (m_fails_Moms>0)   { msg_Out()<<"\n  "<<"momentum failures: "<<m_fails_Moms; }
+    if (m_fails_Ampls>0)  { msg_Out()<<"\n  "<<"amplitude failures: "<<m_fails_Ampls; }
+    if (m_fails_Masses>0) { msg_Out()<<"\n  "<<"mass failures: "<<m_fails_Masses; }
     msg_Out()<<"\n";
   }
 }

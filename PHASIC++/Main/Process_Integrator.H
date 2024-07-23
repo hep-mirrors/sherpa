@@ -15,6 +15,7 @@ namespace ATOOLS {
 }
 namespace BEAM   { class Beam_Spectra_Handler; }
 namespace PDF    { class ISR_Handler; }
+namespace YFS    { class YFS_Handler; }
 
 namespace PHASIC {
 
@@ -34,6 +35,7 @@ namespace PHASIC {
 
     BEAM::Beam_Spectra_Handler *p_beamhandler;
     PDF::ISR_Handler           *p_isrhandler;
+    YFS::YFS_Handler           *p_yfshandler;
 
     std::string m_resultpath;
     size_t      m_nin, m_nout, m_smode, m_swmode;
@@ -81,7 +83,8 @@ namespace PHASIC {
   
     // member functions
     bool Initialize(BEAM::Beam_Spectra_Handler *const beamhandler=NULL,
-		    PDF::ISR_Handler *const isrhandler=NULL);
+		    PDF::ISR_Handler *const isrhandler=NULL,
+		    YFS::YFS_Handler *const yfshandler=NULL);
   
     void SetMomenta(const ATOOLS::Vec4D_Vector &p);
     void SetMomenta(const ATOOLS::Cluster_Amplitude &ampl);
@@ -160,12 +163,16 @@ namespace PHASIC {
     { p_beamhandler=beam; }
     inline void SetISR(PDF::ISR_Handler *const isr)  
     { p_isrhandler=isr;  }
+    inline void SetYFS(YFS::YFS_Handler *const yfs)
+    { p_yfshandler=yfs;  }
 
     inline BEAM::Beam_Spectra_Handler *Beam() const 
     { return p_beamhandler; }
     inline PDF::ISR_Handler           *ISR() const  
     { return p_isrhandler;  }
 
+    inline YFS::YFS_Handler           *YFS() const
+    { return p_yfshandler;  }
     //inline std::shared_ptr<Phase_Space_Handler> PSHandler() const
     //{ return p_pshandler; }
 

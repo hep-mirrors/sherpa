@@ -70,11 +70,10 @@ Sherpa::~Sherpa()
     if (p_inithandler->GetVariations()) {
       p_inithandler->GetVariations()->PrintStatistics(msg->Out());
     }
+    Blob_List::PrintMomFailStatistics(msg->Out());
+    msg->PrintRates();
+    PHASIC::Decay_Channel::PrintMaxKinFailStatistics(msg->Out());
   }
-  Blob_List::PrintMomFailStatistics(msg->Out());
-  msg->PrintRates();
-  PHASIC::Decay_Channel::PrintMaxKinFailStatistics(msg->Out());
-  rpa->gen.WriteCitationInfo();
   if (p_eventhandler) { delete p_eventhandler; p_eventhandler = nullptr; }
   if (p_inithandler)  { delete p_inithandler;  p_inithandler  = nullptr; }
 #ifdef USING__HEPMC3
@@ -83,6 +82,7 @@ Sherpa::~Sherpa()
   Settings& s = Settings::GetMainSettings();
   if (s["CHECK_SETTINGS"].SetDefault(true).Get<bool>())
     Settings::FinalizeMainSettings();
+  rpa->gen.WriteCitationInfo();
   exh->RemoveTerminatorObject(this);
   delete ATOOLS::s_loader;
   delete PDF::pdfdefs;
@@ -160,6 +160,7 @@ bool Sherpa::InitializeTheEventHandler()
 {
   eventtype::code mode = p_inithandler->Mode();
   p_eventhandler  = new Event_Handler();
+  p_eventhandler->SetVariations(p_inithandler->GetVariations());
   Analysis_Vector *anas(p_inithandler->GetAnalyses());
   for (Analysis_Vector::iterator it=anas->begin(); it!=anas->end(); ++it) {
     (*it)->SetEventHandler(p_eventhandler);
@@ -374,60 +375,54 @@ double Sherpa::GetMEWeight(const Cluster_Amplitude &ampl,const int mode) const
 
 void Sherpa::DrawLogo(const bool& shouldprintversioninfo)
 {
-  msg_Info()<<"-----------------------------------------------------------------------------"<<std::endl;
-  if (msg->Level()>0) msg_Out()<<"-----------    Event generation run with SHERPA started .......   -----------"<<std::endl;
-  msg_Info()<<"-----------------------------------------------------------------------------"<<std::endl
-	    <<"................................................ |       +                   "<<std::endl
-	    <<"................................................ ||  |       +  +            "<<std::endl
-	    <<"...................................        ....  | |         /   +           "<<std::endl
-	    <<"................. ................   _,_ |  ....  ||         +|  +  +        "<<std::endl
-	    <<"...............................  __.'  ,\\|  ...  ||    /    +|          +    "<<std::endl
-	    <<".............................. (  \\    \\   ...  | |  |   + + \\         +   "<<std::endl
-	    <<".............................  (    \\   -/  .... ||       +    |          +  "<<std::endl
-	    <<"........ ...................  <S   /()))))~~~~~~~~##     +     /\\    +       "<<std::endl
-	    <<"............................ (!H   (~~)))))~~~~~~#/     +  +    |  +         "<<std::endl
-	    <<"................ ........... (!E   (~~~)))))     /|/    +         +          "<<std::endl
-	    <<"............................ (!R   (~~~)))))   |||   + +            +        "<<std::endl
-	    <<"..... ...................... (!P    (~~~~)))   /|  + +          +            "<<std::endl
-	    <<"............................ (!A>    (~~~~~~~~~##        + +        +        "<<std::endl
-	    <<"............................. ~~(!    '~~~~~~~ \\       +     + +      +      "<<std::endl
-	    <<"...............................  `~~~QQQQQDb //   |         + + +        +   "<<std::endl
-	    <<"........................ ..........   IDDDDP||     \\  + + + + +             +"<<std::endl
-	    <<"....................................  IDDDI||       \\                      + "<<std::endl
-	    <<".................................... IHD HD||         \\ + +  + + + + +      +"<<std::endl
-	    <<"...................................  IHD ##|            :-) + +\\          +  "<<std::endl
-	    <<"......... ............... ......... IHI ## /      /   +  + + + +\\       +    "<<std::endl
-	    <<"................................... IHI/ /       /      + + + +        +     "<<std::endl
-	    <<"................................... ## | | /    / + +      + + /      +      "<<std::endl
-	    <<"....................... /TT\\ .....  ##/ ///  / + + + + + + +/       +        "<<std::endl
-	    <<"......................./TTT/T\\ ... /TT\\/\\\\\\ / + + + + + + +/   \\         +   "<<std::endl
-	    <<"....................../TTT/TTTT\\...|TT/T\\\\\\/   +    ++  + /              "<<std::endl
-	    <<"-----------------------------------------------------------------------------"<<std::endl
-	    <<std::endl
-	    <<"     SHERPA version "<<SHERPA_VERSION<<"."<<SHERPA_SUBVERSION<<" ("<<SHERPA_NAME<<")"<<std::endl
-	    <<"                                                                             "<<std::endl
-	    <<"     Authors:        Enrico Bothmann, Stefan Hoeche, Frank Krauss,           "<<std::endl
-	    <<"                     Silvan Kuttimalai, Marek Schoenherr, Holger Schulz,     "<<std::endl
-	    <<"                     Steffen Schumann, Frank Siegert, Korinna Zapp           "<<std::endl
-	    <<"     Former Authors: Timo Fischer, Tanju Gleisberg, Hendrik Hoeth,           "<<std::endl
-	    <<"                     Ralf Kuhn, Thomas Laubrich, Andreas Schaelicke,         "<<std::endl
-	    <<"                     Jan Winter                                              "<<std::endl
-	    <<"                                                                             "<<std::endl
-	    <<"     This program uses a lot of genuine and original research work           "<<std::endl
-	    <<"     by other people. Users are encouraged to refer to                       "<<std::endl
-	    <<"     the various original publications.                                      "<<std::endl
-	    <<"                                                                             "<<std::endl
-	    <<"     Users are kindly asked to refer to the documentation                    "<<std::endl
-	    <<"     published under JHEP 02(2009)007                                        "<<std::endl
-	    <<"                                                                             "<<std::endl
-	    <<"     Please visit also our homepage                                          "<<std::endl
-	    <<"                                                                             "<<std::endl
-	    <<"       http://sherpa.hepforge.org                                            "<<std::endl
-	    <<"                                                                             "<<std::endl
-	    <<"     for news, bugreports, updates and new releases.                         "<<std::endl
-	    <<"                                                                             "<<std::endl
-	    <<"-----------------------------------------------------------------------------"<<std::endl;
+  MyStrStream version;
+  version << "SHERPA v" << SHERPA_VERSION << "." << SHERPA_SUBVERSION
+          << " (" << SHERPA_NAME << ")";
+  msg_Info() << Frame_Header{};
+
+  MyStrStream logo;
+  logo << om::green << "                   ." << om::reset << "_";
+  msg_Info() << Frame_Line{logo.str()}; logo.str("");
+  logo << om::green << "                  .-" << om::reset << "#.";
+  msg_Info() << Frame_Line{logo.str()}; logo.str("");
+  logo << om::green << "                 .--" << om::reset << "+@.     .";
+  msg_Info() << Frame_Line{logo.str()}; logo.str("");
+  logo << om::green << "                .----" << om::reset << "@@." << om::red << "   +" << om::reset << "#-";
+  msg_Info() << Frame_Line{logo.str()}; logo.str("");
+  logo << om::green << "               .-----" << om::reset << "+@@." << om::red << " +**" << om::reset << "@-" << "         " << version.str();
+  msg_Info() << Frame_Line{logo.str()}; logo.str("");
+  logo << om::blue  << "       :" << om::reset << "-" << om::green << "     .-------" << om::reset << "@@@" << om::red << "+***" << om::reset << "#@-";
+  msg_Info() << Frame_Line{logo.str()}; logo.str("");
+  logo << om::blue  << "      :=" << om::reset << "#*" << om::green << "   .--------" << om::reset << "+@" << om::red << "+*****" << om::reset << "@@-" << "       Monte Carlo event generator";
+  msg_Info() << Frame_Line{logo.str()}; logo.str("");
+  logo << om::blue  << "     :===" << om::reset << "@*" << om::green << " .----------" << om::red << "+******" << om::reset << "#@@-";
+  msg_Info() << Frame_Line{logo.str()}; logo.str("");
+  logo << om::blue  << "    :====" << om::reset << "#@*" << om::green << "----------" << om::red << "+********" << om::reset << "@@@-" << "     https://sherpa-team.gitlab.io";
+  msg_Info() << Frame_Line{logo.str()}; logo.str("");
+  logo << om::blue  << "   :======" << om::reset << "@@*" << om::green << "--------" << om::red << "+*********" << om::reset << "#@@@-";
+  msg_Info() << Frame_Line{logo.str()}; logo.str("");
+
+  msg_Info() << Frame_Line{"                                                                            "};
+  msg_Info() << Frame_Line{"         Authors:  Enrico Bothmann, Lois Flower, Christian Gutschow,        "};
+  msg_Info() << Frame_Line{"                   Stefan Hoeche, Mareen Hoppe, Joshua Isaacson,            "};
+  msg_Info() << Frame_Line{"                   Max Knobbe, Frank Krauss, Peter Meinzinger,              "};
+  msg_Info() << Frame_Line{"                   Davide Napoletano, Alan Price, Daniel Reichelt,          "};
+  msg_Info() << Frame_Line{"                   Marek Schoenherr, Steffen Schumann, Frank Siegert        "};
+  msg_Info() << Frame_Line{"  Former Authors:  Gurpreet Singh Chahal, Timo Fischer, Tanju Gleisberg,    "};
+  msg_Info() << Frame_Line{"                   Hendrik Hoeth, Johannes Krause, Silvan Kuttimalai,       "};
+  msg_Info() << Frame_Line{"                   Ralf Kuhn, Thomas Laubrich, Sebastian Liebschner,        "};
+  msg_Info() << Frame_Line{"                   Andreas Schaelicke, Holger Schulz, Jan Winter            "};
+  msg_Info() << Frame_Line{"                                                                            "};
+  MyStrStream citation;
+  citation << "Users are kindly asked to cite " << om::bold
+           << "SciPost Phys 7 (2019) 3, 034" << om::reset << ".";
+  msg_Info() << Frame_Line{citation.str()};
+  msg_Info() << Frame_Line{"                                                                            "};
+  msg_Info() << Frame_Line{"This program uses a lot of genuine and original research work by others.    "};
+  msg_Info() << Frame_Line{"Users are encouraged to also cite the various original publications.        "};
+  msg_Info() << Frame_Line{"                                                                            "};
+  msg_Info() << Frame_Footer{};
   rpa->gen.PrintGitVersion(msg->Info(), shouldprintversioninfo);
   rpa->gen.AddCitation
-    (0,"The complete Sherpa package is published under \\cite{Gleisberg:2008ta}.");
+    (0,"The complete Sherpa package is published under \\cite{Sherpa:2019gpd}.");
 }

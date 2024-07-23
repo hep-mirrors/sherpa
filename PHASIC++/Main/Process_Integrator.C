@@ -42,7 +42,8 @@ Process_Integrator::Process_Integrator(Process_Base *const proc):
 
 bool Process_Integrator::Initialize
 (BEAM::Beam_Spectra_Handler *const beamhandler,
- PDF::ISR_Handler *const isrhandler)
+ PDF::ISR_Handler *const isrhandler,
+ YFS::YFS_Handler *const yfshandler)
 {
   Settings& s = Settings::GetMainSettings();
   m_nin=p_proc->NIn();
@@ -50,6 +51,7 @@ bool Process_Integrator::Initialize
   p_momenta.resize(m_nin+m_nout);
   p_beamhandler=beamhandler;
   p_isrhandler=isrhandler;
+  p_yfshandler=yfshandler;
   m_swmode=s["SELECTION_WEIGHT_MODE"].SetDefault(0).Get<int>();
   static bool minit(false);
   if (!minit) {

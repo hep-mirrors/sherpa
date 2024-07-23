@@ -327,6 +327,8 @@ HepMC3_Interface::HepMC3_Interface() :
   generator.version = std::string(SHERPA_VERSION)+"."+std::string(SHERPA_SUBVERSION);
   generator.description = "Used generator";
   m_runinfo->tools().push_back(generator);
+  rpa->gen.AddCitation(
+      1, "The HepMC3 library is described in \\cite{Buckley:2019xhk}.");
 }
 
 HepMC3_Interface::~HepMC3_Interface()
@@ -819,9 +821,13 @@ void HepMC3_Interface::AddCrossSection(HepMC::GenEvent& event,
 
   // Translate weight maps into ordinary string->double maps.
   std::map<std::string, double> xs_wgts;
-  xs.FillVariations(xs_wgts);
   std::map<std::string, double> err_wgts;
+  xs.FillVariations(xs_wgts);
   err.FillVariations(err_wgts);
+  if (m_includemeonlyweights) {
+    xs.FillVariations(xs_wgts, Variations_Source::main);
+    err.FillVariations(err_wgts, Variations_Source::main);
+  }
 
   // Fill nominal values.
   cross_section->set_xsec("Weight", xs.Nominal());

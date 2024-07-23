@@ -1,5 +1,6 @@
-FROM gitlab-registry.cern.ch/linuxsupport/rpmci/builder-cs9
-RUN  yum -y  install  dnf-plugins-core --exclude=*uploa* --exclude=*product* --exclude=*subscr*    epel*
+FROM quay.io/centos/centos:stream9
+RUN  yum -y  install  dnf-plugins-core --exclude=*uploa* --exclude=*product* --exclude=*subscr*    epel* epel-next-release
+RUN  dnf config-manager --set-enabled crb 
 RUN  yum -y  install  bc make ninja-build cmake binutils git wget diffutils file sed gawk grep which autoconf automake libtool ccache \
                       gcc-gfortran gcc-c++ clang bzip2 openssl-devel openssl \
                       libzip-devel  zlib zlib-devel pythia8-devel pythia8 python3-lhapdf lhapdf lhapdf-devel  \

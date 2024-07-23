@@ -3,7 +3,8 @@ BEAMS: 2212
 BEAM_ENERGIES: 6500
 
 # scales
-CORE_SCALE: VAR{Abs2(p[2]+p[3])/4.0}
+MEPS:
+  CORE_SCALE: VAR{Abs2(p[2]+p[3])/4.0}
 
 # me generator settings
 ME_GENERATORS: [Comix, Amegic, OpenLoops]

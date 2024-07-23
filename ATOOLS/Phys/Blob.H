@@ -55,7 +55,8 @@ namespace ATOOLS {
       needs_beamRescatter = 1024,
       needs_smearing      = 16384,
       internal_flag       = 32768,
-      fully_active        = 65535
+      needs_yfs           = 65536,
+      fully_active        = 131072
     };
   };
 
@@ -83,7 +84,8 @@ namespace ATOOLS {
       Elastic_Collision           =  65536,
       Soft_Diffractive_Collision  = 131072,
       Quasi_Elastic_Collision     = 262144,
-      Unspecified                 = 524288
+      YFS_Initial                 = 524288,
+      Unspecified                 = 1048576
     };
   };// end of struct btp
 

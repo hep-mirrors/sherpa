@@ -46,7 +46,8 @@ namespace SHERPA {
 
     bool Initialize(MODEL::Model_Base *const model,
 		    BEAM::Beam_Spectra_Handler *const beam,
-		    PDF::ISR_Handler *const isr)
+		    PDF::ISR_Handler *const isr,
+        YFS::YFS_Handler *const yfs)
     {
       DEBUG_FUNC("");
       p_as=(MODEL::Running_AlphaS*)model->GetScalarFunction("alpha_S");

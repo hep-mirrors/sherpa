@@ -95,7 +95,7 @@ std::vector<std::string> My_MPI::AllgatherStrings(const std::string& s) {
    * all the strings into the combined totalstring buffer.
    */
 
-  MPI_Allgatherv(s.c_str(), s_size, MPI_CHAR, totalstring, recvcounts, displs,
+  MPI_Allgatherv((char*)s.c_str(), s_size, MPI_CHAR, totalstring, recvcounts, displs,
                  MPI_CHAR, MPI_COMM_WORLD);
 
 

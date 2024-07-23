@@ -122,14 +122,13 @@ Variations::~Variations()
     delete params;
 }
 
-std::string Variations::GetVariationNameAt(
-    Variations::Parameters_Vector::size_type i,
-    Variations_Type t,
-    Variations_Source s) const
-{
+std::string
+Variations::GetVariationNameAt(Variations::Parameters_Vector::size_type i,
+                               Variations_Type t, Variations_Source s,
+                               Variations_Name_Type name_type) const {
   switch (t) {
   case Variations_Type::qcd:
-    return m_parameters_vector.at(i)->Name(s);
+    return m_parameters_vector.at(i)->Name(s, name_type);
   case Variations_Type::qcut:
     return m_qcut_parameters_vector.at(i).Name(s);
   case Variations_Type::custom:
@@ -156,7 +155,7 @@ void Variations::ReadDefaults()
   Settings& s = Settings::GetMainSettings();
   m_includecentralvaluevariation =
     s["VARIATIONS_INCLUDE_CV"].SetDefault(false).Get<bool>();
-  const bool cssreweight = s["CSS_REWEIGHT"].Get<bool>();
+  const bool cssreweight = s["SHOWER"]["REWEIGHT"].Get<bool>();
   m_reweightsplittingalphasscales =
     s["REWEIGHT_SPLITTING_ALPHAS_SCALES"].SetDefault(cssreweight).Get<bool>();
   m_reweightsplittingpdfsscales =
@@ -196,9 +195,10 @@ void Variations::PrintStatistics(std::ostream &str)
     }
   }
 
-  if (!m_warnings.empty() || !warningnums.empty()) {
-    str << METHOD << "(): Reweighting statistics {" << std::endl;
-  }
+  if (m_warnings.empty() && warningnums.empty())
+    return;
+
+  str << "Reweighting statistics:\n";
   if (!m_warnings.empty()) {
     // output own warnings (warning -> number of reports)
     for (std::map<std::string, unsigned long>::const_iterator
@@ -223,9 +223,6 @@ void Variations::PrintStatistics(std::ostream &str)
         str << " (" << it->second.second << ")" << std::endl;
       }
     }
-  }
-  if (!m_warnings.empty() || !warningnums.empty()) {
-    str << "}" << std::endl;
   }
 }
 
@@ -720,57 +717,77 @@ QCD_Variation_Params::~QCD_Variation_Params()
 #endif
 }
 
-
-std::string QCD_Variation_Params::Name(Variations_Source source) const
-{
-  static const std::string divider("__");
-
+std::string QCD_Variation_Params::Name(Variations_Source source,
+                                       Variations_Name_Type name_type) const {
+  std::string divider;
   std::string name;
+  std::string prefix;
+
+  if (name_type == Variations_Name_Type::weight_name_convention) {
+    divider = "__";
+    if (source == Variations_Source::main)
+      prefix = "ME.";
+  }
+  else {
+    divider = " ";
+    if (source == Variations_Source::main)
+      name = "ME-only:" + divider;
+    else
+      name = "ME & PS:" + divider;
+  }
 
   // scale factors tags; note that we assume here that the shower scale factors
   // are either equal to the matrix-element scale factors, or 1.0
-  if (source == Variations_Source::main || !m_showermuR2enabled) {
-    name += GenerateVariationNamePart("ME.MUR=", sqrt(m_muR2fac));
-  } else {
-    name += GenerateVariationNamePart("MUR=", sqrt(m_muR2fac));
+  if (name_type != Variations_Name_Type::human_readable || m_muR2fac != 1.0) {
+    if (source == Variations_Source::main || !m_showermuR2enabled) {
+      name += GenerateVariationNamePart(prefix + "MUR=", sqrt(m_muR2fac));
+    } else {
+      name += GenerateVariationNamePart("MUR=", sqrt(m_muR2fac));
+    }
+    name += divider;
   }
-  name += divider;
-  if (source == Variations_Source::main || !m_showermuF2enabled) {
-    name += GenerateVariationNamePart("ME.MUF=", sqrt(m_muF2fac));
-  } else {
-    name += GenerateVariationNamePart("MUF=", sqrt(m_muF2fac));
+  if (name_type != Variations_Name_Type::human_readable || m_muF2fac != 1.0) {
+    if (source == Variations_Source::main || !m_showermuF2enabled) {
+      name += GenerateVariationNamePart(prefix + "MUF=", sqrt(m_muF2fac));
+    } else {
+      name += GenerateVariationNamePart("MUF=", sqrt(m_muF2fac));
+    }
+    name += divider;
   }
-  name += divider;
 
   // PDF tags
   std::string pdf_alphas_level_prefix;
-  if (source == Variations_Source::main)
-    pdf_alphas_level_prefix = "ME.";
   if (p_pdf1 == NULL || p_pdf2 == NULL || p_pdf1->LHEFNumber() == p_pdf2->LHEFNumber()) {
+
     // there is only one relevant PDF ID
-    int pdfid(-1);
+    PDF::PDF_Base * pdf;
     if (p_pdf1 != NULL) {
-      pdfid = p_pdf1->LHEFNumber();
+      pdf = p_pdf1;
     } else if (p_pdf2 != NULL) {
-      pdfid = p_pdf2->LHEFNumber();
+      pdf = p_pdf2;
     } else if (p_alphas->GetAs()->PDF() != NULL) {
-      pdfid = p_alphas->GetAs()->PDF()->LHEFNumber();
+      pdf = p_alphas->GetAs()->PDF();
     } else {
       // THROW(fatal_error, "Cannot obtain PDF IDF");
     }
-    name += pdf_alphas_level_prefix + GenerateVariationNamePart("LHAPDF=", pdfid);
+    int pdfid(-1);
+    if (pdf)
+      pdfid = pdf->LHEFNumber();
+    if (name_type != Variations_Name_Type::human_readable || pdf != rpa->gen.PDF(0)) {
+      name += prefix + GenerateVariationNamePart("LHAPDF=", pdfid);
+    }
   } else {
     // there are two relevant PDF IDs, quote both
-    name += pdf_alphas_level_prefix +
+    name += prefix +
             GenerateVariationNamePart("LHAPDF.BEAM1=", p_pdf1->LHEFNumber()) +
-            divider + pdf_alphas_level_prefix +
+            divider + prefix +
             GenerateVariationNamePart("LHAPDF.BEAM2=", p_pdf2->LHEFNumber());
   }
 
   // append optional non-trival AlphaS(MZ) variation (which is not related to a
   // change in the PDF set)
   if (p_alphas != MODEL::as && p_alphas->GetAs()->PDF() != p_pdf1) {
-    name += divider + pdf_alphas_level_prefix + GenerateVariationNamePart("ASMZ=", p_alphas->AsMZ());
+    name += divider + prefix + GenerateVariationNamePart("ASMZ=", p_alphas->AsMZ());
   }
 
   return name;

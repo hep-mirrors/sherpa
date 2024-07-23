@@ -59,9 +59,9 @@ DipoleSplitting_Base::DipoleSplitting_Base(sbt::subtype st,
   }
 
   m_pfactors.clear(); m_pfactors.push_back(1.);
-  m_k0sqf = s["CSS_FS_PT2MIN"].Get<double>();
-  m_k0sqi = s["CSS_IS_PT2MIN"].Get<double>();
-  m_es = s["CSS_EVOLUTION_SCHEME"].Get<int>();
+  m_k0sqf = s["SHOWER"]["FS_PT2MIN"].Get<double>();
+  m_k0sqi = s["SHOWER"]["IS_PT2MIN"].Get<double>();
+  m_es = s["SHOWER"]["EVOLUTION_SCHEME"].Get<int>();
   if (m_subtype==subscheme::Dire) m_kappa=1.0;
 }
 

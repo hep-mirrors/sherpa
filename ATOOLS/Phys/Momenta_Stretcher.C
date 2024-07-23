@@ -389,3 +389,33 @@ bool Momenta_Stretcher::StretchMomenta( const Particle_Vector& outparts,
   }
   return true;
 }
+
+
+
+bool Momenta_Stretcher::StretchMomenta(  std::vector<Vec4D>& moms,
+                                        std::vector<double>& masses )
+{
+  if(moms.size() != masses.size()) { s_fails++; return false; }
+  if(moms.size()==1 && abs(moms[0].Mass()-masses[0])<Accu() ) return true;
+
+  Vec4D cms;
+  for(size_t i=0; i<masses.size(); i++) {
+    cms += moms[i];
+  }
+  Poincare boost(cms);
+  for(size_t i=0; i<masses.size(); i++) {
+    boost.Boost(moms[i]);
+  }
+  if(!ZeroThem(0,moms)) { s_fails++; return false; }
+  if(!MassThem(0,moms,masses)) {
+    if (s_fails<5) {
+      msg_Error()<<"Warning in "<<METHOD<<"(const Particle_Vector&, masses)."<<std::endl;
+    }
+    s_fails++;
+    return false;
+  }
+  for(size_t i=0; i<moms.size(); i++) {
+    boost.BoostBack(moms[i]);
+  }
+  return true;
+}

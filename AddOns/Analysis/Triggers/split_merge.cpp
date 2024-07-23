@@ -20,19 +20,19 @@
 // along with this program; if not, write to the Free Software               //
 // Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA //
 //                                                                           //
-// $Revision:: 171                                                          $//
-// $Date:: 2007-06-19 16:26:05 +0200 (Tue, 19 Jun 2007)                     $//
+// $Revision::                                                              $//
+// $Date::                                                                  $//
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "split_merge.h"
 #include "siscone_error.h"
 #include "momentum.h"
-#include <math.h>
 #include <limits>   // for max
 #include <iostream>
 #include <algorithm>
 #include <sstream>
 #include <cassert>
+#include <cmath>
 
 namespace siscone{
 
@@ -53,6 +53,8 @@ Cjet::Cjet(){
   v = Cmomentum();
   pt_tilde = 0.0;
   sm_var2 = 0.0;
+  pass = CJET_INEXISTENT_PASS; // initialised to a value that should
+                               // notappear in the end (after clustering)
 }
 
 // default dtor
@@ -228,6 +230,7 @@ Csplit_merge::Csplit_merge(){
   merge_identical_protocones = true;
 #endif
 #endif
+  _user_scale = NULL;
   indices = NULL;
 
   // ensure that ptcomparison points to our set of particles (though params not correct)
@@ -236,10 +239,13 @@ Csplit_merge::Csplit_merge(){
   candidates.reset(new multiset<Cjet,Csplit_merge_ptcomparison>(ptcomparison));
 
   // no hardest cut (col-unsafe)
-  SM_var2_hardest_cut_off = -1.0;
+  SM_var2_hardest_cut_off = -numeric_limits<double>::max();
 
   // no pt cutoff for the particles to put in p_uncol_hard
   stable_cone_soft_pt2_cutoff = -1.0;
+
+  // no pt-weighted splitting
+  use_pt_weighted_splitting = false;
 }
 
 
@@ -256,7 +262,7 @@ Csplit_merge::~Csplit_merge(){
 //  - R2          cone radius (squared)
 //  - ptmin       minimal pT allowed for jets
 //-------------------------------------------------------------
-int Csplit_merge::init(vector<Cmomentum> &_particles, vector<Cmomentum> *protocones, double R2, double ptmin){
+int Csplit_merge::init(vector<Cmomentum> & /*_particles*/, vector<Cmomentum> *protocones, double R2, double ptmin){
   // browse protocones
   return add_protocones(protocones, R2, ptmin);
 }
@@ -274,18 +280,10 @@ int Csplit_merge::init_particles(vector<Cmomentum> &_particles){
   particles = _particles;
   n = particles.size();
 
-  // build the vector of particles' pt and determine min,max eta
-  double eta_min=0.0;  /// for the Ceta_phi_range static member!
-  double eta_max=0.0;  /// for the Ceta_phi_range static member!
+  // build the vector of particles' pt
   pt.resize(n);
-  for (int i=0;i<n;i++){
+  for (int i=0;i<n;i++)
     pt[i] = particles[i].perp();
-    eta_min = min(eta_min, particles[i].eta);
-    eta_max = max(eta_max, particles[i].eta);
-  }
-  Ceta_phi_range epr;
-  epr.eta_min = eta_min-0.01;
-  epr.eta_max = eta_max+0.01;
 
   // ensure that ptcomparison points to our set of particles (though params not correct)
   ptcomparison.particles = &particles;
@@ -313,7 +311,10 @@ int Csplit_merge::init_pleft(){
   int i,j;
 
   // copy particles removing the ones with infinite rapidity
+  // determine min,max eta
   j=0;
+  double eta_min=0.0;  /// for the Ceta_phi_range static member!
+  double eta_max=0.0;  /// for the Ceta_phi_range static member!
   p_remain.clear();
   for (i=0;i<n;i++){
     // set ref for checkxor
@@ -335,12 +336,19 @@ int Csplit_merge::init_pleft(){
       j++;
       // set up parent-particle index
       particles[i].index = 0;
+
+      eta_min = min(eta_min, particles[i].eta);
+      eta_max = max(eta_max, particles[i].eta);
     } else {
       particles[i].index = -1;
     }
   }
   n_left = p_remain.size();
   n_pass = 0;
+
+  Ceta_phi_range epr;
+  epr.eta_min = eta_min-0.01;
+  epr.eta_max = eta_max+0.01;
 
   merge_collinear_and_remove_soft();
 
@@ -551,6 +559,152 @@ int Csplit_merge::add_protocones(vector<Cmomentum> *protocones, double R2, doubl
 
 
 /*
+ * remove the hardest protocone and declare it a a jet 
+ *  - protocones  list of protocones (initial jet candidates)
+ *  - R2          cone radius (squared)
+ *  - ptmin       minimal pT allowed for jets
+ * return 0 on success, 1 on error
+ *
+ * The list of remaining particles (and the uncollinear-hard ones)
+ * is updated.
+ */
+int Csplit_merge::add_hardest_protocone_to_jets(std::vector<Cmomentum> *protocones, double R2, double ptmin){
+
+  int i;
+  Cmomentum *c;
+  Cmomentum *v;
+  double eta, phi;
+  double dx, dy;
+  double R;
+  Cjet jet, jet_candidate;
+  bool found_jet = false;
+
+  if (protocones->size()==0)
+    return 1;
+
+  pt_min2 = ptmin*ptmin;
+  R = sqrt(R2);
+
+  // browse protocones
+  // for each of them, build the list of particles in them
+  for (vector<Cmomentum>::iterator p_it = protocones->begin();p_it != protocones->end();p_it++){
+    // initialise variables
+    c = &(*p_it);
+
+    // note: cones have been tested => their (eta,phi) coordinates are computed
+    eta = c->eta;
+    phi = c->phi;
+
+    // NOTE: this is common to this method and add_protocones, so it
+    // could be moved into a 'build_jet_from_protocone' method
+    //
+    // browse particles to create cone contents
+    jet_candidate.v = Cmomentum();
+    jet_candidate.pt_tilde=0;
+    jet_candidate.contents.clear();
+    for (i=0;i<n_left;i++){
+      v = &(p_remain[i]);
+      // for security, avoid including particles with infinite rapidity)
+      // NO NEEDED ANYMORE SINCE REMOVED FROM p_remain FROM THE BEGINNING
+      //if (fabs(v->pz)!=v->E){
+      dx = eta - v->eta;
+      dy = fabs(phi - v->phi);
+      if (dy>M_PI) 
+	dy -= twopi;
+      if (dx*dx+dy*dy<R2){
+	jet_candidate.contents.push_back(v->parent_index);
+	jet_candidate.v+= *v;
+	jet_candidate.pt_tilde+= pt[v->parent_index];
+	v->index=0;
+      }
+    }
+    jet_candidate.n=jet_candidate.contents.size();
+
+    // set the momentum in protocones 
+    // (it was only known through eta and phi up to now)
+    *c = jet_candidate.v;
+    c->eta = eta; // restore exact original coords
+    c->phi = phi; // to avoid rounding error inconsistencies
+
+    // set the jet range
+    jet_candidate.range=Ceta_phi_range(eta,phi,R);
+
+    // check that the protojet has large enough pt
+    if (jet_candidate.v.perp2()<pt_min2)
+      continue;
+
+    // assign the split-merge (or progressive-removal) squared scale variable
+    if (_user_scale) {
+      // sm_var2 is the signed square of the user scale returned
+      // for the jet candidate
+      jet_candidate.sm_var2 = (*_user_scale)(jet_candidate);
+      jet_candidate.sm_var2 *= abs(jet_candidate.sm_var2);
+    } else {
+      jet_candidate.sm_var2 = get_sm_var2(jet_candidate.v, jet_candidate.pt_tilde);
+    }
+
+    // now check if it is possibly the hardest
+    if ((! found_jet) ||
+	(_user_scale ? _user_scale->is_larger(jet_candidate, jet)
+	             : ptcomparison(jet_candidate, jet))){
+      jet = jet_candidate;
+      found_jet = true;
+    }
+  }
+
+  // make sure at least one of the jets has passed the selection
+  if (!found_jet) return 1;  
+  
+  // add the jet to the list of jets
+  jets.push_back(jet);
+  jets[jets.size()-1].v.build_etaphi();
+
+#ifdef DEBUG_SPLIT_MERGE
+  cout << "PR-Jet " << jets.size() << " [size " << jet.contents.size() << "]:";
+#endif
+    
+  // update the list of what particles are left
+  int p_remain_index = 0;
+  int contents_index = 0;
+  //sort(next_jet.contents.begin(),next_jet.contents.end());
+  for (int index=0;index<n_left;index++){
+    if ((contents_index<(int) jet.contents.size()) &&
+	(p_remain[index].parent_index == jet.contents[contents_index])){
+      // this particle belongs to the newly found jet
+      // set pass in initial list
+      particles[p_remain[index].parent_index].index = n_pass;
+#ifdef DEBUG_SPLIT_MERGE
+      cout << " " << jet.contents[contents_index];
+#endif
+      contents_index++;
+    } else {
+      // this particle still has to be clustered
+      p_remain[p_remain_index] = p_remain[index];
+      p_remain[p_remain_index].parent_index = p_remain[index].parent_index;
+      p_remain[p_remain_index].index=1;
+      p_remain_index++;
+    }
+  }
+  p_remain.resize(n_left-jet.contents.size());
+  n_left = p_remain.size();
+  jets[jets.size()-1].pass = particles[jet.contents[0]].index;
+
+  // increase the pass index
+  n_pass++;
+
+#ifdef DEBUG_SPLIT_MERGE
+  cout << endl;
+#endif
+
+  // male sure the list of uncol_hard particles (used for the next
+  // stable cone finding) is updated [could probably be more
+  // efficient]
+  merge_collinear_and_remove_soft();
+  
+  return 0;
+}
+
+/*
  * really do the splitting and merging
  * At the end, the vector jets is filled with the jets found.
  * the 'contents' field of each jets contains the indices
@@ -682,7 +836,7 @@ int Csplit_merge::save_contents(FILE *flux){
   for (it_j = jets.begin(), i1=0 ; it_j != jets.end() ; it_j++, i1++){
     j1 = &(*it_j);
     j1->v.build_etaphi();
-    fprintf(flux, "%lf\t%lf\t%le\t%d\n", 
+    fprintf(flux, "%f\t%f\t%e\t%d\n", 
 	    j1->v.eta, j1->v.phi, j1->v.perp(), j1->n);
   }
   
@@ -691,7 +845,7 @@ int Csplit_merge::save_contents(FILE *flux){
   for (it_j = jets.begin(), i1=0 ; it_j != jets.end() ; it_j++, i1++){
     j1 = &(*it_j);
     for (i2=0;i2<j1->n;i2++)
-      fprintf(flux, "%lf\t%lf\t%le\t%d\t%d\n", 
+      fprintf(flux, "%f\t%f\t%e\t%d\t%d\n", 
       	      particles[j1->contents[i2]].eta, particles[j1->contents[i2]].phi,
       	      particles[j1->contents[i2]].perp(), j1->contents[i2], i1);
   }
@@ -711,7 +865,7 @@ int Csplit_merge::show(){
 
   for (it_j = jets.begin(), i1=0 ; it_j != jets.end() ; it_j++, i1++){
     j = &(*it_j);
-    fprintf(stdout, "jet %2d: %le\t%le\t%le\t%le\t", i1+1,
+    fprintf(stdout, "jet %2d: %e\t%e\t%e\t%e\t", i1+1,
 	    j->v.px, j->v.py, j->v.pz, j->v.E);
     for (i2=0;i2<j->n;i2++)
       fprintf(stdout, "%d ", j->contents[i2]);
@@ -720,7 +874,7 @@ int Csplit_merge::show(){
   
   for (it_c = candidates->begin(), i1=0 ; it_c != candidates->end() ; it_c++, i1++){
     c = &(*it_c);
-    fprintf(stdout, "cdt %2d: %le\t%le\t%le\t%le\t%le\t", i1+1,
+    fprintf(stdout, "cdt %2d: %e\t%e\t%e\t%e\t%e\t", i1+1,
 	    c->v.px, c->v.py, c->v.pz, c->v.E, sqrt(c->sm_var2));
     for (i2=0;i2<c->n;i2++)
       fprintf(stdout, "%d ", c->contents[i2]);
@@ -808,7 +962,7 @@ bool Csplit_merge::get_overlap(const Cjet &j1, const Cjet &j2, double *overlap2)
 bool Csplit_merge::split(cjet_iterator &it_j1, cjet_iterator &it_j2){
   int i1, i2;
   Cjet jet1, jet2;
-  double eta1, phi1, eta2, phi2;
+  double eta1, phi1, pt1_weight, eta2, phi2, pt2_weight;
   double dx1, dy1, dx2, dy2;
   Cmomentum tmp;
   Cmomentum *v;
@@ -822,15 +976,21 @@ bool Csplit_merge::split(cjet_iterator &it_j1, cjet_iterator &it_j2){
   jet2.pt_tilde = jet1.pt_tilde = 0.0;
 
   // compute centroids
+  // When use_pt_weighted_splitting is activated, the
+  // "geometrical" distance is weighted by the inverse
+  // of the pt of the protojet
+  // This is stored in pt{1,2}_weight
   tmp = j1.v;
   tmp.build_etaphi();
   eta1 = tmp.eta;
   phi1 = tmp.phi;
+  pt1_weight = (use_pt_weighted_splitting) ? 1.0/tmp.perp2() : 1.0;
 
   tmp = j2.v;
   tmp.build_etaphi();
   eta2 = tmp.eta;
   phi2 = tmp.phi;
+  pt2_weight = (use_pt_weighted_splitting) ? 1.0/tmp.perp2() : 1.0;
 
   jet1.v = jet2.v = Cmomentum();  
 
@@ -868,9 +1028,12 @@ bool Csplit_merge::split(cjet_iterator &it_j1, cjet_iterator &it_j2){
       if (dy2>M_PI) 
 	dy2 -= twopi;
 
-      //? what when == ?
-      double d1sq = dx1*dx1+dy1*dy1;
-      double d2sq = dx2*dx2+dy2*dy2;
+      //? what when == ? 
+      // When use_pt_weighted_splitting is activated, the
+      // "geometrical" distance is weighted by the inverse
+      // of the pt of the protojet
+      double d1sq = (dx1*dx1+dy1*dy1)*pt1_weight;
+      double d2sq = (dx2*dx2+dy2*dy2)*pt2_weight;
       // do bookkeeping on most ambiguous split
       if (fabs(d1sq-d2sq) < most_ambiguous_split) 
         most_ambiguous_split = fabs(d1sq-d2sq);
@@ -1017,7 +1180,7 @@ double Csplit_merge::get_sm_var2(Cmomentum &v, double &pt_tilde){
                                  + ptcomparison.SM_scale_name());
   }
 
-  return 0.0;
+  //return 0.0;
 }
 
 }
