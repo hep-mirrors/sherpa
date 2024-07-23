@@ -901,7 +901,7 @@ set(CXXFLAGS_PACKAGES_H_CONTENT
 #ifndef CXXFLAGS_PACKAGES_H\n\
 #define CXXFLAGS_PACKAGES_H\n\n\
 /* Using HEPMC3 */\n\
-$<IF:$<BOOL:${HEPMC3_FOUND}>,#define USING__HEPMC3 \"1\",/* #undef USING__HEPMC3 */>\n\n\
+$<IF:$<BOOL:${HepMC3_FOUND}>,#define USING__HEPMC3 \"1\",/* #undef USING__HEPMC3 */>\n\n\
 /* HepMC3 with ROOT support */\n\
 $<IF:$<BOOL:${SHERPA_ENABLE_HEPMC3_ROOT}>,#define USING__HEPMC3__ROOT \"1\",/* #undef USING__HEPMC3__ROOT */>\n\n\
 /* using gzip */\n\
