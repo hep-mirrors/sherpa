@@ -53,6 +53,8 @@ namespace PHASIC {
                   double sjKt, double skKt, double mKt2);
     void CalcVNSg(double s, double mk, double sjKt, double skKt,
                   double mKt2, bool ini);
+    void CalcVNSsoft(double s, double mj, double mk,
+                     double sjKt, double skKt, double mKt2);
     void CalcVNSs(double s, double mj, double mk);
     void CalcGamma(ATOOLS::ist::itype type, double mu2, double s, double m);
     void CalcgKterm(ATOOLS::ist::itype type, double mu2, double s, double mj,

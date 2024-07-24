@@ -168,9 +168,11 @@ void Massive_Kernels::CalcVNS(ist::itype type,double s,double mj,double mk,
   case ist::Q:
   case ist::sG:
     CalcVNSq(s,mj,mk,sjKt,skKt,mKt2);
+    CalcVNSsoft(s,mj,mk,sjKt,skKt,mKt2);
     break;
   case ist::g:
     CalcVNSg(s,mk,sjKt,skKt,mKt2,ini);
+    CalcVNSsoft(s,mj,mk,sjKt,skKt,mKt2);
     break;
   case ist::sQ:
     CalcVNSs(s,mj,mk);
@@ -186,24 +188,29 @@ void Massive_Kernels::CalcVNS(ist::itype type,double s,double mj,double mk,
   msg_Debugging()<<"VNS="<<m_VNS<<std::endl;
 }
 
+void Massive_Kernels::CalcVNSsoft(double s,double mj,double mk,double sjKt,
+                                  double skKt,double mKt2) {
+  if(m_subtype!=subscheme::Alaric) return;
+  const double rho = skKt/s;
+  const double muK = mKt2/s;
+  const double tau = sjKt/s;
+
+  /// DiLog implements real part for x > 1
+  // m_VNS += -2*((rho + log(std::abs(rho)))*log(rho/tau) - (1 + rho + log(std::abs(rho)))*log((1 + rho)/tau) + DiLog(1 + 1/rho));
+
+  m_VNS += -2.*(DiLog(1+1/rho) - (1 + rho + log(std::abs(rho)))*log(1+1/rho));
+
+  m_VNS += DiLog(1-muK/(rho*tau)); //DiLog(1.-s*mKt2/(sjKt*skKt));
+  m_VNS += 0.5*sqr(log(rho/tau)); //0.5*sqr(log(skKt/sjKt));
+  // m_VNS += 6. - sqr(M_PI)/2.;
+  // m_VNS -= 6. - sqr(M_PI)/2.;
+}
+
 void Massive_Kernels::CalcVNSq(double s,double mj,double mk,double sjKt,
                                double skKt,double mKt2)
 // V^NS_q as defined in (6.21)-(6.23)
 {
-  if (mj==0.&&mk==0.) {
-    if(m_subtype!=subscheme::Alaric) return;
-    else {
-      double rho = skKt/s;
-      double kap = mKt2/sjKt;
-      double tau = s/sjKt;
-      
-      m_VNS = -2*((rho + log(-rho))*log(rho*tau) + (-1 - rho + log(-(1/rho)))*log((1 + rho)*tau) + DiLog(1 + 1/rho));
-      m_VNS += 4-sqr(M_PI)/6.;
-      m_VNS += DiLog(1.-2.*s*mKt2/(sjKt*skKt));
-      m_VNS += 0.5*sqr(log(skKt/sjKt));
-      m_VNS -= 6. - sqr(M_PI)/2.;
-    }
-  }
+  if (mj==0.&&mk==0.) { return; }
   else if (mj==0.) {
     double Q2=s+sqr(mj)+sqr(mk);
     double Q=sqrt(Q2);
@@ -265,16 +272,6 @@ void Massive_Kernels::CalcVNSg(double s,double mk,double sjKt,double skKt,
       }
     }
     m_VNS*=4./3.*m_TRbyCA;
-    if(m_subtype!=subscheme::Alaric) return;
-    else {
-      double rho = skKt/s;
-      double kap = mKt2/sjKt;
-      double tau = -s/sjKt;
-      m_VNS= -2*(-0.5*((2*kap + log(sqr(kap)))*(log((2*kap)/(1 + 2*kap)) - log(1 + 1/(1 + 2*kap)))) +
-                 (rho + log(-rho))*(log((2*rho)/(1 + 2*rho)) - log(1 + 1/(1 + 2*rho))) +
-                 log(((1 + kap)*tau)/(1 + rho)) - DiLog(1 + 1/kap) + DiLog(1 + 1/rho));
-      m_VNS += DiLog(1.-2.*s*mKt2/(sjKt*skKt));
-    }
   }
   else {
     bool simplev=ini||IsEqual(m_kappa,2./3.);
