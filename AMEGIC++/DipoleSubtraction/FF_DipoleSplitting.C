@@ -35,7 +35,7 @@ void FF_DipoleSplitting::SetMomenta(const Vec4D* mom)
   m_pj = mom[m_j];
   m_pk = mom[m_k];
 
-  if (m_subtype==subscheme::Alaric);// && m_ftype==spt::soft)
+  if (m_subtype==subscheme::Alaric)// && m_ftype==spt::soft)
     return SetMomentaAlaric(mom);
 
   m_yijk = m_pi*m_pj/(m_pi*m_pj+m_pj*m_pk+m_pk*m_pi);
@@ -116,7 +116,7 @@ void FF_DipoleSplitting::SetMomentaAlaric(const ATOOLS::Vec4D* mom) {
   }
   ff.m_b=p_recoil->RecoilTags(ampl);
   PHASIC::ClusterAntenna(ff, m_i, m_j, m_k, 0.);
-  
+
   Vec4D n;
   if(m_ftype==spt::soft) {
     m_pi = ff.m_pi;
