@@ -288,6 +288,7 @@ void Phase_Space_Handler::CheckSinglePoint()
       if (vec[1] == '-') p_lab[i] = -ToType<Vec4D>(vec);
       else p_lab[i] = ToType<Vec4D>(vec);
     }
+    m_pspoint.CorrectMomenta();
   } else
     return ;
   Process_Base *proc(p_active->Process());
