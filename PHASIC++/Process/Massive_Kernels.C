@@ -195,13 +195,15 @@ void Massive_Kernels::CalcVNSsoft(double s,double mj,double mk,double sjKt,
   const double muK = mKt2/s;
   const double tau = sjKt/s;
 
+
   /// DiLog implements real part for x > 1
   // m_VNS += -2*((rho + log(std::abs(rho)))*log(rho/tau) - (1 + rho + log(std::abs(rho)))*log((1 + rho)/tau) + DiLog(1 + 1/rho));
 
-  m_VNS += -2.*(DiLog(1+1/rho) - (1 + rho + log(std::abs(rho)))*log(1+1/rho));
-
+  if(!IsEqual(rho,-1))
+    m_VNS += -2.*(DiLog(1+1/rho) - (1 + rho + log(std::abs(rho)))*log(1+1/rho));
   m_VNS += DiLog(1-muK/(rho*tau)); //DiLog(1.-s*mKt2/(sjKt*skKt));
   m_VNS += 0.5*sqr(log(rho/tau)); //0.5*sqr(log(skKt/sjKt));
+  // m_VNS += 4-sqr(M_PI)/3.;
   // m_VNS += 6. - sqr(M_PI)/2.;
   // m_VNS -= 6. - sqr(M_PI)/2.;
 }
@@ -257,7 +259,7 @@ void Massive_Kernels::CalcVNSg(double s,double mk,double sjKt,double skKt,
 // Q_aux-terms canceled with Gamma_g
 {
   size_t nfjk=0;
-  if (!ini) 
+  if (!ini)
     for (size_t i=0;i<m_nmf;i++)
       if (4.*m_massflav[i]*(m_massflav[i]+mk)<s) nfjk++;
   if (mk==0.) {

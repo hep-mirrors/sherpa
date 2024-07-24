@@ -211,7 +211,6 @@ void Initialization_Handler::RegisterDefaults()
   // register settings here or we prevent SetDefault... to called more than once
   // otherwise
   s["SHOWER_GENERATOR"].SetDefault("CSS").UseNoneReplacements();
-  s["RECOIL_DEFINITION"].SetDefault("FinalState").UseNoneReplacements();
   std::string showergen{ s["SHOWER_GENERATOR"].Get<std::string>() };
   s["JET_CRITERION"].SetDefault(showergen);
   s["NLOMC_GENERATOR"].SetDefault(showergen);
@@ -278,6 +277,15 @@ void Initialization_Handler::RegisterDefaults()
 
   s["DIPOLES"]["SCHEME"].SetDefault(subscheme::CSS);
   s["DIPOLES"]["KAPPA"].SetDefault(2.0/3.0);
+
+  bool isalaric = (showergen == "Alaric" || s["DIPOLES"]["SCHEME"].Get<subscheme::code>()==subscheme::Alaric);
+  s["RECOIL_DEFINITION"].SetDefault(isalaric?"FinalState":"None").UseNoneReplacements();
+  s["COLLINEAR_RECOIL_DEFINITION"].SetDefault(isalaric?"PassiveFinalState":"None").UseNoneReplacements();
+
+  if(!isalaric) {
+    if(s["RECOIL_DEFINITION"].Get<string>() != "None" || s["COLLINEAR_RECOIL_DEFINITION"].Get<string>() != "None")
+      THROW(fatal_error, "Variable recoil schemes are only available in Alaric.");
+  }
 
   s["COUPLINGS"].SetDefault("Alpha_QCD 1");
 

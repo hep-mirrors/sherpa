@@ -74,8 +74,11 @@ Single_Virtual_Correction::Single_Virtual_Correction() :
   m_pspfsrecscheme = s["DIPOLES"]["PFF_FS_RECOIL_SCHEME"].Get<size_t>();
   m_pspissplscheme = s["DIPOLES"]["PFF_IS_SPLIT_SCHEME"].Get<size_t>();
   m_pspfssplscheme = s["DIPOLES"]["PFF_FS_SPLIT_SCHEME"].Get<size_t>();
-  p_recoil=RecoilDefinition_Getter::GetObject
+  p_softrecoil=RecoilDefinition_Getter::GetObject
     (Settings::GetMainSettings()["RECOIL_DEFINITION"]
+     .Get<std::string>(),RecoilDefinition_Key());
+  p_collrecoil=RecoilDefinition_Getter::GetObject
+    (Settings::GetMainSettings()["COLLINEAR_RECOIL_DEFINITION"]
      .Get<std::string>(),RecoilDefinition_Key());
   static bool addcite(false);
   if (!addcite) {
@@ -757,21 +760,27 @@ double Single_Virtual_Correction::Calc_I(const ATOOLS::sbt::subtype st,
       bool inik = partonlist[k]<m_nin;
 
       double siKt, skKt, mKt2;
+      double mreci = mk;
+      double mreck = mi;
 
-      /// this bit is only needed for alaric
-      PHASIC::Ant_Args ff;
-      auto* ampl = Cluster_Amplitude::New();
-      ampl->SetNIn(2);
-      for (int idx = 0; idx < mom.size(); ++idx) {
-        ff.m_p.push_back(mom[idx]);
-        ampl->CreateLeg(i<2?-mom[idx]:mom[idx],i<2?m_flavs[idx].Bar():m_flavs[idx]);
+      if(p_softrecoil || p_collrecoil) {
+        Cluster_Amplitude* ampl = Cluster_Amplitude::New();
+        ampl->SetNIn(2);
+        for (int idx = 0; idx < mom.size(); ++idx) {
+          ampl->CreateLeg(i<2?-mom[idx]:mom[idx],i<2?m_flavs[idx].Bar():m_flavs[idx]);
+        }
+        if(p_softrecoil) {
+          Vec4D Kt = p_softrecoil->Recoil(ampl);
+          mKt2 = Kt.Abs2();
+          siKt = 2.*mom[partonlist[i]]*Kt;
+          skKt = 2.*mom[partonlist[k]]*Kt;
+        }
+        if(p_collrecoil) {
+          mreci = p_collrecoil->Recoil(ampl,i,-1,k).Abs();
+          mreck = p_collrecoil->Recoil(ampl,k,-1,i).Abs();
+        }
+        ampl->Delete();
       }
-      Vec4D Kt = p_recoil->Recoil(ampl);
-      ampl->Delete();
-      mKt2 = Kt.Abs2();
-      siKt = 2.*mom[partonlist[i]]*Kt;
-      skKt = 2.*mom[partonlist[k]]*Kt;
-      /// should we only do it then?
 
       // I_ik
       double splf(0.),splf1(0.),splf2(0.);
