@@ -35,7 +35,8 @@ void FF_DipoleSplitting::SetMomenta(const Vec4D* mom)
   m_pj = mom[m_j];
   m_pk = mom[m_k];
 
-  if (m_subtype==subscheme::Alaric)// && m_ftype==spt::soft)
+
+  if (m_subtype==subscheme::Alaric) // && m_ftype==spt::soft)
     return SetMomentaAlaric(mom);
 
   m_yijk = m_pi*m_pj/(m_pi*m_pj+m_pj*m_pk+m_pk*m_pi);
