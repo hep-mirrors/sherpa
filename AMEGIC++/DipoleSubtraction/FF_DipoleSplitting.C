@@ -35,7 +35,7 @@ void FF_DipoleSplitting::SetMomenta(const Vec4D* mom)
   m_pj = mom[m_j];
   m_pk = mom[m_k];
 
-  if (m_subtype==subscheme::Alaric);// && m_ftype==spt::soft)
+  if (m_subtype==subscheme::Alaric)// && m_ftype==spt::soft)
     return SetMomentaAlaric(mom);
 
   m_yijk = m_pi*m_pj/(m_pi*m_pj+m_pj*m_pk+m_pk*m_pi);
@@ -116,7 +116,7 @@ void FF_DipoleSplitting::SetMomentaAlaric(const ATOOLS::Vec4D* mom) {
   }
   ff.m_b=p_recoil->RecoilTags(ampl);
   PHASIC::ClusterAntenna(ff, m_i, m_j, m_k, 0.);
-  
+
   Vec4D n;
   if(m_ftype==spt::soft) {
     m_pi = ff.m_pi;
@@ -143,9 +143,13 @@ void FF_DipoleSplitting::SetMomentaAlaric(const ATOOLS::Vec4D* mom) {
     m_pt2   =     m_ptij;
   }
   else {
-    Vec4D K(0.,0.,0.,0.);
-    for(size_t i(ampl->NIn());i<ampl->Legs().size();++i) {
-      if(i!=m_i && i!=m_j) K += mom[i];
+    Vec4D pij = mom[m_i]+mom[m_j], K(0.,0.,0.,0.);
+    int nk(0);
+    for(size_t i(0);i<ampl->Legs().size();++i) {
+      if(i!=m_i && i!=m_j) {
+        K += mom[i];
+        ++nk;
+      }
     }
     double K2(K.Abs2());
     int mode = 0; // ?? what does it do?
@@ -153,13 +157,23 @@ void FF_DipoleSplitting::SetMomentaAlaric(const ATOOLS::Vec4D* mom) {
     if (ffdip.m_stat<0) {
       msg_Error()<<METHOD<<": Clustering failed in subtraction.\n";
     }
-    
+
+    if(nk>1) {
+      Poincare oldcms(K), newcms(ff.m_pk);
+      newcms.Invert();
+      for(size_t i(0);i<ampl->Legs().size();++i) {
+        if(i!=m_i && i!=m_j) {
+          ampl->Leg(i)->SetMom(newcms*(oldcms*ampl->Leg(i)->Mom()));
+        }
+      }
+    }
+
     m_pi = mom[m_i];
     m_pj = mom[m_j];
     m_pk = mom[m_k];
 
     m_ptij = ffdip.m_pi;
-    m_ptk = ffdip.m_pk; 
+    m_ptk = ffdip.m_pk;
 
     n = ffdip.m_nb;
 
