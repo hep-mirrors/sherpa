@@ -107,6 +107,18 @@ namespace ATOOLS {
 
 }
 
+DECLARE_GETTER(Recoil_ColorPartner,"ColorPartner",
+	       Recoil_Definition,RecoilDefinition_Key);
+Recoil_Definition *ATOOLS::Getter
+<Recoil_Definition,RecoilDefinition_Key,Recoil_ColorPartner>::
+operator()(const RecoilDefinition_Key &key) const
+{ return new Recoil_ColorPartner(); }
+
+void Getter<Recoil_Definition,RecoilDefinition_Key,Recoil_ColorPartner>::
+PrintInfo(std::ostream &str,const size_t width) const
+{ str<<"color partner"; }
+
+
 DECLARE_GETTER(Recoil_PassiveFinalState,"PassiveFinalState",
 	       Recoil_Definition,RecoilDefinition_Key);
 Recoil_Definition *ATOOLS::Getter
