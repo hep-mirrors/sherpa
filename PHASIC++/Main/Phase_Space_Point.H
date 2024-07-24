@@ -57,7 +57,6 @@ namespace PHASIC {
     bool   DefineISRKinematics(Process_Integrator * process);
     bool   DefineFSRKinematics();
     bool   Check4Momentum();
-    void   CorrectMomenta();
 
     inline void Reset(const psmode::code & mode) {
       m_mode   = mode;
@@ -75,6 +74,7 @@ namespace PHASIC {
     bool   operator()(Process_Integrator * process,
 		      const psmode::code & mode=psmode::normal_call);
 
+    void   CorrectMomenta();
     double CalculateWeight();
     
     inline void SetBeamIntegrator(Multi_Channel * channels) { p_beamchannels = channels; }
