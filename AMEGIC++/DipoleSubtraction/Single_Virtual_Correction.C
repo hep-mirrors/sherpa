@@ -759,7 +759,8 @@ double Single_Virtual_Correction::Calc_I(const ATOOLS::sbt::subtype st,
       bool inii = partonlist[i]<m_nin;
       bool inik = partonlist[k]<m_nin;
 
-      double siKt, skKt, mKt2;
+      double siKti, skKti, mKt2i;
+      double siKtk, skKtk, mKt2k;
       double mreci = mk;
       double mreck = mi;
 
@@ -770,10 +771,14 @@ double Single_Virtual_Correction::Calc_I(const ATOOLS::sbt::subtype st,
           ampl->CreateLeg(i<2?-mom[idx]:mom[idx],i<2?m_flavs[idx].Bar():m_flavs[idx]);
         }
         if(p_softrecoil) {
-          Vec4D Kt = p_softrecoil->Recoil(ampl);
-          mKt2 = Kt.Abs2();
-          siKt = 2.*mom[partonlist[i]]*Kt;
-          skKt = 2.*mom[partonlist[k]]*Kt;
+          Vec4D Kti = p_softrecoil->Recoil(ampl,i,-1,k);
+          mKt2i = Kti.Abs2();
+          siKti = 2.*mom[partonlist[i]]*Kti;
+          skKti = 2.*mom[partonlist[k]]*Kti;
+          Vec4D Ktk = p_softrecoil->Recoil(ampl,k,-1,i);
+          mKt2k = Ktk.Abs2();
+          siKtk = 2.*mom[partonlist[i]]*Ktk;
+          skKtk = 2.*mom[partonlist[k]]*Ktk;
         }
         if(p_collrecoil) {
           mreci = p_collrecoil->Recoil(ampl,i,-1,k).Abs();
@@ -785,8 +790,8 @@ double Single_Virtual_Correction::Calc_I(const ATOOLS::sbt::subtype st,
       // I_ik
       double splf(0.),splf1(0.),splf2(0.);
       if (dsij[i][k]!=0.) {
-        kernel->Calculate(typei,mur2,sik,mi,mk,
-                          siKt,skKt,mKt2,inii,inik,m_drmode);
+        kernel->Calculate(typei,mur2,sik,mi,mreci,
+                          siKti,skKti,mKt2i,inii,inik,m_drmode);
         splf  += (kernel->I_Fin()) * dsij[i][k];
         splf1 += kernel->I_E1() * dsij[i][k];
         splf2 += kernel->I_E2() * dsij[i][k];
@@ -799,8 +804,8 @@ double Single_Virtual_Correction::Calc_I(const ATOOLS::sbt::subtype st,
       }
       // I_ki
       if (dsij[k][i]!=0.) {
-        kernel->Calculate(typek,mur2,sik,mk,mi,
-                          skKt,siKt,mKt2,inik,inii,m_drmode);
+        kernel->Calculate(typek,mur2,sik,mk,mreck,
+                          skKtk,siKtk,mKt2k,inik,inii,m_drmode);
         splf  += (kernel->I_Fin()) * dsij[k][i];
         splf1 += kernel->I_E1() * dsij[k][i];
         splf2 += kernel->I_E2() * dsij[k][i];

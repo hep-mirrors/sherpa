@@ -526,7 +526,8 @@ int Single_DipoleTerm::InitAmplitude(Amegic_Model *model,Topology* top,
     stream << " (" << m_pi << "," << m_pj << "," << m_pk << ")" << std::endl;
     THROW(not_implemented, stream.str());
   }
-  p_dipole->SetRecoil(p_recoil);
+  p_dipole->SetSoftRecoil(p_softrecoil);
+  p_dipole->SetCollRecoil(p_collrecoil);
   p_dipole->SetSubevt(&m_subevt);
   msg_Debugging()<<"Initialised dipole "<<*p_dipole<<std::endl;
   Poincare cms;

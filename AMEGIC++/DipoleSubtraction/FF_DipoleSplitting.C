@@ -114,11 +114,12 @@ void FF_DipoleSplitting::SetMomentaAlaric(const ATOOLS::Vec4D* mom) {
     ff.m_p.push_back(mom[i]);
     ampl->CreateLeg(i<2?-mom[i]:mom[i],i<2?p_subevt->p_fl[i].Bar():p_subevt->p_fl[i]);
   }
-  ff.m_b=p_recoil->RecoilTags(ampl);
-  PHASIC::ClusterAntenna(ff, m_i, m_j, m_k, 0.);
 
   Vec4D n;
   if(m_ftype==spt::soft) {
+    ff.m_b=p_softrecoil->RecoilTags(ampl,m_i,m_j,m_k);
+    PHASIC::ClusterAntenna(ff, m_i, m_j, m_k, 0.);
+
     m_pi = ff.m_pi;
     m_pj = ff.m_pj;
     m_pk = ff.m_pk;
@@ -143,11 +144,11 @@ void FF_DipoleSplitting::SetMomentaAlaric(const ATOOLS::Vec4D* mom) {
     m_pt2   =     m_ptij;
   }
   else {
-    Vec4D pij = mom[m_i]+mom[m_j], K(0.,0.,0.,0.);
+    Vec4D pij = mom[m_i]+mom[m_j];
+    Vec4D K = p_collrecoil->Recoil(ampl,m_i,m_j,m_k);
     int nk(0);
     for(size_t i(0);i<ampl->Legs().size();++i) {
       if(i!=m_i && i!=m_j) {
-        K += mom[i];
         ++nk;
       }
     }

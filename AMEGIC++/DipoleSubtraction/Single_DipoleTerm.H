@@ -27,7 +27,8 @@ namespace AMEGIC {
     ATOOLS::Vec4D         * p_LO_mom;
     ATOOLS::Vec4D_Vector    p_LO_labmom;
 
-    ATOOLS::Recoil_Definition * p_recoil;
+    ATOOLS::Recoil_Definition * p_softrecoil;
+    ATOOLS::Recoil_Definition * p_collrecoil;
 
     ATOOLS::sbt::subtype        m_stype;
     ATOOLS::dpt::dipoletype     m_dtype;
@@ -137,7 +138,8 @@ namespace AMEGIC {
     void SetNLOMC(PDF::NLOMC_Base *const mc);
 
     void SetRealSubevt(ATOOLS::NLO_subevt *real) { m_subevt.p_real=real; }
-    void SetRecoil(ATOOLS::Recoil_Definition* recoil) { p_recoil=recoil; }
+    void SetSoftRecoil(ATOOLS::Recoil_Definition* recoil) { p_softrecoil=recoil; }
+    void SetCollRecoil(ATOOLS::Recoil_Definition* recoil) { p_collrecoil=recoil; }
 
     /*------------------------------------------------------------------------------
 

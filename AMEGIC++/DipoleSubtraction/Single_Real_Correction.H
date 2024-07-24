@@ -34,7 +34,8 @@ namespace AMEGIC {
     ATOOLS::sbt::subtype    m_user_stype;
     size_t                  m_pspisrecscheme,m_pspfsrecscheme;
 
-    ATOOLS::Recoil_Definition  * p_recoil;
+    ATOOLS::Recoil_Definition  * p_softrecoil;
+    ATOOLS::Recoil_Definition  * p_collrecoil;
     Single_Real_Correction     * p_partner;
 
     Process_Base          * p_tree_process;
