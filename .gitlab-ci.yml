@@ -19,7 +19,7 @@ variables:
 
 build-manual:
   stage: build
-  image: $CI_REGISTRY_IMAGE:Fedora_37
+  image: $CI_REGISTRY_IMAGE:Fedora_39
   script:
     - cmake3 -S . -B build  -DSHERPA_ENABLE_MANUAL=ON -DLibZip_DIR=/usr -DSHERPA_ENABLE_INSTALL_LHAPDF:BOOL=ON
     - cd build/Manual
@@ -57,7 +57,7 @@ trigger_pages:
 
 # Build Manual
 pages:
-  image: $CI_REGISTRY_IMAGE:Fedora_37
+  image: $CI_REGISTRY_IMAGE:Fedora_39
   stage: deploy
   script:
     - cd Manual
@@ -320,10 +320,10 @@ LCG_102_x86_64-centos7-gcc11-opt:
 ###########################################################################
 # Here we check if we have changes to the Docker files
 
-check_commit_Fedora38:
+check_commit_Fedora40:
   variables:
     OS: Fedora
-    FREL: 38
+    FREL: 40
   extends: .check_commit_Fedora
 
 check_commit_Fedora39:
@@ -331,18 +331,6 @@ check_commit_Fedora39:
     OS: Fedora
     FREL: 39
   extends: .check_commit_Fedora
-
-check_commit_CentOS7:
-  variables:
-    OS: centOS
-    FREL: 7
-  extends: .check_commit_CentOS
-
-check_commit_CentOS8:
-  variables:
-    OS: centOS
-    FREL: 8
-  extends: .check_commit_CentOS
 
 check_commit_CentOS9:
   variables:
@@ -360,13 +348,13 @@ check_commit_Archlinux0:
 
 ###########################################################################
 #Build images
-build_image_Fedora38:
+build_image_Fedora40:
   variables:
     OS: Fedora
-    FREL: 38
+    FREL: 40
   extends: .build_image_Fedora
   needs:
-    - job: check_commit_Fedora38
+    - job: check_commit_Fedora40
 
 build_image_Fedora39:
   variables:
@@ -375,22 +363,6 @@ build_image_Fedora39:
   extends: .build_image_Fedora
   needs:
     - job: check_commit_Fedora39
-
-build_image_CentOS7:
-  variables:
-    OS: CentOS
-    FREL: 7
-  extends: .build_image_CentOS
-  needs:
-    - job: check_commit_CentOS7
-
-build_image_CentOS8:
-  variables:
-    OS: CentOS
-    FREL: 8
-  extends: .build_image_CentOS
-  needs:
-    - job: check_commit_CentOS8
 
 build_image_CentOS9:
   variables:
@@ -423,49 +395,27 @@ Fedora39-make-ccache-GNU:
     - job: build_image_Fedora39
 
 
-Fedora38-make-ccache-GNU:
+Fedora40-make-ccache-GNU:
   variables:
     OS: Fedora
-    FREL: 38
+    FREL: 40
     TOOLSET: GNU
     EXTRACMAKEFLAGS: $COMMON_EXTRA_CMAKE_FLAGS $EXTENDED_EXTRA_CMAKE_FLAGS $DOXYGEN_CMAKE_FLAGS
     BUILDDOCS: 1
   extends: .any-cmake-ccache
   needs:
-    - job: build_image_Fedora38
+    - job: build_image_Fedora40
 
-Fedora38-make-ccache-LLVM:
+Fedora40-make-ccache-LLVM:
   variables:
     OS: Fedora
-    FREL: 38
+    FREL: 40
     TOOLSET: LLVM
     EXTRACMAKEFLAGS: $COMMON_EXTRA_CMAKE_FLAGS $EXTENDED_EXTRA_CMAKE_FLAGS $DOXYGEN_CMAKE_FLAGS
     BUILDDOCS: 1
   extends: .any-cmake-ccache
   needs:
-    - job: build_image_Fedora38
-
-CentOS7-make-ccache-GNU:
-  variables:
-    OS: CentOS
-    FREL: 7
-    TOOLSET: GNU
-    EXTRACMAKEFLAGS: $COMMON_EXTRA_CMAKE_FLAGS
-  extends: .any-cmake-ccache
-  needs:
-    - job: build_image_CentOS7
-
-
-
-CentOS8-make-ccache-GNU:
-  variables:
-    OS: CentOS
-    FREL: 8
-    TOOLSET: GNU
-    EXTRACMAKEFLAGS: $COMMON_EXTRA_CMAKE_FLAGS
-  extends: .any-cmake-ccache
-  needs:
-    - job: build_image_CentOS8
+    - job: build_image_Fedora40
 
 
 CentOS9-make-ccache-GNU:
