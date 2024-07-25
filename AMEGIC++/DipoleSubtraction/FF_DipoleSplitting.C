@@ -177,7 +177,7 @@ void FF_DipoleSplitting::SetMomentaAlaric(const ATOOLS::Vec4D* mom) {
         if(tags[i]&2) {
           ampl->Leg(i)->SetMom(newcms*(oldcms*ampl->Leg(i)->Mom()));
         }
-        m_mom.push_back(ampl->Leg(i)->Mom());
+        m_mom.push_back((i<2?-1.:+1.)*ampl->Leg(i)->Mom());
       }
     }
     else {
@@ -185,7 +185,7 @@ void FF_DipoleSplitting::SetMomentaAlaric(const ATOOLS::Vec4D* mom) {
         if(tags[i]&2) {
           ampl->Leg(i)->SetMom(ff.m_pk);
         }
-        m_mom.push_back(ampl->Leg(i)->Mom());
+        m_mom.push_back((i<2?-1.:+1.)*ampl->Leg(i)->Mom());
       }
     }
 
