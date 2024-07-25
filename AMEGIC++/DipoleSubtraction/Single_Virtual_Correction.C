@@ -771,18 +771,20 @@ double Single_Virtual_Correction::Calc_I(const ATOOLS::sbt::subtype st,
           ampl->CreateLeg(i<2?-mom[idx]:mom[idx],i<2?m_flavs[idx].Bar():m_flavs[idx]);
         }
         if(p_softrecoil) {
-          Vec4D Kti = p_softrecoil->Recoil(ampl,i,-1,k);
+          Vec4D Kti = p_softrecoil->Recoil(ampl,partonlist[i],-1,partonlist[k]);
           mKt2i = Kti.Abs2();
           siKti = 2.*mom[partonlist[i]]*Kti;
           skKti = 2.*mom[partonlist[k]]*Kti;
-          Vec4D Ktk = p_softrecoil->Recoil(ampl,k,-1,i);
+          Vec4D Ktk = p_softrecoil->Recoil(ampl,partonlist[k],-1,partonlist[i]);
           mKt2k = Ktk.Abs2();
           siKtk = 2.*mom[partonlist[i]]*Ktk;
           skKtk = 2.*mom[partonlist[k]]*Ktk;
         }
         if(p_collrecoil) {
-          mreci = p_collrecoil->Recoil(ampl,i,-1,k).Abs();
-          mreck = p_collrecoil->Recoil(ampl,k,-1,i).Abs();
+          mreci = p_collrecoil->Recoil(ampl,partonlist[i],-1,partonlist[k]).Abs2();
+          mreci = IsZero(mreci)?0.:sqrt(abs(mreci));
+          mreck = p_collrecoil->Recoil(ampl,partonlist[k],-1,partonlist[i]).Abs2();
+          mreck = IsZero(mreck)?0.:sqrt(abs(mreci));
         }
         ampl->Delete();
       }
