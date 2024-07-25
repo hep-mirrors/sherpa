@@ -159,10 +159,17 @@ void FF_DipoleSplitting::SetMomentaAlaric(const ATOOLS::Vec4D* mom) {
     if(nk>1) {
       Poincare oldcms(K), newcms(ff.m_pk);
       newcms.Invert();
-
       for(size_t i(0);i<ampl->Legs().size();++i) {
         if(tags[i]&2) {
           ampl->Leg(i)->SetMom(newcms*(oldcms*ampl->Leg(i)->Mom()));
+        }
+      }
+    }
+    else {
+      for(size_t i(0);i<ampl->Legs().size();++i) {
+        if(tags[i]&2) {
+          ampl->Leg(i)->SetMom(ff.m_pk);
+          break;
         }
       }
     }
