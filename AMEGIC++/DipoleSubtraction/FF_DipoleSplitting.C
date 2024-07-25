@@ -146,12 +146,9 @@ void FF_DipoleSplitting::SetMomentaAlaric(const ATOOLS::Vec4D* mom) {
   else {
     Vec4D pij = mom[m_i]+mom[m_j];
     Vec4D K = p_collrecoil->Recoil(ampl,m_i,m_j,m_k);
-    int nk(0);
-    for(size_t i(0);i<ampl->Legs().size();++i) {
-      if(i!=m_i && i!=m_j) {
-        ++nk;
-      }
-    }
+    std::vector<int> tags = p_collrecoil->RecoilTags(ampl,m_i,m_j,m_k);
+    int nk = std::count_if(tags.begin(),tags.end(),[](int t){return t&2;});
+
     double K2(K.Abs2());
     int mode = 0; // ?? what does it do?
     PHASIC::Kin_Args ffdip=PHASIC::ClusterFFDipole(0,0,0,K2,mom[m_i],mom[m_j],K,mode);
@@ -162,8 +159,9 @@ void FF_DipoleSplitting::SetMomentaAlaric(const ATOOLS::Vec4D* mom) {
     if(nk>1) {
       Poincare oldcms(K), newcms(ff.m_pk);
       newcms.Invert();
+
       for(size_t i(0);i<ampl->Legs().size();++i) {
-        if(i!=m_i && i!=m_j) {
+        if(tags[i]&2) {
           ampl->Leg(i)->SetMom(newcms*(oldcms*ampl->Leg(i)->Mom()));
         }
       }
@@ -174,7 +172,7 @@ void FF_DipoleSplitting::SetMomentaAlaric(const ATOOLS::Vec4D* mom) {
     m_pk = mom[m_k];
 
     m_ptij = ffdip.m_pi;
-    m_ptk = ffdip.m_pk;
+    m_ptk = ampl->Leg(m_k)->Mom();
 
     n = ffdip.m_nb;
 
