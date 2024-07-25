@@ -111,11 +111,11 @@ void FF_DipoleSplitting::SetMomentaAlaric(const ATOOLS::Vec4D* mom) {
   Vec4D n;
   if(m_ftype==spt::soft) {
     PHASIC::Ant_Args ff;
-    auto* ampl = Cluster_Amplitude::New();
+    Cluster_Amplitude* ampl = Cluster_Amplitude::New();
     ampl->SetNIn(2);
     for (int i = 0; i <= m_m; ++i) {
       ff.m_p.push_back(mom[i]);
-      ampl->CreateLeg(i<2?-mom[i]:mom[i],i<2?p_subevt->p_fl[i].Bar():p_subevt->p_fl[i]);
+      ampl->CreateLeg(i<2?-mom[i]:mom[i],i<2?p_subevt->p_real->p_fl[i].Bar():p_subevt->p_real->p_fl[i]);
     }
 
     ff.m_b=p_softrecoil->RecoilTags(ampl,m_i,m_j,m_k);
@@ -151,10 +151,10 @@ void FF_DipoleSplitting::SetMomentaAlaric(const ATOOLS::Vec4D* mom) {
     m_pj = mom[m_j];
     m_pk = mom[m_k];
 
-    auto* ampl = Cluster_Amplitude::New();
+    Cluster_Amplitude* ampl = Cluster_Amplitude::New();
     ampl->SetNIn(2);
     for (int i = 0; i <= m_m; ++i) {
-      ampl->CreateLeg(i<2?-mom[i]:mom[i],i<2?p_subevt->p_fl[i].Bar():p_subevt->p_fl[i]);
+      ampl->CreateLeg(i<2?-mom[i]:mom[i],i<2?p_subevt->p_real->p_fl[i].Bar():p_subevt->p_real->p_fl[i]);
     }
 
     Vec4D pij = mom[m_i]+mom[m_j];
