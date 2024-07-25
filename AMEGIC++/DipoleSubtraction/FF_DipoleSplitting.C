@@ -28,6 +28,9 @@ double Vrel(const Vec4D& p1, const Vec4D& p2)
 
 void FF_DipoleSplitting::SetMomenta(const Vec4D* mom)
 {
+  if (m_subtype==subscheme::Alaric) // && m_ftype==spt::soft)
+    return SetMomentaAlaric(mom);
+
   m_mom.clear();
   for(int i=0;i<=m_m;i++) m_mom.push_back(mom[i]);
 
@@ -35,8 +38,6 @@ void FF_DipoleSplitting::SetMomenta(const Vec4D* mom)
   m_pj = mom[m_j];
   m_pk = mom[m_k];
 
-  if (m_subtype==subscheme::Alaric) // && m_ftype==spt::soft)
-    return SetMomentaAlaric(mom);
 
   m_yijk = m_pi*m_pj/(m_pi*m_pj+m_pj*m_pk+m_pk*m_pi);
   m_a = m_yijk;
@@ -107,24 +108,24 @@ void FF_DipoleSplitting::SetMomenta(const Vec4D* mom)
 
 void FF_DipoleSplitting::SetMomentaAlaric(const ATOOLS::Vec4D* mom) {
   DEBUG_FUNC("");
-  PHASIC::Ant_Args ff;
-  auto* ampl = Cluster_Amplitude::New();
-  ampl->SetNIn(2);
-  for (int i = 0; i <= m_m; ++i) {
-    ff.m_p.push_back(mom[i]);
-    ampl->CreateLeg(i<2?-mom[i]:mom[i],i<2?p_subevt->p_fl[i].Bar():p_subevt->p_fl[i]);
-  }
-
   Vec4D n;
   if(m_ftype==spt::soft) {
+    PHASIC::Ant_Args ff;
+    auto* ampl = Cluster_Amplitude::New();
+    ampl->SetNIn(2);
+    for (int i = 0; i <= m_m; ++i) {
+      ff.m_p.push_back(mom[i]);
+      ampl->CreateLeg(i<2?-mom[i]:mom[i],i<2?p_subevt->p_fl[i].Bar():p_subevt->p_fl[i]);
+    }
+
     ff.m_b=p_softrecoil->RecoilTags(ampl,m_i,m_j,m_k);
     PHASIC::ClusterAntenna(ff, m_i, m_j, m_k, 0.);
 
     m_pi = ff.m_pi;
     m_pj = ff.m_pj;
     m_pk = ff.m_pk;
-
     m_mom = ff.m_p;
+
     m_zi = ff.m_z;
     m_zj = 1.-ff.m_z;
 
@@ -142,8 +143,20 @@ void FF_DipoleSplitting::SetMomentaAlaric(const ATOOLS::Vec4D* mom) {
     n = ff.m_n;
     m_pt1   =     (n*m_pi) / (m_pi*m_pj) * m_pj - n;
     m_pt2   =     m_ptij;
+
+    ampl->Delete();
   }
   else {
+    m_pi = mom[m_i];
+    m_pj = mom[m_j];
+    m_pk = mom[m_k];
+
+    auto* ampl = Cluster_Amplitude::New();
+    ampl->SetNIn(2);
+    for (int i = 0; i <= m_m; ++i) {
+      ampl->CreateLeg(i<2?-mom[i]:mom[i],i<2?p_subevt->p_fl[i].Bar():p_subevt->p_fl[i]);
+    }
+
     Vec4D pij = mom[m_i]+mom[m_j];
     Vec4D K = p_collrecoil->Recoil(ampl,m_i,m_j,m_k);
     std::vector<int> tags = p_collrecoil->RecoilTags(ampl,m_i,m_j,m_k);
@@ -151,11 +164,12 @@ void FF_DipoleSplitting::SetMomentaAlaric(const ATOOLS::Vec4D* mom) {
 
     double K2(K.Abs2());
     int mode = 0; // ?? what does it do?
-    PHASIC::Kin_Args ffdip=PHASIC::ClusterFFDipole(0,0,0,K2,mom[m_i],mom[m_j],K,mode);
-    if (ffdip.m_stat<0) {
+    PHASIC::Kin_Args ff=PHASIC::ClusterFFDipole(0,0,0,K2,mom[m_i],mom[m_j],K,mode);
+    if (ff.m_stat<0) {
       msg_Error()<<METHOD<<": Clustering failed in subtraction.\n";
     }
 
+    m_mom.clear();
     if(nk>1) {
       Poincare oldcms(K), newcms(ff.m_pk);
       newcms.Invert();
@@ -163,41 +177,46 @@ void FF_DipoleSplitting::SetMomentaAlaric(const ATOOLS::Vec4D* mom) {
         if(tags[i]&2) {
           ampl->Leg(i)->SetMom(newcms*(oldcms*ampl->Leg(i)->Mom()));
         }
+        m_mom.push_back(ampl->Leg(i)->Mom());
       }
     }
     else {
       for(size_t i(0);i<ampl->Legs().size();++i) {
         if(tags[i]&2) {
           ampl->Leg(i)->SetMom(ff.m_pk);
-          break;
         }
+        m_mom.push_back(ampl->Leg(i)->Mom());
       }
     }
 
-    m_pi = mom[m_i];
-    m_pj = mom[m_j];
-    m_pk = mom[m_k];
-
-    m_ptij = ffdip.m_pi;
+    m_ptij = ff.m_pi;
     m_ptk = ampl->Leg(m_k)->Mom();
 
-    n = ffdip.m_nb;
+    n = ff.m_nb;
 
     m_zi = m_pi*n/((m_pi+m_pj)*n);
     m_zj = 1.-m_zi;
 
-    m_pt1   =     m_zi*m_pi-m_zj*m_pj;
+    /// TODO: some of these might need to become member variables
+    ///       to be used in CalcDiPolarization
+    double vijk = Vrel(pij,m_pk);
+    double viji = Vrel(pij,m_pi);
+    double vijj = Vrel(pij,m_pj);
+
+    double zim = m_pi*pij/pij.Abs2() * (1+vijk*viji);
+    double zjm = m_pj*pij/pij.Abs2() * (1+vijk*vijj);;
+    double zpm = 0;
+
+    m_pt1   =     zim*m_pi-zjm*m_pj;
     m_pt2   =     m_ptij;
 
     /// TODO: correct?
     m_yijk = m_pi*m_pj/(m_pi*m_pj+m_pj*m_pk+m_pk*m_pi);
     m_a = m_yijk;
 
-    // m_ptk  = 1./(1.-m_yijk)*m_pk;
-    // m_ptij = m_pi+m_pj-m_yijk/(1.-m_yijk)*m_pk;
+    ampl->Delete();
   }
 
-  ampl->Delete();
 
   double zi(m_zi), zj(m_zj);
   switch (m_ftype) {
@@ -239,7 +258,6 @@ void FF_DipoleSplitting::SetMomentaAlaric(const ATOOLS::Vec4D* mom) {
           + ToString(m_ftype) + ".");
   }
   if (m_kt2<(p_nlomc?p_nlomc->KT2Min(0):0.0)) m_av=1.0;
-  m_mom = ff.m_p;
   DEBUG_VAR(m_ftype<<" "<<m_sff<<" "<<m_av);
 }
 

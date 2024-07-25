@@ -198,12 +198,10 @@ void Massive_Kernels::CalcVNSsoft(double s,double mj,double mk,double sjKt,
 
   /// DiLog implements real part for x > 1
   // m_VNS += -2*((rho + log(std::abs(rho)))*log(rho/tau) - (1 + rho + log(std::abs(rho)))*log((1 + rho)/tau) + DiLog(1 + 1/rho));
-
   if(!IsEqual(rho,-1))
     m_VNS += -2.*(DiLog(1+1/rho) - (1 + rho + log(std::abs(rho)))*log(1+1/rho));
-  m_VNS += DiLog(1-muK/(rho*tau)); //DiLog(1.-s*mKt2/(sjKt*skKt));
-  m_VNS += 0.5*sqr(log(rho/tau)); //0.5*sqr(log(skKt/sjKt));
-  // m_VNS += 4-sqr(M_PI)/3.;
+  m_VNS += DiLog(1-muK/(rho*tau));
+  m_VNS += 0.5*sqr(log(rho/tau));
   // m_VNS += 6. - sqr(M_PI)/2.;
   // m_VNS -= 6. - sqr(M_PI)/2.;
 }
