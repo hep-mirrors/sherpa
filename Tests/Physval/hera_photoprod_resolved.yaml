@@ -1,0 +1,52 @@
+EVENTS: 1M
+EVENT_GENERATION_MODE: W
+EVENT_DISPLAY_INTERVAL: 100
+BATCH_MODE: 7
+
+BEAMS: [-11, 2212]
+BEAM_ENERGIES: [27.5, 820]
+BEAM_SPECTRA: [EPA, Monochromatic]
+
+SCALES: METS{max(16.,H_T2/4)}{max(16.,H_T2/4)}{max(16.,H_T2/4)}
+
+ME_GENERATORS: [Comix, Amegic, OpenLoops]
+NLO_SUBTRACTION_MODE: QCD+QED
+
+SCALE_VARIATIONS: None
+
+EPA:
+  Q2Max: 1
+
+PARTICLE_DATA: {5: {Massive: true}}
+PARTICLE_CONTAINERS:
+  997:
+    Name: B
+    Flavours: [5, -5]
+
+SELECTORS:
+  - NJetFinder:
+      N: 2
+      PTMin: 8.0
+      R: 1.0
+      Exp: 1
+      MassMax: 5.0
+  - NJetFinder:
+      N: 1
+      PTMin: 11.0
+      R: 1.0
+      Exp: 1
+      MassMax: 5.0
+
+ANALYSIS: Rivet
+RIVET:
+  --analyses: ZEUS_2001_S4815815
+
+PROCESSES:
+  - 93 93 -> (93,997) (93,997):
+      Order: {QCD: 2, EW: 0}
+      NLO_Mode: MC@NLO
+      NLO_Order: {QCD: 1, EW: 0}
+      ME_Generator: Amegic
+      RS_ME_Generator: Comix
+      Loop_Generator: OpenLoops
+
