@@ -13,6 +13,16 @@ PARTICLE_DATA:
   15:
     Massive: 1
 
+## OTF variations
+SCALE_VARIATIONS:
+  - [0.25, 0.25]
+  - [1.0,  0.25]
+  - [0.25, 1.0]
+  - [1.0,  1.0]
+  - [4.0,  1.0]
+  - [1.0,  4.0]
+  - [4.0,  4.0]
+
 # matrix-element calculation
 ME_GENERATORS:
   - Amegic

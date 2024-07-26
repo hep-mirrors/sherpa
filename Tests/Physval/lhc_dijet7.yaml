@@ -20,6 +20,16 @@ SELECTORS:
       R: 0.4
       PTMin: 10
 
+## OTF variations
+SCALE_VARIATIONS:
+  - [0.25, 0.25]
+  - [1.0,  0.25]
+  - [0.25, 1.0]
+  - [1.0,  1.0]
+  - [4.0,  1.0]
+  - [1.0,  4.0]
+  - [4.0,  4.0]
+
 
 ANALYSIS: Rivet
 RIVET:

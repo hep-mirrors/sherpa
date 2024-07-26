@@ -33,6 +33,16 @@ ME_GENERATORS:
   - Amegic
   - OpenLoops
 
+## OTF variations
+SCALE_VARIATIONS:
+  - [0.25, 0.25]
+  - [1.0,  0.25]
+  - [0.25, 1.0]
+  - [1.0,  1.0]
+  - [4.0,  1.0]
+  - [1.0,  4.0]
+  - [4.0,  4.0]
+
 PROCESSES:
 - 11 -11 -> 93 93 93{1}:
     CKKW: pow(10,-$(YCUT)/2.00)*E_CMS
