@@ -27,6 +27,16 @@ MEPS:
   CLUSTER_MODE: 1384
   CORE_SCALE: Photons
 
+# scale and pdf variations
+SCALE_VARIATIONS:
+  - [0.25, 0.25]
+  - [1.0,  0.25]
+  - [0.25, 1.0]
+  - [1.0,  1.0]
+  - [4.0,  1.0]
+  - [1.0,  4.0]
+  - [4.0,  4.0]
+
 PROCESSES:
 - 21 21 -> 22 22:
     ME_Generator: Internal

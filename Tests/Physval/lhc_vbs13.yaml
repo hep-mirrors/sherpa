@@ -46,12 +46,6 @@ SCALE_VARIATIONS:
   - [1.0,  4.0]
   - [4.0,  4.0]
 
-PDF_VARIATIONS:
-  - PDF4LHC21_40_pdfas*
-  - NNPDF40_nnlo_as_01180
-  - MSHT20nnlo_as118
-  - CT18NNLO_as_0118
-
 # WW decaying into electrons and muons
 PROCESSES:
 - 93 93 -> 11 11 -12 -12 93 93 93{$(NJET)}:
