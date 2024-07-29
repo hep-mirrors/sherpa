@@ -25,7 +25,7 @@ static int s_whbins(100);
 static int s_genresdir(0);
 
 Process_Integrator::Process_Integrator(Process_Base *const proc):
-  p_proc(proc),
+  p_proc(proc), p_pshandler(NULL),
   p_beamhandler(NULL), p_isrhandler(NULL),
   m_nin(0), m_nout(0), m_smode(0), m_swmode(0),
   m_threshold(0.), m_enhancefac(1.0), m_maxeps(0.0), m_rsfac(1.0),
