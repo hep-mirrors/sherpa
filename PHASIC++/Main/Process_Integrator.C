@@ -522,12 +522,16 @@ void Process_Integrator::ResetMax(int flag)
 } 
 
 void Process_Integrator::SetPSHandler(Phase_Space_Handler * pshandler) {
-  //  const std::shared_ptr<Phase_Space_Handler> &pshandler) {
   p_pshandler=pshandler;
   if (p_proc->IsGroup())
     for (size_t i(0);i<p_proc->Size();++i)
       (*p_proc)[i]->Integrator()->SetPSHandler(pshandler);
-} 
+}
+
+void Process_Integrator::SetPSHandler(const double &maxerr,const std::string eobs,const std::string efunc) {
+  p_ownpshandler.reset(new Phase_Space_Handler(this, maxerr, eobs, efunc));
+  SetPSHandler(p_ownpshandler.get());
+}
 
 void Process_Integrator::MPICollect
 (std::vector<double> &sv,std::vector<double> &mv,size_t &i)

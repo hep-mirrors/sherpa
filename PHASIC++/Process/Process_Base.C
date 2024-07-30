@@ -585,7 +585,7 @@ void Process_Base::SetRBMap(Cluster_Amplitude *ampl)
 void Process_Base::InitPSHandler
 (const double &maxerr,const std::string eobs,const std::string efunc)
 {
-  p_int->SetPSHandler(new Phase_Space_Handler(p_int, maxerr, eobs, efunc));
+  p_int->SetPSHandler(maxerr, eobs, efunc);
 }
 
 double Process_Base::LastPlus()

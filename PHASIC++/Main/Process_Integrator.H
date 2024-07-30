@@ -30,7 +30,10 @@ namespace PHASIC {
 
     Process_Base *p_proc;
 
-    //std::shared_ptr<PHASIC::Phase_Space_Handler> p_pshandler;
+    /// handler created by this instance, automatically deleted with this
+    std::unique_ptr<Phase_Space_Handler> p_ownpshandler;
+    /// pointer to actually used phase space handler,
+    /// might be owned by different instance and not deleted by this
     Phase_Space_Handler * p_pshandler;
 
     BEAM::Beam_Spectra_Handler *p_beamhandler;
@@ -100,6 +103,7 @@ namespace PHASIC {
 
     //void SetPSHandler(const std::shared_ptr<Phase_Space_Handler> &pshandler);
     void SetPSHandler(Phase_Space_Handler * pshandler);
+    void SetPSHandler(const double &maxerr,const std::string eobs,const std::string efunc);
     void SetISRThreshold(const double threshold);
     
     void InitWeightHistogram();
