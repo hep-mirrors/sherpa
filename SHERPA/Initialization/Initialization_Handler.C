@@ -188,11 +188,6 @@ void Initialization_Handler::RegisterDefaults()
   s["ISR_E_SCHEME"].SetDefault(2);
 
   s["KFACTOR"].SetDefault("None").UseNoneReplacements();
-  s["SCALES"].SetDefault("METS{MU_F2}{MU_R2}{MU_Q2}");
-  s["SCALE_FACTOR"].SetDefault(1.0);
-  s["FACTORIZATION_SCALE_FACTOR"].SetDefault(1.0);
-  s["RENORMALIZATION_SCALE_FACTOR"].SetDefault(1.0);
-  s["RESUMMATION_SCALE_FACTOR"].SetDefault(1.0);
   s["USR_WGT_MODE"].SetDefault(true);
 
   Scoped_Settings metssettings{ Settings::GetMainSettings()["METS"] };
@@ -219,6 +214,12 @@ void Initialization_Handler::RegisterDefaults()
   auto pss = s["SHOWER"], nlopss = s["MC@NLO"];
   pss["EVOLUTION_SCHEME"].SetDefault(30+30*100);
   pss["KFACTOR_SCHEME"].SetDefault(1);
+  if(showergen!="None") s["SCALES"].SetDefault("METS{MU_F2}{MU_R2}{MU_Q2}");
+  else s["SCALES"].SetDefault("VAR{H_T2}");
+  s["SCALE_FACTOR"].SetDefault(1.0);
+  s["FACTORIZATION_SCALE_FACTOR"].SetDefault(1.0);
+  s["RENORMALIZATION_SCALE_FACTOR"].SetDefault(1.0);
+  s["RESUMMATION_SCALE_FACTOR"].SetDefault(1.0);
   pss["SCALE_SCHEME"].SetDefault(14);
   pss["SCALE_VARIATION_SCHEME"].SetDefault(1);
   // TODO: Should this be set to 3.0 for the new Dire default? See the manual
