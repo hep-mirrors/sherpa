@@ -1,19 +1,19 @@
-#ifndef SHRIMPS_Tools_Special_Functions_H
-#define SHRIMPS_Tools_Special_Functions_H
+#ifndef ATOOLS_Math_Special_Functions_H
+#define ATOOLS_Math_Special_Functions_H
 
-#include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Math/MathTools.H"
 #include "ATOOLS/Math/Gauss_Integrator.H"
+#include "ATOOLS/Org/Message.H"
+#include "ATOOLS/Org/Exception.H"
+#include "ATOOLS/Org/MyStrStream.H"
 
-using namespace ATOOLS;
-
-namespace SHRIMPS {
+namespace ATOOLS {
   /*!
     \file
     This file contains an assortment of special functions
-    neccessary for the SHRIMPS::Form_Factor.  
     
-    \todo Further expand and move to ATOOLS::MathTools
+    \todo We should use the C++23 libraries there and match e.g. the
+          various Bessel functions or the exponential integral here.
   */
   class Special_Functions {
   public:
@@ -39,12 +39,18 @@ namespace SHRIMPS {
 	return incgam;
       }
       if (a==0.) {
+	return -std::expint(-x);
 	incgam = -0.577215664902-log(x);
-	double pref(1.);
-	for (int i=1;i<21;i++) {
-	  incgam += pref*pow(x,i);
-	  pref *= -double(i)/sqr(double(i+1));
+	double prev = 0., fac(1.);
+	size_t i(1);
+	msg_Out()<<METHOD<<"("<<a<<", "<<x<<"), inc = "<<incgam<<"\n";
+	while (dabs(1.-incgam/prev)>1.e-12) {
+	  prev    = incgam;
+	  incgam += fac*pow(x,i);
+	  fac    *= -double(i)/sqr(double(i+1));
+	  i++;
 	}
+	msg_Out()<<"---> inc = "<<incgam<<"\n";
 	return incgam;
       }
       double lngamma(LnGamma(a));
@@ -73,36 +79,61 @@ namespace SHRIMPS {
 
     double Jn(const int order,const double & arg) const 
     {
+      switch (order) {
+      case 0: return J0(arg);
+      case 1: return J1(arg);
+      default:
+	THROW(critical_error,"J("+ToString(order)+") not implemented yet.");
+      }
+      return 0.;
+    }
+
+    double J0(const double & arg) const
+    {
       double jn(0.),darg(dabs(arg));
-      if (order==0) {
-	if (darg<=1.e-12) return 1.;
-	if (darg<8.) {
-	  double x2(darg*darg);
-	  double num = 
-	    ((((-184.9052456*x2+77392.33017)*x2-
-	       11214424.18)*x2+651619640.7)*x2-13362590354.)*x2+57568490574.;
-	  double den =
-	    ((((x2+267.8532712)*x2+59272.64853)*
-	      x2+9494680.718)*x2+1029532985)*x2+57568490411.;
-	  jn = num/den;
-	}
-	else {
-	  double x2(64.0/sqr(darg)), xx(darg-0.785398164);
-	  double pref1 = 
-	    (((0.2993887211e-6*x2-0.2073370639e-5)*x2+
-	      0.2734510407e-4)*x2-0.1098628627e-2)*x2+1.;
-	  double pref2 =
-	    (((-0.934945152e-7*x2+0.7621095161e-6)*x2-
-	      0.6911147651e-5)*x2+0.1430488765e-3)*x2-0.1562499995e-1;
-	  jn = sqrt(0.636619772/darg)*(cos(xx)*pref1-8./darg*sin(xx)*pref2);
-	}
+      if (darg<=1.e-12) return 1.;
+      if (darg<8.) {
+	double x2(darg*darg);
+	double num = 
+	  ((((-184.9052456*x2+77392.33017)*x2-
+	     11214424.18)*x2+651619640.7)*x2-13362590354.)*x2+57568490574.;
+	double den =
+	  ((((x2+267.8532712)*x2+59272.64853)*
+	    x2+9494680.718)*x2+1029532985)*x2+57568490411.;
+	jn = num/den;
       }
       else {
-	msg_Error()<<"Error in "<<METHOD<<"("<<order<<", "<<arg<<"):\n"
-		   <<"   Not implemented yet.  Exit the run.\n";
-	exit(1);
+	double x2(64.0/sqr(darg)), xx(darg-0.785398164);
+	double pref1 = 
+	  (((0.2993887211e-6*x2-0.2073370639e-5)*x2+
+	    0.2734510407e-4)*x2-0.1098628627e-2)*x2+1.;
+	double pref2 =
+	  (((-0.934945152e-7*x2+0.7621095161e-6)*x2-
+	    0.6911147651e-5)*x2+0.1430488765e-3)*x2-0.1562499995e-1;
+	jn = sqrt(0.636619772/darg)*(cos(xx)*pref1-8./darg*sin(xx)*pref2);
       }
       return jn;
+    }
+    
+    double J1(const double & arg) const
+    {
+      if (dabs(arg)<=1.e-12) return 0.;
+      double x2 = arg*arg;
+      if (dabs(arg)>=100.) {
+	return (sqrt(2./(M_PI*arg)) *
+		(1.    + 15./(128.*x2))   * cos(arg-3.*M_PI/4.) +
+		(3./8. - 105./(1024.*x2)) * cos(arg-3.*M_PI/4.)/arg);
+      }
+      // using expansion from Maass & Martin, Results in Physics 8 (2018) 1234
+      // https://www.sciencedirect.com/science/article/pii/S2211379718300111
+      double l  = 0.1, l2 = l*l, l2term = sqrt(1.+l2*x2);
+      double p0 = 1.776322448,   p1 = 0.2250803518;
+      double P0 = -0.7763224930, P1 = -0.03147133771;
+      double q1 = 0.4120981204,  q2 = 0.006571619275;
+      double p2 = 2.*sqrt(l/M_PI)*q2, P2 = -l*p2;
+      return ( 1./(2.*sqrt(l2term)) *
+	       ( (p0+p1*x2+p2*x2*x2)/(1.+q1*x2+q2*x2*x2)*sin(arg) +
+		 arg/l2term * (P0+P1*x2+P2*x2*x2)/(1.+q1*x2+q2*x2*x2)*cos(arg) ) );
     }
     
     double In(const int order,const double & arg) const 
@@ -147,31 +178,10 @@ namespace SHRIMPS {
 
 
     double I0(const double & arg)  const { return In(0,arg); }
-
-    double Kn(const int order,const double & arg) const
+    
+    double Kn(const int order,const double & x) const
     {
-      if (arg<=0.) return 0.;
-      double kn(0.),darg(dabs(arg)), y;
-      if (order==1) {
-	if (darg<=2.0) {
-	  y   = sqr(darg)/4.;
-	  kn  = log(darg/2.)*In(1,darg);
-	  kn += ((((((-0.4686e-4*y-0.110404e-2)*y-0.1919402e-1)*y-0.18156897)*y
-		   -0.67278579)*y+0.15443144)*y+1.)/darg;
-	}
-	else {
-	  y   = 2./darg;
-	  kn  = exp(-darg)/sqrt(darg);
-	  kn *= ((((((-0.68245e-3*y+0.325614e-2)*y-0.780353e-2)*y+
-		    0.1504268e-1)*y-0.3655620e-1)*y+0.23498619)*y+1.25331414);
-	}
-      }
-      else {
-	msg_Error()<<"Error in "<<METHOD<<"("<<order<<", "<<arg<<")\n:"
-		   <<"   Not implemented yet.  Exit the run.\n";
-	exit(1);
-      }
-      return kn;
+      return std::cyl_bessel_k(order,x);
     }
 
     void TestBessel(const std::string & dirname) const
@@ -193,19 +203,17 @@ namespace SHRIMPS {
       was.close();
     }
   };
-
   extern Special_Functions SF;
-
 
   class ExpInt : public ATOOLS::Function_Base {
   public:
     virtual double GetValue(double T) { return -exp(-T)/T; }
     virtual double operator()(double T) { return GetValue(T); }
     virtual double GetExpInt(double X){
-	if(X>0.) exit(1);
-  	ATOOLS::Gauss_Integrator integrator(this);
-  	return integrator.Integrate(-X,100000.,1.e-2,1);
-        }
+      if(X>0.) exit(1);
+      ATOOLS::Gauss_Integrator integrator(this);
+      return integrator.Integrate(-X,100000.,1.e-2,1);
+    }
   };
 
 }
