@@ -412,23 +412,23 @@ void Beam_Parameters::InitializeFlav(kf_code flav) {
 					  "P","P","P","P");
     }
     else if (flav==kf_lead208) {
-      s_kftable[flav] = new Particle_Info(1000822080, 193.75, 5.5012, 246, 0, 0,
+      s_kftable[flav] = new Particle_Info(1000822080, 193.75, 5.5012, 82, 0, 0,
 					  "Pb208", "Pb208");
     }
     else if (flav==kf_lead207) {
-      s_kftable[flav] = new Particle_Info(1000822070, 192.82, 5.4943, 246, -1, 2,
+      s_kftable[flav] = new Particle_Info(1000822070, 192.82, 5.4943, 82, -1, 2,
 					  "Pb207", "Pb207");
     }
     else if (flav==kf_lead206) {
-      s_kftable[flav] = new Particle_Info(1000822060, 192.82, 5.4902, 246, 0, 2,
+      s_kftable[flav] = new Particle_Info(1000822060, 192.82, 5.4902, 82, 0, 2,
 					  "Pb206", "Pb206");
     }
     else if (flav==kf_gold197) {
-      s_kftable[flav] = new Particle_Info(1000791970, 183.5, 5.4371, 237, 3, 2,
+      s_kftable[flav] = new Particle_Info(1000791970, 183.5, 5.4371, 79, 3, 2,
 					  "Au197", "Au197");
     }
     else if (flav==kf_calcium40) {
-      s_kftable[flav] = new Particle_Info(1000200400, 37.26, 3.4776, 60, 0, 2,
+      s_kftable[flav] = new Particle_Info(1000200400, 37.26, 3.4776, 20, 0, 2,
 					  "Ca40", "Ca40");
     }
     else {
