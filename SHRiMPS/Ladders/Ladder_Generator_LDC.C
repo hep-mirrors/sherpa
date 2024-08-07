@@ -1,6 +1,6 @@
 #include "SHRiMPS/Ladders/Ladder_Generator_LDC.H"
 #include "SHRiMPS/Tools/MinBias_Parameters.H"
-#include "SHRiMPS/Tools/Special_Functions.H"
+#include "ATOOLS/Math/Special_Functions.H"
 #include "MODEL/Main/Model_Base.H"
 #include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Org/Run_Parameter.H"

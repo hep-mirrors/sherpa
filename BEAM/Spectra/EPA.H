@@ -2,45 +2,43 @@
 #define BEAM_Main_EPA_H
 
 #include "BEAM/Main/Beam_Base.H"
-#include "ATOOLS/Math/Function_Base.H"
+#include "BEAM/Spectra/EPA_FF.H"
+
+namespace ATOOLS { class Settings; }
 
 namespace BEAM {
-
   class EPA final : public Beam_Base {
   private:
+    EPA_ff_type   m_type;
+    EPA_FF_Base * p_ff;
+    double m_mass, m_charge, m_gamma;
+    double m_aqed, m_pref;
+    double m_x, m_q2;
+    double m_q2min, m_q2max, m_theta_max, m_pt2min, m_pt2max;
+    double m_Rmin, m_Rmax, m_Rcut, m_xmin, m_xmax, m_bmin, m_bmax;
 
-    class CosInt final : public ATOOLS::Function_Base {
-    public:
-      double GetValue(double T) override { return -cos(T)/T; }
-      double operator()(double T) override { return GetValue(T); }
-      double GetCosInt(double X);
-    };
+    double m_Lambda2, m_mu, m_Q02, m_WSd;
 
-    double m_mass, m_charge, m_gamma, m_minR, m_maxR;
-    double m_q2Max, m_q2Min, m_pt_min, m_aqed, m_theta_max;
-    double m_xmin, m_xmax;
+    size_t m_plotting;
+    size_t m_approx;
+    size_t m_nxbins, m_nbbins;
+    bool   m_analytic;
 
-    bool m_lo_epa;
+    void   Initialise();
+    void   RegisterDefaults() const;
+    void   InitFormFactor(ATOOLS::Settings &s);
+    double ExtractParameter(ATOOLS::Settings &s,const std::string & tag);
 
-    void RegisterDefaults() const;
-
-    double phi(double x, double qq) const;
-
-    void selfTest(const std::string& filename);
-
-    int m_formfactor;
-
+    void   Tests();
   public:
-
-    EPA(const ATOOLS::Flavour beam,const double energy,const double pol,
-	const int dir);
-
+    EPA(const ATOOLS::Flavour& beam, double energy, double pol, int dir);
     ~EPA() override = default;
+    Beam_Base * Copy() override { return new EPA(*this); }
 
-    Beam_Base *Copy() override;
-    bool CalculateWeight(double, double) override;
+    bool CalculateWeight(double x, double q2) override;
     void FixPosition() override;
     void SetOutMomentum(const ATOOLS::Vec4D &out, const size_t & i=0) override;
+
     inline double Xmax() const override { return m_xmax; }
     inline double Xmin() const override { return m_xmin; }
   };// end of class EPA

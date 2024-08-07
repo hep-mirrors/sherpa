@@ -11,8 +11,10 @@ set(Math_SOURCES MathTools.C
                  Vector.C
                  Matrix.C
                  Gauss_Integrator.C
+                 Bessel_Integrator.C
                  Scaling.C
                  Axis.C
+		 Lookup_Tables.C
                  Histogram.C
                  Histogram_2D.C
                  Variable.C
@@ -22,6 +24,7 @@ set(Math_SOURCES MathTools.C
                  Tensor.C)
 
 set(Math_HEADERS MathTools.H
+                 Special_Functions.H
                  Term.H
                  Algebra_Interpreter.H
                  Marsaglia.H
@@ -37,9 +40,11 @@ set(Math_HEADERS MathTools.H
                  MyComplex.H
                  Matrix.H
                  Gauss_Integrator.H
+                 Bessel_Integrator.H
                  Variable.H
                  Scaling.H
                  Axis.H
+		 Lookup_Tables.H
                  Histogram.H
                  Histogram_2D.H
                  Permutation.H

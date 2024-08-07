@@ -1,5 +1,5 @@
 #include "SHRiMPS/Cross_Sections/Sigma_SD.H"
-#include "SHRiMPS/Tools/Special_Functions.H"
+#include "ATOOLS/Math/Special_Functions.H"
 #include "ATOOLS/Math/Gauss_Integrator.H"
 #include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Org/MyStrStream.H"

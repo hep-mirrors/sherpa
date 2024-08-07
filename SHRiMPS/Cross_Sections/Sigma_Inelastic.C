@@ -1,5 +1,5 @@
 #include "SHRiMPS/Cross_Sections/Sigma_Inelastic.H"
-#include "SHRiMPS/Tools/Special_Functions.H"
+#include "ATOOLS/Math/Special_Functions.H"
 #include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Message.H"
