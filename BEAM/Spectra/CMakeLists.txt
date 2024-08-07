@@ -1,6 +1,8 @@
 set(Spectra_SOURCES Monochromatic.C
                     Laser_Backscattering.C
                     EPA.C
+                    EPA_FF.C
+                    EPA_Spectra_Plotter.C
                     Pomeron.C
                     Reggeon.C
                     Fixed_Target.C
@@ -9,6 +11,8 @@ set(Spectra_SOURCES Monochromatic.C
 set(Spectra_HEADERS Monochromatic.H
                     Laser_Backscattering.H
                     EPA.H
+                    EPA_FF.H
+                    EPA_Spectra_Plotter.H
                     Pomeron.H
                     Reggeon.H
                     Fixed_Target.H
