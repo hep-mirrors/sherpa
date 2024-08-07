@@ -1,5 +1,5 @@
 #include "SHRiMPS/Event_Generation/Soft_Diffractive_Event_Generator.H"
-#include "SHRiMPS/Tools/Special_Functions.H"
+#include "ATOOLS/Math/Special_Functions.H"
 #include "ATOOLS/Phys/Particle.H"
 #include "ATOOLS/Phys/Flavour.H"
 #include "ATOOLS/Org/Run_Parameter.H"
