@@ -1,0 +1,10 @@
+#ifndef BEAM_Spectra_EPA_Spectra_Plotter_H
+#define BEAM_Spectra_EPA_Spectra_Plotter_H
+
+#include "ATOOLS/Phys/Flavour.H"
+#include "ATOOLS/Math/Function_Base.H"
+#include "ATOOLS/Math/Lookup_Tables.H"
+
+namespace ATOOLS { class Settings; }
+
+namespace BEAM {
