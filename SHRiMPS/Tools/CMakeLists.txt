@@ -3,7 +3,6 @@ set(Tools_SOURCES DEQ_Solver.C
                   MinBias_Parameters.C)
 
 set(Tools_HEADERS Parameter_Structures.H
-                  Special_Functions.H
                   DEQ_Solver.H
                   Kernels.H
                   MinBias_Parameters.H)
