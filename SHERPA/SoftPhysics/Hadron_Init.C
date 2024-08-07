@@ -240,6 +240,24 @@ void Hadron_Init::Init() {
   InitHadron(102154,             false,5.91,0.8783,0.002,0,3,true,1,0,   "Lambda(b)(5910)","\\Lambda_{b}(5910)");
   InitHadron(kf_N_1710,          true,1.71,0.8783,0.12,0,1,true,1,0,     "N(1710)","N(1710)");
   InitHadron(kf_N_1710_plus,     true,1.71,0.8783,0.12,3,1,true,1,0,     "N(1710)+","N(1710)+");
+  // ##################################################################################################
+  // IONS
+  // ##################################################################################################
+  // ##################################################################################################
+  // - will assume they are all stable and have spin 0.
+  // ##################################################################################################
+  // (name, true, mass, radius (in fm), width, icharge, spin, majorana, on, stable, idname, texname)
+  double A = 0.93149410372;
+  InitHadron(kf_deuterium,  true,  2.014    *A,2.1   ,0.,  3,0,false,true,1,"deuterium", "H$_2$");
+  InitHadron(kf_helium4,    true,  4.0026033*A,1.9049,0.,  6,0,false,true,1,"helium4",   "He$_4$");
+  InitHadron(kf_carbon12,   true, 12.0000000*A,2.7473,0., 18,0,false,true,1,"carbon12",  "C$_{12}$");
+  InitHadron(kf_calcium40,  true, 39.9625912*A,4.1039,0., 60,0,false,true,1,"calcium40", "Ca$_{40}$");
+  InitHadron(kf_silver107,  true,106.905097 *A,5.6970,0.,141,0,false,true,1,"silver107", "Ag$_{107}$");
+  InitHadron(kf_gold197,    true,196.966552 *A,6.9823,0.,237,0,false,true,1,"gold197",   "Au$_{197}$");
+  InitHadron(kf_lead206,    true,205.9744653*A,7.0871,0.,246,0,false,true,1,"lead206",   "Pb$_{206}$");
+  InitHadron(kf_lead207,    true,206.9758969*A,7.0986,0.,246,0,false,true,1,"lead207",   "Pb$_{207}$");
+  InitHadron(kf_lead208,    true,207.9766521*A,7.1100,0.,246,0,false,true,1,"lead208",   "Pb$_{208}$");
+  InitHadron(kf_uranium238, true,238.0507900*A,7.4366,0.,276,0,false,true,1,"uranium238","U$_{238}$");
   // #########################################################################
   // Obsolete multiple heavy baryons #########################################
   // they will not be produced in our code (we have no heavy di-quarks
@@ -461,6 +479,9 @@ void Hadron_Init::Init() {
   InitHadron(5509,false,1000000.0,1.e6,1000,0,0,true,0,0,"jennifer","jennifer");
   InitHadron(6505,false,1000000.0,1.e6,1000,0,0,true,0,0,"hendrik","hendrik");
   InitHadron(6506,false,1000000.0,1.e6,1000,0,0,true,0,0,"jan","jan");
+  InitHadron(6507,false,1000000.0,1.e6,1000,0,0,true,0,0,"silvan","silvan");
+  InitHadron(6508,false,1000000.0,1.e6,1000,0,0,true,0,0,"holger","holger");
+  InitHadron(6509,false,1000000.0,1.e6,1000,0,0,true,0,0,"gurpreet","gurpreet");
   // ##########################################################################
   // ##########################################################################
   // ##########################################################################

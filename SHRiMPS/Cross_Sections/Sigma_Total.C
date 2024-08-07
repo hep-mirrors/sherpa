@@ -1,5 +1,5 @@
 #include "SHRiMPS/Cross_Sections/Sigma_Total.H"
-#include "SHRiMPS/Tools/Special_Functions.H"
+#include "ATOOLS/Math/Special_Functions.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 
 using namespace SHRIMPS;
