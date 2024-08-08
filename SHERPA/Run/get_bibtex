@@ -8,7 +8,7 @@ print_help(){
 }
 
 dnl=1
-sad='http://inspirebeta.net/search?action_search=Search&of=hx&p='
+sad='http://inspirehep.net/search?action_search=Search&of=hx&p='
 
 while getopts :ha:d OPT
 do
