@@ -6,7 +6,8 @@ SCALES: METS
 MEPS:
   CORE_SCALE: QCD
 
-CSS_IS_AS_FAC: 1
+SHOWER:
+  IS_AS_FAC: 1
 
 PROCESSES:
 - 93 93 -> 93 93:
@@ -17,7 +18,7 @@ SELECTORS:
   - FastjetFinder:
       Algorithm: antikt
       N: 2
-      R: 0.4
+      DR: 0.4
       PTMin: 10
 
 
