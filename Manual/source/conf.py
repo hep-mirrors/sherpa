@@ -21,7 +21,7 @@ from shared_conf import *
 
 # -- Project information -----------------------------------------------------
 
-project = 'Manual'
+project = 'Sherpa Manual'
 
 release = '[GIT]' # will be read from `configure.ac`
 
@@ -62,6 +62,9 @@ html_theme_options['extra_nav_links'] = {
     'Project Home': 'https://sherpa-team.gitlab.io',
     'Pre 3.0.0 Manuals': 'https://sherpa.hepforge.org/doc/',
 }
+
+# Remove logo name, because the logo already contains the string "SHERPA".
+html_theme_options['logo_name'] = False
 
 suppress_warnings = ['ref.option']
 
