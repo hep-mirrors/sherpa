@@ -38,24 +38,41 @@ ATOOLS::Special_Functions ATOOLS::SF;
 ///////////////////////////////////////////////////////////////////////////////////
 
 // Initialisation of relevant beam parameters: 
-// note that the particle radius is in fm
-EPA_FF_Base::EPA_FF_Base(const ATOOLS::Flavour & beam, const double & alpha) :
-  m_beam(beam), m_mass(m_beam.Mass(true)), m_R(m_beam.Radius()/rpa->hBar_c()),
-  m_Z(m_beam.IntCharge()), m_alpha(alpha), m_pref(sqr(m_Z)*m_alpha/M_PI),
+// note that the particle radius is in fm and transformed into 1/GeV
+EPA_FF_Base::EPA_FF_Base(const ATOOLS::Flavour & beam) :
+  m_beam(beam), m_mass(m_beam.Mass(true)), m_mass2(ATOOLS::sqr(m_mass)),
+  m_R(m_beam.Radius()/rpa->hBar_c()),
   m_q2min(0.), m_q2max(1.e99), m_pt2max(-1.),
-  p_FF_Q2(nullptr), p_Nred_x(nullptr), p_N_xb(nullptr),
+  p_Nred_x(nullptr), p_N_xb(nullptr),
   m_approx(0), m_analytic(0) {}
 
-// We assume that the units in the b axis are in fm
+const double EPA_FF_Base::SelectB(double & x) {
+  if (x<m_xmin) x = m_xmin;
+  if (x>m_xmin) x = m_xmax;
+  double maxval = (*p_max_xb)(x), b = m_bmin;
+  size_t trials = 10000;
+  while (trials>0) {
+    b = m_bmin*pow(m_bmax/m_bmin,ran->Get());
+    if ((*p_N_xb)(x,b)/maxval>ran->Get()) break;
+  }
+  // Return b in fm instead of the internally used 1/GeV.
+  return b*rpa->hBar_c();
+}
+
+// We assume that the units in the b axis are in 1/GeV
 void EPA_FF_Base::Fill_Nxb_Table(axis & xaxis,axis & baxis) {
   msg_Out()<<METHOD<<" in "<<xaxis.m_nbins<<" * "<<baxis.m_nbins<<" bins:\n"
   	   <<"   x in ["<<xaxis.m_xmin<<", "<<xaxis.m_xmax<<"], "
   	   <<"b in ["<<baxis.m_xmin<<", "<<baxis.m_xmax<<"], "
   	   <<"from R = "<<m_R<<" 1/GeV = "<<(m_R*rpa->hBar_c())<<" fm.\n";
-  p_N_xb = new TwoDim_Table(xaxis,baxis);
+  m_xmin   = xaxis.m_xmin; m_xmax   = xaxis.m_xmax;
+  m_bmin   = baxis.m_xmin; m_bmax   = baxis.m_xmax;
+  p_N_xb   = new TwoDim_Table(xaxis,baxis);
+  p_max_xb = new OneDim_Table(xaxis);
   N_xb_int * kernel = new N_xb_int(this);
   Bessel_Integrator bessel(kernel,1);
   for (size_t i=0;i<xaxis.m_nbins;i++) {
+    double maxval = 0.;
     for (size_t j=0;j<baxis.m_nbins;j++) {
       kernel->SetXB(xaxis.x(i),baxis.x(j));
       double value = sqr(bessel())/M_PI;
@@ -69,7 +86,9 @@ void EPA_FF_Base::Fill_Nxb_Table(axis & xaxis,axis & baxis) {
 	SetSwitch("analytic",0);
       }
       p_N_xb->Fill(i,j,value);
+      if (dabs(value)>maxval) maxval = dabs(value); 
     }
+    p_max_xb->Fill(i,maxval);
   }
 }
 
@@ -112,8 +131,8 @@ double Nred_x_int::operator()(double b) {
 //
 ///////////////////////////////////////////////////////////////////////////////////
 
-EPA_Point::EPA_Point(const ATOOLS::Flavour & beam, const double & alpha) :
-  EPA_FF_Base(beam,alpha) { m_approx   = 2; }
+EPA_Point::EPA_Point(const ATOOLS::Flavour & beam) :
+  EPA_FF_Base(beam) { m_analytic = 1; m_approx = 2; }
 
 const double EPA_Point::operator()(const double & x,const double & Q2) {
   double wt = 1.;
@@ -130,11 +149,19 @@ const double EPA_Point::N(const double & x) {
   double wt            = log(q2max/q2min);
   if (m_approx>=1) wt *= (1.+sqr(1.-x))/2.; 
   if (m_approx>=2) wt -= sqr(m_mass*x) * (1./q2min - 1./q2max);
-  if (x<2.e-4) msg_Out()<<METHOD<<"(x = "<<x<<", pt^2max = "<<m_pt2max<<", "
-			<<"approx = "<<m_approx<<", "
-			<<"analytic = "<<m_analytic<<"): "
-			<<"wt = "<<wt<<"\n";
   return wt;
+}
+
+const double EPA_Point::SelectB(const double & x) {
+  double bmin = 1.e-12, bmax = 1.e12;
+  if (m_R>=1.e-12) bmin = 1.e-6*m_R, bmax = 1.e12*m_R;
+  double b = bmin, maxval = N(x,b);
+  size_t trials = 10000;
+  while (trials>0) {
+    b = bmin*pow(bmax/bmin,ran->Get());
+    if (N(x,b)/maxval>ran->Get()) break;
+  }
+  return b*rpa->hBar_c();
 }
 
 const double EPA_Point::N(const double & x,const double & b) {
@@ -162,17 +189,27 @@ const double EPA_Point::ReducedN(const double & x) {
 //
 // Dipole form factors and related functions in different approximations, all
 // based on Budnev et al., Phys. Rep. C15 (1974) 181.
+// In its present form, this form factor makes sense for nucleons only.
 //
 ///////////////////////////////////////////////////////////////////////////////////
 
-EPA_Dipole::EPA_Dipole(const ATOOLS::Flavour & beam, const double & alpha) :
-  EPA_FF_Base(beam,alpha), m_Lambda2(1.) {
+EPA_Dipole::EPA_Dipole(const ATOOLS::Flavour & beam) :
+  EPA_FF_Base(beam), m_Lambda2(0.71) {
   m_approx = 1; 
-  m_mass2  = ATOOLS::sqr(m_mass);
-  if (m_beam==ATOOLS::Flavour(kf_p_plus)) { m_mu2 = 2.79*2.79; m_Lambda2 = 0.71; }
+  if (!m_beam.IsNucleon()) THROW(fatal_error,"Wrong form factor for "+m_beam.IDName());
+  m_mu2 = m_beam.Charge()!=0. ? 2.79*2.79 : 0.;
   SetABC();
 }
 
+void EPA_Dipole::FillTables(const size_t & nxbins,const size_t & nbbins) {
+  size_t nx = nxbins==0 ? 120 : nxbins;
+  size_t nb = nbbins==0 ? 150 : nbbins;
+  axis xaxis(nx,     1.e-6,        1., axis_mode::log); 
+  axis baxis(nb, 1.e-3*m_R, 1.e12*m_R, axis_mode::log);
+  Fill_Nxb_Table(xaxis,baxis);
+  Fill_Nredx_Table(xaxis);
+}
+  
 const double EPA_Dipole::operator()(const double & x,const double & Q2) {
   // c.f. V.M. Budnev et al., Phys. Rep. C15(1974)181, Eq. (D.7)
   double q2min = Q2min(x), q2max = Q2max(x), prefC = m_mu2, prefD = 1.;
@@ -190,18 +227,17 @@ void EPA_Dipole::SetABC() {
   m_aDip = (1.+m_mu2)/4. + 4.*m_mass2/m_Lambda2;  // should be  7.16
   m_bDip = 1.-4.*m_mass2/m_Lambda2;               // should be -3.96
   m_cDip = (m_mu2-1.)/pow(m_bDip,4.);             // should be  0.028
+  msg_Out()<<METHOD<<": a = "<<m_aDip<<", b = "<<m_bDip<<", c = "<<m_cDip<<"\n";
 }
 
 const double EPA_Dipole::phi(const double & y,const double & arg) {
   // phi_i(x) from Budnev et al., Eq. (D.7)
-  double pow_arg, sum1=0., sum2=0., addit;
-  for (size_t i=0;i<3;i++) {
-    pow_arg = pow(1.+arg,i+1);
-    sum1   += addit = 1./(double(i+1)*pow_arg);
-    sum2   += pow(m_bDip,i+1)*addit;
-  }
+  double one_arg = 1.+arg, sum1=0., sum2=0.;
+  sum1 += 1./one_arg + 1./(2.*one_arg*one_arg) + 1./(3.*one_arg*one_arg*one_arg);
+  sum2 += ( m_bDip/one_arg + m_bDip*m_bDip/(2.*one_arg*one_arg) +
+	    m_bDip*m_bDip*m_bDip/(3.*one_arg*one_arg*one_arg) );
   return ((1.+m_aDip*y)*(-log(1.+1./arg) + sum1) -
-	  (1.-m_bDip)*y/(4.*arg*pow_arg) +
+	  (1.-m_bDip)*y/(4.*arg*pow(1.+arg,3)) +
 	  m_cDip*(1.+y/4.)*(log((1.+arg-m_bDip)/(1.+arg))+sum2) );
 }
 
@@ -238,21 +274,23 @@ const double EPA_Dipole::ReducedN(const double & x) {
 //
 ///////////////////////////////////////////////////////////////////////////////////
 
-EPA_Gauss::EPA_Gauss(const ATOOLS::Flavour & beam, const double & alpha) :
-  EPA_FF_Base(beam,alpha), m_approx(1), m_Q02(1.) {
-  m_mass2 = ATOOLS::sqr(m_mass);
-  if (m_beam==ATOOLS::Flavour(kf_p_plus)) {
-    m_mu2 = 2.79*2.79;
-    m_Q02 = 0.71;
-  }
-  else if (m_beam.IsIon()) {
-    m_mu2    = 0.;
-    m_R      = 1.2*pow(double(m_beam.GetAtomicNumber()),1./3.)/rpa->hBar_c();
-    m_Q02    = sqr(2./m_R);
-    m_pt2max = sqr(1./m_R);
-  }
+EPA_Gauss::EPA_Gauss(const ATOOLS::Flavour & beam) : EPA_FF_Base(beam), m_Q02(1.) {
+  m_approx = 1;
+  if (m_beam==ATOOLS::Flavour(kf_p_plus)) { m_mu2 = 2.79*2.79; m_Q02 = 0.71; }
+  else if (m_beam.IsIon()) { m_mu2 = 0.; m_Q02 = sqr(2./m_R); m_pt2max = sqr(1./m_R); }
 }
 
+void EPA_Gauss::FillTables(const size_t & nxbins,const size_t & nbbins) {
+  size_t nx   = nxbins==0 ? 120 : nxbins;
+  size_t nb   = nbbins==0 ? 150 : nbbins;
+  double xmin = 1.e-6/m_beam.GetAtomicNumber(), xmax = 1./m_beam.GetAtomicNumber();
+  double bmin = 1.e-3*m_R, bmax = 1.*m_R;
+  axis xaxis(nx, xmin, xmax, axis_mode::log); 
+  axis baxis(nb, bmin, bmax, axis_mode::log);
+  Fill_Nxb_Table(xaxis,baxis);
+  Fill_Nredx_Table(xaxis);
+}
+  
 const double EPA_Gauss::operator()(const double & x,const double & Q2) {
   // c.f. V.M. Budnev et al., Phys. Rep. C15(1974)181, Eq. (D.7)
   // but modifying the dipole form to a Gaussian form
@@ -283,8 +321,9 @@ const double EPA_Gauss::N(const double & x) {
     term2 = term1+q2min*(1./q2max-1./q2min);
   }
   double res = m_mu2*sqr(x)*term1 + (1.-x)*term2; 
-  msg_Out()<<METHOD<<"("<<m_approx<<", x = "<<x<<" in ["<<q2min<<", "<<q2max<<"] :"
-  	   <<term1<<" & "<<term2<<" for Q0^2 = "<<m_Q02<<": "<<res<<".\n";
+  msg_Out()<<"\n"<<METHOD<<"("<<m_approx<<", x = "<<x<<" "
+	   <<"Q^2 in ["<<q2min<<", "<<q2max<<"] :"
+  	   <<term1<<" & "<<term2<<" for Q0 = "<<sqrt(m_Q02)<<": "<<res<<".\n";
   return res;
 }
 
@@ -306,30 +345,31 @@ const double EPA_Gauss::ReducedN(const double & x) {
 //   and in units of fm^-3 or GeV^3.   Internally we normalise it to unity,
 //   because we will later multiply the square of the form factor with the square
 //   of the charge Z.
-// - Radius in 1/GeV, given in fm only for output purposes.
+// - Radius in 1/GeV, therefore "nucelar skin" m_d also in 1/GeV
 //
 ///////////////////////////////////////////////////////////////////////////////////
 
-EPA_WoodSaxon::EPA_WoodSaxon(const ATOOLS::Flavour & beam, const double & alpha) :
-  EPA_FF_Base(beam,alpha) {
-  m_mass2 = ATOOLS::sqr(m_mass);
-  if (m_beam.IsIon()) {
-    m_Z      = m_beam.IntCharge()/3;
-    m_A      = m_beam.GetAtomicNumber();
-    m_R      = 1.2*pow(double(m_A),1./3.)/rpa->hBar_c();
-    m_d      = 0.5;
-    m_pt2max = sqr(1./m_R);
-  }
-  m_rho0  = CalculateDensity();
-  msg_Out()<<"Init Wood-Saxon for "<<m_beam<<": "
-	   <<"Z = "<<m_Z<<", A = "<<m_A<<", "
-	   <<"R = "<<(1000.*m_R)<<" 1/MeV = "<<(m_R*rpa->hBar_c())<<" fm,\n"
-	   <<"   rho_0 = "<<(double(m_A)*m_rho0)<<" GeV^3 = "
-	   <<(double(m_A)*m_rho0/pow(rpa->hBar_c(),3))<<" fm^-3\n";
+EPA_WoodSaxon::EPA_WoodSaxon(const ATOOLS::Flavour & beam) :
+  EPA_FF_Base(beam), m_d(0.5/rpa->hBar_c()), p_FF_Q2(nullptr), p_N(nullptr) 
+{
+  if (!m_beam.IsIon()) THROW(fatal_error,"Wrong form factor for "+m_beam.IDName());
+  m_pt2max = sqr(1./m_R);
+}
+  
+void EPA_WoodSaxon::FillTables(const size_t & nxbins,const size_t & nbbins) {
+  m_rho0 = CalculateDensity();
   InitFFTable(1.e-12,1.e4);
   InitNTable(1.e-10,1.);
+  size_t nx   = nxbins==0 ? 120 : nxbins;
+  size_t nb   = nbbins==0 ? 150 : nbbins;
+  double xmin = 1.e-6/m_beam.GetAtomicNumber(), xmax = 1./m_beam.GetAtomicNumber();
+  double bmin = 1.e-3*m_R, bmax = 1.*m_R;
+  axis xaxis(nx, xmin, xmax, axis_mode::log); 
+  axis baxis(nb, bmin, bmax, axis_mode::log);
+  Fill_Nxb_Table(xaxis,baxis);
+  Fill_Nredx_Table(xaxis);
 }
-
+  
 void EPA_WoodSaxon::InitFFTable(const double & q2min,const double & q2max) {
   p_FF_Q2 = new OneDim_Table(axis(100000,q2min,q2max,axis_mode::log));
   WS_potential * ws = new WS_potential(m_R,m_d);
@@ -342,7 +382,6 @@ void EPA_WoodSaxon::InitFFTable(const double & q2min,const double & q2max) {
       rmin = rmax; rmax *= 2.;
       res += inc  = m_rho0*gauss.Integrate(rmin,rmax,1.e-6,0);
     } while (rmax<4.*m_R || dabs(inc/res)>1.e-6);
-    if (!(i%1000)) msg_Out()<<METHOD<<": FF("<<p_FF_Q2->GetAxis().x(i)<<") = "<<res<<"\n";
     p_FF_Q2->Fill(i,res);
   }
 }
