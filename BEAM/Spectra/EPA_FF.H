@@ -20,31 +20,41 @@ namespace BEAM {
   class EPA_FF_Base {
   protected:
     ATOOLS::Flavour m_beam;
-    double          m_mass, m_R, m_Z, m_alpha, m_pref;
-    double          m_q2min, m_q2max, m_pt2max;
-    ATOOLS::OneDim_Table * p_FF_Q2, * p_Nred_x;
+    double          m_mass, m_mass2, m_R;
+    double          m_q2min, m_q2max, m_pt2min, m_pt2max;
+    double          m_xmin, m_xmax, m_bmin, m_bmax;
+    ATOOLS::OneDim_Table * p_Nred_x, * p_max_xb;
     ATOOLS::TwoDim_Table * p_N_xb;
 
     size_t m_approx, m_analytic;
     virtual void Fill_Nxb_Table(ATOOLS::axis & xaxis,ATOOLS::axis & baxis);
     virtual void Fill_Nredx_Table(ATOOLS::axis & xaxis);
   public:
-    EPA_FF_Base(const ATOOLS::Flavour & beam,const double & alpha=0.0072992701);
+    EPA_FF_Base(const ATOOLS::Flavour & beam);
     ~EPA_FF_Base() {
-      if (p_FF_Q2)  { delete p_FF_Q2;  p_FF_Q2  = nullptr; }
       if (p_Nred_x) { delete p_Nred_x; p_Nred_x = nullptr; }
       if (p_N_xb)   { delete p_N_xb;   p_N_xb   = nullptr; }
+      if (p_max_xb) { delete p_max_xb; p_max_xb = nullptr; }
     }
+    virtual void  FillTables(const size_t & nxbins=0,const size_t & nbbins=0) = 0;
     virtual const double operator()(const double & x,const double & Q2=-1.)   = 0;
     virtual const double N(const double & x)                                  = 0;
+    virtual const double SelectB(double & x);
     virtual const double N(const double & x,const double & b) { return -1.; }
     virtual const double ReducedN(const double & x)           { return -1.; }
     virtual const double FF(const double & Q2)                { return 1.; }
-    virtual       void   SetRadius(const double & R)      { m_R      = R; }
-    virtual       void   SetPT2Max(const double & pt2max) { m_pt2max = pt2max; } 
-    virtual       void   SetQ2Min(const double & q2min)   { m_q2min  = q2min; } 
-    virtual       void   SetQ2Max(const double & q2max)   { m_q2max  = q2max; }
-    virtual       void   SetSwitch(const std::string & tag,const size_t & sw) {
+
+    virtual void SetRadius(const double & R)      { m_R      = R; }
+    virtual void SetQ2Min(const double & q2min)   { m_q2min  = q2min; } 
+    virtual void SetQ2Max(const double & q2max)   { m_q2max  = q2max; }
+    virtual void SetQ2Range(const double & q2min,const double & q2max) {
+      m_q2min = q2min; m_q2max = q2max;
+    }
+    virtual void SetPT2Max(const double & pt2max) { m_pt2max = pt2max; }
+    virtual void SetPT2Range(const double & pt2min,const double & pt2max) {
+      m_pt2min = pt2min; m_pt2max = pt2max;
+    }
+    virtual void SetSwitch(const std::string & tag,const size_t & sw) {
       if (tag=="approximation") m_approx   = sw;
       if (tag=="analytic")      m_analytic = sw;
     }
@@ -68,10 +78,6 @@ namespace BEAM {
       return ( (m_pt2max>0.) ?
 	       ATOOLS::Min(m_q2max,ATOOLS::sqr(m_mass*x)/(1-x)+m_pt2max*(1.-x)) :
 	       m_q2max );
-    }
-    inline virtual void FillTables(ATOOLS::axis & xaxis,ATOOLS::axis & baxis) {
-      Fill_Nxb_Table(xaxis,baxis);
-      Fill_Nredx_Table(xaxis);
     }
   };
 
@@ -99,11 +105,13 @@ namespace BEAM {
   class EPA_Point : public EPA_FF_Base {
   private:
   public:
-    EPA_Point(const ATOOLS::Flavour & beam, const double & alpha=0.0072992701);
+    EPA_Point(const ATOOLS::Flavour & beam);
     const  double operator()(const double & x,const double & Q2=-1.);
     const  double N(const double & x);
+    const  double SelectB(const double & x);
     const  double N(const double & x,const double & b);
     const  double ReducedN(const double & x);
+    inline void   FillTables(const size_t & nxbins=0,const size_t & nbbins=0) {}
   };
 
   class EPA_Dipole : public EPA_FF_Base {
@@ -112,7 +120,8 @@ namespace BEAM {
     void SetABC();
     const double phi(const double & y,const double & arg);
   public:
-    EPA_Dipole(const ATOOLS::Flavour & beam, const double & alpha=0.0072992701);
+    EPA_Dipole(const ATOOLS::Flavour & beam);
+    void FillTables(const size_t & m_nxbins=0,const size_t & m_nbbins=0);
     const  double operator()(const double & x,const double & Q2=-1.);
     const  double N(const double & x);
     const  double N(const double & x,const double & b);
@@ -129,7 +138,8 @@ namespace BEAM {
     size_t m_approx;
     double m_mass2, m_Q02, m_mu2;
   public:
-    EPA_Gauss(const ATOOLS::Flavour & beam, const double & alpha=0.0072992701);
+    EPA_Gauss(const ATOOLS::Flavour & beam);
+    void FillTables(const size_t & nxbins=0,const size_t & nbbins=0);
     const double operator()(const double & x,const double & Q2);
     const double N(const double & x);
     const double N(const double & x,const double & b);
@@ -153,7 +163,6 @@ namespace BEAM {
       Rho_argument(const double & R,const double & d) : m_R(R), m_d(d) {}
       double operator()(double r) { return 4.*M_PI*r*r/(1.+exp((r-m_R)/m_d)); }
     };
-    
     class WS_potential : public ATOOLS::Function_Base {
     private:
       double m_R, m_d, m_q;
@@ -165,7 +174,6 @@ namespace BEAM {
 	return 4.*M_PI*sin(m_q*r)/m_q*r/(1.+exp((r-m_R)/m_d));
       }
     };
-
     class N_argument : public ATOOLS::Function_Base {
     private:
       EPA_WoodSaxon * p_ws;
@@ -176,21 +184,27 @@ namespace BEAM {
       double operator()(double q2)       { return (*p_ws)(m_x,q2)/q2; } 
     };
 
-    size_t m_A, m_Z;
-    double m_mass2, m_R, m_d, m_rho0;
-
-    ATOOLS::OneDim_Table * p_N;
+    double m_d, m_rho0;
+    ATOOLS::OneDim_Table * p_FF_Q2, * p_N;
     
     double CalculateDensity();
     void   InitFFTable(const double & q2min,const double & q2max);
     void   InitNTable(const double & xmin,const double & xmax);
   public:
-    EPA_WoodSaxon(const ATOOLS::Flavour & beam, const double & alpha=0.0072992701);
+    EPA_WoodSaxon(const ATOOLS::Flavour & beam);
+    ~EPA_WoodSaxon() {
+      if (p_N)     { delete p_N;      p_N     = nullptr; }
+      if (p_FF_Q2) { delete p_FF_Q2;  p_FF_Q2 = nullptr; }
+    }
+    void FillTables(const size_t & nxbins=0,const size_t & nbbins=0);
     const double operator()(const double & x,const double & Q2);
     const double N(const double & x);
     const double N(const double & x,const double & b);
     const double ReducedN(const double & x);
     const double FF(const double & Q2) { return (*p_FF_Q2)(Q2); }
+    inline void  SetParam(const std::string & tag,const double & value) {
+      if (tag=="WSd") m_d = value;
+    }
   };
 }// end of namespace BEAM
 

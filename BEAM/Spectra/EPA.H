@@ -1,31 +1,28 @@
-#ifndef BEAM_Spectra_EPA_H
-#define BEAM_Spectra_EPA_H
+#ifndef BEAM_Main_EPA_H
+#define BEAM_Main_EPA_H
 
 #include "BEAM/Main/Beam_Base.H"
 #include "BEAM/Spectra/EPA_FF.H"
-#include "ATOOLS/Math/Function_Base.H"
 
-namespace ATOOLS {
-  class OneDim_Table;
-  class TwoDim_Table;
-  class Settings;
-}
+namespace ATOOLS { class Settings; }
 
 namespace BEAM {
-  class EPA final : public Beam_Base {
+  class EPA : public Beam_Base {
   private:
     EPA_ff_type   m_type;
     EPA_FF_Base * p_ff;
     double m_mass, m_charge, m_gamma;
-    double m_q2max, m_q2min, m_theta_max, m_pt2max, m_pt2min;
-    double m_xmin, m_xmax, m_bmin, m_bmax;
     double m_aqed, m_pref;
+    double m_x, m_q2;
+    double m_q2min, m_q2max, m_theta_max, m_pt2min, m_pt2max;
+    double m_Rmin, m_Rmax, m_Rcut, m_xmin, m_xmax, m_bmin, m_bmax;
+
+    double m_Lambda2, m_mu, m_Q02, m_WSd;
+    
+    size_t m_plotting;
     size_t m_approx;
     size_t m_nxbins, m_nbbins;
     bool   m_analytic;
-
-    ATOOLS::OneDim_Table * p_N_x;
-    ATOOLS::TwoDim_Table * p_N_xb;
 
     void   Initialise();
     void   RegisterDefaults() const;
@@ -33,86 +30,34 @@ namespace BEAM {
     double ExtractParameter(ATOOLS::Settings &s,const std::string & tag);
     void   WriteDebugFiles(ATOOLS::Settings &s);
 
-    void   InitTables();
-    void   InitdN_by_dx();
-    void   TestIntegration();
+    void   Tests();
 
-    double Point(const double & x);
-    double phi(double x, double qq) const;
-    void   selfTest(const std::string& filename);
+    // This methids can be deleted once we are happy everything works
+    double phi(double x, double qq);
+    double OldWeight(double x, double q2);
+    void   selfTest(std::string filename);
   public:
-
     EPA(const ATOOLS::Flavour beam,const double energy,const double pol,
 	const int dir);
-
     ~EPA() override = default;
+    Beam_Base * Copy() { return new EPA(*this); }
 
-    Beam_Base *Copy() override { return new EPA(*this); }
 
-    inline bool CalculateWeight(double x, double Q2=-1) override {
-      m_weight = (*this)(x); return true;
+    bool CalculateWeight(double x, double q2) {
+      m_x = x; m_q2 = q2;
+      m_weight = (*this)(m_x); return true;
     }
     inline const double operator()(const double & x) {
       return ( (x>=m_xmin && x<=m_xmax) ?
-	       ATOOLS::Max(0., p_ff->N(x)) : 0. ); 
+	       ATOOLS::Max(0., m_pref/x * p_ff->N(x)) : 0. ); 
     }
-    void FixPosition() override;
-    void SetOutMomentum(const ATOOLS::Vec4D &out, const size_t & i=0) override;
     inline double Xmax() const override { return m_xmax; }
     inline double Xmin() const override { return m_xmin; }
+
+    void FixPosition();
+    void SetOutMomentum(const ATOOLS::Vec4D &out, const size_t & i=0);
   };// end of class EPA
 
-
-  
-
-  class KperpIntegrand : public ATOOLS::Function_Base {
-  private:
-    EPA_FF_Base * p_ff;
-    size_t m_mode;
-    double m_mass, m_x, m_bT;
-  public:
-    KperpIntegrand(EPA_FF_Base * ff, const size_t & mode=0) :
-      p_ff(ff), m_mode(mode), m_mass(p_ff->Mass()), m_x(1.), m_bT(0.) {}
-    double operator()(double kT);
-    inline const double & Mass() const { return m_mass; }
-    inline const double & X()    const { return m_x; }
-    inline void   SetMass(const double & mass) { m_mass = mass; }
-    inline void   SetX(const double & x)       { m_x    = x; }
-    inline void   SetBT(const double & bT)     { m_bT   = bT; }
-    inline void   SetMode(const bool & mode)   { m_mode = mode; }
-  };
-  
-  class BIntegrand : public ATOOLS::Function_Base {
-  private:
-    ATOOLS::TwoDim_Table * p_N_xb;
-    double m_x;
-  public:
-    BIntegrand(ATOOLS::TwoDim_Table * N_xb) : p_N_xb(N_xb), m_x(1.) {} 
-    double operator()(double b)   { return 2.*M_PI*b*(*p_N_xb)(m_x,b); }
-    void   SetX(const double & x) { m_x = x; }
-  };
-
-  //////////////////////////////////////////////////////////////////////
-  //
-  // A class to implement the integration over the product of a smooth
-  // non-oscillatory function and a oscillatory function, according to
-  // - S.K. Lucas, H.A. Stone, Journal of Computational and Applied
-  //   Mathematics 64 (1995) 217-231; implementing mainly the method of
-  // - A.Sidi, Mathematics of Computation 51 183 (1988) 249-266. 
-  //
-  /////////////////////////////////////////////////////////////////////
-  
 }// end of namespace BEAM
 
-
-
-/*
-      class CosInt final : public ATOOLS::Function_Base {
-    public:
-      double GetValue(double T) override { return -cos(T)/T; }
-      double operator()(double T) override { return GetValue(T); }
-      double GetCosInt(double X);
-    };
-
- */
 #endif

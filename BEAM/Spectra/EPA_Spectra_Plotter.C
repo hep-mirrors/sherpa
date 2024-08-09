@@ -36,8 +36,8 @@ void EPA_Spectra_Plotter::operator()(const size_t disc) {
   case  4: TestGauss();     break;
   case  3: TestDipole();    break;
   case  2: TestPoint();     break;
-  case  1:
-  default: TestBesselFunctions(); break;
+  case  1: TestBesselFunctions(); break;
+  default: break;
   }
 }
 
@@ -224,7 +224,7 @@ FillNumerical(const EPA_ff_type & type,const double & Q2max) {
     ff[i]->SetPT2Max(pt2max);
     ff[i]->SetSwitch("approximation",i);
     ff[i]->SetSwitch("analytic",0);
-    ff[i]->FillTables((*p_xaxis),(*p_baxis));
+    ff[i]->FillTables();
     appname[i] = string("approx_"+ToString(i));
     tag[i]     = partname+string("_")+ffname+string("_")+appname[i];
     if (Q2max>0.) tag[i] += string("_Q2_")+ToString(pt2max);
