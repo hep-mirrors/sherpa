@@ -156,9 +156,13 @@ millimeter. The same units apply to all numbers in the event output
 pico-barn in the output.
 
 There are a few extra features for an easier handling of the parameter
-file(s), namely global tag replacement, see `Tags`_, and algebra
-interpretation, see `Interpreter`_.
-
+file(s), namely algebra interpretation, see `Interpreter`_,
+and global tag replacement, see `Tags`_.
+In addition, Sherpa compiles a report after each run which lists
+all settings for the run, see `Settings Report`_.
+Here, the user can review the value for each setting,
+whether the setting has actually been used,
+and whether it has been customised in some way.
 
 .. contents::
    :local:
@@ -270,3 +274,57 @@ and then be used in the configuration file like:
    - 93 93 -> 11 -11 93{$(NJET)}:
        Order: {QCD: 0, EW: 2}
        CKKW: $(QCUT)
+
+.. _Settings Report:
+
+***************
+Settings Report
+***************
+
+Sherpa monitors the use and customization of user settings
+during its execution.
+
+This can in particular be useful to alert the user
+that some setting has not actually been used at all,
+which can be unexpected and perhaps due to a typo on the command line
+or in an input file.
+
+Therefore, Sherpa prints a list of top-level settings at the end of each run,
+which are unused themselves or contain a subsetting that has not been used.
+Thus, the user can decide to inspect any of these settings further,
+if this is indeed unexpected.
+
+For further inspection, Sherpa writes the directory ``Settings_Report``
+to the working directory towards the end of a run.
+It includes a markdown file that contains up to three sections.
+The top section lists all settings that have been customized by the user,
+but which have not been used by Sherpa during its execution.
+If there is no such setting, this section is omitted.
+As explained above, this can be consulted to ensure that a given setting
+has indeed been used by Sherpa.
+If a setting is unexpectedly listed as unused,
+it might be due to a typo in the setting name.
+
+The middle section lists all user-customized settings
+along with their default values,
+the (perhaps multiple) customizations across all configuration files
+and the command line, as well as the final value used by Sherpa.
+This section can be consulted to double-check
+which setting value from what input method
+has eventually been used by Sherpa.
+
+The last sections lists all settings that have been used by Sherpa,
+but which have not been customized by the user,
+along with their default values.
+It can be used to understand what other (uncustomized) settings
+are relevant for a given Sherpa run,
+and to discover further customization points.
+
+The ``Settings_Report`` directory also contains a ``Makefile``
+to compile a HTML page from the markdown file,
+by simply executing `make` within the directory.
+This requires the tool ``pandoc`` to be installed and available
+in the ``PATH`` environment variable.
+Alternatively, any markdown conversion tool can be used instead.
+The compiled HTML page, ``Settings_Report.html``,
+can be opened in any standard web browser.
