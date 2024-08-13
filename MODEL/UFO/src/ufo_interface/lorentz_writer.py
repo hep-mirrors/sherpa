@@ -96,7 +96,7 @@ def _get_mom_out(key, all_keys):
 def _filter_lorentz(struct, nmax):
     if len(struct.spins) > nmax:
         return False
-    if any(spin < 0 or spin >= 4 for spin in struct.spins):
+    if any(spin < 0 or spin > 4 for spin in struct.spins):
         return False
     return True
 
