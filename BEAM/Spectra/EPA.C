@@ -32,7 +32,13 @@ EPA::EPA(const Flavour beam, const double energy,
   m_vecouts[0] = Vec4D(m_energy, 0., 0., m_dir * m_energy);
   m_vecouts[1] = Vec4D(0.,0.,0.,0.);
   m_on         = true;
-  exit(1);
+}
+
+bool EPA::CalculateWeight(double x, double q2) {
+  m_x = x; m_q2 = q2;
+  m_weight = (*this)(m_x);
+  if (IsNan(m_weight)) msg_Out()<<"Boink! "<<METHOD<<"(x = "<<x<<") yields NaN.\n";
+  return true;
 }
 
 void EPA::FixPosition() {
@@ -44,6 +50,8 @@ void EPA::SetOutMomentum(const ATOOLS::Vec4D &out, const size_t & i) {
   if (i==0) {
     m_vecouts[0] = out;
     m_vecouts[1] = m_lab-out;
+    m_x          = out[0]/m_lab[0];
+    m_q2         = dabs(out.Abs2());
   }
 }
 
@@ -76,8 +84,8 @@ void EPA::Initialise() {
   if (m_plotting>0) {
     EPA_Spectra_Plotter plotter(this,string("Spectra"));
     plotter(m_plotting);
+    Tests();
   }
-  Tests();
 }
 
 void EPA::RegisterDefaults() const {
@@ -102,7 +110,7 @@ void EPA::RegisterDefaults() const {
   s["EPA"]["AlphaQED"].SetDefault(0.0072992701);
   s["EPA"]["ThetaMax"].SetDefault(0.3);
   s["EPA"]["Approximation"].SetDefault(1);
-  s["EPA"]["Analytic"].SetDefault(true);
+  s["EPA"]["AnalyticFF"].SetDefault(true);
   s["EPA"]["PlotSpectra"].SetDefault(0);
   s["EPA"]["Debug"].SetDefault(false);
   s["EPA"]["Debug_Files"].SetDefault("EPA_debugOutput");
@@ -224,7 +232,6 @@ void EPA::Tests() {
 	     <<OldWeight(x,0.)<<" vs. "<<m_weight<<"\n";
   }
   delete ff;
-  exit(1);
 }
 
 

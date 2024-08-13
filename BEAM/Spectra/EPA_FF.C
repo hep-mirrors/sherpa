@@ -4,6 +4,7 @@
 #include "ATOOLS/Math/Bessel_Integrator.H"
 #include "ATOOLS/Math/Gauss_Integrator.H"
 #include "ATOOLS/Math/MathTools.H"
+#include "ATOOLS/Math/Histogram.H"
 #include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/Message.H"
@@ -37,30 +38,40 @@ ATOOLS::Special_Functions ATOOLS::SF;
 //   units of 1/GeV.
 ///////////////////////////////////////////////////////////////////////////////////
 
-// Initialisation of relevant beam parameters: 
-// note that the particle radius is in fm and transformed into 1/GeV
 EPA_FF_Base::EPA_FF_Base(const ATOOLS::Flavour & beam) :
+  ///////////////////////////////////////////////////////////////////////////////////
+  //
+  // Initialisation of relevant beam parameters: 
+  // note that the particle radius is in fm and transformed into 1/GeV
+  //
+  ///////////////////////////////////////////////////////////////////////////////////
   m_beam(beam), m_mass(m_beam.Mass(true)), m_mass2(ATOOLS::sqr(m_mass)),
   m_R(m_beam.Radius()/rpa->hBar_c()),
   m_q2min(0.), m_q2max(1.e99), m_pt2max(-1.),
-  p_Nred_x(nullptr), p_N_xb(nullptr),
+  p_Nred_x(nullptr), p_N_xb(nullptr), p_Inv_xb(nullptr),
   m_approx(0), m_analytic(0) {}
 
-const double EPA_FF_Base::SelectB(double & x) {
-  if (x<m_xmin) x = m_xmin;
-  if (x>m_xmin) x = m_xmax;
-  double maxval = (*p_max_xb)(x), b = m_bmin;
-  size_t trials = 10000;
-  while (trials>0) {
-    b = m_bmin*pow(m_bmax/m_bmin,ran->Get());
-    if ((*p_N_xb)(x,b)/maxval>ran->Get()) break;
-  }
-  // Return b in fm instead of the internally used 1/GeV.
+const double EPA_FF_Base::SelectB(const double & x) {
+  ///////////////////////////////////////////////////////////////////////////////////
+  //
+  // Internally, we assume b is in units of 1/GeV, we return it in fm here.
+  //
+  ///////////////////////////////////////////////////////////////////////////////////
+  double xeff = m_xmin;
+  if (xeff<m_xmin) xeff = m_xmin*(1.+1.e-6);
+  if (xeff>m_xmax) xeff = m_xmax*(1.-1.e-6);
+  double b = (*p_Inv_xb)(xeff,ran->Get());
   return b*rpa->hBar_c();
 }
 
-// We assume that the units in the b axis are in 1/GeV
 void EPA_FF_Base::Fill_Nxb_Table(axis & xaxis,axis & baxis) {
+  ///////////////////////////////////////////////////////////////////////////////////
+  //
+  // N(x,b) is given by the square of the Fourier transform of
+  // kt^2/(kt^2+m^2x^2) F(kt^2+m^2x^2), which leads to a Bessel function.
+  // We assume that the units in the b axis are in 1/GeV
+  //
+  ///////////////////////////////////////////////////////////////////////////////////
   msg_Out()<<METHOD<<" in "<<xaxis.m_nbins<<" * "<<baxis.m_nbins<<" bins:\n"
   	   <<"   x in ["<<xaxis.m_xmin<<", "<<xaxis.m_xmax<<"], "
   	   <<"b in ["<<baxis.m_xmin<<", "<<baxis.m_xmax<<"], "
@@ -68,42 +79,109 @@ void EPA_FF_Base::Fill_Nxb_Table(axis & xaxis,axis & baxis) {
   m_xmin   = xaxis.m_xmin; m_xmax   = xaxis.m_xmax;
   m_bmin   = baxis.m_xmin; m_bmax   = baxis.m_xmax;
   p_N_xb   = new TwoDim_Table(xaxis,baxis);
-  p_max_xb = new OneDim_Table(xaxis);
   N_xb_int * kernel = new N_xb_int(this);
   Bessel_Integrator bessel(kernel,1);
   for (size_t i=0;i<xaxis.m_nbins;i++) {
-    double maxval = 0.;
     for (size_t j=0;j<baxis.m_nbins;j++) {
       kernel->SetXB(xaxis.x(i),baxis.x(j));
       double value = sqr(bessel())/M_PI;
-      if (!(i%10) && !(j%10)) {
-	SetSwitch("analytic",1);
-	double ref = N(xaxis.x(i),baxis.x(j));
-	msg_Out()<<METHOD<<"(x = "<<xaxis.x(i)<<", "
-		 <<"b = "<<baxis.x(j)<<" 1/GeV = "
-		 <<(baxis.x(j)*rpa->hBar_c())<<" fm): num = "<<value<<" vs. "
-		 <<"ana = "<<ref<<" [1], ratio = "<<value/ref<<"\n";
-	SetSwitch("analytic",0);
-      }
+      //if (!(i%10) && !(j%10)) {
+      //SetSwitch("analytic",1);
+      //double ref = N(xaxis.x(i),baxis.x(j));
+      //msg_Out()<<METHOD<<"(x = "<<xaxis.x(i)<<", "
+      //	 <<"b = "<<baxis.x(j)<<" 1/GeV = "
+      //	 <<(baxis.x(j)*rpa->hBar_c())<<" fm): num = "<<value<<" vs. "
+      //	 <<"ana = "<<ref<<" [1], ratio = "<<value/ref<<"\n";
+      //SetSwitch("analytic",0);
+      //}
       p_N_xb->Fill(i,j,value);
-      if (dabs(value)>maxval) maxval = dabs(value); 
     }
-    p_max_xb->Fill(i,maxval);
+  }
+}
+
+void EPA_FF_Base::Fill_Invxb_Table() {
+  ///////////////////////////////////////////////////////////////////////////////////
+  //
+  // The distribution in impact parameter is given by d^2b N(x,b) = 2 Pi db b N(x,b)
+  // so we have to solve for B (with ran being a random number):
+  // int_0^B db b N(x,b) = ran * int_0^infinity db b N(x,b) = ran * integral 
+  // We therefore have to produce a cumulative histogram of 1/integral db b N(x,b)
+  // and invert it to solve the equation above.
+  //
+  ///////////////////////////////////////////////////////////////////////////////////
+  axis   xaxis = p_N_xb->GetAxis(0); 
+  size_t rbins = 5.*p_N_xb->GetAxis(1).m_nbins;
+  axis   raxis = axis(rbins,0.,1.,axis_mode::linear);
+  msg_Out()<<METHOD<<" in "<<xaxis.m_nbins<<" bins:\n"
+  	   <<"   x in ["<<m_xmin<<", "<<m_xmax<<"], "
+	   <<"add "<<rbins<<" bins for random numbers\n";
+  p_Inv_xb     = new TwoDim_Table(xaxis,raxis);
+  OneDim_Table * cum_b;
+  for (size_t i=0;i<xaxis.m_nbins;i++) {
+    double total = 0., b;
+    cum_b = p_N_xb->Cumulative(1.,1,i,total);
+    cum_b->Rescale(1./total);
+    for (size_t j=0;j<rbins;j++) {
+      b = cum_b->Inverse(raxis.x(j));
+      p_Inv_xb->Fill(i,j,b);
+      //if (!(i%10) && !(j%10))
+      //msg_Out()<<METHOD<<"("<<i<<", "<<j<<"): "
+      //	 <<xaxis.x(i)<<" & "<<raxis.x(j)<<" --> "<<b<<"\n";
+    }
+    delete cum_b;
+  }
+}
+
+void EPA_FF_Base::TestInvxb() {
+  ///////////////////////////////////////////////////////////////////////////////////
+  //
+  // Testing the distribution in b N(x,b), comparing 1 M MC trials and the correct
+  // numerical solution.
+  //
+  ///////////////////////////////////////////////////////////////////////////////////
+  for (size_t i=1;i<4;i++) {
+    Histogram * histo = new Histogram(0,0.,50.,50000);
+    std::string name  = string("Spectra/Bdist_x")+ToString(i)+string(".dat");
+    double x = pow(0.1,i);
+    msg_Out()<<METHOD<<"(x = "<<x<<")\n";
+    for (long int j=0;j<10000000;j++) {
+      double b = (*p_Inv_xb)(x,ran->Get());
+      histo->Insert(b,1);
+    }
+    histo->Output(name);
+    delete histo;
+    Histogram * histo1 = new Histogram(0,0.,50.,50000);
+    std::string name1  = string("Spectra/Bcalc_x")+ToString(i)+string(".dat");
+    for (size_t j=0;j<50000;j++) {
+      double b = (double(j)+0.5)/1000.;
+      histo1->Insert(b,b*N(x,b));
+    }
+    histo1->Output(name1);
+    delete histo1;
   }
 }
 
 double N_xb_int::operator()(double y) {
+  ///////////////////////////////////////////////////////////////////////////////////
+  //
   // Integration argument y here is bT*qT as mandated by the Bessel function:
   // - argument of form factor Q^2 = qT^2+x^2m^2 with qT^2 = y^2/bT^2
   // - we assume that m_b is in units of 1/GeV, qT is in GeV, overall results
   //   are in GeV.
+  //
+  ///////////////////////////////////////////////////////////////////////////////////
   double qT   = y/m_b, qT2 = sqr(qT), xm2 = sqr(m_x*p_ff->Mass()); 
   double res = ( 1./m_b * qT2/(qT2+xm2) * (*p_ff)(m_x,qT2+xm2) ); 
   return res;
 }
 
-void EPA_FF_Base::Fill_Nredx_Table(axis & xaxis) {
-  // The b axis is defined by the particle radius taken in 1/GeV 
+void EPA_FF_Base::Fill_Nredx_Table() {
+  ///////////////////////////////////////////////////////////////////////////////////
+  //
+  // The b axis is defined by the particle radius taken in 1/GeV
+  //
+  ///////////////////////////////////////////////////////////////////////////////////
+  axis xaxis          = p_N_xb->GetAxis(0); 
   p_Nred_x            = new OneDim_Table(xaxis);
   Nred_x_int * kernel = new Nred_x_int(this);
   Gauss_Integrator gauss(kernel);
@@ -111,15 +189,16 @@ void EPA_FF_Base::Fill_Nredx_Table(axis & xaxis) {
   for (size_t i=0;i<xaxis.m_nbins;i++) {
     kernel->SetX(xaxis.x(i));
     double value = gauss.Integrate(bmin,bmax,1.e-5);
-    //SetSwitch("analytic",1);
-    //double Nred  = ReducedN(xaxis.x(i)); 
-    //SetSwitch("analytic",0);
     p_Nred_x->Fill(i,value);
   }
 }
 
 double Nred_x_int::operator()(double b) {
+  ///////////////////////////////////////////////////////////////////////////////////
+  //
   // Result is in 1/GeV, will yield 1/GeV^2 upon integration
+  //
+  ///////////////////////////////////////////////////////////////////////////////////
   return 2.*M_PI*b*(*p_ff->GetN_xb())(m_x,b);
 }
 
@@ -141,6 +220,31 @@ const double EPA_Point::operator()(const double & x,const double & Q2) {
   return wt;
 }
 
+void EPA_Point::FillTables(const size_t & nxbins,const size_t & nbbins) {
+  size_t nx = nxbins==0 ? 120 : nxbins;
+  size_t nb = nbbins==0 ? 500 : nbbins;
+  axis xaxis(nx,1.e-9,   1., axis_mode::log); 
+  axis baxis(nb,1.e-3, 1.e6, axis_mode::log);
+  Fill_Nxb_Table(xaxis,baxis);
+  Fill_Invxb_Table();
+  //TestInvxb();
+}
+
+void EPA_Point::Fill_Nxb_Table(axis & xaxis,axis & baxis) {
+  m_xmin   = xaxis.m_xmin; m_xmax   = xaxis.m_xmax;
+  m_bmin   = baxis.m_xmin; m_bmax   = baxis.m_xmax;
+  //msg_Out()<<METHOD<<" in "<<xaxis.m_nbins<<" * "<<baxis.m_nbins<<" bins:\n"
+  //	   <<"   x in ["<<m_xmin<<", "<<m_xmax<<"], "
+  //	   <<"b in ["<<m_bmin<<", "<<m_bmax<<"].\n";
+  p_N_xb   = new TwoDim_Table(xaxis,baxis);
+  for (size_t i=0;i<xaxis.m_nbins;i++) {
+    for (size_t j=0;j<baxis.m_nbins;j++) {
+      p_N_xb->Fill(i,j,N(xaxis.x(i),baxis.x(j)));
+    }
+  }
+  //msg_Out()<<METHOD<<" is done.\n";
+}
+
 const double EPA_Point::N(const double & x) {
   // Budnev et al., Phys. Rep. C15 (1974) 181, Eq. (6.17b)
   // This is in units of [1]
@@ -155,11 +259,11 @@ const double EPA_Point::N(const double & x) {
 const double EPA_Point::SelectB(const double & x) {
   double bmin = 1.e-12, bmax = 1.e12;
   if (m_R>=1.e-12) bmin = 1.e-6*m_R, bmax = 1.e12*m_R;
-  double b = bmin, maxval = N(x,b);
+  double b = bmin, maxval = b*N(x,b);
   size_t trials = 10000;
   while (trials>0) {
     b = bmin*pow(bmax/bmin,ran->Get());
-    if (N(x,b)/maxval>ran->Get()) break;
+    if (b*N(x,b)/maxval>ran->Get()) break;
   }
   return b*rpa->hBar_c();
 }
@@ -203,11 +307,13 @@ EPA_Dipole::EPA_Dipole(const ATOOLS::Flavour & beam) :
 
 void EPA_Dipole::FillTables(const size_t & nxbins,const size_t & nbbins) {
   size_t nx = nxbins==0 ? 120 : nxbins;
-  size_t nb = nbbins==0 ? 150 : nbbins;
-  axis xaxis(nx,     1.e-6,        1., axis_mode::log); 
-  axis baxis(nb, 1.e-3*m_R, 1.e12*m_R, axis_mode::log);
+  size_t nb = nbbins==0 ? 500 : nbbins;
+  axis xaxis(nx,     1.e-9,       1., axis_mode::log); 
+  axis baxis(nb, 1.e-3*m_R, 1.e6*m_R, axis_mode::log);
   Fill_Nxb_Table(xaxis,baxis);
-  Fill_Nredx_Table(xaxis);
+  Fill_Invxb_Table();
+  Fill_Nredx_Table();
+  TestInvxb();
 }
   
 const double EPA_Dipole::operator()(const double & x,const double & Q2) {
@@ -227,18 +333,18 @@ void EPA_Dipole::SetABC() {
   m_aDip = (1.+m_mu2)/4. + 4.*m_mass2/m_Lambda2;  // should be  7.16
   m_bDip = 1.-4.*m_mass2/m_Lambda2;               // should be -3.96
   m_cDip = (m_mu2-1.)/pow(m_bDip,4.);             // should be  0.028
-  msg_Out()<<METHOD<<": a = "<<m_aDip<<", b = "<<m_bDip<<", c = "<<m_cDip<<"\n";
 }
 
 const double EPA_Dipole::phi(const double & y,const double & arg) {
   // phi_i(x) from Budnev et al., Eq. (D.7)
-  double one_arg = 1.+arg, sum1=0., sum2=0.;
-  sum1 += 1./one_arg + 1./(2.*one_arg*one_arg) + 1./(3.*one_arg*one_arg*one_arg);
-  sum2 += ( m_bDip/one_arg + m_bDip*m_bDip/(2.*one_arg*one_arg) +
-	    m_bDip*m_bDip*m_bDip/(3.*one_arg*one_arg*one_arg) );
-  return ((1.+m_aDip*y)*(-log(1.+1./arg) + sum1) -
-	  (1.-m_bDip)*y/(4.*arg*pow(1.+arg,3)) +
-	  m_cDip*(1.+y/4.)*(log((1.+arg-m_bDip)/(1.+arg))+sum2) );
+  double one_arg = 1.+arg;
+  double sum1  = 1./one_arg + 1./(2.*one_arg*one_arg) + 1./(3.*one_arg*one_arg*one_arg);
+  double sum2  = ( m_bDip/one_arg + m_bDip*m_bDip/(2.*one_arg*one_arg) +
+		   m_bDip*m_bDip*m_bDip/(3.*one_arg*one_arg*one_arg) );
+  double term1 = (1.+m_aDip*y)*(-log(one_arg/arg) + sum1);
+  double term2 = (1.-m_bDip)*y/(4.*arg*pow(one_arg,3));
+  double term3 = m_cDip*(1.+y/4.)*(log((one_arg-m_bDip)/one_arg)+sum2);
+  return (term1 - term2 + term3);
 }
 
 const double EPA_Dipole::N(const double & x) {
@@ -282,13 +388,14 @@ EPA_Gauss::EPA_Gauss(const ATOOLS::Flavour & beam) : EPA_FF_Base(beam), m_Q02(1.
 
 void EPA_Gauss::FillTables(const size_t & nxbins,const size_t & nbbins) {
   size_t nx   = nxbins==0 ? 120 : nxbins;
-  size_t nb   = nbbins==0 ? 150 : nbbins;
-  double xmin = 1.e-6/m_beam.GetAtomicNumber(), xmax = 1./m_beam.GetAtomicNumber();
-  double bmin = 1.e-3*m_R, bmax = 1.*m_R;
+  size_t nb   = nbbins==0 ? 500 : nbbins;
+  double xmin = 1.e-9/m_beam.GetAtomicNumber(), xmax = 1./m_beam.GetAtomicNumber();
+  double bmin = 1.e-3*m_R, bmax = 1.e6*m_R;
   axis xaxis(nx, xmin, xmax, axis_mode::log); 
   axis baxis(nb, bmin, bmax, axis_mode::log);
   Fill_Nxb_Table(xaxis,baxis);
-  Fill_Nredx_Table(xaxis);
+  Fill_Invxb_Table();
+  Fill_Nredx_Table();
 }
   
 const double EPA_Gauss::operator()(const double & x,const double & Q2) {
@@ -321,9 +428,6 @@ const double EPA_Gauss::N(const double & x) {
     term2 = term1+q2min*(1./q2max-1./q2min);
   }
   double res = m_mu2*sqr(x)*term1 + (1.-x)*term2; 
-  msg_Out()<<"\n"<<METHOD<<"("<<m_approx<<", x = "<<x<<" "
-	   <<"Q^2 in ["<<q2min<<", "<<q2max<<"] :"
-  	   <<term1<<" & "<<term2<<" for Q0 = "<<sqrt(m_Q02)<<": "<<res<<".\n";
   return res;
 }
 
@@ -361,13 +465,14 @@ void EPA_WoodSaxon::FillTables(const size_t & nxbins,const size_t & nbbins) {
   InitFFTable(1.e-12,1.e4);
   InitNTable(1.e-10,1.);
   size_t nx   = nxbins==0 ? 120 : nxbins;
-  size_t nb   = nbbins==0 ? 150 : nbbins;
-  double xmin = 1.e-6/m_beam.GetAtomicNumber(), xmax = 1./m_beam.GetAtomicNumber();
-  double bmin = 1.e-3*m_R, bmax = 1.*m_R;
+  size_t nb   = nbbins==0 ? 500 : nbbins;
+  double xmin = 1.e-9/m_beam.GetAtomicNumber(), xmax = 1./m_beam.GetAtomicNumber();
+  double bmin = 1.e-3*m_R, bmax = 1.e6*m_R;
   axis xaxis(nx, xmin, xmax, axis_mode::log); 
   axis baxis(nb, bmin, bmax, axis_mode::log);
   Fill_Nxb_Table(xaxis,baxis);
-  Fill_Nredx_Table(xaxis);
+  Fill_Invxb_Table();
+  Fill_Nredx_Table();
 }
   
 void EPA_WoodSaxon::InitFFTable(const double & q2min,const double & q2max) {
@@ -396,7 +501,8 @@ void EPA_WoodSaxon::InitNTable(const double & xmin,const double & xmax) {
     double q2max = Q2min(x)+m_pt2max; 
     nx->SetX(x);
     double res   = gauss.Integrate(q2min,q2max,1.e-6,0);
-    if (!(i%1000)) msg_Out()<<METHOD<<"("<<q2min<<", "<<q2max<<"): N("<<x<<") = "<<res<<"\n";
+    if (!(i%1000)) msg_Out()<<METHOD<<"("<<q2min<<", "<<q2max<<"): "
+			    <<"N("<<x<<") = "<<res<<"\n";
     p_N->Fill(i,res);
   }
 }

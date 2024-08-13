@@ -3,9 +3,18 @@
 BEAMS:             2212
 BEAM_ENERGIES:     3500
 BEAM_SPECTRA:      EPA
-BEAM_RESCATTERING: Amisic
+BEAM_RESCATTERING: None     # Amisic
 MI_HANDLER:        None
 PDF_SET:           None
+
+EPA:
+  bBins:        100
+  Form_Factor:  2      # 1 = Gauss, 2 = Dipole, 0 = point
+  Q2Max:        5.
+  Lambda2:      0.71
+  MagneticMu:   2.79
+  ThetaMax:     0.
+
 
 REMNANTS:
   2212:
@@ -47,4 +56,4 @@ ANALYSIS: Rivet
 RIVET:
   --analyses: CMS_2011_I954992  
   USE_HEPMC_SHORT: 1
-ANALYSIS_OUTPUT: rescatter
+ANALYSIS_OUTPUT: norescatter
