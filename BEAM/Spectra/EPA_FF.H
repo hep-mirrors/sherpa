@@ -23,23 +23,25 @@ namespace BEAM {
     double          m_mass, m_mass2, m_R;
     double          m_q2min, m_q2max, m_pt2min, m_pt2max;
     double          m_xmin, m_xmax, m_bmin, m_bmax;
-    ATOOLS::OneDim_Table * p_Nred_x, * p_max_xb;
-    ATOOLS::TwoDim_Table * p_N_xb;
+    ATOOLS::OneDim_Table * p_Nred_x;
+    ATOOLS::TwoDim_Table * p_N_xb, * p_Inv_xb;
 
     size_t m_approx, m_analytic;
     virtual void Fill_Nxb_Table(ATOOLS::axis & xaxis,ATOOLS::axis & baxis);
-    virtual void Fill_Nredx_Table(ATOOLS::axis & xaxis);
+    virtual void Fill_Invxb_Table();
+    virtual void Fill_Nredx_Table();
+    virtual void TestInvxb();
   public:
     EPA_FF_Base(const ATOOLS::Flavour & beam);
     ~EPA_FF_Base() {
       if (p_Nred_x) { delete p_Nred_x; p_Nred_x = nullptr; }
       if (p_N_xb)   { delete p_N_xb;   p_N_xb   = nullptr; }
-      if (p_max_xb) { delete p_max_xb; p_max_xb = nullptr; }
+      if (p_Inv_xb) { delete p_Inv_xb; p_Inv_xb = nullptr; }
     }
     virtual void  FillTables(const size_t & nxbins=0,const size_t & nbbins=0) = 0;
     virtual const double operator()(const double & x,const double & Q2=-1.)   = 0;
     virtual const double N(const double & x)                                  = 0;
-    virtual const double SelectB(double & x);
+    virtual const double SelectB(const double & x=0.);
     virtual const double N(const double & x,const double & b) { return -1.; }
     virtual const double ReducedN(const double & x)           { return -1.; }
     virtual const double FF(const double & Q2)                { return 1.; }
@@ -104,19 +106,20 @@ namespace BEAM {
   
   class EPA_Point : public EPA_FF_Base {
   private:
+    void Fill_Nxb_Table(ATOOLS::axis & xaxis,ATOOLS::axis & baxis);
   public:
     EPA_Point(const ATOOLS::Flavour & beam);
+    void   FillTables(const size_t & nxbins=0,const size_t & nbbins=0);
     const  double operator()(const double & x,const double & Q2=-1.);
     const  double N(const double & x);
     const  double SelectB(const double & x);
     const  double N(const double & x,const double & b);
     const  double ReducedN(const double & x);
-    inline void   FillTables(const size_t & nxbins=0,const size_t & nbbins=0) {}
   };
 
   class EPA_Dipole : public EPA_FF_Base {
   private:
-    double m_mass2, m_Lambda2, m_mu2, m_aDip, m_bDip, m_cDip;
+    double m_Lambda2, m_mu2, m_aDip, m_bDip, m_cDip;
     void SetABC();
     const double phi(const double & y,const double & arg);
   public:
@@ -136,7 +139,7 @@ namespace BEAM {
   class EPA_Gauss : public EPA_FF_Base {
   private:
     size_t m_approx;
-    double m_mass2, m_Q02, m_mu2;
+    double m_Q02, m_mu2;
   public:
     EPA_Gauss(const ATOOLS::Flavour & beam);
     void FillTables(const size_t & nxbins=0,const size_t & nbbins=0);

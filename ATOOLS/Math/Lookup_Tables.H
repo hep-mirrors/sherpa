@@ -32,8 +32,13 @@ namespace ATOOLS {
     std::vector<double> m_values;
   public:
     explicit OneDim_Table(const axis & xbins);
-    void Fill(const size_t & xbin,const double & value);
-    double operator()(const double & x) const;
+    void           Fill(const size_t & xbin,const double & value);
+    void           Rescale(const double & factor);
+    double         operator()(const double & x) const;
+    const double   Inverse(const double & value) const;
+    const double   Integral() const;
+    OneDim_Table * Cumulative(const double & expo,double & integral) const;
+    
     inline double Value(const size_t & xbin) const { return m_values[xbin]; }
     inline size_t Size()                     const { return m_values.size(); }
     inline const axis & GetAxis()            const { return m_x; }
@@ -45,8 +50,12 @@ namespace ATOOLS {
     std::vector<std::vector<double> > m_values;
   public:
     TwoDim_Table(const axis & xbins,const axis & ybins);
-    void Fill(const size_t & xbin,const size_t & ybin,const double & value);
-    double operator()(const double & x,const double & y) const;
+    void           Fill(const size_t & xbin,const size_t & ybin,const double & value);
+    double         operator()(const double & x,const double & y) const;
+    const double   Integral(const size_t & naxis,const size_t & bin) const;
+    OneDim_Table * Cumulative(const double & expo,const size_t & naxis,
+			      const size_t & bin,double & integral) const;
+    
     double Value(const size_t & xbin,const size_t & ybin) const {
       return m_values[xbin][ybin];
     }
