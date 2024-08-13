@@ -247,10 +247,9 @@ void Hadron_Init::Init() {
   // - will assume they are all stable and have spin 0.
   // ##################################################################################################
   // (name, true, mass, radius (in fm), width, icharge, spin, majorana, on, stable, idname, texname)
-      Particle_Info(const kf_code &kfc,const double &mass,const double &radius,const int icharge,
-                  const int spin,const int formfactor,const std::string &idname,
-                  const std::string &texname);
-
+  // const kf_code &kfc,const double &mass,const double &radius,const int icharge,
+  // const int spin,const int formfactor,const std::string &idname,
+  // const std::string &texname);
   double A = 0.93149410372;
   InitHadron(kf_deuterium,  true,  2.014    *A,2.1   ,0.,  3,0,false,true,1,"deuterium", "H$_2$");
   InitHadron(kf_helium4,    true,  4.0026033*A,1.9049,0.,  6,0,false,true,1,"helium4",   "He$_4$");
