@@ -41,21 +41,17 @@ namespace BEAM {
 	const int dir);
     ~EPA() override = default;
     Beam_Base * Copy() { return new EPA(*this); }
-
-
-    bool CalculateWeight(double x, double q2) {
-      m_x = x; m_q2 = q2;
-      m_weight = (*this)(m_x); return true;
-    }
+    
+    bool CalculateWeight(double x, double q2);
+    void FixPosition();
+    void SetOutMomentum(const ATOOLS::Vec4D &out, const size_t & i=0);
+    
     inline const double operator()(const double & x) {
       return ( (x>=m_xmin && x<=m_xmax) ?
 	       ATOOLS::Max(0., m_pref/x * p_ff->N(x)) : 0. ); 
     }
     inline double Xmax() const override { return m_xmax; }
     inline double Xmin() const override { return m_xmin; }
-
-    void FixPosition();
-    void SetOutMomentum(const ATOOLS::Vec4D &out, const size_t & i=0);
   };// end of class EPA
 
 }// end of namespace BEAM
