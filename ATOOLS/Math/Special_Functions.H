@@ -181,9 +181,18 @@ namespace ATOOLS {
     
     double Kn(const int order,const double & x) const
     {
+      if (x>10.) {
+	double fouro2 = 4.*sqr(double(order));
+	double eightz = 8.*x;
+	return ( sqrt(M_PI/(2.*x))*exp(-x) *
+		 (1. + (fouro2-1.)/eightz +
+		  (fouro2-1.)*(fouro2-9.)/(2.*sqr(eightz)) +
+		  (fouro2-1.)*(fouro2-9.)*(fouro2-25.)/(6.*pow(eightz,3.)) +
+		  (fouro2-1.)*(fouro2-9.)*(fouro2-25.)*(fouro2-49.)/(24.*pow(eightz,4.)) ));
+      }
       return std::cyl_bessel_k(order,x);
     }
-
+    
     void TestBessel(const std::string & dirname) const
     {
       double arg(0.);
