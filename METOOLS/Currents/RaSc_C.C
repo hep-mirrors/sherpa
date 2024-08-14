@@ -496,7 +496,7 @@ void CRS<SType>::AddPropagator()
         }
       }
       // COMIX_DEFAULT_GAUGE: 1
-      else if (Spinor<SType>::R1()==2 && Spinor<SType>::R2()==1 && Spinor<SType>::R3()==3){
+      else if (Spinor<SType>::R1()==2 && Spinor<SType>::R2()==3 && Spinor<SType>::R3()==1){
         if ((*jit)->B()>0) {// S(-p)
           // for -p
           p *= -1; pp *= -1; pm *= -1; pt *= -1; ptc *= -1;
