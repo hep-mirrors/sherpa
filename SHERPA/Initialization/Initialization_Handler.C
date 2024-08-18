@@ -214,6 +214,16 @@ void Initialization_Handler::RegisterDefaults()
   // otherwise
   s["SHOWER_GENERATOR"].SetDefault("CSS").UseNoneReplacements();
   std::string showergen{ s["SHOWER_GENERATOR"].Get<std::string>() };
+  if (showergen == std::string("None") && s["BEAM_REMNANTS"].Get<bool>()) {
+    msg_Error()
+            << METHOD << ": " << om::red
+            << "The shower has been switched off but not\nthe beam remnants. "
+               "Colour assignment might become a problem, \nplease switch off "
+               "MPIs, fragmentation and remnants with `MI_HANDLER: None`, "
+               "\n`FRAGMENTATION: None` and `BEAM_REMNANTS: false` in case of "
+               "any corresponding errors. \n"
+            << om::reset;
+  }
   s["JET_CRITERION"].SetDefault(showergen);
   s["NLOMC_GENERATOR"].SetDefault(showergen);
   auto pss = s["SHOWER"], nlopss = s["MC@NLO"];
