@@ -9,6 +9,16 @@ MEPS:
 SHOWER:
   IS_AS_FAC: 1
 
+## OTF variations
+SCALE_VARIATIONS:
+  - [0.25, 0.25]
+  - [1.0,  0.25]
+  - [0.25, 1.0]
+  - [1.0,  1.0]
+  - [4.0,  1.0]
+  - [1.0,  4.0]
+  - [4.0,  4.0]
+
 PROCESSES:
 - 93 93 -> 93 93:
     Order: {QCD: 2, EW: 0}
