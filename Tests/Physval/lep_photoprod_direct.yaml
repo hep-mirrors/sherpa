@@ -1,0 +1,61 @@
+EVENTS: 1M
+EVENT_GENERATION_MODE: W
+EVENT_DISPLAY_INTERVAL: 100
+BATCH_MODE: 7
+
+BEAMS: [-11, 11]
+BEAM_ENERGIES: 99
+BEAM_SPECTRA: EPA
+PDF_SET: None
+
+ALPHAS(MZ): 0.118
+ORDER_ALPHAS: 2
+ALPHAS: {USE_PDF: 0}
+SCALES: METS{max(16.,H_T2/4)}{max(16.,H_T2/4)}{max(16.,H_T2/4)}
+
+ME_GENERATORS: [Comix, Amegic, OpenLoops]
+NLO_SUBTRACTION_MODE: QCD+QED
+
+SCALE_VARIATIONS: None
+
+EPA:
+  Q2Max: 4.5
+
+PARTICLE_DATA: {5: {Massive: true}, 4: {Massive: true}}
+PARTICLE_CONTAINERS:
+  996:
+    Name: C
+    Flavours: [4, -4]
+  997:
+    Name: B
+    Flavours: [5, -5]
+
+SELECTORS:
+  - NJetFinder:
+      N: 2
+      ETMin: 2.5
+      R: 1.0
+      Exp: 1
+      EtaMax: 2.5
+      MassMax: 5.0
+  - NJetFinder:
+      N: 1
+      ETMin: 4.5
+      R: 1.0
+      Exp: 1
+      EtaMax: 2.5
+      MassMax: 5.0
+
+ANALYSIS: Rivet
+RIVET:
+  --analyses: OPAL_2003_I611415
+
+PROCESSES:
+  - 22 22 -> (93,996,997) (93,996,997):
+      Order: {QCD: 0, EW: 2}
+      NLO_Mode: MC@NLO
+      NLO_Order: {QCD: 1, EW: 0}
+      ME_Generator: Amegic
+      RS_ME_Generator: Comix
+      Loop_Generator: OpenLoops
+

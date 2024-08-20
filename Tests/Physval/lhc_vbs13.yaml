@@ -1,0 +1,82 @@
+
+EVENTS: 500k
+EVENT_GENERATION_MODE: W
+
+EVENT_DISPLAY_INTERVAL: 100
+BATCH_MODE: 7
+
+# collider setup
+BEAMS: 2212
+BEAM_ENERGIES: 6500
+
+# choose EW Gmu input scheme
+EW_SCHEME: 3
+GF: 0.0000116637
+
+# tags for process setup
+TAGS:
+  NJET: 1
+  QCUT: 30
+
+EXCLUSIVE_CLUSTER_MODE: 1
+
+# scales
+# VBF scale setter
+SCALES: VBF{MU_F2}{MU_R2}{MU_Q2}
+MEPS:
+  CORE_SCALE: VAR{Abs2(p[2]+p[3]+p[4]+p[5])}
+
+# solves problem with dipole QED modeling
+ME_QED: { CLUSTERING_THRESHOLD: 10 }
+
+# improve integration performance
+PSI:
+  ITMIN: 25000
+
+EVENTS: $(EVTS)
+EVENT_GENERATION_MODE: Weighted
+
+# scale and pdf variations
+SCALE_VARIATIONS:
+  - [0.25, 0.25]
+  - [1.0,  0.25]
+  - [0.25, 1.0]
+  - [1.0,  1.0]
+  - [4.0,  1.0]
+  - [1.0,  4.0]
+  - [4.0,  4.0]
+
+# WW decaying into electrons and muons
+PROCESSES:
+- 93 93 -> 11 11 -12 -12 93 93 93{$(NJET)}:
+    Order: {QCD: 0, EW: 6}
+    CKKW: $(QCUT)
+- 93 93 -> 13 13 -14 -14 93 93 93{$(NJET)}:
+    Order: {QCD: 0, EW: 6}
+    CKKW: $(QCUT)
+- 93 93 -> 11 13 -12 -14 93 93 93{$(NJET)}:
+    Order: {QCD: 0, EW: 6}
+    CKKW: $(QCUT)
+- 93 93 -> -11 -11 12 12 93 93 93{$(NJET)}:
+    Order: {QCD: 0, EW: 6}
+    CKKW: $(QCUT)
+- 93 93 -> -13 -13 14 14 93 93 93{$(NJET)}:
+    Order: {QCD: 0, EW: 6}
+    CKKW: $(QCUT)
+- 93 93 -> -11 -13 12 14 93 93 93{$(NJET)}:
+    Order: {QCD: 0, EW: 6}
+    CKKW: $(QCUT)
+
+SELECTORS:
+- [PT, 90, 5.0, E_CMS]
+- NJetFinder:
+    N: 2
+    PTMin: 15.0
+    ETMin: 0.0
+    R: 0.4
+    Exp: -1
+
+ANALYSIS: Rivet
+RIVET:
+  --analyses:
+     - CMS_2020_I1794169
