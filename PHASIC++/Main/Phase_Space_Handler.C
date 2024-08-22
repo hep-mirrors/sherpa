@@ -304,8 +304,14 @@ void Phase_Space_Handler::CheckSinglePoint()
              <<"; // in GeV^2, incl. symfacs"<<std::endl;
     if (proc->GetSubevtList()) {
       NLO_subevtlist * subs(proc->GetSubevtList());
-      for (size_t i(0);i<subs->size();++i) msg_Out()<<(*(*subs)[i]);
+      double result = 0;
+      for (size_t i(0);i<subs->size();++i) {
+        result += (*(subs))[i]->m_result;
+        msg_Out()<<(*(*subs)[i]);
+      }
+      msg_Out()<<"ME = "<<result/subs->back()->m_result<<"\n";
     }
+
   }
   THROW(normal_exit,"Computed ME^2");
 }

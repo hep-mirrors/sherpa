@@ -161,7 +161,7 @@ void FF_DipoleSplitting::SetMomentaAlaric(const ATOOLS::Vec4D* mom) {
     Vec4D K = p_collrecoil->Recoil(ampl,m_i,m_j,m_k);
     std::vector<int> tags = p_collrecoil->RecoilTags(ampl,m_i,m_j,m_k);
     int nk = std::count_if(tags.begin(),tags.end(),[](int t){return t&2;});
-
+    
     double K2(K.Abs2());
     int mode = 0; // ?? what does it do?
     PHASIC::Kin_Args ff=PHASIC::ClusterFFDipole(0,0,0,K2,mom[m_i],mom[m_j],K,mode);
