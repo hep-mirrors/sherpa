@@ -695,7 +695,6 @@ void Massive_Kernels::Calculate(ist::itype type, double mu2, double s,
 
 double Massive_Kernels::I_Fin()
 {
-  PRINT_VAR(m_VNS<<" "<<p_Gammat[0]<<" "<<m_gKterm<<" "<<m_aterm);
   return p_VS[0]+m_VNS-sqr(M_PI)/3.+p_Gammat[0]+m_gKterm+m_aterm;
 }
 
