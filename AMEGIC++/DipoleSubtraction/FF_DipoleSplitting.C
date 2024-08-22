@@ -199,13 +199,13 @@ void FF_DipoleSplitting::SetMomentaAlaric(const ATOOLS::Vec4D* mom) {
 
     /// TODO: some of these might need to become member variables
     ///       to be used in CalcDiPolarization
-    double vijk = Vrel(pij,m_pk);
+    m_vijk = Vrel(pij,n);
     double viji = Vrel(pij,m_pi);
     double vijj = Vrel(pij,m_pj);
 
-    double zim = m_pi*pij/pij.Abs2() * (1+vijk*viji);
-    double zjm = m_pj*pij/pij.Abs2() * (1+vijk*vijj);;
-    double zpm = 0;
+    double zim = m_zi-0.5*(1.-m_vijk);
+    double zjm = m_zj-0.5*(1.-m_vijk);
+    m_zpm = sqr(m_pi*pij/pij.Abs2())*(1.- sqr(viji*m_vijk));
 
     m_pt1   =     zim*m_pi-zjm*m_pj;
     m_pt2   =     m_ptij;
@@ -238,13 +238,12 @@ void FF_DipoleSplitting::SetMomentaAlaric(const ATOOLS::Vec4D* mom) {
     m_av  = m_sff;
     break;
   case spt::g2qq:
-    m_sff = 1.;
-    m_sff *= zi;
-    m_av  = m_sff - zi*(zi*(1.-zi) + zj*(1.-zj));
+    m_sff = zi;
+    m_av  = m_sff - 2.0 * ( m_zi*m_zj - m_zpm ) * zi;
     break;
   case spt::g2gg:
       m_sff = zi;
-      m_av = m_sff - zi*(zi*(1.-zi));
+      m_av  = m_sff + ( m_zi*m_zj - m_zpm )*zi;
     break;
   case spt::none:
     THROW(fatal_error, "Splitting type not set.");
@@ -282,14 +281,17 @@ void FF_DipoleSplitting::CalcDiPolarizations()
     CalcVectors(m_pt1,m_pt2);
     break;
   case spt::g2qq:
-    CalcVectors(m_pt1,m_pt2,m_sff/zi/(2.*(zi*(1.-zi)+zj*(1.-zj))));
+    if(m_subtype!=subscheme::Alaric) {
+      CalcVectors(m_pt1,m_pt2,m_sff/zi/(2.*(zi*(1.-zi)+zj*(1.-zj))));
+    } else {
+      CalcVectors(m_pt1,m_pt2,m_sff/zi/(2.*(zi*(1.-zi)+zj*(1.-zj)-2.0*m_zpm)));
+    }
     break;
   case spt::g2gg: {
     if(m_subtype!=subscheme::Alaric) {
       CalcVectors(m_pt1,m_pt2,-m_sff/zi/(zi*(1.-zi)+zj*(1.-zj)));
-    }
-    else {
-      double B = -m_sff/zi/(zi*(1.-zi)+zj*(1.-zj));
+    } else {
+      double B = -m_sff/zi/(zi*(1.-zi)+zj*(1.-zj)-2.0*m_zpm);
       CalcVectors(m_pt1,m_pt2,B);
       m_pfactors[0] = 0;
       m_pfactors[1] = -1/B;
