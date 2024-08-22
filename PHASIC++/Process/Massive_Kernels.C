@@ -108,7 +108,7 @@ void Massive_Kernels::SetSubType(const subscheme::code subtype)
 }
 
 void Massive_Kernels::SetAlpha(double aff, double afi, double aif, double aii)
-{ 
+{
   m_alpha_ff=aff; m_alpha_fi=afi; m_alpha_if=aif; m_alpha_ii=aii; 
   m_logaff=log(aff); m_logafi=log(afi); m_logaif=log(aif); m_logaii=log(aii);
 }
@@ -124,7 +124,7 @@ void Massive_Kernels::CalcVS(ist::itype type,double s,double mj,double mk)
   // does not exist for photons
   if (m_stype==sbt::qed && type==ist::g) return;
   // both massive
-  if (mj>0.&&mk>0.) {
+  if (mj>0.&&mk>0. && m_subtype!=subscheme::Alaric) {
     double mj2=sqr(mj);
     double mk2=sqr(mk);
     double Q2=s+mj2+mk2;
@@ -136,7 +136,7 @@ void Massive_Kernels::CalcVS(ist::itype type,double s,double mj,double mk)
     p_VS[0]=(-sqr(lrhoj)-sqr(lrhok)-sqr(M_PI)/6.+(lrhoj+lrhok)*log(Q2/s))/vjk;
   }
   // one massive, one massless
-  else if (mj>0.||mk>0.) {
+  else if (mj>0.||mk>0. && m_subtype!=subscheme::Alaric) {
     double m2=sqr(mj+mk);
     double Q2=s+m2;
     double lms=log(m2/s);
@@ -214,10 +214,16 @@ void Massive_Kernels::CalcVNSq(double s,double mj,double mk,double sjKt,
   else if (mj==0.) {
     double Q2=s+sqr(mj)+sqr(mk);
     double Q=sqrt(Q2);
-    m_VNS = m_g1t*(log(s/Q2)-2.*log(1.-mk/Q)-2.*mk/(Q+mk))
-            +sqr(M_PI)/6.-DiLog(s/Q2);
-    if (m_subtype==subscheme::Dire)
-      m_VNS += .25-(Q-mk)*(Q+3.*mk)/(4.*sqr(Q+mk));
+    if(m_subtype!=subscheme::Alaric) {
+      m_VNS = m_g1t*(log(s/Q2)-2.*log(1.-mk/Q)-2.*mk/(Q+mk))
+        +sqr(M_PI)/6.-DiLog(s/Q2);
+      if (m_subtype==subscheme::Dire)
+        m_VNS += .25-(Q-mk)*(Q+3.*mk)/(4.*sqr(Q+mk));
+    }
+    else {
+      m_VNS = m_g1t*log(s/Q2); // always needed to change reference scale between s and Q2
+      m_VNS += -sqr(mk)/(Q2-sqr(mk))*log(Q/mk) + log(1-sqr(mk)/Q2) - 6;
+    }
   }
   else if (mk==0.) {
     double mj2=sqr(mj);
@@ -278,37 +284,46 @@ void Massive_Kernels::CalcVNSg(double s,double mk,double sjKt,double skKt,
     double Q2=s+sqr(mk);
     double Q=sqrt(Q2);
     double muk=mk/Q, muk2=mk*mk/Q2;
-    m_VNS=m_g2t*(log(s/Q2)-2.*log(1.-mk/Q)-2.*mk/(Q+mk))
-          +sqr(M_PI)/6.-DiLog(s/Q2);
-    if (!simplev)
-      m_VNS+=(m_kappa-2./3.)*sqr(mk)/s
-             *((2.*m_nf*m_TRbyCA-1.)*log(2.*mk/(Q+mk)));
-    if (m_subtype==subscheme::Dire) {
-      m_VNS += (muk2*log((2.*muk)/(1.+muk)))/(3.*(1.-muk2))+muk2/(2.*pow(1.+muk,3))-pow(muk/(1.+muk),3)/18.;
-      m_VNS += m_nf*m_TR/m_CA*(-muk2*(9.-muk)/(9.*pow(1.+muk,3))-2.*muk2/(3.*(1.-muk2))*log(2.*muk/(1.+muk)));
-    }
-    double nfc=0.;
-    for (size_t i=0;i<nfjk;i++) {
-      double rho1=sqrt(1.-4.*sqr(m_massflav[i])/sqr(Q-mk));
-      double rho2=sqrt(1.-4.*sqr(m_massflav[i])/s);
-      nfc+=4./3.*(log(1.-mk/Q)+mk*rho1*rho1*rho1/(Q+mk)+log(0.5+0.5*rho1)
-                  -rho1*(1.+sqr(rho1)/3.)-0.5*log(sqr(m_massflav[i])/Q2));
-      if (!simplev) {
-        nfc+=(m_kappa-2./3.)*2.*sqr(mk)/s
-             *(rho2*rho2*rho2*log((rho2-rho1)/(rho2+rho1))
-               -log((1.-rho1)/(1.+rho1))-8.*rho1*sqr(m_massflav[i])/s);
-      }
+    if(m_subtype!=subscheme::Alaric) {
+      m_VNS=m_g2t*(log(s/Q2)-2.*log(1.-mk/Q)-2.*mk/(Q+mk))
+        +sqr(M_PI)/6.-DiLog(s/Q2);
+      if (!simplev)
+        m_VNS+=(m_kappa-2./3.)*sqr(mk)/s
+          *((2.*m_nf*m_TRbyCA-1.)*log(2.*mk/(Q+mk)));
       if (m_subtype==subscheme::Dire) {
-	double muj2=sqr(m_massflav[i])/(Q2+sqr(m_massflav[i]));
-	nfc += (-2.*muk2*((-8.*muj2*rho1)/(1-muk2)-log((1-rho1)/(1+rho1))+log((-rho1+rho2)/(rho1+rho2))*pow(rho2,3)))/(3.*(1.-muk2))
-	  -log((1.-rho1)/(1.+rho1))*((3.-2.*muj2)/(3.*(1-muk2))-(muj2*(3.+2.*muj2-(2.*muj2*(9.+5.*muj2))/(1.-2.*muj2-muk2)))/(3.*(1.-2.*muj2-muk2)*muj2))
-	  -(rho1*(65./6.-15*muj2+(8*muj2)/(3.*(1-muk))-4*muk+muk2/6.-(2.*muj2*(36.-148.*muj2-26.*muk+77.*muj2*muk+59.*sqr(muj2)))/(3.*(1.-2.*muj2-muk2)*muj2)
-		  +((-49.*muj2+10.*(1.-muk)+39.*muj2*muk+127.*sqr(muj2)-77.*muk*sqr(muj2)-30.*pow(muj2,3))*sqr(2./(1.-2.*muj2-muk2)))/3.))/(3.*(1.-muk2));
+        m_VNS += (muk2*log((2.*muk)/(1.+muk)))/(3.*(1.-muk2))+muk2/(2.*pow(1.+muk,3))-pow(muk/(1.+muk),3)/18.;
+        m_VNS += m_nf*m_TR/m_CA*(-muk2*(9.-muk)/(9.*pow(1.+muk,3))-2.*muk2/(3.*(1.-muk2))*log(2.*muk/(1.+muk)));
       }
+      double nfc=0.;
+      for (size_t i=0;i<nfjk;i++) {
+        double rho1=sqrt(1.-4.*sqr(m_massflav[i])/sqr(Q-mk));
+        double rho2=sqrt(1.-4.*sqr(m_massflav[i])/s);
+        nfc+=4./3.*(log(1.-mk/Q)+mk*rho1*rho1*rho1/(Q+mk)+log(0.5+0.5*rho1)
+                    -rho1*(1.+sqr(rho1)/3.)-0.5*log(sqr(m_massflav[i])/Q2));
+        if (!simplev) {
+          nfc+=(m_kappa-2./3.)*2.*sqr(mk)/s
+            *(rho2*rho2*rho2*log((rho2-rho1)/(rho2+rho1))
+              -log((1.-rho1)/(1.+rho1))-8.*rho1*sqr(m_massflav[i])/s);
+        }
+        if (m_subtype==subscheme::Dire) {
+          double muj2=sqr(m_massflav[i])/(Q2+sqr(m_massflav[i]));
+          nfc += (-2.*muk2*((-8.*muj2*rho1)/(1-muk2)-log((1-rho1)/(1+rho1))+log((-rho1+rho2)/(rho1+rho2))*pow(rho2,3)))/(3.*(1.-muk2))
+            -log((1.-rho1)/(1.+rho1))*((3.-2.*muj2)/(3.*(1-muk2))-(muj2*(3.+2.*muj2-(2.*muj2*(9.+5.*muj2))/(1.-2.*muj2-muk2)))/(3.*(1.-2.*muj2-muk2)*muj2))
+            -(rho1*(65./6.-15*muj2+(8*muj2)/(3.*(1-muk))-4*muk+muk2/6.-(2.*muj2*(36.-148.*muj2-26.*muk+77.*muj2*muk+59.*sqr(muj2)))/(3.*(1.-2.*muj2-muk2)*muj2)
+                    +((-49.*muj2+10.*(1.-muk)+39.*muj2*muk+127.*sqr(muj2)-77.*muk*sqr(muj2)-30.*pow(muj2,3))*sqr(2./(1.-2.*muj2-muk2)))/3.))/(3.*(1.-muk2));
+        }
+      }
+      m_VNS+=m_TRbyCA*nfc;
     }
-    m_VNS+=m_TRbyCA*nfc;
+    else {
+      double k = muk2/Q2;
+      double Igg = ((-8 + 2*k)/(3.*(1 - k)) - (2*std::pow(k,1.5)*(-0.5*M_PI + std::asin(sqrt(k))))/std::pow(1 - k,1.5) + 2*log(1 - k))/6.;
+      double Igq = m_TRbyCA*m_nf*2./3.*(-(8 - 11*k)/(3.*(1 - k)) + (std::pow(k,1.5)*(-0.5*M_PI + std::asin(sqrt(k))))/std::pow(1 - k,1.5) + 2*log(1 - k) + (3*k*log(k))/(2.*(1 - k)));
+      m_VNS += m_g2t*log(s/Q2) + Igg + Igq - 50./9. - m_TRbyCA*m_nf*16./9.;
+    }
   }
 }
+
 
 void Massive_Kernels::CalcVNSs(double s,double mj,double mk)
 // V^NS_s as defined in (C.9)-(C.10)
@@ -680,6 +695,7 @@ void Massive_Kernels::Calculate(ist::itype type, double mu2, double s,
 
 double Massive_Kernels::I_Fin()
 {
+  PRINT_VAR(m_VNS<<" "<<p_Gammat[0]<<" "<<m_gKterm<<" "<<m_aterm);
   return p_VS[0]+m_VNS-sqr(M_PI)/3.+p_Gammat[0]+m_gKterm+m_aterm;
 }
 
