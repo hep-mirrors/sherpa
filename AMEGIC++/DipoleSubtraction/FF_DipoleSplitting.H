@@ -12,6 +12,7 @@ namespace AMEGIC {
   class FF_DipoleSplitting : public DipoleSplitting_Base {
     double m_yijk;
     double m_zi,m_zj;
+    double m_vijk, m_zpm;
 
     void SetMomentaAlaric(const ATOOLS::Vec4D *);
   public:
