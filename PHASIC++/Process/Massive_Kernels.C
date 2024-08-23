@@ -221,8 +221,11 @@ void Massive_Kernels::CalcVNSq(double s,double mj,double mk,double sjKt,
         m_VNS += .25-(Q-mk)*(Q+3.*mk)/(4.*sqr(Q+mk));
     }
     else {
-      m_VNS = m_g1t*log(s/Q2); // always needed to change reference scale between s and Q2
-      m_VNS += -sqr(mk)/(Q2-sqr(mk))*log(Q/mk) + log(1-sqr(mk)/Q2) - 6;
+      double muk2 = sqr(mk)/Q2;
+      double Iqq = -1 + log(1 - muk2) + (muk2*log(muk2))/(2.*(1 - muk2)); 
+      m_VNS += m_g1t*log(s/Q2) + Iqq + 1;
+      // m_VNS = m_g1t*log(s/Q2); // always needed to change reference scale between s and Q2
+      // m_VNS += -sqr(mk)/(Q2-sqr(mk))*log(Q/mk) + log(1-sqr(mk)/Q2);// - 6;
     }
   }
   else if (mk==0.) {
@@ -316,10 +319,9 @@ void Massive_Kernels::CalcVNSg(double s,double mk,double sjKt,double skKt,
       m_VNS+=m_TRbyCA*nfc;
     }
     else {
-      double k = muk2/Q2;
-      double Igg = ((-8 + 2*k)/(3.*(1 - k)) - (2*std::pow(k,1.5)*(-0.5*M_PI + std::asin(sqrt(k))))/std::pow(1 - k,1.5) + 2*log(1 - k))/6.;
-      double Igq = m_TRbyCA*m_nf*2./3.*(-(8 - 11*k)/(3.*(1 - k)) + (std::pow(k,1.5)*(-0.5*M_PI + std::asin(sqrt(k))))/std::pow(1 - k,1.5) + 2*log(1 - k) + (3*k*log(k))/(2.*(1 - k)));
-      m_VNS += m_g2t*log(s/Q2) + Igg + Igq - 50./9. - m_TRbyCA*m_nf*16./9.;
+      double Igg = ((-8 + 2*muk2)/(3.*(1 - muk2)) - (2*std::pow(muk,3)*(-0.5*M_PI + std::asin(muk)))/std::pow(1 - muk2,1.5) + 2*log(1 - muk2))/6.;
+      double Igq = m_TRbyCA*m_nf*2./3.*(-(8 - 11*muk2)/(3.*(1 - muk2)) + (std::pow(muk,3)*(-0.5*M_PI + std::asin(muk)))/std::pow(1 - muk2,1.5) + 2*log(1 - muk2) + (3*muk2*log(muk2))/(2.*(1 - muk2)));
+      m_VNS += m_g2t*log(s/Q2) + Igg + Igq + (8./18. + m_TRbyCA*m_nf*16./9.);
     }
   }
 }
