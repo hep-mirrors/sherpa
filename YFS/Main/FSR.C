@@ -72,6 +72,8 @@ bool FSR::Initialize(YFS::Dipole &dipole) {
   m_dipoleFl.push_back(p_dipole->GetFlav(0));
   m_dipoleFl.push_back(p_dipole->GetFlav(1));
   m_QFrame = m_dipole[0] + m_dipole[1];
+  m_beta1 = CalculateBeta(m_dipole[0]);
+  m_beta2 = CalculateBeta(m_dipole[1]);
   BoostToXFM();
   p_dipole->SetEikMomentum(0, m_dipole[0]);
   p_dipole->SetEikMomentum(1, m_dipole[1]);
@@ -93,8 +95,6 @@ bool FSR::Initialize(YFS::Dipole &dipole) {
     THROW(fatal_error, "Dipole size incorrect in YFS FSR")
   }
   m_p1p2 = m_dipole[0] * m_dipole[1];
-  m_beta1 = CalculateBeta(m_dipole[0]);
-  m_beta2 = CalculateBeta(m_dipole[1]);
   m_mu1 = 1. - sqr(m_beta1);
   m_mu2 = 1. - sqr(m_beta2);
   m_g  = p_dipole->m_gamma;
@@ -298,6 +298,7 @@ bool FSR::MakeFSR() {
   MakePair(sqrt(m_sprim), m_dipole[0], m_dipole[1]);
   m_px = m_dipole[0] + m_dipole[1] + m_photonSum;
   m_Q = m_dipole[0] + m_dipole[1];
+  // CE.Isotropic2Momenta(m_Q, sqr(m_mass[0]), sqr(m_mass[0]), m_dipole[0], m_dipole[1], ran->Get(), ran->Get(), -1, 1);
 
   double masc1 = m_mass[0] * sqrt(m_sQ / m_dip_sp);
   double masc2 = m_mass[1] * sqrt(m_sQ / m_dip_sp);
@@ -338,8 +339,10 @@ void FSR::RescalePhotons() {
 bool FSR::F() {
   double del1, del2;
   double ener = sqrt(m_sprim) / 2.;
-  double am1 = 1-m_betaBar1*m_betaBar1;
-  double am2 = 1-m_betaBar2*m_betaBar2;
+  // double am1 = 1-m_betaBar1*m_betaBar1;
+  // double am2 = 1-m_betaBar2*m_betaBar2;
+  double am1 = sqr(m_mass[0]/ener);
+  double am2 = sqr(m_mass[1]/ener);
   m_eta1 = (m_sprim + m_dipole[0].Abs2() - m_dipole[1].Abs2()) / m_sprim;
   m_eta2 = (m_sprim - m_dipole[0].Abs2() + m_dipole[1].Abs2()) / m_sprim;
   Vec4D p1 = m_dipole[0];
@@ -348,7 +351,7 @@ bool FSR::F() {
   CalculateBetaBar();
   for (size_t i = 0; i < m_photons.size(); ++i)
   {
-    if (m_cos[i] > 0.) {
+    if (m_cos[i] < 0.) {
       del1 = am1 / (m_eta1 + betan) + betan * sqr(m_sin[i]) / (1. + m_cos[i]);
       del2 = m_eta2 + betan * m_cos[i];
     }
@@ -378,7 +381,7 @@ bool FSR::F() {
       PRINT_VAR(sqrt(m_sQ));
       m_f = 0;
     }
-    m_MassWls[i] *= m_f / m_fbar;
+    m_MassWls[i] *= m_f / m_fbar;// * m_sQ/m_sprim;
     m_dist1.push_back(m_f);
     m_dist2.push_back(m_fbar);
     if (IsBad(m_massW)) {
@@ -653,10 +656,11 @@ void FSR::Weight() {
 
 
 void FSR::BoostToXFM() {
-  // p_rot   = new Poincare(m_dipole[0],Vec4D(0.,0.,0.,1.));
+  Poincare p_rot(m_dipole[0],Vec4D(0.,0.,0.,1.));
   Vec4D Q = m_dipole[0] + m_dipole[1];
   ATOOLS::Poincare poin(Q);
   for (auto &p : m_dipole) {
+    p_rot.Rotate(p);
     poin.Boost(p);
   }
 }
@@ -736,8 +740,8 @@ double FSR::Eikonal(const Vec4D &k) {
 }
 
 double FSR::EikonalInterferance(const Vec4D &k) {
-  Vec4D p1=m_dipole[0];
-  Vec4D p2 = m_dipole[1];
+  Vec4D p1 = p_dipole->GetOldMomenta(0);
+  Vec4D p2 = p_dipole->GetOldMomenta(1);
   MakePair(sqrt(m_dip_sp),p1,p2);
   return m_alpi / (4.*M_PI) * 2.*p1 * p2  / ((k * p1) * (k * p2));
 }

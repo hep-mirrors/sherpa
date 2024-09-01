@@ -194,32 +194,35 @@ void Dipole::Boost() {
     // sqr(1.+2.*t/s)
     // m_eikmomentum = m_momenta;
     double s = (m_bornmomenta[0]+m_bornmomenta[1]).Abs2();
-    double t = (m_beams[0]-m_bornmomenta[0]).Abs2();
-    m_ranTheta = acos(1.+2.*t/s);
+    double t = (m_bornmomenta[0]-m_bornmomenta[1]).Abs2();
+    // m_ranTheta = acos(1.+2.*t/s);
+    m_ranTheta = acos(1.-2.*ran->Get());
     // m_ranTheta = m_beams[0].Theta();
     Vec4D qqk = m_momenta[0] + m_momenta[1] + m_photonSum;
     p_Pboost = new Poincare(qqk);
     p_boost  = new Poincare(m_bornmomenta[0] + m_bornmomenta[1]);
 
-    p_rotate = new Poincare(m_bornmomenta[0], Vec4D(0., 0.,  0., 1.));
+    // p_rotate = new Poincare(m_bornmomenta[0], Vec4D(0., 0.,  0., 1.));
     p_rotatey = new Poincare(m_bornmomenta[0], Vec4D(0., 0., 1., 0.));
     p_rotatex = new Poincare(m_bornmomenta[0], Vec4D(0., 1., 0., 0.));
     for (size_t i = 0; i < 2; ++i)
     {
+      p_Pboost->Boost(m_momenta[i]);
+      if(i==0) p_rotate = new Poincare(m_bornmomenta[0],Vec4D(0., 0.,  0., 1.));
       Boost(m_momenta[i]);
       m_newmomenta[i]=m_momenta[i];
       if(m_ghost.size()!=0){
         Boost(m_ghost[i]);
       }
     }
+    m_eikmomentum = m_momenta;
     m_photonSum*=0.;
     // m_dipolePhotonsEEX.clear();
     for (auto &k : m_dipolePhotons) {
       // Boost(k);
-      m_dipolePhotonsEEX.push_back(k);
       p_Pboost->Boost(k);
-      p_rotate->RotateBack(k);
-      p_boost->BoostBack(k);
+      Boost(k);
+      m_dipolePhotonsEEX.push_back(k);
       m_photonSum+=k;
     }
     if (p_rotate) delete p_rotate;
@@ -231,8 +234,8 @@ void Dipole::Boost() {
 }
 
 void Dipole::Boost(ATOOLS::Vec4D &p) {
-  p_Pboost->Boost(p);
-  p_rotate->RotateBack(p);
+  // p_Pboost->Boost(p);
+  p_rotate->Rotate(p);
   p_boost->BoostBack(p);
 }
 
