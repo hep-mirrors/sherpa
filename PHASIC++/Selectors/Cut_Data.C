@@ -59,7 +59,7 @@ void Cut_Data::Init(int _nin,const Flavour_Vector &_fl) {
     scut_save[i]   = new double[ncut];
     energymin[i]   = Max(0.,fl[i].SelMass());
     if (fl[i].IsKK()) energymin[i] = 0.;
-    smin += energymin_save[i] = energymin[i];
+    if(i>1) smin += energymin_save[i] = energymin[i];
     etmin[i]       = 0.;
   }
   smin = sqr(smin);
