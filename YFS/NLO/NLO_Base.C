@@ -66,8 +66,10 @@ NLO_Base::~NLO_Base() {
 
 
 void NLO_Base::InitializeVirtual(const PHASIC::Process_Info& pi) {
-	p_virt = new YFS::Virtual(pi);
-	m_looptool = true;
+	if(!m_eex_virt){
+		p_virt = new YFS::Virtual(pi);
+		m_looptool = true;
+	}
 }
 
 void NLO_Base::InitializeReal(const PHASIC::Process_Info& pi) {
@@ -91,6 +93,12 @@ double NLO_Base::CalculateNLO() {
 
 
 double NLO_Base::CalculateVirtual() {
+	if(m_eex_virt){
+		// PRINT_VAR(p_dipoles->CalculateEEXVirtual());
+		// subtract born to avoid double counting
+		// already present in eex!!
+		return p_dipoles->CalculateEEXVirtual()*m_born-m_born;
+	}
 	if (!m_looptool && !m_realvirt) return 0;
 	double virt;
 	double sub;
