@@ -193,13 +193,13 @@ void FF_DipoleSplitting::SetMomentaAlaric(const ATOOLS::Vec4D* mom) {
     m_ptk = ampl->Leg(m_k)->Mom();
 
     n = ff.m_nb;
-
+    
     m_zi = m_pi*n/((m_pi+m_pj)*n);
     m_zj = 1.-m_zi;
 
     /// TODO: some of these might need to become member variables
     ///       to be used in CalcDiPolarization
-    m_vijk = Vrel(pij,n);
+    m_vijk = Vrel(pij,K);
     double viji = Vrel(pij,m_pi);
     double vijj = Vrel(pij,m_pj);
 
@@ -238,7 +238,7 @@ void FF_DipoleSplitting::SetMomentaAlaric(const ATOOLS::Vec4D* mom) {
     m_av  = m_sff;
     break;
   case spt::g2qq:
-    m_sff = zi;
+    m_sff = zi*(1.-2.*m_zpm);
     m_av  = m_sff - 2.0 * ( m_zi*m_zj - m_zpm ) * zi;
     break;
   case spt::g2gg:

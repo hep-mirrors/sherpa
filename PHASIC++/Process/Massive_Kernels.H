@@ -48,11 +48,10 @@ namespace PHASIC {
 
     void CalcVS(ATOOLS::ist::itype type, double s, double mj, double mk);
     void CalcVNS(ATOOLS::ist::itype type, double s, double mj, double mk,
-                 double sjKt, double skKt, double mKt2, bool ini);
+                 double sjKt, double skKt, double mKt2, double sjKtcoll, bool ini);
     void CalcVNSq(double s, double mj, double mk,
-                  double sjKt, double skKt, double mKt2);
-    void CalcVNSg(double s, double mk, double sjKt, double skKt,
-                  double mKt2, bool ini);
+                  double sjKcollt);
+    void CalcVNSg(double s, double mk, double sjKtcoll, bool ini);
     void CalcVNSsoft(double s, double mj, double mk,
                      double sjKt, double skKt, double mKt2);
     void CalcVNSs(double s, double mj, double mk);
@@ -85,7 +84,7 @@ namespace PHASIC {
 
     void Calculate(ATOOLS::ist::itype t, double mu2, double s,
                    double mj, double mk, double sjKt, double skKt,
-                   double mKt2, bool inij, bool inik, bool mode);
+                   double mKt2, double sjKtcoll, bool inij, bool inik, bool mode);
 
     double I_Fin();
     double I_E1();

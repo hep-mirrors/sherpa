@@ -156,7 +156,7 @@ void Massive_Kernels::CalcVS(ist::itype type,double s,double mj,double mk)
 }
 
 void Massive_Kernels::CalcVNS(ist::itype type,double s,double mj,double mk,
-                              double sjKt,double skKt, double mKt2,bool ini)
+                              double sjKt,double skKt, double mKt2, double sjKtcoll, bool ini)
 // V^NS
 {
   DEBUG_FUNC(type<<": s="<<s<<", mj="<<mj<<", mk="<<mk<<", ini="<<ini);
@@ -167,11 +167,11 @@ void Massive_Kernels::CalcVNS(ist::itype type,double s,double mj,double mk,
   case ist::q:
   case ist::Q:
   case ist::sG:
-    CalcVNSq(s,mj,mk,sjKt,skKt,mKt2);
+    CalcVNSq(s,mj,mk,sjKtcoll);
     CalcVNSsoft(s,mj,mk,sjKt,skKt,mKt2);
     break;
   case ist::g:
-    CalcVNSg(s,mk,sjKt,skKt,mKt2,ini);
+    CalcVNSg(s,mk,sjKtcoll,ini);
     CalcVNSsoft(s,mj,mk,sjKt,skKt,mKt2);
     break;
   case ist::sQ:
@@ -179,7 +179,7 @@ void Massive_Kernels::CalcVNS(ist::itype type,double s,double mj,double mk,
     break;
   case ist::V:
     if      (m_Vsubmode==0) CalcVNSs(s,mj,mk);
-    else if (m_Vsubmode==1) CalcVNSq(s,mj,mk,sjKt,skKt,mKt2);
+    else if (m_Vsubmode==1) CalcVNSq(s,mj,mk,sjKtcoll);
     break;
   default:
     THROW(fatal_error,"Unknown splitting type.");
@@ -197,17 +197,17 @@ void Massive_Kernels::CalcVNSsoft(double s,double mj,double mk,double sjKt,
 
 
   /// DiLog implements real part for x > 1
-  // m_VNS += -2*((rho + log(std::abs(rho)))*log(rho/tau) - (1 + rho + log(std::abs(rho)))*log((1 + rho)/tau) + DiLog(1 + 1/rho));
-  if(!IsEqual(rho,-1))
+  if(!IsEqual(rho,-1)) {
+    // m_VNS += -2*((rho + log(std::abs(rho)))*log(rho/tau) - (1 + rho + log(std::abs(rho)))*log((1 + rho)/tau) + DiLog(1 + 1/rho));
     m_VNS += -2.*(DiLog(1+1/rho) - (1 + rho + log(std::abs(rho)))*log(1+1/rho));
+  }
   m_VNS += DiLog(1-muK/(rho*tau));
   m_VNS += 0.5*sqr(log(rho/tau));
   // m_VNS += 6. - sqr(M_PI)/2.;
   // m_VNS -= 6. - sqr(M_PI)/2.;
 }
 
-void Massive_Kernels::CalcVNSq(double s,double mj,double mk,double sjKt,
-                               double skKt,double mKt2)
+void Massive_Kernels::CalcVNSq(double s,double mj,double mk,double sjKtcoll)
 // V^NS_q as defined in (6.21)-(6.23)
 {
   if (mj==0.&&mk==0.) { return; }
@@ -260,8 +260,7 @@ void Massive_Kernels::CalcVNSq(double s,double mj,double mk,double sjKt,
   }
 }
 
-void Massive_Kernels::CalcVNSg(double s,double mk,double sjKt,double skKt,
-                               double mKt2,bool ini)
+void Massive_Kernels::CalcVNSg(double s,double mk,double sjKtcoll,bool ini)
 // V^NS_g as defined in Eqs.(6.24) and (6.26);
 // Q_aux-terms canceled with Gamma_g
 {
@@ -319,8 +318,14 @@ void Massive_Kernels::CalcVNSg(double s,double mk,double sjKt,double skKt,
       m_VNS+=m_TRbyCA*nfc;
     }
     else {
+      muk2 = sqr(mk)/(sjKtcoll+sqr(mk));
+      muk = sqrt(muk2);
       double Igg = ((-8 + 2*muk2)/(3.*(1 - muk2)) - (2*std::pow(muk,3)*(-0.5*M_PI + std::asin(muk)))/std::pow(1 - muk2,1.5) + 2*log(1 - muk2))/6.;
       double Igq = m_TRbyCA*m_nf*2./3.*(-(8 - 11*muk2)/(3.*(1 - muk2)) + (std::pow(muk,3)*(-0.5*M_PI + std::asin(muk)))/std::pow(1 - muk2,1.5) + 2*log(1 - muk2) + (3*muk2*log(muk2))/(2.*(1 - muk2)));
+      Q2 = sjKtcoll+sqr(mk);
+      Q = sqrt(Q2);
+      //m_VNS=m_g2t*(log(s/Q2)-2.*log(1.-mk/Q)-2.*mk/(Q+mk));
+      //m_VNS+=1./3.*sqr(mk)/sjKtcoll*((2.*m_nf*m_TRbyCA)*log(2.*mk/(Q+mk)));
       m_VNS += m_g2t*log(s/Q2) + Igg + Igq + (8./18. + m_TRbyCA*m_nf*16./9.);
     }
   }
@@ -684,12 +689,16 @@ void Massive_Kernels::CalcAs(double mu2, double s,double mj,double mk)
 
 void Massive_Kernels::Calculate(ist::itype type, double mu2, double s,
                                 double mj, double mk, double sjKt,
-                                double skKt,  double mKt2, bool inij,
+                                double skKt,  double mKt2,  double sjKtcoll, bool inij,
                                 bool inik, bool mode)
 {
   DEBUG_FUNC(type);
+  if(type==ist::q) {
+    m_VNS=0; p_VS[0]; p_VS[1] = 0; p_VS[2] = 0; p_Gammat[0] = 0; p_Gammat[1] = 0; m_gKterm=0; m_aterm=0;
+    return;
+  }
   CalcVS(type,s,mj,mk);
-  CalcVNS(type,s,mj,mk,sjKt,skKt,mKt2,inij);
+  CalcVNS(type,s,mj,mk,sjKt,skKt,mKt2,sjKtcoll,inij);
   CalcGamma(type,mu2,s,mj);
   CalcgKterm(type,mu2,s,mj,mode);
   CalcAterms(type,mu2,s,mj,mk,inij,inik);
