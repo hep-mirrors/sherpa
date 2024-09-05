@@ -8,14 +8,13 @@ using namespace std;
 
 Amisic::Amisic() :
   m_processes(MI_Processes()), p_soft(nullptr),
-  m_sudakovarg(Sudakov_Argument(&m_processes)),
   m_sigmaND_norm(1.),
   m_isMinBias(false), m_ana(true)
 {}
 
 Amisic::~Amisic() {
   if (mipars) delete mipars;
-  if (p_soft)      delete p_soft;
+  if (p_soft) delete p_soft;
   if (m_ana) FinishAnalysis();
 }
 
@@ -24,30 +23,24 @@ bool Amisic::Initialize(MODEL::Model_Base *const model,
 			YFS::YFS_Handler *const yfs,
                         REMNANTS::Remnant_Handler * remnant_handler)
 {
+  msg_Info()<<"   "<<std::string(77,'=')<<"\n"
+	    <<"   | "<<METHOD<<std::string(56,' ')<<"|\n";
   InitParametersAndType(isr,remnant_handler);
-  Vec4D P = isr->GetBeam(0)->OutMomentum()+isr->GetBeam(1)->OutMomentum();
-  m_S     = P.Abs2();
-  m_Y     = P.Y();
   ///////////////////////////////////////////////////////////////////////////
   // Calculate hadronic non-diffractive cross sections, the normalization
   // for the multiple scattering probability.
   ///////////////////////////////////////////////////////////////////////////
   m_xsecs.Initialize(isr->Flav(0),isr->Flav(1),model);
-  ///////////////////////////////////////////////////////////////////////////
-  // Initialize the parton-level processes - currently only 2->2 scatters.
-  ///////////////////////////////////////////////////////////////////////////
-  m_processes.SetXSecCalculator(&m_xsecs);
-  m_processes.SetMatterOverlap(&m_mo);
-    if (mipars->GetEvtType()==evt_type::Perturbative) {
+  if (mipars->GetEvtType()==evt_type::Perturbative) {
+    ///////////////////////////////////////////////////////////////////////////
+    // Initialize the parton-level processes - currently only 2->2 scatters.
+    ///////////////////////////////////////////////////////////////////////////
+    m_processes.SetXSecCalculator(&m_xsecs);
     m_processes.Initialize(model,nullptr,isr,yfs);
     ///////////////////////////////////////////////////////////////////////////
     // Calculate the ratios of hard and non-diffractive cross sections.
     ///////////////////////////////////////////////////////////////////////////
     m_xsecs.CalculateXSratios(&m_processes,p_sbins);
-    ///////////////////////////////////////////////////////////////////////////
-    // Prepare the integral for the "Sudakov form factor", Eq. (SZ, 37)
-    ///////////////////////////////////////////////////////////////////////////
-    m_sudakovarg.Initialize(p_sbins,m_mo.GetBBins());
     ///////////////////////////////////////////////////////////////////////////
     // Initialize everything to do with the inpact parameter dependence.
     // For dynamic matter overlaps this includes fixing the effective radius
@@ -65,15 +58,14 @@ bool Amisic::Initialize(MODEL::Model_Base *const model,
     // - assuming that the product of the PDFs f(x_1)f(x_2) is largest for
     //   mid-rapidity where x_1 and x_2 are identical
     ///////////////////////////////////////////////////////////////////////////
-    m_overestimator.Initialize(isr,&m_processes,
-                               p_sbins,m_sudakovarg.GetPT2Bins());
+    m_overestimator.Initialize(isr,&m_processes,p_sbins);
     ///////////////////////////////////////////////////////////////////////////
     // Initializing the Single_Collision_Handler which creates the next
     // scatter: it needs the remnants, processes, and the overestimator
     ///////////////////////////////////////////////////////////////////////////
     m_singlecollision.Init(&m_processes,&m_overestimator,&m_pint,&m_mo);
   } else {
-      p_soft = new NonPerturbative_XSecs(remnant_handler,p_xsecs);
+      p_soft = new NonPerturbative_XSecs(remnant_handler,&m_xsecs);
       p_soft->SetBeams(isr->GetBeam(0),isr->GetBeam(1));
       p_soft->CalculateSDependentCrossSections();
       // Initializing the Single_Collision_Handler which creates the next scatter: it needs
@@ -91,12 +83,20 @@ void Amisic::InitParametersAndType(PDF::ISR_Handler *const isr,
 				   REMNANTS::Remnant_Handler * remnants) {
   mipars = new MI_Parameters();
   bool shown = false;
+  ///////////////////////////////////////////////////////////////////////////
   // Must distinguish the hard and rescatter process.  For the latter, we
   // take energies as fixed, for the former, the energies may vary (we have
   // to check the spectrum):
   // - if EPA is used the energies entering the ISR will vary,
   // - otherwise the energy is fixed.
-  m_variable_s = isr->GetBeam(0)->On() || isr->GetBeam(1)->On();
+  //
+  // TODO: fix things up for pomerons - another interesting case
+  ///////////////////////////////////////////////////////////////////////////
+  // Check this one here - I used the version from the b-dependent amisic here.
+  m_variable_s = ( isr->Id()!=PDF::isr::bunch_rescatter &&
+		   ( isr->GetBeam(0)->Type() == BEAM::beamspectrum::EPA ||
+		     isr->GetBeam(1)->Type() == BEAM::beamspectrum::EPA ) );
+  //m_variable_s = isr->GetBeam(0)->On() || isr->GetBeam(1)->On();
   if (isr->Flav(0).IsHadron() && isr->Flav(1).IsHadron())
     m_type = mitype::hadron_hadron;
   else if ((isr->Flav(0).IsHadron() && isr->Flav(1).IsPhoton()) ||
@@ -138,10 +138,10 @@ void Amisic::InitParametersAndType(PDF::ISR_Handler *const isr,
   ///////////////////////////////////////////////////////////////////////////
   m_mo.Initialize(remnants,isr);
   m_variable_b = m_mo.IsDynamic();
-if (m_variable_s && m_variable_b)
+  if (m_variable_s && m_variable_b)
     THROW(fatal_error,
 	  "B-dependent form factors not implemented yet for variable s.");
-
+  
   for (size_t beam=0;beam<2;beam++) {
     if(!shown && sqr((*mipars)("pt_0"))<isr->PDF(beam)->Q2Min()) {
       msg_Error()<<"Potential error in "<<METHOD<<":\n"
@@ -170,47 +170,6 @@ bool Amisic::InitMPIs(const double & ptmax,const double & x1,const double & x2,
   return false;
 }
 
-bool Amisic::InitMinBiasEvent(Blob_List * blobs) {
-  ///////////////////////////////////////////////////////////////////////////
-  // Initialise the MinBias simulation:
-  // - update for new centre-of-mass energy and rapidity
-  //   TODO: will have to use rapidity, postponed until pp works (again)
-  // - create a first scatter (and store a second one, if necessary) and
-  //   add the blob to the blob list.
-  ///////////////////////////////////////////////////////////////////////////
-  if (m_isFirst) {
-    m_isFirst   = false;
-    m_producedSoft = false;
-    m_isMinBias = true;
-    if (m_variable_s) UpdateForNewS();
-    SetMaxScale(rpa->gen.Ecms()/2.);
-    if (!p_soft) SetFirstB();
-    if (m_mo.IsDynamic()) m_singlecollision.PrefabricateBlob();
-    m_mo.SetKRadius(m_pint.K(m_S));
-    return 1;
-  }
-  return 0;
-}
-
-bool Amisic::InitRescatterEvent() {
-  ///////////////////////////////////////////////////////////////////////////
-  // Initialise the MinBias simulation: fixing the maximal scale = S/4, the
-  // kinematic limit, for the downward evolution and take the impact parameter
-  // from the already existing scatter.
-  // TODO: we may have to check the logical flow here.
-  ///////////////////////////////////////////////////////////////////////////
-  if (m_isFirst) {
-    m_isFirst   = false;
-    m_isMinBias = true;
-    if (m_variable_s) UpdateForNewS();
-    // SetFirstB(m_singlecollision.B());
-    SetMaxScale2(sqr(rpa->gen.Ecms()/2.));
-    m_singlecollision.SetLastPT2();
-    return true;
-  }
-  return false;
-}
-
 void Amisic::UpdateForNewS() {
   ///////////////////////////////////////////////////////////////////////////
   // Update if first scatter with variable c.m. energy (e.g. collisions with
@@ -227,68 +186,54 @@ void Amisic::UpdateForNewS() {
   m_S = P.Abs2();
   m_Y = P.Y();
   m_singlecollision.UpdateSandY(m_S, m_Y);
+  //msg_Out()<<"*** "<<METHOD<<": P = "<<P<<" --> E = "<<sqrt(m_S)<<", y = "<<m_Y<<"\n";
 }
 
-void Amisic::SetB(const double & x1,const double & x2,const double & scale) {
+bool Amisic::InitMinBiasEvent(Blob_List * blobs) {
   ///////////////////////////////////////////////////////////////////////////
-  // It is obtained by interpolation from a look-up table in the
-  // Interaction_Probability.
+  // Initialise the MinBias simulation:
+  // - update for new centre-of-mass energy and rapidity
+  //   TODO: will have to use rapidity, postponed until pp works (again)
+  // - create a first scatter (and store a second one, if necessary) and
+  //   add the blob to the blob list.
   ///////////////////////////////////////////////////////////////////////////
-  msg_Out()<<METHOD<<"\n";
-  exit(1);
+  if (!m_isFirst) return false;
+  m_isFirst      = false;
+  m_producedSoft = false;
+  m_isMinBias    = true;
+  if (m_variable_s) UpdateForNewS();
+  //if (!p_soft) SetFirstB();
+  m_mo.SetKRadius(m_pint.K(m_S));
+  return true;
 }
 
 bool Amisic::FirstMinBias(Blob * blob) {
-  //msg_Out()<<METHOD<<"(s = "<<m_S<<"): should produce only "
-  //	   <<m_xsecs.XSratio(m_S)<<" hard events.\n";
   if (m_xsecs.XSratio(m_S)<1.) return false;
-  if (m_singlecollision.FirstMinBiasScatter(blob)) {
-    m_b    = m_singlecollision.B();
-    m_bfac = m_singlecollision.BFac();
-    blob->UnsetStatus(blob_status::needs_minBias);
-    return true;
-  }
-  return false;
+  if (!m_singlecollision.FirstMinBiasScatter(blob)) return false;
+  m_b    = m_singlecollision.B();
+  m_bfac = m_singlecollision.BFac();
+  blob->UnsetStatus(blob_status::needs_minBias);
+  return true;
 }
 
 bool Amisic::FirstMPI(Blob * blob) {
-  if (m_singlecollision.FirstMPI(blob)) {
-    m_b    = m_singlecollision.B();
-    m_bfac = m_singlecollision.BFac();
-    return true;
-  }
-  return false;
+  UpdateForNewS();
+  if (!m_singlecollision.FirstMPI(blob)) return false;
+  m_b    = m_singlecollision.B();
+  m_bfac = m_singlecollision.BFac();
+  return true;
 }
 
+
 bool Amisic::GenerateScatter(const size_t & type,Blob * blob) {
-  // TODO_MERGE check this function implementation
   ///////////////////////////////////////////////////////////////////////////
   // If a next (perturbative) scatter event has been found, the pointer to
   // the respective blob is returned.
   // TODO: we may want to think about something for rescatter events -
   //       but this is for future work.
   ///////////////////////////////////////////////////////////////////////////
-  Blob * blob = nullptr;
-  if (force) m_singlecollision.UpdateSandY(m_S, m_Y);
-  blob = m_singlecollision.NextScatter(force);
-  if (blob) {
-    if (mipars->GetEvtType()==evt_type::Perturbative) {
-      m_pt2 = m_singlecollision.LastPT2();
-      blob->SetPosition(m_impact.SelectPositionForScatter(m_b));
-      if (m_ana) AnalysePerturbative(false);
-      m_producedSoft = false;
-    }
-    else {
-      m_producedSoft = true;
-    }
-    blob->SetTypeSpec("AMISIC++ 1.1");
-    blob->UnsetStatus(blob_status::needs_minBias);
-    return blob;
-  }
-  if (m_ana && mipars->GetEvtType()==evt_type::Perturbative) AnalysePerturbative(true);
-  return nullptr;
-  // old version below
-  /*if (!m_singlecollision.Done()) {
+  //msg_Out()<<"*** "<<METHOD<<":\n";
+  if (!m_singlecollision.Done()) {
     bool outcome = false;
     switch (type) {
     case 3:
@@ -308,11 +253,11 @@ bool Amisic::GenerateScatter(const size_t & type,Blob * blob) {
     if (outcome) {
       AddInformationToBlob(blob);
       if (m_singlecollision.Done() && m_ana) {
-	Analyse(true);
+	AnalysePerturbative(true);
       }
       return true;
     }
-    if (m_ana) Analyse(true);
+    if (m_ana) AnalysePerturbative(true);
   }
   return false;
 }
@@ -325,8 +270,7 @@ void Amisic::AddInformationToBlob(ATOOLS::Blob * blob) {
     x2 = (*blob)["PDFInfo"]->Get<PDF_Info>().m_x2;
   }
   blob->SetPosition(m_mo.SelectPositionForScatter(m_b,x1,m_pt2,x2,m_pt2));
-  if (m_ana && mipars->GetEvtType()==evt_type::Perturbative) AnalysePerturbative(false,blob);
-   */
+  if (m_ana) AnalysePerturbative(false,blob);
 }
 
 bool Amisic::VetoEvent(const double & scale) const {
@@ -382,6 +326,39 @@ void Amisic::CleanUpMinBias() {
 
 void Amisic::Reset() {
   m_singlecollision.Reset();
+}
+
+
+
+
+
+
+bool Amisic::InitRescatterEvent() {
+  ///////////////////////////////////////////////////////////////////////////
+  // Initialise the MinBias simulation: fixing the maximal scale = S/4, the
+  // kinematic limit, for the downward evolution and take the impact parameter
+  // from the already existing scatter.
+  // TODO: we may have to check the logical flow here.
+  ///////////////////////////////////////////////////////////////////////////
+  msg_Out()<<METHOD<<"\n";
+  exit(1);
+  if (!m_isFirst) return false;
+  m_isFirst   = false;
+  m_isMinBias = true;
+  if (m_variable_s) UpdateForNewS();
+  // SetFirstB(m_singlecollision.B());
+  SetMaxScale2(sqr(rpa->gen.Ecms()/2.));
+  m_singlecollision.SetLastPT2();
+  return true;
+}
+
+void Amisic::SetB(const double & x1,const double & x2,const double & scale) {
+  ///////////////////////////////////////////////////////////////////////////
+  // It is obtained by interpolation from a look-up table in the
+  // Interaction_Probability.
+  ///////////////////////////////////////////////////////////////////////////
+  msg_Out()<<METHOD<<"\n";
+  exit(1);
 }
 
 void Amisic::InitAnalysis() {

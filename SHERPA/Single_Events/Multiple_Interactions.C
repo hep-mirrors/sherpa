@@ -104,33 +104,7 @@ Return_Value::code Multiple_Interactions::InitMinBias() {
   // of the collision
   ////////////////////////////////////////////////////////////////////////////
   Blob * signal = (*p_bloblist)[0];
-  p_lastblob = p_activeMI->GenerateHardProcess(MI_Handler::typeID::minbias,signal);
-  if (p_lastblob) {
-    Blob * signal         = (*p_bloblist)[0];
-    Particle_Vector * ins = p_lastblob->InParticles();
-    while (!ins->empty()) {
-      signal->AddToInParticles(p_lastblob->RemoveInParticle(ins->back()));
-    }
-    Particle_Vector * outs = p_lastblob->OutParticles();
-    while (!outs->empty()) {
-      signal->AddToOutParticles(p_lastblob->RemoveOutParticle(outs->back()));
-    }
-    signal->SetStatus(blob_status::code(p_lastblob->Status()));
-    signal->SetType(p_lastblob->Type());
-    signal->SetTypeSpec(p_lastblob->TypeSpec());
-    signal->SetPosition(p_lastblob->Position());
-    signal->AddData("WeightsMap",
-                    new Blob_Data<Weights_Map>((*p_lastblob)["WeightsMap"]->Get<Weights_Map>()));
-    signal->AddData("Renormalization_Scale",
-		    new Blob_Data<double>((*p_lastblob)["Renormalization_Scale"]
-					  ->Get<double>()));
-    signal->AddData("Factorization_Scale",
-		    new Blob_Data<double>((*p_lastblob)["Factorization_Scale"]
-					  ->Get<double>()));
-    signal->AddData("Resummation_Scale",
-		    new Blob_Data<double>((*p_lastblob)["Resummation_Scale"]
-					  ->Get<double>()));
-    delete p_lastblob;
+  if (p_activeMI->GenerateHardProcess(MI_Handler::typeID::minbias,signal)) {
     p_activeMI->Remnants()->SetImpactParameter(p_activeMI->ImpactParameter());
     m_newevent[0] = false;
     return Return_Value::Success;

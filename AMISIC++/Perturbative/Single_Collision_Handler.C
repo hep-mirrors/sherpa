@@ -41,7 +41,7 @@ Init(MI_Processes * processes,Over_Estimator * overestimator,
 void Single_Collision_Handler::Init(REMNANTS::Remnant_Handler * remnant_handler,
 				    NonPerturbative_XSecs * soft) {
   m_evttype  = evt_type::NonPerturbative;
-  p_remnants = remnant_handler;
+  for (size_t i=0;i<2;i++) p_remnants[i] = remnant_handler->GetRemnant(i);
   p_soft     = soft;
   if (m_ana) InitAnalysis();
 }
@@ -57,7 +57,8 @@ void Single_Collision_Handler::Reset() {
   m_done     = false;
 }
 
-bool Single_Collision_Handler::PrefabricateBlob() {
+/*
+  bool Single_Collision_Handler::PrefabricateBlob() {
   ///////////////////////////////////////////////////////////////////////////
   // Current use is in x-dependent matter overlap, which mix the generation
   // of a scatter with fixing the impact parameter.  Assuming the integrator
@@ -69,6 +70,7 @@ bool Single_Collision_Handler::PrefabricateBlob() {
   while (!blob) { blob = p_processes->FillHardScatterBlob(); }
   m_prefabs.push_back(blob);
 }
+*/
 
 bool Single_Collision_Handler::FirstMPI(Blob * signal) {
   double pt2_1  = sqr((*signal)["MI_Scale"]->Get<double>());
@@ -120,8 +122,7 @@ bool Single_Collision_Handler::FirstMPI(Blob * signal) {
 	  delete second;
 	  ///////////////////////////////////////////////////////////////////////
 	  // Kinematics of new blob will have to be vetoed, as its pt^2 > pt^2_1,
-	  //which
-	 means we have to select a new impact parameter b.
+	  // which means we have to select a new impact parameter b.
 	  ///////////////////////////////////////////////////////////////////////
 	  if (fill==-1) reject = true;
 	}
@@ -247,8 +248,8 @@ bool Single_Collision_Handler::NextScatter(Blob * blob) {
   // NonPerturbative_XSecs to generate a blob.
   if (p_soft) {
     Blob * blob = p_soft->MakeScatter();
-    m_muf2 = p_soft->MuF2();
-    m_mur2 = p_soft->MuR2();
+    blob->AddData("Renormalization_Scale",new Blob_Data<double>(p_soft->MuR2()));
+    blob->AddData("Factorization_Scale",new Blob_Data<double>(p_soft->MuF2()));
     return blob;
   }
   ///////////////////////////////////////////////////////////////////////////
@@ -278,9 +279,8 @@ bool Single_Collision_Handler::NextScatter(Blob * blob) {
     case 0:
       ////////////////////////////////////////////////////////////////////////
       // pt^2 is harder than the pt^2 of the hardest pre-fabricated blob,
-      // or such a blob doesn't exist.  Will check
-        if we can fill a
-        //hard scatter blob, if successful we can stop.
+      // or such a blob doesn't exist.  Will check if we can fill a
+      // hard scatter blob, if successful we can stop.
       ////////////////////////////////////////////////////////////////////////
          fill = p_processes->FillHardScatterBlob(blob,m_lastpt2);
       if (fill==1) {

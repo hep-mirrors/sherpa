@@ -142,28 +142,6 @@ std::istream& AMISIC::operator>>(std::istream& s, evt_type::code& f)
   return s;
 }
 
-std::ostream& AMISIC::operator<<(std::ostream& s, const overlap_form& f)
-{
-  switch (f) {
-    case overlap_form::Single_Gaussian: return s << "Single_Gaussian";
-    case overlap_form::Double_Gaussian: return s << "Double_Gaussian";
-    case overlap_form::unknown: return s << "Unknown";
-  }
-  return s;
-}
-
-std::istream& AMISIC::operator>>(std::istream& s, overlap_form& f)
-{
-  std::string tag;
-  s >> tag;
-  if (tag == "Single_Gaussian") f = overlap_form::Single_Gaussian;
-  else if (tag == "Double_Gaussian")
-    f = overlap_form::Double_Gaussian;
-  else
-    THROW(fatal_error, "Unknown overlap form \"" + tag + "\"");
-  return s;
-}
-
 std::ostream& AMISIC::operator<<(std::ostream& os, const scale_scheme& sc)
 {
   switch (sc) {

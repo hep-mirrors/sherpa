@@ -19,9 +19,10 @@ namespace AMISIC {
     MI_Processes             * p_processes;
     MI_Integrator            * p_integrator;
     Hadronic_XSec_Calculator * p_xsecs;
+    NonPerturbative_XSecs    * p_soft;
     Over_Estimator           * p_overestimator;
     Interaction_Probability  * p_pint;
-    NonPerturbative_XSecs    * p_soft;
+    Matter_Overlap           * p_overlap;
 
     MI_Process   * p_proc;
     double         m_pt2, m_pt2min, m_b, m_bfac, m_fb;
@@ -46,8 +47,7 @@ namespace AMISIC {
     Single_Collision_Handler();
     ~Single_Collision_Handler();
 
-    void Init(
-	      MI_Processes * processes, Over_Estimator * overestimator,
+    void Init(MI_Processes * processes, Over_Estimator * overestimator,
 	      Interaction_Probability * pint,Matter_Overlap * overlap);
     void Init(REMNANTS::Remnant_Handler * remnant_handler,
 	      NonPerturbative_XSecs * soft);

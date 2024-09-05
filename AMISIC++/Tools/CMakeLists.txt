@@ -4,7 +4,6 @@ set(Tools_SOURCES MI_Parameters.C
                   Hadronic_XSec_Calculator.C
                   NonPerturbative_XSecs.C
                   Beam_Integrator.C
-                  Impact_Parameter.C
                   Matter_Overlap.C
                   Interaction_Probability.C
                   Over_Estimator.C
@@ -16,7 +15,6 @@ set(Tools_HEADERS MI_Parameters.H
                   Hadronic_XSec_Calculator.H
                   NonPerturbative_XSecs.H
                   Beam_Integrator.H
-                  Impact_Parameter.H
                   Matter_Overlap.H
                   Interaction_Probability.H
                   Over_Estimator.H

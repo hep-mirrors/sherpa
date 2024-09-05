@@ -26,14 +26,20 @@ MI_Handler::MI_Handler(MODEL::Model_Base *model,
   m_gen(genID::none), m_type(typeID::none), m_name("None")
 {
   Settings& s = Settings::GetMainSettings();
-  m_name      = (s["MI_HANDLER"].Get<string>());
-  string scm  = (s["SOFT_COLLISIONS"].Get<string>());
+  m_name      = (s["MI_HANDLER"].SetDefault("Amisic").
+		 UseNoneReplacements().Get<string>());
+  string scm  = (s["SOFT_COLLISIONS"].SetDefault("None").
+		 UseNoneReplacements().Get<string>());
   if (m_id==PDF::isr::bunch_rescatter) {
     string resc = s["BEAM_RESCATTERING"].Get<string>();
     scm = m_name = resc;
   }
-  // Pomerons and Reggeons are hadrons, but don't have Multiple Interactions
-  if (isr->Mode() != PDF::isrmode::hadron_hadron || m_name == "None" ||
+  ///////////////////////////////////////////////////////////////////////
+  // Pomerons and Reggeons are hadrons, but don't have
+  // Multiple Interactions (yet?)
+  ///////////////////////////////////////////////////////////////////////
+  if (m_name == "None" ||
+      isr->Mode() != PDF::isrmode::hadron_hadron ||
       isr->Flav(0).Kfcode() == kf_pomeron ||
       isr->Flav(1).Kfcode() == kf_pomeron ||
       isr->Flav(0).Kfcode() == kf_reggeon ||
@@ -45,8 +51,11 @@ MI_Handler::MI_Handler(MODEL::Model_Base *model,
     if ((scm==string("Shrimps") && p_amisic==NULL) ||
 	m_name==string("Shrimps")) InitShrimps(model);
   }
-  msg_Out()<<"Multiple interactions initialized\n"
-           <<"  id = "<<m_id<<", name = "<<m_name<<", type = "<<m_type<<"\n";
+  msg_Info()<<METHOD<<"(id = "<<m_id<<", name = "<<m_name<<", gen = ";
+  if (m_gen==genID::none)         msg_Info()<<"None)\n";
+  else if (m_gen==genID::amisic)  msg_Info()<<"Amisic)\n";
+  else if (m_gen==genID::shrimps) msg_Info()<<"Shrimps)\n";
+  else                            msg_Info()<<"Unkown)\n";
 }
 
 MI_Handler::~MI_Handler()
@@ -92,13 +101,20 @@ bool MI_Handler::ConnectColours(ATOOLS::Blob * showerblob) {
 
 bool MI_Handler::GenerateHardProcess(const typeID & type,Blob * blob)
 {
-  Blob * blob = NULL;
-  if (m_type==genID::amisic)  blob = p_amisic->GenerateScatter(force);
-  if (m_type==genID::shrimps) blob = p_shrimps->GenerateEvent();
+  if ( (m_gen==genID::amisic  && p_amisic->GenerateScatter(size_t(type),blob)) ||
+       (m_gen==genID::shrimps && p_shrimps->GenerateEvent(blob)) ) {
+    m_firstrescatter = false;
+    return true;
+  }
+  // Here I replaced thins - will need to check.
+  m_stop = true;
+  return false;
+  /*
   if ( blob==NULL || blob->Type()==btp::Soft_Collision ||
        (blob && m_type==typeID::amisic && p_amisic->IsSoft()) ) m_stop = true;
   m_firstrescatter = false;
   return blob;
+  */
 }
 
 bool MI_Handler::VetoScatter(Blob *blob)

@@ -64,10 +64,7 @@ namespace AMISIC {
 
     bool         m_isMinBias, m_isFirst, m_producedSoft;
     double       m_f;
-    size_t       m_nscatters;
-    unsigned long int m_Nscat, m_Nev;
-    std::map<std::string,ATOOLS::Histogram *> m_histos;
-
+    
     void InitParametersAndType(PDF::ISR_Handler *const isr,
 			       REMNANTS::Remnant_Handler * remnant_handler);
     void UpdateForNewS();
@@ -117,8 +114,7 @@ namespace AMISIC {
       m_processes.SetMassMode(mode);
     }
     inline int ShiftMasses(ATOOLS::Cluster_Amplitude * ampl) {
-      if (p_processes) return m_processes.ShiftMasses(ampl);
-      return 1;
+      return m_processes.ShiftMasses(ampl);
     }
     inline void SetPosition(const size_t & beam,const ATOOLS::Vec4D & pos) {
       m_singlecollision.SetPosition(beam,pos);
@@ -135,8 +131,7 @@ namespace AMISIC {
     inline const bool   & IsSoft()    const { return m_producedSoft; }
     inline const double & B()         const { return m_b; }
     inline double Mass(const ATOOLS::Flavour &fl) const {
-      if (p_processes) return m_processes.Mass(fl);
-      return fl.Mass();
+      return m_processes.Mass(fl);
     }
     inline void CleanUp() {
       m_singlecollision.Reset();
