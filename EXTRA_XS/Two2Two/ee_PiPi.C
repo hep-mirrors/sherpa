@@ -46,12 +46,15 @@ namespace EXTRAXS {
   {
     // Eq 90 in 0912.0749
     double s((momenta[2]+momenta[3]).Abs2());
-    double theta = momenta[1].Theta(momenta[3]);
+    double theta = momenta[1].Theta(momenta[2]);
     double masspi = m_flv.Mass();
     double beta = sqrt(1.-4*sqr(masspi)/s);
-    double sinth2 = sqr(sin(theta));
-    if(sinth2 < 0) msg_Error()<<METHOD<<" Sin^2 less than zero: "<<sinth2<<std::endl;
-    return sqr(4*M_PI*(*aqed)(s)) / 2.  * sinth2 * pow(beta,3) * p_formfactor->Eval(s);
+    double betaE = sqrt(1.-4*sqr(momenta[0].Mass())/s);
+    double costh2 = sqr(cos(theta));
+    return sqr(4*M_PI*(*aqed)(s)) / 2. * (1.-sqr(betaE)*costh2) / sqr(betaE) * pow(beta,3) * p_formfactor->Eval(s);
+    // return 4*sqr((*aqed)(s)) * (1.-sqr(betaE)*costh2)/ s/ betaE * pow(beta,3) * p_formfactor->Eval(s);
+    // return 2./3*32 * M_PI * s * sqr((*aqed)(s)) / 8. / s * sqr(betaE) * sinth2 * pow(beta,3) * p_formfactor->Eval(s);
+    // return 32 * s * sqr((*aqed)(s)) / 4. / s * sinth2 * pow(beta,3) * p_formfactor->Eval(s);
   }
 }
 
