@@ -133,14 +133,14 @@ double NLO_Base::CalculateReal() {
 	if(m_coll_real) return p_dipoles->CalculateEEX()*m_born;
 	for (auto k : m_ISRPhotons) {
 		if(m_check_real_sub) {
-			if(k.E() < 0.2*sqrt(m_s)) continue;
+			// if(k.E() < 0.2*sqrt(m_s)) continue;
 				CheckRealSub(k);
 		}
 		real+=CalculateReal(k);
 	}
 	for (auto k : m_FSRPhotons) {
 		if(m_check_real_sub) {
-			if(k.E() < 0.2*sqrt(m_s)) continue;
+			// if(k.E() < 0.2*sqrt(m_s)) continue;
 				CheckRealSub(k);
 		}
 		real+=CalculateReal(k,1);
@@ -234,12 +234,12 @@ void NLO_Base::MapMomenta(Vec4D_Vector &p, Vec4D &k) {
 	Poincare boostQ(Q);
   Poincare pRot(m_bornMomenta[0], Vec4D(0., 0., 0., 1.));
 	for (int i = 2; i < p.size(); ++i) {
+		pRot.Rotate(p[i]);
 		boostQ.Boost(p[i]);
-		// pRot.Rotate(p[i]);
 		// RandomRotate(p[i]);
 	}
+	pRot.Rotate(k);
 	boostQ.Boost(k);
-	// pRot.Rotate(k);
 	// RandomRotate(k);
 	double qx(0), qy(0), qz(0);
 	for (int i = 2; i < p.size(); ++i)
