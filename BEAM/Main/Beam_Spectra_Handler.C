@@ -13,6 +13,7 @@
 
 using namespace ATOOLS;
 using namespace BEAM;
+using namespace std;
 
 Beam_Spectra_Handler::Beam_Spectra_Handler()
     : p_kinematics(nullptr), p_weight(nullptr), m_beammode(beammode::collider),
