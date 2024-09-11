@@ -101,7 +101,6 @@ bool FSR::Initialize(YFS::Dipole &dipole) {
   m_gp = p_dipole->m_gammap;
   if (m_use_massive_nbar) m_nbar = -m_g * log(m_fsrcut);
   else m_nbar = -m_gp * log(m_fsrcut);
-
   if (IsBad(m_nbar)) {
     PRINT_VAR(m_dipole);
     PRINT_VAR(m_g);
@@ -122,7 +121,6 @@ bool FSR::Initialize(YFS::Dipole &dipole) {
 double FSR::CalculateBeta(const Vec4D& p) {
   return Vec3D(p).Abs() / p[0];
 }
-
 void FSR::CalculateBetaBar() {
   m_betaBar = m_dip_sp - sqr(m_mass[0] - m_mass[1]);
   m_betaBar *= m_dip_sp - sqr(m_mass[0] + m_mass[1]);
@@ -302,7 +300,11 @@ bool FSR::MakeFSR() {
 
   double masc1 = m_mass[0] * sqrt(m_sQ / m_dip_sp);
   double masc2 = m_mass[1] * sqrt(m_sQ / m_dip_sp);
-  CE.Isotropic2Momenta(m_Q, sqr(masc1), sqr(masc2), m_r1, m_r2, ran->Get(), ran->Get(), -1, 1);
+  // CE.Isotropic2Momenta(m_Q, sqr(masc1), sqr(masc2), m_r1, m_r2, ran->Get(), ran->Get(), -1, 1);
+  double eta1;
+  double eta2;
+  MakePair(sqrt(m_sprim), m_r1, m_r2, masc1, masc2, eta1, eta2);
+
   CalculateBetaBar();
   p_dipole->AddToGhosts(m_r1);
   p_dipole->AddToGhosts(m_r2);
@@ -418,8 +420,14 @@ bool FSR::YFS_FORM(){
   double YFS_IR = -2.*m_alpi*abs(m_QF2)*(m_q1q2*p_fsrFormFact->A(m_dipole[0],m_dipole[1])-1.)*log(1/Delta);
 
   if (m_use_crude) {
-    m_BtiXcru = p_fsrFormFact->BVR_cru(m_r1 * m_r2, m_r1[0], m_r2[0], m_r1.Mass(), m_r2.Mass(), m_Emin);
-    m_BtiQcru = p_fsrFormFact->BVR_cru(m_r1 * m_r2, Eqq, Eqq, m_r1.Mass(), m_r2.Mass(), m_EminQ);
+    if(m_tchannel!=0){
+      m_BtiXcru = p_fsrFormFact->BVirtT(m_r1, m_r2);
+      m_BtiQcru = p_fsrFormFact->BVirtT(m_r1, m_r2);
+    } 
+    else{
+      m_BtiXcru = p_fsrFormFact->BVR_cru(m_r1 * m_r2, m_r1[0], m_r2[0], m_r1.Mass(), m_r2.Mass(), m_Emin);
+      m_BtiQcru = p_fsrFormFact->BVR_cru(m_r1 * m_r2, Eqq, Eqq, m_r1.Mass(), m_r2.Mass(), m_EminQ);
+    }
   }
   else {
      if(m_tchannel){
