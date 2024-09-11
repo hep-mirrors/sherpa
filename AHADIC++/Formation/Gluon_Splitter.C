@@ -25,26 +25,60 @@ void Gluon_Splitter::Init(const bool & isgluon) {
 }
   
 bool Gluon_Splitter::MakeLongitudinalMomenta() {
-  m_arg = (sqr(m_Q2-m_minQ2[0]-m_popped_mass2)-
-	   4.*(m_Q2*m_kt2 + m_minQ2[0]*m_popped_mass2));
-  if (m_arg<0.) return false;
+  if (m_mode<10) {
+    m_arg = (sqr(m_Q2-m_minQ2[0]-m_popped_mass2)-
+	     4.*(m_Q2*m_kt2 + m_minQ2[0]*m_popped_mass2));
+    if (m_arg<0.) return false;
+  }
+  else if (m_mode>=20) {
+    m_arg = (sqr(m_Q2-m_minQ2[0])-4.*(m_Q2*m_kt2));
+    if (m_arg<0.) return false;
+  }
   CalculateLimits();
   do { m_z[1] = m_zselector(m_zmin[1],m_zmax[1]); } while (!CalculateXY());
   return true;
 }
 
 void Gluon_Splitter::CalculateLimits() {
-  double mean1 = (m_Q2+m_minQ2[0]-m_popped_mass2)/(2.*m_Q2);
-  double delta = sqrt(m_arg)/(2.*m_Q2);
-  m_zmin[0] = Max(0.0,mean1-delta);
-  m_zmax[0] = Min(1.0,mean1+delta);
-  double mean2 = (m_Q2-m_minQ2[0]+m_popped_mass2)/(2.*m_Q2);
-  m_zmin[1] = Max(0.0,mean2-delta/2.);
-  m_zmax[1] = Min(1.0,mean2+delta);
+  if (m_mode<10) {
+    double mean1 = (m_Q2+m_minQ2[0]-m_popped_mass2)/(2.*m_Q2);
+    double delta = sqrt(m_arg)/(2.*m_Q2);
+    m_zmin[0] = Max(0.0,mean1-delta);
+    m_zmax[0] = Min(1.0,mean1+delta);
+    double mean2 = (m_Q2-m_minQ2[0]+m_popped_mass2)/(2.*m_Q2);
+    m_zmin[1] = Max(0.0,mean2-delta/2.);
+    m_zmax[1] = Min(1.0,mean2+delta);
+  }
+  else if (m_mode<20) {
+    m_zmin[0] = m_zmin[1] = 0.;
+    m_zmax[0] = m_zmax[1] = 1.;
+  }
+  else {
+    double mean1 = (m_Q2+m_minQ2[0])/(2.*m_Q2);
+    double delta = sqrt(m_arg)/(2.*m_Q2);
+    m_zmin[0] = Max(0.0,mean1-delta);
+    m_zmax[0] = Min(1.0,mean1+delta);
+    double mean2 = (m_Q2-m_minQ2[0])/(2.*m_Q2);
+    m_zmin[1] = Max(0.0,mean2-delta/2.);
+    m_zmax[1] = Min(1.0,mean2+delta);
+  }
 }
 
 bool Gluon_Splitter::CalculateXY() {
-  m_z[0] = 1.-(m_popped_mass2+m_kt2)/(m_z[1]*m_Q2);
+  if (m_mode>=10) {
+    double mT2tilde = (m_popped_mass2+m_kt2)/(m_z[1]*(1.-m_z[1]));
+    if (m_mode>=20) mT2tilde = m_kt2/(m_z[1]*(1.-m_z[1]));
+    double help     = m_Q2-m_m2[0]+mT2tilde;
+    if (sqr(help)<4.*m_Q2*mT2tilde) return false;
+    m_y = (help-sqrt(sqr(help)-4.*m_Q2*mT2tilde))/(2.*m_Q2);
+    m_x = m_m2[0]/m_Q2/(1.-m_y);
+    //msg_Out()<<METHOD<<"(Q^2 = "<<m_Q2<<", kt^2 = "<<m_kt2<<", z = "<<m_z[1]<<", "
+    //	     <<"m^2 = "<<m_popped_mass2<<") x = "<<m_x<<", y = "<<m_y<<"\n";
+    return (m_x<=1. && m_y<=(1.-m_x) && m_y>=0.);
+  }
+  m_z[0] = ( m_mode<10 ?
+	     1.-(m_popped_mass2+m_kt2)/(m_z[1]*m_Q2) :
+	     1.-m_kt2/(m_z[1]*m_Q2) );
   double M2 = m_z[0]*(1.-m_z[1])*m_Q2;
   //This is a new addition w.r.t. original master
   double R2 = M2 - m_kt2;
@@ -71,9 +105,11 @@ WeightFunction(const double & z,const double & zmin,const double & zmax,
 	       const unsigned int & cnt) {
   double norm = 1.;
   switch (m_mode) {
+  case 11:
   case 1:
     norm = pow(0.5,2*m_alpha);
     return pow(z*(1.-z),m_alpha)/norm;
+  case 10:
   case 0:
   default:
     break;
@@ -82,18 +118,32 @@ WeightFunction(const double & z,const double & zmin,const double & zmax,
   return (pow(z,m_alpha)+pow(1.-z,m_alpha))/norm;
 }
 
-
 bool Gluon_Splitter::CheckKinematics() {
   // check if:
   // 1. new cluster mass larger than minimal mass
   // 2. spectator still on its mass shell
   // 3. new cluster particle with mass 0
   // 4. new particle after gluon splitting on its mass-shell.
+  if (m_mode>=10) {
+    double M2   = m_Q2*(m_z[1]*(1.-m_x)+m_x)*((1.-m_z[1])*m_y+1.-m_y)-m_kt2;
+    double m112 = m_Q2*m_x*(1.-m_y); 
+    double m122 = m_Q2*m_z[1]*(1.-m_z[1])*(1.-m_x)*m_y-m_kt2;
+    double m22  = m_Q2*m_z[1]*(1.-m_z[1])*(1.-m_x)*m_y-m_kt2;
+    if (M2-m_minQ2[0]      < 1.e-6*m_Q2 ||
+	dabs(m112-m_m2[0]) > 1.e-8*m_Q2)            return false;
+    if (m_mode<20 &&
+	( dabs(m122-m_popped_mass2) > 1.e-8*m_Q2 ||
+	  dabs(m22-m_popped_mass2)  > 1.e-8*m_Q2) ) return false;
+    if (m_mode>=20 &&
+	( m122 > 1.e-8*m_Q2 || m22  > 1.e-8*m_Q2) ) return false;
+    return true;
+  }
   double M2 = m_z[0]*(1.-m_z[1])*m_Q2;
   if (M2-m_kt2-m_minQ2[0] < 1.e-6*m_Q2 ||
       dabs(m_x*(1.-m_y)*M2-m_m2[0]) > 1.e-6*m_Q2 ||
       dabs((1.-m_x)*m_y*M2-m_kt2) > 1.e-6*m_Q2 ||
-      dabs((1.-m_z[0])*m_z[1]*m_Q2-m_kt2-m_popped_mass2) > 1.e-6*m_Q2) {
+      (m_mode<10 && dabs((1.-m_z[0])*m_z[1]*m_Q2-m_kt2-m_popped_mass2) > 1.e-6*m_Q2) ||
+      (m_mode>=20 && dabs((1.-m_z[0])*m_z[1]*m_Q2-m_kt2) > 1.e-6*m_Q2) ) {
     msg_Tracking()<<"Error in "<<METHOD<<": failed to reconstruct masses.\n"
 		  <<"   cluster mass:"<<(m_z[0]*(1.-m_z[1])*m_Q2-m_kt2)<<" > "
 		  <<m_minQ2[0]<<",\n"
@@ -166,9 +216,18 @@ Cluster * Gluon_Splitter::MakeCluster() {
   // This is the overall cluster momentum - we do not need it - and its
   // individual components, i.e. the momenta of the Proto_Particles
   // it is made of --- transverse momentum goes to new particle
-  Vec4D newmom11 = (m_E*(m_z[0]*     m_x*s_AxisP + (1.-m_z[1])*(1.-m_y)*s_AxisM));
-  Vec4D newmom12 = (m_E*(m_z[0]*(1.-m_x)*s_AxisP + (1.-m_z[1])*     m_y*s_AxisM) +
-		    m_ktvec);
+
+  Vec4D newmom11, newmom12;
+  if (m_mode>=10) {
+    newmom11 = (m_E*(           m_x *s_AxisP +             (1.-m_y)*s_AxisM));
+    newmom12 = (m_E*(m_z[1]*(1.-m_x)*s_AxisP + (1.-m_z[1])*    m_y *s_AxisM) +
+		m_ktvec);
+  }
+  else {
+     newmom11 = (m_E*(m_z[0]*     m_x*s_AxisP + (1.-m_z[1])*(1.-m_y)*s_AxisM));
+     newmom12 = (m_E*(m_z[0]*(1.-m_x)*s_AxisP + (1.-m_z[1])*     m_y*s_AxisM) +
+		 m_ktvec);
+  }
   // back into lab system
   m_rotat.RotateBack(newmom11);
   m_boost.BoostBack(newmom11);
@@ -208,9 +267,15 @@ Cluster * Gluon_Splitter::MakeCluster() {
 
 bool Gluon_Splitter::CheckConstituentKinematics(const ATOOLS::Vec4D & newmom11,
 						const ATOOLS::Vec4D & newmom12) {
-  if (dabs(newmom11.Abs2()-m_m2[0]) < 1.e-3*m_Q2 &&
+  if ((m_mode<10 || m_mode>=20) &&
+      dabs(newmom11.Abs2()-m_m2[0]) < 1.e-3*m_Q2 &&
       dabs(newmom12.Abs2())         < 1.e-3*m_Q2) return true;
-  Vec4D newmom2  = m_E*((1.-m_z[0])*s_AxisP+m_z[1]*s_AxisM) - m_ktvec;
+  if ((m_mode>=10 && m_mode<20) &&
+      dabs(newmom11.Abs2()-m_m2[0])        < 1.e-3*m_Q2 &&
+      dabs(newmom12.Abs2()-m_popped_mass2) < 1.e-3*m_Q2) return true;
+  Vec4D newmom2  = m_mode<10 ?
+    (m_E*((1.-m_z[0])*s_AxisP+m_z[1]*s_AxisM) - m_ktvec) :
+    (m_E*((1.-m_z[1])*(1.-m_x)*s_AxisP + m_z[1]*m_y *s_AxisM) - m_ktvec);
   m_rotat.RotateBack(newmom2);
   m_boost.BoostBack(newmom2);
   msg_Error()<<"Error in "<<METHOD<<": masses not respected.\n"
