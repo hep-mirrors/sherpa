@@ -201,6 +201,7 @@ void Define_Dipoles::MakeDipoles(ATOOLS::Flavour_Vector const &fl, ATOOLS::Vec4D
         }
       }
       Dipole D(ff, mm, bm, dipoletype::final,m_alpha);
+      IsResonant(D);
       Dipole_FF(ff, mm);
       m_dipolesFF.push_back(D);
       return;
