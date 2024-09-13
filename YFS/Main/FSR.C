@@ -588,15 +588,6 @@ void FSR::MakePair(double cms, Vec4D &p1, Vec4D &p2) {
   }
 }
 
-void FSR::BoostDipole(Vec4D_Vector &dipole) {
-  Vec4D QMS = dipole[0] + dipole[1] + m_photonSum;
-  ATOOLS::Poincare poin(QMS);
-  poin.Boost(dipole[0]);
-  poin.Rotate(dipole[0]);
-  poin.Boost(dipole[1]);
-  poin.Rotate(dipole[1]);
-}
-
 void FSR::Weight() {
   CalculateBetaBar();
   if (m_photons.size() == 0) m_sprim = m_sX;
@@ -664,13 +655,16 @@ void FSR::Weight() {
 
 
 void FSR::BoostToXFM() {
-  Poincare p_rot(m_dipole[0],Vec4D(0.,0.,0.,1.));
+  Poincare p_rot;
   Vec4D Q = m_dipole[0] + m_dipole[1];
   ATOOLS::Poincare poin(Q);
-  for (auto &p : m_dipole) {
-    p_rot.Rotate(p);
-    poin.Boost(p);
+  for (int i=0; i<2; i++) {
+    poin.Boost(m_dipole[i]);
+    if(i==0) p_rot = Poincare(m_dipole[i],Vec4D(0.,0.,0.,1.));
+    p_rot.Rotate(m_dipole[i]);
   }
+  p_dipole->SetRotate(p_rot);
+  p_dipole->SetBoost(poin);
 }
 
 void FSR::RotateDipole() {
