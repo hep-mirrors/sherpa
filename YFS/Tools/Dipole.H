@@ -39,7 +39,8 @@ namespace YFS{
         Vec4D_Vector m_momenta, m_bornmomenta, m_oldmomenta, m_newmomenta, m_ghost, m_beams, m_eikmomentum;
         Flavour_Vector m_flavs;
         Vec4D m_photonSum, m_QFrame;
-        Poincare *p_boost, *p_rotate, *p_rotatex, *p_rotatey, *p_Pboost, *p_Qboost;
+        Poincare *p_Pboost, *p_Qboost;
+        Poincare p_rotate, p_boost;
         void PrintInfo();
         void AddPhotonsToDipole(Vec4D_Vector &Photons);
         void AddPhotonToDipole(Vec4D &Photon);
@@ -87,6 +88,8 @@ namespace YFS{
         inline Vec4D_Vector GetPhotons() { return m_dipolePhotons;}
         inline Vec4D GetPhotonSum() { return m_photonSum;}
         inline Vec4D GetGhost(int i) { return m_ghost[i];}
+        inline void SetRotate(Poincare &rot) { p_rotate = rot;}
+        inline void SetBoost(Poincare &boost) { p_boost = boost;}
         inline dipoletype::code Type() {return m_type;}
         inline void AddPhotonsSumToDipole(Vec4D k) {m_photonSum = k;}
         inline double Sprime() {return m_sp;}

@@ -65,7 +65,6 @@ namespace YFS {
       void MakePair(double cms, Vec4D &p1, Vec4D &p2);
       void MakePair(double cms, Vec4D &p1, Vec4D &p2, double mass1, double mass2,
                     double &eta1, double &eta2);
-      void BoostDipole(Vec4D_Vector &dip);
       void Weight();
       bool F();
       bool Initialize(Dipole &dipole);
