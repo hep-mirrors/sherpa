@@ -148,7 +148,6 @@ void Initialization_Handler::RegisterDefaults()
       "SCALE_VARIATIONS",
       "PDF_VARIATIONS",
       "QCUT_VARIATIONS",
-      "BUNCHES",
       "MASSIVE_PS",
       "MASSLESS_PS"
       });
@@ -962,17 +961,8 @@ void Initialization_Handler::InitISRHandler(const PDF::isr::id & pid,Settings& s
 }
 
 void Initialization_Handler::DefineBunchFlavours(Settings& settings) {
-  std::vector<int> bunches{ settings["BUNCHES"].GetVector<int>() };
-  if (bunches.size() > 2) {
-    THROW(fatal_error, "You can not specify more than two bunches.");
-  }
   for (size_t beam=0;beam<2;beam++) {
-    if (bunches.empty()) m_bunch_particles[beam] = p_beamspectra->GetBeam(beam)->Bunch(0);
-    else {
-      int flav = bunches[Min(beam,bunches.size()-1)];
-      m_bunch_particles[beam] = Flavour((kf_code)abs(flav));
-      if (flav<0) m_bunch_particles[beam] = m_bunch_particles[beam].Bar();
-    }
+    m_bunch_particles[beam] = p_beamspectra->GetBeam(beam)->Bunch(0);
   }
 }
 
