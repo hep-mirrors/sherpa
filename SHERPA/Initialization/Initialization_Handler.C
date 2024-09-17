@@ -798,11 +798,17 @@ void Initialization_Handler::LoadPDFLibraries(Settings& settings) {
     // fix PDFs and default sets for the MPI's / hard_subprocesses here
     // we may have to define defaults here.
     if (!mpilibs.empty()) {
-      std::string libname = mpilibs[Min(beam,mpilibs.size()-1)];
-      if (m_pdflibs.find(libname)==m_pdflibs.end()) m_pdflibs.insert(libname);
-    } else if (!p_beamspectra->GetBeam(beam)->Bunch(0).IsLepton())
+      std::string libname = mpilibs[Min(beam, mpilibs.size() - 1)];
+      if (m_pdflibs.find(libname) == m_pdflibs.end()) m_pdflibs.insert(libname);
+    } else if (!p_beamspectra->GetBeam(beam)->Bunch(0).IsLepton() &&
+               !pdflibs.empty() &&
+               pdflibs[Min(beam, pdflibs.size() - 1)] != std::string("None"))
       m_pdflibs.insert(deflib);
-    m_defsets[PDF::isr::hard_subprocess][beam] = defset;
+    m_defsets[PDF::isr::hard_subprocess][beam] =
+            !pdflibs.empty() && pdflibs[Min(beam, pdflibs.size() - 1)] ==
+                                        std::string("None")
+                    ? "None"
+                    : defset;
     // fix PDFs and default sets for the beam rescattering here
     // EPA is the only configuration at the moment where we allow
     // additional scattering/interactions of the incoming beams.
