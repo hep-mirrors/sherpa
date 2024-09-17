@@ -105,7 +105,7 @@ void Colour_Generator::IterateColours(LadderMap::iterator out,TPropList::iterato
 void Colour_Generator::PickEndColours() {
   Ladder_Particle * outpart = &p_ladder->GetEmissions()->rbegin()->second;
   Ladder_Particle * inpart  = p_ladder->InPart(1);
-  if (m_propcolours[0]!=0 && m_propcolours[0]!=0) {
+  if (m_propcolours[0]!=0 && m_propcolours[0]!=1) {
     outpart->SetFlow(1,m_propcolours[0]);
     inpart->SetFlow(1,m_propcolours[1]);
     if (m_colours[1][0].find(inpart->GetFlow(1))!=m_colours[1][0].end()) {

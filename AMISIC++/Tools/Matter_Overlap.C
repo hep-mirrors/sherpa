@@ -45,7 +45,7 @@ double Matter_Overlap::SelectB(const bool & mode) const {
   // 1. select a radius R according to matter content:
   // 2. Select b according to d^2b O(b) = d b^2 exp(-b^2/R^2).
   double b, radius, rand = ran->Get();
-  for (size_t i=3;i>=0;i--) {
+  for (int i=3;i>=0;i--) {
     rand -= m_fraction[i];
     if (rand<=0.) { radius = m_radius[i]; break; }
   }
