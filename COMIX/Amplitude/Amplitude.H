@@ -140,9 +140,6 @@ namespace COMIX {
     LeptonCurrents m_lmu;
     bool m_calc_lmu{false};
 
-    static size_t     MakeId(const Int_Vector &ids,const int t);
-    static Int_Vector MakeId(const size_t &id,const size_t &n);
-
     void CleanUp();
     void Prune();
     void ConstructNLOEvents();
