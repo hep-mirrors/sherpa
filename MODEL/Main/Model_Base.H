@@ -90,7 +90,6 @@ namespace MODEL {
     const PDF::ISR_Handler_Map* p_isrhandlermap;
 
     virtual void InitVertices() = 0;
-    void InitHadronicTensor();
 
     void RotateVertices();
 
