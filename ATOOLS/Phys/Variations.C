@@ -756,19 +756,16 @@ std::string QCD_Variation_Params::Name(Variations_Source source,
   }
 
   // PDF tags
-  std::string pdf_alphas_level_prefix;
   if (p_pdf1 == NULL || p_pdf2 == NULL || p_pdf1->LHEFNumber() == p_pdf2->LHEFNumber()) {
 
-    // there is only one relevant PDF ID
-    PDF::PDF_Base * pdf;
+    // there is only one relevant PDF ID (or none)
+    PDF::PDF_Base* pdf {nullptr};
     if (p_pdf1 != NULL) {
       pdf = p_pdf1;
     } else if (p_pdf2 != NULL) {
       pdf = p_pdf2;
     } else if (p_alphas->GetAs()->PDF() != NULL) {
       pdf = p_alphas->GetAs()->PDF();
-    } else {
-      // THROW(fatal_error, "Cannot obtain PDF IDF");
     }
     int pdfid(-1);
     if (pdf)
