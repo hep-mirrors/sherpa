@@ -379,3 +379,4 @@ PrintInfo(std::ostream &str,const size_t width) const
 }
 
 #endif
+#endif
