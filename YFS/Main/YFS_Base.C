@@ -71,7 +71,7 @@ void YFS_Base::RegisterDefaults(){
   s["Sub_Mode"].SetDefault(submode::global);
   s["No_Flux"].SetDefault(0);
   s["Flux_Mode"].SetDefault(1);
-  s["IFI_Sub"].SetDefault(0);
+  s["IFI_Sub"].SetDefault(1);
   s["Massless_Sub"].SetDefault(0);
   s["Check_Real_Sub"].SetDefault(0);
   s["Integrate_NLO"].SetDefault(1);
