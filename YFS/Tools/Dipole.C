@@ -173,6 +173,7 @@ void Dipole::Boost() {
       pRot.Rotate(m_newmomenta[i]);
       poin.BoostBack(m_newmomenta[i]);
     }
+    m_sp = (m_newmomenta[0]+m_newmomenta[1]).Abs2();
   }
   else if (Type() == dipoletype::final) {
     if (m_dipolePhotons.size() == 0) return;
