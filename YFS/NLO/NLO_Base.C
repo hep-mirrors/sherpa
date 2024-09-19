@@ -1,4 +1,3 @@
-// #include "PHASIC++/Channels/Channel_Elements.H"
 #include "ATOOLS/Math/Random.H"
 #include "YFS/NLO/NLO_Base.H"
 #include "MODEL/Main/Running_AlphaQED.H"
@@ -25,6 +24,7 @@ NLO_Base::NLO_Base() {
   m_looptool = 0;
   if(m_isr_debug || m_fsr_debug){
   	m_histograms2d["IFI_EIKONAL"] = new Histogram_2D(0, -1., 1., 20, 0, 5., 20 );
+  	m_histograms2d["REAL_SUB"] = new Histogram_2D(0,  0, sqrt(m_s), 200, 0, sqrt(m_s)/2., 200);
   	m_histograms1d["Real_diff"] = new Histogram(0, -1, 1, 100);
   	m_histograms1d["Real_Flux"] = new Histogram(0, 0, 1, 100);
   	if (!ATOOLS::DirectoryExists(m_debugDIR_NLO)) {
@@ -130,7 +130,9 @@ double NLO_Base::CalculateVirtual() {
 double NLO_Base::CalculateReal() {
 	if (!m_realtool) return 0;
 	double real(0);
+	double sp = p_dipoles->GetDipoleII()->Sprime();
 	if(m_coll_real) return p_dipoles->CalculateEEX()*m_born;
+	if(HasISR() && m_sp/m_s < 0.001) return p_dipoles->CalculateEEX()*m_born;
 	for (auto k : m_ISRPhotons) {
 		if(m_check_real_sub) {
 			// if(k.E() < 0.2*sqrt(m_s)) continue;
@@ -163,17 +165,15 @@ double NLO_Base::CalculateReal(Vec4D k, int submode) {
 	p_nlodipoles->MakeDipolesIF(m_flavs,p,m_plab);
 	
 	double flux;
-	if(m_flux_mode==1) flux = p_nlodipoles->CalculateFlux(k);
+	if(m_flux_mode==1) flux = p_nlodipoles->CalculateFlux(kk);
 	else if(m_flux_mode==2) flux = 0.5*(p_dipoles->CalculateFlux(kk)+p_nlodipoles->CalculateFlux(k));
 	else flux = p_dipoles->CalculateFlux(kk);
 	double tot,rcoll;
 	double subloc = p_nlodipoles->CalculateRealSub(k);
-	double subb   = p_dipoles->CalculateRealSubEEX(kk);
+	double subb   = p_nlodipoles->CalculateRealSubEEX(k);
 	if(IsZero(subb)) return 0;
-	if(m_isr_debug || m_fsr_debug) m_histograms2d["IFI_EIKONAL"]->Insert(k.Y(),k.PPerp(), p_nlodipoles->CalculateRealSubIF(k));
 	p.push_back(k);
-	// if(submode!=1) flux = 1;
-	// CheckMasses(p,1);
+	CheckMasses(p,1);
 	CheckMomentumConservation(p);
 	double r = p_real->Calc_R(p) / norm * flux;
 	if(IsZero(r)) return 0;
@@ -184,8 +184,6 @@ double NLO_Base::CalculateReal(Vec4D k, int submode) {
 		return 0;
 	}
 	m_recola_evts+=1;
-	// if(submode) tot = r-subloc*m_born;
-	// else tot =  (r-subloc*m_born)/subloc;
 	if(m_submode==submode::local) tot =  (r-subloc*m_born)/subloc;
 	else if(m_submode==submode::global) tot =  (r-subloc*m_born)/subb;
 	else if(m_submode==submode::off) tot =  (r)/subb;
@@ -202,6 +200,10 @@ double NLO_Base::CalculateReal(Vec4D k, int submode) {
   							<<"Local  S = "<<subloc*m_born<<std::endl
   							<<"GLobal S = "<<subb<<std::endl;
   }
+	if(m_isr_debug || m_fsr_debug) {
+		m_histograms2d["IFI_EIKONAL"]->Insert(k.Y(),k.PPerp(), p_nlodipoles->CalculateRealSubIF(k));
+		m_histograms2d["REAL_SUB"]->Insert((p[0]+p[1]).Mass(), k.E(), tot/m_born);
+	}
 	return tot;// / flux;
 }
 
@@ -280,13 +282,13 @@ void NLO_Base::MapMomenta(Vec4D_Vector &p, Vec4D &k) {
  	p[0] = {E1, 0, 0, sign_z*lamCM};
   p[1] = {E2, 0, 0, -sign_z*lamCM};
   Poincare pRot2(m_bornMomenta[0], Vec4D(0., 	0., 0, 1.));
-	for (int i = 0; i < p.size(); ++i)
-	{
-		pRot2.Rotate(p[i]);
-		boostLab.Boost(p[i]);
-	}
-	pRot2.Rotate(k);
-	boostLab.Boost(k);
+	// for (int i = 0; i < p.size(); ++i)
+	// {
+	// 	pRot2.Rotate(p[i]);
+	// 	boostLab.Boost(p[i]);
+	// }
+	// pRot2.Rotate(k);
+	// boostLab.Boost(k);
 }
 
 
