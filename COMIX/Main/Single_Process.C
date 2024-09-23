@@ -483,8 +483,13 @@ double COMIX::Single_Process::Partonic(const Vec4D_Vector &p,
       rsubs.back()->m_K=kf;
       if (p_map==NULL) p_bg->SubEvts().MultME(m_w);
       else {
-	for (size_t i(0);i<rsubs.size();++i)
+	for (size_t i(0);i<rsubs.size();++i) {
 	  m_subs[i]->CopyXSData(rsubs[i]);
+          for (Cluster_Amplitude *campl(m_subs[i]->p_ampl);
+               campl;campl=campl->Next())
+            for (size_t i(0);i<campl->Legs().size();++i)
+              campl->Leg(i)->SetFlav(ReMap(campl->Leg(i)->Flav(),0));
+        }
 	m_subs.MultME(m_w);
       }
     }
