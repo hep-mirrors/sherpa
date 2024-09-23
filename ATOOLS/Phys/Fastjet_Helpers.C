@@ -117,7 +117,7 @@ namespace ATOOLS {
     if (ji.m_ptmin>0.)     out+="pT>"+ToString(ji.m_ptmin)+",";
     if (ji.m_etamax<1000.) out+="|eta|<"+ToString(ji.m_etamax)+",";
     if (ji.m_ymax<1000.)   out+="|y|<"+ToString(ji.m_ymax);
-    if (out[out.size()-1]==',') out.substr(0,out.size()-1);
+    if (out.size() && out.back()==',') out.pop_back();
     return str<<ji.m_fl<<((out!="")?"["+out+"]":"");
   }
 
