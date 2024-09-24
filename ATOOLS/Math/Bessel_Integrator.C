@@ -29,7 +29,7 @@ bool Bessel_Integrator::FillBins(const bool & output) {
     m_N[i].resize(m_maxbins+1,0.);
   }
   m_maxdepth = m_depth;
-  
+
   if (output) msg_Out()<<"=== "<<METHOD<<" start filling the supports, "
 		       <<"max depth = "<<m_maxdepth<<":\n";
   Gauss_Integrator gauss(&m_kernel);
@@ -48,8 +48,8 @@ bool Bessel_Integrator::FillBins(const bool & output) {
       return false;
     }
     m_F[i-1]    = F;
-    m_M[0][i-1] = m_F[i-1]/m_Psi[i-1]; 
-    m_N[0][i-1] = 1./m_Psi[i-1]; 
+    m_M[0][i-1] = m_F[i-1]/m_Psi[i-1];
+    m_N[0][i-1] = 1./m_Psi[i-1];
     if (output) {
       msg_Out()<<"  bin i = "<<std::setw(2)<<i<<": "
 	       <<"Psi["<<std::setw(8)<<xmin<<", "<<std::setw(8)<<xmax<<"] = "
@@ -77,7 +77,7 @@ bool Bessel_Integrator::FillBins(const bool & output) {
 	       <<std::setw(12)<<std::setprecision(6)<<(m_M[d][0]/m_N[d][0])<<"\n";
     }
   }
-  if (output) 
+  if (output)
     msg_Out()<<"=== "<<METHOD<<": Integral value("
 	     <<"depth = "<<std::setw(2)<<m_maxdepth<<"): "
 	     <<std::setw(12)<<std::setprecision(6)
@@ -89,7 +89,7 @@ bool Bessel_Integrator::FillBins(const bool & output) {
 void Bessel_Integrator::FixBins(const bool & output) {
   m_zeroes.resize(m_maxbins+1);
   m_extrema.resize(m_maxbins+1);
-  m_zeroes[0] = m_extrema[0] = m_xmin; 
+  m_zeroes[0] = m_extrema[0] = m_xmin;
   for (size_t i=1;i<m_maxbins+1;i++) {
     switch (m_order) {
     case 0:
@@ -166,7 +166,6 @@ double Bessel_Integrator::TestFunction::operator()(double x) {
 }
 
 void Bessel_Integrator::Test() {
-  bool output=true;
   Function_Base * f;
   for (size_t i=0;i<5;i++) {
     m_kernel.SetFunc(f = new Bessel_Integrator::TestFunction(i));

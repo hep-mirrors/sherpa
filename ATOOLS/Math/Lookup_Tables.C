@@ -20,11 +20,11 @@ axis::axis(const size_t & nbins,const double & xmin,const double & xmax,
 }
 
 double axis::x(const size_t & bin) const {
-  if (m_nbins==1) return m_mode== ( axis_mode::linear ?
-				    (m_xmin+m_xmax)/2. : sqrt(m_xmin*m_xmax) );
+  if (m_nbins == 1)
+    return m_mode ==
+           (axis_mode::linear ? (m_xmin + m_xmax) / 2. : sqrt(m_xmin * m_xmax));
   if (bin>=m_nbins) {
     msg_Out()<<METHOD<<" calls "<<bin<<" out of "<<m_nbins<<"\n";
-    abort();
     THROW(normal_exit,"Wrong bin called");
   }
   if (m_mode==axis_mode::linear)   return m_xmin + (double)bin*m_xstep;
@@ -161,11 +161,11 @@ double TwoDim_Table::operator()(const double & x,const double & y) const {
 const double TwoDim_Table::Integral(const size_t & naxis,const size_t & bin) const {
   double integral = 0.;
   if (naxis==0) {
-    for (size_t i=0;i<m_x.m_nbins-1;i++) 
+    for (size_t i=0;i<m_x.m_nbins-1;i++)
       integral += (m_x.x(i+1)-m_x.x(i))*(m_values[i+1][bin]+m_values[i][bin])/2.;
   }
   else {
-    for (size_t i=0;i<m_y.m_nbins-1;i++) 
+    for (size_t i=0;i<m_y.m_nbins-1;i++)
       integral += (m_y.x(i+1)-m_y.x(i))*(m_values[bin][i+1]+m_values[bin][i])/2.;
   }
   return integral;
@@ -250,7 +250,7 @@ double ThreeDim_Table::operator()(const double & x,const double & y,const double
 	      (z-z1) * (m_values[xbin][0][zbin+1]   * (x2-x) +
 			m_values[xbin+1][0][zbin+1] * (x-x1)) ) /
 	     ((x2-x1)*(z2-z1)) );
-  }  
+  }
   if (x<m_x.m_xmin || x>=m_x.m_xmax ||
       y<m_y.m_xmin || y>=m_y.m_xmax ||
       z<m_z.m_xmin || z>=m_z.m_xmax) return 0.;

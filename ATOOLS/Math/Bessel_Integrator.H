@@ -6,23 +6,23 @@
 
 namespace ATOOLS {
   class Bessel_Integrator {
-    class Kernel:  public ATOOLS::Function_Base {
+    class Kernel final :  public ATOOLS::Function_Base {
     private:
       ATOOLS::Function_Base * p_func;
       size_t m_order;
     public:
-      Kernel(ATOOLS::Function_Base * func,const size_t & order=1) :
+      explicit Kernel(ATOOLS::Function_Base * func,const size_t & order=1) :
 	p_func(func), m_order(order) {}
       void   SetFunc(ATOOLS::Function_Base * func) { p_func  = func; }
       void   SetOrder(const size_t & order)        { m_order = order; }
-      double operator()(double x);
+      double operator()(double x) override;
     };
-    class TestFunction: public ATOOLS::Function_Base {
+    class TestFunction final : public ATOOLS::Function_Base {
     private:
       size_t m_mode;
     public:
-      TestFunction(const size_t & mode=0) : m_mode(mode) {}
-      double operator()(double x);
+      explicit TestFunction(const size_t & mode=0) : m_mode(mode) {}
+      double operator()(double x) override;
     };
   private:
     Kernel              m_kernel;
@@ -34,10 +34,10 @@ namespace ATOOLS {
     bool   FillBins(const bool & output=true);
     void   FixBins(const bool & output=false);
   public:
-    Bessel_Integrator(ATOOLS::Function_Base * f,const size_t & order=1);
+    explicit Bessel_Integrator(ATOOLS::Function_Base * f,const size_t & order=1);
 
     double operator()(const double & xmin=0., const double & xmax=-1.);
-    
+
     inline void SetF(ATOOLS::Function_Base * f)      { m_kernel.SetFunc(f); }
     inline void SetOrder(const size_t & order)       { m_order    = order; }
     inline void SetMaxBins(const size_t & maxbins)   { m_maxbins  = maxbins; }
