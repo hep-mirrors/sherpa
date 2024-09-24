@@ -250,7 +250,7 @@ void Hadron_Init::Init() {
   // const kf_code &kfc,const double &mass,const double &radius,const int icharge,
   // const int spin,const int formfactor,const std::string &idname,
   // const std::string &texname);
-  double A = 0.93149410372;
+  constexpr double A = 0.93149410372;
   InitHadron(kf_deuterium,  true,  2.014    *A,2.1   ,0.,  3,0,false,true,1,"deuterium", "H$_2$");
   InitHadron(kf_helium4,    true,  4.0026033*A,1.9049,0.,  6,0,false,true,1,"helium4",   "He$_4$");
   InitHadron(kf_carbon12,   true, 12.0000000*A,2.7473,0., 18,0,false,true,1,"carbon12",  "C$_{12}$");
