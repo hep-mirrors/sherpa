@@ -122,15 +122,15 @@ FillAnalytic(const enum EPA_ff_type & type,const double & Q2max) {
   switch (type) {
   case EPA_ff_type::WoodSaxon:
     return;
-  case EPA_ff_type::dipole:    
+  case EPA_ff_type::dipole:
     ff     = new EPA_Dipole(m_beam);
     ffname = string("dipole");
     break;
-  case EPA_ff_type::Gauss:     
+  case EPA_ff_type::Gauss:
     ff     = new EPA_Gauss(m_beam);
     ffname = string("gauss");
     break;
-  case EPA_ff_type::point:      
+  case EPA_ff_type::point:
   default:
     ff     = new EPA_Point(m_beam);
     ff->SetSwitch("approximation",0);
@@ -152,7 +152,7 @@ FillAnalytic(const enum EPA_ff_type & type,const double & Q2max) {
   }
   string Nxb[m_xvals.size()];
   for (size_t i=0;i<m_xvals.size();i++) {
-    Nxb[i] = string("Nxb_"+tag+string("_x_")+ToString(m_xvals[i])); 
+    Nxb[i] = string("Nxb_"+tag+string("_x_")+ToString(m_xvals[i]));
     if (type==EPA_ff_type::point) {
       m_histograms[Nxb[i]] = new Histogram(0,m_bmin,m_bmax,m_nbbins);
     }
@@ -202,19 +202,19 @@ FillNumerical(const EPA_ff_type & type,const double & Q2max) {
   string Nxb[maxapp][m_xvals.size()];
   for (size_t i=0;i<maxapp;i++) {
     switch (type) {
-    case EPA_ff_type::WoodSaxon: 
+    case EPA_ff_type::WoodSaxon:
       ff[i] = new EPA_WoodSaxon(m_beam);
       ffname = string("woodsaxon");
       break;
-    case EPA_ff_type::dipole:    
+    case EPA_ff_type::dipole:
       ff[i] = new EPA_Dipole(m_beam);
       ffname = string("dipole");
       break;
-    case EPA_ff_type::Gauss:     
+    case EPA_ff_type::Gauss:
       ff[i] = new EPA_Gauss(m_beam);
       ffname = string("gauss");
       break;
-    case EPA_ff_type::point:      
+    case EPA_ff_type::point:
     default:
       ff[i] = new EPA_Point(m_beam);
       ffname = string("point");
@@ -225,7 +225,7 @@ FillNumerical(const EPA_ff_type & type,const double & Q2max) {
     ff[i]->SetPT2Max(pt2max);
     ff[i]->SetSwitch("approximation",i);
     ff[i]->SetSwitch("analytic",0);
-    ff[i]->FillTables();
+    ff[i]->FillTables(120, 500);
     appname[i] = string("approx_"+ToString(i));
     tag[i]     = partname+string("_")+ffname+string("_")+appname[i];
     if (Q2max>0.) tag[i] += string("_Q2_")+ToString(pt2max);

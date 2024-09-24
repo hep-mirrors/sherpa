@@ -11,7 +11,7 @@ namespace ATOOLS {
   /*!
     \file
     This file contains an assortment of special functions
-    
+
     \todo We should use the C++23 libraries there and match e.g. the
           various Bessel functions or the exponential integral here.
   */
@@ -19,8 +19,8 @@ namespace ATOOLS {
   public:
     double LnGamma(const double & x) const
     {
-      static const double coeff[6] = 
-	{ 76.18009172947146, -86.50532032941677, 24.01409824083091, 
+      static const double coeff[6] =
+	{ 76.18009172947146, -86.50532032941677, 24.01409824083091,
 	  -1.231739572450155, 0.1208650973866179e-2, -0.5395239384953e-5 };
       double y(x), tmp(x+5.5);
       tmp -= (x+0.5)*log(tmp);
@@ -39,7 +39,7 @@ namespace ATOOLS {
 	return incgam;
       }
       if (a==0.) {
-	return -std::expint(-x);
+	//return -std::expint(-x);
 	incgam = -0.577215664902-log(x);
 	double prev = 0., fac(1.);
 	size_t i(1);
@@ -77,7 +77,7 @@ namespace ATOOLS {
       return incgam;
     }
 
-    double Jn(const int order,const double & arg) const 
+    double Jn(const int order,const double & arg) const
     {
       switch (order) {
       case 0: return J0(arg);
@@ -85,7 +85,6 @@ namespace ATOOLS {
       default:
 	THROW(critical_error,"J("+ToString(order)+") not implemented yet.");
       }
-      return 0.;
     }
 
     double J0(const double & arg) const
@@ -94,7 +93,7 @@ namespace ATOOLS {
       if (darg<=1.e-12) return 1.;
       if (darg<8.) {
 	double x2(darg*darg);
-	double num = 
+	double num =
 	  ((((-184.9052456*x2+77392.33017)*x2-
 	     11214424.18)*x2+651619640.7)*x2-13362590354.)*x2+57568490574.;
 	double den =
@@ -104,7 +103,7 @@ namespace ATOOLS {
       }
       else {
 	double x2(64.0/sqr(darg)), xx(darg-0.785398164);
-	double pref1 = 
+	double pref1 =
 	  (((0.2993887211e-6*x2-0.2073370639e-5)*x2+
 	    0.2734510407e-4)*x2-0.1098628627e-2)*x2+1.;
 	double pref2 =
@@ -114,7 +113,7 @@ namespace ATOOLS {
       }
       return jn;
     }
-    
+
     double J1(const double & arg) const
     {
       if (dabs(arg)<=1.e-12) return 0.;
@@ -135,8 +134,8 @@ namespace ATOOLS {
 	       ( (p0+p1*x2+p2*x2*x2)/(1.+q1*x2+q2*x2*x2)*sin(arg) +
 		 arg/l2term * (P0+P1*x2+P2*x2*x2)/(1.+q1*x2+q2*x2*x2)*cos(arg) ) );
     }
-    
-    double In(const int order,const double & arg) const 
+
+    double In(const int order,const double & arg) const
     {
       double in(0.),darg(dabs(arg)), y;
       switch (order) {
@@ -150,7 +149,7 @@ namespace ATOOLS {
 	  y  = 3.75/darg;
 	  in = ((((((((-0.420059e-2*y+0.1787654e-1)*y-0.2895312e-1)*y+
 		     0.2282967)*y-0.1031555e-1)*y+0.163801e-2)*y-
-		  0.362018e-2)*y-0.3988024e-1)*y+0.39894228) * 
+		  0.362018e-2)*y-0.3988024e-1)*y+0.39894228) *
 	    exp(darg)/sqrt(darg);
 	}
 	break;
@@ -164,9 +163,9 @@ namespace ATOOLS {
 	  y  = 3.75/darg;
 	  in = ((((((((0.392377e-2*y-0.1647633e-1)*y+0.2635537e-1)*y-
 		     0.2057706)*y+0.916281e-2)*y-0.157565e-2)*y+
-		  0.225319e-2)*y+0.1328592e-1)*y+0.39894228) * 
+		  0.225319e-2)*y+0.1328592e-1)*y+0.39894228) *
 	    exp(darg)/sqrt(darg);
-	}    
+	}
 	break;
       default:
 	msg_Error()<<"Error in "<<METHOD<<"("<<order<<", "<<arg<<"):\n"
@@ -178,7 +177,7 @@ namespace ATOOLS {
 
 
     double I0(const double & arg)  const { return In(0,arg); }
-    
+
     double Kn(const int order,const double & x) const
     {
       if (x>10.) {
@@ -190,9 +189,14 @@ namespace ATOOLS {
 		  (fouro2-1.)*(fouro2-9.)*(fouro2-25.)/(6.*pow(eightz,3.)) +
 		  (fouro2-1.)*(fouro2-9.)*(fouro2-25.)*(fouro2-49.)/(24.*pow(eightz,4.)) ));
       }
-      return std::cyl_bessel_k(order,x);
+      switch (order) {
+        case 0: return ATOOLS::cyl_bessel_0(x);
+        case 1: return ATOOLS::cyl_bessel_1(x);
+        case 2: return ATOOLS::cyl_bessel_2(x);
+        default: THROW(not_implemented, "Bessel function of order "+std::to_string(order)+" not implemented");
+      }
     }
-    
+
     void TestBessel(const std::string & dirname) const
     {
       double arg(0.);
@@ -203,7 +207,7 @@ namespace ATOOLS {
       while (arg<10.) {
 	was<<arg<<"   "<<Jn(0,arg)<<"   "
 	   <<In(0,arg)<<"   "<<In(1,arg)<<"   "<<Kn(1,arg)<<std::endl;
-	//if (cnt==0 || !(cnt%500)) 
+	//if (cnt==0 || !(cnt%500))
 	//  msg_Out()<<"  J_0("<<arg<<") = "<<Jn(0,arg)
 	//	   <<"  K_1("<<arg<<") = "<<Kn(1,arg)<<std::endl;
 	arg += 0.001;
@@ -216,9 +220,9 @@ namespace ATOOLS {
 
   class ExpInt : public ATOOLS::Function_Base {
   public:
-    virtual double GetValue(double T) { return -exp(-T)/T; }
-    virtual double operator()(double T) { return GetValue(T); }
-    virtual double GetExpInt(double X){
+    double GetValue(double T) override { return -exp(-T)/T; }
+    double operator()(double T) override { return GetValue(T); }
+    double GetExpInt(double X){
       if(X>0.) exit(1);
       ATOOLS::Gauss_Integrator integrator(this);
       return integrator.Integrate(-X,100000.,1.e-2,1);
