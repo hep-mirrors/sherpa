@@ -27,7 +27,6 @@ namespace BEAM {
     void   Initialise();
     void   RegisterDefaults() const;
     void   InitFormFactor(ATOOLS::Settings &s);
-    double ExtractParameter(ATOOLS::Settings &s,const std::string & tag);
 
     void   Tests();
   public:

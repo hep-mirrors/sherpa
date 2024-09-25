@@ -6,7 +6,6 @@
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/Message.H"
-#include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/Settings.H"
 
 #include <fstream>
@@ -14,7 +13,7 @@
 
 using namespace BEAM;
 using namespace ATOOLS;
-using namespace std;
+using string = std::string;
 
 EPA::EPA(const Flavour& beam, const double energy,
 	 const double pol, const int dir) :
@@ -58,30 +57,37 @@ void EPA::SetOutMomentum(const ATOOLS::Vec4D &out, const size_t & i) {
 }
 
 void EPA::Initialise() {
-  Settings &s = Settings::GetMainSettings();
+  const auto &s = Settings::GetMainSettings()["EPA"];
   RegisterDefaults();
-  m_aqed      = s["EPA"]["AlphaQED"].Get<double>();
+  size_t b = m_dir > 0 ? 0 : 1;
+  m_aqed      = s["AlphaQED"].Get<double>();
   m_pref      = sqr(m_charge)*m_aqed/M_PI;
-  m_approx    = s["EPA"]["Approximation"].Get<size_t>();
-  m_analytic  = s["EPA"]["AnalyticFF"].Get<bool>();
-  m_plotting  = s["EPA"]["PlotSpectra"].Get<bool>();
-  m_q2max     = ExtractParameter(s,"Q2Max");
-  m_q2min     = ExtractParameter(s,"Q2Min");
-  m_theta_max = ExtractParameter(s,"ThetaMax");
+  m_approx    = s["Approximation"].Get<size_t>();
+  m_analytic  = s["AnalyticFF"].Get<bool>();
+  m_plotting  = s["PlotSpectra"].Get<bool>();
+  m_q2max     = s["Q2Max"].GetTwoVector<double>()[b];
+  m_q2min     = s["Q2Min"].GetTwoVector<double>()[b];
+  m_theta_max = s["ThetaMax"].GetTwoVector<double>()[b];
   m_pt2max    = sqr(m_energy*m_theta_max);
-  m_pt2min    = ExtractParameter(s,"PT2Min");
-  m_xmin      = ExtractParameter(s,"xMin");
-  m_xmax      = ExtractParameter(s,"xMax");
-  m_bmin      = ExtractParameter(s,"bMin");
-  m_bmax      = ExtractParameter(s,"bMax");
-  m_WSd       = ExtractParameter(s,"WoodSaxon_d");
-  m_mu        = ExtractParameter(s,"MagneticMu");
-  m_Lambda2   = ExtractParameter(s,"Lambda2");
-  m_Q02       = ExtractParameter(s,"Q02");
-  m_nxbins    = s["EPA"]["xBins"].Get<int>();
-  m_nbbins    = s["EPA"]["bBins"].Get<int>();
+  m_pt2min    = s["PT2Min"].GetTwoVector<double>()[b];
+  if (m_pt2min > 1.0) {
+    /* pt2min > 1 - according to approximation of
+       'qmi' calculation in CalculateWeight */
+    THROW(critical_error, "Too big p_T cut 'EPA:PT2Min'.  Will exit.");
+  }
+  m_xmin      = s["xMin"].GetTwoVector<double>()[b];
+  m_xmax      = s["xMax"].GetTwoVector<double>()[b];
+  m_bmin      = s["bMin"].GetTwoVector<double>()[b];
+  m_bmax      = s["bMax"].GetTwoVector<double>()[b];
+  m_WSd       = s["WoodSaxon_d"].GetTwoVector<double>()[b];
+  m_mu        = s["MagneticMu"].GetTwoVector<double>()[b];
+  m_Lambda2   = s["Lambda2"].GetTwoVector<double>()[b];
+  m_Q02       = s["Q02"].GetTwoVector<double>()[b];
+  m_nxbins    = s["xBins"].Get<int>();
+  m_nbbins    = s["bBins"].Get<int>();
 
-  InitFormFactor(s);
+  m_type = static_cast<EPA_ff_type>(s["Form_Factor"].GetTwoVector<int>()[b]);
+  InitFormFactor(Settings::GetMainSettings());
   //WriteDebugFiles(s);
   if (m_plotting>0) {
     EPA_Spectra_Plotter plotter(this,string("Spectra"));
@@ -119,51 +125,25 @@ void EPA::RegisterDefaults() const {
   s["Debug_Files"].SetDefault("EPA_debugOutput");
 }
 
-double EPA::ExtractParameter(Settings &s,const std::string & tag) {
-  std::vector<double> parms = s["EPA"][tag].GetVector<double>();
-  if (parms.size()!=1 && parms.size()!=2)
-    THROW(fatal_error,
-	  "Specify either one or two values for 'EPA:"+tag+"'.  Will exit.");
-  double parm = (m_dir > 0) ? parms.front() : parms.back();
-  if (tag=="PTMin" && parm>1.0) {
-    /* pt2min > 1 - according to approximation of
-       'qmi' calculation in CalculateWeight */
-    THROW(critical_error, "Too big p_T cut 'EPA:"+tag+"'.  Will exit.");
-  }
-  return parm;
-}
-
-void EPA::InitFormFactor(Settings &s) {
-  std::vector<int> formfactors = s["EPA"]["Form_Factor"].GetVector<int>();
-  if (formfactors.size()!=1 && formfactors.size()!=2)
-    THROW(fatal_error,
-          "Specify either one or two values for `EPA:Form_Factor'.");
-  int formfactor = (m_dir > 0) ? formfactors.front() : formfactors.back();
-  switch (formfactor) {
-  case  0:
-    m_type = EPA_ff_type::point;
-    p_ff   = new EPA_Point(m_beam);
-    break;
-  case  1:
-    m_type = EPA_ff_type::Gauss;
-    p_ff   = new EPA_Gauss(m_beam);
-    p_ff->SetParam("Q02",m_Q02);
-    p_ff->SetParam("Mu2",sqr(m_mu));
-    break;
-  case  2:
-    m_type = EPA_ff_type::dipole;
-    p_ff   = new EPA_Dipole(m_beam);
-    p_ff->SetParam("Lambda2",m_Lambda2);
-    p_ff->SetParam("Mu2",sqr(m_mu));
-    break;
-  case 13:
-    m_type = EPA_ff_type::WoodSaxon;
-    p_ff   = new EPA_WoodSaxon(m_beam);
-    p_ff->SetParam("WSd",m_WSd);
-    break;
-  default:
-    THROW(fatal_error,
-          "unspecified EPA form factor: "+ToString(formfactor));
+void EPA::InitFormFactor(Settings& s)
+{
+  switch (m_type) {
+    case EPA_ff_type::point: p_ff = new EPA_Point(m_beam); break;
+    case EPA_ff_type::Gauss:
+      p_ff = new EPA_Gauss(m_beam);
+      p_ff->SetParam("Q02", m_Q02);
+      p_ff->SetParam("Mu2", sqr(m_mu));
+      break;
+    case EPA_ff_type::dipole:
+      p_ff = new EPA_Dipole(m_beam);
+      p_ff->SetParam("Lambda2", m_Lambda2);
+      p_ff->SetParam("Mu2", sqr(m_mu));
+      break;
+    case EPA_ff_type::WoodSaxon:
+      p_ff = new EPA_WoodSaxon(m_beam);
+      p_ff->SetParam("WSd", m_WSd);
+      break;
+    default: THROW(fatal_error, "unknown EPA form factor. ");
   }
   p_ff->SetSwitch("approximation",m_approx);
   p_ff->SetSwitch("analytic",m_analytic);
