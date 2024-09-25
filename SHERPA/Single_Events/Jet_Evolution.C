@@ -147,7 +147,7 @@ Return_Value::code Jet_Evolution::Treat(Blob_List *bloblist) {
   // initiators.
   Blob *showerblob = bloblist->FindLast(btp::Shower);
   if (showerblob!=NULL && showerblob->Has(blob_status::needs_beams)) {
-    Blob * meblob = showerblob->InParticle(0)->ProductionBlob();
+    Blob * meblob = bloblist->FindLast(btp::Signal_Process);
     REMNANTS::Remnant_Handler * remnants =
       SelectInterface(meblob)->second->RemnantHandler();
     if (meblob->Type()!=btp::Hadron_Decay &&

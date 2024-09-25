@@ -166,7 +166,11 @@ VBF_Scale_Setter::VBF_Scale_Setter
     if (m_calcs.size()==1) m_tagset.SetCalculator(m_calcs.back());
     SetScale(ctag,*m_calcs.back());
   }
-  if (p_proc->Shower()==NULL) THROW(fatal_error,"No shower generator");
+  if (p_proc->Shower()==NULL){
+    msg_Error()<<"\nPlease specify the renormalisation and factorisation scale e.g SCALES: VAR{H_T2}"<<endl
+               <<"For detailed instructions on setting scales, please refer to the Sherpa manual."<<endl;
+    THROW(missing_input,"No shower generator found. Unable to use the VBF scale scheme.");
+  }
   p_clu=p_proc->Shower()->GetClusterDefinitions();
   p_ms=p_proc->Generator();
   m_scale.resize(Max(m_scale.size(),m_calcs.size()));

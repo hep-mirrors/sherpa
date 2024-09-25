@@ -133,6 +133,8 @@ factorisation scale and potential additional scales.
    In a setup with the parton shower enabled, it is strongly recommended to
    leave this at its default value, :option:`METS`, and to instead customise the
    :option:`CORE_SCALE` setting as described in :ref:`METS scale setting with multiparton core processes`.
+   If however the parton shower is disabled then the scale will have to be explicity
+   set, as described in :ref:`Predefined scale tags`.
 
 .. contents::
    :local:

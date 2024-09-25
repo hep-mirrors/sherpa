@@ -1246,7 +1246,7 @@ void Single_Virtual_Correction::ComputeChargeFactors()
         }
       }
       else if (m_flavs[p_LO_process->PartonListQED()[i]].Charge() &&
-               m_flavs[p_LO_process->PartonListQED()[i]].Charge()) {
+               m_flavs[p_LO_process->PartonListQED()[j]].Charge()) {
         double Qi(m_flavs[p_LO_process->PartonListQED()[i]].Charge());
         double Qj(m_flavs[p_LO_process->PartonListQED()[j]].Charge());
         bool inii(p_LO_process->PartonListQED()[i]<m_nin);

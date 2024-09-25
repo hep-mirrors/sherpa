@@ -374,6 +374,7 @@ std::vector<Process_Base*> Matrix_Element_Handler::InitializeSingleProcess
     return procs;
   }
   else {
+    if(p_yfs->Mode()!=YFS::yfsmode::off) p_yfs->SetFlavours(pi.ExtractFlavours());
     if (m_nlomode==nlo_mode::mcatnlo) {
       m_hasnlo=3;
       if (p_nlomc==NULL) InitNLOMC();

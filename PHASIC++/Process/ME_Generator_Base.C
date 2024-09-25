@@ -359,6 +359,11 @@ int ME_Generator_Base::ShiftMassesDIS(Cluster_Amplitude *const ampl, Vec4D cms) 
   /// currently assume leg 0 is the electron/QCD siglet
   /// is this ever wrong?
   const Vec4D pLepIn = ampl->Leg(0)->Mom();
+  std::vector<Vec4D> pLepOut;
+  for (size_t i(ampl->NIn());i<ampl->Legs().size();++i) {
+    if(!ampl->Leg(i)->Flav().Strong()) pLepOut.push_back(ampl->Leg(i)->Mom());
+  }
+
 
   BreitBoost breit(ampl);
   breit.Apply(ampl);
@@ -409,51 +414,79 @@ int ME_Generator_Base::ShiftMassesDIS(Cluster_Amplitude *const ampl, Vec4D cms) 
   msg_Debugging()<<"In real breit frame: "<<*ampl<<"\n";
   msg_Debugging()<<"Momentum conservation: "<<MomSum(ampl)<<".\n";
 
-  double Ein = 0;
-  for(size_t i=0; i<ampl->NIn(); i++) {
-    Vec4D p = ampl->Leg(i)->Mom();
-    if(ampl->Leg(i)->Flav().Strong()) {
-      p[0]=-sqrt(Mass2(ampl->Leg(i)->Flav())+p.PSpat2());
-      Ein = -p[0];
+  if(ampl->Legs().size()==4) {
+    /// in 2->2 DIS the target masses of incoming and outgoing quarks
+    /// should be equal, so we should just be allowed to set both energies
+    /// to the ones including masses
+    double mass2in=-1;
+    double mass2out=-1;
+    for(size_t i=0; i<ampl->Legs().size(); i++) {
+      Vec4D p = ampl->Leg(i)->Mom();
+      if(ampl->Leg(i)->Flav().Strong()) {
+        if(i<ampl->NIn()) {
+          mass2in = Mass2(ampl->Leg(i)->Flav());
+          p[0]=-sqrt(mass2in+p.PSpat2());
+        }
+        else{
+          mass2out = Mass2(ampl->Leg(i)->Flav());
+          p[0]=sqrt(mass2out+p.PSpat2());
+        }
+      }
+      ampl->Leg(i)->SetMom(p);
     }
-    ampl->Leg(i)->SetMom(p);
+    if(!IsEqual(mass2in,mass2out)) {
+      msg_Error()<<"Unequal masses in 2->2 DIS: "<<mass2in<<" vs. "<<mass2out<<".\n";
+      return -1;
+    }
+    msg_Debugging()<<"After shift 2->2 shift in Breit frame: "<<*ampl<<"\n";
   }
+  else {
+    double Ein = 0;
+    for(size_t i=0; i<ampl->NIn(); i++) {
+      Vec4D p = ampl->Leg(i)->Mom();
+      if(ampl->Leg(i)->Flav().Strong()) {
+        p[0]=-sqrt(Mass2(ampl->Leg(i)->Flav())+p.PSpat2());
+        Ein = -p[0];
+      }
+      ampl->Leg(i)->SetMom(p);
+    }
 
-  ShiftMasses_DIS etot(this,ampl);
-  // need at least the energy to produce all masses
-  // while preserving pZ
-  double EoutMin = 0;
-  for(size_t i=ampl->NIn(); i<ampl->Legs().size(); i++) {
-    if(ampl->Leg(i)->Flav().Strong()) {
-      EoutMin += sqrt(Mass2(ampl->Leg(i)->Flav()) +
-                      sqr(etot.scaledZ(ampl->Leg(i)->Mom()[3],0)));
+    ShiftMasses_DIS etot(this,ampl);
+    // need at least the energy to produce all masses
+    // while preserving pZ
+    double EoutMin = 0;
+    for(size_t i=ampl->NIn(); i<ampl->Legs().size(); i++) {
+      if(ampl->Leg(i)->Flav().Strong()) {
+        EoutMin += sqrt(Mass2(ampl->Leg(i)->Flav()) +
+                        sqr(etot.scaledZ(ampl->Leg(i)->Mom()[3],0)));
+      }
     }
-  }
-  if(!IsEqual(Ein,EoutMin) && Ein < EoutMin) {
-    msg_Debugging()<<"Not enough energy, Ein = "<<Ein
-                   <<" vs "<<EoutMin<<".\n";
-    return -1;
-  }
-  double xi(etot.WDBSolve(Ein,0.0,1.0));
-  if (!IsEqual(etot(xi),Ein,rpa->gen.Accu())) {
+    if(!IsEqual(Ein,EoutMin) && Ein < EoutMin) {
+      msg_Debugging()<<"Not enough energy, Ein = "<<Ein
+                     <<" vs "<<EoutMin<<".\n";
+      return -1;
+    }
+    double xi(etot.WDBSolve(Ein,0.0,1.0));
+    if (!IsEqual(etot(xi),Ein,rpa->gen.Accu())) {
       if (m_massmode==0) xi=etot.WDBSolve(Ein,1.0,2.0);
       if (!IsEqual(etot(xi),Ein,rpa->gen.Accu())) {
         msg_Error()<<"No solution found for mass shift "
                    <<etot(xi)<<" vs. "<<Ein<<".\n";
         return -1;
       }
-  }
-  for (size_t i(ampl->NIn());i<ampl->Legs().size();++i) {
-    Vec4D p = ampl->Leg(i)->Mom();
-    if(ampl->Leg(i)->Flav().Strong()) {
-      p[1] *= xi;
-      p[2] *= xi;
-      p[3] = etot.scaledZ(p[3],xi);
-      p[0] = sqrt(Mass2(ampl->Leg(i)->Flav())+p.PSpat2());
     }
-    ampl->Leg(i)->SetMom(p);
+    for (size_t i(ampl->NIn());i<ampl->Legs().size();++i) {
+      Vec4D p = ampl->Leg(i)->Mom();
+      if(ampl->Leg(i)->Flav().Strong()) {
+        p[1] *= xi;
+        p[2] *= xi;
+        p[3] = etot.scaledZ(p[3],xi);
+        p[0] = sqrt(Mass2(ampl->Leg(i)->Flav())+p.PSpat2());
+      }
+      ampl->Leg(i)->SetMom(p);
+    }
+    msg_Debugging()<<"After shift (xi = "<<xi<<") in Breit frame: "<<*ampl<<"\n";
   }
-  msg_Debugging()<<"After shift (xi = "<<xi<<") in Breit frame: "<<*ampl<<"\n";
   msg_Debugging()<<"Momentum conservation: "<<MomSum(ampl)<<".\n";
   msg_Debugging()<<"DIS variables: Q2 = "<<breit.Q2()<<" vs "<<BreitBoost(ampl).Q2()
                  <<" and x = "<<breit.x()<<" vs "<<BreitBoost(ampl).x()<<".\n";
@@ -462,7 +495,7 @@ int ME_Generator_Base::ShiftMassesDIS(Cluster_Amplitude *const ampl, Vec4D cms) 
   msg_Debugging()<<"Momentum conservation: "<<MomSum(ampl)<<".\n";
   msg_Debugging()<<"DIS variables: Q2 = "<<breit.Q2()<<" vs "<<BreitBoost(ampl).Q2()
                  <<" and x = "<<breit.x()<<" vs "<<BreitBoost(ampl).x()<<".\n";
-  /// shifted in momentum will be a bit of the z axis, so construct a new one that is
+  /// shifted in momentum will be a bit off the z axis, so construct a new one that is
   /// aligned and push recoil to hadronic final state
   Vec4D pStrongOut(0,0,0,0);
   for (size_t i(ampl->NIn());i<ampl->Legs().size();++i) {
@@ -472,9 +505,9 @@ int ME_Generator_Base::ShiftMassesDIS(Cluster_Amplitude *const ampl, Vec4D cms) 
   for(size_t i=0; i<ampl->NIn(); i++) {
     if(ampl->Leg(i)->Flav().Strong()) pStrongIn = -ampl->Leg(i)->Mom();
   }
-  /// hadronic final state should have finite mass, otherwise we had a
+  /// hadronic final state should have finite mass, otherwise
   /// we should be in a 2->2 case with massless partons, and never arrive here
-  if(!IsZero(pStrongOut.Abs2())) {
+  if(!IsZero(pStrongIn.PPerp2()) && !IsZero(pStrongOut.Abs2())) {
     /// might assume positive z for hadronic IS?
     const double m2 = pStrongIn.Abs2();
     const double inOutProd = pStrongIn*pStrongOut;
@@ -489,15 +522,33 @@ int ME_Generator_Base::ShiftMassesDIS(Cluster_Amplitude *const ampl, Vec4D cms) 
     Poincare newHCM(pStrongOut-pStrongIn+newInMom);
 
     for(size_t i=0; i<ampl->Legs().size(); i++) {
+      size_t idxout = 0;
       if(i < ampl->NIn()) {
         if(ampl->Leg(i)->Flav().Strong()) ampl->Leg(i)->SetMom(-newInMom);
         else                              ampl->Leg(i)->SetMom(pLepIn);
       }
-      else if(ampl->Leg(i)->Flav().Strong()) {
-        Vec4D p = ampl->Leg(i)->Mom();
-        oldHCM.Boost(p);
-        newHCM.BoostBack(p);
-        ampl->Leg(i)->SetMom(p);
+      else {
+        if(ampl->Leg(i)->Flav().Strong()) {
+          Vec4D p = ampl->Leg(i)->Mom();
+          oldHCM.Boost(p);
+          newHCM.BoostBack(p);
+          ampl->Leg(i)->SetMom(p);
+        }
+        else {
+          ampl->Leg(i)->SetMom(pLepOut[idxout]);
+          idxout++;
+        }
+      }
+    }
+  }
+  else {
+    size_t idxout = 0;
+    for(size_t i=0; i<ampl->Legs().size(); i++) {
+      if(ampl->Leg(i)->Flav().Strong()) continue;
+      if(i < ampl->NIn()) ampl->Leg(i)->SetMom(pLepIn);
+      else {
+        ampl->Leg(i)->SetMom(pLepOut[idxout]);
+        idxout++;
       }
     }
   }

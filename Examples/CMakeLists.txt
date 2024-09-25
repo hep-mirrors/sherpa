@@ -4,6 +4,9 @@ install(DIRECTORY ${CMAKE_CURRENT_LIST_DIR}
         DESTINATION ${CMAKE_INSTALL_DATADIR}/SHERPA-MC${VERSIONING} 
         COMPONENT doc 
         PATTERN CI EXCLUDE
+        PATTERN Makefile EXCLUDE
+        PATTERN cmake_install.cmake EXCLUDE
+        PATTERN CMakeDirectoryInformation.cmake EXCLUDE
         PATTERN CMakeLists.txt EXCLUDE
         REGEX ".*\.in$" EXCLUDE
         REGEX "\..*\.sw.$" EXCLUDE)

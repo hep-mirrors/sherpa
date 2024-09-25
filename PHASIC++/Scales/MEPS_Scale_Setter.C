@@ -105,7 +105,7 @@ operator()(const Scale_Setter_Arguments &args) const
 void ATOOLS::Getter<Scale_Setter_Base,Scale_Setter_Arguments,
 		    MEPS_Scale_Setter>::
 PrintInfo(std::ostream &str,const size_t width) const
-{ 
+{
   str<<"meps scale scheme";
 }
 
@@ -140,7 +140,7 @@ MEPS_Scale_Setter::MEPS_Scale_Setter
   if (pos==4) {
     tag=tag.substr(pos+1);
     pos=tag.find(']');
-    if (pos==std::string::npos) 
+    if (pos==std::string::npos)
       THROW(fatal_error,"Invalid scale '"+args.m_scale+"'");
     Data_Reader read(" ",",","#","=");
     read.AddIgnore(":");
@@ -160,7 +160,7 @@ MEPS_Scale_Setter::MEPS_Scale_Setter
     }
     tag=tag.substr(pos+1);
     pos=tag.find('}');
-    if (pos==std::string::npos) 
+    if (pos==std::string::npos)
       THROW(fatal_error,"Invalid scale '"+args.m_scale+"'");
     std::string ctag(tag.substr(0,pos));
     tag=tag.substr(pos+1);
@@ -173,7 +173,11 @@ MEPS_Scale_Setter::MEPS_Scale_Setter
     if (m_calcs.size()==1) m_tagset.SetCalculator(m_calcs.back());
     SetScale(ctag,*m_calcs.back());
   }
-  if (p_proc->Shower()==NULL) THROW(fatal_error,"No shower generator");
+  if (p_proc->Shower()==NULL) {
+    msg_Error()<<"\nPlease specify the renormalisation and factorisation scale e.g SCALES: VAR{H_T2}"<<endl
+               <<"For detailed instructions on setting scales, please refer to the Sherpa manual."<<endl;
+    THROW(missing_input,"No shower generator found. Unable to use the MEPS scale scheme.");
+  }
   p_clu=p_proc->Shower()->GetClusterDefinitions();
   p_ms=p_proc->Generator();
   m_scale.resize(Max(m_scale.size(),m_calcs.size()));
@@ -340,7 +344,7 @@ void MEPS_Scale_Setter::Combine
 }
 
 double MEPS_Scale_Setter::Calculate
-(const Vec4D_Vector &momenta,const size_t &mode) 
+(const Vec4D_Vector &momenta,const size_t &mode)
 {
   m_p=momenta;
   if (m_nproc || (m_cmode&8)) p_ci=NULL;
@@ -375,7 +379,7 @@ double MEPS_Scale_Setter::Calculate
 	ampl->CreateLeg(m_p[i],i<p_proc->NIn()?fl[i].Bar():fl[i]);
       ampl->SetProc(p_proc->Caller()->Get<Single_Process>());
       SetCoreScale(ampl);
-      m_ampls.push_back(ampl);      
+      m_ampls.push_back(ampl);
     }
     return SetScales(m_ampls.back());
   }
@@ -420,7 +424,6 @@ double MEPS_Scale_Setter::Calculate
     if (m_nproc) ampl->SetOrderQCD(ampl->OrderQCD()+1);
     m_ampls.push_back(ampl);
     msg_Debugging()<<"Rescue: "<<*ampl<<"\n";
-    ampl->Delete();
     return SetScales(m_ampls.back());
   }
   ampl->Delete();
@@ -782,7 +785,7 @@ double MEPS_Scale_Setter::SetScales(Cluster_Amplitude *ampl)
 
 void MEPS_Scale_Setter::SetScale
 (const std::string &mu2tag,Algebra_Interpreter &mu2calc)
-{ 
+{
   if (mu2tag=="" || mu2tag=="0") THROW(fatal_error,"No scale specified");
   msg_Debugging()<<METHOD<<"(): scale '"<<mu2tag
 		 <<"' in '"<<p_proc->Caller()->Name()<<"' {\n";

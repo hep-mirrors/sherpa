@@ -1,0 +1,80 @@
+EVENTS: 500k
+EVENT_GENERATION_MODE: W
+
+EVENT_GENERATION_MODE: W
+EVENT_DISPLAY_INTERVAL: 100
+BATCH_MODE: 7
+
+BEAMS: 2212
+BEAM_ENERGIES: 6500
+
+TAGS:
+  QCUT: 10
+  NJET: 3
+
+ALPHAQED_DEFAULT_SCALE: 0.0
+
+ME_GENERATORS: [Comix, Amegic, OpenLoops, Internal]
+
+# EW corrections setup
+METS_BBAR_MODE: 5
+NLO_CSS_PSMODE: 1
+
+HEPMC_USE_NAMED_WEIGHTS: 1
+ANALYSIS: Rivet
+
+MEPS:
+  CLUSTER_MODE: 1384
+  CORE_SCALE: Photons
+
+# scale and pdf variations
+SCALE_VARIATIONS:
+  - [0.25, 0.25]
+  - [1.0,  0.25]
+  - [0.25, 1.0]
+  - [1.0,  1.0]
+  - [4.0,  1.0]
+  - [1.0,  4.0]
+  - [4.0,  4.0]
+
+PROCESSES:
+- 21 21 -> 22 22:
+    ME_Generator: Internal
+    Order: {QCD: 2, EW: 2}
+    Loop_Generator: gg_yy
+
+- 93 93 -> 22 22 93{$(NJET)}:
+    Order: {QCD: 0, EW: 2}
+    CKKW: $(QCUT)/sqrt(1.0+sqr($(QCUT)/0.6)/Abs2(p[2]+p[3]))
+    2->2-3:
+      NLO_Mode: MC@NLO
+      NLO_Order: {QCD: 1, EW: 0}
+      ME_Generator: Amegic
+      RS_ME_Generator: Comix
+      Loop_Generator: OpenLoops
+      Associated_Contributions: [EW, LO1, LO2, LO3]
+    2->3:
+      PSI_ItMin: 50000
+      Integration_Error: 0.99
+    2->4:
+      PSI_ItMin: 100000
+      Integration_Error: 0.02
+    2->5:
+      PSI_ItMin: 100000
+      Integration_Error: 0.05
+
+SELECTORS:
+- VariableSelector:
+    Variable: PT
+    Flavs: [22]
+    Ranges:
+    - [20, E_CMS]
+    - [18, E_CMS]
+    Ordering: [PT_UP]
+- [Y,  22,  -2.7,  2.7]
+- [IsolationCut, 22, 0.1, 2, 0.10]
+- [DR, 22, 22, 0.2, 10000.0 ]
+
+RIVET:
+  --analyses: ATLAS_2021_I1887997
+

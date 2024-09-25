@@ -25,15 +25,7 @@ Fastjet_Selector_Base::Fastjet_Selector_Base(const std::string& name,
   m_eta   = s["EtaMax"].SetDefault("None").UseMaxDoubleReplacements().Get<double>();
   m_y     = s["YMax"]  .SetDefault("None").UseMaxDoubleReplacements().Get<double>();
 
-  fjcore::RecombinationScheme recom;
-  if      (reco=="E")     recom=fjcore::E_scheme;
-  else if (reco=="pt")    recom=fjcore::pt_scheme;
-  else if (reco=="pt2")   recom=fjcore::pt2_scheme;
-  else if (reco=="Et")    recom=fjcore::Et_scheme;
-  else if (reco=="Et2")   recom=fjcore::Et2_scheme;
-  else if (reco=="BIpt")  recom=fjcore::BIpt_scheme;
-  else if (reco=="BIpt2") recom=fjcore::BIpt2_scheme;
-  else THROW(fatal_error, "Unknown recombination scheme \"" + reco + "\".");
+  fjcore::RecombinationScheme recom = ATOOLS::GetRecombinationScheme(reco);
 
   bool ee(rpa->gen.Bunch(0).IsLepton() && rpa->gen.Bunch(1).IsLepton());
 
