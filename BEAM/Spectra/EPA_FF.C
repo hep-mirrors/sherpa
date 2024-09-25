@@ -393,10 +393,7 @@ EPA_Gauss::EPA_Gauss(const ATOOLS::Flavour& beam, const int dir)
   m_mu2         = sqr(s["MagneticMu"].GetTwoVector<double>()[b]);
   m_Q02         = s["Q02"].GetTwoVector<double>()[b];
   // TODO ist m_Q02 in 1/GeV oder fm? Set defaults for mu2 and Q02 in EPA.C!
-  if (m_beam == ATOOLS::Flavour(kf_p_plus)) {
-    // m_Q02 = 0.71;
-  } else if (m_beam.IsIon()) {
-    // m_Q02    = sqr(2. / m_R);
+  if (m_beam.IsIon()) {
     m_pt2max = sqr(1. / m_R);
   }
 
