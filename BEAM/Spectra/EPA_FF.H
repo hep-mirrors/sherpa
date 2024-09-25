@@ -29,7 +29,7 @@ namespace BEAM {
     ATOOLS::TwoDim_Table *p_N_xb, *p_Inv_xb;
 
     size_t m_nxbins, m_nbbins;
-    bool   m_approx, m_analytic;
+    bool   m_approx;
 
     virtual void Fill_Nxb_Table(ATOOLS::axis& xaxis, ATOOLS::axis& baxis);
     virtual void Fill_Invxb_Table();
@@ -53,7 +53,6 @@ namespace BEAM {
     virtual double FF(const double& Q2) { return 1.; }
 
     void SetApprox(size_t i) { m_approx = i; }
-    void SetAnalytic(size_t i) { m_analytic = i; }
 
     virtual void SetRadius(const double& R) { m_R = R; }
     virtual void SetPT2Max(const double& pt2max) { m_pt2max = pt2max; }
