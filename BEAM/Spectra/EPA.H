@@ -16,19 +16,15 @@ namespace BEAM {
     double       m_mass, m_charge, m_gamma;
     double       m_aqed, m_pref;
     double       m_x, m_q2;
-    double       m_q2min, m_q2max, m_theta_max, m_pt2min, m_pt2max;
+    double       m_theta_max, m_pt2min, m_pt2max;
     double       m_Rmin, m_Rmax, m_Rcut, m_xmin, m_xmax, m_bmin, m_bmax;
 
-    double m_Lambda2, m_mu, m_Q02, m_WSd;
+    double m_Q02;
 
     size_t m_plotting;
-    size_t m_approx;
-    size_t m_nxbins, m_nbbins;
-    bool   m_analytic;
 
     void Initialise();
     void RegisterDefaults() const;
-    void InitFormFactor(ATOOLS::Settings& s);
 
     void Tests();
 

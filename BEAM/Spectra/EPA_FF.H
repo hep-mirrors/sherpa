@@ -28,14 +28,16 @@ namespace BEAM {
     ATOOLS::OneDim_Table* p_Nred_x;
     ATOOLS::TwoDim_Table *p_N_xb, *p_Inv_xb;
 
-    size_t       m_approx, m_analytic;
+    size_t m_nxbins, m_nbbins;
+    bool   m_approx, m_analytic;
+
     virtual void Fill_Nxb_Table(ATOOLS::axis& xaxis, ATOOLS::axis& baxis);
     virtual void Fill_Invxb_Table();
     virtual void Fill_Nredx_Table();
     virtual void TestInvxb();
 
   public:
-    explicit EPA_FF_Base(const ATOOLS::Flavour& beam);
+    EPA_FF_Base(const ATOOLS::Flavour& beam, int dir);
     virtual ~EPA_FF_Base()
     {
       if (p_Nred_x) delete p_Nred_x;
@@ -50,26 +52,17 @@ namespace BEAM {
     virtual double ReducedN(const double& x) { return -1.; }
     virtual double FF(const double& Q2) { return 1.; }
 
+    void SetApprox(size_t i) { m_approx = i; }
+    void SetAnalytic(size_t i) { m_analytic = i; }
+
     virtual void SetRadius(const double& R) { m_R = R; }
-    virtual void SetQ2Min(const double& q2min) { m_q2min = q2min; }
-    virtual void SetQ2Max(const double& q2max) { m_q2max = q2max; }
-    virtual void SetQ2Range(const double& q2min, const double& q2max)
-    {
-      m_q2min = q2min;
-      m_q2max = q2max;
-    }
     virtual void SetPT2Max(const double& pt2max) { m_pt2max = pt2max; }
     virtual void SetPT2Range(const double& pt2min, const double& pt2max)
     {
       m_pt2min = pt2min;
       m_pt2max = pt2max;
     }
-    virtual void SetSwitch(const std::string& tag, const size_t& sw)
-    {
-      if (tag == "approximation") m_approx = sw;
-      if (tag == "analytic") m_analytic = sw;
-    }
-    virtual void SetParam(const std::string& tag, const double& val) {}
+    void SetQ2Max(const double q2max) { m_q2max = q2max; }
 
     virtual double                 Radius() const { return m_R; }
     virtual const ATOOLS::Flavour& Flav() const { return m_beam; }
@@ -126,7 +119,7 @@ namespace BEAM {
     void Fill_Nxb_Table(ATOOLS::axis& xaxis, ATOOLS::axis& baxis) override;
 
   public:
-    explicit EPA_Point(const ATOOLS::Flavour& beam);
+    EPA_Point(const ATOOLS::Flavour& beam, int dir);
     void   FillTables(const size_t& nx, const size_t& nb) override;
     double operator()(const double& x, const double& Q2) override;
     double N(const double& x) override;
@@ -138,46 +131,29 @@ namespace BEAM {
   class EPA_Dipole final : public EPA_FF_Base {
   private:
     double       m_Lambda2, m_mu2, m_aDip, m_bDip, m_cDip;
-    void         SetABC();
     const double phi(const double& y, const double& arg) const;
 
   public:
-    explicit EPA_Dipole(const ATOOLS::Flavour& beam);
+    explicit EPA_Dipole(const ATOOLS::Flavour& beam, int dir);
     void   FillTables(const size_t& m_nxbins, const size_t& m_nbbins) override;
     double operator()(const double& x, const double& Q2) override;
     double N(const double& x) override;
     double N(const double& x, const double& b) override;
     double ReducedN(const double& x) override;
-    inline void SetParam(const std::string& tag, const double& value) override
-    {
-      if (tag == "Lambda2") m_Lambda2 = value;
-      if (tag == "Mu2") m_mu2 = value;
-      SetABC();
-    }
   };
 
   class EPA_Gauss final : public EPA_FF_Base {
   private:
-    size_t m_approx;
     double m_Q02, m_mu2;
 
   public:
-    explicit EPA_Gauss(const ATOOLS::Flavour& beam);
+    EPA_Gauss(const ATOOLS::Flavour& beam, int dir);
     void        FillTables(const size_t& nx, const size_t& nb) override;
     double      operator()(const double& x, const double& Q2) override;
     double      N(const double& x) override;
     double      N(const double& x, const double& b) override;
     double      ReducedN(const double& x) override;
     double      FF(const double& Q2) override { return exp(-Q2 / m_Q02); }
-    inline void SetParam(const std::string& tag, const double& value) override
-    {
-      if (tag == "Q02") m_Q02 = value;
-      if (tag == "Mu2") m_mu2 = value;
-    }
-    inline void SetSwitch(const std::string& tag, size_t sw)
-    {
-      if (tag == "approximation") m_approx = sw;
-    }
   };
 
   class EPA_WoodSaxon final : public EPA_FF_Base {
@@ -227,7 +203,7 @@ namespace BEAM {
     void   InitNTable(const double& xmin, const double& xmax);
 
   public:
-    explicit EPA_WoodSaxon(const ATOOLS::Flavour& beam);
+    EPA_WoodSaxon(const ATOOLS::Flavour& beam, int dir);
     ~EPA_WoodSaxon() override
     {
       if (p_N) {
@@ -239,16 +215,12 @@ namespace BEAM {
         p_FF_Q2 = nullptr;
       }
     }
-    void        FillTables(const size_t& nx, const size_t& nb) override;
-    double      operator()(const double& x, const double& Q2) override;
-    double      N(const double& x) override;
-    double      N(const double& x, const double& b) override;
-    double      ReducedN(const double& x) override;
-    double      FF(const double& Q2) override { return (*p_FF_Q2)(Q2); }
-    inline void SetParam(const std::string& tag, const double& value) override
-    {
-      if (tag == "WSd") m_d = value;
-    }
+    void   FillTables(const size_t& nx, const size_t& nb) override;
+    double operator()(const double& x, const double& Q2) override;
+    double N(const double& x) override;
+    double N(const double& x, const double& b) override;
+    double ReducedN(const double& x) override;
+    double FF(const double& Q2) override { return (*p_FF_Q2)(Q2); }
   };
 }// end of namespace BEAM
 
