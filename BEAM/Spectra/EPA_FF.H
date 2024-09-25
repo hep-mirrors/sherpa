@@ -47,9 +47,12 @@ namespace BEAM {
     virtual void   FillTables(const size_t& nx, const size_t& nb) = 0;
     virtual double operator()(const double& x, const double& Q2)  = 0;
     virtual double N(const double& x)                             = 0;
-    virtual double N(const double& x, const double& b)            = 0;
+    virtual double N(const double& x, const double& b)
+    {
+      return (*p_N_xb)(x, b);
+    };
     virtual double SelectB(const double& x);
-    virtual double ReducedN(const double& x) { return -1.; }
+    virtual double ReducedN(const double& x) { return (*p_Nred_x)(x); }
     virtual double FF(const double& Q2) { return 1.; }
 
     void SetApprox(size_t i) { m_approx = i; }
@@ -137,8 +140,6 @@ namespace BEAM {
     void   FillTables(const size_t& m_nxbins, const size_t& m_nbbins) override;
     double operator()(const double& x, const double& Q2) override;
     double N(const double& x) override;
-    double N(const double& x, const double& b) override;
-    double ReducedN(const double& x) override;
   };
 
   class EPA_Gauss final : public EPA_FF_Base {
@@ -147,12 +148,10 @@ namespace BEAM {
 
   public:
     EPA_Gauss(const ATOOLS::Flavour& beam, int dir);
-    void        FillTables(const size_t& nx, const size_t& nb) override;
-    double      operator()(const double& x, const double& Q2) override;
-    double      N(const double& x) override;
-    double      N(const double& x, const double& b) override;
-    double      ReducedN(const double& x) override;
-    double      FF(const double& Q2) override { return exp(-Q2 / m_Q02); }
+    void   FillTables(const size_t& nx, const size_t& nb) override;
+    double operator()(const double& x, const double& Q2) override;
+    double N(const double& x) override;
+    double FF(const double& Q2) override { return exp(-Q2 / m_Q02); }
   };
 
   class EPA_WoodSaxon final : public EPA_FF_Base {
@@ -217,8 +216,6 @@ namespace BEAM {
     void   FillTables(const size_t& nx, const size_t& nb) override;
     double operator()(const double& x, const double& Q2) override;
     double N(const double& x) override;
-    double N(const double& x, const double& b) override;
-    double ReducedN(const double& x) override;
     double FF(const double& Q2) override { return (*p_FF_Q2)(Q2); }
   };
 }// end of namespace BEAM
