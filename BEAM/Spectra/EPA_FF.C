@@ -16,7 +16,7 @@
 
 using namespace BEAM;
 using namespace ATOOLS;
-using namespace std;
+using string = std::string;
 
 ATOOLS::Special_Functions ATOOLS::SF;
 
@@ -301,7 +301,7 @@ void EPA_Dipole::FillTables(const size_t & nx,const size_t & nb) {
 
 double EPA_Dipole::operator()(const double & x,const double & Q2) {
   // c.f. V.M. Budnev et al., Phys. Rep. C15(1974)181, Eq. (D.7)
-  double q2min = Q2min(x), q2max = Q2max(x), prefC = m_mu2, prefD = 1.;
+  double q2min = Q2min(x), prefC = m_mu2, prefD = 1.;
   // taking into account Q^2-dependence of form factors by over-riding their
   // value at Q^2 = 0.
   if (m_approx>0) {
