@@ -105,20 +105,17 @@ void EPA::RegisterDefaults() const
   s["bMin"].SetDefault(0.);
   s["bMax"].SetDefault(1.e12);
   s["bBins"].SetDefault(10);
-  s["PT2Min"].SetDefault(0.0);
   s["Form_Factor"].SetDefault(size_t(m_beam.IsIon() ? EPA_ff_type::WoodSaxon
                                      : m_beam.IsNucleon() ? EPA_ff_type::dipole
                                      : m_beam.IsMeson()   ? EPA_ff_type::dipole
                                                         : EPA_ff_type::point));
   s["MagneticMu"].SetDefault(m_beam.IsNucleon() ? 2.79 : 0.);
-  s["Lambda2"].SetDefault(0.71);
   // TODO check the default for ions below
-  s["Q02"].SetDefault(m_beam.IsNucleon() ? 2.79 : sqr(2. / m_beam.Radius()));
+  s["Q02"].SetDefault(m_beam.IsNucleon() ? 0.71 : sqr(2. / m_beam.Radius()));
   s["WoodSaxon_d"].SetDefault(0.5);
   s["AlphaQED"].SetDefault(0.0072992701);
   s["ThetaMax"].SetDefault(0.3);
   s["Approximation"].SetDefault(false);
-  s["AnalyticFF"].SetDefault(true);
   s["PlotSpectra"].SetDefault(false);
 }
 
