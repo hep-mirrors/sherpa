@@ -137,7 +137,6 @@ void EPA::Tests()
   p_ff->SetQ2Max(1.e99);
   p_ff->SetPT2Max(sqr(m_energy * m_theta_max));
   p_ff->SetApprox(2);
-  p_ff->SetAnalytic(1);
   for (size_t i = 0; i < 100; i++) {
     double x = double(i) / 1000;
     CalculateWeight(x, 0.);
@@ -150,7 +149,6 @@ void EPA::Tests()
   p_ff      = new EPA_Dipole(m_beam, 0);
   p_ff->SetQ2Max(16.);
   p_ff->SetApprox(1);
-  p_ff->SetAnalytic(1);
   for (size_t i = 0; i < 100; i++) {
     double x = double(i) / 1000;
     CalculateWeight(x, 0.);

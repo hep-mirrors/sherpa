@@ -47,12 +47,11 @@ EPA_FF_Base::EPA_FF_Base(const ATOOLS::Flavour& beam, const int dir)
       m_beam(beam), m_mass(m_beam.Mass(true)), m_mass2(ATOOLS::sqr(m_mass)),
       m_R(m_beam.Radius() / rpa->hBar_c()), m_q2min(0.), m_q2max(1.e99),
       m_pt2max(-1.), p_Nred_x(nullptr), p_N_xb(nullptr), p_Inv_xb(nullptr),
-      m_approx(false), m_analytic(true)
+      m_approx(false)
 {
   const auto& s = Settings::GetMainSettings()["EPA"];
   size_t      b = dir > 0 ? 0 : 1;
   m_approx      = s["Approximation"].Get<bool>();
-  m_analytic    = s["AnalyticFF"].Get<bool>();
   m_q2max       = s["Q2Max"].GetTwoVector<double>()[b];
   m_q2min       = s["Q2Min"].GetTwoVector<double>()[b];
   m_nxbins      = s["xBins"].GetTwoVector<int>()[b];
@@ -285,22 +284,16 @@ double EPA_Point::N(const double& x, const double& b)
   // Result is in GeV^2, inherited from the mass in the argument.
   // Integration over the (2D) impact parameter plane (in units of 1/GeV^2)
   // will yield a result in units of [1].
-  if (m_analytic) {
-    double arg = m_mass * x * SF.Kn(1, m_mass * x * b);
-    return sqr(arg) / M_PI;
-  }
-  return (*p_N_xb)(x, b);
+  double arg = m_mass * x * SF.Kn(1, m_mass * x * b);
+  return sqr(arg) / M_PI;
 }
 
 double EPA_Point::ReducedN(const double& x)
 {
   // Result is in units of [1].
-  if (true) {
-    double mxR = m_mass * x * m_R, mxR2 = sqr(mxR);
-    double K0 = SF.Kn(0, mxR), K1 = SF.Kn(1, mxR);
-    return mxR2 * (sqr(K0) - sqr(K1)) + 2. * mxR * K0 * K1;
-  }
-  return (*p_Nred_x)(x);
+  double mxR = m_mass * x * m_R, mxR2 = sqr(mxR);
+  double K0 = SF.Kn(0, mxR), K1 = SF.Kn(1, mxR);
+  return mxR2 * (sqr(K0) - sqr(K1)) + 2. * mxR * K0 * K1;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -386,13 +379,11 @@ double EPA_Dipole::N(const double& x)
 
 double EPA_Dipole::N(const double& x, const double& b)
 {
-  if (m_analytic > 0) return -1.;
   return (*p_N_xb)(x, b);
 }
 
 double EPA_Dipole::ReducedN(const double& x)
 {
-  if (m_analytic > 0) return -1.;
   return (*p_Nred_x)(x);
 }
 
@@ -473,13 +464,11 @@ double EPA_Gauss::N(const double& x)
 
 double EPA_Gauss::N(const double& x, const double& b)
 {
-  if (m_analytic > 0) return -1.;
   return (*p_N_xb)(x, b);
 }
 
 double EPA_Gauss::ReducedN(const double& x)
 {
-  if (m_analytic > 0) return -1.;
   return (*p_Nred_x)(x);
 }
 
@@ -582,18 +571,15 @@ double EPA_WoodSaxon::operator()(const double& x, const double& Q2)
 
 double EPA_WoodSaxon::N(const double& x)
 {
-  if (m_analytic > 0) return -1.;
   return (*p_N)(x);
 }
 
 double EPA_WoodSaxon::N(const double& x, const double& b)
 {
-  if (m_analytic > 0) return -1.;
   return (*p_N_xb)(x, b);
 }
 
 double EPA_WoodSaxon::ReducedN(const double& x)
 {
-  if (m_analytic > 0) return -1.;
   return (*p_Nred_x)(x);
 }
