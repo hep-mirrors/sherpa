@@ -137,7 +137,6 @@ FillAnalytic(const enum EPA_ff_type & type,const double & Q2max) {
     ffname = string("point");
     break;
   }
-  ff->SetAnalytic(1);
   double pt2max = (Q2max<0. ? sqr(1./m_R) : Q2max);
   ff->SetPT2Max(pt2max);
   string tag           = m_beam.IDName()+string("_")+ffname+string("_analytic");
@@ -224,7 +223,6 @@ FillNumerical(const EPA_ff_type & type,const double & Q2max) {
     double pt2max = (Q2max<0. ? sqr(1./m_R) : Q2max);
     ff[i]->SetPT2Max(pt2max);
     ff[i]->SetApprox(i);
-    ff[i]->SetAnalytic(0);
     //ff[i]->FillTables();
     appname[i] = string("approx_"+ToString(i));
     tag[i]     = partname+string("_")+ffname+string("_")+appname[i];
