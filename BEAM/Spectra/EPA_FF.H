@@ -129,7 +129,7 @@ namespace BEAM {
 
   class EPA_Dipole final : public EPA_FF_Base {
   private:
-    double       m_Lambda2, m_mu2, m_aDip, m_bDip, m_cDip;
+    double       m_Q02, m_mu2, m_aDip, m_bDip, m_cDip;
     double phi(const double& y, const double& arg) const;
 
   public:

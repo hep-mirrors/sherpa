@@ -306,20 +306,20 @@ double EPA_Point::ReducedN(const double& x)
 ////////////////////////////////////////////////////////////////////////////////
 
 EPA_Dipole::EPA_Dipole(const ATOOLS::Flavour& beam, const int dir)
-    : EPA_FF_Base(beam, dir), m_Lambda2(0.71)
+    : EPA_FF_Base(beam, dir)
 {
   const auto& s = Settings::GetMainSettings()["EPA"];
   size_t      b = dir > 0 ? 0 : 1;
   m_mu2         = sqr(s["MagneticMu"].GetTwoVector<double>()[b]);
-  m_Lambda2     = s["Lambda2"].GetTwoVector<double>()[b];
+  m_Q02     = s["Q02"].GetTwoVector<double>()[b];
   if (!m_beam.IsNucleon())
     THROW(fatal_error, "Wrong form factor for " + m_beam.IDName());
   //m_mu2 = m_beam.Charge() != 0. ? 2.79 * 2.79 : 0.;
 
   // a, b, c coeffients from Budnev et al., Eq. (D.7)
-  m_aDip = (1. + m_mu2) / 4. + 4. * m_mass2 / m_Lambda2;// should be  7.16
-  m_bDip = 1. - 4. * m_mass2 / m_Lambda2;               // should be -3.96
-  m_cDip = (m_mu2 - 1.) / pow(m_bDip, 4.);              // should be  0.028
+  m_aDip = (1. + m_mu2) / 4. + 4. * m_mass2 / m_Q02; // should be  7.16
+  m_bDip = 1. - 4. * m_mass2 / m_Q02;                // should be -3.96
+  m_cDip = (m_mu2 - 1.) / pow(m_bDip, 4.);           // should be  0.028
 
   FillTables(m_nxbins, m_nbbins);
 }
@@ -341,9 +341,9 @@ double EPA_Dipole::operator()(const double& x, const double& Q2)
   // taking into account Q^2-dependence of form factors by over-riding their
   // value at Q^2 = 0.
   if (!m_approx) {
-    prefC = m_mu2 / sqr(1. + Q2 / m_Lambda2);
+    prefC = m_mu2 / sqr(1. + Q2 / m_Q02);
     prefD = (4. * m_mass2 + Q2 * m_mu2) / (4. * m_mass2 + Q2) /
-            sqr(1. + Q2 / m_Lambda2);
+            sqr(1. + Q2 / m_Q02);
   }
   return (sqr(x) / 2. * prefC + (1. - x) * (1. + q2min / Q2) * prefD);
 }
@@ -371,11 +371,11 @@ double EPA_Dipole::N(const double& x)
   // taking into account the Q^2-dependence of form factors ...
   if (!m_approx) {
     double y = sqr(x) / (1. - x);
-    return (1. - x) * (phi(y, q2max / m_Lambda2) - phi(y, q2min / m_Lambda2));
+    return (1. - x) * (phi(y, q2max / m_Q02) - phi(y, q2min / m_Q02));
   }
   // ... or ignoring it.
   return ((1. - x + m_mu2 * sqr(x) / 2.) * log(q2max / q2min) -
-          (1. - x) * (1. - q2min / q2max));
+          (1. - x) * (1. - q2min / q2max)); //< TODO which one is this eq.?
 }
 
 ////////////////////////////////////////////////////////////////////////////////

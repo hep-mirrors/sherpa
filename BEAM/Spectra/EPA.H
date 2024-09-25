@@ -18,8 +18,6 @@ namespace BEAM {
     double       m_x, m_q2, m_pt2max;
     double       m_Rmin, m_Rmax, m_Rcut, m_xmin, m_xmax, m_bmin, m_bmax;
 
-    double m_Q02;
-
     size_t m_plotting;
 
     void Initialise();
