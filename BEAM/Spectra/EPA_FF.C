@@ -65,6 +65,7 @@ double EPA_FF_Base::SelectB(const double& x)
   // Internally, we assume b is in units of 1/GeV, we return it in fm here.
   //
   //////////////////////////////////////////////////////////////////////////////
+  // TODO check below this must be wrong
   double xeff = m_xmin;
   if (xeff < m_xmin) xeff = m_xmin * (1. + 1.e-6);
   if (xeff > m_xmax) xeff = m_xmax * (1. - 1.e-6);
@@ -313,7 +314,7 @@ EPA_Dipole::EPA_Dipole(const ATOOLS::Flavour& beam, const int dir)
   m_Lambda2     = s["Lambda2"].GetTwoVector<double>()[b];
   if (!m_beam.IsNucleon())
     THROW(fatal_error, "Wrong form factor for " + m_beam.IDName());
-  m_mu2 = m_beam.Charge() != 0. ? 2.79 * 2.79 : 0.;
+  //m_mu2 = m_beam.Charge() != 0. ? 2.79 * 2.79 : 0.;
 
   // a, b, c coeffients from Budnev et al., Eq. (D.7)
   m_aDip = (1. + m_mu2) / 4. + 4. * m_mass2 / m_Lambda2;// should be  7.16
@@ -347,7 +348,7 @@ double EPA_Dipole::operator()(const double& x, const double& Q2)
   return (sqr(x) / 2. * prefC + (1. - x) * (1. + q2min / Q2) * prefD);
 }
 
-const double EPA_Dipole::phi(const double& y, const double& arg) const
+double EPA_Dipole::phi(const double& y, const double& arg) const
 {
   // phi_i(x) from Budnev et al., Eq. (D.7)
   double one_arg = 1. + arg;
@@ -393,10 +394,8 @@ EPA_Gauss::EPA_Gauss(const ATOOLS::Flavour& beam, const int dir)
   m_Q02         = s["Q02"].GetTwoVector<double>()[b];
   // TODO ist m_Q02 in 1/GeV oder fm? Set defaults for mu2 and Q02 in EPA.C!
   if (m_beam == ATOOLS::Flavour(kf_p_plus)) {
-    // m_mu2 = 2.79 * 2.79;
     // m_Q02 = 0.71;
   } else if (m_beam.IsIon()) {
-    // m_mu2    = 0.;
     // m_Q02    = sqr(2. / m_R);
     m_pt2max = sqr(1. / m_R);
   }
