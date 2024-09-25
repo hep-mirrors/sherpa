@@ -51,8 +51,8 @@ void EPA_Spectra_Plotter::Init() {
   if (m_beam.IsIon()) {
     m_xmin  = 1./double(m_nxbins);
     m_xmax  = 1.+m_xmin;
-    m_minx  = 1.e-5/m_beam.GetAtomicNumber();
-    m_maxx  = 1./m_beam.GetAtomicNumber();
+    m_minx  = 1.e-5/m_beam.GetMassNumber();
+    m_maxx  = 1./m_beam.GetMassNumber();
     m_xvals = { 0.001, 0.01, 0.1 };
   }
   else {
@@ -63,7 +63,7 @@ void EPA_Spectra_Plotter::Init() {
     m_xvals = { 0.001, 0.01, 0.1 };
   }
   m_xsize   = (m_xmax-m_xmin)/double(m_nxbins);
-  m_R       = m_beam.Radius();
+  m_R       = m_beam.Radius() / rpa->hBar_c();
   m_bmin    = 0.;
   m_bmax    = 10000.*m_R+m_bmin;
   m_bsize   = (m_bmax-m_bmin)/double(m_nbbins);
@@ -123,21 +123,20 @@ FillAnalytic(const enum EPA_ff_type & type,const double & Q2max) {
   case EPA_ff_type::WoodSaxon:
     return;
   case EPA_ff_type::dipole:
-    ff     = new EPA_Dipole(m_beam);
+    ff     = new EPA_Dipole(m_beam, 0);
     ffname = string("dipole");
     break;
   case EPA_ff_type::Gauss:
-    ff     = new EPA_Gauss(m_beam);
+    ff     = new EPA_Gauss(m_beam, 0);
     ffname = string("gauss");
     break;
   case EPA_ff_type::point:
   default:
-    ff     = new EPA_Point(m_beam);
-    ff->SetSwitch("approximation",0);
+    ff     = new EPA_Point(m_beam, 0);
+    ff->SetApprox(0);
     ffname = string("point");
     break;
   }
-  ff->SetSwitch("analytic",1);
   double pt2max = (Q2max<0. ? sqr(1./m_R) : Q2max);
   ff->SetPT2Max(pt2max);
   string tag           = m_beam.IDName()+string("_")+ffname+string("_analytic");
@@ -163,14 +162,9 @@ FillAnalytic(const enum EPA_ff_type & type,const double & Q2max) {
   for (int xi=0;xi<m_nxbins;xi++) {
     double x   = m_xmin + (double(xi)+0.5)*m_xsize;
     double arg = x / (m_beam.IsIon() ? m_beam.GetAtomicNumber() : 1.);
-    double n   = ff->N(arg);
+    double n   = ff->N(arg, 0.1);
     msg_Out()<<"    N("<<arg<<" --> "<<x<<") = "<<n<<"\n";
     m_histograms[Nx]->Insert(x,n);
-    if (type==EPA_ff_type::point) {
-      double nred = ff->ReducedN(arg), ratio = nred/n;
-      m_histograms[Nx_red]->Insert(x,nred);
-      m_histograms[Ratiox]->Insert(x,ratio);
-    }
   }
   if (type==EPA_ff_type::point) {
     for (int bi=0;bi<m_nbbins;bi++) {
@@ -203,29 +197,28 @@ FillNumerical(const EPA_ff_type & type,const double & Q2max) {
   for (size_t i=0;i<maxapp;i++) {
     switch (type) {
     case EPA_ff_type::WoodSaxon:
-      ff[i] = new EPA_WoodSaxon(m_beam);
+      ff[i] = new EPA_WoodSaxon(m_beam, 0);
       ffname = string("woodsaxon");
       break;
     case EPA_ff_type::dipole:
-      ff[i] = new EPA_Dipole(m_beam);
+      ff[i] = new EPA_Dipole(m_beam, 0);
       ffname = string("dipole");
       break;
     case EPA_ff_type::Gauss:
-      ff[i] = new EPA_Gauss(m_beam);
+      ff[i] = new EPA_Gauss(m_beam, 0);
       ffname = string("gauss");
       break;
     case EPA_ff_type::point:
     default:
-      ff[i] = new EPA_Point(m_beam);
+      ff[i] = new EPA_Point(m_beam, 0);
       ffname = string("point");
       break;
     }
     msg_Out()<<"=== "<<METHOD<<"(i = "<<i<<", type = "<<int(type)<<")\n";
     double pt2max = (Q2max<0. ? sqr(1./m_R) : Q2max);
     ff[i]->SetPT2Max(pt2max);
-    ff[i]->SetSwitch("approximation",i);
-    ff[i]->SetSwitch("analytic",0);
-    ff[i]->FillTables(120, 500);
+    ff[i]->SetApprox(i);
+    //ff[i]->FillTables();
     appname[i] = string("approx_"+ToString(i));
     tag[i]     = partname+string("_")+ffname+string("_")+appname[i];
     if (Q2max>0.) tag[i] += string("_Q2_")+ToString(pt2max);
@@ -250,16 +243,6 @@ FillNumerical(const EPA_ff_type & type,const double & Q2max) {
 	double arg = x / (m_beam.IsIon() ? m_beam.GetAtomicNumber() : 1.);
 	m_histograms[Nxb[i][j]]->Insert(b,ff[i]->N(arg,b));
       }
-    }
-  }
-  for (int xi=0;xi<m_nxbins;xi++) {
-    double x   = m_xmin + (double(xi)+0.5)*m_xsize;
-    double arg = x / (m_beam.IsIon() ? m_beam.GetAtomicNumber() : 1.);
-    for (size_t i=0;i<maxapp;i++) {
-      double n = ff[i]->N(arg), nred = ff[i]->ReducedN(arg);
-      m_histograms[Nx[i]]->Insert(x,n);
-      m_histograms[Nredx[i]]->Insert(x,nred);
-      m_histograms[Ratiox[i]]->Insert(x,nred/n);
     }
   }
   for (size_t i=0;i<maxapp;i++) delete ff[i];
