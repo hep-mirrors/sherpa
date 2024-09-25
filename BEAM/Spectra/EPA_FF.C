@@ -377,16 +377,6 @@ double EPA_Dipole::N(const double& x)
           (1. - x) * (1. - q2min / q2max));
 }
 
-double EPA_Dipole::N(const double& x, const double& b)
-{
-  return (*p_N_xb)(x, b);
-}
-
-double EPA_Dipole::ReducedN(const double& x)
-{
-  return (*p_Nred_x)(x);
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 //
 // Gaussian form factors replacing the dipole form factors of Budnev et al.,
@@ -460,16 +450,6 @@ double EPA_Gauss::N(const double& x)
   }
   double res = m_mu2 * sqr(x) * term1 + (1. - x) * term2;
   return res;
-}
-
-double EPA_Gauss::N(const double& x, const double& b)
-{
-  return (*p_N_xb)(x, b);
-}
-
-double EPA_Gauss::ReducedN(const double& x)
-{
-  return (*p_Nred_x)(x);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -572,14 +552,4 @@ double EPA_WoodSaxon::operator()(const double& x, const double& Q2)
 double EPA_WoodSaxon::N(const double& x)
 {
   return (*p_N)(x);
-}
-
-double EPA_WoodSaxon::N(const double& x, const double& b)
-{
-  return (*p_N_xb)(x, b);
-}
-
-double EPA_WoodSaxon::ReducedN(const double& x)
-{
-  return (*p_Nred_x)(x);
 }
