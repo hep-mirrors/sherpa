@@ -37,7 +37,7 @@ ATOOLS::Special_Functions ATOOLS::SF;
 //   units of 1/GeV.
 ////////////////////////////////////////////////////////////////////////////////
 
-EPA_FF_Base::EPA_FF_Base(const ATOOLS::Flavour& beam)
+EPA_FF_Base::EPA_FF_Base(const ATOOLS::Flavour& beam, const int dir)
     ://////////////////////////////////////////////////////////////////////////////
      //
      // Initialisation of relevant beam parameters:
@@ -47,9 +47,16 @@ EPA_FF_Base::EPA_FF_Base(const ATOOLS::Flavour& beam)
       m_beam(beam), m_mass(m_beam.Mass(true)), m_mass2(ATOOLS::sqr(m_mass)),
       m_R(m_beam.Radius() / rpa->hBar_c()), m_q2min(0.), m_q2max(1.e99),
       m_pt2max(-1.), p_Nred_x(nullptr), p_N_xb(nullptr), p_Inv_xb(nullptr),
-      m_approx(0), m_analytic(0)
+      m_approx(false), m_analytic(true)
 {
   const auto& s = Settings::GetMainSettings()["EPA"];
+  size_t      b = dir > 0 ? 0 : 1;
+  m_approx      = s["Approximation"].Get<bool>();
+  m_analytic    = s["AnalyticFF"].Get<bool>();
+  m_q2max       = s["Q2Max"].GetTwoVector<double>()[b];
+  m_q2min       = s["Q2Min"].GetTwoVector<double>()[b];
+  m_nxbins      = s["xBins"].GetTwoVector<int>()[b];
+  m_nbbins      = s["bBins"].GetTwoVector<int>()[b];
 }
 
 double EPA_FF_Base::SelectB(const double& x)
@@ -213,17 +220,16 @@ double Nred_x_int::operator()(double b)
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-EPA_Point::EPA_Point(const ATOOLS::Flavour& beam) : EPA_FF_Base(beam)
+EPA_Point::EPA_Point(const ATOOLS::Flavour& beam, const int dir)
+    : EPA_FF_Base(beam, dir)
 {
-  m_analytic = 1;
-  m_approx   = 2;
+  FillTables(m_nxbins, m_nbbins);
 }
 
 double EPA_Point::operator()(const double& x, const double& Q2)
 {
-  double wt = 1.;
-  if (m_approx >= 1) wt *= (1. + sqr(1. - x)) / 2.;
-  if (m_approx >= 2) wt -= (1. - x) * Q2min(x) / Q2;
+  double wt = (1. + sqr(1. - x)) / 2.;
+  if (!m_approx) wt -= (1. - x) * Q2min(x) / Q2;
   return wt;
 }
 
@@ -255,10 +261,8 @@ double EPA_Point::N(const double& x)
   // This is in units of [1]
   double q2min = Q2min(x), q2max = Q2max(x);
   if (x <= 0. || x >= 1. || q2max <= q2min) return 0.;
-  double wt = log(q2max / q2min);
-  // TODO this can be redone
-  if (m_approx >= 1) wt *= (1. + sqr(1. - x)) / 2.;
-  if (m_approx >= 2) wt -= sqr(m_mass * x) * (1. / q2min - 1. / q2max);
+  double wt = log(q2max / q2min) * (1. + sqr(1. - x)) / 2.;
+  if (!m_approx) wt -= sqr(m_mass * x) * (1. / q2min - 1. / q2max);
   return wt;
 }
 
@@ -281,7 +285,7 @@ double EPA_Point::N(const double& x, const double& b)
   // Result is in GeV^2, inherited from the mass in the argument.
   // Integration over the (2D) impact parameter plane (in units of 1/GeV^2)
   // will yield a result in units of [1].
-  if (m_analytic > 0) {
+  if (m_analytic) {
     double arg = m_mass * x * SF.Kn(1, m_mass * x * b);
     return sqr(arg) / M_PI;
   }
@@ -291,7 +295,7 @@ double EPA_Point::N(const double& x, const double& b)
 double EPA_Point::ReducedN(const double& x)
 {
   // Result is in units of [1].
-  if (m_analytic > 0) {
+  if (true) {
     double mxR = m_mass * x * m_R, mxR2 = sqr(mxR);
     double K0 = SF.Kn(0, mxR), K1 = SF.Kn(1, mxR);
     return mxR2 * (sqr(K0) - sqr(K1)) + 2. * mxR * K0 * K1;
@@ -307,14 +311,23 @@ double EPA_Point::ReducedN(const double& x)
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-EPA_Dipole::EPA_Dipole(const ATOOLS::Flavour& beam)
-    : EPA_FF_Base(beam), m_Lambda2(0.71)
+EPA_Dipole::EPA_Dipole(const ATOOLS::Flavour& beam, const int dir)
+    : EPA_FF_Base(beam, dir), m_Lambda2(0.71)
 {
-  m_approx = 1;
+  const auto& s = Settings::GetMainSettings()["EPA"];
+  size_t      b = dir > 0 ? 0 : 1;
+  m_mu2         = sqr(s["MagneticMu"].GetTwoVector<double>()[b]);
+  m_Lambda2     = s["Lambda2"].GetTwoVector<double>()[b];
   if (!m_beam.IsNucleon())
     THROW(fatal_error, "Wrong form factor for " + m_beam.IDName());
   m_mu2 = m_beam.Charge() != 0. ? 2.79 * 2.79 : 0.;
-  SetABC();
+
+  // a, b, c coeffients from Budnev et al., Eq. (D.7)
+  m_aDip = (1. + m_mu2) / 4. + 4. * m_mass2 / m_Lambda2;// should be  7.16
+  m_bDip = 1. - 4. * m_mass2 / m_Lambda2;               // should be -3.96
+  m_cDip = (m_mu2 - 1.) / pow(m_bDip, 4.);              // should be  0.028
+
+  FillTables(m_nxbins, m_nbbins);
 }
 
 void EPA_Dipole::FillTables(const size_t& nx, const size_t& nb)
@@ -333,20 +346,12 @@ double EPA_Dipole::operator()(const double& x, const double& Q2)
   double q2min = Q2min(x), prefC = m_mu2, prefD = 1.;
   // taking into account Q^2-dependence of form factors by over-riding their
   // value at Q^2 = 0.
-  if (m_approx > 0) {
+  if (!m_approx) {
     prefC = m_mu2 / sqr(1. + Q2 / m_Lambda2);
     prefD = (4. * m_mass2 + Q2 * m_mu2) / (4. * m_mass2 + Q2) /
             sqr(1. + Q2 / m_Lambda2);
   }
   return (sqr(x) / 2. * prefC + (1. - x) * (1. + q2min / Q2) * prefD);
-}
-
-void EPA_Dipole::SetABC()
-{
-  // a, b, c coeffients from Budnev et al., Eq. (D.7)
-  m_aDip = (1. + m_mu2) / 4. + 4. * m_mass2 / m_Lambda2;// should be  7.16
-  m_bDip = 1. - 4. * m_mass2 / m_Lambda2;               // should be -3.96
-  m_cDip = (m_mu2 - 1.) / pow(m_bDip, 4.);              // should be  0.028
 }
 
 const double EPA_Dipole::phi(const double& y, const double& arg) const
@@ -370,7 +375,7 @@ double EPA_Dipole::N(const double& x)
   double q2min = Q2min(x), q2max = Q2max(x);
   if (q2max <= q2min) return 0.;
   // taking into account the Q^2-dependence of form factors ...
-  if (m_approx > 0) {
+  if (!m_approx) {
     double y = sqr(x) / (1. - x);
     return (1. - x) * (phi(y, q2max / m_Lambda2) - phi(y, q2min / m_Lambda2));
   }
@@ -398,17 +403,24 @@ double EPA_Dipole::ReducedN(const double& x)
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-EPA_Gauss::EPA_Gauss(const ATOOLS::Flavour& beam) : EPA_FF_Base(beam), m_Q02(1.)
+EPA_Gauss::EPA_Gauss(const ATOOLS::Flavour& beam, const int dir)
+    : EPA_FF_Base(beam, dir), m_Q02(1.)
 {
-  m_approx = 1;
+  const auto& s = Settings::GetMainSettings()["EPA"];
+  size_t      b = dir > 0 ? 0 : 1;
+  m_mu2         = sqr(s["MagneticMu"].GetTwoVector<double>()[b]);
+  m_Q02         = s["Q02"].GetTwoVector<double>()[b];
+  // TODO ist m_Q02 in 1/GeV oder fm? Set defaults for mu2 and Q02 in EPA.C!
   if (m_beam == ATOOLS::Flavour(kf_p_plus)) {
-    m_mu2 = 2.79 * 2.79;
-    m_Q02 = 0.71;
+    // m_mu2 = 2.79 * 2.79;
+    // m_Q02 = 0.71;
   } else if (m_beam.IsIon()) {
-    m_mu2    = 0.;
-    m_Q02    = sqr(2. / m_R);
+    // m_mu2    = 0.;
+    // m_Q02    = sqr(2. / m_R);
     m_pt2max = sqr(1. / m_R);
   }
+
+  FillTables(m_nxbins, m_nbbins);
 }
 
 void EPA_Gauss::FillTables(const size_t& nx, const size_t& nb)
@@ -430,7 +442,7 @@ double EPA_Gauss::operator()(const double& x, const double& Q2)
   double q2min = Q2min(x), prefC = m_mu2, prefD = 1.;
   // taking into account Q^2-dependence of form factors by over-riding their
   // value at Q^2 = 0 ...
-  if (m_approx > 0) {
+  if (!m_approx) {
     prefC = m_mu2 * exp(-Q2 / m_Q02);
     prefD = exp(-Q2 / m_Q02);
   }
@@ -444,7 +456,7 @@ double EPA_Gauss::N(const double& x)
   double q2min = Q2min(x), q2max = Q2max(x), term1, term2;
   // taking into account the Q^2-dependence of form factors and using that
   // Ei(-x) = -IncompleteGamma(0,x)
-  if (m_approx > 0) {
+  if (!m_approx) {
     term1 = SF.IncompleteGamma(0, q2min / m_Q02) -
             SF.IncompleteGamma(0, q2max / m_Q02);
     term2 = term1 - q2min * (exp(-q2max / m_Q02) / q2max -
@@ -484,13 +496,18 @@ double EPA_Gauss::ReducedN(const double& x)
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-EPA_WoodSaxon::EPA_WoodSaxon(const ATOOLS::Flavour& beam)
-    : EPA_FF_Base(beam), m_d(0.5 / rpa->hBar_c()), p_FF_Q2(nullptr),
+EPA_WoodSaxon::EPA_WoodSaxon(const ATOOLS::Flavour& beam, const int dir)
+    : EPA_FF_Base(beam, dir), m_d(0.5 / rpa->hBar_c()), p_FF_Q2(nullptr),
       p_N(nullptr)
 {
+  const auto& s = Settings::GetMainSettings()["EPA"];
+  size_t      b = dir > 0 ? 0 : 1;
+  m_d           = s["WoodSaxon_d"].GetTwoVector<double>()[b];
   if (!m_beam.IsIon())
     THROW(fatal_error, "Wrong form factor for " + m_beam.IDName());
   m_pt2max = sqr(1. / m_R);
+
+  FillTables(m_nxbins, m_nbbins);
 }
 
 void EPA_WoodSaxon::FillTables(const size_t& nx, const size_t& nb)

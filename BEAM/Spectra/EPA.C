@@ -67,11 +67,7 @@ void EPA::Initialise()
   size_t b    = m_dir > 0 ? 0 : 1;
   m_aqed      = s["AlphaQED"].Get<double>();
   m_pref      = sqr(m_charge) * m_aqed / M_PI;
-  m_approx    = s["Approximation"].Get<size_t>();
-  m_analytic  = s["AnalyticFF"].Get<bool>();
   m_plotting  = s["PlotSpectra"].Get<bool>();
-  m_q2max     = s["Q2Max"].GetTwoVector<double>()[b];
-  m_q2min     = s["Q2Min"].GetTwoVector<double>()[b];
   m_theta_max = s["ThetaMax"].GetTwoVector<double>()[b];
   m_pt2max    = sqr(m_energy * m_theta_max);
   m_pt2min    = s["PT2Min"].GetTwoVector<double>()[b];
@@ -80,25 +76,28 @@ void EPA::Initialise()
        'qmi' calculation in CalculateWeight */
     THROW(critical_error, "Too big p_T cut 'EPA:PT2Min'.  Will exit.");
   }
-  m_xmin    = s["xMin"].GetTwoVector<double>()[b];
-  m_xmax    = s["xMax"].GetTwoVector<double>()[b];
-  m_bmin    = s["bMin"].GetTwoVector<double>()[b];
-  m_bmax    = s["bMax"].GetTwoVector<double>()[b];
-  m_WSd     = s["WoodSaxon_d"].GetTwoVector<double>()[b];
-  m_mu      = s["MagneticMu"].GetTwoVector<double>()[b];
-  m_Lambda2 = s["Lambda2"].GetTwoVector<double>()[b];
-  m_Q02     = s["Q02"].GetTwoVector<double>()[b];
-  m_nxbins  = s["xBins"].Get<int>();
-  m_nbbins  = s["bBins"].Get<int>();
+  m_xmin = s["xMin"].GetTwoVector<double>()[b];
+  m_xmax = s["xMax"].GetTwoVector<double>()[b];
+  m_bmin = s["bMin"].GetTwoVector<double>()[b];
+  m_bmax = s["bMax"].GetTwoVector<double>()[b];
+
+  if (m_plotting > 0) {
+    EPA_Spectra_Plotter* plotter = new EPA_Spectra_Plotter(this, string("Spectra"));
+    (*plotter)(99);
+    Tests();
+    delete plotter;
+    THROW(normal_exit, "Tests done.");
+  }
 
   m_type = static_cast<EPA_ff_type>(s["Form_Factor"].GetTwoVector<int>()[b]);
-  InitFormFactor(Settings::GetMainSettings());
-  // WriteDebugFiles(s);
-  if (m_plotting > 0) {
-    EPA_Spectra_Plotter plotter(this, string("Spectra"));
-    plotter(m_plotting);
-    Tests();
+  switch (m_type) {
+    case EPA_ff_type::point: p_ff = new EPA_Point(m_beam, m_dir); break;
+    case EPA_ff_type::Gauss: p_ff = new EPA_Gauss(m_beam, m_dir); break;
+    case EPA_ff_type::dipole: p_ff = new EPA_Dipole(m_beam, m_dir); break;
+    case EPA_ff_type::WoodSaxon: p_ff = new EPA_WoodSaxon(m_beam, m_dir); break;
+    default: THROW(not_implemented, "unknown EPA form factor. ");
   }
+  p_ff->SetPT2Range(m_pt2min, m_pt2max);
 }
 
 void EPA::RegisterDefaults() const
@@ -123,36 +122,50 @@ void EPA::RegisterDefaults() const
   s["WoodSaxon_d"].SetDefault(0.5);
   s["AlphaQED"].SetDefault(0.0072992701);
   s["ThetaMax"].SetDefault(0.3);
-  s["Approximation"].SetDefault(1);
+  s["Approximation"].SetDefault(false);
   s["AnalyticFF"].SetDefault(true);
-  s["PlotSpectra"].SetDefault(0);
-  s["Debug"].SetDefault(false);
-  s["Debug_Files"].SetDefault("EPA_debugOutput");
+  s["PlotSpectra"].SetDefault(false);
 }
 
-void EPA::InitFormFactor(Settings& s)
+void EPA::Tests()
 {
-  switch (m_type) {
-    case EPA_ff_type::point: p_ff = new EPA_Point(m_beam); break;
-    case EPA_ff_type::Gauss:
-      p_ff = new EPA_Gauss(m_beam);
-      p_ff->SetParam("Q02", m_Q02);
-      p_ff->SetParam("Mu2", sqr(m_mu));
-      break;
-    case EPA_ff_type::dipole:
-      p_ff = new EPA_Dipole(m_beam);
-      p_ff->SetParam("Lambda2", m_Lambda2);
-      p_ff->SetParam("Mu2", sqr(m_mu));
-      break;
-    case EPA_ff_type::WoodSaxon:
-      p_ff = new EPA_WoodSaxon(m_beam);
-      p_ff->SetParam("WSd", m_WSd);
-      break;
-    default: THROW(fatal_error, "unknown EPA form factor. ");
+  m_theta_max = M_PI / 180.;
+  // Testing the electron spectrum
+  m_beam = Flavour(kf_e);
+  m_mass = m_beam.Mass(true);
+  p_ff     = new EPA_Point(m_beam, 0);
+  p_ff->SetQ2Max(1.e99);
+  p_ff->SetPT2Max(sqr(m_energy * m_theta_max));
+  p_ff->SetApprox(2);
+  p_ff->SetAnalytic(1);
+  for (size_t i = 0; i < 100; i++) {
+    double x = double(i) / 1000;
+    CalculateWeight(x, 0.);
   }
-  p_ff->SetSwitch("approximation", m_approx);
-  p_ff->SetSwitch("analytic", m_analytic);
-  p_ff->SetQ2Range(m_q2min, m_q2max);
-  p_ff->SetPT2Range(m_pt2min, m_pt2max);
-  p_ff->FillTables(m_nxbins, m_nbbins);
+  delete p_ff;
+  // Testing the proton spectrum
+  m_beam  = Flavour(kf_p_plus);
+  m_mass  = m_beam.Mass(true);
+  m_type  = EPA_ff_type::dipole;
+  p_ff      = new EPA_Dipole(m_beam, 0);
+  p_ff->SetQ2Max(16.);
+  p_ff->SetApprox(1);
+  p_ff->SetAnalytic(1);
+  for (size_t i = 0; i < 100; i++) {
+    double x = double(i) / 1000;
+    CalculateWeight(x, 0.);
+  }
+  delete p_ff;
+  m_beam      = Flavour(kf_lead208);
+  m_mass      = m_beam.Mass(true);
+  m_type      = EPA_ff_type::Gauss;
+  p_ff = new EPA_Gauss(m_beam, 0);
+  p_ff->SetQ2Max(16.);
+  p_ff->SetApprox(1);
+  for (size_t i = 0; i < 100; i++) {
+    double x = double(i) / 1000 / m_beam.GetAtomicNumber();
+    msg_Out() << "-----------------------------------------------------\n";
+    CalculateWeight(x, 0.);
+  }
+  delete p_ff;
 }
