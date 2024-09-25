@@ -14,7 +14,7 @@ Colour_Generator::~Colour_Generator() {}
 
 bool Colour_Generator::operator()(Ladder * ladder){
   p_ladder    = ladder;
-  p_emissions = p_ladder->GetEmissions(); 
+  p_emissions = p_ladder->GetEmissions();
   p_props     = p_ladder->GetProps();
   PickStartColours();
   IterateColours(p_ladder->GetEmissions()->begin(),p_props->begin());
@@ -105,7 +105,7 @@ void Colour_Generator::IterateColours(LadderMap::iterator out,TPropList::iterato
 void Colour_Generator::PickEndColours() {
   Ladder_Particle * outpart = &p_ladder->GetEmissions()->rbegin()->second;
   Ladder_Particle * inpart  = p_ladder->InPart(1);
-  if (m_propcolours[0]!=0 && m_propcolours[0]!=0) {
+  if (m_propcolours[0]!=0 && m_propcolours[1]!=0) {
     outpart->SetFlow(1,m_propcolours[0]);
     inpart->SetFlow(1,m_propcolours[1]);
     if (m_colours[1][0].find(inpart->GetFlow(1))!=m_colours[1][0].end()) {
@@ -166,13 +166,13 @@ ReplaceFSColour(const size_t & pos,const int & orig,const int & repl) {
   return false;
 }
 
-void Colour_Generator::Reset() { 
-  for (size_t beam=0;beam<2;beam++) { 
-    for (size_t flow=0;flow<2;flow++) { 
+void Colour_Generator::Reset() {
+  for (size_t beam=0;beam<2;beam++) {
+    for (size_t flow=0;flow<2;flow++) {
       m_colours[beam][flow].clear();
     }
     m_propcolours[beam] = 0;
-  } 
+  }
 }
 
 void Colour_Generator::OutputStack() {

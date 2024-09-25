@@ -53,12 +53,6 @@ event.  Their respective keywords are
   are the flavour ``<kf>`` to be isolated against massless partons
   and the isolation cone parameters.
 
-:option:`[NJ, <N>, <algo>, <min value>, <max value>]`
-  NJettiness from :cite:`Stewart2010tn`, where ``<algo>`` specifies
-  the jet finding algorithm to determine the hard jet directions and
-  ``<N>`` is their multiplicity.
-  ``algo=kt|antikt|cambridge,PT:<ptmin>,R:<dR>[,[ETA:<etamax>,Y:<ymax>]]``
-
 .. _One particle selectors:
 
 One particle selectors
@@ -323,6 +317,70 @@ are added with a relative sign as constituents, i.e. a jet containing
 b and anti-b is not tagged.  Note that only ``<epression>``,
 ``<algorithm>``, ``<n>`` and ``<ptmin>`` are relevant when using the
 lepton-lepton collider algorithms.
+
+:option:`NJettiness`
+  NJettiness from :cite:`Stewart2010tn`. Selects all phase space points
+  that have a value of ``NJettiness`` larger than a specified minimum value.
+
+.. code-block:: yaml
+
+   - NJettiness:
+       N: <N>
+       TauN: <Taucut>
+       Frame: lab
+       Normalization: jet2
+       Algorithm: antikt
+       RecombinationScheme: E
+       PTMin: 0.0
+       ETMin: 0.0
+       DR: 1
+       EtaMax: None
+       YMax: None
+
+where ``<N>`` specifies the number of hard directions -- jets -- that
+are required, and ``<Taucut>`` the minimum value that the observable
+is allowed to have to be considered a valid phase space point.
+In the current implementation, the algorithm used to cluster the jets defining
+the hard directions can be specified using the ``Algorithm`` option. The
+following values are accepted: ``antikt, kt, genkt, cambridge``, and they
+correspond to those that can be accessed throught the ``Fastjet`` implementation.
+The algorithm is then used to find ``<N>`` pseudojet, which are then
+used to compute the minima that determine the final value of ``NJetttiness``.
+Note, that in the case of Hadron Colliders, the beam are added internally as
+additional ``jets``. Further options can be specified to determine the behaviour
+of this selector. In particular as ``NJettiness`` is a frame dependent quantity,
+the frame in which to compute its value can be specified using the ``Frame``
+option. Currently only two values are accepted which correspond to the hadronic
+centre of mass frame (or Laboratory frame), which is the default and referred to
+as ``lab``, and the partonic centre of mass frame specified as ``com``.
+Additionally, the normalization of each contribution to ``NJettiness`` can be
+choosen through the ``Norm`` parameter between three options: ``jet``, ``jet2``
+and ``com``.
+The first correspond to normalizing the scalar product with the jet energy, the second and
+default choice is equal to the first but multiplied by a factor two, while the
+last one corresponds to normalizing each contribution with the centre of mass
+energy and leads to a Lorentz invariant definition of ``NJettiness``.
+
+Finally a variaty of parameters to control the clustering of the hard directions
+can be passed, similarly to the :option:`FastjetFinder` case. In particular the
+minimum transverse momentum and/or transverse energy (``PTMin,ETMin``), the
+radius of the jet (``DR``), which defaults to ``1``, and the maximum rapidity
+and/or pseudorapidity can be specified (``YMax,EtaMax``).dsd
+
+For example, in the case of vector boson plus jet setup, with ``0.1`` GeV
+0-Jettiness cut, one would use something along the lines of
+
+.. code-block:: yaml
+
+   PROCESSES:
+   - 93 93 -> 11 -11 93:
+     Order: {QCD:1,EW:2}
+   SELECTORS:
+   - [Mass, 11, -11, 75.,125.]
+   - NJettiness:
+       N: 0
+       TauN: 0.1
+
 
 .. _Isolation selector:
 

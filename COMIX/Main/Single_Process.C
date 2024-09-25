@@ -458,10 +458,10 @@ double COMIX::Single_Process::Partonic(const Vec4D_Vector &p,
     else {
       m_w=1.0;
       m_dxs=0.0;
-      ComputeHardMatrix(2);
-      for (size_t i(0); i<m_cols.m_perms.size(); ++i)
-	for (size_t j(0); j<m_cols.m_perms.size(); ++j)
-	  m_dxs+=((*p_hc)[i][j]*m_cols.m_colfacs[i][j]).real();
+      sp->ComputeHardMatrix(2);
+      for (size_t i(0); i<sp->m_cols.m_perms.size(); ++i)
+	for (size_t j(0); j<sp->m_cols.m_perms.size(); ++j)
+	  m_dxs+=((*sp->p_hc)[i][j]*sp->m_cols.m_colfacs[i][j]).real();
     }
     if (p_int->HelicityIntegrator()!=NULL) 
       m_w*=p_int->HelicityIntegrator()->Weight();
@@ -483,8 +483,13 @@ double COMIX::Single_Process::Partonic(const Vec4D_Vector &p,
       rsubs.back()->m_K=kf;
       if (p_map==NULL) p_bg->SubEvts().MultME(m_w);
       else {
-	for (size_t i(0);i<rsubs.size();++i)
+	for (size_t i(0);i<rsubs.size();++i) {
 	  m_subs[i]->CopyXSData(rsubs[i]);
+          for (Cluster_Amplitude *campl(m_subs[i]->p_ampl);
+               campl;campl=campl->Next())
+            for (size_t i(0);i<campl->Legs().size();++i)
+              campl->Leg(i)->SetFlav(ReMap(campl->Leg(i)->Flav(),0));
+        }
 	m_subs.MultME(m_w);
       }
     }

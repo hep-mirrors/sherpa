@@ -148,7 +148,6 @@ void Initialization_Handler::RegisterDefaults()
       "SCALE_VARIATIONS",
       "PDF_VARIATIONS",
       "QCUT_VARIATIONS",
-      "BUNCHES",
       "MASSIVE_PS",
       "MASSLESS_PS"
       });
@@ -214,6 +213,16 @@ void Initialization_Handler::RegisterDefaults()
   // otherwise
   s["SHOWER_GENERATOR"].SetDefault("CSS").UseNoneReplacements();
   std::string showergen{ s["SHOWER_GENERATOR"].Get<std::string>() };
+  if (showergen == std::string("None") && s["BEAM_REMNANTS"].Get<bool>()) {
+    msg_Error()
+            << METHOD << ": " << om::red
+            << "The shower has been switched off but not\nthe beam remnants. "
+               "Colour assignment might become a problem, \nplease switch off "
+               "MPIs, fragmentation and remnants with `MI_HANDLER: None`, "
+               "\n`FRAGMENTATION: None` and `BEAM_REMNANTS: false` in case of "
+               "any corresponding errors. \n"
+            << om::reset;
+  }
   s["JET_CRITERION"].SetDefault(showergen);
   s["NLOMC_GENERATOR"].SetDefault(showergen);
   auto pss = s["SHOWER"], nlopss = s["MC@NLO"];
@@ -788,11 +797,17 @@ void Initialization_Handler::LoadPDFLibraries(Settings& settings) {
     // fix PDFs and default sets for the MPI's / hard_subprocesses here
     // we may have to define defaults here.
     if (!mpilibs.empty()) {
-      std::string libname = mpilibs[Min(beam,mpilibs.size()-1)];
-      if (m_pdflibs.find(libname)==m_pdflibs.end()) m_pdflibs.insert(libname);
-    } else if (!p_beamspectra->GetBeam(beam)->Bunch(0).IsLepton())
+      std::string libname = mpilibs[Min(beam, mpilibs.size() - 1)];
+      if (m_pdflibs.find(libname) == m_pdflibs.end()) m_pdflibs.insert(libname);
+    } else if (!p_beamspectra->GetBeam(beam)->Bunch(0).IsLepton() &&
+               !pdflibs.empty() &&
+               pdflibs[Min(beam, pdflibs.size() - 1)] != std::string("None"))
       m_pdflibs.insert(deflib);
-    m_defsets[PDF::isr::hard_subprocess][beam] = defset;
+    m_defsets[PDF::isr::hard_subprocess][beam] =
+            !pdflibs.empty() && pdflibs[Min(beam, pdflibs.size() - 1)] ==
+                                        std::string("None")
+                    ? "None"
+                    : defset;
     // fix PDFs and default sets for the beam rescattering here
     // EPA is the only configuration at the moment where we allow
     // additional scattering/interactions of the incoming beams.
@@ -946,17 +961,8 @@ void Initialization_Handler::InitISRHandler(const PDF::isr::id & pid,Settings& s
 }
 
 void Initialization_Handler::DefineBunchFlavours(Settings& settings) {
-  std::vector<int> bunches{ settings["BUNCHES"].GetVector<int>() };
-  if (bunches.size() > 2) {
-    THROW(fatal_error, "You can not specify more than two bunches.");
-  }
   for (size_t beam=0;beam<2;beam++) {
-    if (bunches.empty()) m_bunch_particles[beam] = p_beamspectra->GetBeam(beam)->Bunch(0);
-    else {
-      int flav = bunches[Min(beam,bunches.size()-1)];
-      m_bunch_particles[beam] = Flavour((kf_code)abs(flav));
-      if (flav<0) m_bunch_particles[beam] = m_bunch_particles[beam].Bar();
-    }
+    m_bunch_particles[beam] = p_beamspectra->GetBeam(beam)->Bunch(0);
   }
 }
 
@@ -1051,7 +1057,7 @@ bool Initialization_Handler::InitializeTheShowers()
     as->SetActiveAs(id);
     if (m_showerhandlers.find(id) != m_showerhandlers.end())
       delete m_showerhandlers[id];
-    m_showerhandlers[id] = new Shower_Handler(p_model, m_isrhandlers[id], id);
+    m_showerhandlers[id] = new Shower_Handler(p_model, m_isrhandlers[id], id-1);
     m_showerhandlers[id]->SetRemnants(m_remnanthandlers[id]);
     m_isrhandlers[id]->SetRemnants(m_remnanthandlers[id]->GetRemnants());
   }

@@ -7,6 +7,7 @@ set(Selectors_SOURCES Cut_Data.C
                       Jet_Selector.C
                       Isolation_Selector.C
                       NJet_Finder.C
+                      NJettiness_Selector.C
                       Standard_Selector.C
                       DIS_Selector.C
                       Decay_Selector.C

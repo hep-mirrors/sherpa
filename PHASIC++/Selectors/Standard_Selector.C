@@ -286,18 +286,6 @@ namespace PHASIC {
     bool   Trigger(ATOOLS::Selector_List &);
     void   BuildCuts(Cut_Data *);
   };
-
-  class NJettiness_Selector : public Selector_Base {
-    size_t  m_N;
-    double  m_njmin, m_njmax;
-  public:
-    NJettiness_Selector(Process_Base *const);
-    ~NJettiness_Selector();
-    void     SetRange(size_t,double,double);
-    bool     Trigger(ATOOLS::Selector_List &);
-    void     BuildCuts(Cut_Data *);
-  };
-
 }
 
 #include "PHASIC++/Process/Process_Base.H"
@@ -2326,78 +2314,6 @@ PrintInfo(std::ostream &str,const size_t width) const
 {
   str<<"Isolation_Cut selector [hep-ph/9801442]";
 }
-
-
-
-/*--------------------------------------------------------------------
-
- NJettiness arXiv:1004.2489
-
- --------------------------------------------------------------------*/
-
-NJettiness_Selector::NJettiness_Selector(Process_Base *const proc):
- Selector_Base("NJettiness_Selector",proc), m_N(0), m_njmin(0.), m_njmax(0.)
-{
-  THROW(not_implemented,"Not fully implemented yet.");
-}
-
-NJettiness_Selector::~NJettiness_Selector() {
-}
-
-bool NJettiness_Selector::Trigger(Selector_List &sl)
-{
-  DEBUG_FUNC(m_on);
-  if (!m_on) return true;
-  // find all reference vectors n_i
-  Vec4D_Vector ni(m_N+2,Vec4D(0.,0.,0.,0));
-  ni[0]=Vec4D(1.,0.,0.,1.);
-  ni[1]=Vec4D(1.,0.,0.,-1.);
-  // construct all q_i and non hadronic q
-  Vec4D_Vector qi(m_N+2,Vec4D(0.,0.,0.,0));
-  Vec4D q(0.,0.,0.,0.);
-  // find x_a, x_b, Q2
-  Vec4D sumq(q);
-  for (size_t i(0);i<qi.size();++i) sumq+=qi[i];
-  return true;
-}
-
-void NJettiness_Selector::BuildCuts(Cut_Data * cuts)
-{
-}
-
-void NJettiness_Selector::SetRange(size_t N,double min,double max)
-{
-  m_N=N;
-  m_njmin=min;
-  m_njmax=max;
-}
-
-DECLARE_GETTER(NJettiness_Selector,"NJ",Selector_Base,Selector_Key);
-
-Selector_Base *ATOOLS::Getter<Selector_Base,Selector_Key,NJettiness_Selector>::
-operator()(const Selector_Key &key) const
-{
-  Scoped_Settings s{ key.m_settings };
-  const auto parameters = s.SetDefault<std::string>({}).GetVector<std::string>();
-  assert(parameters[0] == "NJ");
-  if (parameters.size() != 4)
-    THROW(critical_error, "Invalid syntax");
-  const auto n = s.Interprete<size_t>(parameters[1]);
-  const auto min = s.Interprete<double>(parameters[2]);
-  const auto max = s.Interprete<double>(parameters[3]);
-  NJettiness_Selector *sel = new NJettiness_Selector(key.p_proc);
-  sel->SetRange(n,min,max);
-  return sel;
-}
-
-void ATOOLS::Getter<Selector_Base,Selector_Key,NJettiness_Selector>::
-PrintInfo(std::ostream &str,const size_t width) const
-{
-  str<<"NJettiness selector [arXiv:1004.2489]";
-}
-
-
-
 
 /*--------------------------------------------------------------------
 

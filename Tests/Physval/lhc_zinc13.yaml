@@ -20,6 +20,16 @@ ME_GENERATORS:
   - Comix
   - Internal
 
+## OTF variations
+SCALE_VARIATIONS:
+  - [0.25, 0.25]
+  - [1.0,  0.25]
+  - [0.25, 1.0]
+  - [1.0,  1.0]
+  - [4.0,  1.0]
+  - [1.0,  4.0]
+  - [4.0,  4.0]
+
 # pp -> Z[ll]+jets
 PROCESSES:
 - 93 93 -> 13 -13:

@@ -33,7 +33,7 @@ def contract_wavefunctions(lorentz, spins):
         name = WAVEFUNCTIONS[sign*spin][0].format(i)
         shape = WAVEFUNCTIONS[sign*spin][1]
         wavefunction = ArraySymbol(name, shape)
-        wavefunctions.append(wavefunction[*indices])
+        wavefunctions.append(wavefunction[tuple(indices)])
     rotations = []
     num_ext = len(wavefunctions)
     for i in range(num_ext):

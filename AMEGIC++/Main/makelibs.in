@@ -1,5 +1,5 @@
 #!/bin/bash
-# 
+#
 # To successfully employ this script, make sure that your bash is in
 # the bin - directory or adjust accordingly.
 #
@@ -40,7 +40,7 @@ do
   \?)
     shift `expr $OPTIND - 1`
     if [ "$1" = "--help" ]; then print_help && exit 0;
-    else 
+    else
       echo -n "makelibs: error: unrecognized option "
       if [ $OPTARG != "-" ]; then echo "'-$OPTARG'. try '-h'"
       else echo "'$1'. try '-h'"
@@ -52,13 +52,13 @@ do
   esac
 done
 
-if [ "$ONE" = "TRUE" ] ; then 
+if [ "$ONE" = "TRUE" ] ; then
   echo "makelibs: select module ( q) to quit )"
   select DIRS in $DIRS ; do
-    if [ "$DIRS" != "" ] ; then 
+    if [ "$DIRS" != "" ] ; then
       SINGLE="TRUE"
       break
-    else 
+    else
       if [ "$REPLY" = "q" ] || [ "$REPLY" = "Q" ]  ; then exit ; fi
     fi
   done
@@ -80,7 +80,7 @@ if [[ ! -f $CMAKE ]]; then
     if [[ `type -p cmake` != "" ]]; then
       export CMAKE=cmake
     else
-      echo "makelibs: cannot find cmake in the system" 
+      echo "makelibs: cannot find cmake in the system"
       exit 1
     fi
   fi
@@ -92,7 +92,7 @@ for J in $DIRS ; do
   echo "======================"
   echo "$J";
   echo "======================"
-  cd $J 
+  cd $J
   test -f CMakeLists.txt.orig || cp CMakeLists.txt CMakeLists.txt.orig
   if test $LIBMODE -eq 1; then
     cp CMakeLists.txt.orig CMakeLists.txt
@@ -105,6 +105,7 @@ for J in $DIRS ; do
 project(${libname} LANGUAGES C CXX)
 cmake_minimum_required(VERSION 3.11.0)
 find_package(SHERPA-MC PATHS ${SHERPA_CMAKE_PATH} REQUIRED ${PATHOPT})
+message(STATUS SHERPA-MC_DIR=\${SHERPA-MC_DIR})
 include(\"GNUInstallDirs\")
 set(lib${libname}_la_SOURCES  ${sources})
 add_library( ${libname} SHARED \${lib${libname}_la_SOURCES})
