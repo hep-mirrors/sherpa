@@ -326,13 +326,20 @@ void Dipole::AddToGhosts(ATOOLS::Vec4D &p) {
 }
 
 double Dipole::EEX(const int betaorder){
-  double real=0;
+  double real=0, test;
+  // msg_Out()<<"================================="<<std::endl;
   if(m_dipolePhotonsEEX.size()==0) return real;
   CalculateGamma();
   m_betaorder = betaorder;
   if(betaorder >= 1 && Type()!=dipoletype::ifi) {
     for(auto &k: m_dipolePhotonsEEX){
-     real += Beta1(k)/Eikonal(k);
+    // msg_Out()<<"Photon Momentum is = "<<k<<std::endl;
+     test = Beta1(k)/Eikonal(k);
+     real+=test;
+     // real += Beta1(k)/Eikonal(k);
+    // msg_Out()<<"EEX Beta11 for k is = "<<test<<std::endl;
+    // msg_Out()<<"Eikonal for k is = "<<Eikonal(k)<<std::endl;
+    // msg_Out()<<"================================="<<std::endl;
     }
   }
   if(betaorder >= 2 ) {
@@ -365,11 +372,14 @@ double Dipole::EEX(const int betaorder){
   if(IsNan(real)){
     msg_Error()<<"YFS EEX is NaN at order "<<betaorder<<std::endl;
   }
+  // msg_Out()<<"================================="<<xstd::endl;;
   return real;//+virt;
 }
 
 double Dipole::Beta1(const Vec4D &k){
   double b1=0;
+  b1 = Hard(k);
+  // msg_Out()<<"EEXReal for k is = "<<b1<<std::endl;
   if(Type()==dipoletype::initial) {
   //   // beta11
     if(m_betaorder==2) b1 = Hard(k)*(1+delf)-Eikonal(k)*(1+deli)*(1+delf);
@@ -435,6 +445,7 @@ double Dipole::VirtualEEX(const int betaorder){
 }
 
 double Dipole::Hard(const Vec4D &k, int i){
+  // msg_Out()<<"Dipole momentum is "<<m_eikmomentum<<std::endl;
   double p1p2 = m_eikmomentum[0]*m_eikmomentum[1];
   double a = k*m_eikmomentum[0]/p1p2;
   double b = k*m_eikmomentum[1]/p1p2;
