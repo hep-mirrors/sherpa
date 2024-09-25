@@ -520,6 +520,8 @@ void Recola::Recola_Interface::GenerateProcesses(const double& alpha, const doub
   ew_scheme::code ewrenscheme = s["EW_REN_SCHEME"].Get<ew_scheme::code>();
   if (ewscheme!=ewrenscheme) THROW(fatal_error,"Inconsistent input scheme.");
   switch (ewscheme) {
+    case 0:
+      use_alpha0_scheme_rcl(alpha);
     case 1:
       // use_alpha0_scheme_and_set_alpha_rcl(AlphaQED());
       use_alpha0_scheme_rcl(alpha);
@@ -532,12 +534,13 @@ void Recola::Recola_Interface::GenerateProcesses(const double& alpha, const doub
       use_gfermi_scheme_and_set_alpha_rcl(alpha);
       break;
     default:
+      use_gfermi_scheme_and_set_alpha_rcl(alpha);
       msg_Error()<<"The EW scheme "<<ewscheme<<" is not available with the "
                   <<"Sherpa+Recola interface. Valid options are:\n"
                   <<"  1) alpha(0)\n"
                   <<"  2) alpha(M_Z)\n"
                   <<"  3) GFermi"<<std::endl;
-      THROW(fatal_error,"Unknown EW_SCHEME setting.");
+      // THROW(fatal_error,"Unknown EW_SCHEME setting.");
   }
 
 
