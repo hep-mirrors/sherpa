@@ -52,11 +52,13 @@ namespace BEAM {
       return (*p_N_xb)(x, b);
     };
     virtual double SelectB(const double& x);
-    virtual double ReducedN(const double& x) { return (*p_Nred_x)(x); }
+    virtual double ReducedN(const double& x)
+    {
+      return (*p_Nred_x)(x);
+    }//< TODO can be deleted?
     virtual double FF(const double& Q2) { return 1.; }
 
-    void SetApprox(size_t i) { m_approx = i; }
-
+    void         SetApprox(size_t i) { m_approx = i; }
     virtual void SetRadius(const double& R) { m_R = R; }
     virtual void SetPT2Max(const double& pt2max) { m_pt2max = pt2max; }
     virtual void SetPT2Range(const double& pt2min, const double& pt2max)
@@ -133,7 +135,7 @@ namespace BEAM {
   class EPA_Dipole final : public EPA_FF_Base {
   private:
     double       m_Lambda2, m_mu2, m_aDip, m_bDip, m_cDip;
-    const double phi(const double& y, const double& arg) const;
+    double phi(const double& y, const double& arg) const;
 
   public:
     explicit EPA_Dipole(const ATOOLS::Flavour& beam, int dir);

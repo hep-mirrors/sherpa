@@ -82,7 +82,8 @@ void EPA::Initialise()
   m_bmax = s["bMax"].GetTwoVector<double>()[b];
 
   if (m_plotting > 0) {
-    EPA_Spectra_Plotter* plotter = new EPA_Spectra_Plotter(this, string("Spectra"));
+    EPA_Spectra_Plotter* plotter =
+            new EPA_Spectra_Plotter(this, string("Spectra"));
     (*plotter)(99);
     Tests();
     delete plotter;
@@ -118,7 +119,8 @@ void EPA::RegisterDefaults() const
                                                         : EPA_ff_type::point));
   s["MagneticMu"].SetDefault(m_beam.IsNucleon() ? 2.79 : 0.);
   s["Lambda2"].SetDefault(0.71);
-  s["Q02"].SetDefault(2. * rpa->hBar_c() / m_beam.Radius());
+  // TODO check the default for ions below
+  s["Q02"].SetDefault(m_beam.IsNucleon() ? 2.79 : sqr(2. / m_beam.Radius()));
   s["WoodSaxon_d"].SetDefault(0.5);
   s["AlphaQED"].SetDefault(0.0072992701);
   s["ThetaMax"].SetDefault(0.3);
@@ -133,7 +135,7 @@ void EPA::Tests()
   // Testing the electron spectrum
   m_beam = Flavour(kf_e);
   m_mass = m_beam.Mass(true);
-  p_ff     = new EPA_Point(m_beam, 0);
+  p_ff   = new EPA_Point(m_beam, 0);
   p_ff->SetQ2Max(1.e99);
   p_ff->SetPT2Max(sqr(m_energy * m_theta_max));
   p_ff->SetApprox(2);
@@ -143,10 +145,10 @@ void EPA::Tests()
   }
   delete p_ff;
   // Testing the proton spectrum
-  m_beam  = Flavour(kf_p_plus);
-  m_mass  = m_beam.Mass(true);
-  m_type  = EPA_ff_type::dipole;
-  p_ff      = new EPA_Dipole(m_beam, 0);
+  m_beam = Flavour(kf_p_plus);
+  m_mass = m_beam.Mass(true);
+  m_type = EPA_ff_type::dipole;
+  p_ff   = new EPA_Dipole(m_beam, 0);
   p_ff->SetQ2Max(16.);
   p_ff->SetApprox(1);
   for (size_t i = 0; i < 100; i++) {
@@ -154,10 +156,10 @@ void EPA::Tests()
     CalculateWeight(x, 0.);
   }
   delete p_ff;
-  m_beam      = Flavour(kf_lead208);
-  m_mass      = m_beam.Mass(true);
-  m_type      = EPA_ff_type::Gauss;
-  p_ff = new EPA_Gauss(m_beam, 0);
+  m_beam = Flavour(kf_lead208);
+  m_mass = m_beam.Mass(true);
+  m_type = EPA_ff_type::Gauss;
+  p_ff   = new EPA_Gauss(m_beam, 0);
   p_ff->SetQ2Max(16.);
   p_ff->SetApprox(1);
   for (size_t i = 0; i < 100; i++) {
