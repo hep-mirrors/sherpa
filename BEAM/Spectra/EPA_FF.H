@@ -23,7 +23,7 @@ namespace BEAM {
   protected:
     ATOOLS::Flavour       m_beam;
     double                m_mass, m_mass2, m_R;
-    double                m_q2min, m_q2max, m_pt2min, m_pt2max;
+    double                m_q2min, m_q2max, m_pt2max;
     double                m_xmin, m_xmax, m_bmin, m_bmax;
     ATOOLS::OneDim_Table* p_Nred_x;
     ATOOLS::TwoDim_Table *p_N_xb, *p_Inv_xb;
@@ -61,11 +61,6 @@ namespace BEAM {
     void         SetApprox(size_t i) { m_approx = i; }
     virtual void SetRadius(const double& R) { m_R = R; }
     virtual void SetPT2Max(const double& pt2max) { m_pt2max = pt2max; }
-    virtual void SetPT2Range(const double& pt2min, const double& pt2max)
-    {
-      m_pt2min = pt2min;
-      m_pt2max = pt2max;
-    }
     void SetQ2Max(const double q2max) { m_q2max = q2max; }
 
     virtual double                 Radius() const { return m_R; }

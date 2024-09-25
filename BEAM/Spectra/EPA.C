@@ -68,14 +68,7 @@ void EPA::Initialise()
   m_aqed      = s["AlphaQED"].Get<double>();
   m_pref      = sqr(m_charge) * m_aqed / M_PI;
   m_plotting  = s["PlotSpectra"].Get<bool>();
-  m_theta_max = s["ThetaMax"].GetTwoVector<double>()[b];
-  m_pt2max    = sqr(m_energy * m_theta_max);
-  m_pt2min    = s["PT2Min"].GetTwoVector<double>()[b];
-  if (m_pt2min > 1.0) {
-    /* pt2min > 1 - according to approximation of
-       'qmi' calculation in CalculateWeight */
-    THROW(critical_error, "Too big p_T cut 'EPA:PT2Min'.  Will exit.");
-  }
+  m_pt2max    = sqr(m_energy * s["ThetaMax"].GetTwoVector<double>()[b]);
   m_xmin = s["xMin"].GetTwoVector<double>()[b];
   m_xmax = s["xMax"].GetTwoVector<double>()[b];
   m_bmin = s["bMin"].GetTwoVector<double>()[b];
@@ -98,7 +91,7 @@ void EPA::Initialise()
     case EPA_ff_type::WoodSaxon: p_ff = new EPA_WoodSaxon(m_beam, m_dir); break;
     default: THROW(not_implemented, "unknown EPA form factor. ");
   }
-  p_ff->SetPT2Range(m_pt2min, m_pt2max);
+  p_ff->SetPT2Max(m_pt2max);
 }
 
 void EPA::RegisterDefaults() const
@@ -131,13 +124,12 @@ void EPA::RegisterDefaults() const
 
 void EPA::Tests()
 {
-  m_theta_max = M_PI / 180.;
   // Testing the electron spectrum
   m_beam = Flavour(kf_e);
   m_mass = m_beam.Mass(true);
   p_ff   = new EPA_Point(m_beam, 0);
   p_ff->SetQ2Max(1.e99);
-  p_ff->SetPT2Max(sqr(m_energy * m_theta_max));
+  p_ff->SetPT2Max(sqr(m_energy * M_PI / 180.));
   p_ff->SetApprox(2);
   for (size_t i = 0; i < 100; i++) {
     double x = double(i) / 1000;
