@@ -15,8 +15,7 @@ namespace BEAM {
     EPA_FF_Base* p_ff;
     double       m_mass, m_charge, m_gamma;
     double       m_aqed, m_pref;
-    double       m_x, m_q2;
-    double       m_theta_max, m_pt2min, m_pt2max;
+    double       m_x, m_q2, m_pt2max;
     double       m_Rmin, m_Rmax, m_Rcut, m_xmin, m_xmax, m_bmin, m_bmax;
 
     double m_Q02;
