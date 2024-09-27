@@ -134,6 +134,7 @@ Variations::GetVariationNameAt(Variations::Parameters_Vector::size_type i,
   case Variations_Type::custom:
     THROW(fatal_error, "Variations does not manage custom variations.");
   }
+  return std::string();
 }
 
 size_t Variations::Size(Variations_Type t) const
@@ -148,6 +149,7 @@ size_t Variations::Size(Variations_Type t) const
   case Variations_Type::custom:
     THROW(fatal_error, "Variations does not manage custom variations.");
   }
+  return 0;
 }
 
 void Variations::ReadDefaults()
@@ -812,6 +814,7 @@ namespace ATOOLS {
       case Variations_Type::qcut:   return o << "Qcut";
       case Variations_Type::custom: return o << "Custom";
     }
+    return o;
   }
 
   std::ostream& operator<<(std::ostream& s, const Variations& v)
