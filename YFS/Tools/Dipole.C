@@ -20,7 +20,7 @@ using namespace YFS;
 double delf = 0;
 double deli = 0;
 int order = 0;
-double SqLam(double x,double y,double z)
+static double SqLam(double x,double y,double z)
 {
   return abs(x*x+y*y+z*z-2.*x*y-2.*x*z-2.*y*z);
   // double arg(sqr(s-s1-s2)-4.*s1*s2);
