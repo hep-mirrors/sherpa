@@ -470,11 +470,6 @@ bool Shower::EvolveSinglet(Singlet * act,const size_t &maxem,size_t &nem)
 			       p_actual->NME()+nem>=m_maxpart));
       msg_Debugging()<<"stat = "<<kstat<<"\n";
       if (kstat<0) continue;
-      /* TODO fusing: implement the following change from rel-2-2-x somewhere:
--       if (vstat==0) {
-+       //next line: special treatment for Qcut=Infinity, needed for fusing with massive calculation
-+       if (vstat==0 || (p_actual->JF()->Ycut() > 1.0 && p_actual->NLO()&2)) {
-      */
       if (p_actual->NLO()&64) {
 	msg_Debugging()<<"UNLOPS veto\n";
 	p_actual->Reduce();
@@ -501,6 +496,10 @@ bool Shower::EvolveSinglet(Singlet * act,const size_t &maxem,size_t &nem)
               const double fac {
                   qcutparams == nullptr ? 1.0 : qcutparams->m_scale_factor};
               stat = jcv < sqr(p_actual->JF()->Qcut() * fac);
+              if (p_actual->JF()->Qcut()>rpa->gen.Ecms()) {
+                if (!(p_actual->NLO()&2)) THROW(fatal_error, "Internal Error 111");
+                stat = 0;
+              }
               msg_Debugging() << "  jcv = " << sqrt(jcv) << " vs "
                               << p_actual->JF()->Qcut() << " * " << fac << " = "
                               << p_actual->JF()->Qcut() * fac << "\n";
