@@ -99,6 +99,7 @@ void Initialization_Handler::RegisterDefaults()
 {
   Settings& s = Settings::GetMainSettings();
   s["BEAM_REMNANTS"].SetDefault(true);
+  s["INTRINSIC_KPERP"].SetDefault(true);
   s["EVENT_GENERATION_MODE"].SetDefault("PartiallyUnweighted");
   s["EVENT_TYPE"].SetDefault("StandardPerturbative");
   s["SOFT_COLLISIONS"].UseNoneReplacements().SetDefault("None");

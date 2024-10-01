@@ -27,7 +27,18 @@ BEAM_REMNANTS
 .. index:: BEAM_REMNANTS
 
 Specifies whether beam remnants are taken into account, with possible
-values 'On' and 'Off'.
+values 'true' and 'false'.
+
+.. _INTRINSIC_KPERP:
+
+INTRINSIC_KPERP
+===============
+
+.. index:: INTRINSIC_KPERP
+
+Global switches to specify whether intrinsic transverse momentum will be
+generated and distributed among the remnants, with possible
+values 'true' and 'false'.
 
 .. _Remnants:
 
