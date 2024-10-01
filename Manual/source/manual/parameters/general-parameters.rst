@@ -204,7 +204,9 @@ The following analysis handlers are currently available
   | Sherpa's internal analysis handler.
   | To use this option, the package must be configured with option
   | :option:`-DSHERPA_ENABLE_ANALYSIS=ON`. An output directory can
-  | be specified using :ref:`ANALYSIS_OUTPUT`.
+  | be specified using :ref:`ANALYSIS_OUTPUT`. However, this module is
+  | deprecated and users are strongly advised to use the Rivet interface
+  | and, e.g., Rivet's `yoda2flat` script.
 
 :option:`Rivet`
   | The Rivet package, see `Rivet Website <http://projects.hepforge.org/rivet/>`_.
