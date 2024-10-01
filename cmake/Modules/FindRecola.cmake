@@ -39,4 +39,13 @@ include(FindPackageHandleStandardArgs)
 FIND_PACKAGE_HANDLE_STANDARD_ARGS(Recola REQUIRED_VARS RECOLA_PREFIX RECOLA_LIBRARY RECOLA_INCLUDE_DIR 
                                  VERSION_VAR RECOLA_VERSION
                                  )
+
+if(Recola_FOUND AND NOT TARGET recola::recola)
+    add_library( recola::recola UNKNOWN IMPORTED)
+    set_target_properties( recola::recola PROPERTIES
+        IMPORTED_LOCATION "${RECOLA_LIBRARY}"
+        INTERFACE_INCLUDE_DIRECTORIES "${RECOLA_INCLUDE_DIR}"
+    )
+endif()
+
 mark_as_advanced(Recola_FOUND)

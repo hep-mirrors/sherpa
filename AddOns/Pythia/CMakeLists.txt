@@ -14,6 +14,5 @@ add_library(SherpaPythia SHARED ${Pythia_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Gi
 sherpa_handle_shared_library(SherpaPythia SherpaPythia)
 
 if (SHERPA_ENABLE_PYTHIA8)   
-  target_link_libraries(SherpaPythia PRIVATE ${PYTHIA8_LIBRARIES})
-  target_include_directories(SherpaPythia PRIVATE ${PYTHIA8_INCLUDE_DIRS})
+  target_link_libraries(SherpaPythia PRIVATE Pythia8::Pythia8)
 endif()

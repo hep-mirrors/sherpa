@@ -34,33 +34,27 @@ list(TRANSFORM SherpaRootEDInput_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/..
 list(APPEND SherpaRootEDInput_SOURCES ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C)
 
 add_library(SherpaRootOutput SHARED ${SherpaRootOutput_SOURCES})
-target_link_libraries(SherpaRootOutput PRIVATE ${ROOT_LIBRARIES})
-target_include_directories(SherpaRootOutput PRIVATE ${ROOT_INCLUDE_DIRS})
+target_link_libraries(SherpaRootOutput PRIVATE ROOT::Tree ROOT::RIO ROOT::Core)
 sherpa_handle_shared_library(SherpaRootOutput SherpaRootOutput)
 
 add_library(SherpaERootOutput SHARED ${SherpaRootEOutput_SOURCES})
-target_link_libraries(SherpaERootOutput PRIVATE ${ROOT_LIBRARIES})
-target_include_directories(SherpaERootOutput PRIVATE ${ROOT_INCLUDE_DIRS})
+target_link_libraries(SherpaERootOutput PRIVATE ROOT::Tree ROOT::RIO ROOT::Core)
 sherpa_handle_shared_library(SherpaERootOutput SherpaERootOutput)
 
 add_library(SherpaEDRootOutput SHARED ${SherpaRootEDOutput_SOURCES})
-target_link_libraries(SherpaEDRootOutput PRIVATE ${ROOT_LIBRARIES})
-target_include_directories(SherpaEDRootOutput PRIVATE ${ROOT_INCLUDE_DIRS})
+target_link_libraries(SherpaEDRootOutput PRIVATE ROOT::Tree ROOT::RIO ROOT::Core)
 sherpa_handle_shared_library(SherpaEDRootOutput SherpaEDRootOutput)
 
 add_library(SherpaRootInput SHARED ${SherpaRootInput_SOURCES})
-target_link_libraries(SherpaRootInput PRIVATE ${ROOT_LIBRARIES})
-target_include_directories(SherpaRootInput PRIVATE ${ROOT_INCLUDE_DIRS})
+target_link_libraries(SherpaRootInput PRIVATE ROOT::Tree ROOT::RIO ROOT::Core)
 sherpa_handle_shared_library(SherpaRootInput SherpaRootInput)
 
 add_library(SherpaERootInput SHARED ${SherpaRootEInput_SOURCES})
-target_link_libraries(SherpaERootInput PRIVATE ${ROOT_LIBRARIES})
-target_include_directories(SherpaERootInput PRIVATE ${ROOT_INCLUDE_DIRS})
+target_link_libraries(SherpaERootInput PRIVATE ROOT::Tree ROOT::RIO ROOT::Core)
 sherpa_handle_shared_library(SherpaERootInput SherpaERootInput)
 
 add_library(SherpaEDRootInput SHARED ${SherpaRootEDInput_SOURCES})
-target_link_libraries(SherpaEDRootInput PRIVATE ${ROOT_LIBRARIES})
-target_include_directories(SherpaEDRootInput PRIVATE ${ROOT_INCLUDE_DIRS})
+target_link_libraries(SherpaEDRootInput PRIVATE ROOT::Tree ROOT::RIO ROOT::Core)
 sherpa_handle_shared_library(SherpaEDRootInput SherpaEDRootInput)
 
 include(CheckCXXCompilerFlag)
