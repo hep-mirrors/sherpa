@@ -22,12 +22,6 @@ Fragmentation models
 
 
 .. index:: FRAGMENTATION
-.. index:: MSTJ
-.. index:: MSTP
-.. index:: MSTU
-.. index:: PARP
-.. index:: PARJ
-.. index:: PARU
 
 The ``FRAGMENTATION`` parameter sets the fragmentation module to be
 employed during event generation.
