@@ -9,7 +9,6 @@ MI_HANDLER:             None # multiple interaction switch
 #BEAM_REMNANTS: false  #Turn off if SHOWER_GENERATOR is None
 #SHOWER_GENERATOR: None #Set None to turn off all the showers, instanton does not decay 
 #FRAGMENTATION: Off
-#FRAGMENTATION: Lund  #Hadronization switch
 #DECAYMODEL: Off
 BATCH_MODE: 2
 #OUTPUT: 8
