@@ -215,8 +215,8 @@ void Dipole::Boost() {
     for (auto &k : m_dipolePhotons) {
       // Boost(k);
       // p_Pboost->Boost(k);
-      Boost(k);
       m_dipolePhotonsEEX.push_back(k);
+      Boost(k);
       m_photonSum+=k;
     }
     // if (p_rotate) delete p_rotate;
@@ -332,7 +332,7 @@ double Dipole::EEX(const int betaorder){
   CalculateGamma();
   m_betaorder = betaorder;
   if(betaorder >= 1 && Type()!=dipoletype::ifi) {
-    for(auto &k: m_dipolePhotonsEEX){
+    for(auto &k: m_dipolePhotons){
     // msg_Out()<<"Photon Momentum is = "<<k<<std::endl;
      test = Beta1(k)/Eikonal(k);
      real+=test;
