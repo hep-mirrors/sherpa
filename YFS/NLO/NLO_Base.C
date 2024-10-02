@@ -26,6 +26,8 @@ NLO_Base::NLO_Base() {
   if(m_isr_debug || m_fsr_debug){
   	m_histograms2d["IFI_EIKONAL"] = new Histogram_2D(0, -1., 1., 20, 0, 5., 20 );
   	m_histograms2d["REAL_SUB"] = new Histogram_2D(0,  0, sqrt(m_s), 200, 0, sqrt(m_s)/2., 20);
+  	m_histograms2d["REAL_COLL_RATIO"] = new Histogram_2D(0,  0, 2.*M_PI, 20, 0, sqrt(m_s)/2., 125);
+  	m_histograms2d["REAL_COLL_RATIO"] = new Histogram_2D(0, 0, sqrt(m_s)/2., 125, 0, 10, 20);
   	m_histograms2d["REAL_RATIO"] = new Histogram_2D(0,  0, 15, 16, 0, sqrt(m_s)/2., 200);
   	m_histograms1d["Real_diff"] = new Histogram(0, -1, 1, 100);
   	m_histograms2d["Real_Flux"] = new Histogram_2D(0, 0, 1.1, 50, 80, 100, 100);
@@ -103,11 +105,10 @@ double NLO_Base::CalculateVirtual() {
 	if (!m_looptool && !m_realvirt) return 0;
 	double virt;
 	double sub;
-	Vec4D_Vector p = m_plab;
 	CheckMassReg();
 	// for(auto pp: m_plab) PRINT_VAR(pp.Mass());
 	if(!HasISR()) virt = p_virt->Calc(m_bornMomenta, m_born);
-	else virt = p_virt->Calc(p, m_born);
+	else virt = p_virt->Calc(m_plab, m_born);
 	if(m_check_virt_born) {
 			if (!IsEqual(m_born, p_virt->p_loop_me->ME_Born(), 1e-6)) {
 			msg_Error() << METHOD << "\n Warning! Loop provider's born is different! YFS Subtraction likely fails\n"
@@ -117,7 +118,12 @@ double NLO_Base::CalculateVirtual() {
 			for(auto _p: m_plab) msg_Error()<<_p<<std::endl;
 		}
 	}	
-	sub = p_dipoles->CalculateVirtualSub();
+	if(virt==0) return 0;
+	if(m_virt_sub) sub = p_dipoles->CalculateVirtualSub();
+	else {
+		sub = 0;
+		virt=virt-m_born;
+	}
 	m_oneloop = (virt - sub * m_born);
 	if(IsBad(m_oneloop)){
 		msg_Error()<<"YFS Virtual is NaN"<<std::endl
@@ -142,7 +148,14 @@ double NLO_Base::CalculateReal() {
 			// if(k.E() < 0.2*sqrt(m_s)) continue;
 				CheckRealSub(k);
 		}
-		real+=CalculateReal(k);
+		if(m_isr_debug || m_fsr_debug){
+			double fullreal = CalculateReal(k);
+			real+=fullreal;
+			double coll = p_dipoles->GetDipoleII()[0].Beta1(k);
+			coll /=  p_dipoles->GetDipoleII()[0].Eikonal(k);
+			if(fullreal!=0) m_histograms2d["REAL_COLL_RATIO"]->Insert(k.E(), coll*m_born/fullreal);
+		}
+		else real+=CalculateReal(k);
 	}
 	for (auto k : m_FSRPhotons) {
 		if(m_check_real_sub) {
@@ -154,21 +167,6 @@ double NLO_Base::CalculateReal() {
 	if(IsBad(real)){
 		msg_Error()<<"YFS Real is NaN"<<std::endl;
 	}
-	// if(m_isr_debug || m_fsr_debug){
-	// 	m_histograms2d["REAL_RATIO"]->Insert(m_FSRPhotons.size()+m_ISRPhotons.size(), sqrt(sp),real/p_dipoles->CalculateEEX()*m_born);
-	// }
-	// if(!IsEqual(real,collreal)){
-	// 		PRINT_VAR(real);
-	// 		PRINT_VAR(collreal);
-	// 		PRINT_VAR(collreal/real);
-	// 		PRINT_VAR(m_FSRPhotons);
-	// 		double t;
-	// 	if(real/m_born > 1e-2){
-	// 		std::cin >> t;
-	// 		// PRINT_VAR(sqrt(sp));
-	// 	}
-	// }		
-	// msg_Out()<<"================================="<<endl;
 	return real;
 }
 
@@ -184,11 +182,6 @@ double NLO_Base::CalculateReal(Vec4D k, int submode) {
 	p_nlodipoles->MakeDipoles(m_flavs,p,m_plab);
 	p_nlodipoles->MakeDipolesII(m_flavs,p,m_plab);
 	p_nlodipoles->MakeDipolesIF(m_flavs,p,m_plab);
-	// msg_Out()<<"================================="<<endl;
-	// msg_Out()<<"Pre boost momentum  is = "<<kk<<endl;
-	// msg_Out()<<"After boost momentum is = "<<k<<endl;
-	// msg_Out()<<"Diff in boost momentum is = "<<k-kk<<endl;
-  // msg_Out()<<"Dipole momentum is "<<p<<std::endl;
 	double flux;
 	if(m_flux_mode==1) flux = p_nlodipoles->CalculateFlux(k);
 	else if(m_flux_mode==2) flux = 0.5*(p_nlodipoles->CalculateFlux(kk)+p_nlodipoles->CalculateFlux(k));
@@ -322,7 +315,7 @@ void NLO_Base::MapMomenta(Vec4D_Vector &p, Vec4D &k) {
 		pRot2.Rotate(p[i]);
 		boostLab.BoostBack(p[i]);
 	}
-	// pRot2.Rotate(k);
+	pRot2.Rotate(k);
 	boostLab.BoostBack(k);
 }
 
