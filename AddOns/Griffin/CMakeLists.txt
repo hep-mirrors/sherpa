@@ -1,0 +1,10 @@
+
+set(Griffin_SOURCES Griffin_Interface.C Griffin_Virtual.C Griffin_Born.C)
+set(Griffin_HEADERS Griffin_Interface.H Griffin_Virtual.H Griffin_Born.H)
+
+sherpa_create_git_info(Griffin)
+
+add_library(SherpaGriffin SHARED ${Griffin_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C)
+sherpa_handle_shared_library(SherpaGriffin SherpaGriffin)
+target_include_directories(SherpaGriffin  PRIVATE ${Griffin_INCLUDE_DIR})
+target_link_libraries(SherpaGriffin  PRIVATE ${GRIFFIN_PREFIX}/libgriffin.a)

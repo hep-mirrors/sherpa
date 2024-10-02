@@ -65,6 +65,17 @@ double Virtual::Calc_V(const ATOOLS::Vec4D_Vector& p,
     //  run_corr = 4.*dalpha*B;
     // }
     p_loop_me->Calc(p,B);
-    V = p_loop_me->ME_Finite()*B-run_corr;
-    return V*m_rescale_alpha*m_factor;
+    switch(p_loop_me->Mode())
+      {
+      case 0:
+        V =  m_factor *  p_loop_me->ME_Finite() * B ; break;
+      case 1:
+        // For Griffin
+        V =  p_loop_me->ME_Finite() -B ; 
+        break;
+      default:
+        THROW(not_implemented, "Loop ME mode not implemented: "+ATOOLS::ToString(p_loop_me->Mode()));
+      }
+    // V = p_loop_me->ME_Finite();//*B-run_corr;
+    return V*m_rescale_alpha;
   }

@@ -18,12 +18,13 @@ std::ofstream real_out, out_ps;
 
 Real::Real(const PHASIC::Process_Info& pi)  {
    /* Load Real ME */
-   p_real_me =  PHASIC::Tree_ME2_Base::GetME2(pi);
-   if (!p_real_me)  THROW(not_implemented, "Couldn't find real ME for this process.");
-   MODEL::s_model->GetCouplings(m_cpls);
    PHASIC::External_ME_Args args(pi.m_ii.GetExternal(),
                                  pi.m_fi.GetExternal(),
-                                 pi.m_maxcpl);
+                                 pi.m_maxcpl,
+                                 "Recola");
+   p_real_me =  PHASIC::Tree_ME2_Base::GetME2(args);
+   if (!p_real_me)  THROW(not_implemented, "Couldn't find real ME for this process.");
+   MODEL::s_model->GetCouplings(m_cpls);
    p_real_me->SetCouplings(m_cpls);
    Flavour_Vector born_flavs;
    for (int i = 0; i < args.m_outflavs.size()-1; ++i) born_flavs.push_back(args.m_outflavs[i]);
