@@ -76,6 +76,7 @@ void YFS_Base::RegisterDefaults(){
   s["Check_Real_Sub"].SetDefault(0);
   s["Integrate_NLO"].SetDefault(1);
   s["Collinear_Virtual"].SetDefault(0);
+  s["Virtual_Sub"].SetDefault(1);
 }
 
 void YFS_Base::RegisterSettings(){
@@ -125,6 +126,7 @@ void YFS_Base::RegisterSettings(){
   m_photon_split = s["PHOTON_SPLITTER_MODE"].ResetDefault().SetDefault(0).Get<bool>();
   m_int_nlo = s["Integrate_NLO"].Get<bool>();
   m_eex_virt = s["Collinear_Virtual"].Get<int>();
+  m_virt_sub = s["Virtual_Sub"].Get<int>();
   m_CalForm = false;
   m_realtool = false;
   //update when beamstrahlung is added

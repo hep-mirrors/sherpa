@@ -65,7 +65,7 @@ public:
   
   int  m_order, m_betaorder, m_fullform, m_formWW, m_ifisub;
   int  m_check_mass_reg, m_check_poles, m_check_real;
-  int m_rmode, m_qedmode, m_kkmcAngles;
+  int m_rmode, m_qedmode, m_kkmcAngles, m_virt_sub;
   int m_no_born, m_check_real_sub, m_no_subtraction, m_tchannel, m_check_virt_born, m_noflux, m_massless_sub;
   
   bool m_looptool, m_virtual_only, m_real_only, m_use_model_alpha;
