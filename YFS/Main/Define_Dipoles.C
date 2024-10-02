@@ -129,7 +129,8 @@ void Define_Dipoles::MakeDipoles(ATOOLS::Flavour_Vector const &fl, ATOOLS::Vec4D
     m_flav_label[fl[2]] = 2;
     m_flav_label[fl[3]] = 3;
     for(size_t i = 2; i < fl.size(); i++) {
-      if(fl[i].IntCharge()!=0 && !fl[i].IsQCD()){
+      // if(fl[i].IntCharge()!=0 && !fl[i].IsQCD()){
+      if(fl[i].IntCharge()!=0){
         ff.push_back(fl[i]);
         mm.push_back(mom[i]);
         bm.push_back(m_bornmomenta[i]);
@@ -155,7 +156,7 @@ void Define_Dipoles::MakeDipoles(ATOOLS::Flavour_Vector const &fl, ATOOLS::Vec4D
       for(size_t i = 2; i < fl.size(); ++i)
       {
         f = fl[i];
-        if (f.IsChargedLepton()) {
+        if (f.Charge()!=0) {
           // msg_Error()<<"YFS FSR only defined for Final state leptons and not for "<<f<<std::endl;
           // }
           ff.push_back(f);
@@ -195,7 +196,7 @@ void Define_Dipoles::MakeDipoles(ATOOLS::Flavour_Vector const &fl, ATOOLS::Vec4D
       // m_flav_label[fl[2]] = 2;
       // m_flav_label[fl[3]] = 3;
       for(size_t i = 2; i < fl.size(); i++) {
-        if (fl[i].IsChargedLepton()) {
+        if (fl[i].Charge()!=0) {
           ff.push_back(fl[i]);
           mm.push_back(mom[i]);
           bm.push_back(m_bornmomenta[i]);
@@ -224,7 +225,7 @@ void Define_Dipoles::MakeDipoles(ATOOLS::Flavour_Vector const &fl, ATOOLS::Vec4D
         if (k == 2) {
           Flavour f1 = fl[d1];
           Flavour f2 = fl[d2];
-          if(f1.IsChargedLepton() && f2.IsChargedLepton()){
+          if(f1.Charge()!=0 && f2.Charge()!=0){
             ff.push_back(f1);
             ff.push_back(f2);
             mm.push_back(mom[d1]);
@@ -548,7 +549,7 @@ double Define_Dipoles::CalculateRealSubEEX(const Vec4D &k) {
     sub += D.Eikonal(k, D.GetBornMomenta(0), D.GetBornMomenta(1));
   }
   for (auto &D : m_dipolesFF) {
-    sub += D.Eikonal(k, D.GetMomenta(0), D.GetMomenta(1));
+    sub += D.Eikonal(k, D.GetBornMomenta(0), D.GetBornMomenta(1));
   }
   // for (auto &D : m_dipolesIF) {
   //   sub += D.Eikonal(k, D.GetBornMomenta(0), D.GetBornMomenta(1));
@@ -610,13 +611,13 @@ double Define_Dipoles::CalculateFlux(const Vec4D &k){
     for (auto &D : m_dipolesFF) {
       Q  = D.GetBornMomenta(0)+D.GetBornMomenta(1);
       QX = D.GetNewMomenta(0)+D.GetNewMomenta(1);
-      sq = (QX).Abs2();
-      sx = (QX+k).Abs2();
+      sq = (Q).Abs2();
+      sx = (Q+k).Abs2();
       flux = (sq/sx);
       // PRINT_VAR(flux);
-      // if(CheckResonant(D)){ 
-      //   flux = (Propagator(sx)/Propagator(sq));
-      // }
+      if(CheckResonant(D)){ 
+        flux *= (Propagator(sx)/Propagator(sq));
+      }
     } 
     return flux;
   }
@@ -751,7 +752,7 @@ bool Define_Dipoles::CheckResonant(){
 }
 
 double Define_Dipoles::ResonantDist(YFS::Dipole &D, const Vec4D &k){
-  double mass_d = (D.GetMomenta(0) + D.GetMomenta(1)+k).Mass();
+  double mass_d = (D.GetNewMomenta(0) + D.GetNewMomenta(1)+k).Mass();
   double mdist(100000000);
   double mcheck(100000000);
   for (auto it = m_proc_restab_map.begin(); it != m_proc_restab_map.end(); ++it) {
