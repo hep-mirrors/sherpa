@@ -21,6 +21,9 @@ EPA::EPA(const Flavour& beam, const double energy, const double pol,
       m_type(EPA_ff_type::point), p_ff(nullptr), m_mass(m_beam.Mass(true)),
       m_charge(m_beam.Charge()), m_plotting(0)
 {
+  if (m_beam.Charge() == 0.)
+    THROW(fatal_error,
+          "No photon flux for uncharged particles. Can not enable EPA. ")
   Initialise();
   m_Nbunches = 2;
   m_bunches.resize(m_Nbunches);
@@ -64,22 +67,24 @@ void EPA::Initialise()
 {
   const auto& s = Settings::GetMainSettings()["EPA"];
   RegisterDefaults();
-  size_t b    = m_dir > 0 ? 0 : 1;
-  m_aqed      = s["AlphaQED"].Get<double>();
-  m_pref      = sqr(m_charge) * m_aqed / M_PI;
-  m_plotting  = s["PlotSpectra"].Get<bool>();
-  m_pt2max    = sqr(m_energy * s["ThetaMax"].GetTwoVector<double>()[b]);
-  m_xmin = s["xMin"].GetTwoVector<double>()[b];
-  m_xmax = s["xMax"].GetTwoVector<double>()[b];
-  m_bmin = s["bMin"].GetTwoVector<double>()[b];
-  m_bmax = s["bMax"].GetTwoVector<double>()[b];
+  size_t b   = m_dir > 0 ? 0 : 1;
+  m_aqed     = s["AlphaQED"].Get<double>();
+  m_pref     = sqr(m_charge) * m_aqed / M_PI;
+  m_plotting = s["PlotSpectra"].Get<bool>();
+  m_pt2max   = !m_beam.IsIon()
+                       ? sqr(m_energy * s["ThetaMax"].GetTwoVector<double>()[b])
+                       : sqr(1. / m_beam.Radius());
+  m_xmin     = s["xMin"].GetTwoVector<double>()[b];
+  m_xmax     = s["xMax"].GetTwoVector<double>()[b];
+  m_bmin     = s["bMin"].GetTwoVector<double>()[b];
+  m_bmax     = s["bMax"].GetTwoVector<double>()[b];
 
-  if (m_plotting > 0) {
-    EPA_Spectra_Plotter* plotter =
+  if (m_plotting) {
+    Tests();
+    /*EPA_Spectra_Plotter* plotter =
             new EPA_Spectra_Plotter(this, string("Spectra"));
     (*plotter)(99);
-    Tests();
-    delete plotter;
+    delete plotter;*/
     THROW(normal_exit, "Tests done.");
   }
 
@@ -121,40 +126,29 @@ void EPA::RegisterDefaults() const
 
 void EPA::Tests()
 {
-  // Testing the electron spectrum
-  m_beam = Flavour(kf_e);
-  m_mass = m_beam.Mass(true);
-  p_ff   = new EPA_Point(m_beam, 0);
-  p_ff->SetQ2Max(1.e99);
-  p_ff->SetPT2Max(sqr(m_energy * M_PI / 180.));
-  p_ff->SetApprox(2);
-  for (size_t i = 0; i < 100; i++) {
-    double x = double(i) / 1000;
-    CalculateWeight(x, 0.);
-  }
-  delete p_ff;
-  // Testing the proton spectrum
-  m_beam = Flavour(kf_p_plus);
-  m_mass = m_beam.Mass(true);
-  m_type = EPA_ff_type::dipole;
-  p_ff   = new EPA_Dipole(m_beam, 0);
-  p_ff->SetQ2Max(16.);
-  p_ff->SetApprox(1);
-  for (size_t i = 0; i < 100; i++) {
-    double x = double(i) / 1000;
-    CalculateWeight(x, 0.);
-  }
-  delete p_ff;
-  m_beam = Flavour(kf_lead208);
-  m_mass = m_beam.Mass(true);
-  m_type = EPA_ff_type::Gauss;
-  p_ff   = new EPA_Gauss(m_beam, 0);
-  p_ff->SetQ2Max(16.);
-  p_ff->SetApprox(1);
-  for (size_t i = 0; i < 100; i++) {
-    double x = double(i) / 1000 / m_beam.GetAtomicNumber();
-    msg_Out() << "-----------------------------------------------------\n";
-    CalculateWeight(x, 0.);
-  }
-  delete p_ff;
+  // Point
+  auto* ff_e = new EPA_Point(Flavour(kf_e), 0);
+  ff_e->OutputToCSV("point");
+  auto* ff_p_point = new EPA_Point(Flavour(kf_p_plus), 0);
+  ff_p_point->OutputToCSV("point");
+
+  // Dipole
+  auto* ff_p_dip = new EPA_Dipole(Flavour(kf_p_plus), 0);
+  ff_p_dip->OutputToCSV("dipole");
+
+  // Gauss
+  auto* ff_p_gauss = new EPA_Gauss(Flavour(kf_p_plus), 0);
+  ff_p_gauss->OutputToCSV("gauss");
+  auto* ff_lead_gauss = new EPA_Gauss(Flavour(kf_lead208), 0);
+  ff_lead_gauss->OutputToCSV("gauss");
+  auto* ff_calc_gauss = new EPA_Gauss(Flavour(kf_calcium40), 0);
+  ff_calc_gauss->OutputToCSV("gauss");
+
+  // Woods-Saxon
+  auto* ff_lead_ws = new EPA_WoodSaxon(Flavour(kf_lead208), 0);
+  ff_lead_ws->OutputToCSV("ws");
+  auto* ff_calc_ws = new EPA_WoodSaxon(Flavour(kf_calcium40), 0);
+  ff_calc_ws->OutputToCSV("ws");
+
+  return;
 }
