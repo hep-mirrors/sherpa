@@ -84,31 +84,41 @@ pages:
 ##########################################################################
 
 
-LCG_102_x86_64-centos7-gcc11-opt:
+LCG_106_ATLAS_7_x86_64-el9-gcc13-opt:
   only:
     variables:
-     - $CI_SERVER_HOST=="gitlab.cern.chxxx"
-  image: gitlab-registry.cern.ch/sft/docker:lcg-cc7
+     - $CI_SERVER_HOST=="gitlab.cern.ch"
+  image: gitlab-registry.cern.ch/sft/docker/alma9-core:latest
+  tags:
+    - k8s-cvmfs
   stage: build
   script:
-      - export RELPATH=/cvmfs/sft.cern.ch/lcg/releases/LCG_102
-      - export LCGPLATFORM=x86_64-centos7-gcc11-opt
-      - export PATH=$RELPATH/swig/4.0.2/bin:/cvmfs/sft.cern.ch/lcg/contrib/CMake/3.23.2/Linux-x86_64/bin/:$PATH
+      - export NCOMPILATION_JOBS=8
+      - export RELPATH=/cvmfs/sft.cern.ch/lcg/releases/LCG_106_ATLAS_7
+      - export LCGPLATFORM=x86_64-el9-gcc13-opt
       - set -x
-      - export S_ROOT=6.26.04
-      - export S_HEPMC3=3.2.4
-      - export S_PYTHIA8=307p1
-      - export S_RIVET=3.1.6
+      - export S_ROOT=6.32.02
+      - export S_HEPMC3=3.2.7
+      - export S_PYTHIA8=312.atlas1
+      - export S_RIVET=4.0.1
+      - export S_YODA=2.0.1
       - export S_MG5=3.3.1.atlas3
       - export S_OPENLOOPS=2.1.2
       - export S_RECOLA=2.2.0
-      - export S_GOSAM=2.0.4
-      - export S_LHAPDF=6.5.1
-      - export S_PYTHON=3.9.12
+      - export S_GOSAM=2.1.1
+      - export S_LHAPDF=6.5.4
+      - export S_PYTHON=3.11.9
+      - export S_LIBZIP=1.9.2
+      - export S_MATPLOTLIB=3.8.3
+      - export S_SWIG=4.0.2
+      - export PATH=$RELPATH/swig/${S_SWIG}/${LCGPLATFORM}/bin:/cvmfs/sft.cern.ch/lcg/contrib/CMake/3.26.2/Linux-x86_64/bin/:$PATH
       - set +x
-      - source $RELPATH/../gcc/11.2.0/x86_64-centos7/setup.sh
-      - source $RELPATH/ROOT/$S_ROOT/${LCGPLATFORM}/bin/thisroot.sh
-      - source $RELPATH/Python/$S_PYTHON/${LCGPLATFORM}/Python-env.sh
+      - source $RELPATH/../gcc/13.1.0/x86_64-el9/setup.sh
+      - source $RELPATH/swig/${S_SWIG}/${LCGPLATFORM}/swig-env.sh
+      - source $RELPATH/ROOT/${S_ROOT}/${LCGPLATFORM}/bin/thisroot.sh
+      - source $RELPATH/Python/${S_PYTHON}/${LCGPLATFORM}/Python-env.sh
+      - source $RELPATH/matplotlib/${S_MATPLOTLIB}/${LCGPLATFORM}/matplotlib-env.sh
+      - source $RELPATH/MCGenerators/rivet/${S_RIVET}/${LCGPLATFORM}/rivetenv.sh
       - set -x
       - which -a g++
       - which -a cmake
@@ -117,9 +127,11 @@ LCG_102_x86_64-centos7-gcc11-opt:
       - LARG="$LARG "-DCMAKE_INSTALL_PREFIX=$(pwd)/install
       - LARG="$LARG "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON
       - LARG="$LARG "-DHepMC3_DIR=$RELPATH/hepmc3/$S_HEPMC3/${LCGPLATFORM}/share/HepMC3/cmake/
-      - LARG="$LARG "-DSHERPA_ENABLE_INSTALL_LIBZIP=ON
+      - LARG="$LARG "-DSHERPA_ENABLE_INSTALL_LIBZIP=OFF
+      - LARG="$LARG "-DLibZip_DIR=$RELPATH/libzip/$S_LIBZIP/${LCGPLATFORM}
       - LARG="$LARG "-DPYTHIA8_DIR=$RELPATH/MCGenerators/pythia8/$S_PYTHIA8/${LCGPLATFORM}
       - LARG="$LARG "-DRIVET_DIR=$RELPATH/MCGenerators/rivet/$S_RIVET/${LCGPLATFORM}
+      - LARG="$LARG "-DYODA_DIR=$RELPATH/MCGenerators/yoda/$S_YODA/${LCGPLATFORM}
       - LARG="$LARG "-DOPENLOOPS_DIR=$RELPATH/MCGenerators/openloops/$S_OPENLOOPS/${LCGPLATFORM}/
       - LARG="$LARG "-DSHERPA_ENABLE_RECOLA=OFF
       - LARG="$LARG "-DLHAPDF_DIR=$RELPATH/MCGenerators/lhapdf/$S_LHAPDF/${LCGPLATFORM}/
@@ -127,13 +139,20 @@ LCG_102_x86_64-centos7-gcc11-opt:
       - LARG="$LARG "-DGOSAM_DIR=$RELPATH/MCGenerators/gosam/$S_GOSAM/${LCGPLATFORM}/
       - LARG="$LARG "-DSHERPA_ENABLE_ROOT=OFF
       - LARG="$LARG "-DSHERPA_ENABLE_HEPMC3_ROOT=OFF
-      - LARG="$LARG "-DSHERPA_ENABLE_PYTHON=OFF
+      - LARG="$LARG "-DSHERPA_ENABLE_PYTHON=ON
       - LARG="$LARG "-DSHERPA_ENABLE_MCFM=OFF
       - LARG="$LARG "-DSHERPA_ENABLE_MANUAL=OFF
       - LARG="$LARG "-DSHERPA_ENABLE_THREADING=OFF
       - LARG="$LARG "-DSHERPA_ENABLE_BLACKHAT=OFF
-      - cmake -S . -B BUILD  $LARG
+      - LARG="$LARG "-DSHERPA_ENABLE_EWSUD:BOOL=ON
+      - LARG="$LARG "-DSHERPA_ENABLE_TESTING:BOOL=ON
+      - LARG="$LARG "-DSHERPA_ENABLE_INTERNAL_PDFS:BOOL=OFF
+      - LARG="$LARG "-DSHERPA_ENABLE_UFO:BOOL=ON
+      - export LHAPDF_DATA_PATH=$LHAPDF_DATA_PATH:/cvmfs/sft.cern.ch/lcg/external/lhapdfsets/current
+      - export LHAPATH=$LHAPATH:/cvmfs/sft.cern.ch/lcg/external/lhapdfsets/current
+      - cmake -S . -B BUILD -DCMAKE_INSTALL_PREFIX=$(pwd)/CM   $LARG
       - cmake --build BUILD -j $NCOMPILATION_JOBS
+      - cmake --install BUILD 
       - ctest --test-dir BUILD --output-on-failure
 ##########################################################################
 ##########################################################################
