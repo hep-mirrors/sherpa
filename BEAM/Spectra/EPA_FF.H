@@ -4,6 +4,8 @@
 #include "ATOOLS/Math/Function_Base.H"
 #include "ATOOLS/Math/Lookup_Tables.H"
 #include "ATOOLS/Phys/Flavour.H"
+#include <iostream>
+#include <fstream>
 
 namespace ATOOLS {
   class Settings;
@@ -52,20 +54,15 @@ namespace BEAM {
       return (*p_N_xb)(x, b);
     };
     virtual double SelectB(const double& x);
-    virtual double ReducedN(const double& x)
-    {
-      return (*p_Nred_x)(x);
-    }//< TODO can be deleted?
+    virtual double ReducedN(const double& x) { return (*p_Nred_x)(x); }
     virtual double FF(const double& Q2) { return 1.; }
 
-    void         SetApprox(size_t i) { m_approx = i; }
+    void         SetApprox(bool approx) { m_approx = approx; }
     virtual void SetRadius(const double& R) { m_R = R; }
     virtual void SetPT2Max(const double& pt2max) { m_pt2max = pt2max; }
-    void SetQ2Max(const double q2max) { m_q2max = q2max; }
+    void         SetQ2Max(const double q2max) { m_q2max = q2max; }
 
-    virtual double                 Radius() const { return m_R; }
-    virtual const ATOOLS::Flavour& Flav() const { return m_beam; }
-    virtual double                 Mass() const { return m_beam.Mass(); }
+    virtual double Mass() const { return m_beam.Mass(); }
 
     virtual ATOOLS::TwoDim_Table* GetN_xb() const { return p_N_xb; }
     virtual ATOOLS::OneDim_Table* GetNred_x() const { return p_Nred_x; }
@@ -79,12 +76,13 @@ namespace BEAM {
     // inclusion of term ~(x m)^2
     inline virtual double Q2max(const double& x) const
     {
-      // TODO this should be an angle, not a pt2?
       return ((m_pt2max > 0.)
                       ? ATOOLS::Min(m_q2max, ATOOLS::sqr(m_mass * x) / (1 - x) +
                                                      m_pt2max * (1. - x))
                       : m_q2max);
     }
+
+    void OutputToCSV(const std::string& type);
   };
 
   class N_xb_int : public ATOOLS::Function_Base {
@@ -129,7 +127,7 @@ namespace BEAM {
 
   class EPA_Dipole final : public EPA_FF_Base {
   private:
-    double       m_Q02, m_mu2, m_aDip, m_bDip, m_cDip;
+    double m_Q02, m_mu2, m_aDip, m_bDip, m_cDip;
     double phi(const double& y, const double& arg) const;
 
   public:
