@@ -1,5 +1,5 @@
 import ast
-import regex
+import re
 
 cmath_dict = {
     "cos": "cos",
