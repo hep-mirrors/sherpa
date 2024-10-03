@@ -43,14 +43,14 @@ namespace ATOOLS {
 	incgam = -0.577215664902-log(x);
 	double prev = 0., fac(1.);
 	size_t i(1);
-	msg_Out()<<METHOD<<"("<<a<<", "<<x<<"), inc = "<<incgam<<"\n";
+	msg_Debugging()<<METHOD<<"("<<a<<", "<<x<<"), inc = "<<incgam<<"\n";
 	while (dabs(1.-incgam/prev)>1.e-12) {
 	  prev    = incgam;
 	  incgam += fac*pow(x,i);
 	  fac    *= -double(i)/sqr(double(i+1));
 	  i++;
 	}
-	msg_Out()<<"---> inc = "<<incgam<<"\n";
+        msg_Debugging()<<"---> inc = "<<incgam<<"\n";
 	return incgam;
       }
       double lngamma(LnGamma(a));
