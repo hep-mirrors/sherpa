@@ -19,8 +19,6 @@ using namespace BEAM;
 using namespace ATOOLS;
 using string = std::string;
 
-ATOOLS::Special_Functions ATOOLS::SF;
-
 ////////////////////////////////////////////////////////////////////////////////
 //
 // Base class for different "form factors" that will enter the EPA spectra.
@@ -169,21 +167,6 @@ void EPA_FF_Base::TestInvxb()
   }
 }
 
-double N_xb_int::operator()(double y)
-{
-  //////////////////////////////////////////////////////////////////////////////
-  //
-  // Integration argument y here is bT*qT as mandated by the Bessel function:
-  // - argument of form factor Q^2 = qT^2+x^2m^2 with qT^2 = y^2/bT^2
-  // - we assume that m_b is in units of 1/GeV, qT is in GeV, overall results
-  //   are in GeV.
-  //
-  //////////////////////////////////////////////////////////////////////////////
-  double qT = y / m_b, qT2 = sqr(qT), xm2 = sqr(m_x * p_ff->Mass());
-  double res = (1. / m_b * qT2 / (qT2 + xm2) * (*p_ff)(m_x, qT2 + xm2));
-  return res;
-}
-
 void EPA_FF_Base::Fill_Nredx_Table()
 {
   //////////////////////////////////////////////////////////////////////////////
@@ -203,6 +186,74 @@ void EPA_FF_Base::Fill_Nredx_Table()
   }
 }
 
+void EPA_FF_Base::OutputToCSV(const std::string& type)
+{
+  double step_x(std::log(m_xmax / m_xmin) / double(m_nxbins));
+  std::vector<double> xs(m_nxbins);
+  xs[0] = m_xmin;
+  for (int i = 1; i < m_nxbins; ++i) {
+    xs[i] = xs[i-1] * std::exp(step_x);
+  }
+  double step_b(std::log(m_bmax / m_bmin) / double(m_nbbins));
+  std::vector<double> bs(m_nbbins);
+  bs[0] = m_bmin;
+  for (int i = 1; i < m_nbbins; ++i) {
+    bs[i] = bs[i-1] * std::exp(step_b);
+  }
+  double q2max(1.), q2min(1.e-5);
+  int    nq2steps(10);
+  double step_q2(std::log(q2max / q2min) / double(nq2steps));
+  std::vector<double> q2s(nq2steps);
+  q2s[0] = q2min;
+  for (int i = 1; i < nq2steps; ++i) {
+    q2s[i] = q2s[i-1] * std::exp(step_q2);
+  }
+  std::string prefix = m_beam.IDName() + "_" + type + "_";
+  if (m_approx) prefix += "approx_";
+
+  std::ofstream outfile_Nx(prefix + "N_x.csv");
+  outfile_Nx << "x,N" << std::endl;
+  for (auto& x : xs) {
+    outfile_Nx << x << "," << N(x) << std::endl;
+  }
+  outfile_Nx.close();
+
+  std::ofstream outfile_Nxq2(prefix + "N_x_q2.csv");
+  outfile_Nxq2 << "x,q2,N" << std::endl;
+  for (auto& x : xs) {
+    for (auto& q2 : q2s) {
+      outfile_Nxq2 << x << "," << q2 << "," << this->operator()(x, q2)
+                   << std::endl;
+    }
+  }
+  outfile_Nxq2.close();
+
+  if (m_approx) return;
+
+  std::ofstream outfile_Nxb(prefix + "N_x_b.csv");
+  outfile_Nxb << "x,b,N" << std::endl;
+  for (auto& x : xs) {
+    for (auto& b : bs) {
+      outfile_Nxb << x << "," << b << "," << N(x, b) << std::endl;
+    }
+  }
+  outfile_Nxb.close();
+
+  std::ofstream outfile_Nredx(prefix + "Nred_x.csv");
+  outfile_Nredx << "x,N" << std::endl;
+  for (auto& x : xs) {
+    outfile_Nredx << x << "," << ReducedN(x) << std::endl;
+  }
+  outfile_Nredx.close();
+
+  std::ofstream outfile_FFq2(prefix + "FF_q2.csv");
+  outfile_FFq2 << "q2,FF" << std::endl;
+  for (auto& q2 : q2s) {
+    outfile_FFq2 << q2 << "," << FF(q2) << std::endl;
+  }
+  outfile_FFq2.close();
+}
+
 double Nred_x_int::operator()(double b)
 {
   //////////////////////////////////////////////////////////////////////////////
@@ -211,6 +262,21 @@ double Nred_x_int::operator()(double b)
   //
   //////////////////////////////////////////////////////////////////////////////
   return 2. * M_PI * b * (*p_ff->GetN_xb())(m_x, b);
+}
+
+double N_xb_int::operator()(double y)
+{
+  //////////////////////////////////////////////////////////////////////////////
+  //
+  // Integration argument y here is bT*qT as mandated by the Bessel function:
+  // - argument of form factor Q^2 = qT^2+x^2m^2 with qT^2 = y^2/bT^2
+  // - we assume that m_b is in units of 1/GeV, qT is in GeV, overall results
+  //   are in GeV.
+  //
+  //////////////////////////////////////////////////////////////////////////////
+  double qT = y / m_b, qT2 = sqr(qT), xm2 = sqr(m_x * p_ff->Mass());
+  double res = (1. / m_b * qT2 / (qT2 + xm2) * (*p_ff)(m_x, qT2 + xm2));
+  return res;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -311,15 +377,14 @@ EPA_Dipole::EPA_Dipole(const ATOOLS::Flavour& beam, const int dir)
   const auto& s = Settings::GetMainSettings()["EPA"];
   size_t      b = dir > 0 ? 0 : 1;
   m_mu2         = sqr(s["MagneticMu"].GetTwoVector<double>()[b]);
-  m_Q02     = s["Q02"].GetTwoVector<double>()[b];
+  m_Q02         = s["Q02"].GetTwoVector<double>()[b];
   if (!m_beam.IsNucleon())
     THROW(fatal_error, "Wrong form factor for " + m_beam.IDName());
-  //m_mu2 = m_beam.Charge() != 0. ? 2.79 * 2.79 : 0.;
 
   // a, b, c coeffients from Budnev et al., Eq. (D.7)
-  m_aDip = (1. + m_mu2) / 4. + 4. * m_mass2 / m_Q02; // should be  7.16
-  m_bDip = 1. - 4. * m_mass2 / m_Q02;                // should be -3.96
-  m_cDip = (m_mu2 - 1.) / pow(m_bDip, 4.);           // should be  0.028
+  m_aDip = (1. + m_mu2) / 4. + 4. * m_mass2 / m_Q02;// should be  7.16
+  m_bDip = 1. - 4. * m_mass2 / m_Q02;               // should be -3.96
+  m_cDip = (m_mu2 - 1.) / pow(m_bDip, 4.);          // should be  0.028
 
   FillTables(m_nxbins, m_nbbins);
 }
@@ -375,7 +440,7 @@ double EPA_Dipole::N(const double& x)
   }
   // ... or ignoring it.
   return ((1. - x + m_mu2 * sqr(x) / 2.) * log(q2max / q2min) -
-          (1. - x) * (1. - q2min / q2max)); //< TODO which one is this eq.?
+          (1. - x) * (1. - q2min / q2max));//< TODO which one is this eq.?
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -392,10 +457,7 @@ EPA_Gauss::EPA_Gauss(const ATOOLS::Flavour& beam, const int dir)
   size_t      b = dir > 0 ? 0 : 1;
   m_mu2         = sqr(s["MagneticMu"].GetTwoVector<double>()[b]);
   m_Q02         = s["Q02"].GetTwoVector<double>()[b];
-  // TODO ist m_Q02 in 1/GeV oder fm? Set defaults for mu2 and Q02 in EPA.C!
-  if (m_beam.IsIon()) {
-    m_pt2max = sqr(1. / m_R);
-  }
+  if (m_beam.IsIon()) { m_Q02 /= m_beam.GetAtomicNumber(); }
 
   FillTables(m_nxbins, m_nbbins);
 }
@@ -453,24 +515,22 @@ double EPA_Gauss::N(const double& x)
 // Form factor for ions in a Wood-Saxon potential.  A few comments:
 //
 // - Output for the density modifed to recover the atomic number A on
-// integration,
-//   and in units of fm^-3 or GeV^3. Internally we normalise it to unity,
-//   because we will later multiply the square of the form factor with the
-//   square of the charge Z.
+//   integration, and in units of fm^-3 or GeV^3. Internally we normalise it to
+//   unity, because we will later multiply the square of the form factor with
+//   the square of the charge Z.
 // - Radius in 1/GeV, therefore "nucelar skin" m_d also in 1/GeV
 //
 ////////////////////////////////////////////////////////////////////////////////
 
 EPA_WoodSaxon::EPA_WoodSaxon(const ATOOLS::Flavour& beam, const int dir)
     : EPA_FF_Base(beam, dir), m_d(0.5 / rpa->hBar_c()), p_FF_Q2(nullptr),
-      p_N(nullptr)
+      p_N(nullptr), m_rho0(0.)
 {
   const auto& s = Settings::GetMainSettings()["EPA"];
   size_t      b = dir > 0 ? 0 : 1;
   m_d           = s["WoodSaxon_d"].GetTwoVector<double>()[b];
   if (!m_beam.IsIon())
     THROW(fatal_error, "Wrong form factor for " + m_beam.IDName());
-  m_pt2max = sqr(1. / m_R);
 
   FillTables(m_nxbins, m_nbbins);
 }
@@ -498,8 +558,9 @@ void EPA_WoodSaxon::InitFFTable(const double& q2min, const double& q2max)
   for (size_t i = 0; i < p_FF_Q2->GetAxis().m_nbins; i++) {
     ws->SetQ(sqrt(p_FF_Q2->GetAxis().x(i)));
     double rmin = 0., rmax = m_R;
-    double res = m_rho0 * gauss.Integrate(rmin, rmax, 1.e-6, 0), inc = 0.;
-    do {
+    double res = m_rho0 * gauss.Integrate(rmin, rmax, 1.e-6, 0);
+    double inc(0.);
+    do {// TODO what's the logic here?
       rmin = rmax;
       rmax *= 2.;
       res += inc = m_rho0 * gauss.Integrate(rmin, rmax, 1.e-6, 0);
@@ -532,7 +593,7 @@ double EPA_WoodSaxon::CalculateDensity()
   Gauss_Integrator gauss(rho);
   double           rmin = 0., rmax = m_R;
   double           res = gauss.Integrate(rmin, rmax, 1.e-3), inc = 0.;
-  do {
+  do {// TODO what's the logic here?
     rmin = rmax;
     rmax *= 2.;
     res += inc = gauss.Integrate(rmin, rmax, 1.e-6);
@@ -545,7 +606,4 @@ double EPA_WoodSaxon::operator()(const double& x, const double& Q2)
   return (1. - x) * (1. - Q2min(x) / Q2) * (*p_FF_Q2)(Q2);
 }
 
-double EPA_WoodSaxon::N(const double& x)
-{
-  return (*p_N)(x);
-}
+double EPA_WoodSaxon::N(const double& x) { return (*p_N)(x); }
