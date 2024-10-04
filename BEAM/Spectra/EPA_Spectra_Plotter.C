@@ -63,7 +63,7 @@ void EPA_Spectra_Plotter::Init() {
     m_xvals = { 0.001, 0.01, 0.1 };
   }
   m_xsize   = (m_xmax-m_xmin)/double(m_nxbins);
-  m_R       = m_beam.Radius();
+  m_R       = m_beam.Radius() / rpa->hBar_c();
   m_bmin    = 0.;
   m_bmax    = 10000.*m_R+m_bmin;
   m_bsize   = (m_bmax-m_bmin)/double(m_nbbins);
