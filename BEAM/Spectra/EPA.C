@@ -73,7 +73,7 @@ void EPA::Initialise()
   m_plotting = s["PlotSpectra"].Get<bool>();
   m_pt2max   = !m_beam.IsIon()
                        ? sqr(m_energy * s["ThetaMax"].GetTwoVector<double>()[b])
-                       : sqr(1. / m_beam.Radius());
+                       : sqr(1. / m_beam.Radius() * rpa->hBar_c());
   m_xmin     = s["xMin"].GetTwoVector<double>()[b];
   m_xmax     = s["xMax"].GetTwoVector<double>()[b];
   m_bmin     = s["bMin"].GetTwoVector<double>()[b];
@@ -115,8 +115,7 @@ void EPA::RegisterDefaults() const
                                      : m_beam.IsMeson()   ? EPA_ff_type::dipole
                                                         : EPA_ff_type::point));
   s["MagneticMu"].SetDefault(m_beam.IsNucleon() ? 2.79 : 0.);
-  // TODO check the default for ions below
-  s["Q02"].SetDefault(m_beam.IsNucleon() ? 0.71 : sqr(2. / m_beam.Radius()));
+  s["Q02"].SetDefault(m_beam.IsNucleon() ? 0.71 : sqr(2. / m_beam.Radius() * rpa->hBar_c()));
   s["WoodSaxon_d"].SetDefault(0.5);
   s["AlphaQED"].SetDefault(0.0072992701);
   s["ThetaMax"].SetDefault(0.3);
