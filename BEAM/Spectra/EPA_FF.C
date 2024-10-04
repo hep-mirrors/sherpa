@@ -63,8 +63,7 @@ double EPA_FF_Base::SelectB(const double& x)
   // Internally, we assume b is in units of 1/GeV, we return it in fm here.
   //
   //////////////////////////////////////////////////////////////////////////////
-  // TODO check below this must be wrong
-  double xeff = m_xmin;
+  double xeff(x);
   if (xeff < m_xmin) xeff = m_xmin * (1. + 1.e-6);
   if (xeff > m_xmax) xeff = m_xmax * (1. - 1.e-6);
   double b = (*p_Inv_xb)(xeff, ran->Get());
