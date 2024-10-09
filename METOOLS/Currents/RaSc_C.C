@@ -337,12 +337,12 @@ void CRS<SType>::ConstructJ(const ATOOLS::Vec4D &p,const int ch,
       CRaScType j(anti^(this->m_dir>0)?
                   RS(p, this->m_fl.Majorana()?-2:-1, this->m_fl.Majorana()?(mode?2:3):2, 0, -this->m_dir, cr, ca):
                   RS(p, this->m_fl.Majorana()?2:1, this->m_fl.Majorana()?(mode?3:2):2, 0, this->m_dir, cr, ca));
-      AddJ(CRaScType::New(j));
       // h=3 for bar vector-spinor
       //j.SetH(anti^(this->m_dir>0)?2:3);
       j.SetH(2);
       CRaScType *c(CRaScType::New(j));
       AddJ(c);
+      DEBUG_VAR(j);
 #ifdef DEBUG__BG
       msg_Debugging()<<METHOD<<"(): "<<(this->m_dir>0?'I':'O')
 		     <<"+ "<<this->m_id<<" "<<j
@@ -364,6 +364,7 @@ void CRS<SType>::ConstructJ(const ATOOLS::Vec4D &p,const int ch,
 #endif
       CRaScType *c(CRaScType::New(j));
       AddJ(c);
+      DEBUG_VAR(j);
 /*    if (p_sub) static_cast<Dipole_Color*>
       (p_sub->In().front()->Color().front())->AddJJK(c);*/
     }
@@ -373,11 +374,11 @@ void CRS<SType>::ConstructJ(const ATOOLS::Vec4D &p,const int ch,
       CRaScType j(anti^(this->m_dir>0)?
                   RS(p, this->m_fl.Majorana()?-2:-1, this->m_fl.Majorana()?(mode?3:2):3, 0, -this->m_dir, cr, ca):
                   RS(p, this->m_fl.Majorana()?2:1, this->m_fl.Majorana()?(mode?2:3):3, 0, this->m_dir, cr, ca));
-      AddJ(CRaScType::New(j));
       //j.SetH(anti^(this->m_dir>0)?3:2);
       j.SetH(3);
       CRaScType *c(CRaScType::New(j));
       AddJ(c);
+      DEBUG_VAR(j);
 #ifdef DEBUG__BG
       msg_Debugging()<<METHOD<<"(): "<<(this->m_dir>0?'I':'O')
 		     <<"- "<<this->m_id<<" "<<j
@@ -399,6 +400,7 @@ void CRS<SType>::ConstructJ(const ATOOLS::Vec4D &p,const int ch,
 #endif
       CRaScType *c(CRaScType::New(j));
       AddJ(c);
+      DEBUG_VAR(j);
 /*    if (p_sub) static_cast<Dipole_Color*>
       (p_sub->In().front()->Color().front())->AddJJK(c);*/
     }
