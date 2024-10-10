@@ -110,6 +110,7 @@ void Sudakov::InitSplittingFunctions(MODEL::Model_Base *md,const int kfmode)
     }
   }
   AddDiQuarkSplittingFunctions(md,kfmode);
+  AddOctetMesonSplittingFunctions(md,kfmode);
   msg_Debugging()<<"}\n";
 }
 
@@ -127,6 +128,33 @@ void Sudakov::AddDiQuarkSplittingFunctions(MODEL::Model_Base *md,const int kfmod
     v.AddParticle(flav);
     v.AddParticle(Flavour(kf_gluon));
     v.Color.push_back(Color_Function(cf::T,3,2,1));
+    v.Lorentz.push_back("SSV");
+    v.cpl.push_back(cpl0);
+    v.order[0]=1;
+    Add(new Splitting_Function_Base(SF_Key(&v,0,cstp::FF,kfmode,m_qcdmode,m_ewmode, 1,m_pdfmin)));
+    Add(new Splitting_Function_Base(SF_Key(&v,0,cstp::FF,kfmode,m_qcdmode,m_ewmode,-1,m_pdfmin)));
+  }
+  //msg_Out()<<METHOD<<": by now "<<m_splittings.size()<<" splitting functions\n"
+    //	   <<"============================================================\n";
+}
+
+void Sudakov::AddOctetMesonSplittingFunctions(MODEL::Model_Base *md,const int kfmode) {
+  //msg_Out()<<"============================================================\n"
+  //	   <<METHOD<<": so far "<<m_splittings.size()<<" splitting functions\n";
+  Kabbala g3("g_3",sqrt(4.*M_PI*md->ScalarConstant("alpha_S")));
+  Kabbala cpl0=g3*Kabbala("i",Complex(0.,1.));
+  list<kf_code> octetmesons = { kf_eta_c_1S_oct, kf_J_psi_1S_oct,
+				kf_chi_c0_1P_oct, kf_chi_c1_1P_oct, /*kf_chi_c2_1P_oct,*/
+				kf_eta_b_oct, kf_Upsilon_1S_oct,
+				kf_chi_b0_1P_oct, kf_chi_b1_1P_oct /*, kf_chi_b2_1P_oct */};
+    for (list<kf_code>::iterator kfit=octetmesons.begin();kfit!=octetmesons.end();kfit++) {
+    Flavour flav(*kfit);
+    //if (!flav.IsOn()) continue;
+    Single_Vertex v;
+    v.AddParticle(flav.Bar());
+    v.AddParticle(flav);
+    v.AddParticle(Flavour(kf_gluon));
+    v.Color.push_back(Color_Function(cf::F,3,2,1));
     v.Lorentz.push_back("SSV");
     v.cpl.push_back(cpl0);
     v.order[0]=1;

@@ -59,6 +59,17 @@ namespace EXTRAXS {
     bool SetColours(const Vec4D_Vector& mom);
 
   };
+
+
+  class XS_qg_q1S0_octet : public ME2_Base {
+  private:
+    size_t m_g, m_q, m_O, m_a;
+    double m_alphaS, m_R02, m_mass, m_mass2, m_pref;
+  public:
+    XS_qg_q1S0_octet(const External_ME_Args& args);
+    double operator()(const Vec4D_Vector& mom);
+    bool SetColours(const Vec4D_Vector& mom);
+  };
 }
 
 
@@ -248,11 +259,83 @@ double XS_gg_g1S0::operator()(const Vec4D_Vector& mom)
 bool XS_gg_g1S0::SetColours(const Vec4D_Vector& mom) 
 {
   size_t bit = ran->Get()<0.5 ? 0 : 1;
-  m_colours[0][bit] = m_colours[1][1-bit]     = Flow::Counter();
-  m_colours[0][bit] = m_colours[5-m_S][1-bit] = Flow::Counter();
-  m_colours[1][bit] = m_colours[5-m_S][bit]   = Flow::Counter();
+  m_colours[0][bit]   = m_colours[1][1-bit]     = Flow::Counter();
+  m_colours[0][1-bit] = m_colours[5-m_S][1-bit] = Flow::Counter();
+  m_colours[1][bit]   = m_colours[5-m_S][bit]   = Flow::Counter();
   return true;
 }
+
+//////////////////////////////////////////////////////////////////////////
+//
+// Octet production of eta states (1S0 = 441, 551)
+//
+// currently: still for tssting purposes only,
+//            singlet (wrong) MEs and incomplete colour flows
+//////////////////////////////////////////////////////////////////////////
+DECLARE_TREEME2_GETTER(EXTRAXS::XS_qg_q1S0_octet,"1XS_qg_q1S0_octet")
+Tree_ME2_Base *ATOOLS::Getter<PHASIC::Tree_ME2_Base,
+			      PHASIC::External_ME_Args,
+			      EXTRAXS::XS_qg_q1S0_octet>::
+operator()(const External_ME_Args &args) const
+{
+  if (dynamic_cast<UFO::UFO_Model*>(MODEL::s_model)) return NULL;
+
+  const Flavour_Vector fl = args.Flavours();
+  if (fl.size()==4 && args.m_orders[0]==3 && args.m_orders[1]==0) {
+    if ( ((fl[0].IsQuark() && fl[1].IsGluon() && fl[2]==fl[0]) ||
+	  (fl[0].IsGluon() && fl[1].IsQuark() && fl[2]==fl[1])) &&
+	 fl[3].IsMeson() ) {
+      kf_code kfc = fl[3].Kfcode();
+      if (kfc==kf_eta_c_1S_oct || kfc==kf_eta_b_oct)
+	return new XS_qg_q1S0_octet(args);
+    }
+    if ( ((fl[0].IsQuark() && fl[1].IsGluon() && fl[3]==fl[0]) ||
+	  (fl[0].IsGluon() && fl[1].IsQuark() && fl[3]==fl[1])) &&
+	 fl[2].IsMeson() ) {
+      kf_code kfc = fl[2].Kfcode();
+      if (kfc==kf_eta_c_1S_oct || kfc==kf_eta_b_oct)
+	return new XS_qg_q1S0_octet(args);
+    }
+  }
+  return NULL;
+}
+
+XS_qg_q1S0_octet::XS_qg_q1S0_octet(const External_ME_Args& args):
+  ME2_Base(args)
+{
+  m_oqcd = 3; m_oew = 0;
+  const ATOOLS::Flavour_Vector& fl = args.Flavours();
+  for (short int i=0;i<4;i++) {
+    if (i<2 && fl[i].IsGluon()) m_g = i;
+    if (i<2 && fl[i].IsQuark()) m_q = i;
+    if (i>1 && fl[i].IsMeson()) m_O = i;
+  }
+  m_mass   = fl[m_O].Mass(true);  m_mass2 = sqr(m_mass); m_R02 = 0.;
+  if (fl[m_O].Kfcode()==kf_eta_c_1S_oct) m_R02 = 0.49;
+  if (fl[m_O].Kfcode()==kf_eta_c_1S_oct) m_R02 = 4.54;
+  m_a      = fl[m_q].IsAnti() ? 1 : 0; 
+  m_alphaS = MODEL::s_model->ScalarConstant("alpha_S");
+  m_pref   = 2./9.*sqr(4.*M_PI)*m_R02/m_mass;
+}
+
+double XS_qg_q1S0_octet::operator()(const Vec4D_Vector& mom) 
+{
+  double s  = (mom[0]+mom[1]).Abs2();
+  double t  = (mom[0]-mom[2]).Abs2();
+  double u  = (mom[0]-mom[3]).Abs2();
+  double M2 = (sqr(t-m_mass2)-2.*s*u)/(-t*sqr(t-m_mass2));
+  return pow(m_alphaS,3)*CouplingFactor(3,0)*m_pref*M2;
+}
+
+bool XS_qg_q1S0_octet::SetColours(const Vec4D_Vector& mom) 
+{
+  m_colours[m_O][m_a]   = m_colours[m_q][m_a]   = Flow::Counter();
+  m_colours[m_O][1-m_a] = m_colours[m_g][1-m_a] = Flow::Counter();
+  m_colours[5-m_O][m_a] = m_colours[m_g][m_a]   = Flow::Counter();
+  return true;
+}
+
+
 
 
 //////////////////////////////////////////////////////////////////////////

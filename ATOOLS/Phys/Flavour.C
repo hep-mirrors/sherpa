@@ -77,6 +77,36 @@ Particle_Info::Particle_Info
   m_content.push_back(new Flavour(*this));
 }
 
+void Particle_Info::InitHadron(const kf_code& kfc,const bool & checkinitialised,
+			       const double &mass,const double &radius,const double &width,
+			       const int & icharge,const int & spin,const bool & majorana,
+			       const bool & on,const int & stable,
+			       const std::string& idname,const std::string& texname)
+{
+  if (checkinitialised) {
+    if(s_kftable.find(kfc)!=s_kftable.end()) return;
+  }
+  s_kftable[kfc]=new Particle_Info(kfc, mass, radius, width, icharge,
+				   spin, on, stable, 
+				   idname, texname);
+}
+
+void Particle_Info::InitHadron(const kf_code& kfc,const bool & checkinitialised,
+			       const double &mass,const double &radius,const double &width,
+			       const int & icharge,const int & strong,
+			       const int & spin,const bool & majorana,
+			       const bool & massive, const bool & on,const int & stable,
+			       const std::string& idname,const std::string& antiidname,
+			       const std::string& texname,const std::string& antitexname) {
+  if (checkinitialised) {
+    if(s_kftable.find(kfc)!=s_kftable.end()) return;
+  }
+  s_kftable[kfc]=new Particle_Info(kfc, mass, radius, width, icharge,strong,
+				   spin, majorana, massive, on, stable, 
+				   idname, antiidname,texname,antitexname);
+}
+
+
 Particle_Info::~Particle_Info()
 { 
   Clear();
@@ -361,6 +391,11 @@ bool Flavour::IsDiQuark() const
     if(help<0.031) return true;
   }
   return false;
+}
+
+bool Flavour::IsOctetMeson() const 
+{
+  return (Kfcode()/100000==99);
 }
 
 bool Flavour::IsBaryon() const 

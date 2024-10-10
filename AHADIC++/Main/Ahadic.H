@@ -4,6 +4,7 @@
 #include "AHADIC++/Formation/Beam_Particles_Shifter.H"
 #include "AHADIC++/Formation/Singlet_Former.H"
 #include "AHADIC++/Formation/Singlet_Checker.H"
+#include "AHADIC++/Formation/OctetMeson_Decayer.H"
 #include "AHADIC++/Formation/Gluon_Decayer.H"
 #include "AHADIC++/Tools/Soft_Cluster_Handler.H"
 #include "AHADIC++/Decays/Cluster_Decayer.H"
@@ -27,6 +28,7 @@ namespace AHADIC {
     Beam_Particles_Shifter m_beamparticles;
     Singlet_Former         m_sformer;
     Singlet_Checker        m_singletchecker;
+    OctetMeson_Decayer     m_octetmesondecayer;
     Gluon_Decayer          m_gluondecayer;
     Cluster_Decayer        m_clusterdecayer;
 
@@ -35,6 +37,7 @@ namespace AHADIC {
     bool ExtractSinglets(ATOOLS::Blob * blob);
     bool ShiftBeamParticles();
     bool CheckSinglets();
+    bool DecayOctetMesons();
     bool DecayGluons();
     bool DecayClusters();
     void Reset(ATOOLS::Blob * blob=NULL);

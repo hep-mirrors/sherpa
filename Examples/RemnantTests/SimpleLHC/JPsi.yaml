@@ -5,7 +5,7 @@ BEAMS:            2212
 BEAM_ENERGIES:    3500
 MI_HANDLER:       None
 SHOWER_GENERATOR: CSS
-FRAGMENTATION:    None
+FRAGMENTATION:    Ahadic
 
 # matrix-element calculation
 ME_GENERATORS:
@@ -20,6 +20,8 @@ SCALES: METS{H_T2}{H_T2}
 # pp -> Z[ee]+jets
 PROCESSES:
 - 93 93 -> 441 93:
+    Order: {QCD: 3, EW: 0}
+- 93 93 -> 9900441 93:
     Order: {QCD: 3, EW: 0}
 
 SHOWER:

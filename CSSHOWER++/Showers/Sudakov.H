@@ -32,6 +32,9 @@ namespace CSSHOWER {
     double m_reweightscalecutoff, m_gluon_xscaling_in_forced_splittings;
     std::pair<double, double> m_pdfmin;
     static bool s_init;
+    
+    void AddDiQuarkSplittingFunctions(MODEL::Model_Base *md,const int kfmode);
+    void AddOctetMesonSplittingFunctions(MODEL::Model_Base *md,const int kfmode);
     double ProduceT(double t);
     bool Veto(double,double,double,double,double);
     bool Splitting(double,double,double,double,double);

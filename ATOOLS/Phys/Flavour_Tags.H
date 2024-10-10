@@ -404,6 +404,29 @@
 #define      kf_Sigma_1660_plus         203222
 #define      kf_Xi_1690_minus           203312
 #define      kf_Xi_1690                 203322
+// fictitious octet mesons relevant for quarkonia production
+#define      kf_eta_c_1S_oct            9900441
+#define      kf_J_psi_1S_oct            9900443
+#define      kf_chi_c0_1P_oct           9910441
+#define      kf_chi_c1_1P_oct           9920443
+#define      kf_chi_c2_1P_oct           9900445
+#define      kf_eta_b_oct               9900551
+#define      kf_Upsilon_1S_oct          9900553
+#define      kf_chi_b0_1P_oct           9910551
+#define      kf_chi_b1_1P_oct           9920553
+#define      kf_chi_b2_1P_oct           9900555
+// alternative version
+//#define      kf_eta_c_1S_oct            881
+//#define      kf_J_psi_1S_oct            883
+//#define      kf_chi_c0_1P_oct           10881
+//#define      kf_chi_c1_1P_oct           20883
+//#define      kf_chi_c2_1P_oct           885
+//#define      kf_eta_b_oct               991
+//#define      kf_Upsilon_1S_oct          993
+//#define      kf_chi_b0_1P_oct           10991
+//#define      kf_chi_b1_1P_oct           20993
+//#define      kf_chi_b2_1P_oct           995
+// hadrons we do not (yet) use with dodgy naming
 // #define      kf_Sigma_c_2455            204112
 // #define      kf_Lambda_c_plus           204122
 // #define      kf_Sigma_c_2455_plus       204212
