@@ -60,7 +60,18 @@ namespace ATOOLS {
 
     ~Particle_Info();
 
-    // member functions
+    static void InitHadron(const kf_code& kfc,const bool & checkinitialised,
+			   const double &mass,const double &radius,const double &width,
+			   const int & icharge,const int & spin,const bool & majorana,
+			   const bool & on,const int & stable,
+			   const std::string& idname,const std::string& texname);
+    static void InitHadron(const kf_code& kfc,const bool & checkinitialised,
+			   const double &mass,const double &radius,const double &width,
+			   const int & icharge,const int & strong,const int & spin,const bool & majorana,
+			   const bool & massive, const bool & on,const int & stable,
+			   const std::string& idname,const std::string& antiidname,
+			   const std::string& texname,const std::string& antitexname);
+    
     bool Includes(const Flavour &fl) const;
 
     void Add(const Flavour &fl);
@@ -106,6 +117,7 @@ namespace ATOOLS {
 
     bool IsDiQuark() const;
     bool IsBaryon() const;
+    bool IsOctetMeson() const;
     bool IsMeson() const;
     bool IsNucleon() const;
     bool IsB_Hadron() const;
@@ -167,9 +179,12 @@ namespace ATOOLS {
     Flavour GoldstoneBosonPartner() const;
 
     inline int  StrongCharge() const
-    { int c(p_info->m_strong); return m_anti?-c:c; }
+    {
+      if (IsOctetMeson()) return 8;
+      int c(p_info->m_strong); return m_anti?-c:c;
+    }
     inline bool Strong() const
-    { return p_info->m_strong!=0&&!IsDiQuark(); }
+    { return ((p_info->m_strong!=0 && !IsDiQuark()) || IsOctetMeson()); }
     inline bool IsQCD() const
     { return p_info->m_strong; }
 
