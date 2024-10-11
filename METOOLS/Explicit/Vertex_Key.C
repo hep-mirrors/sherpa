@@ -19,7 +19,8 @@ Vertex_Key::Vertex_Key
   m_j(j), p_c(c), p_k(NULL), p_kt(NULL),
   p_model(model), p_mv(mv),
   m_p(p), m_n(0), m_d(0), p_v(v),
-  p_cc(cc), p_lc(lc), p_dinfo(NULL), m_stype(0)
+  p_cc(cc), p_lc(lc), p_dinfo(NULL),
+  m_stype(0), m_dtype(0)
 {
 }
 

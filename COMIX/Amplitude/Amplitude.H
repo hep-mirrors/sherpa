@@ -151,7 +151,7 @@ namespace COMIX {
 
     Current *CopyCurrent(Current *const c);
     bool AddRSDipole(Current *const c,Current *const sc,
-		     Current_Vector &scur,int stype);
+		     Current_Vector &scur,int stype,int dtype,int swap);
     bool AddRSDipoles();
     bool AddVIDipole(Current *const c,Current *const sc,Current_Vector &scur);
     bool AddVIDipoles();

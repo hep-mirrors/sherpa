@@ -31,7 +31,7 @@ Current::Current(const Current_Key &key):
   m_fl(key.m_fl), m_key(0), m_order(2,0), m_cid(0), m_ntc(0),
   m_mass(m_fl.Mass()), m_width(m_fl.Width()), 
   m_msv(!IsZero(m_mass)), m_zero(true),
-  m_dir(0), m_cut(0), m_osd(0), p_sub(NULL) {}
+  m_dir(0), m_cut(0), m_osd(0), m_sub(0), p_sub(NULL) {}
 
 Current::~Current()
 {
@@ -225,7 +225,8 @@ void Current::Print() const
 		 <<m_key<<"}("<<m_order<<"|"<<m_ntc<<")("
 		 <<(m_dir<=0?Flav():Flav().Bar())<<")"
 		 <<(m_dir==0?"":m_dir>0?"I":"O")<<(m_cut?"c":"")
-		 <<(p_sub?"S["+ToString(p_sub->Id())+
+		 <<(p_sub?"S"+ToString(p_sub->SubType())+
+		    "["+ToString(p_sub->Id())+
 		    ToString(p_sub->Sub()->Id())+"]":"")<<"{\n";
   if (m_p!=Vec4D()) msg_Debugging()<<"m_p  : "<<m_p<<"\n";
   msg_Debugging()<<"m_j  :\n";

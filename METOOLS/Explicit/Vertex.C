@@ -44,7 +44,7 @@ std::map<std::string,Int_Vector> Vertex::s_h;
 Vertex::Vertex(const Vertex_Key &key): 
   p_v(key.p_mv), p_c(NULL),
   p_info(key.p_dinfo), p_kin(NULL), p_h(NULL),
-  m_sign(false), m_fperm(0), m_stype(key.m_stype),
+  m_sign(false), m_fperm(0),
   m_icplfac(1.0)
 {
   if (key.p_mv==NULL) return;
@@ -78,10 +78,15 @@ Vertex::Vertex(const Vertex_Key &key):
     ckey.p_cc=m_cc.back();
     std::string lname=ckey.m_p;
     if(key.p_dinfo)
-      lname+="X"+MODEL::s_model->MappedLorentzName(ckey.p_mv->Lorentz[ckey.m_n]);
+      lname+=(key.m_dtype?"Y":"X")+
+	MODEL::s_model->MappedLorentzName(ckey.p_mv->Lorentz[ckey.m_n]);
     else lname+=ckey.p_mv->Lorentz[ckey.m_n];
     m_lc.push_back(LC_Getter::GetObject(lname,ckey));
     if (m_lc.back()==NULL) {
+      if (key.p_dinfo) {
+	m_lc.clear();
+	return;
+      }
       msg_Out()<<*ckey.p_mv<<std::endl;
       THROW(fatal_error,"Lorentz calculator not implemented '"+lname+"'");
     }
@@ -380,7 +385,8 @@ std::ostream &METOOLS::operator<<(std::ostream &str,const Vertex &v)
   for (size_t i(0);i<v.J().size();++i) {
     if (i) str<<"(+)";
     str<<'{'<<v.J(i)->Type()<<','<<v.J(i)->Flav()<<'}'<<v.J(i)->Id();
-    if (v.J(i)->Sub()) str<<"S["<<v.J(i)->Sub()->Id()
+    if (v.J(i)->Sub()) str<<"S"<<v.J(i)->Sub()->SubType()
+			  <<"["<<v.J(i)->Sub()->Id()
 			  <<v.J(i)->Sub()->Sub()->Id()<<"]";
   }
   if (v.JC()!=NULL) {

@@ -61,7 +61,7 @@ namespace METOOLS {
 
     double m_mass, m_width;
     bool   m_msv, m_zero;
-    int    m_dir, m_cut, m_osd;
+    int    m_dir, m_cut, m_osd, m_sub;
 
     Current *p_sub;
 
@@ -129,6 +129,7 @@ namespace METOOLS {
     inline void SetOnShell(const int &osd)   { m_osd=osd; }
 
     inline void SetSub(Current *const sub) { p_sub=sub; }
+    inline void SetSubType(const int sub)  { m_sub=sub; }
 
     inline ATOOLS::Flavour Flav() const { return m_fl; }
 
@@ -154,6 +155,7 @@ namespace METOOLS {
     inline int OnShell() const   { return m_osd; }
 
     inline Current *Sub() const { return p_sub; }
+    inline int SubType() const  { return m_sub; }
 
     inline void AttachIn(Vertex *const v)  { m_in.push_back(v);  }
     inline void AttachOut(Vertex *const v) { m_out.push_back(v); }
