@@ -28,7 +28,7 @@ namespace METOOLS {
 
     SComplex m_cpll, m_cplr;
 
-    int m_dir, m_cl, m_cr;
+    int m_dir, m_cl, m_cr, m_dtype;
 
     double m_mi, m_mi2, m_mj, m_mj2, m_mk, m_mk2, m_mij, m_mij2;
 
@@ -41,7 +41,7 @@ namespace METOOLS {
     
     FFV_DCalculator(const Vertex_Key &key);
 
-    std::string Label() const { return "XFFV"; }
+    std::string Label() const { return m_dtype==1?"XFFV":"YFFV"; }
 
     CObject *Evaluate(const CObject_Vector &j) { return NULL; }
     
@@ -66,6 +66,15 @@ namespace METOOLS {
 
   };// end of class FFV_DCalculator
 
+  template <typename SType>
+  class FFV_CCalculator: public FFV_DCalculator<SType> {
+  public:
+
+    FFV_CCalculator(const Vertex_Key &key):
+      FFV_DCalculator<SType>(key) {}
+
+  };// end of class FFV_CCalculator
+
 }// end of namespace METOOLS
 
 #include "ATOOLS/Org/MyStrStream.H"
@@ -80,7 +89,7 @@ template <typename SType>
 FFV_DCalculator<SType>::FFV_DCalculator(const Vertex_Key &key): 
   Lorentz_Calculator(key), p_cc(key.p_cc),
   m_dir(key.Fl(1).IsFermion()?
-	(key.Fl(0).IsFermion()?0:2):1),
+	(key.Fl(0).IsFermion()?0:2):1), m_dtype(key.m_dtype),
   m_mi(-1.0), m_mi2(-1.0), m_mj(-1.0), m_mj2(-1.0),
   m_mij(-1.0), m_mij2(-1.0), m_mk(-1.0), m_mk2(-1.0)
 {
@@ -93,7 +102,7 @@ FFV_DCalculator<SType>::FFV_DCalculator(const Vertex_Key &key):
     m_mij2=sqr(m_mij=p_v->Kin()->JIJT()->Flav().Mass());
   }
   bool nuc(p_v->Info() && p_v->Info()->Mode()&2);
-  double fch(p_v->Info()&&p_v->SType()==1?
+  double fch(p_v->Info()&&key.m_stype==1?
 	     dabs(key.p_c->Flav().Charge()):1.0);
   m_cpll=SComplex((nuc?fch:p_v->V()->cpl.front().Value())*p_cc->Coupling());
   m_cplr=SComplex((nuc?fch:p_v->V()->cpl.front().Value())*p_cc->Coupling());
@@ -311,8 +320,14 @@ void FFV_DCalculator<SType>::ConstructFVSDipole()
 	     (sqr(Q2-pij2-m_mk2)-4.0*pij2*m_mk2));
       mt2=m_mij2/pipj;
     }
-    if (iisf) A=2.0/(1.0-zi*(1.0-y))-rv*(1.0+zti+mt2);
-    else A=2.0/(1.0-(1.0-zi)*(1.0-y))-rv*(1.0+ztj+mt2);
+    if (iisf) {
+      if (m_dtype&1) A+=2.0/(1.0-zi*(1.0-y))-2.0;
+      if (m_dtype&2) A+=2.0-rv*(1.0+zti+mt2);
+    }
+    else {
+      if (m_dtype&1) A+=2.0/(1.0-(1.0-zi)*(1.0-y))-2.0;
+      if (m_dtype&2) A+=2.0-rv*(1.0+ztj+mt2);
+    }
     t=2.0*pipj;
     p_v->Kin()->SetA(A);
   }
@@ -444,6 +459,7 @@ void FFV_DCalculator<SType>::Evaluate()
 namespace METOOLS {
 
   template class FFV_DCalculator<double>;
+  template class FFV_CCalculator<double>;
 
 }
 
@@ -452,9 +468,38 @@ DECLARE_GETTER(FFV_DCalculator<double>,"DXFFV",
 Lorentz_Calculator *ATOOLS::Getter
 <Lorentz_Calculator,Vertex_Key,FFV_DCalculator<double> >::
 operator()(const Vertex_Key &key) const
-{ return new FFV_DCalculator<double>(key); }
+{
+  if ((!key.m_j[1]->Flav().IsAnti() &&
+       key.m_j[0]->Flav().IsVector()) ||
+      (key.m_j[0]->Flav().IsAnti() &&
+       key.m_j[1]->Flav().IsVector()) ||
+      (key.m_j[0]->Flav().Bar()==
+       key.m_j[1]->Flav())) return NULL;
+  return new FFV_DCalculator<double>(key);
+}
 
 void ATOOLS::Getter<Lorentz_Calculator,Vertex_Key,
 		    FFV_DCalculator<double> >::
 PrintInfo(std::ostream &str,const size_t width) const
-{ str<<"FFV dipole vertex"; }
+{ str<<"FFV soft dipole vertex"; }
+
+DECLARE_GETTER(FFV_CCalculator<double>,"DYFFV",
+	       Lorentz_Calculator,Vertex_Key);
+Lorentz_Calculator *ATOOLS::Getter
+<Lorentz_Calculator,Vertex_Key,FFV_CCalculator<double> >::
+operator()(const Vertex_Key &key) const
+{
+  if ((!key.m_j[1]->Flav().IsAnti() &&
+       key.m_j[0]->Flav().IsVector()) ||
+      (key.m_j[0]->Flav().IsAnti() &&
+       key.m_j[1]->Flav().IsVector()) ||
+      (key.m_j[0]->Flav().IsAnti() &&
+       key.m_j[0]->Flav().Bar()==
+       key.m_j[1]->Flav())) return NULL;
+  return new FFV_CCalculator<double>(key);
+}
+
+void ATOOLS::Getter<Lorentz_Calculator,Vertex_Key,
+		    FFV_CCalculator<double> >::
+PrintInfo(std::ostream &str,const size_t width) const
+{ str<<"FFV collinear dipole vertex"; }

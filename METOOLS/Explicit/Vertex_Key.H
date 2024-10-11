@@ -49,7 +49,7 @@ namespace METOOLS {
     mutable Lorentz_Calculator *p_lc;
 
     Dipole_Info *p_dinfo;
-    int m_stype;
+    int m_stype, m_dtype;
 
     static ATOOLS::AutoDelete_Vector<Vertex_Key> s_objects;
 

@@ -145,7 +145,16 @@ bool Amplitude::AddRSDipoles()
       if (!(v->Order(0)==1 && flc.StrongCharge())) continue;
       if (m_cur[2][i]->In().size()!=1)
 	THROW(not_implemented,"Invalid current");
-      if (!AddRSDipole(m_cur[2][i],m_cur[1][j],scur,1)) return false;
+      int failed(false);
+      if (!isb) {
+	failed&=!AddRSDipole(m_cur[2][i],m_cur[1][j],scur,1,1,0);
+	failed&=!AddRSDipole(m_cur[2][i],m_cur[1][j],scur,1,2,0);
+      }
+      if (!isa) {
+	failed&=!AddRSDipole(m_cur[2][i],m_cur[1][j],scur,1,1,1);
+	failed&=!AddRSDipole(m_cur[2][i],m_cur[1][j],scur,1,2,1);
+      }
+      if (failed) return false;
     }
   }
   }
@@ -162,7 +171,16 @@ bool Amplitude::AddRSDipoles()
 	    (/*!isb &&*/ flb.IsPhoton() && flc.Charge()))) continue;
       if (m_cur[2][i]->In().size()!=1)
 	THROW(not_implemented,"Invalid current");
-      if (!AddRSDipole(m_cur[2][i],m_cur[1][j],scur,2)) return false;
+      int failed(false);
+      if (!isb) {
+	failed&=!AddRSDipole(m_cur[2][i],m_cur[1][j],scur,2,1,0);
+	failed&=!AddRSDipole(m_cur[2][i],m_cur[1][j],scur,2,2,0);
+      }
+      if (!isa) {
+	failed&=!AddRSDipole(m_cur[2][i],m_cur[1][j],scur,2,1,1);
+	failed&=!AddRSDipole(m_cur[2][i],m_cur[1][j],scur,2,2,1);
+      }
+      if (failed) return false;
     }
   }
   }
@@ -179,7 +197,8 @@ bool Amplitude::AddRSDipoles()
 }
 
 bool Amplitude::AddRSDipole
-(Current *const c,Current *const s,Current_Vector &scur,int stype)
+(Current *const c,Current *const s,Current_Vector &scur,
+ int stype,int dtype,int swap)
 {
 #ifdef DEBUG__BG
   msg_Indent();
@@ -197,31 +216,47 @@ bool Amplitude::AddRSDipole
     if (cin->J(0)->Flav().Mass()>mm &&
 	cin->J(1)->Flav().Mass()>mm) return true;
   }
-  for (size_t k(0);k<m_scur.size();++k)
-    if (m_scur[k]->CId()==s->CId() &&
-	m_scur[k]->Sub()->CId()==c->CId()) return true;
+  // for (size_t k(0);k<m_scur.size();++k)
+  //   if (m_scur[k]->CId()==s->CId() &&
+  // 	m_scur[k]->Sub()->CId()==c->CId()) return true;
   Current *jijt(CopyCurrent(c)), *jkt(CopyCurrent(s));
   jijt->SetSub(jkt);
+  jijt->SetSubType(stype|(dtype<<2));
   jijt->SetKey(m_scur.size());
-  scur.push_back(jijt);
   jkt->SetSub(jijt);
+  jkt->SetSubType(stype|(dtype<<2));
   jkt->SetKey(m_scur.size());
-  m_scur.push_back(jkt);
-  Vertex_Key *svkey(Vertex_Key::New(cin->J(),jijt,p_model));
+  Current_Vector curs(cin->J());
+  if (swap) std::swap<Current*>(curs[0],curs[1]);
+  Vertex_Key *svkey(Vertex_Key::New(curs,jijt,p_model));
   svkey->m_p=std::string(1,m_pmode);
   svkey->p_dinfo=p_dinfo;
   svkey->m_stype=stype;
+  svkey->m_dtype=dtype;
   svkey->p_k=s;
   svkey->p_kt=jkt;
+  bool found(false);
   MODEL::VMIterator_Pair vmp(p_model->GetVertex(svkey->ID()));
   for (MODEL::Vertex_Map::const_iterator vit(vmp.first);
        vit!=vmp.second;++vit) {
     svkey->p_mv=vit->second;
     Vertex *v(new Vertex(*svkey));
+    if (v->Lorentz().empty()) {
+      delete v;
+      continue;
+    }
     v->AddJ(svkey->m_j);
     v->SetJC(svkey->p_c);
+    found=true;
   }
   svkey->Delete();
+  if (!found) {
+    delete jijt;
+    delete jkt;
+    return true;
+  }
+  scur.push_back(jijt);
+  m_scur.push_back(jkt);
 #ifdef DEBUG__BG
   jijt->Print();
   jkt->Print();
@@ -415,7 +450,8 @@ Vertex *Amplitude::AddCurrent
   }
   std::string okey
     ("("+ToString(order)+(n<m_n-1?";"+ToString(ntc):"")
-     +(sub?",S"+ToString(sub->Sub()->Id())+
+     +(sub?",S"+ToString(sub->Sub()->SubType())+
+       ToString(sub->Sub()->Id())+
        ToString(sub->Sub()->Sub()->Id()):"")+")");
   if (order!=vkey.p_c->Order() ||
       ntc!=vkey.p_c->NTChannel() || sub!=vkey.p_c->Sub()) {
@@ -1494,7 +1530,7 @@ bool Amplitude::EvaluateAll(const bool& mode)
 		     <<m_cur.back()[j]->Order()<<", dipole "
 		     <<m_cur.back()[i]->Sub()->Sub()->Id()
 		     <<m_cur.back()[i]->Sub()->Id()<<" (type="
-		     <<m_cur.back()[i]->Sub()->Sub()->In().front()->SType()<<") {\n";
+		     <<m_cur.back()[i]->Sub()->Sub()->SubType()<<") {\n";
 #endif
       double ccsum(0.0);
       for (size_t k(0);k<m_ress[i].size();++k)
