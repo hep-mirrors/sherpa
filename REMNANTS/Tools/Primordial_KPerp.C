@@ -19,6 +19,11 @@ Primordial_KPerp::~Primordial_KPerp() {
 
 void Primordial_KPerp::Initialize(Remnant_Handler * rhandler) {
   msg_Out()<<"Initializing primordial transverse momentum ...\n";
+  m_on = Settings::GetMainSettings()["INTRINSIC_KPERP"].Get<bool>();
+  if (!m_on) {
+    m_form = {primkT_form::none, primkT_form::none};
+    return;
+  }
   for (size_t beam=0;beam<2;beam++) {
     m_beamflav          = rhandler->GetRemnant(beam)->Flav();
     msg_Debugging()<<METHOD<<"("<<beam<<"): flav = "<<m_beamflav<<", "<<m_beamflav.Kfcode()<<"\n";
@@ -51,6 +56,7 @@ void Primordial_KPerp::Initialize(Remnant_Handler * rhandler) {
 
 bool Primordial_KPerp::
 CreateBreakupKinematics(const size_t & beam,ParticleMomMap * ktmap,const double & scale) {
+  if (!m_on) return true;
   m_beam  = beam;
   p_ktmap = ktmap;
   Vec4D  kt_Show = Vec4D(0.,0.,0.,0.), kt_Spec = Vec4D(0.,0.,0.,0.);
@@ -112,7 +118,7 @@ void Primordial_KPerp::BalanceKT(const Vec4D & kt_Show,const double & E_Show,
 }
 
 Vec4D Primordial_KPerp::KT(const Particle * part,const double & ktext) {
-  if (m_form[m_beam]==primkT_form::none) return Vec4D(0.,0.,0.,0.);
+  if (!m_on || m_form[m_beam]==primkT_form::none) return Vec4D(0.,0.,0.,0.);
   if (part->Info()=='I') {
     m_mean  = m_SIMean[m_beam];  m_sigma = m_SISigma[m_beam]; m_Q2 = m_SIQ2[m_beam];
     m_ktmax = m_SIKtmax[m_beam]; m_eta   = m_SIEta[m_beam];

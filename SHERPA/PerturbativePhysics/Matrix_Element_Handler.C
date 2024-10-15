@@ -497,9 +497,7 @@ std::vector<Process_Base*> Matrix_Element_Handler::InitializeSingleProcess
             s["BEAM_REMNANTS"].Get<bool>()) {
           // beam remnants are requested explicitly, but let us at least disable
           // intrinsic k_perp
-          Scoped_Settings kperp_settings{ s["INTRINSIC_KPERP"] };
-          kperp_settings["MEAN"].OverrideScalar<double>(0.0);
-          kperp_settings["SIGMA"].OverrideScalar<double>(0.0);
+          s["INTRINSIC_KPERP"].OverrideScalar<bool>(false);
         } else {
           // if not requested explicitly, we turn it off, too
           s["BEAM_REMNANTS"].OverrideScalar<bool>(false);
