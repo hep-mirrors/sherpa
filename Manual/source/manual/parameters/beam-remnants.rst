@@ -27,7 +27,18 @@ BEAM_REMNANTS
 .. index:: BEAM_REMNANTS
 
 Specifies whether beam remnants are taken into account, with possible
-values 'On' and 'Off'.
+values 'true' and 'false'.
+
+.. _INTRINSIC_KPERP:
+
+INTRINSIC_KPERP
+===============
+
+.. index:: INTRINSIC_KPERP
+
+Global switches to specify whether intrinsic transverse momentum will be
+generated and distributed among the remnants, with possible
+values 'true' and 'false'.
 
 .. _Remnants:
 
@@ -55,13 +66,13 @@ REMNANTS
 
 
 Sherpa organises the remnant handling by particle, with the PDG code as
-tag-line.  
+tag-line.
 
 .. code-block:: yaml
 
    REMNANTS:
      2212:
-       KT_Form: Gauss_limited
+       KT_FORM: Gauss_limited
 
 The usual rules for yaml structure apply, c.f. :ref:`Input structure`.
 Longitudinal momenta for sea partons in hadrons are distributed according
@@ -81,7 +92,7 @@ two sets of partons per beam, see below (``KT_RECOIL``).
 :option:`KT_FORM (default: Gauss_Limited)`
   This parameter specifies the scheme to calculate the intrinsic transverse
   momentum of partons within beams.  Available options are:
-  
+
   * ``Gauss``: a simple Gaussian with mean and width;
   * ``Dipole``: a dipole form parameterised by :math:`Q^2`;
   * ``Gauss_Limited``, ``dipole_Limited``: as above but further modified by a polynomial function of the form :math:`1-(k_{T}/k_{T,\rm{max}})^\eta`, where :math:`k_{T,\rm{max}}` and :math:`\eta` are given by the ``KTMAX`` and ``KTEXPO`` tags;
@@ -95,10 +106,10 @@ two sets of partons per beam, see below (``KT_RECOIL``).
   momentum of partons that needs to be compensated within the beams, to
   guarantee that the remnants do not create a total beam transverse
   momentum.  Sherpa has implemented two strategies to achieve this:
-  
-  * ``Democratic``: the overall residual transverse momentum is distributed over all partons in the beam according to their energies.  
+
+  * ``Democratic``: the overall residual transverse momentum is distributed over all partons in the beam according to their energies.
   * ``Beam_vs_Shower``: the residual transverse momentum of all spectators is distributed over the shower initiators according to their energies and vice versa.
-	
+
 :option:`SHOWER_INITIATOR_MEAN (default for nucleons: 1.0)`
   This parameter specifies the mean in GeV for the intrinsic
   transverse momentum in case of a limited or unlimited
@@ -126,14 +137,14 @@ two sets of partons per beam, see below (``KT_RECOIL``).
 :option:`SHOWER_INITIATOR_KTMAX (default for nucleons: 2.7)`
   This parameter specifies the :math:`k_{T,\rm{max}}` in
   :math:`{\rm GeV}` of the limited dipole or Gaussian distributions
-  for the intrinsic transverse momentum. 
+  for the intrinsic transverse momentum.
 
 :option:`BEAM_SPECTATOR_KTMAX   (default for nucleons: 1.0)`
   Same as for ``SHOWER_INITIATOR_KTMAX``.
 
 :option:`SHOWER_INITIATOR_KTEXPO (default for nucleons: 5.12)`
   This parameter specifies the :math:`\eta` in the equation above
-  that limits the intrinsic transverse momentum distribution. 
+  that limits the intrinsic transverse momentum distribution.
 
 :option:`BEAM_SPECTATOR_KTEXPO   (default for nucleons: 5.0)`
   Same as for ``SHOWER_INITIATOR_KTEXPO``.
