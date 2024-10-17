@@ -59,9 +59,9 @@ REMNANTS
 .. index:: REMNANTS:BEAM_SPECTATOR_KTEXPO
 .. index:: REMNANTS:REFERENCE_ENERGY
 .. index:: REMNANTS:ENERGY_SCALING_EXPO
-.. index:: REMNANTS:MATTER_FRACTION1
-.. index:: REMNANTS:MATTER_RADIUS1
-.. index:: REMNANTS:MATTER_RADIUS2
+.. index:: REMNANTS:MATTER_FRACTION_1
+.. index:: REMNANTS:MATTER_RADIUS_1
+.. index:: REMNANTS:MATTER_RADIUS_2
 .. index:: REMNANTS:MATTER_FORM
 
 
@@ -163,11 +163,11 @@ two sets of partons per beam, see below (``KT_RECOIL``).
   ``Double_Gaussian`` can be used to model the overlap between
   the colliding particles.  ``None`` switches this off.
 
-:option:`MATTER_RADIUS1 (default for nucleons: 0.86, for mesons/photons: 0.75)`
+:option:`MATTER_RADIUS_1 (default for nucleons: 0.86, for mesons/photons: 0.75)`
   The radius of the (inner) Gaussian in fm. If used with the
-  double-Gaussian matter form, this value must be smaller than ``MATTER_RADIUS2``.
+  double-Gaussian matter form, this value must be smaller than ``MATTER_RADIUS_2``.
 
-:option:`MATTER_FRACTION1`
+:option:`MATTER_FRACTION_1`
   Only to be used for double-Gaussian matter form, where it will control the
   distribution of matter over the two Gaussians. It assumes that a fraction
   :math:`f^2` is distributed by the inner Gaussian :math:`r_1`, another fraction
@@ -175,7 +175,7 @@ two sets of partons per beam, see below (``KT_RECOIL``).
   and the remaining fraction :math:`2f(1-f)` is distributed by the combined radius
   :math:`r_\text{tot} = \sqrt{\frac{r_1^2+r_2^2}{2}}`. Defaults to ``0.5``.
 
-:option:`MATTER_RADIUS2`
+:option:`MATTER_RADIUS_2`
     Defaults to ``1.0``. It is only used for the case of a double-Gaussian
     overlap, see below.
 
