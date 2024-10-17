@@ -520,8 +520,6 @@ void Recola::Recola_Interface::GenerateProcesses(const double& alpha, const doub
   ew_scheme::code ewrenscheme = s["EW_REN_SCHEME"].Get<ew_scheme::code>();
   if (ewscheme!=ewrenscheme) THROW(fatal_error,"Inconsistent input scheme.");
   switch (ewscheme) {
-    case 0:
-      use_alpha0_scheme_rcl(alpha);
     case 1:
       // use_alpha0_scheme_and_set_alpha_rcl(AlphaQED());
       use_alpha0_scheme_rcl(alpha);

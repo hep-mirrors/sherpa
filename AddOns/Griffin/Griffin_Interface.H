@@ -19,7 +19,11 @@
 #include <algorithm>
 #include <sys/stat.h>
 
-#include "griffin.h"
+#include "classes.h"
+#include "EWPOZ2.h"
+#include "xscnnlo.h"
+// #include "SMval.h"
+
 
 using namespace PHASIC;
 using namespace MODEL;
@@ -60,7 +64,7 @@ namespace Griffin {
     static void EvaluateNLO(const Vec4D_Vector& momenta, METOOLS::DivArrD& virt);
     static void EvaluateNNLO(const Vec4D_Vector& momenta, METOOLS::DivArrD& virt);
     static void EvaluateBorn(const Vec4D_Vector& momenta, double &born);
-    static griffin::SMval m_griffin;
+    static griffin::inval m_griffin;
     static griffinorder::code m_order;
     static int m_inital;
     static int m_final;
