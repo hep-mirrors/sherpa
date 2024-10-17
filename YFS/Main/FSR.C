@@ -85,7 +85,7 @@ bool FSR::Initialize(YFS::Dipole &dipole) {
   m_Q1 = p_dipole->m_charges[0];
   m_Q2 = p_dipole->m_charges[1];
   m_QF2 = m_Q1 * m_Q2;
-  m_dip_sp = p_dipole->Sprime();
+  m_dip_sp = (m_dipole[0]+m_dipole[1]).Abs2();
   if(IsBad(m_dip_sp)) return false;
   m_EQ = sqrt(m_dip_sp) / 2.;
   m_Emin = 0.5 * sqrt(m_s) * m_isrcut;
@@ -253,6 +253,7 @@ void FSR::GeneratePhotonMomentum() {
     m_photonSum += photon;
     m_k0.push_back(k0);
   }
+  m_photonspreboost = m_photons;
 }
 
 
@@ -310,7 +311,6 @@ bool FSR::MakeFSR() {
   p_dipole->AddToGhosts(m_r2);
   for (int i = 0; i < 2; ++i) {
     p_dipole->SetMomentum(i, m_dipole[i]);
-    p_dipole->SetEikMomentum(i, m_dipole[i]);
   }
   m_photonSumPreBoost = m_photonSum;
   if (m_cut != 0) return true;
@@ -324,19 +324,43 @@ void FSR::RescalePhotons() {
   m_yy = 1. / (1. + m_photonSum[0] + 0.25 * m_photonSum.Abs2());
   m_wt2 = m_yy * (1. + m_photonSum[0]);
   m_sprim = m_dip_sp * m_yy;
-
-  // Rescale all photons
   double ener = sqrt(m_sprim) / 2.;
+  m_scalek = ener;
   for (size_t i = 0; i < m_photons.size(); ++i) {
     m_photons[i] *= ener;
-    m_photonspreboost.push_back(m_photons[i]);
   }
-  // p_dipole->AddPhotonsToDipole(m_photons);
   m_photonSum *= ener;
+  m_scalek = ener;
+  p_dipole->SetPhotonScale(m_scalek);
   for (auto k : m_photons) {
     msg_Debugging() << k << std::endl;
-  }
+  } 
 }
+
+Vec4D FSR::ScalePhoton(const int &i) {
+  Vec4D k = m_photonspreboost[i];
+  Vec4D sumk;
+  for(auto _k: m_photonspreboost) sumk+=_k;
+  double x = 1. / (1. - k[0]);
+  double yy = 1. / (1. + k[0]*m_xfact);
+  double sprim = m_dip_sp * yy;
+  double ener = sqrt(sprim) / 2.;
+  return k*ener*x;
+}
+
+double FSR::ScalePhoton(const Vec4D & _k) {
+  // HidePhotons(m_photonspreboost);
+  Vec4D k = _k;
+  Vec4D ksum;
+  for(auto &kk: m_photonspreboost) ksum += kk;
+  k = k/m_scalek;
+  double x;
+  double yy = 1. / (1. + k[0]);
+  double sprim = m_dip_sp * yy;
+  double ener = sqrt(sprim) / 2.;
+  return ener;
+}
+
 
 bool FSR::F() {
   double del1, del2;
@@ -477,7 +501,7 @@ void FSR::HidePhotons() {
   m_massW =1;// m_MassWls[0];
   m_yini.clear();
   m_zini.clear();
-  Vec4D_Vector ph;
+  Vec4D_Vector ph, phboost;
   std::vector<int> mark;
   m_photonSum *= 0;
   // mark photons for removal
@@ -490,6 +514,7 @@ void FSR::HidePhotons() {
     else {
       m_massW *= m_MassWls[i];
       ph.push_back(m_photons[i]);
+      phboost.push_back(m_photonspreboost[i]);
       del1.push_back(m_del1[i]);
       del2.push_back(m_del2[i]);
     }
@@ -503,6 +528,7 @@ void FSR::HidePhotons() {
   }
   p_dipole->SetNPhoton(ph.size());
   m_photons = ph;
+  // m_photonspreboost = phboost;
   p_dipole->AddPhotonsToDipole(m_photons);
   p_dipole->SetSudakovs(m_yini,m_zini);
 }
@@ -626,7 +652,7 @@ void FSR::Weight() {
     m_fsrWeight = 0;
   }
   DEBUG_FUNC("FSR for Dipole  = " << m_dipoleFl
-             << "\n N Photons = " << m_N
+             << "\n N Photons = " << m_n
              << "\n N Photons removed = " << m_NRemoved
              << "\n Eprime = " << sqrt(m_dip_sp)
              << "\n Eq = " << sqrt(m_sQ)
