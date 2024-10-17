@@ -103,4 +103,5 @@ The setup (cf. example :ref:`LHC_Zbb`):
 * Sherpa's internal analysis package can be used to generate a few
   histograms. Thus, then when installing Sherpa the option
   :option:`-DSHERPA_ENABLE_ANALYSIS=ON` must be include on the command line when
-  Sherpa is configured, see :ref:`ANALYSIS`.
+  Sherpa is configured, see :ref:`ANALYSIS`. However, this module is deprecated
+  and will not be supported in the future.

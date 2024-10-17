@@ -74,8 +74,7 @@ The available command line options for Sherpa (given either in long form (starti
 .. option:: --analysis, -a <analyses>
 
    Set the analysis handler list to ``<analyses>``, see
-   :REF:`ANALYSIS`.  If you specify more than one analysis handler, use
-   the YAML sequence syntax, e.g. :option:`-a '[Rivet, Internal]'`.
+   :REF:`ANALYSIS`.
 
 .. option:: --analysis-output, -A <path>
 
