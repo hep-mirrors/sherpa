@@ -2,6 +2,7 @@
 #define YFS_NLO_BASE_H
 
 #include "YFS/Main/YFS_Base.H"
+#include "YFS/Main/FSR.H"
 #include "YFS/NLO/Virtual.H"
 #include "YFS/NLO/Real.H"
 #include "YFS/Main/YFS_Form_Factor.H"
@@ -11,6 +12,7 @@
 
 #include "PHASIC++/Process/Single_Process.H"
 #include "ATOOLS/Phys/Momenta_Stretcher.H"
+#include "PHASIC++/Channels/Multi_Channel.H"
 
 
 
@@ -29,14 +31,17 @@ public:
   YFS::Real        *p_real;
   YFS::Define_Dipoles *p_nlodipoles;
   YFS::YFS_Form_Factor *p_yfsFormFact;
+  YFS::FSR  *p_fsr;
   PHASIC::Single_Process *p_born;
   YFS::Define_Dipoles *p_dipoles;
   Vec4D_Vector m_plab, m_reallab, m_FSRPhotons, m_ISRPhotons, m_bornMomenta, m_eikmom;
-  Vec4D m_nvec;
+  Vec4D m_nvec, m_realsum, m_ksum;
   ATOOLS::Flavour_Vector m_flavs;
   histograms2d m_histograms2d;
   histograms1d m_histograms1d;
   ATOOLS::Momenta_Stretcher m_stretcher;
+  PHASIC::Multi_Channel *p_fsrchannel;
+  PHASIC::Cut_Data *p_cuts;
 
   double m_evts, m_recola_evts, m_ranTheta, m_ranPhi;
   int m_is_isr;
@@ -49,6 +54,7 @@ public:
   double CalculateReal(Vec4D k, int submode=0);
   void MakeHardMomenta();
   void MapMomenta(ATOOLS::Vec4D_Vector &p, ATOOLS::Vec4D &k);
+  void MapInitial(ATOOLS::Vec4D_Vector &p);
   void CheckMassReg();
   double CalculateNLO();
   bool CheckPhotonForReal(const Vec4D &k);
@@ -60,7 +66,7 @@ public:
   inline void SetBorn(double b) { m_born = b;}
   inline void SetMomentum(Vec4D_Vector &p) { m_plab = p;}
   inline void SetBornProc(PHASIC::Single_Process *p) {p_born = p;}
-
+  inline void SetFSR(YFS::FSR *p) {p_fsr = p;}
 };
 
 

@@ -24,7 +24,7 @@ Griffin::Griffin_Virtual::Griffin_Virtual(const Process_Info& pi,
 void Griffin::Griffin_Virtual::Calc(const Vec4D_Vector& momenta) {
  Griffin_Interface::EvaluateLoop(momenta,m_res);
  double s = (momenta[2]+momenta[3]).Abs2();
- m_res.Finite() *= 2*s*s;
+ m_res.Finite() *= s*s;
 }
 
 
