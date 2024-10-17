@@ -11,7 +11,7 @@ Griffin::Griffin_Interface::~Griffin_Interface() {}
 int Griffin::Griffin_Interface::m_inital=11;
 int Griffin::Griffin_Interface::m_final=13;
 Griffin::griffinorder::code Griffin::Griffin_Interface::m_order=griffinorder::nnlo;
-griffin::SMval Griffin::Griffin_Interface::m_griffin;
+griffin::inval Griffin::Griffin_Interface::m_griffin;
 
 void Griffin::Griffin_Interface::RegisterDefaults()
 {
@@ -78,7 +78,7 @@ void Griffin::Griffin_Interface::EvaluateLoop(const Vec4D_Vector& momenta, METOO
   }
   // EvaluateLO(momenta, virt);
   // PRINT_VAR(virt.Finite());
-  EvaluateNLO(momenta, virt);
+  EvaluateNNLO(momenta, virt);
   // PRINT_VAR(virt.Finite());
   // if(m_order==griffinorder::lo) EvaluateLO(momenta, virt);
   // else if(m_order==griffinorder::nlo) EvaluateNLO(momenta, virt);
@@ -99,12 +99,14 @@ void Griffin::Griffin_Interface::EvaluateLO(const Vec4D_Vector& momenta, DivArrD
   //   res.Finite() = 0;
   // }
   FA_SMLO FAi(m_inital, m_griffin), FAf(m_final, m_griffin);
-  SW_SMLO SWi(m_inital, m_griffin), SWf(m_final, m_griffin);
+  // SW_SMLO SWi(m_inital, m_griffin), SWf(m_final, m_griffin);
   // cout << "sineff^i (LO+) = " << SWi.result() << endl;
   // cout << "sineff^f (LO+) = " << SWf.result() << endl;
-  matel M(m_inital, m_final, VEC, VEC, FAi, FAf, SWi, SWf, s, cost, m_griffin);
-  M.setkinvar(s, cost);
   Cplx resvv, resva, resav, resaa;
+  double sw=s_model->ComplexConstant("csin2_thetaW").real();
+  // double  FAi = 0.0345, FAf = 0.0345;
+  matel M(m_inital, m_final, VEC, VEC, FAi.result().real(), FAf.result().real(), sw, sw, s, cost, m_griffin);
+  M.setkinvar(s, cost);
 
   M.setform(VEC, VEC);
   resvv = M.result();
@@ -128,10 +130,12 @@ void Griffin::Griffin_Interface::EvaluateNLO(const Vec4D_Vector& momenta, DivArr
   //   res.Finite() = 0;
   // }
   FA_SMNLO FAi(m_inital, m_griffin), FAf(m_final, m_griffin);
-  SW_SMNLO SWi(m_inital, m_griffin), SWf(m_final, m_griffin);
-  // cout << "sineff^i (LO+) = " << SWi.result() << endl;
-  // cout << "sineff^f (LO+) = " << SWf.result() << endl;
-  mat_SMNLO M(m_inital, m_final, VEC, VEC, FAi, FAf, SWi, SWf, s, cost, m_griffin);
+  // SW_SMNLO SWi(m_inital, m_griffin), SWf(m_final, m_griffin);
+  // cout << "FAi = " << FAi.result() << endl;
+  // cout << "FAi = " << FAf.result() << endl;
+  double sw=s_model->ComplexConstant("csin2_thetaW").real();
+
+  mat_SMNLO M(m_inital, m_final, VEC, VEC, FAi.result().real(), FAf.result().real(), sw, sw*1.001, s, cost, m_griffin);
 
   M.setkinvar(s, cost);
   Cplx resvv, resva, resav, resaa;
@@ -158,13 +162,13 @@ void Griffin::Griffin_Interface::EvaluateNNLO(const Vec4D_Vector& momenta, DivAr
   double t = (momenta[0]-momenta[2]).Abs2();
   double cost = 1.+2.*t/s;
   // double cost = 0;
-  // if(sqrt(s)<40) {
-  //   res.Finite() = 0;
-  // }
+  if(sqrt(s)<40) {
+    res.Finite() = 0;
+  }
   FA_SMNNLO FAi(m_inital, m_griffin), FAf(m_final, m_griffin);
-  SW_SMNNLO SWi(m_inital, m_griffin), SWf(m_final, m_griffin);
-
-  mat_SMNNLO M(m_inital, m_final, VEC, VEC, FAi, FAf, SWi, SWf, s, cost, m_griffin);
+  // SW_SMNNLO SWi(m_inital, m_griffin), SWf(m_final, m_griffin);
+  double sw=s_model->ComplexConstant("csin2_thetaW").real();
+  mat_SMNNLO M(m_inital, m_final, VEC, VEC, FAi.result().real(), FAf.result().real(), sw, sw, s, cost, m_griffin);
 
   M.setkinvar(s, cost);
   Cplx resvv, resva, resav, resaa;
