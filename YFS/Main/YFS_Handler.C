@@ -401,6 +401,7 @@ double YFS_Handler::CalculateNLO(){
   p_nlo->p_dipoles = p_dipoles;
   p_nlo->m_eikmom = m_plab;
   p_nlo->SetBorn(m_born);
+  p_nlo->SetFSR(p_fsr);
   p_nlo->m_ISRPhotons = m_ISRPhotons;
   p_nlo->m_FSRPhotons = m_fsrphotonsforME;
   return p_nlo->CalculateNLO();
