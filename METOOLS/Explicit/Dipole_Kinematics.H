@@ -1,6 +1,7 @@
 #ifndef METOOLS_Explicit_Dipole_Kinematics_H
 #define METOOLS_Explicit_Dipole_Kinematics_H
 
+#include "ATOOLS/Phys/Recoil_Definition.H"
 #include "METOOLS/Explicit/Current.H"
 #include "METOOLS/Explicit/Dipole_Info.H"
 
@@ -31,6 +32,9 @@ namespace METOOLS {
 
     ATOOLS::NLO_subevt *p_subevt;
     PDF::NLOMC_Base    *p_nlomc;
+
+    ATOOLS::Recoil_Definition *p_softrecoil;
+    ATOOLS::Recoil_Definition *p_collrecoil;
 
     double Lam(const double &s,
 	       const double &sb,const double &sc) const;
@@ -109,6 +113,9 @@ namespace METOOLS {
     inline void SetA(const double &a) { m_a=a; }
 
     inline void SetSubevt(ATOOLS::NLO_subevt *sub)  { p_subevt=sub; }
+
+    void SetSoftRecoil(ATOOLS::Recoil_Definition* recoil) { p_softrecoil=recoil; }
+    void SetCollRecoil(ATOOLS::Recoil_Definition* recoil) { p_collrecoil=recoil; }
 
   };// end of class Dipole_Kinematics
   

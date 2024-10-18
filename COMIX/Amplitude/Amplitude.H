@@ -9,12 +9,13 @@
 #include "MODEL/Main/Coupling_Data.H"
 #include "ATOOLS/Phys/NLO_Subevt.H"
 #include "ATOOLS/Phys/NLO_Types.H"
+#include "ATOOLS/Phys/Recoil_Definition.H"
 #include "ATOOLS/Phys/Weight_Info.H"
 #include "ATOOLS/Org/CXXFLAGS.H"
 
-#ifdef USING__Threading 
-#include <pthread.h> 
-#endif 
+#ifdef USING__Threading
+#include <pthread.h>
+#endif
 
 namespace PHASIC {
   class Color_Integrator;
@@ -68,9 +69,9 @@ namespace COMIX {
     CDBG_ME_TID(): p_ampl(NULL), m_s(2), m_b(0), m_e(0) {}
   };// end of struct CDBG_ME_TID
 
-  typedef std::vector<CDBG_ME_TID*> CDBG_ME_TID_Vector; 
+  typedef std::vector<CDBG_ME_TID*> CDBG_ME_TID_Vector;
 #endif
- 
+
   class Amplitude {
   public:
 
@@ -123,17 +124,20 @@ namespace COMIX {
     bool   m_trig;
 
     ATOOLS::NLO_subevtlist    m_subs;
-    PHASIC::Virtual_ME2_Base *p_loop;  
+    PHASIC::Virtual_ME2_Base *p_loop;
 
     std::vector<std::map<size_t,std::vector<long int> > > m_affm;
 
     ATOOLS::NLO_subevt *p_sub;
 
+    ATOOLS::Recoil_Definition  * p_softrecoil;
+    ATOOLS::Recoil_Definition  * p_collrecoil;
+
     size_t BornID(const size_t &id,const NLO_subevt *sub) const;
 
-#ifdef USING__Threading 
+#ifdef USING__Threading
     CDBG_ME_TID_Vector *p_cts;
-#endif 
+#endif
 
     void CleanUp();
     void Prune();
@@ -242,9 +246,9 @@ namespace COMIX {
 
     void SetCTS(void *const cts);
 
-#ifdef USING__Threading 
+#ifdef USING__Threading
     static void *TCalcJL(void *arg);
-#endif 
+#endif
 
     // inline functions
     inline void SetColorIntegrator(PHASIC::Color_Integrator *const cint)
@@ -270,7 +274,7 @@ namespace COMIX {
 
     inline const Current_Matrix &Currents() const { return m_cur; }
 
-    inline void SetDecayInfos(const ATOOLS::DecayInfo_Vector &id) 
+    inline void SetDecayInfos(const ATOOLS::DecayInfo_Vector &id)
     { m_decid=id; m_dec=m_decid.size(); }
     inline const ATOOLS::DecayInfo_Vector &DecayInfos() const
     { return m_decid; }
