@@ -26,7 +26,6 @@ using namespace PHASIC;
 using namespace ATOOLS;
 using namespace BEAM;
 using namespace PDF;
-using namespace std;
 
 Integration_Info *PHASIC::Phase_Space_Handler::p_info=NULL;
 
@@ -243,6 +242,7 @@ void Phase_Space_Handler::RegisterDefaults() const
   settings["PRINT_PS_POINTS"].SetDefault(false);
   settings["PS_PT_FILE"].SetDefault("");
   settings["PS_POINT"].SetDefault("");
+  settings["PS_POINTS"].SetDefault({""});
   settings["TCHANNEL_ALPHA"].SetDefault(0.9);
   settings["SCHANNEL_ALPHA"].SetDefault(0.5);
   settings["CHANNEL_EPSILON"].SetDefault(0.0);
@@ -277,7 +277,7 @@ void Phase_Space_Handler::CheckSinglePoint()
       else p_lab[i]=ToType<Vec4D>(vec.front());
       msg_Debugging()<<"p_lab["<<i<<"]=Vec4D"<<p_lab[i]<<";\n";
     }
-  } else if (s["PS_POINT"].IsSetExplicitly()){
+  } else if (s["PS_POINT"].IsSetExplicitly()) {
     std::istringstream point(s["PS_POINT"].Get<std::string>());
     std::string vec;
     for (size_t i = 0; i<p_lab.size(); ++i) {
@@ -291,8 +291,35 @@ void Phase_Space_Handler::CheckSinglePoint()
       else p_lab[i] = ToType<Vec4D>(vec);
     }
     m_pspoint.CorrectMomenta();
+  } else if (s["PS_POINTS"].IsSetExplicitly()) {
+    auto points = s["PS_POINTS"].GetVector<std::string>();
+    for (auto& point : points) {
+      if (point.empty())
+        THROW(fatal_error, "Momentum missing for calculation. ")
+      msg_Out() << "========================================" << std::endl;
+      msg_Out() << "PS point: " << std::endl
+                << point
+                << std::endl;
+      for (size_t i = 0; i < p_lab.size(); ++i) {
+        auto pos1      = point.find_first_of('(');
+        auto pos2      = point.find_first_of(')');
+        auto momstring = point.substr(pos1, pos2 - pos1 + 1);
+        point          = point.substr(pos2 + 1);
+        if (momstring[1] == '-') p_lab[i] = -ToType<Vec4D>(momstring);
+        else
+          p_lab[i] = ToType<Vec4D>(momstring);
+      }
+      m_pspoint.CorrectMomenta();
+      CalcSinglePoint();
+    }
+    THROW(normal_exit, "Computed multiple ME^2");
   } else
-    return ;
+    return;
+  CalcSinglePoint();
+  THROW(normal_exit, "Computed ME^2");
+}
+
+void Phase_Space_Handler::CalcSinglePoint() {
   Process_Base *proc(p_active->Process());
   proc->Trigger(p_lab);
   CalculateME(Variations_Mode::nominal_only);
@@ -302,8 +329,8 @@ void Phase_Space_Handler::CheckSinglePoint()
     msg_Out()<<"p_lab["<<i<<"]=Vec4D"<<p_lab[i]<<";"<<std::endl;
   for (int i=0; i<proc->Size(); ++i) {
     msg_Out()<<(*proc)[i]->Name()<<" ME = "<<(*proc)[i]->Get<Single_Process>()->LastXS()
-             <<", ME with PDF = "<<(*proc)[i]->Get<Single_Process>()->Last()
-             <<"; // in GeV^2, incl. symfacs"<<std::endl;
+              <<", ME with PDF = "<<(*proc)[i]->Get<Single_Process>()->Last()
+              <<"; // in GeV^2, incl. symfacs"<<std::endl;
     if (proc->GetSubevtList()) {
       NLO_subevtlist * subs(proc->GetSubevtList());
       double result = 0;
@@ -311,11 +338,11 @@ void Phase_Space_Handler::CheckSinglePoint()
         result += (*(subs))[i]->m_result;
         msg_Out()<<(*(*subs)[i]);
       }
-      msg_Out()<<"ME = "<<result/subs->back()->m_result<<"\n";
+      if (std::abs(subs->back()->m_result)>0.)
+        msg_Out()<<"ME = "<<std::abs(result/subs->back()->m_result)<<"\n";
     }
 
   }
-  THROW(normal_exit,"Computed ME^2");
 }
 
 void Phase_Space_Handler::TestPoint(ATOOLS::Vec4D *const p,
