@@ -14,11 +14,12 @@ Dipole_Kinematics::Dipole_Kinematics
 (Dipole_Info *const info,Current *const i,Current *const j,
  Current *const k,Current *const ijt,Current *const kt):
   p_i(i), p_j(j), p_k(k), p_ijt(ijt), p_kt(kt),
-  m_type(0), m_swap(0), m_trig(1),
+  m_type(0), m_swap(0), m_trig(1), m_z(0.), m_y(0.), m_kt2(0.), m_Q2(0.),
   p_info(info), m_mi2(0.0), m_mj2(0.0),
   m_mij2(sqr(p_ijt->Flav().Mass())), m_mk2(sqr(p_k->Flav().Mass())),
   m_ym(0.0), m_yp(1.0), m_f(0.0), m_a(0.0),
-  p_subevt(NULL), p_nlomc(NULL)
+  p_subevt(nullptr), p_nlomc(nullptr),
+  p_softrecoil(nullptr), p_collrecoil(nullptr)
 {
   if (p_i) m_mi2=sqr(p_i->Flav().Mass());
   if (p_j) m_mj2=sqr(p_j->Flav().Mass());

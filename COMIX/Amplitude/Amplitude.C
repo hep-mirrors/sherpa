@@ -36,7 +36,8 @@ Amplitude::Amplitude():
   p_model(NULL), m_nin(0), m_nout(0), m_dec(0), m_n(0), m_wfmode(0), m_ngpl(3),
   m_maxcpl(2,99), m_mincpl(2,0), m_maxacpl(2,99), m_minacpl(2,0),
   m_minntc(0), m_maxntc(99), m_pmode('D'), p_dinfo(new Dipole_Info()),
-  p_colint(NULL), p_helint(NULL), m_trig(true), p_loop(NULL)
+  p_colint(NULL), p_helint(NULL), m_trig(true), p_loop(NULL),
+  p_softrecoil(nullptr), p_collrecoil(nullptr)
 {
   Settings& s = Settings::GetMainSettings();
   Scoped_Settings comixsettings{ s["COMIX"] };
@@ -67,6 +68,13 @@ Amplitude::Amplitude():
   if (subtype==subscheme::Dire) p_dinfo->SetKappa(1.0);
   m_smth=GetParameter<double>("NLO_SMEAR_THRESHOLD");
   m_smpow=GetParameter<double>("NLO_SMEAR_POWER");
+
+  p_softrecoil=RecoilDefinition_Getter::GetObject
+          (Settings::GetMainSettings()["RECOIL_DEFINITION"]
+                   .Get<std::string>(),RecoilDefinition_Key());
+  p_collrecoil=RecoilDefinition_Getter::GetObject
+          (Settings::GetMainSettings()["COLLINEAR_RECOIL_DEFINITION"]
+                   .Get<std::string>(),RecoilDefinition_Key());
 }
 
 Amplitude::~Amplitude()
@@ -77,9 +85,9 @@ Amplitude::~Amplitude()
 
 void Amplitude::CleanUp()
 {
-  for (size_t i(0);i<m_cur.size();++i) 
-    for (size_t j(0);j<m_cur[i].size();++j) delete m_cur[i][j]; 
-  for (size_t j(0);j<m_scur.size();++j) delete m_scur[j]; 
+  for (size_t i(0);i<m_cur.size();++i)
+    for (size_t j(0);j<m_cur[i].size();++j) delete m_cur[i][j];
+  for (size_t j(0);j<m_scur.size();++j) delete m_scur[j];
   m_cur=Current_Matrix();
   m_scur=Current_Vector();
   m_n=0;
@@ -391,7 +399,7 @@ Vertex *Amplitude::AddCurrent
  const int dec,std::vector<int> &maxcpl,std::vector<int> &mincpl,
  std::map<std::string,Current*> &curs)
 {
-  if (vkey.p_mv==NULL || 
+  if (vkey.p_mv==NULL ||
       vkey.p_mv->dec<0) return NULL;
   vkey.m_p=std::string(1,m_pmode);
   Vertex *v(new Vertex(vkey));
@@ -455,7 +463,7 @@ Vertex *Amplitude::AddCurrent
        ToString(sub->Sub()->Sub()->Id()):"")+")");
   if (order!=vkey.p_c->Order() ||
       ntc!=vkey.p_c->NTChannel() || sub!=vkey.p_c->Sub()) {
-    std::map<std::string,Current*>::iterator 
+    std::map<std::string,Current*>::iterator
       cit(curs.find(okey));
     if (cit!=curs.end()) vkey.p_c=cit->second;
     else {
@@ -580,7 +588,7 @@ void Amplitude::AddCurrent(const Int_Vector &ids,const size_t &n,
 	    ToString(m_fl[i].Spin())+" particles");
     }
   }
-  for (std::map<std::string,Current*>::iterator 
+  for (std::map<std::string,Current*>::iterator
 	 cit(curs.begin());cit!=curs.end();++cit) {
     cit->second->SetId(ids);
     cit->second->SetFId(isfs);
@@ -610,7 +618,7 @@ bool Amplitude::Construct(Flavour_Vector &fls,
 	if (kid>=m_cur[1].size()) THROW(fatal_error,"Internal error");
 	if (!m_fl[kid].IsOn()) return false;
 	AddCurrent(ids,n,m_fl[kid].Bar(),m_dirs[kid]);
-	if (kid==0 && (m_cur.back().size()==0 || 
+	if (kid==0 && (m_cur.back().size()==0 ||
 		       m_cur.back().back()->CId()&1)) return false;
       }
     }
@@ -682,7 +690,7 @@ bool Amplitude::Construct(const Flavour_Vector &flavs)
   Prune();
   if (p_dinfo->Mode()) {
     for (size_t i(0);i<m_cur.back().size();++i)
-      if (m_cur.back()[i]->Sub()==NULL && 
+      if (m_cur.back()[i]->Sub()==NULL &&
 	  (i && m_cur.back()[i-1]->Sub())) {
 	Current *c(m_cur.back()[i]);
 	m_cur.back().erase(m_cur.back().begin()+i);
@@ -849,6 +857,10 @@ void Amplitude::ConstructNLOEvents()
   msg_Debugging()<<METHOD<<"(): {\n";
   for (size_t i(0);i<m_scur.size();++i) {
     Dipole_Kinematics *kin(m_scur[i]->Sub()->In().front()->Kin());
+    if (p_dinfo->SubType()==subscheme::code::Alaric) {
+      kin->SetSoftRecoil(p_softrecoil);
+      kin->SetCollRecoil(p_collrecoil);
+    }
     NLO_subevt *sub(new NLO_subevt());
     m_subs.push_back(sub);
     sub->m_idx=i;
@@ -1166,7 +1178,7 @@ void *Amplitude::TCalcJL(void *arg)
   while (true) {
     pthread_cond_wait(&tid->m_s_cnd,&tid->m_s_mtx);
     if (tid->m_s==0) return NULL;
-    for (tid->m_i=tid->m_b;tid->m_i<tid->m_e;++tid->m_i) 
+    for (tid->m_i=tid->m_b;tid->m_i<tid->m_e;++tid->m_i)
       tid->p_ampl->m_cur[tid->m_n][tid->m_i]->Evaluate();
     pthread_cond_signal(&tid->m_t_cnd,&tid->m_t_mtx);
   }
@@ -1178,7 +1190,7 @@ void *Amplitude::TCalcJL(void *arg)
 void Amplitude::CalcJL()
 {
   SetCouplings();
-  for (size_t i(0);i<m_n;++i) 
+  for (size_t i(0);i<m_n;++i)
     m_cur[1][i]->ConstructJ(m_p[i],m_ch[i],m_cl[i][0],m_cl[i][1],m_wfmode);
   for (size_t i(m_n);i<m_cur[1].size();++i) m_cur[1][i]->Evaluate();
   for (size_t n(2);n<m_n;++n) {
@@ -1187,7 +1199,7 @@ void Amplitude::CalcJL()
       m_cur[n][i]->Evaluate();
 #else
     if (p_cts->empty())
-      for (size_t i(0);i<m_cur[n].size();++i) 
+      for (size_t i(0);i<m_cur[n].size();++i)
 	m_cur[n][i]->Evaluate();
     else {
       size_t d(m_cur[n].size()/p_cts->size());
@@ -1247,7 +1259,7 @@ void Amplitude::SetCouplings() const
 void Amplitude::ResetJ()
 {
   for (size_t n(1);n<=m_n-1;--n) {
-    for (size_t i(0);i<m_cur[n].size();++i) 
+    for (size_t i(0);i<m_cur[n].size();++i)
       m_cur[n][i]->ResetJ();
   }
 }
@@ -1255,7 +1267,7 @@ void Amplitude::ResetJ()
 void Amplitude::ResetZero()
 {
   for (size_t n(m_n-2);n>=2;--n) {
-    for (size_t i(0);i<m_cur[n].size();++i) 
+    for (size_t i(0);i<m_cur[n].size();++i)
       m_cur[n][i]->ResetZero();
   }
 }
@@ -1276,7 +1288,7 @@ bool Amplitude::SetMomenta(const Vec4D_Vector &moms)
   }
 #ifdef DEBUG__BG
   static double accu(sqrt(rpa->gen.Accu()));
-  if (!IsEqual(sum,Vec4D(),accu)) 
+  if (!IsEqual(sum,Vec4D(),accu))
     msg_Error()<<METHOD<<"(): Four momentum not conserved. sum = "
   	       <<sum<<"."<<std::endl;
 #endif
@@ -1570,9 +1582,9 @@ bool Amplitude::EvaluateAll(const bool& mode)
 	m_p[1]=-m_p[1];
 	//double lf(log(2.0*M_PI*mu2/EpsSchemeFactor(m_p)/
 	//	      dabs(kin->JIJT()->P()*kin->JK()->P())));
-  
+
   double lf(0.);
-  if (!p_loop || !(p_loop->fixedIRscale())) 
+  if (!p_loop || !(p_loop->fixedIRscale()))
       lf = log(2.0*M_PI*mu2/EpsSchemeFactor(m_p)/dabs(kin->JIJT()->P()*kin->JK()->P()));
   else{
       double irscale=p_loop->IRscale();
@@ -1923,7 +1935,7 @@ bool Amplitude::GaugeTest(const Vec4D_Vector &moms,const int mode)
       double res(m_born?m_born:m_res);
       if (res!=0.0) cnt=false;
       if (cnt) {
-	if (++nt>100) 
+	if (++nt>100)
 	  msg_Error()<<METHOD<<"(): Zero result. Redo gauge test."<<std::endl;
 	while (!p_colint->GeneratePoint());
       }
@@ -1997,11 +2009,11 @@ void Amplitude::WriteOutGraph
     if (nf>0) str<<", $\\sum \\rm F$="<<fp<<" ("<<(fp%2==0?'+':'-')<<")";
     str<<"\\\\[6mm]\n  \\begin{fmfgraph*}("<<(10*m_n)<<","<<(10*m_n)<<")\n";
     str<<"    \\fmfsurround{"<<graph->front()<<"}\n";
-    for (size_t j(0);j<m_n;++j) 
+    for (size_t j(0);j<m_n;++j)
       str<<"    \\fmfv{decor.size=0ex,label=$J_{"
 	 <<j<<"}$}{j_"<<(1<<j)<<"}\n";
     for (size_t j(1);j<graph->size();++j)
-      if ((*graph)[j].find("%%")==std::string::npos) 
+      if ((*graph)[j].find("%%")==std::string::npos)
 	str<<(*graph)[j]<<"\n";
     str<<"  \\end{fmfgraph*}\\end{center}\\vspace*{5mm}}";
     if (ng>0 && ng%m_ngpl==0) str<<" \\\\\n\n";
@@ -2073,7 +2085,7 @@ void Amplitude::WriteOutGraphs(const std::string &file) const
 void Amplitude::PrintStatistics
 (std::ostream &str,const int mode) const
 {
-  if (mode&1) 
+  if (mode&1)
     str<<"Amplitude statistics (n="
        <<m_n<<") {\n  level currents vertices\n"<<std::right;
   size_t csum(0), vsum(0);
