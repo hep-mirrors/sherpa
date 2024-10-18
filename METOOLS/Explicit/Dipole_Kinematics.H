@@ -39,6 +39,8 @@ namespace METOOLS {
     double Lam(const double &s,
 	       const double &sb,const double &sc) const;
 
+    void EvaluateAlaricKinematics();
+    void EvaluateCSSKinematics();
   public:
 
     // constructor
@@ -118,7 +120,7 @@ namespace METOOLS {
     void SetCollRecoil(ATOOLS::Recoil_Definition* recoil) { p_collrecoil=recoil; }
 
   };// end of class Dipole_Kinematics
-  
+
   std::ostream &operator<<
     (std::ostream &str,const Dipole_Kinematics &k);
 

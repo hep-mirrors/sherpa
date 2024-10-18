@@ -3,9 +3,10 @@
 #include "METOOLS/Explicit/Vertex.H"
 #include "PDF/Main/NLOMC_Base.H"
 #include "ATOOLS/Org/Run_Parameter.H"
-#include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/Scoped_Settings.H"
+#include "PHASIC++/Channels/Antenna_Kinematics.H"
+#include "PHASIC++/Channels/CSS_Kinematics.H"
 
 using namespace METOOLS;
 using namespace ATOOLS;
@@ -64,10 +65,50 @@ void Dipole_Kinematics::Evaluate()
   m_pk=p_k->P();
   m_Q=m_pi+m_pj+m_pk;
   m_Q2=m_Q.Abs2();
+  if (p_info->SubType()==subscheme::code::Alaric)
+    EvaluateAlaricKinematics();
+  else
+    EvaluateCSSKinematics();
+  m_trig = m_y/m_yp < ((p_nlomc) ? 1.0 : p_info->AMax(m_type));
+  if (m_trig) m_trig=m_kt2<p_info->KT2Max();
+  if (p_info->AMin()>0.0) {
+    if (m_y<p_info->AMin()) p_info->SetStat(0);
+  }
+  else {
+    if (m_kt2<-p_info->AMin()) p_info->SetStat(0);
+  }
+  if (p_info->Stat() &&
+      !IsEqual(p_i->P()+p_j->P()+p_k->P(),p_ijt->P()+p_kt->P())) {
+    msg_Error()<<METHOD<<"(): Momentum not conserved in type "<<m_type
+	       <<" {\n  before "<<p_i->P()+p_j->P()+p_k->P()
+	       <<"\n  after  "<<p_ijt->P()+p_kt->P()
+	       <<"\n  p_"<<p_i->Id().front()<<" = "<<p_i->P()
+	       <<"\n  p_"<<p_j->Id().front()<<" = "<<p_j->P()
+	       <<"\n  p_"<<p_k->Id().front()<<" = "<<p_k->P()
+	       <<"\n  p_{"<<p_ijt->Id()<<"} -> "<<p_ijt->P()
+	       <<"\n  p_{"<<p_kt->Id()<<"} -> "<<p_kt->P()
+	       <<"\n}"<<std::endl;
+  }
+#ifdef DEBUG__BG
+  msg_Debugging()<<METHOD<<"(): m_type = "<<m_type
+		 <<" {\n  m_z = "<<m_z<<", m_y = "<<m_y
+		 <<"\n  p_"<<p_i->Id().front()<<" = "<<p_i->P()
+		 <<"\n  p_"<<p_j->Id().front()<<" = "<<p_j->P()
+		 <<"\n  p_"<<p_k->Id().front()<<" = "<<p_k->P()
+		 <<"\n  p_{"<<p_ijt->Id()<<"} -> "<<p_ijt->P()
+		 <<"\n  p_{"<<p_kt->Id()<<"} -> "<<p_kt->P()
+		 <<"\n} -> "<<(m_type==2?1.0-m_y:m_y)
+		 <<" vs. "<<p_info->AMin()<<" => stat = "
+		 <<((m_type==2?1.0-m_y:m_y)>=p_info->AMin())<<std::endl;
+#endif
+}
+
+void Dipole_Kinematics::EvaluateCSSKinematics()
+{
   if (m_type==0) {
     double lrat=Lam(m_Q2,m_mij2,m_mk2)/Lam(m_Q2,(m_pi+m_pj).Abs2(),m_mk2);
     Vec4D pkt(sqrt(lrat)*(m_pk-(m_Q*m_pk/m_Q2)*m_Q)+
-	      (m_Q2+m_mk2-m_mij2)/(2.*m_Q2)*m_Q);
+               (m_Q2+m_mk2-m_mij2)/(2.*m_Q2)*m_Q);
     p_ijt->SetP(m_Q-pkt);
     p_kt->SetP(pkt);
     double pijpk((m_pi+m_pj)*m_pk);
@@ -81,14 +122,14 @@ void Dipole_Kinematics::Evaluate()
     }
     if (p_nlomc) m_kt2=p_nlomc->KT2(*p_subevt,m_z,m_y,m_Q2);
     else m_kt2=(m_Q2-m_mi2-m_mj2-m_mk2)*m_y*m_z*(1.0-m_z)
-	   -sqr(1.0-m_z)*m_mi2-sqr(m_z)*m_mj2;
+              -sqr(1.0-m_z)*m_mi2-sqr(m_z)*m_mj2;
     if (p_info->Stat() && (m_pi[0]>1.0e-3 && m_pj[0]>1.0e-3) &&
-	(pkt[0]<0.0 || m_Q[0]<pkt[0])) {
+        (pkt[0]<0.0 || m_Q[0]<pkt[0])) {
       p_info->SetStat(0);
       msg_Error()<<METHOD<<"(): Negative energy in FF {\n  p_i = "
-		 <<m_pi<<"\n  p_j = "<<m_pj<<"\n  p_k = "<<m_pk
-		 <<"\n  p_ij -> "<<m_Q-pkt<<"\n  p_k  -> "
-		 <<pkt<<"\n}"<<std::endl;
+                  <<m_pi<<"\n  p_j = "<<m_pj<<"\n  p_k = "<<m_pk
+                  <<"\n  p_ij -> "<<m_Q-pkt<<"\n  p_k  -> "
+                  <<pkt<<"\n}"<<std::endl;
     }
     for (size_t i(0);i<m_cur.size();++i) m_p[i]=m_cur[i]->P();
   }
@@ -102,13 +143,13 @@ void Dipole_Kinematics::Evaluate()
     if (Massive()) m_yp=1.0+m_y*(m_mij2-sqr(sqrt(m_mi2)+sqrt(m_mj2)))/m_Q2;
     if (p_nlomc) m_kt2=p_nlomc->KT2(*p_subevt,m_z,1.0-m_y,m_Q2);
     else m_kt2=2.0*(m_pi*m_pj)*m_z*(1.0-m_z)
-	   -sqr(1.0-m_z)*m_mi2-sqr(m_z)*m_mj2;
+              -sqr(1.0-m_z)*m_mi2-sqr(m_z)*m_mj2;
     if (p_info->Stat() && m_Q[0]<pkt[0] && m_pi[0]>1.0e-3 && m_pj[0]>1.0e-3) {
       p_info->SetStat(0);
       msg_Error()<<METHOD<<"(): Negative energy in FI {\n  p_i = "
-		 <<m_pi<<"\n  p_j = "<<m_pj<<"\n  p_a = "<<m_pk
-		 <<"\n  p_ij -> "<<m_Q-pkt<<"\n  p_a  -> "
-		 <<pkt<<"\n}"<<std::endl;
+                  <<m_pi<<"\n  p_j = "<<m_pj<<"\n  p_a = "<<m_pk
+                  <<"\n  p_ij -> "<<m_Q-pkt<<"\n  p_a  -> "
+                  <<pkt<<"\n}"<<std::endl;
     }
     for (size_t i(0);i<m_cur.size();++i) m_p[i]=m_cur[i]->P();
   }
@@ -143,38 +184,85 @@ void Dipole_Kinematics::Evaluate()
   else {
     THROW(fatal_error,"Invalid dipole type");
   }
-  m_trig = m_y/m_yp < ((p_nlomc) ? 1.0 : p_info->AMax(m_type));
-  if (m_trig) m_trig=m_kt2<p_info->KT2Max();
-  if (p_info->AMin()>0.0) {
-    if (m_y<p_info->AMin()) p_info->SetStat(0);
+}
+
+void Dipole_Kinematics::EvaluateAlaricKinematics()
+{
+  int index_i(p_i->Id().front()), index_j(p_j->Id().front()),
+          index_k(p_k->Id().front());
+  Vec4D n;
+  Cluster_Amplitude* ampl = Cluster_Amplitude::New();
+  ampl->SetNIn(2);
+  for (int i = 0; i <= m_cur.size(); ++i) {
+    ampl->CreateLeg((i<2?-1.:1.)*p_subevt->p_real->p_mom[i],i<2?p_subevt->p_real->p_fl[i].Bar():p_subevt->p_real->p_fl[i]);
   }
-  else {
-    if (m_kt2<-p_info->AMin()) p_info->SetStat(0);
+  if (m_cur.back()->SubType()>>2&1) { // soft
+    PHASIC::Ant_Args ff;
+    ff.m_p=ampl->Momenta();
+
+    ff.m_b=p_softrecoil->RecoilTags(ampl,index_i,index_j,index_k);
+    PHASIC::ClusterAntenna(ff, index_i, index_j, index_k, 0.);
+
+    p_ijt->SetP(ff.m_pijt);
+    p_kt->SetP(ff.m_p[index_k]);
+    n = ff.m_n;
+  } else { // collinear
+    Vec4D K = p_collrecoil->Recoil(ampl,index_i,index_j,index_k);
+    std::vector<int> tags = p_collrecoil->RecoilTags(ampl,index_i,index_j,index_k);
+    int nk = std::count_if(tags.begin(),tags.end(),[](int t){return t&2;});
+
+    double K2(K.Abs2());
+    int mode = 0;
+    PHASIC::Kin_Args ff=PHASIC::ClusterFFDipole(0,0,0,K2,p_i->P(),p_j->P(),K,mode);
+    if (ff.m_stat<0) {
+      msg_Error()<<METHOD<<": Clustering failed in subtraction.\n";
+    }
+
+    if(nk>1) {
+      Poincare oldcms(K), newcms(ff.m_pk);
+      newcms.Invert();
+      for(size_t i(0);i<ampl->Legs().size();++i) {
+        if(tags[i]&2) {
+          ampl->Leg(i)->SetMom(newcms*(oldcms*ampl->Leg(i)->Mom()));
+        }
+      }
+    }
+    else {
+      for(size_t i(0);i<ampl->Legs().size();++i) {
+        if(tags[i]&2) {
+          ampl->Leg(i)->SetMom(ff.m_pk);
+        }
+      }
+    }
+
+    p_ijt->SetP(ff.m_pi);
+    p_kt->SetP(ampl->Leg(index_k)->Mom());
+    n=ff.m_nb;
   }
-  if (p_info->Stat() &&
-      !IsEqual(p_i->P()+p_j->P()+p_k->P(),p_ijt->P()+p_kt->P())) {
-    msg_Error()<<METHOD<<"(): Momentum not conserved in type "<<m_type
-	       <<" {\n  before "<<p_i->P()+p_j->P()+p_k->P()
-	       <<"\n  after  "<<p_ijt->P()+p_kt->P()
-	       <<"\n  p_"<<p_i->Id().front()<<" = "<<p_i->P()
-	       <<"\n  p_"<<p_j->Id().front()<<" = "<<p_j->P()
-	       <<"\n  p_"<<p_k->Id().front()<<" = "<<p_k->P()
-	       <<"\n  p_{"<<p_ijt->Id()<<"} -> "<<p_ijt->P()
-	       <<"\n  p_{"<<p_kt->Id()<<"} -> "<<p_kt->P()
-	       <<"\n}"<<std::endl;
+  if (m_type==0) {
+    m_z=m_pi*n/((m_pi+m_pj)*n);
+    m_y=m_pi*m_pj/(m_pi*m_pj+m_pj*m_pk+m_pk*m_pi);
+    if (Massive()) {
+      // TODO later
+    }
+    if (p_nlomc) m_kt2=p_nlomc->KT2(*p_subevt,m_z,m_y,m_Q2);
+    else m_kt2=0.;
+    if (p_info->Stat() && (m_pi[0]>1.0e-3 && m_pj[0]>1.0e-3) &&
+        (p_kt->P()[0]<0.0 || m_Q[0]<p_kt->P()[0])) {
+      p_info->SetStat(0);
+      msg_Error()<<METHOD<<"(): Negative energy in FF {\n  p_i = "
+                  <<m_pi<<"\n  p_j = "<<m_pj<<"\n  p_k = "<<m_pk
+                  <<"\n  p_ij -> "<<m_Q-p_kt->P()<<"\n  p_k  -> "
+                  <<p_kt->P()<<"\n}"<<std::endl;
+    }
   }
-#ifdef DEBUG__BG
-  msg_Debugging()<<METHOD<<"(): m_type = "<<m_type
-		 <<" {\n  m_z = "<<m_z<<", m_y = "<<m_y
-		 <<"\n  p_"<<p_i->Id().front()<<" = "<<p_i->P()
-		 <<"\n  p_"<<p_j->Id().front()<<" = "<<p_j->P()
-		 <<"\n  p_"<<p_k->Id().front()<<" = "<<p_k->P()
-		 <<"\n  p_{"<<p_ijt->Id()<<"} -> "<<p_ijt->P()
-		 <<"\n  p_{"<<p_kt->Id()<<"} -> "<<p_kt->P()
-		 <<"\n} -> "<<(m_type==2?1.0-m_y:m_y)
-		 <<" vs. "<<p_info->AMin()<<" => stat = "
-		 <<((m_type==2?1.0-m_y:m_y)>=p_info->AMin())<<std::endl;
-#endif
+  int it(0);
+  for (int i = 0; i < ampl->Momenta().size(); ++i) {
+    if (i == index_j) continue;
+    m_p[it]=(i<2?-1.:+1.)*ampl->Leg(i)->Mom();
+    ++it;
+  }
+  ampl->Delete();
 }
 
 void Dipole_Kinematics::CheckKT2Min()
