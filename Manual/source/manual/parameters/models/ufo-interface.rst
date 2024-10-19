@@ -56,6 +56,11 @@ massless in the UFO model. This is necessary for a meaningful
 simulation. In the hard process however, the UFO model masses are always
 respected.
 
+If your UFO model adds particles which should be treated like hadrons, e.g.
+decaying through the hadron decay module similar to the tau lepton, then you
+have to list them with their PDG IDs using the
+:option:`UFO_HADRONS=[<int>, <int>, ...]` option.
+
 For an example UFO setup, see :ref:`MSSM/UFO`. Further models are shipped
 with Sherpa, residing in the ``<prefix>/share/SHERPA-MC/Examples/BSM``
 directory. Note, if you want to use an extremely complex model with many
