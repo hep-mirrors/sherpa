@@ -27,6 +27,10 @@ public:
     // Initialise Pythia object
     m_pythia.readString("ProcessLevel:all = off");
 
+    // do not print all changed particles
+    if(!msg_LevelIsDebugging())
+      m_pythia.readString("Init:showChangedParticleData = off");
+
     // Optionally switch off resonance decays, or only showers in them.
     m_pythia.readString("ProcessLevel:resonanceDecays = off");
     m_pythia.readString("PartonLevel:FSRinResonances = off");
@@ -70,8 +74,8 @@ public:
 	if (!m_pythia.next()) {
           Blob * showerblob(blob->InParticle(0)->ProductionBlob());
           Blob * decblob(showerblob->InParticle(0)->ProductionBlob());
-          if (decblob->Type()!=btp::Hadron_Decay) {
-            event.list();
+          if (decblob->Type() != btp::Hadron_Decay) {
+            if(msg_LevelIsDebugging()) event.list();
             msg_Error()<<"Pythia8 hadronisation failed.\n"<<endl;
             return Return_Value::Error;
           }
@@ -269,7 +273,7 @@ private:
     }
     if(inpart->Flav().IsStable()){
       msg_Error() << inpart->Flav() << std::endl;
-      pevt.list();
+      if(msg_LevelIsDebugging()) pevt.list();
       THROW(fatal_error,"Particle is supposed to be stable.");
     }
     if(inpart->Time()==0.0) inpart->SetTime();
