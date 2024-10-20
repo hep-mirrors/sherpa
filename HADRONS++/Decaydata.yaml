@@ -407,11 +407,11 @@ HADRON_DECAYS:
         IntResults: [1.764e-18, 7.291e-21, 5.006e-18]
 
     311:
-      130:
+      '130':
         BR: [0.5, 0.5]
         IntResults: [1.0, 1.0, 1.0]
 
-      310:
+      '310':
         BR: [0.5, 0.5]
         IntResults: [1.0, 1.0, 1.0]
 
@@ -5421,11 +5421,6 @@ HADRON_DECAYS:
                 V_CKM: 0.221
                 FORM_FACTOR: 2
                 mode: 1
-                HONR_msigma: 0.40
-                HONR_mq: 0.40
-                HONR_mQ: 1.89
-                HONR_alpha: 0.55
-                HONR_alpha_prime: 0.48
                 HONR_msigma: 0.38
                 HONR_mq: 0.38
                 HONR_mQ: 1.83
@@ -5447,11 +5442,6 @@ HADRON_DECAYS:
                 V_CKM: 0.221
                 FORM_FACTOR: 2
                 mode: 1
-                HONR_msigma: 0.40
-                HONR_mq: 0.40
-                HONR_mQ: 1.89
-                HONR_alpha: 0.55
-                HONR_alpha_prime: 0.48
                 HONR_msigma: 0.38
                 HONR_mq: 0.38
                 HONR_mQ: 1.83
@@ -5707,7 +5697,6 @@ HADRON_DECAYS:
 
     4232:
       Spectators: [ 3201: { Weight: 1.0 } ]
-        
       3201,3,-1,2:
         IntResults: [2.954e-14, 1.424e-16, 5.307e-13]
 
@@ -5890,7 +5879,6 @@ HADRON_DECAYS:
 
     4332:
       Spectators: [ 3303: { Weight: 1.0 } ]
-        
       3303,3,-1,2:
         IntResults: [1.861e-14, 7.436e-17, 4.593e-13]
 
@@ -7426,10 +7414,10 @@ HADRON_DECAYS:
               Weight: 0.5
         IntResults: [6.137e-16, 2.646e-18, 9.257e-14]
 
-      20213,-421:
-        BR: [0, 0]
-        Origin: included
-        IntResults: [1.006, 0, 10.63]
+      # 20213,-421:
+      #   BR: [0, 0]
+      #   Origin: included
+      #   IntResults: [1.006, 0, 10.63]
 
       -423,211,211,-211:
         BR: [0.0103, 0.0012]
@@ -7483,10 +7471,10 @@ HADRON_DECAYS:
               Weight: 0.5
         IntResults: [1.102e-15, 5.169e-18, 1.376e-13]
 
-      20213,-423:
-        BR: [0, 0]
-        Origin: included
-        IntResults: [0.7519, 0, 7.939]
+      # 20213,-423:
+      #   BR: [0, 0]
+      #   Origin: included
+      #   IntResults: [0.7519, 0, 7.939]
 
       -423,213,111:
         BR: [0, 0]
@@ -8054,10 +8042,10 @@ HADRON_DECAYS:
               Weight: 1.0
         IntResults: [1.121e-20, 6.744e-23, 2.302e-18]
 
-      323,111:
-        BR: [0, 0]
-        Origin: included
-        IntResults: [3.368, 0, 35.55]
+      # 323,111:
+      #   BR: [0, 0]
+      #   Origin: included
+      #   IntResults: [3.368, 0, 35.55]
 
       321,-311,111:
         BR: [1e-06, 1e-06]
@@ -8145,10 +8133,10 @@ HADRON_DECAYS:
               Weight: 1.0
         IntResults: [3.594e-20, 2.171e-22, 7.424e-18]
 
-      323,221:
-        BR: [0, 0]
-        Origin: included
-        IntResults: [3.258, 0, 34.39]
+      # 323,221:
+      #   BR: [0, 0]
+      #   Origin: included
+      #   IntResults: [3.258, 0, 34.39]
 
       321,-311,221:
         BR: [1e-06, 1e-06]
@@ -8236,10 +8224,10 @@ HADRON_DECAYS:
               Weight: 1.0
         IntResults: [5.503e-20, 3.332e-22, 1.137e-17]
 
-      331,323:
-        BR: [0, 0]
-        Origin: included
-        IntResults: [3.024, 0, 31.92]
+      # 331,323:
+      #   BR: [0, 0]
+      #   Origin: included
+      #   IntResults: [3.024, 0, 31.92]
 
       331,321,-311:
         BR: [1e-06, 1e-06]
@@ -8327,10 +8315,10 @@ HADRON_DECAYS:
               Weight: 1.0
         IntResults: [1.788e-20, 1.065e-22, 3.575e-18]
 
-      9010221,323:
-        BR: [0, 0]
-        Origin: included
-        IntResults: [3.008, 0, 31.76]
+      # 9010221,323:
+      #   BR: [0, 0]
+      #   Origin: included
+      #   IntResults: [3.008, 0, 31.76]
 
       211,113,111:
         BR: [2.5e-05, 2.5e-05]
@@ -8404,15 +8392,15 @@ HADRON_DECAYS:
               Weight: 1.0
         IntResults: [1.028e-19, 5.015e-22, 1.435e-17]
 
-      323,113:
-        BR: [0, 0]
-        Origin: included
-        IntResults: [1.255, 0, 13.25]
+      # 323,113:
+      #   BR: [0, 0]
+      #   Origin: included
+      #   IntResults: [1.255, 0, 13.25]
 
-      10321,113:
-        BR: [0, 0]
-        Origin: included
-        IntResults: [3.622, 0, 38.24]
+      # 10321,113:
+      #   BR: [0, 0]
+      #   Origin: included
+      #   IntResults: [3.622, 0, 38.24]
 
       321,-311,113:
         BR: [1e-06, 1e-06]
@@ -8500,10 +8488,10 @@ HADRON_DECAYS:
               Weight: 1.0
         IntResults: [9.609e-20, 4.823e-22, 1.405e-17]
 
-      323,223:
-        BR: [0, 0]
-        Origin: included
-        IntResults: [1.253, 0, 13.23]
+      # 323,223:
+      #   BR: [0, 0]
+      #   Origin: included
+      #   IntResults: [1.253, 0, 13.23]
 
       321,-311,223:
         BR: [1e-06, 1e-06]
@@ -8567,10 +8555,10 @@ HADRON_DECAYS:
               Weight: 1.0
         IntResults: [2.242e-19, 1.279e-21, 4.274e-17]
 
-      20113,323:
-        BR: [0, 0]
-        Origin: included
-        IntResults: [1.129, 0, 11.92]
+      # 20113,323:
+      #   BR: [0, 0]
+      #   Origin: included
+      #   IntResults: [1.129, 0, 11.92]
 
       9000111,211,111:
         BR: [1.1e-05, 1.1e-05]
@@ -8639,10 +8627,10 @@ HADRON_DECAYS:
               Weight: 1.0
         IntResults: [1.752e-20, 1.065e-22, 3.623e-18]
 
-      9000111,323:
-        BR: [0, 0]
-        Origin: included
-        IntResults: [2.996, 0, 31.63]
+      # 9000111,323:
+      #   BR: [0, 0]
+      #   Origin: included
+      #   IntResults: [2.996, 0, 31.63]
 
       211,211,-211,111:
         BR: [3e-05, 3e-05]
@@ -8696,10 +8684,10 @@ HADRON_DECAYS:
         Origin: included
         IntResults: [0.0004074, 6.997e-07, 0.004868]
 
-      20213,111:
-        BR: [0, 0]
-        Origin: included
-        IntResults: [1.632, 0, 17.23]
+      # 20213,111:
+      #   BR: [0, 0]
+      #   Origin: included
+      #   IntResults: [1.632, 0, 17.23]
 
       321,211,-211,111:
         BR: [2.33e-05, 2.33e-05]
@@ -8787,25 +8775,25 @@ HADRON_DECAYS:
         Origin: included
         IntResults: [0.0007442, 1.439e-06, 0.009208]
 
-      313,211,111:
-        BR: [0, 0]
-        Origin: included
-        IntResults: [0.0007736, 1.512e-06, 0.009507]
+      # 313,211,111:
+      #   BR: [0, 0]
+      #   Origin: included
+      #   IntResults: [0.0007736, 1.512e-06, 0.009507]
 
-      10311,211,111:
-        BR: [0, 0]
-        Origin: included
-        IntResults: [0.0001975, 5.702e-07, 0.002748]
+      # 10311,211,111:
+      #   BR: [0, 0]
+      #   Origin: included
+      #   IntResults: [0.0001975, 5.702e-07, 0.002748]
 
-      323,111,111:
-        BR: [0, 0]
-        Origin: included
-        IntResults: [0.0003878, 7.545e-07, 0.00476]
+      # 323,111,111:
+      #   BR: [0, 0]
+      #   Origin: included
+      #   IntResults: [0.0003878, 7.545e-07, 0.00476]
 
-      10321,111,111:
-        BR: [0, 0]
-        Origin: included
-        IntResults: [9.884e-05, 2.854e-07, 0.001375]
+      # 10321,111,111:
+      #   BR: [0, 0]
+      #   Origin: included
+      #   IntResults: [9.884e-05, 2.854e-07, 0.001375]
 
       321,-321,211,111:
         BR: [1.66e-06, 1.66e-06]
@@ -8852,10 +8840,10 @@ HADRON_DECAYS:
               Weight: 1.0
         IntResults: [4.141e-20, 4.885e-22, 1.22e-15]
 
-      321,-313,111:
-        BR: [0, 0]
-        Origin: included
-        IntResults: [0.0007058, 1.503e-06, 0.00899]
+      # 321,-313,111:
+      #   BR: [0, 0]
+      #   Origin: included
+      #   IntResults: [0.0007058, 1.503e-06, 0.00899]
 
       323,-311,111:
         BR: [0, 0]
@@ -8883,10 +8871,10 @@ HADRON_DECAYS:
               Weight: 0.5
         IntResults: [1.222e-19, 5.976e-22, 3.174e-16]
 
-      323,-311,111:
-        BR: [0, 0]
-        Origin: included
-        IntResults: [0.0007061, 1.504e-06, 0.008989]
+      # 323,-311,111:
+      #   BR: [0, 0]
+      #   Origin: included
+      #   IntResults: [0.0007061, 1.504e-06, 0.008989]
 
       321,321,-321,111:
         BR: [1e-05, 1e-05]
@@ -9037,15 +9025,15 @@ HADRON_DECAYS:
               Weight: 1.0
         IntResults: [1.737e-19, 8.171e-22, 3.826e-16]
 
-      323,221,111:
-        BR: [0, 0]
-        Origin: included
-        IntResults: [0.0006937, 1.51e-06, 0.008895]
+      # 323,221,111:
+      #   BR: [0, 0]
+      #   Origin: included
+      #   IntResults: [0.0006937, 1.51e-06, 0.008895]
 
-      313,221,211:
-        BR: [0, 0]
-        Origin: included
-        IntResults: [0.0006917, 1.509e-06, 0.008873]
+      # 313,221,211:
+      #   BR: [0, 0]
+      #   Origin: included
+      #   IntResults: [0.0006917, 1.509e-06, 0.008873]
 
       311,221,213:
         BR: [0, 0]
@@ -9123,15 +9111,15 @@ HADRON_DECAYS:
               Weight: 1.0
         IntResults: [1.339e-19, 1.061e-21, 1.704e-15]
 
-      321,-313,221:
-        BR: [0, 0]
-        Origin: included
-        IntResults: [0.000625, 1.387e-06, 0.007921]
+      # 321,-313,221:
+      #   BR: [0, 0]
+      #   Origin: included
+      #   IntResults: [0.000625, 1.387e-06, 0.007921]
 
-      323,-311,221:
-        BR: [0, 0]
-        Origin: included
-        IntResults: [0.0006253, 1.388e-06, 0.007921]
+      # 323,-311,221:
+      #   BR: [0, 0]
+      #   Origin: included
+      #   IntResults: [0.0006253, 1.388e-06, 0.007921]
 
       321,321,-321,221:
         BR: [5e-06, 5e-06]
@@ -9280,10 +9268,10 @@ HADRON_DECAYS:
               Weight: 0.5
         IntResults: [5.141e-20, 2.559e-22, 6.171e-17]
 
-      331,323,111:
-        BR: [0, 0]
-        Origin: included
-        IntResults: [0.0005768, 1.55e-06, 0.008006]
+      # 331,323,111:
+      #   BR: [0, 0]
+      #   Origin: included
+      #   IntResults: [0.0005768, 1.55e-06, 0.008006]
 
       331,321,-321,211:
         BR: [3.33e-07, 3.33e-07]
@@ -9335,10 +9323,10 @@ HADRON_DECAYS:
         Origin: included
         IntResults: [0.0005122, 1.319e-06, 0.006826]
 
-      331,321,-313:
-        BR: [0, 0]
-        Origin: included
-        IntResults: [0.0005115, 1.327e-06, 0.006827]
+      # 331,321,-313:
+      #   BR: [0, 0]
+      #   Origin: included
+      #   IntResults: [0.0005115, 1.327e-06, 0.006827]
 
       331,311,-311,211:
         BR: [3.33e-07, 3.33e-07]
@@ -9361,10 +9349,10 @@ HADRON_DECAYS:
               Weight: 0.5
         IntResults: [2.935e-19, 1.788e-21, 7.257e-15]
 
-      331,323,-311:
-        BR: [0, 0]
-        Origin: included
-        IntResults: [0.0005122, 1.319e-06, 0.006826]
+      # 331,323,-311:
+      #   BR: [0, 0]
+      #   Origin: included
+      #   IntResults: [0.0005122, 1.319e-06, 0.006826]
 
       331,321,321,-321:
         BR: [2e-06, 2e-06]
@@ -9449,10 +9437,10 @@ HADRON_DECAYS:
         Origin: included
         IntResults: [0.0006053, 1.55e-06, 0.008236]
 
-      9010221,20213:
-        BR: [0, 0]
-        Origin: included
-        IntResults: [1.444, 0, 15.25]
+      # 9010221,20213:
+      #   BR: [0, 0]
+      #   Origin: included
+      #   IntResults: [1.444, 0, 15.25]
 
       9010221,321,211,-211:
         BR: [6.6e-06, 6.6e-06]
@@ -9523,15 +9511,15 @@ HADRON_DECAYS:
               Weight: 1.0
         IntResults: [8.558e-20, 3.972e-22, 1.091e-16]
 
-      9010221,323,111:
-        BR: [0, 0]
-        Origin: included
-        IntResults: [0.0005701, 1.551e-06, 0.007955]
+      # 9010221,323,111:
+      #   BR: [0, 0]
+      #   Origin: included
+      #   IntResults: [0.0005701, 1.551e-06, 0.007955]
 
-      9010221,313,211:
-        BR: [0, 0]
-        Origin: included
-        IntResults: [0.0005683, 1.548e-06, 0.007928]
+      # 9010221,313,211:
+      #   BR: [0, 0]
+      #   Origin: included
+      #   IntResults: [0.0005683, 1.548e-06, 0.007928]
 
       9010221,321,-311,111:
         BR: [1e-06, 1e-06]
@@ -9651,10 +9639,10 @@ HADRON_DECAYS:
         Origin: included
         IntResults: [0.002008, 4.539e-06, 0.02604]
 
-      20213,113:
-        BR: [0, 0]
-        Origin: included
-        IntResults: [1.156, 0, 12.2]
+      # 20213,113:
+      #   BR: [0, 0]
+      #   Origin: included
+      #   IntResults: [1.156, 0, 12.2]
 
       321,211,-211,113:
         BR: [1.33e-05, 1.33e-05]
@@ -9744,20 +9732,20 @@ HADRON_DECAYS:
               Weight: 1.0
         IntResults: [7.636e-19, 8.839e-21, 2.855e-14]
 
-      313,211,113:
-        BR: [0, 0]
-        Origin: included
-        IntResults: [0.001889, 4.644e-06, 0.02521]
+      # 313,211,113:
+      #   BR: [0, 0]
+      #   Origin: included
+      #   IntResults: [0.001889, 4.644e-06, 0.02521]
 
-      10311,211,113:
-        BR: [0, 0]
-        Origin: included
-        IntResults: [0.0004627, 1.517e-06, 0.007132]
+      # 10311,211,113:
+      #   BR: [0, 0]
+      #   Origin: included
+      #   IntResults: [0.0004627, 1.517e-06, 0.007132]
 
-      323,113,111:
-        BR: [0, 0]
-        Origin: included
-        IntResults: [0.001898, 4.614e-06, 0.02528]
+      # 323,113,111:
+      #   BR: [0, 0]
+      #   Origin: included
+      #   IntResults: [0.001898, 4.614e-06, 0.02528]
 
       321,-321,211,113:
         BR: [1e-06, 1e-06]
@@ -9897,10 +9885,10 @@ HADRON_DECAYS:
         Origin: included
         IntResults: [0.001997, 4.548e-06, 0.02596]
 
-      20213,223:
-        BR: [0, 0]
-        Origin: included
-        IntResults: [1.153, 0, 12.18]
+      # 20213,223:
+      #   BR: [0, 0]
+      #   Origin: included
+      #   IntResults: [1.153, 0, 12.18]
 
       321,223,211,-211:
         BR: [6.6e-06, 6.6e-06]
@@ -9972,15 +9960,15 @@ HADRON_DECAYS:
               Weight: 1.0
         IntResults: [7.238e-19, 7.166e-21, 6.147e-16]
 
-      313,223,211:
-        BR: [0, 0]
-        Origin: included
-        IntResults: [0.001882, 4.612e-06, 0.02513]
+      # 313,223,211:
+      #   BR: [0, 0]
+      #   Origin: included
+      #   IntResults: [0.001882, 4.612e-06, 0.02513]
 
-      323,223,111:
-        BR: [0, 0]
-        Origin: included
-        IntResults: [0.001887, 4.618e-06, 0.0252]
+      # 323,223,111:
+      #   BR: [0, 0]
+      #   Origin: included
+      #   IntResults: [0.001887, 4.618e-06, 0.0252]
 
       321,-321,223,211:
         BR: [1e-06, 1e-06]
@@ -10109,10 +10097,10 @@ HADRON_DECAYS:
               Weight: 0.5
         IntResults: [3.946e-18, 1.424e-20, 5.634e-16]
 
-      20213,20113:
-        BR: [0, 0]
-        Origin: included
-        IntResults: [1.036, 0, 10.94]
+      # 20213,20113:
+      #   BR: [0, 0]
+      #   Origin: included
+      #   IntResults: [1.036, 0, 10.94]
 
       9000111,211,111,111:
         BR: [1.1e-05, 1.1e-05]
@@ -10632,7 +10620,6 @@ HADRON_DECAYS:
 
     511:
       Spectators: [ 1: { Weight: 1.0 } ]
-      
       -413,12,-11:
         BR: [0.0497, 0.0012]
         Origin: PDG2022
@@ -11197,7 +11184,6 @@ HADRON_DECAYS:
               LD: 0
               Vts: 4.0e-2
               Vtb: 0.78
-              Vts: 0.04
               C1: -0.248
               C2: 1.107
               C3: 0.011
@@ -11220,7 +11206,6 @@ HADRON_DECAYS:
               LD: 0
               Vts: 4.0e-2
               Vtb: 0.78
-              Vts: 0.04
               C1: -0.248
               C2: 1.107
               C3: 0.011
@@ -11243,7 +11228,6 @@ HADRON_DECAYS:
               LD: 0
               Vts: 4.0e-2
               Vtb: 0.78
-              Vts: 0.04
               C1: -0.248
               C2: 1.107
               C3: 0.011
@@ -11266,7 +11250,6 @@ HADRON_DECAYS:
               LD: 0
               Vts: 4.0e-2
               Vtb: 0.78
-              Vts: 0.04
               C1: -0.248
               C2: 1.107
               C3: 0.011
@@ -11317,7 +11300,6 @@ HADRON_DECAYS:
               LD: 0
               Vts: 4.0e-2
               Vtb: 0.78
-              Vts: 0.04
               C1: -0.248
               C2: 1.107
               C3: 0.011
@@ -11368,7 +11350,6 @@ HADRON_DECAYS:
               LD: 0
               Vts: 4.0e-2
               Vtb: 0.78
-              Vts: 0.04
               C1: -0.248
               C2: 1.107
               C3: 0.011
@@ -11749,9 +11730,9 @@ HADRON_DECAYS:
               Weight: 0.5
         IntResults: [6.155e-16, 2.654e-18, 9.279e-14]
 
-      20213,-411:
-        BR: [0, 0]
-        IntResults: [1.004, 0, 10.6]
+      # 20213,-411:
+      #   BR: [0, 0]
+      #   IntResults: [1.004, 0, 10.6]
 
       -411,213,111:
         BR: [0, 0]
@@ -11803,9 +11784,9 @@ HADRON_DECAYS:
               Weight: 0.5
         IntResults: [1.107e-15, 5.188e-18, 1.381e-13]
 
-      20213,-413:
-        BR: [0, 0]
-        IntResults: [0.7508, 0, 7.927]
+      # 20213,-413:
+      #   BR: [0, 0]
+      #   IntResults: [0.7508, 0, 7.927]
 
       -413,213,111:
         BR: [0, 0]
@@ -12068,13 +12049,13 @@ HADRON_DECAYS:
               Weight: 1.0
         IntResults: [2.254e-20, 1.356e-22, 4.629e-18]
 
-      323,-211:
-        BR: [0, 0]
-        IntResults: [3.368, 0, 35.56]
+      # 323,-211:
+      #   BR: [0, 0]
+      #   IntResults: [3.368, 0, 35.56]
 
-      10321,-211:
-        BR: [0, 0]
-        IntResults: [0.003489, 0, 0.03684]
+      # 10321,-211:
+      #   BR: [0, 0]
+      #   IntResults: [0.003489, 0, 0.03684]
 
       321,-311,-211:
         BR: [5e-07, 5e-07]
@@ -12156,13 +12137,13 @@ HADRON_DECAYS:
               Weight: 1.0
         IntResults: [1.028e-19, 5.014e-22, 1.434e-17]
 
-      323,-213:
-        BR: [0, 0]
-        IntResults: [1.256, 0, 13.26]
+      # 323,-213:
+      #   BR: [0, 0]
+      #   IntResults: [1.256, 0, 13.26]
 
-      10321,-213:
-        BR: [0, 0]
-        IntResults: [3.623, 0, 38.25]
+      # 10321,-213:
+      #   BR: [0, 0]
+      #   IntResults: [3.623, 0, 38.25]
 
       321,-311,-213:
         BR: [1e-06, 1e-06]
@@ -12238,9 +12219,9 @@ HADRON_DECAYS:
               Weight: 1.0
         IntResults: [1.813e-20, 1.08e-22, 3.623e-18]
 
-      -9000211,323:
-        BR: [0, 0]
-        IntResults: [2.997, 0, 31.64]
+      # -9000211,323:
+      #   BR: [0, 0]
+      #   IntResults: [2.997, 0, 31.64]
 
       -20213,211,111:
         BR: [2e-05, 2e-05]
@@ -12301,9 +12282,9 @@ HADRON_DECAYS:
               Weight: 1.0
         IntResults: [4.484e-19, 2.557e-21, 8.548e-17]
 
-      -20213,323:
-        BR: [0, 0]
-        IntResults: [1.129, 0, 11.92]
+      # -20213,323:
+      #   BR: [0, 0]
+      #   IntResults: [1.129, 0, 11.92]
 
       211,211,-211,-211:
         BR: [3.3e-05, 3.3e-05]
@@ -12351,9 +12332,9 @@ HADRON_DECAYS:
               Weight: 0.5
         IntResults: [3.575e-19, 1.536e-21, 7.306e-17]
 
-      20213,-211:
-        BR: [0, 0]
-        IntResults: [1.632, 0, 17.24]
+      # 20213,-211:
+      #   BR: [0, 0]
+      #   IntResults: [1.632, 0, 17.24]
 
       213,-211,111:
         BR: [0, 0]
@@ -12430,13 +12411,13 @@ HADRON_DECAYS:
         BR: [0, 0]
         IntResults: [0.0007437, 1.438e-06, 0.009198]
 
-      313,211,-211:
-        BR: [0, 0]
-        IntResults: [0.0007731, 1.511e-06, 0.009502]
+      # 313,211,-211:
+      #   BR: [0, 0]
+      #   IntResults: [0.0007731, 1.511e-06, 0.009502]
 
-      323,-211,111:
-        BR: [0, 0]
-        IntResults: [0.0007751, 1.508e-06, 0.009516]
+      # 323,-211,111:
+      #   BR: [0, 0]
+      #   IntResults: [0.0007751, 1.508e-06, 0.009516]
 
       311,-311,211,-211:
         BR: [1.67e-06, 1.67e-06]
@@ -12487,13 +12468,13 @@ HADRON_DECAYS:
                 Indices: [1,4,2]
         IntResults: [8.432e-20, 1.409e-21, 6.274e-16]
 
-      321,-313,-211:
-        BR: [0, 0]
-        IntResults: [0.0007053, 1.501e-06, 0.008979]
+      # 321,-313,-211:
+      #   BR: [0, 0]
+      #   IntResults: [0.0007053, 1.501e-06, 0.008979]
 
-      323,-311,-211:
-        BR: [0, 0]
-        IntResults: [0.0007057, 1.502e-06, 0.008978]
+      # 323,-311,-211:
+      #   BR: [0, 0]
+      #   IntResults: [0.0007057, 1.502e-06, 0.008978]
 
       321,321,-321,-211:
         BR: [1e-05, 1e-05]
@@ -12556,9 +12537,9 @@ HADRON_DECAYS:
               Weight: 0.5
         IntResults: [2.439e-18, 1.114e-20, 3.559e-16]
 
-      20213,-213:
-        BR: [0, 0]
-        IntResults: [1.156, 0, 12.21]
+      # 20213,-213:
+      #   BR: [0, 0]
+      #   IntResults: [1.156, 0, 12.21]
 
       213,-213,111:
         BR: [0, 0]
@@ -12608,9 +12589,9 @@ HADRON_DECAYS:
               Weight: 0.5
         IntResults: [6.478e-19, 3.138e-21, 3.453e-16]
 
-      313,-213,211:
-        BR: [0, 0]
-        IntResults: [0.001892, 4.609e-06, 0.02521]
+      # 313,-213,211:
+      #   BR: [0, 0]
+      #   IntResults: [0.001892, 4.609e-06, 0.02521]
 
       321,-213,111,111:
         BR: [1.33e-05, 1.33e-05]
@@ -12631,9 +12612,9 @@ HADRON_DECAYS:
               Weight: 0.5
         IntResults: [1.39e-19, 6.164e-22, 7.867e-17]
 
-      323,-213,111:
-        BR: [0, 0]
-        IntResults: [0.001898, 4.614e-06, 0.02528]
+      # 323,-213,111:
+      #   BR: [0, 0]
+      #   IntResults: [0.001898, 4.614e-06, 0.02528]
 
       321,-311,-213,111:
         BR: [1e-06, 1e-06]
@@ -12780,9 +12761,9 @@ HADRON_DECAYS:
               Weight: 0.5
         IntResults: [1.679e-20, 8.377e-23, 2.025e-17]
 
-      -9000211,323,111:
-        BR: [0, 0]
-        IntResults: [0.0005653, 1.551e-06, 0.007919]
+      # -9000211,323,111:
+      #   BR: [0, 0]
+      #   IntResults: [0.0005653, 1.551e-06, 0.007919]
 
       -20213,211,211,-211:
         BR: [2.5e-05, 2.5e-05]
@@ -12824,9 +12805,9 @@ HADRON_DECAYS:
               Weight: 0.5
         IntResults: [3.946e-18, 1.424e-20, 5.634e-16]
 
-      20213,-20213:
-        BR: [0, 0]
-        IntResults: [1.037, 0, 10.95]
+      # 20213,-20213:
+      #   BR: [0, 0]
+      #   IntResults: [1.037, 0, 10.95]
 
       223,111:
         BR: [1e-06, 1e-06]
@@ -13790,7 +13771,6 @@ HADRON_DECAYS:
 
     531:
       Spectators: [ 3: { Weight: 1.0 } ]
-
       -10433,14,-13:
         BR: [0.0025, 0.0007]
         Origin: PDG
@@ -14113,7 +14093,6 @@ HADRON_DECAYS:
 
     5122:
       Spectators: [ 2101: { Weight: 1.0 } ]
-        
       4122,-12,11:
         BR: [0.062, 0.014]
         Origin: PDG
@@ -15061,7 +15040,6 @@ HADRON_DECAYS:
 
     5132:
       Spectators: [ 3101: { Weight: 1.0 } ]
-        
       4132,-12,11:
         BR: [0.0546, 0.0546]
         Origin: EvtGen
@@ -15184,7 +15162,6 @@ HADRON_DECAYS:
 
     5232:
       Spectators: [ 3201: { Weight: 1.0 } ]
-        
       4232,-12,11:
         BR: [0.0546, 0.0546]
         IntResults: [0.001016, 4.313e-06, 0.01854]
@@ -15558,7 +15535,6 @@ HADRON_DECAYS:
 
     5332:
       Spectators: [ 3303: { Weight: 1.0 } ]
-        
       3303,4,-4,3:
         IntResults: [6.663e-16, 2.358e-18, 2.716e-14]
 
@@ -15632,7 +15608,6 @@ HADRON_DECAYS:
 #            Weight: "0.642"
 #        - "-5":
 #            Weight: "0.321"
-        
       12,-11:
         BR: [1.46e-09, 1.46e-09]
         Origin: FS
