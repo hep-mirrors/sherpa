@@ -106,7 +106,7 @@ HADRON_DECAYS:
                 Indices: [0]
               J2:
                 Type: VA_F_F
-                Indices: [1,2]
+                Indices: [1, 2]
         IntResults: [2.542e-17, 0, 7.095e-18]
 
       12,-11:
@@ -119,7 +119,7 @@ HADRON_DECAYS:
                 Indices: [0]
               J2:
                 Type: VA_F_F
-                Indices: [1,2]
+                Indices: [1, 2]
         IntResults: [3.195e-21, 0, 8.92e-22]
 
     321:
@@ -130,7 +130,7 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_F_F
-                Indices: [1,2]
+                Indices: [1, 2]
               J2:
                 Type: VA_0_P
                 Indices: [0]
@@ -143,7 +143,7 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_F_F
-                Indices: [1,2]
+                Indices: [1, 2]
               J2:
                 Type: VA_0_P
                 Indices: [0]
@@ -161,10 +161,10 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_F_F
-                Indices: [2,3]
+                Indices: [2, 3]
               J2:
                 Type: VA_P_P
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 7
         IntResults: [2.591e-18, 1.271e-20, 8.142e-18]
 
@@ -180,10 +180,10 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_F_F
-                Indices: [2,3]
+                Indices: [2, 3]
               J2:
                 Type: VA_P_P
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 7
         IntResults: [1.743e-18, 7.142e-21, 4.861e-18]
 
@@ -230,10 +230,10 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_F_F
-                Indices: [3,2]
+                Indices: [3, 2]
               J2:
                 Type: VA_P_P
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 7
         IntResults: [2.624e-18, 1.295e-20, 8.366e-18]
 
@@ -244,10 +244,10 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_F_F
-                Indices: [2,3]
+                Indices: [2, 3]
               J2:
                 Type: VA_P_P
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 7
         IntResults: [2.624e-18, 1.295e-20, 8.366e-18]
 
@@ -258,10 +258,10 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_F_F
-                Indices: [3,2]
+                Indices: [3, 2]
               J2:
                 Type: VA_P_P
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 7
         IntResults: [1.764e-18, 7.291e-21, 5.006e-18]
 
@@ -272,10 +272,10 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_F_F
-                Indices: [2,3]
+                Indices: [2, 3]
               J2:
                 Type: VA_P_P
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 7
         IntResults: [1.764e-18, 7.291e-21, 5.006e-18]
 
@@ -357,10 +357,10 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_F_F
-                Indices: [3,2]
+                Indices: [3, 2]
               J2:
                 Type: VA_P_P
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 7
         IntResults: [2.624e-18, 1.295e-20, 8.366e-18]
 
@@ -371,10 +371,10 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_F_F
-                Indices: [2,3]
+                Indices: [2, 3]
               J2:
                 Type: VA_P_P
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 7
         IntResults: [2.624e-18, 1.295e-20, 8.366e-18]
 
@@ -385,10 +385,10 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_F_F
-                Indices: [3,2]
+                Indices: [3, 2]
               J2:
                 Type: VA_P_P
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 7
         IntResults: [1.764e-18, 7.291e-21, 5.006e-18]
 
@@ -399,10 +399,10 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_F_F
-                Indices: [2,3]
+                Indices: [2, 3]
               J2:
                 Type: VA_P_P
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 7
         IntResults: [1.764e-18, 7.291e-21, 5.006e-18]
 
@@ -2443,12 +2443,12 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_F_F
-                Indices: [1,0]
+                Indices: [1, 0]
                 v: 1.
                 a: -1.
               J2:
                 Type: VA_F_F
-                Indices: [3,2]
+                Indices: [3, 2]
                 v: 1.
                 a: -1.
         PhaseSpace:
@@ -2462,12 +2462,12 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_F_F
-                Indices: [1,0]
+                Indices: [1, 0]
                 v: 1.
                 a: -1.
               J2:
                 Type: VA_F_F
-                Indices: [3,2]
+                Indices: [3, 2]
                 v: 1.
                 a: -1.
         PhaseSpace:
@@ -2481,7 +2481,7 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_F_F
-                Indices: [2,0]
+                Indices: [2, 0]
                 v: 1.
                 a: -1.
               J2:
@@ -2495,7 +2495,7 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_F_F
-                Indices: [2,0]
+                Indices: [2, 0]
                 v: 1.
                 a: -1.
               J2:
@@ -2509,12 +2509,12 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_F_F
-                Indices: [3,0]
+                Indices: [3, 0]
                 v: 1.
                 a: -1.
               J2:
                 Type: VA_0_PP
-                Indices: [2,1]
+                Indices: [2, 1]
                 RUNNING_WIDTH: 1
                 FORM_FACTOR: 2
         PhaseSpace:
@@ -2528,12 +2528,12 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_F_F
-                Indices: [3,0]
+                Indices: [3, 0]
                 v: 1.
                 a: -1.
               J2:
                 Type: VA_0_PP
-                Indices: [2,1]
+                Indices: [2, 1]
                 RUNNING_WIDTH: 1
                 FORM_FACTOR: 2
         IntResults: [2.123e-15, 7.341e-18, 1.111e-14]
@@ -2544,12 +2544,12 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_F_F
-                Indices: [3,0]
+                Indices: [3, 0]
                 v: 1.
                 a: -1.
               J2:
                 Type: VA_0_PP
-                Indices: [2,1]
+                Indices: [2, 1]
                 RUNNING_WIDTH: 1
                 FORM_FACTOR: 2
         IntResults: [2.123e-15, 7.341e-18, 1.111e-14]
@@ -2560,12 +2560,12 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_F_F
-                Indices: [3,0]
+                Indices: [3, 0]
                 v: 1.
                 a: -1.
               J2:
                 Type: VA_0_PP_strange
-                Indices: [2,1]
+                Indices: [2, 1]
                 RUNNING_WIDTH: 1
                 FORM_FACTOR: 2
         IntResults: [2.136e-14, 1.952e-16, 1.339e-12]
@@ -2576,12 +2576,12 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_F_F
-                Indices: [3,0]
+                Indices: [3, 0]
                 v: 1.
                 a: -1.
               J2:
                 Type: VA_0_PP_strange
-                Indices: [1,2]
+                Indices: [1, 2]
                 RUNNING_WIDTH: 1
                 FORM_FACTOR: 2
         IntResults: [2.147e-14, 1.971e-16, 1.339e-12]
@@ -2592,12 +2592,12 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_F_F
-                Indices: [3,0]
+                Indices: [3, 0]
                 v: 1.
                 a: -1.
               J2:
                 Type: VA_0_PP_strange
-                Indices: [2,1]
+                Indices: [2, 1]
                 RUNNING_WIDTH: 1
                 FORM_FACTOR: 2
         IntResults: [1.062e-14, 9.624e-17, 6.687e-13]
@@ -2608,12 +2608,12 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_F_F
-                Indices: [4,0]
+                Indices: [4, 0]
                 v: 1.
                 a: -1.
               J2:
                 Type: VA_0_PPP
-                Indices: [3,2,1]
+                Indices: [3, 2, 1]
                 FORM_FACTOR: 2
                 RUNNING_WIDTH: 3
         PhaseSpace:
@@ -2629,12 +2629,12 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_F_F
-                Indices: [4,0]
+                Indices: [4, 0]
                 v: 1.
                 a: -1.
               J2:
                 Type: VA_0_PPP
-                Indices: [3,2,1]
+                Indices: [3, 2, 1]
                 FORM_FACTOR: 2
                 RUNNING_WIDTH: 3
         IntResults: [9.044e-14, 4.449e-16, 1.654e-11]
@@ -2645,12 +2645,12 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_F_F
-                Indices: [4,0]
+                Indices: [4, 0]
                 v: 1.
                 a: -1.
               J2:
                 Type: VA_0_PPP
-                Indices: [2,1,3]
+                Indices: [2, 1, 3]
                 FORM_FACTOR: 1
                 RUNNING_WIDTH: 3
         PhaseSpace:
@@ -2664,12 +2664,12 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_F_F
-                Indices: [4,0]
+                Indices: [4, 0]
                 v: 1.
                 a: -1.
               J2:
                 Type: VA_0_PPP
-                Indices: [1,2,3]
+                Indices: [1, 2, 3]
                 FORM_FACTOR: 1
                 RUNNING_WIDTH: 3
         PhaseSpace:
@@ -2683,12 +2683,12 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_F_F
-                Indices: [4,0]
+                Indices: [4, 0]
                 v: 1.
                 a: -1.
               J2:
                 Type: VA_0_PPP
-                Indices: [1,3,2]
+                Indices: [1, 3, 2]
                 FORM_FACTOR: 1
                 RUNNING_WIDTH: 3
         PhaseSpace:
@@ -2704,12 +2704,12 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_F_F
-                Indices: [4,0]
+                Indices: [4, 0]
                 v: 1.
                 a: -1.
               J2:
                 Type: VA_0_PPP
-                Indices: [3,2,1]
+                Indices: [3, 2, 1]
                 FORM_FACTOR: 1
                 RUNNING_WIDTH: 3
         PhaseSpace:
@@ -2725,12 +2725,12 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_F_F
-                Indices: [4,0]
+                Indices: [4, 0]
                 v: 1.
                 a: -1.
               J2:
                 Type: VA_0_PPP
-                Indices: [2,3,1]
+                Indices: [2, 3, 1]
                 FORM_FACTOR: 1
                 RUNNING_WIDTH: 3
         PhaseSpace:
@@ -2746,12 +2746,12 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_F_F
-                Indices: [4,0]
+                Indices: [4, 0]
                 v: 1.
                 a: -1.
               J2:
                 Type: VA_0_PPP
-                Indices: [1,3,2]
+                Indices: [1, 3, 2]
                 FORM_FACTOR: 1
                 RUNNING_WIDTH: 3
         PhaseSpace:
@@ -2765,12 +2765,12 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_F_F
-                Indices: [4,0]
+                Indices: [4, 0]
                 v: 1.
                 a: -1.
               J2:
                 Type: VA_0_PPP
-                Indices: [1,3,2]
+                Indices: [1, 3, 2]
                 FORM_FACTOR: 1
                 RUNNING_WIDTH: 3
         PhaseSpace:
@@ -2784,12 +2784,12 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_F_F
-                Indices: [4,0]
+                Indices: [4, 0]
                 v: 1.
                 a: -1.
               J2:
                 Type: VA_0_PPP
-                Indices: [1,2,3]
+                Indices: [1, 2, 3]
                 FORM_FACTOR: 1
                 RUNNING_WIDTH: 3
         PhaseSpace:
@@ -2805,12 +2805,12 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_F_F
-                Indices: [4,0]
+                Indices: [4, 0]
                 v: 1.
                 a: -1.
               J2:
                 Type: VA_0_PPP
-                Indices: [1,3,2]
+                Indices: [1, 3, 2]
                 FORM_FACTOR: 1
                 RUNNING_WIDTH: 3
         PhaseSpace:
@@ -2826,12 +2826,12 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_F_F
-                Indices: [4,0]
+                Indices: [4, 0]
                 v: 1.
                 a: -1.
               J2:
                 Type: VA_0_PPP
-                Indices: [1,2,3]
+                Indices: [1, 2, 3]
                 FORM_FACTOR: 1
                 RUNNING_WIDTH: 3
         PhaseSpace:
@@ -2847,12 +2847,12 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_F_F
-                Indices: [4,0]
+                Indices: [4, 0]
                 v: 1.
                 a: -1.
               J2:
                 Type: VA_0_PPP
-                Indices: [3,2,1]
+                Indices: [3, 2, 1]
                 FORM_FACTOR: 1
                 RUNNING_WIDTH: 3
         PhaseSpace:
@@ -2868,10 +2868,10 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_F_F
-                Indices: [5,0]
+                Indices: [5, 0]
               J2:
                 Type: VA_0_PiPiPiPi3Charged
-                Indices: [2,1,3,4]
+                Indices: [2, 1, 3, 4]
                 FORM_FACTOR: 1
         IntResults: [4.6e-14, 2.248e-16, 2.326e-11]
 
@@ -2881,10 +2881,10 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_F_F
-                Indices: [5,0]
+                Indices: [5, 0]
               J2:
                 Type: VA_0_PiPiPiPi1Charged
-                Indices: [1,2,3,4]
+                Indices: [1, 2, 3, 4]
                 FORM_FACTOR: 1
         IntResults: [3.885e-15, 1.806e-17, 3.863e-13]
 
@@ -3006,10 +3006,10 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_F_F
-                Indices: [2,3]
+                Indices: [2, 3]
               J2:
                 Type: VA_P_P
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 5
         IntResults: [5.53e-14, 4.537e-16, 5.161e-13]
 
@@ -3020,10 +3020,10 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_F_F
-                Indices: [2,3]
+                Indices: [2, 3]
               J2:
                 Type: VA_P_P
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 5
         IntResults: [5.202e-14, 5.054e-16, 4.45e-13]
 
@@ -3034,10 +3034,10 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_F_F
-                Indices: [2,3]
+                Indices: [2, 3]
               J2:
                 Type: VA_P_V
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 2
         IntResults: [3.38e-14, 1.667e-16, 2.527e-13]
 
@@ -3048,10 +3048,10 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_F_F
-                Indices: [2,3]
+                Indices: [2, 3]
               J2:
                 Type: VA_P_V
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 2
         IntResults: [3.2e-14, 1.528e-16, 2.186e-13]
 
@@ -3062,10 +3062,10 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_F_F
-                Indices: [2,3]
+                Indices: [2, 3]
               J2:
                 Type: VA_P_T
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 2
         IntResults: [8.364e-18, 4.147e-20, 1.276e-16]
 
@@ -3076,10 +3076,10 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_F_F
-                Indices: [2,3]
+                Indices: [2, 3]
               J2:
                 Type: VA_P_T
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 2
         IntResults: [5.546e-18, 2.899e-20, 9.441e-17]
 
@@ -3090,10 +3090,10 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_F_F
-                Indices: [2,3]
+                Indices: [2, 3]
               J2:
                 Type: VA_P_P
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 2
         IntResults: [5.05e-18, 3.219e-20, 1.092e-16]
 
@@ -3104,10 +3104,10 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_F_F
-                Indices: [2,3]
+                Indices: [2, 3]
               J2:
                 Type: VA_P_P
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 2
         IntResults: [3.298e-18, 2.134e-20, 7.575e-17]
 
@@ -3118,10 +3118,10 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_F_F
-                Indices: [2,3]
+                Indices: [2, 3]
               J2:
                 Type: VA_P_V
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 2
         IntResults: [1.936e-15, 8.823e-18, 2.02e-14]
 
@@ -3132,10 +3132,10 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_F_F
-                Indices: [2,3]
+                Indices: [2, 3]
               J2:
                 Type: VA_P_V
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 2
         IntResults: [1.634e-15, 7.51e-18, 1.751e-14]
 
@@ -3146,10 +3146,10 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_F_F
-                Indices: [2,3]
+                Indices: [2, 3]
               J2:
                 Type: VA_P_P
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 2
         IntResults: [2.327e-16, 9.828e-19, 1.782e-15]
 
@@ -3160,10 +3160,10 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_F_F
-                Indices: [2,3]
+                Indices: [2, 3]
               J2:
                 Type: VA_P_P
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 2
         IntResults: [2.249e-16, 9.426e-19, 1.714e-15]
 
@@ -3174,10 +3174,10 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_F_F
-                Indices: [2,3]
+                Indices: [2, 3]
               J2:
                 Type: VA_P_V
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 2
         IntResults: [1.674e-15, 7.253e-18, 1.632e-14]
 
@@ -3188,10 +3188,10 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_F_F
-                Indices: [2,3]
+                Indices: [2, 3]
               J2:
                 Type: VA_P_V
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 2
         IntResults: [1.607e-15, 6.672e-18, 1.458e-14]
 
@@ -3292,11 +3292,11 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_P_P
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 2
               J2:
                 Type: VA_0_PP
-                Indices: [3,2]
+                Indices: [3, 2]
                 RUNNING_WIDTH: 1
                 FORM_FACTOR: 2
         PhaseSpace:
@@ -3356,11 +3356,11 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_P_P
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 2
               J2:
                 Type: VA_0_PPP
-                Indices: [2,3,4]
+                Indices: [2, 3, 4]
                 FORM_FACTOR: 2
                 RUNNING_WIDTH: 3
         IntResults: [3.722e-16, 1.847e-18, 1.1e-13]
@@ -3382,11 +3382,11 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_P_P
-                Indices: [0,3]
+                Indices: [0, 3]
                 FORM_FACTOR: 2
               J2:
                 Type: VA_0_PPP
-                Indices: [2,1,4]
+                Indices: [2, 1, 4]
                 FORM_FACTOR: 1
                 RUNNING_WIDTH: 3
         PhaseSpace:
@@ -3406,11 +3406,11 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_P_P
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 2
               J2:
                 Type: VA_0_PPP
-                Indices: [4,3,2]
+                Indices: [4, 3, 2]
                 FORM_FACTOR: 2
                 RUNNING_WIDTH: 3
         PhaseSpace:
@@ -3442,11 +3442,11 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_P_P
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 2
               J2:
                 Type: VA_0_PiPiPiPi3Charged
-                Indices: [2,4,3,5]
+                Indices: [2, 4, 3, 5]
                 FORM_FACTOR: 1
         IntResults: [8.497e-17, 4.236e-19, 1.534e-13]
 
@@ -3547,11 +3547,11 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_P_P
-                Indices: [0,2]
+                Indices: [0, 2]
                 FORM_FACTOR: 2
               J2:
                 Type: VA_0_PP
-                Indices: [3,1]
+                Indices: [3, 1]
                 RUNNING_WIDTH: 1
                 FORM_FACTOR: 2
         IntResults: [5.882e-18, 2.853e-20, 5.708e-17]
@@ -3563,11 +3563,11 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_P_P
-                Indices: [0,2]
+                Indices: [0, 2]
                 FORM_FACTOR: 2
               J2:
                 Type: VA_0_PPP
-                Indices: [1,4,3]
+                Indices: [1, 4, 3]
                 FORM_FACTOR: 1
                 RUNNING_WIDTH: 3
         PhaseSpace:
@@ -3584,11 +3584,11 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_P_P
-                Indices: [0,2]
+                Indices: [0, 2]
                 FORM_FACTOR: 2
               J2:
                 Type: VA_0_PPP
-                Indices: [1,4,3]
+                Indices: [1, 4, 3]
                 FORM_FACTOR: 1
                 RUNNING_WIDTH: 3
         PhaseSpace:
@@ -3633,11 +3633,11 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_P_P
-                Indices: [0,4]
+                Indices: [0, 4]
                 FORM_FACTOR: 2
               J2:
                 Type: VA_0_PPP
-                Indices: [1,2,3]
+                Indices: [1, 2, 3]
                 FORM_FACTOR: 2
                 RUNNING_WIDTH: 3
         IntResults: [2.873422032e-12, 15.051651e-15, 1.119183036e-9]
@@ -3649,11 +3649,11 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_P_P
-                Indices: [0,2]
+                Indices: [0, 2]
                 FORM_FACTOR: 2
               J2:
                 Type: VA_0_PPP
-                Indices: [4,3,1]
+                Indices: [4, 3, 1]
                 FORM_FACTOR: 2
                 RUNNING_WIDTH: 3
         IntResults: [5.961278544e-12, 31.134237e-15, 1.905992628e-9]
@@ -3699,7 +3699,7 @@ HADRON_DECAYS:
                 Indices: [0]
               J2:
                 Type: VA_F_F
-                Indices: [1,2]
+                Indices: [1, 2]
         IntResults: [6.926e-21, 0, 2.589e-20]
 
       14,-13:
@@ -3712,7 +3712,7 @@ HADRON_DECAYS:
                 Indices: [0]
               J2:
                 Type: VA_F_F
-                Indices: [1,2]
+                Indices: [1, 2]
         IntResults: [2.906e-16, 0, 1.086e-15]
 
       16,-15:
@@ -3725,7 +3725,7 @@ HADRON_DECAYS:
                 Indices: [0]
               J2:
                 Type: VA_F_F
-                Indices: [1,2]
+                Indices: [1, 2]
         IntResults: [7.769e-16, 0, 2.905e-15]
 
       -311,12,-11:
@@ -3735,10 +3735,10 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_F_F
-                Indices: [2,3]
+                Indices: [2, 3]
               J2:
                 Type: VA_P_P
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 10
         IntResults: [6.776e-14, 5.677e-16, 6.386e-13]
 
@@ -3749,10 +3749,10 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_F_F
-                Indices: [2,3]
+                Indices: [2, 3]
               J2:
                 Type: VA_P_P
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 10
         IntResults: [6.094e-14, 5.026e-16, 5.522e-13]
 
@@ -3763,10 +3763,10 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_F_F
-                Indices: [2,3]
+                Indices: [2, 3]
               J2:
                 Type: VA_P_V
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 2
         IntResults: [3.366e-14, 1.665e-16, 2.534e-13]
 
@@ -3777,10 +3777,10 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_F_F
-                Indices: [2,3]
+                Indices: [2, 3]
               J2:
                 Type: VA_P_V
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 2
         IntResults: [3.187e-14, 1.526e-16, 2.19e-13]
 
@@ -3791,10 +3791,10 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_F_F
-                Indices: [2,3]
+                Indices: [2, 3]
               J2:
                 Type: VA_P_T
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 2
         IntResults: [8.028e-18, 3.984e-20, 1.229e-16]
 
@@ -3805,10 +3805,10 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_F_F
-                Indices: [2,3]
+                Indices: [2, 3]
               J2:
                 Type: VA_P_T
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 2
         IntResults: [5.305e-18, 2.777e-20, 9.07e-17]
 
@@ -3819,10 +3819,10 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_F_F
-                Indices: [2,3]
+                Indices: [2, 3]
               J2:
                 Type: VA_P_P
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 2
         IntResults: [5.304e-18, 3.376e-20, 1.148e-16]
 
@@ -3833,10 +3833,10 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_F_F
-                Indices: [2,3]
+                Indices: [2, 3]
               J2:
                 Type: VA_P_P
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 2
         IntResults: [3.491e-18, 2.255e-20, 8.011e-17]
 
@@ -3847,10 +3847,10 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_F_F
-                Indices: [2,3]
+                Indices: [2, 3]
               J2:
                 Type: VA_P_V
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 2
         IntResults: [2.007e-15, 9.15e-18, 2.1e-14]
 
@@ -3861,10 +3861,10 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_F_F
-                Indices: [2,3]
+                Indices: [2, 3]
               J2:
                 Type: VA_P_V
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 2
         IntResults: [1.698e-15, 7.806e-18, 1.824e-14]
 
@@ -3885,10 +3885,10 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_F_F
-                Indices: [2,3]
+                Indices: [2, 3]
               J2:
                 Type: VA_P_P
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 2
         IntResults: [2.331e-16, 9.815e-19, 1.783e-15]
 
@@ -3899,10 +3899,10 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_F_F
-                Indices: [2,3]
+                Indices: [2, 3]
               J2:
                 Type: VA_P_P
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 2
         IntResults: [2.254e-16, 9.416e-19, 1.716e-15]
 
@@ -3913,10 +3913,10 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_F_F
-                Indices: [2,3]
+                Indices: [2, 3]
               J2:
                 Type: VA_P_V
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 2
         IntResults: [1.701e-15, 7.39e-18, 1.668e-14]
 
@@ -3927,10 +3927,10 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_F_F
-                Indices: [2,3]
+                Indices: [2, 3]
               J2:
                 Type: VA_P_V
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 2
         IntResults: [1.633e-15, 6.802e-18, 1.492e-14]
 
@@ -3941,10 +3941,10 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_F_F
-                Indices: [2,3]
+                Indices: [2, 3]
               J2:
                 Type: VA_P_P
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 2
         IntResults: [2.256e-16, 9.973e-19, 2.266e-15]
 
@@ -3955,10 +3955,10 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_F_F
-                Indices: [2,3]
+                Indices: [2, 3]
               J2:
                 Type: VA_P_P
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 2
         IntResults: [2.151e-16, 9.467e-19, 2.162e-15]
 
@@ -3969,10 +3969,10 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_F_F
-                Indices: [2,3]
+                Indices: [2, 3]
               J2:
                 Type: VA_P_V
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 2
         IntResults: [1.615e-15, 7.046e-18, 1.589e-14]
 
@@ -3983,10 +3983,10 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_F_F
-                Indices: [2,3]
+                Indices: [2, 3]
               J2:
                 Type: VA_P_V
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 2
         IntResults: [1.55e-15, 6.471e-18, 1.416e-14]
 
@@ -3997,10 +3997,10 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_F_F
-                Indices: [2,3]
+                Indices: [2, 3]
               J2:
                 Type: VA_P_P
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 2
         IntResults: [9.09e-17, 4.511e-19, 1.317e-15]
 
@@ -4011,10 +4011,10 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_F_F
-                Indices: [2,3]
+                Indices: [2, 3]
               J2:
                 Type: VA_P_P
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 2
         IntResults: [8.331e-17, 4.103e-19, 1.215e-15]
 
@@ -4055,12 +4055,12 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_0_PP
-                Indices: [3,2]
+                Indices: [3, 2]
                 FORM_FACTOR: 2
                 RUNNING_WIDTH: 1
               J2:
                 Type: VA_P_P
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 2
         PhaseSpace:
           - Dalitz_rho(770)+_23:
@@ -4119,11 +4119,11 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_P_P
-                Indices: [0,3]
+                Indices: [0, 3]
                 FORM_FACTOR: 2
               J2:
                 Type: VA_0_PP
-                Indices: [2,1]
+                Indices: [2, 1]
                 FORM_FACTOR: 2
                 RUNNING_WIDTH: 1
         PhaseSpace:
@@ -4252,7 +4252,7 @@ HADRON_DECAYS:
                 Indices: [0]
               J2:
                 Type: VA_F_F
-                Indices: [1,2]
+                Indices: [1, 2]
         IntResults: [9.247e-15, 0, 3.64e-14]
 
       16,-15:
@@ -4265,7 +4265,7 @@ HADRON_DECAYS:
                 Indices: [0]
               J2:
                 Type: VA_F_F
-                Indices: [1,2]
+                Indices: [1, 2]
         IntResults: [9.126e-14, 0, 3.593e-13]
 
       333,12,-11:
@@ -4275,10 +4275,10 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_F_F
-                Indices: [2,3]
+                Indices: [2, 3]
               J2:
                 Type: VA_P_V
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 5
                 FORM_FACTOR_TUNE: 1
         IntResults: [3.317e-14, 3.008e-16, 2.17e-13]
@@ -4290,10 +4290,10 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_F_F
-                Indices: [2,3]
+                Indices: [2, 3]
               J2:
                 Type: VA_P_V
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 5
                 FORM_FACTOR_TUNE: 1
         IntResults: [3.155e-14, 2.765e-16, 2.021e-13]
@@ -4305,10 +4305,10 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_F_F
-                Indices: [2,3]
+                Indices: [2, 3]
               J2:
                 Type: VA_P_P
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 5
                 FORM_FACTOR_TUNE: 8
         IntResults: [2.943e-14, 2.94e-16, 2.813e-13]
@@ -4320,10 +4320,10 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_F_F
-                Indices: [2,3]
+                Indices: [2, 3]
               J2:
                 Type: VA_P_P
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 5
                 FORM_FACTOR_TUNE: 8
         IntResults: [2.722e-14, 2.68e-16, 2.474e-13]
@@ -4335,10 +4335,10 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_F_F
-                Indices: [2,3]
+                Indices: [2, 3]
               J2:
                 Type: VA_P_P
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 8
                 FORM_FACTOR_TUNE: 8
         IntResults: [9.27e-15, 8.58e-17, 1.274e-13]
@@ -4350,10 +4350,10 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_F_F
-                Indices: [2,3]
+                Indices: [2, 3]
               J2:
                 Type: VA_P_P
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 8
                 FORM_FACTOR_TUNE: 8
         IntResults: [7.908e-15, 7.15e-17, 9.911e-14]
@@ -4365,10 +4365,10 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_F_F
-                Indices: [2,3]
+                Indices: [2, 3]
               J2:
                 Type: VA_P_P
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 5
         IntResults: [3.861e-15, 3.637e-17, 3.4e-14]
 
@@ -4379,10 +4379,10 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_F_F
-                Indices: [2,3]
+                Indices: [2, 3]
               J2:
                 Type: VA_P_P
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 5
         IntResults: [3.718e-15, 3.513e-17, 3.296e-14]
 
@@ -4393,10 +4393,10 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_F_F
-                Indices: [2,3]
+                Indices: [2, 3]
               J2:
                 Type: VA_P_V
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 5
         IntResults: [2.232e-15, 1.907e-17, 1.55e-14]
 
@@ -4407,10 +4407,10 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_F_F
-                Indices: [2,3]
+                Indices: [2, 3]
               J2:
                 Type: VA_P_V
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 5
         IntResults: [2.097e-15, 1.865e-17, 1.411e-14]
 
@@ -4421,10 +4421,10 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_F_F
-                Indices: [2,3]
+                Indices: [2, 3]
               J2:
                 Type: VA_P_P
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 5
                 FORM_FACTOR_TUNE: 5
         IntResults: [5.159e-15, 5.659e-17, 9.235e-14]
@@ -4436,10 +4436,10 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_F_F
-                Indices: [2,3]
+                Indices: [2, 3]
               J2:
                 Type: VA_P_P
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 5
                 FORM_FACTOR_TUNE: 5
         IntResults: [4.291e-15, 4.521e-17, 6.641e-14]
@@ -4718,7 +4718,7 @@ HADRON_DECAYS:
         IntResults: [1.328e-06, 0, 5.611e-06]
 
     4122:
-      Spectators: [ 2101: { Weight: 1.0 } ]
+      Spectators: [2101: {Weight: 1.0}]
 
       2112,211:
         BR: [0.003, 0.003]
@@ -5097,7 +5097,7 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_B_B
-                Indices: [0,1]
+                Indices: [0, 1]
                 V_CKM: 0.975
                 mode: 0
                 FORM_FACTOR: 2
@@ -5123,7 +5123,7 @@ HADRON_DECAYS:
                 STSR_alpha_prime: 0.38
               J2:
                 Type: VA_F_F
-                Indices: [2,3]
+                Indices: [2, 3]
         IntResults: [2.215e-13, 8.689e-16, 2.075e-12]
 
       3122,14,-13:
@@ -5133,7 +5133,7 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_B_B
-                Indices: [0,1]
+                Indices: [0, 1]
                 V_CKM: 0.975
                 mode: 0
                 FORM_FACTOR: 2
@@ -5159,7 +5159,7 @@ HADRON_DECAYS:
                 STSR_alpha_prime: 0.38
               J2:
                 Type: VA_F_F
-                Indices: [2,3]
+                Indices: [2, 3]
         IntResults: [2.149e-13, 8.42e-16, 2.022e-12]
 
       102132,12,-11:
@@ -5169,7 +5169,7 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_B_B
-                Indices: [0,1]
+                Indices: [0, 1]
                 V_CKM: 0.975
                 FORM_FACTOR: 2
                 mode: 1
@@ -5195,7 +5195,7 @@ HADRON_DECAYS:
                 STSR_alpha_prime: 0.58
               J2:
                 Type: VA_F_F
-                Indices: [2,3]
+                Indices: [2, 3]
         IntResults: [3.024e-14, 1.481e-16, 4.826e-13]
 
       102132,14,-13:
@@ -5205,7 +5205,7 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_B_B
-                Indices: [0,1]
+                Indices: [0, 1]
                 V_CKM: 0.975
                 FORM_FACTOR: 2
                 mode: 1
@@ -5231,7 +5231,7 @@ HADRON_DECAYS:
                 STSR_alpha_prime: 0.58
               J2:
                 Type: VA_F_F
-                Indices: [2,3]
+                Indices: [2, 3]
         IntResults: [2.84e-14, 1.378e-16, 4.543e-13]
 
       203122,12,-11:
@@ -5241,7 +5241,7 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_B_B
-                Indices: [0,1]
+                Indices: [0, 1]
                 V_CKM: 0.975
                 FORM_FACTOR: 2
                 mode: 2
@@ -5267,7 +5267,7 @@ HADRON_DECAYS:
                 STSR_alpha_prime: 0.38
               J2:
                 Type: VA_F_F
-                Indices: [2,3]
+                Indices: [2, 3]
         IntResults: [2.11e-15, 1.093e-17, 4.347e-14]
 
       203122,14,-13:
@@ -5277,7 +5277,7 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_B_B
-                Indices: [0,1]
+                Indices: [0, 1]
                 V_CKM: 0.975
                 FORM_FACTOR: 2
                 mode: 2
@@ -5303,7 +5303,7 @@ HADRON_DECAYS:
                 STSR_alpha_prime: 0.38
               J2:
                 Type: VA_F_F
-                Indices: [2,3]
+                Indices: [2, 3]
         IntResults: [1.893e-15, 9.548e-18, 3.874e-14]
 
       2112,12,-11:
@@ -5313,7 +5313,7 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_B_B
-                Indices: [0,1]
+                Indices: [0, 1]
                 V_CKM: 0.221
                 FORM_FACTOR: 2
                 mode: 0
@@ -5329,7 +5329,7 @@ HADRON_DECAYS:
                 HOSR_alpha_prime: 0.54
               J2:
                 Type: VA_F_F
-                Indices: [2,3]
+                Indices: [2, 3]
         IntResults: [1.799e-14, 6.446e-17, 1.445e-13]
 
       2112,14,-13:
@@ -5339,7 +5339,7 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_B_B
-                Indices: [0,1]
+                Indices: [0, 1]
                 V_CKM: 0.221
                 FORM_FACTOR: 2
                 mode: 0
@@ -5355,7 +5355,7 @@ HADRON_DECAYS:
                 HOSR_alpha_prime: 0.54
               J2:
                 Type: VA_F_F
-                Indices: [2,3]
+                Indices: [2, 3]
         IntResults: [1.766e-14, 6.32e-17, 1.419e-13]
 
       202112,12,-11:
@@ -5365,7 +5365,7 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_B_B
-                Indices: [0,1]
+                Indices: [0, 1]
                 V_CKM: 0.221
                 FORM_FACTOR: 2
                 mode: 2
@@ -5381,7 +5381,7 @@ HADRON_DECAYS:
                 HOSR_alpha_prime: 0.54
               J2:
                 Type: VA_F_F
-                Indices: [2,3]
+                Indices: [2, 3]
         IntResults: [6.011e-16, 3.188e-18, 1.204e-14]
 
       202112,14,-13:
@@ -5391,7 +5391,7 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_B_B
-                Indices: [0,1]
+                Indices: [0, 1]
                 V_CKM: 0.221
                 FORM_FACTOR: 2
                 mode: 2
@@ -5407,7 +5407,7 @@ HADRON_DECAYS:
                 HOSR_alpha_prime: 0.54
               J2:
                 Type: VA_F_F
-                Indices: [2,3]
+                Indices: [2, 3]
         IntResults: [5.612e-16, 2.91e-18, 1.118e-14]
 
       102112,12,-11:
@@ -5417,7 +5417,7 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_B_B
-                Indices: [0,1]
+                Indices: [0, 1]
                 V_CKM: 0.221
                 FORM_FACTOR: 2
                 mode: 1
@@ -5428,7 +5428,7 @@ HADRON_DECAYS:
                 HONR_alpha_prime: 0.54
               J2:
                 Type: VA_F_F
-                Indices: [2,3]
+                Indices: [2, 3]
         IntResults: [1.539e-15, 7.841e-18, 2.948e-14]
 
       102112,14,-13:
@@ -5438,7 +5438,7 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_B_B
-                Indices: [0,1]
+                Indices: [0, 1]
                 V_CKM: 0.221
                 FORM_FACTOR: 2
                 mode: 1
@@ -5449,7 +5449,7 @@ HADRON_DECAYS:
                 HONR_alpha_prime: 0.54
               J2:
                 Type: VA_F_F
-                Indices: [2,3]
+                Indices: [2, 3]
         IntResults: [1.422e-15, 7.096e-18, 2.719e-14]
 
       3212,12,-11:
@@ -5696,7 +5696,7 @@ HADRON_DECAYS:
         IntResults: [0.001811, 0, 0.008911]
 
     4232:
-      Spectators: [ 3201: { Weight: 1.0 } ]
+      Spectators: [3201: {Weight: 1.0}]
       3201,3,-1,2:
         IntResults: [2.954e-14, 1.424e-16, 5.307e-13]
 
@@ -5722,7 +5722,7 @@ HADRON_DECAYS:
         IntResults: [5.088e-15, 2.24e-17, 7.43e-14]
 
     4132:
-      Spectators: [ 3101: { Weight: 1.0 } ]
+      Spectators: [3101: {Weight: 1.0}]
 
       3101,3,-1,2:
         IntResults: [3.028e-14, 1.455e-16, 5.423e-13]
@@ -5878,7 +5878,7 @@ HADRON_DECAYS:
         IntResults: [0.00195, 6.622e-09, 0.01032]
 
     4332:
-      Spectators: [ 3303: { Weight: 1.0 } ]
+      Spectators: [3303: {Weight: 1.0}]
       3303,3,-1,2:
         IntResults: [1.861e-14, 7.436e-17, 4.593e-13]
 
@@ -6144,7 +6144,7 @@ HADRON_DECAYS:
         IntResults: [0.005814, 0, 0.04384]
 
     521:
-      Spectators: [ 2: { Weight: 1.0 } ]
+      Spectators: [2: {Weight: 1.0}]
 
       -423,12,-11:
         BR: [0.0558, 0.0022]
@@ -6153,10 +6153,10 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_F_F
-                Indices: [2,3]
+                Indices: [2, 3]
               J2:
                 Type: VA_P_V
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 3
         PhaseSpace:
           - Dalitz_W_23:
@@ -6170,10 +6170,10 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_F_F
-                Indices: [2,3]
+                Indices: [2, 3]
               J2:
                 Type: VA_P_V
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 3
         PhaseSpace:
           - Dalitz_W_23:
@@ -6187,10 +6187,10 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_F_F
-                Indices: [2,3]
+                Indices: [2, 3]
               J2:
                 Type: VA_P_V
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 3
         PhaseSpace:
           - Dalitz_W_23:
@@ -6204,10 +6204,10 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_F_F
-                Indices: [2,3]
+                Indices: [2, 3]
               J2:
                 Type: VA_P_P
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 4
         PhaseSpace:
           - Dalitz_W_23:
@@ -6221,10 +6221,10 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_F_F
-                Indices: [2,3]
+                Indices: [2, 3]
               J2:
                 Type: VA_P_P
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 4
         PhaseSpace:
           - Dalitz_W_23:
@@ -6238,10 +6238,10 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_F_F
-                Indices: [2,3]
+                Indices: [2, 3]
               J2:
                 Type: VA_P_P
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 4
         PhaseSpace:
           - Dalitz_W_23:
@@ -6255,10 +6255,10 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_F_F
-                Indices: [2,3]
+                Indices: [2, 3]
               J2:
                 Type: VA_P_P
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 2
         PhaseSpace:
           - Dalitz_W_23:
@@ -6272,10 +6272,10 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_F_F
-                Indices: [2,3]
+                Indices: [2, 3]
               J2:
                 Type: VA_P_P
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 2
         PhaseSpace:
           - Dalitz_W_23:
@@ -6289,10 +6289,10 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_F_F
-                Indices: [2,3]
+                Indices: [2, 3]
               J2:
                 Type: VA_P_P
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 2
         PhaseSpace:
           - Dalitz_W_23:
@@ -6306,10 +6306,10 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_F_F
-                Indices: [2,3]
+                Indices: [2, 3]
               J2:
                 Type: VA_P_V
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 2
         PhaseSpace:
           - Dalitz_W_23:
@@ -6323,10 +6323,10 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_F_F
-                Indices: [2,3]
+                Indices: [2, 3]
               J2:
                 Type: VA_P_V
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 2
         PhaseSpace:
           - Dalitz_W_23:
@@ -6340,10 +6340,10 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_F_F
-                Indices: [2,3]
+                Indices: [2, 3]
               J2:
                 Type: VA_P_V
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 2
         PhaseSpace:
           - Dalitz_W_23:
@@ -6357,10 +6357,10 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_F_F
-                Indices: [2,3]
+                Indices: [2, 3]
               J2:
                 Type: VA_P_V
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 2
         PhaseSpace:
           - Dalitz_W_23:
@@ -6374,10 +6374,10 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_F_F
-                Indices: [2,3]
+                Indices: [2, 3]
               J2:
                 Type: VA_P_V
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 2
         PhaseSpace:
           - Dalitz_W_23:
@@ -6391,10 +6391,10 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_F_F
-                Indices: [2,3]
+                Indices: [2, 3]
               J2:
                 Type: VA_P_V
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 2
         PhaseSpace:
           - Dalitz_W_23:
@@ -6408,10 +6408,10 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_F_F
-                Indices: [2,3]
+                Indices: [2, 3]
               J2:
                 Type: VA_P_T
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 2
         IntResults: [1.05e-15, 4.668e-18, 3.069e-14]
 
@@ -6422,10 +6422,10 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_F_F
-                Indices: [2,3]
+                Indices: [2, 3]
               J2:
                 Type: VA_P_T
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 2
         PhaseSpace:
           - Dalitz_W_23:
@@ -6439,10 +6439,10 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_F_F
-                Indices: [2,3]
+                Indices: [2, 3]
               J2:
                 Type: VA_P_T
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 2
         PhaseSpace:
           - Dalitz_W_23:
@@ -6456,10 +6456,10 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_F_F
-                Indices: [3,4]
+                Indices: [3, 4]
               J2:
                 Type: VA_B_DPi
-                Indices: [0,1,2]
+                Indices: [0, 1, 2]
                 Vxx: 0.04
         IntResults: [2.077e-16, 9.935e-19, 1.4e-14]
 
@@ -6470,10 +6470,10 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_F_F
-                Indices: [3,4]
+                Indices: [3, 4]
               J2:
                 Type: VA_B_DPi
-                Indices: [0,1,2]
+                Indices: [0, 1, 2]
                 Vxx: 0.04
         IntResults: [2.06e-16, 9.835e-19, 1.388e-14]
 
@@ -6484,10 +6484,10 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_F_F
-                Indices: [3,4]
+                Indices: [3, 4]
               J2:
                 Type: VA_B_DPi
-                Indices: [0,1,2]
+                Indices: [0, 1, 2]
                 Vxx: 0.04
         IntResults: [2.06e-16, 9.835e-19, 1.388e-14]
 
@@ -6498,10 +6498,10 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_F_F
-                Indices: [3,4]
+                Indices: [3, 4]
               J2:
                 Type: VA_B_DstarPi
-                Indices: [0,1,2]
+                Indices: [0, 1, 2]
                 Vxx: 0.04
         IntResults: [1.077e-16, 4.831e-19, 1.015e-14]
 
@@ -6512,10 +6512,10 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_F_F
-                Indices: [3,4]
+                Indices: [3, 4]
               J2:
                 Type: VA_B_DstarPi
-                Indices: [0,1,2]
+                Indices: [0, 1, 2]
                 Vxx: 0.04
         IntResults: [1.065e-16, 4.767e-19, 9.993e-15]
 
@@ -6526,10 +6526,10 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_F_F
-                Indices: [3,4]
+                Indices: [3, 4]
               J2:
                 Type: VA_B_DstarPi
-                Indices: [0,1,2]
+                Indices: [0, 1, 2]
                 Vxx: 0.04
         IntResults: [1.065e-16, 4.767e-19, 9.993e-15]
 
@@ -6570,10 +6570,10 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_F_F
-                Indices: [2,3]
+                Indices: [2, 3]
               J2:
                 Type: VA_P_P
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 2
         IntResults: [9.765e-18, 9.657e-20, 1.961e-16]
 
@@ -6584,10 +6584,10 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_F_F
-                Indices: [2,3]
+                Indices: [2, 3]
               J2:
                 Type: VA_P_P
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 2
         IntResults: [9.844e-18, 9.715e-20, 1.957e-16]
 
@@ -6598,10 +6598,10 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_F_F
-                Indices: [2,3]
+                Indices: [2, 3]
               J2:
                 Type: VA_P_P
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 2
         IntResults: [5.081e-18, 2.398e-20, 1.002e-16]
 
@@ -6612,10 +6612,10 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_F_F
-                Indices: [2,3]
+                Indices: [2, 3]
               J2:
                 Type: VA_P_P
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 2
         IntResults: [9.84e-18, 9.614e-20, 1.959e-16]
 
@@ -6626,10 +6626,10 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_F_F
-                Indices: [2,3]
+                Indices: [2, 3]
               J2:
                 Type: VA_P_P
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 2
         IntResults: [1.512e-17, 5.529e-20, 3.041e-16]
 
@@ -6640,10 +6640,10 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_F_F
-                Indices: [2,3]
+                Indices: [2, 3]
               J2:
                 Type: VA_P_P
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 2
         IntResults: [7.586e-18, 3.746e-20, 1.5e-16]
 
@@ -6654,10 +6654,10 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_F_F
-                Indices: [2,3]
+                Indices: [2, 3]
               J2:
                 Type: VA_P_P
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 2
         PhaseSpace:
           - Dalitz_W_23:
@@ -6671,10 +6671,10 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_F_F
-                Indices: [2,3]
+                Indices: [2, 3]
               J2:
                 Type: VA_P_P
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 2
         PhaseSpace:
           - Dalitz_W_23:
@@ -6688,10 +6688,10 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_F_F
-                Indices: [2,3]
+                Indices: [2, 3]
               J2:
                 Type: VA_P_P
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 2
         PhaseSpace:
           - Dalitz_W_23:
@@ -6705,10 +6705,10 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_F_F
-                Indices: [2,3]
+                Indices: [2, 3]
               J2:
                 Type: VA_P_P
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 2
         IntResults: [2.214e-18, 8.606e-21, 4.391e-17]
 
@@ -6719,10 +6719,10 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_F_F
-                Indices: [2,3]
+                Indices: [2, 3]
               J2:
                 Type: VA_P_P
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 2
         IntResults: [2.214e-18, 8.561e-21, 4.38e-17]
 
@@ -6733,10 +6733,10 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_F_F
-                Indices: [2,3]
+                Indices: [2, 3]
               J2:
                 Type: VA_P_P
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 2
         IntResults: [2.024e-18, 9.044e-21, 4.457e-17]
 
@@ -6747,10 +6747,10 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_F_F
-                Indices: [2,3]
+                Indices: [2, 3]
               J2:
                 Type: VA_P_V
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 2
         IntResults: [1.736e-16, 8.678e-19, 8.683e-15]
 
@@ -6761,10 +6761,10 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_F_F
-                Indices: [2,3]
+                Indices: [2, 3]
               J2:
                 Type: VA_P_V
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 2
         IntResults: [1.733e-16, 8.661e-19, 8.666e-15]
 
@@ -6775,10 +6775,10 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_F_F
-                Indices: [2,3]
+                Indices: [2, 3]
               J2:
                 Type: VA_P_V
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 2
         IntResults: [9.564e-17, 4.718e-19, 4.704e-15]
 
@@ -6789,10 +6789,10 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_F_F
-                Indices: [2,3]
+                Indices: [2, 3]
               J2:
                 Type: VA_P_V
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 2
         IntResults: [1.718e-16, 8.636e-19, 8.624e-15]
 
@@ -6803,10 +6803,10 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_F_F
-                Indices: [2,3]
+                Indices: [2, 3]
               J2:
                 Type: VA_P_V
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 2
         IntResults: [1.715e-16, 8.619e-19, 8.607e-15]
 
@@ -6817,10 +6817,10 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_F_F
-                Indices: [2,3]
+                Indices: [2, 3]
               J2:
                 Type: VA_P_V
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 2
         IntResults: [9.432e-17, 4.681e-19, 4.66e-15]
 
@@ -6831,10 +6831,10 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_F_F
-                Indices: [2,3]
+                Indices: [2, 3]
               J2:
                 Type: VA_P_V
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 2
         IntResults: [4.687e-17, 1.671e-19, 1.09e-15]
 
@@ -6845,10 +6845,10 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_F_F
-                Indices: [2,3]
+                Indices: [2, 3]
               J2:
                 Type: VA_P_V
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 2
         IntResults: [5.081e-17, 2.253e-19, 9.088e-16]
 
@@ -6859,10 +6859,10 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_F_F
-                Indices: [2,3]
+                Indices: [2, 3]
               J2:
                 Type: VA_P_V
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 2
         IntResults: [4.297e-17, 1.567e-19, 1.023e-15]
 
@@ -6873,10 +6873,10 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_F_F
-                Indices: [2,3]
+                Indices: [2, 3]
               J2:
                 Type: VA_P_V
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 2
         IntResults: [1.812e-12, 7.005e-15, 4.574e-11]
 
@@ -6887,10 +6887,10 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_F_F
-                Indices: [2,3]
+                Indices: [2, 3]
               J2:
                 Type: VA_P_V
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 2
         IntResults: [5.623e-17, 2.456e-19, 9.964e-16]
 
@@ -6901,10 +6901,10 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_F_F
-                Indices: [2,3]
+                Indices: [2, 3]
               J2:
                 Type: VA_P_V
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 2
         IntResults: [3.885e-17, 1.805e-19, 7.165e-16]
 
@@ -6915,10 +6915,10 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_F_F
-                Indices: [2,3]
+                Indices: [2, 3]
               J2:
                 Type: VA_P_T
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 2
         IntResults: [1.328e-17, 6.351e-20, 3.248e-16]
 
@@ -6929,10 +6929,10 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_F_F
-                Indices: [2,3]
+                Indices: [2, 3]
               J2:
                 Type: VA_P_T
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 2
         IntResults: [5.834e-18, 2.576e-20, 1.749e-16]
 
@@ -7155,7 +7155,7 @@ HADRON_DECAYS:
                 Indices: [0]
               J2:
                 Type: VA_F_F
-                Indices: [1,2]
+                Indices: [1, 2]
         IntResults: [4.293e-24, 0, 4.533e-23]
 
       14,-13:
@@ -7168,7 +7168,7 @@ HADRON_DECAYS:
                 Indices: [0]
               J2:
                 Type: VA_F_F
-                Indices: [1,2]
+                Indices: [1, 2]
         IntResults: [1.811e-19, 0, 1.912e-18]
 
       16,-15:
@@ -7181,7 +7181,7 @@ HADRON_DECAYS:
                 Indices: [0]
               J2:
                 Type: VA_F_F
-                Indices: [1,2]
+                Indices: [1, 2]
         IntResults: [4.082e-17, 0, 4.31e-16]
 
       431,-421:
@@ -7321,12 +7321,12 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_0_PP
-                Indices: [3,2]
+                Indices: [3, 2]
                 RUNNING_WIDTH: 1
                 FORM_FACTOR: 1
               J2:
                 Type: VA_P_P
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 4
         PhaseSpace:
           - Dalitz_rho(770)+_23:
@@ -7345,12 +7345,12 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_0_PP
-                Indices: [3,2]
+                Indices: [3, 2]
                 RUNNING_WIDTH: 1
                 FORM_FACTOR: 1
               J2:
                 Type: VA_P_V
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 3
         PhaseSpace:
           - Dalitz_rho(770)+_23:
@@ -7369,12 +7369,12 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_0_PPP
-                Indices: [2,3,4]
+                Indices: [2, 3, 4]
                 FORM_FACTOR: 1
                 RUNNING_WIDTH: 3
               J2:
                 Type: VA_P_P
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 4
         PhaseSpace:
           - TwoResonances_a(1)(1260)+_2_rho(770)_34:
@@ -7400,12 +7400,12 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_0_PPP
-                Indices: [3,4,2]
+                Indices: [3, 4, 2]
                 FORM_FACTOR: 1
                 RUNNING_WIDTH: 3
               J2:
                 Type: VA_P_P
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 4
         PhaseSpace:
           - TwoResonances_a(1)(1260)+_3_rho(770)+_24:
@@ -7426,12 +7426,12 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_0_PPP
-                Indices: [2,3,4]
+                Indices: [2, 3, 4]
                 FORM_FACTOR: 1
                 RUNNING_WIDTH: 3
               J2:
                 Type: VA_P_V
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 3
         PhaseSpace:
           - TwoResonances_a(1)(1260)+_2_rho(770)_34:
@@ -7457,12 +7457,12 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_0_PPP
-                Indices: [3,4,2]
+                Indices: [3, 4, 2]
                 FORM_FACTOR: 1
                 RUNNING_WIDTH: 3
               J2:
                 Type: VA_P_V
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 3
         PhaseSpace:
           - TwoResonances_a(1)(1260)+_3_rho(770)+_24:
@@ -7982,11 +7982,11 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_P_P
-                Indices: [0,3]
+                Indices: [0, 3]
                 FORM_FACTOR: 2
               J2:
                 Type: VA_0_PP
-                Indices: [2,1]
+                Indices: [2, 1]
                 RUNNING_WIDTH: 1
                 FORM_FACTOR: 1
         PhaseSpace:
@@ -8006,11 +8006,11 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_P_P
-                Indices: [0,3]
+                Indices: [0, 3]
                 FORM_FACTOR: 2
               J2:
                 Type: VA_0_PP_strange
-                Indices: [1,2]
+                Indices: [1, 2]
                 RUNNING_WIDTH: 1
                 FORM_FACTOR: 1
         PhaseSpace:
@@ -8030,11 +8030,11 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_P_P
-                Indices: [0,3]
+                Indices: [0, 3]
                 FORM_FACTOR: 2
               J2:
                 Type: VA_0_PP_strange
-                Indices: [2,1]
+                Indices: [2, 1]
                 RUNNING_WIDTH: 1
                 FORM_FACTOR: 1
         PhaseSpace:
@@ -8054,11 +8054,11 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_P_P
-                Indices: [0,3]
+                Indices: [0, 3]
                 FORM_FACTOR: 2
               J2:
                 Type: VA_0_PP
-                Indices: [2,1]
+                Indices: [2, 1]
                 RUNNING_WIDTH: 1
                 FORM_FACTOR: 1
         PhaseSpace:
@@ -8073,11 +8073,11 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_P_P
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 2
               J2:
                 Type: VA_0_PP
-                Indices: [3,2]
+                Indices: [3, 2]
                 RUNNING_WIDTH: 1
                 FORM_FACTOR: 1
         PhaseSpace:
@@ -8097,11 +8097,11 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_P_P
-                Indices: [0,2]
+                Indices: [0, 2]
                 FORM_FACTOR: 2
               J2:
                 Type: VA_0_PP_strange
-                Indices: [1,3]
+                Indices: [1, 3]
                 RUNNING_WIDTH: 1
                 FORM_FACTOR: 1
         PhaseSpace:
@@ -8121,11 +8121,11 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_P_P
-                Indices: [0,2]
+                Indices: [0, 2]
                 FORM_FACTOR: 2
               J2:
                 Type: VA_0_PP_strange
-                Indices: [3,1]
+                Indices: [3, 1]
                 RUNNING_WIDTH: 1
                 FORM_FACTOR: 1
         PhaseSpace:
@@ -8145,11 +8145,11 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_P_P
-                Indices: [0,3]
+                Indices: [0, 3]
                 FORM_FACTOR: 2
               J2:
                 Type: VA_0_PP
-                Indices: [2,1]
+                Indices: [2, 1]
                 RUNNING_WIDTH: 1
                 FORM_FACTOR: 1
         PhaseSpace:
@@ -8164,11 +8164,11 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_P_P
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 2
               J2:
                 Type: VA_0_PP
-                Indices: [3,2]
+                Indices: [3, 2]
                 RUNNING_WIDTH: 1
                 FORM_FACTOR: 1
         PhaseSpace:
@@ -8188,11 +8188,11 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_P_P
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 2
               J2:
                 Type: VA_0_PP_strange
-                Indices: [2,3]
+                Indices: [2, 3]
                 RUNNING_WIDTH: 1
                 FORM_FACTOR: 1
         PhaseSpace:
@@ -8212,11 +8212,11 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_P_P
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 2
               J2:
                 Type: VA_0_PP_strange
-                Indices: [3,2]
+                Indices: [3, 2]
                 RUNNING_WIDTH: 1
                 FORM_FACTOR: 1
         PhaseSpace:
@@ -8236,11 +8236,11 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_P_P
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 2
               J2:
                 Type: VA_0_PP
-                Indices: [3,2]
+                Indices: [3, 2]
                 RUNNING_WIDTH: 1
                 FORM_FACTOR: 1
         PhaseSpace:
@@ -8255,11 +8255,11 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_P_P
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 2
               J2:
                 Type: VA_0_PP
-                Indices: [3,2]
+                Indices: [3, 2]
                 RUNNING_WIDTH: 1
                 FORM_FACTOR: 1
         PhaseSpace:
@@ -8279,11 +8279,11 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_P_P
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 2
               J2:
                 Type: VA_0_PP_strange
-                Indices: [2,3]
+                Indices: [2, 3]
                 RUNNING_WIDTH: 1
                 FORM_FACTOR: 1
         PhaseSpace:
@@ -8303,11 +8303,11 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_P_P
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 2
               J2:
                 Type: VA_0_PP_strange
-                Indices: [3,2]
+                Indices: [3, 2]
                 RUNNING_WIDTH: 1
                 FORM_FACTOR: 1
         PhaseSpace:
@@ -8327,11 +8327,11 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_P_V
-                Indices: [0,2]
+                Indices: [0, 2]
                 FORM_FACTOR: 2
               J2:
                 Type: VA_0_PP
-                Indices: [3,1]
+                Indices: [3, 1]
                 RUNNING_WIDTH: 1
                 FORM_FACTOR: 1
         PhaseSpace:
@@ -8351,11 +8351,11 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_P_V
-                Indices: [0,3]
+                Indices: [0, 3]
                 FORM_FACTOR: 2
               J2:
                 Type: VA_0_PP_strange
-                Indices: [1,2]
+                Indices: [1, 2]
                 RUNNING_WIDTH: 1
                 FORM_FACTOR: 1
         PhaseSpace:
@@ -8380,11 +8380,11 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_P_V
-                Indices: [0,2]
+                Indices: [0, 2]
                 FORM_FACTOR: 2
               J2:
                 Type: VA_0_PP_strange
-                Indices: [3,1]
+                Indices: [3, 1]
                 RUNNING_WIDTH: 1
                 FORM_FACTOR: 1
         PhaseSpace:
@@ -8409,11 +8409,11 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_P_V
-                Indices: [0,3]
+                Indices: [0, 3]
                 FORM_FACTOR: 2
               J2:
                 Type: VA_0_PP
-                Indices: [2,1]
+                Indices: [2, 1]
                 RUNNING_WIDTH: 1
                 FORM_FACTOR: 1
         PhaseSpace:
@@ -8428,11 +8428,11 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_P_V
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 2
               J2:
                 Type: VA_0_PP
-                Indices: [3,2]
+                Indices: [3, 2]
                 RUNNING_WIDTH: 1
                 FORM_FACTOR: 1
         PhaseSpace:
@@ -8452,11 +8452,11 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_P_V
-                Indices: [0,2]
+                Indices: [0, 2]
                 FORM_FACTOR: 2
               J2:
                 Type: VA_0_PP_strange
-                Indices: [3,1]
+                Indices: [3, 1]
                 RUNNING_WIDTH: 1
                 FORM_FACTOR: 1
         PhaseSpace:
@@ -8476,11 +8476,11 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_P_V
-                Indices: [0,2]
+                Indices: [0, 2]
                 FORM_FACTOR: 2
               J2:
                 Type: VA_0_PP_strange
-                Indices: [1,3]
+                Indices: [1, 3]
                 RUNNING_WIDTH: 1
                 FORM_FACTOR: 1
         PhaseSpace:
@@ -8500,11 +8500,11 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_P_V
-                Indices: [0,3]
+                Indices: [0, 3]
                 FORM_FACTOR: 2
               J2:
                 Type: VA_0_PP
-                Indices: [2,1]
+                Indices: [2, 1]
                 RUNNING_WIDTH: 1
                 FORM_FACTOR: 1
         PhaseSpace:
@@ -8519,11 +8519,11 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_P_V
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 2
               J2:
                 Type: VA_0_PP_strange
-                Indices: [2,3]
+                Indices: [2, 3]
                 RUNNING_WIDTH: 1
                 FORM_FACTOR: 1
         PhaseSpace:
@@ -8543,11 +8543,11 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_P_V
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 2
               J2:
                 Type: VA_0_PP_strange
-                Indices: [2,3]
+                Indices: [2, 3]
                 RUNNING_WIDTH: 1
                 FORM_FACTOR: 1
         PhaseSpace:
@@ -8567,11 +8567,11 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_P_P
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 2
               J2:
                 Type: VA_0_PP
-                Indices: [3,2]
+                Indices: [3, 2]
                 RUNNING_WIDTH: 1
                 FORM_FACTOR: 1
         PhaseSpace:
@@ -8591,11 +8591,11 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_P_P
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 2
               J2:
                 Type: VA_0_PP_strange
-                Indices: [3,2]
+                Indices: [3, 2]
                 RUNNING_WIDTH: 1
                 FORM_FACTOR: 1
         PhaseSpace:
@@ -8615,11 +8615,11 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_P_P
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 2
               J2:
                 Type: VA_0_PP_strange
-                Indices: [2,3]
+                Indices: [2, 3]
                 RUNNING_WIDTH: 1
                 FORM_FACTOR: 1
         PhaseSpace:
@@ -8639,11 +8639,11 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_P_P
-                Indices: [0,4]
+                Indices: [0, 4]
                 FORM_FACTOR: 2
               J2:
                 Type: VA_0_PPP
-                Indices: [1,2,3]
+                Indices: [1, 2, 3]
                 FORM_FACTOR: 1
                 RUNNING_WIDTH: 3
         PhaseSpace:
@@ -8665,11 +8665,11 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_P_P
-                Indices: [0,4]
+                Indices: [0, 4]
                 FORM_FACTOR: 2
               J2:
                 Type: VA_0_PPP
-                Indices: [2,3,1]
+                Indices: [2, 3, 1]
                 FORM_FACTOR: 1
                 RUNNING_WIDTH: 3
         PhaseSpace:
@@ -8696,11 +8696,11 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_P_P
-                Indices: [0,4]
+                Indices: [0, 4]
                 FORM_FACTOR: 2
               J2:
                 Type: VA_0_PPP
-                Indices: [1,2,3]
+                Indices: [1, 2, 3]
                 FORM_FACTOR: 1
                 RUNNING_WIDTH: 3
         PhaseSpace:
@@ -8727,11 +8727,11 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_P_P
-                Indices: [0,4]
+                Indices: [0, 4]
                 FORM_FACTOR: 2
               J2:
                 Type: VA_0_PPP
-                Indices: [3,2,1]
+                Indices: [3, 2, 1]
                 FORM_FACTOR: 1
                 RUNNING_WIDTH: 3
         PhaseSpace:
@@ -8758,11 +8758,11 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_P_P
-                Indices: [0,4]
+                Indices: [0, 4]
                 FORM_FACTOR: 2
               J2:
                 Type: VA_0_PPP
-                Indices: [2,1,3]
+                Indices: [2, 1, 3]
                 FORM_FACTOR: 1
                 RUNNING_WIDTH: 3
         PhaseSpace:
@@ -8802,11 +8802,11 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_P_P
-                Indices: [0,4]
+                Indices: [0, 4]
                 FORM_FACTOR: 2
               J2:
                 Type: VA_0_PPP
-                Indices: [1,3,2]
+                Indices: [1, 3, 2]
                 FORM_FACTOR: 1
                 RUNNING_WIDTH: 3
         PhaseSpace:
@@ -8828,11 +8828,11 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_P_P
-                Indices: [0,4]
+                Indices: [0, 4]
                 FORM_FACTOR: 2
               J2:
                 Type: VA_0_PPP
-                Indices: [1,3,2]
+                Indices: [1, 3, 2]
                 FORM_FACTOR: 1
                 RUNNING_WIDTH: 3
         PhaseSpace:
@@ -8857,11 +8857,11 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_P_P
-                Indices: [0,4]
+                Indices: [0, 4]
                 FORM_FACTOR: 2
               J2:
                 Type: VA_0_PPP
-                Indices: [2,3,1]
+                Indices: [2, 3, 1]
                 FORM_FACTOR: 1
                 RUNNING_WIDTH: 2
         PhaseSpace:
@@ -8883,11 +8883,11 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_P_P
-                Indices: [0,4]
+                Indices: [0, 4]
                 FORM_FACTOR: 2
               J2:
                 Type: VA_0_PPP
-                Indices: [1,2,3]
+                Indices: [1, 2, 3]
                 FORM_FACTOR: 1
                 RUNNING_WIDTH: 3
         PhaseSpace:
@@ -8909,11 +8909,11 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_P_P
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 2
               J2:
                 Type: VA_0_PPP
-                Indices: [2,3,4]
+                Indices: [2, 3, 4]
                 FORM_FACTOR: 1
                 RUNNING_WIDTH: 3
         PhaseSpace:
@@ -8930,12 +8930,12 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_0_PPP
-                Indices: [3,4,2]
+                Indices: [3, 4, 2]
                 FORM_FACTOR: 1
                 RUNNING_WIDTH: 3
               J2:
                 Type: VA_P_P
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 2
         PhaseSpace:
           - TwoResonances_a(1)(1260)+_3_rho(770)+_24:
@@ -8956,11 +8956,11 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_P_P
-                Indices: [0,2]
+                Indices: [0, 2]
                 FORM_FACTOR: 2
               J2:
                 Type: VA_0_PPP
-                Indices: [1,3,4]
+                Indices: [1, 3, 4]
                 FORM_FACTOR: 1
                 RUNNING_WIDTH: 3
         PhaseSpace:
@@ -8987,11 +8987,11 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_P_P
-                Indices: [0,2]
+                Indices: [0, 2]
                 FORM_FACTOR: 2
               J2:
                 Type: VA_0_PPP
-                Indices: [4,3,1]
+                Indices: [4, 3, 1]
                 FORM_FACTOR: 1
                 RUNNING_WIDTH: 3
         PhaseSpace:
@@ -9013,11 +9013,11 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_P_P
-                Indices: [0,2]
+                Indices: [0, 2]
                 FORM_FACTOR: 2
               J2:
                 Type: VA_0_PPP
-                Indices: [3,1,4]
+                Indices: [3, 1, 4]
                 FORM_FACTOR: 1
                 RUNNING_WIDTH: 3
         PhaseSpace:
@@ -9047,11 +9047,11 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_P_P
-                Indices: [0,3]
+                Indices: [0, 3]
                 FORM_FACTOR: 2
               J2:
                 Type: VA_0_PPP
-                Indices: [1,4,2]
+                Indices: [1, 4, 2]
                 FORM_FACTOR: 1
                 RUNNING_WIDTH: 3
         PhaseSpace:
@@ -9073,11 +9073,11 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_P_P
-                Indices: [0,3]
+                Indices: [0, 3]
                 FORM_FACTOR: 2
               J2:
                 Type: VA_0_PPP
-                Indices: [2,4,1]
+                Indices: [2, 4, 1]
                 FORM_FACTOR: 1
                 RUNNING_WIDTH: 2
         PhaseSpace:
@@ -9099,11 +9099,11 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_P_P
-                Indices: [0,3]
+                Indices: [0, 3]
                 FORM_FACTOR: 2
               J2:
                 Type: VA_0_PPP
-                Indices: [1,4,2]
+                Indices: [1, 4, 2]
                 FORM_FACTOR: 1
                 RUNNING_WIDTH: 3
         PhaseSpace:
@@ -9128,11 +9128,11 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_P_P
-                Indices: [0,4]
+                Indices: [0, 4]
                 FORM_FACTOR: 2
               J2:
                 Type: VA_0_PPP
-                Indices: [1,2,3]
+                Indices: [1, 2, 3]
                 FORM_FACTOR: 1
                 RUNNING_WIDTH: 3
         PhaseSpace:
@@ -9154,11 +9154,11 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_P_P
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 2
               J2:
                 Type: VA_0_PPP
-                Indices: [2,3,4]
+                Indices: [2, 3, 4]
                 FORM_FACTOR: 1
                 RUNNING_WIDTH: 3
         PhaseSpace:
@@ -9175,12 +9175,12 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_0_PPP
-                Indices: [3,4,2]
+                Indices: [3, 4, 2]
                 FORM_FACTOR: 1
                 RUNNING_WIDTH: 3
               J2:
                 Type: VA_P_P
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 2
         PhaseSpace:
           - TwoResonances_a(1)(1260)+_3_rho(770)+_24:
@@ -9200,11 +9200,11 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_P_P
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 2
               J2:
                 Type: VA_0_PPP
-                Indices: [2,3,4]
+                Indices: [2, 3, 4]
                 FORM_FACTOR: 1
                 RUNNING_WIDTH: 3
         PhaseSpace:
@@ -9225,11 +9225,11 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_P_P
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 2
               J2:
                 Type: VA_0_PPP
-                Indices: [3,2,4]
+                Indices: [3, 2, 4]
                 FORM_FACTOR: 1
                 RUNNING_WIDTH: 3
         PhaseSpace:
@@ -9254,11 +9254,11 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_P_P
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 2
               J2:
                 Type: VA_0_PPP
-                Indices: [4,3,2]
+                Indices: [4, 3, 2]
                 FORM_FACTOR: 1
                 RUNNING_WIDTH: 3
         PhaseSpace:
@@ -9280,11 +9280,11 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_P_P
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 2
               J2:
                 Type: VA_0_PPP
-                Indices: [2,4,3]
+                Indices: [2, 4, 3]
                 FORM_FACTOR: 1
                 RUNNING_WIDTH: 3
         PhaseSpace:
@@ -9306,11 +9306,11 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_P_P
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 2
               J2:
                 Type: VA_0_PPP
-                Indices: [2,4,3]
+                Indices: [2, 4, 3]
                 FORM_FACTOR: 1
                 RUNNING_WIDTH: 3
         PhaseSpace:
@@ -9335,11 +9335,11 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_P_P
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 2
               J2:
                 Type: VA_0_PPP
-                Indices: [3,4,2]
+                Indices: [3, 4, 2]
                 FORM_FACTOR: 1
                 RUNNING_WIDTH: 2
         PhaseSpace:
@@ -9361,11 +9361,11 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_P_P
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 2
               J2:
                 Type: VA_0_PPP
-                Indices: [2,3,4]
+                Indices: [2, 3, 4]
                 FORM_FACTOR: 1
                 RUNNING_WIDTH: 3
         PhaseSpace:
@@ -9387,11 +9387,11 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_P_P
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 2
               J2:
                 Type: VA_0_PPP
-                Indices: [2,3,4]
+                Indices: [2, 3, 4]
                 FORM_FACTOR: 1
                 RUNNING_WIDTH: 3
         PhaseSpace:
@@ -9418,11 +9418,11 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_P_P
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 2
               J2:
                 Type: VA_0_PPP
-                Indices: [3,4,2]
+                Indices: [3, 4, 2]
                 FORM_FACTOR: 1
                 RUNNING_WIDTH: 3
         PhaseSpace:
@@ -9449,11 +9449,11 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_P_P
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 2
               J2:
                 Type: VA_0_PPP
-                Indices: [2,3,4]
+                Indices: [2, 3, 4]
                 FORM_FACTOR: 1
                 RUNNING_WIDTH: 3
         PhaseSpace:
@@ -9475,11 +9475,11 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_P_P
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 2
               J2:
                 Type: VA_0_PPP
-                Indices: [4,3,2]
+                Indices: [4, 3, 2]
                 FORM_FACTOR: 1
                 RUNNING_WIDTH: 3
         PhaseSpace:
@@ -9501,11 +9501,11 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_P_P
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 2
               J2:
                 Type: VA_0_PPP
-                Indices: [3,2,4]
+                Indices: [3, 2, 4]
         PhaseSpace:
           - TwoResonances_K(1)(1400)+_2_rho(770)+_34:
               Weight: 1.0
@@ -9528,11 +9528,11 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_P_P
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 2
               J2:
                 Type: VA_0_PPP
-                Indices: [2,4,3]
+                Indices: [2, 4, 3]
                 FORM_FACTOR: 1
                 RUNNING_WIDTH: 3
         PhaseSpace:
@@ -9547,11 +9547,11 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_P_P
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 2
               J2:
                 Type: VA_0_PPP
-                Indices: [2,4,3]
+                Indices: [2, 4, 3]
                 FORM_FACTOR: 1
                 RUNNING_WIDTH: 2
         PhaseSpace:
@@ -9568,11 +9568,11 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_P_P
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 2
               J2:
                 Type: VA_0_PPP
-                Indices: [2,3,4]
+                Indices: [2, 3, 4]
                 FORM_FACTOR: 1
                 RUNNING_WIDTH: 3
         PhaseSpace:
@@ -9589,11 +9589,11 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_P_V
-                Indices: [0,4]
+                Indices: [0, 4]
                 FORM_FACTOR: 2
               J2:
                 Type: VA_0_PPP
-                Indices: [1,2,3]
+                Indices: [1, 2, 3]
                 FORM_FACTOR: 1
                 RUNNING_WIDTH: 3
         PhaseSpace:
@@ -9620,11 +9620,11 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_P_V
-                Indices: [0,2]
+                Indices: [0, 2]
                 FORM_FACTOR: 2
               J2:
                 Type: VA_0_PPP
-                Indices: [3,4,1]
+                Indices: [3, 4, 1]
                 FORM_FACTOR: 1
                 RUNNING_WIDTH: 3
         PhaseSpace:
@@ -9651,11 +9651,11 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_P_V
-                Indices: [0,4]
+                Indices: [0, 4]
                 FORM_FACTOR: 2
               J2:
                 Type: VA_0_PPP
-                Indices: [1,2,3]
+                Indices: [1, 2, 3]
                 FORM_FACTOR: 1
                 RUNNING_WIDTH: 3
         PhaseSpace:
@@ -9682,11 +9682,11 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_P_V
-                Indices: [0,2]
+                Indices: [0, 2]
                 FORM_FACTOR: 2
               J2:
                 Type: VA_0_PPP
-                Indices: [4,3,1]
+                Indices: [4, 3, 1]
                 FORM_FACTOR: 1
                 RUNNING_WIDTH: 3
                 Mass_K*(892)+: 0.89166
@@ -9720,11 +9720,11 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_P_V
-                Indices: [0,3]
+                Indices: [0, 3]
                 FORM_FACTOR: 2
               J2:
                 Type: VA_0_PPP
-                Indices: [2,1,4]
+                Indices: [2, 1, 4]
                 FORM_FACTOR: 1
                 RUNNING_WIDTH: 3
         PhaseSpace:
@@ -9754,11 +9754,11 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_P_V
-                Indices: [0,4]
+                Indices: [0, 4]
                 FORM_FACTOR: 2
               J2:
                 Type: VA_0_PPP
-                Indices: [1,3,2]
+                Indices: [1, 3, 2]
                 FORM_FACTOR: 1
                 RUNNING_WIDTH: 3
         PhaseSpace:
@@ -9775,11 +9775,11 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_P_V
-                Indices: [0,3]
+                Indices: [0, 3]
                 FORM_FACTOR: 2
               J2:
                 Type: VA_0_PPP
-                Indices: [1,4,2]
+                Indices: [1, 4, 2]
                 FORM_FACTOR: 1
                 RUNNING_WIDTH: 3
         PhaseSpace:
@@ -9794,11 +9794,11 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_P_V
-                Indices: [0,4]
+                Indices: [0, 4]
                 FORM_FACTOR: 2
               J2:
                 Type: VA_0_PPP
-                Indices: [2,3,1]
+                Indices: [2, 3, 1]
                 FORM_FACTOR: 1
                 RUNNING_WIDTH: 2
         PhaseSpace:
@@ -9815,11 +9815,11 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_P_V
-                Indices: [0,4]
+                Indices: [0, 4]
                 FORM_FACTOR: 2
               J2:
                 Type: VA_0_PPP
-                Indices: [1,2,3]
+                Indices: [1, 2, 3]
                 FORM_FACTOR: 1
                 RUNNING_WIDTH: 3
         PhaseSpace:
@@ -9835,11 +9835,11 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_P_V
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 2
               J2:
                 Type: VA_0_PPP
-                Indices: [2,3,4]
+                Indices: [2, 3, 4]
                 FORM_FACTOR: 1
                 RUNNING_WIDTH: 3
         PhaseSpace:
@@ -9866,11 +9866,11 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_P_V
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 2
               J2:
                 Type: VA_0_PPP
-                Indices: [3,4,2]
+                Indices: [3, 4, 2]
                 FORM_FACTOR: 1
                 RUNNING_WIDTH: 3
         PhaseSpace:
@@ -9896,11 +9896,11 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_P_V
-                Indices: [0,2]
+                Indices: [0, 2]
                 FORM_FACTOR: 2
               J2:
                 Type: VA_0_PPP
-                Indices: [1,3,4]
+                Indices: [1, 3, 4]
                 FORM_FACTOR: 1
                 RUNNING_WIDTH: 3
         PhaseSpace:
@@ -9922,11 +9922,11 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_P_V
-                Indices: [0,2]
+                Indices: [0, 2]
                 FORM_FACTOR: 2
               J2:
                 Type: VA_0_PPP
-                Indices: [4,3,1]
+                Indices: [4, 3, 1]
                 FORM_FACTOR: 1
                 RUNNING_WIDTH: 3
         PhaseSpace:
@@ -9948,11 +9948,11 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_P_V
-                Indices: [0,2]
+                Indices: [0, 2]
                 FORM_FACTOR: 2
               J2:
                 Type: VA_0_PPP
-                Indices: [3,1,4]
+                Indices: [3, 1, 4]
                 FORM_FACTOR: 1
                 RUNNING_WIDTH: 3
         PhaseSpace:
@@ -9977,11 +9977,11 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_P_V
-                Indices: [0,3]
+                Indices: [0, 3]
                 FORM_FACTOR: 2
               J2:
                 Type: VA_0_PPP
-                Indices: [1,4,2]
+                Indices: [1, 4, 2]
                 FORM_FACTOR: 1
                 RUNNING_WIDTH: 3
         PhaseSpace:
@@ -9998,11 +9998,11 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_P_V
-                Indices: [0,3]
+                Indices: [0, 3]
                 FORM_FACTOR: 2
               J2:
                 Type: VA_0_PPP
-                Indices: [1,4,2]
+                Indices: [1, 4, 2]
                 FORM_FACTOR: 1
                 RUNNING_WIDTH: 3
         PhaseSpace:
@@ -10017,11 +10017,11 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_P_V
-                Indices: [0,3]
+                Indices: [0, 3]
                 FORM_FACTOR: 2
               J2:
                 Type: VA_0_PPP
-                Indices: [2,4,1]
+                Indices: [2, 4, 1]
                 FORM_FACTOR: 1
                 RUNNING_WIDTH: 2
         PhaseSpace:
@@ -10038,11 +10038,11 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_P_V
-                Indices: [0,4]
+                Indices: [0, 4]
                 FORM_FACTOR: 2
               J2:
                 Type: VA_0_PPP
-                Indices: [1,2,3]
+                Indices: [1, 2, 3]
                 FORM_FACTOR: 1
                 RUNNING_WIDTH: 3
         PhaseSpace:
@@ -10058,11 +10058,11 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_P_V
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 2
               J2:
                 Type: VA_0_PPP
-                Indices: [2,3,4]
+                Indices: [2, 3, 4]
                 FORM_FACTOR: 1
                 RUNNING_WIDTH: 3
         PhaseSpace:
@@ -10083,11 +10083,11 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_P_V
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 2
               J2:
                 Type: VA_0_PPP
-                Indices: [3,4,2]
+                Indices: [3, 4, 2]
                 FORM_FACTOR: 1
                 RUNNING_WIDTH: 3
         PhaseSpace:
@@ -10109,11 +10109,11 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_P_P
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 2
               J2:
                 Type: VA_0_PPP
-                Indices: [3,4,2]
+                Indices: [3, 4, 2]
                 FORM_FACTOR: 1
                 RUNNING_WIDTH: 3
         PhaseSpace:
@@ -10619,7 +10619,7 @@ HADRON_DECAYS:
         IntResults: [0.03011, 0, 0.3179]
 
     511:
-      Spectators: [ 1: { Weight: 1.0 } ]
+      Spectators: [1: {Weight: 1.0}]
       -413,12,-11:
         BR: [0.0497, 0.0012]
         Origin: PDG2022
@@ -10627,10 +10627,10 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_F_F
-                Indices: [2,3]
+                Indices: [2, 3]
               J2:
                 Type: VA_P_V
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 3
         PhaseSpace:
           - Dalitz_W_23:
@@ -10644,10 +10644,10 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_F_F
-                Indices: [2,3]
+                Indices: [2, 3]
               J2:
                 Type: VA_P_V
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 3
         PhaseSpace:
           - Dalitz_W_23:
@@ -10661,10 +10661,10 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_F_F
-                Indices: [2,3]
+                Indices: [2, 3]
               J2:
                 Type: VA_P_V
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 3
         PhaseSpace:
           - Dalitz_W_23:
@@ -10678,10 +10678,10 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_F_F
-                Indices: [2,3]
+                Indices: [2, 3]
               J2:
                 Type: VA_P_P
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 4
         PhaseSpace:
           - Dalitz_W_23:
@@ -10695,10 +10695,10 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_F_F
-                Indices: [2,3]
+                Indices: [2, 3]
               J2:
                 Type: VA_P_P
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 4
         PhaseSpace:
           - Dalitz_W_23:
@@ -10712,10 +10712,10 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_F_F
-                Indices: [2,3]
+                Indices: [2, 3]
               J2:
                 Type: VA_P_P
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 4
         PhaseSpace:
           - Dalitz_W_23:
@@ -10729,10 +10729,10 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_F_F
-                Indices: [2,3]
+                Indices: [2, 3]
               J2:
                 Type: VA_P_P
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 2
         PhaseSpace:
           - Dalitz_W_23:
@@ -10746,10 +10746,10 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_F_F
-                Indices: [2,3]
+                Indices: [2, 3]
               J2:
                 Type: VA_P_P
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 2
         PhaseSpace:
           - Dalitz_W_23:
@@ -10763,10 +10763,10 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_F_F
-                Indices: [2,3]
+                Indices: [2, 3]
               J2:
                 Type: VA_P_P
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 2
         PhaseSpace:
           - Dalitz_W_23:
@@ -10780,10 +10780,10 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_F_F
-                Indices: [2,3]
+                Indices: [2, 3]
               J2:
                 Type: VA_P_V
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 2
         PhaseSpace:
           - Dalitz_W_23:
@@ -10797,10 +10797,10 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_F_F
-                Indices: [2,3]
+                Indices: [2, 3]
               J2:
                 Type: VA_P_V
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 2
         PhaseSpace:
           - Dalitz_W_23:
@@ -10814,10 +10814,10 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_F_F
-                Indices: [2,3]
+                Indices: [2, 3]
               J2:
                 Type: VA_P_V
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 2
         PhaseSpace:
           - Dalitz_W_23:
@@ -10831,10 +10831,10 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_F_F
-                Indices: [2,3]
+                Indices: [2, 3]
               J2:
                 Type: VA_P_V
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 2
         PhaseSpace:
           - Dalitz_W_23:
@@ -10848,10 +10848,10 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_F_F
-                Indices: [2,3]
+                Indices: [2, 3]
               J2:
                 Type: VA_P_V
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 2
         PhaseSpace:
           - Dalitz_W_23:
@@ -10865,10 +10865,10 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_F_F
-                Indices: [2,3]
+                Indices: [2, 3]
               J2:
                 Type: VA_P_V
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 2
         PhaseSpace:
           - Dalitz_W_23:
@@ -10882,10 +10882,10 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_F_F
-                Indices: [2,3]
+                Indices: [2, 3]
               J2:
                 Type: VA_P_T
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 2
         PhaseSpace:
           - Dalitz_W_23:
@@ -10899,10 +10899,10 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_F_F
-                Indices: [2,3]
+                Indices: [2, 3]
               J2:
                 Type: VA_P_T
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 2
         PhaseSpace:
           - Dalitz_W_23:
@@ -10916,10 +10916,10 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_F_F
-                Indices: [2,3]
+                Indices: [2, 3]
               J2:
                 Type: VA_P_T
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 2
         PhaseSpace:
           - Dalitz_W_23:
@@ -10933,10 +10933,10 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_F_F
-                Indices: [3,4]
+                Indices: [3, 4]
               J2:
                 Type: VA_B_DPi
-                Indices: [0,1,2]
+                Indices: [0, 1, 2]
                 Vxx: 0.04
         IntResults: [2.082e-16, 9.967e-19, 1.404e-14]
 
@@ -10947,10 +10947,10 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_F_F
-                Indices: [3,4]
+                Indices: [3, 4]
               J2:
                 Type: VA_B_DPi
-                Indices: [0,1,2]
+                Indices: [0, 1, 2]
                 Vxx: 0.04
         IntResults: [2.064e-16, 9.867e-19, 1.392e-14]
 
@@ -10961,10 +10961,10 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_F_F
-                Indices: [3,4]
+                Indices: [3, 4]
               J2:
                 Type: VA_B_DPi
-                Indices: [0,1,2]
+                Indices: [0, 1, 2]
                 Vxx: 0.04
         IntResults: [2.064e-16, 9.867e-19, 1.392e-14]
 
@@ -10975,10 +10975,10 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_F_F
-                Indices: [3,4]
+                Indices: [3, 4]
               J2:
                 Type: VA_B_DstarPi
-                Indices: [0,1,2]
+                Indices: [0, 1, 2]
                 Vxx: 0.04
         IntResults: [1.083e-16, 4.863e-19, 1.02e-14]
 
@@ -10989,10 +10989,10 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_F_F
-                Indices: [3,4]
+                Indices: [3, 4]
               J2:
                 Type: VA_B_DstarPi
-                Indices: [0,1,2]
+                Indices: [0, 1, 2]
                 Vxx: 0.04
         IntResults: [1.071e-16, 4.799e-19, 1.005e-14]
 
@@ -11003,10 +11003,10 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_F_F
-                Indices: [3,4]
+                Indices: [3, 4]
               J2:
                 Type: VA_B_DstarPi
-                Indices: [0,1,2]
+                Indices: [0, 1, 2]
                 Vxx: 0.04
         IntResults: [1.083e-16, 4.863e-19, 1.02e-14]
 
@@ -11043,10 +11043,10 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_F_F
-                Indices: [2,3]
+                Indices: [2, 3]
               J2:
                 Type: VA_P_P
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 9
         IntResults: [2.019e-16, 1.821e-18, 6.222e-15]
 
@@ -11057,10 +11057,10 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_F_F
-                Indices: [2,3]
+                Indices: [2, 3]
               J2:
                 Type: VA_P_P
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 9
         IntResults: [1.993e-16, 1.803e-18, 6.208e-15]
 
@@ -11071,10 +11071,10 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_F_F
-                Indices: [2,3]
+                Indices: [2, 3]
               J2:
                 Type: VA_P_P
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 2
         IntResults: [5.112e-18, 2.415e-20, 1.009e-16]
 
@@ -11085,10 +11085,10 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_F_F
-                Indices: [2,3]
+                Indices: [2, 3]
               J2:
                 Type: VA_P_P
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 2
         IntResults: [2.215e-18, 8.607e-21, 4.393e-17]
 
@@ -11099,10 +11099,10 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_F_F
-                Indices: [2,3]
+                Indices: [2, 3]
               J2:
                 Type: VA_P_V
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 2
         IntResults: [1.737e-16, 8.68e-19, 8.686e-15]
 
@@ -11113,10 +11113,10 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_F_F
-                Indices: [2,3]
+                Indices: [2, 3]
               J2:
                 Type: VA_P_V
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 2
         IntResults: [1.733e-16, 8.663e-19, 8.669e-15]
 
@@ -11127,10 +11127,10 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_F_F
-                Indices: [2,3]
+                Indices: [2, 3]
               J2:
                 Type: VA_P_V
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 2
         IntResults: [9.566e-17, 4.719e-19, 4.706e-15]
 
@@ -11141,10 +11141,10 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_F_F
-                Indices: [2,3]
+                Indices: [2, 3]
               J2:
                 Type: VA_P_V
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 2
         IntResults: [4.689e-17, 1.672e-19, 1.091e-15]
 
@@ -11155,10 +11155,10 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_F_F
-                Indices: [2,3]
+                Indices: [2, 3]
               J2:
                 Type: VA_P_V
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 2
         IntResults: [5.083e-17, 2.254e-19, 9.091e-16]
 
@@ -11169,10 +11169,10 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_F_F
-                Indices: [2,3]
+                Indices: [2, 3]
               J2:
                 Type: VA_P_T
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 2
         IntResults: [1.151e-17, 5.624e-20, 2.926e-16]
 
@@ -11649,11 +11649,11 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_P_P
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 4
               J2:
                 Type: VA_0_PP
-                Indices: [3,2]
+                Indices: [3, 2]
         PhaseSpace:
           - Dalitz_rho(770)+_23:
               Weight: 1.0
@@ -11670,11 +11670,11 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_P_V
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 3
               J2:
                 Type: VA_0_PP
-                Indices: [3,2]
+                Indices: [3, 2]
         PhaseSpace:
           - Dalitz_rho(770)+_23:
               Weight: 1.0
@@ -11691,11 +11691,11 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_P_P
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 4
               J2:
                 Type: VA_0_PPP
-                Indices: [2,3,4]
+                Indices: [2, 3, 4]
         PhaseSpace:
           - TwoResonances_a(1)(1260)+_2_rho(770)_34:
               Weight: 0.5
@@ -11718,11 +11718,11 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_P_P
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 4
               J2:
                 Type: VA_0_PPP
-                Indices: [3,4,2]
+                Indices: [3, 4, 2]
         PhaseSpace:
           - TwoResonances_a(1)(1260)+_3_rho(770)+_24:
               Weight: 0.5
@@ -11745,11 +11745,11 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_P_V
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 3
               J2:
                 Type: VA_0_PPP
-                Indices: [2,3,4]
+                Indices: [2, 3, 4]
         PhaseSpace:
           - TwoResonances_a(1)(1260)+_2_rho(770)_34:
               Weight: 0.5
@@ -11772,11 +11772,11 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_P_V
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 3
               J2:
                 Type: VA_0_PPP
-                Indices: [3,4,2]
+                Indices: [3, 4, 2]
         PhaseSpace:
           - TwoResonances_a(1)(1260)+_3_rho(770)+_24:
               Weight: 0.5
@@ -11989,11 +11989,11 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_P_P
-                Indices: [0,2]
+                Indices: [0, 2]
                 FORM_FACTOR: 2
               J2:
                 Type: VA_0_PP
-                Indices: [3,1]
+                Indices: [3, 1]
         PhaseSpace:
           - Dalitz_rho(770)+_13:
               Weight: 1.0
@@ -12014,11 +12014,11 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_P_P
-                Indices: [0,3]
+                Indices: [0, 3]
                 FORM_FACTOR: 2
               J2:
                 Type: VA_0_PP_strange
-                Indices: [2,1]
+                Indices: [2, 1]
         PhaseSpace:
           - Dalitz_K*(892)+_12:
               Weight: 1.0
@@ -12039,11 +12039,11 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_P_P
-                Indices: [0,2]
+                Indices: [0, 2]
                 FORM_FACTOR: 2
               J2:
                 Type: VA_0_PP_strange
-                Indices: [3,1]
+                Indices: [3, 1]
         PhaseSpace:
           - Dalitz_K*(892)+_13:
               Weight: 1.0
@@ -12064,11 +12064,11 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_P_P
-                Indices: [0,3]
+                Indices: [0, 3]
                 FORM_FACTOR: 2
               J2:
                 Type: VA_0_PP
-                Indices: [2,1]
+                Indices: [2, 1]
         PhaseSpace:
           - Dalitz_rho(770)+_12:
               Weight: 1.0
@@ -12081,11 +12081,11 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_P_V
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 2
               J2:
                 Type: VA_0_PP
-                Indices: [3,2]
+                Indices: [3, 2]
         PhaseSpace:
           - Dalitz_rho(770)+_23:
               Weight: 1.0
@@ -12102,11 +12102,11 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_P_V
-                Indices: [0,2]
+                Indices: [0, 2]
                 FORM_FACTOR: 2
               J2:
                 Type: VA_0_PP_strange
-                Indices: [3,1]
+                Indices: [3, 1]
         PhaseSpace:
           - Dalitz_K*(892)+_13:
               Weight: 1.0
@@ -12127,11 +12127,11 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_P_V
-                Indices: [0,2]
+                Indices: [0, 2]
                 FORM_FACTOR: 2
               J2:
                 Type: VA_0_PP_strange
-                Indices: [3,1]
+                Indices: [3, 1]
         PhaseSpace:
           - Dalitz_K*(892)+_13:
               Weight: 1.0
@@ -12152,11 +12152,11 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_P_V
-                Indices: [0,3]
+                Indices: [0, 3]
                 FORM_FACTOR: 2
               J2:
                 Type: VA_0_PP
-                Indices: [2,1]
+                Indices: [2, 1]
         PhaseSpace:
           - Dalitz_rho(770)+_12:
               Weight: 1.0
@@ -12169,11 +12169,11 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_P_P
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 2
               J2:
                 Type: VA_0_PP
-                Indices: [3,2]
+                Indices: [3, 2]
         PhaseSpace:
           - Dalitz_rho(770)+_23:
               Weight: 1.0
@@ -12189,11 +12189,11 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_P_P
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 2
               J2:
                 Type: VA_0_PP_strange
-                Indices: [3,2]
+                Indices: [3, 2]
         PhaseSpace:
           - Dalitz_K*(892)+_23:
               Weight: 1.0
@@ -12209,11 +12209,11 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_P_P
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 2
               J2:
                 Type: VA_0_PP_strange
-                Indices: [3,2]
+                Indices: [3, 2]
         PhaseSpace:
           - Dalitz_K*(892)+_23:
               Weight: 1.0
@@ -12230,11 +12230,11 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_P_V
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 2
               J2:
                 Type: VA_0_PP
-                Indices: [3,2]
+                Indices: [3, 2]
         PhaseSpace:
           - Dalitz_rho(770)+_23:
               Weight: 1.0
@@ -12251,11 +12251,11 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_P_V
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 2
               J2:
                 Type: VA_0_PP_strange
-                Indices: [3,2]
+                Indices: [3, 2]
         PhaseSpace:
           - Dalitz_K*(892)+_23:
               Weight: 1.0
@@ -12272,11 +12272,11 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_P_V
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 2
               J2:
                 Type: VA_0_PP_strange
-                Indices: [3,2]
+                Indices: [3, 2]
         PhaseSpace:
           - Dalitz_K*(892)+_23:
               Weight: 1.0
@@ -12293,11 +12293,11 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_P_P
-                Indices: [0,4]
+                Indices: [0, 4]
                 FORM_FACTOR: 2
               J2:
                 Type: VA_0_PPP
-                Indices: [1,2,3]
+                Indices: [1, 2, 3]
         PhaseSpace:
           - TwoResonances_a(1)(1260)+_1_rho(770)_23:
               Weight: 0.5
@@ -12320,11 +12320,11 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_P_P
-                Indices: [0,2]
+                Indices: [0, 2]
                 FORM_FACTOR: 2
               J2:
                 Type: VA_0_PPP
-                Indices: [3,4,1]
+                Indices: [3, 4, 1]
         PhaseSpace:
           - TwoResonances_a(1)(1260)+_3_rho(770)+_14:
               Weight: 0.5
@@ -12347,11 +12347,11 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_P_P
-                Indices: [0,4]
+                Indices: [0, 4]
                 FORM_FACTOR: 2
               J2:
                 Type: VA_0_PPP
-                Indices: [1,2,3]
+                Indices: [1, 2, 3]
         PhaseSpace:
           - TwoResonances_K(1)(1400)+_2_K*(892)_13:
               Weight: 0.5
@@ -12374,11 +12374,11 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_P_P
-                Indices: [0,2]
+                Indices: [0, 2]
                 FORM_FACTOR: 2
               J2:
                 Type: VA_0_PPP
-                Indices: [3,4,1]
+                Indices: [3, 4, 1]
         PhaseSpace:
           - TwoResonances_K(1)(1400)+_3_K*(892)+_14:
               Weight: 0.5
@@ -12397,11 +12397,11 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_P_P
-                Indices: [0,3]
+                Indices: [0, 3]
                 FORM_FACTOR: 2
               J2:
                 Type: VA_0_PPP
-                Indices: [2,1,4]
+                Indices: [2, 1, 4]
         PhaseSpace:
           - TwoResonances_K(1)(1400)+_1_rho(770)+_24:
               Weight: 1.0
@@ -12426,11 +12426,11 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_P_P
-                Indices: [0,4]
+                Indices: [0, 4]
                 FORM_FACTOR: 2
               J2:
                 Type: VA_0_PPP
-                Indices: [2,3,1]
+                Indices: [2, 3, 1]
         IntResults: [9.111e-20, 1.872e-21, 1.188e-15]
 
       323,-311,-211:
@@ -12444,11 +12444,11 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_P_P
-                Indices: [0,4]
+                Indices: [0, 4]
                 FORM_FACTOR: 2
               J2:
                 Type: VA_0_PPP
-                Indices: [1,3,2]
+                Indices: [1, 3, 2]
         IntResults: [9.395e-20, 1.881e-21, 1.507e-15]
 
       321,-313,-211:
@@ -12461,11 +12461,11 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_P_P
-                Indices: [0,3]
+                Indices: [0, 3]
                 FORM_FACTOR: 2
               J2:
                 Type: VA_0_PPP
-                Indices: [1,4,2]
+                Indices: [1, 4, 2]
         IntResults: [8.432e-20, 1.409e-21, 6.274e-16]
 
       # 321,-313,-211:
@@ -12483,11 +12483,11 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_P_P
-                Indices: [0,4]
+                Indices: [0, 4]
                 FORM_FACTOR: 2
               J2:
                 Type: VA_0_PPP
-                Indices: [1,2,3]
+                Indices: [1, 2, 3]
         PhaseSpace:
           - TwoResonances_K(1)(1400)+_2_rho(770)_13:
               Weight: 0.5
@@ -12502,11 +12502,11 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_P_V
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 2
               J2:
                 Type: VA_0_PPP
-                Indices: [2,3,4]
+                Indices: [2, 3, 4]
         PhaseSpace:
           - TwoResonances_a(1)(1260)+_2_rho(770)_34:
               Weight: 0.5
@@ -12525,11 +12525,11 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_P_V
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 2
               J2:
                 Type: VA_0_PPP
-                Indices: [3,4,2]
+                Indices: [3, 4, 2]
         PhaseSpace:
           - TwoResonances_a(1)(1260)+_3_rho(770)+_24:
               Weight: 0.5
@@ -12552,11 +12552,11 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_P_V
-                Indices: [0,2]
+                Indices: [0, 2]
                 FORM_FACTOR: 2
               J2:
                 Type: VA_0_PPP
-                Indices: [3,1,4]
+                Indices: [3, 1, 4]
         PhaseSpace:
           - TwoResonances_K(1)(1400)+_1_rho(770)+_34:
               Weight: 1.0
@@ -12577,11 +12577,11 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_P_V
-                Indices: [0,2]
+                Indices: [0, 2]
                 FORM_FACTOR: 2
               J2:
                 Type: VA_0_PPP
-                Indices: [1,3,4]
+                Indices: [1, 3, 4]
         PhaseSpace:
           - TwoResonances_K(1)(1400)+_3_K*(892)_14:
               Weight: 0.5
@@ -12600,11 +12600,11 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_P_V
-                Indices: [0,2]
+                Indices: [0, 2]
                 FORM_FACTOR: 2
               J2:
                 Type: VA_0_PPP
-                Indices: [4,3,1]
+                Indices: [4, 3, 1]
         PhaseSpace:
           - TwoResonances_K(1)(1400)+_3_K*(892)+_14:
               Weight: 0.5
@@ -12623,11 +12623,11 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_P_V
-                Indices: [0,3]
+                Indices: [0, 3]
                 FORM_FACTOR: 2
               J2:
                 Type: VA_0_PPP
-                Indices: [1,4,2]
+                Indices: [1, 4, 2]
         IntResults: [1.002e-18, 1.028e-20, 3.141e-15]
 
       311,-311,-213,211:
@@ -12637,11 +12637,11 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_P_V
-                Indices: [0,3]
+                Indices: [0, 3]
                 FORM_FACTOR: 2
               J2:
                 Type: VA_0_PPP
-                Indices: [2,4,1]
+                Indices: [2, 4, 1]
         IntResults: [1.185e-18, 1.346e-20, 3.989e-15]
 
       321,-321,-213,211:
@@ -12651,11 +12651,11 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_P_V
-                Indices: [0,3]
+                Indices: [0, 3]
                 FORM_FACTOR: 2
               J2:
                 Type: VA_0_PPP
-                Indices: [1,4,2]
+                Indices: [1, 4, 2]
         IntResults: [1.197e-18, 1.405e-20, 4.604e-15]
 
       321,321,-321,-213:
@@ -12665,11 +12665,11 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_P_V
-                Indices: [0,4]
+                Indices: [0, 4]
                 FORM_FACTOR: 2
               J2:
                 Type: VA_0_PPP
-                Indices: [1,2,3]
+                Indices: [1, 2, 3]
         PhaseSpace:
           - TwoResonances_K(1)(1400)+_2_rho(770)_13:
               Weight: 0.5
@@ -12684,11 +12684,11 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_P_P
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 2
               J2:
                 Type: VA_0_PPP
-                Indices: [2,3,4]
+                Indices: [2, 3, 4]
         PhaseSpace:
           - TwoResonances_a(1)(1260)+_2_rho(770)_34:
               Weight: 0.5
@@ -12707,11 +12707,11 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_P_P
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 2
               J2:
                 Type: VA_0_PPP
-                Indices: [3,4,2]
+                Indices: [3, 4, 2]
         PhaseSpace:
           - TwoResonances_a(1)(1260)+_3_rho(770)+_24:
               Weight: 0.5
@@ -12729,11 +12729,11 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_P_P
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 2
               J2:
                 Type: VA_0_PPP
-                Indices: [3,2,4]
+                Indices: [3, 2, 4]
         PhaseSpace:
           - TwoResonances_K(1)(1400)+_2_rho(770)+_34:
               Weight: 1.0
@@ -12749,11 +12749,11 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_P_P
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 2
               J2:
                 Type: VA_0_PPP
-                Indices: [4,3,2]
+                Indices: [4, 3, 2]
         PhaseSpace:
           - TwoResonances_K(1)(1400)+_4_K*(892)+_23:
               Weight: 0.5
@@ -12771,11 +12771,11 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_P_V
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 2
               J2:
                 Type: VA_0_PPP
-                Indices: [2,3,4]
+                Indices: [2, 3, 4]
         PhaseSpace:
           - TwoResonances_a(1)(1260)+_2_rho(770)_34:
               Weight: 0.5
@@ -12793,11 +12793,11 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_P_V
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 2
               J2:
                 Type: VA_0_PPP
-                Indices: [3,4,2]
+                Indices: [3, 4, 2]
         PhaseSpace:
           - TwoResonances_a(1)(1260)+_3_rho(770)+_24:
               Weight: 0.5
@@ -13770,7 +13770,7 @@ HADRON_DECAYS:
         IntResults: [0.0001285, 0, 0.001369]
 
     531:
-      Spectators: [ 3: { Weight: 1.0 } ]
+      Spectators: [3: {Weight: 1.0}]
       -10433,14,-13:
         BR: [0.0025, 0.0007]
         Origin: PDG
@@ -14092,7 +14092,7 @@ HADRON_DECAYS:
         IntResults: [0.0001269, 0, 0.001375]
 
     5122:
-      Spectators: [ 2101: { Weight: 1.0 } ]
+      Spectators: [2101: {Weight: 1.0}]
       4122,-12,11:
         BR: [0.062, 0.014]
         Origin: PDG
@@ -14100,7 +14100,7 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_B_B
-                Indices: [0,1]
+                Indices: [0, 1]
                 V_CKM: 0.04
                 mode: 0
                 FORM_FACTOR: 2
@@ -14126,7 +14126,7 @@ HADRON_DECAYS:
                 STSR_alpha_prime: 0.43
               J2:
                 Type: VA_F_F
-                Indices: [3,2]
+                Indices: [3, 2]
         IntResults: [3.905e-14, 1.649e-16, 6.982e-13]
 
       4122,-14,13:
@@ -14136,7 +14136,7 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_B_B
-                Indices: [0,1]
+                Indices: [0, 1]
                 V_CKM: 0.04
                 mode: 0
                 FORM_FACTOR: 2
@@ -14162,7 +14162,7 @@ HADRON_DECAYS:
                 STSR_alpha_prime: 0.43
               J2:
                 Type: VA_F_F
-                Indices: [3,2]
+                Indices: [3, 2]
         IntResults: [3.892e-14, 1.642e-16, 6.959e-13]
 
       4122,-16,15:
@@ -14172,7 +14172,7 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_B_B
-                Indices: [0,1]
+                Indices: [0, 1]
                 V_CKM: 0.04
                 mode: 0
                 FORM_FACTOR: 2
@@ -14198,7 +14198,7 @@ HADRON_DECAYS:
                 STSR_alpha_prime: 0.43
               J2:
                 Type: VA_F_F
-                Indices: [3,2]
+                Indices: [3, 2]
         IntResults: [1.163e-14, 4.35e-17, 2.443e-13]
 
       102142,-12,11:
@@ -14208,7 +14208,7 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_B_B
-                Indices: [0,1]
+                Indices: [0, 1]
                 V_CKM: 0.04
                 mode: 1
                 FORM_FACTOR: 2
@@ -14234,7 +14234,7 @@ HADRON_DECAYS:
                 STSR_alpha_prime: 0.61
               J2:
                 Type: VA_F_F
-                Indices: [3,2]
+                Indices: [3, 2]
         IntResults: [8.232e-15, 3.694e-17, 2.563e-13]
 
       102142,-14,13:
@@ -14244,7 +14244,7 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_B_B
-                Indices: [0,1]
+                Indices: [0, 1]
                 V_CKM: 0.04
                 mode: 1
                 FORM_FACTOR: 2
@@ -14270,7 +14270,7 @@ HADRON_DECAYS:
                 STSR_alpha_prime: 0.61
               J2:
                 Type: VA_F_F
-                Indices: [3,2]
+                Indices: [3, 2]
         IntResults: [8.196e-15, 3.668e-17, 2.55e-13]
 
       102142,-16,15:
@@ -14280,7 +14280,7 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_B_B
-                Indices: [0,1]
+                Indices: [0, 1]
                 V_CKM: 0.04
                 mode: 1
                 FORM_FACTOR: 2
@@ -14306,7 +14306,7 @@ HADRON_DECAYS:
                 STSR_alpha_prime: 0.61
               J2:
                 Type: VA_F_F
-                Indices: [3,2]
+                Indices: [3, 2]
         IntResults: [1.721e-15, 7.533e-18, 6.112e-14]
 
       102144,-12,11:
@@ -14316,7 +14316,7 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_B_B3
-                Indices: [0,1]
+                Indices: [0, 1]
                 V_CKM: 0.04
                 mode: 0
                 FORM_FACTOR: 2
@@ -14342,7 +14342,7 @@ HADRON_DECAYS:
                 STSR_alpha_prime: 0.61
               J2:
                 Type: VA_F_F
-                Indices: [3,2]
+                Indices: [3, 2]
         IntResults: [3.497e-15, 1.778e-17, 2.05e-13]
 
       102144,-14,13:
@@ -14352,7 +14352,7 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_B_B3
-                Indices: [0,1]
+                Indices: [0, 1]
                 V_CKM: 0.04
                 mode: 0
                 FORM_FACTOR: 2
@@ -14378,7 +14378,7 @@ HADRON_DECAYS:
                 STSR_alpha_prime: 0.61
               J2:
                 Type: VA_F_F
-                Indices: [3,2]
+                Indices: [3, 2]
         IntResults: [3.465e-15, 1.761e-17, 2.029e-13]
 
       102144,-16,15:
@@ -14388,7 +14388,7 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_B_B3
-                Indices: [0,1]
+                Indices: [0, 1]
                 V_CKM: 0.04
                 mode: 0
                 FORM_FACTOR: 2
@@ -14414,7 +14414,7 @@ HADRON_DECAYS:
                 STSR_alpha_prime: 0.61
               J2:
                 Type: VA_F_F
-                Indices: [3,2]
+                Indices: [3, 2]
         IntResults: [2.877e-16, 1.819e-18, 2.342e-14]
 
       4122,211,-211,-12,11:
@@ -15039,7 +15039,7 @@ HADRON_DECAYS:
         IntResults: [0.4729, 0, 5.467]
 
     5132:
-      Spectators: [ 3101: { Weight: 1.0 } ]
+      Spectators: [3101: {Weight: 1.0}]
       4132,-12,11:
         BR: [0.0546, 0.0546]
         Origin: EvtGen
@@ -15161,7 +15161,7 @@ HADRON_DECAYS:
         IntResults: [0.01372, 0, 0.1589]
 
     5232:
-      Spectators: [ 3201: { Weight: 1.0 } ]
+      Spectators: [3201: {Weight: 1.0}]
       4232,-12,11:
         BR: [0.0546, 0.0546]
         IntResults: [0.001016, 4.313e-06, 0.01854]
@@ -15534,7 +15534,7 @@ HADRON_DECAYS:
         IntResults: [0.5179, 0, 6.236]
 
     5332:
-      Spectators: [ 3303: { Weight: 1.0 } ]
+      Spectators: [3303: {Weight: 1.0}]
       3303,4,-4,3:
         IntResults: [6.663e-16, 2.358e-18, 2.716e-14]
 
@@ -15601,7 +15601,7 @@ HADRON_DECAYS:
         IntResults: [8.141e-05, 0, 0.0009915]
 
     541:
-      Spectators: [ 4: { Weight: 0.642 }, -5: { Weight: 0.321 } ]
+      Spectators: [4: {Weight: 0.642}, -5: {Weight: 0.321}]
 
 #      Spectators:
 #        - "4":
@@ -15618,7 +15618,7 @@ HADRON_DECAYS:
                 Indices: [0]
               J2:
                 Type: VA_F_F
-                Indices: [1,2]
+                Indices: [1, 2]
         IntResults: [2.029e-21, 0, 2.597e-20]
 
       14,-13:
@@ -15631,7 +15631,7 @@ HADRON_DECAYS:
                 Indices: [0]
               J2:
                 Type: VA_F_F
-                Indices: [1,2]
+                Indices: [1, 2]
         IntResults: [8.561e-17, 0, 1.096e-15]
 
       16,-15:
@@ -15644,7 +15644,7 @@ HADRON_DECAYS:
                 Indices: [0]
               J2:
                 Type: VA_F_F
-                Indices: [1,2]
+                Indices: [1, 2]
         IntResults: [2.09e-14, 0, 2.675e-13]
 
       4,-3:
@@ -15659,11 +15659,11 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_P_P
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 12
               J2:
                 Type: VA_F_F
-                Indices: [2,3]
+                Indices: [2, 3]
         IntResults: [6.727e-14, 5.761e-16, 1.729e-12]
 
       441,14,-13:
@@ -15673,11 +15673,11 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_P_P
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 12
               J2:
                 Type: VA_F_F
-                Indices: [2,3]
+                Indices: [2, 3]
         IntResults: [6.837e-14, 5.71e-16, 1.728e-12]
 
       441,16,-15:
@@ -15687,11 +15687,11 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_P_P
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 12
               J2:
                 Type: VA_F_F
-                Indices: [2,3]
+                Indices: [2, 3]
         IntResults: [4.175e-14, 3.907e-16, 9.263e-13]
 
       100441,12,-11:
@@ -15701,11 +15701,11 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_P_P
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 12
               J2:
                 Type: VA_F_F
-                Indices: [2,3]
+                Indices: [2, 3]
         IntResults: [9.198e-15, 1.203e-16, 5.216e-13]
 
       100441,14,-13:
@@ -15715,11 +15715,11 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_P_P
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 12
               J2:
                 Type: VA_F_F
-                Indices: [2,3]
+                Indices: [2, 3]
         IntResults: [8.899e-15, 1.192e-16, 5.193e-13]
 
       100441,16,-15:
@@ -15729,11 +15729,11 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_P_P
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 12
               J2:
                 Type: VA_F_F
-                Indices: [2,3]
+                Indices: [2, 3]
         IntResults: [1.601e-16, 3.339e-18, 2.966e-14]
 
       443,12,-11:
@@ -15743,11 +15743,11 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_P_V
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 10
               J2:
                 Type: VA_F_F
-                Indices: [2,3]
+                Indices: [2, 3]
         IntResults: [8.513e-14, 8.233e-16, 3.35e-12]
 
       443,14,-13:
@@ -15757,11 +15757,11 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_P_V
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 10
               J2:
                 Type: VA_F_F
-                Indices: [2,3]
+                Indices: [2, 3]
         IntResults: [8.503e-14, 8.302e-16, 3.336e-12]
 
       443,16,-15:
@@ -15771,11 +15771,11 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_P_V
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 10
               J2:
                 Type: VA_F_F
-                Indices: [2,3]
+                Indices: [2, 3]
         IntResults: [2.531e-14, 2.315e-16, 1.12e-12]
 
       100443,12,-11:
@@ -15785,11 +15785,11 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_P_V
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 10
               J2:
                 Type: VA_F_F
-                Indices: [2,3]
+                Indices: [2, 3]
         IntResults: [1.067e-14, 9.425e-17, 3.771e-13]
 
       100443,14,-13:
@@ -15799,11 +15799,11 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_P_V
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 10
               J2:
                 Type: VA_F_F
-                Indices: [2,3]
+                Indices: [2, 3]
         IntResults: [1.052e-14, 9.402e-17, 3.747e-13]
 
       100443,16,-15:
@@ -15813,11 +15813,11 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_P_V
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 10
               J2:
                 Type: VA_F_F
-                Indices: [2,3]
+                Indices: [2, 3]
         IntResults: [3.545e-16, 5.428e-18, 3.079e-14]
 
       10441,12,-11:
@@ -15872,11 +15872,11 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_P_S
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 1
               J2:
                 Type: VA_F_F
-                Indices: [2,3]
+                Indices: [2, 3]
         IntResults: [6.67e-17, 8.978e-19, 5.345e-15]
 
       10511,14,-13:
@@ -15886,11 +15886,11 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_P_S
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 1
               J2:
                 Type: VA_F_F
-                Indices: [2,3]
+                Indices: [2, 3]
         IntResults: [5.435e-17, 7.188e-19, 4.426e-15]
 
       10531,12,-11:
@@ -15900,11 +15900,11 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_P_S
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 1
               J2:
                 Type: VA_F_F
-                Indices: [2,3]
+                Indices: [2, 3]
         IntResults: [9.494e-16, 1.297e-17, 7.758e-14]
 
       10531,14,-13:
@@ -15914,11 +15914,11 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_P_S
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 1
               J2:
                 Type: VA_F_F
-                Indices: [2,3]
+                Indices: [2, 3]
         IntResults: [7.616e-16, 1.014e-17, 6.322e-14]
 
       535,12,-11:
@@ -15928,11 +15928,11 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_P_T
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 3
               J2:
                 Type: VA_F_F
-                Indices: [2,3]
+                Indices: [2, 3]
         IntResults: [4.324e-17, 4.698e-19, 2.533e-15]
 
       535,14,-13:
@@ -15942,11 +15942,11 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_P_T
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 3
               J2:
                 Type: VA_F_F
-                Indices: [2,3]
+                Indices: [2, 3]
         IntResults: [2.789e-17, 3.24e-19, 1.894e-15]
 
       515,12,-11:
@@ -15956,11 +15956,11 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_P_T
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 3
               J2:
                 Type: VA_F_F
-                Indices: [2,3]
+                Indices: [2, 3]
         IntResults: [7.39e-18, 7.942e-20, 4.227e-16]
 
       515,14,-13:
@@ -15970,11 +15970,11 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_P_T
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 3
               J2:
                 Type: VA_F_F
-                Indices: [2,3]
+                Indices: [2, 3]
         IntResults: [5.637e-18, 6.236e-20, 3.49e-16]
 
       445,12,-11:
@@ -16029,11 +16029,11 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_P_P
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 11
               J2:
                 Type: VA_F_F
-                Indices: [2,3]
+                Indices: [2, 3]
         IntResults: [2.194e-14, 2.667e-16, 1.469e-12]
 
       531,14,-13:
@@ -16043,11 +16043,11 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_P_P
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 11
               J2:
                 Type: VA_F_F
-                Indices: [2,3]
+                Indices: [2, 3]
         IntResults: [2.11e-14, 2.508e-16, 1.379e-12]
 
       533,12,-11:
@@ -16057,11 +16057,11 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_P_V
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 9
               J2:
                 Type: VA_F_F
-                Indices: [2,3]
+                Indices: [2, 3]
         IntResults: [2.871e-14, 2.358e-16, 7.03e-13]
 
       533,14,-13:
@@ -16071,11 +16071,11 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_P_V
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 9
               J2:
                 Type: VA_F_F
-                Indices: [2,3]
+                Indices: [2, 3]
         IntResults: [2.662e-14, 2.249e-16, 6.702e-13]
 
       511,12,-11:
@@ -16085,11 +16085,11 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_P_P
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 11
               J2:
                 Type: VA_F_F
-                Indices: [2,3]
+                Indices: [2, 3]
         IntResults: [1.487e-15, 1.748e-17, 9.195e-14]
 
       511,14,-13:
@@ -16099,11 +16099,11 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_P_P
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 11
               J2:
                 Type: VA_F_F
-                Indices: [2,3]
+                Indices: [2, 3]
         IntResults: [1.454e-15, 1.678e-17, 8.822e-14]
 
       513,12,-11:
@@ -16113,11 +16113,11 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_P_V
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 9
               J2:
                 Type: VA_F_F
-                Indices: [2,3]
+                Indices: [2, 3]
         IntResults: [1.918e-15, 1.631e-17, 4.935e-14]
 
       513,14,-13:
@@ -16127,11 +16127,11 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_P_V
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 9
               J2:
                 Type: VA_F_F
-                Indices: [2,3]
+                Indices: [2, 3]
         IntResults: [1.82e-15, 1.577e-17, 4.774e-14]
 
       441,211:
@@ -16151,7 +16151,7 @@ HADRON_DECAYS:
           - Current_ME:
               J1:
                 Type: VA_P_V
-                Indices: [0,1]
+                Indices: [0, 1]
                 FORM_FACTOR: 10
               J2:
                 Type: VA_0_P
