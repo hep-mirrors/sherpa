@@ -145,7 +145,7 @@ void Hadronic_XSec_Calculator::operator()(double s)
 void Hadronic_XSec_Calculator::CalculateXSecs() {
   m_xstot = m_xsel = m_xssdA = m_xssdB = m_xsdd = 0.;
   size_t hadtags[2];
-  double xstot, prefVA = 1., prefVB = 1., prefVV = 1., masses[2];
+  double xstot, prefVA = 1., prefVB = 1., prefVV = 1., masses[2], E = sqrt(m_s);
   m_sigmaEl.clear();
   m_sigmaSDA.clear();
   m_sigmaSDB.clear();
@@ -163,6 +163,7 @@ void Hadronic_XSec_Calculator::CalculateXSecs() {
       flavs.second = (*flit1);
       hadtags[1]   = m_indexmap[(*flit1)];
       masses[1]    = (*flit1).Mass();
+      if (E<masses[0]+masses[1]) continue;
       prefVB       = (m_fVs.find((*flit1))!=m_fVs.end() ?
 		      m_alphaQED / m_fVs[(*flit1)] : 1.);
       prefVV       = prefVA * prefVB;
@@ -274,7 +275,7 @@ double Hadronic_XSec_Calculator::IntSDXSec(const size_t hadtags[2],const size_t 
   double mres   = masses[nodiff]-m_mass_proton+m_mres, mres2 = sqr(mres);
   double mmax2  = ( s_c[hadtags[0]][hadtags[1]][0+4*diff]*m_s +
 		    s_c[hadtags[0]][hadtags[1]][1+4*diff] );
-  if (m_s<=mmin2 || m_s<=mmin*mres) return 0.;
+  if (m_s<=sqr(mmin+masses[1-nodiff])) return 0.;
   double bA     = s_slopes[hadtags[nodiff]];
   double B_AX   = ( s_c[hadtags[0]][hadtags[1]][2+4*diff]     +
 		    s_c[hadtags[0]][hadtags[1]][3+4*diff]/m_s );
@@ -333,7 +334,7 @@ double Hadronic_XSec_Calculator::IntDDXSec(const size_t hadtags[2],
 }
 
 bool Hadronic_XSec_Calculator::SelectEl(array<ATOOLS::Flavour, 2> & flavs) {
-  double disc = m_xsel * ran->Get();
+  double disc = m_xsel * ran->Get(), E = sqrt(m_s);
   pair<Flavour, Flavour> flpair;
   for (list<Flavour>::const_iterator flit0=m_hadroncomponents[m_flavs[0]].begin();
        flit0!=m_hadroncomponents[m_flavs[0]].end();flit0++) {
@@ -341,6 +342,7 @@ bool Hadronic_XSec_Calculator::SelectEl(array<ATOOLS::Flavour, 2> & flavs) {
     for (list<Flavour>::const_iterator flit1=m_hadroncomponents[m_flavs[1]].begin();
 	 flit1!=m_hadroncomponents[m_flavs[1]].end();flit1++) {
       flpair.second = (*flit1);
+      if (E<flpair.first.Mass()+flpair.second.Mass()) continue;
       disc -= m_sigmaEl[flpair];
       if (disc<=0.) {
 	flavs[0] = flpair.first;
@@ -353,7 +355,7 @@ bool Hadronic_XSec_Calculator::SelectEl(array<ATOOLS::Flavour, 2> & flavs) {
 }
 
 bool Hadronic_XSec_Calculator::SelectSDA(array<ATOOLS::Flavour, 2> & flavs) {
-  double disc = m_xssdA * ran->Get();
+  double disc = m_xssdA * ran->Get(), E = sqrt(m_s);
   pair<Flavour, Flavour> flpair;
   for (list<Flavour>::const_iterator flit0=m_hadroncomponents[m_flavs[0]].begin();
        flit0!=m_hadroncomponents[m_flavs[0]].end();flit0++) {
@@ -361,19 +363,25 @@ bool Hadronic_XSec_Calculator::SelectSDA(array<ATOOLS::Flavour, 2> & flavs) {
     for (list<Flavour>::const_iterator flit1=m_hadroncomponents[m_flavs[1]].begin();
 	 flit1!=m_hadroncomponents[m_flavs[1]].end();flit1++) {
       flpair.second = (*flit1);
+      if (E<=flpair.first.Mass()+flpair.second.Mass()+2.*m_mass_pi) continue;
       disc -= m_sigmaSDA[flpair];
       if (disc<=0.) {
 	flavs[0] = flpair.first;
 	flavs[1] = flpair.second;
+	msg_Out()<<METHOD<<" selects "<<flavs[0]<<" + "<<flavs[1]<<" for "
+		 <<"E = "<<E<<" > "<<(flavs[0].Mass()+flavs[1].Mass()+2.*m_mass_pi)<<"\n";
 	return true;
       }
     }
   }
+  for (size_t i=0;i<2;i++) flavs[i] = (*m_hadroncomponents[m_flavs[i]].begin());
+  if (E>(flavs[0].Mass()+flavs[1].Mass())) return true;
+  msg_Error()<<METHOD<<" fails for E = "<<E<<", disc = "<<disc<<"\n"; 
   return false;
 }
 
 bool Hadronic_XSec_Calculator::SelectSDB(array<ATOOLS::Flavour, 2> & flavs) {
-  double disc = m_xssdB * ran->Get();
+  double disc = m_xssdB * ran->Get(), E = sqrt(m_s);
   pair<Flavour, Flavour> flpair;
   for (list<Flavour>::const_iterator flit0=m_hadroncomponents[m_flavs[0]].begin();
        flit0!=m_hadroncomponents[m_flavs[0]].end();flit0++) {
@@ -381,6 +389,7 @@ bool Hadronic_XSec_Calculator::SelectSDB(array<ATOOLS::Flavour, 2> & flavs) {
     for (list<Flavour>::const_iterator flit1=m_hadroncomponents[m_flavs[1]].begin();
 	 flit1!=m_hadroncomponents[m_flavs[1]].end();flit1++) {
       flpair.second = (*flit1);
+      if (E<=flpair.first.Mass()+flpair.second.Mass()+2.*m_mass_pi) continue;
       disc -= m_sigmaSDB[flpair];
       if (disc<=0.) {
 	flavs[0] = flpair.first;
@@ -393,7 +402,7 @@ bool Hadronic_XSec_Calculator::SelectSDB(array<ATOOLS::Flavour, 2> & flavs) {
 }
 
 bool Hadronic_XSec_Calculator::SelectDD(array<ATOOLS::Flavour, 2> & flavs) {
-  double disc = m_xsdd * ran->Get();
+  double disc = m_xsdd * ran->Get(), E = sqrt(m_s);
   pair<Flavour, Flavour> flpair;
   for (list<Flavour>::const_iterator flit0=m_hadroncomponents[m_flavs[0]].begin();
        flit0!=m_hadroncomponents[m_flavs[0]].end();flit0++) {
@@ -401,6 +410,7 @@ bool Hadronic_XSec_Calculator::SelectDD(array<ATOOLS::Flavour, 2> & flavs) {
     for (list<Flavour>::const_iterator flit1=m_hadroncomponents[m_flavs[1]].begin();
 	 flit1!=m_hadroncomponents[m_flavs[1]].end();flit1++) {
       flpair.second = (*flit1);
+      if (E<=flpair.first.Mass()+flpair.second.Mass()+4.*m_mass_pi) continue;
       disc -= m_sigmaDD[flpair];
       if (disc<=0.) {
 	flavs[0] = flpair.first;

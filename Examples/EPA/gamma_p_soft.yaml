@@ -7,6 +7,7 @@ EVENT_TYPE:          MinimumBias
 ME_GENERATORS:       None
 SOFT_COLLISIONS:     Amisic
 AMISIC:
-  EVENT_TYPE:        Elastic
+  EVENT_TYPE:          Elastic
+  TwoPionInterference: 0
 YFS:
   MODE:              None

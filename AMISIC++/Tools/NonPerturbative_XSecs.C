@@ -195,6 +195,7 @@ const event_mode::code NonPerturbative_XSecs::SelectMode() {
     total -= xsecs[i];
     if (total<=0.) break;
   }
+  msg_Out()<<METHOD<<": i = "<<i<<"\n";
   switch (i) {
   case 3: return event_mode::DD;
   case 2: return event_mode::SDB;
@@ -219,6 +220,7 @@ bool NonPerturbative_XSecs::FixFS(array<ATOOLS::Flavour, 2> & flavs) {
     m_hadtags[i]      = p_xsecs->Index(flavs[i],i);
     if (m_hadtags[i]>99) return false;
   }
+  msg_Out()<<METHOD<<": "<<m_hadtags[0]<<" / "<<m_hadtags[1]<<"\n";
   return true;
 }
 
@@ -289,16 +291,16 @@ bool NonPerturbative_XSecs::SingleDiffractiveScatter(const size_t & pos,Blob * b
   // In the Tests method we explicitly verify that the MC reproduces the differential
   // cross section above in DiffSDXSec.
   ////////////////////////////////////////////////////////////////////////////////////
-  double M2min  = sqr(m_outmasses2[2*pos]+2.*m_mpi);
-  double M2res  = sqr(m_outmasses2[2*pos]+m_deltaMres);
+  double M2min  = sqr(m_outmasses[2*pos]+2.*m_mpi);
+  double M2res  = sqr(m_outmasses[2*pos]+m_deltaMres);
   double argt   = 2.*(p_xsecs->s_slopes[m_hadtags[1-pos]] +
 		      m_alphaP_pomeron*log(m_s/M2min));
   double argM   = -(1. + 2.*m_eps_pomeron);
   double maxval = F_SD(M2min,M2res);
   double t, M2, value;
   size_t attempts = 0;
-   do {
-    if (attempts++>10000) return NULL;
+  do {
+    if (attempts++>10000) return false;
     do {
       t      = ExponentialDist(-m_s,0,argt);
       M2     = PowerDist(M2min,m_s/4.,argM);
@@ -308,6 +310,7 @@ bool NonPerturbative_XSecs::SingleDiffractiveScatter(const size_t & pos,Blob * b
 		 exp(argt * t) );
     } while (value/maxval<ran->Get());
     m_outmasses2[2*pos]     = M2;
+    msg_Out()<<METHOD<<": E = "<<sqrt(m_s)<<", Emin = "<<sqrt(M2min)<<".\n";
   } while (!FixOutMomenta(t));
   SplitDiffractiveState(pos);
   InitBlob(blob,M2,M2);
@@ -353,8 +356,8 @@ bool NonPerturbative_XSecs::DoubleDiffractiveScatter(ATOOLS::Blob * blob) {
   ////////////////////////////////////////////////////////////////////////////////////
   array<double, 2> M2min, M2res, M2;
   for (size_t i=0;i<2;i++) {
-    M2min[i] = sqr(m_outmasses2[2*i]+2.*m_mpi);
-    M2res[i] = sqr(m_outmasses2[2*i]+m_deltaMres);
+    M2min[i] = sqr(m_outmasses[2*i]+2.*m_mpi);
+    M2res[i] = sqr(m_outmasses[2*i]+m_deltaMres);
   }
   double argt   = 2.*m_alphaP_pomeron * log((m_s*m_s0)/(M2min[0]*M2min[1]));
   double argM   = -(1. + 2.*m_eps_pomeron);
@@ -384,9 +387,15 @@ bool NonPerturbative_XSecs::FixOutMomenta(const double & t) {
   // i -> {2i, 2i+1}, we only have to create outmomenta m_outmom[0] and m_outmom[2].
   // This method also includes a boost back into the lab-frame.
   ////////////////////////////////////////////////////////////////////////////////////
-  if (m_s<sqr(sqrt(m_outmasses2[0])+sqrt(m_outmasses2[2]))) return false;
+  if (m_s<sqr(sqrt(m_outmasses2[0])+sqrt(m_outmasses2[2]))) {
+    msg_Out()<<METHOD<<" fails .... s = "<<sqrt(m_s)<<" < "
+	     <<sqrt(m_outmasses2[0])<<" + "<<sqrt(m_outmasses2[2])<<"\n";
+    return false;
+  }
   if ((m_outflav[0].Kfcode()==kf_rho_770 || m_outflav[2].Kfcode()==kf_rho_770) &&
-      !SetRhoMasses2()) return false;
+      !SetRhoMasses2()) {
+    return false;
+  }
   double p22  = ( (sqr(m_s-m_outmasses2[0]-m_outmasses2[2]) -
 		   4.*m_outmasses2[0]*m_outmasses2[2] )/
 		  (4.*m_s) );
@@ -394,7 +403,10 @@ bool NonPerturbative_XSecs::FixOutMomenta(const double & t) {
   for (size_t i=0;i<2;i++) E[2*i] = sqrt(p22+m_outmasses2[2*i]);
   double cost = (t-m_masses2[0]-m_outmasses2[0] +
 		 2.*m_inmom[0][0]*E[0])/(2.*m_inmom[0][3]*p2);
-  if (dabs(cost)>1.) return false;
+  if (dabs(cost)>1.) {
+    msg_Out()<<METHOD<<" fails .... cos = "<<cost<<".\n";
+    return false;
+  }
   double sint = sqrt(1.-cost*cost);
   double phi  = 2.*M_PI*ran->Get();
   m_outmom[0] = Vec4D(E[0],  p2*sint*cos(phi),  p2*sint*sin(phi),  p2*cost);
