@@ -20,7 +20,7 @@ namespace AMISIC {
     axis * p_bbins;
     double m_integral, m_kradius, m_norm, m_invGeV2fm;
     double m_radius[4], m_radius2[4], m_rnorm[4], m_fraction[4];
-double m_fixradius, m_dynradius2, m_maxradius;
+    double m_fixradius, m_dynradius2, m_maxradius;
     double m_xmin[2], m_xmax[2];
 
 
@@ -50,14 +50,16 @@ double m_fixradius, m_dynradius2, m_maxradius;
     inline void SetKRadius(const double & k)   { m_kradius = k; }
     inline void SetBmax(const double & bmax)   { m_bmax    = bmax; }
     inline void SetBAxis(axis * bbins)         { p_bbins   = bbins; }
-    inline const bool   & IsDynamic()      const { return m_dynamic; }
-    inline const double & Bmax()           const { return m_bmax; }
-    inline const double & Bstep()          const { return m_bstep; }
-    inline const double & Integral()       const { return m_integral; }
-    inline const double & KRadius()        const { return m_kradius; }
-    inline const double & DynamicRadius2() const { return m_dynradius2; }
-    inline const double & FixRadius()      const { return m_fixradius; }
-    inline       axis   * GetBBins()       const { return p_bbins; }
+    inline const bool   & IsDynamic()       const { return m_dynamic; }
+    inline const double & Norm()            const { return m_norm; }
+    inline const double & Bmax()            const { return m_bmax; }
+    inline const double & Bstep()           const { return m_bstep; }
+    inline const double & Integral()        const { return m_integral; }
+    inline const double & KRadius()         const { return m_kradius; }
+    inline const double & DynamicRadius2()  const { return m_dynradius2; }
+    inline const double & FixRadius()       const { return m_fixradius; }
+    inline const double & Radius2(size_t i) const { return m_radius2[i]; }
+    inline       axis   * GetBBins()        const { return p_bbins; }
   };
 
   class MO_Integrand : public ATOOLS::Function_Base {

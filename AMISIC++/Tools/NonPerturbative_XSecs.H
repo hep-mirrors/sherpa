@@ -45,9 +45,11 @@ namespace AMISIC {
     ATOOLS::Vec4D                 m_inmom[2], m_outmom[4];
     double m_smin, m_eps_pomeron, m_alphaP_pomeron, m_triple_pomeron, m_alphaQED;
     double m_s, m_s0, m_mpi, m_mpi2, m_deltaMres, m_cres;
-    double m_mrho, m_mrho2, m_mrho_min, m_momega, m_momega2, m_Grho, m_Grho2, m_Gomega, m_Gomega2;
-    double m_q_rho, m_q_omega, m_f_omega, m_phi_omega, m_f_nr, m_Lambda2_nr, m_delta_nr, m_A2max;
-    double m_weight, m_muf2, m_mur2;
+    double m_mrho, m_mrho2, m_mrho_min, m_momega, m_momega2;
+    double m_Grho, m_Grho2, m_Gomega, m_Gomega2;
+    double m_q_rho, m_q_omega, m_f_omega, m_phi_omega;
+    double m_f_nr, m_Lambda2_nr, m_delta_nr, m_A2max;
+    double m_weight, m_xsec, m_muf2, m_mur2;
     two_pions::code m_twopions;
 
     unsigned long int m_calls, m_fails;
@@ -63,7 +65,8 @@ namespace AMISIC {
       double averMass = sqrt(M2[0])+sqrt(M2[1])/2., Mass2 = 4.*averMass*averMass;
       return ( (1.-Mass2/m_s) *
 	       (m_masses[0]*m_masses[1]*m_s)/(m_masses[0]*m_masses[1]*m_s+M2[0]*M2[1]) *
-	       (1.+m_cres*Mres2[0]/(Mres2[0]+M2[0])) * (1.+m_cres*Mres2[1]/(Mres2[1]+M2[1])) );
+	       (1.+m_cres*Mres2[0]/(Mres2[0]+M2[0])) *
+	       (1.+m_cres*Mres2[1]/(Mres2[1]+M2[1])) );
     }
     inline ATOOLS::Flavour GetFlavour(const size_t & pos,const size_t & had) const {
       if (m_inflav[pos]==ATOOLS::Flavour(kf_p_plus) ||
@@ -97,7 +100,8 @@ namespace AMISIC {
       if (expo==-1.) return smin*pow(smax/smin,ran);
       return pow(ran*pow(smax,expo+1.)+(1.-ran)*pow(smin,expo+1.), 1./(expo+1.));
     }
-    inline const double PowerWeight(const double & smin,const double & smax,const double & expo) {
+    inline const double PowerWeight(const double & smin,const double & smax,
+				    const double & expo) {
       if (expo==-1.) return log(smax/smin);
       return (pow(smax,expo+1.)-pow(smin,expo+1.))/(expo+1.);
     }
@@ -111,10 +115,10 @@ namespace AMISIC {
     bool   SetRhoMasses2();
     double RhoMassModifier(const double & M2);
     void   SplitRhoIntoPions(const size_t & pos);
-    ATOOLS::Blob * ElasticScatter();
-    ATOOLS::Blob * SingleDiffractiveScatter(const size_t & pos);
-    ATOOLS::Blob * DoubleDiffractiveScatter();
-    ATOOLS::Blob * InitBlob(const double & muR2=0.,const double & muQ2=0.);
+    bool   ElasticScatter(ATOOLS::Blob * blob);
+    bool   SingleDiffractiveScatter(const size_t & pos,ATOOLS::Blob * blob);
+    bool   DoubleDiffractiveScatter(ATOOLS::Blob * blob);
+    void   InitBlob(ATOOLS::Blob * blob,const double & muR2=0.,const double & muQ2=0.);
 
     bool   m_ana;
     size_t m_Nsteps, m_Nevents;
@@ -128,12 +132,13 @@ namespace AMISIC {
     void TestSingleD();
     void TestDoubleD();
   public:
-    NonPerturbative_XSecs(REMNANTS::Remnant_Handler * remnants, Hadronic_XSec_Calculator * xsecs);
+    NonPerturbative_XSecs(REMNANTS::Remnant_Handler * remnants,
+			  Hadronic_XSec_Calculator * xsecs);
     ~NonPerturbative_XSecs();
     void SetBeams(BEAM::Beam_Base * beam1,BEAM::Beam_Base * beam2);
     void CalculateSDependentCrossSections();
     
-    ATOOLS::Blob * MakeScatter();
+    bool MakeScatter(ATOOLS::Blob * blob);
 
     inline const double & Weight() const { return m_weight; }
     inline const double & Smin()   const { return m_smin; }
@@ -144,8 +149,10 @@ namespace AMISIC {
       for (size_t i=0;i<2;i++) m_hadtags[i] = tags[i];
     }
     double DiffElXSec(const double & s,const double & t) const;
-    double DiffSDXSec(const double & s,const double & t,const double & M2,const size_t & pos) const;
-    double DiffDDXSec(const double & s,const double & t,const std::array<double, 2> & M2) const;
+    double DiffSDXSec(const double & s,const double & t,const double & M2,
+		      const size_t & pos) const;
+    double DiffDDXSec(const double & s,const double & t,
+		      const std::array<double, 2> & M2) const;
   };
 }
 

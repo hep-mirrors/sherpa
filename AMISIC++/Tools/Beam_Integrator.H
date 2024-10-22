@@ -24,24 +24,11 @@ namespace AMISIC {
     void   CalculateXSecs();
     double MakePoint();
     double TrialEvent();
-    double inline MEweight() {
-      double MEweight     = 0.;
-      if (m_evttype==evt_type::Elastic       ||
-	  m_evttype==evt_type::QuasiElastic) MEweight += p_xsecs->SigmaEl();
-      if (m_evttype==evt_type::DiffractiveA  ||
-	  m_evttype==evt_type::QuasiElastic) MEweight += p_xsecs->SigmaSDA();
-      if (m_evttype==evt_type::DiffractiveB  ||
-	  m_evttype==evt_type::QuasiElastic) MEweight += p_xsecs->SigmaSDB();
-      if (m_evttype==evt_type::DiffractiveAB ||
-	  m_evttype==evt_type::QuasiElastic) MEweight += p_xsecs->SigmaDD();
-      return MEweight;
-    }
   public:
     Beam_Integrator() : m_Npoints(10000), m_variable(0), m_smin(4.),
 			m_total(0.), m_error(1.), m_max(0.) {}
     void Init(Hadronic_XSec_Calculator * xsecs,
-	      BEAM::Beam_Base * beam1,BEAM::Beam_Base * beam2,
-	      evt_type::code & type);
+	      BEAM::Beam_Base * beam1,BEAM::Beam_Base * beam2);
     bool operator()();
     inline const double        & Sprime()                    const { return m_sprime; }
     inline const double        & Yprime()                    const { return m_yprime; }

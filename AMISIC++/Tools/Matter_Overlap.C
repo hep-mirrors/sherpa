@@ -140,7 +140,7 @@ void Matter_Overlap::Initialize(Remnant_Handler * const rh,
   InitializeFFParams(isr);
   Output(CalculateIntegral());
   size_t nbins = size_t((*mipars)("nB_bins"));
-  double bmin  = 0.001*m_radius[0];
+  double bmin  = 0.00001*m_radius[0];
   p_bbins = new axis(nbins, bmin, m_bmax, axis_mode::log);
 }
 

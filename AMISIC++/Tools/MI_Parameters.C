@@ -24,6 +24,8 @@ MI_Parameters::MI_Parameters() :
     = s["PT_0(IR)"].SetDefault(0.5).Get<double>();
   m_parameters[string("pt_min(ref)")]
     = s["PT_Min(ref)"].SetDefault(2.25).Get<double>();
+  m_parameters[string("pt_min(IR)")]
+    = s["PT_Min(IR)"].SetDefault(1.00).Get<double>();
   m_parameters[string("Ecms(ref)")]
     = s["E(ref)"].SetDefault(7000.).Get<double>();
   m_parameters[string("eta")]
@@ -31,6 +33,7 @@ MI_Parameters::MI_Parameters() :
   m_pt02ref   = sqr(m_parameters[string("pt_0(ref)")]);
   m_pt02IR    = sqr(m_parameters[string("pt_0(IR)")]);
   m_ptmin2ref = sqr(m_parameters[string("pt_min(ref)")]);
+  m_ptmin2IR  = sqr(m_parameters[string("pt_min(IR)")]);
   m_Sref      = sqr(m_Eref = m_parameters[string("Ecms(ref)")]);
   m_Scms      = sqr(m_Ecms = rpa->gen.Ecms());
   m_eta       = m_parameters[string("eta")];
@@ -69,7 +72,7 @@ MI_Parameters::MI_Parameters() :
   m_parameters[string("Diffractive_Mres")]
     = s["Diffractive_Mres"].SetDefault(2.).Get<double>();
   m_parameters[string("Diffractive_s1")]
-    = s["Diffractive_s1"].SetDefault(20.).Get<double>();
+    = s["Diffractive_s1"].SetDefault(400.).Get<double>();
   m_parameters[string("ElasticSlope_c0")]
     = s["ElasticSlope_c0"].SetDefault(2.24).Get<double>();
   m_parameters[string("ElasticSlope_c1")]
@@ -93,11 +96,18 @@ MI_Parameters::MI_Parameters() :
   case 0:
   default: m_twopions = two_pions::none;           break;
   }
-  //msg_Out()<<twopions<<" --> "<<m_twopions<<"\n";
+  msg_Out()<<METHOD<<":\n"
+	   <<"p_T0 = "<<m_parameters[string("pt_0(ref)")]<<", "
+	   <<"p_Tmin = "<<m_parameters[string("pt_min(ref)")]<<" "
+	   <<"at E(ref) = "<<m_parameters["Ecms(ref)"]<<"\n";
 }
 
 double MI_Parameters::CalculatePT02(const double & s) const {
   return Max(m_pt02IR, m_pt02ref * pow((s<0 ? m_Scms : s)/m_Sref,m_eta));
+}
+
+double MI_Parameters::CalculatePTmin2(const double & s) const {
+  return Max(m_ptmin2IR, m_ptmin2ref * pow((s<0 ? m_Scms : s)/m_Sref,m_eta));
 }
 
 

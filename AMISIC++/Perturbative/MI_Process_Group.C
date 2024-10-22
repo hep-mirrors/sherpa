@@ -51,6 +51,15 @@ operator()(const double & shat,const double & that,const double & uhat) {
     if (!(*mit)->AllowedKinematics(Ehat)) continue;
     tot += ( ATOOLS::Max(0.,p_pdf[0]->GetXPDF((*mit)->Flav(0))) *
 	     ATOOLS::Max(0.,p_pdf[1]->GetXPDF((*mit)->Flav(1))) ) * (**mit)();
+    /*
+    if ((*mit)->Flav(0)==Flavour(kf_gluon) && (*mit)->Flav(1)==Flavour(kf_gluon) &&
+	(*mit)->Flav(2)==Flavour(kf_gluon) && (*mit)->Flav(3)==Flavour(kf_gluon)) {
+      msg_Out()<<"[xs = "
+	       <<p_pdf[0]->GetXPDF((*mit)->Flav(0))<<" * "
+	       <<p_pdf[1]->GetXPDF((*mit)->Flav(1))<<" * "<<((**mit)())<<" * "
+	       <<"pref = "<<m_pref<<"* soft = "<<SoftCorrection(m_scale)<<"] ";
+    }
+    */
   }
   if (std::isnan(tot)) tot = 0.;
   m_lastxs = ( m_pref/sqr(m_shat) * Coupling() *

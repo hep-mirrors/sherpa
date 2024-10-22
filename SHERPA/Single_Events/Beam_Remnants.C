@@ -43,7 +43,7 @@ Return_Value::code Beam_Remnants::StandardTreatment(Blob_List*  bloblist,
                                                     const bool& onlyBunch)
 {
   Return_Value::code rv =
-          p_beamremnanthandler->FillBeamAndBunchBlobs(bloblist, onlyBunch);
+    p_beamremnanthandler->FillBeamAndBunchBlobs(bloblist, onlyBunch);
   if (m_ana) Analyse(bloblist);
   return rv;
 }

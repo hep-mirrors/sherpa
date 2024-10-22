@@ -713,7 +713,8 @@ bool Initialization_Handler::InitializeTheYFS(){
   if(p_yfshandler->Mode()!=YFS::yfsmode::off) {
     msg_Info()<<"Initialized YFS for Soft Photon Resummation"<<std::endl;
     for (const auto &pdf: m_pdflibs) {
-      if(pdf!="None") THROW(fatal_error,"Cannot use PDFs with initial state YFS. Disable the PDF (PDF_LIBRARY: None) or YFS (YFS: MODE: OFF)");
+      if(pdf!="None")
+	THROW(fatal_error, "Cannot use PDFs with initial state YFS. Disable the PDF (PDF_LIBRARY: None) or YFS (YFS: MODE: OFF)");
     }
     for (size_t beam=0;beam<2;++beam) {
       p_yfshandler->SetInFlav(m_bunch_particles[beam]);
@@ -819,7 +820,7 @@ void Initialization_Handler::LoadPDFLibraries(Settings& settings) {
     }
     m_defsets[PDF::isr::bunch_rescatter][beam] = defset;
   }
-  msg_Out()<<"   * (mode = "<<m_mode<<"): "
+  msg_Out()<<"   * (mode = "<<m_mode<<"), default sets: "
 	   <<"beam 0 = "<<m_defsets[PDF::isr::hard_process][0]<<" + "
 	   <<m_defsets[PDF::isr::hard_subprocess][0]<<", "
 	   <<"beam 1 = "<<m_defsets[PDF::isr::hard_process][1]<<" + "
@@ -828,7 +829,8 @@ void Initialization_Handler::LoadPDFLibraries(Settings& settings) {
   if (Variations::NeedsLHAPDF6Interface()) {
     m_pdflibs.insert("LHAPDFSherpa");
   }
-  for (set<string>::iterator pdflib=m_pdflibs.begin(); pdflib!=m_pdflibs.end();++pdflib) {
+  for (set<string>::iterator pdflib=m_pdflibs.begin();
+       pdflib!=m_pdflibs.end();++pdflib) {
     if (*pdflib=="None") continue;
     if (*pdflib=="LHAPDFSherpa") {
       #ifdef USING__LHAPDF
@@ -852,9 +854,11 @@ void Initialization_Handler::LoadPDFLibraries(Settings& settings) {
   }
 }
 
-void Initialization_Handler::InitISRHandler(const PDF::isr::id & pid,Settings& settings) {
+void Initialization_Handler::
+InitISRHandler(const PDF::isr::id & pid,Settings& settings) {
   if (m_isrhandlers.find(pid)!=m_isrhandlers.end()) delete m_isrhandlers[pid];
-  bool needs_resc  = settings["BEAM_RESCATTERING"].Get<string>()!=string("None");
+  bool needs_resc = ( settings["BEAM_RESCATTERING"].Get<string>()!=
+		      string("None") );
   /////////////////////////////////////////////////////////////
   // make sure rescatter ISR bases are only initialised if necessary
   /////////////////////////////////////////////////////////////
@@ -908,12 +912,13 @@ void Initialization_Handler::InitISRHandler(const PDF::isr::id & pid,Settings& s
       // 3    | bunch - bunch (disabled, because that would be normal MPI)
       int bbrmode = settings["BBR_MODE"].Get<int>();
       if (bbrmode < 0 || bbrmode > 2)
-        THROW(fatal_error, "BBR_Mode: Invalid mode, use MPI settings instead. ")
-      flav                   = bbrmode & (beam + 1) ? m_bunch_particles[beam]
-                                                    : p_beamspectra->GetBeam(beam)->Beam();
+        THROW(fatal_error,"BBR_Mode: Invalid mode, use MPI settings instead.")
+	  flav = ( bbrmode & (beam + 1) ?
+		   m_bunch_particles[beam] :
+		   p_beamspectra->GetBeam(beam)->Beam() );
       m_bunchtags[pid][beam] = bbrmode & (beam + 1) ? 0 : 1;
     }
-    PDF_Arguments args = PDF_Arguments(flav, beam, set, version, order, scheme);
+    PDF_Arguments args = PDF_Arguments(flav,beam,set,version,order,scheme);
     if (pid != PDF::isr::bunch_rescatter) {
       msg_Out()<<METHOD<<"("<<pid<<"): before getter for set = "<<set<<".\n";
       PDF_Base* pdfbase = PDF_Base::PDF_Getter_Function::GetObject(set, args);
@@ -923,9 +928,10 @@ void Initialization_Handler::InitISRHandler(const PDF::isr::id & pid,Settings& s
                       " libraries for " + ToString(m_bunch_particles[beam]) +
                       " bunch.");
       if (pid == PDF::isr::hard_process) rpa->gen.SetPDF(beam, pdfbase);
-      msg_Out()<<METHOD<<"[beam = "<<beam<<", "<<pid<<"]: "<<m_bunch_particles[beam]
-	       <<" --> "<<pdfbase<<"\n"
-	       <<"   from flav = "<<flav<<", set = "<<set<<", version = "<<version<<", "
+      msg_Out()<<METHOD<<"[beam = "<<beam<<", "<<pid<<"]: "
+	       <<m_bunch_particles[beam]<<" --> "<<pdfbase<<"\n"
+	       <<"   from flav = "<<flav<<", set = "<<set<<", "
+	       <<"version = "<<version<<", "
 	       <<"order = "<<order<<", scheme = "<<scheme<<"\n";
       if (pdfbase == nullptr) {
         isrbases[beam] = new Intact(flav);

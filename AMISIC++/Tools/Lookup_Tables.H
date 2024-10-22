@@ -53,9 +53,12 @@ namespace AMISIC {
     std::vector<std::vector<std::vector<double> > > m_values;
   public:
     ThreeDim_Table(const axis & xbins,const axis & ybins,const axis & zbins);
-    void Fill(const size_t & xbin,const size_t & ybin,const size_t & zbin,const double & value);
-    double operator()(const double & x,const double & y,const double & z) const;
-    double Value(const size_t & xbin,const size_t & ybin,const size_t & zbin) const {
+    void Fill(const size_t & xbin,const size_t & ybin,const size_t & zbin,
+	      const double & value);
+    double operator()(const double & x,const double & y,
+		      const double & z) const;
+    double Value(const size_t & xbin,const size_t & ybin,
+		 const size_t & zbin) const {
       return m_values[xbin][ybin][zbin];
     }
   };

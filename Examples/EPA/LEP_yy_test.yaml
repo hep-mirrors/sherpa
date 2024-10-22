@@ -1,11 +1,10 @@
 EVENTS: 100000
 
-BEAMS:             [11, -11]
-BEAM_ENERGIES:     103
-BEAM_SPECTRA:      EPA
+BEAMS:             [22,22]
+BEAM_ENERGIES:     12.5
 PDF_LIBRARY:       SASGSherpa
 PDF_SET:           SAS2D
-MI_HANDLER:        Amisic   
+MI_HANDLER:        None
 MPI_PDF_LIBRARY:   SASGSherpa
 MPI_PDF_SET:       SAS2D
 BEAM_RESCATTERING: None
@@ -19,20 +18,19 @@ REMNANTS:
 
 AMISIC:
   nS_bins:       20
-  PT_Min:        1.2
+  PT_Min:        2.
   PT_0:          1.
   Eta:           0.08
-  SIGMA_ND_NORM: 1.02
-  MU_R_FACTOR:   0.5
+  SIGMA_ND_NORM: 0.4
 
 
 ALPHAS(MZ): 0.1188
 ORDER_ALPHAS: 1
 ALPHAS: {USE_PDF: 0}
-SCALES: METS{H_T2}{H_T2/4.}
+SCALES: VAR{sqr(PPerp(p[2]))}{sqr(PPerp(p[2])/2)}
 
 SELECTORS:
-  - [PT, 93, 4., 1000.]
+  - [PT, 93, 1.2, 1000.]
 
 
 PROCESSES:

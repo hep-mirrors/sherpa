@@ -38,8 +38,9 @@ Init(MI_Processes * processes,Over_Estimator * overestimator,
   if (m_ana) InitAnalysis();
 }
 
-void Single_Collision_Handler::Init(REMNANTS::Remnant_Handler * remnant_handler,
-				    NonPerturbative_XSecs * soft) {
+void Single_Collision_Handler::
+Init(REMNANTS::Remnant_Handler * remnant_handler,
+     NonPerturbative_XSecs * soft) {
   m_evttype  = evt_type::NonPerturbative;
   for (size_t i=0;i<2;i++) p_remnants[i] = remnant_handler->GetRemnant(i);
   p_soft     = soft;
@@ -77,10 +78,14 @@ bool Single_Collision_Handler::FirstMPI(Blob * signal) {
   double x1     = (*signal)["PDFInfo"]->Get<PDF_Info>().m_x1;
   double x2     = (*signal)["PDFInfo"]->Get<PDF_Info>().m_x2;
   p_overlap->FixDynamicRadius(x1,x2,pt2_1,pt2_1);
+  msg_Out()<<"*** "<<METHOD<<"(x1 = "<<x1<<", x2 = "<<x2<<", "
+  	   <<"pt^2 = "<<pt2_1<<")\n";
   while (true) {
     m_b         = p_overlap->SelectB();
     m_fb        = p_pint->fb(m_S,m_b);
     m_bfac      = m_fb * p_overlap->MaxValue(m_b);
+    msg_Out()<<"***** b = "<<m_b<<" --> f_b = "<<m_fb<<" "
+    	     <<"--> bfac = "<<m_bfac<<"\n";
     p_overestimator->SetBFac(m_bfac);
     m_pt2       = m_S/4.;
     bool reject = false;
@@ -89,50 +94,52 @@ bool Single_Collision_Handler::FirstMPI(Blob * signal) {
       int fill;
       switch (SelectPT2()) {
       case 1:
-	////////////////////////////////////////////////////////////////////////
+	//////////////////////////////////////////////////////////////////////
 	// pt^2 is smaller than the pt^2 of the hardest pre-fabricated blob,
 	// we will copy it over and remove it from the (ordered) list.  This
 	// has not been implemented yet due to interplay with first blob.
-	////////////////////////////////////////////////////////////////////////
-	msg_Error()<<METHOD<<" results in a biased minbias event - not implemented yet.\n";
+	//////////////////////////////////////////////////////////////////////
+	msg_Error()<<METHOD<<" results in a biased minbias event - "
+		   <<"not implemented yet.\n";
 	exit(1);
       case 0:
-	////////////////////////////////////////////////////////////////////////
+	//////////////////////////////////////////////////////////////////////
 	// pt^2 is harder than the pt^2 of the hardest pre-fabricated blob,
 	// or such a blob doesn't exist.  Will check if we can fill a
 	// hard scatter blob, if successful we can stop.
-	////////////////////////////////////////////////////////////////////////
+	//////////////////////////////////////////////////////////////////////
 	second  = new Blob();
 	fill    = p_processes->FillHardScatterBlob(second,pt2_1);
 	if (fill==1) {
-	  /////////////////////////////////////////////////////////////////////////
-	  // New blob (second) was successfull filled and fulfils requirements that
-	  // its pt^2 < pt^2_1, the pt^2 of the signal blob.  We store the new blob
-	  // now to get it off the shelf in the NextScatter call.
-	  /////////////////////////////////////////////////////////////////////////
+	  /////////////////////////////////////////////////////////////////////
+	  // New blob (second) was successfull filled and fulfils requirements 
+	  // that its pt^2 < pt^2_1, the pt^2 of the signal blob.  We store
+	  // the new blob now to get it off the shelf in the NextScatter call.
+	  /////////////////////////////////////////////////////////////////////
 	  m_prefabs[m_pt2] = second;
 	  m_lastpt2        = m_pt2;
 	  m_done           = false;
 	  return true;
 	}
 	else {
-	  /////////////////////////////////////////////////////////////////////////
+	  /////////////////////////////////////////////////////////////////////
 	  // New blob (second) couldn't be created and needs to be deleted.
-	  /////////////////////////////////////////////////////////////////////////
+	  /////////////////////////////////////////////////////////////////////
 	  delete second;
-	  ///////////////////////////////////////////////////////////////////////
-	  // Kinematics of new blob will have to be vetoed, as its pt^2 > pt^2_1,
-	  // which means we have to select a new impact parameter b.
-	  ///////////////////////////////////////////////////////////////////////
+	  /////////////////////////////////////////////////////////////////////
+	  // Kinematics of new blob will have to be vetoed, as its 
+	  // pt^2 > pt^2_1, which means we have to select a new impact
+	  // parameter b.
+	  /////////////////////////////////////////////////////////////////////
 	  if (fill==-1) reject = true;
 	}
 	break;
       case -1:
       default:
-	////////////////////////////////////////////////////////////////////////
+	//////////////////////////////////////////////////////////////////////
 	// pt^2 is smaller than pt2min.  Will stop and deal with it at end
 	// of method.
-	////////////////////////////////////////////////////////////////////////
+	//////////////////////////////////////////////////////////////////////
 	m_lastpt2 = 0.;
 	m_done    = true;
 	return true;
@@ -153,6 +160,18 @@ bool Single_Collision_Handler::FirstMinBiasScatter(Blob * first) {
   // to the list of pre-fabricated blobs, to be taken off the shelf in the
   // NextScatter method.
   ///////////////////////////////////////////////////////////////////////////
+  // If AMISIC only produces (semi-inclusive) soft interactions use the
+  // NonPerturbative_XSecs to generate a blob.
+  if (p_soft) {
+    if (p_soft->MakeScatter(first)) {
+      first->AddData("Renormalization_Scale",new Blob_Data<double>(p_soft->MuR2()));
+      first->AddData("Factorization_Scale",new Blob_Data<double>(p_soft->MuF2()));
+      first->SetTypeSpec("Soft_Process_from_AMISIC");
+      m_done = true;
+      return true;
+    }
+    THROW(fatal_error,"Couldn't fill non-perturbative scatter blob.");
+  }
   bool done = false;
   while (!done) {
     first->ClearAllData();
@@ -177,7 +196,8 @@ bool Single_Collision_Handler::FirstMinBiasScatter(Blob * first) {
 	// we will copy it over and remove it from the (ordered) list.  This
 	// has not been implemented yet due to interplay with first blob.
       ////////////////////////////////////////////////////////////////////////
-	msg_Error()<<METHOD<<" results in a biased minbias event - not implemented yet.\n";
+	msg_Error()<<METHOD
+		   <<" results in a biased minbias event - not implemented yet.\n";
 	exit(1);
       case 0:
 	////////////////////////////////////////////////////////////////////////
@@ -244,14 +264,6 @@ double Single_Collision_Handler::MakeHardScatterBlob(Blob * blob) {
 }
 
 bool Single_Collision_Handler::NextScatter(Blob * blob) {
-  // If AMISIC only produces (semi-inclusive) soft interactions use the
-  // NonPerturbative_XSecs to generate a blob.
-  if (p_soft) {
-    Blob * blob = p_soft->MakeScatter();
-    blob->AddData("Renormalization_Scale",new Blob_Data<double>(p_soft->MuR2()));
-    blob->AddData("Factorization_Scale",new Blob_Data<double>(p_soft->MuF2()));
-    return blob;
-  }
   ///////////////////////////////////////////////////////////////////////////
   // Simple logic - bfac is provided from outside, now
   // - either use (one of) the pre-fabricated blob(s), or
@@ -332,14 +344,20 @@ int Single_Collision_Handler::SelectPT2() {
   ///////////////////////////////////////////////////////////////////////////
   while (true) {
     m_pt2 = p_overestimator->TrialPT2(m_pt2);
-    if (m_pt2<=m_pt2min)  return -1;
+    if (m_pt2<=m_pt2min)  {
+      msg_Out()<<"*** "<<METHOD<<"(pt^2 = "<<m_pt2<<" < "<<m_pt2min<<")\n";
+      return -1;
+    }
     if (m_pt2<=m_nextpt2) { m_pt2 = m_nextpt2; return 1; }
     if (!p_integrator->MakeKinematics(m_pt2,m_S)) continue;
     p_overlap->FixDynamicRadius(p_integrator->X(0),p_integrator->X(1));
-    double wt = ( (*p_processes)()/(*p_overestimator)(m_pt2,p_integrator->Yvol()) *
+    double wt = ( p_processes->PDFnorm()*(*p_processes)()/
+		  (*p_overestimator)(m_pt2,p_integrator->Yvol()) *
 		  (*p_overlap)(m_b)/m_bfac );
     if (m_ana) AnalyseWeight(wt);
-    if (wt>=ran->Get()) break;
+    msg_Out()<<"*** "<<METHOD<<"(pt^2 = "<<m_pt2<<", wt = "<<wt;
+    if (wt>=ran->Get()) { msg_Out()<<" -> success)\n";break; }
+    msg_Out()<<" -> too small)\n";
   }
   return 0;
 }
@@ -380,7 +398,6 @@ void Single_Collision_Handler::UpdateSandY(double s, double y) {
   m_Ycms = y;
   if (m_evttype==evt_type::Perturbative) {
     p_processes->UpdateS(m_S);
-
     p_overestimator->UpdateS(m_S,  p_processes->PT02());
   }
 }

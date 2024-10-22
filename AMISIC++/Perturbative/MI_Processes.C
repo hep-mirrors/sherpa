@@ -33,21 +33,26 @@ bool MI_Processes::Initialize(MODEL::Model_Base* const          model,
 {
   ///////////////////////////////////////////////////////////////////////////
   // Get PDFs and couplings
+  ///////////////////////////////////////////////////////////////////////////
   m_muF_scheme  = mipars->GetScaleFScheme();
   m_muF_fac     = sqr((*mipars)("FacScale_Factor"));
-  for (size_t i=0;i<2;i++) {
-    p_pdf[i]      = isr->PDF(i);
-    m_xmin[i]     = p_pdf[i]->XMin();
-    m_xmax[i]     = p_pdf[i]->XMax();
-    p_remnants[i] = isr->GetRemnant(i);
-    m_resx[i]     = 1.;
-  }
   m_muR_scheme  = mipars->GetScaleRScheme();
   m_muR_fac     = sqr((*mipars)("RenScale_Factor"));
   p_alphaS      = dynamic_cast<MODEL::Running_AlphaS *>
     (model->GetScalarFunction("alpha_S"))->GetAs(PDF::isr::hard_subprocess);
   p_alpha       = dynamic_cast<MODEL::Running_AlphaQED *>
     (model->GetScalarFunction("alpha_QED"));
+  m_pdfnorm     = 1.;
+  for (size_t i=0;i<2;i++) {
+    p_pdf[i]      = isr->PDF(i);
+    m_xmin[i]     = p_pdf[i]->XMin();
+    m_xmax[i]     = p_pdf[i]->XMax();
+    m_Q2min[i]    = p_pdf[i]->Q2Min();
+    p_remnants[i] = isr->GetRemnant(i);
+    if (p_remnants[i]->Flav()==Flavour(kf_photon))
+      m_pdfnorm  *= 1./p_alpha->AqedThomson();
+    m_resx[i]     = 1.;
+  }
   ///////////////////////////////////////////////////////////////////////////
   // Initialize model parameters:
   // - pt_0, the IR regulator in the propagator and in the strong coupling
@@ -104,8 +109,8 @@ bool MI_Processes::InitializeAllProcesses() {
   // We are missing di-photon production here:
   // - gg->gamma gamma and qqbar->gamma gamma
   ///////////////////////////////////////////////////////////////////////////
-  m_groups.push_back(new MI_QG_QGamma_Processes());
-  m_groups.push_back(new MI_QQ_GGamma_Processes());
+  //m_groups.push_back(new MI_QG_QGamma_Processes());
+  //m_groups.push_back(new MI_QQ_GGamma_Processes());
   ///////////////////////////////////////////////////////////////////////////
   // We are missing the production of (heavy quarkonia) mesons MQQ in
   // - singlet production qqbar -> MQQ, gg -> MQQ, gq -> MQQ+q etc.
@@ -116,6 +121,7 @@ bool MI_Processes::InitializeAllProcesses() {
   ///////////////////////////////////////////////////////////////////////////
   SetPDFs();
   SetAlphaS();
+  m_printit = true;
   return true;
 }
 
@@ -144,6 +150,7 @@ operator()(const double & shat,const double & that,const double & uhat,
   if (x1<=m_xmin[0]/m_resx[0] || x1>=m_xmax[0] ||
       x2<=m_xmin[1]/m_resx[1] || x2>=m_xmax[1]) return 0.;
   CalcScales(shat,that,uhat);
+  double pt2 = (that*uhat/shat);
   CalcPDFs(x1,x2);
   /////////////////////////////////////////////////////////////////////////
   // This is the sum over the matrix elements, grouped by parton content:
@@ -192,7 +199,9 @@ int MI_Processes::FillHardScatterBlob(Blob *&  blob,const double & pt2veto) {
 
 double MI_Processes::TotalCrossSection(const double & s,const bool & output) {
   ///////////////////////////////////////////////////////////////////////////
-  // Calculate the hard cross section first, by iterating over the pt2 bins
+  // Calculate the hard cross section first, by iterating over the pt2 bins.
+  // m_xshard is calculated as the total hard cross section at fixed s without
+  // any effects from the matter overlap
   ///////////////////////////////////////////////////////////////////////////
   m_xshard      = m_integrator(s,nullptr,0.);
   if (output) {
@@ -223,16 +232,17 @@ CalcScales(const double & shat,const double & that,const double & uhat) {
     THROW(fatal_error,"Scale scheme PT_with_Raps not implemented yet!")
   case scale_scheme::PT:
   default:
-    m_muF2 = m_muF_fac*(pt2 + m_pt02);
+    m_muF2 = m_muF_fac*pt2;
   }
+  // msg_Out()<<"[pt^2 = "<<pt2<<" --> "<<m_muR2<<"/"<<m_muF2<<" ] ";
 }
 
 void MI_Processes::CalcPDFs(const double & x1,const double & x2) {
   ///////////////////////////////////////////////////////////////////////////
   // Calculate both sets of PDFs at the relevant x and Q^2
   ///////////////////////////////////////////////////////////////////////////
-  p_pdf[0]->Calculate(x1,m_muF2);
-  p_pdf[1]->Calculate(x2,m_muF2);
+  p_pdf[0]->Calculate(x1,Max(m_Q2min[0],m_muF2));
+  p_pdf[1]->Calculate(x2,Max(m_Q2min[1],m_muF2));
 }
 
 void MI_Processes::SetAlphaS() {

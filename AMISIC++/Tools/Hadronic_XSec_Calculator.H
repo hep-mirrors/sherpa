@@ -35,7 +35,8 @@ namespace AMISIC {
     void   FixTables();
 
     std::array<ATOOLS::Flavour,2> m_flavs;
-    xsec_type                      m_type;
+    xsec_type      m_type;
+    evt_type::code m_evttype;
     double m_mmin, m_smin, m_mass_proton, m_mass_proton2, m_mass_pi;
     std::array<double, 2> m_masses, m_masses2;
     double m_mres, m_cres, m_s0, m_s1, m_Ypp, m_c0, m_c1;
@@ -44,7 +45,8 @@ namespace AMISIC {
     double m_alphaQED;
     double m_s, m_xstot, m_xsel, m_xssdA, m_xssdB, m_xsdd, m_xsnd, m_xsnd_norm;
     std::map<std::pair<ATOOLS::Flavour, ATOOLS::Flavour>, double> m_sigmaEl;
-    std::map<std::pair<ATOOLS::Flavour, ATOOLS::Flavour>, double> m_sigmaSDA, m_sigmaSDB;
+    std::map<std::pair<ATOOLS::Flavour, ATOOLS::Flavour>, double> m_sigmaSDA;
+    std::map<std::pair<ATOOLS::Flavour, ATOOLS::Flavour>, double> m_sigmaSDB;
     std::map<std::pair<ATOOLS::Flavour, ATOOLS::Flavour>, double> m_sigmaDD;
     double m_GeV2mb;
     OneDim_Table * p_xsratio, * p_xshard;
@@ -59,17 +61,17 @@ namespace AMISIC {
 		     const double masses[2]) const;
     double IntDDXSec(const size_t hadtags[2], const double masses[2]) const;
     double CalculateDoubleDXSec() const;
-
     void OutputXSratios(axis * sbins);
   public:
     explicit Hadronic_XSec_Calculator();
     ~Hadronic_XSec_Calculator();
 
     void Initialize(const ATOOLS::Flavour & fl1,const ATOOLS::Flavour & fl2,
-		    MODEL::Model_Base * model);
+		    MODEL::Model_Base * model,const evt_type::code & type);
     void operator()(double s);
     void CalculateXSratios(MI_Processes * processes,axis * sbins);
     void Output() const;
+    
     inline const double & Smin()   const { return m_smin; }
     //////////////////////////////////////////////////////////////////////////
     // The ratio of parton-level cross section obtained by integration over
@@ -93,6 +95,22 @@ namespace AMISIC {
     //////////////////////////////////////////////////////////////////////////
     inline double XStot(const double & s=-1.) {
       if (s>0.) (*this)(s); return m_xstot;
+    }
+    //////////////////////////////////////////////////////////////////////////
+    // Total cross section, given in mb
+    //////////////////////////////////////////////////////////////////////////
+    inline const double SimulatedXSec(const double & s=-1.) {
+      if (s>0.) (*this)(s);
+      double xsec = 0;
+      if (m_evttype==evt_type::Elastic       ||
+	  m_evttype==evt_type::QuasiElastic) xsec += SigmaEl();
+      if (m_evttype==evt_type::DiffractiveA  ||
+	  m_evttype==evt_type::QuasiElastic) xsec += SigmaSDA();
+      if (m_evttype==evt_type::DiffractiveB  ||
+	  m_evttype==evt_type::QuasiElastic) xsec += SigmaSDB();
+      if (m_evttype==evt_type::DiffractiveAB ||
+	  m_evttype==evt_type::QuasiElastic) xsec += SigmaDD();
+      return xsec;
     }
     //////////////////////////////////////////////////////////////////////////
     // Tuning value to (re-)normalise the non-diffractive cross section,

@@ -10,20 +10,20 @@ using namespace AMISIC;
 using namespace ATOOLS;
 using namespace std;
 
-/////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////
 // Non-perturbative cross section calculator, with cross sections as given in
 // Schuler-Sjostrand PRD 49 (1994) 2257.
 // All cross sections here are returned in GeV^{-2}, with s in GeV^2
 //
 // The total cross section will be given as
 // sigma(s) = X_pomeron s^{0.0808} + X_reggeon s^{-0.4525},
-// where the he X_{pomeron/reggeon} (m_xsecpom and m_xsecregge) are given in units of mb,
-// to make comparison with literature simpler.
+// where the he X_{pomeron/reggeon} (m_xsecpom and m_xsecregge) are given in units of
+// mb, to make comparison with literature simpler.
 // We also use units of mb^{1/2} for the (constant) triple pomeron vertex.
 //
 // When invoking this class, we will have to make sure that nucleons, pions, etc. are
 // initialised.
-/////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////
 Hadronic_XSec_Calculator::Hadronic_XSec_Calculator() :
   m_mmin(0.), m_smin(0.),
   m_mass_proton(Flavour(kf_p_plus).Mass()),m_mass_proton2(sqr(m_mass_proton)),
@@ -36,13 +36,15 @@ Hadronic_XSec_Calculator::Hadronic_XSec_Calculator() :
 { }
 
 void Hadronic_XSec_Calculator::
-Initialize(const Flavour & fl1,const Flavour & fl2,MODEL::Model_Base * model)
+Initialize(const Flavour & fl1,const Flavour & fl2,
+	   MODEL::Model_Base * model,const evt_type::code & type)
 {
   m_flavs[0] = fl1; m_flavs[1] = fl2;
+  m_evttype  = type;
   for (size_t i=0;i<2;i++) {
     m_masses[i] = m_flavs[i].HadMass(); m_masses2[i] = sqr(m_masses[i]);
-    m_mmin     += ( (m_flavs[i].IsPhoton() ? Flavour(kf_rho_770).Mass() : m_masses[i]) +
-		    2.*m_mass_pi );
+    m_mmin     += ( (m_flavs[i].IsPhoton() ?
+		     Flavour(kf_rho_770).Mass() : m_masses[i]) + 2.*m_mass_pi );
   }
   m_smin           = sqr(m_mmin);
   m_alphaQED       = (dynamic_cast<MODEL::Running_AlphaQED *>
@@ -154,17 +156,19 @@ void Hadronic_XSec_Calculator::CalculateXSecs() {
     flavs.first = (*flit0);
     hadtags[0]  = m_indexmap[(*flit0)];
     masses[0]   = (*flit0).Mass();
-    prefVA      = m_fVs.find((*flit0))!=m_fVs.end() ? m_alphaQED / m_fVs[(*flit0)] : 1.;
+    prefVA      = (m_fVs.find((*flit0))!=m_fVs.end() ?
+		   m_alphaQED / m_fVs[(*flit0)] : 1.);
     for (list<Flavour>::const_iterator flit1=m_hadroncomponents[m_flavs[1]].begin();
          flit1!=m_hadroncomponents[m_flavs[1]].end();flit1++) {
       flavs.second = (*flit1);
       hadtags[1]   = m_indexmap[(*flit1)];
       masses[1]    = (*flit1).Mass();
-      prefVB       = m_fVs.find((*flit1))!=m_fVs.end() ? m_alphaQED / m_fVs[(*flit1)] : 1.;
+      prefVB       = (m_fVs.find((*flit1))!=m_fVs.end() ?
+		      m_alphaQED / m_fVs[(*flit1)] : 1.);
       prefVV       = prefVA * prefVB;
       m_xstot     += prefVV * (xstot  = TotalXSec(hadtags));
       m_xsel      += m_sigmaEl[flavs]  = prefVV * IntElXSec(hadtags,xstot);
-      m_xssdA     += m_sigmaSDA[flavs] = prefVV * IntSDXSec(hadtags,0,masses);
+      m_xssdA     += m_sigmaSDA[flavs] = prefVV * IntSDXSec(hadtags,0,masses); 
       m_xssdB     += m_sigmaSDB[flavs] = prefVV * IntSDXSec(hadtags,1,masses);
       m_xsdd      += m_sigmaDD[flavs]  = prefVV * IntDDXSec(hadtags,masses);
     }
@@ -193,23 +197,48 @@ CalculateXSratios(MI_Processes * processes,axis * sbins)
 }
 
 void Hadronic_XSec_Calculator::OutputXSratios(axis * sbins) {
-  msg_Info()<<"   "<<std::string(77,'-')<<"\n"
-	    <<"   | "<<METHOD<<": cross sections and ratios:      |\n"
-	    <<"   | E_cms [GeV] | sigma_hd [mb] | sigma_tot [mb] | "
-	    <<"sigma_ND [mb] |      ratio |\n";
+  (*this)(sbins->x(0));
+  double fac = 1;
+  string units = string("mb");
+  if      (m_xstot<1.e-6) { fac = 1.e9; units = string("pb"); }
+  else if (m_xstot<1.e-3) { fac = 1.e6; units = string("nb"); }
+  else if (m_xstot<1.)    { fac = 1.e3; units = string("ub"); }
+  msg_Info()<<"   "<<string(99,'-')<<"\n"
+	    <<"   | "<<METHOD<<": hadronic cross sections (all in "<<units<<")"
+	    <<"                   |\n"
+	    <<"   | E_cms [GeV] | sigma_tot   | sigma_el    |"
+	    <<"sigma_SDA    | sigma_SDB   | sigma_DD    | sigma_ND    |\n";
+  for (size_t sbin=0;sbin<sbins->m_nbins;sbin++) {
+    double s    = sbins->x(sbin), E = sqrt(s);
+    (*this)(s);
+    msg_Info()<<"   | "
+	      <<setprecision(6)<<setw(11)<<E<<" | "
+	      <<setprecision(6)<<setw(11)<<(m_xstot*fac)<<" | "
+	      <<setprecision(6)<<setw(11)<<(m_xsel*fac*m_GeV2mb)<<" | "
+	      <<setprecision(6)<<setw(11)<<(m_xssdA*fac*m_GeV2mb)<<" | "
+	      <<setprecision(6)<<setw(11)<<(m_xssdB*fac*m_GeV2mb)<<" | "
+	      <<setprecision(6)<<setw(11)<<(m_xsdd*fac*m_GeV2mb)<<" | " 
+	      <<setprecision(6)<<setw(11)<<(m_xsnd*fac*m_GeV2mb)<<" |\n"; 
+  }
+  msg_Info()<<"   "<<string(99,'-')<<"\n";
+  msg_Info()<<"   "<<string(77,'-')<<"\n"
+	    <<"   | "<<METHOD<<": cross sections (in "<<units<<") and ratios:"
+	    <<"      |\n"
+	    <<"   | E_cms [GeV] | sigma_hd      | sigma_tot      | "
+	    <<"sigma_ND      | ratio      |\n";
   for (size_t sbin=0;sbin<sbins->m_nbins;sbin++) {
     double s    = sbins->x(sbin), E = sqrt(s);
     (*this)(s);
     double xshard = (*p_xshard)(s), xsnd  = XSndNorm() * XSnd();
     double ratio  = (*p_xsratio)(s);
-    msg_Info()<<"   |"
-	      <<std::setprecision(6)<<std::setw(12)<<E<<" | "
-	      <<std::setprecision(6)<<std::setw(13)<<(xshard*m_GeV2mb)<<" | "
-	      <<std::setprecision(6)<<std::setw(14)<<m_xstot<<" | "
-	      <<std::setprecision(6)<<std::setw(13)<<(xsnd*m_GeV2mb)<<" | "
-	      <<std::setprecision(6)<<std::setw(10)<<ratio<<" |\n";
+    msg_Info()<<"   | "
+	      <<setprecision(6)<<setw(11)<<E<<" | "
+	      <<setprecision(6)<<setw(13)<<(xshard*fac*m_GeV2mb)<<" | "
+	      <<setprecision(6)<<setw(14)<<(m_xstot*fac)<<" | "
+	      <<setprecision(6)<<setw(13)<<(xsnd*fac*m_GeV2mb)<<" | "
+	      <<setprecision(6)<<setw(10)<<ratio<<" |\n";
   }
-  msg_Info()<<"   "<<std::string(77,'-')<<"\n\n";
+  msg_Info()<<"   "<<string(77,'-')<<"\n\n";
 }
 
 double Hadronic_XSec_Calculator::TotalXSec(const size_t hadtags[2]) const {
@@ -303,7 +332,7 @@ double Hadronic_XSec_Calculator::IntDDXSec(const size_t hadtags[2],
   return m_prefDD * s_X[hadtags[0]][hadtags[1]] * J_XX;
 }
 
-bool Hadronic_XSec_Calculator::SelectEl(std::array<ATOOLS::Flavour, 2> & flavs) {
+bool Hadronic_XSec_Calculator::SelectEl(array<ATOOLS::Flavour, 2> & flavs) {
   double disc = m_xsel * ran->Get();
   pair<Flavour, Flavour> flpair;
   for (list<Flavour>::const_iterator flit0=m_hadroncomponents[m_flavs[0]].begin();
@@ -323,7 +352,7 @@ bool Hadronic_XSec_Calculator::SelectEl(std::array<ATOOLS::Flavour, 2> & flavs) 
   return false;
 }
 
-bool Hadronic_XSec_Calculator::SelectSDA(std::array<ATOOLS::Flavour, 2> & flavs) {
+bool Hadronic_XSec_Calculator::SelectSDA(array<ATOOLS::Flavour, 2> & flavs) {
   double disc = m_xssdA * ran->Get();
   pair<Flavour, Flavour> flpair;
   for (list<Flavour>::const_iterator flit0=m_hadroncomponents[m_flavs[0]].begin();
@@ -343,7 +372,7 @@ bool Hadronic_XSec_Calculator::SelectSDA(std::array<ATOOLS::Flavour, 2> & flavs)
   return false;
 }
 
-bool Hadronic_XSec_Calculator::SelectSDB(std::array<ATOOLS::Flavour, 2> & flavs) {
+bool Hadronic_XSec_Calculator::SelectSDB(array<ATOOLS::Flavour, 2> & flavs) {
   double disc = m_xssdB * ran->Get();
   pair<Flavour, Flavour> flpair;
   for (list<Flavour>::const_iterator flit0=m_hadroncomponents[m_flavs[0]].begin();
@@ -363,7 +392,7 @@ bool Hadronic_XSec_Calculator::SelectSDB(std::array<ATOOLS::Flavour, 2> & flavs)
   return false;
 }
 
-bool Hadronic_XSec_Calculator::SelectDD(std::array<ATOOLS::Flavour, 2> & flavs) {
+bool Hadronic_XSec_Calculator::SelectDD(array<ATOOLS::Flavour, 2> & flavs) {
   double disc = m_xsdd * ran->Get();
   pair<Flavour, Flavour> flpair;
   for (list<Flavour>::const_iterator flit0=m_hadroncomponents[m_flavs[0]].begin();
@@ -392,7 +421,7 @@ void Hadronic_XSec_Calculator::Output() const {
 	   <<"   \\sigma_{sd}(B) = "<<m_xssdB<<" mb\n"
 	   <<"   \\sigma_{dd}    = "<<m_xsdd<<" mb\n"
 	   <<"   \\sigma_{nd}    = "<<m_xsnd*m_GeV2mb<<" mb = "
-	   <<m_xsnd<<" GeV^-2\n}"<<endl;
+	   <<m_xsnd<<" GeV^-2\n}\n";
 }
 
 
@@ -456,6 +485,10 @@ double Hadronic_XSec_Calculator::s_Y[4][4] = {
   { 31.790,  13.080,   -0.62,  -0.060  },   // Column: N rho/omega phi J/psi
   { -1.510,   -0.62,    0.03,  -0.0028 },
   { -0.146,  -0.060, -0.0028,  0.00028 }
+  //{ 56.080,  31.790,  -1.510,  -0.146 },   // Row:    N rho/omega phi J/psi
+  //{ 31.790,   0.,      0.,      0.    },   // Column: N rho/omega phi J/psi
+  //{ -1.510,   0.,      0.,      0.    },
+  //{ -0.146,   0.,      0.,      0.    }
 };
 
 ///////////////////////////////////////////////////////////////////////////////////

@@ -17,12 +17,12 @@ namespace AMISIC {
     axis           * p_sbins, * p_bbins;
     OneDim_Table   * p_k, * p_norm;
     TwoDim_Table   * p_diffxsec;
-    double           m_xs_test, m_xs_hard, m_bmax, m_smin;
+    double           m_pdfnorm, m_xs_test, m_xs_hard, m_bmax, m_smin;
     bool             m_dynamic;
 
     void FixKandSmin();
     void InitializeTables();
-    void InitializeTable(const size_t & sbin);
+    void InitializeTable(const size_t & sbin,const bool & out=false);
     bool CheckTables();
     void OutputTables();
     
@@ -51,6 +51,9 @@ namespace AMISIC {
       return (*p_diffxsec)(s,b);
     }
     inline double fb(const double & s,const double & b) {
+      //msg_Out()<<METHOD<<"("<<s<<", "<<b<<"): "
+      //       <<(*p_diffxsec)(s,b)<<"/"
+      //       <<p_procs->GetXSecs()->XSratio(s)<<".\n";
       if ((*this)(s,b)<=1.e-12) return -1.;
       return (*p_diffxsec)(s,b)/p_procs->GetXSecs()->XSratio(s);
     }
@@ -106,12 +109,13 @@ namespace AMISIC {
   //////////////////////////////////////////////////////////////////////////
   class PInt_Dyn_Integrand : public ATOOLS::Function_Base {
     TwoDim_Table * p_lookup;
-    double m_s;
+    double m_pref, m_s;
   public:
-    PInt_Dyn_Integrand(TwoDim_Table * lookup) : p_lookup(lookup), m_s(0.) {}
+    PInt_Dyn_Integrand(TwoDim_Table * lookup,const double & pref=1.) :
+      p_lookup(lookup), m_pref(pref), m_s(0.) {}
     ~PInt_Dyn_Integrand() {};
     double operator()(double b) {
-      return 2.*M_PI*b*(1. - exp(-(*p_lookup)(m_s,b)));
+      return 2.*M_PI*b*(1. - exp(-m_pref*(*p_lookup)(m_s,b)));
     }
     inline void SetS(const double & s) { m_s = s; }
   };
@@ -128,12 +132,13 @@ namespace AMISIC {
   //////////////////////////////////////////////////////////////////////////
   class PInt_Norm_Integrand : public ATOOLS::Function_Base {
     TwoDim_Table * p_lookup;
-    double m_s;
+    double m_pref, m_s;
   public:
-    PInt_Norm_Integrand(TwoDim_Table * lookup) : p_lookup(lookup), m_s(0.) {}
+    PInt_Norm_Integrand(TwoDim_Table * lookup,const double & pref=1.) :
+      p_lookup(lookup), m_pref(pref), m_s(0.) {}
     ~PInt_Norm_Integrand() {};
     double operator()(double b) {
-      return 2.*M_PI*b*(*p_lookup)(m_s,b)*(1. - exp(-(*p_lookup)(m_s,b)));
+      return 2.*M_PI*b*m_pref*(*p_lookup)(m_s,b)*(1. - exp(-m_pref*(*p_lookup)(m_s,b)));
     }
     inline void SetS(const double & s) { m_s = s; }
   };

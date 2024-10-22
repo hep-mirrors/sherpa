@@ -3,6 +3,7 @@
 #include "ATOOLS/Org/Exception.H"
 
 using namespace AMISIC;
+using namespace ATOOLS;
 using namespace std;
 
 axis::axis(const size_t & nbins,const double & xmin,const double & xmax,
@@ -19,10 +20,10 @@ axis::axis(const size_t & nbins,const double & xmin,const double & xmax,
 }
 
 double axis::x(const size_t & bin) const {
-  if (m_nbins==1) return m_mode==axis_mode::linear ? (m_xmin+m_xmax)/2. : sqrt(m_xmin*m_xmax);
-  if (bin>=m_nbins) {
-    THROW(normal_exit,"Wrong bin called");
-  }
+  if (m_nbins==1) return (m_mode==axis_mode::linear ?
+			  (m_xmin+m_xmax)/2. : sqrt(m_xmin*m_xmax) );
+  if (bin>m_nbins) THROW(normal_exit,"Wrong bin called");
+  if (bin==m_nbins) return m_xmax;
   if (m_mode==axis_mode::linear)   return m_xmin + (double)bin*m_xstep;
   else if (m_mode==axis_mode::log) return m_xmin * exp(m_xstep*(double)bin);
   else return 0.;
@@ -54,6 +55,8 @@ void OneDim_Table::Fill(const size_t & xbin,const double & value) {
 
 double OneDim_Table::operator()(const double & x) const {
   if (m_x.m_nbins==1)                 return m_values[0];
+  if (x==m_x.m_xmax)                  return m_values[m_x.m_nbins-1];
+  if (x==m_x.m_xmin)                  return m_values[0];
   if (x>=m_x.m_xmax || x<=m_x.m_xmin) return 0.;
   size_t bin = m_x.bin(x);
   if (bin>=m_x.m_nbins) return 0;
@@ -68,31 +71,45 @@ double OneDim_Table::operator()(const double & x) const {
 TwoDim_Table::TwoDim_Table(const axis & xbins,const axis & ybins) :
   m_x(xbins), m_y(ybins)
 {
-  if (m_y.m_nbins<=1) THROW(fatal_error,"Only one or less bins in y direction.")
+  if (m_y.m_nbins<=1)
+    THROW(fatal_error,"Only one or less bins in y direction.")
   m_values.resize(m_x.m_nbins);
   for (auto& val : m_values) val.resize(m_y.m_nbins, 0.);
 }
 
-void TwoDim_Table::Fill(const size_t & xbin,const size_t & ybin,const double & value) {
+void TwoDim_Table::
+Fill(const size_t & xbin,const size_t & ybin,const double & value) {
   if (xbin<m_x.m_nbins && ybin<m_y.m_nbins)
     m_values[xbin][ybin] = value;
 }
 
 double TwoDim_Table::operator()(const double & x,const double & y) const {
-  if (m_x.m_nbins==1) {
-    if (y<m_y.m_xmin || y>=m_y.m_xmax) return 0.;
-    if (m_y.m_nbins==1) return m_values[0][0];
-    size_t ybin = m_y.bin(y);
-    if (ybin>=m_y.m_nbins) return 0.;
-    double y1 = m_y.x(ybin), y2 = m_y.x(ybin+1);
+  size_t xbin = 0, ybin = 0;
+  double y1, y2, x1, x2;
+  if (x<m_x.m_xmin || x>m_x.m_xmax || y<m_y.m_xmin || y>m_y.m_xmax) return 0.;
+  if (m_x.m_nbins==1 || IsEqual(x,m_x.m_xmin,1.e-3) || IsEqual(x,m_x.m_xmax,1.e-3)) {
+    xbin = (x==m_x.m_xmax) ? m_x.m_nbins-1 : 0;
+    if (m_y.m_nbins==1 || IsEqual(y,m_y.m_xmin,1.e-3) || IsEqual(y,m_y.m_xmax,1.e-3)) { 
+      ybin = (y==m_y.m_xmax) ? m_y.m_nbins-1 : 0;
+      return m_values[xbin][ybin];
+    }
+    ybin = m_y.bin(y);
+    y1   = m_y.x(ybin);
+    y2   = m_y.x(ybin+1 );
     return ( m_values[0][ybin]   * (y2-y) +
 	     m_values[0][ybin+1] * (y-y1) ) / (y2-y1);
   }
-  if (x<m_x.m_xmin || x>=m_x.m_xmax || y<m_y.m_xmin || y>=m_y.m_xmax) return 0.;
-  size_t xbin = m_x.bin(x),             ybin = m_y.bin(y);
-  if (xbin>=m_x.m_nbins || ybin>=m_y.m_nbins) return 0.;
-  double x1   = m_x.x(xbin),            x2   = m_x.x(xbin+1);
-  double y1   = m_y.x(ybin),            y2   = m_y.x(ybin+1);
+  xbin = m_x.bin(x);
+  x1   = m_x.x(xbin);
+  x2   = m_x.x(xbin+1 );
+  if (m_y.m_nbins==1 || IsEqual(y,m_y.m_xmin,1.e-3) || IsEqual(y,m_y.m_xmax,1.e-3)) { 
+    ybin = (y==m_y.m_xmax) ? m_y.m_nbins-1 : 0;
+    return ( m_values[xbin][ybin]   * (x2-x) +
+	     m_values[xbin+1][ybin] * (x-x1) ) / (x2-x1);
+  }
+  ybin = m_y.bin(y);
+  y1   = m_y.x(ybin);
+  y2   = m_y.x(ybin+1 );
   return ( ((y2-y) * (m_values[xbin][ybin]     * (x2-x) +
 		      m_values[xbin+1][ybin]   * (x-x1)) +
 	    (y-y1) * (m_values[xbin][ybin+1]   * (x2-x) +

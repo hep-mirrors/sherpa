@@ -90,7 +90,7 @@ void Over_Estimator::FixMaximum(MI_Processes * procs,axis * sbins) {
       // volume to define a constant prefactor that ensures that the
       // approximation is always larger than the exact calculation.
       ///////////////////////////////////////////////////////////////////////
-      double test   = Max(approx,exact)*yvol*sqr(pt2+m_pt02/4.);
+      double test   = procs->PDFnorm()*Max(approx,exact)*yvol*sqr(pt2+m_pt02/4.);
       if (test > maxpref) { maxpref = test; }
     }
     p_prefs->Fill(sbin,maxpref);
@@ -148,6 +148,8 @@ double Over_Estimator::TrialPT2(const double & Q2) {
   ///////////////////////////////////////////////////////////////////////////
   double Q2tilde = Q2+m_pt02/4.;
   double prefb   = m_pref*m_bfac;
+  msg_Out()<<"*** "<<METHOD<<"(Q2 = "<<Q2<<" -> Q2~ = "<<Q2tilde<<", "
+  	   <<"pref = "<<m_pref<<" * "<<m_bfac<<")\n";
   return ( prefb * Q2tilde/(prefb-Q2tilde*log(Max(1.e-12,ran->Get()))) -
 	   m_pt02/4. );
 }
@@ -157,13 +159,14 @@ void Over_Estimator::Output() {
 	    <<"   | Fixed (energy-dependent) maxima for "
 	    <<"quick'n'dirty Sudakov evaluation"
 	    <<"      |\n"
-	    <<"   | Energy [GeV] |      Maximum"<<std::string(47,' ')<<"|\n";
+	    <<"   |       Energy [GeV] |      "
+	    <<"Maximum"<<std::string(41,' ')<<"|\n";
   for (size_t i=0;i<p_prefs->GetAxis().m_nbins;i++)
     msg_Info()<<"   | "
-	      <<std::setprecision(1)<<std::setw(12)
-	      <<sqrt(p_prefs->GetAxis().x(i))<<" | "
+	      <<std::setprecision(6)<<std::setw(18)
+	      <<sqrt(p_prefs->GetAxis().x(i))<<" |     "
 	      <<std::setprecision(6)<<std::setw(12)<<p_prefs->Value(i)
-	      <<std::string(47,' ')<<"|\n";
+	      <<std::string(37,' ')<<"|\n";
   msg_Info()<<"   "<<std::string(77,'-')<<"\n\n";      
 }
 

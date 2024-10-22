@@ -51,10 +51,12 @@ namespace REMNANTS {
     void InitializeKinematicsAndColours();
     bool CheckBeamBreakup();
     void InitBeamAndSoftBlobs(ATOOLS::Blob_List* const blobs, const bool& isrescatter);
-    int  FindInsertPositionForRescatter(ATOOLS::Blob_List* const bloblist, const bool& isrescatter);
+    int  FindInsertPositionForRescatter(ATOOLS::Blob_List* const bloblist,
+					const bool& isrescatter);
 
   public:
-    Remnant_Handler(PDF::ISR_Handler * isr, YFS::YFS_Handler *yfs, BEAM::Beam_Spectra_Handler * beam_handler,
+    Remnant_Handler(PDF::ISR_Handler * isr, YFS::YFS_Handler *yfs,
+		    BEAM::Beam_Spectra_Handler * beam_handler,
                     const std::array<size_t, 2>& tags);
     Remnant_Handler(std::array<std::shared_ptr<Remnant_Base>, 2> remnants,
                     PDF::ISR_Handler*                            isr,

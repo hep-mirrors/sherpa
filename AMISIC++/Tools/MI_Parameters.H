@@ -63,6 +63,7 @@ namespace AMISIC {
 
     double operator()(const std::string& keyword) const;
     double CalculatePT02(const double & s=-1) const;
+    double CalculatePTmin2(const double & s=-1) const;
 
     const evt_type::code  & GetEvtType()          const { return m_evttype; }
     const scale_scheme    & GetScaleRScheme()     const { return m_scaleRscheme; }

@@ -30,13 +30,23 @@ bool Amisic::Initialize(MODEL::Model_Base *const model,
   // Calculate hadronic non-diffractive cross sections, the normalization
   // for the multiple scattering probability.
   ///////////////////////////////////////////////////////////////////////////
-  m_xsecs.Initialize(isr->Flav(0),isr->Flav(1),model);
-  if (mipars->GetEvtType()==evt_type::Perturbative) {
+  m_xsecs.Initialize(isr->Flav(0),isr->Flav(1),model,m_evttype);
+  if (m_evttype==evt_type::Perturbative) {
     ///////////////////////////////////////////////////////////////////////////
     // Initialize the parton-level processes - currently only 2->2 scatters.
     ///////////////////////////////////////////////////////////////////////////
     m_processes.SetXSecCalculator(&m_xsecs);
     m_processes.Initialize(model,nullptr,isr,yfs);
+    /*
+    msg_Out()<<METHOD<<" tests processes:\n"
+	     <<"[1] = "<<m_processes(21.00929,-10.176134,-10.833156,
+				     0.934473,0.927971)<<"\n"
+	     <<"[2] = "<<m_processes(16.31282,-7.595389,-8.717431,
+				     0.876251,0.768405)<<"\n"
+	     <<"[3] = "<<m_processes(51.929848,-17.86502,-34.064828,
+				     0.86798571,0.9971677)<<"\n";
+    exit(1);
+    */
     ///////////////////////////////////////////////////////////////////////////
     // Calculate the ratios of hard and non-diffractive cross sections.
     ///////////////////////////////////////////////////////////////////////////
@@ -64,14 +74,16 @@ bool Amisic::Initialize(MODEL::Model_Base *const model,
     // scatter: it needs the remnants, processes, and the overestimator
     ///////////////////////////////////////////////////////////////////////////
     m_singlecollision.Init(&m_processes,&m_overestimator,&m_pint,&m_mo);
-  } else {
-      p_soft = new NonPerturbative_XSecs(remnant_handler,&m_xsecs);
-      p_soft->SetBeams(isr->GetBeam(0),isr->GetBeam(1));
-      p_soft->CalculateSDependentCrossSections();
-      // Initializing the Single_Collision_Handler which creates the next scatter: it needs
-      // the remnants, processes, and the overestimator
-      m_singlecollision.Init(remnant_handler,p_soft);
-      remnant_handler->SetType(REMNANTS::strat::simple);
+  }
+  else {
+    msg_Out()<<METHOD<<" initialises non-perturbative event generation.\n";
+    p_soft = new NonPerturbative_XSecs(remnant_handler,&m_xsecs);
+    p_soft->SetBeams(isr->GetBeam(0),isr->GetBeam(1));
+    p_soft->CalculateSDependentCrossSections();
+    // Initializing the Single_Collision_Handler which creates the next
+    // scatter: it needs the remnants, processes, and the overestimator
+    m_singlecollision.Init(remnant_handler,p_soft);
+    remnant_handler->SetType(REMNANTS::strat::simple);
   }
   if (m_ana) InitAnalysis();
   m_isFirst   = true;
@@ -93,6 +105,7 @@ void Amisic::InitParametersAndType(PDF::ISR_Handler *const isr,
   // TODO: fix things up for pomerons - another interesting case
   ///////////////////////////////////////////////////////////////////////////
   // Check this one here - I used the version from the b-dependent amisic here.
+  m_evttype    = mipars->GetEvtType();
   m_variable_s = ( isr->Id()!=PDF::isr::bunch_rescatter &&
 		   ( isr->GetBeam(0)->Type() == BEAM::beamspectrum::EPA ||
 		     isr->GetBeam(1)->Type() == BEAM::beamspectrum::EPA ) );
@@ -115,8 +128,8 @@ void Amisic::InitParametersAndType(PDF::ISR_Handler *const isr,
   m_Y     = P.Y();
   size_t nbins = size_t((*mipars)("nS_bins"));
   p_sbins      = (m_variable_s ?
-		  new axis(nbins, 4.*Max(1., sqr(2.*(*mipars)("pt_min"))), m_S,
-			   axis_mode::linear) :
+		  new axis(nbins, 4.*Max(1., sqr((*mipars)("pt_min"))),
+			   (1.+1.e-6)*m_S, axis_mode::log) :
 		  new axis(1, m_S, (1.+1.e-6)*m_S, axis_mode::linear));
 
   size_t nspace = 15;
@@ -161,6 +174,7 @@ bool Amisic::InitMPIs(const double & ptmax,const double & x1,const double & x2,
   // hard event, for the downward evolution and determining a
   // kinematics-dependent impact parameter in SetB().
   ///////////////////////////////////////////////////////////////////////////
+  msg_Out()<<"*** "<<METHOD<<"(first = "<<m_isFirst<<")\n";
   if (m_isFirst) {
     m_isFirst = false;
     if (m_variable_s) UpdateForNewS();
@@ -186,7 +200,8 @@ void Amisic::UpdateForNewS() {
   m_S = P.Abs2();
   m_Y = P.Y();
   m_singlecollision.UpdateSandY(m_S, m_Y);
-  //msg_Out()<<"*** "<<METHOD<<": P = "<<P<<" --> E = "<<sqrt(m_S)<<", y = "<<m_Y<<"\n";
+  msg_Out()<<"*** "<<METHOD<<": P = "<<P<<" --> E = "<<sqrt(m_S)<<", "
+  	   <<"y = "<<m_Y<<"\n";
 }
 
 bool Amisic::InitMinBiasEvent(Blob_List * blobs) {
@@ -203,24 +218,31 @@ bool Amisic::InitMinBiasEvent(Blob_List * blobs) {
   m_isMinBias    = true;
   if (m_variable_s) UpdateForNewS();
   //if (!p_soft) SetFirstB();
-  m_mo.SetKRadius(m_pint.K(m_S));
+  if (m_evttype==evt_type::Perturbative) m_mo.SetKRadius(m_pint.K(m_S));
   return true;
 }
 
 bool Amisic::FirstMinBias(Blob * blob) {
-  if (m_xsecs.XSratio(m_S)<1.) return false;
+  if (m_evttype==evt_type::Perturbative) {
+    if (m_xsecs.XSratio(m_S)<1.) return false;
+  }
   if (!m_singlecollision.FirstMinBiasScatter(blob)) return false;
   m_b    = m_singlecollision.B();
   m_bfac = m_singlecollision.BFac();
+  m_producedSoft = (m_singlecollision.Done());
   blob->UnsetStatus(blob_status::needs_minBias);
+  msg_Out()<<"*** "<<METHOD<<" successful: b = "<<m_b<<", "
+	   <<"soft = "<<m_producedSoft<<".\n";
   return true;
 }
 
 bool Amisic::FirstMPI(Blob * blob) {
+  msg_Out()<<"*** "<<METHOD<<"\n";
   UpdateForNewS();
   if (!m_singlecollision.FirstMPI(blob)) return false;
   m_b    = m_singlecollision.B();
   m_bfac = m_singlecollision.BFac();
+  msg_Out()<<"*** "<<METHOD<<" successful: b = "<<m_b<<"\n";
   return true;
 }
 
@@ -232,7 +254,8 @@ bool Amisic::GenerateScatter(const size_t & type,Blob * blob) {
   // TODO: we may want to think about something for rescatter events -
   //       but this is for future work.
   ///////////////////////////////////////////////////////////////////////////
-  //msg_Out()<<"*** "<<METHOD<<":\n";
+  msg_Out()<<"*** "<<METHOD<<"(type = "<<type<<", blob = |"<<blob<<"| for "
+	   <<"event type = "<<m_evttype<<"):\n";
   if (!m_singlecollision.Done()) {
     bool outcome = false;
     switch (type) {
@@ -247,6 +270,7 @@ bool Amisic::GenerateScatter(const size_t & type,Blob * blob) {
       if (!m_isMinBias) THROW(fatal_error,"Conflict for "+to_string(int(type))+
 			      " vs "+to_string(int(m_isMinBias)));
       outcome = FirstMinBias(blob);
+      msg_Out()<<"---> outcome = "<<outcome<<"\n";
       break;
     default: THROW(fatal_error,"Unknown type: "+to_string(type));
     }
@@ -263,14 +287,16 @@ bool Amisic::GenerateScatter(const size_t & type,Blob * blob) {
 }
 
 void Amisic::AddInformationToBlob(ATOOLS::Blob * blob) {
-  m_pt2     = m_singlecollision.LastPT2();
-  double x1 = 0., x2 = 0.;
-  if ((*blob)["PDFInfo"]!=NULL) {
-    x1 = (*blob)["PDFInfo"]->Get<PDF_Info>().m_x1;
-    x2 = (*blob)["PDFInfo"]->Get<PDF_Info>().m_x2;
+  if (m_evttype==evt_type::Perturbative) {
+    m_pt2     = m_singlecollision.LastPT2();
+    double x1 = 0., x2 = 0.;
+    if ((*blob)["PDFInfo"]!=NULL) {
+      x1 = (*blob)["PDFInfo"]->Get<PDF_Info>().m_x1;
+      x2 = (*blob)["PDFInfo"]->Get<PDF_Info>().m_x2;
+    }
+    blob->SetPosition(m_mo.SelectPositionForScatter(m_b,x1,m_pt2,x2,m_pt2));
+    if (m_ana) AnalysePerturbative(false,blob);
   }
-  blob->SetPosition(m_mo.SelectPositionForScatter(m_b,x1,m_pt2,x2,m_pt2));
-  if (m_ana) AnalysePerturbative(false,blob);
 }
 
 bool Amisic::VetoEvent(const double & scale) const {
@@ -319,9 +345,9 @@ void Amisic::CreateAmplitudeLegs(Cluster_Amplitude * ampl,Blob * blob) {
 void Amisic::CleanUpMinBias() {
   SetMaxEnergies(rpa->gen.PBeam(0)[0],rpa->gen.PBeam(1)[0]);
   SetMaxScale2(sqr(rpa->gen.Ecms()/2.));
+  m_singlecollision.Reset();
   m_isFirst   = true;
   m_isMinBias = false;
-  m_singlecollision.Reset();
 }
 
 void Amisic::Reset() {
@@ -340,7 +366,7 @@ bool Amisic::InitRescatterEvent() {
   // from the already existing scatter.
   // TODO: we may have to check the logical flow here.
   ///////////////////////////////////////////////////////////////////////////
-  msg_Out()<<METHOD<<"\n";
+  msg_Out()<<"*** "<<METHOD<<"\n";
   exit(1);
   if (!m_isFirst) return false;
   m_isFirst   = false;
@@ -357,7 +383,7 @@ void Amisic::SetB(const double & x1,const double & x2,const double & scale) {
   // It is obtained by interpolation from a look-up table in the
   // Interaction_Probability.
   ///////////////////////////////////////////////////////////////////////////
-  msg_Out()<<METHOD<<"\n";
+  msg_Out()<<"*** "<<METHOD<<"\n";
   exit(1);
 }
 
@@ -379,9 +405,11 @@ void Amisic::InitAnalysis() {
 }
 
 void Amisic::FinishAnalysis() {
-  msg_Info()<<METHOD<<": <nscatters> = "
-	    <<double(m_Nscat)/double(m_Nev)<<" vs. "
-	    <<m_xsecs.XSratio()<<".\n";
+  if (m_evttype==evt_type::Perturbative) {
+    msg_Info()<<METHOD<<": <nscatters> = "
+	      <<double(m_Nscat)/double(m_Nev)<<" vs. "
+	      <<m_xsecs.XSratio()<<".\n";
+  }
   Histogram * histo;
   string name;
   for (map<string,Histogram *>::iterator hit=m_histos.begin();

@@ -21,8 +21,8 @@ using namespace ATOOLS;
 
 Interaction_Probability::Interaction_Probability() :
   p_mo(NULL), p_procs(NULL), p_sbins(NULL), p_bbins(NULL),
- p_k(NULL), p_diffxsec(NULL),
-  m_bmax(1.e6), m_smin(1.e99), m_xs_hard(0.), m_xs_test(0.),
+  p_k(NULL), p_norm(NULL), p_diffxsec(NULL),
+  m_pdfnorm(1.), m_bmax(1.e6), m_smin(1.e99), m_xs_hard(0.), m_xs_test(0.),
   m_dynamic(false), m_test(false), m_ana(true) {}
 
 Interaction_Probability::~Interaction_Probability() {
@@ -37,6 +37,7 @@ Initialize(Matter_Overlap * mo,MI_Processes * processes,axis * sbins) {
   if (m_ana) InitAnalysis();
   p_mo       = mo;
   p_procs    = processes;
+  m_pdfnorm  = p_procs->PDFnorm();
   p_sbins    = sbins;
   p_k        = new OneDim_Table(*p_sbins);
   p_norm     = new OneDim_Table(*p_sbins);
@@ -46,7 +47,7 @@ Initialize(Matter_Overlap * mo,MI_Processes * processes,axis * sbins) {
   p_diffxsec = new TwoDim_Table(*p_sbins,*p_bbins);
   FixKandSmin();
   // if (!CheckTables()) THROW(fatal_error,"Mismatch of cross sections.");
-  //OutputTables();
+  OutputTables();
 }
 
 double Interaction_Probability::SelectB(const double & s) {
@@ -59,17 +60,29 @@ void Interaction_Probability::FixKandSmin() {
   PInt_Dyn_Integrand integrand(p_diffxsec);
   Gauss_Integrator   gauss(&integrand);
   for (size_t sbin=0;sbin<p_sbins->m_nbins;sbin++) {
-    double s = p_sbins->x(sbin), k=1.;
-    double xs_test, xs_nd = p_procs->GetXSecs()->XSnd(s);
+    double s     = p_sbins->x(sbin), k=1., xs_test = 0.;
+    double xs_nd = (m_pdfnorm*p_procs->GetXSecs()->XSndNorm()*
+		    p_procs->GetXSecs()->XSnd(s));
+    msg_Out()<<METHOD<<"(E = "<<std::setw(8)<<std::setprecision(6)<<sqrt(s)<<"): "
+    	     <<"xs_ND = "<<std::setw(12)<<std::setprecision(6)<<xs_nd<<", "
+    	     <<"ratio = "<<std::setw(12)<<std::setprecision(6)
+    	     <<p_procs->GetXSecs()->XSratio(s)<<".\n";
     if (s<=1. || p_procs->GetXSecs()->XSratio(s)<=1.) continue;
     integrand.SetS(s);
     do {
       p_mo->SetKRadius(k);
       InitializeTable(sbin);
       xs_test = gauss.Integrate(0.,p_mo->Bmax(),1.e-3);
+      if (xs_test/xs_nd<1.e-3) { k = 0.; break; }
+      msg_Out()<<"   * k = "<<std::setw(8)<<std::setprecision(6)<<k<<", "
+	       <<"xs_test = "<<std::setw(12)<<std::setprecision(6)<<xs_test<<" vs "
+	       <<"xs_ND = "<<std::setw(12)<<std::setprecision(6)<<xs_nd<<".\n";
       k *= Min(5., Max(0.2, sqrt(xs_nd/xs_test)));
     } while (dabs(1.-xs_test/xs_nd)>0.02);
     p_k->Fill(sbin,k);
+    msg_Out()<<METHOD<<"(sbin = "<<sbin<<", s = "<<s<<", "
+    	     <<"ratio = "<<p_procs->GetXSecs()->XSratio(s)<<"): "
+    	     <<"k = "<<k<<".\n";
     if (s<m_smin) m_smin = s;
   }
   PInt_Norm_Integrand Nintegrand(p_diffxsec);
@@ -79,7 +92,7 @@ void Interaction_Probability::FixKandSmin() {
     if (s<=1. || p_procs->GetXSecs()->XSratio(s)<=1.) continue;
     Nintegrand.SetS(s);
     p_mo->SetKRadius(p_k->Value(sbin));
-    InitializeTable(sbin);
+    InitializeTable(sbin,true);
     p_norm->Fill(sbin,Ngauss.Integrate(0.,p_mo->Bmax(),1.e-3));
   }
 }
@@ -88,17 +101,28 @@ void Interaction_Probability::InitializeTables() {
   for (size_t sbin=0;sbin<p_sbins->m_nbins;sbin++) InitializeTable(sbin);
 }
 
-void Interaction_Probability::InitializeTable(const size_t & sbin) {
+void Interaction_Probability::
+InitializeTable(const size_t & sbin,const bool & out) {
   MI_Integrator * integrator = p_procs->GetIntegrator();
   double s  = p_sbins->x(sbin), prev = 0., xsfix = -1.;
   if (!p_mo->IsDynamic()) xsfix = (*integrator)(s,nullptr,0.);
+  if (out) msg_Out()<<METHOD<<"(s = "<<s<<", sbin = "<<sbin<<", "
+  		    <<"dyn = "<<p_mo->IsDynamic()<<"): "
+  		    <<"xsfix = "<<xsfix<<"\n";
   for (size_t bbin=0;bbin<p_bbins->m_nbins;bbin++) {
     double b  = p_bbins->x(bbin);
-    double xs = ( p_mo->IsDynamic() ?
-		  (*integrator)(s,p_mo,b) :
-		  xsfix * (*p_mo)(b) );
+    double xs = m_pdfnorm * ( p_mo->IsDynamic() ?
+			      (*integrator)(s,p_mo,b) :
+			      xsfix * (*p_mo)(b) );
     p_diffxsec->Fill(sbin,bbin,xs);
-  if (xs/prev < 1.e-6) {
+    if (out) msg_Out()<<"     mo(b = "<<b<<") = "<<(*p_mo)(b)<<", "
+    		      <<"xs = "<<xs<<", stop = "<<(xs/prev)<<" --> "
+    		      <<(*p_diffxsec)(s,b)<<"\n"
+    		      <<"        from norm = "<<p_mo->Norm()<<", "
+    		      <<"k = "<<p_mo->KRadius()<<", radii = {"
+    		      <<p_mo->Radius2(0)<<", "<<p_mo->Radius2(1)<<", " 
+    		      <<p_mo->Radius2(2)<<", "<<p_mo->Radius2(3)<<"}\n"; 
+    if (prev!=0. && xs/prev < 1.e-6) {
       for (size_t i=bbin+1;i<p_bbins->m_nbins;i++)
 	p_diffxsec->Fill(sbin,i,0.);
       break;
@@ -133,24 +157,24 @@ void Interaction_Probability::OutputTables() {
 	    <<"   | "<<METHOD<<" look-up tables and values:          |\n"
 	    <<"   | "<<std::setw(15)<<"E_{c.m.} [GeV]"<<" | "
 	    <<std::setw(6)<<"b [fm]"<<" | "
-	    <<std::setw(16)<<"xs_hard/xs_ND"<<" | "
-	    <<std::setw(10)<<"k"<<" | "
+	    <<std::setw(14)<<"xs_hard/xs_ND"<<" | "
+	    <<std::setw(12)<<"k"<<" | "
 	    <<std::setw(14)<<"b*dP_int(b)"<<" |\n";
   for (size_t i=0;i<p_sbins->m_nbins;i++) {
     double s       = p_sbins->x(i);
     double xsratio = p_procs->XSratio(s);
     msg_Info()<<"   | "<<std::setprecision(6)<<std::setw(15)<<sqrt(s)<<" | "
 	      <<std::string(6,' ')<<" | "
-	      <<std::setprecision(6)<<std::setw(16)<<xsratio<<" | "
-	      <<std::setprecision(6)<<std::setw(10)<<p_k->Value(i)<<" | "
+	      <<std::setprecision(6)<<std::setw(14)<<xsratio<<" | "
+	      <<std::setprecision(6)<<std::setw(12)<<p_k->Value(i)<<" | "
 	      <<std::string(14,' ')<<" |\n";
     for (size_t j=0;j<20;j++) {
       double b = p_mo->Bmax()*double(j)/40.;
       msg_Info()<<"   | "<<std::string(15,' ')<<" | "
 		<<std::setprecision(3)<<std::setw(6)
 		<<(b*rpa->hBar()*rpa->c()*1.e12)<<" | "
-		<<std::string(16,' ')<<" | "
-		<<std::string(10,' ')<<" | "
+		<<std::string(14,' ')<<" | "
+		<<std::string(12,' ')<<" | "
 		<<std::setprecision(6)<<std::setw(14)
 		<<(b*(*this)(s,b))<<" |\n";
     }
@@ -162,7 +186,7 @@ void Interaction_Probability::OutputTables() {
 	    <<(m_xs_hard*rpa->Picobarn()/1.e9)<<" mb "
 	    <<" (without overlap) vs. "<<std::setprecision(5)<<std::setw(6)
 	    <<(m_xs_test*rpa->Picobarn()/1.e9)<<" (with overlap) mb.      |\n"
-	    <<"   "<<std::string(77,'-')<<"\n\n";
+	    <<"   "<<std::string(77,'-')<<"\n\n\n";
 }
 
 void Interaction_Probability::InitAnalysis() {

@@ -57,10 +57,11 @@ namespace AMISIC {
     NonPerturbative_XSecs    * p_soft;
     Single_Collision_Handler m_singlecollision;
 
-    mitype m_type;
-    bool         m_variable_s, m_variable_b;
-    axis       * p_sbins;
-    double       m_sigmaND_norm, m_b, m_bfac, m_S, m_Y, m_pt2;
+    evt_type::code m_evttype;
+    mitype         m_type;
+    bool           m_variable_s, m_variable_b;
+    axis         * p_sbins;
+    double         m_sigmaND_norm, m_b, m_bfac, m_S, m_Y, m_pt2;
 
     bool         m_isMinBias, m_isFirst, m_producedSoft;
     double       m_f;

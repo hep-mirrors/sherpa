@@ -76,6 +76,8 @@ bool Multiple_Interactions::CheckForMPIs() {
   if (p_bloblist->empty()) THROW(fatal_error,"Empty bloblist - this is odd.");
   if (!m_newevent[0]) return false;
   Blob * blob = p_bloblist->FindFirst(btp::Signal_Process);
+  msg_Out()<<"=== "<<METHOD<<"("<<(blob && !blob->Has(blob_status::needs_signal))
+  	   <<")\n";
   return (blob && !blob->Has(blob_status::needs_signal));
 }
 
@@ -176,8 +178,8 @@ ATOOLS::Return_Value::code Multiple_Interactions::InitRescatter() {
   // scatter blob into soft collision blob, add required information to the
   // latter, delete the former.  If no scatter found, delete soft blob.
   ////////////////////////////////////////////////////////////////////////////
-  Blob * soft = p_bloblist->FindLast(ATOOLS::btp::Soft_Collision);
-  if (p_activeMI->GenerateHardProcess(MI_Handler::typeID::rescatter,soft)) {
+  Blob * rescatter = p_bloblist->FindLast(ATOOLS::btp::Soft_Collision);
+  if (p_activeMI->GenerateHardProcess(MI_Handler::typeID::rescatter,rescatter)) {
     if (m_bbr_veto) return Return_Value::New_Event;
     m_newevent[0] = m_newevent[1] = false;
     return Return_Value::Success;
@@ -185,7 +187,7 @@ ATOOLS::Return_Value::code Multiple_Interactions::InitRescatter() {
   ////////////////////////////////////////////////////////////////////////////
   // No meaningful first scatter in MinBias event produced - ask for new event
   ////////////////////////////////////////////////////////////////////////////
-  p_bloblist->Delete(soft);
+  p_bloblist->Delete(rescatter);
   return Return_Value::Nothing;
 }
 
@@ -225,6 +227,7 @@ void Multiple_Interactions::SwitchPerturbativeInputsToMIs() {
 }
 
 Return_Value::code Multiple_Interactions::Treat(Blob_List *bloblist) {
+  msg_Out()<<"=== "<<METHOD<<" =================================\n";
   ////////////////////////////////////////////////////////////////////////////
   // Check for - and if necessary initialise - Minimum Bias, bunch
   // rescattering, and MPIs.  Return nothing if there is no suitable
@@ -259,21 +262,21 @@ Return_Value::code Multiple_Interactions::Treat(Blob_List *bloblist) {
   // Try to produce a hard scattering blob and test if this works.
   ////////////////////////////////////////////////////////////////////////////
   //<<Blob::Counter()<<"/"<<Particle::Counter()<<".\n";
-  Blob * blob = new Blob();
-  if (p_activeMI->GenerateHardProcess(MI_Handler::typeID::MPI,blob)) {
+  Blob * mpi = new Blob();
+  if (p_activeMI->GenerateHardProcess(MI_Handler::typeID::MPI,mpi)) {
     //////////////////////////////////////////////////////////////////////////
     // Check that the partons can be extracted from remnant - mainly a
     // confirmation that the remnant has enough energy to accommodate
     // the extra parton.
     //////////////////////////////////////////////////////////////////////////
-    if (!TestHardScatter(blob)) {
-      delete blob;
+    if (!TestHardScatter(mpi)) {
+      delete mpi;
       return Return_Value::Success;
       return Return_Value::Retry_Event;
     }
     if (p_activeMI->Id()==PDF::isr::bunch_rescatter)
-      blob->AddStatus(blob_status::needs_beamRescatter);
-    p_bloblist->push_back(blob);
+      mpi->AddStatus(blob_status::needs_beamRescatter);
+    p_bloblist->push_back(mpi);
     return Return_Value::Success;
   }
   //////////////////////////////////////////////////////////////////////////
@@ -281,7 +284,7 @@ Return_Value::code Multiple_Interactions::Treat(Blob_List *bloblist) {
   // we can stop here.
   //////////////////////////////////////////////////////////////////////////
   else if (p_activeMI->Done()) {
-    delete blob;
+    delete mpi;
     return Return_Value::Nothing;
   }
   //////////////////////////////////////////////////////////////////////////
@@ -366,6 +369,7 @@ void Multiple_Interactions::Finish(const std::string &resultpath) {}
 
 void Multiple_Interactions::CleanUp(const size_t& mode)
 {
+  msg_Out()<<"=== "<<METHOD<<"("<<int(mode)<<")\n";
   for (MI_Handler_Map::iterator mihit=p_mihandlers->begin();
        mihit!=p_mihandlers->end();mihit++) {
     mihit->second->CleanUp();
@@ -373,4 +377,5 @@ void Multiple_Interactions::CleanUp(const size_t& mode)
   m_vetoed      = false;
   m_newevent[0] = m_newevent[1] = true;
   p_activeMI    = NULL;
+  msg_Out()<<"================================================\n\n";
 }

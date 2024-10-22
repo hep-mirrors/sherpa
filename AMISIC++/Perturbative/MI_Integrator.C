@@ -61,7 +61,7 @@ operator()(const double & s,Matter_Overlap * mo,const double & b) {
   ////////////////////////////////////////////////////////////////////////////
   if (4.*m_pt2min>=(1.-1.e-6)*s) return 0.;
   double invpt2min = 1./m_pt2min, invpt2max = 4./s;
-  double pt2vol    = invpt2min-invpt2max;
+  double pt2vol    = invpt2min-invpt2max; // s/4.-m_pt2min;  //
   double sum  = 0., sum2 = 0., xsec = 0., uncert = 1.e12, xs;
   double mowt = mo ? (mo->IsDynamic() ? 0. : (*mo)(b)) : 1.;
   unsigned int sumtrials = 0.;
@@ -69,7 +69,7 @@ operator()(const double & s,Matter_Overlap * mo,const double & b) {
     ////////////////////////////////////////////////////////////////////////
     // Select pt^2 according to 1/pt^4 and calculate the Jacobean
     ////////////////////////////////////////////////////////////////////////
-    m_pt2  = 1./(invpt2min-ran->Get()*pt2vol);
+    m_pt2  = 1./(invpt2min-ran->Get()*pt2vol); // m_pt2min + ran->Get()*pt2vol;  //
     ////////////////////////////////////////////////////////////////////////
     // Fix the rest of the kinematics: rapidities, x's, Mandelstams. 
     ////////////////////////////////////////////////////////////////////////
@@ -90,6 +90,10 @@ operator()(const double & s,Matter_Overlap * mo,const double & b) {
   } while (xsec==0 || (uncert/xsec>5.e-3));
   m_xsec   = sum/double(sumtrials);
   m_uncert = sqrt(sum2 - sqr(m_xsec))/double(sumtrials);
+  msg_Out()<<"*** "<<METHOD<<"(E = "<<std::setprecision(6)<<sqrt(s)<<", mo = "<<mowt<<") "
+	   <<"--> xs = "<<(m_xsec*rpa->Picobarn())
+	   <<" ["<<(pt2vol*m_yvol*rpa->Picobarn())<<"] pb "
+	   <<"+/- "<<(100.*m_uncert/m_xsec)<<"%.\n";
   return m_xsec;
 }
 
@@ -104,7 +108,7 @@ MakeKinematics(const double & pt2,const double & s) {
   ////////////////////////////////////////////////////////////////////////////
   m_pt2     = pt2;
   double xt = sqrt(4.*m_pt2/s);
-  if (xt>1.) return false;
+  if (xt>1.) return false; 
   //////////////////////////////////////////////////////////////////////////
   // Generate two trial rapidities and keep the integration volume.
   ////////////////////////////////////////////////////////////////////////////
@@ -125,7 +129,7 @@ MakeKinematics(const double & pt2,const double & s) {
   if (m_x[0]<=m_xmin[0] || m_x[0]>=m_xmax[0] ||
       m_x[1]<=m_xmin[1] || m_x[1]>=m_xmax[1] ||
       m_x[0]*m_x[1]<=xt*xt) return false;
-  if (m_x[0]*sqrt(s)/2.<=m_Emin || m_x[1]*sqrt(s)/2.<=m_Emin) return false;
+  // if (m_x[0]*sqrt(s)/2.<=m_Emin || m_x[1]*sqrt(s)/2.<=m_Emin) return false;
   ////////////////////////////////////////////////////////////////////////////
   // Mandelstams for the exact matrix element.
   ////////////////////////////////////////////////////////////////////////////
@@ -133,5 +137,11 @@ MakeKinematics(const double & pt2,const double & s) {
   m_shat = m_x[0] * m_x[1] * s;
   m_that = -0.5 * m_shat * (1.-m_cost);
   m_uhat = -0.5 * m_shat * (1.+m_cost);
+  //if (m_shat>50.) {
+  //  msg_Out()<<METHOD<<std::setprecision(8)
+  //	     <<": s = "<<m_shat<<", t = "<<m_that<<", u = "<<m_uhat<<", "
+  //	     <<"x1 = "<<m_x[0]<<", x2 = "<<m_x[1]<<"\n";
+  //  exit(1);
+  //}
   return true;
 }
