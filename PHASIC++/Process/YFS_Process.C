@@ -210,6 +210,7 @@ void YFS_Process::FindResonances() {
   for (size_t k = 0; k < vlist.size(); ++k) msg_Out() << vlist[k] << endl;
   restab_map[this->Name()] = vlist;
   p_yfs->p_dipoles->SetProcResMap(restab_map);
+  if(p_yfs->NLO()) p_yfs->NLO()->p_nlodipoles->SetProcResMap(restab_map);
 }
 
 void YFS_Process::OneRealEvent(){
