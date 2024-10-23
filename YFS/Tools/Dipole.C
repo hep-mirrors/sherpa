@@ -671,6 +671,16 @@ double Dipole::Hard(const Vec4D &k1, const Vec4D &k2){
   return 0;
 }
 
+double Dipole::xi(const double &alp, const double &beta, const double &gamma){
+  return 0.25*sqr(1.-alp)*(sqr(1.-beta)+sqr(1.-gamma));
+}
+
+double Dipole::xi(const double &alp, const double &a1, const double &b1, const double &a2, const double &b2){
+  return 0.125*sqr(1.-alp)*(sqr(1.-a1)+sqr(1.-b1))*(sqr(1.-a2)+sqr(1.-b2));
+}
+
+
+
 void Dipole::Clean(){
   m_masses.clear();
   m_charges.clear();
