@@ -204,6 +204,7 @@ void Dipole::Boost() {
     m_ranPhi = ran->Get()*2.*M_PI;
     Vec4D qqk = m_momenta[0] + m_momenta[1] + m_photonSum;
     p_Pboost = new Poincare(qqk);
+    m_eikmomentum = m_momenta;
     for (size_t i = 0; i < 2; ++i)
     {
       Boost(m_momenta[i]);
@@ -212,17 +213,13 @@ void Dipole::Boost() {
         Boost(m_ghost[i]);
       }
     }
-    m_eikmomentum = m_momenta;
     m_photonSum*=0.;
     // m_dipolePhotonsEEX.clear();
     for (auto &k : m_dipolePhotons) {
-      // Boost(k);
-      // p_Pboost->Boost(k);
+      m_dipolePhotonsEEX.push_back(k);
       Boost(k);
       m_photonSum+=k;
-      m_dipolePhotonsEEX.push_back(k);
     }
-    // if (p_rotate) delete p_rotate;
     if (p_Pboost) delete p_Pboost;
   }
 }
@@ -304,12 +301,12 @@ bool Dipole::BoostNLO() {
     // PHASIC::CE.Isotropic2Momenta(rref, m1*m1, m2*m2,m_momenta[0], m_momenta[1],ran->Get(), ran->Get());
     Vec4D qqk = m_momenta[0] + m_momenta[1] + m_photonSum;
     p_Pboost = new Poincare(qqk);
-    Vec4D ref = m_bornmomenta[1];
+    Vec4D ref = m_bornmomenta[0];
     
     boost.Boost(ref);
     Poincare rot(ref, Vec4D(0,0,0,1));
-    // SetBoost(boost);
-    // SetRotate(rot);
+    SetBoost(boost);
+    SetRotate(rot);
     for (size_t i = 0; i < 2; ++i)
     {
       Boost(m_momenta[i]);
@@ -321,7 +318,6 @@ bool Dipole::BoostNLO() {
     m_photonSum*=0.;
     for (auto &k : m_dipolePhotons) {
       Boost(k);
-      
       // p_rotate.Rotate(k);
       // p_boost.BoostBack(k);
       m_photonSum+=k;
@@ -454,10 +450,14 @@ double Dipole::EEX(const int betaorder){
   // msg_Out()<<"================================="<<std::endl;
   if(m_dipolePhotonsEEX.size()==0) return real;
   CalculateGamma();
+  Poincare boost(m_eikmomentum[0]+m_eikmomentum[1]);
+  boost.Boost(m_eikmomentum[0]);
+  boost.Boost(m_eikmomentum[1]);
   m_betaorder = betaorder;
   if(betaorder >= 1 && Type()!=dipoletype::ifi) {
-    for(auto &k: m_dipolePhotons){
+    for(auto k: m_dipolePhotons){
     // msg_Out()<<"Photon Momentum is = "<<k<<std::endl;
+      boost.Boost(k);
      test = Beta1(k)/Eikonal(k);
      real+=test;
      // real += Beta1(k)/Eikonal(k);
