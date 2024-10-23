@@ -282,10 +282,6 @@ double NLO_Base::CalculateReal(Vec4D k, int fsrcount) {
 		m_histograms2d["IFI_EIKONAL"]->Insert(k.Y(),k.PPerp(), p_nlodipoles->CalculateRealSubIF(k));
 		m_histograms2d["REAL_SUB"]->Insert((p[0]+p[1]).Mass(), k.E(), tot/m_born);
 	}
-	// msg_Out()<<"Beta11 for k is = "<<tot/m_born<<endl;
-	// flux = (m_plab[2]+m_plab[3]+kk).Abs2()/(m_plab[2]+m_plab[3]).Abs2();
-	// if((m_plab[2]+m_plab[3]).Abs2() < m_s/2) flux*=flux;
-	// if(!fsrcount) return tot;
 	return tot;
 }
 
