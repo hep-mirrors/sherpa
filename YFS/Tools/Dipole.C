@@ -290,6 +290,8 @@ bool Dipole::BoostNLO() {
     m_ranTheta = acos(1.-2.*ran->Get());
     m_ranPhi = ran->Get()*2.*M_PI;
     Vec4D Q = m_bornmomenta[0]+m_bornmomenta[1];
+    Poincare boost(m_bornmomenta[0]+m_bornmomenta[1]);
+    // boost.Boost(m_photonSum);
     double x = 1./(1-m_photonSum.E());
     double y = 1./(1. + m_photonSum.E()/m_photonscale);
     double sprim =(Q).Abs2()*y;
@@ -302,22 +304,26 @@ bool Dipole::BoostNLO() {
     // PHASIC::CE.Isotropic2Momenta(rref, m1*m1, m2*m2,m_momenta[0], m_momenta[1],ran->Get(), ran->Get());
     Vec4D qqk = m_momenta[0] + m_momenta[1] + m_photonSum;
     p_Pboost = new Poincare(qqk);
-    Vec4D ref = m_bornmomenta[0];
-    Poincare boost(m_bornmomenta[0]+m_bornmomenta[1]);
+    Vec4D ref = m_bornmomenta[1];
     
     boost.Boost(ref);
     Poincare rot(ref, Vec4D(0,0,0,1));
-    SetBoost(boost);
+    // SetBoost(boost);
     // SetRotate(rot);
     for (size_t i = 0; i < 2; ++i)
     {
       Boost(m_momenta[i]);
+      // p_boost.Boost(m_momenta[i]);
+      // p_rotate.Rotate(m_momenta[i]);
       m_newmomenta[i]=m_momenta[i];
     }
-    m_eikmomentum = m_momenta;
+    // m_eikmomentum = m_momenta;
     m_photonSum*=0.;
     for (auto &k : m_dipolePhotons) {
       Boost(k);
+      
+      // p_rotate.Rotate(k);
+      // p_boost.BoostBack(k);
       m_photonSum+=k;
     }
     if (p_Pboost) delete p_Pboost;
@@ -665,77 +671,6 @@ double Dipole::Hard(const Vec4D &k1, const Vec4D &k2){
   return 0;
 }
 
-double Dipole::Hard(const Vec4D &k1, const Vec4D &k2, const Vec4D &k3){
-  double p1p2 = m_eikmomentum[0]*m_eikmomentum[1];
-  
-  double a1 = k1*m_eikmomentum[0]/p1p2;
-  double a2 = k2*m_eikmomentum[0]/p1p2;
-  double a3 = k3*m_eikmomentum[0]/p1p2;
-  
-  double b1 = k1*m_eikmomentum[1]/p1p2;
-  double b2 = k2*m_eikmomentum[1]/p1p2;
-  double b3 = k3*m_eikmomentum[1]/p1p2;
-  
-  double eta1 = a1/(1+a1+b1);
-  double eta2 = a2/(1+a2+b2);
-  double eta3 = a3/(1+a3+b3);
-
-  double zeta1 = b1/(1+a1+b1);
-  double zeta2 = b2/(1+a2+b2);
-  double zeta3 = b3/(1+a3+b3);
-
-  double etap1 = eta1/(1+eta2);
-  double zetap1 = zeta1/(1+zeta2);
-
-  double etap2 = eta2/(1+eta1);;
-  double zetap2 = zeta2/(1+zeta1);
-
-  double etap3  = eta3/(1+eta1+eta3);
-  double zetap3 = zeta3/(1+zeta1+zeta2);
-
-  double ap1 = a1/(1.-a2);
-  double bp1 = b1/(1.-b2);
-
-  double ap2 = a2/(1.-a1);
-  double bp2 = b2/(1.-b1);
-
-  double ap3 = a3/(1-a1-a2);
-  double bp3 = b3/(1-b1-b2);
-  
-  double v1 = a1+b1;
-  double v2 = a2+b2;
-  double hard;
-  if (Type() == dipoletype::initial) {
-    if(v1 > v2){
-      hard = xi(a1,ap2,bp2,ap3,bp3) + xi(b1,ap2,bp2,ap3,bp3);
-    } 
-    else{
-      hard = xi(a2,ap1,bp1,ap3,bp3) + xi(b2,ap1,bp1,ap3,bp3);
-    }
-    return Eikonal(k1)*Eikonal(k2)*Eikonal(k3)*hard;
-  }
-  else if (Type() == dipoletype::final) {
-    // return 0; // not implemented as << 0
-    if(v1 > v2){
-      hard = xi(eta1,etap2,zetap2,etap3,zetap3) + xi(zeta1,etap2,zetap2,etap3,zetap3);
-    }
-    else{
-      hard = xi(eta2,etap1,zetap1,etap3,zetap3) + xi(zeta2,etap1,zetap1,etap3,zetap3);
-    }
-    return Eikonal(k1)*Eikonal(k2)*Eikonal(k3)*hard;
-  }
-  return 0;
-}
-
-
-double Dipole::xi(const double &alp, const double &beta, const double &gamma){
-  return 0.25*sqr(1.-alp)*(sqr(1.-beta)+sqr(1.-gamma));
-}
-
-double Dipole::xi(const double &alp, const double &a1, const double &b1, const double &a2, const double &b2){
-  return 0.125*sqr(1.-alp)*(sqr(1.-a1)+sqr(1.-b1))*(sqr(1.-a2)+sqr(1.-b2));
-}
-
 void Dipole::Clean(){
   m_masses.clear();
   m_charges.clear();
@@ -745,14 +680,10 @@ void Dipole::Clean(){
   m_oldmomenta.clear();
   m_newmomenta.clear();
   m_bornmomenta.clear();
-  m_eikmomentum.clear();
   m_beams.clear();
   m_ghost.clear();
   m_dipolePhotons.clear();
-  m_dipolePhotonsEEX.clear();
   m_photonSum*=0;
-  m_theta.clear();
-  m_Q.clear();
 }
 
 bool Dipole::IsDecayAllowed(){
