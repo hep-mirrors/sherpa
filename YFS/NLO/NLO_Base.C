@@ -198,16 +198,13 @@ double NLO_Base::CalculateReal(Vec4D k, int fsrcount) {
 	m_evts+=1;
 	p_nlodipoles->MakeDipoles(m_flavs,m_plab,m_plab);
 	fluxtype = p_nlodipoles->WhichResonant(k);
-  if(fluxtype==dipoletype::final){
-  // if(fsrcount){
+  // if(fluxtype==dipoletype::final){
+  if(fsrcount){
   	if(!HasFSR()) msg_Error()<<"Wrong dipole type in "<<METHOD<<endl;
   	for (Dipole_Vector::iterator Dip = p_nlodipoles->GetDipoleFF()->begin();
        Dip != p_nlodipoles->GetDipoleFF()->end(); ++Dip) {
   		 double scalek = p_fsr->ScalePhoton(k);
   		 Dip->SetPhotonScale(scalek);
-  		 // k = p_fsr->ScalePhoton(fsrcount);
-  		 Dip->SetRotate(p_dipoles->GetDipoleFF()[0][0].p_rotate);
-  		 Dip->SetBoost(p_dipoles->GetDipoleFF()[0][0].p_boost);
   		 Dip->AddPhotonToDipole(k);
   		 if(!Dip->BoostNLO()) return 0;
   		 int i(0);
@@ -222,7 +219,7 @@ double NLO_Base::CalculateReal(Vec4D k, int fsrcount) {
  		MapMomenta(p,k);
  	}
  	p.push_back(k);
- 	if(fluxtype==dipoletype::final) MapInitial(p);
+ 	if(fsrcount) MapInitial(p);
  	Vec4D_Vector pp = p;
  	pp.pop_back();
 	p_nlodipoles->MakeDipolesII(m_flavs,pp,m_plab);
@@ -234,7 +231,9 @@ double NLO_Base::CalculateReal(Vec4D k, int fsrcount) {
 	else flux = p_dipoles->CalculateFlux(kk);
 	double tot,rcoll;
 	double subloc = p_nlodipoles->CalculateRealSub(k);
-	double subb   = p_dipoles->CalculateRealSubEEX(k);
+	double subb;
+	if(fsrcount) subb = p_dipoles->CalculateRealSubEEX(k);
+	else subb = p_dipoles->CalculateRealSubEEX(kk);
 	if(IsZero(subb)) return 0;
 	if(!CheckMomentumConservation(p)) {
 		if(m_isr_debug || m_fsr_debug){
