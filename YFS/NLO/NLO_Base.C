@@ -148,6 +148,7 @@ double NLO_Base::CalculateReal() {
 	double real(0);
 	m_ksum*=0;
 	for(auto &k: m_FSRPhotons) m_ksum += k;
+	for(auto &k: m_ISRPhotons) m_ksum += k;
 	// msg->SetPrecision(16);
 	double sp = p_dipoles->GetDipoleII()->Sprime();
 	if(m_coll_real) return p_dipoles->CalculateEEX()*m_born;
@@ -197,17 +198,16 @@ double NLO_Base::CalculateReal(Vec4D k, int fsrcount) {
 	m_evts+=1;
 	p_nlodipoles->MakeDipoles(m_flavs,m_plab,m_plab);
 	fluxtype = p_nlodipoles->WhichResonant(k);
-  // if(fluxtype==dipoletype::final){
-  if(fsrcount){
+  if(fluxtype==dipoletype::final){
+  // if(fsrcount){
   	if(!HasFSR()) msg_Error()<<"Wrong dipole type in "<<METHOD<<endl;
   	for (Dipole_Vector::iterator Dip = p_nlodipoles->GetDipoleFF()->begin();
        Dip != p_nlodipoles->GetDipoleFF()->end(); ++Dip) {
   		 double scalek = p_fsr->ScalePhoton(k);
   		 Dip->SetPhotonScale(scalek);
   		 // k = p_fsr->ScalePhoton(fsrcount);
-  		 Dip->m_kcorr = k-m_ksum;
   		 Dip->SetRotate(p_dipoles->GetDipoleFF()[0][0].p_rotate);
-  		 // Dip->SetBoost(p_dipoles->GetDipoleFF()[0][0].p_boost);
+  		 Dip->SetBoost(p_dipoles->GetDipoleFF()[0][0].p_boost);
   		 Dip->AddPhotonToDipole(k);
   		 if(!Dip->BoostNLO()) return 0;
   		 int i(0);
@@ -216,21 +216,13 @@ double NLO_Base::CalculateReal(Vec4D k, int fsrcount) {
       	i++;
     	}
     	k = Dip->m_dipolePhotons[0];
-    	Vec4D incoming = p[0]+p[1];
-    	Vec4D outgoing;
-    	for (int i = 2; i < p.size(); ++i)
-    	{
-    		outgoing+=p[i];
-    		if(p[i].E()<0) PRINT_VAR(p[i]);
-    	}
   	}
   }
  	else {
  		MapMomenta(p,k);
  	}
-
  	p.push_back(k);
- 	if(fsrcount) MapInitial(p);
+ 	if(fluxtype==dipoletype::final) MapInitial(p);
  	Vec4D_Vector pp = p;
  	pp.pop_back();
 	p_nlodipoles->MakeDipolesII(m_flavs,pp,m_plab);
@@ -242,7 +234,7 @@ double NLO_Base::CalculateReal(Vec4D k, int fsrcount) {
 	else flux = p_dipoles->CalculateFlux(kk);
 	double tot,rcoll;
 	double subloc = p_nlodipoles->CalculateRealSub(k);
-	double subb   = p_dipoles->CalculateRealSubEEX(k);
+	double subb   = p_dipoles->CalculateRealSubEEX(kk);
 	if(IsZero(subb)) return 0;
 	if(!CheckMomentumConservation(p)) {
 		if(m_isr_debug || m_fsr_debug){
@@ -268,6 +260,7 @@ double NLO_Base::CalculateReal(Vec4D k, int fsrcount) {
 		return 0;
 	}
 	m_recola_evts+=1;
+	// if(!fsrcount) r*=flux;
 	// PRINT_VAR(m_born);
 	if(m_submode==submode::local) tot =  (r*flux-subloc*m_born)/subloc;
 	else if(m_submode==submode::global) tot =  (r*flux-subloc*m_born)/subb;
@@ -290,8 +283,10 @@ double NLO_Base::CalculateReal(Vec4D k, int fsrcount) {
 		m_histograms2d["REAL_SUB"]->Insert((p[0]+p[1]).Mass(), k.E(), tot/m_born);
 	}
 	// msg_Out()<<"Beta11 for k is = "<<tot/m_born<<endl;
-
-	return tot;// / flux;
+	// flux = (m_plab[2]+m_plab[3]+kk).Abs2()/(m_plab[2]+m_plab[3]).Abs2();
+	// if((m_plab[2]+m_plab[3]).Abs2() < m_s/2) flux*=flux;
+	// if(!fsrcount) return tot;
+	return tot;
 }
 
 void NLO_Base::RandomRotate(Vec4D &p){
@@ -312,7 +307,7 @@ void NLO_Base::MapMomenta(Vec4D_Vector &p, Vec4D &k) {
   double t = (m_plab[0]-m_plab[2]).Abs2();
   m_ranTheta = acos(1.+2.*t/s);
 	m_ranPhi = ran->Get()*2.*M_PI;
-	// Poincare boostLab(p[0] + p[1]);
+	Poincare boostLab(p[0] + p[1]);
 	for (int i = 2; i < p.size(); ++i)
 	{
 		Q += p[i];
@@ -322,12 +317,12 @@ void NLO_Base::MapMomenta(Vec4D_Vector &p, Vec4D &k) {
 	Poincare boostQ(Q);
   Poincare pRot(m_bornMomenta[0], Vec4D(0., 0., 0., 1.));
 	for (int i = 0; i < p.size(); ++i) {
-		pRot.Rotate(p[i]);
 		boostQ.Boost(p[i]);
+		pRot.Rotate(p[i]);
 		// RandomRotate(p[i]);
 	}
-	// pRot.Rotate(k);
 	boostQ.Boost(k);
+	pRot.Rotate(k);
 	// RandomRotate(k);
 	double qx(0), qy(0), qz(0);
 	for (int i = 2; i < p.size(); ++i)
@@ -367,14 +362,13 @@ void NLO_Base::MapMomenta(Vec4D_Vector &p, Vec4D &k) {
   double E2 = lamCM*sqrt(1+m2*m2/sqr(lamCM));
  	p[0] = {E1, 0, 0, sign_z*lamCM};
   p[1] = {E2, 0, 0, -sign_z*lamCM};
-	Poincare boostLab(m_bornMomenta[0] + m_bornMomenta[1]);
   Poincare pRot2(m_bornMomenta[0], Vec4D(0., 	0., 0, 1.));
 	for (int i = 0; i < p.size(); ++i)
 	{
-		pRot2.Rotate(p[i]);
+		pRot2.RotateBack(p[i]);
 		boostLab.BoostBack(p[i]);
 	}
-	pRot2.Rotate(k);
+	pRot2.RotateBack(k);
 	boostLab.BoostBack(k);
 }
 
@@ -399,7 +393,7 @@ void NLO_Base::MapInitial(Vec4D_Vector &p){
 	for (int i = 0; i < 2; ++i)
 	{
 		if(i==0) pRot = Poincare(p[i], Vec4D(0., 0., 0., 1.));
-		// pRot.RotateBack(p[i]);
+		// pRot.Rotate(p[i]);
 		boostLab.BoostBack(p[i]);
 		// pRot2.Rotate(p[i]);
 	}
@@ -445,6 +439,10 @@ bool NLO_Base::CheckMomentumConservation(Vec4D_Vector p){
   Vec4D outgoing;
   for (int i = 2; i < p.size(); ++i)
   {
+    if(p[i].E() < 0 || IsBad(p[i].E())) {
+    	msg_Error()<<"Energy less than zero!: "<<p[i]<<std::endl;
+    	return false;
+    }
     outgoing+=p[i];
   }
   Vec4D diff = incoming - outgoing;
