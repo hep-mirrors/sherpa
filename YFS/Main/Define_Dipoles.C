@@ -611,7 +611,6 @@ double Define_Dipoles::CalculateFlux(const Vec4D &k){
 
   }
   if(fluxtype==dipoletype::final){
-    flux=1;
     for (auto &D : m_dipolesFF) {
       Q  = D.GetBornMomenta(0)+D.GetBornMomenta(1);
       QX = D.GetNewMomenta(0)+D.GetNewMomenta(1);
