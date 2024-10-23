@@ -671,6 +671,69 @@ double Dipole::Hard(const Vec4D &k1, const Vec4D &k2){
   return 0;
 }
 
+double Dipole::Hard(const Vec4D &k1, const Vec4D &k2, const Vec4D &k3){
+  double p1p2 = m_eikmomentum[0]*m_eikmomentum[1];
+  
+  double a1 = k1*m_eikmomentum[0]/p1p2;
+  double a2 = k2*m_eikmomentum[0]/p1p2;
+  double a3 = k3*m_eikmomentum[0]/p1p2;
+  
+  double b1 = k1*m_eikmomentum[1]/p1p2;
+  double b2 = k2*m_eikmomentum[1]/p1p2;
+  double b3 = k3*m_eikmomentum[1]/p1p2;
+  
+  double eta1 = a1/(1+a1+b1);
+  double eta2 = a2/(1+a2+b2);
+  double eta3 = a3/(1+a3+b3);
+
+  double zeta1 = b1/(1+a1+b1);
+  double zeta2 = b2/(1+a2+b2);
+  double zeta3 = b3/(1+a3+b3);
+
+  double etap1 = eta1/(1+eta2);
+  double zetap1 = zeta1/(1+zeta2);
+
+  double etap2 = eta2/(1+eta1);;
+  double zetap2 = zeta2/(1+zeta1);
+
+  double etap3  = eta3/(1+eta1+eta3);
+  double zetap3 = zeta3/(1+zeta1+zeta2);
+
+  double ap1 = a1/(1.-a2);
+  double bp1 = b1/(1.-b2);
+
+  double ap2 = a2/(1.-a1);
+  double bp2 = b2/(1.-b1);
+
+  double ap3 = a3/(1-a1-a2);
+  double bp3 = b3/(1-b1-b2);
+  
+  double v1 = a1+b1;
+  double v2 = a2+b2;
+  double hard;
+  if (Type() == dipoletype::initial) {
+    if(v1 > v2){
+      hard = xi(a1,ap2,bp2,ap3,bp3) + xi(b1,ap2,bp2,ap3,bp3);
+    } 
+    else{
+      hard = xi(a2,ap1,bp1,ap3,bp3) + xi(b2,ap1,bp1,ap3,bp3);
+    }
+    return Eikonal(k1)*Eikonal(k2)*Eikonal(k3)*hard;
+  }
+  else if (Type() == dipoletype::final) {
+    // return 0; // not implemented as << 0
+    if(v1 > v2){
+      hard = xi(eta1,etap2,zetap2,etap3,zetap3) + xi(zeta1,etap2,zetap2,etap3,zetap3);
+    }
+    else{
+      hard = xi(eta2,etap1,zetap1,etap3,zetap3) + xi(zeta2,etap1,zetap1,etap3,zetap3);
+    }
+    return Eikonal(k1)*Eikonal(k2)*Eikonal(k3)*hard;
+  }
+  return 0;
+}
+
+
 double Dipole::xi(const double &alp, const double &beta, const double &gamma){
   return 0.25*sqr(1.-alp)*(sqr(1.-beta)+sqr(1.-gamma));
 }
