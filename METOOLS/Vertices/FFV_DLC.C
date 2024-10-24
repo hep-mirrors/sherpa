@@ -38,13 +38,13 @@ namespace METOOLS {
 			const double &q2,const int mode);
 
   public:
-    
+
     FFV_DCalculator(const Vertex_Key &key);
 
-    std::string Label() const { return m_dtype==1?"XFFV":"YFFV"; }
+    std::string Label() const { return m_dtype==1?"SFFV":"CFFV"; }
 
     CObject *Evaluate(const CObject_Vector &j) { return NULL; }
-    
+
     void Evaluate();
 
     void ConstructFFSDipole();
@@ -52,15 +52,15 @@ namespace METOOLS {
 
     void ConstructFVIDipole();
 
-    inline SComplex PPlus(const CVec4<SType> &p) const  
+    inline SComplex PPlus(const CVec4<SType> &p) const
     { return p[0]+p[ATOOLS::Spinor<SType>::R3()]; }
-    inline SComplex PMinus(const CVec4<SType> &p) const 
+    inline SComplex PMinus(const CVec4<SType> &p) const
     { return p[0]-p[ATOOLS::Spinor<SType>::R3()]; }
 
-    inline SComplex PT(const CVec4<SType> &p) const  
+    inline SComplex PT(const CVec4<SType> &p) const
     { return p[ATOOLS::Spinor<SType>::R1()]+
 	SComplex(0.0,1.0)*p[ATOOLS::Spinor<SType>::R2()]; }
-    inline SComplex PTC(const CVec4<SType> &p) const  
+    inline SComplex PTC(const CVec4<SType> &p) const
     { return p[ATOOLS::Spinor<SType>::R1()]-
 	SComplex(0.0,1.0)*p[ATOOLS::Spinor<SType>::R2()]; }
 
@@ -86,7 +86,7 @@ using namespace METOOLS;
 using namespace ATOOLS;
 
 template <typename SType>
-FFV_DCalculator<SType>::FFV_DCalculator(const Vertex_Key &key): 
+FFV_DCalculator<SType>::FFV_DCalculator(const Vertex_Key &key):
   Lorentz_Calculator(key), p_cc(key.p_cc),
   m_dir(key.Fl(1).IsFermion()?
 	(key.Fl(0).IsFermion()?0:2):1), m_dtype(key.m_dtype),
@@ -118,7 +118,7 @@ FFV_DCalculator<SType>::GetPol
   Vec3D qxp(cross(Vec3D(q),Vec3D(p))), qxpxp(p*q[0]-q*p[0]);
   CVec4Type e1(Vec4D(0.0,qxp/(sqrttwo*qxp.Abs())));
   CVec4Type e2(Vec4D(0.0,qxpxp/(sqrttwo*qxpxp.Abs())));
-  return CVec4Type::New(e1+SComplex(0.0,mode?1.0:-1.0)*e2); 
+  return CVec4Type::New(e1+SComplex(0.0,mode?1.0:-1.0)*e2);
 }
 
 template <typename SType>
@@ -207,7 +207,7 @@ void FFV_DCalculator<SType>::ConstructFFSDipole()
     t=-2.0*(pi*p_v->Kin()->PI())*x;
     p_v->Kin()->SetA(A+2.0*tc);
   }
-  p_v->Kin()->CheckKT2Min(); 
+  p_v->Kin()->CheckKT2Min();
   double At(A-B/2.0);
   p_v->Kin()->SetPhase(1.0/(2.0*A/B-1.0),0);
   p_v->Kin()->SetPhase(1.0/(2.0*A/B-1.0),1);
@@ -367,7 +367,7 @@ void FFV_DCalculator<SType>::ConstructFVSDipole()
     t=-2.0*(p_v->Kin()->PI()*p_v->Kin()->PJ())*x;
     p_v->Kin()->SetA(A);
   }
-  p_v->Kin()->CheckKT2Min(); 
+  p_v->Kin()->CheckKT2Min();
   for (size_t cp(0);cp<2;++cp) {
     CSpinorType *j(GetPol(p_v->JC()->P(),sqr(p_v->JC()->Mass()),cp));
     *j*=m_cpll;
@@ -463,7 +463,7 @@ namespace METOOLS {
 
 }
 
-DECLARE_GETTER(FFV_DCalculator<double>,"DXFFV",
+DECLARE_GETTER(FFV_DCalculator<double>,"DSFFV",
 	       Lorentz_Calculator,Vertex_Key);
 Lorentz_Calculator *ATOOLS::Getter
 <Lorentz_Calculator,Vertex_Key,FFV_DCalculator<double> >::
@@ -483,7 +483,7 @@ void ATOOLS::Getter<Lorentz_Calculator,Vertex_Key,
 PrintInfo(std::ostream &str,const size_t width) const
 { str<<"FFV soft dipole vertex"; }
 
-DECLARE_GETTER(FFV_CCalculator<double>,"DYFFV",
+DECLARE_GETTER(FFV_CCalculator<double>,"DCFFV",
 	       Lorentz_Calculator,Vertex_Key);
 Lorentz_Calculator *ATOOLS::Getter
 <Lorentz_Calculator,Vertex_Key,FFV_CCalculator<double> >::
