@@ -1,9 +1,13 @@
 set(YFSNLO_SOURCES NLO_Base.C
                  Real.C
+                 RealReal.C
+                 RealVirtual.C
                  Virtual.C)
 
 set(YFSNLO_HEADERS  NLO_Base.H
                  Real.H
+                 RealReal.H
+                 RealVirtual.H
                  Virtual.H)
 
 
