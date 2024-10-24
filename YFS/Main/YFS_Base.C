@@ -74,6 +74,7 @@ void YFS_Base::RegisterDefaults(){
   s["IFI_Sub"].SetDefault(1);
   s["Massless_Sub"].SetDefault(0);
   s["Check_Real_Sub"].SetDefault(0);
+  s["Check_RR_Sub"].SetDefault(0);
   s["Integrate_NLO"].SetDefault(1);
   s["Collinear_Virtual"].SetDefault(0);
   s["Virtual_Sub"].SetDefault(1);
@@ -124,6 +125,7 @@ void YFS_Base::RegisterSettings(){
   m_ifisub = s["IFI_Sub"].Get<int>();
   m_massless_sub = s["Massless_Sub"].Get<int>();
   m_check_real_sub = s["Check_Real_Sub"].Get<bool>();
+  m_check_rr_sub = s["Check_RR_Sub"].Get<bool>();
   m_photon_split = s["PHOTON_SPLITTER_MODE"].ResetDefault().SetDefault(0).Get<bool>();
   m_int_nlo = s["Integrate_NLO"].Get<bool>();
   m_eex_virt = s["Collinear_Virtual"].Get<int>();
