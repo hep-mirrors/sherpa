@@ -41,7 +41,7 @@ size_t Vertex::s_vlmode(0);
 
 std::map<std::string,Int_Vector> Vertex::s_h;
 
-Vertex::Vertex(const Vertex_Key &key): 
+Vertex::Vertex(const Vertex_Key &key):
   p_v(key.p_mv), p_c(NULL),
   p_info(key.p_dinfo), p_kin(NULL), p_h(NULL),
   m_sign(false), m_fperm(0),
@@ -78,7 +78,7 @@ Vertex::Vertex(const Vertex_Key &key):
     ckey.p_cc=m_cc.back();
     std::string lname=ckey.m_p;
     if(key.p_dinfo)
-      lname+=(key.m_dtype?"Y":"X")+
+      lname+=(key.m_dtype==1?"S":"C")+
 	MODEL::s_model->MappedLorentzName(ckey.p_mv->Lorentz[ckey.m_n]);
     else lname+=ckey.p_mv->Lorentz[ckey.m_n];
     m_lc.push_back(LC_Getter::GetObject(lname,ckey));
@@ -200,7 +200,7 @@ void Vertex::FindPermutation()
   msg_Debugging()<<"  id  = "<<id<<", fid  = "<<fid<<"\n";
 #endif
   for (size_t i(0);i<id.size();++i) {
-    for (size_t j(0);j<pid.size();++j) 
+    for (size_t j(0);j<pid.size();++j)
       if (pid[j]==id[i] && i!=j) {
 	for (size_t k(j);k!=i;) {
 	  size_t l(j>i?k-1:k+1);
@@ -339,7 +339,7 @@ std::string Vertex::VLabel() const
   if (s_vlmode&2) {
     if (m_cc.empty() || m_lc.empty()) THROW(fatal_error,"Invalid call");
     std::string id(GetName(*m_cc.front())+"_"+GetName(*m_lc.front(),1));
-    for (size_t pos;(pos=id.find("_"))!=std::string::npos && 
+    for (size_t pos;(pos=id.find("_"))!=std::string::npos &&
 	   id[pos-1]!='\\';id.replace(pos,1,"\\_"));
     if (s_vlmode&16) {
       label+=std::string(label.length()>0?"\\\\":"")+
