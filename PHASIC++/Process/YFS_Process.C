@@ -86,6 +86,21 @@ void YFS_Process::Init(const Process_Info &pi,
     p_yfs->p_nlo->InitializeVirtual(vpi);
     p_yfs->SetNLOType(nlo_type::loop);
   }
+  if (pi.Has(nlo_type::rvirt)) {
+    Process_Info rvpi(pi);
+    p_realvirtproc = InitProcess(rvpi, nlo_type::born, false);
+    rvpi.m_fi.m_ps.push_back(Subprocess_Info(kf_photon, "", ""));
+    p_yfs->p_nlo->InitializeRealVirtual(rvpi);
+    // p_yfs->p_nlo->InitializeVirtual(vpi);
+  }
+  if (pi.Has(nlo_type::realreal)) {
+    Process_Info rrpi(pi);
+    p_realrealproc = InitProcess(rrpi, nlo_type::born, false);
+    rrpi.m_fi.m_ps.push_back(Subprocess_Info(kf_photon, "", ""));
+    rrpi.m_fi.m_ps.push_back(Subprocess_Info(kf_photon, "", ""));
+    p_yfs->p_nlo->InitializeRealReal(rrpi);
+    // p_yfs->InitializeVirtual(vpi);
+  }
   p_bornproc->SetLookUp(false);
   // p_bornproc->SetParent(p_bornproc);
   p_bornproc->SetSelected(this);
