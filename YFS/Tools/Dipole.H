@@ -26,7 +26,7 @@ namespace YFS{
         Dipole(Flavour_Vector const &fl, Vec4D_Vector const &mom,  
                 Vec4D_Vector const &born, dipoletype::code d, const double alpha);
         ~Dipole();
-
+        Dipole() {};
         std::vector<double> m_masses, m_charges, m_theta, m_Q;
         Vec4D_Vector m_dipolePhotons, m_dipolePhotonsEEX;
         std::vector<std::string> m_names;
@@ -36,7 +36,7 @@ namespace YFS{
         int m_Nphotons, m_resonance, m_betaorder;
         double m_ranPhi, m_ranTheta, m_born, m_photonscale, m_u;
         dipoletype::code m_type;
-        Vec4D_Vector m_momenta, m_bornmomenta, m_oldmomenta, m_newmomenta, m_ghost, m_beams, m_eikmomentum;
+        Vec4D_Vector m_momenta, m_bornmomenta, m_oldmomenta, m_newmomenta, m_ghost, m_beams, m_eikmomentum,m_mephotons;
         Flavour_Vector m_flavs;
         Vec4D m_photonSum, m_QFrame, m_kcorr;
         Poincare *p_Pboost, *p_Qboost;
@@ -104,6 +104,7 @@ namespace YFS{
         inline double ChargeNorm() {return -m_QiQj*m_thetaij;}
         inline void SetSudakovs(std::vector<double> y, std::vector<double> z) {m_pk1 =y; m_pk2=z;}
         inline void SetPhotonScale(double &scale) {m_photonscale = scale;}
+        inline void SetMEPhotons(Vec4D_Vector &k) {m_mephotons = k;}
 
     };
 

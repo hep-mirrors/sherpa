@@ -69,6 +69,7 @@ namespace YFS {
       bool CheckResonant();
       double ResonantDist(YFS::Dipole &D, const Vec4D &k);
       dipoletype::code WhichResonant(const Vec4D &k);
+      YFS::Dipole WhichDipole(const Vec4D &k, YFS::Dipole_Vector *Dlo);
       double CalculateRealSub(const Vec4D &k);
       double CalculateRealSubIF(const Vec4D &k);
       double CalculateRealSubEEX(const Vec4D &k);
@@ -83,6 +84,7 @@ namespace YFS {
       double CalculateVirtualSubTchannel();
       double FormFactor();
       double TFormFactor();
+      bool IsEqualFlav(YFS::Dipole d1, YFS::Dipole d2);
       void generate_pairings(std::vector<std::vector<int>>& pairings, std::vector<int>& curr_pairing, std::vector<int>& available_nums);
       void CleanUp();
       std::ostream& operator<<(std::ostream &out);
