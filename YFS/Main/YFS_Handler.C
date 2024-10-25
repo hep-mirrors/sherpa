@@ -304,6 +304,7 @@ bool YFS_Handler::CalculateFSR(Vec4D_Vector & p) {
 
     m_fsrphotonsforME = m_FSRPhotons;
     Dip->AddPhotonsToDipole(m_FSRPhotons);
+    Dip->SetMEPhotons(m_fsrphotonsforME);
     Dip->Boost();
     if(!p_fsr->YFS_FORM()) return false;
     p_fsr->HidePhotons();
