@@ -215,22 +215,25 @@ double NLO_Base::CalculateReal(Vec4D k, int fsrcount) {
 	m_evts+=1;
 	p_nlodipoles->MakeDipoles(m_flavs,m_plab,m_plab);
 	fluxtype = p_nlodipoles->WhichResonant(k);
+	// if(HasFSR()) Dipole dfs = p_nlodipoles->WhichDipole(k);
   // if(fluxtype==dipoletype::final){
   if(fsrcount){
   	if(!HasFSR()) msg_Error()<<"Wrong dipole type in "<<METHOD<<endl;
-  	for (Dipole_Vector::iterator Dip = p_nlodipoles->GetDipoleFF()->begin();
-       Dip != p_nlodipoles->GetDipoleFF()->end(); ++Dip) {
-  		 double scalek = p_fsr->ScalePhoton(k);
-  		 Dip->SetPhotonScale(scalek);
-  		 Dip->AddPhotonToDipole(k);
-  		 if(!Dip->BoostNLO()) return 0;
-  		 int i(0);
-  		 for (auto f : Dip->m_flavs) {
-      	p[p_nlodipoles->m_flav_label[f]] =  Dip->GetNewMomenta(i);
-      	i++;
-    	}
-    	k = Dip->m_dipolePhotons[0];
+  	Dipole_Vector *diplo = p_dipoles->GetDipoleFF();
+  	Dipole dfs = p_nlodipoles->WhichDipole(k,diplo);
+  	// for (Dipole_Vector::iterator Dip = p_nlodipoles->GetDipoleFF()->begin();
+    //    Dip != p_nlodipoles->GetDipoleFF()->end(); ++Dip) {
+		double scalek = p_fsr->ScalePhoton(k);
+		dfs.SetPhotonScale(scalek);
+		dfs.AddPhotonToDipole(k);
+		if(!dfs.BoostNLO()) return 0;
+		int i(0);
+		for (auto f : dfs.m_flavs) {
+			p[p_nlodipoles->m_flav_label[f]] =  dfs.GetNewMomenta(i);
+			i++;
   	}
+  	k = dfs.m_dipolePhotons[0];
+  	// }
   }
  	else {
  		MapMomenta(p,k);

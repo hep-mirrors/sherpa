@@ -355,10 +355,12 @@ double Define_Dipoles::CalculateRealSub(const Vec4D &k) {
     }
   }
   for (auto &D : m_dipolesFF) {
-    for(size_t i = 0; i < D.GetMomenta().size(); ++i)
-    {
-      Vec4D p = D.GetMomenta(i);
-      eik += -D.m_Q[i]*p/(p*k);
+    if(D.IsDecayAllowed()){
+      for(size_t i = 0; i < D.GetMomenta().size(); ++i)
+      {
+        Vec4D p = D.GetMomenta(i);
+        eik += -D.m_Q[i]*p/(p*k);
+      }
     }
   }
   sub = -m_alpha / (4 * M_PI * M_PI)*eik*eik;
@@ -640,6 +642,7 @@ double Define_Dipoles::CalculateFlux(const Vec4D &k){
 
   }
   if(fluxtype==dipoletype::final){
+    // YFS::Dipole D = WhichDipole(k);
     for (auto &D : m_dipolesFF) {
       Q  = D.GetBornMomenta(0)+D.GetBornMomenta(1);
       QX = D.GetMomenta(0)+D.GetMomenta(1);
@@ -768,8 +771,8 @@ double Define_Dipoles::ResonantDist(YFS::Dipole &D, const Vec4D &k){
   double mcheck(100000000);
   for (auto it = m_proc_restab_map.begin(); it != m_proc_restab_map.end(); ++it) {
     for (auto *v : it->second) {
-      // mcheck = abs(mass_d - v->in[0].Mass()) / v->in[0].Width();
-      mcheck = (mass_i-mass_d);
+      mcheck = abs(mass_d - v->in[0].Mass()) / v->in[0].Width();
+      // mcheck = (mass_i-mass_d);
       if(mcheck < mdist) mdist = mcheck;
     }
   }
@@ -789,6 +792,33 @@ dipoletype::code Define_Dipoles::WhichResonant(const Vec4D &k){
   }
   if(mdistfsr < mdistisr) return dipoletype::final;
   else return dipoletype::initial;
+}
+
+YFS::Dipole Define_Dipoles::WhichDipole(const Vec4D &k, YFS::Dipole_Vector *Dlo){
+  if(m_dipolesFF.size()==1) return m_dipolesFF[0];
+  YFS::Dipole winner;
+  double mdistfsr;
+  double dist = 100000000;
+  for(auto &D: m_dipolesFF){
+    // for(auto &_D: Dlo){
+     for (Dipole_Vector::iterator _D = Dlo->begin(); _D != Dlo->end(); ++_D){
+      if(!IsEqualFlav(D,(*_D))) continue;
+      // if(!_D->IsDecayAllowed()) continue;
+      for(auto &_k: _D->m_mephotons){
+        if(IsEqual(_k,k)){
+          winner=D;
+        }
+      }
+    }
+  }
+  return winner;
+}
+
+bool Define_Dipoles::IsEqualFlav(YFS::Dipole d1, YFS::Dipole d2){
+  bool match=true;
+  if(d1.GetFlav(0)!=d2.GetFlav(1) && d1.GetFlav(0)!=d2.GetFlav(0)) match = false;
+  if(d1.GetFlav(1)!=d2.GetFlav(1) && d1.GetFlav(1)!=d2.GetFlav(0)) match = false;
+  return match;
 }
 
 void Define_Dipoles::generate_pairings(std::vector<std::vector<int>>& pairings, std::vector<int>& curr_pairing, std::vector<int>& available_nums) {
