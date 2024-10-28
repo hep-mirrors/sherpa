@@ -161,7 +161,6 @@ void Define_Dipoles::MakeDipoles(ATOOLS::Flavour_Vector const &fl, ATOOLS::Vec4D
       for(size_t i = 2; i < fl.size(); ++i)
       {
         f = fl[i];
-        PRINT_VAR(f);
         if (f.Charge()!=0) {
           // msg_Error()<<"YFS FSR only defined for Final state leptons and not for "<<f<<std::endl;
           // }
@@ -737,21 +736,6 @@ bool Define_Dipoles::CheckResonant(YFS::Dipole &D) {
   return false;
 }
 
-bool Define_Dipoles::IsResonant() {
-  for(auto &D: m_dipolesFF){
-    double mass_d = (D.GetBornMomenta(0) + D.GetBornMomenta(1)).Mass();
-    double mdist;
-    for (auto it = m_proc_restab_map.begin(); it != m_proc_restab_map.end(); ++it) {
-      for (auto *v : it->second) {
-        mdist = abs(mass_d - v->in[0].Mass()) / v->in[0].Width();
-        if(mdist<5) {
-          return true;
-        }
-      }
-    }
-  }
-  return false;
-}
 
 bool Define_Dipoles::CheckResonant(){
   bool isres = false;
