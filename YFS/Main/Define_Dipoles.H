@@ -64,7 +64,6 @@ namespace YFS {
       void Get4Mom(ATOOLS::Flavour_Vector const &fl,ATOOLS::Vec4D_Vector mom);
       bool CheckMasses();
       void IsResonant(YFS::Dipole &D);
-      bool IsResonant();
       bool CheckResonant(YFS::Dipole &D);
       bool CheckResonant();
       double ResonantDist(YFS::Dipole &D, const Vec4D &k);
