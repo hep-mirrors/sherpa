@@ -154,8 +154,13 @@ def try_import(ufo_path, auto_convert=False):
 
 
 def write_param_card(model_name, ufo_mod):
-    writer = ufo_mod.write_param_card.ParamCardWriter(f'param_{model_name}.dat', generic=True)
-    del writer
+    try:
+        writer = ufo_mod.write_param_card.ParamCardWriter(f'param_{model_name}.dat',
+                                                          generic=True)
+        del writer
+    except AttributeError:
+        warning('UFO model does not have a write_param_card script, '
+                'unable to generate example parameter card')
 
 
 def gen_color(color, out_dir):
