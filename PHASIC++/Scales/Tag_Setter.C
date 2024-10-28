@@ -72,6 +72,11 @@ void Tag_Setter::AssignId(Term *term)
   else if (term->Tag()=="P_SUM") term->SetId(8);
   else if (term->Tag()=="TAUB") term->SetId(9);
   else if (term->Tag()=="P_TM2") term->SetId(10);
+  else if (term->Tag().find("MU_")==0) {
+    term->SetId(10+ToType<int>
+		(term->Tag().substr
+		 (3,term->Tag().length()-4)));
+  }
   else {
     term->SetId(100+ToType<int>
 		(term->Tag().substr
