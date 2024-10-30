@@ -162,6 +162,7 @@ bool Beam_Spectra_Handler::CheckConsistency(const ATOOLS::Flavour *_bunches) {
 void Beam_Spectra_Handler::BoostFixedTarget(){
   // p_BeamBase[0] is the beam in the lab frame
   // p_BeamBase[1] is the fixed target
+  PRINT_VAR("HERE");
   Vec4D pmu_lab = p_BeamBase[0]->InMomentum();
   Vec4D pe_lab  = p_BeamBase[1]->InMomentum();
   p_BeamBase[0]->SetInMomentum(pmu_lab);

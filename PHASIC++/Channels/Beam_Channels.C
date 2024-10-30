@@ -35,6 +35,7 @@ bool Beam_Channels::Initialize() {
 }
 
 bool Beam_Channels::MakeChannels() {
+  PRINT_VAR(m_beamparams.size());
   if (m_beamparams.size() > 0) return CreateChannels();
   switch (m_beammode) {
     case beammode::relic_density: {
@@ -87,6 +88,13 @@ bool Beam_Channels::DefineColliderChannels() {
   if (m_beamtype[0] == beamspectrum::Fixed_Target &&
       m_beamtype[1] == beamspectrum::Fixed_Target)
     return true;
+  if (m_beamtype[0] == beamspectrum::Leptonic &&
+      m_beamtype[1] == beamspectrum::Leptonic){
+      double dev = p_beamspectra->Dev();
+      PRINT_VAR(dev);
+      m_beamparams.push_back(Channel_Info(channel_type::exponential,
+                                        dev));
+  }
   // one or two laser backscattering spectra with monochromatic beams
   if ((m_beamtype[0] == beamspectrum::monochromatic &&
        (m_beamtype[1] == beamspectrum::laser_backscattering ||
@@ -317,5 +325,9 @@ void Beam_Channels::AddExponential(const size_t &chno, const size_t &mode) {
     // todo: change this
     Add(new Exponential_DM_Annihilation(spex, mass1, mass2, m_keyid,
                                         p_psh->GetInfo()));
-  } else return;
+  }
+  else if (m_beammode == beammode::collider){
+    Add(new Exponential_Gaussian(spex, m_keyid, p_psh->GetInfo()));
+  }
+  else return;
 }
