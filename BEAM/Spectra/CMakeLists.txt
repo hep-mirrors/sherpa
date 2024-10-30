@@ -4,7 +4,9 @@ set(Spectra_SOURCES Monochromatic.C
                     EPA_FF.C
                     Pomeron.C
                     Reggeon.C
-                    DM_beam.C)
+                    Fixed_Target.C
+                    DM_beam.C
+                    Lepton_Beam.C)
 
 set(Spectra_HEADERS Monochromatic.H
                     Laser_Backscattering.H
@@ -12,7 +14,9 @@ set(Spectra_HEADERS Monochromatic.H
                     EPA_FF.H
                     Pomeron.H
                     Reggeon.H
-                    DM_beam.H)
+                    Fixed_Target.H
+                    DM_beam.H
+                    Lepton_Beam.H)
 
 sherpa_create_git_info(Spectra ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR})
 
