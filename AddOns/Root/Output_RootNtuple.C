@@ -204,13 +204,8 @@ void Output_RootNtuple::PrepareTerminate()
 
 void Output_RootNtuple::AddDecayProducts(Particle *part,int &np) 
 {
-  DEBUG_FUNC(*part);
-  if (part->DecayBlob()) {
-    for (size_t i(0);i<part->DecayBlob()->NOutP();++i)
-      AddDecayProducts(part->DecayBlob()->OutParticle(i),np);
-    return;
-  }
-  DEBUG_VAR("Adding "<<*part);
+  //Already checks if its a decay blob on line 300
+  msg_Debugging()<<"Adding "<<*part<<endl;
   ++np;
   int kfc=part->Flav().Kfcode(); 
   if (part->Flav().IsAnti()) kfc=-kfc;
