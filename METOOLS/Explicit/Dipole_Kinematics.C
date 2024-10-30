@@ -79,7 +79,7 @@ void Dipole_Kinematics::Evaluate()
   }
   if (p_info->Stat() &&
       !IsEqual(p_i->P()+p_j->P()+p_k->P(),p_ijt->P()+p_kt->P())) {
-    msg_Error()<<METHOD<<"(): Momentum not conserved in type "<<m_type
+    msg_Error()<<METHOD<<"(): Momentum not conserved in type "<<m_cur.back()->SubType()
 	       <<" {\n  before "<<p_i->P()+p_j->P()+p_k->P()
 	       <<"\n  after  "<<p_ijt->P()+p_kt->P()
 	       <<"\n  p_"<<p_i->Id().front()<<" = "<<p_i->P()
@@ -193,9 +193,10 @@ void Dipole_Kinematics::EvaluateAlaricKinematics()
   Cluster_Amplitude* ampl = Cluster_Amplitude::New();
   ampl->SetNIn(2);
   for (int i = 0; i <= m_cur.size(); ++i) {
-    ampl->CreateLeg(p_subevt->p_real->p_mom[i],i<2?p_subevt->p_real->p_fl[i].Bar():p_subevt->p_real->p_fl[i]);
+    ampl->CreateLeg((i<2?-1.:1.)*p_subevt->p_real->p_mom[i],i<2?p_subevt->p_real->p_fl[i].Bar():p_subevt->p_real->p_fl[i]);
   }
   if (m_cur.back()->SubType()>>2&1) { // soft
+    if (p_j->Flav().IsFermion()) std::swap(index_i, index_j);
     PHASIC::Ant_Args ff;
     for (int i = 0; i <= m_cur.size(); ++i) {
       ff.m_p.emplace_back((i<2?-1.:1.)*p_subevt->p_real->p_mom[i]);

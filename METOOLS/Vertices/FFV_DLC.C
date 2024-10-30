@@ -320,13 +320,35 @@ void FFV_DCalculator<SType>::ConstructFVSDipole()
 	     (sqr(Q2-pij2-m_mk2)-4.0*pij2*m_mk2));
       mt2=m_mij2/pipj;
     }
-    if (iisf) {
-      if (m_dtype&1) A+=2.0/(1.0-zi*(1.0-y))-2.0;
-      if (m_dtype&2) A+=2.0-rv*(1.0+zti+mt2);
+    if (iisf) { // q2qg
+      if (p_v->Info()->SubType()==subscheme::Alaric) {
+        if (m_dtype&1) { // soft
+          double pipk(p_v->Kin()->PI()*p_v->Kin()->PK());
+          double pkpj(p_v->Kin()->PJ()*p_v->Kin()->PK());
+          double pin(p_v->Kin()->PI()*p_v->Kin()->N());
+          double pkn(p_v->Kin()->PK()*p_v->Kin()->N());
+          A+=2.*pipk*pin/(pipj*pkn+pkpj*pin);
+        }
+        if (m_dtype&2) A+=ztj; // collinear
+      } else {
+        if (m_dtype&1) A+=2.0/(1.0-zi*(1.0-y))-2.0;
+        if (m_dtype&2) A+=2.0-rv*(1.0+zti+mt2);
+      }
     }
-    else {
-      if (m_dtype&1) A+=2.0/(1.0-(1.0-zi)*(1.0-y))-2.0;
-      if (m_dtype&2) A+=2.0-rv*(1.0+ztj+mt2);
+    else { // q2gq
+      if (p_v->Info()->SubType()==subscheme::Alaric) {
+        if (m_dtype&1) { // soft
+          double pipk(p_v->Kin()->PI()*p_v->Kin()->PK());
+          double pkpj(p_v->Kin()->PJ()*p_v->Kin()->PK());
+          double pjn(p_v->Kin()->PJ()*p_v->Kin()->N());
+          double pkn(p_v->Kin()->PK()*p_v->Kin()->N());
+          A+=2.*pkpj*pjn/(pipj*pkn+pipk*pjn);
+        }
+        if (m_dtype&2) A+=zti; // collinear
+      } else {
+        if (m_dtype&1) A+=2.0/(1.0-(1.0-zi)*(1.0-y))-2.0;
+        if (m_dtype&2) A+=2.0-rv*(1.0+ztj+mt2);
+      }
     }
     t=2.0*pipj;
     p_v->Kin()->SetA(A);
