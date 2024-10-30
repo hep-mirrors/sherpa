@@ -283,8 +283,9 @@ void Initialization_Handler::RegisterDefaults()
   s["COLLINEAR_RECOIL_DEFINITION"].SetDefault(isalaric?"PassiveFinalState":"None").UseNoneReplacements();
 
   if(!isalaric) {
-    if(s["RECOIL_DEFINITION"].Get<string>() != "None" || s["COLLINEAR_RECOIL_DEFINITION"].Get<string>() != "None")
-      THROW(fatal_error, "Variable recoil schemes are only available in Alaric.");
+    if(s["RECOIL_DEFINITION"].Get<string>() != "None"
+            || s["COLLINEAR_RECOIL_DEFINITION"].Get<string>() != "None")
+      msg_Error()<<METHOD<<om::red<<"Variable recoil schemes are only available in Alaric.\n"<<om::reset;
   }
 
   s["COUPLINGS"].SetDefault("Alpha_QCD 1");

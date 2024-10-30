@@ -16,7 +16,7 @@ namespace METOOLS {
 
     Current *p_i, *p_j, *p_k, *p_ijt, *p_kt;
 
-    ATOOLS::Vec4D m_pi, m_pj, m_pk, m_Q;
+    ATOOLS::Vec4D m_pi, m_pj, m_pk, m_Q, m_n;
 
     int m_type, m_swap, m_trig;
 
@@ -69,6 +69,7 @@ namespace METOOLS {
     inline const ATOOLS::Vec4D &PI() const { return m_pi; }
     inline const ATOOLS::Vec4D &PJ() const { return m_pj; }
     inline const ATOOLS::Vec4D &PK() const { return m_pk; }
+    inline const ATOOLS::Vec4D &N()  const { return m_n;  }
 
     inline const ATOOLS::Vec4D &Q() const { return m_Q; }
 

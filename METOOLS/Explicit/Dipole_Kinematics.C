@@ -190,30 +190,33 @@ void Dipole_Kinematics::EvaluateAlaricKinematics()
 {
   int index_i(p_i->Id().front()), index_j(p_j->Id().front()),
           index_k(p_k->Id().front());
-  Vec4D n;
   Cluster_Amplitude* ampl = Cluster_Amplitude::New();
   ampl->SetNIn(2);
   for (int i = 0; i <= m_cur.size(); ++i) {
-    ampl->CreateLeg((i<2?-1.:1.)*p_subevt->p_real->p_mom[i],i<2?p_subevt->p_real->p_fl[i].Bar():p_subevt->p_real->p_fl[i]);
+    ampl->CreateLeg(p_subevt->p_real->p_mom[i],i<2?p_subevt->p_real->p_fl[i].Bar():p_subevt->p_real->p_fl[i]);
   }
   if (m_cur.back()->SubType()>>2&1) { // soft
     PHASIC::Ant_Args ff;
-    ff.m_p=ampl->Momenta();
+    for (int i = 0; i <= m_cur.size(); ++i) {
+      ff.m_p.emplace_back((i<2?-1.:1.)*p_subevt->p_real->p_mom[i]);
+    }
 
     ff.m_b=p_softrecoil->RecoilTags(ampl,index_i,index_j,index_k);
     PHASIC::ClusterAntenna(ff, index_i, index_j, index_k, 0.);
 
     p_ijt->SetP(ff.m_pijt);
     p_kt->SetP(ff.m_p[index_k]);
-    n = ff.m_n;
-  } else { // collinear
+    m_n = ff.m_n;
+    m_z = ff.m_z;
+    m_y = ff.m_y;
+  } else if (m_cur.back()->SubType()>>3&1) { // collinear
     Vec4D K = p_collrecoil->Recoil(ampl,index_i,index_j,index_k);
     std::vector<int> tags = p_collrecoil->RecoilTags(ampl,index_i,index_j,index_k);
     int nk = std::count_if(tags.begin(),tags.end(),[](int t){return t&2;});
 
     double K2(K.Abs2());
     int mode = 0;
-    PHASIC::Kin_Args ff=PHASIC::ClusterFFDipole(0,0,0,K2,p_i->P(),p_j->P(),K,mode);
+    PHASIC::Kin_Args ff=PHASIC::ClusterFFDipole(0,0,0,K2,ampl->Mom(index_i),ampl->Mom(index_j),K,mode);
     if (ff.m_stat<0) {
       msg_Error()<<METHOD<<": Clustering failed in subtraction.\n";
     }
@@ -237,10 +240,14 @@ void Dipole_Kinematics::EvaluateAlaricKinematics()
 
     p_ijt->SetP(ff.m_pi);
     p_kt->SetP(ampl->Leg(index_k)->Mom());
-    n=ff.m_nb;
+    m_n=ff.m_nb;
+    m_z=ff.m_z;
+    m_y=ff.m_y;
   }
+  else
+    msg_Error() << METHOD << ": Unknown subtraction type, neither soft nor collinear.\n";
   if (m_type==0) {
-    m_z=m_pi*n/((m_pi+m_pj)*n);
+    m_z=m_pi*m_n/((m_pi+m_pj)*m_n);
     m_y=m_pi*m_pj/(m_pi*m_pj+m_pj*m_pk+m_pk*m_pi);
     if (Massive()) {
       // TODO later
@@ -259,7 +266,9 @@ void Dipole_Kinematics::EvaluateAlaricKinematics()
   int it(0);
   for (int i = 0; i < ampl->Momenta().size(); ++i) {
     if (i == index_j) continue;
-    m_p[it]=(i<2?-1.:+1.)*ampl->Leg(i)->Mom();
+    if (i == index_i) m_p[it]=p_ijt->P();
+    else if (i == index_k) m_p[it]=p_k->P();
+    else m_p[it]=(i<2?-1.:+1.)*ampl->Leg(i)->Mom();
     ++it;
   }
   ampl->Delete();

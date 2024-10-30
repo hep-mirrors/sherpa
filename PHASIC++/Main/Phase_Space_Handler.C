@@ -334,12 +334,11 @@ void Phase_Space_Handler::CalcSinglePoint() {
       double result = 0;
       for (size_t i(0);i<subs->size();++i) {
         result += (*(subs))[i]->m_result;
-        msg_Out()<<(*(*subs)[i]);
+        msg_Out()<<(*(*subs)[i])<<"\n";
       }
       if (std::abs(subs->back()->m_result)>0.)
         msg_Out()<<"ME = "<<std::abs(result/subs->back()->m_result)<<"\n";
     }
-
   }
 }
 
