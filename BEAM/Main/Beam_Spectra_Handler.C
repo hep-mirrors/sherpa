@@ -147,3 +147,46 @@ bool Beam_Spectra_Handler::CheckConsistency(const ATOOLS::Flavour *_bunches) {
   }
   return true;
 }
+
+void Beam_Spectra_Handler::BoostFixedTarget(){
+  // p_BeamBase[0] is the beam in the lab frame
+  // p_BeamBase[1] is the fixed target
+  Vec4D pmu_lab = p_BeamBase[0]->InMomentum();
+  Vec4D pe_lab  = p_BeamBase[1]->InMomentum();
+  p_BeamBase[0]->SetInMomentum(pmu_lab);
+  p_BeamBase[1]->SetInMomentum(pe_lab);
+
+  double slab = (pmu_lab+pe_lab).Abs2();
+  double m1 = p_BeamBase[0]->Beam().Mass();
+  double m2 = p_BeamBase[1]->Beam().Mass();
+
+  double lamCM = 0.5*sqrt(SqLam(slab,m1*m1,m2*m2)/slab);
+
+  double E1 = lamCM*sqrt(1+m1*m1/sqr(lamCM));
+  double E2 = lamCM*sqrt(1+m2*m2/sqr(lamCM));
+
+  Vec4D pmu = {E1, 0, 0, lamCM};
+  Vec4D pe  = {E2, 0, 0, -lamCM};
+
+  p_BeamBase[0]->SetOutMomentum(pmu);
+  p_BeamBase[1]->SetOutMomentum(pe);
+
+  rpa->gen.SetBeam1(p_BeamBase[0]->Beam());
+  rpa->gen.SetBeam2(p_BeamBase[1]->Beam());
+  rpa->gen.SetPBeam(0, pmu);
+  rpa->gen.SetPBeam(1, pe);
+  rpa->gen.SetPBunch(0, pmu);
+  rpa->gen.SetPBunch(1, pe);
+  double ecms = E1+E2;
+  rpa->gen.SetEcms(ecms);
+  Settings::GetMainSettings().AddGlobalTag("E_CMS", ToString(ecms));
+}
+
+
+double Beam_Spectra_Handler::SqLam(double x,double y,double z)
+{
+  return abs(x*x+y*y+z*z-2.*x*y-2.*x*z-2.*y*z);
+  // double arg(sqr(s-s1-s2)-4.*s1*s2);
+  // if (arg>0.) return sqrt(arg)/s;
+  // return 0.;
+}

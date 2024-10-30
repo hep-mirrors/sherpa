@@ -26,6 +26,8 @@ namespace BEAM {
     Pomeron              = 5,
     Reggeon              = 6,
     DM                   = 10,
+    Fixed_Target         = 12,
+    Leptonic             = 14,
     unknown              = 99
   };
   std::ostream& operator<<(std::ostream&,const beamspectrum spect);
@@ -77,6 +79,8 @@ namespace BEAM {
     Beam_Base * InitializePomeron(int);
     Beam_Base*  InitializeReggeon(int);
     Beam_Base * InitializeDM_beam(int);
+    Beam_Base * InitializeFixed_Target(int);
+    Beam_Base * InitializeLeptonic(int);
   public:
     Beam_Parameters();
     ~Beam_Parameters();
