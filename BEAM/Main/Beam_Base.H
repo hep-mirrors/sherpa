@@ -18,6 +18,7 @@ namespace BEAM {
     int                m_dir;
     double             m_energy, m_polarisation;
     double             m_x, m_Q2, m_weight;
+    double             m_dev;
     bool               m_on;
 
   public:
@@ -48,6 +49,7 @@ namespace BEAM {
     virtual inline double Xmin()          const { return 0.; }
     virtual inline double Xmax()          const { return 1.; }
     virtual inline double Peak()          const { return 1.; }
+    virtual inline double Dev()          const { return m_dev; }
 
     virtual inline bool On()             const { return m_on; }
     virtual inline bool PolarisationOn() const { return (m_polarisation!=0.); }
