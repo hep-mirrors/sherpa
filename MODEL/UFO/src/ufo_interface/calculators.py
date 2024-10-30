@@ -1,5 +1,7 @@
 import ast
-import re
+from .message import warning
+
+NLO_WARNING = False
 
 cmath_dict = {
     "cos": "cos",
@@ -148,8 +150,19 @@ class color_visitor(ast.NodeVisitor):
 
 
 def calc_parameter(parameter):
+    # Use function attribute to track if warning was shown
+    if not hasattr(calc_parameter, '_warned_nlo'):
+        calc_parameter._warned_nlo = False
+
     visitor = param_visitor()
-    visitor.visit(ast.parse(parameter))
+    try:
+        visitor.visit(ast.parse(parameter))
+    except TypeError:
+        if not calc_parameter._warned_nlo:
+            warning("Sherpa currently can not run models at NLO")
+            warning("Setting all NLO parameters to zero")
+            calc_parameter._warned_nlo = True
+        return 0
     return ensuring_matching_parens(visitor.value)
 
 
