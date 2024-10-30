@@ -28,7 +28,7 @@ PARTICLE_DATA:
 PROCESSES:
   - 93 93 -> 11 -11 93:
       NLO_Mode: Fixed_Order
-      NLO_Part: RS,
+      NLO_Part: RS
       NLO_Order: {QCD: 1, EW: 0}
       Order: {QCD: 1, EW: 2}
       Print_Graphs: Graphs
@@ -47,7 +47,7 @@ SELECTORS:
             Identify_As: [22, "E>0.5[rel]"]
             NMin: 1
         - [PT, -11, 20.0, E_CMS]
-        - [PseudoRapidity, -11, -2.5, 2.5]
+        - [Eta, -11, -2.5, 2.5]
         - [PT, 11, 20.0, E_CMS]
-        - [PseudoRapidity, 11, -2.5, 2.5]
+        - [Eta, 11, -2.5, 2.5]
         - [Mass, 11, -11, 60.0, 120.0]
