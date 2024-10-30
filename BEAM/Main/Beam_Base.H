@@ -19,6 +19,7 @@ namespace BEAM {
     int                m_dir;
     double             m_energy, m_polarisation;
     double             m_x, m_Q2, m_weight;
+    double             m_dev;
     bool               m_on;
     double m_R;
     double m_eran;
@@ -50,16 +51,17 @@ namespace BEAM {
     const ATOOLS::Vec4D& Position() const { return m_position; }
     const std::vector<ATOOLS::Flavour>& Bunches() const { return m_bunches; }
     const std::vector<ATOOLS::Vec4D>& OutMomenta() const { return m_vecouts; }
-    const double& Energy() const { return m_energy; }
-    const double& Polarisation() const { return m_polarisation; }
     bool PolarisationOn() const { return (m_polarisation != 0.); }
-    double X() const { return m_x; }
-    double Weight() const { return m_weight; }
+    virtual inline const double & Energy()       const { return m_energy; }
+    virtual inline const double & Polarisation() const { return m_polarisation; }
+    virtual inline double Weight(ATOOLS::Flavour fl=kf_none) { return m_weight; }
+    virtual inline double Exponent()      const { return 0.; }
+    virtual inline double X()             const { return m_x; }
+    virtual inline double Xmin()          const { return 0.; }
+    virtual inline double Xmax()          const { return 1.; }
+    virtual inline double Peak()          const { return 1.; }
+    virtual inline double Dev()          const { return m_dev; }
 
-    virtual double Exponent() const { return 0.; }
-    virtual double Xmin() const { return 0.; }
-    virtual double Xmax() const { return 1.; }
-    virtual double Peak() const { return 1.; }
 
     void SetERan(double eran) { m_eran = eran; }
 

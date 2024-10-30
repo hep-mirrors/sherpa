@@ -59,6 +59,7 @@ namespace BEAM {
     inline double SprimeMax() const { return p_kinematics->SprimeMax(); }
     inline double Sprime()    const { return p_kinematics->Sprime(); }
     inline double Y()         const { return p_kinematics->Y(); }
+    inline double Dev()         const { return p_BeamBase[0]->Dev(); }
     inline double Exponent(const size_t & i) const {
       return p_kinematics->Exponent(i);
     }
