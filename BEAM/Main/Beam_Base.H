@@ -19,6 +19,7 @@ namespace BEAM {
     int                m_dir;
     double             m_energy, m_polarisation;
     double             m_x, m_Q2, m_weight;
+    double             m_dev;
     bool               m_on;
     double m_R;
     double m_eran;
@@ -55,11 +56,12 @@ namespace BEAM {
     bool PolarisationOn() const { return (m_polarisation != 0.); }
     double X() const { return m_x; }
     double Weight() const { return m_weight; }
+    double Exponent()      const { return 0.; }
+    double Xmin()          const { return 0.; }
+    double Xmax()          const { return 1.; }
+    double Peak()          const { return 1.; }
+    double Dev()          const { return m_dev; }
 
-    virtual double Exponent() const { return 0.; }
-    virtual double Xmin() const { return 0.; }
-    virtual double Xmax() const { return 1.; }
-    virtual double Peak() const { return 1.; }
 
     void SetERan(double eran) { m_eran = eran; }
 

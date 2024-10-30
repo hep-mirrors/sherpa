@@ -6,6 +6,7 @@
 #include "BEAM/Spectra/DM_beam.H"
 #include "BEAM/Spectra/EPA.H"
 #include "BEAM/Spectra/Laser_Backscattering.H"
+#include "BEAM/Spectra/Lepton_Beam.H"
 #include "BEAM/Spectra/Monochromatic.H"
 #include "BEAM/Spectra/Pomeron.H"
 #include "BEAM/Spectra/Reggeon.H"
@@ -62,8 +63,11 @@ std::ostream& BEAM::operator<<(std::ostream& ostr, const beamspectrum spect)
   case beamspectrum::laser_backscattering:
     return ostr << "Laser Backscattering";
   case beamspectrum::DM:
-    return ostr << "Dark Matter";
-
+    return ostr<<"Dark Matter";
+  case beamspectrum::Fixed_Target:
+    return ostr<<"Fixed Target";
+  case beamspectrum::Leptonic:
+    return ostr<<"Leptonic with Beamstrahlung";
   default:
     break;
   }
@@ -106,8 +110,11 @@ Beam_Base* Beam_Parameters::InitSpectrum(const size_t& num)
     return InitializeReggeon(num);
   case beamspectrum::DM:
     return InitializeDM_beam(num);
-
-  default:
+  case beamspectrum::Fixed_Target :
+    return InitializeFixed_Target(num);
+  case beamspectrum::Leptonic :
+    return InitializeLeptonic(num);
+  default :
     break;
   }
   msg_Error() << "Warning in Beam_Initialization::SpecifySpectra :\n"
@@ -128,7 +135,16 @@ Beam_Base* Beam_Parameters::InitializeMonochromatic(int num)
                            1 - 2 * num);
 }
 
-Beam_Base* Beam_Parameters::InitializeLaserBackscattering(int num)
+Beam_Base * Beam_Parameters::InitializeLeptonic(int num)
+{
+  Flavour beam_particle     = GetFlavour("BEAMS",num);
+  double beam_energy        = Max((*this)("BEAM_ENERGIES",num), beam_particle.Mass());
+  double beam_polarization  = (*this)("BEAM_POLARIZATIONS",num);
+  return new Lepton_Beam(beam_particle,beam_energy,beam_polarization,1-2*num);
+}
+
+
+Beam_Base * Beam_Parameters::InitializeLaserBackscattering(int num)
 {
   Flavour beam_particle = GetFlavour("BEAMS", num);
   if ((beam_particle != Flavour(kf_e)) &&
@@ -350,6 +366,10 @@ bool Beam_Parameters::SpecifySpectra()
       m_beamspec[num] = beamspectrum::Reggeon;
     else if (bs == "DM_beam")
       m_beamspec[num] = beamspectrum::DM;
+    else if (bs == "Fixed_Target")
+      m_beamspec[num] = beamspectrum::Fixed_Target;
+    else if (bs == "Leptonic")
+      m_beamspec[num] = beamspectrum::Leptonic;
     else
       m_beamspec[num] = beamspectrum::unknown;
   }
