@@ -24,31 +24,30 @@ PARTICLE_DATA:
   23: {Mass: 91.1876, Width: 2.44407605833133}
   24: {Mass: 80.385, Width: 2.04544486478742}
   25: {Mass: 126, Width: 0.00407}
+
 PROCESSES:
-- 93 93 -> 11 -11 93:
-    NLO_Mode: Fixed_Order
-    NLO_Part: RS,
-    NLO_Order: {QCD: 1, EW: 0}
-    Order: {QCD: 1, EW: 2}
-    Print_Graphs: Graphs
+  - 93 93 -> 11 -11 93:
+      NLO_Mode: Fixed_Order
+      NLO_Part: RS,
+      NLO_Order: {QCD: 1, EW: 0}
+      Order: {QCD: 1, EW: 2}
+      Print_Graphs: Graphs
+
 SELECTORS:
-- DressedParticleSelector:
-    DressingAlgorithm: [Cone, 0.1]
-    Subselectors:
-    - Jet_Selector:
-        Input_Particles: [98]
-        Jet_Algorithm:
-          Type: antikt
-          PT: 30.0
-          R: 0.4
-          Eta: 2.5
-        Identify_As: [22, "E>0.5[rel]"]
-        NMin: 1
-    - [PTNLO, -11, 20.0, E_CMS]
-    - [PseudoRapidityNLO, -11, -2.5, 2.5]
-    - [PTNLO, 11, 20.0, E_CMS]
-    - [PseudoRapidityNLO, 11, -2.5, 2.5]
-    - [MassNLO, 11, -11, 60.0, 120.0]
-RIVET:
-  USE_HEPMC_SHORT: 1
-  --ignore-beams: 1
+  - DressedParticleSelector:
+      DressingAlgorithm: [Cone, 0.1]
+      Subselectors:
+        - Jet_Selector:
+            Input_Particles: [98]
+            Jet_Algorithm:
+              Type: antikt
+              PT: 30.0
+              R: 0.4
+              Eta: 2.5
+            Identify_As: [22, "E>0.5[rel]"]
+            NMin: 1
+        - [PT, -11, 20.0, E_CMS]
+        - [PseudoRapidity, -11, -2.5, 2.5]
+        - [PT, 11, 20.0, E_CMS]
+        - [PseudoRapidity, 11, -2.5, 2.5]
+        - [Mass, 11, -11, 60.0, 120.0]
