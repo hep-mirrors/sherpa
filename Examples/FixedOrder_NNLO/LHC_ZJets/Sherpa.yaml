@@ -4,7 +4,7 @@ BEAM_ENERGIES: 6500
 EVENTS: 100M
 SHERPA_LDADD: NNLOqT
 NNLOqT_FOMODE: 1
-ME_GENERATORS: [Comix, Amegic, BlackHat]
+ME_GENERATORS: [Comix, Amegic]
 EVENT_GENERATION_MODE: W
 EVENT_SEED_MODE: 3
 
@@ -26,16 +26,18 @@ PROCESSES:
     NLO_Mode: Fixed_Order
     ME_Generator: Amegic
     RS_ME_Generator: Comix
+    Loop_Generator: Internal
     PSI_ItMin: 100000
     RS_PSI_ItMin: 500000
     2->2:
       Special: MapOff
     KFactor: DYNNLO
-    Order: {QCD: Any, EW: 2}
+    Order: {QCD: 0, EW: 2}
+    NLO_Order: {QCD: 1, EW: 0}
 
 SELECTORS:
 - [Mass, 90, 90, 60, 120]
-- [NNLOqT, $(QTCUT)]
+- [NNLOqT, 1]
 
 RIVET:
   --analyses: [ATLAS_2011_S9131140, ATLAS_2012_I1204784, CMS_2012_I941555]
