@@ -811,6 +811,31 @@ double Channel_Elements::WeightYForward(const double yexponent,
   return wt;
 }
 
+double Channel_Elements::GaussianDist(double mean, double dev, double r1, double r2)
+{
+  // use  Marsaglia polar method
+  double  x1;
+  PRINT_VAR(r1);
+  PRINT_VAR(r2);
+  PRINT_VAR(mean);
+  PRINT_VAR(dev);
+  double r = r1*r1+r2*r2;
+  if(r > 1){
+    msg_Error()<<"Incorrect rans for Marsaglia method";
+    msg_Error()<<"r1 = "<<r1<<"\n r2 = "<<r2<<"\n r = "<<r;
+  }
+  x1 = sqrt(-2*log(r)/r);
+  return mean+dev*r1*x1;
+}
+
+double Channel_Elements::GaussianWeight(double mean,double std, double s, double &ran)
+{
+  double arg = sqr(mean-s)/2/std/std;
+  double wt = exp(-arg)/sqrt(2*M_PI*std*std);
+  return wt;
+}
+
+
 double Channel_Elements::GenerateYBackward(
     const double yexponent, const double tau, const Double_Container &xinfo,
     const Double_Container &yinfo, const double ran, const int mode) const {
@@ -892,6 +917,8 @@ double PHASIC::ExponentialDist(double ca,double cxm,double cxp,double ran)
   else              msg_Error()<<"Flat distribution specified, expected exponential"<<endl;
   return res;
 }
+
+
 double PHASIC::ExponentialWeight(double ca,double cxm,double cxp)
 {
   double wt = 0;
