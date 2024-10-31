@@ -98,8 +98,8 @@ void NLO_Base::Init(Flavour_Vector &flavs, Vec4D_Vector &plab, Vec4D_Vector &bor
 
 double NLO_Base::CalculateNLO() {
 	double result{0.0};
-	result += CalculateVirtual();
-	result += CalculateReal();
+	if(!m_real_only) result += CalculateVirtual();
+	if(!m_virtual_only) result += CalculateReal();
 	return result;
 }
 
