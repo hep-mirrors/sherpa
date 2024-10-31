@@ -381,9 +381,18 @@ void YFS_Handler::CalculateBeta() {
   if(!m_rmode && !m_int_nlo) return;
   double realISR(0), realFSR(0);
   if (m_betaorder > 0) {
-    if(m_real_only) m_real = p_dipoles->CalculateEEX()+1;
-    else if(m_virtual_only) m_real = p_dipoles->CalculateEEXVirtual();
-    else m_real = p_dipoles->CalculateEEX()+p_dipoles->CalculateEEXVirtual();
+    if(m_real_only) {
+      if(!m_no_born) m_real = p_dipoles->CalculateEEX()+1;
+      else m_real = p_dipoles->CalculateEEX();
+    }
+    else if(m_virtual_only) {
+      if(!m_no_born) m_real = p_dipoles->CalculateEEXVirtual();
+      else m_real = p_dipoles->CalculateEEXVirtual()-m_born;
+    }
+    else {
+      if(!m_no_born) m_real = p_dipoles->CalculateEEX()+p_dipoles->CalculateEEXVirtual();
+      else m_real = p_dipoles->CalculateEEX()/m_born+p_dipoles->CalculateEEXVirtual()/m_born;
+    }
     // if(m_real < 0) m_real = 0;
     // m_real /= m_born;
   }
