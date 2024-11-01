@@ -109,6 +109,7 @@ Exponential_Gaussian(const double exponent,const std::string cinfo,ATOOLS::Integ
   m_exponent(exponent)
 {
   m_name="Gaussian_"+ATOOLS::ToString(exponent)+"_Beam";
+  p_random = new ATOOLS::Random(12345);
   m_spkey.SetInfo(std::string("Gaussian_")+ATOOLS::ToString(exponent));
   m_spkey.Assign(cinfo+std::string("::s'"),5,0,info);
   m_sgridkey.Assign(m_spkey.Info(),1,0,info);
@@ -120,22 +121,16 @@ Exponential_Gaussian(const double exponent,const std::string cinfo,ATOOLS::Integ
   p_rans     = new double[m_rannum];
 }
 
+Exponential_Gaussian::~Exponential_Gaussian(){
+  if(p_random) delete p_random;
+}
+
 void Exponential_Gaussian::GeneratePoint(const double *rns)
 {
-  double *ran = p_vegas->GeneratePoint(rns);
-  for(int i=0;i<m_rannum;i++) p_rans[i]=ran[i];
-  double rr = 10;
-  double r1, r2;
-  while( rr > 1){
-    PRINT_VAR(ran[0]);
-    PRINT_VAR(ran[1]);
-    r1 = ran[0]*2.-1.;
-    r2 = ran[1]*2.-1.;
-    rr = r1*r1+r2*r2;
-  }
+  // double *ran = p_vegas->GeneratePoint(rns);
+  // for(int i=0;i<m_rannum;i++) p_rans[i]=ran[i];
   m_mean = m_spkey[1];
-  m_spkey[1] = m_spkey[3] = m_spkey[2] = CE.GaussianDist(m_mean,m_exponent,r1,r2);
-  PRINT_VAR(m_spkey[3]);
+  m_spkey[1] = m_spkey[3] = m_spkey[2] = CE.GaussianDist(m_mean,m_exponent, p_random->GetGaussian(),  p_random->GetGaussian());
 }
 
 void Exponential_Gaussian::GenerateWeight(const int & mode)
@@ -147,8 +142,8 @@ void Exponential_Gaussian::GenerateWeight(const int & mode)
   }
   // if (m_spkey[4]>0.0) { p_vegas->ConstChannel(0); m_spkey<<M_PI*2.0; }
 
-  p_rans[0] = m_sgridkey[0];
-  double pw = p_vegas->GenerateWeight(p_rans);
-  m_weight=pw*m_spkey.Weight()/m_spkey[2];
+  // p_rans[0] = m_sgridkey[0];
+  // double pw = p_vegas->GenerateWeight(p_rans);
+  // m_weight=m_spkey.Weight();
   // msg_Out()<<"s="<<m_spkey[3]<<", weight="<<m_weight<<"\n"; //debugging
 }
