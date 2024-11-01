@@ -78,8 +78,8 @@ bool Collider_Kinematics::operator()(ATOOLS::Vec4D_Vector& moms) {
     m_x[1] = m_xkey[5] = sqrt(tau) / yt;
   } else
     return false;
-  if (m_x[0] > 1. || m_x[1] > 1.)
-    return false;
+  if(m_x[0] > 1. && p_beams[0]->Type()!=beamspectrum::Leptonic) return false;
+  if(m_x[1] > 1. && p_beams[1]->Type()!=beamspectrum::Leptonic) return false;
   moms[0] = m_xkey[4] * m_p_plus + m_m2[0] / m_S / m_xkey[4] * m_p_minus;
   moms[1] = m_xkey[5] * m_p_minus + m_m2[1] / m_S / m_xkey[5] * m_p_plus;
   for (size_t i = 0; i < 2; ++i) {
