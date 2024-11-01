@@ -81,9 +81,8 @@ bool Beam_Channels::DefineColliderChannels() {
     return true;
   if (m_beamtype[0] == beamspectrum::Leptonic &&
       m_beamtype[1] == beamspectrum::Leptonic){
-      double dev = p_beamspectra->Dev();
       m_beamparams.push_back(Channel_Info(channel_type::exponential,
-                                        dev));
+                                         p_beamspectra->Dev()));
   }
   // one or two laser backscattering spectra with monochromatic beams
   if ((m_beamtype[0] == beamspectrum::monochromatic &&

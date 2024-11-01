@@ -76,7 +76,7 @@ namespace PHASIC {
     double ThresholdMomenta(double,double,double,double,double);
     double ThresholdWeight(double,double,double,double,double,double&);
 
-    double GaussianDist(double, double, double, double);
+    double GaussianDist(const double, const double, const double, const double);
     double GaussianWeight(double mean,double std, double s, double &ran);
 
     double GenerateDMRapidityUniform(const double masses[], const ATOOLS::Double_Container &spinfo,

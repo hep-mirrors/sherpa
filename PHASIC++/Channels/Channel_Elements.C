@@ -811,28 +811,16 @@ double Channel_Elements::WeightYForward(const double yexponent,
   return wt;
 }
 
-double Channel_Elements::GaussianDist(double mean, double dev, double r1, double r2)
+double Channel_Elements::GaussianDist(const double mean, const double dev, const double ran1, double ran2)
 {
-  // use  Marsaglia polar method
-  double  x1;
-  PRINT_VAR(r1);
-  PRINT_VAR(r2);
-  PRINT_VAR(mean);
-  PRINT_VAR(dev);
-  double r = r1*r1+r2*r2;
-  if(r > 1){
-    msg_Error()<<"Incorrect rans for Marsaglia method";
-    msg_Error()<<"r1 = "<<r1<<"\n r2 = "<<r2<<"\n r = "<<r;
-  }
-  x1 = sqrt(-2*log(r)/r);
-  return mean+dev*r1*x1;
+  return (mean+dev*dev*ran1+dev*dev*ran2);
 }
 
 double Channel_Elements::GaussianWeight(double mean,double std, double s, double &ran)
 {
   double arg = sqr(mean-s)/2/std/std;
   double wt = exp(-arg)/sqrt(2*M_PI*std*std);
-  return wt;
+  return sqrt(M_PI*2*std);
 }
 
 
