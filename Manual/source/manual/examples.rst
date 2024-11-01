@@ -106,6 +106,14 @@ Vector boson pairs + jets production
 
 .. include:: ./examples/vector-boson-pairs-jets-production.rst
 
+.. _BSM/UFO_SMEFTsim:
+
+**************************************
+SMEFT using UFO
+**************************************
+
+.. include:: ./examples/smeft-using-ufo.rst
+
 .. _MSSM/UFO:
 
 **************************************
