@@ -372,6 +372,7 @@ bool Beam_Parameters::SpecifySpectra() {
 }
 
 void Beam_Parameters::InitializeFlav(kf_code flav) {
+  constexpr double A = 0.93149410372;
   if (s_kftable.find(flav)==s_kftable.end()) {
     if (flav==kf_p_plus) {
       AddParticle(kf_p_plus, 0.938272, 0.8783, .0, 3, 1, 1, 1, "P+", "P^{+}");
@@ -383,24 +384,43 @@ void Beam_Parameters::InitializeFlav(kf_code flav) {
       AddParticle(kf_e, 0.000511, .0, .0, -3, 0, 1, 0, 1, 1, 0, "e-", "e+", "e^{-}", "e^{+}");
     }
     else if (flav==kf_photon) {
-      AddParticle(22, .0, .0, .0, 0, 0, 2, -1, 1, 1, 0, "P", "P", "P", "P");
-    }
-    else if (flav==kf_lead208) {
-      AddParticle(1000822080, 193.75, 5.5012, 82, 0, 0, "Pb208", "Pb208");
-    }
-    else if (flav==kf_lead207) {
-      AddParticle(1000822070, 192.82, 5.4943, 82, -1, 2, "Pb207", "Pb207");
-    }
-    else if (flav==kf_lead206) {
-      AddParticle(1000822060, 192.82, 5.4902, 82, 0, 2, "Pb206", "Pb206");
-    }
-    else if (flav==kf_gold197) {
-      AddParticle(1000791970, 183.5, 5.4371, 79, 3, 2, "Au197", "Au197");
-    }
-    else if (flav==kf_calcium40) {
-      AddParticle(1000200400, 37.26, 3.4776, 20, 0, 2, "Ca40", "Ca40");
-    }
-    else {
+      AddParticle(kf_photon,.0,.0,.0,0,0,2,-1,1,1,0,
+					  "P","P","P","P");
+    } else if (flav == kf_deuterium) {
+      AddParticle(kf_deuterium, 2.014 * A, 2.1, 0., 3,
+                                          0, true, 1, "deuterium", "H$_2$");
+    } else if (flav == kf_helium4) {
+      s_kftable[flav] = new Particle_Info(kf_helium4, 4.0026033 * A, 1.9049, 0.,
+                                          6, 0, true, 1, "helium4", "He$_4$");
+    } else if (flav == kf_carbon12) {
+      AddParticle(kf_carbon12, 12.0000000 * A, 2.7473, 0., 18, 0,
+                                true, 1, "carbon12", "C$_{12}$");
+    } else if (flav == kf_calcium40) {
+      s_kftable[flav] =
+              new Particle_Info(kf_calcium40, 39.9625912 * A, 4.1039, 0., 60, 0,
+                                true, 1, "calcium40", "Ca$_{40}$");
+    } else if (flav == kf_silver107) {
+      AddParticle(kf_silver107, 106.905097 * A, 5.6970, 0., 141,
+                                0, true, 1, "silver107", "Ag$_{107}$");
+    } else if (flav == kf_gold197) {
+      AddParticle(kf_gold197, 196.966552 * A, 6.9823, 0., 237, 0,
+                                true, 1, "gold197", "Au$_{197}$");
+    } else if (flav == kf_lead206) {
+      s_kftable[flav] =
+              new Particle_Info(kf_lead206, 205.9744653 * A, 7.0871, 0., 246, 0,
+                                true, 1, "lead206", "Pb$_{206}$");
+    } else if (flav == kf_lead207) {
+      s_kftable[flav] =
+              new Particle_Info(kf_lead207, 206.9758969 * A, 7.0986, 0., 246, 0,
+                                true, 1, "lead207", "Pb$_{207}$");
+    } else if (flav == kf_lead208) {
+      AddParticle(kf_lead208, 207.9766521 * A, 7.1100, 0., 246, 0,
+                                true, 1, "lead208", "Pb$_{208}$");
+    } else if (flav == kf_uranium238) {
+      s_kftable[flav] =
+              new Particle_Info(kf_uranium238, 238.0507900 * A, 7.4366, 0., 276,
+                                0, true, 1, "uranium238", "U$_{238}$");
+    } else {
       THROW(fatal_error,"You specified a beam particle "+ToString(flav)+
             "which is not contained in your chosen model. Will abort.");
     }
