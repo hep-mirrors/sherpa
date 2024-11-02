@@ -189,7 +189,7 @@ namespace ATOOLS {
 
     inline bool IsIon() const { return p_info->m_kfc>1000000000; }
 
-    inline int GetAtomicNumber() const { return (p_info->m_kfc/10)%1000; }
+    inline int GetAtomicNumber() const { return (p_info->m_kfc/10000)%1000; }
 
     inline void SetOn(const bool on) const { p_info->m_on=on; }
 
