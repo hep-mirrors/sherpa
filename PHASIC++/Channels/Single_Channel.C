@@ -98,27 +98,33 @@ void Single_Channel::CalculateLimits()
  		     <<"Virtual method called!"<<std::endl;
 }
 
-int Single_Channel::ChNumber() 
-{
-  msg_Error()<<"Method : Single_Channel::ChNumber()"<<std::endl;
-  return 0;
-}
-
-void Single_Channel::SetChNumber(int) 
-{
-  msg_Error()<<"Method : Single_Channel::SetChNumber()"<<std::endl;
-}
-
-const std::string Single_Channel::ChID() const
-{ 
-  msg_Error()<<"Virtual Method : Single_Channel::ChID()"<<std::endl;
-  return std::string(""); 
-}
-
-
 void Single_Channel::MPISync()
 {
 #ifdef USING__MPI
   THROW(not_implemented,"Channel not MPI ready");
 #endif
 }
+
+void Single_Channel::Optimize()              {}
+void Single_Channel::EndOptimize()           {}
+void Single_Channel::WriteOut(std::string)   {}
+void Single_Channel::ReadIn(std::string)     {}
+bool Single_Channel::OptimizationFinished()  { return false; }
+
+void Single_Channel::ISRInfo(int & type,double & mass,double & width) {
+  type = 0; mass = width = 0.0;
+}
+void Single_Channel::ISRInfo(std::vector<int> &ts,
+	     std::vector<double> &ms,std::vector<double> &ws) const {}
+
+void Single_Channel::MPISync();
+
+void Single_Channel::CopyMPIValues() {
+  m_res1 += m_mres1;
+  m_res2 += m_mres2;
+  m_mres1 = m_mres2 = 0.0;
+  m_status = 1;
+}
+
+size_t Single_Channel::NChannels() { return 1; }
+int Single_Channel::OType() { return 0; }

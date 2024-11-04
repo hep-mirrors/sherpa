@@ -459,7 +459,7 @@ bool Multi_Channel::ReadIn(std::string pID) {
 
 std::string Multi_Channel::ChID(int n)
 {
-  return channels[n]->ChID();
+  return channels[n]->Name();
 }
 
 bool Multi_Channel::Initialize()

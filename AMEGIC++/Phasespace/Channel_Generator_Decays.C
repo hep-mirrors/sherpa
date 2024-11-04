@@ -144,6 +144,7 @@ int Channel_Generator_Decays::MakeChannel(int& echflag,int n,string& path,string
     }
   }
   chf	<<"  p_vegas = new Vegas(m_rannum,100,m_name);"<<endl;
+  chf   <<"  m_name = std::string(\""<<m_idstr<<"\");"<<endl;  
   chf	<<"}"<<endl<<endl;
 
   //Destructor
