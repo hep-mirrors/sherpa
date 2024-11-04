@@ -107,7 +107,6 @@ namespace ATOOLS {
     bool IsDiQuark() const;
     bool IsBaryon() const;
     bool IsMeson() const;
-    bool IsNucleon() const;
     bool IsB_Hadron() const;
     bool IsC_Hadron() const;
 
@@ -186,6 +185,9 @@ namespace ATOOLS {
     inline bool Majorana() const { return p_info->m_majorana==1; }
 
     inline int FormFactor() const {return p_info->m_formfactor; }
+
+    inline bool IsNucleon() const
+    { return p_info->m_kfc == kf_p_plus || p_info->m_kfc == kf_n; }
 
     inline bool IsIon() const { return p_info->m_kfc>1000000000; }
 
