@@ -17,8 +17,7 @@ namespace PHASIC {
 
     Vegas *p_vegas;
     int m_type;
-    Flavour m_flv;
-    double m_alpha, m_ptmin;
+    double m_alpha, m_ptmin, m_flmass, m_flwidth;
 
   public :
 
@@ -32,14 +31,24 @@ namespace PHASIC {
       m_type=1;
       if (m_nout>1) {
 	if (!fl[2].Strong() && !fl[3].Strong()) {
-	  if (fl[3]==fl[2].Bar()) m_flv=Flavour(kf_Z);
-	  else m_flv=Flavour(kf_Wplus);
+	  if (fl[3]==fl[2].Bar()) {
+	    m_flmass=Flavour(kf_Z).Mass();
+	    m_flwidth=Flavour(kf_Z).Width();
+	  }
+	  else {
+	    m_flmass=Flavour(kf_Wplus).Mass();
+	    m_flwidth=Flavour(kf_Wplus).Width();
+	  }
 	  m_type=2;
 	}
       }
-      Data_Reader read(" ",";","!","=");
-      m_ptmin=read.GetValue<double>("MCFM_JET_PTMIN",30);
-      m_alpha=read.GetValue<double>("MCFM_TEXP",2);
+      Scoped_Settings s{ Settings::GetMainSettings()["PSI"] };
+      m_ptmin=s["MCFM_JET_PTMIN"].SetDefault(30).Get<double>();
+      m_alpha=s["MCFM_TEXP"].SetDefault(2).Get<double>();
+      m_flmass=s["MCFM_RESONANCE_MASS"].ResetDefault().
+	SetDefault(m_flmass).Get<double>();
+      m_flwidth=s["MCFM_RESONANCE_WIDTH"].ResetDefault().
+	SetDefault(m_flwidth).Get<double>();
       p_vegas = new Vegas(m_rannum,100,m_name);
     }
 
@@ -98,10 +107,10 @@ namespace PHASIC {
       double m2(p_ms[m_nin]);
       if (m_type==2) {
 	m2=CE.MassivePropMomenta
-	  (m_flv.Mass(),m_flv.Width(),
+	  (m_flmass,m_flwidth,
 	   cuts->scut[2][3],sqr(rtS-psum.Mass()),ran[irn++]);
 	m_weight/=2.*M_PI*CE.MassivePropWeight
-	  (m_flv.Mass(),m_flv.Width(),
+	  (m_flmass,m_flwidth,
 	   cuts->scut[2][3],sqr(rtS-psum.Mass()),m2,p_rans[irn-1]);
 	DEBUG_VAR(m2<<" "<<ran[irn-1]);
 	DEBUG_VAR(m2<<" "<<p_rans[irn-1]);
@@ -191,7 +200,7 @@ namespace PHASIC {
 	m2=(p[2]+p[3]).Abs2();
 	yv=(p[2]+p[3]).Y();
 	m_weight/=2.*M_PI*CE.MassivePropWeight
-	  (m_flv.Mass(),m_flv.Width(),
+	  (m_flmass,m_flwidth,
 	   cuts->scut[2][3],sqr(rtS-psum.Mass()),m2,p_rans[irn++]);
 	DEBUG_VAR(m2<<" "<<p_rans[irn-1]);
       }
