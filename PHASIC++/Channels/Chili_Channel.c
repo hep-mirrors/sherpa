@@ -13,7 +13,7 @@ using namespace ATOOLS;
 
 namespace PHASIC {
 
-  class MCFM_Channel : public Single_Channel {
+  class Chili_Channel : public Single_Channel {
 
     Vegas *p_vegas;
     int m_type;
@@ -21,10 +21,10 @@ namespace PHASIC {
 
   public :
 
-    MCFM_Channel(int _nin,int _nout,Flavour *fl):
+    Chili_Channel(int _nin,int _nout,Flavour *fl):
       Single_Channel(_nin,_nout,fl)
     {
-      m_name="MCFM Channel";
+      m_name="Chili Channel";
       m_incisr=1;
       m_rannum=3*m_nout-4+2;
       p_rans = new double[m_rannum];
@@ -43,16 +43,16 @@ namespace PHASIC {
 	}
       }
       Scoped_Settings s{ Settings::GetMainSettings()["PSI"] };
-      m_ptmin=s["MCFM_JET_PTMIN"].SetDefault(30).Get<double>();
-      m_alpha=s["MCFM_TEXP"].SetDefault(2).Get<double>();
-      m_flmass=s["MCFM_RESONANCE_MASS"].ResetDefault().
+      m_ptmin=s["Chili_JET_PTMIN"].SetDefault(30).Get<double>();
+      m_alpha=s["Chili_TEXP"].SetDefault(2).Get<double>();
+      m_flmass=s["Chili_RESONANCE_MASS"].ResetDefault().
 	SetDefault(m_flmass).Get<double>();
-      m_flwidth=s["MCFM_RESONANCE_WIDTH"].ResetDefault().
+      m_flwidth=s["Chili_RESONANCE_WIDTH"].ResetDefault().
 	SetDefault(m_flwidth).Get<double>();
       p_vegas = new Vegas(m_rannum,100,m_name);
     }
 
-    ~MCFM_Channel() { delete p_vegas; }
+    ~Chili_Channel() { delete p_vegas; }
 
     void GeneratePoint(Vec4D *p,Cut_Data *cuts,double *_ran)
     {
@@ -233,40 +233,40 @@ namespace PHASIC {
     void ISRInfo(int &type,double &mass,double &width)
     { type=-2; mass=0.; width=0.; }
 
-    std::string ChID() { return "MCFM_Channel"; }
+    std::string ChID() { return "Chili_Channel"; }
 
-  };// end of class MCFM_Channel
+  };// end of class Chili_Channel
 
-  class MCFM_Channel_Generator: public Channel_Generator {
+  class Chili_Channel_Generator: public Channel_Generator {
   public:
-    MCFM_Channel_Generator(const Channel_Generator_Key &key):
+    Chili_Channel_Generator(const Channel_Generator_Key &key):
     Channel_Generator(key) {}
     int GenerateChannels()
     {
       p_proc->FillIntegrator(&*p_proc->Integrator()->PSHandler());
       p_mc->DropAllChannels();
-      p_mc->Add(new MCFM_Channel
+      p_mc->Add(new Chili_Channel
 		(p_proc->NIn(),p_proc->NOut(),
 		 (Flavour*)&p_proc->Flavours().front()));
       return 0;
     }
-  };// end of class MCFM_Channel_Generator
+  };// end of class Chili_Channel_Generator
 
 }// end of namespace PHASIC
 
 using namespace PHASIC;
 
-DECLARE_GETTER(MCFM_Channel_Generator,"MCFM",
+DECLARE_GETTER(Chili_Channel_Generator,"Chili",
 	       Channel_Generator,Channel_Generator_Key);
 Channel_Generator *Getter
-<Channel_Generator,Channel_Generator_Key,MCFM_Channel_Generator>::
+<Channel_Generator,Channel_Generator_Key,Chili_Channel_Generator>::
 operator()(const Channel_Generator_Key &args) const
 {
-  return new MCFM_Channel_Generator(args);
+  return new Chili_Channel_Generator(args);
 }
 void Getter<Channel_Generator,Channel_Generator_Key,
-		    MCFM_Channel_Generator>::
+		    Chili_Channel_Generator>::
 PrintInfo(std::ostream &str,const size_t width) const
 { 
-  str<<"MCFM integrator";
+  str<<"Chili integrator";
 }
