@@ -43,13 +43,19 @@ namespace PHASIC {
 	}
       }
       Scoped_Settings s{ Settings::GetMainSettings()["PSI"] };
-      m_ptmin=s["Chili_JET_PTMIN"].SetDefault(30).Get<double>();
-      m_alpha=s["Chili_TEXP"].SetDefault(2).Get<double>();
-      m_flmass=s["Chili_RESONANCE_MASS"].ResetDefault().
+      m_ptmin=s["CHILI_JET_PTMIN"].SetDefault(30).Get<double>();
+      m_alpha=s["CHILI_TEXP"].SetDefault(2).Get<double>();
+      m_flmass=s["CHILI_RESONANCE_MASS"].ResetDefault().
 	SetDefault(m_flmass).Get<double>();
-      m_flwidth=s["Chili_RESONANCE_WIDTH"].ResetDefault().
+      m_flwidth=s["CHILI_RESONANCE_WIDTH"].ResetDefault().
 	SetDefault(m_flwidth).Get<double>();
       p_vegas = new Vegas(m_rannum,100,m_name);
+      static int citation(false);
+      if (!citation) {
+	rpa->gen.AddCitation
+	  (1,"Chili is published as \\cite{Bothmann:2023siu}.");
+	citation=true;
+      }
     }
 
     ~Chili_Channel() { delete p_vegas; }
