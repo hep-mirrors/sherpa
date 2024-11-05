@@ -90,29 +90,30 @@ Variations::Variations(Variations_Mode mode)
   ReadDefaults();
   int lhapdfverbosity(0);
   const bool needslhapdf(NeedsLHAPDF6Interface());
-  #ifndef USING__LHAPDF
-    if(needslhapdf) {
-      THROW(fatal_error, "LHAPDF has not been enabled during configuration and is required for PDF variations");
+#ifndef USING__LHAPDF
+  if (needslhapdf) {
+    THROW(fatal_error, "LHAPDF has not been enabled during configuration and "
+                       "is required for PDF variations");
+  }
+#else
+  if (needslhapdf) {
+    if (!s_loader->LibraryIsLoaded("LHAPDFSherpa")) {
+      THROW(fatal_error, "LHAPDF interface is not initialised.");
     }
-  #endif
-  #ifdef USING__LHAPDF
-    if (needslhapdf) {
-      if (!s_loader->LibraryIsLoaded("LHAPDFSherpa")) {
-        THROW(fatal_error, "LHAPDF interface is not initialised.");
-      }
-      lhapdfverbosity = LHAPDF::verbosity();
-      LHAPDF::setVerbosity(0);
-    }
-    InitialiseParametersVector();
+    lhapdfverbosity = LHAPDF::verbosity();
+    LHAPDF::setVerbosity(0);
+  }
+  InitialiseParametersVector();
 
-    if (!m_parameters_vector.empty() || !m_qcut_parameters_vector.empty()) {
-      rpa->gen.AddCitation(1, "The Sherpa-internal reweighting is published in \\cite{Bothmann:2016nao}.");
-    }
+  if (!m_parameters_vector.empty() || !m_qcut_parameters_vector.empty()) {
+    rpa->gen.AddCitation(1, "The Sherpa-internal reweighting is published in "
+                            "\\cite{Bothmann:2016nao}.");
+  }
 
-    if (needslhapdf) {
-      LHAPDF::setVerbosity(lhapdfverbosity);
-    }
-  #endif
+  if (needslhapdf) {
+    LHAPDF::setVerbosity(lhapdfverbosity);
+  }
+#endif
 }
 
 
