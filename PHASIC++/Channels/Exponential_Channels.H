@@ -2,6 +2,8 @@
 #define PHASIC_Channels_Exponential_Channels_H
 
 #include "PHASIC++/Channels/ISR_Channel_Base.H"
+#include "ATOOLS/Math/Random.H"
+
 
 namespace PHASIC {
   class Exponential_RelicDensity: public ISR_Channel_Base {
@@ -24,6 +26,19 @@ namespace PHASIC {
   public:
     Exponential_DM_Annihilation(const double exponent, const double mass1,const double mass2,
 			     const std::string cinfo, ATOOLS::Integration_Info *info);
+    void GeneratePoint(const double *rans);
+    void GenerateWeight(const int & mode=0);
+  };
+  class Exponential_Gaussian: public ISR_Channel_Base {
+  protected:
+    double m_exponent, m_dev, m_mean;
+    bool   m_zchannel;
+    ATOOLS::Info_Key m_spkey, m_sgridkey, m_xkey, m_xgridkey, m_cosxikey, m_cosgridkey;
+    ATOOLS::Random *p_random;
+  public:
+    Exponential_Gaussian(const double exponent,
+           const std::string cinfo, ATOOLS::Integration_Info *info);
+    ~Exponential_Gaussian();
     void GeneratePoint(const double *rans);
     void GenerateWeight(const int & mode=0);
   };
