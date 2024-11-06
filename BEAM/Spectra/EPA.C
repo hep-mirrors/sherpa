@@ -19,7 +19,7 @@ EPA::EPA(const Flavour& beam, const double energy, const double pol,
          const int dir)
     : Beam_Base(beamspectrum::EPA, beam, energy, pol, dir),
       m_type(EPA_ff_type::point), p_ff(nullptr), m_mass(m_beam.Mass(true)),
-      m_charge(m_beam.Charge()), m_plotting(0)
+      m_plotting(0)
 {
   if (m_beam.Charge() == 0.)
     THROW(fatal_error,

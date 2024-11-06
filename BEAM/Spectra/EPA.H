@@ -13,7 +13,7 @@ namespace BEAM {
   private:
     EPA_ff_type  m_type;
     EPA_FF_Base* p_ff;
-    double       m_mass, m_charge;
+    double       m_mass;
     double       m_aqed, m_pref;
     double       m_x, m_q2, m_pt2max;
     double       m_xmin, m_xmax, m_bmin, m_bmax;

@@ -53,8 +53,8 @@ namespace BEAM {
     {
       return (*p_N_xb)(x, b);
     };
-    virtual double SelectB(const double& x);
     virtual double ReducedN(const double& x) { return (*p_Nred_x)(x); }
+    virtual double SelectB(double x);
     virtual double FF(const double& Q2) { return 1.; }
 
     void         SetApprox(bool approx) { m_approx = approx; }
@@ -76,10 +76,11 @@ namespace BEAM {
     // inclusion of term ~(x m)^2
     inline virtual double Q2max(const double& x) const
     {
-      return ((m_pt2max > 0.)
-                      ? ATOOLS::Min(m_q2max, ATOOLS::sqr(m_mass * x) / (1 - x) +
-                                                     m_pt2max * (1. - x))
-                      : m_q2max);
+      return (m_pt2max > 0.)
+                     ? ATOOLS::Min(m_q2max,
+                                   (m_pt2max + ATOOLS::sqr(m_mass * x)) /
+                                           (1 - x))
+                     : m_q2max;
     }
 
     void OutputToCSV(const std::string& type);

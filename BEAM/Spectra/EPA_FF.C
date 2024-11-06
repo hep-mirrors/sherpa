@@ -43,7 +43,7 @@ EPA_FF_Base::EPA_FF_Base(const ATOOLS::Flavour& beam, const int dir)
      //
      //////////////////////////////////////////////////////////////////////////////
       m_beam(beam), m_mass(m_beam.Mass(true)), m_mass2(ATOOLS::sqr(m_mass)),
-      m_R(m_beam.Radius() / rpa->hBar_c()), m_q2min(0.), m_q2max(1.e99),
+      m_R(m_beam.Radius() / rpa->hBar_c()), m_q2min(0.), m_q2max(1.),
       m_pt2max(-1.), p_Nred_x(nullptr), p_N_xb(nullptr), p_Inv_xb(nullptr),
       m_approx(false)
 {
@@ -56,17 +56,16 @@ EPA_FF_Base::EPA_FF_Base(const ATOOLS::Flavour& beam, const int dir)
   m_nbbins      = s["bBins"].GetTwoVector<int>()[b];
 }
 
-double EPA_FF_Base::SelectB(const double& x)
+double EPA_FF_Base::SelectB(double x)
 {
   //////////////////////////////////////////////////////////////////////////////
   //
   // Internally, we assume b is in units of 1/GeV, we return it in fm here.
   //
   //////////////////////////////////////////////////////////////////////////////
-  double xeff(x);
-  if (xeff < m_xmin) xeff = m_xmin * (1. + 1.e-6);
-  if (xeff > m_xmax) xeff = m_xmax * (1. - 1.e-6);
-  double b = (*p_Inv_xb)(xeff, ran->Get());
+  if (x < m_xmin) x = m_xmin * (1. + 1.e-6);
+  if (x > m_xmax) x = m_xmax * (1. - 1.e-6);
+  double b = (*p_Inv_xb)(x, ran->Get());
   return b * rpa->hBar_c();
 }
 
