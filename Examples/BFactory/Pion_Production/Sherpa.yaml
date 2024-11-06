@@ -1,12 +1,12 @@
-# collider setup
+EVENT_GENERATION_MODE: 'Weighted'
+ANALYSIS: Rivet
 BEAMS:  [11, -11]
 BEAM_ENERGIES: 0.7/2
 
 # model parameters
-ALPHAS(MZ): 0.115
-ORDER_ALPHAS: 1
 PARTICLE_DATA:
-  211: {Mass: 0.1395699}
+  -211: 
+    Mass: 0.13957039
   11:
     Massive: 1
     Mass: 0.0005109989500
@@ -14,48 +14,40 @@ PARTICLE_DATA:
     Massive: 1
     Mass: 0.1056583755
 
-
+FRAGMENTATION: None
+BEAM_REMNANTS: None
 SHOWER_GENERATOR: None
+
 ME_GENERATORS: Internal
-SCALES: VAR{sqr(91.2)}
 PDF_LIBRARY: None
 
-EW_SCHEME: 1
+
+SCALES: VAR{Abs2(p[0]+p[1])}
 1/ALPHAQED(0): 137.035999084
 
-SCALES: VAR{1.02*1.02}
+# COUPLINGS:
+#   - "Alpha_QED 1"
 
-ME_QED: None
+
+# Alpha_QED:
+#   VPMODE: Full
+
+ME_QED: 
+  ENABLED: 0
+Pion:
+  Form_Factor: 1
 
 YFS:
-  MODE: 0
-  # ISR_MODE: 1
+  MODE: ISR
+  IR_CUTOFF: 1e-7
+
 PROCESSES:
-# electron positron -> pi+ pi-
-- 11 -11 -> 211 -211:
+- 11 -11 -> -211 211:
     Order: {QCD: 0, EW: 0}
 
 
-# PROCESSES:
-# #
-# # electron positron -> Y(4S) -> B+ B-
-# #
-# - 11 -11 -> 300553[a]:
-#     Decay: "300553[a] -> 521 -521"
-#     Order: {QCD: 0, EW: 0}
-# #
-# # electron positron -> Y(4S) -> B0 B0bar
-# #
-# - 11 -11 -> 300553[a]:
-#     Decay: "300553[a] -> 511 -511"
-#     Order: {QCD: 0, EW: 0}
-
-
-SELECTORS:
-  - [Polar_Angle, 211, 1, M_PI-1]
-  - [Polar_Angle, -211, 1, M_PI-1]
-  - [Acoplanarity, 211, -211, 0, 0.15]
-  - VariableSelector:
-      Variable: Calc(abs(Theta(p[0])+Theta(p[1]) - 3.14159265359 ) < 0.25)
-      Flavs: [-211, 211]
-      Ranges: [1, 1]
+RIVET:
+ IGNOREBEAMS: 1
+ ANALYSES:
+  - MC_XS
+  - cmd
