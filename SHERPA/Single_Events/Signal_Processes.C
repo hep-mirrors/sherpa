@@ -132,7 +132,7 @@ bool Signal_Processes::FillBlob(Blob_List *const bloblist,Blob *const blob)
     // Pass born momenta to in if using YFS
     if(p_yfshandler->Mode()!=YFS::yfsmode::off){
       particle = new Particle(0,proc->Flavours()[i],
-  			    p_yfshandler->BornMomenta()[i]);
+  			    p_yfshandler->FillBlob()?p_yfshandler->BornMomenta()[i]:p_yfshandler->GetMomenta()[i]);
     }
     else{
       particle = new Particle(0,proc->Flavours()[i],
