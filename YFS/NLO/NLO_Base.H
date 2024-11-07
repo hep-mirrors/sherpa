@@ -59,10 +59,12 @@ public:
   double CalculateReal();
   double CalculateRealReal();
   double CalculateReal(Vec4D k, int submode=0);
+  double CalculateRealReal(Vec4D k1, Vec4D k2, int fsrmode1=0, int fsrmode2=0);
   double CalculateRealVirtual();
   double CalculateRealVirtual(Vec4D k, int submode=0);
   void MakeHardMomenta();
   void MapMomenta(ATOOLS::Vec4D_Vector &p, ATOOLS::Vec4D &k);
+  void MapMomenta(ATOOLS::Vec4D_Vector &p, ATOOLS::Vec4D &k1, ATOOLS::Vec4D &k2);
   void MapInitial(ATOOLS::Vec4D_Vector &p);
   void CheckMassReg();
   double CalculateNLO();

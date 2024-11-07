@@ -329,9 +329,11 @@ double NLO_Base::CalculateRealVirtual() {
 	double real(0);
 	for (auto k : m_ISRPhotons) {
 		if(k.E()>1)	real+=CalculateRealVirtual(k,0);
+		else real+=m_oneloop*CalculateReal(k);
 	}
 	for (auto k : m_FSRPhotons) {
 		if(k.E()>1) real+=CalculateRealVirtual(k, 1);
+		else real+=m_oneloop*CalculateReal(k,1);
 	}
 	return real;
 }
@@ -408,18 +410,137 @@ double NLO_Base::CalculateRealReal() {
 	Vec4D_Vector photons, p(m_plab);
 	for (auto k : m_ISRPhotons) photons.push_back(k);
 	for (auto k : m_FSRPhotons) photons.push_back(k);
-	// if (NHardPhotons(photons) == 0) return 0;
-	double norm = 2.*pow(2 * M_PI, 3);
-	double mz = Flavour(kf_Z).Mass();
-	double gz = Flavour(kf_Z).Width();
 	Vec4D Q = m_bornMomenta[0]+m_bornMomenta[1];
 	// Vec4D_Vector photons;
+	double len = m_ISRPhotons.size();
 	double flux;
-	// for (int i = 0; i < photons.size(); ++i) {
-	// 	for (int j = 0; j < i; ++j) {
-	// 		p = m_plab;
-	// 		Vec4D k  = photons[i];
-	// 		Vec4D kk = photons[j];
+	for (int i = 0; i < photons.size(); ++i) {
+		for (int j = 0; j < i; ++j) {
+			Vec4D k  = photons[i];
+			Vec4D kk = photons[j];
+			real+=CalculateRealReal(k,kk, i>(len-1)?1:0, j>(len-1)?1:0);
+			// real+=CalculateRealReal(k,kk, 0, 1);
+		}
+	}
+	return real;
+}
+
+
+double NLO_Base::CalculateRealReal(Vec4D k1, Vec4D k2, int fsr1, int fsr2){
+	double norm = 2.*pow(2 * M_PI, 3);
+	Vec4D_Vector p(m_plab),pi(m_bornMomenta), pf(m_bornMomenta);
+	Vec4D kk1 = k1;
+	Vec4D kk2 = k2;
+	p_nlodipoles->MakeDipoles(m_flavs,m_plab,m_plab);
+	dipoletype::code fluxtype1 = p_nlodipoles->WhichResonant(k1);
+	dipoletype::code fluxtype2 = p_nlodipoles->WhichResonant(k2);
+  // if(fluxtype==dipoletype::final){
+  if(fsr1 && !fsr2){
+  	if(!HasFSR()) msg_Error()<<"Wrong dipole type in "<<METHOD<<endl;
+  	Dipole_Vector *diplo = p_dipoles->GetDipoleFF();
+  	Dipole dfs = p_nlodipoles->WhichDipole(k1,diplo);
+  	// for (Dipole_Vector::iterator Dip = p_nlodipoles->GetDipoleFF()->begin();
+    //    Dip != p_nlodipoles->GetDipoleFF()->end(); ++Dip) {
+		double scalek = p_fsr->ScalePhoton(k1+k2);
+		dfs.SetPhotonScale(scalek);
+		dfs.AddPhotonToDipole(k1);
+		// dfs.AddPhotonToDipole(k2);
+		if(!dfs.BoostNLO()) return 0;
+		int i(0);
+		for (auto f : dfs.m_flavs) {
+			p[p_nlodipoles->m_flav_label[f]] =  dfs.GetNewMomenta(i);
+			i++;
+  	}
+  	k1 = dfs.m_dipolePhotons[0];
+  	p.push_back(k1);
+  	MapMomenta(p,k2);
+  	p.pop_back();
+  	// k2 = dfs.m_dipolePhotons[1];
+  	// p.push_back(k2);
+ 		// MapInitial(p);
+ 		// p.pop_back();
+  }
+  if(!fsr1 && fsr2){
+  	if(!HasFSR()) msg_Error()<<"Wrong dipole type in "<<METHOD<<endl;
+  	Dipole_Vector *diplo = p_dipoles->GetDipoleFF();
+  	Dipole dfs = p_nlodipoles->WhichDipole(k2,diplo);
+  	// for (Dipole_Vector::iterator Dip = p_nlodipoles->GetDipoleFF()->begin();
+    //    Dip != p_nlodipoles->GetDipoleFF()->end(); ++Dip) {
+		double scalek = p_fsr->ScalePhoton(k2);
+		dfs.SetPhotonScale(scalek);
+		dfs.AddPhotonToDipole(k2);
+		if(!dfs.BoostNLO()) return 0;
+		int i(0);
+		for (auto f : dfs.m_flavs) {
+			p[p_nlodipoles->m_flav_label[f]] =  dfs.GetNewMomenta(i);
+			i++;
+  	}
+  	k1 = dfs.m_dipolePhotons[0];
+ 		MapMomenta(p,k1);
+  }
+  if(fsr1 && fsr2){
+  	if(!HasFSR()) msg_Error()<<"Wrong dipole type in "<<METHOD<<endl;
+  	Dipole_Vector *diplo = p_dipoles->GetDipoleFF();
+  	Dipole dfs = p_nlodipoles->WhichDipole(k2,diplo);
+  	// for (Dipole_Vector::iterator Dip = p_nlodipoles->GetDipoleFF()->begin();
+    //    Dip != p_nlodipoles->GetDipoleFF()->end(); ++Dip) {
+		double scalek = p_fsr->ScalePhoton(k2+k1);
+		dfs.SetPhotonScale(scalek);
+		dfs.AddPhotonToDipole(k1);
+		dfs.AddPhotonToDipole(k2);
+		if(!dfs.BoostNLO()) return 0;
+		int i(0);
+		for (auto f : dfs.m_flavs) {
+			p[p_nlodipoles->m_flav_label[f]] =  dfs.GetNewMomenta(i);
+			i++;
+  	}
+  	k1 = dfs.m_dipolePhotons[0];
+  	k2 = dfs.m_dipolePhotons[1];
+  }
+  if(!fsr1 && !fsr2) MapMomenta(p, k1, k2);
+ 	p.push_back(k1);
+ 	p.push_back(k2);
+ 	if(fsr1 || fsr2) MapInitial(p);
+ 	Vec4D_Vector pp = p;
+ 	pp.pop_back();
+ 	pp.pop_back();
+	p_nlodipoles->MakeDipolesII(m_flavs,pp,m_plab);
+	p_nlodipoles->MakeDipolesIF(m_flavs,pp,m_plab);
+	p_nlodipoles->MakeDipoles(m_flavs,pp,m_plab);
+	double flux;
+	flux = p_nlodipoles->CalculateFlux(k1,k2);
+	// else if(m_flux_mode==2) flux = 0.5*(p_nlodipoles->CalculateFlux(kk)+p_nlodipoles->CalculateFlux(k));
+	// else flux = p_dipoles->CalculateFlux(kk);
+	double tot,rcoll;
+	double subloc1 = p_nlodipoles->CalculateRealSubEEX(k1);
+	double subloc2 = p_nlodipoles->CalculateRealSubEEX(k2);
+	double sub1 = p_dipoles->CalculateRealSubEEX(k1);
+	double sub2 = p_dipoles->CalculateRealSubEEX(k2);
+	// if(fsrcount) subb = p_dipoles->CalculateRealSubEEX(k);
+	// else subb = p_dipoles->CalculateRealSubEEX(kk);
+	// if(IsZero(subb)) return 0;
+	if(!CheckMomentumConservation(p)) {
+		return 0;
+	}
+	double r = p_realreal->Calc_R(p) / norm /norm;
+	if(IsZero(r)) return 0;
+	if(IsBad(r) || IsBad(flux)) {
+		msg_Error()<<"Bad point for YFS Real"<<std::endl
+							 <<"Real ME is : "<<r<<std::endl
+							 <<"Flux is : "<<flux<<std::endl;
+		return 0;
+	}
+	m_recola_evts+=1;
+	double real1 = CalculateReal(k1);
+	double real2 = CalculateReal(k2);
+	tot = (r*flux -sub1*subloc2*real1 -sub2*subloc1*real2-subloc1*subloc2*m_born*m_rescale_alpha)/sub1/sub2;
+	// if(m_submode==submode::local) tot =  (r*flux-subloc*m_born*m_rescale_alpha)/subloc;
+
+  if(IsBad(tot)){
+  	msg_Error()<<"NNLO RR is NaN"<<std::endl;
+  }
+	return tot;
+}
 	// 		MapMomenta(p, k, kk);
 	// 		CheckMasses(p);
 	// 		flux  = (Q-kk-k).Abs2()/(Q).Abs2();
@@ -460,8 +581,6 @@ double NLO_Base::CalculateRealReal() {
 	// 		real += (r - subb)/subb1/subb2;
 	// 	}
 	// }
-	return real;
-}
 
 
 
@@ -547,6 +666,84 @@ void NLO_Base::MapMomenta(Vec4D_Vector &p, Vec4D &k) {
 	pRot2.Rotate(k);
 	boostLab.BoostBack(k);
 }
+
+
+
+void NLO_Base::MapMomenta(Vec4D_Vector &p, Vec4D &k1, Vec4D &k2) {
+	Vec4D Q;
+	Vec4D QQ, PP;
+  double s = (m_plab[0]+m_plab[1]).Abs2();
+  double t = (m_plab[0]-m_plab[2]).Abs2();
+  m_ranTheta = acos(1.+2.*t/s);
+	m_ranPhi = ran->Get()*2.*M_PI;
+	Poincare boostLab(m_bornMomenta[0]+m_bornMomenta[1]);
+	for (int i = 2; i < p.size(); ++i)
+	{
+		Q += p[i];
+	}
+	Q += k1+k2;
+	double sq = Q.Abs2();
+	Poincare boostQ(Q);
+  Poincare pRot(m_bornMomenta[0], Vec4D(0., 0., 0., 1.));
+	for (int i = 0; i < p.size(); ++i) {
+		pRot.Rotate(p[i]);
+		boostQ.Boost(p[i]);
+		// RandomRotate(p[i]);
+	}
+	// pRot.Rotate(k);
+	boostQ.Boost(k1);
+	boostQ.Boost(k2);
+	// RandomRotate(k);
+	double qx(0), qy(0), qz(0);
+	for (int i = 2; i < p.size(); ++i)
+	{
+		qx += p[i][1];
+		qy += p[i][2];
+		qz += p[i][3];
+	}
+	// if (!IsEqual(k[1], -qx, 1e-5) || !IsEqual(k[2], -qy, 1e-5) || !IsEqual(k[3], -qz, 1e-5) ) {
+	// 	if( k[1]> 1e-6 && k[2]> 1e-6 && k[3]> 1e-6 ){
+	// 		msg_Error() << "YFS Mapping has failed for ISR\n";
+	// 		msg_Error() << " Photons px = " << k[1] << "\n Qx = " << -qx << std::endl;
+	// 		msg_Error() << " Photons py = " << k[2] << "\n Qy = " << -qy << std::endl;
+	// 		msg_Error() << " Photons pz = " << k[3] << "\n Qz = " << -qz << std::endl;
+	// 	}
+	// 	}
+	for (int i = 2; i < p.size(); ++i)
+	{
+		QQ += p[i];
+	}
+	QQ+=k1+k2;
+	double sqq = QQ.Abs2();
+	if (!IsEqual(sqq, sq, 1e-6))
+	{
+		msg_Error() << "YFS Real mapping not conserving momentum in " << METHOD << std::endl;
+	}
+	// if(m_is_isr) QQ = p[0]+p[1];
+  // double zz = sqrt(sqq) / 2.;
+	// double z = zz * sqrt((sqq - sqr(m_flavs[0].Mass() - m_flavs[1].Mass())) * (sqq - sqr(m_flavs[0].Mass() + m_flavs[1].Mass()))) / sqq;
+	double sign_z = (p[0][3] < 0 ? -1 : 1);
+	// p[0] = {zz, 0, 0, z};
+	// p[1] = {zz, 0, 0, -z};
+  double m1 = m_flavs[0].Mass();
+  double m2 = m_flavs[1].Mass();
+  double lamCM = 0.5*sqrt(SqLam(sqq,m1*m1,m2*m2)/sqq);
+  double E1 = lamCM*sqrt(1+m1*m1/sqr(lamCM));
+  double E2 = lamCM*sqrt(1+m2*m2/sqr(lamCM));
+ 	p[0] = {E1, 0, 0, sign_z*lamCM};
+  p[1] = {E2, 0, 0, -sign_z*lamCM};
+  Poincare pRot2(m_bornMomenta[0], Vec4D(0., 	0., 0, 1.));
+	for (int i = 0; i < p.size(); ++i)
+	{
+		pRot2.Rotate(p[i]);
+		boostLab.BoostBack(p[i]);
+	}
+	pRot2.Rotate(k1);
+	pRot2.Rotate(k2);
+	boostLab.BoostBack(k1);
+	boostLab.BoostBack(k2);
+}
+
 
 void NLO_Base::MapInitial(Vec4D_Vector &p){
 	Vec4D QQ;
@@ -682,4 +879,3 @@ void NLO_Base::CheckRealSub(Vec4D k){
 		out_sub.close();
 		exit(0);
 }
-
