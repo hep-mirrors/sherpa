@@ -661,11 +661,12 @@ double Define_Dipoles::CalculateFlux(const Vec4D &k, const Vec4D &kk){
   if(!HasFSR()){
     for (auto &D : m_dipolesII) {
       QX = D.GetMomenta(0)+D.GetMomenta(1);
-      Q =  D.GetBornMomenta(0)+D.GetBornMomenta(1);
+      Q =  D.GetMomenta(0)+D.GetMomenta(1);
     }
-    sq = QX.Abs2();
-    sx = (QX-k-kk).Abs2();
+    sq = Q.Abs2();
+    sx = (Q-k-kk).Abs2();
     flux = sx/sq;
+    return flux;
   }
   else if(m_mode==yfsmode::isrfsr){
     for (auto &D : m_dipolesFF) {

@@ -275,14 +275,16 @@ bool Dipole::BoostNLO() {
   }
   else if (Type() == dipoletype::final) {
     if (m_dipolePhotons.size() == 0) return true;
-    if (m_dipolePhotons.size() != 1){
-      msg_Error()<<"Wrong Photon multiplicity in BoostNLO \n"
-                 <<"Photon vector size: "<<m_dipolePhotons.size()<<std::endl
-                 <<"Photons Generated: "<<m_Nphotons<<std::endl;
-    }
-    if(!IsEqual(m_dipolePhotons[0],m_photonSum)){
-      msg_Error()<<"Wrong photon momentum in "<<METHOD<<std::endl;
-    }
+    m_photonSum*=0;
+    for(auto &k: m_dipolePhotons) m_photonSum+=k;
+    // if (m_dipolePhotons.size() != 1){
+    //   msg_Error()<<"Wrong Photon multiplicity in BoostNLO \n"
+    //              <<"Photon vector size: "<<m_dipolePhotons.size()<<std::endl
+    //              <<"Photons Generated: "<<m_Nphotons<<std::endl;
+    // }
+    // if(!IsEqual(m_dipolePhotons[0],m_photonSum)){
+    //   msg_Error()<<"Wrong photon momentum in "<<METHOD<<std::endl;
+    // }
     // Check that the final state fermions
     // are in their own restframe;
     m_ranTheta = acos(1.-2.*ran->Get());
@@ -303,7 +305,6 @@ bool Dipole::BoostNLO() {
     Vec4D qqk = m_momenta[0] + m_momenta[1] + m_photonSum;
     p_Pboost = new Poincare(qqk);
     Vec4D ref = m_bornmomenta[0];
-    
     boost.Boost(ref);
     Poincare rot(ref, Vec4D(0,0,0,1));
     SetBoost(boost);
@@ -324,7 +325,6 @@ bool Dipole::BoostNLO() {
       m_photonSum+=k;
     }
     if (p_Pboost) delete p_Pboost;
-    qqk = m_newmomenta[0]+m_newmomenta[1]+m_dipolePhotons[0];
     return true;
   }
   return true;
