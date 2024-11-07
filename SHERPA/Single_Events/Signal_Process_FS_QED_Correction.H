@@ -35,6 +35,7 @@ namespace SHERPA {
     Matrix_Element_Handler  * p_mehandler;
     Soft_Photon_Handler     * p_sphotons;
     ATOOLS::NLO_subevtlist  * p_newsublist;
+    YFS::YFS_Handler        * p_yfsisr;
 
     void RegisterDefaults(ATOOLS::Scoped_Settings&);
 
