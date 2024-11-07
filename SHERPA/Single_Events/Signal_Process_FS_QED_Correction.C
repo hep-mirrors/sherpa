@@ -37,7 +37,7 @@ Signal_Process_FS_QED_Correction::Signal_Process_FS_QED_Correction(
 {
   Settings& s = Settings::GetMainSettings();
   Scoped_Settings meqedsettings{ s["ME_QED"] };
-
+  p_yfsisr = p_mehandler->GetYFS();
   DEBUG_FUNC("");
   m_name      = string("Lepton_FS_QED_Corrections:");
   m_type      = eph::Perturbative;
@@ -71,8 +71,9 @@ Signal_Process_FS_QED_Correction::Signal_Process_FS_QED_Correction(
   // Force Photons++ to be off if YFS ISR is switched on.
   // In principle they can be combined but that will
   // require some tweaks - A.Price
-  if(p_mehandler->GetYFS()->Mode()!=YFS::yfsmode::off) m_on=false;
+  if(p_yfsisr->Mode()!=YFS::yfsmode::off) m_on=false;
   if (m_on && m_qed) m_name += p_sphotons->SoftQEDGenerator();
+  if(p_yfsisr->Mode()!=YFS::yfsmode::off) m_name += "ISR+FSR";
   else               m_name += "None";
 }
 
@@ -84,6 +85,7 @@ Signal_Process_FS_QED_Correction::~Signal_Process_FS_QED_Correction()
 
 Return_Value::code Signal_Process_FS_QED_Correction::Treat(Blob_List* bloblist)
 {
+  // if (!m_on && p_yfsisr->Mode()==YFS::yfsmode::off) return Return_Value::Nothing;
   if (!m_on) return Return_Value::Nothing;
   if (bloblist->empty()) {
     msg_Error()<<"Signal_Process_FS_QED_Correction::Treat"
@@ -94,6 +96,49 @@ Return_Value::code Signal_Process_FS_QED_Correction::Treat(Blob_List* bloblist)
   }
   // look for QCD corrected hard process in need for QED
   Blob * sigblob(bloblist->FindLast(btp::Shower));
+  // if(p_yfsisr->Mode()!=YFS::yfsmode::off){
+  //   sigblob->AddStatus(blob_status::needs_extraQED);
+  //   ATOOLS::Vec4D_Vector isrphotons = p_yfsisr->GetISRPhotons();
+  //   ATOOLS::Vec4D_Vector fsrphotons;
+  //   Particle *inparticle, *outparticle;
+  //   sigblob = bloblist->FindFirst(btp::Signal_Process);
+  //   Blob * YFSblob = bloblist->AddBlob(btp::QED_Radiation);
+  //   for (unsigned int i=0;i<p_mehandler->Process()->NIn();i++) {
+  //   inparticle = new Particle(0,p_mehandler->Process()->Flavours()[i],
+  //          p_yfsisr->BornMomenta()[i]);
+  //   outparticle = new Particle(0,p_mehandler->Process()->Flavours()[i],
+  //          p_yfsisr->GetMomenta()[i]);
+  //   inparticle->SetNumber(0);
+  //   inparticle->SetInfo('H');
+  //   YFSblob->AddToInParticles(inparticle);
+  //   YFSblob->AddToOutParticles(outparticle);
+  // }
+  //   if (p_yfsisr->HasFSR()) {
+  //     fsrphotons = p_yfsisr->GetFSRPhotons();
+  //   }
+  //   if (p_yfsisr->FillBlob()) {
+  //     for (int i = 0; i < isrphotons.size(); ++i)
+  //     {
+  //       outparticle = new Particle(-1, Flavour(22),
+  //                               isrphotons[i]);
+  //       outparticle->SetNumber(0);
+  //       outparticle->SetInfo('S');
+  //       // outparticle->SetStatus(part_status::decayed);
+  //       YFSblob->AddToOutParticles(outparticle);
+  //     }
+  //     for (int i = 0; i < fsrphotons.size(); ++i)
+  //     {
+  //       outparticle = new Particle(-1, Flavour(22),
+  //                               fsrphotons[i]);
+  //       outparticle->SetNumber(0);
+  //       outparticle->SetInfo('S');
+  //       YFSblob->AddToOutParticles(outparticle);
+  //     }
+  //   }
+  //   YFSblob->UnsetStatus(blob_status::needs_extraQED);
+  //   YFSblob->SetStatus(blob_status::needs_reconnections | blob_status::needs_hadronization);
+  //   return Return_Value::Success;
+  // }
   // if NLO QCD, no shower blob, take ME blob instead, status not set yet
   if (m_onme) {
     sigblob = bloblist->FindFirst(btp::Signal_Process);
