@@ -163,6 +163,7 @@ bool YFS_Handler::MakeYFS(ATOOLS::Vec4D_Vector &p)
   p_isr->SetV(m_v);
   if (m_v <= m_deltacut && m_mode!=yfsmode::fsr) { // correction weight included in Generate photon
     m_yfsweight = 0.0;
+    Reset();
     return false;
   }
   if (!CalculateISR()) return 0;
