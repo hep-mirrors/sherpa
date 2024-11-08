@@ -51,8 +51,8 @@ void EPA_Spectra_Plotter::Init() {
   if (m_beam.IsIon()) {
     m_xmin  = 1./double(m_nxbins);
     m_xmax  = 1.+m_xmin;
-    m_minx  = 1.e-5/m_beam.GetAtomicNumber();
-    m_maxx  = 1./m_beam.GetAtomicNumber();
+    m_minx  = 1.e-5/m_beam.GetMassNumber();
+    m_maxx  = 1./m_beam.GetMassNumber();
     m_xvals = { 0.001, 0.01, 0.1 };
   }
   else {
@@ -162,14 +162,9 @@ FillAnalytic(const enum EPA_ff_type & type,const double & Q2max) {
   for (int xi=0;xi<m_nxbins;xi++) {
     double x   = m_xmin + (double(xi)+0.5)*m_xsize;
     double arg = x / (m_beam.IsIon() ? m_beam.GetAtomicNumber() : 1.);
-    double n   = ff->N(arg);
+    double n   = ff->N(arg, 0.1);
     msg_Out()<<"    N("<<arg<<" --> "<<x<<") = "<<n<<"\n";
     m_histograms[Nx]->Insert(x,n);
-    if (type==EPA_ff_type::point) {
-      double nred = ff->ReducedN(arg), ratio = nred/n;
-      m_histograms[Nx_red]->Insert(x,nred);
-      m_histograms[Ratiox]->Insert(x,ratio);
-    }
   }
   if (type==EPA_ff_type::point) {
     for (int bi=0;bi<m_nbbins;bi++) {
@@ -248,16 +243,6 @@ FillNumerical(const EPA_ff_type & type,const double & Q2max) {
 	double arg = x / (m_beam.IsIon() ? m_beam.GetAtomicNumber() : 1.);
 	m_histograms[Nxb[i][j]]->Insert(b,ff[i]->N(arg,b));
       }
-    }
-  }
-  for (int xi=0;xi<m_nxbins;xi++) {
-    double x   = m_xmin + (double(xi)+0.5)*m_xsize;
-    double arg = x / (m_beam.IsIon() ? m_beam.GetAtomicNumber() : 1.);
-    for (size_t i=0;i<maxapp;i++) {
-      double n = ff[i]->N(arg), nred = ff[i]->ReducedN(arg);
-      m_histograms[Nx[i]]->Insert(x,n);
-      m_histograms[Nredx[i]]->Insert(x,nred);
-      m_histograms[Ratiox[i]]->Insert(x,nred/n);
     }
   }
   for (size_t i=0;i<maxapp;i++) delete ff[i];
