@@ -44,7 +44,7 @@ EPA_FF_Base::EPA_FF_Base(const ATOOLS::Flavour& beam, const int dir)
      //////////////////////////////////////////////////////////////////////////////
       m_beam(beam), m_mass(beam.Mass(true)), m_mass2(ATOOLS::sqr(m_mass)),
       m_R(beam.Radius() / rpa->hBar_c()), m_q2min(0.), m_q2max(1.),
-      m_pt2max(-1.), p_Nred_x(nullptr), p_N_xb(nullptr), p_Inv_xb(nullptr),
+      m_pt2max(-1.), p_N_xb(nullptr), p_Inv_xb(nullptr),
       m_approx(false)
 {
   const auto& s = Settings::GetMainSettings()["EPA"];
