@@ -7,6 +7,7 @@
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/MyStrStream.H"
 
+// TOOD check this file for correct implementations on this branch
 namespace ATOOLS {
   /*!
     \file
@@ -180,21 +181,28 @@ namespace ATOOLS {
 
     double Kn(const int order,const double & x) const
     {
-      if (x>10.) {
-	double fouro2 = 4.*sqr(double(order));
-	double eightz = 8.*x;
-	return ( sqrt(M_PI/(2.*x))*exp(-x) *
-		 (1. + (fouro2-1.)/eightz +
-		  (fouro2-1.)*(fouro2-9.)/(2.*sqr(eightz)) +
-		  (fouro2-1.)*(fouro2-9.)*(fouro2-25.)/(6.*pow(eightz,3.)) +
-		  (fouro2-1.)*(fouro2-9.)*(fouro2-25.)*(fouro2-49.)/(24.*pow(eightz,4.)) ));
+      if (x<=0.) return 0.;
+      double kn(0.),darg(dabs(x)), y;
+      if (order==1) {
+        if (darg<=2.0) {
+          y   = sqr(darg)/4.;
+          kn  = log(darg/2.)*In(1,darg);
+          kn += ((((((-0.4686e-4*y-0.110404e-2)*y-0.1919402e-1)*y-0.18156897)*y
+                   -0.67278579)*y+0.15443144)*y+1.)/darg;
+        }
+        else {
+          y   = 2./darg;
+          kn  = exp(-darg)/sqrt(darg);
+          kn *= ((((((-0.68245e-3*y+0.325614e-2)*y-0.780353e-2)*y+
+                    0.1504268e-1)*y-0.3655620e-1)*y+0.23498619)*y+1.25331414);
+        }
       }
-      switch (order) {
-        case 0: return ATOOLS::cyl_bessel_0(x);
-        case 1: return ATOOLS::cyl_bessel_1(x);
-        case 2: return ATOOLS::cyl_bessel_2(x);
-        default: THROW(not_implemented, "Bessel function of order "+std::to_string(order)+" not implemented");
+      else {
+        msg_Error()<<"Error in "<<METHOD<<"("<<order<<", "<<x<<")\n:"
+                    <<"   Not implemented yet.  Exit the run.\n";
+        exit(1);
       }
+      return kn;
     }
 
     void TestBessel(const std::string & dirname) const
