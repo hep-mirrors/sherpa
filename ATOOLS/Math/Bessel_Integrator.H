@@ -27,7 +27,6 @@ namespace ATOOLS {
   private:
     Kernel              m_kernel;
     size_t              m_order, m_maxbins, m_depth, m_maxdepth, m_iterator;
-    double              m_xmin, m_xmax;
     std::vector<double> m_zeroes, m_extrema, m_F, m_Psi;
     std::vector<std::vector<double> > m_M, m_N;
     void   Test();
@@ -36,14 +35,13 @@ namespace ATOOLS {
   public:
     explicit Bessel_Integrator(ATOOLS::Function_Base * f,const size_t & order=1);
 
-    double operator()(const double & xmin=0., const double & xmax=-1.);
+    double operator()();
 
     inline void SetF(ATOOLS::Function_Base * f)      { m_kernel.SetFunc(f); }
     inline void SetOrder(const size_t & order)       { m_order    = order; }
     inline void SetMaxBins(const size_t & maxbins)   { m_maxbins  = maxbins; }
     inline void SetDepth(const size_t & depth)       { m_depth    = depth; }
     inline void SetIterator(const size_t & iterator) { m_iterator = iterator; }
-    inline void SetXmin(const double & xmin)         { m_xmin     = xmin; }
   };
 }
 
