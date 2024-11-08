@@ -10,9 +10,9 @@ DM_Annihilation_Kinematics::DM_Annihilation_Kinematics(std::array<Beam_Base*, 2>
 }
 
 void DM_Annihilation_Kinematics::InitIntegration() {
-  Beam_Parameters parameters;
+  auto& s = Settings::GetMainSettings();
   double Emin = m_m[0]+m_m[1];   // Equal to mass energy
-  double Emax = Emin + parameters("RELIC_DENSITY_EMAX");
+  double Emax = Emin + s["RELIC_DENSITY_EMAX"].Get<double>();
   m_smin = sqr(Emin);
   m_smax = sqr(Emax);
   m_S    = sqr(Emin);

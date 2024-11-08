@@ -8,9 +8,9 @@ using namespace ATOOLS;
 DM_Annihilation_Weight::DM_Annihilation_Weight(Kinematics_Base * kinematics) :
   Weight_Base(kinematics), m_relativistic(true)
 {
-  Beam_Parameters parameters;
-  m_relativistic = parameters.On("DM_RELATIVISTIC");
-  m_temperature  = parameters("DM_TEMPERATURE");
+  auto& s = Settings::GetMainSettings();
+  m_relativistic = s["DM_RELATIVISTIC"].Get<bool>();
+  m_temperature  = s["DM_TEMPERATURE"].Get<double>();
   for (size_t i=0;i<2;i++) {
     m_m[i]        = p_kinematics->m(i);
     m_m2[i]       = p_kinematics->m2(i);
