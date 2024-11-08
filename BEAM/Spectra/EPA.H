@@ -16,7 +16,8 @@ namespace BEAM {
     double       m_mass;
     double       m_aqed, m_pref;
     double       m_x, m_q2, m_pt2max;
-    double       m_xmin, m_xmax, m_bmin, m_bmax;
+    double       m_xmin, m_xmax;
+    double       m_b;
 
     size_t m_plotting;
 
