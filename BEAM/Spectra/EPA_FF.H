@@ -4,8 +4,9 @@
 #include "ATOOLS/Math/Function_Base.H"
 #include "ATOOLS/Math/Lookup_Tables.H"
 #include "ATOOLS/Phys/Flavour.H"
-#include <iostream>
+#include "ATOOLS/Org/Message.H"
 #include <fstream>
+#include <iostream>
 
 namespace ATOOLS {
   class Settings;
@@ -13,12 +14,15 @@ namespace ATOOLS {
 
 namespace BEAM {
   enum class EPA_ff_type {
-    point      = 0,
-    Gauss      = 1,
-    dipole     = 2,
-    hcs        = 11,
-    smooth_hcs = 12,
-    WoodSaxon  = 13
+    point        = 0,
+    proton       = 1,
+    protonApprox = 2,
+    Gauss        = 10,
+    hcs          = 11,
+    dipole       = 12,
+    dipoleApprox = 13,
+    WoodSaxon    = 14,
+    Test         = 99
   };
 
   class EPA_FF_Base {
@@ -35,7 +39,6 @@ namespace BEAM {
 
     virtual void Fill_Nxb_Table(ATOOLS::axis& xaxis, ATOOLS::axis& baxis);
     virtual void Fill_Invxb_Table();
-    virtual void Fill_Nredx_Table();
     virtual void TestInvxb();
 
   public:
@@ -46,35 +49,36 @@ namespace BEAM {
       if (p_N_xb) delete p_N_xb;
       if (p_Inv_xb) delete p_Inv_xb;
     }
-    virtual void   FillTables(const size_t& nx, const size_t& nb) = 0;
-    virtual double operator()(const double& x, const double& Q2)  = 0;
-    virtual double N(const double& x)                             = 0;
+    virtual void   FillTables(const size_t& nx, const size_t& nb);
+    virtual double operator()(const double& x, const double& Q2) = 0;
     virtual double N(const double& x, const double& b)
     {
+      double w((*p_N_xb)(x, b));
+      //msg_Out() << METHOD << "("<<x<<", "<<b<<") = " << w << "\n";
       return (*p_N_xb)(x, b);
     };
-    virtual double ReducedN(const double& x) { return (*p_Nred_x)(x); }
     virtual double SelectB(double x);
-    virtual double FF(const double& Q2) { return 1.; }
+    virtual double FF(const double& Q2) = 0;
 
     void         SetApprox(bool approx) { m_approx = approx; }
     virtual void SetRadius(const double& R) { m_R = R; }
     virtual void SetPT2Max(const double& pt2max) { m_pt2max = pt2max; }
     void         SetQ2Max(const double q2max) { m_q2max = q2max; }
 
-    virtual double Mass() const { return m_beam.Mass(); }
+    double Mass() const { return m_beam.Mass(); }
+    double Radius() const { return m_R; }
 
     virtual ATOOLS::TwoDim_Table* GetN_xb() const { return p_N_xb; }
     virtual ATOOLS::OneDim_Table* GetNred_x() const { return p_Nred_x; }
 
-    inline virtual double Q2min(const double& x) const
+    inline double Q2min(const double& x) const
     {
       return ATOOLS::Max(m_q2min, ATOOLS::sqr(m_mass * x) / (1 - x));
     }
     // Use maximal angle for the scattered electron in Q^2_max,
     // compare with hep-ph/9610406 and hep-ph/9310350 for the
     // inclusion of term ~(x m)^2
-    inline virtual double Q2max(const double& x) const
+    inline double Q2max(const double& x) const
     {
       return (m_pt2max > 0.)
                      ? ATOOLS::Min(m_q2max,
@@ -101,53 +105,81 @@ namespace BEAM {
     double operator()(double y) override;
   };
 
-  class Nred_x_int : public ATOOLS::Function_Base {
-  private:
-    EPA_FF_Base* p_ff;
-    double       m_x;
-
-  public:
-    explicit Nred_x_int(EPA_FF_Base* ff) : p_ff(ff), m_x(0.) {}
-    inline void SetX(const double& x) { m_x = x; }
-    double      operator()(double b) override;
-  };
-
   class EPA_Point final : public EPA_FF_Base {
-  private:
-    void Fill_Nxb_Table(ATOOLS::axis& xaxis, ATOOLS::axis& baxis) override;
-
   public:
     EPA_Point(const ATOOLS::Flavour& beam, int dir);
     void   FillTables(const size_t& nx, const size_t& nb) override;
     double operator()(const double& x, const double& Q2) override;
-    double N(const double& x) override;
-    double SelectB(const double& x) override;
+    double SelectB(double x) override;
     double N(const double& x, const double& b) override;
-    double ReducedN(const double& x) override;
+    double FF(const double& Q2) override { return 1.; }
   };
 
-  class EPA_Dipole final : public EPA_FF_Base {
-  private:
-    double m_Q02, m_mu2, m_aDip, m_bDip, m_cDip;
-    double phi(const double& y, const double& arg) const;
-
-  public:
-    explicit EPA_Dipole(const ATOOLS::Flavour& beam, int dir);
-    void   FillTables(const size_t& m_nxbins, const size_t& m_nbbins) override;
-    double operator()(const double& x, const double& Q2) override;
-    double N(const double& x) override;
-  };
-
-  class EPA_Gauss final : public EPA_FF_Base {
+  class EPA_Proton final : public EPA_FF_Base {
   private:
     double m_Q02, m_mu2;
 
   public:
-    EPA_Gauss(const ATOOLS::Flavour& beam, int dir);
-    void   FillTables(const size_t& nx, const size_t& nb) override;
+    EPA_Proton(const ATOOLS::Flavour& beam, int dir);
     double operator()(const double& x, const double& Q2) override;
-    double N(const double& x) override;
-    double FF(const double& Q2) override { return exp(-Q2 / m_Q02); }
+    double FF(const double& Q2) override
+    {
+      return std::pow(1. + Q2 / m_Q02, -2);
+    }
+  };
+
+  class EPA_ProtonApprox final : public EPA_FF_Base {
+  private:
+    double m_mu2;
+
+  public:
+    EPA_ProtonApprox(const ATOOLS::Flavour& beam, int dir);
+    double operator()(const double& x, const double& Q2) override;
+    double FF(const double& Q2) override { return 1.; }
+  };
+
+  class EPA_Gauss final : public EPA_FF_Base {
+  private:
+    double m_Q02, m_Zsquared;
+
+  public:
+    EPA_Gauss(const ATOOLS::Flavour& beam, int dir);
+    double operator()(const double& x, const double& Q2) override;
+    double FF(const double& Q2) override { return exp(-Q2 / m_Q02 / 2.); }
+  };
+
+  class EPA_HCS final : public EPA_FF_Base {
+  private:
+    double m_Zsquared;
+
+  public:
+    EPA_HCS(const ATOOLS::Flavour& beam, int dir);
+    double operator()(const double& x, const double& Q2) override;
+    double FF(const double& QR) override
+    {
+      return 3 * (std::sin(QR) / std::pow(QR, 3) -
+             std::cos(QR) / ATOOLS::sqr(QR));
+    }
+  };
+
+  class EPA_Dipole final : public EPA_FF_Base {
+  private:
+    double m_Q02, m_Zsquared;
+
+  public:
+    explicit EPA_Dipole(const ATOOLS::Flavour& beam, int dir);
+    double operator()(const double& x, const double& Q2) override;
+    double FF(const double& Q2) override { return std::pow(1. + Q2 / m_Q02, -2); }
+  };
+
+  class EPA_DipoleApprox final : public EPA_FF_Base {
+  private:
+    double m_Q02, m_Zsquared;
+
+  public:
+    explicit EPA_DipoleApprox(const ATOOLS::Flavour& beam, int dir);
+    double operator()(const double& x, const double& Q2) override;
+    double FF(const double& Q2) override { return 1.; }
   };
 
   class EPA_WoodSaxon final : public EPA_FF_Base {
@@ -211,8 +243,15 @@ namespace BEAM {
     }
     void   FillTables(const size_t& nx, const size_t& nb) override;
     double operator()(const double& x, const double& Q2) override;
-    double N(const double& x) override;
     double FF(const double& Q2) override { return (*p_FF_Q2)(Q2); }
+  };
+
+  class EPA_Test final : public EPA_FF_Base {
+  public:
+    explicit EPA_Test(const ATOOLS::Flavour& beam, int dir);
+    void   FillTables(const size_t& m_nxbins, const size_t& m_nbbins) override;
+    double operator()(const double& x, const double& Q2) override;
+    double FF(const double& Q2) override { return 0.; }
   };
 }// end of namespace BEAM
 
