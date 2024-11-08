@@ -253,8 +253,8 @@ void ISR::Weight() {
     // m_massW = 1.0;
     // m_jacW = 1.0;
     m_weight = m_g * pow(m_v, m_g - 1);
-    double B = pow(m_isrcut, m_g) * (-m_g * m_isrcut + m_g + 1.) / (m_g + 1.);
-    double D = pow(m_deltacut, m_g) * (-m_g * m_deltacut + m_g + 1.) / (m_g + 1.);
+    double B = pow(m_isrcut, m_gp) * (-m_gp * m_isrcut + m_gp + 1.) / (m_gp + 1.);
+    double D = pow(m_deltacut, m_gp) * (-m_gp * m_deltacut + m_gp + 1.) / (m_gp + 1.);
     corrW = 1. / (1. - D / B);
     m_weight *= corrW;
   }
