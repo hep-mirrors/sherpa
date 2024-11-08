@@ -31,7 +31,6 @@ namespace BEAM {
     double                m_mass, m_mass2, m_R;
     double                m_q2min, m_q2max, m_pt2max;
     double                m_xmin, m_xmax, m_bmin, m_bmax;
-    ATOOLS::OneDim_Table* p_Nred_x;
     ATOOLS::TwoDim_Table *p_N_xb, *p_Inv_xb;
 
     size_t m_nxbins, m_nbbins;
@@ -45,7 +44,6 @@ namespace BEAM {
     EPA_FF_Base(const ATOOLS::Flavour& beam, int dir);
     virtual ~EPA_FF_Base()
     {
-      if (p_Nred_x) delete p_Nred_x;
       if (p_N_xb) delete p_N_xb;
       if (p_Inv_xb) delete p_Inv_xb;
     }
@@ -69,7 +67,6 @@ namespace BEAM {
     double Radius() const { return m_R; }
 
     virtual ATOOLS::TwoDim_Table* GetN_xb() const { return p_N_xb; }
-    virtual ATOOLS::OneDim_Table* GetNred_x() const { return p_Nred_x; }
 
     inline double Q2min(const double& x) const
     {
