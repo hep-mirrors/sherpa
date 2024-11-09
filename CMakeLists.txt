@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.12.0 FATAL_ERROR)
 project(SHERPA-MC LANGUAGES C  CXX)
 #The complicated way to set the version is used to assure the simple
 #replacement of version variable with sed will not break the CMakeLists.txt
-set(EXTERNAL_VERSION_STRING "3.0.0")
+set(EXTERNAL_VERSION_STRING "3.1.x")
 string(REPLACE "."  ";" EXTERNAL_VERSION_LIST "${EXTERNAL_VERSION_STRING}")
 list(GET EXTERNAL_VERSION_LIST 0 SHERPA_VERSION_MAJOR)
 list(GET EXTERNAL_VERSION_LIST 1 SHERPA_VERSION_MINOR)
@@ -13,7 +13,6 @@ SET(SHERPA_VERSION ${SHERPA_VERSION_MAJOR}.${SHERPA_VERSION_MINOR}.${SHERPA_VERS
 # remove "alpha1", "beta2" etc.
 string(REGEX REPLACE "[a-z]+[0-9]+" "" SHERPA_VERSION_PATCH_NUMBER
   "${SHERPA_VERSION_PATCH}")
-math(EXPR SHERPA_VERSION_CODE "${SHERPA_VERSION_MAJOR} * 1000000 + ${SHERPA_VERSION_MINOR} * 1000 + ${SHERPA_VERSION_PATCH_NUMBER}")
 message(STATUS "SHERPA: SHERPA_VERSION=${SHERPA_VERSION}")
 message(STATUS "SHERPA: SHERPA_VERSION_MAJOR=${SHERPA_VERSION_MAJOR}")
 message(STATUS "SHERPA: SHERPA_VERSION_MINOR=${SHERPA_VERSION_MINOR}")
@@ -1040,8 +1039,6 @@ $<IF:$<BOOL:${SHERPA_ENABLE_BINRELOC}>,#define ENABLE_BINRELOC \"1\",/* #undef E
 #define SHERPA_VERSION \"${SHERPA_VERSION_MAJOR}\"\n\n\
 /* Sherpa version name */\n\
 #define SHERPA_NAME \"Erebus\"\n\n\
-/* Sherpa version code */\n\
-#define SHERPA_VERSION_CODE ${SHERPA_VERSION_CODE}\n\n\
 /* Using colour */\n\
 #define USING__COLOUR \"1\"\n\n\
 #define PYTHON_LIBS \"${SHERPA_Python_SITEARCH}\"\n\n\
