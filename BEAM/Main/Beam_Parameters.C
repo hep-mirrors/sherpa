@@ -167,19 +167,12 @@ Beam_Base * Beam_Parameters::InitializeSimpleCompton(int num)
 
 Beam_Base * Beam_Parameters::InitializeEPA(int num)
 {
-  Flavour beam_particle     = GetFlavour("BEAMS",num);
-  if (beam_particle.Kfcode()!=kf_p_plus &&
-      beam_particle.Kfcode()!=kf_e &&
-      !beam_particle.IsIon()) {
-    msg_Error() << "Error in Beam_Initialization::SpecifySpectra:\n"
-                << "   Tried to initialize EPA for " << beam_particle << ".\n"
-                << "   This option is not available (yet).\n";
-    return nullptr;
-  }
-  double beam_energy = (*this)("BEAM_ENERGIES",num);
-  if (beam_particle.IsIon()) beam_energy *= beam_particle.GetAtomicNumber();
-  double beam_polarization = (*this)("BEAM_POLARIZATIONS",num);
-  return new EPA(beam_particle,beam_energy,beam_polarization,1-2*num);
+  Flavour beam_particle = GetFlavour("BEAMS", num);
+  double beam_energy = m_settings["BEAM_ENERGIES"].GetTwoVector<double>()[num];
+  if (beam_particle.IsIon()) beam_energy *= beam_particle.GetMassNumber();
+  double beam_polarization =
+          m_settings["BEAM_POLARIZATIONS"].GetTwoVector<double>()[num];
+  return new EPA(beam_particle, beam_energy, beam_polarization, 1 - 2 * num);
 }
 
 Beam_Base * Beam_Parameters::InitializePomeron(int num)
