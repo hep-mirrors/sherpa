@@ -152,13 +152,6 @@ Beam_Base* Beam_Parameters::InitializeSimpleCompton(int num)
 Beam_Base* Beam_Parameters::InitializeEPA(int num)
 {
   Flavour beam_particle = GetFlavour("BEAMS", num);
-  if (beam_particle.Kfcode() != kf_p_plus && beam_particle.Kfcode() != kf_e &&
-      !beam_particle.IsIon()) {
-    msg_Error() << "Error in Beam_Initialization::SpecifySpectra:\n"
-                << "   Tried to initialize EPA for " << beam_particle << ".\n"
-                << "   This option is not available (yet).\n";
-    return nullptr;
-  }
   double beam_energy = m_settings["BEAM_ENERGIES"].GetTwoVector<double>()[num];
   if (beam_particle.IsIon()) beam_energy *= beam_particle.GetMassNumber();
   double beam_polarization =
