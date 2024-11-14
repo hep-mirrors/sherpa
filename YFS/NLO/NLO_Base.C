@@ -357,7 +357,7 @@ void NLO_Base::MapMomenta(Vec4D_Vector &p, Vec4D &k) {
 	// if(m_is_isr) QQ = p[0]+p[1];
   // double zz = sqrt(sqq) / 2.;
 	// double z = zz * sqrt((sqq - sqr(m_flavs[0].Mass() - m_flavs[1].Mass())) * (sqq - sqr(m_flavs[0].Mass() + m_flavs[1].Mass()))) / sqq;
-	double sign_z = (p[0][3] < 0 ? 1 : -1);
+	double sign_z = (p[0][3] < 0 ? -1 : 1);
 	// p[0] = {zz, 0, 0, z};
 	// p[1] = {zz, 0, 0, -z};
   double m1 = m_flavs[0].Mass();
