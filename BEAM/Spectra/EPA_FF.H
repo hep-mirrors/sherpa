@@ -51,8 +51,6 @@ namespace BEAM {
     virtual double operator()(const double& x, const double& Q2) = 0;
     virtual double N(const double& x, const double& b)
     {
-      double w((*p_N_xb)(x, b));
-      //msg_Out() << METHOD << "("<<x<<", "<<b<<") = " << w << "\n";
       return (*p_N_xb)(x, b);
     };
     virtual double SelectB(double x);
@@ -65,8 +63,6 @@ namespace BEAM {
 
     double Mass() const { return m_beam.Mass(); }
     double Radius() const { return m_R; }
-
-    virtual ATOOLS::TwoDim_Table* GetN_xb() const { return p_N_xb; }
 
     inline double Q2min(const double& x) const
     {
@@ -105,9 +101,9 @@ namespace BEAM {
   class EPA_Point final : public EPA_FF_Base {
   public:
     EPA_Point(const ATOOLS::Flavour& beam, int dir);
-    void   FillTables(const size_t& nx, const size_t& nb) override;
+    void   FillTables(const size_t& nx, const size_t& nb) override {};
+    double SelectB(double x) override { return 0.; };
     double operator()(const double& x, const double& Q2) override;
-    double SelectB(double x) override;
     double N(const double& x, const double& b) override;
     double FF(const double& Q2) override { return 1.; }
   };
