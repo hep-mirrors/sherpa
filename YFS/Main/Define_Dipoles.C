@@ -587,7 +587,8 @@ double Define_Dipoles::CalculateFlux(const Vec4D &k){
   if(m_noflux==1) return 1;
   if(HasISR()&&HasFSR()){
     // fluxtype = WhichResonant(k);
-    fluxtype = dipoletype::final;
+    fluxtype = dipoletype::initial;
+    // fluxtype = dipoletype::ifi;
   }
   else if(HasISR()){
     fluxtype = dipoletype::initial;
@@ -619,6 +620,23 @@ double Define_Dipoles::CalculateFlux(const Vec4D &k){
       flux = (sq/sx);
     } 
     return flux;
+  }
+  if(fluxtype==dipoletype::ifi){
+    flux = 1;
+    for (auto &D : m_dipolesII) {
+      QX = D.GetNewMomenta(0)+D.GetNewMomenta(1);
+      Q =  D.GetMomenta(0)+D.GetMomenta(1);
+      sq = (Q).Abs2(); 
+      sx = (Q-k).Abs2();
+      flux *= (sx/sq);
+    }
+    for (auto &D : m_dipolesFF) {
+      Q  = D.GetBornMomenta(0)+D.GetBornMomenta(1);
+      QX = D.GetMomenta(0)+D.GetMomenta(1);
+      sq = (Q).Abs2();
+      sx = (Q+k).Abs2();
+      flux *= (sq/sx);
+    }
   }
   return flux;
 }

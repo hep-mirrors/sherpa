@@ -287,7 +287,6 @@ bool Dipole::BoostNLO() {
     m_ranTheta = acos(1.-2.*ran->Get());
     m_ranPhi = ran->Get()*2.*M_PI;
     Vec4D Q = m_bornmomenta[0]+m_bornmomenta[1];
-    Poincare boost(m_bornmomenta[0]+m_bornmomenta[1]);
     // boost.Boost(m_photonSum);
     double x = 1./(1-m_photonSum.E());
     double y = 1./(1. + m_photonSum.E()/m_photonscale);
@@ -303,23 +302,28 @@ bool Dipole::BoostNLO() {
     p_Pboost = new Poincare(qqk);
     Vec4D ref = m_bornmomenta[0];
     
+    Poincare boost(m_momenta[0] + m_momenta[1]);
+    Poincare boostb(Q);
     boost.Boost(ref);
     Poincare rot(ref, Vec4D(0,0,0,1));
     SetBoost(boost);
     SetRotate(rot);
     for (size_t i = 0; i < 2; ++i)
     {
-      Boost(m_momenta[i]);
-      // p_boost.Boost(m_momenta[i]);
-      // p_rotate.Rotate(m_momenta[i]);
+      // Boost(m_momenta[i]);
+      p_Pboost->Boost(m_momenta[i]);
+      p_rotate.Rotate(m_momenta[i]);
+      boostb.Boost(m_momenta[i]);
       m_newmomenta[i]=m_momenta[i];
     }
     // m_eikmomentum = m_momenta;
     m_photonSum*=0.;
     for (auto &k : m_dipolePhotons) {
-      Boost(k);
+      // Boost(k);
+      // p_boost.Boost(k);
+      // p_Pboost->Boost(k);
       // p_rotate.Rotate(k);
-      // p_boost.BoostBack(k);
+      boostb.Boost(k);
       m_photonSum+=k;
     }
     if (p_Pboost) delete p_Pboost;

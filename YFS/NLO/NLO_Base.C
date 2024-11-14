@@ -235,8 +235,15 @@ double NLO_Base::CalculateReal(Vec4D k, int fsrcount) {
 	double tot,rcoll;
 	double subloc = p_nlodipoles->CalculateRealSub(k);
 	double subb;
-	if(fsrcount) subb = p_dipoles->CalculateRealSubEEX(k);
+	if(fsrcount) subb = p_dipoles->CalculateRealSubEEX(kk);
 	else subb = p_dipoles->CalculateRealSubEEX(kk);
+	// if(!fsrcount){
+	// 	for(auto &D : p_dipoles->m_dipolesII) subb += D.Eikonal(kk, D.GetMomenta(0), D.GetMomenta(1));
+	// }
+	// else{
+	// 	for(auto &D : p_dipoles->m_dipolesFF) subb += D.Eikonal(kk, D.GetMomenta(0), D.GetMomenta(1));
+	// }
+
 	if(IsZero(subb)) return 0;
 	if(!CheckMomentumConservation(p)) {
 		if(m_isr_debug || m_fsr_debug){
@@ -319,7 +326,7 @@ void NLO_Base::MapMomenta(Vec4D_Vector &p, Vec4D &k) {
 		boostQ.Boost(p[i]);
 		// RandomRotate(p[i]);
 	}
-	// pRot.Rotate(k);
+	pRot.Rotate(k);
 	boostQ.Boost(k);
 	// RandomRotate(k);
 	double qx(0), qy(0), qz(0);
@@ -350,7 +357,7 @@ void NLO_Base::MapMomenta(Vec4D_Vector &p, Vec4D &k) {
 	// if(m_is_isr) QQ = p[0]+p[1];
   // double zz = sqrt(sqq) / 2.;
 	// double z = zz * sqrt((sqq - sqr(m_flavs[0].Mass() - m_flavs[1].Mass())) * (sqq - sqr(m_flavs[0].Mass() + m_flavs[1].Mass()))) / sqq;
-	double sign_z = (p[0][3] < 0 ? -1 : 1);
+	double sign_z = (p[0][3] < 0 ? 1 : -1);
 	// p[0] = {zz, 0, 0, z};
 	// p[1] = {zz, 0, 0, -z};
   double m1 = m_flavs[0].Mass();
@@ -366,8 +373,8 @@ void NLO_Base::MapMomenta(Vec4D_Vector &p, Vec4D &k) {
 		pRot2.Rotate(p[i]);
 		boostLab.BoostBack(p[i]);
 	}
-	pRot2.Rotate(k);
-	boostLab.BoostBack(k);
+	// pRot2.Rotate(k);
+	// boostLab.BoostBack(k);
 }
 
 void NLO_Base::MapInitial(Vec4D_Vector &p){
@@ -390,9 +397,9 @@ void NLO_Base::MapInitial(Vec4D_Vector &p){
   Poincare pRot;
 	for (int i = 0; i < 2; ++i)
 	{
-		if(i==0) pRot = Poincare(p[i], Vec4D(0., 0., 0., 1.));
-		// pRot.Rotate(p[i]);
 		boostLab.BoostBack(p[i]);
+		// if(i==0) pRot = Poincare(p[i], Vec4D(0., 0., 0., 1.));
+		// pRot.Rotate(p[i]);
 		// pRot2.Rotate(p[i]);
 	}
 }
