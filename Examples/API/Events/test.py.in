@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 @LOADMPIFORPY@
 import sys
 sys.path.append('@PYLIBDIR@')
@@ -13,7 +12,7 @@ try:
         blobs=Generator.GetBlobList();
         print("Event",n,"{")
         ## print blobs
-        print("  Weight ",blobs.GetFirst(1)["Weight"]);
+        print("  Weight ",blobs.Weight());
         print("  Trials ",blobs.GetFirst(1)["Trials"]);
         for i in range(0,blobs.size()):
             print("  Blob",i,"{")
@@ -38,6 +37,6 @@ try:
         print("} Event",n)
         if ((n%100)==0): print("  Event ",n)
     Generator.SummarizeRun()
-        
+
 except Sherpa.SherpaException as exc:
     exit(1)
