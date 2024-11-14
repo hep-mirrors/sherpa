@@ -93,10 +93,6 @@ void EPA_FF_Base::Fill_Nxb_Table(axis& xaxis, axis& baxis)
             << "b in [" << baxis.m_xmin << ", " << baxis.m_xmax << "], "
             << "from R = " << m_R << " 1/GeV = " << (m_R * rpa->hBar_c())
             << " fm.\n";
-  m_xmin                   = xaxis.m_xmin;
-  m_xmax                   = xaxis.m_xmax;
-  m_bmin                   = baxis.m_xmin;
-  m_bmax                   = baxis.m_xmax;
   p_N_xb                   = new TwoDim_Table(xaxis, baxis);
   N_xb_int*         kernel = new N_xb_int(this);
   Bessel_Integrator bessel(kernel, 1);
@@ -247,9 +243,7 @@ double N_xb_int::operator()(double y)
 
 EPA_Point::EPA_Point(const ATOOLS::Flavour& beam, const int dir)
     : EPA_FF_Base(beam, dir)
-{
-  // FillTables(m_nxbins, m_nbbins);
-}
+{ }
 
 double EPA_Point::operator()(const double& x, const double& Q2)
 {
@@ -258,14 +252,6 @@ double EPA_Point::operator()(const double& x, const double& Q2)
   double wt = (1. + sqr(1. - x)) / 2.;
   if (!m_approx) wt -= (1. - x) * q2min / Q2;
   return wt / x / Q2;
-}
-
-void EPA_Point::FillTables(const size_t& nx, const size_t& nb)
-{
-  /*axis xaxis(nx, 1.e-5, 1., axis_mode::log);
-  axis baxis(nb, 1.e-3, 1.e6, axis_mode::log);
-  Fill_Nxb_Table(xaxis, baxis);
-  Fill_Invxb_Table();*/
 }
 
 double EPA_Point::N(const double& x, const double& b)
@@ -286,8 +272,6 @@ double EPA_Point::N(const double& x, const double& b)
   if (f < 0) f = 0.;
   return f;
 }
-
-double EPA_Point::SelectB(double x) { return 0.; }
 
 ////////////////////////////////////////////////////////////////////////////////
 //
