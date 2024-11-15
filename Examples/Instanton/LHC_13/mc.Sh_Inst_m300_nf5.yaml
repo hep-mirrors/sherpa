@@ -145,7 +145,7 @@ HARD_DECAYS:
     Enabled: False
 
 # me generator settings
-ME_SIGNAL_GENERATOR: [Internal]
+ME_GENERATORS: Internal
 PROCESSES:
 - 21 21 -> 999:      
      Order: {EW: 2, QCD: Any}

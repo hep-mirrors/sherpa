@@ -55,12 +55,15 @@ Examples/VBF_Interference/BH_Interface/Comix.py
 Examples/VBF_Interference/Tests/Comix.py
 
 # test run output
-Examples/*/Process
+Process
+makelibs
 References.tex
+Settings_Report
 Results.zip
 Results.zip~
 /Testing/
 Tests/End2End/UFO/TestProcesses.tar.gz
+Tests/End2End/UFO/TestProcesses/
 Tests/End2End/UFO/run_all.py
 Tests/UFO/
 

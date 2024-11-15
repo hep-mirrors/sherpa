@@ -42,7 +42,7 @@ FREEZE_PDF_FOR_LOW_Q: 1
 MI_HANDLER: None
 
 # me generator settings
-ME_SIGNAL_GENERATOR: [Internal]
+ME_GENERATORS: Internal
 
 PROCESSES:
 - 21 21 -> 999:
