@@ -1059,6 +1059,9 @@ bool Initialization_Handler::InitializeTheUnderlyingEvents()
   ///////////////////////////////////////////////////////////
   // define up to three multiple interaction handlers ...
   ///////////////////////////////////////////////////////////
+  if (m_isrhandlers[isr::hard_process]->Mode() != PDF::isrmode::hadron_hadron)
+    Settings::GetMainSettings()["MI_HANDLER"].OverrideScalar<std::string>(
+            "None");
   std::vector<isr::id> isrtypes;
   isrtypes.push_back(isr::hard_subprocess);
   if (m_isrhandlers.find(isr::bunch_rescatter)!=m_isrhandlers.end())
