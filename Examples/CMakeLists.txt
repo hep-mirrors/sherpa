@@ -89,7 +89,6 @@ set (INSTALL_PATHS
      EPA/LEP_EPA_BosonPairs.yaml
      EPA/LEP_EPA_JetProduction.yaml
      EPA/LHC_EPA_JetProduction.yaml
-     EPA/LHC_EPA_Muons_Rescatter.yaml
      EPA/MinBias.yaml
      FixedOrder/MINLO_ppenuj/Sherpa.yaml
      FixedOrder/NLO_EW_ppWW/Sherpa.LO.yaml
@@ -137,7 +136,6 @@ set (INSTALL_PATHS
      Photoproduction/LEP/Sherpa.Direct.yaml
      Photoproduction/LEP/Sherpa.Double-Resolved.yaml
      Photoproduction/LEP/Sherpa.Single-Resolved.yaml
-     RelicDensity/LEP_ee_mumu.yaml
      RelicDensity/Sherpa.yaml
      RemnantTests/SimpleHera/Sherpa.yaml
      RemnantTests/SimpleLEP/Sherpa.EPA.yaml
@@ -154,7 +152,6 @@ set (INSTALL_PATHS
      Soft_QCD/LHC_7TeV_MinBias/Amisic.yaml
      Soft_QCD/LHC_7TeV_MinBias/Elastic.yaml
      Soft_QCD/LHC_7TeV_MinBias/Shrimps.yaml
-     Soft_QCD/LHC_7TeV_MinBias/SoftDiffractive.yaml
      Tops_plus_Jets/LHC_Tops/Sherpa.EWapprox.yaml
      Tops_plus_Jets/LHC_Tops/Sherpa.Reconnect.yaml
      Tops_plus_Jets/LHC_Tops/Sherpa.yaml
