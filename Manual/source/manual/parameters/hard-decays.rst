@@ -309,7 +309,7 @@ daughter particles.
 
 In all cases, one can exclude the replacement of a particle below a
 given width threshold using :option:`Min_Prop_Width: <threshold>`
-(default 0.0).  Both settings are sub-settings of
+(default is ``std::numeric_limits<double>::min()``).  Both settings are sub-settings of
 :option:`HARD_DECAYS`:
 
 .. code-block:: yaml
