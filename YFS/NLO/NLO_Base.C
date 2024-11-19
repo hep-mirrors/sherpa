@@ -153,13 +153,7 @@ double NLO_Base::CalculateVirtual() {
 		sub = 0;
 		// virt=virt;
 	}
-<<<<<<< HEAD
 	m_oneloop = (virt - sub * m_born/m_rescale_alpha);
-||||||| parent of 60d0402b1 (Apply the alpha rescale to subtraction terms instead of the full ME)
-	m_oneloop = (virt - sub * m_born);
-=======
-	m_oneloop = (virt- sub * m_born*m_rescale_alpha );
->>>>>>> 60d0402b1 (Apply the alpha rescale to subtraction terms instead of the full ME)
 	if(IsBad(m_oneloop)){
 		msg_Error()<<"YFS Virtual is NaN"<<std::endl
 							 <<"Virtual:  "<<m_oneloop<<std::endl
@@ -293,16 +287,8 @@ double NLO_Base::CalculateReal(Vec4D k, int fsrcount) {
 	m_recola_evts+=1;
 	// if(!fsrcount) r*=flux;
 	// PRINT_VAR(m_born);
-<<<<<<< HEAD
 	if(m_submode==submode::local) tot =  (r*flux-subloc*m_born/m_rescale_alpha)/subloc;
 	else if(m_submode==submode::global) tot =  (r*flux-subloc*m_born/m_rescale_alpha)/subb;
-||||||| parent of 60d0402b1 (Apply the alpha rescale to subtraction terms instead of the full ME)
-	if(m_submode==submode::local) tot =  (r*flux-subloc*m_born)/subloc;
-	else if(m_submode==submode::global) tot =  (r*flux-subloc*m_born)/subb;
-=======
-	if(m_submode==submode::local) tot =  (r*flux-subloc*m_born*m_rescale_alpha)/subloc;
-	else if(m_submode==submode::global) tot =  (r*flux-subloc*m_born*m_rescale_alpha)/subb;
->>>>>>> 60d0402b1 (Apply the alpha rescale to subtraction terms instead of the full ME)
 	else if(m_submode==submode::off) tot =  (r*flux)/subb;
 	else msg_Error()<<METHOD<<" Unknown YFS Subtraction Mode "<<m_submode<<std::endl;
   if(m_isr_debug || m_fsr_debug){
