@@ -133,7 +133,7 @@ double NLO_Base::CalculateVirtual() {
 		sub = 0;
 		// virt=virt;
 	}
-	m_oneloop = (virt - sub * m_born);
+	m_oneloop = (virt - sub * m_born/m_rescale_alpha);
 	if(IsBad(m_oneloop)){
 		msg_Error()<<"YFS Virtual is NaN"<<std::endl
 							 <<"Virtual:  "<<m_oneloop<<std::endl
@@ -233,7 +233,7 @@ double NLO_Base::CalculateReal(Vec4D k, int fsrcount) {
 	double subloc = p_nlodipoles->CalculateRealSub(k);
 	double subb;
 	if(fsrcount) subb = p_dipoles->CalculateRealSubEEX(k);
-	else subb = p_dipoles->CalculateRealSubEEX(kk);
+	else subb = p_dipoles->CalculateRealSubEEX(k);
 	if(IsZero(subb)) return 0;
 	if(!CheckMomentumConservation(p)) {
 		if(m_isr_debug || m_fsr_debug){
@@ -261,8 +261,8 @@ double NLO_Base::CalculateReal(Vec4D k, int fsrcount) {
 	m_recola_evts+=1;
 	// if(!fsrcount) r*=flux;
 	// PRINT_VAR(m_born);
-	if(m_submode==submode::local) tot =  (r*flux-subloc*m_born)/subloc;
-	else if(m_submode==submode::global) tot =  (r*flux-subloc*m_born)/subb;
+	if(m_submode==submode::local) tot =  (r*flux-subloc*m_born/m_rescale_alpha)/subloc;
+	else if(m_submode==submode::global) tot =  (r*flux-subloc*m_born/m_rescale_alpha)/subb;
 	else if(m_submode==submode::off) tot =  (r*flux)/subb;
 	else msg_Error()<<METHOD<<" Unknown YFS Subtraction Mode "<<m_submode<<std::endl;
   if(m_isr_debug || m_fsr_debug){
@@ -467,9 +467,9 @@ void NLO_Base::CheckMassReg(){
 		}
 		double sub = p_dipoles->CalculateVirtualSub();
 		std::cout << setprecision(15);
-		out_sub<< setprecision(15) << m_photonMass << "," << -sub*m_born << std::endl;
+		out_sub<< setprecision(15) << m_photonMass << "," << -sub*m_born/m_rescale_alpha << std::endl;
 		out_recola<< setprecision(15) << m_photonMass << "," << virt << std::endl;
-		out_finite<< setprecision(15) << m_photonMass << "," << virt - sub*m_born << std::endl;
+		out_finite<< setprecision(15) << m_photonMass << "," << virt - sub*m_born/m_rescale_alpha << std::endl;
 		out_sub.close();
 		out_recola.close();
 		exit(0);
