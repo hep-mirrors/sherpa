@@ -48,6 +48,3 @@ PROCESSES:
 - 21 21 -> 999:
      Order: {EW: 2, QCD: Any}
 
-ANALYSIS: Rivet
-RIVET: { -a: [MC_INSTANTON, MC_XS] } 
-  
