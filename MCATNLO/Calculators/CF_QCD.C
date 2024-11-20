@@ -172,8 +172,8 @@ double CF_QCD::Coupling(const double &scale,const int pol,
   if (pol!=0) return 0.0;
   QCD_Coupling_Info cplinfo = CurrentCouplingInfo();
   double t(CplFac(scale)*scale), scl(sub?sub->MuR2():t*cplinfo.RSF());
-  if (scl<cplinfo.RSF()*cplinfo.Coupling()->CutQ2()) return m_last = 0.0;
-  double cpl=(*cplinfo.Coupling())(scl);
+  if (scl<cplinfo.RSF()*Min(1.0,CplFac(m_k0sq))*m_k0sq) return m_last = 0.0;
+  double cpl=cplinfo.Coupling()->BoundedAlphaS(scl);
   if (sub==NULL && !IsEqual(scl,t)) {
     std::vector<double> ths(cplinfo.Coupling()->Thresholds(t,scl));
     if (scl>t) std::reverse(ths.begin(),ths.end());
@@ -188,9 +188,10 @@ double CF_QCD::Coupling(const double &scale,const int pol,
   cpl*=m_q*s_qfac;
   if (cpl>cplinfo.MaxCoupling()->front()*s_qfac) {
     msg_Error()<<METHOD<<"(): Value exceeds maximum at t = "
-               <<sqrt(scale)<<" -> \\mu_R = "<<sqrt(scl)
-               <<", qmin = "<<sqrt(cplinfo.Coupling()->CutQ2())<<std::endl;
-    return m_last = cplinfo.MaxCoupling()->front();
+               <<sqrt(scale)<<" -> \\mu_R = "<<sqrt(scl)<<", qmin = "
+	       <<sqrt(Min(1.0,CplFac(m_k0sq))*m_k0sq)<<std::endl;
+    m_last=cplinfo.MaxCoupling()->front()/m_q;
+    return cplinfo.MaxCoupling()->front();
   }
 #ifdef DEBUG__Trial_Weight
   msg_Debugging()<<"as weight kt = "<<(sub?1.0:sqrt(CplFac(scale)))
