@@ -2,6 +2,7 @@
 #define ATOOLS_Math_Lookup_Tables_H
 
 #include <cstddef>
+#include <fstream>
 #include <vector>
 
 namespace ATOOLS {
