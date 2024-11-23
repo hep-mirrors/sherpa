@@ -4,15 +4,18 @@
 
 using namespace ATOOLS;
 using namespace SHERPA;
+using namespace std;
 
 class Userhook_Example : public Userhook_Base {
 
   Sherpa* p_sherpa;
+  size_t  m_nevents, m_nvertices, m_nparticles;
 
 public:
 
   Userhook_Example(const Userhook_Arguments args) :
-    Userhook_Base("Example"), p_sherpa(args.p_sherpa)
+    Userhook_Base("Example"), p_sherpa(args.p_sherpa),
+    m_nevents(0), m_nvertices(0), m_nparticles(0)
   {
     PRINT_INFO("We are using a user hook within Sherpa and are using PDF "<<p_sherpa->PDFInfo());
   }
@@ -21,6 +24,12 @@ public:
 
   ATOOLS::Return_Value::code Run(ATOOLS::Blob_List* blobs) {
     DEBUG_INFO("Let's do something with the bloblist for each event:");
+
+    ++m_nevents;
+    m_nvertices += blobs->size();
+    for (auto blob : *blobs) {
+      m_nparticles += blob->OutParticles()->size();
+    }
 
     if(blobs->FourMomentumConservation()) {
       return Return_Value::Nothing;
@@ -31,7 +40,10 @@ public:
   }
 
   void Finish() {
-    PRINT_INFO("Printing something at the end of the run...");
+    PRINT_INFO("End of the run... "  << endl <<
+               "  Number of events:  " << m_nevents << endl <<
+               "  Average number of vertices per event: " << double(m_nvertices)/double(m_nevents) << endl <<
+               "  Average number of particles per event: " << double(m_nparticles)/double(m_nevents) << endl);
   }
 
 };

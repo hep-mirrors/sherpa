@@ -22,7 +22,6 @@ endfunction()
 
 # configure and install all ".in" files (insofar it makes sense to do so)
 set (IN_FILE_PATHS
-     Userhook/CMakeLists.txt
      V_plus_Bs/LHC_Wbb/CMakeLists.txt
      V_plus_Jets/LHC_WJets/CMakeLists.txt)
 if (SHERPA_ENABLE_PYTHON)
