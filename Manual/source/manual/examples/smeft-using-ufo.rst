@@ -1,3 +1,8 @@
+.. _BSM/UFO_SMEFTsim:
+
+SMEFT using UFO
+===============
+
 This example uses a UFO model called SMEFTsim, which extends the Standard Model Lagrangian by introducing additional dimension-six operators. The new operators are scaled with their respective Wilson coefficients. Detailed information about the model can be found here: https://arxiv.org/abs/2012.11343.
 
 In the corresponding Example directory

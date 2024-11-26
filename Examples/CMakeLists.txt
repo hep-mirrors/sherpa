@@ -184,7 +184,6 @@ set (INSTALL_PATHS
 
 # Example files that should be first configured and then installed
 set (CONFIGURE_AND_INSTALL_PATHS
-     Userhook/CMakeLists.txt
      V_plus_Bs/LHC_Wbb/CMakeLists.txt
      V_plus_Jets/LHC_WJets/CMakeLists.txt
 )
