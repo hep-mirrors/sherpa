@@ -64,17 +64,4 @@ public:
 
 };
 
-DECLARE_GETTER(Userhook_Example,"Example",
-	       Userhook_Base,Userhook_Arguments);
-
-Userhook_Base *ATOOLS::Getter<Userhook_Base,Userhook_Arguments,Userhook_Example>::
-operator()(const Userhook_Arguments &args) const
-{
-  return new Userhook_Example(args);
-}
-
-void ATOOLS::Getter<Userhook_Base,Userhook_Arguments,Userhook_Example>::
-PrintInfo(std::ostream &str,const size_t width) const
-{
-  str<<"Example userhook";
-}
+DECLARE_USERHOOK_GETTER(Userhook_Example, "Example")
