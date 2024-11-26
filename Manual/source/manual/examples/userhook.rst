@@ -8,10 +8,8 @@ Example code for a simple user hook just counting some event statistics:
 
 The user hook code has to be compiled into a shared library ``libSherpaUserhookExample.so``, e.g. with the following lines assuming ``Sherpa-config`` is in your ``$PATH``:
 
-.. code-block:: shell-session
-
-   $ g++ -I$(Sherpa-config --incdir) -fPIC -c Userhook_Example.C -o Userhook_Example.o
-   $ g++ -o libSherpaUserhookExample.so Userhook_Example.o $(Sherpa-config --ldflags) -shared
+.. literalinclude:: /../../Examples/Userhook/Makefile
+   :language: make
 
 This user hook can then be enabled in the run card as follows:
 
