@@ -1,6 +1,13 @@
 #include "SHERPA/Tools/Userhook_Base.H"
 #include "ATOOLS/Org/Message.H"
 #include "SHERPA/Main/Sherpa.H"
+#include "SHERPA/Tools/HepMC3_Interface.H"
+
+#ifdef USING__HEPMC3
+#include "HepMC3/GenEvent.h"
+#include "HepMC3/GenVertex.h"
+#include "HepMC3/GenParticle.h"
+#endif
 
 using namespace ATOOLS;
 using namespace SHERPA;
@@ -30,6 +37,15 @@ public:
     for (auto blob : *blobs) {
       m_nparticles += blob->OutParticles()->size();
     }
+
+#ifdef USING__HEPMC3
+    // and now convert into a HepMC event
+    SHERPA::HepMC3_Interface hepmc_converter;
+    HepMC3::GenEvent hepmc_event;
+    hepmc_converter.Sherpa2HepMC(blobs, hepmc_event);
+    // ... do something with HepMC event here ...
+    DEBUG_VAR(hepmc_event.particles().size());
+#endif
 
     if(blobs->FourMomentumConservation()) {
       return Return_Value::Nothing;
