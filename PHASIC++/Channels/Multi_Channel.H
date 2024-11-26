@@ -16,6 +16,7 @@ namespace PHASIC {
       leadinglog = 3,
       laserback  = 4,
       exponential= 5,
+      gaussian   = 7,
       unknown    = 99
     };
   };
@@ -169,7 +170,7 @@ namespace PHASIC {
     reshuffle the a-priori weights such that all variances would equal the
     average. What I find strange in this method at the moment is the occurence
     of s2 ... . I'll have to check this ... .
-  */
+  */  
   /*!
     Endoptimize replaces, after an ordinary optimization step, the set of a-priori weights
     with the best set so far which has been stored during the optimization procedure.

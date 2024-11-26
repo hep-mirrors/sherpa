@@ -811,6 +811,19 @@ double Channel_Elements::WeightYForward(const double yexponent,
   return wt;
 }
 
+double Channel_Elements::GaussianDist(const double mean, const double dev, const double ran1, double ran2)
+{
+  return (mean+dev*dev*ran1+dev*dev*ran2);
+}
+
+double Channel_Elements::GaussianWeight(double mean,double std, double s, double &ran)
+{
+  double arg = sqr(mean-s)/2/std/std;
+  double wt = exp(-arg)/sqrt(2*M_PI*std*std);
+  return sqrt(M_PI*2*std);
+}
+
+
 double Channel_Elements::GenerateYBackward(
     const double yexponent, const double tau, const Double_Container &xinfo,
     const Double_Container &yinfo, const double ran, const int mode) const {
@@ -892,6 +905,8 @@ double PHASIC::ExponentialDist(double ca,double cxm,double cxp,double ran)
   else              msg_Error()<<"Flat distribution specified, expected exponential"<<endl;
   return res;
 }
+
+
 double PHASIC::ExponentialWeight(double ca,double cxm,double cxp)
 {
   double wt = 0;
