@@ -187,7 +187,7 @@ void Define_Dipoles::MakeDipoles(ATOOLS::Flavour_Vector const &fl, ATOOLS::Vec4D
     int N = 0; // number of leptons minus the inital state
     // for (auto f : fl) {
     for(int i=2; i < fl.size(); i++){
-      if (fl[i].IsChargedLepton()) N += 1;
+      if (fl[i].Charge()!=0) N += 1;
     }
     if (N == 2) {
       //only two leptons in final state
@@ -226,8 +226,6 @@ void Define_Dipoles::MakeDipoles(ATOOLS::Flavour_Vector const &fl, ATOOLS::Vec4D
         if (k == 2) {
           Flavour f1 = fl[d1];
           Flavour f2 = fl[d2];
-          PRINT_VAR(f1);
-          PRINT_VAR(f2);
           if(f1.Charge()!=0 && f2.Charge()!=0){
             ff.push_back(f1);
             ff.push_back(f2);
@@ -249,7 +247,6 @@ void Define_Dipoles::MakeDipoles(ATOOLS::Flavour_Vector const &fl, ATOOLS::Vec4D
       }
     }
   }
-
 }
 
 void Define_Dipoles::Get4Mom(ATOOLS::Flavour_Vector const &fl, ATOOLS::Vec4D_Vector mom) {
@@ -383,7 +380,6 @@ double Define_Dipoles::CalculateVirtualSub() {
   for (auto &D : m_dipolesFF) {
     if(m_mode==yfsmode::fsr) sub += -D.m_QiQj*p_yfsFormFact->BVV_full(D.GetBornMomenta(0), D.GetBornMomenta(1), m_photonMass, sqrt(m_s) / 2., 3);
     else sub += D.ChargeNorm()*p_yfsFormFact->BVV_full(D.GetBornMomenta(0), D.GetBornMomenta(1), m_photonMass, sqrt(m_s) / 2., 3);
-
   }
 
   for (auto &D : m_dipolesIF){
