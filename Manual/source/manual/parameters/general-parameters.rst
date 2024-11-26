@@ -498,7 +498,7 @@ The following formats are currently available:
   scale and PDF variations using the ROOT NTuple Output <A posteriori
   scale and PDF variations using the ROOT NTuple Output>`. ROOT ntuples can be
   read back into Sherpa and analyzed using the option
-  :option:`EVENT_INPUT`. This feature is described in :ref:`NTuple production`.
+  :option:`EVENT_INPUT`.
 
   Requires ``-DROOT_DIR=/path/to/root``
   (or ``-DSHERPA_ENABLE_ROOT=ON``, if ROOT is installed in a

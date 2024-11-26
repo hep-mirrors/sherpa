@@ -12,4 +12,4 @@ must be configured and installed using :option:`-DSHERPA_ENABLE_MPI`, see
 :ref:`MPI parallelization`.
 
 .. literalinclude:: /../../Examples/API/MPIEvents/test.py.in
-   :language: text
+   :language: python

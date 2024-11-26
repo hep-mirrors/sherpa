@@ -1,3 +1,8 @@
+.. _MSSM/UFO:
+
+Event generation in the MSSM using UFO
+======================================
+
 This is an example for event generation in the MSSM using Sherpa's UFO
 support. In the corresponding Example directory
 ``<prefix>/share/SHERPA-MC/Examples/BSM/UFO_MSSM/``, you will find a

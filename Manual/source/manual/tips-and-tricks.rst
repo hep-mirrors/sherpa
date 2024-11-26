@@ -466,9 +466,8 @@ A posteriori scale and PDF variations using the ROOT NTuple Output
 
 Events generated at fixed-order LO and NLO can be stored in ROOT
 NTuples that allow arbitrary a posteriori scale and PDF variations,
-see :ref:`Event output formats`. An example for writing and reading in
-such ROOT NTuples can be found here: :ref:`NTuple production`.  The
-internal ROOT Tree has the following Branches:
+see :ref:`Event output formats`.
+The internal ROOT Tree has the following Branches:
 
 ``id``
   Event ID to identify correlated real sub-events.
