@@ -37,7 +37,6 @@ listed in the following sections.
 
    customization/exotic-physics
    customization/custom-scale-setter
-   customization/external-one-loop-me
    customization/external-rng
    customization/external-pdf
    customization/python-interface

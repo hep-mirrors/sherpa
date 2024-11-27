@@ -51,7 +51,6 @@ option(SHERPA_ENABLE_INTERNAL_PDFS           "Enables internal PDFs." ON)
 option(SHERPA_ENABLE_INSTALL_LIBZIP          "Enables internal LibZip." OFF)
 option(SHERPA_ENABLE_LHAPDF                  "Enables LHAPDF." ON)
 option(SHERPA_ENABLE_INSTALL_LHAPDF          "Enables internal LHAPDF." OFF)
-option(SHERPA_ENABLE_LHOLE                   "Enables building of LH OLE interface." OFF)
 option(SHERPA_ENABLE_MADLOOP                 "Enables building with MadLoop." OFF)
 option(SHERPA_ENABLE_MANUAL                  "Enables building of manual." OFF)
 option(SHERPA_ENABLE_MCFM                    "Enables building with MCFM." OFF)
@@ -96,7 +95,7 @@ endforeach()
 set( allenables ANALYSIS BINRELOC BLACKHAT CATCH2 CLANG_TIDY DIHIGGS DOXYGEN
  EWSUD EXAMPLES GOSAM GZIP HEPMC3 HEPMC3_ROOT
  INTERNAL_PDFS INSTALL_LIBZIP INSTALL_LHAPDF LHAPDF
- LHOLE MADLOOP MANUAL MCFM MPI OPENLOOPS PYTHIA8 PYTHON RECOLA RIVET ROOT THREADING TESTING UFO VERSIONING)
+ MADLOOP MANUAL MCFM MPI OPENLOOPS PYTHIA8 PYTHON RECOLA RIVET ROOT THREADING TESTING UFO VERSIONING)
 foreach (en IN LISTS allenables)
   message(STATUS "SHERPA: SHERPA_ENABLE_${en}=${SHERPA_ENABLE_${en}}")
 endforeach()
@@ -781,10 +780,6 @@ if (SHERPA_ENABLE_MADLOOP)
   endif()
   message(STATUS "SHERPA: MADLOOP_PREFIX=${MADLOOP_PREFIX}")
   add_subdirectory(AddOns/MadLoop)
-endif()
-
-if (SHERPA_ENABLE_LHOLE)
-  add_subdirectory(AddOns/LH_OLE)
 endif()
 
 if (SHERPA_ENABLE_OPENLOOPS)
