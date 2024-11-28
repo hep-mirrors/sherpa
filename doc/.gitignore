@@ -1,0 +1,10 @@
+__pycache__/
+_extensions/__pycache__/
+completion.index
+doctrees/
+options.index
+sherpa-completion
+sherpamanual.fls
+sherpamanual.info
+sherpamanual.pdf
+sherpamanual_html/

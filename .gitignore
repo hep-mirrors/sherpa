@@ -15,7 +15,6 @@ CTestTestfile.cmake
 /AMEGIC++/Main/makelibs
 /ATOOLS/Org/CXXFLAGS.H
 /ATOOLS/Org/CXXFLAGS_PACKAGES.H
-/Manual/Sherpa.html
 *.l[ao]
 *.o
 *.so
@@ -34,17 +33,10 @@ Git_Info.C.tmp.bak
 /AddOns/Higgs/PS[23]/.dirstamp
 /AddOns/Python/Sherpa.py
 /AddOns/Python/Sherpa_wrap.cxx
-/Manual/Sherpa.info
-/Manual/Sherpa.info-[12]
-/Manual/completion.index
-/Manual/stamp-vti
-/Manual/version.texi
 /SHERPA/Run/Sherpa
 NNPDF31_nnlo_as_0118_mc/
 SHERPA/Run/Sherpa-config
 install_manifest.txt
-Manual/sherpa-completion
-Manual/sherpamanual.fls
 MODEL/UFO/bin/Sherpa-generate-model
 MODEL/UFO/src/opt_einsum/*.py
 MODEL/UFO/src/opt_einsum/backends

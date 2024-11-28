@@ -8,28 +8,4 @@ or our [project site on GitLab](https://gitlab.com/sherpa-team/sherpa).
 You can file a bug report on our [issue tracker](https://gitlab.com/sherpa-team/sherpa/issues)
 or send us an [e-mail](sherpa@projects.hepforge.org).
 
-To install use the commands
-```
-cmake -S <sherpadir> -B <builddir> [+ optional configuration options, see cmake -LAH]
-cmake --build <builddir> [other build options, e.g. -j 8]
-cmake --install <builddir>
-```
-
-You can then run test, if you like, with:
-```
-ctest --test-dir <builddir>
-```
-
-If you used the configuration option `-DSHERPA_ENABLE_CATCH2` (and
-have Catch2 v3) installed, this will also run unit tests.
-
-Required dependencies are LHAPDF and libzip, they can be automaticall installed by adding
-the options
-```
--DSHERPA_ENABLE_INSTALL_LHAPDF=ON -DSHERPA_ENABLE_INSTALL_LIBZIP=ON
-```
-to the first `cmake` command. There are some optional features which can be compiled 
-into Sherpa, please read the info page (`info Manual/Sherpa.info`) 
-or run `cmake -LAH` to find out more about the available options.
-
-Check out our [Getting started section](Manual/source/manual/getting-started.rst) for additional guidance.
+Check out our [online manual](https://sherpa-team.gitlab.io/sherpa/master/manual/getting-started.html#installation) for additional guidance. If you are offline, it is also distributed with this tarball in ``doc/manual/getting-started.rst``.

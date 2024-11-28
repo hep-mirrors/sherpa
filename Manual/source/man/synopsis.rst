@@ -1,5 +1,0 @@
-########
-Synopsis
-########
-
-**Sherpa** [*OPTIONS*]

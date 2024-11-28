@@ -17,25 +17,6 @@ variables:
   NCOMPILATION_JOBS: 1
   MAKE_FLAGS: -j4
 
-build-manual:
-  stage: build
-  image: $CI_REGISTRY_IMAGE:Fedora_39
-  script:
-    - cmake3 -S . -B build  -DSHERPA_ENABLE_MANUAL=ON -DLibZip_DIR=/usr -DSHERPA_ENABLE_INSTALL_LHAPDF:BOOL=ON
-    - cd build/Manual
-    - make
-    - make sherpamanual_html
-  artifacts:
-    expire_in: 2 days
-    paths:
-      - build/Manual
-  rules:
-    - changes:
-        - Manual/**/*
-      when: always
-    - when: never
-    - if: '$CI_SERVER_HOST=="gitlab.com"'
-
 #
 # Deploy
 #
@@ -55,12 +36,12 @@ trigger_pages:
     - "curl -X POST -F token=$PAGES_TRIGGER_TOKEN -F ref=master https://gitlab.com/api/v4/projects/8892644/trigger/pipeline"
   needs: []
 
-# Build Manual
+# Build manual
 pages:
   image: $CI_REGISTRY_IMAGE:Fedora_39
   stage: deploy
   script:
-    - cd Manual
+    - cd doc
     # only include the manual for recent branches, i.e. any that include one of the last 50 master commits
     - git branch -r --contains 'origin/master~50' | grep -v '\->' | while read remote; do git branch --track "${remote#origin/}" "$remote"; done
     - git fetch --all
@@ -75,7 +56,7 @@ pages:
     - public
   rules:
     - changes:
-        - Manual/**/*
+        - doc/**/*
       when: always
     - when: never
     - if: '$CI_SERVER_HOST=="gitlab.com"'
