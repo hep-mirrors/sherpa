@@ -37,12 +37,12 @@ extensions = [
 ]
 
 # List of bibliography files, relative to the source directory
-bibtex_bibfiles = ['manual/references.bib']
+bibtex_bibfiles = ['references.bib']
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 # This pattern also affects html_static_path and html_extra_path.
-exclude_patterns = ['manual/examples/*', 'manual/parameters/models/*']
+exclude_patterns = ['examples/*', 'parameters/models/*']
 
 
 # -- Options for HTML output -------------------------------------------------

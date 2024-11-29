@@ -9,19 +9,19 @@ be found `here <https://sherpa.hepforge.org/doc/>`_.
    :maxdepth: 2
    :numbered:
 
-   manual/introduction
-   manual/getting-started
-   manual/command-line-options
-   manual/input-structure
-   manual/parameters
-   manual/tips-and-tricks
-   manual/customization
-   manual/examples
-   manual/outro
+   introduction
+   getting-started
+   command-line-options
+   input-structure
+   parameters
+   tips-and-tricks
+   customization
+   examples
+   outro
 
 .. toctree::
    :hidden:
 
-   manual/references
+   references
 
 * :ref:`genindex`
