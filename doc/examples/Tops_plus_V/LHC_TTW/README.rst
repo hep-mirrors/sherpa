@@ -3,7 +3,7 @@
 Production of a top quark pair in association with a W-boson
 ============================================================
 
-.. literalinclude:: /../Examples/Tops_plus_V/LHC_TTW/Sherpa.yaml
+.. literalinclude:: /examples/Tops_plus_V/LHC_TTW/Sherpa.yaml
    :language: yaml
 
 Things to notice:

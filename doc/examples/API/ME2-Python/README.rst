@@ -18,7 +18,7 @@ script will result in AMEGIC++ writing out libraries and exiting.
 After compiling the libraries using ``./makelibs``, the script must be
 executed again in order to obtain the matrix element.
 
-.. literalinclude:: /../Examples/API/ME2-Python/test.py.in
+.. literalinclude:: /examples/API/ME2-Python/test.py.in
    :language: text
 
 .. _Matrix Element values through C++ interface:
@@ -43,7 +43,7 @@ where the usual options for Sherpa are passed. An example
 configuration file, giving both the process and the requested phase
 space points looks like
 
-.. literalinclude:: /../Examples/API/ME2-CPP/Sherpa.yaml
+.. literalinclude:: /examples/API/ME2-CPP/Sherpa.yaml
    :language: yaml
 
 Please note that both the process and the beam specifications need to

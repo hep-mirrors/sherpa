@@ -5,7 +5,7 @@ Simulation of Minimum Bias events
 
 Contact the :ref:`Authors` for more information.
 
-.. literalinclude:: /../Examples/Soft_QCD/LHC_7TeV_MinBias/Shrimps.yaml
+.. literalinclude:: /examples/Soft_QCD/LHC_7TeV_MinBias/Shrimps.yaml
    :language: yaml
 
 Things to notice:

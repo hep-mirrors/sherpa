@@ -3,7 +3,7 @@
 Top quark pair production
 =========================
 
-.. literalinclude:: /../Examples/Tops_plus_Jets/LHC_Tops/Sherpa.yaml
+.. literalinclude:: /examples/Tops_plus_Jets/LHC_Tops/Sherpa.yaml
    :language: yaml
 
 Things to notice:
@@ -29,7 +29,7 @@ Things to notice:
 Top quark pair production incuding approximate EW corrections
 =============================================================
 
-.. literalinclude:: /../Examples/Tops_plus_Jets/LHC_Tops/Sherpa.EWapprox.yaml
+.. literalinclude:: /examples/Tops_plus_Jets/LHC_Tops/Sherpa.EWapprox.yaml
    :language: yaml
 
 Things to notice:

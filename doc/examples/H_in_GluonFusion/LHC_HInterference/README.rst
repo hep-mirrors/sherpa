@@ -14,7 +14,7 @@ between Higgs-boson production and the SM gg->yy background.  The
 corresponding matrix elements are taken from :cite:`Bern2002jx` and
 :cite:`Dixon2013haa`.
 
-.. literalinclude:: /../Examples/H_in_GluonFusion/LHC_HInterference/Sherpa.yaml
+.. literalinclude:: /examples/H_in_GluonFusion/LHC_HInterference/Sherpa.yaml
    :language: yaml
 
 Things to notice:

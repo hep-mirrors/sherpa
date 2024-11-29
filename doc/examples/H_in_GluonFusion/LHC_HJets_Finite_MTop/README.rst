@@ -10,7 +10,7 @@ treated in an approximate way. In case of the tree-level contributions,
 including real emission corrections, no approximations are made
 concerning the mass effects.
 
-.. literalinclude:: /../Examples/H_in_GluonFusion/LHC_HJets_Finite_MTop/Sherpa.yaml
+.. literalinclude:: /examples/H_in_GluonFusion/LHC_HJets_Finite_MTop/Sherpa.yaml
    :language: yaml
 
 Things to notice:

@@ -57,3 +57,5 @@ ${CMAKE_CURRENT_BINARY_DIR}/sherpa-completion
 DESTINATION
 ${CMAKE_INSTALL_DATADIR}/SHERPA-MC
 )
+
+add_subdirectory(examples)

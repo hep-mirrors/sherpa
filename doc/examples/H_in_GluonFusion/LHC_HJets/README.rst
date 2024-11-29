@@ -15,7 +15,7 @@ and :cite:`Gehrmann2012yg`. Finally, even higher multiplicities, calculated
 at leading order, are merged on top of that. A few things to note are
 detailed below the example.
 
-.. literalinclude:: /../Examples/H_in_GluonFusion/LHC_HJets/Sherpa.yaml
+.. literalinclude:: /examples/H_in_GluonFusion/LHC_HJets/Sherpa.yaml
    :language: yaml
 
 Things to notice:

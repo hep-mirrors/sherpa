@@ -8,7 +8,7 @@ deep-inelastic lepton-nucleon scattering at a centre-of-mass energy of
 300 GeV.  Corresponding measurements were carried out by the H1 and
 ZEUS collaborations at the HERA collider at DESY Hamburg.
 
-.. literalinclude:: /../Examples/Jets_in_DIS/HERA/Sherpa.yaml
+.. literalinclude:: /examples/Jets_in_DIS/HERA/Sherpa.yaml
    :language: yaml
 
 Things to notice:

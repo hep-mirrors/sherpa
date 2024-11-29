@@ -7,7 +7,7 @@ This example is currently broken. Please contact the :ref:`Authors` for more
 information.
 
 ..
-  .. literalinclude:: /../Examples/V_plus_Bs/LHC_Wbb/Sherpa.yaml
+  .. literalinclude:: /examples/V_plus_Bs/LHC_Wbb/Sherpa.yaml
       :language: yaml
 ..
    Things to notice:
@@ -32,7 +32,7 @@ information.
 
 Zbb production
 ==============
-.. literalinclude:: /../Examples/V_plus_Bs/LHC_Zbb/Sherpa.yaml
+.. literalinclude:: /examples/V_plus_Bs/LHC_Zbb/Sherpa.yaml
       :language: yaml
 
 Things to notice:

@@ -6,7 +6,7 @@ QCD continuum
 Example setup for QCD continuum production at the Belle/KEK collider.
 Please note, it does not include any hadronic resonance.
 
-.. literalinclude:: /../Examples/BFactory/Belle_QCDBackground/Sherpa.yaml
+.. literalinclude:: /examples/BFactory/Belle_QCDBackground/Sherpa.yaml
    :language: yaml
 
 Things to notice:
@@ -25,7 +25,7 @@ Signal process
 
 Example setup for B-hadron pair production on the Y(4S) pole.
 
-.. literalinclude:: /../Examples/BFactory/Belle_Signal/Sherpa.yaml
+.. literalinclude:: /examples/BFactory/Belle_Signal/Sherpa.yaml
    :language: yaml
 
 Things to notice:
@@ -42,7 +42,7 @@ Single hadron decay chains
 This setup is not a collider setup, but a simulation of a hadronic
 decay chain.
 
-.. literalinclude:: /../Examples/BFactory/BDecay/Sherpa.yaml
+.. literalinclude:: /examples/BFactory/BDecay/Sherpa.yaml
    :language: yaml
 
 Things to notice:

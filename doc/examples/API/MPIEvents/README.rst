@@ -11,5 +11,5 @@ written into a single gzip'ed output file.  Note that you need the
 must be configured and installed using :option:`-DSHERPA_ENABLE_MPI`, see
 :ref:`MPI parallelization`.
 
-.. literalinclude:: /../Examples/API/MPIEvents/test.py.in
+.. literalinclude:: /examples/API/MPIEvents/test.py.in
    :language: python

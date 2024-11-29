@@ -18,7 +18,7 @@ MEPS setup for ee->jets
 This example shows a LEP set-up, with electrons and positrons
 colliding at a centre of mass energy of 91.2 GeV.
 
-.. literalinclude:: /../Examples/Jets_at_LeptonColliders/LEP_Jets/Sherpa.yaml
+.. literalinclude:: /examples/Jets_at_LeptonColliders/LEP_Jets/Sherpa.yaml
    :language: yaml
 
 Things to notice:
@@ -39,7 +39,7 @@ MEPS\@NLO setup for ee->jets
 This example expands upon the above setup, elevating its description
 of hard jet production to next-to-leading order.
 
-.. literalinclude:: /../Examples/Jets_at_LeptonColliders/LEP_Jets/Sherpa.NLO.yaml
+.. literalinclude:: /examples/Jets_at_LeptonColliders/LEP_Jets/Sherpa.NLO.yaml
    :language: yaml
 
 Things to notice:

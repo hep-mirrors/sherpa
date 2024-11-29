@@ -13,7 +13,7 @@ from two light partons in the initial state. Each top quark decays into
 an (anti-)bottom quark and a W boson. The W bosons in turn decay to either
 quarks or leptons.
 
-.. literalinclude:: /../Examples/H_in_TTBar/LHC_TTH_MCatNLO/Sherpa.yaml
+.. literalinclude:: /examples/H_in_TTBar/LHC_TTH_MCatNLO/Sherpa.yaml
    :language: yaml
 
 Things to notice:

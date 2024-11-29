@@ -28,5 +28,5 @@ quadratic order. Sherpa has the ability to produce the Standard Model, linear
 and quadratic contributions separately by utilizing the :option:`Order` and
 :option:`Max_Order` settings as indicated:
 
-.. literalinclude:: /../Examples/BSM/UFO_SMEFT/Sherpa.yaml
+.. literalinclude:: /examples/BSM/UFO_SMEFT/Sherpa.yaml
    :language: yaml

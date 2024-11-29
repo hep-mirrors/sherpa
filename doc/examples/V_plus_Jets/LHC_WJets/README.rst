@@ -15,7 +15,7 @@ multiplicities, calculated at leading order, are merged on top of
 that.  A few more things to note are detailed below the example.
 
 
-.. literalinclude:: /../Examples/V_plus_Jets/LHC_WJets/Sherpa.yaml
+.. literalinclude:: /examples/V_plus_Jets/LHC_WJets/Sherpa.yaml
    :language: yaml
 
 Things to notice:

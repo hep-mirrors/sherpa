@@ -7,7 +7,7 @@ This is a very basic example at Leading Order for Z production at the LHC.
 Most of the settings are kept at their default, please refer to the next section
 for a more sophisticated calculation at higher multiplicity and accuracy.
 
-.. literalinclude:: /../Examples/V_plus_Jets/LHC_ZJets/Sherpa.LO.yaml
+.. literalinclude:: /examples/V_plus_Jets/LHC_ZJets/Sherpa.LO.yaml
    :language: yaml
 
 Z+jets production
@@ -26,5 +26,5 @@ that.  A few things to note are detailed below the previous
 :ref:`LHC_WJets` example and apply also to this example.
 
 
-.. literalinclude:: /../Examples/V_plus_Jets/LHC_ZJets/Sherpa.yaml
+.. literalinclude:: /examples/V_plus_Jets/LHC_ZJets/Sherpa.yaml
    :language: yaml

@@ -24,7 +24,7 @@ colliders at next-to-leading order precision matched to the parton shower
 using the MC\@NLO prescription detailed in :cite:`Hoeche2011fd` and
 :cite:`Hoeche2012fm`. A few things to note are detailed below the example.
 
-.. literalinclude:: /../Examples/Jets_at_HadronColliders/LHC_Jets_MCatNLO/Sherpa.yaml
+.. literalinclude:: /examples/Jets_at_HadronColliders/LHC_Jets_MCatNLO/Sherpa.yaml
    :language: yaml
 
 Things to notice:
@@ -55,7 +55,7 @@ Things to notice:
 MEPS setup for jet production
 -----------------------------
 
-.. literalinclude:: /../Examples/Jets_at_HadronColliders/LHC_Jets_MEPS/Sherpa.yaml
+.. literalinclude:: /examples/Jets_at_HadronColliders/LHC_Jets_MEPS/Sherpa.yaml
    :language: yaml
 
 Things to notice:

@@ -16,7 +16,7 @@ be found `here <https://sherpa.hepforge.org/doc/>`_.
    parameters
    tips-and-tricks
    customization
-   examples
+   examples/index.rst
    outro
 
 .. toctree::

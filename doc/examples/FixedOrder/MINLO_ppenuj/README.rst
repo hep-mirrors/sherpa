@@ -9,7 +9,7 @@ The following configuration file shows how to implement the MINLO
 procedure from :cite:`Hamilton2012np`. A few things to note are
 detailed below.
 
-.. literalinclude:: /../Examples/FixedOrder/MINLO_ppenuj/Sherpa.yaml
+.. literalinclude:: /examples/FixedOrder/MINLO_ppenuj/Sherpa.yaml
    :language: yaml
 
 Things to notice:

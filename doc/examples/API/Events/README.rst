@@ -9,5 +9,5 @@ the number of trials and the particle information is printed
 to stdout. This script can be used as a basis for constructing
 interfaces to own analysis routines.
 
-.. literalinclude:: /../Examples/API/Events/test.py.in
+.. literalinclude:: /examples/API/Events/test.py.in
    :language: python

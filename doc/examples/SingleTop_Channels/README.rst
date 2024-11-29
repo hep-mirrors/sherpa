@@ -3,7 +3,7 @@
 s-channel single-top production
 ===============================
 
-.. literalinclude:: /../Examples/SingleTop_Channels/Sherpa.tj-s_channel.yaml
+.. literalinclude:: /examples/SingleTop_Channels/Sherpa.tj-s_channel.yaml
    :language: yaml
 
 Things to notice:
@@ -19,7 +19,7 @@ Things to notice:
 t-channel single-top production
 ===============================
 
-.. literalinclude:: /../Examples/SingleTop_Channels/Sherpa.tj-t_channel.yaml
+.. literalinclude:: /examples/SingleTop_Channels/Sherpa.tj-t_channel.yaml
    :language: yaml
 
 Things to notice:
@@ -46,7 +46,7 @@ Things to notice:
 t-channel single-top production with N_f=4
 ==========================================
 
-.. literalinclude:: /../Examples/SingleTop_Channels/Sherpa.tj-t_channel-nf4.yaml
+.. literalinclude:: /examples/SingleTop_Channels/Sherpa.tj-t_channel-nf4.yaml
    :language: yaml
 
 Things to notice:
@@ -59,7 +59,7 @@ Things to notice:
 tW-channel single-top production
 ================================
 
-.. literalinclude:: /../Examples/SingleTop_Channels/Sherpa.tW.yaml
+.. literalinclude:: /examples/SingleTop_Channels/Sherpa.tW.yaml
    :language: yaml
 
 Things to notice:

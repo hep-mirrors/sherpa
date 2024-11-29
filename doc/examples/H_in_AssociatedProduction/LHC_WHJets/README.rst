@@ -21,7 +21,7 @@ accuracy and adds pp->WHjj at leading order. The Higgs boson is decayed
 to W-pairs and all W decay channels resulting in electrons or muons are
 accounted for, including those with intermediate taus.
 
-.. literalinclude:: /../Examples/H_in_AssociatedProduction/LHC_WHJets/Sherpa.yaml
+.. literalinclude:: /examples/H_in_AssociatedProduction/LHC_WHJets/Sherpa.yaml
    :language: yaml
 
 Things to notice:
@@ -56,7 +56,7 @@ partonic channels, leptonic and hadronic, to allow for all possible
 trilepton signatures, unavoidably producing two and four lepton events
 as well.
 
-.. literalinclude:: /../Examples/H_in_AssociatedProduction/LHC_ZHJets/Sherpa.yaml
+.. literalinclude:: /examples/H_in_AssociatedProduction/LHC_ZHJets/Sherpa.yaml
    :language: yaml
 
 Things to notice:
@@ -87,7 +87,7 @@ is decayed to b-quark pairs. Contrary to the previous examples this setup
 does not use on-shell intermediate vector bosons in its matrix element
 calculation.
 
-.. literalinclude:: /../Examples/H_in_AssociatedProduction/LHC_Hll_MCatNLO/Sherpa.yaml
+.. literalinclude:: /examples/H_in_AssociatedProduction/LHC_Hll_MCatNLO/Sherpa.yaml
    :language: yaml
 
 Things to notice:
