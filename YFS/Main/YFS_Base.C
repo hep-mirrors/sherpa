@@ -47,7 +47,7 @@ void YFS_Base::RegisterDefaults(){
   s["TChannel-Cut"].SetDefault(0);
   s["COULOMB"].SetDefault(false);
   s["HIDE_PHOTONS"].SetDefault(1);
-  s["FULL_FORM"].SetDefault(0);
+  s["FULL_FORM"].SetDefault(1);
   s["WW_FORM"].SetDefault(0);
   s["WW_BETAT"].SetDefault(0.382);
   s["CHECK_MASS_REG"].SetDefault(0);

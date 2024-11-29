@@ -414,13 +414,12 @@ double Define_Dipoles::FormFactor(){
 
 double Define_Dipoles::TFormFactor(){
   double form = 0;
-
   for(auto &D: m_dipolesII){
     form+= D.ChargeNorm()*p_yfsFormFact->R1(D.GetBornMomenta(0), D.GetBornMomenta(1));
   }
   // if(!m_hidephotons){
     for(auto &D: m_dipolesFF){
-      form += -D.ChargeNorm()*p_yfsFormFact->R1(D.GetBornMomenta(0), D.GetBornMomenta(1));
+      form += D.ChargeNorm()*p_yfsFormFact->R1(D.GetBornMomenta(0), D.GetBornMomenta(1));
     // }
   }
   if(m_ifisub==1){
