@@ -18,8 +18,6 @@ TAGS:
   NJET: 1
   QCUT: 30
 
-EXCLUSIVE_CLUSTER_MODE: 1
-
 # scales
 # VBF scale setter
 SCALES: VBF{MU_F2}{MU_R2}{MU_Q2}
