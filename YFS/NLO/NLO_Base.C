@@ -11,7 +11,7 @@ using namespace std;
 std::ofstream out_recola;
 std::ofstream out_sub, out_real, out_finite;
 
-double SqLam(double x,double y,double z)
+static double SqLam(double x,double y,double z)
 {
   return abs(x*x+y*y+z*z-2.*x*y-2.*x*z-2.*y*z);
 }

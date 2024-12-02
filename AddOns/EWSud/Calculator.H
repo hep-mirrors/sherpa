@@ -56,6 +56,8 @@ namespace EWSud {
 
     /// calculate SSC l(s) coefficients
     Coeff_Value lsLogROverSCoeffs(const Two_Leg_Indices&);
+    Complex CalculateComplexLog(const Two_Leg_Indices&);
+    Complex CalculateComplexSubleadingLog(const Two_Leg_Indices&, const double M2);
 
     /// calculate l_C(s) coefficients
     Coeff_Value lsCCoeff();
@@ -87,6 +89,7 @@ namespace EWSud {
 
     const EWGroupConstants m_ewgroupconsts;
 
+    int m_include_i_pi {0};
     double m_threshold;
     bool m_checkinvariantratios;
     bool m_checkcoeff, m_checkkfac;

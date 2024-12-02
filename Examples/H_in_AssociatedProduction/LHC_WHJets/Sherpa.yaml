@@ -17,6 +17,9 @@ PARTICLE_DATA:
   25: {Mass: 125.5, Width: 0}
   15: {Stable: 0, Massive: true}
 
+# do not force SM mass but use the one set above
+HARD_DECAYS:
+  Use_HO_SM_Widths: false
 
 # hard decays setup, specify allowed decay channels, ie.:
 # h->Wenu, h->Wmunu, h->Wtaunu, W->enu, W->munu, W->taunu, tau->enunu, tau->mununu + cc

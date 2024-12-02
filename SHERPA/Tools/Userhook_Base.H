@@ -69,4 +69,17 @@ namespace SHERPA {
 
 }
 
+#define DECLARE_USERHOOK_GETTER(CLASS,NAME) \
+  DECLARE_GETTER(CLASS, NAME, Userhook_Base, Userhook_Arguments); \
+  Userhook_Base *ATOOLS::Getter<Userhook_Base,Userhook_Arguments,CLASS>:: \
+  operator()(const Userhook_Arguments &args) const \
+  { \
+    return new CLASS(args); \
+  } \
+  void ATOOLS::Getter<Userhook_Base,Userhook_Arguments,CLASS>:: \
+  PrintInfo(std::ostream &str,const size_t width) const \
+  { \
+    str<<#NAME; \
+  }
+
 #endif

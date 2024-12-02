@@ -14,6 +14,7 @@ namespace REMNANTS {
   class Primordial_KPerp {
   private:
     ATOOLS::Flavour m_beamflav;
+    bool m_on;
     std::array<primkT_form, 2>   m_form;
     std::array<primkT_recoil, 2> m_recoil;
     std::array<double, 2> m_SIMean, m_SISigma, m_SIQ2, m_SpecMean, m_SpecSigma,

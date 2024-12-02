@@ -102,8 +102,8 @@ for J in $DIRS ; do
     libname="Proc_"$(basename $(pwd))
     sources=$(for i in $(find . -name \*.C | grep -v fsrchannels); do printf $i | sed 's/$/ /1' | tr '\n' ' '; done)
     echo "
-project(${libname} LANGUAGES C CXX)
 cmake_minimum_required(VERSION 3.11.0)
+project(${libname} LANGUAGES C CXX)
 find_package(SHERPA-MC PATHS ${SHERPA_CMAKE_PATH} REQUIRED ${PATHOPT})
 message(STATUS SHERPA-MC_DIR=\${SHERPA-MC_DIR})
 include(\"GNUInstallDirs\")

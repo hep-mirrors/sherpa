@@ -1,6 +1,5 @@
 # collider setup
 BEAMS: [52, 52]
-BEAM_ENERGIES: 65 
 BEAM_SPECTRA: [DM_beam,DM_beam]
 BEAM_MODE: Relic_Density
 DM_beam_weighted: 1

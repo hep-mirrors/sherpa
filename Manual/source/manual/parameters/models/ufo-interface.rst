@@ -56,7 +56,12 @@ massless in the UFO model. This is necessary for a meaningful
 simulation. In the hard process however, the UFO model masses are always
 respected.
 
-For an example UFO setup, see :ref:`MSSM/UFO`. Further models are shipped
+If your UFO model adds particles which should be treated like hadrons, e.g.
+decaying through the hadron decay module similar to the tau lepton, then you
+have to list them with their PDG IDs using the
+:option:`UFO_HADRONS=[<int>, <int>, ...]` option.
+
+For an example UFO setup, see :ref:`BSM/UFO_SMEFTsim`. Further models are shipped
 with Sherpa, residing in the ``<prefix>/share/SHERPA-MC/Examples/BSM``
 directory. Note, if you want to use an extremely complex model with many
 high-multiplicity vertices, the ``Sherpa-generate-model`` step might require a lot of CPU time and memory
@@ -66,7 +71,7 @@ external particles in Lorentz and color functions to the default of
 ``--nmax 4``. Of course you can increase that number if higher-point vertices
 are needed.
 
-Extending Sherpa to include partial support for UFO2.0:cite:`Darme:2023jdn`, Sherpa now has the ability to
+Extending Sherpa to include partial support for UFO2.0 :cite:`Darme:2023jdn`, Sherpa now has the ability to
 handle models that include form factors in the vertices. Currently, the interface
 does not support form factors that are directly defined in the model file. Instead,
 they need to be defined in a separate file, compiled into a shared library, and

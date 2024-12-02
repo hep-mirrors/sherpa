@@ -20,7 +20,6 @@ using namespace std;
 
 Hadron_Decay_Channel::Hadron_Decay_Channel(Flavour fl, const Mass_Selector* ms) :
   Decay_Channel(fl, ms),
-  m_always_integrate(false),
   m_cp_asymmetry_C(0.0), m_cp_asymmetry_S(0.0)
 {
 }
@@ -56,6 +55,10 @@ void Hadron_Decay_Channel::Initialise(Scoped_Settings s, GeneralModel startmd)
 
   m_cp_asymmetry_S = s["CPAsymmetryS"].SetDefault(0.0).Get<double>();
   m_cp_asymmetry_C = s["CPAsymmetryC"].SetDefault(0.0).Get<double>();
+
+  auto hds = Settings::GetMainSettings()["HADRON_DECAYS"];
+  m_always_integrate = hds["AlwaysIntegrate"].SetDefault(false).Get<bool>();
+  m_always_integrate = s["AlwaysIntegrate"].SetDefault(m_always_integrate).Get<bool>();
 
   // convert C and S to lambda, assuming DeltaGamma=0 for the determination of C and S.
   // this allows DeltaGamma dependent terms in the asymmetry
@@ -94,10 +97,9 @@ void Hadron_Decay_Channel::Initialise(Scoped_Settings s, GeneralModel startmd)
   auto results = s["IntResults"].SetDefault({-1.0}).GetItems();
   if (results.size()!=3) {
     msg_Info()<<"Calculating width (PR1) for "<<Name()<<endl;
-    CalculateWidth();
+    CalculateWidth(0.001);
     msg_Info()<<"   yields: "<<m_iwidth<<endl;
-    std::cerr<<"HADRON_DECAYS: { Channels: { "<<m_flavours[0].Kfcode()<<": { "<<FSIDCode()<<": { IntResults: ["
-             <<m_iwidth<<", "<<m_ideltawidth<<", "<<m_max<<"]}}}}"<<std::endl;
+    cerr<<m_flavours[0].Kfcode()<<" "<<FSIDCode()<<" "<<m_iwidth<<" "<<m_ideltawidth<<" "<<m_max<<endl;
   }
   else {
     m_iwidth = results[0].Get<double>();
@@ -110,14 +112,10 @@ void Hadron_Decay_Channel::Initialise(Scoped_Settings s, GeneralModel startmd)
     }
     
     if (m_always_integrate) {
-      double oldwidth(m_iwidth), oldmax(m_max);
       msg_Info()<<"Calculating width (PR2) for "<<Name()<<endl;
-      CalculateWidth();
+      CalculateWidth(0.001);
       msg_Info()<<"   yields: "<<m_iwidth<<endl;
-      // check whether result is different from before and write out if it is
-      if(oldwidth!=m_iwidth || oldmax!=m_max)
-        std::cerr<<"HADRON_DECAYS: { Channels: { "<<m_flavours[0].Kfcode()<<": { "<<FSIDCode()<<": { IntResults: ["
-                 <<m_iwidth<<", "<<m_ideltawidth<<", "<<m_max<<"]}}}}"<<std::endl;
+      cerr<<m_flavours[0].Kfcode()<<" "<<FSIDCode()<<" "<<m_iwidth<<" "<<m_ideltawidth<<" "<<m_max<<endl;
     }
   }
 }

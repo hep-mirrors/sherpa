@@ -94,22 +94,22 @@ Coefficient_Checker::ReferenceCoeffs(const Mandelstam_Variables& mandelstam,
     coeffs[{EWSudakov_Log_Type::lZ, {}}][{1, 1, 0, 0}] = 0.37;
     coeffs[{EWSudakov_Log_Type::lZ, {}}][{0, 0, 1, 1}] = 0.37;
     coeffs[{EWSudakov_Log_Type::lZ, {}}][{1, 1, 1, 1}] = 0.45;
-    coeffs[{EWSudakov_Log_Type::lSSC, {2, 0}}][{0, 0, 0, 0}] = -2.58;  // -2*R_lq(RR)
-    coeffs[{EWSudakov_Log_Type::lSSC, {3, 0}}][{0, 0, 0, 0}] =  2.58;  // +2*R_lq(RR)
-    coeffs[{EWSudakov_Log_Type::lSSC, {3, 1}}][{0, 0, 0, 0}] = -2.58;  // -2*R_lq(RR)
-    coeffs[{EWSudakov_Log_Type::lSSC, {2, 1}}][{0, 0, 0, 0}] =  2.58;  // +2*R_lq(RR)
-    coeffs[{EWSudakov_Log_Type::lSSC, {2, 0}}][{1, 1, 0, 0}] = -1.29;  // -2*R_lq(RL)=-R_lq(RR)
-    coeffs[{EWSudakov_Log_Type::lSSC, {3, 0}}][{1, 1, 0, 0}] =  1.29;  // +2*R_lq(RL)=+R_lq(RR)
-    coeffs[{EWSudakov_Log_Type::lSSC, {3, 1}}][{1, 1, 0, 0}] = -1.29;  // -2*R_lq(RL)=-R_lq(RR)
-    coeffs[{EWSudakov_Log_Type::lSSC, {2, 1}}][{1, 1, 0, 0}] =  1.29;  // +2*R_lq(RL)=+R_lq(RR)
-    coeffs[{EWSudakov_Log_Type::lSSC, {2, 0}}][{0, 0, 1, 1}] = -1.29;  // same as for RL
-    coeffs[{EWSudakov_Log_Type::lSSC, {3, 0}}][{0, 0, 1, 1}] =  1.29;  // same as for RL
-    coeffs[{EWSudakov_Log_Type::lSSC, {3, 1}}][{0, 0, 1, 1}] = -1.29;  // same as for RL
-    coeffs[{EWSudakov_Log_Type::lSSC, {2, 1}}][{0, 0, 1, 1}] =  1.29;  // same as for RL
-    coeffs[{EWSudakov_Log_Type::lSSC, {2, 0}}][{1, 1, 1, 1}] = -9.83;  // (-4*R_lq(LL)-1/(R_lq(LL)*sw^4))/2
-    coeffs[{EWSudakov_Log_Type::lSSC, {3, 1}}][{1, 1, 1, 1}] = -9.83;  // (-4*R_lq(LL)-1/(R_lq(LL)*sw^4)/)2
-    coeffs[{EWSudakov_Log_Type::lSSC, {3, 0}}][{1, 1, 1, 1}] =  2.88;  // -2*R_lq(LL)
-    coeffs[{EWSudakov_Log_Type::lSSC, {2, 1}}][{1, 1, 1, 1}] =  2.88;  // -2*R_lq(LL)
+    coeffs[{EWSudakov_Log_Type::lSSC, {2, 0}}][{0, 0, 0, 0}] = -2.58*log(abs(t_over_s))*log(mandelstam.s/groupconstants.m_mw2);  // -2*R_lq(RR)
+    coeffs[{EWSudakov_Log_Type::lSSC, {3, 0}}][{0, 0, 0, 0}] =  2.58*log(abs(u_over_s))*log(mandelstam.s/groupconstants.m_mw2);  // +2*R_lq(RR)
+    coeffs[{EWSudakov_Log_Type::lSSC, {3, 1}}][{0, 0, 0, 0}] = -2.58*log(abs(t_over_s))*log(mandelstam.s/groupconstants.m_mw2);  // -2*R_lq(RR)
+    coeffs[{EWSudakov_Log_Type::lSSC, {2, 1}}][{0, 0, 0, 0}] =  2.58*log(abs(u_over_s))*log(mandelstam.s/groupconstants.m_mw2);  // +2*R_lq(RR)
+    coeffs[{EWSudakov_Log_Type::lSSC, {2, 0}}][{1, 1, 0, 0}] = -1.29*log(abs(t_over_s))*log(mandelstam.s/groupconstants.m_mw2);  // -2*R_lq(RL)=-R_lq(RR)
+    coeffs[{EWSudakov_Log_Type::lSSC, {3, 0}}][{1, 1, 0, 0}] =  1.29*log(abs(u_over_s))*log(mandelstam.s/groupconstants.m_mw2);  // +2*R_lq(RL)=+R_lq(RR)
+    coeffs[{EWSudakov_Log_Type::lSSC, {3, 1}}][{1, 1, 0, 0}] = -1.29*log(abs(t_over_s))*log(mandelstam.s/groupconstants.m_mw2);  // -2*R_lq(RL)=-R_lq(RR)
+    coeffs[{EWSudakov_Log_Type::lSSC, {2, 1}}][{1, 1, 0, 0}] =  1.29*log(abs(u_over_s))*log(mandelstam.s/groupconstants.m_mw2);  // +2*R_lq(RL)=+R_lq(RR)
+    coeffs[{EWSudakov_Log_Type::lSSC, {2, 0}}][{0, 0, 1, 1}] = -1.29*log(abs(t_over_s))*log(mandelstam.s/groupconstants.m_mw2);  // same as for RL
+    coeffs[{EWSudakov_Log_Type::lSSC, {3, 0}}][{0, 0, 1, 1}] =  1.29*log(abs(u_over_s))*log(mandelstam.s/groupconstants.m_mw2);  // same as for RL
+    coeffs[{EWSudakov_Log_Type::lSSC, {3, 1}}][{0, 0, 1, 1}] = -1.29*log(abs(t_over_s))*log(mandelstam.s/groupconstants.m_mw2);  // same as for RL
+    coeffs[{EWSudakov_Log_Type::lSSC, {2, 1}}][{0, 0, 1, 1}] =  1.29*log(abs(u_over_s))*log(mandelstam.s/groupconstants.m_mw2);  // same as for RL
+    coeffs[{EWSudakov_Log_Type::lSSC, {2, 0}}][{1, 1, 1, 1}] = -9.83*log(abs(t_over_s))*log(mandelstam.s/groupconstants.m_mw2);  // (-4*R_lq(LL)-1/(R_lq(LL)*sw^4))/2
+    coeffs[{EWSudakov_Log_Type::lSSC, {3, 1}}][{1, 1, 1, 1}] = -9.83*log(abs(t_over_s))*log(mandelstam.s/groupconstants.m_mw2);  // (-4*R_lq(LL)-1/(R_lq(LL)*sw^4)/)2
+    coeffs[{EWSudakov_Log_Type::lSSC, {3, 0}}][{1, 1, 1, 1}] =  2.88*log(abs(u_over_s))*log(mandelstam.s/groupconstants.m_mw2);  // -2*R_lq(LL)
+    coeffs[{EWSudakov_Log_Type::lSSC, {2, 1}}][{1, 1, 1, 1}] =  2.88*log(abs(u_over_s))*log(mandelstam.s/groupconstants.m_mw2);  // -2*R_lq(LL)
     coeffs[{EWSudakov_Log_Type::lC, {}}][{0, 0, 0, 0}] = 7.73;
     coeffs[{EWSudakov_Log_Type::lC, {}}][{1, 1, 0, 0}] = 14.9;
     coeffs[{EWSudakov_Log_Type::lC, {}}][{0, 0, 1, 1}] = 14.9;
@@ -133,22 +133,22 @@ Coefficient_Checker::ReferenceCoeffs(const Mandelstam_Variables& mandelstam,
     coeffs[{EWSudakov_Log_Type::lZ, {}}][{1, 1, 0, 0}] = 0.29;
     coeffs[{EWSudakov_Log_Type::lZ, {}}][{0, 0, 1, 1}] = 0.50;
     coeffs[{EWSudakov_Log_Type::lZ, {}}][{1, 1, 1, 1}] = 0.58;
-    coeffs[{EWSudakov_Log_Type::lSSC, {2, 0}}][{0, 0, 0, 0}] =  1.72;  // -2*R_lq(RR)
-    coeffs[{EWSudakov_Log_Type::lSSC, {3, 0}}][{0, 0, 0, 0}] = -1.72;  // +2*R_lq(RR)
-    coeffs[{EWSudakov_Log_Type::lSSC, {3, 1}}][{0, 0, 0, 0}] =  1.72;  // -2*R_lq(RR)
-    coeffs[{EWSudakov_Log_Type::lSSC, {2, 1}}][{0, 0, 0, 0}] = -1.72;  // +2*R_lq(RR)
-    coeffs[{EWSudakov_Log_Type::lSSC, {2, 0}}][{1, 1, 0, 0}] =  0.86;  // -2*R_lq(RL)
-    coeffs[{EWSudakov_Log_Type::lSSC, {3, 0}}][{1, 1, 0, 0}] = -0.86;  // +2*R_lq(RL)
-    coeffs[{EWSudakov_Log_Type::lSSC, {3, 1}}][{1, 1, 0, 0}] =  0.86;  // -2*R_lq(RL)
-    coeffs[{EWSudakov_Log_Type::lSSC, {2, 1}}][{1, 1, 0, 0}] = -0.86;  // +2*R_lq(RL)
-    coeffs[{EWSudakov_Log_Type::lSSC, {2, 0}}][{0, 0, 1, 1}] =  0.43;  // -2*R_lq(LR)
-    coeffs[{EWSudakov_Log_Type::lSSC, {3, 0}}][{0, 0, 1, 1}] = -0.43;  // +2*R_lq(LR)
-    coeffs[{EWSudakov_Log_Type::lSSC, {3, 1}}][{0, 0, 1, 1}] =  0.43;  // -2*R_lq(LR)
-    coeffs[{EWSudakov_Log_Type::lSSC, {2, 1}}][{0, 0, 1, 1}] = -0.43;  // +2*R_lq(LR)
-    coeffs[{EWSudakov_Log_Type::lSSC, {2, 0}}][{1, 1, 1, 1}] =  2.45;  // -2*R_lq(LL)
-    coeffs[{EWSudakov_Log_Type::lSSC, {3, 1}}][{1, 1, 1, 1}] =  2.45;  // -2*R_lq(LL)
-    coeffs[{EWSudakov_Log_Type::lSSC, {3, 0}}][{1, 1, 1, 1}] = -10.6;  // -(4*R_lq(LL)+1/(R_lq(LL)*sw^4))/2
-    coeffs[{EWSudakov_Log_Type::lSSC, {2, 1}}][{1, 1, 1, 1}] = -10.6;  // -(4*R_lq(LL)+1/(R_lq(LL)*sw^4))/2
+    coeffs[{EWSudakov_Log_Type::lSSC, {2, 0}}][{0, 0, 0, 0}] =  1.72*log(abs(t_over_s))*log(mandelstam.s/groupconstants.m_mw2);  // -2*R_lq(RR)
+    coeffs[{EWSudakov_Log_Type::lSSC, {3, 0}}][{0, 0, 0, 0}] = -1.72*log(abs(u_over_s))*log(mandelstam.s/groupconstants.m_mw2);  // +2*R_lq(RR)
+    coeffs[{EWSudakov_Log_Type::lSSC, {3, 1}}][{0, 0, 0, 0}] =  1.72*log(abs(t_over_s))*log(mandelstam.s/groupconstants.m_mw2);  // -2*R_lq(RR)
+    coeffs[{EWSudakov_Log_Type::lSSC, {2, 1}}][{0, 0, 0, 0}] = -1.72*log(abs(u_over_s))*log(mandelstam.s/groupconstants.m_mw2);  // +2*R_lq(RR)
+    coeffs[{EWSudakov_Log_Type::lSSC, {2, 0}}][{1, 1, 0, 0}] =  0.86*log(abs(t_over_s))*log(mandelstam.s/groupconstants.m_mw2);  // -2*R_lq(RL)
+    coeffs[{EWSudakov_Log_Type::lSSC, {3, 0}}][{1, 1, 0, 0}] = -0.86*log(abs(u_over_s))*log(mandelstam.s/groupconstants.m_mw2);  // +2*R_lq(RL)
+    coeffs[{EWSudakov_Log_Type::lSSC, {3, 1}}][{1, 1, 0, 0}] =  0.86*log(abs(t_over_s))*log(mandelstam.s/groupconstants.m_mw2);  // -2*R_lq(RL)
+    coeffs[{EWSudakov_Log_Type::lSSC, {2, 1}}][{1, 1, 0, 0}] = -0.86*log(abs(u_over_s))*log(mandelstam.s/groupconstants.m_mw2);  // +2*R_lq(RL)
+    coeffs[{EWSudakov_Log_Type::lSSC, {2, 0}}][{0, 0, 1, 1}] =  0.43*log(abs(t_over_s))*log(mandelstam.s/groupconstants.m_mw2);  // -2*R_lq(LR)
+    coeffs[{EWSudakov_Log_Type::lSSC, {3, 0}}][{0, 0, 1, 1}] = -0.43*log(abs(u_over_s))*log(mandelstam.s/groupconstants.m_mw2);  // +2*R_lq(LR)
+    coeffs[{EWSudakov_Log_Type::lSSC, {3, 1}}][{0, 0, 1, 1}] =  0.43*log(abs(t_over_s))*log(mandelstam.s/groupconstants.m_mw2);  // -2*R_lq(LR)
+    coeffs[{EWSudakov_Log_Type::lSSC, {2, 1}}][{0, 0, 1, 1}] = -0.43*log(abs(u_over_s))*log(mandelstam.s/groupconstants.m_mw2);  // +2*R_lq(LR)
+    coeffs[{EWSudakov_Log_Type::lSSC, {2, 0}}][{1, 1, 1, 1}] =  2.45*log(abs(t_over_s))*log(mandelstam.s/groupconstants.m_mw2);  // -2*R_lq(LL)
+    coeffs[{EWSudakov_Log_Type::lSSC, {3, 1}}][{1, 1, 1, 1}] =  2.45*log(abs(t_over_s))*log(mandelstam.s/groupconstants.m_mw2);  // -2*R_lq(LL)
+    coeffs[{EWSudakov_Log_Type::lSSC, {3, 0}}][{1, 1, 1, 1}] = -10.6*log(abs(u_over_s))*log(mandelstam.s/groupconstants.m_mw2);  // -(4*R_lq(LL)+1/(R_lq(LL)*sw^4))/2
+    coeffs[{EWSudakov_Log_Type::lSSC, {2, 1}}][{1, 1, 1, 1}] = -10.6*log(abs(u_over_s))*log(mandelstam.s/groupconstants.m_mw2);  // -(4*R_lq(LL)+1/(R_lq(LL)*sw^4))/2
     coeffs[{EWSudakov_Log_Type::lC, {}}][{0, 0, 0, 0}] = 5.58;
     coeffs[{EWSudakov_Log_Type::lC, {}}][{1, 1, 0, 0}] = 12.7;
     coeffs[{EWSudakov_Log_Type::lC, {}}][{0, 0, 1, 1}] = 14.0;
@@ -173,22 +173,22 @@ Coefficient_Checker::ReferenceCoeffs(const Mandelstam_Variables& mandelstam,
     coeffs[{EWSudakov_Log_Type::lZ, {}}][{1, 1, 0, 0}] = 0.29;
     coeffs[{EWSudakov_Log_Type::lZ, {}}][{0, 0, 1, 1}] = 0.50;
     coeffs[{EWSudakov_Log_Type::lZ, {}}][{1, 1, 1, 1}] = 0.58;
-    coeffs[{EWSudakov_Log_Type::lSSC, {2, 0}}][{0, 0, 0, 0}] =  1.72;  // -2*R_lq(RR)
-    coeffs[{EWSudakov_Log_Type::lSSC, {3, 0}}][{0, 0, 0, 0}] = -1.72;  // +2*R_lq(RR)
-    coeffs[{EWSudakov_Log_Type::lSSC, {3, 1}}][{0, 0, 0, 0}] =  1.72;  // -2*R_lq(RR)
-    coeffs[{EWSudakov_Log_Type::lSSC, {2, 1}}][{0, 0, 0, 0}] = -1.72;  // +2*R_lq(RR)
-    coeffs[{EWSudakov_Log_Type::lSSC, {2, 0}}][{1, 1, 0, 0}] =  0.86;  // -2*R_lq(RL)
-    coeffs[{EWSudakov_Log_Type::lSSC, {3, 0}}][{1, 1, 0, 0}] = -0.86;  // +2*R_lq(RL)
-    coeffs[{EWSudakov_Log_Type::lSSC, {3, 1}}][{1, 1, 0, 0}] =  0.86;  // -2*R_lq(RL)
-    coeffs[{EWSudakov_Log_Type::lSSC, {2, 1}}][{1, 1, 0, 0}] = -0.86;  // +2*R_lq(RL)
-    coeffs[{EWSudakov_Log_Type::lSSC, {2, 0}}][{0, 0, 1, 1}] =  0.43;  // -2*R_lq(LR)
-    coeffs[{EWSudakov_Log_Type::lSSC, {3, 0}}][{0, 0, 1, 1}] = -0.43;  // +2*R_lq(LR)
-    coeffs[{EWSudakov_Log_Type::lSSC, {3, 1}}][{0, 0, 1, 1}] =  0.43;  // -2*R_lq(LR)
-    coeffs[{EWSudakov_Log_Type::lSSC, {2, 1}}][{0, 0, 1, 1}] = -0.43;  // +2*R_lq(LR)
-    coeffs[{EWSudakov_Log_Type::lSSC, {2, 0}}][{1, 1, 1, 1}] =  2.45;  // -2*R_lq(LL)
-    coeffs[{EWSudakov_Log_Type::lSSC, {3, 1}}][{1, 1, 1, 1}] =  2.45;  // -2*R_lq(LL)
-    coeffs[{EWSudakov_Log_Type::lSSC, {3, 0}}][{1, 1, 1, 1}] = -10.6;  // -(4*R_lq(LL)+1/(R_lq(LL)*sw^4))/2
-    coeffs[{EWSudakov_Log_Type::lSSC, {2, 1}}][{1, 1, 1, 1}] = -10.6;  // -(4*R_lq(LL)+1/(R_lq(LL)*sw^4))/2
+    coeffs[{EWSudakov_Log_Type::lSSC, {2, 0}}][{0, 0, 0, 0}] =  1.72*log(abs(t_over_s))*log(mandelstam.s/groupconstants.m_mw2);  // -2*R_lq(RR)
+    coeffs[{EWSudakov_Log_Type::lSSC, {3, 0}}][{0, 0, 0, 0}] = -1.72*log(abs(u_over_s))*log(mandelstam.s/groupconstants.m_mw2);  // +2*R_lq(RR)
+    coeffs[{EWSudakov_Log_Type::lSSC, {3, 1}}][{0, 0, 0, 0}] =  1.72*log(abs(t_over_s))*log(mandelstam.s/groupconstants.m_mw2);  // -2*R_lq(RR)
+    coeffs[{EWSudakov_Log_Type::lSSC, {2, 1}}][{0, 0, 0, 0}] = -1.72*log(abs(u_over_s))*log(mandelstam.s/groupconstants.m_mw2);  // +2*R_lq(RR)
+    coeffs[{EWSudakov_Log_Type::lSSC, {2, 0}}][{1, 1, 0, 0}] =  0.86*log(abs(t_over_s))*log(mandelstam.s/groupconstants.m_mw2);  // -2*R_lq(RL)
+    coeffs[{EWSudakov_Log_Type::lSSC, {3, 0}}][{1, 1, 0, 0}] = -0.86*log(abs(u_over_s))*log(mandelstam.s/groupconstants.m_mw2);  // +2*R_lq(RL)
+    coeffs[{EWSudakov_Log_Type::lSSC, {3, 1}}][{1, 1, 0, 0}] =  0.86*log(abs(t_over_s))*log(mandelstam.s/groupconstants.m_mw2);  // -2*R_lq(RL)
+    coeffs[{EWSudakov_Log_Type::lSSC, {2, 1}}][{1, 1, 0, 0}] = -0.86*log(abs(u_over_s))*log(mandelstam.s/groupconstants.m_mw2);  // +2*R_lq(RL)
+    coeffs[{EWSudakov_Log_Type::lSSC, {2, 0}}][{0, 0, 1, 1}] =  0.43*log(abs(t_over_s))*log(mandelstam.s/groupconstants.m_mw2);  // -2*R_lq(LR)
+    coeffs[{EWSudakov_Log_Type::lSSC, {3, 0}}][{0, 0, 1, 1}] = -0.43*log(abs(u_over_s))*log(mandelstam.s/groupconstants.m_mw2);  // +2*R_lq(LR)
+    coeffs[{EWSudakov_Log_Type::lSSC, {3, 1}}][{0, 0, 1, 1}] =  0.43*log(abs(t_over_s))*log(mandelstam.s/groupconstants.m_mw2);  // -2*R_lq(LR)
+    coeffs[{EWSudakov_Log_Type::lSSC, {2, 1}}][{0, 0, 1, 1}] = -0.43*log(abs(u_over_s))*log(mandelstam.s/groupconstants.m_mw2);  // +2*R_lq(LR)
+    coeffs[{EWSudakov_Log_Type::lSSC, {2, 0}}][{1, 1, 1, 1}] =  2.45*log(abs(t_over_s))*log(mandelstam.s/groupconstants.m_mw2);  // -2*R_lq(LL)
+    coeffs[{EWSudakov_Log_Type::lSSC, {3, 1}}][{1, 1, 1, 1}] =  2.45*log(abs(t_over_s))*log(mandelstam.s/groupconstants.m_mw2);  // -2*R_lq(LL)
+    coeffs[{EWSudakov_Log_Type::lSSC, {3, 0}}][{1, 1, 1, 1}] = -10.6*log(abs(u_over_s))*log(mandelstam.s/groupconstants.m_mw2);  // -(4*R_lq(LL)+1/(R_lq(LL)*sw^4))/2
+    coeffs[{EWSudakov_Log_Type::lSSC, {2, 1}}][{1, 1, 1, 1}] = -10.6*log(abs(u_over_s))*log(mandelstam.s/groupconstants.m_mw2);  // -(4*R_lq(LL)+1/(R_lq(LL)*sw^4))/2
     coeffs[{EWSudakov_Log_Type::lC, {}}][{0, 0, 0, 0}] = 5.58;
     coeffs[{EWSudakov_Log_Type::lC, {}}][{1, 1, 0, 0}] = 12.7;
     coeffs[{EWSudakov_Log_Type::lC, {}}][{0, 0, 1, 1}] = 14.0;
@@ -212,22 +212,22 @@ Coefficient_Checker::ReferenceCoeffs(const Mandelstam_Variables& mandelstam,
     coeffs[{EWSudakov_Log_Type::lZ, {}}][{1, 1, 0, 0}] = 0.24;
     coeffs[{EWSudakov_Log_Type::lZ, {}}][{0, 0, 1, 1}] = 0.67;
     coeffs[{EWSudakov_Log_Type::lZ, {}}][{1, 1, 1, 1}] = 0.75;
-    coeffs[{EWSudakov_Log_Type::lSSC, {2, 0}}][{0, 0, 0, 0}] = -0.86;  // -2*R_lq(RR)
-    coeffs[{EWSudakov_Log_Type::lSSC, {3, 0}}][{0, 0, 0, 0}] =  0.86;  // +2*R_lq(RR)
-    coeffs[{EWSudakov_Log_Type::lSSC, {3, 1}}][{0, 0, 0, 0}] = -0.86;  // -2*R_lq(RR)
-    coeffs[{EWSudakov_Log_Type::lSSC, {2, 1}}][{0, 0, 0, 0}] =  0.86;  // +2*R_lq(RR)
-    coeffs[{EWSudakov_Log_Type::lSSC, {2, 0}}][{1, 1, 0, 0}] = -0.43;  // -2*R_lq(RL)
-    coeffs[{EWSudakov_Log_Type::lSSC, {3, 0}}][{1, 1, 0, 0}] =  0.43;  // +2*R_lq(RL)
-    coeffs[{EWSudakov_Log_Type::lSSC, {3, 1}}][{1, 1, 0, 0}] = -0.43;  // -2*R_lq(RL)
-    coeffs[{EWSudakov_Log_Type::lSSC, {2, 1}}][{1, 1, 0, 0}] =  0.43;  // +2*R_lq(RL)
-    coeffs[{EWSudakov_Log_Type::lSSC, {2, 0}}][{0, 0, 1, 1}] =  0.43;  // -2*R_lq(LR)
-    coeffs[{EWSudakov_Log_Type::lSSC, {3, 0}}][{0, 0, 1, 1}] = -0.43;  // +2*R_lq(LR)
-    coeffs[{EWSudakov_Log_Type::lSSC, {3, 1}}][{0, 0, 1, 1}] =  0.43;  // -2*R_lq(LR)
-    coeffs[{EWSudakov_Log_Type::lSSC, {2, 1}}][{0, 0, 1, 1}] = -0.43;  // +2*R_lq(LR)
-    coeffs[{EWSudakov_Log_Type::lSSC, {2, 0}}][{1, 1, 1, 1}] = -11.9;  // -(4*R_lq(LL)-1/(R_lq(LL)*sw^4))/2
-    coeffs[{EWSudakov_Log_Type::lSSC, {3, 1}}][{1, 1, 1, 1}] = -11.9;  // -(4*R_lq(LL)-1/(R_lq(LL)*sw^4))/2
-    coeffs[{EWSudakov_Log_Type::lSSC, {3, 0}}][{1, 1, 1, 1}] =  2.02;  // -2*R_lq(LL)
-    coeffs[{EWSudakov_Log_Type::lSSC, {2, 1}}][{1, 1, 1, 1}] =  2.02;  // -2*R_lq(LL)
+    coeffs[{EWSudakov_Log_Type::lSSC, {2, 0}}][{0, 0, 0, 0}] = -0.86*log(abs(t_over_s))*log(mandelstam.s/groupconstants.m_mw2);  // -2*R_lq(RR)
+    coeffs[{EWSudakov_Log_Type::lSSC, {3, 0}}][{0, 0, 0, 0}] =  0.86*log(abs(u_over_s))*log(mandelstam.s/groupconstants.m_mw2);  // +2*R_lq(RR)
+    coeffs[{EWSudakov_Log_Type::lSSC, {3, 1}}][{0, 0, 0, 0}] = -0.86*log(abs(t_over_s))*log(mandelstam.s/groupconstants.m_mw2);  // -2*R_lq(RR)
+    coeffs[{EWSudakov_Log_Type::lSSC, {2, 1}}][{0, 0, 0, 0}] =  0.86*log(abs(u_over_s))*log(mandelstam.s/groupconstants.m_mw2);  // +2*R_lq(RR)
+    coeffs[{EWSudakov_Log_Type::lSSC, {2, 0}}][{1, 1, 0, 0}] = -0.43*log(abs(t_over_s))*log(mandelstam.s/groupconstants.m_mw2);  // -2*R_lq(RL)
+    coeffs[{EWSudakov_Log_Type::lSSC, {3, 0}}][{1, 1, 0, 0}] =  0.43*log(abs(u_over_s))*log(mandelstam.s/groupconstants.m_mw2);  // +2*R_lq(RL)
+    coeffs[{EWSudakov_Log_Type::lSSC, {3, 1}}][{1, 1, 0, 0}] = -0.43*log(abs(t_over_s))*log(mandelstam.s/groupconstants.m_mw2);  // -2*R_lq(RL)
+    coeffs[{EWSudakov_Log_Type::lSSC, {2, 1}}][{1, 1, 0, 0}] =  0.43*log(abs(u_over_s))*log(mandelstam.s/groupconstants.m_mw2);  // +2*R_lq(RL)
+    coeffs[{EWSudakov_Log_Type::lSSC, {2, 0}}][{0, 0, 1, 1}] =  0.43*log(abs(t_over_s))*log(mandelstam.s/groupconstants.m_mw2);  // -2*R_lq(LR)
+    coeffs[{EWSudakov_Log_Type::lSSC, {3, 0}}][{0, 0, 1, 1}] = -0.43*log(abs(u_over_s))*log(mandelstam.s/groupconstants.m_mw2);  // +2*R_lq(LR)
+    coeffs[{EWSudakov_Log_Type::lSSC, {3, 1}}][{0, 0, 1, 1}] =  0.43*log(abs(t_over_s))*log(mandelstam.s/groupconstants.m_mw2);  // -2*R_lq(LR)
+    coeffs[{EWSudakov_Log_Type::lSSC, {2, 1}}][{0, 0, 1, 1}] = -0.43*log(abs(u_over_s))*log(mandelstam.s/groupconstants.m_mw2);  // +2*R_lq(LR)
+    coeffs[{EWSudakov_Log_Type::lSSC, {2, 0}}][{1, 1, 1, 1}] = -11.9*log(abs(t_over_s))*log(mandelstam.s/groupconstants.m_mw2);  // -(4*R_lq(LL)-1/(R_lq(LL)*sw^4))/2
+    coeffs[{EWSudakov_Log_Type::lSSC, {3, 1}}][{1, 1, 1, 1}] = -11.9*log(abs(t_over_s))*log(mandelstam.s/groupconstants.m_mw2);  // -(4*R_lq(LL)-1/(R_lq(LL)*sw^4))/2
+    coeffs[{EWSudakov_Log_Type::lSSC, {3, 0}}][{1, 1, 1, 1}] =  2.02*log(abs(u_over_s))*log(mandelstam.s/groupconstants.m_mw2);  // -2*R_lq(LL)
+    coeffs[{EWSudakov_Log_Type::lSSC, {2, 1}}][{1, 1, 1, 1}] =  2.02*log(abs(u_over_s))*log(mandelstam.s/groupconstants.m_mw2);  // -2*R_lq(LL)
     coeffs[{EWSudakov_Log_Type::lC, {}}][{0, 0, 0, 0}] = 4.29;
     coeffs[{EWSudakov_Log_Type::lC, {}}][{1, 1, 0, 0}] = 11.5;
     coeffs[{EWSudakov_Log_Type::lC, {}}][{0, 0, 1, 1}] = 14.0;
@@ -252,22 +252,22 @@ Coefficient_Checker::ReferenceCoeffs(const Mandelstam_Variables& mandelstam,
     coeffs[{EWSudakov_Log_Type::lZ, {}}][{1, 1, 0, 0}] = 0.24;
     coeffs[{EWSudakov_Log_Type::lZ, {}}][{0, 0, 1, 1}] = 0.67;
     coeffs[{EWSudakov_Log_Type::lZ, {}}][{1, 1, 1, 1}] = 0.75;
-    coeffs[{EWSudakov_Log_Type::lSSC, {2, 0}}][{0, 0, 0, 0}] = -0.86;  // -2*R_lq(RR)
-    coeffs[{EWSudakov_Log_Type::lSSC, {3, 0}}][{0, 0, 0, 0}] =  0.86;  // +2*R_lq(RR)
-    coeffs[{EWSudakov_Log_Type::lSSC, {3, 1}}][{0, 0, 0, 0}] = -0.86;  // -2*R_lq(RR)
-    coeffs[{EWSudakov_Log_Type::lSSC, {2, 1}}][{0, 0, 0, 0}] =  0.86;  // +2*R_lq(RR)
-    coeffs[{EWSudakov_Log_Type::lSSC, {2, 0}}][{1, 1, 0, 0}] = -0.43;  // -2*R_lq(RL)
-    coeffs[{EWSudakov_Log_Type::lSSC, {3, 0}}][{1, 1, 0, 0}] =  0.43;  // +2*R_lq(RL)
-    coeffs[{EWSudakov_Log_Type::lSSC, {3, 1}}][{1, 1, 0, 0}] = -0.43;  // -2*R_lq(RL)
-    coeffs[{EWSudakov_Log_Type::lSSC, {2, 1}}][{1, 1, 0, 0}] =  0.43;  // +2*R_lq(RL)
-    coeffs[{EWSudakov_Log_Type::lSSC, {2, 0}}][{0, 0, 1, 1}] =  0.43;  // -2*R_lq(LR)
-    coeffs[{EWSudakov_Log_Type::lSSC, {3, 0}}][{0, 0, 1, 1}] = -0.43;  // +2*R_lq(LR)
-    coeffs[{EWSudakov_Log_Type::lSSC, {3, 1}}][{0, 0, 1, 1}] =  0.43;  // -2*R_lq(LR)
-    coeffs[{EWSudakov_Log_Type::lSSC, {2, 1}}][{0, 0, 1, 1}] = -0.43;  // +2*R_lq(LR)
-    coeffs[{EWSudakov_Log_Type::lSSC, {2, 0}}][{1, 1, 1, 1}] = -11.9;  // -(4*R_lq(LL)-1/(R_lq(LL)*sw^4))/2
-    coeffs[{EWSudakov_Log_Type::lSSC, {3, 1}}][{1, 1, 1, 1}] = -11.9;  // -(4*R_lq(LL)-1/(R_lq(LL)*sw^4))/2
-    coeffs[{EWSudakov_Log_Type::lSSC, {3, 0}}][{1, 1, 1, 1}] =  2.02;  // -2*R_lq(LL)
-    coeffs[{EWSudakov_Log_Type::lSSC, {2, 1}}][{1, 1, 1, 1}] =  2.02;  // -2*R_lq(LL)
+    coeffs[{EWSudakov_Log_Type::lSSC, {2, 0}}][{0, 0, 0, 0}] = -0.86*log(abs(t_over_s))*log(mandelstam.s/groupconstants.m_mw2); // -2*R_lq(RR)
+    coeffs[{EWSudakov_Log_Type::lSSC, {3, 0}}][{0, 0, 0, 0}] =  0.86*log(abs(u_over_s))*log(mandelstam.s/groupconstants.m_mw2);  // +2*R_lq(RR)
+    coeffs[{EWSudakov_Log_Type::lSSC, {3, 1}}][{0, 0, 0, 0}] = -0.86*log(abs(t_over_s))*log(mandelstam.s/groupconstants.m_mw2);  // -2*R_lq(RR)
+    coeffs[{EWSudakov_Log_Type::lSSC, {2, 1}}][{0, 0, 0, 0}] =  0.86*log(abs(u_over_s))*log(mandelstam.s/groupconstants.m_mw2);  // +2*R_lq(RR)
+    coeffs[{EWSudakov_Log_Type::lSSC, {2, 0}}][{1, 1, 0, 0}] = -0.43*log(abs(t_over_s))*log(mandelstam.s/groupconstants.m_mw2);  // -2*R_lq(RL)
+    coeffs[{EWSudakov_Log_Type::lSSC, {3, 0}}][{1, 1, 0, 0}] =  0.43*log(abs(u_over_s))*log(mandelstam.s/groupconstants.m_mw2);  // +2*R_lq(RL)
+    coeffs[{EWSudakov_Log_Type::lSSC, {3, 1}}][{1, 1, 0, 0}] = -0.43*log(abs(t_over_s))*log(mandelstam.s/groupconstants.m_mw2);  // -2*R_lq(RL)
+    coeffs[{EWSudakov_Log_Type::lSSC, {2, 1}}][{1, 1, 0, 0}] =  0.43*log(abs(u_over_s))*log(mandelstam.s/groupconstants.m_mw2);  // +2*R_lq(RL)
+    coeffs[{EWSudakov_Log_Type::lSSC, {2, 0}}][{0, 0, 1, 1}] =  0.43*log(abs(t_over_s))*log(mandelstam.s/groupconstants.m_mw2);  // -2*R_lq(LR)
+    coeffs[{EWSudakov_Log_Type::lSSC, {3, 0}}][{0, 0, 1, 1}] = -0.43*log(abs(u_over_s))*log(mandelstam.s/groupconstants.m_mw2);  // +2*R_lq(LR)
+    coeffs[{EWSudakov_Log_Type::lSSC, {3, 1}}][{0, 0, 1, 1}] =  0.43*log(abs(t_over_s))*log(mandelstam.s/groupconstants.m_mw2);  // -2*R_lq(LR)
+    coeffs[{EWSudakov_Log_Type::lSSC, {2, 1}}][{0, 0, 1, 1}] = -0.43*log(abs(u_over_s))*log(mandelstam.s/groupconstants.m_mw2);  // +2*R_lq(LR)
+    coeffs[{EWSudakov_Log_Type::lSSC, {2, 0}}][{1, 1, 1, 1}] = -11.9*log(abs(t_over_s))*log(mandelstam.s/groupconstants.m_mw2);  // -(4*R_lq(LL)-1/(R_lq(LL)*sw^4))/2
+    coeffs[{EWSudakov_Log_Type::lSSC, {3, 1}}][{1, 1, 1, 1}] = -11.9*log(abs(t_over_s))*log(mandelstam.s/groupconstants.m_mw2);  // -(4*R_lq(LL)-1/(R_lq(LL)*sw^4))/2
+    coeffs[{EWSudakov_Log_Type::lSSC, {3, 0}}][{1, 1, 1, 1}] =  2.02*log(abs(u_over_s))*log(mandelstam.s/groupconstants.m_mw2);  // -2*R_lq(LL)
+    coeffs[{EWSudakov_Log_Type::lSSC, {2, 1}}][{1, 1, 1, 1}] =  2.02*log(abs(u_over_s))*log(mandelstam.s/groupconstants.m_mw2);  // -2*R_lq(LL)
     coeffs[{EWSudakov_Log_Type::lC, {}}][{0, 0, 0, 0}] = 4.29;
     coeffs[{EWSudakov_Log_Type::lC, {}}][{1, 1, 0, 0}] = 11.5;
     coeffs[{EWSudakov_Log_Type::lC, {}}][{0, 0, 1, 1}] = 14.0;
@@ -297,23 +297,23 @@ Coefficient_Checker::ReferenceCoeffs(const Mandelstam_Variables& mandelstam,
     // NOTE: if two contributions are given separately, the first is the N-loop
     // and the second the W-loop contribution
     // LT t-ch;
-    coeffs[{EWSudakov_Log_Type::lSSC, {2, 0}}][{1, 1, 0, 1}] =  4.47;
-    coeffs[{EWSudakov_Log_Type::lSSC, {3, 1}}][{1, 1, 0, 1}] =  4.47;
-    coeffs[{EWSudakov_Log_Type::lSSC, {2, 0}}][{1, 1, 1, 0}] =  4.47;
-    coeffs[{EWSudakov_Log_Type::lSSC, {3, 1}}][{1, 1, 1, 0}] =  4.47;
-    coeffs[{EWSudakov_Log_Type::lSSC, {2, 0}}][{0, 0, 2, 2}] =  1.29;
-    coeffs[{EWSudakov_Log_Type::lSSC, {3, 1}}][{0, 0, 2, 2}] =  1.29;
-    coeffs[{EWSudakov_Log_Type::lSSC, {2, 0}}][{1, 1, 2, 2}] =  2.88;
-    coeffs[{EWSudakov_Log_Type::lSSC, {3, 1}}][{1, 1, 2, 2}] =  2.88;
+    coeffs[{EWSudakov_Log_Type::lSSC, {2, 0}}][{1, 1, 0, 1}] =  4.47*log(abs(t_over_s))*log(mandelstam.s/groupconstants.m_mw2);
+    coeffs[{EWSudakov_Log_Type::lSSC, {3, 1}}][{1, 1, 0, 1}] =  4.47*log(abs(t_over_s))*log(mandelstam.s/groupconstants.m_mw2);
+    coeffs[{EWSudakov_Log_Type::lSSC, {2, 0}}][{1, 1, 1, 0}] =  4.47*log(abs(t_over_s))*log(mandelstam.s/groupconstants.m_mw2);
+    coeffs[{EWSudakov_Log_Type::lSSC, {3, 1}}][{1, 1, 1, 0}] =  4.47*log(abs(t_over_s))*log(mandelstam.s/groupconstants.m_mw2);
+    coeffs[{EWSudakov_Log_Type::lSSC, {2, 0}}][{0, 0, 2, 2}] =  1.29*log(abs(t_over_s))*log(mandelstam.s/groupconstants.m_mw2);
+    coeffs[{EWSudakov_Log_Type::lSSC, {3, 1}}][{0, 0, 2, 2}] =  1.29*log(abs(t_over_s))*log(mandelstam.s/groupconstants.m_mw2);
+    coeffs[{EWSudakov_Log_Type::lSSC, {2, 0}}][{1, 1, 2, 2}] =  2.88*log(abs(t_over_s))*log(mandelstam.s/groupconstants.m_mw2);
+    coeffs[{EWSudakov_Log_Type::lSSC, {3, 1}}][{1, 1, 2, 2}] =  2.88*log(abs(t_over_s))*log(mandelstam.s/groupconstants.m_mw2);
     // LT u-ch
-    coeffs[{EWSudakov_Log_Type::lSSC, {3, 0}}][{1, 1, 0, 1}] = -4.47 - 4.47 * (1.0 - u_over_t);
-    coeffs[{EWSudakov_Log_Type::lSSC, {2, 1}}][{1, 1, 0, 1}] = -4.47 - 4.47 * (1.0 - u_over_t);
-    coeffs[{EWSudakov_Log_Type::lSSC, {3, 0}}][{1, 1, 1, 0}] = -4.47 - 4.47 * (1.0 - u_over_t);
-    coeffs[{EWSudakov_Log_Type::lSSC, {2, 1}}][{1, 1, 1, 0}] = -4.47 - 4.47 * (1.0 - u_over_t);
-    coeffs[{EWSudakov_Log_Type::lSSC, {3, 0}}][{0, 0, 2, 2}] = -1.29;
-    coeffs[{EWSudakov_Log_Type::lSSC, {2, 1}}][{0, 0, 2, 2}] = -1.29;
-    coeffs[{EWSudakov_Log_Type::lSSC, {3, 0}}][{1, 1, 2, 2}] = -9.83;
-    coeffs[{EWSudakov_Log_Type::lSSC, {2, 1}}][{1, 1, 2, 2}] = -9.83;
+    coeffs[{EWSudakov_Log_Type::lSSC, {3, 0}}][{1, 1, 0, 1}] = (-4.47 - 4.47 * (1.0 - u_over_t))*log(abs(u_over_s))*log(mandelstam.s/groupconstants.m_mw2);
+    coeffs[{EWSudakov_Log_Type::lSSC, {2, 1}}][{1, 1, 0, 1}] = (-4.47 - 4.47 * (1.0 - u_over_t))*log(abs(u_over_s))*log(mandelstam.s/groupconstants.m_mw2);
+    coeffs[{EWSudakov_Log_Type::lSSC, {3, 0}}][{1, 1, 1, 0}] = (-4.47 - 4.47 * (1.0 - u_over_t))*log(abs(u_over_s))*log(mandelstam.s/groupconstants.m_mw2);
+    coeffs[{EWSudakov_Log_Type::lSSC, {2, 1}}][{1, 1, 1, 0}] = (-4.47 - 4.47 * (1.0 - u_over_t))*log(abs(u_over_s))*log(mandelstam.s/groupconstants.m_mw2);
+    coeffs[{EWSudakov_Log_Type::lSSC, {3, 0}}][{0, 0, 2, 2}] = -1.29*log(abs(u_over_s))*log(mandelstam.s/groupconstants.m_mw2);
+    coeffs[{EWSudakov_Log_Type::lSSC, {2, 1}}][{0, 0, 2, 2}] = -1.29*log(abs(u_over_s))*log(mandelstam.s/groupconstants.m_mw2);
+    coeffs[{EWSudakov_Log_Type::lSSC, {3, 0}}][{1, 1, 2, 2}] = -9.83*log(abs(u_over_s))*log(mandelstam.s/groupconstants.m_mw2);
+    coeffs[{EWSudakov_Log_Type::lSSC, {2, 1}}][{1, 1, 2, 2}] = -9.83*log(abs(u_over_s))*log(mandelstam.s/groupconstants.m_mw2);
 
     coeffs[{EWSudakov_Log_Type::lC, {}}][{0, 0, 2, 2}] = 18.6;
     coeffs[{EWSudakov_Log_Type::lC, {}}][{1, 1, 2, 2}] = 25.7;
@@ -343,19 +343,19 @@ Coefficient_Checker::ReferenceCoeffs(const Mandelstam_Variables& mandelstam,
     coeffs[{EWSudakov_Log_Type::lZ, {}}][{1, 1, 1, 0}] = 0.22;
 
     // LT t-ch;
-    coeffs[{EWSudakov_Log_Type::lSSC, {2, 0}}][{1, 1, 0, 1}] = 4.47 * u_over_s;
-    coeffs[{EWSudakov_Log_Type::lSSC, {3, 1}}][{1, 1, 0, 1}] = 4.47 * u_over_s;
-    coeffs[{EWSudakov_Log_Type::lSSC, {2, 0}}][{1, 1, 1, 0}] = 4.47 * u_over_s;
-    coeffs[{EWSudakov_Log_Type::lSSC, {3, 1}}][{1, 1, 1, 0}] = 4.47 * u_over_s;
+    coeffs[{EWSudakov_Log_Type::lSSC, {2, 0}}][{1, 1, 0, 1}] = (4.47 * u_over_s)*log(abs(t_over_s))*log(mandelstam.s/groupconstants.m_mw2);
+    coeffs[{EWSudakov_Log_Type::lSSC, {3, 1}}][{1, 1, 0, 1}] = (4.47 * u_over_s)*log(abs(t_over_s))*log(mandelstam.s/groupconstants.m_mw2);
+    coeffs[{EWSudakov_Log_Type::lSSC, {2, 0}}][{1, 1, 1, 0}] = (4.47 * u_over_s)*log(abs(t_over_s))*log(mandelstam.s/groupconstants.m_mw2);
+    coeffs[{EWSudakov_Log_Type::lSSC, {3, 1}}][{1, 1, 1, 0}] = (4.47 * u_over_s)*log(abs(t_over_s))*log(mandelstam.s/groupconstants.m_mw2);
     coeffs[{EWSudakov_Log_Type::lSSC, {2, 0}}][{0, 0, 0, 1}] = 0.0;
     coeffs[{EWSudakov_Log_Type::lSSC, {3, 1}}][{0, 0, 0, 1}] = 0.0;
     coeffs[{EWSudakov_Log_Type::lSSC, {2, 0}}][{0, 0, 1, 0}] = 0.0;
     coeffs[{EWSudakov_Log_Type::lSSC, {3, 1}}][{0, 0, 1, 0}] = 0.0;
     // LT u-ch
-    coeffs[{EWSudakov_Log_Type::lSSC, {3, 0}}][{1, 1, 0, 1}] = 4.47 * t_over_s;
-    coeffs[{EWSudakov_Log_Type::lSSC, {2, 1}}][{1, 1, 0, 1}] = 4.47 * t_over_s;
-    coeffs[{EWSudakov_Log_Type::lSSC, {3, 0}}][{1, 1, 1, 0}] = 4.47 * t_over_s;
-    coeffs[{EWSudakov_Log_Type::lSSC, {2, 1}}][{1, 1, 1, 0}] = 4.47 * t_over_s;
+    coeffs[{EWSudakov_Log_Type::lSSC, {3, 0}}][{1, 1, 0, 1}] = 4.47 * t_over_s*log(abs(u_over_s))*log(mandelstam.s/groupconstants.m_mw2);
+    coeffs[{EWSudakov_Log_Type::lSSC, {2, 1}}][{1, 1, 0, 1}] = 4.47 * t_over_s*log(abs(u_over_s))*log(mandelstam.s/groupconstants.m_mw2);
+    coeffs[{EWSudakov_Log_Type::lSSC, {3, 0}}][{1, 1, 1, 0}] = 4.47 * t_over_s*log(abs(u_over_s))*log(mandelstam.s/groupconstants.m_mw2);
+    coeffs[{EWSudakov_Log_Type::lSSC, {2, 1}}][{1, 1, 1, 0}] = 4.47 * t_over_s*log(abs(u_over_s))*log(mandelstam.s/groupconstants.m_mw2);
     coeffs[{EWSudakov_Log_Type::lSSC, {3, 0}}][{0, 0, 0, 1}] = 0.0;
     coeffs[{EWSudakov_Log_Type::lSSC, {2, 1}}][{0, 0, 0, 1}] = 0.0;
     coeffs[{EWSudakov_Log_Type::lSSC, {3, 0}}][{0, 0, 1, 0}] = 0.0;
@@ -391,19 +391,19 @@ Coefficient_Checker::ReferenceCoeffs(const Mandelstam_Variables& mandelstam,
     // different process ordering; i.e. t-ch and u-ch assignment does not
     // change, but {3, 1} here refers to {2, 0} in Denner/Pozzorini and so on
     // LT t-ch;
-    coeffs[{EWSudakov_Log_Type::lSSC, {3, 1}}][{1, 1, 0, 1}] = 4.47 * (-1.81*t_over_s + u_over_s);
-    coeffs[{EWSudakov_Log_Type::lSSC, {2, 0}}][{1, 1, 0, 1}] = 12.56 * u_over_s;
-    coeffs[{EWSudakov_Log_Type::lSSC, {3, 1}}][{1, 1, 1, 0}] = 4.47 * (-1.81*t_over_s + u_over_s);
-    coeffs[{EWSudakov_Log_Type::lSSC, {2, 0}}][{1, 1, 1, 0}] = 12.56 * u_over_s;
+    coeffs[{EWSudakov_Log_Type::lSSC, {3, 1}}][{1, 1, 0, 1}] = (4.47 * (-1.81*t_over_s + u_over_s))*log(abs(t_over_s))*log(mandelstam.s/groupconstants.m_mw2);
+    coeffs[{EWSudakov_Log_Type::lSSC, {2, 0}}][{1, 1, 0, 1}] = 12.56 * u_over_s*log(abs(t_over_s))*log(mandelstam.s/groupconstants.m_mw2);
+    coeffs[{EWSudakov_Log_Type::lSSC, {3, 1}}][{1, 1, 1, 0}] = (4.47 * (-1.81*t_over_s + u_over_s))*log(abs(t_over_s))*log(mandelstam.s/groupconstants.m_mw2);
+    coeffs[{EWSudakov_Log_Type::lSSC, {2, 0}}][{1, 1, 1, 0}] = 12.56 * u_over_s*log(abs(t_over_s))*log(mandelstam.s/groupconstants.m_mw2);
     coeffs[{EWSudakov_Log_Type::lSSC, {3, 1}}][{0, 0, 0, 1}] = 0.0;
     coeffs[{EWSudakov_Log_Type::lSSC, {2, 0}}][{0, 0, 0, 1}] = 0.0;
     coeffs[{EWSudakov_Log_Type::lSSC, {3, 1}}][{0, 0, 1, 0}] = 0.0;
     coeffs[{EWSudakov_Log_Type::lSSC, {2, 0}}][{0, 0, 1, 0}] = 0.0;
     // LT u-ch;
-    coeffs[{EWSudakov_Log_Type::lSSC, {3, 0}}][{1, 1, 0, 1}] = 4.47 * (-1.81*u_over_s + t_over_s);
-    coeffs[{EWSudakov_Log_Type::lSSC, {2, 1}}][{1, 1, 0, 1}] = 12.56 * t_over_s;
-    coeffs[{EWSudakov_Log_Type::lSSC, {3, 0}}][{1, 1, 1, 0}] = 4.47 * (-1.81*u_over_s + t_over_s);
-    coeffs[{EWSudakov_Log_Type::lSSC, {2, 1}}][{1, 1, 1, 0}] = 12.56 * t_over_s;
+    coeffs[{EWSudakov_Log_Type::lSSC, {3, 0}}][{1, 1, 0, 1}] = 4.47 * (-1.81*u_over_s + t_over_s)*log(abs(u_over_s))*log(mandelstam.s/groupconstants.m_mw2);
+    coeffs[{EWSudakov_Log_Type::lSSC, {2, 1}}][{1, 1, 0, 1}] = 12.56 * t_over_s*log(abs(u_over_s))*log(mandelstam.s/groupconstants.m_mw2);
+    coeffs[{EWSudakov_Log_Type::lSSC, {3, 0}}][{1, 1, 1, 0}] = 4.47 * (-1.81*u_over_s + t_over_s)*log(abs(u_over_s))*log(mandelstam.s/groupconstants.m_mw2);
+    coeffs[{EWSudakov_Log_Type::lSSC, {2, 1}}][{1, 1, 1, 0}] = 12.56 * t_over_s*log(abs(u_over_s))*log(mandelstam.s/groupconstants.m_mw2);
     coeffs[{EWSudakov_Log_Type::lSSC, {3, 0}}][{0, 0, 0, 1}] = 0.0;
     coeffs[{EWSudakov_Log_Type::lSSC, {2, 1}}][{0, 0, 0, 1}] = 0.0;
     coeffs[{EWSudakov_Log_Type::lSSC, {3, 0}}][{0, 0, 1, 0}] = 0.0;
@@ -435,19 +435,19 @@ Coefficient_Checker::ReferenceCoeffs(const Mandelstam_Variables& mandelstam,
     coeffs[{EWSudakov_Log_Type::lZ, {}}][{1, 1, 1, 0}] = 0.22;
 
     // LT t-ch;
-    coeffs[{EWSudakov_Log_Type::lSSC, {2, 0}}][{1, 1, 0, 1}] = 12.56 * (u_over_s - 1.81 * t_over_s);
-    coeffs[{EWSudakov_Log_Type::lSSC, {3, 1}}][{1, 1, 0, 1}] = 12.56 * (u_over_s - 1.81 * t_over_s);
-    coeffs[{EWSudakov_Log_Type::lSSC, {2, 0}}][{1, 1, 1, 0}] = 12.56 * (u_over_s - 1.81 * t_over_s);
-    coeffs[{EWSudakov_Log_Type::lSSC, {3, 1}}][{1, 1, 1, 0}] = 12.56 * (u_over_s - 1.81 * t_over_s);
+    coeffs[{EWSudakov_Log_Type::lSSC, {2, 0}}][{1, 1, 0, 1}] = 12.56 * (u_over_s - 1.81 * t_over_s)*log(abs(t_over_s))*log(mandelstam.s/groupconstants.m_mw2);
+    coeffs[{EWSudakov_Log_Type::lSSC, {3, 1}}][{1, 1, 0, 1}] = 12.56 * (u_over_s - 1.81 * t_over_s)*log(abs(t_over_s))*log(mandelstam.s/groupconstants.m_mw2);
+    coeffs[{EWSudakov_Log_Type::lSSC, {2, 0}}][{1, 1, 1, 0}] = 12.56 * (u_over_s - 1.81 * t_over_s)*log(abs(t_over_s))*log(mandelstam.s/groupconstants.m_mw2);
+    coeffs[{EWSudakov_Log_Type::lSSC, {3, 1}}][{1, 1, 1, 0}] = 12.56 * (u_over_s - 1.81 * t_over_s)*log(abs(t_over_s))*log(mandelstam.s/groupconstants.m_mw2);
     coeffs[{EWSudakov_Log_Type::lSSC, {2, 0}}][{0, 0, 0, 1}] = 0.0;
     coeffs[{EWSudakov_Log_Type::lSSC, {3, 1}}][{0, 0, 0, 1}] = 0.0;
     coeffs[{EWSudakov_Log_Type::lSSC, {2, 0}}][{0, 0, 1, 0}] = 0.0;
     coeffs[{EWSudakov_Log_Type::lSSC, {3, 1}}][{0, 0, 1, 0}] = 0.0;
     // LT u-ch
-    coeffs[{EWSudakov_Log_Type::lSSC, {3, 0}}][{1, 1, 0, 1}] = 12.56 * (t_over_s - 1.81 * u_over_s);
-    coeffs[{EWSudakov_Log_Type::lSSC, {2, 1}}][{1, 1, 0, 1}] = 12.56 * (t_over_s - 1.81 * u_over_s);
-    coeffs[{EWSudakov_Log_Type::lSSC, {3, 0}}][{1, 1, 1, 0}] = 12.56 * (t_over_s - 1.81 * u_over_s);
-    coeffs[{EWSudakov_Log_Type::lSSC, {2, 1}}][{1, 1, 1, 0}] = 12.56 * (t_over_s - 1.81 * u_over_s);
+    coeffs[{EWSudakov_Log_Type::lSSC, {3, 0}}][{1, 1, 0, 1}] = 12.56 * (t_over_s - 1.81 * u_over_s)*log(abs(u_over_s))*log(mandelstam.s/groupconstants.m_mw2);
+    coeffs[{EWSudakov_Log_Type::lSSC, {2, 1}}][{1, 1, 0, 1}] = 12.56 * (t_over_s - 1.81 * u_over_s)*log(abs(u_over_s))*log(mandelstam.s/groupconstants.m_mw2);
+    coeffs[{EWSudakov_Log_Type::lSSC, {3, 0}}][{1, 1, 1, 0}] = 12.56 * (t_over_s - 1.81 * u_over_s)*log(abs(u_over_s))*log(mandelstam.s/groupconstants.m_mw2);
+    coeffs[{EWSudakov_Log_Type::lSSC, {2, 1}}][{1, 1, 1, 0}] = 12.56 * (t_over_s - 1.81 * u_over_s)*log(abs(u_over_s))*log(mandelstam.s/groupconstants.m_mw2);
     coeffs[{EWSudakov_Log_Type::lSSC, {3, 0}}][{0, 0, 0, 1}] = 0.0;
     coeffs[{EWSudakov_Log_Type::lSSC, {2, 1}}][{0, 0, 0, 1}] = 0.0;
     coeffs[{EWSudakov_Log_Type::lSSC, {3, 0}}][{0, 0, 1, 0}] = 0.0;
@@ -491,20 +491,20 @@ Coefficient_Checker::ReferenceCoeffs(const Mandelstam_Variables& mandelstam,
     coeffs[{EWSudakov_Log_Type::Ls, {}}][{1, 1, 1, 0}] = -7.86 - 4.47 * GZ_minus;
 
     // t-ch;
-    coeffs[{EWSudakov_Log_Type::lSSC, {2, 0}}][{1, 1, 0, 1}] = -4.47 - 4.91 * GZ_plus;
-    coeffs[{EWSudakov_Log_Type::lSSC, {3, 1}}][{1, 1, 0, 1}] = -4.47 - 4.04 * GZ_plus;
-    coeffs[{EWSudakov_Log_Type::lSSC, {2, 0}}][{1, 1, 1, 0}] = -4.47 - 4.91 * GZ_plus;
-    coeffs[{EWSudakov_Log_Type::lSSC, {3, 1}}][{1, 1, 1, 0}] = -4.47 - 4.04 * GZ_plus;
-    coeffs[{EWSudakov_Log_Type::lSSC, {2, 0}}][{1, 1, 2, 2}] = -4.47 + 0.43;  // NOTE: A,Z contrib is -2.02
-    coeffs[{EWSudakov_Log_Type::lSSC, {3, 1}}][{1, 1, 2, 2}] = -4.47 + 0.43;  // NOTE: A,Z contrib is -2.02
+    coeffs[{EWSudakov_Log_Type::lSSC, {2, 0}}][{1, 1, 0, 1}] = (-4.47 - 4.91 * GZ_plus)*log(abs(t_over_s))*log(mandelstam.s/groupconstants.m_mw2);
+    coeffs[{EWSudakov_Log_Type::lSSC, {3, 1}}][{1, 1, 0, 1}] = (-4.47 - 4.04 * GZ_plus)*log(abs(t_over_s))*log(mandelstam.s/groupconstants.m_mw2);
+    coeffs[{EWSudakov_Log_Type::lSSC, {2, 0}}][{1, 1, 1, 0}] = (-4.47 - 4.91 * GZ_plus)*log(abs(t_over_s))*log(mandelstam.s/groupconstants.m_mw2);
+    coeffs[{EWSudakov_Log_Type::lSSC, {3, 1}}][{1, 1, 1, 0}] = (-4.47 - 4.04 * GZ_plus)*log(abs(t_over_s))*log(mandelstam.s/groupconstants.m_mw2);
+    coeffs[{EWSudakov_Log_Type::lSSC, {2, 0}}][{1, 1, 2, 2}] = (-4.47 + 0.43)*log(abs(t_over_s))*log(mandelstam.s/groupconstants.m_mw2);  // NOTE: A,Z contrib is -2.02
+    coeffs[{EWSudakov_Log_Type::lSSC, {3, 1}}][{1, 1, 2, 2}] = (-4.47 + 0.43)*log(abs(t_over_s))*log(mandelstam.s/groupconstants.m_mw2);  // NOTE: A,Z contrib is -2.02
 
     // u-ch;
-    coeffs[{EWSudakov_Log_Type::lSSC, {3, 0}}][{1, 1, 0, 1}] = -4.47 + 4.90 * GZ_plus;
-    coeffs[{EWSudakov_Log_Type::lSSC, {2, 1}}][{1, 1, 0, 1}] = -4.47 + 4.05 * GZ_plus;
-    coeffs[{EWSudakov_Log_Type::lSSC, {3, 0}}][{1, 1, 1, 0}] = -4.47 + 4.90 * GZ_plus;
-    coeffs[{EWSudakov_Log_Type::lSSC, {2, 1}}][{1, 1, 1, 0}] = -4.47 + 4.05 * GZ_plus;
-    coeffs[{EWSudakov_Log_Type::lSSC, {3, 0}}][{1, 1, 2, 2}] = -4.47 - 0.43;  // NOTE: A,Z contrib is -2.46
-    coeffs[{EWSudakov_Log_Type::lSSC, {2, 1}}][{1, 1, 2, 2}] = -4.47 - 0.43;  // NOTE: A,Z contrib is -2.46
+    coeffs[{EWSudakov_Log_Type::lSSC, {3, 0}}][{1, 1, 0, 1}] = (-4.47 + 4.90 * GZ_plus)*log(abs(u_over_s))*log(mandelstam.s/groupconstants.m_mw2);
+    coeffs[{EWSudakov_Log_Type::lSSC, {2, 1}}][{1, 1, 0, 1}] = (-4.47 + 4.05 * GZ_plus)*log(abs(u_over_s))*log(mandelstam.s/groupconstants.m_mw2);
+    coeffs[{EWSudakov_Log_Type::lSSC, {3, 0}}][{1, 1, 1, 0}] = (-4.47 + 4.90 * GZ_plus)*log(abs(u_over_s))*log(mandelstam.s/groupconstants.m_mw2);
+    coeffs[{EWSudakov_Log_Type::lSSC, {2, 1}}][{1, 1, 1, 0}] = (-4.47 + 4.05 * GZ_plus)*log(abs(u_over_s))*log(mandelstam.s/groupconstants.m_mw2);
+    coeffs[{EWSudakov_Log_Type::lSSC, {3, 0}}][{1, 1, 2, 2}] = (-4.47 - 0.43)*log(abs(u_over_s))*log(mandelstam.s/groupconstants.m_mw2);  // NOTE: A,Z contrib is -2.46
+    coeffs[{EWSudakov_Log_Type::lSSC, {2, 1}}][{1, 1, 2, 2}] = (-4.47 - 0.43)*log(abs(u_over_s))*log(mandelstam.s/groupconstants.m_mw2);  // NOTE: A,Z contrib is -2.46
 
     coeffs[{EWSudakov_Log_Type::lZ, {}}][{1, 1, 2, 2}] = 0.92;
     coeffs[{EWSudakov_Log_Type::lZ, {}}][{1, 1, 0, 1}] = 1.32;
@@ -544,15 +544,15 @@ Coefficient_Checker::ReferenceCoeffs(const Mandelstam_Variables& mandelstam,
     coeffs[{EWSudakov_Log_Type::Ls, {}}][{1, 1, 0, 1}] = -7.86 - 4.47 * GA_minus;
     coeffs[{EWSudakov_Log_Type::Ls, {}}][{1, 1, 1, 0}] = -7.86 - 4.47 * GA_minus;
 
-    coeffs[{EWSudakov_Log_Type::lSSC, {2, 1}}][{1, 1, 0, 1}] = -3.81 - 0.67 - 5.96 * GA_plus;
-    coeffs[{EWSudakov_Log_Type::lSSC, {2, 1}}][{1, 1, 1, 0}] = -3.81 - 0.67 - 5.96 * GA_plus;
-    coeffs[{EWSudakov_Log_Type::lSSC, {3, 0}}][{1, 1, 0, 1}] = -4.47 * (GA_plus + GA_minus);
-    coeffs[{EWSudakov_Log_Type::lSSC, {3, 0}}][{1, 1, 1, 0}] = -4.47 * (GA_plus + GA_minus);
+    coeffs[{EWSudakov_Log_Type::lSSC, {2, 1}}][{1, 1, 0, 1}] = (-3.81 - 0.67 - 5.96 * GA_plus)*log(abs(u_over_s))*log(mandelstam.s/groupconstants.m_mw2);
+    coeffs[{EWSudakov_Log_Type::lSSC, {2, 1}}][{1, 1, 1, 0}] = (-3.81 - 0.67 - 5.96 * GA_plus)*log(abs(u_over_s))*log(mandelstam.s/groupconstants.m_mw2);
+    coeffs[{EWSudakov_Log_Type::lSSC, {3, 0}}][{1, 1, 0, 1}] = (-4.47 * (GA_plus + GA_minus))*log(abs(u_over_s))*log(mandelstam.s/groupconstants.m_mw2);
+    coeffs[{EWSudakov_Log_Type::lSSC, {3, 0}}][{1, 1, 1, 0}] = (-4.47 * (GA_plus + GA_minus))*log(abs(u_over_s))*log(mandelstam.s/groupconstants.m_mw2);
 
-    coeffs[{EWSudakov_Log_Type::lSSC, {2, 0}}][{1, 1, 0, 1}] = -3.14 - 1.33 + 2.98 * GA_plus;
-    coeffs[{EWSudakov_Log_Type::lSSC, {2, 0}}][{1, 1, 1, 0}] = -3.14 - 1.33 + 2.98 * GA_plus;
-    coeffs[{EWSudakov_Log_Type::lSSC, {3, 1}}][{1, 1, 0, 1}] =  4.47 * (GA_plus - GA_minus);
-    coeffs[{EWSudakov_Log_Type::lSSC, {3, 1}}][{1, 1, 1, 0}] =  4.47 * (GA_plus - GA_minus);
+    coeffs[{EWSudakov_Log_Type::lSSC, {2, 0}}][{1, 1, 0, 1}] = (-3.14 - 1.33 + 2.98 * GA_plus)*log(abs(t_over_s))*log(mandelstam.s/groupconstants.m_mw2);
+    coeffs[{EWSudakov_Log_Type::lSSC, {2, 0}}][{1, 1, 1, 0}] = (-3.14 - 1.33 + 2.98 * GA_plus)*log(abs(t_over_s))*log(mandelstam.s/groupconstants.m_mw2);
+    coeffs[{EWSudakov_Log_Type::lSSC, {3, 1}}][{1, 1, 0, 1}] = (4.47 * (GA_plus - GA_minus))*log(abs(t_over_s))*log(mandelstam.s/groupconstants.m_mw2);
+    coeffs[{EWSudakov_Log_Type::lSSC, {3, 1}}][{1, 1, 1, 0}] = (4.47 * (GA_plus - GA_minus))*log(abs(t_over_s))*log(mandelstam.s/groupconstants.m_mw2);
 
     coeffs[{EWSudakov_Log_Type::lZ, {}}][{1, 1, 0, 1}] = 1.32;
     coeffs[{EWSudakov_Log_Type::lZ, {}}][{1, 1, 1, 0}] = 1.32;

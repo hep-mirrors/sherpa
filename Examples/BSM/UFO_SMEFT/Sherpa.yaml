@@ -1,0 +1,249 @@
+# LHC beam setup:
+BEAMS: 2212
+BEAM_ENERGIES: 6500
+
+# ME generator setup
+ME_GENERATORS: Comix
+SCALES: VAR{sqr(100)}
+
+# model setup
+MODEL: SMEFTsim_topU3l_MwScheme_UFO
+
+PROCESSES:
+- 93 93 -> -11 -11 12 12 93 93:
+    Max_Order: {QCD: 0,QED: Any,SMHLOOP: 0, NP: 1, NPcW: 1, NPshifts: Any,NPprop: Any,NPcpv: Any,NPcbb: Any,NPcbB: Any,NPcbBB: Any,NPcbd1: Any,NPcbd8: Any,NPcbe: Any,NPcbG: Any,NPcbH: Any,NPcbj1: Any,NPcbj8: Any,NPcbl: Any,NPcbu1: Any,NPcbu8: Any,NPcbW: Any,NPcdB: Any,NPcdd1: Any,NPcdd8: Any,NPcdG: Any,NPcdH: Any,NPcdW: Any,NPceB: Any,NPced: Any,NPcee: Any,NPceH: Any,NPceu: Any,NPceW: Any,NPcG: Any,NPcGtil: Any,NPcH: Any,NPcHB: Any,NPcHbox: Any,NPcHbq: Any,NPcHBtil: Any,NPcHd: Any,NPcHDD: Any,NPcHe: Any,NPcHG: Any,NPcHGtil: Any,NPcHj1: Any,NPcHj3: Any,NPcHl1: Any,NPcHl3: Any,NPcHQ1: Any,NPcHQ3: Any,NPcHt: Any,NPcHtb: Any,NPcHu: Any,NPcHud: Any,NPcHW: Any,NPcHWB: Any,NPcHWBtil: Any,NPcHWtil: Any,NPcjd1: Any,NPcjd8: Any,NPcje: Any,NPcjj11: Any,NPcjj18: Any,NPcjj31: Any,NPcjj38: Any,NPcjQbd1: Any,NPcjQbd8: Any,NPcjQtu1: Any,NPcjQtu8: Any,NPcjtQd1: Any,NPcjtQd8: Any,NPcju1: Any,NPcju8: Any,NPcjujd1: Any,NPcjujd11: Any,NPcjujd8: Any,NPcjujd81: Any,NPcjuQb1: Any,NPcjuQb8: Any,NPcld: Any,NPcle: Any,NPclebQ: Any,NPcledj: Any,NPcleju1: Any,NPcleju3: Any,NPcleQt1: Any,NPcleQt3: Any,NPclj1: Any,NPclj3: Any,NPcll: Any,NPcll1: Any,NPclu: Any,NPcQb1: Any,NPcQb8: Any,NPcQd1: Any,NPcQd8: Any,NPcQe: Any,NPcQj11: Any,NPcQj18: Any,NPcQj31: Any,NPcQj38: Any,NPcQl1: Any,NPcQl3: Any,NPcQQ1: Any,NPcQQ8: Any,NPcQt1: Any,NPcQt8: Any,NPcQtjd1: Any,NPcQtjd8: Any,NPcQtQb1: Any,NPcQtQb8: Any,NPcQu1: Any,NPcQu8: Any,NPcQujb1: Any,NPcQujb8: Any,NPctB: Any,NPctb1: Any,NPctb8: Any,NPctd1: Any,NPctd8: Any,NPcte: Any,NPctG: Any,NPctH: Any,NPctj1: Any,NPctj8: Any,NPctl: Any,NPctt: Any,NPctu1: Any,NPctu8: Any,NPctW: Any,NPcuB: Any,NPcud1: Any,NPcud8: Any,NPcuG: Any,NPcuH: Any,NPcutbd1: Any,NPcutbd8: Any,NPcuu1: Any,NPcuu8: Any,NPcuW: Any,NPcWtil: Any,NPQjujb8: Any}
+
+      # For JUST the linear contribution, set Order of NP and cW to 0.5 like this:
+      # Order: {QCD: 0,QED: Any,SMHLOOP: 0, NP: 0.5, NPcW: 0.5, NPshifts: Any,NPprop: Any,NPcpv: Any,NPcbb: Any,NPcbB: Any,NPcbBB: Any,NPcbd1: Any,NPcbd8: Any,NPcbe: Any,NPcbG: Any,NPcbH: Any,NPcbj1: Any,NPcbj8: Any,NPcbl: Any,NPcbu1: Any,NPcbu8: Any,NPcbW: Any,NPcdB: Any,NPcdd1: Any,NPcdd8: Any,NPcdG: Any,NPcdH: Any,NPcdW: Any,NPceB: Any,NPced: Any,NPcee: Any,NPceH: Any,NPceu: Any,NPceW: Any,NPcG: Any,NPcGtil: Any,NPcH: Any,NPcHB: Any,NPcHbox: Any,NPcHbq: Any,NPcHBtil: Any,NPcHd: Any,NPcHDD: Any,NPcHe: Any,NPcHG: Any,NPcHGtil: Any,NPcHj1: Any,NPcHj3: Any,NPcHl1: Any,NPcHl3: Any,NPcHQ1: Any,NPcHQ3: Any,NPcHt: Any,NPcHtb: Any,NPcHu: Any,NPcHud: Any,NPcHW: Any,NPcHWB: Any,NPcHWBtil: Any,NPcHWtil: Any,NPcjd1: Any,NPcjd8: Any,NPcje: Any,NPcjj11: Any,NPcjj18: Any,NPcjj31: Any,NPcjj38: Any,NPcjQbd1: Any,NPcjQbd8: Any,NPcjQtu1: Any,NPcjQtu8: Any,NPcjtQd1: Any,NPcjtQd8: Any,NPcju1: Any,NPcju8: Any,NPcjujd1: Any,NPcjujd11: Any,NPcjujd8: Any,NPcjujd81: Any,NPcjuQb1: Any,NPcjuQb8: Any,NPcld: Any,NPcle: Any,NPclebQ: Any,NPcledj: Any,NPcleju1: Any,NPcleju3: Any,NPcleQt1: Any,NPcleQt3: Any,NPclj1: Any,NPclj3: Any,NPcll: Any,NPcll1: Any,NPclu: Any,NPcQb1: Any,NPcQb8: Any,NPcQd1: Any,NPcQd8: Any,NPcQe: Any,NPcQj11: Any,NPcQj18: Any,NPcQj31: Any,NPcQj38: Any,NPcQl1: Any,NPcQl3: Any,NPcQQ1: Any,NPcQQ8: Any,NPcQt1: Any,NPcQt8: Any,NPcQtjd1: Any,NPcQtjd8: Any,NPcQtQb1: Any,NPcQtQb8: Any,NPcQu1: Any,NPcQu8: Any,NPcQujb1: Any,NPcQujb8: Any,NPctB: Any,NPctb1: Any,NPctb8: Any,NPctd1: Any,NPctd8: Any,NPcte: Any,NPctG: Any,NPctH: Any,NPctj1: Any,NPctj8: Any,NPctl: Any,NPctt: Any,NPctu1: Any,NPctu8: Any,NPctW: Any,NPcuB: Any,NPcud1: Any,NPcud8: Any,NPcuG: Any,NPcuH: Any,NPcutbd1: Any,NPcutbd8: Any,NPcuu1: Any,NPcuu8: Any,NPcuW: Any,NPcWtil: Any,NPQjujb8: Any}
+
+SELECTORS:
+     - [PT, 93, 20., E_CMS]
+     - [DR, 93, 93, 0.4, 100]
+     - [Eta, 93, -5, 5]
+
+UFO_PARAMS: |
+  block smeft
+        1   0             # cG
+        2   1             # cW
+        3   0             # cH
+        4   0             # cHbox
+        5   0             # cHDD
+        6   0             # cHG
+        7   0             # cHW
+        8   0             # cHWB
+        9   0             # cHWB
+        10  0             # cuHRe
+        11  0             # ctHRe
+        12  0             # cdHRe
+        13  0             # cbHRe
+        14  0             # cuGRe
+        15  0             # ctGRe
+        16  0             # cuWRe
+        17  0             # ctWRe
+        18  0             # cuBRe
+        19  0             # ctBRe
+        20  0             # cdGRe
+        21  0             # cbGRe
+        22  0             # cdWRe
+        23  0             # cbWRe
+        24  0             # cdBRe
+        25  0             # cbBRe
+        26  0             # cHj1
+        27  0             # cHQ1
+        28  0             # cHj3
+        29  0             # cHQ3
+        30  0             # cHu
+        31  0             # cHt
+        32  0             # cHd
+        33  0             # cHbq
+        34  0             # cHudRe
+        35  0             # cHtbRe
+        36  0             # cjj11
+        37  0             # cjj18
+        38  0             # cjj31
+        39  0             # cjj38
+        40  0             # cQj11
+        41  0             # cQj18
+        42  0             # cQj31
+        43  0             # cQj38
+        44  0             # cQQ1
+        45  0             # cQQ8
+        46  0             # cuu1
+        47  0             # cuu8
+        48  0             # ctt
+        49  0             # ctu1
+        50  0             # ctu8
+        51  0             # cdd1
+        52  0             # cdd8
+        53  0             # cbb
+        54  0             # cbd1
+        55  0             # cbd8
+        56  0             # cud1
+        57  0             # ctb1
+        58  0             # ctd1
+        59  0             # cbu1
+        60  0             # cud8
+        61  0             # ctb8
+        62  0             # ctd8
+        63  0             # cbu8
+        64  0             # cutbd1Re
+        65  0             # cutbd8Re
+        66  0             # cju1
+        67  0             # cQu1
+        68  0             # cju8
+        69  0             # cQu8
+        70  0             # ctj1
+        71  0             # ctj8
+        72  0             # cQt1
+        73  0             # cQt8
+        74  0             # cjd1
+        75  0             # cjd8
+        76  0             # cQd1
+        77  0             # cQd8
+        78  0             # cbj1
+        79  0             # cbj8
+        80  0             # cQb1
+        81  0             # cQb8
+        82  0             # cjQtu1Re
+        83  0             # cjQtu8Re
+        84  0             # cjQbd1Re
+        85  0             # cjQbd8Re
+        86  0             # cjujd1Re
+        87  0             # cjujd8Re
+        88  0             # cjujd11Re
+        89  0             # cjujd81Re
+        90  0             # cQtjd1Re
+        91  0             # cQtjd8Re
+        92  0             # cjuQb1Re
+        93  0             # cjuQb8Re
+        94  0             # cQujb1Re
+        95  0             # cQujb8Re
+        96  0             # cjtQd1Re
+        97  0             # cjtQd8Re
+        98  0             # cQtQb1Re
+        99  0             # cQtQb8Re
+        100 0             # ceHRe
+        101 0             # ceWRe
+        102 0             # ceBRe
+        103 0             # cHl1
+        104 0             # cHl3
+        105 0             # cHe
+        106 0             # cll
+        107 0             # cll1
+        108 0             # clj1
+        109 0             # clj3
+        110 0             # cQl1
+        111 0             # cQl3
+        112 0             # cee
+        113 0             # ceu
+        114 0             # cte
+        115 0             # ced
+        116 0             # cbe
+        117 0             # cje
+        118 0             # cQe
+        119 0             # clu
+        120 0             # ctl
+        121 0             # cld
+        122 0             # cbl
+        123 0             # cle
+        124 0             # cledjRe
+        125 0             # clebQRe
+        126 0             # cleju1Re
+        127 0             # cleQt1Re
+        128 0             # cleju3Re
+        129 0             # cleQt3Re
+
+  block smeftcpv
+        1   0             # cGtil
+        2   0             # cWtil
+        3   0             # cHGtil
+        4   0             # cHWtil
+        5   0             # cHBtil
+        6   0             # cHWBtil
+        7   0             # cuGIm
+        8   0             # ctGIm
+        9   0             # cuWIm
+        10  0             # ctWIm
+        11  0             # cuBIm
+        12  0             # ctBIm
+        13  0             # cdGIm
+        14  0             # cbGIm
+        15  0             # cdWIm
+        16  0             # cbWIm
+        17  0             # cdBIm
+        18  0             # cbBIm
+        19  0             # cuHIm
+        20  0             # ctHIm
+        21  0             # cdHIm
+        22  0             # cbHIm
+        23  0             # cHudIm
+        24  0             # cHtbIm
+        25  0             # cutbd1Im
+        26  0             # cutbd8Im
+        27  0             # cjQtu1Im
+        28  0             # cjQtu8Im
+        29  0             # cjQbd1Im
+        30  0             # cjQbd8Im
+        31  0             # cjujd1Im
+        32  0             # cjujd8Im
+        33  0             # cjujd11Im
+        34  0             # cjujd81Im
+        35  0             # cQtjd1Im
+        36  0             # cQtjd8Im
+        37  0             # cjuQb1Im
+        38  0             # cjuQb8Im
+        39  0             # cQujb1Im
+        40  0             # cQujb8Im
+        41  0             # cjtQd1Im
+        42  0             # cjtQd8Im
+        43  0             # cQtQb1Im
+        44  0             # cQtQb8Im
+        45  0             # ceHIm
+        46  0             # ceWIm
+        47  0             # ceBIm
+        48  0             # cledjIm
+        49  0             # clebQIm
+        50  0             # cleju1Im
+        51  0             # cleju3Im
+        52  0             # cleQt1Im
+        53  0             # cleQt3Im
+
+  block smeftcutoff
+        1   1000          # LambdaSMEFT
+
+  block sminputs
+        1   80.387        # MW
+        2   1.1663787e-05 # Gf
+        3   0.1179        # aS
+
+  block switches
+        1   0             # linearPropCorrections
+
+  block yukawa
+        1   0       # ymdo
+        2   0       # ymup
+        3   0         # yms
+        4   0         # ymc
+        5   4.18          # ymb
+        6   172.76        # ymt
+        11  0      # yme
+        13  0       # ymm
+        15  0         # ymtau
+
+  block mass
+        23  91.1876       # MZ
+        11  0      # Me
+        13  0       # MMU
+        15  0         # MTA
+        2   0       # MU
+        4   0          # MC
+        6   172.76        # MT
+        1   0       # MD
+        3   0         # MS
+        5   4.18          # MB
+        25  125.09        # MH
+
+  decay         23  2.4952        # WZ
+  decay         24  2.085         # WW
+  decay         6   1.33          # WT
+  decay         25  0.00407       # WH

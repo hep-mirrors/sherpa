@@ -157,6 +157,14 @@ calculation, along with their default values:
   :option:`THRESHOLD` these may become numerically significant. For lower threshold
   values, it is recommended to leave this option `true`, as default.
 
+.. index:: INCLUDE_I_PI
+
+* :option:`INCLUDE_I_PI` determines whether to include imaginary part of high
+  energy logs :cite:`Pagani2021vyk`. This can have a significant numerical effect and it should be set
+  to `true`, as per default. However, together with
+  :option:`INCLUDE_SUBLEADING`, they should be turned off when testing the
+  coefficients with older references that did not include them.
+
 .. index:: CLUSTERING_THRESHOLD
 
 * :option:`CLUSTERING_THRESHOLD` determines the number of vector boson decay widths,

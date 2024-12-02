@@ -250,9 +250,10 @@ void Decay_Channel::CalculateWidth(double acc, double ref, int iter)
   double crit = (ref>0.0?ref:result);
   m_ideltawidth=crit;
 
-  while(opt<maxopt && m_ideltawidth>acc*crit) {
+  while(opt<maxopt || m_ideltawidth>acc*crit) {
     for (int ln=1;ln<iter+1;ln++) {
       value = Differential(momenta, false, NULL);
+      if (IsNan(value)) continue;
       mv[0] += 1.0;
       mv[1] += value;
       mv[2] += ATOOLS::sqr(value);
@@ -390,7 +391,7 @@ GenerateKinematics(ATOOLS::Vec4D_Vector& momenta, bool anti,
 	if (s_kinmaxfails.find(Name())==s_kinmaxfails.end()) s_kinmaxfails[Name()] = value/m_max;
 	else if (s_kinmaxfails[Name()] < value/m_max) s_kinmaxfails[Name()] = value/m_max;
       }
-      m_max=value;
+      //m_max=value; // should not change m_max during run (kills individual event reproducability)
       Return_Value::IncRetryMethod(mname);
       break;
     }

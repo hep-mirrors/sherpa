@@ -18,9 +18,6 @@ PARTICLE_DATA:
   6: {Width: 0}
   24: {Width: 0}
 
-# technical parameters
-EXCLUSIVE_CLUSTER_MODE: 1
-
 PROCESSES:
 - 93 93 -> 6 -6 24:
     NLO_Mode: MC@NLO

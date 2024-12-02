@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.12.0 FATAL_ERROR)
 project(SHERPA-MC LANGUAGES C  CXX)
 #The complicated way to set the version is used to assure the simple
 #replacement of version variable with sed will not break the CMakeLists.txt
-set(EXTERNAL_VERSION_STRING "3.0.0")
+set(EXTERNAL_VERSION_STRING "3.1.x")
 string(REPLACE "."  ";" EXTERNAL_VERSION_LIST "${EXTERNAL_VERSION_STRING}")
 list(GET EXTERNAL_VERSION_LIST 0 SHERPA_VERSION_MAJOR)
 list(GET EXTERNAL_VERSION_LIST 1 SHERPA_VERSION_MINOR)
@@ -13,7 +13,6 @@ SET(SHERPA_VERSION ${SHERPA_VERSION_MAJOR}.${SHERPA_VERSION_MINOR}.${SHERPA_VERS
 # remove "alpha1", "beta2" etc.
 string(REGEX REPLACE "[a-z]+[0-9]+" "" SHERPA_VERSION_PATCH_NUMBER
   "${SHERPA_VERSION_PATCH}")
-math(EXPR SHERPA_VERSION_CODE "${SHERPA_VERSION_MAJOR} * 1000000 + ${SHERPA_VERSION_MINOR} * 1000 + ${SHERPA_VERSION_PATCH_NUMBER}")
 message(STATUS "SHERPA: SHERPA_VERSION=${SHERPA_VERSION}")
 message(STATUS "SHERPA: SHERPA_VERSION_MAJOR=${SHERPA_VERSION_MAJOR}")
 message(STATUS "SHERPA: SHERPA_VERSION_MINOR=${SHERPA_VERSION_MINOR}")
@@ -52,7 +51,6 @@ option(SHERPA_ENABLE_INTERNAL_PDFS           "Enables internal PDFs." ON)
 option(SHERPA_ENABLE_INSTALL_LIBZIP          "Enables internal LibZip." OFF)
 option(SHERPA_ENABLE_LHAPDF                  "Enables LHAPDF." ON)
 option(SHERPA_ENABLE_INSTALL_LHAPDF          "Enables internal LHAPDF." OFF)
-option(SHERPA_ENABLE_LHOLE                   "Enables building of LH OLE interface." OFF)
 option(SHERPA_ENABLE_MADLOOP                 "Enables building with MadLoop." OFF)
 option(SHERPA_ENABLE_MANUAL                  "Enables building of manual." OFF)
 option(SHERPA_ENABLE_MCFM                    "Enables building with MCFM." OFF)
@@ -97,7 +95,7 @@ endforeach()
 set( allenables ANALYSIS BINRELOC BLACKHAT CATCH2 CLANG_TIDY DIHIGGS DOXYGEN
  EWSUD EXAMPLES GOSAM GZIP HEPMC3 HEPMC3_ROOT
  INTERNAL_PDFS INSTALL_LIBZIP INSTALL_LHAPDF LHAPDF
- LHOLE MADLOOP MANUAL MCFM MPI OPENLOOPS PYTHIA8 PYTHON RECOLA RIVET ROOT THREADING TESTING UFO VERSIONING)
+ MADLOOP MANUAL MCFM MPI OPENLOOPS PYTHIA8 PYTHON RECOLA RIVET ROOT THREADING TESTING UFO VERSIONING)
 foreach (en IN LISTS allenables)
   message(STATUS "SHERPA: SHERPA_ENABLE_${en}=${SHERPA_ENABLE_${en}}")
 endforeach()
@@ -182,7 +180,7 @@ include(CheckCCompilerFlag)
 include(CheckCXXCompilerFlag)
 set(CXX_CXX_FLAGS_TO_CHECK -Wno-tautological-constant-compare)
 set ( NEW_CMAKE_CXX_FLAGS " ")
-string(REPLACE " " ";" LIST_CMAKE_CXX_FLAGS "${CXX_CXX_FLAGS_TO_CHECK} ${CMAKE_CXX_FLAGS}")
+string(REPLACE " -" ";-" LIST_CMAKE_CXX_FLAGS "${CXX_CXX_FLAGS_TO_CHECK} ${CMAKE_CXX_FLAGS}")
 foreach(fx IN LISTS LIST_CMAKE_CXX_FLAGS)
   if (fx)
     check_cxx_compiler_flag(${fx} CXX_COMPILER_SUPPORTS_${fx})
@@ -784,10 +782,6 @@ if (SHERPA_ENABLE_MADLOOP)
   add_subdirectory(AddOns/MadLoop)
 endif()
 
-if (SHERPA_ENABLE_LHOLE)
-  add_subdirectory(AddOns/LH_OLE)
-endif()
-
 if (SHERPA_ENABLE_OPENLOOPS)
 #Version is not set to allow for "beta"
   find_package(OpenLoops REQUIRED)
@@ -955,7 +949,6 @@ file(GENERATE OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/ATOOLS/Org/CXXFLAGS_PACKAGES.H 
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/AMEGIC++/Main/makelibs.in ${CMAKE_CURRENT_BINARY_DIR}/AMEGIC++/Main/makelibs @ONLY)
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/AMEGIC++/Main/makelibs    DESTINATION  ${CMAKE_INSTALL_DATADIR}/SHERPA-MC COMPONENT doc PERMISSIONS  OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE )
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/SHERPA/Run/Sherpa-config.in ${CMAKE_CURRENT_BINARY_DIR}/SHERPA/Run/Sherpa${VERSIONING}-config @ONLY)
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/Examples/Userhook/CMakeLists.txt.in ${CMAKE_CURRENT_BINARY_DIR}/Examples/Userhook/CMakeLists.txt @ONLY)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/EXTAMP/Example/madgraph/CMakeLists.txt.in ${CMAKE_CURRENT_BINARY_DIR}/EXTAMP/Example/madgraph/CMakeLists.txt @ONLY)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/EXTAMP/Example/subtraction/CMakeLists.txt.in ${CMAKE_CURRENT_BINARY_DIR}/EXTAMP/Example/subtraction/CMakeLists.txt @ONLY)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/Examples/V_plus_Bs/LHC_Wbb/CMakeLists.txt.in ${CMAKE_CURRENT_BINARY_DIR}/Examples/V_plus_Bs/LHC_Wbb/CMakeLists.txt @ONLY)
@@ -1040,8 +1033,6 @@ $<IF:$<BOOL:${SHERPA_ENABLE_BINRELOC}>,#define ENABLE_BINRELOC \"1\",/* #undef E
 #define SHERPA_VERSION \"${SHERPA_VERSION_MAJOR}\"\n\n\
 /* Sherpa version name */\n\
 #define SHERPA_NAME \"Erebus\"\n\n\
-/* Sherpa version code */\n\
-#define SHERPA_VERSION_CODE ${SHERPA_VERSION_CODE}\n\n\
 /* Using colour */\n\
 #define USING__COLOUR \"1\"\n\n\
 #define PYTHON_LIBS \"${SHERPA_Python_SITEARCH}\"\n\n\

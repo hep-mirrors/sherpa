@@ -6,7 +6,7 @@ MI_HANDLER: None
 ME_GENERATORS: [Comix, Amegic]
 OL_PARAMETERS:
   preset: 2
-SCALES: SMETS
+SCALES: METS
 PP_RS_SCALE: VAR{sqr(sqrt(H_T2)-PPerp(p[2])-PPerp(p[3])+MPerp(p[2]+p[3]))/4}
 PSI:
   IT_BY_NODE: 10
