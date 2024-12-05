@@ -357,9 +357,9 @@ double ISR_Handler::PDFWeight(const int mode, Vec4D p1, Vec4D p2, double Q12,
     return 0.;
   }
   if (m_freezePDFforLowQ) {
-    if (Q12 < PDF(0)->Q2Min())
+    if (PDF(0) && Q12 < PDF(0)->Q2Min())
       Q12 = 1.001 * PDF(0)->Q2Min();
-    if (Q22 < PDF(1)->Q2Min())
+    if (PDF(1) && Q22 < PDF(1)->Q2Min())
       Q22 = 1.001 * PDF(1)->Q2Min();
   }
   msg_IODebugging() << "  " << p1 << " from " << p_beam[0]->OutMomentum()
