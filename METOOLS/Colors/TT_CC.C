@@ -70,8 +70,8 @@ namespace METOOLS {
 			      m_d?(*p_g[m_d])(m_d):0,-1.0/3.0));
 	if ((*p_g[m_d])(m_d)==(*p_g[m_d])(1-m_d) &&
 	    (*p_g[1-m_d])(m_d)==(*p_g[1-m_d])(1-m_d))
-	  m_c.push_back(CInfo(m_d?0:(*p_g[m_d])(m_d),
-			      m_d?(*p_g[m_d])(m_d):0,1.0/9.0));
+	  m_c.push_back(CInfo(m_d?0:(*p_q[m_d])(m_d),
+			      m_d?(*p_q[m_d])(m_d):0,1.0/9.0));
 	return m_c.size();
       }
       if ((*p_q[m_d])(m_d)==(*p_g[m_d])(1-m_d)) {
