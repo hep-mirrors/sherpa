@@ -39,7 +39,7 @@ namespace ATOOLS {
       double m_timeout;
       int m_batchmode;
       std::string m_username,m_hostname;
-      bool m_softsc, m_hardsc;
+      bool m_softsc, m_hardsc, m_use_nanobarns;
       std::map<std::string,std::string> m_variables;
       std::vector<std::string> m_cites;
       size_t m_clevel;
@@ -70,6 +70,7 @@ namespace ATOOLS {
       inline double    TimeOut()                          { return m_timeout;   }
       inline MyTiming &Timer()                            { return m_timer;     }
       inline int    BatchMode()                           { return m_batchmode; }
+      inline bool   IsNanoBarn()                          { return  m_use_nanobarns;}
       bool CheckTime(const double limit=0.);
       inline void   SetNumberOfGeneratedEvents(const long gen) { m_ngenevents=gen; }
       inline void   SetNumberOfTrials(const long trials) { m_ntrials=trials; }
@@ -94,11 +95,11 @@ namespace ATOOLS {
     } gen;
 
 #if defined(__GNUC__) &&  __GNUC__ < 5
-    double Picobarn()             { return 3.89379656e8;}   // pb GeV^2
+    double Picobarn()             { return (gen.IsNanoBarn()==0 ?  3.89379656e8 : 3.89379656e6);}   // pb GeV^2
     double c()                    { return 299.792458e9;}   // mm/s
     double hBar()                 { return 6.58211889e-25;} // GeV s
 #else
-    constexpr double Picobarn()             { return 3.89379656e8;}   // pb GeV^2
+    constexpr double Picobarn()             { return (gen.IsNanoBarn()==0 ? 3.89379656e8 :  3.89379656e6);}   // pb GeV^2
     constexpr double c()                    { return 299.792458e9;}   // mm/s
     constexpr double hBar()                 { return 6.58211889e-25;} // GeV s
 #endif
