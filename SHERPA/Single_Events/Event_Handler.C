@@ -550,8 +550,8 @@ void Event_Handler::Finish() {
   MyStrStream line;
   line << std::left << std::setw(max_weight_name_size)
        << "Nominal or variation name" << std::right << std::setw(12)
-       << "XS [pb]" << std::right << std::setw(12) << "RelDev" << std::right
-       << std::setw(13) << "AbsErr [pb]" << std::right << std::setw(12)
+       << (rpa->gen.IsNanoBarn()==0 ? "XS [pb]" : "XS [nb]") << std::right << std::setw(12) << "RelDev" << std::right
+       << std::setw(13) << (rpa->gen.IsNanoBarn()==0 ? "AbsErr [pb]" : "AbsErr [nb]") << std::right << std::setw(12)
        << "RelErr";
   msg_Out() << Frame_Line{line.str(), table_size};
   msg_Out() << Frame_Separator{table_size};
