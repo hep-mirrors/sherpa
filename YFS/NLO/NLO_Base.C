@@ -85,6 +85,7 @@ void NLO_Base::InitializeVirtual(const PHASIC::Process_Info& pi) {
 }
 
 void NLO_Base::InitializeReal(const PHASIC::Process_Info& pi) {
+	if(m_coll_real) return;
 	p_real = new YFS::Real(pi);
 	m_realtool = true;
 }
@@ -460,16 +461,16 @@ void NLO_Base::CheckMassReg(){
 		out_finite.open("yfs-finite.txt", std::ios_base::app);
 		if(!HasISR()) virt = p_virt->Calc(m_bornMomenta, m_born);
 		else virt = p_virt->Calc(m_plab, m_born);
-		if (!IsEqual(m_born, p_virt->p_loop_me->ME_Born(), 1e-6)) {
+		if (!IsEqual(m_born, p_virt->p_loop_me->ME_Born()*m_rescale_alpha, 1e-6)) {
 			msg_Error() << METHOD << "\n Warning! Loop provider's born is different! YFS Subtraction likely fails\n"
 									<< "Loop Provider " << ":  "<<p_virt->p_loop_me->ME_Born()
 									<< "Sherpa" << ":  "<<m_born;
 		}
 		double sub = p_dipoles->CalculateVirtualSub();
 		std::cout << setprecision(15);
-		out_sub<< setprecision(15) << m_photonMass << "," << -sub*m_born/m_rescale_alpha << std::endl;
-		out_recola<< setprecision(15) << m_photonMass << "," << virt << std::endl;
-		out_finite<< setprecision(15) << m_photonMass << "," << virt - sub*m_born/m_rescale_alpha << std::endl;
+		out_sub<< setprecision(15) << m_photonMass << "," << -sub*m_born << std::endl;
+		out_recola<< setprecision(15) << m_photonMass << "," << virt*m_rescale_alpha << std::endl;
+		out_finite<< setprecision(15) << m_photonMass << "," << virt*m_rescale_alpha - sub*m_born << std::endl;
 		out_sub.close();
 		out_recola.close();
 		exit(0);

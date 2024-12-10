@@ -35,10 +35,11 @@ Dipole::Dipole(ATOOLS::Flavour_Vector const &fl, ATOOLS::Vec4D_Vector const &mom
   m_type(ty), m_alp(alpha)
 {
   if ((mom.size() != fl.size()) || fl.size() != 2 || mom.size() != 2 || born.size()!=2) {
-    msg_Out()<<"Dipole type is  =  "<<ty<<std::endl
-             <<" mom.size() =  "<<mom.size()<<std::endl
-             <<" fl.size() =  "<<fl.size()<<std::endl
-             <<" born.size() =  "<<born.size()<<std::endl;
+    msg_Out()<<"Dipole type is  = "<<ty<<std::endl
+             <<" mom.size() = "<<mom.size()<<std::endl
+             <<" fl.size() = "<<fl.size()<<std::endl
+             <<" born.size() = "<<born.size()<<std::endl
+             <<"Flavours = "<<fl<<std::endl;
     THROW(fatal_error, "Incorrect dipole size in YFS for dipoletype");
   }
   Clean();

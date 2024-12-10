@@ -85,7 +85,7 @@ void ISR::GenerateAngles()
 {
   // Generation of theta for two massive particles
   double weight = 1;
-  if (m_kkmcAngles == 0) {
+  if (m_kkmcAngles != 1) {
     double P = log((1.+m_b1)/(1.-m_b1))
                 /(log((1.+m_b1)/(1.-m_b1))+log((1.+m_b2)/(1.-m_b2)));
     while (true) {
