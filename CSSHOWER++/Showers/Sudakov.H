@@ -9,10 +9,12 @@
 #include "ATOOLS/Phys/Variations.H"
 
 
-namespace CSSHOWER {
+namespace CSSHOWER {  
   typedef std::map<ATOOLS::Flavour,Splitting_Function_Base*> SF_E_Map;
-  typedef std::map<ATOOLS::Flavour,SF_E_Map> SF_EE_Map;
-  typedef std::map<ATOOLS::Flavour,SF_EE_Map> SF_EEE_Map;
+  typedef std::map<ATOOLS::Flavour,SF_E_Map>                 SF_EE_Map;
+  typedef std::map<ATOOLS::Flavour,SF_EE_Map>                SF_EEE_Map;
+
+  
 
   class Shower;
 
@@ -25,6 +27,7 @@ namespace CSSHOWER {
     Parton * p_split, * p_spect;
     SF_EEE_Map m_fffmap, m_ffimap, m_iffmap, m_ifimap, m_fifmap, m_fiimap;
     SF_EEE_Map m_sffmap, m_sfimap, m_sifmap, m_siimap;
+    ST_Map     m_stmap;
     std::vector<Splitting_Function_Base *> m_addsplittings;
     Shower *p_shower;
     std::vector<SFC_Getter*> m_cgets;
@@ -35,6 +38,7 @@ namespace CSSHOWER {
     
     void AddDiQuarkSplittingFunctions(MODEL::Model_Base *md,const int kfmode);
     void AddOctetMesonSplittingFunctions(MODEL::Model_Base *md,const int kfmode);
+    void AddGluonThresholds(MODEL::Model_Base *md);
     double ProduceT(double t);
     bool Veto(double,double,double,double,double);
     bool Splitting(double,double,double,double,double);
