@@ -1,4 +1,4 @@
-#include <iostream>
+ATOOLS/Org/Run_Parameter.C#include <iostream>
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Math/MathTools.H"
 #include "ATOOLS/Org/Message.H"
@@ -184,6 +184,7 @@ void Run_Parameter::RegisterDefaults()
   s["SHERPA_CPP_PATH"].SetDefault("");
   s["SHERPA_LIB_PATH"].SetDefault("");
   s["EVENTS"].SetDefault(100);
+  s["NANOBARN"].SetDefault(0);
 
   std::vector<long int> seeds = {-1, -1, -1, -1};
   s["RANDOM_SEED"].SetDefault(seeds);
@@ -209,7 +210,7 @@ void Run_Parameter::Init()
 {
   RegisterDefaults();
   Settings& s = Settings::GetMainSettings();
-
+  gen.m_use_nanobarns = s["NANOBARN"].Get<bool>();
   // set path
   std::string path=s.GetPath();
   if (path[0]!='/') path=gen.m_variables["SHERPA_RUN_PATH"]+"/"+path;
@@ -273,6 +274,7 @@ void Run_Parameter::Init()
   // configure event generation
   gen.m_variables["EVENT_GENERATION_MODE"]="-1";
   gen.m_nevents = s["EVENTS"].Get<long int>();
+
 
   s_loader->AddPath(rpa->gen.Variable("SHERPA_RUN_PATH"));
 
