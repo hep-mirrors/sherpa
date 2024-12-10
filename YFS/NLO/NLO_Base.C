@@ -831,9 +831,9 @@ void NLO_Base::CheckMassReg(){
 		}
 		double sub = p_dipoles->CalculateVirtualSub();
 		std::cout << setprecision(15);
-		out_sub<< setprecision(15) << m_photonMass << "," << -sub*m_born << std::endl;
-		out_recola<< setprecision(15) << m_photonMass << "," << virt*m_rescale_alpha << std::endl;
-		out_finite<< setprecision(15) << m_photonMass << "," << virt*m_rescale_alpha - sub*m_born << std::endl;
+		out_sub<< setprecision(15) << m_photonMass << "," << -sub*m_born/m_rescale_alpha << std::endl;
+		out_recola<< setprecision(15) << m_photonMass << "," << virt << std::endl;
+		out_finite<< setprecision(15) << m_photonMass << "," << virt - sub*m_born/m_rescale_alpha << std::endl;
 		out_sub.close();
 		out_recola.close();
 		exit(0);
