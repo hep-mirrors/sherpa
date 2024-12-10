@@ -111,6 +111,35 @@ namespace CSSHOWER {
 
     friend std::ostream& operator<<(std::ostream &,const Splitting_Function_Base &);
   };
+
+  class One2One_Transition_Base : public Splitting_Function_Base {
+  protected:
+    ATOOLS::Flavour m_flin, m_flout, m_flout2;
+    double          m_mout, m_mout2, m_arg;
+  public:
+    One2One_Transition_Base(const ATOOLS::Flavour & flin,const ATOOLS::Flavour & flout,
+			    const double & arg) :
+      m_flin(flin), m_flout(flout), m_flout2(ATOOLS::Flavour(kf_none)),
+      m_mout(m_flout.HadMass()), m_mout2(m_mout*m_mout),
+      m_arg(arg) {}
+    const double & OutMass()  const { return m_mout; }
+    const double & OutMass2() const { return m_mout2; }
+    const double & SudArg()   const { return m_arg; }
+    const ATOOLS::Flavour & GetFlavourA() const { return m_flin; }
+    const ATOOLS::Flavour & GetFlavourB() const { return m_flout; }
+    const ATOOLS::Flavour & GetFlavourC() const { return m_flout2; };
+  };
+    
+  struct STcmp {
+    bool operator()(const One2One_Transition_Base & a,
+		    const One2One_Transition_Base & b) const {
+      if (a.OutMass()<b.OutMass()) return true;
+      return false;
+    }
+  };
+  typedef std::set<One2One_Transition_Base, STcmp>  ST_Set;
+  typedef std::map<ATOOLS::Flavour, ST_Set*> ST_Map;
+
 }
 
 #endif

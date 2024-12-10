@@ -16,7 +16,8 @@ using namespace MODEL;
 using namespace ATOOLS;
 
 Splitting_Function_Base::Splitting_Function_Base():
-  p_lf(NULL), p_cf(NULL), m_type(cstp::none), m_mth(0.0),
+  p_lf(NULL), p_cf(NULL), m_type(cstp::none),
+  m_symf(1.0), m_polfac(1.0), m_lpdf(1.0), m_efac(1.0), m_mth(0.0),
   m_on(1), m_qcd(-1), m_facscalefactor(1.0)
 {
 }

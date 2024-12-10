@@ -51,7 +51,7 @@ public:
   }
 };
 
-void Sudakov::InitSplittingFunctions(MODEL::Model_Base *md,const int kfmode)
+void Sudakov::InitSplittingFunctions(Model_Base *md,const int kfmode)
 {
   if (!s_init) {
     s_init=true;
@@ -111,10 +111,11 @@ void Sudakov::InitSplittingFunctions(MODEL::Model_Base *md,const int kfmode)
   }
   AddDiQuarkSplittingFunctions(md,kfmode);
   AddOctetMesonSplittingFunctions(md,kfmode);
+  AddGluonThresholds(md);
   msg_Debugging()<<"}\n";
 }
 
-void Sudakov::AddDiQuarkSplittingFunctions(MODEL::Model_Base *md,const int kfmode) {
+void Sudakov::AddDiQuarkSplittingFunctions(Model_Base *md,const int kfmode) {
   //msg_Out()<<"============================================================\n"
   //	   <<METHOD<<": so far "<<m_splittings.size()<<" splitting functions\n";
   Kabbala g3("g_3",sqrt(4.*M_PI*md->ScalarConstant("alpha_S")));
@@ -138,7 +139,7 @@ void Sudakov::AddDiQuarkSplittingFunctions(MODEL::Model_Base *md,const int kfmod
     //	   <<"============================================================\n";
 }
 
-void Sudakov::AddOctetMesonSplittingFunctions(MODEL::Model_Base *md,const int kfmode) {
+void Sudakov::AddOctetMesonSplittingFunctions(Model_Base *md,const int kfmode) {
   //msg_Out()<<"============================================================\n"
   //	   <<METHOD<<": so far "<<m_splittings.size()<<" splitting functions\n";
   Kabbala g3("g_3",sqrt(4.*M_PI*md->ScalarConstant("alpha_S")));
@@ -160,14 +161,25 @@ void Sudakov::AddOctetMesonSplittingFunctions(MODEL::Model_Base *md,const int kf
     v.order[0]=1;
     Add(new Splitting_Function_Base(SF_Key(&v,0,cstp::FF,kfmode,m_qcdmode,m_ewmode, 1,m_pdfmin)));
     Add(new Splitting_Function_Base(SF_Key(&v,0,cstp::FF,kfmode,m_qcdmode,m_ewmode,-1,m_pdfmin)));
+    Add(new Splitting_Function_Base(SF_Key(&v,0,cstp::FI,kfmode,m_qcdmode,m_ewmode, 1,m_pdfmin)));
+    Add(new Splitting_Function_Base(SF_Key(&v,0,cstp::FI,kfmode,m_qcdmode,m_ewmode,-1,m_pdfmin)));
   }
   //msg_Out()<<METHOD<<": by now "<<m_splittings.size()<<" splitting functions\n"
     //	   <<"============================================================\n";
 }
 
+void Sudakov::AddGluonThresholds(Model_Base *md) {
+  Running_AlphaS as = md->ScalarConstant("alpha_S");
+  list<kf_code> octetvectors = { kf_J_psi_1S_oct /*, kf_chi_c0_1P_oct, kf_chi_c1_1P_oct */};
+  ST_Set * stset;
+  m_stmap[Flavour(kf_gluon)] = stset = new ST_Set;
+  for (list<kf_code>::iterator octit=octetvectors.begin();
+       octit!=octetvectors.end();octit++) {
+    stset->insert(One2One_Transition_Base(Flavour(kf_gluon),Flavour(*octit),0.1));
+  }
+}
 
-
-void Sudakov::SetCoupling(MODEL::Model_Base *md,
+void Sudakov::SetCoupling(Model_Base *md,
 			  const double &k0sqi,const double &k0sqf,
 			  const double &isfac,const double &fsfac,
 			  const double &k0sq_gsplit_fac)
@@ -448,6 +460,28 @@ int Sudakov::Generate(Parton *split,Parton *spect,
 	  return false;
 	}
 	return -1;
+      }
+    }
+    if (m_stmap.find(split->GetFlavour())!=m_stmap.end()) {
+      ST_Set * transitions = m_stmap[split->GetFlavour()];
+      if (((p_split->Momentum()+p_spect->Momentum()).Abs2()>
+	   sqr(transitions->begin()->OutMass()+sqrt(Max(0.,p_spect->Momentum().Abs2())))) && 
+	  split->KtStart()>transitions->begin()->OutMass2() &&
+	  t<transitions->begin()->OutMass2()) {
+	msg_Out()<<"Tried to split a gluon ("<<split->GetFlow(1)<<", "<<split->GetFlow(2)<<") "
+		 <<"between t = "<<split->KtStart()<<" and t = "<<t<<":\n"
+		 <<"Will want to transit to "<<transitions->begin()->GetFlavourB()
+		 <<" ("<<transitions->begin()->OutMass2()<<") "
+		 <<"with P = "<<(1-exp(-transitions->begin()->SudArg()))<<".\n"
+		 <<"Invariant mass = "<<(p_split->Momentum()+p_spect->Momentum()).Abs2()<<" > "
+		 <<sqr(transitions->begin()->OutMass()+sqrt(Max(0.,p_spect->Momentum().Abs2())))<<".\n";
+	t   = transitions->begin()->OutMass2(); // need to increase a bit after transition is done.
+	z   = 1;
+	phi = 0.;
+	split->SetSpect(p_spect);
+	p_selected = (Splitting_Function_Base *)(&*transitions->begin());
+	return 1.;
+	//split->SetForcedSplitting(true); // make this a transition tag.
       }
     }
     SelectOne();
