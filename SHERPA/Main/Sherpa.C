@@ -292,8 +292,8 @@ bool Sherpa::GenerateOneEvent(bool reset)
       p_eventhandler->PerformMemoryMonitoring();
       const Uncertain<double> xs = p_eventhandler->TotalNominalXSMPI();
       if (!(rpa->gen.BatchMode()&2)) msg_Info()<<"\n  ";
-      msg_Info() << "XS = " << xs.value << " pb +- ( " << xs.error
-                 << " pb = " << xs.PercentError() << " % )  ";
+      msg_Info() << "XS = " << xs.value << (rpa->gen.IsNanoBarn()==0 ? " pb +- ( " : " nb +- ( ")  << xs.error
+                 << (rpa->gen.IsNanoBarn()==0 ? " pb = " : " nb = ") << xs.PercentError() << " % )  ";
       if (rpa->gen.BatchMode()&8)
         msg_Info()<<"  Process was "<<p_eventhandler->CurrentProcess()<<"  ";
       if (!(rpa->gen.BatchMode()&2))
