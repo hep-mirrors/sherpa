@@ -46,13 +46,17 @@ namespace EXTRAXS {
   {
     // Eq 90 in 0912.0749
     double s((momenta[0]+momenta[1]).Abs2());
-    double theta = momenta[0].Theta(momenta[2]);
+    double t((momenta[0]-momenta[2]).Abs2());
+    double u((momenta[0]-momenta[3]).Abs2());
     double masspi = m_flv.Mass();
     double beta = sqrt(1.-4*sqr(masspi)/s);
     double betaE = sqrt(1.-4*sqr(momenta[0].Mass())/s);
-    double costh2 = sqr(cos(theta));
-    double sinth2 = 1-costh2;
-    return sqr(4*M_PI*(*aqed)(s))*pow(beta,3)*sinth2/8/s*p_formfactor->Eval(s);
+    double theta = momenta[0].Theta(momenta[2]);
+    double sinth2 = sin(theta)*sin(theta);
+    // double sinth2 = 1-sqr(u-t)/s/s;
+    // double sinth2 = -2.*u*u + 4*t*u - 2*t*t + 2*s*s - 8.*masspi*masspi*s; 
+    // PRINT_VAR(1./(*aqed)(s));
+    return sqr(4*M_PI*(*aqed)(s))*CouplingFactor(0, 2)*pow(beta,3)*sinth2/16;//*p_formfactor->Eval(s);
   }
 }
 
