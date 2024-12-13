@@ -95,11 +95,11 @@ namespace ATOOLS {
     } gen;
 
 #if defined(__GNUC__) &&  __GNUC__ < 5
-    double Picobarn()             { return (gen.IsNanoBarn()==0 ?  3.89379656e8 : 3.89379656e6);}   // pb GeV^2
+    double Picobarn()             { return (gen.IsNanoBarn()==0 ?  3.89379656e8 : 3.89379656e5);}   // pb GeV^2
     double c()                    { return 299.792458e9;}   // mm/s
     double hBar()                 { return 6.58211889e-25;} // GeV s
 #else
-    constexpr double Picobarn()             { return (gen.IsNanoBarn()==0 ? 3.89379656e8 :  3.89379656e6);}   // pb GeV^2
+    constexpr double Picobarn()             { return (gen.IsNanoBarn()==0 ? 3.89379656e8 :  3.89379656e5);}   // pb GeV^2
     constexpr double c()                    { return 299.792458e9;}   // mm/s
     constexpr double hBar()                 { return 6.58211889e-25;} // GeV s
 #endif
