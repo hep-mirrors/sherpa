@@ -37,6 +37,7 @@ Define_Dipoles::Define_Dipoles() {
     FORTRAN(ltini)();
     Setlambda(0);
   #endif
+  p_nloamp = new YFS::NLO_Amp();
 }
 
 Define_Dipoles::~Define_Dipoles() {
@@ -616,10 +617,36 @@ double Define_Dipoles::CalculateRealVirtualSub(const Vec4D & k) {
 
 double Define_Dipoles::CalculateEEX(){
   double eex=0;
-  for (auto &D: m_dipolesII){
+
+  for (auto &D: m_dipolesFF){
+    if(fabs(D.m_flavs[0].Kfcode())==211 && (fabs(D.m_flavs[1].Kfcode()))==211){
+      //assumm e+e- => pi+ pi-
+      Vec4D_Vector p;
+      Vec4D_Vector ki, kf;
+      kf = D.GetPhotons();
+      for (auto &DI: m_dipolesII){
+        p.push_back(DI.GetMomenta(0));
+        p.push_back(DI.GetMomenta(1));
+        ki = DI.GetPhotons();
+      }
+      p.push_back(D.GetMomenta(0));
+      p.push_back(D.GetMomenta(1));
+      Vec4D_Vector pi = p;
+      for(auto k: ki){
+        p.push_back(k);
+        // eex += p_nloamp->Calculate(p)/m_dipolesII[0].Eikonal(k)-m_born;
+        p = pi;
+      }
+      for(auto k: kf){
+        p.push_back(k);
+        // eex += p_nloamp->Calculate(p)/D.Eikonal(k)-m_born;
+        p = pi;
+      }
+      // return eex;
+    }
     eex += D.EEX(m_betaorder);
   }
-  for (auto &D: m_dipolesFF){
+  for (auto &D: m_dipolesII){
     eex += D.EEX(m_betaorder);
   }
   for (auto &D: m_dipolesIF){
