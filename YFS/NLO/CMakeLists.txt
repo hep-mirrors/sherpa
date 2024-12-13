@@ -1,9 +1,11 @@
 set(NLO_SOURCES NLO_Base.C
                  Real.C
+                 NLO_Amp.C
                  Virtual.C)
 
 set(NLO_HEADERS  NLO_Base.H
                  Real.H
+                 NLO_Amp.H
                  Virtual.H)
 
 

@@ -379,6 +379,7 @@ void YFS_Handler::CalculateCoulomb() {
 void YFS_Handler::CalculateBeta() {
   if(!m_rmode && !m_int_nlo) return;
   double realISR(0), realFSR(0);
+  p_dipoles->SetBorn(m_born);
   if (m_betaorder > 0) {
     if(m_real_only) m_real = p_dipoles->CalculateEEX()+1;
     else if(m_virtual_only) m_real = p_dipoles->CalculateEEXVirtual();
