@@ -5,7 +5,7 @@
 #include "YFS/Tools/Dipole.H"
 #include "YFS/Main/YFS_Base.H"
 #include "YFS/Main/YFS_Form_Factor.H"
-
+#include "YFS/NLO/NLO_Amp.H"
 
 namespace MODEL {
   class Single_Vertex;
@@ -39,6 +39,7 @@ namespace YFS {
       std::map<std::string,MODEL::Vertex_List> m_proc_restab_map;
       YFS::YFS_Form_Factor *p_yfsFormFact;
       DivArrD m_virtSub;
+      YFS::NLO_Amp *p_nloamp;
 
       YFS::dipoletype     m_type;
       Define_Dipoles();
@@ -100,6 +101,7 @@ namespace YFS {
       inline Dipole * GetDipoleII() { return &m_dipolesII[0]; }
       inline Dipole_Vector * GetDipoleFF() { return &m_dipolesFF; }
       inline Dipole_Vector * GetDipoleIF() { return &m_dipolesIF; }
+      inline void SetBorn(double b) { m_born = b; }
       inline void SetProcResMap(std::map<std::string,MODEL::Vertex_List> map) {m_proc_restab_map=map;}
       inline double Get_E1() {return m_virtSub.GetIR();}
   };
