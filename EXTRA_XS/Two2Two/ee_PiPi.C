@@ -1,6 +1,7 @@
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Math/MyComplex.H"
+#include "ATOOLS/Math/Random.H"
 #include "MODEL/Main/Running_AlphaQED.H"
 #include "PHASIC++/Process/External_ME_Args.H"
 #include "EXTRA_XS/Main/ME2_Base.H"
@@ -45,18 +46,12 @@ namespace EXTRAXS {
   double ee_PiPi::operator()(const ATOOLS::Vec4D_Vector& momenta)
   {
     // Eq 90 in 0912.0749
-    double s((momenta[0]+momenta[1]).Abs2());
+    double m1 = momenta[0].Mass();
+    double s((momenta[2]+momenta[3]).Abs2());
     double t((momenta[0]-momenta[2]).Abs2());
-    double u((momenta[0]-momenta[3]).Abs2());
     double masspi = m_flv.Mass();
-    double beta = sqrt(1.-4*sqr(masspi)/s);
-    double betaE = sqrt(1.-4*sqr(momenta[0].Mass())/s);
-    double theta = momenta[0].Theta(momenta[2]);
-    double sinth2 = sin(theta)*sin(theta);
-    // double sinth2 = 1-sqr(u-t)/s/s;
-    // double sinth2 = -2.*u*u + 4*t*u - 2*t*t + 2*s*s - 8.*masspi*masspi*s; 
-    // PRINT_VAR(1./(*aqed)(s));
-    return sqr(4*M_PI*(*aqed)(s))*CouplingFactor(0, 2)*pow(beta,3)*sinth2/16;//*p_formfactor->Eval(s);
+    double amp = -t*(s+t) - m1*m1*(2*masspi*masspi-s-2*t) -sqr(m1*m1) - sqr(masspi*masspi) + 2*masspi*masspi*t;
+    return  32*M_PI*M_PI*sqr((*aqed)(s))*amp/s/s*p_formfactor->Eval(s); // flux = 0.5
   }
 }
 
