@@ -169,12 +169,12 @@ bool OpenLoops_Interface::Initialize(MODEL::Model_Base* const model,
   // set remaining OL parameters specified by user
   for (const auto& key : s["OL_PARAMETERS"].GetKeys()) {
     const auto val = s["OL_PARAMETERS"][key].SetDefault("").Get<std::string>();
+    msg_Info()<<key<<" "<<val<<std::endl;
     // ew_scheme is fixed in the interface, must not be reset
     if (key == "ew_scheme")
         THROW(fatal_error,"\'ew_scheme\' is fixed for the correct operation of \
-                           the interface to OpenLoops. If you need to change \
-                           the EW renormalisation scheme, please use \
-                            \'ew_renorm_scheme\'");
+the interface to OpenLoops. If you need to change the EW renormalisation \
+scheme, please use \'ew_renorm_scheme\'.");
     // if add_associated_ew is set manually, then include its value in the
     // associated contributions (will now be included in default value)
     if (key == "add_associated_ew")
