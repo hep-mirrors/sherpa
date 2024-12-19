@@ -72,8 +72,8 @@ Alaric::Alaric(const Shower_Key &key):
   p_shower = new Shower();
   p_clus = new Cluster_Definitions(p_shower);
   p_shower->Init(key.p_model,key.p_isr);
-  m_reco = s["CSS_RECO_CHECK"].Get<int>();
-  m_wcheck = s["CSS_WEIGHT_CHECK"].Get<int>();
+  m_reco = s["SHOWER"]["RECO_CHECK"].Get<int>();
+  m_wcheck = s["SHOWER"]["WEIGHT_CHECK"].Get<int>();
 }
 
 Alaric::~Alaric()

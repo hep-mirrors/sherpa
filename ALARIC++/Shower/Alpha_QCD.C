@@ -18,8 +18,8 @@ Alpha_QCD::Alpha_QCD(const Kernel_Key &key):
   Gauge(key), p_cpl(p_sk->PS()->AlphaS()), m_override(0)
 {
   Settings& s = Settings::GetMainSettings();
-  m_lc=s["CSS_CMODE"].Get<unsigned int>();
-  m_Nc=s["CSS_NCOL"].Get<unsigned int>();
+  m_lc=s["SHOWER"]["CMODE"].Get<unsigned int>();
+  m_Nc=s["SHOWER"]["NCOL"].Get<unsigned int>();
   m_CF=(m_Nc*m_Nc-1.)/(2.0*m_Nc);
   m_CA=m_Nc;
   m_TR=1.0/2.0;
