@@ -22,6 +22,7 @@ namespace DIRE {
     Color_Vector m_ci, m_cj;
     ATOOLS::Vec4D m_pi, m_pj, m_pl, m_pk;
     ATOOLS::Poincare_Sequence m_lam;
+    ATOOLS::Vec4D_Vector m_p;
     int m_h[3], m_mode;
     int m_type, m_cm, m_kin, m_cpl, m_kfac, m_clu;
     Weight m_w;

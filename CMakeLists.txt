@@ -481,6 +481,7 @@ add_subdirectory(COMIX)
 add_subdirectory(CSSHOWER++)
 add_subdirectory(DIM)
 add_subdirectory(DIRE)
+add_subdirectory(ALARIC++)
 add_subdirectory(EXTAMP)
 add_subdirectory(EXTRA_XS)
 add_subdirectory(HADRONS++)
@@ -701,6 +702,7 @@ MCatNLOMain MCatNLOCalculators MCatNLOShowers MCatNLOTools
 DIMTools DIMShower DIMGauge DIMLorentz DIMMain
 CSMain CSCalculators CSShowers CSTools
 DireTools DireShower DireGauge DireLorentz DireMain
+AlaricTools AlaricShower AlaricGauge AlaricLorentz AlaricMain
 PhasicScales Comix  ComixPhasespace ComixAmplitude
 YFSCEEX  YFSMain YFSNLO  YFSTools 
 PhasicMain PhasicChannels PhasicProcess PhasicSelectors PhasicEnhance PhasicDecays

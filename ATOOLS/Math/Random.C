@@ -114,35 +114,28 @@ double ATOOLS::Random::Ran2(long *idum)
 int ATOOLS::Random::WriteOutStatus(const char * filename)
 {
   if (p_external!=NULL) return 1;
-  // if Ran4 is the active Random Generator, then use its method
-  if (activeGenerator==4) {return WriteOutStatus4(filename);}
-  // write out every Statusregister of Random Number generator
-
-  // remove old random file
   if (FileExists(filename)) remove(filename);
   std::ofstream outstream(filename);
-  outstream<<0<<"\t"<<m_id<<"\t";
-  outstream<<iy<<"\t"<<idum2<<"\t";
-  for (int i=0;i<NTAB;++i) outstream<<iv[i]<<"\t";
-  outstream<<endl;
-  return 1;
+  return WriteOutStatus(outstream,0);
 }
 
 int ATOOLS::Random::WriteOutSavedStatus(const char * filename)
 {
   if (p_external!=NULL) return 1;
-  // if Ran4 is the active Random Generator, then use its method
-  if (activeGenerator==4) {return WriteOutSavedStatus4(filename);}
-  // write out every Statusregister of Random Number generator
-
-  // remove old random file
   if (FileExists(filename)) remove(filename);
   std::ofstream outstream(filename);
+  return WriteOutSavedStatus(outstream,0);
+}
+
+int ATOOLS::Random::WriteOutSavedStatus
+(std::ostream &outstream,const size_t &idx)
+{
+  if (activeGenerator==4) return WriteOutSavedStatus4(outstream,idx);
   outstream<<0<<"\t"<<m_sid<<"\t";
   outstream<<siy<<"\t"<<sidum2<<"\t";
   for (int i=0;i<NTAB;++i) outstream<<siv[i]<<"\t";
-  outstream<<endl;
-  return 1;
+  outstream<<"\n";
+  return idx+1;
 }
 
 int ATOOLS::Random::WriteOutStatus
@@ -378,8 +371,14 @@ int ATOOLS::Random::WriteOutSavedStatus4(const char * filename)
 
 int ATOOLS::Random::WriteOutStatus4(std::ostream &os,const size_t &idx)
 {
-  THROW(fatal_error,"Invalid call");
-  return -1;
+  p_ran4[0]->WriteStatus(os);
+  return 1;
+}
+
+int ATOOLS::Random::WriteOutSavedStatus4(std::ostream &os,const size_t &idx)
+{
+  p_ran4[1]->WriteStatus(os);
+  return 1;
 }
 
 void ATOOLS::Random::ReadInStatus4(const char * filename)

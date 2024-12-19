@@ -129,6 +129,9 @@ Term *Variable_KFactor_Setter::ReplaceTags(Term *term) const
   case 12:
     term->Set((double)p_proc->MaxOrder(1));
     return term;
+  case 20:
+    term->Set(M_PI);
+    return term;
   default:
     if (term->Id()>=1000) {
       term->Set(m_p[term->Id()-1000]);
@@ -148,6 +151,7 @@ void Variable_KFactor_Setter::AssignId(Term *term)
   else if (term->Tag()=="S_TOT") term->SetId(4);
   else if (term->Tag()=="Order_QCD") term->SetId(11);
   else if (term->Tag()=="Order_EW") term->SetId(12);
+  else if (term->Tag()=="M_PI") term->SetId(20);
   else if (term->Tag().find("p[")==0) {
     term->SetId(1000+ToType<int>
 		(term->Tag().substr

@@ -519,7 +519,6 @@ Cluster_Amplitude* Decay_Handler_Base::ClusterConfiguration(Blob *const bl)
   p_ampl->SetNIn(bl->NInP());
   for (int i(0);i<bl->NOutP();++i) {
     Particle *p(bl->OutParticle(i));
-    if (p->GetFlow(1)==0 && p->GetFlow(2)==0) continue;
     ColorID col(p->GetFlow(1),p->GetFlow(2));
     p_ampl->CreateLeg(p->Momentum(),p->Flav(),col,1<<(i+p_ampl->NIn()));
   }

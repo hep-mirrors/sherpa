@@ -97,8 +97,8 @@ int Dire::PerformShowers()
     std::string rname="dire.random."+rpa->gen.Variable("RNG_SEED")+".dat";
     if (ATOOLS::msg->LogFile()!="")
       rname=ATOOLS::msg->LogFile()+"."+rname;
-    ATOOLS::ran->WriteOutSavedStatus(rname.c_str());
     std::ofstream outstream(rname.c_str(),std::fstream::app);
+    ATOOLS::ran->WriteOutSavedStatus(outstream,0);
     outstream<<std::endl;
     outstream << "# Wrote status for weight=" << weight << " in event "
               << rpa->gen.NumberOfGeneratedEvents() + 1 << std::endl;

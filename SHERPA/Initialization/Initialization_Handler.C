@@ -35,6 +35,7 @@
 #include "PHASIC++/Channels/Channel_Generator.H"
 #include "PDF/Main/NLOMC_Base.H"
 #include "PDF/Main/Shower_Base.H"
+#include "ATOOLS/Phys/Recoil_Definition.H"
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Org/My_MPI.H"
@@ -177,6 +178,7 @@ void Initialization_Handler::RegisterDefaults()
   s["SHOW_SHOWER_GENERATORS"].SetDefault(0);
   s["SHOW_KFACTOR_SYNTAX"].SetDefault(0);
   s["SHOW_SCALE_SYNTAX"].SetDefault(0);
+  s["SHOW_RECOIL_SYNTAX"].SetDefault(0);
   s["SHOW_SELECTOR_SYNTAX"].SetDefault(0);
   s["SHOW_MODEL_SYNTAX"].SetDefault(0);
   s["SHOW_FILTER_SYNTAX"].SetDefault(0);
@@ -213,6 +215,7 @@ void Initialization_Handler::RegisterDefaults()
   // register settings here or we prevent SetDefault... to called more than once
   // otherwise
   s["SHOWER_GENERATOR"].SetDefault("CSS").UseNoneReplacements();
+  s["RECOIL_DEFINITION"].SetDefault("FinalState").UseNoneReplacements();
   std::string showergen{ s["SHOWER_GENERATOR"].Get<std::string>() };
   if (showergen == std::string("None") && s["BEAM_REMNANTS"].Get<bool>()) {
     msg_Error()
@@ -262,7 +265,7 @@ void Initialization_Handler::RegisterDefaults()
   pss["EW_MODE"].SetDefault(false);
   pss["RECO_DECAYS"].SetDefault(0);
   pss["MAXPART"].SetDefault(std::numeric_limits<int>::max());
-  pss["PDF_MIN"].SetDefault(1.0e-4);
+  pss["PDF_MIN"].SetDefault(1.0e-6);
   pss["PDF_MIN_X"].SetDefault(1.0e-2);
   pss["WEIGHT_CHECK"].SetDefault(false);
   pss["CMODE"].SetDefault(1);
@@ -270,8 +273,12 @@ void Initialization_Handler::RegisterDefaults()
   pss["RECALC_FACTOR"].SetDefault(4.0);
   pss["TC_ENHANCE"].SetDefault(1.0);
   pss["COUPLING_SCHEME"].SetDefault(1);
+  pss["FACSCALE_SCHEME"].SetDefault(0);
+  pss["IS_EVOL_SCHEME"].SetDefault(0);
+  pss["FS_EVOL_SCHEME"].SetDefault(0);
   pss["ME_CORRECTION"].SetDefault(0);
   pss["KERNEL_TYPE"].SetDefault(15);
+  pss["KERNEL_SCHEME"].SetDefault(1);
   nlopss["RECALC_FACTOR"].SetDefault(2.0);
   nlopss["PSMODE"].SetDefault(0);
   nlopss["WEIGHT_CHECK"].SetDefault(0);
@@ -466,6 +473,12 @@ void Initialization_Handler::ShowParameterSyntax()
     msg->SetLevel(2);
     if (helpi&1) PHASIC::Scale_Setter_Base::ShowSyntax(helpi);
     if (helpi&2) PHASIC::Core_Scale_Setter::ShowSyntax(helpi);
+    THROW(normal_exit,"Syntax shown.");
+  }
+  helpi = s["SHOW_RECOIL_SYNTAX"].Get<int>();
+  if (helpi>0) {
+    msg->SetLevel(2);
+    ATOOLS::Recoil_Definition::ShowSyntax(helpi);
     THROW(normal_exit,"Syntax shown.");
   }
   helpi = s["SHOW_SELECTOR_SYNTAX"].Get<int>();

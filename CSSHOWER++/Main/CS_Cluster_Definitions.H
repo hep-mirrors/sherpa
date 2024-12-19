@@ -13,7 +13,7 @@ namespace CSSHOWER {
     double m_kt2, m_z, m_y, m_phi, m_x, m_wk, m_q2, m_mu2;
     int m_mode, m_cpl, m_kin, m_col, m_kmode;
     Splitting_Function_Base *p_sf;
-    ATOOLS::Vec4D m_pk, m_pijt, m_pkt;
+    ATOOLS::Vec4D_Vector m_p;
     ATOOLS::Poincare_Sequence m_lt;
     CS_Parameters(const double &kt2,const double &z,
 		  const double &y,const double &phi,
@@ -56,9 +56,7 @@ namespace CSSHOWER {
 		Splitting_Function_Base* const) const;
     PDF::Cluster_Param Cluster(const PDF::Cluster_Config &ca);
     CS_Parameters KT2(const ATOOLS::Cluster_Amplitude *ampl,
-		      const ATOOLS::Cluster_Leg *i,
-		      const ATOOLS::Cluster_Leg *j,
-		      const ATOOLS::Cluster_Leg *k,
+		      const int ii,const int ij,const int ik,
 		      const ATOOLS::Flavour &mo=ATOOLS::Flavour(kf_none),
 		      const ATOOLS::Mass_Selector *const ms=NULL,
 		      const int kin=-1,const int mode=0,const int force=0);

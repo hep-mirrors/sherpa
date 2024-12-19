@@ -342,7 +342,9 @@ bool CS_Shower::PrepareStandardShower(Cluster_Amplitude *const ampl)
       split->SetKScheme((almap[split]->Stat()&4)?1:0);
       if (split->KScheme()) split->SetMass2(split->Momentum().Abs2());
       CS_Parameters cp(p_cluster->KT2
-		       (campl->Prev(),almap[l],almap[r],almap[s],
+		       (campl->Prev(),campl->Prev()->Index(almap[l]),
+			campl->Prev()->Index(almap[r]),
+			campl->Prev()->Index(almap[s]),
 			split->GetType()==pst::FS?split->GetFlavour():
 			split->GetFlavour().Bar(),p_ms,
 			split->Kin(),split->KScheme(),1));
@@ -364,7 +366,9 @@ bool CS_Shower::PrepareStandardShower(Cluster_Amplitude *const ampl)
       almap[r]->SetMom(almap[r]->Id()&3?-r->Momentum():r->Momentum());
       almap[s]->SetMom(almap[s]->Id()&3?-s->Momentum():s->Momentum());
       CS_Parameters ncp(p_cluster->KT2
-			(campl->Prev(),almap[l],almap[r],almap[s],
+			(campl->Prev(),campl->Prev()->Index(almap[l]),
+			 campl->Prev()->Index(almap[r]),
+			 campl->Prev()->Index(almap[s]),
 			 split->GetType()==pst::FS?split->GetFlavour():
 			 split->GetFlavour().Bar(),p_ms,
 			 split->Kin(),split->KScheme(),1));
@@ -644,9 +648,9 @@ double CS_Shower::JetVeto(ATOOLS::Cluster_Amplitude *const ampl,
     q2list.erase(q2list.begin());
     Cluster_Param cp=p_cluster->Cluster
       (Cluster_Config(ampl,imin,jmin,kmin,mofl,ampl->MS(),NULL,1));
-    if (cp.m_pijt==Vec4D())
+    if (cp.m_p.empty())
       cp=p_cluster->Cluster(Cluster_Config(ampl,jmin,imin,kmin,mofl,ampl->MS(),NULL,1));
-    if (cp.m_pijt==Vec4D()) continue;
+    if (cp.m_p.empty()) continue;
     Cluster_Amplitude *bampl(Cluster_Amplitude::New());
     bampl->SetProc(ampl->Proc<void>());
     bampl->SetNIn(ampl->NIn());
@@ -654,13 +658,12 @@ double CS_Shower::JetVeto(ATOOLS::Cluster_Amplitude *const ampl,
     for (int i(0), j(0);i<ampl->Legs().size();++i) {
       if (i==jmin) continue;
       if (i==imin) {
-	bampl->CreateLeg(cp.m_pijt,mofl,ampl->Leg(i)->Col());
+	bampl->CreateLeg(cp.m_p[imin],mofl,ampl->Leg(i)->Col());
 	bampl->Legs().back()->SetId(ampl->Leg(imin)->Id()|ampl->Leg(jmin)->Id());
 	bampl->Legs().back()->SetK(ampl->Leg(kmin)->Id());	
       }
       else {
-	bampl->CreateLeg(i==kmin?cp.m_pkt:cp.m_lam*ampl->Leg(i)->Mom(),
-			 ampl->Leg(i)->Flav(),ampl->Leg(i)->Col());
+	bampl->CreateLeg(cp.m_p[i],ampl->Leg(i)->Flav(),ampl->Leg(i)->Col());
       }
       ++j;
     }

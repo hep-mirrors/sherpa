@@ -294,20 +294,16 @@ void Scale_Setter::Combine
   Cluster_Leg *lk(ampl.Leg(ci.first.m_k));
   li->SetCol(ampl.CombineColors(li,lj,lk,ci.first.m_mo));
   li->SetFlav(ci.first.m_mo);
-  li->SetMom(ci.second.m_pijt);
   li->SetStat(ci.second.m_stat);
-  lk->SetMom(ci.second.m_pkt);
+  ampl.SetMomenta(ci.second.m_p);
   ampl.Prev()->SetIdNew(ampl.Leg(ci.first.m_j)->Id());
   for (size_t m(0);m<ampl.Legs().size();++m) {
     ampl.Leg(m)->SetK(0);
     ampl.Leg(m)->SetStat(ampl.Leg(m)->Stat()|1);
   }
   if (i<2) {
-    for (size_t m(0);m<ampl.Legs().size();++m) {
+    for (size_t m(0);m<ampl.Legs().size();++m)
       if (ampl.Prev()) ampl.Leg(m)->SetNMax(ampl.Prev()->Leg(m)->NMax());
-      if ((int)m==i || (int)m==j || (int)m==ci.first.m_k) continue;
-      ampl.Leg(m)->SetMom(ci.second.m_lam*ampl.Leg(m)->Mom());
-    }
   }
   li->SetId(li->Id()+lj->Id());
   li->SetK(lk->Id());
@@ -464,7 +460,7 @@ void Scale_Setter::Cluster
 	  for (size_t k(0);k<ampl->Legs().size();++k) {
 	    Cluster_Leg *lk(ampl->Leg(k));
 	    if (k!=i && k!=j) {
-	      Cluster_Config cc(ampl,i,j,k,cf[f],p_ms,NULL,-1,m_nproc?16:0);
+	      Cluster_Config cc(ampl,i,j,k,cf[f],p_ms,NULL,0,-1,m_nproc?16:0);
 	      if (frs && !CheckSubEvents(cc)) continue;
 	      DEBUG_FUNC("Combine "<<ID(li->Id())<<" & "<<ID(lj->Id())
 			 <<" <-> "<<ID(lk->Id())<<" ["<<cc.m_mo<<"], f = "<<f);
@@ -473,11 +469,13 @@ void Scale_Setter::Cluster
 			       <<lj->Col()<<" <-> "<<lk->Col()<<"\n";
 		continue;
 	      }
-	      Cluster_Info ci(cc,strict&&p_clu?p_clu->Cluster(cc):
-			      (cc.PureQCD()?p_qdc->Cluster(cc):NULL));
-	      if (ci.second.m_kt2<0.0) continue;
-	      ccs.push_back(ci);
-	      if (ci.second.p_ca==NULL) break;
+	      for (cc.m_n=0;cc.m_n<2;++cc.m_n) {
+		Cluster_Info ci(cc,strict&&p_clu?p_clu->Cluster(cc):
+				(cc.PureQCD()?p_qdc->Cluster(cc):NULL));
+		if (ci.second.m_kt2<0.0) continue;
+		ccs.push_back(ci);
+		if (ci.second.p_ca==NULL) break;
+	      }
 	    }
 	  }
 	}

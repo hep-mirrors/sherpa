@@ -22,7 +22,7 @@ namespace DIRE {
     {
       double A1=2.0*(1.0-s.m_z)/(sqr(1.0-s.m_z)+s.m_t/(s.m_Q2/s.m_z));
       double B=-(1.0+s.m_z);
-      if (p_sk->PS()->MECorrection()&1)
+      if (p_sk->PS()->MECorrection()&2)
 	B+=s.m_y*(1.+3.*s.m_x*(1.-s.m_y));
       if (s.m_kfac&2) {
 	double CF=4./3., CA=3., TF=.5*p_sk->GF()->Nf(s), x=s.m_z;
@@ -70,7 +70,7 @@ namespace DIRE {
     double Value(const Splitting &s) const
     {
       double B=2.0/s.m_z-(2.0-s.m_z);
-      if (p_sk->PS()->MECorrection()&1)
+      if (p_sk->PS()->MECorrection()&2)
 	B+=s.m_y*(1.+3.*s.m_x*(1.-s.m_y));
       if (s.m_mk2==0.0) {
 	if (s.m_kfac&2) {
@@ -123,7 +123,7 @@ namespace DIRE {
     double Value(const Splitting &s) const
     {
       double B=1.0-2.0*s.m_z*(1.0-s.m_z);
-      if (p_sk->PS()->MECorrection()&1)
+      if (p_sk->PS()->MECorrection()&2)
 	B=B*(1.0-2.*s.m_y*(1.-s.m_y))+4.*s.m_y*s.m_x*(1.-s.m_x);
       if (s.m_kfac&2) {
 	double CF=4./3., CA=3., x=s.m_z;

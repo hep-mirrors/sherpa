@@ -19,6 +19,7 @@ Cluster_Definitions::Cluster_Definitions(Shower *const shower):
 
 Cluster_Param Cluster_Definitions::Cluster(const Cluster_Config &ca)
 {
+  if (ca.m_n>0) return Cluster_Param(this,0.0,-1.0);
   DEBUG_FUNC(ca);
   p_ms=ca.p_ms;
   int i(ca.m_i), j(ca.m_j), swap(j<ca.p_ampl->NIn() && j<i);
@@ -29,8 +30,7 @@ Cluster_Param Cluster_Definitions::Cluster(const Cluster_Config &ca)
 		  ca.m_kin,type,(swap?2:0)|(ca.m_mode<<2),ws,mu2));
   bool iss=i<ca.p_ampl->NIn() || j<ca.p_ampl->NIn();
   if (s.m_t>0.0) return Cluster_Param
-    (this,ws,s.m_t,mu2,0,s.m_kin,0,iss?-s.m_ff.m_pi:s.m_ff.m_pi,
-     ca.m_k<ca.p_ampl->NIn()?-s.m_ff.m_pk:s.m_ff.m_pk,s.m_ff.m_lam);
+    (this,ws,s.m_t,mu2,0,s.m_kin,0,s.m_p);
   if (ca.PureQCD()) return Cluster_Param(this,0.0,0.0,0.0,0);
   return Cluster_Param(this,0.0);
 }
@@ -60,12 +60,17 @@ Splitting Cluster_Definitions::KT2
   Kernel *sk(p_shower->GetKernel(sp,(mode&2)?1:0));
   if (sk==NULL) return Splitting(NULL,NULL,-1.0);
   ws=0.0;
-  sk->LF()->SetMS(p_ms);
+  sk->LF()->SetMS(ampl.MS());
   if (!sk->LF()->SetLimits(sp) ||
       !sk->LF()->Cluster(sp,1|2)) {
     sp.m_t=-1.0;
     return sp;
   }
+  sp.m_p=ampl.Momenta();
+  for (size_t l(0);l<sp.m_p.size();++l) sp.m_p[l]=sp.m_ff.m_lam*sp.m_p[l];
+  sp.m_p[i]=(type&1)?-sp.m_ff.m_pi:sp.m_ff.m_pi;
+  sp.m_p[k]=(type&2)?-sp.m_ff.m_pk:sp.m_ff.m_pk;
+  sp.m_p.erase(sp.m_p.begin()+j);
   msg_Debugging()<<"Splitting: t = "<<sp.m_t<<" = "<<sqrt(sp.m_t)
 		 <<" ^ 2, z = "<<sp.m_z<<", phi = "<<sp.m_phi<<"\n"; 
   ws=sk->Value(sp);
