@@ -215,7 +215,6 @@ void Initialization_Handler::RegisterDefaults()
   // register settings here or we prevent SetDefault... to called more than once
   // otherwise
   s["SHOWER_GENERATOR"].SetDefault("CSS").UseNoneReplacements();
-  s["RECOIL_DEFINITION"].SetDefault("FinalState").UseNoneReplacements();
   std::string showergen{ s["SHOWER_GENERATOR"].Get<std::string>() };
   if (showergen == std::string("None") && s["BEAM_REMNANTS"].Get<bool>()) {
     msg_Error()
@@ -230,6 +229,7 @@ void Initialization_Handler::RegisterDefaults()
   s["JET_CRITERION"].SetDefault(showergen);
   s["NLOMC_GENERATOR"].SetDefault(showergen);
   auto pss = s["SHOWER"], nlopss = s["MC@NLO"];
+  pss["RECOIL_DEFINITION"].SetDefault("FinalState").UseNoneReplacements();
   pss["EVOLUTION_SCHEME"].SetDefault(30+30*100);
   pss["KFACTOR_SCHEME"].SetDefault(1);
   pss["SCALE_SCHEME"].SetDefault(14);
