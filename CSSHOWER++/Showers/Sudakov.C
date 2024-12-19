@@ -175,7 +175,7 @@ void Sudakov::AddGluonThresholds(Model_Base *md) {
   m_stmap[Flavour(kf_gluon)] = stset = new ST_Set;
   for (list<kf_code>::iterator octit=octetvectors.begin();
        octit!=octetvectors.end();octit++) {
-    stset->insert(One2One_Transition_Base(Flavour(kf_gluon),Flavour(*octit),0.1));
+    stset->insert(One2One_Transition_Base(Flavour(kf_gluon),Flavour(*octit),0.1, 1));
   }
 }
 
@@ -356,7 +356,7 @@ bool Sudakov::Generate(Parton* split, double kt2win)
     p_spect=spect;
     p_split->SetSpect(p_spect);
     p_selected=selected;
-    msg_IODebugging()<<"selected "<<p_spect<<", t = "<<m_st
+    msg_IODebugging()<<"selected "<<p_spect<<" " << p_spect->GetFlavour() << ", t = "<<m_st
 		     <<", y = "<<m_sy<<", z = "<<m_sz<<", phi = "<<m_sphi<<"\n";
   }
   ClearSpecs();
@@ -374,6 +374,7 @@ int Sudakov::Generate(Parton *split,Parton *spect,
   double Q2(0.);
   int beam = -1;
   m_flspec = spect->GetFlavour();
+  if (spect == NULL) return false; //guard clause against fake entries
   switch (split->GetType()) {
   case pst::FS:
     if (spect->GetType()==pst::FS) {
@@ -468,20 +469,22 @@ int Sudakov::Generate(Parton *split,Parton *spect,
 	   sqr(transitions->begin()->OutMass()+sqrt(Max(0.,p_spect->Momentum().Abs2())))) && 
 	  split->KtStart()>transitions->begin()->OutMass2() &&
 	  t<transitions->begin()->OutMass2()) {
-	msg_Out()<<"Tried to split a gluon ("<<split->GetFlow(1)<<", "<<split->GetFlow(2)<<") "
-		 <<"between t = "<<split->KtStart()<<" and t = "<<t<<":\n"
+	  msg_Debugging()<<"Tried to split a gluon ("<<split->GetFlow(1)<<", "<<split->GetFlow(2)<<") "
+		 <<"between t = "<<split->KtStart()<<" and t = "<<t<<":\n" <<
+     "spectator is: " << spect->GetFlavour() << "  " << spect->Momentum() << endl
 		 <<"Will want to transit to "<<transitions->begin()->GetFlavourB()
 		 <<" ("<<transitions->begin()->OutMass2()<<") "
 		 <<"with P = "<<(1-exp(-transitions->begin()->SudArg()))<<".\n"
 		 <<"Invariant mass = "<<(p_split->Momentum()+p_spect->Momentum()).Abs2()<<" > "
 		 <<sqr(transitions->begin()->OutMass()+sqrt(Max(0.,p_spect->Momentum().Abs2())))<<".\n";
-	t   = transitions->begin()->OutMass2(); // need to increase a bit after transition is done.
+  t   = transitions->begin()->OutMass2(); // need to increase a bit after transition is done.
 	z   = 1;
 	phi = 0.;
 	split->SetSpect(p_spect);
-	p_selected = (Splitting_Function_Base *)(&*transitions->begin());
+  p_selected = (Splitting_Function_Base *)(&*transitions->begin());
+  split->SetTransition(true); // make this a transition tag.
+  //msg_Out() << "Transisition tag -->  " << split->Transition() << " =?=  true" << endl;
 	return 1.;
-	//split->SetForcedSplitting(true); // make this a transition tag.
       }
     }
     SelectOne();

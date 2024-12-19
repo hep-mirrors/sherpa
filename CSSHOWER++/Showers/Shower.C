@@ -376,6 +376,31 @@ bool Shower::EvolveSinglet(Singlet * act,const size_t &maxem,size_t &nem)
       }
       return true;
     }
+    else if (split->Transition()) {
+      msg_Debugging()<<"Transition "<<m_flavA<<" -> "<<m_flavB
+		     <<" at kt = "<<sqrt(split->KtTest())
+		     <<"( "<<sqrt(split->GetSing()->KtNext())<<" .. "
+		     <<sqrt(split->KtStart())<<" ), z = "<<split->ZTest()<<", y = "
+		     <<split->YTest()<<" for\n"<<*split
+		     <<*split->GetSpect()<<"\n";
+      m_last[0]=m_last[1]=m_last[2]=m_last[3]=NULL;
+      if (kt2win<split->GetSing()->KtNext()) { 
+        msg_Debugging() << "WTF is going on? Aborting..." << endl;
+        exit(1);
+      	}   
+      ResetScales(kt2win);
+      if (p_actual->NSkip()) {
+        msg_Debugging() << "WTF is going on? Aborting..." << endl;
+        exit(1);
+      }
+      if (p_actual->JF() && p_actual->NMax() && (p_actual->GetSplit()==NULL || (p_actual->GetSplit()->Stat()&part_status::code::decayed))) {
+        msg_Debugging() << "WTF is going on? Aborting..." << endl;
+      }
+      double jcv(0.0);
+      int kstat = 1;
+      // TODO Implement the correct weight for g -> J/Psi transitions
+      return true;
+    }
     else {
       msg_Debugging()<<"Emission "<<m_flavA<<" -> "<<m_flavB<<" "<<m_flavC
 		     <<" at kt = "<<sqrt(split->KtTest())
@@ -518,9 +543,7 @@ bool Shower::EvolveSinglet(Singlet * act,const size_t &maxem,size_t &nem)
         }
       }
       ++nem;
-      if (p_actual->NME()+nem>m_maxpart || nem >= maxem) {
-	return true;
-      }
+      if (p_actual->NME()+nem>m_maxpart || nem >= maxem) return true;
     }
   }
   return true;
@@ -528,10 +551,15 @@ bool Shower::EvolveSinglet(Singlet * act,const size_t &maxem,size_t &nem)
 
 Parton *Shower::SelectSplitting(double & kt2win) {
   Parton *winner(NULL);
+  msg_Debugging() <<"Search splitter with kt2win: "<< kt2win << " out of:  \n";
+  for (PLiter splitter = p_actual->begin(); splitter!=p_actual->end();splitter++) {
+      msg_Debugging()<< (*splitter)->GetFlavour() << "  " << "(" << (*splitter)->GetFlow(1) << ", " << (*splitter)->GetFlow(2) << ")  " << (*splitter)->Momentum() << endl;
+  }
   for (PLiter splitter = p_actual->begin();
-       splitter!=p_actual->end();splitter++) {
+       splitter!=p_actual->end();splitter++) {      
     if (TrialEmission(kt2win,*splitter)) winner = *splitter;
   }
+  msg_Debugging() << endl;
   return winner;
 }
 
@@ -549,9 +577,18 @@ bool Shower::TrialEmission(double & kt2win,Parton * split)
 	m_flavA = m_sudakov.GetFlavourA();
 	m_flavB = m_sudakov.GetFlavourB();
 	m_flavC = m_sudakov.GetFlavourC();
-	m_lastcpl = m_sudakov.Selected()->Coupling()->Last();
-	split->SetCol(m_sudakov.GetCol());
-	split->SetTest(kt2,z,y,phi);
+  if (split->Transition()) {
+    kt2win = kt2*(1.0);
+    split->SetFlavour(m_sudakov.Selected()->GetFlavourB());
+    split->SetTest(kt2,z,y,phi);
+    // msg_Out() << "C flow:  (" << split->GetFlow(1) << ", " << split->GetFlow(2) << ")" << endl;
+    // msg_Out() << "momentum:  " << split->Momentum() << endl;
+  }
+  else {
+    m_lastcpl = m_sudakov.Selected()->Coupling()->Last();
+    split->SetCol(m_sudakov.GetCol());
+    split->SetTest(kt2,z,y,phi);
+  }
 	return true;
       }
     }
