@@ -1,9 +1,12 @@
 set(NLO_SOURCES Logarithms.C
                 Dummy_QCD_Virtual.C
                 DY_QCD_Virtual.C
+                DY_QCD_Virtual.C
                 DY_Jet_QCD_Virtual.C
                 Higgs_QCD_Virtual.C
                 Higgs_Jet_QCD_Virtual.C
+                PionPionVirtual.C
+                PionPionGamma.C
                 ee3jet_CSS_approx.C
                 ppll1jet_CSS_approx.C
                 epe2jet_CSS_approx.C)
