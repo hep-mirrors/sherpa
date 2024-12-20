@@ -66,9 +66,9 @@ int Lorentz::Update(Splitting &s,const int mode) const
     for (size_t i(0);i<s.m_p.size();++i)
       if (s.m_p[i]!=Vec4D())
 	(*s.p_c->Ampl())[i]->SetMom(s.m_p[i]);
-  ATOOLS::Vec4D pc(s.p_c->Mom()), ps(s.p_s->Mom());
   if (s.p_c->Out(0)==NULL) s.p_c->SetFlav(m_fl[1]);
   s.p_c->SetMom(s.m_pi);
+  if (s.m_p.empty()) s.p_s->SetMom(s.m_pk);
   if (s.p_n==NULL) {
     s.p_n = new Parton(s.p_c->Ampl(),m_fl[2],s.m_pj);
     s.p_n->SetId(s.p_n->Counter());
