@@ -210,6 +210,9 @@ bool Lorentz_FS_Split::Cluster
       if ((s.m_rcl[l]&2) && l!=i && l!=j)
 	s.m_p[l]=newcms*(oldcms*s.m_p[l]);
   }
+  else {
+    s.m_p[k]=ff.m_pk;
+  }
   s.m_p[i]=ff.m_pi;
   s.m_pk=s.m_p[k];
   s.m_kt2=s.m_t;
