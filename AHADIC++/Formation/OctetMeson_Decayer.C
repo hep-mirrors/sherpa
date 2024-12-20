@@ -3,6 +3,7 @@
 #include "ATOOLS/Math/Poincare.H"
 #include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Org/Message.H"
+#include "ATOOLS/Org/Exception.H"
 
 using namespace AHADIC;
 using namespace ATOOLS;
@@ -18,37 +19,51 @@ bool OctetMeson_Decayer::operator()() {
   for (list<Singlet *>::iterator sit=p_singlets->begin();
        sit!=p_singlets->end();sit++) {
     p_part1 = p_part2 = NULL;
-    //msg_Out()<<METHOD<<":\n"<<(**sit)<<"\n";
-    if (!FixSpectator(*sit)) continue;
-    if (!FixKinematics()) return false;
-    UpdateColouredObjectsAndAddHadron();
+    list<Proto_Particle *>::iterator pit1;
+    bool found;
+    do {
+      found = false;
+      if (FindOctet(*sit,pit1) && FixSpectator(*sit,pit1)) {
+	if (!FixKinematics()) return false;
+	UpdateColouredObjectsAndAddHadron();
+	found = true;
+      }
+    } while (found);
   }
   return true;
 }
 
-bool OctetMeson_Decayer::FixSpectator(Singlet * singlet) {
-  for (list<Proto_Particle *>::iterator ppiter1=singlet->begin();
-       ppiter1!=singlet->end();ppiter1++) {
-    p_part1 = (*ppiter1);
-    //msg_Out()<<"Test "<<p_part1->Flavour()<<" --> "<<p_part1->Flavour().IsOctetMeson()<<"\n";
-    if (p_part1->Flavour().IsOctetMeson()) {
-      list<Proto_Particle *>::iterator ppiter2 = ppiter1, ppiter3; ppiter2++;
-      if (ppiter2==singlet->end())     ppiter2 = p_singlet->begin();
-      ppiter3 = (ppiter1==singlet->begin()) ? p_singlet->end() : ppiter1;
-      ppiter3--;
-      p_part2 = ( ( (p_part1->Momentum()+(*ppiter2)->Momentum()).Abs2() >
-		    (p_part1->Momentum()+(*ppiter3)->Momentum()).Abs2() ) ?
-		  (*ppiter2) : (*ppiter3) );
-      break;
+bool OctetMeson_Decayer::
+FindOctet(Singlet * singlet,list<Proto_Particle *>::iterator & pit1) {
+  for (pit1=singlet->begin();pit1!=singlet->end();pit1++) {
+    if ((*pit1)->Flavour().IsOctetMeson()) {
+      p_part1 = (*pit1);
+      return true;
     }
   }
-  return (p_part2!=NULL);
+  return false;
+}
+
+bool OctetMeson_Decayer::
+FixSpectator(Singlet * singlet,list<Proto_Particle *>::iterator & pit1) {
+  list<Proto_Particle *>::iterator pit2 = pit1, pit3 = pit1;
+  Proto_Particle * part2 = NULL, * part3 = NULL;
+  if (pit2!=singlet->begin())   { pit2--; part2 = (*pit2); }
+  if ((pit3++)!=singlet->end()) { part3 = (*pit3); }
+  if (part2==NULL && part3==NULL) {
+    THROW(fatal_error,"this seems to be a one-particle singlet!");
+  }
+  else if (part2==NULL) p_part2 = part3;
+  else if (part3==NULL) p_part2 = part2;
+  else if ( (p_part1->Momentum()+part2->Momentum()).Abs2()>
+	    (p_part1->Momentum()+part3->Momentum()).Abs2() ) p_part2 = part2;
+  else p_part2 = part3;
+  return true;
 }
 
 bool OctetMeson_Decayer::FixKinematics() {
-  //msg_Out()<<METHOD<<"("<<p_part1<<"|"<<p_part2<<"):\n"
-  //	   <<(*p_part1)
-  //	   <<(*p_part2)<<"\n";
+  //msg_Out()<<"\n"<<METHOD<<"("<<p_part1<<"|"<<p_part2<<"):\n"
+  //	   <<(*p_part1)<<(*p_part2);
   // p+/- = E (1, 0, 0, +-1)
   // p1:    a1  p+ + (1-b1) p- --> m1^2/Q^2 = (1-b1) a1  ==> a1(1-b1) = m1^2/Q^2 
   // p2: (1-a1) p+ +    b1  p- --> m2^2/Q^2 = (1-a1) b1  ==> b1       = m2^2/Q^2 1/(1-a1)
@@ -84,7 +99,7 @@ bool OctetMeson_Decayer::FixKinematics() {
   m_mom[1]      =     z *alpha2 *E*s_AxisP;
   m_mom[2]      = (1.-   alpha2)*E*s_AxisP +     beta2 *E*s_AxisM;
   for (size_t i=0;i<3;i++) {
-    ontoZ.Rotate(m_mom[i]);
+    ontoZ.RotateBack(m_mom[i]);
     intoCMS.BoostBack(m_mom[i]);
   }
   //msg_Out()<<"Selectec z = "<<z<<" in ["<<zmin<<", "<<zmax<<"]  --> "<<alpha2<<" & "<<beta2<<"\n"
@@ -101,5 +116,5 @@ void OctetMeson_Decayer::UpdateColouredObjectsAndAddHadron() {
   p_part1->SetFlavour(Flavour(kf_gluon));
   p_part1->SetMomentum(m_mom[1]);
   p_part2->SetMomentum(m_mom[2]);
-  //msg_Out()<<(*meson)<<"\n"<<(*p_part1)<<"\n"<<(*p_part2)<<"\n";
+  //msg_Out()<<"\n"<<(*meson)<<(*p_part1)<<(*p_part2)<<"\n";
 }
