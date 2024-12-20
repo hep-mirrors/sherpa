@@ -12,7 +12,7 @@ using namespace std;
 Fragmentation_Base::Fragmentation_Base()
 {
   Settings& s = Settings::GetMainSettings();
-  m_shrink = s["COMPRESS_PARTONIC_DECAYS"].SetDefault(true).Get<bool>();
+  m_shrink = s["COMPRESS_PARTONIC_DECAYS"].SetDefault(false).Get<bool>();
   m_flagpartonics = s["FLAG_PARTONIC_DECAYS"].SetDefault(true).Get<bool>();
 }
    
