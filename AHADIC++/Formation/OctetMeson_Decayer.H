@@ -15,7 +15,8 @@ namespace AHADIC {
     Proto_Particle * p_part1, * p_part2;
     ATOOLS::Vec4D    m_mom[3];
 
-    bool FixSpectator(Singlet * singlet);
+    bool FindOctet(Singlet * singlet,std::list<Proto_Particle *>::iterator & pit1);
+    bool FixSpectator(Singlet * singlet,std::list<Proto_Particle *>::iterator & pit1);
     bool FixKinematics();
     void UpdateColouredObjectsAndAddHadron();
   public:
