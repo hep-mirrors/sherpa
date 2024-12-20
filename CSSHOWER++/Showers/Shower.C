@@ -353,6 +353,9 @@ bool Shower::EvolveSinglet(Singlet * act,const size_t &maxem,size_t &nem)
     kt2win = 0.;
     Parton *split=SelectSplitting(kt2win);
     //no shower anymore
+    msg_Debugging() << "Selected splitter at kt2win:  " << kt2win << endl
+                    << m_flavA << " -> " << m_flavB << "  ("<< m_flavC << ")" << endl;
+    if (split != NULL) msg_Debugging() << "Transition tag reads:  " << split->Transition() << endl;
     if (split==NULL) {
       msg_Debugging()<<"No emission\n";
       ResetScales(p_actual->KtNext());
@@ -376,14 +379,16 @@ bool Shower::EvolveSinglet(Singlet * act,const size_t &maxem,size_t &nem)
       }
       return true;
     }
-    else if (split->Transition()) {
-      msg_Debugging()<<"Transition "<<m_flavA<<" -> "<<m_flavB
+    else if (split->Transition() && m_flavC == (ATOOLS::Flavour)(kf_none) ) {
+      msg_Debugging()<<"Transition "<<m_flavA<<" -> "<<m_flavB << "  (" << m_flavC << ") "
 		     <<" at kt = "<<sqrt(split->KtTest())
 		     <<"( "<<sqrt(split->GetSing()->KtNext())<<" .. "
 		     <<sqrt(split->KtStart())<<" ), z = "<<split->ZTest()<<", y = "
 		     <<split->YTest()<<" for\n"<<*split
-		     <<*split->GetSpect()<<"\n";
+		     <<*split->GetSpect()<<"\n"
+         <<"Resetting transition tag from " << split->Transition() <<" to false.\n";
       m_last[0]=m_last[1]=m_last[2]=m_last[3]=NULL;
+      split->SetTransition(false);
       if (kt2win<split->GetSing()->KtNext()) { 
         msg_Debugging() << "WTF is going on? Aborting..." << endl;
         exit(1);
@@ -577,12 +582,10 @@ bool Shower::TrialEmission(double & kt2win,Parton * split)
 	m_flavA = m_sudakov.GetFlavourA();
 	m_flavB = m_sudakov.GetFlavourB();
 	m_flavC = m_sudakov.GetFlavourC();
-  if (split->Transition()) {
-    kt2win = kt2*(1.0);
+  if (split->Transition() && m_flavC == (ATOOLS::Flavour)(kf_none)) {
+    kt2win = kt2*(1.1);
     split->SetFlavour(m_sudakov.Selected()->GetFlavourB());
     split->SetTest(kt2,z,y,phi);
-    // msg_Out() << "C flow:  (" << split->GetFlow(1) << ", " << split->GetFlow(2) << ")" << endl;
-    // msg_Out() << "momentum:  " << split->Momentum() << endl;
   }
   else {
     m_lastcpl = m_sudakov.Selected()->Coupling()->Last();

@@ -469,14 +469,15 @@ int Sudakov::Generate(Parton *split,Parton *spect,
 	   sqr(transitions->begin()->OutMass()+sqrt(Max(0.,p_spect->Momentum().Abs2())))) && 
 	  split->KtStart()>transitions->begin()->OutMass2() &&
 	  t<transitions->begin()->OutMass2()) {
-	  msg_Debugging()<<"Tried to split a gluon ("<<split->GetFlow(1)<<", "<<split->GetFlow(2)<<") "
+	  msg_Debugging()<<"Tried to split a " << split->GetFlavour() << " ("<<split->GetFlow(1)<<", "<<split->GetFlow(2)<<") "
 		 <<"between t = "<<split->KtStart()<<" and t = "<<t<<":\n" <<
      "spectator is: " << spect->GetFlavour() << "  " << spect->Momentum() << endl
 		 <<"Will want to transit to "<<transitions->begin()->GetFlavourB()
 		 <<" ("<<transitions->begin()->OutMass2()<<") "
 		 <<"with P = "<<(1-exp(-transitions->begin()->SudArg()))<<".\n"
 		 <<"Invariant mass = "<<(p_split->Momentum()+p_spect->Momentum()).Abs2()<<" > "
-		 <<sqr(transitions->begin()->OutMass()+sqrt(Max(0.,p_spect->Momentum().Abs2())))<<".\n";
+		 <<sqr(transitions->begin()->OutMass()+sqrt(Max(0.,p_spect->Momentum().Abs2())))<<".\n"
+     <<"Setting transition tag from " << split->Transition() << " to true.\n";
   t   = transitions->begin()->OutMass2(); // need to increase a bit after transition is done.
 	z   = 1;
 	phi = 0.;
