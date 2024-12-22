@@ -116,7 +116,8 @@ bool Lorentz_FS_Rad::Cluster
   if (p_sk->PS()->KernelScheme()&1)
     s.m_zi=(s.m_x*s.m_p[i]*ff.m_nb)/
       ((s.m_x*s.m_p[i]+s.m_p[j])*ff.m_nb);
-  s.m_p.erase(s.m_p.begin()+j);
+  if (j<i) s.m_p[j]=s.m_p[i];
+  s.m_p.erase(s.m_p.begin()+(i<j?j:i));
   if (s.m_kt2<s.m_t0) return false;
   return true;
 }
@@ -219,6 +220,7 @@ bool Lorentz_FS_Split::Cluster
   s.m_zi=s.m_x;
   if (p_sk->PS()->KernelScheme()&1)
     s.m_zi=(s.m_pi*ff.m_nb)/((s.m_pi+s.m_pj)*ff.m_nb);
-  s.m_p.erase(s.m_p.begin()+j);
+  if (j<i) s.m_p[j]=s.m_p[i];
+  s.m_p.erase(s.m_p.begin()+(i<j?j:i));
   return true;
 }
