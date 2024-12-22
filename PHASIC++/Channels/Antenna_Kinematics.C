@@ -22,12 +22,27 @@ int PHASIC::ClusterAntenna
       if (l==k) ffp.m_mode|=4;
     }
   if (ffp.m_mode&2) { K+=pj; K=-K; }
-  Vec4D n(K+pj);
-  double z((pi*n)/((pi+pj)*n));
-  ffp.m_pijt=pi/z;
-  ffp.m_Kt=n-(1.0-z)*ffp.m_pijt;
-  ffp.m_nb=n-n.Abs2()/(2.*n*pi)*pi;
-  ffp.m_z=(ffp.m_mode&1)?1.0/z:z;
+  Vec4D n(K+pj), Q(pi+n);
+  double mi2(pi.Abs2()), K2(K.Abs2());
+  double n2(n.Abs2()), Q2(2.*pi*n);
+  double z(1.+(mi2-mij2+n2-K2)/Q2);
+  double vo(sqrt(1.0-mi2*n2/sqr(Q2/2.0)));
+  double gam(Q2*(1+vo)/2.0);
+  double muit2(mij2/Q2), mui2(mi2/Q2);
+  double muitb2(mij2/gam), muib2(mi2/gam);
+  double nu(n2/Q2), nub(n2/gam);
+  double zb((z+2.0*muit2)/(1.0+vo+2.0*mui2));
+  if (zb*zb<muitb2/(1.0+muib2)*(1.0+nub)) {
+    msg_IODebugging()<<METHOD<<"(): Invalid kinematics."<<std::endl;
+    return -1;
+  }
+  zb+=sqrt(zb*zb-muitb2/(1.0+muib2)*(1.0+nub));
+  ffp.m_pijt=zb*pi+(muit2/zb-mui2*zb)/vo*(n-nub*pi);
+  ffp.m_Kt=Q-ffp.m_pijt;
+  double pn(sqr(Q2)-4.0*mij2*n2);
+  pn=Sign(Q2)*sqrt(pn);
+  ffp.m_nb=((Q2+pn)/2.*n-n2*pi)/Q2;
+  ffp.m_z=(ffp.m_mode&1)?z:1.0/z;
   ffp.m_y=(pi*pj)/(pi*n);
   ffp.m_pk=pk;
   ffp.m_pj=pj;
@@ -67,9 +82,8 @@ int PHASIC::ClusterAntenna
   Kt=ffp.m_Kt;
   Vec4D pij(ffp.m_pijt);
   LN_Pair ln(GetLN(pij,Kt));
-  double gam(2.*pij*Kt);
   Vec4D n_perp(pk);
-  n_perp-=((pk*ln.m_n)*ln.m_l+(pk*ln.m_l)*ln.m_n)/(gam/2.0);
+  n_perp-=((pk*ln.m_n)*ln.m_l+(pk*ln.m_l)*ln.m_n)/(ln.m_l*ln.m_n);
   if (n_perp.PSpat2()<=rpa->gen.SqrtAccu()) {
     msg_IODebugging()<<METHOD<<"(): Set fixed n_perp\n";
     n_perp=LT(pij,Kt,Vec4D::ZVEC);
