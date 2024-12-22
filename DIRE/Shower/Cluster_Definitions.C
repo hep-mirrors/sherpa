@@ -70,7 +70,8 @@ Splitting Cluster_Definitions::KT2
   for (size_t l(0);l<sp.m_p.size();++l) sp.m_p[l]=sp.m_ff.m_lam*sp.m_p[l];
   sp.m_p[i]=(type&1)?-sp.m_ff.m_pi:sp.m_ff.m_pi;
   sp.m_p[k]=(type&2)?-sp.m_ff.m_pk:sp.m_ff.m_pk;
-  sp.m_p.erase(sp.m_p.begin()+j);
+  if (j<i) sp.m_p[j]=s.m_p[i];
+  sp.m_p.erase(sp.m_p.begin()+(i<j?j:i));
   msg_Debugging()<<"Splitting: t = "<<sp.m_t<<" = "<<sqrt(sp.m_t)
 		 <<" ^ 2, z = "<<sp.m_z<<", phi = "<<sp.m_phi<<"\n"; 
   ws=sk->Value(sp);
