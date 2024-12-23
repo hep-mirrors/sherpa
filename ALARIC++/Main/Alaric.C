@@ -283,10 +283,14 @@ void Alaric::RecoCheck(Amplitude *const a,int swap,
     for (size_t i(0);i<ampl->Legs().size();++i)
       ampl->Leg(i)->SetMom(c.m_lam*ampl->Leg(i)->Mom());
   if (c.m_p.size())
-    for (size_t i(0);i<c.m_p.size();++i)
-      if (c.m_p[i]!=Vec4D()) ampl->Leg(i)->SetMom(c.m_p[i]);
+    for (size_t i(0), j(0);j<c.m_p.size();++i,++j) {
+      if (i==Max(ic,jc)) ++i;
+      if (i>=ampl->Legs().size()) break;
+      ampl->Leg(i)->SetMom(c.m_p[j]);
+    }
   ampl->Leg(ic)->SetMom(c.m_pi);
   ampl->Leg(jc)->SetMom(c.m_pj);
+  if (c.m_p.empty()) ampl->Leg(kc)->SetMom(c.m_pk);
   double ws, mu2;
   Splitting s=p_clus->KT2
     (*ampl,ic,jc,kc,a->Split().p_c->Flav(),a->ClusterAmplitude()->Kin(),
