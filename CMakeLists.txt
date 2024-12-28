@@ -68,6 +68,8 @@ option(SHERPA_ENABLE_THREADING               "Enables building with threading." 
 option(SHERPA_ENABLE_TESTING                 "Enables testing." OFF)
 option(SHERPA_ENABLE_UFO                     "Enables installation of UFO interfaces." OFF)
 option(SHERPA_ENABLE_VERSIONING              "Enables versioned installation." OFF)
+option(SHERPA_ENABLE_ALPHAQEDHAD             "Enables hadronic contribution to alphaqed." OFF)
+option(SHERPA_ENABLE_LOOPTOOLS               "Enables LOOPTOOLS." OFF)
 
 set(HEPMC_MIN_VERSION "3.0.0")
 set(RIVET_MIN_VERSION "3.0.0")
@@ -477,6 +479,11 @@ else()
 endif()
 
 message(STATUS "SHERPA: LHAPDF_VERSION=${LHAPDF_VERSION} LHAPDF_LIBRARIES=${LHAPDF_LIBRARIES} LHAPDF_INCLUDE_DIRS=${LHAPDF_INCLUDE_DIRS}")
+
+if (SHERPA_ENABLE_LOOPTOOLS)
+  # find_package(LOOPTOOLS REQUIRED)
+  message(STATUS "LOOPTOOLS_INCLUDE_DIRS=${LOOPTOOLS_DIRS}/include" "LOOPTOOLS_LIB_DIRS=${LOOPTOOLS_DIRS}/lib")
+endif()
 
 add_subdirectory(AHADIC++)
 add_subdirectory(AMEGIC++)
