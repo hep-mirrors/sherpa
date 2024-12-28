@@ -495,6 +495,11 @@ if (SHERPA_ENABLE_ALPHAQEDHAD)
   
 endif()
 
+if (SHERPA_ENABLE_LOOPTOOLS)
+  # find_package(LOOPTOOLS REQUIRED)
+  message(STATUS "LOOPTOOLS_INCLUDE_DIRS=${LOOPTOOLS_DIRS}/include" "LOOPTOOLS_LIB_DIRS=${LOOPTOOLS_DIRS}/lib")
+endif()
+
 add_subdirectory(AHADIC++)
 add_subdirectory(AMEGIC++)
 add_subdirectory(AMISIC++)
