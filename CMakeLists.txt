@@ -68,6 +68,7 @@ option(SHERPA_ENABLE_TESTING                 "Enables testing." OFF)
 option(SHERPA_ENABLE_UFO                     "Enables installation of UFO interfaces." OFF)
 option(SHERPA_ENABLE_VERSIONING              "Enables versioned installation." OFF)
 option(SHERPA_ENABLE_ALPHAQEDHAD             "Enables hadronic contribution to alphaqed." OFF)
+option(SHERPA_ENABLE_LOOPTOOLS               "Enables LOOPTOOLS." OFF)
 
 set(HEPMC_MIN_VERSION "3.0.0")
 set(RIVET_MIN_VERSION "3.0.0")
@@ -488,6 +489,11 @@ if (SHERPA_ENABLE_ALPHAQEDHAD)
     message(FATAL_ERROR "Failed to download the file.")
   endif()
   
+endif()
+
+if (SHERPA_ENABLE_LOOPTOOLS)
+  # find_package(LOOPTOOLS REQUIRED)
+  message(STATUS "LOOPTOOLS_INCLUDE_DIRS=${LOOPTOOLS_DIRS}/include" "LOOPTOOLS_LIB_DIRS=${LOOPTOOLS_DIRS}/lib")
 endif()
 
 add_subdirectory(AHADIC++)
