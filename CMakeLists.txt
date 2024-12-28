@@ -72,6 +72,8 @@ option(SHERPA_ENABLE_INTEGRATION_TESTS       "Enables integration testing." ON)
 option(SHERPA_ENABLE_UFO                     "Enables installation of UFO interfaces." OFF)
 option(SHERPA_ENABLE_VERSIONING              "Enables versioned installation." OFF)
 option(SHERPA_ENABLE_COVERAGE                "Enable code coverage reporting" OFF)
+option(SHERPA_ENABLE_ALPHAQEDHAD             "Enables hadronic contribution to alphaqed." OFF)
+option(SHERPA_ENABLE_LOOPTOOLS               "Enables LOOPTOOLS." OFF)
 
 
 ########################################################################
@@ -476,6 +478,11 @@ else()
 endif()
 
 message(STATUS "SHERPA: LHAPDF_VERSION=${LHAPDF_VERSION} LHAPDF_LIBRARIES=${LHAPDF_LIBRARIES} LHAPDF_INCLUDE_DIRS=${LHAPDF_INCLUDE_DIRS}")
+
+if (SHERPA_ENABLE_LOOPTOOLS)
+  # find_package(LOOPTOOLS REQUIRED)
+  message(STATUS "LOOPTOOLS_INCLUDE_DIRS=${LOOPTOOLS_DIRS}/include" "LOOPTOOLS_LIB_DIRS=${LOOPTOOLS_DIRS}/lib")
+endif()
 
 add_subdirectory(AHADIC++)
 add_subdirectory(AMEGIC++)
