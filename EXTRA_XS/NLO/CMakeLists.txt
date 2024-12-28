@@ -5,7 +5,6 @@ set(ExtraXSNLO_SOURCES Logarithms.C
                 DY_Jet_QCD_Virtual.C
                 Higgs_QCD_Virtual.C
                 Higgs_Jet_QCD_Virtual.C
-                PionPionVirtual.C
                 PionPionGamma.C
                 ee3jet_CSS_approx.C
                 ppll1jet_CSS_approx.C
