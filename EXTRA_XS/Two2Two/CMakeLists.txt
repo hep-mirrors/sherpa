@@ -4,6 +4,7 @@ set(Two2Two_SOURCES XS_Drell_Yan.C
                     XS_HadronsQED.C
                     ee_Y4S_BB.C
                     gg_yy.C
+                    emu_emu.C
                     DMDM_mumu.C)
 
 sherpa_create_git_info(Two2Two)
