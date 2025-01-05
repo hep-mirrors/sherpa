@@ -38,6 +38,7 @@ namespace SHERPARIVET {
     size_t m_nevt, m_histointerval;
     bool   m_finished;
     bool   m_splitjetconts, m_splitSH, m_splitpm, m_splitcoreprocs, m_usehepmcshort;
+    bool   m_outputmeonlyvariations;
 
     int m_loglevel, m_ignorebeams, m_skipmerge, m_skipweights;
     double m_weightcap, m_nlosmearing;
@@ -230,6 +231,9 @@ std::string Rivet_Interface::GetCoreProc(const std::string& proc)
 bool Rivet_Interface::Init()
 {
   if (m_nevt==0) {
+    m_outputmeonlyvariations =
+      Settings::GetMainSettings()["OUTPUT_ME_ONLY_VARIATIONS"].Get<bool>();
+
     Scoped_Settings s{ Settings::GetMainSettings()[m_tag] };
 
     m_splitjetconts = s["JETCONTS"].SetDefault(0).Get<int>();
@@ -469,6 +473,10 @@ bool Rivet_Interface::Finish()
   std::map<std::string, double> err_wgts;
   xs.FillVariations(xs_wgts);
   err.FillVariations(err_wgts);
+  if (m_outputmeonlyvariations) {
+    xs.FillVariations(xs_wgts, Variations_Source::main);
+    err.FillVariations(err_wgts, Variations_Source::main);
+  }
   // At this point, we have a "Nominal" entry (but the Rivet weight name might
   // be different, e.g. an empty string ""), and we might have additional
   // unphysical weights in the Rivet weight sums obtained above. Hence, we make
