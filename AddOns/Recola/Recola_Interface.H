@@ -5,9 +5,13 @@
 #include "PHASIC++/Process/ME_Generator_Base.H"
 #include "METOOLS/Loops/Divergence_Array.H"
 #include "ATOOLS/Phys/NLO_Types.H"
+#include "ATOOLS/Org/CXXFLAGS_PACKAGES.H"
 
-#include "recola.h"
-
+#ifdef USING__RECOLA2
+  #include "recola.hpp"
+#else
+  #include "recola.h"
+#endif
 namespace PHASIC {
   struct External_ME_Args;
 }

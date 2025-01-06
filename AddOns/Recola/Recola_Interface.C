@@ -227,7 +227,6 @@ bool Recola::Recola_Interface::Initialize(MODEL::Model_Base *const model,
         THROW(fatal_error,"Mismatch in photon mass regulator");
     }
     
-    set_dynamic_settings_rcl(1);
     use_mass_reg_soft_rcl(s_photon_mass);
   }
   
@@ -238,8 +237,9 @@ bool Recola::Recola_Interface::Initialize(MODEL::Model_Base *const model,
   s_compute_poles = s["RECOLA_COMPUTE_POLES"].Get<int>();
   if (s_compute_poles) {
     msg_Info()<<METHOD<<"(): Instructing Recola to compute poles."<<std::endl;
+    set_compute_ir_poles_rcl(1);
+    set_dynamic_settings_rcl(1);
   }
-
 
   if(MODEL::s_model->Name() != "SM")
     THROW(not_implemented, "ONLY Standard Model so far supported in RECOLA");
@@ -601,7 +601,7 @@ void Recola::Recola_Interface::EvaluateLoop(int id, const Vec4D_Vector& momenta,
     }
   }
 
-  double fA2[2]={0.0};
+  double fA2[4]={0.0};
   
   bool momcheck(0);
   //    compute_process_rcl(id,fpp,NN,"NLO",fA2);
@@ -658,19 +658,12 @@ void Recola::Recola_Interface::EvaluateLoop(int id, const Vec4D_Vector& momenta,
   }
 
   if (s_compute_poles) {
-    double fE12[2]={0.};
-      double fE22[2]={0.};
-    // compute 1/eps^2
-    set_delta_ir_rcl(0.,100.+M_PI*M_PI/6.);
-    compute_process_rcl(id,fpp,"NLO",fE22);
-    msg_Info()<<"B = "<<fE22[0]<<" <==> "<<fA2[0]<<std::endl;
-    // compute 1/eps
-    set_delta_uv_rcl(100.);
-    compute_process_rcl(id,fpp,"NLO",fE12);
-    msg_Info()<<"B = "<<fE12[0]<<" <==> "<<fA2[0]<<std::endl;
-    // reset
-    set_delta_ir_rcl(0.,M_PI*M_PI/6.);
-    set_delta_uv_rcl(0.);
+      get_squared_amplitude_rcl(id,voqcd,"NLO-IR1",fA2[2]);
+      msg_Debugging()<<"... eps^{-1}="<<fA2[2]<<std::endl;
+      get_squared_amplitude_rcl(id,voqcd,"NLO-IR2",fA2[3]);
+      msg_Debugging()<<"... eps^{-2}="<<fA2[3]<<std::endl;
+      virt.IR()=fA2[2];
+      virt.IR2()=fA2[3];
   }
 }
 
