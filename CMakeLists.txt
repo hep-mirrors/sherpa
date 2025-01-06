@@ -963,9 +963,11 @@ $<IF:$<BOOL:${SHERPA_ENABLE_GOSAM}>,#define GOSAM_PREFIX \"${GOSAM_PREFIX}\",/* 
 /* MadLoop installation prefix */\n\
 $<IF:$<BOOL:${SHERPA_ENABLE_MADLOOP}>,#define MADLOOP_PREFIX \"${MADLOOP_PREFIX}\",/* #undef MADLOOP_PREFIX */>\n\n\
 /* Recola installation prefix */\n\
-$<IF:$<BOOL:${SHERPA_ENABLE_RECOLA}>,#define RECOLA_PREFIX \"${RECOLA_PREFIX}\",/* #undef RECOLA_PREFIX */>\n\n\
 /* Griffin installation prefix */\n\
 $<IF:$<BOOL:${SHERPA_ENABLE_GRIFFIN}>,#define GRIFFIN_PREFIX \"${GRIFFIN_PREFIX}\",/* #undef GRIFFIN_PREFIX */>\n\n\
+$<IF:$<BOOL:${SHERPA_ENABLE_RECOLA}>,#define RECOLA_PREFIX \"${RECOL_PREFIX}\",/* #undef RECOLA_PREFIX */>\n\n\
+/* using RECOLA2 */\n\
+$<IF:$<BOOL:$<VERSION_GREATER_EQUAL:${RECOLA_VERSION},2.0.0>>,#define USING__RECOLA2 \"1\",/* #undef USING__RECOLA2 */>\n\n\
 /* using MCFM */\n\
 $<IF:$<BOOL:${SHERPA_ENABLE_MCFM}>,#define USING__MCFM \"1\",/* #undef USING__MCFM */>\n\n\
 /* MCFM directory */\n\
