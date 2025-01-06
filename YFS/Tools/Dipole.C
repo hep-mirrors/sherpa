@@ -8,6 +8,7 @@
 #include "MODEL/Main/Model_Base.H"
 #include "MODEL/Main/Running_AlphaQED.H"
 #include "ATOOLS/Org/Run_Parameter.H" 
+#include "PHASIC++/Channels/Channel_Elements.H"
 
 
 
@@ -34,10 +35,11 @@ Dipole::Dipole(ATOOLS::Flavour_Vector const &fl, ATOOLS::Vec4D_Vector const &mom
   m_type(ty), m_alp(alpha)
 {
   if ((mom.size() != fl.size()) || fl.size() != 2 || mom.size() != 2 || born.size()!=2) {
-    msg_Out()<<"Dipole type is  =  "<<ty<<std::endl
-             <<" mom.size() =  "<<mom.size()<<std::endl
-             <<" fl.size() =  "<<fl.size()<<std::endl
-             <<" born.size() =  "<<born.size()<<std::endl;
+    msg_Out()<<"Dipole type is  = "<<ty<<std::endl
+             <<" mom.size() = "<<mom.size()<<std::endl
+             <<" fl.size() = "<<fl.size()<<std::endl
+             <<" born.size() = "<<born.size()<<std::endl
+             <<"Flavours = "<<fl<<std::endl;
     THROW(fatal_error, "Incorrect dipole size in YFS for dipoletype");
   }
   Clean();
@@ -156,6 +158,7 @@ void Dipole::Boost() {
     double m2 = m_masses[1];
     // m_newmomenta[0] = {zz, 0, 0, z};
     // m_newmomenta[1] = {zz, 0, 0, -z};
+    double signz = m_bornmomenta[0][3]>0?1:-1;
     double lamCM = 0.5*sqrt(SqLam(Q.Abs2(),m1*m1,m2*m2)/Q.Abs2());
     double E1 = lamCM*sqrt(1+m1*m1/sqr(lamCM));
     double E2 = lamCM*sqrt(1+m2*m2/sqr(lamCM));
@@ -172,11 +175,14 @@ void Dipole::Boost() {
       pRot.RotateBack(m_newmomenta[i]);
       poin.BoostBack(m_newmomenta[i]);
     }
+    m_sp = (m_newmomenta[0]+m_newmomenta[1]).Abs2();
   }
   else if (Type() == dipoletype::final) {
     if (m_dipolePhotons.size() == 0) return;
     if (m_dipolePhotons.size() != m_Nphotons){
-      msg_Error()<<"Wrong Photon multiplicity in Boost \n";
+      msg_Error()<<"Wrong Photon multiplicity in Boost \n"
+                 <<"Photon vector size: "<<m_dipolePhotons.size()<<std::endl
+                 <<"Photons Generated: "<<m_Nphotons<<std::endl;
     }
     // Check that the final state fermions
     // are in their own restframe;
@@ -190,20 +196,16 @@ void Dipole::Boost() {
         msg_Error()<<"Dipole ghost is in the wrong frame";
       }
     }
-    m_ranPhi = ran->Get()*2.*M_PI;
     // sqr(1.+2.*t/s)
     // m_eikmomentum = m_momenta;
-    double s = (m_bornmomenta[0]+m_bornmomenta[1]).Abs2();
-    double t = (m_beams[0]-m_bornmomenta[0]).Abs2();
-    m_ranTheta = acos(1.+2.*t/s);
-    // m_ranTheta = m_beams[0].Theta();
+    double s = (m_bornmomenta[2]+m_bornmomenta[3]).Abs2();
+    double t = (m_bornmomenta[0]-m_bornmomenta[2]).Abs2();
+    // m_ranTheta = acos(1.+2.*t/s);
+    m_ranTheta = acos(1.-2.*ran->Get());
+    m_ranPhi = ran->Get()*2.*M_PI;
     Vec4D qqk = m_momenta[0] + m_momenta[1] + m_photonSum;
     p_Pboost = new Poincare(qqk);
-    p_boost  = new Poincare(m_bornmomenta[0] + m_bornmomenta[1]);
-
-    p_rotate = new Poincare(m_bornmomenta[0], Vec4D(0., 0.,  0., 1.));
-    p_rotatey = new Poincare(m_bornmomenta[0], Vec4D(0., 0., 1., 0.));
-    p_rotatex = new Poincare(m_bornmomenta[0], Vec4D(0., 1., 0., 0.));
+    m_eikmomentum = m_momenta;
     for (size_t i = 0; i < 2; ++i)
     {
       Boost(m_momenta[i]);
@@ -215,26 +217,140 @@ void Dipole::Boost() {
     m_photonSum*=0.;
     // m_dipolePhotonsEEX.clear();
     for (auto &k : m_dipolePhotons) {
-      // Boost(k);
       m_dipolePhotonsEEX.push_back(k);
-      p_Pboost->Boost(k);
-      p_rotate->RotateBack(k);
-      p_boost->BoostBack(k);
+      Boost(k);
       m_photonSum+=k;
     }
-    if (p_rotate) delete p_rotate;
-    if (p_rotatex) delete p_rotatey;
-    if (p_rotatey) delete p_rotatex;
     if (p_Pboost) delete p_Pboost;
-    if (p_boost) delete p_boost;
   }
 }
 
 void Dipole::Boost(ATOOLS::Vec4D &p) {
   p_Pboost->Boost(p);
-  p_rotate->RotateBack(p);
-  p_boost->BoostBack(p);
+  p_rotate.RotateBack(p);
+  // RandomRotate(p);
+  p_boost.BoostBack(p);
+  // PRINT_VAR(p_boost.PL());
 }
+
+bool Dipole::BoostNLO() {
+  if (Type() == dipoletype::initial) {
+    m_dipolePhotonsEEX=m_dipolePhotons;
+    m_eikmomentum = m_bornmomenta;
+    if (m_dipolePhotons.size() == 0) {
+      DEBUG_FUNC("No ISR Photons, skipping boost");
+      for (int i = 0; i < 2; ++i) m_newmomenta[i]=m_bornmomenta[i];
+      return true;
+    }
+    Vec4D Q;
+    Q = m_bornmomenta[0] + m_bornmomenta[1] - m_photonSum;
+    // if(Q.Abs2() > )
+    double sp = Q * Q;
+    double zz = sqrt(sp) / 2.;
+    double z = zz * sqrt((sp - sqr(m_masses[0] - m_masses[1])) * (sp - sqr(m_masses[0] + m_masses[1]))) / sp;
+    double m1 = m_masses[0];
+    double m2 = m_masses[1];
+    // m_newmomenta[0] = {zz, 0, 0, z};
+    // m_newmomenta[1] = {zz, 0, 0, -z};
+    double signz = m_bornmomenta[0][3]>0?1:-1;
+    double lamCM = 0.5*sqrt(SqLam(Q.Abs2(),m1*m1,m2*m2)/Q.Abs2());
+    double E1 = lamCM*sqrt(1+m1*m1/sqr(lamCM));
+    double E2 = lamCM*sqrt(1+m2*m2/sqr(lamCM));
+    m_newmomenta[0] = {E1, 0, 0, signz*lamCM};
+    m_newmomenta[1] = {E2, 0, 0, -signz*lamCM};
+    m_ranPhi = ran->Get()*2.*M_PI;
+    // sqr(1.+2.*t/s)
+    double s = (m_newmomenta[0]+m_newmomenta[1]).Abs2();
+    double t = (m_newmomenta[0]-m_newmomenta[0]).Abs2();
+    m_ranTheta = acos(1.+2.*t/s);
+    ATOOLS::Poincare poin(Q);
+    Poincare pRot(m_bornmomenta[0], Vec4D(0., 0., 0., signz*1.));
+    for (int i = 0; i < 2; ++i) {
+      pRot.Rotate(m_newmomenta[i]);
+      poin.BoostBack(m_newmomenta[i]);
+    }
+    m_sp = (m_newmomenta[0]+m_newmomenta[1]).Abs2();
+    PRINT_VAR(m_newmomenta[0]+m_newmomenta[1]+m_photonSum);
+    PRINT_VAR(m_bornmomenta[0]+m_bornmomenta[1]);
+  }
+  else if (Type() == dipoletype::final) {
+    if (m_dipolePhotons.size() == 0) return true;
+    if (m_dipolePhotons.size() != 1){
+      msg_Error()<<"Wrong Photon multiplicity in BoostNLO \n"
+                 <<"Photon vector size: "<<m_dipolePhotons.size()<<std::endl
+                 <<"Photons Generated: "<<m_Nphotons<<std::endl;
+    }
+    if(!IsEqual(m_dipolePhotons[0],m_photonSum)){
+      msg_Error()<<"Wrong photon momentum in "<<METHOD<<std::endl;
+    }
+    // Check that the final state fermions
+    // are in their own restframe;
+    m_ranTheta = acos(1.-2.*ran->Get());
+    m_ranPhi = ran->Get()*2.*M_PI;
+    Vec4D Q = m_bornmomenta[0]+m_bornmomenta[1];
+    Poincare boost(m_bornmomenta[0]+m_bornmomenta[1]);
+    // boost.Boost(m_photonSum);
+    double x = 1./(1-m_photonSum.E());
+    double y = 1./(1. + m_photonSum.E()/m_photonscale);
+    double sprim =(Q).Abs2()*y;
+    Vec4D preboostk = m_photonSum;
+    if(IsBad(sprim)) return  false;
+    double m1 = m_momenta[0].Mass();
+    double m2 = m_momenta[1].Mass();
+    // Vec4D rref = Q-m_photonSum;
+    MakePair(sqrt(sprim), m_momenta[0], m_momenta[1]);
+    // PHASIC::CE.Isotropic2Momenta(rref, m1*m1, m2*m2,m_momenta[0], m_momenta[1],ran->Get(), ran->Get());
+    Vec4D qqk = m_momenta[0] + m_momenta[1] + m_photonSum;
+    p_Pboost = new Poincare(qqk);
+    Vec4D ref = m_bornmomenta[0];
+    
+    boost.Boost(ref);
+    Poincare rot(ref, Vec4D(0,0,0,1));
+    SetBoost(boost);
+    SetRotate(rot);
+    for (size_t i = 0; i < 2; ++i)
+    {
+      Boost(m_momenta[i]);
+      // p_boost.Boost(m_momenta[i]);
+      // p_rotate.Rotate(m_momenta[i]);
+      m_newmomenta[i]=m_momenta[i];
+    }
+    // m_eikmomentum = m_momenta;
+    m_photonSum*=0.;
+    for (auto &k : m_dipolePhotons) {
+      Boost(k);
+      // p_rotate.Rotate(k);
+      // p_boost.BoostBack(k);
+      m_photonSum+=k;
+    }
+    if (p_Pboost) delete p_Pboost;
+    qqk = m_newmomenta[0]+m_newmomenta[1]+m_dipolePhotons[0];
+    return true;
+  }
+  return true;
+}
+
+
+void Dipole::MakePair(double cms, Vec4D &p1, Vec4D &p2) {
+  double E = cms / 2.;
+  double s = sqr(cms);
+  Vec4D P = {cms,0,0,0};
+  double mass1 = p1.Mass();
+  double mass2 = p2.Mass();
+  double beta2 = (s - sqr(mass1 - mass2)) * (s - sqr(mass1 + mass2)) / (s * s);
+  double beta =  sqrt(beta2);
+  double eta1 = (s + sqr(mass1) - sqr(mass2)) / s;
+  double eta2 = (s - sqr(mass1) + sqr(mass2)) / s;
+  // p1 = {E * eta1, 0, 0, beta * E};
+  // p2 = {E * eta2, 0, 0, -beta * E};
+  double lamCM = 0.5*sqrt(SqLam(s,mass1*mass1,mass2*mass2)/s);
+  double E1 = lamCM*sqrt(1+mass1*mass1/sqr(lamCM));
+  double E2 = lamCM*sqrt(1+mass2*mass2/sqr(lamCM));
+  p1 = {E1, 0, 0, lamCM};
+  p2 =  {E2, 0, 0, -lamCM};
+  // p2 = P-p1;
+}
+
 
 void Dipole::RandomRotate(Vec4D &p){
   Vec4D t1 = p;
@@ -254,15 +370,15 @@ void Dipole::BoostLab(){
   // if (p_boost) delete p_boost;
 }
 
-void Dipole::BoostToCMS(Vec4D_Vector &k, bool boostback){
+void Dipole::BoostToCMS(){
   Vec4D CMSFrame=m_bornmomenta[0] + m_bornmomenta[1];
-  ATOOLS::Poincare poin(m_QFrame);
-  for (auto &p : k) {
-    if(boostback) poin.BoostBack(p);
-    else poin.Boost(p);
+  Poincare rot;
+  ATOOLS::Poincare poin(CMSFrame);
+  for (int i=0; i<2; i++) {
+    poin.Boost(m_bornmomenta[i]);
+    if(i==0) rot = Poincare(m_bornmomenta[i],Vec4D(0.,0.,0.,1.));
+    rot.Rotate(m_bornmomenta[i]);
   }
-  poin.Boost(m_eikmomentum[0]);
-  poin.Boost(m_eikmomentum[1]);
 }
 
 
@@ -331,13 +447,24 @@ void Dipole::AddToGhosts(ATOOLS::Vec4D &p) {
 }
 
 double Dipole::EEX(const int betaorder){
-  double real=0;
+  double real=0, test;
+  // msg_Out()<<"================================="<<std::endl;
   if(m_dipolePhotonsEEX.size()==0) return real;
   CalculateGamma();
+  Poincare boost(m_eikmomentum[0]+m_eikmomentum[1]);
+  boost.Boost(m_eikmomentum[0]);
+  boost.Boost(m_eikmomentum[1]);
   m_betaorder = betaorder;
   if(betaorder >= 1 && Type()!=dipoletype::ifi) {
-    for(auto &k: m_dipolePhotonsEEX){
-     real += Beta1(k)/Eikonal(k);
+    for(auto k: m_dipolePhotons){
+    // msg_Out()<<"Photon Momentum is = "<<k<<std::endl;
+      boost.Boost(k);
+     test = Beta1(k)/Eikonal(k);
+     real+=test;
+     // real += Beta1(k)/Eikonal(k);
+    // msg_Out()<<"EEX Beta11 for k is = "<<test<<std::endl;
+    // msg_Out()<<"Eikonal for k is = "<<Eikonal(k)<<std::endl;
+    // msg_Out()<<"================================="<<std::endl;
     }
   }
   if(betaorder >= 2 ) {
@@ -370,11 +497,14 @@ double Dipole::EEX(const int betaorder){
   if(IsNan(real)){
     msg_Error()<<"YFS EEX is NaN at order "<<betaorder<<std::endl;
   }
+  // msg_Out()<<"================================="<<xstd::endl;;
   return real;//+virt;
 }
 
 double Dipole::Beta1(const Vec4D &k){
   double b1=0;
+  b1 = Hard(k);
+  // msg_Out()<<"EEXReal for k is = "<<b1<<std::endl;
   if(Type()==dipoletype::initial) {
   //   // beta11
     if(m_betaorder==2) b1 = Hard(k)*(1+delf)-Eikonal(k)*(1+deli)*(1+delf);
@@ -440,6 +570,7 @@ double Dipole::VirtualEEX(const int betaorder){
 }
 
 double Dipole::Hard(const Vec4D &k, int i){
+  // msg_Out()<<"Dipole momentum is "<<m_eikmomentum<<std::endl;
   double p1p2 = m_eikmomentum[0]*m_eikmomentum[1];
   double a = k*m_eikmomentum[0]/p1p2;
   double b = k*m_eikmomentum[1]/p1p2;
@@ -612,6 +743,8 @@ double Dipole::xi(const double &alp, const double &a1, const double &b1, const d
   return 0.125*sqr(1.-alp)*(sqr(1.-a1)+sqr(1.-b1))*(sqr(1.-a2)+sqr(1.-b2));
 }
 
+
+
 void Dipole::Clean(){
   m_masses.clear();
   m_charges.clear();
@@ -621,14 +754,10 @@ void Dipole::Clean(){
   m_oldmomenta.clear();
   m_newmomenta.clear();
   m_bornmomenta.clear();
-  m_eikmomentum.clear();
   m_beams.clear();
   m_ghost.clear();
   m_dipolePhotons.clear();
-  m_dipolePhotonsEEX.clear();
   m_photonSum*=0;
-  m_theta.clear();
-  m_Q.clear();
 }
 
 bool Dipole::IsDecayAllowed(){

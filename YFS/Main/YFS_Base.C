@@ -47,7 +47,7 @@ void YFS_Base::RegisterDefaults(){
   s["TChannel-Cut"].SetDefault(0);
   s["COULOMB"].SetDefault(false);
   s["HIDE_PHOTONS"].SetDefault(1);
-  s["FULL_FORM"].SetDefault(0);
+  s["FULL_FORM"].SetDefault(1);
   s["WW_FORM"].SetDefault(0);
   s["WW_BETAT"].SetDefault(0.382);
   s["CHECK_MASS_REG"].SetDefault(0);
@@ -71,10 +71,12 @@ void YFS_Base::RegisterDefaults(){
   s["Sub_Mode"].SetDefault(submode::global);
   s["No_Flux"].SetDefault(0);
   s["Flux_Mode"].SetDefault(1);
-  s["IFI_Sub"].SetDefault(0);
+  s["IFI_Sub"].SetDefault(1);
   s["Massless_Sub"].SetDefault(0);
   s["Check_Real_Sub"].SetDefault(0);
   s["Integrate_NLO"].SetDefault(1);
+  s["Collinear_Virtual"].SetDefault(0);
+  s["Virtual_Sub"].SetDefault(1);
 }
 
 void YFS_Base::RegisterSettings(){
@@ -123,6 +125,8 @@ void YFS_Base::RegisterSettings(){
   m_check_real_sub = s["Check_Real_Sub"].Get<bool>();
   m_photon_split = s["PHOTON_SPLITTER_MODE"].ResetDefault().SetDefault(0).Get<bool>();
   m_int_nlo = s["Integrate_NLO"].Get<bool>();
+  m_eex_virt = s["Collinear_Virtual"].Get<int>();
+  m_virt_sub = s["Virtual_Sub"].Get<int>();
   m_CalForm = false;
   m_realtool = false;
   //update when beamstrahlung is added

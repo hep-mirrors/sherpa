@@ -43,7 +43,7 @@ class SherpaHistogram:
                                   'Content': float(linearray[1]),
                                   'Error':   float(linearray[2])})
             else:
-                print "Can't handle 1D histo with line of length %s:\n %s" % (len(linearray), linearray)
+                print("Can't handle 1D histo with line of length %s:\n %s" % (len(linearray), linearray))
         if not self.is2D:
             self.data.pop() # removes overflow bin
         f.close()
@@ -114,7 +114,7 @@ class SherpaHistogram2D:
                                   'Content': float(linearray[2]),
                                   'Error':   float(linearray[3])})
             else:
-                print "Can't handle 2D histo with line of length %s:\n %s" % (len(linearray), linearray)
+                print("Can't handle 2D histo with line of length %s:\n %s" % (len(linearray), linearray))
         f.close()
 
     def write_datapoint(self, f, xval, xerr, yval, yerr, zval, zerr):
@@ -191,7 +191,7 @@ for dir in args:
         dir = dir[0:-1]
     if dir[0:2]=="./":
         dir = dir[2:]
-    print "Processing", dir
+    print("Processing", dir)
     f = open(dir+'.yoda', 'w')
 
     for path, dirs, files in os.walk(dir):
@@ -199,11 +199,11 @@ for dir in args:
             for testdir in dirs:
                 if (len(testdir)<=3 and testdir[:1]=="j") or ("j[" in testdir):
                     dirs.remove(testdir)
-                    print "Skipping %s/%s" %(path,testdir)
+                    print("Skipping %s/%s" %(path,testdir))
         for file in files:
             if not file[-4:]==".dat":
                 continue
-            print "Converting %s in %s" %(file, path)
+            print("Converting %s in %s" %(file, path))
             histo = SherpaHistogram(path, file)
             histo.write_datapointset(f, opts.ANA_NAME)
     f.close

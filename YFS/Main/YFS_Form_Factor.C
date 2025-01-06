@@ -310,8 +310,7 @@ double YFS_Form_Factor::BVV_full(const ATOOLS::Vec4D p1, const ATOOLS::Vec4D p2,
   double virt = m_alpi * (t1 + t2 + t3);
   if (mode == 3) return m_alpi * (t1 + t2 + t3);
   if (mode==4) return m_alpi*t1;
-  double real = BVR_full(p1p2, E1, E2, Mas1, Mas2, Kmax, MasPhot, mode);
-  if (IsBad(real) || IsBad(virt)) {
+  if (IsBad(virt)) {
     msg_Error() << METHOD << "\n"
                 << "p1 = " << p1 << "\n"
                 << "p2 = " << p2 << "\n"
@@ -324,7 +323,6 @@ double YFS_Form_Factor::BVV_full(const ATOOLS::Vec4D p1, const ATOOLS::Vec4D p2,
                 << "beta2 = " << beta2 << "\n"
                 << "zeta1 = " << zeta1 << "\n"
                 << "zeta2 = " << zeta2 << "\n"
-                << "real = " << real << "\n"
                 << "virt = " << virt << "\n"
                 << "Mass Photon = " << m_photonMass << "\n";
   }
@@ -546,16 +544,6 @@ double YFS_Form_Factor::BVirtT(const Vec4D &p1, const Vec4D &p2, double kmax){
   double zeta = 1 + M*M/ta;
   double TBvirt, Bv;
   double rho = sqrt(1. - sqr(m1*m2 / (p1*p2)));
-  double m12 = m1*m2;
-  double s=(p1-p2).Abs2();
-  double xnum = sqrt(1-4*m12/(s-sqr(m1-m2)))-1;
-  double xden = sqrt(1-4*m12/(s-sqr(m1-m2)))+1;
-  double xs = (xnum/xden);
-  // if(xs < 0 || xs==1 || IsBad(xs)) return 0;   
-  // double test = log(xs)*xs/(m1*m2*(1-xs*xs))*(log(m_photonMass*m_photonMass/(m1*m2)));
-  // PRINT_VAR(log(1./xs)*xs/(m1*m2*(1-xs*xs)));
-  // PRINT_VAR( (log(p1p2 * (1. + rho) / (m1*m2)) / rho - 1));
-  // test = (log(p1p2 * (1. + rho) / (m1*m2)) / rho - 1) *log(pow(m_photonMass, 2)/(m1*m2)); 
   TBvirt = m_alpi*(
     (log(p1p2 * (1. + rho) / (m1*m2)) / rho - 1) *log(pow(m_photonMass, 2)/(kmax)) 
        // (log(2*p1p2/(m1*m2))-1.0)*log(m_photonMass*m_photonMass/(m1*m2))
@@ -569,12 +557,12 @@ double YFS_Form_Factor::BVirtT(const Vec4D &p1, const Vec4D &p2, double kmax){
 }
 
 double YFS_Form_Factor::R1(const Vec4D &p1, const Vec4D &p2){
-  double R = BVR_full(p1, p2,sqrt(m_s)/2.,m_photonMass,1);
+  double R = BVR_full(p1, p2,sqrt(m_s)/2.,m_photonMass,0);
   double V = BVirtT(p1, p2);
   if(m_tchannel!=2){
     // add s channel 
-    double Vs = BVV_full(p1, p2, m_photonMass, sqrt(m_s)/2., 0);
-    return R+V+Vs;
+    double Vs = BVR_full(p1, p2, sqrt(m_s) / 2.);
+    return R+V-Vs;
   }
   return R+V;
 }
