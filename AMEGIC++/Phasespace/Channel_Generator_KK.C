@@ -282,7 +282,7 @@ int Channel_Generator_KK::MakeChannel(int& echflag,int n,string& path,string& pI
   chf<<"void "<<name<<"::AddPoint(double Value)";
   chf<<endl<<"{"<<endl;  
   chf<<"  Single_Channel::AddPoint(Value);"<<endl;
-  chf<<"  p_vegas->AddPoint(Value,rans);"<<endl;  
+  chf<<"  p_vegas->AddPoint(Value,p_rans);"<<endl;  
   chf<<"}"<<endl;
 
   chf<<"std::string "<<name<<"::ChID()";
