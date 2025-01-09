@@ -269,6 +269,11 @@ double YFS_Form_Factor::Full(const ATOOLS::Vec4D p1, const ATOOLS::Vec4D p2, dou
 }
 
 double YFS_Form_Factor::BVV_full(const ATOOLS::Vec4D p1, const ATOOLS::Vec4D p2, double MasPhot, double Kmax, int mode) {
+  if(m_dim_reg){
+    DivArrD form = BVV_full_eps(p1, p2, MasPhot, Kmax, mode);
+    PRINT_VAR(form.GetEpsilon());
+    return form.Finite();
+  }
   double t1, t2, t3;
   double alpi = m_alpha / M_PI;
   double Mas1 = p1.Mass();
