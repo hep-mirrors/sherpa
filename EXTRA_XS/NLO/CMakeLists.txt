@@ -1,4 +1,4 @@
-EXTRA_XS/NLO/CMakeLists.txtset(NLO_SOURCES Logarithms.C
+set(NLO_SOURCES Logarithms.C
                 Dummy_QCD_Virtual.C
                 DY_QCD_Virtual.C
                 DY_Jet_QCD_Virtual.C
