@@ -1,4 +1,4 @@
-EXTRA_XS/NLO/emu_emu_Virtual.C#include "PHASIC++/Process/Process_Info.H"
+#include "PHASIC++/Process/Process_Info.H"
 #include "PHASIC++/Process/Virtual_ME2_Base.H"
 #include "MODEL/Main/Model_Base.H"
 #include "ATOOLS/Math/MyComplex.H"
