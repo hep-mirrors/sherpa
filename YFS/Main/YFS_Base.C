@@ -77,6 +77,7 @@ void YFS_Base::RegisterDefaults(){
   s["Integrate_NLO"].SetDefault(1);
   s["Collinear_Virtual"].SetDefault(0);
   s["Virtual_Sub"].SetDefault(1);
+  s["Dim_Reg"].SetDefault(0);
 }
 
 void YFS_Base::RegisterSettings(){
@@ -127,6 +128,7 @@ void YFS_Base::RegisterSettings(){
   m_int_nlo = s["Integrate_NLO"].Get<bool>();
   m_eex_virt = s["Collinear_Virtual"].Get<int>();
   m_virt_sub = s["Virtual_Sub"].Get<int>();
+  m_dim_reg = s["Dim_Reg"].Get<bool>();
   m_CalForm = false;
   m_realtool = false;
   //update when beamstrahlung is added
