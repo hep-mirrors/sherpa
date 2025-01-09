@@ -1,4 +1,4 @@
-#include "YFS/Main/Define_Dipoles.H"
+YFS/Main/Define_Dipoles.CYFS/Main/Define_Dipoles.C#include "YFS/Main/Define_Dipoles.H"
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Phys/Blob.H"
@@ -6,8 +6,10 @@
 #include "ATOOLS/Phys/Particle.H"
 #include "ATOOLS/Org/Scoped_Settings.H"
 #include "MODEL/Main/Single_Vertex.H"
-
-
+#include "ATOOLS/Org/CXXFLAGS_PACKAGES.H"
+#ifdef USING__LOOPTOOLS
+  #include "clooptools.h"
+#endif
 
 using namespace YFS;
 using namespace ATOOLS;
@@ -31,6 +33,10 @@ Define_Dipoles::Define_Dipoles() {
     m_dip.push_back(tmp);
   }
   p_yfsFormFact = new YFS::YFS_Form_Factor();
+  #ifdef USING__LOOPTOOLS
+    FORTRAN(ltini)();
+    Setlambda(0);
+  #endif
 }
 
 Define_Dipoles::~Define_Dipoles() {
@@ -373,7 +379,8 @@ double Define_Dipoles::CalculateRealSubIF(const Vec4D &k) {
 
 double Define_Dipoles::CalculateVirtualSub() {
   double sub(0);
-  if(m_tchannel) return CalculateVirtualSubTchannel();
+  if(m_tchannel==2) return CalculateVirtualSubTchannel();
+  if(m_dim_reg) return CalculateVirtualSubEps();
   for (auto &D : m_dipolesII) {
     sub += D.ChargeNorm()*p_yfsFormFact->BVV_full(D.GetNewMomenta(0), D.GetNewMomenta(1), m_photonMass, sqrt(m_s) / 2., 3);
   }
@@ -390,6 +397,27 @@ double Define_Dipoles::CalculateVirtualSub() {
   }
   return sub;
 }
+
+double Define_Dipoles::CalculateVirtualSubEps() {
+  DivArrD sub(0);
+  for (auto &D : m_dipolesII) {
+    sub += D.ChargeNorm()*p_yfsFormFact->BVV_full_eps(D.GetNewMomenta(0), D.GetNewMomenta(1), m_photonMass, sqrt(m_s) / 2., 3);
+  }
+  for (auto &D : m_dipolesFF) {
+    if(m_mode==yfsmode::fsr) sub += -D.m_QiQj*p_yfsFormFact->BVV_full_eps(D.GetBornMomenta(0), D.GetBornMomenta(1), m_photonMass, sqrt(m_s) / 2., 3);
+    else sub += D.ChargeNorm()*p_yfsFormFact->BVV_full_eps(D.GetBornMomenta(0), D.GetBornMomenta(1), m_photonMass, sqrt(m_s) / 2., 3);
+  }
+
+  for (auto &D : m_dipolesIF){
+    // change to + for IFI terms
+    // Note Born momenta are redifined
+    // for IFI terms.
+    sub += D.ChargeNorm()*p_yfsFormFact->BVV_full_eps(D.GetNewMomenta(0), D.GetBornMomenta(1), m_photonMass, sqrt(m_s) / 2., 3);
+  }
+  m_virtSub=sub;
+  return sub.Finite();
+}
+
 
 
 double Define_Dipoles::FormFactor(){
@@ -458,28 +486,33 @@ double Define_Dipoles::CalculateVirtualSubTchannel(){
   // {
   //   for(size_t j=i; j<pvirt.size(); ++j ){
   //     double etaij = z[i]*z[j]*th[i]*th[j];
-  //     double YFSij = 0.;
+  //     Complex YFSij = 0.;
   //     double mi = pvirt[i].Mass();
   //     double mj = pvirt[j].Mass();
   //     double s = (pvirt[i]-pvirt[j]).Abs2();
 
-  //     double bii = p_yfsFormFact->B0(0,mi*mi,mi*mi);
-  //     double bjj = p_yfsFormFact->B0(0,mj*mj,mj*mj);
-  //     double bij = p_yfsFormFact->B0(s,mi*mi,mj*mj);
-  //     double cij = p_yfsFormFact->C0(mi*mi,mj*mj,mi*mi,
-  //                                   (th[i]*pvirt[i]+th[j]*pvirt[j]).Abs2(),
-  //                                    mi*mi, mj*mj);
-  //     // PRINT_VAR(s);
-  //     // PRINT_VAR(bii);
-  //     // PRINT_VAR(bjj);
-  //     // PRINT_VAR(cij);
+  //     Complex bii = B0(0,mi*mi,mi*mi);
+  //     Complex bjj = B0(0,mj*mj,mj*mj);
+  //     Complex bij = B0(0,mi*mi,mj*mj);
+  //     Complex cij = C0(mi*mi,(th[i]*pvirt[i]+th[j]*pvirt[j]).Abs2(),mj*mj,
+  //                      0.,mi*mi,mj*mj);
+  //     Complex cii = C0(mi*mi, 0., mi*mi, 0.0, mi*mi, mi*mi);
   //     // YFSij = 8*pvirt[i]*pvirt[j]*cij;
-  //     // YFSij = 4*bij -bii-bjj
-  //     //         +4*mi*mi*0.5/(mi*mi)*2*log(m_photonMass/mi)
-  //     //         +4*mj*mj*0.5/(mj*mj)*2*log(m_photonMass/mj);
-  //             YFSij=8*pvirt[i]*pvirt[j]*cij;
-  //     sub+=etaij*YFSij;
-  //     // PRINT_VAR(etaij*YFSij);
+  //     if(i==j){
+  //       YFSij = bii-4.*mi*mi*0.5*log(m_photonMass*m_photonMass/mi/mi);
+  //     }
+  //     else{
+  //       YFSij = 2.*pvirt[i]*pvirt[j]*cij+0.5*bij;
+  //       }
+  //     if(IsBad(YFSij)){
+  //       msg_Error()<<"YFS Virtual Sub is NaN"<<endl
+  //                  <<"bii = "<<bii<<endl
+  //                  <<"bij = "<<bij<<endl
+  //                  <<"cii = "<<cii<<endl
+  //                  <<"cij = "<<cij<<endl;
+  //     }
+  //     sub+=m_alpi*etaij*YFSij.real();
+  // //     // PRINT_VAR(etaij*YFSij);
   //   }
   // }
   // PRINT_VAR(count);
@@ -492,6 +525,7 @@ double Define_Dipoles::CalculateVirtualSubTchannel(){
   for (auto &D : m_dipolesIF){
     sub += D.ChargeNorm()*p_yfsFormFact->BVirtT(D.GetNewMomenta(0), D.GetBornMomenta(1));
   }
+  // clearcache();
   return sub;
 }
 
