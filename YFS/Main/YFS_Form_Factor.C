@@ -330,15 +330,15 @@ double YFS_Form_Factor::BVV_full(const ATOOLS::Vec4D p1, const ATOOLS::Vec4D p2,
 }
 
 
-DivArrC YFS_Form_Factor::BVV_full_eps(const ATOOLS::Vec4D p1, const ATOOLS::Vec4D p2, double MasPhot, double Kmax, int mode) {
+DivArrD YFS_Form_Factor::BVV_full_eps(const ATOOLS::Vec4D p1, const ATOOLS::Vec4D p2, double MasPhot, double Kmax, int mode) {
   // for dim-reg
   // DivArrc {UV, IR, IR^2, finite, eps, eps^2, 0}
   double muf = 91.2*91.2;
   double mur = 91.2*91.2;
   double t2, t3;
-  DivArrC t1;
+  DivArrD t1;
   double alpi = m_alpha / M_PI;
-  DivArrC massph(1,0,0,log(4*M_PI*mur)-GAMMA_E,1,0);
+  DivArrD massph(0,-1,0,0,0,0);
   double Mas1 = p1.Mass();
   double Mas2 = p2.Mass();
   double m12 = Mas1 * Mas2;
@@ -354,7 +354,9 @@ DivArrC YFS_Form_Factor::BVV_full_eps(const ATOOLS::Vec4D p1, const ATOOLS::Vec4
   double betat = 0.382;
   double beta  = sqrt(1. - 2 * (Mas1 + Mas2) / s + sqr((Mas1 - Mas2) / s));
   // t1 = (1./rho*A(p1p2,Mas1,Mas2)-1.)*2.*log(2.*Kmax/MasPhot);
-  t1 = (log(p1p2 * (1. + rho) / m12) / rho - 1) * (massph-log(m12));
+  double irloop = p_virt->p_loop_me->IRscale();
+  double epsloop = p_virt->p_loop_me->Eps_Scheme_Factor({p1,p2});
+  t1 = (log(p1p2 * (1. + rho) / m12) / rho - 1) *  (massph+log(4.*M_PI*sqr(irloop)/m12/epsloop));
   // t1 = (log(sqr(MasPhot)/sqr(250)));
   t2 = p1p2 * rho / s * log(p1p2 * (1. + rho) / m12) + (Mas1 * Mas1 - Mas2 * Mas2) / (2.*s) * log(Mas1 / Mas2) - 1;
 
