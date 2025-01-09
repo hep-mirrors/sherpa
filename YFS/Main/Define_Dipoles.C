@@ -38,6 +38,10 @@ Define_Dipoles::Define_Dipoles() {
     Setlambda(0);
   #endif
   p_nloamp = new YFS::NLO_Amp();
+  #ifdef USING__LOOPTOOLS
+    FORTRAN(ltini)();
+    Setlambda(0);
+  #endif
 }
 
 Define_Dipoles::~Define_Dipoles() {
