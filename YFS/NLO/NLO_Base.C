@@ -150,6 +150,11 @@ double NLO_Base::CalculateVirtual() {
 								 <<"One-Loop Provider  = "<<p1<<std::endl
 								 <<"Sherpa  = "<<yfspole<<std::endl;
 		}
+		{
+			msg_Debugging()<<"Poles cancel in YFS Virtuals"<<std::endl
+								 		 <<"One-Loop Provider  = "<<p1<<std::endl
+								 			<<"Sherpa  = "<<yfspole<<std::endl;
+		}
 	}
 	return m_oneloop;
 }
