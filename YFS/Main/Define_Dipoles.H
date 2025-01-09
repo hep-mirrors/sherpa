@@ -75,8 +75,13 @@ namespace YFS {
       double CalculateRealSubIF(const Vec4D &k);
       double CalculateRealSubEEX(const Vec4D &k);
       double CalculateVirtualSub();
+<<<<<<< HEAD
       double CalculateVirtualSubEps();
       double CalculateRealVirtualSubEps(const Vec4D &k);
+||||||| parent of 590b2d5bb (Check poles in YFS)
+=======
+      double CalculateVirtualSubEps();
+>>>>>>> 590b2d5bb (Check poles in YFS)
       double CalculateRealVirtualSub(const Vec4D & k);
       double CalculateEEX();
       double CalculateEEXVirtual();
