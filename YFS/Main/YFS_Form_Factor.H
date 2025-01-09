@@ -2,6 +2,7 @@
 #define YFS_Main_FORM_H
 #include "ATOOLS/Math/Vector.H"
 #include "YFS/Main/YFS_Base.H"
+#include "YFS/NLO/Virtual.H"
 #include "METOOLS/Loops/Divergence_Array.H"
 
 using namespace METOOLS;
@@ -32,7 +33,7 @@ public:
     double Chi(double eta, double yi, double yj, double yk, double yl);
     double BVV_full(const ATOOLS::Vec4D p1, const ATOOLS::Vec4D p2, double MasPhot, double Kmax, int mode);
     double Full(const ATOOLS::Vec4D p1, const ATOOLS::Vec4D p2, double MasPhot, double Kmax, int mode);
-    DivArrC BVV_full_eps(const ATOOLS::Vec4D p1, const ATOOLS::Vec4D p2, double MasPhot, double Kmax, int mode);
+    DivArrD BVV_full_eps(const ATOOLS::Vec4D p1, const ATOOLS::Vec4D p2, double MasPhot, double Kmax, int mode);
     double BVV_WW(const ATOOLS::Vec4D_Vector born, const ATOOLS::Vec4D_Vector k, const ATOOLS::Vec4D p1, const ATOOLS::Vec4D p2, double MasPhot, double Kmax);
     double WW_t(double t, double m, double M, double k);
     double WW_s(ATOOLS::Vec4D p1, ATOOLS::Vec4D p2);
@@ -48,6 +49,7 @@ public:
     double m_kmax, m_t1, m_t2, m_u1, m_u2;
     int m_useCoulomb;
     ATOOLS::Vec4D m_wp, m_wm, m_p1, m_p2;
+    YFS::Virtual *p_virt;
     double m_xx1, m_xx2, m_m1, m_m2;
     bool m_use_model_alpha;
     inline void SetCharge(double ch) {
