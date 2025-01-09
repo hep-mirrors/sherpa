@@ -153,7 +153,7 @@ double NLO_Base::CalculateVirtual() {
 		sub = 0;
 		// virt=virt;
 	}
-	m_oneloop = (virt- sub * m_born*m_rescale_alpha );
+	m_oneloop = (virt- sub * m_born/m_rescale_alpha );
 	if(IsBad(m_oneloop)){
 		msg_Error()<<"YFS Virtual is NaN"<<std::endl
 							 <<"Virtual:  "<<m_oneloop<<std::endl
@@ -218,28 +218,27 @@ double NLO_Base::CalculateReal(Vec4D k, int fsrcount) {
 	// if(fsrcount!=1) return 0;
 	double norm = 2.*pow(2 * M_PI, 3);
 	Vec4D_Vector p(m_plab),pi(m_bornMomenta), pf(m_bornMomenta);
+  	dipoletype::code fluxtype;
 	Vec4D kk = k;
 	m_evts+=1;
 	p_nlodipoles->MakeDipoles(m_flavs,m_plab,m_plab);
-	dipoletype::code fluxtype = p_nlodipoles->WhichResonant(k);
+	fluxtype = p_nlodipoles->WhichResonant(k);
   // if(fluxtype==dipoletype::final){
   if(fsrcount){
   	if(!HasFSR()) msg_Error()<<"Wrong dipole type in "<<METHOD<<endl;
-  	Dipole_Vector *diplo = p_dipoles->GetDipoleFF();
-  	Dipole dfs = p_nlodipoles->WhichDipole(k,diplo);
-  	// for (Dipole_Vector::iterator Dip = p_nlodipoles->GetDipoleFF()->begin();
-    //    Dip != p_nlodipoles->GetDipoleFF()->end(); ++Dip) {
-		double scalek = p_fsr->ScalePhoton(k);
-		dfs.SetPhotonScale(scalek);
-		dfs.AddPhotonToDipole(k);
-		if(!dfs.BoostNLO()) return 0;
-		int i(0);
-		for (auto f : dfs.m_flavs) {
-			p[p_nlodipoles->m_flav_label[f]] =  dfs.GetNewMomenta(i);
-			i++;
+  	for (Dipole_Vector::iterator Dip = p_nlodipoles->GetDipoleFF()->begin();
+       Dip != p_nlodipoles->GetDipoleFF()->end(); ++Dip) {
+  		 double scalek = p_fsr->ScalePhoton(k);
+  		 Dip->SetPhotonScale(scalek);
+  		 Dip->AddPhotonToDipole(k);
+  		 if(!Dip->BoostNLO()) return 0;
+  		 int i(0);
+  		 for (auto f : Dip->m_flavs) {
+      	p[p_nlodipoles->m_flav_label[f]] =  Dip->GetNewMomenta(i);
+      	i++;
+    	}
+    	k = Dip->m_dipolePhotons[0];
   	}
-  	k = dfs.m_dipolePhotons[0];
-  	// }
   }
  	else {
  		MapMomenta(p,k);
@@ -287,8 +286,8 @@ double NLO_Base::CalculateReal(Vec4D k, int fsrcount) {
 	m_recola_evts+=1;
 	// if(!fsrcount) r*=flux;
 	// PRINT_VAR(m_born);
-	if(m_submode==submode::local) tot =  (r*flux-subloc*m_born*m_rescale_alpha)/subloc;
-	else if(m_submode==submode::global) tot =  (r*flux-subloc*m_born*m_rescale_alpha)/subb;
+	if(m_submode==submode::local) tot =  (r*flux-subloc*m_born/m_rescale_alpha)/subloc;
+	else if(m_submode==submode::global) tot =  (r*flux-subloc*m_born/m_rescale_alpha)/subb;
 	else if(m_submode==submode::off) tot =  (r*flux)/subb;
 	else msg_Error()<<METHOD<<" Unknown YFS Subtraction Mode "<<m_submode<<std::endl;
   if(m_isr_debug || m_fsr_debug){
@@ -314,11 +313,11 @@ double NLO_Base::CalculateRealVirtual() {
 	if (!m_realvirt) return 0;
 	double real(0);
 	for (auto k : m_ISRPhotons) {
-		if(k.E()>1)	real+=CalculateRealVirtual(k,0);
+		if(k.PPerp() > m_hardmin)	real+=CalculateRealVirtual(k,0);
 		else real+=m_oneloop*CalculateReal(k);
 	}
 	for (auto k : m_FSRPhotons) {
-		if(k.E()>1) real+=CalculateRealVirtual(k, 1);
+		if(k.PPerp() > m_hardmin) real+=CalculateRealVirtual(k, 1);
 		else real+=m_oneloop*CalculateReal(k,1);
 	}
 	return real;
@@ -404,6 +403,10 @@ double NLO_Base::CalculateRealReal() {
 		for (int j = 0; j < i; ++j) {
 			Vec4D k  = photons[i];
 			Vec4D kk = photons[j];
+			if(m_check_rr_sub){
+				if(k.E() < 0.2*sqrt(m_s) && kk.E() < 0.2*sqrt(m_s)) continue;
+				CheckRealRealSub(k,kk);
+			}
 			real+=CalculateRealReal(k,kk, i>(len-1)?1:0, j>(len-1)?1:0);
 			// real+=CalculateRealReal(k,kk, 0, 1);
 		}
@@ -417,71 +420,80 @@ double NLO_Base::CalculateRealReal(Vec4D k1, Vec4D k2, int fsr1, int fsr2){
 	Vec4D_Vector p(m_plab),pi(m_bornMomenta), pf(m_bornMomenta);
 	Vec4D kk1 = k1;
 	Vec4D kk2 = k2;
+	double real1 = CalculateReal(k1);
+	double real2 = CalculateReal(k2);
+	double sub1 = p_dipoles->CalculateRealSubEEX(k1);
+	double sub2 = p_dipoles->CalculateRealSubEEX(k2);
 	p_nlodipoles->MakeDipoles(m_flavs,m_plab,m_plab);
 	dipoletype::code fluxtype1 = p_nlodipoles->WhichResonant(k1);
 	dipoletype::code fluxtype2 = p_nlodipoles->WhichResonant(k2);
   // if(fluxtype==dipoletype::final){
   if(fsr1 && !fsr2){
   	if(!HasFSR()) msg_Error()<<"Wrong dipole type in "<<METHOD<<endl;
-  	Dipole_Vector *diplo = p_dipoles->GetDipoleFF();
-  	Dipole dfs = p_nlodipoles->WhichDipole(k1,diplo);
-  	// for (Dipole_Vector::iterator Dip = p_nlodipoles->GetDipoleFF()->begin();
-    //    Dip != p_nlodipoles->GetDipoleFF()->end(); ++Dip) {
-		double scalek = p_fsr->ScalePhoton(k1+k2);
-		dfs.SetPhotonScale(scalek);
-		dfs.AddPhotonToDipole(k1);
-		// dfs.AddPhotonToDipole(k2);
-		if(!dfs.BoostNLO()) return 0;
-		int i(0);
-		for (auto f : dfs.m_flavs) {
-			p[p_nlodipoles->m_flav_label[f]] =  dfs.GetNewMomenta(i);
-			i++;
+  	for (Dipole_Vector::iterator Dip = p_nlodipoles->GetDipoleFF()->begin();
+       Dip != p_nlodipoles->GetDipoleFF()->end(); ++Dip) {
+  		 double scalek = p_fsr->ScalePhoton(k1);
+  		 Dip->SetPhotonScale(scalek);
+  		 Dip->AddPhotonToDipole(k1);
+  		 if(!Dip->BoostNLO()) {
+  		 	msg_Error()<<"NLO boost failed" <<endl;
+  		 	return 0;
+  		 }
+  		 int i(0);
+  		 for (auto f : Dip->m_flavs) {
+      	p[p_nlodipoles->m_flav_label[f]] =  Dip->GetNewMomenta(i);
+      	i++;
+    	}
+    	k1 = Dip->m_dipolePhotons[0];
   	}
-  	k1 = dfs.m_dipolePhotons[0];
   	p.push_back(k1);
   	MapMomenta(p,k2);
   	p.pop_back();
-  	// k2 = dfs.m_dipolePhotons[1];
-  	// p.push_back(k2);
- 		// MapInitial(p);
- 		// p.pop_back();
   }
   if(!fsr1 && fsr2){
   	if(!HasFSR()) msg_Error()<<"Wrong dipole type in "<<METHOD<<endl;
   	Dipole_Vector *diplo = p_dipoles->GetDipoleFF();
-  	Dipole dfs = p_nlodipoles->WhichDipole(k2,diplo);
-  	// for (Dipole_Vector::iterator Dip = p_nlodipoles->GetDipoleFF()->begin();
-    //    Dip != p_nlodipoles->GetDipoleFF()->end(); ++Dip) {
-		double scalek = p_fsr->ScalePhoton(k2);
-		dfs.SetPhotonScale(scalek);
-		dfs.AddPhotonToDipole(k2);
-		if(!dfs.BoostNLO()) return 0;
-		int i(0);
-		for (auto f : dfs.m_flavs) {
-			p[p_nlodipoles->m_flav_label[f]] =  dfs.GetNewMomenta(i);
-			i++;
+  	for (Dipole_Vector::iterator Dip = p_nlodipoles->GetDipoleFF()->begin();
+       Dip != p_nlodipoles->GetDipoleFF()->end(); ++Dip) {
+  		 double scalek = p_fsr->ScalePhoton(k2);
+  		 Dip->SetPhotonScale(scalek);
+  		 Dip->AddPhotonToDipole(k2);
+  		 if(!Dip->BoostNLO()) {
+  		 	msg_Error()<<"NLO boost failed" <<endl;
+  		 	return 0;
+  		 }
+  		 int i(0);
+  		 for (auto f : Dip->m_flavs) {
+      	p[p_nlodipoles->m_flav_label[f]] =  Dip->GetNewMomenta(i);
+      	i++;
+    	}
+    	k2 = Dip->m_dipolePhotons[0];
   	}
-  	k1 = dfs.m_dipolePhotons[0];
- 		MapMomenta(p,k1);
+  	p.push_back(k2);
+  	MapMomenta(p,k1);
+  	p.pop_back();
   }
   if(fsr1 && fsr2){
   	if(!HasFSR()) msg_Error()<<"Wrong dipole type in "<<METHOD<<endl;
   	Dipole_Vector *diplo = p_dipoles->GetDipoleFF();
-  	Dipole dfs = p_nlodipoles->WhichDipole(k2,diplo);
-  	// for (Dipole_Vector::iterator Dip = p_nlodipoles->GetDipoleFF()->begin();
-    //    Dip != p_nlodipoles->GetDipoleFF()->end(); ++Dip) {
-		double scalek = p_fsr->ScalePhoton(k2+k1);
-		dfs.SetPhotonScale(scalek);
-		dfs.AddPhotonToDipole(k1);
-		dfs.AddPhotonToDipole(k2);
-		if(!dfs.BoostNLO()) return 0;
-		int i(0);
-		for (auto f : dfs.m_flavs) {
-			p[p_nlodipoles->m_flav_label[f]] =  dfs.GetNewMomenta(i);
-			i++;
+  	for (Dipole_Vector::iterator Dip = p_nlodipoles->GetDipoleFF()->begin();
+       Dip != p_nlodipoles->GetDipoleFF()->end(); ++Dip) {
+  		 double scalek = p_fsr->ScalePhoton(k1);
+  		 Dip->SetPhotonScale(scalek);
+  		 Dip->AddPhotonToDipole(k1);
+  		 Dip->AddPhotonToDipole(k2);
+  		 if(!Dip->BoostNLO()) {
+  		 	msg_Error()<<"NLO boost failed" <<endl;
+  		 	return 0;
+  		 }
+  		 int i(0);
+  		 for (auto f : Dip->m_flavs) {
+      	p[p_nlodipoles->m_flav_label[f]] =  Dip->GetNewMomenta(i);
+      	i++;
+    	}
+    	k1 = Dip->m_dipolePhotons[0];
+    	k2 = Dip->m_dipolePhotons[0];
   	}
-  	k1 = dfs.m_dipolePhotons[0];
-  	k2 = dfs.m_dipolePhotons[1];
   }
   if(!fsr1 && !fsr2) MapMomenta(p, k1, k2);
  	p.push_back(k1);
@@ -494,14 +506,12 @@ double NLO_Base::CalculateRealReal(Vec4D k1, Vec4D k2, int fsr1, int fsr2){
 	p_nlodipoles->MakeDipolesIF(m_flavs,pp,m_plab);
 	p_nlodipoles->MakeDipoles(m_flavs,pp,m_plab);
 	double flux;
-	flux = p_nlodipoles->CalculateFlux(k1,k2);
+	flux = p_nlodipoles->CalculateFlux(k1,k2);//*p_nlodipoles->CalculateFlux(k2);
 	// else if(m_flux_mode==2) flux = 0.5*(p_nlodipoles->CalculateFlux(kk)+p_nlodipoles->CalculateFlux(k));
 	// else flux = p_dipoles->CalculateFlux(kk);
 	double tot,rcoll;
-	double subloc1 = p_nlodipoles->CalculateRealSubEEX(k1);
-	double subloc2 = p_nlodipoles->CalculateRealSubEEX(k2);
-	double sub1 = p_dipoles->CalculateRealSubEEX(k1);
-	double sub2 = p_dipoles->CalculateRealSubEEX(k2);
+	double subloc1 = p_nlodipoles->CalculateRealSub(k1);
+	double subloc2 = p_nlodipoles->CalculateRealSub(k2);
 	// if(fsrcount) subb = p_dipoles->CalculateRealSubEEX(k);
 	// else subb = p_dipoles->CalculateRealSubEEX(kk);
 	// if(IsZero(subb)) return 0;
@@ -517,10 +527,7 @@ double NLO_Base::CalculateRealReal(Vec4D k1, Vec4D k2, int fsr1, int fsr2){
 		return 0;
 	}
 	m_recola_evts+=1;
-	double real1 = CalculateReal(k1);
-	double real2 = CalculateReal(k2);
-	tot = (r*flux -sub1*subloc2*real1 -sub2*subloc1*real2-subloc1*subloc2*m_born*m_rescale_alpha)/sub1/sub2;
-	// if(m_submode==submode::local) tot =  (r*flux-subloc*m_born*m_rescale_alpha)/subloc;
+	tot = (r -sub1*subloc2*real1 -sub2*subloc1*real2-subloc1*subloc2*m_born*m_rescale_alpha)/sub1/sub2;
 
   if(IsBad(tot)){
   	msg_Error()<<"NNLO RR is NaN"<<std::endl;
@@ -860,6 +867,68 @@ void NLO_Base::CheckRealSub(Vec4D k){
 			real=CalculateReal(k);
 			out_sub<<k.E()<<","<<fabs(real)<<std::endl;
 			if(k.E() < 1e-10 || real==0) break;
+			// m_histograms2d["Real_me_sub"]->Insert(k.E(),fabs(real), 1);
+		}
+		out_sub.close();
+		exit(0);
+}
+
+void NLO_Base::CheckRealRealSub(Vec4D k1, Vec4D k2){
+		// if(k.E() < 20) return;
+		// k*=100;
+		double real;
+		Vec4D _k1 = k1;
+		Vec4D _k2 = k2;
+		std::string filename1="RealReal_k1_subtracted_";
+		std::string filename2="RealReal_k2_subtracted_";
+		std::string filename3="RealReal_k1_k2_subtracted_";
+		for(auto f: m_flavs) {
+			filename1+=f.IDName();
+			filename2+=f.IDName();
+			filename3+=f.IDName();
+			filename1+="_";
+			filename2+="_";
+			filename3+="_";
+		}
+		filename1+=".txt";
+		filename2+=".txt";
+		filename3+=".txt";
+		if(ATOOLS::FileExists(filename1))  ATOOLS::Remove(filename1);
+		if(ATOOLS::FileExists(filename2))  ATOOLS::Remove(filename2);
+		if(ATOOLS::FileExists(filename3))  ATOOLS::Remove(filename3);
+		out_sub.open(filename1, std::ios_base::app);
+		// if(k.E() < 0.8*sqrt(m_s)/2.) return;
+		for (double i = 1; i < 20 ; i+=0.005)
+		{
+			k1=k1/i;
+			real=CalculateRealReal(k1,k2);
+			out_sub<<k1.E()<<","<<fabs(real)<<std::endl;
+			if(k1.E() < 1e-10 || real==0) break;
+			// m_histograms2d["Real_me_sub"]->Insert(k.E(),fabs(real), 1);
+		}
+		out_sub.close();
+		out_sub.open(filename2, std::ios_base::app);
+	 	k2 = _k2;
+	 	k1 = _k1;
+		for (double i = 1; i < 20 ; i+=0.005)
+		{
+			k2=k2/i;
+			real=CalculateRealReal(k1,k2);
+			out_sub<<k2.E()<<","<<fabs(real)<<std::endl;
+			if(k1.E() < 1e-10 || real==0) break;
+			// m_histograms2d["Real_me_sub"]->Insert(k.E(),fabs(real), 1);
+		}
+		out_sub.close();
+		out_sub.open(filename3, std::ios_base::app);
+		k2 = _k2;
+	 	k1 = _k1;
+		for (double i = 1; i < 20 ; i+=0.005)
+		{
+			k2=k2/i;
+			k1=k1/i;
+			real=CalculateRealReal(k1,k2);
+			out_sub<<k2.E()<<","<<fabs(real)<<std::endl;
+			if(k1.E() < 1e-10 || real==0) break;
 			// m_histograms2d["Real_me_sub"]->Insert(k.E(),fabs(real), 1);
 		}
 		out_sub.close();
