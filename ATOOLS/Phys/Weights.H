@@ -324,8 +324,8 @@ namespace ATOOLS {
       for (size_t i(0); i < num_vars; ++i) {
         const std::string varname {weights.Name(i + 1, source, name_type)};
         map[varname] = weights.Variation(i) * relfac;
-        msg_Debugging() << varname << " (" << varname
-          << "): " << weights.Variation(i) * relfac << '\n';
+        msg_Debugging() << varname << ": " << weights.Variation(i) * relfac
+                        << '\n';
       }
     }
 
