@@ -348,7 +348,7 @@ Weights_Map MCatNLO_Process::LocalKFactor(Cluster_Amplitude& ampl)
       if (selectionwgt > random) {
         const double kfac {info.s / selectionwgt};
         msg_Debugging() << "S selected ( w = " << kfac << " )\n";
-        if (key == "ME" && i == 0 && m_kfacmode / 10) {
+        if (key == "Main" && i == 0 && m_kfacmode / 10) {
           for (Cluster_Amplitude* campl(ampl.Next()); campl;
               campl = campl->Next()) {
             campl->SetLKF(bvi[key][i] / b[key][i]);
@@ -359,7 +359,7 @@ Weights_Map MCatNLO_Process::LocalKFactor(Cluster_Amplitude& ampl)
       } else {
         const double kfac {info.h / (1.0 - selectionwgt)};
         msg_Debugging() << "H selected ( w = " << kfac << " )\n";
-        if (key == "ME" && i == 0 && m_kfacmode / 10)
+        if (key == "Main" && i == 0 && m_kfacmode / 10)
           ampl.SetNLO(m_hpsmode);
         kfacs[key][i] = kfac;
       }

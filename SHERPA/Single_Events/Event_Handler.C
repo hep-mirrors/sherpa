@@ -721,10 +721,11 @@ bool Event_Handler::WeightsAreGood(const Weights_Map& wgtmap)
   }
   if (m_checkweight & 8) {
     for (auto type : s_variations->ManagedVariationTypes()) {
-      auto weights = wgtmap.Combine(type);
+      const Weights& weights = wgtmap.at(type);
+      const auto relfac = wgtmap.NominalIgnoringVariationType(type);
       const auto num_variations = s_variations->Size(type);
       for (auto i = 0; i < num_variations; ++i) {
-        const auto varweight = weights.Variation(i);
+        const auto varweight = weights.Variation(i) * relfac;
         const std::string& name = s_variations->Parameters(i).Name();
         if (m_maxweights.find(name) == m_maxweights.end()) {
           m_maxweights[name] = 0.0;

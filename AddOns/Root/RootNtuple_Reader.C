@@ -573,12 +573,13 @@ bool RootNtuple_Reader::ReadInFullEvent(Blob_List * blobs)
       weight*=K/p_vars->m_kfac;
       m_nlos.back()->m_results = weight;
       ATOOLS::Reweight(
-          m_nlos.back()->m_results["ME"],
+          m_nlos.back()->m_results["Main"],
           [this, &args, K, weight](double varweight,
                            const QCD_Variation_Params& varparams) -> double {
             varweight = CalculateWeight(args, varparams);
             return varweight / weight * K / p_vars->m_kfac;
           });
+      m_nlos.back()->m_results["All"] = m_nlos.back()->m_results["Main"];
 
 #ifdef DEBUG__MINLO
       msg_Debugging()<<"DEBUG MINLO   total weight "<<weight/p_vars->m_wgt2<<"\n";

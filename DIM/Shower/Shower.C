@@ -142,9 +142,9 @@ void Shower::AddWeight(const Amplitude &a,const double &t)
     cw*=a[i]->GetWeight(Max(t,m_tmin[a[i]->Beam()?1:0]),cv);
     a[i]->ClearWeights();
   }
-  m_weightsmap["MC@NLO_PS"].Nominal() *= cw;
+  m_weightsmap["Sudakov"].Nominal() *= cw;
   if (cv.size()) {
-    ATOOLS::Reweight(m_weightsmap["MC@NLO_PS"],
+    ATOOLS::Reweight(m_weightsmap["Sudakov"],
                      [&cv](double varweight,
                            size_t varindex,
                            QCD_Variation_Params& varparams) -> double {
@@ -152,15 +152,15 @@ void Shower::AddWeight(const Amplitude &a,const double &t)
                      });
   }
   msg_Debugging()<<a<<" t = "<<t<<" -> w = "<<cw
-		 <<" ("<<m_weightsmap["MC@NLO_PS"].Nominal()<<"), v = "<<cv<<"\n";
+		 <<" ("<<m_weightsmap["Sudakov"].Nominal()<<"), v = "<<cv<<"\n";
 }
 
 int Shower::Evolve(Amplitude &a,unsigned int &nem)
 {
   DEBUG_FUNC(this);
   m_weightsmap.Clear();
-  m_weightsmap["MC@NLO_PS"] = Weights {Variations_Type::qcd};
-  m_weightsmap["MC@NLO_QCUT"] = Weights {Variations_Type::qcut};
+  m_weightsmap["Sudakov"] = Weights {Variations_Type::qcd};
+  m_weightsmap["QCUT"] = Weights {Variations_Type::qcut};
   msg_Debugging()<<a<<"\n";
   if (nem>=m_maxem) return 1;
   double t(a.T());
@@ -176,7 +176,7 @@ int Shower::Evolve(Amplitude &a,unsigned int &nem)
     msg_Debugging()<<"stat = "<<stat<<"\n";
     if (p_gamma) {
       int veto(p_gamma->Reject());
-      m_weightsmap["MC@NLO_PS"] *= p_gamma->Weight();
+      m_weightsmap["Sudakov"] *= p_gamma->Weight();
       if (veto) {
 	a.Remove(m_s.p_n);
 	m_s.p_c->SetFlav(m_s.p_sk->LF()->Flav(0));
@@ -194,7 +194,7 @@ int Shower::Evolve(Amplitude &a,unsigned int &nem)
     const bool is_jcv_positive {jcv >= 0.0};
     bool all_vetoed {true};
     ATOOLS::ReweightAll(
-        m_weightsmap["MC@NLO_QCUT"],
+        m_weightsmap["QCUT"],
         [this, jcv, is_jcv_positive, ampl, &all_vetoed](
             double varweight,
             size_t varindex,

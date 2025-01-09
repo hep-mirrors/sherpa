@@ -105,8 +105,8 @@ int CS_Shower::PerformShowers(const size_t &maxem,size_t &nem)
     }
     size_t pem(nem);
     if (!p_shower->EvolveShower(*sit,maxem,nem)) return 0;
-    m_weightsmap["PS"] *= p_shower->WeightsMap().at("PS");
-    m_weightsmap["PS_QCUT"] *= p_shower->WeightsMap().at("PS_QCUT");
+    m_weightsmap["Sudakov"] *= p_shower->WeightsMap().at("Sudakov");
+    m_weightsmap["QCUT"] *= p_shower->WeightsMap().at("QCUT");
     m_allsinglets=*p_next;
     if (colmap.size()) {
       msg_Debugging()<<"Decay. Reset color connections.\n";

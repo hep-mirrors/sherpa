@@ -296,7 +296,7 @@ void Primitive_Analysis::DoAnalysis(const Blob_List * const bl, const double val
     if (m_varid == 0) {
       weight = wgtmap.Nominal();
     } else {
-      const auto weights = wgtmap.Combine(m_vartype);
+      const Weights& weights = wgtmap.at(m_vartype);
       weight = weights[m_varid];
       weight *= wgtmap.NominalIgnoringVariationType(m_vartype);
     }
@@ -380,7 +380,7 @@ bool Primitive_Analysis::DoAnalysisNLO(const Blob_List * const bl, const double 
     if (m_varid == 0) {
       weight = wgtmap.Nominal();
     } else {
-      const auto weights = wgtmap.Combine(m_vartype);
+      const Weights& weights = wgtmap.at(m_vartype);
       weight = weights[m_varid];
       weight *= wgtmap.NominalIgnoringVariationType(m_vartype);
     }
