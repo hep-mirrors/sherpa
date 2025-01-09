@@ -39,7 +39,7 @@ namespace YFS {
       std::map<std::string,MODEL::Vertex_List> m_proc_restab_map;
       YFS::YFS_Form_Factor *p_yfsFormFact;
       YFS::NLO_Amp *p_nloamp;
-
+      DivArrD m_virtSub;
 
       YFS::dipoletype     m_type;
       Define_Dipoles();
@@ -74,6 +74,7 @@ namespace YFS {
       double CalculateRealSubIF(const Vec4D &k);
       double CalculateRealSubEEX(const Vec4D &k);
       double CalculateVirtualSub();
+      double CalculateVirtualSubEps();
       double CalculateRealVirtualSub(const Vec4D & k);
       double CalculateEEX();
       double CalculateEEXVirtual();
@@ -97,6 +98,7 @@ namespace YFS {
       inline Dipole_Vector * GetDipoleIF() { return &m_dipolesIF; }
       inline void SetBorn(double b) { m_born = b; }
       inline void SetProcResMap(std::map<std::string,MODEL::Vertex_List> map) {m_proc_restab_map=map;}
+      inline double Get_E1() {return m_virtSub.GetIR();}
   };
 
 
