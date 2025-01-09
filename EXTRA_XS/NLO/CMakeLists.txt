@@ -5,6 +5,7 @@ set(NLO_SOURCES Logarithms.C
                 Higgs_QCD_Virtual.C
                 Higgs_Jet_QCD_Virtual.C
                 ee3jet_CSS_approx.C
+                emu_emu_Virtual.C
                 ppll1jet_CSS_approx.C
                 epe2jet_CSS_approx.C)
 
