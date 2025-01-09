@@ -115,6 +115,7 @@ double NLO_Base::CalculateVirtual() {
 	if (!m_looptool && !m_realvirt) return 0;
 	double virt;
 	double sub;
+	p_dipoles->p_yfsFormFact->p_virt = p_virt;
 	CheckMassReg();
 	// for(auto pp: m_plab) PRINT_VAR(pp.Mass());
 	if(!HasISR()) virt = p_virt->Calc(m_bornMomenta, m_born);
@@ -139,6 +140,16 @@ double NLO_Base::CalculateVirtual() {
 		msg_Error()<<"YFS Virtual is NaN"<<std::endl
 							 <<"Virtual:  "<<m_oneloop<<std::endl
 							 <<"Subtraction: "<<sub*m_born<<std::endl;
+	}
+	if(m_check_poles==1){
+		if(m_virt_sub==0) sub = p_dipoles->CalculateVirtualSub();
+		double p1 = p_virt->p_loop_me->ME_E1()*p_virt->m_factor;
+		double yfspole = p_dipoles->Get_E1();
+		if(!IsEqual(p1,-yfspole,1e-6)){
+			msg_Error()<<"Poles do not cancel in YFS Virtuals"<<std::endl
+								 <<"One-Loop Provider  = "<<p1<<std::endl
+								 <<"Sherpa  = "<<yfspole<<std::endl;
+		}
 	}
 	return m_oneloop;
 }
