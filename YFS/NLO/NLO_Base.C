@@ -457,7 +457,7 @@ void NLO_Base::CheckMassReg(){
 	double virt;
 	if (m_check_mass_reg==1 && !m_realvirt) {
 		out_sub.open("yfs-sub.txt", std::ios_base::app);
-		out_recola.open("recola-res.txt", std::ios_base::app); // append instead of overwrite
+		out_recola.open("virtual-res.txt", std::ios_base::app); // append instead of overwrite
 		out_finite.open("yfs-finite.txt", std::ios_base::app);
 		if(!HasISR()) virt = p_virt->Calc(m_bornMomenta, m_born);
 		else virt = p_virt->Calc(m_plab, m_born);
