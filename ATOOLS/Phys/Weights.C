@@ -47,6 +47,12 @@ double& Weights::Variation(size_t i)
   return weights[i + 1];
 }
 
+const double& Weights::Variation(size_t i) const
+{
+  assert(i + 1 < weights.size());
+  return weights[i + 1];
+}
+
 double& Weights::operator[](const std::string& name)
 {
   const auto it = std::find(names.begin(), names.end(), name);
@@ -328,18 +334,6 @@ Weights Weights_Map::RelativeValues(const std::string& k) const
     return ret;
   }
   return 1.0;
-}
-
-Weights Weights_Map::Combine(Variations_Type type) const
-{
-  assert(!is_absolute);
-  auto w = Weights {type};
-  for (const auto& kv : *this) {
-    if (kv.second.type == type)
-      w *= kv.second;
-  }
-  w[0] *= nominals_prefactor;
-  return w;
 }
 
 void Weights_Map::SetZeroIfCloseToZero(double tolerance)
