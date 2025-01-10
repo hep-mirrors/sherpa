@@ -151,6 +151,29 @@ namespace ATOOLS {
       }
     }
 
+    // find elements
+    const_iterator find(const char *key) const {
+      return this->std::map<std::string, Weights>::find(key);
+    }
+    iterator find(const char *key) {
+      return this->std::map<std::string, Weights>::find(key);
+    }
+    const_iterator find(const std::string& key) const {
+      return this->std::map<std::string, Weights>::find(key);
+    }
+    iterator find(const std::string& key) {
+      return this->std::map<std::string, Weights>::find(key);
+    }
+    const_iterator
+    find(Variations_Type type,
+         Variations_Source source = Variations_Source::all) const {
+      if (type == Variations_Type::qcd) {
+        return this->std::map<std::string, Weights>::find(ToString(source));
+      } else {
+        return this->std::map<std::string, Weights>::find("QCUT");
+      }
+    }
+
     // Convenience method to fill e.g. an ordinary map with variations; passing
     // Variations_Source::main only fills ME QCD-like variations (discarding
     // ones that originate from the shower), while passing
@@ -317,15 +340,18 @@ namespace ATOOLS {
     // Fill "managed" QCD variations
     for (const auto type : s_variations->ManagedVariationTypes()) {
       // calculate contributions
-      const Weights& weights {this->at(type, source)};
-      const double relfac {NominalIgnoringVariationType(type)};
-      // do remaining combination and store resulting weights
-      size_t num_vars = weights.Size() - 1;
-      for (size_t i(0); i < num_vars; ++i) {
-        const std::string varname {weights.Name(i + 1, source, name_type)};
-        map[varname] = weights.Variation(i) * relfac;
-        msg_Debugging() << varname << ": " << weights.Variation(i) * relfac
-                        << '\n';
+      const_iterator it {this->find(type, source)};
+      if (it != this->end()) {
+        const Weights& weights {it->second};
+        const double relfac {NominalIgnoringVariationType(type)};
+        // do remaining combination and store resulting weights
+        size_t num_vars = weights.Size() - 1;
+        for (size_t i(0); i < num_vars; ++i) {
+          const std::string varname {weights.Name(i + 1, source, name_type)};
+          map[varname] = weights.Variation(i) * relfac;
+          msg_Debugging() << varname << ": " << weights.Variation(i) * relfac
+                          << '\n';
+        }
       }
     }
 
