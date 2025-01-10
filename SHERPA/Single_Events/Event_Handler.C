@@ -721,22 +721,25 @@ bool Event_Handler::WeightsAreGood(const Weights_Map& wgtmap)
   }
   if (m_checkweight & 8) {
     for (auto type : s_variations->ManagedVariationTypes()) {
-      const Weights& weights = wgtmap.at(type);
-      const auto relfac = wgtmap.NominalIgnoringVariationType(type);
-      const auto num_variations = s_variations->Size(type);
-      for (auto i = 0; i < num_variations; ++i) {
-        const auto varweight = weights.Variation(i) * relfac;
-        const std::string& name = s_variations->Parameters(i).Name();
-        if (m_maxweights.find(name) == m_maxweights.end()) {
-          m_maxweights[name] = 0.0;
-        }
-        if (fabs(varweight) > m_maxweights[name]) {
-          m_maxweights[name] = fabs(varweight);
-          WriteRNGStatus("maxweight." + name,
-              "# Wrote status for weight=" + ToString(varweight) +
-              " in event " +
-              ToString(rpa->gen.NumberOfGeneratedEvents() + 1) +
-              " trial " + ToString(rpa->gen.NumberOfTrials() - 1));
+      auto it {wgtmap.find(type)};
+      if (it != wgtmap.end()) {
+        const Weights& weights {it->second};
+        const auto relfac = wgtmap.NominalIgnoringVariationType(type);
+        const auto num_variations = s_variations->Size(type);
+        for (auto i = 0; i < num_variations; ++i) {
+          const auto varweight = weights.Variation(i) * relfac;
+          const std::string& name = s_variations->Parameters(i).Name();
+          if (m_maxweights.find(name) == m_maxweights.end()) {
+            m_maxweights[name] = 0.0;
+          }
+          if (fabs(varweight) > m_maxweights[name]) {
+            m_maxweights[name] = fabs(varweight);
+            WriteRNGStatus("maxweight." + name,
+                "# Wrote status for weight=" + ToString(varweight) +
+                " in event " +
+                ToString(rpa->gen.NumberOfGeneratedEvents() + 1) +
+                " trial " + ToString(rpa->gen.NumberOfTrials() - 1));
+          }
         }
       }
     }
