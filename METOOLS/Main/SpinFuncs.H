@@ -29,6 +29,7 @@ namespace METOOLS{
   public:
     typedef std::complex<Scalar> SComplex;
     Gamma();
+    ATOOLS::TCMatrix<Scalar> Gamma5();
     ATOOLS::TCMatrix<Scalar> operator[](int i) const;
     ATOOLS::TCMatrix<Scalar> operator*(const ATOOLS::Vec4<double> &p);
 
