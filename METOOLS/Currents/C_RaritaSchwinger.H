@@ -238,8 +238,8 @@ namespace METOOLS {
 
     static void ResetAccu();
 
-    inline static void   SetAccu(const double &accu) { s_accu=accu;   }
-    inline static double Accu()                      { return s_accu; }
+    inline static void SetAccu(const double &accu) { s_accu=accu; }
+    inline static double Accu() { return s_accu; }
 
     bool Test_Properties(const ATOOLS::Vec4D &p, int dir);
 

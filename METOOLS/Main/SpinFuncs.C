@@ -45,6 +45,12 @@ gamma3(ATOOLS::TCMatrix(4, SComplex(0.0))) {
 }
 
 template<class Scalar>
+ATOOLS::TCMatrix<Scalar>
+METOOLS::Gamma<Scalar>::Gamma5() {
+  return std::complex<Scalar>(0., 1.) * gamma0 * gamma1 * gamma2 * gamma3;
+}
+
+template<class Scalar>
 ATOOLS::TCMatrix<Scalar> METOOLS::Gamma<Scalar>::operator[](int i) const{
   if (i>3) THROW(fatal_error, "There are only four Pauli matrices!")
   if (i==0) return gamma0;

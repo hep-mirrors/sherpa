@@ -161,9 +161,10 @@ CRS<SType>::EMP(const Vec4D &p,const int cr,const int ca, const bool hel)
 {
   Vec4D m_k_mod;
   // explicit four vector form of polarisation vector for particles at rest (helicity basis not defined then)
-  if (hel)
-    if (p.PSpat()==0) return CVec4Type(0., 1./ sqrt(2.), -std::complex<SType>(0., 1.)/ sqrt(2.), 0., cr, ca, 0);
-    else m_k_mod=ATOOLS::Vec4D(1., -ATOOLS::Vec3D(p) / p.PSpat());  // helicity basis
+  if (hel) {
+    if (p.PSpat() == 0) return CVec4Type(0., 1. / sqrt(2.), -std::complex<SType>(0., 1.) / sqrt(2.), 0., cr, ca, 0);
+    else m_k_mod = ATOOLS::Vec4D(1., -ATOOLS::Vec3D(p) / p.PSpat());  // helicity basis
+  }
   else m_k_mod = m_k; // standard setting for reference vector
   return EP(p-p.Abs2()/(2.0*m_k_mod*p)*m_k_mod,cr,ca,m_k_mod);
 }
@@ -203,6 +204,8 @@ CRS<SType>::RS(const ATOOLS::Vec4D &p, const int r, const int h, const int s, co
 // TODO: PLUS AND MINUS EXCHANGED
 // TODO: Im HELAS-Paper hat die Wellenfunktion 18 Komponenten, wobei die letzten bei den Komponenten den Viererimpuls
 //       entlang des Fermionzahlflusses enthalten -> brauchen wir das auch?
+// TODO: Do RS anti-particles need a complex-conjugate polarisation vector as used in HELAS convention (s. 1308.1668)?
+//       (W- in Sherpa are also described by non-conjugate vector)
 // RARITA-SCHWINGER WAVE FUNCTIONS
 // - Order of indices same as in MadGraph / HELAS paper arXiv: 1010.4255 ("Four vector of Dirac spinors",
 //   first four entries have same Lorentz index and ascending spinor index, fifth entry has spinor index 0 and Lorentz
@@ -225,64 +228,34 @@ CRS<SType>::RSPP(const ATOOLS::Vec4D &p, const int r, const int s, const int b, 
 
 template<typename SType> CRaritaSchwinger<SType>
 CRS<SType>::RSP(const ATOOLS::Vec4D &p, int r, int s, int b, int cr, int ca, int hh, int ms){
-  //SComplex exp_phi(SComplex(0, 0));
-  /*if (p[1]>0) exp_phi = std::exp(SComplex(0, 1)*std::atan(p[2]/p[1]));
-  else if (p[1]==0) exp_phi = std::exp(SComplex(0, 1)*(M_PI/2)*((p[2]>0)?SComplex(1,0):((p[2]==0)?0.0:SComplex(-1,0))));
-  else if (p[1]<0 && p[2]>=0) exp_phi = std::exp(SComplex(0, 1)*(std::atan(p[2]/p[1])+M_PI));
-  else if (p[1]<0 && p[2]>0) exp_phi = std::exp(SComplex(0, 1)*(std::atan(p[2]/p[1])-M_PI));*/
   if (!this->m_msv) THROW(fatal_error, "There is no massless Rarita-Schwinger-particle with Sz=1/2!")
+
   CRaritaSchwinger<SType> wf_p0(METOOLS::CRS<SType>::SpinorVectorProduct(CSpinor(r, abs(b), 1, p, cr, ca, hh, s, p.Abs2(),
-                                                                              ms), EML(p, cr, ca), 1, cr, ca, s));
+                                                                            ms), EML(p, cr, ca), 1, cr, ca, s));
   CRaritaSchwinger<SType> wf_mp(METOOLS::CRS<SType>::SpinorVectorProduct(CSpinor(r, abs(b), -1, p, cr, ca, hh, s, p.Abs2(),
-                                                                                 ms), EMM(p, cr, ca), 1, cr, ca, s));
+                                                                               ms), EMM(p, cr, ca), 1, cr, ca, s));
   CRaritaSchwinger<SType> wf = b>0?(sqrt(2.0/3.0) * wf_p0 - sqrt(1.0/3.0) * wf_mp) :
                                    (sqrt(2.0/3.0) * wf_p0 - sqrt(1.0/3.0) * wf_mp).Bar();
-  /*CRaritaSchwinger<SType> wf_p01(METOOLS::CRS<SType>::SpinorVectorProduct(CSpinor(1, abs(b), 1, Vec4D(sqrt(p.Abs2()+1.0), 0, 0, 1.0), cr, ca, hh, s, p.Abs2(),
-                                                                                 ms), EML(Vec4D(sqrt(p.Abs2()+1.0), 0, 0, 1.0) , cr, ca), 1, cr, ca, s));
-  CRaritaSchwinger<SType> wf_mp1(METOOLS::CRS<SType>::SpinorVectorProduct(CSpinor(1, abs(b), -1, Vec4D(sqrt(p.Abs2()+1.0), 0, 0, 1.0), cr, ca, hh, s, p.Abs2(),
-                                                                                 ms), EMM(Vec4D(sqrt(p.Abs2()+1.0), 0, 0, 1.0), cr, ca), 1, cr, ca, s));
-  SComplex exp_phi1(SComplex(0, 0));
-  Vec4D p1 = Vec4D(sqrt(2), 0, 0, 1);
-  if (p1[1]>0) exp_phi1 = std::exp(SComplex(0, 1)*std::atan(p1[2]/p1[1]));
-  else if (p1[1]==0) exp_phi1 = std::exp(SComplex(0, 1)*(M_PI/2)*((p1[2]>0)?SComplex(1,0):((p1[2]==0)?0.0:SComplex(-1,0))));
-  else if (p1[1]<0 && p1[2]>=0) exp_phi1 = std::exp(SComplex(0, 1)*(std::atan(p1[2]/p1[1])+M_PI));
-  else if (p1[1]<0 && p1[2]>0) exp_phi1 = std::exp(SComplex(0, 1)*(std::atan(p1[2]/p1[1])-M_PI));
-  std::cout << exp_phi1 << std::endl;
-  CRaritaSchwinger<SType> wf1 = sqrt(2.0/3.0) * wf_p01 - sqrt(1.0/3.0) * wf_mp1;
-  CRaritaSchwinger<SType> wf2 = sqrt(2.0/3.0) * wf_p01 + sqrt(1.0/3.0) * wf_mp1;
-  CRaritaSchwinger<SType> wf3 = sqrt(2.0/3.0) * wf_p01 + exp_phi1*sqrt(1.0/3.0) * wf_mp1;
-  std::cout << "Test-wf" << wf1 << std::endl;
-  std::cout << "Test-wf" << wf2 << std::endl;
-  std::cout << "Test-wf" << wf3 << std::endl;
-  std::cout << "+" << wf << std::endl;*/
   return wf;
 }
 
 template<typename SType> CRaritaSchwinger<SType>
 CRS<SType>::RSM(const ATOOLS::Vec4D &p, int r, int s, int b, int cr, int ca, int hh, int ms){
   if (!this->m_msv) THROW(fatal_error, "There is no massless Rarita-Schwinger-particle with Sz=1/2!")
-  /*SComplex exp_phi(SComplex(0, 0));
-  if (p[1]>0) exp_phi = std::exp(SComplex(0, 1)*std::atan(p[2]/p[1]));
-  else if (p[1]==0) exp_phi = std::exp(SComplex(0, 1)*(M_PI/2)*((p[2]>0)?SComplex(1,0):((p[2]==0)?0.0:SComplex(-1,0))));
-  else if (p[1]<0 && p[2]>=0) exp_phi = std::exp(SComplex(0, 1)*(std::atan(p[2]/p[1])+M_PI));
-  else if (p[1]<0 && p[2]>0) exp_phi = std::exp(SComplex(0, 1)*(std::atan(p[2]/p[1])-M_PI));*/
+
   CRaritaSchwinger<SType> wf_pm(METOOLS::CRS<SType>::SpinorVectorProduct(CSpinor(r, abs(b), 1, p, cr, ca, hh, s, p.Abs2(),
                                                                                  ms), EMP(p, cr, ca), 1, cr, ca, s));
   CRaritaSchwinger<SType> wf_m0(METOOLS::CRS<SType>::SpinorVectorProduct(CSpinor(r, abs(b), -1, p, cr, ca, hh, s, p.Abs2(),
                                                                                  ms), EML(p, cr, ca), 1, cr, ca, s));
-  CRaritaSchwinger<SType> wf = b>0?(sqrt(2.0/3.0) * wf_m0 + sqrt(1.0/3.0) * wf_pm) :
-                               (sqrt(2.0/3.0) * wf_m0 + sqrt(1.0/3.0) * wf_pm).Bar();
+  std::complex<SType> ephi = p.PPerp()==0.0?1.0:(p[1]-std::complex<SType>(0.,1.)*p[2]) * (1./p.PPerp());
+  CRaritaSchwinger<SType> wf = b>0?-(sqrt(2.0/3.0) * wf_m0 + sqrt(1.0/3.0) * wf_pm) :
+                               (-(sqrt(2.0/3.0) * wf_m0 + sqrt(1.0/3.0) * wf_pm)).Bar();
   return wf;
 }
 
 template<typename SType> CRaritaSchwinger<SType>
 CRS<SType>::RSMM(const ATOOLS::Vec4D &p, const int r, const int s, const int b, const int cr, const int ca,
                  const int hh, const int ms) {
-  /*SComplex exp_phi(SComplex(0, 0));
-  if (p[1]>0) exp_phi = std::exp(SComplex(0, 1)*std::atan(p[2]/p[1]));
-  else if (p[1]==0) exp_phi = std::exp(SComplex(0, 1)*(M_PI/2)*((p[2]>0)?SComplex(1,0):((p[2]==0)?0.0:SComplex(-1,0))));
-  else if (p[1]<0 && p[2]>=0) exp_phi = std::exp(SComplex(0, 1)*(std::atan(p[2]/p[1])+M_PI));
-  else if (p[1]<0 && p[2]>0) exp_phi = std::exp(SComplex(0, 1)*(std::atan(p[2]/p[1])-M_PI));*/
   CRaritaSchwinger<SType> wf(b>0?METOOLS::CRS<SType>::SpinorVectorProduct(CSpinor(r, abs(b), -1, p, cr, ca, hh, s,
                                                                                   this->m_msv?p.Abs2():0, ms),
                                                                           this->m_msv? EMP(p, cr, ca) : EP(p, cr, ca, m_k), -1, cr, ca, s):
