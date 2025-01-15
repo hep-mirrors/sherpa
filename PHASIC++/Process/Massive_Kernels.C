@@ -693,10 +693,6 @@ void Massive_Kernels::Calculate(ist::itype type, double mu2, double s,
                                 bool inik, bool mode)
 {
   DEBUG_FUNC(type);
-  if(type==ist::q) {
-    m_VNS=0; p_VS[0]; p_VS[1] = 0; p_VS[2] = 0; p_Gammat[0] = 0; p_Gammat[1] = 0; m_gKterm=0; m_aterm=0;
-    return;
-  }
   CalcVS(type,s,mj,mk);
   CalcVNS(type,s,mj,mk,sjKt,skKt,mKt2,sjKtcoll,inij);
   CalcGamma(type,mu2,s,mj);
