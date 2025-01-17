@@ -49,7 +49,7 @@ public:
     double m_kmax, m_t1, m_t2, m_u1, m_u2;
     int m_useCoulomb;
     ATOOLS::Vec4D m_wp, m_wm, m_p1, m_p2;
-    YFS::Virtual *p_virt;
+    PHASIC::Virtual_ME2_Base *p_virt;
     double m_xx1, m_xx2, m_m1, m_m2;
     bool m_use_model_alpha;
     inline void SetCharge(double ch) {
