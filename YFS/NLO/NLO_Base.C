@@ -115,8 +115,6 @@ double NLO_Base::CalculateNLO() {
 	double result{0.0};
 	if(!m_real_only) result += CalculateVirtual();
 	if(!m_virtual_only) result += CalculateReal();
-	result += CalculateVirtual();
-	result += CalculateReal();
 	result += CalculateRealVirtual();
 	result += CalculateRealReal();
 	return result;
@@ -133,7 +131,7 @@ double NLO_Base::CalculateVirtual() {
 	if (!m_looptool && !m_realvirt) return 0;
 	double virt;
 	double sub;
-	p_dipoles->p_yfsFormFact->p_virt = p_virt;
+	p_dipoles->p_yfsFormFact->p_virt = p_virt->p_loop_me;;
 	CheckMassReg();
 	// for(auto pp: m_plab) PRINT_VAR(pp.Mass());
 	if(!HasISR()) virt = p_virt->Calc(m_bornMomenta, m_born);
@@ -165,13 +163,15 @@ double NLO_Base::CalculateVirtual() {
 		double yfspole = p_dipoles->Get_E1();
 		if(!IsEqual(p1,-yfspole,1e-6)){
 			msg_Error()<<"Poles do not cancel in YFS Virtuals"<<std::endl
-								 <<"One-Loop Provider  = "<<p1<<std::endl
-								 <<"Sherpa  = "<<yfspole<<std::endl;
+					 // <<"Process =  "<<p_virt->p_loop_me->Name()<<std::endl
+					 <<"One-Loop Provider  = "<<p1<<std::endl
+					 <<"Sherpa  = "<<yfspole<<std::endl;
 		}
-		{
-			msg_Debugging()<<"Poles cancel in YFS Virtuals"<<std::endl
-								 		 <<"One-Loop Provider  = "<<p1<<std::endl
-								 			<<"Sherpa  = "<<yfspole<<std::endl;
+		else{
+			msg_Out()<<"Poles cancel in YFS Virtuals"<<std::endl
+						// <<"Process =  "<<p_virt->p_loop_me->Name()<<std::endl
+						<<"One-Loop Provider  = "<<p1<<std::endl
+			 			<<"Sherpa  = "<<yfspole<<std::endl;
 		}
 	}
 	return m_oneloop;
@@ -286,6 +286,8 @@ double NLO_Base::CalculateReal(Vec4D k, int fsrcount) {
 	m_recola_evts+=1;
 	// if(!fsrcount) r*=flux;
 	// PRINT_VAR(m_born);
+	// PRINT_VAR(r*flux);
+	// PRINT_VAR(subloc*m_born/m_rescale_alpha);
 	if(m_submode==submode::local) tot =  (r*flux-subloc*m_born/m_rescale_alpha)/subloc;
 	else if(m_submode==submode::global) tot =  (r*flux-subloc*m_born/m_rescale_alpha)/subb;
 	else if(m_submode==submode::off) tot =  (r*flux)/subb;
@@ -306,6 +308,7 @@ double NLO_Base::CalculateReal(Vec4D k, int fsrcount) {
 		m_histograms2d["IFI_EIKONAL"]->Insert(k.Y(),k.PPerp(), p_nlodipoles->CalculateRealSubIF(k));
 		m_histograms2d["REAL_SUB"]->Insert((p[0]+p[1]).Mass(), k.E(), tot/m_born);
 	}
+	if(fsrcount==3) return tot*subb;
 	return tot;
 }
 
@@ -314,11 +317,11 @@ double NLO_Base::CalculateRealVirtual() {
 	double real(0);
 	for (auto k : m_ISRPhotons) {
 		if(k.PPerp() > m_hardmin)	real+=CalculateRealVirtual(k,0);
-		else real+=m_oneloop*CalculateReal(k);
+		// else real+=m_oneloop*CalculateReal(k);
 	}
 	for (auto k : m_FSRPhotons) {
 		if(k.PPerp() > m_hardmin) real+=CalculateRealVirtual(k, 1);
-		else real+=m_oneloop*CalculateReal(k,1);
+		// else real+=m_oneloop*CalculateReal(k,1);
 	}
 	return real;
 }
@@ -347,7 +350,7 @@ double NLO_Base::CalculateRealVirtual(Vec4D k, int fsrcount) {
   		 for (auto f : Dip->m_flavs) {
       	p[p_nlodipoles->m_flav_label[f]] =  Dip->GetNewMomenta(i);
       	i++;
-    	}
+    		}
     	k = Dip->m_dipolePhotons[0];
   	}
   }
@@ -358,12 +361,17 @@ double NLO_Base::CalculateRealVirtual(Vec4D k, int fsrcount) {
  	if(fsrcount) MapInitial(p);
 	Vec4D_Vector pp = p;
  	pp.pop_back();
-	p_nlodipoles->MakeDipolesII(m_flavs,pp,m_plab);
-	p_nlodipoles->MakeDipolesIF(m_flavs,pp,m_plab);
-	p_nlodipoles->MakeDipoles(m_flavs,pp,m_plab);
+ 	Vec4D kzero = k*0.0;
+ 	MapMomenta(pp, kzero);
+ 	Flavour_Vector fl = m_flavs;
+ 	fl.push_back(kf_photon);
+	p_nlodipoles->MakeDipolesII(fl,p,p);
+	p_nlodipoles->MakeDipolesIF(fl,p,p);
+	p_nlodipoles->MakeDipoles(fl,p,p);
 	p.push_back(k);
-
-	if(m_flux_mode==1) flux = p_nlodipoles->CalculateFlux(k);
+	// m_plab = pp;
+	p_nlodipoles->p_yfsFormFact->p_virt = p_realvirt->p_loop_me;
+	if(m_flux_mode==1) flux = p_dipoles->CalculateFlux(k);
 	else if(m_flux_mode==2) flux = 0.5*(p_nlodipoles->CalculateFlux(kk)+p_nlodipoles->CalculateFlux(k));
 	else flux = p_dipoles->CalculateFlux(kk);
 
@@ -376,11 +384,48 @@ double NLO_Base::CalculateRealVirtual(Vec4D k, int fsrcount) {
 	double r = p_realvirt->Calc(p, m_born) / norm;
 	if (r == 0 || IsBad(r)) return 0;
 	double aB = subloc*CalculateVirtual();
+	// double aB = subloc*(p_virt->Calc(pp, m_born)- p_nlodipoles->CalculateVirtualSub());
 	// double tot = (r-aB) / subloc;
 	if(m_submode==submode::local) tot =  (r*flux-aB)/subloc;
 	else if(m_submode==submode::global) tot =  (r*flux-aB)/subb;
 	else if(m_submode==submode::off) tot =  (r*flux)/subb;
 	// real += tot;
+	if(m_check_poles==1){
+		double pr1 = p_realvirt->p_loop_me->ME_E1()*p_realvirt->m_factor;
+		double p1 = p_virt->p_loop_me->ME_E1()*p_virt->m_factor;
+		double diff = pr1-p1;
+		double yfspole = p_nlodipoles->Get_E1();
+		double yfspoleV = p_dipoles->Get_E1();
+		if(!IsEqual(pr1,-yfspole,1e-4)){
+			msg_Error()<<"Poles do not cancel in YFS Real-Virtuals"<<std::endl
+					 <<"Process =  "<<p_realvirt->p_loop_me->Name()<<std::endl
+					 <<"One-Loop Provider V  = "<<p1<<std::endl
+					 <<"One-Loop Provider RV  = "<<pr1<<std::endl
+					 <<"One-Loop Provider RV*Rescale  = "<<pr1*m_rescale_alpha<<std::endl
+					 <<"One-Loop Provider RV/Rescale  = "<<pr1/m_rescale_alpha<<std::endl
+					 <<"One-Loop Provider RVsubloc/subb  = "<<pr1*subloc/subb<<std::endl
+					 <<"One-Loop Provider RVsubb/subloc  = "<<pr1*subb/subloc<<std::endl
+					 <<"One-Loop Provider RV-V  = "<<diff<<std::endl
+					 <<"Sherpa V  = "<<yfspoleV<<std::endl
+					 <<"Sherpa RV = "<<yfspole<<std::endl
+					 <<"Sherpa RV*Rescale = "<<yfspole*m_rescale_alpha<<std::endl
+					 <<"Sherpa RV/Rescale = "<<yfspole/m_rescale_alpha<<std::endl
+					 <<"Sherpa RVsubloc/subb = "<<yfspole*subloc/subb<<std::endl
+					 <<"Sherpa RVsubb/subloc = "<<yfspole*subb/subloc<<std::endl
+					 <<"Sherpa RV-V = "<<yfspole-yfspoleV<<std::endl
+					 <<"One-Loop Norm = "<<p_realvirt->m_factor<<std::endl
+					 <<"Sherpa-One-loop = "<<yfspole-pr1<<std::endl
+					 <<"Sherpa/One-loop = "<<yfspole/pr1<<std::endl;
+			return 0;
+		}
+		else{
+			msg_Debugging()<<"Poles cancel in YFS Real-Virtuals"<<std::endl
+						<<"Process =  "<<p_realvirt->p_loop_me->Name()<<std::endl
+						<<"One-Loop Provider V  = "<<p1<<std::endl
+					 	<<"One-Loop Provider RV  = "<<pr1<<std::endl
+			 			<<"Sherpa  = "<<yfspole<<std::endl;
+		}
+	}
 
 	return tot;
 }
@@ -391,23 +436,20 @@ double NLO_Base::CalculateRealVirtual(Vec4D k, int fsrcount) {
 
 double NLO_Base::CalculateRealReal() {
 	if (!m_rrtool) return 0;
-	double real(0), sub(0);
-	Vec4D_Vector photons, p(m_plab);
+	double real(0);
+	Vec4D_Vector photons;
 	for (auto k : m_ISRPhotons) photons.push_back(k);
 	for (auto k : m_FSRPhotons) photons.push_back(k);
-	Vec4D Q = m_bornMomenta[0]+m_bornMomenta[1];
-	// Vec4D_Vector photons;
 	double len = m_ISRPhotons.size();
-	double flux;
 	for (int i = 0; i < photons.size(); ++i) {
-		for (int j = 0; j < i; ++j) {
+		for (int j = i+1; j < photons.size(); ++j) {
 			Vec4D k  = photons[i];
 			Vec4D kk = photons[j];
 			if(m_check_rr_sub){
 				if(k.E() < 0.2*sqrt(m_s) && kk.E() < 0.2*sqrt(m_s)) continue;
 				CheckRealRealSub(k,kk);
 			}
-			real+=CalculateRealReal(k,kk, i>(len-1)?1:0, j>(len-1)?1:0);
+			real+=CalculateRealReal(k,kk, i>(len-1)?0:1, j>(len-1)?0:1);
 			// real+=CalculateRealReal(k,kk, 0, 1);
 		}
 	}
@@ -420,13 +462,15 @@ double NLO_Base::CalculateRealReal(Vec4D k1, Vec4D k2, int fsr1, int fsr2){
 	Vec4D_Vector p(m_plab),pi(m_bornMomenta), pf(m_bornMomenta);
 	Vec4D kk1 = k1;
 	Vec4D kk2 = k2;
-	double real1 = CalculateReal(k1);
-	double real2 = CalculateReal(k2);
+	double real1 = CalculateReal(k1,3);
+	double real2 = CalculateReal(k2,3);
 	double sub1 = p_dipoles->CalculateRealSubEEX(k1);
 	double sub2 = p_dipoles->CalculateRealSubEEX(k2);
 	p_nlodipoles->MakeDipoles(m_flavs,m_plab,m_plab);
 	dipoletype::code fluxtype1 = p_nlodipoles->WhichResonant(k1);
 	dipoletype::code fluxtype2 = p_nlodipoles->WhichResonant(k2);
+	fsr1 = (fluxtype1==dipoletype::final?1:0);
+	fsr2 = (fluxtype2==dipoletype::final?1:0);
   // if(fluxtype==dipoletype::final){
   if(fsr1 && !fsr2){
   	if(!HasFSR()) msg_Error()<<"Wrong dipole type in "<<METHOD<<endl;
@@ -479,6 +523,7 @@ double NLO_Base::CalculateRealReal(Vec4D k1, Vec4D k2, int fsr1, int fsr2){
   	for (Dipole_Vector::iterator Dip = p_nlodipoles->GetDipoleFF()->begin();
        Dip != p_nlodipoles->GetDipoleFF()->end(); ++Dip) {
   		 double scalek = p_fsr->ScalePhoton(k1);
+  		scalek += p_fsr->ScalePhoton(k2);
   		 Dip->SetPhotonScale(scalek);
   		 Dip->AddPhotonToDipole(k1);
   		 Dip->AddPhotonToDipole(k2);
@@ -492,7 +537,7 @@ double NLO_Base::CalculateRealReal(Vec4D k1, Vec4D k2, int fsr1, int fsr2){
       	i++;
     	}
     	k1 = Dip->m_dipolePhotons[0];
-    	k2 = Dip->m_dipolePhotons[0];
+    	k2 = Dip->m_dipolePhotons[1];
   	}
   }
   if(!fsr1 && !fsr2) MapMomenta(p, k1, k2);
@@ -502,11 +547,11 @@ double NLO_Base::CalculateRealReal(Vec4D k1, Vec4D k2, int fsr1, int fsr2){
  	Vec4D_Vector pp = p;
  	pp.pop_back();
  	pp.pop_back();
-	p_nlodipoles->MakeDipolesII(m_flavs,pp,m_plab);
-	p_nlodipoles->MakeDipolesIF(m_flavs,pp,m_plab);
-	p_nlodipoles->MakeDipoles(m_flavs,pp,m_plab);
+	p_nlodipoles->MakeDipolesII(m_flavs,pp,pp);
+	p_nlodipoles->MakeDipolesIF(m_flavs,pp,pp);
+	p_nlodipoles->MakeDipoles(m_flavs,pp,pp);
 	double flux;
-	flux = p_nlodipoles->CalculateFlux(k1,k2);//*p_nlodipoles->CalculateFlux(k2);
+	flux = p_nlodipoles->CalculateFlux(k1)*p_nlodipoles->CalculateFlux(k2);
 	// else if(m_flux_mode==2) flux = 0.5*(p_nlodipoles->CalculateFlux(kk)+p_nlodipoles->CalculateFlux(k));
 	// else flux = p_dipoles->CalculateFlux(kk);
 	double tot,rcoll;
@@ -527,8 +572,11 @@ double NLO_Base::CalculateRealReal(Vec4D k1, Vec4D k2, int fsr1, int fsr2){
 		return 0;
 	}
 	m_recola_evts+=1;
-	tot = (r -sub1*subloc2*real1 -sub2*subloc1*real2-subloc1*subloc2*m_born*m_rescale_alpha)/sub1/sub2;
-
+	tot = (2.*r*flux -subloc2*real1 -subloc1*real2-subloc1*subloc2*m_born/m_rescale_alpha)/sub1/sub2;
+	// PRINT_VAR(r*flux);
+	// PRINT_VAR(subloc2*real1);
+	// PRINT_VAR(subloc1*real2);
+	// PRINT_VAR(subloc1*subloc2*m_born/m_rescale_alpha);
   if(IsBad(tot)){
   	msg_Error()<<"NNLO RR is NaN"<<std::endl;
   }

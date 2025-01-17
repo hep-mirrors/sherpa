@@ -229,11 +229,10 @@ void ISR::MapPhotonMomentun() {
 
   for (size_t i = 0; i < m_photons.size(); ++i)
   {
-    if(m_photons[i].E() < m_isrcut) m_cut = 0.;
     m_photons[i] *= m_lam * sqrt(m_s) / 2.;
     m_yini[i] /= m_lam;
     m_zini[i] /= m_lam;
-    // if(m_photons[i].E() <= m_Kmin) m_cut = 0.;
+    if(m_photons[i].E() <= m_Kmin) m_cut = 0.;
   }
   if(m_photons.size()!=m_n){
     msg_Error()<<"Missmatch in Photon Multiplicity for ISR"<<std::endl
@@ -247,15 +246,15 @@ void ISR::MapPhotonMomentun() {
 void ISR::Weight() {
   m_ntotal += 1;
   double corrW = 1;
-  if (m_v > m_isrcut && m_n != 0 ) {
+  if (m_v >= m_isrcut && m_n != 0 ) {
     m_weight = m_gp * pow(m_v, m_gp - 1) * m_diljac0 * pow(m_isrcut, m_g - m_gp);
   }
   else {
     // m_massW = 1.0;
     // m_jacW = 1.0;
-    m_weight = m_gp * pow(m_v, m_gp - 1);
-    double B = pow(m_isrcut, m_gp) * (-m_gp * m_isrcut + m_gp + 1.) / (m_gp + 1.);
-    double D = pow(m_deltacut, m_gp) * (-m_gp * m_deltacut + m_gp + 1.) / (m_gp + 1.);
+    m_weight = m_g * pow(m_v, m_g - 1);
+    double B = pow(m_isrcut, m_g) * (-m_g * m_isrcut + m_g + 1.) / (m_g + 1.);
+    double D = pow(m_deltacut, m_g) * (-m_g * m_deltacut + m_g + 1.) / (m_g + 1.);
     corrW = 1. / (1. - D / B);
     m_weight *= corrW;
   }

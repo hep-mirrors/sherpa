@@ -86,7 +86,7 @@ void YFS_Base::RegisterSettings(){
   m_betaorder = s["BETA"].Get<int>();
   m_mode = s["MODE"].Get<yfsmode::code>();
   m_isrcut   = s["IR_CUTOFF"].Get<double>();
-  m_isrcut = 2.*m_isrcut/sqrt(m_s); // dimensionless units
+  m_isrcut = m_isrcut/sqrt(m_s); // dimensionless units
   m_vmax = s["VMAX"].Get<double>();
   m_vmax = 1.-sqr(m_vmax)/m_s;
   m_fillblob  = s["FILL_BLOB"].Get<bool>();
@@ -138,7 +138,6 @@ void YFS_Base::RegisterSettings(){
   m_g = 0;
   m_gp = 0;
 
-  // if(m_use_model_alpha) m_alpha = s_model->ScalarConstant("alpha_QED");
   if(m_use_model_alpha) m_alpha = s_model->ScalarConstant("alpha_QED");
   else m_alpha  = 1./s["1/ALPHAQED(0)"].SetDefault(137.03599976).Get<double>();
   if (m_use_model_alpha) m_rescale_alpha = 1;
