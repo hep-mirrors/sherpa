@@ -41,6 +41,7 @@ operator()(const External_ME_Args& args) const
 {
   if(args.m_source.length() &&
      args.m_source != "Griffin") return NULL;
+  if(args.Flavours().size()!=4) return NULL;
   Griffin_Interface::RegisterProcess(args); 
   return new Griffin_Born(args);
 }

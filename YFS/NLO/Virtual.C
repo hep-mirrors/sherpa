@@ -72,7 +72,7 @@ double Virtual::Calc_V(const ATOOLS::Vec4D_Vector& p,
         V =  m_factor *  p_loop_me->ME_Finite() * B ; break;
       case 1:
         // For Griffin
-        V =  p_loop_me->ME_Finite(); 
+        V =  p_loop_me->ME_Finite()*2-B; 
         break;
       default:
         THROW(not_implemented, "Loop ME mode not implemented: "+ATOOLS::ToString(p_loop_me->Mode()));

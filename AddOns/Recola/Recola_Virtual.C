@@ -116,7 +116,7 @@ Virtual_ME2_Base *ATOOLS::Getter<PHASIC::Virtual_ME2_Base,PHASIC::Process_Info,R
 operator()(const PHASIC::Process_Info &pi) const
 {
   DEBUG_FUNC(pi);
-  if (pi.m_loopgenerator!="Recola") return NULL;
+  if (pi.m_loopgenerator!="Recola" && pi.m_rvgenerator!="Recola") return NULL;
 
   if (pi.m_fi.m_nlotype!=nlo_type::loop) return NULL;
 
