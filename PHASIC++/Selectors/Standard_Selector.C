@@ -87,6 +87,19 @@ namespace PHASIC {
     inline void UseRadians(int radians) {m_use_radians = radians;}
     inline void SetLabframe(const bool &lab) {m_labframe=lab;}
   };
+  class BhaBha_Angle_Selector : public Selector_Base {
+    double  m_angmin, m_angmax, m_use_radians;
+    bool m_labframe;
+    ATOOLS::Flavour m_flav;
+  public:
+    BhaBha_Angle_Selector(Process_Base *const);
+    ~BhaBha_Angle_Selector();
+    void     SetRange(ATOOLS::Flavour,double,double);
+    bool     Trigger(ATOOLS::Selector_List &);
+    void     BuildCuts(Cut_Data *);
+    inline void UseRadians(int radians) {m_use_radians = radians;}
+    inline void SetLabframe(const bool &lab) {m_labframe=lab;}
+  };
   // -----------------------------
   // two particle selectors
   // -----------------------------
@@ -734,6 +747,88 @@ void ATOOLS::Getter<Selector_Base,Selector_Key,Polar_Angle_Selector>::
 PrintInfo(std::ostream &str,const size_t width) const
 {
   str<<"Polar angle selector";
+}
+
+
+
+/*--------------------------------------------------------------------
+
+  BhaBha Angle Selector
+
+  --------------------------------------------------------------------*/
+
+BhaBha_Angle_Selector::BhaBha_Angle_Selector(Process_Base *const proc):
+  Selector_Base("BhaBha_Angle_Selector",proc), m_angmin(0.), m_angmax(0.),
+  m_flav(Flavour(kf_none))
+{
+}
+
+BhaBha_Angle_Selector::~BhaBha_Angle_Selector() {
+}
+
+bool BhaBha_Angle_Selector::Trigger(Selector_List &sl)
+{
+  DEBUG_FUNC(m_on);
+  if (!m_on) return true;
+  for (size_t i=m_nin;i<sl.size();i++) {
+    if (m_flav.Includes(sl[i].Flavour())) {
+      Vec4D mom = sl[i].Momentum();
+      if(m_labframe) p_proc->Integrator()->Beam()->BoostBackLab(mom);
+      double ang = mom.Theta((mom[3]>0?Vec4D::ZVEC:-Vec4D::ZVEC));
+      if(!m_use_radians) ang *= 180./M_PI;
+      if (m_sel_log->Hit( ((ang<m_angmin) || (ang>m_angmax)) )) return false;
+    }
+  }
+  return true;
+}
+
+void BhaBha_Angle_Selector::BuildCuts(Cut_Data * cuts)
+{
+}
+
+void BhaBha_Angle_Selector::SetRange(Flavour flav,double min,double max)
+{
+  m_flav=flav;
+  m_angmin=min;
+  m_angmax=max;
+
+  for (size_t i=m_nin;i<m_n;i++) {
+    if (m_flav.Includes(p_fl[i])) {
+      m_on=true;
+    }
+  }
+}
+
+DECLARE_GETTER(BhaBha_Angle_Selector,"BhaBha_Angle",Selector_Base,Selector_Key);
+
+Selector_Base *ATOOLS::Getter<Selector_Base,Selector_Key,BhaBha_Angle_Selector>::
+operator()(const Selector_Key &key) const
+{
+  Scoped_Settings s{ key.m_settings };
+  const auto parameters = s.SetDefault<std::string>({}).GetVector<std::string>();
+  if (parameters.size() < 4 || parameters.size() > 6)
+    THROW(critical_error, "Invalid syntax");
+  const auto kf = s.Interprete<int>(parameters[1]);
+  const auto min = s.Interprete<double>(parameters[2]);
+  const auto max = s.Interprete<double>(parameters[3]);
+  auto radians = 1;
+  if(parameters.size()==5){
+    radians = s.Interprete<int>(parameters[4]);
+  }
+  bool labframe = false;
+  if(parameters.size()==6) labframe = s.Interprete<int>(parameters[5]);
+  Flavour flav = Flavour((kf_code)abs(kf),kf<0);
+  BhaBha_Angle_Selector *sel = new BhaBha_Angle_Selector(key.p_proc);
+  sel->SetRange(flav,min,max);
+  sel->UseRadians(radians);
+  sel->SetLabframe(labframe);
+  return sel;
+}
+
+void ATOOLS::Getter<Selector_Base,Selector_Key,BhaBha_Angle_Selector>::
+PrintInfo(std::ostream &str,const size_t width) const
+{
+  str<<"BhaBha angle selector";
 }
 
 

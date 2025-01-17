@@ -146,7 +146,7 @@ double NLO_Base::CalculateVirtual() {
 		}
 	}	
 	if(virt==0) return 0;
-	if(m_virt_sub) sub = p_dipoles->CalculateVirtualSub();
+	if(m_virt_sub && p_virt->p_loop_me->Name()!="Griffin") sub = p_dipoles->CalculateVirtualSub();
 	else {
 		sub = 0;
 		// virt=virt;
