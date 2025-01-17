@@ -26,7 +26,7 @@ namespace YFS{
         Dipole(Flavour_Vector const &fl, Vec4D_Vector const &mom,  
                 Vec4D_Vector const &born, dipoletype::code d, const double alpha);
         ~Dipole();
-        Dipole() {};
+
         std::vector<double> m_masses, m_charges, m_theta, m_Q;
         Vec4D_Vector m_dipolePhotons, m_dipolePhotonsEEX;
         std::vector<std::string> m_names;
