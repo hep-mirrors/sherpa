@@ -18,21 +18,16 @@ std::ofstream rr_out, out_ps_rr;
 RealReal::RealReal(const PHASIC::Process_Info& pi)  {
    /* Load RealReal ME */
    PHASIC::Process_Info real_pi(pi);
-   real_pi.m_fi.m_nlotype = ATOOLS::nlo_type::loop;
-   real_pi.m_mincpl[0] = pi.m_mincpl[0];
-   real_pi.m_maxcpl[0] = pi.m_maxcpl[0];
-   real_pi.m_mincpl[1] = pi.m_mincpl[1];
-   real_pi.m_maxcpl[1] = pi.m_maxcpl[1];
-   p_real_me = PHASIC::Tree_ME2_Base::GetME2(real_pi);;
+  PHASIC::External_ME_Args args(pi.m_ii.GetExternal(),
+                             pi.m_fi.GetExternal(),
+                             pi.m_maxcpl,
+                             "Recola");
+   p_real_me =  PHASIC::Tree_ME2_Base::GetME2(args);
    if (!p_real_me)  {
     msg_Error()<<real_pi;
     THROW(not_implemented, "Couldn't find real ME for this process.");
   }
    MODEL::s_model->GetCouplings(m_cpls);
-   /* Load color-correlated ME. TODO: orders */
-   PHASIC::External_ME_Args args(real_pi.m_ii.GetExternal(),
-                                 real_pi.m_fi.GetExternal(),
-                                 real_pi.m_maxcpl);
    p_real_me->SetCouplings(m_cpls);
    for(auto f: args.m_inflavs) m_flavs.push_back(f);
    for(auto f: args.m_outflavs) m_flavs.push_back(f);
