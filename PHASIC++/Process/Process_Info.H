@@ -27,7 +27,7 @@ namespace PHASIC {
     ATOOLS::nlo_mode::code m_nlomode;
 
     std::string m_scale, m_coupling, m_kfactor, m_gpath, m_addname;
-    std::string m_megenerator, m_rsmegenerator, m_loopgenerator, m_special;
+    std::string m_megenerator, m_rsmegenerator, m_loopgenerator, m_special,m_rvgenerator;
     std::string m_integrator, m_rsintegrator;
 
     ATOOLS::Scoped_Settings m_selectors;
@@ -45,7 +45,7 @@ namespace PHASIC {
       m_nminq(0), m_nmaxq(99), m_ckkw(0), m_itmin(1000), m_rsitmin(1000),
       m_amegicmhv(1), m_ntchan(0), m_mtchan(99), m_sort(3),
       m_nlomode(ATOOLS::nlo_mode::none),
-      m_scale("VAR"), m_kfactor("None"), m_loopgenerator("Internal"),
+      m_scale("VAR"), m_kfactor("None"), m_loopgenerator("Internal"), m_rvgenerator("Internal"),
       p_gens(NULL) {}
 
     ATOOLS::Flavour_Vector ExtractFlavours() const;
