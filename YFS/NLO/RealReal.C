@@ -39,8 +39,8 @@ RealReal::RealReal(const PHASIC::Process_Info& pi)  {
    // p_real_me->SetSubType(sbt::qed);
    m_sym  = ATOOLS::Flavour::FSSymmetryFactor(args.m_outflavs);
    m_sym *= ATOOLS::Flavour::ISSymmetryFactor(args.m_inflavs);
-   // m_factor = p_real_me->AlphaQED()/m_sym;
-   m_factor = 1./m_sym;
+   m_factor =  1./m_sym;
+   // m_factor = 1./m_sym;
    ATOOLS::Settings& s = ATOOLS::Settings::GetMainSettings();
    if(m_check_rr){
     if(FileExists("recola-real-real.txt")) Remove("recola-real-real.txt");

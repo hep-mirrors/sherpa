@@ -269,11 +269,6 @@ double YFS_Form_Factor::Full(const ATOOLS::Vec4D p1, const ATOOLS::Vec4D p2, dou
 }
 
 double YFS_Form_Factor::BVV_full(const ATOOLS::Vec4D p1, const ATOOLS::Vec4D p2, double MasPhot, double Kmax, int mode) {
-  if(m_dim_reg){
-    DivArrD form = BVV_full_eps(p1, p2, MasPhot, Kmax, mode);
-    PRINT_VAR(form.GetEpsilon());
-    return form.Finite();
-  }
   double t1, t2, t3;
   double alpi = m_alpha / M_PI;
   double Mas1 = p1.Mass();
@@ -359,8 +354,8 @@ DivArrD YFS_Form_Factor::BVV_full_eps(const ATOOLS::Vec4D p1, const ATOOLS::Vec4
   double betat = 0.382;
   double beta  = sqrt(1. - 2 * (Mas1 + Mas2) / s + sqr((Mas1 - Mas2) / s));
   // t1 = (1./rho*A(p1p2,Mas1,Mas2)-1.)*2.*log(2.*Kmax/MasPhot);
-  double irloop = p_virt->p_loop_me->IRscale();
-  double epsloop = p_virt->p_loop_me->Eps_Scheme_Factor({p1,p2});
+  double irloop = p_virt->IRscale();
+  double epsloop = p_virt->Eps_Scheme_Factor({p1,p2});
   t1 = (log(p1p2 * (1. + rho) / m12) / rho - 1) *  (massph+log(4.*M_PI*sqr(irloop)/m12/epsloop));
   // t1 = (log(sqr(MasPhot)/sqr(250)));
   t2 = p1p2 * rho / s * log(p1p2 * (1. + rho) / m12) + (Mas1 * Mas1 - Mas2 * Mas2) / (2.*s) * log(Mas1 / Mas2) - 1;
