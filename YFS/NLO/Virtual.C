@@ -58,12 +58,12 @@ double Virtual::Calc_V(const ATOOLS::Vec4D_Vector& p,
            const double mur)
   {
     double V(0.0), run_corr(0.0), scale(0.0);
-    // if(s_model->IsQEDRunning()) {
-    //  if(m_tchannel) scale = -(p[0]-p[2]).Abs2();  
-    //  else scale = (p[0]+p[1]).Abs2();
-    //  double dalpha = ((*aqed)(scale) - aqed->AqedThomson());
-    //  run_corr = 4.*dalpha*B;
-    // }
+    if(aqed->m_mode!=vpmode::off) {
+     if(m_tchannel==2) scale = -(p[0]-p[2]).Abs2();  
+     else scale = (p[0]+p[1]).Abs2();
+     double dalpha = ((*aqed)(scale) - aqed->AqedThomson());
+     run_corr = 4.*dalpha*B;
+    }
     p_loop_me->Calc(p,B);
     // PRINT_VAR(p_loop_me->ME_Finite()/B);
     switch(p_loop_me->Mode())
@@ -78,5 +78,5 @@ double Virtual::Calc_V(const ATOOLS::Vec4D_Vector& p,
         THROW(not_implemented, "Loop ME mode not implemented: "+ATOOLS::ToString(p_loop_me->Mode()));
       }
     // V = p_loop_me->ME_Finite();//*B-run_corr;
-    return V;
+    return V-run_corr;
   }

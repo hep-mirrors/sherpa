@@ -318,11 +318,13 @@ double NLO_Base::CalculateRealVirtual() {
 	for (auto k : m_ISRPhotons) {
 		// if(k.PPerp() > m_hardmin)	real+=CalculateRealVirtual(k,0);
 		if(CheckPhotonForReal(k))	real+=CalculateRealVirtual(k,0);
+		else real+= p_dipoles->EEXRealVirtual(k);
 		// else real+=m_oneloop*CalculateReal(k);
 	}
 	for (auto k : m_FSRPhotons) {
 		// if(k.PPerp() > m_hardmin) real+=CalculateRealVirtual(k, 1);
 		if(CheckPhotonForReal(k)) real+=CalculateRealVirtual(k, 1);
+		else real+= p_dipoles->EEXRealVirtual(k);
 		// else real+=m_oneloop*CalculateReal(k,1);
 	}
 	return real;
@@ -361,7 +363,7 @@ double NLO_Base::CalculateRealVirtual(Vec4D k, int fsrcount) {
  	}
  	p.push_back(k);
  	if(fsrcount) MapInitial(p);
-	// CheckMasses(p, 1);
+	CheckMasses(p, 1);
 	Vec4D_Vector pp = p;
  	pp.pop_back();
  	Vec4D kzero = k*0.0;
