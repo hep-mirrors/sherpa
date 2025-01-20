@@ -61,5 +61,5 @@ double RealVirtual::Calc_V(const ATOOLS::Vec4D_Vector& p,
     // p_loop_me->SetRenScale(mur);
     p_loop_me->Calc(p,B);
     V = p_loop_me->ME_Finite();
-    return V*m_factor*m_factor*B;
+    return V*m_factor*B;
   }
