@@ -385,8 +385,8 @@ double NLO_Base::CalculateRealVirtual(Vec4D k, int fsrcount) {
 	if(!CheckPhotonForReal(k,pp)) return 0;
 	double r = p_realvirt->Calc(p, m_born) / norm;
 	if (r == 0 || IsBad(r)) return 0;
-	// double aB = subloc*CalculateVirtual();
-	double aB = subloc*(p_virt->Calc(pp, m_born)- p_nlodipoles->CalculateVirtualSub());
+	double aB = subloc*CalculateVirtual();
+	// double aB = subloc*(p_virt->Calc(pp, m_born)- p_nlodipoles->CalculateVirtualSub());
 	// double tot = (r-aB) / subloc;
 	if(m_submode==submode::local) tot =  (r*flux-aB)/subloc;
 	else if(m_submode==submode::global) tot =  (r*flux-aB)/subb;
