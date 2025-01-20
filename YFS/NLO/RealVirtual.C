@@ -57,9 +57,15 @@ double RealVirtual::Calc_V(const ATOOLS::Vec4D_Vector& p,
            const double B,
            const double mur)
   {
-    double V(0.0);
+    double V(0.0), run_corr(0.0), scale(0.0);
     // p_loop_me->SetRenScale(mur);
+    if(aqed->m_mode!=vpmode::off) {
+     if(m_tchannel) scale = -(p[0]-p[2]).Abs2();  
+     else scale = (p[0]+p[1]).Abs2();
+     double dalpha = ((*aqed)(scale) - aqed->AqedThomson());
+     run_corr = 4.*dalpha*B;
+    }
     p_loop_me->Calc(p,B);
     V = p_loop_me->ME_Finite();
-    return V*m_factor*B;
+    return V*m_factor*B-run_corr;
   }
