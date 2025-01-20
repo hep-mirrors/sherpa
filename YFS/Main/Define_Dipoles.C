@@ -574,6 +574,24 @@ double Define_Dipoles::CalculateEEXVirtual(){
   return vint*vfin;
 }
 
+double Define_Dipoles::EEXRealVirtual(const Vec4D &k){
+  double eex = 0;
+  for(auto &D: m_dipolesII){
+    D.m_betaorder = 2;
+    eex +=  D.Beta1(k)/D.Eikonal(k);
+  }
+  for(auto &D: m_dipolesFF){
+    D.m_betaorder = 2;
+    eex +=  D.Beta1(k)/D.Eikonal(k);
+  }
+  // for(auto &D: m_dipolesIF){
+  //   D.m_betaorder = 2;
+  //   eex -=  D.Beta1(k)/D.Eikonal(k);
+  // }
+  if(IsNan(eex)) return 0;
+  return eex;
+}
+
 double Define_Dipoles::CalculateRealSubEEX(const Vec4D &k) {
   double sub(0);
   for (auto &D : m_dipolesII) {
