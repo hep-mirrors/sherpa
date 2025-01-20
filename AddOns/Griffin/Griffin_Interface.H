@@ -68,6 +68,7 @@ namespace Griffin {
     static griffinorder::code m_order;
     static int m_inital;
     static int m_final;
+    static double m_norm;
   };
 
 }
