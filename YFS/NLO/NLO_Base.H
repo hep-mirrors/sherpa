@@ -69,6 +69,7 @@ public:
   void CheckMassReg();
   double CalculateNLO();
   bool CheckPhotonForReal(const Vec4D &k);
+  bool CheckPhotonForReal(const Vec4D &k, const Vec4D_Vector &p);
   void CheckMasses(Vec4D_Vector &p, int realmode=0);
   bool CheckMomentumConservation(Vec4D_Vector p);
   void CheckRealSub(Vec4D k);
