@@ -655,24 +655,40 @@ double Define_Dipoles::CalculateFlux(const Vec4D &k, const Vec4D &kk){
   double sq, sx;
   double flux = 1;
   Vec4D Q,QX;
-  if(!HasFSR()){
-    for (auto &D : m_dipolesII) {
-      QX = D.GetMomenta(0)+D.GetMomenta(1);
-      Q =  D.GetBornMomenta(0)+D.GetBornMomenta(1);
-    }
-    sq = QX.Abs2();
-    sx = (QX-k-kk).Abs2();
-    flux = sx/sq;
+  dipoletype::code fluxtype;
+  if(m_noflux==1) return 1;
+  if(HasISR()&&HasFSR()){
+    // fluxtype = WhichResonant(k);
+    fluxtype = dipoletype::final;
   }
-  else if(m_mode==yfsmode::isrfsr){
+  else if(HasISR()){
+    fluxtype = dipoletype::initial;
+  }
+  else if(HasFSR()){
+    fluxtype = dipoletype::final;
+  }
+  else{
+    msg_Error()<<"Unknown dipole type in "<<METHOD<<std::endl;
+  }
+  if(fluxtype==dipoletype::initial){
+    for (auto &D : m_dipolesII) {
+      QX = D.GetNewMomenta(0)+D.GetNewMomenta(1);
+      Q =  D.GetBornMomenta(0)+D.GetBornMomenta(1);
+      sq = Q.Abs2();
+      sx = (Q-k-kk).Abs2();
+      flux = sx/sq;
+      return flux;
+    }
+  }
+  if(fluxtype==dipoletype::final){
     for (auto &D : m_dipolesFF) {
       Q = D.GetBornMomenta(0)+D.GetBornMomenta(1);
       QX = D.GetMomenta(0)+D.GetMomenta(1);
-
+      sq = (Q).Abs2();
+      sx = (Q+k+kk).Abs2();
+      flux = sq/sx;
     }
-    sq = (Q).Abs2();
-    sx = (Q+k+kk).Abs2();
-    flux = sx/sq*Propagator(sq)/Propagator(sx);
+    return flux;
   }
   else if (m_mode==yfsmode::fsr){
     for (auto &D : m_dipolesFF) {
@@ -681,7 +697,7 @@ double Define_Dipoles::CalculateFlux(const Vec4D &k, const Vec4D &kk){
     }
     sq = (Q).Abs2();
     sx = (Q+k+kk).Abs2();
-    flux = sqr(sq/sx)*Propagator(sx,0)/Propagator(sq,1);
+    flux = sq/sx;
   }
   return flux;
 }
