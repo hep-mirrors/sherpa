@@ -146,7 +146,7 @@ double NLO_Base::CalculateVirtual() {
 		}
 	}	
 	if(virt==0) return 0;
-	if(m_virt_sub && p_virt->p_loop_me->Name()!="Griffin") sub = p_dipoles->CalculateVirtualSub();
+	if(m_virt_sub && p_virt->p_loop_me->Mode()!=1) sub = p_dipoles->CalculateVirtualSub();
 	else {
 		sub = 0;
 		// virt=virt;
@@ -316,11 +316,13 @@ double NLO_Base::CalculateRealVirtual() {
 	if (!m_realvirt) return 0;
 	double real(0);
 	for (auto k : m_ISRPhotons) {
-		if(k.PPerp() > m_hardmin)	real+=CalculateRealVirtual(k,0);
+		// if(k.PPerp() > m_hardmin)	real+=CalculateRealVirtual(k,0);
+		if(CheckPhotonForReal(k))	real+=CalculateRealVirtual(k,0);
 		// else real+=m_oneloop*CalculateReal(k);
 	}
 	for (auto k : m_FSRPhotons) {
-		if(k.PPerp() > m_hardmin) real+=CalculateRealVirtual(k, 1);
+		// if(k.PPerp() > m_hardmin) real+=CalculateRealVirtual(k, 1);
+		if(CheckPhotonForReal(k)) real+=CalculateRealVirtual(k, 1);
 		// else real+=m_oneloop*CalculateReal(k,1);
 	}
 	return real;
@@ -380,11 +382,11 @@ double NLO_Base::CalculateRealVirtual(Vec4D k, int fsrcount) {
 
 	if(fsrcount) subb = p_dipoles->CalculateRealSubEEX(k);
 	else subb = p_dipoles->CalculateRealSubEEX(kk);
-
+	if(!CheckPhotonForReal(k,pp)) return 0;
 	double r = p_realvirt->Calc(p, m_born) / norm;
 	if (r == 0 || IsBad(r)) return 0;
-	double aB = subloc*CalculateVirtual();
-	// double aB = subloc*(p_virt->Calc(pp, m_born)- p_nlodipoles->CalculateVirtualSub());
+	// double aB = subloc*CalculateVirtual();
+	double aB = subloc*(p_virt->Calc(pp, m_born)- p_nlodipoles->CalculateVirtualSub());
 	// double tot = (r-aB) / subloc;
 	if(m_submode==submode::local) tot =  (r*flux-aB)/subloc;
 	else if(m_submode==submode::global) tot =  (r*flux-aB)/subb;
@@ -394,7 +396,7 @@ double NLO_Base::CalculateRealVirtual(Vec4D k, int fsrcount) {
 		double pr1 = p_realvirt->p_loop_me->ME_E1()*p_realvirt->m_factor;
 		double p1 = p_virt->p_loop_me->ME_E1()*p_virt->m_factor;
 		double diff = pr1-p1;
-		double yfspole = p_nlodipoles->Get_E1();
+		double yfspole = (p_nlodipoles->Get_E1());
 		double yfspoleV = p_dipoles->Get_E1();
 		if(!IsEqual(pr1,-yfspole,1e-4)){
 			msg_Error()<<"Poles do not cancel in YFS Real-Virtuals"<<std::endl
@@ -839,14 +841,28 @@ bool NLO_Base::CheckPhotonForReal(const Vec4D &k) {
 	{
 		if (m_flavs[i].IsChargedLepton()) {
 			double sik = (k + m_plab[i]).Abs2();
-			if (sik < m_hardmin ) {
+			if (sik < m_hardmin*m_plab[i].Abs2() ) {
+				return false;
+			}
+		}
+	}
+	if(k.PPerp() < m_hardmin) return false;
+	return true;
+}
+
+
+bool NLO_Base::CheckPhotonForReal(const Vec4D &k, const Vec4D_Vector &p) {
+	for (int i = 0; i < p.size(); ++i)
+	{
+		if (m_flavs[i].IsChargedLepton()) {
+			double sik = (k + p[i]).Abs2();
+			if (sik < m_hardmin*p[i].Abs2() ) {
 				return false;
 			}
 		}
 	}
 	return true;
 }
-
 
 bool NLO_Base::CheckMomentumConservation(Vec4D_Vector p){
   Vec4D incoming = p[0]+p[1];
