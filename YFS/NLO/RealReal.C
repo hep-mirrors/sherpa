@@ -70,6 +70,6 @@ double RealReal::Calc_R(const ATOOLS::Vec4D_Vector& p)
   }
     // double R = p_real_me->ME_Finite();
     double R = p_real_me->Calc(p);
-    if(m_check_rr) rr_out<<std::setprecision(15)<<R/m_sym<<std::endl;
+    if(m_check_rr) rr_out<<std::setprecision(15)<<R*m_factor<<std::endl;
     return R*m_factor;
   }
