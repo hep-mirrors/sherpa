@@ -318,13 +318,13 @@ double NLO_Base::CalculateRealVirtual() {
 	for (auto k : m_ISRPhotons) {
 		// if(k.PPerp() > m_hardmin)	real+=CalculateRealVirtual(k,0);
 		if(CheckPhotonForReal(k))	real+=CalculateRealVirtual(k,0);
-		else real+= p_dipoles->EEXRealVirtual(k);
+		// else real+= p_dipoles->EEXRealVirtual(k);
 		// else real+=m_oneloop*CalculateReal(k);
 	}
 	for (auto k : m_FSRPhotons) {
 		// if(k.PPerp() > m_hardmin) real+=CalculateRealVirtual(k, 1);
 		if(CheckPhotonForReal(k)) real+=CalculateRealVirtual(k, 1);
-		else real+= p_dipoles->EEXRealVirtual(k);
+		// else real+= p_dipoles->EEXRealVirtual(k);
 		// else real+=m_oneloop*CalculateReal(k,1);
 	}
 	return real;
