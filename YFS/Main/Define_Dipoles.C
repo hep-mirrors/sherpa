@@ -691,7 +691,7 @@ double Define_Dipoles::CalculateFlux(const Vec4D &k, const Vec4D &kk){
   if(fluxtype==dipoletype::initial){
     for (auto &D : m_dipolesII) {
       QX = D.GetNewMomenta(0)+D.GetNewMomenta(1);
-      Q =  D.GetBornMomenta(0)+D.GetBornMomenta(1);
+      Q =  D.GetMomenta(0)+D.GetMomenta(1);
       sq = Q.Abs2();
       sx = (Q-k-kk).Abs2();
       flux = sx/sq;
@@ -707,15 +707,6 @@ double Define_Dipoles::CalculateFlux(const Vec4D &k, const Vec4D &kk){
       flux = sq/sx;
     }
     return flux;
-  }
-  else if (m_mode==yfsmode::fsr){
-    for (auto &D : m_dipolesFF) {
-      Q = D.GetBornMomenta(0)+D.GetBornMomenta(1);
-      QX = D.GetMomenta(0)+D.GetMomenta(1);
-    }
-    sq = (Q).Abs2();
-    sx = (Q+k+kk).Abs2();
-    flux = sq/sx;
   }
   return flux;
 }
@@ -819,9 +810,9 @@ dipoletype::code Define_Dipoles::WhichResonant(const Vec4D &k){
   }
   for(auto &D: m_dipolesFF){
     mdistfsr = ResonantDist(D,k);
+    if(mdistfsr < mdistisr) return dipoletype::final; 
   }
-  if(mdistfsr < mdistisr) return dipoletype::final;
-  else return dipoletype::initial;
+  return dipoletype::initial;
 }
 
 void Define_Dipoles::generate_pairings(std::vector<std::vector<int>>& pairings, std::vector<int>& curr_pairing, std::vector<int>& available_nums) {
