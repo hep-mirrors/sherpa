@@ -62,7 +62,6 @@ Tree_ME2_Base *ATOOLS::Getter<PHASIC::Tree_ME2_Base,PHASIC::External_ME_Args,EXT
 operator()(const External_ME_Args &args) const
 {
   const Flavour_Vector fl = args.Flavours();
-  PRINT_VAR(fl);
   if (fl.size()!=4) return NULL;
   if ( ( fl[0].Kfcode() == Flavour(kf_e) && fl[1].Kfcode() == Flavour(kf_mu)  ) || 
        ( fl[0].Kfcode() == Flavour(kf_mu) && fl[1].Kfcode() == Flavour(kf_e)  )
