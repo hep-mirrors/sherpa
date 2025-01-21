@@ -73,7 +73,7 @@ public:
   void CheckMasses(Vec4D_Vector &p, int realmode=0);
   bool CheckMomentumConservation(Vec4D_Vector p);
   void CheckRealSub(Vec4D k);
-  void CheckRealRealSub(Vec4D k1, Vec4D k2);
+  void CheckRealRealSub(Vec4D k1, Vec4D k2, int fsr1, int fsr2);
   void RandomRotate(Vec4D &k);
 
   inline void SetBorn(double b) { m_born = b;}
