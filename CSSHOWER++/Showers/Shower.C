@@ -1,57 +1,57 @@
-#include "CSSHOWER++/Showers/Shower.H"
-#include "CSSHOWER++/Tools/Parton.H"
-#include "PHASIC++/Selectors/Jet_Finder.H"
-#include "REMNANTS/Main/Remnant_Base.H"
-#include "ATOOLS/Org/Run_Parameter.H"
-#include "MODEL/Main/Model_Base.H"
+#include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/MyStrStream.H"
-#include "ATOOLS/Phys/Cluster_Leg.H"
-#include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Org/My_Limits.H"
+#include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Scoped_Settings.H"
+#include "ATOOLS/Phys/Cluster_Leg.H"
+#include "CSSHOWER++/Showers/Shower.H"
+#include "CSSHOWER++/Tools/Parton.H"
+#include "MODEL/Main/Model_Base.H"
+#include "PHASIC++/Selectors/Jet_Finder.H"
+#include "REMNANTS/Main/Remnant_Base.H"
 
 using namespace CSSHOWER;
 using namespace PHASIC;
 using namespace ATOOLS;
 using namespace std;
 
-Shower::Shower(PDF::ISR_Handler* isr, const int qcd, const int qed, int type)
-    : p_actual(NULL), m_sudakov(isr, qcd, qed), p_isr(isr)
-{
+Shower::Shower(PDF::ISR_Handler *isr, const int qcd, const int qed, int type)
+    : p_actual(NULL), m_sudakov(isr, qcd, qed), p_isr(isr) {
   auto pss = Settings::GetMainSettings()["SHOWER"];
-  const int evol{ pss["EVOLUTION_SCHEME"].Get<int>() };
-  int kfmode{ pss["KFACTOR_SCHEME"].Get<int>() };
-  const int scs{ pss["SCALE_SCHEME"].Get<int>() };
-  double k0sqf{ pss["FS_PT2MIN"].Get<double>() };
-  double k0sqi{ pss["IS_PT2MIN"].Get<double>() };
-  double gsplit_fac{ pss["PT2MIN_GSPLIT_FACTOR"].Get<double>() };
-  double fs_as_fac{ pss["FS_AS_FAC"].Get<double>() };
-  double is_as_fac{ pss["IS_AS_FAC"].Get<double>() };
-  double is_pdf_fac{ pss["PDF_FAC"].Get<double>() };
-  const double mth{ pss["MASS_THRESHOLD"].Get<double>() };
-  bool   forced_splittings{ pss["FORCED_IS_QUARK_SPLITTING"].Get<bool>() };
-  double forced_splittings_gluon_scaling{ pss["FORCED_SPLITTING_GLUON_SCALING"].Get<double>() };
-  m_reweight          = pss["REWEIGHT"].Get<bool>();
+  const int evol{pss["EVOLUTION_SCHEME"].Get<int>()};
+  int kfmode{pss["KFACTOR_SCHEME"].Get<int>()};
+  const int scs{pss["SCALE_SCHEME"].Get<int>()};
+  double k0sqf{pss["FS_PT2MIN"].Get<double>()};
+  double k0sqi{pss["IS_PT2MIN"].Get<double>()};
+  double gsplit_fac{pss["PT2MIN_GSPLIT_FACTOR"].Get<double>()};
+  double fs_as_fac{pss["FS_AS_FAC"].Get<double>()};
+  double is_as_fac{pss["IS_AS_FAC"].Get<double>()};
+  double is_pdf_fac{pss["PDF_FAC"].Get<double>()};
+  const double mth{pss["MASS_THRESHOLD"].Get<double>()};
+  bool forced_splittings{pss["FORCED_IS_QUARK_SPLITTING"].Get<bool>()};
+  double forced_splittings_gluon_scaling{
+      pss["FORCED_SPLITTING_GLUON_SCALING"].Get<double>()};
+  m_reweight = pss["REWEIGHT"].Get<bool>();
   m_maxreweightfactor = pss["MAX_REWEIGHT_FACTOR"].Get<double>();
-  m_kscheme           = pss["KIN_SCHEME"].Get<int>();
-  m_recdec            = pss["RECO_DECAYS"].Get<int>();
-  m_maxpart           = pss["MAXPART"].Get<int>();
+  m_kscheme = pss["KIN_SCHEME"].Get<int>();
+  m_recdec = pss["RECO_DECAYS"].Get<int>();
+  m_maxpart = pss["MAXPART"].Get<int>();
   if (type) {
-    kfmode=pss["MI_KFACTOR_SCHEME"].Get<int>();
-    k0sqf=pss["MI_FS_PT2MIN"].Get<double>();
-    k0sqi=pss["MI_IS_PT2MIN"].Get<double>();
-    gsplit_fac=pss["MI_PT2MIN_GSPLIT_FACTOR"].Get<double>();
-    fs_as_fac=pss["MI_FS_AS_FAC"].Get<double>();
-    is_as_fac=pss["MI_IS_AS_FAC"].Get<double>();
+    kfmode = pss["MI_KFACTOR_SCHEME"].Get<int>();
+    k0sqf = pss["MI_FS_PT2MIN"].Get<double>();
+    k0sqi = pss["MI_IS_PT2MIN"].Get<double>();
+    gsplit_fac = pss["MI_PT2MIN_GSPLIT_FACTOR"].Get<double>();
+    fs_as_fac = pss["MI_FS_AS_FAC"].Get<double>();
+    is_as_fac = pss["MI_IS_AS_FAC"].Get<double>();
     m_kscheme = pss["MI_KIN_SCHEME"].Get<int>();
   }
-  std::vector<std::vector<std::string> > helpsvv{
-    pss["ENHANCE"].GetMatrix<std::string>() };
+  std::vector<std::vector<std::string>> helpsvv{
+      pss["ENHANCE"].GetMatrix<std::string>()};
   m_efac.clear();
-  for (size_t i(0);i<helpsvv.size();++i)
-    if (helpsvv[i].size()==2) {
-      m_efac[helpsvv[i][0]]=ToType<double>(helpsvv[i][1]);
+  for (size_t i(0); i < helpsvv.size(); ++i)
+    if (helpsvv[i].size() == 2) {
+      m_efac[helpsvv[i][0]] = ToType<double>(helpsvv[i][1]);
     }
   m_sudakov.SetShower(this);
   m_sudakov.SetMassThreshold(mth);
@@ -61,85 +61,88 @@ Shower::Shower(PDF::ISR_Handler* isr, const int qcd, const int qed, int type)
   pdfmin.first = pss["PDF_MIN"].Get<double>();
   pdfmin.second = pss["PDF_MIN_X"].Get<double>();
   m_sudakov.SetPDFMin(pdfmin);
-  m_sudakov.InitSplittingFunctions(MODEL::s_model,kfmode);
-  m_sudakov.SetCoupling(MODEL::s_model,k0sqi,k0sqf,is_as_fac,fs_as_fac,gsplit_fac);
-  m_sudakov.SetReweightScaleCutoff(
-      pss["REWEIGHT_SCALE_CUTOFF"].Get<double>());
-  m_sudakov.SetForcedHQSplittings(forced_splittings,forced_splittings_gluon_scaling);
-  m_kinFF.SetEvolScheme(evol-100*(evol/100));
-  m_kinFI.SetEvolScheme(evol-100*(evol/100));
-  m_kinIF.SetEvolScheme(evol/100);
-  m_kinII.SetEvolScheme(evol/100);
-  m_last[0]=m_last[1]=m_last[2]=m_last[3]=NULL;
-  p_old[0]=Cluster_Leg::New(NULL,Vec4D(),kf_none,ColorID());
-  p_old[1]=Cluster_Leg::New(NULL,Vec4D(),kf_none,ColorID());
+  m_sudakov.InitSplittingFunctions(MODEL::s_model, kfmode);
+  m_sudakov.SetCoupling(MODEL::s_model, k0sqi, k0sqf, is_as_fac, fs_as_fac,
+                        gsplit_fac);
+  m_sudakov.SetReweightScaleCutoff(pss["REWEIGHT_SCALE_CUTOFF"].Get<double>());
+  m_sudakov.SetForcedHQSplittings(forced_splittings,
+                                  forced_splittings_gluon_scaling);
+  m_kinFF.SetEvolScheme(evol - 100 * (evol / 100));
+  m_kinFI.SetEvolScheme(evol - 100 * (evol / 100));
+  m_kinIF.SetEvolScheme(evol / 100);
+  m_kinII.SetEvolScheme(evol / 100);
+  m_last[0] = m_last[1] = m_last[2] = m_last[3] = NULL;
+  p_old[0] = Cluster_Leg::New(NULL, Vec4D(), kf_none, ColorID());
+  p_old[1] = Cluster_Leg::New(NULL, Vec4D(), kf_none, ColorID());
 }
 
-Shower::~Shower()
-{
+Shower::~Shower() {
   p_old[0]->Delete();
   p_old[1]->Delete();
 }
 
-double Shower::EFac(const std::string &sfk) const
-{
-  for (std::map<std::string,double,ATOOLS::String_Sort>::const_reverse_iterator
-	 eit=m_efac.rbegin();eit!=m_efac.rend();++eit)
-    if (sfk.find(eit->first)!=std::string::npos) return eit->second;
+double Shower::EFac(const std::string &sfk) const {
+  for (std::map<std::string, double,
+                ATOOLS::String_Sort>::const_reverse_iterator eit =
+           m_efac.rbegin();
+       eit != m_efac.rend(); ++eit)
+    if (sfk.find(eit->first) != std::string::npos)
+      return eit->second;
   return 1.0;
 }
 
-bool Shower::EvolveShower(Singlet * actual,const size_t &maxem,size_t &nem)
-{
+bool Shower::EvolveShower(Singlet *actual, const size_t &maxem, size_t &nem) {
   m_weightsmap.Clear();
-  m_weightsmap["PS"] = Weights {Variations_Type::qcd};
-  m_weightsmap["PS_QCUT"] = Weights {Variations_Type::qcut};
-  return EvolveSinglet(actual,maxem,nem);
+  m_weightsmap["PS"] = Weights{Variations_Type::qcd};
+  m_weightsmap["PS_QCUT"] = Weights{Variations_Type::qcut};
+  return EvolveSinglet(actual, maxem, nem);
 }
 
-double Shower::GetXBj(Parton *const p) const
-{
+double Shower::GetXBj(Parton *const p) const {
   return p_isr->CalcX(p->Momentum());
 }
 
-int Shower::SetXBj(Parton *const p) const
-{
+int Shower::SetXBj(Parton *const p) const {
   double x(GetXBj(p));
-  if (x>1.0) return -1;
+  if (x > 1.0)
+    return -1;
   p->SetXbj(x);
   return 1;
 }
 
-int Shower::RemnantTest(Parton *const p,const Poincare_Sequence *lt)
-{
+int Shower::RemnantTest(Parton *const p, const Poincare_Sequence *lt) {
   Vec4D mom(p->Momentum());
-  if (lt) mom=(*lt)*mom;
-  if (mom[0]<0.0 || mom.Nan()) return -1;
+  if (lt)
+    mom = (*lt) * mom;
+  if (mom[0] < 0.0 || mom.Nan())
+    return -1;
   double x(p_isr->CalcX(mom));
-  if (x>1.0 && !IsEqual(x,1.0,1.0e-6)) return -1;
-  if (!m_sudakov.CheckPDF(mom[0]/rpa->gen.PBunch(p->Beam())[0],p->GetFlavour(),p->Beam())) return -1;
-  return p_remnants->GetRemnant(p->Beam())->TestExtract(p->GetFlavour(),mom)?1:-1;
+  if (x > 1.0 && !IsEqual(x, 1.0, 1.0e-6))
+    return -1;
+  if (!m_sudakov.CheckPDF(mom[0] / rpa->gen.PBunch(p->Beam())[0],
+                          p->GetFlavour(), p->Beam()))
+    return -1;
+  return p_remnants->GetRemnant(p->Beam())->TestExtract(p->GetFlavour(), mom)
+             ? 1
+             : -1;
 }
 
-int Shower::ReconstructDaughters(Singlet *const split,double &jcv,
-				 Parton *const pi,Parton *const pj)
-{
+int Shower::ReconstructDaughters(Singlet *const split, double &jcv,
+                                 Parton *const pi, Parton *const pj) {
   if (split->GetSplit()) {
-    if (split->GetSplit()->Stat()&part_status::code::decayed) {
-      msg_Debugging()<<"Decay. Skip truncated shower veto\n";
-    }
-    else {
-      msg_Debugging()<<"Truncated shower veto\n";
+    if (split->GetSplit()->Stat() & part_status::code::decayed) {
+      msg_Debugging() << "Decay. Skip truncated shower veto\n";
+    } else {
+      msg_Debugging() << "Truncated shower veto\n";
       return 0;
     }
   }
-  jcv=split->JetVeto(&m_sudakov);
+  jcv = split->JetVeto(&m_sudakov);
   return 1;
 }
 
-int Shower::UpdateDaughters(Parton *const split,Parton *const newpB,
-			    Parton *const newpC,double &jcv,int mode)
-{
+int Shower::UpdateDaughters(Parton *const split, Parton *const newpB,
+                            Parton *const newpC, double &jcv, int mode) {
   newpB->SetStart(split->KtTest());
   newpC->SetStart(split->KtTest());
   newpB->SetVeto(split->KtVeto());
@@ -153,36 +156,38 @@ int Shower::UpdateDaughters(Parton *const split,Parton *const newpB,
   }
   newpB->SetId(split->Id());
   newpC->SetId(split->Id());
-  if (split==split->GetSing()->GetSplit()) {
+  if (split == split->GetSing()->GetSplit()) {
     split->GetSing()->SetSplit(newpB);
   }
-  if (split->GetSing()->GetSplit()==NULL ||
-      (split->GetSing()->GetSplit()->Stat()&part_status::code::decayed)) {
-    split->GetSing()->ArrangeColours(split,newpB,newpC);
+  if (split->GetSing()->GetSplit() == NULL ||
+      (split->GetSing()->GetSplit()->Stat() & part_status::code::decayed)) {
+    split->GetSing()->ArrangeColours(split, newpB, newpC);
   }
-  if (newpB==split->GetSing()->GetSplit())
+  if (newpB == split->GetSing()->GetSplit())
     split->GetSing()->SetSplit(split);
   newpB->SetPrev(split->GetPrev());
   newpC->SetPrev(split->GetPrev());
-  double m2=split->Mass2();
+  double m2 = split->Mass2();
   split->SetMass2(newpB->Mass2());
   Flavour fls(split->GetFlavour());
   split->SetFlavour(newpB->GetFlavour());
-  int rd=ReconstructDaughters(split->GetSing(),jcv,newpB,newpC);
+  int rd = ReconstructDaughters(split->GetSing(), jcv, newpB, newpC);
   split->SetFlavour(fls);
-  if (mode && rd==1) rd=-1;
+  if (mode && rd == 1)
+    rd = -1;
   split->SetMass2(m2);
   split->GetSing()->RemoveParton(newpC);
-  if (rd==1 && (p_actual->NLO()&16)) rd=0;
-  if (rd<=0) {
-    if (split==split->GetSing()->GetSplit()) {
+  if (rd == 1 && (p_actual->NLO() & 16))
+    rd = 0;
+  if (rd <= 0) {
+    if (split == split->GetSing()->GetSplit()) {
       split->GetSing()->SetSplit(newpB);
     }
-    if (split->GetSing()->GetSplit()==NULL ||
-        (split->GetSing()->GetSplit()->Stat()&part_status::code::decayed)) {
-      split->GetSing()->RearrangeColours(split,newpB,newpC);
+    if (split->GetSing()->GetSplit() == NULL ||
+        (split->GetSing()->GetSplit()->Stat() & part_status::code::decayed)) {
+      split->GetSing()->RearrangeColours(split, newpB, newpC);
     }
-    if (newpB==split->GetSing()->GetSplit())
+    if (newpB == split->GetSing()->GetSplit())
       split->GetSing()->SetSplit(split);
     if (split->GetNext()) {
       newpB->GetNext()->SetPrev(split);
@@ -190,7 +195,7 @@ int Shower::UpdateDaughters(Parton *const split,Parton *const newpB,
     }
     return rd;
   }
-  if (split==split->GetSing()->GetSplit()) {
+  if (split == split->GetSing()->GetSplit()) {
     split->GetSing()->SetSplit(newpB);
     split->GetSing()->GetLeft()->SetPrev(newpB);
     split->GetSing()->GetRight()->SetPrev(newpB);
@@ -198,73 +203,72 @@ int Shower::UpdateDaughters(Parton *const split,Parton *const newpB,
   return rd;
 }
 
-void Shower::ResetScales(const double &kt2)
-{
-  for (PLiter pit(p_actual->begin());pit!=p_actual->end();++pit)
-    if ((*pit)->KtStart()>kt2) (*pit)->SetStart(kt2);
-  m_last[0]=m_last[1]=m_last[2]=NULL;
+void Shower::ResetScales(const double &kt2) {
+  for (PLiter pit(p_actual->begin()); pit != p_actual->end(); ++pit)
+    if ((*pit)->KtStart() > kt2)
+      (*pit)->SetStart(kt2);
+  m_last[0] = m_last[1] = m_last[2] = NULL;
 }
 
-void Shower::SetSplitInfo
-(const Vec4D &psplit,const Vec4D &pspect,Parton *const split,
- Parton *const newb,Parton *const newc,const int mode)
-{
-  p_old[0]->SetMom((mode&1)?-psplit:psplit);
-  p_old[1]->SetMom((mode&2)?-pspect:pspect);
+void Shower::SetSplitInfo(const Vec4D &psplit, const Vec4D &pspect,
+                          Parton *const split, Parton *const newb,
+                          Parton *const newc, const int mode) {
+  p_old[0]->SetMom((mode & 1) ? -psplit : psplit);
+  p_old[1]->SetMom((mode & 2) ? -pspect : pspect);
   p_old[0]->SetFlav(split->GetFlavour());
-  p_old[0]->SetCol(ColorID(split->GetFlow((mode&1)?2:1),
-			   split->GetFlow((mode&1)?1:2)));
-  m_last[0]=newb;
-  m_last[1]=newc;
-  m_last[2]=split->GetSpect();
-  m_last[3]=split;
+  p_old[0]->SetCol(ColorID(split->GetFlow((mode & 1) ? 2 : 1),
+                           split->GetFlow((mode & 1) ? 1 : 2)));
+  m_last[0] = newb;
+  m_last[1] = newc;
+  m_last[2] = split->GetSpect();
+  m_last[3] = split;
 }
 
-int Shower::MakeKinematics
-(Parton *split,const Flavour &fla,const Flavour &flb,
- const Flavour &flc,double &jcv,int mode)
-{
+int Shower::MakeKinematics(Parton *split, const Flavour &fla,
+                           const Flavour &flb, const Flavour &flc, double &jcv,
+                           int mode) {
   DEBUG_FUNC("");
   Parton *spect(split->GetSpect()), *pj(NULL);
   Vec4D peo(split->Momentum()), pso(spect->Momentum());
   int stype(-1), stat(-1);
   double mc2(m_kinFF.MS()->Mass2(flc)), mi2(0.0);
-  if (split->GetType()==pst::FS) {
-    mi2=m_kinFF.MS()->Mass2(flb);
-    if (split->KScheme()) mi2=split->Mass2();
-    if (spect->GetType()==pst::FS) {
-      stype=0;
-      stat=m_kinFF.MakeKinematics(split,mi2,mc2,flc,pj);
+  if (split->GetType() == pst::FS) {
+    mi2 = m_kinFF.MS()->Mass2(flb);
+    if (split->KScheme())
+      mi2 = split->Mass2();
+    if (spect->GetType() == pst::FS) {
+      stype = 0;
+      stat = m_kinFF.MakeKinematics(split, mi2, mc2, flc, pj);
+    } else {
+      stype = 2;
+      stat = m_kinFI.MakeKinematics(split, mi2, mc2, flc, pj);
     }
-    else {
-      stype=2;
-      stat=m_kinFI.MakeKinematics(split,mi2,mc2,flc,pj);
-    }
-  }
-  else {
-    mi2=m_kinFF.MS()->Mass2(fla);
-    if (spect->GetType()==pst::FS) {
-      stype=1;
-      stat=m_kinIF.MakeKinematics(split,mi2,mc2,flc,pj);
-    }
-    else {
-      stype=3;
-      stat=m_kinII.MakeKinematics(split,mi2,mc2,flc,pj);
+  } else {
+    mi2 = m_kinFF.MS()->Mass2(fla);
+    if (spect->GetType() == pst::FS) {
+      stype = 1;
+      stat = m_kinIF.MakeKinematics(split, mi2, mc2, flc, pj);
+    } else {
+      stype = 3;
+      stat = m_kinII.MakeKinematics(split, mi2, mc2, flc, pj);
     }
   }
-  Parton *pi(new Parton((stype&1)?fla:flb,
-                        split->ForcedSplitting()?split->Momentum():split->LT()*split->Momentum(),
+  Parton *pi(new Parton((stype & 1) ? fla : flb,
+                        split->ForcedSplitting()
+                            ? split->Momentum()
+                            : split->LT() * split->Momentum(),
                         split->GetType()));
-  if (stype&1) pi->SetBeam(split->Beam());
-  if (stat==1) {
-    if (split->GetType()==pst::IS &&
-	RemnantTest(pi,NULL)==-1) stat=-1;
-    if (split->GetSpect()->GetType()==pst::IS &&
-	RemnantTest(split->GetSpect(),
-		    split->GetType()==pst::IS?
-		    &split->LT():NULL)==-1) stat=-1;
+  if (stype & 1)
+    pi->SetBeam(split->Beam());
+  if (stat == 1) {
+    if (split->GetType() == pst::IS && RemnantTest(pi, NULL) == -1)
+      stat = -1;
+    if (split->GetSpect()->GetType() == pst::IS &&
+        RemnantTest(split->GetSpect(),
+                    split->GetType() == pst::IS ? &split->LT() : NULL) == -1)
+      stat = -1;
   }
-  if (stat==-1) {
+  if (stat == -1) {
     split->SetMomentum(peo);
     spect->SetMomentum(pso);
     delete pj;
@@ -278,69 +282,70 @@ int Shower::MakeKinematics
   pi->SetKin(split->Kin());
   pj->SetKin(m_kscheme);
   pi->SetLT(split->LT());
-  SetSplitInfo(peo,pso,split,pi,pj,stype);
+  SetSplitInfo(peo, pso, split, pi, pj, stype);
   split->GetSing()->AddParton(pj);
-  if (stype) split->GetSing()->BoostAllFS(pi,pj,spect,split->ForcedSplitting());
-  int ustat(UpdateDaughters(split,pi,pj,jcv,mode));
-  if (ustat<=0 || (split->GetSing()->GetLeft() &&
-		   !(split->GetSing()->GetSplit()->Stat()&part_status::code::decayed))) {
-    if (stype) split->GetSing()->BoostBackAllFS(pi,pj,spect,split->ForcedSplitting());
+  if (stype)
+    split->GetSing()->BoostAllFS(pi, pj, spect, split->ForcedSplitting());
+  int ustat(UpdateDaughters(split, pi, pj, jcv, mode));
+  if (ustat <= 0 ||
+      (split->GetSing()->GetLeft() &&
+       !(split->GetSing()->GetSplit()->Stat() & part_status::code::decayed))) {
+    if (stype)
+      split->GetSing()->BoostBackAllFS(pi, pj, spect, split->ForcedSplitting());
     delete pi;
     pj->DeleteAll();
     split->SetMomentum(peo);
     spect->SetMomentum(pso);
     return ustat;
   }
-  const double split_weight {split->Weight()};
+  const double split_weight{split->Weight()};
   m_weightsmap["PS"] *= split_weight;
   msg_Debugging() << "sw = " << split_weight
                   << ", w = " << m_weightsmap["PS"].Nominal() << "\n";
   if (m_reweight) {
     ATOOLS::Reweight(m_weightsmap["PS"],
                      [this, split](double varweight,
-                                   QCD_Variation_Params& varparams) -> double {
+                                   QCD_Variation_Params &varparams) -> double {
                        return varweight * Reweight(&varparams, *split);
                      });
   }
-  Singlet * singlet = split->GetSing();
-  split->GetSing()->SplitParton(split,pi,pj);
-  for (PLiter plit(singlet->begin());
-       plit!=singlet->end();++plit)
+  Singlet *singlet = split->GetSing();
+  split->GetSing()->SplitParton(split, pi, pj);
+  for (PLiter plit(singlet->begin()); plit != singlet->end(); ++plit)
     (*plit)->UpdateDaughters();
   return 1;
 }
 
-bool Shower::EvolveSinglet(Singlet * act,const size_t &maxem,size_t &nem)
-{
-  p_actual=act;
+bool Shower::EvolveSinglet(Singlet *act, const size_t &maxem, size_t &nem) {
+  p_actual = act;
   Vec4D mom;
   double kt2win;
-  if (p_actual->NLO()&128) {
+  if (p_actual->NLO() & 128) {
     p_actual->Reduce();
     p_actual->SetNLO(0);
     ResetScales(p_actual->KtNext());
   }
-  if (p_actual->NLO()&(4|8)) {
-    msg_Debugging()<<"Skip MC@NLO emission\nSet p_T = "
-		   <<sqrt(p_actual->KtNext())<<"\n";
+  if (p_actual->NLO() & (4 | 8)) {
+    msg_Debugging() << "Skip MC@NLO emission\nSet p_T = "
+                    << sqrt(p_actual->KtNext()) << "\n";
     ResetScales(p_actual->KtNext());
     return true;
   }
   if (p_actual->GetSplit() &&
-      (p_actual->GetSplit()->Stat()&part_status::code::fragmented) &&
-      !(p_actual->GetSplit()->Stat()&part_status::code::decayed)) {
-    msg_Debugging()<<"Skip EW clustering\n";
+      (p_actual->GetSplit()->Stat() & part_status::code::fragmented) &&
+      !(p_actual->GetSplit()->Stat() & part_status::code::decayed)) {
+    msg_Debugging() << "Skip EW clustering\n";
     return true;
   }
-  if (p_actual->NME()+nem>m_maxpart) {
-    if (p_actual->NLO()&32) {
+  if (p_actual->NME() + nem > m_maxpart) {
+    if (p_actual->NLO() & 32) {
       p_actual->Reduce();
       p_actual->SetNLO(0);
     }
     return true;
   }
-  if (nem>=maxem) {
-    if (p_actual->NLO()&32) {
+  if (nem >= maxem) {
+    if (p_actual->NLO() & 32) {
       p_actual->Reduce();
       p_actual->SetNLO(0);
     }
@@ -348,19 +353,20 @@ bool Shower::EvolveSinglet(Singlet * act,const size_t &maxem,size_t &nem)
   }
   m_sudakov.SetKeepReweightingInfo(m_reweight);
   while (true) {
-    for (Singlet::const_iterator it=p_actual->begin();it!=p_actual->end();++it)
-      if ((*it)->GetType()==pst::IS) SetXBj(*it);
+    // Main splitting loop
+    for (Singlet::const_iterator it = p_actual->begin(); it != p_actual->end();
+         ++it)
+      if ((*it)->GetType() == pst::IS)
+        SetXBj(*it);
     kt2win = 0.;
-    Parton *split=SelectSplitting(kt2win);
-    //no shower anymore
-    msg_Debugging() << "Selected splitter at kt2win:  " << kt2win << endl
-                    << m_flavA << " -> " << m_flavB << "  ("<< m_flavC << ")" << endl;
-    if (split != NULL) msg_Debugging() << "Transition tag reads:  " << split->Transition() << endl;
-    if (split==NULL) {
-      msg_Debugging()<<"No emission\n";
+    Parton *split = SelectSplitting(kt2win);
+
+    if (split == NULL) { // Singlet evolution is terminated
+      msg_Debugging() << "No emission\n";
       ResetScales(p_actual->KtNext());
-      for (Singlet::const_iterator it=p_actual->begin(); it!=p_actual->end();++it) {
-        const double singlet_weight {(*it)->Weight()};
+      for (Singlet::const_iterator it = p_actual->begin();
+           it != p_actual->end(); ++it) {
+        const double singlet_weight{(*it)->Weight()};
         if (singlet_weight != 1.0)
           msg_Debugging() << "Add wt for " << (**it) << ": " << singlet_weight
                           << "\n";
@@ -368,108 +374,98 @@ bool Shower::EvolveSinglet(Singlet * act,const size_t &maxem,size_t &nem)
         if (m_reweight) {
           ATOOLS::Reweight(
               m_weightsmap["PS"],
-              [this, it](double varweight, QCD_Variation_Params& varparams)
+              [this, it](double varweight, QCD_Variation_Params &varparams)
                   -> double { return varweight * Reweight(&varparams, **it); });
           (*it)->SudakovReweightingInfos().clear();
         }
       }
-      if (p_actual->NLO()&32) {
-	p_actual->Reduce();
-	p_actual->SetNLO(0);
+      if (p_actual->NLO() & 32) {
+        p_actual->Reduce();
+        p_actual->SetNLO(0);
       }
       return true;
-    }
-    else if (split->Transition() && m_flavC == (ATOOLS::Flavour)(kf_none) ) {
-      msg_Debugging()<<"Transition "<<m_flavA<<" -> "<<m_flavB << "  (" << m_flavC << ") "
-		     <<" at kt = "<<sqrt(split->KtTest())
-		     <<"( "<<sqrt(split->GetSing()->KtNext())<<" .. "
-		     <<sqrt(split->KtStart())<<" ), z = "<<split->ZTest()<<", y = "
-		     <<split->YTest()<<" for\n"<<*split
-		     <<*split->GetSpect()<<"\n"
-         <<"Resetting transition tag from " << split->Transition() <<" to false.\n";
-      m_last[0]=m_last[1]=m_last[2]=m_last[3]=NULL;
-      split->SetTransition(false);
-      if (kt2win<split->GetSing()->KtNext()) { 
-        msg_Debugging() << "WTF is going on? Aborting..." << endl;
-        exit(1);
-      	}   
+    } else if (split->Transition() && m_flavC == (ATOOLS::Flavour)(kf_none)) {
+      // Handles transitions
+      double tr_weight = 1;
+      msg_Debugging() << "Transition " << m_flavA << " -> " << m_flavB << "  ("
+                      << m_flavC << ") "
+                      << " at kt = " << sqrt(split->KtTest()) << "( "
+                      << sqrt(split->GetSing()->KtNext()) << " .. "
+                      << sqrt(split->KtStart()) << " ), z = " << split->ZTest()
+                      << ", y = " << split->YTest() << " for\n"
+                      << *split << *split->GetSpect() << "\n"
+                      << "Transition weight: " << tr_weight << endl
+                      << "Resetting transition tag from " << split->Transition()
+                      << " to false.\n";
+      m_weightsmap["PS"] *= tr_weight;
+      msg_Debugging() << "FS --> Exiting Transition handling in" << METHOD
+                      << " Shower weight: " << m_weightsmap["PS"] << endl;
+    } else {
+      msg_Debugging() << "Emission " << m_flavA << " -> " << m_flavB << " "
+                      << m_flavC << " at kt = " << sqrt(split->KtTest()) << "( "
+                      << sqrt(split->GetSing()->KtNext()) << " .. "
+                      << sqrt(split->KtStart()) << " ), z = " << split->ZTest()
+                      << ", y = " << split->YTest() << " for\n"
+                      << *split << *split->GetSpect() << "\n";
+      m_last[0] = m_last[1] = m_last[2] = m_last[3] = NULL;
+      if (kt2win < split->GetSing()->KtNext()) { // FS: Edge case
+        msg_Debugging() << "... Defer split ...\n\n";
+        ResetScales(split->GetSing()->KtNext());
+        if (p_actual->NLO() & 32) {
+          p_actual->Reduce();
+          p_actual->SetNLO(0);
+          ResetScales(p_actual->KtNext());
+        }
+        return true;
+      }
+
       ResetScales(kt2win);
       if (p_actual->NSkip()) {
-        msg_Debugging() << "WTF is going on? Aborting..." << endl;
-        exit(1);
-      }
-      if (p_actual->JF() && p_actual->NMax() && (p_actual->GetSplit()==NULL || (p_actual->GetSplit()->Stat()&part_status::code::decayed))) {
-        msg_Debugging() << "WTF is going on? Aborting..." << endl;
-      }
-      double jcv(0.0);
-      int kstat = 1;
-      // TODO Implement the correct weight for g -> J/Psi transitions
-      return true;
-    }
-    else {
-      msg_Debugging()<<"Emission "<<m_flavA<<" -> "<<m_flavB<<" "<<m_flavC
-		     <<" at kt = "<<sqrt(split->KtTest())
-		     <<"( "<<sqrt(split->GetSing()->KtNext())<<" .. "
-		     <<sqrt(split->KtStart())<<" ), z = "<<split->ZTest()<<", y = "
-		     <<split->YTest()<<" for\n"<<*split
-		     <<*split->GetSpect()<<"\n";
-      m_last[0]=m_last[1]=m_last[2]=m_last[3]=NULL;
-      if (kt2win<split->GetSing()->KtNext()) {
-	msg_Debugging()<<"... Defer split ...\n\n";
-	ResetScales(split->GetSing()->KtNext());
-	if (p_actual->NLO()&32) {
-	  p_actual->Reduce();
-	  p_actual->SetNLO(0);
-	  ResetScales(p_actual->KtNext());
-	}
-	return true;
-      }
-      ResetScales(kt2win);
-      if (p_actual->NSkip()) {
-	msg_Debugging()<<"Skip emissions "<<p_actual->NSkip()<<"\n";
-	p_actual->SetNSkip(p_actual->NSkip()-1);
-	continue;
+        msg_Debugging() << "Skip emissions " << p_actual->NSkip() << "\n";
+        p_actual->SetNSkip(p_actual->NSkip() - 1);
+        continue;
       }
       if (p_actual->JF() && p_actual->NMax() &&
-	  (p_actual->GetSplit()==NULL ||
-	   (p_actual->GetSplit()->Stat()&part_status::code::decayed))) {
-	msg_Debugging()<<"Highest Multi -> Disable jet veto\n";
-	Singlet *sing(p_actual);
-	sing->SetJF(NULL);
-	while (sing->GetLeft()) {
-	  sing=sing->GetLeft()->GetSing();
-	  sing->SetJF(NULL);
-	}
+          (p_actual->GetSplit() == NULL ||
+           (p_actual->GetSplit()->Stat() & part_status::code::decayed))) {
+        msg_Debugging() << "Highest Multi -> Disable jet veto\n";
+        Singlet *sing(p_actual);
+        sing->SetJF(NULL);
+        while (sing->GetLeft()) {
+          sing = sing->GetLeft()->GetSing();
+          sing->SetJF(NULL);
+        }
       }
+
       double jcv(0.0);
-      int kstat(MakeKinematics(split,m_flavA,m_flavB,m_flavC,jcv,
-			       p_actual->NME()+nem>=m_maxpart));
-      msg_Debugging()<<"stat = "<<kstat<<"\n";
-      if (kstat<0) continue;
-      if (p_actual->NLO()&64) {
-	msg_Debugging()<<"UNLOPS veto\n";
-	p_actual->Reduce();
-	p_actual->SetNLO(0);
-	ResetScales(p_actual->KtNext());
-	continue;
+      int kstat(MakeKinematics(split, m_flavA, m_flavB, m_flavC, jcv,
+                               p_actual->NME() + nem >= m_maxpart));
+      msg_Debugging() << "stat = " << kstat << "\n";
+      if (kstat < 0)
+        continue;
+      if (p_actual->NLO() & 64) {
+        msg_Debugging() << "UNLOPS veto\n";
+        p_actual->Reduce();
+        p_actual->SetNLO(0);
+        ResetScales(p_actual->KtNext());
+        continue;
       }
       jcv = kstat ? jcv : -1.0;
-      const bool is_jcv_positive {jcv >= 0.0};
-      bool all_vetoed {true};
+      const bool is_jcv_positive{jcv >= 0.0};
+      bool all_vetoed{true};
       const int nqcuts = s_variations->Size(Variations_Type::qcut);
-      std::vector<bool> skips (nqcuts + 1, false);
-      int nskips {0};
+      std::vector<bool> skips(nqcuts + 1, false);
+      int nskips{0};
       ATOOLS::ReweightAll(
           m_weightsmap["PS_QCUT"],
-          [this, jcv, is_jcv_positive, &all_vetoed, &skips, &nskips](
-              double varweight,
-              size_t varindex,
-              Qcut_Variation_Params* qcutparams) -> double {
+          [this, jcv, is_jcv_positive, &all_vetoed, &skips,
+           &nskips](double varweight, size_t varindex,
+                    Qcut_Variation_Params *qcutparams) -> double {
             msg_Debugging()
                 << "Applying veto weight to qcut var #" << varindex << " {\n";
-            bool stat {is_jcv_positive};
+            bool stat{is_jcv_positive};
             if (stat && p_actual->JF()) {
-              const double fac {
+              const double fac{
                   qcutparams == nullptr ? 1.0 : qcutparams->m_scale_factor};
               stat = jcv < sqr(p_actual->JF()->Qcut() * fac);
               msg_Debugging() << "  jcv = " << sqrt(jcv) << " vs "
@@ -492,55 +488,57 @@ bool Shower::EvolveSinglet(Singlet * act,const size_t &maxem,size_t &nem)
               return 0.0;
             }
           });
-      if (p_actual->NLO()&2) {
+      if (p_actual->NLO() & 2) {
         const int nqcdvars = s_variations->Size(Variations_Type::qcd);
         if (skips[0])
           nskips += nqcdvars;
-        const double wskip {nskips / double(nqcuts + nqcdvars + 1)};
-        if (ran->Get()<=wskip) {
-	  double lkf(p_actual->LKF());
-	  Singlet *sing(p_actual);
-	  sing->SetLKF(1.0);
-	  sing->SetNLO(sing->NLO()&~2);
-	  while (sing->GetLeft()) {
-	    sing=sing->GetLeft()->GetSing();
-	    sing->SetLKF(1.0);
-	    sing->SetNLO(sing->NLO()&~2);
-	  }
-          const double fac {1.0 / lkf / wskip};
+        const double wskip{nskips / double(nqcuts + nqcdvars + 1)};
+        if (ran->Get() <= wskip) {
+          double lkf(p_actual->LKF());
+          Singlet *sing(p_actual);
+          sing->SetLKF(1.0);
+          sing->SetNLO(sing->NLO() & ~2);
+          while (sing->GetLeft()) {
+            sing = sing->GetLeft()->GetSing();
+            sing->SetLKF(1.0);
+            sing->SetNLO(sing->NLO() & ~2);
+          }
+          const double fac{1.0 / lkf / wskip};
           m_weightsmap["PS"] *= fac;
           m_weightsmap["PS_QCUT"] *= skips;
           continue;
-        }
-	else {
-          const double fac {1.0 / (1.0 - wskip)};
+        } else {
+          const double fac{1.0 / (1.0 - wskip)};
           skips.flip();
           m_weightsmap["PS"] *= fac;
           m_weightsmap["PS_QCUT"] *= skips;
         }
       }
-      if (all_vetoed) return false;
+      if (all_vetoed)
+        return false;
       Singlet *sing(p_actual);
       sing->SetJF(NULL);
       while (sing->GetLeft()) {
-	sing=sing->GetLeft()->GetSing();
-	sing->SetJF(NULL);
+        sing = sing->GetLeft()->GetSing();
+        sing->SetJF(NULL);
       }
+
+      // FS resume normal operations
       if (m_last[0]) {
-        for (Singlet::const_iterator it=p_actual->begin();
-             it!=p_actual->end();++it) {
-          if ((*it)->Weight()!=1.0) {
-            const double singlet_weight {(*it)->Weight(m_last[0]->KtStart())};
-            msg_Debugging()
-                << "Add wt for " << (**it) << ": " << singlet_weight << "\n";
+        // FS this computes the shower weight
+        for (Singlet::const_iterator it = p_actual->begin();
+             it != p_actual->end(); ++it) {
+          if ((*it)->Weight() != 1.0) {
+            const double singlet_weight{(*it)->Weight(m_last[0]->KtStart())};
             m_weightsmap["PS"] *= singlet_weight;
             (*it)->Weights().clear();
           }
           if (m_reweight) {
+            // FS is the on-the-fly reweighting facility
             ATOOLS::Reweight(
                 m_weightsmap["PS"],
                 [this, it](double varweight,
-                           QCD_Variation_Params& varparams) -> double {
+                           QCD_Variation_Params &varparams) -> double {
                   return varweight * Reweight(&varparams, **it);
                 });
             (*it)->SudakovReweightingInfos().clear();
@@ -548,54 +546,49 @@ bool Shower::EvolveSinglet(Singlet * act,const size_t &maxem,size_t &nem)
         }
       }
       ++nem;
-      if (p_actual->NME()+nem>m_maxpart || nem >= maxem) return true;
+      if (p_actual->NME() + nem > m_maxpart || nem >= maxem)
+        return true;
     }
-  }
+  } // FS this closes the main sudakov loop
   return true;
 }
 
-Parton *Shower::SelectSplitting(double & kt2win) {
+Parton *Shower::SelectSplitting(
+    double &kt2win) { // FS ktwin is always zero at call time
   Parton *winner(NULL);
-  msg_Debugging() <<"Search splitter with kt2win: "<< kt2win << " out of:  \n";
-  for (PLiter splitter = p_actual->begin(); splitter!=p_actual->end();splitter++) {
-      msg_Debugging()<< (*splitter)->GetFlavour() << "  " << "(" << (*splitter)->GetFlow(1) << ", " << (*splitter)->GetFlow(2) << ")  " << (*splitter)->Momentum() << endl;
+  for (PLiter splitter = p_actual->begin(); splitter != p_actual->end();
+       splitter++) {
+    if (TrialEmission(kt2win, *splitter))
+      winner = *splitter;
   }
-  for (PLiter splitter = p_actual->begin();
-       splitter!=p_actual->end();splitter++) {      
-    if (TrialEmission(kt2win,*splitter)) winner = *splitter;
-  }
-  msg_Debugging() << endl;
   return winner;
 }
 
-bool Shower::TrialEmission(double & kt2win,Parton * split)
-{
-  if (split->KtStart()==0.0 ||
-      split->KtStart()<split->GetSing()->KtNext()) return false;
-  double kt2(0.),z(0.),y(0.),phi(0.);
-  while (true) {
-    if (m_sudakov.Generate(split,kt2win)) {
-      m_sudakov.GetSplittingParameters(kt2,z,y,phi);
+bool Shower::TrialEmission(double &kt2win, Parton *split) {
+  if (split->KtStart() == 0.0 || split->KtStart() < split->GetSing()->KtNext())
+    return false;
+  double kt2(0.), z(0.), y(0.), phi(0.);
+  while (true) { // picks the splitter with a winner-takes all logic
+    if (m_sudakov.Generate(split, kt2win)) {
+      m_sudakov.GetSplittingParameters(kt2, z, y, phi);
       split->SetWeight(m_sudakov.Weight());
-      if (kt2>kt2win) {
-	kt2win  = kt2;
-	m_flavA = m_sudakov.GetFlavourA();
-	m_flavB = m_sudakov.GetFlavourB();
-	m_flavC = m_sudakov.GetFlavourC();
-  if (split->Transition() && m_flavC == (ATOOLS::Flavour)(kf_none)) {
-    kt2win = kt2*(1.1);
-    split->SetFlavour(m_sudakov.Selected()->GetFlavourB());
-    split->SetTest(kt2,z,y,phi);
-  }
-  else {
-    m_lastcpl = m_sudakov.Selected()->Coupling()->Last();
-    split->SetCol(m_sudakov.GetCol());
-    split->SetTest(kt2,z,y,phi);
-  }
-	return true;
+      if (kt2 > kt2win) {
+        kt2win = kt2;
+        m_flavA = m_sudakov.GetFlavourA();
+        m_flavB = m_sudakov.GetFlavourB();
+        m_flavC = m_sudakov.GetFlavourC();
+        if (split->Transition() && m_flavC == (ATOOLS::Flavour)(kf_none)) {
+          kt2win = kt2 * (1.01);
+          split->SetFlavour(m_sudakov.Selected()->GetFlavourB());
+          split->SetTest(kt2, z, y, phi);
+        } else {
+          m_lastcpl = m_sudakov.Selected()->Coupling()->Last();
+          split->SetCol(m_sudakov.GetCol());
+          split->SetTest(kt2, z, y, phi);
+        }
+        return true;
       }
-    }
-    else {
+    } else {
       split->SetWeight(m_sudakov.Weight());
     }
     return false;
@@ -603,12 +596,10 @@ bool Shower::TrialEmission(double & kt2win,Parton * split)
   return false;
 }
 
-double Shower::Reweight(QCD_Variation_Params* varparams,
-                        Parton& splitter)
-{
-  const double kt2win {(m_last[0] == NULL) ? 0.0 : m_last[0]->KtStart()};
-  Sudakov_Reweighting_Infos& infos = splitter.SudakovReweightingInfos();
-  double overallrewfactor {1.0};
+double Shower::Reweight(QCD_Variation_Params *varparams, Parton &splitter) {
+  const double kt2win{(m_last[0] == NULL) ? 0.0 : m_last[0]->KtStart()};
+  Sudakov_Reweighting_Infos &infos = splitter.SudakovReweightingInfos();
+  double overallrewfactor{1.0};
 
   for (auto info : infos) {
 
@@ -620,41 +611,40 @@ double Shower::Reweight(QCD_Variation_Params* varparams,
     if (info.scale < kt2win)
       continue;
 
-    const double rejwgt {1.0 - info.accwgt};
-    double rewfactor {1.0};
-    double accrewfactor {1.0};
+    const double rejwgt{1.0 - info.accwgt};
+    double rewfactor{1.0};
+    double accrewfactor{1.0};
 
     // perform PDF reweighting
     // NOTE: also the Jacobians depend on the Running_AlphaS class, but only
     // through the number of flavours, which should not vary between AlphaS
     // variations anyway; therefore we do not insert AlphaS for the PDF
     // reweighting
-    const cstp::code type {info.sf->GetType()};
+    const cstp::code type{info.sf->GetType()};
     if (type == cstp::II || type == cstp::FI || type == cstp::IF) {
       // insert new PDF
-      const Flavour swappedflspec {info.sf->Lorentz()->FlSpec()};
+      const Flavour swappedflspec{info.sf->Lorentz()->FlSpec()};
       info.sf->Lorentz()->SetFlSpec(info.flspec);
-      PDF::PDF_Base** swappedpdf {info.sf->PDF()};
-      PDF::PDF_Base* pdf[] = {varparams->p_pdf1, varparams->p_pdf2};
+      PDF::PDF_Base **swappedpdf{info.sf->PDF()};
+      PDF::PDF_Base *pdf[] = {varparams->p_pdf1, varparams->p_pdf2};
       info.sf->SetPDF(pdf);
       // calculate new J
       const double lastJ(info.sf->Lorentz()->LastJ());
       double newJ;
-      double muF2fac {1.0};
+      double muF2fac{1.0};
       if (varparams->m_showermuF2enabled)
-	muF2fac = varparams->m_muF2fac;
+        muF2fac = varparams->m_muF2fac;
       switch (type) {
       case cstp::II:
-        newJ = info.sf->Lorentz()->JII(
-            info.z, info.y, info.x, muF2fac * info.scale);
+        newJ = info.sf->Lorentz()->JII(info.z, info.y, info.x,
+                                       muF2fac * info.scale);
         break;
       case cstp::IF:
-        newJ = info.sf->Lorentz()->JIF(
-            info.z, info.y, info.x, muF2fac * info.scale);
+        newJ = info.sf->Lorentz()->JIF(info.z, info.y, info.x,
+                                       muF2fac * info.scale);
         break;
       case cstp::FI:
-        newJ = info.sf->Lorentz()->JFI(
-            info.y, info.x, muF2fac * info.scale);
+        newJ = info.sf->Lorentz()->JFI(info.y, info.x, muF2fac * info.scale);
         break;
       case cstp::FF:
       case cstp::none:
@@ -666,11 +656,10 @@ double Shower::Reweight(QCD_Variation_Params* varparams,
       info.sf->Lorentz()->SetFlSpec(swappedflspec);
       // validate and apply
       if (newJ == 0.0) {
-        varparams->IncrementOrInitialiseWarningCounter(
-            "different PDF cut-off");
+        varparams->IncrementOrInitialiseWarningCounter("different PDF cut-off");
         continue;
       } else {
-        const double pdfrewfactor {newJ / info.lastj};
+        const double pdfrewfactor{newJ / info.lastj};
         if (pdfrewfactor < 0.25 || pdfrewfactor > 4.0) {
           varparams->IncrementOrInitialiseWarningCounter(
               "large PDF reweighting factor");
@@ -682,19 +671,19 @@ double Shower::Reweight(QCD_Variation_Params* varparams,
     // AlphaS reweighting
     if (info.sf->Coupling()->AllowsAlternativeCouplingUsage()) {
       // insert new AlphaS
-      const double lastcpl {info.sf->Coupling()->Last()};
-      double muR2fac {1.0};
+      const double lastcpl{info.sf->Coupling()->Last()};
+      double muR2fac{1.0};
       if (varparams->m_showermuR2enabled)
-	muR2fac = varparams->m_muR2fac;
-      info.sf->Coupling()->SetAlternativeUnderlyingCoupling(
-          varparams->p_alphas, muR2fac);
+        muR2fac = varparams->m_muR2fac;
+      info.sf->Coupling()->SetAlternativeUnderlyingCoupling(varparams->p_alphas,
+                                                            muR2fac);
       // calculate new coupling
-      double newcpl {info.sf->Coupling()->Coupling(info.scale, 0)};
+      double newcpl{info.sf->Coupling()->Coupling(info.scale, 0)};
       // clean up
       info.sf->Coupling()->SetAlternativeUnderlyingCoupling(nullptr);
       info.sf->Coupling()->SetLast(lastcpl);
       // validate and apply
-      const double alphasrewfactor {newcpl / info.lastcpl};
+      const double alphasrewfactor{newcpl / info.lastcpl};
       if (alphasrewfactor < 0.5 || alphasrewfactor > 2.0) {
         varparams->IncrementOrInitialiseWarningCounter(
             "large AlphaS reweighting factor");
@@ -723,8 +712,7 @@ double Shower::Reweight(QCD_Variation_Params* varparams,
   return overallrewfactor;
 }
 
-void Shower::SetMS(const ATOOLS::Mass_Selector *const ms)
-{
+void Shower::SetMS(const ATOOLS::Mass_Selector *const ms) {
   m_sudakov.SetMS(ms);
   m_kinFF.SetMS(ms);
   m_kinFI.SetMS(ms);

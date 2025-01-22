@@ -1,149 +1,157 @@
 #ifndef CSSHOWER_Showers_Splitting_Function_Base_H
 #define CSSHOWER_Showers_Splitting_Function_Base_H
 
-#include "CSSHOWER++/Showers/SF_Key.H"
-#include "CSSHOWER++/Showers/SF_Coupling.H"
-#include "CSSHOWER++/Showers/SF_Lorentz.H"
 #include "ATOOLS/Math/Vector.H"
+#include "CSSHOWER++/Showers/SF_Coupling.H"
+#include "CSSHOWER++/Showers/SF_Key.H"
+#include "CSSHOWER++/Showers/SF_Lorentz.H"
 
-namespace ATOOLS { class Function_Base; }
+namespace ATOOLS {
+class Function_Base;
+}
 
-namespace PDF { class PDF_Base; }
+namespace PDF {
+class PDF_Base;
+}
 
 namespace CSSHOWER {
 
-  class Parton;
-  class Shower;
+class Parton;
+class Shower;
 
-  class Splitting_Function_Base {
+class Splitting_Function_Base {
 
-  private:
+private:
+  static SF_Lorentz *InitLorentzCalc(const MODEL::Single_Vertex &v,
+                                     const SF_Key &key);
 
-    static SF_Lorentz* InitLorentzCalc(const MODEL::Single_Vertex& v,
-				       const SF_Key& key);
+protected:
+  SF_Lorentz *p_lf;
+  SF_Coupling *p_cf;
+  cstp::code m_type;
+  double m_lastint, m_lastacceptwgt, m_lastscale;
+  double m_symf, m_polfac, m_lpdf, m_efac, m_mth;
+  double m_facscalefactor;
+  int m_on, m_qcd, m_scs;
+  std::vector<Parton *> m_specs;
+  Parton *p_spec;
+  PDF::PDF_Base **p_pdf;
 
-  protected:
-    SF_Lorentz  *p_lf;
-    SF_Coupling *p_cf;
-    cstp::code m_type;
-    double m_lastint, m_lastacceptwgt, m_lastscale;
-    double m_symf, m_polfac, m_lpdf, m_efac, m_mth;
-    double m_facscalefactor;
-    int m_on, m_qcd, m_scs;
-    std::vector<Parton*> m_specs;
-    Parton *p_spec;
-    PDF::PDF_Base **p_pdf;
-  public:
+public:
+  Splitting_Function_Base();
+  Splitting_Function_Base(const SF_Key &key);
 
-    Splitting_Function_Base();
-    Splitting_Function_Base(const SF_Key &key);
+  virtual ~Splitting_Function_Base();
 
-    virtual ~Splitting_Function_Base();
+  double MEPSWeight(const double &z, const double &y, const double &eta,
+                    const double &scale, const double &Q2) const;
 
-    double MEPSWeight(const double &z,const double &y,const double &eta,
-		      const double &scale,const double &Q2) const;
+  virtual double operator()(const double z, const double y, const double eta,
+                            const double scale, const double Q2);
+  virtual double OverIntegrated(const double, const double, const double,
+                                const double);
+  virtual double Overestimated(const double, const double);
+  virtual double RejectionWeight(const double, const double, const double,
+                                 const double, const double);
+  virtual double Z();
+  virtual double Phi(double z) const;
 
-    virtual double operator()
-      (const double z,const double y,const double eta,
-       const double scale,const double Q2);
-    virtual double OverIntegrated(const double,const double,
-				  const double,const double);
-    virtual double Overestimated(const double,const double);
-    virtual double RejectionWeight(const double,const double,
-				   const double,const double,const double);
-    virtual double Z();         
-    virtual double Phi(double z) const;
+  virtual const ATOOLS::Flavour &GetFlavourA() const;
+  virtual const ATOOLS::Flavour &GetFlavourB() const;
+  virtual const ATOOLS::Flavour &GetFlavourC() const;
+  virtual const ATOOLS::Flavour &GetFlavourSpec() const;
 
-    virtual const ATOOLS::Flavour & GetFlavourA() const;
-    virtual const ATOOLS::Flavour & GetFlavourB() const;
-    virtual const ATOOLS::Flavour & GetFlavourC() const;
-    virtual const ATOOLS::Flavour & GetFlavourSpec() const;
+  virtual int GetCol() const;
 
-    virtual int GetCol() const;
+  virtual void ResetLastInt();
+  virtual void ClearSpecs();
 
-    virtual void ResetLastInt();
-    virtual void ClearSpecs();
+  virtual void SetMS(const ATOOLS::Mass_Selector *const ms);
 
-    virtual void SetMS(const ATOOLS::Mass_Selector *const ms);
+  double GetXPDF(const double &scale, const double &x, const ATOOLS::Flavour &a,
+                 const int beam, const int mode = 0);
+  bool CheckPDF(const double &x, const ATOOLS::Flavour &a, const int beam);
 
-    double GetXPDF(const double &scale,const double &x,
-		   const ATOOLS::Flavour &a,const int beam,
-		   const int mode=0);
-    bool CheckPDF(const double &x,const ATOOLS::Flavour &a,const int beam);
+  Parton *SelectSpec();
+  bool PureQCD() const;
 
-    Parton *SelectSpec();
-    bool PureQCD() const;
+  void SetEFac(Shower *const shower);
 
-    void SetEFac(Shower *const shower);
+  double EFac() const;
 
-    double EFac() const;
+  Parton *SetSpec(Parton *const spec);
 
-    Parton *SetSpec(Parton *const spec);
+  inline double Last() const { return m_lastint; }
+  virtual double LastAcceptanceWeight() const { return m_lastacceptwgt; }
+  virtual double LastScale() const { return m_lastscale; }
+  inline cstp::code GetType() const { return m_type; }
 
-    inline double     Last()                 const { return m_lastint;       } 
-    virtual double    LastAcceptanceWeight() const { return m_lastacceptwgt; }
-    virtual double    LastScale()            const { return m_lastscale;     }
-    inline cstp::code GetType()              const { return m_type;          } 
+  inline void SetFlavourSpec(ATOOLS::Flavour flav) { p_lf->SetFlSpec(flav); }
+  inline void AddSpec(Parton *const s) { m_specs.push_back(s); }
 
-    inline void SetFlavourSpec(ATOOLS::Flavour flav) { p_lf->SetFlSpec(flav); }
-    inline void AddSpec(Parton *const s) { m_specs.push_back(s); }
+  inline Parton *Spec() const { return p_spec; }
 
-    inline Parton *Spec() const { return p_spec; }
+  inline int On() const { return m_on; }
+  template <class _Type> inline _Type *Get() {
+    return dynamic_cast<_Type *>(this);
+  }
 
-    inline int On() const { return m_on; }
-    template <class _Type> inline _Type *Get() { return dynamic_cast<_Type*>(this); }
+  inline SF_Lorentz *Lorentz() const { return p_lf; }
+  inline SF_Coupling *Coupling() const { return p_cf; }
 
-    inline SF_Lorentz  *Lorentz() const  { return p_lf; }
-    inline SF_Coupling *Coupling() const { return p_cf; }
+  PDF::PDF_Base **PDF() { return p_pdf; }
+  inline void SetPDF(PDF::PDF_Base **const pdf) { p_pdf = pdf; }
 
-    PDF::PDF_Base** PDF() { return p_pdf; }
-    inline void SetPDF(PDF::PDF_Base **const pdf) { p_pdf=pdf; }
+  inline double SymFac() const { return m_symf; }
 
-    inline double SymFac() const { return m_symf; }
+  inline void SetMassThreshold(const double &mth) { m_mth = mth; }
 
-    inline void SetMassThreshold(const double &mth) { m_mth=mth; }
+  inline void SetScaleScheme(const int &scs) { m_scs = scs; }
 
-    inline void SetScaleScheme(const int &scs) { m_scs=scs; }
+  inline int ScaleScheme() const { return m_scs; }
 
-    inline int ScaleScheme() const { return m_scs; }
+  inline void SetFacScaleFactor(const double fac) { m_facscalefactor = fac; }
 
-    inline void SetFacScaleFactor(const double fac) { m_facscalefactor=fac; }
+  friend std::ostream &operator<<(std::ostream &,
+                                  const Splitting_Function_Base &);
+};
 
-    friend std::ostream& operator<<(std::ostream &,const Splitting_Function_Base &);
-  };
+class One2One_Transition_Base : public Splitting_Function_Base {
+protected:
+  ATOOLS::Flavour m_flin, m_flout, m_flout2;
+  double m_mout, m_mout2, m_arg, m_totalarg;
+  int m_col;
 
-  class One2One_Transition_Base : public Splitting_Function_Base {
-  protected:
-    ATOOLS::Flavour m_flin, m_flout, m_flout2;
-    double          m_mout, m_mout2, m_arg;
-    int             m_col;
-  public:
-    One2One_Transition_Base(const ATOOLS::Flavour & flin,const ATOOLS::Flavour & flout,
-			    const double & arg, const int & col) :
-      m_flin(flin), m_flout(flout), m_flout2(ATOOLS::Flavour(kf_none)),
-      m_mout(m_flout.HadMass()), m_mout2(m_mout*m_mout),
-      m_arg(arg), m_col(col) {
-        p_cf = NULL;
-      }
-    const double & OutMass()  const { return m_mout; }
-    const double & OutMass2() const { return m_mout2; }
-    const double & SudArg()   const { return m_arg; }
-    const ATOOLS::Flavour & GetFlavourA() const { return m_flin; }
-    const ATOOLS::Flavour & GetFlavourB() const { return m_flout; }
-    const ATOOLS::Flavour & GetFlavourC() const { return m_flout2; }
-    int GetCol() const {return m_col;}
-  };
-    
-  struct STcmp {
-    bool operator()(const One2One_Transition_Base & a,
-		    const One2One_Transition_Base & b) const {
-      if (a.OutMass()<b.OutMass()) return true;
-      return false;
-    }
-  };
-  typedef std::set<One2One_Transition_Base, STcmp>  ST_Set;
-  typedef std::map<ATOOLS::Flavour, ST_Set*> ST_Map;
+public:
+  One2One_Transition_Base(const ATOOLS::Flavour &flin,
+                          const ATOOLS::Flavour &flout, const double &arg,
+                          const double &totalarg, const int &col)
+      : m_flin(flin), m_flout(flout), m_flout2(ATOOLS::Flavour(kf_none)),
+        m_mout(m_flout.HadMass()), m_mout2(m_mout * m_mout), m_arg(arg),
+        m_totalarg(totalarg), m_col(col) {
+    p_cf = NULL;
+  }
+  const double &OutMass() const { return m_mout; }
+  const double &OutMass2() const { return m_mout2; }
+  const double &SudArg() const { return m_arg; }
+  const double &TotalSudArg() const { return m_totalarg; }
+  const ATOOLS::Flavour &GetFlavourA() const { return m_flin; }
+  const ATOOLS::Flavour &GetFlavourB() const { return m_flout; }
+  const ATOOLS::Flavour &GetFlavourC() const { return m_flout2; }
+  int GetCol() const { return m_col; }
+};
 
-}
+struct STcmp {
+  bool operator()(const One2One_Transition_Base &a,
+                  const One2One_Transition_Base &b) const {
+    if (a.OutMass() < b.OutMass())
+      return true;
+    return false;
+  }
+};
+typedef std::set<One2One_Transition_Base, STcmp> ST_Set;
+typedef std::map<ATOOLS::Flavour, ST_Set *> ST_Map;
+
+} // namespace CSSHOWER
 
 #endif
