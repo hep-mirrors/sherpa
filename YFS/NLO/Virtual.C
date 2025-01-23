@@ -25,7 +25,10 @@ Virtual::Virtual(const PHASIC::Process_Info& pi)
     loop_pi.m_mincpl[1] = pi.m_mincpl[1]+1;
     loop_pi.m_maxcpl[1] = pi.m_maxcpl[1]+1;
     p_loop_me = PHASIC::Virtual_ME2_Base::GetME2(loop_pi);
-    if (!p_loop_me)  THROW(not_implemented, "Couldn't find virtual ME for this process.");
+    if (!p_loop_me)  {
+      msg_Error()<<loop_pi<<std::endl;
+      THROW(not_implemented, "Couldn't find virtual ME for this process.");
+    }
     MODEL::s_model->GetCouplings(m_cpls);
     p_loop_me->SetSubType(ATOOLS::sbt::qed);
     PHASIC::External_ME_Args args(loop_pi.m_ii.GetExternal(),
@@ -69,10 +72,12 @@ double Virtual::Calc_V(const ATOOLS::Vec4D_Vector& p,
     switch(p_loop_me->Mode())
       {
       case 0:
+        // PRINT_VAR(p_loop_me->ME_Finite()*m_factor*B);
         V =  m_factor *  p_loop_me->ME_Finite() * B ; break;
       case 1:
         // For Griffin
-        V =  p_loop_me->ME_Finite()*m_rescale_alpha-B;
+        // PRINT_VAR(p_loop_me->ME_Finite()*m_rescale_alpha);
+        V =  p_loop_me->ME_Finite()-B;//*((*aqed)(0)/s_model->ScalarConstant("alpha_QED"));
         break;
       default:
         THROW(not_implemented, "Loop ME mode not implemented: "+ATOOLS::ToString(p_loop_me->Mode()));
