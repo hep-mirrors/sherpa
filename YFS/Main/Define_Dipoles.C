@@ -379,7 +379,7 @@ double Define_Dipoles::CalculateRealSubIF(const Vec4D &k) {
 double Define_Dipoles::CalculateVirtualSub() {
   double sub(0);
   if(m_tchannel==2) return CalculateVirtualSubTchannel();
-  if(m_dim_reg) return CalculateVirtualSubEps();
+  if(m_dim_reg==1) return CalculateVirtualSubEps();
   for (auto &D : m_dipolesII) {
     sub += D.ChargeNorm()*p_yfsFormFact->BVV_full(D.GetNewMomenta(0), D.GetNewMomenta(1), m_photonMass, sqrt(m_s) / 2., 3);
   }
