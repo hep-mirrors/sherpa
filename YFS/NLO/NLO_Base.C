@@ -152,7 +152,7 @@ double NLO_Base::CalculateVirtual() {
 		// virt=virt;
 	}
 	m_oneloop = (virt- sub * m_born/m_rescale_alpha );
-	if(IsBad(m_oneloop)){
+	if(IsBad(m_oneloop) || IsBad(sub)){
 		msg_Error()<<"YFS Virtual is NaN"<<std::endl
 							 <<"Virtual:  "<<m_oneloop<<std::endl
 							 <<"Subtraction: "<<sub*m_born<<std::endl;
@@ -323,10 +323,12 @@ double NLO_Base::CalculateRealVirtual() {
 	}
 	for (auto k : m_FSRPhotons) {
 		// if(k.PPerp() > m_hardmin) real+=CalculateRealVirtual(k, 1);
-		if(CheckPhotonForReal(k)) real+=CalculateRealVirtual(k, 1);
+		if(CheckPhotonForReal(k)) real+=CalculateRealVirtual(k, 0);
 		else real+= p_dipoles->EEXRealVirtual(k);
 		// else real+=m_oneloop*CalculateReal(k,1);
 	}
+	double realvirt = real;
+	// if(m_ISRPhotons.size()!=0 || m_FSRPhotons.size()!=0) PRINT_VAR(realvirt);
 	return real;
 }
 
@@ -349,7 +351,10 @@ double NLO_Base::CalculateRealVirtual(Vec4D k, int fsrcount) {
   		 double scalek = p_fsr->ScalePhoton(k);
   		 Dip->SetPhotonScale(scalek);
   		 Dip->AddPhotonToDipole(k);
-  		 if(!Dip->BoostNLO()) return 0;
+  		 if(!Dip->BoostNLO()) {
+  		 	msg_Error()<<"NLO Boost Failed"<<std::endl;
+  		 	return 0;
+  		 }
   		 int i(0);
   		 for (auto f : Dip->m_flavs) {
       	p[p_nlodipoles->m_flav_label[f]] =  Dip->GetNewMomenta(i);
@@ -363,7 +368,7 @@ double NLO_Base::CalculateRealVirtual(Vec4D k, int fsrcount) {
  	}
  	p.push_back(k);
  	if(fsrcount) MapInitial(p);
-	CheckMasses(p, 1);
+	// CheckMasses(p, 1);
 	Vec4D_Vector pp = p;
  	pp.pop_back();
  	Vec4D kzero = k*0.0;
@@ -376,33 +381,39 @@ double NLO_Base::CalculateRealVirtual(Vec4D k, int fsrcount) {
 	// p.push_back(k);
 	// m_plab = pp;
 	p_nlodipoles->p_yfsFormFact->p_virt = p_realvirt->p_loop_me;
-	if(m_flux_mode==1) flux = p_dipoles->CalculateFlux(k);
+	if(m_flux_mode==1) flux = p_nlodipoles->CalculateFlux(k);
 	else if(m_flux_mode==2) flux = 0.5*(p_nlodipoles->CalculateFlux(kk)+p_nlodipoles->CalculateFlux(k));
 	else flux = p_dipoles->CalculateFlux(kk);
 	double subloc = p_nlodipoles->CalculateRealSub(k);
 	double subb;
 
-	if(fsrcount) subb = p_dipoles->CalculateRealSubEEX(k);
-	else subb = p_dipoles->CalculateRealSubEEX(kk);
+	subb = p_dipoles->CalculateRealSubEEX(k);
+	
 	if(!CheckPhotonForReal(k,pp)) return 0;
+	if(p.size()!=(m_flavs.size()+1)){
+		msg_Error()<<"Mismatch in "<<METHOD<<std::endl;
+	}
 	double r = p_realvirt->Calc(p, m_born) / norm;
-	if (r == 0 || IsBad(r)) {
-		// for(auto _p : p){
-		// 	PRINT_VAR(_p.Mass());
-		// 	PRINT_VAR(_p.PPerp());
-		// 	PRINT_VAR(_p.E());
-		// }
+	if(IsZero(r)) return 0;
+	if (IsBad(r)) {
+		msg_Error()<<"Real-Virtual is "<<r<<std::endl;
 		return 0;
 	}
-	// double aB = subloc*CalculateVirtual();
-	double aB = subloc*(p_virt->Calc(pp, m_born)- p_nlodipoles->CalculateVirtualSub());
+	m_plab = pp;
+	double aB = subloc*CalculateVirtual();
+	// double aB = subloc*(p_virt->Calc(m_plab, m_born) - m_born*p_nlodipoles->CalculateVirtualSub());
 	// double tot = (r-aB) / subloc;
 	if(m_submode==submode::local) tot =  (r*flux-aB)/subloc;
 	else if(m_submode==submode::global) tot =  (r*flux-aB)/subb;
 	else if(m_submode==submode::off) tot =  (r*flux)/subb;
-	// real += tot;
+	// // real += tot;
+	// PRINT_VAR(r);
+	// PRINT_VAR(r*flux);
+	// PRINT_VAR(aB);
+	// PRINT_VAR(subloc);
+	// PRINT_VAR(tot);
 	if(m_check_poles==1){
-		double pr1 = p_realvirt->p_loop_me->ME_E1()*p_realvirt->m_factor;
+		double pr1 = p_realvirt->p_loop_me->ME_E1()*p_realvirt->m_factor/norm;
 		double p1 = p_virt->p_loop_me->ME_E1()*p_virt->m_factor;
 		double diff = pr1-p1;
 		double yfspole = (p_nlodipoles->Get_E1());
@@ -412,6 +423,7 @@ double NLO_Base::CalculateRealVirtual(Vec4D k, int fsrcount) {
 					 <<"Process =  "<<p_realvirt->p_loop_me->Name()<<std::endl
 					 <<"One-Loop Provider V  = "<<p1<<std::endl
 					 <<"One-Loop Provider RV  = "<<pr1<<std::endl
+					 <<"One-Loop Provider RV/norm  = "<<pr1/norm<<std::endl
 					 <<"One-Loop Provider RV*Rescale  = "<<pr1*m_rescale_alpha<<std::endl
 					 <<"One-Loop Provider RV/Rescale  = "<<pr1/m_rescale_alpha<<std::endl
 					 <<"One-Loop Provider RVsubloc/subb  = "<<pr1*subloc/subb<<std::endl
@@ -460,7 +472,8 @@ double NLO_Base::CalculateRealReal() {
 				if(k.E() < 0.2*sqrt(m_s) && kk.E() < 0.2*sqrt(m_s)) continue;
 				CheckRealRealSub(k,kk, i>(len-1)?0:1, j>(len-1)?0:1);
 			}
-			real+=CalculateRealReal(k,kk, i>(len-1)?0:1, j>(len-1)?0:1);
+			real+=CalculateRealReal(k,kk, 0, 0);
+			// real+=CalculateRealReal(k,kk, 0,0);
 		}
 	}
 	return real;
@@ -494,9 +507,9 @@ double NLO_Base::CalculateRealReal(Vec4D k1, Vec4D k2, int fsr1, int fsr2){
     	}
     	k1 = Dip->m_dipolePhotons[0];
   	}
-  	p.push_back(k1);
-  	MapMomenta(p,k2);
-  	p.pop_back();
+  	// p.push_back(k1);
+  	// MapMomenta(p,k2);
+  	// p.pop_back();
   }
   if(!fsr1 && fsr2){
   	if(!HasFSR()) msg_Error()<<"Wrong dipole type in "<<METHOD<<endl;
@@ -517,9 +530,9 @@ double NLO_Base::CalculateRealReal(Vec4D k1, Vec4D k2, int fsr1, int fsr2){
     	}
     	k2 = Dip->m_dipolePhotons[0];
   	}
-  	p.push_back(k2);
-  	MapMomenta(p,k1);
-  	p.pop_back();
+  	// p.push_back(k2);
+  	// MapMomenta(p,k1);
+  	// p.pop_back();
   }
   if(fsr1 && fsr2){
   	if(!HasFSR()) msg_Error()<<"Wrong dipole type in "<<METHOD<<endl;
@@ -804,9 +817,10 @@ bool NLO_Base::CheckPhotonForReal(const Vec4D &k) {
 			if (sik < m_hardmin*m_plab[i].Abs2() ) {
 				return false;
 			}
+			// if(m_plab[i].PPerp()< m_hardmin) return false;
 		}
 	}
-	if(k.PPerp() < m_hardmin) return false;
+	if(k.PPerp() < 1e-4) return false;
 	return true;
 }
 
@@ -819,10 +833,10 @@ bool NLO_Base::CheckPhotonForReal(const Vec4D &k, const Vec4D_Vector &p) {
 			if (sik < m_hardmin*p[i].Abs2() ) {
 				return false;
 			}
-			if(p[i].PPerp() < m_hardmin) return false;
+			// if(p[i].PPerp() < m_hardmin) return false;
 		}
 	}
-	if(k.PPerp() < m_hardmin) return false;
+	// if(k.PPerp() < m_hardmin) return false;
 	return true;
 }
 
@@ -929,7 +943,7 @@ void NLO_Base::CheckRealRealSub(Vec4D k1, Vec4D k2, int fsr1, int fsr2){
 			k1=k1/i;
 			real=CalculateRealReal(k1,k2,fsr1, fsr2);
 			out_sub<<k1.E()<<","<<fabs(real)<<std::endl;
-			if(k1.E() < 1e-10) break;
+			if(k1.E() < m_vmin) break;
 			// m_histograms2d["Real_me_sub"]->Insert(k.E(),fabs(real), 1);
 		}
 		out_sub.close();
@@ -941,7 +955,7 @@ void NLO_Base::CheckRealRealSub(Vec4D k1, Vec4D k2, int fsr1, int fsr2){
 			k2=k2/i;
 			real=CalculateRealReal(k1,k2, fsr1, fsr2);
 			out_sub<<k2.E()<<","<<fabs(real)<<std::endl;
-			if(k1.E() < 1e-10) break;
+			if(k1.E() < m_vmin) break;
 			// m_histograms2d["Real_me_sub"]->Insert(k.E(),fabs(real), 1);
 		}
 		out_sub.close();
@@ -954,7 +968,7 @@ void NLO_Base::CheckRealRealSub(Vec4D k1, Vec4D k2, int fsr1, int fsr2){
 			k1=k1/i;
 			real=CalculateRealReal(k1,k2,fsr1,fsr2);
 			out_sub<<k2.E()<<","<<fabs(real)<<std::endl;
-			if(k1.E() < 1e-10) break;
+			if(k1.E() <m_vmin) break;
 			// m_histograms2d["Real_me_sub"]->Insert(k.E(),fabs(real), 1);
 		}
 		out_sub.close();
