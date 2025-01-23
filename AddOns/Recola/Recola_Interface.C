@@ -416,7 +416,7 @@ size_t Recola::Recola_Interface::RegisterProcess(const Process_Info& pi,
     int quarkcount(0), gluoncount(0);
     int tempQCD(pi.m_maxcpl[0]), tempEW(pi.m_maxcpl[1]);
     
-    if(pi.m_fi.m_nlotype==nlo_type::loop){
+    if(pi.m_fi.m_nlotype==nlo_type::loop || pi.m_fi.m_nlotype==nlo_type::rvirt){
       
       // Check whether for this process any interference 
       // diagram is present
