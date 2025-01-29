@@ -195,7 +195,6 @@ void Massive_Kernels::CalcVNSsoft(double s,double mj,double mk,double sjKt,
   const double muK = mKt2/s;
   const double tau = sjKt/s;
 
-
   /// DiLog implements real part for x > 1
   if(!IsEqual(rho,-1)) {
     // m_VNS += -2*((rho + log(std::abs(rho)))*log(rho/tau) - (1 + rho + log(std::abs(rho)))*log((1 + rho)/tau) + DiLog(1 + 1/rho));
@@ -212,18 +211,23 @@ void Massive_Kernels::CalcVNSq(double s,double mj,double mk,double sjKtcoll)
 {
   if (mj==0.&&mk==0.) { return; }
   else if (mj==0.) {
-    double Q2=s+sqr(mj)+sqr(mk);
-    double Q=sqrt(Q2);
     if(m_subtype!=subscheme::Alaric) {
+      double Q2=s+sqr(mj)+sqr(mk);
+      double Q=sqrt(Q2);
       m_VNS = m_g1t*(log(s/Q2)-2.*log(1.-mk/Q)-2.*mk/(Q+mk))
         +sqr(M_PI)/6.-DiLog(s/Q2);
       if (m_subtype==subscheme::Dire)
         m_VNS += .25-(Q-mk)*(Q+3.*mk)/(4.*sqr(Q+mk));
     }
     else {
+      double Q2=sjKtcoll+sqr(mj)+sqr(mk);
+      double Q = sqrt(Q2);
       double muk2 = sqr(mk)/Q2;
-      double Iqq = -1 + log(1 - muk2) + (muk2*log(muk2))/(2.*(1 - muk2)); 
-      m_VNS += m_g1t*log(s/Q2) + Iqq + 1;
+      // double Iqq = -1 + log(1 - muk2) + (muk2*log(muk2))/(2.*(1 - muk2)); 
+      // double IqqMassless = -1;
+      double Iqq = -1/(1+sqrt(muk2)) + log(1 - sqrt(muk2)); 
+      double IqqMassless = -1;
+      m_VNS += m_g1t*log(s/Q2) + Iqq - IqqMassless;
       // m_VNS = m_g1t*log(s/Q2); // always needed to change reference scale between s and Q2
       // m_VNS += -sqr(mk)/(Q2-sqr(mk))*log(Q/mk) + log(1-sqr(mk)/Q2);// - 6;
     }

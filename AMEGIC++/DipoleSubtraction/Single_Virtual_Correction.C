@@ -772,11 +772,11 @@ double Single_Virtual_Correction::Calc_I(const ATOOLS::sbt::subtype st,
           ampl->CreateLeg(idx<2?-mom[idx]:mom[idx],idx<2?m_flavs[idx].Bar():m_flavs[idx]);
         }
         if(p_softrecoil) {
-          Vec4D Kti = p_softrecoil->Recoil(ampl,partonlist[i],-1,partonlist[k]);
+          Vec4D Kti = -p_softrecoil->Recoil(ampl,partonlist[i],-1,partonlist[k]);
           mKt2i = Kti.Abs2();
           siKti = 2.*mom[partonlist[i]]*Kti;
           skKti = 2.*mom[partonlist[k]]*Kti;
-          Vec4D Ktk = p_softrecoil->Recoil(ampl,partonlist[k],-1,partonlist[i]);
+          Vec4D Ktk = -p_softrecoil->Recoil(ampl,partonlist[k],-1,partonlist[i]);
           mKt2k = Ktk.Abs2();
           siKtk = 2.*mom[partonlist[i]]*Ktk;
           skKtk = 2.*mom[partonlist[k]]*Ktk;
@@ -786,7 +786,7 @@ double Single_Virtual_Correction::Calc_I(const ATOOLS::sbt::subtype st,
           mreci = IsZero(mreci)?0.:sqrt(abs(mreci));
           siKtcoll = 2.*mom[partonlist[i]]*p_collrecoil->Recoil(ampl,partonlist[i],-1,partonlist[k]);
           mreck = p_collrecoil->Recoil(ampl,partonlist[k],-1,partonlist[i]).Abs2();
-          mreck = IsZero(mreck)?0.:sqrt(abs(mreci));
+          mreck = IsZero(mreck)?0.:sqrt(abs(mreck));
           skKtcoll = 2.*mom[partonlist[k]]*p_collrecoil->Recoil(ampl,partonlist[k],-1,partonlist[i]);
         }
         ampl->Delete();
