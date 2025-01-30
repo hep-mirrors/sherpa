@@ -50,10 +50,11 @@ namespace AMISIC {
     std::vector<ATOOLS::Vec4D>   m_momenta;
     XS_Base*                     p_me2;
     double                       m_Emin, m_sumInMasses, m_sumOutMasses;
-    bool                         m_masslessIS;
+    double                       m_lastxs;
+    bool                         m_masslessIS, m_massive;
 
-    const bool AllowedRemnants(std::array<std::shared_ptr<REMNANTS::Remnant_Base>, 2> remnants)
-            const;
+    const bool AllowedRemnants(std::array<std::shared_ptr
+			       <REMNANTS::Remnant_Base>,2> remnants) const;
     void MasslessISKinematics(MI_Integrator* integrator);
   public:
     explicit MI_Process(const std::vector<ATOOLS::Flavour>& flavs);
@@ -61,10 +62,10 @@ namespace AMISIC {
     ///////////////////////////////////////////////////////////////////////////
     // Creating four-vectors for a legal phase space point, checking for its
     // viability re remnants, masses, PDF limits, etc..
-///////////////////////////////////////////////////////////////////////////
-    bool MakeKinematics(
-            MI_Integrator*                                         integrator,
-            std::array<std::shared_ptr<REMNANTS::Remnant_Base>, 2>  remnants);
+    ///////////////////////////////////////////////////////////////////////////
+    bool MakeKinematics(MI_Integrator * integrator,
+			std::array<std::shared_ptr
+			<REMNANTS::Remnant_Base>, 2>  remnants);
     ///////////////////////////////////////////////////////////////////////////
     // Making sure that the c.m. energy of the scatter is larger than the
     // IS or FS sum of masses.
@@ -74,7 +75,8 @@ namespace AMISIC {
     }
 
     ATOOLS::Particle * GetParticle(const size_t & i);
-    inline void SetME2(XS_Base * me2) { p_me2 = me2; }
+    inline void SetME2(XS_Base * me2)          { p_me2    = me2; }
+    inline void SetLast(const double & lastxs) { m_lastxs = lastxs; }
     inline const ATOOLS::Flavour& Flav(const size_t& i) const
     {
       return m_flavs[i];
@@ -84,8 +86,9 @@ namespace AMISIC {
       return m_momenta[i];
     }
     inline bool SetColours() const { return p_me2->SetColours(m_flavs); }
-    inline const std::string& Name() const { return m_name; }
+    inline const std::string& Name()       const { return m_name; }
     inline double             operator()() const { return (*p_me2)(); }
+    inline const double &     LastXS()     const { return m_lastxs; }
   };
 }
 

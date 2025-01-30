@@ -25,10 +25,10 @@ namespace AMISIC {
     Matter_Overlap           * p_overlap;
     
     MI_Process   * p_proc;
-    double         m_pt2, m_pt2min, m_b, m_bfac, m_fb;
+    double         m_pt2, m_pt2min, m_b;
     double         m_S, m_lastpt2, m_nextpt2, m_residualx1, m_residualx2, m_Ycms;
     double         m_xsec;
-    bool           m_done;
+    bool           m_done, m_needsTrigger;
     ATOOLS::Blob * m_nextblob;
     std::map<double, ATOOLS::Blob *> m_prefabs;
     
@@ -48,15 +48,16 @@ namespace AMISIC {
     Single_Collision_Handler();
     ~Single_Collision_Handler();
     
-    void Init(MI_Processes * processes, Over_Estimator * overestimator,
-	      Interaction_Probability * pint,Matter_Overlap * overlap);
-    void Init(REMNANTS::Remnant_Handler * remnant_handler,
-	      NonPerturbative_XSecs * soft);
-    void UpdateSandY(double s, double y);
-    void Reset();
-    bool FirstMinBiasScatter(ATOOLS::Blob * first);
-    bool FirstMPI(ATOOLS::Blob * signal);
-    bool NextScatter(ATOOLS::Blob * blob);
+    void   Init(MI_Processes * processes, Over_Estimator * overestimator,
+		Interaction_Probability * pint,Matter_Overlap * overlap);
+    void   Init(REMNANTS::Remnant_Handler * remnant_handler,
+		NonPerturbative_XSecs * soft);
+    void   UpdateSandY(double s, double y);
+    void   Reset();
+    double PrefabricateBlob(const int & mode=0);
+    bool   FirstMinBiasScatter(ATOOLS::Blob * first);
+    bool   FirstMPI(ATOOLS::Blob * signal);
+    bool   NextScatter(ATOOLS::Blob * blob);
     
     inline void SetResidualX(const double & E1, const double & E2) {
       m_residualx1 = E1/InMomentum(0)[0];
@@ -81,12 +82,11 @@ namespace AMISIC {
     inline ATOOLS::Vec4D InMomentum(const size_t & beam) const {
       return p_remnants[beam]->InMomentum();
     }
-    inline const double & B()       const { return m_b; }
-    inline const double & BFac()    const { return m_bfac; }
-    inline const double & LastPT2() const { return m_lastpt2; }
-    inline const double & PT2()     const { return m_pt2; }
-    inline const bool   & Done()    const { return m_done; }
-
+    inline const double & B()         const { return m_b; }
+    inline const double & LastPT2()   const { return m_lastpt2; }
+    inline const double & PT2()       const { return m_pt2; }
+    inline const bool   & Done()      const { return m_done; }
+    inline const bool   & NeedsTrig() const { return m_needsTrigger; }
     void Test(const double & Q2,const long int & n);
   };
 }

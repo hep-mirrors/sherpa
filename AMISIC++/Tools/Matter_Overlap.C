@@ -71,7 +71,7 @@ double Matter_Overlap::operator()(double b) {
   if (m_dynamic || (m_form[0]==matter_form::single_gaussian &&
 		    m_form[1]==matter_form::single_gaussian )) {
     double effradius2 = ( sqr(m_kradius) *
-			  (m_dynamic ? m_dynradius2 : m_radius2[0]) ); 
+			  (m_dynamic ? m_dynradius2 : m_radius2[0]) );
     return m_norm/effradius2 * exp(-b2/effradius2);
   }
   double result = 0.;
@@ -98,17 +98,17 @@ double Matter_Overlap::SelectB() const {
   // 1. select a radius R according to matter content:
   // 2. Select b according to d^2b O(b) = d b^2 exp(-b^2/R^2).
   ///////////////////////////////////////////////////////////////////////////
-  double radius = m_radius[0], b=0.;
-  if (m_dynamic) radius = sqrt(m_dynradius2);
+  double effradius = m_kradius * m_radius[0], b=0.;
+  if (m_dynamic) effradius = m_kradius * sqrt(m_dynradius2);
   else if (m_form[0]==matter_form::double_gaussian ||
 	   m_form[1]==matter_form::double_gaussian) {
     double rand = ran->Get();
     for (size_t i=3;i>=0;i--) {
       rand -= m_fraction[i];
-      if (rand<=1.e-6) { radius = m_radius[i]; break; }
+      if (rand<=1.e-6) { effradius = m_kradius * m_radius[i]; break; }
     }
   }
-  do { b = sqrt(-log(Max(1.e-12,ran->Get())))*radius; } while(b>=m_bmax);
+  do { b = sqrt(-log(Max(1.e-12,ran->Get())))*effradius; } while(b>=m_bmax);
   return b;
 }
 
@@ -117,7 +117,10 @@ SelectPositionForScatter(const double & B,
 			 const double & x0, const double & Q20,
 			 const double & x1, const double & Q21) const {
   ///////////////////////////////////////////////////////////////////////////
-  // 
+  // Independently select two impact paraemters b0 and b1 w.r.t.\ the incoming 
+  // beams, from their respective form factors until a combination that is
+  // allowed given the overall impact paramter B is found.
+  // Position is given in fm, calculation in 1/GeV.
   ///////////////////////////////////////////////////////////////////////////
   double b0, b1, cosphi2;
   size_t trials = 0;
@@ -139,7 +142,7 @@ void Matter_Overlap::Initialize(Remnant_Handler * const rh,
   }
   InitializeFFParams(isr);
   Output(CalculateIntegral());
-  size_t nbins = size_t((*mipars)("nB_bins"));
+  size_t nbins = size_t((*mipars)["nB_bins"]);
   double bmin  = 0.00001*m_radius[0];
   p_bbins = new axis(nbins, bmin, m_bmax, axis_mode::log);
 }

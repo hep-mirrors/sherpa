@@ -61,9 +61,10 @@ namespace AMISIC {
     mitype         m_type;
     bool           m_variable_s, m_variable_b;
     axis         * p_sbins;
-    double         m_sigmaND_norm, m_b, m_bfac, m_S, m_Y, m_pt2;
+    double         m_sigmaND_norm, m_b, m_bfac, m_S, m_Y, m_pt2, m_weight;
 
     bool         m_isMinBias, m_isFirst, m_producedSoft;
+    size_t       m_maxNscatters, m_Nscatters; 
     double       m_f;
     
     void InitParametersAndType(PDF::ISR_Handler *const isr,
@@ -72,18 +73,16 @@ namespace AMISIC {
     bool FirstMinBias(ATOOLS::Blob * blob);
     bool FirstMPI(ATOOLS::Blob * blob);
     void AddInformationToBlob(ATOOLS::Blob * blob);
-    void SetB(const double & x1,const double & x2,const double & scale);
     void CreateAmplitudeLegs(ATOOLS::Cluster_Amplitude * ampl,
 			     ATOOLS::Blob * blob);
 
     bool              m_ana;
     size_t            m_nscatters;
-    unsigned long int m_Nscat, m_Nev;
+    unsigned long int m_nscat, m_nev;
     std::map<std::string,ATOOLS::Histogram *> m_histos;
     void InitAnalysis();
     void FinishAnalysis();
     void AnalysePerturbative(const bool & last,ATOOLS::Blob * blob=nullptr);
-    void Test();
  public:
     Amisic();
     ~Amisic();
@@ -97,6 +96,7 @@ namespace AMISIC {
 		  const double & scale);
     bool InitMinBiasEvent(ATOOLS::Blob_List * blobs);
     bool InitRescatterEvent();
+    void SetB(const double & b);
     bool VetoEvent(const double & scale=-1.) const;
 
     bool GenerateScatter(const size_t & type,ATOOLS::Blob * blob);

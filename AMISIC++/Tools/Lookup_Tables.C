@@ -90,7 +90,7 @@ double TwoDim_Table::operator()(const double & x,const double & y) const {
   if (m_x.m_nbins==1 || IsEqual(x,m_x.m_xmin,1.e-3) || IsEqual(x,m_x.m_xmax,1.e-3)) {
     xbin = (x==m_x.m_xmax) ? m_x.m_nbins-1 : 0;
     if (m_y.m_nbins==1 || IsEqual(y,m_y.m_xmin,1.e-3) || IsEqual(y,m_y.m_xmax,1.e-3)) { 
-      ybin = (y==m_y.m_xmax) ? m_y.m_nbins-1 : 0;
+      ybin = IsEqual(y,m_y.m_xmax,1.e-3) ? m_y.m_nbins-1 : 0;
       return m_values[xbin][ybin];
     }
     ybin = m_y.bin(y);
@@ -103,7 +103,7 @@ double TwoDim_Table::operator()(const double & x,const double & y) const {
   x1   = m_x.x(xbin);
   x2   = m_x.x(xbin+1 );
   if (m_y.m_nbins==1 || IsEqual(y,m_y.m_xmin,1.e-3) || IsEqual(y,m_y.m_xmax,1.e-3)) { 
-    ybin = (y==m_y.m_xmax) ? m_y.m_nbins-1 : 0;
+    ybin = IsEqual(y,m_y.m_xmax,1.e-3) ? m_y.m_nbins-1 : 0;
     return ( m_values[xbin][ybin]   * (x2-x) +
 	     m_values[xbin+1][ybin] * (x-x1) ) / (x2-x1);
   }

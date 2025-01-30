@@ -12,6 +12,7 @@
 
 using namespace AMISIC;
 using namespace ATOOLS;
+using namespace std;
 
 // This is the base class for the "naked" matrix elements, which do not need to
 // know their flavours, as this is part of their explicit implementation.
@@ -32,7 +33,7 @@ XS_Base::XS_Base() :
 }
 
 
-XS_Base::XS_Base(const std::vector<double> & masses) :
+XS_Base::XS_Base(const vector<double> & masses) :
   m_name(""), m_Ms(0.), m_Mt(0.), m_Mu(0.), m_lastxs(0.), m_masses(masses) {
   m_masses2.resize(m_masses.size());
   m_colours.resize(m_masses.size());
@@ -57,19 +58,20 @@ XS_Base::~XS_Base() = default;
 // and to construct scattering kinematics, i.e. the four-vectors of the
 // outgoing particles.
 
-MI_Process::MI_Process(const std::vector<Flavour>& flavs)
-    : m_name(flavs[0].IDName() + " " + flavs[1].IDName() + " --> " +
-             flavs[2].IDName() + " " + flavs[3].IDName()),
-      m_stretcher(Momenta_Stretcher(std::string("AMISIC: ")+m_name)),p_me2(NULL),
+MI_Process::MI_Process(const vector<Flavour>& flavs) :
+  m_name(flavs[0].IDName() + " " + flavs[1].IDName() + " --> " +
+	 flavs[2].IDName() + " " + flavs[3].IDName()),
+  m_stretcher(Momenta_Stretcher(string("AMISIC: ")+m_name)),p_me2(NULL),
   m_Emin((*mipars)("E_min")),m_sumInMasses(0.), m_sumOutMasses(0.),
-      m_masslessIS((flavs[0].Kfcode() < 4 || flavs[0].Kfcode() == 21) &&
-                   (flavs[1].Kfcode() < 4 || flavs[1].Kfcode() == 21))
+  m_masslessIS((flavs[0].Kfcode() < 4 || flavs[0].Kfcode() == 21) &&
+	       (flavs[1].Kfcode() < 4 || flavs[1].Kfcode() == 21)),
+  m_massive(false)
 {
-  if (flavs.size() != 4) {
-    msg_Error() << "Error in " << METHOD << ":\n"
-                << "   Tried to initialize MPI process with wrong number of "
-                << "flavours = " << m_flavs.size() << " --> " << m_name
-                << ".\n";
+  if (flavs.size()!=4) {
+    msg_Error()<< "Error in "<<METHOD<<":\n"
+              <<"   Tried to initialize MPI process with wrong number of "
+              <<"flavours = "<<m_flavs.size()<<" --> "<<m_name
+              <<".\n";
     THROW(fatal_error,
           "Tried to initialize MPI process with wrong number of flavours.");
   }
@@ -81,22 +83,21 @@ MI_Process::MI_Process(const std::vector<Flavour>& flavs)
     m_flavs[i]   = flavs[i];
     m_masses[i]  = flavs[i].Mass();
     m_masses2[i] = sqr(m_masses[i]);
-    if (i < 2) m_sumInMasses += m_masses[i];
-    else
+    if (i < 2) m_sumInMasses  += m_masses[i];
+    else {
       m_sumOutMasses += m_masses[i];
+      if (m_masses[i]>0.) m_massive = true;
+    }
   }
 }
 
 MI_Process::~MI_Process() = default;
 
-bool MI_Process::MakeKinematics(
-        MI_Integrator*                                         integrator,
-        std::array<std::shared_ptr<REMNANTS::Remnant_Base>, 2> remnants)
+bool MI_Process::
+MakeKinematics(MI_Integrator * integrator,
+	       array<shared_ptr<REMNANTS::Remnant_Base>, 2> remnants)
 {
-  if (!AllowedKinematics(sqrt(integrator->SHat()))) {
-    //msg_Out()<<"   --> "<<METHOD<<"("<<m_name<<") not allowed.\n";
-    return false;
-  }
+  if (!AllowedKinematics(sqrt(integrator->SHat()))) return false;
   ///////////////////////////////////////////////////////////////////////////
   // Until now only have massless initial state partons.
   ///////////////////////////////////////////////////////////////////////////
@@ -107,31 +108,23 @@ bool MI_Process::MakeKinematics(
   // particles onto their mass shells.  The logic is to go to the c.m. system
   // of the scatter, rescale momenta there, and boost back.
   ///////////////////////////////////////////////////////////////////////////
-  if (m_flavs[2].Kfcode() == 5 || m_flavs[2].Kfcode() == 4) {
+  if (m_massive) {
     Vec4D    cms = m_momenta[0] + m_momenta[1];
     Poincare scattercms(cms);
     for (size_t i=2;i<m_momenta.size();i++) scattercms.Boost(m_momenta[i]);
     if (!m_stretcher.ZeroThem(2,m_momenta) ||
         !m_stretcher.MassThem(2,m_momenta,m_masses)) {
-      //msg_Out()<<"   --> "<<METHOD<<"("<<m_name<<") couldn't boost.\n";
       return false;
     }
     for (size_t i = 2; i < m_momenta.size(); i++)
       scattercms.BoostBack(m_momenta[i]);
   }
-  if (!AllowedRemnants(remnants)) {
-    //msg_Out()<<"   --> "<<METHOD<<"("<<m_name<<") no remnants for:\n"
-    //	     <<"       "
-    //	     <<m_momenta[0]<<" from "<<(*remnants)[0]->InMomentum()<<"\n"
-    //	     <<"       "
-    //	     <<m_momenta[1]<<" from "<<(*remnants)[1]->InMomentum()<<"\n";
-    return false;
-  }
+  if (!AllowedRemnants(remnants)) return false;
   return true;
 }
 
-const bool MI_Process::AllowedRemnants(
-        std::array<std::shared_ptr<REMNANTS::Remnant_Base>, 2> remnants) const
+const bool MI_Process::
+AllowedRemnants(array<shared_ptr<REMNANTS::Remnant_Base>, 2> remnants) const
 {
   ///////////////////////////////////////////////////////////////////////////
   // Make sure there is enough energy left in the remnants

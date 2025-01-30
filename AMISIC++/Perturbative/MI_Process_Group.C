@@ -34,6 +34,31 @@ MI_Process_Group::~MI_Process_Group() {
   m_me2s.clear();
 }
 
+void MI_Process_Group::
+FilterTriggerProcesses(vector<int> triggers,list<MI_Process *> * triggerprocs) {
+  ///////////////////////////////////////////////////////////////////////////
+  // Making a list of "trigger" processes, extracted from the available
+  // inclusive 2->2 scatters, relevant for the biased min-bias.
+  // "Triggers" not contained in the MPI list would lead to a regular
+  // Underlying Event/MPI generation.
+  ///////////////////////////////////////////////////////////////////////////
+  for (list<MI_Process *>::iterator pit=m_processes.begin();
+       pit!=m_processes.end();pit++) {
+    bool add = true;
+    for (size_t i=0;i<triggers.size();i++) {
+      Flavour test = Flavour((kf_code)(abs(triggers[i])));
+      if (triggers[i]<0) test = test.Bar();
+      bool found = false;
+      for (size_t j=2;j<4;j++) {
+	if (test==(*pit)->Flav(j)) { found = true; break; }
+      }
+      if (!found) { add = false; break; }
+    }
+    if (add) triggerprocs->push_back((*pit));
+  }
+}
+
+
 double MI_Process_Group::
 operator()(const double & shat,const double & that,const double & uhat) {
   ///////////////////////////////////////////////////////////////////////////
@@ -45,25 +70,19 @@ operator()(const double & shat,const double & that,const double & uhat) {
   ///////////////////////////////////////////////////////////////////////////
   m_shat = shat; m_that = that; m_uhat = uhat;
   PreCalculate();
-  double tot  = 0., Ehat = sqrt(m_shat);
+  double pref = ( m_pref/sqr(m_shat) * Coupling() *
+		  SoftCorrection(m_that*m_uhat/m_shat) ); 
+  double tot  = 0., xs, Ehat = sqrt(m_shat);
   for (list<MI_Process * >::iterator mit=m_processes.begin();
        mit!=m_processes.end();mit++) {
     if (!(*mit)->AllowedKinematics(Ehat)) continue;
-    tot += ( ATOOLS::Max(0.,p_pdf[0]->GetXPDF((*mit)->Flav(0))) *
-	     ATOOLS::Max(0.,p_pdf[1]->GetXPDF((*mit)->Flav(1))) ) * (**mit)();
-    /*
-    if ((*mit)->Flav(0)==Flavour(kf_gluon) && (*mit)->Flav(1)==Flavour(kf_gluon) &&
-	(*mit)->Flav(2)==Flavour(kf_gluon) && (*mit)->Flav(3)==Flavour(kf_gluon)) {
-      msg_Out()<<"[xs = "
-	       <<p_pdf[0]->GetXPDF((*mit)->Flav(0))<<" * "
-	       <<p_pdf[1]->GetXPDF((*mit)->Flav(1))<<" * "<<((**mit)())<<" * "
-	       <<"pref = "<<m_pref<<"* soft = "<<SoftCorrection(m_scale)<<"] ";
-    }
-    */
+    tot += xs = ( ATOOLS::Max(0.,p_pdf[0]->GetXPDF((*mit)->Flav(0))) *
+		  ATOOLS::Max(0.,p_pdf[1]->GetXPDF((*mit)->Flav(1))) *
+		  pref * (**mit)() );
+    (*mit)->SetLast(xs);
   }
   if (std::isnan(tot)) tot = 0.;
-  m_lastxs = ( m_pref/sqr(m_shat) * Coupling() *
-	       SoftCorrection(m_that*m_uhat/m_shat) * tot );
+  m_lastxs = tot;
   return m_lastxs;
 }
 
@@ -176,7 +195,7 @@ MI_QQB_Processes::MI_QQB_Processes():
 
   vector<Flavour> flavs;
   flavs.resize(4);
-  for (size_t i=2;i<3;i++) {
+  for (size_t i=1;i<6;i++) {
     if (Flavour(i).Mass()>0.) continue;
     // q qbar -> q qbar
     flavs[0] = flavs[2] = Flavour(i);
@@ -187,19 +206,21 @@ MI_QQB_Processes::MI_QQB_Processes():
     for (size_t j=0;j<4;j++) flavs[j] = flavs[j].Bar();
     m_processes.push_back(new MI_Process(flavs));
     m_processes.back()->SetME2(qqbar2qqbar);
-    // q qbar -> gg
-    flavs[2] = flavs[3] = Flavour(kf_gluon);
+    // qbar q -> g g
     flavs[0] = Flavour(i);
     flavs[1] = flavs[0].Bar();
+    flavs[2] = flavs[3] = Flavour(kf_gluon);
     m_processes.push_back(new MI_Process(flavs));
     m_processes.back()->SetME2(qqbar2gg);
-    // qbar q -> g g
-    for (size_t j=0;j<2;j++) flavs[j] = flavs[j].Bar();
+    // q qbar -> gg
+    flavs[1] = Flavour(i);
+    flavs[0] = flavs[1].Bar();
+    flavs[2] = flavs[3] = Flavour(kf_gluon);
     m_processes.push_back(new MI_Process(flavs));
     m_processes.back()->SetME2(qqbar2gg);
     // now loop over all flavours, where i and j are different
-    for (size_t j=1;j<2;j++) {
-      if (i==j || Flavour(j).Mass()>0.) continue;
+    for (size_t j=1;j<6;j++) {
+      if (i==j) continue;
       // q1 q1bar -> q2 q2bar
       flavs[0] = Flavour(i);
       flavs[1] = flavs[0].Bar();
