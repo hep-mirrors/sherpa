@@ -1,6 +1,6 @@
 EVENTS: 100000
 ME_GENERATORS:       Comix
-MI_HANDLER:          Amisic
+MI_HANDLER:          None # Amisic
 YFS:
   MODE:              None
 
@@ -9,7 +9,6 @@ BEAM_ENERGIES:     103
 BEAM_SPECTRA:      EPA
 PDF_LIBRARY:       SASGSherpa
 PDF_SET:           SAS2D
-MI_HANDLER:        Amisic
 MPI_PDF_LIBRARY:   SASGSherpa
 MPI_PDF_SET:       SAS2D
 BEAM_RESCATTERING: None
@@ -52,4 +51,4 @@ RIVET:
   --analyses: [OPAL_2008_I754316,OPAL_2003_I611415]
   --ignore-beams: 1
   USE_HEPMC_SHORT: 1
-ANALYSIS_OUTPUT: smallND
+ANALYSIS_OUTPUT: noMPI
