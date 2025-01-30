@@ -18,7 +18,7 @@ namespace AMISIC {
   private:
     double m_muR_fac, m_muF_fac, m_pt02, m_ptmin2;
     std::array<double, 2> m_xmin, m_xmax;
-    double m_s, m_pref, m_bfac;
+    double m_s, m_pref;
     size_t m_npt2bins;
     
     std::array<PDF::PDF_Base *, 2> p_pdf;
@@ -36,13 +36,10 @@ namespace AMISIC {
 
     void   Initialize(PDF::ISR_Handler * isr,MI_Processes * procs,
 		      axis * sbins);
-    void   UpdateS(const double & s,const double & pt02);
+    void   UpdateS(const double & s,const double & pt02,const double & ptmin2);
 
     double operator()(const double & pt2,const double & yvol);
     double TrialPT2(const double & Q2);
-
-    inline const double & BFac()       const { return m_bfac; }    
-    inline void SetBFac(const double & bfac) { m_bfac = bfac; }
 
     void Test(const double & Q2,const long int & n);
   };

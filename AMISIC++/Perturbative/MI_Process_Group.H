@@ -33,6 +33,9 @@ namespace AMISIC {
     MI_Process_Group(const std::string & name);
     virtual ~MI_Process_Group();
 
+    virtual void FilterTriggerProcesses(std::vector<int> triggers,
+					std::list<MI_Process *> * triggerprocs);
+    
     virtual double operator()(const double & shat,const double & that,
 			      const double & uhat);
     virtual MI_Process * SelectProcess();

@@ -12,7 +12,7 @@ Single_Collision_Handler::Single_Collision_Handler() :
   m_pt2(0.), m_pt2min(0.),
   m_S((rpa->gen.PBeam(0)+rpa->gen.PBeam(1)).Abs2()), m_lastpt2(m_S),
   m_residualx1(1.), m_residualx2(1.), m_Ycms(0.),
-  m_done(false),
+  m_done(false), 
   m_ana(false)
 {}
 
@@ -26,6 +26,7 @@ Init(MI_Processes * processes,Over_Estimator * overestimator,
   p_processes     = processes;
   p_integrator    = p_processes->GetIntegrator();
   p_xsecs         = p_processes->GetXSecs();
+  m_needsTrigger  = (p_processes->TrigSize()>0);
   p_overestimator = overestimator;
   for (size_t i=0;i<2;i++) p_remnants[i] = p_processes->GetRemnant(i);
   p_pint          = pint;
@@ -58,214 +59,103 @@ void Single_Collision_Handler::Reset() {
   m_done     = false;
 }
 
-/*
-  bool Single_Collision_Handler::PrefabricateBlob() {
-  ///////////////////////////////////////////////////////////////////////////
-  // Current use is in x-dependent matter overlap, which mix the generation
-  // of a scatter with fixing the impact parameter.  Assuming the integrator
-  // has produced a successful trial event, triggered by the "FirstB" method
-  // in the Impact class, we select the specific process, create the
-  // kinematics, and fill the blob.
-  ///////////////////////////////////////////////////////////////////////////
-  Blob * blob = nullptr;
-  while (!blob) { blob = p_processes->FillHardScatterBlob(); }
-  m_prefabs.push_back(blob);
-}
-*/
 
-bool Single_Collision_Handler::FirstMPI(Blob * signal) {
-  double pt2_1  = sqr((*signal)["MI_Scale"]->Get<double>());
-  double x1     = (*signal)["PDFInfo"]->Get<PDF_Info>().m_x1;
-  double x2     = (*signal)["PDFInfo"]->Get<PDF_Info>().m_x2;
-  p_overlap->FixDynamicRadius(x1,x2,pt2_1,pt2_1);
-  msg_Out()<<"*** "<<METHOD<<"(x1 = "<<x1<<", x2 = "<<x2<<", "
-  	   <<"pt^2 = "<<pt2_1<<")\n";
-  while (true) {
-    m_b         = p_overlap->SelectB();
-    m_fb        = p_pint->fb(m_S,m_b);
-    m_bfac      = m_fb * p_overlap->MaxValue(m_b);
-    msg_Out()<<"***** b = "<<m_b<<" --> f_b = "<<m_fb<<" "
-    	     <<"--> bfac = "<<m_bfac<<"\n";
-    p_overestimator->SetBFac(m_bfac);
-    m_pt2       = m_S/4.;
-    bool reject = false;
-    while (!reject) {
-      Blob * second;
-      int fill;
-      switch (SelectPT2()) {
-      case 1:
-	//////////////////////////////////////////////////////////////////////
-	// pt^2 is smaller than the pt^2 of the hardest pre-fabricated blob,
-	// we will copy it over and remove it from the (ordered) list.  This
-	// has not been implemented yet due to interplay with first blob.
-	//////////////////////////////////////////////////////////////////////
-	msg_Error()<<METHOD<<" results in a biased minbias event - "
-		   <<"not implemented yet.\n";
-	exit(1);
-      case 0:
-	//////////////////////////////////////////////////////////////////////
-	// pt^2 is harder than the pt^2 of the hardest pre-fabricated blob,
-	// or such a blob doesn't exist.  Will check if we can fill a
-	// hard scatter blob, if successful we can stop.
-	//////////////////////////////////////////////////////////////////////
-	second  = new Blob();
-	fill    = p_processes->FillHardScatterBlob(second,pt2_1);
-	if (fill==1) {
-	  /////////////////////////////////////////////////////////////////////
-	  // New blob (second) was successfull filled and fulfils requirements 
-	  // that its pt^2 < pt^2_1, the pt^2 of the signal blob.  We store
-	  // the new blob now to get it off the shelf in the NextScatter call.
-	  /////////////////////////////////////////////////////////////////////
-	  m_prefabs[m_pt2] = second;
-	  m_lastpt2        = m_pt2;
-	  m_done           = false;
-	  return true;
-	}
-	else {
-	  /////////////////////////////////////////////////////////////////////
-	  // New blob (second) couldn't be created and needs to be deleted.
-	  /////////////////////////////////////////////////////////////////////
-	  delete second;
-	  /////////////////////////////////////////////////////////////////////
-	  // Kinematics of new blob will have to be vetoed, as its 
-	  // pt^2 > pt^2_1, which means we have to select a new impact
-	  // parameter b.
-	  /////////////////////////////////////////////////////////////////////
-	  if (fill==-1) reject = true;
-	}
-	break;
-      case -1:
-      default:
-	//////////////////////////////////////////////////////////////////////
-	// pt^2 is smaller than pt2min.  Will stop and deal with it at end
-	// of method.
-	//////////////////////////////////////////////////////////////////////
-	m_lastpt2 = 0.;
-	m_done    = true;
-	return true;
+double Single_Collision_Handler::PrefabricateBlob(const int & mode) {
+  ///////////////////////////////////////////////////////////////////////////
+  // Current use is in producing "biased" minbias, i.e. by enforcing a
+  // particular final state at parton level.
+  // The method will return the relative weight for its production.
+  ///////////////////////////////////////////////////////////////////////////
+  double wt = 1., pt2;
+  if (mode!=0) {
+    Blob * blob = nullptr;
+    while (!blob) {
+      if (p_integrator->TrialEvent(m_S,p_overlap)) {
+	wt  = p_processes->MakeTriggerBlob(blob);
       }
     }
+    m_prefabs[p_integrator->PT2()] = blob;
   }
+  return wt;
+}
+
+
+bool Single_Collision_Handler::FirstMPI(Blob * signal) {
+  ///////////////////////////////////////////////////////////////////////////
+  // Initialising the MPI sequence along the following steps:
+  // 1. Extract the relevant kinematics variables, including in particular the
+  //    hardest pt^2_veto scale, from the signal blob and adjust the effective
+  //    dynamic radius in the matter overlap.
+  // 2. Produce trial impact parameters m_b and trial pt^2_trial of potential 
+  //    first MPI scatters, until a trial pt^2_trial<pt^2_veto for a viable
+  //    scatter that is softer than the signal has been found.
+  // TODO: in case the signal is independent of, i.e. different from, the 2->2
+  //       scatters in the potential MPI scatters, we should not veto but
+  //       just pick an impact parameter m_b and start without the veto
+  //       condition.
+  ///////////////////////////////////////////////////////////////////////////
+  double pt2veto = sqr((*signal)["MI_Scale"]->Get<double>());
+  double x1      = (*signal)["PDFInfo"]->Get<PDF_Info>().m_x1;
+  double x2      = (*signal)["PDFInfo"]->Get<PDF_Info>().m_x2;
+  p_overlap->FixDynamicRadius(x1,x2,pt2veto,pt2veto);
+  do {
+    m_b   = p_overlap->SelectB();
+    m_pt2 = m_lastpt2 = m_S/4.;
+  } while (SelectPT2()==0 && m_pt2>pt2veto);
+  m_lastpt2 = m_pt2;
+  if (m_pt2<=m_pt2min) m_done = true;
   return true;
 }
 
-bool Single_Collision_Handler::FirstMinBiasScatter(Blob * first) {
-  ///////////////////////////////////////////////////////////////////////////
-  // Start the Min bias event by continuing to select a (new) hardest scatter
-  // and the associated impact parameter of the two colliding hadronic systems
-  // until the implicit Sudakov rejection,  which is achieve by a hit-or-miss
-  // method, accepts it.  In this process, either a pt^2 smaller than the
-  // cut-off is selected or a first MPI blob (i.e. the second min bias blob)
-  // with pt^2 smaller than the signal process scale may be filled and added
-  // to the list of pre-fabricated blobs, to be taken off the shelf in the
-  // NextScatter method.
+bool Single_Collision_Handler::FirstMinBiasScatter(Blob * blob) {
   ///////////////////////////////////////////////////////////////////////////
   // If AMISIC only produces (semi-inclusive) soft interactions use the
   // NonPerturbative_XSecs to generate a blob.
+  ///////////////////////////////////////////////////////////////////////////
   if (p_soft) {
-    if (p_soft->MakeScatter(first)) {
-      first->AddData("Renormalization_Scale",new Blob_Data<double>(p_soft->MuR2()));
-      first->AddData("Factorization_Scale",new Blob_Data<double>(p_soft->MuF2()));
-      first->SetTypeSpec("Soft_Process_from_AMISIC");
+    if (p_soft->MakeScatter(blob)) {
+      blob->AddData("Renormalization_Scale",new Blob_Data<double>(p_soft->MuR2()));
+      blob->AddData("Factorization_Scale",new Blob_Data<double>(p_soft->MuF2()));
+      blob->SetTypeSpec("Soft_Process_from_AMISIC");
       m_done = true;
       return true;
     }
     THROW(fatal_error,"Couldn't fill non-perturbative scatter blob.");
   }
-  bool done = false;
-  while (!done) {
-    first->ClearAllData();
-    first->DeleteOwnedParticles();
-    double pt2_1 = MakeHardScatterBlob(first);
-    p_overlap->FixDynamicRadius(p_integrator->X(0),p_integrator->X(1));
+  ///////////////////////////////////////////////////////////////////////////
+  // Start the Min bias event by repeating the two steps below, until
+  // a viable first (hardest) blob is found.
+  // 1. Selecting b according to db dphi b P_int(b)/sigma_ND from
+  //    the Interaction_Probability class
+  // 2. Produce a hard scatter, using the NextScatter method.
+  ///////////////////////////////////////////////////////////////////////////
+  blob->ClearAllData();
+  blob->DeleteOwnedParticles();
+  bool success = false;
+  int  trials  = 100;
+  while (!success) {
+    m_b    = p_pint->SelectB(m_S);
+    trials = 100;
     do {
-      m_b  = p_overlap->SelectB();
-      m_fb = p_pint->fb(m_S,m_b);
-    } while (m_fb<=0.);
-    m_bfac        = m_fb * p_overlap->MaxValue(m_b);
-    p_overestimator->SetBFac(m_bfac);
-    m_pt2         = m_S/4.;
-    bool reject   = false;
-    Blob * second = nullptr;
-    while (!reject && !done) {
-      int fill;
-      switch (SelectPT2()) {
-      case 1:
-	////////////////////////////////////////////////////////////////////////
-	// pt^2 is smaller than the pt^2 of the hardest pre-fabricated blob,
-	// we will copy it over and remove it from the (ordered) list.  This
-	// has not been implemented yet due to interplay with first blob.
-      ////////////////////////////////////////////////////////////////////////
-	msg_Error()<<METHOD
-		   <<" results in a biased minbias event - not implemented yet.\n";
-	exit(1);
-      case 0:
-	////////////////////////////////////////////////////////////////////////
-	// pt^2 is harder than the pt^2 of the hardest pre-fabricated blob,
-	// or such a blob doesn't exist.  Will check if we can fill a
-	// hard scatter blob, if successful we can stop.
-	////////////////////////////////////////////////////////////////////////
-	second  = new Blob();
-	fill    = p_processes->FillHardScatterBlob(second,pt2_1);
-	if (fill==1) {
-	  /////////////////////////////////////////////////////////////////////////
-	  // New blob (second) was successfull filled and fulfils requirements that
-	  // its pt^2 < pt^2_1, the pt^2 of the signal blob.  We store the new blob
-	  // now to get it off the shelf in the NextScatter call.
-	  /////////////////////////////////////////////////////////////////////////
-	  m_prefabs[m_pt2] = second;
-	  m_lastpt2        = m_pt2;
-	  m_done           = false;
-	  done             = true;
-	}
-	else {
-	  /////////////////////////////////////////////////////////////////////////
-	  // New blob (second) couldn't be created and needs to be deleted.
-	  /////////////////////////////////////////////////////////////////////////
-	  delete second;
-	  ///////////////////////////////////////////////////////////////////////
-	  // Kinematics of new blob will have to be vetoed, as its pt^2 > pt^2_1,
-	// which means we have to select a new impact parameter b.
-	  ///////////////////////////////////////////////////////////////////////
-	  if (fill==-1) reject = true;
-	}
-	break;
-      case -1:
-      default:
-	////////////////////////////////////////////////////////////////////////
-	// pt^2 is smaller than pt2min.  Will stop and deal with it at end
-	// of method.
-	////////////////////////////////////////////////////////////////////////
-	m_lastpt2 = 0.;
-	m_done = done = true;
-	break;
-      }
-    }
+      m_done  = false;
+      m_pt2   = m_lastpt2 = m_S/4.;
+      success = NextScatter(blob);
+    } while (!success && (trials--)>0);
   }
   ///////////////////////////////////////////////////////////////////////////////
   // Updating the new "signal" blob of the min bias event and adding the last
   // bits of relevant information.
+  // Switching Sudakov evolution back on: m_done = false
   ///////////////////////////////////////////////////////////////////////////////
-  first->SetType(btp::Hard_Collision);
-  first->SetStatus(blob_status::needs_showers);
-  first->AddData("Trials",new Blob_Data<size_t>(1));
-  first->AddData("Weight_Norm",new Blob_Data<double>(p_xsecs->XSnd()));
+  blob->AddData("Trials",new Blob_Data<size_t>(1));
+  blob->AddData("Weight_Norm",new Blob_Data<double>(p_xsecs->XSnd()));
+  m_done = false;
   return true;
-}
-
-double Single_Collision_Handler::MakeHardScatterBlob(Blob * blob) {
-  ///////////////////////////////////////////////////////////////////////////
-  // Here we do not apply any pt2 veto as this is the first blob in a
-  // min bias or rescattering sequence.
-  ///////////////////////////////////////////////////////////////////////////
-  do { } while (!(p_integrator->TrialEvent(m_S,p_overlap) &&
-		  p_processes->FillHardScatterBlob(blob)));
-  return p_integrator->PT2();
 }
 
 bool Single_Collision_Handler::NextScatter(Blob * blob) {
   ///////////////////////////////////////////////////////////////////////////
-  // Simple logic - bfac is provided from outside, now
+  // Simple logic:
   // - either use (one of) the pre-fabricated blob(s), or
   // - generate the next pt^2 with the Sudakov-like hit-or-miss method
   //   and create a new blob based on the associated kinematics
@@ -275,9 +165,9 @@ bool Single_Collision_Handler::NextScatter(Blob * blob) {
   if (m_done) return false;
   m_pt2 = m_lastpt2;
   DefinePossibleNext();
-  int fill;
-  bool run = true;
-  while (run) {
+  int  fill = 0;
+  bool done = false;
+  while (!done) {
     switch (SelectPT2()) {
     case 1:
       ////////////////////////////////////////////////////////////////////////
@@ -294,13 +184,12 @@ bool Single_Collision_Handler::NextScatter(Blob * blob) {
       // or such a blob doesn't exist.  Will check if we can fill a
       // hard scatter blob, if successful we can stop.
       ////////////////////////////////////////////////////////////////////////
-         fill = p_processes->FillHardScatterBlob(blob,m_lastpt2);
+      fill = p_processes->FillHardScatterBlob(blob,m_lastpt2);
       if (fill==1) {
-
         m_lastpt2 = m_pt2;
-      blob->SetType(btp::Hard_Collision);
-      blob->SetStatus(blob_status::needs_showers);
-      blob->SetId();
+	blob->SetType(btp::Hard_Collision);
+	blob->SetStatus(blob_status::needs_showers);
+	blob->SetId();
 	return true;
       }
       else {
@@ -310,18 +199,25 @@ bool Single_Collision_Handler::NextScatter(Blob * blob) {
     case -1:
     default:
       ////////////////////////////////////////////////////////////////////////
-      // pt^2 is smaller than pt2min.  Will stop and deal with it at end
-      // of method.
+      // pt^2 is smaller than pt2min.  
+      // This means we will switch off "Sudakov evolution" at the end of the
+      // method (m_done = true) - for the FirstMinBias method we will have to
+      // switch it on again.
       ////////////////////////////////////////////////////////////////////////
-      run = false;
+      done = true;
       break;
     }
   }
   if (m_pt2<m_pt2min) m_done = true;
+  m_lastpt2 = m_pt2;
   return false;
 }
 
 void Single_Collision_Handler::DefinePossibleNext() {
+  ///////////////////////////////////////////////////////////////////////////
+  // Checks the pt2-ordered list of prefabricated blobs and, if there are any 
+  // left, the next pt^2 and corresponding blob are extracted from the list. 
+  ///////////////////////////////////////////////////////////////////////////
   m_nextpt2  = -1.;
   m_nextblob = nullptr;
   if (!m_prefabs.empty()) {
@@ -334,30 +230,28 @@ int Single_Collision_Handler::SelectPT2() {
   ///////////////////////////////////////////////////////////////////////////
   // Generate a trial kinematics, starting from m_lastpt2
   // - produces a trial pt2 based on a fast and crude overestimator (in
-  //   TrialPT2). If it falls below the minimal value, false is returned,
+  //   TrialPT2). If it falls below the minimal value, -1 is returned,
   //    which effectively stops the generation of secondary scatters
+  // - if the trial pt2 is below the (next, if present) prefabricated blob,
+  //   its own pt^2 scale overwrites the trial pt2 and 1 is returned.
   // - produce rapidites for the two outgoing particles (flat distribution),
   //   reconstruct Bjorken-x for the PDFs and the Mandelstams
   // - calculate the cross section summed over all parton-level processes
   // - accept or reject the kinematics with a hit-or-miss of true over
-  //   overestimated differential cross section dsigma/dpt2
+  //   overestimated differential cross section dsigma/dpt2,
+  //   if accepted 0 is returned. 
   ///////////////////////////////////////////////////////////////////////////
   while (true) {
     m_pt2 = p_overestimator->TrialPT2(m_pt2);
-    if (m_pt2<=m_pt2min)  {
-      msg_Out()<<"*** "<<METHOD<<"(pt^2 = "<<m_pt2<<" < "<<m_pt2min<<")\n";
-      return -1;
-    }
+    if (m_pt2<=m_pt2min)  return -1;
     if (m_pt2<=m_nextpt2) { m_pt2 = m_nextpt2; return 1; }
     if (!p_integrator->MakeKinematics(m_pt2,m_S)) continue;
     p_overlap->FixDynamicRadius(p_integrator->X(0),p_integrator->X(1));
     double wt = ( p_processes->PDFnorm()*(*p_processes)()/
 		  (*p_overestimator)(m_pt2,p_integrator->Yvol()) *
-		  (*p_overlap)(m_b)/m_bfac );
+		  (*p_overlap)(m_b) );
     if (m_ana) AnalyseWeight(wt);
-    msg_Out()<<"*** "<<METHOD<<"(pt^2 = "<<m_pt2<<", wt = "<<wt;
-    if (wt>=ran->Get()) { msg_Out()<<" -> success)\n";break; }
-    msg_Out()<<" -> too small)\n";
+    if (wt>=ran->Get()) break;
   }
   return 0;
 }
@@ -394,11 +288,12 @@ void Single_Collision_Handler::UpdateSandY(double s, double y) {
   ///////////////////////////////////////////////////////////////////////////
   // Updating everything that is needed for generation of next scatter
   // Setting the last pT^2 on s, as a default.
+  ///////////////////////////////////////////////////////////////////////////
   m_lastpt2 = m_S = s;
   m_Ycms = y;
   if (m_evttype==evt_type::Perturbative) {
     p_processes->UpdateS(m_S);
-    p_overestimator->UpdateS(m_S,  p_processes->PT02());
+    p_overestimator->UpdateS(m_S,p_processes->PT02(),p_processes->PT2Min());
   }
 }
 
@@ -442,25 +337,4 @@ void Single_Collision_Handler::Analyse(const double & pt2,Blob * blob) {
   if (fl2==22) fl2=-6;
   m_histos[string("flavs")]->Insert(fl1);
   m_histos[string("flavs")]->Insert(fl2);
-}
-
-void Single_Collision_Handler::Test(const double & Q2,const long int & n) {
-  /*
-  msg_Out()<<"  * "<<METHOD<<" for Q^2 = "<<Q2<<", s = "<<m_S<<".\n";
-  Histogram histo(0,0.0,Q2,100);
-  for (long int dryrun=0;dryrun<n;dryrun++) {
-    SetLastPT2(Q2);
-    bool taken(false);
-    while (NextScatter() && m_lastpt2>0) {
-      if (!taken) {
-	histo.Insert(m_lastpt2);
-	taken = true;
-      }
-      SetLastPT2(m_pt2);
-    }
-  }
-  histo.Finalize();
-  histo.Output("True_PT2");
-  msg_Out()<<"  * "<<METHOD<<": finished "<<n<<" dry runs.\n";
-  */
 }

@@ -22,8 +22,8 @@ namespace AMISIC {
     evt_type::code m_evttype;
 
     void   CalculateXSecs();
-    double MakePoint();
     double TrialEvent();
+    double MakePoint();
   public:
     Beam_Integrator() : m_Npoints(10000), m_variable(0), m_smin(4.),
 			m_total(0.), m_error(1.), m_max(0.) {}

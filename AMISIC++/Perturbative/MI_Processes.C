@@ -66,13 +66,16 @@ bool MI_Processes::Initialize(MODEL::Model_Base* const          model,
   m_S = m_S_lab = m_ecms*m_ecms;
   m_ptmax2      = m_S/4.;
   ///////////////////////////////////////////////////////////////////////////
-  // Now initialize the 2->2 scatters and the integrator ...
+  // Now check if we have processes to trigger on.
+  // Initialize all 2->2 scatters and the integrator ...
   ///////////////////////////////////////////////////////////////////////////
+  m_triggers = mipars->GetTriggerFlavs(); 
   InitializeAllProcesses();
   m_integrator.Initialize(isr);
   ///////////////////////////////////////////////////////////////////////////
   // ... and integrate away.
   ///////////////////////////////////////////////////////////////////////////
+  UpdateS(m_S);
   (*p_xsecs)(m_S);
   msg_Info()<<"   "<<std::string(77,'-')<<"\n\n";
   ///////////////////////////////////////////////////////////////////////////
@@ -119,11 +122,19 @@ bool MI_Processes::InitializeAllProcesses() {
   // - qqbar->Z, qqbar'->W
   // - gq->Zq, gq->Wq', etc.
   ///////////////////////////////////////////////////////////////////////////
+  if (m_triggers.size()>0) FilterTriggerProcesses();
   SetPDFs();
   SetAlphaS();
   m_printit = true;
   return true;
 }
+
+void MI_Processes::FilterTriggerProcesses() {
+  for (list<MI_Process_Group * >::iterator git=m_groups.begin();
+       git!=m_groups.end();git++) 
+    (*git)->FilterTriggerProcesses(m_triggers,&m_triggerprocs);
+}
+
 
 double MI_Processes::operator()() {
   ///////////////////////////////////////////////////////////////////////////
@@ -143,8 +154,8 @@ operator()(const double & shat,const double & that,const double & uhat,
 	   const double & x1,const double & x2) {
   ///////////////////////////////////////////////////////////////////////////
   // Return the total parton-level scattering cross section, summed over all
-  // contributing processes.  This implicitly assumes that the PDFs have
-  // already been set.
+  // contributing processes.  
+  // Note: This implicitly assumes that the PDFs have already been set.
   ///////////////////////////////////////////////////////////////////////////
   m_lastxs   = 0.;
   if (x1<=m_xmin[0]/m_resx[0] || x1>=m_xmax[0] ||
@@ -197,27 +208,68 @@ int MI_Processes::FillHardScatterBlob(Blob *&  blob,const double & pt2veto) {
   return 1;
 }
 
+double MI_Processes::MakeTriggerBlob(ATOOLS::Blob *& blob) {
+  ///////////////////////////////////////////////////////////////////////////
+  // Select a "trigger" process for the biased min-bias generation from the
+  // list of the available processes.  
+  // Generate the process kinematics and fill the (new) blob.
+  ///////////////////////////////////////////////////////////////////////////
+  MI_Process * proc;
+  do {
+    proc = SelectTrigger();
+  } while (proc==nullptr ||
+	   !proc->MakeKinematics(&m_integrator,p_remnants) ||
+	   !proc->SetColours());
+  blob = new Blob();
+  blob->SetType(btp::Hard_Collision);
+  blob->SetStatus(blob_status::needs_showers);
+  blob->SetId();
+  blob->SetTypeSpec("AMISIC++ 1.1");
+  array<int,2> inflavs;
+  for (size_t i=0;i<2;i++) {
+    Particle * part = proc->GetParticle(i);
+    blob->AddToInParticles(part);
+    inflavs[i] = (part->Flav().IsAnti() ? -1 : 1) * part->Flav().Kfcode();
+  }
+  for (size_t i=2;i<4;i++) blob->AddToOutParticles(proc->GetParticle(i));
+  blob->AddData("WeightsMap",new Blob_Data<Weights_Map>({}));
+  blob->AddData("Renormalization_Scale",new Blob_Data<double>(m_muR2));
+  blob->AddData("Factorization_Scale",new Blob_Data<double>(m_muF2));
+  blob->AddData("Resummation_Scale",new Blob_Data<double>(Max(m_muR2,m_muF2)));
+  PDF_Info info(inflavs[0],inflavs[1],
+		m_integrator.X(0),m_integrator.X(1),
+		m_muF2,m_muF2);
+  blob->AddData("PDFInfo",new Blob_Data<PDF_Info>(info));
+  double wt = m_triggerxs/(*this)();
+  return wt;
+}
+
 double MI_Processes::TotalCrossSection(const double & s,const bool & output) {
   ///////////////////////////////////////////////////////////////////////////
   // Calculate the hard cross section first, by iterating over the pt2 bins.
-  // m_xshard is calculated as the total hard cross section at fixed s without
-  // any effects from the matter overlap
+  // m_xshard is calculated as the total hard cross section at fixed s.
+  // Effects from the matter overlap are implicitly integrated over as its
+  // b-integration yields unity.
   ///////////////////////////////////////////////////////////////////////////
+  m_integrator.SetPT2min(mipars->CalculatePTmin2(s));
   m_xshard      = m_integrator(s,nullptr,0.);
   if (output) {
-    msg_Info()<<"   "<<std::string(77,'-')<<"\n"
+    msg_Info()<<"   "<<std::string(85,'-')<<"\n"
 	      <<"   | "<<METHOD<<": xs_pert = "
 	      <<std::setprecision(4)<<std::setw(10)
 	      <<(m_xshard*rpa->Picobarn()/1.e9)<<" mb "
 	      <<"+- "<<std::setprecision(0)<<std::setw(3)
 	      <<(100.*m_integrator.Uncertainty()/m_xshard)
-	      <<"%."<<std::string(9,' ')<<"|\n";
+	      <<"%."<<std::string(17,' ')<<"|\n";
   }
   return m_xshard;
 }
 
 void MI_Processes::
 CalcScales(const double & shat,const double & that,const double & uhat) {
+  ///////////////////////////////////////////////////////////////////////////
+  // Scale choices - at the moment it is only pT
+  ///////////////////////////////////////////////////////////////////////////
   double pt2 = that*uhat/shat;
   switch (m_muR_scheme) {
   case scale_scheme::PT_with_Raps:
@@ -234,7 +286,6 @@ CalcScales(const double & shat,const double & that,const double & uhat) {
   default:
     m_muF2 = m_muF_fac*pt2;
   }
-  // msg_Out()<<"[pt^2 = "<<pt2<<" --> "<<m_muR2<<"/"<<m_muF2<<" ] ";
 }
 
 void MI_Processes::CalcPDFs(const double & x1,const double & x2) {
@@ -281,6 +332,21 @@ MI_Process * MI_Processes::SelectProcess() {
   return (*mig)->SelectProcess();
 }
 
+MI_Process * MI_Processes::SelectTrigger() {
+  ///////////////////////////////////////////////////////////////////////////
+  // Sum over all cross sections of all groups and select one of the groups.
+  // Then select one of the processes within the group.
+  ///////////////////////////////////////////////////////////////////////////
+  m_triggerxs = 0.;
+  for (auto tpi : m_triggerprocs) m_triggerxs += tpi->LastXS();
+  double disc = 0.9999999999 * m_triggerxs * ran->Get();
+  for (auto tpi : m_triggerprocs) {
+    disc -= tpi->LastXS();
+    if (disc<0.) return tpi;
+  }
+  return (*m_triggerprocs.begin());
+}
+
 void MI_Processes::UpdateS(const double & s) {
   ///////////////////////////////////////////////////////////////////////////
   // Update c.m. energy for variable centre-of-mass energies:
@@ -290,6 +356,9 @@ void MI_Processes::UpdateS(const double & s) {
   m_S      = s;
   m_ecms   = sqrt(m_S);
   m_pt02   = mipars->CalculatePT02(m_S);
+  m_ptmin2 = mipars->CalculatePTmin2(m_S);
+  m_ptmin  = sqrt(m_ptmin2);
+  m_integrator.SetPT2min(m_ptmin2);
   (*p_xsecs)(m_S);
   ///////////////////////////////////////////////////////////////////////////
   // need to upate pt02 and ptmin2 for new s as well.

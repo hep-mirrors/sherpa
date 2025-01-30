@@ -3,6 +3,10 @@
 
 #include <map>
 #include <string>
+#include <vector>
+
+namespace ATOOLS {
+}
 
 namespace AMISIC {
   class axis;
@@ -51,10 +55,12 @@ namespace AMISIC {
   private:
     double m_pt02ref, m_pt02IR, m_ptmin2ref, m_ptmin2IR;
     double m_Eref, m_Sref, m_Ecms, m_Scms, m_eta;
-    evt_type::code  m_evttype;
-    scale_scheme    m_scaleRscheme, m_scaleFscheme;
-    two_pions::code m_twopions;
+    evt_type::code   m_evttype;
+    scale_scheme     m_scaleRscheme, m_scaleFscheme;
+    two_pions::code  m_twopions;
+    std::vector<int> m_triggerflavs;
     std::map<std::string,double> m_parameters;
+    std::map<std::string,int>    m_flags;
 
     axis * p_sbins;
   public:
@@ -62,13 +68,15 @@ namespace AMISIC {
     ~MI_Parameters() = default;
 
     double operator()(const std::string& keyword) const;
+    int    operator[](const std::string& keyword) const;
     double CalculatePT02(const double & s=-1) const;
     double CalculatePTmin2(const double & s=-1) const;
 
-    const evt_type::code  & GetEvtType()          const { return m_evttype; }
-    const scale_scheme    & GetScaleRScheme()     const { return m_scaleRscheme; }
-    const scale_scheme    & GetScaleFScheme()     const { return m_scaleFscheme; }
-    const two_pions::code & GetTwoPionTreatment() const { return m_twopions; }
+    const evt_type::code   & GetEvtType()          const { return m_evttype; }
+    const scale_scheme     & GetScaleRScheme()     const { return m_scaleRscheme; }
+    const scale_scheme     & GetScaleFScheme()     const { return m_scaleFscheme; }
+    const two_pions::code  & GetTwoPionTreatment() const { return m_twopions; }
+    const std::vector<int> & GetTriggerFlavs()     const { return m_triggerflavs; }
   };
 
   extern const MI_Parameters * mipars;

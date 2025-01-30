@@ -48,14 +48,7 @@ namespace AMISIC {
     // which will become the full hard cross section when integrated over b.
     //////////////////////////////////////////////////////////////////////////
     inline double DiffXSec(const double & s,const double & b) {
-      return (*p_diffxsec)(s,b);
-    }
-    inline double fb(const double & s,const double & b) {
-      //msg_Out()<<METHOD<<"("<<s<<", "<<b<<"): "
-      //       <<(*p_diffxsec)(s,b)<<"/"
-      //       <<p_procs->GetXSecs()->XSratio(s)<<".\n";
-      if ((*this)(s,b)<=1.e-12) return -1.;
-      return (*p_diffxsec)(s,b)/p_procs->GetXSecs()->XSratio(s);
+      return (b<=p_mo->Bmax() ? (*p_diffxsec)(s,b) : 0.);
     }
     //////////////////////////////////////////////////////////////////////////
     // Probability for at least one interaction, Eq. (SZ, 24)
@@ -67,13 +60,6 @@ namespace AMISIC {
     // The s-dependent radius multiplier
     //////////////////////////////////////////////////////////////////////////
     inline double K(const double & s) const { return (*p_k)(s); }
-    //////////////////////////////////////////////////////////////////////////
-    // The s-dependent norm for the diffxsec
-    // (*p_norm)(s) = \int d^2b \int dx_1 dx_2 f(x_1)f(x_2) {
-    //                          O(b;x_1,x_2) \hat\sigma(\hat{s})
-    //                          exp[1-O(b;x_1,x_2)\hat\sigma(\hat{s})] }
-    //////////////////////////////////////////////////////////////////////////
-    inline double Norm(const double & s) const { return (*p_norm)(s); }
   };
 
   //////////////////////////////////////////////////////////////////////////

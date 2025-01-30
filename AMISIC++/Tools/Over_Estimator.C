@@ -22,7 +22,7 @@ using namespace ATOOLS;
 /////////////////////////////////////////////////////////////////////////////
 
 Over_Estimator::Over_Estimator() :
-  m_muR_fac(1.), m_muF_fac(1.), m_pref(0.), m_bfac(1.), m_npt2bins(1000),
+  m_muR_fac(1.), m_muF_fac(1.), m_pref(0.), m_npt2bins(1000),
   p_prefs(nullptr)
 {}
 
@@ -49,25 +49,29 @@ Initialize(PDF::ISR_Handler * isr,MI_Processes * procs,axis * sbins) {
   Output();
 }
 
-void Over_Estimator::UpdateS(const double & s,const double & pt02) {
+void Over_Estimator::UpdateS(const double & s,const double & pt02,const double & ptmin2) {
   ////////////////////////////////////////////////////////////////////////////
   // Updating to new variable centre-of-mass energy if necessary, and fixing a
   // suitable overestimating prefactor by interpolation in the look-up tables.
   ////////////////////////////////////////////////////////////////////////////
-  m_pref = (*p_prefs)(m_s=s);
-  m_pt02 = pt02;
+  m_pref   = (*p_prefs)(m_s=s);
+  m_pt02   = pt02;
+  m_ptmin2 = ptmin2;
 }
 
 void Over_Estimator::FixMaximum(MI_Processes * procs,axis * sbins) {
   ////////////////////////////////////////////////////////////////////////////
   // Looping over all relevant s values from the Sudakov tables in the 
   // MI_Processes to fill a look-up table of maxima.
+  // Note: This does not include any effect of the matter overlap
+  //       (its weight should be below unity)
   ////////////////////////////////////////////////////////////////////////////
   p_prefs    = new OneDim_Table(*sbins);
   for (size_t sbin=0;sbin<sbins->m_nbins;sbin++) {
-    m_s    = sbins->x(sbin);
-    m_pt02 = mipars->CalculatePT02(m_s);
-    double ratioN  = pow(m_s/m_pt02,1./double(m_npt2bins));
+    m_s      = sbins->x(sbin);
+    m_pt02   = mipars->CalculatePT02(m_s);
+    m_ptmin2 = mipars->CalculatePT02(m_s);
+    double ratioN  = pow(m_s/m_ptmin2,1./double(m_npt2bins));
     double maxpref = 0.;
     for (size_t i=0;i<m_npt2bins;i++) {
       ///////////////////////////////////////////////////////////////////////
@@ -78,7 +82,7 @@ void Over_Estimator::FixMaximum(MI_Processes * procs,axis * sbins) {
       // very crude and massively overestimated rapidity volume both partons
       // can occupy.
       ///////////////////////////////////////////////////////////////////////
-      double pt2    = m_pt02 * pow(ratioN,i);
+      double pt2    = m_ptmin2 * pow(ratioN,i);
       double xt     = sqrt(4.*pt2/m_s);
       if (xt*xt > m_xmax[0]*m_xmax[1]) continue;
       double yvol   = sqr(2.*log(1./xt*(1.+sqrt(1.-xt*xt))));
@@ -147,10 +151,7 @@ double Over_Estimator::TrialPT2(const double & Q2) {
   // random = exp[-int_{q^2}^{Q2} dpt2 prefb/(pt2+pt02/4)^2]
   ///////////////////////////////////////////////////////////////////////////
   double Q2tilde = Q2+m_pt02/4.;
-  double prefb   = m_pref*m_bfac;
-  msg_Out()<<"*** "<<METHOD<<"(Q2 = "<<Q2<<" -> Q2~ = "<<Q2tilde<<", "
-  	   <<"pref = "<<m_pref<<" * "<<m_bfac<<")\n";
-  return ( prefb * Q2tilde/(prefb-Q2tilde*log(Max(1.e-12,ran->Get()))) -
+  return ( m_pref * Q2tilde/(m_pref-Q2tilde*log(Max(1.e-12,ran->Get()))) -
 	   m_pt02/4. );
 }
 
@@ -159,13 +160,13 @@ void Over_Estimator::Output() {
 	    <<"   | Fixed (energy-dependent) maxima for "
 	    <<"quick'n'dirty Sudakov evaluation"
 	    <<"      |\n"
-	    <<"   |       Energy [GeV] |      "
-	    <<"Maximum"<<std::string(41,' ')<<"|\n";
+	    <<"   | Energy [GeV]       | Maximum"
+	    <<std::string(46,' ')<<"|\n";
   for (size_t i=0;i<p_prefs->GetAxis().m_nbins;i++)
     msg_Info()<<"   | "
 	      <<std::setprecision(6)<<std::setw(18)
-	      <<sqrt(p_prefs->GetAxis().x(i))<<" |     "
-	      <<std::setprecision(6)<<std::setw(12)<<p_prefs->Value(i)
+	      <<sqrt(p_prefs->GetAxis().x(i))<<" | "
+	      <<std::setprecision(8)<<std::setw(16)<<p_prefs->Value(i)
 	      <<std::string(37,' ')<<"|\n";
   msg_Info()<<"   "<<std::string(77,'-')<<"\n\n";      
 }

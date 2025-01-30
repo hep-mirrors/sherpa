@@ -51,14 +51,6 @@ MI_Parameters::MI_Parameters() :
   m_parameters[string("E_min")] = s["E_Min"].SetDefault(0.25).Get<double>();
   m_parameters[string("SigmaND_Norm")]
     = s["SIGMA_ND_NORM"].SetDefault(1.02).Get<double>();
-  m_parameters[string("nPT_bins")]
-    = s["nPT_bins"].SetDefault(200).Get<size_t>();
-  m_parameters[string("nMC_points")]
-    = s["nMC_points"].SetDefault(1000).Get<size_t>();
-  m_parameters[string("nS_bins")]
-    = s["nS_bins"].SetDefault(40).Get<size_t>();
-  m_parameters[string("nB_bins")]
-    = s["nB_bins"].SetDefault(20).Get<size_t>();
   m_parameters[string("PomeronIntercept")]
     = s["PomeronIntercept"].SetDefault(0.0808).Get<double>();
   m_parameters[string("PomeronSlope")]
@@ -87,6 +79,19 @@ MI_Parameters::MI_Parameters() :
     = s["Lambda_nr"].SetDefault(0.15).Get<double>();
   m_parameters[string("delta_nr")]
     = s["delta_nr"].SetDefault(0.75).Get<double>();
+  
+  m_flags[string("nPT_bins")]
+    = s["nPT_bins"].SetDefault(200).Get<size_t>();
+  m_flags[string("nMC_points")]
+    = s["nMC_points"].SetDefault(1000).Get<size_t>();
+  m_flags[string("nS_bins")]
+    = s["nS_bins"].SetDefault(40).Get<size_t>();
+  m_flags[string("nB_bins")]
+    = s["nB_bins"].SetDefault(20).Get<size_t>();
+  m_flags[string("nMaxScatters")]
+    = s["N_MaxScatters"].SetDefault(10000).Get<size_t>();
+
+  
   size_t twopions = s["TwoPionInterference"].SetDefault(1).Get<size_t>();
   switch (twopions) {
   case 4:  m_twopions = two_pions::cont_only;      break;
@@ -96,10 +101,9 @@ MI_Parameters::MI_Parameters() :
   case 0:
   default: m_twopions = two_pions::none;           break;
   }
-  msg_Out()<<METHOD<<":\n"
-	   <<"p_T0 = "<<m_parameters[string("pt_0(ref)")]<<", "
-	   <<"p_Tmin = "<<m_parameters[string("pt_min(ref)")]<<" "
-	   <<"at E(ref) = "<<m_parameters["Ecms(ref)"]<<"\n";
+  m_triggerflavs = s["TRIGGER"].SetDefault(vector<int>()).GetVector<int>();
+  if (m_triggerflavs.size()>2)
+    THROW(critical_error,"Too many trigger flavours specified.");
 }
 
 double MI_Parameters::CalculatePT02(const double & s) const {
@@ -115,6 +119,13 @@ double MI_Parameters::operator()(const string& keyword) const
 {
   map<string,double>::const_iterator piter = m_parameters.find(keyword);
   if (piter!=m_parameters.end()) return piter->second;
+  THROW(fatal_error,"Keyword not found in MI_Parameters.");
+}
+
+int MI_Parameters::operator[](const string& keyword) const
+{
+  map<string,int>::const_iterator piter = m_flags.find(keyword);
+  if (piter!=m_flags.end()) return piter->second;
   THROW(fatal_error,"Keyword not found in MI_Parameters.");
 }
 

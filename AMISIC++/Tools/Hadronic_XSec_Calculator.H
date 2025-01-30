@@ -100,8 +100,9 @@ namespace AMISIC {
     // Total cross section, given in mb
     //////////////////////////////////////////////////////////////////////////
     inline const double SimulatedXSec(const double & s=-1.) {
-      if (s>0.) (*this)(s);
+      if (s>0. && m_evttype!=evt_type::Perturbative) (*this)(s);
       double xsec = 0;
+      if (m_evttype==evt_type::Perturbative) xsec += (*p_xshard)(s);
       if (m_evttype==evt_type::Elastic       ||
 	  m_evttype==evt_type::QuasiElastic) xsec += SigmaEl();
       if (m_evttype==evt_type::DiffractiveA  ||

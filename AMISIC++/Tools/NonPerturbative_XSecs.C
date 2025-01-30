@@ -75,7 +75,7 @@ void NonPerturbative_XSecs::SetBeams(BEAM::Beam_Base * beam1,BEAM::Beam_Base * b
   }
   for (size_t beam=0;beam<2;beam++)
     m_inmom[beam] = p_remnants->GetRemnant(beam)->InMomentum();
-  m_s     = (m_inmom[0]+m_inmom[1]).Abs2();
+  m_s = (m_inmom[0]+m_inmom[1]).Abs2();
 }
 
 void NonPerturbative_XSecs::CalculateSDependentCrossSections() {
@@ -195,7 +195,6 @@ const event_mode::code NonPerturbative_XSecs::SelectMode() {
     total -= xsecs[i];
     if (total<=0.) break;
   }
-  msg_Out()<<METHOD<<": i = "<<i<<"\n";
   switch (i) {
   case 3: return event_mode::DD;
   case 2: return event_mode::SDB;
@@ -220,7 +219,6 @@ bool NonPerturbative_XSecs::FixFS(array<ATOOLS::Flavour, 2> & flavs) {
     m_hadtags[i]      = p_xsecs->Index(flavs[i],i);
     if (m_hadtags[i]>99) return false;
   }
-  msg_Out()<<METHOD<<": "<<m_hadtags[0]<<" / "<<m_hadtags[1]<<"\n";
   return true;
 }
 
@@ -310,7 +308,6 @@ bool NonPerturbative_XSecs::SingleDiffractiveScatter(const size_t & pos,Blob * b
 		 exp(argt * t) );
     } while (value/maxval<ran->Get());
     m_outmasses2[2*pos]     = M2;
-    msg_Out()<<METHOD<<": E = "<<sqrt(m_s)<<", Emin = "<<sqrt(M2min)<<".\n";
   } while (!FixOutMomenta(t));
   SplitDiffractiveState(pos);
   InitBlob(blob,M2,M2);
@@ -387,15 +384,10 @@ bool NonPerturbative_XSecs::FixOutMomenta(const double & t) {
   // i -> {2i, 2i+1}, we only have to create outmomenta m_outmom[0] and m_outmom[2].
   // This method also includes a boost back into the lab-frame.
   ////////////////////////////////////////////////////////////////////////////////////
-  if (m_s<sqr(sqrt(m_outmasses2[0])+sqrt(m_outmasses2[2]))) {
-    msg_Out()<<METHOD<<" fails .... s = "<<sqrt(m_s)<<" < "
-	     <<sqrt(m_outmasses2[0])<<" + "<<sqrt(m_outmasses2[2])<<"\n";
-    return false;
-  }
-  if ((m_outflav[0].Kfcode()==kf_rho_770 || m_outflav[2].Kfcode()==kf_rho_770) &&
-      !SetRhoMasses2()) {
-    return false;
-  }
+  if (m_s<sqr(sqrt(m_outmasses2[0])+sqrt(m_outmasses2[2]))) return false;
+  if ((m_outflav[0].Kfcode()==kf_rho_770 ||
+       m_outflav[2].Kfcode()==kf_rho_770) &&
+      !SetRhoMasses2()) return false;
   double p22  = ( (sqr(m_s-m_outmasses2[0]-m_outmasses2[2]) -
 		   4.*m_outmasses2[0]*m_outmasses2[2] )/
 		  (4.*m_s) );
@@ -403,10 +395,7 @@ bool NonPerturbative_XSecs::FixOutMomenta(const double & t) {
   for (size_t i=0;i<2;i++) E[2*i] = sqrt(p22+m_outmasses2[2*i]);
   double cost = (t-m_masses2[0]-m_outmasses2[0] +
 		 2.*m_inmom[0][0]*E[0])/(2.*m_inmom[0][3]*p2);
-  if (dabs(cost)>1.) {
-    msg_Out()<<METHOD<<" fails .... cos = "<<cost<<".\n";
-    return false;
-  }
+  if (dabs(cost)>1.) return false;
   double sint = sqrt(1.-cost*cost);
   double phi  = 2.*M_PI*ran->Get();
   m_outmom[0] = Vec4D(E[0],  p2*sint*cos(phi),  p2*sint*sin(phi),  p2*cost);

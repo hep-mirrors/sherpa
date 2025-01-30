@@ -27,6 +27,8 @@ namespace AMISIC {
     bool   TrialEvent(const double & s,Matter_Overlap * mo);
     bool   MakeKinematics(const double & pt2, const double & s);
     
+    inline void SetPT2min(const double & pt2min) { m_pt2min = pt2min; }
+    
     inline const double & Integral()    const { return m_xsec; } 
     inline const double & Uncertainty() const { return m_uncert; } 
 

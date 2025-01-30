@@ -61,10 +61,10 @@ void Remnants_Parameters::SetNucleonDefaults()
   parmsP->params["BEAM_SPECTATOR_KTEXPO"]   = 5.00;
   parmsP->params["REFERENCE_ENERGY"]        = 7000.;
   parmsP->params["ENERGY_SCALING_EXPO"]     = 0.08;
-  parmsP->m_form                            = matter_form::double_gaussian;
+  parmsP->m_form                            = matter_form::single_gaussian;
   parmsP->params["MATTER_RADIUS_1"]         = 0.86;
   parmsP->params["MATTER_RADIUS_2"]         = 0.00;
-  parmsP->params["MATTER_FRACTION_1"]       = 1.00;
+  parmsP->params["MATTER_FRACTION_1"]       = 0.50;
   parmsP->params["SOFT_EXPONENT"]           = 0.08;
   m_defaults[Flavour(kf_p_plus)]            = parmsP;
   m_defaults[Flavour(kf_p_plus).Bar()]      = new remnant_parameters(*parmsP);
@@ -153,7 +153,6 @@ void Remnants_Parameters::SetLeptonDefaults()
 
 void Remnants_Parameters::Init()
 {
-  msg_Debugging() << METHOD << "\n";
   Scoped_Settings data = Settings::GetMainSettings()["REMNANTS"];
   for (const auto& pid : data.GetKeys()) {
     kf_code             kf = ToType<kf_code>(pid);
@@ -247,8 +246,8 @@ void Remnants_Parameters::Init()
        .SetDefault(defaults->params["MATTER_FRACTION_1"])
        .Get<double>());
     m_actuals[flav] = actuals;
-    msg_Out() << "Reading in parameters for " << flav << " yields:\n"
-              << (*m_actuals[flav]) << "\n";
+    msg_Out()<<"Reading in parameters for "<<flav<<" yields:\n"
+              <<(*m_actuals[flav])<<"\n";
   }
   rempars->Output();
 }

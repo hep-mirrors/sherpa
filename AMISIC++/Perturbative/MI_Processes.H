@@ -20,21 +20,25 @@ namespace AMISIC {
     MODEL::Running_AlphaQED      * p_alpha;
     Hadronic_XSec_Calculator     * p_xsecs;
     std::list<MI_Process_Group * > m_groups;
+    std::vector<int>               m_triggers;
+    std::list<MI_Process *>        m_triggerprocs;
 
     scale_scheme          m_muR_scheme, m_muF_scheme;
     std::string           m_scale_scheme, m_kfactor_scheme;
     double                m_muR_fac, m_muF_fac, m_muR2, m_muF2, m_pdfnorm;
     double                m_pt0, m_pt02, m_ptmin, m_ptmin2, m_ptmax2, m_Emin;
     std::array<double, 2> m_xmin, m_xmax, m_Q2min, m_resx;
-    double                m_ecms, m_S, m_S_lab, m_lastxs, m_fm2GeV2;
+    double                m_ecms, m_S, m_S_lab, m_lastxs, m_triggerxs, m_fm2GeV2;
     double                m_xshard;
     bool                  m_printit;
     
     bool         InitializeAllProcesses();
+    void         FilterTriggerProcesses();
     void         SetPDFs();
     void         SetAlphaS();
     void         CalcPDFs(const double & x1,const double & x2);
     MI_Process * SelectProcess();
+    MI_Process * SelectTrigger();
     void         Test();
   public:
     explicit MI_Processes();
@@ -59,21 +63,23 @@ namespace AMISIC {
     void   CalcScales(const double & shat,const double & that,
 		      const double & uhat);
     int    FillHardScatterBlob(ATOOLS::Blob *& blob,const double & pt2veto=-1.);
+    double MakeTriggerBlob(ATOOLS::Blob *& blob);
     /////////////////////////////////////////////////////////////////////////
     // Ratio of parton-level and non-diffractive cross section.
     /////////////////////////////////////////////////////////////////////////
     inline double XSratio(const double & s) { return p_xsecs->XSratio(s); }
 
-    inline const double  & Ecms()    const { return m_ecms; }
-    inline const double  & S()       const { return m_S; }
-    inline const double  & PT02()    const { return m_pt02; }
-    inline const double  & PTMin()   const { return m_ptmin; }
-    inline const double  & PT2Min()  const { return m_ptmin2; }
-    inline const double  & EMin()    const { return m_Emin; }
-    inline const double  & PDFnorm() const { return m_pdfnorm; } 
-    inline const double  & MuR2()    const { return m_muR2; }
-    inline const double  & MuF2()    const { return m_muF2; }
-    inline const size_t    Size()    const { return m_groups.size(); }
+    inline const double  & Ecms()     const { return m_ecms; }
+    inline const double  & S()        const { return m_S; }
+    inline const double  & PT02()     const { return m_pt02; }
+    inline const double  & PTMin()    const { return m_ptmin; }
+    inline const double  & PT2Min()   const { return m_ptmin2; }
+    inline const double  & EMin()     const { return m_Emin; }
+    inline const double  & PDFnorm()  const { return m_pdfnorm; } 
+    inline const double  & MuR2()     const { return m_muR2; }
+    inline const double  & MuF2()     const { return m_muF2; }
+    inline const size_t    TrigSize() const { return m_triggerprocs.size(); }
+    inline const size_t    Size()     const { return m_groups.size(); }
     inline MI_Integrator * GetIntegrator() { return &m_integrator; }
     inline MODEL::One_Running_AlphaS * AlphaS()     const { return p_alphaS; }
     inline MODEL::Running_AlphaQED   * Alpha()      const { return p_alpha; }
