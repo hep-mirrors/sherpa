@@ -12,17 +12,16 @@ using namespace std;
 
 
 namespace EXTRAXS {
-
-  class yy_bobo : public ME2_Base {
+  class yy_PSPS : public ME2_Base {
   private:
     double m_mass2, m_pref;
     int    m_charge;
   public:
-    yy_bobo(const External_ME_Args& args);
+    yy_PSPS(const External_ME_Args& args);
     double operator()(const ATOOLS::Vec4D_Vector& mom);
   };
 
-  yy_bobo::yy_bobo(const External_ME_Args& args)
+  yy_PSPS::yy_PSPS(const External_ME_Args& args)
     : ME2_Base(args)
   {
     m_sintt = 1;
@@ -38,7 +37,7 @@ namespace EXTRAXS {
     // doSelfTest(); // TODO trigger calculation based on message level
   }
 
-  double yy_bobo::operator()(const ATOOLS::Vec4D_Vector& momenta)
+  double yy_PSPS::operator()(const ATOOLS::Vec4D_Vector& momenta)
   {
     // This matrix element to simulate the production of charged
     // boson pairs in EPA with scalar QED: no form factors etc.
@@ -56,8 +55,8 @@ namespace EXTRAXS {
   }
 }
 
-DECLARE_TREEME2_GETTER(EXTRAXS::yy_bobo,"yy_bobo")
-Tree_ME2_Base *ATOOLS::Getter<PHASIC::Tree_ME2_Base,PHASIC::External_ME_Args,EXTRAXS::yy_bobo>::
+DECLARE_TREEME2_GETTER(EXTRAXS::yy_PSPS,"yy_PSPS")
+Tree_ME2_Base *ATOOLS::Getter<PHASIC::Tree_ME2_Base,PHASIC::External_ME_Args,EXTRAXS::yy_PSPS>::
 operator()(const External_ME_Args &args) const
 {
   const Flavour_Vector fl = args.Flavours();
@@ -67,7 +66,7 @@ operator()(const External_ME_Args &args) const
       fl[2]==fl[3].Bar() && fl[2].IntSpin()==0 &&
       fl[2].Charge()!=0) {
     //    if (args.m_orders[0]==0 && args.m_orders[1]==2)
-    //return new yy_bobo(args);
+    //return new yy_PSPS(args);
   }
   return NULL;
 }

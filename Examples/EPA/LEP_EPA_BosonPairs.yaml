@@ -11,9 +11,6 @@ MI_HANDLER:        None
 ME_GENERATORS: [Internal]
 
 PROCESSES:
-  - 22 22 -> 211 -211:
-      Order: {QCD: 0, EW: 2}
-
   - 22 22 -> 411 -411:
       Order: {QCD: 0, EW: 2}
 
