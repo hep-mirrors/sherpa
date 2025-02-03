@@ -62,7 +62,7 @@ double Interaction_Probability::SelectB(const double & s) {
   do {
     b    = ran->Get()*p_mo->Bmax();
     diff = (*this)(s,b);
-    disc = M_PI*b*diff/xsnd;
+    disc = 2.*M_PI*b*diff/xsnd;
   } while (disc<ran->Get());
   return b;
 }
