@@ -296,10 +296,9 @@ int Perturbative_Interface::PerformShowers()
   if ((*p_hard)["WeightsMap"]!=NULL) {
     m_weightsmap["Sudakov"] = csh->WeightsMap()["Sudakov"];
     m_weightsmap["QCUT"]    = csh->WeightsMap()["QCUT"];
+    m_weightsmap["All"]     = csh->WeightsMap()["Sudakov"];
     auto wgtmap = (*p_hard)["WeightsMap"]->Get<Weights_Map>();
-    wgtmap["Sudakov"]      *= m_weightsmap["Sudakov"];
-    wgtmap["QCUT"]         *= m_weightsmap["QCUT"];
-    wgtmap["All"]          *= m_weightsmap["Sudakov"];
+    wgtmap *= m_weightsmap;
     p_hard->AddData("WeightsMap",new Blob_Data<Weights_Map>(wgtmap));
   }
   return stat;

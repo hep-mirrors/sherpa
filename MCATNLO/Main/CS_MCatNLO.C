@@ -138,6 +138,7 @@ int CS_MCatNLO::PerformMCatNLO(const size_t &maxem,size_t &nem,const double &qfa
     size_t pem(nem);
     if (!p_mcatnlo->EvolveShower(*sit,maxem,nem)) return 0;
     m_weightsmap["Sudakov"] *= p_mcatnlo->WeightsMap().at("Sudakov");
+    m_weightsmap["All"] *= p_mcatnlo->WeightsMap().at("Sudakov");
     m_weightsmap["QCUT"] *= p_mcatnlo->WeightsMap().at("QCUT");
     msg_Debugging()<<"after mc@nlo step with "<<nem-pem
 		   <<" emission(s), w = "<<m_weightsmap.Nominal()<<"\n";
