@@ -38,7 +38,7 @@ MI_Parameters::MI_Parameters() :
   m_Scms        = sqr(m_Ecms = rpa->gen.Ecms());
   m_eta         = m_parameters[string("eta")];
   double pt_0   = sqrt(CalculatePT02(m_Scms));
-  double pt_min = sqrt(CalculatePTMin2(m_Scms));
+  double pt_min = sqrt(CalculatePTmin2(m_Scms));
   m_parameters[string("pt_min")]
     = s["PT_Min"].SetDefault(m_parameters[string("pt_min")]).Get<double>();
   m_parameters[string("pt_0")]
