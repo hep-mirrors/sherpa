@@ -30,16 +30,17 @@ MI_Parameters::MI_Parameters() :
     = s["E(ref)"].SetDefault(7000.).Get<double>();
   m_parameters[string("eta")]
     = s["Eta"].SetDefault(0.16).Get<double>();
-  m_pt02ref   = sqr(m_parameters[string("pt_0(ref)")]);
-  m_pt02IR    = sqr(m_parameters[string("pt_0(IR)")]);
-  m_ptmin2ref = sqr(m_parameters[string("pt_min(ref)")]);
-  m_ptmin2IR  = sqr(m_parameters[string("pt_min(IR)")]);
-  m_Sref      = sqr(m_Eref = m_parameters[string("Ecms(ref)")]);
-  m_Scms      = sqr(m_Ecms = rpa->gen.Ecms());
-  m_eta       = m_parameters[string("eta")];
-  double pt_0 = sqrt(CalculatePT02(m_Scms));
+  m_pt02ref     = sqr(m_parameters[string("pt_0(ref)")]);
+  m_pt02IR      = sqr(m_parameters[string("pt_0(IR)")]);
+  m_ptmin2ref   = sqr(m_parameters[string("pt_min(ref)")]);
+  m_ptmin2IR    = sqr(m_parameters[string("pt_min(IR)")]);
+  m_Sref        = sqr(m_Eref = m_parameters[string("Ecms(ref)")]);
+  m_Scms        = sqr(m_Ecms = rpa->gen.Ecms());
+  m_eta         = m_parameters[string("eta")];
+  double pt_0   = sqrt(CalculatePT02(m_Scms));
+  double pt_min = sqrt(CalculatePTMin2(m_Scms));
   m_parameters[string("pt_min")]
-    = s["PT_Min"].SetDefault(m_parameters[string("pt_min(ref)")]).Get<double>();
+    = s["PT_Min"].SetDefault(m_parameters[string("pt_min")]).Get<double>();
   m_parameters[string("pt_0")]
     = s["PT_0"].SetDefault(pt_0).Get<double>();
   m_scaleRscheme = s["MU_R_SCHEME"].SetDefault("PT").Get<scale_scheme>();
