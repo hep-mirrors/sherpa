@@ -35,11 +35,23 @@ REMNANTS:
     MATTER_FRACTION_1:  0.5;
 
 AMISIC:
-  PT_0:              2.05
-  PT_Min:            2.25
-  MU_R_FACTOR:       0.5
-  MU_F_FACTOR:       1.0
-  nB_bins:           50  # only relevant for x_Dependent_Gaussian
+  EVENT_TYPE:     Perturbative
+  PT_0(ref):      2.0
+  PT_Min(ref):    3.0
+  E(ref):         13000.
+  SIGMA_ND_NORM:  1.0
+  MU_R_FACTOR:    0.5
+  MU_F_FACTOR:    1.0
+  #TRIGGER:        [ 5, -5 ]
+  #N_MaxScatters:  100
+
+COLOUR_RECONNECTIONS:
+  MODE:        On
+  PMODE:       Log  # Log or Power (-law)
+  Q_0:         1.
+  ETA_Q:       0.1
+  RESHUFFLE:   0.1111
+  KAPPA:       1.
 
 ALPHAS(MZ): 0.1188
 ORDER_ALPHAS: 1
@@ -47,7 +59,7 @@ ALPHAS: {USE_PDF: 0}
 SCALES: METS{H_T2}{H_T2}     
 
 SHOWER:
-  FORCED_IS_QUARK_SPLITTING:         1
+  FORCED_IS_QUARK_SPLITTING:       1
   FORCED_SPLITTING_GLUON_SCALING: -1.
 
 # pp -> Z[ee]+jets
@@ -61,4 +73,4 @@ SELECTORS:
 ANALYSIS: Rivet
 RIVET:
   --analyses: [ATLAS_2011_S9131140,ATLAS_2014_I1315949]
-ANALYSIS_OUTPUT: test
+ANALYSIS_OUTPUT: DY_MPI
