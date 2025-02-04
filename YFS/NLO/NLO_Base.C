@@ -1,7 +1,7 @@
+#include "ATOOLS/Math/MathTools.H"
 #include "ATOOLS/Math/Random.H"
 #include "YFS/NLO/NLO_Base.H"
 #include "MODEL/Main/Running_AlphaQED.H"
-
 
 using namespace YFS;
 using namespace MODEL;
@@ -41,14 +41,21 @@ NLO_Base::NLO_Base() {
   	m_histograms1d["k_E_pass"] = new Histogram(0, 0, sqrt(m_s)/2, sqrt(m_s)/2);
   	m_histograms1d["k_pt_pass"] = new Histogram(0, 0, sqrt(m_s)/2, sqrt(m_s)/2);
   	m_histograms1d["dip_mass_pass"] = new Histogram(0, 0, sqrt(m_s), sqrt(m_s));
-  	if (!ATOOLS::DirectoryExists(m_debugDIR_NLO)) {
-			ATOOLS::MakeDir(m_debugDIR_NLO);
-		}
+  	if (!ATOOLS::DirectoryExists(m_debugDIR_NLO)) ATOOLS::MakeDir(m_debugDIR_NLO);
+  }
+  if(m_check_poles==1){
+  	if (!ATOOLS::DirectoryExists(m_debugDIR_NLO)) ATOOLS::MakeDir(m_debugDIR_NLO);
+  	m_histograms1d["SinglePoleCD"] = new Histogram(0, 0, 25, 25);
+  	m_histograms1d["OneLoopEpsLP"] = new Histogram(0, -1.5, -0.5, 50);
+  	m_histograms1d["OneLoopEpsYFS"] = new Histogram(0, -1.5, -0.5, 50);
+  	m_histograms1d["RealLoopEpsLP"] = new Histogram(0, -5,  0.0, 50);
+  	m_histograms1d["RealLoopEpsYFS"] = new Histogram(0, -5, 0.0, 50);
+  	m_histograms1d["relativediff"] = new Histogram(0, -20., -5.0, 50);
   }
 }
 
 NLO_Base::~NLO_Base() {
-  if(m_isr_debug || m_fsr_debug || m_check_real_sub){
+  if(m_isr_debug || m_fsr_debug || m_check_real_sub ||m_check_poles ){
 		Histogram_2D * histo2d;
 		string name;
 		for (map<string, Histogram_2D *>::iterator hit = m_histograms2d.begin();
@@ -131,7 +138,8 @@ double NLO_Base::CalculateVirtual() {
 	if (!m_looptool && !m_realvirt) return 0;
 	double virt;
 	double sub;
-	p_dipoles->p_yfsFormFact->p_virt = p_virt->p_loop_me;;
+	p_dipoles->p_yfsFormFact->p_virt = p_virt->p_loop_me;
+	CheckMasses(m_plab);
 	CheckMassReg();
 	// for(auto pp: m_plab) PRINT_VAR(pp.Mass());
 	if(!HasISR()) virt = p_virt->Calc(m_bornMomenta, m_born);
@@ -154,25 +162,59 @@ double NLO_Base::CalculateVirtual() {
 	m_oneloop = (virt- sub * m_born/m_rescale_alpha );
 	if(IsBad(m_oneloop) || IsBad(sub)){
 		msg_Error()<<"YFS Virtual is NaN"<<std::endl
-							 <<"Virtual:  "<<m_oneloop<<std::endl
-							 <<"Subtraction: "<<sub*m_born<<std::endl;
+							 <<"Virtual:  "<<virt<<std::endl
+							 <<"Subtraction: "<<sub*m_born<<std::endl
+							 <<"PhaseSpace Point: "<<std::endl<<m_plab<<std::endl;
 	}
 	if(m_check_poles==1){
 		if(m_virt_sub==0) sub = p_dipoles->CalculateVirtualSub();
 		double p1 = p_virt->p_loop_me->ME_E1()*p_virt->m_factor;
 		double yfspole = p_dipoles->Get_E1();
+		int ncorrect = ::countMatchingDigits(p1, -yfspole);
+		double reldiff = (p1+yfspole)/p1;
+		m_histograms1d["SinglePoleCD"]->Insert(ncorrect);
+		m_histograms1d["OneLoopEpsYFS"]->Insert(log10(fabs(yfspole)));
+		m_histograms1d["OneLoopEpsLP"]->Insert(log10(fabs(p1)));
+		m_histograms1d["relativediff"]->Insert(log10(fabs(reldiff)));
 		if(!IsEqual(p1,-yfspole,1e-6)){
 			msg_Error()<<"Poles do not cancel in YFS Virtuals"<<std::endl
+					 <<"Correct digits =  "<<ncorrect<<std::endl
+					 <<"Relative diff =  "<<reldiff<<std::endl
 					 // <<"Process =  "<<p_virt->p_loop_me->Name()<<std::endl
 					 <<"One-Loop Provider  = "<<p1<<std::endl
 					 <<"Sherpa  = "<<yfspole<<std::endl;
+					 return 0;
 		}
 		else{
-			msg_Out()<<"Poles cancel in YFS Virtuals"<<std::endl
-						// <<"Process =  "<<p_virt->p_loop_me->Name()<<std::endl
-						<<"One-Loop Provider  = "<<p1<<std::endl
+			int i = 0;
+			msg_Debugging()<<std::setprecision(16);
+			msg_Debugging()<<"Poles cancel in YFS Virtuals to "<<ncorrect<<" digits"<<std::endl
+					 		<<"Relative diff =  "<<reldiff<<std::endl;
+			msg_Debugging()<<"PhaseSpace point: "<<std::endl;
+			for(auto &p: m_plab) {
+				msg_Debugging()<<"p["<<i<<"] = "<<p<<std::endl;
+				i++;
+			}
+			msg_Debugging()<<"One-Loop Provider  = "<<p1<<std::endl
 			 			<<"Sherpa  = "<<yfspole<<std::endl;
 		}
+		// Check Rescaling
+		// Vec4D_Vector pscale = m_plab;
+		// double virtscale;
+		// for (double scale = 1; scale < 100; scale+=5)
+		// {
+		// 	std::vector<double> masses;
+		// 	for (int i = 0; i < m_plab.size(); ++i)
+		// 	{
+		// 		masses.push_back(m_plab[i].Mass() *scale);
+		// 	}
+		// 	RescaleMasses(pscale, masses);
+		// 	PRINT_VAR(masses);
+		// 	PRINT_VAR(pscale);
+		// 	PRINT_VAR(m_plab);
+		// 	virtscale = p_virt->Calc(pscale, m_born);
+		// 	msg_Out()<<"Virtual/ScaledVirtual = "<<virt/virtscale<<std::endl;
+		// }
 	}
 	return m_oneloop;
 }
@@ -181,11 +223,6 @@ double NLO_Base::CalculateVirtual() {
 double NLO_Base::CalculateReal() {
 	if (!m_realtool) return 0;
 	double real(0);
-	m_ksum*=0;
-	for(auto &k: m_FSRPhotons) m_ksum += k;
-	for(auto &k: m_ISRPhotons) m_ksum += k;
-	// msg->SetPrecision(16);
-	double sp = p_dipoles->GetDipoleII()->Sprime();
 	if(m_coll_real) return p_dipoles->CalculateEEX()*m_born;
 	double collreal = p_dipoles->CalculateEEX()*m_born;
 	for (auto k : m_ISRPhotons) {
@@ -244,14 +281,15 @@ double NLO_Base::CalculateReal(Vec4D k, int fsrcount) {
  		MapMomenta(p,k);
  	}
  	p.push_back(k);
- 	if(fsrcount) MapInitial(p);
+ 	// if(fluxtype==dipoletype::final) MapInitial(p);
+ 	if(fsrcount==1 || fsrcount==4) MapInitial(p);
  	Vec4D_Vector pp = p;
  	pp.pop_back();
 	p_nlodipoles->MakeDipolesII(m_flavs,pp,m_plab);
 	p_nlodipoles->MakeDipolesIF(m_flavs,pp,m_plab);
 	p_nlodipoles->MakeDipoles(m_flavs,pp,m_plab);
 	double flux;
-	if(m_flux_mode==1) flux = p_nlodipoles->CalculateFlux(k);
+	if(m_flux_mode==1) flux = p_dipoles->CalculateFlux(k);
 	else if(m_flux_mode==2) flux = 0.5*(p_nlodipoles->CalculateFlux(kk)+p_nlodipoles->CalculateFlux(k));
 	else flux = p_dipoles->CalculateFlux(kk);
 	double tot,rcoll;
@@ -274,7 +312,7 @@ double NLO_Base::CalculateReal(Vec4D k, int fsrcount) {
 			m_histograms1d["k_pt_pass"]->Insert(k.PPerp());
 			m_histograms1d["dip_mass_pass"]->Insert((p[2]+p[3]).Mass());
 		}
-	// CheckMasses(p,1);
+	CheckMasses(p,1);
 	double r = p_real->Calc_R(p) / norm;
 	// if(IsZero(r)) return 0;
 	if(IsBad(r) || IsBad(flux)) {
@@ -366,6 +404,7 @@ double NLO_Base::CalculateRealVirtual(Vec4D k, int fsrcount) {
  	else {
  		MapMomenta(p,k);
  	}
+ 	double yfspole;
  	p.push_back(k);
  	if(fsrcount) MapInitial(p);
 	// CheckMasses(p, 1);
@@ -374,17 +413,18 @@ double NLO_Base::CalculateRealVirtual(Vec4D k, int fsrcount) {
  	Vec4D kzero = k*0.0;
  	MapMomenta(pp, kzero);
  	Flavour_Vector fl = m_flavs;
- 	fl.push_back(kf_photon);
-	p_nlodipoles->MakeDipolesII(fl,p,p);
-	p_nlodipoles->MakeDipolesIF(fl,p,p);
-	p_nlodipoles->MakeDipoles(fl,p,p);
+ 	// fl.push_back(kf_photon);
+	p_nlodipoles->MakeDipolesII(fl,pp,pp);
+	p_nlodipoles->MakeDipolesIF(fl,pp,pp);
+	p_nlodipoles->MakeDipoles(fl,pp,pp);
 	// p.push_back(k);
 	// m_plab = pp;
 	p_nlodipoles->p_yfsFormFact->p_virt = p_realvirt->p_loop_me;
 	if(m_flux_mode==1) flux = p_nlodipoles->CalculateFlux(k);
 	else if(m_flux_mode==2) flux = 0.5*(p_nlodipoles->CalculateFlux(kk)+p_nlodipoles->CalculateFlux(k));
 	else flux = p_dipoles->CalculateFlux(kk);
-	double subloc = p_nlodipoles->CalculateRealSub(k);
+	double subloc = p_nlodipoles->CalculateRealVirtualSubEps(k);
+	yfspole = p_nlodipoles->Get_E1();
 	double subb;
 
 	subb = p_dipoles->CalculateRealSubEEX(k);
@@ -399,9 +439,10 @@ double NLO_Base::CalculateRealVirtual(Vec4D k, int fsrcount) {
 		msg_Error()<<"Real-Virtual is "<<r<<std::endl;
 		return 0;
 	}
-	m_plab = pp;
+	// m_plab = pp;
 	double aB = subloc*CalculateVirtual();
-	// double aB = subloc*(p_virt->Calc(m_plab, m_born) - m_born*p_nlodipoles->CalculateVirtualSub());
+	// double aB = subloc*(p_virt->Calc(p, m_born) - m_born*p_nlodipoles->CalculateVirtualSub());
+	yfspole*=(p_virt->p_loop_me->ME_E1()*p_virt->m_factor-m_born*p_nlodipoles->Get_E1());
 	// double tot = (r-aB) / subloc;
 	if(m_submode==submode::local) tot =  (r*flux-aB)/subloc;
 	else if(m_submode==submode::global) tot =  (r*flux-aB)/subb;
@@ -413,17 +454,22 @@ double NLO_Base::CalculateRealVirtual(Vec4D k, int fsrcount) {
 	// PRINT_VAR(subloc);
 	// PRINT_VAR(tot);
 	if(m_check_poles==1){
-		double pr1 = p_realvirt->p_loop_me->ME_E1()*p_realvirt->m_factor/norm;
+		double pr1 = p_realvirt->p_loop_me->ME_E1()*p_realvirt->m_factor*flux/norm;
 		double p1 = p_virt->p_loop_me->ME_E1()*p_virt->m_factor;
 		double diff = pr1-p1;
-		double yfspole = (p_nlodipoles->Get_E1());
+		// yfspole = p_nlodipoles->Get_E1();
 		double yfspoleV = p_dipoles->Get_E1();
+		PRINT_VAR(log10(fabs(pr1)));
+		PRINT_VAR(log10(fabs(yfspole)));
+		m_histograms1d["RealLoopEpsLP"]->Insert(log10(fabs(pr1)));
+		m_histograms1d["RealLoopEpsYFS"]->Insert(log10(fabs(yfspole)));
 		if(!IsEqual(pr1,-yfspole,1e-4)){
 			msg_Error()<<"Poles do not cancel in YFS Real-Virtuals"<<std::endl
 					 <<"Process =  "<<p_realvirt->p_loop_me->Name()<<std::endl
 					 <<"One-Loop Provider V  = "<<p1<<std::endl
 					 <<"One-Loop Provider RV  = "<<pr1<<std::endl
-					 <<"One-Loop Provider RV/norm  = "<<pr1/norm<<std::endl
+					 // <<"One-Loop Provider RV/norm  = "<<pr1/norm<<std::endl
+					 <<"One-Loop Provider RV*flux  = "<<pr1*flux<<std::endl
 					 <<"One-Loop Provider RV*Rescale  = "<<pr1*m_rescale_alpha<<std::endl
 					 <<"One-Loop Provider RV/Rescale  = "<<pr1/m_rescale_alpha<<std::endl
 					 <<"One-Loop Provider RVsubloc/subb  = "<<pr1*subloc/subb<<std::endl
@@ -808,6 +854,14 @@ void NLO_Base::CheckMasses(Vec4D_Vector &p, int realmode){
 	if(!allonshell) m_stretcher.StretchMomenta(p, masses);
 	// return true;
 }
+
+void NLO_Base::RescaleMasses(Vec4D_Vector &p, std::vector<double> masses){
+	bool allonshell=true;
+	if(p.size() != masses.size()) msg_Error()<<"Mismatch between mass and vectors in "<<METHOD<<std::endl;
+	m_stretcher.StretchMomenta(p, masses);
+	// return true;
+}
+
 
 bool NLO_Base::CheckPhotonForReal(const Vec4D &k) {
 	for (int i = 0; i < m_plab.size(); ++i)
