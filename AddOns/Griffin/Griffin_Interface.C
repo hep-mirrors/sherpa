@@ -37,7 +37,7 @@ bool Griffin::Griffin_Interface::Initialize(MODEL::Model_Base *const model,
   double delap = ss["Delta_Alpha"].Get<double>();
   double mz2 = sqr(Flavour(kf_Z).Mass());
   if(IsEqual(delap,-1)){
-    delap = 1-(*aqed)(0)/(*aqed)(mz2);
+    delap = 1-(*aqed)(0)/s_model->ScalarConstant("alpha_QED");
   }
   m_griffin.set(MZ, Flavour(kf_Z).Mass());
   m_griffin.set(MW, Flavour(kf_Wplus).Mass());
@@ -158,9 +158,9 @@ void Griffin::Griffin_Interface::EvaluateNNLO(const Vec4D_Vector& momenta, DivAr
   double t = (momenta[0]-momenta[2]).Abs2();
   double cost = 1.+2.*t/s;
   // double cost = 0;
-  if(sqrt(s)<40) {
-    res.Finite() = 0;
-  }
+  // if(sqrt(s)<40) {
+  //   res.Finite() = 0;
+  // }
   FA_SMNNLO FAi(m_inital, m_griffin), FAf(m_final, m_griffin);
   // SW_SMNNLO SWi(m_inital, m_griffin), SWf(m_final, m_griffin);
   double sw=s_model->ComplexConstant("csin2_thetaW").real();
@@ -168,9 +168,6 @@ void Griffin::Griffin_Interface::EvaluateNNLO(const Vec4D_Vector& momenta, DivAr
 
   M.setkinvar(s, cost);
   Cplx resvv, resva, resav, resaa;
-  Cplx res1, res2;
-  res1 = M.result();
-  res2 = M.resoffZ();
 
   M.setform(VEC, VEC);
   resvv = M.result();
