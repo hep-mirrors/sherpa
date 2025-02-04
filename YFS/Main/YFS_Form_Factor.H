@@ -2,6 +2,7 @@
 #define YFS_Main_FORM_H
 #include "ATOOLS/Math/Vector.H"
 #include "YFS/Main/YFS_Base.H"
+#include "YFS/Tools/Dipole.H"
 #include "YFS/NLO/Virtual.H"
 #include "METOOLS/Loops/Divergence_Array.H"
 
@@ -16,6 +17,7 @@ public:
     double BVR_full(double p1p2, double E1, double E2,
                     double Mas1, double Mas2, double Kmax, double MasPhot, int mode);
     double BVR_full(ATOOLS::Vec4D p1, ATOOLS::Vec4D p2,  double Kmax, double MasPhot, int mode);
+    DivArrD BVR_full_eps(ATOOLS::Vec4D p1, ATOOLS::Vec4D p2,  double Kmax, int mode);
     double BVR_full(ATOOLS::Vec4D p1, ATOOLS::Vec4D p2, double omega);
     double BR_full(ATOOLS::Vec4D p1, ATOOLS::Vec4D p2, double omega);
     double BVR_cru(double p1p2, double E1, double E2,
@@ -33,7 +35,7 @@ public:
     double Chi(double eta, double yi, double yj, double yk, double yl);
     double BVV_full(const ATOOLS::Vec4D p1, const ATOOLS::Vec4D p2, double MasPhot, double Kmax, int mode);
     double Full(const ATOOLS::Vec4D p1, const ATOOLS::Vec4D p2, double MasPhot, double Kmax, int mode);
-    DivArrD BVV_full_eps(const ATOOLS::Vec4D p1, const ATOOLS::Vec4D p2, double MasPhot, double Kmax, int mode);
+    DivArrD BVV_full_eps(YFS::Dipole &d, double Kmax, int mode);
     double BVV_WW(const ATOOLS::Vec4D_Vector born, const ATOOLS::Vec4D_Vector k, const ATOOLS::Vec4D p1, const ATOOLS::Vec4D p2, double MasPhot, double Kmax);
     double WW_t(double t, double m, double M, double k);
     double WW_s(ATOOLS::Vec4D p1, ATOOLS::Vec4D p2);

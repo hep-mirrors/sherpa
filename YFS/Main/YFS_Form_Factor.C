@@ -15,7 +15,8 @@ using namespace ATOOLS;
 using namespace MODEL;
 using namespace METOOLS;
 
-
+double Lambda(double x, double y, double z)
+    { return x*x+y*y+z*z-2.*(x*y+x*z+y*z); }
 
 
 
@@ -71,14 +72,82 @@ double YFS_Form_Factor::BVR_full(double p1p2, double E1, double E2,
   return m_alpi * (t1 + t2 + 0.5 * t3);
 }
 
+DivArrD YFS_Form_Factor::BVR_full_eps(ATOOLS::Vec4D p1, ATOOLS::Vec4D p2,  double Kmax, int mode) {
+  double p1p2 = p1*p2;
+  double E1 = p1.E();
+  double E2 = p2.E();
+  double Mas1 = p1.Mass();
+  double Mas2 = p2.Mass();
+  double alpi = m_alpi;
+  double m12 = Mas1 * Mas2;
+  DivArrD t1; 
+  double t2, AA4;
+  if (p1p2 - m12 < 1e-10) return 0;
+  double beta1 = sqrt(1. - sqr(Mas1 / E1));
+  double beta2 = sqrt(1. - sqr(Mas2 / E2));
+  double rho = sqrt(1 - sqr(m12 / p1p2));
+  double irloop = 100;//p_virt->IRscale();
+  double epsloop = 4.0*M_PI;//p_virt->Eps_Scheme_Factor({p1,p2});
+  DivArrD massph(0,-1,0,0,0,0);
+  t1 = (p1p2 * A(p1p2, Mas1, Mas2) - 1) * (massph-log(4.*M_PI*sqr(irloop)/4./Kmax/epsloop));
+  if ( mode == 0 ) {
+    t2 = p1p2 * A4(p1p2, E1, E2, Mas1, Mas2);
+  }
+  else if(mode==1) {
+    // alpi = 1./137.03599976000001/M_PI;
+    t1 = (p1p2 * A(p1p2, Mas1, Mas2)) * (massph-log(4.*M_PI*sqr(irloop)/4./Kmax/epsloop));
+    t2 = p1p2 * A4(p1p2, E1, E2, Mas1, Mas2);
+    
+    }
+    else {
+      AA4 = A4(p1p2, E1, E2, Mas1, Mas2);
+      t2 = AA4 * p1p2;
+  }
+  double t3 = Mas1 * Mas1 * A4_eq(E1, Mas1) + Mas2 * Mas2 * A4_eq(E2, Mas2);
+  if (IsBad(t1.Finite()) || IsBad(t2) || IsBad(t3)) {
+    msg_Error() << METHOD << "\n"
+                << "YFS Form Factor is NaN"
+                << "\n T2    = " << p1p2*AA4
+                << "\n T3    = " << t3 * 0.5
+                << "\n E1    = " << E1
+                << "\n E2    = " << E2
+                << "\n Mass1 = " << Mas1
+                << "\n Mass2 = " << Mas2
+                << "\n Kmax = " << Kmax
+                << "\n M12 = " << m12
+                << "\n A4 = " << AA4
+                << "\n p1p2  = " << p1p2;
+  }
+  return m_alpi * (t1 + t2 + 0.5 * t3);
+}
+
+
+
 double YFS_Form_Factor::BVR_full(Vec4D p1, Vec4D p2,  double Kmax, double MasPhot, int mode) {
   return BVR_full(p1 * p2, p1.E(), p2.E(), p1.Mass(), p2.Mass(), Kmax, MasPhot, mode);
 }
 
 
 double YFS_Form_Factor::BVR_full(Vec4D p1, Vec4D p2, double omega) {
-  double R =  BVR_full(p1 * p2, p1.E(), p2.E(), p1.Mass(), p2.Mass(), omega, m_photonMass, 0);
-  double V =  BVV_full(p1, p2, m_photonMass, omega, 0);
+  double R, V;
+  // if(!m_dim_reg){
+    R =  BVR_full(p1 * p2, p1.E(), p2.E(), p1.Mass(), p2.Mass(), omega, m_photonMass, 0);
+    V =  BVV_full(p1, p2, m_photonMass, omega, 0);
+  // }
+  // else{
+  //   DivArrD DR, DV;
+  //   DR = BVR_full_eps(p1, p2, omega, 0);
+  //   DV = BVV_full_eps(p1, p2, omega, 0);
+  //   if(!IsZero(DR.GetIR()-DV.GetIR())){
+  //     msg->SetPrecision(16);
+  //     msg_Error()<<"Poles do not cancel in YFS Form Factor"<<std::endl;
+  //     msg_Error()<<"Real eps^{-1} = "<<DR.GetIR()<<std::endl
+  //               <<"Virtual eps^{-1} = "<<-DV.GetIR()<<std::endl
+  //               << "Diff =  "<< DV.GetIR()-DR.GetIR()<<std::endl;
+  //   }
+  //   R=DR.Finite();
+  //   V=DV.Finite();
+  // }
   return (R+V);
 }
 
@@ -330,22 +399,37 @@ double YFS_Form_Factor::BVV_full(const ATOOLS::Vec4D p1, const ATOOLS::Vec4D p2,
 }
 
 
-DivArrD YFS_Form_Factor::BVV_full_eps(const ATOOLS::Vec4D p1, const ATOOLS::Vec4D p2, double MasPhot, double Kmax, int mode) {
+
+DivArrD YFS_Form_Factor::BVV_full_eps(YFS::Dipole &d, double Kmax, int mode){
   // for dim-reg
   // DivArrc {UV, IR, IR^2, finite, eps, eps^2, 0}
-  double muf = 91.2*91.2;
-  double mur = 91.2*91.2;
+  Vec4D p1,p2;
+  if(d.Type()==dipoletype::initial){
+    p1 = d.GetNewMomenta(0);
+    p2 = d.GetNewMomenta(1);
+  }
+  else if(d.Type()==dipoletype::final){
+    p1 = d.GetBornMomenta(0);
+    p2 = d.GetBornMomenta(1);
+  }
+  else if(d.Type()==dipoletype::ifi){
+    p1 = d.GetBornMomenta(1);
+    p2 = d.GetBornMomenta(0);
+  }
+  else{
+    msg_Error()<<"Unknown Dipole type"<<std::endl;
+  }
   double t2, t3;
   DivArrD t1;
-  double alpi = m_alpha / M_PI;
   DivArrD massph(0,-1,0,0,0,0);
-  double Mas1 = p1.Mass();
-  double Mas2 = p2.Mass();
-  double m12 = Mas1 * Mas2;
+  double Mas1 = d.GetMass(0);
+  double Mas2 = d.GetMass(1);
+  double m12 = Mas1*Mas2;
   double E1 = p1.E();
   double E2 = p2.E();
   double p1p2 = p1 * p2;
-  double rho = sqrt(1. - sqr(m12 / p1p2));
+  // double rho = sqrt(1. - sqr(m12 / p1p2));
+  double rho = sqrt((p1p2 - m12) * (p1p2 + m12)) / p1p2;
   double s = (p1 + p2).Abs2();
   double zeta1 = 2 * p1p2 * rho / (sqr(Mas1) + p1p2 * (1. + rho));
   double zeta2 = 2 * p1p2 * rho / (sqr(Mas2) + p1p2 * (1. + rho));
@@ -356,7 +440,10 @@ DivArrD YFS_Form_Factor::BVV_full_eps(const ATOOLS::Vec4D p1, const ATOOLS::Vec4
   // t1 = (1./rho*A(p1p2,Mas1,Mas2)-1.)*2.*log(2.*Kmax/MasPhot);
   double irloop = p_virt->IRscale();
   double epsloop = p_virt->Eps_Scheme_Factor({p1,p2});
-  t1 = (log(p1p2 * (1. + rho) / m12) / rho - 1) *  (massph+log(4.*M_PI*sqr(irloop)/m12/epsloop));
+  double logarg = (p1p2 * (1. + rho) / m12) / rho;
+  t1 = (log1p(logarg-1) -1.) *  (massph+log(4.*M_PI*sqr(irloop)/m12/epsloop));
+  // if(logarg < 1e-2) t1 = (log1p(logarg-1) -1.) *  (massph+log(4.*M_PI*sqr(irloop)/m12/epsloop));
+  // else t1 = (log(logarg) - 1.) *  (massph+log(4.*M_PI*sqr(irloop)/m12/epsloop));
   // t1 = (log(sqr(MasPhot)/sqr(250)));
   t2 = p1p2 * rho / s * log(p1p2 * (1. + rho) / m12) + (Mas1 * Mas1 - Mas2 * Mas2) / (2.*s) * log(Mas1 / Mas2) - 1;
 
@@ -367,8 +454,6 @@ DivArrD YFS_Form_Factor::BVV_full_eps(const ATOOLS::Vec4D p1, const ATOOLS::Vec4
   t3 /= rho;
   return m_alpi * (t1 + t2 + t3);
 }
-
-
 
 double YFS_Form_Factor::WW_t(double t, double m, double M, double k) {
   // t and u virtual form factor

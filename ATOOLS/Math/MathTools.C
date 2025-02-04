@@ -3,21 +3,35 @@
 
 namespace ATOOLS {
 
-// calculates the logarithm of the Gammafunction
-double Gammln(double xx)
-{
-  double x,y,tmp,ser;
-  static double cof[6]={76.18009172947146,-86.50532032941677,
-			24.01409824083091,-1.231739572450155,
-			0.1208650973866179e-2,-0.5395239384953e-5};
-  short int j;
-  y=x=xx;
-  tmp=x+5.5;
-  tmp -= (x+0.5)*log(tmp);
-  ser=1.000000000190015;
-  for (j=0;j<=5;j++) ser += cof[j]/++y;
-  return -tmp+log(2.5066282746310005*ser/x);
-}
+  int countMatchingDigits(const double num1, const double num2, const int precision) {
+      std::ostringstream ss1, ss2;
+      ss1 << std::fixed << std::setprecision(precision) << num1;
+      ss2 << std::fixed << std::setprecision(precision) << num2;
+      std::string str1 = ss1.str();
+      std::string str2 = ss2.str();
+      int matchCount = 0;
+      for (size_t i = 0; i < str1.size() && i < str2.size(); ++i) {
+          if (str1[i] == str2[i]) matchCount++;
+          else break;
+      }
+    return matchCount;
+  }
+  // calculates the logarithm of the Gammafunction
+  double Gammln(double xx)
+  {
+    double x,y,tmp,ser;
+    static double cof[6]={76.18009172947146,-86.50532032941677,
+			  24.01409824083091,-1.231739572450155,
+			  0.1208650973866179e-2,-0.5395239384953e-5};
+    short int j;
+    y=x=xx;
+    tmp=x+5.5;
+    tmp -= (x+0.5)*log(tmp);
+    ser=1.000000000190015;
+    for (j=0;j<=5;j++) ser += cof[j]/++y;
+    return -tmp+log(2.5066282746310005*ser/x);
+  }
+  // (C) Copr. 1986-92 Numerical Recipes Software VsXz&v%120(9p+45$j3D.
 
 
 double ReIncompleteGamma0(double x, double prec) {
