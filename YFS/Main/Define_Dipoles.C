@@ -322,6 +322,7 @@ void Define_Dipoles::Dipole_IF(ATOOLS::Flavour_Vector const &fl, ATOOLS::Vec4D_V
       for(size_t j = 2; j < fl.size(); ++j)
       {
         if(fl[i].IntCharge()==0 || fl[i].IsQCD()) continue;
+        if(fl[j].IntCharge()==0 || fl[j].IsQCD()) continue;
         ff.clear();
         mm.clear();
         bm.clear();
@@ -356,6 +357,7 @@ double Define_Dipoles::CalculateRealSub(const Vec4D &k) {
   for (auto &D : m_dipolesFF) {
     for(size_t i = 0; i < D.GetMomenta().size(); ++i)
     {
+      if(D.IsFinite()) continue;
       Vec4D p = D.GetMomenta(i);
       eik += -D.m_Q[i]*p/(p*k);
     }
@@ -400,18 +402,46 @@ double Define_Dipoles::CalculateVirtualSub() {
 double Define_Dipoles::CalculateVirtualSubEps() {
   DivArrD sub(0);
   for (auto &D : m_dipolesII) {
-    sub += D.ChargeNorm()*p_yfsFormFact->BVV_full_eps(D.GetNewMomenta(0), D.GetNewMomenta(1), m_photonMass, sqrt(m_s) / 2., 3);
+    sub += D.ChargeNorm()*p_yfsFormFact->BVV_full_eps(D, sqrt(m_s) / 2., 3);
+  if(IsBad(sub.Finite())) msg_Error()<<"YFS subtraction is Nan For dipole:"<<D<<std::endl;
   }
   for (auto &D : m_dipolesFF) {
-    if(m_mode==yfsmode::fsr) sub += -D.m_QiQj*p_yfsFormFact->BVV_full_eps(D.GetBornMomenta(0), D.GetBornMomenta(1), m_photonMass, sqrt(m_s) / 2., 3);
-    else sub += D.ChargeNorm()*p_yfsFormFact->BVV_full_eps(D.GetBornMomenta(0), D.GetBornMomenta(1), m_photonMass, sqrt(m_s) / 2., 3);
+    if(D.IsFinite()) continue;
+    if(m_mode==yfsmode::fsr) sub += -D.m_QiQj*p_yfsFormFact->BVV_full_eps(D, sqrt(m_s) / 2., 3);
+    else sub += D.ChargeNorm()*p_yfsFormFact->BVV_full_eps(D, sqrt(m_s) / 2., 3);
+    if(IsBad(sub.Finite())) msg_Error()<<"YFS subtraction is Nan For dipole:"<<D<<std::endl;
+  }
+
+  for (auto &D : m_dipolesIF){
+    if(D.IsFinite()) continue;
+    sub += D.ChargeNorm()*p_yfsFormFact->BVV_full_eps(D, sqrt(m_s) / 2., 3);
+    if(IsBad(sub.Finite())) {
+      msg_Error()<<"YFS subtraction is Nan For dipole:"<<D<<std::endl;
+      THROW(fatal_error, "YFS Subtraction fails");
+    }
+  }
+  m_virtSub=sub;
+  return sub.Finite();
+}
+
+
+double Define_Dipoles::CalculateRealVirtualSubEps(const Vec4D &k) {
+  DivArrD sub(0);
+  for (auto &D : m_dipolesII) {
+    sub += D.ChargeNorm()*p_yfsFormFact->BVR_full_eps(D.GetNewMomenta(0), D.GetNewMomenta(1), sqrt(m_s) / 2., 0);
+  }
+  for (auto &D : m_dipolesFF) {
+    if(D.IsFinite()) continue;
+    if(m_mode==yfsmode::fsr) sub += -D.m_QiQj*p_yfsFormFact->BVR_full_eps(D.GetBornMomenta(0), D.GetBornMomenta(1), sqrt(m_s) / 2., 0);
+    else sub += D.ChargeNorm()*p_yfsFormFact->BVR_full_eps(D.GetBornMomenta(0), D.GetBornMomenta(1), sqrt(m_s) / 2., 0);
   }
 
   for (auto &D : m_dipolesIF){
     // change to + for IFI terms
     // Note Born momenta are redifined
     // for IFI terms.
-    sub += D.ChargeNorm()*p_yfsFormFact->BVV_full_eps(D.GetNewMomenta(0), D.GetBornMomenta(1), m_photonMass, sqrt(m_s) / 2., 3);
+    if(D.IsFinite()) continue;
+    sub += D.ChargeNorm()*p_yfsFormFact->BVR_full_eps(D.GetNewMomenta(0), D.GetBornMomenta(1), sqrt(m_s) / 2., 0);
   }
   m_virtSub=sub;
   return sub.Finite();
@@ -634,12 +664,13 @@ double Define_Dipoles::CalculateFlux(const Vec4D &k){
   if(m_noflux==1) return 1;
   if(HasISR()&&HasFSR()){
     // fluxtype = WhichResonant(k);
+    // PRINT_VAR(fluxtype);
     fluxtype = dipoletype::final;
   }
-  else if(HasISR()){
+  else if(!HasFSR()){
     fluxtype = dipoletype::initial;
   }
-  else if(HasFSR()){
+  else if(!HasISR()){
     fluxtype = dipoletype::final;
   }
   else{
@@ -657,12 +688,13 @@ double Define_Dipoles::CalculateFlux(const Vec4D &k){
 
   }
   if(fluxtype==dipoletype::final){
+    flux=0;
     for (auto &D : m_dipolesFF) {
       Q  = D.GetBornMomenta(0)+D.GetBornMomenta(1);
       QX = D.GetMomenta(0)+D.GetMomenta(1);
       sq = (Q).Abs2();
       sx = (Q+k).Abs2();
-      flux = (sq/sx);
+      flux += (sq/sx);
     } 
     return flux;
   }
@@ -827,13 +859,13 @@ double Define_Dipoles::ResonantDist(YFS::Dipole &D, const Vec4D &k){
   double mass_i = (D.GetBornMomenta(0) + D.GetBornMomenta(1)).Mass();
   double mdist(100000000);
   double mcheck(100000000);
-  for (auto it = m_proc_restab_map.begin(); it != m_proc_restab_map.end(); ++it) {
-    for (auto *v : it->second) {
-      // mcheck = abs(mass_d - v->in[0].Mass()) / v->in[0].Width();
-      mcheck = (mass_i-mass_d);
-      if(mcheck < mdist) mdist = mcheck;
-    }
-  }
+  // for (auto it = m_proc_restab_map.begin(); it != m_proc_restab_map.end(); ++it) {
+    // for (auto *v : it->second) {
+      // mcheck = abs(mass_i - v->in[0].Mass()) / v->in[0].Width();
+  mcheck = (mass_i-mass_d);
+  if(mcheck < mdist) mdist = mcheck;
+  //   }
+  // }
   return mcheck;
 }
 
