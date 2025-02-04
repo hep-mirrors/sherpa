@@ -74,6 +74,7 @@ namespace YFS {
       double CalculateRealSubEEX(const Vec4D &k);
       double CalculateVirtualSub();
       double CalculateVirtualSubEps();
+      double CalculateRealVirtualSubEps(const Vec4D &k);
       double CalculateRealVirtualSub(const Vec4D & k);
       double CalculateEEX();
       double CalculateEEXVirtual();
