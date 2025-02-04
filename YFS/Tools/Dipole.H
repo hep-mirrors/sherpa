@@ -3,7 +3,8 @@
 
 #include "ATOOLS/Phys/Particle.H"
 #include "ATOOLS/Math/Poincare.H"
-// #include "YFS/Main/YFS_Handler.H"
+#include "METOOLS/Loops/Divergence_Array.H"
+#include "YFS/NLO/Virtual.H"
 
 using namespace ATOOLS;
 
@@ -32,15 +33,16 @@ namespace YFS{
         std::vector<std::string> m_names;
         std::vector<double> m_pk1, m_pk2;
         double m_QiQj, m_Qi, m_Qj, m_thetai, m_thetaj, m_thetaij, m_sp, m_b1, m_b2, m_gamma, m_gammap, m_alp, m_alpi,m_rescale_alpha;
-        bool m_setBorn, m_setbeams=1,m_sameflav;
+        bool m_setBorn, m_setbeams=1,m_sameflav, m_irfinite;
         int m_Nphotons, m_resonance, m_betaorder;
-        double m_ranPhi, m_ranTheta, m_born, m_photonscale, m_u;
+        double m_ranPhi, m_ranTheta, m_born, m_photonscale, m_u,m_irscale;
         dipoletype::code m_type;
         Vec4D_Vector m_momenta, m_bornmomenta, m_oldmomenta, m_newmomenta, m_ghost, m_beams, m_eikmomentum,m_mephotons;
         Flavour_Vector m_flavs;
         Vec4D m_photonSum, m_QFrame, m_kcorr;
         Poincare *p_Pboost, *p_Qboost;
         Poincare p_rotate, p_boost;
+        PHASIC::Virtual_ME2_Base *p_virt;
         void PrintInfo();
         void AddPhotonsToDipole(Vec4D_Vector &Photons);
         void AddPhotonToDipole(Vec4D &Photon);
@@ -77,6 +79,7 @@ namespace YFS{
         void Clean();
         bool IsDecayAllowed();
         Vec4D Sum();
+        METOOLS::DivArrD BVV_full_eps(const ATOOLS::Vec4D p1, const ATOOLS::Vec4D p2, double Kmax, int mode);
         inline int size() {return m_momenta.size();}
         inline Vec4D GetBornMomenta(int i) { return m_bornmomenta[i];}
         inline Vec4D_Vector GetBornMomenta() { return m_bornmomenta;}
@@ -86,6 +89,7 @@ namespace YFS{
         inline Vec4D_Vector GetNewMomenta() { return m_newmomenta;}
         inline Vec4D GetOldMomenta(int i) { return m_oldmomenta[i];}
         inline Vec4D GetEikMomenta(int i) { return m_eikmomentum[i];}
+        const inline double GetMass(int i) { return m_masses[i];}
         inline Flavour GetFlav(int i) { return m_flavs[i];}
         inline Vec4D_Vector GetPhotons() { return m_dipolePhotons;}
         inline Vec4D GetPhotonSum() { return m_photonSum;}
@@ -105,6 +109,7 @@ namespace YFS{
         inline void SetSudakovs(std::vector<double> y, std::vector<double> z) {m_pk1 =y; m_pk2=z;}
         inline void SetPhotonScale(double &scale) {m_photonscale = scale;}
         inline void SetMEPhotons(Vec4D_Vector &k) {m_mephotons = k;}
+        inline bool IsFinite() {return m_irfinite;}
 
     };
 
