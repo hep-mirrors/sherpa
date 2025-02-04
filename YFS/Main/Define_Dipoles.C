@@ -469,7 +469,8 @@ double Define_Dipoles::CalculateRealSub(const Vec4D &k) {
      if(!D.IsResonance()) continue;
     for(size_t i = 0; i < D.GetBornMomenta().size(); ++i)
     {
-      Vec4D p = D.GetBornMomenta(i);
+      if(D.IsFinite()) continue;
+      Vec4D p = D.GetMomenta(i);
       eik += -D.m_Q[i]*p/(p*k);
     }
   }

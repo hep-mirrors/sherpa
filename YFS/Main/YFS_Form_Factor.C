@@ -476,7 +476,8 @@ double YFS_Form_Factor::BVV_full(YFS::Dipole &d, double MasPhot, double Kmax, in
   double E1 = p1.E();
   double E2 = p2.E();
   double p1p2 = p1 * p2;
-  double rho = sqrt(1. - sqr(m12 / p1p2));
+  // double rho = sqrt(1. - sqr(m12 / p1p2));
+  double rho = sqrt((p1p2 - m12) * (p1p2 + m12)) / p1p2;
   double s = (p1 + p2).Abs2();
   double zeta1 = 2 * p1p2 * rho / (sqr(Mas1) + p1p2 * (1. + rho));
   double zeta2 = 2 * p1p2 * rho / (sqr(Mas2) + p1p2 * (1. + rho));
