@@ -24,7 +24,7 @@ namespace ATOOLS {
   public:
     // masses, yukawa's etc. in GeV, radius in fm
     kf_code m_kfc;
-    double  m_mass, m_hmass, m_radius, m_yuk, m_width, m_dg, m_dm, m_qoverp2;
+    double  m_mass, m_hmass, m_radius, m_charge, m_yuk, m_width, m_dg, m_dm, m_qoverp2;
     int     m_icharge, m_strong, m_resummed, m_priority;
     int     m_spin, m_stable, m_masssign, m_dummy, m_majorana, m_formfactor;
     bool    m_on, m_massive, m_hadron, m_isgroup;
@@ -37,7 +37,7 @@ namespace ATOOLS {
 
     // default constructor
     inline Particle_Info():
-      m_kfc(kf_none), m_mass(0.0), m_radius(0.0), m_hmass(0.0), m_yuk(-1.0), m_width(0.0),
+      m_kfc(kf_none), m_mass(0.0), m_radius(0.0), m_hmass(0.0), m_charge(0.0), m_yuk(-1.0), m_width(0.0),
       m_dg(0.0), m_dm(0.0), m_qoverp2(1.0), m_icharge(0),
       m_strong(0), m_resummed(0), m_priority(0), m_spin(0), m_stable(1),
       m_masssign(0), m_dummy(1), m_majorana(0), m_formfactor(0), m_on(0),
@@ -155,9 +155,9 @@ namespace ATOOLS {
     inline int    IntCharge() const
     { int iq(p_info->m_icharge); return m_anti?-iq:iq;     }
     inline double Charge() const
-    { double c(p_info->m_icharge/3.0); return m_anti?-c:c; }
+    { return (m_anti?-1.:1.) * p_info->m_charge; }
     inline bool IsQED() const
-    { return (IsPhoton()||IntCharge());}
+    { return (IsPhoton()|| dabs(Charge())>0.); }
 
     inline double IsoWeak() const
     { double c((p_info->m_kfc<7 || (p_info->m_kfc>10 && p_info->m_kfc<17))

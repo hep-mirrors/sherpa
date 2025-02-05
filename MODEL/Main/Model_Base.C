@@ -321,6 +321,8 @@ void Model_Base::ReadParticleData()
           it->second->m_massive = s.SetDefault(it->second->m_massive).Get<bool>();
         } else if (propertyname == "IntCharge") {
           it->second->m_icharge = s.SetDefault(it->second->m_icharge).Get<int>();
+        } else if (propertyname == "Charge") {
+          it->second->m_charge = s.SetDefault(it->second->m_charge).Get<double>();
         } else if (propertyname == "StrongCharge") {
           it->second->m_strong = s.SetDefault(it->second->m_strong).Get<int>();
         } else if (propertyname == "Yukawa") {

@@ -13,7 +13,7 @@ using namespace ATOOLS;
 
 Particle_Info::Particle_Info(const Particle_Info &info):
   m_kfc(info.m_kfc), m_mass(info.m_mass), m_hmass(info.m_hmass), m_radius(info.m_radius),
-  m_yuk(info.m_yuk), m_width(info.m_width),
+  m_yuk(info.m_yuk), m_width(info.m_width), m_charge(info.m_charge),
   m_dg(info.m_dg), m_dm(info.m_dm), m_qoverp2(info.m_qoverp2), 
   m_icharge(info.m_icharge),
   m_strong(info.m_strong), m_resummed(info.m_resummed), m_priority(info.m_priority),
@@ -35,8 +35,8 @@ Particle_Info::Particle_Info
  const int stable, bool massive, const std::string &idname,
  const std::string &antiname, const std::string& texname,
  const std::string &antitexname, const bool dummy, const bool isgroup):
-  m_kfc(kfc), m_mass(mass), m_hmass(mass), m_radius(radius), m_yuk(-1.0), m_width(width),
-  m_dg(0.0), m_dm(0.0), m_qoverp2(1.0), m_icharge(icharge),
+  m_kfc(kfc), m_mass(mass), m_hmass(mass), m_radius(radius), m_charge(icharge/3.),
+  m_yuk(-1.0), m_width(width), m_dg(0.0), m_dm(0.0), m_qoverp2(1.0), m_icharge(icharge), 
   m_strong(strong), m_resummed(0), m_priority(0), m_spin(spin), 
   m_stable(stable), m_masssign(1), m_dummy(dummy), m_majorana(majorana), 
   m_formfactor(0), m_on(on), m_massive(massive), m_hadron(0), 
@@ -50,8 +50,8 @@ Particle_Info::Particle_Info
 (const kf_code &kfc,const double &mass,const double &radius,const double &width,
  const int icharge,const int spin,const bool on,
  const int stable,const std::string &idname,const std::string &texname):
-  m_kfc(kfc), m_mass(mass), m_hmass(mass), m_radius(radius), m_yuk(-1.0), m_width(width),
-  m_dg(0.0), m_dm(0.0), m_qoverp2(1.0),
+  m_kfc(kfc), m_mass(mass), m_hmass(mass), m_radius(radius), m_charge(icharge/3.),
+  m_yuk(-1.0), m_width(width), m_dg(0.0), m_dm(0.0), m_qoverp2(1.0),
   m_icharge(icharge), m_strong(0), m_resummed(0), m_priority(0), 
   m_spin(spin), m_stable(stable), m_masssign(1), m_dummy(0), m_majorana(0), 
   m_formfactor(0), m_on(on), m_massive(1), m_hadron(1), m_isgroup(0), 
@@ -65,8 +65,8 @@ Particle_Info::Particle_Info
 Particle_Info::Particle_Info
 (const kf_code &kfc,const double &mass, const double &radius,const int icharge, const int spin,
  const int formfactor, const std::string &idname, const std::string &antiname):
-  m_kfc(kfc), m_mass(mass), m_hmass(mass), m_radius(radius), m_yuk(-1.0), m_width(0),
-  m_dg(0.0), m_dm(0.0), m_qoverp2(1.0),
+  m_kfc(kfc), m_mass(mass), m_hmass(mass), m_radius(radius), m_charge(icharge/3.),
+  m_yuk(-1.0), m_width(0), m_dg(0.0), m_dm(0.0), m_qoverp2(1.0),
   m_icharge(icharge), m_strong(0), m_resummed(0), m_priority(0), m_spin(spin), 
   m_stable(1), m_masssign(1), m_dummy(0), m_majorana(0), 
   m_formfactor(formfactor), m_on(1), m_massive(1), m_hadron(1), m_isgroup(0), 

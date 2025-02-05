@@ -1,0 +1,17 @@
+# collider setup
+BEAMS: [22, -22]
+BEAM_ENERGIES: 10.
+PDF_LIBRARY: None
+
+# general setting
+EVENTS: 50k
+
+# model parameters
+ALPHAS(MZ): 0.1188
+ORDER_ALPHAS: 2
+SHOWER:
+  FS_PT2MIN: 1.00
+
+PROCESSES:
+- 22 22 -> 22 22:
+    Order: {QCD: 0, EW: 4}
