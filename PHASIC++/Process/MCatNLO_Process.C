@@ -122,6 +122,7 @@ void MCatNLO_Process::Init(const Process_Info &pi,
   Process_Info rspi(spi);
   rspi.m_integrator=rspi.m_rsintegrator;
   rspi.m_itmin=rspi.m_rsitmin;
+  rspi.m_itmax=rspi.m_rsitmax;
   rspi.m_megenerator=rspi.m_rsmegenerator;
   if (rspi.m_megenerator=="") rspi.m_megenerator=defrsmegen;
   p_rsproc=InitProcess(rspi,nlo_type::real|nlo_type::rsub,1|2);

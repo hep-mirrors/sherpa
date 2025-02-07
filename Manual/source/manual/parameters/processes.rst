@@ -569,14 +569,29 @@ Sets a process-specific integrator, see :ref:`int_INTEGRATOR`.
 PSI_ItMin
 =========
 
-Sets the number of points per optimization step, see :ref:`PSI`.
+Sets the minimal number of points per optimization step, see :ref:`PSI`.
+
+.. _PSI_ItMax:
+
+PSI_ItMax
+=========
+
+Sets the maximal number of points per optimization step, see :ref:`PSI`.
 
 .. _RS_PSI_ItMin:
 
 RS_PSI_ItMin
 ============
 
-Sets the number of points per optimization step in real-minus-subtraction
+Sets the minimal number of points per optimization step in real-minus-subtraction
+parts of fixed-order and MC\@NLO calculations, see :ref:`PSI`.
+
+.. _RS_PSI_ItMax:
+
+RS_PSI_ItMax
+============
+
+Sets the maximal number of points per optimization step in real-minus-subtraction
 parts of fixed-order and MC\@NLO calculations, see :ref:`PSI`.
 
 .. _Special Group:

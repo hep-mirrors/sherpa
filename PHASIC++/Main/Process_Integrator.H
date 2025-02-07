@@ -50,7 +50,7 @@ namespace PHASIC {
 
     double m_threshold, m_enhancefac, m_maxeps, m_rsfac;
 
-    long unsigned int m_n, m_itmin;
+    long unsigned int m_n, m_itmin, m_itmax;
 
     double m_max, m_totalxs, m_totalsum, m_totalsumsqr, m_totalerr;
     double m_ssum, m_ssumsqr, m_smax, m_ssigma2, m_wmin;
@@ -140,6 +140,7 @@ namespace PHASIC {
     inline void SetHelicityScheme(const hls::scheme &s) { m_helicityscheme=s; }
 
     inline void SetItMin(const long unsigned int &itmin) { m_itmin=itmin;  }
+    inline void SetItMax(const long unsigned int &itmax) { m_itmax=itmax;  }
 
     inline size_t NIn() const     { return m_nin;     }
     inline size_t NOut() const    { return m_nout;    }
@@ -193,6 +194,7 @@ namespace PHASIC {
     { return p_helint; }
 
     inline long unsigned int ItMin() const { return m_itmin; }
+    inline long unsigned int ItMax() const { return m_itmax; }
 
     inline void SetResultPath(const std::string &path) { m_resultpath=path; }
 

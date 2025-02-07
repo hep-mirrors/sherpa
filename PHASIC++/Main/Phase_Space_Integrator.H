@@ -10,7 +10,7 @@ namespace PHASIC {
   class Phase_Space_Integrator {
   private:
     static long unsigned int m_nrawmax;
-    long unsigned int m_nopt, m_iter, m_itmin, m_nexpected;
+    long unsigned int m_nopt, m_iter, m_itmin, m_itmax, m_nexpected;
 
     long unsigned int m_n, m_nstep, m_ncstep;
     long unsigned int m_mn, m_mnstep, m_mncstep;
