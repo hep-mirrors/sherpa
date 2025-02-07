@@ -20,7 +20,7 @@ using namespace std;
 long unsigned int Phase_Space_Integrator::m_nrawmax(std::numeric_limits<long unsigned int>::max());
 
 Phase_Space_Integrator::Phase_Space_Integrator(Phase_Space_Handler *_psh):
-  m_iter(1000), m_itmin(1000),
+  m_iter(1000), m_itmin(1000), m_itmax(1000000),
   m_n(0), m_nstep(0), m_ncstep(0), m_mn(0), m_mnstep(0), m_mncstep(0),
   m_ncontrib(0), m_maxopt(0), m_stopopt(1000), m_nlo(0), m_fin_opt(true),
   m_starttime(0.), m_lotime(0.), m_addtime(0.), m_lrtime(0.),
@@ -38,26 +38,34 @@ Phase_Space_Integrator::Phase_Space_Integrator(Phase_Space_Handler *_psh):
     <long unsigned int>(m_npower?1:5);
   m_stopopt = s["STOPOPT"].Get<long unsigned int>();
   // number of points per iteration
-  const auto procitmin = p_psh->Process()->Process()->Info().m_itmin;
+  const size_t procitmin = p_psh->Process()->Process()->Info().m_itmin;
   m_itmin = s["ITMIN"].GetScalarWithOtherDefault
     <long unsigned int>((m_npower?5:5)*procitmin);
+  const size_t procitmax = p_psh->Process()->Process()->Info().m_itmax;
+  m_itmax = s["ITMAX"].GetScalarWithOtherDefault
+    <long unsigned int>((m_npower?5:5)*procitmax);
   // time steps
   m_timestep = s["TIMESTEP_OFFSET"].Get<double>();
   m_timeslope = s["TIMESTEP_SLOPE"].Get<double>();
 #ifdef USING__MPI
   int size=mpi->Size();
-  long unsigned int itminbynode=Max(1,(int)m_itmin/size);
+  long unsigned int itminbynode=Max(1,(int)m_itmin/size),
+                    itmaxbynode=Max(1,(int)m_itmax/size);
   if (size) {
     int helpi;
     if (s["ITMIN_BY_NODE"].IsSetExplicitly())
       itminbynode = s["ITMIN_BY_NODE"].Get<long unsigned int>();
     m_itmin = itminbynode * size;
+    if (s["ITMAX_BY_NODE"].IsSetExplicitly())
+      itmaxbynode = s["ITMAX_BY_NODE"].Get<long unsigned int>();
+    m_itmax = itmaxbynode * size;
   }
 #endif
   m_nexpected = m_itmin;
   for (size_t i(1);i<m_nopt;++i) m_nexpected+=m_itmin*pow(2.,i*m_npower);
   m_nexpected+=m_maxopt*m_itmin*pow(2.,m_nopt*m_npower);
   msg_Info()<<"Integration parameters: n_{min} = "<<m_itmin
+            <<", n_{max} = "<<m_itmax
 	    <<", N_{opt} = "<<m_nopt<<", N_{max} = "<<m_maxopt;
   if (m_npower) msg_Info()<<", exponent = "<<m_npower;
   msg_Info()<<std::endl;
@@ -152,7 +160,7 @@ double Phase_Space_Integrator::Calculate(double _maxerror, double _maxabserror,
   m_nstep = m_ncstep = 0;
 
   m_lrtime = ATOOLS::rpa->gen.Timer().RealTime();
-  m_iter = m_itmin;
+  m_iter = Min(m_itmin,m_itmax);
   if (p_psh->Stats().size()) {
     m_iter=p_psh->Stats().back()[4];
     if (p_psh->Stats().size()>1)

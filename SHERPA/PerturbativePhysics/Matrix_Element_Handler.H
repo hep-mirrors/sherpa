@@ -56,7 +56,7 @@ namespace SHERPA {
         m_vrsint, m_vgpath, m_vcpl, m_vmaxcpl, m_vmincpl, m_vacpl,
 	m_vmaxacpl, m_vminacpl, m_vaddname, m_vspecial;
       MPIV_Map m_vnmaxq, m_vnminq, m_vamegicmhv, m_vcls, m_vhls,
-	m_vntchan, m_vmtchan, m_vitmin, m_vrsitmin;
+	m_vntchan, m_vmtchan, m_vitmin, m_vitmax, m_vrsitmin, m_vrsitmax;
       ATOOLS::Scoped_Settings m_selectors;
 
       std::string m_gycut;
