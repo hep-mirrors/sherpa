@@ -415,7 +415,7 @@ void Sherpa::DrawLogo(const bool& shouldprintversioninfo)
   msg_Info() << Frame_Line{"                                                                            "};
   MyStrStream citation;
   citation << "Users are kindly asked to cite " << om::bold
-           << "SciPost Phys 7 (2019) 3, 034" << om::reset << ".";
+           << "JHEP 12 (2024) 156" << om::reset << ".";
   msg_Info() << Frame_Line{citation.str()};
   msg_Info() << Frame_Line{"                                                                            "};
   msg_Info() << Frame_Line{"This program uses a lot of genuine and original research work by others.    "};
@@ -424,5 +424,5 @@ void Sherpa::DrawLogo(const bool& shouldprintversioninfo)
   msg_Info() << Frame_Footer{};
   rpa->gen.PrintGitVersion(msg->Info(), shouldprintversioninfo);
   rpa->gen.AddCitation
-    (0,"The complete Sherpa package is published under \\cite{Sherpa:2019gpd}.");
+    (0,"The complete Sherpa package is published under \\cite{Sherpa:2024mfk}.");
 }
