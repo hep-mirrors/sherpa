@@ -59,7 +59,7 @@ namespace SHERPA {
     {
       m_outstream << "# EventNumber Nominal";
       static std::array<Variations_Type, 2> types = {Variations_Type::qcd, Variations_Type::qcut};
-      for (const auto type : types) {
+      for (const auto& type : types) {
         size_t numqcdvars = s_variations->Size(type);
         for (size_t i(0);i<numqcdvars;++i) {
           m_outstream << ' ' << s_variations->GetVariationNameAt(i, type);
@@ -98,7 +98,7 @@ namespace SHERPA {
         m_outstream<<' '<<0.0;
       else
         m_outstream<<' '<<nom;
-      for (const auto type : types) {
+      for (const auto& type : types) {
         size_t numvars = s_variations->Size(type);
         auto wgts = wgtmap.Combine(type);
         const auto relfac = wgtmap.NominalIgnoringVariationType(type);

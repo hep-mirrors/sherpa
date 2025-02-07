@@ -1075,7 +1075,7 @@ int Amplitude_Generator::CountRealAmplitudes(Single_Amplitude* first)
 Single_Amplitude* Amplitude_Generator::Matching(std::set<std::pair<int,int> > &valid)
 {
   DEBUG_FUNC("N="<<N);
-  short int i,j;
+  short int j;
   int sw1;
   int qsum,lsum; 
   Single_Amplitude* first_amp;

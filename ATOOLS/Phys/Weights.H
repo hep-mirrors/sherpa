@@ -306,7 +306,7 @@ namespace ATOOLS {
     // Fill "managed" QCD variations, which might need to be combined first,
     // since we have QCD variations from "ME", "PS", etc., hence we need to
     // build a product over those for each individual QCD variation.
-    for (const auto type : s_variations->ManagedVariationTypes()) {
+    for (const auto& type : s_variations->ManagedVariationTypes()) {
       // calculate contributions
       Weights weights = Weights {type};
       double relfac {1.0};

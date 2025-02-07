@@ -96,7 +96,6 @@ void Reconnection_Base::HarvestParticleInfo(ATOOLS::Particle * part) {
   for (size_t pos=0;pos<2;pos++) col[pos] = part->GetFlow(pos+1);
   if (col[0]==0 && col[1]==0) return;
   Particle * copy = new Particle(*part);
-  colpair cols = colpair(col[0],col[1]);
   // We work with colour pairs <triplet, anti-triplet>.
   // Filling maps of triplet/anti-triplet colour indices to the particles;
   // constructing the singlets will use this, the two sets m_parts[] will be

@@ -103,7 +103,7 @@ namespace ATOOLS {
                            Variations_Name_Type::weight_name_convention) const;
     size_t Size(Variations_Type t=Variations_Type::qcd) const;
     bool HasVariations() const {
-      for (const auto t : ManagedVariationTypes())
+      for (const auto& t : ManagedVariationTypes())
         if (Size(t) > 0)
           return true;
       return false;

@@ -131,7 +131,6 @@ bool Cluster_Splitter::MakeLongitudinalMomentaZ() {
 }
 
 bool Cluster_Splitter::MakeLongitudinalMomentaZSimple() {
-  bool mustrecalc = false;
   for (size_t i=0;i<2;i++) m_z[i]  = m_zselector(m_zmin[i],m_zmax[i],i);
   for (size_t i=0;i<2;i++) m_R2[i] = m_z[i]*(1.-m_z[1-i])*m_Q2-m_kt2;
   return (m_R2[0]>=m_mdec2[0]+m_kt2) && (m_R2[1]>=m_mdec2[1]+m_kt2);
@@ -212,7 +211,8 @@ bool Cluster_Splitter::MakeLongitudinalMomentaMass() {
 
 double Cluster_Splitter::DeltaM(const size_t & cl) {
   double deltaM, deltaMmax = m_Q-sqrt(m_m2min[0])-sqrt(m_m2min[1]);
-  double mean =  m_mean[cl], sigma = 1./(m_c[cl] * sqrt(m_kt02));
+  //double mean =  m_mean[cl];
+  double sigma = 1./(m_c[cl] * sqrt(m_kt02));
   double arg  =  1.-exp(-sigma * deltaMmax);
   size_t trials = 1000;
   do {
@@ -310,7 +310,7 @@ Cluster * Cluster_Splitter::MakeCluster(size_t i) {
   Vec4D newmom11 = (m_E*(     x*lca*s_AxisP+     y*(1.-lcb)*s_AxisM));
   Vec4D newmom12 = (m_E*((1.-x)*lca*s_AxisP+(1.-y)*(1.-lcb)*s_AxisM) +
 		    sign * m_ktvec);
-  Vec4D clumom = m_E*(lca*s_AxisP + (1.-lcb)*s_AxisM) + sign * m_ktvec;
+  //Vec4D clumom = m_E*(lca*s_AxisP + (1.-lcb)*s_AxisM) + sign * m_ktvec;
 
   // back into lab system
   m_rotat.RotateBack(newmom11);

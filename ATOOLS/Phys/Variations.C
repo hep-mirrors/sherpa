@@ -427,7 +427,7 @@ void Variations::AddParameterExpandingScaleFactors(
   for (std::vector<PDFs_And_AlphaS>::const_iterator pdfasit(pdfsandalphaslist.items.begin());
         pdfasit != pdfsandalphaslist.items.end(); pdfasit++) {
     bool assignedownershipofpdfsandalphas {false};
-    for (const auto sfpair : scalefactorpairs) {
+    for (const auto& sfpair : scalefactorpairs) {
       if (!m_includecentralvaluevariation && did_expand &&
           pdfsandalphaslist.did_expand &&
           IsQCDVariationTrivial(sfpair.first, sfpair.second, pdfasit->m_pdfs[0],
