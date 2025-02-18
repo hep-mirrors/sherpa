@@ -8,7 +8,6 @@
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Settings.H"
 
-#include <fstream>
 #include <string>
 
 using namespace BEAM;
@@ -19,7 +18,8 @@ EPA::EPA(const Flavour& beam, const double energy, const double pol,
          const int dir)
     : Beam_Base(beamspectrum::EPA, beam, energy, pol, dir),
       m_type(EPA_ff_type::point), p_ff(nullptr), m_mass(beam.Mass(true)),
-      m_plotting(0)
+      m_aqed(1./127), m_pref(0.), m_q2(0.), m_pt2max(-1.), m_xmin(0.),
+      m_xmax(1.), m_b(0.), m_plotting(0)
 {
   if (m_beam.Charge() == 0.)
     THROW(fatal_error,
@@ -54,13 +54,11 @@ void EPA::FixPosition()
   m_position = R * Vec4D(0., cos(phi), sin(phi), 0.);
 }
 
-void EPA::SetOutMomentum(const ATOOLS::Vec4D& out, const size_t& i)
+void EPA::SetOutMomentum(const ATOOLS::Vec4D& out)
 {
-  if (i == 0) {
-    m_vecouts[0] = out;
-    m_vecouts[1] = m_lab - out;
-    m_q2         = dabs(out.Abs2());
-  }
+  m_vecouts[0] = out;
+  m_vecouts[1] = m_lab - out;
+  m_q2         = dabs(out.Abs2());
 }
 
 void EPA::Initialise()

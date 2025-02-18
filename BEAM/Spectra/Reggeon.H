@@ -17,7 +17,7 @@ namespace BEAM {
 
     Beam_Base* Copy() override;
     bool CalculateWeight(double, double) override;
-    void SetOutMomentum(const ATOOLS::Vec4D& out, const size_t& i = 0) override;
+    void SetOutMomentum(const ATOOLS::Vec4D& out) override;
     void FixPosition() override;
     void FixNormalisation();
     inline double Xmax() const override { return m_xMax; }

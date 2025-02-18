@@ -177,13 +177,6 @@ bool Laser_Backscattering::CalculateWeight(double _x,double _scale)
   return 1;
 }
 
-double Laser_Backscattering::Weight(Flavour flin)
-{
-  if (m_weight<=0.) return 0.;
-  //if (flin != Flavour(kf_photon)) return 0.;
-  return m_weight;
-}
-
 ATOOLS::Vec4D Laser_Backscattering::OutMomentum(const size_t & i) {
   if (m_angles!=0) {
     msg_Error()<<"Error in "<<METHOD<<": m_angles != 0 not implemented yet.\n";
