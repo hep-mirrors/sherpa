@@ -115,7 +115,7 @@ HADRON_DECAYS:
       # Two-body form factors ~ V_{ud}
       ###############################################################
       -211,111,16:
-        BR: [1.,0.]  #  [0.255, 0.255]
+        BR: [0.,0.]  #  [0.255, 0.255]
         ME:
           - Current_ME:
               J1:
@@ -124,10 +124,10 @@ HADRON_DECAYS:
                 v: 1.
                 a: -1.
               J2:
-                Type: VA_0_PiPi
+                Type: VA_0_PP
                 Indices: [2, 1]
                 RUNNING_WIDTH: 2
-                FORM_FACTOR:   1
+                FORM_FACTOR:   2
         PhaseSpace:
           - Dalitz_rho(770)+_12:
               Weight: 1.0
@@ -218,7 +218,7 @@ HADRON_DECAYS:
       # Two-body form factors with eta's
       ###############################################################	
       221,-211,16:
-        BR: [0.,0.]  #  [0.00013, 0.00013]
+        BR: [1.,0.]  #  [0.00013, 0.00013]
         ME:
           - Current_ME:
               J1:
@@ -227,14 +227,14 @@ HADRON_DECAYS:
                 v: 1.
                 a: -1.
               J2:
-                Type: VA_0_PP
+                Type: VA_0_PiPi
                 Indices: [2, 1]
                 RUNNING_WIDTH: 1
                 FORM_FACTOR: 1
         IntResults: [0.0001102, 3.65e-07, 0.0005746]
       ## -------------------------------------------------------------	
       331,-211,16:
-        BR: [0.,0.]  #  [0.00013, 0.00013]
+        BR: [1.,0.]  #  [0.00013, 0.00013]
         ME:
           - Current_ME:
               J1:
@@ -243,14 +243,26 @@ HADRON_DECAYS:
                 v: 1.
                 a: -1.
               J2:
-                Type: VA_0_PP
+                Type: VA_0_PiPi
                 Indices: [2, 1]
                 RUNNING_WIDTH: 1
                 FORM_FACTOR: 1
         IntResults: [0.0001102, 3.65e-07, 0.0005746]
       ## -------------------------------------------------------------	
       -321,221,16:
-        BR: [0.,0.]  #  [0.00027, 0.00027]
+        BR: [1.,0.]  #  [0.00027, 0.00027]
+        ME:
+          - Current_ME:
+              J1:
+                Type: VA_F_F
+                Indices: [3, 0]
+                v: 1.
+                a: -1.
+              J2:
+                Type: VA_0_PiPi
+                Indices: [2, 1]
+                RUNNING_WIDTH: 1
+                FORM_FACTOR: 1
         IntResults: [5.396e-05, 1.919e-07, 0.0004206]
       ###############################################################
       # Three-body form factors ~ V_{ud}, 0 K's

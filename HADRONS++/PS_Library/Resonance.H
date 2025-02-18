@@ -78,7 +78,7 @@ namespace HADRONS {
   class RunningWidth_Resonance : public Resonance_Base {
     double CalculateWidth(const double & s);
   public:
-    RunningWidth_Resonance(const Resonance_Parameters & params) : Resonance_Base(params) {}
+    RunningWidth_Resonance(const Resonance_Parameters & params);
     Complex BreitWigner(const double & s); 
   };
 

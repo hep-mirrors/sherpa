@@ -31,7 +31,9 @@ namespace HADRONS {
     PSmode         m_PSmode;
     ffmodel        m_ffmodel;
     double  m_global, m_deltaM2;
-    double  m_fpi, m_GV, m_m2_pi, m_m2_K, m_m2_eta, m_mu2;
+    double  m_fpi, m_fa0, m_GV, m_GS;
+    double  m_g_a0_eta_pi, m_g_a0_etaprime_pi, m_eps_etapi, m_eps_etaprimepi;
+    double  m_m2_pi, m_m2_K, m_m2_eta, m_mu2;
     double  m_RChTnorm;
 
     std::list<std::pair<double, Resonance_Base * > > m_vectors, m_scalars;

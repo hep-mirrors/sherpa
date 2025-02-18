@@ -37,6 +37,10 @@ Resonance_Base::Resonance_Base(const Resonance_Parameters & params) :
 ///////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////
 
+RunningWidth_Resonance::RunningWidth_Resonance(const Resonance_Parameters & params) :
+  Resonance_Base(params)
+{}
+
 double RunningWidth_Resonance::CalculateWidth(const double & s) {
   if (s>m_threshold2) {
     if (dabs(1.-s/m_OSmass2)<1.e-12) return m_OSwidth;

@@ -15,6 +15,9 @@ using namespace std;
 //     (https://doi.org/10.1140/epjc/s10052-019-6943-9)
 //   * K pi: Phys.Lett.B 640 (2006) 176
 //     (https://doi.org/10.1016/j.physletb.2006.06.058)
+//           - not implemented (but maybe worth it, especially because
+//             of the treatment of eta and eta'?):
+//             (https://arxiv.org/pdf/1201.1794)
 // - KS, 1 (Kuehn-Santamaria model):
 //   * pi pi (original version): Z.Phys.C 48 (1990) 445-452
 //     (https://doi.org/10.1007/BF01572024)
@@ -40,7 +43,9 @@ VA_0_PiPi::VA_0_PiPi(const ATOOLS::Flavour_Vector& flavs,
   m_restype(resonance_type::running),
   m_PSmode(PSmode::unknown),
   m_ffmodel(ffmodel::KS),
-  m_global(1.), m_deltaM2(0.), m_fpi(0.13041), m_GV(0.0619), 
+  m_global(1.), m_deltaM2(0.),
+  m_fpi(0.13041), m_fa0(0.015),
+  m_GV(0.0619), m_GS(0.), m_eps_etapi(0.0134), m_eps_etaprimepi(0.003),
   m_m2_pi(sqr(Flavour(kf_pi_plus).Mass(true))),
   m_m2_K(sqr(Flavour(kf_K_plus).Mass(true))),
   m_m2_eta(sqr(Flavour(kf_eta).Mass(true))),
@@ -62,8 +67,10 @@ VA_0_PiPi::VA_0_PiPi(const ATOOLS::Flavour_Vector& flavs,
 	    m_flavs[p_i[1]].Kfcode()==kf_eta )          m_PSmode = PSmode::etapi;
   else if ( m_flavs[p_i[0]].Kfcode()==kf_pi_plus &&
 	    m_flavs[p_i[1]].Kfcode()==kf_eta_prime_958) m_PSmode = PSmode::etaprimepi;
-  msg_Out()<<METHOD<<"("<<m_flavs[p_i[0]]<<" + "<<m_flavs[p_i[1]]<<") "
-	   <<"--> "<<int(m_PSmode)<<"\n";
+  else if ( m_flavs[p_i[0]].Kfcode()==kf_eta &&
+	    m_flavs[p_i[1]].Kfcode()==kf_K_plus)        m_PSmode = PSmode::Keta;
+  else if ( m_flavs[p_i[0]].Kfcode()==kf_eta_prime_958 &&
+	    m_flavs[p_i[1]].Kfcode()==kf_pi_plus)       m_PSmode = PSmode::Ketaprime;
   if (m_PSmode==PSmode::unknown)
     THROW(fatal_error,"Current called for illegal flavour combination.");
 }
@@ -94,6 +101,7 @@ void VA_0_PiPi::SetModelParameters(struct GeneralModel model)
   m_fpi     = model("fpi", 0.13041 );
   m_GV      = model("GV",  0.0619 );
   m_ffmodel = ffmodel(model("FORM_FACTOR",1));
+  m_deltaM2 = m_flavs[p_i[1]].Mass(true)-m_flavs[p_i[0]].Mass(true);
   if (m_ffmodel==ffmodel::RChT) {
     m_fpi   = 0.092316;
     if (m_PSmode==PSmode::pipi || m_PSmode==PSmode::KK) {
@@ -102,6 +110,14 @@ void VA_0_PiPi::SetModelParameters(struct GeneralModel model)
     else if (m_PSmode==PSmode::Kpi || m_PSmode==PSmode::Keta) {
       m_RChTnorm = (sqr(m_GV)*Flavour(kf_K_star_892_plus).Mass(true)/
 		    (64.*M_PI*pow(m_fpi,4)));
+    }
+  }
+  else if (m_ffmodel==ffmodel::KS) {
+    if (m_PSmode==PSmode::etapi) {
+      m_GS = m_fa0*m_g_a0_eta_pi/m_deltaM2;
+    }
+    if (m_PSmode==PSmode::etapi) {
+      m_GS = m_fa0*m_g_a0_etaprime_pi/m_deltaM2;
     }
   }
   // global pre-factor: 1/sqrt(2) for pi_0 wave-function, V_ud for the
@@ -127,9 +143,9 @@ void VA_0_PiPi::SetModelParameters(struct GeneralModel model)
     }
     tags.clear();
     if ( (m_PSmode==PSmode::Kpi ||
-	  m_PSmode==PSmode::etapi || m_PSmode==PSmode::etaprimepi) &&
+	  m_PSmode==PSmode::etapi || m_PSmode==PSmode::etaprimepi ||
+	  m_PSmode==PSmode::Keta  || m_PSmode==PSmode::Ketaprime) &&
 	  SelectResonances(tags,true)) {
-      m_deltaM2 = m_flavs[p_i[1]].Mass(true)-m_flavs[p_i[0]].Mass(true);
       for (list<kf_code>::iterator kfit=tags.begin();kfit!=tags.end();kfit++)
 	InitResonance(model, *kfit, true);
     }
@@ -147,7 +163,9 @@ bool VA_0_PiPi::SelectResonances(list<kf_code> & tags,const bool & isScalar) {
       tags.push_back(kf_a_0_1450_plus);
       return true;
     }
-    else if (m_PSmode==PSmode::Kpi) {
+    else if (m_PSmode==PSmode::Kpi   ||
+	     m_PSmode==PSmode::Keta  ||
+	     m_PSmode==PSmode::Ketaprime) {
       tags.push_back(kf_K_0_star_1430_plus);
       return true;
     }
@@ -162,7 +180,9 @@ bool VA_0_PiPi::SelectResonances(list<kf_code> & tags,const bool & isScalar) {
       tags.push_back(kf_rho_1700_plus);
       return true;
     }
-    else if (m_PSmode==PSmode::Kpi) {
+    else if (m_PSmode==PSmode::Kpi   ||
+	     m_PSmode==PSmode::Keta  ||
+	     m_PSmode==PSmode::Ketaprime) {
       tags.push_back(kf_K_star_892_plus);
       tags.push_back(kf_K_star_1410_plus);
       return true;
@@ -230,7 +250,9 @@ bool VA_0_PiPi::KSDefaults(const kf_code & tag,vector<double> & defs) {
       defs = {  1.0000, 0.7749, 0.1480, 0.0000 }; break;
     }
   }
-  else if (m_PSmode==PSmode::Kpi && m_restype==resonance_type::running) {
+  else if ((m_PSmode==PSmode::Kpi  ||
+	    m_PSmode==PSmode::Keta || m_PSmode==PSmode::Ketaprime) &&
+	   m_restype==resonance_type::running) {
     switch (tag) {
     case kf_K_star_1410_plus:
       defs = { -0.1350, 1.4120, 0.2270, 0.0000 }; break;
@@ -294,36 +316,37 @@ void VA_0_PiPi::InitResonance(struct GeneralModel model,const kf_code & tag,
   case kf_K_0_star_1430_plus: id = string("K*_0(1430)+"); break;
   case kf_a_0_980_plus:       id = string("a_0(980)+");   break;
   case kf_a_0_1450_plus:      id = string("a_0(1450)+");  break;
+  default: break;
   }
   vector<Flavour> outflavs;
   if (m_PSmode==PSmode::pipi || m_PSmode==PSmode::KK) {
     outflavs.push_back(Flavour(kf_pi_plus));
     outflavs.push_back(Flavour(kf_pi));
   }
-  else if (m_PSmode==PSmode::etapi || m_PSmode==PSmode::etaprimepi) {
-    outflavs.push_back(m_flavs[p_i[0]]);
-    outflavs.push_back(m_flavs[p_i[1]]);
-  }
-  else if (m_PSmode==PSmode::Kpi) {
+  else if (m_PSmode==PSmode::etapi || m_PSmode==PSmode::etaprimepi ||
+	   m_PSmode==PSmode::Keta  || m_PSmode==PSmode::Keta || m_PSmode==PSmode::Ketaprime) {
     outflavs.push_back(m_flavs[p_i[0]]);
     outflavs.push_back(m_flavs[p_i[1]]);
   }
   Flavour flav = Flavour(tag);
-  double weight = model(string("Weight")+id, defaults[0]);
-  double mass   = model(string("Mass")  +id, defaults[1]);
-  double width  = model(string("Width") +id, defaults[2]);
-  double phase  = model(string("Phase") +id, defaults[3]);
+  double weight = model(string("Weight_")+id, defaults[0]);
+  double mass   = model(string("Mass_")  +id, defaults[1]);
+  double width  = model(string("Width_") +id, defaults[2]);
+  double phase  = model(string("Phase_") +id, defaults[3]);
 
   Resonance_Parameters params(flav,outflavs,m_restype,mass,width,phase);
   Resonance_Base * res = NULL;
   switch (m_restype) {
   case resonance_type::fixed:
-    res = new FixedWidth_Resonance(params); break;
+    res = new FixedWidth_Resonance(params);
+    break;
   case resonance_type::GS:
-    res = new GS_Resonance(params); break;
+    res = new GS_Resonance(params);
+    break;
   case resonance_type::running:
   default:
-    res = new RunningWidth_Resonance(params); break;
+    res = new RunningWidth_Resonance(params);
+    break;
   }
   if (!isScalar) m_vectors.push_back(make_pair(weight,res));
   else           m_scalars.push_back(make_pair(weight,res));
