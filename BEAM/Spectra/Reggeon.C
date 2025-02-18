@@ -66,11 +66,9 @@ bool Reggeon::CalculateWeight(double x, double q2)
   return true;
 }
 
-void Reggeon::SetOutMomentum(const ATOOLS::Vec4D &out, const size_t & i) {
-  if (i==0) {
-    m_vecouts[0] = out;
-    m_vecouts[1] = m_lab-out;
-  }
+void Reggeon::SetOutMomentum(const ATOOLS::Vec4D &out) {
+  m_vecouts[0] = out;
+  m_vecouts[1] = m_lab-out;
 }
 
 void Reggeon::FixPosition() {
