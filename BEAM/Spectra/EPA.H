@@ -15,7 +15,7 @@ namespace BEAM {
     EPA_FF_Base* p_ff;
     double       m_mass;
     double       m_aqed, m_pref;
-    double       m_x, m_q2, m_pt2max;
+    double       m_q2, m_pt2max;
     double       m_xmin, m_xmax;
     double       m_b;
 
@@ -33,7 +33,7 @@ namespace BEAM {
 
     bool CalculateWeight(double x, double q2) override;
     void FixPosition() override;
-    void SetOutMomentum(const ATOOLS::Vec4D& out, const size_t& i = 0) override;
+    void SetOutMomentum(const ATOOLS::Vec4D& out) override;
 
     inline double Xmax() const override { return m_xmax; }
     inline double Xmin() const override { return m_xmin; }
