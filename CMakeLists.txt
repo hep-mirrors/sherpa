@@ -478,7 +478,7 @@ if (SHERPA_ENABLE_LOOPTOOLS)
 endif()
 if (SHERPA_ENABLE_ALPHAQEDHAD)
   execute_process(
-  COMMAND wget --no-check-certificate -O ${PROJECT_SOURCE_DIR}/MODEL/Main/hadr5x19.f https://people.physik.hu-berlin.de/~fjeger/hadr5x19.f 
+  COMMAND wget --no-check-certificate -O ${PROJECT_SOURCE_DIR}/MODEL/Main/hadr5x19.f https://gitlab.com/aprice/qed-hvp/-/raw/main/hadr5x19.f 
   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
   RESULT_VARIABLE download_result
   )
