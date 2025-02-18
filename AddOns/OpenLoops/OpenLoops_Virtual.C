@@ -37,7 +37,7 @@ void OpenLoops_Virtual::SwitchMode(const int mode)
 void OpenLoops_Virtual::Calc(const Vec4D_Vector& momenta)
 {
   m_mode=m_modebackup;
-
+  m_IRscale=sqrt(m_mur2);
   OpenLoops_Interface::SetParameter("alpha", AlphaQED());
   OpenLoops_Interface::SetParameter("alphas", AlphaQCD());
   OpenLoops_Interface::SetParameter("mu", sqrt(m_mur2));
