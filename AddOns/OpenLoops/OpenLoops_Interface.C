@@ -81,6 +81,8 @@ void OpenLoops_Interface::RegisterDefaults() const
   s["OL_VMODE"].SetDefault(0);
   s["OL_EXIT_ON_ERROR"].SetDefault(true);
   s["OL_IGNORE_MODEL"].SetDefault(false);
+  s["OL_IR_SCALE"].SetDefault(100);
+  s["OL_UV_SCALE"].SetDefault(100);
 
   // find OL installation prefix with several overwrite options
   char *var=NULL;
