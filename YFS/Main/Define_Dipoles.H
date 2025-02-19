@@ -83,6 +83,7 @@ namespace YFS {
       double CalculateFlux(const Vec4D &k, const Vec4D &kk);
       double Propagator(const double &s, int width=0);
       double CalculateVirtualSubTchannel();
+      double CalculateVirtualSubTchannelEps();
       double FormFactor();
       double TFormFactor();
       double EEXRealVirtual(const Vec4D &k);

@@ -5,9 +5,13 @@
 #include "ATOOLS/Math/Poincare.H"
 #include "MODEL/Main/Running_AlphaQED.H"
 #include "ATOOLS/Org/Message.H"
+#include "ATOOLS/Org/CXXFLAGS_PACKAGES.H"
 #include "MODEL/Main/Model_Base.H"
 #include "METOOLS/Loops/Master_Integrals.H"
 
+#ifdef USING__LOOPTOOLS
+  #include "clooptools.h"
+#endif
 
 
 using namespace YFS;
@@ -72,12 +76,28 @@ double YFS_Form_Factor::BVR_full(double p1p2, double E1, double E2,
   return m_alpi * (t1 + t2 + 0.5 * t3);
 }
 
-DivArrD YFS_Form_Factor::BVR_full_eps(ATOOLS::Vec4D p1, ATOOLS::Vec4D p2,  double Kmax, int mode) {
+DivArrD YFS_Form_Factor::BVR_full_eps(YFS::Dipole &d,  double Kmax, int mode) {
+  Vec4D p1,p2;
+  if(d.Type()==dipoletype::initial){
+    p1 = d.GetNewMomenta(0);
+    p2 = d.GetNewMomenta(1);
+  }
+  else if(d.Type()==dipoletype::final){
+    p1 = d.GetBornMomenta(0);
+    p2 = d.GetBornMomenta(1);
+  }
+  else if(d.Type()==dipoletype::ifi){
+    p1 = d.GetBornMomenta(1);
+    p2 = d.GetBornMomenta(0);
+  }
+  else{
+    msg_Error()<<"Unknown Dipole type"<<std::endl;
+  }
   double p1p2 = p1*p2;
   double E1 = p1.E();
   double E2 = p2.E();
-  double Mas1 = p1.Mass();
-  double Mas2 = p2.Mass();
+  double Mas1 = d.GetMass(0);//p1.Mass();
+  double Mas2 = d.GetMass(1);//p2.Mass();
   double alpi = m_alpi;
   double m12 = Mas1 * Mas2;
   DivArrD t1; 
@@ -440,6 +460,11 @@ DivArrD YFS_Form_Factor::BVV_full_eps(YFS::Dipole &d, double Kmax, int mode){
   // t1 = (1./rho*A(p1p2,Mas1,Mas2)-1.)*2.*log(2.*Kmax/MasPhot);
   double irloop = p_virt->IRscale();
   double epsloop = p_virt->Eps_Scheme_Factor({p1,p2});
+  // if(IsZero(irloop)){
+  //   if(p_virt->fixedIRscale()) irloop =   
+  // }
+  // PRINT_VAR(irloop);
+  // PRINT_VAR(epsloop);
   double logarg = (p1p2 * (1. + rho) / m12) / rho;
   t1 = (log1p(logarg-1) -1.) *  (massph+log(4.*M_PI*sqr(irloop)/m12/epsloop));
   // if(logarg < 1e-2) t1 = (log1p(logarg-1) -1.) *  (massph+log(4.*M_PI*sqr(irloop)/m12/epsloop));
@@ -618,8 +643,7 @@ double YFS_Form_Factor::BVV_WW(const ATOOLS::Vec4D_Vector born, const ATOOLS::Ve
 }
 
 
-
-double YFS_Form_Factor::BVirtT(const Vec4D &p1, const Vec4D &p2, double kmax){
+double YFS_Form_Factor::BVirtT(Vec4D p1, Vec4D p2,  double kmax){
   double m1 = p1.Mass();
   double m2 = p2.Mass();
   if(IsZero(kmax)) kmax=m1*m2;
@@ -636,16 +660,201 @@ double YFS_Form_Factor::BVirtT(const Vec4D &p1, const Vec4D &p2, double kmax){
        // (log(2*p1p2/(m1*m2))-1.0)*log(m_photonMass*m_photonMass/(m1*m2))
        +0.5*zeta*log(ta*zeta/(m1*m2))
         -0.5*log(ta/m1/m1)*log(ta/m2/m2)
+      -log(zeta)*(log(ta/(m1*m2)) +0.5*log(zeta))
+      +0.5*(zeta -1.0)*log(m1/m2)
+      +DiLog(1./zeta) -1.0
+       );
+  // #ifdef USING__LOOPTOOLS
+  //   Complex form;
+  //   Flavour fl1 = d.GetFlav(0);
+  //   Flavour fl2 = d.GetFlav(1);
+  //   // PRINT_VAR(d.m_thetai*p1+d.m_thetaj*p2);
+  //   double s = (p1+p2).Abs2();
+  //   double crossterm = ((d.m_thetai*p1+d.m_thetaj*p2).Abs2());
+  //   if(fl1==fl2){
+  //     form = 1./8.*B0(s, m1*m1, m2*m2);
+  //     // form += -8.*(m1*m1)*C0(m1*m1, s, m2*m2,0,m1*m1,m2*m2);
+  //     // PRINT_VAR(B0(s, m1*m1, m2*m2));
+  //   //   // PRINT_VAR(C0(m1*m1, 0, m1*m1,0, m1*m1, m1*m1));
+  //   }
+  //   else{
+  //     form = 2*(p1*p2)*C0(m1*m1, s, m2*m2,0,m1*m1,m2*m2);
+  //     form += 0.25*B0(s, m1*m1, m2*m2);
+  //     // PRINT_VAR(B0(crossterm, m1*m1, m2*m2));
+  //   }
+  //   form*=m_alpi;
+  //   // PRINT_VAR(form.real());
+  //   // PRINT_VAR(TBvirt.Finite());
+  //   // // PRINT_VAR(fl1);
+  //   // // PRINT_VAR(fl2);
+  //   // PRINT_VAR(form.real());
+  //   // PRINT_VAR(TBvirt.Finite());
+  //   TBvirt+=form.real();
+  // #endif
+  return TBvirt;
+}
+
+
+double YFS_Form_Factor::BVirtT(YFS::Dipole &d, double kmax){
+ Vec4D p1,p2;
+  if(d.Type()==dipoletype::initial){
+    p1 = d.GetNewMomenta(0);
+    p2 = d.GetNewMomenta(1);
+  }
+  else if(d.Type()==dipoletype::final){
+    p1 = d.GetBornMomenta(0);
+    p2 = d.GetBornMomenta(1);
+  }
+  else if(d.Type()==dipoletype::ifi){
+    p1 = d.GetBornMomenta(1);
+    p2 = d.GetBornMomenta(0);
+  }
+  else{
+    msg_Error()<<"Unknown Dipole type"<<std::endl;
+  }
+  double m1 = d.GetMass(0);
+  double m2 = d.GetMass(1);
+  if(IsZero(kmax)) kmax=m1*m2;
+  double M = m1>=m2 ? m1 : m2;
+  double m = m1>=m2 ? m2 : m1;
+  double p1p2 = p1*p2;
+  double t  = (p1-p2).Abs2();
+  double ta = fabs(t);
+  double zeta = 1 + M*M/ta;
+  double TBvirt, Bv;
+  double rho = sqrt(1. - sqr(m1*m2 / (p1*p2)));
+  TBvirt = m_alpi*(
+    (log(p1p2 * (1. + rho) / (m1*m2)) / rho - 1) *log(pow(m_photonMass, 2)/(kmax)) 
+       // (log(2*p1p2/(m1*m2))-1.0)*log(m_photonMass*m_photonMass/(m1*m2))
+    // (log(ta/(m1*m2))+log(zeta)-1.0)*-1.*log(pow(m_photonMass, 2)/(kmax))
+       +log(ta/(m1*m2))+log(zeta)-1.0
+        +0.5*zeta*log(ta*zeta/(m1*m2))
+        -0.5*log(ta/m1/m1)*log(ta/m2/m2)
       +DiLog(1./zeta) -1.0
       +0.5*(zeta -1.0)*log(m1/m2)
       -log(zeta)*(log(ta/(m1*m2)) +0.5*log(zeta))
        );
+  #ifdef USING__LOOPTOOLS
+    Complex form;
+    Flavour fl1 = d.GetFlav(0);
+    Flavour fl2 = d.GetFlav(1);
+    // PRINT_VAR(d.m_thetai*p1+d.m_thetaj*p2);
+    double s = (p1+p2).Abs2();
+    double crossterm = ((d.m_thetai*p1+d.m_thetaj*p2).Abs2());
+    if(fl1==fl2){
+      form = 1./8.*B0(s, m1*m1, m2*m2);
+      // form += -8.*(m1*m1)*C0(m1*m1, s, m2*m2,0,m1*m1,m2*m2);
+      // PRINT_VAR(B0(s, m1*m1, m2*m2));
+    //   // PRINT_VAR(C0(m1*m1, 0, m1*m1,0, m1*m1, m1*m1));
+    }
+    else{
+      form = 2*(p1*p2)*C0(m1*m1, s, m2*m2,0,m1*m1,m2*m2);
+      form += 0.25*B0(s, m1*m1, m2*m2);
+      // PRINT_VAR(B0(crossterm, m1*m1, m2*m2));
+    }
+    form*=m_alpi;
+    // PRINT_VAR(form.real());
+    // PRINT_VAR(TBvirt.Finite());
+    // // PRINT_VAR(fl1);
+    // // PRINT_VAR(fl2);
+    // PRINT_VAR(form.real());
+    // PRINT_VAR(TBvirt.Finite());
+    // TBvirt+=form.real();
+  #endif
   return TBvirt;
 }
 
-double YFS_Form_Factor::R1(const Vec4D &p1, const Vec4D &p2){
+DivArrD YFS_Form_Factor::BVirtTEps(YFS::Dipole &d, double kmax){
+   Vec4D p1,p2;
+  if(d.Type()==dipoletype::initial){
+    p1 = d.GetNewMomenta(0);
+    p2 = d.GetNewMomenta(1);
+  }
+  else if(d.Type()==dipoletype::final){
+    p1 = d.GetBornMomenta(0);
+    p2 = d.GetBornMomenta(1);
+  }
+  else if(d.Type()==dipoletype::ifi){
+    p1 = d.GetBornMomenta(1);
+    p2 = d.GetBornMomenta(0);
+  }
+  else{
+    msg_Error()<<"Unknown Dipole type"<<std::endl;
+  }
+  double m1 = d.GetMass(0);
+  double m2 = d.GetMass(1);
+  if(IsZero(kmax)) kmax=m1*m2;
+  double M = m1>=m2 ? m1 : m2;
+  double m = m1>=m2 ? m2 : m1;
+  double p1p2 = p1*p2;
+  double t  = (p1-p2).Abs2();
+  double ta = fabs(t);
+  double zeta = 1 + M*M/ta;
+  DivArrD TBvirt, Bv;
+  double rho = sqrt(1. - sqr(m1*m2 / (p1*p2)));
+  DivArrD massph(0,-1,0,0,0,0);
+  double irloop = p_virt->IRscale();
+  double epsloop = p_virt->Eps_Scheme_Factor({p1,p2});
+  TBvirt = m_alpi*(
+    (log(p1p2 * (1. + rho) / (m1*m2)) / rho - 1) * -1.*(-massph-log(4.*M_PI*sqr(irloop)/kmax/epsloop)) 
+       // (log(2*p1p2/(m1*m2))-1.0)*-1.*(-massph-log(4.*M_PI*sqr(irloop)/kmax/epsloop)) 
+       // (log(ta/(m1*m2))+log(zeta)-1.0)*-1.*(-massph-log(4.*M_PI*sqr(irloop)/kmax/epsloop)) 
+       +log(ta/(m1*m2))+log(zeta)-1.0
+       +0.5*zeta*log(ta*zeta/(m1*m2))
+        -0.5*log(ta/m1/m1)*log(ta/m2/m2)
+      -log(zeta)*(log(ta/(m1*m2)) +0.5*log(zeta))
+      +DiLog(1./zeta) -1.0
+      +0.5*(zeta -1.0)*log(m1/m2)
+       );
+  #ifdef USING__LOOPTOOLS
+    Complex form;
+    Flavour fl1 = d.GetFlav(0);
+    Flavour fl2 = d.GetFlav(1);
+    // PRINT_VAR(d.m_thetai*p1+d.m_thetaj*p2);
+    double s = (p1+p2).Abs2();
+    double crossterm = ((d.m_thetai*p1+d.m_thetaj*p2).Abs2());
+    if(fl1==fl2){
+      form = 1./8.*B0(s, m1*m1, m2*m2);
+      // form += -8.*(m1*m1)*C0(m1*m1, s, m2*m2,0,m1*m1,m2*m2);
+      // PRINT_VAR(B0(s, m1*m1, m2*m2));
+    //   // PRINT_VAR(C0(m1*m1, 0, m1*m1,0, m1*m1, m1*m1));
+    }
+    else{
+      form = 2*(p1*p2)*C0(m1*m1, s, m2*m2,0,m1*m1,m2*m2);
+      form += 0.25*B0(s, m1*m1, m2*m2);
+      // PRINT_VAR(B0(crossterm, m1*m1, m2*m2));
+    }
+    form*=m_alpi;
+    // PRINT_VAR(form.real());
+    // PRINT_VAR(TBvirt.Finite());
+    // // PRINT_VAR(fl1);
+    // // PRINT_VAR(fl2);
+    // PRINT_VAR(form.real());
+    // PRINT_VAR(TBvirt.Finite());
+    // TBvirt+=form.real();
+  #endif
+  return TBvirt;
+}
+
+double YFS_Form_Factor::R1(YFS::Dipole &d){
+  Vec4D p1,p2;
+  if(d.Type()==dipoletype::initial){
+    p1 = d.GetNewMomenta(0);
+    p2 = d.GetNewMomenta(1);
+  }
+  else if(d.Type()==dipoletype::final){
+    p1 = d.GetBornMomenta(0);
+    p2 = d.GetBornMomenta(1);
+  }
+  else if(d.Type()==dipoletype::ifi){
+    p1 = d.GetBornMomenta(1);
+    p2 = d.GetBornMomenta(0);
+  }
+  else{
+    msg_Error()<<"Unknown Dipole type"<<std::endl;
+  }
   double R = BVR_full(p1, p2,sqrt(m_s)/2.,m_photonMass,0);
-  double V = BVirtT(p1, p2);
+  double V = BVirtT(d);
   if(m_tchannel!=2){
     // add s channel 
     double Vs = BVR_full(p1, p2, sqrt(m_s) / 2.);
@@ -692,62 +901,62 @@ double YFS_Form_Factor::R2(const Vec4D &p1, const Vec4D &p2){
 }
 
 
-double YFS_Form_Factor::C0(double p12, double p22, double p23,
-                          double m1, double m2, double m3){
+// double YFS_Form_Factor::C0(double p12, double p22, double p23,
+//                           double m1, double m2, double m3){
 
-  // Eq B5 in https://arxiv.org/pdf/hep-ph/0308246.pdf
-  DivArrC t2 = Master_Triangle(p12,p22,p23,m1,m2,m3,0);
-  // double m12 = m1*m2;
-  // // double s=(p1-p2).Abs2();
-  // double xnum = sqrt(1-4*m12/(s-sqr(m1-m2)))-1;
-  // double xden = sqrt(1-4*m12/(s-sqr(m1-m2)))+1;
-  // double xs = fabs(xnum/xden);  
-  // if(4*m12/(s-sqr(m1-m2)) > 1 ) xs=1;
-  // double t1 = -log(m_photonMass*m_photonMass/m12)*log(xs)-0.5*log(xs)*log(xs)+0.5*log(m1/m2);
-  // t1+=2*log(xs)*log(1-xs*xs)-M_PI*M_PI/6+DiLog(xs*xs);
-  // t1+=DiLog(1-xs*m1/m2)+DiLog(1-xs*m2/m1);
-  // t1*=xs/(m12*(1-xs*xs));
-  // if(IsBad(t1)){
-  //   PRINT_VAR(xs);
-  //   PRINT_VAR(xs*xs);
-  //   PRINT_VAR(1-xs*m1/m2);
-  //   PRINT_VAR(1-xs*m2/m1);
-  // }
-  return t2.Finite().real();
-}
+//   // Eq B5 in https://arxiv.org/pdf/hep-ph/0308246.pdf
+//   DivArrC t2 = Master_Triangle(p12,p22,p23,m1,m2,m3,0);
+//   // double m12 = m1*m2;
+//   // // double s=(p1-p2).Abs2();
+//   // double xnum = sqrt(1-4*m12/(s-sqr(m1-m2)))-1;
+//   // double xden = sqrt(1-4*m12/(s-sqr(m1-m2)))+1;
+//   // double xs = fabs(xnum/xden);  
+//   // if(4*m12/(s-sqr(m1-m2)) > 1 ) xs=1;
+//   // double t1 = -log(m_photonMass*m_photonMass/m12)*log(xs)-0.5*log(xs)*log(xs)+0.5*log(m1/m2);
+//   // t1+=2*log(xs)*log(1-xs*xs)-M_PI*M_PI/6+DiLog(xs*xs);
+//   // t1+=DiLog(1-xs*m1/m2)+DiLog(1-xs*m2/m1);
+//   // t1*=xs/(m12*(1-xs*xs));
+//   // if(IsBad(t1)){
+//   //   PRINT_VAR(xs);
+//   //   PRINT_VAR(xs*xs);
+//   //   PRINT_VAR(1-xs*m1/m2);
+//   //   PRINT_VAR(1-xs*m2/m1);
+//   // }
+//   return t2.Finite().real();
+// }
 
-double YFS_Form_Factor::B0(double s, double m1, double m2){
-  Complex m02 = m1*m1;
-  Complex m12 = m2*m2;
-  if(IsZero(s)){
-    if(IsEqual(m1,m2)){
-      return 0;
-    }
-    return 1+(m1*m1)/(m1*m1-m2*m2)*2*log(m_photonMass/m1)
-            -(m2*m2)/(m1*m1-m2*m2)*2*log(m_photonMass/m2);
-  }
-  else{
-    // sqrt((p2-(m1+m2)**2)*(p2-(m1-m2)**2))
-    double r = m1*m1+m2*m2-s+sqrt(sqr(m1*m1+m2*m2-s)-sqr(2*m1*m2));
-    r /= 2*m1*m2;
-    // PRINT_VAR(r);
-    Complex l1 = (-s-m12+m02+sqrt(csqr(-s-m12+m02)+4.*s*m02))
-                    /(-2.*s);
-    Complex l2 = (-s-m12+m02-sqrt(csqr(-s-m12+m02)+4.*s*m02))
-                    /(-2.*s);
-    Complex box = l1*log((l1-1.)/l1) + l2*log((l2-1.)/l2) - log(l1-1.) - log(l2-1.) + 2.;
-    box += log(m_photonMass*m_photonMass)-log(s);
-    // return (box*conj(box)).real();
-    return 2.*((box)).real();
-    if(IsEqual(m1,m2)){
-      return 2*log(m_photonMass/m1)-m1*m1/s*(1/r-r)*log(r);
-    }
-    else{
-      return log(m_photonMass*m_photonMass/(m1*m2))+(m1*m1-m2*m2)/s*log(m2/m1)
-              -m1*m2/s*(1./r-r)*log(r);
-    }
-  }
-}
+// double YFS_Form_Factor::B0(double s, double m1, double m2){
+//   Complex m02 = m1*m1;
+//   Complex m12 = m2*m2;
+//   if(IsZero(s)){
+//     if(IsEqual(m1,m2)){
+//       return 0;
+//     }
+//     return 1+(m1*m1)/(m1*m1-m2*m2)*2*log(m_photonMass/m1)
+//             -(m2*m2)/(m1*m1-m2*m2)*2*log(m_photonMass/m2);
+//   }
+//   else{
+//     // sqrt((p2-(m1+m2)**2)*(p2-(m1-m2)**2))
+//     double r = m1*m1+m2*m2-s+sqrt(sqr(m1*m1+m2*m2-s)-sqr(2*m1*m2));
+//     r /= 2*m1*m2;
+//     // PRINT_VAR(r);
+//     Complex l1 = (-s-m12+m02+sqrt(csqr(-s-m12+m02)+4.*s*m02))
+//                     /(-2.*s);
+//     Complex l2 = (-s-m12+m02-sqrt(csqr(-s-m12+m02)+4.*s*m02))
+//                     /(-2.*s);
+//     Complex box = l1*log((l1-1.)/l1) + l2*log((l2-1.)/l2) - log(l1-1.) - log(l2-1.) + 2.;
+//     box += log(m_photonMass*m_photonMass)-log(s);
+//     // return (box*conj(box)).real();
+//     return 2.*((box)).real();
+//     if(IsEqual(m1,m2)){
+//       return 2*log(m_photonMass/m1)-m1*m1/s*(1/r-r)*log(r);
+//     }
+//     else{
+//       return log(m_photonMass*m_photonMass/(m1*m2))+(m1*m1-m2*m2)/s*log(m2/m1)
+//               -m1*m2/s*(1./r-r)*log(r);
+//     }
+//   }
+// }
 
 
 Complex YFS_Form_Factor::tsub(const Vec4D &p1, const Vec4D &p2, int mode, double QiQj, double theta1, double theta2){
