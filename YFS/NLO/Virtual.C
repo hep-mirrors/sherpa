@@ -60,6 +60,7 @@ double Virtual::Calc_V(const ATOOLS::Vec4D_Vector& p,
            const double B,
            const double mur)
   {
+    p_loop_me->SetRenScale(100);
     double V(0.0), run_corr(0.0), scale(0.0);
     if(aqed->m_mode!=vpmode::off) {
      if(m_tchannel==2) scale = -(p[0]-p[2]).Abs2();  
@@ -83,5 +84,6 @@ double Virtual::Calc_V(const ATOOLS::Vec4D_Vector& p,
         THROW(not_implemented, "Loop ME mode not implemented: "+ATOOLS::ToString(p_loop_me->Mode()));
       }
     // V = p_loop_me->ME_Finite();//*B-run_corr;
+    if(V<0) PRINT_VAR(V);
     return V-run_corr*m_factor;
   }

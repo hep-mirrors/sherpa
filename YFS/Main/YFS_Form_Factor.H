@@ -17,7 +17,7 @@ public:
     double BVR_full(double p1p2, double E1, double E2,
                     double Mas1, double Mas2, double Kmax, double MasPhot, int mode);
     double BVR_full(ATOOLS::Vec4D p1, ATOOLS::Vec4D p2,  double Kmax, double MasPhot, int mode);
-    DivArrD BVR_full_eps(ATOOLS::Vec4D p1, ATOOLS::Vec4D p2,  double Kmax, int mode);
+    DivArrD BVR_full_eps(YFS::Dipole &d,  double Kmax, int mode);
     double BVR_full(ATOOLS::Vec4D p1, ATOOLS::Vec4D p2, double omega);
     double BR_full(ATOOLS::Vec4D p1, ATOOLS::Vec4D p2, double omega);
     double BVR_cru(double p1p2, double E1, double E2,
@@ -39,12 +39,14 @@ public:
     double BVV_WW(const ATOOLS::Vec4D_Vector born, const ATOOLS::Vec4D_Vector k, const ATOOLS::Vec4D p1, const ATOOLS::Vec4D p2, double MasPhot, double Kmax);
     double WW_t(double t, double m, double M, double k);
     double WW_s(ATOOLS::Vec4D p1, ATOOLS::Vec4D p2);
-    double BVirtT(const Vec4D &p1, const Vec4D &p2, double kmax=0);
-    double R1(const Vec4D &p1, const Vec4D &p2);
+    double BVirtT(YFS::Dipole &d, double kmax=0);
+    DivArrD BVirtTEps(YFS::Dipole &d, double kmax=0);
+    double BVirtT(Vec4D p1, Vec4D p2,  double kmax=0);
+    double R1(YFS::Dipole &d);
     double R2(const Vec4D &p1, const Vec4D &p2);
     // double C0(double p1, double p2, double p3);
-    double C0(double p1, double p2, double p3,double m1, double m2, double m3);
-    double B0(double s, double m1, double m2);
+    // double C0(double p1, double p2, double p3,double m1, double m2, double m3);
+    // double B0(double s, double m1, double m2);
     Complex tsub(const Vec4D &p1, const Vec4D &p2, int mode, double QiQj, double theta1, double theta2);
     void WW_u();
     double  m_ww_s, m_ww_u, m_ww_t;
