@@ -490,16 +490,20 @@ bool Rivet_Interface::Finish()
             }
             else  filtered_data.push_back(data[i]);
           }
+          int vetoed_ranks = 0;
           if (!m_outliersperbin && triggered) {
             std::fill(filtered_data.begin(), filtered_data.end(), 0.0);
+            vetoed_ranks = 1;
           }
           // Perform MPI_Reduce to compute the filtered sum
           mpi->Reduce(filtered_data.data(),datalen,MPI_DOUBLE,MPI_SUM);
+          mpi->Reduce(&vetoed_ranks,1,MPI_INT,MPI_SUM);
           if (mpi->Rank()==0) {
             // Lazily initialise a new AnalysisHandler
             // and populate it with the filtered data
             const std::string newlabel = it.first.first+"thr="+threshold;
-            GetRivet(newlabel,it.first.second,&m_lastevent)->deserializeContent(filtered_data,(size_t)mpi->Size());
+            size_t nRanks = mpi->Size()-vetoed_ranks;
+            GetRivet(newlabel,it.first.second,&m_lastevent)->deserializeContent(filtered_data,nRanks);
           }
         }
       }
