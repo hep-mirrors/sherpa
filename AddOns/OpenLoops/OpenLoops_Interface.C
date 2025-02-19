@@ -169,7 +169,6 @@ bool OpenLoops_Interface::Initialize(MODEL::Model_Base* const model,
   // set remaining OL parameters specified by user
   for (const auto& key : s["OL_PARAMETERS"].GetKeys()) {
     const auto val = s["OL_PARAMETERS"][key].SetDefault("").Get<std::string>();
-    msg_Info()<<key<<" "<<val<<std::endl;
     // ew_scheme is fixed in the interface, must not be reset
     if (key == "ew_scheme")
         THROW(fatal_error,"\'ew_scheme\' is fixed for the correct operation of \
