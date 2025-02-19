@@ -51,6 +51,7 @@ NLO_Base::NLO_Base() {
   	m_histograms1d["RealLoopEpsLP"] = new Histogram(0, -5,  0.0, 50);
   	m_histograms1d["RealLoopEpsYFS"] = new Histogram(0, -5, 0.0, 50);
   	m_histograms1d["relativediff"] = new Histogram(0, -20., -5.0, 50);
+  	m_histograms1d["RVSinglePoleCD"] = new Histogram(0, 0, 25, 25);
   }
 }
 
@@ -130,7 +131,6 @@ double NLO_Base::CalculateNLO() {
 
 double NLO_Base::CalculateVirtual() {
 	if(m_eex_virt){
-		// PRINT_VAR(p_dipoles->CalculateEEXVirtual());
 		// subtract born to avoid double counting
 		// already present in eex!!
 		return p_dipoles->CalculateEEXVirtual()*m_born-m_born;
@@ -139,7 +139,7 @@ double NLO_Base::CalculateVirtual() {
 	double virt;
 	double sub;
 	p_dipoles->p_yfsFormFact->p_virt = p_virt->p_loop_me;
-	CheckMasses(m_plab);
+	// CheckMasses(m_plab);
 	CheckMassReg();
 	// for(auto pp: m_plab) PRINT_VAR(pp.Mass());
 	if(!HasISR()) virt = p_virt->Calc(m_bornMomenta, m_born);
@@ -181,22 +181,22 @@ double NLO_Base::CalculateVirtual() {
 					 <<"Correct digits =  "<<ncorrect<<std::endl
 					 <<"Relative diff =  "<<reldiff<<std::endl
 					 // <<"Process =  "<<p_virt->p_loop_me->Name()<<std::endl
-					 <<"One-Loop Provider  = "<<p1<<std::endl
-					 <<"Sherpa  = "<<yfspole<<std::endl;
+					 <<"One-Loop Provider V eps^{-1}  = "<<p1<<std::endl
+					 <<"Sherpa V eps^{-1} = "<<yfspole<<std::endl;
 					 return 0;
 		}
 		else{
 			int i = 0;
 			msg_Debugging()<<std::setprecision(16);
-			msg_Debugging()<<"Poles cancel in YFS Virtuals to "<<ncorrect<<" digits"<<std::endl
+			msg_Out()<<"Poles cancel in YFS Virtuals to "<<ncorrect<<" digits"<<std::endl
 					 		<<"Relative diff =  "<<reldiff<<std::endl;
-			msg_Debugging()<<"PhaseSpace point: "<<std::endl;
+			msg_Out()<<"PhaseSpace point: "<<std::endl;
 			for(auto &p: m_plab) {
-				msg_Debugging()<<"p["<<i<<"] = "<<p<<std::endl;
+				msg_Out()<<"p["<<i<<"] = "<<p<<std::endl;
 				i++;
 			}
-			msg_Debugging()<<"One-Loop Provider  = "<<p1<<std::endl
-			 			<<"Sherpa  = "<<yfspole<<std::endl;
+			msg_Out()<<"One-Loop Provider V eps^{-1}  = "<<p1<<std::endl
+			 			<<"Sherpa V eps^{-1}  = "<<yfspole<<std::endl;
 		}
 		// Check Rescaling
 		// Vec4D_Vector pscale = m_plab;
@@ -227,6 +227,7 @@ double NLO_Base::CalculateReal() {
 	double collreal = p_dipoles->CalculateEEX()*m_born;
 	for (auto k : m_ISRPhotons) {
 		if(m_check_real_sub) {
+				if(k.E() < 0.2*sqrt(m_s)) continue;
 				CheckRealSub(k);
 		}
 		if(m_isr_debug || m_fsr_debug){
@@ -354,19 +355,21 @@ double NLO_Base::CalculateRealVirtual() {
 	if (!m_realvirt) return 0;
 	double real(0);
 	for (auto k : m_ISRPhotons) {
-		// if(k.PPerp() > m_hardmin)	real+=CalculateRealVirtual(k,0);
+		if(m_check_rv) {
+			if(k.E() < 0.2*sqrt(m_s)) continue;
+			CheckRealVirtualSub(k);
+		}
 		if(CheckPhotonForReal(k))	real+=CalculateRealVirtual(k,0);
-		else real+= p_dipoles->EEXRealVirtual(k);
-		// else real+=m_oneloop*CalculateReal(k);
 	}
 	for (auto k : m_FSRPhotons) {
-		// if(k.PPerp() > m_hardmin) real+=CalculateRealVirtual(k, 1);
-		if(CheckPhotonForReal(k)) real+=CalculateRealVirtual(k, 0);
-		else real+= p_dipoles->EEXRealVirtual(k);
-		// else real+=m_oneloop*CalculateReal(k,1);
+		if(m_check_rv) {
+			if(k.E() < 0.2*sqrt(m_s)) continue;
+			CheckRealVirtualSub(k);
+		}
+		if(CheckPhotonForReal(k)) real+=CalculateRealVirtual(k, 1);
 	}
+	// if(IsZero(real)) real = p_dipoles->CalculateRealSubEEX();
 	double realvirt = real;
-	// if(m_ISRPhotons.size()!=0 || m_FSRPhotons.size()!=0) PRINT_VAR(realvirt);
 	return real;
 }
 
@@ -407,16 +410,16 @@ double NLO_Base::CalculateRealVirtual(Vec4D k, int fsrcount) {
  	double yfspole;
  	p.push_back(k);
  	if(fsrcount) MapInitial(p);
-	// CheckMasses(p, 1);
+	CheckMasses(p, 1);
 	Vec4D_Vector pp = p;
  	pp.pop_back();
  	Vec4D kzero = k*0.0;
  	MapMomenta(pp, kzero);
  	Flavour_Vector fl = m_flavs;
- 	// fl.push_back(kf_photon);
-	p_nlodipoles->MakeDipolesII(fl,pp,pp);
-	p_nlodipoles->MakeDipolesIF(fl,pp,pp);
-	p_nlodipoles->MakeDipoles(fl,pp,pp);
+ 	fl.push_back(kf_photon);
+	p_nlodipoles->MakeDipolesII(fl,p,p);
+	p_nlodipoles->MakeDipolesIF(fl,p,p);
+	p_nlodipoles->MakeDipoles(fl,p,p);
 	// p.push_back(k);
 	// m_plab = pp;
 	p_nlodipoles->p_yfsFormFact->p_virt = p_realvirt->p_loop_me;
@@ -425,6 +428,7 @@ double NLO_Base::CalculateRealVirtual(Vec4D k, int fsrcount) {
 	else flux = p_dipoles->CalculateFlux(kk);
 	double subloc = p_nlodipoles->CalculateRealVirtualSubEps(k);
 	yfspole = p_nlodipoles->Get_E1();
+	// PRINT_VAR(yfspole);
 	double subb;
 
 	subb = p_dipoles->CalculateRealSubEEX(k);
@@ -440,59 +444,67 @@ double NLO_Base::CalculateRealVirtual(Vec4D k, int fsrcount) {
 		return 0;
 	}
 	// m_plab = pp;
-	double aB = subloc*CalculateVirtual();
-	// double aB = subloc*(p_virt->Calc(p, m_born) - m_born*p_nlodipoles->CalculateVirtualSub());
-	yfspole*=(p_virt->p_loop_me->ME_E1()*p_virt->m_factor-m_born*p_nlodipoles->Get_E1());
+	double aB = subloc*m_oneloop;//CalculateVirtual();
+	// double aB = subloc*(p_virt->Calc(pp, m_born) - m_born*p_nlodipoles->CalculateVirtualSub());
+	yfspole*=aB;
+	// yfspole*=(p_virt->p_loop_me->ME_E1()*p_virt->m_factor-m_born*p_nlodipoles->Get_E1());
 	// double tot = (r-aB) / subloc;
 	if(m_submode==submode::local) tot =  (r*flux-aB)/subloc;
 	else if(m_submode==submode::global) tot =  (r*flux-aB)/subb;
 	else if(m_submode==submode::off) tot =  (r*flux)/subb;
 	// // real += tot;
 	// PRINT_VAR(r);
-	// PRINT_VAR(r*flux);
-	// PRINT_VAR(aB);
+	// PRINT_VAR(r*flux-aB);
 	// PRINT_VAR(subloc);
+	// PRINT_VAR(subb);
 	// PRINT_VAR(tot);
 	if(m_check_poles==1){
 		double pr1 = p_realvirt->p_loop_me->ME_E1()*p_realvirt->m_factor*flux/norm;
+		double pr2 = p_realvirt->p_loop_me->ME_E1()*p_realvirt->m_factor;
 		double p1 = p_virt->p_loop_me->ME_E1()*p_virt->m_factor;
 		double diff = pr1-p1;
 		// yfspole = p_nlodipoles->Get_E1();
 		double yfspoleV = p_dipoles->Get_E1();
-		PRINT_VAR(log10(fabs(pr1)));
-		PRINT_VAR(log10(fabs(yfspole)));
+		double correctdigit = ::countMatchingDigits(pr2, -p_nlodipoles->Get_E1());
+		m_histograms1d["RVSinglePoleCD"]->Insert(correctdigit);
 		m_histograms1d["RealLoopEpsLP"]->Insert(log10(fabs(pr1)));
 		m_histograms1d["RealLoopEpsYFS"]->Insert(log10(fabs(yfspole)));
-		if(!IsEqual(pr1,-yfspole,1e-4)){
-			msg_Error()<<"Poles do not cancel in YFS Real-Virtuals"<<std::endl
+		if(!IsEqual(pr2,-p_nlodipoles->Get_E1(),1e-4)){
+			msg_Out()<<"Poles do not cancel in YFS Real-Virtuals"<<std::endl
 					 <<"Process =  "<<p_realvirt->p_loop_me->Name()<<std::endl
-					 <<"One-Loop Provider V  = "<<p1<<std::endl
-					 <<"One-Loop Provider RV  = "<<pr1<<std::endl
-					 // <<"One-Loop Provider RV/norm  = "<<pr1/norm<<std::endl
-					 <<"One-Loop Provider RV*flux  = "<<pr1*flux<<std::endl
-					 <<"One-Loop Provider RV*Rescale  = "<<pr1*m_rescale_alpha<<std::endl
-					 <<"One-Loop Provider RV/Rescale  = "<<pr1/m_rescale_alpha<<std::endl
-					 <<"One-Loop Provider RVsubloc/subb  = "<<pr1*subloc/subb<<std::endl
-					 <<"One-Loop Provider RVsubb/subloc  = "<<pr1*subb/subloc<<std::endl
+					 <<"Correct Digits =  "<<correctdigit<<std::endl
+					 <<"One-Loop Provider V eps^{-1} = "<<p1<<std::endl
+					 <<"One-Loop Provider RV eps^{-1}  = "<<pr2<<std::endl
+					 <<"One-Loop Provider RV*flux eps^{-1}  = "<<pr2*flux<<std::endl
+					 <<"One-Loop Provider RV*flux/norm eps^{-1}  = "<<pr1<<std::endl
+					 <<"One-Loop Provider ME_E2() eps^{-1} = "<<p_virt->p_loop_me->ME_E2()<<std::endl
+					 <<"One-Loop Provider RV*flux eps^{-1} = "<<pr1*flux<<std::endl
+					 <<"One-Loop Provider RV*Rescale eps^{-1}  = "<<pr2*m_rescale_alpha<<std::endl
+					 <<"One-Loop Provider RV/Rescale eps^{-1}  = "<<pr2/m_rescale_alpha<<std::endl
+					 <<"One-Loop Provider RVsubloc/subb eps^{-1}  = "<<pr1*subloc/subb<<std::endl
+					 <<"One-Loop Provider RVsubb/subloc eps^{-1}  = "<<pr1*subb/subloc<<std::endl
 					 <<"One-Loop Provider RV-V  = "<<diff<<std::endl
-					 <<"Sherpa V  = "<<yfspoleV<<std::endl
-					 <<"Sherpa RV = "<<yfspole<<std::endl
-					 <<"Sherpa RV*Rescale = "<<yfspole*m_rescale_alpha<<std::endl
-					 <<"Sherpa RV/Rescale = "<<yfspole/m_rescale_alpha<<std::endl
-					 <<"Sherpa RVsubloc/subb = "<<yfspole*subloc/subb<<std::endl
-					 <<"Sherpa RVsubb/subloc = "<<yfspole*subb/subloc<<std::endl
-					 <<"Sherpa RV-V = "<<yfspole-yfspoleV<<std::endl
-					 <<"One-Loop Norm = "<<p_realvirt->m_factor<<std::endl
-					 <<"Sherpa-One-loop = "<<yfspole-pr1<<std::endl
-					 <<"Sherpa/One-loop = "<<yfspole/pr1<<std::endl;
+					 <<"Sherpa V eps^{-1}  = "<<yfspoleV<<std::endl
+					 <<"Sherpa RV eps^{-1} = "<<p_nlodipoles->Get_E1()<<std::endl
+					 <<"Sherpa RV*Rescale eps^{-1} = "<<p_nlodipoles->Get_E1()*m_rescale_alpha<<std::endl
+					 <<"Sherpa RV/Rescale eps^{-1} = "<<p_nlodipoles->Get_E1()/m_rescale_alpha<<std::endl
+					 <<"Sherpa RV ps^{-1} = "<<p_nlodipoles->Get_E1()*m_oneloop<<std::endl
+					 <<"Sherpa RVsubloc/subb eps^{-1} = "<<yfspole*subloc/subb<<std::endl
+					 <<"Sherpa RVsubb/subloc eps^{-1} = "<<yfspole*subb/subloc<<std::endl
+					 <<"Sherpa RV-V eps^{-1} = "<<yfspole-yfspoleV<<std::endl
+					 <<"One-Loop Norm eps^{-1} = "<<p_realvirt->m_factor<<std::endl
+					 <<"Sherpa-One-loop eps^{-1} = "<<yfspole-pr1<<std::endl
+					 <<"Sherpa/One-loop eps^{-1} = "<<yfspole/pr1<<std::endl;
 			return 0;
 		}
 		else{
-			msg_Debugging()<<"Poles cancel in YFS Real-Virtuals"<<std::endl
+			msg_Out()<<std::setprecision(16)<<"Poles cancel in YFS Real-Virtuals"<<std::endl
 						<<"Process =  "<<p_realvirt->p_loop_me->Name()<<std::endl
-						<<"One-Loop Provider V  = "<<p1<<std::endl
-					 	<<"One-Loop Provider RV  = "<<pr1<<std::endl
-			 			<<"Sherpa  = "<<yfspole<<std::endl;
+						<<"Correct Digits =  "<<correctdigit<<std::endl
+						<<"One-Loop Provider V eps^{-1} = "<<p1<<std::endl
+					 	<<"One-Loop Provider RV eps^{-1}  = "<<pr2<<std::endl
+			 			<<"Sherpa V eps^{-1} = "<<yfspoleV<<std::endl
+			 			<<"Sherpa RV eps^{-1} = "<<p_nlodipoles->Get_E1()<<std::endl;
 		}
 	}
 
@@ -515,10 +527,13 @@ double NLO_Base::CalculateRealReal() {
 			Vec4D k  = photons[i];
 			Vec4D kk = photons[j];
 			if(m_check_rr_sub){
-				if(k.E() < 0.2*sqrt(m_s) && kk.E() < 0.2*sqrt(m_s)) continue;
-				CheckRealRealSub(k,kk, i>(len-1)?0:1, j>(len-1)?0:1);
+				if(k.E() < 0.3*sqrt(m_s) || kk.E() < 0.3*sqrt(m_s)) continue;
+				if(k.E() < kk.E()) continue;
+				// if(k.E() < 0.2*sqrt(m_s)) continue;
+				// if(k.PPerp() < 1. || kk.PPerp() < 1.) continue;
+				CheckRealRealSub(k, kk, i>(len-1)?1:0, j>(len-1)?1:0);
 			}
-			real+=CalculateRealReal(k,kk, 0, 0);
+			real+=CalculateRealReal(k,kk,i>(len-1)?1:0, j>(len-1)?1:0);
 			// real+=CalculateRealReal(k,kk, 0,0);
 		}
 	}
@@ -869,6 +884,8 @@ bool NLO_Base::CheckPhotonForReal(const Vec4D &k) {
 		if (m_flavs[i].IsChargedLepton()) {
 			double sik = (k + m_plab[i]).Abs2();
 			if (sik < m_hardmin*m_plab[i].Abs2() ) {
+				msg_Out()<<"Rejecting photon k = "<<k<<std::endl
+								<<"sik = "<<sik<<std::endl;
 				return false;
 			}
 			// if(m_plab[i].PPerp()< m_hardmin) return false;
@@ -885,6 +902,8 @@ bool NLO_Base::CheckPhotonForReal(const Vec4D &k, const Vec4D_Vector &p) {
 		if (m_flavs[i].IsChargedLepton()) {
 			double sik = (k + p[i]).Abs2();
 			if (sik < m_hardmin*p[i].Abs2() ) {
+				msg_Out()<<"Rejecting photon k = "<<k<<std::endl
+								<<"sik = "<<sik<<std::endl;
 				return false;
 			}
 			// if(p[i].PPerp() < m_hardmin) return false;
@@ -967,6 +986,31 @@ void NLO_Base::CheckRealSub(Vec4D k){
 		exit(0);
 }
 
+void NLO_Base::CheckRealVirtualSub(Vec4D k){
+		// if(k.E() < 20) return;
+		// k*=100;
+		double real;
+		std::string filename="RealVirtual_subtracted_";
+		for(auto f: m_flavs) {
+			filename+=f.IDName();
+			filename+="_";
+		}
+		filename+=".txt";
+		if(ATOOLS::FileExists(filename))  ATOOLS::Remove(filename);
+		out_sub.open(filename, std::ios_base::app);
+		// if(k.E() < 0.8*sqrt(m_s)/2.) return;
+		for (double i = 1; i < 20 ; i+=0.005)
+		{
+			k=k/i;
+			real=CalculateRealVirtual(k);
+			out_sub<<k.E()<<","<<fabs(real)<<std::endl;
+			if(k.E() < 1e-10 || real==0) break;
+			// m_histograms2d["Real_me_sub"]->Insert(k.E(),fabs(real), 1);
+		}
+		out_sub.close();
+		exit(0);
+}
+
 void NLO_Base::CheckRealRealSub(Vec4D k1, Vec4D k2, int fsr1, int fsr2){
 		// if(k.E() < 20) return;
 		// k*=100;
@@ -992,37 +1036,40 @@ void NLO_Base::CheckRealRealSub(Vec4D k1, Vec4D k2, int fsr1, int fsr2){
 		if(ATOOLS::FileExists(filename3))  ATOOLS::Remove(filename3);
 		out_sub.open(filename1, std::ios_base::app);
 		// if(k.E() < 0.8*sqrt(m_s)/2.) return;
-		for (double i = 1; i < 20 ; i+=0.005)
+		for (double i = 1; i < 20 ; i+=0.6)
 		{
 			k1=k1/i;
+			if(k1.E()< m_isrcut*sqrt(m_s)) break;
 			real=CalculateRealReal(k1,k2,fsr1, fsr2);
 			out_sub<<k1.E()<<","<<fabs(real)<<std::endl;
-			if(k1.E() < m_vmin) break;
 			// m_histograms2d["Real_me_sub"]->Insert(k.E(),fabs(real), 1);
 		}
 		out_sub.close();
 		out_sub.open(filename2, std::ios_base::app);
 	 	k2 = _k2;
 	 	k1 = _k1;
-		for (double i = 1; i < 20 ; i+=0.005)
+		for (double i = 1; i < 20 ; i+=0.6)
 		{
 			k2=k2/i;
+			if(k2.E()< m_isrcut*sqrt(m_s)) break;
 			real=CalculateRealReal(k1,k2, fsr1, fsr2);
 			out_sub<<k2.E()<<","<<fabs(real)<<std::endl;
-			if(k1.E() < m_vmin) break;
+			// if(IsZero(real)) break;
 			// m_histograms2d["Real_me_sub"]->Insert(k.E(),fabs(real), 1);
 		}
 		out_sub.close();
 		out_sub.open(filename3, std::ios_base::app);
 		k2 = _k2;
 	 	k1 = _k1;
-		for (double i = 1; i < 20 ; i+=0.005)
+		for (double i = 1; i < 20 ; i+=0.6)
 		{
 			k2=k2/i;
 			k1=k1/i;
+			if(k1.E()< m_isrcut*sqrt(m_s)) break;
+			// if(k2.E()< m_isrcut*sqrt(m_s)) break;
 			real=CalculateRealReal(k1,k2,fsr1,fsr2);
-			out_sub<<k2.E()<<","<<fabs(real)<<std::endl;
-			if(k1.E() <m_vmin) break;
+			out_sub<<k1.E()<<","<<fabs(real)<<std::endl;
+			// if(IsZero(real)) break;
 			// m_histograms2d["Real_me_sub"]->Insert(k.E(),fabs(real), 1);
 		}
 		out_sub.close();

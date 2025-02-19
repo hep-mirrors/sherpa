@@ -227,9 +227,17 @@ void Dipole::Boost() {
   }
 }
 
-void Dipole::Boost(ATOOLS::Vec4D &p) {
+void Dipole::BoostNLO(ATOOLS::Vec4D &p) {
   p_Pboost->Boost(p);
   p_rotate.RotateBack(p);
+  // RandomRotate(p);
+  p_boost.BoostBack(p);
+  // PRINT_VAR(p_boost.PL());
+}
+
+void Dipole::Boost(ATOOLS::Vec4D &p) {
+  p_Pboost->Boost(p);
+  // p_rotate.Rotate(p);
   // RandomRotate(p);
   p_boost.BoostBack(p);
   // PRINT_VAR(p_boost.PL());
@@ -313,7 +321,7 @@ bool Dipole::BoostNLO() {
     SetRotate(rot);
     for (size_t i = 0; i < 2; ++i)
     {
-      Boost(m_momenta[i]);
+      BoostNLO(m_momenta[i]);
       // p_boost.Boost(m_momenta[i]);
       // p_rotate.Rotate(m_momenta[i]);
       m_newmomenta[i]=m_momenta[i];
@@ -321,7 +329,7 @@ bool Dipole::BoostNLO() {
     // m_eikmomentum = m_momenta;
     m_photonSum*=0.;
     for (auto &k : m_dipolePhotons) {
-      Boost(k);
+      BoostNLO(k);
       // p_rotate.Rotate(k);
       // p_boost.BoostBack(k);
       m_photonSum+=k;
