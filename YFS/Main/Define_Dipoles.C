@@ -122,6 +122,8 @@ void Define_Dipoles::MakeDipoles(ATOOLS::Flavour_Vector const &fl, ATOOLS::Vec4D
   m_out = fl.size() - m_in;
   m_olddipoles.clear();
   m_dipolesFF.clear();
+  int fsrc=0;
+  for (int i = 2; i < fl.size(); ++i) if(fl[i].Charge()!=0) fsrc++;
   // m_dipolesIF.clear();
   for(size_t i = 0; i < fl.size(); ++i)
   {
@@ -180,7 +182,8 @@ void Define_Dipoles::MakeDipoles(ATOOLS::Flavour_Vector const &fl, ATOOLS::Vec4D
       }
       Dipole D(ff, mm, bm, dipoletype::final,m_alpha);
       Dipole_FF(ff, mm);
-      IsResonant(D);
+      if(fsrc==2)  D.SetResonance(true);
+      else IsResonant(D);
       m_dipolesFF.push_back(D);
       msg_Debugging() << "Added " << ff << " to dipole " << a << std::endl;
     }
@@ -209,7 +212,8 @@ void Define_Dipoles::MakeDipoles(ATOOLS::Flavour_Vector const &fl, ATOOLS::Vec4D
         }
       }
       Dipole D(ff, mm, bm, dipoletype::final,m_alpha);
-      IsResonant(D);
+      if(fsrc==2)  D.SetResonance(true);
+      else IsResonant(D);
       Dipole_FF(ff, mm);
       m_dipolesFF.push_back(D);
       return;
@@ -417,7 +421,7 @@ double Define_Dipoles::CalculateVirtualSubEps() {
     sub += D.ChargeNorm()*p_yfsFormFact->BVV_full_eps(D, sqrt(m_s) / 2., 3);
     if(IsBad(sub.Finite())) {
       msg_Error()<<"YFS subtraction is Nan For dipole:"<<D<<std::endl;
-      THROW(fatal_error, "YFS Subtraction fails");
+      // THROW(fatal_error, "YFS Subtraction fails");
     }
   }
   m_virtSub=sub;
@@ -428,12 +432,12 @@ double Define_Dipoles::CalculateVirtualSubEps() {
 double Define_Dipoles::CalculateRealVirtualSubEps(const Vec4D &k) {
   DivArrD sub(0);
   for (auto &D : m_dipolesII) {
-    sub += D.ChargeNorm()*p_yfsFormFact->BVR_full_eps(D.GetNewMomenta(0), D.GetNewMomenta(1), sqrt(m_s) / 2., 0);
+    sub += D.ChargeNorm()*p_yfsFormFact->BVR_full_eps(D, sqrt(m_s) / 2., 0);
   }
   for (auto &D : m_dipolesFF) {
     if(D.IsFinite()) continue;
-    if(m_mode==yfsmode::fsr) sub += -D.m_QiQj*p_yfsFormFact->BVR_full_eps(D.GetBornMomenta(0), D.GetBornMomenta(1), sqrt(m_s) / 2., 0);
-    else sub += D.ChargeNorm()*p_yfsFormFact->BVR_full_eps(D.GetBornMomenta(0), D.GetBornMomenta(1), sqrt(m_s) / 2., 0);
+    if(m_mode==yfsmode::fsr) sub += -D.m_QiQj*p_yfsFormFact->BVR_full_eps(D, sqrt(m_s) / 2., 0);
+    else sub += D.ChargeNorm()*p_yfsFormFact->BVR_full_eps(D, sqrt(m_s) / 2., 0);
   }
 
   for (auto &D : m_dipolesIF){
@@ -441,7 +445,7 @@ double Define_Dipoles::CalculateRealVirtualSubEps(const Vec4D &k) {
     // Note Born momenta are redifined
     // for IFI terms.
     if(D.IsFinite()) continue;
-    sub += D.ChargeNorm()*p_yfsFormFact->BVR_full_eps(D.GetNewMomenta(0), D.GetBornMomenta(1), sqrt(m_s) / 2., 0);
+    sub += D.ChargeNorm()*p_yfsFormFact->BVR_full_eps(D, sqrt(m_s) / 2., 0);
   }
   m_virtSub=sub;
   return sub.Finite();
@@ -460,11 +464,11 @@ double Define_Dipoles::FormFactor(){
         form += D.ChargeNorm()*p_yfsFormFact->BVR_full(D.GetBornMomenta(0), D.GetBornMomenta(1), sqrt(m_s) / 2.);
       }
     }
-  if(m_ifisub==1){
-    for(auto &D: m_dipolesIF){
-      form += D.ChargeNorm()*p_yfsFormFact->R1(D.GetBornMomenta(0), D.GetBornMomenta(1));
-    }
-  }
+  // if(m_ifisub==1){
+  //   for(auto &D: m_dipolesIF){
+  //     form += D.ChargeNorm()*p_yfsFormFact->R1(D);
+  //   }
+  // }
   return exp(form); 
 }
 
@@ -472,18 +476,18 @@ double Define_Dipoles::FormFactor(){
 double Define_Dipoles::TFormFactor(){
   double form = 0;
   for(auto &D: m_dipolesII){
-    form+= D.ChargeNorm()*p_yfsFormFact->R1(D.GetBornMomenta(0), D.GetBornMomenta(1));
+    form+= D.ChargeNorm()*p_yfsFormFact->R1(D);
   }
   // if(!m_hidephotons){
     for(auto &D: m_dipolesFF){
-      form += D.ChargeNorm()*p_yfsFormFact->R1(D.GetBornMomenta(0), D.GetBornMomenta(1));
+      form += D.ChargeNorm()*p_yfsFormFact->R1(D);
     // }
   }
-  if(m_ifisub==1){
-    for(auto &D: m_dipolesIF){
-      form+= D.ChargeNorm()*p_yfsFormFact->R1(D.GetBornMomenta(0), D.GetBornMomenta(1));
-    }
-  }
+  // if(m_ifisub==1){
+  //   for(auto &D: m_dipolesIF){
+  //     form+= D.ChargeNorm()*p_yfsFormFact->R1(D);
+  //   }
+  // }
   return exp(form); 
 }
 
@@ -492,6 +496,7 @@ double Define_Dipoles::CalculateVirtualSubTchannel(){
    //   .         + 4.d0 * mi2 * C0singular(mi2,phmass)
    //   .         + 4.d0 * mj2 * C0singular(mj2,phmass)
    //   .         + 8.d0*pi_pj * C0ij
+  if(m_dim_reg) return CalculateVirtualSubTchannelEps();
   double sub(0);
   // Vec4D_Vector pvirt;
   // std::vector<double> z,th;
@@ -558,6 +563,26 @@ double Define_Dipoles::CalculateVirtualSubTchannel(){
   return sub;
 }
 
+double Define_Dipoles::CalculateVirtualSubTchannelEps() {
+  DivArrD sub(0);
+  for (auto &D : m_dipolesII) {
+    sub += D.ChargeNorm()*p_yfsFormFact->BVirtTEps(D,sqrt(m_s) / 2.);
+  }
+  for (auto &D : m_dipolesFF) {
+    if(m_mode==yfsmode::fsr) sub += -D.m_QiQj*p_yfsFormFact->BVirtTEps(D,sqrt(m_s) / 2.);
+    else sub += D.ChargeNorm()*p_yfsFormFact->BVirtTEps(D,sqrt(m_s) / 2.);
+  }
+
+  for (auto &D : m_dipolesIF){
+    // change to + for IFI terms
+    // Note Born momenta are redifined
+    // for IFI terms.
+    sub += D.ChargeNorm()*p_yfsFormFact->BVirtTEps(D,sqrt(m_s) / 2.);
+  }
+  m_virtSub=sub;
+  return sub.Finite();
+}
+
 double Define_Dipoles::CalculateRealVirtualSub(const Vec4D & k) {
   double sub(0);
   for (auto &D : m_dipolesII) {
@@ -614,10 +639,10 @@ double Define_Dipoles::EEXRealVirtual(const Vec4D &k){
     D.m_betaorder = 2;
     eex += D.Beta1(k)/D.Eikonal(k);
   }
-  for(auto &D: m_dipolesIF){
-    D.m_betaorder = 2;
-    eex += D.Beta1(k)/D.Eikonal(k);
-  }
+  // for(auto &D: m_dipolesIF){
+  //   D.m_betaorder = 2;
+  //   eex += D.Beta1(k)/D.Eikonal(k);
+  // }
   if(IsNan(eex)) return 0;
   return eex;
 }

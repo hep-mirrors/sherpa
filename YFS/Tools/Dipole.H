@@ -72,6 +72,7 @@ namespace YFS{
         void MakePair(double cms, Vec4D &p1, Vec4D &p2);
         void BoostLab();
         void Boost(Vec4D &p);
+        void BoostNLO(Vec4D &p);
         void RandomRotate(Vec4D &p);
         void BoostToQFM(bool boostback);
         void BoostToCMS();

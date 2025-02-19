@@ -21,3 +21,7 @@ sherpa_create_git_info(Main)
  
 add_library(YFSMain SHARED ${Main_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
 sherpa_handle_shared_library(YFSMain YFSMain)
+if (SHERPA_ENABLE_LOOPTOOLS) 
+    target_include_directories(YFSMain  PRIVATE ${LOOPTOOLS_DIRS}/include)
+    target_link_libraries(YFSMain  PRIVATE ${LOOPTOOLS_DIRS}/lib/libooptools.a)
+endif()

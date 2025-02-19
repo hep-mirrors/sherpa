@@ -480,7 +480,6 @@ endif()
 message(STATUS "SHERPA: LHAPDF_VERSION=${LHAPDF_VERSION} LHAPDF_LIBRARIES=${LHAPDF_LIBRARIES} LHAPDF_INCLUDE_DIRS=${LHAPDF_INCLUDE_DIRS}")
 
 if (SHERPA_ENABLE_LOOPTOOLS)
-  # find_package(LOOPTOOLS REQUIRED)
   message(STATUS "LOOPTOOLS_INCLUDE_DIRS=${LOOPTOOLS_DIRS}/include" "LOOPTOOLS_LIB_DIRS=${LOOPTOOLS_DIRS}/lib")
 endif()
 if (SHERPA_ENABLE_ALPHAQEDHAD)
@@ -985,6 +984,8 @@ $<IF:$<BOOL:${SHERPA_ENABLE_MCFM}>,#define USING__MCFM \"1\",/* #undef USING__MC
 $<IF:$<BOOL:${SHERPA_ENABLE_MCFM}>,#define MCFM_PATH \"${MCFM_PATH}\",/* #undef MCFM_PATH */>\n\n\
 /* using EWSud */\n\
 $<IF:$<BOOL:${SHERPA_ENABLE_EWSUD}>,#define USING__EWSud \"1\",/* #undef USING__EWSud */>\n\n\
+/* using Looptools */\n\
+$<IF:$<BOOL:${SHERPA_ENABLE_LOOPTOOLS}>,#define USING__LOOPTOOLS \"1\",/* #undef USING__LOOPTOOLS */>\n\n\
 /* using  hadronic contribution to alphaqed */\n\
 $<IF:$<BOOL:${SHERPA_ENABLE_ALPHAQEDHAD}>,#define USING__HADALPHAQED \"1\",/* #undef USING__HADALPHAQED */>\n\n\
 #endif")
