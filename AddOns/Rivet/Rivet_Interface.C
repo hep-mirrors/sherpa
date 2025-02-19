@@ -38,7 +38,7 @@ namespace SHERPARIVET {
     size_t m_nevt, m_histointerval;
     bool   m_finished;
     bool   m_splitjetconts, m_splitSH, m_splitpm, m_splitcoreprocs, m_usehepmcshort;
-    bool   m_outputmeonlyvariations, m_outliersperbin;
+    bool   m_outputmeonlyvariations;
 
     int m_loglevel, m_ignorebeams, m_skipmerge, m_skipweights;
     double m_weightcap, m_nlosmearing;
@@ -270,7 +270,6 @@ bool Rivet_Interface::Init()
                               .SetDefault<std::vector<std::string>>({}).GetVector<std::string>();
     m_thresholds = s["OUTLIER_THRESHOLDS"].SetSynonyms({"--outlier-thresholds"})
                               .SetDefault<std::vector<std::string>>({}).GetVector<std::string>();
-    m_outliersperbin = s["REMOVE_OUTLIERS_PER_BIN"].SetSynonyms({"--remove-outliers-per-bin"}).SetDefault(true).Get<bool>();
 
     // add a MPI rank specific suffix if necessary
 #if defined(USING__MPI) && defined(USING__RIVET4)
@@ -482,26 +481,42 @@ bool Rivet_Interface::Finish()
           std::vector<double> filtered_data;
           filtered_data.reserve(datalen);
           const double level = std::stod(threshold);
-          bool triggered = false;
+          bool has_outlier = false;
           for (size_t i = 0; i < datalen; ++i) {
             if (std::abs(data[i] - mean[i]) > level * stddev[i]) {
               filtered_data.push_back(0.0);  // exclude outlier
-              triggered = true;
+              has_outlier = true;
             }
             else  filtered_data.push_back(data[i]);
           }
+          // Perform MPI_Reduce to compute the filtered sum
+          mpi->Reduce(filtered_data.data(),datalen,MPI_DOUBLE,MPI_SUM);
+          if (mpi->Rank()==0) {
+            // Lazily initialise a new AnalysisHandler
+            // and populate it with the filtered data
+            const std::string newlabel = it.first.first+"thr="+threshold+".rmbin";
+            GetRivet(newlabel,it.first.second,&m_lastevent)->deserializeContent(filtered_data,(size_t)mpi->Size());
+          }
+          // Let's also write out the version that removes the entire rank,
+          // e.g. if the outlier also affected the total sum of weights
           int vetoed_ranks = 0;
-          if (!m_outliersperbin && triggered) {
+          if (has_outlier) {
             std::fill(filtered_data.begin(), filtered_data.end(), 0.0);
             vetoed_ranks = 1;
           }
-          // Perform MPI_Reduce to compute the filtered sum
+          else if (mpi->Rank()==0) {
+            // undo MPI-reduction for the root rank
+            for (size_t i = 0; i < datalen; ++i) {
+              filtered_data[i] = data[i];
+            }
+          }
+          // Re-perform MPI_Reduce to compute the filtered sum
           mpi->Reduce(filtered_data.data(),datalen,MPI_DOUBLE,MPI_SUM);
           mpi->Reduce(&vetoed_ranks,1,MPI_INT,MPI_SUM);
           if (mpi->Rank()==0) {
             // Lazily initialise a new AnalysisHandler
             // and populate it with the filtered data
-            const std::string newlabel = it.first.first+"thr="+threshold;
+            const std::string newlabel = it.first.first+"thr="+threshold+".rmrank";
             size_t nRanks = mpi->Size()-vetoed_ranks;
             GetRivet(newlabel,it.first.second,&m_lastevent)->deserializeContent(filtered_data,nRanks);
           }
