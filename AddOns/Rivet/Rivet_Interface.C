@@ -38,7 +38,7 @@ namespace SHERPARIVET {
     size_t m_nevt, m_histointerval;
     bool   m_finished;
     bool   m_splitjetconts, m_splitSH, m_splitpm, m_splitcoreprocs, m_usehepmcshort;
-    bool   m_outputmeonlyvariations;
+    bool   m_outputmeonlyvariations, m_outliersperbin;
 
     int m_loglevel, m_ignorebeams, m_skipmerge, m_skipweights;
     double m_weightcap, m_nlosmearing;
@@ -270,6 +270,7 @@ bool Rivet_Interface::Init()
                               .SetDefault<std::vector<std::string>>({}).GetVector<std::string>();
     m_thresholds = s["OUTLIER_THRESHOLDS"].SetSynonyms({"--outlier-thresholds"})
                               .SetDefault<std::vector<std::string>>({}).GetVector<std::string>();
+    m_outliersperbin = s["REMOVE_OUTLIERS_PER_BIN"].SetSynonyms({"--remove-outliers-per-bin"}).SetDefault(true).Get<bool>();
 
     // add a MPI rank specific suffix if necessary
 #if defined(USING__MPI) && defined(USING__RIVET4)
@@ -481,11 +482,16 @@ bool Rivet_Interface::Finish()
           std::vector<double> filtered_data;
           filtered_data.reserve(datalen);
           const double level = std::stod(threshold);
+          bool triggered = false;
           for (size_t i = 0; i < datalen; ++i) {
             if (std::abs(data[i] - mean[i]) > level * stddev[i]) {
               filtered_data.push_back(0.0);  // exclude outlier
+              triggered = true;
             }
             else  filtered_data.push_back(data[i]);
+          }
+          if (!m_outliersperbin && triggered) {
+            std::fill(filtered_data.begin(), filtered_data.end(), 0.0);
           }
           // Perform MPI_Reduce to compute the filtered sum
           mpi->Reduce(filtered_data.data(),datalen,MPI_DOUBLE,MPI_SUM);
