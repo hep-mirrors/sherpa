@@ -67,12 +67,13 @@ double Running_AlphaQED::operator()(double t)
 
   #ifdef USING__HADALPHAQED
     // t=sqrt;
-    double e = sqrt(t);
+    // double e = t;
+    t=-t;
     double delta_r,errdersta, errdersys,deg,errdegsta,errdegsys;
     double sin2 = 0.23153;// MODEL::m_model->ComplexConstant("csin2_thetaW").real();
     if(m_mode!=vpmode::off){
       if(m_mode !=vpmode::lp){
-        hadr5x_(&e, &sin2, &delta_r, &errdersta, 
+        hadr5x_(&t, &sin2, &delta_r, &errdersta, 
           &errdersys, &deg, &errdegsta, &errdegsys); 
      }
     switch(m_mode){
