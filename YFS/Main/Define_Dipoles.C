@@ -431,12 +431,13 @@ double Define_Dipoles::CalculateVirtualSubEps() {
 
 double Define_Dipoles::CalculateRealVirtualSubEps(const Vec4D &k) {
   DivArrD sub(0);
+  if(m_tchannel==2) return CalculateRealSub(k);
   for (auto &D : m_dipolesII) {
     sub += D.ChargeNorm()*p_yfsFormFact->BVR_full_eps(D, sqrt(m_s) / 2., 0);
   }
   for (auto &D : m_dipolesFF) {
     if(D.IsFinite()) continue;
-    if(m_mode==yfsmode::fsr) sub += -D.m_QiQj*p_yfsFormFact->BVR_full_eps(D, sqrt(m_s) / 2., 0);
+    if(m_mode==yfsmode::fsr) sub += -D.m_QiQj*p_yfsFormFact->BVR_full_eps(D, sqrt(m_s) / 2., 1);
     else sub += D.ChargeNorm()*p_yfsFormFact->BVR_full_eps(D, sqrt(m_s) / 2., 0);
   }
 
