@@ -112,6 +112,7 @@ void Standard_Model::ParticleInit()
   Particle_Info::InitHadron(kf_chi_b0_1P_oct, true,9.8598 ,0.65,0.,0,0,false,1,1, "chi(b0)8(1P)","chi_{b0}^{(8)}(1P)");
   Particle_Info::InitHadron(kf_chi_c1_1P_oct, true,3.51053,0.65,0.,0,2,false,1,1, "chi(c1)8(1P)","chi_{c1}^{(8)}(1P)");
   Particle_Info::InitHadron(kf_chi_b1_1P_oct, true,9.8919 ,0.65,0.,0,2,false,1,1, "chi(b1)8(1P)","chi_{b1}^{(8)}(1P)");
+  Particle_Info::InitHadron(kf_chi_c2_1P_oct, true,3.55617,0.65,0.,0,2,false,1,1, "chi(c2)8(1P)","chi_{c2}^{(8)}(1P)");
   ReadParticleData();
 }
 

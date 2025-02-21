@@ -407,6 +407,7 @@
 // fictitious octet mesons relevant for quarkonia production
 #define      kf_eta_c_1S_oct            9900441
 #define      kf_J_psi_1S_oct            9900443
+#define      kf_psi_2S_oct              9910443
 #define      kf_chi_c0_1P_oct           9910441
 #define      kf_chi_c1_1P_oct           9920443
 #define      kf_chi_c2_1P_oct           9900445
