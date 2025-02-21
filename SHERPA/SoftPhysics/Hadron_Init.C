@@ -159,6 +159,7 @@ void Hadron_Init::Init() {
   Particle_Info::InitHadron(kf_eta_c_1S_oct,   true,2.9798,0.65,0.0132,0,0,false,1,0,    "eta(c)8(1S)","eta_{c}^{(8)}(1S)");
   Particle_Info::InitHadron(kf_eta_b_oct,      true,9.4,0.65,0.050,0,0,false,1,0,        "eta(b)8(1S)","eta_{b}^{(8)}(1S)");
   Particle_Info::InitHadron(kf_J_psi_1S_oct,   true,3.09688,0.65,8.7e-05,0,2,false,1,0,  "J/psi(1S)8","J/psi^{(8)}(1S)");
+  Particle_Info::InitHadron(kf_psi_2S_oct,     true,3.686097,0.65,0.,0,2,false,1,1,        "psi(2S)8","psi^{(8)}(2S)");
   Particle_Info::InitHadron(kf_Upsilon_1S_oct, true,9.46037,0.65,5.25e-05,0,2,false,1,0, "Upsilon(1S)8","Upsilon^{(8)}(1S)");
   Particle_Info::InitHadron(kf_chi_c0_1P_oct,  true,3.4173,0.65,0.014,0,0,false,1,0,     "chi(c0)8(1P)","chi_{c0}^{(8)}(1P)");
   Particle_Info::InitHadron(kf_chi_b0_1P_oct,  true,9.8598,0.65,0.050,0,0,false,1,0,     "chi(b0)8(1P)","chi_{b0}^{(8)}(1P)");

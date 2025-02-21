@@ -135,15 +135,17 @@ void Sudakov::InitSplittingFunctions(Model_Base *md, const int kfmode) {
       msg_Debugging() << "}\n";
     }
   }
+  msg_Out() << "About to add DiQuark fun." << endl;
   AddDiQuarkSplittingFunctions(md, kfmode);
   AddOctetMesonSplittingFunctions(md, kfmode);
+  AddQuarkoniaSplittingFunctions(md, kfmode);
   AddGluonThresholds(md);
   msg_Debugging() << "}\n";
 }
 
 void Sudakov::AddDiQuarkSplittingFunctions(Model_Base *md, const int kfmode) {
-  // msg_Out()<<"============================================================\n"
-  //	   <<METHOD<<": so far "<<m_splittings.size()<<" splitting functions\n";
+  msg_Out()<<"============================================================\n"
+     <<METHOD<<": so far "<<m_splittings.size()<<" splitting functions\n";
   Kabbala g3("g_3", sqrt(4. * M_PI * md->ScalarConstant("alpha_S")));
   Kabbala cpl0 = g3 * Kabbala("i", Complex(0., 1.));
   list<kf_code> diquarks = {kf_ud_0, kf_dd_1, kf_ud_1, kf_uu_1};
@@ -164,6 +166,32 @@ void Sudakov::AddDiQuarkSplittingFunctions(Model_Base *md, const int kfmode) {
     Add(new Splitting_Function_Base(
         SF_Key(&v, 0, cstp::FF, kfmode, m_qcdmode, m_ewmode, -1, m_pdfmin)));
   }
+  // msg_Out()<<METHOD<<": by now "<<m_splittings.size()<<" splitting
+  // functions\n"
+  //	   <<"============================================================\n";
+}
+
+void Sudakov::AddQuarkoniaSplittingFunctions(Model_Base *md, const int kfmode) {
+  msg_Out()<<"============================================================\n"
+     <<METHOD<<": so far "<<m_splittings.size()<<" splitting functions\n";
+  Kabbala g3("g_3", sqrt(4. * M_PI * md->ScalarConstant("alpha_S")));
+  Kabbala cpl0 = 10*g3 * Kabbala("i", Complex(0., 1.));
+  Flavour Meson_flav(kf_J_psi_1S);
+  Flavour Quark_flav(kf_c);
+  // if (!flav.IsOn()) continue;
+  Single_Vertex v;
+  v.AddParticle(Quark_flav.Bar());
+  v.AddParticle(Quark_flav);
+  v.AddParticle(Meson_flav);
+  v.Color.push_back(Color_Function(cf::D, 2, 1));
+  v.Lorentz.push_back("FFV");
+  v.cpl.push_back(cpl0); //Check later
+  v.order[0] = 1;
+  Add(new Splitting_Function_Base(
+      SF_Key(&v, 0, cstp::FF, kfmode, m_qcdmode, m_ewmode, 1, m_pdfmin)));
+  Add(new Splitting_Function_Base(
+      SF_Key(&v, 0, cstp::FF, kfmode, m_qcdmode, m_ewmode, -1, m_pdfmin)));
+      msg_Out() << " added J/Psi splitting fun.\n" << endl;
   // msg_Out()<<METHOD<<": by now "<<m_splittings.size()<<" splitting
   // functions\n"
   //	   <<"============================================================\n";
@@ -208,30 +236,29 @@ void Sudakov::AddOctetMesonSplittingFunctions(Model_Base *md,
 
 void Sudakov::AddGluonThresholds(Model_Base *md) {
   Running_AlphaS as = md->ScalarConstant("alpha_S");
-  Flavour my_c = ATOOLS::Flavour(kf_c);
-  list<kf_code> octetvectors = {kf_J_psi_1S_oct, //kf_psi_2S_oct,
-                                kf_chi_c0_1P_oct, kf_chi_c1_1P_oct};
-                                //kf_chi_c2_1P_oct};
+  const double mc = ATOOLS::Flavour(kf_c).Mass(1);
+  list<kf_code> octetvectors = {kf_J_psi_1S_oct, kf_psi_2S_oct,
+                                kf_chi_c0_1P_oct, kf_chi_c1_1P_oct,
+                                kf_chi_c2_1P_oct};
   ST_Set *stset;
   m_stmap[Flavour(kf_gluon)] = stset = new ST_Set;
   map<kf_code, double> LDME = {
       // numerical LDME [GeV^3] from ph/9507398, PhysRevD.50.3176
       {kf_J_psi_1S_oct, 1.5E-02},
-      //{kf_psi_2S_oct, 4.3E-03},
-      {kf_chi_c0_1P_oct, 1 * 3E-03 * my_c.Mass(1) * my_c.Mass(1)},
-      {kf_chi_c1_1P_oct, 3 * 3E-03 * my_c.Mass(1) * my_c.Mass(1)},
-      //{kf_chi_c2_1P_oct, 5 * 3E-03 * my_c.Mass(1) * my_c.Mass(1)}
-      };
+      {kf_psi_2S_oct, 4.3E-03},
+      {kf_chi_c0_1P_oct, 1 * 3E-03 * mc * mc},
+      {kf_chi_c1_1P_oct, 3 * 3E-03 * mc * mc},
+      {kf_chi_c2_1P_oct, 5 * 3E-03 * mc * mc}};
   double totalarg = 0;
   for (const auto &pair : LDME) {
     totalarg += pair.second;
   }
-  totalarg *= 0.5 * (M_PI * as(2 * my_c.Mass(1)) / (24 * pow(my_c.Mass(1), 3)));
+  totalarg *= 0.5 * (M_PI * as(2 * mc) / (24 * pow(mc, 3)));
   double arg;
   for (list<kf_code>::iterator octit = octetvectors.begin();
        octit != octetvectors.end(); octit++) {
-    arg = 0.5 * (M_PI * as(2 * my_c.Mass(1)) /
-                 (24 * pow(my_c.Mass(1), 3))); // SDME for g -> ccb (3S_1)_8
+    arg = 0.5 * (M_PI * as(2 * mc) /
+                 (24 * pow(mc, 3))); // SDME for g -> ccb (3S_1)_8
     arg *= LDME[*octit];
     stset->insert(One2One_Transition_Base(Flavour(kf_gluon), Flavour(*octit),
                                           arg, totalarg, 1));
@@ -529,14 +556,12 @@ int Sudakov::Generate(Parton *split, Parton *spect, double t0, double kt2win,
     if (m_stmap.find(split->GetFlavour()) != m_stmap.end()) {
       ST_Set *transitions = m_stmap[split->GetFlavour()];
       if (ran->Get() < (1 - exp(-transitions->begin()->TotalSudArg()))) {
-        msg_Out() << "Entered transition" << endl;
         double pick_transition = ran->Get();
         double tr_P = 0;
         for (auto transit = transitions->begin(); transit != transitions->end();
              ++transit) {
           tr_P += transit->SudArg() / transit->TotalSudArg();
           if (pick_transition > tr_P) {
-            msg_Out() << "Rejected " << transit->GetFlavourB() << endl;
             continue;
           } else {
             if (((p_split->Momentum() + p_spect->Momentum()).Abs2() >

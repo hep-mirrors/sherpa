@@ -63,12 +63,14 @@ Splitting_Function_Base::Splitting_Function_Base(const SF_Key &key):
     ckey.p_cf=p_cf = SFC_Getter::GetObject(ckey.ID(1),ckey);
     if (p_cf==NULL) {
       m_on=-1;
+      msg_Out() << "Fuck up 1 -- ckey.ID(0)" << ckey.ID(0) << "\nckey.ID(1):  " << ckey.ID(1) << endl;
       return;
     }
   }
   p_lf = InitLorentzCalc(*ckey.p_v, ckey);
   if (p_lf==NULL) {
     m_on=-1;
+    msg_Out() << "Fuck up 2" << endl;
     return;
   }
   p_cf->SetLF(p_lf);
@@ -84,12 +86,12 @@ Splitting_Function_Base::Splitting_Function_Base(const SF_Key &key):
       (key.m_type==cstp::FF || key.m_type==cstp::FI)) m_symf=2.0;
   m_polfac=key.p_v->in[0].IntSpin()+1;
   if (key.p_v->in[0].IntSpin()==2 && IsZero(key.p_v->in[0].Mass())) m_polfac=2.0;
-  msg_Debugging()<<"Init("<<m_on<<") "<<p_lf->FlA()<<"->"
+  msg_Out()<<"Init("<<m_on<<") "<<p_lf->FlA()<<"->"
 		 <<p_lf->FlB()<<","<<p_lf->FlC()
 		 <<" => ("<<Demangle(typeid(*p_lf).name()).substr(10)
 		 <<","<<Demangle(typeid(*p_cf).name()).substr(10)
 		 <<"), sf="<<m_symf<<", polfac="<<m_polfac
-		 <<", col="<<p_lf->Col();
+		 <<", col="<<p_lf->Col() << endl;
 }
 
 Splitting_Function_Base::~Splitting_Function_Base()
