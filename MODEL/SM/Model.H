@@ -19,7 +19,7 @@ namespace MODEL {
     void InitQEDVertices();
     void InitQCDVertices();
     void InitEWVertices();
-
+    
   public :
 
     Standard_Model();
