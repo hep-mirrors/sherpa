@@ -7,12 +7,28 @@ using namespace HADRONS;
 using namespace ATOOLS;
 using namespace std;
 
+
+///////////////////////////////////////////////////////////////////////////
+//
+// Comment to be deleted once we have it all checked ....
+// Please take a look at a summary of what is implemented in Tauola
+// - https://arxiv.org/pdf/1509.09140
+// - https://arxiv.org/abs/1609.04617
+// and "harvest" the references within.
+//
+///////////////////////////////////////////////////////////////////////////
+
 ///////////////////////////////////////////////////////////////////////////
 //
 // Form factors for charged pi pi, K K, K pi final-state currents from:
 // - RChT, 2: Resonance Chiral Perturbation Theory
 //   * pi pi/KK fit: Eur.Phys.J.C 79 (2019) 5, 436
 //     (https://doi.org/10.1140/epjc/s10052-019-6943-9)
+//           - We could also have some alternative dispersive approach, 
+//             maybe as form factor model 3, based on RchT
+//             (https://arxiv.org/pdf/1112.0962)
+//             === Zara - maybe this would be a nice way to promote
+//                 yourself from "debugging" to "coding"?
 //   * K pi: Phys.Lett.B 640 (2006) 176
 //     (https://doi.org/10.1016/j.physletb.2006.06.058)
 //           - not implemented (but maybe worth it, especially because
@@ -43,36 +59,13 @@ VA_0_PiPi::VA_0_PiPi(const ATOOLS::Flavour_Vector& flavs,
   m_restype(resonance_type::running),
   m_PSmode(PSmode::unknown),
   m_ffmodel(ffmodel::KS),
-  m_global(1.), m_deltaM2(0.),
-  m_fpi(0.13041), m_fa0(0.015),
-  m_GV(0.0619), m_GS(0.), m_eps_etapi(0.0134), m_eps_etaprimepi(0.003),
+  m_norm(1.), m_deltaM2(0.),
   m_m2_pi(sqr(Flavour(kf_pi_plus).Mass(true))),
   m_m2_K(sqr(Flavour(kf_K_plus).Mass(true))),
   m_m2_eta(sqr(Flavour(kf_eta).Mass(true))),
   m_mu2(sqr(Flavour(kf_rho_770_plus).Mass(true)))
 {
-  if (m_flavs[p_i[0]].Kfcode()==kf_pi &&
-      m_flavs[p_i[1]].Kfcode()==kf_pi_plus)             m_PSmode = PSmode::pipi;
-  else if ( (m_flavs[p_i[0]].Kfcode()==kf_K_L ||
-	     m_flavs[p_i[0]].Kfcode()==kf_K_S ||
-	     m_flavs[p_i[0]].Kfcode()==kf_K) &&
-	    m_flavs[p_i[1]].Kfcode()==kf_K_plus)        m_PSmode = PSmode::KK;
-  else if ( (m_flavs[p_i[0]].Kfcode()==kf_pi_plus && 
-	     (m_flavs[p_i[1]].Kfcode()==kf_K_S ||
-	      m_flavs[p_i[1]].Kfcode()==kf_K_L ||
-	      m_flavs[p_i[1]].Kfcode()==kf_K) ) ||
-	    (m_flavs[p_i[0]].Kfcode()==kf_pi && 
-	     (m_flavs[p_i[1]].Kfcode()==kf_K_plus) ) )  m_PSmode = PSmode::Kpi;
-  else if ( m_flavs[p_i[0]].Kfcode()==kf_pi_plus &&
-	    m_flavs[p_i[1]].Kfcode()==kf_eta )          m_PSmode = PSmode::etapi;
-  else if ( m_flavs[p_i[0]].Kfcode()==kf_pi_plus &&
-	    m_flavs[p_i[1]].Kfcode()==kf_eta_prime_958) m_PSmode = PSmode::etaprimepi;
-  else if ( m_flavs[p_i[0]].Kfcode()==kf_eta &&
-	    m_flavs[p_i[1]].Kfcode()==kf_K_plus)        m_PSmode = PSmode::Keta;
-  else if ( m_flavs[p_i[0]].Kfcode()==kf_eta_prime_958 &&
-	    m_flavs[p_i[1]].Kfcode()==kf_pi_plus)       m_PSmode = PSmode::Ketaprime;
-  if (m_PSmode==PSmode::unknown)
-    THROW(fatal_error,"Current called for illegal flavour combination.");
+  msg_Out()<<"==========================================================\n";
 }
 
 VA_0_PiPi::~VA_0_PiPi() {
@@ -86,11 +79,14 @@ VA_0_PiPi::~VA_0_PiPi() {
   }
 }
 
+
 void VA_0_PiPi::Calc(const ATOOLS::Vec4D_Vector& moms, bool m_anti)
 {
   Vec4D  q  = moms[p_i[1]]+moms[p_i[0]];
   double Q2 = q.Abs2();
-  Insert(m_global *
+  msg_Out()<<METHOD<<"(Q = "<<sqrt(Q2)<<"): "
+	   <<"V = "<<VectorFF(Q2)<<", S = "<<ScalarFF(Q2)<<"\n";
+  Insert(m_norm *
 	 ( VectorFF(Q2) * ((moms[p_i[1]]-moms[p_i[0]]) - m_deltaM2/Q2 * q ) +
 	   ScalarFF(Q2) * q
 	   ),   0);
@@ -98,6 +94,12 @@ void VA_0_PiPi::Calc(const ATOOLS::Vec4D_Vector& moms, bool m_anti)
 
 void VA_0_PiPi::SetModelParameters(struct GeneralModel model)
 {
+  FixMode();
+  FixNorm(model);
+  //m_fa0(0.015),
+  //m_GS(0.), m_eps_etapi(0.0134), m_eps_etaprimepi(0.003),
+
+  m_mu2     = sqr(model("mu", Flavour(kf_rho_770_plus).Mass(true)));
   m_fpi     = model("fpi", 0.13041 );
   m_GV      = model("GV",  0.0619 );
   m_ffmodel = ffmodel(model("FORM_FACTOR",1));
@@ -105,10 +107,10 @@ void VA_0_PiPi::SetModelParameters(struct GeneralModel model)
   if (m_ffmodel==ffmodel::RChT) {
     m_fpi   = 0.092316;
     if (m_PSmode==PSmode::pipi || m_PSmode==PSmode::KK) {
-      m_RChTnorm = -1./(96.*sqr(M_PI*m_fpi));
+      m_RChTpref = -1./(96.*sqr(M_PI*m_fpi));
     }
     else if (m_PSmode==PSmode::Kpi || m_PSmode==PSmode::Keta) {
-      m_RChTnorm = (sqr(m_GV)*Flavour(kf_K_star_892_plus).Mass(true)/
+      m_RChTpref = (sqr(m_GV)*Flavour(kf_K_star_892_plus).Mass(true)/
 		    (64.*M_PI*pow(m_fpi,4)));
     }
   }
@@ -120,14 +122,6 @@ void VA_0_PiPi::SetModelParameters(struct GeneralModel model)
       m_GS = m_fa0*m_g_a0_etaprime_pi/m_deltaM2;
     }
   }
-  // global pre-factor: 1/sqrt(2) for pi_0 wave-function, V_ud for the
-  // quark-level coupling producing a rho (or rho-resonance), 1/sqrt(2)
-  // for the overall normalisation.
-  double iso = ( (m_flavs[p_i[0]].Kfcode()==kf_pi_plus ||
-		  m_flavs[p_i[1]].Kfcode()==kf_pi_plus) ? sqrt(0.5) : 1.);
-  double CKM = ( (m_PSmode==PSmode::pipi || m_PSmode==PSmode::KK) ?
-		 model("Vud", Tools::Vud) : model("Vus", Tools::Vus) );
-  m_global = iso * CKM / sqrt(0.5);
   switch (int(model("RUNNING_WIDTH",1))) {
   case 10: m_restype = resonance_type::bespoke; break; 
   case 2:  m_restype = resonance_type::GS;      break; 
@@ -155,6 +149,60 @@ void VA_0_PiPi::SetModelParameters(struct GeneralModel model)
   }
 }
 
+void VA_0_PiPi::FixMode() {
+  if (m_flavs[p_i[0]].Kfcode()==kf_pi &&
+      m_flavs[p_i[1]].Kfcode()==kf_pi_plus)             m_PSmode = PSmode::pipi;
+  else if ( (m_flavs[p_i[0]].Kfcode()==kf_K_L ||
+	     m_flavs[p_i[0]].Kfcode()==kf_K_S ||
+	     m_flavs[p_i[0]].Kfcode()==kf_K) &&
+	    m_flavs[p_i[1]].Kfcode()==kf_K_plus)        m_PSmode = PSmode::KK;
+  else if ( (m_flavs[p_i[0]].Kfcode()==kf_pi_plus && 
+	     (m_flavs[p_i[1]].Kfcode()==kf_K_S ||
+	      m_flavs[p_i[1]].Kfcode()==kf_K_L ||
+	      m_flavs[p_i[1]].Kfcode()==kf_K) ) ||
+	    (m_flavs[p_i[0]].Kfcode()==kf_pi && 
+	     (m_flavs[p_i[1]].Kfcode()==kf_K_plus) ) )  m_PSmode = PSmode::Kpi;
+  else if ( m_flavs[p_i[0]].Kfcode()==kf_pi_plus &&
+	    m_flavs[p_i[1]].Kfcode()==kf_eta )          m_PSmode = PSmode::etapi;
+  else if ( m_flavs[p_i[0]].Kfcode()==kf_pi_plus &&
+	    m_flavs[p_i[1]].Kfcode()==kf_eta_prime_958) m_PSmode = PSmode::etaprimepi;
+  else if ( m_flavs[p_i[0]].Kfcode()==kf_eta &&
+	    m_flavs[p_i[1]].Kfcode()==kf_K_plus)        m_PSmode = PSmode::Keta;
+  else if ( m_flavs[p_i[0]].Kfcode()==kf_eta_prime_958 &&
+	    m_flavs[p_i[1]].Kfcode()==kf_pi_plus)       m_PSmode = PSmode::Ketaprime;
+  if (m_PSmode==PSmode::unknown)
+    THROW(fatal_error,"Current called for illegal flavour combination.");
+}
+
+void VA_0_PiPi::FixNorm(struct GeneralModel & model) {
+  // global pre-factor: 1/sqrt(2) for pi_0 wave-function, V_ud for the
+  // quark-level coupling producing a rho (or rho-resonance), 1/sqrt(2)
+  // for the overall normalisation.
+  double iso = 0.;
+  switch (int(m_PSmode)) {
+  case int(PSmode::KK):
+    iso = 1./sqrt(2.);
+    break;
+  case int(PSmode::Kpi):
+    if (m_flavs[p_i[0]].Kfcode()==kf_pi_plus) iso = 1./2.;
+    else if (m_flavs[p_i[0]].Kfcode()==kf_pi) iso = 1./sqrt(2.);
+    break;
+  case int(PSmode::pipi):
+    iso = 1.;
+    break;
+  default: break;
+  }
+  double CKM = 0.;
+  if (m_PSmode==PSmode::pipi  || m_PSmode==PSmode::KK ||
+      m_PSmode==PSmode::etapi || m_PSmode==PSmode::etaprimepi)
+    CKM = model("Vud", Tools::Vud);
+  else if (m_PSmode==PSmode::Kpi || m_PSmode==PSmode::Keta ||
+	   m_PSmode==PSmode::Ketaprime) 
+    CKM = model("Vus", Tools::Vus);
+  m_norm = iso * CKM / sqrt(0.5);
+  if (m_norm<=0.) THROW(fatal_error,"Current with zero norm.");
+}
+  
 bool VA_0_PiPi::SelectResonances(list<kf_code> & tags,const bool & isScalar) {
   if (isScalar) {
     if (m_PSmode==PSmode::etapi   ||
@@ -226,7 +274,7 @@ bool VA_0_PiPi::KSDefaults(const kf_code & tag,vector<double> & defs) {
       break;
     }
   }
-  if (m_PSmode==PSmode::etapi || m_PSmode==PSmode::etaprimepi) {
+  else if (m_PSmode==PSmode::etapi || m_PSmode==PSmode::etaprimepi) {
     switch (tag) {
     case kf_rho_1700_plus:
       defs = { -0.0370, 1.7000, 0.2350, 0.0000 }; break;
@@ -277,7 +325,7 @@ bool VA_0_PiPi::RChTDefaults(const kf_code & tag,vector<double> & defs) {
     case kf_rho_1700_plus:
       defs ={ -0.1200, 1.7540, 0.4120, -0.0200 }; break;
     case kf_rho_1450_plus: 
-      defs = { 0.1500, 1.4380, 0.5350, -0.3600 }; break;
+      defs = { 0.1800, 1.4380, 0.5350, -0.3600 }; break;
     case kf_rho_770_plus:  
       defs = { 1.0000, 0.7752, 0.0000,  0.0000 }; break;
     }
@@ -301,9 +349,11 @@ bool VA_0_PiPi::RChTDefaults(const kf_code & tag,vector<double> & defs) {
   return false;
 }
     
-void VA_0_PiPi::InitResonance(struct GeneralModel model,const kf_code & tag,
+void VA_0_PiPi::InitResonance(struct GeneralModel & model,const kf_code & tag,
 			      const bool & isScalar)
 {
+  msg_Out()<<METHOD<<"(mode = "<<int(m_PSmode)<<" for "
+	   <<int(tag)<<", scalar = "<<isScalar<<")\n";
   vector<double> defaults;
   if (!FillDefaults(tag,defaults) || dabs(defaults[0])<1.e-8) return;
   string id = string("");
@@ -323,8 +373,9 @@ void VA_0_PiPi::InitResonance(struct GeneralModel model,const kf_code & tag,
     outflavs.push_back(Flavour(kf_pi_plus));
     outflavs.push_back(Flavour(kf_pi));
   }
-  else if (m_PSmode==PSmode::etapi || m_PSmode==PSmode::etaprimepi ||
-	   m_PSmode==PSmode::Keta  || m_PSmode==PSmode::Keta || m_PSmode==PSmode::Ketaprime) {
+  else if (m_PSmode==PSmode::Kpi ||
+	   m_PSmode==PSmode::etapi || m_PSmode==PSmode::etaprimepi ||
+	   m_PSmode==PSmode::Keta  || m_PSmode==PSmode::Ketaprime) {
     outflavs.push_back(m_flavs[p_i[0]]);
     outflavs.push_back(m_flavs[p_i[1]]);
   }
@@ -416,18 +467,17 @@ Complex VA_0_PiPi::VectorRChT_pipi(const double & s)
 {
   Complex ff      = Complex(0.,0.);
   Complex ExtraBW = Complex(0.,0.);
-  double  RhoExpo = 0., pref = 0., Gamma = 0.;
+  double  RhoExpo = 0., Gamma = 0., pref;
   for (list<pair<double, Resonance_Base * > >::iterator
 	 rtit=m_vectors.begin();rtit!=m_vectors.end();rtit++) {
     if (rtit->second->Flav()==Flavour(kf_rho_770_plus)) {
       Complex Ampl = ( Loop(m_m2_pi, s, m_mu2) +
 		       Loop(m_m2_K,  s, m_mu2)/2. );
-      pref    = s*m_RChTnorm;
-      RhoExpo = exp(pref*Ampl.real());
-      Gamma   = ( rtit->second->Mass() * s/(96.*M_PI*sqr(m_fpi)) *
-		  (s>=4.*m_m2_pi ? pow(1.-4.*m_m2_pi/s, 1.5) : 0.) +
-		  (s>=4.*m_m2_K  ? pow(1.-4.*m_m2_K/s,  1.5) : 0.)/2.
-		  );
+      // remember that  m_RChTpref = -1./(96.*sqr(M_PI*m_fpi))
+      RhoExpo = exp(m_RChTpref*s*Ampl.real());
+      // rho width repressed through the imaginar part of loop integral:
+      // automatically captures the mass-shell conditions
+      Gamma   = m_RChTpref*rtit->second->Mass()*s*Ampl.imag();
       ExtraBW = rtit->second->AltBreitWigner(s,rtit->second->Mass2(),
 					     -rtit->second->Mass()*Gamma);
       ff  += (rtit->first *
@@ -438,8 +488,7 @@ Complex VA_0_PiPi::VectorRChT_pipi(const double & s)
     else {
       Gamma = (s>4.*m_m2_pi ? rtit->second->Width(s) : 0.);
       pref = - ( s*rtit->second->Width()/M_PI/
-		 pow(rtit->second->Mass()*
-		     rtit->second->Lambda(rtit->second->Mass2(),m_m2_pi,m_m2_pi), 3));
+		 pow(2.*rtit->second->Lambda(rtit->second->Mass2(),m_m2_pi,m_m2_pi), 3) );
       ff += - (rtit->first * exp(Complex(0.,rtit->second->Phase())) *
 	       ( rtit->second->AltBreitWigner(s,rtit->second->Mass2(),
 					      -rtit->second->Mass()*Gamma) *
@@ -460,7 +509,7 @@ Complex VA_0_PiPi::VectorRChT_Kpi(const double & s)
   for (list<pair<double, Resonance_Base * > >::iterator
 	 rtit=m_vectors.begin();rtit!=m_vectors.end();rtit++) {
     if (rtit->second->Flav()==Flavour(kf_K_star_892_plus)) {
-      Gamma   = (m_RChTnorm * 8./sqrt(s) *
+      Gamma   = (m_RChTpref * 8./sqrt(s) *
 		 (pow(rtit->second->Lambda(s,m_m2_K,m_m2_pi),3)+
 		  pow(rtit->second->Lambda(s,m_m2_K,m_m2_eta),3)));
       ExtraBW = rtit->second->AltBreitWigner(s,rtit->second->Mass2(),

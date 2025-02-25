@@ -291,91 +291,91 @@ void Hadron_Init::Init() {
   // Tensors 3       ##########################################################
   // heavy ones missing - the rho(1690) could be useful for
   // tau/D/B decays with hadrons.
-  InitHadron(kf_rho_3_1690,false,1.691,0.65,0.16,0,6,false,1,0,"rho(3)(1690)","rho_{3}(1690)");
-  InitHadron(217,false,1.691,0.65,0.16,3,6,true,1,0,"rho(3)(1690)+","rho_{3}^{+}(1690)");
-  InitHadron(kf_omega_3_1670,false,1.667,0.65,0.168,0,6,false,1,0,"omega(3)(1670)","omega_{3}(1670)");
-  InitHadron(317,false,1.776,0.65,0.159,0,6,true,1,0,"K(3)*(1780)","K_{3}*(1780)");
-  InitHadron(327,false,1.776,0.65,0.159,3,6,true,1,0,"K(3)*(1780)+","K_{3}*^{+}(1780)");
-  InitHadron(kf_phi_3_1850,false,1.854,0.65,0.087,0,6,false,1,0,"phi(3)(1850)","phi_{3}(1850)");
-  InitHadron(557,false,10.1599,0.65,0.0,0,6,true,1,0,"Upsilon(3)(1D)","Upsilon_{3}(1D)");
+  InitHadron(kf_rho_3_1690,   false,1.691,0.65,0.16,0,6,false,1,0,"rho(3)(1690)","rho_{3}(1690)");
+  InitHadron(217,             false,1.691,0.65,0.16,3,6,true,1,0,"rho(3)(1690)+","rho_{3}^{+}(1690)");
+  InitHadron(kf_omega_3_1670, false,1.667,0.65,0.168,0,6,false,1,0,"omega(3)(1670)","omega_{3}(1670)");
+  InitHadron(317,             false,1.776,0.65,0.159,0,6,true,1,0,"K(3)*(1780)","K_{3}*(1780)");
+  InitHadron(327,             false,1.776,0.65,0.159,3,6,true,1,0,"K(3)*(1780)+","K_{3}*^{+}(1780)");
+  InitHadron(kf_phi_3_1850,   false,1.854,0.65,0.087,0,6,false,1,0,"phi(3)(1850)","phi_{3}(1850)");
+  InitHadron(557,             false,10.1599,0.65,0.0,0,6,true,1,0,"Upsilon(3)(1D)","Upsilon_{3}(1D)");
   // Tensors 4     ############################################################
   // heavy ones missing.
-  InitHadron(kf_a_4_2040,false,2.014,0.65,0.361,0,8,false,1,0,"a(4)(2040)","a_{4}(2040)");
-  InitHadron(219,false,2.014,0.65,0.361,3,8,true,1,0,"a(4)(2040)+","a_{4}^{+}(2040)");
-  InitHadron(kf_f_4_2050,false,2.044,0.65,0.208,0,8,false,1,0,"f(4)(2050)","f_{4}(2050)");
-  InitHadron(319,false,2.045,0.65,0.198,0,8,true,1,0,"K(4)*(2045)","K_{4}*(2045)");
-  InitHadron(329,false,2.045,0.65,0.198,3,8,true,1,0,"K(4)*(2045)+","K_{4}*^{+}(2045)");
+  InitHadron(kf_a_4_2040,     false,2.014,0.65,0.361,0,8,false,1,0,"a(4)(2040)","a_{4}(2040)");
+  InitHadron(219,             false,2.014,0.65,0.361,3,8,true,1,0,"a(4)(2040)+","a_{4}^{+}(2040)");
+  InitHadron(kf_f_4_2050,     false,2.044,0.65,0.208,0,8,false,1,0,"f(4)(2050)","f_{4}(2050)");
+  InitHadron(319,             false,2.045,0.65,0.198,0,8,true,1,0,"K(4)*(2045)","K_{4}*(2045)");
+  InitHadron(329,             false,2.045,0.65,0.198,3,8,true,1,0,"K(4)*(2045)+","K_{4}*^{+}(2045)");
   // Tensors 2       ##################################################################################
   // heavy ones missing.
-  InitHadron(kf_pi_2_1670,false,1.67,0.65,0.258,0,4,false,1,0,"pi(2)(1670)","pi_{2}(1670)");
-  InitHadron(10215,false,1.67,0.65,0.258,3,4,true,1,0,"pi(2)(1670)+","pi_{2}^{+}(1670)");
-  InitHadron(kf_eta_2_1645,false,1.617,0.65,0.181,0,4,false,1,0,"eta(2)(1645)","eta_{2}(1645)");
-  InitHadron(10315,false,1.773,0.65,0.186,0,4,true,1,0,"K(2)(1770)","K_{2}(1770)");
-  InitHadron(10325,false,1.773,0.65,0.186,3,4,true,1,0,"K(2)(1770)+","K_{2}^{+}(1770)");
-  InitHadron(kf_eta_2_1870,false,1.842,0.65,0.225,0,4,false,1,0,"eta(2)(1870)","eta_{2}(1870)");
-  InitHadron(10555,false,10.157,0.65,0.0,0,4,true,1,0,"eta(b2)(1D)","eta_{b2}(1D)");
+  InitHadron(kf_pi_2_1670,    false,1.67,0.65,0.258,0,4,false,1,0,"pi(2)(1670)","pi_{2}(1670)");
+  InitHadron(10215,           false,1.67,0.65,0.258,3,4,true,1,0,"pi(2)(1670)+","pi_{2}^{+}(1670)");
+  InitHadron(kf_eta_2_1645,   false,1.617,0.65,0.181,0,4,false,1,0,"eta(2)(1645)","eta_{2}(1645)");
+  InitHadron(10315,           false,1.773,0.65,0.186,0,4,true,1,0,"K(2)(1770)","K_{2}(1770)");
+  InitHadron(10325,           false,1.773,0.65,0.186,3,4,true,1,0,"K(2)(1770)+","K_{2}^{+}(1770)");
+  InitHadron(kf_eta_2_1870,   false,1.842,0.65,0.225,0,4,false,1,0,"eta(2)(1870)","eta_{2}(1870)");
+  InitHadron(10555,           false,10.157,0.65,0.0,0,4,true,1,0,"eta(b2)(1D)","eta_{b2}(1D)");
   // Tensors 2       ##################################################################################
   // lots missing
-  InitHadron(20315,false,1.816,0.65,0.276,0,4,true,1,0,"K(2)(1820)","K_{2}(1820)");
-  InitHadron(20325,false,1.816,0.65,0.276,3,4,true,1,0,"K(2)(1820)+","K_{2}^{+}(1820)");
-  InitHadron(20555,false,10.1562,0.65,0.0,0,4,true,1,0,"Upsilon(2)(1D)","Upsilon_{2}(1D)");
-  InitHadron(30411,false,2.58,0.65,0.0,3,0,true,1,0,"D(2S)+","D(2S)^{+}");
-  InitHadron(30421,false,2.58,0.65,0.0,0,0,true,1,0,"D(2S)","D(2S)");
+  InitHadron(20315,           false,1.816,0.65,0.276,0,4,true,1,0,"K(2)(1820)","K_{2}(1820)");
+  InitHadron(20325,           false,1.816,0.65,0.276,3,4,true,1,0,"K(2)(1820)+","K_{2}^{+}(1820)");
+  InitHadron(20555,           false,10.1562,0.65,0.0,0,4,true,1,0,"Upsilon(2)(1D)","Upsilon_{2}(1D)");
+  InitHadron(30411,           false,2.58,0.65,0.0,3,0,true,1,0,"D(2S)+","D(2S)^{+}");
+  InitHadron(30421,           false,2.58,0.65,0.0,0,0,true,1,0,"D(2S)","D(2S)");
   // Vectors 2       ##################################################################################
   // some heavy ones missing - we may have to include this because of the
   // psi(3770)
-  InitHadron(kf_rho_1700,false,1.7,0.65,0.24,0,2,false,1,0,"rho(1700)","rho(1700)");
-  InitHadron(30213,false,1.7,0.65,0.24,3,2,true,1,0,"rho(1700)+","rho^{+}(1700)");
-  InitHadron(kf_omega_1600,false,1.670,0.65,0.31,0,2,false,1,0,"omega(1650)","omega(1650)");
-  InitHadron(30313,false,1.717,0.65,0.32,0,2,true,1,0,"K*(1680)","K*(1680)");
-  InitHadron(30323,false,1.717,0.65,0.32,3,2,true,1,0,"K*(1680)+","K*^{+}(1680)");
-  InitHadron(kf_f1_1900_fict,false,1.900,0.65,0.32,0,2,false,1,0,"f1(1900)_fict","f1(1900)_fict");
-  InitHadron(30413,false,2.64,0.65,0.0,3,2,true,1,0,"D*(2S)+","D*^{+}(2S)");
-  InitHadron(30423,false,2.64,0.65,0.0,0,2,true,1,0,"D*(2S)","D*(2S)");
-  InitHadron(kf_psi_3770,false,3.7699,0.65,0.0236,0,2,false,1,0,"psi(3770)","psi(3770)");
-  InitHadron(30553,false,10.161,0.65,0.0,0,2,true,1,0,"Upsilon(1)(1D)","Upsilon_{1}(1D)");
+  InitHadron(kf_rho_1700,         false,1.7,0.65,0.24,0,2,false,1,0,"rho(1700)","rho(1700)");
+  InitHadron(kf_rho_1700_plus,    false,1.7,0.65,0.24,3,2,true,1,0,"rho(1700)+","rho^{+}(1700)");
+  InitHadron(kf_omega_1600,       false,1.670,0.65,0.31,0,2,false,1,0,"omega(1650)","omega(1650)");
+  InitHadron(kf_K_star_1680,      false,1.717,0.65,0.32,0,2,true,1,0,"K*(1680)","K*(1680)");
+  InitHadron(kf_K_star_1680_plus, false,1.717,0.65,0.32,3,2,true,1,0,"K*(1680)+","K*^{+}(1680)");
+  InitHadron(kf_f1_1900_fict,     false,1.900,0.65,0.32,0,2,false,1,0,"f1(1900)_fict","f1(1900)_fict");
+  InitHadron(30413,               false,2.64,0.65,0.0,3,2,true,1,0,"D*(2S)+","D*^{+}(2S)");
+  InitHadron(30423,               false,2.64,0.65,0.0,0,2,true,1,0,"D*(2S)","D*(2S)");
+  InitHadron(kf_psi_3770,         false,3.7699,0.65,0.0236,0,2,false,1,0,"psi(3770)","psi(3770)");
+  InitHadron(30553,               false,10.161,0.65,0.0,0,2,true,1,0,"Upsilon(1)(1D)","Upsilon_{1}(1D)");
   // Pseudoscalars   ##################################################################################
   // heavy ones missing.
-  InitHadron(kf_pi_1300,false,1.3,0.65,0.400,0,0,false,1,0,"pi(1300)","pi(1300)");
-  InitHadron(100211,false,1.3,0.65,0.400,3,0,true,1,0,"pi(1300)+","pi^{+}(1300)");
-  InitHadron(kf_eta_1295,false,1.297,0.65,0.053,0,0,false,1,0,"eta(1295)","eta(1295)");
-  InitHadron(100311,false,1.46,0.65,0.26,0,0,true,1,0,"K(1460)","K(1460)");
-  InitHadron(100321,false,1.46,0.65,0.26,3,0,true,1,0,"K(1460)+","K^{+}(1460)");
-  InitHadron(kf_eta_1475,false,1.476,0.65,0.08,0,0,false,1,0,"eta(1475)","eta(1475)");
-  InitHadron(100441,false,3.638,0.65,0.014,0,0,true,1,0,"eta(c)(2S)","eta_{c}(2S)");
-  InitHadron(100551,false,9.997,0.65,0.0,0,0,true,1,0,"eta(b)(2S)","eta_{b}(2S)");
+  InitHadron(kf_pi_1300,          false,1.3,0.65,0.400,0,0,false,1,0,"pi(1300)","pi(1300)");
+  InitHadron(kf_pi_1300_plus,     false,1.3,0.65,0.400,3,0,true,1,0,"pi(1300)+","pi^{+}(1300)");
+  InitHadron(kf_eta_1295,         false,1.297,0.65,0.053,0,0,false,1,0,"eta(1295)","eta(1295)");
+  InitHadron(kf_K_1460,           false,1.46,0.65,0.26,0,0,true,1,0,"K(1460)","K(1460)");
+  InitHadron(kf_K_1460_plus,      false,1.46,0.65,0.26,3,0,true,1,0,"K(1460)+","K^{+}(1460)");
+  InitHadron(kf_eta_1475,         false,1.476,0.65,0.08,0,0,false,1,0,"eta(1475)","eta(1475)");
+  InitHadron(100441,              false,3.638,0.65,0.014,0,0,true,1,0,"eta(c)(2S)","eta_{c}(2S)");
+  InitHadron(100551,              false,9.997,0.65,0.0,0,0,true,1,0,"eta(b)(2S)","eta_{b}(2S)");
   // Vectors         ##################################################################################
   // heavy ones missing.
   // the rho's may be important for tau/D/B decays
-  InitHadron(kf_rho_1450,false,1.465,0.65,0.31,0,2,false,1,0,"rho(1450)","rho(1450)");
-  InitHadron(100213,false,1.465,0.65,0.31,3,2,true,1,0,"rho(1450)+","rho^{+}(1450)");
-  InitHadron(kf_omega_1420,false,1.419,0.65,0.17,0,2,false,1,0,"omega(1420)","omega(1420)");
-  InitHadron(100313,false,1.414,0.65,0.232,0,2,true,1,0,"K*(1410)","K*(1410)");
-  InitHadron(100323,false,1.414,0.65,0.232,3,2,true,1,0,"K*(1410)+","K*^{+}(1410)");
-  InitHadron(kf_phi_1680,false,1.68,0.65,0.15,0,2,false,1,0,"phi(1680)","phi(1680)");
-  InitHadron(kf_psi_2S,false,3.686,0.65,0.000277,0,2,false,1,0,"psi(2S)","psi(2S)");
-  InitHadron(kf_Upsilon_2S,false,10.0233,0.65,4.4e-05,0,2,false,1,0,"Upsilon(2S)","Upsilon(2S)");
+  InitHadron(kf_rho_1450,         false,1.465,0.65,0.31,0,2,false,1,0,"rho(1450)","rho(1450)");
+  InitHadron(kf_rho_1450_plus,    false,1.465,0.65,0.31,3,2,true,1,0,"rho(1450)+","rho^{+}(1450)");
+  InitHadron(kf_omega_1420,       false,1.419,0.65,0.17,0,2,false,1,0,"omega(1420)","omega(1420)");
+  InitHadron(kf_K_star_1410,      false,1.414,0.65,0.232,0,2,true,1,0,"K*(1410)","K*(1410)");
+  InitHadron(kf_K_star_1410_plus, false,1.414,0.65,0.232,3,2,true,1,0,"K*(1410)+","K*^{+}(1410)");
+  InitHadron(kf_phi_1680,         false,1.68,0.65,0.15,0,2,false,1,0,"phi(1680)","phi(1680)");
+  InitHadron(kf_psi_2S,           false,3.686,0.65,0.000277,0,2,false,1,0,"psi(2S)","psi(2S)");
+  InitHadron(kf_Upsilon_2S,       false,10.0233,0.65,4.4e-05,0,2,false,1,0,"Upsilon(2S)","Upsilon(2S)");
   // Tensors 2       ##################################################################################
   // heavy ones missing.
-  InitHadron(kf_f_2_2010,false,2.01,0.65,0.2,0,4,false,1,0,"f(2)(2010)","f_{2}(2010)");
-  InitHadron(100445,false,3.929,0.65,0.029,0,4,true,1,0,"chi(c2)(2P)","chi_{c2}(2P)");
+  InitHadron(kf_f_2_2010,         false,2.01,0.65,0.2,0,4,false,1,0,"f(2)(2010)","f_{2}(2010)");
+  InitHadron(100445,              false,3.929,0.65,0.029,0,4,true,1,0,"chi(c2)(2P)","chi_{c2}(2P)");
   // More states without full multiplets ########################################################
   // light ones missing - we know A LOT about heavy-heavy states ....
-  InitHadron(kf_chi_b2_2P,false,10.2685,0.65,0.001,0,4,false,1,0,"chi(b2)(2P)","chi_{b2}(2P)");
-  InitHadron(100557,false,10.4443,0.65,0.0,0,6,true,1,0,"Upsilon(3)(2D)","Upsilon_{3}(2D)");
-  InitHadron(kf_chi_b0_2P,false,10.2321,0.65,0.001,0,0,false,1,0,"chi(b0)(2P)","chi_{b0}(2P)");
-  InitHadron(110553,false,10.255,0.65,0.0,0,2,true,1,0,"h(b)(2P)","h_{b}(2P)");
-  InitHadron(110555,false,10.441,0.65,0.0,0,4,true,1,0,"eta(b2)(2D)","eta_{b2}(2D)");
-  InitHadron(kf_chi_b1_2P,false,10.2552,0.65,0.001,0,2,false,1,0,"chi(b1)(2P)","chi_{b1}(2P)");
-  InitHadron(120555,false,10.4406,0.65,0.0,0,4,true,1,0,"Upsilon(2)(2D)","Upsilon_{2}(2D)");
-  InitHadron(130553,false,10.4349,0.65,0.0,0,2,true,1,0,"Upsilon(1)(2D)","Upsilon_{1}(2D)");
-  InitHadron(200551,false,10.335,0.65,0.0,0,0,true,1,0,"eta(b)(3S)","eta_{b}(3S)");
-  InitHadron(kf_Upsilon_3S,false,10.3553,0.65,2.63e-05,0,2,false,1,0,"Upsilon(3S)","Upsilon(3S)");
-  InitHadron(200555,false,10.5264,0.65,0.0,0,4,true,1,0,"chi(b2)(3P)","chi_{b2}(3P)");
-  InitHadron(210551,false,10.5007,0.65,0.0,0,0,true,1,0,"chi(b0)(3P)","chi_{b0}(3P)");
-  InitHadron(210553,false,10.516,0.65,0.0,0,2,true,1,0,"h(b)(3P)","h_{b}(3P)");
-  InitHadron(220553,false,10.516,0.65,0.0,0,2,true,1,0,"chi(b1)(3P)","chi_{b1}(3P)");
-  InitHadron(kf_Upsilon_4S,false,10.58,0.65,0.01,0,2,false,1,0,"Upsilon(4S)","Upsilon(4S)");
+  InitHadron(kf_chi_b2_2P,        false,10.2685,0.65,0.001,0,4,false,1,0,"chi(b2)(2P)","chi_{b2}(2P)");
+  InitHadron(100557,              false,10.4443,0.65,0.0,0,6,true,1,0,"Upsilon(3)(2D)","Upsilon_{3}(2D)");
+  InitHadron(kf_chi_b0_2P,        false,10.2321,0.65,0.001,0,0,false,1,0,"chi(b0)(2P)","chi_{b0}(2P)");
+  InitHadron(110553,              false,10.255,0.65,0.0,0,2,true,1,0,"h(b)(2P)","h_{b}(2P)");
+  InitHadron(110555,              false,10.441,0.65,0.0,0,4,true,1,0,"eta(b2)(2D)","eta_{b2}(2D)");
+  InitHadron(kf_chi_b1_2P,        false,10.2552,0.65,0.001,0,2,false,1,0,"chi(b1)(2P)","chi_{b1}(2P)");
+  InitHadron(120555,              false,10.4406,0.65,0.0,0,4,true,1,0,"Upsilon(2)(2D)","Upsilon_{2}(2D)");
+  InitHadron(130553,              false,10.4349,0.65,0.0,0,2,true,1,0,"Upsilon(1)(2D)","Upsilon_{1}(2D)");
+  InitHadron(200551,              false,10.335,0.65,0.0,0,0,true,1,0,"eta(b)(3S)","eta_{b}(3S)");
+  InitHadron(kf_Upsilon_3S,       false,10.3553,0.65,2.63e-05,0,2,false,1,0,"Upsilon(3S)","Upsilon(3S)");
+  InitHadron(200555,              false,10.5264,0.65,0.0,0,4,true,1,0,"chi(b2)(3P)","chi_{b2}(3P)");
+  InitHadron(210551,              false,10.5007,0.65,0.0,0,0,true,1,0,"chi(b0)(3P)","chi_{b0}(3P)");
+  InitHadron(210553,              false,10.516,0.65,0.0,0,2,true,1,0,"h(b)(3P)","h_{b}(3P)");
+  InitHadron(220553,              false,10.516,0.65,0.0,0,2,true,1,0,"chi(b1)(3P)","chi_{b1}(3P)");
+  InitHadron(kf_Upsilon_4S,       false,10.58,0.65,0.01,0,2,false,1,0,"Upsilon(4S)","Upsilon(4S)");
   // a0(980) and friends #####################################################
   // These are the "funny" state with some iso number.  We will have to
   // figure out what to do with them.
