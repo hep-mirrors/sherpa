@@ -76,6 +76,7 @@ namespace ATOOLS {
   public:
 
     static void InitializeMainSettings(int argc, char* argv[]);
+    static void InitializeMainSettings(std::istream &);
     static void FinalizeMainSettings();
     static Settings& GetMainSettings();
 
@@ -141,6 +142,7 @@ namespace ATOOLS {
     bool m_interpreterenabled{ true };
 
     Settings(int argc, char* argv[]);
+    Settings(std::istream &);
 
     std::vector<std::string> GetKeys(const Settings_Keys&);
 

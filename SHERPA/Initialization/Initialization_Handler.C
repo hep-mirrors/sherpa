@@ -9,6 +9,7 @@
 #include "SHERPA/SoftPhysics/Soft_Collision_Handler.H"
 #include "SHERPA/PerturbativePhysics/MI_Handler.H"
 #include "SHERPA/SoftPhysics/Soft_Photon_Handler.H"
+#include "SHERPA/Tools/Definitions.H"
 #include "SHERPA/Tools/Event_Reader_Base.H"
 #include "SHERPA/Main/Filter.H"
 #include "PHASIC++/Scales/Core_Scale_Setter.H"
@@ -76,7 +77,10 @@ Initialization_Handler::Initialization_Handler() :
   }
 
   m_evtform = s["EVENT_INPUT"].Get<std::string>();
-  if (m_evtform != "") {
+  if (m_evtform == "Achilles") {
+    m_mode=eventtype::Achilles;
+    msg_Out()<<"Running Sherpa with the Achilles interface"<<endl;
+  } else if (m_evtform != "") {
     m_mode=eventtype::EventReader;
     msg_Out()<<"Sherpa will read in events as "<<m_evtform<<endl;
   }
@@ -281,7 +285,7 @@ void Initialization_Handler::RegisterDefaults()
   s["EXTRAXS_CSS_APPROX_ME"].SetDefault(false);
 
   s["RESPECT_MASSIVE_FLAG"].SetDefault(false);
-  int lmu = s["LEPTONIC_CURRENT_MODE"].SetDefault(0);
+  int lmu = s["LEPTONIC_CURRENT_MODE"].SetDefault(0).Get<int>();
   rpa->gen.SetVariable("LEPTONIC_CURRENT_MODE",ToString(lmu));
 }
 
@@ -582,6 +586,17 @@ bool Initialization_Handler::InitializeTheFramework(int nr)
     InitializeTheIO();
     InitializeTheReweighting(Variations_Mode::all);
     return true;
+  } else if (m_mode==eventtype::Achilles) {
+    PHASIC::Phase_Space_Handler::GetInfo();
+    okay = okay && InitializeTheShowers();
+    okay = okay && InitializeTheHardDecays();
+    okay = okay && InitializeTheMatrixElements();
+    okay = okay && InitializeTheBeamRemnants();
+
+    okay = okay && InitializeTheHadronDecays();
+    okay = okay && InitializeTheSoftPhotons();
+    okay = okay && InitializeTheReweighting(Variations_Mode::nominal_only);
+    return okay;
   }
   PHASIC::Phase_Space_Handler::GetInfo();
   okay = okay && InitializeTheShowers();

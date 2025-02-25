@@ -1,3 +1,4 @@
+#include "ATOOLS/Org/Yaml_Reader.H"
 #include "SHERPA/Main/Sherpa.H"
 #include "SHERPA/Initialization/Initialization_Handler.H"
 #include "SHERPA/Single_Events/Event_Handler.H"
@@ -52,6 +53,33 @@ Sherpa::Sherpa(int argc, char* argv[]) :
   // in turn needs the Settings to be initialized
   ATOOLS::rpa = new Run_Parameter();
   Settings::InitializeMainSettings(argc, argv);
+  ATOOLS::ran = new Random(1234);
+  ATOOLS::s_loader = new Library_Loader();
+  PDF::pdfdefs = new PDF::PDF_Defaults();
+  m_trials = 0;
+  m_debuginterval = 0;
+  m_debugstep = -1;
+  m_displayinterval = 100;
+  m_evt_starttime = -1.0;
+  exh->AddTerminatorObject(this);
+}
+
+Sherpa::Sherpa(std::istream &settings) :
+  p_inithandler(nullptr),
+  p_eventhandler(nullptr)
+#ifdef USING__HEPMC3
+  , p_hepmc3(nullptr)
+#endif
+{
+  ATOOLS::mpi = new My_MPI();
+  ATOOLS::exh = new Terminator_Object_Handler(false);
+  ATOOLS::msg = new Message();
+  // rpa should be constructed before initializing the main settings, since the
+  // latter might throw an exception and rpa would be involved in terminating
+  // the program then; however, do not call its Init method yet, because this
+  // in turn needs the Settings to be initialized
+  ATOOLS::rpa = new Run_Parameter();
+  Settings::InitializeMainSettings(settings);
   ATOOLS::ran = new Random(1234);
   ATOOLS::s_loader = new Library_Loader();
   PDF::pdfdefs = new PDF::PDF_Defaults();
@@ -171,8 +199,17 @@ bool Sherpa::InitializeTheEventHandler()
     p_eventhandler->AddEventPhase(new EvtReadin_Phase(p_inithandler->GetEventReader()));
     p_eventhandler->AddEventPhase(new Hard_Decays(p_inithandler->GetHardDecayHandler()));
     p_eventhandler->AddEventPhase(new Beam_Remnants(p_inithandler->GetBeamRemnantHandler()));
-  }
-  else {
+  } else if (mode==eventtype::Achilles) {
+    p_eventhandler->AddEventPhase(new Signal_Processes(p_inithandler->GetMatrixElementHandler()));
+    p_eventhandler->AddEventPhase(new Jet_Evolution(p_inithandler->GetMatrixElementHandler(),
+                                                    p_inithandler->GetHardDecayHandler(),
+						    p_inithandler->GetHDHandler(),
+						    p_inithandler->GetMIHandlers(),
+						    p_inithandler->GetSoftCollisionHandlers(),
+						    p_inithandler->GetShowerHandlers(),
+						    p_inithandler->GetRemnantHandlers()));
+    p_eventhandler->AddEventPhase(new Hadron_Decays(p_inithandler->GetHDHandler()));
+  } else {
     p_eventhandler->AddEventPhase(new Signal_Processes(p_inithandler->GetMatrixElementHandler()));
     p_eventhandler->AddEventPhase(new Minimum_Bias(p_inithandler->GetSoftCollisionHandlers()));
     p_eventhandler->AddEventPhase(new Hard_Decays(p_inithandler->GetHardDecayHandler()));

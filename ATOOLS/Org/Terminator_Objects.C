@@ -20,20 +20,22 @@ void ATOOLS::Terminate()
   exh->Terminate(1);
 }
 
-Terminator_Object_Handler::Terminator_Object_Handler():
+Terminator_Object_Handler::Terminator_Object_Handler(bool enable):
   m_noremove(false),
   m_nbus(0), m_nsegv(0), m_stacktraces(0)
 {
-  std::set_terminate(ATOOLS::Terminate);
-  signal(SIGSEGV,ATOOLS::HandleSignal);
-  signal(SIGINT,ATOOLS::HandleSignal);
-  signal(SIGPIPE,ATOOLS::HandleSignal);
-  signal(SIGBUS,ATOOLS::HandleSignal);
-  signal(SIGFPE,ATOOLS::HandleSignal);
-  signal(SIGABRT,ATOOLS::HandleSignal);
-  signal(SIGTERM,ATOOLS::HandleSignal);
-  signal(SIGXCPU,ATOOLS::HandleSignal);
-  signal(SIGUSR1,ATOOLS::HandleSignal);
+  if(enable) {
+    std::set_terminate(ATOOLS::Terminate);
+    signal(SIGSEGV,ATOOLS::HandleSignal);
+    signal(SIGINT,ATOOLS::HandleSignal);
+    signal(SIGPIPE,ATOOLS::HandleSignal);
+    signal(SIGBUS,ATOOLS::HandleSignal);
+    signal(SIGFPE,ATOOLS::HandleSignal);
+    signal(SIGABRT,ATOOLS::HandleSignal);
+    signal(SIGTERM,ATOOLS::HandleSignal);
+    signal(SIGXCPU,ATOOLS::HandleSignal);
+    signal(SIGUSR1,ATOOLS::HandleSignal);
+  }
 }
 
 bool Terminator_Object_Handler::ReadInStatus(const std::string &path)

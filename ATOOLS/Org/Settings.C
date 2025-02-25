@@ -16,6 +16,11 @@ void Settings::InitializeMainSettings(int argc, char* argv[])
   mainsettings = std::unique_ptr<Settings>(new Settings(argc, argv));
 }
 
+void Settings::InitializeMainSettings(std::istream &s)
+{
+  mainsettings = std::unique_ptr<Settings>(new Settings(s));
+}
+
 void Settings::FinalizeMainSettings()
 {
   Settings_Writer().WriteSettings(*mainsettings);
@@ -47,6 +52,20 @@ Settings::Settings(int argc, char* argv[])
       m_yamlreaders.emplace_back(new Yaml_Reader {path, *it});
     }
   }
+  Settings_Keys tagkeys{ Setting_Key{"TAGS"} };
+  for (auto it = m_yamlreaders.rbegin(); it != m_yamlreaders.rend(); ++it) {
+    const auto tags = (*it)->GetKeys(tagkeys);
+    for (const auto& tag : tags) {
+      tagkeys.push_back(Setting_Key{tag});
+      AddTag(tag, (*it)->GetScalar<std::string>(tagkeys));
+      tagkeys.pop_back();
+    }
+  }
+}
+
+Settings::Settings(std::istream &s)
+{
+  m_yamlreaders.emplace_back(std::make_unique<Yaml_Reader>(s));
   Settings_Keys tagkeys{ Setting_Key{"TAGS"} };
   for (auto it = m_yamlreaders.rbegin(); it != m_yamlreaders.rend(); ++it) {
     const auto tags = (*it)->GetKeys(tagkeys);
