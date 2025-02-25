@@ -219,11 +219,15 @@ class LorentzWriter:
     def write(self, struct):
         progress(f"Calculating lorentz structure: {struct.name}")
         impl, ff_impl, ff_decl = self._get_impl(struct)
+        ff_name = 'return "None";'
+        if ff_impl != '':
+            ff_name = 'return p_ff->ID();'
         subs = {
             'vertex_name': struct.name,
             'implementation': impl,
             'form_factor_impl': ff_impl,
             'form_factor_decl': ff_decl,
+            'form_factor_name': ff_name,
         }
         with open(f'{self._path}/{struct.name}.C', 'w') as output:
             output.write(self._template.substitute(subs))

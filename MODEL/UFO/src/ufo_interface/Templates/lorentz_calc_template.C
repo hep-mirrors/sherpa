@@ -34,6 +34,8 @@ ${implementation}
       return NULL;
     }
 
+    virtual std::string FormFactor() const { ${form_factor_name} }
+
 ${form_factor_decl}
   };// end of class ${vertex_name}_Calculator
 
