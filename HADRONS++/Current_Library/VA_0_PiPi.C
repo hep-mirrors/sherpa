@@ -28,7 +28,7 @@ using namespace std;
 //             maybe as form factor model 3, based on RchT
 //             (https://arxiv.org/pdf/1112.0962)
 //             === Zara - maybe this would be a nice way to promote
-//                 yourself from "debugging" to "coding"?
+//                 yourself from "debugging" to "coding"? // 3rd ff model!
 //   * K pi: Phys.Lett.B 640 (2006) 176
 //     (https://doi.org/10.1016/j.physletb.2006.06.058)
 //           - not implemented (but maybe worth it, especially because
@@ -63,7 +63,7 @@ VA_0_PiPi::VA_0_PiPi(const ATOOLS::Flavour_Vector& flavs,
   m_m2_pi(sqr(Flavour(kf_pi_plus).Mass(true))),
   m_m2_K(sqr(Flavour(kf_K_plus).Mass(true))),
   m_m2_eta(sqr(Flavour(kf_eta).Mass(true))),
-  m_mu2(sqr(Flavour(kf_rho_770_plus).Mass(true)))
+  m_mu2(sqr(Flavour(kf_rho_770_plus).Mass(true))) //renormalisation scale
 {
   msg_Out()<<"==========================================================\n";
 }
@@ -84,8 +84,8 @@ void VA_0_PiPi::Calc(const ATOOLS::Vec4D_Vector& moms, bool m_anti)
 {
   Vec4D  q  = moms[p_i[1]]+moms[p_i[0]];
   double Q2 = q.Abs2();
-  msg_Out()<<METHOD<<"(Q = "<<sqrt(Q2)<<"): "
-	   <<"V = "<<VectorFF(Q2)<<", S = "<<ScalarFF(Q2)<<"\n";
+  // msg_Out()<<METHOD<<"(Q = "<<sqrt(Q2)<<"): "
+  // <<"V = "<<VectorFF(Q2)<<", S = "<<ScalarFF(Q2)<<"\n";
   Insert(m_norm *
 	 ( VectorFF(Q2) * ((moms[p_i[1]]-moms[p_i[0]]) - m_deltaM2/Q2 * q ) +
 	   ScalarFF(Q2) * q
@@ -105,7 +105,7 @@ void VA_0_PiPi::SetModelParameters(struct GeneralModel model)
   m_ffmodel = ffmodel(model("FORM_FACTOR",1));
   m_deltaM2 = m_flavs[p_i[1]].Mass(true)-m_flavs[p_i[0]].Mass(true);
   if (m_ffmodel==ffmodel::RChT) {
-    m_fpi   = 0.092316;
+    m_fpi   = 0.092316; //!!!
     if (m_PSmode==PSmode::pipi || m_PSmode==PSmode::KK) {
       m_RChTpref = -1./(96.*sqr(M_PI*m_fpi));
     }
@@ -131,13 +131,13 @@ void VA_0_PiPi::SetModelParameters(struct GeneralModel model)
   }
   if (m_ffmodel!=ffmodel::none) { 
     list<kf_code> tags;
-    if (SelectResonances(tags,false)) {
+    if (SelectResonances(tags,false)) { //vector
       for (list<kf_code>::iterator kfit=tags.begin();kfit!=tags.end();kfit++)
 	InitResonance(model, *kfit, false);
     }
     tags.clear();
     if ( (m_PSmode==PSmode::Kpi ||
-	  m_PSmode==PSmode::etapi || m_PSmode==PSmode::etaprimepi ||
+	  m_PSmode==PSmode::etapi || m_PSmode==PSmode::etaprimepi || //scalars
 	  m_PSmode==PSmode::Keta  || m_PSmode==PSmode::Ketaprime) &&
 	  SelectResonances(tags,true)) {
       for (list<kf_code>::iterator kfit=tags.begin();kfit!=tags.end();kfit++)
@@ -149,11 +149,11 @@ void VA_0_PiPi::SetModelParameters(struct GeneralModel model)
   }
 }
 
-void VA_0_PiPi::FixMode() {
+void VA_0_PiPi::FixMode() { //relabels decay yaml indices to 0 and 1 for each seperate current (both outgoing by construction)
   if (m_flavs[p_i[0]].Kfcode()==kf_pi &&
       m_flavs[p_i[1]].Kfcode()==kf_pi_plus)             m_PSmode = PSmode::pipi;
-  else if ( (m_flavs[p_i[0]].Kfcode()==kf_K_L ||
-	     m_flavs[p_i[0]].Kfcode()==kf_K_S ||
+  else if ( (m_flavs[p_i[0]].Kfcode()==kf_K_L || 
+	     m_flavs[p_i[0]].Kfcode()==kf_K_S || 
 	     m_flavs[p_i[0]].Kfcode()==kf_K) &&
 	    m_flavs[p_i[1]].Kfcode()==kf_K_plus)        m_PSmode = PSmode::KK;
   else if ( (m_flavs[p_i[0]].Kfcode()==kf_pi_plus && 
@@ -253,9 +253,10 @@ bool VA_0_PiPi::FillDefaults(const kf_code & tag,vector<double> & defs) {
 
 bool VA_0_PiPi::KSDefaults(const kf_code & tag,vector<double> & defs) {
   if (m_PSmode==PSmode::pipi) {
+    // (weight , mass , width, phase)
     switch (tag) {
     case kf_rho_1700_plus:
-      if (m_restype==resonance_type::running)
+      if (m_restype==resonance_type::running) 
 	defs = { -0.0370, 1.7000, 0.2350, 0.0000 };
       else if (m_restype==resonance_type::GS)
 	defs = {  0.0280, 1.6940, 0.1350, -3./180.*M_PI };
@@ -475,7 +476,7 @@ Complex VA_0_PiPi::VectorRChT_pipi(const double & s)
 		       Loop(m_m2_K,  s, m_mu2)/2. );
       // remember that  m_RChTpref = -1./(96.*sqr(M_PI*m_fpi))
       RhoExpo = exp(m_RChTpref*s*Ampl.real());
-      // rho width repressed through the imaginar part of loop integral:
+      // rho width expressed through the imaginary part of loop integral:
       // automatically captures the mass-shell conditions
       Gamma   = m_RChTpref*rtit->second->Mass()*s*Ampl.imag();
       ExtraBW = rtit->second->AltBreitWigner(s,rtit->second->Mass2(),

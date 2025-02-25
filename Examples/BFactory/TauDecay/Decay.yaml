@@ -12,7 +12,7 @@ ANALYSIS: Rivet
 RIVET:
   --ignore-beams: 1
   --analyses: [BELLE_2007_I753243]
-ANALYSIS_OUTPUT: tau_2_KS_pi-_FF1
+ANALYSIS_OUTPUT: tau_2_KS_pi-_FF1  # will be name of output file
 
 #  --analyses: [CLEO_1999_I508944,BELLE_2008_I786560]
 #ANALYSIS_OUTPUT: tau_2_pi-_pi_FF2
@@ -115,7 +115,7 @@ HADRON_DECAYS:
       ###############################################################
       # Two-body form factors ~ V_{ud}
       ###############################################################
-      -211,111,16:
+      -211,111,16: # anti pi plus, pi0 and tau neutrino
         BR: [0.,0.]  #  [0.255, 0.255]
         ME:
           - Current_ME:
