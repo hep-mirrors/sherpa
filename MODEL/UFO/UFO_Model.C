@@ -40,8 +40,16 @@ namespace UFO{
   // at ME level by setting 'massive' to zero in SetMassiveFlags.
   void UFO_Model::SetSMMass(const kf_code &kf,const double &m)
   {
-    if (ATOOLS::s_kftable.find(kf)==ATOOLS::s_kftable.end())
-      THROW(fatal_error,"SM particle not in model");
+    if (ATOOLS::s_kftable.find(kf)==ATOOLS::s_kftable.end()) {
+      // THROW(fatal_error,"SM particle not in model");
+      msg_Info() << "WARNING: SM particle " << kf << " is not in the model" << std::endl; 
+      msg_Info() << "Creating dummy particle with mass " << m << std::endl;
+      bool is_massive = m > 3;
+      int charge = kf == 0 ? 0 : kf < 6 ? kf % 2 == 0 ? 2 : -1 : -1;
+      int strong = kf == 0 ? 8 : kf < 6 ? 3 : 0;
+      ATOOLS::s_kftable[kf] = new ATOOLS::Particle_Info(kf,m,.0,.0,charge,strong,1,0,1,1,is_massive,"d","db", "d", "\\bar{d}");
+      return;
+    }
     if (ATOOLS::s_kftable[kf]->m_mass) return;
     ATOOLS::s_kftable[kf]->m_mass=m;
     ATOOLS::s_kftable[kf]->m_hmass=m;
@@ -49,6 +57,7 @@ namespace UFO{
 
   void UFO_Model::SetSMMasses(){
     // this part hopes the UFO model has the SM with the same kfcodes included
+    SetSMMass(kf_gluon,0.0);
     SetSMMass(kf_d,0.01);
     SetSMMass(kf_u,0.005);
     SetSMMass(kf_s,0.2);
