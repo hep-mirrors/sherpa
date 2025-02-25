@@ -29,6 +29,8 @@ namespace METOOLS {
 
     virtual void Evaluate();
 
+    virtual std::string FormFactor() const { return "None"; }
+
   };// end of class Lorentz_Calculator
 
   typedef std::vector<Lorentz_Calculator*> LC_Vector;
