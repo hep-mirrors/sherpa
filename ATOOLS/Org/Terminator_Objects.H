@@ -42,7 +42,7 @@ namespace ATOOLS {
 
   public:
 
-    Terminator_Object_Handler();
+    Terminator_Object_Handler(bool enable=true);
 
     ~Terminator_Object_Handler();
 

@@ -43,6 +43,7 @@ namespace SHERPA {
   public:
 
     Sherpa(int argc, char* argv[]);
+    Sherpa(std::istream &);
     ~Sherpa();
 
     bool InitializeTheRun();
