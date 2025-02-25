@@ -398,6 +398,11 @@ bool Flavour::IsOctetMeson() const
   return (Kfcode()/100000==99);
 }
 
+bool Flavour::IsJPsi() const
+{
+  return (Kfcode() == kf_J_psi_1S);
+}
+
 bool Flavour::IsBaryon() const 
 {
   if (Kfcode() % 10000 < 1000) return false;
