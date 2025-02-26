@@ -351,9 +351,8 @@ bool Momenta_Stretcher::StretchMomenta( const Particle_Vector& outparts, std::ve
     s_fails++;
     return false;
   }
-  boost.Invert();
   for(size_t i=0; i<moms.size(); i++) {
-    moms[i] = boost*moms[i];
+    boost.BoostBack(moms[i]);
   }
   return true;
 }

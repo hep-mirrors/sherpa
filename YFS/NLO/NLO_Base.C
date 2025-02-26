@@ -282,6 +282,7 @@ double NLO_Base::CalculateReal(Vec4D k, int fsrcount) {
  		MapMomenta(p,k);
  	}
  	p.push_back(k);
+ 	CheckMasses(p,1);
  	// if(fluxtype==dipoletype::final) MapInitial(p);
  	if(fsrcount==1 || fsrcount==4) MapInitial(p);
  	Vec4D_Vector pp = p;
@@ -289,6 +290,8 @@ double NLO_Base::CalculateReal(Vec4D k, int fsrcount) {
 	p_nlodipoles->MakeDipolesII(m_flavs,pp,m_plab);
 	p_nlodipoles->MakeDipolesIF(m_flavs,pp,m_plab);
 	p_nlodipoles->MakeDipoles(m_flavs,pp,m_plab);
+	double r = p_real->Calc_R(p) / norm;
+	if(IsZero(r)) return 0;
 	double flux;
 	if(m_flux_mode==1) flux = p_dipoles->CalculateFlux(k);
 	else if(m_flux_mode==2) flux = 0.5*(p_nlodipoles->CalculateFlux(kk)+p_nlodipoles->CalculateFlux(k));
@@ -313,8 +316,6 @@ double NLO_Base::CalculateReal(Vec4D k, int fsrcount) {
 			m_histograms1d["k_pt_pass"]->Insert(k.PPerp());
 			m_histograms1d["dip_mass_pass"]->Insert((p[2]+p[3]).Mass());
 		}
-	CheckMasses(p,1);
-	double r = p_real->Calc_R(p) / norm;
 	// if(IsZero(r)) return 0;
 	if(IsBad(r) || IsBad(flux)) {
 		msg_Error()<<"Bad point for YFS Real"<<std::endl
@@ -433,7 +434,6 @@ double NLO_Base::CalculateRealVirtual(Vec4D k, int fsrcount) {
 
 	subb = p_dipoles->CalculateRealSubEEX(k);
 	
-	if(!CheckPhotonForReal(k,pp)) return 0;
 	if(p.size()!=(m_flavs.size()+1)){
 		msg_Error()<<"Mismatch in "<<METHOD<<std::endl;
 	}
@@ -507,7 +507,6 @@ double NLO_Base::CalculateRealVirtual(Vec4D k, int fsrcount) {
 			 			<<"Sherpa RV eps^{-1} = "<<p_nlodipoles->Get_E1()<<std::endl;
 		}
 	}
-
 	return tot;
 }
 
@@ -858,7 +857,7 @@ void NLO_Base::CheckMasses(Vec4D_Vector &p, int realmode){
 	for (int i = 0; i < p.size(); ++i)
 	{
 		masses.push_back(flavs[i].Mass());
-		if(!IsEqual(p[i].Mass(),flavs[i].Mass(),1e-6)){
+		if(!IsEqual(p[i].Mass(),flavs[i].Mass())&& flavs[i].Mass()!=0){
 			msg_Debugging()<<"Wrong particle masses in YFS Mapping"<<std::endl
 								 <<"Flavour = "<<flavs[i]<<", with mass = "<<flavs[i].Mass()<<std::endl
 								 <<"Four momentum = "<<p[i]<<", with mass = "<<p[i].Mass()<<std::endl;
@@ -866,7 +865,13 @@ void NLO_Base::CheckMasses(Vec4D_Vector &p, int realmode){
 
 		}
 	}
-	if(!allonshell) m_stretcher.StretchMomenta(p, masses);
+	if(!allonshell) {
+		m_stretcher.StretchMomenta(p, masses);
+		for (int i = 0; i < p.size(); ++i){
+			msg_Debugging()<<"Flavour = "<<flavs[i]<<", with mass = "<<flavs[i].Mass()<<std::endl
+							 <<"Four momentum = "<<p[i]<<", with new mass = "<<p[i].Mass()<<std::endl;
+		}
+	}
 	// return true;
 }
 

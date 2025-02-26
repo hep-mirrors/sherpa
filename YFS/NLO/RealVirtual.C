@@ -66,6 +66,19 @@ double RealVirtual::Calc_V(const ATOOLS::Vec4D_Vector& p,
      run_corr = 4.*dalpha*B;
     }
     p_loop_me->Calc(p,B);
-    V = p_loop_me->ME_Finite();
-    return V*m_factor*B-run_corr;
+    // V = p_loop_me->ME_Finite();
+    switch(p_loop_me->Mode())
+      {
+      case 0:
+        // PRINT_VAR(p_loop_me->ME_Finite()*m_factor*B);
+        V =  m_factor *  p_loop_me->ME_Finite() * B ; break;
+      case 1:
+        // For Griffin
+        // PRINT_VAR(p_loop_me->ME_Finite()*m_rescale_alpha);
+        V =  p_loop_me->ME_Finite()-B;//*((*aqed)(0)/s_model->ScalarConstant("alpha_QED"));
+        break;
+      default:
+        THROW(not_implemented, "Loop ME mode not implemented: "+ATOOLS::ToString(p_loop_me->Mode()));
+      }
+    return V*m_factor-run_corr;
   }

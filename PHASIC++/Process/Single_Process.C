@@ -523,11 +523,13 @@ Weights_Map Single_Process::Differential(const Vec4D_Vector& p,
                                          Variations_Mode varmode)
 {
   DEBUG_FUNC(Name()<<", RS:"<<GetSubevtList());
-
   ResetResultsForDifferential(varmode);
   InitMEWeightInfo();
   UpdateIntegratorMomenta(p);
   CalculateFlux(p);
+  if(this==p_int->YFS()->NLO()->p_real->p_realproc){
+    return YFSDifferential(p,varmode);
+  }
 
   if (m_zero) {
     m_last = 0.0;
@@ -734,6 +736,11 @@ Weights_Map Single_Process::Differential(const Vec4D_Vector& p,
   p_int->ISR()->SetMuF2(facscale, 1);
 
   return m_last;
+}
+
+Weights_Map Single_Process::YFSDifferential(const Vec4D_Vector &p,  ATOOLS::Variations_Mode varmode){
+  Partonic(p, varmode);
+  return m_lastxs;
 }
 
 void Single_Process::ResetResultsForDifferential(Variations_Mode varmode)
