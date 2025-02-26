@@ -84,6 +84,5 @@ double Virtual::Calc_V(const ATOOLS::Vec4D_Vector& p,
         THROW(not_implemented, "Loop ME mode not implemented: "+ATOOLS::ToString(p_loop_me->Mode()));
       }
     // V = p_loop_me->ME_Finite();//*B-run_corr;
-    if(V<0) PRINT_VAR(V);
     return V-run_corr*m_factor;
   }
