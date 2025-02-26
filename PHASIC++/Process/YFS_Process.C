@@ -75,8 +75,14 @@ void YFS_Process::Init(const Process_Info &pi,
       rpi.m_mincpl[i] += rpi.m_fi.m_nlocpl[i];
     }
     rpi.m_fi.m_ps.push_back(Subprocess_Info(kf_photon, "", ""));
+    p_realproc = InitProcess(rpi, nlo_type::real, false);
+    // p_realproc->SetLookUp(false);
+    p_realproc->SetParent(this);
+    // p_realproc->FillProcessMap(p_apmap);
+    // p_realproc->SetLookUp(true);
     p_yfs->p_nlo->InitializeReal(rpi);
     p_yfs->SetNLOType(nlo_type::real);
+    p_yfs->NLO()->p_real->SetProc(p_realproc);
   }
   if (pi.Has(nlo_type::loop)) {
     vpi.m_fi.SetNLOType(nlo_type::born);
@@ -113,12 +119,11 @@ Process_Base* YFS_Process::InitProcess
 {
   Process_Info cpi(pi);
   cpi.m_fi.SetNLOType(nlotype);
-  Process_Base* proc;
-  if(!real) proc = m_gens.InitializeProcess(pi, false);
+  Process_Base* proc = m_gens.InitializeProcess(pi, false);
   if (!proc)
   {
     std::stringstream msg;
-    msg << "Unable to initialize process:\n" << cpi;
+    msg_Error()<< METHOD <<": Unable to initialize process:\n" << cpi;
     THROW(fatal_error,  msg.str());
   }
   return proc;
@@ -211,6 +216,7 @@ Weight_Info *YFS_Process::OneEvent(const int wmode,ATOOLS::Variations_Mode varmo
   p_selected = p_bornproc;
   Weight_Info *winfo(NULL);
   winfo = p_int->PSHandler()->OneEvent(this, varmode, mode);
+  // PRINT_VAR(METHOD);
   // if(p_realproc) OneRealEvent();
   return winfo;
 }
@@ -230,6 +236,8 @@ void YFS_Process::FindResonances() {
 
 void YFS_Process::OneRealEvent(){
   // Vec4D_Vector &p(p_yfs);
+  // Cluster_Amplitude *rampl;
+  // Cluster_Amplitude(rampl);
   Weight_Info *winfo(NULL);
   Vec4D_Vector plab;
   Vec4D_Vector pho = p_yfs->GetPhotons();
