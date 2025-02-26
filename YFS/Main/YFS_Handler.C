@@ -398,7 +398,7 @@ void YFS_Handler::CalculateBeta() {
     // if(m_real < 0) m_real = 0;
     // m_real /= m_born;
   }
-  if(m_nlotype==nlo_type::loop || m_nlotype==nlo_type::real) {
+  if(m_nlotype!=nlo_type::born) {
     if(m_no_born) m_real=CalculateNLO()/m_born;
     else m_real=(m_born+CalculateNLO())/m_born;
   }

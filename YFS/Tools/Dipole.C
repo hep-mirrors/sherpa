@@ -306,7 +306,7 @@ bool Dipole::BoostNLO() {
     double y = 1./(1. + m_photonSum.E()/m_photonscale);
     double sprim =(Q).Abs2()*y;
     Vec4D preboostk = m_photonSum;
-    if(IsBad(sprim)) return  false;
+    // if(IsBad(sprim)) return  false;
     double m1 = m_momenta[0].Mass();
     double m2 = m_momenta[1].Mass();
     // Vec4D rref = Q-m_photonSum;
