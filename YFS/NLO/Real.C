@@ -57,6 +57,8 @@ Real::Real(const PHASIC::Process_Info& pi)  {
     m_fill=0;
     std::string filename="Momenta";
     std::string MEfilename="ME";
+    MEfilename+="_";
+    MEfilename+=gen;
     for(auto f: m_flavs) {
       filename+="_";
       MEfilename+="_";
@@ -115,7 +117,7 @@ double Real::Calc_R(const ATOOLS::Vec4D_Vector& p)
     if(m_writemom && m_fill < m_nmom){
       out_mom<<std::setprecision(20)<<"  - ["<<std::endl;
       real_out<<std::setprecision(20)<<"  "<<m_fill<<":"<<std::endl;
-      real_out<<std::setprecision(20)<<"    value: "<<external_real<<std::endl;
+      real_out<<std::setprecision(20)<<"    value: "<< (p_real_me ? external_real : iR.Nominal())<<std::endl;
       int j=0;
       for(auto k: p){
         out_mom<<"      [";
@@ -137,7 +139,8 @@ double Real::Calc_R(const ATOOLS::Vec4D_Vector& p)
       double ratio = iR.Nominal()/external_real;
       // if(!IsEqual(ratio,1.,1e-4)){
         msg_Out()<<std::setprecision(15)<<"ratio = "<<ratio<<std::endl;
-        msg_Out()<<std::setprecision(15)<<"external_real = "<<external_real<<std::endl;
+        msg_Out()<<std::setprecision(15)<<"1-ratio = "<<1-ratio<<std::endl;
+        // msg_Out()<<std::setprecision(15)<<"external_real = "<<external_real<<std::endl;
         if(p[4].PPerp() > maxpt) maxpt =  p[4].PPerp();
          m_histograms1d["RealME_Dev"]->Insert(1.-ratio);
          m_histograms1d["RealME_DevWide"]->Insert(1.-ratio);
