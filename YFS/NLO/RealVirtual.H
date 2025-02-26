@@ -27,8 +27,9 @@ namespace YFS{
         MODEL::Coupling_Map m_cpls;
         PHASIC::Scale_Setter_Base *p_scale;
         PHASIC::Tree_ME2_Base* p_born_me;
+        PHASIC::Process_Base *p_rvproc;
         double m_sym, m_factor;
-
+        inline void SetProc(PHASIC::Process_Base *realproc) {p_rvproc=realproc;}
     };
 }
 
