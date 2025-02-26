@@ -20,7 +20,8 @@ double maxpt = -1;
 
 Real::Real(const PHASIC::Process_Info& pi)  {
    /* Load Real ME */
-    p_real_me = NULL;
+   p_real_me = NULL;
+   p_realproc = NULL;
    Scoped_Settings s{ Settings::GetMainSettings()["YFS"] };
    std::string gen = s["Real_Generator"].SetDefault("").Get<std::string>();
    m_check = s["Compare_Real"].SetDefault(0).Get<bool>();
@@ -98,6 +99,7 @@ Real::~Real() {
 double Real::Calc_R(const ATOOLS::Vec4D_Vector& p)
   {
     double external_real;
+    if(!p_realproc->Trigger(p)) return 0;
     if(p_real_me) {
       if(!m_check) return Calc_External(p);
       external_real = Calc_External(p);

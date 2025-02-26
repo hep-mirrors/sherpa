@@ -34,7 +34,8 @@ using namespace std;
 
 YFS_Process::YFS_Process
 (ME_Generators& gens, NLOTypeStringProcessMap_Map *pmap):
-  m_gens(gens), p_bornproc(NULL), p_realproc(NULL)
+  m_gens(gens), p_bornproc(NULL), p_realproc(NULL), p_realrealproc(NULL),
+  p_realvirtproc(NULL)
 {
   m_lastxs= 0.0;
   RegisterDefaults();
@@ -47,6 +48,8 @@ YFS_Process::~YFS_Process() {
   if (p_bornproc) delete p_bornproc;
   if (p_realproc) delete p_realproc;
   if (p_virtproc) delete p_virtproc;
+  if (p_realrealproc) delete p_realrealproc;
+  if (p_realvirtproc) delete p_realvirtproc;
   if (p_int) delete p_int;
   if (p_yfs) delete p_yfs;
 }
@@ -94,17 +97,33 @@ void YFS_Process::Init(const Process_Info &pi,
   }
   if (pi.Has(nlo_type::rvirt)) {
     Process_Info rvpi(pi);
-    p_realvirtproc = InitProcess(rvpi, nlo_type::born, false);
+    for (size_t i = 0; i < pi.m_fi.m_nlocpl.size(); ++i)
+    {
+      rvpi.m_maxcpl[i] += rvpi.m_fi.m_nlocpl[i];
+      rvpi.m_mincpl[i] += rvpi.m_fi.m_nlocpl[i];
+    }
     rvpi.m_fi.m_ps.push_back(Subprocess_Info(kf_photon, "", ""));
+    p_realvirtproc = InitProcess(rvpi, nlo_type::rvirt, false);
     p_yfs->p_nlo->InitializeRealVirtual(rvpi);
     // p_yfs->p_nlo->InitializeVirtual(vpi);
+    p_yfs->SetNLOType(nlo_type::loop);
+    p_yfs->NLO()->p_realvirt->SetProc(p_realvirtproc);
+
   }
   if (pi.Has(nlo_type::realreal)) {
     Process_Info rrpi(pi);
-    p_realrealproc = InitProcess(rrpi, nlo_type::born, false);
+    for (size_t i = 0; i < pi.m_fi.m_nlocpl.size(); ++i)
+    {
+      rrpi.m_maxcpl[i] += rrpi.m_fi.m_nlocpl[i]+rrpi.m_fi.m_nlocpl[i];
+      rrpi.m_mincpl[i] += rrpi.m_fi.m_nlocpl[i]+rrpi.m_fi.m_nlocpl[i];
+    }
     rrpi.m_fi.m_ps.push_back(Subprocess_Info(kf_photon, "", ""));
     rrpi.m_fi.m_ps.push_back(Subprocess_Info(kf_photon, "", ""));
+    p_realrealproc = InitProcess(rrpi, nlo_type::real, false);
     p_yfs->p_nlo->InitializeRealReal(rrpi);
+    p_realrealproc->SetParent(this);
+    p_yfs->SetNLOType(nlo_type::realreal);
+    p_yfs->NLO()->p_realreal->SetProc(p_realrealproc);
     // p_yfs->InitializeVirtual(vpi);
   }
   p_bornproc->SetLookUp(false);
@@ -299,6 +318,7 @@ bool YFS_Process::InitScale() {
 void YFS_Process::SetScale(const Scale_Setter_Arguments &scale) {
   if (p_bornproc) p_bornproc->SetScale(scale);
   if (p_realproc) p_realproc->SetScale(scale);
+  if (p_realrealproc) p_realrealproc->SetScale(scale);
 }
 
 
@@ -339,6 +359,8 @@ void YFS_Process::SetSelector(const Selector_Key &key)
 {
   if (p_bornproc) p_bornproc->SetSelector(key);
   if (p_realproc) p_realproc->SetSelector(key);
+  if (p_realrealproc) p_realrealproc->SetSelector(key);
+  if (p_realvirtproc) p_realvirtproc->SetSelector(key);
 }
 
 void YFS_Process::SetGenerator(ME_Generator_Base *const gen)
@@ -354,6 +376,7 @@ void YFS_Process::SetShower(PDF::Shower_Base *const ps)
   p_shower = ps;
   if (p_bornproc) p_bornproc->SetShower(ps);
   if (p_realproc) p_realproc->SetShower(ps);
+  if (p_realrealproc) p_realrealproc->SetShower(ps);
 }
 
 void YFS_Process::SetNLOMC(PDF::NLOMC_Base *const mc)
@@ -361,6 +384,7 @@ void YFS_Process::SetNLOMC(PDF::NLOMC_Base *const mc)
   p_nlomc = mc;
   if (p_bornproc) p_bornproc->SetNLOMC(mc);
   if (p_realproc) p_realproc->SetNLOMC(mc);
+  if (p_realrealproc) p_realrealproc->SetNLOMC(mc);
 }
 
 void YFS_Process::InitializeTheReweighting(ATOOLS::Variations_Mode mode)
