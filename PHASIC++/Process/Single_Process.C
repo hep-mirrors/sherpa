@@ -534,11 +534,13 @@ Weights_Map Single_Process::Differential(const Vec4D_Vector& p,
   InitMEWeightInfo();
   UpdateIntegratorMomenta(p);
   CalculateFlux(p);
-  if(p_int->YFS()->NLO()->HasReal()){
-    if(this==p_int->YFS()->NLO()->p_real->p_realproc) return YFSDifferential(p,varmode);
-  }
-  if(p_int->YFS()->NLO()->p_realreal){
-    if(this==p_int->YFS()->NLO()->p_realreal->p_rrproc) return YFSDifferential(p,varmode);
+  if(p_int->YFS()->Mode()!=YFS::yfsmode::off){
+    if(p_int->YFS()->NLO()->HasReal()){
+      if(this==p_int->YFS()->NLO()->p_real->p_realproc) return YFSDifferential(p,varmode);
+    }
+    if(p_int->YFS()->NLO()->p_realreal){
+      if(this==p_int->YFS()->NLO()->p_realreal->p_rrproc) return YFSDifferential(p,varmode);
+    }
   }
   if (m_zero) {
     m_last = 0.0;
