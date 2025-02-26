@@ -20,8 +20,8 @@ RealVirtual::RealVirtual(const PHASIC::Process_Info& pi)
     loop_pi.m_fi.m_nlotype=ATOOLS::nlo_type::rvirt;
     loop_pi.m_mincpl[0] = pi.m_mincpl[0];
     loop_pi.m_maxcpl[0] = pi.m_maxcpl[0];
-    loop_pi.m_mincpl[1] = pi.m_mincpl[1]+2;
-    loop_pi.m_maxcpl[1] = pi.m_maxcpl[1]+2;
+    loop_pi.m_mincpl[1] = pi.m_mincpl[1]+1;
+    loop_pi.m_maxcpl[1] = pi.m_maxcpl[1]+1;
     p_loop_me = PHASIC::Virtual_ME2_Base::GetME2(loop_pi);
     if (!p_loop_me)  THROW(not_implemented, "Couldn't find RealVirtual ME for this process.");
     MODEL::s_model->GetCouplings(m_cpls);
@@ -58,6 +58,7 @@ double RealVirtual::Calc_V(const ATOOLS::Vec4D_Vector& p,
            const double mur)
   {
     double V(0.0), run_corr(0.0), scale(0.0);
+    if(!p_rvproc->Trigger(p)) return 0;
     // p_loop_me->SetRenScale(mur);
     if(aqed->m_mode!=vpmode::off) {
      if(m_tchannel) scale = -(p[0]-p[2]).Abs2();  
