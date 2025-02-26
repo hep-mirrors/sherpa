@@ -81,6 +81,7 @@ public:
   inline void SetMomentum(Vec4D_Vector &p) { m_plab = p;}
   inline void SetBornProc(PHASIC::Single_Process *p) {p_born = p;}
   inline void SetFSR(YFS::FSR *p) {p_fsr = p;}
+  inline bool HasReal() {return m_realtool;}
 };
 
 
