@@ -121,6 +121,7 @@ void NLO_Base::Init(Flavour_Vector &flavs, Vec4D_Vector &plab, Vec4D_Vector &bor
 
 double NLO_Base::CalculateNLO() {
 	double result{0.0};
+	// PRINT_VAR(m_looptool);
 	if(!m_real_only) result += CalculateVirtual();
 	if(!m_virtual_only) result += CalculateReal();
 	result += CalculateRealVirtual();
@@ -135,7 +136,8 @@ double NLO_Base::CalculateVirtual() {
 		// already present in eex!!
 		return p_dipoles->CalculateEEXVirtual()*m_born-m_born;
 	}
-	if (!m_looptool && !m_realvirt) return 0;
+	// if (!m_looptool && !m_realvirt) return 0;
+	if (!m_looptool) return 0;
 	double virt;
 	double sub;
 	p_dipoles->p_yfsFormFact->p_virt = p_virt->p_loop_me;
@@ -360,14 +362,16 @@ double NLO_Base::CalculateRealVirtual() {
 			if(k.E() < 0.2*sqrt(m_s)) continue;
 			CheckRealVirtualSub(k);
 		}
-		if(CheckPhotonForReal(k))	real+=CalculateRealVirtual(k,0);
+		// if(CheckPhotonForReal(k))	real+=CalculateRealVirtual(k,0);
+		real+=CalculateRealVirtual(k,0);
 	}
 	for (auto k : m_FSRPhotons) {
 		if(m_check_rv) {
 			if(k.E() < 0.2*sqrt(m_s)) continue;
 			CheckRealVirtualSub(k);
 		}
-		if(CheckPhotonForReal(k)) real+=CalculateRealVirtual(k, 1);
+		// if(CheckPhotonForReal(k)) real+=CalculateRealVirtual(k, 1);
+		real+=CalculateRealVirtual(k, 1);
 	}
 	// if(IsZero(real)) real = p_dipoles->CalculateRealSubEEX();
 	double realvirt = real;
@@ -638,7 +642,7 @@ double NLO_Base::CalculateRealReal(Vec4D k1, Vec4D k2, int fsr1, int fsr2){
 		return 0;
 	}
 	double r = p_realreal->Calc_R(p) / norm;
-	// if(IsZero(r)) return 0;
+	if(IsZero(r)) return 0;
 	if(IsBad(r) || IsBad(flux)) {
 		msg_Error()<<"Bad point for YFS Real"<<std::endl
 							 <<"Real ME is : "<<r<<std::endl
