@@ -61,6 +61,7 @@ double Virtual::Calc_V(const ATOOLS::Vec4D_Vector& p,
            const double mur)
   {
     p_loop_me->SetRenScale(100);
+    // if(!p_rvproc->Trigger(p)) return 0;
     double V(0.0), run_corr(0.0), scale(0.0);
     if(aqed->m_mode!=vpmode::off) {
      if(m_tchannel==2) scale = -(p[0]-p[2]).Abs2();  
