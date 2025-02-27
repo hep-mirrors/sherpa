@@ -35,8 +35,9 @@ SF_Lorentz* Splitting_Function_Base::InitLorentzCalc(const MODEL::Single_Vertex&
 						     const SF_Key& sf_key)
 {
   std::vector<int> spins;
-  for(const auto& fl : vertex.in) 
+  for(const auto& fl : vertex.in) {
     spins.push_back(fl.IntSpin());
+  }
   std::sort(spins.begin(),spins.end());
 
   SF_Lorentz* lf(NULL);
@@ -44,8 +45,10 @@ SF_Lorentz* Splitting_Function_Base::InitLorentzCalc(const MODEL::Single_Vertex&
     lf = SFL_Getter::GetObject("SSV",sf_key);
   else if(spins[0]==0 && spins[1]==2 && spins[2]==2)
     lf = SFL_Getter::GetObject("HVV",sf_key);
-  else if(spins[0]==1 && spins[1]==1 && spins[2]==2)
-    lf = SFL_Getter::GetObject("FFV1",sf_key);
+  else if(spins[0]==1 && spins[1]==1 && spins[2]==2) {
+    if ( vertex.in[2].IsJPsi() || vertex.in[1].IsJPsi()) lf = SFL_Getter::GetObject("FFV_Quarkonia",sf_key);
+    else lf = SFL_Getter::GetObject("FFV1",sf_key); 
+  } 
   else if(spins[0]==2 && spins[1]==2 && spins[2]==2)
     lf = SFL_Getter::GetObject("VVV",sf_key);
 
@@ -63,14 +66,12 @@ Splitting_Function_Base::Splitting_Function_Base(const SF_Key &key):
     ckey.p_cf=p_cf = SFC_Getter::GetObject(ckey.ID(1),ckey);
     if (p_cf==NULL) {
       m_on=-1;
-      msg_Out() << "Fuck up 1 -- ckey.ID(0)" << ckey.ID(0) << "\nckey.ID(1):  " << ckey.ID(1) << endl;
       return;
     }
   }
   p_lf = InitLorentzCalc(*ckey.p_v, ckey);
   if (p_lf==NULL) {
     m_on=-1;
-    msg_Out() << "Fuck up 2" << endl;
     return;
   }
   p_cf->SetLF(p_lf);
@@ -86,7 +87,7 @@ Splitting_Function_Base::Splitting_Function_Base(const SF_Key &key):
       (key.m_type==cstp::FF || key.m_type==cstp::FI)) m_symf=2.0;
   m_polfac=key.p_v->in[0].IntSpin()+1;
   if (key.p_v->in[0].IntSpin()==2 && IsZero(key.p_v->in[0].Mass())) m_polfac=2.0;
-  msg_Out()<<"Init("<<m_on<<") "<<p_lf->FlA()<<"->"
+  msg_Debugging()<<"Init("<<m_on<<") "<<p_lf->FlA()<<"->"
 		 <<p_lf->FlB()<<","<<p_lf->FlC()
 		 <<" => ("<<Demangle(typeid(*p_lf).name()).substr(10)
 		 <<","<<Demangle(typeid(*p_cf).name()).substr(10)

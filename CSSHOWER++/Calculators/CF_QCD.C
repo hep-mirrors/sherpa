@@ -315,9 +315,8 @@ operator()(const SFC_Filler_Key &key) const
       key.p_gets->push_back(new CF_QCD_Getter(atag+btag+ctag));
     }
   }
-  Flavour Meson_flav(kf_J_psi_1S);
-  Flavour Quark_flav(kf_c);
-  key.p_gets->push_back(new CF_QCD_Getter("{"+Quark_flav.IDName()+"}"+"{"+Quark_flav.IDName()+"}"+"{"+Meson_flav.IDName()+"}"));
+  key.p_gets->push_back(new CF_QCD_Getter("{"+Flavour(kf_c).IDName()+"}"+"{"+Flavour(kf_c).IDName()+"}"+"{"+Flavour(kf_J_psi_1S).IDName()+"}"));
+  key.p_gets->push_back(new CF_QCD_Getter("{"+Flavour(kf_c).Bar().IDName()+"}"+"{"+Flavour(kf_c).Bar().IDName()+"}"+"{"+Flavour(kf_J_psi_1S).IDName()+"}"));
   return NULL;
 }
 

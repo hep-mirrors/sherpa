@@ -61,7 +61,7 @@ void Sudakov::InitSplittingFunctions(Model_Base *md, const int kfmode) {
     for (SFC_Filler_Getter::Getter_List::const_iterator git(flist.begin());
          git != flist.end(); ++git)
       (*git)->GetObject(SFC_Filler_Key(md, &m_cgets));
-    if (msg_LevelIsDebugging()) {
+    if (true) {
       msg_Out() << METHOD << "(): {\n\n"
                 << "   // available coupling calcs\n\n";
       SFC_Getter::PrintGetterInfo(msg->Out(), 25);
@@ -175,7 +175,7 @@ void Sudakov::AddQuarkoniaSplittingFunctions(Model_Base *md, const int kfmode) {
   msg_Out()<<"============================================================\n"
      <<METHOD<<": so far "<<m_splittings.size()<<" splitting functions\n";
   Kabbala g3("g_3", sqrt(4. * M_PI * md->ScalarConstant("alpha_S")));
-  Kabbala cpl0 = 10*g3 * Kabbala("i", Complex(0., 1.));
+  Kabbala cpl0 = 10* g3 * Kabbala("i", Complex(0., 1.));
   Flavour Meson_flav(kf_J_psi_1S);
   Flavour Quark_flav(kf_c);
   // if (!flav.IsOn()) continue;
@@ -184,17 +184,17 @@ void Sudakov::AddQuarkoniaSplittingFunctions(Model_Base *md, const int kfmode) {
   v.AddParticle(Quark_flav);
   v.AddParticle(Meson_flav);
   v.Color.push_back(Color_Function(cf::D, 2, 1));
-  v.Lorentz.push_back("FFV");
+  v.Lorentz.push_back("FFV_Quarkonia");
   v.cpl.push_back(cpl0); //Check later
   v.order[0] = 1;
   Add(new Splitting_Function_Base(
       SF_Key(&v, 0, cstp::FF, kfmode, m_qcdmode, m_ewmode, 1, m_pdfmin)));
+  v.in[0] = v.in[0].Bar();
+  v.in[1] = v.in[1].Bar();
   Add(new Splitting_Function_Base(
-      SF_Key(&v, 0, cstp::FF, kfmode, m_qcdmode, m_ewmode, -1, m_pdfmin)));
-      msg_Out() << " added J/Psi splitting fun.\n" << endl;
-  // msg_Out()<<METHOD<<": by now "<<m_splittings.size()<<" splitting
-  // functions\n"
-  //	   <<"============================================================\n";
+      SF_Key(&v, 0, cstp::FF, kfmode, m_qcdmode, m_ewmode, 1, m_pdfmin)));
+  msg_Out()<<METHOD<<": by now "<<m_splittings.size()<<" splitting functions\n"
+  	   <<"============================================================\n";
 }
 
 void Sudakov::AddOctetMesonSplittingFunctions(Model_Base *md,
@@ -237,18 +237,18 @@ void Sudakov::AddOctetMesonSplittingFunctions(Model_Base *md,
 void Sudakov::AddGluonThresholds(Model_Base *md) {
   Running_AlphaS as = md->ScalarConstant("alpha_S");
   const double mc = ATOOLS::Flavour(kf_c).Mass(1);
-  list<kf_code> octetvectors = {kf_J_psi_1S_oct, kf_psi_2S_oct,
-                                kf_chi_c0_1P_oct, kf_chi_c1_1P_oct,
-                                kf_chi_c2_1P_oct};
+  list<kf_code> octetvectors = {kf_J_psi_1S_oct};//, kf_psi_2S_oct,
+                               // kf_chi_c0_1P_oct, kf_chi_c1_1P_oct,
+                               // kf_chi_c2_1P_oct};
   ST_Set *stset;
   m_stmap[Flavour(kf_gluon)] = stset = new ST_Set;
   map<kf_code, double> LDME = {
       // numerical LDME [GeV^3] from ph/9507398, PhysRevD.50.3176
-      {kf_J_psi_1S_oct, 1.5E-02},
-      {kf_psi_2S_oct, 4.3E-03},
-      {kf_chi_c0_1P_oct, 1 * 3E-03 * mc * mc},
-      {kf_chi_c1_1P_oct, 3 * 3E-03 * mc * mc},
-      {kf_chi_c2_1P_oct, 5 * 3E-03 * mc * mc}};
+      {kf_J_psi_1S_oct, 1.5E-02}};
+      // {kf_psi_2S_oct, 4.3E-03},
+      // {kf_chi_c0_1P_oct, 1 * 3E-03 * mc * mc},
+      // {kf_chi_c1_1P_oct, 3 * 3E-03 * mc * mc},
+      // {kf_chi_c2_1P_oct, 5 * 3E-03 * mc * mc}};
   double totalarg = 0;
   for (const auto &pair : LDME) {
     totalarg += pair.second;
@@ -458,6 +458,7 @@ int Sudakov::Generate(Parton *split, Parton *spect, double t0, double kt2win,
   switch (split->GetType()) {
   case pst::FS:
     if (spect->GetType() == pst::FS) {
+      msg_Out() << "Check" <<  endl;
       Q2 = (split->Momentum() + spect->Momentum()).Abs2();
       if (!DefineFFBoundaries(Q2, 1.))
         return false;
@@ -516,7 +517,7 @@ int Sudakov::Generate(Parton *split, Parton *spect, double t0, double kt2win,
   m_lastint = m_partint.back();
 
   t = split->KtStart();
-  msg_IODebugging() << "starting scale " << t << ", cutoff scale " << t0
+  msg_Out() << "starting scale " << t << ", cutoff scale " << t0
                     << "\n";
   if (p_spect == p_split->GetLeft() && t > p_split->KtSoft(0)) {
     msg_IODebugging() << "reset starting scale " << t << " -> "
@@ -529,7 +530,7 @@ int Sudakov::Generate(Parton *split, Parton *spect, double t0, double kt2win,
     t = split->KtSoft(1);
   }
   double x = 0.0;
-
+  msg_Out() << "  t: " << t << ", t0: " << t0 << ", kt2win: " << kt2win << endl;
   while (t >= Max(t0, kt2win)) {
     t = ProduceT(t);
     p_split->SetForcedSplitting(false);
