@@ -237,7 +237,7 @@ void Dipole::BoostNLO(ATOOLS::Vec4D &p) {
 
 void Dipole::Boost(ATOOLS::Vec4D &p) {
   p_Pboost->Boost(p);
-  // p_rotate.RotateBack(p);
+  p_rotate.RotateBack(p);
   // RandomRotate(p);
   p_boost.BoostBack(p);
   // PRINT_VAR(p_boost.PL());
@@ -307,8 +307,8 @@ bool Dipole::BoostNLO() {
     double sprim =(Q).Abs2()*y;
     Vec4D preboostk = m_photonSum;
     // if(IsBad(sprim)) return  false;
-    double m1 = m_momenta[0].Mass();
-    double m2 = m_momenta[1].Mass();
+    // double m1 = m_momenta[0].Mass();
+    // double m2 = m_momenta[1].Mass();
     // Vec4D rref = Q-m_photonSum;
     MakePair(sqrt(sprim), m_momenta[0], m_momenta[1]);
     // PHASIC::CE.Isotropic2Momenta(rref, m1*m1, m2*m2,m_momenta[0], m_momenta[1],ran->Get(), ran->Get());
@@ -335,6 +335,30 @@ bool Dipole::BoostNLO() {
       m_photonSum+=k;
     }
     if (p_Pboost) delete p_Pboost;
+    for (int i = 0; i < 2; ++i)
+    {
+      for(int j = 0; j < 4; ++j){
+        double k = m_newmomenta[i][j];
+        if(IsBad(k)){
+         msg_Error()<<"NLO Boost Failed"<<std::endl
+                    <<"For photon = "<<m_photonSum<<std::endl;
+        PRINT_VAR(m_dipolePhotons);
+        PRINT_VAR(ref);
+        PRINT_VAR(m_newmomenta);
+        PRINT_VAR(qqk);
+        PRINT_VAR(preboostk);
+        PRINT_VAR(sqrt(sprim));
+        PRINT_VAR(m_photonscale);
+        PRINT_VAR(y);
+        PRINT_VAR(Q);
+         return false; 
+        }
+      }
+    }
+    // if(IsBad(m_newmomenta[0]) || IsBad(m_newmomenta[1]) ){
+    //   msg_Error()<<"NLO Boost Failed"<<std::endl;
+    //   return false;
+    // }
     return true;
   }
   return true;
