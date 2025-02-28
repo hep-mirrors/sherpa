@@ -418,13 +418,13 @@ double NLO_Base::CalculateRealVirtual(Vec4D k, int fsrcount) {
 	CheckMasses(p, 1);
 	Vec4D_Vector pp = p;
  	pp.pop_back();
- 	Vec4D kzero = k*0.0;
- 	MapMomenta(pp, kzero);
+ 	// Vec4D kzero = k*0.0;
+ 	// MapMomenta(pp, kzero);
  	Flavour_Vector fl = m_flavs;
- 	fl.push_back(kf_photon);
-	p_nlodipoles->MakeDipolesII(fl,p,p);
-	p_nlodipoles->MakeDipolesIF(fl,p,p);
-	p_nlodipoles->MakeDipoles(fl,p,p);
+ 	// fl.push_back(kf_photon);
+	p_nlodipoles->MakeDipolesII(fl,pp,pp);
+	p_nlodipoles->MakeDipolesIF(fl,pp,pp);
+	p_nlodipoles->MakeDipoles(fl,pp,pp);
 	// p.push_back(k);
 	// m_plab = pp;
 	p_nlodipoles->p_yfsFormFact->p_virt = p_realvirt->p_loop_me;
@@ -551,17 +551,21 @@ double NLO_Base::CalculateRealReal(Vec4D k1, Vec4D k2, int fsr1, int fsr2){
 	Vec4D kk2 = k2;
 	dipoletype::code fluxtype1 = p_nlodipoles->WhichResonant(k1);
 	dipoletype::code fluxtype2 = p_nlodipoles->WhichResonant(k2);
+	p_nlodipoles->MakeDipoles(m_flavs,m_plab,m_plab);
 	// fsr1 = (fluxtype1==dipoletype::final?1:0);
 	// fsr2 = (fluxtype2==dipoletype::final?1:0);
   if(fsr1 && !fsr2){
   	if(!HasFSR()) msg_Error()<<"Wrong dipole type in "<<METHOD<<endl;
   	for (Dipole_Vector::iterator Dip = p_nlodipoles->GetDipoleFF()->begin();
        Dip != p_nlodipoles->GetDipoleFF()->end(); ++Dip) {
+  		 Dip->ClearPhotons();
   		 double scalek = p_fsr->ScalePhoton(k1);
   		 Dip->SetPhotonScale(scalek);
   		 Dip->AddPhotonToDipole(k1);
   		 if(!Dip->BoostNLO()) {
-  		 	msg_Error()<<"NLO boost failed" <<endl;
+  		 	msg_Error()<<"NLO boost failed" <<endl
+  		 						<<"k1 = "<<k1<<endl
+  		 						<<"k2 = "<<k2<<endl;
   		 	return 0;
   		 }
   		 int i(0);
@@ -584,7 +588,9 @@ double NLO_Base::CalculateRealReal(Vec4D k1, Vec4D k2, int fsr1, int fsr2){
   		 Dip->SetPhotonScale(scalek);
   		 Dip->AddPhotonToDipole(k2);
   		 if(!Dip->BoostNLO()) {
-  		 	msg_Error()<<"NLO boost failed" <<endl;
+  		 	msg_Error()<<"NLO boost failed" <<endl
+  		 						<<"k1 = "<<k1<<endl
+  		 						<<"k2 = "<<k2<<endl;
   		 	return 0;
   		 }
   		 int i(0);
@@ -605,11 +611,14 @@ double NLO_Base::CalculateRealReal(Vec4D k1, Vec4D k2, int fsr1, int fsr2){
        Dip != p_nlodipoles->GetDipoleFF()->end(); ++Dip) {
   		 double scalek = p_fsr->ScalePhoton(k1+k2);
   		 // scalek += p_fsr->ScalePhoton(k2);
+  		 Dip->ClearPhotons();
   		 Dip->SetPhotonScale(scalek);
   		 Dip->AddPhotonToDipole(k1);
   		 Dip->AddPhotonToDipole(k2);
   		 if(!Dip->BoostNLO()) {
-  		 	msg_Error()<<"NLO boost failed" <<endl;
+  		 	msg_Error()<<"NLO boost failed" <<endl
+  		 							<<"k1 = "<<k1<<endl
+  		 						<<"k2 = "<<k2<<endl;
   		 	return 0;
   		 }
   		 int i(0);
@@ -636,12 +645,13 @@ double NLO_Base::CalculateRealReal(Vec4D k1, Vec4D k2, int fsr1, int fsr2){
 	double subloc2 = p_nlodipoles->CalculateRealSub(k2);
 	double flux;
 	if(m_flux_mode==1) flux = p_nlodipoles->CalculateFlux(k1)*p_nlodipoles->CalculateFlux(k2);
+	// if(m_flux_mode==1) flux = p_nlodipoles->CalculateFlux(k1,k2);
 	else flux = p_dipoles->CalculateFlux(k1)*p_dipoles->CalculateFlux(k2);
 	double tot,rcoll;
 	if(!CheckMomentumConservation(p)) {
 		return 0;
 	}
-	double r = p_realreal->Calc_R(p) / norm;
+	double r = p_realreal->Calc_R(p) / norm ;
 	if(IsZero(r)) return 0;
 	if(IsBad(r) || IsBad(flux)) {
 		msg_Error()<<"Bad point for YFS Real"<<std::endl
