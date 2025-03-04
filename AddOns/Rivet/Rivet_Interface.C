@@ -481,9 +481,11 @@ bool Rivet_Interface::Finish()
           std::vector<double> filtered_data;
           filtered_data.reserve(datalen);
           const double level = std::stod(threshold);
+          bool has_outlier = false;
           for (size_t i = 0; i < datalen; ++i) {
             if (std::abs(data[i] - mean[i]) > level * stddev[i]) {
               filtered_data.push_back(0.0);  // exclude outlier
+              has_outlier = true;
             }
             else  filtered_data.push_back(data[i]);
           }
@@ -492,8 +494,31 @@ bool Rivet_Interface::Finish()
           if (mpi->Rank()==0) {
             // Lazily initialise a new AnalysisHandler
             // and populate it with the filtered data
-            const std::string newlabel = it.first.first+"thr="+threshold;
+            const std::string newlabel = it.first.first+"thr="+threshold+".rmbin";
             GetRivet(newlabel,it.first.second,&m_lastevent)->deserializeContent(filtered_data,(size_t)mpi->Size());
+          }
+          // Let's also write out the version that removes the entire rank,
+          // e.g. if the outlier also affected the total sum of weights
+          int vetoed_ranks = 0;
+          if (has_outlier) {
+            std::fill(filtered_data.begin(), filtered_data.end(), 0.0);
+            vetoed_ranks = 1;
+          }
+          else if (mpi->Rank()==0) {
+            // undo MPI-reduction for the root rank
+            for (size_t i = 0; i < datalen; ++i) {
+              filtered_data[i] = data[i];
+            }
+          }
+          // Re-perform MPI_Reduce to compute the filtered sum
+          mpi->Reduce(filtered_data.data(),datalen,MPI_DOUBLE,MPI_SUM);
+          mpi->Reduce(&vetoed_ranks,1,MPI_INT,MPI_SUM);
+          if (mpi->Rank()==0) {
+            // Lazily initialise a new AnalysisHandler
+            // and populate it with the filtered data
+            const std::string newlabel = it.first.first+"thr="+threshold+".rmrank";
+            size_t nRanks = mpi->Size()-vetoed_ranks;
+            GetRivet(newlabel,it.first.second,&m_lastevent)->deserializeContent(filtered_data,nRanks);
           }
         }
       }
