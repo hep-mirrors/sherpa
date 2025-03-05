@@ -18,6 +18,7 @@ std::ofstream rr_out, out_ps_rr, out_mom_rr;
 
 RealReal::RealReal(const PHASIC::Process_Info& pi)  {
   p_real_me = NULL;
+  p_rrproc = NULL;
   Scoped_Settings s{ Settings::GetMainSettings()["YFS"] };
   std::string gen = s["RR_Generator"].SetDefault("").Get<std::string>();
   m_check = s["Compare_RR"].SetDefault(0).Get<bool>();
@@ -34,7 +35,7 @@ RealReal::RealReal(const PHASIC::Process_Info& pi)  {
      p_real_me =  PHASIC::Tree_ME2_Base::GetME2(args);
      if (!p_real_me)  {
       msg_Error()<<real_pi;
-      THROW(not_implemented, "Couldn't find real ME for this process.");
+      THROW(not_implemented, "Couldn't find Real-Real ME for this process.");
     }
      MODEL::s_model->GetCouplings(m_cpls);
      p_real_me->SetCouplings(m_cpls);
