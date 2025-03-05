@@ -14,7 +14,9 @@
 #include "ATOOLS/Org/Settings.H"
 
 #include <string>
-
+#include <cmath>
+#include <iostream>
+#include <numbers>
 using namespace BEAM;
 using namespace ATOOLS;
 using string = std::string;
@@ -528,6 +530,46 @@ double EPA_WoodSaxon::CalculateDensity()
 double EPA_WoodSaxon::operator()(const double& x, const double& Q2)
 {
   return (1. - x) * (1. - Q2min(x) / Q2) * (*p_FF_Q2)(Q2);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+//
+// Dummy test class for the Ion FF in the Electric Dipole approximation using
+// the analytical expression from 2207.03012, eq. 3.3
+//
+////////////////////////////////////////////////////////////////////////////////
+
+EPA_testIon::EPA_testIon(const ATOOLS::Flavour& beam, const int dir)
+    : EPA_FF_Base(beam, dir)
+{
+  msg_Out() << "K_1(1.) = " << std::cyl_bessel_k(1, 1.) << std::endl;
+}
+
+double EPA_testIon::operator()(const double& x, const double& Q2)
+{
+  return 1.;
+}
+
+double EPA_testIon::N(const double& x, const double& b)
+{
+  // Analytically integrated out the b
+  //double chi = x * m_mass * m_R;
+  //return 2 / x * (chi * std::cyl_bessel_k(1, chi) * std::cyl_bessel_k(0, chi)
+  //    - sqr(chi)/2. * (sqr(std::cyl_bessel_k(1, chi)) - sqr(std::cyl_bessel_k(0, chi))));
+
+  double bmin = 1., bmax = 1e5;
+  // sampling b by 1/b**2
+  //double bt = (bmax*bmin)/(bmax + ATOOLS::ran->Get() * (bmin - bmax));
+  //double wt = sqr(bt) * (1. / bmin - 1. / bmax);
+  // sampling b by 1/b
+  double bt = bmin * std::pow( bmax / bmin, ATOOLS::ran->Get());
+  double wt = bt * std::log(bmax / bmin);
+
+  double chi = x * m_mass * bt * m_R;
+  wt *= 2 * bt * sqr(m_R) * x * sqr(m_mass) * sqr(std::cyl_bessel_k(1, chi));
+  // correction term seems to be negligible
+  //wt *= 2 * bt * sqr(m_R) * x * sqr(m_mass) * (sqr(std::cyl_bessel_k(1, chi)) + sqr(m_mass / 3500) * sqr(std::cyl_bessel_k(0, chi)));
+  return wt;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
