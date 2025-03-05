@@ -538,7 +538,7 @@ Weights_Map Single_Process::Differential(const Vec4D_Vector& p,
     if(p_int->YFS()->NLO()->HasReal()){
       if(this==p_int->YFS()->NLO()->p_real->p_realproc) return YFSDifferential(p,varmode);
     }
-    if(p_int->YFS()->NLO()->p_realreal){
+    if(p_int->YFS()->NLO()->HasRR()){
       if(this==p_int->YFS()->NLO()->p_realreal->p_rrproc) return YFSDifferential(p,varmode);
     }
   }
