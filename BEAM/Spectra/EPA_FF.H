@@ -3,6 +3,7 @@
 
 #include "ATOOLS/Math/Function_Base.H"
 #include "ATOOLS/Math/Lookup_Tables.H"
+#include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Phys/Flavour.H"
 #include "ATOOLS/Org/Message.H"
 #include <fstream>
@@ -22,6 +23,7 @@ namespace BEAM {
     dipole       = 12,
     dipoleApprox = 13,
     WoodSaxon    = 14,
+    testIon      = 15,
     Test         = 99
   };
 
@@ -237,6 +239,16 @@ namespace BEAM {
     void   FillTables(const size_t& nx, const size_t& nb) override;
     double operator()(const double& x, const double& Q2) override;
     double FF(const double& Q2) override { return (*p_FF_Q2)(Q2); }
+  };
+
+  class EPA_testIon final : public EPA_FF_Base {
+  public:
+    EPA_testIon(const ATOOLS::Flavour& beam, int dir);
+    void   FillTables(const size_t& nx, const size_t& nb) override {};
+    double SelectB(double x) override { return 0.; };
+    double operator()(const double& x, const double& Q2) override;
+    double N(const double& x, const double& b) override;
+    double FF(const double& Q2) override { return 0.; }
   };
 
   class EPA_Test final : public EPA_FF_Base {
