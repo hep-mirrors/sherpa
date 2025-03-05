@@ -83,12 +83,12 @@ DivArrD YFS_Form_Factor::BVR_full_eps(YFS::Dipole &d,  double Kmax, int mode) {
     p2 = d.GetNewMomenta(1);
   }
   else if(d.Type()==dipoletype::final){
-    p1 = d.GetBornMomenta(0);
-    p2 = d.GetBornMomenta(1);
+    p1 = d.GetNewMomenta(0);
+    p2 = d.GetNewMomenta(1);
   }
   else if(d.Type()==dipoletype::ifi){
-    p1 = d.GetBornMomenta(1);
-    p2 = d.GetBornMomenta(0);
+    p1 = d.GetNewMomenta(1);
+    p2 = d.GetNewMomenta(0);
   }
   else{
     msg_Error()<<"Unknown Dipole type"<<std::endl;
@@ -106,8 +106,8 @@ DivArrD YFS_Form_Factor::BVR_full_eps(YFS::Dipole &d,  double Kmax, int mode) {
   double beta1 = sqrt(1. - sqr(Mas1 / E1));
   double beta2 = sqrt(1. - sqr(Mas2 / E2));
   double rho = sqrt(1 - sqr(m12 / p1p2));
-  double irloop = 100;//p_virt->IRscale();
-  double epsloop = 4.0*M_PI;//p_virt->Eps_Scheme_Factor({p1,p2});
+  double irloop = p_virt->IRscale();
+  double epsloop = p_virt->Eps_Scheme_Factor({p1,p2});
   DivArrD massph(0,-1,0,0,0,0);
   t1 = (p1p2 * A(p1p2, Mas1, Mas2) - 1) * (massph-log(4.*M_PI*sqr(irloop)/4./Kmax/epsloop));
   if ( mode == 0 ) {
@@ -433,7 +433,7 @@ DivArrD YFS_Form_Factor::BVV_full_eps(YFS::Dipole &d, double Kmax, int mode){
     p2 = d.GetBornMomenta(1);
   }
   else if(d.Type()==dipoletype::ifi){
-    p1 = d.GetBornMomenta(1);
+    p1 = d.GetNewMomenta(1);
     p2 = d.GetBornMomenta(0);
   }
   else{
@@ -466,7 +466,7 @@ DivArrD YFS_Form_Factor::BVV_full_eps(YFS::Dipole &d, double Kmax, int mode){
   // PRINT_VAR(irloop);
   // PRINT_VAR(epsloop);
   double logarg = (p1p2 * (1. + rho) / m12) / rho;
-  t1 = (log1p(logarg-1) -1.) *  (massph+log(4.*M_PI*sqr(irloop)/m12/epsloop));
+  t1 = (p1p2 * A(p1p2, Mas1, Mas2) -1.) *  (massph+log(4.*M_PI*sqr(irloop)/m12/epsloop));
   // if(logarg < 1e-2) t1 = (log1p(logarg-1) -1.) *  (massph+log(4.*M_PI*sqr(irloop)/m12/epsloop));
   // else t1 = (log(logarg) - 1.) *  (massph+log(4.*M_PI*sqr(irloop)/m12/epsloop));
   // t1 = (log(sqr(MasPhot)/sqr(250)));
@@ -477,6 +477,7 @@ DivArrD YFS_Form_Factor::BVV_full_eps(YFS::Dipole &d, double Kmax, int mode){
   t3 -= DiLog(zeta1) + DiLog(zeta2);
   t3 += sqr(M_PI);
   t3 /= rho;
+  if(m_tchannel==1) return m_alpi * (t1 + t2 + t3) + BVirtT(d);
   return m_alpi * (t1 + t2 + t3);
 }
 
@@ -654,7 +655,8 @@ double YFS_Form_Factor::BVirtT(Vec4D p1, Vec4D p2,  double kmax){
   double ta = fabs(t);
   double zeta = 1 + M*M/ta;
   double TBvirt, Bv;
-  double rho = sqrt(1. - sqr(m1*m2 / (p1*p2)));
+  // double rho = sqrt(1. - sqr(m1*m2 / (p1*p2)));
+  double rho = sqrt((1. - (m1*m2 / (p1*p2)))*(1. + (m1*m2 / (p1*p2))));
   TBvirt = m_alpi*(
     (log(p1p2 * (1. + rho) / (m1*m2)) / rho - 1) *log(pow(m_photonMass, 2)/(kmax)) 
        // (log(2*p1p2/(m1*m2))-1.0)*log(m_photonMass*m_photonMass/(m1*m2))
