@@ -97,6 +97,7 @@ void EPA::Initialise()
     case EPA_ff_type::dipoleApprox:
       p_ff = new EPA_DipoleApprox(m_beam, m_dir);
       break;
+    case EPA_ff_type::testIon: p_ff = new EPA_testIon(m_beam, m_dir); break;
     case EPA_ff_type::WoodSaxon: p_ff = new EPA_WoodSaxon(m_beam, m_dir); break;
     default: THROW(not_implemented, "unknown EPA form factor. ");
   }
