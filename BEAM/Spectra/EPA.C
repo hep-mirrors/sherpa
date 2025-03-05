@@ -39,7 +39,6 @@ bool EPA::CalculateWeight(double x, double q2)
 {
   m_x      = x;
   m_q2     = q2;
-  m_b      = p_ff->SelectB(x);
   m_weight = (x > m_xmin && x < m_xmax)
                      ? ATOOLS::Max(0., m_pref * p_ff->N(x, m_b))
                      : 0.;
@@ -50,8 +49,8 @@ bool EPA::CalculateWeight(double x, double q2)
 
 void EPA::FixPosition()
 {
-  double R = p_ff->SelectB(m_x), phi = 2. * M_PI * ran->Get();
-  m_position = R * Vec4D(0., cos(phi), sin(phi), 0.);
+  double phi = 2. * M_PI * ran->Get();
+  m_position = p_ff->ImpactParameter() * Vec4D(0., cos(phi), sin(phi), 0.);
 }
 
 void EPA::SetOutMomentum(const ATOOLS::Vec4D& out)
@@ -97,6 +96,7 @@ void EPA::Initialise()
     case EPA_ff_type::dipoleApprox:
       p_ff = new EPA_DipoleApprox(m_beam, m_dir);
       break;
+    case EPA_ff_type::testIon: p_ff = new EPA_testIon(m_beam, m_dir); break;
     case EPA_ff_type::WoodSaxon: p_ff = new EPA_WoodSaxon(m_beam, m_dir); break;
     default: THROW(not_implemented, "unknown EPA form factor. ");
   }
