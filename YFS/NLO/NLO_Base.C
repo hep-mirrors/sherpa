@@ -21,6 +21,9 @@ static double SqLam(double x,double y,double z)
 NLO_Base::NLO_Base() {
   p_yfsFormFact = new YFS::YFS_Form_Factor();
   p_nlodipoles = new YFS::Define_Dipoles();
+  p_real = NULL;
+  p_virt = NULL;
+  p_realvirt = NULL;
   m_evts = 0;
   m_recola_evts = 0;
   m_realtool = 0;
@@ -82,8 +85,9 @@ NLO_Base::~NLO_Base() {
 	// PRINT_VAR(massmin)
 	if(p_yfsFormFact) delete p_yfsFormFact;
 	if(p_nlodipoles) delete p_nlodipoles;
-	// if(p_real) delete p_real;
-	// if(p_virt) delete p_virt;
+	if(p_realvirt) delete p_realvirt;
+	if(p_real) delete p_real;
+	if(p_virt) delete p_virt;
 }
 
 
@@ -101,6 +105,7 @@ void NLO_Base::InitializeReal(const PHASIC::Process_Info& pi) {
 }
 
 void NLO_Base::InitializeRealVirtual(const PHASIC::Process_Info& pi) {
+	// if(m_realvirt)
 	p_realvirt = new YFS::RealVirtual(pi);
 	m_realvirt = true;
 	// m_looptool = true;
@@ -120,12 +125,20 @@ void NLO_Base::Init(Flavour_Vector &flavs, Vec4D_Vector &plab, Vec4D_Vector &bor
 
 
 double NLO_Base::CalculateNLO() {
-	double result{0.0};
+	double result{0.0}, virt, real, rv, rr;
 	// PRINT_VAR(m_looptool);
 	if(!m_real_only) result += CalculateVirtual();
+	virt = result;
 	if(!m_virtual_only) result += CalculateReal();
+	real = result-virt;
 	result += CalculateRealVirtual();
+	rv = result - real - virt;
 	result += CalculateRealReal();
+	rr = result - real - virt - rv;
+		// PRINT_VAR(virt);
+		// PRINT_VAR(real);
+		// PRINT_VAR(rr);
+		// PRINT_VAR(rv);
 	return result;
 }
 
@@ -172,7 +185,7 @@ double NLO_Base::CalculateVirtual() {
 		if(m_virt_sub==0) sub = p_dipoles->CalculateVirtualSub();
 		double p1 = p_virt->p_loop_me->ME_E1()*p_virt->m_factor;
 		double yfspole = p_dipoles->Get_E1();
-		int ncorrect = ::countMatchingDigits(p1, -yfspole);
+		int ncorrect = ::countMatchingDigits(p1, -yfspole, 20);
 		double reldiff = (p1+yfspole)/p1;
 		m_histograms1d["SinglePoleCD"]->Insert(ncorrect);
 		m_histograms1d["OneLoopEpsYFS"]->Insert(log10(fabs(yfspole)));
@@ -189,7 +202,7 @@ double NLO_Base::CalculateVirtual() {
 		}
 		else{
 			int i = 0;
-			msg_Debugging()<<std::setprecision(16);
+			msg_Debugging()<<std::setprecision(20);
 			msg_Out()<<"Poles cancel in YFS Virtuals to "<<ncorrect<<" digits"<<std::endl
 					 		<<"Relative diff =  "<<reldiff<<std::endl;
 			msg_Out()<<"PhaseSpace point: "<<std::endl;
@@ -374,7 +387,6 @@ double NLO_Base::CalculateRealVirtual() {
 		real+=CalculateRealVirtual(k, 1);
 	}
 	// if(IsZero(real)) real = p_dipoles->CalculateRealSubEEX();
-	double realvirt = real;
 	return real;
 }
 
@@ -415,16 +427,16 @@ double NLO_Base::CalculateRealVirtual(Vec4D k, int fsrcount) {
  	double yfspole;
  	p.push_back(k);
  	if(fsrcount) MapInitial(p);
-	CheckMasses(p, 1);
+	// CheckMasses(p, 1);
 	Vec4D_Vector pp = p;
  	pp.pop_back();
  	// Vec4D kzero = k*0.0;
  	// MapMomenta(pp, kzero);
  	Flavour_Vector fl = m_flavs;
  	// fl.push_back(kf_photon);
-	p_nlodipoles->MakeDipolesII(fl,pp,pp);
-	p_nlodipoles->MakeDipolesIF(fl,pp,pp);
-	p_nlodipoles->MakeDipoles(fl,pp,pp);
+	p_nlodipoles->MakeDipolesII(fl,pp,m_plab);
+	p_nlodipoles->MakeDipolesIF(fl,pp,m_plab);
+	p_nlodipoles->MakeDipoles(fl,pp,m_plab);
 	// p.push_back(k);
 	// m_plab = pp;
 	p_nlodipoles->p_yfsFormFact->p_virt = p_realvirt->p_loop_me;
@@ -449,24 +461,23 @@ double NLO_Base::CalculateRealVirtual(Vec4D k, int fsrcount) {
 	}
 	// m_plab = pp;
 	double aB = subloc*m_oneloop;//CalculateVirtual();
+	// double aB = subloc*CalculateVirtual();
 	// double aB = subloc*(p_virt->Calc(pp, m_born) - m_born*p_nlodipoles->CalculateVirtualSub());
 	yfspole*=aB;
 	// yfspole*=(p_virt->p_loop_me->ME_E1()*p_virt->m_factor-m_born*p_nlodipoles->Get_E1());
 	// double tot = (r-aB) / subloc;
-	if(m_submode==submode::local) tot =  (r*flux-aB)/subloc;
-	else if(m_submode==submode::global) tot =  (r*flux-aB)/subb;
+	if(m_submode==submode::local) tot =  (r*flux-aB/m_rescale_alpha)/subloc;
+	else if(m_submode==submode::global) tot =  (r*flux-aB/m_rescale_alpha)/subb;
 	else if(m_submode==submode::off) tot =  (r*flux)/subb;
 	// // real += tot;
 	// PRINT_VAR(r);
 	// PRINT_VAR(r*flux-aB);
 	// PRINT_VAR(subloc);
 	// PRINT_VAR(subb);
-	// PRINT_VAR(tot);
+	PRINT_VAR(tot);
 	if(m_check_poles==1){
 		double pr1 = p_realvirt->p_loop_me->ME_E1()*p_realvirt->m_factor*flux/norm;
 		double pr2 = p_realvirt->p_loop_me->ME_E1()*p_realvirt->m_factor;
-		double p1 = p_virt->p_loop_me->ME_E1()*p_virt->m_factor;
-		double diff = pr1-p1;
 		// yfspole = p_nlodipoles->Get_E1();
 		double yfspoleV = p_dipoles->Get_E1();
 		double correctdigit = ::countMatchingDigits(pr2, -p_nlodipoles->Get_E1());
@@ -477,37 +488,15 @@ double NLO_Base::CalculateRealVirtual(Vec4D k, int fsrcount) {
 			msg_Out()<<"Poles do not cancel in YFS Real-Virtuals"<<std::endl
 					 <<"Process =  "<<p_realvirt->p_loop_me->Name()<<std::endl
 					 <<"Correct Digits =  "<<correctdigit<<std::endl
-					 <<"One-Loop Provider V eps^{-1} = "<<p1<<std::endl
 					 <<"One-Loop Provider RV eps^{-1}  = "<<pr2<<std::endl
-					 <<"One-Loop Provider RV*flux eps^{-1}  = "<<pr2*flux<<std::endl
-					 <<"One-Loop Provider RV*flux/norm eps^{-1}  = "<<pr1<<std::endl
-					 <<"One-Loop Provider ME_E2() eps^{-1} = "<<p_virt->p_loop_me->ME_E2()<<std::endl
-					 <<"One-Loop Provider RV*flux eps^{-1} = "<<pr1*flux<<std::endl
-					 <<"One-Loop Provider RV*Rescale eps^{-1}  = "<<pr2*m_rescale_alpha<<std::endl
-					 <<"One-Loop Provider RV/Rescale eps^{-1}  = "<<pr2/m_rescale_alpha<<std::endl
-					 <<"One-Loop Provider RVsubloc/subb eps^{-1}  = "<<pr1*subloc/subb<<std::endl
-					 <<"One-Loop Provider RVsubb/subloc eps^{-1}  = "<<pr1*subb/subloc<<std::endl
-					 <<"One-Loop Provider RV-V  = "<<diff<<std::endl
-					 <<"Sherpa V eps^{-1}  = "<<yfspoleV<<std::endl
-					 <<"Sherpa RV eps^{-1} = "<<p_nlodipoles->Get_E1()<<std::endl
-					 <<"Sherpa RV*Rescale eps^{-1} = "<<p_nlodipoles->Get_E1()*m_rescale_alpha<<std::endl
-					 <<"Sherpa RV/Rescale eps^{-1} = "<<p_nlodipoles->Get_E1()/m_rescale_alpha<<std::endl
-					 <<"Sherpa RV ps^{-1} = "<<p_nlodipoles->Get_E1()*m_oneloop<<std::endl
-					 <<"Sherpa RVsubloc/subb eps^{-1} = "<<yfspole*subloc/subb<<std::endl
-					 <<"Sherpa RVsubb/subloc eps^{-1} = "<<yfspole*subb/subloc<<std::endl
-					 <<"Sherpa RV-V eps^{-1} = "<<yfspole-yfspoleV<<std::endl
-					 <<"One-Loop Norm eps^{-1} = "<<p_realvirt->m_factor<<std::endl
-					 <<"Sherpa-One-loop eps^{-1} = "<<yfspole-pr1<<std::endl
-					 <<"Sherpa/One-loop eps^{-1} = "<<yfspole/pr1<<std::endl;
+					 <<"Sherpa RV eps^{-1} = "<<p_nlodipoles->Get_E1()<<std::endl;
 			return 0;
 		}
 		else{
 			msg_Out()<<std::setprecision(16)<<"Poles cancel in YFS Real-Virtuals"<<std::endl
 						<<"Process =  "<<p_realvirt->p_loop_me->Name()<<std::endl
 						<<"Correct Digits =  "<<correctdigit<<std::endl
-						<<"One-Loop Provider V eps^{-1} = "<<p1<<std::endl
 					 	<<"One-Loop Provider RV eps^{-1}  = "<<pr2<<std::endl
-			 			<<"Sherpa V eps^{-1} = "<<yfspoleV<<std::endl
 			 			<<"Sherpa RV eps^{-1} = "<<p_nlodipoles->Get_E1()<<std::endl;
 		}
 	}
