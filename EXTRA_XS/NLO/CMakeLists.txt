@@ -7,10 +7,12 @@ set(NLO_SOURCES Logarithms.C
                 Higgs_Jet_QCD_Virtual.C
                 PionPionGamma.C
                 ee3jet_CSS_approx.C
+                ee2nunuA.C
                 ppll1jet_CSS_approx.C
                 epe2jet_CSS_approx.C)
 
 set(NLO_HEADERS Logarithms.H)
+
 
 if (SHERPA_ENABLE_LOOPTOOLS) 
     list(APPEND NLO_SOURCES PionPionVirtual.C)
@@ -19,6 +21,7 @@ endif()
 sherpa_create_git_info(NLO)
  
 add_library(ExtraXSNLO SHARED ${NLO_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
+sherpa_handle_shared_library(ExtraXSNLO ExtraXSNLO)
 if (SHERPA_ENABLE_LOOPTOOLS) 
     list(APPEND NLO_SOURCES emu_emu_Virtual.C)
     target_include_directories(ExtraXSNLO  PRIVATE ${LOOPTOOLS_DIRS}/include)
