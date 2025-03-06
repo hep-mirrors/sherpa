@@ -82,7 +82,6 @@ Real::Real(const PHASIC::Process_Info& pi)  {
 }
 
 Real::~Real() {
-  PRINT_VAR(maxpt);
   if(m_check){
     string name;
     Histogram * histo1d;
