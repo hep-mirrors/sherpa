@@ -106,7 +106,7 @@ DivArrD YFS_Form_Factor::BVR_full_eps(YFS::Dipole &d,  double Kmax, int mode) {
   double beta1 = sqrt(1. - sqr(Mas1 / E1));
   double beta2 = sqrt(1. - sqr(Mas2 / E2));
   double rho = sqrt(1 - sqr(m12 / p1p2));
-  double irloop = p_virt->IRscale();
+  double irloop = m_irscale;//p_virt->IRscale();
   double epsloop = p_virt->Eps_Scheme_Factor({p1,p2});
   DivArrD massph(0,-1,0,0,0,0);
   t1 = (p1p2 * A(p1p2, Mas1, Mas2) - 1) * (massph-log(4.*M_PI*sqr(irloop)/4./Kmax/epsloop));
@@ -127,7 +127,8 @@ DivArrD YFS_Form_Factor::BVR_full_eps(YFS::Dipole &d,  double Kmax, int mode) {
   if (IsBad(t1.Finite()) || IsBad(t2) || IsBad(t3)) {
     msg_Error() << METHOD << "\n"
                 << "YFS Form Factor is NaN"
-                << "\n T2    = " << p1p2*AA4
+                << "\n T1    = " << t1.Finite()
+                << "\n T2    = " << t2
                 << "\n T3    = " << t3 * 0.5
                 << "\n E1    = " << E1
                 << "\n E2    = " << E2
@@ -136,6 +137,11 @@ DivArrD YFS_Form_Factor::BVR_full_eps(YFS::Dipole &d,  double Kmax, int mode) {
                 << "\n Kmax = " << Kmax
                 << "\n M12 = " << m12
                 << "\n A4 = " << AA4
+                << "\n  A(p1p2, Mas1, Mas2) = "<<  A(p1p2, Mas1, Mas2)
+                << "\n p1  = " << p1
+                << "\n p2  = " << p2
+                << "\n irloop  = " << irloop
+                << "\n epsloop  = " << epsloop
                 << "\n p1p2  = " << p1p2;
   }
   return m_alpi * (t1 + t2 + 0.5 * t3);
@@ -460,11 +466,6 @@ DivArrD YFS_Form_Factor::BVV_full_eps(YFS::Dipole &d, double Kmax, int mode){
   // t1 = (1./rho*A(p1p2,Mas1,Mas2)-1.)*2.*log(2.*Kmax/MasPhot);
   double irloop = p_virt->IRscale();
   double epsloop = p_virt->Eps_Scheme_Factor({p1,p2});
-  // if(IsZero(irloop)){
-  //   if(p_virt->fixedIRscale()) irloop =   
-  // }
-  // PRINT_VAR(irloop);
-  // PRINT_VAR(epsloop);
   double logarg = (p1p2 * (1. + rho) / m12) / rho;
   t1 = (p1p2 * A(p1p2, Mas1, Mas2) -1.) *  (massph+log(4.*M_PI*sqr(irloop)/m12/epsloop));
   // if(logarg < 1e-2) t1 = (log1p(logarg-1) -1.) *  (massph+log(4.*M_PI*sqr(irloop)/m12/epsloop));
