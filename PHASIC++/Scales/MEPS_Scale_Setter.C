@@ -259,8 +259,8 @@ bool MEPS_Scale_Setter::CheckOrdering
       ampl->Prev()->Prev()==NULL) return true;
   if (ampl->KT2()<ampl->Prev()->KT2()) {
     if ((m_cmode&256) &&
-	(ampl->OrderQCD()==0 ||
-	 (ampl->OrderQCD()>1 && ampl->Legs().size()==3))) {
+	(ampl->OrderQCD()==(m_vproc?1:0) ||
+	 (ampl->OrderQCD()>(m_vproc?2:1) && ampl->Legs().size()==3))) {
       msg_Debugging()<<"No ordering veto: "<<sqrt(ampl->KT2())
 		     <<" < "<<sqrt(ampl->Prev()->KT2())<<"\n";
       return true;
