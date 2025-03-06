@@ -185,7 +185,7 @@ double NLO_Base::CalculateVirtual() {
 		if(m_virt_sub==0) sub = p_dipoles->CalculateVirtualSub();
 		double p1 = p_virt->p_loop_me->ME_E1()*p_virt->m_factor;
 		double yfspole = p_dipoles->Get_E1();
-		int ncorrect = ::countMatchingDigits(p1, -yfspole, 20);
+		int ncorrect = ::countMatchingDigits(p1, -yfspole, 32);
 		double reldiff = (p1+yfspole)/p1;
 		m_histograms1d["SinglePoleCD"]->Insert(ncorrect);
 		m_histograms1d["OneLoopEpsYFS"]->Insert(log10(fabs(yfspole)));
@@ -202,15 +202,15 @@ double NLO_Base::CalculateVirtual() {
 		}
 		else{
 			int i = 0;
-			msg_Debugging()<<std::setprecision(20);
+			msg_Debugging()<<std::setprecision(32);
 			msg_Out()<<"Poles cancel in YFS Virtuals to "<<ncorrect<<" digits"<<std::endl
 					 		<<"Relative diff =  "<<reldiff<<std::endl;
-			msg_Out()<<"PhaseSpace point: "<<std::endl;
-			for(auto &p: m_plab) {
-				msg_Out()<<"p["<<i<<"] = "<<p<<std::endl;
-				i++;
-			}
-			msg_Out()<<"One-Loop Provider V eps^{-1}  = "<<p1<<std::endl
+			// msg_Out()<<"PhaseSpace point: "<<std::endl;
+			// for(auto &p: m_plab) {
+			// 	msg_Out()<<"p["<<i<<"] = "<<p<<std::endl;
+			// 	i++;
+			// }
+			msg_Out()<<std::setprecision(32)<<"One-Loop Provider V eps^{-1}  = "<<p1<<std::endl
 			 			<<"Sherpa V eps^{-1}  = "<<yfspole<<std::endl;
 		}
 		// Check Rescaling
@@ -434,9 +434,9 @@ double NLO_Base::CalculateRealVirtual(Vec4D k, int fsrcount) {
  	// MapMomenta(pp, kzero);
  	Flavour_Vector fl = m_flavs;
  	// fl.push_back(kf_photon);
-	p_nlodipoles->MakeDipolesII(fl,pp,m_plab);
-	p_nlodipoles->MakeDipolesIF(fl,pp,m_plab);
-	p_nlodipoles->MakeDipoles(fl,pp,m_plab);
+	p_nlodipoles->MakeDipolesII(fl,pp,pp);
+	p_nlodipoles->MakeDipolesIF(fl,pp,pp);
+	p_nlodipoles->MakeDipoles(fl,pp,pp);
 	// p.push_back(k);
 	// m_plab = pp;
 	p_nlodipoles->p_yfsFormFact->p_virt = p_realvirt->p_loop_me;
@@ -474,7 +474,6 @@ double NLO_Base::CalculateRealVirtual(Vec4D k, int fsrcount) {
 	// PRINT_VAR(r*flux-aB);
 	// PRINT_VAR(subloc);
 	// PRINT_VAR(subb);
-	PRINT_VAR(tot);
 	if(m_check_poles==1){
 		double pr1 = p_realvirt->p_loop_me->ME_E1()*p_realvirt->m_factor*flux/norm;
 		double pr2 = p_realvirt->p_loop_me->ME_E1()*p_realvirt->m_factor;
