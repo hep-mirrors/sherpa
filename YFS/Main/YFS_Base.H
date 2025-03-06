@@ -56,7 +56,7 @@ public:
   bool On() const   { return m_on;   }
 
   double m_mass2[2];
-  double m_s;
+  double m_s,m_irscale;
   double m_v, m_vmin, m_vmax, m_isrcut, m_sp;
   double m_alpha, m_alpi, m_hardmin, m_gp, m_g;
   bool m_CalForm, m_fillblob, m_isr_debug, m_fsr_debug, m_coulomb, m_setparticles;
