@@ -119,22 +119,21 @@ public:
 class One2One_Transition_Base : public Splitting_Function_Base {
 protected:
   ATOOLS::Flavour m_flin, m_flout, m_flout2;
-  double m_mout, m_mout2, m_arg, m_totalarg;
+  double m_mout, m_mout2, m_arg;
   int m_col;
 
 public:
   One2One_Transition_Base(const ATOOLS::Flavour &flin,
                           const ATOOLS::Flavour &flout, const double &arg,
-                          const double &totalarg, const int &col)
+                          const int &col)
       : m_flin(flin), m_flout(flout), m_flout2(ATOOLS::Flavour(kf_none)),
         m_mout(m_flout.HadMass()), m_mout2(m_mout * m_mout), m_arg(arg),
-        m_totalarg(totalarg), m_col(col) {
+        m_col(col) {
     p_cf = NULL;
   }
   const double &OutMass() const { return m_mout; }
   const double &OutMass2() const { return m_mout2; }
   const double &SudArg() const { return m_arg; }
-  const double &TotalSudArg() const { return m_totalarg; }
   const ATOOLS::Flavour &GetFlavourA() const { return m_flin; }
   const ATOOLS::Flavour &GetFlavourB() const { return m_flout; }
   const ATOOLS::Flavour &GetFlavourC() const { return m_flout2; }
