@@ -398,9 +398,12 @@ bool Flavour::IsOctetMeson() const
   return (Kfcode()/100000==99);
 }
 
-bool Flavour::IsJPsi() const
+
+bool Flavour::IsCharmonia() const
 {
-  return (Kfcode() == kf_J_psi_1S);
+  std::string kf_str = std::to_string( Kfcode() );
+  if (kf_str.size() < 3) return false;
+  return (kf_str[kf_str.size() - 3] == '4' && kf_str[kf_str.size() - 2] == '4');
 }
 
 bool Flavour::IsBaryon() const 

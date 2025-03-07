@@ -61,7 +61,7 @@ void Sudakov::InitSplittingFunctions(Model_Base *md, const int kfmode) {
     for (SFC_Filler_Getter::Getter_List::const_iterator git(flist.begin());
          git != flist.end(); ++git)
       (*git)->GetObject(SFC_Filler_Key(md, &m_cgets));
-    if (true) {
+    if (msg_LevelIsDebugging()) {
       msg_Out() << METHOD << "(): {\n\n"
                 << "   // available coupling calcs\n\n";
       SFC_Getter::PrintGetterInfo(msg->Out(), 25);
@@ -135,7 +135,6 @@ void Sudakov::InitSplittingFunctions(Model_Base *md, const int kfmode) {
       msg_Debugging() << "}\n";
     }
   }
-  msg_Out() << "About to add DiQuark fun." << endl;
   AddDiQuarkSplittingFunctions(md, kfmode);
   AddOctetMesonSplittingFunctions(md, kfmode);
   AddQuarkoniaSplittingFunctions(md, kfmode);
@@ -144,8 +143,10 @@ void Sudakov::InitSplittingFunctions(Model_Base *md, const int kfmode) {
 }
 
 void Sudakov::AddDiQuarkSplittingFunctions(Model_Base *md, const int kfmode) {
-  msg_Out()<<"============================================================\n"
-     <<METHOD<<": so far "<<m_splittings.size()<<" splitting functions\n";
+  // msg_Out() <<
+  // "============================================================\n"
+  //           << METHOD << ": so far " << m_splittings.size()
+  //           << " splitting functions\n";
   Kabbala g3("g_3", sqrt(4. * M_PI * md->ScalarConstant("alpha_S")));
   Kabbala cpl0 = g3 * Kabbala("i", Complex(0., 1.));
   list<kf_code> diquarks = {kf_ud_0, kf_dd_1, kf_ud_1, kf_uu_1};
@@ -172,29 +173,43 @@ void Sudakov::AddDiQuarkSplittingFunctions(Model_Base *md, const int kfmode) {
 }
 
 void Sudakov::AddQuarkoniaSplittingFunctions(Model_Base *md, const int kfmode) {
-  msg_Out()<<"============================================================\n"
-     <<METHOD<<": so far "<<m_splittings.size()<<" splitting functions\n";
+  msg_Out() <<
+  "============================================================\n"
+            << METHOD << ": so far " << m_splittings.size()
+            << " splitting functions\n";
   Kabbala g3("g_3", sqrt(4. * M_PI * md->ScalarConstant("alpha_S")));
-  Kabbala cpl0 = 10* g3 * Kabbala("i", Complex(0., 1.));
-  Flavour Meson_flav(kf_J_psi_1S);
+  Kabbala cpl0 = g3 * Kabbala("i", Complex(0., 1.));
   Flavour Quark_flav(kf_c);
+  Flavour Gluon_flav(kf_gluon);
   // if (!flav.IsOn()) continue;
   Single_Vertex v;
   v.AddParticle(Quark_flav.Bar());
   v.AddParticle(Quark_flav);
-  v.AddParticle(Meson_flav);
-  v.Color.push_back(Color_Function(cf::D, 2, 1));
+  v.AddParticle(Flavour(kf_J_psi_1S));
+  v.Color.push_back(Color_Function(cf::D, 1, 2));
   v.Lorentz.push_back("FFV_Quarkonia");
-  v.cpl.push_back(cpl0); //Check later
+  v.cpl.push_back(cpl0); // Check later
   v.order[0] = 1;
   Add(new Splitting_Function_Base(
-      SF_Key(&v, 0, cstp::FF, kfmode, m_qcdmode, m_ewmode, 1, m_pdfmin)));
+    SF_Key(&v, 0, cstp::FF, kfmode, m_qcdmode, m_ewmode, 1, m_pdfmin)));
   v.in[0] = v.in[0].Bar();
   v.in[1] = v.in[1].Bar();
   Add(new Splitting_Function_Base(
+    SF_Key(&v, 0, cstp::FF, kfmode, m_qcdmode, m_ewmode, 1, m_pdfmin)));
+  v = Single_Vertex();
+  v.AddParticle(Gluon_flav);
+  v.AddParticle(Flavour(kf_eta_c_1S));
+  v.AddParticle(Gluon_flav);
+  v.Color.push_back(Color_Function(cf::G, 1, 3));
+  v.Lorentz.push_back("VSV_Quarkonia");
+  v.cpl.push_back(cpl0); // Check later
+  v.order[0] = 1;
+  Add(new Splitting_Function_Base(
       SF_Key(&v, 0, cstp::FF, kfmode, m_qcdmode, m_ewmode, 1, m_pdfmin)));
-  msg_Out()<<METHOD<<": by now "<<m_splittings.size()<<" splitting functions\n"
-  	   <<"============================================================\n";
+  msg_Out() << METHOD << ": by now " << m_splittings.size()
+            << " splitting functions\n"
+            <<
+            "============================================================\n";
 }
 
 void Sudakov::AddOctetMesonSplittingFunctions(Model_Base *md,
@@ -237,31 +252,25 @@ void Sudakov::AddOctetMesonSplittingFunctions(Model_Base *md,
 void Sudakov::AddGluonThresholds(Model_Base *md) {
   Running_AlphaS as = md->ScalarConstant("alpha_S");
   const double mc = ATOOLS::Flavour(kf_c).Mass(1);
-  list<kf_code> octetvectors = {kf_J_psi_1S_oct};//, kf_psi_2S_oct,
-                               // kf_chi_c0_1P_oct, kf_chi_c1_1P_oct,
-                               // kf_chi_c2_1P_oct};
+  list<kf_code> octetvectors = {kf_J_psi_1S_oct, kf_psi_2S_oct,
+                                kf_chi_c0_1P_oct, kf_chi_c1_1P_oct,
+                                kf_chi_c2_1P_oct};
   ST_Set *stset;
   m_stmap[Flavour(kf_gluon)] = stset = new ST_Set;
   map<kf_code, double> LDME = {
       // numerical LDME [GeV^3] from ph/9507398, PhysRevD.50.3176
-      {kf_J_psi_1S_oct, 1.5E-02}};
-      // {kf_psi_2S_oct, 4.3E-03},
-      // {kf_chi_c0_1P_oct, 1 * 3E-03 * mc * mc},
-      // {kf_chi_c1_1P_oct, 3 * 3E-03 * mc * mc},
-      // {kf_chi_c2_1P_oct, 5 * 3E-03 * mc * mc}};
-  double totalarg = 0;
-  for (const auto &pair : LDME) {
-    totalarg += pair.second;
-  }
-  totalarg *= 0.5 * (M_PI * as(2 * mc) / (24 * pow(mc, 3)));
+      {kf_J_psi_1S_oct, 1.5E-02},
+      {kf_psi_2S_oct, 4.3E-03},
+      {kf_chi_c0_1P_oct, 1 * 3E-03 * mc * mc},
+      {kf_chi_c1_1P_oct, 3 * 3E-03 * mc * mc},
+      {kf_chi_c2_1P_oct, 5 * 3E-03 * mc * mc}};
   double arg;
   for (list<kf_code>::iterator octit = octetvectors.begin();
        octit != octetvectors.end(); octit++) {
-    arg = 0.5 * (M_PI * as(2 * mc) /
-                 (24 * pow(mc, 3))); // SDME for g -> ccb (3S_1)_8
-    arg *= LDME[*octit];
-    stset->insert(One2One_Transition_Base(Flavour(kf_gluon), Flavour(*octit),
-                                          arg, totalarg, 1));
+    arg = 0.5 *
+          (M_PI * as(2 * mc) / (24 * pow(mc, 3))); // SDME for g -> ccb (3S_1)_8
+    stset->insert(
+        One2One_Transition_Base(Flavour(kf_gluon), Flavour(*octit), arg, 1));
   }
 }
 
@@ -374,7 +383,6 @@ bool Sudakov::Generate(Parton *split, double kt2win) {
        split->GetLeft() == NULL) ||
       ((cc == 8 || (split->GetType() == pst::FS ? cc : -cc) == -3) &&
        split->GetRight() == NULL)) {
-    msg_Out() << METHOD << ":\n" << (*split) << ".\n";
     THROW(fatal_error, "Invalid color flow.");
   }
   m_cfl = split->GetFlavour();
@@ -458,7 +466,6 @@ int Sudakov::Generate(Parton *split, Parton *spect, double t0, double kt2win,
   switch (split->GetType()) {
   case pst::FS:
     if (spect->GetType() == pst::FS) {
-      msg_Out() << "Check" <<  endl;
       Q2 = (split->Momentum() + spect->Momentum()).Abs2();
       if (!DefineFFBoundaries(Q2, 1.))
         return false;
@@ -517,7 +524,7 @@ int Sudakov::Generate(Parton *split, Parton *spect, double t0, double kt2win,
   m_lastint = m_partint.back();
 
   t = split->KtStart();
-  msg_Out() << "starting scale " << t << ", cutoff scale " << t0
+  msg_IODebugging() << "starting scale " << t << ", cutoff scale " << t0
                     << "\n";
   if (p_spect == p_split->GetLeft() && t > p_split->KtSoft(0)) {
     msg_IODebugging() << "reset starting scale " << t << " -> "
@@ -530,7 +537,6 @@ int Sudakov::Generate(Parton *split, Parton *spect, double t0, double kt2win,
     t = split->KtSoft(1);
   }
   double x = 0.0;
-  msg_Out() << "  t: " << t << ", t0: " << t0 << ", kt2win: " << kt2win << endl;
   while (t >= Max(t0, kt2win)) {
     t = ProduceT(t);
     p_split->SetForcedSplitting(false);
@@ -556,45 +562,53 @@ int Sudakov::Generate(Parton *split, Parton *spect, double t0, double kt2win,
     }
     if (m_stmap.find(split->GetFlavour()) != m_stmap.end()) {
       ST_Set *transitions = m_stmap[split->GetFlavour()];
-      if (ran->Get() < (1 - exp(-transitions->begin()->TotalSudArg()))) {
-        double pick_transition = ran->Get();
-        double tr_P = 0;
-        for (auto transit = transitions->begin(); transit != transitions->end();
-             ++transit) {
-          tr_P += transit->SudArg() / transit->TotalSudArg();
-          if (pick_transition > tr_P) {
-            continue;
-          } else {
-            if (((p_split->Momentum() + p_spect->Momentum()).Abs2() >
-                 sqr(transit->OutMass() +
-                     sqrt(Max(0., p_spect->Momentum().Abs2())))) &&
-                split->KtStart() > transit->OutMass2() &&
-                t < transit->OutMass2()) {
-              msg_Debugging()
-                  << "Tried to split a " << split->GetFlavour() << " ("
-                  << split->GetFlow(1) << ", " << split->GetFlow(2) << ") "
-                  << "between t = " << split->KtStart() << " and t = " << t
-                  << ":\n"
-                  << "spectator is: " << spect->GetFlavour() << "  "
-                  << spect->Momentum() << endl
-                  << "Will want to transit to " << transit->GetFlavourB()
-                  << " (" << transit->OutMass2() << ") "
-                  << "with P = " << (1 - exp(-transit->SudArg())) << ".\n"
-                  << "Invariant mass = "
-                  << (p_split->Momentum() + p_spect->Momentum()).Abs2() << " > "
-                  << sqr(transit->OutMass() +
-                         sqrt(Max(0., p_spect->Momentum().Abs2())))
-                  << ".\n";
-              t = transit->OutMass2(); // need to increase a bit after
-                                       // transition is done.
-              z = 1;
-              phi = 0.;
-              split->SetSpect(p_spect);
-              p_selected = (Splitting_Function_Base *)(&*transit);
-              split->SetTransition(true); // make this a transition tag.
-              return true;
-            }
-          }
+      const double random = ran->Get();
+      double tra_P = 0.;
+      double sur_P = 1.;
+      double tr_Q2 = (p_split->Momentum() + p_spect->Momentum()).Abs2();
+      for (auto transit = transitions->begin(); transit != transitions->end();
+           transit++) {
+        double tr_mass = transit->OutMass();
+        double tr_spmass = sqrt(Max(0., p_spect->Momentum().Abs2()));
+        double tr_thr = sqr(tr_mass + tr_spmass);
+        double tr_phw =
+            sqrt(sqr(tr_Q2) + sqr(sqr(tr_mass)) + sqr(sqr(tr_spmass)) -
+                 2 * (tr_Q2 * sqr(tr_mass) + tr_Q2 * sqr(tr_spmass) +
+                      sqr(tr_mass * tr_spmass))) /
+            fabs(tr_Q2 - sqr(tr_spmass));
+        tra_P += sur_P * (1. - exp(-tr_phw * transit->SudArg()));
+        sur_P *= exp(-tr_phw * transit->SudArg());
+        msg_Debugging() << METHOD << ", checking transition for "
+                        << transit->GetFlavourB().IDName() << ", " << random
+                        << " < " << tra_P << ",  trw: " << tr_phw << endl;
+        if (random < tra_P && (tr_Q2 > tr_thr) &&
+            split->KtStart() > transit->OutMass2() && t < transit->OutMass2()) {
+          msg_Debugging() << "Tried to split a " << split->GetFlavour() << " ("
+                          << split->GetFlow(1) << ", " << split->GetFlow(2)
+                          << ") "
+                          << "between t = " << split->KtStart()
+                          << " and t = " << t << ":\n"
+                          << "spectator is: " << spect->GetFlavour() << "  "
+                          << spect->Momentum() << endl
+                          << "Will want to transit to "
+                          << transit->GetFlavourB() << " ("
+                          << transit->OutMass2() << ") "
+                          << "with P = " << (1 - exp(-transit->SudArg()))
+                          << ".\n"
+                          << "Invariant mass = "
+                          << (p_split->Momentum() + p_spect->Momentum()).Abs2()
+                          << " > "
+                          << sqr(transit->OutMass() +
+                                 sqrt(Max(0., p_spect->Momentum().Abs2())))
+                          << ".\n";
+          t = transit->OutMass2(); // need to increase a bit after
+                                   // transition is done.
+          z = 1;
+          phi = 0.;
+          split->SetSpect(p_spect);
+          p_selected = (Splitting_Function_Base *)(&*transit);
+          split->SetTransition(true); // make this a transition tag.
+          return true;
         }
       }
     } // closes transition handling
