@@ -17,7 +17,8 @@ using namespace MODEL;
 using namespace ATOOLS;
 
 Splitting_Function_Base::Splitting_Function_Base():
-  p_lf(NULL), p_cf(NULL), m_type(cstp::none), m_mth(0.0),
+  p_lf(NULL), p_cf(NULL), m_type(cstp::none),
+  m_symf(1.0), m_polfac(1.0), m_lpdf(1.0), m_efac(1.0), m_mth(0.0),
   m_on(1), m_qcd(-1), m_facscalefactor(1.0)
 {
 }
@@ -35,8 +36,9 @@ SF_Lorentz* Splitting_Function_Base::InitLorentzCalc(const MODEL::Single_Vertex&
 						     const SF_Key& sf_key)
 {
   std::vector<int> spins;
-  for(const auto& fl : vertex.in) 
+  for(const auto& fl : vertex.in) {
     spins.push_back(fl.IntSpin());
+  }
   std::sort(spins.begin(),spins.end());
 
   SF_Lorentz* lf(NULL);
@@ -45,10 +47,15 @@ SF_Lorentz* Splitting_Function_Base::InitLorentzCalc(const MODEL::Single_Vertex&
       spins[2]==2) {
     lf = SFL_Getter::GetObject("SSV",sf_key);
   }
-  else if(spins[0]==0 && spins[1]==2 && spins[2]==2)
-    lf = SFL_Getter::GetObject("HVV",sf_key);
-  else if(spins[0]==1 && spins[1]==1 && spins[2]==2) {
-    lf = SFL_Getter::GetObject("FFV1",sf_key);
+  else if(spins[0]==0 && spins[1]==2 && spins[2]==2)  {
+    if (vertex.in[1].IsCharmonia() || vertex.in[2].IsCharmonia())
+      lf = SFL_Getter::GetObject("VSV_Quarkonia",sf_key);
+    else lf = SFL_Getter::GetObject("HVV",sf_key);
+  }
+  else if(spins[0]==1 && spins[1]==1 && spins[2]==2) { {
+    if ( vertex.in[2].IsCharmonia() || vertex.in[1].IsCharmonia()) lf = SFL_Getter::GetObject("FFV_Quarkonia",sf_key);
+    else lf = SFL_Getter::GetObject("FFV1",sf_key); 
+  } 
   }
   else if( spins[0]==2 && !vertex.in[0].IsDiQuark() &&
 	   spins[1]==2 && !vertex.in[1].IsDiQuark() &&
@@ -104,7 +111,7 @@ Splitting_Function_Base::Splitting_Function_Base(const SF_Key &key):
 		 <<" => ("<<Demangle(typeid(*p_lf).name()).substr(10)
 		 <<","<<Demangle(typeid(*p_cf).name()).substr(10)
 		 <<"), sf="<<m_symf<<", polfac="<<m_polfac
-		 <<", col="<<p_lf->Col();
+		 <<", col="<<p_lf->Col() << endl;
 }
 
 Splitting_Function_Base::~Splitting_Function_Base()

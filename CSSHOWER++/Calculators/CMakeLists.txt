@@ -6,7 +6,8 @@ set(Calculators_SOURCES CF_QCD.C
                         LF_SSV.C
                         LF_FFV.C
                         LF_VVV.C
-                        LF_Triangle.C)
+                        LF_Triangle.C
+                        LF_Quarkonia.C)
 
 set(Calculators_HEADERS CF_QCD.H)
 		      

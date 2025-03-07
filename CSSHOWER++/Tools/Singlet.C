@@ -326,6 +326,18 @@ bool Singlet::ArrangeColours(Parton * mother, Parton * daughter1, Parton * daugh
 	}
       }
     }
+  else if ( d1.StrongCharge() == 0 && d2.StrongCharge() == 8) {
+    daughter1->SetFlow(1,0);
+    daughter1->SetFlow(2,0);
+    daughter2->SetFlow(1,mother->GetFlow(1));
+    daughter2->SetFlow(2,mother->GetFlow(2));
+  }
+  else if ( d1.StrongCharge() == 8 && d2.StrongCharge() == 0) {
+    daughter2->SetFlow(1,0);
+    daughter2->SetFlow(2,0);
+    daughter1->SetFlow(1,mother->GetFlow(1));
+    daughter1->SetFlow(2,mother->GetFlow(2));
+  }
   }
   else if (mo.StrongCharge()==0) {
     if (d1.StrongCharge()==3 &&
