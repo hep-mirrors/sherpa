@@ -123,7 +123,7 @@ If Sherpa has been configured with MPI support, the Rivet output from each MPI r
 is merged in memory and a single output file is written out (available starting
 with Rivet v4.0.0). This behaviour can be disabled using the ``--skip-merge=1`` option.
 
-If memory-based merging is used, it's possible to veto statistical outliers on fly
+If memory-based merging is used, it's possible to veto statistical outliers on the fly
 by specifying a threshold in terms of standard deviation. For example, the option
 ``--outlier-thresholds: [3.0, 5.0]`` would write out additional versions of the
 output file where outlying ranks ("rmrank") or outlying bins ("rmbin") have been
