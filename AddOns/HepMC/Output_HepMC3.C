@@ -23,7 +23,7 @@ using namespace std;
 Output_HepMC3::Output_HepMC3(const Output_Arguments &args) :
   Output_Base("HepMC3")
 {
-  m_basename=args.m_outpath+"/"+args.m_outfile;
+  m_basename = args.m_outpath + "/" + args.m_outfile;
   m_compression = Settings::GetMainSettings()["HEPMC3_COMPRESSION"].SetDefault("").Get<std::string>();
   m_iotype = Settings::GetMainSettings()["HEPMC3_IO_TYPE"].SetDefault(0).Get<int>();
   int precision = Settings::GetMainSettings()["HEPMC3_OUTPUT_PRECISION"].SetDefault(12).Get<int>();
