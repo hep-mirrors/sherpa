@@ -65,8 +65,21 @@ option(SHERPA_ENABLE_THREADING               "Enables building with threading." 
 option(SHERPA_ENABLE_TESTING                 "Enables testing." OFF)
 option(SHERPA_ENABLE_UFO                     "Enables installation of UFO interfaces." OFF)
 option(SHERPA_ENABLE_VERSIONING              "Enables versioned installation." OFF)
+option(SHERPA_ENABLE_COVERAGE                "Enable code coverage reporting" OFF)
 
 
+########################################################################
+# enable unit-test coverage reporting
+if(SHERPA_ENABLE_COVERAGE)
+    if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+        message(STATUS "SHERPA: Enabling coverage support")
+        set(COVERAGE_FLAGS "-g -O0 --coverage -fprofile-arcs -ftest-coverage -fno-inline")
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${COVERAGE_FLAGS}")
+        set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${COVERAGE_FLAGS}")
+    else()
+        message(WARNING "Coverage support requires GCC or Clang.")
+    endif()
+endif()
 ########################################################################
 ### allow the user to be sloppy and use HEPMC3_DIR instead of the correct
 ### capitalisation, HepMC3_DIR. Note that the capitalisation is defined
