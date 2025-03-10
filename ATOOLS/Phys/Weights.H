@@ -35,6 +35,7 @@ namespace ATOOLS {
     double& Nominal();
     double Nominal() const;
     double& Variation(size_t i);
+    const double& Variation(size_t i) const;
     double& operator[](size_t i) { return weights[i]; }
     double operator[](size_t i) const { return weights[i]; }
     double& operator[](const std::string& name);
@@ -134,6 +135,45 @@ namespace ATOOLS {
     bool IsZero() const;
     double BaseWeight() const { return base_weight; }
 
+    // access elements
+    const Weights& at(const char* key) const {
+      return this->std::map<std::string, Weights>::at(key);
+    }
+    const Weights& at(const std::string& key) const {
+      return this->std::map<std::string, Weights>::at(key);
+    }
+    const Weights& at(Variations_Type type,
+                      Variations_Source source = Variations_Source::all) const {
+      if (type == Variations_Type::qcd) {
+        return this->at(ToString(source));
+      } else {
+        return (*this).at("QCUT");
+      }
+    }
+
+    // find elements
+    const_iterator find(const char *key) const {
+      return this->std::map<std::string, Weights>::find(key);
+    }
+    iterator find(const char *key) {
+      return this->std::map<std::string, Weights>::find(key);
+    }
+    const_iterator find(const std::string& key) const {
+      return this->std::map<std::string, Weights>::find(key);
+    }
+    iterator find(const std::string& key) {
+      return this->std::map<std::string, Weights>::find(key);
+    }
+    const_iterator
+    find(Variations_Type type,
+         Variations_Source source = Variations_Source::all) const {
+      if (type == Variations_Type::qcd) {
+        return this->std::map<std::string, Weights>::find(ToString(source));
+      } else {
+        return this->std::map<std::string, Weights>::find("QCUT");
+      }
+    }
+
     // Convenience method to fill e.g. an ordinary map with variations; passing
     // Variations_Source::main only fills ME QCD-like variations (discarding
     // ones that originate from the shower), while passing
@@ -153,12 +193,6 @@ namespace ATOOLS {
     // return relative Weights entries for a given name
     Weights& RelativeValues(const std::string& k) { return (*this)[k]; }
     Weights RelativeValues(const std::string& k) const;
-
-    /// Calculate the product of all entries that share the same type, e.g. to
-    /// get the combined QCD or Qcut variations from different sources. Note
-    /// that this returns a Weights object, that contains the nominal product
-    /// and the entry-by-entry product of all variations.
-    Weights Combine(Variations_Type type) const;
 
     /// Set all values to exactly 0.0 that are close to zero. The tolerance
     /// is the maximum absolute distance from 0.0 defining this "closeness".
@@ -303,44 +337,25 @@ namespace ATOOLS {
                                    Variations_Name_Type name_type) const {
     DEBUG_FUNC(source);
 
-    // Fill "managed" QCD variations, which might need to be combined first,
-    // since we have QCD variations from "ME", "PS", etc., hence we need to
-    // build a product over those for each individual QCD variation.
+    // Fill "managed" QCD variations
     for (const auto type : s_variations->ManagedVariationTypes()) {
       // calculate contributions
-      Weights weights = Weights {type};
-      double relfac {1.0};
-      if (source == Variations_Source::all) {
-        weights *= Combine(type);
-        relfac = NominalIgnoringVariationType(type);
-      } else {
-        // calculate nominal, relfac and weights ignoring shower weights
-        static const std::unordered_set<std::string> shower_keys {
-          "PS", "PS_QCUT", "MC@NLO_PS", "MC@NLO_QCUT"};
-        for (const auto& v : *this) {
-          if (shower_keys.find(v.first) != shower_keys.end())
-            continue;
-          if (v.second.Type() == type) {
-            weights *= v.second;
-          } else {
-            relfac *= v.second.Nominal();
-          }
+      const_iterator it {this->find(type, source)};
+      if (it != this->end()) {
+        const Weights& weights {it->second};
+        const double relfac {NominalIgnoringVariationType(type)};
+        // do remaining combination and store resulting weights
+        size_t num_vars = weights.Size() - 1;
+        for (size_t i(0); i < num_vars; ++i) {
+          const std::string varname {weights.Name(i + 1, source, name_type)};
+          map[varname] = weights.Variation(i) * relfac;
+          msg_Debugging() << varname << ": " << weights.Variation(i) * relfac
+                          << '\n';
         }
-        relfac *= base_weight;
-      }
-      // do remaining combination and store resulting weights
-      size_t num_vars = weights.Size() - 1;
-      for (size_t i(0); i < num_vars; ++i) {
-        const std::string varname {weights.Name(i + 1, source, name_type)};
-        map[varname] = weights.Variation(i) * relfac;
-        msg_Debugging() << varname << " (" << varname
-          << "): " << weights.Variation(i) * relfac << '\n';
       }
     }
 
-    // Fill other "custom" variations. These are simple, because they are all
-    // assumed to be independent from each other, hence no combination is
-    // necessary.
+    // Fill other "custom" variations
     if (source == Variations_Source::all) {
       for (const auto& kv : *this) {
         if (kv.second.Type() != Variations_Type::custom)

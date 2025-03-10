@@ -99,6 +99,7 @@ void Initialization_Handler::RegisterDefaults()
 {
   Settings& s = Settings::GetMainSettings();
   s["BEAM_REMNANTS"].SetDefault(true);
+  s["INTRINSIC_KPERP"].SetDefault(true);
   s["EVENT_GENERATION_MODE"].SetDefault("PartiallyUnweighted");
   s["EVENT_TYPE"].SetDefault("StandardPerturbative");
   s["SOFT_COLLISIONS"].UseNoneReplacements().SetDefault("None");
@@ -1167,8 +1168,14 @@ bool Initialization_Handler::InitializeTheFragmentation()
   p_fragmentation = Fragmentation_Getter::GetObject
     (fragmentationmodel,
      Fragmentation_Getter_Parameters(m_showerhandlers[isr::hard_process]->ShowerGenerator()));
-  if (p_fragmentation==NULL)
-    THROW(fatal_error, "  Fragmentation model '"+fragmentationmodel+"' not found.");
+  if (p_fragmentation==NULL) {
+    if (s_loader->LoadLibrary("Sherpa"+fragmentationmodel))
+      p_fragmentation = Fragmentation_Getter::GetObject
+	(fragmentationmodel,
+	 Fragmentation_Getter_Parameters(m_showerhandlers[isr::hard_process]->ShowerGenerator()));
+    if (p_fragmentation==NULL)
+      THROW(fatal_error, "  Fragmentation model '"+fragmentationmodel+"' not found.");
+  }
   as->SetActiveAs(isr::hard_process);
   msg_Info()<<"Initialized fragmentation\n";
   return 1;
@@ -1249,10 +1256,10 @@ bool Initialization_Handler::InitializeTheReweighting(Variations_Mode mode)
   if (p_variations) {
     delete p_variations;
   }
-  if (mode != Variations_Mode::nominal_only)
-    Variations::CheckConsistencyWithBeamSpectra(p_beamspectra);
   p_variations = new Variations(mode);
   s_variations = p_variations;
+  if (mode != Variations_Mode::nominal_only && p_variations->HasVariations())
+    Variations::CheckConsistencyWithBeamSpectra(p_beamspectra);
   if (p_mehandler)
     p_mehandler->InitializeTheReweighting(mode);
   if (mode != Variations_Mode::nominal_only)

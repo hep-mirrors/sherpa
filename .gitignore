@@ -7,6 +7,8 @@ build/
 outputs/
 /.*
 compile_commands.json
+config.log
+CTestTestfile.cmake
 
 # make targets and intermediate files
 /AMEGIC++/Main/make2scons
@@ -43,16 +45,27 @@ SHERPA/Run/Sherpa-config
 install_manifest.txt
 Manual/sherpa-completion
 Manual/sherpamanual.fls
-MODEL/UFO/Sherpa-generate-model
-MODEL/UFO/sconstruct_template
+MODEL/UFO/bin/Sherpa-generate-model
+MODEL/UFO/src/opt_einsum/*.py
+MODEL/UFO/src/opt_einsum/backends
+MODEL/UFO/src/ufo_interface/parser.py
 test.py
+Examples/VBF_Interference/BH_Interface/BlackHat.py
+Examples/VBF_Interference/BH_Interface/Comix.py
+Examples/VBF_Interference/Tests/Comix.py
 
 # test run output
-Examples/*/Process
+Process
+makelibs
 References.tex
+Settings_Report
 Results.zip
 Results.zip~
 /Testing/
+Tests/End2End/UFO/TestProcesses.tar.gz
+Tests/End2End/UFO/TestProcesses/
+Tests/End2End/UFO/run_all.py
+Tests/UFO/
 
 # (local) make install targets
 

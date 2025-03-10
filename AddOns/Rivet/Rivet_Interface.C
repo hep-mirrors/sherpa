@@ -38,11 +38,12 @@ namespace SHERPARIVET {
     size_t m_nevt, m_histointerval;
     bool   m_finished;
     bool   m_splitjetconts, m_splitSH, m_splitpm, m_splitcoreprocs, m_usehepmcshort;
+    bool   m_outputmeonlyvariations;
 
     int m_loglevel, m_ignorebeams, m_skipmerge, m_skipweights;
     double m_weightcap, m_nlosmearing;
     std::string m_matchweights, m_unmatchweights, m_nomweight;
-    std::vector<std::string> m_analyses;
+    std::vector<std::string> m_analyses, m_thresholds;
 
     Rivet_Map         m_rivet;
     SHERPA::HepMC3_Interface      m_hepmc;
@@ -230,6 +231,9 @@ std::string Rivet_Interface::GetCoreProc(const std::string& proc)
 bool Rivet_Interface::Init()
 {
   if (m_nevt==0) {
+    m_outputmeonlyvariations =
+      Settings::GetMainSettings()["OUTPUT_ME_ONLY_VARIATIONS"].Get<bool>();
+
     Scoped_Settings s{ Settings::GetMainSettings()[m_tag] };
 
     m_splitjetconts = s["JETCONTS"].SetDefault(0).Get<int>();
@@ -243,7 +247,7 @@ bool Rivet_Interface::Init()
         <<"   Analysis splitting is combined with on-the-fly variations. Cross\n"
         <<"   sections of variations in split analyses, and hence their\n"
         <<"   normalizations, will not be correct. To fix this, upgrade your\n"
-        <<"   Rivet installation to v3.2.0 or later.\n";
+        <<"   Rivet installation to v4.0.0 or later.\n";
     }
 #endif
 
@@ -263,6 +267,8 @@ bool Rivet_Interface::Init()
     m_unmatchweights = s["UNMATCH_WEIGHTS"].SetSynonyms({"--unmatch-weights"}).SetDefault("").Get<std::string>();
     m_nomweight = s["NOMINAL_WEIGHT"].SetSynonyms({"--nominal-weight"}).SetDefault("").Get<std::string>();
     m_analyses = s["ANALYSES"].SetSynonyms({"ANALYSIS", "-a", "--analyses"})
+                              .SetDefault<std::vector<std::string>>({}).GetVector<std::string>();
+    m_thresholds = s["OUTLIER_THRESHOLDS"].SetSynonyms({"--outlier-thresholds"})
                               .SetDefault<std::vector<std::string>>({}).GetVector<std::string>();
 
     // add a MPI rank specific suffix if necessary
@@ -441,7 +447,81 @@ bool Rivet_Interface::Finish()
 
     // merge Rivet::AnalysisHandlers before finalising
     for (auto& it : m_rivet) {
+      if (it.first.first.find("thr=") != std::string::npos)  continue;
       std::vector<double> data = it.second->serializeContent(true); //< ensure fixed-length across ranks
+      if (m_thresholds.size()) {
+        // Compute global sums and sum of squares
+        // for each element in the serialised vector
+        const size_t datalen = data.size();
+        std::vector<double> data_sum;    data_sum.reserve(datalen);
+        std::vector<double> data_sum_sq; data_sum_sq.reserve(datalen);
+        for (size_t i = 0; i < datalen; ++i) {
+          data_sum.push_back(data[i]);
+          data_sum_sq.push_back(data[i] * data[i]);
+        }
+        mpi->Reduce(data_sum.data(),datalen,MPI_DOUBLE,MPI_SUM);
+        mpi->Reduce(data_sum_sq.data(),datalen,MPI_DOUBLE,MPI_SUM);
+
+        // Compute mean and standard deviation on the root rank
+        std::vector<double> mean(datalen, 0.0);
+        std::vector<double> stddev(datalen, 0.0);
+        if (mpi->Rank()==0) {
+          for (size_t i = 0; i < datalen; ++i) {
+            mean[i] = data_sum[i] / (double)mpi->Size();
+            double variance = (data_sum_sq[i] / (double)mpi->Size()) - (mean[i] * mean[i]);
+            stddev[i] = (variance > 0) ? std::sqrt(variance) : 0.0;
+          }
+        }
+        // Broadcast mean and stddev to all ranks
+        mpi->Bcast(mean.data(), datalen, MPI_DOUBLE);
+        mpi->Bcast(stddev.data(), datalen, MPI_DOUBLE);
+
+        // Apply the outlier filtering: replace outliers with 0 before reduction
+        for (const std::string& threshold : m_thresholds) {
+          std::vector<double> filtered_data;
+          filtered_data.reserve(datalen);
+          const double level = std::stod(threshold);
+          bool has_outlier = false;
+          for (size_t i = 0; i < datalen; ++i) {
+            if (std::abs(data[i] - mean[i]) > level * stddev[i]) {
+              filtered_data.push_back(0.0);  // exclude outlier
+              has_outlier = true;
+            }
+            else  filtered_data.push_back(data[i]);
+          }
+          // Perform MPI_Reduce to compute the filtered sum
+          mpi->Reduce(filtered_data.data(),datalen,MPI_DOUBLE,MPI_SUM);
+          if (mpi->Rank()==0) {
+            // Lazily initialise a new AnalysisHandler
+            // and populate it with the filtered data
+            const std::string newlabel = it.first.first+"thr="+threshold+".rmbin";
+            GetRivet(newlabel,it.first.second,&m_lastevent)->deserializeContent(filtered_data,(size_t)mpi->Size());
+          }
+          // Let's also write out the version that removes the entire rank,
+          // e.g. if the outlier also affected the total sum of weights
+          int vetoed_ranks = 0;
+          if (has_outlier) {
+            std::fill(filtered_data.begin(), filtered_data.end(), 0.0);
+            vetoed_ranks = 1;
+          }
+          else if (mpi->Rank()==0) {
+            // undo MPI-reduction for the root rank
+            for (size_t i = 0; i < datalen; ++i) {
+              filtered_data[i] = data[i];
+            }
+          }
+          // Re-perform MPI_Reduce to compute the filtered sum
+          mpi->Reduce(filtered_data.data(),datalen,MPI_DOUBLE,MPI_SUM);
+          mpi->Reduce(&vetoed_ranks,1,MPI_INT,MPI_SUM);
+          if (mpi->Rank()==0) {
+            // Lazily initialise a new AnalysisHandler
+            // and populate it with the filtered data
+            const std::string newlabel = it.first.first+"thr="+threshold+".rmrank";
+            size_t nRanks = mpi->Size()-vetoed_ranks;
+            GetRivet(newlabel,it.first.second,&m_lastevent)->deserializeContent(filtered_data,nRanks);
+          }
+        }
+      }
       mpi->Reduce(&data[0],data.size(),MPI_DOUBLE,MPI_SUM);
       if (mpi->Rank()==0) {
         it.second->deserializeContent(data,(size_t)mpi->Size());
@@ -469,6 +549,10 @@ bool Rivet_Interface::Finish()
   std::map<std::string, double> err_wgts;
   xs.FillVariations(xs_wgts);
   err.FillVariations(err_wgts);
+  if (m_outputmeonlyvariations) {
+    xs.FillVariations(xs_wgts, Variations_Source::main);
+    err.FillVariations(err_wgts, Variations_Source::main);
+  }
   // At this point, we have a "Nominal" entry (but the Rivet weight name might
   // be different, e.g. an empty string ""), and we might have additional
   // unphysical weights in the Rivet weight sums obtained above. Hence, we make

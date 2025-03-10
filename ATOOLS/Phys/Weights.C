@@ -47,6 +47,12 @@ double& Weights::Variation(size_t i)
   return weights[i + 1];
 }
 
+const double& Weights::Variation(size_t i) const
+{
+  assert(i + 1 < weights.size());
+  return weights[i + 1];
+}
+
 double& Weights::operator[](const std::string& name)
 {
   const auto it = std::find(names.begin(), names.end(), name);
@@ -293,6 +299,8 @@ double Weights_Map::Nominal() const
   } else {
     double w {base_weight};
     for (const auto& kv : *this) {
+      if (kv.first == "Sudakov" || kv.first == "Main")
+        continue;
       w *= kv.second.Nominal();
     }
     return nominals_prefactor * w;
@@ -312,8 +320,9 @@ double Weights_Map::NominalIgnoringVariationType(Variations_Type type) const
   assert(!is_absolute);
   double w {base_weight};
   for (const auto& kv : *this) {
-    if (kv.second.type != type)
-      w *= kv.second.Nominal();
+    if (kv.second.type == type || kv.first == "Sudakov" || kv.first == "Main")
+      continue;
+    w *= kv.second.Nominal();
   }
   return w;
 }
@@ -328,18 +337,6 @@ Weights Weights_Map::RelativeValues(const std::string& k) const
     return ret;
   }
   return 1.0;
-}
-
-Weights Weights_Map::Combine(Variations_Type type) const
-{
-  assert(!is_absolute);
-  auto w = Weights {type};
-  for (const auto& kv : *this) {
-    if (kv.second.type == type)
-      w *= kv.second;
-  }
-  w[0] *= nominals_prefactor;
-  return w;
 }
 
 void Weights_Map::SetZeroIfCloseToZero(double tolerance)
@@ -536,7 +533,12 @@ void Weights_Map::MakeAbsolute()
 
   // apply nominals of each Weights entry to all other Weights entries
   for (const auto& key_nom : nominals) {
+    if (key_nom.first == "Main" || key_nom.first == "Sudakov")
+      continue;
     for (auto& kv : *this) {
+      if (key_nom.first == "All" &&
+          (kv.first == "Main" || kv.first == "Sudakov"))
+        continue;
       if (kv.first != key_nom.first) {
         kv.second *= key_nom.second;
       }
@@ -638,6 +640,8 @@ double Weights_Map::NominalIgnoringPrefactor() const
   } else {
     double w {base_weight};
     for (const auto& kv : *this) {
+      if (kv.first == "Sudakov" || kv.first == "Main")
+        continue;
       w *= kv.second.Nominal();
     }
     return w;

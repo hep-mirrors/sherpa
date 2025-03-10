@@ -54,55 +54,41 @@ C                CTEQ-TEA Parton Distribution Functions: version 2014
 C                       December 31, 2014
 C
 C   When using these PDFs, please cite the references below
-C   
+C
 C
 C   This package provides a standard interface for CT10, CT12
-C   (unpublished), and CT14 parton distribution functions. 
+C   (unpublished), and CT14 parton distribution functions.
 C
-C   The following sets of CTEQ PDF table files can be computed 
-C    with this program: 
-C               PDF                             References         
+C   The following sets of CTEQ PDF table files can be computed
+C    with this program:
+C               PDF                             References
 C   (1) 1+50 sets of CT10 NNLO PDF's;             [1]
 C   (2' ) 1+52 sets of CT10 NLO PDF's;            [2]
 C   (2'') 1+52 sets of CT10W NLO PDF's;           [2]
 C   (3) 4 sets of CT10W NNLO and NLO PDF's        [2]
-C       with alternative alpha_s values; 
+C       with alternative alpha_s values;
 C   (4) 1+56 sets of CT14 NNLO PDF's;             [3]
 C   (5) 1+56 sets of CT14 NLO PDF's;              [3]
 C   (6) 2 sets of CT14 LO PDF's;                  [3]
 C   (7) 11 CT14 NNLO sets and 11 CT14 NLO sets    [3]
-C       with alternative alpha_s values         
+C       with alternative alpha_s values
 C   (8) 3 CT14 NNLO and 3 CT14 NLO sets           [3]
 C       with up to 3, 4, and 6 active quark flavors
 C   (9) 4 CT14 NNLO sets with intrinsic charm     [X]
 
 C   References
-C   [1] J. Gao, M. Guzzi, J. Huston, H.-L. Lai, Z. Li, P. M. Nadolsky, 
+C   [1] J. Gao, M. Guzzi, J. Huston, H.-L. Lai, Z. Li, P. M. Nadolsky,
 C       J. Pumplin, D. Stump, C.-P. Yuan,  arXiv:1302.6246 [hep-ph]
 C   [2] H.-L. Lai, M. Guzzi, J. Huston, Z. Li, P. M. Nadolsky,
 C       J. Pumplin, and C.-P. Yuan, arXiv: 1007.2241 [hep-ph]
-C   [3] S. Dulat, T.-J. Hou, J. Gao, M. Guzzi, J. Huston, 
+C   [3] S. Dulat, T.-J. Hou, J. Gao, M. Guzzi, J. Huston,
 C       P. M. Nadolsky, J. Pumplin, C. Schmidt, D. Stump, and
 C       C.-P. Yuan, arXiv:1506.XXXX
-C 
+C
 C ===========================================================================
 
 
-4) PDF/GRS
-
-
-*********************************************************************
-*                                                                   *
-*            LO AND NLO (REAL) PHOTON - PARAMETRIZATIONS            *
-*                                                                   *
-*                 FOR A DETAILED EXPLANATION SEE :                  *
-*                 M. GLUECK, E.REYA, I. Schienbein                  *
-*                    Phys. Rev. D60(1999)054019                     *
-*                                                                   *
-*        PROBLEMS/QUESTIONS TO schien@lpsc.in2p3.fr                 *  
-
-
-5) PDF/GRV
+4) PDF/GRV
 
 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 *                                                                 *
@@ -133,7 +119,7 @@ C ===========================================================================
 *                                                                 *
 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 
-6) PDF/SASG
+5) PDF/SASG
 
 C...SaSgam version 2 - parton distributions of the photon
 C...by Gerhard A. Schuler and Torbjorn Sjostrand
@@ -141,7 +127,7 @@ C...For further information see Z. Phys. C68 (1995) 607
 C...and Phys. Lett. B376 (1996) 193.
 
 
-7) ATOOLS/YAML/yaml-cpp
+6) ATOOLS/YAML/yaml-cpp
 yaml-cpp is a YAML parser and emitter in C++ matching the YAML 1.2 spec.
 
 Copyright (c) 2008-2015 Jesse Beder.
@@ -166,7 +152,7 @@ THE SOFTWARE.
 
 
 
-8) AddOns/Analysis/Triggers/
+7) AddOns/Analysis/Triggers/
 
 SISCone is a Seedless Infrared Safe Cone jet algorithm.
 
@@ -201,7 +187,7 @@ email  : soyez@fastjet.fr
  */
 
 
-10) ATOOLS/Org/libzippp.h, ATOOLS/Org/libzippp.cpp
+9) ATOOLS/Org/libzippp.h, ATOOLS/Org/libzippp.cpp
 
 /*
   libzippp.h -- exported declarations.
@@ -223,7 +209,7 @@ email  : soyez@fastjet.fr
   3. The names of the authors may not be used to endorse or promote
      products derived from this software without specific prior
      written permission.
- 
+
   THIS SOFTWARE IS PROVIDED BY THE AUTHORS ``AS IS'' AND ANY EXPRESS
   OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
   WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -238,7 +224,7 @@ email  : soyez@fastjet.fr
 */
 
 
-11) ATOOLS/Org/Gzip_Stream.H
+10) ATOOLS/Org/Gzip_Stream.H
 
 // adapted for Sherpa by Frank Siegert from: ==================================
 // gzstream, C++ iostream classes wrapping the zlib compression library.
@@ -247,7 +233,7 @@ email  : soyez@fastjet.fr
 // ============================================================================
 
 
-12) ATOOLS/Phys/fjcore.cc, ATOOLS/Phys/fjcore.hh
+11) ATOOLS/Phys/fjcore.cc, ATOOLS/Phys/fjcore.hh
 
 
 //
@@ -279,7 +265,7 @@ email  : soyez@fastjet.fr
 
 
 
-13) ATOOLS/Math/Sobol.C
+12) ATOOLS/Math/Sobol.C
 
 
 // Frances Y. Kuo
@@ -288,10 +274,10 @@ email  : soyez@fastjet.fr
 // School of Mathematics and Statistics
 // University of New South Wales
 // Sydney NSW 2052, Australia
-// 
+//
 // Last updated: 21 October 2008
 //
-//   You may incorporate this source code into your own program 
+//   You may incorporate this source code into your own program
 //   provided that you
 //   1) acknowledge the copyright owner in your program and publication
 //   2) notify the copyright owner by email
@@ -303,22 +289,22 @@ email  : soyez@fastjet.fr
 // -----------------------------------------------------------------------------
 // Copyright (c) 2008, Frances Y. Kuo and Stephen Joe
 // All rights reserved.
-// 
+//
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are met:
-// 
+//
 //     * Redistributions of source code must retain the above copyright
 //       notice, this list of conditions and the following disclaimer.
-// 
+//
 //     * Redistributions in binary form must reproduce the above copyright
 //       notice, this list of conditions and the following disclaimer in the
 //       documentation and/or other materials provided with the distribution.
-// 
+//
 //     * Neither the names of the copyright holders nor the names of the
 //       University of New South Wales and the University of Waikato
 //       and its contributors may be used to endorse or promote products derived
 //       from this software without specific prior written permission.
-// 
+//
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS ``AS IS'' AND ANY
 // EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
 // WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -335,7 +321,7 @@ email  : soyez@fastjet.fr
 
 
 
-14) ATOOLS/Org/Option_Parser.H
+13) ATOOLS/Org/Option_Parser.H
 
 
 /*
@@ -380,7 +366,7 @@ email  : soyez@fastjet.fr
 
 
 
-15) ATOOLS/Org/RUsage.C
+14) ATOOLS/Org/RUsage.C
 
 
 /*
@@ -392,7 +378,7 @@ email  : soyez@fastjet.fr
 
 
 
-16) Examples/BSM/UFO_*/function_library.py
+15) Examples/BSM/UFO_*/function_library.py
 
 
 # This file is part of the UFO.

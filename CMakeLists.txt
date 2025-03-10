@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.12.0 FATAL_ERROR)
 project(SHERPA-MC LANGUAGES C  CXX)
 #The complicated way to set the version is used to assure the simple
 #replacement of version variable with sed will not break the CMakeLists.txt
-set(EXTERNAL_VERSION_STRING "3.0.0")
+set(EXTERNAL_VERSION_STRING "3.1.x")
 string(REPLACE "."  ";" EXTERNAL_VERSION_LIST "${EXTERNAL_VERSION_STRING}")
 list(GET EXTERNAL_VERSION_LIST 0 SHERPA_VERSION_MAJOR)
 list(GET EXTERNAL_VERSION_LIST 1 SHERPA_VERSION_MINOR)
@@ -13,7 +13,6 @@ SET(SHERPA_VERSION ${SHERPA_VERSION_MAJOR}.${SHERPA_VERSION_MINOR}.${SHERPA_VERS
 # remove "alpha1", "beta2" etc.
 string(REGEX REPLACE "[a-z]+[0-9]+" "" SHERPA_VERSION_PATCH_NUMBER
   "${SHERPA_VERSION_PATCH}")
-math(EXPR SHERPA_VERSION_CODE "${SHERPA_VERSION_MAJOR} * 1000000 + ${SHERPA_VERSION_MINOR} * 1000 + ${SHERPA_VERSION_PATCH_NUMBER}")
 message(STATUS "SHERPA: SHERPA_VERSION=${SHERPA_VERSION}")
 message(STATUS "SHERPA: SHERPA_VERSION_MAJOR=${SHERPA_VERSION_MAJOR}")
 message(STATUS "SHERPA: SHERPA_VERSION_MINOR=${SHERPA_VERSION_MINOR}")
@@ -52,7 +51,6 @@ option(SHERPA_ENABLE_INTERNAL_PDFS           "Enables internal PDFs." ON)
 option(SHERPA_ENABLE_INSTALL_LIBZIP          "Enables internal LibZip." OFF)
 option(SHERPA_ENABLE_LHAPDF                  "Enables LHAPDF." ON)
 option(SHERPA_ENABLE_INSTALL_LHAPDF          "Enables internal LHAPDF." OFF)
-option(SHERPA_ENABLE_LHOLE                   "Enables building of LH OLE interface." OFF)
 option(SHERPA_ENABLE_MADLOOP                 "Enables building with MadLoop." OFF)
 option(SHERPA_ENABLE_MANUAL                  "Enables building of manual." OFF)
 option(SHERPA_ENABLE_MCFM                    "Enables building with MCFM." OFF)
@@ -67,8 +65,21 @@ option(SHERPA_ENABLE_THREADING               "Enables building with threading." 
 option(SHERPA_ENABLE_TESTING                 "Enables testing." OFF)
 option(SHERPA_ENABLE_UFO                     "Enables installation of UFO interfaces." OFF)
 option(SHERPA_ENABLE_VERSIONING              "Enables versioned installation." OFF)
+option(SHERPA_ENABLE_COVERAGE                "Enable code coverage reporting" OFF)
 
 
+########################################################################
+# enable unit-test coverage reporting
+if(SHERPA_ENABLE_COVERAGE)
+    if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+        message(STATUS "SHERPA: Enabling coverage support")
+        set(COVERAGE_FLAGS "-g -O0 --coverage -fprofile-arcs -ftest-coverage -fno-inline")
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${COVERAGE_FLAGS}")
+        set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${COVERAGE_FLAGS}")
+    else()
+        message(WARNING "Coverage support requires GCC or Clang.")
+    endif()
+endif()
 ########################################################################
 ### allow the user to be sloppy and use HEPMC3_DIR instead of the correct
 ### capitalisation, HepMC3_DIR. Note that the capitalisation is defined
@@ -97,7 +108,7 @@ endforeach()
 set( allenables ANALYSIS BINRELOC BLACKHAT CATCH2 CLANG_TIDY DIHIGGS DOXYGEN
  EWSUD EXAMPLES GOSAM GZIP HEPMC3 HEPMC3_ROOT
  INTERNAL_PDFS INSTALL_LIBZIP INSTALL_LHAPDF LHAPDF
- LHOLE MADLOOP MANUAL MCFM MPI OPENLOOPS PYTHIA8 PYTHON RECOLA RIVET ROOT THREADING TESTING UFO VERSIONING)
+ MADLOOP MANUAL MCFM MPI OPENLOOPS PYTHIA8 PYTHON RECOLA RIVET ROOT THREADING TESTING UFO VERSIONING)
 foreach (en IN LISTS allenables)
   message(STATUS "SHERPA: SHERPA_ENABLE_${en}=${SHERPA_ENABLE_${en}}")
 endforeach()
@@ -182,7 +193,7 @@ include(CheckCCompilerFlag)
 include(CheckCXXCompilerFlag)
 set(CXX_CXX_FLAGS_TO_CHECK -Wno-tautological-constant-compare)
 set ( NEW_CMAKE_CXX_FLAGS " ")
-string(REPLACE " " ";" LIST_CMAKE_CXX_FLAGS "${CXX_CXX_FLAGS_TO_CHECK} ${CMAKE_CXX_FLAGS}")
+string(REPLACE " -" ";-" LIST_CMAKE_CXX_FLAGS "${CXX_CXX_FLAGS_TO_CHECK} ${CMAKE_CXX_FLAGS}")
 foreach(fx IN LISTS LIST_CMAKE_CXX_FLAGS)
   if (fx)
     check_cxx_compiler_flag(${fx} CXX_COMPILER_SUPPORTS_${fx})
@@ -493,7 +504,6 @@ add_subdirectory(PHASIC++)
 add_subdirectory(PHOTONS++)
 add_subdirectory(PDF/Electron)
 if (SHERPA_ENABLE_INTERNAL_PDFS)
-  add_subdirectory(PDF/GRS)
   add_subdirectory(PDF/GRV)
   add_subdirectory(PDF/CJK)
   add_subdirectory(PDF/H1)
@@ -525,7 +535,7 @@ if (SHERPA_ENABLE_RIVET)
   message(STATUS "SHERPA: RIVET_VERSION=${RIVET_VERSION} RIVET_FOUND=${RIVET_FOUND}  RIVET_LIBRARIES=${RIVET_LIBRARIES} \
   RIVET_INCLUDE_DIRS=${RIVET_INCLUDE_DIRS} RIVET_DATA_PATH=${RIVET_DATA_PATH} RIVET_ANALYSIS_PATH=${RIVET_ANALYSIS_PATH} \
   RIVET_CONFIG_LIBS_STRING=${RIVET_CONFIG_LIBS_STRING}  RIVET_CONFIG_LIBS=${RIVET_CONFIG_LIBS}  RIVET_CONFIG_LIB_DIRS=${RIVET_CONFIG_LIB_DIRS} \
-  RIVET_CONFIG_CPPFLAGS_STRING=${RIVET_CONFIG_CPPFLAGS_STRING}  RIVET_CONFIG_CPPFLAGS_DIRS=${RIVET_CONFIG_CPPFLAGS_DIRS}") 
+  RIVET_CONFIG_CPPFLAGS_STRING=${RIVET_CONFIG_CPPFLAGS_STRING}  RIVET_CONFIG_CPPFLAGS_DIRS=${RIVET_CONFIG_CPPFLAGS_DIRS}")
   message(STATUS "SHERPA: WARNING: HepMC3 with RIVET_HEPMC3_MIN_VERSION=${RIVET_HEPMC3_MIN_VERSION} will be requested by Rivet.")
   message(STATUS "SHERPA: YODA_VERSION=${YODA_VERSION} YODA_LIBRARIES=${YODA_LIBRARIES} YODA_INCLUDE_DIRS=${YODA_INCLUDE_DIRS} YODA_CONFIG_PYTHONPATH_STRING=${YODA_CONFIG_PYTHONPATH_STRING}")
 endif()
@@ -549,7 +559,7 @@ if (SHERPA_ENABLE_HEPMC3 OR SHERPA_ENABLE_RIVET)
   endif()
   if (SHERPA_ENABLE_HEPMC3_ROOT)
     set(HepMC3_rootIO  HepMC3::rootIO)
-  endif()  
+  endif()
   message(STATUS "SHERPA: HEPMC3_VERSION=${HEPMC3_VERSION} HEPMC3_LIBRARIES=${HEPMC3_LIBRARIES}  HEPMC3_INCLUDE_DIR=${HEPMC3_INCLUDE_DIR}")
   add_subdirectory(AddOns/HepMC)
 endif()
@@ -629,7 +639,6 @@ foreach ( IDIR ${IDIRS} )
                              PATTERN "*MODEL/SMGold*" EXCLUDE
                              PATTERN "*MODEL/TauPi*" EXCLUDE
                              PATTERN "*PDF/CT14*" EXCLUDE
-                             PATTERN "*PDF/GRS/GRSGrid*" EXCLUDE
                              PATTERN "*PDF/SAL/SALGrid*" EXCLUDE
                              PATTERN "*PDF/CJK/CJKHOGrid*" EXCLUDE
                              PATTERN "*PDF/CJK/CJK1Grid*" EXCLUDE
@@ -658,7 +667,6 @@ if (SHERPA_ENABLE_GZIP)
 endif()
 if (SHERPA_ENABLE_INTERNAL_PDFS)
   install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/PDF/CT14/CT14Grid DESTINATION  ${CMAKE_INSTALL_DATADIR}/SHERPA-MC${VERSIONING} COMPONENT doc PATTERN "*ct14ll*" EXCLUDE  )
-  install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/PDF/GRS/GRSGrid DESTINATION  ${CMAKE_INSTALL_DATADIR}/SHERPA-MC${VERSIONING} COMPONENT doc  )
   install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/PDF/SAL/SALGrid DESTINATION  ${CMAKE_INSTALL_DATADIR}/SHERPA-MC${VERSIONING} COMPONENT doc  )
   install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/PDF/CJK/CJKHOGrid DESTINATION  ${CMAKE_INSTALL_DATADIR}/SHERPA-MC${VERSIONING} COMPONENT doc  )
   install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/PDF/CJK/CJK1Grid DESTINATION  ${CMAKE_INSTALL_DATADIR}/SHERPA-MC${VERSIONING} COMPONENT doc  )
@@ -704,7 +712,7 @@ DIMTools DIMShower DIMGauge DIMLorentz DIMMain
 CSMain CSCalculators CSShowers CSTools
 DireTools DireShower DireGauge DireLorentz DireMain
 PhasicScales Comix  ComixPhasespace ComixAmplitude
-YFSCEEX  YFSMain YFSNLO  YFSTools 
+YFSCEEX  YFSMain YFSNLO  YFSTools
 PhasicMain PhasicChannels PhasicProcess PhasicSelectors PhasicEnhance PhasicDecays
 Amegic DipoleSubtraction Amplitude AmegicPSGen
 String Zfunctions
@@ -782,10 +790,6 @@ if (SHERPA_ENABLE_MADLOOP)
   endif()
   message(STATUS "SHERPA: MADLOOP_PREFIX=${MADLOOP_PREFIX}")
   add_subdirectory(AddOns/MadLoop)
-endif()
-
-if (SHERPA_ENABLE_LHOLE)
-  add_subdirectory(AddOns/LH_OLE)
 endif()
 
 if (SHERPA_ENABLE_OPENLOOPS)
@@ -955,7 +959,6 @@ file(GENERATE OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/ATOOLS/Org/CXXFLAGS_PACKAGES.H 
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/AMEGIC++/Main/makelibs.in ${CMAKE_CURRENT_BINARY_DIR}/AMEGIC++/Main/makelibs @ONLY)
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/AMEGIC++/Main/makelibs    DESTINATION  ${CMAKE_INSTALL_DATADIR}/SHERPA-MC COMPONENT doc PERMISSIONS  OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE )
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/SHERPA/Run/Sherpa-config.in ${CMAKE_CURRENT_BINARY_DIR}/SHERPA/Run/Sherpa${VERSIONING}-config @ONLY)
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/Examples/Userhook/CMakeLists.txt.in ${CMAKE_CURRENT_BINARY_DIR}/Examples/Userhook/CMakeLists.txt @ONLY)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/EXTAMP/Example/madgraph/CMakeLists.txt.in ${CMAKE_CURRENT_BINARY_DIR}/EXTAMP/Example/madgraph/CMakeLists.txt @ONLY)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/EXTAMP/Example/subtraction/CMakeLists.txt.in ${CMAKE_CURRENT_BINARY_DIR}/EXTAMP/Example/subtraction/CMakeLists.txt @ONLY)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/Examples/V_plus_Bs/LHC_Wbb/CMakeLists.txt.in ${CMAKE_CURRENT_BINARY_DIR}/Examples/V_plus_Bs/LHC_Wbb/CMakeLists.txt @ONLY)
@@ -1040,8 +1043,6 @@ $<IF:$<BOOL:${SHERPA_ENABLE_BINRELOC}>,#define ENABLE_BINRELOC \"1\",/* #undef E
 #define SHERPA_VERSION \"${SHERPA_VERSION_MAJOR}\"\n\n\
 /* Sherpa version name */\n\
 #define SHERPA_NAME \"Erebus\"\n\n\
-/* Sherpa version code */\n\
-#define SHERPA_VERSION_CODE ${SHERPA_VERSION_CODE}\n\n\
 /* Using colour */\n\
 #define USING__COLOUR \"1\"\n\n\
 #define PYTHON_LIBS \"${SHERPA_Python_SITEARCH}\"\n\n\

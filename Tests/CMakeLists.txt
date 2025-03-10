@@ -15,19 +15,19 @@ add_test( NAME Main${test}part3 COMMAND Sherpa  ${PROJECT_SOURCE_DIR}/Examples/C
                               WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${test}
            )
 
-SET_TESTS_PROPERTIES( Main${test}part1 PROPERTIES ENVIRONMENT "${STANDARDENVIRONMENT}") 
+SET_TESTS_PROPERTIES( Main${test}part1 PROPERTIES ENVIRONMENT "${STANDARDENVIRONMENT}")
 SET_TESTS_PROPERTIES( Main${test}part2 PROPERTIES ENVIRONMENT "${STANDARDENVIRONMENT}")
-SET_TESTS_PROPERTIES( Main${test}part3 PROPERTIES ENVIRONMENT "${STANDARDENVIRONMENT}") 
+SET_TESTS_PROPERTIES( Main${test}part3 PROPERTIES ENVIRONMENT "${STANDARDENVIRONMENT}")
 
 set_tests_properties( Main${test}part2 PROPERTIES DEPENDS Main${test}part1)
 set_tests_properties( Main${test}part3 PROPERTIES DEPENDS Main${test}part2)
 
 set(test test-LO_Z)
 file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${test})
-add_test( NAME Main${test}part1 COMMAND Sherpa ${PROJECT_SOURCE_DIR}/Examples/CI/LO_Z/Sherpa.yaml 
+add_test( NAME Main${test}part1 COMMAND Sherpa ${PROJECT_SOURCE_DIR}/Examples/CI/LO_Z/Sherpa.yaml
                               WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${test}
            )
-SET_TESTS_PROPERTIES( Main${test}part1 PROPERTIES ENVIRONMENT "${STANDARDENVIRONMENT}") 
+SET_TESTS_PROPERTIES( Main${test}part1 PROPERTIES ENVIRONMENT "${STANDARDENVIRONMENT}")
 
 
 # ==============================
@@ -49,7 +49,7 @@ if(SHERPA_ENABLE_RIVET)
     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${test}
     )
   set_tests_properties(Main${test}part1
-    PROPERTIES ENVIRONMENT "${STANDARDENVIRONMENT}") 
+    PROPERTIES ENVIRONMENT "${STANDARDENVIRONMENT}")
 
   # run rivet-mkhtml (part 2/3)
   add_test(
@@ -111,18 +111,18 @@ if(SHERPA_ENABLE_RIVET)
       WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${test}
       )
     set_tests_properties(Main${test}partA Main${test}partB
-      PROPERTIES ENVIRONMENT "${STANDARDENVIRONMENT}") 
+      PROPERTIES ENVIRONMENT "${STANDARDENVIRONMENT}")
     set_tests_properties(Main${test}partB PROPERTIES DEPENDS Main${test}partA)
 
     # now do explicit variation runs
     macro(run_var NN a b c d)
       add_test(
-        NAME Main${test}partC${NN} 
+        NAME Main${test}partC${NN}
         COMMAND Sherpa SCALE_VARIATIONS:None RSF:=${a} FSF:=${b} -A Explicit__MUR=${c}__MUF=${d}__LHAPDF=93300
           ${PROJECT_SOURCE_DIR}/Examples/CI/FO_Z_Variations/Base.yaml
           ${PROJECT_SOURCE_DIR}/Examples/CI/FO_Z_Variations/${order}.yaml
         WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${test}
-      )  
+      )
       set_tests_properties(Main${test}partC${NN} PROPERTIES DEPENDS Main${test}partA)
       set_tests_properties(Main${test}partC${NN} PROPERTIES ENVIRONMENT "${STANDARDENVIRONMENT}")
     endmacro()
@@ -158,4 +158,33 @@ endif()
 if(SHERPA_ENABLE_UFO)
   # Add UFO tests
   add_subdirectory(End2End/UFO)
+endif()
+
+if(SHERPA_ENABLE_COVERAGE)
+    find_program(LCOV lcov)
+    find_program(GENHTML genhtml)
+
+    if(LCOV AND GENHTML)
+        get_filename_component(BUILD_DIR_NAME ${CMAKE_BINARY_DIR} NAME)
+        get_filename_component(INSTALL_DIR_NAME ${CMAKE_INSTALL_PREFIX} NAME)
+        set(COVERAGE_EXCL '${BUILD_DIR_NAME}/*' '${INSTALL_DIR_NAME}/*' '*/Tests/*' '*/yaml-cpp/*')
+        set(LCOV_FLAGS --quiet --ignore-errors inconsistent,inconsistent)
+        if(CMAKE_SYSTEM_NAME MATCHES Darwin)
+          set(LCOV_FLAGS ${LCOV_FLAGS},usage,gcov,gcov)
+        else()
+        endif()
+        add_custom_target(coverage
+            COMMENT "SHERPA: Running coverage analysis with gcov/lcov..."
+            COMMAND ${LCOV} --directory ${CMAKE_SOURCE_DIR} --no-external --capture --output-file coverage.info ${LCOV_FLAGS}
+            COMMAND ${LCOV} --remove coverage.info --output-file coverage.info ${LCOV_FLAGS} ${COVERAGE_EXCL}
+            COMMAND ${GENHTML} coverage.info --output-directory html ${LCOV_FLAGS}
+            COMMAND ${CMAKE_COMMAND} -E echo "SHERPA: Coverage report generated in Tests/html/index.html"
+        )
+        add_custom_target(cov-reset
+            COMMENT "SHERPA: Resetting coverage data..."
+            COMMAND find ${CMAKE_BINARY_DIR} -name "*.gcda" -delete
+        )
+    else()
+        message(WARNING "lcov or genhtml not found, coverage target will be unavailable.")
+    endif()
 endif()

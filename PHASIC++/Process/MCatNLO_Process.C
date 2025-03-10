@@ -122,6 +122,7 @@ void MCatNLO_Process::Init(const Process_Info &pi,
   Process_Info rspi(spi);
   rspi.m_integrator=rspi.m_rsintegrator;
   rspi.m_itmin=rspi.m_rsitmin;
+  rspi.m_itmax=rspi.m_rsitmax;
   rspi.m_megenerator=rspi.m_rsmegenerator;
   if (rspi.m_megenerator=="") rspi.m_megenerator=defrsmegen;
   p_rsproc=InitProcess(rspi,nlo_type::real|nlo_type::rsub,1|2);
@@ -373,7 +374,7 @@ Weights_Map MCatNLO_Process::LocalKFactor(Cluster_Amplitude& ampl)
       if (selectionwgt > random) {
         const double kfac {info.s / selectionwgt};
         msg_Debugging() << "S selected ( w = " << kfac << " )\n";
-        if (key == "ME" && i == 0 && m_kfacmode / 10) {
+        if (key == "Main" && i == 0 && m_kfacmode / 10) {
           for (Cluster_Amplitude* campl(ampl.Next()); campl;
               campl = campl->Next()) {
             campl->SetLKF(bvi[key][i] / b[key][i]);
@@ -384,7 +385,7 @@ Weights_Map MCatNLO_Process::LocalKFactor(Cluster_Amplitude& ampl)
       } else {
         const double kfac {info.h / (1.0 - selectionwgt)};
         msg_Debugging() << "H selected ( w = " << kfac << " )\n";
-        if (key == "ME" && i == 0 && m_kfacmode / 10)
+        if (key == "Main" && i == 0 && m_kfacmode / 10)
           ampl.SetNLO(m_hpsmode);
         kfacs[key][i] = kfac;
       }

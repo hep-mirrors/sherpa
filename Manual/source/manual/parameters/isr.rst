@@ -52,9 +52,6 @@ They can be configured with the following parameters.
   :option:`GRVSherpa`
     Built-in library for the GRV photon PDF :cite:`Gluck1991jc`, :cite:`Gluck1991ee`.
 
-  :option:`GRSSherpa`
-    Built-in library for the GRS photon PDF :cite:`Gluck1999ub`.
-
   :option:`SALSherpa`
     Built-in library for the SAL photon PDF :cite:`Slominski2005bw`.
 

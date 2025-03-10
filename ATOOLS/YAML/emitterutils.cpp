@@ -10,6 +10,7 @@
 #include "stringsource.h"
 #include "yaml-cpp/binary.h"  // IWYU pragma: keep
 #include "yaml-cpp/null.h"
+#include <cstdint>
 #include "yaml-cpp/ostream_wrapper.h"
 
 namespace SHERPA_YAML {

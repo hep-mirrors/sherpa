@@ -260,9 +260,7 @@ RootNtuple_Reader::RootNtuple_Reader(const Input_Arguments &args,int exact,int f
 #else
   msg_Error()<<"Sherpa must be linked with root to read in root files!"<<endl;
 #endif
-  Scoped_Settings kperp_settings{ s["INTRINSIC_KPERP"] };
-  kperp_settings["MEAN"].OverrideScalar(0.0);
-  kperp_settings["SIGMA"].OverrideScalar(0.0);
+  s["INTRINSIC_KPERP"].OverrideScalar<bool>(false);
 }
 
 RootNtuple_Reader::~RootNtuple_Reader()
@@ -296,17 +294,17 @@ void RootNtuple_Reader::CloseFile() {
 
 
 
-bool RootNtuple_Reader::FillBlobs(Blob_List * blobs) 
+bool RootNtuple_Reader::FillBlobs(Blob_List * blobs)
 {
   bool result=ReadInFullEvent(blobs);
   if (result==0) rpa->gen.SetNumberOfEvents(rpa->gen.NumberOfGeneratedEvents());
-  
+
   long nev=rpa->gen.NumberOfEvents();
   if(nev==rpa->gen.NumberOfGeneratedEvents()) CloseFile();
   return result;
 }
 
-bool RootNtuple_Reader::ReadInEntry() 
+bool RootNtuple_Reader::ReadInEntry()
 {
   if (m_evtpos>=m_entries) return 0;
 #ifdef USING__ROOT
@@ -575,12 +573,13 @@ bool RootNtuple_Reader::ReadInFullEvent(Blob_List * blobs)
       weight*=K/p_vars->m_kfac;
       m_nlos.back()->m_results = weight;
       ATOOLS::Reweight(
-          m_nlos.back()->m_results["ME"],
+          m_nlos.back()->m_results["Main"],
           [this, &args, K, weight](double varweight,
                            const QCD_Variation_Params& varparams) -> double {
             varweight = CalculateWeight(args, varparams);
             return varweight / weight * K / p_vars->m_kfac;
           });
+      m_nlos.back()->m_results["All"] = m_nlos.back()->m_results["Main"];
 
 #ifdef DEBUG__MINLO
       msg_Debugging()<<"DEBUG MINLO   total weight "<<weight/p_vars->m_wgt2<<"\n";
@@ -614,7 +613,7 @@ bool RootNtuple_Reader::ReadInFullEvent(Blob_List * blobs)
     }
     vars=*p_vars;
     if (!ReadInEntry()) m_evtid=0;
-  }  
+  }
   Particle *part1=new Particle(0,m_nlos.back()->p_fl[0],x1*bm[0]);
   Particle *part2=new Particle(1,m_nlos.back()->p_fl[1],x2*bm[1]);
   signalblob->AddToInParticles(part1);

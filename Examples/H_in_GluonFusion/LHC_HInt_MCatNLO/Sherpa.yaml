@@ -16,8 +16,8 @@ MEPS:
 
 # physics parameters
 PARTICLE_DATA:
-  4:  {Yukawa: 1.42}
-  5:  {Yukawa: 4.92}
+  4: {Yukawa: 1.42}
+  5: {Yukawa: 4.92}
   15: {Yukawa: 1.777}
 EW_SCHEME: 3
 RUN_MASS_BELOW_POLE: 1
@@ -35,7 +35,7 @@ PROCESSES:
 - 93 93 -> 22 22:
     NLO_Mode: MC@NLO
     NLO_Order: {QCD: 1, EW: 0}
-    Order: {QCD: Any, EW: 2}
+    Order: {QCD: 0, EW: 2}
     Enable_MHV: 12
     Loop_Generator: Higgs
     Integrator: PS2

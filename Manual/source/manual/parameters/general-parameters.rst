@@ -204,7 +204,9 @@ The following analysis handlers are currently available
   | Sherpa's internal analysis handler.
   | To use this option, the package must be configured with option
   | :option:`-DSHERPA_ENABLE_ANALYSIS=ON`. An output directory can
-  | be specified using :ref:`ANALYSIS_OUTPUT`.
+  | be specified using :ref:`ANALYSIS_OUTPUT`. However, this module is
+  | deprecated and users are strongly advised to use the ``Rivet`` interface
+  | and, e.g., ``Rivet``'s `yoda2flat` script.
 
 :option:`Rivet`
   | The Rivet package, see `Rivet Website <http://projects.hepforge.org/rivet/>`_.
@@ -496,7 +498,7 @@ The following formats are currently available:
   scale and PDF variations using the ROOT NTuple Output <A posteriori
   scale and PDF variations using the ROOT NTuple Output>`. ROOT ntuples can be
   read back into Sherpa and analyzed using the option
-  :option:`EVENT_INPUT`. This feature is described in :ref:`NTuple production`.
+  :option:`EVENT_INPUT`.
 
   Requires ``-DROOT_DIR=/path/to/root``
   (or ``-DSHERPA_ENABLE_ROOT=ON``, if ROOT is installed in a
@@ -741,7 +743,7 @@ Additionally, some event output (see :ref:`Event output formats`) and analysis m
 (see :ref:`ANALYSIS`) are able to process alternate event weights.
 Currently, the only supported event output method is
 ``HepMC3`` (requires configuration with HepMC version 3 or later).
-The supported analysis methods are ``Rivet`` and ``Internal``.
+The supported analysis methods are ``Rivet`` and ``Internal`` (deprecated).
 
 The alternative event weight names follow the MC naming convention, i.e. they
 are named ``MUR=<fac>__MUF=<fac>__LHAPDF=<id>``.  When using Sherpa's
@@ -862,9 +864,13 @@ documentation of your local cluster resources or the many excellent
 introductions on the internet. MPI parallelization is mainly intended
 to speed up the integration process, as event generation can be
 parallelized trivially by starting multiple instances of Sherpa with
-different random seed, cf.  :ref:`RANDOM_SEED`. However, both the
-internal analysis module and the Root NTuple writeout can be used with
-MPI. Note that these require substantial data transfer.
+different random seed, cf.  :ref:`RANDOM_SEED`. Starting with ``Rivet`` version 4,
+Sherpa supports the serialisation of the ``Rivet`` output, allowing for efficient
+data reductions in memory as part of MPI-collective communications in
+high-performance applications. This avoids the need for a posteriori merging
+of histogram files entirely. The internal analysis module (deprecated) and the
+Root NTuple writeout can be used with MPI as well. Note that these require
+substantial data transfer.
 
 Please note that the process information contained in the ``Process``
 directory for both Amegic and Comix needs to be generated without MPI
@@ -872,7 +878,7 @@ parallelization first. Therefore, first run
 
 .. code-block:: shell-session
 
-   $ Sherpa INIT_ONLY=1 <Sherpa.yaml>
+   $ Sherpa -I <Sherpa.yaml>
 
 and, in case of using Amegic, compile the libraries. Then start your
 parallelized integration, e.g.

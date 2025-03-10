@@ -99,9 +99,9 @@ namespace SHERPA {
       else
         m_outstream<<' '<<nom;
       for (const auto type : types) {
-        size_t numvars = s_variations->Size(type);
-        auto wgts = wgtmap.Combine(type);
+        const Weights& wgts = wgtmap.at(type);
         const auto relfac = wgtmap.NominalIgnoringVariationType(type);
+        const size_t numvars = s_variations->Size(type);
         for (size_t i(0);i<numvars;++i) {
           if (IsZero(wgts.Variation(i) * relfac))
             m_outstream << " " << 0.0;

@@ -74,6 +74,13 @@ namespace UFO{
     for (ATOOLS::KF_Table::iterator it=ATOOLS::s_kftable.begin(); it!=ATOOLS::s_kftable.end(); ++it)
       if (it->second->m_width==0.)
 	it->second->m_stable=1;
+
+    ATOOLS::Settings& s = ATOOLS::Settings::GetMainSettings();
+    s["UFO_HADRONS"].SetDefault<std::vector<int> >({});
+    for( int hadron : s["UFO_HADRONS"].GetVector<int>()) {
+      auto it=ATOOLS::s_kftable.find(std::abs(hadron));
+      if (it!=ATOOLS::s_kftable.end()) it->second->m_hadron=1;
+    }
   }
 
   bool UFO_Model::ModelInit()
