@@ -487,6 +487,7 @@ endif()
 message(STATUS "SHERPA: LHAPDF_VERSION=${LHAPDF_VERSION} LHAPDF_LIBRARIES=${LHAPDF_LIBRARIES} LHAPDF_INCLUDE_DIRS=${LHAPDF_INCLUDE_DIRS}")
 
 add_subdirectory(AHADIC++)
+add_subdirectory(ALPACA)
 add_subdirectory(AMEGIC++)
 add_subdirectory(AMISIC++)
 add_subdirectory(BEAM)
@@ -568,7 +569,7 @@ if (SHERPA_ENABLE_RIVET)
 endif()
 add_subdirectory(SHERPA)
 
-set( IDIRS  AHADIC++ AMEGIC++ AMISIC++ ATOOLS BEAM COMIX CSSHOWER++ DIM DIRE EXTAMP EXTRA_XS HADRONS++
+set( IDIRS  AHADIC++ ALPACA AMEGIC++ AMISIC++ ATOOLS BEAM COMIX CSSHOWER++ DIM DIRE EXTAMP EXTRA_XS HADRONS++
 METOOLS MCATNLO MODEL PHASIC++ PHOTONS++  PDF RECONNECTIONS REMNANTS SHRiMPS SHERPA YFS)
 
 if (SHERPA_ENABLE_MANUAL)
@@ -705,6 +706,7 @@ HadronsMain HadronsMEs HadronsCurrents HadronsPSs
 Reconnections
 AhadicMain AhadicTools AhadicFormation AhadicDecays
 Amisic AmisicTools AmisicPerturbative
+AlpacaMain AlpacaTools
 PhotonsMain PhotonsTools PhotonsPhaseSpace PhotonsMEs PhotonsPhotonSplitter
 Remnants  RemnantsTools
 MCatNLOMain MCatNLOCalculators MCatNLOShowers MCatNLOTools

@@ -6,6 +6,7 @@ set(Single_Events_SOURCES Event_Handler.C
                           Jet_Evolution.C
                           Signal_Process_FS_QED_Correction.C
                           Hard_Decays.C
+			  Rescattering.C
                           Beam_Remnants.C
                           Hadronization.C
                           Hadron_Decays.C
@@ -26,6 +27,7 @@ set(Single_Events_HEADERS Event_Handler.H
                           Beam_Remnants.H
                           Hadronization.H
                           Hadron_Decays.H
+			  Rescattering.H
                           Userhook_Phase.H
                           Analysis_Phase.H
                           Output_Phase.H

@@ -1,6 +1,7 @@
 #include "SHERPA/Initialization/Initialization_Handler.H"
 
 #include "SHERPA/PerturbativePhysics/Hard_Decay_Handler.H"
+#include "SHERPA/PerturbativePhysics/Rescattering_Handler.H"
 #include "SHERPA/PerturbativePhysics/Shower_Handler.H"
 #include "SHERPA/SoftPhysics/Beam_Remnant_Handler.H"
 #include "SHERPA/SoftPhysics/Colour_Reconnection_Handler.H"
@@ -56,7 +57,7 @@ Initialization_Handler::Initialization_Handler() :
   m_mode(eventtype::StandardPerturbative),
   m_savestatus(false), p_model(NULL), p_beamspectra(NULL),
   p_mehandler(NULL), p_harddecays(NULL),
-  p_beamremnants(NULL), p_reconnections(NULL),
+  p_beamremnants(NULL), p_rescattering(NULL), p_reconnections(NULL),
   p_fragmentation(NULL), p_hdhandler(NULL),
   p_softphotons(NULL), p_evtreader(NULL),
   p_variations(NULL), p_filter(NULL)
@@ -602,6 +603,7 @@ bool Initialization_Handler::InitializeTheFramework(int nr)
   if (rpa->gen.NumberOfEvents()>0) {
     okay = okay && InitializeTheUnderlyingEvents();
     okay = okay && InitializeTheSoftCollisions();
+    okay = okay && InitializeTheRescattering();
     okay = okay && InitializeTheColourReconnections();
     okay = okay && InitializeTheFragmentation();
     okay = okay && InitializeTheHadronDecays();
@@ -712,6 +714,13 @@ bool Initialization_Handler::InitializeTheBeams()
 {
   if (p_beamspectra) { delete p_beamspectra; p_beamspectra = NULL; }
   p_beamspectra = new Beam_Spectra_Handler();
+  return 1;
+}
+
+bool Initialization_Handler::InitializeTheRescattering()
+{
+  if (p_rescattering) { delete p_rescattering; p_rescattering = NULL; }
+  p_rescattering = new Rescattering_Handler();
   return 1;
 }
 

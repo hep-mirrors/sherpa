@@ -10,6 +10,7 @@
 #include "SHERPA/Single_Events/Minimum_Bias.H"
 #include "SHERPA/Single_Events/Multiple_Interactions.H"
 #include "SHERPA/Single_Events/Jet_Evolution.H"
+#include "SHERPA/Single_Events/Rescattering.H"
 #include "SHERPA/Single_Events/Signal_Process_FS_QED_Correction.H"
 #include "SHERPA/Single_Events/Beam_Remnants.H"
 #include "SHERPA/Single_Events/Hadronization.H"
@@ -187,6 +188,7 @@ bool Sherpa::InitializeTheEventHandler()
 						    p_inithandler->GetSoftPhotonHandler()));
     p_eventhandler->AddEventPhase(new Multiple_Interactions(p_inithandler->GetMIHandlers()));
     p_eventhandler->AddEventPhase(new Beam_Remnants(p_inithandler->GetBeamRemnantHandler()));
+    p_eventhandler->AddEventPhase(new Rescattering(p_inithandler->GetRescatteringHandler()));
     p_eventhandler->AddEventPhase(new Hadronization(p_inithandler->GetColourReconnectionHandler(),
 						    p_inithandler->GetFragmentation()));
     p_eventhandler->AddEventPhase(new Hadron_Decays(p_inithandler->GetHDHandler()));

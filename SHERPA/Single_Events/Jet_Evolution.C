@@ -308,7 +308,8 @@ bool Jet_Evolution::AftermathOfNoShower(Blob *blob, Blob_List *bloblist) {
   noshowerblob->SetStatus(blob_status::needs_beams |
                           blob_status::needs_hadronization);
   if (blob->Type() != btp::Hadron_Decay) {
-    noshowerblob->AddStatus(blob_status::needs_reconnections);
+    noshowerblob->AddStatus(blob_status::needs_rescattering |
+			    blob_status::needs_reconnections);
   }
   noshowerblob->SetId();
   noshowerblob->SetTypeSpec("No_Shower");
@@ -327,7 +328,8 @@ bool Jet_Evolution::AftermathOfSuccessfulShower(Blob *blob, Blob_List *bloblist,
       (!pertinterface->Shower()->On() ? CreateMockShowerBlobs(blob, bloblist)
                                   : bloblist->FindLast(btp::Shower));
   if (showerblob==NULL || blob->Type()== btp::Hadron_Decay) return true;
-  showerblob->AddStatus(blob_status::needs_reconnections);
+  showerblob->AddStatus(blob_status::needs_rescattering |
+			blob_status::needs_reconnections);
   return p_remnants->ExtractShowerInitiators(showerblob);
 }
 

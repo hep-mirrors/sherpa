@@ -33,6 +33,7 @@ namespace SHERPA {
   class Matrix_Element_Handler;
   class Hard_Decay_Handler;
   class Beam_Remnant_Handler;
+  class Rescattering_Handler;
   class Colour_Reconnection_Handler;
   class Decay_Handler_Base;
   class Soft_Photon_Handler;
@@ -60,6 +61,7 @@ namespace SHERPA {
     Hard_Decay_Handler           * p_harddecays;
     Shower_Handler_Map             m_showerhandlers;
     Beam_Remnant_Handler         * p_beamremnants;
+    Rescattering_Handler         * p_rescattering;
     Colour_Reconnection_Handler  * p_reconnections;
     ATOOLS::Fragmentation_Base   * p_fragmentation;
     Soft_Collision_Handler_Map     m_schandlers;
@@ -89,6 +91,7 @@ namespace SHERPA {
     bool InitializeTheHardDecays();
     bool InitializeTheShowers();
     bool InitializeTheBeamRemnants();
+    bool InitializeTheRescattering();
     bool InitializeTheColourReconnections();
     bool InitializeTheFragmentation();
     bool InitializeTheSoftCollisions();
@@ -123,11 +126,12 @@ namespace SHERPA {
     Output_Vector                    * GetOutputs()                         { return &m_outputs; }
     MODEL::Model_Base                * GetModel()                     const { return p_model; }
     PDF::ISR_Handler_Map             * GetISRHandlers()                     { return &m_isrhandlers; }
-    YFS::YFS_Handler             * GetYFSHandler()                  { return p_yfshandler;    }
+    YFS::YFS_Handler                 * GetYFSHandler()                      { return p_yfshandler;    }
     BEAM::Beam_Spectra_Handler       * GetBeamSpectraHandler()        const { return p_beamspectra; }
     Hard_Decay_Handler               * GetHardDecayHandler()          const { return p_harddecays; }
     const Shower_Handler_Map         & GetShowerHandlers()            const { return m_showerhandlers; }
     Beam_Remnant_Handler             * GetBeamRemnantHandler()        const { return p_beamremnants; }
+    Rescattering_Handler             * GetRescatteringHandler()       const { return p_rescattering; }
     Colour_Reconnection_Handler      * GetColourReconnectionHandler() const { return p_reconnections; }
     ATOOLS::Fragmentation_Base       * GetFragmentation()             const { return p_fragmentation; }
     Soft_Collision_Handler_Map       * GetSoftCollisionHandlers()           { return &m_schandlers; }
