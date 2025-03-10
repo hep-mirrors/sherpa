@@ -15,64 +15,72 @@
 #include "HepMC3/WriterRootTree.h"
 #include "HepMC3/WriterRoot.h"
 #endif
+#if USING__GZIP &&  HEPMC3_USE_COMPRESSION
+#include "HepMC3/ReaderGZ.h"
+#include "HepMC3/WriterGZ.h"
+#endif
 
 using namespace SHERPA;
 using namespace ATOOLS;
 using namespace std;
 
+template <class T>
+std::shared_ptr<HepMC3::Writer> get_output_file(std::ofstream& n, const char* use_compression, const int precision) {
+#if USING__GZIP && HEPMC3_USE_COMPRESSION
+    if (std::string(use_compression) == "GZ" )   { auto X = std::make_shared< HepMC3::WriterGZ<T,HepMC3::Compression::z> >(n);  X->writer()->set_precision(precision); return X;}
+    if (std::string(use_compression) == "LZMA" ) { auto X = std::make_shared< HepMC3::WriterGZ<T,HepMC3::Compression::lzma> >(n);  X->writer()->set_precision(precision); return X;}
+    if (std::string(use_compression) == "BZ2" )  { auto X = std::make_shared< HepMC3::WriterGZ<T,HepMC3::Compression::bz2> >(n);  X->writer()->set_precision(precision); return X;}
+#endif
+    auto X = std::make_shared<T>(n);
+    X->set_precision(precision);
+    return X;
+}
+
 Output_HepMC3::Output_HepMC3(const Output_Arguments &args) :
   Output_Base("HepMC3")
 {
   m_basename = args.m_outpath + "/" + args.m_outfile;
-  m_compression = Settings::GetMainSettings()["HEPMC3_COMPRESSION"].SetDefault("").Get<std::string>();
+  m_compression = Settings::GetMainSettings()["HEPMC3_COMPRESSION"].SetDefault("GZ").Get<std::string>();
   m_iotype = Settings::GetMainSettings()["HEPMC3_IO_TYPE"].SetDefault(0).Get<int>();
   int precision = Settings::GetMainSettings()["HEPMC3_OUTPUT_PRECISION"].SetDefault(12).Get<int>();
   m_short = Settings::GetMainSettings()["HEPMC3_SHORT"].SetDefault(false).Get<bool>();
-#ifdef USING__GZIP
-  m_compression = "GZ"; 
-  m_ext += ".gz";
+#ifdef USING__GZIP && HEPMC3_USE_COMPRESSION
+  if (m_compression == "GZ") m_ext += ".gz";
+  if (m_compression == "LZMA") m_ext += ".lz";
+  if (m_compression == "BZ2") m_ext += ".bz2";
+#else 
+  m_compression = "";
 #endif
 #ifdef USING__MPI
-  if (mpi->Size()>1) {
+  if (mpi->Size() > 1) {
     m_basename += "_"+rpa->gen.Variable("RNG_SEED");
   }
 #endif
-
+  if (m_iotype == 0 || m_iotype == 1 || m_iotype == 2) {
+     m_outstream.open((m_basename + m_ext).c_str());
+     if (!m_outstream.good())THROW(fatal_error, "Could not open event file " + m_basename + m_ext+".");
+  }
 switch (m_iotype)
     {
     case 0:
-    {
-        m_outstream.open((m_basename+m_ext).c_str());
-        if (!m_outstream.good())THROW(fatal_error, "Could not open event file "+m_basename+m_ext+".");
-        HepMC::WriterAscii* t_writer=new HepMC::WriterAscii(m_outstream);
-        t_writer->set_precision(precision);
-        p_writer=t_writer;
-    }
-    break;
+      p_writer = get_output_file<HepMC3::WriterAscii>(m_outstream, m_compression, precision);
+      break;
     case 1:
-        m_outstream.open((m_basename+m_ext).c_str());
-        if (!m_outstream.good())THROW(fatal_error, "Could not open event file "+m_basename+m_ext+".");
-        p_writer=new HepMC::WriterHEPEVT(m_outstream);
-        break;
+       p_writer = get_output_file<HepMC3::WriterHEPEVT>(m_outstream, m_compression, precision);
+       break;
     case 2:
-    {
-        m_outstream.open((m_basename+m_ext).c_str());
-        if (!m_outstream.good())THROW(fatal_error, "Could not open event file "+m_basename+m_ext+".");
-        HepMC::WriterAsciiHepMC2* t_writer=new HepMC::WriterAsciiHepMC2(m_outstream);
-        t_writer->set_precision(precision);
-        p_writer=t_writer;
-    }
-    break;
+       p_writer = get_output_file<HepMC3::WriterAsciiHepMC2>(m_outstream, m_compression, precision);
+       break;
     case 3:
 #ifdef USING__HEPMC3__ROOT
-        p_writer=new HepMC::WriterRoot(m_basename);
+        p_writer = std::make_shared<HepMC3::WriterRoot>(m_basename);
 #else
         THROW(fatal_error,"Asked for Root output, but Sherpa/HepMC3 was compiled without Root output support.");
 #endif
         break;
     case 4:
 #ifdef USING__HEPMC3__ROOT
-        p_writer=new HepMC::WriterRootTree(m_basename);
+        p_writer = std::make_shared<HepMC3::WriterRootTree>(m_basename);
 #else
         THROW(fatal_error,"Asked for RootTree output, but Sherpa/HepMC3 was compiled without RootTree output support.");
 #endif
@@ -81,7 +89,7 @@ switch (m_iotype)
         THROW(fatal_error, "Output format HEPMC3_IO_TYPE is undefined.");
         break;
     }
-  m_run_info= std::make_shared<HepMC::GenRunInfo>();
+  m_run_info = std::make_shared<HepMC::GenRunInfo>();
   HepMC::GenRunInfo::ToolInfo tool;
   tool.name = std::string("SHERPA-MC");
   tool.version = std::string(SHERPA_VERSION)+"."+std::string(SHERPA_SUBVERSION);
@@ -112,7 +120,7 @@ void Output_HepMC3::Output(Blob_List* blobs)
   } else {
     m_hepmc3.Sherpa2HepMC(blobs, m_run_info);
   }
-  HepMC::GenEvent* q=m_hepmc3.GenEvent();
+  HepMC::GenEvent* q = m_hepmc3.GenEvent();
   if (q)  m_hepmc3.AddCrossSection(*q, m_xs, m_err);
   std::vector<HepMC::GenEvent*> subevents(m_hepmc3.GenSubEventList());
   for (size_t i = 0; i<subevents.size(); ++i) {
