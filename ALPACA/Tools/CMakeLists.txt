@@ -1,6 +1,8 @@
-set(Tools_SOURCES P2P_Translator.C)
+set(Tools_SOURCES P2P_Translator.C
+                  Parton.C)
 
-set(Tools_HEADERS P2P_Translator.H)
+set(Tools_HEADERS P2P_Translator.H
+                  Parton.H)
 
 sherpa_create_git_info(Tools)
  

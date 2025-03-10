@@ -2,6 +2,7 @@
 #define ALPACA_Tools_P2P_Translator_H
 
 #include "ATOOLS/Phys/Particle.H"
+#include "ALPACA/Tools/Parton.H"
 
 namespace ALPACA {
 
@@ -13,6 +14,9 @@ namespace ALPACA {
 
     // destructor
     ~P2P_Translator() {}
+
+    Parton operator()(ATOOLS::Particle * particle, ATOOLS::Vec4D pos);
+    ATOOLS::Particle operator()(Parton * parton);
   };
 }
 
