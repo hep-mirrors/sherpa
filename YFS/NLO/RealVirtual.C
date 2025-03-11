@@ -16,26 +16,37 @@ RealVirtual::RealVirtual(const PHASIC::Process_Info& pi)
   {
 
     /* Load loop ME */
-    PHASIC::Process_Info loop_pi(pi);
-    loop_pi.m_fi.m_nlotype=ATOOLS::nlo_type::rvirt;
-    loop_pi.m_mincpl[0] = pi.m_mincpl[0];
-    loop_pi.m_maxcpl[0] = pi.m_maxcpl[0];
-    loop_pi.m_mincpl[1] = pi.m_mincpl[1]+1;
-    loop_pi.m_maxcpl[1] = pi.m_maxcpl[1]+1;
-    p_loop_me = PHASIC::Virtual_ME2_Base::GetME2(loop_pi);
+    PHASIC::Process_Info rr_pi(pi);
+    rr_pi.m_fi.m_nlotype=ATOOLS::nlo_type::rvirt;
+    rr_pi.m_mincpl[0] = pi.m_mincpl[0];
+    rr_pi.m_maxcpl[0] = pi.m_maxcpl[0];
+    rr_pi.m_mincpl[1] = pi.m_mincpl[1]+1;
+    rr_pi.m_maxcpl[1] = pi.m_maxcpl[1]+1;
+    PRINT_VAR(rr_pi.m_maxcpl);
+    // MODEL::Coupling_Data* aqcd=m_cpls.Get("Alpha_QCD");
+    // MODEL::Coupling_Data* aqed=m_cpls.Get("Alpha_QED");
+    p_loop_me = PHASIC::Virtual_ME2_Base::GetME2(rr_pi);
     if (!p_loop_me)  THROW(not_implemented, "Couldn't find RealVirtual ME for this process.");
     MODEL::s_model->GetCouplings(m_cpls);
     p_loop_me->SetSubType(ATOOLS::sbt::qed);
     /* Load color-correlated ME. TODO: orders */
-    PHASIC::External_ME_Args args(loop_pi.m_ii.GetExternal(),
-          loop_pi.m_fi.GetExternal(),
-          loop_pi.m_maxcpl);
+    PHASIC::External_ME_Args args(rr_pi.m_ii.GetExternal(),
+          rr_pi.m_fi.GetExternal(),
+          rr_pi.m_maxcpl);
     p_corr_me = PHASIC::Color_Correlated_ME2::GetME2(args);  
     p_loop_me->SetCouplings(m_cpls);
     m_sym  = ATOOLS::Flavour::FSSymmetryFactor(args.m_outflavs);
     m_sym *= ATOOLS::Flavour::ISSymmetryFactor(args.m_inflavs);
     m_factor  = p_loop_me->AlphaQED()/2.0/M_PI;
-    m_factor *= p_loop_me->AlphaQED()/2.0/M_PI;
+    double cplfac(1.0);
+    // cplfac *= pow(p_loop_me->AlphaQCD(),rr_pi.m_mincpl[0]);
+    cplfac *= pow(p_loop_me->AlphaQED(),rr_pi.m_mincpl[1]);
+    m_factor = cplfac/2.0/M_PI;
+    m_factor = p_loop_me->AlphaQED()/2.0/M_PI;
+    // PRINT_VAR(m_factor);
+    // PRINT_VAR(cplfac/2.0/M_PI);
+
+    // m_factor *= p_loop_me->AlphaQED()/2.0/M_PI;
 
   }
 
@@ -59,10 +70,10 @@ double RealVirtual::Calc_V(const ATOOLS::Vec4D_Vector& p,
   {
     double V(0.0), run_corr(0.0), scale(0.0);
     m_failcut = false;
-    // if(!p_rvproc->Trigger(p)) {
-    //   m_failcut = true;
-    //   return 0;
-    // }
+    if(!p_rvproc->Trigger(p)) {
+      m_failcut = true;
+      return 0;
+    }
     // p_loop_me->SetRenScale(mur);
     if(aqed->m_mode!=vpmode::off) {
      if(m_tchannel) scale = -(p[0]-p[2]).Abs2();  
