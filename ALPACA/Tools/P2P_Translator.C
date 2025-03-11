@@ -8,10 +8,11 @@ using namespace std;
 
 P2P_Translator::P2P_Translator() {}
 
-Parton * P2P_Translator::operator()(Particle * particle, Vec4D pos){
+Parton * P2P_Translator::operator()(Particle * particle){
     double inittau = 0.;
     Parton * parton = new Parton(particle->Flav(),
-				 particle->Momentum(), pos, inittau);
+				 particle->Momentum(),
+                 particle->XProd(), inittau);
     parton->SetFlow(1,particle->GetFlow(1));
     parton->SetFlow(2,particle->GetFlow(2));
     return parton;

@@ -25,8 +25,11 @@ bool Alpaca::Harvest(ATOOLS::Blob_List * blobs) {
       vector<Particle *> outparts((*bit)->GetOutParticles());
       for (vector<Particle *>::iterator piter=outparts.begin();
 	   piter != outparts.end(); piter++) {
-        if((*piter)->Info() == 'F' )
-	  m_partons.push_back(m_translator(*piter, (*bit)->Position()));
+        if((*piter)->Status() == part_status::active &&
+           (*piter)->Info() == 'F' &&
+           (*piter)->Flav().Strong() &&
+           !(*piter)->DecayBlob())
+	      m_partons.push_back(m_translator(*piter));
       }
     }
   }
@@ -41,10 +44,10 @@ bool Alpaca::AddBlob(ATOOLS::Blob_List * blobs) {
   Blob * blob = blobs->AddBlob(btp::Hard_Collision);
   blob->SetId();
   blob->SetTypeSpec("ALPACA");
-  blob->SetStatus(blob_status::needs_reconnections);
+  blob->SetStatus(blob_status::needs_reconnections|blob_status::needs_hadronization);
   for (Blob_List::iterator bit=blobs->begin();bit!=blobs->end();bit++) {
     if ((*bit)->Has(blob_status::needs_rescattering)) {
-      (*bit)->UnsetStatus(blob_status::needs_rescattering);
+      (*bit)->UnsetStatus(blob_status::needs_rescattering|blob_status::needs_hadronization);
       vector<Particle *> outparts((*bit)->GetOutParticles());
       for (vector<Particle *>::iterator
 	     piter=outparts.begin(); piter != outparts.end(); piter++) {
