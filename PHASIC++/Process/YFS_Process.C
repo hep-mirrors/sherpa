@@ -52,6 +52,9 @@ YFS_Process::~YFS_Process() {
   if (p_realvirtproc) delete p_realvirtproc;
   if (p_int) delete p_int;
   if (p_yfs) delete p_yfs;
+  if (p_apmap) delete p_apmap;
+  // if (p_rampl) delete p_rampl;
+  if (p_gen) delete p_gen;
 }
 
 void YFS_Process::Init(const Process_Info &pi,
@@ -92,8 +95,9 @@ void YFS_Process::Init(const Process_Info &pi,
     Process_Base::Init(vpi, beam, isr, yfs);
     p_virtproc = InitProcess(vpi, nlo_type::born, false);
     p_virtproc->FillProcessMap(p_apmap);
-    p_yfs->p_nlo->InitializeVirtual(vpi);
+    p_yfs->NLO()->InitializeVirtual(vpi);
     p_yfs->SetNLOType(nlo_type::loop);
+    p_yfs->NLO()->p_virt->SetProc(p_virtproc);
   }
   if (pi.Has(nlo_type::rvirt)) {
     Process_Info rvpi(pi);

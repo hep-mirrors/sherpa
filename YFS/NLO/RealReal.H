@@ -50,6 +50,7 @@ public:
   inline void SetProc(PHASIC::Process_Base *realproc) {p_rrproc=realproc;}
    ATOOLS::Cluster_Amplitude *CreateAmplitude
     (const ATOOLS::Vec4D_Vector &p) const;
+  inline bool FailCut() {return m_failcut;}
 };
 }
 

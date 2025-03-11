@@ -100,7 +100,11 @@ Real::~Real() {
 double Real::Calc_R(const ATOOLS::Vec4D_Vector& p)
   {
     double external_real;
-    if(!p_realproc->Trigger(p)) return 0;
+    m_failcut = false;
+    if(!p_realproc->Trigger(p)) {
+      m_failcut = true;
+      return 0;
+    }
     if(p_real_me) {
       if(!m_check) return Calc_External(p);
       external_real = Calc_External(p);
