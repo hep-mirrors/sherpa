@@ -1,4 +1,4 @@
-#ifndef YFS_Virtual_Virtual_H
+ #ifndef YFS_Virtual_Virtual_H
 #define YFS_Virtual_Virtual_H
 #include "PHASIC++/Process/Virtual_ME2_Base.H"
 #include "PHASIC++/Process/Tree_ME2_Base.H"
@@ -27,7 +27,9 @@ namespace YFS{
         PHASIC::Scale_Setter_Base *p_scale;
         PHASIC::Tree_ME2_Base* p_born_me;
         double m_factor;
-        
+        PHASIC::Process_Base *p_vproc;
+        inline void SetProc(PHASIC::Process_Base *proc) {p_vproc=proc;}
+        inline bool FailCut() {return m_failcut;}
     };
 }
 

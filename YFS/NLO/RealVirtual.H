@@ -30,6 +30,7 @@ namespace YFS{
         PHASIC::Process_Base *p_rvproc;
         double m_sym, m_factor;
         inline void SetProc(PHASIC::Process_Base *realproc) {p_rvproc=realproc;}
+        inline bool FailCut() {return m_failcut;}
     };
 }
 

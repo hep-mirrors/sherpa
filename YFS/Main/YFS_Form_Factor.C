@@ -478,7 +478,7 @@ DivArrD YFS_Form_Factor::BVV_full_eps(YFS::Dipole &d, double Kmax, int mode){
   t3 -= DiLog(zeta1) + DiLog(zeta2);
   t3 += sqr(M_PI);
   t3 /= rho;
-  if(m_tchannel==1) return m_alpi * (t1 + t2 + t3) + BVirtT(d);
+  // if(m_tchannel==1) return m_alpi * (t1 + t2 + t3) + BVirtTEps(d);
   return m_alpi * (t1 + t2 + t3);
 }
 
