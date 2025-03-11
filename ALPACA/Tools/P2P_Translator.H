@@ -15,8 +15,8 @@ namespace ALPACA {
     // destructor
     ~P2P_Translator() {}
 
-    Parton operator()(ATOOLS::Particle * particle, ATOOLS::Vec4D pos);
-    ATOOLS::Particle operator()(Parton * parton);
+    Parton * operator()(ATOOLS::Particle * particle, ATOOLS::Vec4D pos);
+    ATOOLS::Particle * operator()(Parton * parton);
   };
 }
 

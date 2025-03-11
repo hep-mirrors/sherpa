@@ -10,9 +10,11 @@ namespace ALPACA {
   class Alpaca {
   private:
     P2P_Translator m_translator;
-    std::vector<Parton> m_partons;
+    std::vector<Parton *> m_partons;
 
     bool Harvest(ATOOLS::Blob_List * blobs);
+    bool AddBlob(ATOOLS::Blob_List * blobs);
+    bool Evolve();
   public:
     //constructor
     Alpaca();
