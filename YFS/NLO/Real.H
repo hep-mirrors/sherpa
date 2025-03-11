@@ -46,7 +46,7 @@ public:
   PHASIC::Process_Base *p_realproc;
   ATOOLS::Cluster_Amplitude *p_ampl;
   histograms1d m_histograms1d;
-
+  inline bool FailCut() {return m_failcut;}
   inline void SetProc(PHASIC::Process_Base *realproc) {p_realproc=realproc;}
    ATOOLS::Cluster_Amplitude *CreateAmplitude
     (const ATOOLS::Vec4D_Vector &p) const;

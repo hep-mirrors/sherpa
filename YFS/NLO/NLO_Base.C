@@ -168,7 +168,7 @@ double NLO_Base::CalculateVirtual() {
 			for(auto _p: m_plab) msg_Error()<<_p<<std::endl;
 		}
 	}	
-	if(virt==0) return 0;
+	if(p_virt->FailCut()) return 0;
 	if(m_virt_sub && p_virt->p_loop_me->Mode()!=1) sub = p_dipoles->CalculateVirtualSub();
 	else {
 		sub = 0;
@@ -306,7 +306,7 @@ double NLO_Base::CalculateReal(Vec4D k, int fsrcount) {
 	p_nlodipoles->MakeDipolesIF(m_flavs,pp,m_plab);
 	p_nlodipoles->MakeDipoles(m_flavs,pp,m_plab);
 	double r = p_real->Calc_R(p) / norm;
-	if(IsZero(r)) return 0;
+	if(p_real->FailCut()) return 0;
 	double flux;
 	if(m_flux_mode==1) flux = p_dipoles->CalculateFlux(k);
 	else if(m_flux_mode==2) flux = 0.5*(p_nlodipoles->CalculateFlux(kk)+p_nlodipoles->CalculateFlux(k));
@@ -314,10 +314,12 @@ double NLO_Base::CalculateReal(Vec4D k, int fsrcount) {
 	double tot,rcoll;
 	double subloc = p_nlodipoles->CalculateRealSub(k);
 	double subb;
+	m_real = r*flux;
 	if(fsrcount) subb = p_dipoles->CalculateRealSubEEX(k);
 	else subb = p_dipoles->CalculateRealSubEEX(k);
-	if(IsZero(subb)) return 0;
+	// if(IsZero(subb)) return 0;
 	if(!CheckMomentumConservation(p)) {
+		msg_Error()<<"Momentum Conservation fails in "<<METHOD<<std::endl;
 		if(m_isr_debug || m_fsr_debug){
 			m_histograms1d["k_E"]->Insert(k.E());
 			m_histograms1d["k_pt"]->Insert(k.PPerp());
@@ -454,7 +456,7 @@ double NLO_Base::CalculateRealVirtual(Vec4D k, int fsrcount) {
 		msg_Error()<<"Mismatch in "<<METHOD<<std::endl;
 	}
 	double r = p_realvirt->Calc(p, m_born) / norm;
-	if(IsZero(r)) return 0;
+	if(p_realvirt->FailCut()) return 0;
 	if (IsBad(r)) {
 		msg_Error()<<"Real-Virtual is "<<r<<std::endl;
 		return 0;
@@ -640,7 +642,7 @@ double NLO_Base::CalculateRealReal(Vec4D k1, Vec4D k2, int fsr1, int fsr2){
 		return 0;
 	}
 	double r = p_realreal->Calc_R(p) / norm ;
-	if(IsZero(r)) return 0;
+	if(p_realreal->FailCut()) return 0;
 	if(IsBad(r) || IsBad(flux)) {
 		msg_Error()<<"Bad point for YFS Real"<<std::endl
 							 <<"Real ME is : "<<r<<std::endl
@@ -973,23 +975,31 @@ void NLO_Base::CheckRealSub(Vec4D k){
 		// k*=100;
 		double real;
 		std::string filename="Real_subtracted_";
+		std::string filename2="Real_ME_";
 		for(auto f: m_flavs) {
 			filename+=f.IDName();
 			filename+="_";
+			filename2+=f.IDName();
+			filename2+="_";
 		}
 		filename+=".txt";
+		filename2+=".txt";
 		if(ATOOLS::FileExists(filename))  ATOOLS::Remove(filename);
+		if(ATOOLS::FileExists(filename2))  ATOOLS::Remove(filename2);
 		out_sub.open(filename, std::ios_base::app);
+		out_real.open(filename2, std::ios_base::app);
 		// if(k.E() < 0.8*sqrt(m_s)/2.) return;
 		for (double i = 1; i < 20 ; i+=0.005)
 		{
 			k=k/i;
+			if(k.E() <= m_isrcut*sqrt(m_s)) break;
 			real=CalculateReal(k);
 			out_sub<<k.E()<<","<<fabs(real)<<std::endl;
-			if(k.E() < 1e-10 || real==0) break;
+			out_real<<k.E()<<","<<fabs(m_real)<<std::endl;
 			// m_histograms2d["Real_me_sub"]->Insert(k.E(),fabs(real), 1);
 		}
 		out_sub.close();
+		out_real.close();
 		exit(0);
 }
 
