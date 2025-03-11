@@ -25,5 +25,6 @@ Particle * P2P_Translator::operator()(Parton * parton){
     particle->SetInfo('F');
     particle->SetFlow(1,parton->GetFlow(1));
     particle->SetFlow(2,parton->GetFlow(2));
+    particle->SetPosition(parton->Position());
     return particle;
 }
