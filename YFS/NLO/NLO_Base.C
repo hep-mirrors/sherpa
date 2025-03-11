@@ -371,25 +371,25 @@ double NLO_Base::CalculateReal(Vec4D k, int fsrcount) {
 
 double NLO_Base::CalculateRealVirtual() {
 	if (!m_realvirt) return 0;
-	double real(0);
+	double realvirtual(0);
 	for (auto k : m_ISRPhotons) {
 		if(m_check_rv) {
 			if(k.E() < 0.2*sqrt(m_s)) continue;
 			CheckRealVirtualSub(k);
 		}
-		// if(CheckPhotonForReal(k))	real+=CalculateRealVirtual(k,0);
-		real+=CalculateRealVirtual(k,0);
+		// if(CheckPhotonForReal(k))	realvirtual+=CalculateRealVirtual(k,0);
+		realvirtual+=CalculateRealVirtual(k,0);
 	}
 	for (auto k : m_FSRPhotons) {
 		if(m_check_rv) {
 			if(k.E() < 0.2*sqrt(m_s)) continue;
 			CheckRealVirtualSub(k);
 		}
-		// if(CheckPhotonForReal(k)) real+=CalculateRealVirtual(k, 1);
-		real+=CalculateRealVirtual(k, 1);
+		// if(CheckPhotonForReal(k)) realvirtual+=CalculateRealVirtual(k, 1);
+		realvirtual+=CalculateRealVirtual(k, 1);
 	}
-	// if(IsZero(real)) real = p_dipoles->CalculateRealSubEEX();
-	return real;
+	// if(IsZero(realvirtual)) realvirtual = p_dipoles->CalculateRealSubEEX();
+	return realvirtual;
 }
 
 
@@ -399,7 +399,7 @@ double NLO_Base::CalculateRealVirtual(Vec4D k, int fsrcount) {
 	Vec4D_Vector p(m_plab),pi(m_bornMomenta), pf(m_bornMomenta);
 	double tot(0), sub(0);
 	double norm = 2.*pow(2 * M_PI, 3);
-	double flux;
+	double flux(1);
 	Vec4D kk = k;
 	p_nlodipoles->MakeDipoles(m_flavs,m_plab,m_plab);
 	dipoletype::code fluxtype = p_nlodipoles->WhichResonant(k);
@@ -436,9 +436,9 @@ double NLO_Base::CalculateRealVirtual(Vec4D k, int fsrcount) {
  	// MapMomenta(pp, kzero);
  	Flavour_Vector fl = m_flavs;
  	// fl.push_back(kf_photon);
-	p_nlodipoles->MakeDipolesII(fl,pp,pp);
-	p_nlodipoles->MakeDipolesIF(fl,pp,pp);
-	p_nlodipoles->MakeDipoles(fl,pp,pp);
+	p_nlodipoles->MakeDipolesII(fl,pp,m_plab);
+	p_nlodipoles->MakeDipolesIF(fl,pp,m_plab);
+	p_nlodipoles->MakeDipoles(fl,pp,m_plab);
 	// p.push_back(k);
 	// m_plab = pp;
 	p_nlodipoles->p_yfsFormFact->p_virt = p_realvirt->p_loop_me;
@@ -462,10 +462,10 @@ double NLO_Base::CalculateRealVirtual(Vec4D k, int fsrcount) {
 		return 0;
 	}
 	// m_plab = pp;
-	double aB = subloc*m_oneloop;//CalculateVirtual();
+	double aB = subloc*m_oneloop*p_realvirt->m_factor;
+	// yfspole*=m_oneloop*p_realvirt->m_factor;
 	// double aB = subloc*CalculateVirtual();
 	// double aB = subloc*(p_virt->Calc(pp, m_born) - m_born*p_nlodipoles->CalculateVirtualSub());
-	yfspole*=aB;
 	// yfspole*=(p_virt->p_loop_me->ME_E1()*p_virt->m_factor-m_born*p_nlodipoles->Get_E1());
 	// double tot = (r-aB) / subloc;
 	if(m_submode==submode::local) tot =  (r*flux-aB/m_rescale_alpha)/subloc;
@@ -473,7 +473,9 @@ double NLO_Base::CalculateRealVirtual(Vec4D k, int fsrcount) {
 	else if(m_submode==submode::off) tot =  (r*flux)/subb;
 	// // real += tot;
 	// PRINT_VAR(r);
-	// PRINT_VAR(r*flux-aB);
+	// PRINT_VAR(r);
+	// PRINT_VAR(r*flux);
+	// PRINT_VAR(aB);
 	// PRINT_VAR(subloc);
 	// PRINT_VAR(subb);
 	if(m_check_poles==1){
@@ -485,12 +487,12 @@ double NLO_Base::CalculateRealVirtual(Vec4D k, int fsrcount) {
 		m_histograms1d["RVSinglePoleCD"]->Insert(correctdigit);
 		m_histograms1d["RealLoopEpsLP"]->Insert(log10(fabs(pr1)));
 		m_histograms1d["RealLoopEpsYFS"]->Insert(log10(fabs(yfspole)));
-		if(!IsEqual(pr2,-p_nlodipoles->Get_E1(),1e-4)){
+		if(!IsEqual(pr2,-yfspole,1e-4)){
 			msg_Out()<<"Poles do not cancel in YFS Real-Virtuals"<<std::endl
 					 <<"Process =  "<<p_realvirt->p_loop_me->Name()<<std::endl
 					 <<"Correct Digits =  "<<correctdigit<<std::endl
 					 <<"One-Loop Provider RV eps^{-1}  = "<<pr2<<std::endl
-					 <<"Sherpa RV eps^{-1} = "<<p_nlodipoles->Get_E1()<<std::endl;
+					 <<"Sherpa RV eps^{-1} = "<<-yfspole<<std::endl;
 			return 0;
 		}
 		else{
@@ -510,7 +512,7 @@ double NLO_Base::CalculateRealVirtual(Vec4D k, int fsrcount) {
 
 double NLO_Base::CalculateRealReal() {
 	if (!m_rrtool) return 0;
-	double real(0);
+	double rr(0);
 	Vec4D_Vector photons;
 	for (auto k : m_ISRPhotons) photons.push_back(k);
 	for (auto k : m_FSRPhotons) photons.push_back(k);
@@ -526,11 +528,12 @@ double NLO_Base::CalculateRealReal() {
 				// if(k.PPerp() < 1. || kk.PPerp() < 1.) continue;
 				CheckRealRealSub(k, kk, i>(len-1)?1:0, j>(len-1)?1:0);
 			}
-			real+=CalculateRealReal(k,kk,i>(len-1)?1:0, j>(len-1)?1:0);
-			// real+=CalculateRealReal(k,kk, 0,0);
+			rr+=CalculateRealReal(k,kk,i>(len-1)?1:0, j>(len-1)?1:0);
+			// rr+=CalculateRealReal(k,kk, 0,0);
 		}
 	}
-	return real;
+	// PRINT_VAR(rr);
+	return rr;
 }
 
 
