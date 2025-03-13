@@ -43,6 +43,7 @@ RealVirtual::RealVirtual(const PHASIC::Process_Info& pi)
     cplfac *= pow(p_loop_me->AlphaQED(),rr_pi.m_mincpl[1]);
     m_factor = cplfac/2.0/M_PI;
     m_factor = p_loop_me->AlphaQED()/2.0/M_PI;
+    // m_factor =1.;
     // PRINT_VAR(m_factor);
     // PRINT_VAR(cplfac/2.0/M_PI);
 
@@ -82,13 +83,20 @@ double RealVirtual::Calc_V(const ATOOLS::Vec4D_Vector& p,
      run_corr = 4.*dalpha*B;
     }
     p_loop_me->Calc(p,B);
+    double gammaborn = p_loop_me->ME_Born();
+    // PRINT_VAR(gammaborn);
+    // PRINT_VAR(B);
     // V = p_loop_me->ME_Finite();
     switch(p_loop_me->Mode())
       {
       case 0:
         // PRINT_VAR(p_loop_me->ME_Finite()*m_factor*B);
-        V =  m_factor *  p_loop_me->ME_Finite() * B ; break;
+        V =  m_factor *  p_loop_me->ME_Finite() * gammaborn ; break;
+
       case 1:
+        // PRINT_VAR(p_loop_me->ME_Finite()*m_factor*B);
+        V =  m_factor *  p_loop_me->ME_Finite(); break;
+      case 2:
         // For Griffin
         // PRINT_VAR(p_loop_me->ME_Finite()*m_rescale_alpha);
         V =  p_loop_me->ME_Finite()-B;//*((*aqed)(0)/s_model->ScalarConstant("alpha_QED"));
