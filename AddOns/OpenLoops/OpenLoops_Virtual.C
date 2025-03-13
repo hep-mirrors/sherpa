@@ -65,10 +65,6 @@ void OpenLoops_Virtual::Calc(const Vec4D_Vector& momenta)
     PRINT_INFO(momenta[2][0]<<" "<<m_flavs<<" user="<<timing->UserTime()
                <<" real="<<timing->RealTime()<<" sys="<<timing->SystemTime());
     double factor=coupling/2.0/M_PI;
-    msg_Out()<<"B     = "<<m_born<<std::endl;
-    msg_Out()<<"V_fin = "<<m_res.Finite()<<" -> "<<m_res.Finite()/m_born/factor<<std::endl;
-    msg_Out()<<"V_e1  = "<<m_res.IR()<<" -> "<<m_res.IR()/m_born/factor<<std::endl;
-    msg_Out()<<"V_e2  = "<<m_res.IR2()<<" -> "<<m_res.IR2()/m_born/factor<<std::endl;
   }
   if (m_calcass) {
     for (size_t i(0);i<m_ol_asscontribs;++i) {
