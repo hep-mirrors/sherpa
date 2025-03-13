@@ -365,6 +365,8 @@ double MEPS_Scale_Setter::Calculate
   m_sproc=p_proc->Caller()->Info().Has(nlo_type::rsub);
   m_vproc=p_proc->Info().Has(nlo_type::vsub);
   m_rsproc=m_rproc||(m_sproc&&p_proc->Caller()->GetRSSubevtList());
+  msg_Debugging()<<"vproc = "<<m_vproc<<", sproc = "<<m_sproc
+		 <<", rproc = "<<m_rproc<<", rsproc = "<<m_rsproc<<"\n";
   const Flavour_Vector &fl=p_proc->Caller()->Flavours();
   if ((m_cmode&128) && m_sproc && !m_rproc &&
       p_proc->Caller()->GetRSSubevtList()) {
@@ -783,11 +785,19 @@ double MEPS_Scale_Setter::SetScales(Cluster_Amplitude *ampl)
     ampl->SetMuF2(m_scale[stp::fac]);
     ampl->SetMuR2(m_scale[stp::ren]);
     ampl->SetMuQ2(m_scale[stp::res]);
+    for (size_t i(0);i<ampl->Legs().size();++i) {
+      ampl->Leg(i)->SetKT2(0,-1.);
+      ampl->Leg(i)->SetKT2(1,-1.);
+    }
     while (ampl->Prev()) {
       ampl=ampl->Prev();
       ampl->SetMuF2(m_scale[stp::fac]);
       ampl->SetMuR2(m_scale[stp::ren]);
       ampl->SetMuQ2(m_scale[stp::res]);
+      for (size_t i(0);i<ampl->Legs().size();++i) {
+	ampl->Leg(i)->SetKT2(0,-1.);
+	ampl->Leg(i)->SetKT2(1,-1.);
+      }
     }
   }
   return m_scale[stp::fac];
