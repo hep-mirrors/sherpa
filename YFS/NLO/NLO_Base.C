@@ -341,10 +341,6 @@ double NLO_Base::CalculateReal(Vec4D k, int fsrcount) {
 		return 0;
 	}
 	m_recola_evts+=1;
-	// if(!fsrcount) r*=flux;
-	// PRINT_VAR(m_born);
-	// PRINT_VAR(r*flux);
-	// PRINT_VAR(subloc*m_born/m_rescale_alpha);
 	if(m_submode==submode::local) tot =  (r*flux-subloc*m_born/m_rescale_alpha)/subloc;
 	else if(m_submode==submode::global) tot =  (r*flux-subloc*m_born/m_rescale_alpha)/subb;
 	else if(m_submode==submode::off) tot =  (r*flux)/subb;
@@ -455,30 +451,23 @@ double NLO_Base::CalculateRealVirtual(Vec4D k, int fsrcount) {
 	if(p.size()!=(m_flavs.size()+1)){
 		msg_Error()<<"Mismatch in "<<METHOD<<std::endl;
 	}
-	double r = p_realvirt->Calc(p, m_born) / norm;
+	double r = p_realvirt->Calc(p, 1) / norm;
 	if(p_realvirt->FailCut()) return 0;
 	if (IsBad(r)) {
 		msg_Error()<<"Real-Virtual is "<<r<<std::endl;
 		return 0;
 	}
 	// m_plab = pp;
-	double aB = subloc*m_oneloop*p_realvirt->m_factor;
-	// yfspole*=m_oneloop*p_realvirt->m_factor;
+	double aB = p_nlodipoles->CalculateRealSub(k)*m_oneloop;//*p_realvirt->m_factor;
 	// double aB = subloc*CalculateVirtual();
+	// yfspole*=m_oneloop*p_realvirt->m_factor;
 	// double aB = subloc*(p_virt->Calc(pp, m_born) - m_born*p_nlodipoles->CalculateVirtualSub());
 	// yfspole*=(p_virt->p_loop_me->ME_E1()*p_virt->m_factor-m_born*p_nlodipoles->Get_E1());
 	// double tot = (r-aB) / subloc;
 	if(m_submode==submode::local) tot =  (r*flux-aB/m_rescale_alpha)/subloc;
 	else if(m_submode==submode::global) tot =  (r*flux-aB/m_rescale_alpha)/subb;
 	else if(m_submode==submode::off) tot =  (r*flux)/subb;
-	// // real += tot;
-	// PRINT_VAR(r);
-	// PRINT_VAR(r);
-	// PRINT_VAR(r*flux);
-	// PRINT_VAR(aB);
-	// PRINT_VAR(subloc);
-	// PRINT_VAR(subb);
-	if(m_check_poles==1){
+	if(m_check_poles==1 && r!=0){
 		double pr1 = p_realvirt->p_loop_me->ME_E1()*p_realvirt->m_factor*flux/norm;
 		double pr2 = p_realvirt->p_loop_me->ME_E1()*p_realvirt->m_factor;
 		// yfspole = p_nlodipoles->Get_E1();
@@ -492,7 +481,8 @@ double NLO_Base::CalculateRealVirtual(Vec4D k, int fsrcount) {
 					 <<"Process =  "<<p_realvirt->p_loop_me->Name()<<std::endl
 					 <<"Correct Digits =  "<<correctdigit<<std::endl
 					 <<"One-Loop Provider RV eps^{-1}  = "<<pr2<<std::endl
-					 <<"Sherpa RV eps^{-1} = "<<-yfspole<<std::endl;
+					 <<"Sherpa RV eps^{-1} = "<<-yfspole<<std::endl
+					 <<"Sherpa/One-Loop = "<<-yfspole/pr2<<std::endl;
 			return 0;
 		}
 		else{
@@ -992,11 +982,11 @@ void NLO_Base::CheckRealSub(Vec4D k){
 		out_sub.open(filename, std::ios_base::app);
 		out_real.open(filename2, std::ios_base::app);
 		// if(k.E() < 0.8*sqrt(m_s)/2.) return;
-		for (double i = 1; i < 20 ; i+=0.005)
+		for (double i = 1; i < 20 ; i+=0.001)
 		{
 			k=k/i;
-			if(k.E() <= m_isrcut*sqrt(m_s)) break;
 			real=CalculateReal(k);
+			if(k.E() <= 1e-10 || real==0) break;
 			out_sub<<k.E()<<","<<fabs(real)<<std::endl;
 			out_real<<k.E()<<","<<fabs(m_real)<<std::endl;
 			// m_histograms2d["Real_me_sub"]->Insert(k.E(),fabs(real), 1);
