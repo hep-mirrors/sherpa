@@ -107,7 +107,7 @@ DivArrD YFS_Form_Factor::BVR_full_eps(YFS::Dipole &d,  double Kmax, int mode) {
   double beta2 = sqrt(1. - sqr(Mas2 / E2));
   double rho = sqrt(1 - sqr(m12 / p1p2));
   double irloop = m_irscale;//p_virt->IRscale();
-  double epsloop = p_virt->Eps_Scheme_Factor({p1,p2});
+  double epsloop = (p_virt?p_virt->Eps_Scheme_Factor({p1,p2}):4*M_PI);
   DivArrD massph(0,-1,0,0,0,0);
   t1 = (p1p2 * A(p1p2, Mas1, Mas2) - 1) * (massph-log(4.*M_PI*sqr(irloop)/4./Kmax/epsloop));
   if ( mode == 0 ) {
