@@ -325,8 +325,8 @@ void Define_Dipoles::Dipole_IF(ATOOLS::Flavour_Vector const &fl, ATOOLS::Vec4D_V
     {
       for(size_t j = 2; j < fl.size(); ++j)
       {
-        if(fl[i].IntCharge()==0 || fl[i].IsQCD()) continue;
-        if(fl[j].IntCharge()==0 || fl[j].IsQCD()) continue;
+        if(fl[i].IntCharge()==0) continue;
+        if(fl[j].IntCharge()==0) continue;
         ff.clear();
         mm.clear();
         bm.clear();
