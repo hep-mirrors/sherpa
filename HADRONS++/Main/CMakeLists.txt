@@ -14,3 +14,4 @@ sherpa_create_git_info(HadronsMain)
  
 add_library(HadronsMain SHARED ${HadronsMain_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
 sherpa_handle_shared_library(HadronsMain HadronsMain)
+add_dependencies(HadronsMain HadronsMain_Git_Info)

@@ -12,3 +12,4 @@ sherpa_create_git_info(ShrimpsTools)
  
 add_library(ShrimpsTools SHARED ${ShrimpsTools_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
 sherpa_handle_shared_library(ShrimpsTools ShrimpsTools)
+add_dependencies(ShrimpsTools ShrimpsTools_Git_Info)

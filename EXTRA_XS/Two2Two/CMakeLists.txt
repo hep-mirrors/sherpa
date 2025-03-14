@@ -10,3 +10,4 @@ sherpa_create_git_info(Two2Two)
  
 add_library(ExtraXS2_2 SHARED ${Two2Two_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
 sherpa_handle_shared_library(ExtraXS2_2 ExtraXS2_2)
+add_dependencies(ExtraXS2_2 Two2Two_Git_Info)

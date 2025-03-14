@@ -14,3 +14,4 @@ sherpa_create_git_info(PerturbativePhysics)
  
 add_library(SherpaPerturbativePhysics SHARED ${PerturbativePhysics_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
 sherpa_handle_shared_library(SherpaPerturbativePhysics SherpaPerturbativePhysics)
+add_dependencies(SherpaPerturbativePhysics PerturbativePhysics_Git_Info)

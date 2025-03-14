@@ -24,3 +24,4 @@ sherpa_create_git_info(Ladders)
  
 add_library(ShrimpsLadders SHARED ${Ladders_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
 sherpa_handle_shared_library(ShrimpsLadders ShrimpsLadders)
+add_dependencies(ShrimpsLadders Ladders_Git_Info)

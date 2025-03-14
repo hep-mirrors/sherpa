@@ -8,3 +8,4 @@ sherpa_create_git_info(CSSMain)
  
 add_library(CSMain SHARED ${CSSMain_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
 sherpa_handle_shared_library(CSMain CSMain)
+add_dependencies(CSMain CSSMain_Git_Info)

@@ -14,3 +14,4 @@ sherpa_create_git_info(ReconnectionsMain)
  
 add_library(Reconnections SHARED ${ReconnectionsMain_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
 sherpa_handle_shared_library(Reconnections Reconnections)
+add_dependencies(Reconnections ReconnectionsMain_Git_Info)

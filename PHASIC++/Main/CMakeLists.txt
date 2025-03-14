@@ -21,3 +21,4 @@ sherpa_create_git_info(PhasicMain)
  
 add_library(PhasicMain SHARED ${PhasicMain_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
 sherpa_handle_shared_library(PhasicMain PhasicMain)
+add_dependencies(PhasicMain PhasicMain_Git_Info)

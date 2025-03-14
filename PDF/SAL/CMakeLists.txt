@@ -9,3 +9,4 @@ sherpa_create_git_info(SAL)
  
 add_library(SALSherpa SHARED ${SAL_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
 sherpa_handle_shared_library(SALSherpa SALSherpa)
+add_dependencies(SALSherpa SAL_Git_Info)

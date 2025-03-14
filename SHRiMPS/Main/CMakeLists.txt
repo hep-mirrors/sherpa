@@ -12,3 +12,4 @@ sherpa_create_git_info(ShrimpsMain)
  
 add_library(ShrimpsMain SHARED ${ShrimpsMain_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
 sherpa_handle_shared_library(ShrimpsMain ShrimpsMain)
+add_dependencies(ShrimpsMain ShrimpsMain_Git_Info)

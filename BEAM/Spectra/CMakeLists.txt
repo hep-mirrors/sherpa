@@ -18,3 +18,4 @@ sherpa_create_git_info(Spectra)
 
 add_library(BeamSpectra SHARED ${Spectra_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
 sherpa_handle_shared_library(BeamSpectra BeamSpectra)
+add_dependencies(BeamSpectra Spectra_Git_Info)

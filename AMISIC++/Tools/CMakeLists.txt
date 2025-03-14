@@ -22,3 +22,4 @@ sherpa_create_git_info(AmisicTools)
  
 add_library(AmisicTools SHARED ${AmisicTools_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
 sherpa_handle_shared_library(AmisicTools AmisicTools)
+add_dependencies(AmisicTools AmisicTools_Git_Info)

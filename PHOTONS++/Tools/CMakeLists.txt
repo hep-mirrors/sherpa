@@ -23,3 +23,4 @@ sherpa_create_git_info(PhotonsTools)
  
 add_library(PhotonsTools SHARED ${PhotonsTools_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
 sherpa_handle_shared_library(PhotonsTools PhotonsTools)
+add_dependencies(PhotonsTools PhotonsTools_Git_Info)

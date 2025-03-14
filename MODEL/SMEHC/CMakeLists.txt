@@ -11,3 +11,4 @@ sherpa_create_git_info(SMEHC)
  
 add_library(SherpaSMEHC SHARED ${SMEHC_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
 sherpa_handle_shared_library(SherpaSMEHC SherpaSMEHC)
+add_dependencies(SherpaSMEHC SMEHC_Git_Info)

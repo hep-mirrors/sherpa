@@ -8,3 +8,4 @@ sherpa_create_git_info(Enhance)
  
 add_library(PhasicEnhance SHARED ${Enhance_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
 sherpa_handle_shared_library(PhasicEnhance PhasicEnhance)
+add_dependencies(PhasicEnhance Enhance_Git_Info)

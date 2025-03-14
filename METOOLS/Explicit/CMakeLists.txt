@@ -27,3 +27,4 @@ sherpa_create_git_info(Explicit)
  
 add_library(METoolsExplicit SHARED ${Explicit_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
 sherpa_handle_shared_library(METoolsExplicit METoolsExplicit)
+add_dependencies(METoolsExplicit Explicit_Git_Info)

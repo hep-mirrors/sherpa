@@ -16,3 +16,4 @@ sherpa_create_git_info(SpinCorrelations)
  
 add_library(METoolsSpinCorrelations SHARED ${SpinCorrelations_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
 sherpa_handle_shared_library(METoolsSpinCorrelations METoolsSpinCorrelations)
+add_dependencies(METoolsSpinCorrelations SpinCorrelations_Git_Info)

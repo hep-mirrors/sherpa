@@ -6,3 +6,4 @@ sherpa_create_git_info(DIMGauge)
  
 add_library(DIMGauge SHARED ${DIMGauge_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
 sherpa_handle_shared_library(DIMGauge DIMGauge)
+add_dependencies(DIMGauge DIMGauge_Git_Info)

@@ -22,3 +22,4 @@ sherpa_create_git_info(AmegicPhasespace)
  
 add_library(AmegicPSGen SHARED ${AmegicPhasespace_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
 sherpa_handle_shared_library(AmegicPSGen AmegicPSGen)
+add_dependencies(AmegicPSGen AmegicPhasespace_Git_Info)

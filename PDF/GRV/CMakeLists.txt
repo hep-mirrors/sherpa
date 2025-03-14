@@ -7,3 +7,4 @@ sherpa_create_git_info(GRV)
  
 add_library(GRVSherpa SHARED ${GRV_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
 sherpa_handle_shared_library(GRVSherpa GRVSherpa)
+add_dependencies(GRVSherpa GRV_Git_Info)

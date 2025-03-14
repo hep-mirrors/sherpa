@@ -19,3 +19,4 @@ sherpa_create_git_info(MCatNLOShowers)
  
 add_library(MCatNLOShowers SHARED ${MCatNLOShowers_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
 sherpa_handle_shared_library(MCatNLOShowers MCatNLOShowers)
+add_dependencies(MCatNLOShowers MCatNLOShowers_Git_Info)

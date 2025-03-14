@@ -38,3 +38,4 @@ sherpa_create_git_info(Scales)
 
 add_library(PhasicScales SHARED ${Scales_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
 sherpa_handle_shared_library(PhasicScales PhasicScales)
+add_dependencies(PhasicScales Scales_Git_Info)

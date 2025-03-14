@@ -14,3 +14,4 @@ sherpa_create_git_info(PS_Library)
  
 add_library(HadronsPSs SHARED ${PS_Library_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
 sherpa_handle_shared_library(HadronsPSs HadronsPSs)
+add_dependencies(HadronsPSs PS_Library_Git_Info)

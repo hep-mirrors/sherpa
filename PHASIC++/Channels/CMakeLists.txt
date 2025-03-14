@@ -62,3 +62,4 @@ sherpa_create_git_info(Channels)
  
 add_library(PhasicChannels SHARED ${Channels_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
 sherpa_handle_shared_library(PhasicChannels PhasicChannels)
+add_dependencies(PhasicChannels Channels_Git_Info)

@@ -26,3 +26,4 @@ sherpa_create_git_info(BeamMain)
  
 add_library(BeamMain SHARED ${BeamMain_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
 sherpa_handle_shared_library(BeamMain BeamMain)
+add_dependencies(BeamMain BeamMain_Git_Info)

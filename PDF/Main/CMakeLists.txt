@@ -24,3 +24,4 @@ sherpa_create_git_info(PDFMain)
  
 add_library(PDF SHARED ${PDFMain_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
 sherpa_handle_shared_library(PDF PDF)
+add_dependencies(PDF PDFMain_Git_Info)

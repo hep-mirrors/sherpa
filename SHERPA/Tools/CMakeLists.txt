@@ -22,6 +22,7 @@ sherpa_create_git_info(SherpaTools)
  
 add_library(SherpaTools SHARED ${SherpaTools_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
 sherpa_handle_shared_library(SherpaTools SherpaTools)
+add_dependencies(SherpaTools SherpaTools_Git_Info)
 
 if (HepMC3_FOUND)
   target_link_libraries(SherpaTools PRIVATE HepMC3::HepMC3 ${HepMC3_rootIO})

@@ -24,3 +24,4 @@ sherpa_create_git_info(DireShower)
  
 add_library(DireShower SHARED ${DireShower_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
 sherpa_handle_shared_library(DireShower DireShower)
+add_dependencies(DireShower DireShower_Git_Info)

@@ -16,3 +16,4 @@ sherpa_create_git_info(Formation)
  
 add_library(AhadicFormation SHARED ${Formation_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
 sherpa_handle_shared_library(AhadicFormation AhadicFormation)
+add_dependencies(AhadicFormation Formation_Git_Info)

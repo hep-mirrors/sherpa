@@ -14,3 +14,4 @@ sherpa_create_git_info(ComixPhasespace)
  
 add_library(ComixPhasespace SHARED ${ComixPhasespace_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
 sherpa_handle_shared_library(ComixPhasespace ComixPhasespace)
+add_dependencies(ComixPhasespace ComixPhasespace_Git_Info)

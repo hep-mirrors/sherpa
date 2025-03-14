@@ -24,3 +24,4 @@ sherpa_create_git_info(MEs)
  
 add_library(PhotonsMEs SHARED ${MEs_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
 sherpa_handle_shared_library(PhotonsMEs PhotonsMEs)
+add_dependencies(PhotonsMEs MEs_Git_Info)

@@ -13,3 +13,4 @@ sherpa_create_git_info(ExtraXSMain)
  
 add_library(ExtraXS SHARED ${ExtraXSMain_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
 sherpa_handle_shared_library(ExtraXS ExtraXS)
+add_dependencies(ExtraXS ExtraXSMain_Git_Info)

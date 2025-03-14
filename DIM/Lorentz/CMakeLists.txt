@@ -11,3 +11,4 @@ sherpa_create_git_info(DIMLorentz)
  
 add_library(DIMLorentz SHARED ${DIMLorentz_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
 sherpa_handle_shared_library(DIMLorentz DIMLorentz)
+add_dependencies(DIMLorentz DIMLorentz_Git_Info)

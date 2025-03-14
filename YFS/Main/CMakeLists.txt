@@ -21,3 +21,4 @@ sherpa_create_git_info(YFSMain)
  
 add_library(YFSMain SHARED ${YFSMain_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
 sherpa_handle_shared_library(YFSMain YFSMain)
+add_dependencies(YFSMain YFSMain_Git_Info)

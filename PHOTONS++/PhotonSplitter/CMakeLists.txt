@@ -13,3 +13,4 @@ sherpa_create_git_info(PhotonSplitter)
  
 add_library(PhotonsPhotonSplitter SHARED ${PhotonSplitter_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
 sherpa_handle_shared_library(PhotonsPhotonSplitter PhotonsPhotonSplitter)
+add_dependencies(PhotonsPhotonSplitter PhotonSplitter_Git_Info)

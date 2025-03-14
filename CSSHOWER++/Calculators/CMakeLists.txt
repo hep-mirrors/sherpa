@@ -12,3 +12,4 @@ sherpa_create_git_info(CSSCalculators)
  
 add_library(CSCalculators SHARED ${CSSCalculators_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
 sherpa_handle_shared_library(CSCalculators CSCalculators)
+add_dependencies(CSCalculators CSSCalculators_Git_Info)

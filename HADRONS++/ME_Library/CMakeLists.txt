@@ -28,3 +28,4 @@ sherpa_create_git_info(ME_Library)
  
 add_library(HadronsMEs SHARED ${ME_Library_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
 sherpa_handle_shared_library(HadronsMEs HadronsMEs)
+add_dependencies(HadronsMEs ME_Library_Git_Info)

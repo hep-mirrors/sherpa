@@ -9,3 +9,4 @@ sherpa_create_git_info(H1)
 
 add_library(H1Sherpa SHARED ${H1_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C)
 sherpa_handle_shared_library(H1Sherpa H1Sherpa)
+add_dependencies(H1Sherpa H1_Git_Info)

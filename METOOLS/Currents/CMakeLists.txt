@@ -16,3 +16,4 @@ sherpa_create_git_info(Currents)
  
 add_library(METoolsCurrents SHARED ${Currents_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
 sherpa_handle_shared_library(METoolsCurrents METoolsCurrents)
+add_dependencies(METoolsCurrents Currents_Git_Info)

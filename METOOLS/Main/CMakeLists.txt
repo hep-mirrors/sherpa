@@ -18,3 +18,4 @@ sherpa_create_git_info(METoolsMain)
  
 add_library(METoolsMain SHARED ${METoolsMain_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
 sherpa_handle_shared_library(METoolsMain METoolsMain)
+add_dependencies(METoolsMain METoolsMain_Git_Info)

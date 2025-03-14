@@ -33,3 +33,4 @@ sherpa_create_git_info(AhadicTools)
  
 add_library(AhadicTools SHARED ${AhadicTools_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
 sherpa_handle_shared_library(AhadicTools AhadicTools)
+add_dependencies(AhadicTools AhadicTools_Git_Info)

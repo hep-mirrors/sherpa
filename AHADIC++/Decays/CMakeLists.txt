@@ -8,3 +8,4 @@ sherpa_create_git_info(AhadicDecays)
  
 add_library(AhadicDecays SHARED ${AhadicDecays_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
 sherpa_handle_shared_library(AhadicDecays AhadicDecays)
+add_dependencies(AhadicDecays AhadicDecays_Git_Info)

@@ -14,3 +14,4 @@ sherpa_create_git_info(Loops)
  
 add_library(METoolsLoops SHARED ${Loops_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
 sherpa_handle_shared_library(METoolsLoops METoolsLoops)
+add_dependencies(METoolsLoops Loops_Git_Info)

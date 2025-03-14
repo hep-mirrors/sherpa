@@ -11,3 +11,4 @@ sherpa_create_git_info(HEFT)
  
 add_library(SherpaHEFT SHARED ${HEFT_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
 sherpa_handle_shared_library(SherpaHEFT SherpaHEFT)
+add_dependencies(SherpaHEFT HEFT_Git_Info)

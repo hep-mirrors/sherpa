@@ -22,3 +22,4 @@ sherpa_create_git_info(DIMShower)
  
 add_library(DIMShower SHARED ${DIMShower_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
 sherpa_handle_shared_library(DIMShower DIMShower)
+add_dependencies(DIMShower DIMShower_Git_Info)

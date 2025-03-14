@@ -19,3 +19,4 @@ sherpa_create_git_info(CSSShowers)
  
 add_library(CSShowers SHARED ${CSSShowers_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
 sherpa_handle_shared_library(CSShowers CSShowers)
+add_dependencies(CSShowers CSSShowers_Git_Info)

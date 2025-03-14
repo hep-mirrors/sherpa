@@ -11,3 +11,4 @@ sherpa_create_git_info(SMGold)
  
 add_library(SherpaSMGold SHARED ${SMGold_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
 sherpa_handle_shared_library(SherpaSMGold SherpaSMGold)
+add_dependencies(SherpaSMGold SMGold_Git_Info)

@@ -20,3 +20,4 @@ sherpa_create_git_info(RemnantsMain)
 
 add_library(Remnants SHARED ${RemnantsMain_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
 sherpa_handle_shared_library(Remnants Remnants)
+add_dependencies(Remnants RemnantsMain_Git_Info)

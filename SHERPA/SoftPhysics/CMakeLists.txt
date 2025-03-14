@@ -20,3 +20,4 @@ sherpa_create_git_info(SoftPhysics)
  
 add_library(SherpaSoftPhysics SHARED ${SoftPhysics_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
 sherpa_handle_shared_library(SherpaSoftPhysics SherpaSoftPhysics)
+add_dependencies(SherpaSoftPhysics SoftPhysics_Git_Info)

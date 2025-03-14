@@ -133,3 +133,4 @@ set(YAML_yaml-cpp_node_detail_HEADERS impl.h
  
 add_library(ToolsYaml SHARED ${YAML_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
 sherpa_handle_shared_library(ToolsYaml ToolsYaml)
+add_dependencies(ToolsYaml YAML_Git_Info)

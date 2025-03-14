@@ -10,3 +10,4 @@ sherpa_create_git_info(MCatNLOMain)
  
 add_library(MCatNLOMain SHARED ${MCatNLOMain_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
 sherpa_handle_shared_library(MCatNLOMain MCatNLOMain)
+add_dependencies(MCatNLOMain MCatNLOMain_Git_Info)

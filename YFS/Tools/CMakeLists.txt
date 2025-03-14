@@ -9,3 +9,4 @@ sherpa_create_git_info(YFSTools)
  
 add_library(YFSTools SHARED ${YFSTools_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
 sherpa_handle_shared_library(YFSTools YFSTools)
+add_dependencies(YFSTools YFSTools_Git_Info)

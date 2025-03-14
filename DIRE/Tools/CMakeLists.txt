@@ -14,3 +14,4 @@ sherpa_create_git_info(DireTools)
  
 add_library(DireTools SHARED ${DireTools_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
 sherpa_handle_shared_library(DireTools DireTools)
+add_dependencies(DireTools DireTools_Git_Info)

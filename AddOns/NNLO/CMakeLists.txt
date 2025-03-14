@@ -25,3 +25,4 @@ sherpa_create_git_info(NNLO)
  
 add_library(NNLOqT SHARED ${NNLO_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
 sherpa_handle_shared_library(NNLOqT NNLOqT)
+add_dependencies(NNLOqT NNLO_Git_Info)

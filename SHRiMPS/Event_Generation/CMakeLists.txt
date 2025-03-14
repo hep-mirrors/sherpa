@@ -15,3 +15,4 @@ sherpa_create_git_info(Event_Generation)
  
 add_library(ShrimpsEvents SHARED ${Event_Generation_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
 sherpa_handle_shared_library(ShrimpsEvents ShrimpsEvents)
+add_dependencies(ShrimpsEvents Event_Generation_Git_Info)

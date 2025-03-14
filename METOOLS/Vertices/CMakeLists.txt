@@ -15,3 +15,4 @@ sherpa_create_git_info(Vertices)
  
 add_library(METoolsVertices SHARED ${Vertices_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
 sherpa_handle_shared_library(METoolsVertices METoolsVertices)
+add_dependencies(METoolsVertices Vertices_Git_Info)

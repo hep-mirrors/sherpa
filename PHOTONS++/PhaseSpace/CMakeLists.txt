@@ -10,3 +10,4 @@ sherpa_create_git_info(PhaseSpace)
  
 add_library(PhotonsPhaseSpace SHARED ${PhaseSpace_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
 sherpa_handle_shared_library(PhotonsPhaseSpace PhotonsPhaseSpace)
+add_dependencies(PhotonsPhaseSpace PhaseSpace_Git_Info)

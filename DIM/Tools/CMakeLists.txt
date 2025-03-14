@@ -14,3 +14,4 @@ sherpa_create_git_info(DIMTools)
  
 add_library(DIMTools SHARED ${DIMTools_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
 sherpa_handle_shared_library(DIMTools DIMTools)
+add_dependencies(DIMTools DIMTools_Git_Info)

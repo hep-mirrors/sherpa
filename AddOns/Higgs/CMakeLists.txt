@@ -34,3 +34,4 @@ sherpa_create_git_info(Higgs)
  
 add_library(SherpaHiggs SHARED ${Higgs_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
 sherpa_handle_shared_library(SherpaHiggs SherpaHiggs)
+add_dependencies(SherpaHiggs Higgs_Git_Info)

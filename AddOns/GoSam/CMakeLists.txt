@@ -8,3 +8,4 @@ sherpa_create_git_info(GoSam)
  
 add_library(SherpaGoSam SHARED ${GoSam_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
 sherpa_handle_shared_library(SherpaGoSam SherpaGoSam)
+add_dependencies(SherpaGoSam GoSam_Git_Info)

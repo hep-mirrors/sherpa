@@ -35,3 +35,4 @@ sherpa_create_git_info(Process)
  
 add_library(PhasicProcess SHARED ${Process_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
 sherpa_handle_shared_library(PhasicProcess PhasicProcess)
+add_dependencies(PhasicProcess Process_Git_Info)
