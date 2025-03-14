@@ -1,8 +1,8 @@
-set(Amplitude_SOURCES Amplitude.C)
+set(ComixAmplitude_SOURCES Amplitude.C)
 
-set(Amplitude_HEADERS Amplitude.H)
+set(ComixAmplitude_HEADERS Amplitude.H)
 
-sherpa_create_git_info(Amplitude)
+sherpa_create_git_info(ComixAmplitude)
  
-add_library(ComixAmplitude SHARED ${Amplitude_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
+add_library(ComixAmplitude SHARED ${ComixAmplitude_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
 sherpa_handle_shared_library(ComixAmplitude ComixAmplitude)

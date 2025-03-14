@@ -1,16 +1,16 @@
-set(Tools_SOURCES Color.C
+set(DireTools_SOURCES Color.C
                   Parton.C
                   Splitting.C
                   Amplitude.C)
 
-set(Tools_HEADERS Color.H
+set(DireTools_HEADERS Color.H
                   Parton.H
                   Weight.H
                   Splitting.H
                   Kernel_Key.H
                   Amplitude.H)
 
-sherpa_create_git_info(Tools)
+sherpa_create_git_info(DireTools)
  
-add_library(DireTools SHARED ${Tools_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
+add_library(DireTools SHARED ${DireTools_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
 sherpa_handle_shared_library(DireTools DireTools)

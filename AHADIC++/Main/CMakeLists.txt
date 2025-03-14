@@ -1,8 +1,8 @@
-set(Main_SOURCES  Ahadic.C)
+set(AhadicMain_SOURCES  Ahadic.C)
 
-set(Main_HEADERS Ahadic.H)
+set(AhadicMain_HEADERS Ahadic.H)
 
-sherpa_create_git_info(Main)
+sherpa_create_git_info(AhadicMain)
  
-add_library(AhadicMain SHARED ${Main_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
+add_library(AhadicMain SHARED ${AhadicMain_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
 sherpa_handle_shared_library(AhadicMain AhadicMain)

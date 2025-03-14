@@ -1,16 +1,16 @@
-set(Tools_SOURCES Color.C
+set(DIMTools_SOURCES Color.C
                   Parton.C
                   Splitting.C
                   Amplitude.C)
 
-set(Tools_HEADERS Color.H
+set(DIMTools_HEADERS Color.H
                   Parton.H
                   Weight.H
                   Splitting.H
                   Kernel_Key.H
                   Amplitude.H)
 
-sherpa_create_git_info(Tools)
+sherpa_create_git_info(DIMTools)
  
-add_library(DIMTools SHARED ${Tools_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
+add_library(DIMTools SHARED ${DIMTools_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
 sherpa_handle_shared_library(DIMTools DIMTools)
