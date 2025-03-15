@@ -39,9 +39,15 @@ bool EPA::CalculateWeight(double x, double q2)
 {
   m_x      = x;
   m_q2     = q2;
-  m_b      = p_ff->SelectB(x);
+  double m_bmin = 1., m_bmax = 1e3;
+  // sampling b by 1/b**2
+  //double bt = (bmax*bmin)/(bmax + ATOOLS::ran->Get() * (bmin - bmax));
+  //double wt = sqr(bt) * (1. / bmin - 1. / bmax);
+  // sampling b by 1/b
+  m_b = m_beam.Radius() / rpa->hBar_c() * m_bmin * std::pow( m_bmax / m_bmin, ATOOLS::ran->Get());
+  double wt = m_b * std::log(m_bmax / m_bmin);
   m_weight = (x > m_xmin && x < m_xmax)
-                     ? ATOOLS::Max(0., m_pref * p_ff->N(x, m_b))
+                     ? ATOOLS::Max(0., m_pref * p_ff->N(x, m_b) * wt)
                      : 0.;
   if (IsNan(m_weight))
     msg_Out() << "Boink! " << METHOD << "(x = " << x << ") yields NaN.\n";

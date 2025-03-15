@@ -26,8 +26,8 @@ namespace BEAM {
 	      const int _dir, int mode = 0);
     virtual ~Beam_Base() = default;
 
-    virtual Beam_Base * Copy()                                     = 0;
-    virtual bool        CalculateWeight(const double,const double) = 0;
+    virtual Beam_Base * Copy()                          = 0;
+    virtual bool        CalculateWeight(double, double) = 0;
     virtual void FixPosition() {}
 
     inline bool On()                                              const { return m_on; }
@@ -45,7 +45,7 @@ namespace BEAM {
     inline const double & Polarisation()                          const { return m_polarisation; }
     inline bool PolarisationOn()                                  const { return (m_polarisation!=0.); }
     inline double X()                                             const { return m_x; }
-    inline double Weight(ATOOLS::Flavour fl=kf_none)              const { return m_weight; }
+    inline double Weight()                                        const { return m_weight; }
 
     virtual inline double Exponent()      const { return 0.; }
     virtual inline double Xmin()          const { return 0.; }
