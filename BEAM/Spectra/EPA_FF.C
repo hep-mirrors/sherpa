@@ -77,7 +77,7 @@ void EPA_FF_Base::FillTables(const size_t& nx, const size_t& nb)
   axis xaxis(nx, m_xmin, m_xmax, axis_mode::log);
   axis baxis(nb, m_bmin * m_R, m_bmax * m_R, axis_mode::log);
   Fill_Nxb_Table(xaxis, baxis);
-  Fill_Invxb_Table();
+  //Fill_Invxb_Table();
 }
 
 void EPA_FF_Base::Fill_Nxb_Table(axis& xaxis, axis& baxis)
@@ -101,7 +101,7 @@ void EPA_FF_Base::Fill_Nxb_Table(axis& xaxis, axis& baxis)
   for (size_t i = 0; i < xaxis.m_nbins; i++) {
     for (size_t j = 0; j < baxis.m_nbins; j++) {
       kernel->SetXB(xaxis.x(i), baxis.x(j));
-      double value = sqr(bessel());
+      double value = 2 * sqr(bessel()) / xaxis.x(i) * baxis.x(j);
       p_N_xb->Fill(i, j, value);
     }
   }
@@ -231,8 +231,9 @@ double N_xb_int::operator()(double y)
   //   are in GeV.
   //
   //////////////////////////////////////////////////////////////////////////////
-  double qT = y / m_b , qT2 = sqr(qT), xm2 = sqr(m_x * p_ff->Mass());
-  double res = (*p_ff)(m_x, (qT2 + xm2) / (1. - m_x)) / m_b;
+  double qT = y / m_b, qT2 = sqr(qT);
+  double Q2 = (qT2 + sqr(m_x * p_ff->Mass())) / (1. - m_x);
+  double res = qT2 / Q2 * p_ff->FF(Q2) / m_b;
   return res;
 }
 
@@ -541,9 +542,7 @@ double EPA_WoodSaxon::operator()(const double& x, const double& Q2)
 
 EPA_testIon::EPA_testIon(const ATOOLS::Flavour& beam, const int dir)
     : EPA_FF_Base(beam, dir)
-{
-  msg_Out() << "K_1(1.) = " << std::cyl_bessel_k(1, 1.) << std::endl;
-}
+{ }
 
 double EPA_testIon::operator()(const double& x, const double& Q2)
 {
@@ -557,19 +556,10 @@ double EPA_testIon::N(const double& x, const double& b)
   //return 2 / x * (chi * std::cyl_bessel_k(1, chi) * std::cyl_bessel_k(0, chi)
   //    - sqr(chi)/2. * (sqr(std::cyl_bessel_k(1, chi)) - sqr(std::cyl_bessel_k(0, chi))));
 
-  double bmin = 1., bmax = 1e5;
-  // sampling b by 1/b**2
-  //double bt = (bmax*bmin)/(bmax + ATOOLS::ran->Get() * (bmin - bmax));
-  //double wt = sqr(bt) * (1. / bmin - 1. / bmax);
-  // sampling b by 1/b
-  double bt = bmin * std::pow( bmax / bmin, ATOOLS::ran->Get());
-  double wt = bt * std::log(bmax / bmin);
-
-  double chi = x * m_mass * bt * m_R;
-  wt *= 2 * bt * sqr(m_R) * x * sqr(m_mass) * sqr(std::cyl_bessel_k(1, chi));
+  double chi = x * m_mass * b;
+  return 2 * b * x * sqr(m_mass) * sqr(SF.Kn(1, chi));
   // correction term seems to be negligible
-  //wt *= 2 * bt * sqr(m_R) * x * sqr(m_mass) * (sqr(std::cyl_bessel_k(1, chi)) + sqr(m_mass / 3500) * sqr(std::cyl_bessel_k(0, chi)));
-  return wt;
+  //return 2 * b * sqr(m_R) * x * sqr(m_mass) * (sqr(SF.Kn(1, chi)) + sqr(m_mass / 3500) * sqr(SF.Kn(0, chi)));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
