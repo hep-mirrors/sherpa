@@ -22,14 +22,6 @@ Parton::Parton() :
   m_formation_tau(make_pair(-1.,-1.)), m_formation_time(make_pair(-1.,-1.)), m_splitted_merged(false),
   m_N_scatter(0), m_timekeeper(0), m_ahat(Vec4D(0.,0.,0.,0.))
 { 
-    a_momentum[0] = 0.;
-	a_momentum[1] = 0.;
-	a_momentum[2] = 0.;
-	a_momentum[3] = 0.;
-	a_initpos[0] = 0.;
-	a_initpos[1] = 0.;
-	a_initpos[2] = 0.;
-	a_initpos[3] = 0.;
 }
 
 Parton::Parton(Flavour flav, Vec4D mom) :
@@ -41,16 +33,7 @@ Parton::Parton(Flavour flav, Vec4D mom) :
   p_last_scatter_1(nullptr), p_last_scatter_2(nullptr), p_last_scatter_3(nullptr),
   m_formation_tau(make_pair(-1.,-1.)), m_formation_time(make_pair(-1.,-1.)), m_splitted_merged(false),
   m_N_scatter(0), m_timekeeper(0), m_ahat(Vec4D(0.,0.,0.,0.))
-{ 
-  a_momentum[0] = mom[1];
-	a_momentum[1] = mom[2];
-	a_momentum[2] = mom[3];
-	a_momentum[3] = mom[0];
-	a_initpos[0] = 0.;
-	a_initpos[1] = 0.;
-	a_initpos[2] = 0.;
-	a_initpos[3] = 0.;
-}
+{}
 
 Parton::Parton(Flavour flav, Vec4D mom, Vec4D pos, double tau) :
   m_number(-1),
@@ -61,16 +44,7 @@ Parton::Parton(Flavour flav, Vec4D mom, Vec4D pos, double tau) :
   p_last_scatter_1(nullptr), p_last_scatter_2(nullptr), p_last_scatter_3(nullptr),
   m_formation_tau(make_pair(-1.,-1.)), m_formation_time(make_pair(-1.,-1.)), m_splitted_merged(false),
   m_N_scatter(0), m_timekeeper(0), m_ahat(Vec4D(0.,0.,0.,0.))
-{ 
-  a_momentum[0] = mom[1];
-	a_momentum[1] = mom[2];
-	a_momentum[2] = mom[3];
-	a_momentum[3] = mom[0];
-	a_initpos[0] = pos[1];
-	a_initpos[1] = pos[2];
-	a_initpos[2] = pos[3];
-	a_initpos[3] = pos[0];
-}
+{}
 
 Parton::Parton(Parton * part) :
   m_number(-1),
@@ -81,16 +55,7 @@ Parton::Parton(Parton * part) :
   p_last_scatter_1(part->GetLastScatter()), p_last_scatter_2(part->GetSecondLastScatter()), p_last_scatter_3(part->GetThirdLastScatter()),
   m_formation_tau(make_pair(-1.,-1.)), m_formation_time(make_pair(-1.,-1.)), m_splitted_merged(false),
   m_N_scatter(part->GetNScatter()), m_timekeeper(0), m_ahat(Vec4D(0.,0.,0.,0.))
-{ 
-  	a_momentum[0] = m_momentum[1];
-	a_momentum[1] = m_momentum[2];
-	a_momentum[2] = m_momentum[3];
-	a_momentum[3] = m_momentum[0];
-	a_initpos[0] = m_initpos[1];
-	a_initpos[1] = m_initpos[2];
-	a_initpos[2] = m_initpos[3];
-	a_initpos[3] = m_initpos[0];
-}
+{}
 
 Parton::~Parton() {
 }
@@ -232,105 +197,23 @@ std::pair<bool, std::pair<std::pair<ATOOLS::Vec4D, ATOOLS::Vec4D>, ATOOLS::Flavo
 	return make_pair(exists, make_pair(make_pair(x,p), flav));
 }
 
-std::array<double,4> Parton::getPosition(double t) {
-	std::array<double,4> pos;
-	pos[0] = a_momentum[0]*(t-a_initpos[3])/a_momentum[3]+a_initpos[0];
-	pos[1] = a_momentum[1]*(t-a_initpos[3])/a_momentum[3]+a_initpos[1];
-	pos[2] = a_momentum[2]*(t-a_initpos[3])/a_momentum[3]+a_initpos[2];
-	pos[3] = t;
-	for (size_t i = 0; i < 3; ++i) {
-        int a = (int)pos[i];
-		if (pos[i] > 0.) {
-            pos[i] = pos[i];
-		}
-		else {
-            pos[i] = pos[i];
-		}
-	}
-	return pos;
-}
 
-std::array<double,4> Parton::getPositionNoBound(double t) {
-	std::array<double,4> pos;
-	pos[0] = a_momentum[0]*(t-a_initpos[3])/a_momentum[3]+a_initpos[0];
-	pos[1] = a_momentum[1]*(t-a_initpos[3])/a_momentum[3]+a_initpos[1];
-	pos[2] = a_momentum[2]*(t-a_initpos[3])/a_momentum[3]+a_initpos[2];
-	pos[3] = t;
-	return pos;
-}
 
-std::array<double,4> Parton::getPositionTau(double tau) {
-	std::array<double,4> pos;
-	//if (m_mass == 0.) {
-		pos[0] = 2.*m_lambda*a_momentum[0]*(tau-m_inittau) + a_initpos[0];
-		pos[1] = 2.*m_lambda*a_momentum[1]*(tau-m_inittau) + a_initpos[1];
-		pos[2] = 2.*m_lambda*a_momentum[2]*(tau-m_inittau) + a_initpos[2];
-		pos[3] = 2.*m_lambda*a_momentum[3]*(tau-m_inittau) + a_initpos[3];
-	//}
-	//else {
-	//	pos[0] = a_momentum[0]*(tau-m_inittau)/m_mass + a_initpos[0];
-	//	pos[1] = a_momentum[1]*(tau-m_inittau)/m_mass + a_initpos[1];
-	//	pos[2] = a_momentum[2]*(tau-m_inittau)/m_mass + a_initpos[2];
-	//	pos[3] = a_momentum[3]*(tau-m_inittau)/m_mass + a_initpos[3];
-	//}
-	for (size_t i = 0; i < 3; ++i) {
-        int a = (int)pos[i];
-		if (pos[i] > 0.) {
-            pos[i] = pos[i] - a*1.;
-		}
-		else {
-            pos[i] = pos[i] - (a-1)*1.;
-		}
-	}
-	return pos;
-}
-
-std::array<double,4> Parton::getPositionTauNoBound(double tau) {
-	std::array<double,4> pos;
-	//if (m_mass == 0.) {
-		pos[0] = 2.*m_lambda*a_momentum[0]*(tau-m_inittau) + a_initpos[0];
-		pos[1] = 2.*m_lambda*a_momentum[1]*(tau-m_inittau) + a_initpos[1];
-		pos[2] = 2.*m_lambda*a_momentum[2]*(tau-m_inittau) + a_initpos[2];
-		pos[3] = 2.*m_lambda*a_momentum[3]*(tau-m_inittau) + a_initpos[3];
-	//}
-	//else {
-	//	pos[0] = a_momentum[0]*(tau-m_inittau)/m_mass + a_initpos[0];
-	//	pos[1] = a_momentum[1]*(tau-m_inittau)/m_mass + a_initpos[1];
-	//	pos[2] = a_momentum[2]*(tau-m_inittau)/m_mass + a_initpos[2];
-	//	pos[3] = a_momentum[3]*(tau-m_inittau)/m_mass + a_initpos[3];
-	//}
-	return pos;
-}
 
 double Parton::TauBar(std::shared_ptr<Parton> part) {
-  std::array<double,3> shift = {0., 0., 0.};
-  return TauBar(part, shift);	
-}
-
-double Parton::TauBar(std::shared_ptr<Parton> part, std::array<double,3> shift) {
   if ((*this) == (*part)){
 	return m_inittau;
   } 
+  
   double taubar;
 
-  // TEMPORARY, box method will not work with for timekeeper = 1 or 2
   if(m_timekeeper == 0){
-	std::array<double,4> shift4 = {shift[0], shift[1], shift[2], 0.};
-	std::array<double,4> ipos(subtract(a_initpos, add(part->aPosition(),shift4)));
-	std::array<double,4> dmom(subtract(a_momentum, part->aMomentum()));
-	std::array<double,4> pi(a_momentum);
-	std::array<double,4> pj(part->aMomentum());
-	double iposdmom(dotpr(ipos,dmom));
-	double pipj(dotpr(pi,pj));
-	double taubar;
-	//if (m_mass == 0.) {
-		taubar =  ((m_inittau + part->Inittau())/2. + (iposdmom)/(4.*m_lambda*pipj));
-	//}
-	//else {
-		//  taubar = (m_inittau + part->Inittau())/2. + m_mass*iposdmom/(2.*(pipj-sqr(m_mass)));
-	//}
+	Vec4D xi = m_initpos;
+	Vec4D xj = part->Position();
+	Vec4D pi = m_momentum;
+	Vec4D pj = part->Momentum();
+	taubar =  ((m_inittau + part->Inittau())/2. + ((xi-xj)*(pi-pj))/(4.*m_lambda*pi*pj));
   } else{
-	Vec4D shift_vec(0., shift[0], shift[1], shift[2]);
 	double lambda_1 = m_lambda;
 	double lambda_2 = part->GetLambda();
 	Vec4D p_1 = m_momentum;
@@ -338,50 +221,17 @@ double Parton::TauBar(std::shared_ptr<Parton> part, std::array<double,3> shift) 
 	Vec4D P = p_1 + p_2;
 	Vec4D v = 2.*lambda_1*p_1 - 2.*lambda_2*p_2;
 	Vec4D v_T = v - (v*P)*P/(P*P);
-
-	double init_tau_1 = m_inittau;
-	double init_tau_2 = part->Inittau();
-	
-	double taubar_1 = init_tau_1 - (m_initpos -  (part->Position(init_tau_1)+shift_vec))*v_T/(v_T*v_T);
-	double taubar_2 = init_tau_2 - (Position(init_tau_2) - (part->Position()+shift_vec))*v_T/(v_T*v_T);
-	double taubar_3 = (init_tau_1+init_tau_2)/2. - (m_initpos - (part->Position()+shift_vec))*v_T/(v_T*v_T);
-	
-	if(abs(taubar_1/taubar_2) > 1.001 || abs(taubar_1/taubar_2) < 0.999){
-		msg_Out() << METHOD << ": WARNING" "taubar_1 = " << taubar_1 << ", taubar_2 = " << taubar_2 << ", abs(taubar_1-taubar_2) > 0.00000001" << endl;
-	}
-
-	taubar = taubar_1;
+	double taubar = m_inittau - (m_initpos -  (part->Position(m_inittau)))*v_T/(v_T*v_T);
   }
   
   return taubar;
 }
-
-double Parton::getInvDistTau(std::shared_ptr<Parton> part, double tau, std::array<double,3> shift) {
-  if ((*this) == (*part)) return 0.;
-  std::array<double,4> shift4 = {shift[0], shift[1], shift[2], 0.};
-  std::array<double,4> x(subtract(getPositionTauNoBound(tau), add(part->getPositionTauNoBound(tau),shift4)));
-  std::array<double,4> p(add(a_momentum, part->aMomentum()));
-  //double dij2 = -(abs2(x) - sqr(dotpr(x,p))/abs2(p));
-  double dij2 = -(abs2(x) - sqr(dotpr(x,p)/abs_vec(p)));
-  //double dij2 = - dotpr(subtract(x,scaltimes(dotpr(x,p)/dotpr(p,p),p)),subtract(x,scaltimes(dotpr(x,p)/dotpr(p,p),p)));
-  //if (dij2<=0.) std::cout<<"d_ij^2(tau) = "<<dij2<<"  "<<dotpr(x,p)<<std::endl;
-  return sqrt(max(dij2,0.));
-}
-
 
 
 double Parton::Abs3Momentum(){
     return sqrt(m_momentum[1]*m_momentum[1]+m_momentum[2]*m_momentum[2]+m_momentum[3]*m_momentum[3]);
 }
 
-
-double Parton::TauBound(size_t i, double bound) {
-    double pos,mom,taub;
-    pos = m_initpos[i];
-    mom = m_momentum[i];
-    taub = (bound-pos)/(2.*m_lambda*mom)+m_inittau;
-    return taub;
-}
 
 ostream & ALPACA::
 operator<<(ostream & s, const Parton & part) {
