@@ -33,8 +33,8 @@ namespace YFS{
         std::vector<std::string> m_names;
         std::vector<double> m_pk1, m_pk2;
         double m_QiQj, m_Qi, m_Qj, m_thetai, m_thetaj, m_thetaij, m_sp, m_b1, m_b2, m_gamma, m_gammap, m_alp, m_alpi,m_rescale_alpha;
-        bool m_setBorn, m_setbeams=1,m_sameflav, m_irfinite;
-        int m_Nphotons, m_resonance, m_betaorder;
+        bool m_setBorn, m_setbeams=1,m_sameflav, m_irfinite, m_isduplicate;
+        int m_Nphotons, m_resonance, m_betaorder, m_leftfl, m_rightfl;
         double m_ranPhi, m_ranTheta, m_born, m_photonscale, m_u,m_irscale;
         dipoletype::code m_type;
         Vec4D_Vector m_momenta, m_bornmomenta, m_oldmomenta, m_newmomenta, m_ghost, m_beams, m_eikmomentum,m_mephotons;
@@ -79,6 +79,7 @@ namespace YFS{
         void CalculateGamma();
         void Clean();
         bool IsDecayAllowed();
+        void SetFlavLab(int i, int j);
         Vec4D Sum();
         METOOLS::DivArrD BVV_full_eps(const ATOOLS::Vec4D p1, const ATOOLS::Vec4D p2, double Kmax, int mode);
         inline int size() {return m_momenta.size();}
@@ -111,6 +112,7 @@ namespace YFS{
         inline void SetPhotonScale(double &scale) {m_photonscale = scale;}
         inline void SetMEPhotons(Vec4D_Vector &k) {m_mephotons = k;}
         inline bool IsFinite() {return m_irfinite;}
+        inline void SetDuplicate(bool dub) {m_isduplicate=dub;}
 
     };
 
