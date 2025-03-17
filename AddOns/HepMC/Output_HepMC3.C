@@ -25,7 +25,7 @@ using namespace ATOOLS;
 using namespace std;
 
 template <class T>
-std::shared_ptr<HepMC3::Writer> get_output_file(std::ofstream& m_outstream, const char* use_compression, const int precision,  std::string m_basename,  std::string & ext) {
+std::shared_ptr<HepMC3::Writer> get_output_file(std::ofstream& m_outstream, const char* use_compression, const int precision,  std::string m_basename,  std::string & m_ext) {
 #if USING__GZIP && HEPMC3_USE_COMPRESSION
 #if HEPMC3_Z_SUPPORT
     if (std::string(use_compression) == "GZ" )   {
