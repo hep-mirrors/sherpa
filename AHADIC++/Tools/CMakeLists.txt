@@ -1,4 +1,4 @@
-set(Tools_SOURCES Proto_Particle.C
+set(AhadicTools_SOURCES Proto_Particle.C
                   Cluster.C
                   Constituents.C
                   Wave_Function.C
@@ -13,7 +13,7 @@ set(Tools_SOURCES Proto_Particle.C
                   KT_Selector.C
                   Z_Selector.C)
 
-set(Tools_HEADERS Proto_Particle.H
+set(AhadicTools_HEADERS Proto_Particle.H
                   Cluster.H
                   Constituents.H
                   Wave_Function.H
@@ -29,7 +29,8 @@ set(Tools_HEADERS Proto_Particle.H
                   KT_Selector.H
                   Z_Selector.H)
 
-sherpa_create_git_info(Tools)
+sherpa_create_git_info(AhadicTools ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR})
  
-add_library(AhadicTools SHARED ${Tools_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
+add_library(AhadicTools SHARED ${AhadicTools_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
 sherpa_handle_shared_library(AhadicTools AhadicTools)
+add_dependencies(AhadicTools AhadicTools_Git_Info)

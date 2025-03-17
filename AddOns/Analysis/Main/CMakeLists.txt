@@ -6,7 +6,7 @@ set(Main_HEADERS Analysis_Object.H
                  Primitive_Analysis.H
                  Analysis_Handler.H)
 
-sherpa_create_git_info(Main)
+sherpa_create_git_info(Main ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR})
 
 add_library(SherpaAnalysis SHARED ${Main_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
 target_link_libraries(SherpaAnalysis PRIVATE SherpaAnalyses SherpaObservables SherpaAnalysisTools SherpaAnalysisTrigger)

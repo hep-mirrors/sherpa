@@ -1,4 +1,4 @@
-set(Main_SOURCES PDF_Base.C
+set(PDFMain_SOURCES PDF_Base.C
                  ISR_Base.C
                  Intact.C
                  Structure_Function.C
@@ -9,7 +9,7 @@ set(Main_SOURCES PDF_Base.C
                  Shower_Base.C
                  Photon_PDF_Base.C)
 
-set(Main_HEADERS PDF_Base.H
+set(PDFMain_HEADERS PDF_Base.H
                  ISR_Base.H
                  Intact.H
                  Structure_Function.H
@@ -20,7 +20,8 @@ set(Main_HEADERS PDF_Base.H
                  Shower_Base.H
                  Photon_PDF_Base.H)
 
-sherpa_create_git_info(Main)
+sherpa_create_git_info(PDFMain ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR})
  
-add_library(PDF SHARED ${Main_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
+add_library(PDF SHARED ${PDFMain_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
 sherpa_handle_shared_library(PDF PDF)
+add_dependencies(PDF PDFMain_Git_Info)

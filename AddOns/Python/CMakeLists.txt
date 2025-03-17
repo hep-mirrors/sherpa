@@ -54,7 +54,7 @@ install(FILES ${CMAKE_CURRENT_BINARY_DIR}/Sherpa.py DESTINATION ${SHERPA_Python_
 set(MEProcess_SOURCES MEProcess.C)
 set(MEProcess_HEADERS MEProcess.H)
 
-sherpa_create_git_info(MEProcess)
+sherpa_create_git_info(MEProcess ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR})
 
 add_library(MEProcess SHARED ${MEProcess_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C)
 sherpa_handle_shared_library(MEProcess MEProcess)

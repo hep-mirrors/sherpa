@@ -62,7 +62,7 @@ set(Observables_HEADERS Primitive_Observable_Base.H
                         Four_Jet_Angles.H
                         ChargedDEta.H)
 
-sherpa_create_git_info(Observables)
+sherpa_create_git_info(Observables ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR})
  
 add_library(SherpaObservables SHARED ${Observables_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
 sherpa_handle_shared_library(SherpaObservables SherpaObservables)

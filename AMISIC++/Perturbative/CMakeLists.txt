@@ -14,7 +14,8 @@ set(Perturbative_HEADERS Single_Collision_Handler.H
                          QED_Processes.H
                          Sudakov_Argument.H)
 
-sherpa_create_git_info(Perturbative)
+sherpa_create_git_info(Perturbative ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR})
  
 add_library(AmisicPerturbative SHARED ${Perturbative_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
 sherpa_handle_shared_library(AmisicPerturbative AmisicPerturbative)
+add_dependencies(AmisicPerturbative Perturbative_Git_Info)

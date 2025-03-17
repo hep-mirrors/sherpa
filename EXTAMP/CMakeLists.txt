@@ -17,7 +17,7 @@ set(EXTAMP_HEADERS External_ME_Interface.H
                    CS_Dipoles.H
                    Dipole_Wrapper_Process.H)
 
-sherpa_create_git_info(EXTAMP)
+sherpa_create_git_info(EXTAMP ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR})
  
 add_library(ExtAmp SHARED ${EXTAMP_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
 sherpa_handle_shared_library(ExtAmp ExtAmp)
