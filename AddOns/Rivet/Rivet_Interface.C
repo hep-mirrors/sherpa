@@ -22,6 +22,8 @@
 #include "Rivet/AnalysisHandler.hh"
 #include "Rivet/Tools/Logging.hh"
 
+#include "YODA/Config/BuildConfig.h"
+
 #include "HepMC3/GenEvent.h"
 #include "HepMC3/GenCrossSection.h"
 
@@ -39,6 +41,9 @@ namespace SHERPARIVET {
     bool   m_finished;
     bool   m_splitjetconts, m_splitSH, m_splitpm, m_splitcoreprocs, m_usehepmcshort;
     bool   m_outputmeonlyvariations;
+#ifdef HAVE_HDF5
+    bool   m_useH5;
+#endif
 
     int m_loglevel, m_ignorebeams, m_skipmerge, m_skipweights;
     double m_weightcap, m_nlosmearing;
@@ -270,6 +275,9 @@ bool Rivet_Interface::Init()
                               .SetDefault<std::vector<std::string>>({}).GetVector<std::string>();
     m_thresholds = s["OUTLIER_THRESHOLDS"].SetSynonyms({"--outlier-thresholds"})
                               .SetDefault<std::vector<std::string>>({}).GetVector<std::string>();
+#ifdef HAVE_HDF5
+    m_useH5 = s["YODA_USE_H5"].SetSynonyms({"--yoda-h5"}).SetDefault(false).Get<bool>();
+#endif
 
     // add a MPI rank specific suffix if necessary
 #if defined(USING__MPI) && defined(USING__RIVET4)
@@ -386,6 +394,9 @@ std::string Rivet_Interface::OutputPath(const Rivet_Map::key_type& key)
   if (key.first!="") out+="."+key.first;
   if (key.second!=0) out+=".j"+ToString(key.second);
   out+=".yoda";
+#ifdef HAVE_HDF5
+   if (m_useH5)  return out + ".h5";
+#endif
 #ifdef HAVE_LIBZ
   out+=".gz";
 #endif
