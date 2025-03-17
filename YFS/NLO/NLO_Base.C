@@ -187,11 +187,7 @@ double NLO_Base::CalculateVirtual() {
 		double yfspole = p_dipoles->Get_E1();
 		int ncorrect = ::countMatchingDigits(p1, -yfspole, 32);
 		double reldiff = (p1+yfspole)/p1;
-		m_histograms1d["SinglePoleCD"]->Insert(ncorrect);
-		m_histograms1d["OneLoopEpsYFS"]->Insert(log10(fabs(yfspole)));
-		m_histograms1d["OneLoopEpsLP"]->Insert(log10(fabs(p1)));
-		m_histograms1d["relativediff"]->Insert(log10(fabs(reldiff)));
-		if(!IsEqual(p1,-yfspole,1e-6)){
+		if(!IsEqual(p1,-yfspole,1e-6) || ncorrect < 10){
 			msg_Error()<<"Poles do not cancel in YFS Virtuals"<<std::endl
 					 <<"Correct digits =  "<<ncorrect<<std::endl
 					 <<"Relative diff =  "<<reldiff<<std::endl
@@ -205,6 +201,10 @@ double NLO_Base::CalculateVirtual() {
 			msg_Debugging()<<std::setprecision(32);
 			msg_Out()<<"Poles cancel in YFS Virtuals to "<<ncorrect<<" digits"<<std::endl
 					 		<<"Relative diff =  "<<reldiff<<std::endl;
+			m_histograms1d["SinglePoleCD"]->Insert(ncorrect);
+			m_histograms1d["OneLoopEpsYFS"]->Insert(log10(fabs(yfspole)));
+			m_histograms1d["OneLoopEpsLP"]->Insert(log10(fabs(p1)));
+			m_histograms1d["relativediff"]->Insert(log10(fabs(reldiff)));
 			// msg_Out()<<"PhaseSpace point: "<<std::endl;
 			// for(auto &p: m_plab) {
 			// 	msg_Out()<<"p["<<i<<"] = "<<p<<std::endl;
@@ -276,7 +276,7 @@ double NLO_Base::CalculateReal(Vec4D k, int fsrcount) {
 	m_evts+=1;
 	p_nlodipoles->MakeDipoles(m_flavs,m_plab,m_plab);
 	fluxtype = p_nlodipoles->WhichResonant(k);
-  // if(fluxtype==dipoletype::final){
+  // if(fluxtype==dipoletype::final || fsrcount==4){
   if(fsrcount==1 || fsrcount==4){
   	if(!HasFSR()) msg_Error()<<"Wrong dipole type in "<<METHOD<<endl;
   	for (Dipole_Vector::iterator Dip = p_nlodipoles->GetDipoleFF()->begin();
@@ -298,7 +298,7 @@ double NLO_Base::CalculateReal(Vec4D k, int fsrcount) {
  	}
  	p.push_back(k);
  	CheckMasses(p,1);
- 	// if(fluxtype==dipoletype::final) MapInitial(p);
+ 	// if(fluxtype==dipoletype::final || fsrcount==4) MapInitial(p);
  	if(fsrcount==1 || fsrcount==4) MapInitial(p);
  	Vec4D_Vector pp = p;
  	pp.pop_back();
@@ -314,9 +314,9 @@ double NLO_Base::CalculateReal(Vec4D k, int fsrcount) {
 	double tot,rcoll;
 	double subloc = p_nlodipoles->CalculateRealSub(k);
 	double subb;
-	m_real = r*flux;
-	if(fsrcount) subb = p_dipoles->CalculateRealSubEEX(k);
-	else subb = p_dipoles->CalculateRealSubEEX(k);
+	m_real = r;
+	subb = p_dipoles->CalculateRealSubEEX(kk);
+	// else subb = p_dipoles->CalculateRealSubEEX(k);
 	// if(IsZero(subb)) return 0;
 	if(!CheckMomentumConservation(p)) {
 		msg_Error()<<"Momentum Conservation fails in "<<METHOD<<std::endl;
@@ -982,12 +982,12 @@ void NLO_Base::CheckRealSub(Vec4D k){
 		out_sub.open(filename, std::ios_base::app);
 		out_real.open(filename2, std::ios_base::app);
 		// if(k.E() < 0.8*sqrt(m_s)/2.) return;
-		for (double i = 1; i < 20 ; i+=0.001)
+		for (double i = 1; i < 20 ; i+=0.1)
 		{
 			k=k/i;
 			real=CalculateReal(k);
 			if(k.E() <= 1e-10 || real==0) break;
-			out_sub<<k.E()<<","<<fabs(real)<<std::endl;
+			out_sub<<k.E()<<","<<fabs(real)/m_born<<std::endl;
 			out_real<<k.E()<<","<<fabs(m_real)<<std::endl;
 			// m_histograms2d["Real_me_sub"]->Insert(k.E(),fabs(real), 1);
 		}
