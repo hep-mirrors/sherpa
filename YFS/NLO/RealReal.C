@@ -31,7 +31,7 @@ RealReal::RealReal(const PHASIC::Process_Info& pi)  {
     PHASIC::External_ME_Args args(pi.m_ii.GetExternal(),
                                pi.m_fi.GetExternal(),
                                pi.m_maxcpl,
-                               "Recola");
+                               gen);
      p_real_me =  PHASIC::Tree_ME2_Base::GetME2(args);
      if (!p_real_me)  {
       msg_Error()<<real_pi;
