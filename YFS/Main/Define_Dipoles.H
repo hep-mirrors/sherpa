@@ -68,6 +68,7 @@ namespace YFS {
       bool CheckResonant(YFS::Dipole &D);
       bool CheckResonant();
       double ResonantDist(YFS::Dipole &D, const Vec4D &k);
+      double ResonantDist(YFS::Dipole &D);
       dipoletype::code WhichResonant(const Vec4D &k);
       double CalculateRealSub(const Vec4D &k);
       double CalculateRealSubIF(const Vec4D &k);

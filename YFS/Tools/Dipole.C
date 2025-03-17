@@ -109,6 +109,7 @@ Dipole::Dipole(ATOOLS::Flavour_Vector const &fl, ATOOLS::Vec4D_Vector const &mom
   m_Q.push_back(m_Qi);
   m_Q.push_back(m_Qj);
   CalculateGamma();
+  m_isduplicate=false;
 }
 
 
@@ -872,6 +873,11 @@ METOOLS::DivArrD Dipole::BVV_full_eps(const ATOOLS::Vec4D p1, const ATOOLS::Vec4
   return (t1 + t2 + t3);
 }
 
+void Dipole::SetFlavLab(int i, int j){
+  m_leftfl = i;
+  m_rightfl = j;
+}
+
 std::ostream& YFS::operator<<(std::ostream &out, const Dipole &Dip) {
   out << " Dipole Type is "<<Dip.m_type
       << "\n Dipole components are "
@@ -885,6 +891,8 @@ std::ostream& YFS::operator<<(std::ostream &out, const Dipole &Dip) {
   out << "Invarinat mass " << " = " << (Dip.m_momenta[0]+Dip.m_momenta[1]).Mass() << std::endl
       <<"Sum of Photons = "<< Dip.m_photonSum << std::endl
       << "Q+sum_i K_i = "<< Dip.m_photonSum+Dip.m_momenta[0]+Dip.m_momenta[1]<<std::endl
+      << "Left Fl " << Dip.m_leftfl << std::endl
+      << "Right Fl " << Dip.m_rightfl << std::endl
       << "Mass of photon-fermion system = "
       << (Dip.m_photonSum+Dip.m_newmomenta[0]+Dip.m_newmomenta[1]).Mass()<<std::endl;
   if(Dip.m_type==dipoletype::final){

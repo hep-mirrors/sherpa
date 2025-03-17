@@ -219,7 +219,7 @@ double YFS_Form_Factor::BVR_cru(Vec4D p1, Vec4D p2, double Kmax) {
 
 double YFS_Form_Factor::A(double p1p2, double m1, double m2) {
   double m12 = m1 * m2;
-  if ((p1p2 - m12) < 1e-10) return 0;
+  if (IsEqual(p1p2, m12)) return 0;
   double xlam = sqrt((p1p2 - m12) * (p1p2 + m12));
   double BVR_A = 1. / xlam * log((p1p2 + xlam) / m12);
   return BVR_A;
@@ -439,8 +439,8 @@ DivArrD YFS_Form_Factor::BVV_full_eps(YFS::Dipole &d, double Kmax, int mode){
     p2 = d.GetBornMomenta(1);
   }
   else if(d.Type()==dipoletype::ifi){
-    p1 = d.GetNewMomenta(1);
-    p2 = d.GetBornMomenta(0);
+    p1 = d.GetNewMomenta(0);
+    p2 = d.GetBornMomenta(1);
   }
   else{
     msg_Error()<<"Unknown Dipole type"<<std::endl;
