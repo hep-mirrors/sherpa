@@ -128,6 +128,7 @@ namespace YFS {
         void CalculateWWForm();
         void YFSDebug(double W);
         void SplitPhotons(ATOOLS::Blob * blob);
+        void FinalResonance(int &res);
     };// end of class YFS_Handler
 
 
