@@ -146,6 +146,7 @@ void Define_Dipoles::MakeDipoles(ATOOLS::Flavour_Vector const &fl, ATOOLS::Vec4D
     if(ff.size()==0) return;
     Dipole D(ff, mm, bm, dipoletype::final,m_alpha);
     D.SetResonance(true);
+    D.SetFlavLab(2,3);
     // IsResonant(D);
     Dipole_FF(ff, mm);
     m_dipolesFF.push_back(D);
@@ -182,7 +183,10 @@ void Define_Dipoles::MakeDipoles(ATOOLS::Flavour_Vector const &fl, ATOOLS::Vec4D
       }
       Dipole D(ff, mm, bm, dipoletype::final,m_alpha);
       Dipole_FF(ff, mm);
-      if(fsrc==2)  D.SetResonance(true);
+      if(fsrc==2)  {
+        D.SetResonance(true);
+        D.SetFlavLab(2,3);
+      }
       else IsResonant(D);
       m_dipolesFF.push_back(D);
       msg_Debugging() << "Added " << ff << " to dipole " << a << std::endl;
@@ -215,6 +219,7 @@ void Define_Dipoles::MakeDipoles(ATOOLS::Flavour_Vector const &fl, ATOOLS::Vec4D
       if(fsrc==2)  D.SetResonance(true);
       else IsResonant(D);
       Dipole_FF(ff, mm);
+      D.SetFlavLab(2,3);
       m_dipolesFF.push_back(D);
       return;
     }
@@ -246,6 +251,7 @@ void Define_Dipoles::MakeDipoles(ATOOLS::Flavour_Vector const &fl, ATOOLS::Vec4D
             Dipole_FF(ff, mm);
             IsResonant(D);
             // if(D.IsResonance()) PRINT_VAR(D);
+            D.SetFlavLab(d1,d2);
             m_dipolesFF.push_back(D);
             ff.clear();
             mm.clear();
@@ -363,7 +369,7 @@ double Define_Dipoles::CalculateRealSub(const Vec4D &k) {
     {
       if(D.IsFinite()) continue;
       Vec4D p = D.GetMomenta(i);
-      eik += -D.m_Q[i]*p/(p*k);
+      if(D.IsResonance()) eik += -D.m_Q[i]*p/(p*k);
     }
   }
   sub = -m_alpha / (4 * M_PI * M_PI)*eik*eik;
@@ -689,9 +695,9 @@ double Define_Dipoles::CalculateFlux(const Vec4D &k){
   Vec4D Q,QX;
   if(m_noflux==1) return 1;
   if(HasISR()&&HasFSR()){
-    // fluxtype = WhichResonant(k);
+    fluxtype = WhichResonant(k);
     // PRINT_VAR(fluxtype);
-    fluxtype = dipoletype::final;
+    // fluxtype = dipoletype::final;
   }
   else if(!HasFSR()){
     fluxtype = dipoletype::initial;
@@ -721,8 +727,8 @@ double Define_Dipoles::CalculateFlux(const Vec4D &k){
       sq = (Q).Abs2();
       sx = (Q+k).Abs2();
       flux += (sq/sx);
-    } 
-    return flux;
+    }
+    return flux/m_dipolesFF.size();
   }
   return flux;
 }
@@ -895,6 +901,18 @@ double Define_Dipoles::ResonantDist(YFS::Dipole &D, const Vec4D &k){
   return mcheck;
 }
 
+double Define_Dipoles::ResonantDist(YFS::Dipole &D){
+  double mass_i = (D.GetBornMomenta(0) + D.GetBornMomenta(1)).Mass();
+  double mdist(100000000);
+  double mcheck(100000000);
+  for (auto it = m_proc_restab_map.begin(); it != m_proc_restab_map.end(); ++it) {
+    for (auto *v : it->second) {
+      mcheck = abs(mass_i - v->in[0].Mass()) / v->in[0].Width();
+      if(mcheck < mdist) mdist = mcheck;
+    }
+  }
+  return mcheck;
+}
 
 dipoletype::code Define_Dipoles::WhichResonant(const Vec4D &k){
   if(!HasFSR()) return dipoletype::initial;
