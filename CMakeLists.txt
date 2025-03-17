@@ -1018,10 +1018,16 @@ $<IF:$<BOOL:${SHERPA_ENABLE_BINRELOC}>,#define ENABLE_BINRELOC \"1\",/* #undef E
 #define SHERPA_PREFIX \"${CMAKE_INSTALL_PREFIX}\"\n\n\
 /* Sherpa include directory */\n\
 #define SHERPA_INCLUDE_PATH \"${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_INCLUDEDIR}/SHERPA-MC\"\n\n\
+/* Sherpa include subdirectory */\n\
+#define SHERPA_INCLUDE_SUBDIR \"${CMAKE_INSTALL_INCLUDEDIR}/SHERPA-MC\"\n\n\
 /* Sherpa library directory */\n\
 #define SHERPA_LIBRARY_PATH \"${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/SHERPA-MC/\"\n\n\
+/* Sherpa library subdirectory */\n\
+#define SHERPA_LIBRARY_SUBDIR \"${CMAKE_INSTALL_LIBDIR}/SHERPA-MC/\"\n\n\
 /* Sherpa data directory */\n\
 #define SHERPA_SHARE_PATH \"${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_DATADIR}/SHERPA-MC/\"\n\n\
+/* Sherpa subversion */\n\
+#define SHERPA_SHARE_SUBDIR \"${CMAKE_INSTALL_DATADIR}/SHERPA-MC/\"\n\n\
 /* Sherpa subversion */\n\
 #define SHERPA_SUBVERSION \"${SHERPA_VERSION_MINOR}.${SHERPA_VERSION_PATCH}\"\n\n\
 /* Sherpa version */\n\
