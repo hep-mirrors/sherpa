@@ -54,10 +54,10 @@ double LF_FFV_Quarkonia_FF::operator()(const double zz, const double y,
                                        const double eta, const double scale,
                                        const double Q2) {
   const double z = 1 - zz;
-  double muij2 = sqr(p_ms->Mass(m_flavs[0])) / Q2;
-  double mi2 = sqr(p_ms->Mass(m_flavs[1]));
+  double mi2 = sqr(p_ms->Mass(m_flavs[1])); // works with the mapping c -> J/Psi(1S) c
   double mj2 = sqr(p_ms->Mass(m_flavs[2]));
   double mk2 = sqr(p_ms->Mass(m_flspec));
+  double muij2 = sqr(p_ms->Mass(m_flavs[0])) / Q2;
   double mui2 = mi2 / Q2, muj2 = mj2 / Q2, muk2 = mk2 / Q2;
   const double mjperp2 =
       (scale * z * (1. - z) - mi2 * z - mj2 * (1. - z)) + mj2;
@@ -82,7 +82,8 @@ double LF_FFV_Quarkonia_FF::operator()(const double zz, const double y,
                     << 16. / 27 * sqr(p_cf->Coupling(newscale, 0)) *
                            JFF(y, mui2, muj2, muk2, muij2)
                     << std::endl;
-    return 16. / 27 * sqr(p_cf->Coupling(newscale, 0)) *
+    const double LDME = pow(0.82,3)/Flavour(kf_c).Mass()/sqr(Q2);
+    return 16. / 27 * LDME  *sqr(p_cf->Coupling(newscale, 0)) * value / sqr(Q2) *
            JFF(y, mui2, muj2, muk2, muij2);
   }
 }
@@ -92,12 +93,12 @@ double LF_FFV_Quarkonia_FF::OverIntegrated(const double zmin, const double zmax,
                                            const double xbj) {
   m_zmin = zmin;
   m_zmax = zmax;
-  return 16. / 27 * sqr(p_cf->MaxCoupling(0)) * (0.5) *
+  return 16. / 27 *  pow(0.82,3)/Flavour(kf_c).Mass() * sqr(p_cf->MaxCoupling(0)) * (0.5) *
          log((1. - zmin) / (1. - zmax));
 }
 
 double LF_FFV_Quarkonia_FF::OverEstimated(const double z, const double y) {
-  return 16. / 27 * sqr(p_cf->MaxCoupling(0)) * (0.5) / (1. - z);
+  return 16. / 27 * pow(0.82,3)/Flavour(kf_c).Mass() * sqr(p_cf->MaxCoupling(0)) * (0.5) / (1. - z);
 }
 
 double LF_FFV_Quarkonia_FF::Z() {

@@ -137,38 +137,42 @@ void Sudakov::InitSplittingFunctions(Model_Base *md, const int kfmode) {
   }
   AddDiQuarkSplittingFunctions(md, kfmode);
   AddOctetMesonSplittingFunctions(md, kfmode);
-  AddQuarkoniaSplittingFunctions(md, kfmode);
+  // AddQuarkoniaSplittingFunctions(md, kfmode);
   AddGluonThresholds(md);
   msg_Debugging() << "}\n";
 }
 
-void Sudakov::AddDiQuarkSplittingFunctions(MODEL::Model_Base *md,const int kfmode) {
-  //msg_Out()<<"============================================================\n"
+void Sudakov::AddDiQuarkSplittingFunctions(MODEL::Model_Base *md,
+                                           const int kfmode) {
+  // msg_Out()<<"============================================================\n"
   //	   <<METHOD<<": so far "<<m_splittings.size()<<" splitting functions\n";
-  Kabbala g3("g_3",sqrt(4.*M_PI*md->ScalarConstant("alpha_S")));
-  Kabbala cpl0=g3*Kabbala("i",Complex(0.,1.));
-  list<kf_code> diquarks = { kf_ud_0, kf_dd_1, kf_ud_1, kf_uu_1 };
-    for (list<kf_code>::iterator kfit=diquarks.begin();kfit!=diquarks.end();kfit++) {
+  Kabbala g3("g_3", sqrt(4. * M_PI * md->ScalarConstant("alpha_S")));
+  Kabbala cpl0 = g3 * Kabbala("i", Complex(0., 1.));
+  list<kf_code> diquarks = {kf_ud_0, kf_dd_1, kf_ud_1, kf_uu_1};
+  for (list<kf_code>::iterator kfit = diquarks.begin(); kfit != diquarks.end();
+       kfit++) {
     Flavour flav(*kfit);
-    //if (!flav.IsOn()) continue; 
+    // if (!flav.IsOn()) continue;
     Single_Vertex v;
     v.AddParticle(flav.Bar());
     v.AddParticle(flav);
     v.AddParticle(Flavour(kf_gluon));
-    v.Color.push_back(Color_Function(cf::T,3,2,1));
+    v.Color.push_back(Color_Function(cf::T, 3, 2, 1));
     v.Lorentz.push_back("SSV");
     v.cpl.push_back(cpl0);
-    v.order[0]=1;
-    Add(new Splitting_Function_Base(SF_Key(&v,0,cstp::FF,kfmode,m_qcdmode,m_ewmode, 1,m_pdfmin)));
-    Add(new Splitting_Function_Base(SF_Key(&v,0,cstp::FF,kfmode,m_qcdmode,m_ewmode,-1,m_pdfmin)));
+    v.order[0] = 1;
+    Add(new Splitting_Function_Base(
+        SF_Key(&v, 0, cstp::FF, kfmode, m_qcdmode, m_ewmode, 1, m_pdfmin)));
+    Add(new Splitting_Function_Base(
+        SF_Key(&v, 0, cstp::FF, kfmode, m_qcdmode, m_ewmode, -1, m_pdfmin)));
   }
-  //msg_Out()<<METHOD<<": by now "<<m_splittings.size()<<" splitting functions\n"
-    //	   <<"============================================================\n";
+  // msg_Out()<<METHOD<<": by now "<<m_splittings.size()<<" splitting
+  // functions\n"
+  //	   <<"============================================================\n";
 }
 
 void Sudakov::AddQuarkoniaSplittingFunctions(Model_Base *md, const int kfmode) {
-  msg_Out() <<
-  "============================================================\n"
+  msg_Out() << "============================================================\n"
             << METHOD << ": so far " << m_splittings.size()
             << " splitting functions\n";
   Kabbala g3("g_3", sqrt(4. * M_PI * md->ScalarConstant("alpha_S")));
@@ -185,11 +189,11 @@ void Sudakov::AddQuarkoniaSplittingFunctions(Model_Base *md, const int kfmode) {
   v.cpl.push_back(cpl0); // Check later
   v.order[0] = 1;
   Add(new Splitting_Function_Base(
-    SF_Key(&v, 0, cstp::FF, kfmode, m_qcdmode, m_ewmode, 1, m_pdfmin)));
+      SF_Key(&v, 0, cstp::FF, kfmode, m_qcdmode, m_ewmode, 1, m_pdfmin)));
   v.in[0] = v.in[0].Bar();
   v.in[1] = v.in[1].Bar();
   Add(new Splitting_Function_Base(
-    SF_Key(&v, 0, cstp::FF, kfmode, m_qcdmode, m_ewmode, 1, m_pdfmin)));
+      SF_Key(&v, 0, cstp::FF, kfmode, m_qcdmode, m_ewmode, 1, m_pdfmin)));
   v = Single_Vertex();
   v.AddParticle(Gluon_flav);
   v.AddParticle(Flavour(kf_eta_c_1S));
@@ -202,8 +206,7 @@ void Sudakov::AddQuarkoniaSplittingFunctions(Model_Base *md, const int kfmode) {
       SF_Key(&v, 0, cstp::FF, kfmode, m_qcdmode, m_ewmode, 1, m_pdfmin)));
   msg_Out() << METHOD << ": by now " << m_splittings.size()
             << " splitting functions\n"
-            <<
-            "============================================================\n";
+            << "============================================================\n";
 }
 
 void Sudakov::AddOctetMesonSplittingFunctions(Model_Base *md,
@@ -213,10 +216,11 @@ void Sudakov::AddOctetMesonSplittingFunctions(Model_Base *md,
   Kabbala g3("g_3", sqrt(4. * M_PI * md->ScalarConstant("alpha_S")));
   Kabbala cpl0 = g3 * Kabbala("i", Complex(0., 1.));
   list<kf_code> octetmesons = {
-      kf_eta_c_1S_oct,  kf_J_psi_1S_oct,
-      kf_chi_c0_1P_oct, kf_chi_c1_1P_oct, /*kf_chi_c2_1P_oct,*/
-      kf_eta_b_oct,     kf_Upsilon_1S_oct,
-      kf_chi_b0_1P_oct, kf_chi_b1_1P_oct /*, kf_chi_b2_1P_oct */};
+      kf_eta_c_1S_oct,   kf_J_psi_1S_oct,   kf_chi_c0_1P_oct,
+      kf_chi_c1_1P_oct, /*kf_chi_c2_1P_oct,*/
+      kf_eta_b_oct,      kf_Upsilon_1S_oct, kf_Upsilon_2S_oct,
+      kf_Upsilon_3S_oct, kf_chi_b0_1P_oct,  kf_chi_b1_1P_oct,
+      kf_chi_b1_2P_oct}; //, kf_chi_b2_3P_oct};
   for (list<kf_code>::iterator kfit = octetmesons.begin();
        kfit != octetmesons.end(); kfit++) {
     Flavour flav(*kfit);
@@ -245,7 +249,8 @@ void Sudakov::AddOctetMesonSplittingFunctions(Model_Base *md,
 
 void Sudakov::AddGluonThresholds(Model_Base *md) {
   Running_AlphaS as = md->ScalarConstant("alpha_S");
-  const double mc = ATOOLS::Flavour(kf_c).Mass(1);
+  const double mc = ATOOLS::Flavour(kf_c).Mass();
+  const double mb = ATOOLS::Flavour(kf_b).Mass();
   list<kf_code> octetvectors = {kf_J_psi_1S_oct, kf_psi_2S_oct,
                                 kf_chi_c0_1P_oct, kf_chi_c1_1P_oct,
                                 kf_chi_c2_1P_oct};
@@ -261,11 +266,37 @@ void Sudakov::AddGluonThresholds(Model_Base *md) {
   double arg;
   for (list<kf_code>::iterator octit = octetvectors.begin();
        octit != octetvectors.end(); octit++) {
-    arg = 0.5 *
-          (M_PI * as(2 * mc) / (24 * pow(mc, 3))); // SDME for g -> ccb (3S_1)_8
+    arg = 0.5 * (M_PI * as(2 * mc) / (24 * pow(mc, 3))) *
+          LDME[*octit]; // SDME for g -> ccb (3S_1)_8
     stset->insert(
         One2One_Transition_Base(Flavour(kf_gluon), Flavour(*octit), arg, 1));
   }
+  // stset->insert(One2One_Transition_Base(
+  //     Flavour(kf_gluon), Flavour(kf_Upsilon_1S_oct),
+  //     0.5 * (M_PI * as(2 * mb) / (24 * pow(mb, 3))) * (305.0E-03), 1)); // this will capture almost all Y(1S) production but it's a guess
+  stset->insert(One2One_Transition_Base(
+      Flavour(kf_gluon), Flavour(kf_Upsilon_1S_oct),
+      0.5 * (M_PI * as(2 * mb) / (24 * pow(mb, 3))) * (228.0E-03), 1));  
+  stset->insert(
+      One2One_Transition_Base(Flavour(kf_gluon), Flavour(kf_Upsilon_2S_oct),
+      0.5 *
+          (M_PI * as(2 * mb) / (24 * pow(mb, 3))) * (119.0E-03), 1));
+  stset->insert(
+      One2One_Transition_Base(Flavour(kf_gluon), Flavour(kf_Upsilon_3S_oct),
+      0.5 *
+          (M_PI * as(2 * mb) / (24 * pow(mb, 3))) * (39.0E-03), 1));
+  // stset->insert(
+  //     One2One_Transition_Base(Flavour(kf_gluon), Flavour(kf_chi_b1_1P_oct),
+  //     0.5 *
+  //         (M_PI * as(2 * mb) / (24 * pow(mb, 3))) * (9.4E-03), 1));
+  // stset->insert(
+  //     One2One_Transition_Base(Flavour(kf_gluon), Flavour(kf_chi_b1_2P_oct),
+  //     0.5 *
+  //         (M_PI * as(2 * mb) / (24 * pow(mb, 3))) * (10.9E-03), 1));
+  // stset->insert(
+  //     One2One_Transition_Base(Flavour(kf_gluon), Flavour(kf_chi_b1_3P_oct),
+  //     0.5 *
+  //         (M_PI * as(2 * mb) / (24 * pow(mb, 3))) * (6.9E-03), 1));
 }
 
 void Sudakov::SetCoupling(Model_Base *md, const double &k0sqi,
@@ -569,13 +600,15 @@ int Sudakov::Generate(Parton *split, Parton *spect, double t0, double kt2win,
                  2 * (tr_Q2 * sqr(tr_mass) + tr_Q2 * sqr(tr_spmass) +
                       sqr(tr_mass * tr_spmass))) /
             fabs(tr_Q2 - sqr(tr_spmass));
+        if (!((tr_Q2 > tr_thr) && split->KtStart() > transit->OutMass2() &&
+              t < transit->OutMass2()))
+          continue;
         tra_P += sur_P * (1. - exp(-tr_phw * transit->SudArg()));
         sur_P *= exp(-tr_phw * transit->SudArg());
         msg_Debugging() << METHOD << ", checking transition for "
                         << transit->GetFlavourB().IDName() << ", " << random
                         << " < " << tra_P << ",  trw: " << tr_phw << endl;
-        if (random < tra_P && (tr_Q2 > tr_thr) &&
-            split->KtStart() > transit->OutMass2() && t < transit->OutMass2()) {
+        if (random < tra_P) {
           msg_Debugging() << "Tried to split a " << split->GetFlavour() << " ("
                           << split->GetFlow(1) << ", " << split->GetFlow(2)
                           << ") "

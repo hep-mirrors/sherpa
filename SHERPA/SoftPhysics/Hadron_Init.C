@@ -387,6 +387,7 @@ void Hadron_Init::Init() {
   Particle_Info::InitHadron(110553,false,10.255,0.65,0.0,0,2,true,1,0,"h(b)(2P)","h_{b}(2P)");
   Particle_Info::InitHadron(110555,false,10.441,0.65,0.0,0,4,true,1,0,"eta(b2)(2D)","eta_{b2}(2D)");
   Particle_Info::InitHadron(kf_chi_b1_2P,false,10.2552,0.65,0.001,0,2,false,1,0,"chi(b1)(2P)","chi_{b1}(2P)");
+  Particle_Info::InitHadron(kf_chi_b1_3P,false,10.5134,0.65,0.001,0,2,false,1,0,"chi(b1)(3P)","chi_{b1}(3P)");
   Particle_Info::InitHadron(120555,false,10.4406,0.65,0.0,0,4,true,1,0,"Upsilon(2)(2D)","Upsilon_{2}(2D)");
   Particle_Info::InitHadron(130553,false,10.4349,0.65,0.0,0,2,true,1,0,"Upsilon(1)(2D)","Upsilon_{1}(2D)");
   Particle_Info::InitHadron(200551,false,10.335,0.65,0.0,0,0,true,1,0,"eta(b)(3S)","eta_{b}(3S)");
