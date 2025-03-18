@@ -524,11 +524,11 @@ bool Rivet_Interface::Finish()
           // Re-perform MPI_Reduce to compute the filtered sum
           mpi->Reduce(filtered_data.data(),datalen,MPI_DOUBLE,MPI_SUM);
           mpi->Reduce(&vetoed_ranks,1,MPI_INT,MPI_SUM);
-          if (mpi->Rank()==0) {
+          size_t nRanks = mpi->Size()-vetoed_ranks;
+          if (mpi->Rank()==0 && nRanks >= 1) {
             // Lazily initialise a new AnalysisHandler
             // and populate it with the filtered data
             const std::string newlabel = it.first.first+"thr="+threshold+".rmrank";
-            size_t nRanks = mpi->Size()-vetoed_ranks;
             GetRivet(newlabel,it.first.second,&m_lastevent)->deserializeContent(filtered_data,nRanks);
           }
         }
