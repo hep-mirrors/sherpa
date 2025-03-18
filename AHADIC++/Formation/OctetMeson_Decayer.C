@@ -10,13 +10,14 @@ using namespace ATOOLS;
 using namespace std;
 
 OctetMeson_Decayer::OctetMeson_Decayer(list<Singlet *> *singlets,
-                                       std::list<Proto_Particle *> *hadrons)
-    : p_singlets(singlets), p_hadrons(hadrons),
-      m_offset(Flavour(kf_eta_c_1S_oct).Kfcode() -
-               Flavour(kf_eta_c_1S).Kfcode()),
-      m_kappa(2.), m_minE(0.1) {}
+                                       std::list<Proto_Particle *> *hadrons) :
+  p_singlets(singlets), p_hadrons(hadrons),
+  m_offset(Flavour(kf_eta_c_1S_oct).Kfcode() -
+	   Flavour(kf_eta_c_1S).Kfcode()),
+  m_kappa(2.), m_minE(0.1) {}
 
 bool OctetMeson_Decayer::operator()() {
+  //msg_Out()<<METHOD<<" for "<<p_singlets->size()<<" singlets.\n";
   for (list<Singlet *>::iterator sit = p_singlets->begin();
        sit != p_singlets->end(); sit++) {
     p_part1 = p_part2 = NULL;
@@ -31,6 +32,7 @@ bool OctetMeson_Decayer::operator()() {
         found = true;
       }
     } while (found);
+    //msg_Out()<<(**sit)<<"\n";
   }
   return true;
 }
@@ -59,20 +61,29 @@ bool OctetMeson_Decayer::FixSpectator(Singlet *singlet,
   }
   if (part2 == NULL && part3 == NULL) {
     THROW(fatal_error, "this seems to be a one-particle singlet!");
-  } else if (part2 == NULL)
+  }
+  else if (part2 == NULL)
     p_part2 = part3;
   else if (part3 == NULL)
     p_part2 = part2;
-  else if ((p_part1->Momentum() + part2->Momentum()).Abs2() >
-           (p_part1->Momentum() + part3->Momentum()).Abs2()) {
+  else if (!part2->Flavour().IsOctetMeson() &&
+	   part3->Flavour().IsOctetMeson())
     p_part2 = part2;
-  } else
+  else if (part2->Flavour().IsOctetMeson() &&
+	   !part3->Flavour().IsOctetMeson())
+    p_part2 = part3;
+  else if (( (p_part1->Momentum() + part2->Momentum()).Abs2() -
+	     p_part1->Momentum().Abs2()-part2->Momentum().Abs2() ) >
+           ( (p_part1->Momentum() + part3->Momentum()).Abs2() -
+	     p_part1->Momentum().Abs2()-part3->Momentum().Abs2() )) 
+    p_part2 = part2;
+  else
     p_part2 = part3;
   return true;
 }
 
 bool OctetMeson_Decayer::FixKinematics() {
-  // msg_Out()<<"\n"<<METHOD<<"("<<p_part1<<"|"<<p_part2<<"):\n"
+  //msg_Out()<<"\n"<<METHOD<<"("<<p_part1<<"|"<<p_part2<<"|):\n"
   //	   <<(*p_part1)<<(*p_part2);
   //  p+/- = E (1, 0, 0, +-1)
   //  p1:    a1  p+ + (1-b1) p- --> m1^2/Q^2 = (1-b1) a1  ==> a1(1-b1) =
@@ -100,8 +111,14 @@ bool OctetMeson_Decayer::FixKinematics() {
   if (zmax < zmin)
     zmin = zmax * m_minE / E;
   double z =
-      pow(pow(zmax, 1. - m_kappa) + (1. - ran->Get()) * pow(zmin, 1. - m_kappa),
+      pow(pow(zmax, 1. - m_kappa) +
+	  (1. - ran->Get()) * pow(zmin, 1. - m_kappa),
           1. / (1. - m_kappa));
+  //if (z<0.) {
+  //msg_Out()<<"Awkward z = "<<z<<" in ["<<zmin<<", "<<zmax<<"] from\n"
+  //	     <<"E1 = "<<mom1[0]<<" - m1 = "<<m1<<" and\n"
+  //	     <<"m12 = "<<m12<<" Q2 = "<<Q2<<" - m22 = "<<m22<<"\n";
+  //}
   // p11: (1-z) a2  p+ + (1-b2) p- --> m1^2/Q^2 = (1-b2) (1-z) a2  ==> a2 =
   // m1^2/Q^2 1/[(1-b2)(1-z)] p12:    z  a2  p+             --> mg^2 = 0 p2:  (1
   // -a2) p+ +    b2  p1 --> m2^2/Q^2 = (1-a2) b2        ==> b2 = m2^2/Q^2
@@ -121,12 +138,12 @@ bool OctetMeson_Decayer::FixKinematics() {
     ontoZ.RotateBack(m_mom[i]);
     intoCMS.BoostBack(m_mom[i]);
   }
-  // msg_Out()<<"Selectec z = "<<z<<" in ["<<zmin<<", "<<zmax<<"]  -->
-  // "<<alpha2<<" & "<<beta2<<"\n"
+  //msg_Out()<<"Selected z = "<<z<<" in ["<<zmin<<", "<<zmax<<"]  --> "
+  //	   <<alpha2<<" & "<<beta2<<"\n"
   //	   <<p_part1->Momentum()<<" + "<<p_part2->Momentum()<<"\n"
   //	   <<m_mom[0]<<" + " <<m_mom[1]<<" + " <<m_mom[2]<<"\n"
   //	   <<"Check: "<<mom<<" vs. "<<(m_mom[0]+m_mom[1]+m_mom[2])<<"\n";
-  return true;
+  return (z>0.);
 }
 
 void OctetMeson_Decayer::UpdateColouredObjectsAndAddHadron() {

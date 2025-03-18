@@ -122,10 +122,11 @@ bool Singlet_Checker::CheckSinglet() {
   // Checking the mass for pairs of colour-connected particles
   for (list<Proto_Particle *>::iterator plit=p_singlet->begin();
        plit!=p_singlet->end();plit++) {
-    if ((*plit)->Momentum()[0]<0. || (*plit)->Momentum().RelAbs2()<-rpa->gen.SqrtAccu()) {
-      msg_Tracking()<<"Error in "<<METHOD<<":\n"
-		    <<"   negative energy or mass^2 particle in singlet:\n"
-		    <<(*p_singlet)<<"n";
+    if ((*plit)->Momentum()[0]<0. ||
+	(*plit)->Momentum().RelAbs2()<-rpa->gen.SqrtAccu()) {
+      //msg_Out()<<"Error in "<<METHOD<<":\n"
+      //       <<"   negative energy or mass^2 particle in singlet:\n"
+      //       <<(*p_singlet)<<"n";
       m_errors++;
     }
   }
@@ -138,6 +139,7 @@ bool Singlet_Checker::CheckSinglet() {
 						       (*plit2)->Flavour()),
 			 p_softclusters->MinDoubleMass((*plit1)->Flavour(),
 						       (*plit2)->Flavour()));
+    //if (mass<minmass) msg_Out()<<"Upsi 1.\n";
     return (mass > minmass);
   }
   while (plit2!=p_singlet->end()) {
@@ -145,7 +147,10 @@ bool Singlet_Checker::CheckSinglet() {
     // parameter (minmass2) --- same below for "gluon ring"
     p_part1 = (*plit1);
     p_part2 = (*plit2);
-    if (!CheckMass(p_part1,p_part2)) return false;
+    if (!CheckMass(p_part1,p_part2)) {
+      //msg_Out()<<"Upsi 2: "<<p_part1->Flavour()<<" + "<<p_part2->Flavour()<<"\n";
+      return false;
+    }
     plit2++;
     plit1++;
   }
@@ -154,7 +159,10 @@ bool Singlet_Checker::CheckSinglet() {
       p_singlet->back()->Flavour().IsGluon()) {
     p_part1 = (*plit1);
     p_part2 = p_singlet->front();
-    if (!CheckMass(p_part1,p_part2)) return false;
+    if (!CheckMass(p_part1,p_part2)) {
+      //msg_Out()<<"Upsi 1.\n";
+      return false;
+    }
   }
   return true;
 }
