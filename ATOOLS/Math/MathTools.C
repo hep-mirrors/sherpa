@@ -9,9 +9,12 @@ namespace ATOOLS {
       ss2 << std::fixed << std::setprecision(precision) << num2;
       std::string str1 = ss1.str();
       std::string str2 = ss2.str();
-      int matchCount = -1; // Will inclulde "." as correct
+      char dot = '.';
+      int matchCount = 0;
       for (size_t i = 0; i < str1.size() && i < str2.size(); ++i) {
-          if (str1[i] == str2[i]) matchCount++;
+          if (str1[i] == str2[i]) {
+            if(str1[i] != dot) matchCount++;
+          }
           else break;
       }
     return matchCount;
