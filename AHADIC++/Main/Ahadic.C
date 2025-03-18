@@ -87,12 +87,15 @@ Return_Value::code Ahadic::Hadronize(Blob_List * blobs)
 Return_Value::code Ahadic::Hadronize(Blob * blob, int retry) {
   Reset();
   m_totmom = blob->CheckMomentumConservation();
+  //msg_Out()<<"===============================================================\n";
+  //(*blob)<<"\n";
   if (!ExtractSinglets(blob) || !ShiftBeamParticles() || !CheckSinglets() ||
       !DecayOctetMesons() || !DecayGluons() ||!DecayClusters()) {
-    //msg_Error()<<"ERROR in "<<METHOD<<": Will retry event!\n"
-    //	       <<(*blob);
+    msg_Error()<<"ERROR in "<<METHOD<<": Will retry event!\n"
+    	       <<(*blob);
     Reset(blob);
     Reset();
+    exit(1);
     return Return_Value::New_Event;
   }
   blob->UnsetStatus(blob_status::needs_hadronization);
@@ -113,7 +116,7 @@ Return_Value::code Ahadic::Hadronize(Blob * blob, int retry) {
 bool Ahadic::ExtractSinglets(Blob * blob)
 {
   if (!m_sformer.Extract(blob)) {
-    //msg_Error()<<METHOD<<" could not extract singlet.\n";
+    msg_Error()<<METHOD<<" could not extract singlet.\n";
     return false;
   }
   return true;
@@ -122,7 +125,7 @@ bool Ahadic::ExtractSinglets(Blob * blob)
 bool Ahadic::ShiftBeamParticles()
 {
   if (!m_beamparticles()) {
-    //msg_Error()<<METHOD<<" could not shift beam particles on mass shells.\n";
+    msg_Error()<<METHOD<<" could not shift beam particles on mass shells.\n";
     return false;
   }
   return true;
@@ -131,7 +134,7 @@ bool Ahadic::ShiftBeamParticles()
 bool Ahadic::CheckSinglets()
 {
   if (!m_singletchecker()) {
-    //msg_Error()<<METHOD<<" singlets did not check out.\n";
+    msg_Error()<<METHOD<<" singlets did not check out.\n";
     return false;
   }
   return true;

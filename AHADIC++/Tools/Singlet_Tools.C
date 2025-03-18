@@ -60,11 +60,13 @@ bool Singlet::Combine(Proto_Particle * part1,Proto_Particle * part2) {
 
 void Singlet::StripSingletOfGluons() {
   list<Proto_Particle *>::iterator pit=begin();
-  //msg_Out()<<METHOD<<" adds momenta to particle with flavour = "<<(*pit)->Flavour()<<"\n";
+  //msg_Out()<<METHOD<<" adds momenta to particle with flavour = "
+  // <<(*pit)->Flavour()<<"\n";
   Vec4D mom = Vec4D(0.,0.,0.,0.);
   pit++;
   do {
-    //msg_Out()<<"   add mom = "<<(*pit)->Momentum()<<" from "<<(*pit)->Flavour()<<", ";
+    //msg_Out()<<"   add mom = "<<(*pit)->Momentum()<<" from "
+    // <<(*pit)->Flavour()<<", ";
     mom += (*pit)->Momentum();
     delete (*pit);
     pit  = erase(pit);
@@ -121,9 +123,16 @@ bool Singlet_Tools::CheckMass(Proto_Particle * part1,Proto_Particle * part2) {
   double factor = ((part1->Flavour().IsGluon()?2.:1.)*
 		   (part2->Flavour().IsGluon()?2.:1.));
   m_mass = sqrt((part1->Momentum()+part2->Momentum()).Abs2());
-  return (m_mass > (p_constituents->Mass(part1->Flavour())+
-		    p_constituents->Mass(part2->Flavour())+
-		    factor*m_minQmass));
+  bool check = (m_mass > (p_constituents->Mass(part1->Flavour())+
+			  p_constituents->Mass(part2->Flavour())+
+			  factor*m_minQmass));
+  //if (!check) {
+  //msg_Out()<<METHOD<<": "<<m_mass<<" vs. "
+  //	     <<p_constituents->Mass(part1->Flavour())<<" + "
+  //	     <<p_constituents->Mass(part2->Flavour())<<" + "
+  //	     <<factor<<"*"<<m_minQmass<<"\n";
+  //}
+  return check;
 }
 
 
