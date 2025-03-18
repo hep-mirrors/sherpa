@@ -310,6 +310,7 @@
 #define      kf_chi_b2_2P                 100555
 #define      kf_chi_b0_2P                 110551
 #define      kf_chi_b1_2P                 120553
+#define      kf_chi_b1_3P                 130553
 #define      kf_Upsilon_3S                200553
 #define      kf_Upsilon_4S                300553
 #define      kf_a_0_1450                  10111
@@ -413,8 +414,12 @@
 #define      kf_chi_c2_1P_oct           9900445
 #define      kf_eta_b_oct               9900551
 #define      kf_Upsilon_1S_oct          9900553
+#define      kf_Upsilon_2S_oct          99100553
+#define      kf_Upsilon_3S_oct          99200553
 #define      kf_chi_b0_1P_oct           9910551
 #define      kf_chi_b1_1P_oct           9920553
+#define      kf_chi_b1_2P_oct           99120553
+#define      kf_chi_b1_3P_oct           99130553
 #define      kf_chi_b2_1P_oct           9900555
 // alternative version
 //#define      kf_eta_c_1S_oct            881
