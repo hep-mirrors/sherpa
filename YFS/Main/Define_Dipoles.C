@@ -206,6 +206,7 @@ void Define_Dipoles::MakeDipoles(ATOOLS::Flavour_Vector const &fl, ATOOLS::Vec4D
       // one dipole
       Flavour_Vector ff;
       Vec4D_Vector mm, bm;
+      std::vector<int> id;
       // m_flav_label[fl[2]] = 2;
       // m_flav_label[fl[3]] = 3;
       for(size_t i = 2; i < fl.size(); i++) {
@@ -213,13 +214,14 @@ void Define_Dipoles::MakeDipoles(ATOOLS::Flavour_Vector const &fl, ATOOLS::Vec4D
           ff.push_back(fl[i]);
           mm.push_back(mom[i]);
           bm.push_back(m_bornmomenta[i]);
+          id.push_back(i);
         }
       }
       Dipole D(ff, mm, bm, dipoletype::final,m_alpha);
       if(fsrc==2)  D.SetResonance(true);
       else IsResonant(D);
       Dipole_FF(ff, mm);
-      D.SetFlavLab(2,3);
+      D.SetFlavLab(id[0],id[1]);
       m_dipolesFF.push_back(D);
       return;
     }
