@@ -273,8 +273,7 @@ bool YFS_Handler::CalculateFSR(Vec4D_Vector & p) {
   m_plab=p;
   m_fsrWeight=1;
   p_dipoles->MakeDipoles(m_flavs, m_plab, m_plab);
-  int NRes(0);
-  // FinalResonance(NRes);
+  CheckResonance();
   if(m_mode==yfsmode::isrfsr)  p_dipoles->MakeDipolesIF(m_flavs, m_plab, m_plab);
   m_FSRPhotons.clear();
   if (p_dipoles->GetDipoleFF()->size() == 0) {
@@ -315,12 +314,8 @@ bool YFS_Handler::CalculateFSR(Vec4D_Vector & p) {
     Dip->AddPhotonsToDipole(m_FSRPhotons);
     p_fsr->Weight();
     m_fsrWeight *= p_fsr->GetWeight();
-    // int i(0);
-    // m_plab[Dip->m_leftfl]  =  Dip->GetNewMomenta(0);
-    // m_plab[Dip->m_rightfl] =  Dip->GetNewMomenta(1);
-    // CheckMasses();
-    // PRINT_VAR(Dip->m_rightfl);
-    // PRINT_VAR(Dip->m_leftfl);
+    m_plab[Dip->m_leftfl]  =  Dip->GetNewMomenta(0);
+    m_plab[Dip->m_rightfl] =  Dip->GetNewMomenta(1);
     if(!IsEqual(m_flavs[Dip->m_leftfl].Mass(), m_plab[Dip->m_leftfl].Mass(),1e-5)){
       msg_Debugging()<<"Missmatch in Final state mass"<<std::endl
                  <<"Flavour = "<<m_flavs[Dip->m_leftfl]<<std::endl
@@ -335,15 +330,6 @@ bool YFS_Handler::CalculateFSR(Vec4D_Vector & p) {
                  <<"Momentum =   "<<m_plab[Dip->m_rightfl]<<std::endl
                  <<"Mass =   "<<m_plab[Dip->m_rightfl].Mass()<<std::endl;
     }
-    int i(0);
-    for (auto f : Dip->m_flavs) {
-      m_plab[p_dipoles->m_flav_label[f]] =  Dip->GetNewMomenta(i);
-      i++;
-    }
-    // for (auto f : Dip->m_flavs) {
-      // PRINT_VAR(p_dipoles->m_flav_label[f]);
-      // i++;
-    // }
   }
   for(size_t i = 2; i < m_plab.size(); ++i) {
     m_outparticles[m_particles[i]] = m_plab[i];
@@ -354,8 +340,6 @@ bool YFS_Handler::CalculateFSR(Vec4D_Vector & p) {
          Dip != p_dipoles->GetDipoleFF()->end(); ++Dip) {
     for(auto &k: Dip->GetPhotons()) m_FSRPhotons.push_back(k);
   }
-  // PRINT_VAR(m_plab);
-  // PRINT_VAR(m_FSRPhotons.size());
   if(!CheckMomentumConservation()) return false;
   // CheckMasses();
   return true;
@@ -583,47 +567,18 @@ Vec4D_Vector YFS_Handler::GetPhotons(){
   return k;
 }
 
-void YFS_Handler::FinalResonance(int &nres){
-  std::unordered_set<int> seen_left;
-  std::unordered_set<int> seen_right;
-  Dipole_Vector duplicate;
-  for (Dipole_Vector::iterator Dip = p_dipoles->GetDipoleFF()->begin();
-       Dip != p_dipoles->GetDipoleFF()->end(); ++Dip) {
-    if(Dip->IsResonance()){
-      nres++;
-      if (seen_left.find(Dip->m_leftfl) != seen_left.end()) {
-          msg_Out() << "Duplicate found: " << Dip->m_leftfl << std::endl;
-          duplicate.push_back(*Dip);
-      } else {
-          seen_left.insert(Dip->m_leftfl);
-      }
-      if (seen_right.find(Dip->m_rightfl) != seen_right.end()) {
-          msg_Out() << "Duplicate found: " << Dip->m_rightfl << std::endl;
-          // duplicate.push_back(*Dip);
-      } else {
-          seen_right.insert(Dip->m_rightfl);
+void YFS_Handler::CheckResonance(){
+  for (Dipole_Vector::iterator D1 = p_dipoles->GetDipoleFF()->begin();
+         D1 != p_dipoles->GetDipoleFF()->end(); ++D1) {
+    for (Dipole_Vector::iterator D2 = p_dipoles->GetDipoleFF()->begin();
+       D2 != p_dipoles->GetDipoleFF()->end(); ++D2) {
+      if(D1==D2) continue;
+      // if(!D1->IsResonance() || !D2->IsResonance()) continue;
+      if(D1->m_rightfl == D2->m_rightfl ||  D1->m_rightfl == D2->m_leftfl|| 
+        D1->m_leftfl == D2->m_rightfl||  D1->m_leftfl == D2->m_leftfl){
+        if(p_dipoles->ResonantDist(*D1) < p_dipoles->ResonantDist(*D2)) D2->SetResonance(false);
+        else  D1->SetResonance(false);
+        }
       }
     }
-  }
-
-  for(auto d: duplicate){
-    msg_Out()<<d<<std::endl;
-  }
-  // if(nres > (m_flavs.size()-2)/2){
-  //   msg_Debugging()<<"A lepton has one or more potential resonances"<<std::endl;
-  //   for (Dipole_Vector::iterator D1 = p_dipoles->GetDipoleFF()->begin();
-  //        D1 != p_dipoles->GetDipoleFF()->end(); ++D1) {
-  //     for (Dipole_Vector::iterator D2 = p_dipoles->GetDipoleFF()->begin();
-  //        D2 != p_dipoles->GetDipoleFF()->end(); ++D2) {
-  //       if(D1==D2) continue;
-  //       if( seen_right.find(D1->m_rightfl) == seen_right.end()) continue;
-  //       if( seen_right.find(D2->m_rightfl) == seen_right.end()) continue;
-  //       PRINT_VAR(D1->m_leftfl);
-  //       PRINT_VAR(D1->m_rightfl);
-  //       // if(D1->m_leftfl==D2->m_leftfl || D1->m_rightfl==D2->m_rightfl){
-  //       //   if(p_dipoles->ResonantDist(*D1) < p_dipoles->ResonantDist(*D2)) D2->SetResonance(false);
-  //       //   else D1->SetResonance(false);
-  //       }
-  //     }
-  //   }
   }
