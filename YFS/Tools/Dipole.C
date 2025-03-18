@@ -187,6 +187,9 @@ void Dipole::Boost() {
                  <<"Photon vector size: "<<m_dipolePhotons.size()<<std::endl
                  <<"Photons Generated: "<<m_Nphotons<<std::endl;
     }
+    if(!IsResonance()){
+      msg_Error()<<"Trying to boost a non-resonant dipole"<<std::endl;
+    }
     // Check that the final state fermions
     // are in their own restframe;
     Vec4D Q = m_momenta[0]+m_momenta[1];
@@ -225,6 +228,11 @@ void Dipole::Boost() {
       m_photonSum+=k;
     }
     if (p_Pboost) delete p_Pboost;
+    Vec4D before = m_bornmomenta[0]+m_bornmomenta[1];
+    Vec4D after  = m_newmomenta[0]+m_newmomenta[1]+m_photonSum;
+    if(!IsEqual(before, after)){
+      msg_Error()<<"Boost failed for Final State dipole"<<std::endl;
+    }
   }
 }
 
@@ -886,15 +894,21 @@ std::ostream& YFS::operator<<(std::ostream &out, const Dipole &Dip) {
   {
     out << "Mass of " << Dip.m_names[i] << " = " << Dip.m_masses[i] << std::endl
         << "Charge of " << Dip.m_names[i] << " = " << Dip.m_charges[i] << std::endl
-        << "Momentum of " << Dip.m_names[i] << " = " << Dip.m_momenta[i] << std::endl;
+        << "Momentum of " << Dip.m_names[i] << " = " << Dip.m_momenta[i] << std::endl
+        << "Born Momentum of " << Dip.m_names[i] << " = " << Dip.m_bornmomenta[i] << std::endl;
   }
   out << "Invarinat mass " << " = " << (Dip.m_momenta[0]+Dip.m_momenta[1]).Mass() << std::endl
       <<"Sum of Photons = "<< Dip.m_photonSum << std::endl
       << "Q+sum_i K_i = "<< Dip.m_photonSum+Dip.m_momenta[0]+Dip.m_momenta[1]<<std::endl
+      << "Born Qi+Qj = "<< Dip.m_bornmomenta[0]+Dip.m_bornmomenta[0]<<std::endl
       << "Left Fl " << Dip.m_leftfl << std::endl
       << "Right Fl " << Dip.m_rightfl << std::endl
       << "Mass of photon-fermion system = "
       << (Dip.m_photonSum+Dip.m_newmomenta[0]+Dip.m_newmomenta[1]).Mass()<<std::endl;
+  for (int i = 0; i < Dip.m_dipolePhotons.size(); ++i)
+  {
+    out<<" Photon["<<i<<"] = "<<Dip.m_dipolePhotons[i]<<std::endl;
+  }
   if(Dip.m_type==dipoletype::final){
     std::string isres = (Dip.m_resonance)?"Yes":"No";
     out << "Is Resonance: "<< isres << std::endl;
