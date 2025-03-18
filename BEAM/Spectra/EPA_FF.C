@@ -46,7 +46,9 @@ EPA_FF_Base::EPA_FF_Base(const ATOOLS::Flavour& beam, const int dir)
      //////////////////////////////////////////////////////////////////////////////
       m_beam(beam), m_mass(beam.Mass(true)), m_mass2(ATOOLS::sqr(m_mass)),
       m_R(beam.Radius() / rpa->hBar_c()), m_q2min(0.), m_q2max(1.),
-      m_pt2max(-1.), p_N_xb(nullptr), p_Inv_xb(nullptr),
+      m_pt2max(-1.),
+      m_Zsquared(beam.IsIon() ? sqr(m_beam.GetAtomicNumber()) : 1. ),
+      p_N_xb(nullptr), p_Inv_xb(nullptr),
       m_approx(false)
 {
   const auto& s = Settings::GetMainSettings()["EPA"];
@@ -60,16 +62,6 @@ EPA_FF_Base::EPA_FF_Base(const ATOOLS::Flavour& beam, const int dir)
   m_xmax        = s["xMax"].GetTwoVector<double>()[b];
   m_bmin        = s["bMin"].GetTwoVector<double>()[b];
   m_bmax        = s["bMax"].GetTwoVector<double>()[b];
-}
-
-double EPA_FF_Base::SelectB(double x)
-{
-  //////////////////////////////////////////////////////////////////////////////
-  //
-  // Internally, we assume b is in units of 1/GeV
-  //
-  //////////////////////////////////////////////////////////////////////////////
-  return (*p_Inv_xb)(x, ran->Get());
 }
 
 void EPA_FF_Base::FillTables(const size_t& nx, const size_t& nb)
@@ -195,16 +187,6 @@ void EPA_FF_Base::OutputToCSV(const std::string& type)
   std::string prefix = m_beam.IDName() + "_" + type + "_";
   if (m_approx) prefix += "approx_";
 
-  std::ofstream outfile_Nxq2(prefix + "N_x_q2.csv");
-  outfile_Nxq2 << "x,q2,N" << std::endl;
-  for (auto& x : xs) {
-    for (auto& q2 : q2s) {
-      outfile_Nxq2 << x << "," << q2 << "," << this->operator()(x, q2)
-                   << std::endl;
-    }
-  }
-  outfile_Nxq2.close();
-
   std::ofstream outfile_Nxb(prefix + "N_x_b.csv");
   outfile_Nxb << "x,b,N" << std::endl;
   for (auto& x : xs) {
@@ -248,15 +230,6 @@ EPA_Point::EPA_Point(const ATOOLS::Flavour& beam, const int dir)
     : EPA_FF_Base(beam, dir)
 { }
 
-double EPA_Point::operator()(const double& x, const double& Q2)
-{
-  const double q2min = ATOOLS::sqr(m_mass * x) / (1 - x);
-  if (Q2 < q2min) return 0.;
-  double wt = (1. + sqr(1. - x)) / 2.;
-  if (!m_approx) wt -= (1. - x) * q2min / Q2;
-  return wt / x / Q2;
-}
-
 double EPA_Point::N(const double& x, const double& b)
 {
   // Budnev et al., Phys. Rep. C15 (1974) 181, Eq. (6.17b)
@@ -296,13 +269,13 @@ EPA_Proton::EPA_Proton(const ATOOLS::Flavour& beam, const int dir)
   FillTables(m_nxbins, m_nbbins);
 }
 
-double EPA_Proton::operator()(const double& x, const double& Q2)
+double EPA_Proton::N(const double& x, const double& b)
 {
-  const double q2min(sqr(m_mass * x) / (1. - x));
+  /*const double q2min(sqr(m_mass * x) / (1. - x));
   const double C(m_mu2);
   const double D(4. * m_mass2 + Q2 * m_mu2 / (4. * m_mass2 + Q2));
   return (sqr(x) / 2. * C + (1. - x) * (1. - q2min / Q2) * D) * sqr(FF(Q2)) /
-         x / Q2;
+         x / Q2;*/
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -325,13 +298,13 @@ EPA_ProtonApprox::EPA_ProtonApprox(const ATOOLS::Flavour& beam, const int dir)
   FillTables(m_nxbins, m_nbbins);
 }
 
-double EPA_ProtonApprox::operator()(const double& x, const double& Q2)
+double EPA_ProtonApprox::N(const double& x, const double& b)
 {
-  const double q2min(sqr(m_mass * x) / (1. - x));
+  /*const double q2min(sqr(m_mass * x) / (1. - x));
   const double C(m_mu2);
   const double D(4. * m_mass2 + Q2 * m_mu2 / (4. * m_mass2 + Q2));
   // FF = 1, hence omitted
-  return (sqr(x) / 2. * C + (1. - x) * (1. - q2min / Q2) * D) / x / Q2;
+  return (sqr(x) / 2. * C + (1. - x) * (1. - q2min / Q2) * D) / x / Q2;*/
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -342,21 +315,12 @@ double EPA_ProtonApprox::operator()(const double& x, const double& Q2)
 ////////////////////////////////////////////////////////////////////////////////
 
 EPA_Gauss::EPA_Gauss(const ATOOLS::Flavour& beam, const int dir)
-    : EPA_FF_Base(beam, dir), m_Q02(1.),
-      m_Zsquared(beam.Kfcode() == kf_p_plus ? 1 : sqr(m_beam.GetAtomicNumber()))
+    : EPA_FF_Base(beam, dir), m_Q02(1.)
 {
   const auto& s = Settings::GetMainSettings()["EPA"];
   size_t      b = dir > 0 ? 0 : 1;
   m_Q02         = s["Q02"].GetTwoVector<double>()[b];
   FillTables(m_nxbins, m_nbbins);
-}
-
-double EPA_Gauss::operator()(const double& x, const double& Q2)
-{
-  const double q2min(sqr(m_mass * x) / (1. - x));
-  // approximation with C = 0
-  const double D(m_Zsquared * sqr(FF(Q2)));
-  return (1. - x) * (1. - q2min / Q2) * D / x / Q2;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -368,21 +332,9 @@ double EPA_Gauss::operator()(const double& x, const double& Q2)
 ////////////////////////////////////////////////////////////////////////////////
 
 EPA_HCS::EPA_HCS(const ATOOLS::Flavour& beam, const int dir)
-    : EPA_FF_Base(beam, dir),
-      m_Zsquared(beam.Kfcode() == kf_p_plus ? 1 : sqr(m_beam.GetAtomicNumber()))
+    : EPA_FF_Base(beam, dir)
 {
   FillTables(m_nxbins, m_nbbins);
-}
-
-double EPA_HCS::operator()(const double& x, const double& Q2)
-{
-  // Taken from Vidovic et al., PhysRevC.47.2308
-  // form factor is 3*j_1(Q*R)/(Q*R) with j_1 the spherical bessel function
-  // there the approximation with C = 0 is implicit
-  const double q2min(sqr(m_mass * x) / (1. - x));
-  const double QR(sqrt(Q2) * m_R);
-  const double D(m_Zsquared * sqr(FF(QR)));
-  return ((1. - x) * (1. - q2min / Q2) * D) / x / Q2;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -393,21 +345,13 @@ double EPA_HCS::operator()(const double& x, const double& Q2)
 ////////////////////////////////////////////////////////////////////////////////
 
 EPA_Dipole::EPA_Dipole(const ATOOLS::Flavour& beam, const int dir)
-    : EPA_FF_Base(beam, dir),
-      m_Zsquared(beam.Kfcode() == kf_p_plus ? 1 : sqr(m_beam.GetAtomicNumber()))
+    : EPA_FF_Base(beam, dir)
 {
   const auto& s = Settings::GetMainSettings()["EPA"];
   size_t      b = dir > 0 ? 0 : 1;
   m_Q02         = s["Q02"].GetTwoVector<double>()[b];
 
   FillTables(m_nxbins, m_nbbins);
-}
-
-double EPA_Dipole::operator()(const double& x, const double& Q2)
-{
-  const double q2min(sqr(m_mass * x) / (1. - x));
-  const double D(m_Zsquared * sqr(FF(Q2)));
-  return ((1. - x) * (1. - q2min / Q2) * D) / x / Q2;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -418,23 +362,13 @@ double EPA_Dipole::operator()(const double& x, const double& Q2)
 ////////////////////////////////////////////////////////////////////////////////
 
 EPA_DipoleApprox::EPA_DipoleApprox(const ATOOLS::Flavour& beam, const int dir)
-    : EPA_FF_Base(beam, dir),
-      m_Zsquared(beam.Kfcode() == kf_p_plus ? 1 : sqr(m_beam.GetAtomicNumber()))
+    : EPA_FF_Base(beam, dir)
 {
   const auto& s = Settings::GetMainSettings()["EPA"];
   size_t      b = dir > 0 ? 0 : 1;
   m_Q02         = s["Q02"].GetTwoVector<double>()[b];
 
   FillTables(m_nxbins, m_nbbins);
-}
-
-double EPA_DipoleApprox::operator()(const double& x, const double& Q2)
-{
-  // neglecting the Q2 dependence of the form factor and approximating
-  // it with Q2 = 0
-  const double q2min(sqr(m_mass * x) / (1. - x));
-  const double D(m_Zsquared);
-  return ((1. - x) * (1. - q2min / Q2) * D) / x / Q2;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -528,11 +462,6 @@ double EPA_WoodSaxon::CalculateDensity()
   return 1. / res;
 }
 
-double EPA_WoodSaxon::operator()(const double& x, const double& Q2)
-{
-  return (1. - x) * (1. - Q2min(x) / Q2) * (*p_FF_Q2)(Q2);
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 //
 // Dummy test class for the Ion FF in the Electric Dipole approximation using
@@ -543,11 +472,6 @@ double EPA_WoodSaxon::operator()(const double& x, const double& Q2)
 EPA_testIon::EPA_testIon(const ATOOLS::Flavour& beam, const int dir)
     : EPA_FF_Base(beam, dir)
 { }
-
-double EPA_testIon::operator()(const double& x, const double& Q2)
-{
-  return 1.;
-}
 
 double EPA_testIon::N(const double& x, const double& b)
 {
@@ -581,9 +505,4 @@ void EPA_Test::FillTables(const size_t& nx, const size_t& nb)
   Fill_Nxb_Table(xaxis, baxis);
   Fill_Invxb_Table();
   TestInvxb();
-}
-
-double EPA_Test::operator()(const double& x, const double& Q2)
-{
-  return 1. / x / sqrt((1. - x) * Q2);
 }
