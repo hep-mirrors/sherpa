@@ -48,8 +48,7 @@ EPA_FF_Base::EPA_FF_Base(const ATOOLS::Flavour& beam, const int dir)
       m_R(beam.Radius() / rpa->hBar_c()), m_q2min(0.), m_q2max(1.),
       m_pt2max(-1.),
       m_Zsquared(beam.IsIon() ? sqr(m_beam.GetAtomicNumber()) : 1. ),
-      p_N_xb(nullptr), p_Inv_xb(nullptr),
-      m_approx(false)
+      p_N_xb(nullptr), m_approx(false)
 {
   const auto& s = Settings::GetMainSettings()["EPA"];
   size_t      b = dir > 0 ? 0 : 1;
@@ -66,14 +65,10 @@ EPA_FF_Base::EPA_FF_Base(const ATOOLS::Flavour& beam, const int dir)
 
 void EPA_FF_Base::FillTables(const size_t& nx, const size_t& nb)
 {
-  axis xaxis(nx, m_xmin, m_xmax, axis_mode::log);
+  double xnorm = m_beam.IsIon() ? 1. / m_beam.GetMassNumber() : 1.;
+  axis xaxis(nx, m_xmin * xnorm, m_xmax * xnorm, axis_mode::log);
   axis baxis(nb, m_bmin * m_R, m_bmax * m_R, axis_mode::log);
-  Fill_Nxb_Table(xaxis, baxis);
-  //Fill_Invxb_Table();
-}
 
-void EPA_FF_Base::Fill_Nxb_Table(axis& xaxis, axis& baxis)
-{
   //////////////////////////////////////////////////////////////////////////////
   //
   // N(x,b) is given by the square of the Fourier transform of
@@ -93,75 +88,11 @@ void EPA_FF_Base::Fill_Nxb_Table(axis& xaxis, axis& baxis)
   for (size_t i = 0; i < xaxis.m_nbins; i++) {
     for (size_t j = 0; j < baxis.m_nbins; j++) {
       kernel->SetXB(xaxis.x(i), baxis.x(j));
-      double value = 2 * sqr(bessel()) / xaxis.x(i) * baxis.x(j);
+      double value = 2 * m_Zsquared * sqr(bessel()) / xaxis.x(i) * baxis.x(j);
       p_N_xb->Fill(i, j, value);
     }
   }
   delete kernel;
-}
-
-void EPA_FF_Base::Fill_Invxb_Table()
-{
-  //////////////////////////////////////////////////////////////////////////////
-  //
-  // The distribution in impact parameter is given by
-  //   d^2b N(x,b) = 2 Pi db b N(x,b)
-  // so we have to solve for B (with ran being a random number):
-  //   int_0^B db b N(x,b) = ran * int_0^infinity db b N(x,b) = ran * integral
-  // We therefore have to produce a cumulative
-  // histogram of 1/integral db b N(x,b)
-  // and invert it to solve the equation above.
-  //
-  //////////////////////////////////////////////////////////////////////////////
-  axis   xaxis = p_N_xb->GetAxis(0);
-  size_t rbins = 5. * p_N_xb->GetAxis(1).m_nbins;
-  axis   raxis = axis(rbins, 0., 1., axis_mode::linear);
-  msg_Out() << METHOD << " in " << xaxis.m_nbins << " bins:\n"
-            << "   x in [" << m_xmin << ", " << m_xmax << "], "
-            << "add " << rbins << " bins for random numbers\n";
-  p_Inv_xb = new TwoDim_Table(xaxis, raxis);
-  OneDim_Table* cum_b;
-  for (size_t i = 0; i < xaxis.m_nbins; i++) {
-    double total = 0., b;
-    cum_b        = p_N_xb->Cumulative(1., 1, i, total);
-    cum_b->Rescale(1. / total);
-    for (size_t j = 0; j < rbins; j++) {
-      b = cum_b->Inverse(raxis.x(j));
-      p_Inv_xb->Fill(i, j, b);
-    }
-    delete cum_b;
-  }
-}
-
-void EPA_FF_Base::TestInvxb()
-{
-  //////////////////////////////////////////////////////////////////////////////
-  //
-  // Testing the distribution in b N(x,b), comparing 1 M MC trials and
-  // the correct numerical solution.
-  //
-  //////////////////////////////////////////////////////////////////////////////
-  for (size_t i = 1; i < 4; i++) {
-    Histogram*  histo = new Histogram(0, 0., 50., 50000);
-    std::string name = string("Spectra/Bdist_x") + ToString(i) + string(".dat");
-    double      x    = pow(0.1, i);
-    msg_Out() << METHOD << "(x = " << x << ")\n";
-    for (long int j = 0; j < 10000000; j++) {
-      double b = (*p_Inv_xb)(x, ran->Get());
-      histo->Insert(b, 1);
-    }
-    histo->Output(name);
-    delete histo;
-    Histogram*  histo1 = new Histogram(0, 0., 50., 50000);
-    std::string name1 =
-            string("Spectra/Bcalc_x") + ToString(i) + string(".dat");
-    for (size_t j = 0; j < 50000; j++) {
-      double b = (double(j) + 0.5) / 1000.;
-      histo1->Insert(b, b * N(x, b));
-    }
-    histo1->Output(name1);
-    delete histo1;
-  }
 }
 
 void EPA_FF_Base::OutputToCSV(const std::string& type)
@@ -393,21 +324,10 @@ EPA_WoodSaxon::EPA_WoodSaxon(const ATOOLS::Flavour& beam, const int dir)
   if (!m_beam.IsIon())
     THROW(fatal_error, "Wrong form factor for " + m_beam.IDName());
 
-  FillTables(m_nxbins, m_nbbins);
-}
-
-void EPA_WoodSaxon::FillTables(const size_t& nx, const size_t& nb)
-{
   m_rho0 = CalculateDensity();
   InitFFTable(1.e-12, 1.e4);
   InitNTable(1.e-10, 1.);
-  double xmin = 1.e-9 / m_beam.GetMassNumber();
-  double xmax = 1. / m_beam.GetMassNumber();
-  double bmin = 1.e-3 * m_R, bmax = 1.e6 * m_R;
-  axis   xaxis(nx, xmin, xmax, axis_mode::log);
-  axis   baxis(nb, bmin, bmax, axis_mode::log);
-  Fill_Nxb_Table(xaxis, baxis);
-  Fill_Invxb_Table();
+  FillTables(m_nxbins, m_nbbins);
 }
 
 void EPA_WoodSaxon::InitFFTable(const double& q2min, const double& q2max)
@@ -502,7 +422,5 @@ void EPA_Test::FillTables(const size_t& nx, const size_t& nb)
 {
   axis xaxis(100, 1.e-4, 1., axis_mode::log);
   axis baxis(100, 1.e-6, 1.e4, axis_mode::log);
-  Fill_Nxb_Table(xaxis, baxis);
-  Fill_Invxb_Table();
-  TestInvxb();
+  //Fill_Nxb_Table(xaxis, baxis);
 }

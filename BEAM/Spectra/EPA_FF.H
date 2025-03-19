@@ -35,21 +35,16 @@ namespace BEAM {
     double                m_q2min, m_q2max, m_pt2max;
     double                m_xmin, m_xmax, m_bmin, m_bmax;
     double                m_Zsquared, m_b;
-    ATOOLS::TwoDim_Table *p_N_xb, *p_Inv_xb;
+    ATOOLS::TwoDim_Table *p_N_xb;
 
     size_t m_nxbins, m_nbbins;
     bool   m_approx;
-
-    virtual void Fill_Nxb_Table(ATOOLS::axis& xaxis, ATOOLS::axis& baxis);
-    virtual void Fill_Invxb_Table();
-    virtual void TestInvxb();
 
   public:
     EPA_FF_Base(const ATOOLS::Flavour& beam, int dir);
     virtual ~EPA_FF_Base()
     {
       if (p_N_xb) delete p_N_xb;
-      if (p_Inv_xb) delete p_Inv_xb;
     }
     virtual void   FillTables(const size_t& nx, const size_t& nb);
     virtual double N(const double& x, const double& b)
@@ -65,8 +60,8 @@ namespace BEAM {
     virtual double FF(const double& Q2) = 0;
 
     void         SetApprox(bool approx) { m_approx = approx; }
-    virtual void SetRadius(const double& R) { m_R = R; }
-    virtual void SetPT2Max(const double& pt2max) { m_pt2max = pt2max; }
+    void         SetRadius(const double& R) { m_R = R; }
+    void         SetPT2Max(const double& pt2max) { m_pt2max = pt2max; }
     void         SetQ2Max(const double q2max) { m_q2max = q2max; }
 
     double Mass() const { return m_beam.Mass(); }
@@ -234,7 +229,6 @@ namespace BEAM {
         p_FF_Q2 = nullptr;
       }
     }
-    void   FillTables(const size_t& nx, const size_t& nb) override;
     double FF(const double& Q2) override { return (*p_FF_Q2)(Q2); }
   };
 
