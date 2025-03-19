@@ -49,9 +49,6 @@ namespace BEAM {
     virtual void   FillTables(const size_t& nx, const size_t& nb);
     virtual double N(const double& x, const double& b)
     {
-      // sampling b by 1/b**2
-      //m_b = (bmax*bmin)/(bmax + ATOOLS::ran->Get() * (bmin - bmax));
-      //double wt = sqr(bt) * (1. / bmin - 1. / bmax);
       // sampling b by 1/b
       m_b = m_beam.Radius() / ATOOLS::rpa->hBar_c() * m_bmin * std::pow( m_bmax / m_bmin, ATOOLS::ran->Get());
       double wt = m_b * std::log(m_bmax / m_bmin);
