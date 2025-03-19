@@ -763,6 +763,7 @@ double YFS_Form_Factor::BVirtT(YFS::Dipole &d, double kmax){
     // PRINT_VAR(form.real());
     // PRINT_VAR(TBvirt.Finite());
     // TBvirt+=form.real();
+    clearcache();
   #endif
   return TBvirt;
 }
@@ -835,6 +836,7 @@ DivArrD YFS_Form_Factor::BVirtTEps(YFS::Dipole &d, double kmax){
     // PRINT_VAR(form.real());
     // PRINT_VAR(TBvirt.Finite());
     // TBvirt+=form.real();
+    clearcache();
   #endif
   return TBvirt;
 }
