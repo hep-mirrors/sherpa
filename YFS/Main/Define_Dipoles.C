@@ -560,13 +560,13 @@ double Define_Dipoles::CalculateVirtualSubTchannel(){
   // }
   // PRINT_VAR(count);
   for (auto &D : m_dipolesII){
-    sub += D.ChargeNorm()*p_yfsFormFact->BVirtT(D.GetNewMomenta(0), D.GetNewMomenta(1));
+    sub += D.ChargeNorm()*p_yfsFormFact->BVirtT(D,sqrt(m_s) / 2.);
   }
   for (auto &D : m_dipolesFF){
-    sub += D.ChargeNorm()*p_yfsFormFact->BVirtT(D.GetBornMomenta(0), D.GetBornMomenta(1));
+    sub += D.ChargeNorm()*p_yfsFormFact->BVirtT(D,sqrt(m_s) / 2.);
   }
   for (auto &D : m_dipolesIF){
-    sub += D.ChargeNorm()*p_yfsFormFact->BVirtT(D.GetNewMomenta(0), D.GetBornMomenta(1));
+    sub += D.ChargeNorm()*p_yfsFormFact->BVirtT(D,sqrt(m_s) / 2.);
   }
   // clearcache();
   return sub;
