@@ -439,7 +439,7 @@ double Define_Dipoles::CalculateVirtualSubEps() {
 
 double Define_Dipoles::CalculateRealVirtualSubEps(const Vec4D &k) {
   DivArrD sub(0);
-  if(m_tchannel==2) return CalculateRealSub(k);
+  // if(m_tchannel==2) return CalculateRealSub(k);
   for (auto &D : m_dipolesII) {
     sub += D.ChargeNorm()*p_yfsFormFact->BVR_full_eps(D, sqrt(m_s) / 2., 0);
   }

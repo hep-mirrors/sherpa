@@ -428,10 +428,7 @@ double NLO_Base::CalculateRealVirtual(Vec4D k, int fsrcount) {
 	// CheckMasses(p, 1);
 	Vec4D_Vector pp = p;
  	pp.pop_back();
- 	// Vec4D kzero = k*0.0;
- 	// MapMomenta(pp, kzero);
  	Flavour_Vector fl = m_flavs;
- 	// fl.push_back(kf_photon);
 	p_nlodipoles->MakeDipolesII(fl,pp,m_plab);
 	p_nlodipoles->MakeDipolesIF(fl,pp,m_plab);
 	p_nlodipoles->MakeDipoles(fl,pp,m_plab);
@@ -458,14 +455,14 @@ double NLO_Base::CalculateRealVirtual(Vec4D k, int fsrcount) {
 		return 0;
 	}
 	// m_plab = pp;
-	double aB = p_nlodipoles->CalculateRealSub(k)*m_oneloop;//*p_realvirt->m_factor;
+	double aB = subloc*p_nlodipoles->CalculateRealSub(k)*m_oneloop;//*p_realvirt->m_factor;
 	// double aB = subloc*CalculateVirtual();
 	// yfspole*=m_oneloop*p_realvirt->m_factor;
 	// double aB = subloc*(p_virt->Calc(pp, m_born) - m_born*p_nlodipoles->CalculateVirtualSub());
 	// yfspole*=(p_virt->p_loop_me->ME_E1()*p_virt->m_factor-m_born*p_nlodipoles->Get_E1());
 	// double tot = (r-aB) / subloc;
 	if(m_submode==submode::local) tot =  (r*flux-aB/m_rescale_alpha)/subloc;
-	else if(m_submode==submode::global) tot =  (r*flux-aB/m_rescale_alpha)/subb;
+	else if(m_submode==submode::global) tot =  (r*flux-aB)/subb;
 	else if(m_submode==submode::off) tot =  (r*flux)/subb;
 	if(m_check_poles==1 && r!=0){
 		double pr1 = p_realvirt->p_loop_me->ME_E1()*p_realvirt->m_factor*flux/norm;
