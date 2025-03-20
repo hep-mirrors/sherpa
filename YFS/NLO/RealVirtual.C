@@ -42,7 +42,7 @@ RealVirtual::RealVirtual(const PHASIC::Process_Info& pi)
     // cplfac *= pow(p_loop_me->AlphaQCD(),rr_pi.m_mincpl[0]);
     cplfac *= pow(p_loop_me->AlphaQED(),rr_pi.m_mincpl[1]);
     m_factor = cplfac/2.0/M_PI;
-    m_factor = p_loop_me->AlphaQED()/2.0/M_PI*m_sym;
+    // m_factor = p_loop_me->AlphaQED()/2.0/M_PI;
     // m_factor =1.;
     // PRINT_VAR(m_factor);
     // PRINT_VAR(cplfac/2.0/M_PI);
