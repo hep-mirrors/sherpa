@@ -399,11 +399,13 @@ bool Flavour::IsOctetMeson() const
 }
 
 
-bool Flavour::IsCharmonia() const
+bool Flavour::IsQuarkonia() const
 {
   std::string kf_str = std::to_string( Kfcode() );
   if (kf_str.size() < 3) return false;
-  return (kf_str[kf_str.size() - 3] == '4' && kf_str[kf_str.size() - 2] == '4');
+  bool ans =  (kf_str[kf_str.size() - 3] == '4' && kf_str[kf_str.size() - 2] == '4')
+           || (kf_str[kf_str.size() - 3] == '5' && kf_str[kf_str.size() - 2] == '5');
+  return ans;
 }
 
 bool Flavour::IsBaryon() const 

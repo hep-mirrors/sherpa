@@ -160,8 +160,11 @@ void Singlet::ExtractPartons
     }
     part->SetFromDec((*plit)->FromDec());
     if ((*plit)->GetType()==pst::FS) {
+      msg_Out() << METHOD << ", from shower: Flav: " << (*plit)->GetFlavour().IDName() << " ColFlow: (" << (*plit)->GetFlow(1) << ", " << (*plit)->GetFlow(2) << ")" << endl;
+      msg_Out() << METHOD << ", from shower: Flav: " << (*plit)->GetFlavour().IDName() << " IsStrong: " << (*plit)->GetFlavour().IsQCD() << endl;
       part->SetFlow(1,(*plit)->GetFlow(1));
       part->SetFlow(2,(*plit)->GetFlow(2));
+      msg_Out() << METHOD << ", into blob:   Flav: " << part->Flav().IDName() << " ColFlow: (" << (part)->GetFlow(1) << ", " << (part)->GetFlow(2) << ")" << endl << endl;
     }
     else if ((*plit)->GetType()==pst::IS) {
       part->SetFlow(1,(*plit)->GetFlow(2));

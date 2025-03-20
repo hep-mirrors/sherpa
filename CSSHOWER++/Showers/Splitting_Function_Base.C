@@ -48,12 +48,12 @@ SF_Lorentz* Splitting_Function_Base::InitLorentzCalc(const MODEL::Single_Vertex&
     lf = SFL_Getter::GetObject("SSV",sf_key);
   }
   else if(spins[0]==0 && spins[1]==2 && spins[2]==2)  {
-    if (vertex.in[1].IsCharmonia() || vertex.in[2].IsCharmonia())
+    if (vertex.in[1].IsQuarkonia() || vertex.in[2].IsQuarkonia())
       lf = SFL_Getter::GetObject("VSV_Quarkonia",sf_key);
     else lf = SFL_Getter::GetObject("HVV",sf_key);
   }
   else if(spins[0]==1 && spins[1]==1 && spins[2]==2) { {
-    if ( vertex.in[2].IsCharmonia() || vertex.in[1].IsCharmonia()) lf = SFL_Getter::GetObject("FFV_Quarkonia",sf_key);
+    if ( vertex.in[2].IsQuarkonia() || vertex.in[1].IsQuarkonia()) lf = SFL_Getter::GetObject("FFV_Quarkonia",sf_key);
     else lf = SFL_Getter::GetObject("FFV1",sf_key); 
   } 
   }

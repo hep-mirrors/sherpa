@@ -609,7 +609,7 @@ int Sudakov::Generate(Parton *split, Parton *spect, double t0, double kt2win,
                         << transit->GetFlavourB().IDName() << ", " << random
                         << " < " << tra_P << ",  trw: " << tr_phw << endl;
         if (random < tra_P) {
-          msg_Debugging() << "Tried to split a " << split->GetFlavour() << " ("
+          msg_Debugging() << "Tried to transit a " << split->GetFlavour() << " ("
                           << split->GetFlow(1) << ", " << split->GetFlow(2)
                           << ") "
                           << "between t = " << split->KtStart()
