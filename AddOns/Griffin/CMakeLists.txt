@@ -1,8 +1,8 @@
-
+AddOns/Griffin/CMakeLists.txt
 set(Griffin_SOURCES Griffin_Interface.C Griffin_Virtual.C Griffin_Born.C)
 set(Griffin_HEADERS Griffin_Interface.H Griffin_Virtual.H Griffin_Born.H)
 
-sherpa_create_git_info(Griffin)
+sherpa_create_git_info(Griffin ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR})
 
 add_library(SherpaGriffin SHARED ${Griffin_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C)
 sherpa_handle_shared_library(SherpaGriffin SherpaGriffin)
