@@ -579,11 +579,8 @@ bool Rivet_Interface::Finish()
           if (mpi->Rank()==0 && nRanks >= 1) {
             // Lazily initialise a new AnalysisHandler
             // and populate it with the filtered data
-	    double sf(1.-vetoed_ranks/double(mpi->Size()));
-	    for (size_t i = 0; i < filtered_data.size(); ++i)
-	      filtered_data[i] /= sf;
             const std::string newlabel = it.first.first+"thr="+threshold+".rmrank";
-            GetRivet(newlabel,it.first.second,&m_lastevent)->deserializeContent(filtered_data,(size_t)mpi->Size());
+            GetRivet(newlabel,it.first.second,&m_lastevent)->deserializeContent(filtered_data,nRanks);
           }
         }
       }
