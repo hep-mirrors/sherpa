@@ -221,15 +221,12 @@ void Massive_Kernels::CalcVNSq(double s,double mj,double mk,double sjKtcoll)
     }
     else {
       double Q2=sjKtcoll+sqr(mj)+sqr(mk);
-      double Q = sqrt(Q2);
+      //double Q = sqrt(Q2);
       double muk2 = sqr(mk)/Q2;
-      // double Iqq = -1 + log(1 - muk2) + (muk2*log(muk2))/(2.*(1 - muk2)); 
-      // double IqqMassless = -1;
-      double Iqq = -1/(1+sqrt(muk2)) + log(1 - sqrt(muk2)); 
+      double Iqq = -1 + log(1 - muk2) + (muk2*log(muk2))/(2.*(1 - muk2));   // without velocity factor
+      //double Iqq = -1/(1+sqrt(muk2)) + log(1 - sqrt(muk2));                    // with velocity factor
       double IqqMassless = -1;
-      m_VNS += m_g1t*log(s/Q2) + Iqq - IqqMassless;
-      // m_VNS = m_g1t*log(s/Q2); // always needed to change reference scale between s and Q2
-      // m_VNS += -sqr(mk)/(Q2-sqr(mk))*log(Q/mk) + log(1-sqr(mk)/Q2);// - 6;
+      m_VNS += -0.5*log(s/Q2) + Iqq - IqqMassless;
     }
   }
   else if (mk==0.) {
@@ -322,15 +319,14 @@ void Massive_Kernels::CalcVNSg(double s,double mk,double sjKtcoll,bool ini)
       m_VNS+=m_TRbyCA*nfc;
     }
     else {
-      muk2 = sqr(mk)/(sjKtcoll+sqr(mk));
+      Q2 = sjKtcoll+sqr(mk);
+      muk2 = sqr(mk)/Q2;
       muk = sqrt(muk2);
       double Igg = ((-8 + 2*muk2)/(3.*(1 - muk2)) - (2*std::pow(muk,3)*(-0.5*M_PI + std::asin(muk)))/std::pow(1 - muk2,1.5) + 2*log(1 - muk2))/6.;
+      double IggMassless = - 8./18.;
       double Igq = m_TRbyCA*m_nf*2./3.*(-(8 - 11*muk2)/(3.*(1 - muk2)) + (std::pow(muk,3)*(-0.5*M_PI + std::asin(muk)))/std::pow(1 - muk2,1.5) + 2*log(1 - muk2) + (3*muk2*log(muk2))/(2.*(1 - muk2)));
-      Q2 = sjKtcoll+sqr(mk);
-      Q = sqrt(Q2);
-      //m_VNS=m_g2t*(log(s/Q2)-2.*log(1.-mk/Q)-2.*mk/(Q+mk));
-      //m_VNS+=1./3.*sqr(mk)/sjKtcoll*((2.*m_nf*m_TRbyCA)*log(2.*mk/(Q+mk)));
-      m_VNS += m_g2t*log(s/Q2) + Igg + Igq + (8./18. + m_TRbyCA*m_nf*16./9.);
+      double IgqMassless = - m_TRbyCA*m_nf*16./9.;
+      m_VNS += (m_g2t-2)*log(s/Q2) + Igg - IggMassless + Igq - IgqMassless;
     }
   }
 }
