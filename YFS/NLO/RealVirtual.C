@@ -42,7 +42,7 @@ RealVirtual::RealVirtual(const PHASIC::Process_Info& pi)
     // cplfac *= pow(p_loop_me->AlphaQCD(),rr_pi.m_mincpl[0]);
     cplfac *= pow(p_loop_me->AlphaQED(),rr_pi.m_mincpl[1]);
     m_factor = cplfac/2.0/M_PI;
-    m_factor = p_loop_me->AlphaQED()/2.0/M_PI;
+    m_factor = p_loop_me->AlphaQED()/2.0/M_PI*m_sym;
     // m_factor =1.;
     // PRINT_VAR(m_factor);
     // PRINT_VAR(cplfac/2.0/M_PI);
@@ -71,10 +71,10 @@ double RealVirtual::Calc_V(const ATOOLS::Vec4D_Vector& p,
   {
     double V(0.0), run_corr(0.0), scale(0.0);
     m_failcut = false;
-    if(!p_rvproc->Trigger(p)) {
-      m_failcut = true;
-      return 0;
-    }
+    // if(!p_rvproc->Trigger(p)) {
+    //   m_failcut = true;
+    //   return 0;
+    // }
     // p_loop_me->SetRenScale(mur);
     if(aqed->m_mode!=vpmode::off) {
      if(m_tchannel) scale = -(p[0]-p[2]).Abs2();  

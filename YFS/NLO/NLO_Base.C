@@ -446,7 +446,7 @@ double NLO_Base::CalculateRealVirtual(Vec4D k, int fsrcount) {
 	// PRINT_VAR(yfspole);
 	double subb;
 
-	subb = p_dipoles->CalculateRealSubEEX(k);
+	subb = p_dipoles->CalculateRealSubEEX(kk);
 	
 	if(p.size()!=(m_flavs.size()+1)){
 		msg_Error()<<"Mismatch in "<<METHOD<<std::endl;
