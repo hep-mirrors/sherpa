@@ -191,7 +191,6 @@ void FF_DipoleSplitting::SetMomentaAlaric(const ATOOLS::Vec4D* mom) {
         m_mom.push_back((i<2?-1.:+1.)*ampl->Leg(i)->Mom());
       }
     }
-
     m_ptij = ff.m_pi;
     m_ptk = ampl->Leg(m_k)->Mom();
 
