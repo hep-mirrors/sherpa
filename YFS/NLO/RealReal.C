@@ -88,10 +88,10 @@ RealReal::~RealReal() {
 
 double RealReal::Calc_R(const ATOOLS::Vec4D_Vector& p){
   m_failcut = false;
-  if(!p_rrproc->Trigger(p)) {
-    m_failcut = true;
-    return 0;
-  }
+  // if(!p_rrproc->Trigger(p)) {
+  //   m_failcut = true;
+  //   return 0;
+  // }
   double external_real;
   if(p_real_me) {
       if(!m_check) return Calc_External(p);
