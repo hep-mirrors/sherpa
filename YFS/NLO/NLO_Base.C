@@ -13,7 +13,7 @@ double massmin=2220;
 std::ofstream out_recola;
 std::ofstream out_sub, out_real, out_finite;
 
-static double SqLam(double x,double y,double z)
+static double Lambda(double x,double y,double z)
 {
   return abs(x*x+y*y+z*z-2.*x*y-2.*x*z-2.*y*z);
 }
@@ -724,7 +724,7 @@ void NLO_Base::MapMomenta(Vec4D_Vector &p, Vec4D &k) {
 	// p[1] = {zz, 0, 0, -z};
   double m1 = m_flavs[0].Mass();
   double m2 = m_flavs[1].Mass();
-  double lamCM = 0.5*sqrt(SqLam(sqq,m1*m1,m2*m2)/sqq);
+  double lamCM = 0.5*sqrt(Lambda(sqq,m1*m1,m2*m2)/sqq);
   double E1 = lamCM*sqrt(1+m1*m1/sqr(lamCM));
   double E2 = lamCM*sqrt(1+m2*m2/sqr(lamCM));
  	p[0] = {E1, 0, 0, sign_z*lamCM};
@@ -799,7 +799,7 @@ void NLO_Base::MapMomenta(Vec4D_Vector &p, Vec4D &k1, Vec4D &k2) {
 	// p[1] = {zz, 0, 0, -z};
   double m1 = m_flavs[0].Mass();
   double m2 = m_flavs[1].Mass();
-  double lamCM = 0.5*sqrt(SqLam(sqq,m1*m1,m2*m2)/sqq);
+  double lamCM = 0.5*sqrt(Lambda(sqq,m1*m1,m2*m2)/sqq);
   double E1 = lamCM*sqrt(1+m1*m1/sqr(lamCM));
   double E2 = lamCM*sqrt(1+m2*m2/sqr(lamCM));
  	p[0] = {E1, 0, 0, sign_z*lamCM};
@@ -828,7 +828,7 @@ void NLO_Base::MapInitial(Vec4D_Vector &p){
 	double sign_z = (p[0][3] < 0 ? -1 : 1);
   double m1 = m_flavs[0].Mass();
   double m2 = m_flavs[1].Mass();
-  double lamCM = 0.5*sqrt(SqLam(sqq,m1*m1,m2*m2)/sqq);
+  double lamCM = 0.5*sqrt(Lambda(sqq,m1*m1,m2*m2)/sqq);
   double E1 = lamCM*sqrt(1+m1*m1/sqr(lamCM));
   double E2 = lamCM*sqrt(1+m2*m2/sqr(lamCM));
  	p[0] = {E1, 0, 0, sign_z*lamCM};
