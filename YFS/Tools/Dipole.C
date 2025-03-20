@@ -21,12 +21,10 @@ using namespace YFS;
 double delf = 0;
 double deli = 0;
 int order = 0;
-static double SqLam(double x,double y,double z)
+ 
+ double Lambda(double x,double y,double z)
 {
-  return std::abs(x*x+y*y+z*z-2.*x*y-2.*x*z-2.*y*z);
-  // double arg(sqr(s-s1-s2)-4.*s1*s2);
-  // if (arg>0.) return sqrt(arg)/s;
-  // return 0.;
+  return abs(x*x+y*y+z*z-2.*x*y-2.*x*z-2.*y*z);
 }
 
 
@@ -162,7 +160,7 @@ void Dipole::Boost() {
     // m_newmomenta[0] = {zz, 0, 0, z};
     // m_newmomenta[1] = {zz, 0, 0, -z};
     double signz = m_bornmomenta[0][3]>0?1:-1;
-    double lamCM = 0.5*sqrt(SqLam(Q.Abs2(),m1*m1,m2*m2)/Q.Abs2());
+    double lamCM = 0.5*sqrt(Lambda(Q.Abs2(),m1*m1,m2*m2)/Q.Abs2());
     double E1 = lamCM*sqrt(1+m1*m1/sqr(lamCM));
     double E2 = lamCM*sqrt(1+m2*m2/sqr(lamCM));
     m_newmomenta[0] = {E1, 0, 0, lamCM};
@@ -272,7 +270,7 @@ bool Dipole::BoostNLO() {
     // m_newmomenta[0] = {zz, 0, 0, z};
     // m_newmomenta[1] = {zz, 0, 0, -z};
     double signz = m_bornmomenta[0][3]>0?1:-1;
-    double lamCM = 0.5*sqrt(SqLam(Q.Abs2(),m1*m1,m2*m2)/Q.Abs2());
+    double lamCM = 0.5*sqrt(Lambda(Q.Abs2(),m1*m1,m2*m2)/Q.Abs2());
     double E1 = lamCM*sqrt(1+m1*m1/sqr(lamCM));
     double E2 = lamCM*sqrt(1+m2*m2/sqr(lamCM));
     m_newmomenta[0] = {E1, 0, 0, signz*lamCM};
@@ -386,7 +384,7 @@ void Dipole::MakePair(double cms, Vec4D &p1, Vec4D &p2) {
   double eta2 = (s - sqr(mass1) + sqr(mass2)) / s;
   // p1 = {E * eta1, 0, 0, beta * E};
   // p2 = {E * eta2, 0, 0, -beta * E};
-  double lamCM = 0.5*sqrt(SqLam(s,mass1*mass1,mass2*mass2)/s);
+  double lamCM = 0.5*sqrt(Lambda(s,mass1*mass1,mass2*mass2)/s);
   double E1 = lamCM*sqrt(1+mass1*mass1/sqr(lamCM));
   double E2 = lamCM*sqrt(1+mass2*mass2/sqr(lamCM));
   p1 = {E1, 0, 0, lamCM};
