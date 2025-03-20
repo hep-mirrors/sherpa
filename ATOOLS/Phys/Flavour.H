@@ -118,7 +118,7 @@ namespace ATOOLS {
     bool IsDiQuark() const;
     bool IsBaryon() const;
     bool IsOctetMeson() const;
-    bool IsCharmonia() const;
+    bool IsQuarkonia() const;
     bool IsMeson() const;
     bool IsNucleon() const;
     bool IsB_Hadron() const;
@@ -185,7 +185,7 @@ namespace ATOOLS {
       int c(p_info->m_strong); return m_anti?-c:c;
     }
     inline bool Strong() const
-    { return ((p_info->m_strong!=0 && !IsDiQuark()) || IsOctetMeson() || IsCharmonia()); }
+    { return ((p_info->m_strong!=0 && !IsDiQuark()) || IsOctetMeson() || IsQuarkonia()); }
     inline bool IsQCD() const
     { return p_info->m_strong; }
 
