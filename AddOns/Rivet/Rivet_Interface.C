@@ -460,51 +460,102 @@ bool Rivet_Interface::Finish()
     for (auto& it : m_rivet) {
       if (it.first.first.find("thr=") != std::string::npos)  continue;
       std::vector<double> data = it.second->serializeContent(true); //< ensure fixed-length across ranks
+      std::vector<double> scale(data.size(),0.);
       if (m_thresholds.size()) {
         // Compute global sums and sum of squares
         // for each element in the serialised vector
         const size_t datalen = data.size();
-        std::vector<double> data_sum;    data_sum.reserve(datalen);
-        std::vector<double> data_sum_sq; data_sum_sq.reserve(datalen);
-        for (size_t i = 0; i < datalen; ++i) {
-          data_sum.push_back(data[i]);
-          data_sum_sq.push_back(data[i] * data[i]);
-        }
-        mpi->Reduce(data_sum.data(),datalen,MPI_DOUBLE,MPI_SUM);
-        mpi->Reduce(data_sum_sq.data(),datalen,MPI_DOUBLE,MPI_SUM);
+        std::vector<double> data_sum, data_sum_sq;
+	const size_t beaminfo_len = 2/* assuming _beaminfo->numBins() is always 2 */;
+	const vector<YODA::AnalysisObjectPtr> raos = it.second->getRawAOs();
+	size_t sum = beaminfo_len+1;
+	for (size_t i = 0; i < raos.size(); ++i) {
+	  int cur = raos[i]->lengthContent(true)+1;
+	  YODA::Histo1D *h = dynamic_cast<YODA::Histo1D*>(&*raos[i]);
+	  if (h!=nullptr) {
+	    sum += 1;
+	    const size_t nBins = h->numBins(true, true);
+	    for (size_t j = 0; j < nBins; ++j) {
+	      double val = data[sum+1]/data[sum+4];
+	      double err = sqrt((data[sum+2]/data[sum+4]-val*val)/data[sum+4]);
+	      data_sum.push_back(err);
+	      data_sum_sq.push_back(err*err);
+	      sum += 5;
+	    }
+	  }
+	  else {
+	    sum += cur;
+	  }
+	}
+	if (sum!=datalen) THROW(fatal_error,"Serialization failed 1");
+        mpi->Reduce(data_sum.data(),data_sum.size(),MPI_DOUBLE,MPI_SUM);
+        mpi->Reduce(data_sum_sq.data(),data_sum_sq.size(),MPI_DOUBLE,MPI_SUM);
 
         // Compute mean and standard deviation on the root rank
-        std::vector<double> mean(datalen, 0.0);
-        std::vector<double> stddev(datalen, 0.0);
+        std::vector<double> mean(data_sum.size(), 0.0);
+        std::vector<double> stddev(data_sum_sq.size(), 0.0);
         if (mpi->Rank()==0) {
-          for (size_t i = 0; i < datalen; ++i) {
+          for (size_t i = 0; i < mean.size(); ++i) {
             mean[i] = data_sum[i] / (double)mpi->Size();
             double variance = (data_sum_sq[i] / (double)mpi->Size()) - (mean[i] * mean[i]);
-            stddev[i] = (variance > 0) ? std::sqrt(variance) : 0.0;
+            stddev[i] = (variance > 0) ? std::sqrt(variance/(double)mpi->Size()) : 0.0;
           }
         }
         // Broadcast mean and stddev to all ranks
-        mpi->Bcast(mean.data(), datalen, MPI_DOUBLE);
-        mpi->Bcast(stddev.data(), datalen, MPI_DOUBLE);
+        mpi->Bcast(mean.data(), mean.size(), MPI_DOUBLE);
+        mpi->Bcast(stddev.data(), stddev.size(), MPI_DOUBLE);
 
         // Apply the outlier filtering: replace outliers with 0 before reduction
         for (const std::string& threshold : m_thresholds) {
           std::vector<double> filtered_data;
-          filtered_data.reserve(datalen);
           const double level = std::stod(threshold);
           bool has_outlier = false;
-          for (size_t i = 0; i < datalen; ++i) {
-            if (std::abs(data[i] - mean[i]) > level * stddev[i]) {
-              filtered_data.push_back(0.0);  // exclude outlier
-              has_outlier = true;
-            }
-            else  filtered_data.push_back(data[i]);
-          }
+	  size_t sum = beaminfo_len+1, nbin = 0;
+	  for (size_t i = 0; i < sum; ++i) filtered_data.push_back(data[i]);
+	  for (size_t i = 0; i < raos.size(); ++i) {
+	    int cur = raos[i]->lengthContent(true)+1;
+	    YODA::Histo1D *h = dynamic_cast<YODA::Histo1D*>(&*raos[i]);
+	    if (h!=nullptr) {
+	      filtered_data.push_back(data[sum]);
+	      sum += 1;
+	      const size_t nBins = h->numBins(true, true);
+	      for (size_t j = 0; j < nBins; ++j, ++nbin) {
+		filtered_data.push_back(data[sum]);
+		double val = data[sum+1]/data[sum+4];
+		double err = sqrt((data[sum+2]/data[sum+4]-val*val)/data[sum+4]);
+		if (err - mean[nbin] > level * stddev[nbin]) {
+		  for (int k = 1; k <= 4; ++k)
+		    filtered_data.push_back(0.0);  // exclude outlier
+		  scale[sum] += 1; // rescale result to account for missing rank
+		  has_outlier = true;
+		}
+		else {
+		  for (int k = 1; k <= 4; ++k)
+		    filtered_data.push_back(data[sum+k]);
+		}
+		sum += 5;
+	      }
+	    }
+	    else {
+	      for (size_t j = 0; j < cur; ++j)
+		filtered_data.push_back(data[sum+j]);
+	      sum += cur;
+	    }
+	  }
+	  if (nbin!=mean.size() || filtered_data.size()!=data.size())
+	    THROW(fatal_error,"Serialization failed 2");
           // Perform MPI_Reduce to compute the filtered sum
           mpi->Reduce(filtered_data.data(),datalen,MPI_DOUBLE,MPI_SUM);
           if (mpi->Rank()==0) {
             // Lazily initialise a new AnalysisHandler
             // and populate it with the filtered data
+            for (size_t i = 0; i < datalen; ++i)
+	      if (scale[i]) {
+		double sf(1.-scale[i]/double(mpi->Size()));
+		filtered_data[i+1] /= sf;
+		filtered_data[i+2] /= sf;
+		filtered_data[i+3] /= sf;
+	      }
             const std::string newlabel = it.first.first+"thr="+threshold+".rmbin";
             GetRivet(newlabel,it.first.second,&m_lastevent)->deserializeContent(filtered_data,(size_t)mpi->Size());
           }
@@ -528,8 +579,11 @@ bool Rivet_Interface::Finish()
           if (mpi->Rank()==0 && nRanks >= 1) {
             // Lazily initialise a new AnalysisHandler
             // and populate it with the filtered data
+	    double sf(1.-vetoed_ranks/double(mpi->Size()));
+	    for (size_t i = 0; i < filtered_data.size(); ++i)
+	      filtered_data[i] /= sf;
             const std::string newlabel = it.first.first+"thr="+threshold+".rmrank";
-            GetRivet(newlabel,it.first.second,&m_lastevent)->deserializeContent(filtered_data,nRanks);
+            GetRivet(newlabel,it.first.second,&m_lastevent)->deserializeContent(filtered_data,(size_t)mpi->Size());
           }
         }
       }
