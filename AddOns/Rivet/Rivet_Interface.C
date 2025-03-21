@@ -460,7 +460,6 @@ bool Rivet_Interface::Finish()
     for (auto& it : m_rivet) {
       if (it.first.first.find("thr=") != std::string::npos)  continue;
       std::vector<double> data = it.second->serializeContent(true); //< ensure fixed-length across ranks
-      std::vector<double> scale(data.size(),0.);
       if (m_thresholds.size()) {
         // Compute global sums and sum of squares
         // for each element in the serialised vector
@@ -474,10 +473,11 @@ bool Rivet_Interface::Finish()
 	  YODA::Histo1D *h = dynamic_cast<YODA::Histo1D*>(&*raos[i]);
 	  if (h!=nullptr) {
 	    sum += 1;
+	    size_t numEntries = 0;
 	    const size_t nBins = h->numBins(true, true);
+	    for (size_t j = 0; j < nBins; ++j) numEntries+=data[sum+5*j+4];
 	    for (size_t j = 0; j < nBins; ++j) {
-	      double val = data[sum+1]/data[sum+4];
-	      double err = sqrt((data[sum+2]/data[sum+4]-val*val)/data[sum+4]);
+	      double err = sqrt(data[sum+2]/numEntries);
 	      data_sum.push_back(err);
 	      data_sum_sq.push_back(err*err);
 	      sum += 5;
@@ -488,26 +488,26 @@ bool Rivet_Interface::Finish()
 	  }
 	}
 	if (sum!=datalen) THROW(fatal_error,"Serialization failed 1");
-        mpi->Reduce(data_sum.data(),data_sum.size(),MPI_DOUBLE,MPI_SUM);
+	mpi->Reduce(data_sum.data(),data_sum.size(),MPI_DOUBLE,MPI_SUM);
         mpi->Reduce(data_sum_sq.data(),data_sum_sq.size(),MPI_DOUBLE,MPI_SUM);
 
         // Compute mean and standard deviation on the root rank
-        std::vector<double> mean(data_sum.size(), 0.0);
-        std::vector<double> stddev(data_sum_sq.size(), 0.0);
+	std::vector<double> mean(data_sum.size(), 0.0);
+	std::vector<double> stddev(data_sum_sq.size(), 0.0);
         if (mpi->Rank()==0) {
-          for (size_t i = 0; i < mean.size(); ++i) {
-            mean[i] = data_sum[i] / (double)mpi->Size();
-            double variance = (data_sum_sq[i] / (double)mpi->Size()) - (mean[i] * mean[i]);
-            stddev[i] = (variance > 0) ? std::sqrt(variance/(double)mpi->Size()) : 0.0;
+	  for (size_t i = 0; i < mean.size(); ++i) {
+	    mean[i] = data_sum[i] / (double)mpi->Size();
+	    double variance = (data_sum_sq[i] / (double)mpi->Size()) - (mean[i] * mean[i]);
+	    stddev[i] = (variance > 0) ? std::sqrt(variance/(double)mpi->Size()) : 0.0;
           }
         }
         // Broadcast mean and stddev to all ranks
-        mpi->Bcast(mean.data(), mean.size(), MPI_DOUBLE);
+	mpi->Bcast(mean.data(), mean.size(), MPI_DOUBLE);
         mpi->Bcast(stddev.data(), stddev.size(), MPI_DOUBLE);
 
         // Apply the outlier filtering: replace outliers with 0 before reduction
         for (const std::string& threshold : m_thresholds) {
-          std::vector<double> filtered_data;
+          std::vector<double> filtered_data, scale(data.size(),0.);
           const double level = std::stod(threshold);
           bool has_outlier = false;
 	  size_t sum = beaminfo_len+1, nbin = 0;
@@ -518,19 +518,20 @@ bool Rivet_Interface::Finish()
 	    if (h!=nullptr) {
 	      filtered_data.push_back(data[sum]);
 	      sum += 1;
+	      size_t numEntries = 0;
 	      const size_t nBins = h->numBins(true, true);
+	      for (size_t j = 0; j < nBins; ++j) numEntries+=data[sum+5*j+4];
 	      for (size_t j = 0; j < nBins; ++j, ++nbin) {
-		filtered_data.push_back(data[sum]);
-		double val = data[sum+1]/data[sum+4];
-		double err = sqrt((data[sum+2]/data[sum+4]-val*val)/data[sum+4]);
-		if (err - mean[nbin] > level * stddev[nbin]) {
-		  for (int k = 1; k <= 4; ++k)
+		double err = sqrt(data[sum+2]/numEntries);
+		double rescale = mpi->Size()*sqrt(numEntries/(nBins*data[sum+4]));
+		if (std::abs(err - mean[nbin]) > level * rescale * stddev[nbin]) {
+		  for (int k = 0; k < 5; ++k)
 		    filtered_data.push_back(0.0);  // exclude outlier
-		  scale[sum] += 1; // rescale result to account for missing rank
+		  scale[sum+4] = 1; // rescale result to account for missing rank
 		  has_outlier = true;
 		}
 		else {
-		  for (int k = 1; k <= 4; ++k)
+		  for (int k = 0; k < 5; ++k)
 		    filtered_data.push_back(data[sum+k]);
 		}
 		sum += 5;
@@ -546,15 +547,18 @@ bool Rivet_Interface::Finish()
 	    THROW(fatal_error,"Serialization failed 2");
           // Perform MPI_Reduce to compute the filtered sum
           mpi->Reduce(filtered_data.data(),datalen,MPI_DOUBLE,MPI_SUM);
+          mpi->Reduce(scale.data(),datalen,MPI_DOUBLE,MPI_SUM);
           if (mpi->Rank()==0) {
             // Lazily initialise a new AnalysisHandler
             // and populate it with the filtered data
             for (size_t i = 0; i < datalen; ++i)
-	      if (scale[i]) {
+	      if (scale[i] && scale[i]<mpi->Size()) {
 		double sf(1.-scale[i]/double(mpi->Size()));
-		filtered_data[i+1] /= sf;
-		filtered_data[i+2] /= sf;
-		filtered_data[i+3] /= sf;
+		filtered_data[i] /= sf;
+		filtered_data[i-1] /= sf;
+		filtered_data[i-2] /= sf;
+		filtered_data[i-3] /= sf;
+		filtered_data[i-4] /= sf;
 	      }
             const std::string newlabel = it.first.first+"thr="+threshold+".rmbin";
             GetRivet(newlabel,it.first.second,&m_lastevent)->deserializeContent(filtered_data,(size_t)mpi->Size());
