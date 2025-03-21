@@ -159,17 +159,17 @@ void Hadron_Init::Init() {
   Particle_Info::InitHadron(kf_eta_c_1S_oct,   true, 2.9798,   0.65, 0.0132,0,0,false,1,0,    "eta(c)8(1S)","eta_{c}^{(8)}(1S)");
   Particle_Info::InitHadron(kf_eta_b_oct,      true, 9.4,      0.65, 0.050,0,0,false,1,0,        "eta(b)8(1S)","eta_{b}^{(8)}(1S)");
   Particle_Info::InitHadron(kf_J_psi_1S_oct,   true, 3.09688,  0.65, 8.7e-05,0,2,false,1,0,  "J/psi(1S)8","J/psi^{(8)}(1S)");
-  Particle_Info::InitHadron(kf_psi_2S_oct,     true, 3.686097, 0.65, 0.,0,2,false,1,1,        "psi(2S)8","psi^{(8)}(2S)");
+  Particle_Info::InitHadron(kf_psi_2S_oct,     true, 3.686,    0.65, 2.77e-04, 0, 2, false, 1, 0, "psi(2S)8","psi^{(8)}(2S)");
   Particle_Info::InitHadron(kf_Upsilon_1S_oct, true, 9.46037,  0.65, 5.25e-05, 0, 2, false, 1, 0, "Upsilon(1S)8","Upsilon^{(8)}(1S)");
-  Particle_Info::InitHadron(kf_Upsilon_2S_oct, true, 10.0234,  0.65, 5.25e-05, 0, 2, false, 1, 0, "Upsilon(2S)8","Upsilon^{(8)}(2S)");
-  Particle_Info::InitHadron(kf_Upsilon_3S_oct, true, 10.3551,  0.65, 5.25e-05, 0, 2, false, 1, 0, "Upsilon(3S)8","Upsilon^{(8)}(3S)");
+  Particle_Info::InitHadron(kf_Upsilon_2S_oct, true, 10.0233,  0.65, 4.4e-05,  0, 2, false, 1, 0, "Upsilon(2S)8","Upsilon^{(8)}(2S)");
+  Particle_Info::InitHadron(kf_Upsilon_3S_oct, true, 10.3553,  0.65, 2.63e-05, 0, 2, false, 1, 0, "Upsilon(3S)8","Upsilon^{(8)}(3S)");
   Particle_Info::InitHadron(kf_chi_c0_1P_oct,  true, 3.4173,   0.65, 0.014, 0,0,false,1,0,     "chi(c0)8(1P)","chi_{c0}^{(8)}(1P)");
   Particle_Info::InitHadron(kf_chi_b0_1P_oct,  true, 9.8598,   0.65, 0.050, 0,0,false,1,0,     "chi(b0)8(1P)","chi_{b0}^{(8)}(1P)");
   Particle_Info::InitHadron(kf_chi_c1_1P_oct,  true, 3.51053,  0.65, 0.00088, 0,2,false,1,0,  "chi(c1)8(1P)","chi_{c1}^{(8)}(1P)");
   Particle_Info::InitHadron(kf_chi_b1_1P_oct,  true, 9.8919,   0.65, 0.001, 0,2,false,1,0,     "chi(b1)8(1P)","chi_{b1}^{(8)}(1P)");
-  Particle_Info::InitHadron(kf_chi_b1_2P_oct,  true, 10.25546, 0.65, 0., 0,2,false,1,1, "chi(b1)8(2P)","chi_{b1}^{(8)}(2P)");
-  Particle_Info::InitHadron(kf_chi_b1_3P_oct,  true, 10.5134,  0.65, 0., 0,2,false,1,1, "chi(b1)8(3P)","chi_{b1}^{(8)}(3P)");
-  Particle_Info::InitHadron(kf_chi_c2_1P_oct,  true, 3.55617,  0.65, 0., 0,2,false,1,1, "chi(c2)8(1P)","chi_{c2}^{(8)}(1P)");
+  Particle_Info::InitHadron(kf_chi_b1_2P_oct,  true, 10.25546, 0.65, 0., 0,2,false,1,0, "chi(b1)8(2P)","chi_{b1}^{(8)}(2P)");
+  Particle_Info::InitHadron(kf_chi_b1_3P_oct,  true, 10.5134,  0.65, 0., 0,2,false,1,0, "chi(b1)8(3P)","chi_{b1}^{(8)}(3P)");
+  Particle_Info::InitHadron(kf_chi_c2_1P_oct,  true, 3.55617,  0.65, 0., 0,2,false,1,0, "chi(c2)8(1P)","chi_{c2}^{(8)}(1P)");
   
   // ##################################################################################################
   // BARYON MULTIPLETS

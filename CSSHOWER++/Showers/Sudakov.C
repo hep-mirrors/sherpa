@@ -251,9 +251,7 @@ void Sudakov::AddGluonThresholds(MODEL::Model_Base *md) {
   Running_AlphaS as = md->ScalarConstant("alpha_S");
   const double mc = ATOOLS::Flavour(kf_c).Mass();
   const double mb = ATOOLS::Flavour(kf_b).Mass();
-  list<kf_code> octetvectors = {kf_J_psi_1S_oct, kf_psi_2S_oct,
-                                kf_chi_c0_1P_oct, kf_chi_c1_1P_oct,
-                                kf_chi_c2_1P_oct};
+  list<kf_code> octetvectors = {kf_J_psi_1S_oct, kf_psi_2S_oct};
   ST_Set *stset;
   m_stmap[Flavour(kf_gluon)] = stset = new ST_Set;
   map<kf_code, double> LDME = {
@@ -273,18 +271,17 @@ void Sudakov::AddGluonThresholds(MODEL::Model_Base *md) {
   }
   // stset->insert(One2One_Transition_Base(
   //     Flavour(kf_gluon), Flavour(kf_Upsilon_1S_oct),
-  //     0.5 * (M_PI * as(2 * mb) / (24 * pow(mb, 3))) * (305.0E-03), 1)); // this will capture almost all Y(1S) production but it's a guess
+  //     0.5 * (M_PI * as(2 * mb) / (24 * pow(mb, 3))) * (305.0E-03), 1)); //
+  //     this will capture almost all Y(1S) production but it's a guess
   stset->insert(One2One_Transition_Base(
       Flavour(kf_gluon), Flavour(kf_Upsilon_1S_oct),
-      0.5 * (M_PI * as(2 * mb) / (24 * pow(mb, 3))) * (228.0E-03), 1));  
-  stset->insert(
-      One2One_Transition_Base(Flavour(kf_gluon), Flavour(kf_Upsilon_2S_oct),
-      0.5 *
-          (M_PI * as(2 * mb) / (24 * pow(mb, 3))) * (119.0E-03), 1));
-  stset->insert(
-      One2One_Transition_Base(Flavour(kf_gluon), Flavour(kf_Upsilon_3S_oct),
-      0.5 *
-          (M_PI * as(2 * mb) / (24 * pow(mb, 3))) * (39.0E-03), 1));
+      0.5 * (M_PI * as(2 * mb) / (24 * pow(mb, 3))) * (228.0E-03), 1));
+  stset->insert(One2One_Transition_Base(
+      Flavour(kf_gluon), Flavour(kf_Upsilon_2S_oct),
+      0.5 * (M_PI * as(2 * mb) / (24 * pow(mb, 3))) * (119.0E-03), 1));
+  // stset->insert(One2One_Transition_Base(
+  //     Flavour(kf_gluon), Flavour(kf_Upsilon_3S_oct),
+  //     0.5 * (M_PI * as(2 * mb) / (24 * pow(mb, 3))) * (39.0E-03), 1));
   // stset->insert(
   //     One2One_Transition_Base(Flavour(kf_gluon), Flavour(kf_chi_b1_1P_oct),
   //     0.5 *
@@ -610,9 +607,9 @@ int Sudakov::Generate(Parton *split, Parton *spect, double t0, double kt2win,
                         << transit->GetFlavourB().IDName() << ", " << random
                         << " < " << tra_P << ",  trw: " << tr_phw << endl;
         if (random < tra_P) {
-          msg_Debugging() << "Tried to transit a " << split->GetFlavour() << " ("
-                          << split->GetFlow(1) << ", " << split->GetFlow(2)
-                          << ") "
+          msg_Debugging() << "Tried to transit a " << split->GetFlavour()
+                          << " (" << split->GetFlow(1) << ", "
+                          << split->GetFlow(2) << ") "
                           << "between t = " << split->KtStart()
                           << " and t = " << t << ":\n"
                           << "spectator is: " << spect->GetFlavour() << "  "

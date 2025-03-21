@@ -406,21 +406,22 @@
 #define      kf_Xi_1690_minus           203312
 #define      kf_Xi_1690                 203322
 // fictitious octet mesons relevant for quarkonia production
-#define      kf_eta_c_1S_oct            9900441
-#define      kf_J_psi_1S_oct            9900443
-#define      kf_psi_2S_oct              9910443
-#define      kf_chi_c0_1P_oct           9910441
-#define      kf_chi_c1_1P_oct           9920443
-#define      kf_chi_c2_1P_oct           9900445
-#define      kf_eta_b_oct               9900551
-#define      kf_Upsilon_1S_oct          9900553
+// logic is 99 + padding zeroes to 6 figures + meson kf_code
+#define      kf_eta_c_1S_oct            99000441
+#define      kf_J_psi_1S_oct            99000443
+#define      kf_psi_2S_oct              99100443
+#define      kf_chi_c0_1P_oct           99010441
+#define      kf_chi_c1_1P_oct           99020443
+#define      kf_chi_c2_1P_oct           99000445
+#define      kf_eta_b_oct               99000551
+#define      kf_Upsilon_1S_oct          99000553
 #define      kf_Upsilon_2S_oct          99100553
 #define      kf_Upsilon_3S_oct          99200553
-#define      kf_chi_b0_1P_oct           9910551
-#define      kf_chi_b1_1P_oct           9920553
+#define      kf_chi_b0_1P_oct           99010551
+#define      kf_chi_b1_1P_oct           99020553
 #define      kf_chi_b1_2P_oct           99120553
-#define      kf_chi_b1_3P_oct           99130553
-#define      kf_chi_b2_1P_oct           9900555
+#define      kf_chi_b1_3P_oct           99220553
+#define      kf_chi_b2_1P_oct           99000555
 // alternative version
 //#define      kf_eta_c_1S_oct            881
 //#define      kf_J_psi_1S_oct            883
