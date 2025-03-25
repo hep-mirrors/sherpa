@@ -1,4 +1,4 @@
-YFS/Main/Define_Dipoles.C#include "YFS/Main/Define_Dipoles.H"
+#include "YFS/Main/Define_Dipoles.H"
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Phys/Blob.H"
