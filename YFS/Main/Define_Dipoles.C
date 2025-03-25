@@ -1,4 +1,4 @@
-#include "YFS/Main/Define_Dipoles.H"
+YFS/Main/Define_Dipoles.C#include "YFS/Main/Define_Dipoles.H"
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Phys/Blob.H"
@@ -395,18 +395,18 @@ double Define_Dipoles::CalculateVirtualSub() {
   if(m_tchannel==2) return CalculateVirtualSubTchannel();
   if(m_dim_reg==1) return CalculateVirtualSubEps();
   for (auto &D : m_dipolesII) {
-    sub += D.ChargeNorm()*p_yfsFormFact->BVV_full(D.GetNewMomenta(0), D.GetNewMomenta(1), m_photonMass, sqrt(m_s) / 2., 3);
+    sub += D.ChargeNorm()*p_yfsFormFact->BVV_full(D, m_photonMass, sqrt(m_s) / 2., 3);
   }
   for (auto &D : m_dipolesFF) {
-    if(m_mode==yfsmode::fsr) sub += -D.m_QiQj*p_yfsFormFact->BVV_full(D.GetBornMomenta(0), D.GetBornMomenta(1), m_photonMass, sqrt(m_s) / 2., 3);
-    else sub += D.ChargeNorm()*p_yfsFormFact->BVV_full(D.GetBornMomenta(0), D.GetBornMomenta(1), m_photonMass, sqrt(m_s) / 2., 3);
+    if(m_mode==yfsmode::fsr) sub += -D.m_QiQj*p_yfsFormFact->BVV_full(D, m_photonMass, sqrt(m_s) / 2., 3);
+    else sub += D.ChargeNorm()*p_yfsFormFact->BVV_full(D, m_photonMass, sqrt(m_s) / 2., 3);
   }
 
   for (auto &D : m_dipolesIF){
     // change to + for IFI terms
     // Note Born momenta are redifined
     // for IFI terms.
-    sub += D.ChargeNorm()*p_yfsFormFact->BVV_full(D.GetNewMomenta(0), D.GetBornMomenta(1), m_photonMass, sqrt(m_s) / 2., 3);
+    sub += D.ChargeNorm()*p_yfsFormFact->BVV_full(D, m_photonMass, sqrt(m_s) / 2., 3);
   }
   return sub;
 }
