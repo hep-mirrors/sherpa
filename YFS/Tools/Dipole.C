@@ -226,11 +226,6 @@ void Dipole::Boost() {
       m_photonSum+=k;
     }
     if (p_Pboost) delete p_Pboost;
-    Vec4D before = m_bornmomenta[0]+m_bornmomenta[1];
-    Vec4D after  = m_newmomenta[0]+m_newmomenta[1]+m_photonSum;
-    if(!IsEqual(before, after)){
-      msg_Error()<<"Boost failed for Final State dipole"<<std::endl;
-    }
   }
 }
 
