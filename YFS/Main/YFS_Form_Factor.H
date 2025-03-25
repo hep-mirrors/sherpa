@@ -34,6 +34,7 @@ public:
     double Zij(double eta, double yi, double yj);
     double Chi(double eta, double yi, double yj, double yk, double yl);
     double BVV_full(const ATOOLS::Vec4D p1, const ATOOLS::Vec4D p2, double MasPhot, double Kmax, int mode);
+    double BVV_full(YFS::Dipole &d, double MasPhot, double Kmax, int mode);
     double Full(const ATOOLS::Vec4D p1, const ATOOLS::Vec4D p2, double MasPhot, double Kmax, int mode);
     DivArrD BVV_full_eps(YFS::Dipole &d, double Kmax, int mode);
     double BVV_WW(const ATOOLS::Vec4D_Vector born, const ATOOLS::Vec4D_Vector k, const ATOOLS::Vec4D p1, const ATOOLS::Vec4D p2, double MasPhot, double Kmax);
