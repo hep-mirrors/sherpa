@@ -276,10 +276,6 @@ bool YFS_Handler::CalculateFSR(Vec4D_Vector & p) {
   CheckResonance();
   if(m_mode==yfsmode::isrfsr)  p_dipoles->MakeDipolesIF(m_flavs, m_plab, m_plab);
   m_FSRPhotons.clear();
-  if (p_dipoles->GetDipoleFF()->size() == 0) {
-    THROW(fatal_error,"No dipoles found in the final state for YFS.");
-    return true;
-  }
   for (Dipole_Vector::iterator Dip = p_dipoles->GetDipoleFF()->begin();
        Dip != p_dipoles->GetDipoleFF()->end(); ++Dip) {
     if(!Dip->IsResonance()) continue;
