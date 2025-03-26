@@ -241,7 +241,7 @@ double NLO_Base::CalculateReal() {
 	if(m_coll_real) return p_dipoles->CalculateEEX()*m_born;
 	double collreal = p_dipoles->CalculateEEX()*m_born;
 	for (auto k : m_ISRPhotons) {
-		if(m_check_real_sub) {
+		if(m_check_real_sub && !HasFSR()) {
 				if(k.E() < 0.2*sqrt(m_s)) continue;
 				CheckRealSub(k);
 		}
@@ -509,7 +509,7 @@ double NLO_Base::CalculateRealReal() {
 			Vec4D k  = photons[i];
 			Vec4D kk = photons[j];
 			if(m_check_rr_sub){
-				if(k.E() < 0.3*sqrt(m_s) || kk.E() < 0.3*sqrt(m_s)) continue;
+				if(k.E() < 0.2*sqrt(m_s) || kk.E() < 0.2*sqrt(m_s)) continue;
 				if(k.E() < kk.E()) continue;
 				// if(k.E() < 0.2*sqrt(m_s)) continue;
 				// if(k.PPerp() < 1. || kk.PPerp() < 1.) continue;
@@ -1043,11 +1043,12 @@ void NLO_Base::CheckRealRealSub(Vec4D k1, Vec4D k2, int fsr1, int fsr2){
 		if(ATOOLS::FileExists(filename3))  ATOOLS::Remove(filename3);
 		out_sub.open(filename1, std::ios_base::app);
 		// if(k.E() < 0.8*sqrt(m_s)/2.) return;
-		for (double i = 1; i < 20 ; i+=0.6)
+		for (double i = 1; i < 20 ; i+=1)
 		{
 			k1=k1/i;
 			if(k1.E()< m_isrcut*sqrt(m_s)) break;
 			real=CalculateRealReal(k1,k2,fsr1, fsr2);
+			if(real==0) break;
 			out_sub<<k1.E()<<","<<fabs(real)<<std::endl;
 			// m_histograms2d["Real_me_sub"]->Insert(k.E(),fabs(real), 1);
 		}
@@ -1055,11 +1056,12 @@ void NLO_Base::CheckRealRealSub(Vec4D k1, Vec4D k2, int fsr1, int fsr2){
 		out_sub.open(filename2, std::ios_base::app);
 	 	k2 = _k2;
 	 	k1 = _k1;
-		for (double i = 1; i < 20 ; i+=0.6)
+		for (double i = 1; i < 20 ; i+=1)
 		{
 			k2=k2/i;
 			if(k2.E()< m_isrcut*sqrt(m_s)) break;
 			real=CalculateRealReal(k1,k2, fsr1, fsr2);
+			if(real==0) break;
 			out_sub<<k2.E()<<","<<fabs(real)<<std::endl;
 			// if(IsZero(real)) break;
 			// m_histograms2d["Real_me_sub"]->Insert(k.E(),fabs(real), 1);
@@ -1068,13 +1070,14 @@ void NLO_Base::CheckRealRealSub(Vec4D k1, Vec4D k2, int fsr1, int fsr2){
 		out_sub.open(filename3, std::ios_base::app);
 		k2 = _k2;
 	 	k1 = _k1;
-		for (double i = 1; i < 20 ; i+=0.6)
+		for (double i = 1; i < 20 ; i+=1)
 		{
 			k2=k2/i;
 			k1=k1/i;
 			if(k1.E()< m_isrcut*sqrt(m_s)) break;
 			// if(k2.E()< m_isrcut*sqrt(m_s)) break;
 			real=CalculateRealReal(k1,k2,fsr1,fsr2);
+			if(real==0) break;
 			out_sub<<k1.E()<<","<<fabs(real)<<std::endl;
 			// if(IsZero(real)) break;
 			// m_histograms2d["Real_me_sub"]->Insert(k.E(),fabs(real), 1);
