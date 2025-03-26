@@ -346,17 +346,17 @@ std::vector<Process_Base*> Matrix_Element_Handler::InitializeSingleProcess
   if (pi.m_fi.NLOType()==nlo_type::lo) {
     if(p_yfs->Mode()!=YFS::yfsmode::off){
       // else Process_Base *proc(m_gens.InitializeProcess(pi, true));
-      if(!pi.m_fi.IsGroup()) {
+      // if(!pi.m_fi.IsGroup()) {
         YFS_Process *proc = new YFS_Process(m_gens,pmap);
         proc->Init(pi,p_beam,p_isr, p_yfs,1);
         m_procs.push_back(proc);
         procs.push_back(proc);
-      }
-      else{
-        Process_Base *proc(m_gens.InitializeProcess(pi, true));
-        m_procs.push_back(proc);
-        procs.push_back(proc);
-      }
+      // }
+      // else{
+      //   Process_Base *proc(m_gens.InitializeProcess(pi, true));
+      //   m_procs.push_back(proc);
+      //   procs.push_back(proc);
+      // }
       p_yfs->SetFlavours(pi.ExtractFlavours());
     }
     else{
@@ -406,7 +406,7 @@ std::vector<Process_Base*> Matrix_Element_Handler::InitializeSingleProcess
       proc->Init(pi,p_beam,p_isr, p_yfs,1);
       m_procs.push_back(proc);
       procs.push_back(proc);
-      return procs;
+      // return procs;
     }
     else if (m_nlomode==nlo_mode::fixedorder) {
       m_hasnlo=1;
