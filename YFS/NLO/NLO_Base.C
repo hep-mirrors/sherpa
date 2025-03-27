@@ -260,7 +260,7 @@ double NLO_Base::CalculateReal() {
 			if(k.E() < 0.2*sqrt(m_s)) continue;
 				CheckRealSub(k);
 		}
-		real+=CalculateReal(k, 1);
+		real+=CalculateReal(k, 0);
 		fsrcount++;
 	}
 	return real;
@@ -275,7 +275,7 @@ double NLO_Base::CalculateReal(Vec4D k, int fsrcount) {
 	Vec4D kk = k;
 	m_evts+=1;
 	p_nlodipoles->MakeDipoles(m_flavs,m_plab,m_plab);
-	fluxtype = p_nlodipoles->WhichResonant(k);
+	// fluxtype = p_nlodipoles->WhichResonant(k);
   // if(fluxtype==dipoletype::final || fsrcount==4){
   if(fsrcount==1 || fsrcount==4){
   	if(!HasFSR()) msg_Error()<<"Wrong dipole type in "<<METHOD<<endl;
