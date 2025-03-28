@@ -26,7 +26,6 @@ using namespace PHASIC;
 using namespace ATOOLS;
 using namespace BEAM;
 using namespace PDF;
-using namespace std;
 
 Integration_Info *PHASIC::Phase_Space_Handler::p_info=NULL;
 
