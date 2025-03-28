@@ -15,7 +15,6 @@
 
 using namespace PHASIC;
 using namespace ATOOLS;
-using namespace std;
 
 long unsigned int Phase_Space_Integrator::m_nrawmax(std::numeric_limits<long unsigned int>::max());
 
