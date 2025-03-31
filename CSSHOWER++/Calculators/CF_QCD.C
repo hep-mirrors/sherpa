@@ -89,8 +89,8 @@ double CF_QCD::CplMax(MODEL::Running_AlphaS * as, double rsf) const
 {
   double minscale = Min(1.0, CplFac(m_k0sq)) * m_k0sq;
   double ct(0.);
-  if (rsf > 1.) // only for f>1 cpl gets larger
-    ct = -as->BoundedAlphaS(minscale) / M_PI * as->Beta0(0.) * log(rsf);
+  if (rsf < 1.) // only for f<1 cpl gets larger
+    ct = as->BoundedAlphaS(minscale) / M_PI * as->Beta0(0.) * log(rsf);
   return as->BoundedAlphaS(minscale) * (1. - ct) * m_q;
 }
 
@@ -156,14 +156,14 @@ double CF_QCD::Coupling(const double &scale,const int pol)
     msg_Debugging()<<"as(\\mu_R^2)*(1-ct)="<<cpl<<std::endl;
 #endif
   }
-  m_last=cpl;
   cpl*=m_q;
   if (cpl>cplinfo.MaxCoupling()->front()) {
-    msg_Tracking()<<METHOD<<"(): Value exceeds maximum at t = "
-               <<sqrt(t)<<" -> \\mu_R = "<<sqrt(scl)
-               <<", qmin = "<<sqrt(cplinfo.Coupling()->CutQ2())<<std::endl;
-    m_last=cplinfo.MaxCoupling()->front()/m_q;
-    return cplinfo.MaxCoupling()->front();
+    msg_Tracking()<<"CSS::"<<METHOD<<"(q="<<m_q<<"): Value "<<cpl
+		  <<" exceeds maximum "<<cplinfo.MaxCoupling()->front()
+		  <<" at t = "<<sqrt(CplFac(scale))<<" * "<<sqrt(scale)
+		  <<" * "<<sqrt(cplinfo.RSF())<<" -> \\mu_R = "<<sqrt(scl)
+		  <<", qmin = "<<sqrt(cplinfo.Coupling()->CutQ2())<<std::endl;
+    cpl=cplinfo.MaxCoupling()->front();
   }
 #ifdef DEBUG__Trial_Weight
   msg_Debugging()<<"as weight kt = "<<sqrt(CplFac(scale))<<" * "
