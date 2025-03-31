@@ -61,6 +61,8 @@ namespace MCATNLO {
 
     double m_q, m_k0sq, m_kfac[7];
 
+    int m_scvmode;
+
   public:
 
     CF_QCD(const SF_Key &key):
@@ -86,6 +88,7 @@ namespace MCATNLO {
       }
       for (size_t nf(0);nf<7;++nf)
         m_kfac[nf]=exp(-(67.0-3.0*ATOOLS::sqr(M_PI)-10.0/3.0*nf)/(33.0-2.0*nf));
+      m_scvmode=0;
     }
 
     double B0(const double &nf) const
@@ -121,6 +124,8 @@ bool CF_QCD::SetCoupling(MODEL::Model_Base *md,
   MODEL::Running_AlphaS * cpl = (MODEL::Running_AlphaS *)md->GetScalarFunction("alpha_S");
 
   double rsf = ToType<double>(rpa->gen.Variable("RENORMALIZATION_SCALE_FACTOR"));
+  auto pss = Settings::GetMainSettings()["SHOWER"];
+  m_scvmode = pss["SCALE_VARIATION_SCHEME"].Get<int>();
 
   // determine prefactors before calling CplMax below
   m_cplfac=((m_type/10==1)?fsfac:isfac);
@@ -161,8 +166,8 @@ double CF_QCD::CplMax(MODEL::Running_AlphaS * as, double rsf) const
 {
   double minscale = Min(1.0, CplFac(m_k0sq)) * m_k0sq;
   double ct(0.);
-  if (rsf > 1.) // only for f>1 cpl gets larger
-    ct = -as->BoundedAlphaS(minscale) / M_PI * as->Beta0(0.) * log(rsf);
+  if (rsf < 1.) // only for f<1 cpl gets larger
+    ct = as->BoundedAlphaS(minscale) / M_PI * as->Beta0(0.) * log(rsf);
   return as->BoundedAlphaS(minscale) * (1. - ct) * m_q;
 }
 
@@ -172,26 +177,61 @@ double CF_QCD::Coupling(const double &scale,const int pol,
   if (pol!=0) return 0.0;
   QCD_Coupling_Info cplinfo = CurrentCouplingInfo();
   double t(CplFac(scale)*scale), scl(sub?sub->MuR2():t*cplinfo.RSF());
-  if (scl<cplinfo.RSF()*cplinfo.Coupling()->CutQ2()) return m_last = 0.0;
-  double cpl=(*cplinfo.Coupling())(scl);
+  double cpl=cplinfo.Coupling()->BoundedAlphaS(scl);
   if (sub==NULL && !IsEqual(scl,t)) {
+#ifdef DEBUG__AlphaS
+    msg_Debugging()<<"as(\\mu_R^2)="<<cpl<<std::endl;
+#endif
     std::vector<double> ths(cplinfo.Coupling()->Thresholds(t,scl));
-    if (scl>t) std::reverse(ths.begin(),ths.end());
-    if (ths.empty() || !IsEqual(t,ths.back())) ths.push_back(t);
-    if (!IsEqual(scl,ths.front())) ths.insert(ths.begin(),scl);
-    for (size_t i(1);i<ths.size();++i) {
-      double nf=cplinfo.Coupling()->Nf((ths[i]+ths[i-1])/2.0);
-      double L=log(ths[i]/ths[i-1]), ct=cpl/(2.0*M_PI)*B0(nf)*L;
-      cpl*=1.0-ct;
+    ths.push_back((scl>t)?scl:t);
+    ths.insert(ths.begin(),(scl>t)?t:scl);
+    if (t<scl) std::reverse(ths.begin(),ths.end());
+#ifdef DEBUG__AlphaS
+    msg_Debugging()<<"thresholds: "<<ths<<std::endl;
+#endif
+    double fac(1.),ct(0.);
+    // Beta0 from One_Running_AlphaS contains extra factor 1/2
+    switch (m_scvmode) {
+    case 1:
+      // local counterterms and redefinition at threshold
+      for (size_t i(1);i<ths.size();++i) {
+        ct=cpl/M_PI*cplinfo.Coupling()->Beta0((ths[i]+ths[i-1])/2.0)*log(ths[i]/ths[i-1]);
+	cpl*=1.0-ct;
+      }
+      break;
+    case 2:
+      // replace as(t) -> as(t)*[1-sum as/2pi*beta(nf)*log(th[i]/th[i-1])]
+      for (size_t i(1);i<ths.size();++i)
+        ct+=cpl/M_PI*cplinfo.Coupling()->Beta0((ths[i]+ths[i-1])/2.0)*log(ths[i]/ths[i-1]);
+      fac=1.-ct;
+      break;
+    default:
+      fac=1.;
+      break;
     }
+#ifdef DEBUG__AlphaS
+    msg_Debugging()<<"ct="<<ct<<std::endl;
+#endif
+    if (fac<0.) {
+      msg_Tracking()<<METHOD<<"(): Renormalisation term too large. Remove."
+                    <<std::endl;
+      fac=1.;
+    }
+    cpl*=fac;
+#ifdef DEBUG__AlphaS
+    msg_Debugging()<<"as(\\mu_R^2)*(1-ct)="<<cpl<<std::endl;
+#endif
   }
-  cpl*=m_q*s_qfac;
-  if (cpl>cplinfo.MaxCoupling()->front()*s_qfac) {
-    msg_Error()<<METHOD<<"(): Value exceeds maximum at t = "
-               <<sqrt(scale)<<" -> \\mu_R = "<<sqrt(scl)
-               <<", qmin = "<<sqrt(cplinfo.Coupling()->CutQ2())<<std::endl;
-    return m_last = cplinfo.MaxCoupling()->front();
+  cpl*=m_q;
+  if (cpl>cplinfo.MaxCoupling()->front()) {
+    msg_Tracking()<<"MC@NLO::"<<METHOD<<"(q="<<m_q<<"): Value "<<cpl
+		  <<" exceeds maximum "<<cplinfo.MaxCoupling()->front()
+		  <<" at t = "<<sqrt(CplFac(scale))<<" * "<<sqrt(scale)
+		  <<" * "<<sqrt(cplinfo.RSF())<<" -> \\mu_R = "<<sqrt(scl)
+		  <<", qmin = "<<sqrt(cplinfo.Coupling()->CutQ2())<<std::endl;
+    cpl = cplinfo.MaxCoupling()->front();
   }
+  cpl*=s_qfac;
 #ifdef DEBUG__Trial_Weight
   msg_Debugging()<<"as weight kt = "<<(sub?1.0:sqrt(CplFac(scale)))
 		 <<" * "<<(sub?sqrt(scl):sqrt(scale))<<", \\alpha_s("
