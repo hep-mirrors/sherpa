@@ -72,5 +72,8 @@ Tests/UFO/
 /bin/
 /include/
 /lib/
+/lib64/
 /share/
 *.DS_Store
+EXTERNALINSTALL/
+EXTERNALSRC/
