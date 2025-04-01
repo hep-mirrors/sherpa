@@ -137,7 +137,7 @@ void Sudakov::InitSplittingFunctions(Model_Base *md, const int kfmode) {
   }
   AddDiQuarkSplittingFunctions(md, kfmode);
   AddOctetMesonSplittingFunctions(md, kfmode);
-  // AddQuarkoniaSplittingFunctions(md, kfmode);
+  AddQuarkoniaSplittingFunctions(md, kfmode);
   AddGluonThresholds(md);
   msg_Debugging() << "}\n";
 }
@@ -194,16 +194,18 @@ void Sudakov::AddQuarkoniaSplittingFunctions(Model_Base *md, const int kfmode) {
   v.in[1] = v.in[1].Bar();
   Add(new Splitting_Function_Base(
       SF_Key(&v, 0, cstp::FF, kfmode, m_qcdmode, m_ewmode, 1, m_pdfmin)));
-  v = Single_Vertex();
-  v.AddParticle(Gluon_flav);
-  v.AddParticle(Flavour(kf_eta_c_1S));
-  v.AddParticle(Gluon_flav);
-  v.Color.push_back(Color_Function(cf::G, 1, 3));
-  v.Lorentz.push_back("VSV_Quarkonia");
-  v.cpl.push_back(cpl0); // Check later
-  v.order[0] = 1;
-  Add(new Splitting_Function_Base(
-      SF_Key(&v, 0, cstp::FF, kfmode, m_qcdmode, m_ewmode, 1, m_pdfmin)));
+  // This if g -> eta_c g
+  // still needs substantial debugging and tuning
+  // v = Single_Vertex();
+  // v.AddParticle(Gluon_flav);
+  // v.AddParticle(Flavour(kf_eta_c_1S));
+  // v.AddParticle(Gluon_flav);
+  // v.Color.push_back(Color_Function(cf::G, 1, 3));
+  // v.Lorentz.push_back("VSV_Quarkonia");
+  // v.cpl.push_back(cpl0); // Check later
+  // v.order[0] = 1;
+  // Add(new Splitting_Function_Base(
+  //     SF_Key(&v, 0, cstp::FF, kfmode, m_qcdmode, m_ewmode, 1, m_pdfmin)));
   msg_Out() << METHOD << ": by now " << m_splittings.size()
             << " splitting functions\n"
             << "============================================================\n";
@@ -251,7 +253,8 @@ void Sudakov::AddGluonThresholds(MODEL::Model_Base *md) {
   Running_AlphaS as = md->ScalarConstant("alpha_S");
   const double mc = ATOOLS::Flavour(kf_c).Mass();
   const double mb = ATOOLS::Flavour(kf_b).Mass();
-  list<kf_code> octetvectors = {kf_J_psi_1S_oct, kf_psi_2S_oct};
+  list<kf_code> octetvectors = {kf_J_psi_1S_oct, kf_psi_2S_oct,
+     kf_chi_c0_1P_oct, kf_chi_c1_1P_oct, kf_chi_c2_1P_oct};
   ST_Set *stset;
   m_stmap[Flavour(kf_gluon)] = stset = new ST_Set;
   map<kf_code, double> LDME = {

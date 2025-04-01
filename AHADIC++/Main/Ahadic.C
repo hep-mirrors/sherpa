@@ -91,8 +91,15 @@ Return_Value::code Ahadic::Hadronize(Blob * blob, int retry) {
   //(*blob)<<"\n";
   if (!ExtractSinglets(blob) || !ShiftBeamParticles() || !CheckSinglets() ||
       !DecayOctetMesons() || !DecayGluons() ||!DecayClusters()) {
-    msg_Error()<<"ERROR in "<<METHOD<<": Will retry event!\n"
-    	       <<(*blob);
+    msg_Error() << "Entered fail state due to: " 
+      << std::endl << "ext. singlet: " << !ExtractSinglets(blob) 
+      << std::endl << "Shfit beam part.: " << !ShiftBeamParticles() 
+      << std::endl << "Check singlet: " << !CheckSinglets() 
+      << std::endl << "Octect Decayer: " << !DecayOctetMesons() 
+      << std::endl << "Gluon dacyer: " << !DecayGluons() 
+      << std::endl << "Cluster decayer: " << !DecayClusters();
+    // msg_Error()<<"ERROR in "<<METHOD<<": Will retry event!\n"
+    // 	       <<(*blob);
     Reset(blob);
     Reset();
     exit(1);

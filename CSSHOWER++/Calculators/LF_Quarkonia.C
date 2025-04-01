@@ -82,7 +82,7 @@ double LF_FFV_Quarkonia_FF::operator()(const double zz, const double y,
                     << 16. / 27 * sqr(p_cf->Coupling(newscale, 0)) *
                            JFF(y, mui2, muj2, muk2, muij2)
                     << std::endl;
-    const double LDME = pow(0.82,3)/Flavour(kf_c).Mass()/sqr(Q2);
+    const double LDME = 1./Flavour(kf_c).Mass()/sqr(Q2) * (m_flavs[1].IsOctetMeson()?pow(0.82,3):pow(0.82,3));
     return 16. / 27 * LDME  *sqr(p_cf->Coupling(newscale, 0)) * value / sqr(Q2) *
            JFF(y, mui2, muj2, muk2, muij2);
   }
