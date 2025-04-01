@@ -413,7 +413,7 @@ bool SHERPA::HepMC3_Interface::Sherpa2ShortHepMC(ATOOLS::Blob_List *const blobs,
   }
   event.add_vertex(vertex);
   vertex->add_attribute("weight0",std::make_shared<HepMC::DoubleAttribute>(1.0));
-  if (event.beams().empty() && beamparticles.empty() && inparticles.size()==2) {
+  if (inparticles.size()==2) {
     for (size_t j(0);j<2;++j) {
       HepMC::GenVertexPtr  beamvertex = std::make_shared<HepMC::GenVertex>();
       event.add_vertex(beamvertex);
@@ -424,11 +424,14 @@ bool SHERPA::HepMC3_Interface::Sherpa2ShortHepMC(ATOOLS::Blob_List *const blobs,
       HepMC::GenParticlePtr beampart =
           MakeGenParticle(rpa->gen.PBeam(j), flav, true);
       beamparticles.push_back(beampart);
+      // PRINT_VAR(rpa->gen.PBeam(j));
       beamvertex->add_particle_in(beampart);
       beamvertex->add_particle_out(inparticles[j]);
     }
   }
   if (event.beams().empty() && beamparticles.size()==2) {
+  // if (beamparticles.size()==2) {
+    // PRINT_VAR(beamparticles);
     event.set_beam_particles(beamparticles[0],beamparticles[1]);
   }
 
