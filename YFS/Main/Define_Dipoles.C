@@ -726,10 +726,56 @@ double Define_Dipoles::CalculateFlux(const Vec4D &k){
     flux=0;
     for (auto &D : m_dipolesFF) {
       Q  = D.GetBornMomenta(0)+D.GetBornMomenta(1);
-      QX = D.GetMomenta(0)+D.GetMomenta(1);
+      QX = D.GetNewMomenta(0)+D.GetNewMomenta(1);
       sq = (Q).Abs2();
       sx = (Q+k).Abs2();
       flux += (sq/sx);
+      // flux = Propagator(sx)/Propagator(sq);
+    }
+    return flux/m_dipolesFF.size();
+  }
+  return flux;
+}
+
+double Define_Dipoles::CalculateFlux(const Vec4D &k, dipoletype::code &fluxtype){
+  double sq, sx;
+  double flux = 1;
+  Vec4D Q,QX;
+  if(m_noflux==1) return 1;
+  // if(HasISR()&&HasFSR()){
+  //   fluxtype = WhichResonant(k);
+  //   // PRINT_VAR(fluxtype);
+  //   // fluxtype = dipoletype::final;
+  // }
+  // else if(!HasFSR()){
+  //   fluxtype = dipoletype::initial;
+  // }
+  // else if(!HasISR()){
+  //   fluxtype = dipoletype::final;
+  // }
+  // else{
+  //   msg_Error()<<"Unknown dipole type in "<<METHOD<<std::endl;
+  // }
+  if(fluxtype==dipoletype::initial){
+    for (auto &D : m_dipolesII) {
+      QX = D.GetNewMomenta(0)+D.GetNewMomenta(1);
+      Q =  D.GetMomenta(0)+D.GetMomenta(1);
+      sq = (Q).Abs2(); 
+      sx = (Q-k).Abs2();
+      flux = (sx/sq);
+      return flux;
+    }
+
+  }
+  if(fluxtype==dipoletype::final){
+    flux=0;
+    for (auto &D : m_dipolesFF) {
+      Q  = D.GetBornMomenta(0)+D.GetBornMomenta(1);
+      QX = D.GetNewMomenta(0)+D.GetNewMomenta(1);
+      sq = (Q).Abs2();
+      sx = (Q+k).Abs2();
+      flux += (sq/sx);
+      // flux = Propagator(sx)/Propagator(sq);
     }
     return flux/m_dipolesFF.size();
   }
@@ -818,14 +864,15 @@ double Define_Dipoles::CalculateFlux(const Vec4D &k, const Vec4D &kk){
 
 double Define_Dipoles::Propagator(const double &s, int width){
   Flavour fl;
-  Complex Prop = Complex(1.,0.);///Complex(s,0.0);
+  Complex Prop = Complex(0.,0.);///Complex(s,0.0);
   for (auto it = m_proc_restab_map.begin(); it != m_proc_restab_map.end(); ++it) {
     for (auto *v : it->second) {
       fl = v->in[0];
+      if(IsZero(fl.Mass())) continue;
       Prop += Complex(1.,0.)/Complex(s-sqr(fl.Mass()),fl.Width()*fl.Mass());
     }
   }
-  return sqrt((Prop*conj(Prop)).real());
+  return ((Prop*conj(Prop)).real());
 }
 
 void Define_Dipoles::IsResonant(YFS::Dipole &D) {
@@ -894,14 +941,17 @@ double Define_Dipoles::ResonantDist(YFS::Dipole &D, const Vec4D &k){
   double mass_i = (D.GetBornMomenta(0) + D.GetBornMomenta(1)).Mass();
   double mdist(100000000);
   double mcheck(100000000);
-  // for (auto it = m_proc_restab_map.begin(); it != m_proc_restab_map.end(); ++it) {
-    // for (auto *v : it->second) {
-      // mcheck = abs(mass_i - v->in[0].Mass()) / v->in[0].Width();
-  mcheck = (mass_i-mass_d);
-  if(mcheck < mdist) mdist = mcheck;
-  //   }
-  // }
-  return mcheck;
+  for (auto it = m_proc_restab_map.begin(); it != m_proc_restab_map.end(); ++it) {
+    for (auto *v : it->second) {
+      if(IsZero(v->in[0].Mass()) || IsZero(v->in[0].Width()) ) continue;
+      mcheck = abs(mass_d- mass_i);
+      if(mcheck < mdist) {
+        mdist = mcheck;
+        D.SetResonaceFlavour(v->in[0]);
+      }
+    }
+  }
+  return mdist;
 }
 
 double Define_Dipoles::ResonantDist(YFS::Dipole &D){
@@ -910,7 +960,8 @@ double Define_Dipoles::ResonantDist(YFS::Dipole &D){
   double mcheck(100000000);
   for (auto it = m_proc_restab_map.begin(); it != m_proc_restab_map.end(); ++it) {
     for (auto *v : it->second) {
-      mcheck = abs(mass_i - v->in[0].Mass()) / v->in[0].Width();
+      if(IsZero(v->in[0].Mass()) || IsZero(v->in[0].Width()) ) continue;
+      mcheck = abs(mass_i - v->in[0].Mass());
       if(mcheck < mdist) mdist = mcheck;
     }
   }
@@ -920,15 +971,32 @@ double Define_Dipoles::ResonantDist(YFS::Dipole &D){
 dipoletype::code Define_Dipoles::WhichResonant(const Vec4D &k){
   if(!HasFSR()) return dipoletype::initial;
   if(!HasISR()) return dipoletype::final;
-  double mdistisr(10000), mdistfsr(100000);
+  double mdistisr(10000), mdistfsr(100000),mdistifi(100000);
+  double mindis(10000);
+  dipoletype::code min(dipoletype::initial);
   for(auto &D: m_dipolesII){
     mdistisr = ResonantDist(D,k);
+    // PRINT_VAR(mdistisr);
+    mindis = mdistisr;
+    min = dipoletype::initial;
   }
   for(auto &D: m_dipolesFF){
-    mdistfsr = ResonantDist(D,k);
-    if(mdistfsr < mdistisr) return dipoletype::final; 
+    mdistfsr = ResonantDist(D,k);  
+    // PRINT_VAR(mdistfsr);
+    if(mdistfsr < mdistisr){
+      min = dipoletype::final;
+    }
   }
-  return dipoletype::initial;
+  // for(auto &D: m_dipolesIF){
+  //   mdistifi = ResonantDist(D,k);  
+  //   PRINT_VAR(mdistifi);
+  //   if(mdistifi < mdistfsr) {
+  //     min = dipoletype::ifi;
+  //     // return dipoletype::final; 
+  //   }
+  // }
+  // PRINT_VAR(min);
+  return min;
 }
 
 void Define_Dipoles::generate_pairings(std::vector<std::vector<int>>& pairings, std::vector<int>& curr_pairing, std::vector<int>& available_nums) {
