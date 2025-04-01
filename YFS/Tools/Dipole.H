@@ -39,6 +39,7 @@ namespace YFS{
         dipoletype::code m_type;
         Vec4D_Vector m_momenta, m_bornmomenta, m_oldmomenta, m_newmomenta, m_ghost, m_beams, m_eikmomentum,m_mephotons;
         Flavour_Vector m_flavs;
+        Flavour m_ResFlav;
         Vec4D m_photonSum, m_QFrame, m_kcorr;
         Poincare *p_Pboost, *p_Qboost;
         Poincare p_rotate, p_boost;
@@ -113,6 +114,7 @@ namespace YFS{
         inline void SetMEPhotons(Vec4D_Vector &k) {m_mephotons = k;}
         inline bool IsFinite() {return m_irfinite;}
         inline void SetDuplicate(bool dub) {m_isduplicate=dub;}
+        inline void SetResonaceFlavour(Flavour &fl) {m_ResFlav = fl;}
 
     };
 
