@@ -88,7 +88,7 @@ void YFS_Process::Init(const Process_Info &pi,
     // p_realproc->SetLookUp(true);
     p_yfs->p_nlo->InitializeReal(rpi);
     p_yfs->SetNLOType(nlo_type::real);
-    p_yfs->NLO()->p_real->SetProc(p_realproc);
+    if(p_yfs->NLO()->HasReal()) p_yfs->NLO()->p_real->SetProc(p_realproc);
   }
   if (pi.Has(nlo_type::loop)) {
     vpi.m_fi.SetNLOType(nlo_type::born);
@@ -97,7 +97,7 @@ void YFS_Process::Init(const Process_Info &pi,
     p_virtproc->FillProcessMap(p_apmap);
     p_yfs->NLO()->InitializeVirtual(vpi);
     p_yfs->SetNLOType(nlo_type::loop);
-    p_yfs->NLO()->p_virt->SetProc(p_virtproc);
+    if(p_yfs->NLO()->HasVirtual()) p_yfs->NLO()->p_virt->SetProc(p_virtproc);
   }
   if (pi.Has(nlo_type::rvirt)) {
     Process_Info rvpi(pi);
