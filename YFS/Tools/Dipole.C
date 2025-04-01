@@ -209,7 +209,7 @@ void Dipole::Boost() {
     m_ranPhi = ran->Get()*2.*M_PI;
     Vec4D qqk = m_momenta[0] + m_momenta[1] + m_photonSum;
     p_Pboost = new Poincare(qqk);
-    m_eikmomentum = m_momenta;
+    // m_eikmomentum = m_momenta;
     for (size_t i = 0; i < 2; ++i)
     {
       Boost(m_momenta[i]);
@@ -221,9 +221,9 @@ void Dipole::Boost() {
     m_photonSum*=0.;
     // m_dipolePhotonsEEX.clear();
     for (auto &k : m_dipolePhotons) {
-      m_dipolePhotonsEEX.push_back(k);
       Boost(k);
       m_photonSum+=k;
+      m_dipolePhotonsEEX.push_back(k);
     }
     if (p_Pboost) delete p_Pboost;
   }
@@ -491,10 +491,10 @@ double Dipole::EEX(const int betaorder){
   boost.Boost(m_eikmomentum[0]);
   boost.Boost(m_eikmomentum[1]);
   m_betaorder = betaorder;
-  if(betaorder >= 1 && Type()!=dipoletype::ifi) {
-    for(auto k: m_dipolePhotons){
+  if(betaorder >= 1) {
+    for(auto k: m_dipolePhotonsEEX){
     // msg_Out()<<"Photon Momentum is = "<<k<<std::endl;
-      boost.Boost(k);
+      // boost.Boost(k);
      test = Beta1(k)/Eikonal(k);
      real+=test;
      // real += Beta1(k)/Eikonal(k);
