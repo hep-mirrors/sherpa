@@ -39,7 +39,7 @@ namespace CSSHOWER {
     };
 
     PDF::ISR_Handler * p_isr;
-    int m_kmode, m_type;
+    int m_kmode, m_type, m_jetcrit;
     bool m_respectq2;
     size_t m_maxem, m_nem, m_recocheck;
 

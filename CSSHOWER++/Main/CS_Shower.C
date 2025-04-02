@@ -40,6 +40,7 @@ CS_Shower::CS_Shower(PDF::ISR_Handler *const _isr,
   m_kmode      = pss["KMODE"].Get<int>();
   m_recocheck  = pss["RECO_CHECK"].Get<int>();
   m_respectq2  = pss["RESPECT_Q2"].Get<bool>();
+  m_jetcrit    = pss["JET_CRITERION"].Get<bool>();
 
   const int ckfmode { pss["CKFMODE"].Get<bool>() };
   const int pdfcheck{ pss["PDFCHECK"].Get<bool>() };
@@ -563,6 +564,19 @@ double CS_Shower::Qij2(const ATOOLS::Vec4D &pi,const ATOOLS::Vec4D &pj,
 		       const ATOOLS::Vec4D &pk,const ATOOLS::Flavour &fi,
 		       const ATOOLS::Flavour &fj) const
 {
+  if (m_jetcrit==1) {
+    // arXiv:2002.11114 [hep-ph]
+    const double beta(0.5);
+    double t1(2.0*(pi*pj)*(pj*pk)/(pi*pk));
+    double t2(2.0*(pj*pi)*(pi*pk)/(pj*pk));
+    double xi1(dabs((pi*pj)/(pk*pj)));
+    double xi2(dabs((pj*pi)/(pk*pi)));
+    t1*=pow(Max(xi1,1.0/xi1),-beta/2.0);
+    t2*=pow(Max(xi2,1.0/xi2),-beta/2.0);
+    if (pi[0]<0.0) return dabs(t1);
+    if (pj[0]<0.0) return dabs(t2);
+    return Min(t1,t2);
+  }
   Vec4D npi(pi), npj(pj);
   if (npi[0]<0.0) npi=-pi-pj;
   if (npj[0]<0.0) npj=-pj-pi;
