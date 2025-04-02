@@ -45,13 +45,12 @@ option(SHERPA_ENABLE_EWSUD                   "Enables building of EWSUD." OFF)
 option(SHERPA_ENABLE_EXAMPLES                "Enables installation of EXAMPLES." ON)
 option(SHERPA_ENABLE_GOSAM                   "Enables building with GoSam." OFF)
 option(SHERPA_ENABLE_GZIP                    "Enables building with GZIP." OFF)
-option(SHERPA_ENABLE_HEPMC3                  "Enables building of HepMC3 interface." OFF)
+option(SHERPA_ENABLE_HEPMC3                  "Enables building of HepMC3 interface." ON)
 option(SHERPA_ENABLE_HEPMC3_ROOT             "Enables building of HepMC3+ROOT interface ." OFF)
 option(SHERPA_ENABLE_INTERNAL_PDFS           "Enables internal PDFs." ON)
-option(SHERPA_ENABLE_INSTALL_LIBZIP          "Enables internal LibZip." OFF)
+option(SHERPA_ENABLE_INSTALL_LIBZIP          "Enables internal LibZip." ON)
 option(SHERPA_ENABLE_LHAPDF                  "Enables LHAPDF." ON)
-option(SHERPA_ENABLE_INSTALL_LHAPDF          "Enables internal LHAPDF." OFF)
-option(SHERPA_ENABLE_LHOLE                   "Enables building of LH OLE interface." OFF)
+option(SHERPA_ENABLE_INSTALL_LHAPDF          "Enables internal LHAPDF." ON)
 option(SHERPA_ENABLE_MADLOOP                 "Enables building with MadLoop." OFF)
 option(SHERPA_ENABLE_MANUAL                  "Enables building of manual." OFF)
 option(SHERPA_ENABLE_MCFM                    "Enables building with MCFM." OFF)
@@ -61,11 +60,13 @@ option(SHERPA_ENABLE_PYTHIA8                 "Enables building with Pythia8." OF
 option(SHERPA_ENABLE_PYTHON                  "Enables building of Python interface." OFF)
 option(SHERPA_ENABLE_RECOLA                  "Enables building with Recola." OFF)
 option(SHERPA_ENABLE_RIVET                   "Enables building with Rivet." OFF)
-option(SHERPA_ENABLE_ROOT                    "Enables building with ROOT." OFF)
+option(SHERPA_ENABLE_ROOT                    "Enables building with ROOT." ON)
 option(SHERPA_ENABLE_THREADING               "Enables building with threading." OFF)
 option(SHERPA_ENABLE_TESTING                 "Enables testing." OFF)
 option(SHERPA_ENABLE_UFO                     "Enables installation of UFO interfaces." OFF)
 option(SHERPA_ENABLE_VERSIONING              "Enables versioned installation." OFF)
+option(SHERPA_ENABLE_GSL                  "Enables installation of GSL." ON)
+option(SHERPA_ENABLE_TMDLIB                  "Enables installation of TMDlib." ON)
 
 
 ########################################################################
@@ -96,7 +97,7 @@ endforeach()
 set( allenables ANALYSIS BINRELOC BLACKHAT CATCH2 CLANG_TIDY DIHIGGS DOXYGEN
  EWSUD EXAMPLES GOSAM GZIP HEPMC3 HEPMC3_ROOT
  INTERNAL_PDFS INSTALL_LIBZIP INSTALL_LHAPDF LHAPDF
- LHOLE MADLOOP MANUAL MCFM MPI OPENLOOPS PYTHIA8 PYTHON RECOLA RIVET ROOT THREADING TESTING UFO VERSIONING)
+ MADLOOP MANUAL MCFM MPI OPENLOOPS PYTHIA8 PYTHON RECOLA RIVET ROOT THREADING TESTING UFO VERSIONING)
 foreach (en IN LISTS allenables)
   message(STATUS "SHERPA: SHERPA_ENABLE_${en}=${SHERPA_ENABLE_${en}}")
 endforeach()
@@ -474,6 +475,150 @@ endif()
 
 message(STATUS "SHERPA: LHAPDF_VERSION=${LHAPDF_VERSION} LHAPDF_LIBRARIES=${LHAPDF_LIBRARIES} LHAPDF_INCLUDE_DIRS=${LHAPDF_INCLUDE_DIRS}")
 
+
+
+#-----------------------------   below gsl
+#---------------------------------------------------------------- 
+#------------------------------------------------------------------
+
+
+if (SHERPA_ENABLE_GSL)
+    message(STATUS "SHERPA: GSL will be downloaded and compiled")
+    include(ExternalProject)
+    include(FetchContent)
+    set(GSLDESTDIR ${PROJECT_BINARY_DIR}/EXTERNALINSTALL/gsl)
+    ExternalProject_Add(downloadedgsl
+      URL https://ftpmirror.gnu.org/gnu/gsl/gsl-2.6.tar.gz
+      UPDATE_COMMAND ""
+
+      BUILD_IN_SOURCE     1
+      PREFIX ${PROJECT_BINARY_DIR}/EXTERNALSRC
+
+     CONFIGURE_COMMAND ./configure  --prefix=${CMAKE_INSTALL_PREFIX} --libdir=${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/SHERPA-MC${VERSIONING} -datadir=${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_DATADIR}/SHERPA-MC${VERSIONING}/aclocal
+
+      BUILD_COMMAND make -j 8
+      INSTALL_COMMAND make install DESTDIR=${GSLDESTDIR}
+    )
+    unset(GSL_ROOT)
+    set(GSL_DIR ${GSLDESTDIR}/${CMAKE_INSTALL_PREFIX})
+    set(GSL_PATH ${CMAKE_INSTALL_PREFIX})
+    set(GSL_DATA_PATH ${GSLDESTDIR}/${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_DATADIR}/SHERPA-MC${VERSIONING}/aclocal/)
+    set(GSL_VERSION 2.6)
+    set(GSL_LIBRARIES ${GSLDESTDIR}/${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/SHERPA-MC${VERSIONING}/libgsl${CMAKE_SHARED_LIBRARY_SUFFIX})
+    set(GSL_LIBRARY_DIR ${GSLDESTDIR}/${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/SHERPA-MC${VERSIONING})
+    set(GSL_INCLUDE_DIRS ${GSL_DIR}/include)
+    add_library(GSL::GSL UNKNOWN IMPORTED)
+    set_target_properties(GSL::GSL PROPERTIES
+          IMPORTED_LOCATION "${GSL_LIBRARIES}"
+          INTERFACE_INCLUDE_DIRECTORIES "${GSL_INCLUDE_DIRS}"
+      )
+   file(MAKE_DIRECTORY ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_DATADIR}/aclocal)
+
+    install(DIRECTORY ${GSL_LIBRARY_DIR}/ DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/SHERPA-MC${VERSIONING} COMPONENT libs FILES_MATCHING PATTERN "*")
+    install(DIRECTORY ${GSL_INCLUDE_DIRS}/gsl DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_INCLUDEDIR}/SHERPA-MC${VERSIONING} COMPONENT libs)
+    install(DIRECTORY ${GSL_DIR}/share/SHERPA-MC${VERSIONING}/aclocal/  DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_DATADIR}/aclocal COMPONENT libs)
+    add_dependencies(GSL::GSL PRIVATE downloadedgsl)
+
+
+
+
+endif()
+
+# below test to include TMDlib
+#--------------------------------------------------------------------------------------------------------------------------
+#--------------------------------------------------------------------------------------------------------------------------
+
+
+
+
+if (SHERPA_ENABLE_TMDLIB)
+    message(STATUS "SHERPA: TMDlib will be downloaded and compiled")
+#
+    file(MAKE_DIRECTORY ${LHAPDFDESTDIR}/${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/SHERPA-MC${VERSIONING}/lib)
+   file(COPY ${LHAPDFDESTDIR}/${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/SHERPA-MC${VERSIONING}/libLHAPDF.a
+        DESTINATION ${LHAPDFDESTDIR}/${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/SHERPA-MC${VERSIONING}/lib/libLHAPDF.a)
+   file(COPY ${LHAPDFDESTDIR}/${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/SHERPA-MC${VERSIONING}/libLHAPDF.la
+        DESTINATION ${LHAPDFDESTDIR}/${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/SHERPA-MC${VERSIONING}/lib/libLHAPDF.la)
+   file(COPY ${LHAPDFDESTDIR}/${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/SHERPA-MC${VERSIONING}/libLHAPDF.so
+        DESTINATION ${LHAPDFDESTDIR}/${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/SHERPA-MC${VERSIONING}/lib/libLHAPDF.so)
+#
+    include(ExternalProject)
+    include(FetchContent)
+    set(TMDLIBDESTDIR ${PROJECT_BINARY_DIR}/EXTERNALINSTALL/tmdlib)
+    ExternalProject_Add(downloadedtmdlib
+      URL https://tmdlib.hepforge.org/downloads/?f=tmdlib-2.2.11.tar.gz
+      UPDATE_COMMAND ""
+      BUILD_IN_SOURCE     1
+      PREFIX ${PROJECT_BINARY_DIR}/EXTERNALSRC
+      CONFIGURE_COMMAND ./configure  --prefix=${CMAKE_INSTALL_PREFIX} --libdir=${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/SHERPA-MC${VERSIONING} --datadir=${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_DATADIR}/SHERPA-MC${VERSIONING}/ --with-lhapdf=${LHAPDFDESTDIR}/${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/SHERPA-MC${VERSIONING}/
+#
+      BUILD_COMMAND make -j 8
+      INSTALL_COMMAND make install DESTDIR=${TMDLIBDESTDIR}
+      BUILD_BYPRODUCTS
+                     ${PROJECT_BINARY_DIR}/${CMAKE_INSTALL_LIBDIR}/SHERPA-MC${VERSIONING}/libTMDlib${CMAKE_SHARED_LIBRARY_SUFFIX}
+                     ${PROJECT_BINARY_DIR}/${CMAKE_INSTALL_DATADIR}/SHERPA-MC${VERSIONING}/tmdlib/config_tmdplotter.ini
+                     ${PROJECT_BINARY_DIR}/${CMAKE_INSTALL_DATADIR}/SHERPA-MC${VERSIONING}/tmdlib/tmdpdfsets.index
+    )
+    unset(TMDLIB_ROOT)
+    set(TMDLIB_DIR ${TMDLIBDESTDIR}/${CMAKE_INSTALL_PREFIX})
+    set(TMDLIB_PATH ${CMAKE_INSTALL_PREFIX})
+    set(TMDLIB_DATA_PATH ${TMDLIBDESTDIR}/${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_DATADIR}/SHERPA-MC${VERSIONING}/tmdlib/)
+    set(TMDLIB_VERSION 2.2.11)
+    set(TMDLIB_LIBRARIES ${TMDLIBDESTDIR}/${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/SHERPA-MC${VERSIONING}/libTMDlib${CMAKE_SHARED_LIBRARY_SUFFIX})
+    set(TMDLIB_LIBRARY_DIR ${TMDLIBDESTDIR}/${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/SHERPA-MC${VERSIONING})
+#
+#
+#
+list(APPEND TMDLIB_INCLUDE_DIRS "${TMDLIB_DIR}/include")
+list(APPEND TMDLIB_INCLUDE_DIRS "${TMDLIB_DIR}/include/tmdlib")
+list(APPEND TMDLIB_INCLUDE_DIRS "${TMDLIB_DIR}/include/apfel")
+list(APPEND TMDLIB_INCLUDE_DIRS "${TMDLIB_DIR}/include/tmdlib/yaml-cpp")
+list(APPEND TMDLIB_INCLUDE_DIRS "${TMDLIB_DIR}/include/tmdlib/yaml-cpp/node")
+list(APPEND TMDLIB_INCLUDE_DIRS "${TMDLIB_DIR}/include/tmdlib/yaml-cpp/node/detail")
+list(APPEND TMDLIB_INCLUDE_DIRS "${PROJECT_BINARY_DIR}/EXTERNALSRC/src/downloadedtmdlib/src/yaml-cpp-yaml-cpp-0.6.0/src")
+list(APPEND TMDLIB_INCLUDE_DIRS "${PROJECT_BINARY_DIR}/EXTERNALSRC/src/downloadedtmdlib/src/yaml-cpp-yaml-cpp-0.6.0/include")
+list(APPEND TMDLIB_INCLUDE_DIRS "${PROJECT_BINARY_DIR}/EXTERNALSRC/src/downloadedtmdlib/src/yaml-cpp-yaml-cpp-0.6.0/include/yaml-cpp/")
+list(APPEND TMDLIB_INCLUDE_DIRS "${PROJECT_BINARY_DIR}/EXTERNALSRC/src/downloadedtmdlib/src/yaml-cpp-yaml-cpp-0.6.0/include/yaml-cpp/node")
+list(APPEND TMDLIB_INCLUDE_DIRS "${PROJECT_BINARY_DIR}/EXTERNALSRC/src/downloadedtmdlib/src/yaml-cpp-yaml-cpp-0.6.0/include/yaml-cpp/node/detail")
+list(APPEND TMDLIB_INCLUDE_DIRS "${PROJECT_BINARY_DIR}/EXTERNALSRC/src/downloadedtmdlib/apfelxx")
+list(APPEND TMDLIB_INCLUDE_DIRS "${PROJECT_BINARY_DIR}/EXTERNALSRC/src/downloadedtmdlib/apfelxx/inc")
+list(APPEND TMDLIB_INCLUDE_DIRS "${PROJECT_BINARY_DIR}/EXTERNALSRC/src/downloadedtmdlib/apfelxx/inc/apfel")
+list(APPEND TMDLIB_INCLUDE_DIRS "${PROJECT_BINARY_DIR}/EXTERNALSRC/src/downloadedtmdlib/src")
+#
+    message(TMDLIB_LIBRARY_DIR="${TMDLIB_LIBRARY_DIR}")
+    message(TMDLIB_INCLUDE_DIRS="${TMDLIB_INCLUDE_DIRS}")
+    message("olalalal")
+#
+    add_library(TMD::TMD UNKNOWN IMPORTED)
+    set_target_properties(TMD::TMD PROPERTIES
+          IMPORTED_LOCATION "${TMDLIB_LIBRARIES}"
+          INTERFACE_INCLUDE_DIRECTORIES "${TMDLIB_INCLUDE_DIRS}"
+      )
+#
+    file(MAKE_DIRECTORY ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_DATADIR}/tmdlib)
+    install(DIRECTORY ${TMDLIB_LIBRARY_DIR}/ DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/SHERPA-MC${VERSIONING} COMPONENT libs FILES_MATCHING PATTERN "*")
+    install(DIRECTORY ${TMDLIB_DIR}/include/tmdlib DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_INCLUDEDIR}/SHERPA-MC${VERSIONING} COMPONENT devel)
+    install(DIRECTORY ${TMDLIB_DIR}/include/tmdlib/yaml-cpp DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_INCLUDEDIR}/SHERPA-MC${VERSIONING}/tmdlib COMPONENT devel)
+    install(DIRECTORY ${TMDLIB_DIR}/include/tmdlib/yaml-cpp/node DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_INCLUDEDIR}/SHERPA-MC${VERSIONING}/tmdlib/yaml-cpp COMPONENT devel)
+   install(DIRECTORY ${TMDLIB_DIR}/include/tmdlib/yaml-cpp/node/detail DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_INCLUDEDIR}/SHERPA-MC${VERSIONING}/tmdlib/yaml-cpp/node COMPONENT devel)
+    install(DIRECTORY ${TMDLIB_DIR}/include/apfel DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_INCLUDEDIR}/SHERPA-MC${VERSIONING} COMPONENT devel)
+    install(DIRECTORY ${TMDLIB_DIR}/share/SHERPA-MC${VERSIONING}/tmdlib/  DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_DATADIR}/tmdlib COMPONENT devel)
+    install(DIRECTORY ${TMDLIB_DIR}/include/tmdlib/yaml-cpp DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_INCLUDEDIR}/SHERPA-MC${VERSIONING} COMPONENT libs)
+#
+    add_dependencies(TMD::TMD PRIVATE downloadedtmdlib)
+
+endif()
+
+
+
+
+
+#--------------------------------------------------------------------
+#--- above TMDlib
+
+
+
+
 add_subdirectory(AHADIC++)
 add_subdirectory(AMEGIC++)
 add_subdirectory(AMISIC++)
@@ -492,7 +637,7 @@ add_subdirectory(PHASIC++)
 add_subdirectory(PHOTONS++)
 add_subdirectory(PDF/Electron)
 if (SHERPA_ENABLE_INTERNAL_PDFS)
-  add_subdirectory(PDF/GRS)
+#  add_subdirectory(PDF/GRS)
   add_subdirectory(PDF/GRV)
   add_subdirectory(PDF/CJK)
   add_subdirectory(PDF/H1)
@@ -628,7 +773,7 @@ foreach ( IDIR ${IDIRS} )
                              PATTERN "*MODEL/SMGold*" EXCLUDE
                              PATTERN "*MODEL/TauPi*" EXCLUDE
                              PATTERN "*PDF/CT14*" EXCLUDE
-                             PATTERN "*PDF/GRS/GRSGrid*" EXCLUDE
+#                             PATTERN "*PDF/GRS/GRSGrid*" EXCLUDE
                              PATTERN "*PDF/SAL/SALGrid*" EXCLUDE
                              PATTERN "*PDF/CJK/CJKHOGrid*" EXCLUDE
                              PATTERN "*PDF/CJK/CJK1Grid*" EXCLUDE
@@ -657,7 +802,7 @@ if (SHERPA_ENABLE_GZIP)
 endif()
 if (SHERPA_ENABLE_INTERNAL_PDFS)
   install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/PDF/CT14/CT14Grid DESTINATION  ${CMAKE_INSTALL_DATADIR}/SHERPA-MC${VERSIONING} COMPONENT doc PATTERN "*ct14ll*" EXCLUDE  )
-  install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/PDF/GRS/GRSGrid DESTINATION  ${CMAKE_INSTALL_DATADIR}/SHERPA-MC${VERSIONING} COMPONENT doc  )
+#  install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/PDF/GRS/GRSGrid DESTINATION  ${CMAKE_INSTALL_DATADIR}/SHERPA-MC${VERSIONING} COMPONENT doc  )
   install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/PDF/SAL/SALGrid DESTINATION  ${CMAKE_INSTALL_DATADIR}/SHERPA-MC${VERSIONING} COMPONENT doc  )
   install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/PDF/CJK/CJKHOGrid DESTINATION  ${CMAKE_INSTALL_DATADIR}/SHERPA-MC${VERSIONING} COMPONENT doc  )
   install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/PDF/CJK/CJK1Grid DESTINATION  ${CMAKE_INSTALL_DATADIR}/SHERPA-MC${VERSIONING} COMPONENT doc  )
@@ -781,10 +926,6 @@ if (SHERPA_ENABLE_MADLOOP)
   endif()
   message(STATUS "SHERPA: MADLOOP_PREFIX=${MADLOOP_PREFIX}")
   add_subdirectory(AddOns/MadLoop)
-endif()
-
-if (SHERPA_ENABLE_LHOLE)
-  add_subdirectory(AddOns/LH_OLE)
 endif()
 
 if (SHERPA_ENABLE_OPENLOOPS)
@@ -954,7 +1095,6 @@ file(GENERATE OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/ATOOLS/Org/CXXFLAGS_PACKAGES.H 
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/AMEGIC++/Main/makelibs.in ${CMAKE_CURRENT_BINARY_DIR}/AMEGIC++/Main/makelibs @ONLY)
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/AMEGIC++/Main/makelibs    DESTINATION  ${CMAKE_INSTALL_DATADIR}/SHERPA-MC COMPONENT doc PERMISSIONS  OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE )
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/SHERPA/Run/Sherpa-config.in ${CMAKE_CURRENT_BINARY_DIR}/SHERPA/Run/Sherpa${VERSIONING}-config @ONLY)
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/Examples/Userhook/CMakeLists.txt.in ${CMAKE_CURRENT_BINARY_DIR}/Examples/Userhook/CMakeLists.txt @ONLY)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/EXTAMP/Example/madgraph/CMakeLists.txt.in ${CMAKE_CURRENT_BINARY_DIR}/EXTAMP/Example/madgraph/CMakeLists.txt @ONLY)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/EXTAMP/Example/subtraction/CMakeLists.txt.in ${CMAKE_CURRENT_BINARY_DIR}/EXTAMP/Example/subtraction/CMakeLists.txt @ONLY)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/Examples/V_plus_Bs/LHC_Wbb/CMakeLists.txt.in ${CMAKE_CURRENT_BINARY_DIR}/Examples/V_plus_Bs/LHC_Wbb/CMakeLists.txt @ONLY)

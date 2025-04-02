@@ -1,0 +1,43 @@
+# Sherpa configuration for Z[ee]+Jets production
+
+# set up beams for LHC run 2
+EVENTS: 10
+BEAMS: 2212
+BEAM_ENERGIES: 6500
+
+# matrix-element calculation
+MI_HANDLER: None
+FRAGMENTATION: None
+#SCALES: VAR{H_T2}
+#SHOWER_GENERATOR: None
+BEAM_REMNANTS: false
+EVENT_GENERATION_MODE: Weighted
+ME_GENERATORS: Comix
+#ME_GENERATORS: Amegic
+
+## 7-point variations
+SCALE_VARIATIONS: 4.0*
+
+
+
+
+
+# The Born piece
+PROCESSES:
+- 93 93 -> 11 -11:
+    Order: {QCD: 0, EW: 2}
+#   NLO_Mode: Fixed_Order
+#    NLO_Part: B
+
+
+SELECTORS:
+- [Mass, 11, -11, 66, E_CMS]
+
+EVENT_OUTPUT:
+  - LHEF[MyFile]
+RANDOM_SEED1: 1111
+RANDOM_SEED2: 2222
+RANDOM_SEED3: 3333
+RANDOM_SEED4: 4444
+
+PDF_SET: PB-TMDNLO-HERAI+II-2018-set2

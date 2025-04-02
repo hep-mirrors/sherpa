@@ -11,6 +11,41 @@
 
 #include "LHAPDF/LHAPDF.h"
 
+#include "tmdlib/TMDlib.h"
+
+using namespace TMDlib;
+
+/*class Singleton {
+  private:
+    std::shared_ptr<TMD> m_tmd;
+  
+    // Private constructor to prevent instantiation from outside
+    Singleton() {
+      m_tmd = std::make_shared<TMD>();
+      std::cout << "Singleton Constructor Called" << std::endl;
+    }
+  
+    // Delete copy constructor and assignment operator to prevent copying
+    Singleton(const Singleton&) = delete;
+    Singleton& operator=(const Singleton&) = delete;
+  
+  public:
+    // Method to access the TMD instance
+    TMD* getTMD() {
+      return m_tmd.get();
+    }
+  
+    // Static method to get the single instance of the class
+    static Singleton& getInstance() {
+        static Singleton instance;
+              return instance;  // Dynamically allocate the singleton instance
+    }
+  
+    // Prevent deletion of the singleton instance
+    ~Singleton() = default;  // Destructor is defined but not called explicitly
+  };
+*/
+
 namespace PDF {
   class LHAPDF_CPP_Interface : public PDF_Base {
   private:
@@ -225,9 +260,50 @@ void LHAPDF_CPP_Interface::CalculateSpec(const double& x,const double& Q2) {
   m_Q2=Q2;
 }
 
+//--------------------------------------------------------------------------------------------------------------------
+
+TMD test;
+
+double testTMDlib() {
+  std::cout << "Ola entered testTMDlib()" << std::endl;
+std::string  name ="PB-NLO-HERAI+II-2018-set2";
+
+
+
+  double x, xbar, kt, mu;
+  double mz = 91.18;
+  double uval, dval, sea, charm, bottom, gluon;
+
+  x = 0.01 ;
+  xbar = 0 ;
+  kt = 10. ;
+  mu = 100 ;
+
+//  TMD test ;
+
+  int irep=0;
+  std::cout<<"Ola irep=" <<irep<<std::endl;
+  std::cout<<"Ola name=" <<name<<std::endl;
+
+  test.TMDinit(name, irep);
+
+std::cout << "xmin         = " << test.TMDgetXmin() << std::endl;
+double xmin = test.TMDgetXmin();
+
+  std::cout << "Ola reached the end of testTMDlib(). Now I will go back to GetXPDF..." << std::endl;
+
+return xmin;
+}
+
+//----------------------------------------------------------------------------------------------------------------
+
 double LHAPDF_CPP_Interface::GetXPDF(const ATOOLS::Flavour& infl) {
+  std::cout<<"ola STILL in GetXPDF: TMDlib test will start now"<<std::endl;
+  double ola =testTMDlib();
+  std::cout<<"ola BACK in GetXPDF: the end of tmdlib test. xmin="<<ola<<std::endl;
   return GetXPDF(infl.Kfcode(), infl.IsAnti());
 }
+
 
 double LHAPDF_CPP_Interface::GetXPDF(const kf_code& kf, bool anti) {
   if (IsBad(m_x) || IsBad(m_Q2) || m_Q2<0.0) {
