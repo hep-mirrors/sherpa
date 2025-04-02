@@ -85,13 +85,7 @@ void Phase_Space_Point::InitFixedIncomings() {
     if (p_beamhandler->On() || p_isrhandler->On() != 0)
       return;
     for (int i = 0; i < 2; ++i) {
-      if(p_beamhandler->BeamMode()==BEAM::beammode::Fixed_Target){
-        // Need out momentum for Fixed target
-        m_ISmoms[i] = p_beamhandler->GetBeam(i)->OutMomentum();
-      }
-      else{
-        m_ISmoms[i] = p_beamhandler->GetBeam(i)->InMomentum();
-      }
+      m_ISmoms[i] = p_beamhandler->GetBeam(i)->InMomentum();
     }
     m_sprime = m_fixedsprime = (m_ISmoms[0] + m_ISmoms[1]).Abs2();
     m_Eprime = sqrt(m_sprime);

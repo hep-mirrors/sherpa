@@ -13,8 +13,7 @@ namespace BEAM {
     unknown              = 0,
     relic_density        = 1,
     collider             = 2,
-    DM_annihilation      = 10,
-    Fixed_Target         = 12
+    DM_annihilation      = 10
   };
   std::ostream& operator<<(std::ostream&,const beammode mode);
 
@@ -27,7 +26,6 @@ namespace BEAM {
     Pomeron              = 5,
     Reggeon              = 6,
     DM                   = 10,
-    Fixed_Target         = 12,
     unknown              = 99
   };
   std::ostream& operator<<(std::ostream&,const beamspectrum spect);
@@ -79,7 +77,6 @@ namespace BEAM {
     Beam_Base * InitializePomeron(int);
     Beam_Base*  InitializeReggeon(int);
     Beam_Base * InitializeDM_beam(int);
-    Beam_Base * InitializeFixed_Target(int);
   public:
     Beam_Parameters();
     ~Beam_Parameters();
