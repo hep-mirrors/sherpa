@@ -465,8 +465,8 @@ double NLO_Base::CalculateRealVirtual(Vec4D k, int fsrcount) {
 	// double aB = subloc*(p_virt->Calc(pp, m_born) - m_born*p_nlodipoles->CalculateVirtualSub());
 	// yfspole*=(p_virt->p_loop_me->ME_E1()*p_virt->m_factor-m_born*p_nlodipoles->Get_E1());
 	// double tot = (r-aB) / subloc;
-	if(m_submode==submode::local) tot =  (r*flux-aB)/subloc;
-	else if(m_submode==submode::global) tot =  (r*flux-aB)/subb;
+	if(m_submode==submode::local) tot =  (r*flux-aB/m_rescale_alpha)/subloc;
+	else if(m_submode==submode::global) tot =  (r*flux-aB/m_rescale_alpha)/subb;
 	else if(m_submode==submode::off) tot =  (r*flux)/subb;
 	if(m_check_poles==1 && r!=0){
 		double pr1 = p_realvirt->p_loop_me->ME_E1()*p_realvirt->m_factor*flux/norm;
@@ -530,8 +530,8 @@ double NLO_Base::CalculateRealReal() {
 
 
 double NLO_Base::CalculateRealReal(Vec4D k1, Vec4D k2, int fsr1, int fsr2){
-	double norm = 4.*pow(2 * M_PI, 6);
-	Vec4D_Vector p(m_plab),pi(m_bornMomenta), pf(m_bornMomenta);
+	double norm = 2.*pow(2 * M_PI, 6);
+	Vec4D_Vector p(m_plab),pi(m_bornMomenta), pf(m_bornMomenta), plab(m_plab);
  	Vec4D_Vector pp = p;
 	Vec4D kk1 = k1;
 	Vec4D kk2 = k2;
@@ -619,9 +619,10 @@ double NLO_Base::CalculateRealReal(Vec4D k1, Vec4D k2, int fsr1, int fsr2){
  	// pp.pop_back();
  	// pp.pop_back();
   // m_plab = pp;
-	p_nlodipoles->MakeDipolesII(m_flavs,_p,pp);
-	p_nlodipoles->MakeDipolesIF(m_flavs,_p,pp);
-	p_nlodipoles->MakeDipoles(m_flavs,_p,pp);
+	m_plab = pp;
+	p_nlodipoles->MakeDipolesII(m_flavs,_p,m_plab);
+	p_nlodipoles->MakeDipolesIF(m_flavs,_p,m_plab);
+	p_nlodipoles->MakeDipoles(m_flavs,_p,m_plab);
 	double subloc1 = p_nlodipoles->CalculateRealSub(k1);
 	double subloc2 = p_nlodipoles->CalculateRealSub(k2);
 	double flux;
@@ -641,15 +642,16 @@ double NLO_Base::CalculateRealReal(Vec4D k1, Vec4D k2, int fsr1, int fsr2){
 		return 0;
 	}
 	m_recola_evts+=1;
-	double real1 = CalculateReal(k1,3+fsr1);
-	double real2 = CalculateReal(k2,3+fsr2);
+	double real1 = CalculateReal(kk1,3+fsr1);
+	double real2 = CalculateReal(kk2,3+fsr2);
 	double sub1 = (fsr1!=1?p_dipoles->CalculateRealSubEEX(kk1):p_dipoles->CalculateRealSubEEX(k1));
 	double sub2 = (fsr2!=1?p_dipoles->CalculateRealSubEEX(kk2):p_dipoles->CalculateRealSubEEX(k2));
-	double fullsub = (-subloc2*real1 -subloc1*real2-subloc1*subloc2*m_born/m_rescale_alpha);
+	double fullsub = (-subloc2*real1 -subloc1*real2-subloc1*subloc2*m_born)/m_rescale_alpha;
 	tot = (r*flux + fullsub)/sub1/sub2;
   if(IsBad(tot)){
   	msg_Error()<<"NNLO RR is NaN"<<std::endl;
   }
+  m_plab = plab;
 	return tot;
 }
 
