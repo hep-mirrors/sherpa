@@ -96,7 +96,7 @@ double RealReal::Calc_R(const ATOOLS::Vec4D_Vector& p){
   if(p_real_me) {
       if(!m_check) return Calc_External(p);
       external_real = Calc_External(p);
-    }
+  }
   p_ampl=CreateAmplitude(p);
   int rmode = 130;
   Weights_Map iR = p_rrproc->Differential(*p_ampl, Variations_Mode::nominal_only,rmode);
