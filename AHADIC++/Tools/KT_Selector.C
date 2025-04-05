@@ -76,7 +76,7 @@ double KT_Selector::operator()(const double & ktmax) {
   //   variation_weights[i] *= p / p0;
   //   tmp_variation_weights[i] = p / p0;
   // }
-  std::cout << "DEBUG: KT: " << kttest << " " << tmp_variation_weights << std::endl;
+  //std::cout << "DEBUG: KT: " << kttest << " " << tmp_variation_weights << std::endl;
   // TODO needs fixing
   // accepted();
   return kttest;

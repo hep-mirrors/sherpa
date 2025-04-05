@@ -273,8 +273,8 @@ Cluster * Gluon_Splitter::MakeCluster() {
     m_histograms[std::string("Yasym_frag_2")]->Insert(dabs(y),(y>0.?1.:-1.));
   }
   cluster->m_nsplit = 0;
-  std::cout << "DEBUG: CLUSTER_MASS: " << cluster->m_nsplit << " "
-	    << cluster->Momentum().Abs2() << std::endl;
+  //std::cout << "DEBUG: CLUSTER_MASS: " << cluster->m_nsplit << " "
+  //<< cluster->Momentum().Abs2() << std::endl;
   cluster->m_nsplit = 1;
 
   // cluster->m_nsplit = 0;

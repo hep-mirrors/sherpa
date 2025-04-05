@@ -154,7 +154,7 @@ int Gluon_Decayer::Step(Proto_Particle * part1,Proto_Particle * part2,
     double mass = 0;
     bool isB = false, isC = false;
     m_splitter.GetLast(mass,isB,isC);
-    std::cout << "DEBUG: GLUONMASS: " << mass << std::endl;
+    //std::cout << "DEBUG: GLUONMASS: " << mass << std::endl;
     if (m_analyse) {
       m_Nclusters++;
       double mass = 0;
@@ -225,8 +225,8 @@ bool Gluon_Decayer::Trivial(Proto_Particle * part1,Proto_Particle * part2,
     m_histos[string("Y_asym_1")]->Insert(dabs(y),(y>0.?1.:-1.));
   }
   cluster->m_nsplit = 0;
-  std::cout << "DEBUG: CLUSTER_MASS: " << cluster->m_nsplit << " "
-	    << cluster->Momentum().Abs2() << std::endl;
+  //std::cout << "DEBUG: CLUSTER_MASS: " << cluster->m_nsplit << " "
+  //<< cluster->Momentum().Abs2() << std::endl;
   cluster->m_nsplit = 1;
 
   p_singlet->pop_front();

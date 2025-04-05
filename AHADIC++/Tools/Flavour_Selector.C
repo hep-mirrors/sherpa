@@ -44,30 +44,30 @@ operator()(const double & Emax,const bool & vetodi) {
     THROW(fatal_error, "No flavour selected.");
   if(norms[0] == 0) return ret;
   const double p0 {opt->second->popweights[0] / norms[0]};
-  std::cout << "DEBUG: FLAVS: " << ret << " "<< int(ret) <<" (";
-  for(int i; i<opt->second->popweights.size(); ++i) {
-    tmp_variation_weights[i] *= (opt->second->popweights[i] / norms[i]) / p0;
-    std::cout << (opt->second->popweights[i] / norms[i]) / p0;
-    if(i < opt->second->popweights.size() -1)
-      std::cout << ",";
-  }
-  std::cout << ")" << std::endl;
+  //std::cout << "DEBUG: FLAVS: " << ret << " "<< int(ret) <<" (";
+  //for(int i; i<opt->second->popweights.size(); ++i) {
+  //tmp_variation_weights[i] *= (opt->second->popweights[i] / norms[i]) / p0;
+  //    std::cout << (opt->second->popweights[i] / norms[i]) / p0;
+  //    if(i < opt->second->popweights.size() -1)
+  //std::cout << ",";
+  //}
+  //std::cout << ")" << std::endl;
 
-  if(int(ret) == -3303) {
-    std::cout << "DEBUG_ss" << std::endl;
-    for (FDIter fdit=m_options.begin();fdit!=m_options.end();fdit++) {
-      std::cout << fdit->first << std::endl;
-    }
-    std::cout << norms << std::endl;
-    std::cout << ret << std::endl;
-    std::cout << opt->first << std::endl;
-    for(int i; i<opt->second->popweights.size(); ++i) {
+  //if(int(ret) == -3303) {
+  //    std::cout << "DEBUG_ss" << std::endl;
+  //    for (FDIter fdit=m_options.begin();fdit!=m_options.end();fdit++) {
+  //      std::cout << fdit->first << std::endl;
+  //    }
+  //std::cout << norms << std::endl;
+  //std::cout << ret << std::endl;
+  //std::cout << opt->first << std::endl;
+  //for(int i; i<opt->second->popweights.size(); ++i) {
 
-      std::cout << "wgt = " << opt->second->popweights[i] / norms[i] << std::endl;
-      std::cout << "p0  = " << p0 << std::endl;
-      std::cout << "frac = " << tmp_variation_weights[i] << std::endl;
-    }
-  }
+  //  std::cout << "wgt = " << opt->second->popweights[i] / norms[i] << std::endl;
+  //  std::cout << "p0  = " << p0 << std::endl;
+  //  std::cout << "frac = " << tmp_variation_weights[i] << std::endl;
+  //    }
+  //  }
 
   return ret;
 }

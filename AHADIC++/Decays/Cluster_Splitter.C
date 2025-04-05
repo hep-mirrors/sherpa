@@ -244,15 +244,15 @@ bool Cluster_Splitter::MakeLongitudinalMomentaZSimple() {
   m_z[i1]  = select_z(std::max(m_zmin[i1],lower),
 			 std::min(m_zmax[i1],upper),
 			 i1);
-  std::cout << "DEBUG: ARGS: "
-	    << 0 << " "
-	    << m_type[i1] << " "
-	    << m_z[i1] << " "
-	    << m_nsplit << " "
-	    << m_zmin[i1] << " "
-	    << m_zmax[i1] << " "
-	    << lower << " " << upper << " "
-	    << std::endl;
+  //std::cout << "DEBUG: ARGS: "
+  //<< 0 << " "
+  //	    << m_type[i1] << " "
+  //	    << m_z[i1] << " "
+  //	    << m_nsplit << " "
+  //	    << m_zmin[i1] << " "
+  //	    << m_zmax[i1] << " "
+  //	    << lower << " " << upper << " "
+  //	    << std::endl;
 #endif
 #if AHADIC_CLUSTER_SPLITTER_MODE == 2
   m_z[i1]  = select_z(0.,1.,i1);
@@ -270,14 +270,14 @@ bool Cluster_Splitter::MakeLongitudinalMomentaZSimple() {
   m_z[i2]  = select_z(std::max(m_zmin[i2],lower),
 			std::min(m_zmax[i2],upper),
 			i2);
-  std::cout << "DEBUG: ARGS: "
-	    << 1 << " "
-	    << m_type[i2] << " "
-    	    << m_z[i2] << " "
-    	    << m_nsplit << " "
-	    << m_zmin[i2] << " " << m_zmax[i2] << " "
-	    << lower << " " << upper << " "
-	    << std::endl;
+  //std::cout << "DEBUG: ARGS: "
+  //<< 1 << " "
+  //	    << m_type[i2] << " "
+  //	    << m_z[i2] << " "
+  //	    << m_nsplit << " "
+  //	    << m_zmin[i2] << " " << m_zmax[i2] << " "
+  //	    << lower << " " << upper << " "
+  //	    << std::endl;
 #endif
 #if AHADIC_CLUSTER_SPLITTER_MODE == 2
   m_z[i2]  = select_z(0.,1.,i2);
@@ -313,9 +313,11 @@ double Cluster_Splitter::FragmentationFunctionProb(double z, double zmin, double
   auto f = [](double _z, double arg, double zmax) -> double {
     return (1-_z) * exp(-arg/_z);
   };
+  std::cout << "This is not working at the moment!" << std::endl;
   auto F = [](double _z, double arg) -> double {
     // 1/2 (-e^(-g/x) x (-2 - g + x) + g (2 + g) Ei(-g/x))
-    return 0.5*(-exp(-arg/_z)*_z*(-2-arg+_z) + arg*(2+arg)*std::expint(-arg/_z));
+    //return 0.5*(-exp(-arg/_z)*_z*(-2-arg+_z) + arg*(2+arg)*std::expint(-arg/_z));
+    return 0.;
   };
   double arg    = gamma*(m_kt2+m_masses*m_masses)/kt02;
 
@@ -435,12 +437,12 @@ void Cluster_Splitter::z_accepted(const double wgt, const double & z,
 #endif
     // TODO: find out why this becomes non from time to time
     const auto frac = wgt_new / wgt_old;
-    std::cout << "DEBUG: WSLS: " << type << " "
-	      << m_nsplit << " "
-	      << i << " "
-	      << wgt_new << " "
-	      << wgt_old << " "
-	      << frac << std::endl;
+    //std::cout << "DEBUG: WSLS: " << type << " "
+    //<< m_nsplit << " "
+    //	      << i << " "
+    //	      << wgt_new << " "
+    //	      << wgt_old << " "
+    //	      << frac << std::endl;
 
     if(!std::isnan(frac))
       tmp_variation_weights[i] *= frac;
