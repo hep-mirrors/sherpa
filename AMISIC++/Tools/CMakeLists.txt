@@ -24,6 +24,5 @@ sherpa_create_git_info(AmisicTools ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_B
  
 add_library(AmisicTools SHARED ${AmisicTools_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
 
-hat my changes in the showering do not impact on something else)
 sherpa_handle_shared_library(AmisicTools AmisicTools)
 add_dependencies(AmisicTools AmisicTools_Git_Info)
