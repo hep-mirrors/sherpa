@@ -737,11 +737,11 @@ double YFS_Form_Factor::BVirtT(Vec4D p1, Vec4D p2,  double kmax){
   TBvirt = m_alpi*(
     (log(p1p2 * (1. + rho) / (m1*m2)) / rho - 1) *log(pow(m_photonMass, 2)/(kmax)) 
        // (log(2*p1p2/(m1*m2))-1.0)*log(m_photonMass*m_photonMass/(m1*m2))
-       +0.5*zeta*log(ta*zeta/(m1*m2))
-        -0.5*log(ta/m1/m1)*log(ta/m2/m2)
-      -log(zeta)*(log(ta/(m1*m2)) +0.5*log(zeta))
-      +0.5*(zeta -1.0)*log(m1/m2)
-      +DiLog(1./zeta) -1.0
+      //  +0.5*zeta*log(ta*zeta/(m1*m2))
+      //   -0.5*log(ta/m1/m1)*log(ta/m2/m2)
+      // -log(zeta)*(log(ta/(m1*m2)) +0.5*log(zeta))
+      // +0.5*(zeta -1.0)*log(m1/m2)
+      // +DiLog(1./zeta) -1.0
        );
   // #ifdef USING__LOOPTOOLS
   //   Complex form;
@@ -805,11 +805,11 @@ double YFS_Form_Factor::BVirtT(YFS::Dipole &d, double kmax){
   TBvirt = m_alpi*(
     (log(p1p2 * (1. + rho) / (m1*m2)) / rho - 1) *log(pow(m_photonMass, 2)/(kmax)) 
        // (log(2*p1p2/(m1*m2))-1.0)*log(m_photonMass*m_photonMass/(m1*m2))
-    +0.5*zeta*log(ta*zeta/(m1*m2))
-        -0.5*log(ta/m1/m1)*log(ta/m2/m2)
-      -log(zeta)*(log(ta/(m1*m2)) +0.5*log(zeta))
-      +0.5*(zeta -1.0)*log(m1/m2)
-      +DiLog(1./zeta) -1.0
+    // +0.5*zeta*log(ta*zeta/(m1*m2))
+    //     -0.5*log(ta/m1/m1)*log(ta/m2/m2)
+    //   -log(zeta)*(log(ta/(m1*m2)) +0.5*log(zeta))
+    //   +0.5*(zeta -1.0)*log(m1/m2)
+    //   +DiLog(1./zeta) -1.0
        );
   #ifdef USING__LOOPTOOLS
     Complex form;
@@ -877,11 +877,11 @@ DivArrD YFS_Form_Factor::BVirtTEps(YFS::Dipole &d, double kmax){
     (log(p1p2 * (1. + rho) / (m1*m2)) / rho - 1) * -1.*(-massph-log(4.*M_PI*sqr(irloop)/kmax/epsloop)) 
        // (log(2*p1p2/(m1*m2))-1.0)*-1.*(-massph-log(4.*M_PI*sqr(irloop)/kmax/epsloop)) 
        // (log(ta/(m1*m2))+log(zeta)-1.0)*-1.*(-massph-log(4.*M_PI*sqr(irloop)/kmax/epsloop)) 
-      +0.5*zeta*log(ta*zeta/(m1*m2))
-        -0.5*log(ta/m1/m1)*log(ta/m2/m2)
-      -log(zeta)*(log(ta/(m1*m2)) +0.5*log(zeta))
-      +0.5*(zeta -1.0)*log(m1/m2)
-      +DiLog(1./zeta) -1.0
+      // +0.5*zeta*log(ta*zeta/(m1*m2))
+      //   -0.5*log(ta/m1/m1)*log(ta/m2/m2)
+      // -log(zeta)*(log(ta/(m1*m2)) +0.5*log(zeta))
+      // +0.5*(zeta -1.0)*log(m1/m2)
+      // +DiLog(1./zeta) -1.0
        );
   #ifdef USING__LOOPTOOLS
     Complex form;
