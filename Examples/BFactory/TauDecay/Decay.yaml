@@ -115,7 +115,7 @@ HADRON_DECAYS:
       # Two-body form factors ~ V_{ud}
       ###############################################################
       -211,111,16:
-        BR: [0.,0.]  #  [0.255, 0.255]
+        BR: [1,0.]  #  [0.255, 0.255]
         ME:
           - Current_ME:
               J1:
@@ -124,7 +124,7 @@ HADRON_DECAYS:
                 v: 1.
                 a: -1.
               J2:
-                Type: VA_0_PP
+                Type: VA_0_PiPi
                 Indices: [2, 1]
                 RUNNING_WIDTH: 2
                 FORM_FACTOR:   2
