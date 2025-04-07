@@ -22,23 +22,25 @@ namespace HADRONS {
     };
     
     enum class ffmodel {
-      none = 0,
-      KS   = 1,
-      RChT = 2
+      none  = 0,
+      KS    = 1,
+      RChT  = 2
     };
         
     resonance_type m_restype;
     PSmode         m_PSmode;
     ffmodel        m_ffmodel;
-    double  m_global, m_deltaM2;
-    double  m_fpi, m_fa0, m_GV, m_GS;
-    double  m_g_a0_eta_pi, m_g_a0_etaprime_pi, m_eps_etapi, m_eps_etaprimepi;
-    double  m_m2_pi, m_m2_K, m_m2_eta, m_mu2;
-    double  m_RChTnorm;
+    double         m_norm, m_deltaM2;
+    double         m_fpi, m_fa0, m_GV, m_GS, m_RChTpref;
+    double         m_g_a0_eta_pi, m_g_a0_etaprime_pi, m_eps_etapi, m_eps_etaprimepi;
+    double         m_m2_pi, m_m2_K, m_m2_eta, m_mu2;
 
     std::list<std::pair<double, Resonance_Base * > > m_vectors, m_scalars;
+
+    void FixMode();
+    void FixNorm(struct GeneralModel & model);
     bool SelectResonances(std::list<kf_code> & tags,const bool & isScalar=false);
-    void InitResonance(struct GeneralModel model,const kf_code & tag,
+    void InitResonance(struct GeneralModel & model,const kf_code & tag,
 		       const bool & isScalar=false);
     bool FillDefaults(const kf_code & tag, std::vector<double> & defs);
     bool KSDefaults(const kf_code & tag, std::vector<double> & defs);

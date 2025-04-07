@@ -14,8 +14,10 @@ using namespace std;
 
 Resonance_Base::Resonance_Base(const Resonance_Parameters & params) :
   m_inflav(params.m_inflav), m_type(params.m_type),
-  m_OSmass(params.m_OSmass<0.   ? m_inflav.Mass(true) : params.m_OSmass), m_OSmass2(m_OSmass*m_OSmass),
-  m_OSwidth(params.m_OSwidth<0. ? m_inflav.Width() : params.m_OSwidth),   m_OSwidth2(m_OSwidth*m_OSwidth),
+  m_OSmass(params.m_OSmass<0.   ? m_inflav.Mass(true) : params.m_OSmass),
+  m_OSmass2(m_OSmass*m_OSmass),
+  m_OSwidth(params.m_OSwidth<0. ? m_inflav.Width() : params.m_OSwidth),
+  m_OSwidth2(m_OSwidth*m_OSwidth),
   m_phase(params.m_phase), m_threshold(0.), m_threshold2(0.), m_lambda(0.),
   m_exponent(m_inflav.IsVector() ? 3 : (m_inflav.IsScalar() ? 1 : 0)) 
 {
@@ -46,8 +48,8 @@ double RunningWidth_Resonance::CalculateWidth(const double & s) {
     if (dabs(1.-s/m_OSmass2)<1.e-12) return m_OSwidth;
     if (m_decmasses2.size()==2) {
       return ( m_OSwidth *
-	       pow(Lambda(s,m_decmasses2[0],m_decmasses2[1])/(2.*sqrt(s)) /
-		   (m_lambda / (2.*m_OSmass)), m_exponent)
+	       pow(Lambda(s,m_decmasses2[0],m_decmasses2[1])/m_lambda, m_exponent) *
+	       sqrt(s)/m_OSmass
 	       );
     }
   }
