@@ -1,4 +1,4 @@
-set(ExtraXSNLO_SOURCES Logarithms.C
+sset(ExtraXSNLO_SOURCES Logarithms.C
                 Dummy_QCD_Virtual.C
                 DY_QCD_Virtual.C
                 DY_QCD_Virtual.C
@@ -7,6 +7,7 @@ set(ExtraXSNLO_SOURCES Logarithms.C
                 Higgs_Jet_QCD_Virtual.C
                 PionPionGamma.C
                 ee3jet_CSS_approx.C
+                ee2nunuA.C
                 ppll1jet_CSS_approx.C
                 epe2jet_CSS_approx.C)
 
@@ -17,6 +18,7 @@ if (SHERPA_ENABLE_LOOPTOOLS)
 endif()
 
 sherpa_create_git_info(ExtraXSNLO ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR})
+
 if (SHERPA_ENABLE_LOOPTOOLS) 
     list(APPEND NLO_SOURCES PionPionVirtual.C)
 endif()
@@ -30,9 +32,7 @@ endif()
 sherpa_handle_shared_library(ExtraXSNLO ExtraXSNLO)
 add_dependencies(ExtraXSNLO ExtraXSNLO_Git_Info)
 sherpa_create_git_info(NLO)
- 
 if (SHERPA_ENABLE_LOOPTOOLS) 
     target_include_directories(ExtraXSNLO  PRIVATE ${LOOPTOOLS_DIRS}/include)
     target_link_libraries(ExtraXSNLO  PRIVATE ${LOOPTOOLS_DIRS}/lib/libooptools.a)
 endif()
-sherpa_handle_shared_library(ExtraXSNLO ExtraXSNLO)
