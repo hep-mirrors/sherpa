@@ -15,7 +15,10 @@ if (SHERPA_ENABLE_LOOPTOOLS)
 endif()
 
 sherpa_create_git_info(ExtraXSNLO ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR})
- 
+if (SHERPA_ENABLE_LOOPTOOLS) 
+    list(APPEND NLO_SOURCES PionPionVirtual.C)
+endif()
+
 add_library(ExtraXSNLO SHARED ${ExtraXSNLO_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
 if (SHERPA_ENABLE_LOOPTOOLS) 
     list(APPEND NLO_SOURCES emu_emu_Virtual.C)
