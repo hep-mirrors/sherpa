@@ -488,6 +488,7 @@ if (SHERPA_ENABLE_ALPHAQEDHAD)
   
 endif()
 
+
 add_subdirectory(AHADIC++)
 add_subdirectory(AMEGIC++)
 add_subdirectory(AMISIC++)
