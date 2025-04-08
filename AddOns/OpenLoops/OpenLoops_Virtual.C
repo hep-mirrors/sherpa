@@ -27,6 +27,8 @@ OpenLoops_Virtual::OpenLoops_Virtual(const Process_Info& pi,
                  <<" ("<<m_ol_id<<")"<<std::endl;
   m_modebackup=m_mode=OpenLoops_Interface::s_vmode;
   m_asscontribs.resize(m_ol_asscontribs);
+  Settings& s = Settings::GetMainSettings();
+  // m_IRscale=s["OL_IR_SCALE"].Get<double>();
 }
 
 void OpenLoops_Virtual::SwitchMode(const int mode)
@@ -37,7 +39,7 @@ void OpenLoops_Virtual::SwitchMode(const int mode)
 void OpenLoops_Virtual::Calc(const Vec4D_Vector& momenta)
 {
   m_mode=m_modebackup;
-  m_IRscale=sqrt(m_mur2);
+  m_IRscale = sqrt(m_mur2);
   OpenLoops_Interface::SetParameter("alpha", AlphaQED());
   OpenLoops_Interface::SetParameter("alphas", AlphaQCD());
   OpenLoops_Interface::SetParameter("mu", sqrt(m_mur2));
