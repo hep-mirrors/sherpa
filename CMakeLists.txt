@@ -964,12 +964,14 @@ $<IF:$<BOOL:${SHERPA_ENABLE_OPENLOOPS}>,#define OPENLOOPS_PREFIX \"${OPENLOOPS_P
 $<IF:$<BOOL:${SHERPA_ENABLE_GOSAM}>,#define GOSAM_PREFIX \"${GOSAM_PREFIX}\",/* #undef GOSAM_PREFIX */>\n\n\
 /* MadLoop installation prefix */\n\
 $<IF:$<BOOL:${SHERPA_ENABLE_MADLOOP}>,#define MADLOOP_PREFIX \"${MADLOOP_PREFIX}\",/* #undef MADLOOP_PREFIX */>\n\n\
-/* Recola installation prefix */\n\
 /* Griffin installation prefix */\n\
 $<IF:$<BOOL:${SHERPA_ENABLE_GRIFFIN}>,#define GRIFFIN_PREFIX \"${GRIFFIN_PREFIX}\",/* #undef GRIFFIN_PREFIX */>\n\n\
+/* Recola installation prefix */\n\
 $<IF:$<BOOL:${SHERPA_ENABLE_RECOLA}>,#define RECOLA_PREFIX \"${RECOL_PREFIX}\",/* #undef RECOLA_PREFIX */>\n\n\
 /* using RECOLA2 */\n\
 $<IF:$<BOOL:$<VERSION_GREATER_EQUAL:${RECOLA_VERSION},2.0.0>>,#define USING__RECOLA2 \"1\",/* #undef USING__RECOLA2 */>\n\n\
+/* using LOOPTOOLS */\n\
+$<IF:$<BOOL:${SHERPA_ENABLE_LOOPTOOLS}>,#define USING__LOOPTOOLS \"1\",/* #undef SHERPA_ENABLE_LOOPTOOLS */>\n\n\
 /* using MCFM */\n\
 $<IF:$<BOOL:${SHERPA_ENABLE_MCFM}>,#define USING__MCFM \"1\",/* #undef USING__MCFM */>\n\n\
 /* MCFM directory */\n\
