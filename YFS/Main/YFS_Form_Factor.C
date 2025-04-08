@@ -1,7 +1,7 @@
 #include "YFS/Main/YFS_Form_Factor.H"
 #include "ATOOLS/Math/MathTools.H"
 #include "ATOOLS/Org/Scoped_Settings.H"
-
+#include "ATOOLS/Org/CXXFLAGS_PACKAGES.H"
 #include "ATOOLS/Math/Poincare.H"
 #include "MODEL/Main/Running_AlphaQED.H"
 #include "ATOOLS/Org/Message.H"
@@ -26,6 +26,10 @@ double Lambda(double x, double y, double z)
 
 YFS_Form_Factor::YFS_Form_Factor() {
     rpa->gen.AddCitation(1,"YFS Form Factor as implemented in \\cite{Jadach:1999vf}");
+    #ifdef USING__LOOPTOOLS
+      FORTRAN(ltini)();
+      Setlambda(m_photonMass*m_photonMass);
+    #endif
 }
 
 YFS_Form_Factor::~YFS_Form_Factor() {
@@ -423,7 +427,6 @@ double YFS_Form_Factor::BVV_full(const ATOOLS::Vec4D p1, const ATOOLS::Vec4D p2,
   }
   return virt;
 }
-
 
 
 DivArrD YFS_Form_Factor::BVV_full_eps(YFS::Dipole &d, double Kmax, int mode){
