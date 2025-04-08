@@ -54,6 +54,7 @@ option(SHERPA_ENABLE_LHAPDF                  "Enables LHAPDF." ON)
 option(SHERPA_ENABLE_INSTALL_LHAPDF          "Enables internal LHAPDF." OFF)
 option(SHERPA_ENABLE_MADLOOP                 "Enables building with MadLoop." OFF)
 option(SHERPA_ENABLE_MANUAL                  "Enables building of manual." OFF)
+option(SHERPA_ENABLE_LOOPTOOLS               "Enables LOOPTOOLS." OFF)
 option(SHERPA_ENABLE_MCFM                    "Enables building with MCFM." OFF)
 option(SHERPA_ENABLE_MPI                     "Enables building with MPI." OFF)
 option(SHERPA_ENABLE_OPENLOOPS               "Enables building with OpenLoops." OFF)
@@ -69,7 +70,6 @@ option(SHERPA_ENABLE_UFO                     "Enables installation of UFO interf
 option(SHERPA_ENABLE_VERSIONING              "Enables versioned installation." OFF)
 option(SHERPA_ENABLE_COVERAGE                "Enable code coverage reporting" OFF)
 option(SHERPA_ENABLE_ALPHAQEDHAD             "Enables hadronic contribution to alphaqed." OFF)
-option(SHERPA_ENABLE_LOOPTOOLS               "Enables LOOPTOOLS." OFF)
 
 
 ########################################################################
@@ -490,6 +490,12 @@ endif()
 
 if (SHERPA_ENABLE_LOOPTOOLS)
   # find_package(LOOPTOOLS REQUIRED)
+  find_library(OOPTOOLS_LIBRARY ooptools HINTS ${LOOPTOOLS_LIBS_DIRS})
+  if (OOPTOOLS_LIBRARY)
+    message(STATUS "Found LoopTools library: ${OOPTOOLS_LIBRARY}")
+else()
+    message(FATAL_ERROR "LoopTools library not found in ${LOOPTOOLS_LIBS_DIRS}")
+endif()
   message(STATUS "LOOPTOOLS_INCLUDE_DIRS=${LOOPTOOLS_INCLUDE_DIRS}" " LOOPTOOLS_LIB_DIRS=${LOOPTOOLS_LIBS_DIRS}")
 endif()
 

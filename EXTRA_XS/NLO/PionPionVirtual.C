@@ -49,8 +49,8 @@ PionPionVirtual::PionPionVirtual(const Process_Info& pi, const Flavour_Vector& f
       Virtual_ME2_Base(pi, flavs),
       m_eps2(ep2), m_eps(ep), ME2(flavs[0].Mass()*flavs[0].Mass()),
       MP2(flavs[3].Mass()*flavs[3].Mass()){
-     FORTRAN(ltini)();
-     Setlambda(0.);
+      ltini();
+      Setlambda(0.);
       MM2 = (Flavour(kf_mu).Mass()*Flavour(kf_mu).Mass());
       ML2 = (Flavour(kf_tau).Mass()*Flavour(kf_tau).Mass());
       m_mode=1;

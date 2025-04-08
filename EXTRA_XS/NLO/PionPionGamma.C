@@ -24,9 +24,13 @@ namespace EXTRAXS {
     double IFI();
     double Full();
     inline double Pair(const Vec4D &p1,const Vec4D &p2) {return p1*p2;}
+    inline double Den(const double& a, const double &b) {return (a==b?1:1./(a-b));}
+    inline Vec4D k(const int &i) {return m_pmom[i-1];}
     double m_me, m_mpi, m_pij[5][5], m_s45;
     double m_betapi, m_s, m_sp;
     double ME2, MP2, m_alpha;
+    double S34,T24,T14,S12;
+    double S,U,T;
     Vec4D_Vector m_pmom;
   };
 }
@@ -58,268 +62,160 @@ double PionPionGamma::operator()
 (const ATOOLS::Vec4D_Vector& p)
 {
   m_pmom = p;
-  m_sp = (p[0]+p[1]).Abs2();
+  m_sp = (p[2]+p[3]).Abs2();
   m_s45 = (p[3]+p[4]).Abs2();
   m_betapi = sqrt(1-m_mpi*m_mpi/m_sp);
-  // for (int i = 0; i < p.size(); ++i)
-  // {
-  //   for (int j = i; j < p.size(); ++j)
-  //   {
-  //     m_pij[i][j]= p[i]*p[j];
-  //     // if(IsZero(m_pij[i][j])){
-  //     //   msg_Error()<<"Divide by Zero in "<<METHOD<<std::endl
-  //     //              <<"p_"<<i<<j<<" = "<< m_pij[i][j] <<std::endl;
-  //     // } 
-  //   }
-  // }
+  S = m_sp;
+  S34 = (p[2]+p[3]).Abs2();
+  T14 = (p[0]-p[3]).Abs2();
+  T24 = (p[1]-p[3]).Abs2();
+  T=(p[0]-p[2]).Abs2();;
+  U=(p[0]-p[3]).Abs2();
+  for (int i = 0; i < p.size(); ++i)
+  {
+    for (int j = i; j < p.size(); ++j)
+    {
+      m_pij[i][j]= p[i]*p[j];
+      // if(IsZero(m_pij[i][j])){
+      //   msg_Error()<<"Divide by Zero in "<<METHOD<<std::endl
+      //              <<"p_"<<i<<j<<" = "<< m_pij[i][j] <<std::endl;
+      // } 
+    }
+  }
   m_alpha = (*aqed)(m_sp);
   // PRINT_VAR(Full());
   double res;// = Initial()+Final()+IFI();
+  double Q2 = S;
+  double s15 = (p[0]+p[4]).Abs2(); 
+  double s25 = (p[1]+p[4]).Abs2(); 
+  double s35 = (p[2]+p[4]).Abs2();
+
+
+  double ee2uug_ee = s15*s25*(-2*MP2*MP2*Q2 - MP2*(s15*s15 + s25*s25 + Q2*(-s15 + s25 + 2*s35 - 4*T))
+      - Q2*((s15 - s35)*(Q2 + s15 + s25 - s35) + (2*Q2 + 3*s15 + s25 - 2*s35)*T + 2*T*T));
+  ee2uug_ee = ee2uug_ee + ME2*(2*Q2*Q2*s15*s25 + 2*MP2*MP2*pow(s15 + s25,2)
+    + 2*pow(s15*s15 + s25*T + s15*(s25 - s35 + T),2)
+    - 4*MP2*(s15*s15*s15 + s25*s25*T + s15*s15*(2*s25 - s35 +T) + s15*s25*(Q2 + s25 - s35 + 2*T)) 
+    + Q2*(2*s15*s15*s15 + 2*s25*s25*T + s15*s15*(7*s25 - 2*s35 + 2*T)
+      + s15*s25*(3*s25 - 4*s35 + 8*T)));
+  ee2uug_ee = ee2uug_ee + 2*ME2*ME2*ME2*pow(s15 + s25,2.);
+  ee2uug_ee = ee2uug_ee + 2*ME2*ME2*(2*MP2*pow(s15 + s25,2) - Q2*(s15*s15 + 3*s15*s25 + s25*s25)
+    - 2*(s15 + s25)*(s15*s15 + s25*T + s15*(s25 - s35 + T)));
+
+  ee2uug_ee = 256 * m_alpha * pow(M_PI*m_alpha,3) / Q2*Q2 / s15 / s15 / s25 / s25* ee2uug_ee;
+
   res = Full();
+  if(IsBad(res)){
+     for (int i = 1; i < p.size(); ++i)
+    {
+        for (int j = i; j < p.size(); ++j)
+        {
+            msg_Out()<<"pair(k("<<i<<"),("<<j<<")) = "<<Pair(k(i),k(j))<<std::endl;
+        }
+    }
+    PRINT_VAR(ME2);
+    PRINT_VAR(MP2);
+  }
+  // PRINT_VAR(res);
+  // PRINT_VAR(Initial());
+  // PRINT_VAR(Final());
+  // PRINT_VAR(IFI());
   // PRINT_VAR(res);
   // PRINT_VAR(p[4]);
-  // return 1;
-  return Full();
+  // return ee2uug_ee;
+  return res;
 }
 
 
 double PionPionGamma::Full(){
-  return -pow(M_PI*m_alpha,3)*
-     (-512*ME2*
-       pow(1/(2.*(ME2 + Pair(m_pmom[0],m_pmom[1]))) + 
-         (MP2*(-1/2.*1/Pair(m_pmom[0],m_pmom[4]) - 1/(2.*Pair(m_pmom[1],m_pmom[4]))))/
-          (2.*(MP2 + Pair(m_pmom[2],m_pmom[3]))),2) + 
-      ((1/(2.*(ME2 + Pair(m_pmom[0],m_pmom[1]))) + 
-           (MP2*(-1/2.*1/Pair(m_pmom[0],m_pmom[4]) - 1/(2.*Pair(m_pmom[1],m_pmom[4]))))/
-            (2.*(MP2 + Pair(m_pmom[2],m_pmom[3]))))*
-         ((-1/2.*1/Pair(m_pmom[0],m_pmom[4]) - 1/(2.*Pair(m_pmom[1],m_pmom[4])))*
-            (512*(-(Pair(m_pmom[0],m_pmom[4])*Pair(m_pmom[1],m_pmom[2])) + 
-                 Pair(m_pmom[0],m_pmom[2])*Pair(m_pmom[1],m_pmom[4])) - 
-              1024*ME2*(4*MP2 - 6*Pair(m_pmom[0],m_pmom[2]) - 4*Pair(m_pmom[0],m_pmom[3]) + 
-                 5*Pair(m_pmom[2],m_pmom[3]))) + 
-           ME2*(-1024*(-2/Pair(m_pmom[0],m_pmom[4]) - 5/(2.*Pair(m_pmom[1],m_pmom[4])))*
-               Pair(m_pmom[1],m_pmom[4]) - 
-              (512*(Pair(m_pmom[0],m_pmom[4]) - 2*Pair(m_pmom[2],m_pmom[4])))/Pair(m_pmom[0],m_pmom[4]))))/
-       (2.*(MP2 + Pair(m_pmom[2],m_pmom[3]))) - 
-      256*(MP2*MP2)*(ME2 + Pair(m_pmom[0],m_pmom[1]))*
-       pow((-1/2.*1/Pair(m_pmom[0],m_pmom[4]) + 1/(2.*Pair(m_pmom[1],m_pmom[4])))/
-          (2.*(MP2 + Pair(m_pmom[2],m_pmom[3]))) + 
-         1/(2.*(ME2 + Pair(m_pmom[0],m_pmom[1]))*Pair(m_pmom[2],m_pmom[4])),2) + 
-      (-512*(MP2*Pair(m_pmom[0],m_pmom[1]) - 2*Pair(m_pmom[0],m_pmom[2])*Pair(m_pmom[1],m_pmom[2]) + 
-            ME2*(Pair(m_pmom[0],m_pmom[2]) + Pair(m_pmom[1],m_pmom[2])))*
-          (1/(2.*(ME2 + Pair(m_pmom[0],m_pmom[1]))) + 
-            (MP2*(-1/2.*1/Pair(m_pmom[0],m_pmom[4]) - 1/(2.*Pair(m_pmom[1],m_pmom[4]))) + 
-               (-2/Pair(m_pmom[0],m_pmom[4]) - 5/(2.*Pair(m_pmom[1],m_pmom[4])))*
-                Pair(m_pmom[1],m_pmom[4]))/(2.*(MP2 + Pair(m_pmom[2],m_pmom[3])))) + 
-         512*(ME2*(1/(2.*(ME2 + Pair(m_pmom[0],m_pmom[1]))) + 
-               (MP2*(-1/2.*1/Pair(m_pmom[0],m_pmom[4]) - 1/(2.*Pair(m_pmom[1],m_pmom[4]))))/
-                (2.*(MP2 + Pair(m_pmom[2],m_pmom[3]))))*
-             (Pair(m_pmom[2],m_pmom[3]) + Pair(m_pmom[2],m_pmom[4])) + 
-            ((-1/2.*1/Pair(m_pmom[0],m_pmom[4]) + 1/(2.*Pair(m_pmom[1],m_pmom[4])))/
-                (2.*(MP2 + Pair(m_pmom[2],m_pmom[3]))) + 
-               1/(2.*(ME2 + Pair(m_pmom[0],m_pmom[1]))*Pair(m_pmom[2],m_pmom[4])))*
-             (Pair(m_pmom[0],m_pmom[3])*
-                ((MP2 - Pair(m_pmom[0],m_pmom[2]))*Pair(m_pmom[1],m_pmom[2]) - 
-                  pow(Pair(m_pmom[1],m_pmom[2]),2)) + 
-               (-pow(Pair(m_pmom[0],m_pmom[2]),2) + 
-                  Pair(m_pmom[0],m_pmom[2])*(MP2 - Pair(m_pmom[1],m_pmom[2])))*Pair(m_pmom[1],m_pmom[3]) 
-+ Pair(m_pmom[0],m_pmom[1])*(-MP2 + Pair(m_pmom[0],m_pmom[2]) + Pair(m_pmom[1],m_pmom[2]))*
-                Pair(m_pmom[2],m_pmom[3]) + 
-               ME2*Pair(m_pmom[2],m_pmom[3])*(Pair(m_pmom[2],m_pmom[3]) + Pair(m_pmom[2],m_pmom[4])))) + 
-         (512*(MP2*(-1/2.*1/Pair(m_pmom[0],m_pmom[4]) - 1/(2.*Pair(m_pmom[1],m_pmom[4])))*
-                (-(Pair(m_pmom[0],m_pmom[4])*Pair(m_pmom[1],m_pmom[3])) + 
-                  Pair(m_pmom[0],m_pmom[3])*Pair(m_pmom[1],m_pmom[4])) + 
-               ME2*(-2/Pair(m_pmom[0],m_pmom[4]) - 5/(2.*Pair(m_pmom[1],m_pmom[4])))*
-                Pair(m_pmom[1],m_pmom[4])*(Pair(m_pmom[2],m_pmom[3]) + Pair(m_pmom[2],m_pmom[4]))) - 
-            512*(-1/2.*1/Pair(m_pmom[0],m_pmom[4]) - 1/(2.*Pair(m_pmom[1],m_pmom[4])))*
-             (4*(MP2*MP2*Pair(m_pmom[0],m_pmom[1]) + ME2*MP2*Pair(m_pmom[0],m_pmom[2])) - 
-               6*(MP2*Pair(m_pmom[0],m_pmom[1])*Pair(m_pmom[0],m_pmom[2]) + 
-                  ME2*pow(Pair(m_pmom[0],m_pmom[2]),2)) + 
-               (ME2*(4*MP2 - 6*Pair(m_pmom[0],m_pmom[2])) - 
-                  8*MP2*Pair(m_pmom[0],m_pmom[2]) + 12*pow(Pair(m_pmom[0],m_pmom[2]),2) + 
-                  (-4*ME2 - MP2 + 9*Pair(m_pmom[0],m_pmom[2]))*Pair(m_pmom[0],m_pmom[3]))*
-                Pair(m_pmom[1],m_pmom[2]) + 
-               Pair(m_pmom[0],m_pmom[3])*
-                (-4*(MP2*Pair(m_pmom[0],m_pmom[1]) + ME2*Pair(m_pmom[0],m_pmom[2])) + 
-                  pow(Pair(m_pmom[1],m_pmom[2]),2)) + 
-               (-pow(Pair(m_pmom[0],m_pmom[2]),2) + 
-                  Pair(m_pmom[0],m_pmom[2])*(MP2 - Pair(m_pmom[1],m_pmom[2])))*Pair(m_pmom[1],m_pmom[3]) 
-+ (5*MP2*Pair(m_pmom[0],m_pmom[1]) + (6*ME2 + Pair(m_pmom[0],m_pmom[1]))*Pair(m_pmom[0],m_pmom[2]) + 
-                  (4*ME2 - Pair(m_pmom[0],m_pmom[1]) - 10*Pair(m_pmom[0],m_pmom[2]))*
-                   Pair(m_pmom[1],m_pmom[2]))*Pair(m_pmom[2],m_pmom[3]) + 
-               ME2*(-((4*MP2 - 6*Pair(m_pmom[0],m_pmom[2]) - 4*Pair(m_pmom[0],m_pmom[3]))*
-                     Pair(m_pmom[2],m_pmom[3])) - 5*pow(Pair(m_pmom[2],m_pmom[3]),2) - 
-                  (4*MP2 - 6*Pair(m_pmom[0],m_pmom[2]) - 4*Pair(m_pmom[0],m_pmom[3]) + 
-                     5*Pair(m_pmom[2],m_pmom[3]))*Pair(m_pmom[2],m_pmom[4]))))/
-          (2.*(MP2 + Pair(m_pmom[2],m_pmom[3]))))*
-       ((-1/2.*1/Pair(m_pmom[0],m_pmom[4]) + 1/(2.*Pair(m_pmom[1],m_pmom[4])))/
-          (2.*(MP2 + Pair(m_pmom[2],m_pmom[3]))) - 
-         1/(2.*(ME2 + Pair(m_pmom[0],m_pmom[1]))*Pair(m_pmom[3],m_pmom[4]))) + 
-      pow((-1/2.*1/Pair(m_pmom[0],m_pmom[4]) + 1/(2.*Pair(m_pmom[1],m_pmom[4])))/
-          (2.*(MP2 + Pair(m_pmom[2],m_pmom[3]))) - 
-         1/(2.*(ME2 + Pair(m_pmom[0],m_pmom[1]))*Pair(m_pmom[3],m_pmom[4])),2)*
-       (Pair(m_pmom[0],m_pmom[2])*Pair(m_pmom[1],m_pmom[2])*
-          (512*MP2 - 1024*(MP2 - Pair(m_pmom[0],m_pmom[3]) - Pair(m_pmom[1],m_pmom[3]) + 
-               Pair(m_pmom[2],m_pmom[3]))) + 
-         (ME2 + Pair(m_pmom[0],m_pmom[1]))*(-256*(MP2*MP2) - 512*MP2*Pair(m_pmom[3],m_pmom[4]))) 
-+ 512*(MP2*Pair(m_pmom[0],m_pmom[3])*Pair(m_pmom[1],m_pmom[3])*
-          pow((-1/2.*1/Pair(m_pmom[0],m_pmom[4]) + 1/(2.*Pair(m_pmom[1],m_pmom[4])))/
-             (2.*(MP2 + Pair(m_pmom[2],m_pmom[3]))) + 
-            1/(2.*(ME2 + Pair(m_pmom[0],m_pmom[1]))*Pair(m_pmom[2],m_pmom[4])),2) - 
-         (((-1/2.*1/Pair(m_pmom[0],m_pmom[4]) + 1/(2.*Pair(m_pmom[1],m_pmom[4])))/
-               (2.*(MP2 + Pair(m_pmom[2],m_pmom[3]))) - 
-              1/(2.*(ME2 + Pair(m_pmom[0],m_pmom[1]))*Pair(m_pmom[3],m_pmom[4])))*
-            (Pair(m_pmom[0],m_pmom[4])*(MP2*Pair(m_pmom[0],m_pmom[1]) - 
-                 2*Pair(m_pmom[0],m_pmom[2])*Pair(m_pmom[1],m_pmom[2]) + 
-                 ME2*(Pair(m_pmom[0],m_pmom[2]) + Pair(m_pmom[1],m_pmom[2]))) + 
-              (4*Pair(m_pmom[0],m_pmom[2])*Pair(m_pmom[1],m_pmom[2]) - 
-                 2*(MP2*Pair(m_pmom[0],m_pmom[1]) + 
-                    ME2*(Pair(m_pmom[0],m_pmom[2]) + Pair(m_pmom[1],m_pmom[2]))))*
-               Pair(m_pmom[2],m_pmom[4]) + 
-              ME2*(-((2*MP2 - 2*(Pair(m_pmom[0],m_pmom[2]) + Pair(m_pmom[0],m_pmom[3])) - 
-                      Pair(m_pmom[0],m_pmom[4]))*Pair(m_pmom[2],m_pmom[3])) - 
-                 (-2*(Pair(m_pmom[0],m_pmom[2]) + Pair(m_pmom[0],m_pmom[3])) - 
-                    Pair(m_pmom[0],m_pmom[4]) + 2*Pair(m_pmom[2],m_pmom[3]))*Pair(m_pmom[2],m_pmom[4]) - 
-                 2*(pow(Pair(m_pmom[2],m_pmom[3]),2) + MP2*Pair(m_pmom[2],m_pmom[4])) - 
-                 2*(Pair(m_pmom[2],m_pmom[3]) + Pair(m_pmom[2],m_pmom[4]))*Pair(m_pmom[3],m_pmom[4]))))/
-          (4.*Pair(m_pmom[0],m_pmom[4])*(MP2 + Pair(m_pmom[2],m_pmom[3])))) + 
-      (ME2*(-512*pow(-2/Pair(m_pmom[0],m_pmom[4]) - 5/(2.*Pair(m_pmom[1],m_pmom[4])),2)*
-             pow(Pair(m_pmom[1],m_pmom[4]),2) + 
-            (128*(-pow(Pair(m_pmom[0],m_pmom[4]),2) + 
-                 4*Pair(m_pmom[0],m_pmom[4])*Pair(m_pmom[2],m_pmom[4]) - 
-                 4*pow(Pair(m_pmom[2],m_pmom[4]),2)))/pow(Pair(m_pmom[0],m_pmom[4]),2)) - 
-         ((-1/2.*1/Pair(m_pmom[0],m_pmom[4]) - 1/(2.*Pair(m_pmom[1],m_pmom[4])))*
-            (-1024*ME2*(-(Pair(m_pmom[0],m_pmom[4])*
-                    (4*MP2 - 6*Pair(m_pmom[0],m_pmom[2]) - 4*Pair(m_pmom[0],m_pmom[3]) + 
-                      5*Pair(m_pmom[2],m_pmom[3]))) - 
-                 (-8*MP2 + 12*Pair(m_pmom[0],m_pmom[2]) + 8*Pair(m_pmom[0],m_pmom[3]) - 
-                    10*Pair(m_pmom[2],m_pmom[3]))*Pair(m_pmom[2],m_pmom[4])) - 
-              512*(-(pow(Pair(m_pmom[0],m_pmom[4]),2)*Pair(m_pmom[1],m_pmom[2])) - 
-                 2*(pow(Pair(m_pmom[0],m_pmom[2]),2)*Pair(m_pmom[0],m_pmom[4]) + 
-                    Pair(m_pmom[0],m_pmom[2])*
-                     (pow(Pair(m_pmom[0],m_pmom[4]),2) + 
-                       Pair(m_pmom[0],m_pmom[4])*Pair(m_pmom[1],m_pmom[2]))) + 
-                 (4*pow(Pair(m_pmom[0],m_pmom[2]),2) + 
-                    Pair(m_pmom[0],m_pmom[2])*
-                     (-4*(ME2 + Pair(m_pmom[0],m_pmom[1])) + 6*Pair(m_pmom[0],m_pmom[4]) + 
-                       4*Pair(m_pmom[1],m_pmom[2])) + 
-                    2*(Pair(m_pmom[0],m_pmom[4])*Pair(m_pmom[1],m_pmom[2]) + 
-                       Pair(m_pmom[0],m_pmom[2])*Pair(m_pmom[1],m_pmom[4])))*Pair(m_pmom[2],m_pmom[4]) 
-+ Pair(m_pmom[0],m_pmom[2])*(Pair(m_pmom[0],m_pmom[4])*
-                     (2*(ME2 + Pair(m_pmom[0],m_pmom[1])) - Pair(m_pmom[1],m_pmom[4])) - 
-                    4*pow(Pair(m_pmom[2],m_pmom[4]),2)))))/(2.*Pair(m_pmom[0],m_pmom[4])) + 
-         (-2/Pair(m_pmom[0],m_pmom[4]) - 5/(2.*Pair(m_pmom[1],m_pmom[4])))*Pair(m_pmom[1],m_pmom[4])*
-          ((512*ME2*(2*(ME2 + Pair(m_pmom[0],m_pmom[1])) - 3*Pair(m_pmom[0],m_pmom[4]) - 
-                 2*(Pair(m_pmom[0],m_pmom[2]) + Pair(m_pmom[1],m_pmom[2]) + 
-                    Pair(m_pmom[1],m_pmom[4])) + 4*Pair(m_pmom[2],m_pmom[4])))/Pair(m_pmom[0],m_pmom[4]) 
-+ (-1/2.*1/Pair(m_pmom[0],m_pmom[4]) - 1/(2.*Pair(m_pmom[1],m_pmom[4])))*
-             (-512*(-2*pow(Pair(m_pmom[1],m_pmom[2]),2) + 
-                  (-Pair(m_pmom[0],m_pmom[2]) - 2*Pair(m_pmom[1],m_pmom[2]))*
-                   Pair(m_pmom[1],m_pmom[4]) + 
-                  Pair(m_pmom[1],m_pmom[2])*
-                   (-2*Pair(m_pmom[0],m_pmom[2]) - Pair(m_pmom[0],m_pmom[4]) + 
-                     2*(ME2 + Pair(m_pmom[0],m_pmom[1]) + Pair(m_pmom[2],m_pmom[4])))) + 
-               1024*ME2*(-6*Pair(m_pmom[1],m_pmom[2]) - 4*Pair(m_pmom[1],m_pmom[3]) + 
-                  5*Pair(m_pmom[2],m_pmom[3]) + 6*(MP2 + Pair(m_pmom[2],m_pmom[4])) + 
-                  4*Pair(m_pmom[3],m_pmom[4])))) + 
-         pow(-1/2.*1/Pair(m_pmom[0],m_pmom[4]) - 1/(2.*Pair(m_pmom[1],m_pmom[4])),2)*
-          (-512*(-(((6*ME2 + 2*MP2 + 6*Pair(m_pmom[0],m_pmom[1]))*
-                     Pair(m_pmom[0],m_pmom[2]) + 
-                    (4*ME2 + 3*MP2 + 4*Pair(m_pmom[0],m_pmom[1]) - 
-                       7*Pair(m_pmom[0],m_pmom[2]))*Pair(m_pmom[0],m_pmom[3]) - 
-                    4*pow(Pair(m_pmom[0],m_pmom[3]),2))*Pair(m_pmom[1],m_pmom[2])) - 
-               Pair(m_pmom[0],m_pmom[3])*pow(Pair(m_pmom[1],m_pmom[2]),2) - 
-               (ME2 + Pair(m_pmom[0],m_pmom[1]))*
-                (4*MP2*Pair(m_pmom[0],m_pmom[2]) - 6*pow(Pair(m_pmom[0],m_pmom[2]),2) - 
-                  4*(Pair(m_pmom[0],m_pmom[2])*Pair(m_pmom[0],m_pmom[3]) + 
-                     MP2*Pair(m_pmom[1],m_pmom[2]))) - 
-               (-5*MP2*Pair(m_pmom[0],m_pmom[2]) + 7*pow(Pair(m_pmom[0],m_pmom[2]),2) + 
-                  Pair(m_pmom[0],m_pmom[2])*(4*Pair(m_pmom[0],m_pmom[3]) - Pair(m_pmom[1],m_pmom[2])))*
-                Pair(m_pmom[1],m_pmom[3]) - 
-               (MP2*Pair(m_pmom[0],m_pmom[1]) + 
-                  (6*ME2 + 5*Pair(m_pmom[0],m_pmom[1]))*Pair(m_pmom[0],m_pmom[2]) + 
-                  (-4*ME2 - 5*Pair(m_pmom[0],m_pmom[1]) + 4*Pair(m_pmom[0],m_pmom[3]))*
-                   Pair(m_pmom[1],m_pmom[2]) - 6*Pair(m_pmom[0],m_pmom[2])*Pair(m_pmom[1],m_pmom[3]))*
-                Pair(m_pmom[2],m_pmom[3]) + 
-               ME2*(-48*MP2*Pair(m_pmom[0],m_pmom[2]) + 
-                  36*pow(Pair(m_pmom[0],m_pmom[2]),2) + 
-                  (-32*MP2 + 48*Pair(m_pmom[0],m_pmom[2]))*Pair(m_pmom[0],m_pmom[3]) + 
-                  16*(MP2*MP2 + pow(Pair(m_pmom[0],m_pmom[3]),2)) + 
-                  (39*MP2 - 59*Pair(m_pmom[0],m_pmom[2]) - 40*Pair(m_pmom[0],m_pmom[3]) + 
-                     Pair(m_pmom[1],m_pmom[2]))*Pair(m_pmom[2],m_pmom[3]) + 
-                  24*pow(Pair(m_pmom[2],m_pmom[3]),2))) + 
-            512*(MP2*MP2*Pair(m_pmom[0],m_pmom[1]) + ME2*MP2*Pair(m_pmom[3],m_pmom[4])) + 
-            MP2*(-512*(Pair(m_pmom[0],m_pmom[2])*Pair(m_pmom[1],m_pmom[2]) + 
-                  Pair(m_pmom[0],m_pmom[3])*Pair(m_pmom[1],m_pmom[3])) + 
-               512*(-(Pair(m_pmom[0],m_pmom[4])*Pair(m_pmom[1],m_pmom[3])) - 
-                  Pair(m_pmom[0],m_pmom[3])*Pair(m_pmom[1],m_pmom[4]) + 
-                  Pair(m_pmom[0],m_pmom[1])*Pair(m_pmom[3],m_pmom[4])))))/
-       (4.*pow(MP2 + Pair(m_pmom[2],m_pmom[3]),2)) + 
-      ((-1/2.*1/Pair(m_pmom[0],m_pmom[4]) + 1/(2.*Pair(m_pmom[1],m_pmom[4])))/
-          (2.*(MP2 + Pair(m_pmom[2],m_pmom[3]))) + 
-         1/(2.*(ME2 + Pair(m_pmom[0],m_pmom[1]))*Pair(m_pmom[2],m_pmom[4])))*
-       (-512*((1/(2.*(ME2 + Pair(m_pmom[0],m_pmom[1]))) + 
-               (MP2*(-1/2.*1/Pair(m_pmom[0],m_pmom[4]) - 1/(2.*Pair(m_pmom[1],m_pmom[4]))))/
-                (2.*(MP2 + Pair(m_pmom[2],m_pmom[3]))))*
-             (-(Pair(m_pmom[0],m_pmom[1])*
-                  (MP2 - Pair(m_pmom[0],m_pmom[2]) - Pair(m_pmom[1],m_pmom[2]))) - 
-               Pair(m_pmom[0],m_pmom[3])*Pair(m_pmom[1],m_pmom[2]) - 
-               Pair(m_pmom[0],m_pmom[2])*Pair(m_pmom[1],m_pmom[3]) + 
-               ME2*(Pair(m_pmom[2],m_pmom[3]) + Pair(m_pmom[2],m_pmom[4]))) + 
-            ((-2/Pair(m_pmom[0],m_pmom[4]) - 5/(2.*Pair(m_pmom[1],m_pmom[4])))*
-               (ME2*Pair(m_pmom[1],m_pmom[4])*(Pair(m_pmom[2],m_pmom[3]) + Pair(m_pmom[2],m_pmom[4])) + 
-                 Pair(m_pmom[1],m_pmom[4])*
-                  (-(MP2*Pair(m_pmom[0],m_pmom[1])) - 
-                    ME2*(Pair(m_pmom[0],m_pmom[2]) - Pair(m_pmom[1],m_pmom[2])) - 
-                    (-2*Pair(m_pmom[0],m_pmom[1]) + Pair(m_pmom[0],m_pmom[4]))*
-                     Pair(m_pmom[1],m_pmom[2]) - 2*pow(Pair(m_pmom[1],m_pmom[2]),2) - 
-                    (-Pair(m_pmom[0],m_pmom[2]) + 2*Pair(m_pmom[1],m_pmom[2]))*
-                     Pair(m_pmom[1],m_pmom[4]) + 2*Pair(m_pmom[1],m_pmom[2])*Pair(m_pmom[2],m_pmom[4]))))/
-             (2.*(MP2 + Pair(m_pmom[2],m_pmom[3])))) + 
-         (512*(-1/2.*1/Pair(m_pmom[0],m_pmom[4]) - 1/(2.*Pair(m_pmom[1],m_pmom[4])))*
-             (((3*MP2 + 4*Pair(m_pmom[0],m_pmom[1]) - 5*Pair(m_pmom[0],m_pmom[2]))*
-                   Pair(m_pmom[0],m_pmom[3]) - 4*pow(Pair(m_pmom[0],m_pmom[3]),2))*
-                Pair(m_pmom[1],m_pmom[2]) + 
-               Pair(m_pmom[0],m_pmom[3])*pow(Pair(m_pmom[1],m_pmom[2]),2) + 
-               Pair(m_pmom[0],m_pmom[1])*
-                (4*(MP2*MP2) - 10*MP2*Pair(m_pmom[0],m_pmom[2]) + 
-                  6*pow(Pair(m_pmom[0],m_pmom[2]),2) + 
-                  (-4*MP2 + 4*Pair(m_pmom[0],m_pmom[2]))*Pair(m_pmom[0],m_pmom[3]) + 
-                  (-4*MP2 + 6*Pair(m_pmom[0],m_pmom[2]))*Pair(m_pmom[1],m_pmom[2])) + 
-               (-7*pow(Pair(m_pmom[0],m_pmom[2]),2) + 
-                  Pair(m_pmom[0],m_pmom[2])*
-                   (5*MP2 - 4*Pair(m_pmom[0],m_pmom[3]) - Pair(m_pmom[1],m_pmom[2])))*
-                Pair(m_pmom[1],m_pmom[3]) + 
-               (4*Pair(m_pmom[0],m_pmom[3])*Pair(m_pmom[1],m_pmom[2]) + 
-                  Pair(m_pmom[0],m_pmom[1])*
-                   (5*MP2 - 5*(Pair(m_pmom[0],m_pmom[2]) + Pair(m_pmom[1],m_pmom[2]))) + 
-                  6*Pair(m_pmom[0],m_pmom[2])*Pair(m_pmom[1],m_pmom[3]))*Pair(m_pmom[2],m_pmom[3]) + 
-               ME2*(-((4*MP2 - 6*Pair(m_pmom[0],m_pmom[2]) - 4*Pair(m_pmom[0],m_pmom[3]))*
-                     Pair(m_pmom[2],m_pmom[3])) - 5*pow(Pair(m_pmom[2],m_pmom[3]),2) - 
-                  (4*MP2 - 6*Pair(m_pmom[0],m_pmom[2]) - 4*Pair(m_pmom[0],m_pmom[3]) + 
-                     5*Pair(m_pmom[2],m_pmom[3]))*Pair(m_pmom[2],m_pmom[4]))) - 
-            (512*(-((MP2*Pair(m_pmom[0],m_pmom[1]) + 
-                       (-ME2 - 2*Pair(m_pmom[0],m_pmom[1]))*Pair(m_pmom[0],m_pmom[2]) + 
-                       2*pow(Pair(m_pmom[0],m_pmom[2]),2))*Pair(m_pmom[0],m_pmom[4])) - 
-                  2*Pair(m_pmom[0],m_pmom[2])*pow(Pair(m_pmom[0],m_pmom[4]),2) - 
-                  (ME2*Pair(m_pmom[0],m_pmom[4]) - pow(Pair(m_pmom[0],m_pmom[4]),2))*
-                   Pair(m_pmom[1],m_pmom[2]) - 
-                  Pair(m_pmom[0],m_pmom[2])*Pair(m_pmom[0],m_pmom[4])*Pair(m_pmom[1],m_pmom[4]) - 
-                  (-2*MP2*Pair(m_pmom[0],m_pmom[1]) + 
-                     (2*ME2 + 4*Pair(m_pmom[0],m_pmom[1]))*Pair(m_pmom[0],m_pmom[2]) - 
-                     4*pow(Pair(m_pmom[0],m_pmom[2]),2) - 
-                     6*Pair(m_pmom[0],m_pmom[2])*Pair(m_pmom[0],m_pmom[4]) + 
-                     (-2*ME2 + 2*Pair(m_pmom[0],m_pmom[4]))*Pair(m_pmom[1],m_pmom[2]) - 
-                     2*Pair(m_pmom[0],m_pmom[2])*Pair(m_pmom[1],m_pmom[4]))*Pair(m_pmom[2],m_pmom[4]) - 
-                  4*Pair(m_pmom[0],m_pmom[2])*pow(Pair(m_pmom[2],m_pmom[4]),2)) - 
-               512*ME2*(-((2*MP2 - 
-                       2*(Pair(m_pmom[0],m_pmom[2]) + Pair(m_pmom[0],m_pmom[3])) - 
-                       Pair(m_pmom[0],m_pmom[4]))*Pair(m_pmom[2],m_pmom[3])) - 
-                  (-2*(Pair(m_pmom[0],m_pmom[2]) + Pair(m_pmom[0],m_pmom[3])) - 
-                     Pair(m_pmom[0],m_pmom[4]) + 2*Pair(m_pmom[2],m_pmom[3]))*Pair(m_pmom[2],m_pmom[4]) - 
-                  2*(pow(Pair(m_pmom[2],m_pmom[3]),2) + MP2*Pair(m_pmom[2],m_pmom[4])) - 
-                  2*(Pair(m_pmom[2],m_pmom[3]) + Pair(m_pmom[2],m_pmom[4]))*Pair(m_pmom[3],m_pmom[4])))/
-             (2.*Pair(m_pmom[0],m_pmom[4])))/(2.*(MP2 + Pair(m_pmom[2],m_pmom[3])))));
+  return -256*pow(M_PI*m_alpha,3)*(-(MP2*MP2* pow((Den(ME2 - 2*Pair(k(1),k(5)),ME2) - Den(ME2 - 2*Pair(k
+ (2),k(5)),ME2))* Den(2*(MP2 + Pair(k(3),k(4))),0) + 2*Den(2*(ME2 + Pair(k(1),k(2))),0)* Den
+ (MP2 + 2*Pair(k(3),k(5)),MP2),2)*(ME2 + Pair(k(1),k(2)))) + 2*((Den(ME2 - 2*Pair(k(1),k
+ (5)),ME2) - Den(ME2 - 2*Pair(k(2),k(5)),ME2))* Den(2*(MP2 + Pair(k(3),k(4))),0) - 2*Den(2*
+ (ME2 + Pair(k(1),k(2))),0)*Den(MP2 + 2*Pair(k(4),k(5)),MP2))*(((Den(ME2 - 2*Pair(k(1),k
+ (5)),ME2) - Den(ME2 - 2*Pair(k(2),k(5)),ME2))* Den(2*(MP2 + Pair(k(3),k(4))),0) + 2*Den(2*
+ (ME2 + Pair(k(1),k(2))),0)* Den(MP2 + 2*Pair(k(3),k(5)),MP2))*(Pair(k(1),k(4))*(MP2 - Pair(k(1),k
+ (3)) - Pair(k(2),k(3)))* Pair(k(2),k(3)) - Pair(k(1),k(3))*(-MP2 + Pair(k(1),k(3)) + Pair(k(2),k
+ (3)))*Pair(k(2),k(4)) + Pair(k(1),k(2))*(-MP2 + Pair(k(1),k(3)) + Pair(k(2),k(3)))* Pair(k(3),k
+ (4)) + ME2*Pair(k(3),k(4))*(Pair(k(3),k(4)) + Pair(k(3),k(5)))) + Den(2*(MP2 + Pair(k(3),k
+ (4))),0)*(-((4*Den(ME2 - 2*Pair(k(1),k(5)),ME2) + 5*Den(ME2 - 2*Pair(k(2),k(5)),ME2))*(MP2*Pair(k
+ (1),k(2)) + Pair(k(1),k(3))*(ME2 - 2*Pair(k(2),k(3))) + ME2*Pair(k(2),k(3)))*Pair(k(2),k
+ (5))) + ME2*(4*Den(ME2 - 2*Pair(k(1),k(5)),ME2) + 5*Den(ME2 - 2*Pair(k(2),k(5)),ME2))*Pair(k(2),k
+ (5))*(Pair(k(3),k(4)) + Pair(k(3),k(5))) + MP2*(Den(ME2 - 2*Pair(k(1),k(5)),ME2) + Den
+ (ME2 - 2*Pair(k(2),k(5)),ME2))*(-(Pair(k(1),k(5))*Pair(k(2),k(4))) + Pair(k(1),k(4))*Pair(k(2),k
+ (5)) + ME2*(Pair(k(3),k(4)) + Pair(k(3),k(5)))) -(Den(ME2 - 2*Pair(k(1),k(5)),ME2) + Den
+ (ME2 - 2*Pair(k(2),k(5)),ME2))*(4*MP2*(MP2*Pair(k(1),k(2)) + ME2*Pair(k(1),k(3))) - 6*Pair(k(1),k
+ (3))*(MP2*Pair(k(1),k(2)) + ME2*Pair(k(1),k(3))) +(2*(2*MP2 - 3*Pair(k(1),k(3)))*(ME2 - 2*Pair(k
+ (1),k(3))) -(4*ME2 + MP2 - 9*Pair(k(1),k(3)))*Pair(k(1),k(4)))* Pair(k(2),k(3)) + MP2*(MP2*Pair(k
+ (1),k(2)) + Pair(k(1),k(3))*(ME2 - 2*Pair(k(2),k(3))) + ME2*Pair(k(2),k(3))) + Pair(k(1),k(4))*
+ (-4*MP2*Pair(k(1),k(2)) - 4*ME2*Pair(k(1),k(3)) + pow(Pair(k(2),k(3)),2)) - Pair(k(1),k(3))*
+ (-MP2 + Pair(k(1),k(3)) + Pair(k(2),k(3)))* Pair(k(2),k(4)) +(2*Pair(k(1),k(3))*(3*ME2 - 5*Pair(k
+ (2),k(3))) + Pair(k(1),k(2))*(5*MP2 + Pair(k(1),k(3)) - Pair(k(2),k(3))) + 4*ME2*Pair(k(2),k
+ (3)))*Pair(k(3),k(4)) - ME2*(4*MP2 - 6*Pair(k(1),k(3)) - 4*Pair(k(1),k(4)) + 5*Pair(k(3),k(4)))*
+ (Pair(k(3),k(4)) + Pair(k(3),k(5)))))) + pow((Den(ME2 - 2*Pair(k(1),k(5)),ME2) - Den
+ (ME2 - 2*Pair(k(2),k(5)),ME2))* Den(2*(MP2 + Pair(k(3),k(4))),0) - 2*Den(2*(ME2 + Pair(k(1),k
+ (2))),0)*Den(MP2 + 2*Pair(k(4),k(5)),MP2), 2)*(-(ME2*(MP2*MP2)) + (MP2*Pair(k(1),k(2)) - 2*Pair(k
+ (1),k(3))*Pair(k(2),k(3)))*(MP2 - 2*Pair(k(1),k(4)) - 2*Pair(k(2),k(4)) + 2*Pair(k(3),k
+ (4))) - 2*ME2*MP2*Pair(k(4),k(5))) + 2*(MP2*pow((Den(ME2 - 2*Pair(k(1),k(5)),ME2) - Den
+ (ME2 - 2*Pair(k(2),k(5)),ME2))* Den(2*(MP2 + Pair(k(3),k(4))),0) + 2*Den(2*(ME2 + Pair(k(1),k
+ (2))),0)* Den(MP2 + 2*Pair(k(3),k(5)),MP2),2)*Pair(k(1),k(4))* Pair(k(2),k(4)) + Den(ME2 - 2*Pair
+ (k(1),k(5)),ME2)* Den(2*(MP2 + Pair(k(3),k(4))),0)*((Den(ME2 - 2*Pair(k(1),k(5)),ME2) - Den
+ (ME2 - 2*Pair(k(2),k(5)),ME2))* Den(2*(MP2 + Pair(k(3),k(4))),0) - 2*Den(2*(ME2 + Pair(k(1),k
+ (2))),0)* Den(MP2 + 2*Pair(k(4),k(5)),MP2))*(Pair(k(1),k(5))*(MP2*Pair(k(1),k(2)) + Pair(k(1),k
+ (3))*(ME2 - 2*Pair(k(2),k(3))) + ME2*Pair(k(2),k(3)) ) - 2*(MP2*Pair(k(1),k(2)) + Pair(k(1),k
+ (3))*(ME2 - 2*Pair(k(2),k(3))) + ME2*Pair(k(2),k(3)))*Pair(k(3),k(5)) - ME2*(Pair(k(3),k
+ (4)) + Pair(k(3),k(5)))*(-2*Pair(k(1),k(3)) - 2*Pair(k(1),k(4)) - Pair(k(1),k(5)) + 2*(MP2 + Pair
+ (k(3),k(4)) + Pair(k(4),k(5)))))) + 2*Den(2*(MP2 + Pair(k(3),k(4))),0)*((Den(ME2 - 2*Pair(k(1),k
+ (5)),ME2) - Den(ME2 - 2*Pair(k(2),k(5)),ME2))* Den(2*(MP2 + Pair(k(3),k(4))),0) + 2*Den(2*
+ (ME2 + Pair(k(1),k(2))),0)*Den(MP2 + 2*Pair(k(3),k(5)),MP2))*(-(MP2*(Den(ME2 - 2*Pair(k(1),k
+ (5)),ME2) + Den(ME2 - 2*Pair(k(2),k(5)),ME2))*(-(Pair(k(1),k(4))*Pair(k(2),k(3))) + Pair(k(1),k
+ (2))*(-MP2 + Pair(k(1),k(3)) + Pair(k(2),k(3))) - Pair(k(1),k(3))*Pair(k(2),k(4)) + ME2*(Pair(k
+ (3),k(4)) + Pair(k(3),k(5))))) +(Den(ME2 - 2*Pair(k(1),k(5)),ME2) + Den(ME2 - 2*Pair(k(2),k
+ (5)),ME2))*((3*MP2 + 4*Pair(k(1),k(2)) - 5*Pair(k(1),k(3)) - 4*Pair(k(1),k(4)))*Pair(k(1),k
+ (4))*Pair(k(2),k(3)) + Pair(k(1),k(4))*pow(Pair(k(2),k(3)),2) + 2*Pair(k(1),k(2))*((-MP2 + Pair
+ (k(1),k(3)))*(-2*MP2 + 3*Pair(k(1),k(3)) + 2*Pair(k(1),k(4))) +(-2*MP2 + 3*Pair(k(1),k(3)))*Pair(k
+ (2),k(3))) - Pair(k(1),k(3))*(-5*MP2 + 7*Pair(k(1),k(3)) + 4*Pair(k(1),k(4)) + Pair(k(2),k
+ (3)))*Pair(k(2),k(4)) +(4*Pair(k(1),k(4))*Pair(k(2),k(3)) + Pair(k(1),k(2))*(5*MP2 - 5*(Pair(k
+ (1),k(3)) + Pair(k(2),k(3)))) + 6*Pair(k(1),k(3))*Pair(k(2),k(4)))*Pair(k(3),k(4)) - ME2*
+ (4*MP2 - 6*Pair(k(1),k(3)) - 4*Pair(k(1),k(4)) + 5*Pair(k(3),k(4)))*(Pair(k(3),k(4)) + Pair(k(3),k
+ (5)))) -(4*Den(ME2 - 2*Pair(k(1),k(5)),ME2) + 5*Den(ME2 - 2*Pair(k(2),k(5)),ME2))*Pair(k(2),k(5))*
+ (-(Pair(k(1),k(2))*(MP2 - 2*Pair(k(2),k(3)))) + Pair(k(1),k(3))*(-ME2 + Pair(k(2),k(5))) - Pair(k
+ (2),k(3))*(Pair(k(1),k(5)) + 2*(Pair(k(2),k(3)) + Pair(k(2),k(5)) - Pair(k(3),k(5)))) + ME2*(Pair
+ (k(2),k(3)) + Pair(k(3),k(4)) + Pair(k(3),k(5)))) + Den(ME2 - 2*Pair(k(1),k(5)),ME2)*(-((MP2*Pair
+ (k(1),k(2)) -(ME2 + 2*Pair(k(1),k(2)))*Pair(k(1),k(3)) + 2*pow(Pair(k(1),k(3)),2))*Pair(k(1),k
+ (5))) - 2*Pair(k(1),k(3))*pow(Pair(k(1),k(5)),2) + Pair(k(1),k(5))*(-ME2 + Pair(k(1),k(5)))*Pair
+ (k(2),k(3)) - Pair(k(1),k(3))*Pair(k(1),k(5))*Pair(k(2),k(5)) + 2*(Pair(k(1),k(2))*(MP2 - 2*Pair(k
+ (1),k(3))) + 2*pow(Pair(k(1),k(3)),2) +(ME2 - Pair(k(1),k(5)))*Pair(k(2),k(3)) + Pair(k(1),k
+ (3))*(-ME2 + 3*Pair(k(1),k(5)) + Pair(k(2),k(5))))* Pair(k(3),k(5)) - 4*Pair(k(1),k(3))*pow(Pair
+ (k(3),k(5)),2) + ME2*(Pair(k(3),k(4)) + Pair(k(3),k(5)))*(-2*Pair(k(1),k(3)) - 2*Pair(k(1),k
+ (4)) - Pair(k(1),k(5)) + 2*(MP2 + Pair(k(3),k(4)) + Pair(k(4),k(5)))))) + 2*pow(Den(2*
+ (MP2 + Pair(k(3),k(4))),0),2)*(pow(Den(ME2 - 2*Pair(k(1),k(5)),ME2) + Den(ME2 - 2*Pair(k(2),k
+ (5)),ME2),2)*(-4*pow(Pair(k(1),k(4)),2)*(4*ME2 + Pair(k(2),k(3))) + pow(Pair(k(1),k(3)),2)*
+ (-6*(7*ME2 + Pair(k(1),k(2))) + 7*Pair(k(2),k(4))) - MP2*((4*(ME2 + Pair(k(1),k(2))) + Pair(k(1),k
+ (5)))* Pair(k(2),k(3)) + ME2*(25*MP2 + Pair(k(2),k(4)))) -(49*ME2*MP2 + 5*(ME2 + Pair(k(1),k
+ (2)))*Pair(k(2),k(3)))* Pair(k(3),k(4)) - 24*ME2*pow(Pair(k(3),k(4)),2) + Pair(k(1),k(4))*
+ (39*ME2*MP2 + pow(Pair(k(2),k(3)),2) + MP2*Pair(k(2),k(4)) + 40*ME2*Pair(k(3),k(4)) + 4*Pair(k
+ (2),k(3))*(ME2 + MP2 + Pair(k(1),k(2)) + Pair(k(3),k(4)))) + Pair(k(1),k(3))*
+ (64*ME2*MP2 + 6*ME2*Pair(k(2),k(3)) + MP2*Pair(k(2),k(3)) - 4*MP2*Pair(k(2),k(4)) - Pair(k(2),k
+ (3))*Pair(k(2),k(4)) + Pair(k(1),k(4))*(-52*ME2 - 7*Pair(k(2),k(3)) + 4*Pair(k(2),k
+ (4))) + MP2*Pair(k(2),k(5)) +(65*ME2 - 6*Pair(k(2),k(4)))*Pair(k(3),k(4)) + Pair(k(1),k(2))*
+ (4*MP2 - 4*Pair(k(1),k(4)) + 6*Pair(k(2),k(3)) + 5*Pair(k(3),k(4))))) + ME2*(-(pow(4*Den
+ (ME2 - 2*Pair(k(1),k(5)),ME2) + 5*Den(ME2 - 2*Pair(k(2),k(5)),ME2),2)* pow(Pair(k(2),k
+ (5)),2)) - pow(Den(ME2 - 2*Pair(k(1),k(5)),ME2),2)* pow(Pair(k(1),k(5)) - 2*Pair(k(3),k
+ (5)),2) - 2*Den(ME2 - 2*Pair(k(1),k(5)),ME2)*(4*Den(ME2 - 2*Pair(k(1),k(5)),ME2) + 5*Den
+ (ME2 - 2*Pair(k(2),k(5)),ME2))*Pair(k(2),k(5))*(2*(ME2 + Pair(k(1),k(2))) - 3*Pair(k(1),k(5)) - 2*
+ (Pair(k(1),k(3)) + Pair(k(2),k(3)) + Pair(k(2),k(5))) + 4*Pair(k(3),k(5))) + MP2*pow(Den
+ (ME2 - 2*Pair(k(1),k(5)),ME2) + Den(ME2 - 2*Pair(k(2),k(5)),ME2),2)*Pair(k(4),k(5))) +(Den
+ (ME2 - 2*Pair(k(1),k(5)),ME2) + Den(ME2 - 2*Pair(k(2),k(5)),ME2))*(Den(ME2 - 2*Pair(k(1),k
+ (5)),ME2)*(Pair(k(1),k(5)) - 2*Pair(k(3),k(5)))*(2*pow(Pair(k(1),k(3)),2) - 8*ME2*Pair(k(1),k
+ (4)) + Pair(k(1),k(5))*Pair(k(2),k(3)) + 10*ME2*(MP2 + Pair(k(3),k(4))) + Pair(k(1),k(3))*(-2*Pair
+ (k(1),k(2)) + 2*Pair(k(1),k(5)) + 2*Pair(k(2),k(3)) + Pair(k(2),k(5)) - 2*(7*ME2 + Pair(k(3),k
+ (5))))) +(4*Den(ME2 - 2*Pair(k(1),k(5)),ME2) + 5*Den(ME2 - 2*Pair(k(2),k(5)),ME2))*Pair(k(2),k
+ (5))*(2*pow(Pair(k(2),k(3)),2) - 8*ME2*Pair(k(2),k(4)) + Pair(k(1),k(3))*Pair(k(2),k(5)) + Pair
+ (k(2),k(3))*(-14*ME2 - 2*Pair(k(1),k(2)) + 2*Pair(k(1),k(3)) + Pair(k(1),k(5)) + 2*Pair(k(2),k
+ (5)) - 2*Pair(k(3),k(5))) + 2*ME2*(5*MP2 + 5*Pair(k(3),k(4)) + 6*Pair(k(3),k(5)) + 4*Pair(k(4),k
+ (5)))))));
+
 }
 
 
