@@ -113,16 +113,7 @@ double PionPionGamma::operator()
             msg_Out()<<"pair(k("<<i<<"),("<<j<<")) = "<<Pair(k(i),k(j))<<std::endl;
         }
     }
-    PRINT_VAR(ME2);
-    PRINT_VAR(MP2);
   }
-  // PRINT_VAR(res);
-  // PRINT_VAR(Initial());
-  // PRINT_VAR(Final());
-  // PRINT_VAR(IFI());
-  // PRINT_VAR(res);
-  // PRINT_VAR(p[4]);
-  // return ee2uug_ee;
   return res;
 }
 
@@ -378,8 +369,16 @@ operator()(const External_ME_Args &args) const
   // if (pi.m_fi.m_nlotype==nlo_type::loop) {
   // Flavour_Vector fl(pi.ExtractFlavours());
   const Flavour_Vector fl = args.Flavours();
-  PRINT_INFO(fl);
   if(fl.size()!=5) return NULL;
+  if (fl[0]!=Flavour(kf_e) && fl[1]!=Flavour(kf_e)) return NULL; 
+  int npion=0;
+  int ngamma=0;
+  for (int i = 2; i < 5; ++i)
+  {
+    if(fl[i].Kfcode()==kf_pi_plus || fl[i].Kfcode()==-kf_pi_plus) npion++;
+    if(fl[i].IsPhoton()) ngamma++;
+  }
+  if(ngamma!=1 || npion!=2) return NULL;
   return new PionPionGamma(args);
   // if(fl[2])
   // }

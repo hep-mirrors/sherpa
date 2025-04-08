@@ -47,18 +47,21 @@ using namespace EXTRAXS;
 PionPionVirtual::PionPionVirtual(const Process_Info& pi, const Flavour_Vector& flavs,
                   const double& ep2, const double& ep) :
       Virtual_ME2_Base(pi, flavs),
-      m_eps2(ep2), m_eps(ep), ME2(flavs[0].Mass()*flavs[0].Mass()),
-      MP2(flavs[3].Mass()*flavs[3].Mass()){
-      ltini();
+      m_eps2(ep2), m_eps(ep)
+   {
+      // ltini();
       Setlambda(0.);
-      MM2 = (Flavour(kf_mu).Mass()*Flavour(kf_mu).Mass());
+      ME2 = (Flavour(kf_e).Mass()*Flavour(kf_e).Mass());
+      MP2 = (Flavour(kf_pi).Mass()*Flavour(kf_pi).Mass());
       ML2 = (Flavour(kf_tau).Mass()*Flavour(kf_tau).Mass());
-      m_mode=1;
+      ML2 = (Flavour(kf_tau).Mass()*Flavour(kf_tau).Mass());
+      m_mode=2;
       m_IRscale=1.;
       m_UVscale=1.;
       setmudim(m_IRscale);
-      setdelta(m_IRscale);
-      }
+      setdelta(4.*M_PI);
+      Setminmass(0.);
+   }
 
 
 void PionPionVirtual::Calc(const Vec4D_Vector& momenta) {
@@ -67,17 +70,21 @@ void PionPionVirtual::Calc(const Vec4D_Vector& momenta) {
   else if (m_stype&sbt::qed) factor=2.*M_PI/AlphaQED();
   else THROW(fatal_error,"Unknown coupling.");
   Setlambda(0.);
-  m_s = (momenta[0]+momenta[1]).Abs2();
+  m_s = (momenta[2]+momenta[3]).Abs2();
   S=m_s;
   T = (momenta[0]-momenta[2]).Abs2();
-  m_alpha = (*aqed)(m_s);
+  m_alpha = (*aqed)(0);
   Complex ffull=BornTriangle()+BornBox()+BornSelf();
   m_res.Finite()= m_alpha*m_alpha*m_alpha*2.*(Full()).real();
   Setlambda(-1.);
-  m_res.IR() = m_alpha*m_alpha*2.*Full().real();
-  Setlambda(-2.);
-  m_res.IR2() = m_alpha*m_alpha*2.*Full().real();
-  clearcache();// Since in general s will be different we gain nothing from cache
+  // m_res.IR() = (BornTriangle()+BornBox()+BornSelf()).real();
+  // double amp = -T*(S+T) - ME2*(2*MP2-S-2*T) -ME2 - sqr(MP2) + 2*MP2*T;
+  // amp = amp/S/S;
+  m_res.IR() = (BornTriangle()+BornBox()+BornSelf()).real();
+  // PRINT_VAR(m_res.IR()-Full().real());
+  // Setlambda(-2.);
+  // m_res.IR2() = m_alpha*m_alpha*2.*Full().real();
+  // clearcache();// Since in general s will be different we gain nothing from cache
 }
   
 Complex PionPionVirtual::Full(){
@@ -579,12 +586,14 @@ Virtual_ME2_Base *ATOOLS::Getter
 <PHASIC::Virtual_ME2_Base,PHASIC::Process_Info,EXTRAXS::PionPionVirtual>::
 operator()(const Process_Info &pi) const
 {
+  PRINT_INFO(pi);
   if (pi.m_loopgenerator.find("Internal")!=0) return NULL;
   // if (pi.m_fi.m_nlotype==nlo_type::loop) {
   Flavour_Vector fl(pi.ExtractFlavours());
+   PRINT_INFO(fl);
   if (fl.size()!=4) return NULL;
   if ( (fl[0]==Flavour(kf_e) || fl[1]==Flavour(kf_e))  && fl[1]==fl[0].Bar() &&
-      ((fl[2].Kfcode()==kf_pi_plus || fl[2].Kfcode()==-kf_pi_plus)) && fl[3]==fl[2].Bar())
+      ((fl[2].Kfcode()==kf_pi_plus || fl[3].Kfcode()==kf_pi_plus)) && fl[3]==fl[2].Bar())
   {
     return new PionPionVirtual(pi,fl,0.0,0);
   }
