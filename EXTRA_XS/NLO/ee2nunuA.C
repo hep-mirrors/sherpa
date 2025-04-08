@@ -199,7 +199,8 @@ Tree_ME2_Base *ATOOLS::Getter
 operator()(const External_ME_Args &args) const
 {
   const Flavour_Vector fl = args.Flavours();
-  PRINT_INFO(fl);
   if(fl.size()!=5) return NULL;
-  return new ee2nunuA(args);
+   if ( (fl[0]==Flavour(kf_e) || fl[1]==Flavour(kf_e))  && fl[1]==fl[0].Bar() &&
+      (fl[2].IsNeutrino() && fl[2].IsNeutrino()) && fl[3]==fl[2].Bar()) return new ee2nunuA(args);
+    return NULL;
 }
