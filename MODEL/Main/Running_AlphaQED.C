@@ -26,7 +26,7 @@ namespace MODEL {
   const double Running_AlphaQED::m_C[4]={1.0,3.927,1.0,1.0};
  #ifdef USING__HADALPHAQED
     extern "C"{
-      void hadr5x_(double *e, double *st2,
+      void hadr5x_qedc19_(double *e, double *st2,
                   double *der, double *errdersta,
                   double *errdersys, double *deg,
                   double *errdegsta, double *errdegsys);
@@ -67,17 +67,17 @@ double Running_AlphaQED::operator()(double t)
   double sigma_gg   = sig_lep_gg+sig_ha_gg+sig_top_gg;
 
   #ifdef USING__HADALPHAQED
-    t=-t;
+    // t=-t;
     double delta_r,errdersta, errdersys,deg,errdegsta,errdegsys;
     double sin2 = 0.23153;// MODEL::m_model->ComplexConstant("csin2_thetaW").real();
     if(m_mode!=vpmode::off){
       if(m_mode !=vpmode::lp){
-        hadr5x_(&t, &sin2, &delta_r, &errdersta, 
+        hadr5x_qedc19_(&t, &sin2, &delta_r, &errdersta, 
           &errdersys, &deg, &errdegsta, &errdegsys); 
      }
     switch(m_mode){
       case vpmode::full:
-        sigma_gg = sig_lep_gg+delta_r+sig_top_gg;
+        sigma_gg = delta_r;
         break;
       case vpmode::lp:
         sigma_gg = sig_lep_gg;
