@@ -84,7 +84,7 @@ double LF_FFV_Quarkonia_FF::operator()(const double zz, const double y,
                            JFF(y, mui2, muj2, muk2, muij2)
                     << std::endl;
     const double LDME = 1./mq/sqr(Q2) * (m_flavs[2].IsOctetMeson()?(1.5E-02):pow(0.82,3));
-    msg_Out() << "Called FFV_Quarkonia with " << m_flavs[2].IDName() << std::endl;
+    //msg_Out() << "Called FFV_Quarkonia with " << m_flavs[2].IDName() << std::endl;
     return 16. / 27 * LDME  *sqr(p_cf->Coupling(newscale, 0)) * value / sqr(Q2) *
            JFF(y, mui2, muj2, muk2, muij2);
   }
