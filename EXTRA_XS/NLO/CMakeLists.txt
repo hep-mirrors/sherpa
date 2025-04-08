@@ -1,13 +1,13 @@
 sset(ExtraXSNLO_SOURCES Logarithms.C
                 Dummy_QCD_Virtual.C
                 DY_QCD_Virtual.C
-                DY_QCD_Virtual.C
                 DY_Jet_QCD_Virtual.C
                 Higgs_QCD_Virtual.C
                 Higgs_Jet_QCD_Virtual.C
                 PionPionGamma.C
                 ee3jet_CSS_approx.C
                 ee2nunuA.C
+                ee2FFBarGamma.C
                 ppll1jet_CSS_approx.C
                 epe2jet_CSS_approx.C)
 
@@ -23,6 +23,7 @@ if (SHERPA_ENABLE_LOOPTOOLS)
     list(APPEND NLO_SOURCES PionPionVirtual.C)
 endif()
 
+<<<<<<< HEAD
 add_library(ExtraXSNLO SHARED ${ExtraXSNLO_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
 if (SHERPA_ENABLE_LOOPTOOLS) 
     list(APPEND NLO_SOURCES emu_emu_Virtual.C)
@@ -33,6 +34,12 @@ sherpa_handle_shared_library(ExtraXSNLO ExtraXSNLO)
 add_dependencies(ExtraXSNLO ExtraXSNLO_Git_Info)
 sherpa_create_git_info(NLO)
 if (SHERPA_ENABLE_LOOPTOOLS) 
-    target_include_directories(ExtraXSNLO  PRIVATE ${LOOPTOOLS_DIRS}/include)
-    target_link_libraries(ExtraXSNLO  PRIVATE ${LOOPTOOLS_DIRS}/lib/libooptools.a)
+    target_include_directories(ExtraXSNLO  PRIVATE ${LOOPTOOLS_INCLUDE_DIRS})
+    message( ${LOOPTOOLS_DIRS}/lib)
+    find_library(LOOPTOOLS_LIB NAMES ooptools PATHS ${LOOPTOOLS_DIRS}/lib)
+    if (LOOPTOOLS_LIB)
+        target_link_libraries(ExtraXSNLO PRIVATE ${LOOPTOOLS_LIB})
+    else()
+        message(FATAL_ERROR "LoopTools library not found!")
+    endif()
 endif()
