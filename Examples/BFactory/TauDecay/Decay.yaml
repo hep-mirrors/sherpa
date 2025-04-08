@@ -6,13 +6,16 @@ BEAM_ENERGIES: [7., 4.]
 EVENT_TYPE: HadronDecay
 
 # specify hadron to be decayed
-DECAYER: 15
+DECAYER: 15 # tau
 
 ANALYSIS: Rivet
 RIVET:
   --ignore-beams: 1
-  --analyses: [BELLE_2007_I753243]
-ANALYSIS_OUTPUT: tau_2_KS_pi-_FF1  # will be name of output file
+  --analyses: [CLEO_1999_I508944,BELLE_2008_I786560]
+ANALYSIS_OUTPUT: tau_2_pi-_pi_FF1
+
+#  --analyses: [BELLE_2007_I753243]
+#ANALYSIS_OUTPUT: tau_2_KS_pi-_FF1  # will be name of output file
 
 #  --analyses: [CLEO_1999_I508944,BELLE_2008_I786560]
 #ANALYSIS_OUTPUT: tau_2_pi-_pi_FF2
@@ -115,8 +118,8 @@ HADRON_DECAYS:
       ###############################################################
       # Two-body form factors ~ V_{ud}
       ###############################################################
-      -211,111,16:
-        BR: [1,0.]  #  [0.255, 0.255]
+      -211,111,16: # pi- pi0 tau_neutrino
+        BR: [1.,0.]  #  [0.255, 0.255]
         ME:
           - Current_ME:
               J1:
@@ -128,7 +131,7 @@ HADRON_DECAYS:
                 Type: VA_0_PiPi
                 Indices: [2, 1]
                 RUNNING_WIDTH: 2
-                FORM_FACTOR:   2
+                FORM_FACTOR:   1
         PhaseSpace:
           - Dalitz_rho(770)+_12:
               Weight: 1.0
@@ -169,7 +172,7 @@ HADRON_DECAYS:
       # Two-body form factors ~ V_{us}
       ###############################################################
       310,-211,16:
-        BR: [1.,0.] # [0.0042, 0.0042]
+        BR: [0.,0.] # [0.0042, 0.0042]
         ME:
           - Current_ME:
               J1:
@@ -185,7 +188,7 @@ HADRON_DECAYS:
         IntResults: [2.27495e-14, 2.27443e-17, 1.40627e-12]
       ## -------------------------------------------------------------	
       -211,130,16:
-        BR: [1.,0.]  #  [0.0042, 0.0042]
+        BR: [0.,0.]  #  [0.0042, 0.0042]
         ME:
           - Current_ME:
               J1:
