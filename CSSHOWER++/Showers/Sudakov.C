@@ -109,8 +109,11 @@ void Sudakov::InitSplittingFunctions(MODEL::Model_Base *md,const int kfmode)
       msg_Debugging()<<"}\n";
     }
   }
-  AddDiQuarkSplittingFunctions(md,kfmode);
-  msg_Debugging()<<"}\n";
+  AddDiQuarkSplittingFunctions(md, kfmode);
+  AddOctetMesonSplittingFunctions(md, kfmode);
+  AddQuarkoniaSplittingFunctions(md, kfmode);
+  AddGluonThresholds(md);
+  msg_Debugging() << "}\n";
 }
 
 void Sudakov::AddDiQuarkSplittingFunctions(MODEL::Model_Base *md,const int kfmode) {
@@ -126,41 +129,187 @@ void Sudakov::AddDiQuarkSplittingFunctions(MODEL::Model_Base *md,const int kfmod
     v.AddParticle(flav.Bar());
     v.AddParticle(flav);
     v.AddParticle(Flavour(kf_gluon));
-    v.Color.push_back(Color_Function(cf::T,3,2,1));
+    v.Color.push_back(Color_Function(cf::T, 3, 2, 1));
     v.Lorentz.push_back("SSV");
     v.cpl.push_back(cpl0);
-    v.order[0]=1;
-    Add(new Splitting_Function_Base(SF_Key(&v,0,cstp::FF,kfmode,m_qcdmode,m_ewmode, 1,m_pdfmin)));
-    Add(new Splitting_Function_Base(SF_Key(&v,0,cstp::FF,kfmode,m_qcdmode,m_ewmode,-1,m_pdfmin)));
+    v.order[0] = 1;
+    Add(new Splitting_Function_Base(
+        SF_Key(&v, 0, cstp::FF, kfmode, m_qcdmode, m_ewmode, 1, m_pdfmin)));
+    Add(new Splitting_Function_Base(
+        SF_Key(&v, 0, cstp::FF, kfmode, m_qcdmode, m_ewmode, -1, m_pdfmin)));
   }
-  //msg_Out()<<METHOD<<": by now "<<m_splittings.size()<<" splitting functions\n"
-    //	   <<"============================================================\n";
+  // msg_Out()<<METHOD<<": by now "<<m_splittings.size()<<" splitting
+  // functions\n"
+  //	   <<"============================================================\n";
 }
 
-void Sudakov::SetCoupling(MODEL::Model_Base *md,
-			  const double &k0sqi,const double &k0sqf,
-			  const double &isfac,const double &fsfac,
-			  const double &k0sq_gsplit_fac)
-{
-  m_k0sqi=k0sqi;
-  m_k0sqf=k0sqf;
-  m_k0sq_gsplit_fac=k0sq_gsplit_fac;
-  for (std::vector<Splitting_Function_Base*>::iterator
-	 sit(m_splittings.begin());sit!=m_splittings.end();)
-    if (!(*sit)->Coupling()->SetCoupling(md,m_k0sqi,m_k0sqf,isfac,fsfac)) {
+void Sudakov::AddQuarkoniaSplittingFunctions(Model_Base *md, const int kfmode) {
+  msg_Out() << "============================================================\n"
+            << METHOD << ": so far " << m_splittings.size()
+            << " splitting functions\n";
+  Kabbala g3("g_3", sqrt(4. * M_PI * md->ScalarConstant("alpha_S")));
+  Kabbala cpl0 = g3 * Kabbala("i", Complex(0., 1.));
+  Flavour Quark_flav(kf_c);
+  Flavour Gluon_flav(kf_gluon);
+  // if (!flav.IsOn()) continue;
+  // This is c -> c J/psi(1S)
+  Single_Vertex v;
+  v.AddParticle(Quark_flav.Bar());
+  v.AddParticle(Quark_flav);
+  v.AddParticle(Flavour(kf_J_psi_1S));
+  v.Color.push_back(Color_Function(cf::D, 1, 2));
+  v.Lorentz.push_back("FFV_Quarkonia");
+  v.cpl.push_back(cpl0); // Check later
+  v.order[0] = 1;
+  Add(new Splitting_Function_Base(
+      SF_Key(&v, 0, cstp::FF, kfmode, m_qcdmode, m_ewmode, 1, m_pdfmin)));
+  v.in[0] = v.in[0].Bar();
+  v.in[1] = v.in[1].Bar();
+  Add(new Splitting_Function_Base(
+      SF_Key(&v, 0, cstp::FF, kfmode, m_qcdmode, m_ewmode, 1, m_pdfmin)));
+  // This is c -> c J/Psi(1S)8
+  v = Single_Vertex();
+  v.AddParticle(Quark_flav.Bar());
+  v.AddParticle(Quark_flav);
+  v.AddParticle(Flavour(kf_J_psi_1S_oct));
+  // No clue of how to write T^a_{i,j} T^{a}_{k,l} in this form 
+  v.Color.push_back(Color_Function(cf::T,3,2,1));
+  v.Lorentz.push_back("FFV_Quarkonia");
+  v.cpl.push_back(cpl0); // Check later
+  v.order[0] = 1;
+  Add(new Splitting_Function_Base(
+      SF_Key(&v, 0, cstp::FF, kfmode, m_qcdmode, m_ewmode, 1, m_pdfmin)));
+  v.in[0] = v.in[0].Bar();
+  v.in[1] = v.in[1].Bar();
+  Add(new Splitting_Function_Base(
+      SF_Key(&v, 0, cstp::FF, kfmode, m_qcdmode, m_ewmode, 1, m_pdfmin)));
+  // This if g -> eta_c g
+  // still needs substantial debugging and tuning
+  // v = Single_Vertex();
+  // v.AddParticle(Gluon_flav);
+  // v.AddParticle(Flavour(kf_eta_c_1S));
+  // v.AddParticle(Gluon_flav);
+  // v.Color.push_back(Color_Function(cf::G, 1, 3));
+  // v.Lorentz.push_back("VSV_Quarkonia");
+  // v.cpl.push_back(cpl0); // Check later
+  // v.order[0] = 1;
+  // Add(new Splitting_Function_Base(
+  //     SF_Key(&v, 0, cstp::FF, kfmode, m_qcdmode, m_ewmode, 1, m_pdfmin)));
+  msg_Out() << METHOD << ": by now " << m_splittings.size()
+            << " splitting functions\n"
+            << "============================================================\n";
+}
+
+void Sudakov::AddOctetMesonSplittingFunctions(Model_Base *md,
+                                              const int kfmode) {
+  // msg_Out()<<"============================================================\n"
+  //	   <<METHOD<<": so far "<<m_splittings.size()<<" splitting functions\n";
+  Kabbala g3("g_3", sqrt(4. * M_PI * md->ScalarConstant("alpha_S")));
+  Kabbala cpl0 = g3 * Kabbala("i", Complex(0., 1.));
+  list<kf_code> octetmesons = {
+      kf_eta_c_1S_oct,   kf_J_psi_1S_oct,   kf_chi_c0_1P_oct,
+      kf_chi_c1_1P_oct, /*kf_chi_c2_1P_oct,*/
+      kf_eta_b_oct,      kf_Upsilon_1S_oct, kf_Upsilon_2S_oct,
+      kf_Upsilon_3S_oct, kf_chi_b0_1P_oct,  kf_chi_b1_1P_oct,
+      kf_chi_b1_2P_oct}; //, kf_chi_b2_3P_oct};
+  for (list<kf_code>::iterator kfit = octetmesons.begin();
+       kfit != octetmesons.end(); kfit++) {
+    Flavour flav(*kfit);
+    // if (!flav.IsOn()) continue;
+    Single_Vertex v;
+    v.AddParticle(flav.Bar());
+    v.AddParticle(flav);
+    v.AddParticle(Flavour(kf_gluon));
+    v.Color.push_back(Color_Function(cf::F, 3, 2, 1));
+    v.Lorentz.push_back("SSV");
+    v.cpl.push_back(cpl0);
+    v.order[0] = 1;
+    Add(new Splitting_Function_Base(
+        SF_Key(&v, 0, cstp::FF, kfmode, m_qcdmode, m_ewmode, 1, m_pdfmin)));
+    Add(new Splitting_Function_Base(
+        SF_Key(&v, 0, cstp::FF, kfmode, m_qcdmode, m_ewmode, -1, m_pdfmin)));
+    Add(new Splitting_Function_Base(
+        SF_Key(&v, 0, cstp::FI, kfmode, m_qcdmode, m_ewmode, 1, m_pdfmin)));
+    Add(new Splitting_Function_Base(
+        SF_Key(&v, 0, cstp::FI, kfmode, m_qcdmode, m_ewmode, -1, m_pdfmin)));
+  }
+  // msg_Out()<<METHOD<<": by now "<<m_splittings.size()<<" splitting
+  // functions\n"
+  //	   <<"============================================================\n";
+}
+
+void Sudakov::AddGluonThresholds(Model_Base *md) {
+  Running_AlphaS as = md->ScalarConstant("alpha_S");
+  const double mc = ATOOLS::Flavour(kf_c).Mass();
+  const double mb = ATOOLS::Flavour(kf_b).Mass();
+  list<kf_code> octetvectors = {kf_J_psi_1S_oct, kf_psi_2S_oct,
+     kf_chi_c0_1P_oct, kf_chi_c1_1P_oct, kf_chi_c2_1P_oct};
+  ST_Set *stset;
+  m_stmap[Flavour(kf_gluon)] = stset = new ST_Set;
+  map<kf_code, double> LDME = {
+      // numerical LDME [GeV^3] from ph/9507398, PhysRevD.50.3176
+      {kf_J_psi_1S_oct, 1.5E-02/M_PI_2},
+      {kf_psi_2S_oct, 4.3E-03 / M_PI_2},
+      {kf_chi_c0_1P_oct, 1 * 3E-03 * mc * mc},
+      {kf_chi_c1_1P_oct, 3 * 3E-03 * mc * mc},
+      {kf_chi_c2_1P_oct, 5 * 3E-03 * mc * mc}};
+  double arg;
+  for (list<kf_code>::iterator octit = octetvectors.begin();
+       octit != octetvectors.end(); octit++) {
+    arg = 0.5 * (M_PI * as(2 * mc) / (24 * pow(mc, 3))) *
+          LDME[*octit]; // SDME for g -> ccb (3S_1)_8
+    stset->insert(
+        One2One_Transition_Base(Flavour(kf_gluon), Flavour(*octit), arg, 1));
+  }
+  // stset->insert(One2One_Transition_Base(
+  //     Flavour(kf_gluon), Flavour(kf_Upsilon_1S_oct),
+  //     0.5 * (M_PI * as(2 * mb) / (24 * pow(mb, 3))) * (305.0E-03), 1)); //
+  //     this will capture almost all Y(1S) production but it's a guess
+  stset->insert(One2One_Transition_Base(
+      Flavour(kf_gluon), Flavour(kf_Upsilon_1S_oct),
+      0.5 * (M_PI * as(2 * mb) / (24 * pow(mb, 3))) * (228.0E-03), 1));
+  stset->insert(One2One_Transition_Base(
+      Flavour(kf_gluon), Flavour(kf_Upsilon_2S_oct),
+      0.5 * (M_PI * as(2 * mb) / (24 * pow(mb, 3))) * (119.0E-03), 1));
+  // stset->insert(One2One_Transition_Base(
+  //     Flavour(kf_gluon), Flavour(kf_Upsilon_3S_oct),
+  //     0.5 * (M_PI * as(2 * mb) / (24 * pow(mb, 3))) * (39.0E-03), 1));
+  // stset->insert(
+  //     One2One_Transition_Base(Flavour(kf_gluon), Flavour(kf_chi_b1_1P_oct),
+  //     0.5 *
+  //         (M_PI * as(2 * mb) / (24 * pow(mb, 3))) * (9.4E-03), 1));
+  // stset->insert(
+  //     One2One_Transition_Base(Flavour(kf_gluon), Flavour(kf_chi_b1_2P_oct),
+  //     0.5 *
+  //         (M_PI * as(2 * mb) / (24 * pow(mb, 3))) * (10.9E-03), 1));
+  // stset->insert(
+  //     One2One_Transition_Base(Flavour(kf_gluon), Flavour(kf_chi_b1_3P_oct),
+  //     0.5 *
+  //         (M_PI * as(2 * mb) / (24 * pow(mb, 3))) * (6.9E-03), 1));
+}
+
+void Sudakov::SetCoupling(Model_Base *md, const double &k0sqi,
+                          const double &k0sqf, const double &isfac,
+                          const double &fsfac, const double &k0sq_gsplit_fac) {
+  m_k0sqi = k0sqi;
+  m_k0sqf = k0sqf;
+  m_k0sq_gsplit_fac = k0sq_gsplit_fac;
+  for (std::vector<Splitting_Function_Base *>::iterator sit(
+           m_splittings.begin());
+       sit != m_splittings.end();)
+    if (!(*sit)->Coupling()->SetCoupling(md, m_k0sqi, m_k0sqf, isfac, fsfac)) {
       delete *sit;
-      sit=m_splittings.erase(sit);
-    }
-    else {
+      sit = m_splittings.erase(sit);
+    } else {
       ++sit;
     }
-  for (std::vector<Splitting_Function_Base*>::iterator
-	 sit(m_addsplittings.begin());sit!=m_addsplittings.end();)
-    if (!(*sit)->Coupling()->SetCoupling(md,m_k0sqi,m_k0sqf,isfac,fsfac)) {
+  for (std::vector<Splitting_Function_Base *>::iterator sit(
+           m_addsplittings.begin());
+       sit != m_addsplittings.end();)
+    if (!(*sit)->Coupling()->SetCoupling(md, m_k0sqi, m_k0sqf, isfac, fsfac)) {
       delete *sit;
-      sit=m_addsplittings.erase(sit);
-    }
-    else {
+      sit = m_addsplittings.erase(sit);
+    } else {
       ++sit;
     }
 }
@@ -291,7 +440,7 @@ bool Sudakov::Generate(Parton* split, double kt2win)
 	slist.push_back(*pit);
     }
   }
-  double t0(Min(m_k0sqi,m_k0sqf)), t, y, z, phi;
+  double t0(Min(m_k0sqi, m_k0sqf)), t, y, z, phi;
   Parton *spect(NULL);
   Splitting_Function_Base *selected(NULL);
   for (size_t i(0);i<slist.size();++i) {
@@ -306,8 +455,8 @@ bool Sudakov::Generate(Parton* split, double kt2win)
       selected = p_selected;
     }
   }
-  p_spect=NULL;
-  p_selected=NULL;
+  p_spect = NULL;
+  p_selected = NULL;
   if (spect) {
     p_spect=spect;
     p_split->SetSpect(p_spect);
@@ -330,6 +479,8 @@ int Sudakov::Generate(Parton *split,Parton *spect,
   double Q2(0.);
   int beam = -1;
   m_flspec = spect->GetFlavour();
+  if (spect == NULL)
+    return false; // guard clause against fake entries
   switch (split->GetType()) {
   case pst::FS:
     if (spect->GetType()==pst::FS) {
@@ -348,10 +499,12 @@ int Sudakov::Generate(Parton *split,Parton *spect,
       Q2       = -(split->Momentum()-spect->Momentum()).Abs2();
       beam     = split->Beam();
       if (IsNan(Q2)) {
-	msg_Error()<<METHOD<<" has no meaningful Q2 from:\n"
-		   <<"   "<<split->Momentum()<<" - "<<spect->Momentum()<<"\n"<<(*split)<<(*spect)
-		   <<"   will return false and hope for the best.\n";
-	return false;
+        msg_Error() << METHOD << " has no meaningful Q2 from:\n"
+                    << "   " << split->Momentum() << " - " << spect->Momentum()
+                    << "\n"
+                    << (*split) << (*spect)
+                    << "   will return false and hope for the best.\n";
+        return false;
       }
       if (!DefineIFBoundaries(Q2,split->Xbj(),beam)) return false;
       break;
@@ -374,14 +527,15 @@ int Sudakov::Generate(Parton *split,Parton *spect,
     return false;
     Abort();
   }
-  if (m_lastint<=0.0 || IsBad(m_lastint)) return false;
-  double last=0.0;
-  for (size_t i(0);i<m_splittings.size();++i)
-    m_partint[i]=last+=m_splittings[i]->Last();
-  if (!IsEqual(m_partint.back(),m_lastint))
-    msg_Error()<<METHOD<<"(): Error, last = "<<m_lastint
-	       <<" vs. "<<m_partint.back()<<"."<<std::endl;
-  m_lastint=m_partint.back();
+  if (m_lastint <= 0.0 || IsBad(m_lastint))
+    return false;
+  double last = 0.0;
+  for (size_t i(0); i < m_splittings.size(); ++i)
+    m_partint[i] = last += m_splittings[i]->Last();
+  if (!IsEqual(m_partint.back(), m_lastint))
+    msg_Error() << METHOD << "(): Error, last = " << m_lastint << " vs. "
+                << m_partint.back() << "." << std::endl;
+  m_lastint = m_partint.back();
 
   t = split->KtStart();
   msg_IODebugging()<<"starting scale "<<t<<", cutoff scale "<<t0<<"\n";
@@ -394,30 +548,84 @@ int Sudakov::Generate(Parton *split,Parton *spect,
     t=split->KtSoft(1);
   }
   double x = 0.0;
-
-  while (t>=Max(t0,kt2win)) {
-    t=ProduceT(t);
+  while (t >= Max(t0, kt2win)) {
+    t = ProduceT(t);
     p_split->SetForcedSplitting(false);
-    if (m_forced_splittings &&
-	p_split->GetType()==pst::IS &&
-	t<sqr(p_split->GetFlavour().HadMass()) && t>Max(t0,kt2win)) {
-      if (FixOne(Flavour(kf_gluon),p_split->GetFlavour(),
-		 p_spect->GetType()==pst::IS ? cstp::II : cstp::IF)) {
-	t     = sqr(p_split->GetFlavour().HadMass());
-	do {
-	  z   = Z();
-	} while (pow(z/m_zmax,m_gluon_xscaling_in_forced_splittings)<ran->Get());
-	phi   = 2.*M_PI*ran->Get();
-	split->SetSpect(p_spect);
-	split->SetForcedSplitting(true);
-	split->IncForcedTrials();
-	if (split->ForcedTrials()>10) {
-	  split->SetKtStart(0.0);
-	  return false;
-	}
-	return -1;
+    if (m_forced_splittings && p_split->GetType() == pst::IS &&
+        t < sqr(p_split->GetFlavour().HadMass()) && t > Max(t0, kt2win)) {
+      if (FixOne(Flavour(kf_gluon), p_split->GetFlavour(),
+                 p_spect->GetType() == pst::IS ? cstp::II : cstp::IF)) {
+        t = sqr(p_split->GetFlavour().HadMass());
+        do {
+          z = Z();
+        } while (pow(z / m_zmax, m_gluon_xscaling_in_forced_splittings) <
+                 ran->Get());
+        phi = 2. * M_PI * ran->Get();
+        split->SetSpect(p_spect);
+        split->SetForcedSplitting(true);
+        split->IncForcedTrials();
+        if (split->ForcedTrials() > 10) {
+          split->SetKtStart(0.0);
+          return false;
+        }
+        return -1;
       }
     }
+    if (m_stmap.find(split->GetFlavour()) != m_stmap.end()) {
+      ST_Set *transitions = m_stmap[split->GetFlavour()];
+      const double random = ran->Get();
+      double tra_P = 0.;
+      double sur_P = 1.;
+      double tr_Q2 = (p_split->Momentum() + p_spect->Momentum()).Abs2();
+      for (auto transit = transitions->begin(); transit != transitions->end();
+           transit++) {
+        double tr_mass = transit->OutMass();
+        double tr_spmass = sqrt(Max(0., p_spect->Momentum().Abs2()));
+        double tr_thr = sqr(tr_mass + tr_spmass);
+        double tr_phw =
+            sqrt(sqr(tr_Q2) + sqr(sqr(tr_mass)) + sqr(sqr(tr_spmass)) -
+                 2 * (tr_Q2 * sqr(tr_mass) + tr_Q2 * sqr(tr_spmass) +
+                      sqr(tr_mass * tr_spmass))) /
+            fabs(tr_Q2 - sqr(tr_spmass));
+        if (!((tr_Q2 > tr_thr) && split->KtStart() > transit->OutMass2() &&
+              t < transit->OutMass2()))
+          continue;
+        tra_P += sur_P * (1. - exp(-tr_phw * transit->SudArg()));
+        sur_P *= exp(-tr_phw * transit->SudArg());
+        msg_Debugging() << METHOD << ", checking transition for "
+                        << transit->GetFlavourB().IDName() << ", " << random
+                        << " < " << tra_P << ",  trw: " << tr_phw << endl;
+        if (random < tra_P) {
+          msg_Debugging() << "Tried to transit a " << split->GetFlavour()
+                          << " (" << split->GetFlow(1) << ", "
+                          << split->GetFlow(2) << ") "
+                          << "between t = " << split->KtStart()
+                          << " and t = " << t << ":\n"
+                          << "spectator is: " << spect->GetFlavour() << "  "
+                          << spect->Momentum() << endl
+                          << "Will want to transit to "
+                          << transit->GetFlavourB() << " ("
+                          << transit->OutMass2() << ") "
+                          << "with P = " << (1 - exp(-transit->SudArg()))
+                          << ".\n"
+                          << "Invariant mass = "
+                          << (p_split->Momentum() + p_spect->Momentum()).Abs2()
+                          << " > "
+                          << sqr(transit->OutMass() +
+                                 sqrt(Max(0., p_spect->Momentum().Abs2())))
+                          << ".\n";
+          t = transit->OutMass2(); // need to increase a bit after
+                                   // transition is done.
+          z = 1;
+          phi = 0.;
+          split->SetSpect(p_spect);
+          p_selected = (Splitting_Function_Base *)(&*transit);
+          split->SetTransition(true); // make this a transition tag.
+          return true;
+        }
+      }
+    } // closes transition handling
+
     SelectOne();
     split->SetSpect(p_spect=p_selected->SelectSpec());
     z = Z();
@@ -450,12 +658,12 @@ int Sudakov::Generate(Parton *split,Parton *spect,
       double mi2 = sqr(ms->Mass(((*m_splitter)->GetFlavourB())));
       double mj2 = sqr(ms->Mass(((*m_splitter)->GetFlavourC())));
       double ma2 = sqr(ms->Mass(m_flspec));
-      double mij2= sqr(ms->Mass(((*m_splitter)->GetFlavourA())));
-      Q2 = -(split->Momentum()-split->GetSpect()->Momentum()).Abs2();
-      y = p_shower->KinFI()->GetY(-Q2,t,z,mi2,mj2,ma2,
-				  (*m_splitter)->GetFlavourA(),
-				  (*m_splitter)->GetFlavourC());
-      y = 1.0-y*(-Q2-mij2-ma2)/(-Q2-mi2-mj2-ma2);
+      double mij2 = sqr(ms->Mass(((*m_splitter)->GetFlavourA())));
+      Q2 = -(split->Momentum() - split->GetSpect()->Momentum()).Abs2();
+      y = p_shower->KinFI()->GetY(-Q2, t, z, mi2, mj2, ma2,
+                                  (*m_splitter)->GetFlavourA(),
+                                  (*m_splitter)->GetFlavourC());
+      y = 1.0 - y * (-Q2 - mij2 - ma2) / (-Q2 - mi2 - mj2 - ma2);
       x = split->GetSpect()->Xbj();
       if (y<0.0 || y>1.0-x) continue;
     }
@@ -642,10 +850,9 @@ double Sudakov::OverIntegrated(const double zmin,const double zmax,
   return m_lastint;
 }
 
-double Sudakov::ProduceT(double t)
-{
-  double ne=2.*M_PI/m_lastint;
-  return t * exp(log(ran->Get())*Max(ne,1.0e-3));
+double Sudakov::ProduceT(double t) {
+  double ne = 2. * M_PI / m_lastint;
+  return t * exp(log(ran->Get()) * Max(ne, 1.0e-3));
 }
 
 bool Sudakov::Veto(double Q2,double x,double t,double y,double z) {

@@ -17,6 +17,7 @@ Ahadic::Ahadic(string shower) :
   m_beamparticles(Beam_Particles_Shifter(&m_singlet_list, &m_softclusters)),
   m_sformer(Singlet_Former(&m_singlet_list)),
   m_singletchecker(Singlet_Checker(&m_singlet_list, &m_softclusters)),
+  m_octetmesondecayer(OctetMeson_Decayer(&m_singlet_list, &m_hadron_list)),
   m_gluondecayer(Gluon_Decayer(&m_cluster_list, &m_softclusters)),
   m_clusterdecayer(Cluster_Decayer(&m_cluster_list, &m_softclusters))
 {
@@ -28,6 +29,7 @@ Ahadic::Ahadic(string shower) :
   m_beamparticles.Init();
   m_softclusters.Init();
   m_singletchecker.Init();
+  m_octetmesondecayer.Init();
   m_gluondecayer.Init();
   m_clusterdecayer.Init();
 }
@@ -85,12 +87,15 @@ Return_Value::code Ahadic::Hadronize(Blob_List * blobs)
 Return_Value::code Ahadic::Hadronize(Blob * blob, int retry) {
   Reset();
   m_totmom = blob->CheckMomentumConservation();
+  //msg_Out()<<"===============================================================\n";
+  //(*blob)<<"\n";
   if (!ExtractSinglets(blob) || !ShiftBeamParticles() || !CheckSinglets() ||
-      !DecayGluons() ||!DecayClusters()) {
-    //msg_Error()<<"ERROR in "<<METHOD<<": Will retry event!\n"
-    //	       <<(*blob);
+      !DecayOctetMesons() || !DecayGluons() ||!DecayClusters()) {
+    msg_Error()<<"ERROR in "<<METHOD<<": Will retry event!\n"
+    	       <<(*blob);
     Reset(blob);
     Reset();
+    exit(1);
     return Return_Value::New_Event;
   }
   blob->UnsetStatus(blob_status::needs_hadronization);
@@ -111,7 +116,7 @@ Return_Value::code Ahadic::Hadronize(Blob * blob, int retry) {
 bool Ahadic::ExtractSinglets(Blob * blob)
 {
   if (!m_sformer.Extract(blob)) {
-    //msg_Error()<<METHOD<<" could not extract singlet.\n";
+    msg_Error()<<METHOD<<" could not extract singlet.\n";
     return false;
   }
   return true;
@@ -120,7 +125,7 @@ bool Ahadic::ExtractSinglets(Blob * blob)
 bool Ahadic::ShiftBeamParticles()
 {
   if (!m_beamparticles()) {
-    //msg_Error()<<METHOD<<" could not shift beam particles on mass shells.\n";
+    msg_Error()<<METHOD<<" could not shift beam particles on mass shells.\n";
     return false;
   }
   return true;
@@ -129,12 +134,16 @@ bool Ahadic::ShiftBeamParticles()
 bool Ahadic::CheckSinglets()
 {
   if (!m_singletchecker()) {
-    //msg_Error()<<METHOD<<" singlets did not check out.\n";
+    msg_Error()<<METHOD<<" singlets did not check out.\n";
     return false;
   }
   return true;
 }
 
+bool Ahadic::DecayOctetMesons() {
+  return m_octetmesondecayer();
+}
+  
 bool Ahadic::DecayGluons() {
   m_gluondecayer.ResetN();
   while (!m_singlet_list.empty()) {
@@ -142,7 +151,6 @@ bool Ahadic::DecayGluons() {
       m_singlet_list.pop_front();
     }
     else {
-      //msg_Error()<<METHOD<<" could not decay all gluons.\n";
       return false;
     }
   }

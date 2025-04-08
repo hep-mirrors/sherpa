@@ -248,6 +248,11 @@ operator()(const SFC_Filler_Key &key) const
       key.p_gets->push_back(new CF_QCD_Getter(atag+btag+ctag));
     }
   }
+  key.p_gets->push_back(new CF_QCD_Getter("{"+Flavour(kf_c).IDName()+"}"+"{"+Flavour(kf_c).IDName()+"}"+"{"+Flavour(kf_J_psi_1S).IDName()+"}"));
+  key.p_gets->push_back(new CF_QCD_Getter("{"+Flavour(kf_c).Bar().IDName()+"}"+"{"+Flavour(kf_c).Bar().IDName()+"}"+"{"+Flavour(kf_J_psi_1S).IDName()+"}"));
+  key.p_gets->push_back(new CF_QCD_Getter("{"+Flavour(kf_c).IDName()+"}"+"{"+Flavour(kf_c).IDName()+"}"+"{"+Flavour(kf_J_psi_1S_oct).IDName()+"}"));
+  key.p_gets->push_back(new CF_QCD_Getter("{"+Flavour(kf_c).Bar().IDName()+"}"+"{"+Flavour(kf_c).Bar().IDName()+"}"+"{"+Flavour(kf_J_psi_1S_oct).IDName()+"}"));
+  key.p_gets->push_back(new CF_QCD_Getter("{"+Flavour(kf_gluon).IDName()+"}"+"{"+Flavour(kf_eta_c_1S).IDName()+"}"+"{"+Flavour(kf_gluon).IDName()+"}"));
   return NULL;
 }
 

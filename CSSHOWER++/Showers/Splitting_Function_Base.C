@@ -44,11 +44,15 @@ SF_Lorentz* Splitting_Function_Base::InitLorentzCalc(const MODEL::Single_Vertex&
       (spins[1]==0 || vertex.in[1].IsDiQuark()) &&
       spins[2]==2) {
     lf = SFL_Getter::GetObject("SSV",sf_key);
+      }
+  else if(spins[0]==0 && spins[1]==2 && spins[2]==2)  {
+    if (vertex.in[1].IsQuarkonia() || vertex.in[2].IsQuarkonia())
+      lf = SFL_Getter::GetObject("VSV_Quarkonia",sf_key);
+    else lf = SFL_Getter::GetObject("HVV",sf_key);
   }
-  else if(spins[0]==0 && spins[1]==2 && spins[2]==2)
-    lf = SFL_Getter::GetObject("HVV",sf_key);
-  else if(spins[0]==1 && spins[1]==1 && spins[2]==2) {
-    lf = SFL_Getter::GetObject("FFV1",sf_key);
+  else if(spins[0]==1 && spins[1]==1 && spins[2]==2) { 
+    if ( vertex.in[2].IsQuarkonia() || vertex.in[1].IsQuarkonia()) lf = SFL_Getter::GetObject("FFV_Quarkonia",sf_key);
+    else lf = SFL_Getter::GetObject("FFV1",sf_key); 
   }
   else if( spins[0]==2 && !vertex.in[0].IsDiQuark() &&
 	   spins[1]==2 && !vertex.in[1].IsDiQuark() &&
@@ -104,7 +108,7 @@ Splitting_Function_Base::Splitting_Function_Base(const SF_Key &key):
 		 <<" => ("<<Demangle(typeid(*p_lf).name()).substr(10)
 		 <<","<<Demangle(typeid(*p_cf).name()).substr(10)
 		 <<"), sf="<<m_symf<<", polfac="<<m_polfac
-		 <<", col="<<p_lf->Col();
+		 <<", col="<<p_lf->Col() << endl;
 }
 
 Splitting_Function_Base::~Splitting_Function_Base()

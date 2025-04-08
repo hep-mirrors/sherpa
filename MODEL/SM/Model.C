@@ -85,12 +85,35 @@ void Standard_Model::ParticleInit()
   s_kftable[kf_Z]      = new Particle_Info(kf_Z,91.1876,.0,2.4952,0,0,2,-1,1,0,1,"Z","Z","Z","Z");
   s_kftable[kf_Wplus]  = new Particle_Info(kf_Wplus,80.379,.0,2.085,3,0,2,0,1,0,1,"W+","W-","W^{+}","W^{-}");
   s_kftable[kf_h0]     = new Particle_Info(kf_h0,125.09,.0,0.0041,0,0,0,-1,1,0,1,"h0","h0","h_{0}","h_{0}");
+  // ##################################################################################################
+  // (Fictitious) HELPER for the construction of multi-gluon vertices
+  // ##################################################################################################  
   s_kftable[kf_gluon_qgc] = new Particle_Info(kf_gluon_qgc,0.0,.0,0.0,0,8,4,-1,1,1,0,"G4","G4","G_{4}","G_{4}",1);
+  // ##################################################################################################
+  // (Fictitious) INSTANTONS, REGGEONS \& POMERONS
+  // ##################################################################################################  
   s_kftable[kf_instanton] = new Particle_Info(kf_instanton,0.0,0.0,0.0,0,8,0,-1,1,0,0,"Instanton","Instanton","Instanton","Instanton");
   s_kftable[kf_pomeron] = new Particle_Info(kf_pomeron, 0.0, 0.0, 0.0, 0, 0, 1,
                                             0, "Pomeron", "{I\\!\\!P}");
   s_kftable[kf_reggeon] = new Particle_Info(kf_reggeon, 0.0, 0.0, 0.0, 0, 0, 1,
                                             0, "Reggeon", "{I\\!\\!R}");
+  // ##################################################################################################
+  // (Fictitious) OCTET MESON MULTIPLETS
+  //   - will assume same masses etc. as singlet counterparts
+  // Call to InitHadron(kfcode, checkinitialised,
+  //                    mass, radius, width, icharge, spin, majorana, on, stable,
+  //                    idname, texname);
+  // ##################################################################################################
+  // Particle_Info::InitHadron(kf_eta_c_1S_oct,  true,2.9798 ,0.65,0.,0,0,false,1,1, "eta(c)8(1S)","eta_{c}^{(8)}(1S)");
+  // Particle_Info::InitHadron(kf_eta_b_oct,     true,9.4    ,0.65,0.,0,0,false,1,1, "eta(b)8(1S)","eta_{b}^{(8)}(1S)");
+  // Particle_Info::InitHadron(kf_J_psi_1S_oct,  true,3.09688,0.65,0.,0,2,false,1,1, "J/psi(1S)8","J/psi^{(8)}(1S)");
+  // Particle_Info::InitHadron(kf_chi_c0_1P_oct, true,3.4173 ,0.65,0.,0,0,false,1,1, "chi(c0)8(1P)","chi_{c0}^{(8)}(1P)");
+  // Particle_Info::InitHadron(kf_chi_b0_1P_oct, true,9.8598 ,0.65,0.,0,0,false,1,1, "chi(b0)8(1P)","chi_{b0}^{(8)}(1P)");
+  // Particle_Info::InitHadron(kf_chi_c1_1P_oct, true,3.51053,0.65,0.,0,2,false,1,1, "chi(c1)8(1P)","chi_{c1}^{(8)}(1P)");
+  // Particle_Info::InitHadron(kf_chi_b1_1P_oct, true,9.8919 ,0.65,0.,0,2,false,1,1, "chi(b1)8(1P)","chi_{b1}^{(8)}(1P)");
+  // Particle_Info::InitHadron(kf_chi_b1_2P_oct, true,10.25546 ,0.65,0.,0,2,false,1,1, "chi(b1)8(2P)","chi_{b1}^{(8)}(2P)");
+  // Particle_Info::InitHadron(kf_chi_b1_3P_oct, true,10.5134  ,0.65,0.,0,2,false,1,1, "chi(b1)8(3P)","chi_{b1}^{(8)}(3P)");
+  // Particle_Info::InitHadron(kf_chi_c2_1P_oct, true,3.55617,0.65,0.,0,2,false,1,1, "chi(c2)8(1P)","chi_{c2}^{(8)}(1P)");
   ReadParticleData();
 }
 

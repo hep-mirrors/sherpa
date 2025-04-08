@@ -105,13 +105,13 @@ bool Singlet_Checker::operator()() {
   if (m_badones.size()>0) {
     if (!DealWithProblematicSinglets()) {
       m_errors++;
-      msg_Tracking()<<METHOD<<" throws error - no rescue possible.\n";
-      if (msg_LevelIsTracking()) {
+      msg_Out()<<METHOD<<" throws error - no rescue possible.\n";
+      //if (msg_LevelIsTracking()) {
 	for (list<list<Singlet *>::iterator>::iterator bit=m_badones.begin();
 	     bit!=m_badones.end();bit++) {
 	  msg_Tracking()<<(***bit)<<"\n";
 	}
-      }
+	//}
       return false;
     }
   }
@@ -122,10 +122,11 @@ bool Singlet_Checker::CheckSinglet() {
   // Checking the mass for pairs of colour-connected particles
   for (list<Proto_Particle *>::iterator plit=p_singlet->begin();
        plit!=p_singlet->end();plit++) {
-    if ((*plit)->Momentum()[0]<0. || (*plit)->Momentum().RelAbs2()<-rpa->gen.SqrtAccu()) {
-      msg_Tracking()<<"Error in "<<METHOD<<":\n"
-		    <<"   negative energy or mass^2 particle in singlet:\n"
-		    <<(*p_singlet)<<"n";
+    if ((*plit)->Momentum()[0]<0. ||
+	(*plit)->Momentum().RelAbs2()<-rpa->gen.SqrtAccu()) {
+      //msg_Out()<<"Error in "<<METHOD<<":\n"
+      //       <<"   negative energy or mass^2 particle in singlet:\n"
+      //       <<(*p_singlet)<<"n";
       m_errors++;
     }
   }
@@ -138,6 +139,7 @@ bool Singlet_Checker::CheckSinglet() {
 						       (*plit2)->Flavour()),
 			 p_softclusters->MinDoubleMass((*plit1)->Flavour(),
 						       (*plit2)->Flavour()));
+    //if (mass<minmass) msg_Out()<<"Upsi 1.\n";
     return (mass > minmass);
   }
   while (plit2!=p_singlet->end()) {
@@ -145,7 +147,10 @@ bool Singlet_Checker::CheckSinglet() {
     // parameter (minmass2) --- same below for "gluon ring"
     p_part1 = (*plit1);
     p_part2 = (*plit2);
-    if (!CheckMass(p_part1,p_part2)) return false;
+    if (!CheckMass(p_part1,p_part2)) {
+      //msg_Out()<<"Upsi 2: "<<p_part1->Flavour()<<" + "<<p_part2->Flavour()<<"\n";
+      return false;
+    }
     plit2++;
     plit1++;
   }
@@ -154,7 +159,10 @@ bool Singlet_Checker::CheckSinglet() {
       p_singlet->back()->Flavour().IsGluon()) {
     p_part1 = (*plit1);
     p_part2 = p_singlet->front();
-    if (!CheckMass(p_part1,p_part2)) return false;
+    if (!CheckMass(p_part1,p_part2)) {
+      //msg_Out()<<"Upsi 1.\n";
+      return false;
+    }
   }
   return true;
 }
@@ -168,6 +176,32 @@ bool Singlet_Checker::FusePartonsInLowMassSinglet() {
     p_singlet->Reorder();
     return true;
   }
+  if (p_part1->Flavour().IsOctetMeson()) {
+    msg_Tracking()<<METHOD<<" arrives here:\n"<<(*p_singlet)<<"\n"
+	     <<"and particles are \n"
+	     <<(*p_part1)<<"\n"<<(*p_part2)<<"\n";
+    kf_code kfc = p_part1->Flavour().Kfcode()-99000000;
+    Proto_Particle * part =
+      new Proto_Particle(Flavour(kfc),p_part1->Momentum());
+    p_hadrons->push_back(part);
+    msg_Tracking()<<"move to hadrons:\n"<<(*part)<<"\n";
+    p_singlet->Erase(p_part1);
+    msg_Tracking()<<METHOD<<" arrives here:\n"<<(*p_singlet)<<"\n";
+    return true;
+  }
+  else if (p_part2->Flavour().IsOctetMeson()) {
+    msg_Tracking()<<METHOD<<" arrives here:\n"<<(*p_singlet)<<"\n"
+	     <<"and particles are \n"
+	     <<(*p_part1)<<"\n"<<(*p_part2)<<"\n";
+    kf_code kfc = p_part2->Flavour().Kfcode()-99000000;
+    Proto_Particle * part =
+      new Proto_Particle(Flavour(kfc),p_part2->Momentum());
+    p_hadrons->push_back(part);
+    msg_Tracking()<<"move to hadrons:\n"<<(*part)<<"\n";
+    p_singlet->Erase(p_part2);
+    msg_Tracking()<<METHOD<<" arrives here:\n"<<(*p_singlet)<<"\n";
+    return true;
+  }
   return p_singlet->Combine(p_part1,p_part2);
 }
 
@@ -176,7 +210,7 @@ bool Singlet_Checker::DealWithProblematicSinglets() {
   SortProblematicSinglets();
   if (m_transitions.size()>1) {
     if (!TransitProblematicSinglets()) {
-      msg_Tracking()<<METHOD<<" throws error for more than one transition.\n";
+      msg_Out()<<METHOD<<" throws error for more than one transition.\n";
       m_errors++;
       return false;
     }
@@ -186,7 +220,7 @@ bool Singlet_Checker::DealWithProblematicSinglets() {
     // to sort them out - two birds with one stone.
     if (FindOtherSingletToTransit()) {
       if (!TransitProblematicSinglets()) {
-	msg_Tracking()<<METHOD<<" throws error for one transition (1).\n";
+	msg_Out()<<METHOD<<" throws error for one transition (1).\n";
 	m_errors++;
 	return false;
       }
@@ -194,7 +228,7 @@ bool Singlet_Checker::DealWithProblematicSinglets() {
     // if this does not work, we'll try to find a "regular" singlet ....
     else if (FindRecoilerForTransit()) {
       if (!TransitProblematicSingletWithRecoiler()) {
-	msg_Tracking()<<METHOD<<" throws error for one transition (2).\n";
+	msg_Out()<<METHOD<<" throws error for one transition (2).\n";
 	m_errors++;
 	return false;
       }
@@ -208,10 +242,10 @@ bool Singlet_Checker::DealWithProblematicSinglets() {
 						 mom,false,isbeam);
       p_hadrons->push_back(part);
       m_direct_transitions++;
-      msg_Tracking()<<METHOD<<" with a transition for "
-		    <<"("<<p_singlets->size()<<" singlets).\n"
-		    <<transition.second<<" from "
-		    <<(*transition.first)<<"\n";
+      msg_Out()<<METHOD<<" with a transition for "
+	       <<"("<<p_singlets->size()<<" singlets).\n"
+	       <<transition.second<<" from "
+	       <<(*transition.first)<<"\n";
       return true;
     }
   }

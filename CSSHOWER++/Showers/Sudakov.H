@@ -25,6 +25,7 @@ namespace CSSHOWER {
     Parton * p_split, * p_spect;
     SF_EEE_Map m_fffmap, m_ffimap, m_iffmap, m_ifimap, m_fifmap, m_fiimap;
     SF_EEE_Map m_sffmap, m_sfimap, m_sifmap, m_siimap;
+    ST_Map     m_stmap;
     std::vector<Splitting_Function_Base *> m_addsplittings;
     Shower *p_shower;
     std::vector<SFC_Getter*> m_cgets;
@@ -32,6 +33,10 @@ namespace CSSHOWER {
     double m_reweightscalecutoff, m_gluon_xscaling_in_forced_splittings;
     std::pair<double, double> m_pdfmin;
     static bool s_init;
+    
+    void AddDiQuarkSplittingFunctions(MODEL::Model_Base *md,const int kfmode);
+    void AddOctetMesonSplittingFunctions(MODEL::Model_Base *md,const int kfmode);
+    void AddGluonThresholds(MODEL::Model_Base *md);
     double ProduceT(double t);
     bool Veto(double,double,double,double,double);
     bool Splitting(double,double,double,double,double);
@@ -40,6 +45,7 @@ namespace CSSHOWER {
     bool DefineIFBoundaries(double,double,int);
     bool DefineIIBoundaries(double,double,int);
     void AddDiQuarkSplittingFunctions(MODEL::Model_Base *md,const int kfmode);
+    void AddQuarkoniaSplittingFunctions(MODEL::Model_Base *md,const int kfmode);
     void Add(Splitting_Function_Base * split);
     void AddToMaps(Splitting_Function_Base * split,const int mode=1);
   public:

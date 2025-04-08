@@ -38,7 +38,7 @@ namespace CSSHOWER {
     ATOOLS::Vec4D   m_mom;
     ATOOLS::Flow    m_flow;
     pst::code       m_pst;
-    bool            m_forcedsplitting;
+    bool            m_forcedsplitting, m_transition;
     int             m_beam,m_stat,m_kin,m_kscheme,m_col,m_nforced;
     double          m_kt_start, m_kt_veto, m_kt_test;
     double          m_z_test, m_y_test, m_phi, m_weight, m_xBj, m_t;
@@ -97,6 +97,7 @@ namespace CSSHOWER {
     inline double                  Phi()          const;
     inline bool                    ForcedSplitting() const;
     inline size_t                  ForcedTrials() const { return m_nforced; }
+    inline bool                    Transition() const;
     inline Parton *                GetLeft();
     inline Parton *                GetRight();
     inline Parton *                GetSpect();
@@ -119,6 +120,7 @@ namespace CSSHOWER {
     inline void SetMass2(const double t) { m_t=t; }
     inline void SetPhi(const double);
     inline void SetForcedSplitting(const bool);
+    inline void SetTransition(const bool);
     inline void IncForcedTrials() { m_nforced++; }
     void SetLeftOf(Parton *);
     void SetRightOf(Parton *);
@@ -142,7 +144,7 @@ namespace CSSHOWER {
   Parton::Parton() : 
     m_flav(ATOOLS::Flavour(kf_none)),
     m_mom(ATOOLS::Vec4D(0.,0.,0.,0.)), 
-    m_pst(pst::none), m_forcedsplitting(false),
+    m_pst(pst::none), m_forcedsplitting(false), m_transition(false),
     m_beam(0), m_stat(0), m_kin(0), m_kscheme(0), m_col(0), m_nforced(0),
     m_kt_start(0.), m_kt_veto(0.), m_kt_test(0.),
     m_z_test(1.), m_y_test(1.), m_phi(2.0*M_PI), m_weight(1.0), m_xBj(1.),
@@ -155,7 +157,7 @@ namespace CSSHOWER {
   }
 
   Parton::Parton(const ATOOLS::Flavour & flav,const ATOOLS::Vec4D & mom,pst::code pst) : 
-    m_flav(flav), m_mom(mom), m_pst(pst), m_forcedsplitting(false),
+    m_flav(flav), m_mom(mom), m_pst(pst), m_forcedsplitting(false), m_transition(false),
     m_beam(0), m_stat(0), m_kin(0), m_kscheme(0), m_col(0), m_nforced(0),
     m_kt_start(0.), m_kt_veto(0.), m_kt_test(0.),
     m_z_test(1.), m_y_test(1.), m_phi(2.0*M_PI), m_weight(1.0), m_xBj(1.),
@@ -169,7 +171,7 @@ namespace CSSHOWER {
 
   Parton::Parton(const ATOOLS::Particle * part,pst::code pst) : 
     m_flav(part->Flav()), m_mom(part->Momentum()), 
-    m_pst(pst), m_forcedsplitting(false),
+    m_pst(pst), m_forcedsplitting(false), m_transition(false),
     m_beam(0), m_stat(0), m_kin(0), m_kscheme(0), m_col(0), m_nforced(0),
     m_kt_start(0.), m_kt_veto(0.), m_kt_test(0.),
     m_z_test(1.), m_y_test(1.), m_phi(2.0*M_PI), m_weight(1.0), m_xBj(1.),
@@ -203,6 +205,7 @@ namespace CSSHOWER {
   double                  Parton::Xbj()         const { return m_xBj; }
   double                  Parton::Phi()         const { return m_phi; }
   bool                    Parton::ForcedSplitting() const { return m_forcedsplitting; }
+  bool                    Parton::Transition()  const { return m_transition; }
   int                     Parton::Beam()        const { return m_beam; }
   int                     Parton::Stat()        const { return m_stat; }
   size_t                  Parton::Id()          const { return m_id; }
@@ -232,6 +235,7 @@ namespace CSSHOWER {
   void Parton::SetXbj(const double x)                 { m_xBj      = x; }
   void Parton::SetPhi(const double phi)               { m_phi      = phi; }
   void Parton::SetForcedSplitting(const bool fs)      { m_forcedsplitting = fs; }
+  void Parton::SetTransition(const bool trans)        { m_transition      = trans; }
   void Parton::SetLeft(Parton * part)                 { p_left    = part; }  
   void Parton::SetRight(Parton * part)                { p_right   = part; }  
   void Parton::SetSpect(Parton * part)                { p_spect    = part; }  

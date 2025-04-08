@@ -5,9 +5,21 @@
 
 using namespace AHADIC;
 using namespace ATOOLS;
+using namespace std;
 
 Gluon_Splitter::~Gluon_Splitter() {
   msg_Debugging()<<METHOD<<" with "<<m_kin_fails<<" kinematic fails.\n";
+  Histogram * histo;
+  string name;
+  for (map<string,Histogram *>::iterator 
+	 hit=m_histograms.begin();hit!=m_histograms.end();hit++) {
+    histo = hit->second;
+    name  = string("Hadronisation_Analysis/")+hit->first+string(".dat");
+    //histo->Finalize();
+    histo->Output(name);
+    delete histo;
+  }
+  m_histograms.clear();
 }
 
 
@@ -20,7 +32,8 @@ void Gluon_Splitter::Init(const bool & isgluon) {
   m_alpha = hadpars->Get("alphaG");
   m_analyse = true;
   if (m_analyse) {
-    m_histograms[std::string("Yasym_frag_2")] = new Histogram(0,0.,8.,32);
+    m_histograms[string("Primary_Mass")] = new Histogram(0,0.,100.,200);
+    m_histograms[string("Yasym_frag_2")] = new Histogram(0,0.,8.,32);
   }
 }
   
@@ -201,7 +214,8 @@ Cluster * Gluon_Splitter::MakeCluster() {
 		   p_part[0]->Flavour()==Flavour(kf_b) ||
 		   p_part[0]->Flavour()==Flavour(kf_b).Bar()));
     double y = cluster->Momentum().Y();
-    m_histograms[std::string("Yasym_frag_2")]->Insert(dabs(y),(y>0.?1.:-1.));
+    m_histograms[string("Yasym_frag_2")]->Insert(dabs(y),(y>0.?1.:-1.));
+    m_histograms[string("Primary_Mass")]->Insert(m_lastmass);
   }
   return cluster;
 }

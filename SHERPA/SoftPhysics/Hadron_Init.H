@@ -13,33 +13,6 @@ namespace SHERPA {
     void Init();
 
   private:
-    void InitHadron(const kf_code&,
-                    const bool checkinitialised,
-                    const double &mass,
-                    const double &radius,
-                    const double &width,
-                    const int icharge,
-                    const int spin,
-                    const bool majorana,
-                    const bool on,
-                    const int stable,
-                    const std::string& idname,
-                    const std::string& texname);
-    void InitHadron(const kf_code&,
-                    const double &mass,
-                    const double &radius,
-                    const double &width,
-                    const int icharge,
-                    const int strong,
-                    const int spin,
-                    const bool majorana,
-                    const bool on,
-                    const int stable,
-                    const bool massive,
-                    const std::string& idname,
-                    const std::string& antiname,
-                    const std::string& texname,
-                    const std::string& antitexname);
     void OverrideProperties();
 
     std::unordered_set<kf_code> m_addedhadrons;
