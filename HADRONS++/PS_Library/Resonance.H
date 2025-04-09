@@ -54,7 +54,8 @@ namespace HADRONS {
 
     virtual double CalculateWidth(const double & s) = 0;
   public:
-    Resonance_Base(const Res_Params & params);    
+    Resonance_Base(const Res_Params & params);
+    ~Resonance_Base() {}
     virtual const ATOOLS::Flavour & Flav()           { return m_inflav; }
     virtual const double Mass(const double & s=0.)   { return m_OSmass; }
     virtual const double Mass2(const double & s=0.)  { return m_OSmass2; }
@@ -166,6 +167,7 @@ namespace HADRONS {
     double CalculateWidth(const double & s);
   public:
     RunningWidth3_Resonance(const Res_Params & params);
+    ~RunningWidth3_Resonance();
     Complex BreitWigner(const double & s);
     void    SetResonance(const size_t & pi,Resonance_Base * res);
     inline const double g(const double & Q2) { return (*p_g)(Q2); }

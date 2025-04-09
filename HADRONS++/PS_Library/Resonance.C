@@ -178,6 +178,12 @@ RunningWidth3_Resonance::RunningWidth3_Resonance(const Res_Params & params) :
   m_gV = (*p_g)(sqr(m_inflav.Mass(true)));
 }
 
+RunningWidth3_Resonance::~RunningWidth3_Resonance() {
+  if (p_BW_ij) { delete p_BW_ij: p_BW_ij = NULL; }
+  if (p_BW_kj) { delete p_BW_kj: p_BW_kj = NULL; }
+  if (p_g)     { delete p_g;     p_g     = NULL; }
+}
+
 bool RunningWidth3_Resonance::GetParams(vector<Flavour> & flavs,Res_Params & V) {
   if (flavs.size()!=2) return false;
   if ( (flavs[0].Kfcode()==kf_pi_plus && flavs[1].Kfcode()==kf_pi) ||

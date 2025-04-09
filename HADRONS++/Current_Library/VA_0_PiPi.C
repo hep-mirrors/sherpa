@@ -2,7 +2,6 @@
 #include "ATOOLS/Phys/Flavour.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Exception.H"
-#include <bits/stdc++.h>
 
 using namespace HADRONS;
 using namespace ATOOLS;
