@@ -6,19 +6,19 @@ BEAM_ENERGIES: [7., 4.]
 EVENT_TYPE: HadronDecay
 
 # specify hadron to be decayed
-DECAYER: 15 # tau
+DECAYER: 15
 
 ANALYSIS: Rivet
 RIVET:
   --ignore-beams: 1
-  --analyses: [CLEO_1999_I508944,BELLE_2008_I786560]
-ANALYSIS_OUTPUT: tau_2_pi-_pi_FF1
+#  --analyses: [BELLE_2010_I841618,BABAR_2007_S7266081]
+#ANALYSIS_OUTPUT: tau_2_hhh_FF1
 
 #  --analyses: [BELLE_2007_I753243]
-#ANALYSIS_OUTPUT: tau_2_KS_pi-_FF1  # will be name of output file
+#ANALYSIS_OUTPUT: tau_2_KS_pi-_FF1
 
-#  --analyses: [CLEO_1999_I508944,BELLE_2008_I786560]
-#ANALYSIS_OUTPUT: tau_2_pi-_pi_FF2
+  --analyses: [CLEO_1999_I508944,BELLE_2008_I786560]
+ANALYSIS_OUTPUT: tau_2_pi-_pi_FF2
 
 
 
@@ -118,7 +118,7 @@ HADRON_DECAYS:
       ###############################################################
       # Two-body form factors ~ V_{ud}
       ###############################################################
-      -211,111,16: # pi- pi0 tau_neutrino
+      -211,111,16:
         BR: [1.,0.]  #  [0.255, 0.255]
         ME:
           - Current_ME:
@@ -130,8 +130,8 @@ HADRON_DECAYS:
               J2:
                 Type: VA_0_PiPi
                 Indices: [2, 1]
-                RUNNING_WIDTH: 2
-                FORM_FACTOR:   1
+                RUNNING_WIDTH: 1
+                FORM_FACTOR:   2
         PhaseSpace:
           - Dalitz_rho(770)+_12:
               Weight: 1.0
@@ -181,7 +181,7 @@ HADRON_DECAYS:
                 v: 1.
                 a: -1.
               J2:
-                Type: VA_0_PiPi
+                Type: VA_0_PP
                 Indices: [2, 1]
                 RUNNING_WIDTH: 1
                 FORM_FACTOR: 1
@@ -197,7 +197,7 @@ HADRON_DECAYS:
                 v: 1.
                 a: -1.
               J2:
-                Type: VA_0_PiPi
+                Type: VA_0_PP
                 Indices: [1, 2]
                 RUNNING_WIDTH: 1
                 FORM_FACTOR: 1
@@ -281,9 +281,10 @@ HADRON_DECAYS:
                 v: 1.
                 a: -1.
               J2:
+                #Type: VA_0_PiPiPi
                 Type: VA_0_PPP
                 Indices: [3, 2, 1]
-                FORM_FACTOR: 2
+                FORM_FACTOR: 1
                 RUNNING_WIDTH: 3
         PhaseSpace:
           - TwoResonances_a(1)(1260)+_2_rho(770)+_13:
@@ -302,10 +303,16 @@ HADRON_DECAYS:
                 v: 1.
                 a: -1.
               J2:
+	        #Type: VA_0_PiPiPi
                 Type: VA_0_PPP
                 Indices: [3, 2, 1]
                 FORM_FACTOR: 1
                 RUNNING_WIDTH: 3
+        PhaseSpace:
+          - TwoResonances_a(1)(1260)+_2_rho(770)+_13:
+              Weight: 0.5
+          - TwoResonances_a(1)(1260)+_3_rho(770)+_12:
+              Weight: 0.5
         IntResults: [9.02993e-14, 9.02826e-17, 1.79599e-11]
       ###############################################################
       # Three-body form factors ~ V_{ud}, 2 K's

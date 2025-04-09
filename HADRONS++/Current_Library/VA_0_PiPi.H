@@ -26,22 +26,27 @@ namespace HADRONS {
       KS    = 1,
       RChT  = 2
     };
-        
+
+  public:
+    static ResDefaults s_KSdefaults, s_RChTdefaults;
+    
+  private:
     resonance_type m_restype;
     PSmode         m_PSmode;
     ffmodel        m_ffmodel;
     double         m_norm, m_deltaM2;
     double         m_fpi, m_fa0, m_GV, m_GS, m_RChTpref;
-    double         m_g_a0_eta_pi, m_g_a0_etaprime_pi, m_eps_etapi, m_eps_etaprimepi;
+    double         m_g_a0_eta_pi, m_g_a0_etaprime_pi;
+    double         m_eps_etapi, m_eps_etaprimepi;
     double         m_m2_pi, m_m2_K, m_m2_eta, m_mu2;
 
     std::list<std::pair<double, Resonance_Base * > > m_vectors, m_scalars;
 
     void FixMode();
     void FixNorm(struct GeneralModel & model);
-    bool SelectResonances(std::list<kf_code> & tags,const bool & isScalar=false);
-    void InitResonance(struct GeneralModel & model,const kf_code & tag,
-		       const bool & isScalar=false);
+    bool SelectResonances(std::list<kf_code> & tags,
+			  const bool & isScalar=false);
+    Resonance_Base * InitResonance(struct GeneralModel & model,const kf_code & tag);
     bool FillDefaults(const kf_code & tag, std::vector<double> & defs);
     bool KSDefaults(const kf_code & tag, std::vector<double> & defs);
     bool RChTDefaults(const kf_code & tag, std::vector<double> & defs);
@@ -61,7 +66,7 @@ namespace HADRONS {
     // Exponent for RChT Kpi form factors.
     Complex Htilde(const double & s,const double & MP2,const double & MQ2);
     // Functions below from Gasser & Leutwyler, NPB250 (1985) 465:
-    //JBar, JBarBar: Eq (8.8), L, MR, k: Eq (8.9)
+    // JBar, JBarBar: Eq (8.8), L, MR, k: Eq (8.9)
     Complex JBar(const double & s,const double & MP2,const double & MQ2);
     Complex JBarBar(const double & s,const double & MP2,const double & MQ2);
     Complex L(const double & s,const double & MP2,const double & MQ2);

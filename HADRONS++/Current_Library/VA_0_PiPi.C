@@ -2,6 +2,7 @@
 #include "ATOOLS/Phys/Flavour.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Exception.H"
+#include <bits/stdc++.h>
 
 using namespace HADRONS;
 using namespace ATOOLS;
@@ -15,7 +16,18 @@ using namespace std;
 // - https://arxiv.org/pdf/1509.09140
 // - https://arxiv.org/abs/1609.04617
 // and "harvest" the references within.
+// Please test/debug the different form factor models (1 and 2).
 //
+// RUNNING_WIDTH in Decay.yaml translates into different width schemes,
+// like fixed, running, Gounaris-Sakurai (and potentially other width schemes)
+// for the resonances in
+// HADRONS++/PS_Library/Resonance.[C,H]
+//
+// Named kf-codes (aliases) in ATOOLS/Phys/Flavour_Tags.H - essentially the
+// PDG codes.
+//
+// Check overall norm in the end by calculating partial widths.
+// 
 ///////////////////////////////////////////////////////////////////////////
 
 ///////////////////////////////////////////////////////////////////////////
@@ -28,13 +40,13 @@ using namespace std;
 //             maybe as form factor model 3, based on RchT
 //             (https://arxiv.org/pdf/1112.0962)
 //             === Zara - maybe this would be a nice way to promote
-//                 yourself from "debugging" to "coding"? // 3rd ff model!
+//                 yourself from "debugging" to "coding"?
 //   * K pi: Phys.Lett.B 640 (2006) 176
 //     (https://doi.org/10.1016/j.physletb.2006.06.058)
 //           - not implemented (but maybe worth it, especially because
 //             of the treatment of eta and eta'?):
 //             (https://arxiv.org/pdf/1201.1794)
-// - KS, 1 (Kuehn-Santamaria model):
+// - KS, 1: (Kuehn-Santamaria model):
 //   * pi pi (original version): Z.Phys.C 48 (1990) 445-452
 //     (https://doi.org/10.1007/BF01572024)
 //   * pi pi (KS with Gounaris-Sakurai form factors):
@@ -63,10 +75,8 @@ VA_0_PiPi::VA_0_PiPi(const ATOOLS::Flavour_Vector& flavs,
   m_m2_pi(sqr(Flavour(kf_pi_plus).Mass(true))),
   m_m2_K(sqr(Flavour(kf_K_plus).Mass(true))),
   m_m2_eta(sqr(Flavour(kf_eta).Mass(true))),
-  m_mu2(sqr(Flavour(kf_rho_770_plus).Mass(true))) //renormalisation scale
-{
-  msg_Out()<<"==========================================================\n";
-}
+  m_mu2(sqr(Flavour(kf_rho_770_plus).Mass(true)))
+{ }
 
 VA_0_PiPi::~VA_0_PiPi() {
   while (!m_vectors.empty()) {
@@ -84,8 +94,8 @@ void VA_0_PiPi::Calc(const ATOOLS::Vec4D_Vector& moms, bool m_anti)
 {
   Vec4D  q  = moms[p_i[1]]+moms[p_i[0]];
   double Q2 = q.Abs2();
-  // msg_Out()<<METHOD<<"(Q = "<<sqrt(Q2)<<"): "
-  // <<"V = "<<VectorFF(Q2)<<", S = "<<ScalarFF(Q2)<<"\n";
+  //msg_Out()<<METHOD<<"(Q = "<<sqrt(Q2)<<"): "
+  //	   <<"V = "<<VectorFF(Q2)<<", S = "<<ScalarFF(Q2)<<"\n";
   Insert(m_norm *
 	 ( VectorFF(Q2) * ((moms[p_i[1]]-moms[p_i[0]]) - m_deltaM2/Q2 * q ) +
 	   ScalarFF(Q2) * q
@@ -105,7 +115,7 @@ void VA_0_PiPi::SetModelParameters(struct GeneralModel model)
   m_ffmodel = ffmodel(model("FORM_FACTOR",1));
   m_deltaM2 = m_flavs[p_i[1]].Mass(true)-m_flavs[p_i[0]].Mass(true);
   if (m_ffmodel==ffmodel::RChT) {
-    m_fpi   = 0.092316; //!!!
+    m_fpi   = 0.092316;
     if (m_PSmode==PSmode::pipi || m_PSmode==PSmode::KK) {
       m_RChTpref = -1./(96.*sqr(M_PI*m_fpi));
     }
@@ -129,19 +139,23 @@ void VA_0_PiPi::SetModelParameters(struct GeneralModel model)
   case 0:  m_restype = resonance_type::fixed;   break;
   default: m_restype = resonance_type::running; break;
   }
-  if (m_ffmodel!=ffmodel::none) { 
+  if (m_ffmodel!=ffmodel::none) {
+    Resonance_Base * R;
     list<kf_code> tags;
-    if (SelectResonances(tags,false)) { //vector
-      for (list<kf_code>::iterator kfit=tags.begin();kfit!=tags.end();kfit++)
-	InitResonance(model, *kfit, false);
+    if (SelectResonances(tags,false)) {
+      for (list<kf_code>::iterator kfit=tags.begin();kfit!=tags.end();kfit++) {
+	R = InitResonance(model, *kfit);
+	if (R) m_vectors.push_back(make_pair(R->Weight(),R));
+      }
     }
     tags.clear();
     if ( (m_PSmode==PSmode::Kpi ||
-	  m_PSmode==PSmode::etapi || m_PSmode==PSmode::etaprimepi || //scalars
+	  m_PSmode==PSmode::etapi || m_PSmode==PSmode::etaprimepi ||
 	  m_PSmode==PSmode::Keta  || m_PSmode==PSmode::Ketaprime) &&
 	  SelectResonances(tags,true)) {
       for (list<kf_code>::iterator kfit=tags.begin();kfit!=tags.end();kfit++)
-	InitResonance(model, *kfit, true);
+	R = InitResonance(model, *kfit);
+	if (R) m_scalars.push_back(make_pair(R->Weight(),R));
     }
     if (m_vectors.empty() && m_scalars.empty()) {
       THROW(fatal_error,"Could not find suitable vector and scalar resonances.");
@@ -149,11 +163,11 @@ void VA_0_PiPi::SetModelParameters(struct GeneralModel model)
   }
 }
 
-void VA_0_PiPi::FixMode() { //relabels decay yaml indices to 0 and 1 for each seperate current (both outgoing by construction)
+void VA_0_PiPi::FixMode() {
   if (m_flavs[p_i[0]].Kfcode()==kf_pi &&
       m_flavs[p_i[1]].Kfcode()==kf_pi_plus)             m_PSmode = PSmode::pipi;
-  else if ( (m_flavs[p_i[0]].Kfcode()==kf_K_L || 
-	     m_flavs[p_i[0]].Kfcode()==kf_K_S || 
+  else if ( (m_flavs[p_i[0]].Kfcode()==kf_K_L ||
+	     m_flavs[p_i[0]].Kfcode()==kf_K_S ||
 	     m_flavs[p_i[0]].Kfcode()==kf_K) &&
 	    m_flavs[p_i[1]].Kfcode()==kf_K_plus)        m_PSmode = PSmode::KK;
   else if ( (m_flavs[p_i[0]].Kfcode()==kf_pi_plus && 
@@ -252,111 +266,44 @@ bool VA_0_PiPi::FillDefaults(const kf_code & tag,vector<double> & defs) {
 }
 
 bool VA_0_PiPi::KSDefaults(const kf_code & tag,vector<double> & defs) {
-  if (m_PSmode==PSmode::pipi) {
-    // (weight , mass , width, phase)
-    switch (tag) {
-    case kf_rho_1700_plus:
-      if (m_restype==resonance_type::running) 
-	defs = { -0.0370, 1.7000, 0.2350, 0.0000 };
-      else if (m_restype==resonance_type::GS)
-	defs = {  0.0280, 1.6940, 0.1350, -3./180.*M_PI };
-      break;
-    case kf_rho_1450_plus: 
-      if (m_restype==resonance_type::running)
-	defs = { -0.1030, 1.3200, 0.3900, 0.0000 };
-      else if (m_restype==resonance_type::GS)
-	defs = {  0.1300, 1.4280, 0.4130, 197./180.*M_PI };
-      break;
-    case kf_rho_770_plus:  
-      if (m_restype==resonance_type::running)
-	defs = {  1.0000, 0.7749, 0.1480, 0.0000 };
-      else if (m_restype==resonance_type::GS)
-	defs = {  1.0000, 0.7740, 0.1440, 0.0000 };
-      break;
-    }
-  }
-  else if (m_PSmode==PSmode::etapi || m_PSmode==PSmode::etaprimepi) {
-    switch (tag) {
-    case kf_rho_1700_plus:
-      defs = { -0.0370, 1.7000, 0.2350, 0.0000 }; break;
-    case kf_rho_1450_plus: 
-      defs = { -0.1030, 1.3200, 0.3900, 0.0000 }; break;
-    case kf_rho_770_plus:  
-      defs = {  1.0000, 0.7749, 0.1480, 0.0000 }; break;
-    case kf_a_0_1450_plus:  
-      defs = {  0.0000, 0.1450, 0.2650, 0.0000 }; break;
-    case kf_a_0_980_plus:  
-      defs = {  1.0000, 0.9800, 0.1000, 0.0000 }; break;
-    }
-  }
-  else if (m_PSmode==PSmode::KK && m_restype==resonance_type::running) {
-    switch (tag) {
-    case kf_rho_1700_plus:
-      defs = {  0.0500, 1.7000, 0.2350, 0.0000 }; break;
-    case kf_rho_1450_plus:
-      defs = { -0.1670, 1.3630, 0.3100, 0.0000 }; break;
-    case kf_rho_770_plus:  
-      defs = {  1.0000, 0.7749, 0.1480, 0.0000 }; break;
-    }
-  }
-  else if ((m_PSmode==PSmode::Kpi  ||
-	    m_PSmode==PSmode::Keta || m_PSmode==PSmode::Ketaprime) &&
-	   m_restype==resonance_type::running) {
-    switch (tag) {
-    case kf_K_star_1410_plus:
-      defs = { -0.1350, 1.4120, 0.2270, 0.0000 }; break;
-    case kf_K_star_892_plus:      
-      defs = {  1.0000, 0.8920, 0.0500, 0.0000 }; break;
-    case kf_K_0_star_1430_plus:      
-      defs = {  1.7000, 1.4300, 0.2870, 0.0000 }; break;
-    }
-  }
-  if (!defs.empty()) return true;
-  msg_Error()<<METHOD<<" will throw error:\n"
-	     <<"Combination of decay mode = "<<int(m_PSmode)<<", "
-	     <<"resonancve type = "<<int(m_restype)<<" and "
-	     <<"flavour = "<<tag<<" not yet implemented.\n";
-  THROW(fatal_error,"unknown combination in KS defaults");
-  return false;
+  string error = string("Resonance type: ")+to_string(int(m_restype));
+  if (s_KSdefaults.find(int(m_restype))==
+      s_KSdefaults.end())
+    THROW(fatal_error,string("Run will terminate.")+error+string(" not found."));
+  error += string(", decay mode: ")+to_string(int(m_PSmode));
+  if (s_KSdefaults[int(m_restype)].find(int(m_PSmode))==
+      s_KSdefaults[int(m_restype)].end())
+    THROW(fatal_error,string("Run will terminate.")+error+string(" not found."));
+  error += string(", resonance: ")+to_string((long unsigned int)(tag));
+  if (s_KSdefaults[int(m_restype)][int(m_PSmode)].find(tag)==
+      s_KSdefaults[int(m_restype)][int(m_PSmode)].end())
+    THROW(fatal_error,string("Run will terminate.")+error+string(" not found."));
+  defs = s_KSdefaults[int(m_restype)][int(m_PSmode)][tag];
+  return true;
 }
 
 bool VA_0_PiPi::RChTDefaults(const kf_code & tag,vector<double> & defs) {
-  if (m_PSmode==PSmode::pipi || m_PSmode==PSmode::KK) {
-    switch (tag) {
-    case kf_rho_1700_plus:
-      defs ={ -0.1200, 1.7540, 0.4120, -0.0200 }; break;
-    case kf_rho_1450_plus: 
-      defs = { 0.1800, 1.4380, 0.5350, -0.3600 }; break;
-    case kf_rho_770_plus:  
-      defs = { 1.0000, 0.7752, 0.0000,  0.0000 }; break;
-    }
-  }
-  else if (m_PSmode==PSmode::Kpi) {
-    switch (tag) {
-    case kf_K_star_1410_plus:
-      defs = {  0.0130, 1.4140, 0.2320, 0.0000 }; break;
-    case kf_K_star_892_plus:      
-      defs = {  1.0000, 0.8917, 0.0500, 0.0000 }; break;
-    case kf_K_0_star_1430_plus:      
-      defs = {  1.7000, 1.4300, 0.2870, 0.0000 }; break;
-    }
-  }
-  if (!defs.empty()) return true;
-  msg_Error()<<METHOD<<" will throw error:\n"
-	     <<"Combination of decay mode = "<<int(m_PSmode)<<", "
-	     <<"resonancve type = "<<int(m_restype)<<" and "
-	     <<"flavour = "<<tag<<" not yet implemented.\n";
-  THROW(fatal_error,"unknown combination in KS defaults");
-  return false;
+  string error = string("Resonance type: ")+to_string(int(m_restype));
+  if (s_RChTdefaults.find(int(m_restype))==
+      s_RChTdefaults.end())
+    THROW(fatal_error,string("Run will terminate.")+error+string(" not found."));
+  error += string(", decay mode: ")+to_string(int(m_PSmode));
+  if (s_RChTdefaults[int(m_restype)].find(int(m_PSmode))==
+      s_RChTdefaults[int(m_restype)].end())
+    THROW(fatal_error,string("Run will terminate.")+error+string(" not found."));
+  error += string(", resonance: ")+to_string((long unsigned int)(tag));
+  if (s_RChTdefaults[int(m_restype)][int(m_PSmode)].find(tag)==
+      s_RChTdefaults[int(m_restype)][int(m_PSmode)].end())
+    THROW(fatal_error,string("Run will terminate.")+error+string(" not found."));
+  defs = s_RChTdefaults[int(m_restype)][int(m_PSmode)][tag];
+  return true;
 }
     
-void VA_0_PiPi::InitResonance(struct GeneralModel & model,const kf_code & tag,
-			      const bool & isScalar)
+Resonance_Base * VA_0_PiPi::InitResonance(struct GeneralModel & model,const kf_code & tag)
 {
-  msg_Out()<<METHOD<<"(mode = "<<int(m_PSmode)<<" for "
-	   <<int(tag)<<", scalar = "<<isScalar<<")\n";
+  msg_Out()<<METHOD<<"(mode = "<<int(m_PSmode)<<" for "<<int(tag)<<")\n";
   vector<double> defaults;
-  if (!FillDefaults(tag,defaults) || dabs(defaults[0])<1.e-8) return;
+  if (!FillDefaults(tag,defaults) || dabs(defaults[0])<1.e-8) return NULL;
   string id = string("");
   switch (tag) {
   case kf_rho_1700_plus:      id = string("rho(1700)+");  break;
@@ -380,28 +327,27 @@ void VA_0_PiPi::InitResonance(struct GeneralModel & model,const kf_code & tag,
     outflavs.push_back(m_flavs[p_i[0]]);
     outflavs.push_back(m_flavs[p_i[1]]);
   }
-  Flavour flav = Flavour(tag);
+  Flavour flav  = Flavour(tag);
   double weight = model(string("Weight_")+id, defaults[0]);
   double mass   = model(string("Mass_")  +id, defaults[1]);
   double width  = model(string("Width_") +id, defaults[2]);
   double phase  = model(string("Phase_") +id, defaults[3]);
 
-  Resonance_Parameters params(flav,outflavs,m_restype,mass,width,phase);
+  Res_Params params(flav,outflavs,m_restype,mass,width,weight,phase);
   Resonance_Base * res = NULL;
   switch (m_restype) {
   case resonance_type::fixed:
-    res = new FixedWidth_Resonance(params);
+    return new FixedWidth_Resonance(params);
     break;
   case resonance_type::GS:
-    res = new GS_Resonance(params);
+    return new GS_Resonance(params);
     break;
   case resonance_type::running:
   default:
-    res = new RunningWidth_Resonance(params);
+    return new RunningWidth_Resonance(params);
     break;
   }
-  if (!isScalar) m_vectors.push_back(make_pair(weight,res));
-  else           m_scalars.push_back(make_pair(weight,res));
+  return NULL;
 }
 
 Complex VA_0_PiPi::VectorFF(const double & s) {
@@ -487,9 +433,11 @@ Complex VA_0_PiPi::VectorRChT_pipi(const double & s)
 	      RhoExpo );
     }
     else {
+      // this is for rho' and rho"
       Gamma = (s>4.*m_m2_pi ? rtit->second->Width(s) : 0.);
       pref = - ( s*rtit->second->Width()/M_PI/
 		 pow(2.*rtit->second->Lambda(rtit->second->Mass2(),m_m2_pi,m_m2_pi), 3) );
+      // factor out the weight and phase, BW*exponent for rho'/rho" - BW*exponent for rho
       ff += - (rtit->first * exp(Complex(0.,rtit->second->Phase())) *
 	       ( rtit->second->AltBreitWigner(s,rtit->second->Mass2(),
 					      -rtit->second->Mass()*Gamma) *
@@ -542,8 +490,6 @@ Complex VA_0_PiPi::ScalarRChT(const double & s) {
   return Complex(0.,0.);
 }
 
-
-
 Complex VA_0_PiPi::Loop(const double & m2, const double & s,const double & mu2) {
   Complex sigma = csqrt(1.-4.*m2/s);
   return ( log(m2/mu2) + 8.*m2/s - 5./3. +
@@ -585,6 +531,101 @@ Complex VA_0_PiPi::JBarBar(const double & s, const double & MP2,const double & M
   return JBar(s,MP2,MQ2) - Jprime_0;
 }
 
+ResDefaults VA_0_PiPi::s_KSdefaults = {
+  { int(resonance_type::running), {
+      { int(VA_0_PiPi::PSmode::pipi),
+	{
+	  { (long unsigned int)(kf_rho_1700_plus),      { -0.0370, 1.7000, 0.2350, 0.0000 } },
+	  { (long unsigned int)(kf_rho_1450_plus),      { -0.1030, 1.3200, 0.3900, 0.0000 } },
+	  { (long unsigned int)(kf_rho_770_plus),       {  1.0000, 0.7749, 0.1480, 0.0000 } }
+	}
+      },
+      { int(VA_0_PiPi::PSmode::etapi),
+	{
+	  { (long unsigned int)(kf_rho_1700_plus),      { -0.0370, 1.7000, 0.2350, 0.0000 } },
+	  { (long unsigned int)(kf_rho_1450_plus),      { -0.1030, 1.3200, 0.3900, 0.0000 } },
+	  { (long unsigned int)(kf_rho_770_plus),       {  1.0000, 0.7749, 0.1480, 0.0000 } },
+	  { (long unsigned int)(kf_a_0_1450_plus),      {  0.0000, 0.1450, 0.2650, 0.0000 } },
+	  { (long unsigned int)(kf_a_0_980_plus),       {  1.0000, 0.9800, 0.1000, 0.0000 } }
+	}
+      },
+      { int(VA_0_PiPi::PSmode::etaprimepi),
+	{
+	  { (long unsigned int)(kf_rho_1700_plus),      { -0.0370, 1.7000, 0.2350, 0.0000 } },
+	  { (long unsigned int)(kf_rho_1450_plus),      { -0.1030, 1.3200, 0.3900, 0.0000 } },
+	  { (long unsigned int)(kf_rho_770_plus),       {  1.0000, 0.7749, 0.1480, 0.0000 } },
+	  { (long unsigned int)(kf_a_0_1450_plus),      {  0.0000, 0.1450, 0.2650, 0.0000 } },
+	  { (long unsigned int)(kf_a_0_980_plus),       {  1.0000, 0.9800, 0.1000, 0.0000 } }
+	}
+      },
+      { int(VA_0_PiPi::PSmode::KK),
+	{
+	  { (long unsigned int)(kf_rho_1700_plus),      {  0.0500, 1.7000, 0.2350, 0.0000 } },
+	  { (long unsigned int)(kf_rho_1450_plus),      { -0.1670, 1.3630, 0.3100, 0.0000 } },
+	  { (long unsigned int)(kf_rho_770_plus),       {  1.0000, 0.7749, 0.1480, 0.0000 } }
+	}
+      },
+      { int(VA_0_PiPi::PSmode::Kpi),
+	{
+          { (long unsigned int)(kf_K_star_1410_plus),   { -0.1350, 1.4120, 0.2270, 0.0000 } },
+	  { (long unsigned int)(kf_K_star_892_plus),    {  1.0000, 0.8920, 0.0500, 0.0000 } },
+	  { (long unsigned int)(kf_K_0_star_1430_plus), {  1.7000, 1.4300, 0.2870, 0.0000 } }
+	}
+      },
+      { int(VA_0_PiPi::PSmode::Keta),
+	{
+          { (long unsigned int)(kf_K_star_1410_plus),   { -0.1350, 1.4120, 0.2270, 0.0000 } },
+	  { (long unsigned int)(kf_K_star_892_plus),    {  1.0000, 0.8920, 0.0500, 0.0000 } },
+	  { (long unsigned int)(kf_K_0_star_1430_plus), {  1.7000, 1.4300, 0.2870, 0.0000 } }
+	}
+      },
+      { int(VA_0_PiPi::PSmode::Ketaprime),
+	{
+          { (long unsigned int)(kf_K_star_1410_plus),   { -0.1350, 1.4120, 0.2270, 0.0000 } },
+	  { (long unsigned int)(kf_K_star_892_plus),    {  1.0000, 0.8920, 0.0500, 0.0000 } },
+	  { (long unsigned int)(kf_K_0_star_1430_plus), {  1.7000, 1.4300, 0.2870, 0.0000 } }
+	}
+      }
+    }
+  },
+  { int(resonance_type::GS), {
+      { int(VA_0_PiPi::PSmode::pipi),
+	{
+	  { (long unsigned int)(kf_rho_1700_plus), {  0.0280, 1.6940, 0.1350, -3./180.*M_PI } },
+	  { (long unsigned int)(kf_rho_1450_plus), {  0.1300, 1.4280, 0.4130, 197./180.*M_PI } },
+	  { (long unsigned int)(kf_rho_770_plus),  {  1.0000, 0.7740, 0.1440, 0.0000 } }
+	}
+      }
+    }
+  }
+};
+
+ResDefaults VA_0_PiPi::s_RChTdefaults = {
+  { int(resonance_type::running), {
+      { int(VA_0_PiPi::PSmode::pipi),
+	{
+	  { (long unsigned int)(kf_rho_1700_plus),      { -0.1200, 1.7540, 0.4120, -0.0200 } },
+	  { (long unsigned int)(kf_rho_1450_plus),      {  0.1800, 1.4380, 0.5350, -0.3600 } },
+	  { (long unsigned int)(kf_rho_770_plus),       {  1.0000, 0.7752, 0.0000,  0.0000 } }
+	}
+      },
+      { int(VA_0_PiPi::PSmode::KK),
+	{
+	  { (long unsigned int)(kf_rho_1700_plus),      { -0.1200, 1.7540, 0.4120, -0.0200 } },
+	  { (long unsigned int)(kf_rho_1450_plus),      {  0.1800, 1.4380, 0.5350, -0.3600 } },
+	  { (long unsigned int)(kf_rho_770_plus),       {  1.0000, 0.7752, 0.0000,  0.0000 } }
+	}
+      },
+      { int(VA_0_PiPi::PSmode::Kpi),
+	{
+	  { (long unsigned int)(kf_K_star_1410_plus),   {  0.0130, 1.4140, 0.2320, 0.0000 } },
+	  { (long unsigned int)(kf_K_star_892_plus),    {  1.0000, 0.8917, 0.0500, 0.0000 } },
+	  { (long unsigned int)(kf_K_0_star_1430_plus), {  1.7000, 1.4300, 0.2870, 0.0000 } }
+	}
+      }
+    }
+  }
+};
 
 // need to update the references once we have the tau's under control
 DEFINE_CURRENT_GETTER(HADRONS::VA_0_PiPi,"VA_0_PiPi")
