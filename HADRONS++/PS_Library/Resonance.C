@@ -179,8 +179,8 @@ RunningWidth3_Resonance::RunningWidth3_Resonance(const Res_Params & params) :
 }
 
 RunningWidth3_Resonance::~RunningWidth3_Resonance() {
-  if (p_BW_ij) { delete p_BW_ij: p_BW_ij = NULL; }
-  if (p_BW_kj) { delete p_BW_kj: p_BW_kj = NULL; }
+  if (p_BW_ij) { delete p_BW_ij; p_BW_ij = NULL; }
+  if (p_BW_kj) { delete p_BW_kj; p_BW_kj = NULL; }
   if (p_g)     { delete p_g;     p_g     = NULL; }
 }
 
