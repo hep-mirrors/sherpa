@@ -19,7 +19,8 @@ set(Math_SOURCES MathTools.C
                  Permutation.C
                  PermStore.C
                  Kabbala.C
-                 Tensor.C)
+                 Tensor.C
+                 Lookup_Tables.C)
 
 set(Math_HEADERS MathTools.H
                  Term.H
@@ -54,7 +55,8 @@ set(Math_HEADERS MathTools.H
                  Tensor_Build.H
                  Tensor_Contractions.H
                  Tensor_Contractions_Epsilon.H
-                 Uncertain.H)
+                 Uncertain.H
+                 Lookup_Tables.H)
 
 sherpa_create_git_info(Math)
  

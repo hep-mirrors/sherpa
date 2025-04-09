@@ -1,10 +1,10 @@
 #ifndef AMISIC_Tools_Over_Estimator_H
 #define AMISIC_Tools_Over_Estimator_H
 
-#include "AMISIC++/Tools/Lookup_Tables.H"
 #include "PDF/Main/ISR_Handler.H"
 #include "MODEL/Main/Model_Base.H"
 #include "MODEL/Main/Running_AlphaS.H"
+#include "ATOOLS/Math/Lookup_Tables.H"
 #include <array>
 
 namespace AMISIC {
@@ -20,7 +20,7 @@ namespace AMISIC {
     std::array<PDF::PDF_Base *, 2> p_pdf;
     MODEL::One_Running_AlphaS * p_alphaS;
     MI_Processes              * p_procs;
-    OneDim_Table              * p_prefs;
+    ATOOLS::OneDim_Table      * p_prefs;
 
     void   FixMaximum();
     double ApproxME(const double & pt2,const double & xt);

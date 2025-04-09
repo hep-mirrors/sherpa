@@ -2,7 +2,7 @@
 #define AMISIC_Tools_Interaction_Probability_H
 
 #include "AMISIC++/Tools/Matter_Overlap.H"
-#include "AMISIC++/Tools/Lookup_Tables.H"
+#include "ATOOLS/Math/Lookup_Tables.H"
 
 namespace AMISIC {
   class MI_Processes;
