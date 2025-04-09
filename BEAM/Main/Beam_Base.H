@@ -52,6 +52,8 @@ namespace BEAM {
     virtual inline double Xmax()          const { return 1.; }
     virtual inline double Peak()          const { return 1.; }
 
+    virtual inline double ImpactParameter() const { return 0.; }
+
     virtual inline void SetInMomentum(const ATOOLS::Vec4D &in)   { m_lab = in; }
     virtual inline void SetOutMomentum(const ATOOLS::Vec4D &out) { m_vecouts[0] = out; }
 
