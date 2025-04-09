@@ -37,6 +37,8 @@ namespace BEAM {
 
     inline double Xmax() const override { return m_xmax; }
     inline double Xmin() const override { return m_xmin; }
+
+    inline double ImpactParameter() const final { return m_b; }
   };// end of class EPA
 
 }// end of namespace BEAM
