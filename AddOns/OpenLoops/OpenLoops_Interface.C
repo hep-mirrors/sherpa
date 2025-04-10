@@ -254,15 +254,26 @@ void OpenLoops_Interface::SetParametersSM(const MODEL::Model_Base* model)
       model->ComplexConstant("CKM_1_2")!=Complex(0.0,0.0) ||
       model->ComplexConstant("CKM_2_1")!=Complex(0.0,0.0)) {
     SetParameter("ckmorder", 1);
-    SetParameter("CKM_u_d", model->ComplexConstant("CKM_0_0").real());
-    SetParameter("CKM_u_s", model->ComplexConstant("CKM_1_0").real());
-    SetParameter("CKM_u_b", model->ComplexConstant("CKM_2_0").real());
-    SetParameter("CKM_c_d", model->ComplexConstant("CKM_0_1").real());
-    SetParameter("CKM_c_s", model->ComplexConstant("CKM_1_1").real());
-    SetParameter("CKM_c_b", model->ComplexConstant("CKM_2_1").real());
-    SetParameter("CKM_t_d", model->ComplexConstant("CKM_0_2").real());
-    SetParameter("CKM_t_s", model->ComplexConstant("CKM_1_2").real());
-    SetParameter("CKM_t_b", model->ComplexConstant("CKM_2_2").real());
+    // real parts
+    SetParameter("VCKMdu", model->ComplexConstant("CKM_0_0").real());
+    SetParameter("VCKMsu", model->ComplexConstant("CKM_1_0").real());
+    SetParameter("VCKMbu", model->ComplexConstant("CKM_2_0").real());
+    SetParameter("VCKMdc", model->ComplexConstant("CKM_0_1").real());
+    SetParameter("VCKMsc", model->ComplexConstant("CKM_1_1").real());
+    SetParameter("VCKMbc", model->ComplexConstant("CKM_2_1").real());
+    SetParameter("VCKMdt", model->ComplexConstant("CKM_0_2").real());
+    SetParameter("VCKMst", model->ComplexConstant("CKM_1_2").real());
+    SetParameter("VCKMbt", model->ComplexConstant("CKM_2_2").real());
+    // imaginary parts
+    SetParameter("VCKMIdu", model->ComplexConstant("CKM_0_0").imag());
+    SetParameter("VCKMIsu", model->ComplexConstant("CKM_1_0").imag());
+    SetParameter("VCKMIbu", model->ComplexConstant("CKM_2_0").imag());
+    SetParameter("VCKMIdc", model->ComplexConstant("CKM_0_1").imag());
+    SetParameter("VCKMIsc", model->ComplexConstant("CKM_1_1").imag());
+    SetParameter("VCKMIbc", model->ComplexConstant("CKM_2_1").imag());
+    SetParameter("VCKMIdt", model->ComplexConstant("CKM_0_2").imag());
+    SetParameter("VCKMIst", model->ComplexConstant("CKM_1_2").imag());
+    SetParameter("VCKMIbt", model->ComplexConstant("CKM_2_2").imag());
   }
   else {
     SetParameter("ckmorder", 0);
