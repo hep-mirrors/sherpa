@@ -8,17 +8,17 @@ EVENT_TYPE: HadronDecay
 # specify hadron to be decayed
 DECAYER: 15
 
-ANALYSIS: Rivet
-RIVET:
-  --ignore-beams: 1
+# ANALYSIS: Rivet
+# RIVET:
+#  --ignore-beams: 1
 #  --analyses: [BELLE_2010_I841618,BABAR_2007_S7266081]
 #ANALYSIS_OUTPUT: tau_2_hhh_FF1
 
 #  --analyses: [BELLE_2007_I753243]
 #ANALYSIS_OUTPUT: tau_2_KS_pi-_FF1
 
-  --analyses: [CLEO_1999_I508944,BELLE_2008_I786560]
-ANALYSIS_OUTPUT: tau_2_pi-_pi_FF2
+#  --analyses: [CLEO_1999_I508944,BELLE_2008_I786560]
+# ANALYSIS_OUTPUT: tau_2_pi-_pi_FF2
 
 
 
@@ -632,3 +632,6 @@ PROCESSES:
 - 11 -11 -> 13 -13:
     Order: {QCD: 0, EW: 2}
 
+
+EVENT_OUTPUT:
+  - HepMC3_GenEvent[MyFile]

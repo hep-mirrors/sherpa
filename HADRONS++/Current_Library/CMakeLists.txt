@@ -10,7 +10,7 @@ set(Current_Library_SOURCES Current_Base.C
                             VA_0_PiPi.C
                             VA_0_PP_strange.C
                             VA_0_PPP.C
-                            VA_0_PiPiPi.C
+                            #VA_0_PiPiPi.C
                             VA_0_PiPiPiPi3Charged.C
                             VA_0_PiPiPiPi1Charged.C
                             VA_B_DPi.C
@@ -32,7 +32,7 @@ set(Current_Library_HEADERS Current_Base.H
                             VA_0_PiPi.H
                             VA_0_PP_strange.H
                             VA_0_PPP.H
-                            VA_0_PiPiPi.H
+                            #VA_0_PiPiPi.H
                             VA_0_PiPiPiPi3Charged.H
                             VA_0_PiPiPiPi1Charged.H
                             VA_B_DPi.H
