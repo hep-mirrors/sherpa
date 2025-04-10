@@ -466,7 +466,6 @@ void Hadron_Init::Init() {
   // ##########################################################################
   // ##########################################################################
 
-  OverrideProperties();
 }
 
 void Hadron_Init::InitHadron(const kf_code& kfc,
@@ -515,31 +514,4 @@ void Hadron_Init::InitHadron(const kf_code& kfc,
     new Particle_Info(kfc, mass, radius, width, icharge, strong, spin, majorana, on, stable, massive,
 		      idname, antiname, texname, antitexname);
   m_addedhadrons.insert(kfc);
-}
-
-void Hadron_Init::OverrideProperties()
-{
-  auto pdata = Settings::GetMainSettings()["PARTICLE_DATA"];
-  for (const auto& ptclname : pdata.GetKeys()) {
-    kf_code kf = ToType<kf_code>(ptclname);
-    if (m_addedhadrons.find(kf) == m_addedhadrons.end())
-      continue;
-    const auto it = s_kftable.find(kf);
-    if (it != s_kftable.end()) {
-      for (const auto& propertyname : pdata[ptclname].GetKeys()) {
-        auto s = pdata[ptclname][propertyname];
-        if (propertyname == "Mass") {
-          it->second->m_mass = s.SetDefault(it->second->m_mass).Get<double>();
-        } else if (propertyname == "Width") {
-          it->second->m_width = s.SetDefault(it->second->m_width).Get<double>();
-        } else if (propertyname == "Active") {
-          it->second->m_on = s.SetDefault(it->second->m_on).Get<bool>();
-        } else if (propertyname == "Stable") {
-          it->second->m_stable = s.SetDefault(it->second->m_stable).Get<int>();
-        } else if (propertyname == "Massive") {
-          it->second->m_massive = s.SetDefault(it->second->m_massive).Get<bool>();
-        }
-      }
-    }
-  }
 }

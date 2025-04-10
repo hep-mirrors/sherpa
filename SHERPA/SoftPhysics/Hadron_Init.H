@@ -40,7 +40,6 @@ namespace SHERPA {
                     const std::string& antiname,
                     const std::string& texname,
                     const std::string& antitexname);
-    void OverrideProperties();
 
     std::unordered_set<kf_code> m_addedhadrons;
   };
