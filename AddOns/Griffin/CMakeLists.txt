@@ -1,4 +1,4 @@
-
+AddOns/Griffin/CMakeLists.txt
 set(Griffin_SOURCES Griffin_Interface.C Griffin_Virtual.C Griffin_Born.C)
 set(Griffin_HEADERS Griffin_Interface.H Griffin_Virtual.H Griffin_Born.H)
 
