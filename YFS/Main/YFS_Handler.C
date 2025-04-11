@@ -26,6 +26,7 @@ YFS_Handler::YFS_Handler()
   m_isrinital = true;
   p_splitter = new PHOTONS::Photon_Splitter(m_photon_split);
   m_rmode = 0;
+  m_real = 1;
   if(Mode()!=YFS::yfsmode::off){
     rpa->gen.AddCitation(1,"The automation of YFS ISR is published in  \\cite{Krauss:2022ajk}.Which is based on \\cite{Jadach:1988gb}");
   }
