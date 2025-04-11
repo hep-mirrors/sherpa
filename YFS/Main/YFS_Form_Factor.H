@@ -2,13 +2,8 @@
 #define YFS_Main_FORM_H
 #include "ATOOLS/Math/Vector.H"
 #include "YFS/Main/YFS_Base.H"
-<<<<<<< HEAD
 #include "YFS/Tools/Dipole.H"
 #include "YFS/NLO/Virtual.H"
-||||||| parent of 9de178c0a (updates for pion-pion)
-=======
-#include "YFS/NLO/Virtual.H"
->>>>>>> 9de178c0a (updates for pion-pion)
 #include "METOOLS/Loops/Divergence_Array.H"
 
 using namespace METOOLS;
@@ -58,7 +53,6 @@ public:
     double  m_ww_s, m_ww_u, m_ww_t;
     double m_kmax, m_t1, m_t2, m_u1, m_u2;
     int m_useCoulomb;
-    YFS::Virtual *p_virt;
     ATOOLS::Vec4D m_wp, m_wm, m_p1, m_p2;
     PHASIC::Virtual_ME2_Base *p_virt;
     double m_xx1, m_xx2, m_m1, m_m2;
