@@ -130,28 +130,28 @@ void Define_Dipoles::MakeDipoles(ATOOLS::Flavour_Vector const &fl, ATOOLS::Vec4D
     m_flav_label[fl[i]] = i;
   }
   if (!HasFSR() ) return;
-  // if (fl.size() == 4) {
-  //   Flavour_Vector ff;
-  //   Vec4D_Vector mm, bm;
-  //   m_flav_label[fl[2]] = 2;
-  //   m_flav_label[fl[3]] = 3;
-  //   for(size_t i = 2; i < fl.size(); i++) {
-  //     // if(fl[i].IntCharge()!=0 && !fl[i].IsQCD()){
-  //     if(fl[i].IntCharge()!=0){
-  //       ff.push_back(fl[i]);
-  //       mm.push_back(mom[i]);
-  //       bm.push_back(m_bornmomenta[i]);
-  //     }
-  //   }
-  //   if(ff.size()==0) return;
-  //   Dipole D(ff, mm, bm, dipoletype::final,m_alpha);
-  //   D.SetResonance(true);
-  //   D.SetFlavLab(2,3);
-  //   // IsResonant(D);
-  //   Dipole_FF(ff, mm);
-  //   m_dipolesFF.push_back(D);
-  //   return;
-  // }
+  if (fl.size() == 4) {
+    Flavour_Vector ff;
+    Vec4D_Vector mm, bm;
+    m_flav_label[fl[2]] = 2;
+    m_flav_label[fl[3]] = 3;
+    for(size_t i = 2; i < fl.size(); i++) {
+      // if(fl[i].IntCharge()!=0 && !fl[i].IsQCD()){
+      if(fl[i].IntCharge()!=0){
+        ff.push_back(fl[i]);
+        mm.push_back(mom[i]);
+        bm.push_back(m_bornmomenta[i]);
+      }
+    }
+    if(ff.size()==0) return;
+    Dipole D(ff, mm, bm, dipoletype::final,m_alpha);
+    D.SetResonance(true);
+    D.SetFlavLab(2,3);
+    // IsResonant(D);
+    Dipole_FF(ff, mm);
+    m_dipolesFF.push_back(D);
+    return;
+  }
   map<ATOOLS::Flavour, ATOOLS::Vec4D>::iterator itr;
   if (m_dip.size() != 0) {
     for (auto a : m_dip) {
@@ -270,7 +270,7 @@ void Define_Dipoles::Get4Mom(ATOOLS::Flavour_Vector const &fl, ATOOLS::Vec4D_Vec
   Vec4D_Vector P;
   for(size_t i = 2; i < fl.size(); ++i)
   {
-    if (fl[i].IsLepton()) {
+    if (fl[i].IntCharge()!=0) {
       m_test_dip[fl[i]] = mom[i];
       P.push_back(mom[i]);
       if (P.size() == 2) break;
@@ -369,10 +369,10 @@ double Define_Dipoles::CalculateRealSub(const Vec4D &k) {
   for (auto &D : m_dipolesFF) {
     for(size_t i = 0; i < D.GetMomenta().size(); ++i)
     {
-      if(D.IsFinite()) continue;
+      // if(D.IsFinite()) continue;
       Vec4D p = D.GetMomenta(i);
-      // if(D.IsResonance()) eik += -D.m_Q[i]*p/(p*k);
-      eik += -D.m_Q[i]*p/(p*k);
+      if(D.IsResonance()) eik += -D.m_Q[i]*p/(p*k);
+      // eik += -D.m_Q[i]*p/(p*k);
     }
   }
   sub = -m_alpha / (4 * M_PI * M_PI)*eik*eik;
