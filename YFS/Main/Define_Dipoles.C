@@ -7,9 +7,9 @@
 #include "ATOOLS/Org/Scoped_Settings.H"
 #include "MODEL/Main/Single_Vertex.H"
 #include "ATOOLS/Org/CXXFLAGS_PACKAGES.H"
-#ifdef USING__LOOPTOOLS
-  #include "clooptools.h"
-#endif
+// #ifdef USING__LOOPTOOLS
+//   #include "clooptools.h"
+// #endif
 
 using namespace YFS;
 using namespace ATOOLS;
@@ -33,15 +33,11 @@ Define_Dipoles::Define_Dipoles() {
     m_dip.push_back(tmp);
   }
   p_yfsFormFact = new YFS::YFS_Form_Factor();
-  #ifdef USING__LOOPTOOLS
-    FORTRAN(ltini)();
-    Setlambda(0);
-  #endif
+  // #ifdef USING__LOOPTOOLS
+  //   FORTRAN(ltini)();
+  //   Setlambda(0);
+  // #endif
   p_nloamp = new YFS::NLO_Amp();
-  #ifdef USING__LOOPTOOLS
-    FORTRAN(ltini)();
-    Setlambda(0);
-  #endif
 }
 
 Define_Dipoles::~Define_Dipoles() {
