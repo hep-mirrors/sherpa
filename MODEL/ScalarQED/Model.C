@@ -91,7 +91,7 @@ void ScalarQED_Model::ParticleInit()
                                             0, "Pomeron", "{I\\!\\!P}");
   s_kftable[kf_reggeon] = new Particle_Info(kf_reggeon, 0.0, 0.0, 0.0, 0, 0, 1,
                                             0, "Reggeon", "{I\\!\\!R}");
-  s_kftable[kf_pi_plus] = new Particle_Info(kf_pi_plus,0.13957,0.0,0,3,0,0,1,1,1,1,"Pi+","Pi-","pi^{+}","pi^{-}");
+  s_kftable[kf_pi_plus] = new Particle_Info(kf_pi_plus,0.13957,0.0,0,3,0,0,0,1,1,1,"Pi+","Pi-","pi^{+}","pi^{-}");
   // s_kftable[kf_pi_plus] = new Particle_Info(kf_pi_plus,0.13957,0.65,2.5242e-17,3,0,1,1,"pi+","pi-");
   ReadParticleData();
 }
@@ -449,11 +449,9 @@ void ScalarQED_Model::InitVertices()
   m_v.back().AddParticle(Flavour(kf_pi_plus).Bar());
   m_v.back().AddParticle(Flavour(kf_photon));
   m_v.back().Color.push_back(Color_Function(cf::None));
-  m_v.back().Lorentz.push_back("FFS");
+  m_v.back().Lorentz.push_back("SSV");
   m_v.back().cpl.push_back(cpl);
   m_v.back().order[1]=1;
-  Flavour fl = Flavour(kf_pi_plus);
-  PRINT_VAR(fl.IsScalar());
 }
 
 void ScalarQED_Model::InitQEDVertices()
