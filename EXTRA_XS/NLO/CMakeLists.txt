@@ -7,7 +7,7 @@ set(ExtraXSNLO_SOURCES Logarithms.C
                 PionPionGamma.C
                 ee3jet_CSS_approx.C
                 ee2nunuA.C
-                ee2FFBarGamma.C
+                # ee2FFBarGamma.C
                 ppll1jet_CSS_approx.C
                 epe2jet_CSS_approx.C)
 
