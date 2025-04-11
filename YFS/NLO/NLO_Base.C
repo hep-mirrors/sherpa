@@ -188,11 +188,20 @@ double NLO_Base::CalculateVirtual() {
 		double reldiff = (p1+yfspole)/p1;
 		if(!IsEqual(p1,-yfspole,1e-6) || ncorrect < 10){
 			msg_Error()<<"Poles do not cancel in YFS Virtuals"<<std::endl
+		m_histograms1d["SinglePoleCD"]->Insert(ncorrect);
+		m_histograms1d["OneLoopEpsYFS"]->Insert(log10(fabs(yfspole)));
+		m_histograms1d["OneLoopEpsLP"]->Insert(log10(fabs(p1)));
+		m_histograms1d["relativediff"]->Insert(log10(fabs(reldiff)));
+			msg_Out()<<"Poles do not cancel in YFS Virtuals"<<std::endl
 					 <<"Correct digits =  "<<ncorrect<<std::endl
 					 <<"Relative diff =  "<<reldiff<<std::endl
 					 // <<"Process =  "<<p_virt->p_loop_me->Name()<<std::endl
 					 <<"One-Loop Provider V eps^{-1}  = "<<p1<<std::endl
-					 <<"Sherpa V eps^{-1} = "<<yfspole<<std::endl;
+					 <<"Sherpa V eps^{-1} = "<<yfspole<<std::endl
+					 <<"One-Loop/Sherpa = "<<p1/yfspole<<std::endl
+					 <<"One-Loop/Sherpa/m_sp = "<<p1/yfspole/(m_plab[0]+m_plab[1]).Mass()<<std::endl
+					 <<"One-Loop/Sherpa/B = "<<p1/yfspole/m_born<<std::endl
+					 <<"One-Loop/Sherpa*B = "<<p1/yfspole*m_born<<std::endl;
 					 return 0;
 		}
 		else{
