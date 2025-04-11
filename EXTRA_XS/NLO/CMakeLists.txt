@@ -1,4 +1,4 @@
-sset(ExtraXSNLO_SOURCES Logarithms.C
+set(ExtraXSNLO_SOURCES Logarithms.C
                 Dummy_QCD_Virtual.C
                 DY_QCD_Virtual.C
                 DY_Jet_QCD_Virtual.C
@@ -12,18 +12,12 @@ sset(ExtraXSNLO_SOURCES Logarithms.C
                 epe2jet_CSS_approx.C)
 
 set(ExtraXSNLO_HEADERS Logarithms.H)
-
-if (SHERPA_ENABLE_LOOPTOOLS) 
-    list(APPEND NLO_SOURCES PionPionVirtual.C)
-endif()
-
 sherpa_create_git_info(ExtraXSNLO ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR})
 
 if (SHERPA_ENABLE_LOOPTOOLS) 
-    list(APPEND NLO_SOURCES PionPionVirtual.C)
+    list(APPEND ExtraXSNLO_SOURCES PionPionVirtual.C)
 endif()
 
-<<<<<<< HEAD
 add_library(ExtraXSNLO SHARED ${ExtraXSNLO_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
 if (SHERPA_ENABLE_LOOPTOOLS) 
     list(APPEND NLO_SOURCES emu_emu_Virtual.C)
@@ -31,15 +25,17 @@ if (SHERPA_ENABLE_LOOPTOOLS)
     target_link_libraries(ExtraXSNLO  PRIVATE ${LOOPTOOLS_DIRS}/lib/libooptools.a)
 endif()
 sherpa_handle_shared_library(ExtraXSNLO ExtraXSNLO)
-add_dependencies(ExtraXSNLO ExtraXSNLO_Git_Info)
-sherpa_create_git_info(NLO)
-if (SHERPA_ENABLE_LOOPTOOLS) 
-    target_include_directories(ExtraXSNLO  PRIVATE ${LOOPTOOLS_INCLUDE_DIRS})
-    message( ${LOOPTOOLS_DIRS}/lib)
+if (SHERPA_ENABLE_LOOPTOOLS)
+    set(LOOPTOOLS_DIRS "/Users/alanprice/software/LoopTools-2.15/arm64-Darwin")
     find_library(LOOPTOOLS_LIB NAMES ooptools PATHS ${LOOPTOOLS_DIRS}/lib)
     if (LOOPTOOLS_LIB)
-        target_link_libraries(ExtraXSNLO PRIVATE ${LOOPTOOLS_LIB})
+        target_include_directories(ExtraXSNLO  PRIVATE ${LOOPTOOLS_DIRS}/include)
+        target_link_libraries(ExtraXSNLO PRIVATE ${LOOPTOOLS_LIB} gfortran)
+        # target_link_libraries(ExtraXSNLO PRIVATE ${LOOPTOOLS_LIB})
     else()
         message(FATAL_ERROR "LoopTools library not found!")
     endif()
 endif()
+
+sherpa_create_git_info(ExtraXSNLO ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR})
+add_dependencies(ExtraXSNLO ExtraXSNLO_Git_Info)
