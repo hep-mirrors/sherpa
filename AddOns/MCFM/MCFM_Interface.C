@@ -140,6 +140,7 @@ namespace SHERPA {
 
     void SetPoleCheck(const int check)
     {
+      m_providespoles=check;
       p_proc->SetPoleCheck(check);
     }
 
