@@ -23,6 +23,13 @@ Resonance_Base::Resonance_Base(const Res_Params & params) :
   m_threshold(0.), m_threshold2(0.), m_lambda(0.),
   m_exponent(m_inflav.IsVector() ? 3 : (m_inflav.IsScalar() ? 1 : 0)) 
 {
+  std::cout << "Initializing Resonance_Base with params..." << std::endl;
+    std::cout << "m_weight: " << params.m_weight << std::endl;
+    std::cout << "m_phase: " << params.m_phase << std::endl;
+    std::cout << "m_OSmass: " << params.m_OSmass << std::endl;
+    std::cout << "m_inflav IDName: " << params.m_inflav.IDName() << std::endl;
+  // Print the address of params
+  std::cout << "Address of params: " << &params << std::endl;
   m_name = std::string("R_")+m_inflav.IDName();
   if (m_type==resonance_type::bespoke)      m_name += std::string("bespoke");
   else if (m_type==resonance_type::running) m_name += std::string("running");

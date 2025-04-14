@@ -55,7 +55,6 @@ namespace HADRONS {
     virtual double CalculateWidth(const double & s) = 0;
   public:
     Resonance_Base(const Res_Params & params);
-    ~Resonance_Base() {}
     virtual const ATOOLS::Flavour & Flav()           { return m_inflav; }
     virtual const double Mass(const double & s=0.)   { return m_OSmass; }
     virtual const double Mass2(const double & s=0.)  { return m_OSmass2; }

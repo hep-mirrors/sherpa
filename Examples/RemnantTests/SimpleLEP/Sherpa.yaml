@@ -15,3 +15,8 @@ SHOWER:
 PROCESSES:
 - 11 -11 -> 93 93:
     Order: {QCD: 0, EW: 2}
+
+ANALYSIS: Rivet
+ANALYSIS_OUTPUT:  test_it
+RIVET:
+  --analyses: [ALEPH_1991_S2435284]
