@@ -35,6 +35,7 @@ Ahadic::Ahadic(string shower) :
 Ahadic::~Ahadic()
 {
   Reset();
+  delete hadpars;
 }
 
 Return_Value::code Ahadic::Hadronize(Blob_List * blobs)

@@ -27,8 +27,14 @@ Sudakov::Sudakov(PDF::ISR_Handler *isr,const int qcd,const int qed) :
 Sudakov::~Sudakov()
 {
   delete [] p_pdf;
-  for (size_t i(0);i<m_addsplittings.size();++i) delete m_addsplittings[i];
-  for (size_t i(0);i<m_cgets.size();++i) delete m_cgets[i];
+  while (!m_addsplittings.empty()) {
+    delete m_addsplittings.back(); m_addsplittings.pop_back();
+  }
+  m_addsplittings.clear();
+  while (!m_cgets.empty()) {
+    delete m_cgets.back(); m_cgets.pop_back();
+  }
+  m_cgets.clear();
   s_init=false;
 }
 
