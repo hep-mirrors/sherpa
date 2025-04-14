@@ -286,17 +286,17 @@ Histogram_2D::Histogram_2D(const std::string & pID) :
 
 
 Histogram_2D::~Histogram_2D() {
-  if (m_zvalues!=0) {
-    delete [] m_zvalues; m_zvalues = 0;
+  if (m_zvalues!=NULL) {
+    delete m_zvalues; m_zvalues = NULL;
   }
-  if (m_z2values!=0) {
-    delete [] m_z2values; m_z2values = 0;
+  if (m_z2values!=NULL) {
+    delete m_z2values; m_z2values = NULL;
   }
-  if (m_psvalues!=0) {
-    delete [] m_psvalues; m_psvalues = 0;
+  if (m_psvalues!=NULL) {
+    delete m_psvalues; m_psvalues = NULL;
   }
-  if (m_tmp!=0) {
-    delete [] m_tmp; m_tmp = 0;
+  if (m_tmp!=NULL) {
+    delete m_tmp; m_tmp = NULL;
   }
 }
 

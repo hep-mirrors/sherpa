@@ -13,7 +13,7 @@ using namespace ATOOLS;
 using namespace PHOTONS;
 using namespace std;
 
-Histogram_2D *Generate_One_Photon::s_histo = new Histogram_2D(1,0.,M_PI,100,0.,2.*M_PI,100);
+// Histogram_2D *Generate_One_Photon::s_histo = new Histogram_2D(1,0.,M_PI,100,0.,2.*M_PI,100);
 
 // public members
 Generate_One_Photon::Generate_One_Photon

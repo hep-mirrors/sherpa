@@ -482,11 +482,11 @@ void Hadron_Init::InitHadron(const kf_code& kfc,
                              const std::string& idname,
                              const std::string& texname)
 {
-  if (checkinitialised) {
-    // if not initialised in SHRIMPS, BEAM, AMISIC, ...
-    if(s_kftable.find(kfc) != s_kftable.end())
-      return;
-  }
+  //if (checkinitialised) {
+  // if not initialised in SHRIMPS, BEAM, AMISIC, ...
+  if(s_kftable.find(kfc) != s_kftable.end())
+    return;
+  //}
   s_kftable[kfc]=new Particle_Info(kfc, mass, radius, width, icharge, spin, on, stable,
                                    idname, texname);
   if (!majorana)

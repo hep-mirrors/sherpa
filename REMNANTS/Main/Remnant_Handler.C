@@ -95,6 +95,7 @@ Remnant_Handler::~Remnant_Handler()
   if (m_fails > 0)
     msg_Out() << "Remnant handling yields " << m_fails
               << " fails in creating good beam  breakups.\n";
+  delete rempars;
 }
 
 void Remnant_Handler::InitializeRemnants(PDF::ISR_Handler* isr,

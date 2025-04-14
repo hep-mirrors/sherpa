@@ -32,6 +32,8 @@ Hadron_Decay_Map::~Hadron_Decay_Map()
        it!=m_fixed_tables.end(); ++it) {
     delete it->second;
   }
+  delete Tools::partonic_b;
+  delete Tools::partonic_c;
 }
 
 void Hadron_Decay_Map::Read(Scoped_Settings& s)
