@@ -7,6 +7,9 @@ using namespace std;
 
 void VA_0_PP::SetModelParameters( struct GeneralModel _md )
 {
+  std::cout<<"VA_0_PP: size   = "<<p_i.size()<<"\n";
+  std::cout<<"         p_i[1] = "<<p_i[1]<<"\n";
+  std::cout<<"         Flav   = "<<m_flavs[p_i[1]]<<"\n";
   m_pionmode = (m_flavs[p_i[1]].Kfcode() == kf_pi_plus) ? 1 : 0;
   m_ff       = int( _md("FORM_FACTOR", 1 ) );
   m_fpi      = _md("fpi", 0.1307 );

@@ -18,7 +18,7 @@ namespace HADRONS {
       Kpi        = 11,
       Keta       = 12,
       Ketaprime  = 13,
-      unknown = 99
+      unknown    = 99
     };
     
     enum class ffmodel {

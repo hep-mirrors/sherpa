@@ -173,8 +173,14 @@ void VA_0_PiPi::FixMode() {
 	     (m_flavs[p_i[1]].Kfcode()==kf_K_S ||
 	      m_flavs[p_i[1]].Kfcode()==kf_K_L ||
 	      m_flavs[p_i[1]].Kfcode()==kf_K) ) ||
+	    (m_flavs[p_i[1]].Kfcode()==kf_pi_plus && 
+	     (m_flavs[p_i[0]].Kfcode()==kf_K_S ||
+	      m_flavs[p_i[0]].Kfcode()==kf_K_L ||
+	      m_flavs[p_i[0]].Kfcode()==kf_K) ) ||
 	    (m_flavs[p_i[0]].Kfcode()==kf_pi && 
-	     (m_flavs[p_i[1]].Kfcode()==kf_K_plus) ) )  m_PSmode = PSmode::Kpi;
+	     m_flavs[p_i[1]].Kfcode()==kf_K_plus) ||
+	    (m_flavs[p_i[1]].Kfcode()==kf_pi && 
+	     m_flavs[p_i[0]].Kfcode()==kf_K_plus) )     m_PSmode = PSmode::Kpi;
   else if ( m_flavs[p_i[0]].Kfcode()==kf_pi_plus &&
 	    m_flavs[p_i[1]].Kfcode()==kf_eta )          m_PSmode = PSmode::etapi;
   else if ( m_flavs[p_i[0]].Kfcode()==kf_pi_plus &&
@@ -183,15 +189,17 @@ void VA_0_PiPi::FixMode() {
 	    m_flavs[p_i[1]].Kfcode()==kf_K_plus)        m_PSmode = PSmode::Keta;
   else if ( m_flavs[p_i[0]].Kfcode()==kf_eta_prime_958 &&
 	    m_flavs[p_i[1]].Kfcode()==kf_pi_plus)       m_PSmode = PSmode::Ketaprime;
-  if (m_PSmode==PSmode::unknown)
+  if (m_PSmode==PSmode::unknown) {
+    msg_Out()<<"Weird flavours: "<<m_flavs[p_i[0]]<<" + "<<m_flavs[p_i[1]]<<"\n";
     THROW(fatal_error,"Current called for illegal flavour combination.");
+  }
 }
 
 void VA_0_PiPi::FixNorm(struct GeneralModel & model) {
   // global pre-factor: 1/sqrt(2) for pi_0 wave-function, V_ud for the
   // quark-level coupling producing a rho (or rho-resonance), 1/sqrt(2)
   // for the overall normalisation.
-  double iso = 0.;
+  double iso = sqrt(1./2.);
   switch (int(m_PSmode)) {
   case int(PSmode::KK):
     iso = 1./sqrt(2.);
@@ -205,7 +213,7 @@ void VA_0_PiPi::FixNorm(struct GeneralModel & model) {
     break;
   default: break;
   }
-  double CKM = 0.;
+  double CKM = 1.;
   if (m_PSmode==PSmode::pipi  || m_PSmode==PSmode::KK ||
       m_PSmode==PSmode::etapi || m_PSmode==PSmode::etaprimepi)
     CKM = model("Vud", Tools::Vud);
