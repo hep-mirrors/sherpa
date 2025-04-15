@@ -260,8 +260,9 @@ bool VA_0_PiPi::FillDefaults(const kf_code & tag,vector<double> & defs) {
     return KSDefaults(tag,defs);
   case ffmodel::RChT:
     return RChTDefaults(tag,defs);
+  default:
+    THROW(fatal_error,"unknown form factor model.");
   }
-  THROW(fatal_error,"unknown form factor model.");
 }
 
 bool VA_0_PiPi::KSDefaults(const kf_code & tag,vector<double> & defs) {

@@ -51,7 +51,7 @@ Resonance_Base::Resonance_Base(const Res_Params & params) :
 Complex Resonance_Tree::operator()(const double & s,const double & s1) {
   msg_Out()<<"--------------------------------------------------\n"
 	   <<METHOD<<"("<<sqrt(s)<<", "<<sqrt(s1)<<")\n";
-  return ( m_norm * ( p_start ? p_start->BreitWigner(s) : (1.,0.) ) *
+  return ( m_norm * ( p_start ? p_start->BreitWigner(s) : Complex(1.,0.) ) *
 	   p_nodes->BreitWigner(s1) );
 }
 

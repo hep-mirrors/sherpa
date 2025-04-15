@@ -34,14 +34,14 @@ namespace HADRONS {
     m_inflav(inflav), m_outflavs(outflavs), m_type(type),
     m_OSmass(OSmass), m_OSwidth(OSwidth), m_weight(weight), m_phase(phase) {}
   };
-  
+
   typedef std::list<Res_Params> ResonanceParameters;
   typedef std::map<int,
 		   std::map<int,
 			    std::map<long unsigned int,
 				     std::vector<double> > > > ResDefaults;
-  
-  
+
+
   class Resonance_Base {
   protected:
     ATOOLS::Flavour m_inflav;
@@ -55,6 +55,7 @@ namespace HADRONS {
     virtual double CalculateWidth(const double & s) = 0;
   public:
     Resonance_Base(const Res_Params & params);
+    virtual ~Resonance_Base() = default;
     virtual const ATOOLS::Flavour & Flav()           { return m_inflav; }
     virtual const double Mass(const double & s=0.)   { return m_OSmass; }
     virtual const double Mass2(const double & s=0.)  { return m_OSmass2; }
@@ -62,7 +63,7 @@ namespace HADRONS {
     virtual const double Width2(const double & s=0.) { return ATOOLS::sqr(Width(s)); }
     virtual const double Weight()                    { return m_weight; }
     virtual const double Phase()                     { return m_phase; }
-    
+
     inline double Lambda(const double & M2,const double & m12,const double & m22) {
       return sqrt( ATOOLS::Max(0., ATOOLS::sqr(M2-m12-m22)-4.*m12*m22)/(4.*M2) );
     }
@@ -80,7 +81,7 @@ namespace HADRONS {
     Resonance_List(Resonance_Base * start=NULL) {
       if (start) push_back(std::make_pair(1.,start));
     }
-    inline ~Resonance_List() { while (!empty()) { delete back().second; pop_back(); } }
+    virtual ~Resonance_List() { while (!empty()) { delete back().second; pop_back(); } }
     inline void Add(Resonance_Base * R) { push_back(std::make_pair(R->Weight(),R)); }
     inline Complex BreitWigner(const double & s) {
       Complex res(1.,0.);
@@ -91,7 +92,7 @@ namespace HADRONS {
       return res;
     }
   };
-  
+
   class Resonance_Tree {
   private:
     Resonance_Base  * p_start;
@@ -102,11 +103,11 @@ namespace HADRONS {
     Resonance_Tree(Resonance_Base * start=NULL,const double & norm=1.0,
 		   const std::string name=std::string("")) :
       p_start(start), p_nodes(NULL), m_norm(norm), m_name(name) {}
-    ~Resonance_Tree() {
+    virtual ~Resonance_Tree() {
       delete p_nodes;
       delete p_start;
     }
-    
+
     Complex operator()(const double & s,const double & s1);
     void    Output();
     inline void Add(Resonance_Base * R) {
@@ -119,7 +120,7 @@ namespace HADRONS {
     inline Resonance_List * GetNodes()           { return p_nodes; }
   };
 
-  
+
   class FixedWidth_Resonance : public Resonance_Base {
     double m_MGamma;
     double CalculateWidth(const double & s) { return m_OSwidth; }
@@ -130,12 +131,12 @@ namespace HADRONS {
       return Resonance_Base::BreitWigner(s,m_OSmass2,m_MGamma);
     }
   };
-  
+
   class RunningWidth_Resonance : public Resonance_Base {
     double CalculateWidth(const double & s);
   public:
     RunningWidth_Resonance(const Res_Params & params);
-    Complex BreitWigner(const double & s); 
+    Complex BreitWigner(const double & s);
   };
 
 
@@ -146,10 +147,10 @@ namespace HADRONS {
     double CalculateWidth(const double & s);
   public:
     GS_Resonance(const Res_Params & params);
-    Complex BreitWigner(const double & s); 
+    Complex BreitWigner(const double & s);
   };
 
-  
+
   class RunningWidth3_Resonance : public Resonance_Base {
   private:
     Resonance_Base * p_BW_ij, * p_BW_kj;
@@ -159,7 +160,7 @@ namespace HADRONS {
     size_t           m_nbins, m_nsbins;
     ATOOLS::OneDim_Table * p_g;
     double           m_gV;
-    
+
     bool   GetParams(std::vector<ATOOLS::Flavour> & flavs,Res_Params & V);
     double dg(const double & Q2,const double & s1,const double & s2);
     void   FillTable(const double & Qmax=-1.);
