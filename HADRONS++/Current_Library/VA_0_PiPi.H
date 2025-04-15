@@ -40,7 +40,7 @@ namespace HADRONS {
     double         m_eps_etapi, m_eps_etaprimepi;
     double         m_m2_pi, m_m2_K, m_m2_eta, m_mu2;
 
-    std::list<std::pair<double, Resonance_Base * > > m_vectors, m_scalars;
+    std::list<Resonance_Base * > m_vectors, m_scalars;
 
     void FixMode();
     void FixNorm(struct GeneralModel & model);

@@ -79,11 +79,11 @@ VA_0_PiPi::VA_0_PiPi(const ATOOLS::Flavour_Vector& flavs,
 
 VA_0_PiPi::~VA_0_PiPi() {
   while (!m_vectors.empty()) {
-    delete m_vectors.front().second;
+    delete m_vectors.front();
     m_vectors.pop_front();
   }
   while (!m_scalars.empty()) {
-    delete m_scalars.front().second;
+    delete m_scalars.front();
     m_scalars.pop_front();
   }
 }
@@ -144,7 +144,7 @@ void VA_0_PiPi::SetModelParameters(struct GeneralModel model)
     if (SelectResonances(tags,false)) {
       for (list<kf_code>::iterator kfit=tags.begin();kfit!=tags.end();kfit++) {
 	R = InitResonance(model, *kfit);
-	if (R) m_vectors.push_back(make_pair(R->Weight(),R));
+	if (R) m_vectors.push_back(R);
       }
     }
     tags.clear();
@@ -154,7 +154,7 @@ void VA_0_PiPi::SetModelParameters(struct GeneralModel model)
 	  SelectResonances(tags,true)) {
       for (list<kf_code>::iterator kfit=tags.begin();kfit!=tags.end();kfit++)
 	R = InitResonance(model, *kfit);
-	if (R) m_scalars.push_back(make_pair(R->Weight(),R));
+	if (R) m_scalars.push_back(R);
     }
     if (m_vectors.empty() && m_scalars.empty()) {
       THROW(fatal_error,"Could not find suitable vector and scalar resonances.");
@@ -386,11 +386,11 @@ Complex VA_0_PiPi::ScalarFF(const double & s) {
 Complex VA_0_PiPi::VectorKS(const double & s)
 {
   Complex ff = Complex(0.,0.), norm = Complex(0.,0.), pref;
-  for (list<pair<double, Resonance_Base * > >::iterator rtit=m_vectors.begin();
-       rtit!=m_vectors.end();rtit++) {
-    pref  = rtit->first * Complex(cos(rtit->second->Phase()),
-				  sin(rtit->second->Phase()));
-    ff   += pref * rtit->second->BreitWigner(s);
+  for (list<Resonance_Base * >::iterator rit=m_vectors.begin();
+       rit!=m_vectors.end();rit++) {
+    Resonance_Base * R = (*rit); 
+    pref  = R->Weight() * Complex(cos(R->Phase()),sin(R->Phase()));
+    ff   += pref * R->BreitWigner(s);
     norm += pref;
   }
   return ff/norm;
@@ -398,14 +398,15 @@ Complex VA_0_PiPi::VectorKS(const double & s)
 
 Complex VA_0_PiPi::ScalarKS(const double & s)
 {
-  Complex ff = Complex(0.,0.), pref;
-  for (list<pair<double, Resonance_Base * > >::iterator rtit=m_vectors.begin();
-       rtit!=m_vectors.end();rtit++) {
-    pref  = ( rtit->first * m_deltaM2/rtit->second->Mass2() *
-	      Complex(cos(rtit->second->Phase()),sin(rtit->second->Phase())) );
-    ff   += pref * rtit->second->BreitWigner(s);
+  Complex ff = Complex(0.,0.), norm = Complex(0.,0.), pref;
+  for (list<Resonance_Base * >::iterator rit=m_scalars.begin();
+       rit!=m_scalars.end();rit++) {
+    Resonance_Base * R = (*rit); 
+    pref  = R->Weight() * Complex(cos(R->Phase()),sin(R->Phase()));
+    ff   += pref * R->BreitWigner(s);
+    norm += pref;
   }
-  return ff;
+  return ff/norm;
 }
   
 Complex VA_0_PiPi::VectorRChT(const double & s) {
@@ -423,32 +424,30 @@ Complex VA_0_PiPi::VectorRChT_pipi(const double & s)
   Complex ff      = Complex(0.,0.);
   Complex ExtraBW = Complex(0.,0.);
   double  RhoExpo = 0., Gamma = 0., pref;
-  for (list<pair<double, Resonance_Base * > >::iterator
-	 rtit=m_vectors.begin();rtit!=m_vectors.end();rtit++) {
-    if (rtit->second->Flav()==Flavour(kf_rho_770_plus)) {
+  for (list<Resonance_Base * >::iterator rit=m_vectors.begin();
+       rit!=m_vectors.end();rit++) {
+    Resonance_Base * R = (*rit);
+    if (R->Flav()==Flavour(kf_rho_770_plus)) {
       Complex Ampl = ( Loop(m_m2_pi, s, m_mu2) +
 		       Loop(m_m2_K,  s, m_mu2)/2. );
       // remember that  m_RChTpref = -1./(96.*sqr(M_PI*m_fpi))
       RhoExpo = exp(m_RChTpref*s*Ampl.real());
       // rho width expressed through the imaginary part of loop integral:
       // automatically captures the mass-shell conditions
-      Gamma   = m_RChTpref*rtit->second->Mass()*s*Ampl.imag();
-      ExtraBW = rtit->second->AltBreitWigner(s,rtit->second->Mass2(),
-					     -rtit->second->Mass()*Gamma);
-      ff  += (rtit->first *
-	      rtit->second->BreitWigner(s,rtit->second->Mass2(),
-					-rtit->second->Mass()*Gamma) *
-	      RhoExpo );
+      Gamma   = m_RChTpref * R->Mass() * s * Ampl.imag();
+      ExtraBW = R->AltBreitWigner(s,R->Mass2(), -R->Mass()*Gamma);
+      ff     += (R->Weight() *
+		 R->BreitWigner(s,R->Mass2(), -R->Mass()*Gamma) *
+		 RhoExpo );
     }
     else {
       // this is for rho' and rho"
-      Gamma = (s>4.*m_m2_pi ? rtit->second->Width(s) : 0.);
-      pref = - ( s*rtit->second->Width()/M_PI/
-		 pow(2.*rtit->second->Lambda(rtit->second->Mass2(),m_m2_pi,m_m2_pi), 3) );
+      Gamma = (s>4.*m_m2_pi ? R->Width(s) : 0.);
+      pref  = - ( s*R->Width()/M_PI/
+		 pow(2.*R->Lambda(R->Mass2(),m_m2_pi,m_m2_pi), 3) );
       // factor out the weight and phase, BW*exponent for rho'/rho" - BW*exponent for rho
-      ff += - (rtit->first * exp(Complex(0.,rtit->second->Phase())) *
-	       ( rtit->second->AltBreitWigner(s,rtit->second->Mass2(),
-					      -rtit->second->Mass()*Gamma) *
+      ff   += - (R->Weight() * exp(Complex(0.,R->Phase())) *
+		 ( R->AltBreitWigner(s,R->Mass2(), -R->Mass()*Gamma) *
 		 exp(pref * Loop(m_m2_pi, s, m_mu2).real()) -
 		 ExtraBW * RhoExpo) );
     }
@@ -463,24 +462,22 @@ Complex VA_0_PiPi::VectorRChT_Kpi(const double & s)
   double  Expo    = exp(3/2.*(Htilde(s,m_m2_K,m_m2_pi)+
 			      Htilde(s,m_m2_K,m_m2_eta)).real());
   double  Gamma;
-  for (list<pair<double, Resonance_Base * > >::iterator
-	 rtit=m_vectors.begin();rtit!=m_vectors.end();rtit++) {
-    if (rtit->second->Flav()==Flavour(kf_K_star_892_plus)) {
+  for (list<Resonance_Base * >::iterator rit=m_vectors.begin();
+       rit!=m_vectors.end();rit++) {
+    Resonance_Base * R = (*rit);
+    if (R->Flav()==Flavour(kf_K_star_892_plus)) {
       Gamma   = (m_RChTpref * 8./sqrt(s) *
-		 (pow(rtit->second->Lambda(s,m_m2_K,m_m2_pi),3)+
-		  pow(rtit->second->Lambda(s,m_m2_K,m_m2_eta),3)));
-      ExtraBW = rtit->second->AltBreitWigner(s,rtit->second->Mass2(),
-					     -rtit->second->Mass()*Gamma);
-      ff     += (rtit->first *
-		 rtit->second->BreitWigner(s,rtit->second->Mass2(),
-					   -rtit->second->Mass()*Gamma) );
+		 (pow(R->Lambda(s,m_m2_K,m_m2_pi),3)+
+		  pow(R->Lambda(s,m_m2_K,m_m2_eta),3)));
+      ExtraBW = R->AltBreitWigner(s,R->Mass2(), -R->Mass()*Gamma);
+      ff     += (R->Weight() *
+		 R->BreitWigner(s,R->Mass2(),-R->Mass()*Gamma) );
     }
     else {
-      Gamma = (s>sqr(sqrt(m_m2_pi)+sqrt(m_m2_K)) ? rtit->second->Width(s) : 0.);
-      ff     += (rtit->first *
-		 rtit->second->AltBreitWigner(s,rtit->second->Mass2(),
-					      -rtit->second->Mass()*Gamma) );
-      ff     -= rtit->first * ExtraBW;
+      Gamma = (s>sqr(sqrt(m_m2_pi)+sqrt(m_m2_K)) ? R->Width(s) : 0.);
+      ff     += (R->Weight() *
+		 R->AltBreitWigner(s,R->Mass2(),-R->Mass()*Gamma) );
+      ff     -= R->Weight() * ExtraBW;
     }
 	
   }
