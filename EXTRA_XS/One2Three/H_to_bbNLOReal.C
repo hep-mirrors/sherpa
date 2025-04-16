@@ -14,13 +14,13 @@ using namespace METOOLS;
 using namespace PHASIC;
 using namespace std;
 
-H_to_bbNLOReal::H_to_bbNLOReal(const vector<Flavour>& flavs, const Flavour& b_prop, // to do: change name from comix to new name and adapt .H
-                     size_t b_non_prop, size_t b_propi, size_t b_propj) : // to do: maybe: fix if propi or propj are the gluon
+H_to_bbNLOReal::H_to_bbNLOReal(const vector<Flavour>& flavs, const Flavour& prop, // to do: change name from comix to new name and adapt .H
+                     size_t b_non_prop, size_t propi, size_t propj) : // to do: maybe: fix if propi or propj are the gluon
   Spin_Amplitudes(flavs,Complex(0.0,0.0)), m_cur(4), m_anticur(4), m_nhel(4),
-  m_b_prop(b_prop)
+  m_prop(prop)
 {
-  DEBUG_FUNC(flavs<<" with b_prop "<<b_prop<<" in "<<b_propi<<","<<b_propj);
-  assert(b_non_prop>0 && b_propi>0 && b_propj>0);
+  DEBUG_FUNC(flavs<<" with prop "<<prop<<" in "<<propi<<","<<propj);
+  assert(b_non_prop>0 && propi>0 && propj>0);
   if (flavs.size()!=4) THROW(fatal_error,"Internal error.");
   Vec4D k(1.0,0.0,1.0,0.0); // gauge
 
@@ -37,14 +37,14 @@ H_to_bbNLOReal::H_to_bbNLOReal(const vector<Flavour>& flavs, const Flavour& b_pr
     m_cur[i]->SetGauge(k);
     m_nhel[i]=NHel(flavs[i]); // number of helicity states (based on spin properties)
   }
-  // s-channel for b_prop (i,j)
-  Current_Key ckey(b_prop,MODEL::s_model,2);
+  // s-channel for prop (i,j)
+  Current_Key ckey(prop,MODEL::s_model,2);
   m_scur = Current_Getter::GetObject("D"+ckey.Type(),ckey); // combine the two currents from i and j to one s-channel current
   METOOLS::Int_Vector isfs(2), ids(2), pols(2); // stores information about the outgoing particles: is fermion? Identifier, polarization
-  isfs[0]=flavs[b_propi].IsFermion();
-  isfs[1]=flavs[b_propj].IsFermion();
-  pols[0]=m_spins[ids[0]=b_propi];
-  pols[1]=m_spins[ids[1]=b_propj];
+  isfs[0]=flavs[propi].IsFermion();
+  isfs[1]=flavs[propj].IsFermion();
+  pols[0]=m_spins[ids[0]=propi];
+  pols[1]=m_spins[ids[1]=propj];
   m_scur->SetId(ids);
   m_scur->SetFId(isfs);
   m_scur->FindPermutations();
@@ -63,7 +63,7 @@ H_to_bbNLOReal::H_to_bbNLOReal(const vector<Flavour>& flavs, const Flavour& b_pr
   m_fcur->SetFId(isfs2);
   m_fcur->FindPermutations(); // sets up allowed permutations of the outgoing particles
   // connect (2) & (3) into (2,3)
-  m_v1=ConstructVertices(m_cur[b_propi], m_cur[b_propj], m_scur);
+  m_v1=ConstructVertices(m_cur[propi], m_cur[propj], m_scur);
   DEBUG_VAR(m_v1.size());
   // connect (1) & (2,3) into (1,2,3)
   m_v2=ConstructVertices(m_cur[b_non_prop],m_scur,m_fcur);
@@ -85,8 +85,8 @@ H_to_bbNLOReal::H_to_bbNLOReal(const vector<Flavour>& flavs, const Flavour& b_pr
     m_anticur[i]->SetKey(i);
     m_anticur[i]->SetGauge(k);
   }
-  // s-channel for b_prop (2,3)
-  ckey=Current_Key(b_prop.Bar(),MODEL::s_model,2);
+  // s-channel for prop (2,3)
+  ckey=Current_Key(prop.Bar(),MODEL::s_model,2);
   m_antiscur = Current_Getter::GetObject("D"+ckey.Type(),ckey);
   m_antiscur->SetId(ids);
   m_antiscur->SetFId(isfs);
@@ -98,7 +98,7 @@ H_to_bbNLOReal::H_to_bbNLOReal(const vector<Flavour>& flavs, const Flavour& b_pr
   m_antifcur->SetFId(isfs2);
   m_antifcur->FindPermutations();
   // connect (2) & (3) into (2,3)
-  m_antiv1=ConstructVertices(m_anticur[b_propi], m_anticur[b_propj], m_antiscur);
+  m_antiv1=ConstructVertices(m_anticur[propi], m_anticur[propj], m_antiscur);
   DEBUG_VAR(m_antiv1.size());
   // connect (1) & (2,3) into (1,2,3)
   m_antiv2=ConstructVertices(m_anticur[b_non_prop],m_antiscur,m_antifcur);
@@ -172,7 +172,7 @@ void H_to_bbNLOReal::Calculate(const ATOOLS::Vec4D_Vector& momenta, bool anti) {
   }
 
   for (size_t i=0; i<size(); ++i) {
-    (*this)[i] *= sqrt(p_ci->GlobalWeight()); // scale the final numerical result apb_propriately with the color factor
+    (*this)[i] *= sqrt(p_ci->GlobalWeight()); // scale the final numerical result appropriately with the color factor
   }
 }
 
