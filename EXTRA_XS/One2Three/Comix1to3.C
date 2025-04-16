@@ -22,23 +22,27 @@ Comix1to3::Comix1to3(const vector<Flavour>& flavs, const Flavour& prop,
   DEBUG_FUNC(flavs<<" with prop "<<prop<<" in "<<propi<<","<<propj);
   assert(nonprop>0 && propi>0 && propj>0);
   if (flavs.size()!=4) THROW(fatal_error,"Internal error.");
-  Vec4D k(1.0,0.0,1.0,0.0);
+  Vec4D k(1.0,0.0,1.0,0.0); // gauge
 
-  for (size_t i(0);i<4;++i) {
-    Current_Key ckey(i==0?flavs[i].Bar():flavs[i],MODEL::s_model,1);
-    m_cur[i] = Current_Getter::GetObject("D"+ckey.Type(),ckey);
+  for (size_t i(0);i<4;++i) { // iterate over the 4 flavours resp. particles
+    // the Current_key object uniquely identify and retrieve a "current"; current = off-shell wave function/ building block to construct amplitude
+    // it encapsulates information like flavour, charge, spin, polarization, etc.
+    Current_Key ckey(i==0?flavs[i].Bar():flavs[i],MODEL::s_model,1); // for i == 0 (incoming partivle), use the bar. This is because for amplitude 
+    // construction the incoming state is treated as if it were outgoing but with reversed fermion flow, so using the barred version ensures that 
+    // the spinor or polarization factors contract correctly in the overall matrix element calculation.
+    m_cur[i] = Current_Getter::GetObject("D"+ckey.Type(),ckey); // get the object that corresponds to the key "ckey"
     if (m_cur[i]==NULL) THROW(fatal_error, "current not found");
-    m_cur[i]->SetDirection(i==0?1:-1);
+    m_cur[i]->SetDirection(i==0?1:-1); // +1 for i=0, -1 for i=1, 2, 3
     m_cur[i]->SetId(std::vector<int>(1,i));
-    m_cur[i]->InitPols(std::vector<int>(1,m_spins[i]));
+    m_cur[i]->InitPols(std::vector<int>(1,m_spins[i])); // define allowed polarization states
     m_cur[i]->SetKey(i);
     m_cur[i]->SetGauge(k);
-    m_nhel[i]=NHel(flavs[i]);
+    m_nhel[i]=NHel(flavs[i]); // number of helicity states (based on spin properties)
   }
   // s-channel for prop (i,j)
   Current_Key ckey(prop,MODEL::s_model,2);
-  m_scur = Current_Getter::GetObject("D"+ckey.Type(),ckey);
-  METOOLS::Int_Vector isfs(2), ids(2), pols(2);
+  m_scur = Current_Getter::GetObject("D"+ckey.Type(),ckey); // combine the two currents from i and j to one s-channel current
+  METOOLS::Int_Vector isfs(2), ids(2), pols(2); // stores information about the outgoing particles: is fermion? Identifier, polarization
   isfs[0]=flavs[propi].IsFermion();
   isfs[1]=flavs[propj].IsFermion();
   pols[0]=m_spins[ids[0]=propi];
@@ -47,18 +51,18 @@ Comix1to3::Comix1to3(const vector<Flavour>& flavs, const Flavour& prop,
   m_scur->SetFId(isfs);
   m_scur->FindPermutations();
   // final current (1,2,3)
-  ckey=Current_Key(flavs[0],MODEL::s_model,1);
+  ckey=Current_Key(flavs[0],MODEL::s_model,1);  // set up with incoming particle
   m_fcur = Current_Getter::GetObject("D"+ckey.Type(),ckey);
   METOOLS::Int_Vector isfs2(3), ids2(3), pols2(3);
   isfs2[0]=flavs[1].IsFermion();
   isfs2[1]=flavs[2].IsFermion();
   isfs2[2]=flavs[3].IsFermion();
-  pols2[0]=m_spins[ids2[0]=1];
+  pols2[0]=m_spins[ids2[0]=1]; // simultaneously sets up the ids
   pols2[1]=m_spins[ids2[1]=2];
   pols2[2]=m_spins[ids2[2]=3];
   m_fcur->SetId(ids2);
   m_fcur->SetFId(isfs2);
-  m_fcur->FindPermutations();
+  m_fcur->FindPermutations(); // sets up allowed permutations of the outgoing particles
   // connect (2) & (3) into (2,3)
   m_v1=ConstructVertices(m_cur[propi], m_cur[propj], m_scur);
   DEBUG_VAR(m_v1.size());
@@ -72,7 +76,7 @@ Comix1to3::Comix1to3(const vector<Flavour>& flavs, const Flavour& prop,
   m_fcur->HM().resize(m_n);
   for (size_t i(0);i<m_n;++i) m_fcur->HM()[i]=i;
 
-  for (size_t i(0);i<4;++i) {
+  for (size_t i(0);i<4;++i) { // do the same for the anticurrent
     ckey=Current_Key(i==0?flavs[i]:flavs[i].Bar(),MODEL::s_model,1);
     m_anticur[i] = Current_Getter::GetObject("D"+ckey.Type(),ckey);
     if (m_anticur[i]==NULL) THROW(fatal_error, "current not found");
@@ -109,9 +113,10 @@ Comix1to3::Comix1to3(const vector<Flavour>& flavs, const Flavour& prop,
 
   p_ci=new Color_Integrator();
   Idx_Vector cids(4,0);
-  METOOLS::Int_Vector acts(4,0), types(4,0);
+  METOOLS::Int_Vector acts(4,0), types(4,0); // (?) acts holds flags indicating whether each particle participates in strong interactions; 
+  // (?) types stores the specific type of color charge for each particle
   for (size_t i(0);i<flavs.size();++i) {
-    cids[i]=i;
+    cids[i]=i; // assign unique index
     acts[i]=flavs[i].Strong();
     if (acts[i]) {
       if (flavs[i].StrongCharge()==8) types[i]=0;
@@ -139,7 +144,7 @@ Comix1to3::~Comix1to3()
 
 void Comix1to3::Calculate(const ATOOLS::Vec4D_Vector& momenta, bool anti) {
   DEBUG_FUNC(momenta.size());
-  p_ci->GeneratePoint();
+  p_ci->GeneratePoint(); // create a new integration point for the color factors
   if (anti) {
     for (size_t i(0);i<m_anticur.size();++i) {
       m_anticur[i]->ConstructJ(i==0?-momenta[i]:momenta[i],0,p_ci->I()[i],p_ci->J()[i],0);
@@ -158,17 +163,17 @@ void Comix1to3::Calculate(const ATOOLS::Vec4D_Vector& momenta, bool anti) {
   }
 
 
-  vector<int> fill(m_n,1);
+  vector<int> fill(m_n,1); // output amplitude vector
   for (size_t i(0);i<m_n;++i) (*this)[i]=Complex(0.0,0.0);
   if (anti) {
-    m_antifcur->Contract<double>(*m_anticur.front(),fill,*this,0);
+    m_antifcur->Contract<double>(*m_anticur.front(),fill,*this,0); // compute amplitude
   }
   else {
     m_fcur->Contract<double>(*m_cur.front(),fill,*this,0);
   }
 
   for (size_t i=0; i<size(); ++i) {
-    (*this)[i] *= sqrt(p_ci->GlobalWeight());
+    (*this)[i] *= sqrt(p_ci->GlobalWeight()); // scale the final numerical result appropriately with the color factor
   }
 }
 

@@ -57,10 +57,38 @@ public:
 };
 
 Hard_Decay_Handler::Hard_Decay_Handler() :
+/* Sets the variable values. It often checkes if there is a value specified, and if not, it sets a default value.
+*/
+
   p_newsublist(NULL), m_resultdir(""), m_offshell(""),
   m_decay_tau(false), m_set_widths(false),
-  m_br_weights(true), m_usemass(true), m_min_prop_width(0.0)
+  m_br_weights(true), m_usemass(true), m_min_prop_width(0.0)   // Variables are set
 {
+  /* This code manages how particle decays are set up and processed in the simulation. In summary:
+
+Setting Decay Masses:
+The code first determines which particle flavours should be treated as massive by checking settings and the particles’ properties. 
+It fills a set (m_decmass) with these flavours (and their antiparticles) and then logs the list of flavours considered “massive.”
+
+Initializing Decay Tables and Channels:
+For each flavour (and its antiparticle) that is allowed to decay (determined by the Decays() method), a new decay table (dt) is created, 
+inserted into the global decay map (p_decaymap), and any pre-existing decay data is read from file via ReadDecayTable().
+
+Then, the decay table entries are initialized in two stages:
+
+Two-body decays (direct decays): Using InitializeDirectDecays(), the vertex information is retrieved from the model’s vertex table (via s_model->VertexTable()), 
+any duplicate vertices are filtered out, and new decay channels are created for each valid vertex.
+
+Three-body (offshell) decays: Using InitializeOffshellDecays(), additional channels arising from offshell intermediate states are set up and the 
+overall channel statuses are updated.
+
+Width Overwriting and Final Adjustments:
+Finally, the code checks for user or heavy‐object–specific overrides for partial widths (through the HO SM widths settings) and sets the decay 
+widths accordingly. It then writes the decay tables to files if the configuration requires storing results.
+
+In essence, this code builds, initializes, and adjusts the decay channels for various particle flavours based on model input, 
+user settings, and computed integration results, ensuring that the decays are treated consistently during the simulation.
+  */
   auto& s = Settings::GetMainSettings();
   auto ds = s["HARD_DECAYS"];
   m_mass_smearing   = ds["Mass_Smearing"].SetDefault(1).Get<int>();
@@ -110,6 +138,12 @@ Hard_Decay_Handler::Hard_Decay_Handler() :
   }
 
   DEBUG_FUNC("");
+  /* This code initializes the decay map by iterating over all particle flavours stored in s_kftable. 
+  For each flavour, it creates a Flavour object from the KF code and then checks with the Decays() 
+  method whether that flavour is eligible for decay. If it is, a new Decay_Table is created for the flavour, 
+  inserted into the decay map (p_decaymap), and an attempt is made to read existing decay data from file via ReadDecayTable. 
+  The same procedure is repeated for the corresponding antiparticle (flav.Bar()) if it is different from the particle itself and also allowed to decay.
+  */
   p_decaymap = new Decay_Map(this);
   KFCode_ParticleInfo_Map::const_iterator it;
   for (it=s_kftable.begin();it!=s_kftable.end();it++) {
@@ -117,7 +151,7 @@ Hard_Decay_Handler::Hard_Decay_Handler() :
     if (Decays(flav)) {
       Decay_Table* dt=new Decay_Table(flav, this);
       p_decaymap->insert(make_pair(flav,dt));
-      ReadDecayTable(flav);
+      ReadDecayTable(flav);    // this method essentially does this: m_read[decayer].insert(make_pair(decaychannel, results))
     }
     if (flav!=flav.Bar() && Decays(flav.Bar())) {
       Decay_Table* dt=new Decay_Table(flav.Bar(), this);
@@ -127,10 +161,15 @@ Hard_Decay_Handler::Hard_Decay_Handler() :
   }
   
   // initialize them sorted by masses:
+  /* This code iterates over all entries in the decay map (p_decaymap), which contains decay tables for different particle flavours. 
+  For each decay table, it calls InitializeDirectDecays to set up two-body/ three-body decay channels, and it logs a debugging message indicating 
+  that the initialization of hard decay tables (specifically two-body decays) is starting. */
   Decay_Map::iterator dmit;
   msg_Debugging()<<"Initialising hard decay tables: two-body decays.\n";
   for (dmit=p_decaymap->begin(); dmit!=p_decaymap->end(); ++dmit) {
-    InitializeDirectDecays(dmit->second);
+    InitializeDirectDecays(dmit->second); // dmit->second retrieves the value of the p_decaymap that is currently being iterated over (flavour, decay table dt)
+                                          // dt is a pointer to a Decay_Table object, which is essentially a container holding pointers to Decay_Channel objects. 
+                                          // It behaves like a vector (or similar container) where you can iterate over its elements (each element being a Decay_Channel*)
   }
   msg_Debugging()<<"Initialising hard decay tables: three-body decays.\n";
   for (dmit=p_decaymap->begin(); dmit!=p_decaymap->end(); ++dmit) {
@@ -140,17 +179,17 @@ Hard_Decay_Handler::Hard_Decay_Handler() :
 
 
   // overwrite partial widths from HO SM or user input
-  if (ds["Use_HO_SM_Widths"].SetDefault(true).Get<bool>()) {
+  if (ds["Use_HO_SM_Widths"].SetDefault(true).Get<bool>()) { // set default value true if not already defined
     if (Flavour(kf_h0).Mass()<125.07 || Flavour(kf_h0).Mass()>125.11 ||
-        Flavour(kf_t).Mass()<172.4 || Flavour(kf_t).Mass()>172.6)
+        Flavour(kf_t).Mass()<172.4 || Flavour(kf_t).Mass()>172.6)  // check if the mass of the Higgs boson and top quark are in the expected SM range
       THROW(fatal_error, "Use_HO_SM_Widths specified, but particle masses not in SM range.");
-    SetHOSMWidths(ds);
+    SetHOSMWidths(ds); // set default values
   }
-  for (dmit=p_decaymap->begin(); dmit!=p_decaymap->end(); ++dmit) {
-    for (auto dc: *(dmit->second)) {
-      auto s = ds["Channels"][dc->IDCode()]["Width"];
-      if (!s.HasDefault()) s.SetDefault(dc->IWidth());
-      dc->SetWidth(s.Get<double>());
+  for (dmit=p_decaymap->begin(); dmit!=p_decaymap->end(); ++dmit) { // iterate over entries in decay map
+    for (auto dc: *(dmit->second)) { // loop over decay channels
+      auto s = ds["Channels"][dc->IDCode()]["Width"]; // setting for the width of the decay channel
+      if (!s.HasDefault()) s.SetDefault(dc->IWidth()); // if no default value is set, use the integrated width value of the decay channel
+      dc->SetWidth(s.Get<double>()); // assign value to the decay channel
     }
     dmit->second->UpdateWidth();
   }
@@ -174,6 +213,13 @@ Hard_Decay_Handler::~Hard_Decay_Handler()
 }
 
 void Hard_Decay_Handler::SetDecayMasses()
+/*SetDecayMasses() retrieves the configuration for massive and massless partons from 
+the global settings and checks for any inconsistencies between these lists. 
+Based on the RESPECT_MASSIVE_FLAG, it then assigns default labels to partons, 
+ensuring that partons explicitly marked as massive or massless are correctly handled. 
+Finally, it populates the m_decmass member with the flavours (and their antiparticles) 
+that are to be treated as massive and logs this configuration for further processing in decays.
+*/
 {
   Settings& s = Settings::GetMainSettings();
   ATOOLS::Flavour_Vector allflavs(MODEL::s_model->IncludedFlavours());
@@ -200,9 +246,14 @@ void Hard_Decay_Handler::SetDecayMasses()
     defpsmassless.push_back(kf_photon);
     for (size_t i(0);i<allflavs.size();++i) {
       if (allflavs[i].IsDummy()) continue;
-      size_t kf(allflavs[i].Kfcode());
+      size_t kf(allflavs[i].Kfcode()); // KF code: unique integer identifier for a particle flavor based on the PDG standard
       bool add(true);
-      for (size_t j(0);j<defpsmassive.size();++j)
+      /*This loop iterates over all flavours in the vector "allflavs". For each flavour that is not marked as a dummy, 
+      it retrieves its KF code and then checks whether that code already exists in either the "defpsmassive" or "defpsmassless" lists. 
+      If the KF code is not present in either list (i.e. "add" remains true), it adds the code to "defpsmassive". Essentially, 
+      this ensures that any flavour not explicitly designated as massless is by default treated as massive.
+      */
+      for (size_t j(0);j<defpsmassive.size();++j) 
         if (kf==defpsmassive[j]) { add=false; break; }
       for (size_t j(0);j<defpsmassless.size();++j)
         if (kf==defpsmassless[j]) { add=false; break; }
@@ -222,7 +273,12 @@ void Hard_Decay_Handler::SetDecayMasses()
       if (add && !allflavs[i].IsMassive()) defpsmassless.push_back(kf);
     }
   }
-  // then remove and add those specified manually
+  /*then remove and add those specified manually. This code synchronizes the default massive and massless lists with the manually specified ones. 
+  For each element in the massive list (psmassive), it removes that element from the massless defaults (defpsmassless) and then ensures it is 
+  present in the massive defaults (defpsmassive). Similarly, for each element in the massless list (psmassless), it removes that element from 
+  the massive defaults and then adds it to the massless defaults if it isn’t already present. This ensures that the manually specified settings 
+  override any previous assignments.
+  */
   for (size_t i(0);i<psmassive.size();++i) {
     defpsmassless.erase(std::remove(defpsmassless.begin(),defpsmassless.end(),
                                     psmassive[i]),defpsmassless.end());
@@ -232,6 +288,9 @@ void Hard_Decay_Handler::SetDecayMasses()
   for (size_t i(0);i<psmassless.size();++i) {
     defpsmassive.erase(std::remove(defpsmassive.begin(),defpsmassive.end(),
                                    psmassless[i]),defpsmassive.end());
+    // This code checks if the current element from the "psmassive" vector is already present in the "defpsmassive" list. 
+    // The function std::find searches the "defpsmassive" container for the given element (psmassive[i]). If std::find 
+    // returns defpsmassive.end(), it means the element was not found, so the element is added to "defpsmassive" via push_back.
     if (std::find(defpsmassless.begin(),defpsmassless.end(),psmassless[i])==
         defpsmassless.end()) defpsmassless.push_back(psmassless[i]);
   }
@@ -239,7 +298,7 @@ void Hard_Decay_Handler::SetDecayMasses()
   for (size_t i(0);i<defpsmassive.size();++i) {
     Flavour fl(defpsmassive[i],0);
     m_decmass.insert(fl);
-    m_decmass.insert(fl.Bar());
+    m_decmass.insert(fl.Bar());  // Antiparticle
   }
   Flavour_Vector mf;
   for (Flavour_Set::iterator fit(m_decmass.begin());fit!=m_decmass.end();++fit)
@@ -252,23 +311,38 @@ void Hard_Decay_Handler::InitializeDirectDecays(Decay_Table* dt)
 {
   DEBUG_FUNC(dt->Flav());
   Flavour inflav=dt->Flav();
-  Vertex_Table::const_iterator vlit=s_model->VertexTable()->find(inflav);
-  const Vertex_List& vlist=(vlit!=s_model->VertexTable()->end()) ? (vlit->second) : Vertex_List();
+  Vertex_Table::const_iterator vlit=s_model->VertexTable()->find(inflav);  // vertex list iterator; s_model is a global pointer (or reference) to the current 
+                                                                          // model instance, typically of type Model_Base or a similar class. It contains all 
+                                                                          // the model-specific information—such as the vertex table, the list of included particle 
+                                                                          // flavours, and other interaction data
+  // Check if the iterator "vlit" is valid (i.e. not equal to the end of the vertex table); 
+  // if so, assign "vlit->second" (the vertex list associated with the found key) to "vlist,"
+  const Vertex_List& vlist=(vlit!=s_model->VertexTable()->end()) ? (vlit->second) : Vertex_List(); 
   // temporary hack:
   // prepare reduced vertex list, not containing duplicates
   // in the sense of having identical external flavours
   Vertex_List reduced_vlist;
-  for (Vertex_List::const_iterator vit=vlist.begin();vit!=vlist.end();++vit){
+  for (Vertex_List::const_iterator vit=vlist.begin();vit!=vlist.end();++vit){  // iterate over the vertex list
     Vertex_List::const_iterator vjt=reduced_vlist.begin();
     for(;vjt!=reduced_vlist.end(); ++vjt)
-      if((*vjt)->in == (*vit)->in) break;
+      if((*vjt)->in == (*vit)->in) break;  // filtering out duplicates
     if(vjt==reduced_vlist.end()) reduced_vlist.push_back(*vit);
   }
 
   msg_Debugging()<<"Vertices:"<<std::endl;
-  for (size_t i=0;i<reduced_vlist.size();i++) {
+  /* This loop processes each unique vertex in the reduced vertex list, and for every proper vertex it creates a new decay channel 
+  for the flavor under consideration. It then adds the decay products (from the vertex), constructs a two-body decay diagram with a 
+  Comix1to2 object, sets up the integration channels (using a Multi_Channel object and a Rambo phase-space generator), applies 
+  configuration settings (such as the channel's active status), calculates the decay width, and if successful, adds the channel to 
+  the decay table; otherwise, it deletes the channel.
+  */
+  for (size_t i=0;i<reduced_vlist.size();i++) { // iterate over the reduced vertex list
     Single_Vertex* sv=reduced_vlist[i];
-    if (!ProperVertex(sv)) continue;
+    // Proper Vertex, if: 1. The vertex is not marked as already decayed (sv->dec is false).
+    // 2. None of the incoming particles (legs) are dummy particles.
+    // 3. The vertex has exactly three legs (necessary for direct decay).
+    // 4. No external leg (except the first) has the same KF code as the first leg (avoiding self-couplings or unwanted configurations).
+    if (!ProperVertex(sv)) continue; 
     msg_Debugging()<<"  "<<i<<": "<<*sv<<std::endl;
     Decay_Channel* dc=new Decay_Channel(inflav, this);
     for (int j=1; j<sv->NLegs(); ++j) dc->AddDecayProduct(sv->in[j]);
@@ -277,9 +351,13 @@ void Hard_Decay_Handler::InitializeDirectDecays(Decay_Table* dt)
     dc->AddDiagram(diagram);
 
     dc->SetChannels(new Multi_Channel(""));
-    dc->Channels()->SetNin(1);
-    dc->Channels()->SetNout(dc->NOut());
-    Rambo* rambo = new Rambo(1,dc->NOut(),&dc->Flavs().front(),this);
+    dc->Channels()->SetNin(1); // One incoming particle
+    dc->Channels()->SetNout(dc->NOut()); // Number of outgoing particles
+
+    // create a new instance of a Rambo phase-space generator. The constructor is given the number of incoming particles (1), the number of 
+    // outgoing particles (dc->NOut()), and a pointer to the list of particle flavors (starting at &dc->Flavs().front()), along with the 
+    //current Hard_Decay_Handler context. 
+    Rambo* rambo = new Rambo(1,dc->NOut(),&dc->Flavs().front(),this); 
     dc->Channels()->Add(rambo);
     dc->Channels()->Reset();
 
@@ -289,36 +367,38 @@ void Hard_Decay_Handler::InitializeDirectDecays(Decay_Table* dt)
     if (CalculateWidth(dc)) dt->AddDecayChannel(dc);
     else delete dc;
   }
-  dt->UpdateWidth();
-  if (m_set_widths) dt->Flav().SetWidth(dt->TotalWidth());
+  dt->UpdateWidth(); // recalculate sum of all individual decay channels' widths stored in dt
+  if (m_set_widths) dt->Flav().SetWidth(dt->TotalWidth()); // set the particle’s width to newly computed total
 }
 
 void Hard_Decay_Handler::InitializeOffshellDecays(Decay_Table* dt) {
   DEBUG_FUNC(dt->Flav()<<" "<<dt->size());
   size_t dtsize=dt->size();
   for (size_t i=0;i<dtsize;++i) {
-    Decay_Channel* dc=dt->at(i);
-    vector<Decay_Channel*> new_dcs=ResolveDecay(dc);
-    if (TriggerOffshell(dc, new_dcs)) {
+    Decay_Channel* dc=dt->at(i); // get the decay channel pointer stored at the i-th index
+    // ResolveDecay attempts to generate additional (offshell or three-body) decay channel configurations that may arise 
+    // from the original two-body decay represented by dc, and returns them in a vector of Decay_Channel pointers.
+    vector<Decay_Channel*> new_dcs=ResolveDecay(dc); 
+    if (TriggerOffshell(dc, new_dcs)) { // hecks if the decay channel is offshell
       dc->SetActiveAll(-1);
       for (size_t j=0; j<new_dcs.size(); ++j) {
         // check for duplicates
         Decay_Channel* dup=dt->GetDecayChannel(new_dcs[j]->Flavs());
-        if (dup && dup->Active(0)>=0) {
+        if (dup && dup->Active(0)>=0) { // check if duplicate channel is already active
           DEBUG_INFO("Adding new diagram to "<<*dup);
           for (size_t k=0; k<new_dcs[j]->GetDiagrams().size(); ++k) {
-            dup->AddDiagram(new_dcs[j]->GetDiagrams()[k]);
+            dup->AddDiagram(new_dcs[j]->GetDiagrams()[k]); // if so, add the new diagrams to the existing decay diagrams
           }
-          for (size_t k=0; k<new_dcs[j]->Channels()->Channels().size(); ++k) {
+          for (size_t k=0; k<new_dcs[j]->Channels()->Channels().size(); ++k) { // add also new channels
             dup->AddChannel(new_dcs[j]->Channels()->Channels()[k]);
           }
-          new_dcs[j]->ResetDiagrams();
+          new_dcs[j]->ResetDiagrams(); // ResetDiagrams and ResetChannels are called to clear the diagrams and channels of the new decay channel
           new_dcs[j]->ResetChannels();
           delete new_dcs[j];
           new_dcs[j]=NULL;
           CalculateWidth(dup);
         }
-        else {
+        else { 
           DEBUG_INFO("Adding "<<new_dcs[j]->Name());
           auto s = Settings::GetMainSettings()["HARD_DECAYS"]["Channels"][new_dcs[j]->IDCode()];
           new_dcs[j]->SetActive(s["Status"].SetDefault(new_dcs[j]->Active()).GetVector<int>());
@@ -326,15 +406,15 @@ void Hard_Decay_Handler::InitializeOffshellDecays(Decay_Table* dt) {
         }
       }
     }
-    else {
+    else { // offshell decay not triggered
       DEBUG_INFO("Keeping factorised.");
       for (size_t j=0; j<new_dcs.size(); ++j) {
-        if (new_dcs[j]) new_dcs[j]->SetActiveAll(-1);
+        if (new_dcs[j]) new_dcs[j]->SetActiveAll(-1); // mark all new decay channels as inactive
       }
     }
   }
   dt->UpdateWidth();
-  if (m_set_widths) dt->Flav().SetWidth(dt->TotalWidth());
+  if (m_set_widths) dt->Flav().SetWidth(dt->TotalWidth()); // set width of particle to summed decay width of all channels
 }
 
 
@@ -374,16 +454,20 @@ void Hard_Decay_Handler::SetHOSMWidths(ATOOLS::Scoped_Settings& s)
   s["Channels"]["-6,-24,-5"] ["Width"].SetDefault(1.32);
 }
 
-bool Hard_Decay_Handler::TriggerOffshell(Decay_Channel* dc, vector<Decay_Channel*> new_dcs) {
+bool Hard_Decay_Handler::TriggerOffshell(Decay_Channel* dc, vector<Decay_Channel*> new_dcs) 
+/* This function determines whether additional resolved offshell decay configurations should be applied to a given decay channel
+*/
+{
   DEBUG_FUNC(dc->Name()<<"... "<<new_dcs.size());
 
-  if (m_offshell=="Threshold") {
+  if (m_offshell=="Threshold") { // sum the masses of the daughter particles and compare that to the mass of the decaying particle
     double outmass=0.0;
     for (size_t j=1; j<dc->Flavs().size(); ++j)
       outmass+=this->Mass(dc->Flavs()[j]);
     DEBUG_INFO(this->Mass(dc->Flavs()[0])<<" vs "<<outmass);
     return (this->Mass(dc->Flavs()[0])<outmass);
   }
+  // sums the widths from all resolved decay channels (new_dcs) and returns true if their total exceeds the original channel’s width
   else if (m_offshell=="ByWidth") {
     double sum_resolved_widths=0.0;
     for (size_t i=0; i<new_dcs.size(); ++i) {
@@ -401,21 +485,24 @@ bool Hard_Decay_Handler::TriggerOffshell(Decay_Channel* dc, vector<Decay_Channel
 }
 
 vector<Decay_Channel*> Hard_Decay_Handler::ResolveDecay(Decay_Channel* dc1)
+/*The ResolveDecay method takes an existing two-body decay channel (dc1) and attempts to “resolve” it into additional 
+offshell (or three-body) decay configurations. 
+*/
 {
   DEBUG_FUNC(dc1->Name());
   vector<Decay_Channel*> new_dcs;
   const std::vector<ATOOLS::Flavour> flavs1(dc1->Flavs());
-  for (size_t j=1;j<flavs1.size();++j) {
+  for (size_t j=1;j<flavs1.size();++j) { // iterate over each daughter flavor (starting at index 1)
     bool ignore=false;
-    if (flavs1[j].Width()<m_min_prop_width) continue;
-    for (size_t k=1; k<j; ++k) {
+    if (flavs1[j].Width()<m_min_prop_width) continue; // skip if width is below threshold
+    for (size_t k=1; k<j; ++k) { // skip duplicates
       // TODO Do we really have to avoid double counting e.g. in h -> Z Z?
       // Further iterations: W+ -> b t -> b W b -> b b .. ?
       if (flavs1[j]==flavs1[k]) ignore=true;
     }
     if (ignore) continue;
-    Vertex_Table::const_iterator it=s_model->VertexTable()->find(flavs1[j]);
-    const Vertex_List& vlist(it->second);
+    Vertex_Table::const_iterator it=s_model->VertexTable()->find(flavs1[j]); // create iterator which points at to the map entry of corresponding flavor
+    const Vertex_List& vlist(it->second);  // retrieve vertex list for corresponding flavor
     // temporary hack:
     // prepare reduced vertex list, not containing duplicates
     // in the sense of having identical external flavours
@@ -440,17 +527,19 @@ vector<Decay_Channel*> Hard_Decay_Handler::ResolveDecay(Decay_Channel* dc1)
       // TODO what about W+ -> b t -> b W b -> b b ... two diagrams, factor 2, ...?
       // TODO what about identical particles like W' -> b t -> b W b ... two diagrams, factor 2, ...?
       // TODO what about W -> W gamma -> l v gamma?
-      for (size_t l=1; l<4; ++l) {
-        if (dc->Flavs()[l]==flavs1[3-j]) nonprop=l;
+      for (size_t l=1; l<4; ++l) { // iterate over the decay products
+        if (dc->Flavs()[l]==flavs1[3-j]) nonprop=l; // find the non-propagating particle
       }
-      for (size_t l=1; l<4; ++l) {
+      for (size_t l=1; l<4; ++l) { // first != nonprop leg assigned to propi, the other one to propj
         if (l!=nonprop && propi>0) propj=l;
         else if (l!=nonprop && propi==0) propi=l;
       }
 
-      assert(dc1->GetDiagrams().size()==1);
+      assert(dc1->GetDiagrams().size()==1); // assert that original two-body decay channel has only one diagram (to catch inconsistencies)
       DEBUG_VAR(dc->Flavs());
       DEBUG_VAR(flavs1[j]);
+      // if dc-> Flavs()[0] == Higgs && nonprop == b or b_bar && propi or propj == gluon and the other one is b_bar or b: use new class here
+      // is either propi or propj always the gluon, e.g. is the order according to the numbering scheme?
       Comix1to3* diagram=new Comix1to3(dc->Flavs(),flavs1[j],
                                        nonprop, propi, propj);
 
@@ -480,26 +569,34 @@ vector<Decay_Channel*> Hard_Decay_Handler::ResolveDecay(Decay_Channel* dc1)
 }
 
 bool Hard_Decay_Handler::CalculateWidth(Decay_Channel* dc)
+/* CalculateWidth first checks whether the decaying particle’s mass is kinematically allowed to decay into its outgoing 
+particles (i.e. its mass exceeds the sum of the decay-product masses). If so, it either retrieves pre-computed width values 
+from stored results or integrates to compute the decay width using specified accuracy and iteration parameters, and updates 
+the decay channel's width values; if not, it disables the channel by setting its width values to zero.
+*/
 {
   // Integrate or use results read from decay table file
   double outmass=0.0;
+  // This loop sums the masses of all decay products in the decay channel. It starts at index 1 (ignoring the initial 
+  // decaying particle at index 0) and calls the handler’s Mass method for each daughter, storing the total in outmass. 
+  // This sum is later used to check if the decaying particle is heavy enough to allow the decay kinematically.
   for (size_t l=1; l<dc->Flavs().size(); ++l)
     outmass+=this->Mass(dc->Flavs()[l]);
-  if (this->Mass(dc->Flavs()[0])>outmass) {
+  if (this->Mass(dc->Flavs()[0])>outmass) { // check if decay is kinematically allowed
     DEBUG_FUNC("Starting calculation of "<<dc->Name()<<" width now.");
-    if (m_store_results && m_read.find(dc->Flavs()[0])!=m_read.end()) {
+    if (m_store_results && m_read.find(dc->Flavs()[0])!=m_read.end()) { // check if results are already stored in m_read
       if (m_read[dc->Flavs()[0]].find(dc->IDCode())!=
-          m_read[dc->Flavs()[0]].end()) {
-        const vector<double>& results(m_read[dc->Flavs()[0]][dc->IDCode()]);
-        dc->SetIWidth(results[0]);
-        dc->SetIDeltaWidth(results[1]);
+          m_read[dc->Flavs()[0]].end()) { // check if current decay channel is in m_read
+        const vector<double>& results(m_read[dc->Flavs()[0]][dc->IDCode()]); // get precomputed set of results
+        dc->SetIWidth(results[0]); // set the width of the decay channel
+        dc->SetIDeltaWidth(results[1]); // set the delta width of the decay channel
         dc->SetMax(results[2]);
       }
-      else {
+      else { // otherwise calculate the width
         msg_Tracking()<<"    Integrating "<<dc->Name()<<endl;
         dc->CalculateWidth(m_int_accuracy,
                            m_int_target_mode==0 ? dc->Flavs()[0].Width() : 0.0,
-                           m_int_niter);
+                           m_int_niter); // this method belongs to the Decay_Channel class
       }
     }
     else {
@@ -509,7 +606,7 @@ bool Hard_Decay_Handler::CalculateWidth(Decay_Channel* dc)
                          m_int_niter);
     }
   }
-  else {
+  else { // decay kinematically not allowed: disable decay channel
     dc->SetActiveAll(-1);
     dc->SetIWidth(0.0);
     dc->SetIDeltaWidth(0.0);
@@ -518,10 +615,14 @@ bool Hard_Decay_Handler::CalculateWidth(Decay_Channel* dc)
   auto s = Settings::GetMainSettings()["HARD_DECAYS"]["Channels"][dc->IDCode()];
   dc->SetWidth(dc->IWidth());
   dc->SetDeltaWidth(dc->IDeltaWidth());
-  return true;
+  return true; // width has been successfully calculated
 }
 
 bool Hard_Decay_Handler::ProperVertex(MODEL::Single_Vertex* sv)
+/* The ProperVertex method checks whether a given vertex is valid for constructing a decay channel. It returns false if:
+- the vertex has already been used (indicated by its dec flag)
+- if any of its legs are dummy particles
+- the vertex has exactly three legs and that none of the outgoing legs (index i) have the same KF code as the incoming leg (index 0) */
 {
   if (sv->dec) return false;
 
@@ -544,10 +645,12 @@ bool Hard_Decay_Handler::ProperVertex(MODEL::Single_Vertex* sv)
 
 
 void Hard_Decay_Handler::CreateDecayBlob(ATOOLS::Particle* inpart)
+/* A decay blob is created for the incoming particle (inpart) if it has not already been assigned one.
+*/
 {
   DEBUG_FUNC(inpart->Flav());
   if(inpart->DecayBlob()) THROW(fatal_error,"Decay blob already exists.");
-  if(!Decays(inpart->Flav())) return;
+  if(!Decays(inpart->Flav())) return; // return if the particle does not decay
   Blob* blob = p_bloblist->AddBlob(btp::Hard_Decay);
   blob->SetStatus(blob_status::needs_showers);
   blob->AddStatus(blob_status::needs_extraQED);
@@ -562,7 +665,7 @@ void Hard_Decay_Handler::CreateDecayBlob(ATOOLS::Particle* inpart)
   blob->AddData("dc",new Blob_Data<Decay_Channel*>(table->Select()));
 
   DEBUG_INFO("p_onshell="<<inpart->Momentum());
-  blob->AddData("p_onshell",new Blob_Data<Vec4D>(inpart->Momentum()));
+  blob->AddData("p_onshell",new Blob_Data<Vec4D>(inpart->Momentum())); // add on-shell momentum
   DEBUG_INFO("succeeded.");
 }
 
@@ -580,6 +683,15 @@ void Hard_Decay_Handler::FindDecayProducts(Particle* decayer,
 }
 
 double Hard_Decay_Handler::BRFactor(ATOOLS::Blob* blob) const
+/* BRFactor calculates an overall branching‐ratio factor for the blob’s decay chain. Here’s how it works:
+
+- It initializes the factor (brfactor) to 1.0.
+- Then, for each outgoing particle in the blob, it looks up a decay table using the particle’s reference flavor.
+- If a decay table is found, it multiplies brfactor by the ratio of the particle’s active width (the width corresponding to the decay channels that are “active”) to the total width available for decays.
+- If the particle itself decays (has a decay blob of type Hard_Decay), the function calls itself recursively on that blob and multiplies the result into brfactor.
+- Finally, it returns the overall brfactor.
+This factor is later used to correct event weights by accounting for the probabilities of the various decay channels.
+*/
 {
   double brfactor=1.0;
   for (size_t i=0; i<blob->NOutP(); ++i) {
@@ -587,6 +699,7 @@ double Hard_Decay_Handler::BRFactor(ATOOLS::Blob* blob) const
     Decay_Table* dt=p_decaymap->FindDecay(part->RefFlav());
     if (dt) {
       brfactor*=dt->ActiveWidth(0)/dt->TotalWidth();
+      // If outgoing particle itself has a further decay (with type “Hard_Decay”), the factor from its decay blob is recursively multiplied in.
       if (part->DecayBlob() && part->DecayBlob()->Type()==btp::Hard_Decay)
         brfactor*=BRFactor(part->DecayBlob());
     }
@@ -598,11 +711,18 @@ void Hard_Decay_Handler::TreatInitialBlob(ATOOLS::Blob* blob,
                                           METOOLS::Amplitude2_Tensor* amps,
                                           const Particle_Vector& origparts)
 {
+  /* Call the base‐class version of TreatInitialBlob (via Decay_Handler_Base::TreatInitialBlob). In that function, the following is done:
+• The blob (representing a decaying system) is logged and a flag is reset (m_decaychainend).
+• Any decay matrices from a previous event are cleared (if spin‐correlations are enabled).
+• The list of outgoing (“daughter”) particles is obtained from the blob.
+• A vector of indices is created and then randomly shuffled. This randomization helps to avoid bias when applying spin‐correlation effects.
+• For each daughter, a check is performed to ensure that its momentum is consistent with its on‑shell mass; if not, the event is retried.
+  */
   Decay_Handler_Base::TreatInitialBlob(blob, amps, origparts);
 
   double brfactor=m_br_weights ? BRFactor(blob) : 1.0;
   DEBUG_VAR(brfactor);
-  Blob_Data_Base * bdbmeweight((*blob)["MEWeight"]);
+  Blob_Data_Base * bdbmeweight((*blob)["MEWeight"]); // retrieve the ME weight from the blob data
   if (bdbmeweight) {
     // msg_Out()<<METHOD<<"(ME = "<<bdbmeweight->Get<double>()<<", "
     // 	     <<"BR = "<<brfactor<<") for\n"<<"   "
@@ -611,8 +731,10 @@ void Hard_Decay_Handler::TreatInitialBlob(ATOOLS::Blob* blob,
     // for (size_t i=0;i<blob->NOutP();i++) 
     //   msg_Out()<<" "<<blob->OutParticle(i)->Flav();
     // msg_Out()<<".\n";
-    bdbmeweight->Set<double>(brfactor*bdbmeweight->Get<double>());
+    bdbmeweight->Set<double>(brfactor*bdbmeweight->Get<double>()); // if data exists, multiply it by the branching ratio factor so that the 
+                                                                  // weight reflects the decay’s branching ratio.
   }
+  // update also MEWeightInfo and WeightsMap with the branching ratio factor
   Blob_Data_Base * wgtinfo((*blob)["MEWeightInfo"]);
   if (wgtinfo) *wgtinfo->Get<ME_Weight_Info*>()*=brfactor;
 
@@ -646,7 +768,8 @@ void Hard_Decay_Handler::TreatInitialBlob(ATOOLS::Blob* blob,
     }
     DEBUG_VAR(newn);
 
-    if (p_newsublist) {
+    if (p_newsublist) { // check, if the new sublist already exists
+      // if so, clear the old one
       for (size_t i=0; i<p_newsublist->size(); ++i) delete (*p_newsublist)[i];
       p_newsublist->clear();
     }
@@ -656,13 +779,13 @@ void Hard_Decay_Handler::TreatInitialBlob(ATOOLS::Blob* blob,
       NLO_subevt* sub((*sublist)[i]);
       DEBUG_VAR(*(*sublist)[i]);
 
-      if (sub->IsReal()) newn+=1;
+      if (sub->IsReal()) newn+=1; // "real": extra parton (vs. virtual)
       Flavour* newfls = new Flavour[newn];
       Vec4D* newmoms = new Vec4D[newn];
       size_t* newid = new size_t[newn];
       for (size_t n=0; n<newn; ++n) newid[n]=0;
-      NLO_subevt* newsub=new NLO_subevt(*sub);
-      newsub->m_n=newn;
+      NLO_subevt* newsub=new NLO_subevt(*sub); // created new subevent as a copy of the current subevent
+      newsub->m_n=newn; // number of legs
       newsub->p_id=newid;
       newsub->p_fl=newfls;
       newsub->p_mom=newmoms;
@@ -670,26 +793,27 @@ void Hard_Decay_Handler::TreatInitialBlob(ATOOLS::Blob* blob,
       p_newsublist->push_back(newsub);
 
       int nin=blob->NInP();
-      for (size_t j=0, jnew=0; j<nin+blob->NOutP()-1; ++j, ++jnew) {
-        if (j<2 || decayprods[j-nin].size()==1) {
+      for (size_t j=0, jnew=0; j<nin+blob->NOutP()-1; ++j, ++jnew) { // iterate over all in- and out-particles
+        if (j<2 || decayprods[j-nin].size()==1) { // If particle did not decay (or when the corresponding decay products list has only one particle):
+                                                  // the code simply copies the original flavor and momentum from the subevent into the new arrays.
           newfls[jnew]=sub->p_fl[j];
           newmoms[jnew]=sub->p_mom[j];
           continue;
         }
-        if (sub->p_fl[j]!=blob->OutParticle(j-nin)->Flav()) {
+        if (sub->p_fl[j]!=blob->OutParticle(j-nin)->Flav()) { // check that the flavor in the subevent agrees with the corresponding blob’s outgoing particle.
           THROW(fatal_error, "Internal Error 1");
         }
 
-        Vec4D oldmom=blob->OutParticle(j-nin)->Momentum();
-        Vec4D newmom=sub->p_mom[j];
+        Vec4D oldmom=blob->OutParticle(j-nin)->Momentum(); // get the momentum of the outgoing particle
+        Vec4D newmom=sub->p_mom[j];                        // get the momentum of the corresponding subevent particle
         Poincare cms(oldmom);
         Poincare newframe(newmom);
         newframe.Invert();
 
         list<Particle*>::const_iterator it;
-        for (it=decayprods[j-nin].begin(); it!=decayprods[j-nin].end(); ++it) {
-          newfls[jnew]=(*it)->Flav();
-          newmoms[jnew]=Vec4D(newframe*(cms*(*it)->Momentum()));
+        for (it=decayprods[j-nin].begin(); it!=decayprods[j-nin].end(); ++it) { // iterate over a list of particles (the decay products for one blob particle)
+          newfls[jnew]=(*it)->Flav(); // copy the decay product’s flavour into the new flavour array (newfls) at the index jnew
+          newmoms[jnew]=Vec4D(newframe*(cms*(*it)->Momentum())); // calculate a new momentum for the decay product by applying a Lorentz transformation
           jnew++;
         }
         jnew--; // because we replaced one particle
@@ -1441,6 +1565,16 @@ Vec4D Hard_Decay_Handler::RecombinedMomentum(const Particle * daughter,
 
 
 void Hard_Decay_Handler::ReadDecayTable(Flavour decayer)
+/* Set Up Reader:
+A Data_Reader object is created and configured with custom delimiters ("|", ";", "!"), comment markers (lines beginning with "#" or "//"), 
+and word separators ("\t"). The reader’s input path is set to m_resultdir, and the input file is chosen based on decayer.ShellName().
+
+Read and Process File Content:
+The reader attempts to load the file contents into a matrix (a vector of string vectors). For each line that has exactly 4 tokens, 
+the first token is treated as the decay channel identifier, and the next three tokens are converted to double values (using ToType<double>), 
+resulting in a vector of three numbers (e.g., widths or related results). These pairs (decay channel and corresponding results) 
+are then stored in the m_read map using the decayer as a key.
+*/
 {
   DEBUG_FUNC(decayer);
   if (!m_store_results) return;
@@ -1458,7 +1592,7 @@ void Hard_Decay_Handler::ReadDecayTable(Flavour decayer)
         string decaychannel=file[iline][0];
         vector<double> results(3);
         for (size_t i=0; i<3; ++i) results[i]=ToType<double>(file[iline][i+1]);
-        m_read[decayer].insert(make_pair(decaychannel, results));
+        m_read[decayer].insert(make_pair(decaychannel, results));     // stores decay information
       }
       else {
         PRINT_INFO("Wrong format in decay table in "<<m_resultdir);
@@ -1488,6 +1622,13 @@ void Hard_Decay_Handler::WriteDecayTables()
 }
 
 bool Hard_Decay_Handler::Decays(const ATOOLS::Flavour& flav)
+/* This method determines whether a given particle flavour should be allowed to decay. It checks three conditions:
+
+If the flavour represents a hadron, it returns false.
+If the particle is a tau (identified by its KF code) and decays for tau are disabled (m_decay_tau is false), it returns false.
+If the particle is either marked as off or is stable, it also returns false.
+If none of these conditions hold, the method returns true, meaning the particle is eligible for decay.
+*/
 {
   if (flav.IsHadron()) return false;
   if (flav.Kfcode()==kf_tau && !m_decay_tau) return false;
@@ -1496,6 +1637,11 @@ bool Hard_Decay_Handler::Decays(const ATOOLS::Flavour& flav)
 }
 
 double Hard_Decay_Handler::Mass(const ATOOLS::Flavour &fl) const
+/* m_usemass is a flag (an instance variable) that determines whether the hard decay handler should 
+consider a particle’s mass when computing decay kinematics and widths. m_decmass is a set (specifically a Flavour_Set) 
+containing the particle flavours that are designated as “massive” for the purposes of decay; if a flavour is present in m_decmass, 
+then its “massive” value (obtained by calling Mass(true)) is used, otherwise the default mass (or zero) is returned.
+*/
 {
   if (m_usemass==0) return fl.Mass();
   if (m_decmass.find(fl)!=m_decmass.end()) return fl.Mass(true);
