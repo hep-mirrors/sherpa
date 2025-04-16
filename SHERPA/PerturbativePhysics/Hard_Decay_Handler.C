@@ -26,6 +26,7 @@
 #include "ATOOLS/Phys/KF_Table.H"
 #include "EXTRA_XS/One2Two/Comix1to2.H"
 #include "EXTRA_XS/One2Three/Comix1to3.H"
+#include "EXTRA_XS/One2Three/H_to_bbNLOReal.H"
 
 #include <iostream>
 #include <algorithm>
@@ -540,7 +541,7 @@ offshell (or three-body) decay configurations.
       DEBUG_VAR(flavs1[j]);
       // if dc-> Flavs()[0] == Higgs && nonprop == b or b_bar && propi or propj == gluon and the other one is b_bar or b: use new class here
       // is either propi or propj always the gluon, e.g. is the order according to the numbering scheme?
-      Comix1to3* diagram=new Comix1to3(dc->Flavs(),flavs1[j],
+      H_to_bbNLOReal* diagram=new H_to_bbNLOReal(dc->Flavs(),flavs1[j],
                                        nonprop, propi, propj);
 
       dc->AddDiagram(diagram);
