@@ -10,7 +10,7 @@ namespace PHASIC {
 }
 
 namespace EXTRAXS {
-  class H_to_bbNLOReal : public METOOLS::Spin_Amplitudes {
+  class H_to_bbg_at_NLO : public METOOLS::Spin_Amplitudes {
     std::vector<METOOLS::Current*> m_cur;
     METOOLS::Current *m_scur, *m_fcur;
     std::vector<METOOLS::Vertex*> m_v1, m_v2;
@@ -27,10 +27,10 @@ namespace EXTRAXS {
 
     size_t NHel(const ATOOLS::Flavour& fl);
   public:
-    H_to_bbNLOReal(const std::vector<ATOOLS::Flavour>& flavs,
+    H_to_bbg_at_NLO(const std::vector<ATOOLS::Flavour>& flavs,
               const ATOOLS::Flavour& prop,
               size_t nonprop, size_t propi, size_t propj);
-    ~H_to_bbNLOReal();
+    ~H_to_bbg_at_NLO();
     void Calculate(const ATOOLS::Vec4D_Vector& momenta, bool anti=false);
     ATOOLS::Flavour Prop() const { return m_prop; }
   };

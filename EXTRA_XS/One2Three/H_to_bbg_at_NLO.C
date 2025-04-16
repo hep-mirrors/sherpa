@@ -1,4 +1,4 @@
-#include "EXTRA_XS/One2Three/H_to_bbNLOReal.H"
+#include "EXTRA_XS/One2Three/H_to_bbg_at_NLO.H"
 
 #include "METOOLS/Explicit/Current.H"
 #include "METOOLS/Explicit/Vertex.H"
@@ -14,7 +14,7 @@ using namespace METOOLS;
 using namespace PHASIC;
 using namespace std;
 
-H_to_bbNLOReal::H_to_bbNLOReal(const vector<Flavour>& flavs, const Flavour& prop, // to do: change name from comix to new name and adapt .H
+H_to_bbg_at_NLO::H_to_bbg_at_NLO(const vector<Flavour>& flavs, const Flavour& prop, // to do: change name from comix to new name and adapt .H
                      size_t b_non_prop, size_t propi, size_t propj) : // to do: maybe: fix if propi or propj are the gluon
   Spin_Amplitudes(flavs,Complex(0.0,0.0)), m_cur(4), m_anticur(4), m_nhel(4),
   m_prop(prop)
@@ -128,7 +128,7 @@ H_to_bbNLOReal::H_to_bbNLOReal(const vector<Flavour>& flavs, const Flavour& prop
   }
 }
 
-H_to_bbNLOReal::~H_to_bbNLOReal()
+H_to_bbg_at_NLO::~H_to_bbg_at_NLO()
 {
   for (size_t i(0);i<4;++i) {
     delete m_cur[i];
@@ -141,7 +141,7 @@ H_to_bbNLOReal::~H_to_bbNLOReal()
   if (p_ci) delete p_ci;
 }
 
-void H_to_bbNLOReal::Calculate(const ATOOLS::Vec4D_Vector& momenta, bool anti) {
+void H_to_bbg_at_NLO::Calculate(const ATOOLS::Vec4D_Vector& momenta, bool anti) {
   DEBUG_FUNC(momenta.size());
   p_ci->GeneratePoint(); // create a new integration point for the color factors
   if (anti) {
@@ -176,7 +176,7 @@ void H_to_bbNLOReal::Calculate(const ATOOLS::Vec4D_Vector& momenta, bool anti) {
   }
 }
 
-size_t H_to_bbNLOReal::NHel(const Flavour& fl)
+size_t H_to_bbg_at_NLO::NHel(const Flavour& fl)
 {
   switch(fl.IntSpin()) {
   case 0:
