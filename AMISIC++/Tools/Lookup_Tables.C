@@ -87,9 +87,11 @@ double TwoDim_Table::operator()(const double & x,const double & y) const {
   size_t xbin = 0, ybin = 0;
   double y1, y2, x1, x2;
   if (x<m_x.m_xmin || x>m_x.m_xmax || y<m_y.m_xmin || y>m_y.m_xmax) return 0.;
-  if (m_x.m_nbins==1 || IsEqual(x,m_x.m_xmin,1.e-3) || IsEqual(x,m_x.m_xmax,1.e-3)) {
+  if (m_x.m_nbins==1 ||
+      IsEqual(x,m_x.m_xmin,1.e-3) || IsEqual(x,m_x.m_xmax,1.e-3)) {
     xbin = (x==m_x.m_xmax) ? m_x.m_nbins-1 : 0;
-    if (m_y.m_nbins==1 || IsEqual(y,m_y.m_xmin,1.e-3) || IsEqual(y,m_y.m_xmax,1.e-3)) { 
+    if (m_y.m_nbins==1 ||
+	IsEqual(y,m_y.m_xmin,1.e-3) || IsEqual(y,m_y.m_xmax,1.e-3)) { 
       ybin = IsEqual(y,m_y.m_xmax,1.e-3) ? m_y.m_nbins-1 : 0;
       return m_values[xbin][ybin];
     }
@@ -102,7 +104,8 @@ double TwoDim_Table::operator()(const double & x,const double & y) const {
   xbin = m_x.bin(x);
   x1   = m_x.x(xbin);
   x2   = m_x.x(xbin+1 );
-  if (m_y.m_nbins==1 || IsEqual(y,m_y.m_xmin,1.e-3) || IsEqual(y,m_y.m_xmax,1.e-3)) { 
+  if (m_y.m_nbins==1 ||
+      IsEqual(y,m_y.m_xmin,1.e-3) || IsEqual(y,m_y.m_xmax,1.e-3)) { 
     ybin = IsEqual(y,m_y.m_xmax,1.e-3) ? m_y.m_nbins-1 : 0;
     return ( m_values[xbin][ybin]   * (x2-x) +
 	     m_values[xbin+1][ybin] * (x-x1) ) / (x2-x1);
@@ -117,6 +120,27 @@ double TwoDim_Table::operator()(const double & x,const double & y) const {
 	   ((x2-x1)*(y2-y1)) );
 }
 
+double TwoDim_Table::Invert(const size_t & xbin,const double & value) {
+  double val1 = m_values[xbin][0], val2 = m_values[xbin][m_y.m_nbins-1];
+  if (val1<val2) {
+    if (value<val1) return m_y.x(0);
+    if (value>val2) return m_y.x(m_y.m_nbins-1);
+  }
+  if (val1>val2) {
+    if (value>val1) return m_y.x(0);
+    if (value<val2) return m_y.x(m_y.m_nbins-1);
+  }
+  for (size_t ybin=0;ybin<m_y.m_nbins;ybin++) {
+    val1 = m_values[xbin][ybin], val2 = m_values[xbin][ybin+1];
+    if ((val1<=value && val2>=value) || (val1<=value && val2>=value)) {
+      double y1 = m_y.x(ybin), y2 = m_y.x(ybin+1);
+      //msg_Out()<<METHOD<<"["<<xbin<<"]["<<ybin<<"] "
+      //       <<"--> {"<<y1<<", "<<y2<<"} "
+      //       <<"-> {"<<val1<<", "<<val2<<"}\n";
+      return ((value-val1)*y2+(val2-value)*y1)/(val2-val1);
+    }
+  }
+}
 
 
 //////////////////////////////////////////////////////////////////////////////

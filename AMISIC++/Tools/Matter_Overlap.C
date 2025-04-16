@@ -142,9 +142,9 @@ void Matter_Overlap::Initialize(Remnant_Handler * const rh,
   }
   InitializeFFParams(isr);
   Output(CalculateIntegral());
-  size_t nbins = size_t((*mipars)["nB_bins"]);
-  double bmin  = 0.00001*m_radius[0];
-  p_bbins = new axis(nbins, bmin, m_bmax, axis_mode::log);
+  size_t nbins = 200; //size_t((*mipars)["nB_bins"]);
+  double bmin  = 1.e-6, bmax = 1.; // *m_radius[0];
+  p_bbins = new axis(nbins, bmin, bmax*m_bmax, axis_mode::log);
 }
 
 void Matter_Overlap::InitializeFFParams(PDF::ISR_Handler * const isr) {

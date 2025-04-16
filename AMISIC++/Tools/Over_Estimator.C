@@ -70,7 +70,7 @@ void Over_Estimator::FixMaximum(MI_Processes * procs,axis * sbins) {
   for (size_t sbin=0;sbin<sbins->m_nbins;sbin++) {
     m_s      = sbins->x(sbin);
     m_pt02   = mipars->CalculatePT02(m_s);
-    m_ptmin2 = mipars->CalculatePT02(m_s);
+    m_ptmin2 = mipars->CalculatePTmin2(m_s);
     double ratioN  = pow(m_s/m_ptmin2,1./double(m_npt2bins));
     double maxpref = 0.;
     for (size_t i=0;i<m_npt2bins;i++) {
@@ -141,7 +141,6 @@ double Over_Estimator::operator()(const double & pt2,const double & yvol) {
   // not present in the true differential cross section calculated by the
   // MI_Processes.
   //////////////////////////////////////////////////////////////////////////
-  double myvol = sqr(log(m_s/(4.*pt2)*sqr(1.+sqrt(1.-4.*pt2/m_s))));
   return m_pref/(yvol * sqr(pt2+m_pt02/4.));
 }
 
@@ -160,14 +159,19 @@ void Over_Estimator::Output() {
 	    <<"   | Fixed (energy-dependent) maxima for "
 	    <<"quick'n'dirty Sudakov evaluation"
 	    <<"      |\n"
-	    <<"   | Energy [GeV]       | Maximum"
-	    <<std::string(46,' ')<<"|\n";
+	    <<"   | Energy [GeV] | Maximum   |"
+	    <<" pT0^2  [GeV^2] | pTmin^2  [GeV^2] "
+	    <<std::string(13,' ')<<"|\n";
   for (size_t i=0;i<p_prefs->GetAxis().m_nbins;i++)
     msg_Info()<<"   | "
-	      <<std::setprecision(6)<<std::setw(18)
+	      <<std::setprecision(6)<<std::setw(12)
 	      <<sqrt(p_prefs->GetAxis().x(i))<<" | "
-	      <<std::setprecision(8)<<std::setw(16)<<p_prefs->Value(i)
-	      <<std::string(37,' ')<<"|\n";
+	      <<std::setprecision(6)<<std::setw(10)<<p_prefs->Value(i)<<"| "
+	      <<std::setprecision(6)<<std::setw(15)
+	      <<mipars->CalculatePT02(sqrt(p_prefs->GetAxis().x(i)))<<"| "
+	      <<std::setprecision(6)<<std::setw(15)
+	      <<mipars->CalculatePTmin2(sqrt(p_prefs->GetAxis().x(i)))
+	      <<std::string(15,' ')<<"|\n";
   msg_Info()<<"   "<<std::string(77,'-')<<"\n\n";      
 }
 

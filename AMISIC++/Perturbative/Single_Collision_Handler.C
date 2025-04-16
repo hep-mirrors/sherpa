@@ -35,7 +35,7 @@ Init(MI_Processes * processes,Over_Estimator * overestimator,
   // TODO: Will have to make pt2min initial-particle dependent
   //       (currently: photon vs proton, but treated the same)
   ///////////////////////////////////////////////////////////////////////////
-  m_pt2min        = sqr((*mipars)("pt_min"));
+  m_pt2min        = p_processes->PT2Min();
   if (m_ana) InitAnalysis();
 }
 
@@ -247,8 +247,8 @@ int Single_Collision_Handler::SelectPT2() {
     if (m_pt2<=m_nextpt2) { m_pt2 = m_nextpt2; return 1; }
     if (!p_integrator->MakeKinematics(m_pt2,m_S)) continue;
     p_overlap->FixDynamicRadius(p_integrator->X(0),p_integrator->X(1));
-    double wt = ( p_processes->PDFnorm()*(*p_processes)()/
-		  (*p_overestimator)(m_pt2,p_integrator->Yvol()) *
+    double wt = ( p_processes->PDFnorm()*
+		  (*p_processes)()/(*p_overestimator)(m_pt2,p_integrator->Yvol()) *
 		  (*p_overlap)(m_b) );
     if (m_ana) AnalyseWeight(wt);
     if (wt>=ran->Get()) break;
@@ -290,10 +290,11 @@ void Single_Collision_Handler::UpdateSandY(double s, double y) {
   // Setting the last pT^2 on s, as a default.
   ///////////////////////////////////////////////////////////////////////////
   m_lastpt2 = m_S = s;
-  m_Ycms = y;
+  m_Ycms    = y;
+  m_pt2min  = p_processes->PT2Min();
   if (m_evttype==evt_type::Perturbative) {
     p_processes->UpdateS(m_S);
-    p_overestimator->UpdateS(m_S,p_processes->PT02(),p_processes->PT2Min());
+    p_overestimator->UpdateS(m_S,p_processes->PT02(),m_pt2min);
   }
 }
 

@@ -94,15 +94,9 @@ double Shower::EFac(const std::string &sfk) const {
 
 bool Shower::EvolveShower(Singlet *actual, const size_t &maxem, size_t &nem) {
   m_weightsmap.Clear();
-<<<<<<< HEAD
   m_weightsmap["Sudakov"] = Weights {Variations_Type::qcd};
   m_weightsmap["QCUT"] = Weights {Variations_Type::qcut};
   return EvolveSinglet(actual,maxem,nem);
-=======
-  m_weightsmap["PS"] = Weights{Variations_Type::qcd};
-  m_weightsmap["PS_QCUT"] = Weights{Variations_Type::qcut};
-  return EvolveSinglet(actual, maxem, nem);
->>>>>>> ada6137df (Missing psi(2S) and chi_c2_1P in the octet colors rep.)
 }
 
 double Shower::GetXBj(Parton *const p) const {
@@ -305,13 +299,8 @@ int Shower::MakeKinematics(Parton *split, const Flavour &fla,
     spect->SetMomentum(pso);
     return ustat;
   }
-<<<<<<< HEAD
   const double split_weight {split->Weight()};
   m_weightsmap["Sudakov"] *= split_weight;
-=======
-  const double split_weight{split->Weight()};
-  m_weightsmap["PS"] *= split_weight;
->>>>>>> ada6137df (Missing psi(2S) and chi_c2_1P in the octet colors rep.)
   msg_Debugging() << "sw = " << split_weight
                   << ", w = " << m_weightsmap["Sudakov"].Nominal() << "\n";
   if (m_reweight) {
@@ -384,15 +373,9 @@ bool Shower::EvolveSinglet(Singlet *act, const size_t &maxem, size_t &nem) {
                           << "\n";
         m_weightsmap["Sudakov"] *= singlet_weight;
         if (m_reweight) {
-          ATOOLS::Reweight(
-<<<<<<< HEAD
-              m_weightsmap["Sudakov"],
-              [this, it](double varweight, QCD_Variation_Params& varparams)
-=======
-              m_weightsmap["PS"],
-              [this, it](double varweight, QCD_Variation_Params &varparams)
->>>>>>> ada6137df (Missing psi(2S) and chi_c2_1P in the octet colors rep.)
-                  -> double { return varweight * Reweight(&varparams, **it); });
+          ATOOLS::Reweight(m_weightsmap["Sudakov"],
+			   [this, it](double varweight, QCD_Variation_Params& varparams)
+			   -> double { return varweight * Reweight(&varparams, **it); });
           (*it)->SudakovReweightingInfos().clear();
         }
       }
@@ -474,18 +457,11 @@ bool Shower::EvolveSinglet(Singlet *act, const size_t &maxem, size_t &nem) {
       std::vector<bool> skips(nqcuts + 1, false);
       int nskips{0};
       ATOOLS::ReweightAll(
-<<<<<<< HEAD
           m_weightsmap["QCUT"],
           [this, jcv, is_jcv_positive, &all_vetoed, &skips, &nskips](
               double varweight,
               size_t varindex,
               Qcut_Variation_Params* qcutparams) -> double {
-=======
-          m_weightsmap["PS_QCUT"],
-          [this, jcv, is_jcv_positive, &all_vetoed, &skips,
-           &nskips](double varweight, size_t varindex,
-                    Qcut_Variation_Params *qcutparams) -> double {
->>>>>>> ada6137df (Missing psi(2S) and chi_c2_1P in the octet colors rep.)
             msg_Debugging()
                 << "Applying veto weight to qcut var #" << varindex << " {\n";
             bool stat{is_jcv_positive};
@@ -517,7 +493,6 @@ bool Shower::EvolveSinglet(Singlet *act, const size_t &maxem, size_t &nem) {
         const int nqcdvars = s_variations->Size(Variations_Type::qcd);
         if (skips[0])
           nskips += nqcdvars;
-<<<<<<< HEAD
         const double wskip {nskips / double(nqcuts + nqcdvars + 1)};
         if (ran->Get()<=wskip) {
 	  double lkf(p_actual->LKF());
@@ -532,22 +507,6 @@ bool Shower::EvolveSinglet(Singlet *act, const size_t &maxem, size_t &nem) {
           const double fac {1.0 / lkf / wskip};
           m_weightsmap["Sudakov"] *= fac;
           m_weightsmap["QCUT"] *= skips;
-=======
-        const double wskip{nskips / double(nqcuts + nqcdvars + 1)};
-        if (ran->Get() <= wskip) {
-          double lkf(p_actual->LKF());
-          Singlet *sing(p_actual);
-          sing->SetLKF(1.0);
-          sing->SetNLO(sing->NLO() & ~2);
-          while (sing->GetLeft()) {
-            sing = sing->GetLeft()->GetSing();
-            sing->SetLKF(1.0);
-            sing->SetNLO(sing->NLO() & ~2);
-          }
-          const double fac{1.0 / lkf / wskip};
-          m_weightsmap["PS"] *= fac;
-          m_weightsmap["PS_QCUT"] *= skips;
->>>>>>> ada6137df (Missing psi(2S) and chi_c2_1P in the octet colors rep.)
           continue;
         } else {
           const double fac{1.0 / (1.0 - wskip)};
@@ -567,7 +526,6 @@ bool Shower::EvolveSinglet(Singlet *act, const size_t &maxem, size_t &nem) {
 
       // FS resume normal operations
       if (m_last[0]) {
-<<<<<<< HEAD
         for (Singlet::const_iterator it=p_actual->begin();
              it!=p_actual->end();++it) {
           if ((*it)->Weight()!=1.0) {
@@ -575,14 +533,6 @@ bool Shower::EvolveSinglet(Singlet *act, const size_t &maxem, size_t &nem) {
             msg_Debugging()
                 << "Add wt for " << (**it) << ": " << singlet_weight << "\n";
             m_weightsmap["Sudakov"] *= singlet_weight;
-=======
-        // FS this computes the shower weight
-        for (Singlet::const_iterator it = p_actual->begin();
-             it != p_actual->end(); ++it) {
-          if ((*it)->Weight() != 1.0) {
-            const double singlet_weight{(*it)->Weight(m_last[0]->KtStart())};
-            m_weightsmap["PS"] *= singlet_weight;
->>>>>>> ada6137df (Missing psi(2S) and chi_c2_1P in the octet colors rep.)
             (*it)->Weights().clear();
           }
           if (m_reweight) {
@@ -730,7 +680,6 @@ double Shower::Reweight(QCD_Variation_Params *varparams, Parton &splitter) {
       info.sf->Coupling()->SetAlternativeUnderlyingCoupling(varparams->p_alphas,
                                                             muR2fac);
       // calculate new coupling
-<<<<<<< HEAD
       if(m_scvmode & 4)
         info.sf->Coupling()->SetCTFac(info.z);
       else if(m_scvmode & 8) {
@@ -738,9 +687,6 @@ double Shower::Reweight(QCD_Variation_Params *varparams, Parton &splitter) {
       }
       double newcpl {info.sf->Coupling()->Coupling(info.scale, 0)};
       info.sf->Coupling()->SetCTFac(1);
-=======
-      double newcpl{info.sf->Coupling()->Coupling(info.scale, 0)};
->>>>>>> ada6137df (Missing psi(2S) and chi_c2_1P in the octet colors rep.)
       // clean up
       info.sf->Coupling()->SetAlternativeUnderlyingCoupling(nullptr);
       info.sf->Coupling()->SetLast(lastcpl);

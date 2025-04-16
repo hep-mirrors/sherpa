@@ -45,6 +45,7 @@ namespace AMISIC {
     double Value(const size_t & xbin,const size_t & ybin) const {
       return m_values[xbin][ybin];
     }
+    double Invert(const size_t & xbin,const double & value);
   };
 
   class ThreeDim_Table {
