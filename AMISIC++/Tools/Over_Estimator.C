@@ -22,7 +22,7 @@ using namespace ATOOLS;
 /////////////////////////////////////////////////////////////////////////////
 
 Over_Estimator::Over_Estimator() :
-  m_muR_fac(1.), m_muF_fac(1.), m_pref(0.), m_npt2bins(1000),
+  m_muR_fac(1.), m_muF_fac(1.), m_pref(0.), m_npt2bins(1000), m_reduceMax(true),
   p_prefs(nullptr)
 {}
 
@@ -101,7 +101,7 @@ void Over_Estimator::FixMaximum(MI_Processes * procs,axis * sbins) {
     ///////////////////////////////////////////////////////////////////////
     // This is an attempt to speed up the generation speed in min bias events
     ///////////////////////////////////////////////////////////////////////    
-    maxpref *= 1./maxratio;
+    if (m_reduceMax) maxpref *= 1./maxratio;
     p_prefs->Fill(sbin,maxpref);
     if (sbins->m_nbins==1) m_pref = maxpref;
   }

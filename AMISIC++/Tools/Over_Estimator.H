@@ -20,6 +20,7 @@ namespace AMISIC {
     std::array<double, 2> m_xmin, m_xmax;
     double m_s, m_pref;
     size_t m_npt2bins;
+    bool   m_reduceMax;
     
     std::array<PDF::PDF_Base *, 2> p_pdf;
     MODEL::One_Running_AlphaS * p_alphaS;
