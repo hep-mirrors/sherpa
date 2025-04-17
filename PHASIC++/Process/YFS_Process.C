@@ -73,6 +73,7 @@ void YFS_Process::Init(const Process_Info &pi,
   m_name = GenerateName(ypi.m_ii, ypi.m_fi);
   Process_Base::Init(ypi, beam, isr, yfs);
   p_bornproc = InitProcess(ypi, nlo_type::born, false);
+  p_yfs->SetNLOType(nlo_type::born);
   if (pi.Has(nlo_type::real)) {
     Process_Info rpi(pi); // real process info
     for (size_t i = 0; i < pi.m_fi.m_nlocpl.size(); ++i)
@@ -86,18 +87,21 @@ void YFS_Process::Init(const Process_Info &pi,
     p_realproc->SetParent(this);
     // p_realproc->FillProcessMap(p_apmap);
     // p_realproc->SetLookUp(true);
-    p_yfs->p_nlo->InitializeReal(rpi);
+    p_yfs->NLO()->InitializeReal(rpi);
     p_yfs->SetNLOType(nlo_type::real);
     if(p_yfs->NLO()->HasReal()) p_yfs->NLO()->p_real->SetProc(p_realproc);
   }
   if (pi.Has(nlo_type::loop)) {
-    vpi.m_fi.SetNLOType(nlo_type::born);
-    Process_Base::Init(vpi, beam, isr, yfs);
-    p_virtproc = InitProcess(vpi, nlo_type::born, false);
+    vpi.m_fi.SetNLOType(nlo_type::loop);
+    // Process_Base::Init(vpi, beam, isr, yfs);
+    p_virtproc = InitProcess(vpi, nlo_type::loop, false);
     p_virtproc->FillProcessMap(p_apmap);
+    // p_virtproc->p_mapproc=NULL
+    p_virtproc->SetParent(this);
+    p_virtproc->SetLookUp(false);
     p_yfs->NLO()->InitializeVirtual(vpi);
     p_yfs->SetNLOType(nlo_type::loop);
-    if(p_yfs->NLO()->HasVirtual()) p_yfs->NLO()->p_virt->SetProc(p_virtproc);
+    p_yfs->NLO()->p_virt->SetProc(p_bornproc);
   }
   if (pi.Has(nlo_type::rvirt)) {
     Process_Info rvpi(pi);
@@ -108,8 +112,8 @@ void YFS_Process::Init(const Process_Info &pi,
     }
     rvpi.m_fi.m_ps.push_back(Subprocess_Info(kf_photon, "", ""));
     p_realvirtproc = InitProcess(rvpi, nlo_type::rvirt, false);
-    p_yfs->p_nlo->InitializeRealVirtual(rvpi);
-    // p_yfs->p_nlo->InitializeVirtual(vpi);
+    p_yfs->NLO()->InitializeRealVirtual(rvpi);
+    // p_yfs->NLO()->InitializeVirtual(vpi);
     p_yfs->SetNLOType(nlo_type::loop);
     p_yfs->NLO()->p_realvirt->SetProc(p_realvirtproc);
 
@@ -124,7 +128,7 @@ void YFS_Process::Init(const Process_Info &pi,
     rrpi.m_fi.m_ps.push_back(Subprocess_Info(kf_photon, "", ""));
     rrpi.m_fi.m_ps.push_back(Subprocess_Info(kf_photon, "", ""));
     p_realrealproc = InitProcess(rrpi, nlo_type::real, false);
-    p_yfs->p_nlo->InitializeRealReal(rrpi);
+    p_yfs->NLO()->InitializeRealReal(rrpi);
     p_realrealproc->SetParent(this);
     p_yfs->SetNLOType(nlo_type::realreal);
     p_yfs->NLO()->p_realreal->SetProc(p_realrealproc);
