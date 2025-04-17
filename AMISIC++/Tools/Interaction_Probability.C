@@ -21,8 +21,7 @@ using namespace ATOOLS;
 
 Interaction_Probability::Interaction_Probability() :
   p_mo(NULL), p_procs(NULL), p_sbins(NULL), p_bbins(NULL),
-  p_k(NULL), p_norm(NULL),
-  p_diffxsec(NULL), p_nbarByP(NULL), p_accumulated(NULL),
+  p_k(NULL), p_norm(NULL), p_diffxsec(NULL), 
   m_pdfnorm(1.), m_bmax(1.e6), m_smin(1.e99), m_xs_hard(0.), m_xs_test(0.),
   m_dynamic(false), m_test(false), m_ana(true) {}
 
@@ -31,8 +30,6 @@ Interaction_Probability::~Interaction_Probability() {
   if (p_k)           delete p_k;
   if (p_norm)        delete p_norm;
   if (p_diffxsec)    delete p_diffxsec;
-  if (p_nbarByP)     delete p_nbarByP;
-  if (p_accumulated) delete p_accumulated;
 }
 
 void Interaction_Probability::
@@ -48,10 +45,7 @@ Initialize(Matter_Overlap * mo,MI_Processes * processes,axis * sbins) {
   m_bmax        = mo->Bmax();
   p_bbins       = mo->GetBBins();
   p_diffxsec    = new TwoDim_Table(*p_sbins,*p_bbins);
-  p_nbarByP     = new TwoDim_Table(*p_sbins,*p_bbins);
-  p_accumulated = new TwoDim_Table(*p_sbins,*p_bbins);
   FixKandSmin();
-  FillAccumulated();
   CheckTables();
   OutputTables();
 }
@@ -110,33 +104,6 @@ void Interaction_Probability::FixKandSmin() {
   msg_Info()<<"   "<<string(77,'-')<<"\n";
 }
 
-void Interaction_Probability::FillAccumulated() {
-  //////////////////////////////////////////////////////////////////////////
-  // For the selection of an impact parameter in Min Bias events we use
-  // the inverse of the integral
-  // int_0^B d^2b P_int(b) = int_0^B d^2b {1-exp[-n(b)]},
-  // where n(b) is the b-dependent hard cross section.
-  //////////////////////////////////////////////////////////////////////////
-  for (size_t sbin=0;sbin<p_sbins->m_nbins;sbin++) {
-    double norm = 0., b0 = 0., b1 = 0.;
-    for (size_t bbin=0;bbin<p_bbins->m_nbins;bbin++) {
-      b1    = p_bbins->x(bbin);
-      norm += (2.*M_PI * (b0+b1)/2. * (b1-b0) *
-	       (1.-exp(-p_diffxsec->Value(sbin,bbin))) );
-      b0    = b1;
-    }
-    double sum = 0.;
-    b0 = 0.;
-    for (size_t bbin=0;bbin<p_bbins->m_nbins;bbin++) {
-      b1    = p_bbins->x(bbin);
-      sum  += (2.*M_PI * (b0+b1)/2. * (b1-b0) *
-	       (1.-exp(-p_diffxsec->Value(sbin,bbin))) );
-      p_accumulated->Fill(sbin,bbin,sum/norm);
-      b0    = b1;
-    }
-  }
-}
-
 void Interaction_Probability::InitializeTables() {
   for (size_t sbin=0;sbin<p_sbins->m_nbins;sbin++) InitializeTable(sbin);
 }
@@ -164,11 +131,9 @@ InitializeTable(const size_t & sbin,const bool & out) {
 			       (*integrator)(s,p_mo,b) :
 			       xsfix * (*p_mo)(b) );
     p_diffxsec->Fill(sbin,bbin,xs);
-    p_nbarByP->Fill(sbin,bbin,xs/(1.-exp(-xs)));
     if (prev!=0. && xs/prev < 1.e-6) {
       for (size_t i=bbin+1;i<p_bbins->m_nbins;i++) {
 	p_diffxsec->Fill(sbin,i,0.);
-	p_nbarByP->Fill(sbin,i,0.);
       }
       break;
     }
@@ -206,8 +171,8 @@ void Interaction_Probability::OutputTables() {
 	    <<std::setw(6)<<"b [fm]"<<" | "
 	    <<std::setw(14)<<"xs_hard/xs_ND"<<" | "
 	    <<std::setw(12)<<"k"<<" | "
-	    <<std::setw(14)<<"b*dP_int(b)"<<" | "
-	    <<std::setw(12)<<"integrated"<<" |\n";
+	    <<std::setw(14)<<"b*P_int(b)"<<"  | "
+	    <<std::setw(12)<<"P_int(b)  |\n";
   for (size_t i=0;i<p_sbins->m_nbins;i++) {
     double s       = p_sbins->x(i);
     double xsratio = p_procs->XSratio(s);
@@ -223,12 +188,12 @@ void Interaction_Probability::OutputTables() {
 		<<std::setprecision(3)<<std::setw(6)
 		<<(b*rpa->hBar()*rpa->c()*1.e12)<<" | "
 		<<std::setprecision(6)<<std::setw(14)	
-		<<((*p_diffxsec)(s,b)/xsratio)<<" | " //<<((*p_nbarByP)(s,b))<<" | "
+		<<((*p_diffxsec)(s,b)/xsratio)<<" | "
 		<<std::string(12,' ')<<" | "
 		<<std::setprecision(6)<<std::setw(14)
 		<<(b*rpa->hBar()*rpa->c()*1.e12*(*this)(s,b))<<" | "
 		<<std::setprecision(6)<<std::setw(12)
-		<<((*p_accumulated)(s,b))<<" |\n";
+		<<((*this)(s,b))<<" |\n";
     }
   }
   msg_Info()<<"   "<<std::string(92,'-')<<"\n"

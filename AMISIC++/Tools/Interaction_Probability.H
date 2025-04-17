@@ -16,7 +16,7 @@ namespace AMISIC {
     MI_Processes   * p_procs;
     axis           * p_sbins, * p_bbins;
     OneDim_Table   * p_k, * p_norm;
-    TwoDim_Table   * p_diffxsec, * p_nbarByP, * p_accumulated;
+    TwoDim_Table   * p_diffxsec;
     double           m_pdfnorm, m_xs_test, m_xs_hard, m_bmax, m_smin;
     bool             m_dynamic;
 
