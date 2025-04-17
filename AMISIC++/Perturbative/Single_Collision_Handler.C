@@ -11,12 +11,15 @@ Single_Collision_Handler::Single_Collision_Handler() :
   p_processes(NULL), p_overestimator(NULL), p_soft(NULL),
   m_pt2(0.), m_pt2min(0.),
   m_S((rpa->gen.PBeam(0)+rpa->gen.PBeam(1)).Abs2()), m_lastpt2(m_S),
-  m_residualx1(1.), m_residualx2(1.), m_Ycms(0.),
+  m_residualx1(1.), m_residualx2(1.), m_Ycms(0.), m_maxwt(0.),
   m_done(false), 
   m_ana(false)
 {}
 
 Single_Collision_Handler::~Single_Collision_Handler() {
+  msg_Out()<<"===========================================================\n"
+	   <<METHOD<<" had maximal weight = "<<m_maxwt<<"\n"
+	   <<"===========================================================\n";
   if (m_ana) FinishAnalysis();
 }
 
@@ -251,6 +254,7 @@ int Single_Collision_Handler::SelectPT2() {
 		  (*p_processes)()/(*p_overestimator)(m_pt2,p_integrator->Yvol()) *
 		  (*p_overlap)(m_b) );
     if (m_ana) AnalyseWeight(wt);
+    if (wt>m_maxwt) m_maxwt = wt;
     if (wt>=ran->Get()) break;
   }
   return 0;

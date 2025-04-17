@@ -28,6 +28,7 @@ namespace AMISIC {
     double         m_pt2, m_pt2min, m_b;
     double         m_S, m_lastpt2, m_nextpt2, m_residualx1, m_residualx2, m_Ycms;
     double         m_xsec;
+    double         m_maxwt;
     bool           m_done, m_needsTrigger;
     ATOOLS::Blob * m_nextblob;
     std::map<double, ATOOLS::Blob *> m_prefabs;

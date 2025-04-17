@@ -72,7 +72,7 @@ void Over_Estimator::FixMaximum(MI_Processes * procs,axis * sbins) {
     m_pt02   = mipars->CalculatePT02(m_s);
     m_ptmin2 = mipars->CalculatePTmin2(m_s);
     double ratioN  = pow(m_s/m_ptmin2,1./double(m_npt2bins));
-    double maxpref = 0.;
+    double maxpref = 0., maxratio = 0.;
     for (size_t i=0;i<m_npt2bins;i++) {
       ///////////////////////////////////////////////////////////////////////
       // The actual value of p_T^2 for the bin, giving the maximal rapidity 
@@ -95,8 +95,13 @@ void Over_Estimator::FixMaximum(MI_Processes * procs,axis * sbins) {
       // approximation is always larger than the exact calculation.
       ///////////////////////////////////////////////////////////////////////
       double test   = procs->PDFnorm()*Max(approx,exact)*yvol*sqr(pt2+m_pt02/4.);
-      if (test > maxpref) { maxpref = test; }
+      if (test         > maxpref)  { maxpref  = test; }
+      if (approx/exact > maxratio) { maxratio = approx/exact; }
     }
+    ///////////////////////////////////////////////////////////////////////
+    // This is an attempt to speed up the generation speed in min bias events
+    ///////////////////////////////////////////////////////////////////////    
+    maxpref *= 1./maxratio;
     p_prefs->Fill(sbin,maxpref);
     if (sbins->m_nbins==1) m_pref = maxpref;
   }
@@ -115,8 +120,7 @@ double Over_Estimator::ApproxME(const double & pt2,const double & xt) {
   ///////////////////////////////////////////////////////////////////////////
   double reg_pt2 = pt2+m_pt02;
   double est     = ( M_PI/2. *
-		     sqr( (*p_alphaS)(Max(m_pt02,m_muR_fac*reg_pt2/4.)) /
-			  reg_pt2) );
+		     sqr((*p_alphaS)(Max(m_pt02,m_muR_fac*reg_pt2))/reg_pt2) );
   for (size_t i=0;i<2;i++) {
     double pdfsum = 0.;
     if (xt>m_xmin[i]) {

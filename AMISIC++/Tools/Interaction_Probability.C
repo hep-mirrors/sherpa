@@ -61,7 +61,11 @@ double Interaction_Probability::SelectB(const double & s) {
   // Selecting b according to (normalised)  d^2b P_int(b):
   // this is valid for min bias-type events only!
   ////////////////////////////////////////////////////////////////////////////
-  return p_accumulated->Invert(0,ran->Get());
+  double b = 0.;
+  do {
+    b = sqrt(ran->Get()) * m_bmax;
+  } while ((*this)(s,b)<ran->Get());
+  return b;
 }
 
 void Interaction_Probability::FixKandSmin() {
