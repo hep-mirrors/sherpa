@@ -35,7 +35,7 @@ namespace BEAM {
     double                m_q2min, m_q2max, m_pt2max;
     double                m_xmin, m_xmax, m_bmin, m_bmax;
     double                m_Zsquared, m_b;
-    ATOOLS::TwoDim_Table *p_N_xb;
+    ATOOLS::TwoDim_Table* p_N_xb;
 
     size_t m_nxbins, m_nbbins;
     bool   m_approx;
@@ -47,19 +47,20 @@ namespace BEAM {
       if (p_N_xb) delete p_N_xb;
     }
     virtual void   FillTables(const size_t& nx, const size_t& nb);
-    virtual double N(const double& x, const double& b)
+    virtual double N(const double& x)
     {
       // sampling b by 1/b
-      m_b = m_beam.Radius() / ATOOLS::rpa->hBar_c() * m_bmin * std::pow( m_bmax / m_bmin, ATOOLS::ran->Get());
+      m_b = m_beam.Radius() / ATOOLS::rpa->hBar_c() * m_bmin *
+            std::pow(m_bmax / m_bmin, ATOOLS::ran->Get());
       double wt = m_b * std::log(m_bmax / m_bmin);
       return (*p_N_xb)(x, m_b) * wt;
     };
     virtual double FF(const double& Q2) = 0;
 
-    void         SetApprox(bool approx) { m_approx = approx; }
-    void         SetRadius(const double& R) { m_R = R; }
-    void         SetPT2Max(const double& pt2max) { m_pt2max = pt2max; }
-    void         SetQ2Max(const double q2max) { m_q2max = q2max; }
+    void SetApprox(bool approx) { m_approx = approx; }
+    void SetRadius(const double& R) { m_R = R; }
+    void SetPT2Max(const double& pt2max) { m_pt2max = pt2max; }
+    void SetQ2Max(const double q2max) { m_q2max = q2max; }
 
     double Mass() const { return m_beam.Mass(); }
     double Radius() const { return m_R; }
@@ -103,7 +104,7 @@ namespace BEAM {
   public:
     EPA_Point(const ATOOLS::Flavour& beam, int dir);
     void   FillTables(const size_t& nx, const size_t& nb) override {};
-    double N(const double& x, const double& b) override;
+    double N(const double& x) override;
     double FF(const double& Q2) override { return 1.; }
   };
 
@@ -117,7 +118,7 @@ namespace BEAM {
     {
       return std::pow(1. + Q2 / m_Q02, -2);
     }
-    double N(const double& x, const double& b) override;
+    double N(const double& x) override;
   };
 
   class EPA_ProtonApprox final : public EPA_FF_Base {
@@ -127,7 +128,7 @@ namespace BEAM {
   public:
     EPA_ProtonApprox(const ATOOLS::Flavour& beam, int dir);
     double FF(const double& Q2) override { return 1.; }
-    double N(const double& x, const double& b) override;
+    double N(const double& x) override;
   };
 
   class EPA_Gauss final : public EPA_FF_Base {
@@ -144,8 +145,8 @@ namespace BEAM {
     EPA_HCS(const ATOOLS::Flavour& beam, int dir);
     double FF(const double& QR) override
     {
-      return 3 * (std::sin(QR) / std::pow(QR, 3) -
-             std::cos(QR) / ATOOLS::sqr(QR));
+      return 3 *
+             (std::sin(QR) / std::pow(QR, 3) - std::cos(QR) / ATOOLS::sqr(QR));
     }
   };
 
@@ -155,7 +156,10 @@ namespace BEAM {
 
   public:
     explicit EPA_Dipole(const ATOOLS::Flavour& beam, int dir);
-    double FF(const double& Q2) override { return std::pow(1. + Q2 / m_Q02, -2); }
+    double FF(const double& Q2) override
+    {
+      return std::pow(1. + Q2 / m_Q02, -2);
+    }
   };
 
   class EPA_DipoleApprox final : public EPA_FF_Base {
@@ -203,7 +207,7 @@ namespace BEAM {
     public:
       explicit N_argument(EPA_WoodSaxon* ws) : p_ws(ws), m_x(0.) {}
       inline void SetX(const double& x) { m_x = x; }
-      //double operator()(double q2) override { return (*p_ws)(m_x, q2) / q2; }
+      // double operator()(double q2) override { return (*p_ws)(m_x, q2) / q2; }
     };
 
     double                m_d, m_rho0;
@@ -233,7 +237,7 @@ namespace BEAM {
   public:
     EPA_testIon(const ATOOLS::Flavour& beam, int dir);
     void   FillTables(const size_t& nx, const size_t& nb) override {};
-    double N(const double& x, const double& b) override;
+    double N(const double& x) override;
     double FF(const double& Q2) override { return 0.; }
   };
 
