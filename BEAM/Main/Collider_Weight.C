@@ -5,7 +5,8 @@
 using namespace BEAM;
 
 Collider_Weight::Collider_Weight(Kinematics_Base* kinematics)
-    : Weight_Base(kinematics), m_mode(collidermode::unknown)
+    : Weight_Base(kinematics), m_mode(collidermode::unknown),
+      p_rejector(nullptr)
 {
   if (p_beams[0]->Type() == beamspectrum::monochromatic &&
       p_beams[1]->Type() == beamspectrum::monochromatic)
