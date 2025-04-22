@@ -5,7 +5,8 @@
 using namespace BEAM;
 
 Collider_Weight::Collider_Weight(Kinematics_Base* kinematics)
-    : Weight_Base(kinematics), m_mode(collidermode::unknown)
+    : Weight_Base(kinematics), m_mode(collidermode::unknown),
+      p_rejector(nullptr)
 {
   if (p_beams[0]->Type() == beamspectrum::monochromatic &&
       p_beams[1]->Type() == beamspectrum::monochromatic)
@@ -25,12 +26,14 @@ Collider_Weight::Collider_Weight(Kinematics_Base* kinematics)
   m_rejection = ATOOLS::Settings::GetMainSettings()["BEAM_OVERLAP_REJECTION"]
                         .SetDefault(false)
                         .Get<int>();
+  if (m_rejection == 0) return;
   if (m_rejection == 1)
     p_rejector = new Radius_Rejection(p_beams[0]->Beam(), p_beams[1]->Beam());
   else if (m_rejection > 1 && p_beams[0]->Beam().Kfcode() == kf_p_plus &&
            p_beams[1]->Beam().Kfcode() == kf_p_plus)
-    p_rejector =
-            new Proton_Proton_Rejection(p_beams[0]->Beam(), p_beams[1]->Beam());
+    p_rejector = new Proton_Proton_Rejection(
+            p_beams[0]->Beam(), p_beams[1]->Beam(),
+            (p_beams[0]->InMomentum() + p_beams[0]->InMomentum()).Abs2());
   else if (m_rejection > 1 && (p_beams[0]->Beam().Kfcode() == kf_p_plus &&
                                p_beams[1]->Beam().IsIon()) ||
            (p_beams[0]->Beam().IsIon() &&
@@ -75,8 +78,10 @@ double Collider_Weight::operator()()
   return m_weight;
 }
 
-bool Collider_Weight::Reject() {
+bool Collider_Weight::Reject()
+{
   double b1(p_beams[0]->ImpactParameter()), b2(p_beams[1]->ImpactParameter());
-  double b = std::sqrt(b1 * b1 + b2 * b2 - 2 * b1 * b2 * std::cos(2 * M_PI * ATOOLS::ran->Get()));
+  double b = std::sqrt(b1 * b1 + b2 * b2 -
+                       2 * b1 * b2 * std::cos(2 * M_PI * ATOOLS::ran->Get()));
   return (*p_rejector)(b);
 }
