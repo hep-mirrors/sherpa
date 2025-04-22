@@ -18,7 +18,7 @@ RIVET:
 ###########################
 
   --analyses: [BELLE_2007_I753243]
-ANALYSIS_OUTPUT: tau_2_KS_pi-_FF1
+ANALYSIS_OUTPUT: tau_2_KS_pi-_FF1_updated_mass_and_width
 #  Note: tail droops. ff models identical
 
 ###########################
