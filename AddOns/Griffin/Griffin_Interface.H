@@ -22,7 +22,8 @@
 #include "classes.h"
 #include "EWPOZ2.h"
 #include "xscnnlo.h"
-// #include "SMval.h"
+#include "xscenlo.h"
+#include "SMval.h"
 
 
 using namespace PHASIC;
@@ -37,6 +38,7 @@ namespace Griffin {
     lo       = 0,
     nlo      = 1,
     nnlo     = 2,
+    nloe     =3,
   };
 };
 
@@ -62,6 +64,7 @@ namespace Griffin {
     static void EvaluateLoop(const Vec4D_Vector& momenta, METOOLS::DivArrD& virt);
     static void EvaluateLO(const Vec4D_Vector& momenta, METOOLS::DivArrD& virt);
     static void EvaluateNLO(const Vec4D_Vector& momenta, METOOLS::DivArrD& virt);
+    static void EvaluateNLOE(const Vec4D_Vector& momenta, METOOLS::DivArrD& virt);
     static void EvaluateNNLO(const Vec4D_Vector& momenta, METOOLS::DivArrD& virt);
     static void EvaluateBorn(const Vec4D_Vector& momenta, double &born);
     static griffin::inval m_griffin;
@@ -69,6 +72,7 @@ namespace Griffin {
     static int m_inital;
     static int m_final;
     static double m_norm;
+    static double m_B;
   };
 
 }
