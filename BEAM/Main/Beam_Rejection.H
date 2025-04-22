@@ -2,6 +2,7 @@
 #define BEAM_Main_Beam_Rejection_H
 
 #include "ATOOLS/Math/MathTools.H"
+#include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include <cmath>
@@ -44,7 +45,8 @@ namespace BEAM {
       // Taken from fit in Section 3 in arxiv:2207.03012; given in GeV^-2
       constexpr double A(9.81), B(0.211), C(0.0185);
       double b0 = A + B * std::log(m_sNN) + C * ATOOLS::sqr(std::log(m_sNN));
-      return ATOOLS::sqr(1. - std::exp(-1. * ATOOLS::sqr(b) / 2 / b0));
+      return ATOOLS::ran->Get() >
+             ATOOLS::sqr(1. - std::exp(-1. * ATOOLS::sqr(b) / 2 / b0));
     }
   };
 

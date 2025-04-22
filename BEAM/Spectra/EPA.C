@@ -1,6 +1,5 @@
 #include "BEAM/Spectra/EPA.H"
 #include "BEAM/Spectra/EPA_FF.H"
-#include "BEAM/Spectra/EPA_Spectra_Plotter.H"
 
 #include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Org/Exception.H"
@@ -19,7 +18,7 @@ EPA::EPA(const Flavour& beam, const double energy, const double pol,
     : Beam_Base(beamspectrum::EPA, beam, energy, pol, dir),
       m_type(EPA_ff_type::point), p_ff(nullptr), m_mass(beam.Mass(true)),
       m_aqed(1./127), m_pref(0.), m_q2(0.), m_pt2max(-1.), m_xmin(0.),
-      m_xmax(1.), m_b(0.), m_plotting(0)
+      m_xmax(1.), m_plotting(0)
 {
   if (m_beam.Charge() == 0.)
     THROW(fatal_error,
@@ -40,7 +39,7 @@ bool EPA::CalculateWeight(double x, double q2)
   m_x      = x;
   m_q2     = q2;
   m_weight = (x > m_xmin && x < m_xmax)
-                     ? ATOOLS::Max(0., m_pref * p_ff->N(x, m_b))
+                     ? ATOOLS::Max(0., m_pref * p_ff->N(x))
                      : 0.;
   if (IsNan(m_weight))
     msg_Out() << "Boink! " << METHOD << "(x = " << x << ") yields NaN.\n";

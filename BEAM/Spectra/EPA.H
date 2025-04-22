@@ -17,7 +17,6 @@ namespace BEAM {
     double       m_aqed, m_pref;
     double       m_q2, m_pt2max;
     double       m_xmin, m_xmax;
-    double       m_b;
 
     size_t m_plotting;
 
@@ -38,7 +37,7 @@ namespace BEAM {
     inline double Xmax() const override { return m_xmax; }
     inline double Xmin() const override { return m_xmin; }
 
-    inline double ImpactParameter() const final { return m_b; }
+    inline double ImpactParameter() const final { return p_ff->ImpactParameter(); }
   };// end of class EPA
 
 }// end of namespace BEAM

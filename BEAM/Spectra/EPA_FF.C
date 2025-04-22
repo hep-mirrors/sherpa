@@ -2,21 +2,18 @@
 
 #include "ATOOLS/Math/Bessel_Integrator.H"
 #include "ATOOLS/Math/Gauss_Integrator.H"
-#include "ATOOLS/Math/Histogram.H"
 #include "ATOOLS/Math/MathTools.H"
-#include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Math/Special_Functions.H"
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/Message.H"
-#include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Scoped_Settings.H"
 #include "ATOOLS/Org/Settings.H"
 
-#include <string>
 #include <cmath>
 #include <iostream>
 #include <numbers>
+#include <string>
 using namespace BEAM;
 using namespace ATOOLS;
 using string = std::string;
@@ -47,7 +44,7 @@ EPA_FF_Base::EPA_FF_Base(const ATOOLS::Flavour& beam, const int dir)
       m_beam(beam), m_mass(beam.Mass(true)), m_mass2(ATOOLS::sqr(m_mass)),
       m_R(beam.Radius() / rpa->hBar_c()), m_q2min(0.), m_q2max(1.),
       m_pt2max(-1.),
-      m_Zsquared(beam.IsIon() ? sqr(m_beam.GetAtomicNumber()) : 1. ),
+      m_Zsquared(beam.IsIon() ? sqr(m_beam.GetAtomicNumber()) : 1.), m_b(0.),
       p_N_xb(nullptr), m_approx(false)
 {
   const auto& s = Settings::GetMainSettings()["EPA"];
@@ -66,8 +63,8 @@ EPA_FF_Base::EPA_FF_Base(const ATOOLS::Flavour& beam, const int dir)
 void EPA_FF_Base::FillTables(const size_t& nx, const size_t& nb)
 {
   double xnorm = m_beam.IsIon() ? 1. / m_beam.GetMassNumber() : 1.;
-  axis xaxis(nx, m_xmin * xnorm, m_xmax * xnorm, axis_mode::log);
-  axis baxis(nb, m_bmin * m_R, m_bmax * m_R, axis_mode::log);
+  axis   xaxis(nx, m_xmin * xnorm, m_xmax * xnorm, axis_mode::log);
+  axis   baxis(nb, m_bmin * m_R, m_bmax * m_R, axis_mode::log);
 
   //////////////////////////////////////////////////////////////////////////////
   //
@@ -122,7 +119,7 @@ void EPA_FF_Base::OutputToCSV(const std::string& type)
   outfile_Nxb << "x,b,N" << std::endl;
   for (auto& x : xs) {
     for (auto& b : bs) {
-      outfile_Nxb << x << "," << b << "," << N(x, b) << std::endl;
+      outfile_Nxb << x << "," << b << "," << (*p_N_xb)(x, m_b) << std::endl;
     }
   }
   outfile_Nxb.close();
@@ -135,17 +132,14 @@ void EPA_FF_Base::OutputToCSV(const std::string& type)
 
 double N_xb_int::operator()(double y)
 {
-  // TODO change this
   //////////////////////////////////////////////////////////////////////////////
-  //
   // Integration argument y here is bT*qT as mandated by the Bessel function:
   // - argument of form factor Q^2 = qT^2+x^2m^2 with qT^2 = y^2/bT^2
   // - we assume that m_b is in units of 1/GeV, qT is in GeV, overall results
   //   are in GeV.
-  //
   //////////////////////////////////////////////////////////////////////////////
   double qT = y / m_b, qT2 = sqr(qT);
-  double Q2 = (qT2 + sqr(m_x * p_ff->Mass())) / (1. - m_x);
+  double Q2  = (qT2 + sqr(m_x * p_ff->Mass())) / (1. - m_x);
   double res = qT2 / Q2 * p_ff->FF(Q2) / m_b;
   return res;
 }
@@ -159,9 +153,9 @@ double N_xb_int::operator()(double y)
 
 EPA_Point::EPA_Point(const ATOOLS::Flavour& beam, const int dir)
     : EPA_FF_Base(beam, dir)
-{ }
+{}
 
-double EPA_Point::N(const double& x, const double& b)
+double EPA_Point::N(const double& x)
 {
   // Budnev et al., Phys. Rep. C15 (1974) 181, Eq. (6.17b)
   // This is in units of [1]
@@ -200,7 +194,7 @@ EPA_Proton::EPA_Proton(const ATOOLS::Flavour& beam, const int dir)
   FillTables(m_nxbins, m_nbbins);
 }
 
-double EPA_Proton::N(const double& x, const double& b)
+double EPA_Proton::N(const double& x)
 {
   /*const double q2min(sqr(m_mass * x) / (1. - x));
   const double C(m_mu2);
@@ -229,7 +223,7 @@ EPA_ProtonApprox::EPA_ProtonApprox(const ATOOLS::Flavour& beam, const int dir)
   FillTables(m_nxbins, m_nbbins);
 }
 
-double EPA_ProtonApprox::N(const double& x, const double& b)
+double EPA_ProtonApprox::N(const double& x)
 {
   /*const double q2min(sqr(m_mass * x) / (1. - x));
   const double C(m_mu2);
@@ -391,19 +385,23 @@ double EPA_WoodSaxon::CalculateDensity()
 
 EPA_testIon::EPA_testIon(const ATOOLS::Flavour& beam, const int dir)
     : EPA_FF_Base(beam, dir)
-{ }
+{}
 
-double EPA_testIon::N(const double& x, const double& b)
+double EPA_testIon::N(const double& x)
 {
   // Analytically integrated out the b
-  //double chi = x * m_mass * m_R;
-  //return 2 / x * (chi * std::cyl_bessel_k(1, chi) * std::cyl_bessel_k(0, chi)
-  //    - sqr(chi)/2. * (sqr(std::cyl_bessel_k(1, chi)) - sqr(std::cyl_bessel_k(0, chi))));
-
-  double chi = x * m_mass * b;
-  return 2 * b * x * sqr(m_mass) * sqr(SF.Kn(1, chi));
+  // double chi = x * m_mass * m_R;
+  // return 2 / x * (chi * std::cyl_bessel_k(1, chi) * std::cyl_bessel_k(0, chi)
+  //    - sqr(chi)/2. * (sqr(std::cyl_bessel_k(1, chi)) -
+  //    sqr(std::cyl_bessel_k(0, chi))));
+  m_b = m_beam.Radius() / ATOOLS::rpa->hBar_c() * m_bmin *
+        std::pow(m_bmax / m_bmin, ATOOLS::ran->Get());
+  double wt = m_b * std::log(m_bmax / m_bmin);
+  double chi = x * m_mass * m_b;
+  return 2 * m_b * x * sqr(m_mass) * sqr(SF.Kn(1, chi)) * wt;
   // correction term seems to be negligible
-  //return 2 * b * sqr(m_R) * x * sqr(m_mass) * (sqr(SF.Kn(1, chi)) + sqr(m_mass / 3500) * sqr(SF.Kn(0, chi)));
+  // return 2 * b * sqr(m_R) * x * sqr(m_mass) * (sqr(SF.Kn(1, chi)) +
+  // sqr(m_mass / 3500) * sqr(SF.Kn(0, chi)));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -422,5 +420,5 @@ void EPA_Test::FillTables(const size_t& nx, const size_t& nb)
 {
   axis xaxis(100, 1.e-4, 1., axis_mode::log);
   axis baxis(100, 1.e-6, 1.e4, axis_mode::log);
-  //Fill_Nxb_Table(xaxis, baxis);
+  // Fill_Nxb_Table(xaxis, baxis);
 }
