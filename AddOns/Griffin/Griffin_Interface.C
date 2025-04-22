@@ -225,9 +225,9 @@ void Griffin::Griffin_Interface::EvaluateNNLO(const Vec4D_Vector& momenta, DivAr
   //   res.Finite() = 0;
   // }
   FA_SMNNLO FAi(m_inital, m_griffin), FAf(m_final, m_griffin);
-  // SW_SMNNLO SWi(m_inital, m_griffin), SWf(m_final, m_griffin);
+  SW_SMNNLO SWi(m_inital, m_griffin), SWf(m_final, m_griffin);
   double sw=s_model->ComplexConstant("csin2_thetaW").real();
-  mat_SMNNLO M(m_inital, m_final, VEC, VEC, FAi.result().real(), FAf.result().real(), sw, sw, s, cost, m_griffin);
+  mat_SMNNLO M(m_inital, m_final, VEC, VEC,  FAi.result().real(), FAf.result().real(),  SWi.result().real(),  SWf.result().real(), s, cost, m_griffin);
 
   M.setkinvar(s, cost);
   Cplx resvv, resva, resav, resaa;
