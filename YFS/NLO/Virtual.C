@@ -83,9 +83,7 @@ double Virtual::Calc_V(const ATOOLS::Vec4D_Vector& p,
         V =  m_factor *  p_loop_me->ME_Finite() * B ; break;
       case 1:
         // For Griffin
-        // PRINT_VAR(p_loop_me->ME_Finite()*m_rescale_alpha);
-        V =  p_loop_me->ME_Finite()-B;//*((*aqed)(0)/s_model->ScalarConstant("alpha_QED"));
-        V *= (*aqed)(0)/s_model->ScalarConstant("alpha_QED");
+        V =  p_loop_me->ME_Finite();
         break;
       default:
         THROW(not_implemented, "Loop ME mode not implemented: "+ATOOLS::ToString(p_loop_me->Mode()));
