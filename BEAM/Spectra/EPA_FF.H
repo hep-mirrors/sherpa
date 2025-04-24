@@ -30,11 +30,11 @@ namespace BEAM {
 
   class EPA_FF_Base {
   protected:
-    ATOOLS::Flavour       m_beam;
-    double                m_mass, m_mass2, m_R;
-    double                m_q2min, m_q2max, m_pt2max;
-    double                m_xmin, m_xmax, m_bmin, m_bmax;
-    double                m_Zsquared, m_b;
+    ATOOLS::Flavour m_beam;
+    double          m_mass, m_mass2, m_R;
+    double          m_q2min, m_q2max, m_pt2max;
+    double m_xmin, m_xmax, m_bmin, m_bmax;//< bmin, bmax only relative to radius
+    double m_Zsquared, m_b;               //< b later is the absolute distance
     ATOOLS::TwoDim_Table* p_N_xb;
 
     size_t m_nxbins, m_nbbins;
@@ -49,10 +49,17 @@ namespace BEAM {
     virtual void   FillTables(const size_t& nx, const size_t& nb);
     virtual double N(const double& x)
     {
-      // sampling b by 1/b
-      m_b = m_beam.Radius() / ATOOLS::rpa->hBar_c() * m_bmin *
-            std::pow(m_bmax / m_bmin, ATOOLS::ran->Get());
-      double wt = m_b * std::log(m_bmax / m_bmin);
+      // sampling b by b/(b^2+1), here still only relative to the radius to
+      // preserve generality
+      m_b = std::sqrt((ATOOLS::sqr(m_bmin) + 1.) *
+                              std::pow((ATOOLS::sqr(m_bmax) + 1.) /
+                                               (ATOOLS::sqr(m_bmin) + 1.),
+                                       ATOOLS::ran->Get()) -
+                      1.);
+      double wt =
+              (ATOOLS::sqr(m_b) + 1.) / m_b * 2. *
+              std::log((ATOOLS::sqr(m_bmax) + 1.) / (ATOOLS::sqr(m_bmin) + 1.));
+      m_b *= m_R;// < now convert to an actual distance
       return (*p_N_xb)(x, m_b) * wt;
     };
     virtual double FF(const double& Q2) = 0;
