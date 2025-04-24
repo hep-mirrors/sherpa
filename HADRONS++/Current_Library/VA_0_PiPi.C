@@ -572,21 +572,21 @@ ResDefaults VA_0_PiPi::s_KSdefaults = {
       },
       { int(VA_0_PiPi::PSmode::Kpi),
 	{
-      { (long unsigned int)(kf_K_star_1410_plus),   {  0.0130, 1.4120, 0.2270, 0.0000 } },
-	  { (long unsigned int)(kf_K_star_892_plus),    {  1.0000, 0.8950, 0.0558, 0.0000 } },
+    { (long unsigned int)(kf_K_star_1410_plus),   {  -0.0135, 1.4120, 0.2270, 0.0000 } },
+	  { (long unsigned int)(kf_K_star_892_plus),    {  1.0000, 0.8920, 0.0500, 0.0000 } },
 	  { (long unsigned int)(kf_K_0_star_1430_plus), {  1.7000, 1.4300, 0.2870, 0.0000 } }
 	}
       },
       { int(VA_0_PiPi::PSmode::Keta),
 	{
-      { (long unsigned int)(kf_K_star_1410_plus),   { -0.1350, 1.4120, 0.2270, 0.0000 } },
+    { (long unsigned int)(kf_K_star_1410_plus),   { -0.1350, 1.4120, 0.2270, 0.0000 } },
 	  { (long unsigned int)(kf_K_star_892_plus),    {  1.0000, 0.8920, 0.0500, 0.0000 } },
 	  { (long unsigned int)(kf_K_0_star_1430_plus), {  1.7000, 1.4300, 0.2870, 0.0000 } }
 	}
       },
       { int(VA_0_PiPi::PSmode::Ketaprime),
 	{
-      { (long unsigned int)(kf_K_star_1410_plus),   { -0.1350, 1.4120, 0.2270, 0.0000 } },
+    { (long unsigned int)(kf_K_star_1410_plus),   { -0.1350, 1.4120, 0.2270, 0.0000 } },
 	  { (long unsigned int)(kf_K_star_892_plus),    {  1.0000, 0.8920, 0.0500, 0.0000 } },
 	  { (long unsigned int)(kf_K_0_star_1430_plus), {  1.7000, 1.4300, 0.2870, 0.0000 } }
 	}
