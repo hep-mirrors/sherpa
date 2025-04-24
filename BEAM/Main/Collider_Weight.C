@@ -26,6 +26,8 @@ Collider_Weight::Collider_Weight(Kinematics_Base* kinematics)
   m_rejection = ATOOLS::Settings::GetMainSettings()["BEAM_OVERLAP_REJECTION"]
                         .SetDefault(false)
                         .Get<int>();
+  if (m_rejection == 0)
+    return;
   if (m_rejection == 1)
     p_rejector = new Radius_Rejection(p_beams[0]->Beam(), p_beams[1]->Beam());
   else if (m_rejection > 1 && p_beams[0]->Beam().Kfcode() == kf_p_plus &&
