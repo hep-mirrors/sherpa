@@ -42,14 +42,13 @@ EPA_FF_Base::EPA_FF_Base(const ATOOLS::Flavour& beam, const int dir)
      //
      //////////////////////////////////////////////////////////////////////////////
       m_beam(beam), m_mass(beam.Mass(true)), m_mass2(ATOOLS::sqr(m_mass)),
-      m_R(beam.Radius() / rpa->hBar_c()), m_q2min(0.), m_q2max(1.),
+      m_R(beam.Radius() / rpa->hBar_c()), m_q2min(-1.), m_q2max(1.),
       m_pt2max(-1.),
       m_Zsquared(beam.IsIon() ? sqr(m_beam.GetAtomicNumber()) : 1.), m_b(0.),
-      p_N_xb(nullptr), m_approx(false)
+      p_N_xb(nullptr)
 {
   const auto& s = Settings::GetMainSettings()["EPA"];
   size_t      b = dir > 0 ? 0 : 1;
-  m_approx      = s["Approximation"].Get<bool>();
   m_q2max       = s["Q2Max"].GetTwoVector<double>()[b];
   m_q2min       = s["Q2Min"].GetTwoVector<double>()[b];
   m_nxbins      = s["xBins"].GetTwoVector<int>()[b];
@@ -113,7 +112,6 @@ void EPA_FF_Base::OutputToCSV(const std::string& type)
     q2s[i] = q2s[i - 1] * std::exp(step_q2);
   }
   std::string prefix = m_beam.IDName() + "_" + type + "_";
-  if (m_approx) prefix += "approx_";
 
   std::ofstream outfile_Nxb(prefix + "N_x_b.csv");
   outfile_Nxb << "x,b,N" << std::endl;
@@ -145,10 +143,8 @@ double N_xb_int::operator()(double y)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-//
 // Point-like form factors and related functions in different approximations,
 // all based on Budnev et al., Phys. Rep. C15 (1974) 181.
-//
 ////////////////////////////////////////////////////////////////////////////////
 
 EPA_Point::EPA_Point(const ATOOLS::Flavour& beam, const int dir)
@@ -163,22 +159,35 @@ double EPA_Point::N(const double& x)
   // compare hep-ph/9610406 and hep-ph/9310350
   double q2min = Q2min(x);
   double q2max = Q2max(x);
-  double f;
-  if (!m_approx)
-    f = 1. / 2 / x *
-        ((1 + sqr(1 - x)) * log(q2max / q2min) -
-         2 * sqr(m_mass * x) * (1 / q2min - 1 / q2max));
-  else// V.M. Budnev et al., Phys. Rep. C15(1974)181, first term in eq. 6.17b
-    f = 1. / 2 * (1 + sqr(1 - x)) / x * log(q2max / q2min);
-  if (f < 0) f = 0.;
-  return f;
+  return 1. / 2 / x *
+         ((1 + sqr(1 - x)) * log(q2max / q2min) -
+          2 * sqr(m_mass * x) * (1 / q2min - 1 / q2max));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-//
+// Point-like form factors and related functions in different approximations,
+// all based on Budnev et al., Phys. Rep. C15 (1974) 181.
+////////////////////////////////////////////////////////////////////////////////
+
+EPA_PointApprox::EPA_PointApprox(const ATOOLS::Flavour& beam, const int dir)
+    : EPA_FF_Base(beam, dir)
+{}
+
+double EPA_PointApprox::N(const double& x)
+{
+  // Budnev et al., Phys. Rep. C15 (1974) 181, Eq. (6.17b)
+  // This is in units of [1]
+  // Maximal angle for the scattered electron
+  // compare hep-ph/9610406 and hep-ph/9310350
+  double q2min = Q2min(x);
+  double q2max = Q2max(x);
+  // V.M. Budnev et al., Phys. Rep. C15(1974)181, first term in eq. 6.17b
+  return 1. / 2 * (1 + sqr(1 - x)) / x * log(q2max / q2min);
+}
+
+////////////////////////////////////////////////////////////////////////////////
 // Proton form factor as defined in Budnev et al., Phys. Rep. C15 (1974) 181
-// c.f. eq. D.4 and Table 8
-//
+// c.f. eq. D.7 and Table 8
 ////////////////////////////////////////////////////////////////////////////////
 
 EPA_Proton::EPA_Proton(const ATOOLS::Flavour& beam, const int dir)
@@ -190,25 +199,37 @@ EPA_Proton::EPA_Proton(const ATOOLS::Flavour& beam, const int dir)
   m_Q02         = s["Q02"].GetTwoVector<double>()[b];
   if (m_beam.Kfcode() != kf_p_plus)
     THROW(fatal_error, "Wrong form factor for " + m_beam.IDName());
-
-  FillTables(m_nxbins, m_nbbins);
 }
 
 double EPA_Proton::N(const double& x)
 {
-  /*const double q2min(sqr(m_mass * x) / (1. - x));
-  const double C(m_mu2);
-  const double D(4. * m_mass2 + Q2 * m_mu2 / (4. * m_mass2 + Q2));
-  return (sqr(x) / 2. * C + (1. - x) * (1. - q2min / Q2) * D) * sqr(FF(Q2)) /
-         x / Q2;*/
+  auto phi = [this](double z) {
+    double y   = z * z / (1. - z);
+    double a   = (1. + m_mu2) / 4. + 4. * m_mass2 / m_Q02;
+    double b   = 1. - 4. * m_mass2 / m_Q02;
+    double c   = (m_mu2 - 1.) * std::pow(b, -4);
+    double zp1 = 1. + z;
+
+    double term1 = (1. + a * y) *
+                   (-std::log(1. + 1. / z) + 1. / zp1 +
+                    1. / 2. * std::pow(zp1, -2) + 1. / 3. * std::pow(zp1, -3));
+    double term2 = (1. - b) * y / 4. / z * std::pow(zp1, -3);
+    double term3 = c * (1. + y / 4.) *
+                   (std::log((zp1 - b) / zp1) + b / zp1 +
+                    std::pow(b, 2) / 2. * std::pow(zp1, -2) +
+                    std::pow(b, 3) / 3. * std::pow(zp1, -3));
+
+    return term1 - term2 + term3;
+  };
+
+  double q2min = Q2min(x);
+  return (1. - x) / x * (phi(m_q2max / m_Q02) - phi(q2min / m_Q02));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-//
 // Proton form factor as defined in Budnev et al., Phys. Rep. C15 (1974) 181,
-// c.f. eq. D.4 and Table 8, but here with the
+// c.f. eq. D.6 and Table 8, but here with the
 // approximation Q2 -> 0 in the form factor
-//
 ////////////////////////////////////////////////////////////////////////////////
 
 EPA_ProtonApprox::EPA_ProtonApprox(const ATOOLS::Flavour& beam, const int dir)
@@ -219,24 +240,18 @@ EPA_ProtonApprox::EPA_ProtonApprox(const ATOOLS::Flavour& beam, const int dir)
   m_mu2         = sqr(s["MagneticMu"].GetTwoVector<double>()[b]);
   if (m_beam.Kfcode() != kf_p_plus)
     THROW(fatal_error, "Wrong form factor for " + m_beam.IDName());
-
-  FillTables(m_nxbins, m_nbbins);
 }
 
 double EPA_ProtonApprox::N(const double& x)
 {
-  /*const double q2min(sqr(m_mass * x) / (1. - x));
-  const double C(m_mu2);
-  const double D(4. * m_mass2 + Q2 * m_mu2 / (4. * m_mass2 + Q2));
-  // FF = 1, hence omitted
-  return (sqr(x) / 2. * C + (1. - x) * (1. - q2min / Q2) * D) / x / Q2;*/
+  double q2min = Q2min(x);
+  return (1. - x + m_mu2 * x * x / 2.) / x * log(m_q2max / q2min) -
+         (1. - x) / x * (1. - q2min / m_q2max);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-//
 // Gaussian form factors replacing the dipole form factors of Budnev et al.,
 // Phys. Rep. C15 (1974) 181.
-//
 ////////////////////////////////////////////////////////////////////////////////
 
 EPA_Gauss::EPA_Gauss(const ATOOLS::Flavour& beam, const int dir)
@@ -249,11 +264,9 @@ EPA_Gauss::EPA_Gauss(const ATOOLS::Flavour& beam, const int dir)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-//
 // Proton form factor as defined in Budnev et al., Phys. Rep. C15 (1974) 181,
 // c.f. eq. D.4 and Table 8, but here with the
 // approximation Q2 -> 0 in the form factor
-//
 ////////////////////////////////////////////////////////////////////////////////
 
 EPA_HCS::EPA_HCS(const ATOOLS::Flavour& beam, const int dir)
@@ -263,10 +276,8 @@ EPA_HCS::EPA_HCS(const ATOOLS::Flavour& beam, const int dir)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-//
 // Dipole form factors and related functions in different approximations, all
 // based on Budnev et al., Phys. Rep. C15 (1974) 181.
-//
 ////////////////////////////////////////////////////////////////////////////////
 
 EPA_Dipole::EPA_Dipole(const ATOOLS::Flavour& beam, const int dir)
@@ -280,10 +291,8 @@ EPA_Dipole::EPA_Dipole(const ATOOLS::Flavour& beam, const int dir)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-//
 // Dipole form factors and related functions in different approximations, all
 // based on Budnev et al., Phys. Rep. C15 (1974) 181.
-//
 ////////////////////////////////////////////////////////////////////////////////
 
 EPA_DipoleApprox::EPA_DipoleApprox(const ATOOLS::Flavour& beam, const int dir)
@@ -297,7 +306,6 @@ EPA_DipoleApprox::EPA_DipoleApprox(const ATOOLS::Flavour& beam, const int dir)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-//
 // Form factor for ions in a Wood-Saxon potential.  A few comments:
 //
 // - Output for the density modifed to recover the atomic number A on
@@ -305,7 +313,6 @@ EPA_DipoleApprox::EPA_DipoleApprox(const ATOOLS::Flavour& beam, const int dir)
 //   unity, because we will later multiply the square of the form factor with
 //   the square of the charge Z.
 // - Radius in 1/GeV, therefore "nucelar skin" m_d also in 1/GeV
-//
 ////////////////////////////////////////////////////////////////////////////////
 
 EPA_WoodSaxon::EPA_WoodSaxon(const ATOOLS::Flavour& beam, const int dir)
@@ -377,10 +384,8 @@ double EPA_WoodSaxon::CalculateDensity()
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-//
 // Dummy test class for the Ion FF in the Electric Dipole approximation using
 // the analytical expression from 2207.03012, eq. 3.3
-//
 ////////////////////////////////////////////////////////////////////////////////
 
 EPA_testIon::EPA_testIon(const ATOOLS::Flavour& beam, const int dir)
@@ -396,7 +401,7 @@ double EPA_testIon::N(const double& x)
   //    sqr(std::cyl_bessel_k(0, chi))));
   m_b = m_beam.Radius() / ATOOLS::rpa->hBar_c() * m_bmin *
         std::pow(m_bmax / m_bmin, ATOOLS::ran->Get());
-  double wt = m_b * std::log(m_bmax / m_bmin);
+  double wt  = m_b * std::log(m_bmax / m_bmin);
   double chi = x * m_mass * m_b;
   return 2 * m_b * x * sqr(m_mass) * sqr(SF.Kn(1, chi)) * wt;
   // correction term seems to be negligible
@@ -405,9 +410,7 @@ double EPA_testIon::N(const double& x)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-//
 // Dummy test class for checking the Bessel_Integrator
-//
 ////////////////////////////////////////////////////////////////////////////////
 
 EPA_Test::EPA_Test(const ATOOLS::Flavour& beam, const int dir)

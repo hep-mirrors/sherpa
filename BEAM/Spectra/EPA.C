@@ -79,19 +79,26 @@ void EPA::Initialise()
 
   m_type = static_cast<EPA_ff_type>(s["Form_Factor"].GetTwoVector<int>()[b]);
   switch (m_type) {
-    case EPA_ff_type::point: p_ff = new EPA_Point(m_beam, m_dir); break;
-    case EPA_ff_type::proton: p_ff = new EPA_Proton(m_beam, m_dir); break;
+    case EPA_ff_type::point:
+      p_ff = new EPA_Point(m_beam, m_dir); break;
+    case EPA_ff_type::pointApprox:
+      p_ff = new EPA_PointApprox(m_beam, m_dir); break;
+    case EPA_ff_type::proton:
+      p_ff = new EPA_Proton(m_beam, m_dir); break;
     case EPA_ff_type::protonApprox:
-      p_ff = new EPA_ProtonApprox(m_beam, m_dir);
-      break;
-    case EPA_ff_type::Gauss: p_ff = new EPA_Gauss(m_beam, m_dir); break;
-    case EPA_ff_type::hcs: p_ff = new EPA_HCS(m_beam, m_dir); break;
-    case EPA_ff_type::dipole: p_ff = new EPA_Dipole(m_beam, m_dir); break;
+      p_ff = new EPA_ProtonApprox(m_beam, m_dir); break;
+    case EPA_ff_type::Gauss:
+      p_ff = new EPA_Gauss(m_beam, m_dir); break;
+    case EPA_ff_type::hcs:
+      p_ff = new EPA_HCS(m_beam, m_dir); break;
+    case EPA_ff_type::dipole:
+      p_ff = new EPA_Dipole(m_beam, m_dir); break;
     case EPA_ff_type::dipoleApprox:
-      p_ff = new EPA_DipoleApprox(m_beam, m_dir);
-      break;
-    case EPA_ff_type::testIon: p_ff = new EPA_testIon(m_beam, m_dir); break;
-    case EPA_ff_type::WoodSaxon: p_ff = new EPA_WoodSaxon(m_beam, m_dir); break;
+      p_ff = new EPA_DipoleApprox(m_beam, m_dir); break;
+    case EPA_ff_type::testIon:
+      p_ff = new EPA_testIon(m_beam, m_dir); break;
+    case EPA_ff_type::WoodSaxon:
+      p_ff = new EPA_WoodSaxon(m_beam, m_dir); break;
     default: THROW(not_implemented, "unknown EPA form factor. ");
   }
   p_ff->SetPT2Max(m_pt2max);
@@ -100,10 +107,10 @@ void EPA::Initialise()
 void EPA::RegisterDefaults() const
 {
   const auto& s = Settings::GetMainSettings()["EPA"];
-  s["Q2Max"].SetDefault(3.0);
+  s["Q2Max"].SetDefault(1.);
   s["Q2Min"].SetDefault(-1.);
   s["xMax"].SetDefault(1.);
-  s["xMin"].SetDefault(1.e-6);
+  s["xMin"].SetDefault(0.);
   s["xBins"].SetDefault(12);
   s["bMin"].SetDefault(1.e-1);
   s["bMax"].SetDefault(1.e4);
@@ -119,7 +126,6 @@ void EPA::RegisterDefaults() const
   s["WoodSaxon_d"].SetDefault(0.5);
   s["AlphaQED"].SetDefault(0.0072992701);
   s["ThetaMax"].SetDefault(0.3);
-  s["Approximation"].SetDefault(false);
   s["PlotSpectra"].SetDefault(false);
 }
 
@@ -133,9 +139,10 @@ void EPA::Tests()
   // Lepton
   auto* ff_e = new EPA_Point(Flavour(kf_e), 0);
   ff_e->OutputToCSV("point");
-  ff_e->SetApprox(true);
-  ff_e->OutputToCSV("point");
   delete ff_e;
+  auto* ff_eApprox = new EPA_PointApprox(Flavour(kf_e), 0);
+  ff_eApprox->OutputToCSV("pointApprox");
+  delete ff_eApprox;
 
   // Proton
   // ======

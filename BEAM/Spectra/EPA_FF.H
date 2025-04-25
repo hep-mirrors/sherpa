@@ -17,8 +17,9 @@ namespace ATOOLS {
 namespace BEAM {
   enum class EPA_ff_type {
     point        = 0,
-    proton       = 1,
-    protonApprox = 2,
+    pointApprox  = 1,
+    proton       = 2,
+    protonApprox = 3,
     Gauss        = 10,
     hcs          = 11,
     dipole       = 12,
@@ -38,7 +39,6 @@ namespace BEAM {
     ATOOLS::TwoDim_Table* p_N_xb;
 
     size_t m_nxbins, m_nbbins;
-    bool   m_approx;
 
   public:
     EPA_FF_Base(const ATOOLS::Flavour& beam, int dir);
@@ -64,7 +64,6 @@ namespace BEAM {
     };
     virtual double FF(const double& Q2) = 0;
 
-    void SetApprox(bool approx) { m_approx = approx; }
     void SetRadius(const double& R) { m_R = R; }
     void SetPT2Max(const double& pt2max) { m_pt2max = pt2max; }
     void SetQ2Max(const double q2max) { m_q2max = q2max; }
@@ -115,12 +114,21 @@ namespace BEAM {
     double FF(const double& Q2) override { return 1.; }
   };
 
+  class EPA_PointApprox final : public EPA_FF_Base {
+  public:
+    EPA_PointApprox(const ATOOLS::Flavour& beam, int dir);
+    void   FillTables(const size_t& nx, const size_t& nb) override {};
+    double N(const double& x) override;
+    double FF(const double& Q2) override { return 1.; }
+  };
+
   class EPA_Proton final : public EPA_FF_Base {
   private:
     double m_Q02, m_mu2;
 
   public:
     EPA_Proton(const ATOOLS::Flavour& beam, int dir);
+    void   FillTables(const size_t& nx, const size_t& nb) override {};
     double FF(const double& Q2) override
     {
       return std::pow(1. + Q2 / m_Q02, -2);
@@ -134,6 +142,7 @@ namespace BEAM {
 
   public:
     EPA_ProtonApprox(const ATOOLS::Flavour& beam, int dir);
+    void   FillTables(const size_t& nx, const size_t& nb) override {};
     double FF(const double& Q2) override { return 1.; }
     double N(const double& x) override;
   };
