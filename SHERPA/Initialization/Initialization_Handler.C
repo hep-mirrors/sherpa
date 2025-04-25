@@ -195,9 +195,6 @@ void Initialization_Handler::RegisterDefaults()
   s["RESUMMATION_SCALE_FACTOR"].SetDefault(1.0);
   s["USR_WGT_MODE"].SetDefault(true);
 
-  Scoped_Settings metssettings{ Settings::GetMainSettings()["METS"] };
-  metssettings["CLUSTER_MODE"].SetDefault(0);
-
   s["NNLOqT_FOMODE"].SetDefault(0);
 
   // m_mtmode != 0 to reweight the whole cross section by full mt-dependent LO
