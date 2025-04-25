@@ -110,7 +110,7 @@ void EPA::RegisterDefaults() const
   s["Q2Max"].SetDefault(1.);
   s["Q2Min"].SetDefault(-1.);
   s["xMax"].SetDefault(1.);
-  s["xMin"].SetDefault(0.);
+  s["xMin"].SetDefault(1.e-10);
   s["xBins"].SetDefault(12);
   s["bMin"].SetDefault(1.e-1);
   s["bMax"].SetDefault(1.e4);
