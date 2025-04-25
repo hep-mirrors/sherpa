@@ -17,13 +17,12 @@ EPA::EPA(const Flavour& beam, const double energy, const double pol,
          const int dir)
     : Beam_Base(beamspectrum::EPA, beam, energy, pol, dir),
       m_type(EPA_ff_type::point), p_ff(nullptr), m_mass(beam.Mass(true)),
-      m_aqed(1./127), m_pref(0.), m_q2(0.), m_pt2max(-1.), m_xmin(0.),
+      m_aqed(1. / 127), m_pref(0.), m_q2(0.), m_pt2max(-1.), m_xmin(0.),
       m_xmax(1.), m_plotting(0)
 {
   if (m_beam.Charge() == 0.)
     THROW(fatal_error,
           "No photon flux for uncharged particles. Can not enable EPA. ")
-  Initialise();
   m_Nbunches = 2;
   m_bunches.resize(m_Nbunches);
   m_bunches[0] = Flavour(kf_photon);
@@ -32,15 +31,22 @@ EPA::EPA(const Flavour& beam, const double energy, const double pol,
   m_vecouts[0] = Vec4D(m_energy, 0., 0., m_dir * m_energy);
   m_vecouts[1] = Vec4D(0., 0., 0., 0.);
   m_on         = true;
+  m_pref       = m_aqed / M_PI;
+
+  RegisterDefaults();
+  Initialise();
+  if (m_plotting) {
+    Tests();
+    THROW(normal_exit, "Tests done.");
+  }
 }
 
 bool EPA::CalculateWeight(double x, double q2)
 {
   m_x      = x;
   m_q2     = q2;
-  m_weight = (x > m_xmin && x < m_xmax)
-                     ? ATOOLS::Max(0., m_pref * p_ff->N(x))
-                     : 0.;
+  m_weight = (x > m_xmin && x < m_xmax) ? ATOOLS::Max(0., m_pref * p_ff->N(x))
+                                        : 0.;
   if (IsNan(m_weight))
     msg_Out() << "Boink! " << METHOD << "(x = " << x << ") yields NaN.\n";
   return true;
@@ -62,25 +68,14 @@ void EPA::SetOutMomentum(const ATOOLS::Vec4D& out)
 void EPA::Initialise()
 {
   const auto& s = Settings::GetMainSettings()["EPA"];
-  RegisterDefaults();
-  size_t b   = m_dir > 0 ? 0 : 1;
-  m_aqed     = s["AlphaQED"].Get<double>();
-  m_pref     = m_aqed / M_PI;
-  m_plotting = s["PlotSpectra"].Get<bool>();
-  m_pt2max   = !m_beam.IsIon()  // TODO check for factor (1-x) below
-                       ? sqr(m_energy * s["ThetaMax"].GetTwoVector<double>()[b])
-                       : sqr(rpa->hBar_c() / m_beam.Radius());
-  m_xmin     = s["xMin"].GetTwoVector<double>()[b];
-  m_xmax     = s["xMax"].GetTwoVector<double>()[b];
-
-  if (m_plotting) {
-    Tests();
-    /*EPA_Spectra_Plotter* plotter =
-            new EPA_Spectra_Plotter(this, string("Spectra"));
-    (*plotter)(99);
-    delete plotter;*/
-    THROW(normal_exit, "Tests done.");
-  }
+  size_t      b = m_dir > 0 ? 0 : 1;
+  m_aqed        = s["AlphaQED"].Get<double>();
+  m_plotting    = s["PlotSpectra"].Get<bool>();
+  m_pt2max      = !m_beam.IsIon()// TODO check for factor (1-x) below
+                          ? sqr(m_energy * s["ThetaMax"].GetTwoVector<double>()[b])
+                          : sqr(rpa->hBar_c() / m_beam.Radius());
+  m_xmin        = s["xMin"].GetTwoVector<double>()[b];
+  m_xmax        = s["xMax"].GetTwoVector<double>()[b];
 
   m_type = static_cast<EPA_ff_type>(s["Form_Factor"].GetTwoVector<int>()[b]);
   switch (m_type) {
@@ -118,7 +113,9 @@ void EPA::RegisterDefaults() const
                                      : m_beam.IsMeson()   ? EPA_ff_type::dipole
                                                         : EPA_ff_type::point));
   s["MagneticMu"].SetDefault(m_beam.IsNucleon() ? 2.79 : 0.);
-  s["Q02"].SetDefault(m_beam.IsNucleon() ? 0.71 : sqr(2. / m_beam.Radius() * rpa->hBar_c()));
+  s["Q02"].SetDefault(m_beam.IsNucleon()
+                              ? 0.71
+                              : sqr(2. / m_beam.Radius() * rpa->hBar_c()));
   s["WoodSaxon_d"].SetDefault(0.5);
   s["AlphaQED"].SetDefault(0.0072992701);
   s["ThetaMax"].SetDefault(0.3);
