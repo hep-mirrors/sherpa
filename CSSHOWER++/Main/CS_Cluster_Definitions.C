@@ -211,7 +211,7 @@ void CS_Cluster_Definitions::KernelWeight
 	       p_shower->GetSudakov()->FSPT2Min());
   if (m_kfmode && !(kmode&16))
   cs.m_mu2*=cdip->Coupling()->CplFac(cs.m_mu2);
-  cs.m_cpl=cdip->PureQCD()?0:-1;
+  cs.m_cpl=cdip->PureQCD()?2:1;
   if (!(kmode&2)) return;
   else {
   double eta=1.0;
