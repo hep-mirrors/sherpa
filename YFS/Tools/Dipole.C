@@ -209,6 +209,10 @@ void Dipole::Boost() {
     m_ranPhi = ran->Get()*2.*M_PI;
     Vec4D qqk = m_momenta[0] + m_momenta[1] + m_photonSum;
     p_Pboost = new Poincare(qqk);
+    Poincare boost(m_bornmomenta[0]+m_bornmomenta[1]);
+    Poincare rot(m_momenta[0], Vec4D(0,0,0,1));
+    SetRotate(rot);
+    // SetBoost(boost);
     // m_eikmomentum = m_momenta;
     for (size_t i = 0; i < 2; ++i)
     {
@@ -317,9 +321,11 @@ bool Dipole::BoostNLO() {
     Vec4D qqk = m_momenta[0] + m_momenta[1] + m_photonSum;
     p_Pboost = new Poincare(qqk);
     Vec4D ref = m_bornmomenta[0];
-    boost.Boost(ref);
-    Poincare rot(ref, Vec4D(0,0,0,1));
-    SetBoost(boost);
+    // boost.Boost(ref);
+    // Poincare rot(ref, Vec4D(0,0,0,1));
+    // SetBoost(boost);
+    // SetRotate(rot);
+    Poincare rot(m_momenta[0], Vec4D(0,0,0,1));
     SetRotate(rot);
     for (size_t i = 0; i < 2; ++i)
     {
