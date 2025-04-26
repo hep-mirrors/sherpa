@@ -452,7 +452,7 @@ double NLO_Base::CalculateRealVirtual(Vec4D k, int fsrcount) {
 	if(p.size()!=(m_flavs.size()+1)){
 		msg_Error()<<"Mismatch in "<<METHOD<<std::endl;
 	}
-	double r = p_realvirt->Calc(p, 1) / norm;
+	double r = p_realvirt->Calc(p, m_born) / norm;
 	if(p_realvirt->FailCut()) return 0;
 	if (IsBad(r)) {
 		msg_Error()<<"Real-Virtual is "<<r<<std::endl;
