@@ -386,7 +386,7 @@ double NLO_Base::CalculateRealVirtual() {
 			CheckRealVirtualSub(k);
 		}
 		// if(CheckPhotonForReal(k)) realvirtual+=CalculateRealVirtual(k, 1);
-		realvirtual+=CalculateRealVirtual(k, 1);
+		realvirtual+=CalculateRealVirtual(k, 0);
 	}
 	// if(IsZero(realvirtual)) realvirtual = p_dipoles->CalculateRealSubEEX();
 	return realvirtual;
@@ -453,7 +453,7 @@ double NLO_Base::CalculateRealVirtual(Vec4D k, int fsrcount) {
 		msg_Error()<<"Mismatch in "<<METHOD<<std::endl;
 	}
 	double r = p_realvirt->Calc(p, m_born) / norm;
-	if(p_realvirt->FailCut()) return 0;
+	// if(p_realvirt->FailCut()) return 0;
 	if (IsBad(r)) {
 		msg_Error()<<"Real-Virtual is "<<r<<std::endl;
 		return 0;
