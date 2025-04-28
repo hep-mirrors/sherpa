@@ -380,8 +380,8 @@ void Hard_Decay_Handler::InitializeOffshellDecays(Decay_Table* dt) {
     // ResolveDecay attempts to generate additional (offshell or three-body) decay channel configurations that may arise 
     // from the original two-body decay represented by dc, and returns them in a vector of Decay_Channel pointers.
     vector<Decay_Channel*> new_dcs=ResolveDecay(dc); 
-    if (TriggerOffshell(dc, new_dcs)) { // hecks if the decay channel is offshell
-      dc->SetActiveAll(-1);
+    if (TriggerOffshell(dc, new_dcs)) { // checks if the decay channel is offshell
+      dc->SetActiveAll(-1);             // deactivate the original decay channel
       for (size_t j=0; j<new_dcs.size(); ++j) {
         // check for duplicates
         Decay_Channel* dup=dt->GetDecayChannel(new_dcs[j]->Flavs());
@@ -402,6 +402,7 @@ void Hard_Decay_Handler::InitializeOffshellDecays(Decay_Table* dt) {
         else { 
           DEBUG_INFO("Adding "<<new_dcs[j]->Name());
           auto s = Settings::GetMainSettings()["HARD_DECAYS"]["Channels"][new_dcs[j]->IDCode()];
+          //std::cout << Settings::GetMainSettings()["HARD_DECAYS"]["Channels"].Get<std::string>() << std::endl;
           new_dcs[j]->SetActive(s["Status"].SetDefault(new_dcs[j]->Active()).GetVector<int>());
           dt->AddDecayChannel(new_dcs[j]);
         }
@@ -493,9 +494,19 @@ offshell (or three-body) decay configurations.
   DEBUG_FUNC(dc1->Name());
   vector<Decay_Channel*> new_dcs;
   const std::vector<ATOOLS::Flavour> flavs1(dc1->Flavs());
+
+  bool bbbar_channel = false; // flag to check if the decay channel is Higgs to b bbar
+
+  // test (delete this later):
+  if (flavs1[0].IDName() == "h0" && flavs1[1].IDName() == "b" && flavs1[2].IDName() == "bb"){
+    bbbar_channel = true;
+  }
+
+
   for (size_t j=1;j<flavs1.size();++j) { // iterate over each daughter flavor (starting at index 1)
     bool ignore=false;
-    if (flavs1[j].Width()<m_min_prop_width) continue; // skip if width is below threshold
+    if (flavs1[j].Width()<m_min_prop_width && !(bbbar_channel)) continue; // skip if width is below threshold
+    //if (flavs1[j].Width()<m_min_prop_width) continue;
     for (size_t k=1; k<j; ++k) { // skip duplicates
       // TODO Do we really have to avoid double counting e.g. in h -> Z Z?
       // Further iterations: W+ -> b t -> b W b -> b b .. ?
@@ -517,18 +528,18 @@ offshell (or three-body) decay configurations.
 
     for (size_t k=0;k<reduced_vlist.size();k++) {
       Single_Vertex* sv = reduced_vlist[k];
-      if (!ProperVertex(sv)) continue;
+      if (!ProperVertex(sv) && !(bbbar_channel && (sv->in[2].IDName() == "G"))) continue; // let Higgs to bbbar + gluon pass
       // TODO so far special case 1->3 only
       Decay_Channel* dc=new Decay_Channel(flavs1[0], this);
-      size_t nonprop(0), propi(0), propj(0);
-      dc->AddDecayProduct(flavs1[3-j]);
-      dc->AddDecayProduct(sv->in[1]);
+      size_t nonprop(0), propi(0), propj(0); 
+      dc->AddDecayProduct(flavs1[3-j]); // particle that did not decay   
+      dc->AddDecayProduct(sv->in[1]);   // decay products of the decaying particle 
       dc->AddDecayProduct(sv->in[2]);
-      DEBUG_FUNC("trying "<<dc->Name());
+      DEBUG_FUNC("trying "<<dc->Name()); 
       // TODO what about W+ -> b t -> b W b -> b b ... two diagrams, factor 2, ...?
       // TODO what about identical particles like W' -> b t -> b W b ... two diagrams, factor 2, ...?
       // TODO what about W -> W gamma -> l v gamma?
-      for (size_t l=1; l<4; ++l) { // iterate over the decay products
+      for (size_t l=1; l<4; ++l) { // iterate over the decay products 
         if (dc->Flavs()[l]==flavs1[3-j]) nonprop=l; // find the non-propagating particle
       }
       for (size_t l=1; l<4; ++l) { // first != nonprop leg assigned to propi, the other one to propj
@@ -539,10 +550,19 @@ offshell (or three-body) decay configurations.
       assert(dc1->GetDiagrams().size()==1); // assert that original two-body decay channel has only one diagram (to catch inconsistencies)
       DEBUG_VAR(dc->Flavs());
       DEBUG_VAR(flavs1[j]);
-      // if dc-> Flavs()[0] == Higgs && nonprop == b or b_bar && propi or propj == gluon and the other one is b_bar or b: use new class here
-      // is either propi or propj always the gluon, e.g. is the order according to the numbering scheme?
-      H_to_bbg_at_NLO* diagram=new H_to_bbg_at_NLO(dc->Flavs(),flavs1[j],
-                                       nonprop, propi, propj);
+      for (size_t i = 0; i < dc->Flavs().size(); ++i) {
+        if (dc->Flavs()[0].IDName() == "h0") {
+        std::cout << "Flavor " << i << ": " << dc->Flavs()[i].IDName() << std::endl; }
+      }
+
+      Spin_Amplitudes* diagram = nullptr; // parent class for H_to_bbg_at_NLO and Comix1to3
+      if (bbbar_channel && (sv->in[2].IDName() == "G")) {
+        diagram = new H_to_bbg_at_NLO(dc->Flavs(),flavs1[j], 
+        nonprop, propi, propj);
+      } else {
+        diagram = new Comix1to3(dc->Flavs(),flavs1[j],
+        nonprop, propi, propj);
+      }
 
       dc->AddDiagram(diagram);
 
@@ -556,6 +576,10 @@ offshell (or three-body) decay configurations.
                                              nonprop, propi, propj, this));
       }
       dc->Channels()->Reset();
+      
+      if (bbbar_channel && (sv->in[2].IDName() == "G")) {
+        return new_dcs;  // don't calculate the width for the Higgs to b bbarg decay, because it will be infinite
+      }
 
       if (CalculateWidth(dc)) new_dcs.push_back(dc);
       else delete dc;
