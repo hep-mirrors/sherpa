@@ -14,8 +14,8 @@ using namespace METOOLS;
 using namespace PHASIC;
 using namespace std;
 
-H_to_bbg_at_NLO::H_to_bbg_at_NLO(const vector<Flavour>& flavs, const Flavour& prop, // to do: change name from comix to new name and adapt .H
-                     size_t b_non_prop, size_t propi, size_t propj) : // to do: maybe: fix if propi or propj are the gluon
+H_to_bbg_at_NLO::H_to_bbg_at_NLO(const vector<Flavour>& flavs, const Flavour& prop, 
+                     size_t b_non_prop, size_t propi, size_t propj) : // to do: maybe: fix if propi or propj are the gluon; I think it's propi
   Spin_Amplitudes(flavs,Complex(0.0,0.0)), m_cur(4), m_anticur(4), m_nhel(4),
   m_prop(prop)
 {
