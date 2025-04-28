@@ -459,7 +459,7 @@ double NLO_Base::CalculateRealVirtual(Vec4D k, int fsrcount) {
 		return 0;
 	}
 	// m_plab = pp;
-	double aB = p_nlodipoles->CalculateRealSub(k)*CalculateVirtual();//*p_realvirt->m_factor;
+	double aB = p_nlodipoles->CalculateRealSub(k)*m_oneloop;//*p_realvirt->m_factor;
 	// double aB = subloc*CalculateVirtual();
 	// yfspole*=m_oneloop*p_realvirt->m_factor;
 	// double aB = subloc*(p_virt->Calc(pp, m_born) - m_born*p_nlodipoles->CalculateVirtualSub());
