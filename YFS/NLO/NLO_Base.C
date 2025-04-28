@@ -397,6 +397,7 @@ double NLO_Base::CalculateRealVirtual() {
 			if(k.E() < 0.2*sqrt(m_s)) continue;
 			CheckRealVirtualSub(k);
 		}
+		// if(CheckPhotonForReal(k)) realvirtual+=CalculateRealVirtual(k, 1);
 		realvirtual+=CalculateRealVirtual(k, 1);
 	}
 	// if(IsZero(realvirtual)) realvirtual = p_dipoles->CalculateRealSubEEX();
