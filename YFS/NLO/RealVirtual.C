@@ -87,7 +87,7 @@ double RealVirtual::Calc_V(const ATOOLS::Vec4D_Vector& p,
     switch(p_loop_me->Mode())
       {
       case 0:
-        V =  m_factor *  p_loop_me->ME_Finite()*B; break;
+        V =  m_factor *  p_loop_me->ME_Finite()*gammaborn; break;
 
       case 1:
         V =  m_factor *  p_loop_me->ME_Finite(); break;
