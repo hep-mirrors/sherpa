@@ -4,15 +4,20 @@
 #include "ATOOLS/Math/MyComplex.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "MODEL/Main/Running_AlphaQED.H"
+#include "EXTRA_XS/Main/ME2_Base.H"
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/Data_Reader.H"
 #include "METOOLS/Loops/Master_Integrals.H"
+#include "ATOOLS/Org/Library_Loader.H"
 #include "clooptools.h"
+#include <iostream>
+#include "ATOOLS/Phys/Pion_FormFactor.H"
 
 using namespace PHASIC;
 using namespace ATOOLS;
 using namespace METOOLS;
 using namespace MODEL;
+using namespace EXTRAXS;
 
 namespace EXTRAXS {
   class PionPionVirtual : public PHASIC::Virtual_ME2_Base {
@@ -32,6 +37,8 @@ namespace EXTRAXS {
     Complex BornSelf();
     Complex Full();
     inline double Den(const double &a, const double &b) {return (a==b?0.:1./(a-b));}
+    std::unique_ptr<Pion_FormFactor> p_formfactor;
+
     // Complex MBub(double a, double b, double c);
     // Complex MTri(double a, double b, double c,
     //             double aa, double bb, double cc);
@@ -49,18 +56,21 @@ PionPionVirtual::PionPionVirtual(const Process_Info& pi, const Flavour_Vector& f
       Virtual_ME2_Base(pi, flavs),
       m_eps2(ep2), m_eps(ep)
    {
-      // ltini();
+      // if (!s_loader->LoadLibrary("ooptools")) THROW(fatal_error, "Failed to load libooptools.");
+      ltini();
       Setlambda(0.);
       ME2 = (Flavour(kf_e).Mass()*Flavour(kf_e).Mass());
+      MM2 = (Flavour(kf_mu).Mass()*Flavour(kf_mu).Mass());
+      ML2 = (Flavour(kf_tau).Mass()*Flavour(kf_tau).Mass());
       MP2 = (Flavour(kf_pi).Mass()*Flavour(kf_pi).Mass());
-      ML2 = (Flavour(kf_tau).Mass()*Flavour(kf_tau).Mass());
-      ML2 = (Flavour(kf_tau).Mass()*Flavour(kf_tau).Mass());
       m_mode=2;
       m_IRscale=1.;
       m_UVscale=1.;
-      setmudim(m_IRscale);
-      setdelta(4.*M_PI);
-      Setminmass(0.);
+      p_formfactor = std::unique_ptr<Pion_FormFactor>(new Pion_FormFactor());
+
+      // setmudim(m_IRscale);
+      // setdelta(4.*M_PI);
+      // Setminmass(0.);
    }
 
 
@@ -75,16 +85,17 @@ void PionPionVirtual::Calc(const Vec4D_Vector& momenta) {
   T = (momenta[0]-momenta[2]).Abs2();
   m_alpha = (*aqed)(0);
   Complex ffull=BornTriangle()+BornBox()+BornSelf();
-  m_res.Finite()= m_alpha*m_alpha*m_alpha*2.*(Full()).real();
+  m_res.Finite()= sqr(m_alpha)*(Full()).real();
   Setlambda(-1.);
   // m_res.IR() = (BornTriangle()+BornBox()+BornSelf()).real();
   // double amp = -T*(S+T) - ME2*(2*MP2-S-2*T) -ME2 - sqr(MP2) + 2*MP2*T;
   // amp = amp/S/S;
-  m_res.IR() = (BornTriangle()+BornBox()+BornSelf()).real();
+  m_res.IR() =  sqr(M_PI*M_PI)*(BornTriangle()).real();///m_s/m_s;
+  // m_res.IR() = (Full()).real();
   // PRINT_VAR(m_res.IR()-Full().real());
   // Setlambda(-2.);
   // m_res.IR2() = m_alpha*m_alpha*2.*Full().real();
-  // clearcache();// Since in general s will be different we gain nothing from cache
+  clearcache();// Since in general s will be different we gain nothing from cache
 }
   
 Complex PionPionVirtual::Full(){
@@ -389,7 +400,7 @@ Complex PionPionVirtual::BornSelf(){
 
 
 Complex PionPionVirtual::BornTriangle(){
-return 8.*M_PI/m_s/m_s*
+return 8.*M_PI*
  (-4.*(ME2*ME2 - MP2*MP2 + ME2*(-2.*MP2 + m_s) + 2.*MP2*m_t - m_t*(m_s + m_t))*
    Conjugate(B0i(bb0, MP2, 0, MP2)) + 
   2.*(ME2*ME2 - MP2*MP2 + ME2*(-2.*MP2 + m_s) + 2.*MP2*m_t - m_t*(m_s + m_t))*
@@ -586,7 +597,6 @@ Virtual_ME2_Base *ATOOLS::Getter
 <PHASIC::Virtual_ME2_Base,PHASIC::Process_Info,EXTRAXS::PionPionVirtual>::
 operator()(const Process_Info &pi) const
 {
-  PRINT_INFO(pi);
   if (pi.m_loopgenerator.find("Internal")!=0) return NULL;
   // if (pi.m_fi.m_nlotype==nlo_type::loop) {
   Flavour_Vector fl(pi.ExtractFlavours());
