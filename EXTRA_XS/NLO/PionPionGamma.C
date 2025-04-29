@@ -102,7 +102,7 @@ double PionPionGamma::operator()
   ee2uug_ee = ee2uug_ee + 2*ME2*ME2*(2*MP2*pow(s15 + s25,2) - Q2*(s15*s15 + 3*s15*s25 + s25*s25)
     - 2*(s15 + s25)*(s15*s15 + s25*T + s15*(s25 - s35 + T)));
 
-  ee2uug_ee = 256 * m_alpha * pow(M_PI*m_alpha,3) / Q2*Q2 / s15 / s15 / s25 / s25* ee2uug_ee;
+  // ee2uug_ee = 256 * m_alpha * pow(M_PI*m_alpha,2) / Q2*Q2 / s15 / s15 / s25 / s25* ee2uug_ee;
 
   res = Full();
   if(IsBad(res)){
