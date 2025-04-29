@@ -606,6 +606,8 @@ double MEPS_Scale_Setter::Differential
 (Cluster_Amplitude *const ampl,const int mode) const
 {
   if (m_cmode&1024) return 1.0;
+  if (ampl->Leg(0)->Flav().Kfcode() == ampl->Leg(1)->Flav().Kfcode())
+    return 0.;
   if (ampl->Prev()==NULL) return 1.0;
   NLOTypeStringProcessMap_Map *procs
     (ampl->Procs<NLOTypeStringProcessMap_Map>());
