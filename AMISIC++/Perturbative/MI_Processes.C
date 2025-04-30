@@ -9,8 +9,6 @@
 using namespace AMISIC;
 using namespace ATOOLS;
 using namespace PHASIC;
-using namespace std;
-
 
 MI_Processes::MI_Processes(const bool & variable_s) :
   ME_Generator_Base("Amisic"), m_variable_s(variable_s) {}
@@ -21,6 +19,7 @@ MI_Processes::~MI_Processes() {
     m_groups.pop_back();
   }
   m_groups.clear();
+  if (p_sudakov) delete p_sudakov;
 }
 
 bool MI_Processes::Initialize(MODEL::Model_Base *const model,
