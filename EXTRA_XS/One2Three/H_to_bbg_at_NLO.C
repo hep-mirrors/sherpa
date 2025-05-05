@@ -39,7 +39,7 @@ H_to_bbg_at_NLO::H_to_bbg_at_NLO(const vector<Flavour>& flavs, const Flavour& pr
   }
   // s-channel for prop (i,j)
   Current_Key ckey(prop,MODEL::s_model,2);
-  m_scur = Current_Getter::GetObject("D"+ckey.Type(),ckey); // combine the two currents from i and j to one s-channel current
+   m_scur = Current_Getter::GetObject("D"+ckey.Type(),ckey); // combine the two currents from i and j to one s-channel current
   METOOLS::Int_Vector isfs(2), ids(2), pols(2); // stores information about the outgoing particles: is fermion? Identifier, polarization
   isfs[0]=flavs[propi].IsFermion();
   isfs[1]=flavs[propj].IsFermion();
@@ -63,10 +63,10 @@ H_to_bbg_at_NLO::H_to_bbg_at_NLO(const vector<Flavour>& flavs, const Flavour& pr
   m_fcur->SetFId(isfs2);
   m_fcur->FindPermutations(); // sets up allowed permutations of the outgoing particles
   // connect (2) & (3) into (2,3)
-  m_v1=ConstructVertices(m_cur[propi], m_cur[propj], m_scur);
+  m_v1=ConstructVertices(m_cur[propi], m_cur[propj], m_scur); // vertex with b, gluon, bbar; bbar is actually an incoming b
   DEBUG_VAR(m_v1.size());
   // connect (1) & (2,3) into (1,2,3)
-  m_v2=ConstructVertices(m_cur[b_non_prop],m_scur,m_fcur);
+  m_v2=ConstructVertices(m_cur[b_non_prop],m_scur,m_fcur); //vertex with bbar, b, higgs
   DEBUG_VAR(m_v2.size());
   m_scur->Print();
   m_fcur->Print();
@@ -98,10 +98,10 @@ H_to_bbg_at_NLO::H_to_bbg_at_NLO(const vector<Flavour>& flavs, const Flavour& pr
   m_antifcur->SetFId(isfs2);
   m_antifcur->FindPermutations();
   // connect (2) & (3) into (2,3)
-  m_antiv1=ConstructVertices(m_anticur[propi], m_anticur[propj], m_antiscur);
+  m_antiv1=ConstructVertices(m_anticur[propi], m_anticur[propj], m_antiscur); // vertex with gluon, bbar, b; b is an incoming bbar
   DEBUG_VAR(m_antiv1.size());
   // connect (1) & (2,3) into (1,2,3)
-  m_antiv2=ConstructVertices(m_anticur[b_non_prop],m_antiscur,m_antifcur);
+  m_antiv2=ConstructVertices(m_anticur[b_non_prop],m_antiscur,m_antifcur); // vertex with b, bbar, higgs
   DEBUG_VAR(m_antiv2.size());
   m_antiscur->Print();
   m_antifcur->Print();
@@ -143,6 +143,10 @@ H_to_bbg_at_NLO::~H_to_bbg_at_NLO()
 
 void H_to_bbg_at_NLO::Calculate(const ATOOLS::Vec4D_Vector& momenta, bool anti) {
   DEBUG_FUNC(momenta.size());
+  // does not do anything yet because integrating this decay channel would result in infinities
+  
+  /*
+  DEBUG_FUNC(momenta.size());
   p_ci->GeneratePoint(); // create a new integration point for the color factors
   if (anti) {
     for (size_t i(0);i<m_anticur.size();++i) {
@@ -161,7 +165,6 @@ void H_to_bbg_at_NLO::Calculate(const ATOOLS::Vec4D_Vector& momenta, bool anti) 
     m_fcur->Evaluate();
   }
 
-
   vector<int> fill(m_n,1); // output amplitude vector
   for (size_t i(0);i<m_n;++i) (*this)[i]=Complex(0.0,0.0);
   if (anti) {
@@ -174,6 +177,7 @@ void H_to_bbg_at_NLO::Calculate(const ATOOLS::Vec4D_Vector& momenta, bool anti) 
   for (size_t i=0; i<size(); ++i) {
     (*this)[i] *= sqrt(p_ci->GlobalWeight()); // scale the final numerical result appropriately with the color factor
   }
+  */
 }
 
 size_t H_to_bbg_at_NLO::NHel(const Flavour& fl)

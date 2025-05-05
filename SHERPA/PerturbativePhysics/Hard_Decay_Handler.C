@@ -402,7 +402,6 @@ void Hard_Decay_Handler::InitializeOffshellDecays(Decay_Table* dt) {
         else { 
           DEBUG_INFO("Adding "<<new_dcs[j]->Name());
           auto s = Settings::GetMainSettings()["HARD_DECAYS"]["Channels"][new_dcs[j]->IDCode()];
-          //std::cout << Settings::GetMainSettings()["HARD_DECAYS"]["Channels"].Get<std::string>() << std::endl;
           new_dcs[j]->SetActive(s["Status"].SetDefault(new_dcs[j]->Active()).GetVector<int>());
           dt->AddDecayChannel(new_dcs[j]);
         }
@@ -550,10 +549,6 @@ offshell (or three-body) decay configurations.
       assert(dc1->GetDiagrams().size()==1); // assert that original two-body decay channel has only one diagram (to catch inconsistencies)
       DEBUG_VAR(dc->Flavs());
       DEBUG_VAR(flavs1[j]);
-      for (size_t i = 0; i < dc->Flavs().size(); ++i) {
-        if (dc->Flavs()[0].IDName() == "h0") {
-        std::cout << "Flavor " << i << ": " << dc->Flavs()[i].IDName() << std::endl; }
-      }
 
       Spin_Amplitudes* diagram = nullptr; // parent class for H_to_bbg_at_NLO and Comix1to3
       if (bbbar_channel && (sv->in[2].IDName() == "G")) {
@@ -576,10 +571,6 @@ offshell (or three-body) decay configurations.
                                              nonprop, propi, propj, this));
       }
       dc->Channels()->Reset();
-      
-      if (bbbar_channel && (sv->in[2].IDName() == "G")) {
-        return new_dcs;  // don't calculate the width for the Higgs to b bbarg decay, because it will be infinite
-      }
 
       if (CalculateWidth(dc)) new_dcs.push_back(dc);
       else delete dc;
