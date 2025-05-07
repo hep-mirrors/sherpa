@@ -18,7 +18,9 @@ ME_GENERATORS: [Comix, Amegic, OpenLoops, Internal]
 
 # EW corrections setup
 METS_BBAR_MODE: 5
-NLO_CSS_PSMODE: 1
+
+MC@NLO:
+  PSMODE: 1
 
 HEPMC_USE_NAMED_WEIGHTS: 1
 ANALYSIS: Rivet
