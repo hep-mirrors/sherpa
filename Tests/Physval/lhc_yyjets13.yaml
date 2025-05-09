@@ -12,6 +12,7 @@ TAGS:
   QCUT: 10
   NJET: 3
 
+EW_SCHEME: alpha0
 ALPHAQED_DEFAULT_SCALE: 0.0
 
 ME_GENERATORS: [Comix, Amegic, OpenLoops, Internal]
