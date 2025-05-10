@@ -144,9 +144,6 @@ H_to_bbg_at_NLO::~H_to_bbg_at_NLO()
 void H_to_bbg_at_NLO::Calculate(const ATOOLS::Vec4D_Vector& momenta, bool anti) {
   DEBUG_FUNC(momenta.size());
   // does not do anything yet because integrating this decay channel would result in infinities
-  
-  /*
-  DEBUG_FUNC(momenta.size());
   p_ci->GeneratePoint(); // create a new integration point for the color factors
   if (anti) {
     for (size_t i(0);i<m_anticur.size();++i) {
@@ -177,7 +174,7 @@ void H_to_bbg_at_NLO::Calculate(const ATOOLS::Vec4D_Vector& momenta, bool anti) 
   for (size_t i=0; i<size(); ++i) {
     (*this)[i] *= sqrt(p_ci->GlobalWeight()); // scale the final numerical result appropriately with the color factor
   }
-  */
+  
 }
 
 size_t H_to_bbg_at_NLO::NHel(const Flavour& fl)
