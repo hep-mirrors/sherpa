@@ -1,4 +1,4 @@
-set(Main_SOURCES Polarization_Tools.C
+set(METoolsMain_SOURCES Polarization_Tools.C
                  XYZFuncs.C
                  Polarization_Index.C
                  Spin_Structure.C
@@ -6,7 +6,7 @@ set(Main_SOURCES Polarization_Tools.C
                  Three_Particle_Amplitudes.C
                  Four_Particle_Amplitudes.C)
 
-set(Main_HEADERS Polarization_Tools.H
+set(METoolsMain_HEADERS Polarization_Tools.H
                  XYZFuncs.H
                  Polarization_Index.H
                  Spin_Structure.H
@@ -14,7 +14,8 @@ set(Main_HEADERS Polarization_Tools.H
                  Three_Particle_Amplitudes.H
                  Four_Particle_Amplitudes.H)
 
-sherpa_create_git_info(Main)
+sherpa_create_git_info(METoolsMain ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR})
  
-add_library(METoolsMain SHARED ${Main_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
+add_library(METoolsMain SHARED ${METoolsMain_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
 sherpa_handle_shared_library(METoolsMain METoolsMain)
+add_dependencies(METoolsMain METoolsMain_Git_Info)

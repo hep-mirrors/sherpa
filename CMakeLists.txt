@@ -63,6 +63,7 @@ option(SHERPA_ENABLE_RIVET                   "Enables building with Rivet." OFF)
 option(SHERPA_ENABLE_ROOT                    "Enables building with ROOT." OFF)
 option(SHERPA_ENABLE_THREADING               "Enables building with threading." OFF)
 option(SHERPA_ENABLE_TESTING                 "Enables testing." OFF)
+option(SHERPA_ENABLE_INTEGRATION_TESTS       "Enables integration testing." ON)
 option(SHERPA_ENABLE_UFO                     "Enables installation of UFO interfaces." OFF)
 option(SHERPA_ENABLE_VERSIONING              "Enables versioned installation." OFF)
 option(SHERPA_ENABLE_COVERAGE                "Enable code coverage reporting" OFF)
@@ -274,45 +275,28 @@ define_property(
   BRIEF_DOCS "Collects all the source files from subdirectories"
   FULL_DOCS "Source files found by the sherpa_create_git_info macro go here"
 )
-macro(sherpa_create_git_info name)
-  if (GIT AND EXISTS "${CMAKE_SOURCE_DIR}/.git")
-    execute_process(COMMAND ${GIT} status -s --untracked-files=no .
-                  WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-                  OUTPUT_VARIABLE GITCLEAN
-                  OUTPUT_STRIP_TRAILING_WHITESPACE)
-  else()
-   set(GITCLEAN "")
+macro(sherpa_create_git_info name sourcedir binarydir)
+  find_program(GIT NAMES git)
+  if(NOT DEFINED GIT_ROOT_DIR)
+    execute_process(
+        COMMAND git rev-parse --git-dir
+        WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
+        OUTPUT_VARIABLE GIT_ROOT_DIR
+        OUTPUT_STRIP_TRAILING_WHITESPACE
+    )
   endif()
-  if ("${GITCLEAN}" STREQUAL "")
-    set(GITREVSUFFIX "")
-  else()
-    set(GITREVSUFFIX "-dirty")
-#Message only changes
-    message(STATUS "SHERPA ${CMAKE_CURRENT_SOURCE_DIR}: GITCLEAN=${GITCLEAN} GITREVSUFFIX=${GITREVSUFFIX}")
+  if(NOT IS_ABSOLUTE "${GIT_ROOT_DIR}")
+    get_filename_component(GIT_ROOT_DIR "${PROJECT_SOURCE_DIR}/${GIT_ROOT_DIR}" ABSOLUTE)
   endif()
-  set(allsources )
-  foreach (f IN LISTS ${name}_SOURCES  ${name}_HEADERS )
-    list(APPEND allsources ${f})
-  endforeach()
-  list (FILTER allsources EXCLUDE REGEX ".*CXXFLAGS.*")
-  set(content "")
-  foreach (f IN LISTS allsources )
-    file(READ "${CMAKE_CURRENT_SOURCE_DIR}/${f}"  temp)
-    string(APPEND content "${temp}")
-  endforeach()
-  string(REPLACE "${PROJECT_SOURCE_DIR}/" "" GITTAG "${CMAKE_CURRENT_SOURCE_DIR}")
-  string(MD5 MDF "${content}")
-  set(newgitinfo "#include \"ATOOLS/Org/Git_Info.H\"\nstatic ATOOLS::Git_Info initializer\n(\"${GITTAG}\",\"${GITURL}\",\"${GITREV}${GITREVSUFFIX}\",\"${MDF}\");\n")
-  set(oldgitinfo "")
-  if (EXISTS ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C)
-    file(READ ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C oldgitinfo)
+  set(${name}_GIT_INFO_FILE "${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C")
+  set(${name}_ALL_FILES ${${name}_SOURCES} ${${name}_HEADERS})
+  list(JOIN ${name}_ALL_FILES "," ${name}_ALL_FILES_STR)
+  if(NOT EXISTS ${name}_GIT_INFO_FILE)
+    execute_process(COMMAND ${CMAKE_COMMAND} -DPROJECT_SOURCE_DIR=${PROJECT_SOURCE_DIR} -DSOURCEDIR=${sourcedir} -DBINARYDIR=${binarydir} -DALL_FILES_ARG=${${name}_ALL_FILES_STR} -DWORKING_DIR=${CMAKE_CURRENT_SOURCE_DIR} -P ${CMAKE_SOURCE_DIR}/git.cmake)
   endif()
-  if ( NOT "${newgitinfo}" STREQUAL "${oldgitinfo}")
-    file( WRITE ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C "${newgitinfo}")
-  endif()
-  list(TRANSFORM allsources PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/")
-  set_property(GLOBAL APPEND PROPERTY ALL_SOURCE_FILES ${allsources})
-endmacro(sherpa_create_git_info )
+  add_custom_target(${name}_Git_Info ALL
+    COMMAND ${CMAKE_COMMAND} -DPROJECT_SOURCE_DIR=${PROJECT_SOURCE_DIR} -DSOURCEDIR=${sourcedir} -DBINARYDIR=${binarydir} -DALL_FILES_ARG=${${name}_ALL_FILES_STR} -DWORKING_DIR=${CMAKE_CURRENT_SOURCE_DIR} -P ${CMAKE_SOURCE_DIR}/git.cmake)
+endmacro(sherpa_create_git_info)
 
 if(SHERPA_ENABLE_MPI)
   find_package(MPI REQUIRED)
@@ -816,7 +800,7 @@ IF (SHERPA_ENABLE_ANALYSIS)
 endif()
 
 if (SHERPA_ENABLE_DOXYGEN)
-  find_package(Doxygen 1.9.3 REQUIRED)
+  find_package(Doxygen 1.9.1 REQUIRED)
   message(STATUS "SHERPA: DOXYGEN_VERSION=${DOXYGEN_VERSION}")
   set(DOXYGEN_OUTPUT_DIRECTORY docs)
   set(DOXYGEN_FILE_PATTERNS *.C *.H *.c *.h *.cc *.hh *.cpp *.hpp)
@@ -881,6 +865,8 @@ if (SHERPA_ENABLE_DOXYGEN)
   )
   set(DOXYGEN_CLANG_ASSISTED_PARSING NO)
   set(DOXYGEN_CLANG_ADD_INC_PATHS NO)
+  set(DOXYGEN_WARN_LOGFILE /dev/null)
+  set(DOXYGEN_WARN_AS_ERROR NO)
   get_property(ALL_SOURCE_FILES GLOBAL PROPERTY ALL_SOURCE_FILES)
   doxygen_add_docs(docs ${ALL_SOURCE_FILES})
 endif()
@@ -1033,10 +1019,16 @@ $<IF:$<BOOL:${SHERPA_ENABLE_BINRELOC}>,#define ENABLE_BINRELOC \"1\",/* #undef E
 #define SHERPA_PREFIX \"${CMAKE_INSTALL_PREFIX}\"\n\n\
 /* Sherpa include directory */\n\
 #define SHERPA_INCLUDE_PATH \"${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_INCLUDEDIR}/SHERPA-MC\"\n\n\
+/* Sherpa include subdirectory */\n\
+#define SHERPA_INCLUDE_SUBDIR \"${CMAKE_INSTALL_INCLUDEDIR}/SHERPA-MC\"\n\n\
 /* Sherpa library directory */\n\
 #define SHERPA_LIBRARY_PATH \"${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/SHERPA-MC/\"\n\n\
+/* Sherpa library subdirectory */\n\
+#define SHERPA_LIBRARY_SUBDIR \"${CMAKE_INSTALL_LIBDIR}/SHERPA-MC/\"\n\n\
 /* Sherpa data directory */\n\
 #define SHERPA_SHARE_PATH \"${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_DATADIR}/SHERPA-MC/\"\n\n\
+/* Sherpa subversion */\n\
+#define SHERPA_SHARE_SUBDIR \"${CMAKE_INSTALL_DATADIR}/SHERPA-MC/\"\n\n\
 /* Sherpa subversion */\n\
 #define SHERPA_SUBVERSION \"${SHERPA_VERSION_MINOR}.${SHERPA_VERSION_PATCH}\"\n\n\
 /* Sherpa version */\n\

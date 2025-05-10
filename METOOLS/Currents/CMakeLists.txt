@@ -12,7 +12,8 @@ set(Currents_HEADERS C_Scalar.H
                      C_Vector.H
                      C_Pseudo.H)
 
-sherpa_create_git_info(Currents)
+sherpa_create_git_info(Currents ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR})
  
 add_library(METoolsCurrents SHARED ${Currents_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
 sherpa_handle_shared_library(METoolsCurrents METoolsCurrents)
+add_dependencies(METoolsCurrents Currents_Git_Info)

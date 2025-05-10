@@ -14,7 +14,8 @@ set(Spectra_HEADERS Monochromatic.H
                     Fixed_Target.H
                     DM_beam.H)
 
-sherpa_create_git_info(Spectra)
+sherpa_create_git_info(Spectra ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR})
 
 add_library(BeamSpectra SHARED ${Spectra_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
 sherpa_handle_shared_library(BeamSpectra BeamSpectra)
+add_dependencies(BeamSpectra Spectra_Git_Info)

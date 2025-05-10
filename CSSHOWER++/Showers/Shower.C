@@ -37,6 +37,7 @@ Shower::Shower(PDF::ISR_Handler* isr, const int qcd, const int qed, int type)
   m_kscheme           = pss["KIN_SCHEME"].Get<int>();
   m_recdec            = pss["RECO_DECAYS"].Get<int>();
   m_maxpart           = pss["MAXPART"].Get<int>();
+  m_scvmode           = pss["SCALE_VARIATION_SCHEME"].Get<int>();
   if (type) {
     kfmode=pss["MI_KFACTOR_SCHEME"].Get<int>();
     k0sqf=pss["MI_FS_PT2MIN"].Get<double>();
@@ -649,7 +650,13 @@ double Shower::Reweight(QCD_Variation_Params* varparams,
       info.sf->Coupling()->SetAlternativeUnderlyingCoupling(
           varparams->p_alphas, muR2fac);
       // calculate new coupling
+      if(m_scvmode & 4)
+        info.sf->Coupling()->SetCTFac(info.z);
+      else if(m_scvmode & 8) {
+        info.sf->Coupling()->SetCTFac(info.z*(1.-info.y));
+      }
       double newcpl {info.sf->Coupling()->Coupling(info.scale, 0)};
+      info.sf->Coupling()->SetCTFac(1);
       // clean up
       info.sf->Coupling()->SetAlternativeUnderlyingCoupling(nullptr);
       info.sf->Coupling()->SetLast(lastcpl);

@@ -1,6 +1,6 @@
  
 set(Scripts_SOURCES Combine_Analysis.C)
-sherpa_create_git_info(Scripts)
+sherpa_create_git_info(Scripts ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR})
  
 add_executable(Combine_Analysis  ${Scripts_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C)
 target_include_directories(Combine_Analysis PRIVATE ${PROJECT_SOURCE_DIR}/include)

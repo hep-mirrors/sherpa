@@ -16,7 +16,8 @@ namespace CSSHOWER {
 
     cstp::code m_type;
     double     m_cplfac, m_last;
-
+    double m_ctfac = 1;
+    
     int        m_kfmode;
     /**
       * m_cplmax[i] = max_{scale} Coupling(scale, i)
@@ -25,6 +26,8 @@ namespace CSSHOWER {
 
   public:
 
+
+    
     SF_Coupling(const SF_Key &key);
 
     virtual ~SF_Coupling();
@@ -55,7 +58,9 @@ namespace CSSHOWER {
     void SetLast(double last) { m_last = last; }
 
     virtual double CplFac(const double &scale) const;
-
+    inline double CTFac() const { return m_ctfac; }
+    inline void   SetCTFac(double ctfac) { m_ctfac = ctfac; }
+    
     inline double MaxCoupling(const int mode) const { return m_cplmax[mode]; }
 
     inline void SetLF(SF_Lorentz *const lf) { p_lf=lf; }

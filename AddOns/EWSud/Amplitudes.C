@@ -226,14 +226,16 @@ Cluster_Amplitude_UPM Amplitudes::CreateAmplitudes(
             continue;
           const auto kflav = (*current_ampl)->Leg(k)->Flav();
           const auto lflav = (*current_ampl)->Leg(l)->Flav();
+          const auto kflavcode = static_cast<long int>(kflav);
+          const auto lflavcode = static_cast<long int>(lflav);
 
           // I^Z * I^Z terms
           auto kcouplings = ewgroupconsts.IZ(kflav, 1);
           auto lcouplings = ewgroupconsts.IZ(lflav, 1);
             for (const auto kcoupling : kcouplings) {
               for (const auto lcoupling : lcouplings) {
-                if (kcoupling.first != kflav ||
-                    lcoupling.first != lflav) {
+                if (kcoupling.first != kflavcode ||
+                    lcoupling.first != lflavcode) {
                   auto leg_set =
                       Cluster_Ampl_Key {{k, std::abs(kcoupling.first)},
                                         {l, std::abs(lcoupling.first)}};
@@ -255,8 +257,8 @@ Cluster_Amplitude_UPM Amplitudes::CreateAmplitudes(
             lcouplings = ewgroupconsts.Ipm(lflav, 1, !isplus);
             for (const auto kcoupling : kcouplings) {
               for (const auto lcoupling : lcouplings) {
-                if (kcoupling.first != kflav ||
-                    lcoupling.first != lflav) {
+                if (kcoupling.first != kflavcode ||
+                    lcoupling.first != lflavcode) {
                   auto leg_set =
                       Cluster_Ampl_Key {{k, std::abs(kcoupling.first)},
                                         {l, std::abs(lcoupling.first)}};
