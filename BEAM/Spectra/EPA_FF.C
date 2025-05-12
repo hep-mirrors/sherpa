@@ -345,7 +345,7 @@ void EPA_WoodSaxon::InitNTable(const double& xmin, const double& xmax)
   for (size_t i = 0; i < p_N->GetAxis().m_nbins; i++) {
     double x     = p_N->GetAxis().x(i);
     double q2min = Q2min(x);
-    double q2max = Q2min(x) + m_pt2max;
+    double q2max = Q2min(x) + m_pt2max / (1. - x);
     nx->SetX(x);
     double res = gauss.Integrate(q2min, q2max, 1.e-6, 0);
     if (!(i % 1000))
