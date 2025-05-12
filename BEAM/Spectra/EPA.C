@@ -71,7 +71,7 @@ void EPA::Initialise()
   size_t      b = m_dir > 0 ? 0 : 1;
   m_aqed        = s["AlphaQED"].Get<double>();
   m_plotting    = s["PlotSpectra"].Get<bool>();
-  m_pt2max      = !m_beam.IsIon()// TODO check for factor (1-x) below
+  m_pt2max      = !m_beam.IsIon()
                           ? sqr(m_energy * s["ThetaMax"].GetTwoVector<double>()[b])
                           : sqr(rpa->hBar_c() / m_beam.Radius());
   m_xmin        = s["xMin"].GetTwoVector<double>()[b];
