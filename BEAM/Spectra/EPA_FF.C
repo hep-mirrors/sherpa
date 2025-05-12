@@ -128,20 +128,6 @@ void EPA_FF_Base::OutputToCSV(const std::string& type)
   outfile_FFq2.close();
 }
 
-double N_xb_int::operator()(double y)
-{
-  //////////////////////////////////////////////////////////////////////////////
-  // Integration argument y here is bT*qT as mandated by the Bessel function:
-  // - argument of form factor Q^2 = qT^2+x^2m^2 with qT^2 = y^2/bT^2
-  // - we assume that m_b is in units of 1/GeV, qT is in GeV, overall results
-  //   are in GeV.
-  //////////////////////////////////////////////////////////////////////////////
-  double qT = y / m_b, qT2 = sqr(qT);
-  double Q2  = (qT2 + sqr(m_x * p_ff->Mass())) / (1. - m_x);
-  double res = qT2 / Q2 * p_ff->FF(Q2) / m_b;
-  return res;
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // Point-like form factors and related functions in different approximations,
 // all based on Budnev et al., Phys. Rep. C15 (1974) 181.
