@@ -103,7 +103,18 @@ namespace BEAM {
       m_x = x;
       m_b = b;
     }
-    double operator()(double y) override;
+    double operator()(double y) override {
+      //////////////////////////////////////////////////////////////////////////////
+      // Integration argument y here is bT*qT as mandated by the Bessel function:
+      // - argument of form factor Q^2 = qT^2+x^2m^2 with qT^2 = y^2/bT^2
+      // - we assume that m_b is in units of 1/GeV, qT is in GeV, overall results
+      //   are in GeV.
+      //////////////////////////////////////////////////////////////////////////////
+      double qT = y / m_b, qT2 = ATOOLS::sqr(qT);
+      double Q2  = (qT2 + ATOOLS::sqr(m_x * p_ff->Mass())) / (1. - m_x);
+      double res = qT2 / Q2 * p_ff->FF(Q2) / m_b;
+      return res;
+    }
   };
 
   class EPA_Point final : public EPA_FF_Base {
