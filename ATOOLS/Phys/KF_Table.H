@@ -13,11 +13,15 @@ namespace ATOOLS {
                    int icharge, int strong, int spin, bool majorana, bool on,
                    int stable, bool massive, const std::string &idname,
                    const std::string &antiname, const std::string &texname,
-                   const std::string &antitexname);
+                   const std::string &antitexname, bool dummy = false,
+                   bool group = false);
 
-  // version with no strong charge, and no massive flag, and no anti names
   void AddParticle(kf_code kfc, double mass, double radius, double width,
                    int icharge, int spin, bool majorana, bool on, int stable,
+                   const std::string &idname, const std::string &texname);
+
+  void AddParticle(kf_code kfc, double mass, double radius, double width,
+                   int icharge, int spin, bool on, int stable,
                    const std::string &idname, const std::string &texname);
 
   typedef std::map<kf_code, Particle_Info *> KFCode_ParticleInfo_Map;

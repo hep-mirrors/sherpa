@@ -343,18 +343,12 @@ void Model_Base::AddStandardContainers()
   }
   // kf,mass,width,icharge,strong,spin,majo,on,stable,massive,
   //   idname,antiidname,texname,antitexname,dummy,group
-  s_kftable[kf_jet] = new
-    Particle_Info(kf_jet,0.,0.,0.,0,1, 2,1,1,1,0,"j","j","j","j",1,1);
-  s_kftable[kf_ewjet] = new
-    Particle_Info(kf_ewjet,0.,0.,0.,0,1, 2,1,1,1,0,"ewj","ewj","ewj","ewj",1,1);
-  s_kftable[kf_quark] = new
-    Particle_Info(kf_quark,0.,0.,0.,0,1,1,0,1,1,0,"Q","Q","Q","Q",1,1);
-  s_kftable[kf_lepton] = new
-    Particle_Info(kf_lepton,0.,0.,0.,-3,0,1,0,1,1,0,"l","l","\\ell","\\ell",1,1);
-  s_kftable[kf_neutrino] = new
-    Particle_Info(kf_neutrino,0.,0.,0.,0,0,1,0,1,1,0,"v","v","\\nu","\\nu",1,1);
-  s_kftable[kf_fermion] = new
-    Particle_Info(kf_fermion,0.,0.,0.,0,0,1,0,1,1,0,"f","f","f","f",1,1);
+  AddParticle(kf_jet,0.,0.,0.,0,1, 2,1,1,1,0,"j","j","j","j",1,1);
+  AddParticle(kf_ewjet,0.,0.,0.,0,1, 2,1,1,1,0,"ewj","ewj","ewj","ewj",1,1);
+  AddParticle(kf_quark,0.,0.,0.,0,1,1,0,1,1,0,"Q","Q","Q","Q",1,1);
+  AddParticle(kf_lepton,0.,0.,0.,-3,0,1,0,1,1,0,"l","l","\\ell","\\ell",1,1);
+  AddParticle(kf_neutrino,0.,0.,0.,0,0,1,0,1,1,0,"v","v","\\nu","\\nu",1,1);
+  AddParticle(kf_fermion,0.,0.,0.,0,0,1,0,1,1,0,"f","f","f","f",1,1);
   s_kftable[kf_lepton]->m_priority=2;
   s_kftable[kf_neutrino]->m_priority=1;
   s_kftable[kf_jet]->Clear();
