@@ -13,7 +13,12 @@ Reconnection_Handler::Reconnection_Handler(const bool & on) :
   m_on(on),
   p_reconnector(new Reconnect_Statistical()),
   m_nfails(0)
-{}
+{
+  const auto wgts {p_reconnector->get_variationweights()};
+
+  // TODO fix
+  wgt_sums.resize(10,0);
+}
 
 Reconnection_Handler::~Reconnection_Handler() {
   if (m_on) {
@@ -50,6 +55,33 @@ Return_Value::code Reconnection_Handler::operator()(Blob_List *const blobs,
     break;
   }
   p_reconnector->Reset();
+
+  // add weights
+  const auto wgts_cr  = p_reconnector->get_variationweights();
+  Blob *blob(blobs->FindFirst(btp::Signal_Process));
+  if (blob == NULL)
+    blob = blobs->FindFirst(btp::Hard_Collision);
+  auto & wgtmap = (*blob)["WeightsMap"]->Get<Weights_Map>();
+  //const bool found {wgtmap.find("RECONNECTIONS") == wgtmap.end() ? false : true};
+  //std::cout << " ---> " << wgts_cr << std::endl;
+  m_nreconnections++;
+  for(int i{0}; i<wgts_cr.size(); i++) {
+    const std::string name {"v"+std::to_string(i)};
+    const auto wgt {wgts_cr[i]};
+    wgt_sums[i] += wgt;
+
+    double norm {1.};
+    if(m_nreconnections > 100) {
+      norm = wgt_sums[i] / m_nreconnections;
+    }
+    
+    const auto clipped_wgt {std::min(wgt,pow(10,2))};
+    wgtmap["RECONNECTIONS"][name] = clipped_wgt / norm;
+  }
+  //std::cout << wgts_cr << std::endl;
+
+  const auto n_vars {wgts_cr.size()};
+  p_reconnector->reset_variationweights(n_vars);
   return Return_Value::Success; 
 }
 

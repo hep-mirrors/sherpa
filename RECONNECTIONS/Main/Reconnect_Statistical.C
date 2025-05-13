@@ -25,11 +25,24 @@ void Reconnect_Statistical::SetParameters() {
   auto s = Settings::GetMainSettings()["COLOUR_RECONNECTIONS"];
   m_Pmode     = s["PMODE"].SetDefault(0).Get<int>();
   m_Q02       = sqr(s["Q_0"].SetDefault(1.00).Get<double>());
-  m_etaQ      = sqr(s["etaQ"].SetDefault(0.1).Get<double>());
   m_R02       = sqr(s["R_0"].SetDefault(100.).Get<double>());
   m_etaR      = sqr(s["etaR"].SetDefault(0.16).Get<double>());
-  m_reshuffle = s["Reshuffle"].SetDefault(1./9.).Get<double>();
   m_kappa     = s["kappa"].SetDefault(2.).Get<double>();
+  
+  // reweightable params
+  m_etaQ      = s["etaQ"].SetDefault({0.1}).GetVector<double>();
+  m_reshuffle = s["Reshuffle"].SetDefault({1./9.}).GetVector<double>();
+
+  // sqr m_etaQ
+  for (int i{0}; i<m_etaQ.size(); ++i)
+    m_etaQ[i] = sqr(m_etaQ[i]);
+  
+  // pad vector entries
+  const auto max_size {std::max(m_etaQ.size(), m_reshuffle.size())};
+  m_etaQ.resize(max_size,m_etaQ[0]);
+  m_reshuffle.resize(max_size,m_reshuffle[0]);
+  
+  reset_variationweights(max_size);
 }
 
 void Reconnect_Statistical::Reset() {
@@ -40,7 +53,6 @@ void Reconnect_Statistical::Reset() {
 int Reconnect_Statistical::operator()(Blob_List *const blobs) {
   if (!HarvestParticles(blobs))               return -1;
   if (m_cols[0].empty() && m_cols[1].empty()) return 0;
-  m_norm = TotalLength();
   for (map<unsigned int, Particle *>::iterator cit=m_cols[0].begin();
        cit!=m_cols[0].end();cit++) m_collist.push_back(cit->first);
   size_t N = m_collist.size();
@@ -79,13 +91,51 @@ bool Reconnect_Statistical::AttemptSwap(const unsigned int col[2]) {
   for (size_t i=0;i<2;i++) {
     for (size_t j=0;j<2;j++) part[2*i+j] = m_cols[i][col[j]];
   }
-  double dist0  = Distance(part[0],part[2]), dist1  = Distance(part[1],part[3]);
-  double ndist0 = Distance(part[0],part[3]), ndist1 = Distance(part[1],part[2]);
-  double prob   = m_reshuffle * exp(-m_etaQ*((ndist0+ndist1)-(dist0+dist1)));
-  if (prob>ran->Get()) {
+  double dist0  = Distance(part[0],part[2]);
+  double dist1  = Distance(part[1],part[3]);
+  double ndist0 = Distance(part[0],part[3]);
+  double ndist1 = Distance(part[1],part[2]);
+
+  // I changed this
+  m_norm = TotalLength();
+  const auto dist {((ndist0+ndist1)-(dist0+dist1)) / m_norm};
+  std::vector<double> probs (m_reshuffle.size());
+  for(int i{0}; i<m_reshuffle.size(); ++i)
+    probs[i] = m_reshuffle[i] * exp(-m_etaQ[i]*dist);
+
+  // Reweight here
+  // params: m_reshuffle; m_etaQ
+  if (dist < 0) {
+    // always accept when lenghts is reduced
     m_cols[1][col[0]] = part[3];
     m_cols[1][col[1]] = part[2];
+
+  } else if (probs[0]>ran->Get()) {
+    // accepted even though the length is increased
+    m_cols[1][col[0]] = part[3];
+    m_cols[1][col[1]] = part[2];
+
+    // due to the exponential we can get really small values
+    if(probs[0] > 1e-8) {
+      //std::cout << "accepted: ";
+      for(int i{0}; i<m_reshuffle.size(); ++i) {
+	variation_weights[i] *= probs[i] / probs[0];
+	//std::cout << probs[i] / probs[0] << " ";
+      }
+      //std::cout << std::endl;
+    }
+  } else {
+    // rejected
+    if(probs[0] > 1e-8) {
+      //std::cout << "rejected: ";
+      for(int i{0}; i<m_reshuffle.size(); ++i) {
+	variation_weights[i] *= (1 - probs[i]) / (1 - probs[0]);
+	//std::cout << (1 - probs[i]) / (1 - probs[0]) << " ";
+      }
+      //std::cout << std::endl;
+    }
   }
+  //std::cout << variation_weights << std::endl;
   return true;
 }
 
@@ -116,7 +166,7 @@ double Reconnect_Statistical::PosDistance(Particle * trip,Particle * anti) {
 }
 
 double Reconnect_Statistical::ColDistance(Particle * trip,Particle * anti) {
-  return trip->GetFlow(1)==anti->GetFlow(2) ? 1. : m_reshuffle;
+  return trip->GetFlow(1)==anti->GetFlow(2) ? 1. : m_reshuffle[0];
 }
 
 double Reconnect_Statistical::TotalLength() {

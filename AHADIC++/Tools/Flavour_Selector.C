@@ -45,12 +45,12 @@ operator()(const double & Emax,const bool & vetodi) {
   if(norms[0] == 0) return ret;
   const double p0 {opt->second->popweights[0] / norms[0]};
   //std::cout << "DEBUG: FLAVS: " << ret << " "<< int(ret) <<" (";
-  //for(int i; i<opt->second->popweights.size(); ++i) {
-  //tmp_variation_weights[i] *= (opt->second->popweights[i] / norms[i]) / p0;
-  //    std::cout << (opt->second->popweights[i] / norms[i]) / p0;
-  //    if(i < opt->second->popweights.size() -1)
-  //std::cout << ",";
-  //}
+  for(int i; i<opt->second->popweights.size(); ++i) {
+    tmp_variation_weights[i] *= (opt->second->popweights[i] / norms[i]) / p0;
+    //std::cout << (opt->second->popweights[i] / norms[i]) / p0;
+    //if(i < opt->second->popweights.size() -1)
+    //std::cout << ",";
+  }
   //std::cout << ")" << std::endl;
 
   //if(int(ret) == -3303) {

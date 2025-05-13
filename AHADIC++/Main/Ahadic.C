@@ -116,13 +116,8 @@ Return_Value::code Ahadic::Hadronize(Blob_List * blobs)
   DEBUG_VAR(wgts_flavs);
 
   Blob *blob(blobs->FindFirst(btp::Signal_Process));
-  //DEBUG_VAR(blob);
-  //DEBUG_VAR(blobs);
-  //DEBUG_VAR(*blobs);
   if (blob == NULL)
     blob = blobs->FindFirst(btp::Hard_Collision);
-  //DEBUG_VAR(*blob);
-  //  DEBUG_VAR("---");
   auto & wgtmap = (*blob)["WeightsMap"]->Get<Weights_Map>();
   const bool found {wgtmap.find("AHADIC") == wgtmap.end() ? false : true};
 
