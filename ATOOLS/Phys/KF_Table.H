@@ -28,6 +28,8 @@ namespace ATOOLS {
                    int spin, int formfactor, const std::string &idname,
                    const std::string &texname);
 
+  void ClearParticles();
+
   typedef std::map<kf_code, Particle_Info *> KFCode_ParticleInfo_Map;
 
   class KF_Table: public KFCode_ParticleInfo_Map {
