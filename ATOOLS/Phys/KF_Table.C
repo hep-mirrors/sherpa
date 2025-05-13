@@ -248,6 +248,13 @@ void ATOOLS::AddParticle(kf_code kfc, double mass, double radius, int icharge,
       pdata[s_kftable[kfc]->m_idname]["Priority"].SetDefault(s_kftable[kfc]->m_priority).Get<int>();
 }
 
+void ATOOLS::ClearParticles()
+{
+  for (KF_Table::const_iterator kfit(s_kftable.begin());kfit!=s_kftable.end();++kfit)
+    delete kfit->second;
+  s_kftable.clear();
+}
+
 KF_Table::~KF_Table()
 {
   for (const_iterator kfit(begin());kfit!=end();++kfit)
