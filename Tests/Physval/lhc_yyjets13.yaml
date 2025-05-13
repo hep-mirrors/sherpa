@@ -12,13 +12,16 @@ TAGS:
   QCUT: 10
   NJET: 3
 
+EW_SCHEME: alpha0
 ALPHAQED_DEFAULT_SCALE: 0.0
 
 ME_GENERATORS: [Comix, Amegic, OpenLoops, Internal]
 
 # EW corrections setup
 METS_BBAR_MODE: 5
-NLO_CSS_PSMODE: 1
+
+MC@NLO:
+  PSMODE: 1
 
 HEPMC_USE_NAMED_WEIGHTS: 1
 ANALYSIS: Rivet
