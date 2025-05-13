@@ -9,9 +9,18 @@ namespace ATOOLS {
   void OutputParticles(std::ostream&);
   void OutputContainers(std::ostream&);
 
-  class Settings;
+  void AddParticle(kf_code kfc, double mass, double radius, double width,
+                   int icharge, int strong, int spin, bool majorana, bool on,
+                   int stable, bool massive, const std::string &idname,
+                   const std::string &antiname, const std::string &texname,
+                   const std::string &antitexname);
 
-  typedef std::map<kf_code,Particle_Info*> KFCode_ParticleInfo_Map;
+  // version with no strong charge, and no massive flag, and no anti names
+  void AddParticle(kf_code kfc, double mass, double radius, double width,
+                   int icharge, int spin, bool majorana, bool on, int stable,
+                   const std::string &idname, const std::string &texname);
+
+  typedef std::map<kf_code, Particle_Info *> KFCode_ParticleInfo_Map;
 
   class KF_Table: public KFCode_ParticleInfo_Map {
   public:
