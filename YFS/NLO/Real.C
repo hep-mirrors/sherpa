@@ -103,6 +103,7 @@ double Real::Calc_R(const ATOOLS::Vec4D_Vector& p)
     m_failcut = false;
     if(!p_realproc->Trigger(p)) {
       m_failcut = true;
+      msg_Debugging()<<"Rejecting real event, failed cuts"<<std::endl;
       return 0;
     }
     if(p_real_me) {
