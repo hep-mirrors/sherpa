@@ -976,13 +976,11 @@ dipoletype::code Define_Dipoles::WhichResonant(const Vec4D &k){
   dipoletype::code min(dipoletype::initial);
   for(auto &D: m_dipolesII){
     mdistisr = ResonantDist(D,k);
-    // PRINT_VAR(mdistisr);
     mindis = mdistisr;
     min = dipoletype::initial;
   }
   for(auto &D: m_dipolesFF){
     mdistfsr = ResonantDist(D,k);  
-    // PRINT_VAR(mdistfsr);
     if(mdistfsr < mdistisr){
       min = dipoletype::final;
     }
