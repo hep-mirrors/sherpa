@@ -24,6 +24,10 @@ namespace ATOOLS {
                    int icharge, int spin, bool on, int stable,
                    const std::string &idname, const std::string &texname);
 
+  void AddParticle(kf_code kfc, double mass, double radius, int icharge,
+                   int spin, int formfactor, const std::string &idname,
+                   const std::string &texname);
+
   typedef std::map<kf_code, Particle_Info *> KFCode_ParticleInfo_Map;
 
   class KF_Table: public KFCode_ParticleInfo_Map {
