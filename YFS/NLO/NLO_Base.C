@@ -9,6 +9,8 @@ using namespace ATOOLS;
 using namespace std;
 
 double massmin=2220;
+double rcount=1;
+double sumw =0;
 
 std::ofstream out_recola;
 std::ofstream out_sub, out_real, out_finite;
@@ -127,6 +129,7 @@ void NLO_Base::Init(Flavour_Vector &flavs, Vec4D_Vector &plab, Vec4D_Vector &bor
 
 
 double NLO_Base::CalculateNLO() {
+	m_failcut = false;
 	double result{0.0}, virt, real, rv, rr;
 	// PRINT_VAR(m_looptool);
 	if(!m_real_only) result += CalculateVirtual();
@@ -137,6 +140,7 @@ double NLO_Base::CalculateNLO() {
 	rv = result - real - virt;
 	result += CalculateRealReal();
 	rr = result - real - virt - rv;
+	if(m_failcut) return 0;
 		// PRINT_VAR(virt);
 		// PRINT_VAR(real);
 		// PRINT_VAR(rr);
@@ -308,7 +312,7 @@ double NLO_Base::CalculateReal(Vec4D k, int fsrcount) {
 	p_nlodipoles->MakeDipolesIF(m_flavs,pp,m_plab);
 	p_nlodipoles->MakeDipoles(m_flavs,pp,m_plab);
 	double r = p_real->Calc_R(p) / norm;
-	if(p_real->FailCut()) return 0;
+	if(p_real->FailCut()) m_failcut = true;
 	double flux;
 	if(m_flux_mode==1) flux = p_nlodipoles->CalculateFlux(k);
 	else if(m_flux_mode==2) flux = 0.5*(p_nlodipoles->CalculateFlux(kk)+p_nlodipoles->CalculateFlux(k));
@@ -317,7 +321,7 @@ double NLO_Base::CalculateReal(Vec4D k, int fsrcount) {
 	double subloc = p_nlodipoles->CalculateRealSub(k);
 	double subb;
 	m_real = r;
-	if(fsrcount==0) subb = p_dipoles->CalculateRealSubEEX(kk);
+	if(fsrcount==0) subb = p_dipoles->CalculateRealSubEEX(k);
 	else subb = p_dipoles->CalculateRealSubEEX(k);
 	// if(IsZero(subb)) return 0;
 	if(!CheckMomentumConservation(p)) {
@@ -364,6 +368,20 @@ double NLO_Base::CalculateReal(Vec4D k, int fsrcount) {
 		m_histograms2d["REAL_SUB"]->Insert((p[0]+p[1]).Mass(), k.E(), tot/m_born);
 		m_histograms2d["REAL"]->Insert(k.E(), k.Theta(), r);
 		m_histograms2d["REAL_SUB"]->Insert(k.E(), k.Theta(), tot);
+	}
+	sumw+=tot;
+	rcount+=1;
+	double avg=sumw/rcount;
+	if(rcount==1000){
+		m_ravg = avg;
+	}
+	if(rcount>1000){
+		double diff = fabs(1.-m_ravg/avg)*100;
+		if(diff>10){
+			msg_Out()<<"Large jump in Real weight for "<<k<<std::endl;
+			m_ravg = avg;
+			return 0;
+		}
 	}
 	if(fsrcount>=3) return tot*subb;
 	return tot;
@@ -447,13 +465,13 @@ double NLO_Base::CalculateRealVirtual(Vec4D k, int fsrcount) {
 	// PRINT_VAR(yfspole);
 	double subb;
 
-	subb = (fsrcount!=1?p_dipoles->CalculateRealSubEEX(kk):p_dipoles->CalculateRealSubEEX(k));
+	subb = (fsrcount!=1?p_dipoles->CalculateRealSubEEX(kk):p_dipoles->CalculateRealSubEEX(kk));
 	
 	if(p.size()!=(m_flavs.size()+1)){
 		msg_Error()<<"Mismatch in "<<METHOD<<std::endl;
 	}
 	double r = p_realvirt->Calc(p, m_born) / norm;
-	if(p_realvirt->FailCut()) return 0;
+	if(p_realvirt->FailCut()) m_failcut = true;;
 	if (IsBad(r)) {
 		msg_Error()<<"Real-Virtual is "<<r<<std::endl;
 		return 0;
@@ -634,7 +652,7 @@ double NLO_Base::CalculateRealReal(Vec4D k1, Vec4D k2, int fsr1, int fsr2){
 		return 0;
 	}
 	double r = p_realreal->Calc_R(p) / norm ;
-	if(p_realreal->FailCut()) return 0;
+	if(p_realreal->FailCut()) m_failcut = true;
 	if(IsBad(r) || IsBad(flux)) {
 		msg_Error()<<"Bad point for YFS Real"<<std::endl
 							 <<"Real ME is : "<<r<<std::endl
@@ -644,9 +662,9 @@ double NLO_Base::CalculateRealReal(Vec4D k1, Vec4D k2, int fsr1, int fsr2){
 	m_recola_evts+=1;
 	double real1 = CalculateReal(kk1,3+fsr1);
 	double real2 = CalculateReal(kk2,3+fsr2);
-	double sub1 = (fsr1!=1?p_dipoles->CalculateRealSubEEX(kk1):p_dipoles->CalculateRealSubEEX(kk1));
-	double sub2 = (fsr2!=1?p_dipoles->CalculateRealSubEEX(kk2):p_dipoles->CalculateRealSubEEX(kk2));
-	double fullsub = (-subloc2*real1 -subloc1*real2-subloc1*subloc2*m_born)/m_rescale_alpha;
+	double sub1 = (fsr1!=1?p_dipoles->CalculateRealSubEEX(kk1):p_dipoles->CalculateRealSubEEX(k1));
+	double sub2 = (fsr2!=1?p_dipoles->CalculateRealSubEEX(kk2):p_dipoles->CalculateRealSubEEX(k2));
+	double fullsub = (-subloc2*real1 -subloc1*real2-subloc1*subloc2*m_born);
 	tot = (r*flux + fullsub)/sub1/sub2;
   if(IsBad(tot)){
   	msg_Error()<<"NNLO RR is NaN"<<std::endl;
