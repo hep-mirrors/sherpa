@@ -126,14 +126,15 @@ void ATOOLS::AddParticle(kf_code kfc, double mass, double radius, double width,
                          bool on, int stable, bool massive,
                          const std::string &idname, const std::string &antiname,
                          const std::string &texname,
-                         const std::string &antitexname)
+                         const std::string &antitexname,
+                         bool dummy, bool group)
 {
   if (s_kftable.find(kfc) != s_kftable.end()) {
     THROW(fatal_error, "Particle already added.");
   }
-  s_kftable[kfc] = new Particle_Info(kfc, mass, radius, width, icharge, strong,
-                                     spin, majorana, on, stable, massive,
-                                     idname, antiname, texname, antitexname);
+  s_kftable[kfc] = new Particle_Info(
+      kfc, mass, radius, width, icharge, strong, spin, majorana, on, stable,
+      massive, idname, antiname, texname, antitexname, dummy, group);
   auto pdata = Settings::GetMainSettings()["PARTICLE_DATA"];
   s_kftable[kfc]->m_mass = s_kftable[kfc]->m_hmass =
       pdata[s_kftable[kfc]->m_idname]["Mass"].SetDefault(mass).Get<double>();
@@ -158,6 +159,37 @@ void ATOOLS::AddParticle(kf_code kfc, double mass, double radius, double width,
 void ATOOLS::AddParticle(kf_code kfc, double mass, double radius, double width,
                          int icharge, int spin, bool majorana, bool on,
                          int stable, const std::string &idname,
+                         const std::string &texname)
+{
+  if (s_kftable.find(kfc) != s_kftable.end()) {
+    THROW(fatal_error, "Particle already added.");
+  }
+  auto pdata = Settings::GetMainSettings()["PARTICLE_DATA"];
+  s_kftable[kfc] = new Particle_Info(kfc, mass, radius, width, icharge, spin,
+                                     on, stable, idname, texname);
+  s_kftable[kfc]->m_mass = s_kftable[kfc]->m_hmass =
+      pdata[s_kftable[kfc]->m_idname]["Mass"].SetDefault(mass).Get<double>();
+  s_kftable[kfc]->m_width =
+      pdata[s_kftable[kfc]->m_idname]["Width"].SetDefault(width).Get<double>();
+  s_kftable[kfc]->m_on =
+      pdata[s_kftable[kfc]->m_idname]["Active"].SetDefault(on).Get<bool>();
+  s_kftable[kfc]->m_stable =
+      pdata[s_kftable[kfc]->m_idname]["Stable"].SetDefault(stable).Get<int>();
+  s_kftable[kfc]->m_massive =
+      pdata[s_kftable[kfc]->m_idname]["Massive"].SetDefault(s_kftable[kfc]->m_massive).Get<bool>();
+  s_kftable[kfc]->m_icharge =
+      pdata[s_kftable[kfc]->m_idname]["IntCharge"].SetDefault(icharge).Get<int>();
+  s_kftable[kfc]->m_strong =
+      pdata[s_kftable[kfc]->m_idname]["StrongCharge"].SetDefault(s_kftable[kfc]->m_strong).Get<int>();
+  s_kftable[kfc]->m_yuk =
+      pdata[s_kftable[kfc]->m_idname]["Yukawa"].SetDefault(s_kftable[kfc]->m_yuk).Get<double>();
+  s_kftable[kfc]->m_priority =
+      pdata[s_kftable[kfc]->m_idname]["Priority"].SetDefault(s_kftable[kfc]->m_priority).Get<int>();
+}
+
+void ATOOLS::AddParticle(kf_code kfc, double mass, double radius, double width,
+                         int icharge, int spin, bool on, int stable,
+                         const std::string &idname,
                          const std::string &texname)
 {
   if (s_kftable.find(kfc) != s_kftable.end()) {
