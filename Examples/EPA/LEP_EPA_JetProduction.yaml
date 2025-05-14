@@ -1,5 +1,3 @@
-EVENTS: 100000
-
 BEAMS:             [11, -11]
 BEAM_ENERGIES:     103
 BEAM_SPECTRA:      EPA
