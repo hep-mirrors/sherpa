@@ -85,7 +85,6 @@ Standard_Model_Zprime::Standard_Model_Zprime() :
   m_name="SM+Zprime";
   ParticleZprimeInit();
   RegisterDefaults();
-  ReadParticleData();
 }
 
 bool Standard_Model_Zprime::ModelInit()
