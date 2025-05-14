@@ -1,4 +1,4 @@
-PARTICLE_FMT = 'ATOOLS::s_kftable[{0}] = new ATOOLS::Particle_Info('
+PARTICLE_FMT = 'ATOOLS::AddParticle('
 PARTICLE_FMT += '{0}, {1}, {2}, {3}, {4}, {5}, {6}, {7}, {8}, {9}'
 
 

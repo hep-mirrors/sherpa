@@ -298,44 +298,6 @@ void Model_Base::ShowSyntax(const size_t i)
   msg_Out()<<"\n}"<<std::endl;
 }
 
-void Model_Base::ReadParticleData()
-{
-  auto pdata = Settings::GetMainSettings()["PARTICLE_DATA"];
-  for (const auto& ptclname : pdata.GetKeys()) {
-    kf_code kf = ToType<kf_code>(ptclname);
-    const auto it = s_kftable.find(kf);
-    if (it != s_kftable.end()) {
-      for (const auto& propertyname : pdata[ptclname].GetKeys()) {
-        auto s = pdata[ptclname][propertyname];
-        if (propertyname == "Mass") {
-          const auto mass = s.SetDefault(it->second->m_mass).Get<double>();
-          it->second->m_mass = mass;
-          it->second->m_hmass = mass;
-        } else if (propertyname == "Width") {
-          it->second->m_width = s.SetDefault(it->second->m_width).Get<double>();
-        } else if (propertyname == "Active") {
-          it->second->m_on = s.SetDefault(it->second->m_on).Get<bool>();
-        } else if (propertyname == "Stable") {
-          it->second->m_stable = s.SetDefault(it->second->m_stable).Get<int>();
-        } else if (propertyname == "Massive") {
-          it->second->m_massive = s.SetDefault(it->second->m_massive).Get<bool>();
-        } else if (propertyname == "IntCharge") {
-          it->second->m_icharge = s.SetDefault(it->second->m_icharge).Get<int>();
-        } else if (propertyname == "StrongCharge") {
-          it->second->m_strong = s.SetDefault(it->second->m_strong).Get<int>();
-        } else if (propertyname == "Yukawa") {
-          it->second->m_yuk = s.SetDefault(it->second->m_yuk).Get<double>();
-        } else if (propertyname == "Priority") {
-          it->second->m_priority = s.SetDefault(it->second->m_priority).Get<int>();
-        } else {
-          THROW(fatal_error,
-                "Unknown PARTICLE_DATA property '" + propertyname + "'");
-        }
-      }
-    }
-  }
-}
-
 void Model_Base::AddStandardContainers()
 {
   if (s_kftable.find(kf_jet) != s_kftable.end()) {
