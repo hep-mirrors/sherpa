@@ -47,11 +47,6 @@ set (INSTALL_PATHS
      BSM/SM_ZPrime/Makefile
      BSM/SM_ZPrime/Model.C
      BSM/SM_ZPrime/Sherpa.yaml
-     BSM/SM_ggV/Makefile
-     BSM/SM_ggV/Model.C
-     BSM/SM_ggV/Sherpa.WW.yaml
-     BSM/SM_ggV/Sherpa.ZZ.yaml
-     BSM/SM_ggV/Sherpa.h.yaml
      BSM/UFO_AQGC/AQGC/__init__.py
      BSM/UFO_AQGC/AQGC/coupling_orders.py
      BSM/UFO_AQGC/AQGC/couplings.py
@@ -86,27 +81,19 @@ set (INSTALL_PATHS
      BSM/UFO_MUED/MUED/vertices.py
      BSM/UFO_MUED/MUED/write_param_card.py
      BSM/UFO_SMEFT/Sherpa.yaml
-     EPA/LEP_EPA_BosonPairs.yaml
-     EPA/LEP_EPA_JetProduction.yaml
      EPA/LHC_EPA_JetProduction.yaml
-     EPA/MinBias.yaml
      FixedOrder/MINLO_ppenuj/Sherpa.yaml
      FixedOrder/NLO_EW_ppWW/Sherpa.LO.yaml
      FixedOrder/NLO_EW_ppWW/Sherpa.RS.EW.yaml
      FixedOrder/NLO_QCD_pptt/Sherpa.BI.QCD.yaml
-     FixedOrder/NNLO_QCD_pph/Sherpa.yaml
-     FixedOrder/NNLO_QCD_ppll/Sherpa.yaml
-     FixedOrder/NNLO_QCD_pplv/Sherpa.yaml
      HPC/WJets/Sherpa.yaml
      HPC/WJets_Async/Sherpa.yaml
      H_in_AssociatedProduction/LHC_Hll_MCatNLO/Sherpa.yaml
      H_in_AssociatedProduction/LHC_WHJets/Sherpa.yaml
      H_in_AssociatedProduction/LHC_ZHJets/Sherpa.yaml
-     H_in_GluonFusion/LHC_HInt_MCatNLO/Sherpa.yaml
      H_in_GluonFusion/LHC_HInterference/Sherpa.yaml
      H_in_GluonFusion/LHC_HJets/Sherpa.yaml
      H_in_GluonFusion/LHC_HJets_Finite_MTop/Sherpa.yaml
-     H_in_GluonFusion/LHC_HJets_UN2LOPS/Sherpa.yaml
      H_in_TTBar/LHC_TTH_MCatNLO/Sherpa.yaml
      Instanton/LHC_13/Instanton.yaml
      Instanton/LHC_13/Instanton_InvRho_noMPI.yaml
