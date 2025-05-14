@@ -70,60 +70,43 @@ ATOOLS::Return_Value::code
 Soft_Collision_Handler::GenerateMinimumBiasEvent(ATOOLS::Blob_List* blobs)
 {
   PROFILE_HERE;
-  int outcome(-1);
+  bool outcome = false;
   switch (m_mode) {
   case scmode::shrimps:
     outcome = p_shrimps->InitMinBiasEvent(blobs);
     break;
   case scmode::amisic:
-    outcome = p_amisic->InitMinBiasEvent(blobs);
+    outcome = p_amisic->InitMinBiasEvent();
     break;
   case scmode::none:
-    outcome = 0;
-    break;
   default:
     break;
   }
-  switch (outcome) {
-  case 1:  return Return_Value::Success;
-  case 0:  return Return_Value::Nothing;
-  default: break;
-  }
-  msg_Tracking() << "Error in "<<METHOD<< ":\n"
-                 <<"   Did not manage to produce a Minimum Bias event with "
-                 << m_scmodel << ".\n";
-  return Return_Value::New_Event;
+  return outcome ? Return_Value::Success : Return_Value::Nothing;
+  //return Return_Value::New_Event;
 }
 
 
 ATOOLS::Return_Value::code
 Soft_Collision_Handler::GenerateBunchRescatter(ATOOLS::Blob_List * blobs) {
-  int outcome(-1);
+  bool outcome = false;
   switch (m_mode) {
-    case scmode::shrimps:
-      THROW(fatal_error, "not yet available for SHRiMPS.  Will exit the run.");
-    case scmode::amisic: outcome = p_amisic->InitRescatterEvent();
+  case scmode::shrimps:
+    THROW(fatal_error, "not yet available for SHRiMPS.  Will exit the run.");
+  case scmode::amisic:
+    if (p_amisic->InitRescatterEvent()) {
+      Blob * soft = new Blob();
+      soft->SetType(btp::Soft_Collision);
+      soft->AddStatus(blob_status::needs_beamRescatter);
+      blobs->push_back(soft);
+      outcome = true;
+    }
     break;
   case scmode::none:
-    outcome = 0;
-    break;
   default:
     break;
   }
-  Blob * soft;
-  switch (outcome) {
-  case 1:
-    msg_Out()<<"WTF?\n"; exit(1);
-    soft = new Blob();
-    soft->SetType(btp::Soft_Collision);
-    soft->AddStatus(blob_status::needs_beamRescatter);
-    blobs->push_back(soft);
-    return Return_Value::Success;
-  case 0:
-    return Return_Value::Nothing;
-  default: break;
-  }
-  return Return_Value::Nothing;
+  return outcome ? Return_Value::Success : Return_Value::Nothing;
 }
 
 void Soft_Collision_Handler::SetPosition(const size_t & beam,const Vec4D & pos) {

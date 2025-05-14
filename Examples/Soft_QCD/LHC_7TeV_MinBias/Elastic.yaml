@@ -3,15 +3,15 @@ BEAM_ENERGIES: 3500
 
 EVENT_TYPE:          MinimumBias
 ME_GENERATORS:       None
-SOFT_COLLISIONS:     Shrimps
-SHRIMPS:
-  MODE:              Elastic
-FRAGMENTATION:       Off
+SOFT_COLLISIONS:     Amisic
+AMISIC:
+  EVENT_TYPE:        QuasiElastic
+FRAGMENTATION:       None # Ahadic
 YFS:
   MODE:              None
 
 ANALYSIS: Rivet
-ANALYSIS_OUTPUT: Elastic_Shrimps
+ANALYSIS_OUTPUT: Elastic_Amisic
 
 RIVET:
   --analyses: [TOTEM_2012_I1220862]

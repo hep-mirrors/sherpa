@@ -168,93 +168,31 @@ void Amisic::InitParametersAndType(PDF::ISR_Handler *const isr,
   m_maxNscatters = size_t((*mipars)["nMaxScatters"]);
 }
 
-bool Amisic::InitMPIs(const double & ptmax,const double & x1,const double & x2,
-		      const double & scale) {
-  ///////////////////////////////////////////////////////////////////////////
-  // Initialise the MPI simulation: fixing the maximal scale, take from the
-  // hard event, for the downward evolution and determining a
-  // kinematics-dependent impact parameter in SetB().
-  ///////////////////////////////////////////////////////////////////////////
-  if (!m_isFirst) return false;
-  m_producedSoft = false;
-  m_isFirst      = false;
-  m_Nscatters    = 0;
-  if (m_variable_s) UpdateForNewS();
-  if (VetoEvent(scale)) return false;
-  return true;
-}
-
-void Amisic::UpdateForNewS() {
-  ///////////////////////////////////////////////////////////////////////////
-  // Update if first scatter with variable c.m. energy (e.g. collisions with
-  // pomerons or resolved photons): update c.m. energy in processes,
-  // re-calculate non-diffractive cross sections for normalisation, adjust
-  // prefactors for radii in matter overlaps etc., etc..
-  // TODO: will have to check if we need another longitudinal boost (hence
-  //       the Y)
-  ///////////////////////////////////////////////////////////////////////////
-  Vec4D P(0.,0.,0.,0.);
-  for (size_t beam=0;beam<2;beam++) P += m_singlecollision.InMomentum(beam);
-  m_S = P.Abs2();
-  m_Y = P.Y();
-  if (m_evttype==evt_type::Perturbative) m_mo.SetKRadius(m_pint.K(m_S));
-  m_singlecollision.UpdateSandY(m_S, m_Y);
-}
-
-bool Amisic::InitMinBiasEvent(Blob_List * blobs) {
-  ///////////////////////////////////////////////////////////////////////////
-  // Initialise the MinBias simulation:
-  // - update for new centre-of-mass energy and rapidity
-  // - create a first scatter (and store a second one, if necessary) and
-  //   add the blob to the blob list.
-  ///////////////////////////////////////////////////////////////////////////
-  if (!m_isFirst) return false;
-  m_isFirst      = false;
-  m_producedSoft = false;
-  m_isMinBias    = true;
-  m_Nscatters    = 0;
-  if (m_variable_s) UpdateForNewS();
-  if (!p_soft && m_singlecollision.NeedsTrig()) {
-    m_weight *= m_singlecollision.PrefabricateBlob(1);
-  }
-  return true;
-}
-
-bool Amisic::FirstMinBias(Blob * blob) {
-  if (m_evttype==evt_type::Perturbative) {
-    if (m_xsecs.XSratio(m_S)<1.) return false;
-  }
-  if (!m_singlecollision.FirstMinBiasScatter(blob)) return false;
-  m_b            = m_singlecollision.B();
-  m_producedSoft = m_singlecollision.Done();
-  blob->UnsetStatus(blob_status::needs_minBias);
-  return true;
-}
-
-bool Amisic::FirstMPI(Blob * blob) {
-  UpdateForNewS();
-  if (!m_singlecollision.FirstMPI(blob)) return false;
-  m_b = m_singlecollision.B();
-  return true;
-}
-
-
 bool Amisic::GenerateScatter(const size_t & type,Blob * blob) {
   ///////////////////////////////////////////////////////////////////////////
-  // If a next (perturbative) scatter event has been found, the pointer to
-  // the respective blob is returned.
-  // TODO: we may want to think about something for rescatter events -
-  //       but this is for future work.
+  // This is the main driver in AMISIC, generating additional scatter
+  // events at the parton level.
+  // Broadly speaking, such events fall into 3 categories:
+  // - MPI events (type = 3), where either the signal blob is analysed
+  //   to define the starting conditions (i.e. maximal pT) for the next
+  //   downward evolution, or the actual downward evolution (taken
+  //   from AMISIC++/Perturbative/Single_Collision_Handler)
+  // - Rescatter events (type = 2)
+  //   TODO: we need to re-instate rescatter events - they seem to work now.
+  // - MinBias events (type = 1), which come with an empty blob to be
+  //   filled - at the moment this is mainly done with parton-level events,
+  //   see comment/documentation below.
   ///////////////////////////////////////////////////////////////////////////
   if (!m_singlecollision.Done() && m_Nscatters<m_maxNscatters) {
     bool outcome = false;
     switch (type) {
     case 3:
       outcome = ((blob->Type()==btp::Signal_Process) ?
-		 FirstMPI(blob) : m_singlecollision.NextScatter(blob) );
+		 FirstMPI(blob) :
+		 m_singlecollision.NextScatter(blob) );
       break;
     case 2:
-      exit(1);
+      outcome = FirstRescatter(blob);
       break;
     case 1:
       if (!m_isMinBias) THROW(fatal_error,"Conflict for "+to_string(int(type))+
@@ -275,6 +213,111 @@ bool Amisic::GenerateScatter(const size_t & type,Blob * blob) {
     if (m_ana) AnalysePerturbative(true);
   }
   return false;
+}
+
+bool Amisic::FirstMPI(Blob * blob) {
+  ///////////////////////////////////////////////////////////////////////////
+  // Initialise the MPI simulation based on the signal blob.  This entails a
+  // loop over trials, until successful:
+  // - produce a possibly kinematics-dependent impact parameter
+  // - check that the downward evolution starting at the hadronic c.m.
+  //   energy - which is subject to the impact parameter - does not produce
+  //   a harder scatter.
+  ///////////////////////////////////////////////////////////////////////////
+  UpdateForNewS();
+  if (!m_singlecollision.FirstMPI(blob)) return false;
+  m_b = m_singlecollision.B();
+  return true;
+}
+
+bool Amisic::InitMinBiasEvent() {
+  ///////////////////////////////////////////////////////////////////////////
+  // Initialise the MinBias simulation
+  // (from SHERPA/SoftPhysics/Soft_Collision_Handler::GenerateMinimumBiasEvent)
+  // - set relevant flags
+  // - if necessary, update for new centre-of-mass energy and rapidity
+  // - create a "trigger scatter", if necessary) and add the prefabricated
+  //   blob to the blob list in the Single_Collision_Handler.
+  ///////////////////////////////////////////////////////////////////////////
+  if (!m_isFirst) return false;
+  m_isFirst      = false;
+  m_producedSoft = false;
+  m_isMinBias    = true;
+  m_Nscatters    = 0;
+  if (m_variable_s) UpdateForNewS();
+  if (!p_soft && m_singlecollision.NeedsTrig()) {
+    m_weight *= m_singlecollision.PrefabricateBlob(1);
+  }
+  return true;
+}
+
+bool Amisic::FirstMinBias(Blob * blob) {
+  ///////////////////////////////////////////////////////////////////////////
+  // Create the first min bias scatter.  This works only, if the ratio of
+  // hard and non-diffractive cross section is larger than one
+  // TODO: We may want to use this to produce a hard event with a probability
+  //       of that ratio, and otherwise go straight to generating
+  //       diffractive/elastic events.  This may be the method of choice for
+  //       photon-photon-collisions.
+  // If the Single_Collision_Handler produced a first scatter, we keep the
+  // impact parameter.
+  ///////////////////////////////////////////////////////////////////////////
+  if (m_evttype==evt_type::Perturbative) {
+    if (m_xsecs.XSratio(m_S)<1.) return false;
+  }
+  if (!m_singlecollision.FirstMinBiasScatter(blob)) return false;
+  m_b            = m_singlecollision.B();
+  m_producedSoft = m_singlecollision.Done();
+  blob->UnsetStatus(blob_status::needs_minBias);
+  return true;
+}
+
+bool Amisic::InitRescatterEvent() {
+  ///////////////////////////////////////////////////////////////////////////
+  // Initialise the MinBias simulation: fixing the maximal scale = S/4, the
+  // kinematic limit, for the downward evolution and take the impact parameter
+  // from the already existing scatter.
+  // TODO: we may have to check the logical flow here.
+  ///////////////////////////////////////////////////////////////////////////
+  if (!m_isFirst) return false;
+  m_isFirst      = false;
+  m_producedSoft = false;
+  m_isMinBias    = true;
+  m_Nscatters    = 0;
+  if (m_variable_s) UpdateForNewS();
+  return true;
+}
+
+bool Amisic::FirstRescatter(Blob * blob) {
+  ///////////////////////////////////////////////////////////////////////////
+  // Create the first beam rescatter, currently hard partonic interactions
+  // only.  If the Single_Collision_Handler produced a first scatter,
+  // dependent on the impact parameter dictated by the beam remnants
+  // the usual MPI framework will kick in.
+  // TODO: we may want to add the option of elastic/diffractive rescattering
+  ///////////////////////////////////////////////////////////////////////////
+  if (!m_singlecollision.FirstRescatter(blob)) return false;
+  m_b            = m_singlecollision.B();
+  m_producedSoft = m_singlecollision.Done();
+  blob->AddStatus(blob_status::needs_beamRescatter);
+  return true;
+}
+
+void Amisic::UpdateForNewS() {
+  ///////////////////////////////////////////////////////////////////////////
+  // Update if first scatter with variable c.m. energy (e.g. collisions with
+  // pomerons or resolved photons): update c.m. energy in processes,
+  // re-calculate non-diffractive cross sections for normalisation, adjust
+  // prefactors for radii in matter overlaps etc., etc..
+  // TODO: will have to check if we need another longitudinal boost (hence
+  //       the Y)
+  ///////////////////////////////////////////////////////////////////////////
+  Vec4D P(0.,0.,0.,0.);
+  for (size_t beam=0;beam<2;beam++) P += m_singlecollision.InMomentum(beam);
+  m_S = P.Abs2();
+  m_Y = P.Y();
+  if (m_evttype==evt_type::Perturbative) m_mo.SetKRadius(m_pint.K(m_S));
+  m_singlecollision.UpdateSandY(m_S, m_Y);
 }
 
 void Amisic::AddInformationToBlob(ATOOLS::Blob * blob) {
@@ -348,26 +391,6 @@ void Amisic::Reset() {
   m_singlecollision.Reset();
 }
 
-bool Amisic::InitRescatterEvent() {
-  ///////////////////////////////////////////////////////////////////////////
-  // Initialise the MinBias simulation: fixing the maximal scale = S/4, the
-  // kinematic limit, for the downward evolution and take the impact parameter
-  // from the already existing scatter.
-  // TODO: we may have to check the logical flow here.
-  ///////////////////////////////////////////////////////////////////////////
-  THROW(fatal_error,"Rescattering not implemented yet.");
-  return true;
-}
-
-void Amisic::SetB(const double & b) {
-  ///////////////////////////////////////////////////////////////////////////
-  // Impact parameter externally set, e.g. for rescattering in processes
-  // with EPA photons.
-  ///////////////////////////////////////////////////////////////////////////
-  THROW(fatal_error,"Rescattering not implemented yet.");
-  exit(1);
-}
-
 void Amisic::InitAnalysis() {
   m_nev = m_nscatters = m_nscat = 0;
   m_histos[string("N_scatters")] = new Histogram(0,0,50,50);
@@ -406,21 +429,23 @@ void Amisic::FinishAnalysis() {
 void Amisic::AnalysePerturbative(const bool & last,Blob * blob) {
   if (!last) {
     if (!blob) return;
-    Vec4D mom[2];
-    for (size_t i=0;i<2;i++) mom[i] = blob->OutParticle(i)->Momentum();
-    if (m_nscatters==0) {
-      m_histos[string("P_T1")]->Insert(sqrt(mom[0].PPerp2()));
-      m_histos[string("Y1")]->Insert(mom[0].Y());
-      m_histos[string("Y1")]->Insert(mom[1].Y());
-      m_histos[string("Delta_Y1")]->Insert(dabs(mom[0].Y()-mom[1].Y()));
+    if (!(blob->Id()==-1 && blob->NInP()==0)) {
+      Vec4D mom[2];
+      for (size_t i=0;i<2;i++) mom[i] = blob->OutParticle(i)->Momentum();
+      if (m_nscatters==0) {
+	m_histos[string("P_T1")]->Insert(sqrt(mom[0].PPerp2()));
+	m_histos[string("Y1")]->Insert(mom[0].Y());
+	m_histos[string("Y1")]->Insert(mom[1].Y());
+	m_histos[string("Delta_Y1")]->Insert(dabs(mom[0].Y()-mom[1].Y()));
+      }
+      if (m_nscatters==1) {
+	m_histos[string("P_T2")]->Insert(sqrt(mom[0].PPerp2()));
+	m_histos[string("Y2")]->Insert(mom[0].Y());
+	m_histos[string("Y2")]->Insert(mom[1].Y());
+	m_histos[string("Delta_Y2")]->Insert(dabs(mom[0].Y()-mom[1].Y()));
+      }
+      m_nscatters++;
     }
-    if (m_nscatters==1) {
-      m_histos[string("P_T2")]->Insert(sqrt(mom[0].PPerp2()));
-      m_histos[string("Y2")]->Insert(mom[0].Y());
-      m_histos[string("Y2")]->Insert(mom[1].Y());
-      m_histos[string("Delta_Y2")]->Insert(dabs(mom[0].Y()-mom[1].Y()));
-    }
-    m_nscatters++;
   }
   if (last) {
     m_nscat += int(m_nscatters);  m_nev++;

@@ -88,6 +88,7 @@ bool Remnant_Base::Extract(ATOOLS::Particle* parton, Colour_Generator* colours)
               << " with momentum " << p_beam->OutMomentum()
               << ", difference = " << parton->Momentum()-p_beam->OutMomentum()
               << "\n";
+  abort();
   return false;
 }
 

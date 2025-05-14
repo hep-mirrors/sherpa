@@ -71,21 +71,20 @@ void Hadron_Remnant::MakeSpectator(Particle* parton, Colour_Generator* colours)
   m_spectators.push_front(p_spectator);
 }
 
-bool Hadron_Remnant::FillBlob(Colour_Generator* colours, ParticleMomMap* ktmap, const bool& copy)
+bool Hadron_Remnant::FillBlob(Colour_Generator* colours,
+			      ParticleMomMap* ktmap, const bool& copy)
 {
   // Add remnants, diquark and quark, if necessary.
   if (!p_valence || !p_remnant) MakeRemnants(colours);
   // Possibly adjust final pending colours with extra gluons - in prinicple
   // one may have to check that they are not singlets ....
   CompensateColours(colours);
-  msg_Debugging() << METHOD << ": Filling blob with remnants, extracted = "
-                  << m_extracted << ", \n and spectators = " << m_spectators
-                  << "\n";
   // Assume all remnant bases already produced a beam blob = p_beamblob
   SquashFlavourSinglets();
   SquashColourSinglets();
   if (!MakeLongitudinalMomenta(ktmap, copy)) {
-    msg_Debugging() << METHOD << ": Cannot put all particles on mass-shell, returning false.\n";
+    msg_Debugging() << METHOD
+		    << ": Cannot put all particles on mass-shell, returning false.\n";
     return false;
   }
   bool colourconserved = p_beamblob->CheckColour(true);
@@ -275,8 +274,6 @@ bool Hadron_Remnant::MakeLongitudinalMomenta(ParticleMomMap *ktmap,const bool & 
     else p_beamblob->AddToOutParticles(pmit);
     (*ktmap)[pmit] = Vec4D();
   }
-  msg_Debugging() << METHOD << ": Longitudinal momentum left for remnants = " << availMom
-		  << "\n";
   double remnant_masses = 0.;
   for (Particle  const * pit : m_spectators) {
     remnant_masses += Max(pit->Flav().HadMass(), m_LambdaQCD);

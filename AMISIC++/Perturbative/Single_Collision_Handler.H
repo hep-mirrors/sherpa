@@ -56,8 +56,10 @@ namespace AMISIC {
     void   UpdateSandY(double s, double y);
     void   Reset();
     double PrefabricateBlob(const int & mode=0);
-    bool   FirstMinBiasScatter(ATOOLS::Blob * first);
+
     bool   FirstMPI(ATOOLS::Blob * signal);
+    bool   FirstMinBiasScatter(ATOOLS::Blob * blob);
+    bool   FirstRescatter(ATOOLS::Blob * blob,const double & b=-1.);
     bool   NextScatter(ATOOLS::Blob * blob);
     
     inline void SetResidualX(const double & E1, const double & E2) {

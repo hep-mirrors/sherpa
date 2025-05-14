@@ -70,8 +70,9 @@ namespace AMISIC {
     void InitParametersAndType(PDF::ISR_Handler *const isr,
 			       REMNANTS::Remnant_Handler * remnant_handler);
     void UpdateForNewS();
-    bool FirstMinBias(ATOOLS::Blob * blob);
     bool FirstMPI(ATOOLS::Blob * blob);
+    bool FirstMinBias(ATOOLS::Blob * blob);
+    bool FirstRescatter(ATOOLS::Blob * blob);
     void AddInformationToBlob(ATOOLS::Blob * blob);
     void CreateAmplitudeLegs(ATOOLS::Cluster_Amplitude * ampl,
 			     ATOOLS::Blob * blob);
@@ -92,14 +93,11 @@ namespace AMISIC {
 		    YFS::YFS_Handler *const yfs,
                     REMNANTS::Remnant_Handler * remnant_handler);
 
-    bool InitMPIs(const double & ptmax,const double & x1,const double & x2,
-		  const double & scale);
-    bool InitMinBiasEvent(ATOOLS::Blob_List * blobs);
+    bool GenerateScatter(const size_t & type,ATOOLS::Blob * blob);
+    bool InitMinBiasEvent();
     bool InitRescatterEvent();
-    void SetB(const double & b);
     bool VetoEvent(const double & scale=-1.) const;
 
-    bool GenerateScatter(const size_t & type,ATOOLS::Blob * blob);
     ATOOLS::Cluster_Amplitude * ClusterConfiguration(ATOOLS::Blob * blob);
 
     void Reset();

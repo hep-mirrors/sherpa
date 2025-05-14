@@ -17,9 +17,6 @@ Single_Collision_Handler::Single_Collision_Handler() :
 {}
 
 Single_Collision_Handler::~Single_Collision_Handler() {
-  msg_Out()<<"===========================================================\n"
-	   <<METHOD<<" had maximal weight = "<<m_maxwt<<"\n"
-	   <<"===========================================================\n";
   if (m_ana) FinishAnalysis();
 }
 
@@ -156,6 +153,26 @@ bool Single_Collision_Handler::FirstMinBiasScatter(Blob * blob) {
   return true;
 }
 
+bool Single_Collision_Handler::
+FirstRescatter(ATOOLS::Blob * blob,const double & b) {
+  ///////////////////////////////////////////////////////////////////////////
+  // Impact parameter obtained from the remnants, relevant, e.g. for
+  // rescattering with EPA photons.
+  ///////////////////////////////////////////////////////////////////////////
+  if (b<0.) { 
+    m_b = sqrt(dabs((Position(0)-Position(1)).Abs2()));
+  }
+  else m_b = b;
+  blob->ClearAllData();
+  blob->DeleteOwnedParticles();
+  m_done  = false;
+  m_pt2   = m_lastpt2 = m_S/4.;
+  if (!NextScatter(blob)) {
+    m_done = true;
+  }
+  return true;
+}
+
 bool Single_Collision_Handler::NextScatter(Blob * blob) {
   ///////////////////////////////////////////////////////////////////////////
   // Simple logic:
@@ -191,7 +208,7 @@ bool Single_Collision_Handler::NextScatter(Blob * blob) {
       if (fill==1) {
         m_lastpt2 = m_pt2;
 	blob->SetType(btp::Hard_Collision);
-	blob->SetStatus(blob_status::needs_showers);
+	blob->AddStatus(blob_status::needs_showers);
 	blob->SetId();
 	return true;
       }

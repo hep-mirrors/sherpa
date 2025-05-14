@@ -1,9 +1,13 @@
 # collider setup
-BEAMS: [11, -11]
-BEAM_ENERGIES: 45.6
-BEAM_SPECTRA: EPA
-BUNCHES: 22
-PDF_LIBRARY: None
+BEAMS:             [11, -11]
+BEAM_ENERGIES:     45.6
+BEAM_SPECTRA:      EPA
+BUNCHES:           22
+PDF_LIBRARY:       SASGSherpa
+PDF_SET:           SAS2D
+MI_HANDLER:        None
+BEAM_RESCATTERING: None
+
 
 # model parameters
 ALPHAS(MZ): 0.1188

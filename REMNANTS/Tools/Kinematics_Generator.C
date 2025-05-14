@@ -14,7 +14,8 @@ Kinematics_Generator::Kinematics_Generator() :
 
 Kinematics_Generator::~Kinematics_Generator() {
   if (m_warns>0 || m_errors>0) {
-    msg_Info() << "Remnant Kinematics: " << m_errors << " errors (no kinematics found) and\n"<<"                    "
+    msg_Info() << "Remnant Kinematics: " << m_errors
+	       << " errors (no kinematics found) and\n"<<"                    "
                <<  m_warns
                << " warnings (scale kt down by factor of 10).\n";
   }
@@ -200,7 +201,10 @@ bool Kinematics_Generator::TransverseKinematicsHH() {
     // Fill the beam remnant blobs with copies of the spectators and the
     // extracted shower initiators and keep the original particles in the
     // ktmaps.
-    if (!p_remnants[beam]->FillBlob(p_rhandler->GetColourGen(), &m_ktmap[beam], true)) return false;
+    if (!p_remnants[beam]->FillBlob(p_rhandler->GetColourGen(),
+				    &m_ktmap[beam], true)) {
+      return false;
+    }
     m_inmom[beam] = p_remnants[beam]->InMomentum();
   }
   // Initialise particle-momentum maps to track the transverse momenta
@@ -235,7 +239,8 @@ bool Kinematics_Generator::TransverseKinematicsHH() {
         msg_Error() << "Warning: "  << METHOD<<" unable to create the breakup kinematics";
       msg_Debugging()<<" for "
                     << p_remnants[0]->GetExtracted()[0] << " and "
-                    << p_remnants[1]->GetExtracted()[0] << " and the corresponding remnants are "
+                    << p_remnants[1]->GetExtracted()[0]
+		     << " and the corresponding remnants are "
                     << p_remnants[0]->GetSpectators()[0] << " and "
 		     << p_remnants[1]->GetSpectators()[0];
       msg_Error()<<".\n";
@@ -270,8 +275,9 @@ bool Kinematics_Generator::TransverseKinematicsHH() {
   // shower/collision. First, reset momenta of beam particles - successively we
   // will subtract momenta of extracted particles and use this to monitor
   // longitudinal momentum conservation.
-  if ((scale < 1.e-4) || !AdjustShowerInitiators() || !AdjustRemnants())
+  if ((scale < 1.e-4) || !AdjustShowerInitiators() || !AdjustRemnants()) {
     return false;
+  }
   return true;
 }
 

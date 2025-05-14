@@ -31,13 +31,13 @@ Remnant_Handler::Remnant_Handler(PDF::ISR_Handler* isr, YFS::YFS_Handler *yfs,
       if (flav.IsHadron() && flav.Kfcode() != kf_pomeron &&
           flav.Kfcode() != kf_reggeon)
         p_remnants[i] =
-                std::make_shared<Hadron_Remnant>(isr->PDF(i), i, m_tags[i]);
+	  std::make_shared<Hadron_Remnant>(isr->PDF(i), i, m_tags[i]);
       else if (flav.IsLepton())
         p_remnants[i] =
-                std::make_shared<Electron_Remnant>(isr->PDF(i), i, m_tags[i]);
+	  std::make_shared<Electron_Remnant>(isr->PDF(i), i, m_tags[i]);
       else if (flav.IsPhoton())
         p_remnants[i] =
-                std::make_shared<Photon_Remnant>(isr->PDF(i), i, m_tags[i]);
+	  std::make_shared<Photon_Remnant>(isr->PDF(i), i, m_tags[i]);
       else if (flav.Kfcode() == kf_pomeron)
         p_remnants[i] = std::make_shared<Pomeron_Remnant>(isr->PDF(i), i);
       else if (flav.Kfcode() == kf_reggeon)
@@ -96,8 +96,8 @@ Remnant_Handler(std::array<std::shared_ptr<Remnant_Base>, 2> remnants,
 Remnant_Handler::~Remnant_Handler()
 {
   if (m_fails > 0)
-    msg_Out() << "Remnant handling yields " << m_fails
-              << " fails in creating good beam  breakups.\n";
+    msg_Info() << "Remnant handling yields " << m_fails
+	       << " fails in creating good beam  breakups.\n";
 }
 
 void Remnant_Handler::InitializeRemnants(PDF::ISR_Handler* isr,

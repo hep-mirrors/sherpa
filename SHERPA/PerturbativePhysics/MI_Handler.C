@@ -101,8 +101,6 @@ bool MI_Handler::ConnectColours(ATOOLS::Blob * showerblob) {
 
 bool MI_Handler::GenerateHardProcess(const typeID & type,Blob * blob)
 {
-  //msg_Out()<<"--- "<<METHOD<<"("<<int(type)<<", "<<blob->Type()<<", "
-  //	   <<"stop = "<<m_stop<<")\n";
   if ( (m_gen==genID::amisic  &&
 	p_amisic->GenerateScatter(size_t(type),blob)) ||
        (m_gen==genID::shrimps && p_shrimps->GenerateEvent(blob)) ) {
@@ -110,11 +108,8 @@ bool MI_Handler::GenerateHardProcess(const typeID & type,Blob * blob)
       if (p_amisic->IsSoft()) m_stop = true;
     }
     m_firstrescatter = false;
-    //msg_Out()<<"--- "<<METHOD<<"(stop = "<<m_stop<<") arrives with:\n"
-    //	     <<(*blob)<<"\n";
-    return true;
+    if (!(type==typeID::rescatter && blob->Id()==-1)) return true;
   }
-  // Here I replaced things - will need to check.
   m_stop = true;
   return false;
 }
@@ -127,8 +122,6 @@ bool MI_Handler::VetoScatter(Blob *blob)
 
 void MI_Handler::Reset()
 {
-  //msg_Out()<<"--- "<<METHOD<<"\n"
-  //	   <<"-------------------------------------------------------------\n";
   m_stop = false;
   if (m_gen==genID::amisic) p_amisic->Reset();
   for (short unsigned int i=0;i<2;++i) {
@@ -140,8 +133,6 @@ void MI_Handler::Reset()
 
 void MI_Handler::CleanUp()
 {
-  //msg_Out()<<"--- "<<METHOD<<"\n"
-  //	   <<"-------------------------------------------------------------\n";
   m_stop           = false;
   m_firstrescatter = (m_id==PDF::isr::bunch_rescatter) ? true : false;
   if (m_gen==genID::amisic)  p_amisic->CleanUp();
