@@ -31,14 +31,10 @@ namespace CSSHOWER {
 
     const ATOOLS::Mass_Selector *p_ms;
     ATOOLS::Cluster_Leg   *p_b;
-    
+
     Shower *p_shower;
     int     m_kmode, m_pdfcheck, m_kfmode;
 
-    Splitting_Function_Base *GetSF(const ATOOLS::Cluster_Leg *i,
-				   const ATOOLS::Cluster_Leg *j,
-				   const ATOOLS::Cluster_Leg *k,
-				   const ATOOLS::Flavour &mo,CS_Parameters &cs) const;
     void KernelWeight(const ATOOLS::Cluster_Leg *i,
 		      const ATOOLS::Cluster_Leg *j,
 		      const ATOOLS::Cluster_Leg *k,
@@ -47,7 +43,7 @@ namespace CSSHOWER {
     ATOOLS::Flavour ProperFlav(const ATOOLS::Flavour &fl,const int anti=false) const;
 
   public:
-    
+
     CS_Cluster_Definitions(Shower *const shower,const int kmode,
 			   const int pdfcheck,const int kfmode);
 
@@ -69,7 +65,11 @@ namespace CSSHOWER {
 				 const ATOOLS::Flavour &mo=ATOOLS::Flavour(kf_none),
 				 const ATOOLS::Mass_Selector *const ms=NULL,
 				 const int kin=0,const int mode=0);
-    
+
+    Splitting_Function_Base *GetSF(const ATOOLS::Cluster_Leg *i,
+				   const ATOOLS::Cluster_Leg *j,
+				   const ATOOLS::Cluster_Leg *k,
+				   const ATOOLS::Flavour &mo,CS_Parameters &cs) const;
   };// end of class CS_Cluster_Definitions
 
 }// end of namespace CSSHOWER
