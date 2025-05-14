@@ -86,8 +86,6 @@ set (INSTALL_PATHS
      FixedOrder/NLO_EW_ppWW/Sherpa.LO.yaml
      FixedOrder/NLO_EW_ppWW/Sherpa.RS.EW.yaml
      FixedOrder/NLO_QCD_pptt/Sherpa.BI.QCD.yaml
-     HPC/WJets/Sherpa.yaml
-     HPC/WJets_Async/Sherpa.yaml
      H_in_AssociatedProduction/LHC_Hll_MCatNLO/Sherpa.yaml
      H_in_AssociatedProduction/LHC_WHJets/Sherpa.yaml
      H_in_AssociatedProduction/LHC_ZHJets/Sherpa.yaml
