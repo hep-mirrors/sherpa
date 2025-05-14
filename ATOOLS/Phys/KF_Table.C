@@ -156,6 +156,47 @@ void ATOOLS::AddParticle(kf_code kfc, double mass, double radius, double width,
       pdata[s_kftable[kfc]->m_idname]["Priority"].SetDefault(s_kftable[kfc]->m_priority).Get<int>();
 }
 
+void ATOOLS::AddOrUpdateParticle(kf_code kfc, double mass, double radius,
+                                 double width, int icharge, int strong,
+                                 int spin, bool majorana, bool on, int stable,
+                                 bool massive, const std::string &idname,
+                                 const std::string &antiname,
+                                 const std::string &texname,
+                                 const std::string &antitexname, bool dummy,
+                                 bool group)
+{
+  if (s_kftable.find(kfc) == s_kftable.end()) {
+    s_kftable[kfc] = new Particle_Info(
+        kfc, mass, radius, width, icharge, strong, spin, majorana, on, stable,
+        massive, idname, antiname, texname, antitexname, dummy, group);
+  } else {
+    s_kftable[kfc]->m_radius = radius;
+    s_kftable[kfc]->m_spin = spin;
+    s_kftable[kfc]->m_majorana = majorana;
+    s_kftable[kfc]->m_dummy = dummy;
+    s_kftable[kfc]->m_isgroup = group;
+    s_kftable[kfc]->m_idname = idname;
+    s_kftable[kfc]->m_antiname = antiname;
+    s_kftable[kfc]->m_texname = texname;
+    s_kftable[kfc]->m_antitexname = antitexname;
+  }
+  auto pdata = Settings::GetMainSettings()["PARTICLE_DATA"];
+  s_kftable[kfc]->m_mass = s_kftable[kfc]->m_hmass =
+      pdata[s_kftable[kfc]->m_idname]["Mass"].GetScalarWithOtherDefault(mass);
+  s_kftable[kfc]->m_width =
+      pdata[s_kftable[kfc]->m_idname]["Width"].GetScalarWithOtherDefault(width);
+  s_kftable[kfc]->m_on =
+      pdata[s_kftable[kfc]->m_idname]["Active"].GetScalarWithOtherDefault(on);
+  s_kftable[kfc]->m_stable =
+      pdata[s_kftable[kfc]->m_idname]["Stable"].GetScalarWithOtherDefault(stable);
+  s_kftable[kfc]->m_massive =
+      pdata[s_kftable[kfc]->m_idname]["Massive"].GetScalarWithOtherDefault(massive);
+  s_kftable[kfc]->m_icharge =
+      pdata[s_kftable[kfc]->m_idname]["IntCharge"].GetScalarWithOtherDefault(icharge);
+  s_kftable[kfc]->m_strong =
+      pdata[s_kftable[kfc]->m_idname]["StrongCharge"].GetScalarWithOtherDefault(strong);
+}
+
 void ATOOLS::AddParticle(kf_code kfc, double mass, double radius, double width,
                          int icharge, int spin, bool majorana, bool on,
                          int stable, const std::string &idname,
