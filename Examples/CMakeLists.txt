@@ -143,7 +143,6 @@ set (INSTALL_PATHS
      Tops_plus_V/LHC_TTW/Sherpa.yaml
      Userhook/Sherpa.yaml
      Userhook/Userhook_Example.C
-     VBF_Interference/Loop2/Sherpa.yaml
      VV_plus_Jets/LHC_2l2nu2jJets_SameSign/Sherpa.yaml
      VV_plus_Jets/LHC_2l2nuJets/Sherpa.yaml
      VV_plus_Jets/LHC_2l2nuJets_GluonInitiated/Sherpa.tree.yaml
@@ -164,7 +163,6 @@ set (INSTALL_PATHS
      V_plus_Jets/LHC_WJets_UN2LOPS/Sherpa.yaml
      V_plus_Jets/LHC_ZJets/Sherpa.LO.yaml
      V_plus_Jets/LHC_ZJets/Sherpa.yaml
-     V_plus_Jets/LHC_ZJets_UN2LOPS/Sherpa.yaml
 )
 
 # Example files that should be first configured and then installed
