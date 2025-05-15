@@ -163,10 +163,7 @@ set (INSTALL_PATHS
 )
 
 # Example files that should be first configured and then installed
-set (CONFIGURE_AND_INSTALL_PATHS
-     V_plus_Bs/LHC_Wbb/CMakeLists.txt
-     V_plus_Jets/LHC_WJets/CMakeLists.txt
-)
+set (CONFIGURE_AND_INSTALL_PATHS V_plus_Jets/LHC_WJets/CMakeLists.txt)
 
 # Conditionally extend the above lists with files for examples that rely on the
 # Python interface.
