@@ -4,7 +4,6 @@ BEAM_ENERGIES: [27.5, 820]
 PDF_SET: [None, Default]
 
 # general setting
-EVENTS: 100000
 ERROR: 0.99
 FRAGMENTATION: Ahadic
 MI_HANDLER: None
