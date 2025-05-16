@@ -152,7 +152,6 @@ set (INSTALL_PATHS
      V_plus_Jets/LHC_WJets/My_JetCriterion.C
      V_plus_Jets/LHC_WJets/Sherpa.yaml
      V_plus_Jets/LHC_WJets/cmake/Modules/FindFastJet.cmake
-     V_plus_Jets/LHC_WJets_UN2LOPS/Sherpa.yaml
      V_plus_Jets/LHC_ZJets/Sherpa.LO.yaml
      V_plus_Jets/LHC_ZJets/Sherpa.yaml
 )
