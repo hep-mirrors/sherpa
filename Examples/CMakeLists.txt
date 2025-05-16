@@ -44,9 +44,6 @@ set (INSTALL_PATHS
      BFactory/Belle_QCDBackground/Sherpa.yaml
      BFactory/Belle_Signal/Sherpa.YFS.yaml
      BFactory/Belle_Signal/Sherpa.yaml
-     BSM/SM_ZPrime/Makefile
-     BSM/SM_ZPrime/Model.C
-     BSM/SM_ZPrime/Sherpa.yaml
      BSM/UFO_AQGC/AQGC/__init__.py
      BSM/UFO_AQGC/AQGC/coupling_orders.py
      BSM/UFO_AQGC/AQGC/couplings.py
