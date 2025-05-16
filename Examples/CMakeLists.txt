@@ -132,7 +132,6 @@ set (INSTALL_PATHS
      SingleTop_Channels/Sherpa.tj-t_channel.yaml
      Soft_QCD/LHC_7TeV_MinBias/Amisic.yaml
      Soft_QCD/LHC_7TeV_MinBias/Elastic.yaml
-     Soft_QCD/LHC_7TeV_MinBias/Shrimps.yaml
      Tops_plus_Jets/LHC_Tops/Sherpa.EWapprox.yaml
      Tops_plus_Jets/LHC_Tops/Sherpa.Reconnect.yaml
      Tops_plus_Jets/LHC_Tops/Sherpa.yaml
