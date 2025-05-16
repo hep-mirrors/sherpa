@@ -47,7 +47,7 @@ Dipole::Dipole(ATOOLS::Flavour_Vector const &fl, ATOOLS::Vec4D_Vector const &mom
   m_sp = (mom[0]+mom[1]).Abs2();
   m_Qi = fl[0].Charge();
   m_Qj = fl[1].Charge();
-  if(fl[0].IsBoson() || fl[1].IsBoson()) m_irfinite = true;// Case for on shell ww
+  // if((fl[0].IsBoson() || fl[1].IsBoson())) m_irfinite = true;// Case for on shell ww
   m_QiQj = m_Qi*m_Qj;
   if(IsEqual(fl[0],fl[1])) m_sameflav = 1;
   else m_sameflav = 0;
