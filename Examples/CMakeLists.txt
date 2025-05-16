@@ -86,7 +86,6 @@ set (INSTALL_PATHS
      H_in_AssociatedProduction/LHC_Hll_MCatNLO/Sherpa.yaml
      H_in_AssociatedProduction/LHC_WHJets/Sherpa.yaml
      H_in_AssociatedProduction/LHC_ZHJets/Sherpa.yaml
-     H_in_GluonFusion/LHC_HInterference/Sherpa.yaml
      H_in_GluonFusion/LHC_HJets/Sherpa.yaml
      H_in_GluonFusion/LHC_HJets_Finite_MTop/Sherpa.yaml
      H_in_TTBar/LHC_TTH_MCatNLO/Sherpa.yaml
