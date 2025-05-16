@@ -707,6 +707,12 @@ BeamMain BeamSpectra
 ToolsPhys ToolsMath ToolsYaml ToolsOrg
 )
 install(TARGETS SHERPAAll EXPORT SHERPATargets)
+get_target_property(TEMP_SHERPALIBS SHERPAAll INTERFACE_LINK_LIBRARIES)
+set(SHERPA_LIB_FLAGS "")
+foreach(lib IN LISTS TEMP_SHERPALIBS)
+  list(APPEND SHERPA_LIB_FLAGS "-l${lib}")
+endforeach()
+string(JOIN " " CONDITIONAL_SHERPALIBS ${SHERPA_LIB_FLAGS})
 
 set(Sherpa_SRCS_C Sherpa.C Filter.C)
 list(TRANSFORM Sherpa_SRCS_C PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/SHERPA/Main/")
