@@ -634,11 +634,13 @@ double CS_Shower::JetVeto(ATOOLS::Cluster_Amplitude *const ampl,
         if (i < ampl->NIn()) cs.m_mode = 1;
         if (k < ampl->NIn()) cs.m_mode |= 2;
         Splitting_Function_Base *cdip(p_cluster->GetSF(li,lj,lk,mo,cs));
+        if (cdip == nullptr) cdip = p_cluster->GetSF(lj,li,lk,mo,cs);
         if ((cdip==NULL || !cdip->On()) && m_qed) {
           if (li->Flav().IsPhoton()) mo = lj->Flav();
           else if (lj->Flav().IsPhoton()) mo = li->Flav();
           else mo = Flavour(kf_photon);
           cdip = p_cluster->GetSF(li,lj,lk,mo,cs);
+          if (cdip == nullptr) cdip = p_cluster->GetSF(lj,li,lk,mo,cs);
         }
 	if (cdip && cdip->Coupling()->AllowSpec(lk->Flav())) {
 	  double q2ijk(Qij2(li->Mom(),lj->Mom(),lk->Mom(),
