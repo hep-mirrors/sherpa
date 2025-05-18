@@ -64,6 +64,7 @@ namespace REMNANTS {
                           const bool& copy = true) = 0;
     virtual void MakeSpectator(ATOOLS::Particle* parton, Colour_Generator* colours) {}
     virtual ATOOLS::Vec4D IncomingMomentum();
+virtual void Output();
 
     virtual void Reset(const bool & resc=false,const bool & DIS=false);
     virtual void SetResidualEnergy(const double & E=-1.) {
@@ -78,10 +79,13 @@ namespace REMNANTS {
     inline Form_Factor              * GetFF() const      { return p_ff; }
     inline ATOOLS::Blob             * GetBlob()          { return p_beamblob; }
     inline const ATOOLS::Vec4D      & InMomentum() const { return p_beam->OutMomentum(m_tag); }
+    inline const double             & ResidualE() const  { return m_residualE; }
+    inline const ATOOLS::Flavour    & InFlav() const     { return m_beamflav; }
     inline ATOOLS::Part_List        * GetExtracted()     { return &m_extracted; }
     inline ATOOLS::Part_List        * GetSpectators()    { return &m_spectators; }
     inline virtual ATOOLS::Particle * GetRecoiler()      { return nullptr; }
     inline virtual ATOOLS::Particle * GetSpectator()     { return nullptr; }
+    inline void SetType(const rtp::code & type)          { m_type = type; }
     inline void SetBeam(BEAM::Beam_Base * beam)          { p_beam = beam; }
     inline void SetScale2(const double & scale2)         { m_scale2 = scale2; }
     inline void SetPosition(const ATOOLS::Vec4D & pos)   { m_position = pos; }
