@@ -1,0 +1,75 @@
+# collider setup
+BEAMS: 2212
+BEAM_ENERGIES: 6500
+
+# general setting
+EVENTS: 5
+ERROR: 0.99
+FRAGMENTATION: Ahadic
+
+# scales, tags for scale variations
+MEPS:
+  CORE_SCALE: VAR{Abs2(p[2]+p[3])}
+
+# me generator settings
+ME_GENERATORS: Comix
+EVENT_GENERATION_MODE: Weighted
+SHOWER_GENERATOR: CSS
+
+PROCESSES:
+- 93 93 -> 13 -13:
+    Order: {QCD: 0, EW: 2}
+    Integration_Error: 0.05
+
+SELECTORS:
+- [Mass, 13, -13, 66, 116.]
+
+
+## ALPACA ##
+# General input
+Timekeeper: 1                 #Time evolution method (see 2306.12131). 0: Original, no timekeeper. 1: a_hat=(1,0,0,0) in the lab frame. (In progress: 2: a_hat=(1,0,0,0) in the global COM frame)
+lambda: 1.                    #If timekeeper = 0, lambda is needed
+
+# General setup of system
+Tau_Max: 5.                   #Sets time interval for the run, remember to check that tsample_Min and tsample_Max (below) are updated accordingly if this is changed
+tsample_Min: 0.               #Decide which time interval to being sampling scatter/merge/split rates for
+tsample_Max: 5.               #Decide which time interval to end sampling scatter/merge/split rates for
+Tau_Max_Scaling_Limit: 1.     #Sets how many maximum times of tau_max that simulation cuts off after, even if particles with t<tsample_max remain in the system
+Tau_Restart: 100.             #<0 to reset list after every process that occurs. Speed up runs by checking for scatter/merge in increments, to keep list elements down.
+Alpha_S: 0.2652               #Set the running coupling to a fixed value
+p_Min: 0.1                    #Minimum p for any particle in the system (initialized and after scatter/merge/split)
+Only_Gluons: False            #Decicides if the system should be initialized with only gluons
+Include_Bose_Factors: True    #Decides if the Bose terms (1+-f) are included in the probabilities for 2->2, 2->1 and 1->2
+
+# Elastic scatterings
+Elastic_Scattering: True      #Decides if the run is done with elastic scatterings
+Fixed_Sigma: False            #Decides if the run is done with a fixed cross section or not for the elastic scattering processes
+Fixed_Sigma_Value: 1.         #If run with a fixed cross section, set this value for it
+Xsec_Form: BlackDisc          #Type of method for the elastic scattering cross section, BlackDisc or Gaussian (Use BlackDisc for now)
+OE_Mult_Scatter: 1.           #Mulitplier for the total overestimate of the scattering cross section
+
+# Splitting/merging
+Splitting_Merging: True       #Decides if the run is done with splitting and merging)of partons.
+Gaussian_kT2: False           #Decides if k_T^2 will be sampled from a Gaussian (True) or from 1/k_T^2 (False)
+kT2_Reg: 0.0001               #Regulating factor if not Gaussian (1/(kT2 + kT2_reg)) or width of Gaussian if Gaussian distribution
+Fixed_Gamma: False            #If run with splitting of partons, this decides if a fixed splitting rate (gamma from the splitting collision kernel) should be used
+Fixed_Gamma_Value: 0.002      #If a fixed splitting rate (gamma) is used, uses this value
+Formation_Time: 1.            #If formation time is enabled to be enforced for split/merge processes
+OE_Mult_Merge: 1.             #Mulitplier for the total overestimate of the merging cross section
+OE_Mult_Split: 1.             #Mulitplier for the total overestimate of the splitting cross section
+
+# Mixed parameters
+N_Include: 5                  #Number of particles to include when calculating m^2 and T^*, if <=0 use whole box instead of sphere
+m2_Min_Scale: 0.5             #Scaling factor for m_g/q^2 minimum cutoff, which is m2_Min_Scale*Lambda_QCD^2
+f_r: -1                       #Spatial radius when sampling f(p), if <0 use whole box instead of sphere
+f_Delta_p: 0.5                #Delta p for the spherical shell when sampling f(p)
+f_Shell: False                #Sample f from shell (otherwise sphere centered at p) in momentum space
+f_N_Max: 3                    #Max number of times to increase spatial volume to look for particles to include when calculating f
+
+# Output
+Show_Event_Information: True  #Output detailed information about each event, pre and post scatterings
+Show_Progress_Bar: True       #Output progress bar for each event
+
+# Temporary variables used when needed for testing
+Test_Double: 7.
+Test_Bool: False

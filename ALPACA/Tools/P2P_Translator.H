@@ -15,8 +15,8 @@ namespace ALPACA {
     // destructor
     ~P2P_Translator() {}
 
-    Parton * operator()(ATOOLS::Particle * particle);
-    ATOOLS::Particle * operator()(Parton * parton);
+    std::shared_ptr<Parton> operator()(ATOOLS::Particle * particle);
+    ATOOLS::Particle * operator()(std::shared_ptr<Parton> parton);
   };
 }
 

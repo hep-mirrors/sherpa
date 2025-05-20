@@ -24,8 +24,12 @@ Return_Value::code Rescattering_Handler::operator()(Blob_List * blobs) {
     msg_Out()<<METHOD<<" to check "<<blobs->size()<<" blobs.\n";
     if ((*p_alpaca)(blobs)) {
       rval = Return_Value::Success;
-      msg_Out()<<"YES!\n"
-	       <<(*blobs->back())<<"\n";
+      //msg_Out()<<"YES!\n"
+	    //   <<(*blobs->back())<<"\n";
+      msg_Out() << "YES!\n" <<"\n";
+    } else{
+      msg_Out() << METHOD << ": ERROR: !(*p_alpaca)(blobs), will exit" << endl;
+      //exit(1.);
     }
   }
   return rval;

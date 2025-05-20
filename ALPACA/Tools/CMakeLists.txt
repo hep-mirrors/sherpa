@@ -1,8 +1,14 @@
 set(Tools_SOURCES P2P_Translator.C
-                  Parton.C)
+                  Parton.C
+                  HeavyIon_Parameters.C
+                  Scatter_Merge_Variables.C
+                  Split_Variables.C)
 
 set(Tools_HEADERS P2P_Translator.H
-                  Parton.H)
+                  Parton.H
+                  HeavyIon_Parameters.H
+                  Scatter_Merge_Variables.H
+                  Split_Variables.H)
 
 sherpa_create_git_info(Tools)
  
