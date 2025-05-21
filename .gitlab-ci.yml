@@ -8,6 +8,7 @@ stages:
   - test
   - deploy
 
+
 variables:
   DOCKER_DRIVER: overlay2
   DOXYGEN_CMAKE_FLAGS: -DSHERPA_ENABLE_DOXYGEN=ON -DDOXYGEN_WARN_AS_ERROR=YES
