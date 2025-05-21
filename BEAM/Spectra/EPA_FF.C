@@ -124,7 +124,8 @@ void EPA_FF_Base::OutputToCSV(const std::string& type)
 
   std::ofstream outfile_FFq2(prefix + "FF_q2.csv");
   outfile_FFq2 << "q2,FF" << std::endl;
-  for (auto& q2 : q2s) { outfile_FFq2 << q2 << "," << FF(q2) << std::endl; }
+  for (auto& q2 : q2s)
+    outfile_FFq2 << q2 << "," << FF(q2) << std::endl;
   outfile_FFq2.close();
 }
 
