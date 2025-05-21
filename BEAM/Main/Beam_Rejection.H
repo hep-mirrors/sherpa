@@ -37,8 +37,9 @@ namespace BEAM {
 
   public:
     Proton_Proton_Rejection(const ATOOLS::Flavour& flav1,
-                            const ATOOLS::Flavour& flav2)
-        : Beam_Rejection_Base(flav1, flav2)
+                            const ATOOLS::Flavour& flav2,
+                            double sNN)
+        : Beam_Rejection_Base(flav1, flav2), m_sNN(sNN)
     {}
     double operator()(double b) final
     {
