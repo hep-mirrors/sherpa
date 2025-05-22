@@ -560,6 +560,9 @@ bool Initialization_Handler::InitializeTheFramework(int nr)
     else {
       THROW(not_implemented,"Unknown event type '"+eventtype+"'");
     }
+    msg_Out()<<METHOD<<": mode = "<<m_mode<<", type = "<<eventtype<<": "
+      //<<"ME = "<<s["ME_GENERATORS"].Get<string>()<<", "
+	     <<"MI = "<<s["SOFT_COLLISIONS"].Get<string>()<<"\n";
   }
   okay = okay && InitializeTheBeams();
   okay = okay && InitializeThePDFs();
@@ -720,7 +723,8 @@ bool Initialization_Handler::InitializeTheYFS(){
   if(p_yfshandler->Mode()!=YFS::yfsmode::off) {
     msg_Info()<<"Initialized YFS for Soft Photon Resummation"<<std::endl;
     for (const auto &pdf: m_pdflibs) {
-      if(pdf!="None") THROW(fatal_error,"Cannot use PDFs with initial state YFS. Disable the PDF (PDF_LIBRARY: None) or YFS (YFS: MODE: OFF)");
+      if(pdf!="None")
+	THROW(fatal_error, "Cannot use PDFs with initial state YFS. Disable the PDF (PDF_LIBRARY: None) or YFS (YFS: MODE: OFF)");
     }
     for (size_t beam=0;beam<2;++beam) {
       p_yfshandler->SetInFlav(m_bunch_particles[beam]);
@@ -743,11 +747,13 @@ bool Initialization_Handler::InitializeThePDFs()
   for (const auto& it : m_isrhandlers) {
     size_t pid      = it.first;
     PDF::isr::id pc = it.second->Id();
-    if (pid == 1) {
-      msg_Info() << "  Hard scattering:    ";
+    if (pid==1) {
+      msg_Info()<<"  Hard scattering:    ";
+
     }
-    if (pid == 2) {
-      msg_Info() << "  MPI:                ";
+    if (pid==2) {
+      msg_Info()<<"  MPI:                ";
+
     }
     if (pid == 3) {
       msg_Info() << "  Beam re-scattering: ";
@@ -767,6 +773,9 @@ void Initialization_Handler::LoadPDFLibraries(Settings& settings) {
   m_defsets[PDF::isr::hard_process]    = std::array<std::string, 2>();
   m_defsets[PDF::isr::hard_subprocess] = std::array<std::string, 2>();
   m_defsets[PDF::isr::bunch_rescatter] = std::array<std::string, 2>();
+  msg_Out()<<METHOD<<": "
+	   <<"bunch(0) = "<<p_beamspectra->GetBeam(0)->Bunch(0)<<" & "
+	   <<"bunch(1) = "<<p_beamspectra->GetBeam(1)->Bunch(0)<<".\n";
   for (size_t beam=0;beam<2;++beam) {
     /////////////////////////////////////////////////////////
     // define bunch particle-dependent PDF libraries and sets here
@@ -827,11 +836,17 @@ void Initialization_Handler::LoadPDFLibraries(Settings& settings) {
     }
     m_defsets[PDF::isr::bunch_rescatter][beam] = defset;
   }
+  msg_Out()<<"   * (mode = "<<m_mode<<"), default sets: "
+	   <<"beam 0 = "<<m_defsets[PDF::isr::hard_process][0]<<" + "
+	   <<m_defsets[PDF::isr::hard_subprocess][0]<<", "
+	   <<"beam 1 = "<<m_defsets[PDF::isr::hard_process][1]<<" + "
+	   <<m_defsets[PDF::isr::hard_subprocess][1]<<"\n";
   // add LHAPDF if necessary and load the relevant libraries
   if (Variations::NeedsLHAPDF6Interface()) {
     m_pdflibs.insert("LHAPDFSherpa");
   }
-  for (set<string>::iterator pdflib=m_pdflibs.begin(); pdflib!=m_pdflibs.end();++pdflib) {
+  for (set<string>::iterator pdflib=m_pdflibs.begin();
+       pdflib!=m_pdflibs.end();++pdflib) {
     if (*pdflib=="None") continue;
     if (*pdflib=="LHAPDFSherpa") {
       #ifdef USING__LHAPDF
@@ -855,9 +870,11 @@ void Initialization_Handler::LoadPDFLibraries(Settings& settings) {
   }
 }
 
-void Initialization_Handler::InitISRHandler(const PDF::isr::id & pid,Settings& settings) {
+void Initialization_Handler::
+InitISRHandler(const PDF::isr::id & pid,Settings& settings) {
   if (m_isrhandlers.find(pid)!=m_isrhandlers.end()) delete m_isrhandlers[pid];
-  bool needs_resc  = settings["BEAM_RESCATTERING"].Get<string>()!=string("None");
+  bool needs_resc = ( settings["BEAM_RESCATTERING"].Get<string>()!=
+		      string("None") );
   /////////////////////////////////////////////////////////////
   // make sure rescatter ISR bases are only initialised if necessary
   /////////////////////////////////////////////////////////////
@@ -911,13 +928,15 @@ void Initialization_Handler::InitISRHandler(const PDF::isr::id & pid,Settings& s
       // 3    | bunch - bunch (disabled, because that would be normal MPI)
       int bbrmode = settings["BBR_MODE"].Get<int>();
       if (bbrmode < 0 || bbrmode > 2)
-        THROW(fatal_error, "BBR_Mode: Invalid mode, use MPI settings instead. ")
-      flav                   = bbrmode & (beam + 1) ? m_bunch_particles[beam]
-                                                    : p_beamspectra->GetBeam(beam)->Beam();
+        THROW(fatal_error,"BBR_Mode: Invalid mode, use MPI settings instead.")
+	  flav = ( bbrmode & (beam + 1) ?
+		   m_bunch_particles[beam] :
+		   p_beamspectra->GetBeam(beam)->Beam() );
       m_bunchtags[pid][beam] = bbrmode & (beam + 1) ? 0 : 1;
     }
-    PDF_Arguments args = PDF_Arguments(flav, beam, set, version, order, scheme);
+    PDF_Arguments args = PDF_Arguments(flav,beam,set,version,order,scheme);
     if (pid != PDF::isr::bunch_rescatter) {
+      msg_Out()<<METHOD<<"("<<pid<<"): before getter for set = "<<set<<".\n";
       PDF_Base* pdfbase = PDF_Base::PDF_Getter_Function::GetObject(set, args);
       if (m_bunch_particles[beam].IsHadron() && pdfbase == nullptr)
         THROW(critical_error,
@@ -925,6 +944,11 @@ void Initialization_Handler::InitISRHandler(const PDF::isr::id & pid,Settings& s
                       " libraries for " + ToString(m_bunch_particles[beam]) +
                       " bunch.");
       if (pid == PDF::isr::hard_process) rpa->gen.SetPDF(beam, pdfbase);
+      msg_Out()<<METHOD<<"[beam = "<<beam<<", "<<pid<<"]: "
+	       <<m_bunch_particles[beam]<<" --> "<<pdfbase<<"\n"
+	       <<"   from flav = "<<flav<<", set = "<<set<<", "
+	       <<"version = "<<version<<", "
+	       <<"order = "<<order<<", scheme = "<<scheme<<"\n";
       if (pdfbase == nullptr) {
         isrbases[beam] = new Intact(flav);
         needs_resc     = false;
@@ -946,6 +970,9 @@ void Initialization_Handler::InitISRHandler(const PDF::isr::id & pid,Settings& s
   }
   if ((pid == PDF::isr::bunch_rescatter && needs_resc) ||
       pid != isr::bunch_rescatter) {
+    msg_Out()<<METHOD<<"["<<pid<<"]: "
+	     <<m_bunch_particles[0]<<" ("<<isrbases[0]<<") & "
+	     <<m_bunch_particles[1]<<" ("<<isrbases[1]<<").\n";
     ISR_Handler* isr = new ISR_Handler(isrbases, pid);
     for (size_t beam = 0; beam < 2; beam++)
       isr->SetBeam(p_beamspectra->GetBeam(beam), beam);
@@ -969,10 +996,12 @@ void Initialization_Handler::DefineBunchFlavours(Settings& settings) {
 
 bool Initialization_Handler::InitializeTheRemnants() {
   ///////////////////////////////////////////////////////////
-  // define two sets of remnants, if necessary (i.e. if we have bunch rescattering).
-  // we will have to make sure that the remnants for hard process and hard subprocess -
-  // the MPI related to the hard process - are the same.
-  // I have the feeling we will have to communicate the mode to the Remnant_Handler in question
+  // define two sets of remnants, if necessary (i.e. if we have bunch
+  // rescattering).  We will have to make sure that the remnants for hard
+  // process and hard subprocess - the MPI related to the hard process - are
+  // the same.
+  // I have the feeling we will have to communicate the mode to the
+  // Remnant_Handler in question
   ///////////////////////////////////////////////////////////
   REMNANTS::Remnants_Parameters();
   m_remnanthandlers[isr::hard_process] =
@@ -1080,6 +1109,7 @@ bool Initialization_Handler::InitializeTheUnderlyingEvents()
     isrtypes.push_back(isr::bunch_rescatter);
   for (isr::id id : isrtypes) {
     as->SetActiveAs(isr::hard_subprocess);
+    msg_Out()<<METHOD<<"["<<id<<"]:\n";
     MI_Handler * mih = new MI_Handler(p_model,m_isrhandlers[id], p_yfshandler, m_remnanthandlers[id]);
     mih->SetShowerHandler(m_showerhandlers[id]);
     as->SetActiveAs(isr::hard_process);// really needed?
@@ -1089,7 +1119,12 @@ bool Initialization_Handler::InitializeTheUnderlyingEvents()
   for (isr::id id : isrtypes) {
     MI_Handler * mih = m_mihandlers[id];
     msg_Info() << "    MI[" << id << "]: on = " << mih->On() << " "
-               << "(type = " << mih->Type() << ", " << mih->Name() << ")\n";
+               << "(type = " ;
+    if (mih->Generator()==MI_Handler::genID::none)         msg_Out()<<"None, ";
+    else if ( mih->Generator()==MI_Handler::genID::amisic)  msg_Out()<<"Amisic, ";
+    else if (mih->Generator()==MI_Handler::genID::shrimps) msg_Out()<<"Shrimps, ";
+    else                                       msg_Out()<<"Unkown, ";
+    msg_Info() <<  mih->Name() << ")\n";
   }
   return true;
 }

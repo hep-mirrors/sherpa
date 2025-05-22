@@ -133,6 +133,8 @@ namespace PDF {
     inline double YMax() const                  { return m_ylimits[1];  }
     inline double Upper1() const                { return p_isrbase[0]->XMax(); }
     inline double Upper2() const                { return p_isrbase[1]->XMax(); }
+    inline double XMax(const size_t beam) const { return p_isrbase[beam]->XMax(); }
+    inline double XMin(const size_t beam) const { return p_isrbase[beam]->XMin(); }
     inline double X1() const                    { return m_x[0]; }
     inline double X2() const                    { return m_x[1]; }
     inline double MuF2(int beam) const          { return m_mu2[beam]; }
