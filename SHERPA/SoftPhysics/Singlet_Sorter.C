@@ -8,8 +8,12 @@ using namespace SHERPA;
 using namespace ATOOLS;
 using namespace std;
 
-Singlet_Sorter::Singlet_Sorter() {}
+Singlet_Sorter::Singlet_Sorter() : m_calls(0), m_fails(0) {}
 Singlet_Sorter::~Singlet_Sorter() {
+  if (m_fails>0) {
+    msg_Out()<<METHOD<<" with "<<m_fails<<" fails in "<<m_calls<<" calls "
+	     <<"= "<<((100.*m_fails)/double(m_calls))<<"%.\n";
+  }
   ResetPartLists();
 }
 
@@ -34,18 +38,24 @@ Return_Value::code Singlet_Sorter::operator()(Blob_List * bloblist) {
   //    into a separate blob, in DealWithHadrons.
   //    TODO: I have to check for partonic hadron decays if I get the connections right.
   // 3. The plists will be decomposed into singlets and filled into one blob
+  m_calls++;
   ResetPartLists();
-  if (!HarvestParticles(bloblist)) return Return_Value::New_Event;
+  if (!HarvestParticles(bloblist)) { m_fails++; return Return_Value::New_Event; }
   if (m_partlists.size()==0 || (*m_partlists.begin())->empty()) return Return_Value::Nothing;
   while (!m_partlists.empty()) {
     p_partlist = m_partlists.front();
     if (!p_partlist->empty()) {
+      //msg_Out()<<(*p_partlist)<<"\n";
       Blob * blob = NULL;
       if (DecomposeIntoSinglets()) blob = MakeBlob();
       if (blob) bloblist->push_back(blob);
       else {
-	msg_Error()<<"Error in "<<METHOD<<" failed to decompose particle list into singlet.\n"
-		   <<"   Reset list, return Error and hope for the best.\n";
+	if (m_fails<5) {
+	  msg_Error()<<"Error in "<<METHOD<<" failed to decompose particle list into singlet.\n"
+		     <<(*p_partlist)
+		     <<"   Reset list, return Error and hope for the best.\n";
+	}
+	m_fails++;
 	ResetPartLists();
 	return Return_Value::New_Event; //Error;
       }
@@ -88,9 +98,12 @@ bool Singlet_Sorter::FillParticleLists(Blob * blob) {
 	part->Info()!='G' && part->Info()!='I') {
       if (part->GetFlow(1)!=0 || part->GetFlow(2)!=0) {
 	if (part->GetFlow(1)==part->GetFlow(2)) {
-	  msg_Error()<<"Error in "<<METHOD<<": blob with funny colour assignements:\n"
-		     <<"   "<<(*part)<<"\n"
-		     <<"   Will demand new event and hope for the best.\n";
+	  if (m_fails<5) {
+	    msg_Error()<<"Error in "<<METHOD<<": blob with funny colour assignements:\n"
+		       <<"   "<<(*part)<<"\n"
+		       <<"   Will demand new event and hope for the best.\n";
+	  }
+	  m_fails++;
 	  return false;
 	}
 	p_partlist->push_back(part);
@@ -126,9 +139,12 @@ bool Singlet_Sorter::DecomposeIntoSinglets() {
   while (!p_partlist->empty()) {
     if (!NextSinglet(sorted,true) &&
 	!NextSinglet(sorted,false)) {
-      msg_Error()<<"Error in "<<METHOD<<" particles left in list.\n";
-      for (Part_List::iterator pit=p_partlist->begin();pit!=p_partlist->end();pit++)
-	msg_Error()<<"  "<<(**pit)<<"\n";
+      if (m_fails<5) {
+	msg_Error()<<"Error in "<<METHOD<<" particles left in list.\n";
+	for (Part_List::iterator pit=p_partlist->begin();pit!=p_partlist->end();pit++)
+	  msg_Error()<<"  "<<(**pit)<<"\n";
+      }
+      m_fails++;
       return false;
     }
   }
@@ -199,7 +215,9 @@ Blob * Singlet_Sorter::MakeBlob() {
       parts.push_back(blob->InParticle(i));
       masses.push_back(parts.back()->Flav().HadMass());
     }
-    if (!m_stretcher.StretchMomenta(parts,masses)) { delete blob; blob = NULL; }
+    if (!m_stretcher.StretchMomenta(parts,masses)) {
+      delete blob; blob = NULL;
+    }
   }
   return blob;
 }
