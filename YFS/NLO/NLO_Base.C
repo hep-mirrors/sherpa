@@ -378,9 +378,9 @@ double NLO_Base::CalculateReal(Vec4D k, int fsrcount) {
 	if(rcount>1000){
 		double diff = fabs(1.-m_ravg/avg)*100;
 		if(diff>10){
-			msg_Out()<<"Large jump in Real weight for "<<k<<std::endl;
+			// msg_Out()<<"Large jump in Real weight for "<<k<<std::endl;
 			m_ravg = avg;
-			return 0;
+			// return 0;
 		}
 	}
 	if(fsrcount>=3) return tot*subb;
@@ -534,9 +534,12 @@ double NLO_Base::CalculateRealReal() {
 			int isFSR_i = (i >= nISR) ? 1 : 0;
 			int isFSR_j = (j >= nISR) ? 1 : 0;
 			if(m_check_rr_sub){
-				if(k.E() < 0.2*sqrt(m_s) || kk.E() < 0.2*sqrt(m_s)) continue;
-				if(k.E() < kk.E()) continue;
-				// if(k.E() < 0.2*sqrt(m_s)) continue;
+				if(k.E() < 0.4*sqrt(m_s)) continue;
+				if(kk.E() < 0.2*sqrt(m_s)) continue;
+				// if(k.PPerp() < 5) continue;
+				// if(k.E()!=kk.E()) continue;
+				// if(kk.E() < 0.2*sqrt(m_s)) continue;
+				// if(kk.E() < ) continue;
 				// if(k.PPerp() < 1. || kk.PPerp() < 1.) continue;
 				CheckRealRealSub(k, kk, isFSR_i, isFSR_j);
 			}
@@ -644,8 +647,8 @@ double NLO_Base::CalculateRealReal(Vec4D k1, Vec4D k2, int fsr1, int fsr2){
 	double subloc1 = p_nlodipoles->CalculateRealSub(k1);
 	double subloc2 = p_nlodipoles->CalculateRealSub(k2);
 	double flux;
-	if(m_flux_mode==1) flux = p_nlodipoles->CalculateFlux(k1)*p_nlodipoles->CalculateFlux(k2);
-	// if(m_flux_mode==1) flux = p_nlodipoles->CalculateFlux(k1,k2);
+	// if(m_flux_mode==1) flux = p_nlodipoles->CalculateFlux(k1)*p_nlodipoles->CalculateFlux(k2);
+	if(m_flux_mode==1) flux = p_nlodipoles->CalculateFlux(k1,k2);
 	else flux = p_dipoles->CalculateFlux(k1)*p_dipoles->CalculateFlux(k2);
 	double tot,rcoll;
 	if(!CheckMomentumConservation(p)) {
@@ -662,8 +665,8 @@ double NLO_Base::CalculateRealReal(Vec4D k1, Vec4D k2, int fsr1, int fsr2){
 	m_recola_evts+=1;
 	double real1 = CalculateReal(kk1,3+fsr1);
 	double real2 = CalculateReal(kk2,3+fsr2);
-	double sub1 = (fsr1!=1?p_dipoles->CalculateRealSubEEX(kk1):p_dipoles->CalculateRealSubEEX(k1));
-	double sub2 = (fsr2!=1?p_dipoles->CalculateRealSubEEX(kk2):p_dipoles->CalculateRealSubEEX(k2));
+	double sub1 = (fsr1!=1?p_dipoles->CalculateRealSubEEX(kk1):p_dipoles->CalculateRealSubEEX(kk1));
+	double sub2 = (fsr2!=1?p_dipoles->CalculateRealSubEEX(kk2):p_dipoles->CalculateRealSubEEX(kk2));
 	double fullsub = (-subloc2*real1 -subloc1*real2-subloc1*subloc2*m_born);
 	tot = (r*flux + fullsub)/sub1/sub2;
   if(IsBad(tot)){
@@ -706,7 +709,7 @@ void NLO_Base::MapMomenta(Vec4D_Vector &p, Vec4D &k) {
 		boostQ.Boost(p[i]);
 		// RandomRotate(p[i]);
 	}
-	// pRot.Rotate(k);
+	pRot.Rotate(k);
 	boostQ.Boost(k);
 	// RandomRotate(k);
 	double qx(0), qy(0), qz(0);
@@ -856,7 +859,7 @@ void NLO_Base::MapInitial(Vec4D_Vector &p){
 	for (int i = 0; i < 2; ++i)
 	{
 		if(i==0) pRot = Poincare(p[i], Vec4D(0., 0., 0., 1.));
-		// pRot.Rotate(p[i]);
+		pRot.Rotate(p[i]);
 		boostLab.BoostBack(p[i]);
 		// pRot2.Rotate(p[i]);
 	}
@@ -1004,7 +1007,7 @@ void NLO_Base::CheckRealSub(Vec4D k){
 		{
 			k=k/i;
 			real=CalculateReal(k);
-			if(k.E() <= 1e-10 || real==0) break;
+			if(k.E() <= 1e-16 || real==0) break;
 			out_sub<<k.E()<<","<<fabs(real)/m_born<<std::endl;
 			out_real<<k.E()<<","<<fabs(m_real)<<std::endl;
 			// m_histograms2d["Real_me_sub"]->Insert(k.E(),fabs(real), 1);
@@ -1067,9 +1070,9 @@ void NLO_Base::CheckRealRealSub(Vec4D k1, Vec4D k2, int fsr1, int fsr2){
 		for (double i = 1; i < 20 ; i+=0.1)
 		{
 			k1=k1/i;
-			if(k1.E()< m_isrcut*sqrt(m_s)) break;
+			// if(k1.E()< m_isrcut*sqrt(m_s)) break;
+			if(k1.E() <= 1e-16) break;
 			real=CalculateRealReal(k1,k2,fsr1, fsr2);
-			if(real==0) continue;
 			out_sub<<k1.E()<<","<<fabs(real)<<std::endl;
 			// m_histograms2d["Real_me_sub"]->Insert(k.E(),fabs(real), 1);
 		}
@@ -1080,9 +1083,9 @@ void NLO_Base::CheckRealRealSub(Vec4D k1, Vec4D k2, int fsr1, int fsr2){
 		for (double i = 1; i < 20 ; i+=0.1)
 		{
 			k2=k2/i;
-			if(k2.E()< m_isrcut*sqrt(m_s)) break;
+			// if(k2.E()< m_isrcut*sqrt(m_s)) break;
+			if(k2.E() <= 1e-16 ) break;
 			real=CalculateRealReal(k1,k2, fsr1, fsr2);
-			if(real==0) continue;
 			out_sub<<k2.E()<<","<<fabs(real)<<std::endl;
 			// if(IsZero(real)) break;
 			// m_histograms2d["Real_me_sub"]->Insert(k.E(),fabs(real), 1);
@@ -1095,10 +1098,8 @@ void NLO_Base::CheckRealRealSub(Vec4D k1, Vec4D k2, int fsr1, int fsr2){
 		{
 			k2=k2/i;
 			k1=k1/i;
-			if(k1.E()< m_isrcut*sqrt(m_s)) break;
-			// if(k2.E()< m_isrcut*sqrt(m_s)) break;
+			if(k1.E() <= 1e-16 || real==0) break;
 			real=CalculateRealReal(k1,k2,fsr1,fsr2);
-			if(real==0) continue;
 			out_sub<<k1.E()<<","<<fabs(real)<<std::endl;
 			// if(IsZero(real)) break;
 			// m_histograms2d["Real_me_sub"]->Insert(k.E(),fabs(real), 1);
