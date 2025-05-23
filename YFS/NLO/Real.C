@@ -23,13 +23,13 @@ Real::Real(const PHASIC::Process_Info& pi)  {
    p_real_me = NULL;
    p_realproc = NULL;
    Scoped_Settings s{ Settings::GetMainSettings()["YFS"] };
-   std::string gen = s["Real_Generator"].SetDefault("").Get<std::string>();
+   std::string gen = s["Real_Generator"].SetDefault("Comix").Get<std::string>();
    m_check = s["Compare_Real"].SetDefault(0).Get<bool>();
    m_writemom = s["Write_Real_Momenta"].SetDefault(0).Get<bool>();
    m_nmom = s["N_Real_Momenta"].SetDefault(100).Get<int>();
    for(auto f: pi.ExtractFlavours()) m_flavs.push_back(f);
    if(m_check && gen=="") THROW(fatal_error, "Need two generators to compare.");
-   if(gen!=""){
+   if(gen!="Comix"){
      PHASIC::External_ME_Args args(pi.m_ii.GetExternal(),
                                    pi.m_fi.GetExternal(),
                                    pi.m_maxcpl,
@@ -45,35 +45,42 @@ Real::Real(const PHASIC::Process_Info& pi)  {
      double bornsym = ATOOLS::Flavour::ISSymmetryFactor(args.m_inflavs);
      bornsym*= ATOOLS::Flavour::FSSymmetryFactor(born_flavs);
      m_factor = 1./m_sym;
+    }
     if(m_check_real){
-      if(FileExists("recola-real.txt")) Remove("recola-real.txt");
-      if(FileExists("ps-points.yaml")) Remove("ps-points.yaml");
-      real_out.open("recola-real.txt", std::ios_base::app); // append instead of overwrite
-      // out_ps.open("ps-points.yaml",std::ios_base::app);
-      // out_ps<<"MOMENTA:"<<std::endl;
-    }
-  }
-  if(m_writemom){
-    m_fill=0;
-    std::string filename="Momenta";
-    std::string MEfilename="ME";
-    MEfilename+="_";
-    MEfilename+=gen;
-    for(auto f: m_flavs) {
+      std::string filename=gen;
+      for(auto f: m_flavs) {
+          filename+="_";
+          filename+=f.IDName();
+      }
       filename+="_";
-      MEfilename+="_";
-      filename+=f.IDName();
-      MEfilename+=f.IDName();
-    }
-    filename+=".yaml";
-    MEfilename+=".yaml";
-    if(FileExists(filename)) Remove(filename);
-    if(FileExists(MEfilename)) Remove(MEfilename);
-    out_mom.open(filename, std::ios_base::app);
-    real_out.open(MEfilename, std::ios_base::app);
-    out_mom<<"MOMENTA:"<<std::endl;
-    real_out<<"ME:"<<std::endl;
+      if(FileExists(filename+"real.txt")) Remove(filename+"-real.txt");
+      if(FileExists(filename+"ps-points.yaml")) Remove(filename+"-ps-points.yaml");
+      if(FileExists(filename+"real.yaml")) Remove(filename+"real.yaml");
+      real_out.open(filename+"real.yaml", std::ios_base::app); // append instead of overwrite
+      out_ps.open(filename+"ps-points.yaml",std::ios_base::app);
+      out_ps<<"MOMENTA:"<<std::endl;
   }
+  // if(m_writemom){
+  //   m_fill=0;
+  //   std::string filename="Momenta";
+  //   std::string MEfilename="ME";
+  //   MEfilename+="_";
+  //   MEfilename+=gen;
+  //   for(auto f: m_flavs) {
+  //     filename+="_";
+  //     MEfilename+="_";
+  //     filename+=f.IDName();
+  //     MEfilename+=f.IDName();
+  //   }
+  //   filename+=".yaml";
+  //   MEfilename+=".yaml";
+  //   if(FileExists(filename)) Remove(filename);
+  //   if(FileExists(MEfilename)) Remove(MEfilename);
+  //   out_mom.open(filename, std::ios_base::app);
+  //   real_out.open(MEfilename, std::ios_base::app);
+  //   out_mom<<"MOMENTA:"<<std::endl;
+  //   real_out<<"ME:"<<std::endl;
+  // }
   if(m_check){
     if (!ATOOLS::DirectoryExists("./Real_Histogram")) ATOOLS::MakeDir("./Real_Histogram");
     m_histograms1d["RealME_Dev"] = new Histogram(0,-1e-6, 1e-6, 100 );
@@ -119,22 +126,23 @@ double Real::Calc_R(const ATOOLS::Vec4D_Vector& p)
       return 0;
     }
     if(m_writemom && m_fill < m_nmom){
-      out_mom<<std::setprecision(20)<<"  - ["<<std::endl;
-      real_out<<std::setprecision(20)<<"  "<<m_fill<<":"<<std::endl;
-      real_out<<std::setprecision(20)<<"    value: "<< (p_real_me ? external_real : iR.Nominal())<<std::endl;
+      PRINT_VAR(m_nmom);
+      out_ps<<std::setprecision(20)<<"  - ["<<std::endl;
+      real_out<<std::setprecision(20)<<""<<m_fill<<":"<<std::endl;
+      real_out<<std::setprecision(20)<<"  value: "<< (p_real_me ? external_real : iR.Nominal())<<std::endl;
       int j=0;
       for(auto k: p){
-        out_mom<<"      [";
-        if(m_flavs[j].IsAnti()) out_mom<<"-"<<m_flavs[j].Kfcode()<<", ";
-        else out_mom<<m_flavs[j].Kfcode()<<", ";
+        out_ps<<"      [";
+        if(m_flavs[j].IsAnti()) out_ps<<"-"<<m_flavs[j].Kfcode()<<", ";
+        else out_ps<<m_flavs[j].Kfcode()<<", ";
         for(int i=0; i<4; i++){
-          if(i!=3) out_mom<<k[i]<<",";
-          else out_mom<<k[i];
+          if(i!=3) out_ps<<k[i]<<",";
+          else out_ps<<k[i];
         }
-        out_mom<<"],"<<std::endl;
+        out_ps<<"],"<<std::endl;
         j++;
       }
-      out_mom<<"    ]"<<std::endl;
+      out_ps<<"    ]"<<std::endl;
       m_fill++;
     } 
     // double ratio = iR.Nominal()/(m_factor*R);
