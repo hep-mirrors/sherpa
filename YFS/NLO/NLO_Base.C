@@ -465,7 +465,7 @@ double NLO_Base::CalculateRealVirtual(Vec4D k, int fsrcount) {
 	// PRINT_VAR(yfspole);
 	double subb;
 
-	subb = (fsrcount!=1?p_dipoles->CalculateRealSubEEX(kk):p_dipoles->CalculateRealSubEEX(kk));
+	subb = (fsrcount!=1?p_dipoles->CalculateRealSubEEX(k):p_dipoles->CalculateRealSubEEX(k));
 	
 	if(p.size()!=(m_flavs.size()+1)){
 		msg_Error()<<"Mismatch in "<<METHOD<<std::endl;
@@ -477,6 +477,7 @@ double NLO_Base::CalculateRealVirtual(Vec4D k, int fsrcount) {
 		return 0;
 	}
 	// m_plab = pp;
+	// double aB = subloc*p_nlodipoles->CalculateRealSub(k)*m_oneloop;//CalculateVirtual();//*p_realvirt->m_factor;
 	double aB = p_nlodipoles->CalculateRealSub(k)*CalculateVirtual();//*p_realvirt->m_factor;
 	// double aB = subloc*CalculateVirtual();
 	// yfspole*=m_oneloop*p_realvirt->m_factor;
