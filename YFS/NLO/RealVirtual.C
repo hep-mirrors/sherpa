@@ -37,19 +37,9 @@ RealVirtual::RealVirtual(const PHASIC::Process_Info& pi)
     p_loop_me->SetCouplings(m_cpls);
     m_sym  = ATOOLS::Flavour::FSSymmetryFactor(args.m_outflavs);
     m_sym *= ATOOLS::Flavour::ISSymmetryFactor(args.m_inflavs);
-    m_factor  = p_loop_me->AlphaQED()/2.0/M_PI;
-    // m_factor  = 1.0/2.0/M_PI;
     double cplfac(1.0);
-    // cplfac *= pow(p_loop_me->AlphaQCD(),rr_pi.m_mincpl[0]);
     cplfac *= pow(p_loop_me->AlphaQED(),rr_pi.m_mincpl[1]);
-    // m_factor = cplfac/2.0/M_PI;
     m_factor = p_loop_me->AlphaQED()/2.0/M_PI;
-    // m_factor =1.;
-    // PRINT_VAR(m_factor);
-    // PRINT_VAR(cplfac/2.0/M_PI);
-
-    // m_factor *= p_loop_me->AlphaQED()/2.0/M_PI;
-
   }
 
 RealVirtual::~RealVirtual()
