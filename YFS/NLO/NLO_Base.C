@@ -140,7 +140,7 @@ double NLO_Base::CalculateNLO() {
 	rv = result - real - virt;
 	result += CalculateRealReal();
 	rr = result - real - virt - rv;
-	if(m_failcut) return 0;
+	// if(m_failcut) return 0;
 		// PRINT_VAR(virt);
 		// PRINT_VAR(real);
 		// PRINT_VAR(rr);
@@ -303,7 +303,7 @@ double NLO_Base::CalculateReal(Vec4D k, int fsrcount) {
  		MapMomenta(p,k);
  	}
  	p.push_back(k);
- 	CheckMasses(p,1);
+ 	// CheckMasses(p,1);
  	// if(fluxtype==dipoletype::final || fsrcount==4) MapInitial(p);
  	if(fsrcount==1 || fsrcount==4) MapInitial(p);
  	Vec4D_Vector pp = p;
@@ -339,7 +339,7 @@ double NLO_Base::CalculateReal(Vec4D k, int fsrcount) {
 			m_histograms1d["k_pt_pass"]->Insert(k.PPerp());
 			m_histograms1d["dip_mass_pass"]->Insert((p[2]+p[3]).Mass());
 		}
-	// if(IsZero(r)) return 0;
+	if(IsZero(r)) return 0;
 	if(IsBad(r) || IsBad(flux)) {
 		msg_Error()<<"Bad point for YFS Real"<<std::endl
 							 <<"Real ME is : "<<r<<std::endl
@@ -378,9 +378,9 @@ double NLO_Base::CalculateReal(Vec4D k, int fsrcount) {
 	if(rcount>1000){
 		double diff = fabs(1.-m_ravg/avg)*100;
 		if(diff>10){
-			// msg_Out()<<"Large jump in Real weight for "<<k<<std::endl;
+			msg_Debugging()<<"Large jump in Real weight for "<<k<<std::endl;
 			m_ravg = avg;
-			// return 0;
+			return 0;
 		}
 	}
 	if(fsrcount>=3) return tot*subb;

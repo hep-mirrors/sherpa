@@ -126,7 +126,6 @@ double Real::Calc_R(const ATOOLS::Vec4D_Vector& p)
       return 0;
     }
     if(m_writemom && m_fill < m_nmom){
-      PRINT_VAR(m_nmom);
       out_ps<<std::setprecision(20)<<"  - ["<<std::endl;
       real_out<<std::setprecision(20)<<""<<m_fill<<":"<<std::endl;
       real_out<<std::setprecision(20)<<"  value: "<< (p_real_me ? external_real : iR.Nominal())<<std::endl;
@@ -186,7 +185,11 @@ double Real::Calc_External(const ATOOLS::Vec4D_Vector &p){
       out_ps<<"    ]"<<std::endl;
   }
    double R = p_real_me->Calc(p);
-  if(m_check_real) real_out<<std::setprecision(15)<<R/m_sym<<std::endl;
+  if(m_check_real) {
+    real_out<<std::setprecision(20)<<""<<m_fill<<":"<<std::endl;
+    real_out<<std::setprecision(20)<<"  value: "<< (R)<<std::endl;
+    m_fill++;
+  }
   // if(m_writemom && m_fill < m_nmom) real_out<<std::setprecision(15)<<R/m_sym<<std::endl;
   return R*m_factor;
 }
