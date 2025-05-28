@@ -5,14 +5,14 @@ endif()
 if (SHERPA_ENABLE_INTEGRATION_TESTS)
   set(test test-Amegic-LO_Z)
   file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${test})
-  add_test( NAME Main${test}part1 COMMAND Sherpa ${PROJECT_SOURCE_DIR}/Examples/CI/LO_Z/Sherpa.yaml ME_GENERATORS:Amegic
+  add_test( NAME Main${test}part1 COMMAND Sherpa ${PROJECT_SOURCE_DIR}/Tests/End2End/CI/LO_Z/Sherpa.yaml ME_GENERATORS:Amegic
                                 WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${test}
              )
   add_test( NAME Main${test}part2 COMMAND ${makelibsscript}
                                 WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${test}
              )
 
-  add_test( NAME Main${test}part3 COMMAND Sherpa  ${PROJECT_SOURCE_DIR}/Examples/CI/LO_Z/Sherpa.yaml ME_GENERATORS:Amegic
+  add_test( NAME Main${test}part3 COMMAND Sherpa  ${PROJECT_SOURCE_DIR}/Tests/End2End/CI/LO_Z/Sherpa.yaml ME_GENERATORS:Amegic
                                 WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${test}
              )
 
@@ -25,7 +25,7 @@ if (SHERPA_ENABLE_INTEGRATION_TESTS)
 
   set(test test-LO_Z)
   file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${test})
-  add_test( NAME Main${test}part1 COMMAND Sherpa ${PROJECT_SOURCE_DIR}/Examples/CI/LO_Z/Sherpa.yaml
+  add_test( NAME Main${test}part1 COMMAND Sherpa ${PROJECT_SOURCE_DIR}/Tests/End2End/CI/LO_Z/Sherpa.yaml
                                 WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${test}
              )
   SET_TESTS_PROPERTIES( Main${test}part1 PROPERTIES ENVIRONMENT "${STANDARDENVIRONMENT}")
@@ -46,7 +46,7 @@ if (SHERPA_ENABLE_INTEGRATION_TESTS)
     # run Sherpa (part 1/3)
     add_test(
       NAME Main${test}part1
-      COMMAND Sherpa ${PROJECT_SOURCE_DIR}/Examples/CI/LO_Z/Sherpa.yaml ANALYSIS=Rivet
+      COMMAND Sherpa ${PROJECT_SOURCE_DIR}/Tests/End2End/CI/LO_Z/Sherpa.yaml ANALYSIS=Rivet
       WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${test}
       )
     set_tests_properties(Main${test}part1
@@ -56,7 +56,7 @@ if (SHERPA_ENABLE_INTEGRATION_TESTS)
     add_test(
       NAME Main${test}part2
       COMMAND ${Python_EXECUTABLE} ${RIVET_MKHTML_EXE} ${RIVET_MKHTML_ARGS}
-        ${PROJECT_SOURCE_DIR}/Examples/CI/LO_Z/Reference.yoda.gz
+        ${PROJECT_SOURCE_DIR}/Tests/End2End/CI/LO_Z/Reference.yoda.gz
         ${CMAKE_CURRENT_BINARY_DIR}/${test}/Analysis.yoda.gz
         PLOT:RatioPlotMode=deviation
       WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${test}
@@ -69,8 +69,8 @@ if (SHERPA_ENABLE_INTEGRATION_TESTS)
     add_test(
       NAME Main${test}part3
       COMMAND ${Python_EXECUTABLE}
-        ${PROJECT_SOURCE_DIR}/Examples/CI/plot_deviations
-        ${PROJECT_SOURCE_DIR}/Examples/CI/LO_Z/Reference.yoda.gz
+        ${PROJECT_SOURCE_DIR}/Tests/End2End/CI/plot_deviations
+        ${PROJECT_SOURCE_DIR}/Tests/End2End/CI/LO_Z/Reference.yoda.gz
         ${CMAKE_CURRENT_BINARY_DIR}/${test}/Analysis.yoda.gz
       WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${test}
       )
@@ -101,14 +101,14 @@ if (SHERPA_ENABLE_INTEGRATION_TESTS)
       # Results.db and random state
       add_test(
         NAME Main${test}partA
-        COMMAND Sherpa -e 0 ${PROJECT_SOURCE_DIR}/Examples/CI/FO_Z_Variations/Base.yaml ${PROJECT_SOURCE_DIR}/Examples/CI/FO_Z_Variations/${order}.yaml
+        COMMAND Sherpa -e 0 ${PROJECT_SOURCE_DIR}/Tests/End2End/CI/FO_Z_Variations/Base.yaml ${PROJECT_SOURCE_DIR}/Tests/End2End/CI/FO_Z_Variations/${order}.yaml
         WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${test}
         )
 
       # do on-the-fly run
       add_test(
         NAME Main${test}partB
-        COMMAND Sherpa -A OTF ${PROJECT_SOURCE_DIR}/Examples/CI/FO_Z_Variations/Base.yaml ${PROJECT_SOURCE_DIR}/Examples/CI/FO_Z_Variations/${order}.yaml
+        COMMAND Sherpa -A OTF ${PROJECT_SOURCE_DIR}/Tests/End2End/CI/FO_Z_Variations/Base.yaml ${PROJECT_SOURCE_DIR}/Tests/End2End/CI/FO_Z_Variations/${order}.yaml
         WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${test}
         )
       set_tests_properties(Main${test}partA Main${test}partB
@@ -120,8 +120,8 @@ if (SHERPA_ENABLE_INTEGRATION_TESTS)
         add_test(
           NAME Main${test}partC${NN}
           COMMAND Sherpa SCALE_VARIATIONS:None RSF:=${a} FSF:=${b} -A Explicit__MUR=${c}__MUF=${d}__LHAPDF=93300
-            ${PROJECT_SOURCE_DIR}/Examples/CI/FO_Z_Variations/Base.yaml
-            ${PROJECT_SOURCE_DIR}/Examples/CI/FO_Z_Variations/${order}.yaml
+            ${PROJECT_SOURCE_DIR}/Tests/End2End/CI/FO_Z_Variations/Base.yaml
+            ${PROJECT_SOURCE_DIR}/Tests/End2End/CI/FO_Z_Variations/${order}.yaml
           WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${test}
         )
         set_tests_properties(Main${test}partC${NN} PROPERTIES DEPENDS Main${test}partA)
@@ -139,7 +139,7 @@ if (SHERPA_ENABLE_INTEGRATION_TESTS)
       # and the explicit runs' analysis results
       add_test(
         NAME Main${test}partD
-        COMMAND ${Python_EXECUTABLE} ${PROJECT_SOURCE_DIR}/Examples/CI/FO_Z_Variations/diff_variations.py
+        COMMAND ${Python_EXECUTABLE} ${PROJECT_SOURCE_DIR}/Tests/End2End/CI/FO_Z_Variations/diff_variations.py
         WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${test}
         )
       set_tests_properties(Main${test}partD PROPERTIES
