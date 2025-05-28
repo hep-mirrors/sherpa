@@ -7,7 +7,7 @@ using namespace ATOOLS;
 Bessel_Integrator::Bessel_Integrator(ATOOLS::Function_Base* f,
                                      const size_t&          order)
     : m_kernel(f, order), m_order(order), m_maxbins(50), m_depth(10),
-      m_iterator(1)
+      m_maxdepth(10), m_iterator(1)
 {
   FixBins(false);
   m_F.resize(m_maxbins + 1, 0.);
@@ -18,7 +18,6 @@ Bessel_Integrator::Bessel_Integrator(ATOOLS::Function_Base* f,
     m_M[i].resize(m_maxbins + 1, 0.);
     m_N[i].resize(m_maxbins + 1, 0.);
   }
-  m_maxdepth = m_depth;
 }
 
 double Bessel_Integrator::operator()()
@@ -29,6 +28,8 @@ double Bessel_Integrator::operator()()
 
 bool Bessel_Integrator::FillBins(const bool& output)
 {
+  double tolerance = 1.e-16;
+
   if (output)
     msg_Out() << "=== " << METHOD << " start filling the supports, "
               << "max depth = " << m_maxdepth << ":\n";
@@ -45,17 +46,18 @@ bool Bessel_Integrator::FillBins(const bool& output)
     } else
       exit(1);
     F += m_Psi[i - 1] = gauss.Integrate(xmin, xmax, 1.e-6);
-    if (dabs(m_Psi[i - 1]) < 1.e-99 && i < m_maxdepth + 1) {
+    if (dabs(m_Psi[i - 1]) < tolerance && i < m_maxdepth + 1) {
       if (output)
         msg_Out() << "   found a zero in integral over "
                   << "x in [" << xmin << ", " << xmax << "]: " << m_Psi[i - 1]
                   << " for "
                   << "i = " << i << " --> new max depth = " << (i - 1) << "\n";
-      m_maxdepth = i - 1;
+      m_maxdepth = i == 1 ? 1 : i - 1;
       return false;
     }
-    m_F[i - 1]    = F;
-    m_M[0][i - 1] = m_F[i - 1] / m_Psi[i - 1];
+    m_F[i - 1] = F;
+    m_M[0][i - 1] =
+            (dabs(m_Psi[i - 1]) > tolerance) ? m_F[i - 1] / m_Psi[i - 1] : 0.;
     m_N[0][i - 1] = 1. / m_Psi[i - 1];
     if (output) {
       msg_Out() << "  bin i = " << std::setw(2) << i << ": "
@@ -84,7 +86,8 @@ bool Bessel_Integrator::FillBins(const bool& output)
                                      : m_extrema[s + 1 + p];
       } else
         exit(1);
-      double norm   = 1. / xmin - 1. / xmax;
+      double norm = 1. / xmin - 1. / xmax;
+      if (dabs(norm) < tolerance) norm = tolerance;
       m_M[p][s - 1] = (m_M[p - 1][s - 1] - m_M[p - 1][s]) / norm;
       m_N[p][s - 1] = (m_N[p - 1][s - 1] - m_N[p - 1][s]) / norm;
     }
