@@ -424,7 +424,7 @@ std::vector<Process_Base*> Matrix_Element_Handler::InitializeSingleProcess
 	procs.push_back(m_gens.InitializeProcess(rpi,true));
 	if (procs.back()==NULL) {
 	  msg_Error()<<"No such process:\n"<<rpi<<std::endl;
-	  THROW(critical_error,"Failed to intialize process");
+	  THROW(critical_error,"Failed to initialize process");
 	}
       }
       if (pi.m_fi.NLOType()&nlo_type::real ||
@@ -468,7 +468,7 @@ std::vector<Process_Base*> Matrix_Element_Handler::InitializeSingleProcess
         procs.push_back(m_gens.InitializeProcess(rpi,true));
 	if (procs.back()==NULL) {
 	  msg_Error()<<"No such process:\n"<<rpi<<std::endl;
-	  THROW(critical_error,"Failed to intialize process");
+	  THROW(critical_error,"Failed to initialize process");
 	}
       }
       if (pmap==NULL) {
