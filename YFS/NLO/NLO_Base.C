@@ -321,7 +321,7 @@ double NLO_Base::CalculateReal(Vec4D k, int fsrcount) {
 	double subloc = p_nlodipoles->CalculateRealSub(k);
 	double subb;
 	m_real = r;
-	if(fsrcount==0) subb = p_dipoles->CalculateRealSubEEX(k);
+	if(fsrcount==0) subb = p_dipoles->CalculateRealSubEEX(kk);
 	else subb = p_dipoles->CalculateRealSubEEX(k);
 	// if(IsZero(subb)) return 0;
 	if(!CheckMomentumConservation(p)) {

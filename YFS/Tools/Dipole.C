@@ -303,6 +303,7 @@ bool Dipole::BoostNLO() {
     m_ranPhi = ran->Get()*2.*M_PI;
     Vec4D Q = m_bornmomenta[0]+m_bornmomenta[1];
     Poincare boost(m_bornmomenta[0]+m_bornmomenta[1]);
+    // Poincare boost(m_newmomenta[0]+m_newmomenta[1]);
     // boost.Boost(m_photonSum);
     double x = 1./(1-m_photonSum.E());
     double y = 1./(1. + m_photonSum.E()/m_photonscale);
