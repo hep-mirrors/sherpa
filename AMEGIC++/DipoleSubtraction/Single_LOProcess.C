@@ -1328,18 +1328,18 @@ double Single_LOProcess::Calc_M2ik(const int& ci, const int& ck,
                                    const std::vector<double>& maxcpl,
                                    const std::vector<double>& mincpl)
 {
-  DEBUG_FUNC(ci<<" "<<ck<<" "<<maxcpl<<" "<<mincpl);
+  IODEBUG_FUNC(ci<<" "<<ck<<" "<<maxcpl<<" "<<mincpl);
   double M2=0.;
   for (size_t i=0;i<p_hel->MaxHel();i++) {
     if (p_hel->On(i)) {
-      msg_Debugging()<<i<<": "<<p_ampl->Differential(i,ci,ck,maxcpl,mincpl)<<" * "
+      msg_IODebugging()<<i<<": "<<p_ampl->Differential(i,ci,ck,maxcpl,mincpl)<<" * "
                               <<p_hel->Multiplicity(i)<<" * "
                               <<p_hel->PolarizationFactor(i)<<std::endl;
       M2 += p_ampl->Differential(i,ci,ck,maxcpl,mincpl) * p_hel->Multiplicity(i)
             * p_hel->PolarizationFactor(i);
     }
   }
-  msg_Debugging()<<"-> M2="<<M2<<std::endl;
+  msg_IODebugging()<<"-> M2="<<M2<<std::endl;
   return M2;
 }
 
@@ -1349,7 +1349,7 @@ void Single_LOProcess::Calc_AllXS(const ATOOLS::Vec4D_Vector &labmom,
                                   std::vector<std::vector<double> > &dsijqed,
                                   const int mode)
 {
-  DEBUG_FUNC("QCD: ("<<dsijqcd.size()<<"x"<<(dsijqcd.size()?dsijqcd[0].size():0)
+  IODEBUG_FUNC("QCD: ("<<dsijqcd.size()<<"x"<<(dsijqcd.size()?dsijqcd[0].size():0)
              <<"), QED: ("<<dsijqed.size()<<"x"<<(dsijqed.size()?dsijqed[0].size():0)
              <<") ");
   if (p_partner!=this) {

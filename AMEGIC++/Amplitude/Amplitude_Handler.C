@@ -41,7 +41,7 @@ Amplitude_Handler::Amplitude_Handler(int N,Flavour* fl,int* b,Process_Tags* pinf
   // O(g in M needed) = O(g in |M|^2) for all possible interferences
   for (size_t i(0);i<m_mincpl.size();++i) m_mincpl[i]=(int)(2*_mincpl[i]);
   for (size_t i(0);i<m_maxcpl.size();++i) m_maxcpl[i]=(int)(2*_maxcpl[i]);
-  DEBUG_FUNC(m_mincpl<<" .. "<<m_maxcpl);
+  IODEBUG_FUNC(m_mincpl<<" .. "<<m_maxcpl);
   groupname = "Amplitude_Handler";
   int ndecays=pinfo->Ndecays();
   int nm = pinfo->Nmax(0);
@@ -79,10 +79,10 @@ Amplitude_Handler::Amplitude_Handler(int N,Flavour* fl,int* b,Process_Tags* pinf
     }
     // order returned from generator is O(g in M)
     std::vector<int> corder=gen->Order();
-    msg_Debugging()<<"Generator generated order "<<corder<<std::endl;
+    msg_IODebugging()<<"Generator generated order "<<corder<<std::endl;
     if (corder.size()>order.size()) order.resize(corder.size(),0.);
     for (size_t i(0);i<corder.size();++i) order[i]+=corder[i];
-    msg_Debugging()<<"order is now "<<order<<std::endl;
+    msg_IODebugging()<<"order is now "<<order<<std::endl;
     delete gen;
   }
 
@@ -90,7 +90,7 @@ Amplitude_Handler::Amplitude_Handler(int N,Flavour* fl,int* b,Process_Tags* pinf
     sfl[0] = fl[0];
     sfl[1] = fl[1];
     pinfo->GetFlavList(sfl+nin);
-    msg_Debugging()<<"order in decays is "<<order<<std::endl;
+    msg_IODebugging()<<"order in decays is "<<order<<std::endl;
   }
 
   // core process
@@ -247,7 +247,7 @@ void Amplitude_Handler::CompleteAmplitudes(int N,Flavour* fl,int* b,
 					   Basic_Sfuncs* BS,std::string pID,
 					   char emit,char spect)
 {
-  DEBUG_FUNC(emit<<" "<<spect);
+  IODEBUG_FUNC(emit<<" "<<spect);
   Single_Amplitude* n = firstgraph;
   ngraph = 0;
   while (n) { 
@@ -281,7 +281,7 @@ void Amplitude_Handler::CompleteAmplitudes(int N,Flavour* fl,int* b,
   //Colors
   if (emit!=spect && emit!=127) {
     // Build colour string with insertion for one real subtraction term
-    msg_Debugging()<<"Building color string with insertion."<<std::endl;
+    msg_IODebugging()<<"Building color string with insertion."<<std::endl;
     char cemit=emit,cspect=spect;
     if (fl[(int)emit].IsGluon() || IsGluino(fl[(int)emit])) cemit+='A';
     else cemit+='i';
@@ -291,10 +291,10 @@ void Amplitude_Handler::CompleteAmplitudes(int N,Flavour* fl,int* b,
   }
   else {
     // Build colour string without insertions
-    msg_Debugging()<<"Building color string without insertions."<<std::endl;
+    msg_IODebugging()<<"Building color string without insertions."<<std::endl;
     CFCol_Matrix   = new CFColor(N,firstgraph,fl,emit,spect,pID);
     if (emit==127) {
-      msg_Debugging()<<"Adding all possible insertions."<<std::endl;
+      msg_IODebugging()<<"Adding all possible insertions."<<std::endl;
       for (int i=0;i<N-1;i++) if (fl[i].Strong()) {
 	for (int j=i+1;j<N;j++) if (fl[j].Strong()) {
 	  char cemit=i,cspect=j;
@@ -405,7 +405,7 @@ void Amplitude_Handler::StoreAmplitudeConfiguration(std::string path)
 
 void Amplitude_Handler::RestoreAmplitudes(std::string path)
 {
-  DEBUG_FUNC(path);
+  IODEBUG_FUNC(path);
   std::string name = rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/"
                      +path+"/Cluster.dat";
   My_In_File cplfile(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/"
@@ -417,7 +417,7 @@ void Amplitude_Handler::RestoreAmplitudes(std::string path)
   IO_Handler ioh;
   ioh.SetFileNameRO(name);
   size_t cg = ioh.Input<int>("");
-  msg_Debugging()<<cg<<" <-> "<<graphs.size()<<std::endl;
+  msg_IODebugging()<<cg<<" <-> "<<graphs.size()<<std::endl;
   if (cg!=graphs.size()) {
     msg_Error()<<METHOD<<"(): ERROR :"
 	       <<"   Stored Cluster and Color information incompatible! Abort the run."<<std::endl;
@@ -470,7 +470,7 @@ void Amplitude_Handler::CompleteLibAmplitudes(int N,std::string pID,
 					      std::string lib,
 					      char emit,char spect,Flavour* fl)
 {
-  DEBUG_FUNC(lib<<", emit="<<emit<<"("<<(int)(emit)
+  IODEBUG_FUNC(lib<<", emit="<<emit<<"("<<(int)(emit)
                 <<"), spect="<<spect<<"("<<(int)(spect)<<")");
   std::string name = rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/"
                      +pID+".map";
@@ -515,8 +515,8 @@ void Amplitude_Handler::CompleteLibAmplitudes(int N,std::string pID,
   for (int i=0;i<CFCol_Matrix->MatrixSize();i++) {
     graphs.push_back(new Color_Group());
   }
-  msg_Debugging()<<"#colour groups: "<<graphs.size()<<std::endl;
-  msg_Debugging()<<"I-operator colour matrix size: "
+  msg_IODebugging()<<"#colour groups: "<<graphs.size()<<std::endl;
+  msg_IODebugging()<<"I-operator colour matrix size: "
                  <<CFCol_MMatrixMap.size()<<std::endl;
   n = firstgraph;
 
@@ -886,8 +886,8 @@ Complex Amplitude_Handler::CommonColorFactor()
 
 Complex Amplitude_Handler::Zvalue(String_Handler * sh, int ihel)
 { // Called when no libraries are present (compiled)
-  DEBUG_FUNC(sh->NumberOfCouplings());
-  msg_Debugging()<<"1: #graphs: "<<graphs.size()<<std::endl;
+  IODEBUG_FUNC(sh->NumberOfCouplings());
+  msg_IODebugging()<<"1: #graphs: "<<graphs.size()<<std::endl;
   for (size_t i=0;i<graphs.size();i++){
     Mi[i] = graphs[i]->Zvalue(sh, ihel);
   }
@@ -904,9 +904,9 @@ Complex Amplitude_Handler::Zvalue(int ihel)
 { 
   // Called for actual calculation of the CS
 #ifdef DEBUG__BG
-  DEBUG_FUNC(ihel);
-  msg_Debugging()<<METHOD<<"(): {\n";
-  msg_Debugging()<<"2: #graphs: "<<graphs.size()<<std::endl;
+  IODEBUG_FUNC(ihel);
+  msg_IODebugging()<<METHOD<<"(): {\n";
+  msg_IODebugging()<<"2: #graphs: "<<graphs.size()<<std::endl;
 #endif
   double gsfac(p_aqcd?sqrt(p_aqcd->Factor()):1.0);
   double gwfac(p_aqed?sqrt(p_aqed->Factor()):1.0);
@@ -916,53 +916,53 @@ Complex Amplitude_Handler::Zvalue(int ihel)
     const std::vector<int> &order(graphs[i]->GetOrder());
     if (p_aqcd && order.size()>0 && order[0]) {
 #ifdef DEBUG__BG
-      msg_Debugging()<<"  qcd: "<<sqrt(p_aqcd->Factor())<<" ^ "<<order[0]
+      msg_IODebugging()<<"  qcd: "<<sqrt(p_aqcd->Factor())<<" ^ "<<order[0]
 		     <<" = "<<intpow(gsfac,order[0])<<"\n";
 #endif
       cplfac *= intpow(gsfac,order[0]);
     }
     if (p_aqed && order.size()>1 && order[1]) {
 #ifdef DEBUG__BG
-      msg_Debugging()<<"  qed: "<<sqrt(p_aqed->Factor())<<" ^ "<<order[1]
+      msg_IODebugging()<<"  qed: "<<sqrt(p_aqed->Factor())<<" ^ "<<order[1]
 		     <<" = "<<intpow(gwfac,order[1])<<"\n";
 #endif
       cplfac *= intpow(gwfac,order[1]);
     }
 #ifdef DEBUG__BG
-    msg_Debugging()<<"  graph "<<i<<" -> "<<cplfac<<"\n";
+    msg_IODebugging()<<"  graph "<<i<<" -> "<<cplfac<<"\n";
 #endif
     Mi[i] = cplfac*(graphs[i]->Zvalue(ihel));
 #ifdef DEBUG__BG
-    msg_Debugging()<<"  "<<i<<": O"<<order<<" "<<Mi[i]<<std::endl;
+    msg_IODebugging()<<"  "<<i<<": O"<<order<<" "<<Mi[i]<<std::endl;
 #endif
   }
   Complex M(0.,0.);
   for (size_t i=0;i<graphs.size();i++) {
     for (size_t j=0;j<graphs.size();j++) {
 #ifdef DEBUG__BG
-      msg_Debugging()<<(m_on.empty()?"m_on empty, ":"m_on")
+      msg_IODebugging()<<(m_on.empty()?"m_on empty, ":"m_on")
                      <<"["<<i<<"]["<<j<<"]=";
 #endif
       if (m_on.empty() || m_on[i][j]) {
 #ifdef DEBUG__BG
-        msg_Debugging()<<"  col="<<CFCol_Matrix->Mij(i,j);
+        msg_IODebugging()<<"  col="<<CFCol_Matrix->Mij(i,j);
 #endif
         M+= Mi[i]*conj(Mi[j])*CFCol_Matrix->Mij(i,j);  //colfactors[i][j];
       }
 #ifdef DEBUG__BG
-      msg_Debugging()<<std::endl;
+      msg_IODebugging()<<std::endl;
 #endif
     }
   }
 #ifdef DEBUG__BG
-  msg_Debugging()<<"}\n";
+  msg_IODebugging()<<"}\n";
 #endif  
   return M;
 }
 
 Complex Amplitude_Handler::Zvalue(int ihel,int ci,int cj)
 {// Called for actual calculation of the CS
-  DEBUG_FUNC(ci<<" "<<cj);
+  IODEBUG_FUNC(ci<<" "<<cj);
   return Zvalue(ihel,ci,cj,m_on);
 }
 
@@ -973,7 +973,7 @@ Complex Amplitude_Handler::Zvalue(int ihel,int ci,int cj,
   std::vector<int> maxcpl(mxc.size(),0),mincpl(mnc.size(),0);
   for (size_t i(0);i<mnc.size();++i) mincpl[i]=2*mnc[i];
   for (size_t i(0);i<mxc.size();++i) maxcpl[i]=2*mxc[i];
-  DEBUG_FUNC(ci<<" "<<cj<<" "<<maxcpl<<" "<<mincpl);
+  IODEBUG_FUNC(ci<<" "<<cj<<" "<<maxcpl<<" "<<mincpl);
   std::vector<std::vector<int> > on;
   std::vector<std::vector<std::vector<int> > > cplmatrix;
   on.resize(graphs.size());
@@ -982,23 +982,23 @@ Complex Amplitude_Handler::Zvalue(int ihel,int ci,int cj,
     on[i].resize(graphs.size(),1);
     cplmatrix[i].resize(graphs.size());
     for (size_t j(0);j<graphs.size();++j) {
-      msg_Debugging()<<"("<<i<<","<<j<<"): ";
+      msg_IODebugging()<<"("<<i<<","<<j<<"): ";
       cplmatrix[i][j].resize(graphs[j]->GetOrder().size(),0);
       for (size_t k(0);k<graphs[j]->GetOrder().size();++k) {
         cplmatrix[i][j][k]=graphs[i]->GetOrder()[k]
                            +graphs[j]->GetOrder()[k];
       }
       for (size_t k(0);k<Min(cplmatrix[i][j].size(),maxcpl.size());++k) {
-        msg_Debugging()<<mincpl[k]<<" < "<<cplmatrix[i][j][k]<<" < "
+        msg_IODebugging()<<mincpl[k]<<" < "<<cplmatrix[i][j][k]<<" < "
                        <<maxcpl[k]<<" ? ";
         if (cplmatrix[i][j][k]>maxcpl[k] || cplmatrix[i][j][k]<mincpl[k]) {
-          msg_Debugging()<<om::bold<<"0"<<om::reset;
+          msg_IODebugging()<<om::bold<<"0"<<om::reset;
           on[i][j]=0;
         }
-        else msg_Debugging()<<om::bold<<"1"<<om::reset;
-        msg_Debugging()<<"   ";
+        else msg_IODebugging()<<om::bold<<"1"<<om::reset;
+        msg_IODebugging()<<"   ";
       }
-      msg_Debugging()<<" -> "<<om::blue<<om::bold<<on[i][j]
+      msg_IODebugging()<<" -> "<<om::blue<<om::bold<<on[i][j]
                      <<om::reset<<"  "<<m_on[i][j]<<std::endl;
     }
   }
@@ -1008,7 +1008,7 @@ Complex Amplitude_Handler::Zvalue(int ihel,int ci,int cj,
 Complex Amplitude_Handler::Zvalue(int ihel,int ci,int cj,
                                   const std::vector<std::vector<int> >& on)
 {// Called for actual calculation of the CS
-  DEBUG_FUNC(ci<<" "<<cj);
+  IODEBUG_FUNC(ci<<" "<<cj);
   int cid = 100*ci+cj;
   if (cj<ci) cid = 100*cj+ci;
   CFColor *col = CFCol_Matrix;
@@ -1021,11 +1021,11 @@ Complex Amplitude_Handler::Zvalue(int ihel,int ci,int cj,
     }
     col = cit->second;
   }
-  msg_Debugging()<<"3: #graphs: "<<graphs.size()<<std::endl;
+  msg_IODebugging()<<"3: #graphs: "<<graphs.size()<<std::endl;
   for (size_t i=0;i<graphs.size();i++) {
     double cplfac(1.0);
     const std::vector<int> &order(graphs[i]->GetOrder());
-    msg_Debugging()<<i<<": O("<<order<<")";
+    msg_IODebugging()<<i<<": O("<<order<<")";
     if (p_aqcd && order.size()>0 && order[0]) {
       cplfac *= pow(p_aqcd->Factor(),order[0]/2.0);
     }
@@ -1033,13 +1033,13 @@ Complex Amplitude_Handler::Zvalue(int ihel,int ci,int cj,
       cplfac *= pow(p_aqed->Factor(),order[1]/2.0);
     }
     Mi[i] = cplfac*(graphs[i]->Zvalue(ihel));
-    msg_Debugging()<<", cpl="<<cplfac<<", Mi="<<Mi[i]<<std::endl;
+    msg_IODebugging()<<", cpl="<<cplfac<<", Mi="<<Mi[i]<<std::endl;
   }
 
   Complex M(0.,0.);
   for (size_t i=0;i<graphs.size();i++) {
     for (size_t j=0;j<graphs.size();j++) {
-      msg_Debugging()<<"on["<<i<<"]["<<j<<"]="<<on[i][j]<<std::endl;
+      msg_IODebugging()<<"on["<<i<<"]["<<j<<"]="<<on[i][j]<<std::endl;
       if (on[i][j]) {
         M+= Mi[i]*conj(Mi[j])*col->Mij(i,j);  //colfactors[i][j];
       }
@@ -1050,7 +1050,7 @@ Complex Amplitude_Handler::Zvalue(int ihel,int ci,int cj,
 
 double Amplitude_Handler::Zvalue(Helicity* hel)
 { 
-  DEBUG_FUNC("");
+  IODEBUG_FUNC("");
   // 2D array for the amplitudes.
   typedef std::vector<Complex> CVec;
   std::vector<CVec> A;
@@ -1058,7 +1058,7 @@ double Amplitude_Handler::Zvalue(Helicity* hel)
 
   /* For all graphs: Calculate all the helicity formalisms amplitudes
      and transform them to desired polarisation states, if nessecary. */
-  msg_Debugging()<<"4: #graphs: "<<graphs.size()<<std::endl;
+  msg_IODebugging()<<"4: #graphs: "<<graphs.size()<<std::endl;
   for (size_t col=0; col<graphs.size(); ++col) {
     double cplfac(1.0);
     const std::vector<int> &order(graphs[col]->GetOrder());
@@ -1095,21 +1095,21 @@ double Amplitude_Handler::Zvalue(Helicity* hel)
 Complex Amplitude_Handler::Zvalue(int ihel,int* sign)
 {
   // This is called for the gauge test
-  DEBUG_FUNC("");
-  msg_Debugging()<<"5: #graphs: "<<graphs.size()<<std::endl;
+  IODEBUG_FUNC("");
+  msg_IODebugging()<<"5: #graphs: "<<graphs.size()<<std::endl;
   for (size_t i=0;i<graphs.size();i++) {
     double cplfac(1.0);
     const std::vector<int> &order(graphs[i]->GetOrder());
     if (p_aqcd && order.size()>0 && order[0]) {
 #ifdef DEBUG__BG
-      msg_Debugging()<<"  qcd: "<<sqrt(p_aqcd->Factor())<<" ^ "<<order[0]
+      msg_IODebugging()<<"  qcd: "<<sqrt(p_aqcd->Factor())<<" ^ "<<order[0]
 		     <<" = "<<pow(p_aqcd->Factor(),order[0]/2.0)<<"\n";
 #endif     
       cplfac *= pow(p_aqcd->Factor(),order[0]/2.0);
     }
     if (p_aqed && order.size()>1 && order[1]) {
 #ifdef DEBUG__BG
-      msg_Debugging()<<"  qed: "<<sqrt(p_aqed->Factor())<<" ^ "<<order[1]
+      msg_IODebugging()<<"  qed: "<<sqrt(p_aqed->Factor())<<" ^ "<<order[1]
 		     <<" = "<<pow(p_aqed->Factor(),order[1]/2.0)<<"\n";
 #endif   
       cplfac *= pow(p_aqed->Factor(),order[1]/2.0);
@@ -1287,27 +1287,27 @@ size_t Amplitude_Handler::PossibleConfigsExist(const std::vector<double>& mxc,
   std::vector<int> maxcpl(mxc.size(),0),mincpl(mnc.size(),0);
   for (size_t i(0);i<mnc.size();++i) mincpl[i]=2*mnc[i];
   for (size_t i(0);i<mxc.size();++i) maxcpl[i]=2*mxc[i];
-  DEBUG_FUNC(mincpl<<" ... "<<maxcpl);
+  IODEBUG_FUNC(mincpl<<" ... "<<maxcpl);
   std::vector<bool> foundone(maxcpl.size(),true);
   std::vector<bool> evaluate(maxcpl.size(),false);
   for (size_t i(0);i<m_possiblecplconfigs.size();++i) {
     for (size_t j(0);j<m_possiblecplconfigs[i].size();++j) {
-      msg_Debugging()<<mincpl[j]<<" < "<<m_possiblecplconfigs[i][j]<<" < "
+      msg_IODebugging()<<mincpl[j]<<" < "<<m_possiblecplconfigs[i][j]<<" < "
                      <<maxcpl[j]<<" ? ";
       if (m_possiblecplconfigs[i][j]>=mincpl[j] &&
           m_possiblecplconfigs[i][j]<=maxcpl[j]) {
-        msg_Debugging()<<"yes"<<std::endl;
+        msg_IODebugging()<<"yes"<<std::endl;
         evaluate[j]=true;
       }
-      else msg_Debugging()<<"no"<<std::endl;
+      else msg_IODebugging()<<"no"<<std::endl;
     }
     if (foundone==evaluate) {
-      msg_Debugging()<<"found at least one configuration with correct orders\n";
+      msg_IODebugging()<<"found at least one configuration with correct orders\n";
       return true;
     }
-    msg_Debugging()<<"----------------\n";
+    msg_IODebugging()<<"----------------\n";
   }
-  msg_Debugging()<<"found no configuration with correct orders\n";
+  msg_IODebugging()<<"found no configuration with correct orders\n";
   return false;
 }
 
