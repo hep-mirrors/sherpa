@@ -750,8 +750,10 @@ void Single_Process::ResetResultsForDifferential(Variations_Mode varmode)
   m_last.Clear();
   m_lastb.Clear();
   if (varmode != Variations_Mode::nominal_only) {
-    m_last["ME"] = Weights {Variations_Type::qcd};
-    m_lastb["ME"] = Weights {Variations_Type::qcd};
+    m_last["Main"] = Weights {Variations_Type::qcd};
+    m_lastb["Main"] = Weights {Variations_Type::qcd};
+    m_last["All"] = Weights {Variations_Type::qcd};
+    m_lastb["All"] = Weights {Variations_Type::qcd};
   }
   m_last = 1.0;
   m_lastb = 0.0;
@@ -759,7 +761,8 @@ void Single_Process::ResetResultsForDifferential(Variations_Mode varmode)
   if (m_dads) {
     m_dadswgtmap.Clear();
     if (varmode != Variations_Mode::nominal_only) {
-      m_dadswgtmap["ME"] = Weights {Variations_Type::qcd};
+      m_dadswgtmap["Main"] = Weights {Variations_Type::qcd};
+      m_dadswgtmap["All"] = Weights {Variations_Type::qcd};
     }
     m_dadswgtmap = 0.0;
   }
@@ -816,13 +819,14 @@ void Single_Process::ReweightBVI(ClusterAmplitude_Vector& ampls)
   // NOTE: we iterate over m_last's variations, but we also update m_lastb
   // inside the loop, to avoid code duplication; also note that m_lastb should
   // not be all-zero if m_lastbxs is zero
-  Reweight(m_last["ME"], [this, &ampls, &info](
+  Reweight(m_last["Main"], [this, &ampls, &info](
                    double varweight,
                    size_t varindex,
                    QCD_Variation_Params& varparams) -> double {
     if (varweight == 0.0) {
-      m_lastb["ME"].Variation(varindex) = 0.0;
-      return 0.0;
+      m_lastb["Main"].Variation(varindex) = 0.0;
+      m_lastb["All"].Variation(varindex) = 0.0;
+      return m_last["All"].Variation(varindex) = 0.0;
     }
     double K {1.0};
     if (!m_mewgtinfo.m_bkw.empty()) {
@@ -832,9 +836,10 @@ void Single_Process::ReweightBVI(ClusterAmplitude_Vector& ampls)
         m_mewgtinfo.m_type == mewgttype::METS) {
 
       const auto res = ReweightBornLike(varparams, info);
-      m_lastb["ME"].Variation(varindex) =
+      m_lastb["Main"].Variation(varindex) =
+      m_lastb["All"].Variation(varindex) =
           (m_lastbxs != 0.0) ? res / m_lastb.BaseWeight() : 0.0;
-      return K * res / m_last.BaseWeight();
+      return m_last["All"].Variation(varindex) = K * res / m_last.BaseWeight();
 
     } else {
 
@@ -884,9 +889,10 @@ void Single_Process::ReweightBVI(ClusterAmplitude_Vector& ampls)
         res = (Bnew * K * (1.0 - csi.m_ct) + (VInew + KPnew) * K1) * csi.m_pdfwgt;
       }
 
-      m_lastb["ME"].Variation(varindex) =
+      m_lastb["All"].Variation(varindex) =
+      m_lastb["Main"].Variation(varindex) =
           (m_lastbxs != 0.0) ? resb / m_lastb.BaseWeight() : 0.0;
-      return res / m_last.BaseWeight();
+      return m_last["All"].Variation(varindex) = res / m_last.BaseWeight();
     }
   });
 }
@@ -897,7 +903,8 @@ void Single_Process::ReweightRS(ClusterAmplitude_Vector& ampls)
   BornLikeReweightingInfo info {m_mewgtinfo, ampls, m_last.Nominal()};
   auto last_subevt_idx = GetSubevtList()->size() - 1;
   for (auto& sub : *GetSubevtList()) {
-    sub->m_results["ME"] = Weights {Variations_Type::qcd};
+    sub->m_results["Main"] = Weights {Variations_Type::qcd};
+    sub->m_results["All"] = Weights {Variations_Type::qcd};
   }
   s_variations->ForEach(
       [this, &info, &last_subevt_idx](size_t varindex,
@@ -915,7 +922,8 @@ void Single_Process::ReweightRS(ClusterAmplitude_Vector& ampls)
                                                  sub->p_real->p_ampl);
           info.m_fallbackresult = sub->m_result;
           auto contrib = K * ReweightBornLike(varparams, info);
-          sub->m_results["ME"].Variation(varindex) =
+          sub->m_results["All"].Variation(varindex) =
+          sub->m_results["Main"].Variation(varindex) =
               contrib / sub->m_results.BaseWeight();
         }
       });
@@ -950,7 +958,7 @@ void Single_Process::CalculateAssociatedContributionVariations()
     const double BVIKP {
       m_mewgtinfo.m_B * (1 - m_csi.m_ct) + m_mewgtinfo.m_VI + m_mewgtinfo.m_KP};
     const double DADS {
-      m_dads ? m_dadswgtmap.Nominal("ME") / m_csi.m_pdfwgt : 0.0};
+      m_dads ? m_dadswgtmap.Nominal("Main") / m_csi.m_pdfwgt : 0.0};
     const double BVIKPDADS {BVIKP - DADS};
     if (IsBad(BVIKPDADS))
       return;

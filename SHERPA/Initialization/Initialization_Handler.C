@@ -195,8 +195,8 @@ void Initialization_Handler::RegisterDefaults()
   s["RESUMMATION_SCALE_FACTOR"].SetDefault(1.0);
   s["USR_WGT_MODE"].SetDefault(true);
 
-  Scoped_Settings metssettings{ Settings::GetMainSettings()["METS"] };
-  metssettings["CLUSTER_MODE"].SetDefault(0);
+  Scoped_Settings mepssettings{ Settings::GetMainSettings()["MEPS"] };
+  mepssettings["CLUSTER_MODE"].SetDefault(0);
 
   s["NNLOqT_FOMODE"].SetDefault(0);
 
@@ -1168,8 +1168,14 @@ bool Initialization_Handler::InitializeTheFragmentation()
   p_fragmentation = Fragmentation_Getter::GetObject
     (fragmentationmodel,
      Fragmentation_Getter_Parameters(m_showerhandlers[isr::hard_process]->ShowerGenerator()));
-  if (p_fragmentation==NULL)
-    THROW(fatal_error, "  Fragmentation model '"+fragmentationmodel+"' not found.");
+  if (p_fragmentation==NULL) {
+    if (s_loader->LoadLibrary("Sherpa"+fragmentationmodel))
+      p_fragmentation = Fragmentation_Getter::GetObject
+	(fragmentationmodel,
+	 Fragmentation_Getter_Parameters(m_showerhandlers[isr::hard_process]->ShowerGenerator()));
+    if (p_fragmentation==NULL)
+      THROW(fatal_error, "  Fragmentation model '"+fragmentationmodel+"' not found.");
+  }
   as->SetActiveAs(isr::hard_process);
   msg_Info()<<"Initialized fragmentation\n";
   return 1;

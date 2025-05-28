@@ -1,4 +1,4 @@
-set(Main_SOURCES Coulomb.C
+set(YFSMain_SOURCES Coulomb.C
                  Define_Dipoles.C
                  FSR.C
                  ISR.C
@@ -7,7 +7,7 @@ set(Main_SOURCES Coulomb.C
                  YFS_Form_Factor.C
                  YFS_Handler.C)
 
-set(Main_HEADERS Coulomb.H
+set(YFSMain_HEADERS Coulomb.H
                  Define_Dipoles.H
                  FSR.H
                  ISR.H
@@ -17,7 +17,8 @@ set(Main_HEADERS Coulomb.H
                  YFS_Handler.H)
 
 
-sherpa_create_git_info(Main)
+sherpa_create_git_info(YFSMain ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR})
  
-add_library(YFSMain SHARED ${Main_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
+add_library(YFSMain SHARED ${YFSMain_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
 sherpa_handle_shared_library(YFSMain YFSMain)
+add_dependencies(YFSMain YFSMain_Git_Info)

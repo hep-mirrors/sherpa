@@ -158,9 +158,9 @@ void Run_Parameter::AnalyseEnvironment()
   BrInitError error;
   if (br_init_lib(&error)) {
     string BR_prefix=br_find_prefix(SHERPA_PREFIX);
-    sharepath=BR_prefix+"/share/SHERPA-MC";
-    includepath=BR_prefix+"/include/SHERPA-MC";
-    librarypath=BR_prefix+"/lib/SHERPA-MC";
+    sharepath=BR_prefix+"/"+SHERPA_SHARE_SUBDIR;
+    includepath=BR_prefix+"/"+SHERPA_INCLUDE_SUBDIR;
+    librarypath=BR_prefix+"/"+SHERPA_LIBRARY_SUBDIR;
   }
 
   gen.m_variables["SHERPA_SHARE_PATH"]=

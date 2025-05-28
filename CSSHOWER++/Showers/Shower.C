@@ -37,6 +37,7 @@ Shower::Shower(PDF::ISR_Handler* isr, const int qcd, const int qed, int type)
   m_kscheme           = pss["KIN_SCHEME"].Get<int>();
   m_recdec            = pss["RECO_DECAYS"].Get<int>();
   m_maxpart           = pss["MAXPART"].Get<int>();
+  m_scvmode           = pss["SCALE_VARIATION_SCHEME"].Get<int>();
   if (type) {
     kfmode=pss["MI_KFACTOR_SCHEME"].Get<int>();
     k0sqf=pss["MI_FS_PT2MIN"].Get<double>();
@@ -92,8 +93,8 @@ double Shower::EFac(const std::string &sfk) const
 bool Shower::EvolveShower(Singlet * actual,const size_t &maxem,size_t &nem)
 {
   m_weightsmap.Clear();
-  m_weightsmap["PS"] = Weights {Variations_Type::qcd};
-  m_weightsmap["PS_QCUT"] = Weights {Variations_Type::qcut};
+  m_weightsmap["Sudakov"] = Weights {Variations_Type::qcd};
+  m_weightsmap["QCUT"] = Weights {Variations_Type::qcut};
   return EvolveSinglet(actual,maxem,nem);
 }
 
@@ -292,11 +293,11 @@ int Shower::MakeKinematics
     return ustat;
   }
   const double split_weight {split->Weight()};
-  m_weightsmap["PS"] *= split_weight;
+  m_weightsmap["Sudakov"] *= split_weight;
   msg_Debugging() << "sw = " << split_weight
-                  << ", w = " << m_weightsmap["PS"].Nominal() << "\n";
+                  << ", w = " << m_weightsmap["Sudakov"].Nominal() << "\n";
   if (m_reweight) {
-    ATOOLS::Reweight(m_weightsmap["PS"],
+    ATOOLS::Reweight(m_weightsmap["Sudakov"],
                      [this, split](double varweight,
                                    QCD_Variation_Params& varparams) -> double {
                        return varweight * Reweight(&varparams, *split);
@@ -361,10 +362,10 @@ bool Shower::EvolveSinglet(Singlet * act,const size_t &maxem,size_t &nem)
         if (singlet_weight != 1.0)
           msg_Debugging() << "Add wt for " << (**it) << ": " << singlet_weight
                           << "\n";
-        m_weightsmap["PS"] *= singlet_weight;
+        m_weightsmap["Sudakov"] *= singlet_weight;
         if (m_reweight) {
           ATOOLS::Reweight(
-              m_weightsmap["PS"],
+              m_weightsmap["Sudakov"],
               [this, it](double varweight, QCD_Variation_Params& varparams)
                   -> double { return varweight * Reweight(&varparams, **it); });
           (*it)->SudakovReweightingInfos().clear();
@@ -430,7 +431,7 @@ bool Shower::EvolveSinglet(Singlet * act,const size_t &maxem,size_t &nem)
       std::vector<bool> skips (nqcuts + 1, false);
       int nskips {0};
       ATOOLS::ReweightAll(
-          m_weightsmap["PS_QCUT"],
+          m_weightsmap["QCUT"],
           [this, jcv, is_jcv_positive, &all_vetoed, &skips, &nskips](
               double varweight,
               size_t varindex,
@@ -478,15 +479,15 @@ bool Shower::EvolveSinglet(Singlet * act,const size_t &maxem,size_t &nem)
 	    sing->SetNLO(sing->NLO()&~2);
 	  }
           const double fac {1.0 / lkf / wskip};
-          m_weightsmap["PS"] *= fac;
-          m_weightsmap["PS_QCUT"] *= skips;
+          m_weightsmap["Sudakov"] *= fac;
+          m_weightsmap["QCUT"] *= skips;
           continue;
         }
 	else {
           const double fac {1.0 / (1.0 - wskip)};
           skips.flip();
-          m_weightsmap["PS"] *= fac;
-          m_weightsmap["PS_QCUT"] *= skips;
+          m_weightsmap["Sudakov"] *= fac;
+          m_weightsmap["QCUT"] *= skips;
         }
       }
       if (all_vetoed) return false;
@@ -503,12 +504,12 @@ bool Shower::EvolveSinglet(Singlet * act,const size_t &maxem,size_t &nem)
             const double singlet_weight {(*it)->Weight(m_last[0]->KtStart())};
             msg_Debugging()
                 << "Add wt for " << (**it) << ": " << singlet_weight << "\n";
-            m_weightsmap["PS"] *= singlet_weight;
+            m_weightsmap["Sudakov"] *= singlet_weight;
             (*it)->Weights().clear();
           }
           if (m_reweight) {
             ATOOLS::Reweight(
-                m_weightsmap["PS"],
+                m_weightsmap["Sudakov"],
                 [this, it](double varweight,
                            QCD_Variation_Params& varparams) -> double {
                   return varweight * Reweight(&varparams, **it);
@@ -649,7 +650,13 @@ double Shower::Reweight(QCD_Variation_Params* varparams,
       info.sf->Coupling()->SetAlternativeUnderlyingCoupling(
           varparams->p_alphas, muR2fac);
       // calculate new coupling
+      if(m_scvmode & 4)
+        info.sf->Coupling()->SetCTFac(info.z);
+      else if(m_scvmode & 8) {
+        info.sf->Coupling()->SetCTFac(info.z*(1.-info.y));
+      }
       double newcpl {info.sf->Coupling()->Coupling(info.scale, 0)};
+      info.sf->Coupling()->SetCTFac(1);
       // clean up
       info.sf->Coupling()->SetAlternativeUnderlyingCoupling(nullptr);
       info.sf->Coupling()->SetLast(lastcpl);

@@ -85,7 +85,11 @@ public:
             return Return_Value::Retry_Event;
           }
 	}
-	FillFragmentationBlob(blobs, blob, event);
+	if (!FillFragmentationBlob(blobs, blob, event)) {
+	  msg_Tracking()<<"Error in "<<METHOD<<"."<<endl
+			<<"   Hadronization failed. Retry the event."<<endl;
+	  return Return_Value::Retry_Event;
+	}
         if (m_pythiadecays) {
           break;
         }
@@ -142,7 +146,7 @@ private:
     }
   }
 
-  void FillFragmentationBlob(Blob_List * bloblist, Blob * blob, Pythia8::Event& pevt)
+  bool FillFragmentationBlob(Blob_List * bloblist, Blob * blob, Pythia8::Event& pevt)
   {
     /*
       Go through now hadronized Pythia event and fill sherpa fragmentation blob with particles
@@ -158,15 +162,16 @@ private:
       auto find = m_processed.find(i);
       if (pevt[i].status() == -23 && find == m_processed.end()) {
         m_processed.insert(i);
-        HandleDaughters(bloblist, blob, pevt, i);
+        if (!HandleDaughters(bloblist, blob, pevt, i)) return false;
       }
     }
     if (!m_pythiadecays){
       blob->SetStatus(blob_status::needs_hadrondecays);
     }
+    return true;
   }
 
-  void HandleDaughters(Blob_List * bloblist, Blob * decayblob, Pythia8::Event& pevt, int i){
+  bool HandleDaughters(Blob_List * bloblist, Blob * decayblob, Pythia8::Event& pevt, int i){
     /*
       Loop over the daughters of the particle at position 'i' in the Pythia event.
       Either add them to outgoing particles directly or continue with their daughters.
@@ -177,7 +182,8 @@ private:
 
     // No daughters (unexpected)
     if (pevt[i].daughter1() == 0 && pevt[i].daughter2() == 0){
-      THROW(fatal_error,"Particle does not have any daughters to handle.");
+      msg_Error()<<METHOD<<"(): Particle does not have any daughters to handle."<<std::endl;
+      return false;
     }
     // One carbon copy as sole daughter. Example are recoil effects in the shower or oscillations.
     else if (pevt[i].daughter1() == pevt[i].daughter2() && pevt[i].daughter1() > 0){
@@ -196,10 +202,12 @@ private:
     }
     // Two separately stored decay products (e.g. in backwards evolution of initial-state showers).
     else if (pevt[i].daughter1() > pevt[i].daughter2() && pevt[i].daughter2() > 0){
-      THROW(fatal_error,"Two separetely stored decay products can not be handled at the moment.");
+      msg_Error()<<METHOD<<"(): Two separetely stored decay products can not be handled at the moment."<<std::endl;
+      return false;
     }
     else {
-      THROW(fatal_error,"Unknown configuration of daughgters.");
+      msg_Debugging()<<METHOD<<"(): Unknown configuration of daughgters."<<std::endl;
+      return false;
     }
     for (int d = begin; d < end; ++d) {
       auto find = m_processed.find(d);
@@ -231,9 +239,9 @@ private:
           // This should not happen.(And has not in testing)
           else {
             msg_Error() << "Particle " <<  m_pythia.particleData.name(abs(Id)) << " with id " << abs(Id) << " was supposed to be stable but is only intermediary." << std::endl;
-            THROW(fatal_error,"Particle is supposed to be stable.");
-          }
-          HandleDaughters(bloblist, decayblob, pevt, d);
+	    return false;
+	  }
+          if (!HandleDaughters(bloblist, decayblob, pevt, d)) return false;
         }
         // If none of previous exceptions occur the particle is added as outgoing to the decay or fragmentation blob.
         else {
@@ -252,7 +260,7 @@ private:
           decayblob->AddToOutParticles(daughter);
           // Initialize the particles decay blob if appropriate.
           if (m_pythiadecays && (pevt[d].status() < 0)){
-            HandleDecays(bloblist, pevt, daughter, d);
+            if (!HandleDecays(bloblist, pevt, daughter, d)) return false;
           }
           else {
             daughter->SetStatus(part_status::active);
@@ -260,21 +268,22 @@ private:
         }
       }
     }
+    return true;
   }
 
-  void HandleDecays(Blob_List * bloblist, Pythia8::Event& pevt, Particle* inpart, int i)
+  bool HandleDecays(Blob_List * bloblist, Pythia8::Event& pevt, Particle* inpart, int i)
   /*
     Create decay blob and fill outgoing particles based on daughters in Pythia event.
   */
   {
     if(inpart->DecayBlob()){
-      msg_Error() << inpart->DecayBlob() << std::endl;
-      THROW(fatal_error,"Decay blob already exists.");
+      msg_Error() <<"(): Decay blob already exists. "<< inpart->DecayBlob() << std::endl;
+      return false;
     }
     if(inpart->Flav().IsStable()){
-      msg_Error() << inpart->Flav() << std::endl;
+      msg_Error() <<"(): Particle is supposed to be stable. "<< inpart->Flav() << std::endl;
       if(msg_LevelIsDebugging()) pevt.list();
-      THROW(fatal_error,"Particle is supposed to be stable.");
+      return false;
     }
     if(inpart->Time()==0.0) inpart->SetTime();
     inpart->SetStatus(part_status::decayed);
@@ -282,7 +291,7 @@ private:
     blob->AddToInParticles(inpart);
     blob->SetTypeSpec("Pythia8");
     DEBUG_VAR(inpart->Momentum());
-    HandleDaughters(bloblist, blob, pevt, i);
+    return HandleDaughters(bloblist, blob, pevt, i);
   }
 
   void AssignDecays() {

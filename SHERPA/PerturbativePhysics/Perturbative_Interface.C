@@ -294,11 +294,11 @@ int Perturbative_Interface::PerformShowers()
   PDF::Shower_Base *csh(p_shower->GetShower());
   int stat=csh->PerformShowers();
   if ((*p_hard)["WeightsMap"]!=NULL) {
-    m_weightsmap["PS"]      = csh->WeightsMap()["PS"];
-    m_weightsmap["PS_QCUT"] = csh->WeightsMap()["PS_QCUT"];
+    m_weightsmap["Sudakov"] = csh->WeightsMap()["Sudakov"];
+    m_weightsmap["QCUT"]    = csh->WeightsMap()["QCUT"];
+    m_weightsmap["All"]     = csh->WeightsMap()["Sudakov"];
     auto wgtmap = (*p_hard)["WeightsMap"]->Get<Weights_Map>();
-    wgtmap["PS"]      *= m_weightsmap["PS"];
-    wgtmap["PS_QCUT"] *= m_weightsmap["PS_QCUT"];
+    wgtmap *= m_weightsmap;
     p_hard->AddData("WeightsMap",new Blob_Data<Weights_Map>(wgtmap));
   }
   return stat;

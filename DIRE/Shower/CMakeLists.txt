@@ -1,4 +1,4 @@
-set(Shower_SOURCES Gauge.C
+set(DireShower_SOURCES Gauge.C
                    Lorentz.C
                    Kernel.C
                    Alpha_QCD.C
@@ -9,7 +9,7 @@ set(Shower_SOURCES Gauge.C
                    Cluster_Definitions.C
                    Shower.C)
 
-set(Shower_HEADERS Gauge.H
+set(DireShower_HEADERS Gauge.H
                    Lorentz.H
                    Kernel.H
                    Alpha_QCD.H
@@ -20,7 +20,8 @@ set(Shower_HEADERS Gauge.H
                    Cluster_Definitions.H
                    Shower.H)
 
-sherpa_create_git_info(Shower)
+sherpa_create_git_info(DireShower ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR})
  
-add_library(DireShower SHARED ${Shower_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
+add_library(DireShower SHARED ${DireShower_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
 sherpa_handle_shared_library(DireShower DireShower)
+add_dependencies(DireShower DireShower_Git_Info)

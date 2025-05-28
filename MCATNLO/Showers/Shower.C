@@ -122,7 +122,7 @@ int Shower::UpdateDaughters(Parton *const split,Parton *const newpB,
   split->SetMEFlow(2,newpB->GetMEFlow(2));
   if (rd==1) rd=p_gamma->Reject()?-1:1;
   const double gamma_weight {p_gamma->Weight()};
-  m_weightsmap["MC@NLO_PS"] *= gamma_weight;
+  m_weightsmap["Sudakov"] *= gamma_weight;
   if (rd==1 && split->KtTest()>split->KtMax())
     jcv=split->GetSing()->JetVeto(&m_sudakov);
   split->SetFlavour(m_flav);
@@ -218,7 +218,7 @@ int Shower::MakeKinematics
     return ustat;
   }
   if (m_reweight) {
-    ATOOLS::Reweight(m_weightsmap["MC@NLO_PS"],
+    ATOOLS::Reweight(m_weightsmap["Sudakov"],
                      [this, split](double varweight,
                                    QCD_Variation_Params& varparams) -> double {
                        return varweight * Reweight(&varparams, *split);
@@ -231,8 +231,8 @@ int Shower::MakeKinematics
 bool Shower::EvolveShower(Singlet *act,const size_t &maxem,size_t &nem)
 {
   m_weightsmap.Clear();
-  m_weightsmap["MC@NLO_PS"] = Weights {Variations_Type::qcd};
-  m_weightsmap["MC@NLO_QCUT"] = Weights {Variations_Type::qcut};
+  m_weightsmap["Sudakov"] = Weights {Variations_Type::qcd};
+  m_weightsmap["QCUT"] = Weights {Variations_Type::qcut};
   p_actual=act;
   Parton * split;
   Vec4D mom;
@@ -252,7 +252,7 @@ bool Shower::EvolveShower(Singlet *act,const size_t &maxem,size_t &nem)
              it != p_actual->end();
              ++it) {
           ATOOLS::Reweight(
-              m_weightsmap["MC@NLO_PS"],
+              m_weightsmap["Sudakov"],
               [this, it](double varweight, QCD_Variation_Params& varparams)
                   -> double { return varweight * Reweight(&varparams, **it); });
           (*it)->SudakovReweightingInfos().clear();
@@ -276,7 +276,7 @@ bool Shower::EvolveShower(Singlet *act,const size_t &maxem,size_t &nem)
       const bool is_jcv_positive {jcv >= 0.0};
       bool all_vetoed {true};
       ATOOLS::ReweightAll(
-          m_weightsmap["MC@NLO_QCUT"],
+          m_weightsmap["QCUT"],
           [this, jcv, is_jcv_positive, &all_vetoed](
               double varweight,
               size_t varindex,
@@ -309,7 +309,7 @@ bool Shower::EvolveShower(Singlet *act,const size_t &maxem,size_t &nem)
              it != p_actual->end();
              ++it) {
           ATOOLS::Reweight(
-              m_weightsmap["MC@NLO_PS"],
+              m_weightsmap["Sudakov"],
               [this, it](double varweight, QCD_Variation_Params& varparams)
                   -> double { return varweight * Reweight(&varparams, **it); });
           (*it)->SudakovReweightingInfos().clear();

@@ -32,7 +32,8 @@ set(Single_Events_HEADERS Event_Handler.H
                           EvtReadin_Phase.H
                           Decay_Handler_Base.H)
 
-sherpa_create_git_info(Single_Events)
+sherpa_create_git_info(Single_Events ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR})
  
 add_library(SherpaSingleEvents SHARED ${Single_Events_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
 sherpa_handle_shared_library(SherpaSingleEvents SherpaSingleEvents)
+add_dependencies(SherpaSingleEvents Single_Events_Git_Info)

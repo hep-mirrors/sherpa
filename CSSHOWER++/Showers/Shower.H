@@ -27,8 +27,8 @@ namespace CSSHOWER {
     PDF::ISR_Handler          * p_isr;
     REMNANTS::Remnant_Handler * p_remnants;
     Parton           * m_last[4];
-    int                m_kscheme, m_maxpart, m_recdec;
-
+    int                m_kscheme, m_maxpart, m_recdec, m_scvmode;
+     
     ATOOLS::Cluster_Leg *p_old[2];
 
     std::map<std::string,double,ATOOLS::String_Sort> m_efac;

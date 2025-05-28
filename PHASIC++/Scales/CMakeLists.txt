@@ -19,6 +19,7 @@ set(Scales_SOURCES Cluster_Definitions.C
                    SingleTop_Core_Scale.C
                    QQSinglet_Core_Scale.C
                    HTPrime_Core_Scale.C
+		           Photons_Core_Scale.C
                    MINLO_Scale_Setter.C
                    MINLO_KFactor_Setter.C
                    EWVirtKFactor_Setter.C
@@ -33,7 +34,8 @@ set(Scales_HEADERS Cluster_Definitions.H
                    Color_Setter.H
                    Tag_Setter.H)
 
-sherpa_create_git_info(Scales)
+sherpa_create_git_info(Scales ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR})
 
 add_library(PhasicScales SHARED ${Scales_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
 sherpa_handle_shared_library(PhasicScales PhasicScales)
+add_dependencies(PhasicScales Scales_Git_Info)

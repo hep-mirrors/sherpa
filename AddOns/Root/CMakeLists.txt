@@ -1,6 +1,6 @@
 
-set(foo_SOURCES Output_RootNtuple.C RootNtuple_Reader.C)
-set(foo_HEADERS Output_RootNtuple.H RootNtuple_Reader.H)
+set(SherpaRootTuple_SOURCES Output_RootNtuple.C RootNtuple_Reader.C)
+set(SherpaRootTuple_HEADERS Output_RootNtuple.H RootNtuple_Reader.H)
 set(SherpaRootOutput_SOURCES Output_RootNtuple.C)
 set(SherpaRootOutput_HEADERS Output_RootNtuple.H)
 set(SherpaRootInput_SOURCES RootNtuple_Reader.C)
@@ -14,7 +14,7 @@ set(SherpaRootEDOutput_HEADERS Output_RootNtuple.H)
 set(SherpaRootEDInput_SOURCES RootNtuple_Reader.C)
 set(SherpaRootEDInput_HEADERS RootNtuple_Reader.H)
 
-sherpa_create_git_info(foo)
+sherpa_create_git_info(SherpaRootTuple ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR})
 list(TRANSFORM SherpaRootOutput_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/../Root/")
 list(APPEND SherpaRootOutput_SOURCES ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C)
 

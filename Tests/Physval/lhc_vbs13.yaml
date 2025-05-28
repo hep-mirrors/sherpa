@@ -31,7 +31,6 @@ ME_QED: { CLUSTERING_THRESHOLD: 10 }
 PSI:
   ITMIN: 25000
 
-EVENTS: $(EVTS)
 EVENT_GENERATION_MODE: Weighted
 
 # scale and pdf variations

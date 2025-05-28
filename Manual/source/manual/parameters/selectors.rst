@@ -292,9 +292,9 @@ selector is
 wherein ``Algorithm`` can take the values
 ``kt,antikt,cambridge,eecambridge``.  In the algebraic
 ``<expression>``, ``MU_n2`` (n=2..njet+1) signify the nodal values of
-the jets found and ``p[i]`` are their momenta. For details see
-:ref:`Scale setters`. For example, in lepton pair production in
-association with jets
+the jets found and ``p[i]`` are their momenta after clustering and ordered
+by :math:`p_T`. For details see :ref:`Scale setters`. For example, in
+lepton pair production in association with jets
 
 .. code-block:: yaml
 

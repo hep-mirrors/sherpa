@@ -436,6 +436,7 @@ std::vector<Process_Base*> Matrix_Element_Handler::InitializeSingleProcess
 	rpi.m_integrator=rpi.m_rsintegrator;
 	rpi.m_megenerator=rpi.m_rsmegenerator;
 	rpi.m_itmin=rpi.m_rsitmin;
+        rpi.m_itmax=rpi.m_rsitmax;
 	if (m_nloadd) {
 	  if (rpi.m_fi.m_nlocpl.size()<2) THROW(fatal_error,"NLO_Order not set.");
 	  for (int i(0);i<2;++i) {
@@ -848,7 +849,9 @@ void Matrix_Element_Handler::ReadFinalStateMultiSpecificProcessSettings(
     else if (subkey == "Integrator")         ExtractMPvalues(value, range, nf, args.pbi.m_vint);
     else if (subkey == "RS_Integrator")      ExtractMPvalues(value, range, nf, args.pbi.m_vrsint);
     else if (subkey == "PSI_ItMin")          ExtractMPvalues(value, range, nf, args.pbi.m_vitmin);
+    else if (subkey == "PSI_ItMax")          ExtractMPvalues(value, range, nf, args.pbi.m_vitmax);
     else if (subkey == "RS_PSI_ItMin")       ExtractMPvalues(value, range, nf, args.pbi.m_vrsitmin);
+    else if (subkey == "RS_PSI_ItMax")       ExtractMPvalues(value, range, nf, args.pbi.m_vrsitmax);
   }
 }
 
@@ -1060,8 +1063,11 @@ void Matrix_Element_Handler::BuildSingleProcessList(
 	if (GetMPvalue(args.pbi.m_vrsint,nfs,pnid,ds)) cpi.m_rsintegrator=ds;
 	else cpi.m_rsintegrator=cpi.m_integrator;
 	if (GetMPvalue(args.pbi.m_vitmin,nfs,pnid,di)) cpi.m_itmin=di;
+        if (GetMPvalue(args.pbi.m_vitmax,nfs,pnid,di)) cpi.m_itmax=di;
 	if (GetMPvalue(args.pbi.m_vrsitmin,nfs,pnid,di)) cpi.m_rsitmin=di;
 	else cpi.m_rsitmin=cpi.m_itmin;
+        if (GetMPvalue(args.pbi.m_vrsitmax,nfs,pnid,di)) cpi.m_rsitmax=di;
+        else cpi.m_rsitmax=cpi.m_itmax;
         cpi.m_sort=args.pbi.m_sort;
 	std::vector<Process_Base*> proc=InitializeProcess(cpi,pmap);
 	for (size_t i(0);i<proc.size();i++) {

@@ -22,6 +22,8 @@
 #include "Rivet/AnalysisHandler.hh"
 #include "Rivet/Tools/Logging.hh"
 
+#include "YODA/Config/BuildConfig.h"
+
 #include "HepMC3/GenEvent.h"
 #include "HepMC3/GenCrossSection.h"
 
@@ -38,11 +40,15 @@ namespace SHERPARIVET {
     size_t m_nevt, m_histointerval;
     bool   m_finished;
     bool   m_splitjetconts, m_splitSH, m_splitpm, m_splitcoreprocs, m_usehepmcshort;
+    bool   m_outputmeonlyvariations;
+#ifdef HAVE_HDF5
+    bool   m_useH5;
+#endif
 
     int m_loglevel, m_ignorebeams, m_skipmerge, m_skipweights;
     double m_weightcap, m_nlosmearing;
     std::string m_matchweights, m_unmatchweights, m_nomweight;
-    std::vector<std::string> m_analyses;
+    std::vector<std::string> m_analyses, m_thresholds;
 
     Rivet_Map         m_rivet;
     SHERPA::HepMC3_Interface      m_hepmc;
@@ -81,6 +87,70 @@ using namespace SHERPA;
 using namespace ATOOLS;
 using namespace Rivet;
 
+
+#ifdef USING__RIVET4
+namespace {
+  // Helper method to extract the error and squared error of the AnalysisObject
+  template<size_t DbnN, typename ... AxisT>
+  bool extractError(const YODA::AnalysisObjectPtr& ao,
+                    const std::vector<double>& data,
+                    std::vector<double>& data_sum,
+                    std::vector<double>& data_sum_sq,
+                    double& numEntries, size_t& idx) {
+    using YAO = YODA::BinnedDbn<DbnN, AxisT...>;
+    using YAOPtr = YODA::BinnedDbnPtr<DbnN, AxisT...>;
+    YAOPtr hist = std::dynamic_pointer_cast<YAO>(ao);
+    if (hist == nullptr)  return false;
+    const size_t binLen = YODA::Dbn<DbnN>::DataSize::value;
+    idx += 1; // skip first element (the length of the serialised histo)
+    // Calculate the total number of histo fills (unweighted)
+    const size_t nBins = hist->numBins(true, true);
+    for (size_t j = 0; j < nBins; ++j) {
+      numEntries += data[idx+binLen*(j+1)-1];
+    }
+    for (size_t j = 0; j < nBins; ++j) {
+      double err = std::sqrt(data[idx+DbnN+1]/numEntries);
+      data_sum.push_back(err);
+      data_sum_sq.push_back(err*err);
+      idx += binLen;
+    }
+    return true;
+  }
+
+  // Helper method to nullify outlier AnalysisObjects
+  template<size_t DbnN, typename ... AxisT>
+  bool applyFiltering(const YODA::AnalysisObjectPtr& ao,
+                      const std::vector<double>& data,
+                      const std::vector<double>& mean,
+                      const std::vector<double>& stddev,
+                      std::vector<double>& filtered_data,
+                      std::vector<double>& scale,
+                      const double numEntries,
+                      size_t level, size_t mpi_size,
+                      size_t& idx, size_t& nbin, bool& has_outlier) {
+    using YAO = YODA::BinnedDbn<DbnN, AxisT...>;
+    using YAOPtr = YODA::BinnedDbnPtr<DbnN, AxisT...>;
+    YAOPtr hist = std::dynamic_pointer_cast<YAO>(ao);
+    if (hist == nullptr)  return false;
+    const size_t binLen = YODA::Dbn<DbnN>::DataSize::value;
+    idx += 1; // skip first element (the length of the serialised histo)
+    const size_t nBins = hist->numBins(true, true);
+    for (size_t j = 0; j < nBins; ++j, ++nbin) {
+      double err = std::sqrt(data[idx+DbnN+1]/numEntries);
+      double rescale = mpi_size*std::sqrt(numEntries/(nBins*data[idx+binLen-1]));
+      if (std::abs(err - mean[nbin]) > level * rescale * stddev[nbin]) {
+        for (size_t k = 0; k < binLen; ++k) {
+          filtered_data[idx+k] = 0.0;  // exclude outlier
+        }
+        scale[idx+binLen-1] = 1; // rescale result to account for missing rank
+        has_outlier = true;
+      }
+      idx += binLen;
+    }
+    return true;
+  }
+} // end of anonymous namespace
+#endif
 
 Rivet_Interface::Rivet_Interface(const std::string &outpath,
                                  const std::vector<btp::code> &ignoreblobs,
@@ -230,6 +300,9 @@ std::string Rivet_Interface::GetCoreProc(const std::string& proc)
 bool Rivet_Interface::Init()
 {
   if (m_nevt==0) {
+    m_outputmeonlyvariations =
+      Settings::GetMainSettings()["OUTPUT_ME_ONLY_VARIATIONS"].Get<bool>();
+
     Scoped_Settings s{ Settings::GetMainSettings()[m_tag] };
 
     m_splitjetconts = s["JETCONTS"].SetDefault(0).Get<int>();
@@ -243,7 +316,7 @@ bool Rivet_Interface::Init()
         <<"   Analysis splitting is combined with on-the-fly variations. Cross\n"
         <<"   sections of variations in split analyses, and hence their\n"
         <<"   normalizations, will not be correct. To fix this, upgrade your\n"
-        <<"   Rivet installation to v3.2.0 or later.\n";
+        <<"   Rivet installation to v4.0.0 or later.\n";
     }
 #endif
 
@@ -264,6 +337,11 @@ bool Rivet_Interface::Init()
     m_nomweight = s["NOMINAL_WEIGHT"].SetSynonyms({"--nominal-weight"}).SetDefault("").Get<std::string>();
     m_analyses = s["ANALYSES"].SetSynonyms({"ANALYSIS", "-a", "--analyses"})
                               .SetDefault<std::vector<std::string>>({}).GetVector<std::string>();
+    m_thresholds = s["OUTLIER_THRESHOLDS"].SetSynonyms({"--outlier-thresholds"})
+                              .SetDefault<std::vector<std::string>>({}).GetVector<std::string>();
+#ifdef HAVE_HDF5
+    m_useH5 = s["YODA_USE_H5"].SetSynonyms({"--yoda-h5"}).SetDefault(false).Get<bool>();
+#endif
 
     // add a MPI rank specific suffix if necessary
 #if defined(USING__MPI) && defined(USING__RIVET4)
@@ -380,6 +458,9 @@ std::string Rivet_Interface::OutputPath(const Rivet_Map::key_type& key)
   if (key.first!="") out+="."+key.first;
   if (key.second!=0) out+=".j"+ToString(key.second);
   out+=".yoda";
+#ifdef HAVE_HDF5
+   if (m_useH5)  return out + ".h5";
+#endif
 #ifdef HAVE_LIBZ
   out+=".gz";
 #endif
@@ -441,7 +522,122 @@ bool Rivet_Interface::Finish()
 
     // merge Rivet::AnalysisHandlers before finalising
     for (auto& it : m_rivet) {
+      if (it.first.first.find("thr=") != std::string::npos)  continue;
       std::vector<double> data = it.second->serializeContent(true); //< ensure fixed-length across ranks
+      if (m_thresholds.size()) {
+        // Compute global sums and sum of squares
+        // for each element in the serialised vector
+        const size_t datalen = data.size();
+        std::vector<double> data_sum; data_sum.reserve(datalen);
+        std::vector<double> data_sum_sq; data_sum_sq.reserve(datalen);
+        const size_t binLen = YODA::Dbn1D::DataSize::value;
+        const size_t beaminfo_len = 2/* assuming _beaminfo->numBins() is always 2 */;
+        const vector<YODA::AnalysisObjectPtr> raos = it.second->getRawAOs();
+        vector<double> numEntries(raos.size(), 0.0);
+        size_t idx = beaminfo_len+1;
+        for (size_t i = 0; i < raos.size(); ++i) {
+          // 1D histograms
+          if ( extractError<1, double>(raos[i], data, data_sum, data_sum_sq, numEntries[i], idx) )  continue;
+          if ( extractError<1, int>(raos[i], data, data_sum, data_sum_sq, numEntries[i], idx) )  continue;
+          if ( extractError<1, std::string>(raos[i], data, data_sum, data_sum_sq, numEntries[i], idx) ) continue;
+          // 1D profiles
+          if ( extractError<2, double>(raos[i], data, data_sum, data_sum_sq, numEntries[i], idx) )  continue;
+          if ( extractError<2, int>(raos[i], data, data_sum, data_sum_sq, numEntries[i], idx) )  continue;
+          if ( extractError<2, std::string>(raos[i], data, data_sum, data_sum_sq, numEntries[i], idx) ) continue;
+          // 2D histograms
+          if ( extractError<2, double, double>(raos[i], data, data_sum, data_sum_sq, numEntries[i], idx) )  continue;
+          // ... extend to other fill dimensions / axis combinations as needed
+          idx += raos[i]->lengthContent(true)+1;
+        }
+        if (idx != datalen) {
+          THROW(fatal_error,"Decomposition of serialised Rivet::AnalysisHandler failed");
+        }
+        mpi->Reduce(data_sum.data(),data_sum.size(),MPI_DOUBLE,MPI_SUM);
+        mpi->Reduce(data_sum_sq.data(),data_sum_sq.size(),MPI_DOUBLE,MPI_SUM);
+
+        // Compute mean and standard deviation on the root rank
+        std::vector<double> mean(data_sum.size(), 0.0);
+        std::vector<double> stddev(data_sum_sq.size(), 0.0);
+        if (mpi->Rank()==0) {
+          for (size_t i = 0; i < mean.size(); ++i) {
+            mean[i] = data_sum[i] / (double)mpi->Size();
+            double variance = (data_sum_sq[i] / (double)mpi->Size()) - (mean[i] * mean[i]);
+            stddev[i] = (variance > 0) ? std::sqrt(variance/(double)mpi->Size()) : 0.0;
+          }
+        }
+        // Broadcast mean and stddev to all ranks
+        mpi->Bcast(mean.data(), mean.size(), MPI_DOUBLE);
+        mpi->Bcast(stddev.data(), stddev.size(), MPI_DOUBLE);
+
+        // Apply the outlier filtering: replace outliers with 0 before reduction
+        for (const std::string& threshold : m_thresholds) {
+          std::vector<double> filtered_data(data), scale(data.size(),0.);
+          const double level = std::stod(threshold);
+          bool has_outlier = false;
+          size_t idx = beaminfo_len+1, nbin = 0;
+          for (size_t i = 0; i < raos.size(); ++i) {
+            // 1D histograms
+            if ( applyFiltering<1, double>(raos[i], data, mean, stddev, filtered_data, scale, numEntries[i],
+                                           level, mpi->Size(), idx, nbin, has_outlier) )  continue;
+            if ( applyFiltering<1, int>(raos[i], data, mean, stddev, filtered_data, scale, numEntries[i],
+                                        level, mpi->Size(), idx, nbin, has_outlier) )  continue;
+            if ( applyFiltering<1, std::string>(raos[i], data, mean, stddev, filtered_data, scale, numEntries[i],
+                                                level, mpi->Size(), idx, nbin, has_outlier) ) continue;
+            // 1D profiles
+            if ( applyFiltering<2, double>(raos[i], data, mean, stddev, filtered_data, scale, numEntries[i],
+                                           level, mpi->Size(), idx, nbin, has_outlier) )  continue;
+            if ( applyFiltering<2, int>(raos[i], data, mean, stddev, filtered_data, scale, numEntries[i],
+                                        level, mpi->Size(), idx, nbin, has_outlier) )  continue;
+            if ( applyFiltering<2, std::string>(raos[i], data, mean, stddev, filtered_data, scale, numEntries[i],
+                                                level, mpi->Size(), idx, nbin, has_outlier) ) continue;
+            // 2D histograms
+            if ( applyFiltering<2, double, double>(raos[i], data, mean, stddev, filtered_data, scale, numEntries[i],
+                                                   level, mpi->Size(), idx, nbin, has_outlier) )  continue;
+            // ... extend to other fill dimensions / axis combinations as needed
+            idx += raos[i]->lengthContent(true)+1;
+          }
+          if (nbin != mean.size() || idx != datalen) {
+            THROW(fatal_error,"Decomposition of filtered Rivet::AnalysisHandler failed");
+          }
+          // Perform MPI_Reduce to compute the filtered sum
+          mpi->Reduce(filtered_data.data(),datalen,MPI_DOUBLE,MPI_SUM);
+          mpi->Reduce(scale.data(),datalen,MPI_DOUBLE,MPI_SUM);
+          if (mpi->Rank()==0) {
+            // Lazily initialise a new AnalysisHandler
+            // and populate it with the filtered data
+            for (size_t i = 0; i < datalen; ++i) {
+              if (scale[i] && scale[i]<mpi->Size()) {
+                double sf(1.-scale[i]/double(mpi->Size()));
+                for (size_t k = 0; i < binLen; ++k) {
+                  filtered_data[i-k] /= sf;
+                }
+              }
+            }
+            const std::string newlabel = it.first.first+"thr="+threshold+".rmbin";
+            GetRivet(newlabel,it.first.second,&m_lastevent)->deserializeContent(filtered_data,(size_t)mpi->Size());
+          }
+          // Let's also write out the version that removes the entire rank,
+          // e.g. if the outlier also affected the total sum of weights
+          int vetoed_ranks = 0;
+          if (has_outlier) {
+            std::fill(filtered_data.begin(), filtered_data.end(), 0.0);
+            vetoed_ranks = 1;
+          }
+          else if (mpi->Rank()==0) { // undo MPI-reduction for the root rank
+            filtered_data = data;
+          }
+          // Re-perform MPI_Reduce to compute the filtered sum
+          mpi->Reduce(filtered_data.data(),datalen,MPI_DOUBLE,MPI_SUM);
+          mpi->Reduce(&vetoed_ranks,1,MPI_INT,MPI_SUM);
+          size_t nRanks = mpi->Size()-vetoed_ranks;
+          if (mpi->Rank()==0 && nRanks >= 1) {
+            // Lazily initialise a new AnalysisHandler
+            // and populate it with the filtered data
+            const std::string newlabel = it.first.first+"thr="+threshold+".rmrank";
+            GetRivet(newlabel,it.first.second,&m_lastevent)->deserializeContent(filtered_data,nRanks);
+          }
+        }
+      }
       mpi->Reduce(&data[0],data.size(),MPI_DOUBLE,MPI_SUM);
       if (mpi->Rank()==0) {
         it.second->deserializeContent(data,(size_t)mpi->Size());
@@ -469,6 +665,10 @@ bool Rivet_Interface::Finish()
   std::map<std::string, double> err_wgts;
   xs.FillVariations(xs_wgts);
   err.FillVariations(err_wgts);
+  if (m_outputmeonlyvariations) {
+    xs.FillVariations(xs_wgts, Variations_Source::main);
+    err.FillVariations(err_wgts, Variations_Source::main);
+  }
   // At this point, we have a "Nominal" entry (but the Rivet weight name might
   // be different, e.g. an empty string ""), and we might have additional
   // unphysical weights in the Rivet weight sums obtained above. Hence, we make

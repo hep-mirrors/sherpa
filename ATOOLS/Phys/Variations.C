@@ -737,6 +737,8 @@ std::string QCD_Variation_Params::Name(Variations_Source source,
       name = "ME-only:" + divider;
     else
       name = "ME & PS:" + divider;
+    if (IsTrivial())
+      return name + "<no variation>";
   }
 
   // scale factors tags; note that we assume here that the shower scale factors

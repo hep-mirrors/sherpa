@@ -195,17 +195,21 @@ double CF_QCD::Coupling(const double &scale,const int pol)
     // Beta0 from One_Running_AlphaS contains extra factor 1/2
     switch (m_scvmode) {
     case 1:
+    case 5:
+    case 9:
       // local counterterms and redefinition at threshold
       for (size_t i(1);i<ths.size();++i) {
         ct=cpl/M_PI*cplinfo.Coupling()->Beta0((ths[i]+ths[i-1])/2.0)*log(ths[i]/ths[i-1]);
-	cpl*=1.0-ct;
+	cpl*=1.0-ct*m_ctfac;
       }
       break;
     case 2:
+    case 6:
+    case 10:
       // replace as(t) -> as(t)*[1-sum as/2pi*beta(nf)*log(th[i]/th[i-1])]
       for (size_t i(1);i<ths.size();++i)
         ct+=cpl/M_PI*cplinfo.Coupling()->Beta0((ths[i]+ths[i-1])/2.0)*log(ths[i]/ths[i-1]);
-      fac=1.-ct;
+      fac=1.-ct*m_ctfac;
       break;
     default:
       fac=1.;

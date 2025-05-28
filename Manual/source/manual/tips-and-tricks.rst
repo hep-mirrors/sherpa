@@ -113,6 +113,23 @@ hard events, and ``SPLITPM: 1`` creates histograms split by events with positive
 negative event weights. Finally, ``SPLITCOREPROCS: 1`` will split by different
 processes if multiple ones are specified in the runcard.
 
+Starting with version 2.1.0, YODA supports an HDF5-based output format.
+This can be requested via the run card using the ``--yoda-h5: true`` option.
+By default, this will attempt to compress the output data when writing out
+the HDF5 file. Exporting the environment variable ``YODA_HDF5_COMPRESSION=0`` will
+disable this behaviour, leading to better I/O performance at the cost of disk space.
+
+If Sherpa has been configured with MPI support, the Rivet output from each MPI rank
+is merged in memory and a single output file is written out (available starting
+with Rivet v4.0.0). This behaviour can be disabled using the ``--skip-merge=1`` option.
+
+If memory-based merging is used, it's possible to veto statistical outliers on the fly
+by specifying a threshold in terms of standard deviation. For example, the option
+``--outlier-thresholds: [3.0, 5.0]`` would write out additional versions of the
+output file where outlying ranks ("rmrank") or outlying bins ("rmbin") have been
+removed at the 3- and 5-sigma level, respectively. The default output
+file for which no outliers have been removed will always be written out.
+
 .. _MCFM interface:
 
 **************

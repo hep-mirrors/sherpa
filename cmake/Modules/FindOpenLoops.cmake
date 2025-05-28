@@ -53,10 +53,11 @@ set(OPENLOOPS_LIBRARIES ${OPENLOOPS_LIBRARY})
 get_filename_component(OPENLOOPS_LIBRARY_DIR ${OPENLOOPS_LIBRARY} PATH)
 
 if(OPENLOOPS_FOUND AND NOT TARGET OpenLoops::OpenLoops)
-    add_library( OpenLoops::OpenLoops UNKNOWN IMPORTED)
+    add_library( OpenLoops::OpenLoops SHARED IMPORTED)
     set_target_properties( OpenLoops::OpenLoops PROPERTIES
         IMPORTED_LOCATION "${OPENLOOPS_LIBRARY}"
         INTERFACE_INCLUDE_DIRECTORIES "${OPENLOOPS_INCLUDE_DIR}"
+        IMPORTED_NO_SONAME TRUE
     )
 endif()
 mark_as_advanced(OpenLoops_FOUND)

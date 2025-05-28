@@ -56,7 +56,8 @@ set(Math_HEADERS MathTools.H
                  Tensor_Contractions_Epsilon.H
                  Uncertain.H)
 
-sherpa_create_git_info(Math)
+sherpa_create_git_info(Math ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR})
  
 add_library(ToolsMath SHARED ${Math_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
 sherpa_handle_shared_library(ToolsMath ToolsMath)
+add_dependencies(ToolsMath Math_Git_Info)

@@ -5,6 +5,6 @@ RUN  pacman -Syu --noconfirm \
                       pkgconf \
                       gcc gcc-fortran \
                       libzip lhapdf \
-                      catch2 \
+                      catch2 lcov \
                       doxygen
 RUN lhapdf update && lhapdf install PDF4LHC21_40_pdfas

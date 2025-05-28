@@ -6,7 +6,6 @@
 
 using namespace AMISIC;
 using namespace ATOOLS;
-using namespace std;
 
 // will have to make sure that pions are initialised below.
 //
@@ -49,7 +48,6 @@ Hadronic_XSec_Calculator(MODEL::Model_Base * model,
   m_prefSD         = m_triple_pomeron * pow(m_s1,3.*m_eps_pomeron/2.)/(16.*M_PI) / (rpa->Picobarn()/1e9);
   m_prefDD         = sqr(m_triple_pomeron) * pow(m_s1,m_eps_pomeron)/(16.*M_PI) / (rpa->Picobarn()/1e9);
   FixType();
-  FixTables();
   if (m_testmode>0) TestXSecs();
 }
 
@@ -66,7 +64,7 @@ void Hadronic_XSec_Calculator::FixType() {
 }
 
 void Hadronic_XSec_Calculator::TestXSecs() {
-  list<double> Es = { 23.5, 62.5, 546., 1800., 16000., 40000. };
+  std::list<double> Es = { 23.5, 62.5, 546., 1800., 16000., 40000. };
   for (size_t i=0;i<2;i++) {
     switch (m_testmode) {
     case 3:
@@ -131,11 +129,10 @@ void Hadronic_XSec_Calculator::CalculateHGammaXSecs(const size_t photon) {
   double xstot, prefV, masses[2];
   masses[1-photon] = m_masses[1-photon];
   // Iterate over VMD hadrons and add cross sections
-  for (std::map<Flavour, double>::const_iterator flit=m_fVs.begin();
-       flit!=m_fVs.end();flit++) {
-    hadtags[photon] = m_indexmap[flit->first];
-    masses[photon]  = flit->first.Mass();
-    prefV           = m_alphaQED/m_fVs[flit->first];
+  for (auto& flit : s_fVs) {
+    hadtags[photon] = s_indexmap[flit.first];
+    masses[photon]  = Flavour(flit.first).Mass();
+    prefV           = m_alphaQED/s_fVs[flit.first];
     m_xstot        += prefV * (xstot = TotalXSec(hadtags));
     m_xsel         += prefV * IntElXSec(hadtags,xstot);
     m_xssdA        += prefV * IntSDXSec(hadtags,0,masses);
@@ -150,15 +147,13 @@ void Hadronic_XSec_Calculator::CalculatePhotonPhotonXSecs() {
   ////////////////////////////////////////////////////////////////////////////////////////////
   // Iterate over VMD hadrons and add cross sections
   ////////////////////////////////////////////////////////////////////////////////////////////
-  for (std::map<Flavour, double>::const_iterator flit0=m_fVs.begin();
-       flit0!=m_fVs.end();flit0++) {
-    hadtags[0] = m_indexmap[flit0->first];
-    masses[0]  = flit0->first.Mass();
-    for (std::map<Flavour, double>::const_iterator flit1=m_fVs.begin();
-	 flit1!=m_fVs.end();flit1++) {
-      hadtags[1] = m_indexmap[flit1->first];
-      masses[1]  = flit0->first.Mass();
-      prefVV     = sqr(m_alphaQED)/(m_fVs[flit0->first] * m_fVs[flit1->first]);
+  for (auto flit0 : s_fVs ) {
+    hadtags[0] = s_indexmap[flit0.first];
+    masses[0]  = Flavour(flit0.first).Mass();
+    for (auto flit1 : s_fVs) {
+      hadtags[1] = s_indexmap[flit1.first];
+      masses[1]  = Flavour(flit0.first).Mass();
+      prefVV     = sqr(m_alphaQED)/(s_fVs[flit0.first] * s_fVs[flit1.first]);
       m_xstot   += prefVV * (xstot = TotalXSec(hadtags));
       m_xsel    += prefVV * IntElXSec(hadtags,xstot);
       m_xssdA   += prefVV * IntSDXSec(hadtags,0,masses);
@@ -265,33 +260,31 @@ void Hadronic_XSec_Calculator::Output() const {
 }
 
 
-void Hadronic_XSec_Calculator::FixTables() {
-  ////////////////////////////////////////////////////////////////////////////////////////////
-  // Cross section parametrisation taken from Donnachie and Landshoff,
-  // and from Schuler and Sjöstrand, Z Phys C 73 677-688 (1997).
-  // Following their papers we assume that for pomeron/regeeon fits, there is no difference
-  // between nucleons (i.e. we treat protons and neutrons as if they were the same), and between
-  // rho(770) and omega(782).
-  ////////////////////////////////////////////////////////////////////////////////////////////
-  m_indexmap = {
-    { Flavour(kf_p_plus),    0 },
-    { Flavour(kf_n),         0 },
-    { Flavour(kf_rho_770),   1 },
-    { Flavour(kf_omega_782), 1 },
-    { Flavour(kf_phi_1020),  2 },
-    { Flavour(kf_J_psi_1S),  3 }
-  };
-  ////////////////////////////////////////////////////////////////////////////////////////////
-  // Critical values for the total and elastic cross section fit: VMD
-  // factors f_V^2/(4 pi) have no units.
-  ////////////////////////////////////////////////////////////////////////////////////////////
-  m_fVs = {
-    { Flavour(kf_rho_770),    2.20 },
-    { Flavour(kf_omega_782), 23.60 },
-    { Flavour(kf_phi_1020),  18.40 },
-    { Flavour(kf_J_psi_1S),  11.50 }
-  };
-}
+////////////////////////////////////////////////////////////////////////////////////////////
+// Cross section parametrisation taken from Donnachie and Landshoff,
+// and from Schuler and Sjöstrand, Z Phys C 73 677-688 (1997).
+// Following their papers we assume that for pomeron/regeeon fits, there is no difference
+// between nucleons (i.e. we treat protons and neutrons as if they were the same), and between
+// rho(770) and omega(782).
+////////////////////////////////////////////////////////////////////////////////////////////
+std::map<kf_code, size_t> Hadronic_XSec_Calculator::s_indexmap = {
+  { kf_p_plus,    0 },
+  { kf_n,         0 },
+  { kf_rho_770,   1 },
+  { kf_omega_782, 1 },
+  { kf_phi_1020,  2 },
+  { kf_J_psi_1S,  3 }
+};
+////////////////////////////////////////////////////////////////////////////////////////////
+// Critical values for the total and elastic cross section fit: VMD
+// factors f_V^2/(4 pi) have no units.
+////////////////////////////////////////////////////////////////////////////////////////////
+std::map<kf_code, double> Hadronic_XSec_Calculator::s_fVs = {
+  { kf_rho_770,    2.20 },
+  { kf_omega_782, 23.60 },
+  { kf_phi_1020,  18.40 },
+  { kf_J_psi_1S,  11.50 }
+};
 
 ////////////////////////////////////////////////////////////////////////////////////////////
 // Slopes for the elastic cross section fit in units of GeV^{-2}.

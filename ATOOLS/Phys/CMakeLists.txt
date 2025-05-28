@@ -59,10 +59,11 @@ set(Phys_HEADERS fjcore.hh
                  Weights.H
                  Hard_Process_Variation_Generator.H)
 
-sherpa_create_git_info(Phys)
+sherpa_create_git_info(Phys ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR})
  
 add_library(ToolsPhys SHARED ${Phys_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
 sherpa_handle_shared_library(ToolsPhys ToolsPhys)
+add_dependencies(ToolsPhys Phys_Git_Info)
 
 
 if(SHERPA_ENABLE_LHAPDF)

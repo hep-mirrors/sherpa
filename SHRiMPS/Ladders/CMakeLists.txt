@@ -20,7 +20,8 @@ set(Ladders_HEADERS Ladder_Particle.H
                     MEs.H
                     Primary_Ladders.H)
 
-sherpa_create_git_info(Ladders)
+sherpa_create_git_info(Ladders ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR})
  
 add_library(ShrimpsLadders SHARED ${Ladders_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
 sherpa_handle_shared_library(ShrimpsLadders ShrimpsLadders)
+add_dependencies(ShrimpsLadders Ladders_Git_Info)
