@@ -333,8 +333,18 @@ namespace ATOOLS {
   <<"("<<ATOOLS::om::green<<"\""<<INFO<<"\""                    \
   <<ATOOLS::om::reset<<")"<<std::endl
 
+#define IODEBUG_INFO(INFO) \
+  msg_IODebugging()<<ATOOLS::om::blue<<METHOD<<":"<<__LINE__      \
+  <<"("<<ATOOLS::om::green<<"\""<<INFO<<"\""                    \
+  <<ATOOLS::om::reset<<")"<<std::endl
+
 #define DEBUG_VAR(VAR) \
   msg_Debugging()<<ATOOLS::om::blue<<__LINE__<<":" \
+  <<#VAR<<ATOOLS::om::reset<<"="<<ATOOLS::om::green \
+  <<VAR<<ATOOLS::om::reset<<std::endl
+
+#define IODEBUG_VAR(VAR) \
+  msg_IODebugging()<<ATOOLS::om::blue<<__LINE__<<":" \
   <<#VAR<<ATOOLS::om::reset<<"="<<ATOOLS::om::green \
   <<VAR<<ATOOLS::om::reset<<std::endl
 
@@ -343,6 +353,12 @@ namespace ATOOLS {
   <<a1<<ATOOLS::om::red<<") "<<ATOOLS::om::reset; \
   ATOOLS::Indentation indent; \
   if (msg_LevelIsDebugging()) indent.Activate(3)
+
+#define IODEBUG_FUNC(a1) \
+  msg_IODebugging()<<ATOOLS::om::red<<METHOD<<"("<<ATOOLS::om::green \
+  <<a1<<ATOOLS::om::red<<") "<<ATOOLS::om::reset; \
+  ATOOLS::Indentation indent; \
+  if (msg_LevelIsIODebugging()) indent.Activate(3)
 
 #endif
 
