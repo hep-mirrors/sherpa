@@ -303,9 +303,12 @@ bool Dipole::BoostNLO() {
     // }
     // Check that the final state fermions
     // are in their own restframe;
-    m_ranTheta = acos(1.-2.*ran->Get());
+    // m_ranTheta = acos(0.99999*(1.-2.*ran->Get()));
     m_ranPhi = ran->Get()*2.*M_PI;
+    double s = (m_momenta[0]+m_momenta[1]).Abs2();
+    double t = (m_momenta[0]-m_momenta[0]).Abs2();
     Vec4D Q = m_bornmomenta[0]+m_bornmomenta[1];
+    m_ranTheta = acos((m_bornmomenta[0]+m_bornmomenta[1]).CosTheta());
     Poincare boost(m_bornmomenta[0]+m_bornmomenta[1]);
     // Poincare boost(m_newmomenta[0]+m_newmomenta[1]);
     // boost.Boost(m_photonSum);
@@ -394,13 +397,24 @@ void Dipole::MakePair(double cms, Vec4D &p1, Vec4D &p2) {
 
 
 void Dipole::RandomRotate(Vec4D &p){
-  Vec4D t1 = p;
-  // rotate around x
-  p[2] = cos(m_ranTheta)*t1[2] - sin(m_ranTheta)*t1[3];
-  p[3] = sin(m_ranTheta)*t1[2] + cos(m_ranTheta)*t1[3];
-  t1 = p;
-  p[1] = cos(m_ranPhi)*t1[1]-sin(m_ranPhi)*t1[2];
-  p[2] = sin(m_ranPhi)*t1[1]+cos(m_ranPhi)*t1[2];
+    double x = p[1], y = p[2], z = p[3];
+
+  // --- First: Rotate around X-axis (θ = m_ranTheta)
+  // Affects Y and Z
+  double cx = cos(m_ranTheta), sx = sin(m_ranTheta);
+  double y1 = cx * y - sx * z;
+  double z1 = sx * y + cx * z;
+
+  // --- Then: Rotate around Z-axis (ϕ = m_ranPhi)
+  // Affects X and new Y
+  double cz = cos(m_ranPhi), sz = sin(m_ranPhi);
+  double x1 = cz * x - sz * y1;
+  double y2 = sz * x + cz * y1;
+
+  // Set rotated components back into the vector
+  p[1] = x1;
+  p[2] = y2;
+  p[3] = z1; // from the X rotation
 }
 
 void Dipole::BoostLab(){
