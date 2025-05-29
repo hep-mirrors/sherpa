@@ -80,16 +80,16 @@ DivArrD YFS_Form_Factor::BVR_full_eps(YFS::Dipole &d,  double Kmax, int mode) {
   if(m_tchannel==2) return BVirtTEps(d,Kmax);
   Vec4D p1,p2;
   if(d.Type()==dipoletype::initial){
-    p1 = d.GetNewMomenta(0);
-    p2 = d.GetNewMomenta(1);
+    p1 = d.GetBornMomenta(0);
+    p2 = d.GetBornMomenta(1);
   }
   else if(d.Type()==dipoletype::final){
-    p1 = d.GetNewMomenta(0);
-    p2 = d.GetNewMomenta(1);
+    p1 = d.GetBornMomenta(0);
+    p2 = d.GetBornMomenta(1);
   }
   else if(d.Type()==dipoletype::ifi){
-    p1 = d.GetNewMomenta(1);
-    p2 = d.GetNewMomenta(0);
+    p1 = d.GetBornMomenta(1);
+    p2 = d.GetBornMomenta(0);
   }
   else{
     msg_Error()<<"Unknown Dipole type"<<std::endl;

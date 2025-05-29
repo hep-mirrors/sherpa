@@ -380,7 +380,7 @@ double NLO_Base::CalculateReal(Vec4D k, int fsrcount) {
 		if(diff>10){
 			msg_Debugging()<<"Large jump in Real weight for "<<k<<std::endl;
 			m_ravg = avg;
-			return 0;
+			// return 0;
 		}
 	}
 	if(fsrcount>=3) return tot*subb;
@@ -856,10 +856,9 @@ void NLO_Base::MapInitial(Vec4D_Vector &p){
  	p[0] = {E1, 0, 0, sign_z*lamCM};
   p[1] = {E2, 0, 0, -sign_z*lamCM};
 	Poincare boostLab(QQ);
-  Poincare pRot;
+  Poincare pRot = Poincare(p[0], Vec4D(0., 0., 0., 1.));
 	for (int i = 0; i < 2; ++i)
 	{
-		if(i==0) pRot = Poincare(p[i], Vec4D(0., 0., 0., 1.));
 		pRot.Rotate(p[i]);
 		boostLab.BoostBack(p[i]);
 		// pRot2.Rotate(p[i]);

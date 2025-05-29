@@ -101,7 +101,7 @@ void YFS_Process::Init(const Process_Info &pi,
     p_virtproc->SetLookUp(false);
     p_yfs->NLO()->InitializeVirtual(vpi);
     p_yfs->SetNLOType(nlo_type::loop);
-    p_yfs->NLO()->p_virt->SetProc(p_bornproc);
+    if(p_yfs->NLO()->HasVirtual()) p_yfs->NLO()->p_virt->SetProc(p_bornproc);
   }
   if (pi.Has(nlo_type::rvirt)) {
     Process_Info rvpi(pi);
