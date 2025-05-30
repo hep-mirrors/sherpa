@@ -61,8 +61,7 @@ EPA_FF_Base::EPA_FF_Base(const ATOOLS::Flavour& beam, const int dir)
 
 void EPA_FF_Base::FillTables(const size_t& nx, const size_t& nb)
 {
-  double xnorm = m_beam.IsIon() ? 1. / m_beam.GetMassNumber() : 1.;
-  axis   xaxis(nx, m_xmin * xnorm, m_xmax * xnorm, axis_mode::log);
+  axis   xaxis(nx, m_xmin, m_xmax, axis_mode::log);
   axis   baxis(nb, m_bmin * m_R, m_bmax * m_R, axis_mode::log);
 
   //////////////////////////////////////////////////////////////////////////////
@@ -84,6 +83,7 @@ void EPA_FF_Base::FillTables(const size_t& nx, const size_t& nb)
   for (size_t i = 0; i < xaxis.m_nbins; i++) {
     for (size_t j = 0; j < baxis.m_nbins; j++) {
       kernel->SetXB(xaxis.x(i), baxis.x(j));
+      // Jacobian is d^2b = b db dphi and phi can be integrated out immediately
       double value = 2 * m_Zsquared * sqr(bessel()) / xaxis.x(i) * baxis.x(j);
       p_N_xb->Fill(i, j, value);
     }

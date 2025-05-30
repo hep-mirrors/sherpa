@@ -57,7 +57,7 @@ namespace BEAM {
                                        ATOOLS::ran->Get()) -
                       1.);
       double wt =
-              (ATOOLS::sqr(m_b) + 1.) / m_b * 2. *
+              (ATOOLS::sqr(m_b) + 1.) / m_b / 2. *
               std::log((ATOOLS::sqr(m_bmax) + 1.) / (ATOOLS::sqr(m_bmin) + 1.));
       m_b *= m_R;// < now convert to an actual distance
       return (*p_N_xb)(x, m_b) * wt;
@@ -103,15 +103,19 @@ namespace BEAM {
       m_x = x;
       m_b = b;
     }
-    double operator()(double y) override {
+    double operator()(double y) override
+    {
       //////////////////////////////////////////////////////////////////////////////
-      // Integration argument y here is bT*qT as mandated by the Bessel function:
+      // Integration argument y here is bT*qT as mandated by the Bessel
+      // function:
       // - argument of form factor Q^2 = qT^2+x^2m^2 with qT^2 = y^2/bT^2
-      // - we assume that m_b is in units of 1/GeV, qT is in GeV, overall results
+      // - we assume that m_b is in units of 1/GeV, qT is in GeV, overall
+      // results
       //   are in GeV.
       //////////////////////////////////////////////////////////////////////////////
       double qT = y / m_b, qT2 = ATOOLS::sqr(qT);
       double Q2  = (qT2 + ATOOLS::sqr(m_x * p_ff->Mass())) / (1. - m_x);
+      // integration variable is qT, so dy/dqT = b, hence Jacobian 1/b needed
       double res = qT2 / Q2 * p_ff->FF(Q2) / m_b;
       return res;
     }
