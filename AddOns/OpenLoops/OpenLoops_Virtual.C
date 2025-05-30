@@ -116,6 +116,7 @@ operator()(const PHASIC::Process_Info &pi) const
   if(pi.m_fi.m_nlotype==nlo_type::loop  && pi.m_loopgenerator!="OpenLoops") return NULL;
   if(pi.m_fi.m_nlotype==nlo_type::rvirt && pi.m_rvgenerator!="OpenLoops") return NULL;
 
+  Flavour_Vector flavs = pi.ExtractFlavours();
   DEBUG_VAR(pi.m_maxcpl[0]-pi.m_fi.m_nlocpl[0]);
   DEBUG_VAR(pi.m_fi.m_nlocpl[0]);
   DEBUG_VAR(pi.m_maxcpl[1]-pi.m_fi.m_nlocpl[1]);
@@ -131,9 +132,17 @@ operator()(const PHASIC::Process_Info &pi) const
   OpenLoops_Interface::SetParameter
     ("coupling_ew_1", (int) pi.m_fi.m_nlocpl[1]);
 
+  if(flavs.size()==4){
+    if((flavs[2].Kfcode()==kf_pi_plus || flavs[3].Kfcode()==kf_pi_plus)){
+       OpenLoops_Interface::SetParameter
+        ("coupling_ew_0", 2);
+      OpenLoops_Interface::SetParameter
+      ("coupling_ew_1", (int) pi.m_fi.m_nlocpl[1]);
+    }
+  }
   int id = OpenLoops_Interface::RegisterProcess(pi.m_ii, pi.m_fi, 11);
   if (id>0) {
-    Flavour_Vector flavs = pi.ExtractFlavours();
+    // Flavour_Vector flavs = pi.ExtractFlavours();
     return new OpenLoops_Virtual(pi, flavs, id);
   }
   else {
