@@ -30,7 +30,8 @@ CS_Dipole::CS_Dipole(NLO_subevt *const sub,
   m_isrmode=psh->Process()->ISR()->On();
   for (size_t i(0);i<m_sub.m_n;++i) {
     size_t k(ID(sub->p_id[i]).front());
-    if (k==m_sub.m_i) m_ijt=i;
+    if (k==(m_sub.m_i<m_sub.m_j?
+	    m_sub.m_i:m_sub.m_j)) m_ijt=i;
     else if (k==m_sub.m_k) m_kt=i;
     m_rbmap[m_brmap[i]=k]=i;
   }
@@ -44,6 +45,7 @@ CS_Dipole::CS_Dipole(NLO_subevt *const sub,
   m_id+="_"+ToString(m_ijt)
     +"["+ToString(m_sub.m_i)+","+ToString(m_sub.m_j)+"]_"
     +ToString(m_kt)+"["+ToString(m_sub.m_k)+"]";
+  m_id+="_"+ToString(m_sub.m_type);
   if (m_ijt<psh->Process()->NIn()) m_type|=1;
   if (m_kt<psh->Process()->NIn()) m_type|=2;
   Reset();
@@ -60,6 +62,7 @@ bool CS_Dipole::IsMapped(CS_Dipole *const dip) const
       m_sub.m_j!=dip->m_sub.m_j ||
       m_sub.m_k!=dip->m_sub.m_k) return false;
   if (m_ijt!=dip->m_ijt || m_kt!=dip->m_kt) return false;
+  if (m_sub.m_type!=dip->m_sub.m_type) return false;
   if (m_brmap!=dip->m_brmap) return false;
   return true;
 }

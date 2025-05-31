@@ -164,16 +164,22 @@ bool MCatNLO::PrepareShower
 }
 
 double MCatNLO::KT2(const ATOOLS::NLO_subevt &sub,
-		    const double &x,const double &y,const double &Q2)
+		    const PHASIC::Kin_Args *ka,
+		    const PHASIC::Ant_Args *aa)
 {
   double mi2(sqr(sub.p_real->p_fl[sub.m_i].Mass()));
   double mj2(sqr(sub.p_real->p_fl[sub.m_j].Mass()));
   double mk2(sqr(sub.p_real->p_fl[sub.m_k].Mass()));
   double mij2(sqr(sub.p_fl[sub.m_ijt].Mass()));
+  double x(ka->m_z), y(ka->m_y);
   if (sub.m_ijt>=2) {
     double t;
-    if (sub.m_kt>=2) t=(Q2-mi2-mj2-mk2)*y*(1.0-y);
+    if (sub.m_kt>=2) {
+      double Q2((ka->m_pi+ka->m_pj+ka->m_pk).Abs2());
+      t=(Q2-mi2-mj2-mk2)*y*(1.0-y);
+    }
     else {
+      double Q2((ka->m_pi+ka->m_pj-ka->m_pk).Abs2());
       double x(y*(Q2-mi2-mj2-mk2)/(Q2-mij2-mk2));
       t=(-Q2+mi2+mj2+mk2)/x*(1.0-x);
     }
@@ -189,9 +195,11 @@ double MCatNLO::KT2(const ATOOLS::NLO_subevt &sub,
     }
   }
   if (sub.m_ijt<2 && sub.m_kt>=2) {
+    double Q2((-ka->m_pi+ka->m_pj+ka->m_pk).Abs2());
     return (-Q2+mi2+mj2+mk2)*y/x*(1.0-x);
   }
   if (sub.m_ijt<2 && sub.m_kt<2) {
+    double Q2((-ka->m_pi+ka->m_pj-ka->m_pk).Abs2());
     return (Q2-mi2-mj2-mk2)*y*(1.0-x-y);
   }
   THROW(fatal_error,"Implement me");

@@ -54,7 +54,7 @@ Single_DipoleTerm::Single_DipoleTerm(const Process_Info &pinfo,
 
   auto dipolesettings = Settings::GetMainSettings()["DIPOLES"];
 
-  m_name+= "_RS"+ToString(m_pi)+"_"+ToString(m_pj)+"_"+ToString(m_pk);
+  m_name+= "_RS"+ToString(m_pi)+"_"+ToString(m_pj)+"_"+ToString(m_pk)+"_T"+ToString(spintype);
 
   // read in g->QQ option
   Flavour flav(dipolesettings["NF_GSPLIT"].Get<kf_code>());
@@ -186,6 +186,7 @@ Single_DipoleTerm::Single_DipoleTerm(const Process_Info &pinfo,
   m_subevt.m_pname=GenerateName(cpi.m_ii,cpi.m_fi);
   m_subevt.m_pname=m_subevt.m_pname.substr(0,m_subevt.m_pname.rfind("__"));
   m_subevt.m_stype = m_stype;
+  m_subevt.m_type = m_ftype;
 
   p_LO_process->SetSubEvt(&m_subevt);
 
@@ -630,7 +631,6 @@ double Single_DipoleTerm::Partonic(const Vec4D_Vector& _moms,
     if (m_flavs[0].Mass() == 0.0) pp[0][0] = std::abs(pp[0][3]);
     if (m_flavs[1].Mass() == 0.0) pp[1][0] = std::abs(pp[1][3]);
   }
-  SetLOMomenta(&pp.front(),cms);
   return m_mewgtinfo.m_B=operator()(&pp.front(),cms,mode);
 }
 
@@ -639,13 +639,13 @@ double Single_DipoleTerm::operator()(const ATOOLS::Vec4D * mom,
                                      const int _mode)
 {
   DEBUG_FUNC("mode="<<_mode);
+  SetLOMomenta(mom,cms);
   int mode(_mode&~2);
   if (mode==1) return m_lastxs;
   if (p_partner!=this) THROW(not_implemented,"No!!!");
 
   ResetLastXS();
   p_LO_process->ResetLastXS();
-  SetLOMomenta(mom,cms);
 
   ((_mode&2)?p_LO_process->Partner():p_LO_process)->SetSubevtList(p_subevtlist);
 

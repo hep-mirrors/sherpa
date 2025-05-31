@@ -4,6 +4,7 @@
 #include "ATOOLS/Org/My_Limits.H"
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/MyStrStream.H"
+#include "PHASIC++/Channels/CSS_Kinematics.H"
 
 using namespace ATOOLS;
 using namespace AMEGIC;
@@ -27,7 +28,8 @@ void IF_DipoleSplitting::SetMomenta(const Vec4D *mom)
   m_a = m_uj;
 
   m_Q2 = (-m_pi+m_pj+m_pk).Abs2();
-  m_kt2  = p_nlomc?p_nlomc->KT2(*p_subevt,m_xijk,m_uj,m_Q2):
+  PHASIC::Kin_Args ff(m_pi,m_pj,m_pk,m_uk,m_xijk);
+  m_kt2  = p_nlomc?p_nlomc->KT2(*p_subevt,&ff,NULL):
     -m_Q2*(1.-m_xijk)/m_xijk*m_uj*(1.0-m_uj);
 
 //   m_pt1  =    m_pj/m_uj;
@@ -118,7 +120,8 @@ void IF_MassiveDipoleSplitting::SetMomenta(const Vec4D *mom)
   m_a = m_uj;
 
   m_Q2 = (-m_pi+m_pj+m_pk).Abs2();
-  m_kt2  = p_nlomc?p_nlomc->KT2(*p_subevt,m_xijk,m_uj,m_Q2):
+  PHASIC::Kin_Args ff(m_pi,m_pj,m_pk,m_uk,m_xijk);
+  m_kt2  = p_nlomc?p_nlomc->KT2(*p_subevt,&ff,NULL):
     2.0*m_pj*m_pk*m_uj*(1.0-m_uj);
 
   m_pt1  =    m_pj/m_uj-m_pk/m_uk;

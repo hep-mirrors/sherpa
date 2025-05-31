@@ -11,13 +11,20 @@
 namespace ATOOLS {
 
   class Cluster_Amplitude;
+  class Recoil_Definition;
   struct RB_Data;
 
 }
 
 namespace MODEL { class Model_Base; }
 
-namespace PHASIC { class Process_Base; }
+namespace PHASIC {
+
+  class Process_Base;
+  struct Kin_Args;
+  struct Ant_Args;
+
+}
 
 namespace PDF {
 
@@ -37,6 +44,8 @@ namespace PDF {
 
     ATOOLS::subscheme::code m_subtype;
 
+    ATOOLS::Recoil_Definition *p_recoil;
+
   public:
 
     NLOMC_Base(const std::string &name);
@@ -46,8 +55,8 @@ namespace PDF {
     virtual int GeneratePoint(ATOOLS::Cluster_Amplitude *const ampl) = 0;
 
     virtual double KT2(const ATOOLS::NLO_subevt &sub,
-		       const double &x,const double &y,
-		       const double &Q2) = 0;
+		       const PHASIC::Kin_Args *ka,
+		       const PHASIC::Ant_Args *aa) = 0;
 
     static void ShowSyntax(const int mode);
 
@@ -60,6 +69,8 @@ namespace PDF {
     inline void SetShower(Shower_Base *const shower) { p_shower=shower; }
 
     inline ATOOLS::subscheme::code SubtractionType() const { return m_subtype; }
+
+    ATOOLS::Recoil_Definition *Recoil() const { return p_recoil; }
 
   };// end of class NLOMC_Base
 

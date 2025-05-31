@@ -12,6 +12,10 @@ namespace PHASIC {
     ATOOLS::Poincare_Sequence m_lam;
     int m_mode, m_stat;
     static double s_uxeps;
+    inline Kin_Args(const ATOOLS::Vec4D &pi,const ATOOLS::Vec4D&pj,
+		    const ATOOLS::Vec4D &pk,const double &y,const double &z):
+      m_pi(pi), m_pj(pj), m_pk(pk), m_y(y), m_z(z),
+      m_phi(0.0), m_mk2(-1.0), m_x(0.0), m_mode(0), m_stat(0) {}
     inline Kin_Args(const double &y=0.0,const double &z=0.0,
 		    const double &phi=0.0,const int mode=0,
 		    const int stat=-1):

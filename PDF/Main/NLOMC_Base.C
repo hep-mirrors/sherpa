@@ -9,8 +9,9 @@
 using namespace PDF;
 using namespace ATOOLS;
 
-NLOMC_Base::NLOMC_Base(const std::string& name)
-    : m_name(name), p_shower(NULL), m_subtype(subscheme::CS)
+NLOMC_Base::NLOMC_Base(const std::string& name):
+  m_name(name), p_shower(NULL),
+  m_subtype(subscheme::CS), p_recoil(NULL)
 {
   m_kt2min[0]=m_kt2min[1]=-1.0;
 }

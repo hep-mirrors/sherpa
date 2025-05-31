@@ -15,6 +15,7 @@
 #include "ATOOLS/Org/Data_Writer.H"
 #include "ATOOLS/Org/Scoped_Settings.H"
 #include "PHASIC++/Channels/Vegas.H"
+#include "PDF/Main/NLOMC_Base.H"
 #include "ATOOLS/Org/My_MPI.H"
 
 using namespace ATOOLS;
@@ -23,7 +24,7 @@ using namespace PHASIC;
 const size_t s_noptmin(10);
 
 BBar_Emission_Generator::BBar_Emission_Generator():
-  m_opt(5)
+  m_opt(5), p_ampl(NULL)
 {
   auto& s = Settings::GetMainSettings();
   m_omode = s["EEG"]["OMODE"].SetDefault(2).Get<size_t>();
@@ -35,6 +36,7 @@ BBar_Emission_Generator::BBar_Emission_Generator():
 BBar_Emission_Generator::~BBar_Emission_Generator() 
 {
   for (size_t i(0);i<m_dipoles.size();++i) delete m_dipoles[i];
+  if (p_ampl) p_ampl->Delete();
 }
 
 bool BBar_Emission_Generator::AddDipole
@@ -65,6 +67,8 @@ bool BBar_Emission_Generator::AddDipole
   dip->InitVegas("");
   dip->SetAMin(m_amin);
   dip->SetQ2Min(m_Q2min);
+  dip->SetSubType(bproc->NLOMC()->SubtractionType());
+  dip->SetRecoil(bproc->NLOMC()->Recoil());
   m_dipoles.push_back(dip);
   m_pmap[dip][bproc].push_back(sproc);
   return true;
@@ -75,6 +79,14 @@ bool BBar_Emission_Generator::InitDipoles
  Phase_Space_Handler *const psh)
 {
   m_nin=sproc->NIn();
+  if (p_ampl) p_ampl->Delete();
+  p_ampl = Cluster_Amplitude::New();
+  p_ampl->SetNIn(m_nin);
+  for (size_t i(0);i<bviproc->NIn()+bviproc->NOut();++i) {
+    p_ampl->CreateLeg(Vec4D(),i<m_nin?bviproc->Flavours()[i].Bar():
+		      bviproc->Flavours()[i],ColorID());
+  }
+  p_ampl->CreateLeg(Vec4D(),Flavour(kf_jet),ColorID());
   for (size_t i(0);i<sproc->Size();++i) {
     NLO_subevtlist *subs((*sproc)[i]->GetSubevtList());
     for (size_t j(0);j<subs->size()-1;++j) {
@@ -132,6 +144,9 @@ bool BBar_Emission_Generator::GeneratePoint
 {
   DEBUG_FUNC("");
   m_p.clear();
+  for (size_t i(0);i<p.size();++i)
+    p_ampl->Leg(i)->SetMom(p[i]);
+  p_ampl->Legs().back()->SetMom(Vec4D());
   p_active=NULL;
   double rns[4];
   for (size_t i(0);i<4;++i) rns[i]=ran->Get();
@@ -161,7 +176,9 @@ bool BBar_Emission_Generator::GeneratePoint
     }
   if (p_active==NULL) THROW(fatal_error,"Internal error");
   msg_Debugging()<<"selected "<<p_active->Id()<<"\n";
-  m_p=p_active->GeneratePoint(p,cuts,&rns[1]);
+  m_p=p_active->GeneratePoint(p,p_ampl,cuts,&rns[1]);
+  for (size_t i(0);i<m_p.size();++i)
+    p_ampl->Leg(i)->SetMom(m_p[i]);
   return true;
 }
 
@@ -174,7 +191,7 @@ bool BBar_Emission_Generator::GenerateWeight
     return false;
   }
   msg_Debugging()<<"Dipole "<<p_active->Id()<<" {\n";
-  double wgt(p_active->GenerateWeight(m_p,cuts));
+  double wgt(p_active->GenerateWeight(m_p,p_ampl,cuts));
   msg_Debugging()<<"} -> w = "<<wgt
 		 <<" ( a = "<<p_active->Alpha(1)<<" )\n";
   double asum(0.0);

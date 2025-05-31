@@ -62,7 +62,8 @@ int Lorentz::Update(Splitting &s,const int mode) const
     for (size_t i(0);i<s.p_c->Ampl()->size();++i)
       (*s.p_c->Ampl())[i]->SetMom
 	(s.m_lam*(*s.p_c->Ampl())[i]->Mom());
-  if (s.m_p.size())
+  if (s.m_p.empty()) s.p_s->SetMom(s.m_pk);
+  else
     for (size_t i(0);i<s.m_p.size();++i)
       if (s.m_p[i]!=Vec4D())
 	(*s.p_c->Ampl())[i]->SetMom(s.m_p[i]);

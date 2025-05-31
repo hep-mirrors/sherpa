@@ -3,6 +3,7 @@
 #include "PHASIC++/Selectors/Combined_Selector.H"
 #include "PHASIC++/Main/Process_Integrator.H"
 #include "PHASIC++/Process/Spin_Color_Correlated_ME2.H"
+#include "PHASIC++/Channels/CSS_Kinematics.H"
 #include "PDF/Main/NLOMC_Base.H"
 
 #include "ATOOLS/Org/MyStrStream.H"
@@ -334,8 +335,9 @@ double Dipole_Wrapper_Process::GetKT2ofSplitting(const Dipole_Kinematics& kin) c
   if(!p_nlomc) return 0.0;
   double x  = kin.ShowerX() ;
   double y  = kin.ShowerY() ;
-  double Q2 = kin.ShowerQ2();
-  return p_nlomc->KT2(*p_subevent,x,y,Q2);
+  THROW(not_implemented,"FIX ME");
+  PHASIC::Kin_Args ff(ATOOLS::Vec4D(),ATOOLS::Vec4D(),ATOOLS::Vec4D(),y,x);
+  return p_nlomc->KT2(*p_subevent,&ff,NULL);
 }
 
 

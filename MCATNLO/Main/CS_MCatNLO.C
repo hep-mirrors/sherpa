@@ -283,22 +283,25 @@ GetRealEmissionAmplitude(const int mode)
 }
 
 double CS_MCatNLO::KT2(const ATOOLS::NLO_subevt &sub,
-		       const double &x,const double &y,const double &Q2)
+		       const PHASIC::Kin_Args *ka,
+		       const PHASIC::Ant_Args *aa)
 {
   double mi2(sqr(sub.p_real->p_fl[sub.m_i].Mass()));
   double mj2(sqr(sub.p_real->p_fl[sub.m_j].Mass()));
   double mk2(sqr(sub.p_real->p_fl[sub.m_k].Mass()));
   double mij2(sqr(sub.p_fl[sub.m_ijt].Mass()));
-  double kt2;
+  double x(ka->m_z), y(ka->m_y), kt2;
   if (sub.m_ijt>=2) {
     // final-state emitter
     if (sub.m_k>=2) {
       // final-state spectator
+      double Q2((ka->m_pi+ka->m_pj+ka->m_pk).Abs2());
       kt2 = p_mcatnlo->KinFF()->GetKT2(Q2,y,x,mi2,mj2,mk2,
             sub.p_fl[sub.m_ijt],sub.p_real->p_fl[sub.m_j]);
     }
     else {
       // initial-state spectator
+      double Q2((ka->m_pi+ka->m_pj-ka->m_pk).Abs2());
       kt2 = p_mcatnlo->KinFI()->GetKT2(Q2,y,x,mi2,mj2,mk2,
             sub.p_fl[sub.m_ijt],sub.p_real->p_fl[sub.m_j]);
     }
@@ -308,11 +311,13 @@ double CS_MCatNLO::KT2(const ATOOLS::NLO_subevt &sub,
     // initial-state emitter
     if (sub.m_k>=2) {
       // final-state spectator
+      double Q2((-ka->m_pi+ka->m_pj+ka->m_pk).Abs2());
       kt2 = p_mcatnlo->KinIF()->GetKT2(Q2,y,x,mi2,mj2,mk2,
             sub.p_fl[sub.m_ijt],sub.p_real->p_fl[sub.m_j]);
     }
     else {
       // initial-state spectator
+      double Q2((-ka->m_pi+ka->m_pj-ka->m_pk).Abs2());
       kt2 = p_mcatnlo->KinII()->GetKT2(Q2,y,x,mi2,mj2,mk2,
 		       sub.p_fl[sub.m_ijt],sub.p_real->p_fl[sub.m_j]);
     }

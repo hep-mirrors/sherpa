@@ -132,13 +132,12 @@ double DipoleSplitting_Base::GetR(const Vec4D* mom,const Vec4D* LOmom)
 
 bool DipoleSplitting_Base::Reject(const double &alpha)
 {
-  // m_alpha needs to be changed to a higher value
-  return false;
   if (IsBad(m_av))
     msg_Error()<<METHOD<<"(): Average is "<<m_av<<" in "
 	       <<Demangle(typeid(*this).name())
 	       <<"[type="<<m_ftype<<"]"<<std::endl;
   if (m_mcmode==1) {
+    DEBUG_VAR(alpha<<" "<<m_alpha);
     int da(m_av>0.0 && (m_kt2<m_kt2max || IsEqual(m_kt2,m_kt2max,1.0e-6))),
         ds(alpha<=m_alpha);
     msg_Debugging()<<"kt = "<<sqrt(m_kt2)<<", ktmax = "<<sqrt(m_kt2max)

@@ -120,7 +120,8 @@ void Dipole_Kinematics::EvaluateCSSKinematics()
       m_yp=1.0-2.0*sqrt(m_mk2)*(sqrt(m_Q2)-sqrt(m_mk2))/eps;
       if (m_y<m_ym) p_info->SetStat(0);
     }
-    if (p_nlomc) m_kt2=p_nlomc->KT2(*p_subevt,m_z,m_y,m_Q2);
+    PHASIC::Kin_Args ff(m_pi,m_pj,m_pk,m_y,m_z);
+    if (p_nlomc) m_kt2=p_nlomc->KT2(*p_subevt,&ff,NULL);
     else m_kt2=(m_Q2-m_mi2-m_mj2-m_mk2)*m_y*m_z*(1.0-m_z)
               -sqr(1.0-m_z)*m_mi2-sqr(m_z)*m_mj2;
     if (p_info->Stat() && (m_pi[0]>1.0e-3 && m_pj[0]>1.0e-3) &&
@@ -141,7 +142,8 @@ void Dipole_Kinematics::EvaluateCSSKinematics()
     p_ijt->SetP(m_Q-pkt);
     p_kt->SetP(pkt);
     if (Massive()) m_yp=1.0+m_y*(m_mij2-sqr(sqrt(m_mi2)+sqrt(m_mj2)))/m_Q2;
-    if (p_nlomc) m_kt2=p_nlomc->KT2(*p_subevt,m_z,1.0-m_y,m_Q2);
+    PHASIC::Kin_Args ff(m_pi,m_pj,m_pk,1.0-m_y,m_z);
+    if (p_nlomc) m_kt2=p_nlomc->KT2(*p_subevt,&ff,NULL);
     else m_kt2=2.0*(m_pi*m_pj)*m_z*(1.0-m_z)
               -sqr(1.0-m_z)*m_mi2-sqr(m_z)*m_mj2;
     if (p_info->Stat() && m_Q[0]<pkt[0] && m_pi[0]>1.0e-3 && m_pj[0]>1.0e-3) {
@@ -159,7 +161,8 @@ void Dipole_Kinematics::EvaluateCSSKinematics()
     m_y=pjpa/(pjpa+pkpa);
     p_ijt->SetP(m_z*m_pi);
     p_kt->SetP(m_Q-p_ijt->P());
-    if (p_nlomc) m_kt2=p_nlomc->KT2(*p_subevt,m_z,m_y,m_Q2);
+    PHASIC::Kin_Args ff(m_pi,m_pj,m_pk,m_y,m_z);
+    if (p_nlomc) m_kt2=p_nlomc->KT2(*p_subevt,&ff,NULL);
     else m_kt2=(-m_Q2+m_mk2)*m_y/m_z*(1.0-m_y)*(1.0-m_z);
     for (size_t i(0);i<m_cur.size();++i) m_p[i]=m_cur[i]->P();
   }
@@ -171,7 +174,8 @@ void Dipole_Kinematics::EvaluateCSSKinematics()
     p_ijt->SetP(pajt);
     p_kt->SetP(m_pi+m_pj+m_pk-pajt);
     m_y=-pjpa/papb;
-    if (p_nlomc) m_kt2=p_nlomc->KT2(*p_subevt,m_z,m_y,m_Q2);
+    PHASIC::Kin_Args ff(m_pi,m_pj,m_pk,m_y,m_z);
+    if (p_nlomc) m_kt2=p_nlomc->KT2(*p_subevt,&ff,NULL);
     else m_kt2=m_Q2*m_y/m_z*(1.0-m_z-m_y);
     for (size_t i(0);i<m_cur.size();++i) {
       const Vec4D &p(m_cur[i]->P());
@@ -253,7 +257,8 @@ void Dipole_Kinematics::EvaluateAlaricKinematics()
     if (Massive()) {
       // TODO later
     }
-    if (p_nlomc) m_kt2=p_nlomc->KT2(*p_subevt,m_z,m_y,m_Q2);
+    PHASIC::Kin_Args ff(m_pi,m_pj,m_pk,m_y,m_z);
+    if (p_nlomc) m_kt2=p_nlomc->KT2(*p_subevt,&ff,NULL);
     else m_kt2=0.;
     if (p_info->Stat() && (m_pi[0]>1.0e-3 && m_pj[0]>1.0e-3) &&
         (p_kt->P()[0]<0.0 || m_Q[0]<p_kt->P()[0])) {
