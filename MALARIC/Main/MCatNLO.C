@@ -21,8 +21,8 @@ MCatNLO::MCatNLO(const NLOMC_Key &key):
   p_mcatnlo->Init(key.p_model,key.p_isr);
   p_recoil = p_mcatnlo->Recoil();
   Settings& s = Settings::GetMainSettings();
-  m_psmode=s["NLO_CSS_PSMODE"].Get<int>();
-  m_wcheck=s["NLO_CSS_WEIGHT_CHECK"].Get<int>();
+  m_psmode=s["MC@NLO"]["PSMODE"].Get<int>();
+  m_wcheck=s["MC@NLO"]["WEIGHT_CHECK"].Get<int>();
   for (int i(0);i<2;++i) m_kt2min[i]=p_mcatnlo->TMin(i);
 }
 

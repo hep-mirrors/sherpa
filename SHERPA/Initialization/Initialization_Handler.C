@@ -272,8 +272,12 @@ void Initialization_Handler::RegisterDefaults()
   pss["RECALC_FACTOR"].SetDefault(4.0);
   pss["TC_ENHANCE"].SetDefault(1.0);
   pss["COUPLING_SCHEME"].SetDefault(1);
+  pss["FACSCALE_SCHEME"].SetDefault(0);
   pss["ME_CORRECTION"].SetDefault(0);
   pss["KERNEL_TYPE"].SetDefault(15);
+  pss["KERNEL_SCHEME"].SetDefault(1);
+  pss["IS_EVOL_SCHEME"].SetDefault(0);
+  pss["FS_EVOL_SCHEME"].SetDefault(0);
   nlopss["RECALC_FACTOR"].SetDefault(2.0);
   nlopss["PSMODE"].SetDefault(0);
   nlopss["WEIGHT_CHECK"].SetDefault(0);

@@ -59,35 +59,36 @@ public:
 bool Shower::Init(MODEL::Model_Base *const model,
 		  PDF::ISR_Handler *const isr)
 {
-  Settings& s = Settings::GetMainSettings();
+  Settings& ms = Settings::GetMainSettings();
+  const Scoped_Settings& s = Settings::GetMainSettings()["SHOWER"];
   DEBUG_FUNC(this);
   p_model=model;
   p_recoil=RecoilDefinition_Getter::GetObject
-    (s["RECOIL_DEFINITION"].Get<std::string>(),RecoilDefinition_Key());
+    (ms["RECOIL_DEFINITION"].Get<std::string>(),RecoilDefinition_Key());
   p_as=(MODEL::Running_AlphaS*)p_model->GetScalarFunction("alpha_S");
   for (int i=0;i<2;++i) p_pdf[i]=isr->PDF(i);
-  m_tmin[0] = s["CSS_FS_PT2MIN"].Get<double>();
-  m_tmin[1] = s["CSS_IS_PT2MIN"].Get<double>();
-  m_cplfac[0] = s["CSS_FS_AS_FAC"].Get<double>();
-  m_cplfac[1] = s["CSS_IS_AS_FAC"].Get<double>();
+  m_tmin[0] = s["FS_PT2MIN"].Get<double>();
+  m_tmin[1] = s["IS_PT2MIN"].Get<double>();
+  m_cplfac[0] = s["FS_AS_FAC"].Get<double>();
+  m_cplfac[1] = s["IS_AS_FAC"].Get<double>();
   m_rsf=ToType<double>(rpa->gen.Variable("RENORMALIZATION_SCALE_FACTOR"));
   m_fsf=ToType<double>(rpa->gen.Variable("FACTORIZATION_SCALE_FACTOR"));
-  m_rcf=s["CSS_RECALC_FACTOR"].Get<double>();
-  m_tcef=s["CSS_TC_ENHANCE"].Get<double>();
-  m_kfac=s["CSS_KFACTOR_SCHEME"].Get<int>();
-  m_cpl=s["CSS_COUPLING_SCHEME"].Get<int>();
-  m_muf=s["CSS_FACSCALE_SCHEME"].Get<int>();
-  m_mec=s["CSS_ME_CORRECTION"].Get<int>();
-  m_sfs=s["CSS_KERNEL_SCHEME"].Get<int>();
-  m_es[0]=s["CSS_FS_EVOL_SCHEME"].Get<int>();
-  m_es[1]=s["CSS_IS_EVOL_SCHEME"].Get<int>();
-  m_pdfmin[0]=s["CSS_PDF_MIN"].Get<double>();
-  m_pdfmin[1]=s["CSS_PDF_MIN_X"].Get<double>();
-  m_maxem=s["CSS_MAXEM"].Get<size_t>();
-  m_maxpart=s["CSS_MAXPART"].Get<int>();
-  m_reweight=s["CSS_REWEIGHT"].Get<bool>();
-  m_rewtmin=s["CSS_REWEIGHT_SCALE_CUTOFF"].Get<double>();
-  m_oef=s["CSS_OEF"].Get<double>();
+  m_rcf=s["RECALC_FACTOR"].Get<double>();
+  m_tcef=s["TC_ENHANCE"].Get<double>();
+  m_kfac=s["KFACTOR_SCHEME"].Get<int>();
+  m_cpl=s["COUPLING_SCHEME"].Get<int>();
+  m_muf=s["FACSCALE_SCHEME"].Get<int>();
+  m_mec=s["ME_CORRECTION"].Get<int>();
+  m_sfs=s["KERNEL_SCHEME"].Get<int>();
+  m_es[0]=s["FS_EVOL_SCHEME"].Get<int>();
+  m_es[1]=s["IS_EVOL_SCHEME"].Get<int>();
+  m_pdfmin[0]=s["PDF_MIN"].Get<double>();
+  m_pdfmin[1]=s["PDF_MIN_X"].Get<double>();
+  m_maxem=s["MAXEM"].Get<size_t>();
+  m_maxpart=s["MAXPART"].Get<int>();
+  m_reweight=s["REWEIGHT"].Get<bool>();
+  m_rewtmin=s["REWEIGHT_SCALE_CUTOFF"].Get<double>();
+  m_oef=s["OEF"].Get<double>();
   if (msg_LevelIsDebugging()) {
     msg_Out()<<METHOD<<"(): {\n\n"
 	     <<"   // available gauge calculators\n\n";
@@ -96,7 +97,7 @@ bool Shower::Init(MODEL::Model_Base *const model,
     Lorentz_Getter::PrintGetterInfo(msg->Out(),25);
     msg_Out()<<"\n}"<<std::endl;
   }
-  int types(s["CSS_KERNEL_TYPE"].Get<int>());
+  int types(s["KERNEL_TYPE"].Get<int>());
   std::set<FTrip> sfs;
   const Vertex_Table *vtab(model->VertexTable());
   for (Vertex_Table::const_iterator

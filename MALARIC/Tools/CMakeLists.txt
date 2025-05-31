@@ -10,7 +10,7 @@ set(MalaricTools_HEADERS Color.H
                   Kernel_Key.H
                   Amplitude.H)
 
-sherpa_create_git_info(MalaricTools)
+sherpa_create_git_info(MalaricTools ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR})
  
 add_library(MalaricTools SHARED ${MalaricTools_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
 sherpa_handle_shared_library(MalaricTools MalaricTools)

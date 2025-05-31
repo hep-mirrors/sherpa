@@ -16,7 +16,7 @@ set(MalaricShower_HEADERS Gauge.H
                    Cluster_Definitions.H
                    Shower.H)
 
-sherpa_create_git_info(MalaricShower)
+sherpa_create_git_info(MalaricShower ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR})
  
 add_library(MalaricShower SHARED ${MalaricShower_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
 sherpa_handle_shared_library(MalaricShower MalaricShower)

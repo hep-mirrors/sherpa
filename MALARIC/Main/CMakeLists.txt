@@ -4,7 +4,7 @@ set(MalaricMain_SOURCES Gamma.C
 set(MalaricMain_HEADERS Gamma.H
                  MCatNLO.H)
 
-sherpa_create_git_info(MalaricMain)
+sherpa_create_git_info(MalaricMain ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR})
  
 add_library(MalaricMain SHARED ${MalaricMain_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
 sherpa_handle_shared_library(MalaricMain MalaricMain)
