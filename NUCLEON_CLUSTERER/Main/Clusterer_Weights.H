@@ -10,7 +10,7 @@ namespace NUCLEON_CLUSTERER {
   
   class Clusterer_Weights {
   private:
-    Clusterer_Base * p_reconnector;
+    Clusterer_Base * p_clusterer;
 
     ATOOLS::ParticleSet                     * p_parts[2];
     std::map<ATOOLS::Particle *,distances * > m_distances;
