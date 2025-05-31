@@ -32,7 +32,10 @@ void Clusterer_Base::Initialize() {
 }
 
 void Clusterer_Base::Reset() {
-  for (size_t pos=0;pos<2;pos++) { m_cols[pos].clear(); m_parts[pos].clear(); }
+  for (size_t pos=0;pos<2;pos++) { 
+    m_nucleonMap[pos].clear();
+    m_nucleonGroups[pos].clear(); // change this from colour stuff to nucleon stuff
+   }
   m_particles.clear();
 }
 
@@ -48,7 +51,7 @@ bool Clusterer_Base::HarvestParticles(Blob_List * blobs) {
     blob = (*bit);
     if (!blob->Has(blob_status::needs_NUCLEON_CLUSTERER)) continue;
     m_found = true;
-    blob->SetTypeSpec("Colour NUCLEON_CLUSTERER");
+    blob->SetTypeSpec(" NUCLEON_CLUSTERING");
     for (int i=0;i<blob->NInP();i++) HarvestParticleInfo(blob->InParticle(i));
     blob->UnsetStatus(blob_status::needs_NUCLEON_CLUSTERER |
 		      blob_status::needs_hadronization);
@@ -57,7 +60,7 @@ bool Clusterer_Base::HarvestParticles(Blob_List * blobs) {
   //	   <<m_cols[0].size()<<" colours and "
   //	   <<m_cols[1].size()<<" anti-colours.\n"
   //	   <<(*blob)<<"\n";
-  return (BalanceColours());
+  return m_found;
 }
 
 bool Clusterer_Base::BalanceColours() {
@@ -96,7 +99,7 @@ void Clusterer_Base::HarvestParticleInfo(ATOOLS::Particle * part) {
   for (size_t pos=0;pos<2;pos++) col[pos] = part->GetFlow(pos+1);
   if (col[0]==0 && col[1]==0) return;
   Particle * copy = new Particle(*part);
-  colpair cols = colpair(col[0],col[1]);
+  nucleonpair cols = nucleonpair(col[0],col[1]);
   // We work with colour pairs <triplet, anti-triplet>.
   // Filling maps of triplet/anti-triplet colour indices to the particles;
   // constructing the singlets will use this, the two sets m_parts[] will be
