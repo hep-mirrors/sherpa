@@ -82,6 +82,7 @@ namespace ATOOLS {
 
     std::string m_pname;
     sbt::subtype m_stype;
+    spt::splittingtype m_type;
 
     Cluster_Amplitude *p_ampl;
 

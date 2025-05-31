@@ -159,11 +159,11 @@ int Lorentz_FS_Split::Construct(Splitting &s,const int mode) const
   if (p_sk->PS()->KernelScheme()&1)
     s.m_zi=(ff.m_pi*ff.m_nb)/((ff.m_pi+ff.m_pj)*ff.m_nb);
   s.m_mk2=p_ms->Mass2(s.p_s->Flav());
+  s.m_p.clear();
   if (nk>1) {
     Poincare oldcms(Kt), newcms(ff.m_pk);
     newcms.Invert();
     s.m_pk=newcms*(oldcms*s.p_s->Mom());
-    s.m_p.clear();
     s.m_p.reserve(a.size());
     for (size_t i(0);i<a.size();++i) {
       if ((s.m_rcl[i]&2)==0) s.m_p.push_back(a[i]->Mom());

@@ -2,6 +2,7 @@
 #define PHASIC_Main_CS_Dipole_H
 
 #include "ATOOLS/Phys/Cluster_Amplitude.H"
+#include "ATOOLS/Phys/Recoil_Definition.H"
 #include "ATOOLS/Phys/NLO_Subevt.H"
 #include "ATOOLS/Org/Info_Key.H"
 
@@ -16,6 +17,9 @@ namespace PHASIC {
   protected:
 
     ATOOLS::NLO_subevt m_sub;
+
+    ATOOLS::subscheme::code    m_subtype;
+    ATOOLS::Recoil_Definition *p_recoil;
 
     Vegas *p_vegas;
     double m_rn[3];
@@ -63,9 +67,12 @@ namespace PHASIC {
 
     virtual ATOOLS::Vec4D_Vector GeneratePoint
     (const ATOOLS::Vec4D_Vector &p,
+     const ATOOLS::Cluster_Amplitude *ampl,
      Cut_Data *const cuts,const double *rns) = 0;
     virtual double GenerateWeight
-    (const ATOOLS::Vec4D_Vector &p,Cut_Data *const cuts) = 0;
+    (const ATOOLS::Vec4D_Vector &p,
+     const ATOOLS::Cluster_Amplitude *ampl,
+     Cut_Data *const cuts) = 0;
 
     virtual bool ValidPoint(const ATOOLS::Vec4D_Vector& p) = 0;
 
@@ -123,6 +130,9 @@ namespace PHASIC {
 
     inline void SetOn(const bool on) { m_on=on; }
     inline bool On() const { return m_on; }
+
+    inline void SetSubType(const ATOOLS::subscheme::code &type) { m_subtype=type; }
+    inline void SetRecoil(ATOOLS::Recoil_Definition *recoil) { p_recoil=recoil; }
 
   };// end of struct Dipole
 

@@ -49,8 +49,10 @@ void FF_DipoleSplitting::SetMomenta(const Vec4D* mom)
   m_zj   = 1.-m_zi;
 
   m_Q2 = (m_pi+m_pj+m_pk).Abs2();
-  m_kt2  = p_nlomc?p_nlomc->KT2(*p_subevt,m_zi,m_yijk,m_Q2):
+  PHASIC::Kin_Args ff(m_pi,m_pj,m_pk,m_yijk,m_zi);
+  m_kt2  = p_nlomc?p_nlomc->KT2(*p_subevt,&ff,NULL):
     m_Q2*m_yijk*m_zi*m_zj;
+  DEBUG_VAR(m_kt2<<" "<<sqrt(m_kt2));
 
   double zi(m_zi), zj(m_zj);
   if (m_subtype==subscheme::Dire) {
@@ -129,16 +131,22 @@ void FF_DipoleSplitting::SetMomentaAlaric(const ATOOLS::Vec4D* mom) {
     m_zi = ff.m_z;
     m_zj = 1.-ff.m_z;
 
-    m_yijk = (m_pi*m_pk)/(m_pj*(m_pi+m_pk)); //< corresponds to v_{i,ab} in CS, eq. 5.169
-    m_a = m_yijk;
+    DEBUG_VAR(m_pi);
+    DEBUG_VAR(m_pj);
+    DEBUG_VAR(m_pk);
+
+    m_yijk = (m_pi*m_pj)/(m_pi*ff.m_n);
+    m_a = -m_yijk/(1.-m_yijk);
 
     m_ptk  = ff.m_p[m_k];
     m_ptij = ff.m_pijt;
 
-    m_Q2 = (m_pi+m_pj+m_pk).Abs2();
+    m_Q2 = 2.0*ff.m_pijt*ff.m_Kt;
+    DEBUG_VAR(m_yijk<<" "<<m_Q2<<" "<<m_Q2*m_yijk*(1.-m_yijk)*(1.-m_zi)-m_yijk*m_yijk*ff.m_Kt.Abs2());
     // für Fixed_Order erstmal egal // wird mittels Getter gelöst, später
-    m_kt2  = p_nlomc?p_nlomc->KT2(*p_subevt,m_zi,m_yijk,m_Q2):
-      m_Q2*m_yijk*m_zi*m_zj;
+    m_kt2  = p_nlomc?p_nlomc->KT2(*p_subevt,NULL,&ff):
+      m_Q2*m_yijk*(1.-m_yijk)*(1.-m_zi)-m_yijk*m_yijk*ff.m_Kt.Abs2();
+    DEBUG_VAR(p_nlomc<<" "<<m_kt2<<" "<<sqrt(m_kt2));
 
     n = ff.m_n;
     m_pt1   =     (n*m_pi) / (m_pi*m_pj) * m_pj - n;
@@ -209,9 +217,15 @@ void FF_DipoleSplitting::SetMomentaAlaric(const ATOOLS::Vec4D* mom) {
     m_pt1   =     zim*m_pi-zjm*m_pj;
     m_pt2   =     m_ptij;
 
-    /// TODO: correct?
-    m_yijk = m_pi*m_pj/(m_pi*m_pj+m_pj*m_pk+m_pk*m_pi);
+    m_Q2 = (m_pi+m_pj+K).Abs2();
+    m_yijk = 2.0*m_pi*m_pj/m_Q2;
     m_a = m_yijk;
+
+    DEBUG_VAR(m_yijk<<" "<<m_Q2<<" "<<m_Q2*m_yijk*m_zi*m_zj);
+    // für Fixed_Order erstmal egal // wird mittels Getter gelöst, später
+    m_kt2  = p_nlomc?p_nlomc->KT2(*p_subevt,&ff,NULL):
+      m_Q2*m_yijk*m_zi*m_zj;
+    DEBUG_VAR(p_nlomc<<" "<<m_kt2<<" "<<sqrt(m_kt2));
 
     ampl->Delete();
   }
@@ -226,6 +240,7 @@ void FF_DipoleSplitting::SetMomentaAlaric(const ATOOLS::Vec4D* mom) {
     A*=sij*skj*(m_pi*n)/D;
     m_sff = A;
     m_av  = m_sff;
+    DEBUG_VAR(A);
     break;
   }
   case spt::q2qg:
@@ -344,7 +359,8 @@ void FF_MassiveDipoleSplitting::SetMomenta(const Vec4D* mom)
   m_zi   = (m_pi*m_pk)/(m_pi*m_pk+m_pj*m_pk);
   m_zj   = 1.-m_zi;
 
-  m_kt2  = p_nlomc?p_nlomc->KT2(*p_subevt,m_zi,m_yijk,m_Q2):
+  PHASIC::Kin_Args ff(m_pi,m_pj,m_pk,m_yijk,m_zi);
+  m_kt2  = p_nlomc?p_nlomc->KT2(*p_subevt,&ff,NULL):
     2.0*m_pi*m_pj*m_zi*m_zj-sqr(m_zi)*m_mj2-sqr(m_zj)*m_mi2;
 
   m_vijk = Vrel(m_pi+m_pj,m_pk);

@@ -32,6 +32,7 @@ namespace PHASIC {
     CS_Dipole       *p_active;
 
     ATOOLS::Vec4D_Vector m_p;
+    ATOOLS::Cluster_Amplitude *p_ampl;
 
     size_t m_nin, m_opt, m_omode;
     double m_weight, m_amin, m_Q2min;

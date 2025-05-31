@@ -281,16 +281,22 @@ GetRealEmissionAmplitude(const int mode)
 }
 
 double CS_MCatNLO::KT2(const ATOOLS::NLO_subevt &sub,
-		       const double &x,const double &y,const double &Q2)
+		       const PHASIC::Kin_Args *ka,
+		       const PHASIC::Ant_Args *aa)
 {
   double mi2(sqr(sub.p_real->p_fl[sub.m_i].Mass()));
   double mj2(sqr(sub.p_real->p_fl[sub.m_j].Mass()));
   double mk2(sqr(sub.p_real->p_fl[sub.m_k].Mass()));
   double mij2(sqr(sub.p_fl[sub.m_ijt].Mass()));
+  double x(ka->m_z), y(ka->m_y);
   if (sub.m_ijt>=2) {
     int evol(p_mcatnlo->KinFF()->EvolScheme());
+    double Q2((ka->m_pi+ka->m_pj+ka->m_pk).Abs2());
     double kt2=(Q2-mi2-mj2-mk2)*y;
-    if (sub.m_kt<2) kt2=(-Q2+mij2+mk2)*(1.0-y)/y;
+    if (sub.m_kt<2) {
+      Q2=(ka->m_pi+ka->m_pj-ka->m_pk).Abs2();
+      kt2=(-Q2+mij2+mk2)*(1.0-y)/y;
+    }
     if (evol==0) kt2=kt2*x*(1.0-x)-x*x*mj2-sqr(1.0-x)*mi2;
     else {
       if (sub.p_real->p_fl[sub.m_i].IsQuark()) {
@@ -305,8 +311,12 @@ double CS_MCatNLO::KT2(const ATOOLS::NLO_subevt &sub,
   }
   else {
     int evol(p_mcatnlo->KinFF()->EvolScheme());
+    double Q2((-ka->m_pi+ka->m_pj+ka->m_pk).Abs2());
     double kt2=-Q2*y/x;
-    if (sub.m_kt<2) kt2=Q2*y/x;
+    if (sub.m_kt<2) {
+      Q2=(-ka->m_pi+ka->m_pj-ka->m_pk).Abs2();
+      kt2=Q2*y/x;
+    }
     if (evol==0) kt2=kt2*(1.0-x);
     else {
       if (sub.p_real->p_fl[sub.m_j].IsGluon()) {

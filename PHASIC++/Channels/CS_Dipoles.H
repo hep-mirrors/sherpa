@@ -19,8 +19,10 @@ namespace PHASIC {
 
     ATOOLS::Vec4D_Vector GeneratePoint
     (const ATOOLS::Vec4D_Vector &p,
+     const ATOOLS::Cluster_Amplitude *ampl,
      Cut_Data *const cuts,const double *rns);
     double GenerateWeight(const ATOOLS::Vec4D_Vector &p,
+			  const ATOOLS::Cluster_Amplitude *ampl,
 			  Cut_Data *const cuts);
     bool ValidPoint(const ATOOLS::Vec4D_Vector& p);
 
@@ -40,8 +42,10 @@ namespace PHASIC {
 
     ATOOLS::Vec4D_Vector GeneratePoint
     (const ATOOLS::Vec4D_Vector &p,
+     const ATOOLS::Cluster_Amplitude *ampl,
      Cut_Data *const cuts,const double *rns);
     double GenerateWeight(const ATOOLS::Vec4D_Vector &p,
+			  const ATOOLS::Cluster_Amplitude *ampl,
 			  Cut_Data *const cuts);
     bool ValidPoint(const ATOOLS::Vec4D_Vector& p);
 
@@ -59,8 +63,10 @@ namespace PHASIC {
 
     ATOOLS::Vec4D_Vector GeneratePoint
     (const ATOOLS::Vec4D_Vector &p,
+     const ATOOLS::Cluster_Amplitude *ampl,
      Cut_Data *const cuts,const double *rns);
     double GenerateWeight(const ATOOLS::Vec4D_Vector &p,
+			  const ATOOLS::Cluster_Amplitude *ampl,
 			  Cut_Data *const cuts);
     bool ValidPoint(const ATOOLS::Vec4D_Vector& p);
 
@@ -78,8 +84,10 @@ namespace PHASIC {
 
     ATOOLS::Vec4D_Vector GeneratePoint
     (const ATOOLS::Vec4D_Vector &p,
+     const ATOOLS::Cluster_Amplitude *ampl,
      Cut_Data *const cuts,const double *rns);
     double GenerateWeight(const ATOOLS::Vec4D_Vector &p,
+			  const ATOOLS::Cluster_Amplitude *ampl,
 			  Cut_Data *const cuts);
     bool ValidPoint(const ATOOLS::Vec4D_Vector& p);
 

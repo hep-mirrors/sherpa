@@ -475,6 +475,7 @@ add_subdirectory(COMIX)
 add_subdirectory(CSSHOWER++)
 add_subdirectory(DIM)
 add_subdirectory(DIRE)
+add_subdirectory(MALARIC)
 add_subdirectory(ALARIC++)
 add_subdirectory(EXTAMP)
 add_subdirectory(EXTRA_XS)
@@ -691,6 +692,7 @@ PhotonsMain PhotonsTools PhotonsPhaseSpace PhotonsMEs PhotonsPhotonSplitter
 Remnants  RemnantsTools
 MCatNLOMain MCatNLOCalculators MCatNLOShowers MCatNLOTools
 DIMTools DIMShower DIMGauge DIMLorentz DIMMain
+MalaricTools MalaricShower MalaricGauge MalaricLorentz MalaricMain
 CSMain CSCalculators CSShowers CSTools
 DireTools DireShower DireGauge DireLorentz DireMain
 AlaricTools AlaricShower AlaricGauge AlaricLorentz AlaricMain

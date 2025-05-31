@@ -53,7 +53,8 @@ namespace MCATNLO {
     int GeneratePoint(ATOOLS::Cluster_Amplitude *const ampl);
 
     double KT2(const ATOOLS::NLO_subevt &sub,
-	       const double &x,const double &y,const double &Q2);
+	       const PHASIC::Kin_Args *ka,
+	       const PHASIC::Ant_Args *aa);
 
     void AddRBPoint(ATOOLS::Cluster_Amplitude *const ampl);
 
