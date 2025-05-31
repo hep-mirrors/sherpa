@@ -489,7 +489,7 @@ bool Rivet_Interface::Finish()
     mpi->Allgather(&mynames[0],len,MPI_CHAR,&allnames[0],len,MPI_CHAR);
     char *catname = new char[len+1];
     for (size_t i(0);i<mpi->Size();++i) {
-      snprintf(catname, sizeof(catname),"%s",&allnames[len*i]);
+      snprintf(catname, sizeof(char)*len,"%s",&allnames[len*i]);
       std::string curname(catname);
       for (size_t epos(curname.find('|'));
            epos<curname.length();epos=curname.find('|')) {
