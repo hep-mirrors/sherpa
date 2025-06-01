@@ -32,6 +32,7 @@ namespace AMISIC {
     inline double Value(const size_t & xbin) const { return m_values[xbin]; }
     inline size_t Size()                     const { return m_values.size(); }
     inline const axis & GetAxis()            const { return m_x; }
+    OneDim_Table * Invert(const size_t nbins);
   };
 
   class TwoDim_Table {
@@ -45,6 +46,7 @@ namespace AMISIC {
     double Value(const size_t & xbin,const size_t & ybin) const {
       return m_values[xbin][ybin];
     }
+    TwoDim_Table * Invert(const size_t axislabel, const size_t nbins);
   };
 
   class ThreeDim_Table {

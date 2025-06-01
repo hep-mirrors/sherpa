@@ -64,6 +64,18 @@ double OneDim_Table::operator()(const double & x) const {
   return ( m_values[bin]*(x2-x) + m_values[bin+1]*(x-x1) ) / (x2-x1);
 }
 
+OneDim_Table * OneDim_Table::Invert(const size_t nbins) {
+  bool dir = m_values[0]>m_values[m_x.m_nbins-1];
+  axis vaxis(nbins,
+	     (dir?m_values[m_x.m_nbins-1]:m_values[0]),
+	     (dir?m_values[0]:m_values[m_x.m_nbins-1]),
+	     axis_mode::linear);
+  OneDim_Table * table = new OneDim_Table(vaxis);
+  for (size_t i=0;i<nbins;i++) double value = vaxis.x(i);
+  THROW(fatal_error,"Inverting 1-D look-up table not implemented yet.");
+  return table;
+}
+
 
 //////////////////////////////////////////////////////////////////////////////
 // Two-dimensional look-up table: will assume y axis has more than one bin.
@@ -117,6 +129,48 @@ double TwoDim_Table::operator()(const double & x,const double & y) const {
 	   ((x2-x1)*(y2-y1)) );
 }
 
+TwoDim_Table * TwoDim_Table::Invert(const size_t axislabel,const size_t nbins) {
+  if (axislabel!=1)
+    THROW(fatal_error,"Two-dim table inversion only available for 2nd axis.");
+  bool   dir    = m_values[0][0]>m_values[0][m_y.m_nbins-1];
+  double minval = dir?m_values[0][m_y.m_nbins-1]:m_values[0][0];
+  double maxval = dir?m_values[0][0]:m_values[0][m_y.m_nbins-1];
+  for (size_t i=1;i<m_x.m_nbins;i++) {
+    if (dir) {
+      if (m_values[i][m_y.m_nbins-1]<minval) minval = m_values[i][m_y.m_nbins-1];
+      if (m_values[i][0]            >maxval) maxval = m_values[i][0];
+    }
+    else {
+      if (m_values[i][m_y.m_nbins-1]>maxval) maxval = m_values[i][m_y.m_nbins-1];
+      if (m_values[i][0]            <minval) minval = m_values[i][0];
+    }
+  }
+  axis vaxis(nbins,minval,maxval,axis_mode::linear);
+  TwoDim_Table * table = new TwoDim_Table(m_x,vaxis);
+  for (size_t i=0;i<m_x.m_nbins;i++) {
+    for (size_t j=0;j<nbins;j++) {
+      double value = vaxis.x(j), val1, val2;
+      size_t ybin  = 0;
+      for (ybin=0;ybin<m_y.m_nbins-1;ybin++) {
+	val1 = m_values[i][ybin];
+	val2 = m_values[i][ybin+1];
+	if (dir) {
+	  if (val1>=value && val2<=value) break; 
+	}
+	else {
+	  if (val1<=value && val2>=value) break; 
+	}
+      }
+      double y1 = m_y.x(ybin), y2 = m_y.x(ybin+1), y = 0;
+      if (dir) 
+	y = y1+((val1-value)*y2+(value-val2)*y1)/(y1-y2);
+      else 
+	y = y1+((val2-value)*y1+(value-val1)*y2)/(y2-y1);
+      table->Fill(i,j,y);
+    }
+  }
+  return table;
+}
 
 
 //////////////////////////////////////////////////////////////////////////////

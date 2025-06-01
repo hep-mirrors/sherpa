@@ -30,41 +30,35 @@ Interaction_Probability::~Interaction_Probability() {
   if (p_k)        delete p_k;
   if (p_norm)     delete p_norm;
   if (p_diffxsec) delete p_diffxsec;
+  if (p_inverted) delete p_inverted;
 }
 
 void Interaction_Probability::
 Initialize(Matter_Overlap * mo,MI_Processes * processes,axis * sbins) {
   if (m_ana) InitAnalysis();
-  p_mo       = mo;
-  p_procs    = processes;
-  m_pdfnorm  = p_procs->PDFnorm();
-  p_sbins    = sbins;
-  p_k        = new OneDim_Table(*p_sbins);
-  p_norm     = new OneDim_Table(*p_sbins);
-  m_dynamic  = mo->IsDynamic();
-  m_bmax     = mo->Bmax();
-  p_bbins    = mo->GetBBins();
-  p_diffxsec = new TwoDim_Table(*p_sbins,*p_bbins);
+  p_mo         = mo;
+  p_procs      = processes;
+  m_pdfnorm    = p_procs->PDFnorm();
+  p_sbins      = sbins;
+  p_k          = new OneDim_Table(*p_sbins);
+  p_norm       = new OneDim_Table(*p_sbins);
+  m_dynamic    = mo->IsDynamic();
+  m_bmax       = mo->Bmax();
+  p_bbins      = mo->GetBBins();
+  p_diffxsec   = new TwoDim_Table(*p_sbins,*p_bbins);
   FixKandSmin();
+  FillIntegrated();
   OutputTables();
 }
 
 double Interaction_Probability::SelectB(const double & s) {
   /////////////////////////////////////////////////////////////////////////////
-  // Selecting b according to (normalised)  d^2b P_int(b): 
-  // the norm is the non-diffractive cross section.
-  // Note: the m_pdfnorm accounts for possible terms alpha in the PDF of
-  //       photons, and the XSndNorm takes care of some (external) rescaling.
-  /////////////////////////////////////////////////////////////////////////////  
-  double disc = 0., diff = 0., b = 0.;
-  double xsnd = ( m_pdfnorm * p_procs->GetXSecs()->XSndNorm() *
-		  p_procs->GetXSecs()->XSnd(s) );
-  do {
-    b    = ran->Get()*p_mo->Bmax();
-    diff = (*this)(s,b);
-    disc = M_PI*b*diff/xsnd;
-  } while (disc<ran->Get());
-  return b;
+  // Selecting b according to the (normalised)  d^2b P_int(b), 
+  // where the norm is the non-diffractive cross section.
+  // We have encoded this in a look-up table obtained from inverting the
+  // probability distribution.
+  /////////////////////////////////////////////////////////////////////////////
+  return (*p_inverted)(s,ran->Get());
 }
 
 void Interaction_Probability::FixKandSmin() {
@@ -107,6 +101,34 @@ void Interaction_Probability::FixKandSmin() {
   }
   msg_Info()<<"   "<<string(77,'-')<<"\n";
 }
+
+void Interaction_Probability::FillIntegrated() {
+  TwoDim_Table integrated(*p_sbins,*p_bbins);
+  for (size_t sbin=0;sbin<p_sbins->m_nbins;sbin++) {
+    double s   = p_sbins->x(sbin);
+    double b1  = 0.,            b2 = 0.;
+    double xs1 = (*this)(s,b1), xs2 = 0., norm = 0., integ = 0.;
+    for (size_t bbin=1;bbin<p_bbins->m_nbins;bbin++) {
+      b2    = p_bbins->x(bbin);
+      xs2   = (*this)(s,b2);
+      norm += (b2-b1)*(b2*xs2+b1*xs1)/2.;
+      b1    = b2;
+      xs1   = xs2;
+    }
+    integrated.Fill(sbin,0,0.);
+    b1 = 0.; xs1 = (*this)(s,b1), b2 = 0., xs2 = 0.;
+    for (size_t bbin=1;bbin<p_bbins->m_nbins;bbin++) {
+      b2     = p_bbins->x(bbin);
+      xs2    = (*this)(s,b2);
+      integ += (b2-b1)*(b2*xs2+b1*xs1)/2./norm;
+      integrated.Fill(sbin,bbin,integ);
+      b1     = b2;
+      xs1    = xs2;
+    }
+  }
+  p_inverted = integrated.Invert(1,1000);
+}
+
 
 void Interaction_Probability::InitializeTables() {
   for (size_t sbin=0;sbin<p_sbins->m_nbins;sbin++) InitializeTable(sbin);

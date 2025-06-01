@@ -74,6 +74,7 @@ Initialize(const Flavour & fl1,const Flavour & fl2,
 		       m_GeV2mb );
   m_prefDD         = ( sqr(m_triple_pomeron) * pow(m_s1,m_eps_pomeron)/(16.*M_PI) /
 		       m_GeV2mb );
+  FixTables();
   FixType();
   if (m_testmode>0) TestXSecs();
 }

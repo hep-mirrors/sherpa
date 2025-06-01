@@ -560,9 +560,9 @@ bool Initialization_Handler::InitializeTheFramework(int nr)
     else {
       THROW(not_implemented,"Unknown event type '"+eventtype+"'");
     }
-    msg_Out()<<METHOD<<": mode = "<<m_mode<<", type = "<<eventtype<<": "
-      //<<"ME = "<<s["ME_GENERATORS"].Get<string>()<<", "
-	     <<"MI = "<<s["SOFT_COLLISIONS"].Get<string>()<<"\n";
+    //msg_Out()<<METHOD<<": mode = "<<m_mode<<", type = "<<eventtype<<": "
+    //<<"ME = "<<s["ME_GENERATORS"].Get<string>()<<", "
+    //	     <<"MI = "<<s["SOFT_COLLISIONS"].Get<string>()<<"\n";
   }
   okay = okay && InitializeTheBeams();
   okay = okay && InitializeThePDFs();
@@ -773,9 +773,9 @@ void Initialization_Handler::LoadPDFLibraries(Settings& settings) {
   m_defsets[PDF::isr::hard_process]    = std::array<std::string, 2>();
   m_defsets[PDF::isr::hard_subprocess] = std::array<std::string, 2>();
   m_defsets[PDF::isr::bunch_rescatter] = std::array<std::string, 2>();
-  msg_Out()<<METHOD<<": "
-	   <<"bunch(0) = "<<p_beamspectra->GetBeam(0)->Bunch(0)<<" & "
-	   <<"bunch(1) = "<<p_beamspectra->GetBeam(1)->Bunch(0)<<".\n";
+  //msg_Out()<<METHOD<<": "
+  //	   <<"bunch(0) = "<<p_beamspectra->GetBeam(0)->Bunch(0)<<" & "
+  //	   <<"bunch(1) = "<<p_beamspectra->GetBeam(1)->Bunch(0)<<".\n";
   for (size_t beam=0;beam<2;++beam) {
     /////////////////////////////////////////////////////////
     // define bunch particle-dependent PDF libraries and sets here
@@ -836,11 +836,11 @@ void Initialization_Handler::LoadPDFLibraries(Settings& settings) {
     }
     m_defsets[PDF::isr::bunch_rescatter][beam] = defset;
   }
-  msg_Out()<<"   * (mode = "<<m_mode<<"), default sets: "
-	   <<"beam 0 = "<<m_defsets[PDF::isr::hard_process][0]<<" + "
-	   <<m_defsets[PDF::isr::hard_subprocess][0]<<", "
-	   <<"beam 1 = "<<m_defsets[PDF::isr::hard_process][1]<<" + "
-	   <<m_defsets[PDF::isr::hard_subprocess][1]<<"\n";
+  //msg_Out()<<"   * (mode = "<<m_mode<<"), default sets: "
+  //	   <<"beam 0 = "<<m_defsets[PDF::isr::hard_process][0]<<" + "
+  //	   <<m_defsets[PDF::isr::hard_subprocess][0]<<", "
+  //	   <<"beam 1 = "<<m_defsets[PDF::isr::hard_process][1]<<" + "
+  //	   <<m_defsets[PDF::isr::hard_subprocess][1]<<"\n";
   // add LHAPDF if necessary and load the relevant libraries
   if (Variations::NeedsLHAPDF6Interface()) {
     m_pdflibs.insert("LHAPDFSherpa");
@@ -896,6 +896,7 @@ InitISRHandler(const PDF::isr::id & pid,Settings& settings) {
     THROW(fatal_error, "You can not specify more than two PDF set versions.");
   }
   std::array<ISR_Base*, 2> isrbases = {};
+  m_bunchtags[pid] = {0, 0};
   for (size_t beam = 0; beam < 2; beam++) {
     isrbases[beam] = nullptr;
     // fix actual set and version for beam number and part of
@@ -915,7 +916,6 @@ InitISRHandler(const PDF::isr::id & pid,Settings& settings) {
     }
     // Initialise the actual PDF and make sure it arrives at the right place.
     Flavour flav;
-    m_bunchtags[pid] = {0, 0};
     if (pid != PDF::isr::bunch_rescatter) flav = m_bunch_particles[beam];
     else {
       // use a mode to select which beam/bunch combination is used for
@@ -928,15 +928,14 @@ InitISRHandler(const PDF::isr::id & pid,Settings& settings) {
       // 3    | bunch - bunch (disabled, because that would be normal MPI)
       int bbrmode = settings["BBR_MODE"].Get<int>();
       if (bbrmode < 0 || bbrmode > 2)
-        THROW(fatal_error,"BBR_Mode: Invalid mode, use MPI settings instead.")
-	  flav = ( bbrmode & (beam + 1) ?
-		   m_bunch_particles[beam] :
-		   p_beamspectra->GetBeam(beam)->Beam() );
+        THROW(fatal_error,"BBR_Mode: Invalid mode, use MPI settings instead.");
+      flav = ( bbrmode & (beam + 1) ?
+	       m_bunch_particles[beam] :
+	       p_beamspectra->GetBeam(beam)->Beam() );
       m_bunchtags[pid][beam] = bbrmode & (beam + 1) ? 0 : 1;
     }
     PDF_Arguments args = PDF_Arguments(flav,beam,set,version,order,scheme);
     if (pid != PDF::isr::bunch_rescatter) {
-      msg_Out()<<METHOD<<"("<<pid<<"): before getter for set = "<<set<<".\n";
       PDF_Base* pdfbase = PDF_Base::PDF_Getter_Function::GetObject(set, args);
       if (m_bunch_particles[beam].IsHadron() && pdfbase == nullptr)
         THROW(critical_error,
@@ -944,11 +943,6 @@ InitISRHandler(const PDF::isr::id & pid,Settings& settings) {
                       " libraries for " + ToString(m_bunch_particles[beam]) +
                       " bunch.");
       if (pid == PDF::isr::hard_process) rpa->gen.SetPDF(beam, pdfbase);
-      msg_Out()<<METHOD<<"[beam = "<<beam<<", "<<pid<<"]: "
-	       <<m_bunch_particles[beam]<<" --> "<<pdfbase<<"\n"
-	       <<"   from flav = "<<flav<<", set = "<<set<<", "
-	       <<"version = "<<version<<", "
-	       <<"order = "<<order<<", scheme = "<<scheme<<"\n";
       if (pdfbase == nullptr) {
         isrbases[beam] = new Intact(flav);
         needs_resc     = false;
@@ -970,9 +964,6 @@ InitISRHandler(const PDF::isr::id & pid,Settings& settings) {
   }
   if ((pid == PDF::isr::bunch_rescatter && needs_resc) ||
       pid != isr::bunch_rescatter) {
-    msg_Out()<<METHOD<<"["<<pid<<"]: "
-	     <<m_bunch_particles[0]<<" ("<<isrbases[0]<<") & "
-	     <<m_bunch_particles[1]<<" ("<<isrbases[1]<<").\n";
     ISR_Handler* isr = new ISR_Handler(isrbases, pid);
     for (size_t beam = 0; beam < 2; beam++)
       isr->SetBeam(p_beamspectra->GetBeam(beam), beam);
@@ -1014,18 +1005,17 @@ bool Initialization_Handler::InitializeTheRemnants() {
     int bbrmode = Settings::GetMainSettings()["BBR_MODE"].Get<int>();
     if (bbrmode == 0)
       m_remnanthandlers[isr::bunch_rescatter] =
-      new Remnant_Handler(m_isrhandlers[isr::bunch_rescatter],p_yfshandler,p_beamspectra,
-                                  m_bunchtags[isr::bunch_rescatter]);
+	new Remnant_Handler(m_isrhandlers[isr::bunch_rescatter],p_yfshandler,p_beamspectra,
+			    m_bunchtags[isr::bunch_rescatter]);
     else {
-      std::array<std::shared_ptr<REMNANTS::Remnant_Base>, 2> remnants = {
-              nullptr, nullptr};
+      std::array<std::shared_ptr<REMNANTS::Remnant_Base>, 2> remnants = { nullptr, nullptr};
       // For mixed beam-bunch rescattering, the remnant for the bunch has already been created for
       // the hard process; we need to get it from there and hand it over
       remnants[bbrmode - 1] = m_remnanthandlers[PDF::isr::hard_process]->GetRemnant(bbrmode - 1);
       m_remnanthandlers[isr::bunch_rescatter] =
-              new Remnant_Handler(remnants, m_isrhandlers[isr::bunch_rescatter],
-                                  p_yfshandler, p_beamspectra,
-                                  m_bunchtags[isr::bunch_rescatter]);
+	new Remnant_Handler(remnants, m_isrhandlers[isr::bunch_rescatter],
+			    p_yfshandler, p_beamspectra,
+			    m_bunchtags[isr::bunch_rescatter]);
     }
   }
   msg_Info()<<"Initializing remnants ...\n"
@@ -1036,9 +1026,11 @@ bool Initialization_Handler::InitializeTheRemnants() {
 	    <<m_remnanthandlers[isr::hard_process]->GetRemnant(1)->Type()<<")\n";
   if (m_remnanthandlers.find(isr::bunch_rescatter) != m_remnanthandlers.end())
     msg_Info()<<"  Rescattering: "
-	      <<m_remnanthandlers[isr::bunch_rescatter]->GetRemnant(0)->GetBeam()->Bunch(m_bunchtags[isr::bunch_rescatter][0])<<" ("
+	      <<(m_remnanthandlers[isr::bunch_rescatter]->GetRemnant(0)->GetBeam()->
+		 Bunch(m_bunchtags[isr::bunch_rescatter][0]))<<" ("
 	      <<m_remnanthandlers[isr::bunch_rescatter]->GetRemnant(0)->Type()<<") + "
-	      <<m_remnanthandlers[isr::bunch_rescatter]->GetRemnant(1)->GetBeam()->Bunch(m_bunchtags[isr::bunch_rescatter][1])<<" ("
+	      <<(m_remnanthandlers[isr::bunch_rescatter]->GetRemnant(1)->GetBeam()->
+		 Bunch(m_bunchtags[isr::bunch_rescatter][1]))<<" ("
 	      <<m_remnanthandlers[isr::bunch_rescatter]->GetRemnant(1)->Type()<<")\n";
   return true;
 }
@@ -1109,7 +1101,6 @@ bool Initialization_Handler::InitializeTheUnderlyingEvents()
     isrtypes.push_back(isr::bunch_rescatter);
   for (isr::id id : isrtypes) {
     as->SetActiveAs(isr::hard_subprocess);
-    msg_Out()<<METHOD<<"["<<id<<"]:\n";
     MI_Handler * mih = new MI_Handler(p_model,m_isrhandlers[id], p_yfshandler, m_remnanthandlers[id]);
     mih->SetShowerHandler(m_showerhandlers[id]);
     as->SetActiveAs(isr::hard_process);// really needed?
@@ -1120,10 +1111,10 @@ bool Initialization_Handler::InitializeTheUnderlyingEvents()
     MI_Handler * mih = m_mihandlers[id];
     msg_Info() << "    MI[" << id << "]: on = " << mih->On() << " "
                << "(type = " ;
-    if (mih->Generator()==MI_Handler::genID::none)         msg_Out()<<"None, ";
-    else if ( mih->Generator()==MI_Handler::genID::amisic)  msg_Out()<<"Amisic, ";
-    else if (mih->Generator()==MI_Handler::genID::shrimps) msg_Out()<<"Shrimps, ";
-    else                                       msg_Out()<<"Unkown, ";
+    if (mih->Generator()==MI_Handler::genID::none)          msg_Info()<<"None, ";
+    else if ( mih->Generator()==MI_Handler::genID::amisic)  msg_Info()<<"Amisic, ";
+    else if (mih->Generator()==MI_Handler::genID::shrimps)  msg_Info()<<"Shrimps, ";
+    else                                                    msg_Info()<<"Unkown, ";
     msg_Info() <<  mih->Name() << ")\n";
   }
   return true;

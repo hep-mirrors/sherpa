@@ -7,9 +7,9 @@ using namespace ATOOLS;
 Beam_Remnants::Beam_Remnants(Beam_Remnant_Handler* _beamremnant)
     : m_ana(false), p_beamremnanthandler(_beamremnant)
 {
-  m_name = "Beam_Remnants:" + (p_beamremnanthandler->Fill() == 1
-                                       ? p_beamremnanthandler->Name()
-                                       : std::string("None"));
+  m_name = "Beam_Remnants:" + (p_beamremnanthandler->Fill()==1 ?
+			       p_beamremnanthandler->Name() :
+			       std::string("None"));
   m_type = eph::Hadronization;
   if (m_ana) InitHistos();
 }
@@ -50,12 +50,8 @@ Return_Value::code Beam_Remnants::StandardTreatment(Blob_List*  bloblist,
 
 Return_Value::code Beam_Remnants::DealWithShowerFromBeams(Blob_List* bloblist)
 {
-  //msg_Out()<<"**** "<<METHOD<<"\n";
   Return_Value::code rv = p_beamremnanthandler->FillBunchBlobsFromShower(bloblist);
   if (m_ana) Analyse(bloblist);
-  //msg_Out()<<"-----------------------------------------------------\n"
-  //	   <<METHOD<<"\n"<<(*bloblist)<<"\n"
-  //	   <<"-----------------------------------------------------\n";
   return rv;
 }
 

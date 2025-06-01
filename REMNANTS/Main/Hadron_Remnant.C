@@ -11,7 +11,7 @@ Hadron_Remnant::Hadron_Remnant(PDF::PDF_Base * pdf,const unsigned int & beam,con
   p_pdf(pdf), p_partons(&(p_pdf->Partons())),
   p_valence(nullptr), p_remnant(nullptr), p_recoiler(nullptr), p_spectator(nullptr),
   m_valence(false), m_alpha(0.), m_gamma(1.), m_beta(-1.5),
-  m_invb(1./(m_beta+1)), m_LambdaQCD(0.25)
+  m_invb(1./(m_beta+1)), m_LambdaQCD(0.25), m_minE(m_beamflav.IsBaryon()?2.:1.)
 {
   p_ff     = new Form_Factor(m_beamflav);
   m_scale2 = Max(4.0,p_pdf->Q2Min());
@@ -78,9 +78,6 @@ bool Hadron_Remnant::FillBlob(Colour_Generator* colours, ParticleMomMap* ktmap, 
   // Possibly adjust final pending colours with extra gluons - in prinicple
   // one may have to check that they are not singlets ....
   CompensateColours(colours);
-  msg_Debugging() << METHOD << ": Filling blob with remnants, extracted = "
-                  << m_extracted << ", \n and spectators = " << m_spectators
-                  << "\n";
   // Assume all remnant bases already produced a beam blob = p_beamblob
   SquashFlavourSinglets();
   SquashColourSinglets();
@@ -369,6 +366,7 @@ bool Hadron_Remnant::TestExtract(const Flavour &flav,const Vec4D &mom) {
     return false;
   }
   // Still enough energy?  And in range?
+  if (m_residualE-mom[0]<m_minE) return false;
   double x = mom[0]/m_residualE;
   if (x<p_pdf->XMin() || x>p_pdf->XMax()) {
     msg_Tracking() << METHOD << ": out of limits, x = " << x << " = "

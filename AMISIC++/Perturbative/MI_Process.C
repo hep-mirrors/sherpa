@@ -81,7 +81,7 @@ MI_Process::MI_Process(const vector<Flavour>& flavs) :
   m_masses2.resize(m_flavs.size());
   for (size_t i = 0; i < m_flavs.size(); i++) {
     m_flavs[i]   = flavs[i];
-    m_masses[i]  = flavs[i].Mass();
+    m_masses[i]  = flavs[i].Mass(true);
     m_masses2[i] = sqr(m_masses[i]);
     if (i < 2) m_sumInMasses  += m_masses[i];
     else {

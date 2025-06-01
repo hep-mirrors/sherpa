@@ -201,7 +201,7 @@ namespace PHASIC {
     std::vector<double> m_m2, m_p2;
   public:
     ShiftMasses_Energy(Mass_Selector *const ms,
-		    Cluster_Amplitude *const ampl,int mode)
+		       Cluster_Amplitude *const ampl,int mode)
     {
       const auto nin = ampl->NIn();
       auto offset = 0;
@@ -288,8 +288,7 @@ int ME_Generator_Base::ShiftMasses(Cluster_Amplitude *const ampl)
   Vec4D cms;
   for (size_t i(0);i<ampl->Legs().size();++i) {
     if (i<ampl->NIn()) cms-=ampl->Leg(i)->Mom();
-    if (m_psmass.find(ampl->Leg(i)->Flav())!=
-	m_psmass.end()) run=true;
+    if (m_psmass.find(ampl->Leg(i)->Flav())!=m_psmass.end()) run=true;
   }
   if (!run) return 1;
   /// if so treat DIS as special case
@@ -307,6 +306,15 @@ int ME_Generator_Base::ShiftMassesDefault(Cluster_Amplitude *const ampl, Vec4D c
 {
   DEBUG_FUNC(m_name);
   msg_Debugging()<<"Before shift: "<<*ampl<<"\n";
+  bool must_shift = false;
+  for (size_t i(0);i<ampl->Legs().size();++i) {
+    if (ampl->Leg(i)->Mom()[0]<0.) continue;
+    double q2 = ampl->Leg(i)->Mom().Abs2(), m2 = sqr(ampl->Leg(i)->Flav().Mass(true)); 
+    if (dabs((q2-m2)/(q2+m2))>1.e-6) {
+      must_shift = true; break;
+    }
+  }
+  if (!must_shift) return 1;
   Poincare boost(cms);
   boost.Boost(cms);
   for (size_t i(0);i<ampl->Legs().size();++i)

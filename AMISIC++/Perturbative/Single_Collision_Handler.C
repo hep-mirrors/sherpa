@@ -132,10 +132,10 @@ bool Single_Collision_Handler::FirstMinBiasScatter(Blob * blob) {
   blob->ClearAllData();
   blob->DeleteOwnedParticles();
   bool success = false;
-  int  trials  = 100;
+  int  trials  = 10;
   while (!success) {
     m_b    = p_pint->SelectB(m_S);
-    trials = 100;
+    trials = 10;
     do {
       m_done  = false;
       m_pt2   = m_lastpt2 = m_S/4.;
@@ -151,6 +151,29 @@ bool Single_Collision_Handler::FirstMinBiasScatter(Blob * blob) {
   blob->AddData("Weight_Norm",new Blob_Data<double>(p_xsecs->XSnd()));
   m_done = false;
   return true;
+}
+
+bool Single_Collision_Handler::FirstRescatter(Blob * blob) {
+  blob->ClearAllData();
+  blob->DeleteOwnedParticles();
+  m_done = false;
+  m_pt2  = m_lastpt2 = m_S/4.;
+  ///////////////////////////////////////////////////////////////////////////////
+  // Updating the new "signal" blob of the min bias event and adding the last
+  // bits of relevant information.
+  // Switching Sudakov evolution back on: m_done = false
+  ///////////////////////////////////////////////////////////////////////////////
+  if (NextScatter(blob)) {
+    blob->AddData("Trials",new Blob_Data<size_t>(1));
+    blob->AddData("Weight_Norm",new Blob_Data<double>(p_xsecs->XSnd()));
+    blob->AddStatus(blob_status::needs_beamRescatter);
+    return true;
+  }
+  m_done = true;
+  return false;
+  ///////////////////////////////////////////////////////////////////////////
+  // Todo: Add soft interactions as an option here.
+  ///////////////////////////////////////////////////////////////////////////
 }
 
 bool Single_Collision_Handler::NextScatter(Blob * blob) {
