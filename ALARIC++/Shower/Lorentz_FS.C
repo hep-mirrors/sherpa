@@ -117,7 +117,6 @@ bool Lorentz_FS_Rad::Cluster
     s.m_zi=(s.m_x*s.m_p[i]*ff.m_nb)/
       ((s.m_x*s.m_p[i]+s.m_p[j])*ff.m_nb);
   s.m_p.erase(s.m_p.begin()+j);
-  if (s.m_kt2<s.m_t0) return false;
   return true;
 }
 

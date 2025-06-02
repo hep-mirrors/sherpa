@@ -131,6 +131,5 @@ bool Lorentz_IS::Cluster
   if (p_sk->PS()->KernelScheme()&1)
     s.m_zi=1.+(s.m_pj*ff.m_nb)/(s.m_pi*ff.m_nb);
   s.m_p.erase(s.m_p.begin()+j);
-  if (s.m_kt2<s.m_t0) return false;
   return true;
 }
