@@ -40,7 +40,12 @@ void CRaritaSchwinger<Scalar>::ResetAccu()
 template<class Scalar>
 void CRaritaSchwinger<Scalar>::Add(const CObject *c) {
   const CRaritaSchwinger *rs(static_cast<const CRaritaSchwinger*>(c));
-  if (rs->m_b!=m_b || rs->m_r!=m_r) THROW(fatal_error, "Summing particle and anti-particle wave functions / bar "
+  if (rs->m_b!=m_b) {
+    CRaritaSchwinger cc(rs->CConj());
+    Add(&cc);
+    return;
+  }
+  if (rs->m_r!=m_r) THROW(fatal_error, "Summing particle and anti-particle wave functions / bar "
                                                        "and non-bar wave functions is not allowed!")
   m_on|=rs->m_on;
   if (m_on&1) {
@@ -52,6 +57,7 @@ void CRaritaSchwinger<Scalar>::Add(const CObject *c) {
     m_x[11]+=rs->m_x[11]; m_x[14]+=rs->m_x[14]; m_x[15]+=rs->m_x[15];
   }
 }
+
 template<class Scalar>
 void CRaritaSchwinger<Scalar>::Multiply(const Complex &c) {
   if (m_on&1) {
@@ -76,6 +82,7 @@ void CRaritaSchwinger<Scalar>::Divide(const double &d) {
     m_x[11]/=SComplex(d); m_x[14]/=SComplex(d); m_x[15]/=SComplex(d);
   }
 }
+
 template<class Scalar>
 void CRaritaSchwinger<Scalar>::Invert() {
   for (size_t i(0); i<16; ++i) m_x[i] = -m_x[i];
@@ -87,7 +94,8 @@ ATOOLS::TCMatrix<Scalar> CRaritaSchwinger<Scalar>::Contract4Index(const CRaritaS
   for (int i=0;i<4;++i) intermediate[i] = new SComplex[4];
   for (size_t i(0); i<4; ++i){
     for (size_t j(0); j<4; ++j){
-      intermediate[i][j] = (*this)[i] * rs[j] - (*this)[i+4] * rs[j+4] - (*this)[i+8] * rs[j+8] - (*this)[i+12] * rs[j+12];
+      intermediate[i][j] = (*this)[i] * rs[j] - (*this)[i+4] * rs[j+4] - (*this)[i+8] * rs[j+8]
+        - (*this)[i+12] * rs[j+12];
     }
   }
   return ATOOLS::TCMatrix<Scalar>(intermediate, 4);
@@ -110,8 +118,8 @@ ATOOLS::TCMatrix<Scalar> CRaritaSchwinger<Scalar>::ContractSpinorIndex(const CRa
 template <class Scalar> std::complex<Scalar>
 CRaritaSchwinger<Scalar>::operator*(const CRaritaSchwinger<Scalar> &rs) const
 {
-  //if (rs.m_b==m_b) return (*this)*rs.CConj();
-  //if (rs.m_r!=m_r) THROW(fatal_error, "Multiplying particle and anti-particle wave functions is not allowed!")
+  if (rs.m_b==m_b) return (*this)*rs.CConj();
+  if (rs.m_r!=m_r) THROW(fatal_error, "Multiplying particle and anti-particle wave functions is not allowed!")
   std::complex<Scalar> result(0.0, 0.0);
   std::complex<Scalar> sign(1);
   for (size_t i(0); i<16; ++i){
@@ -119,6 +127,21 @@ CRaritaSchwinger<Scalar>::operator*(const CRaritaSchwinger<Scalar> &rs) const
     result+=sign*m_x[i]*rs.m_x[i];
   }
   return result;
+}
+
+template <class Scalar> CRaritaSchwinger<Scalar>
+CRaritaSchwinger<Scalar>::CConj() const
+{
+  if (m_b<0)
+    // Charge conjugation operator is gamma matrix representation dependent, for Weyl basis: Psi_C = C Psibar^T with
+    // C = i gamma2 gamma0
+    // additional complex conjugation due to spin-1 part leads to disagreement with MG results, when CConj is used
+    // to account for the different vertex rotations in the vertices generated from the UFO input
+    return CRaritaSchwinger(-m_r, -m_b, m_x[1], -m_x[0], -m_x[3], m_x[2], m_x[5], -m_x[4], -m_x[7], m_x[6],
+    m_x[9], -m_x[8], -m_x[11], m_x[10], m_x[13], -m_x[12], -m_x[15], m_x[14], m_c[0], m_c[1], m_h, m_s, m_on);
+  else
+    return CRaritaSchwinger(-m_r, -m_b, -m_x[1], m_x[0], m_x[3], -m_x[2], -m_x[5], m_x[4], m_x[7], -m_x[6],
+    -m_x[9], m_x[8], m_x[11], -m_x[10], -m_x[13], m_x[12], m_x[15], -m_x[14], m_c[0], m_c[1], m_h, m_s, m_on);
 }
 
 template <class Scalar>
@@ -236,10 +259,10 @@ bool CRaritaSchwinger<Scalar>::Test_Properties(const ATOOLS::Vec4D &p, int dir) 
   ATOOLS::TCMatrix<Scalar> intermediate = ATOOLS::TCMatrix<Scalar>(gammavec * p);
   // TODO: Stimmt das mit dem dir hier?
   if (p.Mass()>1e-6) {
-    intermediate += ATOOLS::TCMatrix<Scalar>(SComplex(-m_r) * SComplex(-dir) * SComplex(p.Mass()) * ATOOLS::TCMatrix<Scalar>(4, true));
+    intermediate += ATOOLS::TCMatrix<Scalar>(SComplex(-m_r) * SComplex(-dir) * SComplex(p.Mass()) *
+      ATOOLS::TCMatrix<Scalar>(4, true));
   }
   std::vector<SComplex> result1(16);
-  // TODO: Sollte man die exakten ZEROS auch hier explizit implementieren?
   for (int i(0); i<4; ++i){
     for (size_t j(0); j<4; ++j){
         if (m_b>0){
@@ -259,8 +282,8 @@ bool CRaritaSchwinger<Scalar>::Test_Properties(const ATOOLS::Vec4D &p, int dir) 
 
   for (size_t j(0); j<16; ++j){
     if (std::abs(result1[j].real())>1e-8 || std::abs(result1[j].imag())>1e-8) {
-      msg_Debugging()<<"Component " << j << " of resulting Rarita-Schwinger wave function is " << result1[j] << " instead of zero!"
-      << "\n";
+      msg_Debugging()<<"Component " << j << " of resulting Rarita-Schwinger wave function is "
+      << result1[j] << " instead of zero!" << "\n";
       testresult =false;
       single_testresult=false;
     }
@@ -286,11 +309,13 @@ bool CRaritaSchwinger<Scalar>::Test_Properties(const ATOOLS::Vec4D &p, int dir) 
     }
   }
 
-  if (!(std::abs(result2[0].real())<s_accu && std::abs(result2[1].real())<s_accu && std::abs(result2[2].real())<s_accu && std::abs(result2[3].real())<s_accu)){
+  if (!(std::abs(result2[0].real())<s_accu && std::abs(result2[1].real())<s_accu && std::abs(result2[2].real())<s_accu
+  && std::abs(result2[3].real())<s_accu)){
     msg_Debugging() << "gamma_mu Psi^mu is " << result2[0] << result2[1] << result2[2] << result2[3] << " not zero!" << "\n";
     testresult = false; single_testresult = false;
   }
-  if (!(std::abs(result2[0].imag())<s_accu && std::abs(result2[1].imag())<s_accu && std::abs(result2[2].imag())<s_accu && std::abs(result2[3].imag())<s_accu)){
+  if (!(std::abs(result2[0].imag())<s_accu && std::abs(result2[1].imag())<s_accu && std::abs(result2[2].imag())<s_accu
+  && std::abs(result2[3].imag())<s_accu)){
     msg_Debugging() << "gamma_mu Psi^mu is " << result2[0] << result2[1] << result2[2] << result2[3] << " not zero!" << "\n";
     testresult = false; single_testresult = false;
   }
@@ -301,13 +326,16 @@ bool CRaritaSchwinger<Scalar>::Test_Properties(const ATOOLS::Vec4D &p, int dir) 
   single_testresult = true;
   std::vector<SComplex> result3(4);
   for (int i(0); i<4; ++i){
-    result3[i] = SComplex(p[0]) * (*this)[i] + SComplex(-p[1]) * (*this)[4+i] + SComplex(-p[2]) * (*this)[8+i] + SComplex(-p[3]) * (*this)[12+i];
+    result3[i] = SComplex(p[0]) * (*this)[i] + SComplex(-p[1]) * (*this)[4+i] + SComplex(-p[2]) * (*this)[8+i]
+      + SComplex(-p[3]) * (*this)[12+i];
   }
-  if (!(std::abs(result3[0].real())<s_accu && std::abs(result3[1].real())<s_accu && std::abs(result3[2].real())<s_accu && std::abs(result3[3].real())<s_accu)){
+  if (!(std::abs(result3[0].real())<s_accu && std::abs(result3[1].real())<s_accu && std::abs(result3[2].real())<s_accu
+  && std::abs(result3[3].real())<s_accu)){
     msg_Debugging() << "p_mu Psi^mu is " << result3[0] << result3[1] << result3[2] << result3[3] << " not zero!" << "\n";
     testresult = false; single_testresult = false;
   }
-  if (!(std::abs(result3[0].imag())<s_accu && std::abs(result3[1].imag())<s_accu && std::abs(result3[2].imag())<s_accu && std::abs(result3[3].imag())<s_accu)) {
+  if (!(std::abs(result3[0].imag())<s_accu && std::abs(result3[1].imag())<s_accu && std::abs(result3[2].imag())<s_accu
+  && std::abs(result3[3].imag())<s_accu)) {
     msg_Debugging() << "p_mu Psi^mu is " << result3[0] << result3[1] << result3[2] << result3[3] << " not zero!" << "\n";
     testresult = false; single_testresult = false;
   }
