@@ -53,7 +53,7 @@ def _get_current_in(spin, index, key, ferm_partner):
     for i in range(4):
         if spin == 4:
             for j in range(4):
-                impl += f'const SComplex & j{index}{4*i + j} = j{index}[4*{VECT_GAUGE_DICT[i]}+{j}];\n'
+                impl += f'const SComplex & j{index}{j + 4*i} = j{index}[{VECT_GAUGE_DICT[j]}+4*{i}];\n'
         elif spin == 3:
             impl += f'const SComplex & j{index}{i} = j{index}[{VECT_GAUGE_DICT[i]}];\n'
         else:
