@@ -207,16 +207,9 @@ namespace METOOLS {
       }
       return *this;
     }
-  // TODO: Stimmt das, dass sich m_r und m_b hier so ändern? Was soll CConj eigentlich machen? Bei Spinoren werden auch
-  //       noch Komponenten paarweise vertauscht!!!
-    inline CRaritaSchwinger CConj() const
-    {
-      return CRaritaSchwinger(-m_r, -m_b, std::conj(m_x[0]),std::conj(m_x[1]), std::conj(m_x[2]),std::conj(m_x[3]),
-                              std::conj(m_x[4]),std::conj(m_x[5]), std::conj(m_x[6]),std::conj(m_x[7]),
-                              std::conj(m_x[8]),std::conj(m_x[9]), std::conj(m_x[10]),std::conj(m_x[10]),
-                              std::conj(m_x[11]),std::conj(m_x[12]), std::conj(m_x[13]),std::conj(m_x[14]),
-		                          m_c[0], m_c[1], m_h, m_s, m_on);
-    }
+  // Charge conjugation
+    CRaritaSchwinger<Scalar> CConj() const;
+
     // Getter of particle/anti-particle parameter (m_r), adjoint wave function parameter (m_b) and m_on
     inline int R() const { return m_r; }
     inline int B() const { return m_b; }
