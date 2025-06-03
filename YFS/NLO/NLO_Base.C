@@ -704,7 +704,7 @@ void NLO_Base::MapMomenta(Vec4D_Vector &p, Vec4D &k) {
 	Poincare boostQ(Q);
   Poincare pRot(m_bornMomenta[0], Vec4D(0., 0., 0., 1.));
 	for (int i = 0; i < p.size(); ++i) {
-		pRot.Rotate(p[i]);
+		// pRot.Rotate(p[i]);
 		boostQ.Boost(p[i]);
 		// RandomRotate(p[i]);
 	}
@@ -752,11 +752,11 @@ void NLO_Base::MapMomenta(Vec4D_Vector &p, Vec4D &k) {
   Poincare pRot2(m_bornMomenta[0], Vec4D(0., 	0., 0, 1.));
 	for (int i = 0; i < p.size(); ++i)
 	{
-		pRot2.Rotate(p[i]);
-		boostLab.BoostBack(p[i]);
+		// pRot2.Rotate(p[i]);
+		// boostLab.BoostBack(p[i]);
 	}
-	pRot2.Rotate(k);
-	boostLab.BoostBack(k);
+	// boostLab.BoostBack(k);
+	// pRot2.Rotate(k);
 }
 
 
