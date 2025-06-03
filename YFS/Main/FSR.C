@@ -687,7 +687,7 @@ void FSR::BoostToXFM() {
   for (int i=0; i<2; i++) {
     poin.Boost(m_dipole[i]);
     if(i==0) p_rot = Poincare(m_dipole[i],Vec4D(0.,0.,0.,1.));
-    // p_rot.Rotate(m_dipole[i]);
+    p_rot.Rotate(m_dipole[i]);
   }
   p_dipole->SetRotate(p_rot);
   p_dipole->SetBoost(poin);

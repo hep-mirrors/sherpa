@@ -221,8 +221,8 @@ void Dipole::Boost() {
     m_photonSum*=0.;
     // m_dipolePhotonsEEX.clear();
     for (auto &k : m_dipolePhotons) {
-      m_dipolePhotonsEEX.push_back(k);
       Boost(k);
+      m_dipolePhotonsEEX.push_back(k);
       m_photonSum+=k;
     }
     if (p_Pboost) delete p_Pboost;
@@ -336,7 +336,8 @@ bool Dipole::BoostNLO() {
     m_photonSum*=0.;
     for (auto &k : m_dipolePhotons) {
       BoostNLO(k);
-      // p_rotate.Rotate(k);
+      // p_Pboost->Boost(k);
+      // // p_rotate.Rotate(k);
       // p_boost.BoostBack(k);
       m_photonSum+=k;
     }
