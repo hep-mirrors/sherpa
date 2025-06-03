@@ -18,7 +18,7 @@ namespace PHASIC {
     ISR_Channel_Base(ATOOLS::Integration_Info *info) {}
     ~ISR_Channel_Base() {
       if (p_vegas) delete p_vegas;
-      if (p_rans)  delete p_rans;
+      if (p_rans)  delete[] p_rans;
     }
     
     inline const std::string & ChID() const { return m_name; }
