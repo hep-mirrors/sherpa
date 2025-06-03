@@ -1955,7 +1955,7 @@ bool Amplitude::GaugeTest(const Vec4D_Vector &moms,const int mode)
   Spinor<double> l(1, moms[3]);
   Spinor<double> g(1, Vec4D(1.0,0.0,1.0,0.0));
   Spinor<double> h(1, Vec4D(1.0,0.0,1.0,0.0));
-  /*Spinor<double> p(1, -(moms[0][1]+Complex(0, -1)*moms[0][2]) / (sqrt(moms[0][0]+moms[0][3])), sqrt(moms[0][0]+moms[0][3]));
+  Spinor<double> p(1, -(moms[0][1]+Complex(0, -1)*moms[0][2]) / (sqrt(moms[0][0]+moms[0][3])), sqrt(moms[0][0]+moms[0][3]));
   Spinor<double> q(1, -(moms[1][1]+Complex(0, -1)*moms[1][2]) / (sqrt(moms[1][0]+moms[1][3])), sqrt(moms[1][0]+moms[1][3]));
   Spinor<double> k(1, -(moms[2][1]+Complex(0, -1)*moms[2][2]) / (sqrt(moms[2][0]+moms[2][3])), sqrt(moms[2][0]+moms[2][3]));
   Spinor<double> l(1, -(moms[3][1]+Complex(0, -1)*moms[3][2]) / (sqrt(moms[3][0]+moms[3][3])), sqrt(moms[3][0]+moms[3][3]));
