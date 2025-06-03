@@ -112,7 +112,7 @@ namespace YFS{
         inline void SetSudakovs(std::vector<double> y, std::vector<double> z) {m_pk1 =y; m_pk2=z;}
         inline void SetPhotonScale(double &scale) {m_photonscale = scale;}
         inline void SetMEPhotons(Vec4D_Vector &k) {m_mephotons = k;}
-        inline Vec4D_Vector GetMEPhotons() {return m_dipolePhotonsEEX;}
+        inline Vec4D_Vector GetMEPhotons() {return m_mephotons;}
         inline bool IsFinite() {return m_irfinite;}
         inline void SetDuplicate(bool dub) {m_isduplicate=dub;}
         inline void SetResonaceFlavour(Flavour &fl) {m_ResFlav = fl;}
