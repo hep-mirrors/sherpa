@@ -375,25 +375,31 @@ double EPA_WoodSaxon::CalculateDensity()
 // the analytical expression from 2207.03012, eq. 3.3
 ////////////////////////////////////////////////////////////////////////////////
 
-EPA_testIon::EPA_testIon(const ATOOLS::Flavour& beam, const int dir)
+EPA_IonApprox::EPA_IonApprox(const ATOOLS::Flavour& beam, const int dir)
     : EPA_FF_Base(beam, dir)
 {}
 
-double EPA_testIon::N(const double& x)
+double EPA_IonApprox::N(const double& x)
 {
   // Analytically integrated out the b
   // double chi = x * m_mass * m_R;
   // return 2 / x * (chi * std::cyl_bessel_k(1, chi) * std::cyl_bessel_k(0, chi)
   //    - sqr(chi)/2. * (sqr(std::cyl_bessel_k(1, chi)) -
   //    sqr(std::cyl_bessel_k(0, chi))));
-  m_b = m_beam.Radius() / ATOOLS::rpa->hBar_c() * m_bmin *
-        std::pow(m_bmax / m_bmin, ATOOLS::ran->Get());
-  double wt  = m_b * std::log(m_bmax / m_bmin);
+  double r2 = m_R * m_R;
+  m_b = std::sqrt((ATOOLS::sqr(m_bmin * m_R) + r2) *
+                                std::pow((ATOOLS::sqr(m_bmax * m_R) + r2) /
+                                                 (ATOOLS::sqr(m_bmin * m_R) + r2),
+                                         ATOOLS::ran->Get()) - r2);
+  double wt =
+          (ATOOLS::sqr(m_b) + r2) / m_b / 2. *
+          std::log((ATOOLS::sqr(m_bmax) + r2) / (ATOOLS::sqr(m_bmin) + r2));
   double chi = x * m_mass * m_b;
   return 2 * m_b * x * sqr(m_mass) * sqr(SF.Kn(1, chi)) * wt;
-  // correction term seems to be negligible
-  // return 2 * b * sqr(m_R) * x * sqr(m_mass) * (sqr(SF.Kn(1, chi)) +
-  // sqr(m_mass / 3500) * sqr(SF.Kn(0, chi)));
+  // correction term seems to be negligible;
+  // removed because K_0 not implemented for large values
+  // return 2 * m_b * x * sqr(m_mass) * (sqr(SF.Kn(1, chi)) +
+  //   sqr(m_mass / m_energy) * sqr(SF.Kn(0, chi))) * wt;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
