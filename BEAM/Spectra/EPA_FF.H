@@ -49,17 +49,15 @@ namespace BEAM {
     virtual void   FillTables(const size_t& nx, const size_t& nb);
     virtual double N(const double& x)
     {
-      // sampling b by b/(b^2+1), here still only relative to the radius to
-      // preserve generality
-      m_b = std::sqrt((ATOOLS::sqr(m_bmin) + 1.) *
-                              std::pow((ATOOLS::sqr(m_bmax) + 1.) /
-                                               (ATOOLS::sqr(m_bmin) + 1.),
-                                       ATOOLS::ran->Get()) -
-                      1.);
+      // sampling b by p(b) = 1/norm * b/(b^2+1)
+      double r2 = m_R * m_R;
+      m_b = std::sqrt((ATOOLS::sqr(m_bmin * m_R) + r2) *
+                        std::pow((ATOOLS::sqr(m_bmax * m_R) + r2) /
+                                         (ATOOLS::sqr(m_bmin * m_R) + r2),
+                                 ATOOLS::ran->Get()) - r2);
       double wt =
               (ATOOLS::sqr(m_b) + 1.) / m_b / 2. *
               std::log((ATOOLS::sqr(m_bmax) + 1.) / (ATOOLS::sqr(m_bmin) + 1.));
-      m_b *= m_R;// < now convert to an actual distance
       return (*p_N_xb)(x, m_b) * wt;
     };
     virtual double FF(const double& Q2) = 0;
@@ -114,7 +112,7 @@ namespace BEAM {
       //   are in GeV.
       //////////////////////////////////////////////////////////////////////////////
       double qT = y / m_b, qT2 = ATOOLS::sqr(qT);
-      double Q2  = (qT2 + ATOOLS::sqr(m_x * p_ff->Mass())) / (1. - m_x);
+      double Q2 = (qT2 + ATOOLS::sqr(m_x * p_ff->Mass())) / (1. - m_x);
       // integration variable is qT, so dy/dqT = b, hence Jacobian 1/b needed
       double res = qT2 / Q2 * p_ff->FF(Q2) / m_b;
       return res;
