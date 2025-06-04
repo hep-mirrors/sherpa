@@ -25,7 +25,7 @@ namespace BEAM {
     dipole       = 12,
     dipoleApprox = 13,
     WoodSaxon    = 14,
-    testIon      = 15,
+    ionApprox    = 15,
     Test         = 99
   };
 
@@ -56,8 +56,8 @@ namespace BEAM {
                                          (ATOOLS::sqr(m_bmin * m_R) + r2),
                                  ATOOLS::ran->Get()) - r2);
       double wt =
-              (ATOOLS::sqr(m_b) + 1.) / m_b / 2. *
-              std::log((ATOOLS::sqr(m_bmax) + 1.) / (ATOOLS::sqr(m_bmin) + 1.));
+              (ATOOLS::sqr(m_b) + r2) / m_b / 2. *
+              std::log((ATOOLS::sqr(m_bmax) + r2) / (ATOOLS::sqr(m_bmin) + r2));
       return (*p_N_xb)(x, m_b) * wt;
     };
     virtual double FF(const double& Q2) = 0;
@@ -262,9 +262,9 @@ namespace BEAM {
     double FF(const double& Q2) override { return (*p_FF_Q2)(Q2); }
   };
 
-  class EPA_testIon final : public EPA_FF_Base {
+  class EPA_IonApprox final : public EPA_FF_Base {
   public:
-    EPA_testIon(const ATOOLS::Flavour& beam, int dir);
+    EPA_IonApprox(const ATOOLS::Flavour& beam, int dir);
     void   FillTables(const size_t& nx, const size_t& nb) override {};
     double N(const double& x) override;
     double FF(const double& Q2) override { return 0.; }
