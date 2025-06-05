@@ -395,7 +395,7 @@ double EPA_IonApprox::N(const double& x)
           (ATOOLS::sqr(m_b) + r2) / m_b / 2. *
           std::log((ATOOLS::sqr(m_bmax) + r2) / (ATOOLS::sqr(m_bmin) + r2));
   double chi = x * m_mass * m_b;
-  return 2 * m_b * x * sqr(m_mass) * sqr(SF.Kn(1, chi)) * wt;
+  return 2 * m_Zsquared * m_b * x * sqr(m_mass) * sqr(SF.Kn(1, chi)) * wt;
   // correction term seems to be negligible;
   // removed because K_0 not implemented for large values
   // return 2 * m_b * x * sqr(m_mass) * (sqr(SF.Kn(1, chi)) +
