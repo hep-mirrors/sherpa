@@ -107,7 +107,7 @@ bool OctetMeson_Decayer::FixKinematics() {
   intoCMS.Boost(mom1);
   Poincare ontoZ = Poincare(mom1, E * s_AxisP);
   ontoZ.Rotate(mom1);
-  double zmin = m_minE / (mom1[0] - m1), zmax = 1. - m12 / (Q2 - m22);
+  double zmin = m_minE / (mom1[0] - m1), zmax = 1 - m12 / (Q2 - m22);
   if (zmax < zmin)
     zmin = zmax * m_minE / E;
   double z =
@@ -145,9 +145,35 @@ bool OctetMeson_Decayer::FixKinematics() {
   //	   <<"Check: "<<mom<<" vs. "<<(m_mom[0]+m_mom[1]+m_mom[2])<<"\n";
   return (z>0.);
 }
-
 void OctetMeson_Decayer::UpdateColouredObjectsAndAddHadron() {
-  int newkfc = p_part1->Flavour().Kfcode() - m_offset;
+  static const map<int, vector<pair<int, double>>> decayLDMEs = {
+  {kf_eta_c_1S_oct, {{kf_eta_c_1S, 0.010},{kf_J_psi_1S, 0.018}}},
+  {kf_J_psi_1S_oct,  {{kf_eta_c_1S,0.018},{kf_J_psi_1S, 0.012}}}
+  };
+
+
+  int octetkfc = p_part1->Flavour().Kfcode();
+  int newkfc = octetkfc - m_offset;
+  auto LDME_it = decayLDMEs.find(octetkfc);
+  if(LDME_it != decayLDMEs.end()) {
+    const auto& LDMEChannels = LDME_it->second;
+    double sumLDME = 0.;
+    for (auto& ch : LDMEChannels) sumLDME += ch.second;
+
+    double r = ran->Get();
+    double cumulative = 0.;
+    int chosenSinglet = LDMEChannels.front().first;
+
+    for (auto& ch : LDMEChannels) {
+      cumulative += ch.second / sumLDME;
+      if (r < cumulative) {
+        chosenSinglet = ch.first;
+        break;
+      }
+    }
+    newkfc = chosenSinglet;
+  }
+
   Proto_Particle *meson = new Proto_Particle(Flavour(newkfc), m_mom[0]);
   p_hadrons->push_back(meson);
   p_part1->SetFlavour(Flavour(kf_gluon));
