@@ -187,7 +187,7 @@ double NLO_Base::CalculateVirtual() {
 		int ncorrect = ::countMatchingDigits(p1, -yfspole, 32);
 		double reldiff = (p1+yfspole)/p1;
 		if(!IsEqual(p1,-yfspole,1e-6) || ncorrect < 10){
-			msg_Error()<<"Poles do not cancel in YFS Virtuals"<<std::endl
+			// msg_Error()<<"Poles do not cancel in YFS Virtuals"<<std::endl
 		m_histograms1d["SinglePoleCD"]->Insert(ncorrect);
 		m_histograms1d["OneLoopEpsYFS"]->Insert(log10(fabs(yfspole)));
 		m_histograms1d["OneLoopEpsLP"]->Insert(log10(fabs(p1)));
