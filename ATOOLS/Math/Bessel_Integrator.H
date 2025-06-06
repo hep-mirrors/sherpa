@@ -2,6 +2,7 @@
 #define ATOOLS_Math_Bessel_Integrator_H
 
 #include "ATOOLS/Math/Function_Base.H"
+#include "ATOOLS/Math/Special_Functions.H"
 #include <vector>
 
 namespace ATOOLS {
@@ -17,7 +18,10 @@ namespace ATOOLS {
       {}
       void   SetFunc(ATOOLS::Function_Base* func) { p_func = func; }
       void   SetOrder(const size_t& order) { m_order = order; }
-      double operator()(double x) override;
+      double operator()(double x) override
+      {
+        return (*p_func)(x) * ATOOLS::SF.Jn(m_order, x);
+      };
     };
     class TestFunction final : public ATOOLS::Function_Base {
     private:

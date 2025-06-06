@@ -1,12 +1,11 @@
 #include "ATOOLS/Math/Bessel_Integrator.H"
-#include "ATOOLS/Math/Special_Functions.H"
 #include <iomanip>
 
 using namespace ATOOLS;
 
 Bessel_Integrator::Bessel_Integrator(ATOOLS::Function_Base* f,
                                      const size_t&          order)
-    : m_kernel(f, order), m_order(order), m_maxbins(50), m_depth(10),
+    : m_kernel(f, order), m_order(order), m_maxbins(20), m_depth(10),
       m_maxdepth(10), m_iterator(1)
 {
   FixBins(false);
@@ -56,9 +55,13 @@ bool Bessel_Integrator::FillBins(const bool& output)
       return false;
     }
     m_F[i - 1] = F;
-    m_M[0][i - 1] =
-            (dabs(m_Psi[i - 1]) > tolerance) ? m_F[i - 1] / m_Psi[i - 1] : 0.;
-    m_N[0][i - 1] = 1. / m_Psi[i - 1];
+    if (dabs(m_Psi[i - 1]) > tolerance) {
+      m_M[0][i - 1] = m_F[i - 1] / m_Psi[i - 1];
+      m_N[0][i - 1] = 1. / m_Psi[i - 1];
+    } else {
+      m_M[0][i - 1] = 0.;
+      m_N[0][i - 1] = 0.;
+    }
     if (output) {
       msg_Out() << "  bin i = " << std::setw(2) << i << ": "
                 << "Psi[" << std::setw(8) << xmin << ", " << std::setw(8)
@@ -86,10 +89,8 @@ bool Bessel_Integrator::FillBins(const bool& output)
                                      : m_extrema[s + 1 + p];
       } else
         exit(1);
-      double norm = 1. / xmin - 1. / xmax;
-      if (dabs(norm) < tolerance) norm = tolerance;
-      m_M[p][s - 1] = (m_M[p - 1][s - 1] - m_M[p - 1][s]) / norm;
-      m_N[p][s - 1] = (m_N[p - 1][s - 1] - m_N[p - 1][s]) / norm;
+      m_M[p][s - 1] = (m_M[p - 1][s - 1] - m_M[p - 1][s]) * xmin * xmax / (xmax - xmin);
+      m_N[p][s - 1] = (m_N[p - 1][s - 1] - m_N[p - 1][s]) * xmin * xmax / (xmax - xmin);
     }
     if (output && p != m_maxdepth - 1) {
       msg_Out() << "=== " << METHOD << "(depth = " << std::setw(2) << p
@@ -139,7 +140,7 @@ void Bessel_Integrator::FixBins(const bool& output)
   }
   // Fill in the remaining zeroes
   for (int i = 11; i < m_maxbins + 1; ++i)
-    m_zeroes[i] = 2. * m_zeroes[i - 1] - m_zeroes[i - 2];
+    m_zeroes[i] = m_zeroes[i - 1] + M_PI;
   // approximate the extrema as midpoints between zeroes; again, the
   // integration starts at 0, so we fix the first value there
   m_extrema[0] = 0.;
@@ -158,11 +159,6 @@ void Bessel_Integrator::FixBins(const bool& output)
                 << m_extrema[i] << ".\n";
     }
   }
-}
-
-double Bessel_Integrator::Kernel::operator()(double x)
-{
-  return (*p_func)(x) *ATOOLS::SF.Jn(m_order, x);
 }
 
 double Bessel_Integrator::TestFunction::operator()(double x)
