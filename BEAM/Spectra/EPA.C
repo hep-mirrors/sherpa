@@ -132,9 +132,9 @@ void EPA::RegisterDefaults() const
 void EPA::Tests()
 {
   // Test
-  auto* ff_test = new EPA_Test(Flavour(kf_photon), 0);
-  ff_test->OutputToCSV("test");
-  delete ff_test;
+  //auto* ff_test = new EPA_Test(Flavour(kf_photon), 0);
+  //ff_test->OutputToCSV("test");
+  //delete ff_test;
 
   // Lepton
   auto* ff_e = new EPA_Point(Flavour(kf_e), 0);
@@ -170,6 +170,10 @@ void EPA::Tests()
   auto* ff_p_dipApprox = new EPA_DipoleApprox(Flavour(kf_p_plus), 0);
   ff_p_dipApprox->OutputToCSV("dipoleApprox");
   delete ff_p_dipApprox;
+  // Ion Approx
+  auto* ff_p_ionApprox = new EPA_IonApprox(Flavour(kf_p_plus), 0);
+  ff_p_ionApprox->OutputToCSV("ionApprox");
+  delete ff_p_ionApprox;
 
   std::vector<kf_code> ions({kf_lead208, kf_calcium40});
   for (kf_code ion : ions) {
@@ -193,5 +197,9 @@ void EPA::Tests()
     auto* ff_ion_ws = new EPA_WoodSaxon(Flavour(ion), 0);
     ff_ion_ws->OutputToCSV("ws");
     delete ff_ion_ws;
+    // Ion Approx
+    auto* ff_ionApprox = new EPA_IonApprox(Flavour(ion), 0);
+    ff_ionApprox->OutputToCSV("ionApprox");
+    delete ff_ionApprox;
   }
 }

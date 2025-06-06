@@ -100,7 +100,7 @@ void EPA_FF_Base::OutputToCSV(const std::string& type)
 
   double              step_b(std::log(m_bmax / m_bmin) / double(m_nbbins));
   std::vector<double> bs(m_nbbins);
-  bs[0] = m_bmin;
+  bs[0] = m_bmin * m_R;
   for (int i = 1; i < m_nbbins; ++i) { bs[i] = bs[i - 1] * std::exp(step_b); }
 
   double              q2max(1000.), q2min(1.e-3);
@@ -113,14 +113,23 @@ void EPA_FF_Base::OutputToCSV(const std::string& type)
   }
   std::string prefix = m_beam.IDName() + "_" + type + "_";
 
-  std::ofstream outfile_Nxb(prefix + "N_x_b.csv");
-  outfile_Nxb << "x,b,N" << std::endl;
-  for (auto& x : xs) {
-    for (auto& b : bs) {
-      outfile_Nxb << x << "," << b << "," << (*p_N_xb)(x, m_b) << std::endl;
+  if (p_N_xb) {
+    std::ofstream outfile_Nxb(prefix + "N_x_b.csv");
+    outfile_Nxb << "x,b,N" << std::endl;
+    for (auto& x : xs) {
+      for (auto& b : bs) {
+        outfile_Nxb << x << "," << b << "," << (*p_N_xb)(x, b) << std::endl;
+      }
     }
+    outfile_Nxb.close();
+  } else {
+    std::ofstream outfile_Nxb(prefix + "N_x_b.csv");
+    outfile_Nxb << "x,b,N" << std::endl;
+    for (auto& x : xs) {
+      outfile_Nxb << x << ",0," << N(x) << std::endl;
+    }
+    outfile_Nxb.close();
   }
-  outfile_Nxb.close();
 
   std::ofstream outfile_FFq2(prefix + "FF_q2.csv");
   outfile_FFq2 << "q2,FF" << std::endl;
