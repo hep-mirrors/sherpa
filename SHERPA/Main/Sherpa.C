@@ -189,6 +189,10 @@ bool Sherpa::InitializeTheEventHandler()
     p_eventhandler->AddEventPhase(new Beam_Remnants(p_inithandler->GetBeamRemnantHandler()));
     p_eventhandler->AddEventPhase(new Hadronization(p_inithandler->GetColourReconnectionHandler(),
 						    p_inithandler->GetFragmentation()));
+
+    // p_eventhandler->AddEventPhase(new nuclear_formation(p_inithandler->nucleonReconnectionHandler(),
+		// 				    p_inithandler->GetFragmentation()));
+    
     p_eventhandler->AddEventPhase(new Hadron_Decays(p_inithandler->GetHDHandler()));
   }
   p_eventhandler->AddEventPhase(new Userhook_Phase(this));

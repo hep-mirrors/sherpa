@@ -12,6 +12,7 @@ namespace SHERPA {
       Unspecified         =    0,
       Perturbative        =    1,
       Hadronization       =    2,
+      Nuclear_Formation   =    3,
       Analysis            =   10,
       Userhook            =   20,
       Read_In             =   90
