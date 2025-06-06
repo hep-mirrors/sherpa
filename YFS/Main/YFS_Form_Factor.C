@@ -816,24 +816,24 @@ double YFS_Form_Factor::BVirtT(YFS::Dipole &d, double kmax){
     //   +DiLog(1./zeta) -1.0
        );
   #ifdef USING__LOOPTOOLS
-    Complex form;
-    Flavour fl1 = d.GetFlav(0);
-    Flavour fl2 = d.GetFlav(1);
-    // PRINT_VAR(d.m_thetai*p1+d.m_thetaj*p2);
-    double s = (p1+p2).Abs2();
-    double crossterm = ((d.m_thetai*p1+d.m_thetaj*p2).Abs2());
-    if(fl1==fl2){
-      form = 1./8.*B0(s, m1*m1, m2*m2);
-      // form += -8.*(m1*m1)*C0(m1*m1, s, m2*m2,0,m1*m1,m2*m2);
-      // PRINT_VAR(B0(s, m1*m1, m2*m2));
-    //   // PRINT_VAR(C0(m1*m1, 0, m1*m1,0, m1*m1, m1*m1));
-    }
-    else{
-      form = 2*(p1*p2)*C0(m1*m1, s, m2*m2,0,m1*m1,m2*m2);
-      form += 0.25*B0(s, m1*m1, m2*m2);
-      // PRINT_VAR(B0(crossterm, m1*m1, m2*m2));
-    }
-    form*=m_alpi;
+    // Complex form;
+    // Flavour fl1 = d.GetFlav(0);
+    // Flavour fl2 = d.GetFlav(1);
+    // // PRINT_VAR(d.m_thetai*p1+d.m_thetaj*p2);
+    // double s = (p1+p2).Abs2();
+    // double crossterm = ((d.m_thetai*p1+d.m_thetaj*p2).Abs2());
+    // if(fl1==fl2){
+    //   form = 1./8.*B0(s, m1*m1, m2*m2);
+    //   // form += -8.*(m1*m1)*C0(m1*m1, s, m2*m2,0,m1*m1,m2*m2);
+    //   // PRINT_VAR(B0(s, m1*m1, m2*m2));
+    // //   // PRINT_VAR(C0(m1*m1, 0, m1*m1,0, m1*m1, m1*m1));
+    // }
+    // else{
+    //   form = 2*(p1*p2)*C0(m1*m1, s, m2*m2,0,m1*m1,m2*m2);
+    //   form += 0.25*B0(s, m1*m1, m2*m2);
+    //   // PRINT_VAR(B0(crossterm, m1*m1, m2*m2));
+    // }
+    // form*=m_alpi;
     // PRINT_VAR(form.real());
     // PRINT_VAR(TBvirt.Finite());
     // // PRINT_VAR(fl1);
@@ -914,24 +914,24 @@ DivArrD YFS_Form_Factor::BVirtTEps(YFS::Dipole &d, double kmax){
       // +DiLog(1./zeta) -1.0
        );
   #ifdef USING__LOOPTOOLS
-    Complex form;
-    Flavour fl1 = d.GetFlav(0);
-    Flavour fl2 = d.GetFlav(1);
-    // PRINT_VAR(d.m_thetai*p1+d.m_thetaj*p2);
-    double s = (p1+p2).Abs2();
-    double crossterm = ((d.m_thetai*p1+d.m_thetaj*p2).Abs2());
-    if(fl1==fl2){
-      form = 1./8.*B0(s, m1*m1, m2*m2);
-      // form += -8.*(m1*m1)*C0(m1*m1, s, m2*m2,0,m1*m1,m2*m2);
-      // PRINT_VAR(B0(s, m1*m1, m2*m2));
-    //   // PRINT_VAR(C0(m1*m1, 0, m1*m1,0, m1*m1, m1*m1));
-    }
-    else{
-      form = 2*(p1*p2)*C0(m1*m1, s, m2*m2,0,m1*m1,m2*m2);
-      form += 0.25*B0(s, m1*m1, m2*m2);
-      // PRINT_VAR(B0(crossterm, m1*m1, m2*m2));
-    }
-    form*=m_alpi;
+    // Complex form;
+    // Flavour fl1 = d.GetFlav(0);
+    // Flavour fl2 = d.GetFlav(1);
+    // // PRINT_VAR(d.m_thetai*p1+d.m_thetaj*p2);
+    // double s = (p1+p2).Abs2();
+    // double crossterm = ((d.m_thetai*p1+d.m_thetaj*p2).Abs2());
+    // if(fl1==fl2){
+    //   form = 1./8.*B0(s, m1*m1, m2*m2);
+    //   // form += -8.*(m1*m1)*C0(m1*m1, s, m2*m2,0,m1*m1,m2*m2);
+    //   // PRINT_VAR(B0(s, m1*m1, m2*m2));
+    // //   // PRINT_VAR(C0(m1*m1, 0, m1*m1,0, m1*m1, m1*m1));
+    // }
+    // else{
+    //   form = 2*(p1*p2)*C0(m1*m1, s, m2*m2,0,m1*m1,m2*m2);
+    //   form += 0.25*B0(s, m1*m1, m2*m2);
+    //   // PRINT_VAR(B0(crossterm, m1*m1, m2*m2));
+    // }
+    // form*=m_alpi;
     // PRINT_VAR(form.real());
     // PRINT_VAR(TBvirt.Finite());
     // // PRINT_VAR(fl1);
@@ -939,7 +939,7 @@ DivArrD YFS_Form_Factor::BVirtTEps(YFS::Dipole &d, double kmax){
     // PRINT_VAR(form.real());
     // PRINT_VAR(TBvirt.Finite());
     // TBvirt+=form.real();
-    clearcache();
+    // clearcache();
   #endif
   return TBvirt;
 }
