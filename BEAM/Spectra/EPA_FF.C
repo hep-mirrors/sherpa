@@ -190,8 +190,8 @@ EPA_Proton::EPA_Proton(const ATOOLS::Flavour& beam, const int dir)
 
 double EPA_Proton::N(const double& x)
 {
-  auto phi = [this](double z) {
-    double y   = z * z / (1. - z);
+  auto phi = [this](double x, double z) {
+    double y   = x * x / (1. - x);
     double a   = (1. + m_mu2) / 4. + 4. * m_mass2 / m_Q02;
     double b   = 1. - 4. * m_mass2 / m_Q02;
     double c   = (m_mu2 - 1.) * std::pow(b, -4);
@@ -206,11 +206,11 @@ double EPA_Proton::N(const double& x)
                     std::pow(b, 2) / 2. * std::pow(zp1, -2) +
                     std::pow(b, 3) / 3. * std::pow(zp1, -3));
 
-    return term1 - term2 + term3;
+    return term1 + term2 + term3;
   };
 
   double q2min = Q2min(x);
-  return (1. - x) / x * (phi(m_q2max / m_Q02) - phi(q2min / m_Q02));
+  return (1. - x) / x * (phi(x, m_q2max / m_Q02) - phi(x, q2min / m_Q02));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
