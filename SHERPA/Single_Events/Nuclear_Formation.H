@@ -25,16 +25,15 @@ namespace SHERPA {
 
   /*!
     \file 
-    \brief Contains the class SHERPA::Hadronization
+    \brief Contains the class SHERPA::Nuclear_Formation
   */
 
   /*!
-    \class Hadronization
-    \brief The specific Event_Phase_Handler responsible for the translation of partons
-           into hadrons.
+    \class Nuclear_Formation
+    \brief The specific Event_Phase_Handler responsible for nucleus formation
 
     This is the single event phase that manages the hadronization stage, i.e. the translation
-    of partons into hadrons. For this, it needs some idea on how to treat the remanants of
+    of nucleons into nucleus. For this, it needs some idea on how to treat the remanants of
     eventually coloured incoming beams (like protons) and a fragmentation handler.
   */
   /*!
@@ -42,21 +41,21 @@ namespace SHERPA {
     A pointer to the Fragmentation_Handler, filled by the constructor.
   */
   /*!
-    \fn Hadronization::Hadronization(Fragmentation_Handler *)
+    \fn Nuclear_Formation::Nuclear_Formation(Fragmentation_Handler *)
     Copies the pointer to the fragmentation handler and sets the
     name and the type of this event phase. The name is given by 
-    "Hadronization : " plus the name of the fragmentation model, the type is "Hadronization".
+    "Nuclear_Formation : " plus the name of the fragmentation model, the type is "Nuclear_Formation".
   */
   /*!
-    \fn Hadronization::~Hadronization()
+    \fn Nuclear_Formation::~Nuclear_Formation()
     Nothing to be done in the destructor so far.
   */
   /*!
-    \fn bool Hadronization::Treat(ATOOLS::Blob_List*)
+    \fn bool Nuclear_Formation::Treat(ATOOLS::Blob_List*)
     This method basically passes the blob list to the method Hadronize of the fragmentation handler.
   */
   /*!
-    \fn void Hadronization::CleanUp()
+    \fn void Nuclear_Formation::CleanUp()
     Nothing has to be done here.
   */
 }
