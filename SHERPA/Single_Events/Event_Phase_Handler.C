@@ -7,6 +7,7 @@ std::ostream& SHERPA::operator<<(std::ostream& ostr, const eph::code ephc) {
   case eph::Unspecified:        return ostr<<"Unspecified       ";
   case eph::Perturbative:       return ostr<<"Perturbative      ";
   case eph::Hadronization:      return ostr<<"Hadronization     ";
+  case eph::Nuclear_Formation:  return ostr<<"Nuclear_Formation ";
   case eph::Analysis:           return ostr<<"Analysis          ";
   case eph::Read_In:            return ostr<<"Read_In           ";
   case eph::Userhook:           return ostr<<"Userhook          ";
