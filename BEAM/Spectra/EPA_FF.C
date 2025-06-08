@@ -103,7 +103,7 @@ void EPA_FF_Base::OutputToCSV(const std::string& type)
   bs[0] = m_bmin * m_R;
   for (int i = 1; i < m_nbbins; ++i) { bs[i] = bs[i - 1] * std::exp(step_b); }
 
-  double              q2max(1000.), q2min(1.e-3);
+  double              q2max(100.), q2min(1.e-5);
   int                 nq2steps(1000);
   double              step_q2(std::log(q2max / q2min) / double(nq2steps));
   std::vector<double> q2s(nq2steps);
