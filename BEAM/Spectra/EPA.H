@@ -11,7 +11,7 @@ namespace ATOOLS {
 namespace BEAM {
   class EPA final : public Beam_Base {
   private:
-    EPA_ff_type  m_type;
+    EPA_ff_type  m_fftype;
     EPA_FF_Base* p_ff;
     double       m_mass;
     double       m_aqed, m_pref;
