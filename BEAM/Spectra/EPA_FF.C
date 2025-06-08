@@ -386,29 +386,39 @@ double EPA_WoodSaxon::CalculateDensity()
 
 EPA_IonApprox::EPA_IonApprox(const ATOOLS::Flavour& beam, const int dir)
     : EPA_FF_Base(beam, dir)
-{}
-
-double EPA_IonApprox::N(const double& x)
 {
-  // Analytically integrated out the b
-  // double chi = x * m_mass * m_R;
-  // return 2 / x * (chi * std::cyl_bessel_k(1, chi) * std::cyl_bessel_k(0, chi)
-  //    - sqr(chi)/2. * (sqr(std::cyl_bessel_k(1, chi)) -
-  //    sqr(std::cyl_bessel_k(0, chi))));
-  double r2 = m_R * m_R;
-  m_b = std::sqrt((ATOOLS::sqr(m_bmin * m_R) + r2) *
-                                std::pow((ATOOLS::sqr(m_bmax * m_R) + r2) /
-                                                 (ATOOLS::sqr(m_bmin * m_R) + r2),
-                                         ATOOLS::ran->Get()) - r2);
-  double wt =
-          (ATOOLS::sqr(m_b) + r2) / m_b / 2. *
-          std::log((ATOOLS::sqr(m_bmax) + r2) / (ATOOLS::sqr(m_bmin) + r2));
-  double chi = x * m_mass * m_b;
-  return 2 * m_Zsquared * m_b * x * sqr(m_mass) * sqr(SF.Kn(1, chi)) * wt;
-  // correction term seems to be negligible;
-  // removed because K_0 not implemented for large values
-  // return 2 * m_b * x * sqr(m_mass) * (sqr(SF.Kn(1, chi)) +
-  //   sqr(m_mass / m_energy) * sqr(SF.Kn(0, chi))) * wt;
+  FillTables(m_nxbins, m_nbbins);
+}
+
+void EPA_IonApprox::FillTables(const size_t& nx, const size_t& nb) {
+  axis   xaxis(nx, m_xmin, m_xmax, axis_mode::log);
+  axis   baxis(nb, m_bmin * m_R, m_bmax * m_R, axis_mode::log);
+
+  //////////////////////////////////////////////////////////////////////////////
+  //
+  // N(x,b) is given by the square of the Fourier transform of
+  // kt^2/(kt^2+m^2x^2) F(kt^2+m^2x^2), which leads to a Bessel function.
+  // We assume that the units in the b axis are in 1/GeV
+  //
+  //////////////////////////////////////////////////////////////////////////////
+  msg_Out() << METHOD << " in " << xaxis.m_nbins << " * " << baxis.m_nbins
+            << " bins:\n"
+            << "   x in [" << xaxis.m_xmin << ", " << xaxis.m_xmax << "], "
+            << "b in [" << baxis.m_xmin << ", " << baxis.m_xmax << "], "
+            << "from R = " << m_R << " 1/GeV = " << (m_R * rpa->hBar_c())
+            << " fm.\n";
+  p_N_xb                   = new TwoDim_Table(xaxis, baxis);
+  for (size_t i = 0; i < xaxis.m_nbins; i++) {
+    for (size_t j = 0; j < baxis.m_nbins; j++) {
+      double chi = xaxis.x(i) * m_mass * baxis.x(j);
+      double value = 2 * m_Zsquared * baxis.x(j) * xaxis.x(i) * sqr(m_mass) * sqr(SF.Kn(1, chi));
+      // correction term seems to be negligible;
+      // removed because K_0 not implemented for large values
+      // double value = 2 * m_b * x * sqr(m_mass) * (sqr(SF.Kn(1, chi)) +
+      //   sqr(m_mass / m_energy) * sqr(SF.Kn(0, chi))) * wt;
+      p_N_xb->Fill(i, j, value);
+    }
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
