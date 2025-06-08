@@ -46,7 +46,7 @@ namespace BEAM {
     {
       if (p_N_xb) delete p_N_xb;
     }
-    virtual void   FillTables(const size_t& nx, const size_t& nb);
+    virtual void   FillTables();
     virtual double N(const double& x)
     {
       // sampling b by p(b) = 1/norm * b/(b^2+1)
@@ -122,7 +122,7 @@ namespace BEAM {
   class EPA_Point final : public EPA_FF_Base {
   public:
     EPA_Point(const ATOOLS::Flavour& beam, int dir);
-    void   FillTables(const size_t& nx, const size_t& nb) override {};
+    void   FillTables() override {};
     double N(const double& x) override;
     double FF(const double& Q2) override { return 1.; }
   };
@@ -130,7 +130,7 @@ namespace BEAM {
   class EPA_PointApprox final : public EPA_FF_Base {
   public:
     EPA_PointApprox(const ATOOLS::Flavour& beam, int dir);
-    void   FillTables(const size_t& nx, const size_t& nb) override {};
+    void   FillTables() override {};
     double N(const double& x) override;
     double FF(const double& Q2) override { return 1.; }
   };
@@ -141,7 +141,7 @@ namespace BEAM {
 
   public:
     EPA_Proton(const ATOOLS::Flavour& beam, int dir);
-    void   FillTables(const size_t& nx, const size_t& nb) override {};
+    void   FillTables() override {};
     double FF(const double& Q2) override
     {
       return std::pow(1. + Q2 / m_Q02, -2);
@@ -155,7 +155,7 @@ namespace BEAM {
 
   public:
     EPA_ProtonApprox(const ATOOLS::Flavour& beam, int dir);
-    void   FillTables(const size_t& nx, const size_t& nb) override {};
+    void   FillTables() override {};
     double FF(const double& Q2) override { return 1.; }
     double N(const double& x) override;
   };
@@ -265,14 +265,14 @@ namespace BEAM {
   class EPA_IonApprox final : public EPA_FF_Base {
   public:
     EPA_IonApprox(const ATOOLS::Flavour& beam, int dir);
-    void   FillTables(const size_t& nx, const size_t& nb) override;
+    void   FillTables() override;
     double FF(const double& Q2) override { return 0.; }
   };
 
   class EPA_Test final : public EPA_FF_Base {
   public:
     explicit EPA_Test(const ATOOLS::Flavour& beam, int dir);
-    void   FillTables(const size_t& m_nxbins, const size_t& m_nbbins) override;
+    void   FillTables() override;
     double FF(const double& Q2) override { return 0.; }
   };
 }// end of namespace BEAM
