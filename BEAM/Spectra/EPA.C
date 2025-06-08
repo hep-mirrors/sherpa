@@ -16,7 +16,7 @@ using string = std::string;
 EPA::EPA(const Flavour& beam, const double energy, const double pol,
          const int dir)
     : Beam_Base(beamspectrum::EPA, beam, energy, pol, dir),
-      m_type(EPA_ff_type::point), p_ff(nullptr), m_mass(beam.Mass(true)),
+      m_fftype(EPA_ff_type::point), p_ff(nullptr), m_mass(beam.Mass(true)),
       m_aqed(1. / 127), m_pref(0.), m_q2(0.), m_pt2max(-1.), m_xmin(0.),
       m_xmax(1.), m_plotting(0)
 {
@@ -77,8 +77,8 @@ void EPA::Initialise()
   m_xmin        = s["xMin"].GetTwoVector<double>()[b];
   m_xmax        = s["xMax"].GetTwoVector<double>()[b];
 
-  m_type = static_cast<EPA_ff_type>(s["Form_Factor"].GetTwoVector<int>()[b]);
-  switch (m_type) {
+  m_fftype = static_cast<EPA_ff_type>(s["Form_Factor"].GetTwoVector<int>()[b]);
+  switch (m_fftype) {
     case EPA_ff_type::point:
       p_ff = new EPA_Point(m_beam, m_dir); break;
     case EPA_ff_type::pointApprox:
