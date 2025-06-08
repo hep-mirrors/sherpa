@@ -59,10 +59,10 @@ EPA_FF_Base::EPA_FF_Base(const ATOOLS::Flavour& beam, const int dir)
   m_bmax        = s["bMax"].GetTwoVector<double>()[b];
 }
 
-void EPA_FF_Base::FillTables(const size_t& nx, const size_t& nb)
+void EPA_FF_Base::FillTables()
 {
-  axis   xaxis(nx, m_xmin, m_xmax, axis_mode::log);
-  axis   baxis(nb, m_bmin * m_R, m_bmax * m_R, axis_mode::log);
+  axis   xaxis(m_nxbins, m_xmin, m_xmax, axis_mode::log);
+  axis   baxis(m_nbbins, m_bmin * m_R, m_bmax * m_R, axis_mode::log);
 
   //////////////////////////////////////////////////////////////////////////////
   //
@@ -256,7 +256,7 @@ EPA_Gauss::EPA_Gauss(const ATOOLS::Flavour& beam, const int dir)
   const auto& s = Settings::GetMainSettings()["EPA"];
   size_t      b = dir > 0 ? 0 : 1;
   m_Q02         = s["Q02"].GetTwoVector<double>()[b];
-  FillTables(m_nxbins, m_nbbins);
+  FillTables();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -268,7 +268,7 @@ EPA_Gauss::EPA_Gauss(const ATOOLS::Flavour& beam, const int dir)
 EPA_HCS::EPA_HCS(const ATOOLS::Flavour& beam, const int dir)
     : EPA_FF_Base(beam, dir)
 {
-  FillTables(m_nxbins, m_nbbins);
+  FillTables();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -283,7 +283,7 @@ EPA_Dipole::EPA_Dipole(const ATOOLS::Flavour& beam, const int dir)
   size_t      b = dir > 0 ? 0 : 1;
   m_Q02         = s["Q02"].GetTwoVector<double>()[b];
 
-  FillTables(m_nxbins, m_nbbins);
+  FillTables();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -298,7 +298,7 @@ EPA_DipoleApprox::EPA_DipoleApprox(const ATOOLS::Flavour& beam, const int dir)
   size_t      b = dir > 0 ? 0 : 1;
   m_Q02         = s["Q02"].GetTwoVector<double>()[b];
 
-  FillTables(m_nxbins, m_nbbins);
+  FillTables();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -324,7 +324,7 @@ EPA_WoodSaxon::EPA_WoodSaxon(const ATOOLS::Flavour& beam, const int dir)
   m_rho0 = CalculateDensity();
   InitFFTable(1.e-12, 1.e4);
   InitNTable(1.e-10, 1.);
-  FillTables(m_nxbins, m_nbbins);
+  FillTables();
 }
 
 void EPA_WoodSaxon::InitFFTable(const double& q2min, const double& q2max)
@@ -387,12 +387,12 @@ double EPA_WoodSaxon::CalculateDensity()
 EPA_IonApprox::EPA_IonApprox(const ATOOLS::Flavour& beam, const int dir)
     : EPA_FF_Base(beam, dir)
 {
-  FillTables(m_nxbins, m_nbbins);
+  FillTables();
 }
 
-void EPA_IonApprox::FillTables(const size_t& nx, const size_t& nb) {
-  axis   xaxis(nx, m_xmin, m_xmax, axis_mode::log);
-  axis   baxis(nb, m_bmin * m_R, m_bmax * m_R, axis_mode::log);
+void EPA_IonApprox::FillTables() {
+  axis   xaxis(m_nxbins, m_xmin, m_xmax, axis_mode::log);
+  axis   baxis(m_nbbins, m_bmin * m_R, m_bmax * m_R, axis_mode::log);
 
   //////////////////////////////////////////////////////////////////////////////
   //
@@ -428,10 +428,10 @@ void EPA_IonApprox::FillTables(const size_t& nx, const size_t& nb) {
 EPA_Test::EPA_Test(const ATOOLS::Flavour& beam, const int dir)
     : EPA_FF_Base(beam, dir)
 {
-  FillTables(m_nxbins, m_nbbins);
+  FillTables();
 }
 
-void EPA_Test::FillTables(const size_t& nx, const size_t& nb)
+void EPA_Test::FillTables()
 {
   axis xaxis(100, 1.e-4, 1., axis_mode::log);
   axis baxis(100, 1.e-6, 1.e4, axis_mode::log);
