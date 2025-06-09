@@ -255,9 +255,10 @@ bool Soft_Cluster_Handler::FixKinematics() {
       return false;
     }
   }
-  double ktmax = Min(m_ktmax,(m_ktorder?
-			      Min(p1,sqrt(Min((*p_cluster)[0]->KT2_Max(),
-					      (*p_cluster)[1]->KT2_Max()))):p1));
+  double ktmax = p1;
+  //Min(2.*m_ktmax,(m_ktorder?
+  //				 Min(p1,sqrt(Min((*p_cluster)[0]->KT2_Max(),
+  //						 (*p_cluster)[1]->KT2_Max()))):p1));
   double pt, pl;
   //bool   lead  = (*p_cluster)[0]->IsLeading() || (*p_cluster)[1]->IsLeading();
   //if (true || lead) {

@@ -68,7 +68,8 @@ void Cluster_Splitter::FixCoefficients() {
   // this is where the magic happens.
   m_mode = m_defmode;
   double sum_mass = 0, massfac;
-  double threshold = p_softclusters->DecayThreshold(p_part[0]->Flavour(),p_part[1]->Flavour());
+  double threshold = p_softclusters->DecayThreshold(p_part[0]->Flavour(),
+						    p_part[1]->Flavour());
   for (size_t i=0;i<2;i++) {
     Proto_Particle * part = p_part[i];
     Flavour flav = part->Flavour();

@@ -166,12 +166,17 @@ bool Splitter_Base::MakeKinematics() {
 }
 
 void Splitter_Base::MakeTransverseMomentum() {
+  bool islead   = p_part[0]->IsLeading() || p_part[1]->IsLeading();
+  double ktmax  = m_ktmax;
+  if (!islead &&
+      !(p_part[0]->Flavour().IsGluon() || p_part[0]->Flavour().IsGluon()))
+    ktmax =2.*m_ktmax;
   m_ktfac  = Max(1.,m_Q2/(4.*m_minQ[0]*m_minQ[1]));
   m_kt2max = Min(p_part[0]->KT2_Max(),p_part[1]->KT2_Max());
-  double ktmax  = Min(m_ktmax,
-		      (m_ktorder?
-		       Min(sqrt(m_kt2max),(m_Emax-2.*m_popped_mass)/2.):
-		       (m_Emax-2.*m_popped_mass)/2.));
+  ktmax    = Min(ktmax,
+		 (m_ktorder?
+		  Min(sqrt(m_kt2max),(m_Emax-2.*m_popped_mass)/2.):
+		  (m_Emax-2.*m_popped_mass)/2.));
   // have to make this a parameter for the beam breakup?
   //if (p_part[0]->IsBeam() || p_part[1]->IsBeam()) ktmax = Min(5.0,m_ktmax);
   if (ktmax<0.) {
@@ -181,7 +186,6 @@ void Splitter_Base::MakeTransverseMomentum() {
     abort();
   }
   m_ktfac = 1.;
-  bool islead = p_part[0]->IsLeading() || p_part[1]->IsLeading();
   m_kt    = m_ktselector(ktmax,m_ktfac);
   m_kt2   = m_kt*m_kt;
   m_phi   = 2.*M_PI*ran->Get();
