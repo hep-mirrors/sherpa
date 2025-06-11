@@ -8,6 +8,7 @@ stages:
   - test
   - deploy
 
+
 variables:
   DOCKER_DRIVER: overlay2
   DOXYGEN_CMAKE_FLAGS: -DSHERPA_ENABLE_DOXYGEN=ON -DDOXYGEN_WARN_AS_ERROR=YES
@@ -19,7 +20,7 @@ variables:
 
 build-manual:
   stage: build
-  image: $CI_REGISTRY_IMAGE:Fedora_39
+  image: $CI_REGISTRY_IMAGE:Fedora_41
   script:
     - cmake3 -S . -B build  -DSHERPA_ENABLE_MANUAL=ON -DLibZip_DIR=/usr -DSHERPA_ENABLE_INSTALL_LHAPDF:BOOL=ON
     - cd build/Manual
@@ -57,7 +58,7 @@ trigger_pages:
 
 # Build Manual
 pages:
-  image: $CI_REGISTRY_IMAGE:Fedora_39
+  image: $CI_REGISTRY_IMAGE:Fedora_41
   stage: deploy
   script:
     - cd Manual
@@ -345,10 +346,10 @@ check_commit_Fedora40:
     FREL: 40
   extends: .check_commit_Fedora
 
-check_commit_Fedora39:
+check_commit_Fedora41:
   variables:
     OS: Fedora
-    FREL: 39
+    FREL: 41
   extends: .check_commit_Fedora
 
 check_commit_CentOS9:
@@ -375,13 +376,13 @@ build_image_Fedora40:
   needs:
     - job: check_commit_Fedora40
 
-build_image_Fedora39:
+build_image_Fedora41:
   variables:
     OS: Fedora
-    FREL: 39
+    FREL: 41
   extends: .build_image_Fedora
   needs:
-    - job: check_commit_Fedora39
+    - job: check_commit_Fedora41
 
 build_image_CentOS9:
   variables:
@@ -402,16 +403,16 @@ build_image_Archlinux0:
 
 ###########################################################################
 
-Fedora39-make-ccache-GNU:
+Fedora41-make-ccache-GNU:
   variables:
     OS: Fedora
-    FREL: 39
+    FREL: 41
     TOOLSET: GNU
     EXTRACMAKEFLAGS: $COMMON_EXTRA_CMAKE_FLAGS $EXTENDED_EXTRA_CMAKE_FLAGS $DOXYGEN_CMAKE_FLAGS
     BUILDDOCS: 1
   extends: .any-cmake-ccache
   needs:
-    - job: build_image_Fedora39
+    - job: build_image_Fedora41
 
 
 Fedora40-make-ccache-GNU:

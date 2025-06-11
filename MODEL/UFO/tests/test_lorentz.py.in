@@ -151,7 +151,7 @@ class TestLorentz(unittest.TestCase):
         value, _ = lorentz_algebra.calc_lorentz(expr)
         value = convert_indexed_to_array(value)
         simplify = sympy.Array(lorentz_simplify.simplify_tensor(value))
-        expected = sympy.Array(4*np.eye(4))
+        expected = sympy.Array(4.0*sympy.eye(4))
         self.assertEqual(simplify, expected)
 
         expr = 'Gamma(-1, 1, -2)*Gamma(-1, -2, 2)'
