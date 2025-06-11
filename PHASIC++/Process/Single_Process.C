@@ -54,6 +54,9 @@ Single_Process::Single_Process():
       msg_Info()<<"NLO n_f scheme conversion terms computed only."<<std::endl;
     printed=true;
   }
+  // read settings for ISR
+  m_pdfmin = s["CSS_PDF_MIN"].Get<double>();
+  m_pdfminx = s["CSS_PDF_MIN_X"].Get<double>();
 
   // parse settings for associated contributions variations
   std::vector<std::vector<asscontrib::type>> asscontribvars =
@@ -430,7 +433,7 @@ void Single_Process::AddISR(ATOOLS::Cluster_Sequence_Info &csi,
         // skip PDF ratio if high-x sanity condition not fullfilled
         auto validratio1 = (!IsZero(wn1) && !IsZero(wd1));
         if (validratio1 && x1 < 1.0)
-          validratio1 = !(dabs(wd1)<1.0e-4*log(1.0 - x1)/log(1.0 - 1.0e-2));
+          validratio1 = !(dabs(wd1)<m_pdfmin*log(1.0 - x1)/log(1.0 - m_pdfminx));
         if (validratio1) {
           csi.AddWeight(wn1 / wd1);
         } else {
@@ -439,7 +442,7 @@ void Single_Process::AddISR(ATOOLS::Cluster_Sequence_Info &csi,
         }
         auto validratio2 = (!IsZero(wn2) && !IsZero(wd2));
         if (validratio2 && x2 < 1.0)
-          validratio2 = !(dabs(wd2)<1.0e-4*log(1.0 - x2)/log(1.0 - 1.0e-2));
+          validratio2 = !(dabs(wd2)<m_pdfmin*log(1.0 - x2)/log(1.0 - m_pdfminx));
         if (validratio2) {
           csi.AddWeight(wn2 / wd2);
         } else {
@@ -481,8 +484,8 @@ void Single_Process::AddISR(ATOOLS::Cluster_Sequence_Info &csi,
         if (m_pdfcts && m_pinfo.Has(nlo_type::born)) {
           for (int i(0); i < 2; ++i) {
             // skip PDF ratio if high-x sanity condition not fullfilled
-            if (i == 0 && (IsZero(wn1) || IsZero(wd1) || (dabs(wd1)<1.0e-4*log(1.0 - x1)/log(1.0 - 1.0e-2)) )) continue;
-            if (i == 1 && (IsZero(wn2) || IsZero(wd2) || (dabs(wd2)<1.0e-4*log(1.0 - x2)/log(1.0 - 1.0e-2)) )) continue;
+            if (i == 0 && (IsZero(wn1) || IsZero(wd1) || (dabs(wd1)<m_pdfmin*log(1.0 - x1)/log(1.0 - m_pdfminx)) )) continue;
+            if (i == 1 && (IsZero(wn2) || IsZero(wd2) || (dabs(wd2)<m_pdfmin*log(1.0 - x2)/log(1.0 - m_pdfminx)) )) continue;
             Vec4D p(-ampl->Leg(i)->Mom());
             const double x(p_int->ISR()->CalcX(p));
             double z(-1.0);
