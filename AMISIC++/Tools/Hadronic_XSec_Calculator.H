@@ -20,14 +20,12 @@ namespace AMISIC {
   };
 
   class Hadronic_XSec_Calculator {
-  public:
-    static double s_slopes[4], s_X[4][4], s_Y[4][4], s_c[4][4][8], s_d[4][4][9];
   private:
+    static double s_slopes[4], s_X[4][4], s_Y[4][4], s_c[4][4][8], s_d[4][4][9];
     // all cross sections in mb.
-    std::map<ATOOLS::Flavour, size_t> m_indexmap;
-    std::map<ATOOLS::Flavour, double> m_fVs;
+    static std::map<kf_code, size_t> s_indexmap;
+    static std::map<kf_code, double> s_fVs;
     double m_beta0[4];
-    void   FixTables();
 
     std::array<ATOOLS::Flavour,2> m_flavs;
     xsec_type::code m_type;
