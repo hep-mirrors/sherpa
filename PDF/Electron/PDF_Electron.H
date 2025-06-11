@@ -8,12 +8,16 @@ namespace PDF {
     double m_mass;
     double m_alpha,m_beta;
     double m_xpdf;
-    int    m_izetta,m_order,m_init;
+    double m_eps, m_delta;
+    int    m_izetta,m_order,m_init; // todo: enum izetta
+    int    m_rescale_mode; // todo: enum this
+    bool   m_runningalpha;
   public:
     PDF_Electron(const ATOOLS::Flavour,const int,const int);
     ~PDF_Electron() {}
     PDF_Base * GetCopy();
 
+    void Calculate(double,double) override;
     void   CalculateSpec(const double&,const double&);
     double GetXPDF(const ATOOLS::Flavour&);
     double GetXPDF(const kf_code&, bool);

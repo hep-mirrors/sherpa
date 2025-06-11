@@ -86,7 +86,7 @@ namespace PDF {
     PDF_Base();
     virtual ~PDF_Base();
 
-    void   Calculate(double x,double Q2);
+    virtual void   Calculate(double x,double Q2);
     virtual double GetXPDF(const ATOOLS::Flavour& flavour) = 0;
     virtual double GetXPDF(const kf_code& kf, bool anti) = 0;
     virtual double AlphaSPDF(const double &q2);

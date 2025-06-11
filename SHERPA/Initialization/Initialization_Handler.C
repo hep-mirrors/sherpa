@@ -186,6 +186,9 @@ void Initialization_Handler::RegisterDefaults()
 
   s["ISR_E_ORDER"].SetDefault(1);
   s["ISR_E_SCHEME"].SetDefault(2);
+  double defeps = 1.e-6;
+  s["PDFE_EPS"].SetDefault(defeps);
+  s["PDFE_DELTA"].SetDefault(1.e2*defeps);
 
   s["KFACTOR"].SetDefault("None").UseNoneReplacements();
   s["SCALES"].SetDefault("METS{MU_F2}{MU_R2}{MU_Q2}");
