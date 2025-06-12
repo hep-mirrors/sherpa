@@ -322,7 +322,7 @@ double NLO_Base::CalculateReal(Vec4D k, int fsrcount) {
 	double subb;
 	m_real = r;
 	if(fsrcount==0) subb = p_dipoles->CalculateRealSubEEX(kk);
-	else subb = p_dipoles->CalculateRealSubEEX(k);
+	else subb = p_dipoles->CalculateRealSubEEX(kk);
 	// if(IsZero(subb)) return 0;
 	if(!CheckMomentumConservation(p)) {
 		msg_Error()<<"Momentum Conservation fails in "<<METHOD<<std::endl;
@@ -465,7 +465,7 @@ double NLO_Base::CalculateRealVirtual(Vec4D k, int fsrcount) {
 	// PRINT_VAR(yfspole);
 	double subb;
 
-	subb = (fsrcount!=1?p_dipoles->CalculateRealSubEEX(k):p_dipoles->CalculateRealSubEEX(k));
+	subb = (fsrcount!=1?p_dipoles->CalculateRealSubEEX(kk):p_dipoles->CalculateRealSubEEX(kk));
 	
 	if(p.size()!=(m_flavs.size()+1)){
 		msg_Error()<<"Mismatch in "<<METHOD<<std::endl;
