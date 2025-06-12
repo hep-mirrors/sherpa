@@ -171,7 +171,7 @@ void Sudakov::AddQuarkoniaSplittingFunctions(Model_Base *md, const int kfmode) {
   v = Single_Vertex();
   v.AddParticle(Quark_flav.Bar());
   v.AddParticle(Quark_flav);
-  v.AddParticle(Flavour(kf_J_psi_1S_oct));
+  v.AddParticle(Flavour(kf_3S1_c_8_J_psi_1S));
   // No clue of how to write T^a_{i,j} T^{a}_{k,l} in this form 
   v.Color.push_back(Color_Function(cf::T,3,2,1));
   v.Lorentz.push_back("FFV_Quarkonia");
@@ -207,11 +207,11 @@ void Sudakov::AddOctetMesonSplittingFunctions(Model_Base *md,
   Kabbala g3("g_3", sqrt(4. * M_PI * md->ScalarConstant("alpha_S")));
   Kabbala cpl0 = g3 * Kabbala("i", Complex(0., 1.));
   list<kf_code> octetmesons = {
-      kf_eta_c_1S_oct,   kf_J_psi_1S_oct,   kf_chi_c0_1P_oct,
-      kf_chi_c1_1P_oct, /*kf_chi_c2_1P_oct,*/
-      kf_eta_b_oct,      kf_Upsilon_1S_oct, kf_Upsilon_2S_oct,
-      kf_Upsilon_3S_oct, kf_chi_b0_1P_oct,  kf_chi_b1_1P_oct,
-      kf_chi_b1_2P_oct}; //, kf_chi_b2_3P_oct};
+      kf_1S0_c_8_eta_c,   kf_3S1_c_8_J_psi_1S,   kf_3P0_c_8_J_psi_1S,
+      kf_3P1_c_8_J_psi_1S, /*kf_chi_c2_1P_oct,*/
+      kf_1S0_b_8_eta_b,      kf_3S1_b_8_Upsilon_1S, kf_3S1_b_8_Upsilon_2S,
+      kf_3P0_b_8_Upsilon_1S,  kf_3P1_b_8_Upsilon_1S,
+      kf_3P2_b_8_Upsilon_1S}; //, kf_chi_b2_3P_oct};
   for (list<kf_code>::iterator kfit = octetmesons.begin();
        kfit != octetmesons.end(); kfit++) {
     Flavour flav(*kfit);
@@ -242,17 +242,17 @@ void Sudakov::AddGluonThresholds(Model_Base *md) {
   Running_AlphaS as = md->ScalarConstant("alpha_S");
   const double mc = ATOOLS::Flavour(kf_c).Mass();
   const double mb = ATOOLS::Flavour(kf_b).Mass();
-  list<kf_code> octetvectors = {kf_J_psi_1S_oct, kf_psi_2S_oct,
-     kf_chi_c0_1P_oct, kf_chi_c1_1P_oct, kf_chi_c2_1P_oct};
+  list<kf_code> octetvectors = {kf_3S1_c_8_J_psi_1S, kf_3S1_c_8_psi_2S,
+     kf_3P0_c_8_J_psi_1S, kf_3P1_c_8_J_psi_1S, kf_3P2_c_8_J_psi_1S};
   ST_Set *stset;
   m_stmap[Flavour(kf_gluon)] = stset = new ST_Set;
   map<kf_code, double> LDME = {
       // numerical LDME [GeV^3] from ph/9507398, PhysRevD.50.3176
-      {kf_J_psi_1S_oct, 1.5E-02/M_PI_2},
-      {kf_psi_2S_oct, 4.3E-03 / M_PI_2},
-      {kf_chi_c0_1P_oct, 1 * 3E-03 * mc * mc},
-      {kf_chi_c1_1P_oct, 3 * 3E-03 * mc * mc},
-      {kf_chi_c2_1P_oct, 5 * 3E-03 * mc * mc}};
+      {kf_3S1_c_8_J_psi_1S, 1.5E-02/M_PI_2},
+      {kf_3S1_c_8_psi_2S, 4.3E-03 / M_PI_2},
+      {kf_3P0_c_8_J_psi_1S, 1 * 3E-03 * mc * mc},
+      {kf_3P1_c_8_J_psi_1S, 3 * 3E-03 * mc * mc},
+      {kf_3P2_c_8_J_psi_1S, 5 * 3E-03 * mc * mc}};
   double arg;
   for (list<kf_code>::iterator octit = octetvectors.begin();
        octit != octetvectors.end(); octit++) {
@@ -266,10 +266,10 @@ void Sudakov::AddGluonThresholds(Model_Base *md) {
   //     0.5 * (M_PI * as(2 * mb) / (24 * pow(mb, 3))) * (305.0E-03), 1)); //
   //     this will capture almost all Y(1S) production but it's a guess
   stset->insert(One2One_Transition_Base(
-      Flavour(kf_gluon), Flavour(kf_Upsilon_1S_oct),
+      Flavour(kf_gluon), Flavour(kf_3S1_b_8_Upsilon_1S),
       0.5 * (M_PI * as(2 * mb) / (24 * pow(mb, 3))) * (228.0E-03), 1));
   stset->insert(One2One_Transition_Base(
-      Flavour(kf_gluon), Flavour(kf_Upsilon_2S_oct),
+      Flavour(kf_gluon), Flavour(kf_3S1_b_8_Upsilon_2S),
       0.5 * (M_PI * as(2 * mb) / (24 * pow(mb, 3))) * (119.0E-03), 1));
   // stset->insert(One2One_Transition_Base(
   //     Flavour(kf_gluon), Flavour(kf_Upsilon_3S_oct),

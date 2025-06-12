@@ -143,7 +143,7 @@ namespace EXTRAXS {
   class XS_gg_g3P0 : public ME2_Base {
   private:
     size_t m_S;
-    double m_alphaS, m_R02, m_mass, m_mass2, m_pref;
+    double m_alphaS, m_R12, m_mass, m_mass2, m_pref;
   public:
     XS_gg_g3P0(const External_ME_Args& args);
     double operator()(const Vec4D_Vector& mom);
@@ -154,7 +154,7 @@ namespace EXTRAXS {
   class XS_gg_g3P1 : public ME2_Base {
   private:
     size_t m_S;
-    double m_alphaS, m_R02, m_mass, m_mass2, m_pref;
+    double m_alphaS, m_R12, m_mass, m_mass2, m_pref;
   public:
     XS_gg_g3P1(const External_ME_Args& args);
     double operator()(const Vec4D_Vector& mom);
@@ -165,7 +165,7 @@ namespace EXTRAXS {
   class XS_gg_g3P2 : public ME2_Base {
   private:
     size_t m_S;
-    double m_alphaS, m_R02, m_mass, m_mass2, m_pref;
+    double m_alphaS, m_R12, m_mass, m_mass2, m_pref;
   public:
     XS_gg_g3P2(const External_ME_Args& args);
     double operator()(const Vec4D_Vector& mom);
@@ -178,7 +178,7 @@ namespace EXTRAXS {
   class XS_qg_q1S0_oct : public ME2_Base {
   private:
     size_t m_g, m_q, m_S, m_a;
-    double m_alphaS, NRQCD, m_mass, m_mass2, m_pref;
+    double m_alphaS, LDME, m_mass, m_mass2, m_pref;
   public:
     XS_qg_q1S0_oct(const External_ME_Args& args);
     double operator()(const Vec4D_Vector& mom);
@@ -188,7 +188,7 @@ namespace EXTRAXS {
   class XS_qg_q3S1_oct : public ME2_Base {
   private:
     size_t m_g, m_q, m_S, m_a;
-    double m_alphaS, NRQCD, m_mass, m_mass2, m_pref;
+    double m_alphaS, LDME, m_mass, m_mass2, m_pref;
   public:
     XS_qg_q3S1_oct(const External_ME_Args& args);
     double operator()(const Vec4D_Vector& mom);
@@ -198,7 +198,7 @@ namespace EXTRAXS {
   class XS_qg_q3P0_oct : public ME2_Base {
   private:
     size_t m_g, m_q, m_S, m_a;
-    double m_alphaS, NRQCD, m_mass, m_mass2, m_pref;
+    double m_alphaS, LDME, m_mass, m_mass2, m_pref;
   public:
     XS_qg_q3P0_oct(const External_ME_Args& args);
     double operator()(const Vec4D_Vector& mom);
@@ -208,7 +208,7 @@ namespace EXTRAXS {
   class XS_qg_q3P1_oct : public ME2_Base {
   private:
     size_t m_g, m_q, m_S, m_a;
-    double m_alphaS, NRQCD, m_mass, m_mass2, m_pref, avg_fact;
+    double m_alphaS, LDME, m_mass, m_mass2, m_pref;
   public:
     XS_qg_q3P1_oct(const External_ME_Args& args);
     double operator()(const Vec4D_Vector& mom);
@@ -218,7 +218,7 @@ namespace EXTRAXS {
   class XS_qg_q3P2_oct : public ME2_Base {
   private:
     size_t m_g, m_q, m_S, m_a;
-    double m_alphaS, NRQCD, m_mass, m_mass2, m_pref, avg_fact;
+    double m_alphaS, LDME, m_mass, m_mass2, m_pref;
   public:
     XS_qg_q3P2_oct(const External_ME_Args& args);
     double operator()(const Vec4D_Vector& mom);
@@ -228,7 +228,7 @@ namespace EXTRAXS {
   class XS_qqbar_g1S0_oct : public ME2_Base {
   private:
     size_t m_S, m_a;
-    double m_alphaS, NRQCD, m_mass, m_mass2, m_pref;
+    double m_alphaS, LDME, m_mass, m_mass2, m_pref;
   public:
     XS_qqbar_g1S0_oct(const External_ME_Args& args);
     double operator()(const Vec4D_Vector& mom);
@@ -238,7 +238,7 @@ namespace EXTRAXS {
   class XS_qqbar_g3S1_oct : public ME2_Base {
   private:
     size_t m_S, m_a;
-    double m_alphaS, NRQCD, m_mass, m_mass2, m_pref;
+    double m_alphaS, LDME, m_mass, m_mass2, m_pref;
   public:
     XS_qqbar_g3S1_oct(const External_ME_Args& args);
     double operator()(const Vec4D_Vector& mom);
@@ -248,7 +248,7 @@ namespace EXTRAXS {
    class XS_qqbar_g3P0_oct : public ME2_Base {
   private:
     size_t m_g, m_q, m_S, m_a;
-    double m_alphaS, NRQCD, m_mass, m_mass2, m_pref;
+    double m_alphaS, LDME, m_mass, m_mass2, m_pref;
   public:
     XS_qqbar_g3P0_oct(const External_ME_Args& args);
     double operator()(const Vec4D_Vector& mom);
@@ -258,7 +258,7 @@ namespace EXTRAXS {
   class XS_qqbar_g3P1_oct : public ME2_Base {
   private:
     size_t m_g, m_q, m_S, m_a;
-    double m_alphaS, NRQCD, m_mass, m_mass2, m_pref, avg_fact;
+    double m_alphaS, LDME, m_mass, m_mass2, m_pref;
   public:
     XS_qqbar_g3P1_oct(const External_ME_Args& args);
     double operator()(const Vec4D_Vector& mom);
@@ -268,7 +268,7 @@ namespace EXTRAXS {
   class XS_qqbar_g3P2_oct : public ME2_Base {
   private:
     size_t m_g, m_q, m_S, m_a;
-    double m_alphaS, NRQCD, m_mass, m_mass2, m_pref, avg_fact;
+    double m_alphaS, LDME, m_mass, m_mass2, m_pref;
   public:
     XS_qqbar_g3P2_oct(const External_ME_Args& args);
     double operator()(const Vec4D_Vector& mom);
@@ -278,7 +278,7 @@ namespace EXTRAXS {
   class XS_gg_g1S0_oct : public ME2_Base {
   private:
     size_t m_S;
-    double m_alphaS, NRQCD, m_mass, m_mass2, m_pref;
+    double m_alphaS, LDME, m_mass, m_mass2, m_pref;
   public:
     XS_gg_g1S0_oct(const External_ME_Args& args);
     double operator()(const Vec4D_Vector& mom);
@@ -288,7 +288,7 @@ namespace EXTRAXS {
   class XS_gg_g3S1_oct : public ME2_Base {
   private:
     size_t m_S;
-    double m_alphaS, NRQCD, m_mass, m_mass2, m_pref, avg_fact;
+    double m_alphaS, LDME, m_mass, m_mass2, m_pref;
   public:
     XS_gg_g3S1_oct(const External_ME_Args& args);
     double operator()(const Vec4D_Vector& mom);
@@ -299,7 +299,7 @@ namespace EXTRAXS {
   class XS_gg_g3P0_oct : public ME2_Base {
   private:
     size_t m_S;
-    double m_alphaS, NRQCD, m_mass, m_mass2, m_pref, avg_fact;
+    double m_alphaS, LDME, m_mass, m_mass2, m_pref;
   public:
     XS_gg_g3P0_oct(const External_ME_Args& args);
     double operator()(const Vec4D_Vector& mom);
@@ -310,7 +310,7 @@ namespace EXTRAXS {
   class XS_gg_g3P1_oct : public ME2_Base {
   private:
     size_t m_S;
-    double m_alphaS, NRQCD, m_mass, m_mass2, m_pref, avg_fact;
+    double m_alphaS, LDME, m_mass, m_mass2, m_pref;
   public:
     XS_gg_g3P1_oct(const External_ME_Args& args);
     double operator()(const Vec4D_Vector& mom);
@@ -363,8 +363,8 @@ XS_qg_q1S0::XS_qg_q1S0(const External_ME_Args& args):
     m_colours[i][0] = m_colours[i][1] = 0;
   }
   m_mass   = fl[m_S].Mass(true);  m_mass2 = sqr(m_mass); m_R02 = 0.;
-  if (fl[m_S].Kfcode()==kf_eta_c_1S) m_R02 = 0.49;
-  if (fl[m_S].Kfcode()==kf_eta_b) m_R02 = 4.54;
+  if (fl[m_S].Kfcode()==kf_eta_c_1S) m_R02 = 0.810;
+  if (fl[m_S].Kfcode()==kf_eta_b) m_R02 = 6.477;
   m_a      = fl[m_q].IsAnti() ? 1 : 0; 
   m_alphaS = MODEL::s_model->ScalarConstant("alpha_S");
   m_pref   = 2./9.*sqr(4.*M_PI)*m_R02/m_mass;
@@ -420,8 +420,8 @@ XS_qqbar_g1S0::XS_qqbar_g1S0(const External_ME_Args& args):
     m_colours[i][0] = m_colours[i][1] = 0;
   }
   m_mass   = fl[m_S].Mass(true);  m_mass2 = sqr(m_mass); m_R02 = 0.;
-  if (fl[m_S].Kfcode()==kf_eta_c_1S) m_R02 = 0.49;
-  if (fl[m_S].Kfcode()==kf_eta_b) m_R02 = 4.54;
+  if (fl[m_S].Kfcode()==kf_eta_c_1S) m_R02 = 0.810;
+  if (fl[m_S].Kfcode()==kf_eta_b) m_R02 = 6.477;
   m_alphaS = MODEL::s_model->ScalarConstant("alpha_S");
   m_pref   = 16./27.*sqr(4.*M_PI)*m_R02/m_mass;
 }
@@ -476,8 +476,8 @@ XS_gg_g1S0::XS_gg_g1S0(const External_ME_Args& args):
     m_colours[i][0] = m_colours[i][1] = 0;
   }
   m_mass   = fl[m_S].Mass(true);  m_mass2 = sqr(m_mass); m_R02 = 0.;
-  if (fl[m_S].Kfcode()==kf_eta_c_1S) m_R02 = 0.49;
-  if (fl[m_S].Kfcode()==kf_eta_b) m_R02 = 4.54;
+  if (fl[m_S].Kfcode()==kf_eta_c_1S) m_R02 = 0.810;
+  if (fl[m_S].Kfcode()==kf_eta_b) m_R02 = 6.477;
   m_alphaS = MODEL::s_model->ScalarConstant("alpha_S");
   m_pref   = 1./2.*sqr(4.*M_PI)*m_R02/m_mass;
 }
@@ -509,7 +509,7 @@ bool XS_gg_g1S0::SetColours(const Vec4D_Vector& mom)
 {
   size_t bit = ran->Get()<0.5 ? 0 : 1;
   m_colours[0][bit] = m_colours[1][1-bit]     = Flow::Counter();
-  m_colours[0][1-bit] = m_colours[5-m_S][1-bit] = Flow::Counter(); //original: m_colours[0][bit]=...
+  m_colours[0][1-bit] = m_colours[5-m_S][1-bit] = Flow::Counter();
   m_colours[1][bit] = m_colours[5-m_S][bit]   = Flow::Counter();
   return true;
 }
@@ -533,12 +533,12 @@ operator()(const External_ME_Args &args) const
     if ( fl[0].IsGluon() && fl[1].IsGluon() && fl[2].IsGluon()  &&
 	 fl[3].IsMeson() ) {
       kf_code kfc = fl[3].Kfcode();
-      if ((kfc==kf_J_psi_1S ||kfc == kf_psi_2S || kfc==kf_Upsilon_1S)) return new XS_gg_g3S1(args); 
+      if ((kfc==kf_J_psi_1S || kfc == kf_psi_2S || kfc==kf_Upsilon_1S || kfc == kf_Upsilon_2S)) return new XS_gg_g3S1(args); 
     }
     if ( fl[0].IsGluon() && fl[1].IsGluon() && fl[3].IsGluon()  &&
 	 fl[2].IsMeson() ) {
       kf_code kfc = fl[2].Kfcode();
-      if ((kfc==kf_J_psi_1S || kfc == kf_psi_2S ||kfc==kf_Upsilon_1S)) return new XS_gg_g3S1(args);
+      if ((kfc==kf_J_psi_1S || kfc == kf_psi_2S || kfc==kf_Upsilon_1S || kfc == kf_Upsilon_2S)) return new XS_gg_g3S1(args);
     }
   }
   return NULL;
@@ -554,11 +554,13 @@ XS_gg_g3S1::XS_gg_g3S1(const External_ME_Args& args):
     m_colours[i][0] = m_colours[i][1] = 0;
   }
   m_mass   = fl[m_S].Mass(true);  m_mass2 = sqr(m_mass); m_R02 = 0.;
-  if (fl[m_S].Kfcode()==kf_J_psi_1S)   m_R02 = 0.810; //0.810  1.16 
-  if (fl[m_S].Kfcode()==kf_psi_2S)     m_R02 = 0.529; //0.529
-  if (fl[m_S].Kfcode()==kf_Upsilon_1S) m_R02 = 9.28;
+  int LDME = 0;
+  if (fl[m_S].Kfcode()==kf_J_psi_1S)   m_R02 = 0.810;
+  if (fl[m_S].Kfcode()==kf_psi_2S)     m_R02 = 0.529;
+  if (fl[m_S].Kfcode()==kf_Upsilon_1S) m_R02 = 6.477;
+  if (fl[m_S].Kfcode()==kf_Upsilon_2S) m_R02 = 3.234;
   m_alphaS = MODEL::s_model->ScalarConstant("alpha_S");
-  
+
 }
 
 double XS_gg_g3S1::operator()(const Vec4D_Vector& mom) 
@@ -578,7 +580,7 @@ bool XS_gg_g3S1::SetColours(const Vec4D_Vector& mom)
 {
   size_t bit = ran->Get()<0.5 ? 0 : 1;
   m_colours[0][bit] = m_colours[1][1-bit]     = Flow::Counter();
-  m_colours[0][1-bit] = m_colours[5-m_S][1-bit] = Flow::Counter(); //bug fixed. Original: m_colours[0][bit]=...
+  m_colours[0][1-bit] = m_colours[5-m_S][1-bit] = Flow::Counter();
   m_colours[1][bit] = m_colours[5-m_S][bit]   = Flow::Counter();
   return true;
 }
@@ -602,13 +604,13 @@ operator()(const External_ME_Args &args) const
 	  (fl[0].IsGluon() && fl[1].IsQuark() && fl[2]==fl[1])) &&
 	 fl[3].IsMeson() ) {
       kf_code kfc = fl[3].Kfcode();
-      if (kfc==kf_chi_c0_1P || kfc==kf_chi_b0_1P) return new XS_qg_q3P0(args);
+      if (kfc==kf_chi_c0_1P ||kfc==kf_chi_b0_1P || kfc==kf_chi_b0_2P) return new XS_qg_q3P0(args);
     }
     if ( ((fl[0].IsQuark() && fl[1].IsGluon() && fl[3]==fl[0]) ||
 	  (fl[0].IsGluon() && fl[1].IsQuark() && fl[3]==fl[1])) &&
 	 fl[2].IsMeson() ) {
       kf_code kfc = fl[2].Kfcode();
-      if (kfc==kf_chi_c0_1P || kfc==kf_chi_b0_1P) return new XS_qg_q3P0(args);
+      if (kfc==kf_chi_c0_1P || kfc==kf_chi_b0_1P || kfc==kf_chi_b0_2P) return new XS_qg_q3P0(args);
     }
   }
   return NULL;
@@ -626,8 +628,9 @@ XS_qg_q3P0::XS_qg_q3P0(const External_ME_Args& args):
     m_colours[i][0] = m_colours[i][1] = 0;
   }
   m_mass   = fl[m_S].Mass(true);  m_mass2 = sqr(m_mass); m_R12 = 0.;
-  if (fl[m_S].Kfcode()==kf_chi_c0_1P) m_R12 = 0.075; //0.0091;
-  if (fl[m_S].Kfcode()==kf_chi_b0_1P) m_R12 = 0.015;
+  if (fl[m_S].Kfcode()==kf_chi_c0_1P) m_R12 = 0.075; 
+  if (fl[m_S].Kfcode()==kf_chi_b0_1P) m_R12 = 1.417;
+  if (fl[m_S].Kfcode()==kf_chi_b0_2P) m_R12 = 1.653;
   m_a      = fl[m_q].IsAnti() ? 1 : 0; 
   m_alphaS = MODEL::s_model->ScalarConstant("alpha_S");
   m_pref   = 8./9.*sqr(4.*M_PI)*m_R12/pow(m_mass,3);
@@ -661,12 +664,12 @@ operator()(const External_ME_Args &args) const
     if (fl[0].IsQuark() && fl[1].IsQuark() && fl[1]==fl[0].Bar() &&
 	fl[2].IsGluon() && fl[3].IsMeson() ) {
 	    kf_code kfc = fl[3].Kfcode();
-      if (kfc==kf_chi_c0_1P || kfc==kf_chi_b0_1P) return new XS_qqbar_g3P0(args);
+      if (kfc==kf_chi_c0_1P || kfc==kf_chi_b0_1P || kfc==kf_chi_b0_2P) return new XS_qqbar_g3P0(args);
     }
     if (fl[0].IsQuark() && fl[1].IsQuark() && fl[1]==fl[0].Bar() &&
 	fl[3].IsGluon() && fl[2].IsMeson() ) {
       kf_code kfc = fl[2].Kfcode();
-      if (kfc==kf_chi_c0_1P || kfc==kf_chi_b0_1P) return new XS_qqbar_g3P0(args);
+      if (kfc==kf_chi_c0_1P || kfc==kf_chi_b0_1P || kfc==kf_chi_b0_2P) return new XS_qqbar_g3P0(args);
     }
   }
   return NULL;
@@ -683,8 +686,9 @@ XS_qqbar_g3P0::XS_qqbar_g3P0(const External_ME_Args& args):
     m_colours[i][0] = m_colours[i][1] = 0;
   }
   m_mass   = fl[m_S].Mass(true);  m_mass2 = sqr(m_mass); m_R12 = 0.;
-  if (fl[m_S].Kfcode()==kf_chi_c0_1P) m_R12 = 0.075; //0.0091;
-  if (fl[m_S].Kfcode()==kf_chi_b0_1P) m_R12 = 0.015;
+  if (fl[m_S].Kfcode()==kf_chi_c0_1P) m_R12 = 0.075;
+  if (fl[m_S].Kfcode()==kf_chi_b0_1P) m_R12 = 1.417;
+  if (fl[m_S].Kfcode()==kf_chi_b0_2P) m_R12 = 1.653;
   m_alphaS = MODEL::s_model->ScalarConstant("alpha_S");
   m_pref   = 64./27.*sqr(4.*M_PI)*m_R12/pow(m_mass,3);
 }
@@ -717,12 +721,12 @@ operator()(const External_ME_Args &args) const
     if ( fl[0].IsGluon() && fl[1].IsGluon() && fl[2].IsGluon()  &&
 	 fl[3].IsMeson() ) {
       kf_code kfc = fl[3].Kfcode();
-      if ((kfc==kf_chi_c0_1P || kfc==kf_chi_b0_1P)) return new XS_gg_g3P0(args);
+      if (kfc==kf_chi_c0_1P || kfc==kf_chi_b0_1P || kfc==kf_chi_b0_2P) return new XS_gg_g3P0(args);
     }
     if ( fl[0].IsGluon() && fl[1].IsGluon() && fl[3].IsGluon()  &&
 	 fl[2].IsMeson() ) {
       kf_code kfc = fl[2].Kfcode();
-      if ((kfc==kf_chi_c0_1P || kfc==kf_chi_b0_1P)) return new XS_gg_g3P0(args);
+      if (kfc==kf_chi_c0_1P || kfc==kf_chi_b0_1P || kfc==kf_chi_b0_2P) return new XS_gg_g3P0(args);
     }
   }
   return NULL;
@@ -737,11 +741,12 @@ XS_gg_g3P0::XS_gg_g3P0(const External_ME_Args& args):
     if (i>1 && fl[i].IsMeson()) m_S = i;
     m_colours[i][0] = m_colours[i][1] = 0;
   }
-  m_mass   = fl[m_S].Mass(true);  m_mass2 = sqr(m_mass); m_R02 = 0.;
-  if (fl[m_S].Kfcode()==kf_chi_c0_1P)   m_R02 = 0.075; //0.0091
-  if (fl[m_S].Kfcode()==kf_chi_b0_1P) m_R02 = 0.015;
+  m_mass   = fl[m_S].Mass(true);  m_mass2 = sqr(m_mass); m_R12 = 0.;
+  if (fl[m_S].Kfcode()==kf_chi_c0_1P)   m_R12 = 0.075;
+  if (fl[m_S].Kfcode()==kf_chi_b0_1P)   m_R12 = 1.417;
+  if (fl[m_S].Kfcode()==kf_chi_b0_2P)   m_R12 = 1.653;
   m_alphaS = MODEL::s_model->ScalarConstant("alpha_S");
-  m_pref   = 4.*sqr(4.*M_PI)*m_R02/pow(m_mass,3);
+  m_pref   = 4.*sqr(4.*M_PI)*m_R12/pow(m_mass,3);
 }
 
 double XS_gg_g3P0::operator()(const Vec4D_Vector& mom) 
@@ -787,13 +792,13 @@ operator()(const External_ME_Args &args) const
 	  (fl[0].IsGluon() && fl[1].IsQuark() && fl[2]==fl[1])) &&
 	 fl[3].IsMeson() ) {
       kf_code kfc = fl[3].Kfcode();
-      if (kfc==kf_chi_c1_1P  || kfc==kf_chi_b1_1P ) return new XS_qg_q3P1(args);
+      if (kfc==kf_chi_c1_1P || kfc==kf_chi_b1_1P || kfc==kf_chi_b1_2P) return new XS_qg_q3P1(args);
     }
     if ( ((fl[0].IsQuark() && fl[1].IsGluon() && fl[3]==fl[0]) ||
 	  (fl[0].IsGluon() && fl[1].IsQuark() && fl[3]==fl[1])) &&
 	 fl[2].IsMeson() ) {
       kf_code kfc = fl[2].Kfcode();
-      if (kfc==kf_chi_c1_1P || kfc==kf_chi_b1_1P) return new XS_qg_q3P1(args);
+      if (kfc==kf_chi_c1_1P || kfc==kf_chi_b1_1P || kfc==kf_chi_b1_2P) return new XS_qg_q3P1(args);
     }
   }
   return NULL;
@@ -811,8 +816,9 @@ XS_qg_q3P1::XS_qg_q3P1(const External_ME_Args& args):
     m_colours[i][0] = m_colours[i][1] = 0;
   }
   m_mass   = fl[m_S].Mass(true);  m_mass2 = sqr(m_mass); m_R12 = 0.;
-  if (fl[m_S].Kfcode()==kf_chi_c1_1P) m_R12 = 0.075; //0.0091;
-  if (fl[m_S].Kfcode()==kf_chi_b1_1P) m_R12 = 0.015;
+  if (fl[m_S].Kfcode()==kf_chi_c1_1P)   m_R12 = 0.075;
+  if (fl[m_S].Kfcode()==kf_chi_b1_1P)   m_R12 = 1.417;
+  if (fl[m_S].Kfcode()==kf_chi_b1_2P)   m_R12 = 1.653;
   m_a      = fl[m_q].IsAnti() ? 1 : 0; 
   m_alphaS = MODEL::s_model->ScalarConstant("alpha_S");
   m_pref   = 16./3.*sqr(4.*M_PI)*m_R12/pow(m_mass,3);
@@ -846,12 +852,12 @@ operator()(const External_ME_Args &args) const
     if (fl[0].IsQuark() && fl[1].IsQuark() && fl[1]==fl[0].Bar() &&
   fl[2].IsGluon() && fl[3].IsMeson() ) {
       kf_code kfc = fl[3].Kfcode();
-      if (kfc==kf_chi_c1_1P || kfc==kf_chi_b1_1P) return new XS_qqbar_g3P1(args);
+      if (kfc==kf_chi_c1_1P || kfc==kf_chi_b1_1P || kfc==kf_chi_b1_2P) return new XS_qqbar_g3P1(args);
     }
     if (fl[0].IsQuark() && fl[1].IsQuark() && fl[1]==fl[0].Bar() &&
   fl[3].IsGluon() && fl[2].IsMeson() ) {
       kf_code kfc = fl[2].Kfcode();
-      if (kfc==kf_chi_c1_1P || kfc==kf_chi_b1_1P) return new XS_qqbar_g3P1(args);
+      if (kfc==kf_chi_c1_1P || kfc==kf_chi_b1_1P || kfc==kf_chi_b1_2P) return new XS_qqbar_g3P1(args);
     }
   }
   return NULL;
@@ -868,8 +874,9 @@ XS_qqbar_g3P1::XS_qqbar_g3P1(const External_ME_Args& args):
     m_colours[i][0] = m_colours[i][1] = 0;
   }
   m_mass   = fl[m_S].Mass(true);  m_mass2 = sqr(m_mass); m_R12 = 0.;
-  if (fl[m_S].Kfcode()==kf_chi_c1_1P) m_R12 = 0.075; //0.0091;
-  if (fl[m_S].Kfcode()==kf_chi_b1_1P) m_R12 = 0.015;
+  if (fl[m_S].Kfcode()==kf_chi_c1_1P)   m_R12 = 0.075;
+  if (fl[m_S].Kfcode()==kf_chi_b1_1P)   m_R12 = 1.417;
+  if (fl[m_S].Kfcode()==kf_chi_b1_2P)   m_R12 = 1.653;
   m_alphaS = MODEL::s_model->ScalarConstant("alpha_S");
   m_pref   = -8./3.*16./3.*sqr(4.*M_PI)*m_R12/pow(m_mass,3);
 }
@@ -902,12 +909,12 @@ operator()(const External_ME_Args &args) const
     if ( fl[0].IsGluon() && fl[1].IsGluon() && fl[2].IsGluon()  &&
 	 fl[3].IsMeson() ) {
       kf_code kfc = fl[3].Kfcode();
-      if ((kfc==kf_chi_c1_1P || kfc==kf_chi_b1_1P)) return new XS_gg_g3P1(args);
+      if (kfc==kf_chi_c1_1P || kfc==kf_chi_b1_1P || kfc==kf_chi_b1_2P) return new XS_gg_g3P1(args);
     }
     if ( fl[0].IsGluon() && fl[1].IsGluon() && fl[3].IsGluon()  &&
 	 fl[2].IsMeson() ) {
       kf_code kfc = fl[2].Kfcode();
-      if ((kfc==kf_chi_c1_1P || kfc==kf_chi_b1_1P)) return new XS_gg_g3P1(args);
+      if (kfc==kf_chi_c1_1P || kfc==kf_chi_b1_1P || kfc==kf_chi_b1_2P) return new XS_gg_g3P1(args);
     }
   }
   return NULL;
@@ -922,11 +929,12 @@ XS_gg_g3P1::XS_gg_g3P1(const External_ME_Args& args):
     if (i>1 && fl[i].IsMeson()) m_S = i;
     m_colours[i][0] = m_colours[i][1] = 0;
   }
-  m_mass   = fl[m_S].Mass(true);  m_mass2 = sqr(m_mass); m_R02 = 0.;
-  if (fl[m_S].Kfcode()==kf_chi_c1_1P)   m_R02 = 0.0075; //0.0091; //R1'2/M2
-  if (fl[m_S].Kfcode()==kf_chi_b1_1P) m_R02 = 0.015;
+  m_mass   = fl[m_S].Mass(true);  m_mass2 = sqr(m_mass); m_R12 = 0.;
+  if (fl[m_S].Kfcode()==kf_chi_c1_1P)   m_R12 = 0.075;
+  if (fl[m_S].Kfcode()==kf_chi_b1_1P)   m_R12 = 1.417;
+  if (fl[m_S].Kfcode()==kf_chi_b1_2P)   m_R12 = 1.653;
   m_alphaS = MODEL::s_model->ScalarConstant("alpha_S");
-  m_pref   = 12.*sqr(4.*M_PI)*m_R02/pow(m_mass,3);
+  m_pref   = 12.*sqr(4.*M_PI)*m_R12/pow(m_mass,3);
 }
 
 double XS_gg_g3P1::operator()(const Vec4D_Vector& mom) 
@@ -971,13 +979,13 @@ operator()(const External_ME_Args &args) const
 	  (fl[0].IsGluon() && fl[1].IsQuark() && fl[2]==fl[1])) &&
 	 fl[3].IsMeson() ) {
       kf_code kfc = fl[3].Kfcode();
-      if (kfc==kf_chi_c2_1P || kfc==kf_chi_b2_1P) return new XS_qg_q3P2(args);
+      if (kfc==kf_chi_c2_1P || kfc==kf_chi_b2_1P || kfc==kf_chi_b2_2P) return new XS_qg_q3P2(args);
     }
     if ( ((fl[0].IsQuark() && fl[1].IsGluon() && fl[3]==fl[0]) ||
 	  (fl[0].IsGluon() && fl[1].IsQuark() && fl[3]==fl[1])) &&
 	 fl[2].IsMeson() ) {
       kf_code kfc = fl[2].Kfcode();
-      if (kfc==kf_chi_c2_1P || kfc==kf_chi_b2_1P) return new XS_qg_q3P2(args);
+      if (kfc==kf_chi_c2_1P || kfc==kf_chi_b2_1P || kfc==kf_chi_b2_2P) return new XS_qg_q3P2(args);
     }
   }
   return NULL;
@@ -995,8 +1003,9 @@ XS_qg_q3P2::XS_qg_q3P2(const External_ME_Args& args):
     m_colours[i][0] = m_colours[i][1] = 0;
   }
   m_mass   = fl[m_S].Mass(true);  m_mass2 = sqr(m_mass); m_R12 = 0.;
-  if (fl[m_S].Kfcode()==kf_chi_c2_1P) m_R12 = 0.075; //0.0091;
-  if (fl[m_S].Kfcode()==kf_chi_b2_1P) m_R12 = 0.015;
+  if (fl[m_S].Kfcode()==kf_chi_c2_1P)   m_R12 = 0.075;
+  if (fl[m_S].Kfcode()==kf_chi_b2_1P)   m_R12 = 1.417;
+  if (fl[m_S].Kfcode()==kf_chi_b2_2P)   m_R12 = 1.653;
   m_a      = fl[m_q].IsAnti() ? 1 : 0; 
   m_alphaS = MODEL::s_model->ScalarConstant("alpha_S");
   m_pref   = 16./9.*sqr(4.*M_PI)*m_R12/pow(m_mass,3);
@@ -1030,12 +1039,12 @@ operator()(const External_ME_Args &args) const
     if (fl[0].IsQuark() && fl[1].IsQuark() && fl[1]==fl[0].Bar() &&
 	fl[2].IsGluon() && fl[3].IsMeson() ) {
 	    kf_code kfc = fl[3].Kfcode();
-      if (kfc==kf_chi_c2_1P || kfc==kf_chi_b2_1P) return new XS_qqbar_g3P2(args);
+      if (kfc==kf_chi_c2_1P || kfc==kf_chi_b2_1P || kfc==kf_chi_b2_2P) return new XS_qqbar_g3P2(args);
     }
     if (fl[0].IsQuark() && fl[1].IsQuark() && fl[1]==fl[0].Bar() &&
 	fl[3].IsGluon() && fl[2].IsMeson() ) {
       kf_code kfc = fl[2].Kfcode();
-      if (kfc==kf_chi_c2_1P || kfc==kf_chi_b2_1P) return new XS_qqbar_g3P2(args);
+      if (kfc==kf_chi_c2_1P || kfc==kf_chi_b2_1P || kfc==kf_chi_b2_2P) return new XS_qqbar_g3P2(args);
     }
   }
   return NULL;
@@ -1052,8 +1061,9 @@ XS_qqbar_g3P2::XS_qqbar_g3P2(const External_ME_Args& args):
     m_colours[i][0] = m_colours[i][1] = 0;
   }
   m_mass   = fl[m_S].Mass(true);  m_mass2 = sqr(m_mass); m_R12 = 0.;
-  if (fl[m_S].Kfcode()==kf_chi_c2_1P) m_R12 = 0.075; //0.0091;
-  if (fl[m_S].Kfcode()==kf_chi_b2_1P) m_R12 = 0.015;
+  if (fl[m_S].Kfcode()==kf_chi_c2_1P)   m_R12 = 0.075;
+  if (fl[m_S].Kfcode()==kf_chi_b2_1P)   m_R12 = 1.417;
+  if (fl[m_S].Kfcode()==kf_chi_b2_2P)   m_R12 = 1.653;
   m_alphaS = MODEL::s_model->ScalarConstant("alpha_S");
   m_pref   = -8./3.*16./9.*sqr(4.*M_PI)*m_R12/pow(m_mass,3);
 }
@@ -1086,12 +1096,12 @@ operator()(const External_ME_Args &args) const
     if ( fl[0].IsGluon() && fl[1].IsGluon() && fl[2].IsGluon()  &&
 	 fl[3].IsMeson() ) {
       kf_code kfc = fl[3].Kfcode();
-      if ((kfc==kf_chi_c2_1P || kfc==kf_chi_b2_1P)) return new XS_gg_g3P2(args);
+      if (kfc==kf_chi_c2_1P || kfc==kf_chi_b2_1P || kfc==kf_chi_b2_2P) return new XS_gg_g3P2(args);
     }
     if ( fl[0].IsGluon() && fl[1].IsGluon() && fl[3].IsGluon()  &&
 	 fl[2].IsMeson() ) {
       kf_code kfc = fl[2].Kfcode();
-      if ((kfc==kf_chi_c2_1P || kfc==kf_chi_b2_1P)) return new XS_gg_g3P2(args);
+      if (kfc==kf_chi_c2_1P || kfc==kf_chi_b2_1P || kfc==kf_chi_b2_2P) return new XS_gg_g3P2(args);
     }
   }
   return NULL;
@@ -1106,11 +1116,12 @@ XS_gg_g3P2::XS_gg_g3P2(const External_ME_Args& args):
     if (i>1 && fl[i].IsMeson()) m_S = i;
     m_colours[i][0] = m_colours[i][1] = 0;
   }
-  m_mass   = fl[m_S].Mass(true);  m_mass2 = sqr(m_mass); m_R02 = 0.;
-  if (fl[m_S].Kfcode()==kf_chi_c2_1P)   m_R02 = 0.075; //0.0091; //R1'2/M2
-  if (fl[m_S].Kfcode()==kf_chi_b2_1P) m_R02 = 0.015;
+  m_mass   = fl[m_S].Mass(true);  m_mass2 = sqr(m_mass); m_R12 = 0.;
+  if (fl[m_S].Kfcode()==kf_chi_c2_1P)   m_R12 = 0.075;
+  if (fl[m_S].Kfcode()==kf_chi_b2_1P)   m_R12 = 1.417;
+  if (fl[m_S].Kfcode()==kf_chi_b2_2P)   m_R12 = 1.653;
   m_alphaS = MODEL::s_model->ScalarConstant("alpha_S");
-  m_pref   = 4.*sqr(4.*M_PI)*m_R02/pow(m_mass,3);
+  m_pref   = 4.*sqr(4.*M_PI)*m_R12/pow(m_mass,3);
 }
 
 double XS_gg_g3P2::operator()(const Vec4D_Vector& mom) 
@@ -1137,6 +1148,15 @@ bool XS_gg_g3P2::SetColours(const Vec4D_Vector& mom)
   return true;
 }
 
+//For S
+//LDME = 9/(2*M_PI)*M_R02
+
+//For P
+//LDME = 3/(4*M_PI)*(2J+1)*m_R12 [1503.08439]
+
+//values from [9503356]
+
+
 /////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////
 //
@@ -1145,7 +1165,8 @@ bool XS_gg_g3P2::SetColours(const Vec4D_Vector& mom)
 /////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////
 
-
+//LDMEs from: https://arxiv.org/pdf/1906.10049, https://arxiv.org/html/2501.15575v1
+//LDME rules: https://arxiv.org/pdf/1411.5287
 
 
 //////////////////////////////////////////////////////////////////////////
@@ -1167,13 +1188,15 @@ operator()(const External_ME_Args &args) const
 	  (fl[0].IsGluon() && fl[1].IsQuark() && fl[2]==fl[1])) &&
 	 fl[3].IsOctetMeson() ) {
       kf_code kfc = fl[3].Kfcode();
-      if (kfc==kf_eta_c_1S_oct || kfc==kf_eta_b_oct) return new XS_qg_q1S0_oct(args);
+      if (kfc==kf_1S0_c_8_eta_c || kfc==kf_1S0_c_8_J_psi_1S   || kfc==kf_1S0_c_8_psi_2S     ||
+          kfc==kf_1S0_b_8_eta_b || kfc==kf_1S0_b_8_Upsilon_1S || kfc==kf_1S0_b_8_Upsilon_2S) return new XS_qg_q1S0_oct(args);
     }
     if ( ((fl[0].IsQuark() && fl[1].IsGluon() && fl[3]==fl[0]) ||
 	  (fl[0].IsGluon() && fl[1].IsQuark() && fl[3]==fl[1])) &&
 	 fl[2].IsOctetMeson() ) {
       kf_code kfc = fl[2].Kfcode();
-      if (kfc==kf_eta_c_1S_oct || kfc==kf_eta_b_oct) return new XS_qg_q1S0_oct(args);
+      if (kfc==kf_1S0_c_8_eta_c || kfc==kf_1S0_c_8_J_psi_1S   || kfc==kf_1S0_c_8_psi_2S     ||
+          kfc==kf_1S0_b_8_eta_b || kfc==kf_1S0_b_8_Upsilon_1S || kfc==kf_1S0_b_8_Upsilon_2S) return new XS_qg_q1S0_oct(args);
     }
   }
   return NULL;
@@ -1190,9 +1213,13 @@ XS_qg_q1S0_oct::XS_qg_q1S0_oct(const External_ME_Args& args):
     if (i>1 && fl[i].IsOctetMeson()) m_S = i;
     m_colours[i][0] = m_colours[i][1] = 0;
   }
-  m_mass   = fl[m_S].Mass(true);  m_mass2 = sqr(m_mass); NRQCD = 0.;
-  if (fl[m_S].Kfcode()==kf_eta_c_1S_oct) NRQCD = 0.0018;
-  if (fl[m_S].Kfcode()==kf_eta_b_oct) NRQCD = 0.02;
+  m_mass   = fl[m_S].Mass(true);  m_mass2 = sqr(m_mass); LDME = 0.;
+  if (fl[m_S].Kfcode()==kf_1S0_c_8_eta_c)      LDME = 0.018/3.;
+  if (fl[m_S].Kfcode()==kf_1S0_c_8_J_psi_1S)   LDME = 0.012/3.;
+  if (fl[m_S].Kfcode()==kf_1S0_c_8_psi_2S)     LDME = 0.005/3.;
+  if (fl[m_S].Kfcode()==kf_1S0_b_8_eta_b)      LDME = 0.0231/3.;
+  if (fl[m_S].Kfcode()==kf_1S0_b_8_Upsilon_1S) LDME = 0.0151/3.;
+  if (fl[m_S].Kfcode()==kf_1S0_b_8_Upsilon_2S) LDME = 0.0124/3.;
   m_a      = fl[m_q].IsAnti() ? 1 : 0; 
   m_alphaS = MODEL::s_model->ScalarConstant("alpha_S");
   
@@ -1206,7 +1233,7 @@ double XS_qg_q1S0_oct::operator()(const Vec4D_Vector& mom)
   double u  = (mom[0]-mom[3]).Abs2();
   double M2= (sqr(s)+sqr(u))/(t*sqr(t-m_mass2));
   m_pref = pow(4.*M_PI*m_alphaS,3)*CouplingFactor(3,0);
-  return -5./(72.*m_mass)*m_pref*M2*NRQCD;
+  return -5./(72.*m_mass)*m_pref*M2*LDME;
 }
 
 bool XS_qg_q1S0_oct::SetColours(const Vec4D_Vector& mom) 
@@ -1239,18 +1266,19 @@ Tree_ME2_Base *ATOOLS::Getter<PHASIC::Tree_ME2_Base,
 operator()(const External_ME_Args &args) const
 {
   if (dynamic_cast<UFO::UFO_Model*>(MODEL::s_model)) return NULL;
-  
   const Flavour_Vector fl = args.Flavours();
   if (fl.size()==4 && args.m_orders[0]==3 && args.m_orders[1]==0) {
     if (fl[0].IsQuark() && fl[1].IsQuark() && fl[1]==fl[0].Bar() &&
 	fl[2].IsGluon() && fl[3].IsOctetMeson() ) {
 	    kf_code kfc = fl[3].Kfcode();
-      if (kfc==kf_eta_c_1S_oct || kfc==kf_eta_b_oct) return new XS_qqbar_g1S0_oct(args);
+      if (kfc==kf_1S0_c_8_eta_c || kfc==kf_1S0_c_8_J_psi_1S   || kfc==kf_1S0_c_8_psi_2S     ||
+          kfc==kf_1S0_b_8_eta_b || kfc==kf_1S0_b_8_Upsilon_1S || kfc==kf_1S0_b_8_Upsilon_2S) return new XS_qqbar_g1S0_oct(args);
     }
     if (fl[0].IsQuark() && fl[1].IsQuark() && fl[1]==fl[0].Bar() &&
 	fl[3].IsGluon() && fl[2].IsOctetMeson() ) {
       kf_code kfc = fl[2].Kfcode();
-      if (kfc==kf_eta_c_1S_oct || kfc==kf_eta_b_oct) return new XS_qqbar_g1S0_oct(args);
+      if (kfc==kf_1S0_c_8_eta_c || kfc==kf_1S0_c_8_J_psi_1S   || kfc==kf_1S0_c_8_psi_2S     ||
+          kfc==kf_1S0_b_8_eta_b || kfc==kf_1S0_b_8_Upsilon_1S || kfc==kf_1S0_b_8_Upsilon_2S) return new XS_qqbar_g1S0_oct(args);
     }
   }
   return NULL;
@@ -1266,9 +1294,13 @@ XS_qqbar_g1S0_oct::XS_qqbar_g1S0_oct(const External_ME_Args& args):
     if (i>1 && fl[i].IsOctetMeson()) m_S = i;
     m_colours[i][0] = m_colours[i][1] = 0;
   }
-  m_mass   = fl[m_S].Mass(true);  m_mass2 = sqr(m_mass); NRQCD = 0.;
-  if (fl[m_S].Kfcode()==kf_eta_c_1S_oct) NRQCD = 0.0018;
-  if (fl[m_S].Kfcode()==kf_eta_b_oct) NRQCD = 0.02;
+  m_mass   = fl[m_S].Mass(true);  m_mass2 = sqr(m_mass); LDME = 0.;
+  if (fl[m_S].Kfcode()==kf_1S0_c_8_eta_c)      LDME = 0.0013/3.;
+  if (fl[m_S].Kfcode()==kf_1S0_c_8_J_psi_1S)   LDME = 0.0180;
+  if (fl[m_S].Kfcode()==kf_1S0_c_8_psi_2S)     LDME = 0.008;
+  if (fl[m_S].Kfcode()==kf_1S0_b_8_eta_b)      LDME = 0.0159;
+  if (fl[m_S].Kfcode()==kf_1S0_b_8_Upsilon_1S) LDME = 0.0121;
+  if (fl[m_S].Kfcode()==kf_1S0_b_8_Upsilon_2S) LDME = 0.00537;
   m_alphaS = MODEL::s_model->ScalarConstant("alpha_S");
   
 }
@@ -1280,7 +1312,7 @@ double XS_qqbar_g1S0_oct::operator()(const Vec4D_Vector& mom)
   double u  = (mom[0]-mom[3]).Abs2();
   double M2 = (sqr(t)+sqr(u))/(s*sqr(s-m_mass2));
   m_pref = pow(4.*M_PI*m_alphaS,3)*CouplingFactor(3,0);
-  return 5./(27.*m_mass)*m_pref*M2*NRQCD;
+  return 5./(27.*m_mass)*m_pref*M2*LDME;
 }
 
 bool XS_qqbar_g1S0_oct::SetColours(const Vec4D_Vector& mom) 
@@ -1304,12 +1336,14 @@ operator()(const External_ME_Args &args) const
 
 	 fl[3].IsOctetMeson() ) {
       kf_code kfc = fl[3].Kfcode();
-      if (kfc==kf_eta_c_1S_oct || kfc==kf_eta_b_oct) return new XS_gg_g1S0_oct(args);
+      if (kfc==kf_1S0_c_8_eta_c || kfc==kf_1S0_c_8_J_psi_1S   || kfc==kf_1S0_c_8_psi_2S     ||
+          kfc==kf_1S0_b_8_eta_b || kfc==kf_1S0_b_8_Upsilon_1S || kfc==kf_1S0_b_8_Upsilon_2S) return new XS_gg_g1S0_oct(args);
     }
     if ( fl[0].IsGluon() && fl[1].IsGluon() && fl[3].IsGluon()  &&
 	 fl[2].IsOctetMeson() ) {
       kf_code kfc = fl[2].Kfcode();
-      if (kfc==kf_eta_c_1S_oct || kfc==kf_eta_b_oct) return new XS_gg_g1S0_oct(args);
+      if (kfc==kf_1S0_c_8_eta_c || kfc==kf_1S0_c_8_J_psi_1S   || kfc==kf_1S0_c_8_psi_2S     ||
+          kfc==kf_1S0_b_8_eta_b || kfc==kf_1S0_b_8_Upsilon_1S || kfc==kf_1S0_b_8_Upsilon_2S)return new XS_gg_g1S0_oct(args);
     }
   }
   return NULL;
@@ -1324,9 +1358,13 @@ XS_gg_g1S0_oct::XS_gg_g1S0_oct(const External_ME_Args& args):
     if (i>1 && fl[i].IsOctetMeson()) m_S = i;
     m_colours[i][0] = m_colours[i][1] = 0;
   }
-  m_mass   = fl[m_S].Mass(true);  m_mass2 = sqr(m_mass); NRQCD = 0.;
-  if (fl[m_S].Kfcode()==kf_eta_c_1S_oct) NRQCD = 0.0018;
-  if (fl[m_S].Kfcode()==kf_eta_b_oct) NRQCD = 0.02;
+  m_mass   = fl[m_S].Mass(true);  m_mass2 = sqr(m_mass); LDME = 0.;
+  if (fl[m_S].Kfcode()==kf_1S0_c_8_eta_c)      LDME = 0.0013/3.;
+  if (fl[m_S].Kfcode()==kf_1S0_c_8_J_psi_1S)   LDME = 0.0180;
+  if (fl[m_S].Kfcode()==kf_1S0_c_8_psi_2S)     LDME = 0.008;
+  if (fl[m_S].Kfcode()==kf_1S0_b_8_eta_b)      LDME = 0.0159;
+  if (fl[m_S].Kfcode()==kf_1S0_b_8_Upsilon_1S) LDME = 0.0121;
+  if (fl[m_S].Kfcode()==kf_1S0_b_8_Upsilon_2S) LDME = 0.00537;
   m_alphaS = MODEL::s_model->ScalarConstant("alpha_S");
   
 }
@@ -1338,7 +1376,7 @@ double XS_gg_g1S0_oct::operator()(const Vec4D_Vector& mom)
   double u    = (mom[0]-mom[3]).Abs2(), uM = u-m_mass2, uM2 = sqr(u-m_mass2);
   double M2   = (sqr(s)*sM2+s*t*u*(m_mass2-2.*s)+sqr(t*u))*(sqr(sqr(s)-m_mass2*s+sqr(m_mass2))-t*u*(2*sqr(t)+3*t*u+2*sqr(u)))/(s*t*u*sM2*tM2*uM2);
   m_pref      = pow(4.*M_PI*m_alphaS,3)*CouplingFactor(3,0);
-  return 5./(16.*m_mass)*m_pref*M2*NRQCD;
+  return 5./(16.*m_mass)*m_pref*M2*LDME;
 }
 
 bool XS_gg_g1S0_oct::SetColours(const Vec4D_Vector& mom) 
@@ -1362,7 +1400,7 @@ bool XS_gg_g1S0_oct::SetColours(const Vec4D_Vector& mom)
 
 //////////////////////////////////////////////////////////////////////////
 //
-// Octet production of 3S1 states (3S1 = 9900443, 9900553)
+// Octet production of 3S1 states (3S1 = 99000443, 99000553, ...)
 //
 //////////////////////////////////////////////////////////////////////////
 
@@ -1379,13 +1417,19 @@ operator()(const External_ME_Args &args) const
 	  (fl[0].IsGluon() && fl[1].IsQuark() && fl[2]==fl[1])) &&
 	 fl[3].IsOctetMeson() ) {
       kf_code kfc = fl[3].Kfcode();
-      if (kfc==kf_J_psi_1S_oct || /*kfc==kf_psi_2S_oct ||*/ kfc==kf_Upsilon_1S_oct) return new XS_qg_q3S1_oct(args);
+      if (kfc==kf_3S1_c_8_J_psi_1S  || kfc==kf_3S1_c_8_psi_2S     || kfc==kf_3S1_c_8_eta_c      || 
+          kfc==kf_3S1_c_8_chi_c0_1P || kfc==kf_3S1_c_8_chi_c1_1P  || kfc==kf_3S1_c_8_chi_c2_1P  ||
+          kfc==kf_3S1_b_8_Upsilon_1S|| kfc==kf_3S1_b_8_Upsilon_2S || kfc==kf_3S1_b_8_eta_b      ||
+          kfc==kf_3S1_b_8_chi_b0_1P || kfc==kf_3S1_b_8_chi_b1_1P  || kfc==kf_3S1_b_8_chi_b2_1P) return new XS_qg_q3S1_oct(args);
     }
     if ( ((fl[0].IsQuark() && fl[1].IsGluon() && fl[3]==fl[0]) ||
 	  (fl[0].IsGluon() && fl[1].IsQuark() && fl[3]==fl[1])) &&
 	 fl[2].IsOctetMeson() ) {
       kf_code kfc = fl[2].Kfcode();
-      if (kfc==kf_J_psi_1S_oct ||  /*kfc==kf_psi_2S_oct||*/ kfc==kf_Upsilon_1S_oct) return new XS_qg_q3S1_oct(args);
+      if (kfc==kf_3S1_c_8_J_psi_1S  || kfc==kf_3S1_c_8_psi_2S     || kfc==kf_3S1_c_8_eta_c      || 
+          kfc==kf_3S1_c_8_chi_c0_1P || kfc==kf_3S1_c_8_chi_c1_1P  || kfc==kf_3S1_c_8_chi_c2_1P  ||
+          kfc==kf_3S1_b_8_Upsilon_1S|| kfc==kf_3S1_b_8_Upsilon_2S || kfc==kf_3S1_b_8_eta_b      ||
+          kfc==kf_3S1_b_8_chi_b0_1P || kfc==kf_3S1_b_8_chi_b1_1P  || kfc==kf_3S1_b_8_chi_b2_1P) return new XS_qg_q3S1_oct(args);
     }
   }
   return NULL;
@@ -1402,10 +1446,19 @@ XS_qg_q3S1_oct::XS_qg_q3S1_oct(const External_ME_Args& args):
     if (i>1 && fl[i].IsOctetMeson()) m_S = i;
     m_colours[i][0] = m_colours[i][1] = 0;
   }
-  m_mass   = fl[m_S].Mass(true);  m_mass2 = sqr(m_mass); NRQCD = 0.;
-  if (fl[m_S].Kfcode()==kf_J_psi_1S_oct) NRQCD = 0.012; //0.013
-  if (fl[m_S].Kfcode()==kf_psi_2S_oct) NRQCD = 0.005;
-  if (fl[m_S].Kfcode()==kf_Upsilon_1S_oct) NRQCD = 0.15;
+  m_mass   = fl[m_S].Mass(true);  m_mass2 = sqr(m_mass); LDME = 0.;
+  if (fl[m_S].Kfcode()==kf_3S1_c_8_eta_c)      LDME = 0.0180;
+  if (fl[m_S].Kfcode()==kf_3S1_c_8_J_psi_1S)   LDME = 0.0013;
+  if (fl[m_S].Kfcode()==kf_3S1_c_8_psi_2S)     LDME = 0.0033;
+  if (fl[m_S].Kfcode()==kf_3S1_c_8_chi_c0_1P)  LDME = 0.00187;
+  if (fl[m_S].Kfcode()==kf_3S1_c_8_chi_c1_1P)  LDME = 3*0.00187;
+  if (fl[m_S].Kfcode()==kf_3S1_c_8_chi_c2_1P)  LDME = 5*0.00187;
+  if (fl[m_S].Kfcode()==kf_3S1_b_8_eta_b)      LDME = 0.0121;
+  if (fl[m_S].Kfcode()==kf_3S1_b_8_Upsilon_1S) LDME = 0.0477;
+  if (fl[m_S].Kfcode()==kf_3S1_b_8_Upsilon_2S) LDME = 0.121;
+  if (fl[m_S].Kfcode()==kf_3S1_b_8_chi_b0_1P)  LDME = 0.1008;
+  if (fl[m_S].Kfcode()==kf_3S1_b_8_chi_b1_1P)  LDME = 3*0.1008;
+  if (fl[m_S].Kfcode()==kf_3S1_b_8_chi_b2_1P)  LDME = 5*0.1008;
   m_a      = fl[m_q].IsAnti() ? 1 : 0; 
   m_alphaS = MODEL::s_model->ScalarConstant("alpha_S");
 
@@ -1417,15 +1470,13 @@ double XS_qg_q3S1_oct::operator()(const Vec4D_Vector& mom)
   double t  = (mom[0]-mom[2]).Abs2(); 
   double u  = (mom[0]-mom[3]).Abs2(), u2 = sqr(u);
   
-  double alpha_S = 0.41;
   double M2 = s+t+u, sM = sqr(s-M2), tM = sqr(t-M2), uM = sqr(u-M2);
   double heq0 = 2.*M2*t;
   double heq1 = ((s2+u2+2.*M2*t)*sM-2.*M2*s*t*u)/(s*u); 
   double dnom = sqr(sM*tM);
   double nom = (4.*(s2+u2)-s*u);
-  double avg_fact = 1./4.;
-  m_pref = pow(4.*M_PI*alpha_S,3);//*CouplingFactor(3,0);
-  return -1./(108.*pow(m_mass,3))*m_pref*(heq0+heq1)/dnom*nom*avg_fact*NRQCD;
+  m_pref = pow(4.*M_PI*m_alphaS,3)*CouplingFactor(3,0);
+  return -1./(108.*pow(m_mass,3))*m_pref*(heq0+heq1)/dnom*nom*LDME;
 }
 
 bool XS_qg_q3S1_oct::SetColours(const Vec4D_Vector& mom) 
@@ -1464,12 +1515,18 @@ operator()(const External_ME_Args &args) const
     if (fl[0].IsQuark() && fl[1].IsQuark() && fl[1]==fl[0].Bar() &&
 	fl[2].IsGluon() && fl[3].IsOctetMeson() ) {
 	    kf_code kfc = fl[3].Kfcode();
-      if (kfc==kf_J_psi_1S_oct ||  kfc==kf_psi_2S_oct || kfc==kf_Upsilon_1S_oct) return new XS_qqbar_g3S1_oct(args);
+      if (kfc==kf_3S1_c_8_J_psi_1S  || kfc==kf_3S1_c_8_psi_2S     || kfc==kf_3S1_c_8_eta_c      || 
+          kfc==kf_3S1_c_8_chi_c0_1P || kfc==kf_3S1_c_8_chi_c1_1P  || kfc==kf_3S1_c_8_chi_c2_1P  ||
+          kfc==kf_3S1_b_8_Upsilon_1S|| kfc==kf_3S1_b_8_Upsilon_2S || kfc==kf_3S1_b_8_eta_b      ||
+          kfc==kf_3S1_b_8_chi_b0_1P || kfc==kf_3S1_b_8_chi_b1_1P  || kfc==kf_3S1_b_8_chi_b2_1P) return new XS_qqbar_g3S1_oct(args);
     }
     if (fl[0].IsQuark() && fl[1].IsQuark() && fl[1]==fl[0].Bar() &&
 	fl[3].IsGluon() && fl[2].IsOctetMeson() ) {
       kf_code kfc = fl[2].Kfcode();
-      if (kfc==kf_J_psi_1S_oct ||  kfc==kf_psi_2S_oct || kfc==kf_Upsilon_1S_oct) return new XS_qqbar_g3S1_oct(args);
+      if (kfc==kf_3S1_c_8_J_psi_1S  || kfc==kf_3S1_c_8_psi_2S     || kfc==kf_3S1_c_8_eta_c      || 
+          kfc==kf_3S1_c_8_chi_c0_1P || kfc==kf_3S1_c_8_chi_c1_1P  || kfc==kf_3S1_c_8_chi_c2_1P  ||
+          kfc==kf_3S1_b_8_Upsilon_1S|| kfc==kf_3S1_b_8_Upsilon_2S || kfc==kf_3S1_b_8_eta_b      ||
+          kfc==kf_3S1_b_8_chi_b0_1P || kfc==kf_3S1_b_8_chi_b1_1P  || kfc==kf_3S1_b_8_chi_b2_1P) return new XS_qqbar_g3S1_oct(args);
     }
   }
   return NULL;
@@ -1485,10 +1542,19 @@ XS_qqbar_g3S1_oct::XS_qqbar_g3S1_oct(const External_ME_Args& args):
     if (i>1 && fl[i].IsOctetMeson()) m_S = i;
     m_colours[i][0] = m_colours[i][1] = 0;
   }
-  m_mass   = fl[m_S].Mass(true);  m_mass2 = sqr(m_mass); NRQCD = 0.;
-  if (fl[m_S].Kfcode()==kf_J_psi_1S_oct) NRQCD = 0.012; //
-  if (fl[m_S].Kfcode()==kf_psi_2S_oct) NRQCD = 0.005;
-  if (fl[m_S].Kfcode()==kf_Upsilon_1S_oct) NRQCD = 0.15;
+  m_mass   = fl[m_S].Mass(true);  m_mass2 = sqr(m_mass); LDME = 0.;
+  if (fl[m_S].Kfcode()==kf_3S1_c_8_eta_c)      LDME = 0.0180;
+  if (fl[m_S].Kfcode()==kf_3S1_c_8_J_psi_1S)   LDME = 0.0013;
+  if (fl[m_S].Kfcode()==kf_3S1_c_8_psi_2S)     LDME = 0.0033;
+  if (fl[m_S].Kfcode()==kf_3S1_c_8_chi_c0_1P)  LDME = 0.00187;
+  if (fl[m_S].Kfcode()==kf_3S1_c_8_chi_c1_1P)  LDME = 3*0.00187;
+  if (fl[m_S].Kfcode()==kf_3S1_c_8_chi_c2_1P)  LDME = 5*0.00187;
+  if (fl[m_S].Kfcode()==kf_3S1_b_8_eta_b)      LDME = 0.0121;
+  if (fl[m_S].Kfcode()==kf_3S1_b_8_Upsilon_1S) LDME = 0.0477;
+  if (fl[m_S].Kfcode()==kf_3S1_b_8_Upsilon_2S) LDME = 0.121;
+  if (fl[m_S].Kfcode()==kf_3S1_b_8_chi_b0_1P)  LDME = 0.1008;
+  if (fl[m_S].Kfcode()==kf_3S1_b_8_chi_b1_1P)  LDME = 3*0.1008;
+  if (fl[m_S].Kfcode()==kf_3S1_b_8_chi_b2_1P)  LDME = 5*0.1008;
   m_alphaS = MODEL::s_model->ScalarConstant("alpha_S");
   
 }
@@ -1505,10 +1571,9 @@ double XS_qqbar_g3S1_oct::operator()(const Vec4D_Vector& mom)
   double heq1 = (sqr(s)+sqr(M2))*(t2+u2)/(t*u);
   double nom = 4.*(t2+u2)-t*u;
   double dnom = pow(s-M2,4);
-  
-  double avg_fact = 1./4.;
-  m_pref = pow(4.*M_PI*alphaS,3);//*CouplingFactor(3,0);
-  return 2./(81.*pow(m_mass,3))*m_pref*(heq0+heq1)/dnom*nom*avg_fact*NRQCD;
+
+  m_pref = pow(4.*M_PI*m_alphaS,3)*CouplingFactor(3,0);
+  return 2./(81.*pow(m_mass,3))*m_pref*(heq0+heq1)/dnom*nom*LDME;
 }
 
 bool XS_qqbar_g3S1_oct::SetColours(const Vec4D_Vector& mom) 
@@ -1532,12 +1597,18 @@ operator()(const External_ME_Args &args) const
     if ( fl[0].IsGluon() && fl[1].IsGluon() && fl[2].IsGluon()  &&
 	 fl[3].IsOctetMeson() ) {
       kf_code kfc = fl[3].Kfcode();
-      if (kfc==kf_J_psi_1S_oct ||  /*kfc==kf_psi_2S_oct ||*/ kfc==kf_Upsilon_1S_oct) return new XS_gg_g3S1_oct(args);
+      if (kfc==kf_3S1_c_8_J_psi_1S  || kfc==kf_3S1_c_8_psi_2S     || kfc==kf_3S1_c_8_eta_c      || 
+          kfc==kf_3S1_c_8_chi_c0_1P || kfc==kf_3S1_c_8_chi_c1_1P  || kfc==kf_3S1_c_8_chi_c2_1P  ||
+          kfc==kf_3S1_b_8_Upsilon_1S|| kfc==kf_3S1_b_8_Upsilon_2S || kfc==kf_3S1_b_8_eta_b      ||
+          kfc==kf_3S1_b_8_chi_b0_1P || kfc==kf_3S1_b_8_chi_b1_1P  || kfc==kf_3S1_b_8_chi_b2_1P) return new XS_gg_g3S1_oct(args);
     }
     if ( fl[0].IsGluon() && fl[1].IsGluon() && fl[3].IsGluon()  &&
 	 fl[2].IsOctetMeson() ) {
       kf_code kfc = fl[2].Kfcode();
-      if (kfc==kf_J_psi_1S_oct || /*kfc==kf_psi_2S_oct ||*/ kfc==kf_Upsilon_1S_oct) return new XS_gg_g3S1_oct(args);
+      if (kfc==kf_3S1_c_8_J_psi_1S  || kfc==kf_3S1_c_8_psi_2S     || kfc==kf_3S1_c_8_eta_c      || 
+          kfc==kf_3S1_c_8_chi_c0_1P || kfc==kf_3S1_c_8_chi_c1_1P  || kfc==kf_3S1_c_8_chi_c2_1P  ||
+          kfc==kf_3S1_b_8_Upsilon_1S|| kfc==kf_3S1_b_8_Upsilon_2S || kfc==kf_3S1_b_8_eta_b      ||
+          kfc==kf_3S1_b_8_chi_b0_1P || kfc==kf_3S1_b_8_chi_b1_1P  || kfc==kf_3S1_b_8_chi_b2_1P) return new XS_gg_g3S1_oct(args);
     }
   }
   return NULL;
@@ -1552,10 +1623,19 @@ XS_gg_g3S1_oct::XS_gg_g3S1_oct(const External_ME_Args& args):
     if (i>1 && fl[i].IsOctetMeson()) m_S = i;
     m_colours[i][0] = m_colours[i][1] = 0;
   }
-  m_mass   = fl[m_S].Mass(true);  m_mass2 = sqr(m_mass); NRQCD = 0.;
-  if (fl[m_S].Kfcode()==kf_J_psi_1S_oct) NRQCD = 0.012; //0.0013
-  //if (fl[m_S].Kfcode()==kf_psi_2S_oct) NRQCD = 0.005;
-  if (fl[m_S].Kfcode()==kf_Upsilon_1S_oct) NRQCD = 0.15;
+  m_mass   = fl[m_S].Mass(true);  m_mass2 = sqr(m_mass); LDME = 0.;
+  if (fl[m_S].Kfcode()==kf_3S1_c_8_eta_c)      LDME = 0.0180;
+  if (fl[m_S].Kfcode()==kf_3S1_c_8_J_psi_1S)   LDME = 0.0013;
+  if (fl[m_S].Kfcode()==kf_3S1_c_8_psi_2S)     LDME = 0.0033;
+  if (fl[m_S].Kfcode()==kf_3S1_c_8_chi_c0_1P)  LDME = 0.00187;
+  if (fl[m_S].Kfcode()==kf_3S1_c_8_chi_c1_1P)  LDME = 3*0.00187;
+  if (fl[m_S].Kfcode()==kf_3S1_c_8_chi_c2_1P)  LDME = 5*0.00187;
+  if (fl[m_S].Kfcode()==kf_3S1_b_8_eta_b)      LDME = 0.0121;
+  if (fl[m_S].Kfcode()==kf_3S1_b_8_Upsilon_1S) LDME = 0.0477;
+  if (fl[m_S].Kfcode()==kf_3S1_b_8_Upsilon_2S) LDME = 0.12;
+  if (fl[m_S].Kfcode()==kf_3S1_b_8_chi_b0_1P)  LDME = 0.1008;
+  if (fl[m_S].Kfcode()==kf_3S1_b_8_chi_b1_1P)  LDME = 3*0.1008;
+  if (fl[m_S].Kfcode()==kf_3S1_b_8_chi_b2_1P)  LDME = 5*0.1008;
   m_alphaS = MODEL::s_model->ScalarConstant("alpha_S");
 }
 
@@ -1571,10 +1651,9 @@ double XS_gg_g3S1_oct::operator()(const Vec4D_Vector& mom)
   double heq1 = sqr(s)*(sqr(sM2)+pow(t,4)+pow(u,4)+2.*sqr(M2)*sqr(t*u/s));
   double nom = 27.*(s*t+t*u+u*s)-19.*sqr(M2);
   double dnom = sM2*sM2*tM2*uM2;
-  m_pref = pow(4.*M_PI*alphaS,3);//*CouplingFactor(3,0);
+  m_pref = pow(4.*M_PI*m_alphaS,3)*CouplingFactor(3,0);
 
-  avg_fact = 1./4.;
-  return -1./(144.*pow(m_mass,3))*m_pref*(heq0+heq1)*nom/dnom*avg_fact*NRQCD;
+  return -1./(144.*pow(m_mass,3))*m_pref*(heq0+heq1)*nom/dnom*LDME;
 }
 
 bool XS_gg_g3S1_oct::SetColours(const Vec4D_Vector& mom) 
@@ -1615,13 +1694,15 @@ operator()(const External_ME_Args &args) const
 	  (fl[0].IsGluon() && fl[1].IsQuark() && fl[2]==fl[1])) &&
 	 fl[3].IsOctetMeson() ) {
       kf_code kfc = fl[3].Kfcode();
-      if (kfc==kf_chi_c0_1P_oct || kfc==kf_chi_b0_1P_oct) return new XS_qg_q3P0_oct(args);
+      if (kfc==kf_3P0_c_8_J_psi_1S   || kfc==kf_3P0_c_8_psi_2S    ||
+          kfc==kf_3P0_b_8_Upsilon_1S || kfc==kf_3P0_b_8_Upsilon_2S) return new XS_qg_q3P0_oct(args);
     }
     if ( ((fl[0].IsQuark() && fl[1].IsGluon() && fl[3]==fl[0]) ||
 	  (fl[0].IsGluon() && fl[1].IsQuark() && fl[3]==fl[1])) &&
 	 fl[2].IsOctetMeson() ) {
       kf_code kfc = fl[2].Kfcode();
-      if (kfc==kf_chi_c0_1P_oct || kfc==kf_chi_b0_1P_oct) return new XS_qg_q3P0_oct(args);
+      if (kfc==kf_3P0_c_8_J_psi_1S   || kfc==kf_3P0_c_8_psi_2S    ||
+          kfc==kf_3P0_b_8_Upsilon_1S || kfc==kf_3P0_b_8_Upsilon_2S)  return new XS_qg_q3P0_oct(args);
     }
   }
   return NULL;
@@ -1638,9 +1719,13 @@ XS_qg_q3P0_oct::XS_qg_q3P0_oct(const External_ME_Args& args):
     if (i>1 && fl[i].IsOctetMeson()) m_S = i;
     m_colours[i][0] = m_colours[i][1] = 0;
   }
-  m_mass   = fl[m_S].Mass(true);  m_mass2 = sqr(m_mass); NRQCD = 0.;
-  if (fl[m_S].Kfcode()==kf_eta_c_1S_oct) NRQCD = 0.035; // <- 0.035
-  if (fl[m_S].Kfcode()==kf_eta_b_oct) NRQCD = 0.02;
+  m_mass   = fl[m_S].Mass(true);  m_mass2 = sqr(m_mass); LDME = 0.;
+  const double mc = ATOOLS::Flavour(kf_c).Mass();
+  const double mb = ATOOLS::Flavour(kf_b).Mass();
+  if (fl[m_S].Kfcode()==kf_3P0_c_8_J_psi_1S)   LDME = 0.0180*(mc*mc);
+  if (fl[m_S].Kfcode()==kf_3P0_c_8_psi_2S)     LDME = 0.016*(mc*mc);
+  if (fl[m_S].Kfcode()==kf_3P0_b_8_Upsilon_1S) LDME = 5*0.0121*(mb*mb);
+  if (fl[m_S].Kfcode()==kf_3P0_b_8_Upsilon_2S) LDME = 5*0.0141*(mb*mb);
   m_a      = fl[m_q].IsAnti() ? 1 : 0; 
   m_alphaS = MODEL::s_model->ScalarConstant("alpha_S");
   m_pref   = -5./(54.*pow(m_mass,3))*pow(4.*M_PI*m_alphaS,3);
@@ -1652,7 +1737,7 @@ double XS_qg_q3P0_oct::operator()(const Vec4D_Vector& mom)
   double t  = (mom[0]-mom[2]).Abs2();
   double u  = (mom[0]-mom[3]).Abs2();
   double M2 = (sqr(t-3.*m_mass2)*(sqr(s)+sqr(u)))/(t*pow(t-m_mass2,4));
-  return pow(m_alphaS,3)*CouplingFactor(3,0)*m_pref*M2*NRQCD;
+  return pow(m_alphaS,3)*CouplingFactor(3,0)*m_pref*M2*LDME;
 }
 
 bool XS_qg_q3P0_oct::SetColours(const Vec4D_Vector& mom) 
@@ -1692,12 +1777,14 @@ operator()(const External_ME_Args &args) const
     if (fl[0].IsQuark() && fl[1].IsQuark() && fl[1]==fl[0].Bar() &&
 	fl[2].IsGluon() && fl[3].IsOctetMeson() ) {
 	    kf_code kfc = fl[3].Kfcode();
-      if (kfc==kf_chi_c0_1P_oct || kfc==kf_chi_b0_1P_oct) return new XS_qqbar_g3P0_oct(args);
+      if (kfc==kf_3P0_c_8_J_psi_1S   || kfc==kf_3P0_c_8_psi_2S    ||
+          kfc==kf_3P0_b_8_Upsilon_1S || kfc==kf_3P0_b_8_Upsilon_2S)  return new XS_qqbar_g3P0_oct(args);
     }
     if (fl[0].IsQuark() && fl[1].IsQuark() && fl[1]==fl[0].Bar() &&
 	fl[3].IsGluon() && fl[2].IsOctetMeson() ) {
       kf_code kfc = fl[2].Kfcode();
-      if (kfc==kf_chi_c0_1P_oct || kfc==kf_chi_b0_1P_oct) return new XS_qqbar_g3P0_oct(args);
+      if  (kfc==kf_3P0_c_8_J_psi_1S   || kfc==kf_3P0_c_8_psi_2S    ||
+          kfc==kf_3P0_b_8_Upsilon_1S || kfc==kf_3P0_b_8_Upsilon_2S)  return new XS_qqbar_g3P0_oct(args);
     }
   }
   return NULL;
@@ -1713,9 +1800,13 @@ XS_qqbar_g3P0_oct::XS_qqbar_g3P0_oct(const External_ME_Args& args):
     if (i>1 && fl[i].IsOctetMeson()) m_S = i;
     m_colours[i][0] = m_colours[i][1] = 0;
   }
-  m_mass   = fl[m_S].Mass(true);  m_mass2 = sqr(m_mass); NRQCD = 0.;
-  if (fl[m_S].Kfcode()==kf_chi_c0_1P_oct) NRQCD = 0.035; //<-- 0.035
-  if (fl[m_S].Kfcode()==kf_chi_b0_1P_oct) NRQCD = 0.02;
+  m_mass   = fl[m_S].Mass(true);  m_mass2 = sqr(m_mass); LDME = 0.;
+  const double mc = ATOOLS::Flavour(kf_c).Mass();
+  const double mb = ATOOLS::Flavour(kf_b).Mass();
+  if (fl[m_S].Kfcode()==kf_3P0_c_8_J_psi_1S)   LDME = 0.0180*(mc*mc);
+  if (fl[m_S].Kfcode()==kf_3P0_c_8_psi_2S)     LDME = 0.016*(mc*mc);
+  if (fl[m_S].Kfcode()==kf_3P0_b_8_Upsilon_1S) LDME = 5*0.0121*(mb*mb);
+  if (fl[m_S].Kfcode()==kf_3P0_b_8_Upsilon_2S) LDME = 5*0.0141*(mb*mb);
   m_alphaS = MODEL::s_model->ScalarConstant("alpha_S");
   m_pref   = 20./(81.*pow(m_mass,3))*pow(4.*M_PI*m_alphaS,3);
 }
@@ -1750,12 +1841,14 @@ operator()(const External_ME_Args &args) const
     if ( fl[0].IsGluon() && fl[1].IsGluon() && fl[2].IsGluon()  &&
 	 fl[3].IsOctetMeson() ) {
       kf_code kfc = fl[3].Kfcode();
-      if (kfc==kf_chi_c0_1P_oct || kfc==kf_chi_b0_1P_oct) return new XS_gg_g3P0_oct(args);
+      if (kfc==kf_3P0_c_8_J_psi_1S   || kfc==kf_3P0_c_8_psi_2S    ||
+          kfc==kf_3P0_b_8_Upsilon_1S || kfc==kf_3P0_b_8_Upsilon_2S)  return new XS_gg_g3P0_oct(args);
     }
     if ( fl[0].IsGluon() && fl[1].IsGluon() && fl[3].IsGluon()  &&
 	 fl[2].IsOctetMeson() ) {
       kf_code kfc = fl[2].Kfcode();
-      if (kfc==kf_chi_c0_1P_oct || kfc==kf_chi_b0_1P_oct) return new XS_gg_g3P0_oct(args);
+      if (kfc==kf_3P0_c_8_J_psi_1S   || kfc==kf_3P0_c_8_psi_2S    ||
+          kfc==kf_3P0_b_8_Upsilon_1S || kfc==kf_3P0_b_8_Upsilon_2S)  return new XS_gg_g3P0_oct(args);
     }
   }
   return NULL;
@@ -1770,9 +1863,13 @@ XS_gg_g3P0_oct::XS_gg_g3P0_oct(const External_ME_Args& args):
     if (i>1 && fl[i].IsOctetMeson()) m_S = i;
     m_colours[i][0] = m_colours[i][1] = 0;
   }
-  m_mass   = fl[m_S].Mass(true);  m_mass2 = sqr(m_mass); NRQCD = 0.;
-  if (fl[m_S].Kfcode()==kf_chi_c0_1P_oct) NRQCD = 0.035;
-  if (fl[m_S].Kfcode()==kf_chi_b0_1P_oct) NRQCD = 0.02;
+  m_mass   = fl[m_S].Mass(true);  m_mass2 = sqr(m_mass); LDME = 0.;
+  const double mc = ATOOLS::Flavour(kf_c).Mass();
+  const double mb = ATOOLS::Flavour(kf_b).Mass();
+  if (fl[m_S].Kfcode()==kf_3P0_c_8_J_psi_1S)   LDME = 0.0180*(mc*mc);
+  if (fl[m_S].Kfcode()==kf_3P0_c_8_psi_2S)     LDME = 0.016*(mc*mc);
+  if (fl[m_S].Kfcode()==kf_3P0_b_8_Upsilon_1S) LDME = 5*0.0121*(mb*mb);
+  if (fl[m_S].Kfcode()==kf_3P0_b_8_Upsilon_2S) LDME = 5*0.0141*(mb*mb);
   m_alphaS = MODEL::s_model->ScalarConstant("alpha_S");
   
 }
@@ -1797,7 +1894,7 @@ double XS_gg_g3P0_oct::operator()(const Vec4D_Vector& mom)
   double all = line1+line2+line3+line4+line5+line6+line7+line8;
   m_pref = 5./12.*pow(4.*M_PI*m_alphaS,3)*CouplingFactor(3,0)/pow(m_mass,3);
 
-  return m_pref*all/dnom*NRQCD;
+  return m_pref*all/dnom*LDME;
 }
 
 bool XS_gg_g3P0_oct::SetColours(const Vec4D_Vector& mom) 
@@ -1838,13 +1935,15 @@ operator()(const External_ME_Args &args) const
 	  (fl[0].IsGluon() && fl[1].IsQuark() && fl[2]==fl[1])) &&
 	 fl[3].IsOctetMeson() ) {
       kf_code kfc = fl[3].Kfcode();
-      if (kfc==kf_chi_c1_1P_oct  || kfc==kf_chi_b1_1P_oct ) return new XS_qg_q3P1_oct(args);
+      if (kfc==kf_3P1_c_8_J_psi_1S   || kfc==kf_3P1_c_8_psi_2S    ||
+          kfc==kf_3P1_b_8_Upsilon_1S || kfc==kf_3P1_b_8_Upsilon_2S)  return new XS_qg_q3P1_oct(args);
     }
     if ( ((fl[0].IsQuark() && fl[1].IsGluon() && fl[3]==fl[0]) ||
 	  (fl[0].IsGluon() && fl[1].IsQuark() && fl[3]==fl[1])) &&
 	 fl[2].IsOctetMeson() ) {
       kf_code kfc = fl[2].Kfcode();
-      if (kfc==kf_chi_c1_1P_oct || kfc==kf_chi_b1_1P_oct) return new XS_qg_q3P1_oct(args);
+      if (kfc==kf_3P1_c_8_J_psi_1S   || kfc==kf_3P1_c_8_psi_2S    ||
+          kfc==kf_3P1_b_8_Upsilon_1S || kfc==kf_3P1_b_8_Upsilon_2S)  return new XS_qg_q3P1_oct(args);
     }
   }
   return NULL;
@@ -1861,9 +1960,13 @@ XS_qg_q3P1_oct::XS_qg_q3P1_oct(const External_ME_Args& args):
     if (i>1 && fl[i].IsOctetMeson()) m_S = i;
     m_colours[i][0] = m_colours[i][1] = 0;
   }
-  m_mass   = fl[m_S].Mass(true);  m_mass2 = sqr(m_mass); NRQCD = 0.;
-  if (fl[m_S].Kfcode()==kf_chi_c1_1P_oct) NRQCD = 0.018;
-  if (fl[m_S].Kfcode()==kf_chi_b1_1P_oct) NRQCD = 0.02;
+  m_mass   = fl[m_S].Mass(true);  m_mass2 = sqr(m_mass); LDME = 0.;
+  const double mc = ATOOLS::Flavour(kf_c).Mass();
+  const double mb = ATOOLS::Flavour(kf_b).Mass();
+  if (fl[m_S].Kfcode()==kf_3P0_c_8_J_psi_1S)   LDME = 3*0.0180*(mc*mc);
+  if (fl[m_S].Kfcode()==kf_3P0_c_8_psi_2S)     LDME = 3*0.016*(mc*mc);
+  if (fl[m_S].Kfcode()==kf_3P0_b_8_Upsilon_1S) LDME = 3*5*0.0121*(mb*mb);
+  if (fl[m_S].Kfcode()==kf_3P0_b_8_Upsilon_2S) LDME = 3*5*0.0141*(mb*mb);
   m_a      = fl[m_q].IsAnti() ? 1 : 0; 
   m_alphaS = MODEL::s_model->ScalarConstant("alpha_S");
   
@@ -1877,11 +1980,9 @@ double XS_qg_q3P1_oct::operator()(const Vec4D_Vector& mom)
   double heq0 = (t*(sqr(s*(sM))+sqr(u*(s+m_mass2))));
   double heq1 = 4.*m_mass2*(s*u*(sqr(t)+t*u+sqr(u)));
   double dnom = (pow(t-m_mass2,4)*sqr(sM));
-  double alphaS = 0.41;
-  m_pref   = -5./(27.*pow(m_mass,3))*pow(4.*M_PI*alphaS,3);
-  avg_fact = 1./4.;
+  m_pref   = -5./(27.*pow(m_mass,3))*pow(4.*M_PI*m_alphaS,3);
 
-  return /*CouplingFactor(3,0)*/m_pref*(heq0+heq1)/dnom*NRQCD*avg_fact;
+  return CouplingFactor(3,0)*m_pref*(heq0+heq1)/dnom*LDME;
 }
 
 bool XS_qg_q3P1_oct::SetColours(const Vec4D_Vector& mom) 
@@ -1920,12 +2021,14 @@ operator()(const External_ME_Args &args) const
     if (fl[0].IsQuark() && fl[1].IsQuark() && fl[1]==fl[0].Bar() &&
 	fl[2].IsGluon() && fl[3].IsOctetMeson() ) {
 	    kf_code kfc = fl[3].Kfcode();
-      if (kfc==kf_chi_c1_1P_oct || kfc==kf_chi_b1_1P_oct) return new XS_qqbar_g3P1_oct(args);
+      if (kfc==kf_3P1_c_8_J_psi_1S   || kfc==kf_3P1_c_8_psi_2S    ||
+          kfc==kf_3P1_b_8_Upsilon_1S || kfc==kf_3P1_b_8_Upsilon_2S)  return new XS_qqbar_g3P1_oct(args);
     }
     if (fl[0].IsQuark() && fl[1].IsQuark() && fl[1]==fl[0].Bar() &&
 	fl[3].IsGluon() && fl[2].IsOctetMeson() ) {
       kf_code kfc = fl[2].Kfcode();
-      if (kfc==kf_chi_c1_1P_oct || kfc==kf_chi_b1_1P_oct) return new XS_qqbar_g3P1_oct(args);
+      if (kfc==kf_3P1_c_8_J_psi_1S   || kfc==kf_3P1_c_8_psi_2S    ||
+          kfc==kf_3P1_b_8_Upsilon_1S || kfc==kf_3P1_b_8_Upsilon_2S)  return new XS_qqbar_g3P1_oct(args);
     }
   }
   return NULL;
@@ -1942,11 +2045,14 @@ XS_qqbar_g3P1_oct::XS_qqbar_g3P1_oct(const External_ME_Args& args):
     m_colours[i][0] = m_colours[i][1] = 0;
   }
   m_mass   = fl[m_S].Mass(true);  m_mass2 = sqr(m_mass);
-  if (fl[m_S].Kfcode()==kf_chi_c1_1P_oct) NRQCD = 0.035;
-  if (fl[m_S].Kfcode()==kf_chi_b1_1P_oct) NRQCD = 0.02;
+  const double mc = ATOOLS::Flavour(kf_c).Mass();
+  const double mb = ATOOLS::Flavour(kf_b).Mass();
+  if (fl[m_S].Kfcode()==kf_3P0_c_8_J_psi_1S)   LDME = 3*0.0180*(mc*mc);
+  if (fl[m_S].Kfcode()==kf_3P0_c_8_psi_2S)     LDME = 3*0.016*(mc*mc);
+  if (fl[m_S].Kfcode()==kf_3P0_b_8_Upsilon_1S) LDME = 3*5*0.0121*(mb*mb);
+  if (fl[m_S].Kfcode()==kf_3P0_b_8_Upsilon_2S) LDME = 3*5*0.0141*(mb*mb);
   m_alphaS = MODEL::s_model->ScalarConstant("alpha_S");
-  double alphaS = 0.41;
-  m_pref   = 40./(81.*pow(m_mass,3))*pow(4.*M_PI*alphaS,3);
+  m_pref   = 40./(81.*pow(m_mass,3))*pow(4.*M_PI*m_alphaS,3);
 }
 
 double XS_qqbar_g3P1_oct::operator()(const Vec4D_Vector& mom) 
@@ -1957,8 +2063,7 @@ double XS_qqbar_g3P1_oct::operator()(const Vec4D_Vector& mom)
   double heq0 = s*(sqr(t)+sqr(u));
   double heq1 = 4.*m_mass2*t*u;
   double dnom = pow(s-m_mass2,4);
-  avg_fact = 1./4.;
-  return /*CouplingFactor(3,0)*/m_pref*(heq0+heq1)/dnom*NRQCD*avg_fact;
+  return CouplingFactor(3,0)*m_pref*(heq0+heq1)/dnom*LDME;
 }
 
 bool XS_qqbar_g3P1_oct::SetColours(const Vec4D_Vector& mom) 
@@ -1981,12 +2086,14 @@ operator()(const External_ME_Args &args) const
     if ( fl[0].IsGluon() && fl[1].IsGluon() && fl[2].IsGluon()  &&
 	 fl[3].IsOctetMeson() ) {
       kf_code kfc = fl[3].Kfcode();
-      if (kfc==kf_chi_c1_1P_oct || kfc==kf_chi_b1_1P_oct) return new XS_gg_g3P1_oct(args);
+      if (kfc==kf_3P1_c_8_J_psi_1S   || kfc==kf_3P1_c_8_psi_2S    ||
+          kfc==kf_3P1_b_8_Upsilon_1S || kfc==kf_3P1_b_8_Upsilon_2S)  return new XS_gg_g3P1_oct(args);
     }
     if ( fl[0].IsGluon() && fl[1].IsGluon() && fl[3].IsGluon()  &&
 	 fl[2].IsOctetMeson() ) {
       kf_code kfc = fl[2].Kfcode();
-      if (kfc==kf_chi_c1_1P_oct || kfc==kf_chi_b1_1P_oct) return new XS_gg_g3P1_oct(args);
+      if (kfc==kf_3P1_c_8_J_psi_1S   || kfc==kf_3P1_c_8_psi_2S    ||
+          kfc==kf_3P1_b_8_Upsilon_1S || kfc==kf_3P1_b_8_Upsilon_2S)  return new XS_gg_g3P1_oct(args);
     }
   }
   return NULL;
@@ -2001,9 +2108,13 @@ XS_gg_g3P1_oct::XS_gg_g3P1_oct(const External_ME_Args& args):
     if (i>1 && fl[i].IsOctetMeson()) m_S = i;
     m_colours[i][0] = m_colours[i][1] = 0;
   }
-  m_mass   = fl[m_S].Mass(true);  m_mass2 = sqr(m_mass); NRQCD = 0.;
-  if (fl[m_S].Kfcode()==kf_chi_c1_1P_oct) NRQCD = 0.035;
-  if (fl[m_S].Kfcode()==kf_chi_b1_1P_oct) NRQCD = 0.02;
+  m_mass   = fl[m_S].Mass(true);  m_mass2 = sqr(m_mass); LDME = 0.;
+  const double mc = ATOOLS::Flavour(kf_c).Mass();
+  const double mb = ATOOLS::Flavour(kf_b).Mass();
+  if (fl[m_S].Kfcode()==kf_3P0_c_8_J_psi_1S)   LDME = 3*0.0180*(mc*mc);
+  if (fl[m_S].Kfcode()==kf_3P0_c_8_psi_2S)     LDME = 3*0.016*(mc*mc);
+  if (fl[m_S].Kfcode()==kf_3P0_b_8_Upsilon_1S) LDME = 3*5*0.0121*(mb*mb);
+  if (fl[m_S].Kfcode()==kf_3P0_b_8_Upsilon_2S) LDME = 3*5*0.0141*(mb*mb);
   
   m_alphaS = MODEL::s_model->ScalarConstant("alpha_S");
   
@@ -2023,13 +2134,11 @@ double XS_gg_g3P1_oct::operator()(const Vec4D_Vector& mom)
   double heq1l2 = M2*(-pow(M,6)*s*(24.*s6-30.*s4*z2+6.*s2*z4-z6)+pow(M,8)*s2*(16.*s4-9.*s2*z2+2*z4)-pow(M,10)*pow(s,3)*(6.*s2-z2)+pow(M,12)*s4);
   double heq = heq1l1 + heq1l2+heq0;
   double dnom = pow(s-M2,4)*pow(s*M2+z2,4);
-  double alphaS = 0.41;
 
-  m_pref = 5./6.*pow(4.*M_PI*alphaS,3)/*CouplingFactor(3,0)*//pow(m_mass,3);
+  m_pref = 5./6.*pow(4.*M_PI*m_alphaS,3)*CouplingFactor(3,0)*pow(m_mass,3);
 
-  double avg_fact = 1./4.;
 
-  return m_pref*heq/dnom*NRQCD*avg_fact;
+  return m_pref*heq/dnom*LDME;
 }
 
 bool XS_gg_g3P1_oct::SetColours(const Vec4D_Vector& mom) 
@@ -2070,13 +2179,15 @@ operator()(const External_ME_Args &args) const
 	  (fl[0].IsGluon() && fl[1].IsQuark() && fl[2]==fl[1])) &&
 	 fl[3].IsOctetMeson() ) {
       kf_code kfc = fl[3].Kfcode();
-      if (kfc==kf_chi_c2_1P_oct || kfc==kf_chi_b2_1P_oct) return new XS_qg_q3P2_oct(args);
+      if (kfc==kf_3P2_c_8_J_psi_1S   || kfc==kf_3P2_c_8_psi_2S    ||
+          kfc==kf_3P2_b_8_Upsilon_1S || kfc==kf_3P2_b_8_Upsilon_2S)  return new XS_qg_q3P2_oct(args);
     }
     if ( ((fl[0].IsQuark() && fl[1].IsGluon() && fl[3]==fl[0]) ||
 	  (fl[0].IsGluon() && fl[1].IsQuark() && fl[3]==fl[1])) &&
 	 fl[2].IsOctetMeson() ) {
       kf_code kfc = fl[2].Kfcode();
-      if (kfc==kf_chi_c2_1P_oct || kfc==kf_chi_b2_1P_oct) return new XS_qg_q3P2_oct(args);
+      if (kfc==kf_3P2_c_8_J_psi_1S   || kfc==kf_3P2_c_8_psi_2S    ||
+          kfc==kf_3P2_b_8_Upsilon_1S || kfc==kf_3P2_b_8_Upsilon_2S)  return new XS_qg_q3P2_oct(args);
     }
   }
   return NULL;
@@ -2093,13 +2204,16 @@ XS_qg_q3P2_oct::XS_qg_q3P2_oct(const External_ME_Args& args):
     if (i>1 && fl[i].IsOctetMeson()) m_S = i;
     m_colours[i][0] = m_colours[i][1] = 0;
   }
-  m_mass   = fl[m_S].Mass(true);  m_mass2 = sqr(m_mass); NRQCD = 0.;
-  if (fl[m_S].Kfcode()==kf_chi_c2_1P_oct) NRQCD = 0.035;
-  if (fl[m_S].Kfcode()==kf_chi_b2_1P_oct) NRQCD = 0.02;
+  m_mass   = fl[m_S].Mass(true);  m_mass2 = sqr(m_mass); LDME = 0.;
+  const double mc = ATOOLS::Flavour(kf_c).Mass();
+  const double mb = ATOOLS::Flavour(kf_b).Mass();
+  if (fl[m_S].Kfcode()==kf_3P0_c_8_J_psi_1S)   LDME = 5*0.0180*(mc*mc);
+  if (fl[m_S].Kfcode()==kf_3P0_c_8_psi_2S)     LDME = 5*0.016*(mc*mc);
+  if (fl[m_S].Kfcode()==kf_3P0_b_8_Upsilon_1S) LDME = 5*5*0.0121*(mb*mb);
+  if (fl[m_S].Kfcode()==kf_3P0_b_8_Upsilon_2S) LDME = 5*5*0.0141*(mb*mb);
   m_a      = fl[m_q].IsAnti() ? 1 : 0; 
   m_alphaS = MODEL::s_model->ScalarConstant("alpha_S");
-  double alphaS = 0.41;
-  m_pref   = -1./(27.*pow(m_mass,3))*pow(4.*M_PI*alphaS,3);
+  m_pref   = -1./(27.*pow(m_mass,3))*pow(4.*M_PI*m_alphaS,3);
 }
 
 double XS_qg_q3P2_oct::operator()(const Vec4D_Vector& mom) 
@@ -2113,8 +2227,7 @@ double XS_qg_q3P2_oct::operator()(const Vec4D_Vector& mom)
   double heq2 = (6.*m_mass4*(s2+sqr(u)+2.*s2*t*u*((s-m_mass2)*(2.*t+u)-sqr(u))/sM4))/t;
   double dnom = pow(t-m_mass2,4);
 
-  avg_fact = 1./4.;
-  return /*CouplingFactor(3,0)*/m_pref*(heq0+heq1+heq2)/dnom*avg_fact*NRQCD;
+  return CouplingFactor(3,0)*m_pref*(heq0+heq1+heq2)/dnom*LDME;
 }
 
 bool XS_qg_q3P2_oct::SetColours(const Vec4D_Vector& mom) 
@@ -2153,12 +2266,14 @@ operator()(const External_ME_Args &args) const
     if (fl[0].IsQuark() && fl[1].IsQuark() && fl[1]==fl[0].Bar() &&
 	fl[2].IsGluon() && fl[3].IsOctetMeson() ) {
 	    kf_code kfc = fl[3].Kfcode();
-      if (kfc==kf_chi_c2_1P_oct || kfc==kf_chi_b2_1P_oct) return new XS_qqbar_g3P2_oct(args);
+      if (kfc==kf_3P2_c_8_J_psi_1S   || kfc==kf_3P2_c_8_psi_2S    ||
+          kfc==kf_3P2_b_8_Upsilon_1S || kfc==kf_3P2_b_8_Upsilon_2S)  return new XS_qqbar_g3P2_oct(args);
     }
     if (fl[0].IsQuark() && fl[1].IsQuark() && fl[1]==fl[0].Bar() &&
 	fl[3].IsGluon() && fl[2].IsOctetMeson() ) {
       kf_code kfc = fl[2].Kfcode();
-      if (kfc==kf_chi_c2_1P_oct || kfc==kf_chi_b2_1P_oct) return new XS_qqbar_g3P2_oct(args);
+      if (kfc==kf_3P2_c_8_J_psi_1S   || kfc==kf_3P2_c_8_psi_2S    ||
+          kfc==kf_3P2_b_8_Upsilon_1S || kfc==kf_3P2_b_8_Upsilon_2S)  return new XS_qqbar_g3P2_oct(args);
     }
   }
   return NULL;
@@ -2174,12 +2289,15 @@ XS_qqbar_g3P2_oct::XS_qqbar_g3P2_oct(const External_ME_Args& args):
     if (i>1 && fl[i].IsOctetMeson()) m_S = i;
     m_colours[i][0] = m_colours[i][1] = 0;
   }
-  m_mass   = fl[m_S].Mass(true);  m_mass2 = sqr(m_mass); NRQCD = 0.;
-  if (fl[m_S].Kfcode()==kf_chi_c2_1P_oct) NRQCD = 0.035;
-  if (fl[m_S].Kfcode()==kf_chi_b2_1P_oct) NRQCD = 0.02;
+  m_mass   = fl[m_S].Mass(true);  m_mass2 = sqr(m_mass); LDME = 0.;
+  const double mc = ATOOLS::Flavour(kf_c).Mass();
+  const double mb = ATOOLS::Flavour(kf_b).Mass();
+  if (fl[m_S].Kfcode()==kf_3P0_c_8_J_psi_1S)   LDME = 5*0.0180*(mc*mc);
+  if (fl[m_S].Kfcode()==kf_3P0_c_8_psi_2S)     LDME = 5*0.016*(mc*mc);
+  if (fl[m_S].Kfcode()==kf_3P0_b_8_Upsilon_1S) LDME = 5*5*0.0121*(mb*mb);
+  if (fl[m_S].Kfcode()==kf_3P0_b_8_Upsilon_2S) LDME = 5*5*0.0141*(mb*mb);
   m_alphaS = MODEL::s_model->ScalarConstant("alpha_S");
-  double alphaS = 0.41;
-  m_pref   = 8./(81.*pow(m_mass,3))*pow(4.*M_PI*alphaS,3);
+  m_pref   = 8./(81.*pow(m_mass,3))*pow(4.*M_PI*m_alphaS,3);
 }
 
 double XS_qqbar_g3P2_oct::operator()(const Vec4D_Vector& mom) 
@@ -2191,9 +2309,8 @@ double XS_qqbar_g3P2_oct::operator()(const Vec4D_Vector& mom)
   double heq1 = 36.*m_mass2*t*u;
   double heq2 = 18.*sqr(m_mass2)*(sqr(t)+sqr(u))/s;
   double dnom = pow(s-m_mass2,4);
-  double alphaS = 0.41;
-  avg_fact = 1./4.;
-  return /*CouplingFactor(3,0)*/m_pref*(heq0+heq1+heq2)/dnom*avg_fact*NRQCD;
+
+  return CouplingFactor(3,0)*m_pref*(heq0+heq1+heq2)/dnom*LDME;
 }
 
 bool XS_qqbar_g3P2_oct::SetColours(const Vec4D_Vector& mom) 
