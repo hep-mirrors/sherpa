@@ -11,6 +11,29 @@ using namespace MODEL;
 using namespace ATOOLS;
 using namespace PDF;
 
+// enum methods
+std::ostream &PDF::operator<<(std::ostream &str,const pdfe_rescale &rm)
+{
+  if      (rm==pdfe_rescale::none)   return str<<"None";
+  else if (rm==pdfe_rescale::lambda) return str<<"Lambda";
+  else if (rm==pdfe_rescale::linear) return str<<"Linear";
+  return str<<"unknown";
+}
+std::istream &PDF::operator>>(std::istream &str,pdfe_rescale &rm)
+{
+  std::string tag;
+  str>>tag;
+  rm=pdfe_rescale::lambda; // default
+  if      (tag.find("None")!=std::string::npos)   rm=pdfe_rescale::none;
+  else if (tag.find("0")!=std::string::npos)      rm=pdfe_rescale::none;
+  else if (tag.find("Lambda")!=std::string::npos) rm=pdfe_rescale::lambda;
+  else if (tag.find("1")!=std::string::npos)      rm=pdfe_rescale::lambda;
+  else if (tag.find("Linear")!=std::string::npos) rm=pdfe_rescale::linear;
+  else if (tag.find("2")!=std::string::npos)      rm=pdfe_rescale::linear;
+  return str;
+}
+
+// Electron structure function
 PDF_Electron::PDF_Electron(const Flavour _bunch,const int _izetta,const int _order) : 
   m_izetta(_izetta), m_order(_order)
 {
@@ -23,8 +46,8 @@ PDF_Electron::PDF_Electron(const Flavour _bunch,const int _izetta,const int _ord
   m_q2min=1.e-12; // electron mass handled separately
   m_q2max=1.e14;
 
-  s["PDFE_RESCALE_MODE"].SetDefault(1);
-  m_rescale_mode = s["PDFE_RESCALE_MODE"].Get<int>();
+  s["PDFE_RESCALE_MODE"].SetDefault(pdfe_rescale::lambda);
+  m_rescale_mode = s["PDFE_RESCALE_MODE"].Get<pdfe_rescale>();
 
   s["PDFE_RUNNING_ALPHA"].SetDefault(false);
   m_runningalpha = s["PDFE_RUNNING_ALPHA"].Get<bool>();
@@ -130,6 +153,7 @@ void PDF_Electron::CalculateSpec(const double& x, const double& Q2)
   case 2:
     // default
     m_beta = betaS = betaH = beta_e;
+    break;
   default:
     THROW(fatal_error, "Undefined scheme for electron structure function!");
   }
@@ -168,13 +192,13 @@ void PDF_Electron::CalculateSpec(const double& x, const double& Q2)
 
   // Rescale the region 1-delta<x<1-epsilon to contain the missing XS contributions
   // from 1-epsilon<x<1
-  if (m_rescale_mode==1) {
+  if (m_rescale_mode==pdfe_rescale::lambda) {
     // lambda rescaling (default)
     if (x>1.-m_delta) {
       m_xpdf *= pow(m_delta/m_eps,m_beta/2)/(pow(m_delta/m_eps,m_beta/2)-1.);
     }
   }
-  else if (m_rescale_mode==2) {
+  else if (m_rescale_mode==pdfe_rescale::linear) {
     // linear rescaling, used for QED shower as it is continuous at x=1-delta
     if (x>1.-m_delta) {
       double a = 1./(m_beta/(m_beta+2)*m_eps-m_delta+m_delta*(1.-m_beta/(m_beta+2))*pow(m_delta/m_eps,m_beta/2));

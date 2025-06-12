@@ -4,14 +4,23 @@
 #include "PDF/Main/PDF_Base.H"
 
 namespace PDF {
+  enum class pdfe_rescale {
+    none = 0,
+    lambda = 1,
+    linear = 2
+  };
+  std::ostream &operator<<(std::ostream&,const pdfe_rescale&);
+  std::istream &operator>>(std::istream&,pdfe_rescale&);
+
   class PDF_Electron : public PDF_Base {
     double m_mass;
     double m_alpha,m_beta;
     double m_xpdf;
     double m_eps, m_delta;
-    int    m_izetta,m_order,m_init; // todo: enum izetta
-    int    m_rescale_mode; // todo: enum this
+    int    m_izetta,m_order,m_init;
     bool   m_runningalpha;
+    pdfe_rescale m_rescale_mode;
+
   public:
     PDF_Electron(const ATOOLS::Flavour,const int,const int);
     ~PDF_Electron() {}
