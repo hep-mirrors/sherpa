@@ -55,8 +55,8 @@ Single_Process::Single_Process():
     printed=true;
   }
   // read settings for ISR
-  m_pdfmin = s["CSS_PDF_MIN"].Get<double>();
-  m_pdfminx = s["CSS_PDF_MIN_X"].Get<double>();
+  m_pdfmin = s["SHOWER"]["PDF_MIN"].Get<double>();
+  m_pdfminx = s["SHOWER"]["PDF_MIN_X"].Get<double>();
 
   // parse settings for associated contributions variations
   std::vector<std::vector<asscontrib::type>> asscontribvars =
