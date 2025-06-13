@@ -35,10 +35,10 @@ namespace ALPACA {
     std::shared_ptr<Parton>    p_last_scatter_1;  //Pointer to the last particle that this particle scattered with
     std::shared_ptr<Parton>    p_last_scatter_2;  //Pointer to the second to last particle that this particle scattered with
     std::shared_ptr<Parton>    p_last_scatter_3;  //Pointer to the third to last particle that this particle scattered with
-    std::shared_ptr<Parton>    p_split_partner;     //If the particle is created from a splitting: pointer to the other particle resulting from that split
+    std::shared_ptr<Parton>    p_split_partner;   //If the particle is created from a splitting: pointer to the other particle resulting from that split
     std::pair<double,double>   m_formation_tau;   //[start tau of formation for merge, end tau of formation for merge] used when creating or merged particle
-    std::pair<double,double>   m_formation_time;   //[start tau of formation for split, end tau of formation for split] used when finding tau_split
-    bool                       m_splitted_merged;        //Bool to tell if the particle has already splitted (and if so has been removed from tau lists, 
+    std::pair<double,double>   m_formation_time;  //[start tau of formation for split, end tau of formation for split] used when finding tau_split
+    bool                       m_splitted_merged; //Bool to tell if the particle has already splitted (and if so has been removed from tau lists, 
                                                   // interesting in the case of the particle being a recoil partner for another splitting process,
                                                   // since there can still exist a shared_ptr to it as a recoil partner)
 
@@ -113,12 +113,11 @@ namespace ALPACA {
     ATOOLS::Vec4D             PositionFromt(const double t) const;
     double                    Tau(const double t) const;
     double                    Dist2(const std::shared_ptr<Parton> part, const double tau);
-    bool                      operator==(Parton part);
+    bool                      operator==(const Parton& part) const;
     double                    Abs3Momentum();
 
 	  double TauBar(std::shared_ptr<Parton> part);
 
-    //Temporary math for taubar, should be removed when switching all relevant variables to ATOOLS::Vec4D
     template <typename T>
     inline T sqr(T value){
       return value * value;

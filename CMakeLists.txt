@@ -706,7 +706,7 @@ HadronsMain HadronsMEs HadronsCurrents HadronsPSs
 Reconnections
 AhadicMain AhadicTools AhadicFormation AhadicDecays
 Amisic AmisicTools AmisicPerturbative
-AlpacaMain AlpacaTools
+AlpacaMain AlpacaTools AlpacaEventGeneration
 PhotonsMain PhotonsTools PhotonsPhaseSpace PhotonsMEs PhotonsPhotonSplitter
 Remnants  RemnantsTools
 MCatNLOMain MCatNLOCalculators MCatNLOShowers MCatNLOTools

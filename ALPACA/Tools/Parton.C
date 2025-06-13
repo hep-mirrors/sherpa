@@ -60,14 +60,11 @@ Parton::Parton(Parton * part) :
 Parton::~Parton() {
 }
 
-bool Parton::operator==(Parton part){
-	if ((part.m_momentum == m_momentum) && 
-		(part.m_initpos == m_initpos) &&
-		(part.m_inittau == m_inittau) &&
-		(part.m_flav == m_flav)) {
-		return true; 
-	}
-	return false;
+bool Parton::operator==(const Parton& part) const {  // FIXED: Pass-by-Reference
+    return (part.m_momentum == m_momentum) && 
+           (part.m_initpos == m_initpos) &&
+           (part.m_inittau == m_inittau) &&
+           (part.m_flav == m_flav);
 }
 
 void Parton::SetNumber()           
@@ -200,11 +197,17 @@ std::pair<bool, std::pair<std::pair<ATOOLS::Vec4D, ATOOLS::Vec4D>, ATOOLS::Flavo
 
 
 
-double Parton::TauBar(std::shared_ptr<Parton> part) {
-  if ((*this) == (*part)){
+double Parton::TauBar(shared_ptr<Parton> part) {
+
+  if (!part) {
+	msg_Out() << METHOD << " - Error: part is nullptr!" << endl;
+  }
+
+  if (*this == *part){
+	msg_Out() << "Same parton" << endl;
 	return m_inittau;
-  } 
-  
+  }
+
   double taubar;
 
   if(m_timekeeper == 0){
@@ -213,6 +216,7 @@ double Parton::TauBar(std::shared_ptr<Parton> part) {
 	Vec4D pi = m_momentum;
 	Vec4D pj = part->Momentum();
 	taubar =  ((m_inittau + part->Inittau())/2. + ((xi-xj)*(pi-pj))/(4.*m_lambda*pi*pj));
+	msg_Out() << "timekeeper = 0" << endl;
   } else{
 	double lambda_1 = m_lambda;
 	double lambda_2 = part->GetLambda();
@@ -221,9 +225,13 @@ double Parton::TauBar(std::shared_ptr<Parton> part) {
 	Vec4D P = p_1 + p_2;
 	Vec4D v = 2.*lambda_1*p_1 - 2.*lambda_2*p_2;
 	Vec4D v_T = v - (v*P)*P/(P*P);
-	double taubar = m_inittau - (m_initpos -  (part->Position(m_inittau)))*v_T/(v_T*v_T);
+	taubar = m_inittau - (m_initpos -  (part->Position(m_inittau)))*v_T/(v_T*v_T);
+	//msg_Out() << "lambda_1 = " << lambda_1 << ", lambda_2 = " << lambda_2 << endl;
+	//msg_Out() << "p_1 = [" << p_1[0] << ", " << p_1[1] << ", " << p_1[2] << ", " << p_1[3] << "]" << endl;
+    //msg_Out() << "p_2 = [" << p_2[0] << ", " << p_2[1] << ", " << p_2[2] << ", " << p_2[3] << "]" << endl;
+	//msg_Out() << "taubar = " << taubar << endl;
   }
-  
+  //msg_Out() << "sending back taubar = " << taubar << endl;
   return taubar;
 }
 
