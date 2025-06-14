@@ -1,5 +1,4 @@
 #include "BEAM/Spectra/EPA.H"
-#include "BEAM/Spectra/EPA_FF.H"
 
 #include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Org/Exception.H"
