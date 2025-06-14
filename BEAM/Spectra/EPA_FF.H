@@ -267,6 +267,7 @@ namespace BEAM {
     EPA_IonApprox(const ATOOLS::Flavour& beam, int dir);
     void   FillTables() override;
     double FF(const double& Q2) override { return 0.; }
+    double N(const double& x) override;
   };
 
   class EPA_Test final : public EPA_FF_Base {
