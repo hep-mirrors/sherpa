@@ -395,7 +395,7 @@ bool Flavour::IsDiQuark() const
 
 bool Flavour::IsOctetMeson() const 
 {
-  return (Kfcode()/1000000==99);
+  return (Kfcode()/10000000==99);
 }
 
 

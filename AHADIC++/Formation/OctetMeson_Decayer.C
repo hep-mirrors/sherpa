@@ -12,7 +12,7 @@ using namespace std;
 OctetMeson_Decayer::OctetMeson_Decayer(list<Singlet *> *singlets,
                                        std::list<Proto_Particle *> *hadrons) :
   p_singlets(singlets), p_hadrons(hadrons),
-  m_offset(Flavour(kf_3S1_c_8_J_psi_1S).Kfcode() -
+  m_offset(Flavour(kf_1S0_c_8_eta_c).Kfcode() -
 	  Flavour(kf_eta_c_1S).Kfcode()),
   m_kappa(2.), m_minE(0.1) {}
 
@@ -146,48 +146,9 @@ bool OctetMeson_Decayer::FixKinematics() {
   return (z>0.);
 }
 void OctetMeson_Decayer::UpdateColouredObjectsAndAddHadron() {
-  static const map<int, int> OctetDecayChannels = { // decay is not always trivial
-  {kf_1S0_c_8_eta_c,     kf_eta_c_1S},
-  {kf_1S0_c_8_J_psi_1S,  kf_J_psi_1S},
-  {kf_1S0_c_8_psi_2S,    kf_psi_2S},
-  {kf_3S1_c_8_eta_c,     kf_eta_c_1S},
-  {kf_3S1_c_8_J_psi_1S,  kf_J_psi_1S},
-  {kf_3S1_c_8_psi_2S,    kf_psi_2S},
-  {kf_3S1_c_8_chi_c0_1P, kf_chi_c0_1P},
-  {kf_3S1_c_8_chi_c1_1P, kf_chi_c1_1P},
-  {kf_3S1_c_8_chi_c2_1P, kf_chi_c2_1P},
-  {kf_3P0_c_8_J_psi_1S,  kf_J_psi_1S},
-  {kf_3P0_c_8_psi_2S,    kf_psi_2S},
-  {kf_3P1_c_8_J_psi_1S,  kf_J_psi_1S},
-  {kf_3P1_c_8_psi_2S,    kf_psi_2S},
-  {kf_3P2_c_8_J_psi_1S,  kf_J_psi_1S},
-  {kf_3P2_c_8_psi_2S,    kf_psi_2S},
   
-
-  {kf_1S0_b_8_eta_b,     kf_eta_b},
-  {kf_1S0_b_8_Upsilon_1S,kf_Upsilon_1S},
-  {kf_1S0_b_8_Upsilon_2S,kf_Upsilon_2S},
-  {kf_3S1_b_8_eta_b,     kf_eta_b},
-  {kf_3S1_b_8_Upsilon_1S,kf_Upsilon_1S},
-  {kf_3S1_b_8_Upsilon_2S,kf_Upsilon_2S},
-  {kf_3S1_b_8_chi_b0_1P, kf_chi_b0_1P},
-  {kf_3S1_b_8_chi_b1_1P, kf_chi_b1_1P},
-  {kf_3S1_b_8_chi_b2_1P, kf_chi_b2_1P},
-  {kf_3P0_b_8_Upsilon_1S,kf_Upsilon_1S},
-  {kf_3P0_b_8_Upsilon_2S,kf_Upsilon_2S},
-  {kf_3P1_b_8_Upsilon_1S,kf_Upsilon_1S},
-  {kf_3P1_b_8_Upsilon_2S,kf_Upsilon_2S},
-  {kf_3P2_b_8_Upsilon_1S,kf_Upsilon_1S},
-  {kf_3P2_b_8_Upsilon_2S,kf_Upsilon_2S}
-  };
-
   int octetkfc = p_part1->Flavour().Kfcode();
-  auto it = OctetDecayChannels.find(octetkfc);
-  int newkfc = octetkfc - m_offset;
-  if (it != OctetDecayChannels.end()) {
-    newkfc = it->second;
-  }
-
+  int newkfc = (octetkfc - 990000000)%1000000;
 
   Proto_Particle *meson = new Proto_Particle(Flavour(newkfc), m_mom[0]);
   p_hadrons->push_back(meson);

@@ -180,7 +180,7 @@ bool Singlet_Checker::FusePartonsInLowMassSinglet() {
     msg_Tracking()<<METHOD<<" arrives here:\n"<<(*p_singlet)<<"\n"
 	     <<"and particles are \n"
 	     <<(*p_part1)<<"\n"<<(*p_part2)<<"\n";
-    kf_code kfc = p_part1->Flavour().Kfcode()-99000000;
+    kf_code kfc = p_part1->Flavour().Kfcode()%1000000;
     Proto_Particle * part =
       new Proto_Particle(Flavour(kfc),p_part1->Momentum());
     p_hadrons->push_back(part);
@@ -193,7 +193,7 @@ bool Singlet_Checker::FusePartonsInLowMassSinglet() {
     msg_Tracking()<<METHOD<<" arrives here:\n"<<(*p_singlet)<<"\n"
 	     <<"and particles are \n"
 	     <<(*p_part1)<<"\n"<<(*p_part2)<<"\n";
-    kf_code kfc = p_part2->Flavour().Kfcode()-99000000;
+    kf_code kfc = p_part2->Flavour().Kfcode()%1000000;
     Proto_Particle * part =
       new Proto_Particle(Flavour(kfc),p_part2->Momentum());
     p_hadrons->push_back(part);
