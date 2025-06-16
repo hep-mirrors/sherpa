@@ -19,16 +19,30 @@ SCALES: METS{H_T2}{H_T2}
 
 # pp -> Z[ee]+jets
 PROCESSES:
-- 93 93 -> 441 93:
+- 93 93 -> 99100441 93:
     Order: {QCD: 3, EW: 0}
-- 93 93 -> 9900441 93:
-    Order: {QCD: 3, EW: 0}
+# - 93 93 -> 99100553 93:
+#     Order: {QCD: 3, EW: 0}
+# - 93 93 -> 99900553 93:
+#     Order: {QCD: 3, EW: 0}
+# - 93 93 -> 99010551 93:
+#     Order: {QCD: 3, EW: 0}
+# - 93 93 -> 99110551 93:
+#     Order: {QCD: 3, EW: 0}
+# - 93 93 -> 99020443 93:
+#     Order: {QCD: 3, EW: 0}
+# - 93 93 -> 99120443 93:
+#     Order: {QCD: 3, EW: 0}
+# - 93 93 -> 99100445 93:
+#     Order: {QCD: 3, EW: 0}
+# - 93 93 -> 99100445 93:
+#     Order: {QCD: 3, EW: 0}
 
-SHOWER:
-- MAXEM: 0
+# SHOWER:
+# - MAXEM: 0
 
 SELECTORS:
-- [PT, 93, 20, E_CMS]
+- [PT, 93, 5, E_CMS]
 
 
 REMNANTS:
@@ -52,3 +66,7 @@ REMNANTS:
     RADIUS_2:   1.5
     FRACTION_1: 0.7
 
+# ANALYSIS: Rivet
+# RIVET:
+#   --analyses: 
+#     - ATLAS_2011_I896268

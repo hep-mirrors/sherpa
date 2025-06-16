@@ -13,6 +13,17 @@ public:
   double Z();
 };
 
+class LF_FFV_Quarkonia_II : public SF_Lorentz {
+public:
+  inline LF_FFV_Quarkonia_II(const SF_Key &key) : SF_Lorentz(key) {}
+
+  double operator()(const double, const double, const double, const double,
+                    const double);
+  double OverIntegrated(const double, const double, const double, const double);
+  double OverEstimated(const double, const double);
+  double Z();
+};
+
 class LF_FVF_Quarkonia_FF : public SF_Lorentz {
 public:
   inline LF_FVF_Quarkonia_FF(const SF_Key &key) : SF_Lorentz(key) {}
@@ -54,7 +65,8 @@ double LF_FFV_Quarkonia_FF::operator()(const double zz, const double y,
                                        const double eta, const double scale,
                                        const double Q2) {
   const double z = 1 - zz;
-  double mi2 = sqr(p_ms->Mass(m_flavs[1])); // works with the mapping c -> J/Psi(1S) c
+  double mi2 =
+      sqr(p_ms->Mass(m_flavs[1])); // works with the mapping c -> J/Psi(1S) c
   double mj2 = sqr(p_ms->Mass(m_flavs[2]));
   double mk2 = sqr(p_ms->Mass(m_flspec));
   double mq = p_ms->Mass(m_flavs[0]);
@@ -83,10 +95,12 @@ double LF_FFV_Quarkonia_FF::operator()(const double zz, const double y,
                     << 16. / 27 * sqr(p_cf->Coupling(newscale, 0)) *
                            JFF(y, mui2, muj2, muk2, muij2)
                     << std::endl;
-    const double LDME = 1./mq/sqr(Q2) * (m_flavs[2].IsOctetMeson()?(1.5E-02):pow(0.82,3));
-    //msg_Out() << "Called FFV_Quarkonia with " << m_flavs[2].IDName() << std::endl;
-    return 16. / 27 * LDME  *sqr(p_cf->Coupling(newscale, 0)) * value / sqr(Q2) *
-           JFF(y, mui2, muj2, muk2, muij2);
+    const double LDME = 1. / mq / sqr(Q2) *
+                        (m_flavs[2].IsOctetMeson() ? (1.5E-02) : pow(0.82, 3));
+    // msg_Out() << "Called FFV_Quarkonia with " << m_flavs[2].IDName() <<
+    // std::endl;
+    return 16. / 27 * LDME * sqr(p_cf->Coupling(newscale, 0)) * value /
+           sqr(Q2) * JFF(y, mui2, muj2, muk2, muij2);
   }
 }
 
@@ -95,12 +109,13 @@ double LF_FFV_Quarkonia_FF::OverIntegrated(const double zmin, const double zmax,
                                            const double xbj) {
   m_zmin = zmin;
   m_zmax = zmax;
-  return 16. / 27 *  pow(0.82,3)/Flavour(kf_c).Mass() * sqr(p_cf->MaxCoupling(0)) * (0.5) *
-         log((1. - zmin) / (1. - zmax));
+  return 16. / 27 * pow(0.82, 3) / Flavour(kf_c).Mass() *
+         sqr(p_cf->MaxCoupling(0)) * (0.5) * log((1. - zmin) / (1. - zmax));
 }
 
 double LF_FFV_Quarkonia_FF::OverEstimated(const double z, const double y) {
-  return 16. / 27 * pow(0.82,3)/Flavour(kf_c).Mass() * sqr(p_cf->MaxCoupling(0)) * (0.5) / (1. - z);
+  return 16. / 27 * pow(0.82, 3) / Flavour(kf_c).Mass() *
+         sqr(p_cf->MaxCoupling(0)) * (0.5) / (1. - z);
 }
 
 double LF_FFV_Quarkonia_FF::Z() {
@@ -108,7 +123,68 @@ double LF_FFV_Quarkonia_FF::Z() {
          (1. - m_zmin) * pow((1. - m_zmax) / (1. - m_zmin), ATOOLS::ran->Get());
 }
 
-DECLARE_GETTER(LF_FFV_Quarkonia_FF, "FFV_Quarkonia", SF_Lorentz, SF_Key);
+double LF_FFV_Quarkonia_II::operator()(const double zz, const double y,
+                                       const double eta, const double scale,
+                                       const double Q2) {
+  const double z = 1 - zz;
+  double mi2 =
+      sqr(p_ms->Mass(m_flavs[1])); // works with the mapping c -> J/Psi(1S) c
+  double mj2 = sqr(p_ms->Mass(m_flavs[2]));
+  double mk2 = sqr(p_ms->Mass(m_flspec));
+  double mq = p_ms->Mass(m_flavs[0]);
+  double muij2 = sqr(p_ms->Mass(m_flavs[0])) / Q2;
+  double mui2 = mi2 / Q2, muj2 = mj2 / Q2, muk2 = mk2 / Q2;
+  const double mjperp2 =
+      (scale * z * (1. - z) - mi2 * z - mj2 * (1. - z)) + mj2;
+  const double newscale = sqrt(scale * mjperp2);
+  // the massless case
+  if (muij2 == 0. || mui2 == 0. || muj2 == 0.) {
+    msg_Error() << "Cannot make massless quarkonia emission" << std::endl;
+    exit(EXIT_FAILURE);
+  } else {
+    // the massive case
+    double value =
+        1. / sqr(sqr(1 - muij2)) *
+        ((1 - 2 * muij2 - 47 * sqr(muij2)) -
+         z * (1 - muij2) * (1 - sqr(sqrt(mui2) + sqrt(muj2))) +
+         4 * (z * (1 - z)) / (2 - z) * (1 - mui2) -
+         4 * (8 - 7 * z - 5 * z * z) / (2 - z) * muij2 * (1 - muij2) +
+         12 * (z * z * (1 - z)) / sqr(2 - z) * sqr(1 - muij2));
+    msg_Debugging() << METHOD << "\tcpl max: " << p_cf->MaxCoupling(0)
+                    << ", cpl: " << p_cf->Coupling(newscale, 0)
+                    << ", newscale:  " << newscale << std::endl;
+    msg_Debugging() << METHOD << "\treturn: "
+                    << 16. / 27 * sqr(p_cf->Coupling(newscale, 0)) *
+                           JFF(y, mui2, muj2, muk2, muij2)
+                    << std::endl;
+    const double LDME = 1. / mq / sqr(Q2) *
+                        (m_flavs[2].IsOctetMeson() ? (1.5E-02) : pow(0.82, 3));
+    // msg_Out() << "Called FFV_Quarkonia with " << m_flavs[2].IDName() <<
+    // std::endl;
+    // msg_Out() << "Called --> " << METHOD << std::endl;
+    return 16. / 27 * LDME * sqr(p_cf->Coupling(newscale, 0)) * value /
+           sqr(Q2) * JFF(y, mui2, muj2, muk2, muij2);
+  }
+}
+
+double LF_FFV_Quarkonia_II::OverIntegrated(const double zmin, const double zmax,
+                                           const double scale,
+                                           const double xbj) {
+  m_zmin = zmin;
+  m_zmax = zmax;
+  return 100* 16. / 27 * pow(0.82, 3) / Flavour(kf_c).Mass() *
+         sqr(p_cf->MaxCoupling(0)) * (0.5) * log((1. - zmin) / (1. - zmax));
+}
+
+double LF_FFV_Quarkonia_II::OverEstimated(const double z, const double y) {
+  return 16. / 27 * pow(0.82, 3) / Flavour(kf_c).Mass() *
+         sqr(p_cf->MaxCoupling(0)) * (0.5) / (1. - z);
+}
+
+double LF_FFV_Quarkonia_II::Z() {
+  return 1. -
+         (1. - m_zmin) * pow((1. - m_zmax) / (1. - m_zmin), ATOOLS::ran->Get());
+}
 
 double LF_FVF_Quarkonia_FF::operator()(const double z, const double y,
                                        const double eta, const double scale,
@@ -136,6 +212,7 @@ double LF_FVF_Quarkonia_FF::operator()(const double z, const double y,
     double value =
         8 / 27 / M_PI / (Q2 * mui2) * p_cf->Coupling(scale, 1) * massive +
         p_cf->Coupling(scale, 0) * longpol;
+    msg_Out() << "Called --> " << METHOD << std::endl;
     return value * JFF(y, mui2, muj2, muk2, muij2);
   }
 }
@@ -158,6 +235,8 @@ double LF_FVF_Quarkonia_FF::Z() {
          (1. - m_zmin) * pow((1. - m_zmax) / (1. - m_zmin), ATOOLS::ran->Get());
 }
 
+DECLARE_GETTER(LF_FFV_Quarkonia_FF, "FFV_Quarkonia", SF_Lorentz, SF_Key);
+
 SF_Lorentz *ATOOLS::Getter<SF_Lorentz, SF_Key, LF_FFV_Quarkonia_FF>::operator()(
     const Parameter_Type &args) const {
   if (args.m_col < 0)
@@ -171,7 +250,8 @@ SF_Lorentz *ATOOLS::Getter<SF_Lorentz, SF_Key, LF_FFV_Quarkonia_FF>::operator()(
       return new LF_FFV_Quarkonia_FF(args);
     // case cstp::FI: return new LF_FFV_FI(args);
     // case cstp::IF: return new LF_FFV_IF(args);
-    // case cstp::II: return new LF_FFV_II(args);
+    case cstp::II:
+      return new LF_FFV_Quarkonia_II(args);
     case cstp::none:
       break;
     }
@@ -233,7 +313,7 @@ double LF_VSV_Quarkonia_FF::operator()(
                                     zb / beta * (sij + gam))));
   const double miperp2 =
       (scale * z * (1. - z) - mj2 * z - mi2 * (1. - z)) + mi2;
-  //if ( y < (mui2 +z*z)/(2*z) || (1+mui2)/2.0 < y) return 0;
+  // if ( y < (mui2 +z*z)/(2*z) || (1+mui2)/2.0 < y) return 0;
   const double newscale = sqrt(scale * miperp2);
   const double mq = ATOOLS::Flavour(kf_c).Mass();
   double value = (f0(mui2, y) + g0(mui2, y) * (1 + mui2 - 2 * y) /
@@ -241,10 +321,11 @@ double LF_VSV_Quarkonia_FF::operator()(
                                     log((y - mui2 + sqrt(y * y - mui2)) /
                                         (y - mui2 - sqrt(y * y - mui2))));
   msg_Debugging() << METHOD << ",  ->"
-            << ((1 + mui2 - 2 * y) / (2 * (y - mui2) * sqrt(y * y - mui2)) *
-                log((y - mui2 + sqrt(y * y - mui2)) /
-                    (y - mui2 - sqrt(y * y - mui2))))
-            << std::endl;
+                  << ((1 + mui2 - 2 * y) /
+                      (2 * (y - mui2) * sqrt(y * y - mui2)) *
+                      log((y - mui2 + sqrt(y * y - mui2)) /
+                          (y - mui2 - sqrt(y * y - mui2))))
+                  << std::endl;
   value += z * (f1(mui2, y) + g1(mui2, y) * (1 + mui2 - 2 * y) /
                                   (2 * (y - mui2) * sqrt(y * y - mui2)) *
                                   log((y - mui2 + sqrt(y * y - mui2)) /
