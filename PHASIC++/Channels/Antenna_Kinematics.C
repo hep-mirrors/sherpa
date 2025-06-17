@@ -45,6 +45,8 @@ int PHASIC::ClusterAntenna
     newcm.BoostBack(ffp.m_pijt);
     oldcm.Boost(n);
     newcm.BoostBack(n);
+    oldcm.Boost(K);
+    newcm.BoostBack(K);
   }
   else {
     newcm=Poincare(Kt);

@@ -170,14 +170,12 @@ double MCatNLO::KT2(const ATOOLS::NLO_subevt &sub,
 {
   if (sub.m_ijt>=2) {
     if (sub.m_type==spt::splittingtype::soft) {
-      double gam(2.*aa->m_pijt*aa->m_Kt);
-      double z(aa->m_z), kt2;
-      if (p_mcatnlo->EvolScheme(0)==0) {
-	Vec4D n(aa->m_K+aa->m_pj);
+      double kt2;
+      if ((p_mcatnlo->EvolScheme(0)&255)==0) {
 	kt2=2.*(aa->m_pi*aa->m_pj)*
-	  (aa->m_pj*n)/(aa->m_pi*n);
+	  (aa->m_pj*aa->m_n)/(aa->m_pi*aa->m_n);
       }
-      else if (p_mcatnlo->EvolScheme(0)==1) {
+      else if ((p_mcatnlo->EvolScheme(0)&255)==1) {
 	kt2=2.*(aa->m_pi*aa->m_pj)*
 	  (aa->m_pj*aa->m_K)/(aa->m_pi*aa->m_K);
       }
@@ -187,10 +185,17 @@ double MCatNLO::KT2(const ATOOLS::NLO_subevt &sub,
       return kt2;
     }
     else {
-      Vec4D n = ka->m_nb;
-      double Q2 = (ka->m_pi+ka->m_pj+n).Abs2();
-      double yijk = 2.0*ka->m_pi*ka->m_pj/Q2;
-      double kt2 = Q2*yijk;
+      double Q2((ka->m_pi+ka->m_pk).Abs2());
+      double yijk(ka->m_y), zi(ka->m_z), kt2;
+      if ((p_mcatnlo->EvolScheme(0)>>8)==0) {
+	kt2=Q2*yijk*zi*(1.0-zi);
+      }
+      else if ((p_mcatnlo->EvolScheme(0)>>8)==1) {
+	kt2=Q2*yijk;
+      }
+      else {
+	THROW(not_implemented,"Unknown evolution scheme");
+      }
       return kt2;
     }
   }
