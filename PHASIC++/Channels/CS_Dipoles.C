@@ -42,12 +42,7 @@ Vec4D_Vector FF_Dipole::GeneratePoint
 {
   if (m_subtype==subscheme::Alaric) {
     DEBUG_FUNC("Alaric "<<m_sub.m_type<<" mapping");
-    DEBUG_VAR(p_recoil);
-    DEBUG_VAR(p);
-    DEBUG_VAR(*ampl);
-    DEBUG_VAR(p_recoil->Recoil(ampl));
-    std::vector<int> rcl(p_recoil->RecoilTags(ampl));
-    DEBUG_VAR(rcl);
+    std::vector<int> rcl(p_recoil->RecoilTags(ampl,1<<m_sub.m_ijt,1<<m_sub.m_kt));
     int nk(0);
     double mk(0.0);
     Vec4D qa(ampl->Leg(m_ijt)->Mom()), Kt;
@@ -57,8 +52,6 @@ Vec4D_Vector FF_Dipole::GeneratePoint
 	mk=ampl->Leg(i)->Flav().Mass();
 	++nk;
       }
-    DEBUG_VAR(qa);
-    DEBUG_VAR(Kt);
     msg_Debugging()<<"p_i = "<<qa<<"\nK_t = "<<Kt<<"\n";
     double *rn(p_vegas->GeneratePoint(rns));
     msg_Debugging()<<"vegased :     ";
@@ -79,7 +72,6 @@ Vec4D_Vector FF_Dipole::GeneratePoint
       double gam(2.*qa*Kt), kap(Kt.Abs2()/gam);
       m_rn[1]=PeakedDist(0.0,m_zexp,0.0,1.0-m_amin,1,rn[1]);
       double ymax((1.0-m_rn[1])/(1.0-m_rn[1]+kap));
-      DEBUG_VAR(gam<<" "<<kap<<" "<<ymax);
       m_rn[0]=-PeakedDist(0.0,m_yexp,m_amin,-ymax,1,rn[0]);
       m_rn[2]=rn[2]*2.0*M_PI;
       msg_Debugging()<<"transformed : ";
@@ -97,24 +89,19 @@ Vec4D_Vector FF_Dipole::GeneratePoint
       pp[m_sub.m_i]=ff.m_pi;
       pp[m_sub.m_j]=ff.m_pj;
       pp[m_sub.m_k]=ff.m_pk;
-      DEBUG_VAR(pp);
       Vec4D psum(-pp[0]-pp[1]);
       for (size_t i(2);i<pp.size();++i) psum+=pp[i];
-      DEBUG_VAR(psum);
       return pp;
     }
     else {
       double Q2((qa+Kt).Abs2()), Kt2(Kt.Abs2());
       double eps(Q2-Kt2), mk2(mk*mk);
-      // DEBUG_VAR(nk);
       if (nk>1) { mk2=Kt2; mk=sqrt(mk2); }
       double ymax(1.0-2.0*mk*(sqrt(Q2)-mk)/eps);
-      // DEBUG_VAR(mk<<" "<<mk2<<" "<<ymax);
       m_rn[0]=PeakedDist(0.0,m_yexp,m_amin,ymax,1,rn[0]);
       double vijk(sqrt(sqr(2.0*mk2+eps*(1.0-m_rn[0]))-
 		       4.0*mk2*Q2)/(eps*(1.0-m_rn[0])));
       double zmin(0.5*(1.0-vijk)), zmax(0.5*(1.0+vijk));
-      // DEBUG_VAR(zmin<<" "<<zmax);
       m_rn[1]=PeakedDist(0.0,m_zexp,zmin,zmax,1,rn[1]);
       m_rn[2]=rn[2]*2.0*M_PI;
       msg_Debugging()<<"transformed : ";
@@ -131,17 +118,13 @@ Vec4D_Vector FF_Dipole::GeneratePoint
       else {
 	Poincare oldcms(Kt), newcms(ff.m_pk);
 	newcms.Invert();
-	for (size_t i(0);i<pp.size();++i) {
+	for (size_t i(0);i<p.size();++i) {
 	  if ((rcl[i]&2)==0) pp[m_brmap[i]]=p[i];
 	  else pp[m_brmap[i]]=newcms*(oldcms*p[i]);
 	}
       }
       pp[m_sub.m_i]=ff.m_pi;
       pp[m_sub.m_j]=ff.m_pj;
-      DEBUG_VAR(pp);
-      // Vec4D psum(-pp[0]-pp[1]);
-      // for (size_t i(2);i<pp.size();++i) psum+=pp[i];
-      // DEBUG_VAR(psum);
       return pp;
     }
   }
@@ -191,13 +174,8 @@ double FF_Dipole::GenerateWeight
 {
   if (m_subtype==subscheme::Alaric) {
     DEBUG_FUNC("Alaric "<<m_sub.m_type<<" mapping");
-    DEBUG_VAR(p_recoil);
-    DEBUG_VAR(p);
-    DEBUG_VAR(*ampl);
-    DEBUG_VAR(p_recoil->Recoil(ampl));
-    std::vector<int> rcl(p_recoil->RecoilTags(ampl));
-    DEBUG_VAR(rcl);
-    int nk(-1), iink(0);
+    std::vector<int> rcl(p_recoil->RecoilTags(ampl,(1<<m_sub.m_i)|(1<<m_sub.m_j),1<<m_sub.m_k));
+    int nk(0), iink(0);
     double mk(0.0);
     Vec4D pij(p[m_sub.m_i]+p[m_sub.m_j]), K;
     for (size_t l(0);l<ampl->Legs().size();++l)
@@ -210,8 +188,6 @@ double FF_Dipole::GenerateWeight
 	++nk;
       }
     if (iink) K=-K-p[m_sub.m_j];
-    DEBUG_VAR(K<<" "<<iink);
-    DEBUG_VAR(mk);
     if (m_sub.m_type==spt::splittingtype::soft) {
       Vec4D_Vector pp(p.size()-1);
       for (size_t i(0);i<p.size();++i) pp[m_rbmap[i]]=p[i];
@@ -242,16 +218,12 @@ double FF_Dipole::GenerateWeight
 	m_rbweight=m_weight=0.0;
 	return 0.0;
       }
-      DEBUG_VAR(ff.m_Kt);
       double gam(2.*ff.m_pijt*ff.m_Kt), kap(ff.m_Kt.Abs2()/gam);
       double ymax(-(1.0-m_rn[1])/(1.0-m_rn[1]+kap));
-      DEBUG_VAR(gam<<" "<<kap<<" "<<ymax);
       m_weight=dabs(gam)/(16.0*sqr(M_PI))*m_rn[1];
       m_weight*=pow(-m_rn[0],m_yexp)*pow(m_rn[1],m_zexp);
-      DEBUG_VAR(m_weight);
       m_weight*=PeakedWeight
 	(0.0,m_yexp,m_amin,ymax,-m_rn[0],1,m_rn[0]);
-      DEBUG_VAR(m_weight);
       m_weight*=PeakedWeight
 	(0.0,m_zexp,0.0,1.0-m_amin,m_rn[1],1,m_rn[1]);
       m_rn[2]/=2.0*M_PI;
@@ -259,7 +231,6 @@ double FF_Dipole::GenerateWeight
       msg_Debugging()<<"v = "<<m_rn[0]<<", z = "<<m_rn[1]
 		     <<", phi = "<<m_rn[2]<<"\n";
       m_rbweight=m_weight*=p_vegas->GenerateWeight(m_rn);
-      DEBUG_VAR(m_weight);
       if (!m_bmcw) return m_weight;
       if (p_ismc) m_weight*=p_ismc->Weight();
       return m_weight*=p_fsmc->Weight();
@@ -283,8 +254,6 @@ double FF_Dipole::GenerateWeight
 	  if ((rcl[l]&2) && l!=m_sub.m_i && l!=m_sub.m_j)
 	    pp[m_rbmap[l]]=newcms*(oldcms*p[l]);
       }
-      DEBUG_VAR(m_ijt<<" "<<m_kt);
-      DEBUG_VAR(pp);
       if (!ValidPoint(pp)) return m_weight=m_rbweight=0.0;
       if (m_bmcw) {
 	p_fsmc->GenerateWeight(&pp.front(),cuts);

@@ -14,11 +14,11 @@ namespace ATOOLS {
     static void ShowSyntax(const int mode);
 
     virtual Vec4D Recoil(const Cluster_Amplitude *ampl,
-			 int split=-1,int em=-1,int cspect=-1) = 0;
+			 size_t splits=0,size_t specs=0) = 0;
 
     virtual std::vector<int> RecoilTags
     (const Cluster_Amplitude *ampl,
-     int split=-1,int spect=-1,int cspect=-1) = 0;
+     size_t splits=0,size_t specs=0) = 0;
 
   };// end of class Recoil_Definition
 

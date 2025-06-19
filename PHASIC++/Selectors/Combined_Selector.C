@@ -60,6 +60,8 @@ bool Combined_Selector::Trigger(const Vec4D_Vector &p,
   DEBUG_FUNC(p.size()<<" momenta, "<<n<<" flavours");
   Selector_List sl(n?Selector_List(fl,n,p,m_nin):
                      Selector_List(p_proc->Flavours(),p,m_nin));
+  if ((p_proc->Info().m_fi.NLOType()&nlo_type::real) &&
+      !(p_proc->Info().m_fi.NLOType()==nlo_type::rsub)) sl.SetReal(true);
   return Trigger(sl);
 }
 

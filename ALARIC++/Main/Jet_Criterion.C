@@ -139,7 +139,7 @@ namespace ALARIC {
 	    bampl->Legs().back()->SetK(ampl->Leg(kmin)->Id());	
 	  }
 	  else {
-	    bampl->CreateLeg(cp.m_p[i],ampl->Leg(i)->Flav(),ampl->Leg(i)->Col());
+	    bampl->CreateLeg(cp.m_p[j],ampl->Leg(i)->Flav(),ampl->Leg(i)->Col());
 	  }
 	  ++j;
 	}

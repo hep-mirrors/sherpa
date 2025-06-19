@@ -68,7 +68,7 @@ bool BBar_Emission_Generator::AddDipole
   dip->SetAMin(m_amin);
   dip->SetQ2Min(m_Q2min);
   dip->SetSubType(bproc->NLOMC()->SubtractionType());
-  dip->SetRecoil(bproc->NLOMC()->Recoil());
+  dip->SetRecoil(dip->GetSubEvt()->p_recoil);
   m_dipoles.push_back(dip);
   m_pmap[dip][bproc].push_back(sproc);
   return true;

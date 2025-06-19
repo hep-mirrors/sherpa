@@ -21,52 +21,53 @@ namespace ATOOLS {
   class Recoil_ColorPartner: public Recoil_Definition {
   public:
 
-    Vec4D Recoil(const Cluster_Amplitude *ampl,int,int,int cspect)
+    Vec4D Recoil(const Cluster_Amplitude *ampl,size_t splits,size_t specs)
     {
-      return ampl->Legs()[cspect]->Mom();
+      Vec4D rec;
+      for (size_t i(ampl->NIn());i<ampl->Legs().size();++i)
+        if(ampl->Leg(i)->Id()&specs) rec+=ampl->Leg(i)->Mom();
+      return rec;
     }
 
-    std::vector<int> RecoilTags(const Cluster_Amplitude *ampl,int,int,int cspect)
+    std::vector<int> RecoilTags
+    (const Cluster_Amplitude *ampl,size_t splits,size_t specs)
     {
       if (!ampl) return std::vector<int>(4);
       std::vector<int> tags(ampl->Legs().size(),0);
-      tags[cspect] = 3;
+      for (size_t i(ampl->NIn());i<ampl->Legs().size();++i)
+        if(ampl->Leg(i)->Id()&specs) tags[i]=3;
       return tags;
     }
 
-  };// end of class Recoil_PassiveFinalState
+  };// end of class Recoil_ColorPartner
 
   class Recoil_PassiveFinalState: public Recoil_Definition {
   public:
 
-    Vec4D Recoil(const Cluster_Amplitude *ampl,int split,int em,int)
+    Vec4D Recoil(const Cluster_Amplitude *ampl,size_t splits,size_t specs)
     {
       Vec4D rec;
-      for (size_t i(ampl->NIn());i<ampl->Legs().size();++i) {
-        if(i==split || i==em) continue;
-	rec+=ampl->Leg(i)->Mom();
-      }
+      for (size_t i(ampl->NIn());i<ampl->Legs().size();++i)
+        if((ampl->Leg(i)->Id()&splits)==0) rec+=ampl->Leg(i)->Mom();
       return rec;
     }
 
-    std::vector<int> RecoilTags(const Cluster_Amplitude *ampl,int split,int em,int)
+    std::vector<int> RecoilTags
+    (const Cluster_Amplitude *ampl,size_t splits,size_t specs)
     {
       if (!ampl) return std::vector<int>(4);
       std::vector<int> tags(ampl->Legs().size(),0);
-      for (size_t i(2);i<ampl->Legs().size();++i) {
-        if(i==split || i==em) continue;
-        tags[i]=3;
-      }
+      for (size_t i(2);i<ampl->Legs().size();++i)
+        if((ampl->Leg(i)->Id()&splits)==0) tags[i]=3;
       return tags;
     }
 
   };// end of class Recoil_PassiveFinalState
 
-
   class Recoil_FinalState: public Recoil_Definition {
   public:
 
-    Vec4D Recoil(const Cluster_Amplitude *ampl,int,int,int)
+    Vec4D Recoil(const Cluster_Amplitude *ampl,size_t splits,size_t specs)
     {
       Vec4D rec;
       for (size_t i(ampl->NIn());i<ampl->Legs().size();++i)
@@ -74,7 +75,8 @@ namespace ATOOLS {
       return rec;
     }
 
-    std::vector<int> RecoilTags(const Cluster_Amplitude *ampl,int,int,int)
+    std::vector<int> RecoilTags
+    (const Cluster_Amplitude *ampl,size_t splits,size_t specs)
     {
       if (!ampl) return std::vector<int>(4);
       std::vector<int> tags(ampl->Legs().size(),0);
@@ -87,7 +89,7 @@ namespace ATOOLS {
   class Recoil_EWFinalState: public Recoil_Definition {
   public:
 
-    Vec4D Recoil(const Cluster_Amplitude *ampl,int,int,int)
+    Vec4D Recoil(const Cluster_Amplitude *ampl,size_t splits,size_t specs)
     {
       Vec4D rec;
       for (size_t i(ampl->NIn());i<ampl->Legs().size();++i)
@@ -95,7 +97,8 @@ namespace ATOOLS {
       return rec;
     }
 
-    std::vector<int> RecoilTags(const Cluster_Amplitude *ampl,int,int,int)
+    std::vector<int> RecoilTags
+    (const Cluster_Amplitude *ampl,size_t splits,size_t specs)
     {
       std::vector<int> tags(ampl->Legs().size(),0);
       for (size_t i(ampl->NIn());i<ampl->Legs().size();++i)

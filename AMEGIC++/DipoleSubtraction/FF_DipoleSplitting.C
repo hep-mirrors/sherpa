@@ -39,9 +39,6 @@ void FF_DipoleSplitting::SetMomenta(const Vec4D* mom)
   m_pk = mom[m_k];
 
 
-  if (m_subtype==subscheme::Alaric) // && m_ftype==spt::soft)
-    return SetMomentaAlaric(mom);
-
   m_yijk = m_pi*m_pj/(m_pi*m_pj+m_pj*m_pk+m_pk*m_pi);
   m_a = m_yijk;
 
@@ -55,7 +52,6 @@ void FF_DipoleSplitting::SetMomenta(const Vec4D* mom)
   PHASIC::Kin_Args ff(m_pi,m_pj,m_pk,m_yijk,m_zi);
   m_kt2  = p_nlomc?p_nlomc->KT2(*p_subevt,&ff,NULL):
     m_Q2*m_yijk*m_zi*m_zj;
-  DEBUG_VAR(m_kt2<<" "<<sqrt(m_kt2));
 
   double zi(m_zi), zj(m_zj);
   if (m_subtype==subscheme::Dire) {
@@ -108,7 +104,6 @@ void FF_DipoleSplitting::SetMomenta(const Vec4D* mom)
         + ToString(m_ftype) + ".");
   }
   if (m_kt2<(p_nlomc?p_nlomc->KT2Min(0):0.0)) m_av=1.0;
-  DEBUG_VAR(m_ftype<<" "<<m_sff<<" "<<m_av);
 }
 
 void FF_DipoleSplitting::SetMomentaAlaric(const ATOOLS::Vec4D* mom) {
@@ -122,8 +117,7 @@ void FF_DipoleSplitting::SetMomentaAlaric(const ATOOLS::Vec4D* mom) {
       ff.m_p.push_back(mom[i]);
       ampl->CreateLeg(i<2?-mom[i]:mom[i],i<2?p_subevt->p_real->p_fl[i].Bar():p_subevt->p_real->p_fl[i]);
     }
-
-    ff.m_b=p_softrecoil->RecoilTags(ampl,m_i,m_j,m_k);
+    ff.m_b=p_recoil->RecoilTags(ampl,(1<<m_i)|(1<<m_j),1<<m_k);
     PHASIC::ClusterAntenna(ff, m_i, m_j, m_k, 0.);
 
     m_pi = ff.m_pi;
@@ -134,10 +128,6 @@ void FF_DipoleSplitting::SetMomentaAlaric(const ATOOLS::Vec4D* mom) {
     m_zi = ff.m_z;
     m_zj = 1.-ff.m_z;
 
-    DEBUG_VAR(m_pi);
-    DEBUG_VAR(m_pj);
-    DEBUG_VAR(m_pk);
-
     m_yijk = (m_pi*m_pj)/(m_pi*ff.m_n);
     m_a = -m_yijk/(1.-m_yijk);
 
@@ -145,11 +135,9 @@ void FF_DipoleSplitting::SetMomentaAlaric(const ATOOLS::Vec4D* mom) {
     m_ptij = ff.m_pijt;
 
     m_Q2 = 2.0*ff.m_pijt*ff.m_Kt;
-    DEBUG_VAR(m_yijk<<" "<<m_Q2<<" "<<m_Q2*m_yijk*(1.-m_yijk)*(1.-m_zi)-m_yijk*m_yijk*ff.m_Kt.Abs2());
     // für Fixed_Order erstmal egal // wird mittels Getter gelöst, später
     m_kt2  = p_nlomc?p_nlomc->KT2(*p_subevt,NULL,&ff):
       m_Q2*m_yijk*(1.-m_yijk)*(1.-m_zi)-m_yijk*m_yijk*ff.m_Kt.Abs2();
-    DEBUG_VAR(p_nlomc<<" "<<m_kt2<<" "<<sqrt(m_kt2));
 
     n = ff.m_n;
     m_pt1   =     (n*m_pi) / (m_pi*m_pj) * m_pj - n;
@@ -169,8 +157,8 @@ void FF_DipoleSplitting::SetMomentaAlaric(const ATOOLS::Vec4D* mom) {
     }
 
     Vec4D pij = mom[m_i]+mom[m_j];
-    Vec4D K = p_collrecoil->Recoil(ampl,m_i,m_j,m_k);
-    std::vector<int> tags = p_collrecoil->RecoilTags(ampl,m_i,m_j,m_k);
+    Vec4D K = p_recoil->Recoil(ampl,(1<<m_i)|(1<<m_j),1<<m_k);
+    std::vector<int> tags = p_recoil->RecoilTags(ampl,(1<<m_i)|(1<<m_j),1<<m_k);
     int nk = std::count_if(tags.begin(),tags.end(),[](int t){return t&2;});
     
     double K2(K.Abs2());
@@ -224,11 +212,8 @@ void FF_DipoleSplitting::SetMomentaAlaric(const ATOOLS::Vec4D* mom) {
     m_yijk = 2.0*m_pi*m_pj/m_Q2;
     m_a = m_yijk;
 
-    DEBUG_VAR(m_yijk<<" "<<m_Q2<<" "<<m_Q2*m_yijk*m_zi*m_zj);
-    // für Fixed_Order erstmal egal // wird mittels Getter gelöst, später
     m_kt2  = p_nlomc?p_nlomc->KT2(*p_subevt,&ff,NULL):
       m_Q2*m_yijk*m_zi*m_zj;
-    DEBUG_VAR(p_nlomc<<" "<<m_kt2<<" "<<sqrt(m_kt2));
 
     ampl->Delete();
   }
@@ -243,7 +228,6 @@ void FF_DipoleSplitting::SetMomentaAlaric(const ATOOLS::Vec4D* mom) {
     A*=sij*skj*(m_pi*n)/D;
     m_sff = A;
     m_av  = m_sff;
-    DEBUG_VAR(A);
     break;
   }
   case spt::q2qg:
@@ -274,7 +258,6 @@ void FF_DipoleSplitting::SetMomentaAlaric(const ATOOLS::Vec4D* mom) {
           + ToString(m_ftype) + ".");
   }
   if (m_kt2<(p_nlomc?p_nlomc->KT2Min(0):0.0)) m_av=1.0;
-  DEBUG_VAR(m_ftype<<" "<<m_sff<<" "<<m_av);
 }
 
 double FF_DipoleSplitting::GetValue()

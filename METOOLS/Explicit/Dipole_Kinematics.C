@@ -206,7 +206,7 @@ void Dipole_Kinematics::EvaluateAlaricKinematics()
       ff.m_p.emplace_back((i<2?-1.:1.)*p_subevt->p_real->p_mom[i]);
     }
 
-    ff.m_b=p_softrecoil->RecoilTags(ampl,index_i,index_j,index_k);
+    ff.m_b=p_softrecoil->RecoilTags(ampl,(1<<index_i)|(1<<index_j),1<<index_k);
     PHASIC::ClusterAntenna(ff, index_i, index_j, index_k, 0.);
 
     p_ijt->SetP(ff.m_pijt);
@@ -215,8 +215,8 @@ void Dipole_Kinematics::EvaluateAlaricKinematics()
     m_z = ff.m_z;
     m_y = ff.m_y;
   } else if (m_cur.back()->SubType()>>3&1) { // collinear
-    Vec4D K = p_collrecoil->Recoil(ampl,index_i,index_j,index_k);
-    std::vector<int> tags = p_collrecoil->RecoilTags(ampl,index_i,index_j,index_k);
+    Vec4D K = p_collrecoil->Recoil(ampl,(1<<index_i)|(1<<index_j),1<<index_k);
+    std::vector<int> tags = p_collrecoil->RecoilTags(ampl,(1<<index_i)|(1<<index_j),1<<index_k);
     int nk = std::count_if(tags.begin(),tags.end(),[](int t){return t&2;});
 
     double K2(K.Abs2());
