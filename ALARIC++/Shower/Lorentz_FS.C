@@ -178,6 +178,13 @@ int Lorentz_FS_Split::Construct(Splitting &s,const int mode) const
     }
     s.m_mk2=ff.m_pk.Abs2();
   }
+  else {
+    s.m_p.reserve(a.size());
+    for (size_t i(0);i<a.size();++i) {
+      if ((s.m_rcl[i]&2)==0) s.m_p.push_back(a[i]->Mom());
+      else s.m_p.push_back(s.m_pk);
+    }
+  }
   double q2(s.m_q2-s.m_mi2-s.m_mj2-s.m_mk2);
   s.m_J*=q2/sqrt(Lam(s.m_q2,s.m_mij2,s.m_mk2));
   s.m_J/=(1.0+(s.m_mi2+s.m_mj2-s.m_mij2)/(s.m_y*q2));
