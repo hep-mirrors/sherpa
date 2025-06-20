@@ -363,7 +363,7 @@ void Hadron_Remnant::Reset(const bool & resc,const bool & DIS) {
 bool Hadron_Remnant::TestExtract(const Flavour &flav,const Vec4D &mom) {
   DEBUG_FUNC("");
   // Is flavour element of flavours allowed by PDF?
-  if (p_partons->find(flav)==p_partons->end()) {
+  if (!flav.IsOctetMeson() && p_partons->find(flav)==p_partons->end()) {
     msg_Error()<<METHOD<<": flavour "<<flav<<" not found.\n";
     abort();
     return false;

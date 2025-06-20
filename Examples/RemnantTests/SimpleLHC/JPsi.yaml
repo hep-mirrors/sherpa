@@ -11,24 +11,62 @@ FRAGMENTATION:    Ahadic
 ME_GENERATORS:
   - Internal
 
+PARTICLE_DATA:
+  4:
+    Massive: 1
+  5: 
+    Massive: 1
+
 ALPHAS(MZ): 0.1188
 ORDER_ALPHAS: 1
 ALPHAS: {USE_PDF: 0}
 SCALES: METS{H_T2}{H_T2}     
 
-
 # pp -> Z[ee]+jets
 PROCESSES:
-- 93 93 -> 441 93:
+- 93 93 -> 443 93:
     Order: {QCD: 3, EW: 0}
-- 93 93 -> 9900441 93:
+- 93 93 -> 100443 93:
+    Order: {QCD: 3, EW: 0}
+- 93 93 -> 10441 93:
+    Order: {QCD: 3, EW: 0}
+- 93 93 -> 20443 93:
+    Order: {QCD: 3, EW: 0}
+- 93 93 -> 445 93:
+    Order: {QCD: 3, EW: 0}
+- 93 93 -> 990000443 93:
+    Order: {QCD: 3, EW: 0}
+- 93 93 -> 990100443 93:
+    Order: {QCD: 3, EW: 0}
+- 93 93 -> 991000443 93:
+    Order: {QCD: 3, EW: 0}
+- 93 93 -> 991100443 93:
+    Order: {QCD: 3, EW: 0}
+- 93 93 -> 991010441 93:
+    Order: {QCD: 3, EW: 0}
+- 93 93 -> 991020443 93:
+    Order: {QCD: 3, EW: 0}
+- 93 93 -> 991000445 93:
+    Order: {QCD: 3, EW: 0}
+- 93 93 -> 992000443 93:
+    Order: {QCD: 3, EW: 0}
+- 93 93 -> 992100443 93:
+    Order: {QCD: 3, EW: 0}
+- 93 93 -> 993000443 93:
+    Order: {QCD: 3, EW: 0}
+- 93 93 -> 993100443 93:
+    Order: {QCD: 3, EW: 0}
+- 93 93 -> 994000443 93:
+    Order: {QCD: 3, EW: 0}
+- 93 93 -> 994100443 93:
     Order: {QCD: 3, EW: 0}
 
-SHOWER:
-- MAXEM: 0
+# SHOWER:
+# - MAXEM: 0
+
 
 SELECTORS:
-- [PT, 93, 20, E_CMS]
+- [PT, 93, 3, E_CMS]
 
 
 REMNANTS:
@@ -52,3 +90,7 @@ REMNANTS:
     RADIUS_2:   1.5
     FRACTION_1: 0.7
 
+ANALYSIS: Rivet
+RIVET:
+   --analyses: 
+     - ATLAS_2011_I896268

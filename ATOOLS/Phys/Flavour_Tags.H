@@ -405,8 +405,7 @@
 #define      kf_Xi_1690_minus           203312
 #define      kf_Xi_1690                 203322
 // fictitious octet mesons relevant for quarkonia production
-// logic is 99 + padding zeroes to 6 figures + meson kf_code
-// for overlap the third digit becomes numbering. It goes up for higher mass end states and "down" for lower mass end states starting from 9
+// logic is 99 + single digit for octet state + final state code
 #define      kf_1S0_c_8_eta_c        990000441
 #define      kf_1S0_c_8_J_psi_1S     990000443
 #define      kf_1S0_c_8_psi_2S       990100443

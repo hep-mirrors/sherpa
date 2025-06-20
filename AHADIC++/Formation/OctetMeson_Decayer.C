@@ -146,9 +146,9 @@ bool OctetMeson_Decayer::FixKinematics() {
   return (z>0.);
 }
 void OctetMeson_Decayer::UpdateColouredObjectsAndAddHadron() {
-  
+
   int octetkfc = p_part1->Flavour().Kfcode();
-  int newkfc = (octetkfc - 990000000)%1000000;
+  int newkfc = octetkfc % 1000000;
 
   Proto_Particle *meson = new Proto_Particle(Flavour(newkfc), m_mom[0]);
   p_hadrons->push_back(meson);
