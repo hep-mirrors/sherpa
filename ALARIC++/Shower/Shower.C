@@ -163,9 +163,9 @@ void Shower::AddWeight(const Amplitude &a,const double &t)
     cw*=a[i]->GetWeight(Max(t,m_tmin[a[i]->Beam()?1:0]),cv);
     a[i]->ClearWeights();
   }
-  m_weightsmap["PS"].Nominal() *= cw;
+  m_weightsmap["Sudakov"].Nominal() *= cw;
   if (cv.size()) {
-    ATOOLS::Reweight(m_weightsmap["PS"],
+    ATOOLS::Reweight(m_weightsmap["Sudakov"],
                      [&cv](double varweight,
                            size_t varindex,
                            QCD_Variation_Params& varparams) -> double {
@@ -173,15 +173,15 @@ void Shower::AddWeight(const Amplitude &a,const double &t)
                      });
   }
   msg_Debugging()<<a<<" t = "<<t<<" -> w = "<<cw
-		 <<" ("<<m_weightsmap["PS"].Nominal()<<"), v = "<<cv<<"\n";
+		 <<" ("<<m_weightsmap["Sudakov"].Nominal()<<"), v = "<<cv<<"\n";
 }
 
 int Shower::Evolve(Amplitude &a, unsigned int &nem)
 {
   DEBUG_FUNC(this);
   m_weightsmap.Clear();
-  m_weightsmap["PS"] = Weights {Variations_Type::qcd};
-  m_weightsmap["PS_QCUT"] = Weights {Variations_Type::qcut};
+  m_weightsmap["Sudakov"] = Weights {Variations_Type::qcd};
+  m_weightsmap["QCUT"] = Weights {Variations_Type::qcut};
   msg_Debugging()<<a<<"\n";
   Cluster_Amplitude *ampl(a.ClusterAmplitude());
   if (ampl->NLO()&128) {
@@ -245,7 +245,7 @@ int Shower::Evolve(Amplitude &a, unsigned int &nem)
     std::vector<bool> skips (nqcuts + 1, false);
     int nskips {0};
     ATOOLS::ReweightAll(
-        m_weightsmap["PS_QCUT"],
+        m_weightsmap["QCUT"],
         [this, jcv, is_jcv_positive, ampl, &all_vetoed, &skips, &nskips](
             double varweight,
             size_t varindex,
@@ -295,15 +295,15 @@ int Shower::Evolve(Amplitude &a, unsigned int &nem)
 	  ampl->SetNLO(ampl->NLO()&~2);
 	}
         const double fac {1.0 / lkf / wskip};
-        m_weightsmap["PS"] *= fac * skips[0];
-        m_weightsmap["PS_QCUT"] *= skips;
+        m_weightsmap["Sudakov"] *= fac * skips[0];
+        m_weightsmap["QCUT"] *= skips;
 	continue;
       }
       else {
         const double fac {1.0 / (1.0 - wskip)};
         skips.flip();
-        m_weightsmap["PS"] *= fac * skips[0];
-        m_weightsmap["PS_QCUT"] *= skips;
+        m_weightsmap["Sudakov"] *= fac * skips[0];
+        m_weightsmap["QCUT"] *= skips;
       }
     }
     if (all_vetoed)
