@@ -312,7 +312,6 @@ void MEPS_Scale_Setter::Combine
 (Cluster_Amplitude &ampl,const Cluster_Info &ci) const
 {
   int i(ci.first.m_i), j(ci.first.m_j);
-  if (i>j) std::swap<int>(i,j);
   Cluster_Leg *li(ampl.Leg(i)), *lj(ampl.Leg(j));
   Cluster_Leg *lk(ampl.Leg(ci.first.m_k));
   li->SetCol(ampl.CombineColors(li,lj,lk,ci.first.m_mo));
