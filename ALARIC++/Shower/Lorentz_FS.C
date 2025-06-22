@@ -225,7 +225,8 @@ bool Lorentz_FS_Split::Cluster
   }
   s.m_phi=ff.m_phi;
   s.m_p=a->Momenta();
-  if (nk>1) {
+  if (nk==1) s.m_p[k]=ff.m_pk;
+  else {
     Poincare oldcms(K), newcms(ff.m_pk);
     newcms.Invert();
     for (size_t l(0);l<s.m_p.size();++l)
