@@ -36,15 +36,15 @@ int MCatNLO::GeneratePoint(Cluster_Amplitude *const ampl)
 {
   DEBUG_FUNC(this);
   m_weightsmap.Clear();
-  m_weightsmap["MC@NLO_PS"] = Weights {Variations_Type::qcd};
-  m_weightsmap["MC@NLO_QCUT"] = Weights {Variations_Type::qcut};
+  m_weightsmap["Sudakov"] = Weights {Variations_Type::qcd};
+  m_weightsmap["QCUT"] = Weights {Variations_Type::qcut};
   CleanUp();
   PrepareShower(ampl);
   if (p_rampl->NLO()&4) return 1;
   unsigned int nem=0;
   int stat(p_mcatnlo->Evolve(*m_ampls.back(),nem));
-  m_weightsmap["MC@NLO_PS"] *= p_mcatnlo->GetWeightsMap().at("MC@NLO_PS");
-  m_weightsmap["MC@NLO_QCUT"] *= p_mcatnlo->GetWeightsMap().at("MC@NLO_QCUT");
+  m_weightsmap["Sudakov"] *= p_mcatnlo->GetWeightsMap().at("Sudakov");
+  m_weightsmap["QCUT"] *= p_mcatnlo->GetWeightsMap().at("QCUT");
   if (m_wcheck && dabs(m_weightsmap.Nominal())>m_maxweight) {
     m_maxweight=dabs(m_weightsmap.Nominal());
     std::string rname="alaricnlo.random.dat";
