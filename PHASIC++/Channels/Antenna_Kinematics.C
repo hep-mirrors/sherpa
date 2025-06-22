@@ -87,20 +87,18 @@ int PHASIC::ClusterAntenna
   ffp.m_p[i]=ffp.m_pijt;
   pk=ffp.m_pk;
   Kt=ffp.m_Kt;
-  Vec4D pij(ffp.m_pijt);
-  LN_Pair ln(GetLN(pij,Kt));
-  Vec4D n_perp(pk);
-  n_perp-=((pk*ln.m_n)*ln.m_l+(pk*ln.m_l)*ln.m_n)/(gam/2.0);
+  Vec4D pl(ffp.m_pijt-muitb2*ffp.m_Kt), n_perp(pk);
+  n_perp-=((pk*ffp.m_nb)*pl+(pk*pl)*ffp.m_nb)/(pl*ffp.m_nb);
   if (n_perp.PSpat2()<=rpa->gen.SqrtAccu()) {
     msg_IODebugging()<<METHOD<<"(): Set fixed n_perp\n";
-    n_perp=LT(pij,Kt,Vec4D::ZVEC);
+    n_perp=LT(ffp.m_pijt,Kt,Vec4D::ZVEC);
     if (n_perp.PSpat2()<=rpa->gen.SqrtAccu())
-      n_perp=LT(pij,Kt,Vec4D::YVEC);
+      n_perp=LT(ffp.m_pijt,Kt,Vec4D::YVEC);
     if (n_perp.PSpat2()<=rpa->gen.SqrtAccu())
-      n_perp=LT(pij,Kt,Vec4D::XVEC);
+      n_perp=LT(ffp.m_pijt,Kt,Vec4D::XVEC);
   }
   n_perp*=1.0/sqrt(dabs(n_perp.Abs2()));
-  Vec4D l_perp(LT(n,pij,n_perp));
+  Vec4D l_perp(LT(n,ffp.m_pijt,n_perp));
   l_perp*=1.0/sqrt(dabs(l_perp.Abs2()));
   double cp(-ffp.m_pj*n_perp), sp(-ffp.m_pj*l_perp);
   ffp.m_phi=atan2(sp,cp);
@@ -141,10 +139,10 @@ int PHASIC::ConstructAntenna
   }
   zb+=sqrt(zb*zb-muib2/(1.0+muitb2)*(1.0+kapb));
   ffp.m_pk=pk;
+  ffp.m_nb=Kt-kapb*pij;
   ffp.m_pi=zb*pij+(mui2/zb-muit2*zb)/vo*(Kt-kapb*pij);
-  Vec4D n(Kt+pij-ffp.m_pi), n_perp(ffp.m_pk);
-  LN_Pair ln(GetLN(pij,Kt));
-  n_perp-=((pk*ln.m_n)*ln.m_l+(pk*ln.m_l)*ln.m_n)/(gam/2.0);
+  Vec4D n(Kt+pij-ffp.m_pi), pl(pij-muitb2*Kt), n_perp(ffp.m_pk);
+  n_perp-=((pk*ffp.m_nb)*pl+(pk*pl)*ffp.m_nb)/(pl*ffp.m_nb);
   if (n_perp.PSpat2()<=rpa->gen.SqrtAccu()) {
     msg_IODebugging()<<METHOD<<"(): Set fixed n_perp\n";
     n_perp=LT(pij,Kt,Vec4D::ZVEC);
@@ -169,10 +167,10 @@ int PHASIC::ConstructAntenna
   ffp.m_pj+=(1.0-z+muit2-mui2+muj2)/(vo*zeta)*(pij-muitb2*Kt);
   ffp.m_pj+=vb*(1.0+vo)/(2.0*vo)*
     ((Kt-kapb*pij)-(1.0-zb+kapb)/zeta*(pij-muitb2*Kt));
-  ffp.m_nb=Kt-kapb*pij;
 #ifdef DEBUG__Kinematics
   {
     DEBUG_FUNC("pi-nb frame");
+    LN_Pair ln(GetLN(pij,Kt));
     DEBUG_VAR((ln.m_l-ln.m_n).Abs2());
     DEBUG_VAR(z<<" "<<v<<" "<<kap<<" "<<-v*(1.+kap));
     Poincare cms(ln.m_l-ln.m_n);
