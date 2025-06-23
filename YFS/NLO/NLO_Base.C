@@ -174,7 +174,7 @@ double NLO_Base::CalculateVirtual() {
 			for(auto _p: m_plab) msg_Error()<<_p<<std::endl;
 		}
 	}	
-	if(p_virt->FailCut()) return 0;
+	if(p_virt->FailCut()) m_failcut = true;
 	if(m_virt_sub && p_virt->p_loop_me->Mode()!=1) sub = p_dipoles->CalculateVirtualSub();
 	else {
 		sub = 0;
@@ -465,7 +465,7 @@ double NLO_Base::CalculateRealVirtual(Vec4D k, int fsrcount) {
 	// PRINT_VAR(yfspole);
 	double subb;
 
-	subb = (fsrcount!=1?p_dipoles->CalculateRealSubEEX(kk):p_dipoles->CalculateRealSubEEX(k));
+	subb = (fsrcount!=1?p_dipoles->CalculateRealSubEEX(kk):p_dipoles->CalculateRealSubEEX(kk));
 	
 	if(p.size()!=(m_flavs.size()+1)){
 		msg_Error()<<"Mismatch in "<<METHOD<<std::endl;
@@ -666,8 +666,8 @@ double NLO_Base::CalculateRealReal(Vec4D k1, Vec4D k2, int fsr1, int fsr2){
 	m_recola_evts+=1;
 	double real1 = CalculateReal(kk1,3+fsr1);
 	double real2 = CalculateReal(kk2,3+fsr2);
-	double sub1 = (fsr1!=1?p_dipoles->CalculateRealSubEEX(kk1):p_dipoles->CalculateRealSubEEX(k1));
-	double sub2 = (fsr2!=1?p_dipoles->CalculateRealSubEEX(kk2):p_dipoles->CalculateRealSubEEX(k2));
+	double sub1 = (fsr1!=1?p_dipoles->CalculateRealSubEEX(kk1):p_dipoles->CalculateRealSubEEX(kk1));
+	double sub2 = (fsr2!=1?p_dipoles->CalculateRealSubEEX(kk2):p_dipoles->CalculateRealSubEEX(kk2));
 	double fullsub = (-subloc2*real1 -subloc1*real2-subloc1*subloc2*m_born);
 	tot = (r*flux + fullsub)/sub1/sub2;
   if(IsBad(tot)){
