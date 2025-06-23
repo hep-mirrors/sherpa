@@ -37,9 +37,25 @@ bool Griffin::Griffin_Interface::Initialize(MODEL::Model_Base *const model,
   m_order = ss["Order"].Get<griffinorder::code>();
   double delap = ss["Delta_Alpha"].Get<double>();
   double mz2 = sqr(Flavour(kf_Z).Mass());
-  if(IsEqual(delap,-1)){
-    delap = 1-(*aqed)(0)/(*aqed)(Flavour(kf_Z).Mass()*Flavour(kf_Z).Mass());
-  }
+  ew_scheme::code ewscheme = s["EW_SCHEME"].Get<ew_scheme::code>();
+  switch (ewscheme) {
+    case 1:
+      // use_alpha0_scheme_and_set_alpha_rcl(AlphaQED());
+      delap=0.0;
+      break;
+    case 2:
+      // use_alphaz_scheme_and_set_alpha_rcl(AlphaQED());
+      delap = 0.03;
+      break;
+    case 3:
+      delap=0.03;
+      break;
+    default:
+      THROW(not_implemented, "EW Scheme");
+ }
+  // if(IsEqual(delap,-1)){
+  //   delap = 1-(*aqed)(0)/(*aqed)(Flavour(kf_Z).Mass()*Flavour(kf_Z).Mass());
+  // }
   m_griffin.set(0, Flavour(kf_Wplus).Mass());
   m_griffin.set(1, Flavour(kf_Z).Mass());
   m_griffin.set(2, Flavour(kf_h0).Mass());
