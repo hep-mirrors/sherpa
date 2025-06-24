@@ -32,7 +32,6 @@ namespace AMISIC {
     std::map<ATOOLS::Flavour, size_t> m_indexmap;
     std::map<ATOOLS::Flavour, double> m_fVs;
     double m_beta0[4];
-    void   FixTables();
 
     std::array<ATOOLS::Flavour,2> m_flavs;
     xsec_type      m_type;
@@ -53,6 +52,7 @@ namespace AMISIC {
     size_t m_testmode;
 
     void   FixType();
+    void   FixTables();
     void   TestXSecs();
     void   CalculateXSecs();
     double TotalXSec(const size_t hadtags[2]) const;

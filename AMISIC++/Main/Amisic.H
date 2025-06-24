@@ -70,6 +70,7 @@ namespace AMISIC {
     void InitParametersAndType(PDF::ISR_Handler *const isr,
 			       REMNANTS::Remnant_Handler * remnant_handler);
     void UpdateForNewS();
+    bool FirstRescatter(ATOOLS::Blob * blob);
     bool FirstMinBias(ATOOLS::Blob * blob);
     bool FirstMPI(ATOOLS::Blob * blob);
     void AddInformationToBlob(ATOOLS::Blob * blob);

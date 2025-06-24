@@ -9,18 +9,17 @@ YFS:
 
 REMNANTS:
   2212:
-    MATTER_FORM:       Single_Gaussian # x_Dependent_Gaussian # 
-    MATTER_RADIUS_1:   0.86 # 0.2 # 
+    MATTER_FORM:       Single_Gaussian # x_Dependent_Gaussian #
+    MATTER_RADIUS_1:   0.86 # 0.2 #
     MATTER_RADIUS_2:   0.5
     MATTER_FRACTION_1: 0.5
 
 AMISIC:
   EVENT_TYPE:     Perturbative
-  PT_0(ref):      2.0
-  PT_Min(ref):    3.0
-  E(ref):         13000.
+  PT_0:           0.5
+  PT_Min:         2.0
   SIGMA_ND_NORM:  1.0
-  MU_R_FACTOR:    0.5
+  MU_R_FACTOR:    1.0
   MU_F_FACTOR:    1.0
   #TRIGGER:        [ 5, -5 ]
   #N_MaxScatters:  100
@@ -62,4 +61,4 @@ ANALYSIS_OUTPUT: Test1
 RIVET:
   --analyses: [ATLAS_2010_S8918562, ATLAS_2011_S8994773, ATLAS_2012_I1084540, TOTEM_2012_I1115294, CMS_2011_S8978280, CMS_2011_S9120041, CMS_2011_S9215166]
 
-#ATLAS_2010_S8894728, 
+#ATLAS_2010_S8894728,

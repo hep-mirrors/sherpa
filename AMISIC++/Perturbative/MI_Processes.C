@@ -10,8 +10,6 @@
 using namespace AMISIC;
 using namespace ATOOLS;
 using namespace PHASIC;
-using namespace std;
-
 
 MI_Processes::MI_Processes() :
   ME_Generator_Base("Amisic"),

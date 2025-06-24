@@ -16,7 +16,7 @@ namespace REMNANTS {
     ATOOLS::Particle * p_valence, * p_remnant, * p_recoiler, * p_spectator;
 
     bool   m_valence;
-    double m_alpha, m_gamma, m_beta, m_invb, m_LambdaQCD;
+    double m_alpha, m_gamma, m_beta, m_invb, m_LambdaQCD, m_minE;
 
     void ConstructConstituentFlavours();
     bool IsValence(ATOOLS::Particle * part);

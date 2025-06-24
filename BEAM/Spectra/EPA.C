@@ -111,6 +111,7 @@ void EPA::FixPosition() {
   // Lorentz-boost E/m.
   //
   // All distances here given in fm and masses in GeV
+  /*
   double ratio = m_maxR/m_minR, logratio = log(ratio), R, weight, k1, k10;
   do {
     if (ran->Get()< logratio/(0.5+logratio)) {
@@ -134,6 +135,8 @@ void EPA::FixPosition() {
 	       <<" = "<<(k1/k10)<<" --> weight = "<<weight<<"\n\n";
     }
   } while (weight<ran->Get());
+  */
+  double R   = ran->Get()*2.;
   double phi = 2.*M_PI*ran->Get();
   m_position = R * Vec4D(0., cos(phi), sin(phi), 0.);
 }

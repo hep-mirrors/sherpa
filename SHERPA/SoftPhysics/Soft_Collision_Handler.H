@@ -22,9 +22,9 @@ namespace SHERPA {
   private:
     struct scmode {
       enum code {
-	none,
-	shrimps,
-	amisic
+	none    = 0,
+	shrimps = 1,
+	amisic  = 2
       };
     };
     bool         m_bunch_rescatter;

@@ -1,0 +1,42 @@
+EVENTS: 100000
+EVENT_TYPE:          MinimumBias
+ME_GENERATORS:       None
+SOFT_COLLISIONS:     Amisic
+YFS:
+  MODE:              None
+
+BEAMS:             [11, -11]
+BEAM_ENERGIES:     103
+BEAM_SPECTRA:      EPA
+PDF_LIBRARY:       SASGSherpa
+PDF_SET:           SAS2D
+MI_HANDLER:        Amisic
+MPI_PDF_LIBRARY:   SASGSherpa
+MPI_PDF_SET:       SAS2D
+BEAM_RESCATTERING: None
+
+FRAGMENTATION:  Ahadic
+
+REMNANTS:
+  22:
+    MATTER_FORM:        Single_Gaussian # x_Dependent_Gaussian # 
+    MATTER_RADIUS_1:    0.75;
+    MATTER_RADIUS_2:    0.35;
+    MATTER_FRACTION_1:  0.5;
+
+AMISIC:
+  PT_0(ref):         2.05
+  PT_Min(ref):       2.25
+  E(ref):            13000
+  Eta:               0.08
+  MU_R_FACTOR:       0.5
+  MU_F_FACTOR:       1.0
+  nS_bins:           20
+  nB_bins:           10
+
+ANALYSIS: Rivet
+RIVET:
+  --analyses: [OPAL_2008_I754316,OPAL_2003_I611415]
+  --ignore-beams: 1
+  USE_HEPMC_SHORT: 1
+ANALYSIS_OUTPUT: MB

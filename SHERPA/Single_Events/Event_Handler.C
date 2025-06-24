@@ -264,7 +264,6 @@ int Event_Handler::IterateEventPhases(eventtype::code & mode) {
                     <<rv<<std::endl;
       //msg_Out()<<" -> "<<rv<<" ("<<m_blobs.size()<<" blobs)"<<std::endl;
     }
-    msg_Debugging()<<" -> "<<rv<<" ("<<m_blobs.size()<<" blobs)"<<std::endl;
     switch (rv) {
     case Return_Value::Success :
       if (mode==eventtype::StandardPerturbative &&

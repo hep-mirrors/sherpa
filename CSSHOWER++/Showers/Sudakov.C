@@ -129,18 +129,15 @@ void Sudakov::AddDiQuarkSplittingFunctions(MODEL::Model_Base *md,const int kfmod
     v.AddParticle(flav.Bar());
     v.AddParticle(flav);
     v.AddParticle(Flavour(kf_gluon));
-    v.Color.push_back(Color_Function(cf::T, 3, 2, 1));
+    v.Color.push_back(Color_Function(cf::T,3,2,1));
     v.Lorentz.push_back("SSV");
     v.cpl.push_back(cpl0);
-    v.order[0] = 1;
-    Add(new Splitting_Function_Base(
-        SF_Key(&v, 0, cstp::FF, kfmode, m_qcdmode, m_ewmode, 1, m_pdfmin)));
-    Add(new Splitting_Function_Base(
-        SF_Key(&v, 0, cstp::FF, kfmode, m_qcdmode, m_ewmode, -1, m_pdfmin)));
+    v.order[0]=1;
+    Add(new Splitting_Function_Base(SF_Key(&v,0,cstp::FF,kfmode,m_qcdmode,m_ewmode, 1,m_pdfmin)));
+    Add(new Splitting_Function_Base(SF_Key(&v,0,cstp::FF,kfmode,m_qcdmode,m_ewmode,-1,m_pdfmin)));
   }
-  // msg_Out()<<METHOD<<": by now "<<m_splittings.size()<<" splitting
-  // functions\n"
-  //	   <<"============================================================\n";
+  //msg_Out()<<METHOD<<": by now "<<m_splittings.size()<<" splitting functions\n"
+    //	   <<"============================================================\n";
 }
 
 void Sudakov::AddQuarkoniaSplittingFunctions(Model_Base *md, const int kfmode) {

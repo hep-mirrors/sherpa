@@ -8,7 +8,6 @@
 
 using namespace AMISIC;
 using namespace ATOOLS;
-using namespace std;
 
 //////////////////////////////////////////////////////////////////////////////////////
 // Non-perturbative cross section calculator, with cross sections as given in
@@ -75,8 +74,8 @@ Initialize(const Flavour & fl1,const Flavour & fl2,
 		       m_GeV2mb );
   m_prefDD         = ( sqr(m_triple_pomeron) * pow(m_s1,m_eps_pomeron)/(16.*M_PI) /
 		       m_GeV2mb );
-  FixType();
   FixTables();
+  FixType();
   if (m_testmode>0) TestXSecs();
 }
 
@@ -102,7 +101,7 @@ void Hadronic_XSec_Calculator::FixType() {
 }
 
 void Hadronic_XSec_Calculator::TestXSecs() {
-  list<double> Es = { 23.5, 62.5, 546., 1800., 16000., 40000. };
+  std::list<double> Es = { 23.5, 62.5, 546., 1800., 16000., 40000. };
   for (size_t i=0;i<2;i++) {
     switch (m_testmode) {
     case 3:
@@ -429,7 +428,6 @@ void Hadronic_XSec_Calculator::Output() const {
 	   <<m_xsnd<<" GeV^-2\n}\n";
 }
 
-
 void Hadronic_XSec_Calculator::FixTables() {
   m_hadroncomponents = {
     { Flavour(kf_p_plus),       { Flavour(kf_p_plus) }                          },
@@ -463,7 +461,6 @@ void Hadronic_XSec_Calculator::FixTables() {
     { Flavour(kf_J_psi_1S),  11.50 }
   };
 }
-
 ///////////////////////////////////////////////////////////////////////////////////
 // Slopes for the elastic cross section fit in units of GeV^{-2}.
 // b slope parameters below eq 19 in Schuler and Sjostrand, Z fuer Physik C 73

@@ -55,6 +55,7 @@ namespace AMISIC {
     void   UpdateSandY(double s, double y);
     void   Reset();
     double PrefabricateBlob(const int & mode=0);
+    bool   FirstRescatter(ATOOLS::Blob * first);
     bool   FirstMinBiasScatter(ATOOLS::Blob * first);
     bool   FirstMPI(ATOOLS::Blob * signal);
     bool   NextScatter(ATOOLS::Blob * blob);
@@ -71,6 +72,10 @@ namespace AMISIC {
     }
     inline void SetPosition(const size_t & beam,const ATOOLS::Vec4D & pos) {
       p_remnants[beam]->SetPosition(pos);
+    }
+    inline void SetB(const double b=-1.) {
+      m_b = (b>=0. ? b :
+	     sqrt(dabs((Position(0)-Position(1)).Abs2())) );
     }
     inline void SetDone(const bool & done) { m_done = done; }
     inline void AddPrefabricatedBlob(const double & pt2,ATOOLS::Blob * blob) {

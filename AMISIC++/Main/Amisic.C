@@ -184,23 +184,6 @@ bool Amisic::InitMPIs(const double & ptmax,const double & x1,const double & x2,
   return true;
 }
 
-void Amisic::UpdateForNewS() {
-  ///////////////////////////////////////////////////////////////////////////
-  // Update if first scatter with variable c.m. energy (e.g. collisions with
-  // pomerons or resolved photons): update c.m. energy in processes,
-  // re-calculate non-diffractive cross sections for normalisation, adjust
-  // prefactors for radii in matter overlaps etc., etc..
-  // TODO: will have to check if we need another longitudinal boost (hence
-  //       the Y)
-  ///////////////////////////////////////////////////////////////////////////
-  Vec4D P(0.,0.,0.,0.);
-  for (size_t beam=0;beam<2;beam++) P += m_singlecollision.InMomentum(beam);
-  m_S = P.Abs2();
-  m_Y = P.Y();
-  if (m_evttype==evt_type::Perturbative) m_mo.SetKRadius(m_pint.K(m_S));
-  m_singlecollision.UpdateSandY(m_S, m_Y);
-}
-
 bool Amisic::InitMinBiasEvent(Blob_List * blobs) {
   ///////////////////////////////////////////////////////////////////////////
   // Initialise the MinBias simulation:
@@ -220,15 +203,44 @@ bool Amisic::InitMinBiasEvent(Blob_List * blobs) {
   return true;
 }
 
+bool Amisic::InitRescatterEvent() {
+  ///////////////////////////////////////////////////////////////////////////
+  // Initialise the MinBias simulation: fixing the maximal scale = S/4, the
+  // kinematic limit, for the downward evolution and take the impact parameter
+  // from the already existing scatter.
+  // TODO: we may have to check the logical flow here.
+  ///////////////////////////////////////////////////////////////////////////
+  if (m_isFirst) {
+    m_isFirst   = false;
+    m_isMinBias = true;
+    if (m_variable_s) UpdateForNewS();
+    m_singlecollision.SetB();
+    m_singlecollision.SetLastPT2();
+  }
+  return true;
+}
+
+void Amisic::SetB(const double & b) { m_singlecollision.SetB(b); }
+
+bool Amisic::FirstRescatter(Blob * blob) {
+  ///////////////////////////////////////////////////////////////////////////
+  // Currently only *** perturbative *** rescattering.
+  // TODO: add diffractive/elastic rescattering
+  ///////////////////////////////////////////////////////////////////////////
+  return m_singlecollision.FirstRescatter(blob);
+}
+
 bool Amisic::FirstMinBias(Blob * blob) {
   if (m_evttype==evt_type::Perturbative) {
     if (m_xsecs.XSratio(m_S)<1.) return false;
   }
-  if (!m_singlecollision.FirstMinBiasScatter(blob)) return false;
-  m_b            = m_singlecollision.B();
-  m_producedSoft = m_singlecollision.Done();
-  blob->UnsetStatus(blob_status::needs_minBias);
-  return true;
+  if (m_singlecollision.FirstMinBiasScatter(blob)) {
+    m_b            = m_singlecollision.B();
+    m_producedSoft = m_singlecollision.Done();
+    blob->UnsetStatus(blob_status::needs_minBias);
+    return true;
+  }
+  return false;
 }
 
 bool Amisic::FirstMPI(Blob * blob) {
@@ -243,8 +255,6 @@ bool Amisic::GenerateScatter(const size_t & type,Blob * blob) {
   ///////////////////////////////////////////////////////////////////////////
   // If a next (perturbative) scatter event has been found, the pointer to
   // the respective blob is returned.
-  // TODO: we may want to think about something for rescatter events -
-  //       but this is for future work.
   ///////////////////////////////////////////////////////////////////////////
   if (!m_singlecollision.Done() && m_Nscatters<m_maxNscatters) {
     bool outcome = false;
@@ -254,7 +264,9 @@ bool Amisic::GenerateScatter(const size_t & type,Blob * blob) {
 		 FirstMPI(blob) : m_singlecollision.NextScatter(blob) );
       break;
     case 2:
-      exit(1);
+      if (!m_isMinBias) THROW(fatal_error,"Conflict for "+to_string(int(type))+
+			      " vs "+to_string(int(m_isMinBias)));
+      outcome = FirstRescatter(blob);
       break;
     case 1:
       if (!m_isMinBias) THROW(fatal_error,"Conflict for "+to_string(int(type))+
@@ -275,6 +287,23 @@ bool Amisic::GenerateScatter(const size_t & type,Blob * blob) {
     if (m_ana) AnalysePerturbative(true);
   }
   return false;
+}
+
+void Amisic::UpdateForNewS() {
+  ///////////////////////////////////////////////////////////////////////////
+  // Update if first scatter with variable c.m. energy (e.g. collisions with
+  // pomerons or resolved photons): update c.m. energy in processes,
+  // re-calculate non-diffractive cross sections for normalisation, adjust
+  // prefactors for radii in matter overlaps etc., etc..
+  // TODO: will have to check if we need another longitudinal boost (hence
+  //       the Y)
+  ///////////////////////////////////////////////////////////////////////////
+  Vec4D P(0.,0.,0.,0.);
+  for (size_t beam=0;beam<2;beam++) P += m_singlecollision.InMomentum(beam);
+  m_S = P.Abs2();
+  m_Y = P.Y();
+  if (m_evttype==evt_type::Perturbative) m_mo.SetKRadius(m_pint.K(m_S));
+  m_singlecollision.UpdateSandY(m_S, m_Y);
 }
 
 void Amisic::AddInformationToBlob(ATOOLS::Blob * blob) {
@@ -346,26 +375,6 @@ void Amisic::Reset() {
   m_weight    = 1.;
   m_Nscatters = 0;
   m_singlecollision.Reset();
-}
-
-bool Amisic::InitRescatterEvent() {
-  ///////////////////////////////////////////////////////////////////////////
-  // Initialise the MinBias simulation: fixing the maximal scale = S/4, the
-  // kinematic limit, for the downward evolution and take the impact parameter
-  // from the already existing scatter.
-  // TODO: we may have to check the logical flow here.
-  ///////////////////////////////////////////////////////////////////////////
-  THROW(fatal_error,"Rescattering not implemented yet.");
-  return true;
-}
-
-void Amisic::SetB(const double & b) {
-  ///////////////////////////////////////////////////////////////////////////
-  // Impact parameter externally set, e.g. for rescattering in processes
-  // with EPA photons.
-  ///////////////////////////////////////////////////////////////////////////
-  THROW(fatal_error,"Rescattering not implemented yet.");
-  exit(1);
 }
 
 void Amisic::InitAnalysis() {

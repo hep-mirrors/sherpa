@@ -87,6 +87,7 @@ using namespace SHERPA;
 using namespace ATOOLS;
 using namespace Rivet;
 
+
 #ifdef USING__RIVET4
 namespace {
   // Helper method to extract the error and squared error of the AnalysisObject

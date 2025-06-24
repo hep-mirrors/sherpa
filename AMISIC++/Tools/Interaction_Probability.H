@@ -16,11 +16,12 @@ namespace AMISIC {
     MI_Processes   * p_procs;
     axis           * p_sbins, * p_bbins;
     OneDim_Table   * p_k, * p_norm;
-    TwoDim_Table   * p_diffxsec;
+    TwoDim_Table   * p_diffxsec, * p_inverted;
     double           m_pdfnorm, m_xs_test, m_xs_hard, m_bmax, m_smin;
     bool             m_dynamic;
 
     void FixKandSmin();
+    void FillIntegrated();
     void InitializeTables();
     void InitializeTable(const size_t & sbin,const bool & out=false);
     bool CheckTables();

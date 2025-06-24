@@ -31,13 +31,13 @@ Remnant_Handler::Remnant_Handler(PDF::ISR_Handler* isr, YFS::YFS_Handler *yfs,
       if (flav.IsHadron() && flav.Kfcode() != kf_pomeron &&
           flav.Kfcode() != kf_reggeon)
         p_remnants[i] =
-                std::make_shared<Hadron_Remnant>(isr->PDF(i), i, m_tags[i]);
+	  std::make_shared<Hadron_Remnant>(isr->PDF(i), i, m_tags[i]);
       else if (flav.IsLepton())
         p_remnants[i] =
-                std::make_shared<Electron_Remnant>(isr->PDF(i), i, m_tags[i]);
+	  std::make_shared<Electron_Remnant>(isr->PDF(i), i, m_tags[i]);
       else if (flav.IsPhoton())
         p_remnants[i] =
-                std::make_shared<Photon_Remnant>(isr->PDF(i), i, m_tags[i]);
+	  std::make_shared<Photon_Remnant>(isr->PDF(i), i, m_tags[i]);
       else if (flav.Kfcode() == kf_pomeron)
         p_remnants[i] = std::make_shared<Pomeron_Remnant>(isr->PDF(i), i);
       else if (flav.Kfcode() == kf_reggeon)
@@ -219,10 +219,9 @@ Return_Value::code Remnant_Handler::MakeBeamBlobs(Blob_List* const bloblist,
   // This still needs debugging - therefore it is commented out.
   Return_Value::code rv = Return_Value::Success;
   if (!m_kinematics.FillBlobs(bloblist)) {
-    msg_Debugging() << METHOD << ": Filling of beam blobs failed.\n";
     rv = Return_Value::New_Event;
-  } else if (!CheckBeamBreakup() || !m_decorrelator(p_softblob)) {
-    msg_Error() << METHOD << " failed. Will return new event\n";
+  }
+  else if (!CheckBeamBreakup() || !m_decorrelator(p_softblob)) {
     rv = Return_Value::New_Event;
   }
   Reset();

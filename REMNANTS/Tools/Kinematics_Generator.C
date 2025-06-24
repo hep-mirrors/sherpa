@@ -200,7 +200,9 @@ bool Kinematics_Generator::TransverseKinematicsHH() {
     // Fill the beam remnant blobs with copies of the spectators and the
     // extracted shower initiators and keep the original particles in the
     // ktmaps.
-    if (!p_remnants[beam]->FillBlob(p_rhandler->GetColourGen(), &m_ktmap[beam], true)) return false;
+    if (!p_remnants[beam]->FillBlob(p_rhandler->GetColourGen(), &m_ktmap[beam], true)) {
+      return false;
+    }
     m_inmom[beam] = p_remnants[beam]->InMomentum();
   }
   // Initialise particle-momentum maps to track the transverse momenta
