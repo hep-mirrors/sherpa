@@ -111,8 +111,8 @@ void Sudakov::InitSplittingFunctions(MODEL::Model_Base *md,const int kfmode)
   }
   AddDiQuarkSplittingFunctions(md, kfmode);
   AddOctetMesonSplittingFunctions(md, kfmode);
-  AddQuarkoniaSplittingFunctions(md, kfmode);
-  AddGluonThresholds(md);
+  // AddQuarkoniaSplittingFunctions(md, kfmode);
+  // AddGluonThresholds(md);
   msg_Debugging() << "}\n";
 }
 
@@ -858,10 +858,10 @@ bool Sudakov::Splitting(double Q2,double x,double t,double y,double z) {
   double wt = RejectionWeight(z,y,x,t,Q2);
   double efac=p_selected->EFac();
   double rn(ran->Get());
-  msg_Out() << "Splitting " <<  p_selected->GetFlavourA().IDName() 
-  << " -> " << p_selected->GetFlavourB().IDName() <<  "  " << p_selected->GetFlavourC().IDName() <<
-  "\t ran : " << rn << "  wt: " << wt <<  "  op: " << operator()(z,y,x,t,Q2) 
-  << "  overe: " << Overestimated(z,y) << std::endl;
+  // msg_Out() << "Splitting " <<  p_selected->GetFlavourA().IDName() 
+  // << " -> " << p_selected->GetFlavourB().IDName() <<  "  " << p_selected->GetFlavourC().IDName() <<
+  // "\t ran : " << rn << "  wt: " << wt <<  "  op: " << operator()(z,y,x,t,Q2) 
+  // << "  overe: " << Overestimated(z,y) << std::endl;
   if (rn>wt) {
     if (efac!=1.0) {
       m_weight*=(1.0-wt/efac)/(1.0-wt);

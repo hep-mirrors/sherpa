@@ -60,7 +60,6 @@ SF_Lorentz* Splitting_Function_Base::InitLorentzCalc(const MODEL::Single_Vertex&
       lf = SFL_Getter::GetObject("FFV_Quarkonia",sf_key);
     else lf = SFL_Getter::GetObject("FFV1",sf_key); 
   }
-  else THROW(fatal_error, "No Lorentz function found");
   return lf;
 }
 
