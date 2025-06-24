@@ -405,38 +405,37 @@
 #define      kf_Xi_1690_minus           203312
 #define      kf_Xi_1690                 203322
 // fictitious octet mesons relevant for quarkonia production
-// logic is 99 + padding zeroes to 6 figures + meson kf_code
-// for overlap the third digit becomes numbering. It goes up for higher mass end states and "down" for lower mass end states starting from 9
-#define      kf_1S0_c_8_eta_c        99000441
-#define      kf_1S0_c_8_J_psi_1S     99100441
-#define      kf_1S0_c_8_psi_2S       99200441
-#define      kf_3S1_c_8_eta_c        99900443
-#define      kf_3S1_c_8_J_psi_1S     99000443
-#define      kf_3S1_c_8_psi_2S       99100443
-#define      kf_3S1_c_8_chi_c0_1P    99200443
-#define      kf_3S1_c_8_chi_c1_1P    99300443
-#define      kf_3S1_c_8_chi_c2_1P    99400443
-#define      kf_3P0_c_8_J_psi_1S     99010441
-#define      kf_3P0_c_8_psi_2S       99110441
-#define      kf_3P1_c_8_J_psi_1S     99020443
-#define      kf_3P1_c_8_psi_2S       99120443
-#define      kf_3P2_c_8_J_psi_1S     99000445
-#define      kf_3P2_c_8_psi_2S       99100445
-#define      kf_1S0_b_8_eta_b        99000551
-#define      kf_1S0_b_8_Upsilon_1S   99100551
-#define      kf_1S0_b_8_Upsilon_2S   99200551
-#define      kf_3S1_b_8_eta_b        99900553
-#define      kf_3S1_b_8_Upsilon_1S   99000553
-#define      kf_3S1_b_8_Upsilon_2S   99100553
-#define      kf_3S1_b_8_chi_b0_1P    99200553
-#define      kf_3S1_b_8_chi_b1_1P    99300553
-#define      kf_3S1_b_8_chi_b2_1P    99400553
-#define      kf_3P0_b_8_Upsilon_1S   99010551
-#define      kf_3P0_b_8_Upsilon_2S   99110551
-#define      kf_3P1_b_8_Upsilon_1S   99020553
-#define      kf_3P1_b_8_Upsilon_2S   99120553
-#define      kf_3P2_b_8_Upsilon_1S   99000555
-#define      kf_3P2_b_8_Upsilon_2S   99100555
+// logic is 99 + single digit for octet state + final state code
+#define      kf_1S0_c_8_eta_c        990000441
+#define      kf_1S0_c_8_J_psi_1S     990000443
+#define      kf_1S0_c_8_psi_2S       990100443
+#define      kf_3S1_c_8_eta_c        991000441
+#define      kf_3S1_c_8_J_psi_1S     991000443
+#define      kf_3S1_c_8_psi_2S       991100443
+#define      kf_3S1_c_8_chi_c0_1P    991010441
+#define      kf_3S1_c_8_chi_c1_1P    991020443
+#define      kf_3S1_c_8_chi_c2_1P    991000445
+#define      kf_3P0_c_8_J_psi_1S     992000443
+#define      kf_3P0_c_8_psi_2S       992100443
+#define      kf_3P1_c_8_J_psi_1S     993000443
+#define      kf_3P1_c_8_psi_2S       993100443
+#define      kf_3P2_c_8_J_psi_1S     994000443
+#define      kf_3P2_c_8_psi_2S       994100443
+#define      kf_1S0_b_8_eta_b        990000551
+#define      kf_1S0_b_8_Upsilon_1S   990000553
+#define      kf_1S0_b_8_Upsilon_2S   990100553
+#define      kf_3S1_b_8_eta_b        991000551
+#define      kf_3S1_b_8_Upsilon_1S   991000553
+#define      kf_3S1_b_8_Upsilon_2S   991100553
+#define      kf_3S1_b_8_chi_b0_1P    991010551
+#define      kf_3S1_b_8_chi_b1_1P    991020553
+#define      kf_3S1_b_8_chi_b2_1P    991000555
+#define      kf_3P0_b_8_Upsilon_1S   992000553
+#define      kf_3P0_b_8_Upsilon_2S   992100553
+#define      kf_3P1_b_8_Upsilon_1S   993000553
+#define      kf_3P1_b_8_Upsilon_2S   993100553
+#define      kf_3P2_b_8_Upsilon_1S   994000555
+#define      kf_3P2_b_8_Upsilon_2S   994100555
 // hadrons we do not (yet) use with dodgy naming
 // #define      kf_Sigma_c_2455            204112
 // #define      kf_Lambda_c_plus           204122

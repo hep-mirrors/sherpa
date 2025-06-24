@@ -166,11 +166,11 @@ void Hadron_Init::Init() {
   Particle_Info::InitHadron(kf_3S1_c_8_chi_c0_1P,  true, 3.4173,   0.65, 0.014, 0,0,false,1,0,   "3S1(c)8_chi(c0)(1P)","3S1_{c}^{(8)}chi_{c0}(1P)");
   Particle_Info::InitHadron(kf_3S1_c_8_chi_c1_1P,  true, 3.51053,  0.65, 0.00088, 0,2,false,1,0, "3S1(c)8_chi(c1)(1P)","3S1_{c}^{(8)}chi_{c1}(1P)");
   Particle_Info::InitHadron(kf_3S1_c_8_chi_c2_1P,  true, 3.55617,  0.65, 0., 0,2,false,1,0,      "3S1(c)8_chi(c2)8(1P)","3S1_{c}^{(8)}chi_{c2}(1P)");
-  Particle_Info::InitHadron(kf_3P0_c_8_J_psi_1S,   true, 3.09688+0.096881,  0.65, 8.7e-05,0,2,false,1,0,  "3P0(c)8_J/psi","3S1_c^{(8)}J/psi(1S)");
+  Particle_Info::InitHadron(kf_3P0_c_8_J_psi_1S,   true, 3.09688,  0.65, 8.7e-05,0,2,false,1,0,  "3P0(c)8_J/psi","3S1_c^{(8)}J/psi(1S)");
   Particle_Info::InitHadron(kf_3P0_c_8_psi_2S,     true, 3.686,    0.65, 2.77e-04,0,2,false,1,0, "3P0(c)8_psi(2S)","3S1_c^{(8)}psi(2S)");
-  Particle_Info::InitHadron(kf_3P1_c_8_J_psi_1S,   true, 3.09688+0.096882,  0.65, 8.7e-05,0,2,false,1,0,  "3P1(c)8_J/psi","3S1_c^{(8)}J/psi(1S)");
+  Particle_Info::InitHadron(kf_3P1_c_8_J_psi_1S,   true, 3.09688,  0.65, 8.7e-05,0,2,false,1,0,  "3P1(c)8_J/psi","3S1_c^{(8)}J/psi(1S)");
   Particle_Info::InitHadron(kf_3P1_c_8_psi_2S,     true, 3.686,    0.65, 2.77e-04,0,2,false,1,0, "3P1(c)8_psi(2S)","3S1_c^{(8)}psi(2S)");
-  Particle_Info::InitHadron(kf_3P2_c_8_J_psi_1S,   true, 3.09688+0.096883,  0.65, 8.7e-05,0,2,false,1,0,  "3P2(c)8_J/psi","3S1_c^{(8)}J/psi(1S)");
+  Particle_Info::InitHadron(kf_3P2_c_8_J_psi_1S,   true, 3.09688,  0.65, 8.7e-05,0,2,false,1,0,  "3P2(c)8_J/psi","3S1_c^{(8)}J/psi(1S)");
   Particle_Info::InitHadron(kf_3P2_c_8_psi_2S,     true, 3.686,    0.65, 2.77e-04,0,2,false,1,0, "3P2(c)8_psi(2)","3S1_c^{(8)}psi(2S)");
 
   Particle_Info::InitHadron(kf_1S0_b_8_eta_b,      true, 9.4,0.65,0.050,0,0,false,1,0,                "1S0(b)8_eta(b)(1S)","1S0_{b}^{(8)}eta_{b}(1S)");
