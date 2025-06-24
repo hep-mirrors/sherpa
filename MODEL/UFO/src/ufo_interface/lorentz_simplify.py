@@ -132,6 +132,8 @@ def simplify_symbolic(input):
         shape = (1,)
     else:
         shape = tensor.shape
+    if isinstance(tensor, np.ndarray) and tensor.ndim == 0:
+        tensor = tensor.item()
     name = ArraySymbol(name, shape)
     return sympy.Array(tensor), name, indices
 
