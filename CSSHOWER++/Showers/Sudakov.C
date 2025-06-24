@@ -591,32 +591,23 @@ int Sudakov::Generate(Parton *split,Parton *spect,
                  2 * (tr_Q2 * sqr(tr_mass) + tr_Q2 * sqr(tr_spmass) +
                       sqr(tr_mass * tr_spmass))) /
             fabs(tr_Q2 - sqr(tr_spmass));
-        if (!((tr_Q2 > tr_thr) && split->KtStart() > transit->OutMass2() &&
-              t < transit->OutMass2()))
-          continue;
         tra_P += sur_P * (1. - exp(-tr_phw * transit->SudArg()));
         sur_P *= exp(-tr_phw * transit->SudArg());
         msg_Debugging() << METHOD << ", checking transition for "
                         << transit->GetFlavourB().IDName() << ", " << random
                         << " < " << tra_P << ",  trw: " << tr_phw << endl;
+        if (!((tr_Q2 > tr_thr) && split->KtStart() > transit->OutMass2() &&
+                        t < transit->OutMass2()))
+                    continue;
         if (random < tra_P) {
-          msg_Debugging() << "Tried to transit a " << split->GetFlavour()
-                          << " (" << split->GetFlow(1) << ", "
-                          << split->GetFlow(2) << ") "
-                          << "between t = " << split->KtStart()
-                          << " and t = " << t << ":\n"
-                          << "spectator is: " << spect->GetFlavour() << "  "
-                          << spect->Momentum() << endl
-                          << "Will want to transit to "
-                          << transit->GetFlavourB() << " ("
-                          << transit->OutMass2() << ") "
-                          << "with P = " << (1 - exp(-transit->SudArg()))
-                          << ".\n"
-                          << "Invariant mass = "
-                          << (p_split->Momentum() + p_spect->Momentum()).Abs2()
-                          << " > "
-                          << sqr(transit->OutMass() +
-                                 sqrt(Max(0., p_spect->Momentum().Abs2())))
+          msg_Debugging() << "Found " << split->GetFlavour()
+                          << " (" << split->GetFlow(1) << ", " << split->GetFlow(2) << ") "
+                          << "between t = " << split->KtStart() << " and t = " << t << "\n"
+                          << "spectator is: " << spect->GetFlavour() << "  " << spect->Momentum() << endl
+                          << "Will want to transit to " << transit->GetFlavourB() << " (" << transit->OutMass2() << ") "
+                          << "with P = " << (1 - exp(-transit->SudArg())) << ".\n"
+                          << "Invariant mass = " << (p_split->Momentum() + p_spect->Momentum()).Abs2() 
+                          << " > " << sqr(transit->OutMass() + sqrt(Max(0., p_spect->Momentum().Abs2())))
                           << ".\n";
           t = transit->OutMass2(); // need to increase a bit after
                                    // transition is done.
@@ -656,6 +647,8 @@ int Sudakov::Generate(Parton *split,Parton *spect,
 				  (*m_splitter)->GetFlavourC());
       x = 0.;
       if (y<0.0 || y>1.0) continue;
+      if (((*m_splitter)->GetFlavourC().Kfcode() == kf_J_psi_1S) && (y*(Q2 - mi2 - mj2 - mk2) + mi2 + mj2 < mj2/(1-z) + mi2/z)) continue;
+      if (((*m_splitter)->GetFlavourB().Kfcode() == kf_J_psi_1S) && (y*(Q2 - mi2 - mj2 - mk2) + mi2 + mj2 < mj2/z + mi2/(1-z))) continue;
     }
       break;
     case (cstp::FI) : {
@@ -865,9 +858,14 @@ bool Sudakov::Veto(double Q2,double x,double t,double y,double z) {
 }
 
 bool Sudakov::Splitting(double Q2,double x,double t,double y,double z) {
-  double wt(RejectionWeight(z,y,x,t,Q2));
+  double wt = RejectionWeight(z,y,x,t,Q2);
   double efac=p_selected->EFac();
-  if (ran->Get()>wt) {
+  double rn(ran->Get());
+  msg_Out() << "Splitting " <<  p_selected->GetFlavourA().IDName() 
+  << " -> " << p_selected->GetFlavourB().IDName() <<  "  " << p_selected->GetFlavourC().IDName() <<
+  "\t ran : " << rn << "  wt: " << wt <<  "  op: " << operator()(z,y,x,t,Q2) 
+  << "  overe: " << Overestimated(z,y) << std::endl;
+  if (rn>wt) {
     if (efac!=1.0) {
       m_weight*=(1.0-wt/efac)/(1.0-wt);
       p_split->Weights().push_back
