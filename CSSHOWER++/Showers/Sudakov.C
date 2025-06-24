@@ -112,7 +112,7 @@ void Sudakov::InitSplittingFunctions(MODEL::Model_Base *md,const int kfmode)
   AddDiQuarkSplittingFunctions(md, kfmode);
   AddOctetMesonSplittingFunctions(md, kfmode);
   // AddQuarkoniaSplittingFunctions(md, kfmode);
-  // AddGluonThresholds(md);
+  AddGluonThresholds(md);
   msg_Debugging() << "}\n";
 }
 
