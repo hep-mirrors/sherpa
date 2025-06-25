@@ -138,7 +138,7 @@ public:
 struct STcmp {
   bool operator()(const One2One_Transition_Base &a,
                   const One2One_Transition_Base &b) const {
-    if (a.OutMass() < b.OutMass())
+    if (a.OutMass() <= b.OutMass())
       return true;
     return false;
   }

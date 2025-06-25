@@ -382,7 +382,7 @@ bool Shower::EvolveSinglet(Singlet * act,const size_t &maxem,size_t &nem)
       return true;
     } else if (split->Transition() && m_flavC == (ATOOLS::Flavour)(kf_none)) {
       // Handles transitions
-      double tr_weight = 1;
+      const double tr_weight {split->Weight()};
       msg_Debugging() << "Transition " << m_flavA << " -> " << m_flavB << "  ("
                       << m_flavC << ") "
                       << " at kt = " << sqrt(split->KtTest()) << "( "
@@ -393,7 +393,7 @@ bool Shower::EvolveSinglet(Singlet * act,const size_t &maxem,size_t &nem)
                       << "Transition weight: " << tr_weight << endl
                       << "Resetting transition tag from " << split->Transition()
                       << " to false.\n";
-      m_weightsmap["PS"] *= tr_weight;
+      m_weightsmap["Sudakov"] *= tr_weight;
       msg_Debugging() << "FS --> Exiting Transition handling in" << METHOD
                       << " Shower weight: " << m_weightsmap["PS"] << endl;
     } else {

@@ -121,25 +121,25 @@ double LF_FFV_Quarkonia_FF::operator()(const double zz, const double y,
       12*z*z*(1-z)/sqr(2-z)*sqr(sij-mij2)
     );
     const double LDME = p_cf->Coupling(newscale,0)/(2*M_PI) * pow(0.82,2); // GeV^3 //(m_flavs[2].IsOctetMeson() ? (1.5E-02) : pow(0.82, 3));
-    return 16. / 27 / sqrt(mij2) * LDME * p_cf->Coupling(scale, 0) * value / (sij - mij2) * JFF(y, mui2, muj2, muk2, muij2) 
-          / (1 + (mui2 + muj2 - muij2)/y/(1-mui2-muj2-muk2) );
+    const double Jprop = 1./ (1 + (mui2 + muj2 - muij2)/y/(1-mui2-muj2-muk2) );
+    return 16. / 27 / sqrt(mij2) * p_cf->Coupling(scale, 0) * LDME * value / (sij - mij2) * JFF(y, mui2, muj2, muk2, muij2);
   }
 }
 
 double LF_FFV_Quarkonia_FF::OverIntegrated(const double zmin, const double zmax,
                                            const double scale,
                                            const double xbj) {
-  const double m = p_ms->Mass(m_flavs[0]); // mass of heavy quark
-  const double preF = ( 8. / 27 * p_cf->MaxCoupling(0) * p_cf->Coupling(sqr(3*m),0) / M_PI ) * pow(0.82,2)/m;
+  const double mij = p_ms->Mass(m_flavs[0]); // mass of heavy quark
+  const double preF = ( 16. / 27 / mij * p_cf->MaxCoupling(0) )  * p_cf->Coupling(sqr(3*mij),0)/(2*M_PI) * pow(0.82,2);
   m_zmin = zmin; 
   m_zmax = zmax;
-  return  preF * 5. / 2. / (8*sqr(m));
+  return  preF * 236. / 100. / (8*sqr(mij));
 }
 
 double LF_FFV_Quarkonia_FF::OverEstimated(const double z, const double y) {
-  const double m = p_ms->Mass(m_flavs[0]);
-  const double preF = ( 8. / 27 * p_cf->MaxCoupling(0) * p_cf->Coupling(sqr(3*m),0) / M_PI ) * pow(0.82,2)/m;
-  return preF * 5. / 2. / (8*sqr(m));
+  const double mij = p_ms->Mass(m_flavs[0]);
+  const double preF = ( 16. / 27 / mij * p_cf->MaxCoupling(0) )  * p_cf->Coupling(sqr(3*mij),0)/(2*M_PI) * pow(0.82,2);
+  return preF * 236. / 100. / (8*sqr(mij));
 }
 
 double LF_FFV_Quarkonia_FF::Z() {

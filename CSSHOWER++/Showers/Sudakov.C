@@ -249,29 +249,38 @@ void Sudakov::AddGluonThresholds(Model_Base *md) {
   m_stmap[Flavour(kf_gluon)] = stset = new ST_Set;
   map<kf_code, double> LDME = {
       // numerical LDME [GeV^3] from ph/9507398, PhysRevD.50.3176
-      {kf_3S1_c_8_J_psi_1S, 1.5E-02/M_PI_2},
-      {kf_3S1_c_8_psi_2S, 4.3E-03 / M_PI_2},
-      {kf_3P0_c_8_J_psi_1S, 1 * 3E-03 * mc * mc},
-      {kf_3P1_c_8_J_psi_1S, 3 * 3E-03 * mc * mc},
-      {kf_3P2_c_8_J_psi_1S, 5 * 3E-03 * mc * mc}};
+      {kf_3S1_c_8_J_psi_1S, 1.5E-02 / sqr(M_PI)},
+      {kf_3S1_c_8_psi_2S,   4.3E-03 / sqr(M_PI)},
+      {kf_3P0_c_8_J_psi_1S, 2./3/M_PI * 1 * 3E-03},
+      {kf_3P1_c_8_J_psi_1S, 2./3/M_PI * 3 * 3E-03},
+      {kf_3P2_c_8_J_psi_1S, 2./3/M_PI * 5 * 3E-03}};
   double arg;
   for (list<kf_code>::iterator octit = octetvectors.begin();
        octit != octetvectors.end(); octit++) {
-    arg = 0.5 * (M_PI * as(2 * mc) / (24 * pow(mc, 3))) *
+    arg = 0.5 * (M_PI * as(sqr(2*mc)) / (24 * pow(mc, 3))) *
           LDME[*octit]; // SDME for g -> ccb (3S_1)_8
     stset->insert(
         One2One_Transition_Base(Flavour(kf_gluon), Flavour(*octit), arg, 1));
   }
+  stset->insert(One2One_Transition_Base(
+      Flavour(kf_gluon), Flavour(kf_3S1_b_8_Upsilon_1S),
+      0.5 * (M_PI * as(2 * mb) / (24 * pow(mb, 3))) * (0.0477), 1));
+  stset->insert(One2One_Transition_Base(
+      Flavour(kf_gluon), Flavour(kf_3S1_b_8_Upsilon_2S),
+      0.5 * (M_PI * as(2 * mb) / (24 * pow(mb, 3))) * (0.121), 1));
+
   // stset->insert(One2One_Transition_Base(
   //     Flavour(kf_gluon), Flavour(kf_Upsilon_1S_oct),
   //     0.5 * (M_PI * as(2 * mb) / (24 * pow(mb, 3))) * (305.0E-03), 1)); //
   //     this will capture almost all Y(1S) production but it's a guess
-  stset->insert(One2One_Transition_Base(
-      Flavour(kf_gluon), Flavour(kf_3S1_b_8_Upsilon_1S),
-      0.5 * (M_PI * as(2 * mb) / (24 * pow(mb, 3))) * (228.0E-03), 1));
-  stset->insert(One2One_Transition_Base(
-      Flavour(kf_gluon), Flavour(kf_3S1_b_8_Upsilon_2S),
-      0.5 * (M_PI * as(2 * mb) / (24 * pow(mb, 3))) * (119.0E-03), 1));
+  
+  // stset->insert(One2One_Transition_Base(
+  //     Flavour(kf_gluon), Flavour(kf_3S1_b_8_Upsilon_1S),
+  //     0.5 * (M_PI * as(2 * mb) / (24 * pow(mb, 3))) * (228.0E-03), 1));
+  // stset->insert(One2One_Transition_Base(
+  //     Flavour(kf_gluon), Flavour(kf_3S1_b_8_Upsilon_2S),
+  //     0.5 * (M_PI * as(2 * mb) / (24 * pow(mb, 3))) * (119.0E-03), 1));
+  
   // stset->insert(One2One_Transition_Base(
   //     Flavour(kf_gluon), Flavour(kf_Upsilon_3S_oct),
   //     0.5 * (M_PI * as(2 * mb) / (24 * pow(mb, 3))) * (39.0E-03), 1));
@@ -583,19 +592,17 @@ int Sudakov::Generate(Parton *split,Parton *spect,
         double tr_mass = transit->OutMass();
         double tr_spmass = sqrt(Max(0., p_spect->Momentum().Abs2()));
         double tr_thr = sqr(tr_mass + tr_spmass);
-        double tr_phw =
+        double tr_phw = 
             sqrt(sqr(tr_Q2) + sqr(sqr(tr_mass)) + sqr(sqr(tr_spmass)) -
                  2 * (tr_Q2 * sqr(tr_mass) + tr_Q2 * sqr(tr_spmass) +
                       sqr(tr_mass * tr_spmass))) /
             fabs(tr_Q2 - sqr(tr_spmass));
+        if (!((tr_Q2 > tr_thr) && split->KtStart() > transit->OutMass2() && t < transit->OutMass2())) continue;
         tra_P += sur_P * (1. - exp(-tr_phw * transit->SudArg()));
         sur_P *= exp(-tr_phw * transit->SudArg());
         msg_Debugging() << METHOD << ", checking transition for "
                         << transit->GetFlavourB().IDName() << ", " << random
                         << " < " << tra_P << ",  trw: " << tr_phw << endl;
-        if (!((tr_Q2 > tr_thr) && split->KtStart() > transit->OutMass2() &&
-                        t < transit->OutMass2()))
-                    continue;
         if (random < tra_P) {
           msg_Debugging() << "Found " << split->GetFlavour()
                           << " (" << split->GetFlow(1) << ", " << split->GetFlow(2) << ") "
