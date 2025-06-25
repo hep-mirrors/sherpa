@@ -230,7 +230,7 @@ void Initialization_Handler::RegisterDefaults()
   s["NLOMC_GENERATOR"].SetDefault(showergen);
   auto pss = s["SHOWER"], nlopss = s["MC@NLO"];
   pss["EVOLUTION_SCHEME"].SetDefault(30+30*100);
-  pss["KFACTOR_SCHEME"].SetDefault(1);
+  pss["KFACTOR_SCHEME"].SetDefault(9);
   pss["SCALE_SCHEME"].SetDefault(14);
   pss["SCALE_VARIATION_SCHEME"].SetDefault(1);
   // TODO: Should this be set to 3.0 for the new Dire default? See the manual

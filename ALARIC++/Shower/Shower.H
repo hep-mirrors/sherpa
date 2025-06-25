@@ -124,7 +124,7 @@ namespace ALARIC {
     double m_tmin[2], m_rewtmin, m_cplfac[2], m_rsf, m_fsf;
     double m_weight, m_oef, m_pdfmin[2], m_rcf, m_tcef;
 
-    int m_kfac, m_cpl, m_muf, m_mec, m_sfs, m_es[2];
+    int m_kfac, m_cpl, m_muf, m_scv, m_mec, m_sfs, m_es[2];
 
     unsigned int m_maxem, m_maxpart;
 
@@ -183,6 +183,7 @@ namespace ALARIC {
 
     inline int KFactorScheme() const  { return m_kfac; }
     inline int CouplingScheme() const { return m_cpl;  }
+    inline int ScaleVarScheme() const { return m_scv;  }
 
     inline int MECorrection() const { return m_mec; }
     inline int KernelScheme() const { return m_sfs; }

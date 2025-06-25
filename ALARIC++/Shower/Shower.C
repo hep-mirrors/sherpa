@@ -78,6 +78,7 @@ bool Shower::Init(MODEL::Model_Base *const model,
   m_kfac=s["KFACTOR_SCHEME"].Get<int>();
   m_cpl=s["COUPLING_SCHEME"].Get<int>();
   m_muf=s["FACSCALE_SCHEME"].Get<int>();
+  m_scv=s["SCALE_VARIATION_SCHEME"].Get<int>();
   m_mec=s["ME_CORRECTION"].Get<int>();
   m_sfs=s["KERNEL_SCHEME"].Get<int>();
   m_es[0]=s["FS_EVOL_SCHEME"].Get<int>();

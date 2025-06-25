@@ -40,7 +40,7 @@ namespace PHASIC {
 
     std::shared_ptr<Color_Integrator> p_ci;
 
-    double m_rsf, m_fsf;
+    double m_fsf;
     int    m_cmode, m_nmin;
     int    m_rproc, m_sproc, m_rsproc, m_vproc, m_nproc;
 
@@ -208,9 +208,6 @@ MEPS_Scale_Setter::MEPS_Scale_Setter
     if (p_uoscale==NULL) THROW(fatal_error,"Invalid unordered scale '"+uoscale+"'");
     msg_Debugging()<<METHOD<<"(): Custom scale for unordered configurations '"+uoscale+"'\n";
   }
-  m_rsf=ToType<double>(rpa->gen.Variable("RENORMALIZATION_SCALE_FACTOR"));
-  if (m_rsf!=1.0)
-    msg_Debugging()<<METHOD<<"(): Renormalization scale factor "<<sqrt(m_rsf)<<"\n";
   m_fsf=ToType<double>(rpa->gen.Variable("FACTORIZATION_SCALE_FACTOR"));
   if (m_fsf!=1.0)
     msg_Debugging()<<METHOD<<"(): Factorization scale factor "<<sqrt(m_fsf)<<"\n";
@@ -654,7 +651,7 @@ double MEPS_Scale_Setter::UnorderedScale(Cluster_Amplitude *const ampl) const
 
 double MEPS_Scale_Setter::SetScales(Cluster_Amplitude *ampl)
 {
-  double muf2(ampl->Last()->KT2()), mur2(m_rsf*ampl->Last()->Mu2());
+  double muf2(ampl->Last()->KT2()), mur2(ampl->Last()->Mu2());
   m_scale[stp::size+stp::res]=m_scale[stp::res]=ampl->MuQ2();
   if (ampl) {
     m_scale[stp::size+stp::res]=ampl->KT2();
@@ -664,7 +661,7 @@ double MEPS_Scale_Setter::SetScales(Cluster_Amplitude *ampl)
     mur2=1.0;
     double as(1.0), mmur2(1.0), mas(1.0), oqcd(0.0), mup2(1.0);
     for (size_t idx(2);ampl->Next();++idx,ampl=ampl->Next()) {
-      scale[idx]=Max(ampl->Mu2(),m_rsf*MODEL::as->CutQ2());
+      scale[idx]=Max(ampl->Mu2(),MODEL::as->CutQ2());
       scale[idx]=Min(scale[idx],sqr(rpa->gen.Ecms()));
       bool skip(false);
       Cluster_Amplitude *next(ampl->Next());
@@ -698,27 +695,25 @@ double MEPS_Scale_Setter::SetScales(Cluster_Amplitude *ampl)
 	  if (p_uoscale) scale[idx]=muuo2;
 	  else scale[idx]=mup2;
 	}
-	double cas(MODEL::as->BoundedAlphaS(m_rsf*scale[idx]));
-	msg_Debugging()<<"  \\mu_{"<<idx<<"} = "
-		       <<sqrt(m_rsf)<<" * "<<sqrt(scale[idx])
+	double cas(MODEL::as->BoundedAlphaS(scale[idx]));
+	msg_Debugging()<<"  \\mu_{"<<idx<<"} = "<<sqrt(scale[idx])
 		       <<", as = "<<cas<<", O(QCD) = "<<coqcd<<"\n";
-	mur2*=pow(m_rsf*scale[idx],coqcd);
+	mur2*=pow(scale[idx],coqcd);
 	as*=pow(cas,coqcd);
-	mmur2=Max(mmur2,m_rsf*scale[idx]);
+	mmur2=Max(mmur2,scale[idx]);
 	mas=Min(mas,cas);
 	oqcd+=coqcd;
       }
       else {
-        msg_Debugging()<<"  \\mu_{"<<idx<<"} = "
-                       <<sqrt(m_rsf)<<" * "<<sqrt(scale[idx])
+        msg_Debugging()<<"  \\mu_{"<<idx<<"} = "<<sqrt(scale[idx])
                        <<", EW splitting\n";
       }
       if (oqcd==0) m_scale[stp::size+stp::res]=ampl->Next()->KT2();
     }
     m_scale[stp::res]=ampl->MuQ2();
-    double mu2(Max(ampl->Mu2(),m_rsf*MODEL::as->CutQ2()));
-    double cas(MODEL::as->BoundedAlphaS(m_rsf*mu2));
-    mmur2=Max(mmur2,m_rsf*mu2);
+    double mu2(Max(ampl->Mu2(),MODEL::as->CutQ2()));
+    double cas(MODEL::as->BoundedAlphaS(mu2));
+    mmur2=Max(mmur2,mu2);
     mas=Min(mas,cas);
     if (ampl->OrderQCD()-(m_vproc?1:0)) {
       if (mu2<mup2) {
@@ -729,13 +724,13 @@ double MEPS_Scale_Setter::SetScales(Cluster_Amplitude *ampl)
 	else mu2=mup2;
       }
       int coqcd(ampl->OrderQCD()-(m_vproc?1:0));
-      msg_Debugging()<<"  \\mu_{0} = "<<sqrt(m_rsf)<<" * "<<sqrt(mu2)
+      msg_Debugging()<<"  \\mu_{0} = "<<sqrt(mu2)
 		     <<", as = "<<cas<<", O(QCD) = "<<coqcd<<"\n";
-      mur2*=pow(m_rsf*mu2,coqcd);
+      mur2*=pow(mu2,coqcd);
       as*=pow(cas,coqcd);
       oqcd+=coqcd;
     }
-    if (oqcd==0) mur2=m_rsf*ampl->Mu2();
+    if (oqcd==0) mur2=ampl->Mu2();
     else {
       mur2=pow(mur2,1.0/oqcd);
       as=pow(as,1.0/oqcd);
@@ -748,8 +743,8 @@ double MEPS_Scale_Setter::SetScales(Cluster_Amplitude *ampl)
       }
       if (s_nlocpl&1) {
 	double smur2(mur2);
-	mur2=MODEL::as->WDBSolve(as,m_rsf*MODEL::as->CutQ2(),
-				 m_rsf*1.01*sqr(rpa->gen.Ecms()));
+	mur2=MODEL::as->WDBSolve(as,MODEL::as->CutQ2(),
+				 1.01*sqr(rpa->gen.Ecms()));
 	if (!IsEqual(smur2,mur2))
 	  msg_Debugging()<<"\\mu_R = "<<sqrt(smur2)<<" -> "<<sqrt(mur2)
 			 <<", rel. dev. "<<2.*(smur2-mur2)/(smur2+mur2)<<"\n";
