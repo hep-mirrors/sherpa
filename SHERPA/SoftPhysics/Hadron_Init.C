@@ -20,31 +20,31 @@ void Hadron_Init::Init() {
   // Diquarks - not exactly particles but we need them ########################
   // ##########################################################################
   // ##########################################################################
-  AddParticle(kf_dd_1,0.77133,0.,0,-2,-3,2,0,0,1,1, "dd_1","dd_1b","dd_1b","dd_1b");
-  AddParticle(kf_ud_0,0.57933,0.,0,1,-3,0,0,0,1,1,  "ud_0","ud_0b","ud_0b","ud_0b");
-  AddParticle(kf_ud_1,0.77133,0.,0,1,-3,2,0,0,1,1,  "ud_1","ud_1b","ud_1b","ud_1b");
-  AddParticle(kf_uu_1,0.77133,0.,0,4,-3,2,0,0,1,1,  "uu_1","uu_1b","uu_1b","uu_1b");
-  AddParticle(kf_sd_0,0.80473,0.,0,-2,-3,0,0,0,1,1, "sd_0","sd_0b","sd_0b","sd_0b");
-  AddParticle(kf_sd_1,0.92953,0.,0,-2,-3,2,0,0,1,1, "sd_1","sd_1b","sd_1b","sd_1b");
-  AddParticle(kf_su_0,0.80473,0.,0,1,-3,0,0,0,1,1,  "su_0","su_0b","su_0b","su_0b");
-  AddParticle(kf_su_1,0.92953,0.,0,1,-3,2,0,0,1,1,  "su_1","su_1b","su_1b","su_1b");
-  AddParticle(kf_ss_1,1.09361,0.,0,-2,-3,2,0,0,1,1, "ss_1","ss_1b","ss_1b","ss_1b");
-  AddParticle(kf_cd_0,1.96908,0.,0,1,-3,0,0,0,1,1,  "cd_0","cd_0b","cd_0b","cd_0b");
-  AddParticle(kf_cd_1,2.00808,0.,0,1,-3,2,0,0,1,1,  "cd_1","cd_1b","cd_1b","cd_1b");
-  AddParticle(kf_cu_0,1.96908,0.,0,4,-3,0,0,0,1,1,  "cu_0","cu_0b","cu_0b","cu_0b");
-  AddParticle(kf_cu_1,2.00808,0.,0,4,-3,2,0,0,1,1,  "cu_1","cu_1b","cu_1b","cu_1b");
-  AddParticle(kf_cs_0,2.15432,0.,0,1,-3,0,0,0,1,1,  "cs_0","cs_0b","cs_0b","cs_0b");
-  AddParticle(kf_cs_1,2.17967,0.,0,1,-3,2,0,0,1,1,  "cs_1","cs_1b","cs_1b","cs_1b");
-  AddParticle(kf_cc_1,3.27531,0.,0,4,-3,2,0,0,1,1,  "cc_1","cc_1b","cc_1b","cc_1b");
-  AddParticle(kf_bd_0,5.38897,0.,0,-2,-3,0,0,0,1,1, "bd_0","bd_0b","bd_0b","bd_0b");
-  AddParticle(kf_bd_1,5.40145,0.,0,-2,-3,2,0,0,1,1, "bd_1","bd_1b","bd_1b","bd_1b");
-  AddParticle(kf_bu_0,5.38897,0.,0,1,-3,0,0,0,1,1,  "bu_0","bu_0b","bu_0b","bu_0b");
-  AddParticle(kf_bu_1,5.40145,0.,0,1,-3,2,0,0,1,1,  "bu_1","bu_1b","bu_1b","bu_1b");
-  AddParticle(kf_bs_0,5.56725,0.,0,-2,-3,0,0,0,1,1, "bs_0","bs_0b","bs_0b","bs_0b");
-  AddParticle(kf_bs_1,5.57536,0.,0,-2,-3,2,0,0,1,1, "bs_1","bs_1b","bs_1b","bs_1b");
-  AddParticle(kf_bc_0,6.67143,0.,0,1,-3,0,0,0,1,1,  "bc_0","bc_0b","bc_0b","bc_0b");
-  AddParticle(kf_bc_1,6.67397,0.,0,1,-3,2,0,0,1,1,  "bc_1","bc_1b","bc_1b","bc_1b");
-  AddParticle(kf_bb_1,10.07354,0.,0,-2,-3,2,0,0,1,1,"bb_1","bb_1b","bb_1b","bb_1b");
+  AddParticle(kf_dd_1,0.77133,0.,0,-2,-3,2,0,1,1,1, "dd_1","dd_1b","dd_1b","dd_1b");
+  AddParticle(kf_ud_0,0.57933,0.,0,1,-3,0,0,1,1,1,  "ud_0","ud_0b","ud_0b","ud_0b");
+  AddParticle(kf_ud_1,0.77133,0.,0,1,-3,2,0,1,1,1,  "ud_1","ud_1b","ud_1b","ud_1b");
+  AddParticle(kf_uu_1,0.77133,0.,0,4,-3,2,0,1,1,1,  "uu_1","uu_1b","uu_1b","uu_1b");
+  AddParticle(kf_sd_0,0.80473,0.,0,-2,-3,0,0,1,1,1, "sd_0","sd_0b","sd_0b","sd_0b");
+  AddParticle(kf_sd_1,0.92953,0.,0,-2,-3,2,0,1,1,1, "sd_1","sd_1b","sd_1b","sd_1b");
+  AddParticle(kf_su_0,0.80473,0.,0,1,-3,0,0,1,1,1,  "su_0","su_0b","su_0b","su_0b");
+  AddParticle(kf_su_1,0.92953,0.,0,1,-3,2,0,1,1,1,  "su_1","su_1b","su_1b","su_1b");
+  AddParticle(kf_ss_1,1.09361,0.,0,-2,-3,2,0,1,1,1, "ss_1","ss_1b","ss_1b","ss_1b");
+  AddParticle(kf_cd_0,1.96908,0.,0,1,-3,0,0,1,1,1,  "cd_0","cd_0b","cd_0b","cd_0b");
+  AddParticle(kf_cd_1,2.00808,0.,0,1,-3,2,0,1,1,1,  "cd_1","cd_1b","cd_1b","cd_1b");
+  AddParticle(kf_cu_0,1.96908,0.,0,4,-3,0,0,1,1,1,  "cu_0","cu_0b","cu_0b","cu_0b");
+  AddParticle(kf_cu_1,2.00808,0.,0,4,-3,2,0,1,1,1,  "cu_1","cu_1b","cu_1b","cu_1b");
+  AddParticle(kf_cs_0,2.15432,0.,0,1,-3,0,0,1,1,1,  "cs_0","cs_0b","cs_0b","cs_0b");
+  AddParticle(kf_cs_1,2.17967,0.,0,1,-3,2,0,1,1,1,  "cs_1","cs_1b","cs_1b","cs_1b");
+  AddParticle(kf_cc_1,3.27531,0.,0,4,-3,2,0,1,1,1,  "cc_1","cc_1b","cc_1b","cc_1b");
+  AddParticle(kf_bd_0,5.38897,0.,0,-2,-3,0,0,1,1,1, "bd_0","bd_0b","bd_0b","bd_0b");
+  AddParticle(kf_bd_1,5.40145,0.,0,-2,-3,2,0,1,1,1, "bd_1","bd_1b","bd_1b","bd_1b");
+  AddParticle(kf_bu_0,5.38897,0.,0,1,-3,0,0,1,1,1,  "bu_0","bu_0b","bu_0b","bu_0b");
+  AddParticle(kf_bu_1,5.40145,0.,0,1,-3,2,0,1,1,1,  "bu_1","bu_1b","bu_1b","bu_1b");
+  AddParticle(kf_bs_0,5.56725,0.,0,-2,-3,0,0,1,1,1, "bs_0","bs_0b","bs_0b","bs_0b");
+  AddParticle(kf_bs_1,5.57536,0.,0,-2,-3,2,0,1,1,1, "bs_1","bs_1b","bs_1b","bs_1b");
+  AddParticle(kf_bc_0,6.67143,0.,0,1,-3,0,0,1,1,1,  "bc_0","bc_0b","bc_0b","bc_0b");
+  AddParticle(kf_bc_1,6.67397,0.,0,1,-3,2,0,1,1,1,  "bc_1","bc_1b","bc_1b","bc_1b");
+  AddParticle(kf_bb_1,10.07354,0.,0,-2,-3,2,0,1,1,1,"bb_1","bb_1b","bb_1b","bb_1b");
   // ##################################################################################################
   // MESON MULTIPLETS:
   //   - will uniformly assume a radius of 0.65 fm
