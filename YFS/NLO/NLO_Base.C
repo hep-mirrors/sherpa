@@ -155,14 +155,11 @@ double NLO_Base::CalculateVirtual() {
 		// already present in eex!!
 		return p_dipoles->CalculateEEXVirtual()*m_born-m_born;
 	}
-	// if (!m_looptool && !m_realvirt) return 0;
 	if (!m_looptool) return 0;
 	double virt;
 	double sub;
 	p_dipoles->p_yfsFormFact->p_virt = p_virt->p_loop_me;
-	// CheckMasses(m_plab);
 	CheckMassReg();
-	// for(auto pp: m_plab) PRINT_VAR(pp.Mass());
 	if(!HasISR()) virt = p_virt->Calc(m_bornMomenta, m_born);
 	else virt = p_virt->Calc(m_plab, m_born);
 	if(m_check_virt_born) {
@@ -176,10 +173,7 @@ double NLO_Base::CalculateVirtual() {
 	}	
 	if(p_virt->FailCut()) return 0;
 	if(m_virt_sub && p_virt->p_loop_me->Mode()!=1) sub = p_dipoles->CalculateVirtualSub();
-	else {
-		sub = 0;
-		// virt=virt;
-	}
+	else sub = 0;
 	m_oneloop = (virt- sub * m_born/m_rescale_alpha );
 	if(IsBad(m_oneloop) || IsBad(sub)){
 		msg_Error()<<"YFS Virtual is NaN"<<std::endl
