@@ -459,7 +459,7 @@ double NLO_Base::CalculateRealVirtual(Vec4D k, int fsrcount) {
 	// PRINT_VAR(yfspole);
 	double subb;
 
-	subb = (fsrcount!=1?p_dipoles->CalculateRealSubEEX(k):p_dipoles->CalculateRealSubEEX(k));
+	subb = (fsrcount!=1?p_dipoles->CalculateRealSubEEX(kk):p_dipoles->CalculateRealSubEEX(kk));
 	
 	if(p.size()!=(m_flavs.size()+1)){
 		msg_Error()<<"Mismatch in "<<METHOD<<std::endl;
@@ -470,9 +470,10 @@ double NLO_Base::CalculateRealVirtual(Vec4D k, int fsrcount) {
 		msg_Error()<<"Real-Virtual is "<<r<<std::endl;
 		return 0;
 	}
+	if(IsZero(r)) return 0;
 	// m_plab = pp;
-	// double aB = subloc*p_nlodipoles->CalculateRealSub(k)*m_oneloop;//CalculateVirtual();//*p_realvirt->m_factor;
-	double aB = p_nlodipoles->CalculateRealSub(k)*CalculateVirtual();//*p_realvirt->m_factor;
+	double aB = p_nlodipoles->CalculateRealSub(k)*m_oneloop;//CalculateVirtual();//*p_realvirt->m_factor;
+	// double aB = p_nlodipoles->CalculateRealSub(k)*CalculateVirtual();//*p_realvirt->m_factor;
 	// double aB = subloc*CalculateVirtual();
 	// yfspole*=m_oneloop*p_realvirt->m_factor;
 	// double aB = subloc*(p_virt->Calc(pp, m_born) - m_born*p_nlodipoles->CalculateVirtualSub());
@@ -650,7 +651,10 @@ double NLO_Base::CalculateRealReal(Vec4D k1, Vec4D k2, int fsr1, int fsr2){
 		return 0;
 	}
 	double r = p_realreal->Calc_R(p) / norm ;
-	if(p_realreal->FailCut()) m_failcut = true;
+	if(p_realreal->FailCut()) {
+		m_failcut = true;
+		return 0;
+	}
 	if(IsBad(r) || IsBad(flux)) {
 		msg_Error()<<"Bad point for YFS Real"<<std::endl
 							 <<"Real ME is : "<<r<<std::endl
