@@ -1163,12 +1163,6 @@ bool Csplit_merge::insert(Cjet &jet){
   return true;
 }
 
-/**
- * given a 4-momentum and its associated pT, return the 
- * variable that has to be used for SM
- * \param v          4 momentum of the protojet
- * \param pt_tilde   pt_tilde of the protojet
- */
 double Csplit_merge::get_sm_var2(Cmomentum &v, double &pt_tilde){
   switch(ptcomparison.split_merge_scale) {
   case SM_pt:      return v.perp2();            
