@@ -845,7 +845,7 @@ if (SHERPA_ENABLE_DOXYGEN)
     PROMOTE
   )
   # YES if you want private members in the documentation
-  set(DOXYGEN_EXTRACT_PRIVATE NO)
+  set(DOXYGEN_EXTRACT_PRIVATE YES)
   # NO if you want undocumented members to have empty documentation
   set(DOXYGEN_HIDE_UNDOC_MEMBERS NO)
   set(DOXYGEN_EXAMPLE_PATH Examples)
