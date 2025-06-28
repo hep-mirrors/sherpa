@@ -75,7 +75,7 @@ NJet_Finder::NJet_Finder(Process_Base *const proc, size_t nj,
 
   m_r2min      = sqr(m_delta_r);
 
-  m_njet       = nj;
+  m_njet       = m_type>1?nj:-nj;
 
   p_kis  = new double[m_nout];
   p_imap = new int[m_nout];
@@ -95,6 +95,10 @@ NJet_Finder::~NJet_Finder() {
 
 
 void NJet_Finder::AddToJetlist(const Vec4D &jet) {
+  if (m_type==1) {
+    m_kt2.push_back(m_sprime);
+    return;
+  }
   if (dabs(jet.Eta())<m_etamax && dabs(jet.Y()<m_ymax)) {
     if (jet.EPerp2()>=m_et2min && jet.PPerp2()>=m_pt2min) {
       m_jetpt.push_back(jet.PPerp2());
@@ -129,8 +133,6 @@ bool NJet_Finder::Trigger(Selector_List &sl)
   if (m_njet<0) {
     size_t np(0);
     for (size_t i(0);i<m_kt2.size();++i) {
-      if (i>0 && m_kt2[i]<m_kt2[i-1])
-	return 1-m_sel_log->Hit(1);
       if (m_kt2[i]>m_pt2min) ++np;
     }
     return 1-m_sel_log->Hit(np<-m_njet);
@@ -154,24 +156,23 @@ void NJet_Finder::ConstructJets(Vec4D * p, int n)
 
   //cal first matrix
   int ii=0, jj=0;
-  double dmin=(m_type>1)?p[0].PPerp2():sqr(p[0][0]);
-  dmin=pow(dmin,m_exp);
+  double dmin=std::numeric_limits<double>::max();
   for (int i=0;i<n;++i) {
     double di = (m_type>1)?p[i].PPerp2():sqr(p[i][0]);
     p_ktij[i][i] = di = pow(di,m_exp);
-    if (di<dmin) { dmin=di; ii=i; jj=i;}
+    if (m_type>1 && di<dmin) { dmin=di; ii=i; jj=i;}
     for (int j=0;j<i;++j) {
       double dj  = p_ktij[j][j];
-      double dij = p_ktij[i][j] = Min(di,dj)*R2(p[i],p[j]) /m_r2min;
+      double dij = p_ktij[i][j] = (m_type>1)?Min(di,dj)*R2(p[i],p[j]) /m_r2min:Y12(p[i],p[j]);
       if (dij<dmin) {dmin=dij; ii=i; jj=j;}
     }
   }
   // recalc matrix
-  while (n>0) {
+  while (n>(m_type>1?0:2)) {
     if (ii!=jj) {
       // combine precluster
       p[p_imap[jj]]+=p[p_imap[ii]];
-      m_kt2.push_back(p_ktij[ii][jj]);
+      m_kt2.push_back(p_ktij[p_imap[ii]][p_imap[jj]]);
     }
     else {
       // add to jet list
@@ -191,19 +192,21 @@ void NJet_Finder::ConstructJets(Vec4D * p, int n)
     // update matrix (only what is necessary)
     int jjx=p_imap[jj];
     p_ktij[jjx][jjx] = pow((m_type>1)?p[jjx].PPerp2():sqr(p[jjx][0]),m_exp);
-    for (int j=0;j<jj;++j)   p_ktij[jjx][p_imap[j]] = 
+    for (int j=0;j<jj;++j)   p_ktij[jjx][p_imap[j]] = (m_type>1)?
                                Min(p_ktij[jjx][jjx],p_ktij[p_imap[j]][p_imap[j]])
-			       *R2(p[jjx],p[p_imap[j]])/m_r2min;
-    for (int i=jj+1;i<n;++i) p_ktij[p_imap[i]][jjx] = 
+			       *R2(p[jjx],p[p_imap[j]])/m_r2min:
+			       Y12(p[jjx],p[p_imap[j]]);
+    for (int i=jj+1;i<n;++i) p_ktij[p_imap[i]][jjx] = (m_type>1)?
                                Min(p_ktij[jjx][jjx],p_ktij[p_imap[i]][p_imap[i]])
-			       *R2(p[p_imap[i]],p[jjx])/m_r2min;
+			       *R2(p[p_imap[i]],p[jjx])/m_r2min:
+			       Y12(p[p_imap[i]],p[jjx]);
     // redetermine rmin and dmin
     ii=jj=0;
-    dmin=p_ktij[p_imap[0]][p_imap[0]];
+    dmin=std::numeric_limits<double>::max();
     for (int i=0;i<n;++i) {
       int ix=p_imap[i];
       double di = p_ktij[ix][ix];
-      if (di<dmin) { dmin=di; ii=jj=i;}
+      if (m_type>1 && di<dmin) { dmin=di; ii=jj=i;}
       for (int j=0;j<i;++j) {
 	int jx=p_imap[j];
 	double dij = p_ktij[ix][jx];
@@ -260,7 +263,7 @@ double NJet_Finder::R2(Vec4D &p1, Vec4D &p2)
 
 double NJet_Finder::Y12(const Vec4D & p1, const Vec4D & p2) const
 {
-  return 2.*sqr(Min(p1[0],p2[0]))*(1.-DCos12(p1,p2))/m_sprime;
+  return 2.*sqr(Min(p1[0],p2[0]))*(1.-DCos12(p1,p2));
 }
 
 double NJet_Finder::DCos12(const Vec4D & p1,const Vec4D & p2) const
@@ -313,11 +316,11 @@ PrintInfo(std::ostream &str,const size_t width) const
      <<width<<"  N: number of jets\n"
      <<width<<"  PTMin: minimum jet pT\n"
      <<width<<"  ETMin: minimum jet eta\n"
-     <<width<<"  R: jet distance parameter\n"
+     <<width<<"  R: jet distance parameter (default=0.4)\n"
      <<width<<"  # optional settings:\n"
      <<width<<"  Exp: exponent for jet distances (default=1)\n"
      <<width<<"  YMax: maximum jet rapidity (default=None)\n"
      <<width<<"  EtaMax: maximum jet eta (default=None)\n"
      <<width<<"  MassMax: maximum jet constituent mass (default=0)\n"
-     <<width<<"  Mode: type (default=2)";
+     <<width<<"  Mode: type (e+e-=1, pp=2, default=2)";
 }
