@@ -345,9 +345,10 @@ int ME_Generator_Base::ShiftMassesDefault(Cluster_Amplitude *const ampl, Vec4D c
     ampl->Leg(i)->SetMom(boost*p);
   }
   for (int i = 0; i < 2; i++) {
-    if (rpa->gen.PBunch(ampl->Leg(i)->Mom()[3] < 0.0 ? 0 : 1)[0] <
-        -ampl->Leg(i)->Mom()[0])
-      return -1;
+    double Ebunch = rpa->gen.PBunch(ampl->Leg(i)->Mom()[3] < 0.0 ? 0 : 1)[0];
+    double Ei = -ampl->Leg(i)->Mom()[0];
+    // need to check equality with some margin, for lepton beams without a pdf
+    if (Ebunch < Ei && !IsEqual(Ei,Ebunch)) return -1;
   }
   msg_Debugging()<<"After shift: "<<*ampl<<"\n";
   return 1;
