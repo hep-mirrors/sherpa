@@ -49,7 +49,7 @@ employed during event generation.
 
 .. code-block:: yaml
 
-   SHERPA_LDADD: SherpaPythia
+   SHERPA_LDADD: SherpaPythia8
    FRAGMENTATION: Pythia8
    PYTHIA8:
      PARAMETERS:
