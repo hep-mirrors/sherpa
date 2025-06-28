@@ -11,7 +11,7 @@ namespace AMEGIC {
 
   class Phase_Space_Generator {
     static const int buffersize = 512*32;
-    static const int maxchannels = 2048;
+    static const int maxchannels = 1e6;
     int         nin,nout;
     char        filename[12], procname[12];
     std::string path,pathID,pID;
