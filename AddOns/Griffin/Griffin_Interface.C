@@ -12,8 +12,11 @@ int Griffin::Griffin_Interface::m_inital=11;
 int Griffin::Griffin_Interface::m_final=13;
 double Griffin::Griffin_Interface::m_norm=1;
 double Griffin::Griffin_Interface::m_B=0;
+ew_scheme::code Griffin::Griffin_Interface::m_ewscheme=ew_scheme::alphamZ;
 Griffin::griffinorder::code Griffin::Griffin_Interface::m_order=griffinorder::nnlo;
 griffin::inval Griffin::Griffin_Interface::m_griffin;
+// griffin::invalGmu Griffin::Griffin_Interface::m_griffin;
+// griffin::SMval Griffin::Griffin_Interface::m_griffin;
 
 void Griffin::Griffin_Interface::RegisterDefaults()
 {
@@ -40,25 +43,65 @@ bool Griffin::Griffin_Interface::Initialize(MODEL::Model_Base *const model,
   if(IsEqual(delap,-1)){
     delap = 1-(*aqed)(0)/(*aqed)(Flavour(kf_Z).Mass()*Flavour(kf_Z).Mass());
   }
-  m_griffin.set(0, Flavour(kf_Wplus).Mass());
-  m_griffin.set(1, Flavour(kf_Z).Mass());
-  m_griffin.set(2, Flavour(kf_h0).Mass());
-  m_griffin.set(3, 0.*Flavour(kf_e).Mass());
-  m_griffin.set(4, 0.*Flavour(kf_mu).Mass());
-  m_griffin.set(5, Flavour(kf_tau).Mass());
-  m_griffin.set(6, Flavour(kf_d).Mass());
-  m_griffin.set(7, Flavour(kf_s).Mass());
-  m_griffin.set(8, Flavour(kf_b).Mass()); // MSbar mass at scale mu=MZ for mb(mb)=4.20
-  m_griffin.set(9, Flavour(kf_u).Mass());
-  m_griffin.set(10, Flavour(kf_c).Mass()); // MSbar mass at scale mu=MZ
-  m_griffin.set(11, Flavour(kf_t).Mass());
-  m_griffin.set(12, s_model->ScalarConstant("alpha_QED"));
-  m_griffin.set(13, s_model->ScalarConstant("alpha_S"));
-  m_griffin.set(14, delap);
-  // m_griffin.set(15, delap);
-  m_griffin.set(16, GF);
-  m_griffin.set(17, Flavour(kf_Wplus).Width());
-  m_griffin.set(18, Flavour(kf_Z).Width());
+  m_ewscheme = s["EW_SCHEME"].Get<ew_scheme::code>();
+  // if(m_ewscheme==ew_scheme::alphamZ){
+    m_griffin.set(0, Flavour(kf_Wplus).Mass());
+    m_griffin.set(1, Flavour(kf_Z).Mass());
+    m_griffin.set(2, Flavour(kf_h0).Mass());
+    m_griffin.set(3, Flavour(kf_e).Mass());
+    m_griffin.set(4, Flavour(kf_mu).Mass());
+    m_griffin.set(5, Flavour(kf_tau).Mass());
+    m_griffin.set(6, Flavour(kf_d).Mass());
+    m_griffin.set(7, Flavour(kf_s).Mass());
+    m_griffin.set(8, Flavour(kf_b).Mass()); // MSbar mass at scale mu=MZ for mb(mb)=4.20
+    m_griffin.set(9, Flavour(kf_u).Mass());
+    m_griffin.set(10, Flavour(kf_c).Mass()); // MSbar mass at scale mu=MZ
+    m_griffin.set(11, Flavour(kf_t).Mass());
+    m_griffin.set(12, s_model->ScalarConstant("alpha_QED"));
+    m_griffin.set(13, s_model->ScalarConstant("alpha_S"));
+    m_griffin.set(14, delap);
+    // m_griffin.set(15, delap);
+    m_griffin.set(16, GF);
+    m_griffin.set(17, Flavour(kf_Wplus).Width());
+    m_griffin.set(18, Flavour(kf_Z).Width());
+
+    //  m_griffin.set(MZ, 91.1876);
+    // m_griffin.set(MW, 80.379);
+    // m_griffin.set(al, 1/128.03599976);
+    // m_griffin.set(als, 0.1179);
+    // m_griffin.set(GamZ, 2.4952);
+    // m_griffin.set(GamW, 2.085);
+    // m_griffin.set(MH, 125.1);
+    // m_griffin.set(MT, 173.0);
+    // m_griffin.set(MB, 2.87);  // MSbar mass at scale mu=MZ
+    // m_griffin.set(Delal, 0.05900);
+    // m_griffin.set(Gmu, 1.166379e-5);
+  // }
+  // else if(m_ewscheme==3){
+    // m_griffinGmu.set(0, Flavour(kf_Wplus).Mass());
+    // m_griffinGmu.set(1, Flavour(kf_Z).Mass());
+    // m_griffinGmu.set(2, Flavour(kf_h0).Mass());
+    // m_griffinGmu.set(3, Flavour(kf_e).Mass());
+    // m_griffinGmu.set(4, Flavour(kf_mu).Mass());
+    // m_griffinGmu.set(5, Flavour(kf_tau).Mass());
+    // m_griffinGmu.set(6, Flavour(kf_d).Mass());
+    // m_griffinGmu.set(7, Flavour(kf_s).Mass());
+    // m_griffinGmu.set(8, Flavour(kf_b).Mass()); // MSbar mass at scale mu=MZ for mb(mb)=4.20
+    // m_griffinGmu.set(9, Flavour(kf_u).Mass());
+    // m_griffinGmu.set(10, Flavour(kf_c).Mass()); // MSbar mass at scale mu=MZ
+    // m_griffinGmu.set(11, Flavour(kf_t).Mass());
+    // PRINT_VAR( s_model->ScalarConstant("alpha_QED"));
+    // m_griffinGmu.set(12, s_model->ScalarConstant("alpha_QED"));
+    // m_griffinGmu.set(13, s_model->ScalarConstant("alpha_S"));
+    // m_griffinGmu.set(14, delap);
+    // // m_griffin.set(15, delap);
+    // m_griffinGmu.set(16, GF);
+    // m_griffinGmu.set(17, Flavour(kf_Wplus).Width());
+    // m_griffinGmu.set(18, Flavour(kf_Z).Width());
+  // }
+  // else{
+  //   THROW(not_implemented, "EW Scheme not implemneted in Griffin Interface.")
+  // }
   return true;
 }
 
@@ -91,31 +134,66 @@ void Griffin::Griffin_Interface::EvaluateLO(const Vec4D_Vector& momenta, DivArrD
   double s = (momenta[0]+momenta[1]).Abs2();
   double t = (momenta[0]-momenta[2]).Abs2();
   double cost = 1.+2.*t/s;
+  Cplx resvv, resva, resav, resaa;
+  double sw=s_model->ComplexConstant("csin2_thetaW").real();
   // cost = cos((momenta[2]).Theta());
   if(cost > 1. || cost < -1){
     msg_Error()<<"CosTheta out of range in "<<METHOD<<endl;
   }
-  FA_SMLO FAi(m_inital, m_griffin), FAf(m_final, m_griffin);
-  SW_SMLO SWi(m_inital, m_griffin), SWf(m_final, m_griffin);
+  // if(m_ewscheme==3){ 
+    // FA_SMLO FAi(m_inital, m_griffinGmu), FAf(m_final, m_griffinGmu);
+    // SW_SMLO SWi(m_inital, m_griffinGmu), SWf(m_final, m_griffinGmu);
+    // matel M(m_inital, m_final, VEC, VEC, FAi.result().real(), FAf.result().real(), SWi.result().real(),  SWf.result().real(), s, cost, m_griffinGmu);
+    // M.setkinvar(s, cost);
+
+    // M.setform(VEC, VEC);
+    // resvv = M.result();
+    // M.setform(AXV, VEC);
+    // resav = M.result();
+    // M.setform(VEC, AXV);
+    // resva = M.result();
+    // M.setform(AXV, AXV);
+    // resaa = M.result();
+    // m_B = real((1+cost*cost)*(resvv*conj(resvv) + resav*conj(resav)
+    //              + resva*conj(resva) + resaa*conj(resaa)) +
+    //   + 4*cost*(resvv*conj(resaa) + resva*conj(resav)).real());
+  // }
+  // else{
+    FA_SMLO FAi(m_inital, m_griffin), FAf(m_final, m_griffin);
+    SW_SMLO SWi(m_inital, m_griffin), SWf(m_final, m_griffin);
+
+    matel M(m_inital, m_final, VEC, VEC, FAi.result().real(), FAf.result().real(), SWi.result().real(),  SWf.result().real(), s, cost, m_griffin);
+    M.setkinvar(s, cost);
+
+    M.setform(VEC, VEC);
+    resvv = M.result();
+    M.setform(AXV, VEC);
+    resav = M.result();
+    M.setform(VEC, AXV);
+    resva = M.result();
+    M.setform(AXV, AXV);
+    resaa = M.result();
+    m_B = real((1+cost*cost)*(resvv*conj(resvv) + resav*conj(resav)
+                 + resva*conj(resva) + resaa*conj(resaa)) +
+      + 4*cost*(resvv*conj(resaa) + resva*conj(resav)).real());
+  // }
   // cout << "sineff^i (LO+) = " << SWi.result() << endl;
   // cout << "sineff^f (LO+) = " << SWf.result() << endl;
-  Cplx resvv, resva, resav, resaa;
-  double sw=s_model->ComplexConstant("csin2_thetaW").real();
-  // double  FAi = 0.0345, FAf = 0.0345;
-  matel M(m_inital, m_final, VEC, VEC, FAi.result().real(), FAf.result().real(), SWi.result().real(),  SWf.result().real(), s, cost, m_griffin);
-  M.setkinvar(s, cost);
+  // // double  FAi = 0.0345, FAf = 0.0345;
+  // matel M(m_inital, m_final, VEC, VEC, FAi.result().real(), FAf.result().real(), SWi.result().real(),  SWf.result().real(), s, cost, m_griffin);
+  // M.setkinvar(s, cost);
 
-  M.setform(VEC, VEC);
-  resvv = M.result();
-  M.setform(AXV, VEC);
-  resav = M.result();
-  M.setform(VEC, AXV);
-  resva = M.result();
-  M.setform(AXV, AXV);
-  resaa = M.result();
-  m_B = real((1+cost*cost)*(resvv*conj(resvv) + resav*conj(resav)
-               + resva*conj(resva) + resaa*conj(resaa)) +
-    + 4*cost*(resvv*conj(resaa) + resva*conj(resav)).real());
+  // M.setform(VEC, VEC);
+  // resvv = M.result();
+  // M.setform(AXV, VEC);
+  // resav = M.result();
+  // M.setform(VEC, AXV);
+  // resva = M.result();
+  // M.setform(AXV, AXV);
+  // resaa = M.result();
+  // m_B = real((1+cost*cost)*(resvv*conj(resvv) + resav*conj(resav)
+  //              + resva*conj(resva) + resaa*conj(resaa)) +
+  //   + 4*cost*(resvv*conj(resaa) + resva*conj(resav)).real());
 }
 
 void Griffin::Griffin_Interface::EvaluateNLO(const Vec4D_Vector& momenta, DivArrD &res){
@@ -126,29 +204,70 @@ void Griffin::Griffin_Interface::EvaluateNLO(const Vec4D_Vector& momenta, DivArr
   // if(sqrt(s)<40) {
   //   res.Finite() = 0;
   // }
-  FA_SMNLO FAi(m_inital, m_griffin), FAf(m_final, m_griffin);
-  SW_SMNLO SWi(m_inital, m_griffin), SWf(m_final, m_griffin);
+  // if(m_ewscheme==3){ 
+    //  FA_SMNLO FAi(m_inital, m_griffinGmu), FAf(m_final, m_griffinGmu);
+    //  SW_SMNLO SWi(m_inital, m_griffinGmu), SWf(m_final, m_griffinGmu);
+
+    // mat_SMNLO M(m_inital, m_final, VEC, VEC, FAi.result().real(), FAf.result().real(),  SWi.result().real(),  SWf.result().real(), s, cost, m_griffinGmu);
+
+    // M.setkinvar(s, cost);
+    // Cplx resvv, resva, resav, resaa;
+
+    // M.setform(VEC, VEC);
+    // resvv = M.result();
+    // M.setform(AXV, VEC);
+    // resav = M.result();
+    // M.setform(VEC, AXV);
+    // resva = M.result();
+    // M.setform(AXV, AXV);
+    // resaa = M.result();
+    // res.Finite() = real((1+cost*cost)*(resvv*conj(resvv) + resav*conj(resav)
+    //              + resva*conj(resva) + resaa*conj(resaa)) +
+    //   + 4*cost*(resvv*conj(resaa) + resva*conj(resav)).real());
+
+  // }
+  // else{
+    FA_SMNLO FAi(m_inital, m_griffin), FAf(m_final, m_griffin);
+    SW_SMNLO SWi(m_inital, m_griffin), SWf(m_final, m_griffin);
+    mat_SMNLO M(m_inital, m_final, VEC, VEC, FAi.result().real(), FAf.result().real(),  SWi.result().real(),  SWf.result().real(), s, cost, m_griffin);
+
+    M.setkinvar(s, cost);
+    Cplx resvv, resva, resav, resaa;
+
+    M.setform(VEC, VEC);
+    resvv = M.result();
+    M.setform(AXV, VEC);
+    resav = M.result();
+    M.setform(VEC, AXV);
+    resva = M.result();
+    M.setform(AXV, AXV);
+    resaa = M.result();
+    res.Finite() = real((1+cost*cost)*(resvv*conj(resvv) + resav*conj(resav)
+                 + resva*conj(resva) + resaa*conj(resaa)) +
+      + 4*cost*(resvv*conj(resaa) + resva*conj(resav)).real());
+
+  // }
   // cout << "FAi = " << FAi.result() << endl;
   // cout << "FAi = " << FAf.result() << endl;
   // cout << "SWi = " << SWi.result() << endl;
   double sw=s_model->ComplexConstant("csin2_thetaW").real();
 
-  mat_SMNLO M(m_inital, m_final, VEC, VEC, FAi.result().real(), FAf.result().real(),  SWi.result().real(),  SWf.result().real(), s, cost, m_griffin);
+  // mat_SMNLO M(m_inital, m_final, VEC, VEC, FAi.result().real(), FAf.result().real(),  SWi.result().real(),  SWf.result().real(), s, cost, m_griffin);
 
-  M.setkinvar(s, cost);
-  Cplx resvv, resva, resav, resaa;
+  // M.setkinvar(s, cost);
+  // Cplx resvv, resva, resav, resaa;
 
-  M.setform(VEC, VEC);
-  resvv = M.result();
-  M.setform(AXV, VEC);
-  resav = M.result();
-  M.setform(VEC, AXV);
-  resva = M.result();
-  M.setform(AXV, AXV);
-  resaa = M.result();
-  res.Finite() = real((1+cost*cost)*(resvv*conj(resvv) + resav*conj(resav)
-               + resva*conj(resva) + resaa*conj(resaa)) +
-    + 4*cost*(resvv*conj(resaa) + resva*conj(resav)).real());
+  // M.setform(VEC, VEC);
+  // resvv = M.result();
+  // M.setform(AXV, VEC);
+  // resav = M.result();
+  // M.setform(VEC, AXV);
+  // resva = M.result();
+  // M.setform(AXV, AXV);
+  // resaa = M.result();
+  // res.Finite() = real((1+cost*cost)*(resvv*conj(resvv) + resav*conj(resav)
+  //              + resva*conj(resva) + resaa*conj(resaa)) +
+  //   + 4*cost*(resvv*conj(resaa) + resva*conj(resav)).real());
     // -2*(1+cost*cost)*(resvv*conj(resav) + resva*conj(resaa)).real()
     // -4*cost*(resvv*conj(resva) + resav*conj(resaa)));
   // return res*3*s*s*m_rescale_alpha/32/M_PI;
@@ -224,25 +343,63 @@ void Griffin::Griffin_Interface::EvaluateNNLO(const Vec4D_Vector& momenta, DivAr
   // if(sqrt(s)<40) {
   //   res.Finite() = 0;
   // }
-  FA_SMNNLO FAi(m_inital, m_griffin), FAf(m_final, m_griffin);
-  SW_SMNNLO SWi(m_inital, m_griffin), SWf(m_final, m_griffin);
+  // if(m_ewscheme==3){
+     // FA_SMNNLO FAi(m_inital, m_griffinGmu), FAf(m_final, m_griffinGmu);
+     // SW_SMNNLO SWi(m_inital, m_griffinGmu), SWf(m_final, m_griffinGmu);
+     // mat_SMNNLO M(m_inital, m_final, VEC, VEC,  FAi.result().real(), FAf.result().real(),  SWi.result().real(),  SWf.result().real(), s, cost, m_griffinGmu);
+
+     //  M.setkinvar(s, cost);
+     //  Cplx resvv, resva, resav, resaa;
+
+     //  M.setform(VEC, VEC);
+     //  resvv = M.result();
+     //  M.setform(AXV, VEC);
+     //  resav = M.result();
+     //  M.setform(VEC, AXV);
+     //  resva = M.result();
+     //  M.setform(AXV, AXV);
+     //  resaa = M.result();
+     //  res.Finite() = real((1+cost*cost)*(resvv*conj(resvv) + resav*conj(resav)
+     //               + resva*conj(resva) + resaa*conj(resaa)) +
+     //    + 4*cost*(resvv*conj(resaa) + resva*conj(resav)).real());
+  // }
+  // else{
+    FA_SMNNLO FAi(m_inital, m_griffin), FAf(m_final, m_griffin);
+    SW_SMNNLO SWi(m_inital, m_griffin), SWf(m_final, m_griffin);
+     mat_SMNNLO M(m_inital, m_final, VEC, VEC,  FAi.result().real(), FAf.result().real(),  SWi.result().real(),  SWf.result().real(), s, cost, m_griffin);
+
+    M.setkinvar(s, cost);
+    Cplx resvv, resva, resav, resaa;
+
+    M.setform(VEC, VEC);
+    resvv = M.result();
+    M.setform(AXV, VEC);
+    resav = M.result();
+    M.setform(VEC, AXV);
+    resva = M.result();
+    M.setform(AXV, AXV);
+    resaa = M.result();
+    res.Finite() = real((1+cost*cost)*(resvv*conj(resvv) + resav*conj(resav)
+                 + resva*conj(resva) + resaa*conj(resaa)) +
+      + 4*cost*(resvv*conj(resaa) + resva*conj(resav)).real());
+  // }
   double sw=s_model->ComplexConstant("csin2_thetaW").real();
-  mat_SMNNLO M(m_inital, m_final, VEC, VEC,  FAi.result().real(), FAf.result().real(),  SWi.result().real(),  SWf.result().real(), s, cost, m_griffin);
+  // mat_SMNNLO M(m_inital, m_final, VEC, VEC,  FAi.result().real(), FAf.result().real(),  SWi.result().real(),  SWf.result().real(), s, cost, m_griffin);
 
-  M.setkinvar(s, cost);
-  Cplx resvv, resva, resav, resaa;
+  // M.setkinvar(s, cost);
+  // Cplx resvv, resva, resav, resaa;
 
-  M.setform(VEC, VEC);
-  resvv = M.result();
-  M.setform(AXV, VEC);
-  resav = M.result();
-  M.setform(VEC, AXV);
-  resva = M.result();
-  M.setform(AXV, AXV);
-  resaa = M.result();
-  res.Finite() = real((1+cost*cost)*(resvv*conj(resvv) + resav*conj(resav)
-               + resva*conj(resva) + resaa*conj(resaa)) +
-    + 4*cost*(resvv*conj(resaa) + resva*conj(resav)).real());
+  // M.setform(VEC, VEC);
+  // resvv = M.result();
+  // M.setform(AXV, VEC);
+  // resav = M.result();
+  // M.setform(VEC, AXV);
+  // resva = M.result();
+  // M.setform(AXV, AXV);
+  // resaa = M.result();
+  // res.Finite() = real((1+cost*cost)*(resvv*conj(resvv) + resav*conj(resav)
+  //              + resva*conj(resva) + resaa*conj(resaa)) +
+  //   + 4*cost*(resvv*conj(resaa) + resva*conj(resav)).real());
     // -2*(1+cost*cost)*(resvv*conj(resav) + resva*conj(resaa)).real()
     // -4*cost*(resvv*conj(resva) + resav*conj(resaa)));
   // return res*3*s*s*m_rescale_alpha/32/M_PI;
