@@ -129,17 +129,22 @@ _EinsumDefaultKeys = Literal["order", "casting", "dtype", "out"]
 def _filter_einsum_defaults(kwargs: Dict[_EinsumDefaultKeys, Any]) -> Dict[_EinsumDefaultKeys, Any]:
     """Filters out default contract kwargs to pass to various backends."""
     kwargs = kwargs.copy()
-    ret: Dict[_EinsumDefaultKeys, Any] = {}
-    if (order := kwargs.pop("order", "K")) != "K":
+    ret = {}  # type: Dict['_EinsumDefaultKeys', Any]
+
+    order = kwargs.pop("order", "K")
+    if order != "K":
         ret["order"] = order
 
-    if (casting := kwargs.pop("casting", "safe")) != "safe":
+    casting = kwargs.pop("casting", "safe")
+    if casting != "safe":
         ret["casting"] = casting
 
-    if (dtype := kwargs.pop("dtype", None)) is not None:
+    dtype = kwargs.pop("dtype", None)
+    if dtype is not None:
         ret["dtype"] = dtype
 
-    if (out := kwargs.pop("out", None)) is not None:
+    out = kwargs.pop("out", None)
+    if out is not None:
         ret["out"] = out
 
     ret.update(kwargs)
