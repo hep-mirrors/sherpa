@@ -1,3 +1,6 @@
+#include <ostream>
+#include <pthread.h>
+
 #include "ATOOLS/Phys/Weights.H"
 #include "ATOOLS/Phys/Blob.H"
 

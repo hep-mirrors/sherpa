@@ -1,6 +1,7 @@
+#include <pthread.h>
 #include "ATOOLS/Org/My_MPI.H"
 
-#include "ATOOLS/Org/Message.H"
+//#include "ATOOLS/Org/Message.H"
 
 #include <csignal>
 #include <unistd.h>

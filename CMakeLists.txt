@@ -190,6 +190,8 @@ message(STATUS "SHERPA: CMAKE_Fortran_FLAGS_${CMAKE_BUILD_TYPE}=${CMAKE_Fortran_
 message(STATUS "SHERPA: CMAKE_C_FLAGS_${CMAKE_BUILD_TYPE}=${CMAKE_C_FLAGS_${CMAKE_BUILD_TYPE}}")
 message(STATUS "SHERPA: CMAKE_CXX_FLAGS_${CMAKE_BUILD_TYPE}=${CMAKE_CXX_FLAGS_${CMAKE_BUILD_TYPE}}")
 
+
+
 include(CheckCCompilerFlag)
 include(CheckCXXCompilerFlag)
 set(CXX_CXX_FLAGS_TO_CHECK -Wno-tautological-constant-compare)
@@ -315,6 +317,10 @@ if(SHERPA_ENABLE_MPI)
   set (LOADMPIFORPY "from mpi4py import MPI")
 else()
   set (LOADMPIFORPY "")
+endif()
+if (SHERPA_ENABLE_THREADING)
+  set(THREADS_PREFER_PTHREAD_FLAG ON)
+  find_package(Threads REQUIRED)
 endif()
 
 macro(sherpa_handle_shared_library  mylib mylibname)
