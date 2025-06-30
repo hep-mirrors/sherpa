@@ -2,14 +2,14 @@
 #define ATOOLS_Org_Message_H
 //Message header
 
-#include "ATOOLS/Org/STL_Tools.H"
+
 #include <string>
 #include <iostream>
 #include <fstream>
 #include <sstream>
 #include <map>
 #include <set>
-
+#include "ATOOLS/Org/STL_Tools.H"
 #include "ATOOLS/Org/CXXFLAGS.H"
 
 namespace ATOOLS {
