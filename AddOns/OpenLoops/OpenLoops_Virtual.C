@@ -113,6 +113,8 @@ operator()(const PHASIC::Process_Info &pi) const
   DEBUG_FUNC(pi);
   if (pi.m_loopgenerator!="OpenLoops" && pi.m_rvgenerator!="OpenLoops") return NULL;
   if (!(pi.m_fi.m_nlotype==nlo_type::loop) && pi.m_fi.m_nlotype!=nlo_type::rvirt ) return NULL;
+  if(pi.m_fi.m_nlotype==nlo_type::loop  && pi.m_loopgenerator!="OpenLoops") return NULL;
+  if(pi.m_fi.m_nlotype==nlo_type::rvirt && pi.m_rvgenerator!="OpenLoops") return NULL;
 
   DEBUG_VAR(pi.m_maxcpl[0]-pi.m_fi.m_nlocpl[0]);
   DEBUG_VAR(pi.m_fi.m_nlocpl[0]);
