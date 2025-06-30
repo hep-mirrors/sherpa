@@ -1,5 +1,6 @@
 #include "AddOns/Griffin/Griffin_Interface.H"
 
+using namespace MODEL;
 
 Griffin::Griffin_Interface::Griffin_Interface() :
       ME_Generator_Base("Griffin") {RegisterDefaults();}
@@ -40,8 +41,19 @@ bool Griffin::Griffin_Interface::Initialize(MODEL::Model_Base *const model,
   m_order = ss["Order"].Get<griffinorder::code>();
   double delap = ss["Delta_Alpha"].Get<double>();
   double mz2 = sqr(Flavour(kf_Z).Mass());
-  if(IsEqual(delap,-1)){
-    delap = 1-(*aqed)(0)/(*aqed)(Flavour(kf_Z).Mass()*Flavour(kf_Z).Mass());
+  ew_scheme::code ewscheme = s["EW_SCHEME"].Get<ew_scheme::code>();
+  switch(ewscheme) {
+    case ew_scheme::alpha0:
+      delap=0;
+      break;
+    case ew_scheme::alphamZ:
+      delap= 0.06;
+      break;
+    case 3:
+      delap=0.03;
+      break;
+    default:
+      THROW(not_implemented, "Wrong EW Scheme for Griffin. Use alpha0,alphamZ,or Gmu.")
   }
   m_ewscheme = s["EW_SCHEME"].Get<ew_scheme::code>();
   // if(m_ewscheme==ew_scheme::alphamZ){
