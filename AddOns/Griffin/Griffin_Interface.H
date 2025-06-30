@@ -24,6 +24,7 @@
 #include "xscnnlo.h"
 #include "xscenlo.h"
 #include "SMval.h"
+// #include "SMvalG.h"
 
 
 using namespace PHASIC;
@@ -68,11 +69,14 @@ namespace Griffin {
     static void EvaluateNNLO(const Vec4D_Vector& momenta, METOOLS::DivArrD& virt);
     static void EvaluateBorn(const Vec4D_Vector& momenta, double &born);
     static griffin::inval m_griffin;
+    // static griffin::SMval m_griffin;
+    // static griffin::invalGmu m_griffinGmu;
     static griffinorder::code m_order;
     static int m_inital;
     static int m_final;
     static double m_norm;
     static double m_B;
+    static ew_scheme::code m_ewscheme;
   };
 
 }
