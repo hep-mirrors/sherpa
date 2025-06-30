@@ -140,7 +140,7 @@ double NLO_Base::CalculateNLO() {
 	rv = result - real - virt;
 	result += CalculateRealReal();
 	rr = result - real - virt - rv;
-	// if(m_failcut) return 0;
+	if(m_failcut) return 0;
 		// PRINT_VAR(virt);
 		// PRINT_VAR(real);
 		// PRINT_VAR(rr);
@@ -642,8 +642,8 @@ double NLO_Base::CalculateRealReal(Vec4D k1, Vec4D k2, int fsr1, int fsr2){
 	double subloc1 = p_nlodipoles->CalculateRealSub(k1);
 	double subloc2 = p_nlodipoles->CalculateRealSub(k2);
 	double flux;
-	// if(m_flux_mode==1) flux = p_nlodipoles->CalculateFlux(k1)*p_nlodipoles->CalculateFlux(k2);
-	if(m_flux_mode==1) flux = p_nlodipoles->CalculateFlux(k1,k2);
+	if(m_flux_mode==1) flux = p_nlodipoles->CalculateFlux(k1)*p_nlodipoles->CalculateFlux(k2);
+	// if(m_flux_mode==1) flux = p_nlodipoles->CalculateFlux(k1,k2);
 	else flux = p_dipoles->CalculateFlux(k1)*p_dipoles->CalculateFlux(k2);
 	double tot,rcoll;
 	if(!CheckMomentumConservation(p)) {
@@ -660,10 +660,10 @@ double NLO_Base::CalculateRealReal(Vec4D k1, Vec4D k2, int fsr1, int fsr2){
 	m_recola_evts+=1;
 	double real1 = CalculateReal(kk1,3+fsr1);
 	double real2 = CalculateReal(kk2,3+fsr2);
-	double sub1 = (fsr1!=1?p_dipoles->CalculateRealSubEEX(kk1):p_dipoles->CalculateRealSubEEX(kk1));
-	double sub2 = (fsr2!=1?p_dipoles->CalculateRealSubEEX(kk2):p_dipoles->CalculateRealSubEEX(kk2));
+	double sub1 = (fsr1!=1?p_dipoles->CalculateRealSubEEX(k1):p_dipoles->CalculateRealSubEEX(kk1));
+	double sub2 = (fsr2!=1?p_dipoles->CalculateRealSubEEX(k2):p_dipoles->CalculateRealSubEEX(kk2));
 	double fullsub = (-subloc2*real1 -subloc1*real2-subloc1*subloc2*m_born);
-	tot = (r*flux + fullsub)/sub1/sub2;
+	tot = (r*flux + fullsub/m_rescale_alpha)/sub1/sub2;
   if(IsBad(tot)){
   	msg_Error()<<"NNLO RR is NaN"<<std::endl;
   }
