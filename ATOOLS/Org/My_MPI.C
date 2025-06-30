@@ -1,5 +1,3 @@
-#include <pthread.h>
-#include <ostream>
 #include "ATOOLS/Org/My_MPI.H"
 #include "ATOOLS/Org/Message.H"
 
