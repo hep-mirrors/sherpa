@@ -1,8 +1,8 @@
 #ifndef ATOOLS_Phys_Event_Weights_H
 #define ATOOLS_Phys_Event_Weights_H
 
-#include "ATOOLS/Org/My_MPI.H"
 #include <ostream>
+#include "ATOOLS/Org/My_MPI.H"
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Phys/Variations.H"
 

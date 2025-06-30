@@ -2,7 +2,6 @@
 #define ATOOLS_Org_Message_H
 //Message header
 
-
 #include <string>
 #include <iostream>
 #include <fstream>
