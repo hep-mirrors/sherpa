@@ -2,9 +2,6 @@
 #define ATOOLS_Org_STL_Tools_H
 
 #include "ATOOLS/Org/CXXFLAGS.H"
-#ifdef USING__Threading
-#include <pthread.h>
-#endif
 #include <cstddef>
 
 #include <iostream>
