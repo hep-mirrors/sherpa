@@ -142,9 +142,10 @@ void YFS_Base::RegisterSettings(){
   m_g = 0;
   m_gp = 0;
   m_failcut=false;
+  double alpha0 = 1./s["1/ALPHAQED(0)"].SetDefault(137.03599976).Get<double>();
   if(m_use_model_alpha) m_alpha = s_model->ScalarConstant("alpha_QED");
-  else m_alpha  = 1./s["1/ALPHAQED(0)"].SetDefault(137.03599976).Get<double>();
-  if (m_use_model_alpha) m_rescale_alpha = 1;
+  else m_alpha  = alpha0;
+  if (m_use_model_alpha) m_rescale_alpha = 1.;//m_rescale_alpha = alpha0/m_alpha;
   else m_rescale_alpha = m_alpha / s_model->ScalarConstant("alpha_QED");
   m_alpi = m_alpha/M_PI;
 }
