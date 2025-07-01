@@ -57,12 +57,12 @@ Perturbative_Interface::Perturbative_Interface(Matrix_Element_Handler *const meh
   m_bbarmode(mets_bbar_mode::none),
   m_fails_Moms(0), m_fails_Ampls(0), m_fails_Masses(0)
 {
-  Settings& s = Settings::GetMainSettings();
-  m_bbarmode = s["METS_BBAR_MODE"].SetDefault(mets_bbar_mode::enabled|
-                                              mets_bbar_mode::exclcluster)
-                                  .Get<mets_bbar_mode::code>();
+  Settings& s  = Settings::GetMainSettings();
+  m_bbarmode   = (s["METS_BBAR_MODE"].SetDefault(mets_bbar_mode::enabled|
+						 mets_bbar_mode::exclcluster).
+		  Get<mets_bbar_mode::code>() );
   m_globalkfac = s["GLOBAL_KFAC"].SetDefault(0.0).Get<double>();
-  m_maxkfac = s["MENLOPS_MAX_KFAC"].SetDefault(10.0).Get<double>();
+  m_maxkfac    = s["MENLOPS_MAX_KFAC"].SetDefault(10.0).Get<double>();
 }
 
 Perturbative_Interface::Perturbative_Interface

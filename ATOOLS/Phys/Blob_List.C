@@ -226,14 +226,11 @@ bool Blob_List::FourMomentumConservation() const
       Vec4D sum((*bit)->CheckMomentumConservation());
       if (sum!=Vec4D()) {
 	btp::code btype = (*bit)->Type();
-	if (s_momfails.find(btype)==s_momfails.end()) {
-	  s_momfails[btype] = 1;
-	}
+	if (s_momfails.find(btype)==s_momfails.end()) s_momfails[btype] = 1;
 	else s_momfails[btype] = s_momfails[btype]+1;
 	if (s_momfails[btype] <= 5) {
 	  msg_Error()<<METHOD<<" throws four momentum error for "<<(*bit)->Type()<<": "<<sum
-		     <<" ("<<s_momfails[btype]<<")\n";
-	  //<<" in\n"<<**bit<<std::endl;
+		     <<" ("<<s_momfails[btype]<<") in\n"<<**bit<<std::endl;
 	}
       }
     }

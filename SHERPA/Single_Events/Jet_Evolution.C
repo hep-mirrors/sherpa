@@ -98,10 +98,11 @@ Return_Value::code Jet_Evolution::Treat(Blob_List *bloblist) {
   }
   PertInterfaceIter piIter;
   bool hit(false), found(true);
+  Blob * meblob;
   while (found) {
     found = false;
     for (size_t i = 0; i < bloblist->size(); ++i) {
-      Blob *meblob = (*bloblist)[i];
+      meblob = (*bloblist)[i];
       if (meblob->Has(blob_status::needs_showers) &&
           meblob->Type() != btp::Hard_Decay) {
 	piIter = SelectInterface(meblob);
@@ -139,22 +140,14 @@ Return_Value::code Jet_Evolution::Treat(Blob_List *bloblist) {
     }
     Blob * showerblob = bloblist->FindLast(btp::Shower);
     showerblob->AddStatus(blob_status::needs_extraQED);
-    return Return_Value::Success;
-  }
-  // Capture potential problem with empty remnants here.
-  // This should only happen after retrying an event has been called.  In this
-  // case we find the last (and hopefully only) shower blob and extract its
-  // initiators.
-  Blob *showerblob = bloblist->FindLast(btp::Shower);
-  if (showerblob!=NULL && showerblob->Has(blob_status::needs_beams)) {
-    Blob * meblob = bloblist->FindLast(btp::Signal_Process);
-    if (meblob) {
-      REMNANTS::Remnant_Handler * remnants =
-        SelectInterface(meblob)->second->RemnantHandler();
-      if (meblob->Type()!=btp::Hadron_Decay &&
-          !remnants->ExtractShowerInitiators(showerblob))
+    if (meblob->Type()==btp::Hard_Collision ||
+	meblob->Type()==btp::Soft_Collision ||
+	meblob->Type()==btp::Signal_Process) {
+      REMNANTS::Remnant_Handler * remnants = piIter->second->RemnantHandler();
+      if (!remnants->ExtractShowerInitiators(showerblob))
         return Return_Value::New_Event;
     }
+    return Return_Value::Success;
   }
   return Return_Value::Nothing;
 }
@@ -224,8 +217,7 @@ Jet_Evolution::AttachShowers(Blob *blob, Blob_List *bloblist,
     msg_Debugging() << METHOD << "(): Setting scale for MI {\n";
     double scale(0.0);
     Cluster_Amplitude *ampl(pertinterface->Amplitude());
-    while (ampl->Next())
-      ampl = ampl->Next();
+    while (ampl->Next()) ampl = ampl->Next();
     msg_Debugging() << *ampl << "\n";
     scale = sqrt(ampl->MuQ2());
     blob->AddData("MI_Scale", new Blob_Data<double>(scale));
@@ -323,9 +315,11 @@ bool Jet_Evolution::AftermathOfSuccessfulShower(Blob *blob, Blob_List *bloblist,
     blob->InParticle(0)->SetInfo('h');
   pertinterface->FillBlobs();
   blob->UnsetStatus(blob_status::needs_showers);
+  blob->UnsetStatus(blob_status::needs_beams);
   Blob *showerblob =
-      (!pertinterface->Shower()->On() ? CreateMockShowerBlobs(blob, bloblist)
-                                  : bloblist->FindLast(btp::Shower));
+    (!pertinterface->Shower()->On() ?
+     CreateMockShowerBlobs(blob, bloblist) :
+     bloblist->FindLast(btp::Shower));
   if (showerblob==NULL || blob->Type()== btp::Hadron_Decay) return true;
   showerblob->AddStatus(blob_status::needs_reconnections);
   return p_remnants->ExtractShowerInitiators(showerblob);

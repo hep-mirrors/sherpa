@@ -15,7 +15,7 @@ void Colour_Generator::Initialize(Remnant_Handler* rhandler)
   p_remnants = rhandler->GetRemnants();
 }
 
-void Colour_Generator::ConnectColours(Blob* const showerblob)
+bool Colour_Generator::ConnectColours(Blob* const showerblob)
 {
   // Extract incoming particles/shower initiators - they are the ones that
   // matter for the colour handling.
@@ -32,14 +32,15 @@ void Colour_Generator::ConnectColours(Blob* const showerblob)
     msg_Error() << "Warning in " << METHOD
                 << ": No colours in incoming partons.\n"
                 << (*showerblob) << "\n";
-    Output();
   }
   if (!showerblob->CheckColour(true)) {
-    msg_Debugging() << METHOD << " did not conserved colour in:\n"
+    msg_Error() << METHOD << " did not conserved colour in:\n"
                     << (*showerblob) << "\n";
+    return false;
   }
   showerblob->UnsetStatus(blob_status::needs_beams);
   ResetFlags();
+  return true;
 }
 
 bool Colour_Generator::TChannelColourFlows()
@@ -48,16 +49,12 @@ bool Colour_Generator::TChannelColourFlows()
   if ((p_inparts[0]->GetFlow(1) == 0 ||
        (p_inparts[0]->GetFlow(1) != p_inparts[1]->GetFlow(2))) &&
       (p_inparts[1]->GetFlow(1) == 0 ||
-       (p_inparts[0]->GetFlow(2) != p_inparts[1]->GetFlow(1)))) {
-    return false;
-  }
+       (p_inparts[0]->GetFlow(2) != p_inparts[1]->GetFlow(1)))) return false;
   // Do nothing if t-channel exchange but no replacement colours
   for (int pos = 0; pos < 2; pos++) {
     if (p_inparts[pos]->GetFlow(1) != 0 &&
         p_inparts[pos]->GetFlow(1) == p_inparts[1 - pos]->GetFlow(2) &&
-        m_cols[pos][0].empty() && m_cols[1 - pos][1].empty()) {
-      return false;
-    }
+        m_cols[pos][0].empty() && m_cols[1 - pos][1].empty()) return false;
   }
   // Logic is as follows:
   // For sea-quarks and their spectators or gluons, we have two colours -
@@ -84,15 +81,18 @@ bool Colour_Generator::TChannelColourFlows()
   if (donor == tbeam) {
     // replace triplet colour in donor (and as anti-triplet in recipient)
     // and push new colour into recipient beam
-    ReplaceBoth(donor, 0);
-    if (spectator || p_inparts[1 - donor]->Flav().IsGluon())
-      Replace(1 - donor, 0, spectator ? spectator : p_inparts[1 - donor]);
-  } else {
+    ReplaceBoth(donor,0);
+    if (spectator || p_inparts[1-donor]->Flav().IsGluon()) {
+      Replace(1-donor,0,spectator?spectator:p_inparts[1-donor]);
+    }
+  }
+  else {
     // replace anti-triplet colour (and as triplet in recipient)
     // and push new colour into recipient beam
     ReplaceBoth(donor, 1);
-    if (spectator || p_inparts[1 - donor]->Flav().IsGluon())
+    if (spectator || p_inparts[1 - donor]->Flav().IsGluon()) {
       Replace(1 - donor, 1, spectator ? spectator : p_inparts[1 - donor]);
+    }
   }
   return true;
 }
@@ -144,7 +144,9 @@ bool Colour_Generator::SChannelColourFlows()
   // This could lead to colour sinlget gluons in the final state and must be
   // avoided.
   for (int beam = 0; beam < 2; beam++) {
-    if (m_cols[beam][0].empty() || m_cols[1 - beam][1].empty()) continue;
+    if (m_cols[beam][0].empty() || m_cols[1 - beam][1].empty()) {
+      continue;
+    }
     if (m_cols[beam][0].front() == m_cols[1 - beam][1].front()) {
       return ConstrainedColourFlows(beam);
     }
@@ -161,11 +163,11 @@ bool Colour_Generator::SChannelColourFlows()
   for (int beam = 0; beam < 2; beam++) {
     Particle* spectator = p_remnants[beam]->GetSpectator();
     if (spectator) {
-      if (p_inparts[beam]->Flav().IsQuark() &&
-          p_inparts[beam]->Flav().IsAnti()) {
-        AssignColours(beam, spectator, p_inparts[beam]);
-      } else {
-        AssignColours(beam, p_inparts[beam], spectator);
+      if (p_inparts[beam]->Flav().IsQuark() && p_inparts[beam]->Flav().IsAnti()) {
+	AssignColours(beam,spectator,p_inparts[beam]);
+
+      }else {
+	AssignColours(beam,p_inparts[beam],spectator);
       }
       replacecol = true;
     } else if (p_inparts[beam]->Flav().IsGluon()) {
@@ -279,14 +281,18 @@ bool Colour_Generator::ConstrainedQGFlows(const size_t& tbeam)
       Replace(tbeam, 1, p_inparts[tbeam]);
     } else if (tspec && ncolt == 1) {
       // There is no anti-colour on stack for the anti-quark but a colour for
-      // the potential spectator.
+      // the potential
+      // spectator.
       Replace(tbeam, 0, tspec);
     }
   } else if (!anti) {
     // Quark on triplet beam is a quark, therefore we may be forced to replace
-    // it - try to avoid this potentially dangoerous situation, by checking for
-    // triplet colour replacement either for the gluon or by moving the
-    // dangerous triplet colour on a potential spectator.
+    // it - try
+    // to avoid this potentially dangerous situation, by checking for
+    // triplet colour
+    // replacement either for the gluon or by moving the
+    // dangerous triplet colour on a
+    // potential spectator.
     if (ncola == 1 || ncola == 3) {
       // quark on triplet and gluon on anti-triplet replaces the triplet colour
       Replace(tbeam, 0, p_inparts[tbeam]);
@@ -387,7 +393,7 @@ bool Colour_Generator::ConstrainedColourFlows(const size_t& tbeam)
   if (tflav.IsGluon() && aflav.IsQuark()) return ConstrainedGQFlows(tbeam);
   if (tflav.IsQuark() && aflav.IsGluon()) return ConstrainedQGFlows(tbeam);
   if (tflav.IsQuark() && aflav.IsQuark()) return ConstrainedQQFlows(tbeam);
-  THROW(fatal_error, "cannot fix colouir flows.");
+  THROW(fatal_error, "cannot fix colour flows.");
   return false;
 }
 
@@ -425,11 +431,16 @@ void Colour_Generator::ReplaceBoth(const int& beam, const size_t& index)
 {
   // This is the replacement method for t-channel colour exchanges.
   // If a new colour (newcol) can be taken from stack through the NextColour
-  // method, replace the old colour (oldcol) in both beam particles with it. For
-  // the recipient beam, this is handled in the ReplaceInIS and ReplaceInFS
-  // methods. Remove the old colour from both conjugate stacks, as it does not
-  // need to be balanced any more, and push the new colour on the stack of the
-  // recipient beam, where it must be balanced now.  Follow the replacement
+  // method, replace
+  // the old colour (oldcol) in both beam particles with it. For
+  // the recipient beam, this
+  // is handled in the ReplaceInIS and ReplaceInFS
+  // methods. Remove the old colour from both
+  // conjugate stacks, as it does not
+  // need to be balanced any more, and push the new colour
+  // on the stack of the
+  // recipient beam, where it must be balanced now.
+  // Follow the replacement
   // downstream through the blob list.
   int newcol = NextColour(beam, index);
   if (newcol != -1) {

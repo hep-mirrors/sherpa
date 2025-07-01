@@ -160,8 +160,9 @@ bool CS_Shower::ExtractPartons(Blob_List *const blist) {
 		    blob_status::needs_reconnections);
   
   for (All_Singlets::const_iterator 
-	 sit(m_allsinglets.begin());sit!=m_allsinglets.end();++sit)
-      (*sit)->ExtractPartons(psblob,p_ms);
+	 sit(m_allsinglets.begin());sit!=m_allsinglets.end();++sit) {
+    (*sit)->ExtractPartons(psblob,p_ms);
+  }
   return true;
 }
 
@@ -429,7 +430,7 @@ bool CS_Shower::PrepareStandardShower(Cluster_Amplitude *const ampl)
       (*sit)->SetDecays(campl->Decays());
       (*sit)->SetAll(p_next);
       msg_Debugging()<<**sit;
-    msg_Debugging()<<"\n";
+      msg_Debugging()<<"\n";
   }
   p_shower->SetMS(p_ms);
   return true;
@@ -463,7 +464,8 @@ Singlet *CS_Shower::TranslateAmplitude
   singlet->SetLKF(ampl->LKF());
   for (size_t i(0);i<ampl->Legs().size();++i) {
     Cluster_Leg *cl(ampl->Leg(i));
-    if (cl->Flav().IsHadron() && cl->Id()&((1<<ampl->NIn())-1)) continue;
+    // FK: I've commented out the line below as it kills my diffractive events.
+    //if (cl->Flav().IsHadron() && cl->Id()&((1<<ampl->NIn())-1)) continue;
     bool is(cl->Id()&((1<<ampl->NIn())-1));
     Particle p(1,is?cl->Flav().Bar():cl->Flav(),is?-cl->Mom():cl->Mom());
     if (is) {

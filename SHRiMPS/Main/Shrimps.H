@@ -83,7 +83,7 @@ namespace SHRIMPS {
     ~Shrimps();
 
     int  InitMinBiasEvent(ATOOLS::Blob_List * blobs);
-    ATOOLS::Blob * GenerateEvent();
+    bool GenerateEvent(ATOOLS::Blob * blob);
     ATOOLS::Cluster_Amplitude * ClusterConfiguration(ATOOLS::Blob *const blob);
     void CleanUp(const size_t & mode=0);
 

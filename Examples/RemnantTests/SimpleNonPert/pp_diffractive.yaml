@@ -1,0 +1,25 @@
+BEAMS:         2212
+BEAM_ENERGIES: 3500
+BUNCHES:       2212
+
+EVENT_TYPE:          MinimumBias
+ME_GENERATORS:       None
+SOFT_COLLISIONS:     Amisic
+AMISIC:
+  EVENT_TYPE:             QuasiElastic # Elastic 
+  PomeronIntercept:       0.0808
+  PomeronSlope:           0.25
+  TriplePomeronCoupling:  0.318
+  ReggeonIntercept:      -0.4525
+  Diffractive_cres:       1.5    # tunable for diffractive xsecs, default: 2
+  Diffractive_Mres:       2.     # tunable for diffractive xsecs, default: 2
+  Diffractive_s1:         20.    # only for cross section calculation: 20.
+  ElasticSlope_c0:        2.28   # only for cross section calculation: 2.24
+  ElasticSlope_c1:        2.1    # only for cross section calculation: 2.1
+YFS:
+  MODE:              None
+
+ANALYSIS: Rivet
+ANALYSIS_OUTPUT: Amisic
+RIVET:
+  --analyses: [ATLAS_2010_S8918562, ATLAS_2011_S8994773, ATLAS_2012_I1084540, TOTEM_2012_I1115294, TOTEM_2012_I1220862, CMS_2011_S8978280, CMS_2011_S9120041, CMS_2011_S9215166]

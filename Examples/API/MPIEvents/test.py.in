@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 @LOADMPIFORPY@
 import sys
 sys.path.append('@PYLIBDIR@')
@@ -40,7 +39,7 @@ try:
         for n in range(1,1+Generator.NumberOfEvents()):
             Generator.GenerateOneEvent()
             blobs=Generator.GetBlobList();
-            weight=blobs.GetFirst(1)["Weight"]
+            print("  Weight ",blobs.Weight());
             trials=blobs.GetFirst(1)["Trials"]
             parts=[]
             for i in range(0,blobs.size()):
