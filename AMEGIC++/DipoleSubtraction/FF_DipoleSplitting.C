@@ -61,6 +61,9 @@ void FF_DipoleSplitting::SetMomenta(const Vec4D* mom)
   m_pt1   =     m_zi*m_pi-m_zj*m_pj;
   m_pt2   =     m_ptij;
 
+  m_zpm = 0.;
+  m_vijk = 1.;
+
   switch (m_ftype) {
   case spt::soft:
     m_sff = 0;
@@ -192,7 +195,7 @@ void FF_DipoleSplitting::SetMomentaAlaric(const ATOOLS::Vec4D* mom) {
 
     n = ff.m_nb;
     
-    m_zi = m_pi*n/((m_pi+m_pj)*n);
+    m_zi = m_pi*K/((m_pi+m_pj)*K);
     m_zj = 1.-m_zi;
 
     /// TODO: some of these might need to become member variables
@@ -239,12 +242,12 @@ void FF_DipoleSplitting::SetMomentaAlaric(const ATOOLS::Vec4D* mom) {
     m_av  = m_sff;
     break;
   case spt::g2qq:
-    m_sff = zi*(1.-2.*m_zpm);
+    m_sff = zi*(1.-2.*m_kappa*m_zpm);
     m_av  = m_sff - 2.0 * ( m_zi*m_zj - m_zpm ) * zi;
     break;
   case spt::g2gg:
-      m_sff = zi;
-      m_av  = m_sff + ( m_zi*m_zj - m_zpm )*zi;
+    m_sff = m_kappa?(m_zpm?zi*m_kappa*m_zpm:zi):zi;
+    m_av  = m_sff + ( m_zi*m_zj - m_zpm )*zi;
     break;
   case spt::none:
     THROW(fatal_error, "Splitting type not set.");
@@ -293,8 +296,10 @@ void FF_DipoleSplitting::CalcDiPolarizations()
     } else {
       double B = -m_sff/zi/(zi*(1.-zi)+zj*(1.-zj)-2.0*m_zpm);
       CalcVectors(m_pt1,m_pt2,B);
-      m_pfactors[0] = 0;
-      m_pfactors[1] = -1/B;
+      if (m_kappa==0.0 || m_zpm==0.0) {
+	m_pfactors[0] = 0;
+	m_pfactors[1] = -1/B;
+      }
     }
     break;
   }
