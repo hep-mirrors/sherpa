@@ -86,26 +86,15 @@ bool Single_Process::Initialize()
       return true;
     }
     else {
+      // try external tools
+      p_tree_me2 = dynamic_cast<PHASIC::Tree_ME2_Base*>(PHASIC::Tree_ME2_Base::GetME2(m_pinfo));
+      if (p_tree_me2!=NULL) {
+        DEBUG_INFO("found external ME2");
+        return true;
+      }
       DEBUG_INFO("not found ...");
       return false;
     }
-  }
-  else if(m_pinfo.Has(nlo_type::real)){
-    DEBUG_INFO("searching real process");
-    if(Integrator()->YFS()->Mode()==YFS::yfsmode::off) return false;
-    p_born_me2=dynamic_cast<ME2_Base*>
-      (PHASIC::Tree_ME2_Base::GetME2(m_pinfo));
-    if (p_born_me2!=NULL) {
-      DEBUG_INFO("found");
-      p_born_me2->SetCouplings(m_cpls);
-      m_maxcpl[0]=m_mincpl[0]=p_born_me2->OrderQCD();
-      m_maxcpl[1]=m_mincpl[1]=p_born_me2->OrderEW();
-      p_born_me2->FillCombinations(m_ccombs,m_cfls);
-      m_sprimemin = p_born_me2->SPrimeMin()>0.?p_born_me2->SPrimeMin():-1.;
-      m_sprimemax = p_born_me2->SPrimeMax()>0.?p_born_me2->SPrimeMax():-1.;
-      return true;
-    }
-    return false;
   }
   else if(m_pinfo.Has(nlo_type::loop)){
     // if(!m_pinfo.Has(nlo_type::lo)){
