@@ -4,6 +4,7 @@
 #include "SHERPA/PerturbativePhysics/Shower_Handler.H"
 #include "SHERPA/SoftPhysics/Beam_Remnant_Handler.H"
 #include "SHERPA/SoftPhysics/Colour_Reconnection_Handler.H"
+#include "SHERPA/SoftPhysics/Baryon_Recombination_Handler.H"
 #include "SHERPA/SoftPhysics/Hadron_Decay_Handler.H"
 #include "SHERPA/SoftPhysics/Hadron_Init.H"
 #include "SHERPA/SoftPhysics/Soft_Collision_Handler.H"
@@ -56,7 +57,7 @@ Initialization_Handler::Initialization_Handler() :
   m_mode(eventtype::StandardPerturbative),
   m_savestatus(false), p_model(NULL), p_beamspectra(NULL),
   p_mehandler(NULL), p_harddecays(NULL),
-  p_beamremnants(NULL), p_reconnections(NULL),
+  p_beamremnants(NULL), p_reconnections(NULL), p_recombination(NULL),
   p_fragmentation(NULL), p_hdhandler(NULL),
   p_softphotons(NULL), p_evtreader(NULL),
   p_variations(NULL), p_filter(NULL)
@@ -310,6 +311,7 @@ Initialization_Handler::~Initialization_Handler()
   if (p_evtreader)     { delete p_evtreader;     p_evtreader     = NULL; }
   if (p_mehandler)     { delete p_mehandler;     p_mehandler     = NULL; }
   if (p_reconnections) { delete p_reconnections; p_reconnections = NULL; }
+  if (p_recombination) { delete p_recombination; p_recombination = NULL; }
   if (p_fragmentation) { delete p_fragmentation; p_fragmentation = NULL; }
   if (p_beamremnants)  { delete p_beamremnants;  p_beamremnants  = NULL; }
   if (p_harddecays)    { delete p_harddecays;    p_harddecays    = NULL; }
@@ -606,6 +608,7 @@ bool Initialization_Handler::InitializeTheFramework(int nr)
     okay = okay && InitializeTheUnderlyingEvents();
     okay = okay && InitializeTheSoftCollisions();
     okay = okay && InitializeTheColourReconnections();
+    okay = okay && InitializeTheBaryonRecombination();
     okay = okay && InitializeTheFragmentation();
     okay = okay && InitializeTheHadronDecays();
     okay = okay && InitializeTheSoftPhotons();
@@ -1174,6 +1177,14 @@ bool Initialization_Handler::InitializeTheColourReconnections()
   if (p_reconnections) { delete p_reconnections; p_reconnections = NULL; }
   p_reconnections = new Colour_Reconnection_Handler();
   p_reconnections->Output();
+  return 1;
+}
+
+bool Initialization_Handler::InitializeTheBaryonRecombination()
+{
+  if (p_recombination) { delete p_recombination; p_recombination = NULL; }
+  p_recombination = new Baryon_Recombination_Handler();
+  p_recombination->Output();
   return 1;
 }
 

@@ -53,6 +53,7 @@ namespace ATOOLS {
       needs_extraQED      = 256,
       needs_minBias       = 512,
       needs_beamRescatter = 1024,
+      needs_baryonrecomb  = 2048,
       needs_smearing      = 16384,
       internal_flag       = 32768,
       needs_yfs           = 65536,

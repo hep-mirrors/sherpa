@@ -38,7 +38,8 @@ void Fragmentation_Base::Shrink(Blob_List * bloblist) {
 	  blob->RemoveOutParticle(blob->GetOutParticles().front());
 	decblob->AddToOutParticles(part);
       }
-      decblob->SetStatus(blob_status::needs_hadrondecays);
+      decblob->SetStatus(blob_status::needs_hadrondecays |
+			 blob_status::needs_baryonrecomb);
       decblob->AddData("Partonic",new Blob_Data<int>(m_flagpartonics));
     }
   }

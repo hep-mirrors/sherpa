@@ -502,6 +502,7 @@ add_subdirectory(PDF/Main)
 add_subdirectory(PDF/NNPDF)
 add_subdirectory(PDF/SAL)
 add_subdirectory(RECONNECTIONS)
+add_subdirectory(RECOMBINATION)
 add_subdirectory(REMNANTS)
 add_subdirectory(SHRiMPS)
 add_subdirectory(YFS)
@@ -553,7 +554,7 @@ endif()
 add_subdirectory(SHERPA)
 
 set( IDIRS  AHADIC++ AMEGIC++ AMISIC++ ATOOLS BEAM COMIX CSSHOWER++ DIM DIRE EXTAMP EXTRA_XS HADRONS++
-METOOLS MCATNLO MODEL PHASIC++ PHOTONS++  PDF RECONNECTIONS REMNANTS SHRiMPS SHERPA YFS)
+METOOLS MCATNLO MODEL PHASIC++ PHOTONS++  PDF RECONNECTIONS RECOMBINATION REMNANTS SHRiMPS SHERPA YFS)
 
 if (SHERPA_ENABLE_MANUAL)
   add_subdirectory(Manual)
@@ -686,7 +687,7 @@ target_link_libraries(SHERPAAll INTERFACE
 SherpaMain SherpaInitialization SherpaSingleEvents SherpaSoftPhysics SherpaPerturbativePhysics SherpaTools
 ShrimpsMain ShrimpsEvents ShrimpsLadders ShrimpsBeamRemnants ShrimpsXsecs ShrimpsEikonals ShrimpsTools
 HadronsMain HadronsMEs HadronsCurrents HadronsPSs
-Reconnections
+Reconnections Recombination
 AhadicMain AhadicTools AhadicFormation AhadicDecays
 Amisic AmisicTools AmisicPerturbative
 PhotonsMain PhotonsTools PhotonsPhaseSpace PhotonsMEs PhotonsPhotonSplitter

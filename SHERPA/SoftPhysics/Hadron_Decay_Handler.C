@@ -96,7 +96,8 @@ void Hadron_Decay_Handler::CreateDecayBlob(Particle* inpart)
   if(!Decays(inpart->Flav())) return;
   if(inpart->Time()==0.0) inpart->SetTime();
   Blob* blob = p_bloblist->AddBlob(btp::Hadron_Decay);
-  blob->SetStatus(blob_status::needs_extraQED);
+  blob->SetStatus(blob_status::needs_extraQED |
+		  blob_status::needs_baryonrecomb);  
   blob->AddToInParticles(inpart);
   SetPosition(blob);
   blob->SetTypeSpec("Sherpa");

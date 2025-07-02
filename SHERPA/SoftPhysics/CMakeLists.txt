@@ -1,6 +1,7 @@
 set(SoftPhysics_SOURCES Hadron_Init.C
                         Beam_Remnant_Handler.C
                         Colour_Reconnection_Handler.C
+                        Baryon_Recombination_Handler.C
                         Soft_Collision_Handler.C
                         Hadron_Decay_Handler.C
                         Soft_Photon_Handler.C
@@ -10,6 +11,7 @@ set(SoftPhysics_SOURCES Hadron_Init.C
 set(SoftPhysics_HEADERS Hadron_Init.H
                         Beam_Remnant_Handler.H
                         Colour_Reconnection_Handler.H
+                        Baryon_Recombination_Handler.H
                         Soft_Collision_Handler.H
                         Hadron_Decay_Handler.H
                         Soft_Photon_Handler.H
