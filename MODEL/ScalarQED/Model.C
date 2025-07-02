@@ -27,7 +27,7 @@ operator()(const Model_Arguments &args) const
 void ATOOLS::Getter<MODEL::Model_Base,MODEL::Model_Arguments,MODEL::ScalarQED_Model>::
 PrintInfo(ostream &str,const size_t width) const
 {
-  str<<"The Standard Model\n";
+  str<<"The Standard Model + Scalar QED\n";
   str<<setw(width+4)<<" "<<"{\n"
      <<setw(width+7)<<" "<<"# possible parameters in yaml configuration [usage: \"keyword: value\"]\n"
      <<setw(width+7)<<" "<<"- EW_SCHEME (EW input scheme, see documentation)\n"
