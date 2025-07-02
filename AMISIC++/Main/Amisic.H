@@ -64,9 +64,9 @@ namespace AMISIC {
     double         m_sigmaND_norm, m_b, m_bfac, m_S, m_Y, m_pt2, m_weight;
 
     bool         m_isMinBias, m_isFirst, m_producedSoft;
-    size_t       m_maxNscatters, m_Nscatters; 
+    size_t       m_maxNscatters, m_Nscatters;
     double       m_f;
-    
+
     void InitParametersAndType(PDF::ISR_Handler *const isr,
 			       REMNANTS::Remnant_Handler * remnant_handler);
     void UpdateForNewS();

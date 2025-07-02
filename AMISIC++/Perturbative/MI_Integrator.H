@@ -21,16 +21,16 @@ namespace AMISIC {
     double         m_pt2, m_shat, m_that, m_uhat, m_cost, m_b;
     double         m_xsec, m_uncert, m_xsmax;
   public:
-    MI_Integrator(MI_Processes * procs);
+    explicit MI_Integrator(MI_Processes * procs);
     void   Initialize(PDF::ISR_Handler * isr);
     double operator()(const double & s,Matter_Overlap * mo,const double & b);
     bool   TrialEvent(const double & s,Matter_Overlap * mo);
     bool   MakeKinematics(const double & pt2, const double & s);
-    
+
     inline void SetPT2min(const double & pt2min) { m_pt2min = pt2min; }
-    
-    inline const double & Integral()    const { return m_xsec; } 
-    inline const double & Uncertainty() const { return m_uncert; } 
+
+    inline const double & Integral()    const { return m_xsec; }
+    inline const double & Uncertainty() const { return m_uncert; }
 
     inline const double & SHat() const { return m_shat; }
     inline const double & THat() const { return m_that; }
