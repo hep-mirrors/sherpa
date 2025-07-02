@@ -40,19 +40,19 @@ using namespace EXTRAXS;
 
 PionPionGamma::PionPionGamma(const External_ME_Args& args) : ME2_Base(args)
 {
-  PRINT_INFO("initialised XS_PionPionGamma");
+  PRINT_INFO("Initialised XS_PionPionGamma");
   Flavour_Vector outflavs = args.m_outflavs;
   // p_bornme = dynamic_cast<ME2_Base*>(PHASIC::Tree_ME2_Base::GetME2(bargs));
   // if (!p_bornme) THROW(fatal_error,"no born me found.");
   const Flavour_Vector fl = args.Flavours();
-  double ME = fl[0].Mass();
-  double MP = fl[3].Mass();
+  double ME = Flavour(kf_e).Mass();
+  double MP = Flavour(kf_pi).Mass();
   ME2 = ME*ME;
   MP2 = MP*MP;
   m_oqcd = 1;
   m_oew  = 2;
-  m_me  = outflavs[0].Mass();
-  m_mpi = outflavs[2].Mass();
+  m_me  = ME;
+  m_mpi = MP;
   m_s = sqr(rpa->gen.Ecms());
   m_betapi = sqrt(1-m_mpi*m_mpi/m_s);
 }
@@ -66,10 +66,10 @@ double PionPionGamma::operator()
   m_s45 = (p[3]+p[4]).Abs2();
   m_betapi = sqrt(1-m_mpi*m_mpi/m_sp);
   S = m_sp;
-  S34 = (p[2]+p[3]).Abs2();
-  T14 = (p[0]-p[3]).Abs2();
-  T24 = (p[1]-p[3]).Abs2();
-  T=(p[0]-p[2]).Abs2();;
+  S34 = (p[3]+p[4]).Abs2();
+  T14 = (p[1]-p[4]).Abs2();
+  T24 = (p[2]-p[4]).Abs2();
+  T=(p[0]-p[2]).Abs2();
   U=(p[0]-p[3]).Abs2();
   for (int i = 0; i < p.size(); ++i)
   {
@@ -119,93 +119,183 @@ double PionPionGamma::operator()
 
 
 double PionPionGamma::Full(){
-  return -256*pow(M_PI*m_alpha,3)*(-(MP2*MP2* pow((Den(ME2 - 2*Pair(k(1),k(5)),ME2) - Den(ME2 - 2*Pair(k
- (2),k(5)),ME2))* Den(2*(MP2 + Pair(k(3),k(4))),0) + 2*Den(2*(ME2 + Pair(k(1),k(2))),0)* Den
- (MP2 + 2*Pair(k(3),k(5)),MP2),2)*(ME2 + Pair(k(1),k(2)))) + 2*((Den(ME2 - 2*Pair(k(1),k
- (5)),ME2) - Den(ME2 - 2*Pair(k(2),k(5)),ME2))* Den(2*(MP2 + Pair(k(3),k(4))),0) - 2*Den(2*
- (ME2 + Pair(k(1),k(2))),0)*Den(MP2 + 2*Pair(k(4),k(5)),MP2))*(((Den(ME2 - 2*Pair(k(1),k
- (5)),ME2) - Den(ME2 - 2*Pair(k(2),k(5)),ME2))* Den(2*(MP2 + Pair(k(3),k(4))),0) + 2*Den(2*
- (ME2 + Pair(k(1),k(2))),0)* Den(MP2 + 2*Pair(k(3),k(5)),MP2))*(Pair(k(1),k(4))*(MP2 - Pair(k(1),k
- (3)) - Pair(k(2),k(3)))* Pair(k(2),k(3)) - Pair(k(1),k(3))*(-MP2 + Pair(k(1),k(3)) + Pair(k(2),k
- (3)))*Pair(k(2),k(4)) + Pair(k(1),k(2))*(-MP2 + Pair(k(1),k(3)) + Pair(k(2),k(3)))* Pair(k(3),k
- (4)) + ME2*Pair(k(3),k(4))*(Pair(k(3),k(4)) + Pair(k(3),k(5)))) + Den(2*(MP2 + Pair(k(3),k
- (4))),0)*(-((4*Den(ME2 - 2*Pair(k(1),k(5)),ME2) + 5*Den(ME2 - 2*Pair(k(2),k(5)),ME2))*(MP2*Pair(k
- (1),k(2)) + Pair(k(1),k(3))*(ME2 - 2*Pair(k(2),k(3))) + ME2*Pair(k(2),k(3)))*Pair(k(2),k
- (5))) + ME2*(4*Den(ME2 - 2*Pair(k(1),k(5)),ME2) + 5*Den(ME2 - 2*Pair(k(2),k(5)),ME2))*Pair(k(2),k
- (5))*(Pair(k(3),k(4)) + Pair(k(3),k(5))) + MP2*(Den(ME2 - 2*Pair(k(1),k(5)),ME2) + Den
- (ME2 - 2*Pair(k(2),k(5)),ME2))*(-(Pair(k(1),k(5))*Pair(k(2),k(4))) + Pair(k(1),k(4))*Pair(k(2),k
- (5)) + ME2*(Pair(k(3),k(4)) + Pair(k(3),k(5)))) -(Den(ME2 - 2*Pair(k(1),k(5)),ME2) + Den
- (ME2 - 2*Pair(k(2),k(5)),ME2))*(4*MP2*(MP2*Pair(k(1),k(2)) + ME2*Pair(k(1),k(3))) - 6*Pair(k(1),k
- (3))*(MP2*Pair(k(1),k(2)) + ME2*Pair(k(1),k(3))) +(2*(2*MP2 - 3*Pair(k(1),k(3)))*(ME2 - 2*Pair(k
- (1),k(3))) -(4*ME2 + MP2 - 9*Pair(k(1),k(3)))*Pair(k(1),k(4)))* Pair(k(2),k(3)) + MP2*(MP2*Pair(k
- (1),k(2)) + Pair(k(1),k(3))*(ME2 - 2*Pair(k(2),k(3))) + ME2*Pair(k(2),k(3))) + Pair(k(1),k(4))*
- (-4*MP2*Pair(k(1),k(2)) - 4*ME2*Pair(k(1),k(3)) + pow(Pair(k(2),k(3)),2)) - Pair(k(1),k(3))*
- (-MP2 + Pair(k(1),k(3)) + Pair(k(2),k(3)))* Pair(k(2),k(4)) +(2*Pair(k(1),k(3))*(3*ME2 - 5*Pair(k
- (2),k(3))) + Pair(k(1),k(2))*(5*MP2 + Pair(k(1),k(3)) - Pair(k(2),k(3))) + 4*ME2*Pair(k(2),k
- (3)))*Pair(k(3),k(4)) - ME2*(4*MP2 - 6*Pair(k(1),k(3)) - 4*Pair(k(1),k(4)) + 5*Pair(k(3),k(4)))*
- (Pair(k(3),k(4)) + Pair(k(3),k(5)))))) + pow((Den(ME2 - 2*Pair(k(1),k(5)),ME2) - Den
- (ME2 - 2*Pair(k(2),k(5)),ME2))* Den(2*(MP2 + Pair(k(3),k(4))),0) - 2*Den(2*(ME2 + Pair(k(1),k
- (2))),0)*Den(MP2 + 2*Pair(k(4),k(5)),MP2), 2)*(-(ME2*(MP2*MP2)) + (MP2*Pair(k(1),k(2)) - 2*Pair(k
- (1),k(3))*Pair(k(2),k(3)))*(MP2 - 2*Pair(k(1),k(4)) - 2*Pair(k(2),k(4)) + 2*Pair(k(3),k
- (4))) - 2*ME2*MP2*Pair(k(4),k(5))) + 2*(MP2*pow((Den(ME2 - 2*Pair(k(1),k(5)),ME2) - Den
- (ME2 - 2*Pair(k(2),k(5)),ME2))* Den(2*(MP2 + Pair(k(3),k(4))),0) + 2*Den(2*(ME2 + Pair(k(1),k
- (2))),0)* Den(MP2 + 2*Pair(k(3),k(5)),MP2),2)*Pair(k(1),k(4))* Pair(k(2),k(4)) + Den(ME2 - 2*Pair
- (k(1),k(5)),ME2)* Den(2*(MP2 + Pair(k(3),k(4))),0)*((Den(ME2 - 2*Pair(k(1),k(5)),ME2) - Den
- (ME2 - 2*Pair(k(2),k(5)),ME2))* Den(2*(MP2 + Pair(k(3),k(4))),0) - 2*Den(2*(ME2 + Pair(k(1),k
- (2))),0)* Den(MP2 + 2*Pair(k(4),k(5)),MP2))*(Pair(k(1),k(5))*(MP2*Pair(k(1),k(2)) + Pair(k(1),k
- (3))*(ME2 - 2*Pair(k(2),k(3))) + ME2*Pair(k(2),k(3)) ) - 2*(MP2*Pair(k(1),k(2)) + Pair(k(1),k
- (3))*(ME2 - 2*Pair(k(2),k(3))) + ME2*Pair(k(2),k(3)))*Pair(k(3),k(5)) - ME2*(Pair(k(3),k
- (4)) + Pair(k(3),k(5)))*(-2*Pair(k(1),k(3)) - 2*Pair(k(1),k(4)) - Pair(k(1),k(5)) + 2*(MP2 + Pair
- (k(3),k(4)) + Pair(k(4),k(5)))))) + 2*Den(2*(MP2 + Pair(k(3),k(4))),0)*((Den(ME2 - 2*Pair(k(1),k
- (5)),ME2) - Den(ME2 - 2*Pair(k(2),k(5)),ME2))* Den(2*(MP2 + Pair(k(3),k(4))),0) + 2*Den(2*
- (ME2 + Pair(k(1),k(2))),0)*Den(MP2 + 2*Pair(k(3),k(5)),MP2))*(-(MP2*(Den(ME2 - 2*Pair(k(1),k
- (5)),ME2) + Den(ME2 - 2*Pair(k(2),k(5)),ME2))*(-(Pair(k(1),k(4))*Pair(k(2),k(3))) + Pair(k(1),k
- (2))*(-MP2 + Pair(k(1),k(3)) + Pair(k(2),k(3))) - Pair(k(1),k(3))*Pair(k(2),k(4)) + ME2*(Pair(k
- (3),k(4)) + Pair(k(3),k(5))))) +(Den(ME2 - 2*Pair(k(1),k(5)),ME2) + Den(ME2 - 2*Pair(k(2),k
- (5)),ME2))*((3*MP2 + 4*Pair(k(1),k(2)) - 5*Pair(k(1),k(3)) - 4*Pair(k(1),k(4)))*Pair(k(1),k
- (4))*Pair(k(2),k(3)) + Pair(k(1),k(4))*pow(Pair(k(2),k(3)),2) + 2*Pair(k(1),k(2))*((-MP2 + Pair
- (k(1),k(3)))*(-2*MP2 + 3*Pair(k(1),k(3)) + 2*Pair(k(1),k(4))) +(-2*MP2 + 3*Pair(k(1),k(3)))*Pair(k
- (2),k(3))) - Pair(k(1),k(3))*(-5*MP2 + 7*Pair(k(1),k(3)) + 4*Pair(k(1),k(4)) + Pair(k(2),k
- (3)))*Pair(k(2),k(4)) +(4*Pair(k(1),k(4))*Pair(k(2),k(3)) + Pair(k(1),k(2))*(5*MP2 - 5*(Pair(k
- (1),k(3)) + Pair(k(2),k(3)))) + 6*Pair(k(1),k(3))*Pair(k(2),k(4)))*Pair(k(3),k(4)) - ME2*
- (4*MP2 - 6*Pair(k(1),k(3)) - 4*Pair(k(1),k(4)) + 5*Pair(k(3),k(4)))*(Pair(k(3),k(4)) + Pair(k(3),k
- (5)))) -(4*Den(ME2 - 2*Pair(k(1),k(5)),ME2) + 5*Den(ME2 - 2*Pair(k(2),k(5)),ME2))*Pair(k(2),k(5))*
- (-(Pair(k(1),k(2))*(MP2 - 2*Pair(k(2),k(3)))) + Pair(k(1),k(3))*(-ME2 + Pair(k(2),k(5))) - Pair(k
- (2),k(3))*(Pair(k(1),k(5)) + 2*(Pair(k(2),k(3)) + Pair(k(2),k(5)) - Pair(k(3),k(5)))) + ME2*(Pair
- (k(2),k(3)) + Pair(k(3),k(4)) + Pair(k(3),k(5)))) + Den(ME2 - 2*Pair(k(1),k(5)),ME2)*(-((MP2*Pair
- (k(1),k(2)) -(ME2 + 2*Pair(k(1),k(2)))*Pair(k(1),k(3)) + 2*pow(Pair(k(1),k(3)),2))*Pair(k(1),k
- (5))) - 2*Pair(k(1),k(3))*pow(Pair(k(1),k(5)),2) + Pair(k(1),k(5))*(-ME2 + Pair(k(1),k(5)))*Pair
- (k(2),k(3)) - Pair(k(1),k(3))*Pair(k(1),k(5))*Pair(k(2),k(5)) + 2*(Pair(k(1),k(2))*(MP2 - 2*Pair(k
- (1),k(3))) + 2*pow(Pair(k(1),k(3)),2) +(ME2 - Pair(k(1),k(5)))*Pair(k(2),k(3)) + Pair(k(1),k
- (3))*(-ME2 + 3*Pair(k(1),k(5)) + Pair(k(2),k(5))))* Pair(k(3),k(5)) - 4*Pair(k(1),k(3))*pow(Pair
- (k(3),k(5)),2) + ME2*(Pair(k(3),k(4)) + Pair(k(3),k(5)))*(-2*Pair(k(1),k(3)) - 2*Pair(k(1),k
- (4)) - Pair(k(1),k(5)) + 2*(MP2 + Pair(k(3),k(4)) + Pair(k(4),k(5)))))) + 2*pow(Den(2*
- (MP2 + Pair(k(3),k(4))),0),2)*(pow(Den(ME2 - 2*Pair(k(1),k(5)),ME2) + Den(ME2 - 2*Pair(k(2),k
- (5)),ME2),2)*(-4*pow(Pair(k(1),k(4)),2)*(4*ME2 + Pair(k(2),k(3))) + pow(Pair(k(1),k(3)),2)*
- (-6*(7*ME2 + Pair(k(1),k(2))) + 7*Pair(k(2),k(4))) - MP2*((4*(ME2 + Pair(k(1),k(2))) + Pair(k(1),k
- (5)))* Pair(k(2),k(3)) + ME2*(25*MP2 + Pair(k(2),k(4)))) -(49*ME2*MP2 + 5*(ME2 + Pair(k(1),k
- (2)))*Pair(k(2),k(3)))* Pair(k(3),k(4)) - 24*ME2*pow(Pair(k(3),k(4)),2) + Pair(k(1),k(4))*
- (39*ME2*MP2 + pow(Pair(k(2),k(3)),2) + MP2*Pair(k(2),k(4)) + 40*ME2*Pair(k(3),k(4)) + 4*Pair(k
- (2),k(3))*(ME2 + MP2 + Pair(k(1),k(2)) + Pair(k(3),k(4)))) + Pair(k(1),k(3))*
- (64*ME2*MP2 + 6*ME2*Pair(k(2),k(3)) + MP2*Pair(k(2),k(3)) - 4*MP2*Pair(k(2),k(4)) - Pair(k(2),k
- (3))*Pair(k(2),k(4)) + Pair(k(1),k(4))*(-52*ME2 - 7*Pair(k(2),k(3)) + 4*Pair(k(2),k
- (4))) + MP2*Pair(k(2),k(5)) +(65*ME2 - 6*Pair(k(2),k(4)))*Pair(k(3),k(4)) + Pair(k(1),k(2))*
- (4*MP2 - 4*Pair(k(1),k(4)) + 6*Pair(k(2),k(3)) + 5*Pair(k(3),k(4))))) + ME2*(-(pow(4*Den
- (ME2 - 2*Pair(k(1),k(5)),ME2) + 5*Den(ME2 - 2*Pair(k(2),k(5)),ME2),2)* pow(Pair(k(2),k
- (5)),2)) - pow(Den(ME2 - 2*Pair(k(1),k(5)),ME2),2)* pow(Pair(k(1),k(5)) - 2*Pair(k(3),k
- (5)),2) - 2*Den(ME2 - 2*Pair(k(1),k(5)),ME2)*(4*Den(ME2 - 2*Pair(k(1),k(5)),ME2) + 5*Den
- (ME2 - 2*Pair(k(2),k(5)),ME2))*Pair(k(2),k(5))*(2*(ME2 + Pair(k(1),k(2))) - 3*Pair(k(1),k(5)) - 2*
- (Pair(k(1),k(3)) + Pair(k(2),k(3)) + Pair(k(2),k(5))) + 4*Pair(k(3),k(5))) + MP2*pow(Den
- (ME2 - 2*Pair(k(1),k(5)),ME2) + Den(ME2 - 2*Pair(k(2),k(5)),ME2),2)*Pair(k(4),k(5))) +(Den
- (ME2 - 2*Pair(k(1),k(5)),ME2) + Den(ME2 - 2*Pair(k(2),k(5)),ME2))*(Den(ME2 - 2*Pair(k(1),k
- (5)),ME2)*(Pair(k(1),k(5)) - 2*Pair(k(3),k(5)))*(2*pow(Pair(k(1),k(3)),2) - 8*ME2*Pair(k(1),k
- (4)) + Pair(k(1),k(5))*Pair(k(2),k(3)) + 10*ME2*(MP2 + Pair(k(3),k(4))) + Pair(k(1),k(3))*(-2*Pair
- (k(1),k(2)) + 2*Pair(k(1),k(5)) + 2*Pair(k(2),k(3)) + Pair(k(2),k(5)) - 2*(7*ME2 + Pair(k(3),k
- (5))))) +(4*Den(ME2 - 2*Pair(k(1),k(5)),ME2) + 5*Den(ME2 - 2*Pair(k(2),k(5)),ME2))*Pair(k(2),k
- (5))*(2*pow(Pair(k(2),k(3)),2) - 8*ME2*Pair(k(2),k(4)) + Pair(k(1),k(3))*Pair(k(2),k(5)) + Pair
- (k(2),k(3))*(-14*ME2 - 2*Pair(k(1),k(2)) + 2*Pair(k(1),k(3)) + Pair(k(1),k(5)) + 2*Pair(k(2),k
- (5)) - 2*Pair(k(3),k(5))) + 2*ME2*(5*MP2 + 5*Pair(k(3),k(4)) + 6*Pair(k(3),k(5)) + 4*Pair(k(4),k
- (5)))))));
+  return -128*pow(m_alpha,3)*pow(M_PI,3)*((2*
+       (2*(ME2*ME2 + MP2*MP2) + 
+         ME2*(4*MP2 - S - T - T14 - 
+            2*(4*ME2 + 4*MP2 - S - S34 - T - T14 - U)) + (S + T + T14)*U - 
+         MP2*(S + T + T14 + 2*U)))/(S*S34*(2*ME2 + 2*MP2 - S - T - T14)) + 
+    (-4*(pow(ME2,3) + ME2*ME2*MP2) - 12*(ME2*(MP2*MP2) + pow(MP2,3)) + 
+       6*(ME2*ME2)*(4*ME2 + 4*MP2 - S - S34 - T14 - U) + 
+       (S34*T + 2*(T*T))*(4*ME2 + 4*MP2 - S - S34 - T - T14 - U) - 
+       (S*(S34 + T) + S34*T14 - 
+          (S + T + T14)*(4*ME2 + 4*MP2 - S - S34 - T - T14 - U))*U - 
+       (S + T14)*(U*U) + 2*(MP2*MP2)*
+        (4*T - T14 + 2*(4*ME2 + 4*MP2 - S - T - T14 - U) + U) - 
+       T*(-pow(4*ME2 + 4*MP2 - S - S34 - T - T14 - U,2) + 
+          S*(-4*ME2 - 4*MP2 + S + 2*S34 + T + T14 + U)) + 
+       MP2*((2*S - S34)*T - 2*(T*T) - 
+          (5*T - 3*T14)*(4*ME2 + 4*MP2 - S - S34 - T - T14 - U) - 
+          pow(4*ME2 + 4*MP2 - S - S34 - T - T14 - U,2) + 
+          (2*S + S34 - T + 3*T14 - 
+             2*(4*ME2 + 4*MP2 - S - S34 - T - T14 - U))*U + U*U + 
+          S34*(-4*ME2 - 4*MP2 + S + S34 + T + 2*T14 + U)) + 
+       ME2*(-2*(T*T) + S34*(2*S - T + T14) - 
+          (2*S + S34 + 7*T + T14)*(4*ME2 + 4*MP2 - S - S34 - T - T14 - U) - 
+          pow(4*ME2 + 4*MP2 - S - S34 - T - T14 - U,2) + 
+          (2*S + S34 - T + T14 - 
+             2*(4*ME2 + 4*MP2 - S - S34 - T - T14 - U))*U + U*U - 
+          2*MP2*(2*S - 5*T + 3*T14 - 
+             3*(4*ME2 + 4*MP2 - S - S34 - T - T14 - U) + U)))/
+     (S*S34*(2*ME2 + 2*MP2 - S - T - T14)*(2*ME2 + 2*MP2 - S34 - T - U)) - 
+    (8*(ME2*(MP2*MP2) + pow(MP2,3)) - pow(T,3) - 
+       T*(S34*S34 + 4*(ME2 + MP2)*T14 - T14*T14) - 
+       MP2*(8*(ME2 + MP2)*S34 + S34*S34 + 4*(2*(ME2 + MP2) - S34)*T - 
+          T*T - 2*(2*(ME2 + MP2) + S34 + 3*T)*T14 - T14*T14 + 
+          2*(2*(ME2 + MP2) + S34)*U) + 
+       2*(ME2*ME2*(S34 + T - T14) + MP2*MP2*(S34 - T - 5*T14 + 2*U)) + 
+       ME2*(-4*MP2*(-2*(ME2 + MP2 + S34) + 3*T14 - U) - 
+          2*(S34*S34 + (2*(ME2 + MP2) - S34)*T + 
+             2*(ME2 + MP2)*(S34 - T14) + S34*U)) + 
+       2*((2*(ME2 + MP2) - S34)*(T*T) + (ME2 + MP2)*(S34*S34 + S34*(T + U)))\
+)/(S34*S34*pow(-2*ME2 - 2*MP2 + S34 + T + T14,2)) + 
+    (-8*(ME2*(MP2*MP2) + pow(MP2,3)) + 
+       (S34*S34 + 4*(ME2 + MP2)*(4*ME2 + 4*MP2 - S - S34 - T - T14 - U) - 
+          pow(4*ME2 + 4*MP2 - S - S34 - T - T14 - U,2))*U + pow(U,3) + 
+       2*ME2*(S34*S34 - 2*(ME2 + MP2)*
+           (4*ME2 + 4*MP2 - S - S34 - T - T14 - 2*U) + 
+          S34*(2*(ME2 + MP2) - T + U)) - 
+       2*((ME2 + MP2)*(S34*S34 - S34*(T - 3*U)) + 
+          (2*(ME2 + MP2) - S34)*(U*U) + 
+          ME2*ME2*(-4*ME2 - 4*MP2 + S + 2*S34 + T + T14 + 2*U) + 
+          MP2*MP2*(-4*ME2 - 4*MP2 + S + 2*S34 - T - 3*T14 + 4*U)) + 
+       MP2*(S34*S34 - 2*(2*(ME2 + MP2) + S34)*T - 
+          pow(4*ME2 + 4*MP2 - S - S34 - T - T14 - U,2) - U*U - 
+          4*(ME2 + MP2)*(-4*ME2 - 4*MP2 + S + S34 + T + 3*T14 + U) - 
+          2*ME2*(-4*ME2 - 4*MP2 + 2*S + S34 - 2*T14 + U + 5*(S34 + U)) + 
+          2*((8*(ME2 + MP2) - 3*(4*ME2 + 4*MP2 - S - S34 - T - T14 - U))*
+              U + S34*(-4*ME2 - 4*MP2 + 4*(ME2 + MP2) + S + S34 + T + T14 + 
+                U))))/(S34*S34*pow(2*ME2 + 2*MP2 - S - T - T14,2)) - 
+    (2*((2*(ME2*ME2 + 2*ME2*MP2 + MP2*MP2 + T*U - ME2*(T + U) - 
+              MP2*(S + T + U)))/(S*S) + 
+         (2*pow(ME2,3) - 18*pow(MP2,3) - S34*(S + 2*T)*U + T14*(U*U) + 
+            MP2*MP2*(13*T14 + 12*(4*ME2 + 4*MP2 - S - T - T14 - U) + U) - 
+            T*((4*ME2 + 4*MP2 - S - S34 - T - U)*U + U*U) - 
+            ME2*ME2*(4*ME2 + 4*MP2 - S - S34 + 2*T - T14 - U + 
+               2*(S34 + U)) + MP2*
+             (-6*(ME2*ME2) - (S + 4*S34 + T)*T14 - 
+               2*(S34*S34 + T14*T14 + 
+                  pow(4*ME2 + 4*MP2 - S - S34 - T - T14 - U,2)) - 
+               4*(S34 + T14)*(4*ME2 + 4*MP2 - S - S34 - T - T14 - U) + 
+               U*(-4*ME2 - 4*MP2 + 4*S + S34 + 7*T - T14 + U)) + 
+            ME2*(-26*(MP2*MP2) + S34*(S + 2*T) + 
+               T*(4*ME2 + 4*MP2 - S - S34 - T - U) + 
+               (4*ME2 + 4*MP2 - S + S34 + 3*T - 2*T14 - U)*U - 
+               MP2*(2*S - 8*S34 + 5*T - 11*T14 - 
+                  9*(4*ME2 + 4*MP2 - S - S34 - T - T14 - U) + 3*U)))/
+          (S*S34*(2*ME2 + 2*MP2 - S - T - T14))))/
+     (-2*ME2 - 2*MP2 + S + T + U) - 
+    (-((32*pow(MP2,3) - S*(S34*S34) - pow(S34,3) + 
+            S34*(2*S*T + T*T) - (S34*S34 - S34*T)*T14 - 
+            (S34*S34 + S*T + 2*(T*T))*
+             (4*ME2 + 4*MP2 - S - S34 - T - T14 - U) - 
+            T*pow(4*ME2 + 4*MP2 - S - S34 - T - T14 - U,2) - 
+            (2*(S34*S34) - 2*(S + S34)*T - T*T + 
+               (S + 2*S34 - 2*T)*T14 + T14*T14 + 
+               (S34 - 2*T)*(4*ME2 + 4*MP2 - S - S34 - T - T14 - U))*U - 
+            (S34 - T + 2*T14)*(U*U) + 
+            2*(ME2*ME2)*(-4*ME2 - 4*MP2 + S + S34 + 2*T + 2*U) + 
+            MP2*(16*(ME2*ME2) + 10*(S34*S34) - (5*S + S34)*T - T*T + 
+               S*(4*S34 - T14) + (7*S34 - 4*T)*T14 + T14*T14 + 
+               (3*S + 11*S34 + 6*T + 4*T14)*
+                (4*ME2 + 4*MP2 - S - S34 - T - T14 - U) + 
+               5*pow(4*ME2 + 4*MP2 - S - S34 - T - T14 - U,2) - 
+               (S - 11*S34 + 8*T - 6*T14 - 
+                  4*(4*ME2 + 4*MP2 - S - S34 - T - T14 - U))*U + 3*(U*U)) \
++ MP2*MP2*(48*ME2 - 2*(16*S34 - T + 5*T14 + 
+                  13*(4*ME2 + 4*MP2 - S - S34 - T - T14 - U) + 7*U)) + 
+            ME2*(2*(16*ME2*MP2 + 8*(ME2*ME2 + MP2*MP2) - S*S34 + 
+                  3*(S34*S34) - 2*(ME2 + MP2)*(S + S34) - 
+                  (8*(ME2 + MP2) - S + S34)*T + 
+                  2*(T*T + T*(4*ME2 + 4*MP2 - S - S34 - T - T14 - U)) - 
+                  (S - S34 + 2*(4*ME2 + 4*MP2 - S - S34 - T14 - U))*U) + 
+               4*MP2*(S - 9*S34 + 2*T - 
+                  6*(4*ME2 + 4*MP2 - S - S34 - T - T14 - U) - 2*(T14 + U))\
+))/(S34*S34*(2*ME2 + 2*MP2 - S - T - T14))) + 
+       (2*(4*ME2*MP2 + 2*(ME2*ME2 + MP2*MP2) + 
+             T*(4*ME2 + 4*MP2 - S34 - T - T14) - 
+             MP2*(4*ME2 + 4*MP2 - S34 + T - T14) - 
+             ME2*(4*ME2 + 4*MP2 - S34 - T + T14)) + 
+          (-4*(pow(ME2,3) + ME2*ME2*MP2) - 
+             12*(ME2*(MP2*MP2) + pow(MP2,3)) - 
+             (T*T + T*(S34 - T14))*(4*ME2 + 4*MP2 - S34 - T - T14 - U) - 
+             (S*(S34 + T - T14) - (S34 + T)*T14 - T14*T14)*U + 
+             2*T14*(U*U) + 6*(ME2*ME2)*(T14 + U) + 
+             2*(MP2*MP2)*(-4*ME2 - 4*MP2 + S + S34 + 2*T + T14 + 
+                2*(S34 + T14) + 5*U) + 
+             MP2*((2*S + S34)*T + T*T - (S34 + 2*T)*T14 - T14*T14 + 
+                (S34 + 3*(T + T14))*
+                 (4*ME2 + 4*MP2 - S - S34 - T - T14 - U) + 
+                (2*S - S34 - T - 5*T14)*U - 2*(U*U)) - 
+             ME2*(-(S34*T) - T*T - 2*S*(S34 + T) + 
+                (S34 + 2*(S + T))*T14 + T14*T14 + 
+                2*MP2*(2*S + T - 3*T14 + 
+                   3*(4*ME2 + 4*MP2 - S - S34 - T - T14 - U) - 5*U) - 
+                (S34 + T - T14)*
+                 (4*ME2 + 4*MP2 - S - S34 - T - T14 - U) + 
+                (S34 + T + 7*T14)*U + 2*(U*U)))/
+           (2*ME2 + 2*MP2 - S34 - T - U) - 
+          (2*(2*pow(ME2,3) - 18*pow(MP2,3) - S*S34*T + 
+               MP2*MP2*(T + 12*(S34 + T14) + 
+                  13*(4*ME2 + 4*MP2 - S - S34 - T - T14 - U)) + 
+               T*T*(4*ME2 + 4*MP2 - S - S34 - T - T14 - U) - 
+               (T*T + T*(4*ME2 + 4*MP2 - S + S34 - T - U))*U - 
+               ME2*ME2*(2*(S34 + T) + T14 + 3*U) + 
+               ME2*(-26*(MP2*MP2) + S34*(S + 2*T) + 
+                  (4*ME2 + 4*MP2 - S + S34 + 3*T - U)*U + 
+                  T*(-4*ME2 - 4*MP2 + S + S34 + T + 2*T14 + U)) + 
+               MP2*(-6*(ME2*ME2) + 3*S*T - (4*S34 + T)*T14 - 
+                  2*(S34*S34 + T14*T14 + 
+                     pow(4*ME2 + 4*MP2 - S - S34 - T - T14 - U,2)) - 
+                  (S + 2*T + 4*(S34 + T14))*
+                   (4*ME2 + 4*MP2 - S - S34 - T - T14 - U) + 
+                  U*(-4*ME2 - 4*MP2 + S + S34 + 7*T + T14 + U) - 
+                  ME2*(2*S - 8*S34 + 3*T - 9*T14 - 
+                     11*(4*ME2 + 4*MP2 - S - S34 - T - T14 - U) + 5*U))))/
+           (-2*ME2 - 2*MP2 + S + T + U))/(S*S34))/
+     (-2*ME2 - 2*MP2 + S34 + T + T14) - 
+    (-2*((2*(-3*pow(MP2,3) + 
+               MP2*(ME2*ME2 - ME2*(4*ME2 + 4*MP2 - S - S34 - T - U) + 
+                  T14*(4*ME2 + 4*MP2 - S - S34 - T - T14 - U)) + 
+               MP2*MP2*(-2*ME2 + S34 + T + U)))/
+           pow(2*ME2 + 2*MP2 - S34 - T - U,2) + 
+          (4*(pow(ME2,3) + ME2*(MP2*MP2)) + S*S34*T - 
+             T*T*(4*ME2 + 4*MP2 - S - S34 - T - T14 - U) + 
+             (S*S34 - T*(4*ME2 + 4*MP2 - S - S34 - T - U))*U - T14*(U*U) - 
+             (2*(MP2*MP2) - MP2*(4*(ME2 + MP2) - 3*S - S34))*(T + U) + 
+             ME2*(-2*S*S34 + T*T + 
+                (4*ME2 + 4*MP2 - S - S34 - T + 2*T14 - U)*U + U*U + 
+                T*(T14 + 3*(4*ME2 + 4*MP2 - S - S34 - T - T14 - U) + 
+                   2*U) + 2*MP2*
+                 (-4*ME2 - 4*MP2 + 3*S + S34 + T + U - 3*(T + U))) + 
+             ME2*ME2*(8*MP2 - 2*
+                 (4*ME2 + 4*MP2 - S - S34 - T - U + 2*(T + U))))/
+           ((2*ME2 + 2*MP2 - S34 - T - U)*(-2*ME2 - 2*MP2 + S + T + U))) + 
+       2*(2*ME2 - (2*(ME2*ME2 + MP2*MP2) - MP2*(4*ME2 + 4*MP2 - S - S34) + 
+             ME2*(4*MP2 - 4*(ME2 + MP2) - S + S34) + 
+             T*(4*ME2 + 4*MP2 - S34 - T - T14 - U) + (S + T14)*U)/
+           (2*ME2 + 2*MP2 - S34 - T - U) - 
+          (2*(2*pow(ME2,3) - ME2*ME2*MP2 - 12*ME2*(MP2*MP2) - 
+               9*pow(MP2,3) - 
+               MP2*(S34*S34 + T14*T14 + 
+                  2*(S34*T14 + 
+                     (S34 + T14)*(4*ME2 + 4*MP2 - S - S34 - T - T14 - U)) \
++ pow(4*ME2 + 4*MP2 - S - S34 - T - T14 - U,2) - 3*T*U) + 
+               (4*ME2 + 4*MP2 - S - T - U)*(6*(MP2*MP2) - T*U) - 
+               ME2*ME2*(4*ME2 + 4*MP2 - S - T - U + 2*(T + U)) + 
+               ME2*(T*(4*ME2 + 4*MP2 - S - T - U) + 
+                  (4*ME2 + 4*MP2 - S + T - U)*U - 
+                  MP2*(-4*(4*ME2 + 4*MP2 - S - T - U) + 3*(T + U)))))/
+           pow(-2*ME2 - 2*MP2 + S + T + U,2)))/(S*S));
 
 }
 
@@ -368,6 +458,7 @@ operator()(const External_ME_Args &args) const
 {
   // if (pi.m_fi.m_nlotype==nlo_type::loop) {
   // Flavour_Vector fl(pi.ExtractFlavours());
+  if(args.m_source!="Internal") return NULL;
   const Flavour_Vector fl = args.Flavours();
   if(fl.size()!=5) return NULL;
   if (fl[0]!=Flavour(kf_e) && fl[1]!=Flavour(kf_e)) return NULL; 
