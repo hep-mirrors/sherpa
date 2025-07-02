@@ -37,7 +37,7 @@ RealVirtual::RealVirtual(const PHASIC::Process_Info& pi)
     m_sym  = ATOOLS::Flavour::FSSymmetryFactor(args.m_outflavs);
     m_sym *= ATOOLS::Flavour::ISSymmetryFactor(args.m_inflavs);
     cplfac *= pow(p_loop_me->AlphaQED(),rr_pi.m_mincpl[1]);
-    m_factor = p_loop_me->AlphaQED()/2.0/M_PI;
+    m_factor = p_loop_me->AlphaQED()/4.0/M_PI;
   }
 
 RealVirtual::~RealVirtual()
