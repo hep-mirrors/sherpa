@@ -22,7 +22,6 @@ RealVirtual::RealVirtual(const PHASIC::Process_Info& pi)
     rr_pi.m_maxcpl[0] = pi.m_maxcpl[0];
     rr_pi.m_mincpl[1] = pi.m_mincpl[1]+1;
     rr_pi.m_maxcpl[1] = pi.m_maxcpl[1]+1;
-    PRINT_VAR(rr_pi.m_maxcpl);
     // MODEL::Coupling_Data* aqcd=m_cpls.Get("Alpha_QCD");
     // MODEL::Coupling_Data* aqed=m_cpls.Get("Alpha_QED");
     p_loop_me = PHASIC::Virtual_ME2_Base::GetME2(rr_pi);
