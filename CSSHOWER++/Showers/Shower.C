@@ -341,7 +341,7 @@ void Shower::MakeTransition(Parton *split, const ATOOLS::Flavour &fla,
       const Vec4D qLong = Vec4D(q[0],0.0,0.0,q[3]);
       const double Q2 = q.Abs2(); 
       const double lam = sqr(Q2 - mafter2 - mspect2) - 4*mafter2*mspect2;
-      pspect = (pspect - 0.5*(mspect2-Q2)/qLong.Abs2()*qLong)
+      pspect = (pspect - 0.5*(mspect2+Q2)/qLong.Abs2()*qLong)
           *sqrt((lam-4*mspect2*pemitt.PPerp2())/(sqr(Q2-mspect2) - 4*mspect2*pemitt.PPerp2()))
           + 0.5*(Q2+mspect2-mafter2)/(qLong.Abs2())*qLong;
       pemitt = pspect - q;
