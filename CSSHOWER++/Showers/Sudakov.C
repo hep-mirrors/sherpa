@@ -111,7 +111,7 @@ void Sudakov::InitSplittingFunctions(MODEL::Model_Base *md,const int kfmode)
   }
   AddDiQuarkSplittingFunctions(md, kfmode);
   AddOctetMesonSplittingFunctions(md, kfmode);
-  // AddQuarkoniaSplittingFunctions(md, kfmode);
+  AddQuarkoniaSplittingFunctions(md, kfmode);
   AddGluonThresholds(md);
   msg_Debugging() << "}\n";
 }
@@ -160,14 +160,14 @@ void Sudakov::AddQuarkoniaSplittingFunctions(Model_Base *md, const int kfmode) {
   v.order[0] = 1;
   Add(new Splitting_Function_Base(
       SF_Key(&v, 0, cstp::FF, kfmode, m_qcdmode, m_ewmode, 1, m_pdfmin)));
-  Add(new Splitting_Function_Base(
-    SF_Key(&v, 0, cstp::II, kfmode, m_qcdmode, m_ewmode, 1, m_pdfmin)));
+  // Add(new Splitting_Function_Base(
+  //   SF_Key(&v, 0, cstp::II, kfmode, m_qcdmode, m_ewmode, 1, m_pdfmin)));
   v.in[0] = v.in[0].Bar();
   v.in[1] = v.in[1].Bar();
   Add(new Splitting_Function_Base(
       SF_Key(&v, 0, cstp::FF, kfmode, m_qcdmode, m_ewmode, 1, m_pdfmin)));
-  Add(new Splitting_Function_Base(
-    SF_Key(&v, 0, cstp::II, kfmode, m_qcdmode, m_ewmode, 1, m_pdfmin)));
+  // Add(new Splitting_Function_Base(
+  //   SF_Key(&v, 0, cstp::II, kfmode, m_qcdmode, m_ewmode, 1, m_pdfmin)));
   // This is c -> c J/Psi(1S)8
   v = Single_Vertex();
   v.AddParticle(Quark_flav.Bar());
