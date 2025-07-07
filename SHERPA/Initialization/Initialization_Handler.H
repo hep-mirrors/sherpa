@@ -29,11 +29,11 @@ namespace ATOOLS {
 }
 
 namespace SHERPA {
-
   class Matrix_Element_Handler;
   class Hard_Decay_Handler;
   class Beam_Remnant_Handler;
   class Colour_Reconnection_Handler;
+  class Hadron_Rescattering_Handler;
   class Decay_Handler_Base;
   class Soft_Photon_Handler;
   class Event_Reader_Base;
@@ -61,6 +61,7 @@ namespace SHERPA {
     Shower_Handler_Map             m_showerhandlers;
     Beam_Remnant_Handler         * p_beamremnants;
     Colour_Reconnection_Handler  * p_reconnections;
+    Hadron_Rescattering_Handler  * p_hadronrescattering;
     ATOOLS::Fragmentation_Base   * p_fragmentation;
     Soft_Collision_Handler_Map     m_schandlers;
     Decay_Handler_Base           * p_hdhandler;
@@ -93,6 +94,7 @@ namespace SHERPA {
     bool InitializeTheFragmentation();
     bool InitializeTheSoftCollisions();
     bool InitializeTheHadronDecays();
+    bool InitializeTheHadronRescattering();
     bool InitializeTheSoftPhotons();
     bool InitializeTheFilter();
     bool InitializeTheAnalyses();
@@ -129,6 +131,7 @@ namespace SHERPA {
     const Shower_Handler_Map         & GetShowerHandlers()            const { return m_showerhandlers; }
     Beam_Remnant_Handler             * GetBeamRemnantHandler()        const { return p_beamremnants; }
     Colour_Reconnection_Handler      * GetColourReconnectionHandler() const { return p_reconnections; }
+    Hadron_Rescattering_Handler      * GetHadronRescatteringHandler() const { return p_hadronrescattering; }
     ATOOLS::Fragmentation_Base       * GetFragmentation()             const { return p_fragmentation; }
     Soft_Collision_Handler_Map       * GetSoftCollisionHandlers()           { return &m_schandlers; }
     ATOOLS::Flavour                  * GetBunches()                         { return m_bunch_particles; }

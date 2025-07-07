@@ -9,6 +9,7 @@ set(Single_Events_SOURCES Event_Handler.C
                           Beam_Remnants.C
                           Hadronization.C
                           Hadron_Decays.C
+                          Hadron_Rescattering.C
                           Userhook_Phase.C
                           Analysis_Phase.C
                           Output_Phase.C
@@ -26,6 +27,7 @@ set(Single_Events_HEADERS Event_Handler.H
                           Beam_Remnants.H
                           Hadronization.H
                           Hadron_Decays.H
+                          Hadron_Rescattering.H
                           Userhook_Phase.H
                           Analysis_Phase.H
                           Output_Phase.H

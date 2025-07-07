@@ -41,22 +41,23 @@ namespace ATOOLS {
 
   struct blob_status {
     enum code {
-      inactive            = 0,
-      needs_signal        = 1,
-      needs_showers       = 2,
-      needs_harddecays    = 4,
-      needs_beams         = 8,
-      needs_softUE        = 16,
-      needs_reconnections = 32,
-      needs_hadronization = 64,
-      needs_hadrondecays  = 128,
-      needs_extraQED      = 256,
-      needs_minBias       = 512,
-      needs_beamRescatter = 1024,
-      needs_smearing      = 16384,
-      internal_flag       = 32768,
-      needs_yfs           = 65536,
-      fully_active        = 131072
+      inactive              = 0,
+      needs_signal          = 1,
+      needs_showers         = 2,
+      needs_harddecays      = 4,
+      needs_beams           = 8,
+      needs_softUE          = 16,
+      needs_reconnections   = 32,
+      needs_hadronization   = 64,
+      needs_hadrondecays    = 128,
+      needs_extraQED        = 256,
+      needs_minBias         = 512,
+      needs_beamRescatter   = 1024,
+      needs_hadronRescatter = 4096,
+      needs_smearing        = 16384,
+      internal_flag         = 32768,
+      needs_yfs             = 65536,
+      fully_active          = 131072
     };
   };
 
