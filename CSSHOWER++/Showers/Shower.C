@@ -312,6 +312,51 @@ int Shower::MakeKinematics
   return 1;
 }
 
+void Shower::MakeTransition(Parton *split, const ATOOLS::Flavour &fla,
+		       const ATOOLS::Flavour &flb) {
+    DEBUG_FUNC("");
+  Parton *spect(split->GetSpect());
+  Vec4D pemitt(split->Momentum()), // momentum of transitioning gluon
+   pspect(spect->Momentum());     // momentum of the spectator
+  int stype(-1), stat(-1);
+  double mbefore2 = split->Mass2();
+  double mafter2 = flb.Mass(1)*flb.Mass(1);
+  double mspect2 = spect->Mass2();
+  if (fla.Kfcode() != kf_gluon || mbefore2 != 0.0) {
+    msg_Error() << METHOD << "Somehow trying to transition something else than a gluon.";
+    exit(EXIT_FAILURE);
+  }
+  if (split->GetType()==pst::FS) {
+    if (spect->GetType()==pst::FS) {
+      const Vec4D q = (pemitt+pspect);
+      const double Q2 = q.Abs2(); 
+      const double lam = sqr(Q2 - mafter2 - mspect2) - 4*mafter2*mspect2;
+      pspect = (pspect - 0.5*(1.+mspect2/Q2)*q)*sqrt(lam/sqr(Q2-mspect2)) + 0.5*(Q2+mspect2-mafter2)/Q2*q;
+      pemitt = q-pspect;
+      //recoils the spector so that the emitter now has the correct mass
+      //while keeping the correct spectator mass
+    }
+    else {
+      const Vec4D q = (pspect - pemitt);
+      const Vec4D qLong = Vec4D(q[0],0.0,0.0,q[3]);
+      const double Q2 = q.Abs2(); 
+      const double lam = sqr(Q2 - mafter2 - mspect2) - 4*mafter2*mspect2;
+      pspect = (pspect - 0.5*(mspect2-Q2)/qLong.Abs2()*qLong)
+          *sqrt((lam-4*mspect2*pemitt.PPerp2())/(sqr(Q2-mspect2) - 4*mspect2*pemitt.PPerp2()))
+          + 0.5*(Q2+mspect2-mafter2)/(qLong.Abs2())*qLong;
+      pemitt = pspect - q;
+    }
+  }
+  else {
+    msg_Error() << METHOD << "Something horrible happened.";
+    exit(EXIT_FAILURE);
+  }
+  split->SetMomentum(pemitt);
+  split->SetMass2(mafter2);
+  split->SetFlavour(flb);
+  spect->SetMomentum(pspect);
+}
+
 bool Shower::EvolveSinglet(Singlet * act,const size_t &maxem,size_t &nem)
 {
   p_actual=act;
@@ -383,17 +428,19 @@ bool Shower::EvolveSinglet(Singlet * act,const size_t &maxem,size_t &nem)
     } else if (split->Transition() && m_flavC == (ATOOLS::Flavour)(kf_none)) {
       // Handles transitions
       const double tr_weight {split->Weight()};
-      msg_Debugging() << "Transition " << m_flavA << " -> " << m_flavB << "  ("
+      msg_Out() << "Transition " << m_flavA << " -> " << m_flavB << "  ("
                       << m_flavC << ") "
                       << " at kt = " << sqrt(split->KtTest()) << "( "
                       << sqrt(split->GetSing()->KtNext()) << " .. "
                       << sqrt(split->KtStart()) << " ), z = " << split->ZTest()
                       << ", y = " << split->YTest() << " for\n"
-                      << *split << *split->GetSpect() << "\n"
+                      << *split << "\n" << *split->GetSpect() << "\n"
                       << "Transition weight: " << tr_weight << endl
                       << "Resetting transition tag from " << split->Transition()
                       << " to false.\n";
       m_weightsmap["Sudakov"] *= tr_weight;
+      MakeTransition(split, m_flavA, m_flavB);
+      msg_Out() << "after transition\n" << *split << "\n" << *split->GetSpect() << "\n";
       msg_Debugging() << "FS --> Exiting Transition handling in" << METHOD
                       << " Shower weight: " << m_weightsmap["PS"] << endl;
     } else {
@@ -572,7 +619,7 @@ bool Shower::TrialEmission(double & kt2win,Parton * split)
         m_flavC = m_sudakov.GetFlavourC();
         if (split->Transition() && m_flavC == (ATOOLS::Flavour)(kf_none)) {
           kt2win = kt2 * (1.01);
-          split->SetFlavour(m_sudakov.Selected()->GetFlavourB());
+          // split->SetFlavour(m_sudakov.Selected()->GetFlavourB());
           split->SetTest(kt2, z, y, phi);
         } else {
           m_lastcpl = m_sudakov.Selected()->Coupling()->Last();

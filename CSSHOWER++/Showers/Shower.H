@@ -57,6 +57,8 @@ namespace CSSHOWER {
     int MakeKinematics(Parton *const split,const ATOOLS::Flavour &fla,
 		       const ATOOLS::Flavour &flb,const ATOOLS::Flavour &flc,
 		       double &jcv,int mode);
+    void MakeTransition(Parton *const split, const ATOOLS::Flavour &fla,
+		       const ATOOLS::Flavour &flb);
 
   public:
     Shower(PDF::ISR_Handler *,const int qcd,const int qed, int type);
