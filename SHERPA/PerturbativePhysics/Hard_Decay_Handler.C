@@ -27,6 +27,7 @@
 #include "EXTRA_XS/One2Two/Comix1to2.H"
 #include "EXTRA_XS/One2Three/Comix1to3.H"
 #include "EXTRA_XS/One2Three/H_to_bbg_at_NLO.H"
+#include "EXTRA_XS/One2Three/H_to_bbar_virtual.H"
 
 #include <iostream>
 #include <algorithm>
@@ -348,6 +349,7 @@ void Hard_Decay_Handler::InitializeDirectDecays(Decay_Table* dt)
     Decay_Channel* dc=new Decay_Channel(inflav, this);
     for (int j=1; j<sv->NLegs(); ++j) dc->AddDecayProduct(sv->in[j]);
 
+
     Comix1to2* diagram=new Comix1to2(dc->Flavs());
     dc->AddDiagram(diagram);
 
@@ -496,16 +498,19 @@ offshell (or three-body) decay configurations.
 
   bool bbbar_channel = false; // flag to check if the decay channel is Higgs to b bbar
 
-  // test (delete this later):
+  // filter out the b bbar channel to manually add h0 to bbarg later
   if (flavs1[0].IDName() == "h0" && flavs1[1].IDName() == "b" && flavs1[2].IDName() == "bb"){
     bbbar_channel = true;
+  }
+  std::cout << "candidate: " << flavs1[0].IDName() << "  to  " << flavs1[1].IDName() << flavs1[2].IDName() << std::endl;
+  if (flavs1[0].IDName() == "h0" && flavs1[1].IDName() == "Z" && flavs1[2].IDName() == "Z"){
+    bbbar_channel = false;
   }
 
 
   for (size_t j=1;j<flavs1.size();++j) { // iterate over each daughter flavor (starting at index 1)
     bool ignore=false;
     if (flavs1[j].Width()<m_min_prop_width && !(bbbar_channel)) continue; // skip if width is below threshold
-    //if (flavs1[j].Width()<m_min_prop_width) continue;
     for (size_t k=1; k<j; ++k) { // skip duplicates
       // TODO Do we really have to avoid double counting e.g. in h -> Z Z?
       // Further iterations: W+ -> b t -> b W b -> b b .. ?
@@ -531,7 +536,7 @@ offshell (or three-body) decay configurations.
       // TODO so far special case 1->3 only
       Decay_Channel* dc=new Decay_Channel(flavs1[0], this);
       size_t nonprop(0), propi(0), propj(0); 
-      dc->AddDecayProduct(flavs1[3-j]); // particle that did not decay   
+      dc->AddDecayProduct(flavs1[3-j]); // particle that does not decay   
       dc->AddDecayProduct(sv->in[1]);   // decay products of the decaying particle 
       dc->AddDecayProduct(sv->in[2]);
       DEBUG_FUNC("trying "<<dc->Name()); 
@@ -552,11 +557,24 @@ offshell (or three-body) decay configurations.
 
       Spin_Amplitudes* diagram = nullptr; // parent class for H_to_bbg_at_NLO and Comix1to3
       if (bbbar_channel && (sv->in[2].IDName() == "G")) {
-        diagram = new H_to_bbg_at_NLO(dc->Flavs(),flavs1[j], 
-        nonprop, propi, propj);
+        diagram = new H_to_bbg_at_NLO(dc->Flavs(),flavs1[1],nonprop, propi, propj);
+
+        // here: second diagram needed for h0 -> b bbar g
+        Spin_Amplitudes* diagram2 = nullptr;
+        diagram2 = new H_to_bbg_at_NLO(dc->Flavs(),flavs1[2],propj,propi,nonprop);
+        Spin_Amplitudes* diagram3 = nullptr;
+        diagram3 = new H_to_bbar_virtual(dc->Flavs(),flavs1[1],flavs1[2],s_model);
+        dc->AddDiagram(diagram2);
       } else {
         diagram = new Comix1to3(dc->Flavs(),flavs1[j],
         nonprop, propi, propj);
+
+        // test (delete this later):
+        const std::vector<ATOOLS::Flavour> flavs1(dc->Flavs());
+        std::cout << "flavs1[0].IDName(): " << flavs1[0].IDName() << "  to  " << flavs1[1].IDName() << flavs1[2].IDName() << flavs1[3].IDName() << std::endl;
+        if (flavs1[0].IDName() == "h0" && flavs1[1].IDName() == "Z" && flavs1[2].IDName() == "b"){
+          std::cout << "flavs1[0].IDName(): " << flavs1[0].IDName() << "  to  " << flavs1[1].IDName() << flavs1[2].IDName() << flavs1[3].IDName() << std::endl;
+        }
       }
 
       dc->AddDiagram(diagram);

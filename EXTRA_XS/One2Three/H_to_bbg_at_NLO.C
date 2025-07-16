@@ -14,13 +14,13 @@ using namespace METOOLS;
 using namespace PHASIC;
 using namespace std;
 
-H_to_bbg_at_NLO::H_to_bbg_at_NLO(const vector<Flavour>& flavs, const Flavour& prop, 
-                     size_t b_non_prop, size_t propi, size_t propj) : // to do: maybe: fix if propi or propj are the gluon; I think it's propi
+H_to_bbg_at_NLO::H_to_bbg_at_NLO(const vector<Flavour>& flavs, const Flavour& prop,
+                     size_t non_prop, size_t gluon, size_t propj) :
   Spin_Amplitudes(flavs,Complex(0.0,0.0)), m_cur(4), m_anticur(4), m_nhel(4),
   m_prop(prop)
 {
-  DEBUG_FUNC(flavs<<" with prop "<<prop<<" in "<<propi<<","<<propj);
-  assert(b_non_prop>0 && propi>0 && propj>0);
+  DEBUG_FUNC(flavs<<" with prop "<<prop<<" in "<<gluon<<","<<propj);
+  assert(non_prop>0 && gluon>0 && propj>0);
   if (flavs.size()!=4) THROW(fatal_error,"Internal error.");
   Vec4D k(1.0,0.0,1.0,0.0); // gauge
 
@@ -41,9 +41,9 @@ H_to_bbg_at_NLO::H_to_bbg_at_NLO(const vector<Flavour>& flavs, const Flavour& pr
   Current_Key ckey(prop,MODEL::s_model,2);
    m_scur = Current_Getter::GetObject("D"+ckey.Type(),ckey); // combine the two currents from i and j to one s-channel current
   METOOLS::Int_Vector isfs(2), ids(2), pols(2); // stores information about the outgoing particles: is fermion? Identifier, polarization
-  isfs[0]=flavs[propi].IsFermion();
+  isfs[0]=flavs[gluon].IsFermion();
   isfs[1]=flavs[propj].IsFermion();
-  pols[0]=m_spins[ids[0]=propi];
+  pols[0]=m_spins[ids[0]=gluon];
   pols[1]=m_spins[ids[1]=propj];
   m_scur->SetId(ids);
   m_scur->SetFId(isfs);
@@ -51,8 +51,7 @@ H_to_bbg_at_NLO::H_to_bbg_at_NLO(const vector<Flavour>& flavs, const Flavour& pr
   // final current (1,2,3)
   ckey=Current_Key(flavs[0],MODEL::s_model,1);  // set up with incoming particle
   m_fcur = Current_Getter::GetObject("D"+ckey.Type(),ckey);
-  METOOLS::Int_Vector isfs2(3), ids2(3), pols2(3);  ///////// to-do: check, that all the particles have the right flavour, resp: incoming = Higgs, nonprop = b or b_bar
-                                                    ///////// prop = b_bar or b (must be different from nonprop), propi and propj: one gluon, one b_bar or b (like prop)
+  METOOLS::Int_Vector isfs2(3), ids2(3), pols2(3); 
   isfs2[0]=flavs[1].IsFermion();
   isfs2[1]=flavs[2].IsFermion();
   isfs2[2]=flavs[3].IsFermion();
@@ -63,10 +62,10 @@ H_to_bbg_at_NLO::H_to_bbg_at_NLO(const vector<Flavour>& flavs, const Flavour& pr
   m_fcur->SetFId(isfs2);
   m_fcur->FindPermutations(); // sets up allowed permutations of the outgoing particles
   // connect (2) & (3) into (2,3)
-  m_v1=ConstructVertices(m_cur[propi], m_cur[propj], m_scur); // vertex with b, gluon, bbar; bbar is actually an incoming b
+  m_v1=ConstructVertices(m_cur[gluon], m_cur[propj], m_scur); // vertex with b, gluon, bbar; bbar is actually an incoming b
   DEBUG_VAR(m_v1.size());
   // connect (1) & (2,3) into (1,2,3)
-  m_v2=ConstructVertices(m_cur[b_non_prop],m_scur,m_fcur); //vertex with bbar, b, higgs
+  m_v2=ConstructVertices(m_cur[non_prop],m_scur,m_fcur); //vertex with bbar, b, higgs
   DEBUG_VAR(m_v2.size());
   m_scur->Print();
   m_fcur->Print();
@@ -75,6 +74,7 @@ H_to_bbg_at_NLO::H_to_bbg_at_NLO(const vector<Flavour>& flavs, const Flavour& pr
   m_fcur->HM().resize(m_n);
   for (size_t i(0);i<m_n;++i) m_fcur->HM()[i]=i;
 
+  
   for (size_t i(0);i<4;++i) { // do the same for the anticurrent
     ckey=Current_Key(i==0?flavs[i]:flavs[i].Bar(),MODEL::s_model,1);
     m_anticur[i] = Current_Getter::GetObject("D"+ckey.Type(),ckey);
@@ -98,10 +98,10 @@ H_to_bbg_at_NLO::H_to_bbg_at_NLO(const vector<Flavour>& flavs, const Flavour& pr
   m_antifcur->SetFId(isfs2);
   m_antifcur->FindPermutations();
   // connect (2) & (3) into (2,3)
-  m_antiv1=ConstructVertices(m_anticur[propi], m_anticur[propj], m_antiscur); // vertex with gluon, bbar, b; b is an incoming bbar
+  m_antiv1=ConstructVertices(m_anticur[gluon], m_anticur[propj], m_antiscur); // vertex with gluon, bbar, b; b is an incoming bbar
   DEBUG_VAR(m_antiv1.size());
   // connect (1) & (2,3) into (1,2,3)
-  m_antiv2=ConstructVertices(m_anticur[b_non_prop],m_antiscur,m_antifcur); // vertex with b, bbar, higgs
+  m_antiv2=ConstructVertices(m_anticur[non_prop],m_antiscur,m_antifcur); // vertex with b, bbar, higgs
   DEBUG_VAR(m_antiv2.size());
   m_antiscur->Print();
   m_antifcur->Print();
@@ -145,6 +145,14 @@ void H_to_bbg_at_NLO::Calculate(const ATOOLS::Vec4D_Vector& momenta, bool anti) 
   DEBUG_FUNC(momenta.size());
   // does not do anything yet because integrating this decay channel would result in infinities
   p_ci->GeneratePoint(); // create a new integration point for the color factors
+
+
+  const std::vector<int> myI = { 0, 2, 1, 0 };
+  const std::vector<int> myJ = { 0, 1, 0, 2 };
+
+  //p_ci->SetI(myI);
+  //p_ci->SetJ(myJ);
+
   if (anti) {
     for (size_t i(0);i<m_anticur.size();++i) {
       m_anticur[i]->ConstructJ(i==0?-momenta[i]:momenta[i],0,p_ci->I()[i],p_ci->J()[i],0);
@@ -174,7 +182,16 @@ void H_to_bbg_at_NLO::Calculate(const ATOOLS::Vec4D_Vector& momenta, bool anti) 
   for (size_t i=0; i<size(); ++i) {
     (*this)[i] *= sqrt(p_ci->GlobalWeight()); // scale the final numerical result appropriately with the color factor
   }
-  
+  std::cout << "GlobalWeight = " << p_ci->GlobalWeight() << std::endl;
+
+
+  for (size_t i = 0; i < p_ci->I().size(); ++i) {
+      std::cout << "I[" << i << "] = " << p_ci->I()[i] << std::endl;
+  }
+  for (size_t i = 0; i < p_ci->J().size(); ++i) {
+      std::cout << "J[" << i << "] = " << p_ci->J()[i] << std::endl;
+  }
+
 }
 
 size_t H_to_bbg_at_NLO::NHel(const Flavour& fl)

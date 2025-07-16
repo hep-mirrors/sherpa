@@ -314,7 +314,6 @@ double Decay_Channel::ME2(const ATOOLS::Vec4D_Vector& momenta, bool anti,
   for(size_t i(0); i<GetDiagrams().size(); ++i) {
     GetDiagrams()[i]->Calculate(momenta, anti);
   }
-
   Complex sumijlambda_AiAj(0.0,0.0);
 
   if (sigma) {

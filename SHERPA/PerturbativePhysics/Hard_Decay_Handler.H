@@ -9,6 +9,7 @@
 #include "ATOOLS/Org/Scoped_Settings.H"
 #include "SHERPA/Single_Events/Decay_Handler_Base.H"
 #include "PDF/Main/Cluster_Definitions_Base.H"
+#include "MODEL/Main/Model_Base.H"
 
 namespace MODEL {
   class Single_Vertex;
