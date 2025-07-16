@@ -1184,10 +1184,6 @@ bool Initialization_Handler::InitializeTheFragmentation()
   Settings& s = Settings::GetMainSettings();
   string fragmentationmodel = s["FRAGMENTATION"].Get<std::string>();
   if (fragmentationmodel!="None") {
-    if (!s["BEAM_REMNANTS"].Get<bool>())
-      msg_Error()<<METHOD<<om::red<<": Fragmentation called without beam remnants, "<<
-        "hadronization might not be possible due to missing colour partners "<<
-        "in the beam!\nFragmentation might stall, please consider aborting manually.\n"<<om::reset;
     Hadron_Init().Init();
     ATOOLS::OutputHadrons(msg->Tracking());
   }
