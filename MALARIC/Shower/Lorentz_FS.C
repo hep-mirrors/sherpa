@@ -123,7 +123,7 @@ bool Lorentz_FS_Rad::Cluster
 
 double Lorentz_FS_Rad::MEPSWeight(const Splitting &s) const
 {
-  return (8.0*M_PI)/(s.m_Q2*s.m_y)/Jacobian(s);
+  return (8.0*M_PI)/(-s.m_Q2*s.m_y*s.m_z);
 }
 
 Lorentz_FS_Split::Lorentz_FS_Split(const Kernel_Key &k):
@@ -243,5 +243,5 @@ bool Lorentz_FS_Split::Cluster
 
 double Lorentz_FS_Split::MEPSWeight(const Splitting &s) const
 {
-  return (8.0*M_PI)/(s.m_Q2*s.m_y)/Jacobian(s);
+  return (8.0*M_PI)/(s.m_Q2*s.m_y);
 }

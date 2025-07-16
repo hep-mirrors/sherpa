@@ -62,20 +62,6 @@ namespace MALARIC {
       return sf*A*(1.0+p_sk->GF()->K(s)+p_sk->GF()->RenCT(s));
     }
 
-    double AsymmetryFactor(const Splitting &s) const
-    {
-      Vec4D pi(s.m_pi), pk(s.m_pk), pj(s.m_pj), n(s.m_K+s.m_pj);
-      if (pk[0]<0.0) pk=-pk;
-      double sij(pi*pj), sik(pi*pk), skj(pj*pk);
-      double D(sij*(pk*n)+skj*(pi*n));
-      if (D==0.0) return 0.0;
-      double A11(2*sik/(sij*skj)-pi.Abs2()/sqr(sij)-pk.Abs2()/sqr(skj));
-      double A12(2*skj/(sij*sik)-pj.Abs2()/sqr(sij)-pk.Abs2()/sqr(sik));
-      A11*=sij*skj*(pi*n)/D;
-      A12*=sij*sik*(pj*n)/D;
-      return A11/(A11+A12);
-    }
-
     double Integral(const Splitting &s) const
     {
       ID_Params ip(s);

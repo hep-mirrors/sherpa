@@ -79,7 +79,6 @@ Weight_Map Gamma::CalculateWeight(Cluster_Amplitude *const ampl)
   Weight_Value meps(Differential(bampl));
   if (meps.p_proc==NULL) return Weight_Map();
   meps.p_sf=cdip;
-  meps.m_me/=cdip->LF()->AsymmetryFactor(s);
 #ifdef DEBUG__Trial_Weight
   double me=meps.m_me;
 #endif
@@ -94,8 +93,7 @@ Weight_Map Gamma::CalculateWeight(Cluster_Amplitude *const ampl)
   msg_Debugging()<<"add ( x = "<<s.m_x<<", y = "<<s. m_y<<", z = "
 		 <<s.m_z<<", kt = "<<sqrt(s.m_t)<<" ) {\n  "<<*li
 		 <<"\n  "<<*lj<<"\n  "<<*lk<<"\n} -> w = "
-		 <<me<<" * "<<meps.m_me/me<<" -> "<<meps.m_me
-		 <<" ( S = "<<cdip->LF()->AsymmetryFactor(s)<<" )\n";
+		 <<me<<" * "<<meps.m_me/me<<" -> "<<meps.m_me<<" )\n";
 #endif
   Weight_Map ws;
   ws[Weight_Key(li->Id()|lj->Id(),lk->Id())]=meps;
@@ -152,8 +150,10 @@ MC_Weight Gamma::TrialWeight(Cluster_Amplitude *const ampl)
       if (i<0) i=l;
       else j=l;
     }
+  if (ampl->Leg(j)->Id()!=ampl->IdNew()) std::swap<int>(i,j);
   std::string nadd("__QCD(S)_RS");
   nadd+=ToString(i)+"_"+ToString(j)+"_"+ToString(k);
+  nadd+="_T"+std::string(s.m_soft?"1":"0");
   double rme(Differential(ampl,nlo_type::rsub,nadd).m_me);
   msg_Debugging()<<"me / ecss = "<<rme<<" / "<<wact.m_me
 		 <<" = "<<rme/wact.m_me<<"\n";

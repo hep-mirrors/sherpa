@@ -45,11 +45,6 @@ void Lorentz::SetMS(const ATOOLS::Mass_Selector *ms)
   p_ms=ms;
 }
 
-double Lorentz::AsymmetryFactor(const Splitting &s) const
-{
-  return 1.0;
-}
-
 void Lorentz::SetParams(Splitting &s) const
 {
   s.m_mij2=p_ms->Mass2(m_fl[0]);
