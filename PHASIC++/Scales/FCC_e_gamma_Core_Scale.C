@@ -52,57 +52,10 @@ PDF::Cluster_Param FCC_e_gamma_Core_Scale::Calculate(Cluster_Amplitude *const am
   fl[1]=campl->Leg(1)->Flav();
   fl[2]=campl->Leg(2)->Flav();
   fl[3]=campl->Leg(3)->Flav();
-  if (fl[0].Strong() && fl[1].Strong()) {// hh collision
-    if (fl[2].Strong() && fl[3].Strong()) {
-      msg_Debugging()<<"pure QCD like\n";
-      double s(2.0*campl->Leg(0)->Mom()*campl->Leg(1)->Mom());
-      double t1(2.0*campl->Leg(0)->Mom()*campl->Leg(2)->Mom());
-      double u1(2.0*campl->Leg(0)->Mom()*campl->Leg(3)->Mom());
-      double t2(2.0*campl->Leg(1)->Mom()*campl->Leg(3)->Mom());
-      double u2(2.0*campl->Leg(1)->Mom()*campl->Leg(2)->Mom());
-      muq2=muf2=mur2=-1.0/(1.0/s+2.0/(t1+t2)+2.0/(u1+u2))/sqrt(2.0);
-    }
-    else if (!fl[2].Strong() && !fl[3].Strong()) {
-      msg_Debugging()<<"DY like\n";
-      muq2=muf2=mur2=(campl->Leg(0)->Mom()+campl->Leg(1)->Mom()).Abs2();
-    }
-    else if (fl[2].Strong() && !fl[3].Strong()) {
-      msg_Debugging()<<"jV like\n";
-      muq2=muf2=mur2=Max(campl->Leg(3)->Mom().Abs2(),
-			 campl->Leg(2)->Mom().PPerp2());
-      if (fl[3].Kfcode()==25) {
-	msg_Debugging()<<"H special\n";
-	mur2=pow(mur2*pow(fl[3].Mass(),4.),1./3.);
-      }
-    }
-    else if (!fl[2].Strong() && fl[3].Strong()) {
-      msg_Debugging()<<"Vj like\n";
-      muq2=muf2=mur2=Max(campl->Leg(2)->Mom().Abs2(),
-			 campl->Leg(3)->Mom().PPerp2());
-      if (fl[2].Kfcode()==25) {
-	msg_Debugging()<<"H special\n";
-	mur2=pow(mur2*pow(fl[2].Mass(),4.),1./3.);
-      }
-    }
-    else THROW(fatal_error,"Internal error.");
-  }
-  else if (!fl[0].Strong() && !fl[1].Strong()) {// ll collision
-    if (fl[2].Strong() && fl[3].Strong()) {
-      msg_Debugging()<<"ll->jets like\n";
-    } else {
-      msg_Debugging()<<"ll->unknown, Mandelstam s will be used as the scale\n";
-    }
-    muq2=muf2=mur2=(campl->Leg(0)->Mom()+campl->Leg(1)->Mom()).Abs2();
-  }
-  else {
-    if (!fl[0].Strong() && !fl[2].Strong()) {
-      msg_Debugging()<<"DIS like\n";
-      muq2=muf2=mur2=dabs((campl->Leg(0)->Mom()+campl->Leg(2)->Mom()).Abs2());
-    } else {
-      msg_Debugging()<<"QCD Compton like, i.e. q+gamma -> q+gluon\n";
-      muq2=muf2=mur2=dabs(sqrt(campl->Leg(2)->Mom().MPerp2()*
-			       campl->Leg(3)->Mom().MPerp2()));
-    }
+  if (!fl[0].Strong() && fl[1].Strong()) { // DIS-like
+    muq2=muf2=mur2=dabs((campl->Leg(0)->Mom()+campl->Leg(2)->Mom()).Abs2());
+  } else {
+    muq2=muf2=mur2=0.;
   }
   campl->Delete();
   msg_Debugging()<<"\\mu_f = "<<sqrt(muf2)<<"\n"
