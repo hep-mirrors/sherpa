@@ -156,7 +156,8 @@ MC_Weight Gamma::TrialWeight(Cluster_Amplitude *const ampl)
   nadd+="_T"+std::string(s.m_soft?"1":"0");
   double rme(Differential(ampl,nlo_type::rsub,nadd).m_me);
   msg_Debugging()<<"me / ecss = "<<rme<<" / "<<wact.m_me
-		 <<" = "<<rme/wact.m_me<<"\n";
+		 <<" = "<<rme/wact.m_me<<" (type "
+		 <<(s.m_soft?"1":"0")<<")\n";
   double h(wact.m_me), g(p_shower->OEF()*rme);
   g*=Max(1.0,h/dabs(rme));
   if (IsEqual(rme,h,1.0e-6) || rme==0.0) g=h;
