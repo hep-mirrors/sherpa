@@ -281,7 +281,7 @@ void FF_DipoleSplitting::CalcDiPolarizations()
   case spt::q2gq:
     return;
   case spt::soft:
-    CalcVectors(m_pt1,m_pt2);
+    CalcVectors(m_pt1,m_pt2,0.);
     break;
   case spt::g2qq:
     if(m_subtype!=subscheme::Alaric) {
