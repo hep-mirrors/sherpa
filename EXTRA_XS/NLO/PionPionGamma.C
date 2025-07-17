@@ -40,7 +40,7 @@ using namespace EXTRAXS;
 
 PionPionGamma::PionPionGamma(const External_ME_Args& args) : ME2_Base(args)
 {
-  PRINT_INFO("Initialised XS_PionPionGamma");
+  PRINT_VAR("Initialised XS_PionPionGamma");
   Flavour_Vector outflavs = args.m_outflavs;
   // p_bornme = dynamic_cast<ME2_Base*>(PHASIC::Tree_ME2_Base::GetME2(bargs));
   // if (!p_bornme) THROW(fatal_error,"no born me found.");
@@ -66,9 +66,9 @@ double PionPionGamma::operator()
   m_s45 = (p[3]+p[4]).Abs2();
   m_betapi = sqrt(1-m_mpi*m_mpi/m_sp);
   S = m_sp;
-  S34 = (p[3]+p[4]).Abs2();
-  T14 = (p[1]-p[4]).Abs2();
-  T24 = (p[2]-p[4]).Abs2();
+  S34 = (p[2]+p[4]).Abs2();
+  T14 = (p[0]-p[4]).Abs2();
+  T24 = (p[1]-p[4]).Abs2();
   T=(p[0]-p[2]).Abs2();
   U=(p[0]-p[3]).Abs2();
   for (int i = 0; i < p.size(); ++i)
@@ -104,7 +104,8 @@ double PionPionGamma::operator()
 
   // ee2uug_ee = 256 * m_alpha * pow(M_PI*m_alpha,2) / Q2*Q2 / s15 / s15 / s25 / s25* ee2uug_ee;
 
-  res = Full();
+  res = Initial()+Final()+IFI();
+  res =Full();
   if(IsBad(res)){
      for (int i = 1; i < p.size(); ++i)
     {
@@ -114,7 +115,7 @@ double PionPionGamma::operator()
         }
     }
   }
-  return res;
+  return res*M_PI*M_PI;
 }
 
 

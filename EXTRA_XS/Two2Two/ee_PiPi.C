@@ -51,7 +51,7 @@ namespace EXTRAXS {
     double t((momenta[0]-momenta[2]).Abs2());
     double masspi = m_flv.Mass();
     double amp = -t*(s+t) - m1*m1*(2*masspi*masspi-s-2*t) -sqr(m1*m1) - sqr(masspi*masspi) + 2*masspi*masspi*t;
-    return  32*M_PI*M_PI*sqr((*aqed)(s))*amp/s/s*p_formfactor->Eval(s); // flux = 0.5
+    return  32*M_PI*M_PI*sqr((*aqed)(s))*amp/s/s;//*p_formfactor->Eval(s); // flux = 0.5
   }
 }
 

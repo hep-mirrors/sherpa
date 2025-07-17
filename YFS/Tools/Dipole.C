@@ -235,8 +235,8 @@ void Dipole::Boost() {
 
 void Dipole::BoostNLO(ATOOLS::Vec4D &p) {
   p_Pboost->Boost(p);
-  p_rotate.RotateBack(p);
-  // RandomRotate(p);
+  // p_rotate.RotateBack(p);
+  RandomRotate(p);
   p_boost.BoostBack(p);
   // PRINT_VAR(p_boost.PL());
 }
@@ -323,7 +323,7 @@ bool Dipole::BoostNLO() {
     p_Pboost = new Poincare(qqk);
     Vec4D ref = m_bornmomenta[0];
     boost.Boost(ref);
-    Poincare rot(ref, Vec4D(0,0,0,1));
+    Poincare rot(Vec4D(0,0,0,1));
     SetBoost(boost);
     SetRotate(rot);
     // Poincare rot(m_momenta[0], Vec4D(0,0,0,1));
