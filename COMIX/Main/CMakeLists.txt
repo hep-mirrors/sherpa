@@ -14,3 +14,6 @@ sherpa_create_git_info(ComixMain ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BIN
 add_library(Comix SHARED ${ComixMain_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
 sherpa_handle_shared_library(Comix Comix)
 add_dependencies(Comix ComixMain_Git_Info)
+if (SHERPA_ENABLE_THREADING)
+  target_link_libraries(Comix PRIVATE Threads::Threads)
+endif()
