@@ -61,8 +61,6 @@ int Lorentz_FS_Rad::Construct(Splitting &s,const int mode) const
   s.m_pk=ff.m_pk;
   s.m_kap=Kt.Abs2()/gam;
   s.m_zi=s.m_x;
-  if (p_sk->PS()->KernelScheme()&1)
-    s.m_zi=(s.m_pi*ff.m_nb)/((s.m_pi+s.m_pj)*ff.m_nb);
   s.m_p=ff.m_p;
   s.m_kt2=s.m_t;
   s.m_K=Vec4D();
@@ -113,16 +111,13 @@ bool Lorentz_FS_Rad::Cluster
   s.m_Kt=ff.m_Kt;
   s.m_kt2=s.m_t;
   s.m_zi=s.m_x;
-  if (p_sk->PS()->KernelScheme()&1)
-    s.m_zi=(s.m_x*s.m_p[i]*ff.m_nb)/
-      ((s.m_x*s.m_p[i]+s.m_p[j])*ff.m_nb);
   s.m_p.erase(s.m_p.begin()+j);
   return true;
 }
 
 double Lorentz_FS_Rad::MEPSWeight(const Splitting &s) const
 {
-  return (8.0*M_PI)/(-s.m_Q2*s.m_y*s.m_z);
+  return (8.0*M_PI)/(2.0*s.m_pi*s.m_pj)/Jacobian(s);
 }
 
 Lorentz_FS_Split::Lorentz_FS_Split(const Kernel_Key &k):
@@ -168,8 +163,6 @@ int Lorentz_FS_Split::Construct(Splitting &s,const int mode) const
   s.m_pk=ff.m_pk;
   s.m_q2=(qa+Kt).Abs2();
   s.m_zi=s.m_x;
-  if (p_sk->PS()->KernelScheme()&1)
-    s.m_zi=(ff.m_pi*ff.m_nb)/((ff.m_pi+ff.m_pj)*ff.m_nb);
   s.m_mk2=p_ms->Mass2(s.p_s->Flav());
   s.m_p.clear();
   if (nk>1) {
@@ -218,7 +211,10 @@ bool Lorentz_FS_Split::Cluster
   SetParams(s);
   s.m_z=s.m_x=ff.m_z;
   s.m_y=ff.m_y;
-  s.m_J=1.0;
+  s.m_J=1.0-s.m_y;
+  double q2(s.m_q2-s.m_mi2-s.m_mj2-s.m_mk2);
+  s.m_J*=q2/sqrt(Lam(s.m_q2,s.m_mij2,s.m_mk2));
+  s.m_J/=(1.0+(s.m_mi2+s.m_mj2-s.m_mij2)/(s.m_y*q2));
   if ((p_sk->PS()->EvolScheme(0)>>8)==0) {
     s.m_t=s.m_y*(Q2-s.m_mi2-s.m_mj2-K2)*s.m_z*(1.0-s.m_z);
   }
@@ -242,13 +238,11 @@ bool Lorentz_FS_Split::Cluster
   s.m_pk=s.m_p[k];
   s.m_kt2=s.m_t;
   s.m_zi=s.m_x;
-  if (p_sk->PS()->KernelScheme()&1)
-    s.m_zi=(s.m_pi*ff.m_nb)/((s.m_pi+s.m_pj)*ff.m_nb);
   s.m_p.erase(s.m_p.begin()+j);
   return true;
 }
 
 double Lorentz_FS_Split::MEPSWeight(const Splitting &s) const
 {
-  return (8.0*M_PI)/(s.m_Q2*s.m_y);
+  return (8.0*M_PI)/(2.0*s.m_pi*s.m_pj)/Jacobian(s);
 }
