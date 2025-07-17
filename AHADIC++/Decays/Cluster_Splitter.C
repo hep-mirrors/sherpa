@@ -242,6 +242,8 @@ bool Cluster_Splitter::FillParticlesInLists() {
 
 size_t Cluster_Splitter::MakeAndCheckClusters() {
   size_t  shuffle = 0;
+  double E0  = p_part[0]->Momentum()[0], E1 = p_part[1]->Momentum()[0];
+  m_position = (p_part[0]->XProd()*E0+ p_part[1]->XProd()*E1)/(E0+E1);
   for (size_t i=0;i<2;i++) {
     p_out[i]     = MakeCluster(i);
     m_cms       += m_mom[i] = p_out[i]->Momentum();
@@ -266,10 +268,14 @@ void Cluster_Splitter::MakeNewMomenta(size_t shuffle) {
 }
 
 void Cluster_Splitter::FillHadronAndDeleteCluster(size_t i) {
-  delete p_out[i];
   m_rotat.RotateBack(m_newmom[i]);
   m_boost.BoostBack(m_newmom[i]);
-  p_softclusters->GetHadrons()->push_back(new Proto_Particle(m_fl[i],m_newmom[i],false));
+  Proto_Particle * part = new Proto_Particle(m_fl[i],m_newmom[i],false);
+  part->SetXProd(p_out[i]->DecayPosition());
+  p_softclusters->GetHadrons()->push_back(part);
+  msg_Out()<<METHOD<<": ["<<part->Flavour()<<", E = "<<part->Momentum()[0]<<"]: "
+	   <<part->XProd()<<"\n";
+  delete p_out[i];
 }
 
 void Cluster_Splitter::UpdateAndFillCluster(size_t i) {
@@ -318,11 +324,12 @@ Cluster * Cluster_Splitter::MakeCluster(size_t i) {
   m_rotat.RotateBack(newmom12);
   m_boost.BoostBack(newmom12);
   p_part[i]->SetMomentum(newmom11);
-
+  p_part[i]->SetXProd(p_part[i]->XProd()+m_distance[i]);
   Proto_Particle * newp =
     new Proto_Particle(m_newflav[i],newmom12,false,
 		       p_part[0]->IsBeam()||p_part[1]->IsBeam());
   newp->SetKT2_Max(m_kt2);
+  newp->SetXProd(m_position+m_distance[i]);
   Cluster * cluster;
   if (i==0) cluster = new Cluster(p_part[0],newp);
   if (i==1) cluster = new Cluster(newp,p_part[1]);

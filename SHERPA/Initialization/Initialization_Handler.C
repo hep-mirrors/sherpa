@@ -58,7 +58,7 @@ Initialization_Handler::Initialization_Handler() :
   m_savestatus(false), p_model(NULL), p_beamspectra(NULL),
   p_mehandler(NULL), p_harddecays(NULL),
   p_beamremnants(NULL), p_reconnections(NULL),
-  p_fragmentation(NULL), p_hdhandler(NULL),
+  p_fragmentation(NULL), p_hdhandler(NULL), p_hadronrescattering(NULL),
   p_softphotons(NULL), p_evtreader(NULL),
   p_variations(NULL), p_filter(NULL)
 {
@@ -1233,7 +1233,10 @@ bool Initialization_Handler::InitializeTheHadronDecays()
 
 bool Initialization_Handler::InitializeTheHadronRescattering()
 {
-  if (p_hadronrescattering) { delete p_hadronrescattering; p_hadronrescattering = NULL; }
+  if (p_hadronrescattering) {
+    delete p_hadronrescattering;
+    p_hadronrescattering = NULL;
+  }
   p_hadronrescattering = new Hadron_Rescattering_Handler();
   p_hadronrescattering->Output();
   return 1;

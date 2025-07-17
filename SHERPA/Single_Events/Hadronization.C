@@ -17,7 +17,7 @@ Hadronization::Hadronization(Colour_Reconnection_Handler * reconnections,
 
 Hadronization::~Hadronization() {}
 
-Return_Value::code Hadronization::Treat(ATOOLS::Blob_List* bloblist)
+Return_Value::code Hadronization::Treat(Blob_List* bloblist)
 {
   if (bloblist->empty()) {
     msg_Error()<<"Hadronization::Treat("<<bloblist<<"): "<<endl

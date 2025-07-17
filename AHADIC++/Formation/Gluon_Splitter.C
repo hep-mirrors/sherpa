@@ -119,7 +119,7 @@ bool Gluon_Splitter::FillParticlesInLists() {
   Vec4D  mom = cluster->Momentum();
   Flavour fl = Flavour(kf_none);
   if (p_softclusters->PromptTransit(cluster,fl)) {
-    ReplaceClusterWithHadron(fl,mom);
+    ReplaceClusterWithHadron(cluster,fl,mom);
     delete cluster;
   }
   else {
@@ -139,14 +139,17 @@ bool Gluon_Splitter::FillParticlesInLists() {
   return true;
 }
 
-void Gluon_Splitter::ReplaceClusterWithHadron(const Flavour & fl,Vec4D & mom) {
+void Gluon_Splitter::
+ReplaceClusterWithHadron(Cluster * cluster,const Flavour & fl,Vec4D & mom) {
   double M2 = m_Q2, mt12 = sqr(fl.Mass())+m_kt2, mt22 = m_m2[1]+m_kt2; 
   double alpha1 = ((M2+mt12-mt22)+sqrt(sqr(M2+mt12-mt22)-4.*M2*mt12))/(2.*M2);
   double beta1  = mt12/(M2*alpha1);
   mom = m_E*(alpha1*s_AxisP + beta1*s_AxisM)+m_ktvec;
   m_rotat.RotateBack(mom);
   m_boost.BoostBack(mom);
-  p_softclusters->GetHadrons()->push_back(new Proto_Particle(fl,mom,false));
+  Proto_Particle * part = new Proto_Particle(fl,mom,false);
+  part->SetXProd(cluster->DecayPosition());
+  p_softclusters->GetHadrons()->push_back(part);
 }
 
 
@@ -184,6 +187,9 @@ Cluster * Gluon_Splitter::MakeCluster() {
   Proto_Particle * newp12 = new Proto_Particle(m_newflav[0],newmom12,false,
 					       p_part[0]->IsBeam() || p_part[1]->IsBeam());
   newp12->SetKT2_Max(m_kt2);
+  newp12->SetXProd(p_part[0]->XProd()+m_distance[0]);
+  p_part[0]->SetXProd(p_part[0]->XProd()+m_distance[0]);
+  p_part[1]->SetXProd(p_part[1]->XProd()+m_distance[1]);
   // Take care of sequence in cluster = triplet + anti-triplet
   Cluster * cluster(m_barrd?
 		    new Cluster(newp12,p_part[0]):
@@ -203,6 +209,9 @@ Cluster * Gluon_Splitter::MakeCluster() {
     double y = cluster->Momentum().Y();
     m_histograms[std::string("Yasym_frag_2")]->Insert(dabs(y),(y>0.?1.:-1.));
   }
+  //msg_Out()<<"New positions: "
+  //	   <<"["<<p_part[0]->XProd()<<", "<<newp12->XProd()<<"] + "
+  //	   <<p_part[1]->XProd()<<"\n";
   return cluster;
 }
 

@@ -66,7 +66,7 @@ void Hadron_Remnant::MakeSpectator(Particle* parton, Colour_Generator* colours)
   if (!flav.IsQuark()) return;
   p_spectator = MakeParticle(flav.Bar());
   p_spectator->SetFlow((flav.Bar().IsAnti()?2:1),-1);
-  p_spectator->SetPosition(parton->XProd());
+  p_spectator->SetPosition(parton->Position());
   colours->AddColour(m_beam, (flav.IsAnti() ? 0 : 1), p_spectator);
   m_spectators.push_front(p_spectator);
 }
@@ -226,6 +226,7 @@ bool Hadron_Remnant::MakeRemnants(Colour_Generator* colours)
     index      = ((valflav.IsQuark() && !valflav.IsAnti()) ||
 		 (valflav.IsDiQuark() && valflav.IsAnti()))?0:1;
     p_valence->SetFlow(index + 1, colours->NextColour(m_beam, index));
+    p_valence->SetPosition(m_position+(*p_ff)());
     m_spectators.push_back(p_valence);
   }
   else {
@@ -235,7 +236,11 @@ bool Hadron_Remnant::MakeRemnants(Colour_Generator* colours)
   }
   p_remnant    = p_recoiler = MakeParticle(RemnantFlavour(valflav));
   p_remnant->SetFlow(2 - index, colours->NextColour(m_beam, 1 - index));
+  p_remnant->SetPosition(m_position+(*p_ff)());
   m_spectators.push_front(p_recoiler);
+  //msg_Out()<<METHOD<<"("<<m_beam<<", "<<m_position<<") with positions: "
+  //	   <<p_valence->Position()<<" ["<<p_valence->Number()<<"] "
+  //	   <<"& "<<p_remnant->Position()<<"\n";
   return true;
 }
 
@@ -270,6 +275,7 @@ bool Hadron_Remnant::MakeLongitudinalMomenta(ParticleMomMap *ktmap,const bool & 
       p_beamblob->AddToOutParticles(pcopy);
     }
     else p_beamblob->AddToOutParticles(pmit);
+    if (pmit->DecayBlob()) pmit->SetPosition(pmit->DecayBlob()->Position());
     (*ktmap)[pmit] = Vec4D();
   }
   msg_Debugging() << METHOD << ": Longitudinal momentum left for remnants = " << availMom
@@ -291,6 +297,7 @@ bool Hadron_Remnant::MakeLongitudinalMomenta(ParticleMomMap *ktmap,const bool & 
       availMom -= part->Momentum();
       remnant_masses -= Max(part->Flav().HadMass(), m_LambdaQCD);
     }
+    if (dabs(part->Position().Abs2())<1.e-12) part->SetPosition(m_position+(*p_ff)());
     msg_Debugging() << METHOD << ": set momentum for "<<part->Flav()<<" to "
               << part->Momentum() << "\n";
     if (copy) {
@@ -299,7 +306,9 @@ bool Hadron_Remnant::MakeLongitudinalMomenta(ParticleMomMap *ktmap,const bool & 
       pcopy->SetBeam(m_beam);
       p_beamblob->AddToOutParticles(pcopy);
     }
-    else p_beamblob->AddToOutParticles(part);
+    else {
+      p_beamblob->AddToOutParticles(part);
+    }	  
     (*ktmap)[part] = Vec4D();
   }
   return true;

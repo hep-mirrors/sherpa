@@ -275,7 +275,7 @@ double Reconnect_By_Singlet::MomDistance(Particle * part1,Particle * part2) {
 }
 
 double Reconnect_By_Singlet::PosDistance(Particle * part1,Particle * part2) {
-  double xdist2 = dabs((part1->XProd().Perp()-part2->XProd().Perp()).Abs2());
+  double xdist2 = dabs((part1->Position().Perp()-part2->Position().Perp()).Abs2());
   return xdist2<1.e-6? 1. : pow(xdist2/m_R02, m_etaR);
 }
 

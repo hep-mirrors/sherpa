@@ -37,6 +37,9 @@ bool Cluster_Decayer::operator()(bool breakit) {
 bool Cluster_Decayer::Treat(Cluster * cluster) {
   bool mustdecay = p_softclusters->MustPromptDecay(cluster);
   if (!mustdecay && m_splitter((*cluster)[0],(*cluster)[1])) {
+    Vec4D xdec = cluster->DecayPosition(sqrt((*cluster)[0]->Momentum().Abs2()),
+					sqrt((*cluster)[1]->Momentum().Abs2()));
+    for (size_t i=0;i<2;i++) (*cluster)[i]->SetXProd(xdec);
     delete cluster;
     return true;
   }

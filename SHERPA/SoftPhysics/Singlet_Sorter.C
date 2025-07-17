@@ -1,4 +1,5 @@
 #include "SHERPA/SoftPhysics/Singlet_Sorter.H"
+#include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Phys/Blob.H"
 #include "ATOOLS/Phys/Blob_List.H"
@@ -8,7 +9,10 @@ using namespace SHERPA;
 using namespace ATOOLS;
 using namespace std;
 
-Singlet_Sorter::Singlet_Sorter() : m_calls(0), m_fails(0) {}
+Singlet_Sorter::Singlet_Sorter() :
+  m_calls(0), m_fails(0), m_hBarC(rpa->hBar()*rpa->c()*1.e12)  // hbar c in fm/GeV
+{}
+
 Singlet_Sorter::~Singlet_Sorter() {
   if (m_fails>0) {
     msg_Out()<<METHOD<<" with "<<m_fails<<" fails in "<<m_calls<<" calls "
@@ -84,11 +88,44 @@ bool Singlet_Sorter::HarvestParticles(Blob_List * bloblist) {
       if (!FillParticleLists(*blit)) return false;
       (*blit)->UnsetStatus(blob_status::needs_reconnections |
 			   blob_status::needs_hadronization);
+      ReconstructPartonPositions((*blit));
     }
   }
   if (m_partlists.size()==1 && m_partlists.front()->empty()) m_partlists.pop_front();
   DealWithHadrons(bloblist);
   return true;
+}
+
+void Singlet_Sorter::ReconstructPartonPositions(Blob * blob) {
+  double scale = 1.;
+  if (blob->Type()==btp::Shower) {
+    Blob * hardblob = blob->OutParticle(0)->DecayBlob();
+    if (hardblob!=NULL)
+      scale = Max(scale,sqrt((*hardblob)["Factorization_Scale"]->Get<double>()));
+    else {
+      hardblob = blob->InParticle(0)->ProductionBlob();
+      scale    = Max(scale,sqrt(hardblob->InParticle(0)->Momentum().Abs2()));
+    }
+  }
+  for (int i=0;i<blob->NOutP();i++) {
+    Particle * part = blob->OutParticle(i);
+    if (part->DecayBlob()) continue;
+    double mass2    = sqr(part->Flav().Mass(true));
+    if (part->Flav().StrongCharge()!=0) {
+      mass2         = Max(mass2,1.);  
+    }
+    Vec3D  velocity = (Vec3D(part->Momentum())/
+		       sqrt(Vec3D(part->Momentum()).Sqr()+mass2));
+    Vec4D  distance = ( rpa->hBarc()/scale *               // lifetime
+			Max(1.,part->Momentum()[0]/sqrt(mass2)) *  // boost factor
+			Vec4D(1.,velocity) );              // velocity 4-vector
+    part->SetPosition(blob->Position()+distance);
+    msg_Out()<<"- "<<std::setw(4)<<part->Flav()
+	     <<" ["<<std::setw(8)<<part->Momentum()[0]<<", "
+	     <<"v = "<<std::setw(8)<<sqrt(velocity.Sqr())<<", "
+	     <<"boost = "<<std::setw(8)<<Max(1.,part->Momentum()[0]/sqrt(mass2))<<"]: "
+	     <<blob->Position()<<" + "<<distance<<"\n";
+  }
 }
 
 bool Singlet_Sorter::FillParticleLists(Blob * blob) {

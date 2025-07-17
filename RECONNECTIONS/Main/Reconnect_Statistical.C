@@ -127,7 +127,7 @@ double Reconnect_Statistical::MomDistance(Particle * trip,Particle * anti) {
 }
 
 double Reconnect_Statistical::PosDistance(Particle * trip,Particle * anti) {
-  double xdist2 = dabs((trip->XProd()-anti->XProd()).Abs2());
+  double xdist2 = dabs((trip->Position()-anti->Position()).Abs2());
   return xdist2<m_R02 ? 1. : pow(xdist2/m_R02, m_etaR);
 }
 

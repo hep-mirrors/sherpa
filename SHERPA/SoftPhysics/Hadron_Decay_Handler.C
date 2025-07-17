@@ -203,7 +203,7 @@ void Hadron_Decay_Handler::SetPosition(ATOOLS::Blob* blob)
 {
   Particle* inpart = blob->InParticle(0);
   if(inpart->Flav().Kfcode()==kf_K) {
-    blob->SetPosition(inpart->XProd());
+    blob->SetPosition(inpart->Position());
     return;
   }
   
@@ -220,5 +220,5 @@ void Hadron_Decay_Handler::SetPosition(ATOOLS::Blob* blob)
   
   Vec3D      spatial = inpart->Distance( lifetime_boosted );
   Vec4D     position = Vec4D( lifetime_boosted*rpa->c(), spatial );
-  blob->SetPosition( inpart->XProd() + position ); // in mm
+  blob->SetPosition( inpart->Position() + position ); // in mm
 }

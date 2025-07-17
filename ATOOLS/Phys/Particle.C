@@ -230,9 +230,11 @@ void Particle::SetPosition(const Vec4D & pos) {
   m_position = pos;
   m_ownpos = true;
 }
-Vec4D Particle::XProd() const {
+
+const Vec4D Particle::Position() const {
   if (m_ownpos)    return m_position;
-  if (p_startblob) return p_startblob->Position(); return Vec4D();
+  if (p_startblob) return p_startblob->Position();
+  return Vec4D();
 }
 
 Blob *       Particle::ProductionBlob() const { return p_startblob; }
