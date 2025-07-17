@@ -6,14 +6,15 @@
 namespace SHERPA {
   class Hadron_Rescattering_Handler {
   private:
-    HADRON_RESCATTERING::Hadron_Rescatterings  * p_rescattering;
+    HADRON_RESCATTERING::Hadron_Rescatterings  m_rescattering;
     std::string m_name;
+    bool        m_on;
   public :
     Hadron_Rescattering_Handler();
     ~Hadron_Rescattering_Handler();
-    void CleanUp(const size_t & mode=0) {}
 
-    void Output() {}
+    void CleanUp(const size_t & mode=0) {}
+    void Output()                       {}
     inline const std::string & Name() const { return m_name; }
   };
 }

@@ -154,9 +154,9 @@ bool Multiple_Interactions::InitMPIs() {
   Blob * blob = p_bloblist->FindFirst(btp::Signal_Process);
   m_ptmax     = ExtractMPIStartingScale(blob);
   p_activeMI->InitialiseMPIs(m_ptmax_fac*m_ptmax);
-  blob->SetPosition(p_activeMI->SelectPositionForScatter());
-  Blob * showerblob = blob->OutParticle(0)->DecayBlob();
-  if (showerblob) showerblob->SetPosition(p_activeMI->SelectPositionForScatter());
+  // blob->SetPosition(p_activeMI->SelectPositionForScatter());
+  // Blob * showerblob = blob->OutParticle(0)->DecayBlob();
+  // if (showerblob) showerblob->SetPosition(p_activeMI->SelectPositionForScatter());
   p_activeMI->Remnants()->SetImpactParameter(p_activeMI->ImpactParameter());
   m_newevent[0] = false;
   return true;

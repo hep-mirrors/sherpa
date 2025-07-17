@@ -38,18 +38,21 @@ bool Singlet::Combine(Proto_Particle * part1,Proto_Particle * part2) {
   // quark-gluon pair not heavy enough, just add them.
   if (!part1->Flavour().IsGluon() && part2->Flavour().IsGluon()) {
     part1->SetMomentum(part1->Momentum()+part2->Momentum());
+    part1->SetXProd((part1->XProd()+part2->XProd())/2.);
     Erase(part2);
     return true;
   }
   // gluon-quark pair not heavy enough, just add them.
   else if (part1->Flavour().IsGluon() && !part2->Flavour().IsGluon()) {
     part2->SetMomentum(part1->Momentum()+part2->Momentum());
+    part2->SetXProd((part1->XProd()+part2->XProd())/2.);
     Erase(part1);
     return true;
   }
   // gluons only - add them and kill one
   else if (part1->Flavour().IsGluon() && part2->Flavour().IsGluon()) {
     part2->SetMomentum(part1->Momentum()+part2->Momentum());
+    part2->SetXProd((part1->XProd()+part2->XProd())/2.);
     Erase(part1);
     return true;
   }

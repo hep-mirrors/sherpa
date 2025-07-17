@@ -275,8 +275,9 @@ void Remnant_Handler::InitBeamAndSoftBlobs(Blob_List* const bloblist,
               bloblist->begin() +
               FindInsertPositionForRescatter(bloblist, isrescatter);
       bloblist->insert(pos, p_remnants[beam]->MakeBlob());
-    } else
+    } else {
       bloblist->push_front(p_remnants[beam]->MakeBlob());
+    }
   }
 }
 

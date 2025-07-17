@@ -187,7 +187,7 @@ void Reggeon_Remnant::MakeSpectator(Particle* parton, Colour_Generator* colours)
   p_spectator = MakeParticle(flavour.Bar());
   int i       = (p_spectator->Flav().IsAnti() ? 2 : 1);
   p_spectator->SetFlow(i, -1);
-  p_spectator->SetPosition(parton->XProd());
+  p_spectator->SetPosition(parton->Position());
   colours->AddColour(m_beam, i - 1, p_spectator);
   m_spectators.push_front(p_spectator);
   m_valence = true;

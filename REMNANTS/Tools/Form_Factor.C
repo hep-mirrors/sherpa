@@ -30,7 +30,8 @@ void Form_Factor::Initialise()
 Vec4D Form_Factor::operator()() {
   // Generate a position distributed according to the form-factor
   double radius = (m_form==matter_form::double_gaussian &&
-		   ran->Get()<=m_fraction1) ? m_radius1 : m_radius2;
+		   ran->Get()>=m_fraction1) ? m_radius2 : m_radius1;
   double x1 = ran->GetGaussian(), x2 = ran->GetGaussian();
-  return Vec4D(0.,radius*x1,radius*x2,0.);
+  Vec4D pos = Vec4D(0.,radius*x1,radius*x2,0.);
+  return pos;
 }

@@ -529,7 +529,7 @@ void Blob::SetVecs() {
   }
   for (int i=0;i<NOutP();i++) {
     m_cms_vec = m_cms_vec + OutParticle(i)->Momentum();
-    pos = pos + OutParticle(i)->XProd();
+    pos = pos + OutParticle(i)->Position();
   }
   m_position = 1./(NInP()+NOutP()) * pos;
 }

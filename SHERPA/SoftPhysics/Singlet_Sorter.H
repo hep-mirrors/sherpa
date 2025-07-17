@@ -12,12 +12,14 @@
 namespace SHERPA {
   class Singlet_Sorter {
   private :
+    double m_hBarC;
     std::list<ATOOLS::Particle *>   m_hadrons;
     ATOOLS::Part_List             * p_partlist;
     std::list<ATOOLS::Part_List * > m_partlists;
     ATOOLS:: Momenta_Stretcher      m_stretcher;
 
     bool HarvestParticles(ATOOLS::Blob_List *);
+    void ReconstructPartonPositions(ATOOLS::Blob *);
     bool FillParticleLists(ATOOLS::Blob * blob);
     void DealWithHadrons(ATOOLS::Blob_List * bloblist);
     bool DecomposeIntoSinglets();

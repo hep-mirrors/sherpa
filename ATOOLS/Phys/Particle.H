@@ -51,12 +51,12 @@ namespace ATOOLS {
     double            ProperTime();
     double            LifeTime();
     Vec3D             Distance(double = -1.);
-    const Vec4D&      Momentum() const;
+    const Vec4D     & Momentum() const;
+    const Vec4D       Position() const;
     double            E() const;
     double            FinalMass() const;
     part_status::code Status() const;
     char              Info() const;
-    Vec4D             XProd() const;
     Blob            * ProductionBlob() const;
     Vec4D             XDec() const;
     Blob            * DecayBlob() const;

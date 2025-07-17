@@ -57,7 +57,6 @@ bool Soft_Cluster_Handler::PromptTransit(Cluster * cluster,ATOOLS::Flavour & had
   if (m_mass>TransitionThreshold(m_flavs.first,m_flavs.second) ||
       m_mass<p_singletransitions->GetLightestMass(m_flavs)) return false;
   if (RadiationWeight(false)>0.) had = m_hads[0];
-  //msg_Out()<<"\n\nSelected transition "<<m_mass<<" --> "<<m_hads[0]<<"\n";
   return true;
 }
 
@@ -100,6 +99,7 @@ int Soft_Cluster_Handler::Treat(Cluster * cluster,bool force)
     m_hads[0] = p_singletransitions->GetLightestTransition(m_flavs);
     Proto_Particle * part = new Proto_Particle(m_hads[0],cluster->Momentum(),
 					       false);
+    part->SetXProd(cluster->DecayPosition());
     p_hadrons->push_back(part);
     return 1;
   }
@@ -173,7 +173,10 @@ bool Soft_Cluster_Handler::Rescue(Cluster * cluster) {
   rotat.RotateBack(wvec);
   boost.BoostBack(wvec);
   Vec4D newvec    = totmom-wvec;
-  p_hadrons->push_back(new Proto_Particle(newhad,newvec));
+  Proto_Particle * newpart = new Proto_Particle(newhad,newvec);
+  newpart->SetXProd(cluster->DecayPosition());
+  p_hadrons->push_back(newpart);
+  
   winner->SetMomentum(wvec);
   return true;
 }
@@ -277,8 +280,11 @@ bool Soft_Cluster_Handler::FixKinematics() {
     rotat.RotateBack(m_moms[i]);
     boost.BoostBack(m_moms[i]);
   }
+  double tau = p_cluster->DecayTime(m_hads[0].HadMass(),m_hads[1].HadMass());
   for (size_t i=0;i<2;i++) {
     Proto_Particle * part = new Proto_Particle(m_hads[i],m_moms[i],false);
+    Vec4D velocity = (*p_cluster)[i]->Momentum()/Max(1.,(*p_cluster)[i]->Momentum()[0]);
+    part->SetXProd((*p_cluster)[i]->XProd()+tau * velocity);
     p_hadrons->push_back(part);
   }
   return true;

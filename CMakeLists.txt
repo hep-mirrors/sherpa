@@ -689,7 +689,7 @@ SherpaMain SherpaInitialization SherpaSingleEvents SherpaSoftPhysics SherpaPertu
 ShrimpsMain ShrimpsEvents ShrimpsLadders ShrimpsBeamRemnants ShrimpsXsecs ShrimpsEikonals ShrimpsTools
 HadronsMain HadronsMEs HadronsCurrents HadronsPSs
 Reconnections
-HadronRescattering
+HadronRescattering HadronRescatteringXSecs
 AhadicMain AhadicTools AhadicFormation AhadicDecays
 Amisic AmisicTools AmisicPerturbative
 PhotonsMain PhotonsTools PhotonsPhaseSpace PhotonsMEs PhotonsPhotonSplitter

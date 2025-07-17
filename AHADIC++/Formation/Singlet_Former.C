@@ -2,6 +2,7 @@
 #include "AHADIC++/Tools/Hadronisation_Parameters.H"
 #include "ATOOLS/Org/Message.H"
 #include <cassert>
+#include <iomanip>
 
 using namespace AHADIC;
 using namespace ATOOLS;
@@ -42,7 +43,8 @@ void Singlet_Former::FormSinglets() {
   //   When found, the colour-connected particle will be erased from
   //   "active" list and put into the singlet list
   // - The process stops when the ring is closed
-  // I/we still have to think about possible errors and how to catch them ... . 
+  // I/we still have to think about possible errors and how to catch them ... .
+
   while (!m_colparts.empty()) {
     p_singlets->push_back(MakeAnother());
   }
