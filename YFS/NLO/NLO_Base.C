@@ -170,6 +170,10 @@ double NLO_Base::CalculateVirtual() {
 	if(m_virt_sub && p_virt->p_loop_me->Mode()!=1) sub = p_dipoles->CalculateVirtualSub();
 	else sub = 0;
 	m_oneloop = (virt- sub * m_born/m_rescale_alpha );
+	if(p_virt->p_loop_me->Mode()==1) {
+		m_oneloop /= m_rescale_alpha; 
+		// PRINT_VAR(m_rescale_alpha);
+	}
 	if(IsBad(m_oneloop) || IsBad(sub)){
 		msg_Error()<<"YFS Virtual is NaN"<<std::endl
 							 <<"Virtual:  "<<virt<<std::endl
@@ -454,8 +458,8 @@ double NLO_Base::CalculateRealVirtual(Vec4D k, int fsrcount) {
 	// PRINT_VAR(yfspole);
 	double subb;
 
-	subb = (fsrcount!=1?p_dipoles->CalculateRealSubEEX(kk):p_dipoles->CalculateRealSubEEX(kk));
-	
+	subb = (fsrcount!=1?p_dipoles->CalculateRealSubEEX(kk):p_dipoles->CalculateRealSubEEX(k));
+
 	if(p.size()!=(m_flavs.size()+1)){
 		msg_Error()<<"Mismatch in "<<METHOD<<std::endl;
 	}
