@@ -349,6 +349,9 @@ void Hard_Decay_Handler::InitializeDirectDecays(Decay_Table* dt)
     Decay_Channel* dc=new Decay_Channel(inflav, this);
     for (int j=1; j<sv->NLegs(); ++j) dc->AddDecayProduct(sv->in[j]);
 
+    if (dc->Flavs()[0].IDName() == "h0" && dc->Flavs()[1].IDName() == "b" && dc->Flavs()[2].IDName() == "bb"){
+          std::cout << "flavs1[0].IDName(): " << dc->Flavs()[0].IDName() << "  to  " << dc->Flavs()[1].IDName() << dc->Flavs()[2].IDName() << std::endl;
+        }
 
     Comix1to2* diagram=new Comix1to2(dc->Flavs());
     dc->AddDiagram(diagram);

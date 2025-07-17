@@ -133,10 +133,22 @@ void Comix1to2::Calculate(const ATOOLS::Vec4D_Vector& momenta, bool anti) {
   else {
     m_fcur->Contract<double>(*m_cur.front(),fill,*this,0);
   }
+  std::cout << "*this 1 = { ";
+for (size_t i = 0; i < this->size(); ++i) {
+    std::cout << (*this)[i];
+    if (i < this->size() - 1) std::cout << ", ";
+}
+std::cout << " }" << std::endl;
 
   for (size_t i=0; i<size(); ++i) {
     (*this)[i] *= sqrt(p_ci->GlobalWeight()); // scale the final numerical result appropriately with the color factor
   }
+  std::cout << "*this 2 = { ";
+for (size_t i = 0; i < this->size(); ++i) {
+    std::cout << (*this)[i];
+    if (i < this->size() - 1) std::cout << ", ";
+}
+std::cout << " }" << *this << std::endl;
 }
 
 size_t Comix1to2::NHel(const Flavour& fl)
