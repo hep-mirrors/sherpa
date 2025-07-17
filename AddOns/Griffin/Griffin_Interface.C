@@ -17,13 +17,13 @@ ew_scheme::code Griffin::Griffin_Interface::m_ewscheme=ew_scheme::alphamZ;
 Griffin::griffinorder::code Griffin::Griffin_Interface::m_order=griffinorder::nnlo;
 griffin::inval Griffin::Griffin_Interface::m_griffin;
 // griffin::invalGmu Griffin::Griffin_Interface::m_griffin;
-// griffin::SMval Griffin::Griffin_Interface::m_griffin;
+// griffin::SMvalGmu Griffin::Griffin_Interface::m_griffin;
 
 void Griffin::Griffin_Interface::RegisterDefaults()
 {
    Scoped_Settings s{ Settings::GetMainSettings()["GRIFFIN"] };
    s["Order"].SetDefault(griffinorder::nnlo);
-   s["Delta_Alpha"].SetDefault(-1);
+   s["Delta_Alpha"].SetDefault(0.06);
 }
 
 
@@ -42,78 +42,52 @@ bool Griffin::Griffin_Interface::Initialize(MODEL::Model_Base *const model,
   double delap = ss["Delta_Alpha"].Get<double>();
   double mz2 = sqr(Flavour(kf_Z).Mass());
   ew_scheme::code ewscheme = s["EW_SCHEME"].Get<ew_scheme::code>();
-  switch(ewscheme) {
-    case ew_scheme::alpha0:
-      delap=0;
-      break;
-    case ew_scheme::alphamZ:
-      delap= 0.06;
-      break;
-    case 3:
-      delap=0.03;
-      break;
-    default:
-      THROW(not_implemented, "Wrong EW Scheme for Griffin. Use alpha0,alphamZ,or Gmu.")
-  }
+  // switch(ewscheme) {
+  //   case ew_scheme::alpha0:
+  //     delap=0.06;
+  //     break;
+  //   case ew_scheme::alphamZ:
+  //     delap= 0.06;
+  //     break;
+  //   case 3:
+  //     delap=0.06;
+  //     break;
+  //   default:
+  //     THROW(not_implemented, "Wrong EW Scheme for Griffin. Use alpha0,alphamZ,or Gmu.")
+  // }
   m_ewscheme = s["EW_SCHEME"].Get<ew_scheme::code>();
   // if(m_ewscheme==ew_scheme::alphamZ){
-    m_griffin.set(0, Flavour(kf_Wplus).Mass());
-    m_griffin.set(1, Flavour(kf_Z).Mass());
-    m_griffin.set(2, Flavour(kf_h0).Mass());
-    m_griffin.set(3, Flavour(kf_e).Mass());
-    m_griffin.set(4, Flavour(kf_mu).Mass());
-    m_griffin.set(5, Flavour(kf_tau).Mass());
-    m_griffin.set(6, Flavour(kf_d).Mass());
-    m_griffin.set(7, Flavour(kf_s).Mass());
-    m_griffin.set(8, Flavour(kf_b).Mass()); // MSbar mass at scale mu=MZ for mb(mb)=4.20
-    m_griffin.set(9, Flavour(kf_u).Mass());
-    m_griffin.set(10, Flavour(kf_c).Mass()); // MSbar mass at scale mu=MZ
-    m_griffin.set(11, Flavour(kf_t).Mass());
-    m_griffin.set(12, s_model->ScalarConstant("alpha_QED"));
-    m_griffin.set(13, s_model->ScalarConstant("alpha_S"));
-    m_griffin.set(14, delap);
-    // m_griffin.set(15, delap);
-    m_griffin.set(16, GF);
-    m_griffin.set(17, Flavour(kf_Wplus).Width());
-    m_griffin.set(18, Flavour(kf_Z).Width());
+  m_griffin.set(0, Flavour(kf_Wplus).Mass());
+  m_griffin.set(1, Flavour(kf_Z).Mass());
+  m_griffin.set(2, Flavour(kf_h0).Mass());
+  m_griffin.set(3, Flavour(kf_e).Mass());
+  m_griffin.set(4, Flavour(kf_mu).Mass());
+  m_griffin.set(5, Flavour(kf_tau).Mass());
+  m_griffin.set(6, Flavour(kf_d).Mass());
+  m_griffin.set(7, Flavour(kf_s).Mass());
+  m_griffin.set(8, Flavour(kf_b).Mass()); // MSbar mass at scale mu=MZ for mb(mb)=4.20
+  m_griffin.set(9, Flavour(kf_u).Mass());
+  m_griffin.set(10, Flavour(kf_c).Mass()); // MSbar mass at scale mu=MZ
+  m_griffin.set(11, Flavour(kf_t).Mass());
+  m_griffin.set(12, s_model->ScalarConstant("alpha_QED"));
+  m_griffin.set(13, s_model->ScalarConstant("alpha_S"));
+  m_griffin.set(14, delap);
+  // m_griffin.set(15, delap);
+  m_griffin.set(16, GF);
+  m_griffin.set(17, Flavour(kf_Wplus).Width());
+  m_griffin.set(18, Flavour(kf_Z).Width());
 
-    //  m_griffin.set(MZ, 91.1876);
-    // m_griffin.set(MW, 80.379);
-    // m_griffin.set(al, 1/128.03599976);
-    // m_griffin.set(als, 0.1179);
-    // m_griffin.set(GamZ, 2.4952);
-    // m_griffin.set(GamW, 2.085);
-    // m_griffin.set(MH, 125.1);
-    // m_griffin.set(MT, 173.0);
-    // m_griffin.set(MB, 2.87);  // MSbar mass at scale mu=MZ
-    // m_griffin.set(Delal, 0.05900);
-    // m_griffin.set(Gmu, 1.166379e-5);
-  // }
-  // else if(m_ewscheme==3){
-    // m_griffinGmu.set(0, Flavour(kf_Wplus).Mass());
-    // m_griffinGmu.set(1, Flavour(kf_Z).Mass());
-    // m_griffinGmu.set(2, Flavour(kf_h0).Mass());
-    // m_griffinGmu.set(3, Flavour(kf_e).Mass());
-    // m_griffinGmu.set(4, Flavour(kf_mu).Mass());
-    // m_griffinGmu.set(5, Flavour(kf_tau).Mass());
-    // m_griffinGmu.set(6, Flavour(kf_d).Mass());
-    // m_griffinGmu.set(7, Flavour(kf_s).Mass());
-    // m_griffinGmu.set(8, Flavour(kf_b).Mass()); // MSbar mass at scale mu=MZ for mb(mb)=4.20
-    // m_griffinGmu.set(9, Flavour(kf_u).Mass());
-    // m_griffinGmu.set(10, Flavour(kf_c).Mass()); // MSbar mass at scale mu=MZ
-    // m_griffinGmu.set(11, Flavour(kf_t).Mass());
-    // PRINT_VAR( s_model->ScalarConstant("alpha_QED"));
-    // m_griffinGmu.set(12, s_model->ScalarConstant("alpha_QED"));
-    // m_griffinGmu.set(13, s_model->ScalarConstant("alpha_S"));
-    // m_griffinGmu.set(14, delap);
-    // // m_griffin.set(15, delap);
-    // m_griffinGmu.set(16, GF);
-    // m_griffinGmu.set(17, Flavour(kf_Wplus).Width());
-    // m_griffinGmu.set(18, Flavour(kf_Z).Width());
-  // }
-  // else{
-  //   THROW(not_implemented, "EW Scheme not implemneted in Griffin Interface.")
-  // }
+  // m_griffin.set(1, 91.1876);
+  // m_griffin.set(0, 80.358);
+  // m_griffin.set(12, 1/137.03599976);
+  // m_griffin.set(13, 0.1179);
+  // m_griffin.set(17, 2.089);
+  // m_griffin.set(18, 2.4952);
+  // m_griffin.set(2, 125.1);
+  // m_griffin.set(11, 173.0);
+  // m_griffin.set(8, 2.87);  // MSbar mass at scale mu=MZ
+  // m_griffin.set(14, 0.05900);
+  // m_griffin.set(16, 1.166379e-5);
   return true;
 }
 
@@ -135,6 +109,8 @@ void Griffin::Griffin_Interface::EvaluateLoop(const Vec4D_Vector& momenta, METOO
   if(momenta.size()!=4){
     THROW(fatal_error, "Griffin library is for 2->2 scattering only");
   }
+  double s = (momenta[0]+momenta[1]).Abs2();
+  m_griffin.set(12, (*aqed)((s)));
   EvaluateLO(momenta, virt);
   if(m_order==griffinorder::nlo) EvaluateNLO(momenta, virt);
   else if(m_order==griffinorder::nloe) EvaluateNLOE(momenta, virt);
@@ -378,7 +354,11 @@ void Griffin::Griffin_Interface::EvaluateNNLO(const Vec4D_Vector& momenta, DivAr
   // else{
     FA_SMNNLO FAi(m_inital, m_griffin), FAf(m_final, m_griffin);
     SW_SMNNLO SWi(m_inital, m_griffin), SWf(m_final, m_griffin);
-     mat_SMNNLO M(m_inital, m_final, VEC, VEC,  FAi.result().real(), FAf.result().real(),  SWi.result().real(),  SWf.result().real(), s, cost, m_griffin);
+    // PRINT_VAR( SWi.result());
+    // PRINT_VAR( SWf.result());
+     double sw=s_model->ComplexConstant("csin2_thetaW").real();
+     // mat_SMNNLO M(m_inital, m_final, VEC, VEC,  FAi.result().real(), FAf.result().real(),  SWi.result().real(),  SWf.result().real(), s, cost, m_griffin);
+     mat_SMNNLO M(m_inital, m_final, VEC, VEC,  FAi.result().real(), FAf.result().real(),  sw, sw, s, cost, m_griffin);
 
     M.setkinvar(s, cost);
     Cplx resvv, resva, resav, resaa;
@@ -395,28 +375,6 @@ void Griffin::Griffin_Interface::EvaluateNNLO(const Vec4D_Vector& momenta, DivAr
                  + resva*conj(resva) + resaa*conj(resaa)) +
       + 4*cost*(resvv*conj(resaa) + resva*conj(resav)).real());
   // }
-  double sw=s_model->ComplexConstant("csin2_thetaW").real();
-  // mat_SMNNLO M(m_inital, m_final, VEC, VEC,  FAi.result().real(), FAf.result().real(),  SWi.result().real(),  SWf.result().real(), s, cost, m_griffin);
-
-  // M.setkinvar(s, cost);
-  // Cplx resvv, resva, resav, resaa;
-
-  // M.setform(VEC, VEC);
-  // resvv = M.result();
-  // M.setform(AXV, VEC);
-  // resav = M.result();
-  // M.setform(VEC, AXV);
-  // resva = M.result();
-  // M.setform(AXV, AXV);
-  // resaa = M.result();
-  // res.Finite() = real((1+cost*cost)*(resvv*conj(resvv) + resav*conj(resav)
-  //              + resva*conj(resva) + resaa*conj(resaa)) +
-  //   + 4*cost*(resvv*conj(resaa) + resva*conj(resav)).real());
-    // -2*(1+cost*cost)*(resvv*conj(resav) + resva*conj(resaa)).real()
-    // -4*cost*(resvv*conj(resva) + resav*conj(resaa)));
-  // return res*3*s*s*m_rescale_alpha/32/M_PI;
-  // res.Finite() *= 3*s/32/M_PI;
-  // PRINT_VAR(res.Finite());
 }
 
 void Griffin::Griffin_Interface::EvaluateBorn(const Vec4D_Vector& momenta, double& bornres)
