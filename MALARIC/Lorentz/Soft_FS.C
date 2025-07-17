@@ -46,7 +46,7 @@ namespace MALARIC {
 	       -pk.Abs2()/sqr(skj));
       A*=sij*skj*(pi*n)/D;
       double sf(1.0);
-      if (m_id) sf=p_sk->Mode()?1.0-s.m_z:s.m_z;
+      if (m_id && s.m_clu!=2) sf=p_sk->Mode()?1.0-s.m_z:s.m_z;
 #ifdef DEBUG__Kinematics
       if (s.m_p.size()) {
 	Vec4D K(s.m_p[0]+s.m_p[1]), pij(s.p_c->Mom());
