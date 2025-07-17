@@ -29,7 +29,7 @@ void Reconnect_Statistical::SetParameters() {
   string pm   = s["PMODE"].SetDefault("Log").Get<string>(); 
   m_Pmode     = (pm==("Power")?1 : 0); 
   m_Q02       = sqr(s["Q_0"].SetDefault(1.00).Get<double>());
-  m_etaQ      = sqr(s["ETA_Q"].SetDefault(0.1).Get<double>());
+  m_etaQ      = sqr(s["ETA_Q"].SetDefault(0.194).Get<double>());
   m_R02       = sqr(s["R_0"].SetDefault(100.).Get<double>());
   m_etaR      = sqr(s["ETA_R"].SetDefault(0.16).Get<double>());
   m_reshuffle = s["RESHUFFLE"].SetDefault(1./9.).Get<double>();

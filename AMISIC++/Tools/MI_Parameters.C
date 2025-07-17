@@ -20,11 +20,11 @@ MI_Parameters::MI_Parameters() :
   m_parameters[string("pt_0(IR)")]
     = s["PT_0(IR)"].SetDefault(0.5).Get<double>();
   m_parameters[string("pt_min(ref)")]
-    = s["PT_Min(ref)"].SetDefault(2.25).Get<double>();
+    = s["PT_Min(ref)"].SetDefault(1.920).Get<double>();
   m_parameters[string("Ecms(ref)")]
     = s["E(ref)"].SetDefault(7000.).Get<double>();
   m_parameters[string("eta")]
-    = s["Eta"].SetDefault(0.16).Get<double>();
+    = s["Eta"].SetDefault(0.0808).Get<double>();
   m_pt02ref   = sqr(m_parameters[string("pt_0(ref)")]);
   m_pt02IR    = sqr(m_parameters[string("pt_0(IR)")]);
   m_ptmin2ref = sqr(m_parameters[string("pt_min(ref)")]);
@@ -42,7 +42,7 @@ MI_Parameters::MI_Parameters() :
   m_parameters[string("FacScale_Factor")]
     = s["MU_F_FACTOR"].SetDefault(1.0).Get<double>();
   m_parameters[string("SigmaND_Norm")]
-    = s["SIGMA_ND_NORM"].SetDefault(1.02).Get<double>();
+    = s["SIGMA_ND_NORM"].SetDefault(1.001).Get<double>();
   m_parameters[string("nPT_bins")]
     = s["nPT_bins"].SetDefault(200).Get<size_t>();
   m_parameters[string("nMC_points")]
