@@ -38,7 +38,7 @@ RealVirtual::RealVirtual(const PHASIC::Process_Info& pi)
     m_sym *= ATOOLS::Flavour::ISSymmetryFactor(args.m_inflavs);
     double cplfac(1.0);
     cplfac *= pow(p_loop_me->AlphaQED(),rr_pi.m_mincpl[1]);
-    m_factor = p_loop_me->AlphaQED()/4.0/M_PI;
+    m_factor = p_loop_me->AlphaQED()/2.0/M_PI;
   }
 
 RealVirtual::~RealVirtual()
@@ -73,7 +73,7 @@ double RealVirtual::Calc_V(const ATOOLS::Vec4D_Vector& p,
      run_corr = 4.*dalpha*B;
     }
     p_loop_me->Calc(p,B);
-    double gammaborn = p_loop_me->ME_Born();
+    double gammaborn = p_loop_me->ME_Born()/m_sym;///2./M_PI;///m_sym;
     switch(p_loop_me->Mode())
       {
       case 0:
