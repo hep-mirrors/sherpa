@@ -162,6 +162,7 @@ Vec4D Scale_Setter_Base::PSum() const
   return sum;
 }
 
+
 double Scale_Setter_Base::hHT() const
 {
   // hadronic H_T
@@ -170,6 +171,14 @@ double Scale_Setter_Base::hHT() const
     if (p_proc->Flavours()[i].Strong())
       htj+=m_p[i].PPerp();
   return htj;
+}
+
+double Scale_Setter_Base::PionForm() const
+{
+  if(m_nin!=2){
+    msg_Error()<<"PionForm is for e+e- -> pi+pi- only"<<std::endl;
+  }
+  return (m_p[0]+m_p[1]).Abs2();
 }
 
 double Scale_Setter_Base::CalculateScale

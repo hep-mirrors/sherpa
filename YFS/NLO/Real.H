@@ -42,6 +42,7 @@ public:
   double m_sym, m_factor;
   bool m_check, m_writemom;
   int m_nmom, m_fill;
+  std::string m_gen;
   Flavour_Vector m_flavs;
   PHASIC::Process_Base *p_realproc;
   ATOOLS::Cluster_Amplitude *p_ampl;

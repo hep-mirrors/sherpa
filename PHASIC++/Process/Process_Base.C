@@ -40,7 +40,7 @@ Process_Base::Process_Base():
   m_mcmode(0), m_cmode(0),
   m_lookup(false), m_use_biweight(true),
   m_hasinternalscale(false), m_internalscale(sqr(rpa->gen.Ecms())),
-  p_apmap(NULL)
+  p_apmap(NULL),p_pionformfactor(std::unique_ptr<Pion_FormFactor>(new Pion_FormFactor()))
 {
   if (s_usefmm<0)
     s_usefmm =
@@ -200,6 +200,12 @@ Weights_Map Process_Base::Differential(const Cluster_Amplitude &ampl,
   if (mode&4) SetUseBIWeight(true);
   if (mode&2) SetFixedScale(std::vector<double>());
   if (Selector()->On()!=selon) SetSelectorOn(selon);
+  if(p_pionformfactor->On()){
+    // Calculate Scale
+    double pscale = p_scale->PionForm();
+    PRINT_VAR(pscale);
+    wgtmap *= p_pionformfactor->Eval(pscale);
+  }
   return wgtmap;
 }
 

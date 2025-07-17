@@ -23,6 +23,8 @@ namespace ATOOLS {
         double f(const double &q2, const double &m, const double &g);
         double gamma(const double &q2, const double &m, const double &g);
 
+        inline bool On() {return m_form_mode;}
+
         Complex b(const double &q2, const Flavour &fl);
         Complex GS(const double &q2, const Flavour &fl);
 

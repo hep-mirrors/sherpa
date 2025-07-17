@@ -1019,8 +1019,8 @@ void NLO_Base::CheckRealSub(Vec4D k){
 		// if(k.E() < 20) return;
 		// k*=100;
 		double real;
-		std::string filename="Real_subtracted_";
-		std::string filename2="Real_ME_";
+		std::string filename="Real_subtracted_"+p_real->m_gen+"_";
+		std::string filename2="Real_ME_"+p_real->m_gen+"_";
 		for(auto f: m_flavs) {
 			filename+=f.IDName();
 			filename+="_";
@@ -1038,7 +1038,7 @@ void NLO_Base::CheckRealSub(Vec4D k){
 		{
 			k=k/i;
 			real=CalculateReal(k);
-			if(k.E() <= 1e-16 || real==0) break;
+			if(k.E() <= 1e-16 || (real==0 && !m_failcut)) break;
 			out_sub<<k.E()<<","<<fabs(real)/m_born<<std::endl;
 			out_real<<k.E()<<","<<fabs(m_real)<<std::endl;
 			// m_histograms2d["Real_me_sub"]->Insert(k.E(),fabs(real), 1);
@@ -1065,8 +1065,8 @@ void NLO_Base::CheckRealVirtualSub(Vec4D k){
 		{
 			k=k/i;
 			real=CalculateRealVirtual(k);
-			out_sub<<k.E()<<","<<fabs(real)<<std::endl;
-			if(k.E() < 1e-10 || real==0) break;
+			out_sub<<k.E()<<","<<fabs(real)/m_born<<std::endl;
+			if(k.E() <= 1e-16 || (real==0 && !m_failcut)) break;
 			// m_histograms2d["Real_me_sub"]->Insert(k.E(),fabs(real), 1);
 		}
 		out_sub.close();

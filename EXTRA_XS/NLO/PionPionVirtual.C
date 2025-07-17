@@ -94,6 +94,9 @@ PionPionVirtual::PionPionVirtual(const Process_Info& pi, const Flavour_Vector& f
       p_formfactor = std::unique_ptr<Pion_FormFactor>(new Pion_FormFactor());
       Scoped_Settings s{ Settings::GetMainSettings()["YFS"] };
       m_photonmass = s["PHOTON_MASS"].Get<double>();
+      int dimreg = s["Dim_Reg"].Get<int>();
+      if(dimreg) m_photonmass = 0;
+      setcmpbits(64);
       // setmudim(m_IRscale);
       // setdelta(4.*M_PI);
       // Setminmass(0.);
@@ -105,11 +108,12 @@ void PionPionVirtual::Calc(const Vec4D_Vector& momenta) {
   if      (m_stype&sbt::qcd) factor=2.*M_PI/AlphaQCD();
   else if (m_stype&sbt::qed) factor=2.*M_PI/AlphaQED();
   else THROW(fatal_error,"Unknown coupling.");
-  for (int i = 0; i < 10; ++i)
-  {
-     m_photonmass = pow(10,i);
-     Setlambda(m_photonmass*m_photonmass);
-     m_s = (momenta[0]+momenta[1]).Abs2();
+  // for (int i = 0; i < 10; ++i)
+  // {
+     // m_photonmass = pow(10,i);
+     // Setlambda(m_photonmass*m_photonmass);
+     Setlambda(0);
+     m_s = (momenta[2]+momenta[3]).Abs2();
      m_t = (momenta[0]-momenta[2]).Abs2();
      m_u = (momenta[0]-momenta[3]).Abs2();
      S=m_s;
@@ -124,28 +128,34 @@ void PionPionVirtual::Calc(const Vec4D_Vector& momenta) {
      clearcache();
   // Complex ffull=BornTriangle()+BornBox();
   // // m_res.Finite()= 2.*(Full()).real()/m_alpha;
-  // Setlambda(-1.);
-  // m_res.IR() =  4*M_PI*(Full()).real()/m_alpha;
-  }
-  exit(1);
+  Setlambda(-1.);
+  PRINT_VAR(m_s);
+  PRINT_VAR(ISR());
+  // PRINT_VAR(ISR()+FSR());
+  // PRINT_VAR(ISR()+IFI());
+  // PRINT_VAR(FSR()+IFI());
+  // PRINT_VAR(ISR()+FSR()+IFI());
+  m_res.IR() =  -(ISR()).real()*m_alpha;
+  // }
+  // exit(1);
 }
   
 Complex PionPionVirtual::C0e(const double x, const double y, const double mass){
-   return  C0i(cc0,mass,mass,m_s,x,mass,y);
+   return  Cget(mass,mass,m_s,x,mass,y);
 }
 
 
 Complex PionPionVirtual::C0e(const double x, const double mass){
-   return  C0i(cc0,mass,mass,m_s,mass,x,mass);
+   return  Cget(mass,mass,m_s,mass,x,mass);
 }
 
 
 Complex PionPionVirtual::C0e(const double x, const double y, const double mass1, const double mass2){
-   return  C0i(cc0,mass1,mass2,x,mass1,y,mass2);
+   return  Cget(mass1,mass2,x,mass1,y,mass2);
 }
 
 Complex PionPionVirtual::D0e(const double z, const double x, const double y, const double mass1, const double mass2){
-   return  D0i(dd0,mass1,mass1,mass2,mass2,m_s,z,x,mass1,y,mass2);
+   return  Dget(mass1,mass1,mass2,mass2,m_s,z,x,mass1,y,mass2);
 }
 
 double PionPionVirtual::Kappa(){
@@ -176,7 +186,7 @@ Complex PionPionVirtual::ISR(){
 //          2.*(-2.*ME2 + S)*Conjugate(C0i(cc0,ME2,S,ME2,0,ME2,ME2)))))/(S*S)
 // ;
    // 2409.03469 Eq. 2.18
-   return m_alpha/2/M_PI*(Kappa()*(B0i(bb0,m_s,ME2,ME2)-B0i(bb1,ME2,m_photonmass*m_photonmass,ME2))
+   return m_alpha/2/M_PI*(Kappa()*(Bget(m_s,ME2,ME2)-Bget(ME2,m_photonmass*m_photonmass,ME2))
                           +2.*(2.*ME2-m_s)*C0e(m_photonmass*m_photonmass,ME2)
                           +4.*ME2*DB0(ME2,m_photonmass*m_photonmass,ME2)
                          );
@@ -831,6 +841,7 @@ Virtual_ME2_Base *ATOOLS::Getter
 <PHASIC::Virtual_ME2_Base,PHASIC::Process_Info,EXTRAXS::PionPionVirtual>::
 operator()(const Process_Info &pi) const
 {
+   PRINT_VAR(pi.m_loopgenerator);
   if (pi.m_loopgenerator.find("Internal")!=0) return NULL;
   // if (pi.m_fi.m_nlotype==nlo_type::loop) {
   Flavour_Vector fl(pi.ExtractFlavours());

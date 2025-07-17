@@ -23,17 +23,17 @@ Real::Real(const PHASIC::Process_Info& pi)  {
    p_real_me = NULL;
    p_realproc = NULL;
    Scoped_Settings s{ Settings::GetMainSettings()["YFS"] };
-   std::string gen = s["Real_Generator"].SetDefault("Comix").Get<std::string>();
+   m_gen = s["Real_Generator"].SetDefault("Comix").Get<std::string>();
    m_check = s["Compare_Real"].SetDefault(0).Get<bool>();
    m_writemom = s["Write_Real_Momenta"].SetDefault(0).Get<bool>();
    m_nmom = s["N_Real_Momenta"].SetDefault(100).Get<int>();
    for(auto f: pi.ExtractFlavours()) m_flavs.push_back(f);
-   if(m_check && gen=="") THROW(fatal_error, "Need two generators to compare.");
-   if(gen!="Comix"){
+   if(m_check && m_gen=="") THROW(fatal_error, "Need two generators to compare.");
+   if(m_gen!="Comix"){
      PHASIC::External_ME_Args args(pi.m_ii.GetExternal(),
                                    pi.m_fi.GetExternal(),
                                    pi.m_maxcpl,
-                                   gen);
+                                   m_gen);
      p_real_me =  PHASIC::Tree_ME2_Base::GetME2(args);
      if (!p_real_me)  THROW(not_implemented, "Couldn't find real ME for this process.");
      MODEL::s_model->GetCouplings(m_cpls);
@@ -47,7 +47,7 @@ Real::Real(const PHASIC::Process_Info& pi)  {
      m_factor = 1./m_sym;
     }
     if(m_check_real){
-      std::string filename=gen;
+      std::string filename=m_gen;
       for(auto f: m_flavs) {
           filename+="_";
           filename+=f.IDName();
@@ -65,7 +65,7 @@ Real::Real(const PHASIC::Process_Info& pi)  {
   //   std::string filename="Momenta";
   //   std::string MEfilename="ME";
   //   MEfilename+="_";
-  //   MEfilename+=gen;
+  //   MEfilename+=m_gen;
   //   for(auto f: m_flavs) {
   //     filename+="_";
   //     MEfilename+="_";
