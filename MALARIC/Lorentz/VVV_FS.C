@@ -18,6 +18,7 @@ namespace MALARIC {
     {
       double B(s.m_zi*(1.0-s.m_zi));
       double sf(s.m_z);
+      if (s.m_clu&2) sf*=2.0;
       return sf*B*(1.0+p_sk->GF()->K(s));
     }
 
