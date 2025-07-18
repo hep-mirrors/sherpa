@@ -94,6 +94,7 @@ bool Amegic::Initialize(MODEL::Model_Base *const model,
   Scoped_Settings amegicsettings{ s["AMEGIC"] };
   RegisterDefaults();
 
+  // Should this throw or just gracefully not be added to generators?
   if (dynamic_cast<UFO::UFO_Model*>(MODEL::s_model)
       && !amegicsettings["ALLOW_UFO"].Get<int>()) {
     THROW(fatal_error, "AMEGIC can only be used in built-in models. Please use Comix for UFO models.");

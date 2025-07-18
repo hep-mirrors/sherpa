@@ -64,6 +64,8 @@ namespace METOOLS {
     void SContract
     (const Current &c,const Int_Vector &pols,
      SComplex_Vector &ress,const size_t &offset) const;
+    // TODO: Make a proper implementation of this function
+    std::vector<std::vector<Complex> > SGetCurrent() const { return {}; }
 
     std::string Format(const CObject *c) const;
 
@@ -455,6 +457,7 @@ void CRS<SType>::AddPropagator()
       // from the right (B>0) / left (B<0), calculated by a python skript (see comment at the end of this file)
       // TODO: Wirklich -p gemacht hier? see F_C!!!
       // COMIX_DEFAULT_GAUGE: 0
+  msg_Debugging()<<"Gauge = "<<Spinor<SType>::R1()<<" "<<Spinor<SType>::R2()<<" "<<Spinor<SType>::R3()<<"\n";
       if (Spinor<SType>::R1()==1 && Spinor<SType>::R2()==2 && Spinor<SType>::R3()==3){
         if ((*jit)->B()>0) {// S(-p)
           // for -p
@@ -577,7 +580,13 @@ void CRS<SType>::AddPropagator()
           j[15]=(**jit)[0]*(pm*(1./3.+1./(3.*m2)*ptc*p[3]-1./(3.*m2)*pp*p[0]) + (-ptc)*(4./(3.*m2)*p[0]*p[3]-1./(3.*m2)*pp*p[3]-1./(3.*m2)*pt*p[0])) - (**jit)[4]*(pm*(-1./(3.*m2)*(M_I*pp)*p[3]-1./(3.*m2)*pp*p[1]) + (-ptc)*(4./(3.*m2)*p[1]*p[3]-M_I/3.-1./(3.*m2)*M_I*ptc*p[3]-1./(3.*m2)*pt*p[1])) - (**jit)[8]*(pm*(-1./3.-1./(3.*m2)*ptc*p[3]-1./(3.*m2)*pp*p[2]) + (-ptc)*(4./(3.*m2)*p[2]*p[3]-1./(3.*m2)*pp*p[3]-1./(3.*m2)*pt*p[2])) - (**jit)[12]*(pm*(+1./(3.*m2)*pp*p[3]-1./(3.*m2)*pp*p[3]) + (-ptc)*(1.0+4./(3.*m2)*p[3]*p[3]-1./3.-1./(3.*m2)*ptc*p[3]-1./(3.*m2)*pt*p[3])) + (**jit)[1]*((-pt)*(1./3.+1./(3.*m2)*ptc*p[3]-1./(3.*m2)*pp*p[0]) + pp*(4./(3.*m2)*p[0]*p[3]-1./(3.*m2)*pp*p[3]-1./(3.*m2)*pt*p[0])) - (**jit)[5]*((-pt)*(-1./(3.*m2)*(M_I*pp)*p[3]-1./(3.*m2)*pp*p[1]) + pp*(4./(3.*m2)*p[1]*p[3]-M_I/3.-1./(3.*m2)*M_I*ptc*p[3]-1./(3.*m2)*pt*p[1])) - (**jit)[9]*((-pt)*(-1./3.-1./(3.*m2)*ptc*p[3]-1./(3.*m2)*pp*p[2]) + pp*(4./(3.*m2)*p[2]*p[3]-1./(3.*m2)*pp*p[3]-1./(3.*m2)*pt*p[2])) - (**jit)[13]*((-pt)*(+1./(3.*m2)*pp*p[3]-1./(3.*m2)*pp*p[3]) + pp*(1.0+4./(3.*m2)*p[3]*p[3]-1./3.-1./(3.*m2)*ptc*p[3]-1./(3.*m2)*pt*p[3])) + (**jit)[2]*((r*m)*(1./3.+1./(3.*m2)*ptc*p[3]-1./(3.*m2)*pp*p[0])) - (**jit)[6]*((r*m)*(-1./(3.*m2)*(M_I*pp)*p[3]-1./(3.*m2)*pp*p[1])) - (**jit)[10]*((r*m)*(-1./3.-1./(3.*m2)*ptc*p[3]-1./(3.*m2)*pp*p[2])) - (**jit)[14]*((r*m)*(+1./(3.*m2)*pp*p[3]-1./(3.*m2)*pp*p[3])) + (**jit)[3]*((r*m)*(4./(3.*m2)*p[0]*p[3]-1./(3.*m2)*pp*p[3]-1./(3.*m2)*pt*p[0])) - (**jit)[7]*((r*m)*(4./(3.*m2)*p[1]*p[3]-M_I/3.-1./(3.*m2)*M_I*ptc*p[3]-1./(3.*m2)*pt*p[1])) - (**jit)[11]*((r*m)*(4./(3.*m2)*p[2]*p[3]-1./(3.*m2)*pp*p[3]-1./(3.*m2)*pt*p[2])) - (**jit)[15]*((r*m)*(1.0+4./(3.*m2)*p[3]*p[3]-1./3.-1./(3.*m2)*ptc*p[3]-1./(3.*m2)*pt*p[3]));
         }
       }
-      else THROW(not_implemented, "Gauge is not implemented!")
+      else {
+        //THROW(not_implemented, "Gauge is not implemented!")
+        msg_Error()<<METHOD<<"(): Gauge is not implemented!\n";
+        for(int i = 0; i < 16; i++) {
+          j[i] = 0;
+        }
+      }
       **jit=j*prop;
     }
   }
