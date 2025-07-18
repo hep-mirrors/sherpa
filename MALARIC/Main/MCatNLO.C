@@ -161,8 +161,8 @@ bool MCatNLO::PrepareShower
     }
     msg_Debugging()<<"-> "<<c->S().size()<<" dipole(s)\n";
   }
-  if (ntrip==0 && noct==2) msg_Debugging()<<"gg special, fill again\n";
-  else break;
+  if (!(ntrip==0 && noct==2)) break;
+  else msg_Debugging()<<"gg special, fill again\n";
   }
   if (ampl->NIn()+ampl->Leg(2)->NMax()==
       ampl->Legs().size()+1) m_ampls.back()->SetJF(NULL);
