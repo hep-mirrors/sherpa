@@ -16,7 +16,8 @@ namespace EXTRAXS {
   class Higgs_QCD_Virtual : public Virtual_ME2_Base {
     double m_fac, m_pij, m_b0, m_finiteconst;
   public:
-    Higgs_QCD_Virtual(const Process_Info& pi, const Flavour_Vector& flavs, int con) :
+    Higgs_QCD_Virtual(const Process_Info& pi, const Flavour_Vector& flavs,
+		      int con, int lltogg=0) :
       Virtual_ME2_Base(pi, flavs)
     {
       Flavour lq(kf_quark);
@@ -28,7 +29,7 @@ namespace EXTRAXS {
         /// @todo finite part
         THROW(not_implemented, "qq -> h virtual not implemented.");
       }
-      else if (flavs[1].IsGluon()) {
+      else if (flavs[lltogg?2:1].IsGluon()) {
         m_fac = CA;
         m_pij = 2.0*M_PI*m_b0/CA;
         m_finiteconst = sqr(M_PI) + (con?0.0:11.0/3.0);
@@ -81,6 +82,15 @@ operator()(const Process_Info &pi) const
         Settings& s = Settings::GetMainSettings();
         int con = s["HNNLO_KF_MODE"].Get<int>();
         return new Higgs_QCD_Virtual(pi, fl, con);
+      }
+    }
+    if (fl[0].IsLepton() && fl[1]==fl[0].Bar() && fl[0].Yuk() &&
+	fl[2].IsGluon() && fl[3].IsGluon()) {
+      if (pi.m_maxcpl[0]==3 && (pi.m_maxcpl[1]==2 || (pi.m_maxcpl.size()>2 && pi.m_maxcpl[2]==2)) &&
+          pi.m_mincpl[0]==3 && (pi.m_mincpl[1]==2 || (pi.m_mincpl.size()>2 && pi.m_mincpl[2]==2))) {
+        Settings& s = Settings::GetMainSettings();
+        int con = s["HNNLO_KF_MODE"].Get<int>();
+        return new Higgs_QCD_Virtual(pi, fl, con, 1);
       }
     }
   }
