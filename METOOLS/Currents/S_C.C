@@ -91,8 +91,8 @@ void CS<SType>::ConstructJ(const ATOOLS::Vec4D &p,const int ch,
   if (ch==0) {
     CScalarType *j(CScalarType::New(CScalarType(1.0,cr,ca,0,0)));
 #ifdef DEBUG__BG
-    msg_Debugging()<<METHOD<<"(): '+' "<<this->m_id<<" "<<*j
-		   <<" "<<this->m_fl<<", m = "<<p.Mass()<<"\n";
+    // msg_Debugging()<<METHOD<<"(): '+' "<<this->m_id<<" "<<*j
+	// 	   <<" "<<this->m_fl<<", m = "<<p.Mass()<<"\n";
 #endif
     AddJ(j);
   }
@@ -189,15 +189,15 @@ CS<SType>::SGetCurrent() const
     for (typename CScalarType_Vector::const_iterator
 	   jit1(j->begin());jit1!=j->end();++jit1) {
 #ifdef DEBUG__BG
-      msg_Debugging()<<"Add ["<<m_hm[n]<<"]"
-		     <<m_h(m_hm[n])<<": "<<**jit1<<"\n";
+      // msg_Debugging()<<"Add ["<<m_hm[n]<<"]"
+	  //        <<m_h(m_hm[n])<<": "<<**jit1<<"\n";
 #endif
       for (size_t i(0);i<cur[n].size();++i)
 	cur[n][i]+=SComplex((**jit1)[i]);
     }
   }
 #ifdef DEBUG__BG
-  msg_Debugging()<<"}\n";
+  // msg_Debugging()<<"}\n";
 #endif
   return cur;
 }

@@ -191,6 +191,7 @@ void Channel_Elements::TChannelMomenta
   double e1out((s+s1out-s2out)/2./rs), m1out(sqrt(e1out*e1out-s1out));
   double a=1.+1.e-6;
   if (mt>0.) a=(mt*mt-s1in-s1out+2.*e1in*e1out)/(2.*m1in*m1out);
+  if (a<1.+1.e-6) a=1.+1.e-6;
   double aminct(PeakedDist(0.,ctexp,a-ctmax,a-ctmin,1,ran1));
   double ct(a-aminct), st(sqrt(1.-ct*ct));
   double phi(2.*M_PI*ran2);
@@ -215,6 +216,7 @@ double Channel_Elements::TChannelWeight
   double e1out((s+s1out-s2out)/2./rs), m1out(sqrt(e1out*e1out-s1out));
   double a=1.+1.e-6;
   if (mt>0) a=(mt*mt-s1in-s1out+2.*e1in*e1out)/(2.*m1in*m1out);
+  if (a<1.+1.e-6) a=1.+1.e-6;
   Poincare cms(pin);
   cms.Boost(p1inh);
   Poincare zax(p1inh,p1inh[3]<0?-Vec4D::ZVEC:Vec4D::ZVEC);

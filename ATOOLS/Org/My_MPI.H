@@ -109,10 +109,11 @@ namespace ATOOLS {
     // and should not be used too often.
     std::vector<std::string> AllgatherStrings(const std::string&);
 
-#endif
+#else
 
     inline int Rank() { return m_rank; }
     inline int Size() { return m_size; }
+#endif
 
     inline int MyRank() { return m_myrank; }
     inline int MySize() { return m_mysize; }
