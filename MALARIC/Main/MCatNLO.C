@@ -143,7 +143,9 @@ bool MCatNLO::PrepareShower
   std::map<Cluster_Leg*,Parton*> lmap;
   m_ampls.push_back(Convert(ampl,lmap));
   std::string pname(Process_Base::GenerateName(p_rampl));
+  int ntrip(0), noct(0);
   const IDip_Set &iinfo((*p_rampl->IInfo<StringIDipSet_Map>())[pname]);
+  for (int nf(0);nf<2;++nf) {
   for (size_t i(0);i<m_ampls.back()->size();++i) {
     Parton *c((*m_ampls.back())[i]);
     msg_Debugging()<<"spectators for "
@@ -153,9 +155,14 @@ bool MCatNLO::PrepareShower
       if (iinfo.find(IDip_ID(c->Id()-1,s->Id()-1))!=iinfo.end()) {
 	msg_Debugging()<<s->Flav()<<"("<<s->Id()<<") ";
 	c->S().push_back(s);
+	if (c->Flav().StrongCharge()==8) ++noct;
+	else ++ntrip;
       }
     }
     msg_Debugging()<<"-> "<<c->S().size()<<" dipole(s)\n";
+  }
+  if (ntrip==0 && noct==2) msg_Debugging()<<"gg special, fill again\n";
+  else break;
   }
   if (ampl->NIn()+ampl->Leg(2)->NMax()==
       ampl->Legs().size()+1) m_ampls.back()->SetJF(NULL);
