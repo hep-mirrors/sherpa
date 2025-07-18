@@ -309,8 +309,8 @@ Splitting Shower::GeneratePoint
   m_tmin[1]=tmin[1];
   if (win.p_sk && win.m_t>m_tmin[win.m_type&1])
     msg_Debugging()<<"Emission at "<<win<<" ("
-		   <<Demangle(typeid(*win.p_sk->LF()).name()).substr(8)
-		   <<","<<Demangle(typeid(*win.p_sk->GF()).name()).substr(8)
+		   <<Demangle(typeid(*win.p_sk->LF()).name()).substr(9)
+		   <<","<<Demangle(typeid(*win.p_sk->GF()).name()).substr(9)
 		   <<")\n";
   return win;
 }

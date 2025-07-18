@@ -47,8 +47,9 @@ namespace MALARIC {
       s.ResetCol();
       int mcs(s.p_c->Col().m_j==s.p_s->Col().m_i);
       int msc(s.p_c->Col().m_i==s.p_s->Col().m_j);
-      if (mcs&&msc) {
-	if (ran->Get()>0.5) mcs=0; else msc=0;
+      if ((mcs&&msc) || (!mcs&&!msc)) {
+	if (ran->Get()>0.5) { msc=1; mcs=0; }
+	else { msc=0; mcs=1; }
       }
       if (mcs) {
 	Color ci(s.p_c->Col().m_i,-1);
