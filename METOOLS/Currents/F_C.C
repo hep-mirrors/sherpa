@@ -257,15 +257,15 @@ template <typename SType> void CF<SType>::SContract
 	  if ((**jit1)(0)==(**jit2)(1) && (**jit1)(1)==(**jit2)(0) &&
 	      (*jit1)->S()==offset && (*jit2)->S()==offset) {
 #ifdef DEBUG__BG
-	    msg_Debugging()<<"Add ("<<m_hm[i]<<")"
-		       <<**jit1***jit2<<" ["<<offset<<"]\n";
+	    // msg_Debugging()<<"Add ("<<m_hm[i]<<")"
+		//        <<**jit1***jit2<<" ["<<offset<<"]\n";
 #endif
 	    ress[m_hm[i]]+=**jit1***jit2;
 	    if (offset && pm) {
 #ifdef DEBUG__BG
-	      msg_Debugging()<<"Add ("<<(*pm)[m_hm[i]]<<")"
-			     <<**jit1***jit2*SType(phase)<<" ["
-			     <<offset<<"] ( phase = "<<phase<<" )\n";
+	    //  msg_Debugging()<<"Add ("<<(*pm)[m_hm[i]]<<")"
+		//	     <<**jit1***jit2*SType(phase)<<" ["
+		//	     <<offset<<"] ( phase = "<<phase<<" )\n";
 #endif
 	      ress[(*pm)[m_hm[i]]]+=**jit1***jit2*SType(phase);
 	    }
@@ -293,8 +293,8 @@ CF<SType>::SGetCurrent() const
     for (typename CSpinorType_Vector::const_iterator
 	   jit1(j->begin());jit1!=j->end();++jit1) {
 #ifdef DEBUG__BG
-      msg_Debugging()<<"Add ["<<m_hm[n]<<"]"
-		     <<m_h(m_hm[n])<<": "<<**jit1<<"\n";
+      //msg_Debugging()<<"Add ["<<m_hm[n]<<"]"
+	  //       <<m_h(m_hm[n])<<": "<<**jit1<<"\n";
 #endif
       for (size_t i(0);i<cur[n].size();++i)
 	cur[n][i]+=SComplex((**jit1)[i]);

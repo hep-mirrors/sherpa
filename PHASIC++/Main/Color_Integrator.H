@@ -69,7 +69,7 @@ namespace PHASIC {
     std::vector<size_t> m_specs;
 
     Idx_Matrix m_orders;
-    Idx_Vector m_lastids, m_lastperm, m_nexti, m_iids, m_jids;
+    Idx_Vector m_lastids, m_lastperm, m_nexti;
 
     Double_Vector m_weights, m_cweights, m_alpha;
 

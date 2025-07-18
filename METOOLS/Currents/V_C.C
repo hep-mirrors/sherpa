@@ -332,8 +332,8 @@ CV<SType>::SGetCurrent() const
     for (typename CVec4Type_Vector::const_iterator
 	   jit1(j->begin());jit1!=j->end();++jit1) {
 #ifdef DEBUG__BG
-      msg_Debugging()<<"Add ["<<m_hm[n]<<"]"
-		     <<m_h(m_hm[n])<<": "<<**jit1<<"\n";
+      // msg_Debugging()<<"Add ["<<m_hm[n]<<"]"
+	  //        <<m_h(m_hm[n])<<": "<<**jit1<<"\n";
 #endif
       for (size_t i(0);i<cur[n].size();++i)
 	cur[n][i]+=SComplex((**jit1)[i]);

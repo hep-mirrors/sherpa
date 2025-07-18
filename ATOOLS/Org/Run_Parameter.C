@@ -203,6 +203,8 @@ void Run_Parameter::RegisterDefaults()
   s["RLIMIT_BY_CPU"].SetDefault(false);
   s["STACK_TRACE"].SetDefault(1);
   s["NUM_ACCURACY"].SetDefault(1.e-10);
+  std::vector<int> emulate_mpi_default = {};
+  s["EMULATE_MPI"].SetDefault(emulate_mpi_default);
 }
 
 void Run_Parameter::Init()

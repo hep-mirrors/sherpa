@@ -155,13 +155,12 @@ Hard_Decay_Handler::Hard_Decay_Handler() :
   }
   // Remove decays with no vertices
   for (dmit=p_decaymap->begin(); dmit!=p_decaymap->end(); ++dmit) {
-    if(dmit->second.at(0)->empty()) {
-        delete dmit->second.at(0);
+    if(dmit->second->empty()) {
+        delete dmit->second;
         dmit = p_decaymap->erase(dmit)--;
     }
   }
   msg_Debugging()<<"Initialising hard decay tables: customizing decay tables.\n";
-  CustomizeDecayTables();
 
   if (m_set_widths)
     for (dmit=p_decaymap->begin(); dmit!=p_decaymap->end(); ++dmit) {

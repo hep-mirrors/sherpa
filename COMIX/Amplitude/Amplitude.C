@@ -360,10 +360,11 @@ Vertex *Amplitude::AddCurrent
  const int dec,std::vector<int> &maxcpl,std::vector<int> &mincpl,
  std::map<std::string,Current*> &curs)
 {
+  msg_Debugging()<<"vertex "<<vkey.ID()<<std::endl;
   if (vkey.p_mv==NULL || 
       vkey.p_mv->dec<0) return NULL;
-  if (m_calc_lmu && n<m_n-1 &&
-      ckey.m_fl.IsHadron()) return NULL;
+  // if (m_calc_lmu && n<m_n-1 &&
+  //     ckey.m_fl.IsHadron()) return NULL;
   vkey.m_p=std::string(1,m_pmode);
   Vertex *v(new Vertex(vkey));
   size_t ntc(0), ist(0);
@@ -382,16 +383,16 @@ Vertex *Amplitude::AddCurrent
     if (order[i]>m_maxcpl[i]) valid=false;
   for (size_t i(0);i<Min(order.size(),m_maxacpl.size());++i)
     if (order[i]>m_maxacpl[i]) valid=false;
+#ifdef DEBUG__BG
+    msg_Debugging()<<"delete vertex "<<vkey.ID()<<"-"<<vkey.Type()
+        <<v->Order()<<")->{"<<vkey.p_c->Flav()<<"} => "
+        <<order<<" vs. max = "<<m_maxcpl<<"/"<<m_maxacpl
+        <<", act = "<<v->Active()<<", n t-ch = "
+        <<ntc<<" vs "<<m_minntc<<"/"<<m_maxntc<<"\n";
+#endif
   if (!v->Active() || 
       (!p_model->HasNegativeCouplingOrders() && !valid) ||
       (n==m_n-1 && (ntc<m_minntc || ntc>m_maxntc))) {
-#ifdef DEBUG__BG
-    msg_Debugging()<<"delete vertex "<<vkey.ID()<<"-"<<vkey.Type()
-		   <<v->Order()<<")->{"<<vkey.p_c->Flav()<<"} => "
-		   <<order<<" vs. max = "<<m_maxcpl<<"/"<<m_maxacpl
-		   <<", act = "<<v->Active()<<", n t-ch = "
-		   <<ntc<<" vs "<<m_minntc<<"/"<<m_maxntc<<"\n";
-#endif
     delete v;
     return NULL;
   }
@@ -423,6 +424,10 @@ Vertex *Amplitude::AddCurrent
     ("("+ToString(order)+(n<m_n-1?";"+ToString(ntc):"")
      +(sub?",S"+ToString(sub->Sub()->Id())+
        ToString(sub->Sub()->Sub()->Id()):"")+")");
+  msg_Debugging()<<"vkey.p_c->Order = " << vkey.p_c->Order() << std::endl;
+  msg_Debugging()<<"order = " << order << std::endl;
+  msg_Debugging()<<"vkey.p_c->NTChannel = " << vkey.p_c->NTChannel() << std::endl;
+  msg_Debugging()<<"ntc = " << ntc << std::endl;
   if (order!=vkey.p_c->Order() ||
       ntc!=vkey.p_c->NTChannel() || sub!=vkey.p_c->Sub()) {
     std::map<std::string,Current*>::iterator 
@@ -532,6 +537,7 @@ void Amplitude::AddCurrent(const Int_Vector &ids,const size_t &n,
       vkey->Delete();
     }
   }
+  msg_Debugging()<<"not one = " << !one << " "  << n << std::endl;
   if (!one && n>1) {
     delete cur;
     return;
@@ -1419,8 +1425,8 @@ bool Amplitude::EvaluateAll(const bool& mode)
     }
 #ifdef DEBUG__BG
     if (m_lmu.size())
-      for (size_t j(0);j<m_lmu.size();++j)
-	msg_Debugging()<<"L^\\mu["<<j<<"] = "<<m_lmu[j]<<"\n";
+      for (const auto &lmu : m_lmu)
+	msg_Debugging()<<"L^\\mu["<<lmu.first<<"] = "<<lmu.second<<"\n";
 #endif
     for (size_t i(0);i<m_ress.size();++i) {
       if (m_cur.back()[i]->Sub()==NULL) continue;
