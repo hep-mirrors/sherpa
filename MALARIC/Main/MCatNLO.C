@@ -101,6 +101,7 @@ GetRealEmissionAmplitude(const int mode)
     ampl->Legs().back()->SetNMax(nmax);
   }
   ampl->SetKT2(p_mcatnlo->LastSplitting().m_t);
+  ampl->SetFlag(p_mcatnlo->LastSplitting().p_sk->Id());
   ampl->SetMuQ2(p_rampl->KT2());
   Process_Base::SortFlavours(ampl);
   return ampl;

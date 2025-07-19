@@ -577,15 +577,15 @@ Weights_Map MCatNLO_Process::OneSEvent(const int wmode)
     Cluster_Definitions_Base *clus(p_shower->GetClusterDefinitions());
     Cluster_Param kt2=clus->Cluster
       (Cluster_Config(campl,ids[0],ids[1],ids[2],lij->Flav(),
-		      p_bviproc->Generator(),NULL,1));
+		      p_bviproc->Generator(),NULL,campl->Flag()));
     if (kt2.m_kt2<=0.0) {
       kt2=clus->Cluster
 	(Cluster_Config(campl,ids[1],ids[0],ids[2],lij->Flav(),
-			p_bviproc->Generator(),NULL,1));
+			p_bviproc->Generator(),NULL,campl->Flag()));
     }
     campl->Delete();
     ampl->SetKT2(kt2.m_kt2);
-    ampl->SetMu2(kt2.m_kt2);
+    ampl->SetMu2(kt2.m_mu2);
     p_ampl=ampl;
     ampl->SetMuF2(next->MuF2());
     ampl->SetMuR2(next->MuR2());

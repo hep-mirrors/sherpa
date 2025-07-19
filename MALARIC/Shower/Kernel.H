@@ -20,7 +20,7 @@ namespace MALARIC {
     Gauge   *p_gf;
 
     double m_ef;
-    int    m_type, m_mode, m_on;
+    int    m_type, m_mode, m_on, m_id;
 
   public:
 
@@ -53,8 +53,10 @@ namespace MALARIC {
     inline int Mode() const { return m_mode; }
 
     inline int On() const { return m_on; }
+    inline int Id() const { return m_id; }
 
     inline void SetOn(const int &on) { m_on=on; }
+    inline void SetId(const int &id) { m_id=id; }
 
     inline void SetEF(const double &ef) { m_ef=ef; }
 

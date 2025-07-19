@@ -141,6 +141,13 @@ void Shower::AddKernel(Kernel *const k)
     return;
   }
   k->GF()->SetLimits();
+  int id(0);
+  const Kernel_Vector &sks(GetKernels(k->LF()->Flav(0)));
+  for (size_t n(0), i(0);i<sks.size();++i)
+    if ((sks[i]->Type()&1)==(k->Type()&1) &&
+	sks[i]->LF()->Flav(1)==k->LF()->Flav(1) &&
+	sks[i]->LF()->Flav(2)==k->LF()->Flav(2)) ++id;
+  k->SetId(id);
   if (k->On()) m_sks[k->LF()->Flav(0)].push_back(k);
   m_cks.push_back(k);
 }

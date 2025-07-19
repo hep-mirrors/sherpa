@@ -13,7 +13,7 @@ using namespace ATOOLS;
 
 Kernel::Kernel(Shower *const ps,Kernel_Key key):
   p_ps(ps), p_lf(NULL), p_gf(NULL), m_ef(1.0),
-  m_type(key.m_type), m_mode(key.m_mode), m_on(1)
+  m_type(key.m_type), m_mode(key.m_mode), m_on(1), m_id(0)
 {
   key.p_k=this;
   std::string gauge;
