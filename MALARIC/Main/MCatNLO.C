@@ -155,7 +155,7 @@ bool MCatNLO::PrepareShower
       Parton *s((*m_ampls.back())[j]);
       if (iinfo.find(IDip_ID(c->Id()-1,s->Id()-1))!=iinfo.end()) {
 	msg_Debugging()<<s->Flav()<<"("<<s->Id()<<") ";
-	c->S().push_back(s);
+	c->AddS(s);
 	if (c->Flav().StrongCharge()==8) ++noct;
 	else ++ntrip;
       }

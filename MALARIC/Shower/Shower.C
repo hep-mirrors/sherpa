@@ -303,7 +303,7 @@ Splitting Shower::GeneratePoint
   double tmin[2]={m_tmin[0],m_tmin[1]};
   for (Amplitude::const_reverse_iterator
 	 it(a.rbegin());it!=a.rend();++it) {
-    for (int cm(0);cm<2;++cm) {
+    for (int cm(0);cm<(*it)->S().size();++cm) {
       double ct((*it)->T(cm)>=0.0?(*it)->T(cm):t);
       Splitting cur(GeneratePoint(**it,ct,cm,rcl,nem));
       (*it)->SetT(cm,-1.0);

@@ -39,9 +39,8 @@ namespace MALARIC {
     Color m_c, m_sc;
     int   m_h, m_b;
 
-    double m_t[2];
-
     std::vector<Parton*> m_s;
+    std::vector<double>  m_t;
 
     size_t m_id;
 
@@ -87,6 +86,9 @@ namespace MALARIC {
 
     inline const std::vector<Parton*> &S() const { return m_s; }
     inline       std::vector<Parton*> &S()       { return m_s; }
+
+    inline void AddS(Parton *s)
+    { m_s.push_back(s); m_t.push_back(-1.0); }
 
     inline void Store()   { m_sp=m_p; m_sc=m_c; }
     inline void Restore() { m_p=m_sp; m_c=m_sc; }

@@ -18,7 +18,6 @@ Parton::Parton
   p_ampl(ampl), m_f(f), m_p(p), m_c(c), m_h(h), m_b(0),
   m_id(0)
 {
-  m_t[0]=m_t[1]=-1.0;
   ++s_cnt;
 }
 
@@ -84,10 +83,18 @@ namespace MALARIC {
 
   std::ostream &operator<<(std::ostream &s,const Parton &p)
   {
-    std::string hist;
+    std::string hist, sp;
     if (p.Beam()) hist+=ToString(p.Beam())+" ";
-    if (p.T(0)>=0.0||p.T(1)>=0.0)
-      hist+="["+ToString(p.T(0))+","+ToString(p.T(1))+"]";
+    if (p.S().size()) {
+      sp=ToString(p.S()[0]->Id());
+      hist+=ToString(p.T(0));
+      for (size_t i(1);i<p.S().size();++i) {
+	sp+=","+ToString(p.S()[i]->Id());
+	hist+=","+ToString(p.T(i));
+      }
+      sp="{"+sp+"}";
+      hist="["+hist+"]";
+    }
     for (Parton::Weight_Map::const_iterator 
 	   wit(p.Weights().begin());wit!=p.Weights().end();++wit) {
       const Parton::Weight_Vector &ws(wit->second);
@@ -103,7 +110,7 @@ namespace MALARIC {
 	    <<std::right<<std::setw(4)<<p.Flav()
 	    <<std::left<<" ["<<p.Hel()<<"]"
 	    <<std::setw(10)<<ToString(p.Col())
-	    <<p.Mom()<<" "<<m<<" "<<hist;
+	    <<p.Mom()<<" "<<m<<" "<<hist<<" "<<sp;
   }
 
 }
