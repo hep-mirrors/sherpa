@@ -276,6 +276,7 @@ void Initialization_Handler::RegisterDefaults()
   pss["ME_CORRECTION"].SetDefault(0);
   pss["KERNEL_TYPE"].SetDefault(15);
   pss["KERNEL_SCHEME"].SetDefault(1);
+  pss["MCMASS_SCHEME"].SetDefault(1);
   pss["IS_EVOL_SCHEME"].SetDefault(0);
   pss["FS_EVOL_SCHEME"].SetDefault(0);
   nlopss["RECALC_FACTOR"].SetDefault(2.0);

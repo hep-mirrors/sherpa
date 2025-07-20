@@ -1,7 +1,7 @@
 #include "MALARIC/Shower/Lorentz_FS.H"
 
 #include "MODEL/Main/Single_Vertex.H"
-#include "MALARIC/Shower/Kernel.H"
+#include "MALARIC/Shower/Shower.H"
 #include "MALARIC/Tools/Amplitude.H"
 #include "PHASIC++/Channels/Transverse_Kinematics.H"
 #include "ATOOLS/Org/Run_Parameter.H"
@@ -44,6 +44,13 @@ namespace MALARIC {
       double A(2*sik/(sij*skj)
 	       -pi.Abs2()/sqr(sij)
 	       -pk.Abs2()/sqr(skj));
+      if (!(s.m_clu&2) && p_sk->PS()->MassScheme()) {
+	double mi2(sqr(s.p_c->Flav().Mass(true)));
+	double mk2(sqr(s.p_s->Flav().Mass(true)));
+        double Am=2*(sik-mi2/2.-mk2/2.)/(sij*skj)
+	  -mi2/sqr(sij)-mk2/sqr(skj);
+	A=std::min(A,std::max(0.0,Am));
+      }
       A*=sij*skj*(pi*n)/D;
       double sf(1.0);
       if (m_id && !(s.m_clu&2)) sf=p_sk->Mode()?1.0-s.m_z:s.m_z;

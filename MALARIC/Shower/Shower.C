@@ -79,6 +79,7 @@ bool Shower::Init(MODEL::Model_Base *const model,
   m_kfac=pss["KFACTOR_SCHEME"].Get<int>();
   m_cpl=pss["COUPLING_SCHEME"].Get<int>();
   m_muf=pss["FACSCALE_SCHEME"].Get<int>();
+  m_ms=pss["MCMASS_SCHEME"].Get<int>();
   m_es[0]=pss["FS_EVOL_SCHEME"].Get<int>();
   m_es[1]=pss["IS_EVOL_SCHEME"].Get<int>();
   m_pdfmin[0]=pss["PDF_MIN"].Get<double>();
