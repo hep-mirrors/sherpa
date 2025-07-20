@@ -80,6 +80,7 @@ namespace MALARIC {
 
     double Value(const Splitting &s) const
     {
+      if (s.m_t<2.*sqr(m_fl[1].Mass(true))) return 0.;
       double B(1.0-2.0*s.m_zi*(1.0-s.m_zi));
       double sf(s.m_z);
       return sf*B;
