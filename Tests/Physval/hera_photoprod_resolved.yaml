@@ -39,7 +39,7 @@ SELECTORS:
 
 ANALYSIS: Rivet
 RIVET:
-  --analyses: ZEUS_2001_S4815815
+  --analyses: ZEUS_2001_I568665
 
 PROCESSES:
   - 93 93 -> (93,997) (93,997):
