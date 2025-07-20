@@ -242,13 +242,6 @@ int Shower::Evolve(Amplitude &a, unsigned int &nem)
             msg_Debugging() << "} no jet veto\n";
             all_vetoed = false;
             return varweight;
-          } else if (ampl->NLO() & 2) {
-            msg_Debugging() << "  skip emission\n";
-            skips[varindex] = true;
-            ++nskips;
-            all_vetoed = false;
-            msg_Debugging() << "} no jet veto\n";
-            return varweight;
           } else {
             msg_Debugging() << "} jet veto\n";
             return 0.0;
