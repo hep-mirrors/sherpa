@@ -32,11 +32,13 @@ namespace MALARIC {
 
     double Charge(const Splitting &s) const
     {
+      if (s.p_c->S().size()<2) return m_CA;
       return m_CA/2.0;
     }
 
     double Weight(const Splitting &s) const
     {
+      if (s.p_c->S().size()<2) return m_CA;
       return m_CA/2.0;
     }
 

@@ -146,7 +146,6 @@ bool MCatNLO::PrepareShower
   std::string pname(Process_Base::GenerateName(p_rampl));
   int ntrip(0), noct(0);
   const IDip_Set &iinfo((*p_rampl->IInfo<StringIDipSet_Map>())[pname]);
-  for (int nf(0);nf<2;++nf) {
   for (size_t i(0);i<m_ampls.back()->size();++i) {
     Parton *c((*m_ampls.back())[i]);
     msg_Debugging()<<"spectators for "
@@ -161,9 +160,6 @@ bool MCatNLO::PrepareShower
       }
     }
     msg_Debugging()<<"-> "<<c->S().size()<<" dipole(s)\n";
-  }
-  if (!(ntrip==0 && noct==2)) break;
-  else msg_Debugging()<<"gg special, fill again\n";
   }
   if (ampl->NIn()+ampl->Leg(2)->NMax()==
       ampl->Legs().size()+1) m_ampls.back()->SetJF(NULL);
