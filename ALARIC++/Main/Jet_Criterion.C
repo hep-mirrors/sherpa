@@ -48,7 +48,7 @@ namespace ALARIC {
       t2*=pow(Max(xi2,1.0/xi2),-beta/2.0);
       if (pi[0]<0.0) return dabs(t1);
       if (pj[0]<0.0) return dabs(t2);
-      return Min(t1,t2);
+      return 2.0*Min(t1,t2);
     }
 
     double Value(Cluster_Amplitude *ampl,int mode)
