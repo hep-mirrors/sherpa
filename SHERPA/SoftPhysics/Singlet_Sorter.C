@@ -10,8 +10,8 @@ using namespace ATOOLS;
 using namespace std;
 
 Singlet_Sorter::Singlet_Sorter() :
-  m_calls(0),
-  m_fails(0), m_hBarC(rpa->hBar()*rpa->c()*1.e12),  // hbar c in fm/GeV
+  m_calls(0), m_fails(0),
+  m_hBarC(rpa->hBar()*rpa->c()*1.e12),  // hbar c in fm/GeV
   m_softscale(1.), m_softmass(0.25)   
 {}
 
