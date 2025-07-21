@@ -3,6 +3,13 @@
 
 #include "HADRON_RESCATTERING/XSecs/HPR1R2.H"
 
+//////////////////////////////////////////////////////////////////////////////
+//
+// All total cross sections in mb.
+// For details regarding parametrizations etc., cf the C-file.
+//
+//////////////////////////////////////////////////////////////////////////////
+
 namespace HADRON_RESCATTERING {
   class NNfits {
     HPR1R2  m_hpr1r2;

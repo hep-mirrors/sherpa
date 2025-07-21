@@ -185,7 +185,8 @@ Cluster * Gluon_Splitter::MakeCluster() {
   p_part[0]->SetMomentum(newmom11);
   // Make new particle
   Proto_Particle * newp12 = new Proto_Particle(m_newflav[0],newmom12,false,
-					       p_part[0]->IsBeam() || p_part[1]->IsBeam());
+					       p_part[0]->IsBeam() ||
+					       p_part[1]->IsBeam());
   newp12->SetKT2_Max(m_kt2);
   newp12->SetXProd(p_part[0]->XProd()+m_distance[0]);
   p_part[0]->SetXProd(p_part[0]->XProd()+m_distance[0]);

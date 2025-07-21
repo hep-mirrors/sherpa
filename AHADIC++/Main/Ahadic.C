@@ -94,7 +94,8 @@ Return_Value::code Ahadic::Hadronize(Blob * blob, int retry) {
     return Return_Value::New_Event;
   }
   blob->UnsetStatus(blob_status::needs_hadronization);
-  blob->SetStatus(blob_status::needs_hadrondecays);
+  blob->SetStatus(blob_status::needs_hadronRescatter |
+		  blob_status::needs_hadrondecays);
   blob->SetType(btp::Fragmentation);
   blob->SetTypeSpec("AHADIC-1.0");
   FillOutgoingParticles(blob);

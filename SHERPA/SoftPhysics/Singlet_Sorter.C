@@ -10,7 +10,8 @@ using namespace ATOOLS;
 using namespace std;
 
 Singlet_Sorter::Singlet_Sorter() :
-  m_hBarC(rpa->hBar()*rpa->c()*1.e12)  // hbar c in fm/GeV
+  m_hBarC(rpa->hBar()*rpa->c()*1.e12), // hbar c in fm/GeV
+  m_softscale(1.), m_softmass(0.25)   
 {}
 
 Singlet_Sorter::~Singlet_Sorter() {
@@ -87,6 +88,7 @@ bool Singlet_Sorter::HarvestParticles(Blob_List * bloblist) {
 }
 
 void Singlet_Sorter::ReconstructPartonPositions(Blob * blob) {
+  /*
   double scale = 1.;
   if (blob->Type()==btp::Shower) {
     Blob * hardblob = blob->OutParticle(0)->DecayBlob();
@@ -97,24 +99,26 @@ void Singlet_Sorter::ReconstructPartonPositions(Blob * blob) {
       scale    = Max(scale,sqrt(hardblob->InParticle(0)->Momentum().Abs2()));
     }
   }
+  */
   for (int i=0;i<blob->NOutP();i++) {
     Particle * part = blob->OutParticle(i);
     if (part->DecayBlob()) continue;
-    double mass2    = sqr(part->Flav().Mass(true));
+    double mass     = part->Flav().HadMass();
     if (part->Flav().StrongCharge()!=0) {
-      mass2         = Max(mass2,1.);  
+      mass          = Max(mass,m_softmass);  
     }
     Vec3D  velocity = (Vec3D(part->Momentum())/
-		       sqrt(Vec3D(part->Momentum()).Sqr()+mass2));
-    Vec4D  distance = ( rpa->hBarc()/scale *               // lifetime
-			Max(1.,part->Momentum()[0]/sqrt(mass2)) *  // boost factor
-			Vec4D(1.,velocity) );              // velocity 4-vector
+		       sqrt(Vec3D(part->Momentum()).Sqr()+sqr(mass)));
+    Vec4D  distance = ( rpa->hBarc()/m_softscale *                 // lifetime
+			Max(1.,part->Momentum()[0]/mass) *         // boost factor
+			Vec4D(1.,velocity) );                      // velocity 4-vector
     part->SetPosition(blob->Position()+distance);
     msg_Out()<<"- "<<std::setw(4)<<part->Flav()
-	     <<" ["<<std::setw(8)<<part->Momentum()[0]<<", "
-	     <<"v = "<<std::setw(8)<<sqrt(velocity.Sqr())<<", "
-	     <<"boost = "<<std::setw(8)<<Max(1.,part->Momentum()[0]/sqrt(mass2))<<"]: "
-	     <<blob->Position()<<" + "<<distance<<"\n";
+    	     <<" ["<<std::setw(8)<<part->Momentum()[0]<<", "
+	     <<std::setw(8)<<part->Flav().HadMass()<<", "
+    	     <<"v = "<<std::setw(8)<<sqrt(velocity.Sqr())<<", "
+    	     <<"boost = "<<std::setw(8)<<Max(1.,part->Momentum()[0]/mass)<<"]: "
+    	     <<blob->Position()<<" + "<<distance<<"\n";
   }
 }
 

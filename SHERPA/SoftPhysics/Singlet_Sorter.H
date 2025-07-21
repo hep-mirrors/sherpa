@@ -12,7 +12,7 @@
 namespace SHERPA {
   class Singlet_Sorter {
   private :
-    double m_hBarC;
+    double m_hBarC, m_softscale, m_softmass;
     std::list<ATOOLS::Particle *>   m_hadrons;
     ATOOLS::Part_List             * p_partlist;
     std::list<ATOOLS::Part_List * > m_partlists;

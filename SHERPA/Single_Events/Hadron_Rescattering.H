@@ -15,6 +15,7 @@ namespace SHERPA {
 
   class Hadron_Rescattering : public Event_Phase_Handler {
   private :
+    bool m_on;
     Hadron_Rescattering_Handler * p_reschandler;
     
   public :
