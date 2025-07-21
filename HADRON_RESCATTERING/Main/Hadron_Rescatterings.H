@@ -2,28 +2,26 @@
 #define HADRON_RESCATTERING_Main_Hadron_Rescatterings_H
 
 #include "HADRON_RESCATTERING/XSecs/BaryonBaryon.H"
+#include "HADRON_RESCATTERING/XSecs/MesonMeson.H"
 
 #include "ATOOLS/Phys/Blob_List.H"
-#include "ATOOLS/Phys/Particle_List.H"
-#include "ATOOLS/Org/Return_Value.H"
 
 namespace HADRON_RESCATTERING {
-  typedef std::pair<unsigned int,unsigned int> colpair;
-  
   class Hadron_Rescatterings {
   private:
     bool                m_on;
     long unsigned int   m_nfails;
 
+    double              m_mm2mb;
     BaryonBaryon *      p_BB;
+    MesonMeson *        p_MM;
  public:
     Hadron_Rescatterings(const bool & on);
     ~Hadron_Rescatterings();
-
-
     
-    ATOOLS::Return_Value::code operator()(ATOOLS::Blob_List *const blobs,
-					  ATOOLS::Particle_List *const=NULL);
+    ATOOLS::Blob * operator()(ATOOLS::Particle * A,
+			      ATOOLS::Particle * B,
+			      const double & dist2);
 
     void Initialize();
     void Reset();
