@@ -34,7 +34,7 @@ bool Colour_Generator::ConnectColours(Blob* const showerblob)
                 << (*showerblob) << "\n";
   }
   if (!showerblob->CheckColour(true)) {
-    msg_Error() << METHOD << " did not conserved colour in:\n"
+    msg_Debugging() << METHOD << " did not conserved colour in:\n"
                     << (*showerblob) << "\n";
     return false;
   }

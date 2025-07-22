@@ -114,14 +114,11 @@ void Sudakov::InitSplittingFunctions(MODEL::Model_Base *md,const int kfmode)
 }
 
 void Sudakov::AddDiQuarkSplittingFunctions(MODEL::Model_Base *md,const int kfmode) {
-  //msg_Out()<<"============================================================\n"
-  //	   <<METHOD<<": so far "<<m_splittings.size()<<" splitting functions\n";
   Kabbala g3("g_3",sqrt(4.*M_PI*md->ScalarConstant("alpha_S")));
   Kabbala cpl0=g3*Kabbala("i",Complex(0.,1.));
   list<kf_code> diquarks = { kf_ud_0, kf_dd_1, kf_ud_1, kf_uu_1 };
     for (list<kf_code>::iterator kfit=diquarks.begin();kfit!=diquarks.end();kfit++) {
     Flavour flav(*kfit);
-    //if (!flav.IsOn()) continue; 
     Single_Vertex v;
     v.AddParticle(flav.Bar());
     v.AddParticle(flav);
@@ -133,8 +130,6 @@ void Sudakov::AddDiQuarkSplittingFunctions(MODEL::Model_Base *md,const int kfmod
     Add(new Splitting_Function_Base(SF_Key(&v,0,cstp::FF,kfmode,m_qcdmode,m_ewmode, 1,m_pdfmin)));
     Add(new Splitting_Function_Base(SF_Key(&v,0,cstp::FF,kfmode,m_qcdmode,m_ewmode,-1,m_pdfmin)));
   }
-  //msg_Out()<<METHOD<<": by now "<<m_splittings.size()<<" splitting functions\n"
-    //	   <<"============================================================\n";
 }
 
 void Sudakov::SetCoupling(MODEL::Model_Base *md,
@@ -174,6 +169,7 @@ void Sudakov::Add(Splitting_Function_Base * split)
   if (split->On()) {
     split->SetFacScaleFactor(m_facscalefactor);
     Splitting_Function_Group::Add(split);
+    msg_Debugging()<<" -> add\n";
   }
   AddToMaps(split,!split->On());
 }

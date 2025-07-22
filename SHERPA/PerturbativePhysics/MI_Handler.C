@@ -52,10 +52,12 @@ MI_Handler::MI_Handler(MODEL::Model_Base *model,
 	m_name==string("Shrimps")) InitShrimps(model);
   }
   msg_Info()<<METHOD<<"(id = "<<m_id<<", name = "<<m_name<<", gen = ";
-  if (m_gen==genID::none)         msg_Info()<<"None)\n";
-  else if (m_gen==genID::amisic)  msg_Info()<<"Amisic)\n";
-  else if (m_gen==genID::shrimps) msg_Info()<<"Shrimps)\n";
-  else                            msg_Info()<<"Unkown)\n";
+  switch (m_gen) {
+    case(genID::none): msg_Info()<<"None)\n"; break;
+    case(genID::amisic): msg_Info()<<"Amisic)\n"; break;
+    case(genID::shrimps): msg_Info()<<"Shrimps)\n"; break;
+    default: msg_Info()<<"Unkown)\n"; break;
+  }
 }
 
 MI_Handler::~MI_Handler()

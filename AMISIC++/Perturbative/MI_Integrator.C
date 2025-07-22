@@ -42,10 +42,11 @@ bool MI_Integrator::TrialEvent(const double & s,Matter_Overlap * mo) {
   size_t trials    = 0;
   do {
     m_pt2 = 1./(invpt2min-ran->Get()*pt2vol);
-    if (MakeKinematics(m_pt2,s)) 
+    if (MakeKinematics(m_pt2,s))
       wt  = (*p_procs)()*m_yvol*sqr(m_pt2)*pt2vol/m_xsmax;
     else wt = 0.;
     if (trials>100) return false;
+    ++trials;
   } while (wt<ran->Get());
   return true;
 }
@@ -71,7 +72,7 @@ operator()(const double & s,Matter_Overlap * mo,const double & b) {
     ////////////////////////////////////////////////////////////////////////
     m_pt2  = 1./(invpt2min-ran->Get()*pt2vol); // m_pt2min + ran->Get()*pt2vol;
     ////////////////////////////////////////////////////////////////////////
-    // Fix the rest of the kinematics: rapidities, x's, Mandelstams. 
+    // Fix the rest of the kinematics: rapidities, x's, Mandelstams.
     ////////////////////////////////////////////////////////////////////////
     if (MakeKinematics(m_pt2,s)) {
       if (mo && mo->IsDynamic()) {
@@ -109,7 +110,7 @@ MakeKinematics(const double & pt2,const double & s) {
   ////////////////////////////////////////////////////////////////////////////
   m_pt2     = pt2;
   double xt = sqrt(4.*m_pt2/s);
-  if (xt>1.) return false; 
+  if (xt>1.) return false;
   //////////////////////////////////////////////////////////////////////////
   // Generate two trial rapidities and keep the integration volume.
   ////////////////////////////////////////////////////////////////////////////
