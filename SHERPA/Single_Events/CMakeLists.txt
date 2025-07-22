@@ -7,6 +7,7 @@ set(Single_Events_SOURCES Event_Handler.C
                           Signal_Process_FS_QED_Correction.C
                           Hard_Decays.C
                           Beam_Remnants.C
+			  NP_Colour_Reconnections.C
                           Hadronization.C
                           Hadron_Decays.C
                           Hadron_Rescattering.C
@@ -25,6 +26,7 @@ set(Single_Events_HEADERS Event_Handler.H
                           Signal_Process_FS_QED_Correction.H
                           Hard_Decays.H
                           Beam_Remnants.H
+			  NP_Colour_Reconnections.H
                           Hadronization.H
                           Hadron_Decays.H
                           Hadron_Rescattering.H

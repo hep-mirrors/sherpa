@@ -16,6 +16,8 @@ namespace SHERPA {
     ATOOLS::Return_Value::code operator()(ATOOLS::Blob_List *const);
     void CleanUp(const size_t & mode=0);
     void Output();
+
+    const inline bool On() const { return m_on; }
   };
 }
 
