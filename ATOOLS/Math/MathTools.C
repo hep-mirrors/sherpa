@@ -406,13 +406,13 @@ long double cyl_bessel_0 (long double x) {
     1.3166052564989571850e-01,
     5.8599221412826100000e-04
   };
-  
+
   static double Q1[] = {
     2.1312714303849120380e+04,
     -2.4994418972832303646e+02,
     1.0
   };
-  
+
   static double P2[] = {
     -1.6128136304458193998e+06,
     -3.7333769444840079748e+05,
@@ -420,14 +420,14 @@ long double cyl_bessel_0 (long double x) {
     -2.9501657892958843865e+02,
     -1.6414452837299064100e+00
   };
-  
+
   static double Q2[] = {
     -1.6128136304458193998e+06,
     2.9865713163054025489e+04,
     -2.5064972445877992730e+02,
     1.0
   };
-  
+
   static double P3[] = {
     1.1600249425076035558e+02,
     2.3444738764199315021e+03,
@@ -440,7 +440,7 @@ long double cyl_bessel_0 (long double x) {
     3.6832589957340267940e+03,
     1.1394980557384778174e+02
   };
-  
+
   static double Q3[] = {
     9.2556599177304839811e+01,
     1.8821890840982713696e+03,
@@ -454,13 +454,13 @@ long double cyl_bessel_0 (long double x) {
     2.0013443064949242491e+02,
     1.0
   };
-  
+
   double factor, r, r1, r2;
   long double value;
-  
+
   if (x < 0) return -1; //error
   if (x == 0) return -1; //error
-  
+
   if (x <= 1) {
     double y = x*x;
     r1 = ( evaluate_polynomial(sizeof(P1)/sizeof(P1[0]),P1,y) /
@@ -477,11 +477,10 @@ long double cyl_bessel_0 (long double x) {
     factor = exp(-x)/sqrt(x);
     value = factor * r;
   }
-  //std::cout << "Using rational approximation, bessel_0 = " << value << std::endl;
   return value;
 }
-  
-long double cyl_bessel_1 (long double x) { 
+
+long double cyl_bessel_1 (long double x) {
   if (x>35) { //accurate to 1/1000
     long double ret = expl(-x)*sqrt(M_PI/(2*x)) * (1 + 3/(8*x)); // limiting expression
     return ret;
@@ -582,7 +581,7 @@ double bessel_i0(double x) {
       3.0899424,
       1.2067492,
       0.2659732,
-      0.360768e-1,      
+      0.360768e-1,
       0.45813e-2
     };
     return ( evaluate_polynomial(sizeof(P)/sizeof(P[0]),P,sqr(x/3.75)) );
@@ -596,7 +595,7 @@ double bessel_i0(double x) {
     0.916281e-2,
     -0.2057706e-1,
     0.2635537e-1,
-    -0.1647633e-1,    
+    -0.1647633e-1,
     0.392377e-2
   };
   return (exp(xabs)/sqrt(xabs)) * evaluate_polynomial(sizeof(P)/sizeof(P[0]),P,3.75/x);
@@ -625,7 +624,7 @@ double bessel_i1(double x) {
       -0.1031555e-1,
       0.2282967e-1,
       -0.2895312e-1,
-      0.1787654e-1,      
+      0.1787654e-1,
       -0.420059e-2
     };
     res = ( exp(xabs)/sqrt(xabs) *
@@ -633,7 +632,7 @@ double bessel_i1(double x) {
   }
   return x < 0.0 ? -res : res;
 }
-  
+
 double bessel_k0(double x) {
   if (x <= 2.0) {
     static double P[] = {
@@ -642,7 +641,7 @@ double bessel_k0(double x) {
       0.23069756,
       0.3488590e-1,
       0.262698e-2,
-      0.10750e-3,      
+      0.10750e-3,
       0.74e-5
     };
     return ( -log(x/2.0)*ATOOLS::bessel_i0(x) +
@@ -654,7 +653,7 @@ double bessel_k0(double x) {
     0.2189568e-1,
     -0.1062446e-1,
     0.587872e-2,
-    -0.251540e-2,    
+    -0.251540e-2,
     0.53208e-3
   };
   return (exp(-x)/sqrt(x)) * evaluate_polynomial(sizeof(P)/sizeof(P[0]),P,2./x);
@@ -668,7 +667,7 @@ double bessel_k1(double x) {
       -0.67278579,
       -0.18156897,
       -0.1919402e-1,
-      -0.110404e-2,      
+      -0.110404e-2,
       -0.4686e-4
     };
     return ( log(x/2.0)*ATOOLS::bessel_i1(x) +
@@ -680,7 +679,7 @@ double bessel_k1(double x) {
     -0.3655620e-1,
     0.1504268e-1,
     -0.780353e-2,
-    0.325614e-2,    
+    0.325614e-2,
     -0.68245e-3
   };
   return (exp(-x)/sqrt(x)) * evaluate_polynomial(sizeof(P)/sizeof(P[0]),P,2./x);

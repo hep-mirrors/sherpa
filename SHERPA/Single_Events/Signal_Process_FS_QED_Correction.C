@@ -113,7 +113,7 @@ Return_Value::code Signal_Process_FS_QED_Correction::Treat(Blob_List* bloblist)
   Particle_Vector fslep(sigblob->GetOutParticles());
   Particle_Vector mfslep;
   for (Particle_Vector::iterator it=fslep.begin();it!=fslep.end();) {
-    if ((*it)->Flav().Strong() || (*it)->Flav().IsDiQuark() || 
+    if ((*it)->Flav().Strong() || (*it)->Flav().IsDiQuark() ||
 	(*it)->DecayBlob()!=NULL) {
       fslep.erase(it);
     }
@@ -189,13 +189,7 @@ Return_Value::code Signal_Process_FS_QED_Correction::Treat(Blob_List* bloblist)
   Blob * QEDblob = bloblist->AddBlob(btp::QED_Radiation);
   QEDblob->SetTypeSpec("YFS-type_QED_Corrections_to_ME");
   if (blobs.size()==0 && !m_onme) {
-    //msg_Out()<<METHOD
-    //	     <<"("<<m_onme<<", "<<blobs.size()<<" blobs, "<<mfslep.size()<<" particles "
-    //	     <<"from blob = "<<sigblob->Id()<<") :\n"
-    //	     <<(*QEDblob)<<"\n";
     while (!mfslep.empty()) {
-      //msg_Out()<<"add & copy "<<mfslep.back()->Number()<<" (original = "
-      //       <<mfslep.back()->OriginalPart()->Number()<<")\n";
       Particle * inpart  = (*mfslep.begin())->OriginalPart();
       inpart->SetStatus(part_status::decayed);
       QEDblob->AddToInParticles(inpart);

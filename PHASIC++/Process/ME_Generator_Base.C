@@ -309,7 +309,7 @@ int ME_Generator_Base::ShiftMassesDefault(Cluster_Amplitude *const ampl, Vec4D c
   bool must_shift = false;
   for (size_t i(0);i<ampl->Legs().size();++i) {
     if (ampl->Leg(i)->Mom()[0]<0.) continue;
-    double q2 = ampl->Leg(i)->Mom().Abs2(), m2 = sqr(ampl->Leg(i)->Flav().Mass(true)); 
+    double q2 = ampl->Leg(i)->Mom().Abs2(), m2 = sqr(ampl->Leg(i)->Flav().Mass(true));
     if (dabs((q2-m2)/(q2+m2))>1.e-6) {
       must_shift = true; break;
     }

@@ -29,8 +29,8 @@ namespace AMISIC {
   private:
     // all cross sections in mb.
     std::map<ATOOLS::Flavour, std::list<ATOOLS::Flavour> > m_hadroncomponents;
-    std::map<ATOOLS::Flavour, size_t> m_indexmap;
-    std::map<ATOOLS::Flavour, double> m_fVs;
+    static std::map<kf_code, size_t> s_indexmap;
+    static std::map<kf_code, double> s_fVs;
     double m_beta0[4];
 
     std::array<ATOOLS::Flavour,2> m_flavs;
@@ -71,7 +71,7 @@ namespace AMISIC {
     void operator()(double s);
     void CalculateXSratios(MI_Processes * processes,axis * sbins);
     void Output() const;
-    
+
     inline const double & Smin()   const { return m_smin; }
     //////////////////////////////////////////////////////////////////////////
     // The ratio of parton-level cross section obtained by integration over
@@ -142,7 +142,7 @@ namespace AMISIC {
       if (std::find(m_hadroncomponents[m_flavs[beam]].begin(),
 		    m_hadroncomponents[m_flavs[beam]].end(), flav) !=
 	  m_hadroncomponents[m_flavs[beam]].end() &&
-	  m_indexmap.find(flav)!=m_indexmap.end()) return m_indexmap[flav];
+	  s_indexmap.find(flav)!=s_indexmap.end()) return s_indexmap[flav];
       return 0;
     }
   };

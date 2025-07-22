@@ -58,9 +58,9 @@ Perturbative_Interface::Perturbative_Interface(Matrix_Element_Handler *const meh
   m_fails_Moms(0), m_fails_Ampls(0), m_fails_Masses(0)
 {
   Settings& s  = Settings::GetMainSettings();
-  m_bbarmode   = (s["METS_BBAR_MODE"].SetDefault(mets_bbar_mode::enabled|
-						 mets_bbar_mode::exclcluster).
-		  Get<mets_bbar_mode::code>() );
+  m_bbarmode = s["METS_BBAR_MODE"].SetDefault(mets_bbar_mode::enabled|
+                                              mets_bbar_mode::exclcluster)
+                                  .Get<mets_bbar_mode::code>();
   m_globalkfac = s["GLOBAL_KFAC"].SetDefault(0.0).Get<double>();
   m_maxkfac    = s["MENLOPS_MAX_KFAC"].SetDefault(10.0).Get<double>();
 }
@@ -80,7 +80,7 @@ Perturbative_Interface::Perturbative_Interface
   p_me(NULL), p_mi(NULL), p_hd(NULL), p_sc(sch), p_shower(psh),
   p_ampl(NULL), m_fails_Moms(0), m_fails_Ampls(0), m_fails_Masses(0) {}
 
-Perturbative_Interface::~Perturbative_Interface() 
+Perturbative_Interface::~Perturbative_Interface()
 {
   if (p_ampl) {
     Cluster_Amplitude *campl(p_ampl);
@@ -305,8 +305,8 @@ int Perturbative_Interface::PerformShowers()
 }
 
 int Perturbative_Interface::PerformDecayShowers()
-{ 
-  return p_shower->GetShower()->PerformDecayShowers(); 
+{
+  return p_shower->GetShower()->PerformDecayShowers();
 }
 
 void Perturbative_Interface::CleanUp()

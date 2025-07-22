@@ -18,25 +18,25 @@ NonPerturbative_XSecs(REMNANTS::Remnant_Handler * remnants,
 		      Hadronic_XSec_Calculator * xsecs) :
   p_remnants(remnants), p_xsecs(xsecs), m_variableS(false),
   m_evttype(mipars->GetEvtType()),
-  m_inflav(p_xsecs->GetFlavs()), 
-  m_smin(p_xsecs->Smin()), 
+  m_inflav(p_xsecs->GetFlavs()),
+  m_smin(p_xsecs->Smin()),
   m_eps_pomeron(p_xsecs->EpsPomeron()), m_alphaP_pomeron(p_xsecs->AlphaPPomeron()),
   m_triple_pomeron(p_xsecs->TriplePomeron()), m_alphaQED(p_xsecs->AlphaQED()),
-  m_s0(1./m_alphaP_pomeron), 
+  m_s0(1./m_alphaP_pomeron),
   m_mpi(Flavour(kf_pi).Mass()), m_mpi2(m_mpi*m_mpi),
   m_deltaMres(p_xsecs->Diffractive_Mres()), m_cres(p_xsecs->Diffractive_cres()),
   m_mrho(Flavour(kf_rho_770).Mass()), m_mrho2(sqr(m_mrho)),
-  m_mrho_min(0.3), m_q_rho(sqrt(m_mrho2-4.*m_mpi2)), 
+  m_mrho_min(0.3), m_q_rho(sqrt(m_mrho2-4.*m_mpi2)),
   m_momega(Flavour(kf_omega_782).Mass()), m_momega2(sqr(m_momega)),
-  m_q_omega(sqrt(m_momega2-4.*m_mpi2)), 
+  m_q_omega(sqrt(m_momega2-4.*m_mpi2)),
   m_Grho(Flavour(kf_rho_770).Width()), m_Grho2(sqr(m_Grho)),
-  m_Gomega(Flavour(kf_omega_782).Width()), m_Gomega2(sqr(m_Gomega)), m_A2max(0.), 
+  m_Gomega(Flavour(kf_omega_782).Width()), m_Gomega2(sqr(m_Gomega)), m_A2max(0.),
   m_twopions(two_pions::none),
   m_calls(0), m_fails(0),
   m_ana(false)
 {
   m_twopions   = mipars->GetTwoPionTreatment();
-  m_f_omega    = (*mipars)("f_omega"); 
+  m_f_omega    = (*mipars)("f_omega");
   m_phi_omega  = (*mipars)("phi_omega");
   m_f_nr       = (*mipars)("f_nr");
   m_Lambda2_nr = sqr((*mipars)("Lambda_nr"));
@@ -44,7 +44,7 @@ NonPerturbative_XSecs(REMNANTS::Remnant_Handler * remnants,
   if (p_remnants->GetRemnants()[0]->Flav()==Flavour(kf_photon) ||
       p_remnants->GetRemnants()[0]->Flav()==Flavour(kf_photon)) {
     for (size_t i=0;i<1000;i++) {
-      double A2test = RhoMassModifier(sqr(m_mrho_min+double(i)/100)); 
+      double A2test = RhoMassModifier(sqr(m_mrho_min+double(i)/100));
       if (A2test>m_A2max) m_A2max = A2test;
     }
   }
@@ -105,7 +105,7 @@ void NonPerturbative_XSecs::CalculateSDependentCrossSections() {
 		  <<setprecision(6)<<setw(11)<<(p_xsecs->SigmaEl())<<" | "
 		  <<setprecision(6)<<setw(11)<<(p_xsecs->SigmaSDA())<<" | "
 		  <<setprecision(6)<<setw(11)<<(p_xsecs->SigmaSDB())<<" | "
-		  <<setprecision(6)<<setw(11)<<(p_xsecs->SigmaDD())<<" | " 
+		  <<setprecision(6)<<setw(11)<<(p_xsecs->SigmaDD())<<" | "
 		  <<setprecision(6)<<setw(11)<<(p_xsecs->XSnd()*GeV2mb)<<" |\n"
 		  <<"   "<<string(99,'-')<<"\n\n";
   }
@@ -127,7 +127,7 @@ bool NonPerturbative_XSecs::MakeScatter(Blob * blob) {
   if (m_variableS) {
     if (!m_integrator()) {
       THROW(critical_error,"could not create initial-state phase-space.");
-      return NULL;
+      return false;
     }
   }
   for (size_t beam=0;beam<2;beam++)
@@ -144,7 +144,7 @@ bool NonPerturbative_XSecs::MakeScatter(Blob * blob) {
   case event_mode::elastic:
     if (!p_xsecs->SelectEl(flavs) || !FixFS(flavs))
       THROW(fatal_error,"Could not define elastic FS");
-    return ElasticScatter(blob);       
+    return ElasticScatter(blob);
   case event_mode::SDA:
     if (!p_xsecs->SelectSDA(flavs) || !FixFS(flavs))
       THROW(fatal_error,"Could not define SD(A) FS");
@@ -169,7 +169,7 @@ const event_mode::code NonPerturbative_XSecs::SelectMode() {
   // Trivial initialisation of outgoing flavours as being either "none" or the
   // initial flavour.  In principle we can have up to four outgoing particles in a
   // two-body scatter, when each of the initial particles decomposes diffractively into
-  // two constituents.  This means we map the initial i = {0,1} onto i -> {2i, 2i+1}. 
+  // two constituents.  This means we map the initial i = {0,1} onto i -> {2i, 2i+1}.
   ////////////////////////////////////////////////////////////////////////////////////
   m_weight = 0.;
   for (size_t i=0;i<2;i++) {
@@ -208,7 +208,7 @@ const event_mode::code NonPerturbative_XSecs::SelectMode() {
 
 bool NonPerturbative_XSecs::FixFS(array<ATOOLS::Flavour, 2> & flavs) {
   ////////////////////////////////////////////////////////////////////////////////////
-  // This method is mainly to meant to initialise the outgoing flavours and masses for 
+  // This method is mainly to meant to initialise the outgoing flavours and masses for
   // initial photons, which will turn into vector mesons through the VMD model, and to
   // define the correct associated hadron tags for the various pomeron couplings.
   ////////////////////////////////////////////////////////////////////////////////////
@@ -233,7 +233,7 @@ double NonPerturbative_XSecs::DiffElXSec(const double & s,const double & t) cons
   // We only use this method for testing purposes.
   ////////////////////////////////////////////////////////////////////////////////////
   return ( 1./(16.*M_PI) * sqr(beta(m_hadtags[0],t) * beta(m_hadtags[1],t)) *
-	   exp((2.*m_eps_pomeron + 2.*m_alphaP_pomeron*t) * log(s/m_s0)) ); 
+	   exp((2.*m_eps_pomeron + 2.*m_alphaP_pomeron*t) * log(s/m_s0)) );
 }
 
 bool NonPerturbative_XSecs::ElasticScatter(Blob * blob) {
@@ -275,7 +275,7 @@ double NonPerturbative_XSecs::DiffSDXSec(const double & s, const double & t,
   if (M2<M2min) return 0.;
   return ( F_SD(M2,M2res) / (16.*M_PI*M2) *
 	   m_triple_pomeron * sqr(beta(m_hadtags[pos],t)) * beta(m_hadtags[1-pos],0.) *
-	   exp((2.*m_eps_pomeron + 2.*m_alphaP_pomeron*t) * log(s/M2)) ); 
+	   exp((2.*m_eps_pomeron + 2.*m_alphaP_pomeron*t) * log(s/M2)) );
 }
 
 bool NonPerturbative_XSecs::SingleDiffractiveScatter(const size_t & pos,Blob * blob) {
@@ -337,7 +337,7 @@ double NonPerturbative_XSecs::DiffDDXSec(const double & s,const double & t,
   return ( F_DD(M2,M2res) / (16.*M_PI*M2[0]*M2[1]) *
 	   sqr(m_triple_pomeron) * beta(m_hadtags[0],0.) * beta(m_hadtags[1],0.) *
 	   exp((2.*m_eps_pomeron + 2.*m_alphaP_pomeron*t) *
-	       log((s*m_s0)/(M2[0]*M2[1]))) ); 
+	       log((s*m_s0)/(M2[0]*M2[1]))) );
 }
 
 bool NonPerturbative_XSecs::DoubleDiffractiveScatter(ATOOLS::Blob * blob) {
@@ -362,7 +362,7 @@ bool NonPerturbative_XSecs::DoubleDiffractiveScatter(ATOOLS::Blob * blob) {
   double t, value;
   size_t attempts = 0;
   do {
-    if (attempts++>10000) return NULL;
+    if (attempts++>10000) return false;
     do {
       t       = ExponentialDist(-m_s,0,argt);
       for (size_t i=0;i<2;i++) M2[i] = PowerDist(M2min[i],m_s,argM);
@@ -425,8 +425,8 @@ void NonPerturbative_XSecs::SplitRhoIntoPions(const size_t & pos) {
   m_outflav[pos+1] = Flavour(kf_pi_plus).Bar();
   for (size_t i=0;i<2;i++) m_outmasses[pos+i] = m_outflav[pos+i].HadMass();
   Poincare boost(rhomom);
-  boost.BoostBack(m_outmom[pos]);   
-  boost.BoostBack(m_outmom[pos+1]);  
+  boost.BoostBack(m_outmom[pos]);
+  boost.BoostBack(m_outmom[pos+1]);
 }
 
 bool NonPerturbative_XSecs::SetRhoMasses2() {
@@ -488,7 +488,7 @@ double NonPerturbative_XSecs::RhoMassModifier(const double & M2) {
   // the selection and therefore the weight must be divided out.
   ////////////////////////////////////////////////////////////////////////////////////
   double rel = (sqr(std::abs(BWrho * A + Complex(A_nr,0.)))/sqr(std::abs(BWrho * A)));
-  return qrhoratio * sqr(std::abs(BWrho * A + Complex(A_nr, 0.) )); 
+  return qrhoratio * sqr(std::abs(BWrho * A + Complex(A_nr, 0.) ));
 }
 
 bool NonPerturbative_XSecs::SplitDiffractiveState(const size_t & pos) {
@@ -496,7 +496,7 @@ bool NonPerturbative_XSecs::SplitDiffractiveState(const size_t & pos) {
   // Given the momentum and mass of the diffractive system, we select its (constituent)
   // flavours in SelectFlavoursOfDiffraction(pos,M2).  As an additional safety measure
   // we check if the diffractive mass is larger than the sum of the constituent masses.
-  // If this is not the case (which may happen for nucleons) we explicitly split the 
+  // If this is not the case (which may happen for nucleons) we explicitly split the
   // excited system into a nucleon and a pion, in
   // SplitDiffractiveStateIntoHadrons(pos,M2).
   // Once we have create two outgoing particles we let the diffractive system decay
@@ -510,7 +510,7 @@ bool NonPerturbative_XSecs::SplitDiffractiveState(const size_t & pos) {
   }
   for (size_t i=0;i<2;i++) {
     m_outmasses[2*pos+i]  = m_outflav[2*pos+i].HadMass();
-    m_outmasses2[2*pos+i] = sqr(m_outmasses[2*pos+i]); 
+    m_outmasses2[2*pos+i] = sqr(m_outmasses[2*pos+i]);
   }
   double p2 = ( (sqr(M2-m_outmasses2[2*pos]-m_outmasses2[2*pos+1]) -
 		   4.*m_outmasses2[2*pos]*m_outmasses2[2*pos+1]) / (4.*M2) );
@@ -521,7 +521,7 @@ bool NonPerturbative_XSecs::SplitDiffractiveState(const size_t & pos) {
   m_outmom[2*pos]   = Vec4D(E[0],p*sint*cos(phi),p*sint*sin(phi),p*cost);
   m_outmom[2*pos+1] = Vec4D(E[1],-Vec3D(m_outmom[2*pos]));
   Poincare boost(diffmom);
-  boost.BoostBack(m_outmom[2*pos]);   
+  boost.BoostBack(m_outmom[2*pos]);
   boost.BoostBack(m_outmom[2*pos+1]);
   return true;
 }
@@ -536,7 +536,7 @@ SelectFlavoursOfDiffraction(const size_t & pos,const double & M2) {
   // - protons are split into
   //   d-uu_1 with probability P = 1/3, u-ud_1 with P = 1/6, and
   //                                    into u-ud_0 with P = 1/2
-  //   provided that the diffractive mass is large enough.  If this is not the case, 
+  //   provided that the diffractive mass is large enough.  If this is not the case,
   //   the rescue system will be invoked.
   // TODO: Also add neutrons
   ////////////////////////////////////////////////////////////////////////////////////
@@ -576,7 +576,7 @@ SelectFlavoursOfDiffraction(const size_t & pos,const double & M2) {
     m_fails++;
     return false;
   }
-  if (anti) for (size_t i=0;i<2;i++) m_outflav[2*pos+i]=m_outflav[2*pos+i].Bar(); 
+  if (anti) for (size_t i=0;i<2;i++) m_outflav[2*pos+i]=m_outflav[2*pos+i].Bar();
   return true;
 }
 
@@ -586,7 +586,7 @@ SplitDiffractiveStateIntoHadrons(const size_t & pos,const double & M2) {
   // This is a safety measure, currently only encoded for protons, which is only
   // invoked if a diffractive sysmte cannot be split into its (di-)quark constituents.
   // We tentatively split the diffracted proton p^* with equal probability either
-  // p* -> p + pi^0   or   p^* -> n + pi^+ 
+  // p* -> p + pi^0   or   p^* -> n + pi^+
   // and return whether the combined decay masses are larger or smaller than the mass
   // of the diffractive system.
   // TODO: We need to extend this method also to neutrons and make sure we are safe for
@@ -603,7 +603,7 @@ SplitDiffractiveStateIntoHadrons(const size_t & pos,const double & M2) {
     }
   }
   if (split.IsAnti()) for (size_t i=0;i<2;i++)
-			m_outflav[2*pos+i]=m_outflav[2*pos+i].Bar(); 
+			m_outflav[2*pos+i]=m_outflav[2*pos+i].Bar();
   return (m_outflav[2*pos].HadMass()+m_outflav[2*pos+1].HadMass()<sqrt(M2));
 }
 
@@ -614,7 +614,7 @@ InitBlob(Blob * blob,const double & muR2,const double & muQ2) {
   // flavours and momenta have been fixed before.  Incoming flavours and momenta are
   // taken directly from the remnants, accessed through the Remnant_Handler p_remnants.
   // Coloured outgoing particles are assigned colour indices, and in their presence the
-  // blob will also be given the "needs_showers" status, which would normally be absent 
+  // blob will also be given the "needs_showers" status, which would normally be absent
   // and replaced with needs_beams | needs_hadrondecays.
   ////////////////////////////////////////////////////////////////////////////////////
   blob->SetId();
@@ -737,7 +737,7 @@ void NonPerturbative_XSecs::TestSingleD() {
     sigmaSD    += dsigmaSD;
     m_histos[string("dsigmaSD1_by_dM(Ex)")]->Insert(M,M*dsigmaSD/binM);
   }
-  
+
   Vec4D  mom;
   for (size_t i=0;i<m_Nevents/100;i++) {
     Blob * blob = new Blob();

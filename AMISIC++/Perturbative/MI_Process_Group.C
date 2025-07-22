@@ -71,7 +71,7 @@ operator()(const double & shat,const double & that,const double & uhat) {
   m_shat = shat; m_that = that; m_uhat = uhat;
   PreCalculate();
   double pref = ( m_pref/sqr(m_shat) * Coupling() *
-		  SoftCorrection(m_that*m_uhat/m_shat) ); 
+		  SoftCorrection(m_that*m_uhat/m_shat) );
   double tot  = 0., xs, Ehat = sqrt(m_shat);
   for (list<MI_Process * >::iterator mit=m_processes.begin();
        mit!=m_processes.end();mit++) {

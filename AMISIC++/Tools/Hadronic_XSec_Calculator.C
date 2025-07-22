@@ -153,22 +153,22 @@ void Hadronic_XSec_Calculator::CalculateXSecs() {
   for (list<Flavour>::const_iterator flit0=m_hadroncomponents[m_flavs[0]].begin();
        flit0!=m_hadroncomponents[m_flavs[0]].end();flit0++) {
     flavs.first = (*flit0);
-    hadtags[0]  = m_indexmap[(*flit0)];
+    hadtags[0]  = s_indexmap[(*flit0)];
     masses[0]   = (*flit0).Mass();
-    prefVA      = (m_fVs.find((*flit0))!=m_fVs.end() ?
-		   m_alphaQED / m_fVs[(*flit0)] : 1.);
+    prefVA      = (s_fVs.find((*flit0))!=s_fVs.end() ?
+		   m_alphaQED / s_fVs[(*flit0)] : 1.);
     for (list<Flavour>::const_iterator flit1=m_hadroncomponents[m_flavs[1]].begin();
          flit1!=m_hadroncomponents[m_flavs[1]].end();flit1++) {
       flavs.second = (*flit1);
-      hadtags[1]   = m_indexmap[(*flit1)];
+      hadtags[1]   = s_indexmap[(*flit1)];
       masses[1]    = (*flit1).Mass();
       if (E<masses[0]+masses[1]) continue;
-      prefVB       = (m_fVs.find((*flit1))!=m_fVs.end() ?
-		      m_alphaQED / m_fVs[(*flit1)] : 1.);
+      prefVB       = (s_fVs.find((*flit1))!=s_fVs.end() ?
+		      m_alphaQED / s_fVs[(*flit1)] : 1.);
       prefVV       = prefVA * prefVB;
       m_xstot     += prefVV * (xstot  = TotalXSec(hadtags));
       m_xsel      += m_sigmaEl[flavs]  = prefVV * IntElXSec(hadtags,xstot);
-      m_xssdA     += m_sigmaSDA[flavs] = prefVV * IntSDXSec(hadtags,0,masses); 
+      m_xssdA     += m_sigmaSDA[flavs] = prefVV * IntSDXSec(hadtags,0,masses);
       m_xssdB     += m_sigmaSDB[flavs] = prefVV * IntSDXSec(hadtags,1,masses);
       m_xsdd      += m_sigmaDD[flavs]  = prefVV * IntDDXSec(hadtags,masses);
     }
@@ -218,7 +218,7 @@ void Hadronic_XSec_Calculator::OutputXSratios(axis * sbins) {
 	      <<setprecision(6)<<setw(11)<<(m_xsel*fac)<<" | "
 	      <<setprecision(6)<<setw(11)<<(m_xssdA*fac)<<" | "
 	      <<setprecision(6)<<setw(11)<<(m_xssdB*fac)<<" | "
-	      <<setprecision(6)<<setw(11)<<(m_xsdd*fac)<<" |\n"; 
+	      <<setprecision(6)<<setw(11)<<(m_xsdd*fac)<<" |\n";
   }
   msg_Info()<<"   "<<string(85,'-')<<"\n"
 	    <<"   | E_cms [GeV] | sigma_tot   | sigma_hd    | "
@@ -435,32 +435,33 @@ void Hadronic_XSec_Calculator::FixTables() {
     { Flavour(kf_photon),       { Flavour(kf_rho_770), Flavour(kf_omega_782),
 				  Flavour(kf_phi_1020), Flavour(kf_J_psi_1S) }  }
   };
-  ///////////////////////////////////////////////////////////////////////////////////
-  // Cross section parametrisation taken from Donnachie and Landshoff,
-  // and from Schuler and Sjöstrand, Z Phys C 73 677-688 (1997).
-  // Following their papers we assume that for pomeron/regeeon fits, there is no
-  // difference between nucleons (i.e. we treat protons and neutrons as if they
-  // were the same), and between rho(770) and omega(782).
-  ///////////////////////////////////////////////////////////////////////////////////
-  m_indexmap = {
-    { Flavour(kf_p_plus),    0 },
-    { Flavour(kf_n),         0 },
-    { Flavour(kf_rho_770),   1 },
-    { Flavour(kf_omega_782), 1 },
-    { Flavour(kf_phi_1020),  2 },
-    { Flavour(kf_J_psi_1S),  3 }
-  };
-  ///////////////////////////////////////////////////////////////////////////////////
-  // Critical values for the total and elastic cross section fit: VMD
-  // factors f_V^2/(4 pi) have no units.
-  ///////////////////////////////////////////////////////////////////////////////////
-  m_fVs = {
-    { Flavour(kf_rho_770),    2.20 },
-    { Flavour(kf_omega_782), 23.60 },
-    { Flavour(kf_phi_1020),  18.40 },
-    { Flavour(kf_J_psi_1S),  11.50 }
-  };
 }
+///////////////////////////////////////////////////////////////////////////////////
+// Cross section parametrisation taken from Donnachie and Landshoff,
+// and from Schuler and Sjöstrand, Z Phys C 73 677-688 (1997).
+// Following their papers we assume that for pomeron/regeeon fits, there is no difference
+// between nucleons (i.e. we treat protons and neutrons as if they were the same), and between
+// rho(770) and omega(782).
+//////////////////////////////////////////////////////////////////////////////////////
+std::map<kf_code, size_t> Hadronic_XSec_Calculator::s_indexmap = {
+  { kf_p_plus,    0 },
+  { kf_n,         0 },
+  { kf_rho_770,   1 },
+  { kf_omega_782, 1 },
+  { kf_phi_1020,  2 },
+  { kf_J_psi_1S,  3 }
+};
+///////////////////////////////////////////////////////////////////////////////////
+// Critical values for the total and elastic cross section fit: VMD
+// factors f_V^2/(4 pi) have no units.
+///////////////////////////////////////////////////////////////////////////////////
+std::map<kf_code, double> Hadronic_XSec_Calculator::s_fVs = {
+  { kf_rho_770,    2.20 },
+  { kf_omega_782, 23.60 },
+  { kf_phi_1020,  18.40 },
+  { kf_J_psi_1S,  11.50 }
+};
+
 ///////////////////////////////////////////////////////////////////////////////////
 // Slopes for the elastic cross section fit in units of GeV^{-2}.
 // b slope parameters below eq 19 in Schuler and Sjostrand, Z fuer Physik C 73
@@ -487,10 +488,6 @@ double Hadronic_XSec_Calculator::s_Y[4][4] = {
   { 31.790,  13.080,   -0.62,  -0.060  },   // Column: N rho/omega phi J/psi
   { -1.510,   -0.62,    0.03,  -0.0028 },
   { -0.146,  -0.060, -0.0028,  0.00028 }
-  //{ 56.080,  31.790,  -1.510,  -0.146 },   // Row:    N rho/omega phi J/psi
-  //{ 31.790,   0.,      0.,      0.    },   // Column: N rho/omega phi J/psi
-  //{ -1.510,   0.,      0.,      0.    },
-  //{ -0.146,   0.,      0.,      0.    }
 };
 
 ///////////////////////////////////////////////////////////////////////////////////

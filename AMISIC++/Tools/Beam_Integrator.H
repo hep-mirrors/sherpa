@@ -14,7 +14,7 @@ namespace AMISIC {
     Hadronic_XSec_Calculator   * p_xsecs;
     BEAM::Beam_Base            * p_beams[2];
     std::array<ATOOLS::Vec4D, 2> m_beammoms,m_inmoms;
-    
+
     size_t         m_Npoints, m_variable;
     int            m_sign;
     double         m_smin, m_smax, m_swt, m_weight;

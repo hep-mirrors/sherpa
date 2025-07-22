@@ -173,24 +173,24 @@ double CF_QCD::Coupling(const double &scale,const int pol)
   return m_last = cpl;
 }
 
-bool CF_QCD::AllowSpec(const ATOOLS::Flavour &fl,const int mode) 
+bool CF_QCD::AllowSpec(const ATOOLS::Flavour &fl,const int mode)
 {
   if (mode) return fl.Strong();
   if (abs(fl.StrongCharge())==3) {
     switch (m_type) {
-    case cstp::FF: 
+    case cstp::FF:
       if (abs(p_lf->FlA().StrongCharge())==3)
 	return p_lf->FlA().StrongCharge()==-fl.StrongCharge();
       break;
-    case cstp::FI: 
+    case cstp::FI:
       if (abs(p_lf->FlA().StrongCharge())==3)
 	return p_lf->FlA().StrongCharge()==fl.StrongCharge();
       break;
-    case cstp::IF: 
+    case cstp::IF:
       if (abs(p_lf->FlB().StrongCharge())==3)
 	return p_lf->FlB().StrongCharge()==fl.StrongCharge();
       break;
-    case cstp::II: 
+    case cstp::II:
       if (abs(p_lf->FlB().StrongCharge())==3)
 	return p_lf->FlB().StrongCharge()==-fl.StrongCharge();
       break;
@@ -233,10 +233,9 @@ operator()(const SFC_Filler_Key &key) const
 {
   DEBUG_FUNC("model = "<<key.p_md->Name());
   const Vertex_Table *vtab(key.p_md->VertexTable());
-  bool found = false;
   for (Vertex_Table::const_iterator
 	 vlit=vtab->begin();vlit!=vtab->end();++vlit) {
-    for (Vertex_List::const_iterator 
+    for (Vertex_List::const_iterator
 	   vit=vlit->second.begin();vit!=vlit->second.end();++vit) {
       Single_Vertex *v(*vit);
       if (v->NLegs()>3) continue;

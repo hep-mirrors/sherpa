@@ -78,6 +78,9 @@ bool Hadron_Remnant::FillBlob(Colour_Generator* colours, ParticleMomMap* ktmap, 
   // Possibly adjust final pending colours with extra gluons - in prinicple
   // one may have to check that they are not singlets ....
   CompensateColours(colours);
+  msg_Debugging() << METHOD << ": Filling blob with remnants, extracted = "
+                  << m_extracted << ", \n and spectators = " << m_spectators
+                  << "\n";
   // Assume all remnant bases already produced a beam blob = p_beamblob
   SquashFlavourSinglets();
   SquashColourSinglets();
@@ -362,7 +365,6 @@ bool Hadron_Remnant::TestExtract(const Flavour &flav,const Vec4D &mom) {
   // Is flavour element of flavours allowed by PDF?
   if (p_partons->find(flav)==p_partons->end()) {
     msg_Error()<<METHOD<<": flavour "<<flav<<" not found.\n";
-    abort();
     return false;
   }
   // Still enough energy?  And in range?

@@ -22,7 +22,7 @@ void Singlet_Sorter::ResetPartLists() {
     m_partlists.back()->clear();
     delete m_partlists.back();
     m_partlists.pop_back();
-  }  
+  }
   m_partlists.clear();
   m_hadrons.clear();
 }
@@ -45,7 +45,6 @@ Return_Value::code Singlet_Sorter::operator()(Blob_List * bloblist) {
   while (!m_partlists.empty()) {
     p_partlist = m_partlists.front();
     if (!p_partlist->empty()) {
-      //msg_Out()<<(*p_partlist)<<"\n";
       Blob * blob = NULL;
       if (DecomposeIntoSinglets()) blob = MakeBlob();
       if (blob) bloblist->push_back(blob);
@@ -93,8 +92,8 @@ bool Singlet_Sorter::HarvestParticles(Blob_List * bloblist) {
 
 bool Singlet_Sorter::FillParticleLists(Blob * blob) {
   for (int i=0;i<blob->NOutP();i++) {
-    Particle * part = blob->OutParticle(i); 
-    if (part->Status()==part_status::active && 
+    Particle * part = blob->OutParticle(i);
+    if (part->Status()==part_status::active &&
 	part->Info()!='G' && part->Info()!='I') {
       if (part->GetFlow(1)!=0 || part->GetFlow(2)!=0) {
 	if (part->GetFlow(1)==part->GetFlow(2)) {

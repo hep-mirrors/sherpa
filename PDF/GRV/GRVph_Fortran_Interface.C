@@ -63,7 +63,6 @@ void GRVph_Fortran_Interface::CalculateSpec(const double &_x,
 DECLARE_PDF_GETTER(GRVph_Getter);
 
 PDF_Base *GRVph_Getter::operator()(const Parameter_Type &args) const {
-  msg_Out()<<METHOD<<" tries for "<<args.m_bunch<<" ("<<args.m_set<<")\n";
   if (!args.m_bunch.IsPhoton())
     return NULL;
   return new GRVph_Fortran_Interface(args.m_bunch, args.m_set);

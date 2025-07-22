@@ -79,7 +79,7 @@ MI_Parameters::MI_Parameters() :
     = s["Lambda_nr"].SetDefault(0.15).Get<double>();
   m_parameters[string("delta_nr")]
     = s["delta_nr"].SetDefault(0.75).Get<double>();
-  
+
   m_flags[string("nPT_bins")]
     = s["nPT_bins"].SetDefault(200).Get<size_t>();
   m_flags[string("nMC_points")]
@@ -91,7 +91,7 @@ MI_Parameters::MI_Parameters() :
   m_flags[string("nMaxScatters")]
     = s["N_MaxScatters"].SetDefault(10000).Get<size_t>();
 
-  
+
   size_t twopions = s["TwoPionInterference"].SetDefault(1).Get<size_t>();
   switch (twopions) {
   case 4:  m_twopions = two_pions::cont_only;      break;
@@ -138,6 +138,8 @@ std::ostream& AMISIC::operator<<(std::ostream& s, const evt_type::code& f)
   case evt_type::code::DiffractiveB:  return s << "DiffractiveB";
   case evt_type::code::DiffractiveAB: return s << "DiffractiveAB";
   case evt_type::code::QuasiElastic:  return s << "QuasiElastic";
+  case evt_type::NonPerturbative:     return s << "Non-Perturbative";
+  case evt_type::AllMinimumBias:      return s << "MinimumBias";
   }
   return s;
 }

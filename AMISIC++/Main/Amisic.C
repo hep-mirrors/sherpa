@@ -10,7 +10,7 @@ Amisic::Amisic() :
   m_processes(MI_Processes()), p_soft(nullptr),
   m_sigmaND_norm(1.),
   m_Nscatters(0), m_producedSoft(false), m_isMinBias(false),
-  m_ana(true)
+  m_ana(false)
 {}
 
 Amisic::~Amisic() {
@@ -79,7 +79,7 @@ bool Amisic::Initialize(MODEL::Model_Base *const model,
     remnant_handler->SetType(REMNANTS::strat::simple);
   }
   /////////////////////////////////////////////////////////////////////////////
-  // TODO: make sure we can inclusively generate min bias events mixing 
+  // TODO: make sure we can inclusively generate min bias events mixing
   //       perturbative and non-perturbative (i.e. diffractive) channels.
   /////////////////////////////////////////////////////////////////////////////
   if (m_ana) InitAnalysis();
@@ -150,7 +150,7 @@ void Amisic::InitParametersAndType(PDF::ISR_Handler *const isr,
   if (m_variable_s && m_variable_b)
     THROW(fatal_error,
 	  "B-dependent form factors not implemented yet for variable s.");
-  
+
   for (size_t beam=0;beam<2;beam++) {
     if(!shown && sqr((*mipars)("pt_0"))<isr->PDF(beam)->Q2Min()) {
       msg_Info()<<"   "<<string(77,'-')<<"\n"

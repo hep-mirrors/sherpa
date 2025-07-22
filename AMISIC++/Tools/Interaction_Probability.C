@@ -23,7 +23,7 @@ Interaction_Probability::Interaction_Probability() :
   p_mo(NULL), p_procs(NULL), p_sbins(NULL), p_bbins(NULL),
   p_k(NULL), p_norm(NULL), p_diffxsec(NULL),
   m_pdfnorm(1.), m_bmax(1.e6), m_smin(1.e99), m_xs_hard(0.), m_xs_test(0.),
-  m_dynamic(false), m_test(false), m_ana(true) {}
+  m_dynamic(false), m_test(false), m_ana(false) {}
 
 Interaction_Probability::~Interaction_Probability() {
   if (m_ana) FinishAnalysis();
@@ -53,7 +53,7 @@ Initialize(Matter_Overlap * mo,MI_Processes * processes,axis * sbins) {
 
 double Interaction_Probability::SelectB(const double & s) {
   /////////////////////////////////////////////////////////////////////////////
-  // Selecting b according to the (normalised)  d^2b P_int(b), 
+  // Selecting b according to the (normalised)  d^2b P_int(b),
   // where the norm is the non-diffractive cross section.
   // We have encoded this in a look-up table obtained from inverting the
   // probability distribution.
@@ -149,7 +149,7 @@ InitializeTable(const size_t & sbin,const bool & out) {
   if (!p_mo->IsDynamic()) xsfix = (*integrator)(s,nullptr,0.);
   if (out)
     msg_Info()<<"   | "<<METHOD<<"(E = "
-	      <<std::setw(8)<<std::setprecision(6)<<sqrt(s)<<", " 
+	      <<std::setw(8)<<std::setprecision(6)<<sqrt(s)<<", "
 	      <<"dyn = "<<p_mo->IsDynamic()<<"):          |\n";
   for (size_t bbin=0;bbin<p_bbins->m_nbins;bbin++) {
     double b  = p_bbins->x(bbin);
