@@ -586,6 +586,7 @@ Weights_Map MCatNLO_Process::OneSEvent(const int wmode)
     campl->Delete();
     ampl->SetKT2(kt2.m_kt2);
     ampl->SetMu2(kt2.m_mu2);
+    ampl->SetFlag(0);
     p_ampl=ampl;
     ampl->SetMuF2(next->MuF2());
     ampl->SetMuR2(next->MuR2());
