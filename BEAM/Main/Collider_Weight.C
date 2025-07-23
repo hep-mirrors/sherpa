@@ -24,7 +24,7 @@ Collider_Weight::Collider_Weight(Kinematics_Base* kinematics)
     THROW(fatal_error, "Bad settings for collider mode.");
 
   m_rejection = ATOOLS::Settings::GetMainSettings()["BEAM_OVERLAP_REJECTION"]
-                        .SetDefault(0)
+                        .SetDefault(1)
                         .Get<int>();
   if (m_rejection == 0) return;
   if (m_rejection == 1)

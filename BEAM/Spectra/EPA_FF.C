@@ -63,7 +63,7 @@ void EPA_FF_Base::FillTables()
 {
   axis xaxis(m_nxbins, m_xmin, m_xmax, axis_mode::log);
   axis baxis(m_nbbins, m_bmin * m_R, std::min(m_b_pl_threshold, m_bmax) * m_R,
-             axis_mode::log);
+             axis_mode::linear);
 
   //////////////////////////////////////////////////////////////////////////////
   //
