@@ -133,14 +133,20 @@ double Lorentz_FS_Split::Jacobian(const Splitting &s) const
 int Lorentz_FS_Split::Construct(Splitting &s,const int mode) const
 {
   if (mode&1) return Update(s,mode);
-  int nk(0);
-  Vec4D qa(s.p_c->Mom()), Kt;
   const Amplitude &a(*s.p_c->Ampl());
-  for (size_t i(0);i<a.size();++i)
-    if ((s.m_rcl[i]&2) && s.p_c!=a[i]) {
-      Kt+=a[i]->Mom();
-      ++nk;
+  int split = -1;
+  for (size_t i(0);i<a.size();++i) {
+    if (s.p_c == a[i]) {
+      split = i;
+      break;
     }
+  }
+  Cluster_Amplitude *ampl(a.GetAmplitude());
+  Vec4D qa(s.p_c->Mom()), Kt(p_sk->PS()->CollRecoil()->Recoil(ampl,1<<split,0,s.p_c->RecMode()));
+  const std::vector<int> tags = p_sk->PS()->CollRecoil()->RecoilTags(ampl,1<<split,0,s.p_c->RecMode());
+  ampl->Delete();
+  const int nk = std::count_if(tags.begin(),tags.end(),[](int t){return t&2;});
+
   double Q2((qa+Kt).Abs2()), Kt2(Kt.Abs2());
   if ((p_sk->PS()->EvolScheme(0)>>8)==0) {
     s.m_y=s.m_t/(Q2-s.m_mi2-s.m_mj2-Kt2)/(s.m_z*(1.0-s.m_z));

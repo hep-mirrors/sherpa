@@ -44,6 +44,8 @@ namespace MALARIC {
 
     size_t m_id;
 
+    int m_recmode;
+    
     Weight_Map m_ws;
 
     static size_t s_cnt;
@@ -84,6 +86,9 @@ namespace MALARIC {
     inline size_t Id() const              { return m_id; }
     inline void   SetId(const size_t &id) { m_id=id;     }
 
+    inline int   RecMode() const { return m_recmode; }
+    inline void  SetRecMode(int recmode) { m_recmode = recmode; }
+    
     inline const std::vector<Parton*> &S() const { return m_s; }
     inline       std::vector<Parton*> &S()       { return m_s; }
 

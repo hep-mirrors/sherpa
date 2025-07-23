@@ -72,6 +72,7 @@ int Lorentz::Update(Splitting &s,const int mode) const
   if (s.p_n==NULL) {
     s.p_n = new Parton(s.p_c->Ampl(),m_fl[2],s.m_pj);
     s.p_n->SetId(s.p_n->Counter());
+    s.p_n->SetRecMode(s.p_c->RecMode());
     s.p_c->Ampl()->Add(s.p_n);
     if (m_fl.size()>3) {
       s.p_l = new Parton(s.p_c->Ampl(),m_fl[3],s.m_pl);

@@ -112,7 +112,8 @@ namespace MALARIC {
     PDF::PDF_Base     *p_pdf[2];
 
     ATOOLS::Recoil_Definition *p_recoil;
-
+    ATOOLS::Recoil_Definition *p_collrecoil;
+    
     MODEL::Running_AlphaS *p_as;
 
     Cluster_Definitions *p_cluster;
@@ -186,7 +187,8 @@ namespace MALARIC {
     { return m_weightsmap; }
 
     ATOOLS::Recoil_Definition *Recoil() const { return p_recoil; }
-
+    ATOOLS::Recoil_Definition *CollRecoil() const { return p_collrecoil; }
+    
     inline int KFactorScheme() const  { return m_kfac; }
     inline int CouplingScheme() const { return m_cpl;  }
 
