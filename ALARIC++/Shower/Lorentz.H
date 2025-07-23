@@ -19,7 +19,7 @@ namespace ALARIC {
 
     Kernel *p_sk;
     int     m_type;
-
+    
     ATOOLS::Flavour_Vector m_fl;
 
     const ATOOLS::Mass_Selector *p_ms;

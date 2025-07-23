@@ -133,14 +133,20 @@ double Lorentz_FS_Split::Jacobian(const Splitting &s) const
 int Lorentz_FS_Split::Construct(Splitting &s,const int mode) const
 {
   if (mode&1) return Update(s,mode);
-  int nk(0);
-  Vec4D qa(s.p_c->Mom()), Kt;
   const Amplitude &a(*s.p_c->Ampl());
-  for (size_t i(0);i<a.size();++i)
-    if ((s.m_rcl[i]&2) && s.p_c!=a[i]) {
-      Kt+=a[i]->Mom();
-      ++nk;
+  int split = -1;
+  for (size_t i(0);i<a.size();++i) {
+    if (s.p_c == a[i]) {
+      split = i;
+      break;
     }
+  }
+  Cluster_Amplitude *ampl(a.GetAmplitude());
+  Vec4D qa(s.p_c->Mom()), Kt(p_sk->PS()->CollRecoil()->Recoil(ampl,split,-1,-1,s.p_c->RecMode()));
+  const std::vector<int> tags = p_sk->PS()->CollRecoil()->RecoilTags(ampl,split,-1,-1,s.p_c->RecMode());
+  ampl->Delete();
+  const int nk = std::count_if(tags.begin(),tags.end(),[](int t){return t&2;});
+
   double Q2((qa+Kt).Abs2()), Kt2(Kt.Abs2());
   s.m_y=s.m_t/(Q2-s.m_mi2-s.m_mj2-Kt2);
   s.m_x=s.m_z;
@@ -162,11 +168,30 @@ int Lorentz_FS_Split::Construct(Splitting &s,const int mode) const
   if (nk>1) {
     Poincare oldcms(Kt), newcms(ff.m_pk);
     newcms.Invert();
-    s.m_pk=newcms*(oldcms*s.p_s->Mom());
+    s.m_pk=s.p_s->Mom();
     s.m_p.reserve(a.size());
     for (size_t i(0);i<a.size();++i) {
-      if ((s.m_rcl[i]&2)==0) s.m_p.push_back(a[i]->Mom());
-      else s.m_p.push_back(newcms*(oldcms*a[i]->Mom()));
+      if ((tags[i]&2)==0) {
+        s.m_p.push_back(a[i]->Mom());
+      }
+      else {
+        if (a[i] == s.p_s) s.m_pk=newcms*(oldcms*s.p_s->Mom());
+        s.m_p.push_back(newcms*(oldcms*a[i]->Mom()));
+      }
+    }
+    s.m_mk2=ff.m_pk.Abs2();
+  }
+  else {
+    s.m_pk=s.p_s->Mom();
+    s.m_p.reserve(a.size());
+    for (size_t i(0);i<a.size();++i) {
+      if ((tags[i]&2)==0) {
+        s.m_p.push_back(a[i]->Mom());
+      }
+      else {
+        if (a[i] == s.p_s) s.m_pk = ff.m_pk;
+        s.m_p.push_back(ff.m_pk);
+      }
     }
     s.m_mk2=ff.m_pk.Abs2();
   }

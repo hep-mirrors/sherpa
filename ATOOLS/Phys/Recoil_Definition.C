@@ -17,16 +17,16 @@ void Recoil_Definition::ShowSyntax(const int mode)
 }
 
 namespace ATOOLS {
-
+  
   class Recoil_ColorPartner: public Recoil_Definition {
   public:
 
-    Vec4D Recoil(const Cluster_Amplitude *ampl,int,int,int cspect)
+    Vec4D Recoil(const Cluster_Amplitude *ampl,int,int,int cspect,int)
     {
       return ampl->Legs()[cspect]->Mom();
     }
 
-    std::vector<int> RecoilTags(const Cluster_Amplitude *ampl,int,int,int cspect)
+    std::vector<int> RecoilTags(const Cluster_Amplitude *ampl,int,int,int cspect,int)
     {
       if (!ampl) return std::vector<int>(4);
       std::vector<int> tags(ampl->Legs().size(),0);
@@ -34,12 +34,13 @@ namespace ATOOLS {
       return tags;
     }
 
+    int Mode(const Cluster_Amplitude *ampl,int split) const { return -1; }
   };// end of class Recoil_PassiveFinalState
 
   class Recoil_PassiveFinalState: public Recoil_Definition {
   public:
 
-    Vec4D Recoil(const Cluster_Amplitude *ampl,int split,int em,int)
+    Vec4D Recoil(const Cluster_Amplitude *ampl,int split,int em,int,int)
     {
       Vec4D rec;
       for (size_t i(ampl->NIn());i<ampl->Legs().size();++i) {
@@ -49,7 +50,7 @@ namespace ATOOLS {
       return rec;
     }
 
-    std::vector<int> RecoilTags(const Cluster_Amplitude *ampl,int split,int em,int)
+    std::vector<int> RecoilTags(const Cluster_Amplitude *ampl,int split,int em,int,int)
     {
       if (!ampl) return std::vector<int>(4);
       std::vector<int> tags(ampl->Legs().size(),0);
@@ -60,13 +61,14 @@ namespace ATOOLS {
       return tags;
     }
 
+    int Mode(const Cluster_Amplitude *ampl,int split) const { return -1; }
   };// end of class Recoil_PassiveFinalState
 
 
   class Recoil_FinalState: public Recoil_Definition {
   public:
 
-    Vec4D Recoil(const Cluster_Amplitude *ampl,int,int,int)
+    Vec4D Recoil(const Cluster_Amplitude *ampl,int,int,int,int)
     {
       Vec4D rec;
       for (size_t i(ampl->NIn());i<ampl->Legs().size();++i)
@@ -74,7 +76,7 @@ namespace ATOOLS {
       return rec;
     }
 
-    std::vector<int> RecoilTags(const Cluster_Amplitude *ampl,int,int,int)
+    std::vector<int> RecoilTags(const Cluster_Amplitude *ampl,int,int,int,int)
     {
       if (!ampl) return std::vector<int>(4);
       std::vector<int> tags(ampl->Legs().size(),0);
@@ -82,12 +84,13 @@ namespace ATOOLS {
       return tags;
     }
 
+    int Mode(const Cluster_Amplitude *ampl,int split) const { return -1; }
   };// end of class Recoil_FinalState
 
   class Recoil_EWFinalState: public Recoil_Definition {
   public:
 
-    Vec4D Recoil(const Cluster_Amplitude *ampl,int,int,int)
+    Vec4D Recoil(const Cluster_Amplitude *ampl,int,int,int,int)
     {
       Vec4D rec;
       for (size_t i(ampl->NIn());i<ampl->Legs().size();++i)
@@ -95,7 +98,7 @@ namespace ATOOLS {
       return rec;
     }
 
-    std::vector<int> RecoilTags(const Cluster_Amplitude *ampl,int,int,int)
+    std::vector<int> RecoilTags(const Cluster_Amplitude *ampl,int,int,int,int)
     {
       std::vector<int> tags(ampl->Legs().size(),0);
       for (size_t i(ampl->NIn());i<ampl->Legs().size();++i)
@@ -103,8 +106,49 @@ namespace ATOOLS {
       return tags;
     }
 
+    int Mode(const Cluster_Amplitude *ampl,int split) const { return -1; }
   };// end of class Recoil_EWFinalState
 
+  class Recoil_EWChargedMode: public Recoil_Definition {
+    enum {
+      all = -1,
+      pos = 0,
+      neg = 1
+    };
+
+    Vec4D Recoil(const Cluster_Amplitude *ampl,int,int,int,int recmode)
+    {
+      Vec4D rec;
+      for (size_t i(ampl->NIn());i<ampl->Legs().size();++i)
+	if (!ampl->Leg(i)->Flav().Strong() &&
+            (recmode==pos && ampl->Leg(i)->Flav().Charge() > 0 ||
+             recmode==neg && ampl->Leg(i)->Flav().Charge() < 0 ||
+             recmode==all))
+          rec+=ampl->Leg(i)->Mom();
+      return rec;
+    }
+
+    std::vector<int> RecoilTags(const Cluster_Amplitude *ampl,int,int,int,int recmode)
+      {
+        std::vector<int> tags(ampl->Legs().size(),0);
+        for (size_t i(ampl->NIn());i<ampl->Legs().size();++i)
+          if (!ampl->Leg(i)->Flav().Strong() &&
+              (recmode==pos && ampl->Leg(i)->Flav().Charge() > 0 ||
+               recmode==neg && ampl->Leg(i)->Flav().Charge() < 0 ||
+               recmode==all)) {
+            tags[i]=3;
+          }
+        return tags;
+      }
+
+    int Mode(const Cluster_Amplitude *ampl,int split) const
+    {
+      return ampl->Leg(split)->Flav().Charge()>0?neg:pos;
+    }
+    
+  };// end of class Recoil_EWChargeMode
+
+  
 }
 
 DECLARE_GETTER(Recoil_ColorPartner,"ColorPartner",
@@ -150,5 +194,17 @@ operator()(const RecoilDefinition_Key &key) const
 { return new Recoil_EWFinalState(); }
 
 void Getter<Recoil_Definition,RecoilDefinition_Key,Recoil_EWFinalState>::
+PrintInfo(std::ostream &str,const size_t width) const
+{ str<<"electroweak final state"; }
+
+
+DECLARE_GETTER(Recoil_EWChargedMode,"EWChargedMode",
+	       Recoil_Definition,RecoilDefinition_Key);
+Recoil_Definition *ATOOLS::Getter
+<Recoil_Definition,RecoilDefinition_Key,Recoil_EWChargedMode>::
+operator()(const RecoilDefinition_Key &key) const
+{ return new Recoil_EWChargedMode(); }
+
+void Getter<Recoil_Definition,RecoilDefinition_Key,Recoil_EWChargedMode>::
 PrintInfo(std::ostream &str,const size_t width) const
 { str<<"electroweak final state"; }

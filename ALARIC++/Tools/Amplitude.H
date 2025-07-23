@@ -52,7 +52,6 @@ namespace ALARIC {
     { return p_ampl->JF<Type>(); }
 
   };// end of class Amplitude
-
   std::ostream &operator<<(std::ostream &s,const Amplitude &a);
 
   typedef std::vector<Amplitude*> Amplitude_Vector;

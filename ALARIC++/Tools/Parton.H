@@ -38,13 +38,15 @@ namespace ALARIC {
 
     Color m_c, m_sc;
     int   m_h, m_b;
-
+    
     double m_t[2];
 
     Parton *p_out[2], *p_in;
 
     size_t m_id;
 
+    int m_recmode;
+    
     Weight_Map m_ws;
 
     static size_t s_cnt;
@@ -68,7 +70,7 @@ namespace ALARIC {
     inline const ATOOLS::Flavour &Flav() const { return m_f; }
     inline const ATOOLS::Vec4D   &Mom() const  { return m_p; }
     inline const Color           &Col() const  { return m_c; }
-
+    
     inline void SetFlav(const ATOOLS::Flavour &f) { m_f=f; }
     inline void SetMom(const ATOOLS::Vec4D &p)    { m_p=p; }
     inline void SetCol(const Color &c)            { m_c=c; }
@@ -91,6 +93,9 @@ namespace ALARIC {
     inline Parton *In() const             { return p_in; }
     inline void    SetIn(Parton *const p) { p_in=p;      }
 
+    inline int   RecMode() const { return m_recmode; }
+    inline void  SetRecMode(int recmode) { m_recmode = recmode; }
+    
     inline void Store()   { m_sp=m_p; m_sc=m_c; }
     inline void Restore() { m_p=m_sp; m_c=m_sc; }
 

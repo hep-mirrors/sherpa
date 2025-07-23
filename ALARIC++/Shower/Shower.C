@@ -65,6 +65,8 @@ bool Shower::Init(MODEL::Model_Base *const model,
   p_model=model;
   p_recoil=RecoilDefinition_Getter::GetObject
     (ms["RECOIL_DEFINITION"].Get<std::string>(),RecoilDefinition_Key());
+  p_collrecoil=RecoilDefinition_Getter::GetObject
+    (ms["COLLINEAR_RECOIL_DEFINITION"].Get<std::string>(),RecoilDefinition_Key());
   p_as=(MODEL::Running_AlphaS*)p_model->GetScalarFunction("alpha_S");
   for (int i=0;i<2;++i) p_pdf[i]=isr->PDF(i);
   m_tmin[0] = s["FS_PT2MIN"].Get<double>();
@@ -333,13 +335,12 @@ Splitting Shower::GeneratePoint
 {
   Splitting win;
   Cluster_Amplitude *ampl(a.GetAmplitude());
-  std::vector<int> rcl(p_recoil->RecoilTags(ampl));
-  ampl->Delete();
   double tmin[2]={m_tmin[0],m_tmin[1]};
   for (Amplitude::const_reverse_iterator
 	 it(a.rbegin());it!=a.rend();++it) {
     for (int cm(0);cm<2;++cm) {
       double ct((*it)->T(cm)>=0.0?(*it)->T(cm):t);
+      std::vector<int> rcl(p_recoil->RecoilTags(ampl,-1,-1,-1,(*it)->RecMode()));
       Splitting cur(GeneratePoint(**it,ct,cm,rcl,nem));
       (*it)->SetT(cm,-1.0);
       if (cur.p_c==NULL || cur.p_s==NULL) continue;
@@ -347,6 +348,7 @@ Splitting Shower::GeneratePoint
       m_tmin[0]=m_tmin[1]=(win=cur).m_t;
     }
   }
+  ampl->Delete();
   m_tmin[0]=tmin[0];
   m_tmin[1]=tmin[1];
   if (win.p_sk && win.m_t>m_tmin[win.m_type&1])
