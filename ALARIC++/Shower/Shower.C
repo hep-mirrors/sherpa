@@ -341,7 +341,7 @@ Splitting Shower::GeneratePoint
 	 it(a.rbegin());it!=a.rend();++it) {
     for (int cm(0);cm<2;++cm) {
       double ct((*it)->T(cm)>=0.0?(*it)->T(cm):t);
-      std::vector<int> rcl(p_recoil->RecoilTags(ampl,-1,-1,-1,(*it)->RecMode()));
+      std::vector<int> rcl(p_recoil->RecoilTags(ampl,0,0,(*it)->RecMode()));
       Splitting cur(GeneratePoint(**it,ct,cm,rcl,nem));
       (*it)->SetT(cm,-1.0);
       if (cur.p_c==NULL || cur.p_s==NULL) continue;
