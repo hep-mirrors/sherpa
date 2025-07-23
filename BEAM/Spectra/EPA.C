@@ -109,14 +109,14 @@ void EPA::RegisterDefaults() const
   s["Q2Max"].SetDefault(1.);
   s["Q2Min"].SetDefault(-1.);
   s["xMax"].SetDefault(1.);
-  s["xMin"].SetDefault(1.e-10);
-  s["xBins"].SetDefault(12);
-  s["bMin"].SetDefault(1.);
+  s["xMin"].SetDefault(m_beam.IsIon() ? 1.e-10 : 1.e-6);
+  s["xBins"].SetDefault(50);
+  s["bMin"].SetDefault(0.1);
   s["bThreshold"].SetDefault(4.);
-  s["bMax"].SetDefault(1.e4);
-  s["bBins"].SetDefault(10);
+  s["bMax"].SetDefault(1.e2);
+  s["bBins"].SetDefault(50);
   s["Form_Factor"].SetDefault(size_t(m_beam.IsIon() ? EPA_ff_type::WoodSaxon
-                                     : m_beam.IsNucleon() ? EPA_ff_type::proton
+                                     : m_beam.IsNucleon() ? EPA_ff_type::dipole
                                      : m_beam.IsMeson()   ? EPA_ff_type::dipole
                                                         : EPA_ff_type::point));
   s["MagneticMu"].SetDefault(m_beam.IsNucleon() ? 2.79 : 0.);
