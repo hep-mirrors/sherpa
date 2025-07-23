@@ -112,6 +112,7 @@ void EPA::RegisterDefaults() const
   s["xMin"].SetDefault(1.e-10);
   s["xBins"].SetDefault(12);
   s["bMin"].SetDefault(1.);
+  s["bThreshold"].SetDefault(4.);
   s["bMax"].SetDefault(1.e4);
   s["bBins"].SetDefault(10);
   s["Form_Factor"].SetDefault(size_t(m_beam.IsIon() ? EPA_ff_type::WoodSaxon

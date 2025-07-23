@@ -3,7 +3,6 @@
 #include "ATOOLS/Math/Bessel_Integrator.H"
 #include "ATOOLS/Math/Gauss_Integrator.H"
 #include "ATOOLS/Math/MathTools.H"
-#include "ATOOLS/Math/Special_Functions.H"
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/Run_Parameter.H"
@@ -47,22 +46,24 @@ EPA_FF_Base::EPA_FF_Base(const ATOOLS::Flavour& beam, const int dir)
       m_Zsquared(beam.IsIon() ? sqr(m_beam.GetAtomicNumber()) : 1.), m_b(0.),
       p_N_xb(nullptr)
 {
-  const auto& s = Settings::GetMainSettings()["EPA"];
-  size_t      b = dir > 0 ? 0 : 1;
-  m_q2max       = s["Q2Max"].GetTwoVector<double>()[b];
-  m_q2min       = s["Q2Min"].GetTwoVector<double>()[b];
-  m_nxbins      = s["xBins"].GetTwoVector<int>()[b];
-  m_nbbins      = s["bBins"].GetTwoVector<int>()[b];
-  m_xmin        = s["xMin"].GetTwoVector<double>()[b];
-  m_xmax        = s["xMax"].GetTwoVector<double>()[b];
-  m_bmin        = s["bMin"].GetTwoVector<double>()[b];
-  m_bmax        = s["bMax"].GetTwoVector<double>()[b];
+  const auto& s    = Settings::GetMainSettings()["EPA"];
+  size_t      b    = dir > 0 ? 0 : 1;
+  m_q2max          = s["Q2Max"].GetTwoVector<double>()[b];
+  m_q2min          = s["Q2Min"].GetTwoVector<double>()[b];
+  m_nxbins         = s["xBins"].GetTwoVector<int>()[b];
+  m_nbbins         = s["bBins"].GetTwoVector<int>()[b];
+  m_xmin           = s["xMin"].GetTwoVector<double>()[b];
+  m_xmax           = s["xMax"].GetTwoVector<double>()[b];
+  m_bmin           = s["bMin"].GetTwoVector<double>()[b];
+  m_b_pl_threshold = s["bThreshold"].GetTwoVector<double>()[b];
+  m_bmax           = s["bMax"].GetTwoVector<double>()[b];
 }
 
 void EPA_FF_Base::FillTables()
 {
-  axis   xaxis(m_nxbins, m_xmin, m_xmax, axis_mode::log);
-  axis   baxis(m_nbbins, m_bmin * m_R, m_bmax * m_R, axis_mode::log);
+  axis xaxis(m_nxbins, m_xmin, m_xmax, axis_mode::log);
+  axis baxis(m_nbbins, m_bmin * m_R, std::min(m_b_pl_threshold, m_bmax) * m_R,
+             axis_mode::log);
 
   //////////////////////////////////////////////////////////////////////////////
   //
@@ -125,16 +126,13 @@ void EPA_FF_Base::OutputToCSV(const std::string& type)
   } else {
     std::ofstream outfile_Nxb(prefix + "N_x_b.csv");
     outfile_Nxb << "x,b,N" << std::endl;
-    for (auto& x : xs) {
-      outfile_Nxb << x << ",0," << N(x) << std::endl;
-    }
+    for (auto& x : xs) { outfile_Nxb << x << ",0," << N(x) << std::endl; }
     outfile_Nxb.close();
   }
 
   std::ofstream outfile_FFq2(prefix + "FF_q2.csv");
   outfile_FFq2 << "q2,FF" << std::endl;
-  for (auto& q2 : q2s)
-    outfile_FFq2 << q2 << "," << FF(q2) << std::endl;
+  for (auto& q2 : q2s) outfile_FFq2 << q2 << "," << FF(q2) << std::endl;
   outfile_FFq2.close();
 }
 
@@ -390,9 +388,10 @@ EPA_IonApprox::EPA_IonApprox(const ATOOLS::Flavour& beam, const int dir)
   FillTables();
 }
 
-void EPA_IonApprox::FillTables() {
-  axis   xaxis(m_nxbins, m_xmin, m_xmax, axis_mode::log);
-  axis   baxis(m_nbbins, m_bmin * m_R, m_bmax * m_R, axis_mode::log);
+void EPA_IonApprox::FillTables()
+{
+  axis xaxis(m_nxbins, m_xmin, m_xmax, axis_mode::log);
+  axis baxis(m_nbbins, m_bmin * m_R, m_bmax * m_R, axis_mode::log);
 
   //////////////////////////////////////////////////////////////////////////////
   //
@@ -407,11 +406,12 @@ void EPA_IonApprox::FillTables() {
             << "b in [" << baxis.m_xmin << ", " << baxis.m_xmax << "], "
             << "from R = " << m_R << " 1/GeV = " << (m_R * rpa->hBar_c())
             << " fm.\n";
-  p_N_xb                   = new TwoDim_Table(xaxis, baxis);
+  p_N_xb = new TwoDim_Table(xaxis, baxis);
   for (size_t i = 0; i < xaxis.m_nbins; i++) {
     for (size_t j = 0; j < baxis.m_nbins; j++) {
-      double chi = xaxis.x(i) * m_mass * baxis.x(j);
-      double value = 2 * m_Zsquared * baxis.x(j) * xaxis.x(i) * sqr(m_mass) * sqr(SF.Kn(1, chi));
+      double chi   = xaxis.x(i) * m_mass * baxis.x(j);
+      double value = 2 * m_Zsquared * baxis.x(j) * xaxis.x(i) * sqr(m_mass) *
+                     sqr(SF.Kn(1, chi));
       // correction term seems to be negligible;
       // removed because K_0 not implemented for large values
       // double value = 2 * m_b * x * sqr(m_mass) * (sqr(SF.Kn(1, chi)) +
@@ -429,13 +429,13 @@ double EPA_IonApprox::N(const double& x)
   //    - sqr(chi)/2. * (sqr(std::cyl_bessel_k(1, chi)) -
   //    sqr(std::cyl_bessel_k(0, chi))));
   double r2 = m_R * m_R;
-  m_b = std::sqrt((ATOOLS::sqr(m_bmin * m_R) + r2) *
+  m_b       = std::sqrt((ATOOLS::sqr(m_bmin * m_R) + r2) *
                                 std::pow((ATOOLS::sqr(m_bmax * m_R) + r2) /
                                                  (ATOOLS::sqr(m_bmin * m_R) + r2),
-                                         ATOOLS::ran->Get()) - r2);
-  double wt =
-          (ATOOLS::sqr(m_b) + r2) / m_b / 2. *
-          std::log((ATOOLS::sqr(m_bmax) + r2) / (ATOOLS::sqr(m_bmin) + r2));
+                                         ATOOLS::ran->Get()) -
+                        r2);
+  double wt = (ATOOLS::sqr(m_b) + r2) / m_b / 2. *
+              std::log((ATOOLS::sqr(m_bmax) + r2) / (ATOOLS::sqr(m_bmin) + r2));
   double chi = x * m_mass * m_b;
   return 2 * m_Zsquared * m_b * x * sqr(m_mass) * sqr(SF.Kn(1, chi)) * wt;
   // correction term seems to be negligible;

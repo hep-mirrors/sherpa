@@ -4,6 +4,7 @@
 #include "ATOOLS/Math/Function_Base.H"
 #include "ATOOLS/Math/Lookup_Tables.H"
 #include "ATOOLS/Math/Random.H"
+#include "ATOOLS/Math/Special_Functions.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Phys/Flavour.H"
@@ -34,8 +35,10 @@ namespace BEAM {
     ATOOLS::Flavour m_beam;
     double          m_mass, m_mass2, m_R;
     double          m_q2min, m_q2max, m_pt2max;
-    double m_xmin, m_xmax, m_bmin, m_bmax;//< bmin, bmax only relative to radius
-    double m_Zsquared, m_b;               //< b later is the absolute distance
+    double          m_xmin, m_xmax;
+    double          m_bmin, m_b_pl_threshold,
+            m_bmax;//< bmin, b_pl_threshold, bmax only relative to radius
+    double                m_Zsquared, m_b;//< b later is the absolute distance
     ATOOLS::TwoDim_Table* p_N_xb;
 
     size_t m_nxbins, m_nbbins;
@@ -51,14 +54,20 @@ namespace BEAM {
     {
       // sampling b by p(b) = 1/norm * b/(b^2+1)
       double r2 = m_R * m_R;
-      m_b = std::sqrt((ATOOLS::sqr(m_bmin * m_R) + r2) *
-                        std::pow((ATOOLS::sqr(m_bmax * m_R) + r2) /
-                                         (ATOOLS::sqr(m_bmin * m_R) + r2),
-                                 ATOOLS::ran->Get()) - r2);
+      m_b       = std::sqrt((ATOOLS::sqr(m_bmin * m_R) + r2) *
+                                    std::pow((ATOOLS::sqr(m_bmax * m_R) + r2) /
+                                                     (ATOOLS::sqr(m_bmin * m_R) + r2),
+                                             ATOOLS::ran->Get()) -
+                            r2);
       double wt =
               (ATOOLS::sqr(m_b) + r2) / m_b / 2. *
               std::log((ATOOLS::sqr(m_bmax) + r2) / (ATOOLS::sqr(m_bmin) + r2));
-      return (*p_N_xb)(x, m_b) * wt;
+      if (m_b < m_b_pl_threshold) return (*p_N_xb)(x, m_b) * wt;
+      else {
+        double chi = x * m_mass * m_b;
+        return 2 * m_Zsquared * m_b * x * ATOOLS::sqr(m_mass) *
+               ATOOLS::sqr(ATOOLS::SF.Kn(1, chi)) * wt;
+      }
     };
     virtual double FF(const double& Q2) = 0;
 
