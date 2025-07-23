@@ -59,7 +59,7 @@ namespace BEAM {
     {}
     double operator()(double b) final
     {
-      THROW(not_implemented, "Proton-Nuclean rejection not yet implemented");
+      THROW(not_implemented, "Proton-Nucleon rejection not yet implemented");
     }
   };
 
@@ -71,7 +71,7 @@ namespace BEAM {
     {}
     double operator()(double b) final
     {
-      THROW(not_implemented, "Nucleon-Nuclean rejection not yet implemented");
+      THROW(not_implemented, "Nucleon-Nucleon rejection not yet implemented");
     }
   };
 }// namespace BEAM
