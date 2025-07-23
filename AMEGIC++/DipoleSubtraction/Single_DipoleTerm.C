@@ -530,9 +530,10 @@ int Single_DipoleTerm::InitAmplitude(Amegic_Model *model,Topology* top,
     stream << " (" << m_pi << "," << m_pj << "," << m_pk << ")" << std::endl;
     THROW(not_implemented, stream.str());
   }
-  p_dipole->SetSoftRecoil(p_softrecoil);
-  p_dipole->SetCollRecoil(p_collrecoil);
   p_dipole->SetSubevt(&m_subevt);
+  if (m_subevt.m_type==spt::soft) m_subevt.p_recoil=p_softrecoil;
+  else m_subevt.p_recoil=p_collrecoil;
+  p_dipole->SetRecoil(m_subevt.p_recoil);
   msg_Debugging()<<"Initialised dipole "<<*p_dipole<<std::endl;
   Poincare cms;
   SetLOMomenta(p_testmoms,cms);
@@ -665,6 +666,7 @@ double Single_DipoleTerm::operator()(const ATOOLS::Vec4D * mom,
     (p_LO_labmom,p_LO_mom,p_dipole->GetFactors(),
      p_dipole->GetDiPolarizations(),mode) : 0.0;
 
+  m_mewgtinfo.m_B = M2 * Norm();
   if (m_subevt.p_ampl) m_subevt.p_ampl->Delete();
   m_subevt.p_ampl=NULL;
 

@@ -55,7 +55,8 @@ Splitting Cluster_Definitions::KT2
   sp.p_n=&n;
   sp.m_clu=1;
   sp.m_cpl=p_shower->CouplingScheme();
-  sp.m_kfac=(mode&(16<<2))?0:p_shower->KFactorScheme();
+  sp.m_kfac=p_shower->KFactorScheme();
+  if (mode&(16<<2)) sp.m_kfac&=~1;
   sp.m_pi=li->Mom();
   sp.m_pj=lj->Mom();
   sp.m_pk=lk->Mom();
@@ -87,8 +88,14 @@ Splitting Cluster_Definitions::KT2
 		 <<" ^ 2, z = "<<sp.m_z<<", phi = "<<sp.m_phi<<"\n";
   c.SetMom(sp.m_p[i<j?i:j]);
   s.SetMom(sp.m_p[(i<j?j:i)<k?k-1:k]);
+  sp.m_clu=0;
   ws=sk->Value(sp);
-  mu2=sk->GF()->TrueScale(sp);
+  if (ws) mu2=sk->GF()->TrueScale(sp);
+  else {
+    sp.m_clu=1;
+    ws=sk->Value(sp);
+    mu2=sk->GF()->TrueScale(sp);
+  }
   msg_Debugging()<<"Scale: "<<sqrt(mu2)<<" <- "
 		 <<sqrt(sk->GF()->Scale(sp))<<"\n";
   msg_Debugging()<<"Kernel: "<<ws<<" ( kfac = "<<sp.m_kfac
@@ -98,8 +105,7 @@ Splitting Cluster_Definitions::KT2
     sp.m_kfac=0;
     double K=ws/sk->Value(sp);
     msg_Debugging()<<"     K: "<<K<<" ( kfac = "<<sp.m_kfac<<" )\n";
-    if (K>0.0 && !IsEqual(K,1.0)) {
-      sp.m_clu=0;
+    if (K>0.0) {
       mu2=sk->GF()->Solve(K*sk->GF()->Coupling(sp));
     }
   }

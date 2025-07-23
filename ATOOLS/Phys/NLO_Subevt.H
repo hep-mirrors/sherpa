@@ -61,6 +61,7 @@ namespace ATOOLS {
   };// end of struct stp
 
   class Cluster_Amplitude;
+  class Recoil_Definition;
 
   class NLO_subevt: public Dip_ID {
   public:
@@ -85,6 +86,7 @@ namespace ATOOLS {
     spt::splittingtype m_type;
 
     Cluster_Amplitude *p_ampl;
+    Recoil_Definition *p_recoil;
 
     int m_delete, m_trig;
 
@@ -99,7 +101,7 @@ namespace ATOOLS {
       m_results {0.0},
       m_x1(0.0), m_x2(0.0), m_xf1(0.0), m_xf2(0.0), m_alpha(0.0), m_kt2(0.0),
       m_mu2(2*stp::size,0.0), m_pname(""), m_stype(sbt::none), 
-      p_ampl(NULL), m_delete(false), m_trig(false)
+      p_ampl(NULL), p_recoil(NULL), m_delete(false), m_trig(false)
     {
     }
 

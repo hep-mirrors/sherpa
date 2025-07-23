@@ -13,7 +13,7 @@ using namespace ATOOLS;
 
 Kernel::Kernel(Shower *const ps,Kernel_Key key):
   p_ps(ps), p_lf(NULL), p_gf(NULL), m_ef(1.0),
-  m_type(key.m_type), m_mode(key.m_mode), m_on(1)
+  m_type(key.m_type), m_mode(key.m_mode), m_on(1), m_id(0)
 {
   key.p_k=this;
   std::string gauge;
@@ -47,8 +47,8 @@ Kernel::Kernel(Shower *const ps,Kernel_Key key):
   for (size_t i(2);i<p_lf->Flavs().size();++i)
     ffl+=","+ToString(p_lf->Flav(i));
   msg_Debugging()<<"Init("<<m_on<<") "<<p_lf->Flav(0)<<"->"<<ffl
-		 <<" => ("<<Demangle(typeid(*p_lf).name()).substr(8)
-		 <<","<<Demangle(typeid(*p_gf).name()).substr(8)
+		 <<" => ("<<Demangle(typeid(*p_lf).name()).substr(9)
+		 <<","<<Demangle(typeid(*p_gf).name()).substr(9)
 		 <<"), mode "<<key.m_mode<<", swap "<<key.m_swap<<"\n";
 }
 
@@ -60,8 +60,8 @@ Kernel::~Kernel()
 
 std::string Kernel::Class() const
 {
-  return "("+Demangle(typeid(*p_lf).name()).substr(8)
-    +","+Demangle(typeid(*p_gf).name()).substr(8)
+  return "("+Demangle(typeid(*p_lf).name()).substr(9)
+    +","+Demangle(typeid(*p_gf).name()).substr(9)
     +","+ToString(m_mode)+")";
 }
 

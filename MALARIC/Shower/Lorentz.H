@@ -55,8 +55,6 @@ namespace MALARIC {
 
     virtual double MEPSWeight(const Splitting &s) const = 0;
 
-    virtual double AsymmetryFactor(const Splitting &s) const;
-
     virtual bool Allowed(const Splitting &s) const;
 
     bool SetLimits(Splitting &s) const;

@@ -94,26 +94,8 @@ void DipoleSplitting_Base::CalcVectors(Vec4D& p1, Vec4D& p2, double B)
 
   Vec4D vh(0.,ptp/ptp.Abs());
   m_dpollist.push_back(vh);
-  m_pfactors.push_back((B-1.)/B);
+  m_pfactors.push_back(B?(B-1.)/B:1.);
 }
-
-void DipoleSplitting_Base::CalcVectors(Vec4D& p1, Vec4D& p2)
-{
-  m_dpollist.clear();
-  m_pfactors.clear();
-
-  Vec3D pv(p2);
-  Vec3D ptp=Vec3D(p1)-(p1[0]/p2[0])*pv;
-  Vec3D ptt=cross(ptp,pv);
-
-  m_dpollist.push_back(Vec4D(0.,ptt/ptt.Abs()));
-  m_pfactors.push_back(1.);
-
-  Vec4D vh(0.,ptp/ptp.Abs());
-  m_dpollist.push_back(vh);
-  m_pfactors.push_back(1.);
-}
-
 
 double DipoleSplitting_Base::GetR(const Vec4D* mom,const Vec4D* LOmom)
 {
@@ -137,7 +119,6 @@ bool DipoleSplitting_Base::Reject(const double &alpha)
 	       <<Demangle(typeid(*this).name())
 	       <<"[type="<<m_ftype<<"]"<<std::endl;
   if (m_mcmode==1) {
-    DEBUG_VAR(alpha<<" "<<m_alpha);
     int da(m_av>0.0 && (m_kt2<m_kt2max || IsEqual(m_kt2,m_kt2max,1.0e-6))),
         ds(alpha<=m_alpha);
     msg_Debugging()<<"kt = "<<sqrt(m_kt2)<<", ktmax = "<<sqrt(m_kt2max)
@@ -151,7 +132,7 @@ bool DipoleSplitting_Base::Reject(const double &alpha)
 		   <<" -> DA = "<<m_mcsign<<"\n";
     return m_mcsign==0;
   }
-  return alpha>m_alpha || m_kt2>m_kt2max;
+  return alpha>m_alpha;
 }
 
 double DipoleSplitting_Base::GetF()

@@ -62,35 +62,32 @@ bool Shower::Init(MODEL::Model_Base *const model,
 		  PDF::ISR_Handler *const isr)
 {
   Settings& ms = Settings::GetMainSettings();
-  const Scoped_Settings& s = Settings::GetMainSettings()["SHOWER"];
+  auto pss = ms["SHOWER"], nlopss = ms["MC@NLO"];
   DEBUG_FUNC(this);
   p_model=model;
   p_recoil=RecoilDefinition_Getter::GetObject
     (ms["RECOIL_DEFINITION"].Get<std::string>(),RecoilDefinition_Key());
   p_as=(MODEL::Running_AlphaS*)p_model->GetScalarFunction("alpha_S");
   for (int i=0;i<2;++i) p_pdf[i]=isr->PDF(i);
-  m_tmin[0] = s["FS_PT2MIN"].Get<double>();
-  m_tmin[1] = s["IS_PT2MIN"].Get<double>();
-  m_cplfac[0] = s["FS_AS_FAC"].Get<double>();
-  m_cplfac[1] = s["IS_AS_FAC"].Get<double>();
+  m_tmin[0] = pss["FS_PT2MIN"].Get<double>();
+  m_tmin[1] = pss["IS_PT2MIN"].Get<double>();
+  m_cplfac[0] = pss["FS_AS_FAC"].Get<double>();
+  m_cplfac[1] = pss["IS_AS_FAC"].Get<double>();
   m_rsf=ToType<double>(rpa->gen.Variable("RENORMALIZATION_SCALE_FACTOR"));
   m_fsf=ToType<double>(rpa->gen.Variable("FACTORIZATION_SCALE_FACTOR"));
-  m_rcf=s["RECALC_FACTOR"].Get<double>();
-  m_tcef=s["TC_ENHANCE"].Get<double>();
-  m_kfac=s["KFACTOR_SCHEME"].Get<int>();
-  m_cpl=s["COUPLING_SCHEME"].Get<int>();
-  m_muf=s["FACSCALE_SCHEME"].Get<int>();
-  m_mec=s["ME_CORRECTION"].Get<int>();
-  m_sfs=s["KERNEL_SCHEME"].Get<int>();
-  m_es[0]=s["FS_EVOL_SCHEME"].Get<int>();
-  m_es[1]=s["IS_EVOL_SCHEME"].Get<int>();
-  m_pdfmin[0]=s["PDF_MIN"].Get<double>();
-  m_pdfmin[1]=s["PDF_MIN_X"].Get<double>();
-  m_maxem=s["MAXEM"].Get<size_t>();
-  m_maxpart=s["MAXPART"].Get<int>();
-  m_reweight=s["REWEIGHT"].Get<bool>();
-  m_rewtmin=s["REWEIGHT_SCALE_CUTOFF"].Get<double>();
-  m_oef=s["OEF"].Get<double>();
+  m_rcf=nlopss["RECALC_FACTOR"].Get<double>();
+  m_kfac=pss["KFACTOR_SCHEME"].Get<int>();
+  m_cpl=pss["COUPLING_SCHEME"].Get<int>();
+  m_muf=pss["FACSCALE_SCHEME"].Get<int>();
+  m_ms=pss["MCMASS_SCHEME"].Get<int>();
+  m_es[0]=pss["FS_EVOL_SCHEME"].Get<int>();
+  m_es[1]=pss["IS_EVOL_SCHEME"].Get<int>();
+  m_pdfmin[0]=pss["PDF_MIN"].Get<double>();
+  m_pdfmin[1]=pss["PDF_MIN_X"].Get<double>();
+  m_maxem=nlopss["MAXEM"].Get<size_t>();
+  m_reweight=nlopss["REWEIGHT_EM"].Get<unsigned int>();
+  m_rewtmin=pss["REWEIGHT_SCALE_CUTOFF"].Get<double>();
+  m_oef=pss["OEF"].Get<double>();
   if (msg_LevelIsDebugging()) {
     msg_Out()<<METHOD<<"(): {\n\n"
 	     <<"   // available gauge calculators\n\n";
@@ -99,7 +96,7 @@ bool Shower::Init(MODEL::Model_Base *const model,
     Lorentz_Getter::PrintGetterInfo(msg->Out(),25);
     msg_Out()<<"\n}"<<std::endl;
   }
-  int types(s["KERNEL_TYPE"].Get<int>());
+  int types(pss["KERNEL_TYPE"].Get<int>());
   std::set<FTrip> sfs;
   const Vertex_Table *vtab(model->VertexTable());
   for (Vertex_Table::const_iterator
@@ -145,8 +142,14 @@ void Shower::AddKernel(Kernel *const k)
     return;
   }
   k->GF()->SetLimits();
+  int id(0);
+  const Kernel_Vector &sks(GetKernels(k->LF()->Flav(0)));
+  for (size_t n(0), i(0);i<sks.size();++i)
+    if ((sks[i]->Type()&1)==(k->Type()&1) &&
+	sks[i]->LF()->Flav(1)==k->LF()->Flav(1) &&
+	sks[i]->LF()->Flav(2)==k->LF()->Flav(2)) ++id;
+  k->SetId(id);
   if (k->On()) m_sks[k->LF()->Flav(0)].push_back(k);
-  if (k->LF()->Flavs().size()>3) k->SetEF(m_tcef);
   m_cks.push_back(k);
 }
 
@@ -165,9 +168,9 @@ void Shower::AddWeight(const Amplitude &a,const double &t)
     cw*=a[i]->GetWeight(Max(t,m_tmin[a[i]->Beam()?1:0]),cv);
     a[i]->ClearWeights();
   }
-  m_weightsmap["PS"].Nominal() *= cw;
+  m_weightsmap["Sudakov"].Nominal() *= cw;
   if (cv.size()) {
-    ATOOLS::Reweight(m_weightsmap["PS"],
+    ATOOLS::Reweight(m_weightsmap["Sudakov"],
                      [&cv](double varweight,
                            size_t varindex,
                            QCD_Variation_Params& varparams) -> double {
@@ -175,29 +178,30 @@ void Shower::AddWeight(const Amplitude &a,const double &t)
                      });
   }
   msg_Debugging()<<a<<" t = "<<t<<" -> w = "<<cw
-		 <<" ("<<m_weightsmap["PS"].Nominal()<<"), v = "<<cv<<"\n";
+		 <<" ("<<m_weightsmap["Sudakov"].Nominal()<<"), v = "<<cv<<"\n";
 }
 
 int Shower::Evolve(Amplitude &a, unsigned int &nem)
 {
   DEBUG_FUNC(this);
   m_weightsmap.Clear();
-  m_weightsmap["PS"] = Weights {Variations_Type::qcd};
-  m_weightsmap["PS_QCUT"] = Weights {Variations_Type::qcut};
+  m_weightsmap["Sudakov"] = Weights {Variations_Type::qcd};
+  m_weightsmap["QCUT"] = Weights {Variations_Type::qcut};
   msg_Debugging()<<a<<"\n";
+  double t(a.T());
   Cluster_Amplitude *ampl(a.ClusterAmplitude());
-  for (Splitting s(GeneratePoint(a,a.T(),nem));
-       s.m_t>Max(a.T0(),m_tmin[s.m_type&1]);
-       s=GeneratePoint(a,s.m_t,nem)) {
+  for (m_s=Splitting(GeneratePoint(a,t,nem));
+       m_s.m_t>Max(a.T0(),m_tmin[m_s.m_type&1]);
+       m_s=GeneratePoint(a,m_s.m_t,nem)) {
     for (size_t i(0);i<a.size();++i) a[i]->Store();
-    int stat(s.p_sk->Construct(s,1));
-    msg_IODebugging()<<"t = "<<s.m_t<<", w = "<<s.m_w.MC()
-		     <<" / "<<s.m_w.Accept()<<" -> "
+    int stat(m_s.p_sk->Construct(m_s,1));
+    msg_IODebugging()<<"t = "<<m_s.m_t<<", w = "<<m_s.m_w.MC()
+		     <<" / "<<m_s.m_w.Accept()<<" -> "
 		     <<(stat==1?"accept\n":"reject\n");
     msg_Debugging()<<"stat = "<<stat<<"\n";
     if (p_gamma) {
       int veto(p_gamma->Reject());
-      m_weightsmap["MC@NLO_PS"] *= p_gamma->Weight();
+      m_weightsmap["Sudakov"] *= p_gamma->Weight();
       if (veto) {
 	a.Remove(m_s.p_n);
 	m_s.p_c->SetFlav(m_s.p_sk->LF()->Flav(0));
@@ -206,7 +210,7 @@ int Shower::Evolve(Amplitude &a, unsigned int &nem)
       }
     }
     double jcv {stat ? 0.0 : -1.0};
-    Jet_Finder *jf(ampl->JF<Jet_Finder>());
+    Jet_Finder *jf(m_s.p_c->Ampl()->JF<Jet_Finder>());
     if (stat && jf) {
       Cluster_Amplitude *ampl(a.GetAmplitude());
       jcv = jf->JC()->Value(ampl);
@@ -218,7 +222,7 @@ int Shower::Evolve(Amplitude &a, unsigned int &nem)
     std::vector<bool> skips (nqcuts + 1, false);
     int nskips {0};
     ATOOLS::ReweightAll(
-        m_weightsmap["PS_QCUT"],
+        m_weightsmap["QCUT"],
         [this, jcv, is_jcv_positive, ampl, &all_vetoed, &skips, &nskips](
             double varweight,
             size_t varindex,
@@ -239,13 +243,6 @@ int Shower::Evolve(Amplitude &a, unsigned int &nem)
             msg_Debugging() << "} no jet veto\n";
             all_vetoed = false;
             return varweight;
-          } else if (ampl->NLO() & 2) {
-            msg_Debugging() << "  skip emission\n";
-            skips[varindex] = true;
-            ++nskips;
-            all_vetoed = false;
-            msg_Debugging() << "} no jet veto\n";
-            return varweight;
           } else {
             msg_Debugging() << "} jet veto\n";
             return 0.0;
@@ -257,9 +254,9 @@ int Shower::Evolve(Amplitude &a, unsigned int &nem)
         nskips += nqcdvars;
       const double wskip {nskips / double(nqcuts + nqcdvars + 1)};
       if (ran->Get()<=wskip) {
-	if (s.p_l) a.Remove(s.p_l);
-	a.Remove(s.p_n);
-	s.p_c->SetFlav(s.p_sk->LF()->Flav(0));
+	if (m_s.p_l) a.Remove(m_s.p_l);
+	a.Remove(m_s.p_n);
+	m_s.p_c->SetFlav(m_s.p_sk->LF()->Flav(0));
 	for (size_t i(0);i<a.size();++i) a[i]->Restore();
 	double lkf(ampl->LKF());
 	for (Cluster_Amplitude *campl(ampl);
@@ -268,30 +265,23 @@ int Shower::Evolve(Amplitude &a, unsigned int &nem)
 	  ampl->SetNLO(ampl->NLO()&~2);
 	}
         const double fac {1.0 / lkf / wskip};
-        m_weightsmap["PS"] *= fac * skips[0];
-        m_weightsmap["PS_QCUT"] *= skips;
+        m_weightsmap["Sudakov"] *= fac * skips[0];
+        m_weightsmap["QCUT"] *= skips;
 	continue;
       }
       else {
         const double fac {1.0 / (1.0 - wskip)};
         skips.flip();
-        m_weightsmap["PS"] *= fac * skips[0];
-        m_weightsmap["PS_QCUT"] *= skips;
+        m_weightsmap["Sudakov"] *= fac * skips[0];
+        m_weightsmap["QCUT"] *= skips;
       }
     }
     if (all_vetoed)
       return 0;
-    AddWeight(a,s.m_t);
+    AddWeight(a,m_s.m_t);
     a.SetJF(NULL);
     a.SetMEC(0);
     if (++nem>=m_maxem) break;
-    if (a.size()-a.ClusterAmplitude()->NIn()>m_maxpart) {
-      if (s.p_l) a.Remove(s.p_l);
-      a.Remove(s.p_n);
-      s.p_c->SetFlav(s.p_sk->LF()->Flav(0));
-      for (size_t i(0);i<a.size();++i) a[i]->Restore();
-    }
-    if (a.size()-a.ClusterAmplitude()->NIn()>=m_maxpart) break;
   }
   AddWeight(a,a.T0());
   return 1;
@@ -307,7 +297,7 @@ Splitting Shower::GeneratePoint
   double tmin[2]={m_tmin[0],m_tmin[1]};
   for (Amplitude::const_reverse_iterator
 	 it(a.rbegin());it!=a.rend();++it) {
-    for (int cm(0);cm<2;++cm) {
+    for (int cm(0);cm<(*it)->S().size();++cm) {
       double ct((*it)->T(cm)>=0.0?(*it)->T(cm):t);
       Splitting cur(GeneratePoint(**it,ct,cm,rcl,nem));
       (*it)->SetT(cm,-1.0);
@@ -320,8 +310,8 @@ Splitting Shower::GeneratePoint
   m_tmin[1]=tmin[1];
   if (win.p_sk && win.m_t>m_tmin[win.m_type&1])
     msg_Debugging()<<"Emission at "<<win<<" ("
-		   <<Demangle(typeid(*win.p_sk->LF()).name()).substr(8)
-		   <<","<<Demangle(typeid(*win.p_sk->GF()).name()).substr(8)
+		   <<Demangle(typeid(*win.p_sk->LF()).name()).substr(9)
+		   <<","<<Demangle(typeid(*win.p_sk->GF()).name()).substr(9)
 		   <<")\n";
   return win;
 }
@@ -355,7 +345,6 @@ Splitting Shower::GeneratePoint
 	  Splitting cur(&p,(*p.Ampl())[i]);
 	  cur.SetType();
 	  cur.m_rcl=rcl;
-	  cur.m_mec=p.Ampl()->MEC()&m_mec;
 	  cur.m_kfac=m_kfac;
 	  cur.m_cpl=m_cpl;
 	  cur.m_t1=ct;
@@ -382,7 +371,6 @@ Splitting Shower::GeneratePoint
 	    win.p_s=(*p.Ampl())[m_sums.Spect(j, i)];
 	    win.SetType();
 	    win.m_rcl=rcl;
-	    win.m_mec=p.Ampl()->MEC()&m_mec;
 	    win.m_kfac=m_kfac;
 	    win.m_cpl=m_cpl;
 	    win.m_t1=ct;

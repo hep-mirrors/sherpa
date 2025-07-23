@@ -528,16 +528,16 @@ double Single_Real_Correction::operator()(const ATOOLS::Vec4D_Vector &_mom,const
 
   if (!m_no_tree) {
     realtrg=p_tree_process->Trigger(_mom);
+    p_tree_process->ScaleSetter()->CalculateScale(_mom,m_cmode);
+    if (p_tree_process->ScaleSetter(1)->Amplitudes().size() &&
+	p_tree_process->ScaleSetter(1)->FixedScales().empty()) {
+      m_realevt.p_ampl = p_tree_process->ScaleSetter(1)->Amplitudes().front()->CopyAll();
+      m_realevt.p_ampl->SetProc(this);
+    }
     if (res && realtrg) {
-      p_tree_process->ScaleSetter()->CalculateScale(_mom,m_cmode);
       m_realevt.m_mu2[stp::fac]=p_tree_process->ScaleSetter()->Scale(stp::fac);
       m_realevt.m_mu2[stp::ren]=p_tree_process->ScaleSetter()->Scale(stp::ren);
       m_realevt.m_mu2[stp::res]=p_tree_process->ScaleSetter()->Scale(stp::res);
-      if (p_tree_process->ScaleSetter(1)->Amplitudes().size() &&
-          p_tree_process->ScaleSetter(1)->FixedScales().empty()) {
-        m_realevt.p_ampl = p_tree_process->ScaleSetter(1)->Amplitudes().front()->CopyAll();
-        m_realevt.p_ampl->SetProc(this);
-      }
       double real = p_tree_process->operator()(&mom.front())*p_tree_process->Norm();
       if (IsBad(real) || real == 0. ) res=false;
       m_realevt.m_me = real;
@@ -566,10 +566,14 @@ double Single_Real_Correction::operator()(const ATOOLS::Vec4D_Vector &_mom,const
                <<std::setw(2)<<m_flavs[m_subtermlist[k]->Lj()]<<"; "
                <<std::setw(2)<<m_flavs[m_subtermlist[k]->Lk()]<<")"
                <<", alpha="<<m_subevtlist[k]->m_alpha
+               <<", mur="<<sqrt(m_subevtlist[k]->m_mu2[stp::ren])
+               <<", muf="<<sqrt(m_subevtlist[k]->m_mu2[stp::fac])
                <<", me="<<m_subevtlist[k]->m_me<<std::endl;
     }
     msg_Out()<<"real:                                        "
-             <<"me="<<m_realevt.m_me<<std::endl;
+	     <<" mur="<<sqrt(m_realevt.m_mu2[stp::ren])
+	     <<", muf="<<sqrt(m_realevt.m_mu2[stp::fac])
+             <<", me="<<m_realevt.m_me<<std::endl;
     msg->SetPrecision(prec);
   }
   m_mewgtinfo.m_bkw = p_tree_process->GetMEwgtinfo()->m_bkw;

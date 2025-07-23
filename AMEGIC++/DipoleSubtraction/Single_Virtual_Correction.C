@@ -664,7 +664,8 @@ double Single_Virtual_Correction::Calc_V(const ATOOLS::Vec4D_Vector &mom,
   // virtual me2 is returning local nlo kfactor to born -> needs coupling
   if (p_loopme->Mode()==0) {
     res = m_lastb*cplfac*p_loopme->ME_Finite();
-    if (m_murcoeffvirt && p_loopme->ProvidesPoles()) {
+    if (m_murcoeffvirt) {
+      if (p_loopme->ProvidesPoles()) {
       if (m_sccmur) {
         m_cmur[0]+=(p_loopme->ME_E1()+bornorderqcd*beta0qcd)*m_lastb*cplfac;
         m_cmur[1]+=p_loopme->ME_E2()*m_lastb*cplfac;
@@ -673,19 +674,30 @@ double Single_Virtual_Correction::Calc_V(const ATOOLS::Vec4D_Vector &mom,
         m_cmur[0]+=m_lastb*cplfac*p_loopme->ScaleDependenceCoefficient(1);
         m_cmur[1]+=m_lastb*cplfac*p_loopme->ScaleDependenceCoefficient(2);
       }
+      }
+      else {
+	m_cmur[0]+=-m_singlepole+bornorderqcd*beta0qcd*m_lastb*cplfac;
+	m_cmur[1]+=-m_doublepole;
+      }
     }
   }
   // virtual me2 is returning full Re(M_B M_V^*)
   else if (p_loopme->Mode()==1) {
     res = cplfac*p_loopme->ME_Finite();
-    if (m_murcoeffvirt && p_loopme->ProvidesPoles()) {
+    if (m_murcoeffvirt) {
+      if (p_loopme->ProvidesPoles()) {
       if (m_sccmur) {
-        m_cmur[0]+=(p_loopme->ME_E1()+bornorderqcd*beta0qcd)*cplfac;
+        m_cmur[0]+=(p_loopme->ME_E1()+bornorderqcd*beta0qcd*m_lastb)*cplfac;
         m_cmur[1]+=p_loopme->ME_E2()*cplfac;
       }
       else {
         m_cmur[0]+=cplfac*p_loopme->ScaleDependenceCoefficient(1);
         m_cmur[1]+=cplfac*p_loopme->ScaleDependenceCoefficient(2);
+      }
+      }
+      else {
+	m_cmur[0]+=-m_singlepole+bornorderqcd*beta0qcd*m_lastb*cplfac;
+	m_cmur[1]+=-m_doublepole;
       }
     }
   }
@@ -776,25 +788,25 @@ double Single_Virtual_Correction::Calc_I(const ATOOLS::sbt::subtype st,
         }
         if(p_softrecoil) {
           int recmode = p_softrecoil->Mode(ampl,partonlist[i]);
-          Vec4D Kti = p_softrecoil->Recoil(ampl,partonlist[i],-1,partonlist[k],recmode);
+          Vec4D Kti = -p_softrecoil->Recoil(ampl,1<<partonlist[i],1<<partonlist[k],recmode);
           mKt2i = Kti.Abs2();
           siKti = 2.*mom[partonlist[i]]*Kti;
           skKti = 2.*mom[partonlist[k]]*Kti;
           recmode = p_softrecoil->Mode(ampl,partonlist[k]);
-          Vec4D Ktk = p_softrecoil->Recoil(ampl,partonlist[k],-1,partonlist[i],recmode);
+          Vec4D Ktk = -p_softrecoil->Recoil(ampl,1<<partonlist[k],1<<partonlist[i],recmode);
           mKt2k = Ktk.Abs2();
           siKtk = 2.*mom[partonlist[i]]*Ktk;
           skKtk = 2.*mom[partonlist[k]]*Ktk;
         }
         if(p_collrecoil) {
           int recmode = p_collrecoil->Mode(ampl,partonlist[i]);
-          mreci = p_collrecoil->Recoil(ampl,partonlist[i],-1,partonlist[k],recmode).Abs2();
+          mreci = p_collrecoil->Recoil(ampl,1<<partonlist[i],1<<partonlist[k],recmode).Abs2();
           mreci = IsZero(mreci)?0.:sqrt(abs(mreci));
-          siKtcoll = 2.*mom[partonlist[i]]*p_collrecoil->Recoil(ampl,partonlist[i],-1,partonlist[k]);
+          siKtcoll = 2.*mom[partonlist[i]]*p_collrecoil->Recoil(ampl,1<<partonlist[i],1<<partonlist[k]);
           recmode = p_softrecoil->Mode(ampl,partonlist[k]);
-          mreck = p_collrecoil->Recoil(ampl,partonlist[k],-1,partonlist[i],recmode).Abs2();
+          mreck = p_collrecoil->Recoil(ampl,1<<partonlist[k],1<<partonlist[i],recmode).Abs2();
           mreck = IsZero(mreck)?0.:sqrt(abs(mreck));
-          skKtcoll = 2.*mom[partonlist[k]]*p_collrecoil->Recoil(ampl,partonlist[k],-1,partonlist[i]);
+          skKtcoll = 2.*mom[partonlist[k]]*p_collrecoil->Recoil(ampl,1<<partonlist[k],1<<partonlist[i]);
         }
         ampl->Delete();
       }

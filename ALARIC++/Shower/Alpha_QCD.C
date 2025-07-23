@@ -109,21 +109,60 @@ double Alpha_QCD::RenCT(const Splitting &s) const
   if (m_override==0) {
     if (s.m_clu&3) return 0.0;
   }
+  if (!(s.m_kfac&8)) return 0.0;
   double scale(Scale(s)), murf(p_sk->PS()->MuR2Factor());
   double scl(TrueScale(s)*murf);
   if (scl<murf*p_cpl->CutQ2()) return 0.0;
   double cpl=(*p_cpl)(scl);
-  double ct=0;
+  double ct=0, ocpl=cpl;
+#ifdef DEBUG__AlphaS
+  msg_Debugging()<<"t="<<scale<<", \\mu_R^2="<<scl<<std::endl;
+  msg_Debugging()<<"as(t)="<<cpl<<std::endl;
+#endif
   if (!IsEqual(scl,scale)) {
+#ifdef DEBUG__AlphaS
+    msg_Debugging()<<"as(\\mu_R^2)="<<cpl<<std::endl;
+#endif
     std::vector<double> ths(p_cpl->Thresholds(scale,scl));
-    if (scl>scale) std::reverse(ths.begin(),ths.end());
-    if (ths.empty() || !IsEqual(scale,ths.back())) ths.push_back(scale);
-    if (!IsEqual(scl,ths.front())) ths.insert(ths.begin(),scl);
-    for (size_t i(1);i<ths.size();++i) {
-      double nf=p_cpl->Nf((ths[i]+ths[i-1])/2.0);
-      double L=log(ths[i]/ths[i-1]);
-      if (s.m_kfac&8) ct-=cpl/(2.0*M_PI)*B0(nf)*L;
+    ths.push_back((scl>scale)?scl:scale);
+    ths.insert(ths.begin(),(scl>scale)?scale:scl);
+    if (scale<scl) std::reverse(ths.begin(),ths.end());
+#ifdef DEBUG__AlphaS
+    msg_Debugging()<<"thresholds: "<<ths<<std::endl;
+#endif
+    double fac(1.);
+    switch (p_sk->PS()->ScaleVarScheme()) {
+    case 1:
+    case 5:
+    case 9:
+      // local counterterms and redefinition at threshold
+      for (size_t i(1);i<ths.size();++i) {
+        ct=cpl/M_PI*p_cpl->Beta0((ths[i]+ths[i-1])/2.0)*log(ths[i]/ths[i-1]);
+	cpl*=1.0-ct;
+      }
+      ct=1.0-cpl/ocpl;
+      break;
+    case 2:
+    case 6:
+    case 10:
+      // replace as(t) -> as(t)*[1-sum as/2pi*beta(nf)*log(th[i]/th[i-1])]
+      for (size_t i(1);i<ths.size();++i)
+        ct+=cpl/M_PI*p_cpl->Beta0((ths[i]+ths[i-1])/2.0)*log(ths[i]/ths[i-1]);
+      fac=1.0-ct;
+      break;
+    default:
+      fac=1.;
+      break;
     }
+#ifdef DEBUG__AlphaS
+    msg_Debugging()<<"ct="<<ct<<std::endl;
+#endif
+    cpl*=fac;
+#ifdef DEBUG__AlphaS
+    msg_Debugging()<<"as(\\mu_R^2)*(1-ct)="<<cpl
+		   <<" vs. "<<(*p_cpl)(scl/murf)<<std::endl;
+#endif
+    ct=-ct;
   }
   return ct;
 }

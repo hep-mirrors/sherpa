@@ -17,8 +17,8 @@ namespace MALARIC {
     double Value(const Splitting &s) const
     {
       double B(s.m_zi*(1.0-s.m_zi));
-      double sf(1.0);
-      sf=p_sk->Mode()?1.0-s.m_z:s.m_z;
+      double sf(s.m_z);
+      if (s.m_clu&2) sf*=2.0;
       return sf*B*(1.0+p_sk->GF()->K(s));
     }
 

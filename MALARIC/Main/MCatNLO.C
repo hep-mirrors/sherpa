@@ -36,15 +36,15 @@ int MCatNLO::GeneratePoint(Cluster_Amplitude *const ampl)
 {
   DEBUG_FUNC(this);
   m_weightsmap.Clear();
-  m_weightsmap["MC@NLO_PS"] = Weights {Variations_Type::qcd};
-  m_weightsmap["MC@NLO_QCUT"] = Weights {Variations_Type::qcut};
+  m_weightsmap["Sudakov"] = Weights {Variations_Type::qcd};
+  m_weightsmap["QCUT"] = Weights {Variations_Type::qcut};
   CleanUp();
   PrepareShower(ampl);
   if (p_rampl->NLO()&4) return 1;
   unsigned int nem=0;
   int stat(p_mcatnlo->Evolve(*m_ampls.back(),nem));
-  m_weightsmap["MC@NLO_PS"] *= p_mcatnlo->GetWeightsMap().at("MC@NLO_PS");
-  m_weightsmap["MC@NLO_QCUT"] *= p_mcatnlo->GetWeightsMap().at("MC@NLO_QCUT");
+  m_weightsmap["Sudakov"] *= p_mcatnlo->GetWeightsMap().at("Sudakov");
+  m_weightsmap["QCUT"] *= p_mcatnlo->GetWeightsMap().at("QCUT");
   if (m_wcheck && dabs(m_weightsmap.Nominal())>m_maxweight) {
     m_maxweight=dabs(m_weightsmap.Nominal());
     std::string rname="alaricnlo.random.dat";
@@ -101,6 +101,7 @@ GetRealEmissionAmplitude(const int mode)
     ampl->Legs().back()->SetNMax(nmax);
   }
   ampl->SetKT2(p_mcatnlo->LastSplitting().m_t);
+  ampl->SetFlag(p_mcatnlo->LastSplitting().p_sk->Id());
   ampl->SetMuQ2(p_rampl->KT2());
   Process_Base::SortFlavours(ampl);
   return ampl;
@@ -143,6 +144,7 @@ bool MCatNLO::PrepareShower
   std::map<Cluster_Leg*,Parton*> lmap;
   m_ampls.push_back(Convert(ampl,lmap));
   std::string pname(Process_Base::GenerateName(p_rampl));
+  int ntrip(0), noct(0);
   const IDip_Set &iinfo((*p_rampl->IInfo<StringIDipSet_Map>())[pname]);
   for (size_t i(0);i<m_ampls.back()->size();++i) {
     Parton *c((*m_ampls.back())[i]);
@@ -152,7 +154,9 @@ bool MCatNLO::PrepareShower
       Parton *s((*m_ampls.back())[j]);
       if (iinfo.find(IDip_ID(c->Id()-1,s->Id()-1))!=iinfo.end()) {
 	msg_Debugging()<<s->Flav()<<"("<<s->Id()<<") ";
-	c->S().push_back(s);
+	c->AddS(s);
+	if (c->Flav().StrongCharge()==8) ++noct;
+	else ++ntrip;
       }
     }
     msg_Debugging()<<"-> "<<c->S().size()<<" dipole(s)\n";
@@ -170,14 +174,12 @@ double MCatNLO::KT2(const ATOOLS::NLO_subevt &sub,
 {
   if (sub.m_ijt>=2) {
     if (sub.m_type==spt::splittingtype::soft) {
-      double gam(2.*aa->m_pijt*aa->m_Kt);
-      double z(aa->m_z), kt2;
-      if (p_mcatnlo->EvolScheme(0)==0) {
-	Vec4D n(aa->m_K+aa->m_pj);
+      double kt2;
+      if ((p_mcatnlo->EvolScheme(0)&255)==0) {
 	kt2=2.*(aa->m_pi*aa->m_pj)*
-	  (aa->m_pj*n)/(aa->m_pi*n);
+	  (aa->m_pj*aa->m_n)/(aa->m_pi*aa->m_n);
       }
-      else if (p_mcatnlo->EvolScheme(0)==1) {
+      else if ((p_mcatnlo->EvolScheme(0)&255)==1) {
 	kt2=2.*(aa->m_pi*aa->m_pj)*
 	  (aa->m_pj*aa->m_K)/(aa->m_pi*aa->m_K);
       }
@@ -187,10 +189,17 @@ double MCatNLO::KT2(const ATOOLS::NLO_subevt &sub,
       return kt2;
     }
     else {
-      Vec4D n = ka->m_nb;
-      double Q2 = (ka->m_pi+ka->m_pj+n).Abs2();
-      double yijk = 2.0*ka->m_pi*ka->m_pj/Q2;
-      double kt2 = Q2*yijk;
+      double Q2((ka->m_pi+ka->m_pk).Abs2());
+      double yijk(ka->m_y), zi(ka->m_z), kt2;
+      if ((p_mcatnlo->EvolScheme(0)>>8)==0) {
+	kt2=Q2*yijk*zi*(1.0-zi);
+      }
+      else if ((p_mcatnlo->EvolScheme(0)>>8)==1) {
+	kt2=Q2*yijk;
+      }
+      else {
+	THROW(not_implemented,"Unknown evolution scheme");
+      }
       return kt2;
     }
   }

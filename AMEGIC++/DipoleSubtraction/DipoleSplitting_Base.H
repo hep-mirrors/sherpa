@@ -44,9 +44,7 @@ namespace AMEGIC {
     MODEL::Coupling_Data *p_cpl;
     ATOOLS::NLO_subevt *p_subevt;
     PDF::NLOMC_Base *p_nlomc;
-    ATOOLS::Recoil_Definition *p_softrecoil;
-    ATOOLS::Recoil_Definition *p_collrecoil;
-    void CalcVectors(ATOOLS::Vec4D&,ATOOLS::Vec4D&);
+    ATOOLS::Recoil_Definition *p_recoil;
     void CalcVectors(ATOOLS::Vec4D&,ATOOLS::Vec4D&,double);
   public:
     DipoleSplitting_Base(ATOOLS::sbt::subtype st, ATOOLS::spt::splittingtype ft,
@@ -92,10 +90,8 @@ namespace AMEGIC {
     inline void SetNLOMC(PDF::NLOMC_Base *const mc)
     { p_nlomc=mc; m_subtype=p_nlomc->SubtractionType();
       if (m_subtype==ATOOLS::subscheme::Dire) m_kappa=1.0; }
-    inline void SetSoftRecoil(ATOOLS::Recoil_Definition* recoil)
-    { p_softrecoil=recoil; }
-    inline void SetCollRecoil(ATOOLS::Recoil_Definition* recoil)
-    { p_collrecoil=recoil; }
+    inline void SetRecoil(ATOOLS::Recoil_Definition* recoil)
+    { p_recoil=recoil; }
   };
 
   inline std::ostream & operator<<(std::ostream & s,

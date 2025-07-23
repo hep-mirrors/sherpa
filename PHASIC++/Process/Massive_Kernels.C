@@ -319,14 +319,30 @@ void Massive_Kernels::CalcVNSg(double s,double mk,double sjKtcoll,bool ini)
       m_VNS+=m_TRbyCA*nfc;
     }
     else {
+      // Alaric scheme // without velocity factor
       Q2 = sjKtcoll+sqr(mk);
       muk2 = sqr(mk)/Q2;
       muk = sqrt(muk2);
+      double Izpm = muk2/(1.-muk2)*(sqrt(muk2/(1.-muk2))*atan(sqrt((1.-muk2)/muk2))-log(muk)-1.);
       double Igg = ((-8 + 2*muk2)/(3.*(1 - muk2)) - (2*std::pow(muk,3)*(-0.5*M_PI + std::asin(muk)))/std::pow(1 - muk2,1.5) + 2*log(1 - muk2))/6.;
+      Igg -= (1.-m_kappa)*Izpm;
       double IggMassless = - 8./18.;
       double Igq = m_TRbyCA*m_nf*2./3.*(-(8 - 11*muk2)/(3.*(1 - muk2)) + (std::pow(muk,3)*(-0.5*M_PI + std::asin(muk)))/std::pow(1 - muk2,1.5) + 2*log(1 - muk2) + (3*muk2*log(muk2))/(2.*(1 - muk2)));
+      Igq += m_TRbyCA*m_nf*2.*(1.-m_kappa)*Izpm;
       double IgqMassless = - m_TRbyCA*m_nf*16./9.;
       m_VNS += (m_g2t-2)*log(s/Q2) + Igg - IggMassless + Igq - IgqMassless;
+      // // with velocity factor
+      // Q2 = sjKtcoll+sqr(mk);
+      // muk2 = sqr(mk)/Q2;
+      // muk = sqrt(muk2);
+      // double Izpm = muk2/(1.-muk2)*log(2.*muk/(1.+muk));
+      // double Igg = (-8./3. + 2.*muk/(1.+muk) + 2*log(1 - muk))/6.;
+      // Igg += (2./3.-m_kappa)*Izpm;
+      // double IggMassless = - 8./18.;
+      // double Igq = m_TRbyCA*m_nf*2./3.*(-8./3. + 2.*muk/(1.+muk) + 2*log(1 - muk));
+      // Igq -= m_TRbyCA*m_nf*2.*(2./3-m_kappa)*Izpm;
+      // double IgqMassless = - m_TRbyCA*m_nf*16./9.;
+      // m_VNS += (m_g2t-2)*log(s/Q2) + Igg - IggMassless + Igq - IgqMassless;
     }
   }
 }

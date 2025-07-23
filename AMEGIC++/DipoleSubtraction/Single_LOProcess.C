@@ -1305,6 +1305,7 @@ double Single_LOProcess::operator()(const ATOOLS::Vec4D_Vector &labmom,
       }
     }
   }
+  msg_Debugging()<<"M2="<<M2<<std::endl;
   m_lastxs = M2;
   return M2;
 }

@@ -1,7 +1,7 @@
 #include "MALARIC/Shower/Lorentz_FS.H"
 
 #include "MODEL/Main/Single_Vertex.H"
-#include "MALARIC/Shower/Kernel.H"
+#include "MALARIC/Shower/Shower.H"
 #include "MALARIC/Tools/Amplitude.H"
 #include "PHASIC++/Channels/Transverse_Kinematics.H"
 #include "ATOOLS/Org/Run_Parameter.H"
@@ -44,9 +44,16 @@ namespace MALARIC {
       double A(2*sik/(sij*skj)
 	       -pi.Abs2()/sqr(sij)
 	       -pk.Abs2()/sqr(skj));
+      if (!(s.m_clu&2) && p_sk->PS()->MassScheme()) {
+	double mi2(sqr(s.p_c->Flav().Mass(true)));
+	double mk2(sqr(s.p_s->Flav().Mass(true)));
+        double Am=2*(sik-mi2/2.-mk2/2.)/(sij*skj)
+	  -mi2/sqr(sij)-mk2/sqr(skj);
+	A=std::min(A,std::max(0.0,Am));
+      }
       A*=sij*skj*(pi*n)/D;
       double sf(1.0);
-      if (m_id) sf=p_sk->Mode()?1.0-s.m_z:s.m_z;
+      if (m_id && !(s.m_clu&2)) sf=p_sk->Mode()?1.0-s.m_z:s.m_z;
 #ifdef DEBUG__Kinematics
       if (s.m_p.size()) {
 	Vec4D K(s.m_p[0]+s.m_p[1]), pij(s.p_c->Mom());
@@ -60,20 +67,6 @@ namespace MALARIC {
       }
 #endif
       return sf*A*(1.0+p_sk->GF()->K(s)+p_sk->GF()->RenCT(s));
-    }
-
-    double AsymmetryFactor(const Splitting &s) const
-    {
-      Vec4D pi(s.m_pi), pk(s.m_pk), pj(s.m_pj), n(s.m_K+s.m_pj);
-      if (pk[0]<0.0) pk=-pk;
-      double sij(pi*pj), sik(pi*pk), skj(pj*pk);
-      double D(sij*(pk*n)+skj*(pi*n));
-      if (D==0.0) return 0.0;
-      double A11(2*sik/(sij*skj)-pi.Abs2()/sqr(sij)-pk.Abs2()/sqr(skj));
-      double A12(2*skj/(sij*sik)-pj.Abs2()/sqr(sij)-pk.Abs2()/sqr(sik));
-      A11*=sij*skj*(pi*n)/D;
-      A12*=sij*sik*(pj*n)/D;
-      return A11/(A11+A12);
     }
 
     double Integral(const Splitting &s) const
