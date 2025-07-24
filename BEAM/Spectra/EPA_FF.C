@@ -58,7 +58,7 @@ EPA_FF_Base::EPA_FF_Base(const ATOOLS::Flavour& beam, const int dir)
   m_b_pl_threshold = s["bThreshold"].GetTwoVector<double>()[b];
   m_bmax           = s["bMax"].GetTwoVector<double>()[b];
 
-  if (m_bmin <= 0. || m_bmin > m_bmax || m_bmin > m_b_pl_threshold)
+  if (m_bmin <= 0. || m_bmin > m_bmax)
     THROW(invalid_input, "Unphysical input for EPA impact parameter. ");
   if (m_xmin < 0. || m_xmin > m_xmax)
     THROW(invalid_input, "Unphysical input for EPA x-limits. ");
