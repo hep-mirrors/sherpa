@@ -150,7 +150,12 @@ void EPA_FF_Base::OutputToCSV(const std::string& type)
 
 EPA_Point::EPA_Point(const ATOOLS::Flavour& beam, const int dir)
     : EPA_FF_Base(beam, dir)
-{}
+{
+  // for point-like particles (i.e. leptons) we use the "classical"
+  // lepton radius given by 1/alpha lambda_l/(2 pi)
+  // with the Compton wavelength lambda_l
+  m_b = rpa->hBar_c() / beam.Mass(true) / (2.*M_PI/137.);
+}
 
 double EPA_Point::N(const double& x)
 {
