@@ -435,14 +435,7 @@ double EPA_IonApprox::N(const double& x)
   // return 2 / x * (chi * std::cyl_bessel_k(1, chi) * std::cyl_bessel_k(0, chi)
   //    - sqr(chi)/2. * (sqr(std::cyl_bessel_k(1, chi)) -
   //    sqr(std::cyl_bessel_k(0, chi))));
-  double r2 = m_R * m_R;
-  m_b       = std::sqrt((ATOOLS::sqr(m_bmin * m_R) + r2) *
-                                std::pow((ATOOLS::sqr(m_bmax * m_R) + r2) /
-                                                 (ATOOLS::sqr(m_bmin * m_R) + r2),
-                                         ATOOLS::ran->Get()) -
-                        r2);
-  double wt = (ATOOLS::sqr(m_b) + r2) / m_b / 2. *
-              std::log((ATOOLS::sqr(m_bmax) + r2) / (ATOOLS::sqr(m_bmin) + r2));
+  double wt = SampleImpactParameter();
   double chi = x * m_mass * m_b;
   return 2 * m_Zsquared * m_b * x * sqr(m_mass) * sqr(SF.Kn(1, chi)) * wt;
   // correction term seems to be negligible;
