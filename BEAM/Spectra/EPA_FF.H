@@ -68,6 +68,7 @@ namespace BEAM {
       double wt = SampleImpactParameter();
       if (m_b < m_b_pl_threshold) return (*p_N_xb)(x, m_b) * wt;
       else {
+        // use point-like approximation for large impact parameters
         double chi = x * m_mass * m_b;
         return 2 * m_Zsquared * m_b * x * ATOOLS::sqr(m_mass) *
                ATOOLS::sqr(ATOOLS::SF.Kn(1, chi)) * wt;
