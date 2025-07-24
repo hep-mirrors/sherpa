@@ -183,7 +183,70 @@ namespace ATOOLS {
     {
       if (x<=0.) return 0.;
       double kn(0.),darg(dabs(x)), y;
-      if (order==1) {
+      if (order==0) {
+        // The implementation is based on the formulas from the "Handbook of Mathematical
+        // Functions" by Abramowitz and Stegun (A&S).
+        if (x <= 0.0) {
+          throw std::domain_error("Argument x for bessel_K0 must be positive.");
+        }
+
+        // --- Crossover point between the two approximation regimes ---
+        const double X_CROSSOVER = 2.0;
+
+        if (x <= X_CROSSOVER) {
+          // --- Series Expansion for small x (0 < x <= 2.0) ---
+          // This regime handles the logarithmic singularity near x=0.
+          // A&S 9.6.11: K₀(x) = -[ln(x/2) + γ]I₀(x) + Σ...
+          // We compute I₀(x) and the summation part simultaneously.
+
+          const double EULER_GAMMA = 0.57721566490153286060; // γ
+
+          double term = 1.0;      // First term of I₀(x) series
+          double i0_sum = 1.0;    // Sum for I₀(x)
+          double k0_sum = 0.0;    // Sum for the second part of K₀(x)
+          double psi_k = 0.0;     // Digamma approximation: H_k - γ, where H_k is harmonic number
+          double k_fact = 1.0;
+          double x_pow_2k = 1.0;
+
+          const double x_half_sq = 0.25 * x * x;
+          const double log_x_half = log(0.5 * x);
+
+          for (int k = 1; k <= 15; ++k) { // 15 terms are sufficient for double precision up to x=2
+            // Update terms for the k-th iteration
+            psi_k += 1.0 / k;
+            k_fact *= k;
+            x_pow_2k *= x_half_sq;
+
+            term = x_pow_2k / (k_fact * k_fact);
+
+            // Accumulate sums
+            i0_sum += term;
+            k0_sum += term * psi_k;
+
+            // Stop if the term becomes negligible to avoid unnecessary computation
+            if (term < std::numeric_limits<double>::epsilon() * i0_sum) {
+              break;
+            }
+          }
+
+          return k0_sum - (log_x_half + EULER_GAMMA) * i0_sum;
+
+        } else {
+          // --- Asymptotic Expansion for large x (x > 2.0) ---
+          // A&S 9.7.2: K₀(x) ~ sqrt(π/(2x)) * e^(-x) * [ 1 - 1/(8x) + 9/(128x^2) - ... ]
+
+          const double inv_x = 1.0 / x;
+          const double inv_x_sq = inv_x * inv_x;
+
+          double series = 1.0;
+          series -= 0.125 * inv_x;                   // -1/(8x)
+          series += 0.0703125 * inv_x_sq;            // +9/(128x^2)
+          series -= 0.0732421875 * inv_x_sq * inv_x; // -75/(1024x^3)
+
+          return exp(-x) * sqrt(M_PI / (2.0 * x)) * series;
+        }
+      }
+      else if (order==1) {
         if (darg<=2.0) {
           y   = sqr(darg)/4.;
           kn  = log(darg/2.)*In(1,darg);
@@ -222,6 +285,59 @@ namespace ATOOLS {
 	cnt++;
       }
       was.close();
+      // Test BesselK0
+      std::cout << "------------------------------------------------------------------" << std::endl;
+      std::cout << std::left << std::setw(12) << "x"
+                << std::setw(22) << "bessel_K0(x)"
+                << std::setw(22) << "Reference"
+                << std::setw(15) << "Rel. Error" << std::endl;
+      std::cout << "------------------------------------------------------------------" << std::endl;
+
+      // Test cases: struct containing {x_value, reference_K0(x_value)}
+      // Reference values obtained from WolframAlpha.
+      const std::vector<std::pair<double, double>> test_cases = {
+              {0.01, 4.721244730161094},
+              {0.1,  2.427069024702016},
+              {0.5,  0.924419071227666},
+              {1.0,  0.42102443824070834},
+              {1.5,  0.2138055626475258},
+              {2.0,  0.1138938727495334}, // The crossover point
+              {2.1,  0.10078374088996696},
+              {5.0,  0.0036910983340425947},
+              {10.0, 0.00001778006231616765},
+              {20.0, 5.741237815336525e-10},
+              {50.0, 3.4101677497894956e-23},
+              {100.0, 4.656628229175903e-45}
+      };
+
+      bool all_tests_passed = true;
+      for (const auto& test : test_cases) {
+        double x = test.first;
+        double ref_val = test.second;
+        double calc_val = Kn(0, x);
+        double rel_error = (ref_val != 0) ? std::abs((calc_val - ref_val) / ref_val) : std::abs(calc_val);
+
+        std::cout << std::left << std::setw(12) << std::fixed << std::setprecision(2) << x
+                  << std::scientific << std::setprecision(12)
+                  << std::setw(22) << calc_val
+                  << std::setw(22) << ref_val
+                  << std::setw(15) << rel_error;
+
+        if (rel_error > 1e-6) {
+          all_tests_passed = false;
+          std::cout << "  <-- FAILED";
+        }
+        std::cout << std::endl;
+      }
+      std::cout << "------------------------------------------------------------------" << std::endl;
+      // Test edge cases
+      try {
+        std::cout << "\nTesting edge case x=0..." << std::endl;
+        Kn(0, 0.0);
+      } catch (const std::domain_error& e) {
+        std::cout << "Caught expected exception: " << e.what() << std::endl;
+      }
+      std::cout << "\nTest summary: " << (all_tests_passed ? "All tests passed." : "Some tests FAILED.") << std::endl;
     }
   };
   extern Special_Functions SF;
