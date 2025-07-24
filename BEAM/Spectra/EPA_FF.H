@@ -43,25 +43,29 @@ namespace BEAM {
 
     size_t m_nxbins, m_nbbins;
 
-  public:
-    EPA_FF_Base(const ATOOLS::Flavour& beam, int dir);
-    virtual ~EPA_FF_Base()
+    double SampleImpactParameter()
     {
-      if (p_N_xb) delete p_N_xb;
-    }
-    virtual void   FillTables();
-    virtual double N(const double& x)
-    {
-      // sampling b by p(b) = 1/norm * b/(b^2+1)
+      // sampling b by p(b) = 1/norm * b/(b^2+r^2) with b physical distance
       double r2 = m_R * m_R;
       m_b       = std::sqrt((ATOOLS::sqr(m_bmin * m_R) + r2) *
                                     std::pow((ATOOLS::sqr(m_bmax * m_R) + r2) /
                                                      (ATOOLS::sqr(m_bmin * m_R) + r2),
                                              ATOOLS::ran->Get()) -
                             r2);
-      double wt =
-              (ATOOLS::sqr(m_b) + r2) / m_b / 2. *
-              std::log((ATOOLS::sqr(m_bmax) + r2) / (ATOOLS::sqr(m_bmin) + r2));
+      return (ATOOLS::sqr(m_b) + r2) / m_b / 2. *
+             std::log((ATOOLS::sqr(m_bmax) + r2) / (ATOOLS::sqr(m_bmin) + r2));
+    };
+    virtual void FillTables();
+
+  public:
+    EPA_FF_Base(const ATOOLS::Flavour& beam, int dir);
+    virtual ~EPA_FF_Base()
+    {
+      if (p_N_xb) delete p_N_xb;
+    }
+    virtual double N(const double& x)
+    {
+      double wt = SampleImpactParameter();
       if (m_b < m_b_pl_threshold) return (*p_N_xb)(x, m_b) * wt;
       else {
         double chi = x * m_mass * m_b;
