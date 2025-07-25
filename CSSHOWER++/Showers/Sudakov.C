@@ -17,7 +17,7 @@ using namespace std;
 bool CSSHOWER::Sudakov::s_init=false;
 
 Sudakov::Sudakov(PDF::ISR_Handler *isr,const int qcd,const int qed) :
-  m_qcdmode(qcd), m_ewmode(qed), m_pdfmin(1.0e-4, 1.0e-2),
+  m_qcdmode(qcd), m_ewmode(qed), m_enableQuarkonia(0), m_pdfmin(1.0e-4, 1.0e-2),
   m_reweightscalecutoff {0.0}, m_keeprewinfo {false}
 {
   p_pdf = new PDF::PDF_Base*[2];
@@ -111,8 +111,20 @@ void Sudakov::InitSplittingFunctions(MODEL::Model_Base *md,const int kfmode)
   }
   AddDiQuarkSplittingFunctions(md, kfmode);
   AddOctetMesonSplittingFunctions(md, kfmode);
-  AddQuarkoniaSplittingFunctions(md, kfmode);
-  AddGluonThresholds(md);
+  PRINT_VAR(m_enableQuarkonia);
+  switch (m_enableQuarkonia)
+  {
+  case 0:
+    AddQuarkoniaSplittingFunctions(md, kfmode);
+      msg_Debugging() << METHOD << " Quarkonia initialised.\n";
+  case 1:
+    AddGluonThresholds(md);
+      msg_Debugging() << METHOD << " G threshold initialised.\n";
+  default:
+  msg_Debugging() << METHOD << " End Quarkonia initialisation.\n"; 
+    break;
+  }
+
   msg_Debugging() << "}\n";
 }
 
@@ -243,8 +255,8 @@ void Sudakov::AddGluonThresholds(Model_Base *md) {
   Running_AlphaS as = md->ScalarConstant("alpha_S");
   const double mc = ATOOLS::Flavour(kf_c).Mass();
   const double mb = ATOOLS::Flavour(kf_b).Mass();
-  list<kf_code> octetvectors = {kf_3S1_c_8_J_psi_1S, kf_3S1_c_8_psi_2S,
-     kf_3P0_c_8_J_psi_1S, kf_3P1_c_8_J_psi_1S, kf_3P2_c_8_J_psi_1S};
+  list<kf_code> octetvectors = {kf_3S1_c_8_J_psi_1S, kf_3S1_c_8_psi_2S, kf_3P0_c_8_J_psi_1S, kf_3P1_c_8_J_psi_1S, kf_3P2_c_8_J_psi_1S
+  };
   ST_Set *stset;
   m_stmap[Flavour(kf_gluon)] = stset = new ST_Set;
   map<kf_code, double> LDME = {

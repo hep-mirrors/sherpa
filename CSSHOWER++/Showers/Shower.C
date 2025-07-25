@@ -39,6 +39,7 @@ Shower::Shower(PDF::ISR_Handler* isr, const int qcd, const int qed, int type)
   m_recdec            = pss["RECO_DECAYS"].Get<int>();
   m_maxpart           = pss["MAXPART"].Get<int>();
   m_scvmode           = pss["SCALE_VARIATION_SCHEME"].Get<int>();
+  m_sudakov.SetQuarkoniaMode( pss["ENABLE_QUARKONIA"].Get<int>());
   if (type) {
     kfmode=pss["MI_KFACTOR_SCHEME"].Get<int>();
     k0sqf=pss["MI_FS_PT2MIN"].Get<double>();

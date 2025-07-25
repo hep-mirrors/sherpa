@@ -20,7 +20,7 @@ namespace CSSHOWER {
     double m_k0sqi, m_k0sqf, m_k0sq_gsplit_fac, m_sphi;
     double m_deltaz, m_st, m_sz, m_sy, m_ymin, m_ymax, m_scale;
     double m_zmin,m_zmax, m_weight;
-    int m_qcdmode,m_ewmode;
+    int m_qcdmode,m_ewmode, m_enableQuarkonia;
     ATOOLS::Flavour m_cfl, m_flspec;
     Parton * p_split, * p_spect;
     SF_EEE_Map m_fffmap, m_ffimap, m_iffmap, m_ifimap, m_fifmap, m_fiimap;
@@ -94,12 +94,14 @@ namespace CSSHOWER {
 
     inline void SetShower(Shower *const shower) { p_shower=shower; }
     inline double Weight() const { return m_weight; }
+    inline void SetQuarkoniaMode(const int mode) { m_enableQuarkonia = mode;}
   };
 
   void Sudakov::GetSplittingParameters
   (double & kt2,double & z,double & y,double & phi) {
     kt2 = m_st; z = m_sz; y = m_sy; phi = m_sphi;
   }
+
 }
 
 #endif
