@@ -48,7 +48,7 @@ namespace PHASIC {
     cls::scheme m_colorscheme;
     hls::scheme m_helicityscheme;
 
-    double m_threshold, m_enhancefac, m_maxeps, m_rsfac;
+    double m_threshold, m_enhancefac, m_maxeps, m_rsfac, m_meanenhfunc=-1, m_effi = -1, m_effevperev=-1;
 
     long unsigned int m_n, m_itmin, m_itmax;
 
@@ -63,7 +63,8 @@ namespace PHASIC {
 
     bool m_writeout;
 
-    ATOOLS::Histogram *p_whisto;
+    ATOOLS::Histogram *p_whisto_pos;
+    ATOOLS::Histogram *p_whisto_neg;
 
     std::shared_ptr<Color_Integrator>    p_colint;
     std::shared_ptr<Helicity_Integrator> p_helint;
@@ -164,6 +165,8 @@ namespace PHASIC {
     inline cls::scheme ColorScheme() const    { return m_colorscheme;    }
     inline hls::scheme HelicityScheme() const { return m_helicityscheme; }
 
+    inline double Efficiency() const { return m_effi; }
+
     inline void SetBeam(BEAM::Beam_Spectra_Handler *const beam) 
     { p_beamhandler=beam; }
     inline void SetISR(PDF::ISR_Handler *const isr)  
@@ -200,7 +203,9 @@ namespace PHASIC {
 
     inline std::string ResultPath() const { return m_resultpath; }
 
-    inline ATOOLS::Histogram *WeightHisto() const { return p_whisto; }
+    inline ATOOLS::Histogram *WeightHisto() const { ATOOLS::Histogram *p_whisto(p_whisto_pos); *p_whisto += *p_whisto_neg; return p_whisto; }
+    inline ATOOLS::Histogram *WeightHistoPos() const { return p_whisto_pos; }
+    inline ATOOLS::Histogram *WeightHistoNeg() const { return p_whisto_neg; }
 
   };// end of class Process_Integrator
 
