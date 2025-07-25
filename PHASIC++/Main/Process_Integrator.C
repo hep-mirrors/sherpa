@@ -21,7 +21,7 @@
 using namespace PHASIC;
 using namespace ATOOLS;
 
-static int s_whbins(100);
+static int s_whbins(1300);
 static int s_genresdir(0);
 
 Process_Integrator::Process_Integrator(Process_Base *const proc):
@@ -33,8 +33,10 @@ Process_Integrator::Process_Integrator(Process_Base *const proc):
   m_totalsum (0.), m_totalsumsqr(0.), m_totalerr(0.), m_ssum(0.), 
   m_ssumsqr(0.), m_smax(0.), m_ssigma2(0.), m_wmin(0.),
   m_mssum(0.), m_mssumsqr(0.), m_msn(0.), m_sn(0), m_son(1),
+  m_external_selectionweight(-1),
   m_writeout(false),
-  p_whisto(NULL)
+  p_whisto_pos(NULL),
+  p_whisto_neg(NULL)
 {
   m_colorscheme=cls::sum;
   m_helicityscheme=hls::sum;
@@ -56,7 +58,7 @@ bool Process_Integrator::Initialize
   static bool minit(false);
   if (!minit) {
     // weight histo bin number
-    s_whbins = s["IB_WHBINS"].SetDefault(100).Get<int>();
+    s_whbins = s["IB_WHBINS"].SetDefault(1300).Get<int>();
     minit=true;
   }
   return true;
@@ -64,13 +66,20 @@ bool Process_Integrator::Initialize
 
 Process_Integrator::~Process_Integrator()
 {
-  if (p_whisto!=NULL) delete p_whisto;
+  if (p_whisto_pos!=NULL) delete p_whisto_pos;
+  if (p_whisto_neg!=NULL) delete p_whisto_neg;
 }
 
 double Process_Integrator::SelectionWeight(const int mode) const
 {
   if (!p_proc->IsGroup()) {
-    if (mode!=0) return m_max*m_enhancefac;
+    if (mode!=0) {
+      if (m_external_selectionweight != -1) {
+	return m_external_selectionweight;
+      }
+      //Sherpa manual - only works with completely written out whisto - otherweise m_meanenhfunc ("mean enhancement function") wrong
+      return TotalResult()*m_meanenhfunc*m_enhancefac/m_effi/m_effevperev;
+    }
     if (m_n+m_sn==0.0) return -1.0;
     if (m_totalxs==0.0) return 0.0;
     double selweight = m_swmode==0 ?
@@ -179,9 +188,13 @@ void Process_Integrator::SetMomenta(const Cluster_Amplitude &ampl)
 
 void Process_Integrator::InitWeightHistogram()
 {
-  if (p_whisto) {
-    delete p_whisto; 
-    p_whisto=0;
+  if (p_whisto_pos) {
+    delete p_whisto_pos;
+    p_whisto_pos=0;
+  }
+  if (p_whisto_neg) {
+    delete p_whisto_neg;
+    p_whisto_neg=0;
   }
 
   double av(dabs(TotalResult()));
@@ -195,7 +208,8 @@ void Process_Integrator::InitWeightHistogram()
      following histogram */
   if (IsZero(av)) av=1.;
   av = exp(log(10.)*int(log(av)/log(10.)+0.5));
-  p_whisto = new Histogram(10,av*1.e-4,av*1.e6,s_whbins);
+  p_whisto_pos = new Histogram(10,av*1.e-100,av*1.e30,s_whbins);
+  p_whisto_neg = new Histogram(10,av*1.e-100,av*1.e30,s_whbins);
   if (p_proc->IsGroup())
     for (size_t i(0);i<p_proc->Size();++i)
       (*p_proc)[i]->Integrator()->InitWeightHistogram();
@@ -241,9 +255,11 @@ bool Process_Integrator::ReadInXSecs(const std::string &path)
 void Process_Integrator::ReadInHistogram(std::string dir)
 {
   std::string filename = dir+"/"+p_proc->ResultsName();
-  if (!FileExists(filename)) return;
-  if (p_whisto) delete p_whisto; 
-  p_whisto = new Histogram(filename);	
+  if (!FileExists(filename+"_pos")) return;
+  if (p_whisto_pos) delete p_whisto_pos;
+  if (p_whisto_neg) delete p_whisto_neg;
+  p_whisto_pos = new Histogram(filename+"_pos");
+  p_whisto_neg = new Histogram(filename+"_neg");
   if (p_proc->IsGroup())
     for (size_t i(0);i<p_proc->Size();++i)
       (*p_proc)[i]->Integrator()->ReadInHistogram(dir);
@@ -272,7 +288,8 @@ void Process_Integrator::WriteOutXSecs(const std::string &path)
 
 void Process_Integrator::WriteOutHistogram(std::string dir)
 {
-  if (p_whisto) p_whisto->Output(dir+"/"+p_proc->ResultsName());	
+  if (p_whisto_pos) p_whisto_pos->Output(dir+"/"+p_proc->ResultsName()+"_pos");
+  if (p_whisto_neg) p_whisto_neg->Output(dir+"/"+p_proc->ResultsName()+"_neg");
   if (p_proc->IsGroup())
     for (size_t i(0);i<p_proc->Size();++i)
       (*p_proc)[i]->Integrator()->WriteOutHistogram(dir);
@@ -313,7 +330,10 @@ void Process_Integrator::SetTotal(const int mode)
 
 double Process_Integrator::GetMaxEps(double epsilon)
 {
-  if (!p_whisto) return m_max;
+  if (!p_whisto_pos) return m_max;
+  //construct whisto having all pos and neg weights
+  ATOOLS::Histogram *p_whisto(p_whisto_pos);
+  *p_whisto += *p_whisto_neg;
   if (epsilon<=-1.) {
     int nsamples(-epsilon), npoints(p_whisto->Fills());
     npoints*=-(epsilon-int(epsilon));
@@ -336,18 +356,73 @@ double Process_Integrator::GetMaxEps(double epsilon)
     return maxs[maxs.size()/2];
   }
 
-  double res = dabs(TotalResult());
-  double pxs = res*epsilon*p_whisto->Fills();
-  double cutxs = 0.;
-  double cnt = 0.;
-
+  //save last, first filled bin and more for next loop
+  double whisto_abs_sum = 0;
+  double whisto_sum = 0;
+  //number of fills differs from ->Fills(), because the first does not include over and underflow events (ratio is cut effi, if all w are in whisto range)
+  int whisto_fills = 0;
+  int last_filled_bin = p_whisto->Nbin()+2;
+  int first_filled_bin = 0;
   for (int i=p_whisto->Nbin()+1;i>0;i--) {
-    cutxs+= p_whisto->Value(i) * 
-      exp(log(10.)*(p_whisto->Xmin()+(i-0.5)*p_whisto->BinSize()));
+    if (p_whisto->Value(i)!=0) {
+      //bin middle times count is added
+      double w = exp(log(10.)*(p_whisto->Xmin()+(i-0.5)*p_whisto->BinSize()));
+      whisto_abs_sum += p_whisto->Value(i) * w;
+      whisto_sum += p_whisto_pos->Value(i) * w;
+      whisto_sum -= p_whisto_neg->Value(i) * w;
+      whisto_fills += p_whisto->Value(i);
+      last_filled_bin = i;
+      if (first_filled_bin==0) {
+	first_filled_bin = i;
+      }
+    }
+  }
+
+  if (last_filled_bin<10) msg_Error() << "WARNING: The lower bin edge of whisto might be to high for subprocess " << p_proc->ResultsName() << " to cover all weights!" << std::endl;
+  if (first_filled_bin>p_whisto->Nbin()-10) msg_Error() << "WARNING: The upper bin edge of whisto might be to low for subprocess " << p_proc->ResultsName() << " to cover all weights!" << std::endl;
+
+  //cutxs: sum of |w| which are cut atm
+  double cutxs_abs = 0.;
+  //cutxs: sum of w which are cut atm
+  double cutxs = 0.;
+  //cutxs: sum of w^2 which are cut atm
+  double cutxs2 = 0.;
+  //cnt: number of events cut atm
+  double cnt = 0.;
+  double pxs = whisto_sum*epsilon; //use this definition, because very slight differences, but most impotrant: mean enhancement missing!
+  //double pxs = dabs(TotalResult())*p_whisto->Fills()*epsilon; //use this definition, because very slight differences, but most impotrant: mean enhancement missing!
+  for (int i=first_filled_bin+1;i>last_filled_bin-1;i--) {
+    double prev_cutxs2 = cutxs2;
+    double prev_cutxs = cutxs;
+    double prev_cutxs_abs = cutxs_abs;
+    double prev_cnt = cnt;
+    //bin middle times count is added
+    double w = exp(log(10.)*(p_whisto->Xmin()+(i-0.5)*p_whisto->BinSize()));
+    cutxs_abs+= p_whisto->Value(i) * w;
+    cutxs+= p_whisto_pos->Value(i) * w;
+    cutxs-= p_whisto_neg->Value(i) * w;
+    cutxs2+= p_whisto->Value(i) * pow(w,2);
     cnt+= p_whisto->Value(i);
-    double twmax = exp(log(10.)*(p_whisto->Xmin()+(i-1)*p_whisto->BinSize()));
-    if (cutxs-cnt*twmax>pxs) {
-      return Min(exp(log(10.)*(p_whisto->Xmin()+i*p_whisto->BinSize())),dabs(m_max));
+    if (cutxs>=pxs) {
+      double fin_w_max = Min(exp(log(10.)*(p_whisto->Xmin()+i*p_whisto->BinSize())),dabs(m_max));
+      if (cutxs==pxs) {//needed for epsilon=1
+	fin_w_max = Min(exp(log(10.)*(p_whisto->Xmin()+(i-1)*p_whisto->BinSize())),dabs(m_max));
+      } else {
+	cutxs2 = prev_cutxs2;
+	cutxs = prev_cutxs;
+	cutxs_abs = prev_cutxs_abs;
+	cnt = prev_cnt;
+      }
+      double mean_efficiency = (1*cnt+(whisto_abs_sum-cutxs_abs)/fin_w_max)/whisto_fills;
+      //according to equation (39) in arXiv:2506.06203v2
+      double effevperev = pow(whisto_sum/fin_w_max,2)/(((whisto_abs_sum-cutxs_abs+cutxs2/fin_w_max)/fin_w_max)*mean_efficiency*whisto_fills);
+      //without enhancement function: whisto_sum/p_whisto->Fills() = dabs(TotalResult())
+      //with enhancement function:    whisto_sum/p_whisto->Fills() = dabs(TotalResult())*m_meanenhfunc
+      //defined such that: dabs(TotalResult())*m_meanenhfunc = mean_w*cut_effi = whisto_sum/whisto_fills * (whisto_fills/p_whisto->Fills())
+      m_meanenhfunc = whisto_sum/p_whisto->Fills()/dabs(TotalResult());
+      m_effi = mean_efficiency;
+      m_effevperev = effevperev;
+      return fin_w_max;
     }
   }
   return m_max;
@@ -357,24 +432,29 @@ void Process_Integrator::SetUpEnhance(const int omode)
 {
   if (m_maxeps!=0.0 && !p_proc->IsGroup()) {
     double max(GetMaxEps(m_maxeps));
-    if (omode || msg->LevelIsTracking())
+    if (omode || msg->LevelIsTracking()) {
       msg_Info()<<"  reduce max for "<<p_proc->ResultsName()<<" to "
 		<<max/Max()<<" ( eps = "<<m_maxeps<<" -> exp. eff "
-                <<dabs(m_totalxs/max)<<" ) "<<std::endl;
+                <<  m_effi <<" ) "<<std::endl;
+    }
     SetMax(max);
   }
   if (p_proc->IsGroup()) {
     double oldmax(m_max);
     m_max=0.0;
+    m_effi=0.0;
+    int wmode = ToType<int>(rpa->gen.Variable("EVENT_GENERATION_MODE"));
     for (size_t i(0);i<p_proc->Size();++i) {
       (*p_proc)[i]->Integrator()->SetUpEnhance(msg_LevelIsTracking());
       m_max+=(*p_proc)[i]->Integrator()->Max();
+      //need to sum up weighted with wsel: m_effi
+      m_effi+=(*p_proc)[i]->Integrator()->Efficiency()*(*p_proc)[i]->Integrator()->SelectionWeight(wmode);
     }
     if (omode || p_proc->Parent()==p_proc)
-      if (p_whisto)
+      if (p_whisto_pos)
     msg_Info()<<"  reduce max for "<<p_proc->ResultsName()<<" to "
 	      <<m_max/oldmax<<" ( eps = "<<m_maxeps<<" -> exp. eff "
-	      <<dabs(m_totalxs/m_max)<<" ) "<<std::endl;
+	      << m_effi/SelectionWeight(wmode)<<" ) "<<std::endl;
   }
 
 }
@@ -419,9 +499,10 @@ void Process_Integrator::AddPoint(const double value)
     ATOOLS::Max(p_proc->LastPlus(),-p_proc->LastMinus());
   if (max>m_max)  m_max  = max;
   if (max>m_smax) m_smax = max;
-  if (p_whisto) {
-    if(value!=0.) p_whisto->Insert(max);
-    else p_whisto->Insert(1.0,0.0);
+  if (p_whisto_pos) {
+    if(value>0.)  p_whisto_pos->Insert(max);
+    else if(value<0.)  p_whisto_neg->Insert(max);
+    else p_whisto_pos->Insert(1.0,0.0);
   }
   if (p_colint!=NULL) p_colint->AddPoint(value);
   p_proc->AddPoint(value);
@@ -565,7 +646,8 @@ void Process_Integrator::MPIReturn
 
 void Process_Integrator::MPISync(const int mode)
 {
-  if (p_whisto) p_whisto->MPISync();
+  if (p_whisto_pos) p_whisto_pos->MPISync();
+  if (p_whisto_neg) p_whisto_neg->MPISync();
 #ifdef USING__MPI
   if (mode==0) {
     size_t i(0), j(0);
