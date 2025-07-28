@@ -78,6 +78,14 @@ if(SHERPA_ENABLE_RIVET)
     DEPENDS Main${test}part2)
 endif()
 
+  if (SHERPA_ENABLE_PYTHIA8)
+    set(test test-LO_Z-Pythia8)
+    file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${test})
+    add_test( NAME Main${test}part1 COMMAND Sherpa  "FRAGMENTATION: Pythia8"  ${PROJECT_SOURCE_DIR}/Examples/CI/LO_Z/Sherpa.yaml 
+                                  WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${test}
+               )
+    SET_TESTS_PROPERTIES( Main${test}part1 PROPERTIES ENVIRONMENT "${STANDARDENVIRONMENT};PYTHIA8DATA=${PYTHIA8_XMLDOC_DIR}")
+  endif()
 
 # ================================================
 # Declare tests "test-rivet-[LO|NLO]_Z_Variations"
