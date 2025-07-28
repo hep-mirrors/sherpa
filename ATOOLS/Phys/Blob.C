@@ -390,6 +390,15 @@ std::string Blob::ShortProcessName() {
   return str;
 }
 
+std::string Blob::ShortProcessNameUnderscored() {
+  std::string str("");
+  str+=std::to_string(NInP())+"_"+std::to_string(NOutP())+"__";
+  for (size_t i(0);i<NInP();++i)  str+=InParticle(i)->Flav().IDName()+"__";
+  for (size_t i(0);i<NOutP();++i) str+=OutParticle(i)->Flav().IDName()+"__";
+  if (str.size()>0)  str.resize (str.size()-2);
+  return str;
+}
+
 bool Blob::MomentumConserved() {
   Vec4D cms_vec = Vec4D(0.,0.,0.,0.);
   for (int i=0;i<NInP();i++) cms_vec = cms_vec + InParticle(i)->Momentum();

@@ -25,6 +25,7 @@
 
 #include <algorithm>
 #include <memory>
+#include <chrono>
 
 using namespace PHASIC;
 using namespace MODEL;
@@ -91,9 +92,25 @@ Weight_Info *Single_Process::OneEvent(const int wmode,
                                       const int mode) {
   p_selected = this;
   auto psh = p_int->PSHandler();
+  std::chrono::high_resolution_clock::time_point begin1 = std::chrono::high_resolution_clock::now();
   if (p_int->ISR())
     p_int->ISR()->SetSprimeMin(psh->Cuts()->Smin());
-  return p_int->PSHandler()->OneEvent(this,varmode,mode);
+  std::chrono::high_resolution_clock::time_point end1 = std::chrono::high_resolution_clock::now();
+
+  std::chrono::high_resolution_clock::time_point begin2 = std::chrono::high_resolution_clock::now();
+  Weight_Info * info = p_int->PSHandler()->OneEvent(this,varmode,mode);
+  std::chrono::high_resolution_clock::time_point end2 = std::chrono::high_resolution_clock::now();
+  std::string sub_name = p_selected->Name();
+  double finetime1 = std::chrono::duration_cast<std::chrono::nanoseconds>(end1-begin1).count()/1000000000.;
+  rpa->gen.SetTimeMap("sum_init_"+sub_name, rpa->gen.TimeMap("sum_init_"+sub_name)+finetime1);
+  rpa->gen.SetTimeMap("sum2_init_"+sub_name, rpa->gen.TimeMap("sum2_init_"+sub_name)+finetime1*finetime1);
+  rpa->gen.SetNumberMap("n_init_"+sub_name, rpa->gen.NumberMap("n_init_"+sub_name)+1);
+  double finetime2 = std::chrono::duration_cast<std::chrono::nanoseconds>(end2-begin2).count()/1000000000.;
+  rpa->gen.SetTimeMap("sum_single_"+sub_name, rpa->gen.TimeMap("sum_single_"+sub_name)+finetime2);
+  rpa->gen.SetTimeMap("sum2_single_"+sub_name, rpa->gen.TimeMap("sum2_single_"+sub_name)+finetime2*finetime2);
+  rpa->gen.SetNumberMap("n_single_"+sub_name, rpa->gen.NumberMap("n_single_"+sub_name)+1);
+
+  return info;
 }
 
 double Single_Process::KFactor(const int mode) const
