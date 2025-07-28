@@ -31,6 +31,7 @@
 #include <cassert>
 #include <unistd.h>
 #include <cctype>
+#include <chrono>
 
 using namespace SHERPA;
 using namespace PHASIC;
@@ -230,6 +231,7 @@ bool Matrix_Element_Handler::GenerateOneTrialEvent()
   }
   if (proc==NULL) THROW(fatal_error,"No process selected");
 
+  std::chrono::high_resolution_clock::time_point begin1 = std::chrono::high_resolution_clock::now();
   // if variations are enabled and we do unweighting, we do a pilot run first
   // where no on-the-fly variations are calculated
   Variations_Mode varmode {Variations_Mode::all};
@@ -247,12 +249,19 @@ bool Matrix_Element_Handler::GenerateOneTrialEvent()
   // try to generate an event for the selected process
   ATOOLS::Weight_Info *info=proc->OneEvent(m_eventmode, varmode);
   p_proc=proc->Selected();
+  std::string sub_name = rpa->gen.GetIsGenSubName();
   if (p_proc->Generator()==NULL)
     THROW(fatal_error,"No generator for process '"+p_proc->Name()+"'");
   if (p_proc->Generator()->MassMode()!=0)
     THROW(fatal_error,"Invalid mass mode. Check your PS interface.");
-  if (info==NULL)
+  if (info==NULL) {
+    std::chrono::high_resolution_clock::time_point end1 = std::chrono::high_resolution_clock::now();
+    double finetime1 = std::chrono::duration_cast<std::chrono::nanoseconds>(end1-begin1).count()/1000000000.;
+    rpa->gen.SetTimeMap("sum_total_" +sub_name, rpa->gen.TimeMap("sum_total_" +sub_name)+finetime1);
+    rpa->gen.SetTimeMap("sum2_total_"+sub_name, rpa->gen.TimeMap("sum2_total_"+sub_name)+finetime1*finetime1);
+    rpa->gen.SetNumberMap("n_total_" +sub_name, rpa->gen.NumberMap("n_total_" +sub_name)+1);
     return false;
+  }
   m_evtinfo=*info;
   delete info;
 
@@ -260,14 +269,27 @@ bool Matrix_Element_Handler::GenerateOneTrialEvent()
   const auto sw = p_proc->Integrator()->SelectionWeight(m_eventmode) / m_sum;
   double enhance = p_proc->Integrator()->PSHandler()->EnhanceWeight();
   double wf(rpa->Picobarn()/sw/enhance);
-  if (m_eventmode!=0) {
+  if (m_eventmode!=0) {//weighted: 0
     const auto maxwt  = p_proc->Integrator()->Max();
     const auto disc   = maxwt * ran->Get();
     const auto abswgt = std::abs(m_evtinfo.m_weightsmap.Nominal());
     if (abswgt < disc) {
+      std::chrono::high_resolution_clock::time_point end1 = std::chrono::high_resolution_clock::now();
+      double finetime1 = std::chrono::duration_cast<std::chrono::nanoseconds>(end1-begin1).count()/1000000000.;
+      rpa->gen.SetTimeMap("sum_total_" +sub_name, rpa->gen.TimeMap("sum_total_" +sub_name)+finetime1);
+      rpa->gen.SetTimeMap("sum2_total_"+sub_name, rpa->gen.TimeMap("sum2_total_"+sub_name)+finetime1*finetime1);
+      rpa->gen.SetNumberMap("n_total_" +sub_name, rpa->gen.NumberMap("n_total_" +sub_name)+1);
       return false;
     }
+    rpa->gen.SetNumberMap("n_gen_"+sub_name, rpa->gen.NumberMap("n_gen_"+sub_name)+1);
+    rpa->gen.SetIsGen(true);
+    //rpa->gen.SetIsGenSubName(sub_name);
+    rpa->gen.SetIsGenTime(std::chrono::high_resolution_clock::now());
+    if (abswgt > maxwt) {
+      rpa->gen.SetNumberMap("n_overw_"+sub_name, rpa->gen.NumberMap("n_overw_"+sub_name)+1);
+    }
     if (abswgt > maxwt * m_ovwth) {
+      rpa->gen.SetNumberMap("n_maxoverw_"+sub_name, rpa->gen.NumberMap("n_maxoverw_"+sub_name)+1);
       Return_Value::IncWarning(METHOD);
       msg_Info() << METHOD<<"(): Point for '" << p_proc->Name()
                  << "' exceeds maximum by "
@@ -299,6 +321,10 @@ bool Matrix_Element_Handler::GenerateOneTrialEvent()
       // unweighting above, such that it is not re-used in the future
       ran->Get();
     }
+  } else {
+    rpa->gen.SetNumberMap("n_gen_"+sub_name, rpa->gen.NumberMap("n_gen_"+sub_name)+1);
+    rpa->gen.SetIsGen(true);
+    rpa->gen.SetIsGenTime(std::chrono::high_resolution_clock::now());
   }
 
   // trial event is accepted, apply weight factor
@@ -308,6 +334,12 @@ bool Matrix_Element_Handler::GenerateOneTrialEvent()
     p_proc->GetSubevtList()->MultMEwgt(wf);
   }
   if (p_proc->GetMEwgtinfo()) (*p_proc->GetMEwgtinfo())*=wf;
+  std::chrono::high_resolution_clock::time_point end1 = std::chrono::high_resolution_clock::now();
+  double finetime1 = std::chrono::duration_cast<std::chrono::nanoseconds>(end1-begin1).count()/1000000000.;
+  rpa->gen.SetTimeMap("sum_total_" +sub_name, rpa->gen.TimeMap("sum_total_" +sub_name)+finetime1);
+  rpa->gen.SetTimeMap("sum2_total_"+sub_name, rpa->gen.TimeMap("sum2_total_"+sub_name)+finetime1*finetime1);
+  rpa->gen.SetNumberMap("n_total_" +sub_name, rpa->gen.NumberMap("n_total_" +sub_name)+1);
+  //std::cout << "    good so far" << std::endl;
   return true;
 }
 
