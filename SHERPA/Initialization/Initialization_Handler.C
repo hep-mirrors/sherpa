@@ -237,7 +237,7 @@ void Initialization_Handler::RegisterDefaults()
   pss["IS_PT2MIN"].SetDefault(2.0);
   pss["PT2MIN_GSPLIT_FACTOR"].SetDefault(1.0);
   pss["FS_AS_FAC"].SetDefault(1.0);
-  pss["IS_AS_FAC"].SetDefault(0.25);
+  pss["IS_AS_FAC"].SetDefault(0.5);
   pss["PDF_FAC"].SetDefault(1.0);
   pss["SCALE_FACTOR"].SetDefault(1.);
   pss["MASS_THRESHOLD"].SetDefault(0.0);
@@ -251,7 +251,7 @@ void Initialization_Handler::RegisterDefaults()
   pss["MAX_REWEIGHT_FACTOR"].SetDefault(1e3);
   nlopss["REWEIGHT_EM"].SetDefault(1);
   pss["REWEIGHT_SCALE_CUTOFF"].SetDefault(5.0);
-  pss["KIN_SCHEME"].SetDefault(1);
+  pss["KIN_SCHEME"].SetDefault(0);
   nlopss["KIN_SCHEME"].SetDefault(1);
   pss["OEF"].SetDefault(3.0);
   pss["KMODE"].SetDefault(2);
@@ -282,7 +282,7 @@ void Initialization_Handler::RegisterDefaults()
   pss["MI_PT2MIN_GSPLIT_FACTOR"].SetDefault(1.0);
   pss["MI_IS_AS_FAC"].SetDefault(0.66);
   pss["MI_FS_AS_FAC"].SetDefault(0.66);
-  pss["MI_KIN_SCHEME"].SetDefault(1);
+  pss["MI_KIN_SCHEME"].SetDefault(0);
 
   s["COMIX_DEFAULT_GAUGE"].SetDefault(1);
 
