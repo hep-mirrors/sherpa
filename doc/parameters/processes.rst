@@ -457,6 +457,7 @@ the fraction of the cross section represented by corresponding events
 is at most the epsilon factor times the total cross section. In other
 words, the relative contribution of overweighted events to the
 inclusive cross section is at most epsilon.
+See :ref:`Timing_statistics` for finding a suitable epsilon value.
 
 Precisely, the reduced maximum is the smallest weight :math:`w_\text{max}`
 for which the weights above it sum to at most epsilon times the sum of all

@@ -31,6 +31,7 @@
 #include <cassert>
 #include <unistd.h>
 #include <cctype>
+#include <chrono>
 
 using namespace SHERPA;
 using namespace PHASIC;
@@ -255,6 +256,7 @@ Matrix_Element_Handler::GenerateOneTrialEvent()
     return trial_event_generation_result::zero;
   }
 
+  std::chrono::high_resolution_clock::time_point begin1 = std::chrono::high_resolution_clock::now();
   // if variations are enabled and we do unweighting, we do a pilot run first
   // where no on-the-fly variations are calculated
   Variations_Mode varmode {Variations_Mode::all};
@@ -272,8 +274,15 @@ Matrix_Element_Handler::GenerateOneTrialEvent()
   // try to generate an event for the selected process
   ATOOLS::Weight_Info *info=proc->OneEvent(m_eventmode, varmode);
   p_proc=proc->Selected();
-  if (info==NULL)
+  std::string sub_name = rpa->gen.GetIsGenSubName();
+  if (info==NULL) {
+    std::chrono::high_resolution_clock::time_point end1 = std::chrono::high_resolution_clock::now();
+    double finetime1 = std::chrono::duration_cast<std::chrono::nanoseconds>(end1-begin1).count()/1000000000.;
+    rpa->gen.SetTimeMap("sum_total_" +sub_name, rpa->gen.TimeMap("sum_total_" +sub_name)+finetime1);
+    rpa->gen.SetTimeMap("sum2_total_"+sub_name, rpa->gen.TimeMap("sum2_total_"+sub_name)+finetime1*finetime1);
+    rpa->gen.SetNumberMap("n_total_" +sub_name, rpa->gen.NumberMap("n_total_" +sub_name)+1);
     return trial_event_generation_result::zero;
+  }
   m_evtinfo=*info;
   delete info;
 
@@ -281,14 +290,30 @@ Matrix_Element_Handler::GenerateOneTrialEvent()
   const auto sw = p_proc->Integrator()->SelectionWeight(m_eventmode) / m_sum;
   double enhance = p_proc->Integrator()->PSHandler()->EnhanceWeight();
   double wf(rpa->Picobarn()/sw/enhance);
-  if (m_eventmode!=0) {
+  // End of the trial of an accepted event. From here on, including the re-run
+  // of the pilot run, the time is booked as time after acceptance, see
+  // Phase_Space_Handler::Differential() and Sherpa::GenerateOneEvent().
+  std::chrono::high_resolution_clock::time_point accepttime;
+  if (m_eventmode!=0) {//weighted: 0
     const auto abswgt = std::abs(m_evtinfo.m_weightsmap.Nominal());
     const auto maxwt  = p_proc->Integrator()->Max();
     const auto disc   = maxwt * ran->Get();
     if (abswgt < disc) {
+      std::chrono::high_resolution_clock::time_point end1 = std::chrono::high_resolution_clock::now();
+      double finetime1 = std::chrono::duration_cast<std::chrono::nanoseconds>(end1-begin1).count()/1000000000.;
+      rpa->gen.SetTimeMap("sum_total_" +sub_name, rpa->gen.TimeMap("sum_total_" +sub_name)+finetime1);
+      rpa->gen.SetTimeMap("sum2_total_"+sub_name, rpa->gen.TimeMap("sum2_total_"+sub_name)+finetime1*finetime1);
+      rpa->gen.SetNumberMap("n_total_" +sub_name, rpa->gen.NumberMap("n_total_" +sub_name)+1);
       return trial_event_generation_result::zero;
     }
+    rpa->gen.SetNumberMap("n_gen_"+sub_name, rpa->gen.NumberMap("n_gen_"+sub_name)+1);
+    accepttime = std::chrono::high_resolution_clock::now();
+    rpa->gen.SetIsGenTime(accepttime);
+    if (abswgt > maxwt) {
+      rpa->gen.SetNumberMap("n_overw_"+sub_name, rpa->gen.NumberMap("n_overw_"+sub_name)+1);
+    }
     if (abswgt > maxwt * m_ovwth) {
+      rpa->gen.SetNumberMap("n_maxoverw_"+sub_name, rpa->gen.NumberMap("n_maxoverw_"+sub_name)+1);
       Return_Value::IncWarning(METHOD);
       msg_Info() << METHOD<<"(): Point for '" << p_proc->Name()
                  << "' exceeds maximum by "
@@ -304,7 +329,12 @@ Matrix_Element_Handler::GenerateOneTrialEvent()
       // this time
       ran->RestoreStatus(1);
       proc->ResetEvent();
+      // The re-run is not a trial of its own, its time is contained in the time
+      // after acceptance.
+      const bool timing(rpa->gen.TimingActive());
+      rpa->gen.SetTimingActive(false);
       info=proc->OneEvent(m_eventmode, Variations_Mode::all);
+      rpa->gen.SetTimingActive(timing);
       assert(info);
       if (!IsEqual(m_evtinfo.m_weightsmap.Nominal(),
                    info->m_weightsmap.Nominal(), 1e-6) &&
@@ -324,7 +354,15 @@ Matrix_Element_Handler::GenerateOneTrialEvent()
       // unweighting above, such that it is not re-used in the future
       ran->Get();
     }
+  } else {
+    rpa->gen.SetNumberMap("n_gen_"+sub_name, rpa->gen.NumberMap("n_gen_"+sub_name)+1);
+    accepttime = std::chrono::high_resolution_clock::now();
+    rpa->gen.SetIsGenTime(accepttime);
   }
+  // Set only after the re-run of the pilot run, whose call of
+  // Phase_Space_Handler::Differential() would otherwise book the accepted event
+  // as rejected and reset the flag.
+  rpa->gen.SetIsGen(true);
 
   // trial event is accepted, apply weight factor
   m_evtinfo.m_weightsmap*=wf;
@@ -333,6 +371,11 @@ Matrix_Element_Handler::GenerateOneTrialEvent()
     p_proc->GetSubevtList()->MultMEwgt(wf);
   }
   if (p_proc->GetMEwgtinfo()) (*p_proc->GetMEwgtinfo())*=wf;
+  double finetime1 = std::chrono::duration_cast<std::chrono::nanoseconds>(accepttime-begin1).count()/1000000000.;
+  rpa->gen.SetTimeMap("sum_total_" +sub_name, rpa->gen.TimeMap("sum_total_" +sub_name)+finetime1);
+  rpa->gen.SetTimeMap("sum2_total_"+sub_name, rpa->gen.TimeMap("sum2_total_"+sub_name)+finetime1*finetime1);
+  rpa->gen.SetNumberMap("n_total_" +sub_name, rpa->gen.NumberMap("n_total_" +sub_name)+1);
+  //std::cout << "    good so far" << std::endl;
   return trial_event_generation_result::non_zero;
 }
 
