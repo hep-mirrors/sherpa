@@ -190,6 +190,7 @@ namespace ATOOLS {
     Vec4D CheckMomentumConservation() const;
     double CheckChargeConservation() const;
     std::string ShortProcessName();
+    std::string ShortProcessNameUnderscored();
     bool  MomentumConserved();
     bool  CheckColour(const bool & transient=false);
     const Vec4D& Position()              const { return m_position; }
