@@ -49,7 +49,8 @@ namespace PHASIC {
     hls::scheme m_helicityscheme;
 
     double m_threshold, m_enhancefac, m_maxeps, m_rsfac, m_meanenhfunc=-1, m_effi = -1, m_effevperev=-1;
-    double m_external_selectionweight;
+    double m_timing_statistics_large_weight_fraction, m_external_selectionweight, m_ovwth;
+    int m_timing_statistics;
 
     long unsigned int m_n, m_ncut, m_itmin, m_itmax;
 

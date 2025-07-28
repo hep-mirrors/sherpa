@@ -22,6 +22,8 @@
 #include "ATOOLS/Org/Scoped_Settings.H"
 #include "ATOOLS/Phys/Weight_Info.H"
 
+#include <chrono>
+
 using namespace PHASIC;
 using namespace ATOOLS;
 using namespace BEAM;
@@ -82,6 +84,18 @@ Phase_Space_Handler::Differential(Process_Integrator *const process,
   m_cmode  = mode;
   p_active = process;
   m_wgtmap = 0.0;
+  //check if last gen event got handled - if not, then store time until now as shower time for that subprocess
+  if (rpa->gen.GetIsGen()) {
+    rpa->gen.SetIsGen(false);
+    std::string sub_name_loc = rpa->gen.GetIsGenSubName();
+    double finetimeGen = std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::high_resolution_clock::now()-rpa->gen.GetIsGenTime()).count()/1000000000.;
+    rpa->gen.SetNumberMap("n_overhead_after_"+sub_name_loc, rpa->gen.NumberMap("n_overhead_after_"+sub_name_loc)+1);
+    rpa->gen.SetTimeMap("sum_overhead_after_"+sub_name_loc, rpa->gen.TimeMap("sum_overhead_after_"+sub_name_loc)+finetimeGen);
+    rpa->gen.SetTimeMap("sum2_overhead_after_"+sub_name_loc, rpa->gen.TimeMap("sum2_overhead_after_"+sub_name_loc)+finetimeGen*finetimeGen);
+  }
+  std::string sub_name = process->Process()->Name();
+  rpa->gen.SetIsGenSubName(sub_name);
+  rpa->gen.SetNumberMap("n_trial_"+sub_name, rpa->gen.NumberMap("n_trial_"+sub_name)+1);
   // check for failure to generate a meaningful phase space point
   if (!process->Process()->GeneratePoint() ||
       !m_pspoint(process,m_cmode))
@@ -91,8 +105,22 @@ Phase_Space_Handler::Differential(Process_Integrator *const process,
   }
   // phase space trigger, calculate and construct weights
   if (process->Process()->Trigger(p_lab)) {
+    std::chrono::high_resolution_clock::time_point begin1 = std::chrono::high_resolution_clock::now();
     m_psweight = CalculatePS();
+    std::chrono::high_resolution_clock::time_point end1 = std::chrono::high_resolution_clock::now();
+    std::chrono::high_resolution_clock::time_point begin2 = std::chrono::high_resolution_clock::now();
     m_wgtmap   = CalculateME(varmode);
+    std::chrono::high_resolution_clock::time_point end2 = std::chrono::high_resolution_clock::now();
+
+    rpa->gen.SetNumberMap("n_PS_"+sub_name, rpa->gen.NumberMap("n_PS_"+sub_name)+1);
+    double finetime1 = std::chrono::duration_cast<std::chrono::nanoseconds>(end1-begin1).count()/1000000000.;
+    rpa->gen.SetTimeMap("sum_PS_"+sub_name, rpa->gen.TimeMap("sum_PS_"+sub_name)+finetime1);
+    rpa->gen.SetTimeMap("sum2_PS_"+sub_name, rpa->gen.TimeMap("sum2_PS_"+sub_name)+finetime1*finetime1);
+    rpa->gen.SetNumberMap("n_ME_"+sub_name, rpa->gen.NumberMap("n_ME_"+sub_name)+1);
+    double finetime2 = std::chrono::duration_cast<std::chrono::nanoseconds>(end2-begin2).count()/1000000000.;
+    rpa->gen.SetTimeMap("sum_ME_"+sub_name, rpa->gen.TimeMap("sum_ME_"+sub_name)+finetime2);
+    rpa->gen.SetTimeMap("sum2_ME_"+sub_name, rpa->gen.TimeMap("sum2_ME_"+sub_name)+finetime2*finetime2);
+
     m_wgtmap  *= m_psweight;
     m_wgtmap  *= (m_enhanceweight = m_psenhance.Factor(p_process->TotalXS()));
     m_wgtmap  *= (m_ISsymmetryfactor = m_pspoint.ISSymmetryFactor());

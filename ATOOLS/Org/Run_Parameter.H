@@ -5,6 +5,7 @@
 #include <string>
 #include <map>
 #include <array>
+#include <chrono>
 #include "ATOOLS/Phys/Flavour.H"
 #include "ATOOLS/Math/Matrix.H"
 #include "ATOOLS/Math/Function_Base.H"
@@ -28,6 +29,21 @@ namespace ATOOLS {
     class Gen {  // general parameters
       //std::string         m_runtime;
       long int            m_nevents, m_ngenevents, m_ntrials;
+      std::map<std::string, double> m_time_map;
+      std::map<std::string, int> m_number_map;
+      bool m_isgen;
+      std::string m_isgen_sub_name;
+      std::chrono::high_resolution_clock::time_point m_isgentime;
+      std::vector<double> epsilon_max_values = {-5.0, -4.9, -4.8, -4.7, -4.6, -4.5, -4.4, -4.3, -4.2, -4.1, -4.0, -3.9, -3.8, -3.7, -3.6, -3.5, -3.4, -3.3, -3.2, -3.1, -3.0, -2.9, -2.8, -2.7, -2.6, -2.5, -2.4, -2.3, -2.2, -2.1, -2.0, -1.9, -1.8, -1.7, -1.6, -1.5, -1.4, -1.3, -1.2, -1.1, -1.0, -0.9, -0.8, -0.7, -0.6, -0.5, -0.4, -0.3, -0.2, -0.1, 0.0};
+      std::map<std::string, double> m_chosen_alpha_map;
+      std::map<std::string, double> m_chosen_efficiency_map;
+      std::map<std::string, double> m_chosen_capped_fraction_map;
+      std::map<std::string, double> m_xsec_map;
+      std::map<std::string, int> m_fills_map;
+      std::map<std::string, std::vector<double>> m_wmax_manual_map;
+      std::map<std::string, std::vector<double>> m_alpha_manual_map;
+      std::map<std::string, std::vector<double>> m_alpha_manual_fraction_map;
+      std::map<std::string, std::vector<double>> m_efficiency_manual_map;
       long int            m_seeds[4];
       double              m_ecms;
       double              m_accu, m_sqrtaccu;
@@ -47,6 +63,23 @@ namespace ATOOLS {
       inline long   NumberOfEvents()                      { return m_nevents; }
       inline long   NumberOfGeneratedEvents()             { return m_ngenevents; }
       inline long   NumberOfTrials()                      { return m_ntrials; }
+      inline bool   GetIsGen()                            { return m_isgen; }
+      inline std::string   GetIsGenSubName()              { return m_isgen_sub_name; }
+      inline std::chrono::high_resolution_clock::time_point GetIsGenTime() { return m_isgentime; }
+      inline double TimeMap(std::string name)             { return m_time_map[name]; }
+      inline std::map<std::string, double> TimeMapAll()   { return m_time_map; }
+      inline int NumberMap(std::string name)             { return m_number_map[name]; }
+      inline std::map<std::string, int> NumberMapAll()   { return m_number_map; }
+      inline std::map<std::string, double> AlphaMap()   { return m_chosen_alpha_map; }
+      inline std::map<std::string, double> EfficiencyMap()   { return m_chosen_efficiency_map; }
+      inline std::map<std::string, double> CappedFractionMap()   { return m_chosen_capped_fraction_map; }
+      inline std::map<std::string, std::vector<double>> WmaxManualMapAll()   { return m_wmax_manual_map; }
+      inline std::map<std::string, std::vector<double>> AlphaManualMapAll()   { return m_alpha_manual_map; }
+      inline std::map<std::string, std::vector<double>> AlphaManualFractionMapAll()   { return m_alpha_manual_fraction_map; }
+      inline std::map<std::string, std::vector<double>> EfficiencyManualMapAll()   { return m_efficiency_manual_map; }
+      inline std::vector<double> EpsilonValues()   { return epsilon_max_values; }
+      inline std::map<std::string, double> XsecMap()   { return m_xsec_map; }
+      inline std::map<std::string, int> FillsMap()   { return m_fills_map; }
       inline void   SetNumberOfEvents(long N)             { m_nevents    = N; }
       inline double Ecms()                                { return m_ecms; }
       void   SetEcms(double _ecms);
@@ -73,6 +106,20 @@ namespace ATOOLS {
       bool CheckTime(const double limit=0.);
       inline void   SetNumberOfGeneratedEvents(const long gen) { m_ngenevents=gen; }
       inline void   SetNumberOfTrials(const long trials) { m_ntrials=trials; }
+      inline void   SetTimeMap(std::string name, const double time) { m_time_map[name]=time; }
+      inline void   SetNumberMap(std::string name, const int time) { m_number_map[name]=time; }
+      inline void   SetChosenAlphaMap(std::string name, const double vec) { m_chosen_alpha_map[name]=vec; }
+      inline void   SetChosenEfficiencyMap(std::string name, const double vec) { m_chosen_efficiency_map[name]=vec; }
+      inline void   SetChosenCappedFractionMap(std::string name, const double vec) { m_chosen_capped_fraction_map[name]=vec; }
+      inline void   SetWmaxManualMap(std::string name, const std::vector<double> vec) { m_wmax_manual_map[name]=vec; }
+      inline void   SetAlphaManualMap(std::string name, const std::vector<double> vec) { m_alpha_manual_map[name]=vec; }
+      inline void   SetAlphaManualFractionMap(std::string name, const std::vector<double> vec) { m_alpha_manual_fraction_map[name]=vec; }
+      inline void   SetEfficiencyManualMap(std::string name, const std::vector<double> vec) { m_efficiency_manual_map[name]=vec; }
+      inline void   SetXsecMap(std::string name, const double xsec) { m_xsec_map[name]=xsec; }
+      inline void   SetFillsMap(std::string name, const int fills) { m_fills_map[name]=fills; }
+      inline void   SetIsGen(bool isgen) { m_isgen=isgen; }
+      inline void   SetIsGenSubName(std::string isgentext) { m_isgen_sub_name=isgentext; }
+      inline void   SetIsGenTime(std::chrono::high_resolution_clock::time_point isgentime) { m_isgentime=isgentime; }
       inline const std::string &UserName() { return m_username; }
       inline const std::string &HostName() { return m_hostname; }
       std::string Variable(const std::string &key);

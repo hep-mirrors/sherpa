@@ -228,6 +228,7 @@ bool Sherpa::GenerateOneEvent(bool reset)
   if (m_evt_starttime<0.0) m_evt_starttime=rpa->gen.Timer().RealTime();
 
   if (reset) p_eventhandler->Reset();
+  rpa->gen.SetIsGen(false);
   if (p_eventhandler->GenerateEvent(p_inithandler->Mode())) {
     if(m_debuginterval>0 && rpa->gen.NumberOfGeneratedEvents()%m_debuginterval==0){
       std::string fname=ToString(rpa->gen.NumberOfGeneratedEvents())+".dat";
@@ -252,6 +253,13 @@ bool Sherpa::GenerateOneEvent(bool reset)
     }
     else {
       m_trials+=(*blobs->FindFirst(btp::Signal_Process))["Trials"]->Get<double>();
+      std::string sub_name = rpa->gen.GetIsGenSubName();
+      std::chrono::high_resolution_clock::time_point end3 = std::chrono::high_resolution_clock::now();
+      double finetime = std::chrono::duration_cast<std::chrono::nanoseconds>(end3-rpa->gen.GetIsGenTime()).count()/1000000000.;
+      rpa->gen.SetNumberMap("n_kept_"+sub_name, rpa->gen.NumberMap("n_kept_"+sub_name)+1);
+      rpa->gen.SetTimeMap("sum_overhead_after_kept_" +sub_name, rpa->gen.TimeMap("sum_overhead_after_kept_" +sub_name)+finetime);
+      rpa->gen.SetTimeMap("sum2_overhead_after_kept_"+sub_name, rpa->gen.TimeMap("sum2_overhead_after_kept_"+sub_name)+finetime*finetime);
+      rpa->gen.SetNumberMap("n_overhead_after_kept_" +sub_name, rpa->gen.NumberMap("n_overhead_after_kept_" +sub_name)+1);
     }
 
     if (msg_LevelIsEvents()) {
@@ -351,9 +359,442 @@ bool Sherpa::SummarizeRun()
                  ((size_t) rpa->gen.Timer().RealTime()-m_evt_starttime)
               <<" evts/day                    "<<std::endl;
     p_eventhandler->Finish();
+
+    Settings& s = Settings::GetMainSettings();
+    double timing_statistics_large_weight_fraction=s["TIMING_STATISTICS_LARGE_WEIGHT_FRACTION"].SetDefault(0.001).Get<double>();
+    double timing_statistics_det_sim=s["TIMING_STATISTICS_DET_SIM_IN_S"].SetDefault(0.0).Get<double>();
+    int timing_statistics=s["TIMING_STATISTICS"].SetDefault(0).Get<int>();
+    int generation_mode=ToType<int>(rpa->gen.Variable("EVENT_GENERATION_MODE"));
+    if (not timing_statistics) return true;
+    double m_ovwth = s["OVERWEIGHT_THRESHOLD"].SetDefault(1e12).Get<double>();
+    
+
+    std::map<std::string, double>  time_map = rpa->gen.TimeMapAll();
+    std::map<std::string, int>     number_map = rpa->gen.NumberMapAll();
+    std::vector<std::string> num_types = {"total", "trial", "PS", "ME", "gen", "overw", "maxoverw", "kept"};//
+    std::map<std::string, double>  sum_map;
+    std::map<std::string, double>  sum_mult_map;//defined as double to simplify following divisions
+    for (const std::string& num_type : num_types) {
+      sum_map[num_type] = 0;
+    }
+    //loop over subprocesses
+    std::vector<std::string> sum_types = {"total", "PS", "ME", "overhead", "overhead_after_kept", "overhead_after"};//
+    std::map<std::string, double> total;
+    for (const std::string& sum_type : sum_types) {
+      total[sum_type] = 0;
+    }
+    for (auto const& [key, val] : time_map) {
+      if (key.rfind("sum_PS_", 0) == 0) {
+        std::string sub_name = key.substr(7);
+        //msg_Info() << sub_name << std::endl;
+        msg_Info() << std::endl;
+        for (const std::string& num_type : num_types) {
+          if (timing_statistics>4) {
+            msg_Info()<<sub_name<<" : "<< "n_"<<num_type<<": "<<number_map["n_"+num_type+"_"+sub_name]<<std::endl;
+          }
+          sum_map[num_type] += number_map["n_"+num_type+"_"+sub_name];
+          std::string mult=sub_name.substr(0,4);
+          if (sum_mult_map.find(mult+"_"+num_type) == sum_mult_map.end()) {
+            sum_mult_map[mult+"_"+num_type] = 0;
+          }
+          sum_mult_map[mult+"_"+num_type] += number_map["n_"+num_type+"_"+sub_name];
+        }
+        double w, w2, unc;
+        if (timing_statistics>4) {
+          for (const std::string& sum_type : sum_types) {
+            if (sum_type=="overhead") continue;
+            printTime(sub_name, sum_type, time_map, number_map);
+          }
+          printEffi(sub_name, "Cut", "ME", "trial", number_map);
+          printEffi(sub_name, "Unweighting", "gen", "ME", number_map);
+          printEffi(sub_name, "Total", "gen", "trial", number_map);
+          w = time_map["sum_PS_"+sub_name]+time_map["sum_ME_"+sub_name];
+          msg_Info()<< sub_name << " : "<<"Summed time: "<<w<<" s"<<std::endl;
+        }
+        total["PS"] += time_map["sum_PS_"+sub_name];
+        total["ME"] += time_map["sum_ME_"+sub_name];
+        total["overhead"] += time_map["sum_total_"+sub_name]-(time_map["sum_PS_"+sub_name]+time_map["sum_ME_"+sub_name]);
+
+        w = time_map["sum_total_"+sub_name];
+        if (timing_statistics>4) {
+          msg_Info()<< sub_name << " : "<<"Total time: "<<w<<" s"<<std::endl;
+        }
+        total["total"] += w;
+        w = time_map["sum_overhead_after_kept_"+sub_name];
+        if (timing_statistics>4) {
+          msg_Info()<< sub_name << " : "<<"overhead_after_kept time: "<<w<<" s"<<std::endl;
+        }
+        total["overhead_after_kept"] += w;
+        w = time_map["sum_overhead_after_"+sub_name];
+        if (timing_statistics>4) {
+          msg_Info()<< sub_name << " : "<<"overhead_after time: "<<w<<" s"<<std::endl;
+        }
+        total["overhead_after"] += w;
+      }
+    }
+    if (timing_statistics>4) {
+      for (const std::string& num_type : num_types) {
+        msg_Info()<<"sum_map['n_"<<num_type<<"']: "<<sum_map[num_type]<<std::endl;
+      }
+      for ( const auto &myPair : sum_mult_map) {
+        msg_Info()<<"sum_mult_map['"<<myPair.first<<"']: "<<sum_mult_map[myPair.first]<<std::endl;
+      }
+      for (const std::string& sum_type : sum_types) {
+        msg_Info()<<"total['"<<sum_type<<"']: "<<total[sum_type]<<std::endl;
+      }
+    }
+    //following for chosen epsilon max
+    //Total time and splitting into unweighting steps
+    total["overhead_during"] = total["overhead"];
+    total["overhead_after"] = total["overhead_after_kept"]+total["overhead_after"];
+    if (timing_statistics>4) {
+      msg_Info()<<std::endl<<"Total time: "<< total["total"]+total["overhead_after"] <<" s"<<std::endl;
+      msg_Info()<<" (It sums up to 100%. 'overhead' is split into 'during' and 'after' unweighting.)"<<std::endl;
+      for (const std::string& sum_type : {"PS", "ME", "overhead_during", "overhead_after"}) {
+        msg_Info()<<" "<< std::right<<std::setw(2) << round(total[sum_type]/(total["total"]+total["overhead_after"])*100)<<"% in '"<<sum_type<<"'"<<std::endl;
+      }
+    }
+    //split by subprocesses
+    double sepsum = 0;
+    std::map<std::string, double> sudakov_efficiency;
+    //uncorrelated between subprocesses
+    std::map<std::string, double> sudakov_efficiency_up;
+    std::map<std::string, double> sudakov_efficiency_down;
+    //correlated between subprocesses
+    std::map<std::string, double> sudakov_efficiency_up_corr;
+    std::map<std::string, double> sudakov_efficiency_down_corr;
+    for (auto const& [key, val] : time_map) {
+      if (key.rfind("sum_PS_", 0) == 0) {
+	std::string sub_name = key.substr(7);
+	if (number_map["n_kept_"+sub_name]>0) {//take sub specific
+	  sudakov_efficiency[sub_name] = number_map["n_kept_"+sub_name]*1.0/number_map["n_gen_"+sub_name];
+	  double d_sud = pow(number_map["n_kept_"+sub_name]*max(1, number_map["n_gen_"+sub_name]-number_map["n_kept_"+sub_name])*1.0/pow(number_map["n_gen_"+sub_name],3),0.5);
+	  sudakov_efficiency_up[sub_name] = sudakov_efficiency[sub_name]+d_sud;
+	  sudakov_efficiency_down[sub_name] = sudakov_efficiency[sub_name]-d_sud;
+	  sudakov_efficiency_up_corr[sub_name] = sudakov_efficiency[sub_name];
+	  sudakov_efficiency_down_corr[sub_name] = sudakov_efficiency[sub_name];
+	} else {
+	  std::string mult=sub_name.substr(0,4);
+	  if (sum_mult_map.find(mult+"_kept") != sum_mult_map.end() and sum_mult_map[mult+"_kept"]>0) {
+	    //assume average of same multi: e.g. 2_6
+	    sudakov_efficiency[sub_name] = sum_mult_map[mult+"_kept"]/sum_mult_map[mult+"_gen"];
+	  } else {
+	    //assume average of whole sample
+	    sudakov_efficiency[sub_name] = sum_map["kept"]/sum_map["gen"];
+	  }
+	  sudakov_efficiency_up[sub_name] = sudakov_efficiency[sub_name];
+	  sudakov_efficiency_down[sub_name] = sudakov_efficiency[sub_name];
+	  sudakov_efficiency_up_corr[sub_name] = 1.0;
+	  sudakov_efficiency_down_corr[sub_name] = 0.0;
+	}
+	//msg_Info() << sub_name << ": sudakov_efficiency[sub_name]: " << sudakov_efficiency[sub_name] << std::endl;
+	double this_sepsum = time_map["sum_overhead_after_"+sub_name]+time_map["sum_overhead_after_kept_"+sub_name]+time_map["sum_total_"+sub_name];
+	sepsum += this_sepsum;
+      }
+    }
+    if (timing_statistics>4) msg_Info() << "Total separate sum: " << sepsum << "s resulting in: " << 60*60*24/sepsum*sum_map["kept"] << "evts/day" << std::endl;
+
+    //epsilon_max scan manual definition
+    std::vector<double> epsilon_values = rpa->gen.EpsilonValues();
+    std::map<std::string, std::vector<double>> alpha_manual_map = rpa->gen.AlphaManualMapAll();
+    std::map<std::string, std::vector<double>> wmax_manual_map = rpa->gen.WmaxManualMapAll();
+    std::map<std::string, std::vector<double>> efficiency_manual_map = rpa->gen.EfficiencyManualMapAll();
+    std::map<std::string, double> xsec_map = rpa->gen.XsecMap();
+    std::vector<double> mean_manual_alpha(epsilon_values.size(), -1);
+    std::vector<double> mean_manual_events(epsilon_values.size(), -1);
+    std::vector<double> mean_manual_eff_events(epsilon_values.size(), -1);
+    std::vector<double> mean_manual_events_up(epsilon_values.size(), -1);
+    std::vector<double> mean_manual_events_down(epsilon_values.size(), -1);
+    std::vector<std::map<std::string, double>> mean_manual_events_time(epsilon_values.size());
+    int optimal_manual_i = 0;
+    double optimal_manual_sum_t_trial = 0;
+    double plain_xsec_sum = 0;
+    for(int i=0; i < epsilon_values.size(); i++){
+      double sum_alpha = 0;
+      double sum_t_trial = 0;
+      double sum_p_unw = 0;
+      double sum_p_eff = 0;
+      double sum_p_unw_up = 0;
+      double sum_p_unw_down = 0;
+      double sum_p_unw_up_corr = 0;
+      double sum_p_unw_down_corr = 0;
+      double sum_t_ME = 0;
+      double sum_t_PS = 0;
+      double sum_t_ov_during = 0;
+      double sum_t_ov_after = 0;
+      //double current_epsilon = epsilon_values[i];
+      for (auto const& [key, val] : alpha_manual_map) {
+	std::string sub_name = key;
+	if (wmax_manual_map[sub_name][i]==-2) continue; //this means that whisto is empty
+	//std::cout << sub_name << std::endl;
+	double curr_xsec = dabs(xsec_map[sub_name])/efficiency_manual_map[sub_name][i]/alpha_manual_map[sub_name][i]; //need to weight with sampling probability in manual approach. Why not sudakov? - bacause happens afterwards - but still more events needed for optimal eff events? no
+	if (i==0) plain_xsec_sum += dabs(xsec_map[sub_name]);
+	if (alpha_manual_map[sub_name][i]==-1) {
+	  msg_Info() << "WARNING: for " << sub_name << " there is no alpha value for i=" << i << " corresponding to eps=" << exp(log(10)*epsilon_values[i]) << std::endl;
+	}
+	double tges  = (time_map["sum_total_"+sub_name])/number_map["n_total_"+sub_name]; //in s
+	if (number_map["n_total_"+sub_name]==0) {
+	  tges = 0; //critical, because underestimate - need to make sure that enough events generated...unc estimate hard, because 0 is 0
+	}
+	double overhead_after = (time_map["sum_overhead_after_kept_"+sub_name]+time_map["sum_overhead_after_"+sub_name])/number_map["n_gen_"+sub_name];
+	if (number_map["n_gen_"+sub_name]==0) {
+	  overhead_after = 0;
+	}
+	sum_t_trial += (tges+efficiency_manual_map[sub_name][i]*(overhead_after+sudakov_efficiency[sub_name]*timing_statistics_det_sim))*curr_xsec;
+	sum_p_unw += efficiency_manual_map[sub_name][i]*sudakov_efficiency[sub_name]*curr_xsec;
+	sum_p_eff += efficiency_manual_map[sub_name][i]*sudakov_efficiency[sub_name]*alpha_manual_map[sub_name][i]*curr_xsec;
+
+	//100% correlated for very few kept events
+	sum_p_unw_up_corr += efficiency_manual_map[sub_name][i]*sudakov_efficiency_up_corr[sub_name]*curr_xsec;
+	sum_p_unw_down_corr += efficiency_manual_map[sub_name][i]*sudakov_efficiency_down_corr[sub_name]*curr_xsec;
+	//0% correlated for a lot kept events - could even make 2 sudakov uncertainties for this ...
+	sum_p_unw_up += pow(efficiency_manual_map[sub_name][i]*(sudakov_efficiency_up[sub_name]-sudakov_efficiency[sub_name])*curr_xsec,2);
+	sum_p_unw_down += pow(efficiency_manual_map[sub_name][i]*(sudakov_efficiency[sub_name]-sudakov_efficiency_down[sub_name])*curr_xsec,2);
+
+	//split by evegen step
+	if (number_map["n_total_"+sub_name]>0) {
+	  sum_t_ME += time_map["sum_ME_"+sub_name]/number_map["n_total_"+sub_name]*curr_xsec;
+	  sum_t_PS += time_map["sum_PS_"+sub_name]/number_map["n_total_"+sub_name]*curr_xsec;
+	  sum_t_ov_during += (time_map["sum_total_"+sub_name]-time_map["sum_ME_"+sub_name]-time_map["sum_PS_"+sub_name])/number_map["n_total_"+sub_name]*curr_xsec;
+	}
+	sum_t_ov_after += (overhead_after+sudakov_efficiency[sub_name]*timing_statistics_det_sim)*efficiency_manual_map[sub_name][i]*curr_xsec;
+
+	sum_alpha += alpha_manual_map[sub_name][i]*efficiency_manual_map[sub_name][i]*sudakov_efficiency[sub_name]*curr_xsec; //=sum_p_eff - everything consistent :)
+      }
+      mean_manual_alpha[i] = sum_alpha/sum_p_unw;
+      mean_manual_events[i] = 60*60*24/(sum_t_trial/sum_p_unw);
+      mean_manual_eff_events[i] = 60*60*24/(sum_t_trial/sum_p_eff);
+      mean_manual_events_up[i] = 60*60*24/(sum_t_trial/(sum_p_unw_up_corr+pow(sum_p_unw_up,0.5)));
+      mean_manual_events_down[i] = 60*60*24/(sum_t_trial/(sum_p_unw_down_corr-pow(sum_p_unw_down,0.5)));
+      mean_manual_events_time[i]["ME"] = sum_t_ME;
+      mean_manual_events_time[i]["PS"] = sum_t_PS;
+      mean_manual_events_time[i]["ov_during"] = sum_t_ov_during;
+      mean_manual_events_time[i]["ov_after"] = sum_t_ov_after;
+      mean_manual_events_time[i]["sum"] = sum_t_trial;
+      //"=" to update optimal_manual_sum_eff, if i=0 is optimal
+      if (mean_manual_eff_events[i]>=mean_manual_eff_events[optimal_manual_i]) {
+	optimal_manual_i=i;
+	optimal_manual_sum_t_trial=sum_t_trial;
+      }
+    }
+
+    //same as above, but for fraction 0.001
+    //epsilon_max scan manual definition
+    std::map<std::string, std::vector<double>> alpha_manual_fraction_map = rpa->gen.AlphaManualFractionMapAll();
+    std::vector<double> mean_manual_fraction_alpha(epsilon_values.size(), -1);
+    std::vector<double> mean_manual_fraction_events(epsilon_values.size(), -1);
+    std::vector<double> mean_manual_fraction_eff_events(epsilon_values.size(), -1);
+    int optimal_manual_fraction_i = 0;
+    double optimal_manual_fraction_sum_t_trial = 0;
+    for(int i=0; i < epsilon_values.size(); i++){
+      double sum_alpha = 0;
+      double sum_t_trial = 0;
+      double sum_p_unw = 0;
+      double sum_p_eff = 0;
+      //for correction factor for smapling according to normal alpha and not fraction alpha
+      double min_p_eff = 0;
+      double sum_sudakov = 0;
+      for (auto const& [key, val] : alpha_manual_fraction_map) {
+	std::string sub_name = key;
+	if (wmax_manual_map[sub_name][i]==-2) continue; //this means that whisto is empty
+	//msg_Info() << sub_name << std::endl;
+	double curr_xsec = dabs(xsec_map[sub_name])/efficiency_manual_map[sub_name][i]/alpha_manual_map[sub_name][i]; //need to weight with sampling probability in manual approach. Why not sudakov? - bacause happens afterwards - but still more events needed for optimal eff events? no
+	if (alpha_manual_fraction_map[sub_name][i]==-1) {
+	  msg_Info() << "WARNING: for " << sub_name << " there is no alpha value for i=" << i << " corresponding to eps=" << exp(log(10)*epsilon_values[i]) << std::endl;
+	}
+	double tges  = (time_map["sum_total_"+sub_name])/number_map["n_total_"+sub_name]; //in s
+	if (number_map["n_total_"+sub_name]==0) {
+	  tges = 0; //critical, because underestimate - need to make sure that enough events generated...unc estimate hard, because 0 is 0
+	}
+	double overhead_after = (time_map["sum_overhead_after_kept_"+sub_name]+time_map["sum_overhead_after_"+sub_name])/number_map["n_gen_"+sub_name];
+	if (number_map["n_gen_"+sub_name]==0) {
+	  overhead_after = 0;
+	}
+	sum_t_trial += (tges+efficiency_manual_map[sub_name][i]*(overhead_after+sudakov_efficiency[sub_name]*timing_statistics_det_sim))*curr_xsec;
+	sum_p_unw += efficiency_manual_map[sub_name][i]*sudakov_efficiency[sub_name]*curr_xsec;
+	sum_p_eff += efficiency_manual_map[sub_name][i]*sudakov_efficiency[sub_name]*alpha_manual_fraction_map[sub_name][i]*curr_xsec;
+
+	sum_alpha += alpha_manual_fraction_map[sub_name][i]*efficiency_manual_map[sub_name][i]*sudakov_efficiency[sub_name]*curr_xsec; //=sum_p_eff - everything consistent :)
+	sum_sudakov += dabs(xsec_map[sub_name])*sudakov_efficiency[sub_name];
+	double temp_p_eff = efficiency_manual_map[sub_name][i]*alpha_manual_fraction_map[sub_name][i]*curr_xsec/dabs(xsec_map[sub_name]);//*sudakov_efficiency[sub_name]
+	if (min_p_eff==0 or min_p_eff>temp_p_eff) {
+	  min_p_eff = temp_p_eff;
+	}
+      }
+      min_p_eff *= sum_sudakov; //= *sum_raw_xsec    * sum_sudakov/sum_raw_xsec;
+      mean_manual_fraction_alpha[i] = min_p_eff/sum_p_unw;
+      mean_manual_fraction_events[i] = 60*60*24/(sum_t_trial/sum_p_unw);
+      mean_manual_fraction_eff_events[i] = 60*60*24/(sum_t_trial/min_p_eff);
+      //"=" to update optimal_manual_sum_eff, if i=0 is optimal
+      if (mean_manual_fraction_eff_events[i]>=mean_manual_fraction_eff_events[optimal_manual_fraction_i]) {
+	optimal_manual_fraction_i=i;
+	optimal_manual_fraction_sum_t_trial=sum_t_trial;
+      }
+    }
+
+    //make nice final table IV (for chosen emax)
+    if (timing_statistics>3) {
+      std::map<std::string, double> chosen_alpha_map = rpa->gen.AlphaMap();
+      std::map<std::string, double> chosen_efficiency_map = rpa->gen.EfficiencyMap();
+      std::cout << "┌──────────────────────────────┬──────────────┬─────────────────────────────────────────────────────────┐" << std::endl;
+      std::cout << "│    sampling contribution     │              │                                                         │" << std::endl;
+      std::cout << "│ xsec*h  efficiency  stat.dil │ time |xsec*h|│ subprocess                                              │" << std::endl;
+      std::cout << "├──────────────────────────────┼──────────────┼─────────────────────────────────────────────────────────┤" << std::endl;
+      const auto default_precision{std::cout.precision()};
+      std::cout << std::setprecision(3);
+      for (auto const& [key, val] : time_map) {
+        if (key.rfind("sum_PS_", 0) != 0) continue;
+        std::string sub_name = key.substr(7);
+        std::cout<<"│ "<< std::left<<std::setw(9) << xsec_map[sub_name]<<"";
+        std::cout<<" "<< std::left<<std::setw(9) << chosen_efficiency_map[sub_name]<<"";
+        std::cout<<" "<< std::left<<std::setw(8) << chosen_alpha_map[sub_name]<<" ";
+        double this_sepsum = time_map["sum_overhead_after_"+sub_name]+time_map["sum_overhead_after_kept_"+sub_name]+time_map["sum_total_"+sub_name];
+        std::cout <<"│ " <<std::right<<std::setw(2) << round(this_sepsum/(total["overhead_after"]+total["total"])*100)<<"%  ";
+        std::cout <<" " <<std::right<<std::setw(4) << round(dabs(xsec_map[sub_name])/plain_xsec_sum*1000.)/10.<<"%  ";
+        std::cout <<"│ " <<std::left<<std::setw(55)<< sub_name << " │" << std::endl;
+      }
+      std::cout << std::setprecision(default_precision);
+      std::cout << "└──────────────────────────────┴──────────────┴─────────────────────────────────────────────────────────┘" << std::endl << std::endl;
+    }
+
+    //make nice final table III (for chosen emax)
+    if (timing_statistics>2) {
+      std::cout << "┌─────────────────────────┬──────────────┬─────────────────────────────────────────────────────────┐" << std::endl;
+      std::cout << "│    time contribution    │              │                                                         │" << std::endl;
+      std::cout << "│ PS   ME   ov.h.  shower │ time |xsec*h|│ subprocess                                              │" << std::endl;
+      std::cout << "├─────────────────────────┼──────────────┼─────────────────────────────────────────────────────────┤" << std::endl;
+      for (auto const& [key, val] : time_map) {
+        if (key.rfind("sum_PS_", 0) != 0) continue;
+        std::string sub_name = key.substr(7);
+        if (number_map["n_total_"+sub_name]>0) {
+          double t_ME = time_map["sum_ME_"+sub_name]/number_map["n_total_"+sub_name];
+          double t_PS = time_map["sum_PS_"+sub_name]/number_map["n_total_"+sub_name];
+          double t_ov_during = (time_map["sum_total_"+sub_name]-time_map["sum_ME_"+sub_name]-time_map["sum_PS_"+sub_name]-time_map["sum_PDF_"+sub_name])/number_map["n_total_"+sub_name];
+          double t_ov_after = (time_map["sum_overhead_after_kept_"+sub_name]+time_map["sum_overhead_after_"+sub_name])/number_map["n_total_"+sub_name];
+          double sum = t_ME+t_PS+t_ov_during+t_ov_after;
+          msg_Info()<<"│ "<< std::right<<std::setw(2) << round(t_PS/sum*100)<<"% ";
+          msg_Info()<<" "<< std::right<<std::setw(2) << round(t_ME/sum*100)<<"% ";
+          msg_Info()<<"  "<< std::right<<std::setw(2) << round(t_ov_during/sum*100)<<"% ";
+          msg_Info()<<"   "<< std::right<<std::setw(2) << round(t_ov_after/sum*100)<<"%   ";
+        } else {
+          std::cout << "│ --   --    --     --   ";
+        }
+        double this_sepsum = time_map["sum_overhead_after_"+sub_name]+time_map["sum_overhead_after_kept_"+sub_name]+time_map["sum_total_"+sub_name];
+        std::cout <<"│ " <<std::right<<std::setw(2) << round(this_sepsum/(total["overhead_after"]+total["total"])*100)<<"%  ";
+        std::cout <<" " <<std::right<<std::setw(4) << round(dabs(xsec_map[sub_name])/plain_xsec_sum*1000.)/10.<<"%  ";
+        std::cout <<"│ " <<std::left<<std::setw(55)<< sub_name << " │" << std::endl;
+      }
+      std::cout << "└─────────────────────────┴──────────────┴─────────────────────────────────────────────────────────┘" << std::endl;
+    }
+
+    //make nice final table II
+    if (timing_statistics>1) {
+      std::cout << "┌─────────────┬─────────────────────────────────────────────┐" << std::endl;
+      std::cout << "│ Max_Epsilon │ PS time   ME time   overhead    shower etc  │" << std::endl;
+      std::cout << "├─────────────┼─────────────────────────────────────────────┤" << std::endl;
+      for(int i=0; i < epsilon_values.size(); i++){
+        std::cout << "│ 1e" <<std::left<<std::setw(9)<< epsilon_values[i] << " │ ";
+        msg_Info()<<" "<< std::right<<std::setw(2) << round(mean_manual_events_time[i]["PS"]/mean_manual_events_time[i]["sum"]*100)<<"%      ";
+        msg_Info()<<" "<< std::right<<std::setw(2) << round(mean_manual_events_time[i]["ME"]/mean_manual_events_time[i]["sum"]*100)<<"%      ";
+        msg_Info()<<" "<< std::right<<std::setw(2) << round(mean_manual_events_time[i]["ov_during"]/mean_manual_events_time[i]["sum"]*100)<<"%       ";
+        msg_Info()<<" "<< std::right<<std::setw(2) << round(mean_manual_events_time[i]["ov_after"]/mean_manual_events_time[i]["sum"]*100)<<"%         │" << std::endl;
+      }
+      std::cout << "└─────────────┴─────────────────────────────────────────────┘" << std::endl;
+    }
+
+    //make nice final table I
+    std::cout << "┌─────────────────────────────┬─────────────────────────────────┬─────────────────────────────────┐" << std::endl;
+    std::cout << "│                             │          Average region         │       Large weight region       │" << std::endl;
+    std::cout << "│                             │           (fraction: 1)         │        (fraction: "<< timing_statistics_large_weight_fraction <<")        │" << std::endl;
+    std::cout << "│ Max_Epsilon    events/day   │ eff. events/day     sample size │ eff. events/day     sample size │" << std::endl;
+    std::cout << "├─────────────────────────────┼─────────────────────────────────┼─────────────────────────────────┤" << std::endl;
+    const auto default_precision{std::cout.precision()};
+    std::cout << std::setprecision(4);
+    for(int i=0; i < epsilon_values.size(); i++){
+      std::cout << "│ 1e" <<std::left<<std::setw(9)<< epsilon_values[i] << "    " <<std::setw(12)<< mean_manual_events[i] << " │ ";
+      if (i==optimal_manual_i) {
+        std::cout <<std::setw(15)<< mean_manual_eff_events[i] << "<--  " <<std::left<<std::setw(11) << 1./mean_manual_alpha[i] << " │ ";
+      } else {
+        std::cout <<std::setw(15)<< mean_manual_eff_events[i] << "     " <<std::left<<std::setw(11) << 1./mean_manual_alpha[i] << " │ ";
+      }
+      if (i==optimal_manual_fraction_i) {
+        std::cout <<std::setw(15)<< mean_manual_fraction_eff_events[i] << "<--  " <<std::left<<std::setw(11) << 1./mean_manual_fraction_alpha[i] << " │" << std::endl;
+      } else {
+        std::cout <<std::setw(15)<< mean_manual_fraction_eff_events[i] << "     " <<std::left<<std::setw(11) << 1./mean_manual_fraction_alpha[i] << " │" << std::endl;
+      }
+    }
+    std::cout << "└─────────────────────────────┴─────────────────────────────────┴─────────────────────────────────┘" << std::endl;
+    //show relative sudakov uncertainty for average region optimal point
+    std::cout << "Relative Sudakov uncertainty for average region optimal point: +"<< (mean_manual_events_up[optimal_manual_i]/mean_manual_events[optimal_manual_i]-1)*100. <<"% -"<< (1-mean_manual_events_down[optimal_manual_i]/mean_manual_events[optimal_manual_i])*100. <<"%" << std::endl;
+    std::cout << std::setprecision(default_precision);
+    if (timing_statistics_det_sim!=0) {
+      std::cout << "With assumed detector simulation time of "<< timing_statistics_det_sim<<" s per kept event." << std::endl;
+    } else {
+      std::cout << "Note: No detector simulation time was considered for the above table(s). Use TIMING_STATISTICS_DET_SIM_IN_S to set it." << std::endl;
+    }
+
+    std::map<std::string, int> whistofill_map = rpa->gen.FillsMap();
+    double average_whistofill = 0;
+    double xsecsum = 0;
+    for (auto const& [key, val] : time_map) {
+      std::string sub_name = key.substr(7);
+      average_whistofill += dabs(xsec_map[sub_name])*whistofill_map[sub_name];
+      xsecsum += dabs(xsec_map[sub_name]);
+    }
+    average_whistofill = average_whistofill/xsecsum;
+    if (average_whistofill<pow(10,5)) {
+      std::cout << "Warning: There are on average only "<< average_whistofill << " events generated in the integration phase per process. For a reliable prediction of the impact of Max_Epslion choises more than 1e6 are recommended. Please increase PSI: MAX_OPT during integration." << std::endl;
+    } else if (average_whistofill<pow(10,6)) {
+      std::cout << "Info: There are on average only "<< average_whistofill << " events generated in the integration phase per process. For a reliable prediction of the impact of Max_Epslion choises more than 1e6 are recommended. One could increase PSI: MAX_OPT during integration." << std::endl;
+    }
+
+    std::map<std::string, double> chosen_capped_fraction_map = rpa->gen.CappedFractionMap();
+    double capfraction = 0;
+    for (auto const& [key, val] : time_map) {
+      std::string sub_name = key.substr(7);
+      capfraction += dabs(xsec_map[sub_name])*chosen_capped_fraction_map[sub_name];
+    }
+    capfraction = capfraction/xsecsum*100;
+    if (capfraction>0.01) {
+      std::cout << "Warning: OVERWEIGHT_THRESHOLD is set to: " << m_ovwth << " which results in a loss of total cross section due to max weight capping of: " << std::round(capfraction*100)/100 << "%. Please consider chosing a smaller Max_Epsilon or a larger OVERWEIGHT_THRESHOLD." << std::endl;
+    }
+    if (generation_mode==0) {
+      //there is no pilot run for weighted events and thus the corresponding overhead can not be estimated in this case. Try to convey this message in user friendly language:
+      std::cout << "Warning: TIMING_STATISTICS was run in 'weighted' mode. The estimate of 'shower etc.' is only correctly determined from 'unweighted' or '(partially) unweighted' events." << std::endl;
+    }
   }
   return true;
 }
+
+void Sherpa::printEffi(std::string sub_name, std::string name, std::string num_type, std::string denom_type, std::map<std::string, int> &number_map)
+{
+  int n_num = number_map["n_"+num_type+"_"+sub_name];
+  int n_denom = number_map["n_"+denom_type+"_"+sub_name];
+  double unc = GetEffiUnc(n_num, n_denom);
+  msg_Info()<< sub_name << " : "<< name << " efficiency: "<<n_num/(double)n_denom<<" +-"<< unc <<std::endl;
+}
+
+double Sherpa::GetEffiUnc(int n_num, int n_denom)
+{
+  //from gaussion error propagation with n_denom=n_num+rest
+  return pow(n_num*(n_denom-n_num)/pow(n_denom,3),0.5);
+}
+
+void Sherpa::printTime(std::string sub_name, std::string time_type, std::map<std::string, double> &time_map, std::map<std::string, int> &number_map)
+{
+  double w = time_map["sum_"+time_type+"_"+sub_name];
+  double w2 = time_map["sum2_"+time_type+"_"+sub_name];
+  int n = number_map["n_"+time_type+"_"+sub_name];
+  double unc = GetUnc(w, w2, n);
+  msg_Info()<< sub_name << " : "<<"Avg time per "<< time_type << " weight: "<<w/(double)n*1000<<" ms +-"<< unc*1000. <<" ms"<<std::endl;
+}
+
+
+double Sherpa::GetUnc(double w, double w2,int n)
+{
+  return pow((w2-pow(w,2)/((double)n))/((double)n*((double)n-1.0)),0.5);
+}
+
 
 long int Sherpa::NumberOfEvents() const
 {

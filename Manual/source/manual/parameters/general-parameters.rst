@@ -872,7 +872,41 @@ weights is implemented as :option:`SHOWER:MAX_REWEIGHT_FACTOR` (default: 1e3).
 Any variation weights accumulated during an event and larger than this factor
 will be ignored and reset to 1.
 
+.. _Timing_statistics:
+
+Timing statistics
+=================
+
+Timing statistics in Sherpa can be enabled setting :option:`TIMING_STATISTICS` (default 0).
+It provides information about the optimal choice of :ref:`Max_Epsilon`.
+Furthermore, it aims to help to identify computational time bottle necks.
+For more precise predictions it is recommended to use a large :ref:`Max_Epsilon`, like 0.5, during the timing run. Additionally, as many as reasonably possible events should be generated.
+The larger :option:`TIMING_STATISTICS`, the more information are printed at the end of event generation.
+All possible settings of :option:`TIMING_STATISTICS` are:
+
+:samp:`{0}`
+      No additional timing information are printed.
+
+:samp:`{1}`
+      A table of generated events per day, generated effective events per day and relative sample size are shown for different :ref:`Max_Epsilon` values.
+      With increasing :ref:`Max_Epsilon` the statistical dilution, (sum w)^2/(sum w^2), increases and more events need to be stored for each effective event. This relative factor is shown in the column `sample size`. Note: A large fraction of negative weights also increases the statistical dilution.
+      The numbers are shown for two phase space regions: 1) an average phase space region and 2) a phase space region populated only by the fraction :option:`TIMING_STATISTICS_LARGE_WEIGHT_FRACTION` (default 0.001) of largest weights. The second region is relevant for very large samples which are also used in quite small sub phase spaces which can be dominated by large weights. Two arrows "<--" indicate the optimal choice for each region in terms of computational time. The dominant source of uncertainty is the Sudakov veto probability whose relative uncertainty is shown on the bottom of the table.
+
+:samp:`{2}`
+      A table of the contribution of different computational steps (PS, ME, overhead, shower etc) is shown for the same :ref:`Max_Epsilon` values. The :ref:`Max_Epsilon` affects directly the contribution of `shower etc`. Due to altered relative time contributions of the subprocesses, the other contributions are indirectly affected.
+
+:samp:`{3}`
+      For the :ref:`Max_Epsilon` value chosen for the timing run, the contributions of different computational steps are shown for the contributing subprocesses. A "--" is shown when the number of generated events was too low. Additionally, the contribution of each subprocess to the total computation time and to the total enhanced cross section is shown.
+
+:samp:`{4}`
+      For the :ref:`Max_Epsilon` value chosen for the timing run, the efficiency and the statistical dilution are shown to understand differing contributions of subprocesses to the computational time compared to the total enhanced cross section.
+
+:samp:`{5}`
+      All collected information about the computational steps for each subprocess are printed.
+
+
 .. _MPI parallelization:
+
 
 MPI parallelization
 ===================
