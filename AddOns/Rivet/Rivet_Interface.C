@@ -41,6 +41,9 @@ namespace SHERPARIVET {
     bool   m_finished;
     bool   m_splitjetconts, m_splitSH, m_splitpm, m_splitcoreprocs, m_usehepmcshort;
     bool   m_outputmeonlyvariations;
+#ifdef HAVE_HDF5
+    bool   m_useH5;
+#endif
 
 #ifdef HAVE_HDF5
     bool   m_useH5;
