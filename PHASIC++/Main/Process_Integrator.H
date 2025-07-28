@@ -63,7 +63,8 @@ namespace PHASIC {
     // stored in the sign-cancellation-safe form <|w|>_cut/sqrt(alpha_absolute).
     // For full unweighting w_sel = w_max.
     double m_selweight_xs = 0.;
-    double m_external_selectionweight;
+    double m_timing_statistics_large_weight_fraction, m_external_selectionweight, m_ovwth;
+    int m_timing_statistics;
 
     long unsigned int m_n, m_itmin, m_itmax;
 
