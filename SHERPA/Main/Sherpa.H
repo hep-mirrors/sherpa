@@ -39,6 +39,10 @@ namespace SHERPA {
     void DrawLogo(const bool& shouldprintversioninfo);
 
     void PrepareTerminate();
+    void printEffi(std::string sub_name, std::string name, std::string num_type, std::string denom_type, std::map<std::string, int> &number_map);
+    double GetEffiUnc(int n_num, int n_denom);
+    void printTime(std::string sub_name, std::string time_type, std::map<std::string, double> &time_map, std::map<std::string, int> &number_map);
+    double GetUnc(double w, double w2,int n);
 
   public:
 
