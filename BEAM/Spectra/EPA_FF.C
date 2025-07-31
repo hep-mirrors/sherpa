@@ -40,9 +40,9 @@ EPA_FF_Base::EPA_FF_Base(const ATOOLS::Flavour& beam, const int dir)
      // note that the particle radius is in fm and transformed into 1/GeV
      //
      //////////////////////////////////////////////////////////////////////////////
-      m_beam(beam), m_mass(beam.Mass(true)), m_mass2(ATOOLS::sqr(m_mass)),
-      m_R(beam.Radius() / rpa->hBar_c()), m_q2min(-1.), m_q2max(1.),
-      m_pt2max(-1.),
+      m_custom_urbg(ATOOLS::ran), m_beam(beam), m_mass(beam.Mass(true)), m_mass2(ATOOLS::sqr(m_mass)),
+      m_R(beam.Radius() / rpa->hBar_c()), m_q2min(-1.),
+      m_q2max(1.), m_pt2max(-1.),
       m_Zsquared(beam.IsIon() ? sqr(m_beam.GetAtomicNumber()) : 1.), m_b(0.),
       p_N_xb(nullptr)
 {
@@ -57,6 +57,14 @@ EPA_FF_Base::EPA_FF_Base(const ATOOLS::Flavour& beam, const int dir)
   m_bmin           = s["bMin"].GetTwoVector<double>()[b];
   m_b_pl_threshold = s["bThreshold"].GetTwoVector<double>()[b];
   m_bmax           = s["bMax"].GetTwoVector<double>()[b];
+
+  m_distribution = std::lognormal_distribution<double>(1., 1.);
+  // Pre-calculate this in the class constructor or initialization
+  double log_b_min = std::log(m_bmin);
+  double log_b_max = std::log(m_bmax);
+  double sigma_sqrt2 = std::sqrt(2.) * m_R;
+  m_norm_distribution = 0.5 * (std::erf((log_b_max - m_R) / sigma_sqrt2) -
+                             std::erf((log_b_min - m_R) / sigma_sqrt2));
 
   if (m_bmin <= 0. || m_bmin > m_bmax)
     THROW(invalid_input, "Unphysical input for EPA impact parameter. ");
@@ -154,7 +162,7 @@ EPA_Point::EPA_Point(const ATOOLS::Flavour& beam, const int dir)
   // for point-like particles (i.e. leptons) we use the "classical"
   // lepton radius given by 1/alpha lambda_l/(2 pi)
   // with the Compton wavelength lambda_l
-  m_b = rpa->hBar_c() / beam.Mass(true) / (2.*M_PI/137.);
+  m_b = rpa->hBar_c() / beam.Mass(true) / (2. * M_PI / 137.);
 }
 
 double EPA_Point::N(const double& x)
@@ -440,7 +448,7 @@ double EPA_IonApprox::N(const double& x)
   // return 2 / x * (chi * std::cyl_bessel_k(1, chi) * std::cyl_bessel_k(0, chi)
   //    - sqr(chi)/2. * (sqr(std::cyl_bessel_k(1, chi)) -
   //    sqr(std::cyl_bessel_k(0, chi))));
-  double wt = SampleImpactParameter();
+  double wt  = SampleImpactParameter();
   double chi = x * m_mass * m_b;
   return 2 * m_Zsquared * m_b * x * sqr(m_mass) * sqr(SF.Kn(1, chi)) * wt;
   // correction term seems to be negligible;
