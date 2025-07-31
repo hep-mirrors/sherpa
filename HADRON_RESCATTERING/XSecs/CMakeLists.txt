@@ -4,6 +4,7 @@ set(HadronRescatteringXSecs_SOURCES
   NNfits.C
   HPR1R2.C
   PiPi.C
+  PiK.C
   HR_Parameters.C)
 
 set(HadronRescatteringXSecs_HEADERS
@@ -12,6 +13,7 @@ set(HadronRescatteringXSecs_HEADERS
   NNfits.H
   HPR1R2.H
   PiPi.H
+  PiK.H
   HR_Parameters.H)
 
 sherpa_create_git_info(HadronRescatteringXSecs ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR})
