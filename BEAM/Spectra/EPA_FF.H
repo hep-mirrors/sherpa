@@ -10,6 +10,7 @@
 #include "ATOOLS/Phys/Flavour.H"
 #include <fstream>
 #include <iostream>
+#include <random>
 
 namespace ATOOLS {
   class Settings;
@@ -30,7 +31,38 @@ namespace BEAM {
     Test         = 99
   };
 
+  class AtoolsURBGWrapper {
+  public:
+    // Define the result type as an unsigned integer
+    using result_type = std::uint32_t;
+
+    // Provide static min() and max() methods
+    static constexpr result_type min() {
+      return 0;
+    }
+    static constexpr result_type max() {
+      return std::numeric_limits<result_type>::max();
+    }
+
+    // The constructor takes a pointer to the ATOOLS generator
+    explicit AtoolsURBGWrapper(ATOOLS::Random* generator) : m_generator(generator) {}
+
+    // Implement the core operator() to produce random integers
+    result_type operator()() {
+      // Scale the [0.0, 1.0) double from Get() to the full range of result_type
+      return static_cast<result_type>(m_generator->Get() * max());
+    }
+
+  private:
+    ATOOLS::Random* m_generator;
+  };
+
   class EPA_FF_Base {
+  private:
+    // Tools to sample impact parameter from log-normal distribution
+    AtoolsURBGWrapper m_custom_urbg;
+    std::lognormal_distribution<double> m_distribution;
+    double m_norm_distribution;
   protected:
     ATOOLS::Flavour m_beam;
     double          m_mass, m_mass2, m_R;
@@ -45,15 +77,12 @@ namespace BEAM {
 
     double SampleImpactParameter()
     {
-      // sampling b by p(b) = 1/norm * b/(b^2+r^2) with b physical distance
-      double r2 = m_R * m_R;
-      m_b       = std::sqrt((ATOOLS::sqr(m_bmin * m_R) + r2) *
-                                    std::pow((ATOOLS::sqr(m_bmax * m_R) + r2) /
-                                                     (ATOOLS::sqr(m_bmin * m_R) + r2),
-                                             ATOOLS::ran->Get()) -
-                            r2);
-      return (ATOOLS::sqr(m_b) + r2) / m_b / 2. *
-             std::log((ATOOLS::sqr(m_bmax) + r2) / (ATOOLS::sqr(m_bmin) + r2));
+      // sampling b from log-normal distribution
+      do {
+        m_b = m_distribution(m_custom_urbg);
+      } while (m_b < m_bmin || m_b > m_bmax);
+      return m_b * std::sqrt(2. * M_PI) *
+             std::exp(ATOOLS::sqr(std::log(m_b) -  1.) / 2) * m_norm_distribution;
     };
     virtual void FillTables();
 
@@ -66,6 +95,9 @@ namespace BEAM {
     virtual double N(const double& x)
     {
       double wt = SampleImpactParameter();
+      // multiply radius to convert b to physical distance and as Jacobian on weight
+      m_b *= m_R;
+      wt *= m_R;
       if (m_b < m_b_pl_threshold) return (*p_N_xb)(x, m_b) * wt;
       else {
         // use point-like approximation for large impact parameters
