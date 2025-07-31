@@ -3,6 +3,7 @@
 
 #include "HADRON_RESCATTERING/XSecs/BaryonBaryon.H"
 #include "HADRON_RESCATTERING/XSecs/MesonMeson.H"
+#include "HADRON_RESCATTERING/XSecs/HR_Parameters.H"
 
 #include "ATOOLS/Phys/Blob_List.H"
 

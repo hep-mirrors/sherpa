@@ -1,4 +1,5 @@
 #include "HADRON_RESCATTERING/XSecs/MesonMeson.H"
+#include "HADRON_RESCATTERING/XSecs/PiPi.H"
 
 #include "ATOOLS/Math/Histogram.H"
 #include "ATOOLS/Org/Message.H"
@@ -8,7 +9,7 @@ using namespace ATOOLS;
 using namespace std;
 
 MesonMeson::MesonMeson() :
-  m_test(false)
+  m_test(true)
 {
   InitialiseResonances();
   if (m_test) { Tests(); exit(1); }
@@ -113,5 +114,7 @@ double MesonMeson::XSel(const ATOOLS::Flavour & A,const ATOOLS::Flavour & B,
   return 0.;
 }
 
-void MesonMeson::Tests() {}
+void MesonMeson::Tests() {
+  PiPi pipi;
+}
 
