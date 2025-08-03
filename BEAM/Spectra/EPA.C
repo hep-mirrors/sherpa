@@ -113,7 +113,7 @@ void EPA::RegisterDefaults() const
   s["xBins"].SetDefault(50);
   s["bMin"].SetDefault(0.1);
   s["bThreshold"].SetDefault(4.);
-  s["bMax"].SetDefault(1.e10);
+  s["bMax"].SetDefault(1.e3);
   s["bBins"].SetDefault(50);
   s["Form_Factor"].SetDefault(size_t(m_beam.IsIon() ? EPA_ff_type::WoodSaxon
                                      : m_beam.IsNucleon() ? EPA_ff_type::dipole
