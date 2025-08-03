@@ -40,7 +40,7 @@ EPA_FF_Base::EPA_FF_Base(const ATOOLS::Flavour& beam, const int dir)
      // note that the particle radius is in fm and transformed into 1/GeV
      //
      //////////////////////////////////////////////////////////////////////////////
-      m_custom_urbg(ATOOLS::ran), m_beam(beam), m_mass(beam.Mass(true)), m_mass2(ATOOLS::sqr(m_mass)),
+      m_beam(beam), m_mass(beam.Mass(true)), m_mass2(ATOOLS::sqr(m_mass)),
       m_R(beam.Radius() / rpa->hBar_c()), m_q2min(-1.),
       m_q2max(1.), m_pt2max(-1.),
       m_Zsquared(beam.IsIon() ? sqr(m_beam.GetAtomicNumber()) : 1.), m_b(0.),
@@ -58,13 +58,8 @@ EPA_FF_Base::EPA_FF_Base(const ATOOLS::Flavour& beam, const int dir)
   m_b_pl_threshold = s["bThreshold"].GetTwoVector<double>()[b];
   m_bmax           = s["bMax"].GetTwoVector<double>()[b];
 
-  m_distribution = std::lognormal_distribution<double>(1., 1.);
-  // Pre-calculate the normalisation of the log-normal distribution \in [bmin, bmax]
-  double log_b_min = std::log(m_bmin);
-  double log_b_max = std::log(m_bmax);
-  double sigma_sqrt2 = std::sqrt(2.);
-  m_norm_distribution = 0.5 * (std::erf((log_b_max - 1.) / sigma_sqrt2) -
-                             std::erf((log_b_min - 1.) / sigma_sqrt2));
+  // Pre-calculate the normalisation of the  distribution \in [bmin, bmax]
+  m_norm_distribution = 0.5 * std::log((ATOOLS::sqr(m_bmax) + 1.) / (ATOOLS::sqr(m_bmin) + 1.));
 
   if (m_bmin <= 0. || m_bmin > m_bmax)
     THROW(invalid_input, "Unphysical input for EPA impact parameter. ");
