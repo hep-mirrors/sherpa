@@ -55,10 +55,10 @@ bool Collider_Kinematics::operator()(ATOOLS::Vec4D_Vector& moms) {
   }
   if (m_mode == collidermode::monochromatic)
     return true;
-  Vec4D pa = p_beams[0]->InMomentum();
-  Vec4D pb = p_beams[1]->InMomentum();
-  double gam = pa * pb + sqrt(sqr(pa * pb) - pa.Abs2() * pb.Abs2());
-  double bet = 1.0 / (1.0 - pa.Abs2() / gam * pb.Abs2() / gam);
+  const Vec4D& pa = p_beams[0]->InMomentum();
+  const Vec4D& pb = p_beams[1]->InMomentum();
+  const double gam = pa * pb + sqrt(sqr(pa * pb) - pa.Abs2() * pb.Abs2());
+  const double bet = 1.0 / (1.0 - pa.Abs2() / gam * pb.Abs2() / gam);
   m_p_plus = bet * (pa - pa.Abs2() / gam * pb);
   m_p_minus = bet * (pb - pb.Abs2() / gam * pa);
   const double tau = CalculateTau();
