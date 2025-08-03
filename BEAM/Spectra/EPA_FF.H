@@ -31,37 +31,8 @@ namespace BEAM {
     Test         = 99
   };
 
-  class AtoolsURBGWrapper {
-  public:
-    // Define the result type as an unsigned integer
-    using result_type = std::uint32_t;
-
-    // Provide static min() and max() methods
-    static constexpr result_type min() {
-      return 0;
-    }
-    static constexpr result_type max() {
-      return std::numeric_limits<result_type>::max();
-    }
-
-    // The constructor takes a pointer to the ATOOLS generator
-    explicit AtoolsURBGWrapper(ATOOLS::Random* generator) : m_generator(generator) {}
-
-    // Implement the core operator() to produce random integers
-    result_type operator()() {
-      // Scale the [0.0, 1.0) double from Get() to the full range of result_type
-      return static_cast<result_type>(m_generator->Get() * max());
-    }
-
-  private:
-    ATOOLS::Random* m_generator;
-  };
-
   class EPA_FF_Base {
   private:
-    // Tools to sample impact parameter from log-normal distribution
-    AtoolsURBGWrapper m_custom_urbg;
-    std::lognormal_distribution<double> m_distribution;
     double m_norm_distribution;
   protected:
     ATOOLS::Flavour m_beam;
@@ -77,12 +48,8 @@ namespace BEAM {
 
     double SampleImpactParameter()
     {
-      // sampling b from log-normal distribution
-      do {
-        m_b = m_distribution(m_custom_urbg);
-      } while (m_b < m_bmin || m_b > m_bmax);
-      return m_b * std::sqrt(2. * M_PI) *
-             std::exp(ATOOLS::sqr(std::log(m_b) -  1.) / 2) * m_norm_distribution;
+      m_b = sqrt((ATOOLS::sqr(m_bmin) + 1.) * std::exp(2. * ATOOLS::ran->Get() * m_norm_distribution) - 1.);
+      return m_norm_distribution * (ATOOLS::sqr(m_b) + 1.)/m_b;
     };
     virtual void FillTables();
 
