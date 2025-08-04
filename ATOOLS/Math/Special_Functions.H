@@ -338,6 +338,62 @@ namespace ATOOLS {
         std::cout << "Caught expected exception: " << e.what() << std::endl;
       }
       std::cout << "\nTest summary: " << (all_tests_passed ? "All tests passed." : "Some tests FAILED.") << std::endl;
+
+      // Test BesselK1
+      std::cout << "------------------------------------------------------------------" << std::endl;
+      std::cout << std::left << std::setw(12) << "x"
+                << std::setw(22) << "bessel_K1(x)"
+                << std::setw(22) << "Reference"
+                << std::setw(15) << "Rel. Error" << std::endl;
+      std::cout << "------------------------------------------------------------------" << std::endl;
+
+      // Test cases: struct containing {x_value, reference_K1(x_value)}
+      // Reference values obtained from WolframAlpha or trusted high-precision sources.
+      const std::vector<std::pair<double, double>> test_cases_K1 = {
+              {0.01, 99.97389411829624},
+              {0.1, 9.853844780870606},
+              {0.5, 1.656441120003301},
+              {1.0, 0.6019072301972347},
+              {1.5, 0.27738780045684386},
+              {2.0, 0.13986588181652243},
+              {2.1, 0.12274641153350789},
+              {5.0, 0.004044613445452164},
+              {10.0, 0.00001864877345382558},
+              {20.0, 5.883057969557039e-10},
+              {50.0, 3.4441022267175555e-23},
+              {100.0, 4.67985373563691e-45}
+      };
+
+      bool all_tests_passed_K1 = true;
+      for (const auto& test : test_cases_K1) {
+        double x = test.first;
+        double ref_val = test.second;
+        double calc_val = Kn(1, x);
+        double rel_error = (ref_val != 0) ? std::abs((calc_val - ref_val) / ref_val) : std::abs(calc_val);
+
+        std::cout << std::left << std::setw(12) << std::fixed << std::setprecision(2) << x
+                  << std::scientific << std::setprecision(12)
+                  << std::setw(22) << calc_val
+                  << std::setw(22) << ref_val
+                  << std::setw(15) << rel_error;
+
+        if (rel_error > 1e-6) {
+          all_tests_passed_K1 = false;
+          std::cout << "  <-- FAILED";
+        }
+        std::cout << std::endl;
+      }
+      std::cout << "------------------------------------------------------------------" << std::endl;
+
+      // Test edge cases
+      try {
+        std::cout << "\nTesting edge case x=0..." << std::endl;
+        Kn(1, 0.0);
+      } catch (const std::domain_error& e) {
+        std::cout << "Caught expected exception: " << e.what() << std::endl;
+      }
+
+      std::cout << "\nTest summary: " << (all_tests_passed_K1 ? "All tests passed." : "Some tests FAILED.") << std::endl;
     }
   };
   extern Special_Functions SF;
