@@ -455,7 +455,7 @@ necessary and both ``HEPMC_USE_NAMED_WEIGHTS: true`` and
 ``HEPMC_EXTENDED_WEIGHTS: true`` have to enabled. Detailed
 instructions on how to use this information to construct the new event
 weight can be found here
-`<https://sherpa.hepforge.org/doc/ScaleVariations-Sherpa-2.2.0.pdf>`_.
+`<https://zenodo.org/records/16738342/files/ScaleVariations-Sherpa-2.2.0.pdf>`_.
 
 .. _A posteriori scale and PDF variations using the ROOT NTuple Output:
 
