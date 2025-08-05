@@ -210,7 +210,8 @@ bool Recola::Recola_Interface::Initialize(MODEL::Model_Base *const model,
   s_photon_mass = s["RECOLA_PHOTON_MASS"].Get<double>();
   s_use_decay   = s["RECOLA_USE_DECAY"].Get<bool>();
   s_mass_reg = s["RECOLA_MASS_REG"].Get<bool>();
-  if(!s_mass_reg && yfs->Mode()!=YFS::yfsmode::off){ 
+  if(!s_mass_reg && yfs->Mode()!=YFS::yfsmode::off
+    && yfs->NLO()->p_virt!=NULL){ 
     THROW(fatal_error, "Dimensional regularization is not supported for YFS. Use RECOLA_MASS_REG: 1");
   }
   if(s_mass_reg){
