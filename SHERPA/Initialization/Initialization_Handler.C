@@ -1157,8 +1157,14 @@ bool Initialization_Handler::InitializeTheFragmentation()
   p_fragmentation = Fragmentation_Getter::GetObject
     (fragmentationmodel,
      Fragmentation_Getter_Parameters(m_showerhandlers[isr::hard_process]->ShowerGenerator()));
-  if (p_fragmentation==NULL)
-    THROW(fatal_error, "  Fragmentation model '"+fragmentationmodel+"' not found.");
+  if (p_fragmentation==NULL) {
+    if (s_loader->LoadLibrary("Sherpa"+fragmentationmodel))
+      p_fragmentation = Fragmentation_Getter::GetObject
+	(fragmentationmodel,
+	 Fragmentation_Getter_Parameters(m_showerhandlers[isr::hard_process]->ShowerGenerator()));
+    if (p_fragmentation==NULL)
+      THROW(fatal_error, "  Fragmentation model '"+fragmentationmodel+"' not found.");
+  }
   as->SetActiveAs(isr::hard_process);
   msg_Info()<<"Initialized fragmentation\n";
   return 1;
