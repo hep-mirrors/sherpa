@@ -40,7 +40,7 @@ using namespace ATOOLS;
 void Matrix_Element_Handler::RegisterDefaults()
 {
   Settings& s = Settings::GetMainSettings();
-  s["OVERWEIGHT_THRESHOLD"].SetDefault(1e3);
+  s["OVERWEIGHT_THRESHOLD"].SetDefault(1e12);
   s["MEH_NLOADD"].SetDefault(1);
   s["MEH_EWADDMODE"].SetDefault(0);
   s["MEH_QCDADDMODE"].SetDefault(0);
@@ -256,11 +256,11 @@ bool Matrix_Element_Handler::GenerateOneTrialEvent()
   delete info;
 
   // calculate weight factor and/or apply unweighting and weight threshold
-  const auto abswgt = std::abs(m_evtinfo.m_weightsmap.Nominal());
   const auto sw = p_proc->Integrator()->SelectionWeight(m_eventmode) / m_sum;
   double enhance = p_proc->Integrator()->PSHandler()->EnhanceWeight();
   double wf(rpa->Picobarn()/sw/enhance);
   if (m_eventmode!=0) {
+    const auto abswgt = std::abs(m_evtinfo.m_weightsmap.Nominal());
     const auto maxwt  = p_proc->Integrator()->Max();
     const auto disc   = maxwt * ran->Get();
     if (abswgt < disc) {
@@ -297,16 +297,6 @@ bool Matrix_Element_Handler::GenerateOneTrialEvent()
       // also consume random number used to set the discriminator for
       // unweighting above, such that it is not re-used in the future
       ran->Get();
-    }
-  }
-  else {
-    double cur=abswgt*wf/m_sum;
-    if (std::abs(cur) > m_ovwth) {
-      Return_Value::IncWarning(METHOD);
-      msg_Info() <<METHOD<<"(): Point for '"<<p_proc->Name()
-                 <<"' exceeds average by "<<cur-1.0
-                 <<". Reject event."<< std::endl;
-      return false;
     }
   }
 
