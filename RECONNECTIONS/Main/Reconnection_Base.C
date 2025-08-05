@@ -24,7 +24,7 @@ Reconnection_Base::~Reconnection_Base() {
 }
 
 void Reconnection_Base::Initialize() {
-  SetParameters(); 
+  SetParameters();
   if (m_analysis) {
     m_histomap[string("Reconn_MassBefore")] = new Histogram(0,0.0,100.0,200);
     m_histomap[string("Reconn_MassAfter")]  = new Histogram(0,0.0,100.0,200);
@@ -66,7 +66,7 @@ bool Reconnection_Base::BalanceColours() {
   for (size_t i=0;i<2;i++) {
     for (map<unsigned int, Particle * >::iterator cit=m_cols[i].begin();
 	 cit!=m_cols[i].end();cit++) {
-      if (m_cols[1-i].find(cit->first)==m_cols[1-i].end()) 
+      if (m_cols[1-i].find(cit->first)==m_cols[1-i].end())
 	replacers[i].push_back(cit->first);
     }
   }
@@ -85,7 +85,7 @@ bool Reconnection_Base::BalanceColours() {
   for (size_t i=0;i<2;i++) {
     for (map<unsigned int, Particle * >::iterator cit=m_cols[i].begin();
 	 cit!=m_cols[i].end();cit++) {
-      if (m_cols[1-i].find(cit->first)==m_cols[1-i].end()) 
+      if (m_cols[1-i].find(cit->first)==m_cols[1-i].end())
 	replacers[i].push_back(cit->first);
     }
   }
@@ -116,9 +116,6 @@ void Reconnection_Base::HarvestParticleInfo(ATOOLS::Particle * part) {
   // form its outgoing particles.
   copy->SetDecayBlob(part->DecayBlob());
   copy->SetProductionBlob(NULL);
-  //msg_Out()<<"* |"<<copy<<"| ("<<copy->Number()<<"): "
-  //        <<copy->Momentum()<<" @ "<<copy->XProd()
-  //	   <<" ["<<copy->ProductionBlob()<<"]\n";
 }
 
 
