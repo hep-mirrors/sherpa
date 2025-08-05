@@ -283,7 +283,7 @@ void Initialization_Handler::RegisterDefaults()
   pss["MI_IS_AS_FAC"].SetDefault(0.66);
   pss["MI_FS_AS_FAC"].SetDefault(0.66);
   pss["MI_KIN_SCHEME"].SetDefault(1);
-  pss["ENABLE_QUARKONIA"].SetDefault(3);
+  pss["ENABLE_QUARKONIA"].SetDefault(99);
 
   s["COMIX_DEFAULT_GAUGE"].SetDefault(1);
 

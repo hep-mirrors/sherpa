@@ -116,12 +116,19 @@ void Sudakov::InitSplittingFunctions(MODEL::Model_Base *md,const int kfmode)
   {
   case 0:
     AddQuarkoniaSplittingFunctions(md, kfmode);
-      msg_Debugging() << METHOD << " Quarkonia initialised.\n";
+    AddGluonThresholds(md);
+    msg_Debugging() << METHOD << " Quarkonia initialised.\n";
+    break; 
   case 1:
     AddGluonThresholds(md);
-      msg_Debugging() << METHOD << " G threshold initialised.\n";
+    msg_Debugging() << METHOD << " G threshold initialised.\n";
+    break;
+  case 2:
+    AddQuarkoniaSplittingFunctions(md, kfmode);
+    msg_Debugging() << METHOD << " Quarkonia splitting functions initialised.\n";
+    break;
   default:
-  msg_Debugging() << METHOD << " End Quarkonia initialisation.\n"; 
+  msg_Debugging() << METHOD << " Skip Quarkonia initialisation.\n"; 
     break;
   }
 
