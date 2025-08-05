@@ -34,7 +34,7 @@ void YFS_Base::RegisterDefaults(){
   s["MODE"].ResetDefault().SetDefault(yfsmode::off);
   s["BETA"].SetDefault(2);
   s["VMAX"].SetDefault(0);
-  s["IR_CUTOFF"].ResetDefault().SetDefault(1e-4);
+  s["IR_CUTOFF"].ResetDefault().SetDefault(1e-6);
   s["DELTA"].SetDefault(1e-2);
   s["PHOTON_MAX"].SetDefault(100);
   s["LOOP_TOOL"].SetDefault(false);
