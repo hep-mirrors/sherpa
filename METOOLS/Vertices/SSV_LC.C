@@ -41,7 +41,7 @@ namespace METOOLS {
       if (p_v->V()->id.back()==2){
 	const CVec4Type &a(*jj[0]->Get<CVec4Type>());
 	const CScalarType &b(*jj[1]->Get<CScalarType>());
-	Vec4D p12(p_v->J(0)->P()+p_v->J(0)->P()+p_v->J(1)->P());
+	Vec4D p12(p_v->J(1)->P()+p_v->J(1)->P()+p_v->J(0)->P());
 	CScalarType *j(CScalarType::New((p12*a)*b[0]));
 	j->SetS(a.S()|b.S());
 	return j;
