@@ -92,9 +92,7 @@ set (INSTALL_PATHS
      Instanton/LHC_13/Instanton.yaml
      Instanton/LHC_13/Instanton_InvRho_noMPI.yaml
      Instanton/LHC_13/Instanton_InvRho_wMPI.yaml
-     Instanton/LHC_13/Instanton_Original.yaml
      Instanton/LHC_13/Instanton_shatoverN_wMPI.yaml
-     Instanton/LHC_13/mc.Sh_Inst_m300_nf5.yaml
      Jets_at_HadronColliders/LHC_Jets_MCatNLO/Sherpa.yaml
      Jets_at_HadronColliders/LHC_Jets_MEPS/Sherpa.yaml
      Jets_at_LeptonColliders/LEP_Jets/Sherpa.197.yaml
