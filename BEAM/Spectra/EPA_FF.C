@@ -331,7 +331,7 @@ EPA_DipoleApprox::EPA_DipoleApprox(const ATOOLS::Flavour& beam, const int dir)
 
 EPA_WoodSaxon::EPA_WoodSaxon(const ATOOLS::Flavour& beam, const int dir)
     : EPA_FF_Base(beam, dir), m_d(0.5 / rpa->hBar_c()), p_FF_Q2(nullptr),
-      p_N(nullptr), m_rho0(0.)
+      m_rho0(0.)
 {
   const auto& s = Settings::GetMainSettings()["EPA"];
   size_t      b = dir > 0 ? 0 : 1;
@@ -341,7 +341,6 @@ EPA_WoodSaxon::EPA_WoodSaxon(const ATOOLS::Flavour& beam, const int dir)
 
   m_rho0 = CalculateDensity();
   InitFFTable(1.e-12, 1.e4);
-  InitNTable(1.e-10, 1.);
   FillTables();
 }
 
@@ -359,28 +358,10 @@ void EPA_WoodSaxon::InitFFTable(const double& q2min, const double& q2max)
       rmin = rmax;
       rmax *= 2.;
       res += inc = m_rho0 * gauss.Integrate(rmin, rmax, 1.e-6, 0);
-    } while (rmax < 4. * m_R || dabs(inc / res) > 1.e-6);
+    } while (rmax < 4. * m_R || std::abs(inc) > 1.e-6 * std::abs(res) + 1.e-12);
     p_FF_Q2->Fill(i, res);
   }
   delete ws;
-}
-
-void EPA_WoodSaxon::InitNTable(const double& xmin, const double& xmax)
-{
-  p_N = new OneDim_Table(axis(10000, xmin, xmax, axis_mode::log));
-  N_argument*      nx = new N_argument(this);
-  Gauss_Integrator gauss(nx);
-  for (size_t i = 0; i < p_N->GetAxis().m_nbins; i++) {
-    double x     = p_N->GetAxis().x(i);
-    double q2min = Q2min(x);
-    double q2max = Q2min(x) + m_pt2max / (1. - x);
-    nx->SetX(x);
-    double res = gauss.Integrate(q2min, q2max, 1.e-6, 0);
-    if (!(i % 1000))
-      msg_Out() << METHOD << "(" << q2min << ", " << q2max << "): "
-                << "N(" << x << ") = " << res << "\n";
-    p_N->Fill(i, res);
-  }
 }
 
 double EPA_WoodSaxon::CalculateDensity()

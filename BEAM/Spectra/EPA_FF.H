@@ -249,24 +249,18 @@ namespace BEAM {
     public:
       explicit N_argument(EPA_WoodSaxon* ws) : p_ws(ws), m_x(0.) {}
       inline void SetX(const double& x) { m_x = x; }
-      // double operator()(double q2) override { return (*p_ws)(m_x, q2) / q2; }
     };
 
     double                m_d, m_rho0;
-    ATOOLS::OneDim_Table *p_FF_Q2, *p_N;
+    ATOOLS::OneDim_Table *p_FF_Q2;
 
     double CalculateDensity();
     void   InitFFTable(const double& q2min, const double& q2max);
-    void   InitNTable(const double& xmin, const double& xmax);
 
   public:
     EPA_WoodSaxon(const ATOOLS::Flavour& beam, int dir);
     ~EPA_WoodSaxon() override
     {
-      if (p_N) {
-        delete p_N;
-        p_N = nullptr;
-      }
       if (p_FF_Q2) {
         delete p_FF_Q2;
         p_FF_Q2 = nullptr;
