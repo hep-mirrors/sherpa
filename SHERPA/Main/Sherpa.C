@@ -369,14 +369,14 @@ bool Sherpa::SummarizeRun()
 
     std::map<std::string, double>  time_map = rpa->gen.TimeMapAll();
     std::map<std::string, int>     number_map = rpa->gen.NumberMapAll();
-    std::vector<std::string> num_types = {"total", "init", "single", "trial", "PS", "ME", "gen", "overw", "maxoverw", "kept"};//
+    std::vector<std::string> num_types = {"total", "trial", "PS", "ME", "gen", "overw", "maxoverw", "kept"};//
     std::map<std::string, double>  sum_map;
     std::map<std::string, double>  sum_mult_map;//defined as double to simplify following divisions
     for (const std::string& num_type : num_types) {
       sum_map[num_type] = 0;
     }
     //loop over subprocesses
-    std::vector<std::string> sum_types = {"total", "init", "single", "PS", "ME", "overhead", "overhead_after_kept", "overhead_after"};//
+    std::vector<std::string> sum_types = {"total", "PS", "ME", "overhead", "overhead_after_kept", "overhead_after"};//
     std::map<std::string, double> total;
     for (const std::string& sum_type : sum_types) {
       total[sum_type] = 0;
@@ -406,28 +406,18 @@ bool Sherpa::SummarizeRun()
           printEffi(sub_name, "Cut", "ME", "trial", number_map);
           printEffi(sub_name, "Unweighting", "gen", "ME", number_map);
           printEffi(sub_name, "Total", "gen", "trial", number_map);
-          w = time_map["sum_init_"+sub_name]+time_map["sum_PS_"+sub_name]+time_map["sum_ME_"+sub_name];
+          w = time_map["sum_PS_"+sub_name]+time_map["sum_ME_"+sub_name];
           msg_Info()<< sub_name << " : "<<"Summed time: "<<w<<" s"<<std::endl;
         }
         total["PS"] += time_map["sum_PS_"+sub_name];
         total["ME"] += time_map["sum_ME_"+sub_name];
-        total["overhead"] += time_map["sum_total_"+sub_name]-(time_map["sum_PS_"+sub_name]+time_map["sum_ME_"+sub_name]+time_map["sum_init_"+sub_name]);
+        total["overhead"] += time_map["sum_total_"+sub_name]-(time_map["sum_PS_"+sub_name]+time_map["sum_ME_"+sub_name]);
 
         w = time_map["sum_total_"+sub_name];
         if (timing_statistics>4) {
           msg_Info()<< sub_name << " : "<<"Total time: "<<w<<" s"<<std::endl;
         }
         total["total"] += w;
-        w = time_map["sum_init_"+sub_name];
-        if (timing_statistics>4) {
-          msg_Info()<< sub_name << " : "<<"Init time: "<<w<<" s"<<std::endl;
-        }
-        total["init"] += w;
-        w = time_map["sum_single_"+sub_name];
-        if (timing_statistics>4) {
-          msg_Info()<< sub_name << " : "<<"Single time: "<<w<<" s"<<std::endl;
-        }
-        total["single"] += w;
         w = time_map["sum_overhead_after_kept_"+sub_name];
         if (timing_statistics>4) {
           msg_Info()<< sub_name << " : "<<"overhead_after_kept time: "<<w<<" s"<<std::endl;
@@ -458,7 +448,7 @@ bool Sherpa::SummarizeRun()
     if (timing_statistics>4) {
       msg_Info()<<std::endl<<"Total time: "<< total["total"]+total["overhead_after"] <<" s"<<std::endl;
       msg_Info()<<" (It sums up to 100%. 'overhead' is split into 'during' and 'after' unweighting.)"<<std::endl;
-      for (const std::string& sum_type : {"init", "PS", "ME", "overhead_during", "overhead_after"}) {
+      for (const std::string& sum_type : {"PS", "ME", "overhead_during", "overhead_after"}) {
         msg_Info()<<" "<< std::right<<std::setw(2) << round(total[sum_type]/(total["total"]+total["overhead_after"])*100)<<"% in '"<<sum_type<<"'"<<std::endl;
       }
     }
@@ -530,7 +520,6 @@ bool Sherpa::SummarizeRun()
       double sum_p_unw_down_corr = 0;
       double sum_t_ME = 0;
       double sum_t_PS = 0;
-      double sum_t_init = 0;
       double sum_t_ov_during = 0;
       double sum_t_ov_after = 0;
       //double current_epsilon = epsilon_values[i];
@@ -567,8 +556,7 @@ bool Sherpa::SummarizeRun()
 	if (number_map["n_total_"+sub_name]>0) {
 	  sum_t_ME += time_map["sum_ME_"+sub_name]/number_map["n_total_"+sub_name]*curr_xsec;
 	  sum_t_PS += time_map["sum_PS_"+sub_name]/number_map["n_total_"+sub_name]*curr_xsec;
-	  sum_t_init += time_map["sum_init_"+sub_name]/number_map["n_total_"+sub_name]*curr_xsec;
-	  sum_t_ov_during += (time_map["sum_total_"+sub_name]-time_map["sum_ME_"+sub_name]-time_map["sum_PS_"+sub_name]-time_map["sum_init_"+sub_name])/number_map["n_total_"+sub_name]*curr_xsec;
+	  sum_t_ov_during += (time_map["sum_total_"+sub_name]-time_map["sum_ME_"+sub_name]-time_map["sum_PS_"+sub_name])/number_map["n_total_"+sub_name]*curr_xsec;
 	}
 	sum_t_ov_after += overhead_after*efficiency_manual_map[sub_name][i]*curr_xsec;
 
@@ -581,7 +569,6 @@ bool Sherpa::SummarizeRun()
       mean_manual_events_down[i] = 60*60*24/(sum_t_trial/(sum_p_unw_down_corr-pow(sum_p_unw_down,0.5))); //*sum_xsec/sum_xsec
       mean_manual_events_time[i]["ME"] = sum_t_ME;
       mean_manual_events_time[i]["PS"] = sum_t_PS;
-      mean_manual_events_time[i]["init"] = sum_t_init;
       mean_manual_events_time[i]["ov_during"] = sum_t_ov_during;
       mean_manual_events_time[i]["ov_after"] = sum_t_ov_after;
       mean_manual_events_time[i]["sum"] = sum_t_trial;
@@ -687,50 +674,47 @@ bool Sherpa::SummarizeRun()
 
     //make nice final table III (for chosen emax)
     if (timing_statistics>2) {
-      std::cout << "+------------------------------+--------------+---------------------------------------------------------+" << std::endl;
-      std::cout << "|      time contribution       |              |                                                         |" << std::endl;
-      std::cout << "| cut  PS   ME   ov.h.  shower | time  xsec*h | subprocess                                              |" << std::endl;
-      std::cout << "+------------------------------+--------------+---------------------------------------------------------+" << std::endl;
+      std::cout << "+-------------------------+--------------+---------------------------------------------------------+" << std::endl;
+      std::cout << "|    time contribution    |              |                                                         |" << std::endl;
+      std::cout << "| PS   ME   ov.h.  shower | time  xsec*h | subprocess                                              |" << std::endl;
+      std::cout << "+-------------------------+--------------+---------------------------------------------------------+" << std::endl;
       for (auto const& [key, val] : time_map) {
         if (key.rfind("sum_PS_", 0) != 0) continue;
         std::string sub_name = key.substr(7);
         if (number_map["n_total_"+sub_name]>0) {
           double t_ME = time_map["sum_ME_"+sub_name]/number_map["n_total_"+sub_name];
           double t_PS = time_map["sum_PS_"+sub_name]/number_map["n_total_"+sub_name];
-          double t_init = time_map["sum_init_"+sub_name]/number_map["n_total_"+sub_name];
-          double t_ov_during = (time_map["sum_total_"+sub_name]-time_map["sum_ME_"+sub_name]-time_map["sum_PS_"+sub_name]-time_map["sum_PDF_"+sub_name]-time_map["sum_init_"+sub_name])/number_map["n_total_"+sub_name];
+          double t_ov_during = (time_map["sum_total_"+sub_name]-time_map["sum_ME_"+sub_name]-time_map["sum_PS_"+sub_name]-time_map["sum_PDF_"+sub_name])/number_map["n_total_"+sub_name];
           double t_ov_after = (time_map["sum_overhead_after_kept_"+sub_name]+time_map["sum_overhead_after_"+sub_name])/number_map["n_total_"+sub_name];
-          double sum = t_ME+t_PS+t_init+t_ov_during+t_ov_after;
-          msg_Info()<<"| "<< std::right<<std::setw(2) << round(t_init/sum*100)<<"% ";
-          msg_Info()<<" "<< std::right<<std::setw(2) << round(t_PS/sum*100)<<"% ";
+          double sum = t_ME+t_PS+t_ov_during+t_ov_after;
+          msg_Info()<<"| "<< std::right<<std::setw(2) << round(t_PS/sum*100)<<"% ";
           msg_Info()<<" "<< std::right<<std::setw(2) << round(t_ME/sum*100)<<"% ";
           msg_Info()<<"  "<< std::right<<std::setw(2) << round(t_ov_during/sum*100)<<"% ";
           msg_Info()<<"   "<< std::right<<std::setw(2) << round(t_ov_after/sum*100)<<"%   ";
         } else {
-          std::cout << "|  --   --   --   --    --     --   ";
+          std::cout << "| --   --   --    --     --   ";
         }
         double this_sepsum = time_map["sum_overhead_after_"+sub_name]+time_map["sum_overhead_after_kept_"+sub_name]+time_map["sum_total_"+sub_name];
         std::cout <<"| " <<std::right<<std::setw(2) << round(this_sepsum/(total["overhead_after"]+total["total"])*100)<<"%  ";
         std::cout <<" " <<std::right<<std::setw(4) << round(xsec_map[sub_name]/plain_xsec_sum*1000.)/10.<<"%  ";
         std::cout <<"| " <<std::left<<std::setw(55)<< sub_name << " |" << std::endl;
       }
-      std::cout << "+------------------------------+--------------+---------------------------------------------------------+" << std::endl << std::endl;
+      std::cout << "+-------------------------+--------------+---------------------------------------------------------+" << std::endl;
     }
 
     //make nice final table II
     if (timing_statistics>1) {
-      std::cout << "+-------------+--------------------------------------------------------+" << std::endl;
-      std::cout << "| epsilon_max | cut time   PS time   ME time   overhead    shower etc  |" << std::endl;
-      std::cout << "+-------------+--------------------------------------------------------+" << std::endl;
+      std::cout << "+-------------+---------------------------------------------+" << std::endl;
+      std::cout << "| epsilon_max | PS time   ME time   overhead    shower etc  |" << std::endl;
+      std::cout << "+-------------+---------------------------------------------+" << std::endl;
       for(int i=0; i < epsilon_values.size(); i++){
         std::cout << "| 1e" <<std::left<<std::setw(9)<< epsilon_values[i] << " | ";
-        msg_Info()<<" "<< std::right<<std::setw(2) << round(mean_manual_events_time[i]["init"]/mean_manual_events_time[i]["sum"]*100)<<"%       ";
         msg_Info()<<" "<< std::right<<std::setw(2) << round(mean_manual_events_time[i]["PS"]/mean_manual_events_time[i]["sum"]*100)<<"%      ";
         msg_Info()<<" "<< std::right<<std::setw(2) << round(mean_manual_events_time[i]["ME"]/mean_manual_events_time[i]["sum"]*100)<<"%      ";
         msg_Info()<<" "<< std::right<<std::setw(2) << round(mean_manual_events_time[i]["ov_during"]/mean_manual_events_time[i]["sum"]*100)<<"%       ";
         msg_Info()<<" "<< std::right<<std::setw(2) << round(mean_manual_events_time[i]["ov_after"]/mean_manual_events_time[i]["sum"]*100)<<"%         |" << std::endl;
       }
-      std::cout << "+-------------+--------------------------------------------------------+" << std::endl << std::endl;
+      std::cout << "+-------------+---------------------------------------------+" << std::endl;
     }
 
     //make nice final table I
