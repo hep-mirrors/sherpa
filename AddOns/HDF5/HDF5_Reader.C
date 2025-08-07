@@ -1,7 +1,6 @@
 #include "ATOOLS/Org/CXXFLAGS_PACKAGES.H"
 #include "ATOOLS/Org/CXXFLAGS.H"
 #include "ATOOLS/Org/My_MPI.H"
-#ifdef USING__HDF5
 #ifdef USING__MPI
 
 #include <mpi.h>
@@ -286,7 +285,7 @@ namespace LHEH5 {
 		  <<"' contains "<<nevts
 		  <<" events ( read "<<m_nstart<<" ).\n";
       }
-      mpi->Bcast(&nevts,1,MPI_LONG_INT,0);
+      mpi->Bcast(&nevts,1,MPI_LONG_INT);
       size_t iStart(rank*nevts/size);
       size_t iStop((rank+1)*nevts/size-1);
       if (rank==size-1) iStop=nevts-1;
@@ -402,5 +401,4 @@ PrintInfo(std::ostream &str,const size_t width) const
   str<<"HDF5 reader (version 2)";
 }
 
-#endif
 #endif
