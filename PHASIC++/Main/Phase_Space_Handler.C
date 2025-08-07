@@ -118,7 +118,6 @@ Phase_Space_Handler::Differential(Process_Integrator *const process,
         m_wgtmap=CalculateME(varmode);
         m_wgtmap*=m_psweight;
         m_enhanceweight=1.;
-        m_wgtmap  *= (m_ISsymmetryfactor = m_pspoint.ISSymmetryFactor());
         p_lab      = process->Momenta();
         if (m_printpspoint || msg_LevelIsDebugging()) PrintIntermediate();
         ManageWeights(m_psweight*m_enhanceweight*m_ISsymmetryfactor);
@@ -128,7 +127,6 @@ Phase_Space_Handler::Differential(Process_Integrator *const process,
         m_wgtmap=CalculateME(varmode);
         m_wgtmap*=m_psweight;
         m_enhanceweight=1.;
-        m_wgtmap  *= (m_ISsymmetryfactor = m_pspoint.ISSymmetryFactor());
         p_lab      = process->Momenta();
         if (m_printpspoint || msg_LevelIsDebugging()) PrintIntermediate();
         ManageWeights(m_psweight*m_enhanceweight*m_ISsymmetryfactor);
@@ -137,7 +135,6 @@ Phase_Space_Handler::Differential(Process_Integrator *const process,
         m_psweight=1.0;
         m_wgtmap=Weights_Map{};
         m_enhanceweight=1.;
-        m_wgtmap  *= (m_ISsymmetryfactor = m_pspoint.ISSymmetryFactor());
         p_lab      = process->Momenta();
         if (m_printpspoint || msg_LevelIsDebugging()) PrintIntermediate();
         ManageWeights(m_psweight*m_enhanceweight*m_ISsymmetryfactor);
