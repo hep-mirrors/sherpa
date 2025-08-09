@@ -1,0 +1,68 @@
+EVENTS: 1M
+EVENT_GENERATION_MODE: W
+
+ME_GENERATORS: [Comix, Amegic, OpenLoops]
+NLO_SUBTRACTION_MODE: QCD+QED
+
+ALPHAS(MZ): 0.118
+ORDER_ALPHAS: 2
+ALPHAS: {USE_PDF: 0}
+
+PARTICLE_DATA: {5: {Massive: true}, 4: {Massive: true}}
+PARTICLE_CONTAINERS:
+  996:
+    Name: c
+    Flavours: [4, -4]
+  997:
+    Name: B
+    Flavours: [5, -5]
+
+SCALE_VARIATIONS: 4.0*
+OUTPUT_ME_ONLY_VARIATIONS: false
+
+MI_HANDLER: None
+
+ANALYSIS: Rivet
+BEAMS: [-11, 2212]
+BEAM_ENERGIES: [27.5, 920]
+
+SCALES: METS{Abs2(p[2]-p[0])/4.+hH_T2/4.}{Abs2(p[2]-p[0])/4.+hH_T2/4.}{hH_T2/4.}
+
+Pomeron:
+  tMax: 0.6
+  xMax: 0.024
+  xMin: 0.01
+
+Reggeon:
+  tMax: 0.6
+  xMax: 0.024
+  xMin: 0.01
+
+SELECTORS:
+  - [Q2, -11, -11, 3., 85]
+  - [INEL, -11, -11, 0.15, 0.75]
+  - FastjetFinder:
+      N: 2
+      ETMin: 4.5
+      DR: 1.0
+      RecombinationScheme: pt
+      Frame: HCM
+  - FastjetFinder:
+      N: 1
+      ETMin: 3.
+      DR: 1.0
+      RecombinationScheme: pt
+      Frame: HCM
+
+RIVET:
+  --analyses: H1_2015_I1343110
+BEAM_SPECTRA: [Monochromatic, Pomeron]
+PDF_LIBRARY: [PDFESherpa, H1Sherpa]
+PDF_SET: [None, FitB]
+
+PROCESSES:
+  - -11 93 -> -11 93 93:
+      Order: {QCD: 1, EW: 2}
+  - -11 93 -> -11 (996,997) (996,997):
+      Order: {QCD: 1, EW: 2}
+
