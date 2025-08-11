@@ -194,11 +194,13 @@ bool Phase_Space_Point::DefineISRKinematics(Process_Integrator *const process) {
     }
     m_sprime = m_osmass ? m_isrspkey[4] : m_isrspkey[3];
     m_y += m_isrykey[2];
-    m_ISsymmetryfactor = p_isrhandler->GenerateSwap(
-                             p_pshandler->Active()->Process()->Flavours()[0],
-                             p_pshandler->Active()->Process()->Flavours()[1])
-                             ? 2.0
-                             : 1.0;
+    if (!p_point) {
+      m_ISsymmetryfactor = p_isrhandler->GenerateSwap(
+                               p_pshandler->Active()->Process()->Flavours()[0],
+                               p_pshandler->Active()->Process()->Flavours()[1])
+                               ? 2.0
+                               : 1.0;
+    }
   }
   if(p_yfshandler->HasISR()){
     p_isrchannels->GeneratePoint();
