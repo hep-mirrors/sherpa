@@ -227,6 +227,69 @@ namespace LHEH5 {
 
     Vec4D_Vector m_ctmoms;
 
+    bool FillAmplitude()
+    {
+      Event e(p_file->GetEvent(m_ievt));
+      if (p_file->Version()[0]==2 &&
+	  p_file->Version()[1]==0 &&
+	  p_file->Version()[2]==0) e.pinfo.unitwgt*=rpa->Picobarn();
+      msg_Debugging()<<e<<"\n";
+      if (e.empty()) {
+	m_trials+=e.trials;
+	m_ievt++;
+	return false;
+      }
+      if (e[0].pz<0 && e[1].pz>0) {
+	msg_Debugging()<<"Flip initial states\n";
+	std::swap<Particle>(e[0],e[1]);
+	std::swap<double>(e.z1,e.z2);
+	if (e.ctparts.size()) {
+	  std::swap<Particle>(e.ctparts[0],e.ctparts[1]);
+	  if (e.ijt<2) e.ijt=1-e.ijt;
+	  if (e.kt<2) e.kt=1-e.kt;
+	  if (e.i<2) e.i=1-e.i;
+	  if (e.k<2) e.k=1-e.k;
+	}
+      }
+      p_ampl = Cluster_Amplitude::New();
+      for (size_t i(0);i<e.size();++i) {
+	Flavour fl((long int)(e[i].id));
+	Vec4D p(e[i].e,e[i].px,e[i].py,e[i].pz);
+	ColorID cl(i<2?e[i].cl2:e[i].cl1,
+		   i<2?e[i].cl1:e[i].cl2);
+	p_ampl->CreateLeg(i<2?-p:p,i<2?fl.Bar():fl,cl);
+      }
+      p_ampl->SetNIn(2);
+      p_ampl->SetMuR2(sqr(e.mur));
+      p_ampl->SetMuF2(sqr(e.muf));
+      p_ampl->SetMuQ2(sqr(e.muq));
+      p_ampl->SetKT2(sqr(e.muq));
+      p_ampl->SetLKF(e.wgts[0]);
+      m_compute=1;
+      m_trials+=e.trials;
+      if (e.pinfo.npnlo>0) {
+	p_ampl->SetLKF(e.psw);
+	m_compute=2;
+      }
+      if (e.ctparts.empty()) p_sub->m_n=0;
+      else {
+	m_ctmoms.resize(p_sub->m_n=e.ctparts.size());
+	for (size_t i(0);i<e.ctparts.size();++i)
+	  m_ctmoms[i]=Vec4D(e.ctparts[i].e,e.ctparts[i].px,
+			    e.ctparts[i].py,e.ctparts[i].pz);
+	p_sub->p_mom=&m_ctmoms[0];
+	p_sub->m_ijt=e.ijt;
+	p_sub->m_kt=e.kt;
+	p_sub->m_i=e.i;
+	p_sub->m_j=e.j;
+	p_sub->m_k=e.k;
+	p_sub->m_x1=e.z1;
+	p_sub->m_x2=e.z2;
+	p_sub->m_result=e.bbpsw;
+      }
+      return true;
+    }
+
   public:
 
     HDF5_Reader(const Event_Reader_Key &key):
@@ -295,6 +358,14 @@ namespace LHEH5 {
       return e;
     }
 
+    void StepBackward()
+    {
+      --m_ievt;
+      if (!FillAmplitude())
+	THROW(fatal_error, "Could not fill amplitude.");
+      m_trials = 1;
+    }
+
     Cluster_Amplitude *ReadEvent()
     {
       DEBUG_FUNC("i="<<m_ievt<<"("<<p_file->NEvents()<<"),trial="<<m_trials);
@@ -311,64 +382,8 @@ namespace LHEH5 {
 	m_ievt=0;
       }
       if (p_ampl==NULL) {
-	Event e(p_file->GetEvent(m_ievt));
-	if (p_file->Version()[0]==2 &&
-	    p_file->Version()[1]==0 &&
-	    p_file->Version()[2]==0) e.pinfo.unitwgt*=rpa->Picobarn();
-	msg_Debugging()<<e<<"\n";
-	if (e.empty()) {
-	  m_trials+=e.trials;
-	  m_ievt++;
+	if (!FillAmplitude())
 	  return NULL;
-	}
-	if (e[0].pz<0 && e[1].pz>0) {
-	  msg_Debugging()<<"Flip initial states\n";
-	  std::swap<Particle>(e[0],e[1]);
-	  std::swap<double>(e.z1,e.z2);
-	  if (e.ctparts.size()) {
-	    std::swap<Particle>(e.ctparts[0],e.ctparts[1]);
-	    if (e.ijt<2) e.ijt=1-e.ijt;
-	    if (e.kt<2) e.kt=1-e.kt;
-	    if (e.i<2) e.i=1-e.i;
-	    if (e.k<2) e.k=1-e.k;
-	  }
-	}
-	p_ampl = Cluster_Amplitude::New();
-	for (size_t i(0);i<e.size();++i) {
-	  Flavour fl((long int)(e[i].id));
-	  Vec4D p(e[i].e,e[i].px,e[i].py,e[i].pz);
-	  ColorID cl(i<2?e[i].cl2:e[i].cl1,
-		     i<2?e[i].cl1:e[i].cl2);
-	  p_ampl->CreateLeg(i<2?-p:p,i<2?fl.Bar():fl,cl);
-	}
-	p_ampl->SetNIn(2);
-	p_ampl->SetMuR2(sqr(e.mur));
-	p_ampl->SetMuF2(sqr(e.muf));
-	p_ampl->SetMuQ2(sqr(e.muq));
-	p_ampl->SetKT2(sqr(e.muq));
-	p_ampl->SetLKF(e.wgts[0]);
-	m_compute=1;
-	m_trials+=e.trials;
-	if (e.pinfo.npnlo>0) {
-	  p_ampl->SetLKF(e.psw);
-	  m_compute=2;
-	}
-	if (e.ctparts.empty()) p_sub->m_n=0;
-	else {
-	  m_ctmoms.resize(p_sub->m_n=e.ctparts.size());
-	  for (size_t i(0);i<e.ctparts.size();++i)
-	    m_ctmoms[i]=Vec4D(e.ctparts[i].e,e.ctparts[i].px,
-			      e.ctparts[i].py,e.ctparts[i].pz);
-	  p_sub->p_mom=&m_ctmoms[0];
-	  p_sub->m_ijt=e.ijt;
-	  p_sub->m_kt=e.kt;
-	  p_sub->m_i=e.i;
-	  p_sub->m_j=e.j;
-	  p_sub->m_k=e.k;
-	  p_sub->m_x1=e.z1;
-	  p_sub->m_x2=e.z2;
-	  p_sub->m_result=e.bbpsw;
-	}
       }
       if (m_trials==1) {
 	Cluster_Amplitude *ampl(p_ampl);
