@@ -47,6 +47,7 @@ namespace PHASIC {
         const int wmode,
         ATOOLS::Variations_Mode varmode=ATOOLS::Variations_Mode::all,
         const int mode=0) override;
+    void ResetEvent() override;
 
     ATOOLS::Weights_Map Differential(const ATOOLS::Vec4D_Vector& p,
                                      ATOOLS::Variations_Mode) override;

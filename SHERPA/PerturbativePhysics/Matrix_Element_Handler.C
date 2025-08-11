@@ -290,6 +290,7 @@ Matrix_Element_Handler::GenerateOneTrialEvent()
       // re-run with same rng state and include the calculation of variations
       // this time
       ran->RestoreStatus();
+      proc->ResetEvent();
       info=proc->OneEvent(m_eventmode, Variations_Mode::all);
       assert(info);
       if (!IsEqual(m_evtinfo.m_weightsmap.Nominal(), info->m_weightsmap.Nominal(), 1e-6)) {

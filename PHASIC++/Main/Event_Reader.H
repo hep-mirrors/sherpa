@@ -37,6 +37,7 @@ namespace PHASIC {
     virtual ~Event_Reader() = default;
 
     virtual ATOOLS::Cluster_Amplitude *ReadEvent() = 0;
+    virtual void StepBackward() = 0;
 
     inline double TotalXS() const { return m_totalxs; }
     inline double UnitWeight() const { return m_unitwgt; }
