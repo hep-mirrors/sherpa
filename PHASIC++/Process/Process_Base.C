@@ -310,14 +310,14 @@ void Process_Base::Init(const Process_Info &pi,
 
 bool Process_Base::SetupEventReader(const std::string &fnames)
 {
-  size_t pos(fnames.find('['));
+  size_t pos(fnames.find('<'));
   std::string type(fnames.substr(0,pos));
   std::string args(fnames.substr(pos+1,fnames.length()-pos-2));
   Event_Reader_Key key;
   while (args.length()) {
     pos=args.find(',');
     std::string tag(args.substr(0,pos));
-    size_t bpos(tag.find('[')), epos(tag.find(']'));
+    size_t bpos(tag.find('<')), epos(tag.find('>'));
     size_t mpos (tag.find('-',bpos));
     if (bpos!=std::string::npos && epos!=std::string::npos &&
 	mpos>bpos+1 && mpos<epos-1) {
