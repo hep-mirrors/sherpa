@@ -19,12 +19,13 @@ set(Scales_SOURCES Cluster_Definitions.C
                    SingleTop_Core_Scale.C
                    QQSinglet_Core_Scale.C
                    HTPrime_Core_Scale.C
-		           Photons_Core_Scale.C
+                   Photons_Core_Scale.C
                    MINLO_Scale_Setter.C
                    MINLO_KFactor_Setter.C
                    EWVirtKFactor_Setter.C
                    Variable_KFactor_Setter.C
                    No_KFactor_Setter.C
+                   FCC_e_gamma_Scale_Setter.C
                    FCC_e_gamma_Core_Scale.C)
 
 set(Scales_HEADERS Cluster_Definitions.H

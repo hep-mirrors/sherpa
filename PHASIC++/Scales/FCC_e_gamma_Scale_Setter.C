@@ -25,7 +25,7 @@
 
 namespace PHASIC {
 
-  class MEPS_Scale_Setter: public Scale_Setter_Base {
+  class FCC_e_gamma_Scale_Setter: public Scale_Setter_Base {
   private:
 
     PDF::Cluster_Definitions_Base *p_clu, *p_qdc;
@@ -74,17 +74,17 @@ namespace PHASIC {
 
   public:
 
-    MEPS_Scale_Setter(const Scale_Setter_Arguments &args,
+    FCC_e_gamma_Scale_Setter(const Scale_Setter_Arguments &args,
 		      const int mode=1);
 
-    ~MEPS_Scale_Setter();
+    ~FCC_e_gamma_Scale_Setter();
 
     double Calculate(const ATOOLS::Vec4D_Vector &p,const size_t &mode);
 
     void SetScale(const std::string &mu2tag,
 		  ATOOLS::Algebra_Interpreter &mu2calc);
 
-  };// end of class MEPS_Scale_Setter
+  };// end of class FCC_e_gamma_Scale_Setter
 
 }// end of namespace PHASIC
 
@@ -92,28 +92,28 @@ using namespace PHASIC;
 using namespace PDF;
 using namespace ATOOLS;
 
-DECLARE_GETTER(MEPS_Scale_Setter,"METS",
+DECLARE_GETTER(FCC_e_gamma_Scale_Setter,"FCC_e_gamma",
 	       Scale_Setter_Base,Scale_Setter_Arguments);
 
 Scale_Setter_Base *ATOOLS::Getter
-<Scale_Setter_Base,Scale_Setter_Arguments,MEPS_Scale_Setter>::
+<Scale_Setter_Base,Scale_Setter_Arguments,FCC_e_gamma_Scale_Setter>::
 operator()(const Scale_Setter_Arguments &args) const
 {
-  return new MEPS_Scale_Setter(args,1);
+  return new FCC_e_gamma_Scale_Setter(args,1);
 }
 
 void ATOOLS::Getter<Scale_Setter_Base,Scale_Setter_Arguments,
-		    MEPS_Scale_Setter>::
+		    FCC_e_gamma_Scale_Setter>::
 PrintInfo(std::ostream &str,const size_t width) const
 {
-  str<<"meps scale scheme";
+  str<<"FCC_e_gamma scale scheme";
 }
 
-int MEPS_Scale_Setter::s_nfgsplit(-1);
-int MEPS_Scale_Setter::s_allowuo(0);
-int MEPS_Scale_Setter::s_nlocpl(-1);
+int FCC_e_gamma_Scale_Setter::s_nfgsplit(-1);
+int FCC_e_gamma_Scale_Setter::s_allowuo(0);
+int FCC_e_gamma_Scale_Setter::s_nlocpl(-1);
 
-MEPS_Scale_Setter::MEPS_Scale_Setter
+FCC_e_gamma_Scale_Setter::FCC_e_gamma_Scale_Setter
 (const Scale_Setter_Arguments &args,const int mode):
   Scale_Setter_Base(args), m_tagset(this)
 {
@@ -123,7 +123,7 @@ MEPS_Scale_Setter::MEPS_Scale_Setter
     Scoped_Settings s(Settings::GetMainSettings()["MEPS"]);
     s_nmaxall=s["NMAX_ALLCONFIGS"].GetScalarWithOtherDefault<int>(-1);
     s_nmaxnloall=s["NLO_NMAX_ALLCONFIGS"].GetScalarWithOtherDefault<int>(-1);
-    s_cmode=s["CLUSTER_MODE"].GetScalarWithOtherDefault<int>(8|32|64);
+    s_cmode=s["CLUSTER_MODE"].GetScalarWithOtherDefault<int>(8|32|64|256|1024);
     s_nlocpl=s["NLO_COUPLING_MODE"].GetScalarWithOtherDefault<int>(2);
     s_csmode=s["MEPS_COLORSET_MODE"].GetScalarWithOtherDefault<int>(0);
     s_core=s["CORE_SCALE"].GetScalarWithOtherDefault<std::string>("Default");
@@ -176,7 +176,7 @@ MEPS_Scale_Setter::MEPS_Scale_Setter
   if (p_proc->Shower()==NULL) {
     msg_Error()<<"\nPlease specify the renormalisation and factorisation scale e.g SCALES: VAR{H_T2}"<<endl
                <<"For detailed instructions on setting scales, please refer to the Sherpa manual."<<endl;
-    THROW(missing_input,"No shower generator found. Unable to use the MEPS scale scheme.");
+    THROW(missing_input,"No shower generator found. Unable to use the FCC_e_gamma scale scheme.");
   }
   p_clu=p_proc->Shower()->GetClusterDefinitions();
   p_ms=p_proc->Generator();
@@ -218,7 +218,7 @@ MEPS_Scale_Setter::MEPS_Scale_Setter
   p_qdc = new Cluster_Definitions(s_kfac,m_nproc,p_proc->Shower()->KTType());
 }
 
-MEPS_Scale_Setter::~MEPS_Scale_Setter()
+FCC_e_gamma_Scale_Setter::~FCC_e_gamma_Scale_Setter()
 {
   for (size_t i(0);i<m_calcs.size();++i) delete m_calcs[i];
   for (size_t i(0);i<m_ampls.size();++i) m_ampls[i]->Delete();
@@ -228,7 +228,7 @@ MEPS_Scale_Setter::~MEPS_Scale_Setter()
   delete p_qdc;
 }
 
-int MEPS_Scale_Setter::Select
+int FCC_e_gamma_Scale_Setter::Select
 (const ClusterInfo_Vector &ccs,const Int_Vector &on,const int mode) const
 {
   if (mode==1 || (m_cmode&4) || ((m_cmode&32) && m_nproc)) {
@@ -252,7 +252,7 @@ int MEPS_Scale_Setter::Select
   return -1;
 }
 
-bool MEPS_Scale_Setter::CheckOrdering
+bool FCC_e_gamma_Scale_Setter::CheckOrdering
 (Cluster_Amplitude *const ampl,const int ord) const
 {
   if (ampl->Prev()==NULL) return true;
@@ -273,7 +273,7 @@ bool MEPS_Scale_Setter::CheckOrdering
   return true;
 }
 
-bool MEPS_Scale_Setter::CheckSplitting
+bool FCC_e_gamma_Scale_Setter::CheckSplitting
 (const Cluster_Info &ci,const int ord) const
 {
   if (!CheckOrdering(ci.first.p_ampl,ord)) return false;
@@ -294,7 +294,7 @@ bool MEPS_Scale_Setter::CheckSplitting
   return true;
 }
 
-bool MEPS_Scale_Setter::CheckSubEvents(const Cluster_Config &cc) const
+bool FCC_e_gamma_Scale_Setter::CheckSubEvents(const Cluster_Config &cc) const
 {
   NLO_subevtlist *subs(p_proc->Caller()->GetRSSubevtList());
   for (size_t i(0);i<subs->size()-1;++i) {
@@ -308,7 +308,7 @@ bool MEPS_Scale_Setter::CheckSubEvents(const Cluster_Config &cc) const
   return false;
 }
 
-void MEPS_Scale_Setter::Combine
+void FCC_e_gamma_Scale_Setter::Combine
 (Cluster_Amplitude &ampl,const Cluster_Info &ci) const
 {
   int i(ci.first.m_i), j(ci.first.m_j);
@@ -349,7 +349,7 @@ void MEPS_Scale_Setter::Combine
   ampl.SetKin(ci.second.m_kin);
 }
 
-double MEPS_Scale_Setter::Calculate
+double FCC_e_gamma_Scale_Setter::Calculate
 (const Vec4D_Vector &momenta,const size_t &mode)
 {
   m_p=momenta;
@@ -498,7 +498,7 @@ double MEPS_Scale_Setter::Calculate
   return SetScales(m_ampls.back());
 }
 
-bool MEPS_Scale_Setter::CoreCandidate(Cluster_Amplitude *const ampl) const
+bool FCC_e_gamma_Scale_Setter::CoreCandidate(Cluster_Amplitude *const ampl) const
 {
   return ampl->Legs().size()==ampl->NIn()+m_nmin ||
     (ampl->Legs().size()==ampl->NIn()+2 &&
@@ -506,7 +506,7 @@ bool MEPS_Scale_Setter::CoreCandidate(Cluster_Amplitude *const ampl) const
      ampl->Leg(3)->Flav().Mass()==0.0);
 }
 
-void MEPS_Scale_Setter::Cluster
+void FCC_e_gamma_Scale_Setter::Cluster
 (Cluster_Amplitude *ampl,ClusterAmplitude_Vector &ampls,const int ord) const
 {
   ampl->SetProc(p_proc);
@@ -583,7 +583,7 @@ void MEPS_Scale_Setter::Cluster
   if (ampl->LKF()) ampls.push_back(ampl->First()->CopyAll());
 }
 
-bool MEPS_Scale_Setter::ClusterStep
+bool FCC_e_gamma_Scale_Setter::ClusterStep
 (Cluster_Amplitude *ampl,ClusterAmplitude_Vector &ampls,
  const Cluster_Info &ci,const int ord) const
 {
@@ -602,10 +602,12 @@ bool MEPS_Scale_Setter::ClusterStep
   return ampls.size()>oldsize;
 }
 
-double MEPS_Scale_Setter::Differential
+double FCC_e_gamma_Scale_Setter::Differential
 (Cluster_Amplitude *const ampl,const int mode) const
 {
   if (m_cmode&1024) return 1.0;
+  if (!ampl->Leg(0)->Flav().IsLepton() || !ampl->Leg(2)->Flav().IsLepton())
+    return 0.;
   if (ampl->Prev()==NULL) return 1.0;
   NLOTypeStringProcessMap_Map *procs
     (ampl->Procs<NLOTypeStringProcessMap_Map>());
@@ -641,7 +643,7 @@ double MEPS_Scale_Setter::Differential
   return meps;
 }
 
-void MEPS_Scale_Setter::SetCoreScale(Cluster_Amplitude *const ampl) const
+void FCC_e_gamma_Scale_Setter::SetCoreScale(Cluster_Amplitude *const ampl) const
 {
   PDF::Cluster_Param kt2(p_core->Calculate(ampl));
   ampl->SetKT2(kt2.m_kt2);
@@ -650,7 +652,7 @@ void MEPS_Scale_Setter::SetCoreScale(Cluster_Amplitude *const ampl) const
        campl;campl=campl->Prev()) campl->SetMuQ2(kt2.m_op);
 }
 
-double MEPS_Scale_Setter::UnorderedScale(Cluster_Amplitude *const ampl) const
+double FCC_e_gamma_Scale_Setter::UnorderedScale(Cluster_Amplitude *const ampl) const
 {
   if (p_uoscale==NULL) return 0.;
   ampl->SetProc(p_proc);
@@ -658,7 +660,7 @@ double MEPS_Scale_Setter::UnorderedScale(Cluster_Amplitude *const ampl) const
   return kt2.m_kt2;
 }
 
-double MEPS_Scale_Setter::SetScales(Cluster_Amplitude *ampl)
+double FCC_e_gamma_Scale_Setter::SetScales(Cluster_Amplitude *ampl)
 {
   double muf2(ampl->Last()->KT2()), mur2(m_rsf*ampl->Last()->Mu2());
   m_scale[stp::size+stp::res]=m_scale[stp::res]=ampl->MuQ2();
@@ -803,7 +805,7 @@ double MEPS_Scale_Setter::SetScales(Cluster_Amplitude *ampl)
   return m_scale[stp::fac];
 }
 
-void MEPS_Scale_Setter::SetScale
+void FCC_e_gamma_Scale_Setter::SetScale
 (const std::string &mu2tag,Algebra_Interpreter &mu2calc)
 {
   if (mu2tag=="" || mu2tag=="0") THROW(fatal_error,"No scale specified");

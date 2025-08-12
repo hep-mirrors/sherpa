@@ -37,10 +37,10 @@ PDF::Cluster_Param FCC_e_gamma_Core_Scale::Calculate(Cluster_Amplitude *const am
   if (campl->Legs().size()!=ampl->Legs().size())
     msg_Debugging()<<*campl<<"\n";
   if (campl->Legs().size()!=4) {
-    msg_Debugging()<<"more than 4 legs, use HT'/2 as scale"<<std::endl;
+    msg_Debugging()<<"more than 4 legs, use sqrt(Q^2+H_T'^2)/2 as scale"<<std::endl;
     double q=0.0;
     for (size_t i(0);i<campl->Legs().size();++i)
-      if (!campl->Leg(i)->Flav().Strong()) q+=sqrt(dabs(campl->Leg(i)->Mom().MPerp2()));
+      if (campl->Leg(i)->Flav().Strong()) q+=sqrt(dabs(campl->Leg(i)->Mom().MPerp2()));
     q = q*q; //< this now is H_{T,hadr}^2
     if (campl->Leg(0)->Flav().IsLepton() && campl->Leg(2)->Flav().IsLepton())
       q += dabs((campl->Leg(0)->Mom() + campl->Leg(2)->Mom()).Abs2());
@@ -52,7 +52,7 @@ PDF::Cluster_Param FCC_e_gamma_Core_Scale::Calculate(Cluster_Amplitude *const am
   fl[1]=campl->Leg(1)->Flav();
   fl[2]=campl->Leg(2)->Flav();
   fl[3]=campl->Leg(3)->Flav();
-  if (!fl[0].Strong() && fl[1].Strong()) { // DIS-like
+  if (fl[0].IsLepton() && fl[2].IsLepton()) { // DIS-like
     muq2=muf2=mur2=dabs((campl->Leg(0)->Mom()+campl->Leg(2)->Mom()).Abs2());
   } else {
     muq2=muf2=mur2=0.;
