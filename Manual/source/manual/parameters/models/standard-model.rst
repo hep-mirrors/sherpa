@@ -22,7 +22,6 @@ Standard Model
 .. index:: ALPHAQED_DEFAULT_SCALE
 .. index:: GMU_CMS_AQED_CONVENTION
 .. index:: ORDER_ALPHAS
-.. index:: ALPHAS_USE_PDF
 .. index:: WIDTH_SCHEME
 .. index:: PARTICLE_DATA_Mass
 .. index:: PARTICLE_DATA_Massive
