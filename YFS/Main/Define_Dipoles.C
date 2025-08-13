@@ -474,11 +474,11 @@ double Define_Dipoles::FormFactor(){
         form += D.ChargeNorm()*p_yfsFormFact->BVR_full(D.GetBornMomenta(0), D.GetBornMomenta(1), sqrt(m_s) / 2.);
       }
     }
-  // if(m_ifisub==1){
-  //   for(auto &D: m_dipolesIF){
-  //     form += D.ChargeNorm()*p_yfsFormFact->R1(D);
-  //   }
-  // }
+  if(m_ifisub==1){
+    for(auto &D: m_dipolesIF){
+      form += D.ChargeNorm()*p_yfsFormFact->R1(D);
+    }
+  }
   return exp(form); 
 }
 
