@@ -651,33 +651,33 @@ bool Sherpa::SummarizeRun()
     if (timing_statistics>3) {
       std::map<std::string, double> chosen_alpha_map = rpa->gen.AlphaMap();
       std::map<std::string, double> chosen_efficiency_map = rpa->gen.EfficiencyMap();
-      std::cout << "+------------------------------+--------------+---------------------------------------------------------+" << std::endl;
-      std::cout << "|    sampling contribution     |              |                                                         |" << std::endl;
-      std::cout << "| xsec*h  efficiency  stat.dil | time  xsec*h | subprocess                                              |" << std::endl;
-      std::cout << "+------------------------------+--------------+---------------------------------------------------------+" << std::endl;
+      std::cout << "┌──────────────────────────────┬──────────────┬─────────────────────────────────────────────────────────┐" << std::endl;
+      std::cout << "│    sampling contribution     │              │                                                         │" << std::endl;
+      std::cout << "│ xsec*h  efficiency  stat.dil │ time  xsec*h │ subprocess                                              │" << std::endl;
+      std::cout << "├──────────────────────────────┼──────────────┼─────────────────────────────────────────────────────────┤" << std::endl;
       const auto default_precision{std::cout.precision()};
       std::cout << std::setprecision(3);
       for (auto const& [key, val] : time_map) {
         if (key.rfind("sum_PS_", 0) != 0) continue;
         std::string sub_name = key.substr(7);
-        std::cout<<"| "<< std::left<<std::setw(9) << xsec_map[sub_name]<<"";
+        std::cout<<"│ "<< std::left<<std::setw(9) << xsec_map[sub_name]<<"";
         std::cout<<" "<< std::left<<std::setw(9) << chosen_efficiency_map[sub_name]<<"";
         std::cout<<" "<< std::left<<std::setw(8) << chosen_alpha_map[sub_name]<<" ";
         double this_sepsum = time_map["sum_overhead_after_"+sub_name]+time_map["sum_overhead_after_kept_"+sub_name]+time_map["sum_total_"+sub_name];
-        std::cout <<"| " <<std::right<<std::setw(2) << round(this_sepsum/(total["overhead_after"]+total["total"])*100)<<"%  ";
+        std::cout <<"│ " <<std::right<<std::setw(2) << round(this_sepsum/(total["overhead_after"]+total["total"])*100)<<"%  ";
         std::cout <<" " <<std::right<<std::setw(4) << round(xsec_map[sub_name]/plain_xsec_sum*1000.)/10.<<"%  ";
-        std::cout <<"| " <<std::left<<std::setw(55)<< sub_name << " |" << std::endl;
+        std::cout <<"│ " <<std::left<<std::setw(55)<< sub_name << " │" << std::endl;
       }
       std::cout << std::setprecision(default_precision);
-      std::cout << "+------------------------------+--------------+---------------------------------------------------------+" << std::endl << std::endl;
+      std::cout << "└──────────────────────────────┴──────────────┴─────────────────────────────────────────────────────────┘" << std::endl << std::endl;
     }
 
     //make nice final table III (for chosen emax)
     if (timing_statistics>2) {
-      std::cout << "+-------------------------+--------------+---------------------------------------------------------+" << std::endl;
-      std::cout << "|    time contribution    |              |                                                         |" << std::endl;
-      std::cout << "| PS   ME   ov.h.  shower | time  xsec*h | subprocess                                              |" << std::endl;
-      std::cout << "+-------------------------+--------------+---------------------------------------------------------+" << std::endl;
+      std::cout << "┌─────────────────────────┬──────────────┬─────────────────────────────────────────────────────────┐" << std::endl;
+      std::cout << "│    time contribution    │              │                                                         │" << std::endl;
+      std::cout << "│ PS   ME   ov.h.  shower │ time  xsec*h │ subprocess                                              │" << std::endl;
+      std::cout << "├─────────────────────────┼──────────────┼─────────────────────────────────────────────────────────┤" << std::endl;
       for (auto const& [key, val] : time_map) {
         if (key.rfind("sum_PS_", 0) != 0) continue;
         std::string sub_name = key.substr(7);
@@ -687,58 +687,58 @@ bool Sherpa::SummarizeRun()
           double t_ov_during = (time_map["sum_total_"+sub_name]-time_map["sum_ME_"+sub_name]-time_map["sum_PS_"+sub_name]-time_map["sum_PDF_"+sub_name])/number_map["n_total_"+sub_name];
           double t_ov_after = (time_map["sum_overhead_after_kept_"+sub_name]+time_map["sum_overhead_after_"+sub_name])/number_map["n_total_"+sub_name];
           double sum = t_ME+t_PS+t_ov_during+t_ov_after;
-          msg_Info()<<"| "<< std::right<<std::setw(2) << round(t_PS/sum*100)<<"% ";
+          msg_Info()<<"│ "<< std::right<<std::setw(2) << round(t_PS/sum*100)<<"% ";
           msg_Info()<<" "<< std::right<<std::setw(2) << round(t_ME/sum*100)<<"% ";
           msg_Info()<<"  "<< std::right<<std::setw(2) << round(t_ov_during/sum*100)<<"% ";
           msg_Info()<<"   "<< std::right<<std::setw(2) << round(t_ov_after/sum*100)<<"%   ";
         } else {
-          std::cout << "| --   --    --     --   ";
+          std::cout << "│ --   --    --     --   ";
         }
         double this_sepsum = time_map["sum_overhead_after_"+sub_name]+time_map["sum_overhead_after_kept_"+sub_name]+time_map["sum_total_"+sub_name];
-        std::cout <<"| " <<std::right<<std::setw(2) << round(this_sepsum/(total["overhead_after"]+total["total"])*100)<<"%  ";
+        std::cout <<"│ " <<std::right<<std::setw(2) << round(this_sepsum/(total["overhead_after"]+total["total"])*100)<<"%  ";
         std::cout <<" " <<std::right<<std::setw(4) << round(xsec_map[sub_name]/plain_xsec_sum*1000.)/10.<<"%  ";
-        std::cout <<"| " <<std::left<<std::setw(55)<< sub_name << " |" << std::endl;
+        std::cout <<"│ " <<std::left<<std::setw(55)<< sub_name << " │" << std::endl;
       }
-      std::cout << "+-------------------------+--------------+---------------------------------------------------------+" << std::endl;
+      std::cout << "└─────────────────────────┴──────────────┴─────────────────────────────────────────────────────────┘" << std::endl;
     }
 
     //make nice final table II
     if (timing_statistics>1) {
-      std::cout << "+-------------+---------------------------------------------+" << std::endl;
-      std::cout << "| epsilon_max | PS time   ME time   overhead    shower etc  |" << std::endl;
-      std::cout << "+-------------+---------------------------------------------+" << std::endl;
+      std::cout << "┌─────────────┬─────────────────────────────────────────────┐" << std::endl;
+      std::cout << "│ epsilon_max │ PS time   ME time   overhead    shower etc  │" << std::endl;
+      std::cout << "├─────────────┼─────────────────────────────────────────────┤" << std::endl;
       for(int i=0; i < epsilon_values.size(); i++){
-        std::cout << "| 1e" <<std::left<<std::setw(9)<< epsilon_values[i] << " | ";
+        std::cout << "│ 1e" <<std::left<<std::setw(9)<< epsilon_values[i] << " │ ";
         msg_Info()<<" "<< std::right<<std::setw(2) << round(mean_manual_events_time[i]["PS"]/mean_manual_events_time[i]["sum"]*100)<<"%      ";
         msg_Info()<<" "<< std::right<<std::setw(2) << round(mean_manual_events_time[i]["ME"]/mean_manual_events_time[i]["sum"]*100)<<"%      ";
         msg_Info()<<" "<< std::right<<std::setw(2) << round(mean_manual_events_time[i]["ov_during"]/mean_manual_events_time[i]["sum"]*100)<<"%       ";
-        msg_Info()<<" "<< std::right<<std::setw(2) << round(mean_manual_events_time[i]["ov_after"]/mean_manual_events_time[i]["sum"]*100)<<"%         |" << std::endl;
+        msg_Info()<<" "<< std::right<<std::setw(2) << round(mean_manual_events_time[i]["ov_after"]/mean_manual_events_time[i]["sum"]*100)<<"%         │" << std::endl;
       }
-      std::cout << "+-------------+---------------------------------------------+" << std::endl;
+      std::cout << "└─────────────┴─────────────────────────────────────────────┘" << std::endl;
     }
 
     //make nice final table I
-    std::cout << "+-----------------------------+---------------------------------+---------------------------------+" << std::endl;
-    std::cout << "|                             |          Average region         |       Large weight region       |" << std::endl;
-    std::cout << "|                             |           (fraction: 1)         |        (fraction: "<< timing_statistics_large_weight_fraction <<")        |" << std::endl;
-    std::cout << "| Max_Epsilon    events/day   | eff. events/day     sample size | eff. events/day     sample size |" << std::endl;
-    std::cout << "+-----------------------------+---------------------------------+---------------------------------+" << std::endl;
+    std::cout << "┌─────────────────────────────┬─────────────────────────────────┬─────────────────────────────────┐" << std::endl;
+    std::cout << "│                             │          Average region         │       Large weight region       │" << std::endl;
+    std::cout << "│                             │           (fraction: 1)         │        (fraction: "<< timing_statistics_large_weight_fraction <<")        │" << std::endl;
+    std::cout << "│ Max_Epsilon    events/day   │ eff. events/day     sample size │ eff. events/day     sample size │" << std::endl;
+    std::cout << "├─────────────────────────────┼─────────────────────────────────┼─────────────────────────────────┤" << std::endl;
     const auto default_precision{std::cout.precision()};
     std::cout << std::setprecision(4);
     for(int i=0; i < epsilon_values.size(); i++){
-      std::cout << "| 1e" <<std::left<<std::setw(9)<< epsilon_values[i] << "    " <<std::setw(12)<< mean_manual_events[i] << " | ";
+      std::cout << "│ 1e" <<std::left<<std::setw(9)<< epsilon_values[i] << "    " <<std::setw(12)<< mean_manual_events[i] << " │ ";
       if (i==optimal_manual_i) {
-        std::cout <<std::setw(15)<< mean_manual_eff_events[i] << "<--  " <<std::left<<std::setw(11) << 1./mean_manual_alpha[i] << " | ";
+        std::cout <<std::setw(15)<< mean_manual_eff_events[i] << "<--  " <<std::left<<std::setw(11) << 1./mean_manual_alpha[i] << " │ ";
       } else {
-        std::cout <<std::setw(15)<< mean_manual_eff_events[i] << "     " <<std::left<<std::setw(11) << 1./mean_manual_alpha[i] << " | ";
+        std::cout <<std::setw(15)<< mean_manual_eff_events[i] << "     " <<std::left<<std::setw(11) << 1./mean_manual_alpha[i] << " │ ";
       }
       if (i==optimal_manual_fraction_i) {
-        std::cout <<std::setw(15)<< mean_manual_fraction_eff_events[i] << "<--  " <<std::left<<std::setw(11) << 1./mean_manual_fraction_alpha[i] << " |" << std::endl;
+        std::cout <<std::setw(15)<< mean_manual_fraction_eff_events[i] << "<--  " <<std::left<<std::setw(11) << 1./mean_manual_fraction_alpha[i] << " │" << std::endl;
       } else {
-        std::cout <<std::setw(15)<< mean_manual_fraction_eff_events[i] << "     " <<std::left<<std::setw(11) << 1./mean_manual_fraction_alpha[i] << " |" << std::endl;
+        std::cout <<std::setw(15)<< mean_manual_fraction_eff_events[i] << "     " <<std::left<<std::setw(11) << 1./mean_manual_fraction_alpha[i] << " │" << std::endl;
       }
     }
-    std::cout << "+-----------------------------+---------------------------------+---------------------------------+" << std::endl;
+    std::cout << "└─────────────────────────────┴─────────────────────────────────┴─────────────────────────────────┘" << std::endl;
     //show relative sudakov uncertainty for average region optimal point
     std::cout << "Relative Sudakov uncertainty for average region optimal point: +"<< (mean_manual_events_up[optimal_manual_i]/mean_manual_events[optimal_manual_i]-1)*100. <<"% -"<< (1-mean_manual_events_down[optimal_manual_i]/mean_manual_events[optimal_manual_i])*100. <<"%" << std::endl;
     std::cout << std::setprecision(default_precision);
