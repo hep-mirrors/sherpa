@@ -94,6 +94,7 @@ Phase_Space_Handler::Differential(Process_Integrator *const process,
     rpa->gen.SetTimeMap("sum2_overhead_after_"+sub_name_loc, rpa->gen.TimeMap("sum2_overhead_after_"+sub_name_loc)+finetimeGen*finetimeGen);
   }
   std::string sub_name = process->Process()->Name();
+  rpa->gen.SetIsGenSubName(sub_name);
   rpa->gen.SetNumberMap("n_trial_"+sub_name, rpa->gen.NumberMap("n_trial_"+sub_name)+1);
   // check for failure to generate a meaningful phase space point
   if (!process->Process()->GeneratePoint() ||

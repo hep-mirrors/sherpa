@@ -33,6 +33,7 @@ Process_Integrator::Process_Integrator(Process_Base *const proc):
   m_totalsum (0.), m_totalsumsqr(0.), m_totalerr(0.), m_ssum(0.), 
   m_ssumsqr(0.), m_smax(0.), m_ssigma2(0.), m_wmin(0.),
   m_mssum(0.), m_mssumsqr(0.), m_msn(0.), m_sn(0), m_son(1),
+  m_external_selectionweight(-1),
   m_writeout(false),
   p_whisto_pos(NULL),
   p_whisto_neg(NULL)
@@ -75,6 +76,9 @@ double Process_Integrator::SelectionWeight(const int mode) const
 {
   if (!p_proc->IsGroup()) {
     if (mode!=0) {
+      if (m_external_selectionweight != -1) {
+	return m_external_selectionweight;
+      }
       //Sherpa manual - only works with completely written out whisto - otherweise m_meanenhfunc ("mean enhancement function") wrong
       return dabs(TotalResult()*m_meanenhfunc*m_enhancefac/m_effi/m_effevperev);
     }

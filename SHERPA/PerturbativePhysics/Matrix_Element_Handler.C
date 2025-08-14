@@ -249,7 +249,7 @@ bool Matrix_Element_Handler::GenerateOneTrialEvent()
   // try to generate an event for the selected process
   ATOOLS::Weight_Info *info=proc->OneEvent(m_eventmode, varmode);
   p_proc=proc->Selected();
-  std::string sub_name = p_proc->Name();
+  std::string sub_name = rpa->gen.GetIsGenSubName();
   if (p_proc->Generator()==NULL)
     THROW(fatal_error,"No generator for process '"+p_proc->Name()+"'");
   if (p_proc->Generator()->MassMode()!=0)
@@ -283,7 +283,7 @@ bool Matrix_Element_Handler::GenerateOneTrialEvent()
     }
     rpa->gen.SetNumberMap("n_gen_"+sub_name, rpa->gen.NumberMap("n_gen_"+sub_name)+1);
     rpa->gen.SetIsGen(true);
-    rpa->gen.SetIsGenSubName(sub_name);
+    //rpa->gen.SetIsGenSubName(sub_name);
     rpa->gen.SetIsGenTime(std::chrono::high_resolution_clock::now());
     if (abswgt > maxwt) {
       rpa->gen.SetNumberMap("n_overw_"+sub_name, rpa->gen.NumberMap("n_overw_"+sub_name)+1);

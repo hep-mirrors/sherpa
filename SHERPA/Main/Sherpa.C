@@ -255,7 +255,7 @@ bool Sherpa::GenerateOneEvent(bool reset)
     }
     else {
       m_trials+=(*blobs->FindFirst(btp::Signal_Process))["Trials"]->Get<double>();
-      std::string sub_name = blobs->FindFirst(btp::Signal_Process)->ShortProcessNameUnderscored();
+      std::string sub_name = rpa->gen.GetIsGenSubName();
       std::chrono::high_resolution_clock::time_point end3 = std::chrono::high_resolution_clock::now();
       double finetime = std::chrono::duration_cast<std::chrono::nanoseconds>(end3-rpa->gen.GetIsGenTime()).count()/1000000000.;
       rpa->gen.SetNumberMap("n_kept_"+sub_name, rpa->gen.NumberMap("n_kept_"+sub_name)+1);
@@ -692,7 +692,7 @@ bool Sherpa::SummarizeRun()
           msg_Info()<<"  "<< std::right<<std::setw(2) << round(t_ov_during/sum*100)<<"% ";
           msg_Info()<<"   "<< std::right<<std::setw(2) << round(t_ov_after/sum*100)<<"%   ";
         } else {
-          std::cout << "| --   --   --    --     --   ";
+          std::cout << "| --   --    --     --   ";
         }
         double this_sepsum = time_map["sum_overhead_after_"+sub_name]+time_map["sum_overhead_after_kept_"+sub_name]+time_map["sum_total_"+sub_name];
         std::cout <<"| " <<std::right<<std::setw(2) << round(this_sepsum/(total["overhead_after"]+total["total"])*100)<<"%  ";

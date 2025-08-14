@@ -49,7 +49,7 @@ namespace PHASIC {
     hls::scheme m_helicityscheme;
 
     double m_threshold, m_enhancefac, m_maxeps, m_rsfac, m_meanenhfunc=-1, m_effi = -1, m_effevperev=-1;
-    double m_timing_statistics_large_weight_fraction;
+    double m_timing_statistics_large_weight_fraction, m_external_selectionweight;
     int m_timing_statistics;
 
     long unsigned int m_n, m_itmin, m_itmax;
@@ -208,6 +208,7 @@ namespace PHASIC {
     inline ATOOLS::Histogram *WeightHisto() const { ATOOLS::Histogram *p_whisto(p_whisto_pos); *p_whisto += *p_whisto_neg; return p_whisto; }
     inline ATOOLS::Histogram *WeightHistoPos() const { return p_whisto_pos; }
     inline ATOOLS::Histogram *WeightHistoNeg() const { return p_whisto_neg; }
+    inline void SetWmodeNonZeroSelectionWeight(double new_weight)    { m_external_selectionweight=new_weight;    }
 
   };// end of class Process_Integrator
 
