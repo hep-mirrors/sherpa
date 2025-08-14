@@ -269,7 +269,7 @@ bool Matrix_Element_Handler::GenerateOneTrialEvent()
   const auto sw = p_proc->Integrator()->SelectionWeight(m_eventmode) / m_sum;
   double enhance = p_proc->Integrator()->PSHandler()->EnhanceWeight();
   double wf(rpa->Picobarn()/sw/enhance);
-  if (m_eventmode!=0) {
+  if (m_eventmode!=0) {//weighted: 0
     const auto maxwt  = p_proc->Integrator()->Max();
     const auto disc   = maxwt * ran->Get();
     const auto abswgt = std::abs(m_evtinfo.m_weightsmap.Nominal());
@@ -321,11 +321,10 @@ bool Matrix_Element_Handler::GenerateOneTrialEvent()
       // unweighting above, such that it is not re-used in the future
       ran->Get();
     }
-    std::chrono::high_resolution_clock::time_point end1 = std::chrono::high_resolution_clock::now();
-    double finetime1 = std::chrono::duration_cast<std::chrono::nanoseconds>(end1-begin1).count()/1000000000.;
-    rpa->gen.SetTimeMap("sum_total_" +sub_name, rpa->gen.TimeMap("sum_total_" +sub_name)+finetime1);
-    rpa->gen.SetTimeMap("sum2_total_"+sub_name, rpa->gen.TimeMap("sum2_total_"+sub_name)+finetime1*finetime1);
-    rpa->gen.SetNumberMap("n_total_" +sub_name, rpa->gen.NumberMap("n_total_" +sub_name)+1);
+  } else {
+    rpa->gen.SetNumberMap("n_gen_"+sub_name, rpa->gen.NumberMap("n_gen_"+sub_name)+1);
+    rpa->gen.SetIsGen(true);
+    rpa->gen.SetIsGenTime(std::chrono::high_resolution_clock::now());
   }
 
   // trial event is accepted, apply weight factor
@@ -335,6 +334,12 @@ bool Matrix_Element_Handler::GenerateOneTrialEvent()
     p_proc->GetSubevtList()->MultMEwgt(wf);
   }
   if (p_proc->GetMEwgtinfo()) (*p_proc->GetMEwgtinfo())*=wf;
+  std::chrono::high_resolution_clock::time_point end1 = std::chrono::high_resolution_clock::now();
+  double finetime1 = std::chrono::duration_cast<std::chrono::nanoseconds>(end1-begin1).count()/1000000000.;
+  rpa->gen.SetTimeMap("sum_total_" +sub_name, rpa->gen.TimeMap("sum_total_" +sub_name)+finetime1);
+  rpa->gen.SetTimeMap("sum2_total_"+sub_name, rpa->gen.TimeMap("sum2_total_"+sub_name)+finetime1*finetime1);
+  rpa->gen.SetNumberMap("n_total_" +sub_name, rpa->gen.NumberMap("n_total_" +sub_name)+1);
+  //std::cout << "    good so far" << std::endl;
   return true;
 }
 
