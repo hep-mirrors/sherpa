@@ -208,7 +208,7 @@ namespace PHASIC {
     inline ATOOLS::Histogram *WeightHisto() const { ATOOLS::Histogram *p_whisto(p_whisto_pos); *p_whisto += *p_whisto_neg; return p_whisto; }
     inline ATOOLS::Histogram *WeightHistoPos() const { return p_whisto_pos; }
     inline ATOOLS::Histogram *WeightHistoNeg() const { return p_whisto_neg; }
-    inline void SetWmodeNonZeroSelectionWeight(double new_weight)    { m_external_selectionweight=new_weight;    }
+    inline void SetUnweightingSelectionWeight(double new_weight)    { m_external_selectionweight=new_weight;    }
 
   };// end of class Process_Integrator
 
