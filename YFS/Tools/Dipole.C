@@ -313,7 +313,7 @@ bool Dipole::BoostNLO() {
     // double m1 = m_momenta[0].Mass();
     // double m2 = m_momenta[1].Mass();
     // Vec4D rref = Q-m_photonSum;
-    MakePair(sqrt(sprim), m_momenta[0], m_momenta[1]);
+    MakePair(sqrt(sprim), m_momenta[1], m_momenta[0]);
     // PHASIC::CE.Isotropic2Momenta(rref, m1*m1, m2*m2,m_momenta[0], m_momenta[1],ran->Get(), ran->Get());
     Vec4D qqk = m_momenta[0] + m_momenta[1] + m_photonSum;
     p_Pboost = new Poincare(qqk);
