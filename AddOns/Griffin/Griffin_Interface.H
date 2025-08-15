@@ -23,7 +23,8 @@
 #include "EWPOZ2.h"
 #include "xscnnlo.h"
 #include "xscenlo.h"
-#include "SMval.h"
+// #include "SMval.h"
+#include "SMvalGMwMz.h"
 // #include "SMvalG.h"
 
 
@@ -69,7 +70,7 @@ namespace Griffin {
     static void EvaluateNNLO(const Vec4D_Vector& momenta, METOOLS::DivArrD& virt);
     static void EvaluateBorn(const Vec4D_Vector& momenta, double &born);
     static griffin::inval m_griffin;
-    // static griffin::SMvalGmu m_griffin;
+    static griffin::SMvalGMwMz m_griffinGMwMz;
     // static griffin::invalGmu m_griffin;
     static griffinorder::code m_order;
     static int m_inital;
