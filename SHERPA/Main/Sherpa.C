@@ -369,14 +369,14 @@ bool Sherpa::SummarizeRun()
 
     std::map<std::string, double>  time_map = rpa->gen.TimeMapAll();
     std::map<std::string, int>     number_map = rpa->gen.NumberMapAll();
-    std::vector<std::string> num_types = {"total", "trial", "PS", "ME", "gen", "overw", "maxoverw", "kept"};//
+    std::vector<std::string> num_types = {"total", "afterpilot", "trial", "PS", "ME", "gen", "overw", "maxoverw", "kept"};//
     std::map<std::string, double>  sum_map;
     std::map<std::string, double>  sum_mult_map;//defined as double to simplify following divisions
     for (const std::string& num_type : num_types) {
       sum_map[num_type] = 0;
     }
     //loop over subprocesses
-    std::vector<std::string> sum_types = {"total", "PS", "ME", "overhead", "overhead_after_kept", "overhead_after"};//
+    std::vector<std::string> sum_types = {"total", "afterpilot", "PS", "ME", "overhead", "overhead_after_kept", "overhead_after"};//
     std::map<std::string, double> total;
     for (const std::string& sum_type : sum_types) {
       total[sum_type] = 0;
@@ -418,6 +418,11 @@ bool Sherpa::SummarizeRun()
           msg_Info()<< sub_name << " : "<<"Total time: "<<w<<" s"<<std::endl;
         }
         total["total"] += w;
+        w = time_map["sum_afterpilot_"+sub_name];
+        if (timing_statistics>4) {
+          msg_Info()<< sub_name << " : "<<"Afterpilot time: "<<w<<" s"<<std::endl;
+        }
+        total["afterpilot"] += w;
         w = time_map["sum_overhead_after_kept_"+sub_name];
         if (timing_statistics>4) {
           msg_Info()<< sub_name << " : "<<"overhead_after_kept time: "<<w<<" s"<<std::endl;
