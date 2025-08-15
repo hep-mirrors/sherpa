@@ -16,8 +16,7 @@ double Griffin::Griffin_Interface::m_B=0;
 ew_scheme::code Griffin::Griffin_Interface::m_ewscheme=ew_scheme::alphamZ;
 Griffin::griffinorder::code Griffin::Griffin_Interface::m_order=griffinorder::nnlo;
 griffin::inval Griffin::Griffin_Interface::m_griffin;
-// griffin::invalGmu Griffin::Griffin_Interface::m_griffin;
-// griffin::SMvalGmu Griffin::Griffin_Interface::m_griffin;
+// griffin::SMvalGMwMz Griffin::Griffin_Interface::m_griffinGMwMz;
 
 void Griffin::Griffin_Interface::RegisterDefaults()
 {
@@ -57,37 +56,50 @@ bool Griffin::Griffin_Interface::Initialize(MODEL::Model_Base *const model,
   // }
   m_ewscheme = s["EW_SCHEME"].Get<ew_scheme::code>();
   // if(m_ewscheme==ew_scheme::alphamZ){
-  m_griffin.set(0, Flavour(kf_Wplus).Mass());
-  m_griffin.set(1, Flavour(kf_Z).Mass());
-  m_griffin.set(2, Flavour(kf_h0).Mass());
-  m_griffin.set(3, Flavour(kf_e).Mass());
-  m_griffin.set(4, Flavour(kf_mu).Mass());
-  m_griffin.set(5, Flavour(kf_tau).Mass());
-  m_griffin.set(6, Flavour(kf_d).Mass());
-  m_griffin.set(7, Flavour(kf_s).Mass());
-  m_griffin.set(8, Flavour(kf_b).Mass()); // MSbar mass at scale mu=MZ for mb(mb)=4.20
-  m_griffin.set(9, Flavour(kf_u).Mass());
-  m_griffin.set(10, Flavour(kf_c).Mass()); // MSbar mass at scale mu=MZ
-  m_griffin.set(11, Flavour(kf_t).Mass());
-  m_griffin.set(12, s_model->ScalarConstant("alpha_QED"));
-  m_griffin.set(13, s_model->ScalarConstant("alpha_S"));
-  m_griffin.set(14, delap);
-  // m_griffin.set(15, delap);
-  m_griffin.set(16, GF);
-  m_griffin.set(17, Flavour(kf_Wplus).Width());
-  m_griffin.set(18, Flavour(kf_Z).Width());
+    m_griffin.set(0, Flavour(kf_Wplus).Mass());
+    m_griffin.set(1, Flavour(kf_Z).Mass());
+    m_griffin.set(2, Flavour(kf_h0).Mass());
+    m_griffin.set(3, Flavour(kf_e).Mass());
+    m_griffin.set(4, Flavour(kf_mu).Mass());
+    m_griffin.set(5, Flavour(kf_tau).Mass());
+    m_griffin.set(6, Flavour(kf_d).Mass());
+    m_griffin.set(7, Flavour(kf_s).Mass());
+    m_griffin.set(8, Flavour(kf_b).Mass()); // MSbar mass at scale mu=MZ for mb(mb)=4.20
+    m_griffin.set(9, Flavour(kf_u).Mass());
+    m_griffin.set(10, Flavour(kf_c).Mass()); // MSbar mass at scale mu=MZ
+    m_griffin.set(11, Flavour(kf_t).Mass());
+    if(m_ewscheme!=3) m_griffin.set(12, s_model->ScalarConstant("alpha_QED"));
+    m_griffin.set(13, s_model->ScalarConstant("alpha_S"));
+    m_griffin.set(Delal, delap);
+    // m_griffin.set(15, delap);
+    m_griffin.set(16, GF);
+    m_griffin.set(17, Flavour(kf_Wplus).Width());
+    m_griffin.set(18, Flavour(kf_Z).Width());
+   //  m_griffin.set(MZ, Flavour(kf_Z).Mass());
+   //  m_griffin.set(MW, Flavour(kf_Wplus).Mass());
+   // m_griffin.set(al, 1/137.03599976);
+   //  m_griffin.set(als, s_model->ScalarConstant("alpha_S"));
+   //  m_griffin.set(GamZ, Flavour(kf_Z).Width());
+   //  m_griffin.set(GamW, Flavour(kf_Wplus).Width());
+   //  m_griffin.set(MH, Flavour(kf_h0).Mass());
+   //  m_griffin.set(MT, Flavour(kf_t).Mass());
+   //  m_griffin.set(MB, Flavour(kf_b).Mass());  // MSbar mass at scale mu=MZ
+   //  m_griffin.set(Delal, delap);
+   //  m_griffin.set(Gmu, GF);
+  // }
+  if(m_ewscheme==3){
+    // m_griffinGMwMz = SMvalGMwMz(m_griffin);
+    SMvalGMwMz myinput2(m_griffin);
 
-  // m_griffin.set(1, 91.1876);
-  // m_griffin.set(0, 80.358);
-  // m_griffin.set(12, 1/137.03599976);
-  // m_griffin.set(13, 0.1179);
-  // m_griffin.set(17, 2.089);
-  // m_griffin.set(18, 2.4952);
-  // m_griffin.set(2, 125.1);
-  // m_griffin.set(11, 173.0);
-  // m_griffin.set(8, 2.87);  // MSbar mass at scale mu=MZ
-  // m_griffin.set(14, 0.05900);
-  // m_griffin.set(16, 1.166379e-5);
+    cout << endl;
+    cout << "complex-pole mass: mw = " << myinput2.get(MWc) << endl;
+    cout << "PDG mass:          mw = " << myinput2.get(MW) << endl;
+    cout << "complex-pole mass: mZ = " << myinput2.get(MZc) << endl;
+    cout << "PDG mass:          mZ = " << myinput2.get(MZ) << endl;
+    cout << "alpha(0):          al = " << myinput2.get(al) << endl;
+    cout << "                   1/al = " << 1/myinput2.get(al) << endl;
+    cout << endl;
+  }
   return true;
 }
 
@@ -128,30 +140,11 @@ void Griffin::Griffin_Interface::EvaluateLO(const Vec4D_Vector& momenta, DivArrD
   if(cost > 1. || cost < -1){
     msg_Error()<<"CosTheta out of range in "<<METHOD<<endl;
   }
-  // if(m_ewscheme==3){ 
-    // FA_SMLO FAi(m_inital, m_griffinGmu), FAf(m_final, m_griffinGmu);
-    // SW_SMLO SWi(m_inital, m_griffinGmu), SWf(m_final, m_griffinGmu);
-    // matel M(m_inital, m_final, VEC, VEC, FAi.result().real(), FAf.result().real(), SWi.result().real(),  SWf.result().real(), s, cost, m_griffinGmu);
-    // M.setkinvar(s, cost);
+  FA_SMLO FAi(m_inital, m_griffin), FAf(m_final, m_griffin);
+  SW_SMLO SWi(m_inital, m_griffin), SWf(m_final, m_griffin);
 
-    // M.setform(VEC, VEC);
-    // resvv = M.result();
-    // M.setform(AXV, VEC);
-    // resav = M.result();
-    // M.setform(VEC, AXV);
-    // resva = M.result();
-    // M.setform(AXV, AXV);
-    // resaa = M.result();
-    // m_B = real((1+cost*cost)*(resvv*conj(resvv) + resav*conj(resav)
-    //              + resva*conj(resva) + resaa*conj(resaa)) +
-    //   + 4*cost*(resvv*conj(resaa) + resva*conj(resav)).real());
-  // }
-  // else{
-    FA_SMLO FAi(m_inital, m_griffin), FAf(m_final, m_griffin);
-    SW_SMLO SWi(m_inital, m_griffin), SWf(m_final, m_griffin);
-
-    matel M(m_inital, m_final, VEC, VEC, FAi.result().real(), FAf.result().real(), SWi.result().real(),  SWf.result().real(), s, cost, m_griffin);
-    M.setkinvar(s, cost);
+  matel M(m_inital, m_final, VEC, VEC, FAi.result().real(), FAf.result().real(), SWi.result().real(),  SWf.result().real(), s, cost, m_griffin);
+        M.setkinvar(s, cost);
 
     M.setform(VEC, VEC);
     resvv = M.result();
@@ -164,103 +157,54 @@ void Griffin::Griffin_Interface::EvaluateLO(const Vec4D_Vector& momenta, DivArrD
     m_B = real((1+cost*cost)*(resvv*conj(resvv) + resav*conj(resav)
                  + resva*conj(resva) + resaa*conj(resaa)) +
       + 4*cost*(resvv*conj(resaa) + resva*conj(resav)).real());
-  // }
-  // cout << "sineff^i (LO+) = " << SWi.result() << endl;
-  // cout << "sineff^f (LO+) = " << SWf.result() << endl;
-  // // double  FAi = 0.0345, FAf = 0.0345;
-  // matel M(m_inital, m_final, VEC, VEC, FAi.result().real(), FAf.result().real(), SWi.result().real(),  SWf.result().real(), s, cost, m_griffin);
-  // M.setkinvar(s, cost);
-
-  // M.setform(VEC, VEC);
-  // resvv = M.result();
-  // M.setform(AXV, VEC);
-  // resav = M.result();
-  // M.setform(VEC, AXV);
-  // resva = M.result();
-  // M.setform(AXV, AXV);
-  // resaa = M.result();
-  // m_B = real((1+cost*cost)*(resvv*conj(resvv) + resav*conj(resav)
-  //              + resva*conj(resva) + resaa*conj(resaa)) +
-  //   + 4*cost*(resvv*conj(resaa) + resva*conj(resav)).real());
 }
 
 void Griffin::Griffin_Interface::EvaluateNLO(const Vec4D_Vector& momenta, DivArrD &res){
   double s = (momenta[0]+momenta[1]).Abs2();
   double t = (momenta[0]-momenta[2]).Abs2();
   double cost = 1.+2.*t/s;
-  // double cost = 0;
-  // if(sqrt(s)<40) {
-  //   res.Finite() = 0;
-  // }
-  // if(m_ewscheme==3){ 
-    //  FA_SMNLO FAi(m_inital, m_griffinGmu), FAf(m_final, m_griffinGmu);
-    //  SW_SMNLO SWi(m_inital, m_griffinGmu), SWf(m_final, m_griffinGmu);
 
-    // mat_SMNLO M(m_inital, m_final, VEC, VEC, FAi.result().real(), FAf.result().real(),  SWi.result().real(),  SWf.result().real(), s, cost, m_griffinGmu);
+  // if(m_ewscheme==3){
+      FA_SMNLO FAi(m_inital, m_griffin), FAf(m_final, m_griffin);
+      SW_SMNLO SWi(m_inital, m_griffin), SWf(m_final, m_griffin);
+      mat_SMNLO M(m_inital, m_final, VEC, VEC, FAi.result().real(), FAf.result().real(),  SWi.result().real(),  SWf.result().real(), s, cost, m_griffin);
 
-    // M.setkinvar(s, cost);
-    // Cplx resvv, resva, resav, resaa;
+      M.setkinvar(s, cost);
+      Cplx resvv, resva, resav, resaa;
 
-    // M.setform(VEC, VEC);
-    // resvv = M.result();
-    // M.setform(AXV, VEC);
-    // resav = M.result();
-    // M.setform(VEC, AXV);
-    // resva = M.result();
-    // M.setform(AXV, AXV);
-    // resaa = M.result();
-    // res.Finite() = real((1+cost*cost)*(resvv*conj(resvv) + resav*conj(resav)
-    //              + resva*conj(resva) + resaa*conj(resaa)) +
-    //   + 4*cost*(resvv*conj(resaa) + resva*conj(resav)).real());
+      M.setform(VEC, VEC);
+      resvv = M.result();
+      M.setform(AXV, VEC);
+      resav = M.result();
+      M.setform(VEC, AXV);
+      resva = M.result();
+      M.setform(AXV, AXV);
+      resaa = M.result();
+      res.Finite() = real((1+cost*cost)*(resvv*conj(resvv) + resav*conj(resav)
+                   + resva*conj(resva) + resaa*conj(resaa)) +
+        + 4*cost*(resvv*conj(resaa) + resva*conj(resav)).real());
+    // }
+    // else{
+    //   FA_SMNLO FAi(m_inital, m_griffinGMwMz), FAf(m_final, m_griffinGMwMz);
+    //   SW_SMNLO SWi(m_inital, m_griffinGMwMz), SWf(m_final, m_griffinGMwMz);
+    //   mat_SMNLO M(m_inital, m_final, VEC, VEC, FAi.result().real(), FAf.result().real(),  SWi.result().real(),  SWf.result().real(), s, cost, m_griffinGMwMz);
 
-  // }
-  // else{
-    FA_SMNLO FAi(m_inital, m_griffin), FAf(m_final, m_griffin);
-    SW_SMNLO SWi(m_inital, m_griffin), SWf(m_final, m_griffin);
-    mat_SMNLO M(m_inital, m_final, VEC, VEC, FAi.result().real(), FAf.result().real(),  SWi.result().real(),  SWf.result().real(), s, cost, m_griffin);
+    //   M.setkinvar(s, cost);
+    //   Cplx resvv, resva, resav, resaa;
 
-    M.setkinvar(s, cost);
-    Cplx resvv, resva, resav, resaa;
+    //   M.setform(VEC, VEC);
+    //   resvv = M.result();
+    //   M.setform(AXV, VEC);
+    //   resav = M.result();
+    //   M.setform(VEC, AXV);
+    //   resva = M.result();
+    //   M.setform(AXV, AXV);
+    //   resaa = M.result();
+    //   res.Finite() = real((1+cost*cost)*(resvv*conj(resvv) + resav*conj(resav)
+    //                + resva*conj(resva) + resaa*conj(resaa)) +
+    //     + 4*cost*(resvv*conj(resaa) + resva*conj(resav)).real());
 
-    M.setform(VEC, VEC);
-    resvv = M.result();
-    M.setform(AXV, VEC);
-    resav = M.result();
-    M.setform(VEC, AXV);
-    resva = M.result();
-    M.setform(AXV, AXV);
-    resaa = M.result();
-    res.Finite() = real((1+cost*cost)*(resvv*conj(resvv) + resav*conj(resav)
-                 + resva*conj(resva) + resaa*conj(resaa)) +
-      + 4*cost*(resvv*conj(resaa) + resva*conj(resav)).real());
-
-  // }
-  // cout << "FAi = " << FAi.result() << endl;
-  // cout << "FAi = " << FAf.result() << endl;
-  // cout << "SWi = " << SWi.result() << endl;
-  double sw=s_model->ComplexConstant("csin2_thetaW").real();
-
-  // mat_SMNLO M(m_inital, m_final, VEC, VEC, FAi.result().real(), FAf.result().real(),  SWi.result().real(),  SWf.result().real(), s, cost, m_griffin);
-
-  // M.setkinvar(s, cost);
-  // Cplx resvv, resva, resav, resaa;
-
-  // M.setform(VEC, VEC);
-  // resvv = M.result();
-  // M.setform(AXV, VEC);
-  // resav = M.result();
-  // M.setform(VEC, AXV);
-  // resva = M.result();
-  // M.setform(AXV, AXV);
-  // resaa = M.result();
-  // res.Finite() = real((1+cost*cost)*(resvv*conj(resvv) + resav*conj(resav)
-  //              + resva*conj(resva) + resaa*conj(resaa)) +
-  //   + 4*cost*(resvv*conj(resaa) + resva*conj(resav)).real());
-    // -2*(1+cost*cost)*(resvv*conj(resav) + resva*conj(resaa)).real()
-    // -4*cost*(resvv*conj(resva) + resav*conj(resaa)));
-  // return res*3*s*s*m_rescale_alpha/32/M_PI;
-  // res.Finite() *= 3*s/32/M_PI;
-  // res.Finite() *= 2;
+    // }
 }
 
 void Griffin::Griffin_Interface::EvaluateNLOE(const Vec4D_Vector& momenta, DivArrD &res){
@@ -269,19 +213,10 @@ void Griffin::Griffin_Interface::EvaluateNLOE(const Vec4D_Vector& momenta, DivAr
   double m1 = momenta[0].Mass();
   double m2 = momenta[2].Mass();
   double cost = 1+2.*t/s;
-  // double cost = cos((momenta[0]+momenta[1]).Theta());
-  // double cost = 2*(t-m1*m1-m2*m2+s/2);
-  // cost /= sqrt((s-4*m1*m1)*(s-4*m2*m2));
-  // if(sqrt(s)<40) {
-  //   res.Finite() = 0;
-  // }
   FA_SMLO FAi0(m_inital, m_griffin), FAf0(m_final, m_griffin);
   SW_SMLO SWi0(m_inital, m_griffin), SWf0(m_final, m_griffin);
   FA_SMNLO FAi(m_inital, m_griffin), FAf(m_final, m_griffin);
   SW_SMNLO SWi(m_inital, m_griffin), SWf(m_final, m_griffin);
-  // cout << "FAi = " << FAi.result() << endl;
-  // cout << "FAi = " << FAf.result() << endl;
-  // cout << "SWi = " << SWi.result() << endl;
   double sw=s_model->ComplexConstant("csin2_thetaW").real();
   matel M0(m_inital, m_final, VEC, VEC, FAi0.result().real(), FAf0.result().real(), sw, sw, s, cost, m_griffin);
   mat_SMeNLO M(m_inital, m_final, VEC, VEC, FAi.result().real(), FAf.result().real(), sw, sw, s, cost, m_griffin);
