@@ -304,7 +304,13 @@ bool Matrix_Element_Handler::GenerateOneTrialEvent()
       // re-run with same rng state and include the calculation of variations
       // this time
       ran->RestoreStatus();
+      std::chrono::high_resolution_clock::time_point begin2 = std::chrono::high_resolution_clock::now();
       info=proc->OneEvent(m_eventmode, Variations_Mode::all);
+      std::chrono::high_resolution_clock::time_point end2 = std::chrono::high_resolution_clock::now();
+      double finetime1 = std::chrono::duration_cast<std::chrono::nanoseconds>(end2-begin2).count()/1000000000.;
+      rpa->gen.SetTimeMap("sum_afterpilot_" +sub_name, rpa->gen.TimeMap("sum_afterpilot_" +sub_name)+finetime1);
+      rpa->gen.SetTimeMap("sum2_afterpilot_"+sub_name, rpa->gen.TimeMap("sum2_afterpilot_"+sub_name)+finetime1*finetime1);
+      rpa->gen.SetNumberMap("n_afterpilot_" +sub_name, rpa->gen.NumberMap("n_afterpilot_" +sub_name)+1);
       assert(info);
       if (!IsEqual(m_evtinfo.m_weightsmap.Nominal(), info->m_weightsmap.Nominal(), 1e-6)) {
         msg_Error()
