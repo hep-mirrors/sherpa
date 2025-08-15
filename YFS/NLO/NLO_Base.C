@@ -389,16 +389,16 @@ double NLO_Base::CalculateRealVirtual() {
 			if(k.E() < 0.2*sqrt(m_s)) continue;
 			CheckRealVirtualSub(k);
 		}
-		// if(CheckPhotonForReal(k))	realvirtual+=CalculateRealVirtual(k,0);
-		realvirtual+=CalculateRealVirtual(k,0);
+		if(CheckPhotonForReal(k))	realvirtual+=CalculateRealVirtual(k,0);
+		// realvirtual+=CalculateRealVirtual(k,0);
 	}
 	for (auto k : m_FSRPhotons) {
 		if(m_check_rv) {
 			if(k.E() < 0.2*sqrt(m_s)) continue;
 			CheckRealVirtualSub(k);
 		}
-		// if(CheckPhotonForReal(k)) realvirtual+=CalculateRealVirtual(k, 1);
-		realvirtual+=CalculateRealVirtual(k, 1);
+		if(CheckPhotonForReal(k)) realvirtual+=CalculateRealVirtual(k, 1);
+		// realvirtual+=CalculateRealVirtual(k, 1);
 	}
 	// if(IsZero(realvirtual)) realvirtual = p_dipoles->CalculateRealSubEEX();
 	return realvirtual;
@@ -902,9 +902,9 @@ bool NLO_Base::CheckPhotonForReal(const Vec4D &k) {
 	{
 		if (m_flavs[i].IsChargedLepton()) {
 			double sik = (k + m_plab[i]).Abs2();
-			if (sik < m_hardmin*m_plab[i].Abs2() ) {
-				msg_Out()<<"Rejecting photon k = "<<k<<std::endl
-								<<"sik = "<<sik<<std::endl;
+			if (sik < m_hardmin ) {
+				// msg_Out()<<"Rejecting photon k = "<<k<<std::endl
+				// 				<<"sik = "<<sik<<std::endl;
 				return false;
 			}
 			// if(m_plab[i].PPerp()< m_hardmin) return false;
