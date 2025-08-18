@@ -72,6 +72,8 @@ namespace PHASIC {
     std::shared_ptr<Helicity_Integrator> p_helint;
 
     double Sigma2() const;
+    double EnhanceSigma2() const;
+    double TotalEnhanceResult() const;
 
   public:
 
