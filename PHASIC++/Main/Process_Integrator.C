@@ -21,7 +21,7 @@
 using namespace PHASIC;
 using namespace ATOOLS;
 
-static int s_whbins(5200);
+static int s_whbins(1300);
 static int s_genresdir(0);
 
 Process_Integrator::Process_Integrator(Process_Base *const proc):
@@ -60,7 +60,7 @@ bool Process_Integrator::Initialize
   static bool minit(false);
   if (!minit) {
     // weight histo bin number
-    s_whbins = s["IB_WHBINS"].SetDefault(5200).Get<int>();
+    s_whbins = s["IB_WHBINS"].SetDefault(1300).Get<int>();
     minit=true;
   }
   return true;
