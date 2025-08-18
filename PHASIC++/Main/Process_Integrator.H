@@ -54,11 +54,11 @@ namespace PHASIC {
 
     long unsigned int m_n, m_itmin, m_itmax;
 
-    double m_max, m_totalxs, m_totalsum, m_totalsumsqr, m_totalerr;
-    double m_ssum, m_ssumsqr, m_smax, m_ssigma2, m_wmin;
-    double m_mssum, m_mssumsqr, m_msn;
+    double m_max, m_totalxs, m_totalhsum, m_totalsum, m_totalhsumsqr, m_totalsumsqr, m_totalerr;
+    double m_shsum, m_ssum, m_shsumsqr, m_ssumsqr, m_smax, m_shsigma2, m_ssigma2, m_wmin;
+    double m_mshsum, m_mssum, m_mshsumsqr, m_mssumsqr, m_msn;
 
-    std::vector<double> m_vsmax, m_vsum;
+    std::vector<double> m_vsmax, m_vhsum, m_vsum;
     std::vector<long unsigned int> m_vsn;
 
     long unsigned int m_sn, m_son;
