@@ -33,6 +33,7 @@
 #include <sstream>
 #include <cstring>
 #include <assert.h>
+#include <limits>
 
 using namespace SHERPA;
 using namespace ATOOLS;
@@ -71,7 +72,7 @@ Hard_Decay_Handler::Hard_Decay_Handler() :
   m_br_weights      = ds["Apply_Branching_Ratios"].SetDefault(true).Get<bool>();
   m_decay_tau       = ds["Decay_Tau"].SetDefault(false).Get<bool>();
   m_set_widths      = ds["Set_Widths"].SetDefault(false).Get<bool>();
-  m_min_prop_width  = ds["Min_Prop_Width"].SetDefault(0.0).Get<double>();
+  m_min_prop_width  = ds["Min_Prop_Width"].SetDefault(std::numeric_limits<double>::min()).Get<double>();
   m_int_accuracy    = ds["Int_Accuracy"].SetDefault(0.01).Get<double>();
   m_int_niter       = ds["Int_NIter"].SetDefault(2500).Get<int>();
   m_int_target_mode = ds["Int_Target_Mode"].SetDefault(0).Get<int>();
