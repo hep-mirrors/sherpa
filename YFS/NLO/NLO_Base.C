@@ -136,10 +136,10 @@ double NLO_Base::CalculateNLO() {
 	virt = result;
 	if(!m_virtual_only) result += CalculateReal();
 	real = result-virt;
-	result += CalculateRealVirtual();
-	rv = result - real - virt;
 	result += CalculateRealReal();
 	rr = result - real - virt - rv;
+	result += CalculateRealVirtual();
+	rv = result - real - virt;
 	if(m_failcut) return 0;
 	return result;
 }
