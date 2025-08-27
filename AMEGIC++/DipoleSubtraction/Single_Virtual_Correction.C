@@ -787,23 +787,25 @@ double Single_Virtual_Correction::Calc_I(const ATOOLS::sbt::subtype st,
           ampl->CreateLeg(idx<2?-mom[idx]:mom[idx],idx<2?m_flavs[idx].Bar():m_flavs[idx]);
         }
         if(p_softrecoil) {
-          int recmode = p_softrecoil->Mode(ampl,partonlist[i]);
-          Vec4D Kti = -p_softrecoil->Recoil(ampl,1<<partonlist[i],1<<partonlist[k],recmode);
+          int recmode = p_softrecoil->Mode(ampl,1<<partonlist[i]);
+          Vec4D Kti = p_softrecoil->Recoil(ampl,1<<partonlist[i],1<<partonlist[k],recmode);
+          Kti *= p_softrecoil->m_prefac;
           mKt2i = Kti.Abs2();
           siKti = 2.*mom[partonlist[i]]*Kti;
           skKti = 2.*mom[partonlist[k]]*Kti;
-          recmode = p_softrecoil->Mode(ampl,partonlist[k]);
-          Vec4D Ktk = -p_softrecoil->Recoil(ampl,1<<partonlist[k],1<<partonlist[i],recmode);
+          recmode = p_softrecoil->Mode(ampl,1<<partonlist[k]);
+          Vec4D Ktk = p_softrecoil->Recoil(ampl,1<<partonlist[k],1<<partonlist[i],recmode);
+          Ktk *= p_softrecoil->m_prefac;
           mKt2k = Ktk.Abs2();
           siKtk = 2.*mom[partonlist[i]]*Ktk;
           skKtk = 2.*mom[partonlist[k]]*Ktk;
         }
         if(p_collrecoil) {
-          int recmode = p_collrecoil->Mode(ampl,partonlist[i]);
+          int recmode = p_collrecoil->Mode(ampl,1<<partonlist[i]);
           mreci = p_collrecoil->Recoil(ampl,1<<partonlist[i],1<<partonlist[k],recmode).Abs2();
           mreci = IsZero(mreci)?0.:sqrt(abs(mreci));
           siKtcoll = 2.*mom[partonlist[i]]*p_collrecoil->Recoil(ampl,1<<partonlist[i],1<<partonlist[k]);
-          recmode = p_softrecoil->Mode(ampl,partonlist[k]);
+          recmode = p_softrecoil->Mode(ampl,1<<partonlist[k]);
           mreck = p_collrecoil->Recoil(ampl,1<<partonlist[k],1<<partonlist[i],recmode).Abs2();
           mreck = IsZero(mreck)?0.:sqrt(abs(mreck));
           skKtcoll = 2.*mom[partonlist[k]]*p_collrecoil->Recoil(ampl,1<<partonlist[k],1<<partonlist[i]);

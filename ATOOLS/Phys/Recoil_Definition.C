@@ -70,7 +70,11 @@ namespace ATOOLS {
   class Recoil_FinalState: public Recoil_Definition {
   public:
 
-      Vec4D Recoil(const Cluster_Amplitude *ampl,size_t splits,size_t specs,int)
+    Recoil_FinalState() {
+      m_prefac = -1;
+    } 
+    
+    Vec4D Recoil(const Cluster_Amplitude *ampl,size_t splits,size_t specs,int)
       {
         Vec4D rec;
         for (size_t i(ampl->NIn());i<ampl->Legs().size();++i)
@@ -146,9 +150,17 @@ namespace ATOOLS {
         return tags;
       }
 
-    int Mode(const Cluster_Amplitude *ampl,int split) const
+    int Mode(const Cluster_Amplitude *ampl,int splits) const
     {
-      return ampl->Leg(split)->Flav().Charge()>0?neg:pos;
+      double charge = 0;
+      for (size_t i(ampl->NIn());i<ampl->Legs().size();++i) {
+        if((ampl->Leg(i)->Id()&splits)==0) charge += ampl->Leg(i)->Flav().Charge();
+      }
+      if(charge == 0) {
+        //THROW(fatal_error,"No unique charge assignment. Recoil definition invalid.");
+        return all;
+      }
+      return charge>0?neg:pos;
     }
     
   };// end of class Recoil_EWChargeMode

@@ -22,6 +22,8 @@ namespace ATOOLS {
 
     virtual int Mode(const Cluster_Amplitude *ampl,int split) const = 0;
     
+    double m_prefac = 1;
+    
   };// end of class Recoil_Definition
 
   typedef ATOOLS::Getter_Function
