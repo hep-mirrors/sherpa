@@ -30,7 +30,7 @@ Remnant_Base::Remnant_Base(const ATOOLS::Flavour& flav, const size_t& beam, cons
     : m_beamflav(flav), m_type(FixType(m_beamflav)), m_beam(beam), m_tag(tag), p_beam(nullptr),
       p_ff(nullptr), p_beamblob(nullptr), m_position(Vec4D(0., 0., 0., 0.)), m_residualE(0.),
       m_scale2(-1.)
-{}
+{ }
 
 Remnant_Base::~Remnant_Base() {
   if (p_ff!=nullptr) { delete p_ff; p_ff = nullptr; }
@@ -122,4 +122,15 @@ Vec4D Remnant_Base::IncomingMomentum() { return p_beam->OutMomentum(m_tag); }
 void Remnant_Base::Reset(const bool & resc,const bool &DIS) {
   m_extracted.clear();
   p_beamblob = nullptr;
+}
+
+void Remnant_Base::Output() {
+  msg_Out()<<"------------------------------------------------------------\n"
+	   <<METHOD<<"("<<m_beam<<"): extracted :\n";
+  for (Part_List::iterator pit=m_extracted.begin();pit!=m_extracted.end();pit++)
+    msg_Out()<<(**pit);
+  msg_Out()<<METHOD<<"("<<m_beam<<"): spectators :\n";
+  for (Part_List::iterator pit=m_spectators.begin();pit!=m_spectators.end();pit++)
+    msg_Out()<<(**pit);
+  msg_Out()<<"------------------------------------------------------------\n";
 }

@@ -16,7 +16,7 @@ namespace REMNANTS {
     ATOOLS::Particle * p_valence, * p_remnant, * p_recoiler, * p_spectator;
 
     bool   m_valence;
-    double m_alpha, m_gamma, m_beta, m_invb, m_LambdaQCD;
+    double m_alpha, m_gamma, m_beta, m_invb, m_LambdaQCD, m_minE;
 
     void ConstructConstituentFlavours();
     bool IsValence(ATOOLS::Particle * part);
@@ -29,7 +29,7 @@ namespace REMNANTS {
     bool   MakeLongitudinalMomenta(ATOOLS::ParticleMomMap* ktmap, const bool& copy = true);
     double SelectZ(const ATOOLS::Flavour &flav, double restmom, double remnant_masses) const;
     ATOOLS::Flavour    RemnantFlavour(const ATOOLS::Flavour & flav);
-    void Output();
+    void Output() override;
   public:
     Hadron_Remnant(PDF::PDF_Base* pdf, const unsigned int& beam,
                    const unsigned int& tag = 0);

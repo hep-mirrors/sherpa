@@ -667,12 +667,17 @@ double Single_Virtual_Correction::Calc_V(const ATOOLS::Vec4D_Vector &mom,
     if (m_murcoeffvirt) {
       if (p_loopme->ProvidesPoles()) {
       if (m_sccmur) {
-        m_cmur[0]+=(p_loopme->ME_E1()+bornorderqcd*beta0qcd)*m_lastb*cplfac;
-        m_cmur[1]+=p_loopme->ME_E2()*m_lastb*cplfac;
+        p_partner->m_cmur[0]+=(p_loopme->ME_E1()+bornorderqcd*beta0qcd)*m_lastb*cplfac;
+        p_partner->m_cmur[1]+=p_loopme->ME_E2()*m_lastb*cplfac;
       }
       else {
-        m_cmur[0]+=m_lastb*cplfac*p_loopme->ScaleDependenceCoefficient(1);
-        m_cmur[1]+=m_lastb*cplfac*p_loopme->ScaleDependenceCoefficient(2);
+        p_partner->m_cmur[0]+=m_lastb*cplfac*p_loopme->ScaleDependenceCoefficient(1);
+        p_partner->m_cmur[1]+=m_lastb*cplfac*p_loopme->ScaleDependenceCoefficient(2);
+      }
+      }
+      else {
+	p_partner->m_cmur[0]+=-m_singlepole+bornorderqcd*beta0qcd*m_lastb*cplfac;
+	p_partner->m_cmur[1]+=-m_doublepole;
       }
       }
       else {
@@ -687,12 +692,17 @@ double Single_Virtual_Correction::Calc_V(const ATOOLS::Vec4D_Vector &mom,
     if (m_murcoeffvirt) {
       if (p_loopme->ProvidesPoles()) {
       if (m_sccmur) {
-        m_cmur[0]+=(p_loopme->ME_E1()+bornorderqcd*beta0qcd*m_lastb)*cplfac;
-        m_cmur[1]+=p_loopme->ME_E2()*cplfac;
+        p_partner->m_cmur[0]+=(p_loopme->ME_E1()+bornorderqcd*beta0qcd*m_lastb)*cplfac;
+        p_partner->m_cmur[1]+=p_loopme->ME_E2()*cplfac;
       }
       else {
-        m_cmur[0]+=cplfac*p_loopme->ScaleDependenceCoefficient(1);
-        m_cmur[1]+=cplfac*p_loopme->ScaleDependenceCoefficient(2);
+        p_partner->m_cmur[0]+=cplfac*p_loopme->ScaleDependenceCoefficient(1);
+        p_partner->m_cmur[1]+=cplfac*p_loopme->ScaleDependenceCoefficient(2);
+      }
+      }
+      else {
+	p_partner->m_cmur[0]+=-m_singlepole+bornorderqcd*beta0qcd*m_lastb*cplfac;
+	p_partner->m_cmur[1]+=-m_doublepole;
       }
       }
       else {
@@ -741,8 +751,8 @@ double Single_Virtual_Correction::Calc_I(const ATOOLS::Vec4D_Vector &mom)
                                p_kernel_qcd,p_kpterms_qcd,mom,m_dsijqcd);
   if (m_stype&sbt::qed) Calc_I(sbt::qed,p_LO_process->PartonListQED(),
                                p_kernel_ew,p_kpterms_ew,mom,m_dsijew);
-  m_cmur[0]=m_singlepole;
-  m_cmur[1]=m_doublepole;
+  p_partner->m_cmur[0]=m_singlepole;
+  p_partner->m_cmur[1]=m_doublepole;
   msg_Debugging()<<"I_fin = "<<m_Norm*m_finite<<std::endl;
   msg_Debugging()<<"I_e1  = "<<m_Norm*m_singlepole<<std::endl;
   msg_Debugging()<<"I_e2  = "<<m_Norm*m_doublepole<<std::endl;
@@ -1057,7 +1067,7 @@ double Single_Virtual_Correction::operator()(const ATOOLS::Vec4D_Vector &mom,
   }
 
   double B(0.),V(0.),I(0.);
-  m_cmur[0]=m_cmur[1]=0.;
+  p_partner->m_cmur[0]=p_partner->m_cmur[1]=0.;
 
   Vec4D_Vector _mom(mom);
   Poincare cms;

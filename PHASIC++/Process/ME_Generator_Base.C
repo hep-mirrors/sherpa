@@ -201,7 +201,7 @@ namespace PHASIC {
     std::vector<double> m_m2, m_p2;
   public:
     ShiftMasses_Energy(Mass_Selector *const ms,
-		    Cluster_Amplitude *const ampl,int mode)
+		       Cluster_Amplitude *const ampl,int mode)
     {
       const auto nin = ampl->NIn();
       auto offset = 0;
@@ -288,8 +288,7 @@ int ME_Generator_Base::ShiftMasses(Cluster_Amplitude *const ampl)
   Vec4D cms;
   for (size_t i(0);i<ampl->Legs().size();++i) {
     if (i<ampl->NIn()) cms-=ampl->Leg(i)->Mom();
-    if (m_psmass.find(ampl->Leg(i)->Flav())!=
-	m_psmass.end()) run=true;
+    if (m_psmass.find(ampl->Leg(i)->Flav())!=m_psmass.end()) run=true;
   }
   if (!run) return 1;
   /// if so treat DIS as special case
@@ -307,6 +306,15 @@ int ME_Generator_Base::ShiftMassesDefault(Cluster_Amplitude *const ampl, Vec4D c
 {
   DEBUG_FUNC(m_name);
   msg_Debugging()<<"Before shift: "<<*ampl<<"\n";
+  bool must_shift = false;
+  for (size_t i(0);i<ampl->Legs().size();++i) {
+    if (ampl->Leg(i)->Mom()[0]<0.) continue;
+    double q2 = ampl->Leg(i)->Mom().Abs2(), m2 = sqr(ampl->Leg(i)->Flav().Mass(true));
+    if (dabs((q2-m2)/(q2+m2))>1.e-6) {
+      must_shift = true; break;
+    }
+  }
+  if (!must_shift) return 1;
   Poincare boost(cms);
   boost.Boost(cms);
   for (size_t i(0);i<ampl->Legs().size();++i)
@@ -337,9 +345,10 @@ int ME_Generator_Base::ShiftMassesDefault(Cluster_Amplitude *const ampl, Vec4D c
     ampl->Leg(i)->SetMom(boost*p);
   }
   for (int i = 0; i < 2; i++) {
-    if (rpa->gen.PBunch(ampl->Leg(i)->Mom()[3] < 0.0 ? 0 : 1)[0] <
-        -ampl->Leg(i)->Mom()[0])
-      return -1;
+    double Ebunch = rpa->gen.PBunch(ampl->Leg(i)->Mom()[3] < 0.0 ? 0 : 1)[0];
+    double Ei = -ampl->Leg(i)->Mom()[0];
+    // need to check equality with some margin, for lepton beams without a pdf
+    if (Ebunch < Ei && !IsEqual(Ei,Ebunch)) return -1;
   }
   msg_Debugging()<<"After shift: "<<*ampl<<"\n";
   return 1;

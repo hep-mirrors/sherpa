@@ -88,6 +88,11 @@ namespace ATOOLS {
   long double cyl_bessel_1 (long double x);
   long double cyl_bessel_2 (long double x);
 
+  double bessel_i0(double x);
+  double bessel_i1(double x);
+  double bessel_k0(double x);
+  double bessel_k1(double x);
+
   template<typename Scalar> inline bool IsNan(const Scalar& x);
   template<typename Scalar> inline bool IsBad(const Scalar& x);
   template<typename Scalar> inline bool IsZero(const Scalar& x);

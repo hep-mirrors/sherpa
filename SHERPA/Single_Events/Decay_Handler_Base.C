@@ -511,12 +511,15 @@ Cluster_Amplitude* Decay_Handler_Base::ClusterConfiguration(Blob *const bl)
   msg_Indent();
   p_ampl = Cluster_Amplitude::New();
   p_ampl->SetMS(this);
-  for (int i(0);i<bl->NInP();++i) {
-    Particle *p(bl->InParticle(i));
-    ColorID col(p->GetFlow(2),p->GetFlow(1));
-    p_ampl->CreateLeg(-p->Momentum(),p->Flav().Bar(),col,1<<i);
+  if (!(bl->NInP()==1 && bl->Type()==btp::Hadron_Decay &&
+	bl->InParticle(0)->GetFlow(1)==0 && bl->InParticle(0)->GetFlow(2)==0) ) {
+    for (int i(0);i<bl->NInP();++i) {
+      Particle *p(bl->InParticle(i));
+      ColorID col(p->GetFlow(2),p->GetFlow(1));
+      p_ampl->CreateLeg(-p->Momentum(),p->Flav().Bar(),col,1<<i);
+    }
+    p_ampl->SetNIn(bl->NInP());
   }
-  p_ampl->SetNIn(bl->NInP());
   for (int i(0);i<bl->NOutP();++i) {
     Particle *p(bl->OutParticle(i));
     if (p->GetFlow(1)==0 && p->GetFlow(2)==0) {

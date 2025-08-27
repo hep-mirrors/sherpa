@@ -5,7 +5,9 @@ NLO_WARNING = False
 
 cmath_dict = {
     "cos": "cos",
+    "sec": "1.0/cos",
     "sin": "sin",
+    "csc": "1.0/sin",
     "tan": "tan",
     "acos": "acos",
     "asin": "asin",
@@ -60,6 +62,8 @@ class param_visitor(ast.NodeVisitor):
         return call
 
     def visit_Name(self, node):
+        if str(node.id) in cmath_dict:
+            return cmath_dict[node.id]
         return str(node.id)
 
     def visit_Attribute(self, node):

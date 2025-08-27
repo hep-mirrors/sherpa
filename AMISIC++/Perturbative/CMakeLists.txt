@@ -2,17 +2,17 @@ set(Perturbative_SOURCES Single_Collision_Handler.C
                          MI_Processes.C
                          MI_Process_Group.C
                          MI_Process.C
+                         MI_Integrator.C
                          QCD_Processes.C
-                         QED_Processes.C
-                         Sudakov_Argument.C)
+                         QED_Processes.C)
 
 set(Perturbative_HEADERS Single_Collision_Handler.H
                          MI_Processes.H
                          MI_Process_Group.H
                          MI_Process.H
+                         MI_Integrator.H
                          QCD_Processes.H
-                         QED_Processes.H
-                         Sudakov_Argument.H)
+                         QED_Processes.H)
 
 sherpa_create_git_info(Perturbative ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR})
  

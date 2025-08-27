@@ -1,6 +1,8 @@
 #ifndef ATOOLS__Org__My_MPI_H
 #define ATOOLS__Org__My_MPI_H
 
+/* The reason why inclusion of this header in this place fixes the compilation on RHEL8 is not clear */
+#include <ostream>
 #include "ATOOLS/Org/CXXFLAGS.H"
 
 #ifdef USING__MPI
