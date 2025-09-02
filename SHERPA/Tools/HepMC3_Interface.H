@@ -32,9 +32,9 @@ using GenParticlePtr = std::shared_ptr<GenParticle>;
 namespace ATOOLS {
   class Blob_List;
   class Particle;
-  class ME_Weight_Info;
   class NLO_subevtlist;
-  class PDF_Info;
+  struct ME_Weight_Info;
+  struct PDF_Info;
 }
 
 namespace SHERPA {

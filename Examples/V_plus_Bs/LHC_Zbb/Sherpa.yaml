@@ -1,9 +1,6 @@
 BEAMS: 2212
 BEAM_ENERGIES: 6500
 
-# general settings
-EVENTS: 1M
-
 # me generator settings
 ME_GENERATORS: [Comix, Amegic, OpenLoops]
 

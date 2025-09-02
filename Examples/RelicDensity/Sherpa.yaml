@@ -1,13 +1,19 @@
+# WARNING: This is an unvalidated, unpublished feature. Do not use it for physics.
+# This runcard will compute the LO velocity-weighted cross section <\sigma v> of
+# two WIMP dark matter particles annihilating to muons in the galactic halo, and
+# generate corresponding events according to the Boltzmann distribution.
+# If you are interested in testing and developing this feature further, please contact the authors.
+
 # collider setup
 BEAMS: [52, 52]
 BEAM_SPECTRA: [DM_beam,DM_beam]
 BEAM_MODE: Relic_Density
+BEAM_REMNANTS: False
 DM_beam_weighted: 1
 DM_TEMPERATURE: 1
 DM_RELATIVISTIC: 1
 PDF_SET: [None, None]
 MODEL: SMDM
-EVENTS: 0
 
 PARTICLE_DATA:
   52:

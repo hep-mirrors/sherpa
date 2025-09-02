@@ -1,7 +1,6 @@
 # pp -> instanton
 
 # general setting
-EVENTS: 1k
 SCALES: Democratic
 FRAGMENTATION: None
 

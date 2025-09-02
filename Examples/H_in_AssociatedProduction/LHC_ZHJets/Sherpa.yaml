@@ -46,6 +46,8 @@ HARD_DECAYS:
     -15,-16,4,-3: {Status: 2}
   Decay_Tau: 1
   Apply_Branching_Ratios: 0
+  # do not force SM mass but use the one set above
+  Use_HO_SM_Widths: false
 
 PROCESSES:
 - 901 901 -> 23 25 901{2}:

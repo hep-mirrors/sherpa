@@ -17,10 +17,6 @@ PARTICLE_DATA:
   25: {Mass: 125.5, Width: 0}
   15: {Stable: 0, Massive: true}
 
-# do not force SM mass but use the one set above
-HARD_DECAYS:
-  Use_HO_SM_Widths: false
-
 # hard decays setup, specify allowed decay channels, ie.:
 # h->Wenu, h->Wmunu, h->Wtaunu, W->enu, W->munu, W->taunu, tau->enunu, tau->mununu + cc
 HARD_DECAYS:
@@ -44,6 +40,8 @@ HARD_DECAYS:
     -15,-16,14,-13: {Status: 2}
   Decay_Tau: 1
   Apply_Branching_Ratios: 0
+  # do not force SM mass but use the one set above
+  Use_HO_SM_Widths: false
 
 PROCESSES:
 - 901 901 -> 900 25 901{2}:

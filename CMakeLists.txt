@@ -711,6 +711,12 @@ BeamMain BeamSpectra
 ToolsPhys ToolsMath ToolsYaml ToolsOrg
 )
 install(TARGETS SHERPAAll EXPORT SHERPATargets)
+get_target_property(TEMP_SHERPALIBS SHERPAAll INTERFACE_LINK_LIBRARIES)
+set(SHERPA_LIB_FLAGS "")
+foreach(lib IN LISTS TEMP_SHERPALIBS)
+  list(APPEND SHERPA_LIB_FLAGS "-l${lib}")
+endforeach()
+string(JOIN " " CONDITIONAL_SHERPALIBS ${SHERPA_LIB_FLAGS})
 
 set(Sherpa_SRCS_C Sherpa.C Filter.C)
 list(TRANSFORM Sherpa_SRCS_C PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/SHERPA/Main/")
@@ -951,7 +957,6 @@ install(FILES ${CMAKE_CURRENT_BINARY_DIR}/AMEGIC++/Main/makelibs    DESTINATION 
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/SHERPA/Run/Sherpa-config.in ${CMAKE_CURRENT_BINARY_DIR}/SHERPA/Run/Sherpa${VERSIONING}-config @ONLY)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/EXTAMP/Example/madgraph/CMakeLists.txt.in ${CMAKE_CURRENT_BINARY_DIR}/EXTAMP/Example/madgraph/CMakeLists.txt @ONLY)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/EXTAMP/Example/subtraction/CMakeLists.txt.in ${CMAKE_CURRENT_BINARY_DIR}/EXTAMP/Example/subtraction/CMakeLists.txt @ONLY)
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/Examples/V_plus_Bs/LHC_Wbb/CMakeLists.txt.in ${CMAKE_CURRENT_BINARY_DIR}/Examples/V_plus_Bs/LHC_Wbb/CMakeLists.txt @ONLY)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/Examples/V_plus_Jets/LHC_WJets/CMakeLists.txt.in ${CMAKE_CURRENT_BINARY_DIR}/Examples/V_plus_Jets/LHC_WJets/CMakeLists.txt @ONLY)
 
 if (SHERPA_ENABLE_UFO)

@@ -1,12 +1,11 @@
 # pp -> instanton
 
 # general setting
-EVENTS: 10000
 SCALES: Democratic
 #MI_HANDLER: None # multiple interaction switch
 #EVENT_GENERATION_MODE: Weighted
 #BEAM_REMNANTS: false  #Turn off if SHOWER_GENERATOR is None
-#SHOWER_GENERATOR: None #Set None to turn off all the showers, instanton does not decay 
+#SHOWER_GENERATOR: None #Set None to turn off all the showers, instanton does not decay
 #FRAGMENTATION: Off
 #DECAYMODEL: Off
 BATCH_MODE: 2
@@ -59,9 +58,7 @@ PROCESSES:
      Order: {EW: 2, QCD: Any}
 
 
-#EVENT_OUTPUT: HepMC_GenEvent[../../../../scratch/jinw/Instanton/Sherpa_4f_mass100-noshower-InvRho]
-EVENT_OUTPUT: HepMC_GenEvent[../../../../scratch/jinw/Instanton/Sherpa_5f_mass150_wMPI-shatoverN]
 #HEPMC_USE_NAMED_WEIGHTS: 1
 #ANALYSIS: Rivet
-#RIVET: { -a: [MC_INSTANTON, MC_XS] } 
-#RIVET: { -a: [MC_XS] } 
+#RIVET: { -a: [MC_INSTANTON, MC_XS] }
+#RIVET: { -a: [MC_XS] }

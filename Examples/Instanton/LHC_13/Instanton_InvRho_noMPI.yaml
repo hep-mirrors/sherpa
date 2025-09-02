@@ -1,7 +1,6 @@
 # pp -> instanton
 
 # general settings
-EVENTS:                 10000
 SCALES:                 Democratic
 SCALE_VARIATIONS:       4.0*
 MI_HANDLER:             None # multiple interaction switch
