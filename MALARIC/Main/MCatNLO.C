@@ -125,7 +125,7 @@ Amplitude *MCatNLO::Convert
     Cluster_Leg *cl(campl->Leg(i));
     Parton *p(new Parton(ampl,cl->Flav(),cl->Mom(),
 			 Color(cl->Col().m_i,cl->Col().m_j)));
-    p->SetRecMode(p_mcatnlo->Recoil()->Mode(campl,i));
+    p->SetRecMode(p_mcatnlo->Recoil()->Mode(campl,1<<i));
     ampl->push_back(p);
     p->SetId(p->Counter());
     if (i<campl->NIn()) p->SetBeam(1+(cl->Mom()[3]>0.0));
