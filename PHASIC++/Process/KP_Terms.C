@@ -37,7 +37,8 @@ KP_Terms::KP_Terms(Process_Base *const proc,const sbt::subtype st,
                                  +") smaller than number of light flavours ("
                                  +ToString(nf)+").");
   const size_t nmf(nfgs-nf);
-  p_kernel=new Massive_Kernels(st,nf,nmf);
+  const size_t sfs = s["SHOWER"]["KERNEL_SCHEME"].Get<size_t>();
+  p_kernel=new Massive_Kernels(st,nf,nmf,sfs);
   p_kernel->SetSubType(m_subtype);
 
   m_kcontrib=ToType<cs_kcontrib::type>(

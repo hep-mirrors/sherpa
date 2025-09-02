@@ -120,9 +120,10 @@ namespace ATOOLS {
 
   class Recoil_EWChargedMode: public Recoil_Definition {
     enum {
-      all = -1,
+      det = -1,
       pos = 0,
-      neg = 1
+      neg = 1,
+      all = 2
     };
 
     Vec4D Recoil(const Cluster_Amplitude *ampl,size_t,size_t,int recmode)
@@ -137,8 +138,9 @@ namespace ATOOLS {
       return rec;
     }
 
-    std::vector<int> RecoilTags(const Cluster_Amplitude *ampl,size_t,size_t,int recmode)
+    std::vector<int> RecoilTags(const Cluster_Amplitude *ampl,size_t splits,size_t,int recmode)
       {
+        if(recmode==det) recmode = Mode(ampl,splits);
         std::vector<int> tags(ampl->Legs().size(),0);
         for (size_t i(ampl->NIn());i<ampl->Legs().size();++i)
           if (!ampl->Leg(i)->Flav().Strong() &&
@@ -154,7 +156,9 @@ namespace ATOOLS {
     {
       double charge = 0;
       for (size_t i(ampl->NIn());i<ampl->Legs().size();++i) {
-        if((ampl->Leg(i)->Id()&splits)==0) charge += ampl->Leg(i)->Flav().Charge();
+        if((ampl->Leg(i)->Id()&splits)) {
+          charge += ampl->Leg(i)->Flav().Charge();
+        }
       }
       if(charge == 0) {
         //THROW(fatal_error,"No unique charge assignment. Recoil definition invalid.");

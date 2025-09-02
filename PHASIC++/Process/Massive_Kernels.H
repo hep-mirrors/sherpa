@@ -32,6 +32,7 @@ namespace PHASIC {
   protected:
     const ATOOLS::sbt::subtype m_stype;
     ATOOLS::subscheme::code m_subtype;
+    size_t m_kscheme;
     size_t m_nf,m_nmf;
     double m_NC,m_CA,m_CF,m_TR,m_TRbyCA,m_CFbyCA,m_TRbyCF;
     double m_g1t,m_g2t,m_g3t,m_K1t,m_K2t,m_K3t;
@@ -65,7 +66,8 @@ namespace PHASIC {
     void CalcAs(double mu2, double s,double mj,double mk);
   public:
     Massive_Kernels(ATOOLS::sbt::subtype st,
-                    const size_t &nf, const size_t nmf);
+                    const size_t &nf, const size_t nmf,
+                    const size_t kscheme);
     ~Massive_Kernels() {}
 
     void SetAlpha(double aff, double afi, double aif, double aii); 

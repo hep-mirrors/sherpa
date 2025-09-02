@@ -110,7 +110,7 @@ void FF_DipoleSplitting::SetMomenta(const Vec4D* mom)
 }
 
 void FF_DipoleSplitting::SetMomentaAlaric(const ATOOLS::Vec4D* mom) {
-  DEBUG_FUNC("");
+  DEBUG_FUNC(m_ftype);
   Vec4D n;
   if(m_ftype==spt::soft) {
     PHASIC::Ant_Args ff;
@@ -127,11 +127,11 @@ void FF_DipoleSplitting::SetMomentaAlaric(const ATOOLS::Vec4D* mom) {
     m_pj = ff.m_pj;
     m_pk = ff.m_pk;
     m_mom = ff.m_p;
-
+    
     m_zi = ff.m_z;
     m_zj = 1.-ff.m_z;
 
-    m_yijk = (m_pi*m_pj)/(m_pi*ff.m_n);
+    m_yijk = -p_recoil->m_prefac*(m_pi*m_pj)/(m_pi*ff.m_n);
     m_a = -m_yijk/(1.-m_yijk);
 
     m_ptk  = ff.m_p[m_k];
@@ -227,10 +227,15 @@ void FF_DipoleSplitting::SetMomentaAlaric(const ATOOLS::Vec4D* mom) {
   switch (m_ftype) {
   case spt::soft: {
     double sij(m_pi*m_pj), sik(m_pi*m_pk), skj(m_pj*m_pk);
-    double D(sij*(m_pk*n)+skj*(m_pi*n));
-    double A(2*sik/(sij*skj));
-    A*=sij*skj*(m_pi*n)/D;
-    m_sff = A;
+    if(m_kscheme&2) {
+      m_sff = 2*sik/(sij+skj);      
+    }
+    else {
+      double D(sij*(m_pk*n)+skj*(m_pi*n));
+      m_sff = 2*sik/(sij*skj);
+      m_sff *= sij*skj*(m_pi*n)/D;
+    }
+
     m_av  = m_sff;
     break;
   }

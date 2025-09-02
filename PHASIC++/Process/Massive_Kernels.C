@@ -14,8 +14,9 @@ using namespace PHASIC;
 //for equations see hep-ph/0201036
 
 Massive_Kernels::Massive_Kernels(ATOOLS::sbt::subtype st,
-                                 const size_t &nf, const size_t nmf) :
-  m_stype(st), m_subtype(subscheme::CS),
+                                 const size_t &nf, const size_t nmf,
+                                 const size_t kscheme) :
+  m_stype(st), m_subtype(subscheme::CS), m_kscheme(kscheme),
   m_nf(nf), m_nmf(nmf), m_NC(3.), m_CA(3.), m_CF(4./3.), m_TR(0.5),
   m_TRbyCA(m_TR/m_CA), m_CFbyCA(m_CF/m_CA), m_TRbyCF(m_TR/m_CF),
   m_g1t(0.), m_g2t(0.), m_g3t(0.), m_K1t(0.), m_K2t(0.), m_K3t(0.),
@@ -194,16 +195,25 @@ void Massive_Kernels::CalcVNSsoft(double s,double mj,double mk,double sjKt,
   const double rho = skKt/s;
   const double muK = mKt2/s;
   const double tau = sjKt/s;
-
-  /// DiLog implements real part for x > 1
-  if(!IsEqual(rho,-1)) {
-    // m_VNS += -2*((rho + log(std::abs(rho)))*log(rho/tau) - (1 + rho + log(std::abs(rho)))*log((1 + rho)/tau) + DiLog(1 + 1/rho));
-    m_VNS += -2.*(DiLog(1+1/rho) - (1 + rho + log(std::abs(rho)))*log(1+1/rho));
+  
+  if(m_kscheme&2) {
+    double sqrtarg = -4*muK+sqr(rho+tau);
+    sqrtarg = IsZero(sqrtarg)?0:sqrtarg;
+    const double arg1 = (-rho+tau-sqrt(sqrtarg))/(2*tau);
+    const double arg2 = (-rho+tau+sqrt(sqrtarg))/(2*tau);  
+    m_VNS += 2*(DiLog(arg1)+DiLog(arg2));
   }
-  m_VNS += DiLog(1-muK/(rho*tau));
-  m_VNS += 0.5*sqr(log(rho/tau));
-  // m_VNS += 6. - sqr(M_PI)/2.;
-  // m_VNS -= 6. - sqr(M_PI)/2.;
+  else {
+    /// DiLog implements real part for x > 1
+    if(!IsEqual(rho,-1)) {
+      // m_VNS += -2*((rho + log(std::abs(rho)))*log(rho/tau) - (1 + rho + log(std::abs(rho)))*log((1 + rho)/tau) + DiLog(1 + 1/rho));
+      m_VNS += -2.*(DiLog(1+1/rho) - (1 + rho + log(std::abs(rho)))*log(1+1/rho));
+    }
+    m_VNS += DiLog(1-muK/(rho*tau));
+    m_VNS += 0.5*sqr(log(rho/tau));
+  }
+  m_VNS += 6. - sqr(M_PI)/2.;
+  m_VNS -= 6. - sqr(M_PI)/2.;
 }
 
 void Massive_Kernels::CalcVNSq(double s,double mj,double mk,double sjKtcoll)

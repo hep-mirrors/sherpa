@@ -190,7 +190,17 @@ bool BBar_Emission_Generator::GenerateWeight
     msg_Debugging()<<"Invalid Born\n";
     return false;
   }
+  
   msg_Debugging()<<"Dipole "<<p_active->Id()<<" {\n";
+  const std::map<Process_Base*,Process_Vector> &procs(m_pmap[p_active]);
+  for (std::map<Process_Base*,Process_Vector>::const_iterator
+	 pit(procs.begin());pit!=procs.end();++pit) {
+    for(size_t i=0; i<p_ampl->Legs().size(); ++i) {
+      p_ampl->Leg(i)->SetFlav((*pit).second.front()->Flavours()[i]);
+    }
+    break;
+  }
+    
   double wgt(p_active->GenerateWeight(m_p,p_ampl,cuts));
   msg_Debugging()<<"} -> w = "<<wgt
 		 <<" ( a = "<<p_active->Alpha(1)<<" )\n";
@@ -198,6 +208,18 @@ bool BBar_Emission_Generator::GenerateWeight
   for (size_t i(0);i<m_dipoles.size();++i)
     if (m_dipoles[i]->On()) asum+=m_dipoles[i]->Alpha(1);
   m_weight=wgt*asum/p_active->Alpha(1);
+
+  for (std::map<Process_Base*,Process_Vector>::const_iterator
+	 pit(procs.begin());pit!=procs.end();++pit) {
+    for(size_t i=0; i<p_ampl->Legs().size()-1; ++i) {
+      p_ampl->Leg(i)->SetFlav((*pit).first->Flavours()[i]);
+    }
+    break;
+  }
+  
+    
+
+
   return true;
 }
 

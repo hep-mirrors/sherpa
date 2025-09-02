@@ -81,6 +81,7 @@ bool Shower::Init(MODEL::Model_Base *const model,
   m_kfac=pss["KFACTOR_SCHEME"].Get<int>();
   m_cpl=pss["COUPLING_SCHEME"].Get<int>();
   m_muf=pss["FACSCALE_SCHEME"].Get<int>();
+  m_sfs=pss["KERNEL_SCHEME"].Get<int>();
   m_ms=pss["MCMASS_SCHEME"].Get<int>();
   m_es[0]=pss["FS_EVOL_SCHEME"].Get<int>();
   m_es[1]=pss["IS_EVOL_SCHEME"].Get<int>();
@@ -295,11 +296,16 @@ Splitting Shower::GeneratePoint
   Splitting win;
   Cluster_Amplitude *ampl(a.GetAmplitude());
   double tmin[2]={m_tmin[0],m_tmin[1]};
+  int recmode = -1;
+  std::vector<int> rcl = p_recoil->RecoilTags(ampl,0,0,recmode);
   for (Amplitude::const_reverse_iterator
 	 it(a.rbegin());it!=a.rend();++it) {
+    if(recmode != (*it)->RecMode()) {
+      recmode = (*it)->RecMode();
+      rcl = p_recoil->RecoilTags(ampl,0,0,recmode);
+    }
     for (int cm(0);cm<(*it)->S().size();++cm) {
       double ct((*it)->T(cm)>=0.0?(*it)->T(cm):t);
-      std::vector<int> rcl(p_recoil->RecoilTags(ampl,0,0,(*it)->RecMode()));
       Splitting cur(GeneratePoint(**it,ct,cm,rcl,nem));
       (*it)->SetT(cm,-1.0);
       if (cur.p_c==NULL || cur.p_s==NULL) continue;

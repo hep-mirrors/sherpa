@@ -47,7 +47,7 @@ Vec4D_Vector FF_Dipole::GeneratePoint
     double mk(0.0);
     Vec4D qa(ampl->Leg(m_ijt)->Mom()), Kt;
     for (size_t i(0);i<ampl->Legs().size()-1;++i)
-      if ((rcl[i]&2) && m_ijt!=i) {
+      if (rcl[i]&2) {
 	Kt+=ampl->Leg(i)->Mom();
 	mk=ampl->Leg(i)->Flav().Mass();
 	++nk;
@@ -72,7 +72,7 @@ Vec4D_Vector FF_Dipole::GeneratePoint
       double gam(2.*qa*Kt), kap(Kt.Abs2()/gam);
       m_rn[1]=PeakedDist(0.0,m_zexp,0.0,1.0-m_amin,1,rn[1]);
       double ymax((1.0-m_rn[1])/(1.0-m_rn[1]+kap));
-      m_rn[0]=-PeakedDist(0.0,m_yexp,m_amin,-ymax,1,rn[0]);
+      m_rn[0]=(iink?-1:1)*PeakedDist(0.0,m_yexp,m_amin,iink?-ymax:ymax,1,rn[0]);
       m_rn[2]=rn[2]*2.0*M_PI;
       msg_Debugging()<<"transformed : ";
       msg_Debugging()<<"v = "<<m_rn[0]<<", z = "<<m_rn[1]
@@ -214,16 +214,16 @@ double FF_Dipole::GenerateWeight
       msg_Debugging()<<"again :       ";
       msg_Debugging()<<"y = "<<m_rn[0]<<", z = "<<m_rn[1]
 		     <<", phi = "<<m_rn[2]<<"\n";
-      if (-m_rn[0]<m_amin) {
+      if ((iink?-1:1)*m_rn[0]<m_amin) {
 	m_rbweight=m_weight=0.0;
 	return 0.0;
       }
       double gam(2.*ff.m_pijt*ff.m_Kt), kap(ff.m_Kt.Abs2()/gam);
-      double ymax(-(1.0-m_rn[1])/(1.0-m_rn[1]+kap));
+      double ymax((iink?-1:1)*(1.0-m_rn[1])/(1.0-m_rn[1]+kap));
       m_weight=dabs(gam)/(16.0*sqr(M_PI))*m_rn[1];
-      m_weight*=pow(-m_rn[0],m_yexp)*pow(m_rn[1],m_zexp);
-      m_weight*=PeakedWeight
-	(0.0,m_yexp,m_amin,ymax,-m_rn[0],1,m_rn[0]);
+      m_weight*=pow((iink?-1:1)*m_rn[0],m_yexp)*pow(m_rn[1],m_zexp);
+      m_weight*=(iink?-1:1)*PeakedWeight
+	(0.0,m_yexp,m_amin,ymax,(iink?-1:1)*m_rn[0],1,m_rn[0]);
       m_weight*=PeakedWeight
 	(0.0,m_zexp,0.0,1.0-m_amin,m_rn[1],1,m_rn[1]);
       m_rn[2]/=2.0*M_PI;

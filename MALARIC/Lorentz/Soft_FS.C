@@ -39,19 +39,17 @@ namespace MALARIC {
       Vec4D pi(s.m_pi), pk(s.m_pk), pj(s.m_pj), n(s.m_K+s.m_pj);
       if (pk[0]<0.0) pk=-pk;
       double sij(pi*pj), sik(pi*pk), skj(pj*pk);
-      double D(sij*(pk*n)+skj*(pi*n));
-      if (D==0.0) return 0.0;
       double A(2*sik/(sij*skj)
 	       -pi.Abs2()/sqr(sij)
 	       -pk.Abs2()/sqr(skj));
-      if (!(s.m_clu&2) && p_sk->PS()->MassScheme()) {
-	double mi2(sqr(s.p_c->Flav().Mass(true)));
-	double mk2(sqr(s.p_s->Flav().Mass(true)));
-        double Am=2*(sik-mi2/2.-mk2/2.)/(sij*skj)
-	  -mi2/sqr(sij)-mk2/sqr(skj);
-	A=std::min(A,std::max(0.0,Am));
+      if(p_sk->PS()->KernelScheme()&2) {
+        A *= sij*skj/(sij+skj);
       }
-      A*=sij*skj*(pi*n)/D;
+      else {
+        double D(sij*(pk*n)+skj*(pi*n));
+        if (D==0.0) return 0.0;
+        A*=sij*skj*(pi*n)/D;
+      }
       double sf(1.0);
       if (m_id && !(s.m_clu&2)) sf=p_sk->Mode()?1.0-s.m_z:s.m_z;
 #ifdef DEBUG__Kinematics

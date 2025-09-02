@@ -43,7 +43,8 @@ namespace AMEGIC {
     double                  m_smth;
     size_t                  m_nphotonsplits;
     size_t                  m_pspissplitscheme,m_pspfssplitscheme;
-
+    size_t                  m_kscheme;
+    
     PHASIC::Process_Integrator*     p_realint;
 
     std::vector<size_t> m_sids;

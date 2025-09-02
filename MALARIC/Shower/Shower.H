@@ -194,6 +194,8 @@ namespace MALARIC {
 
     inline int MassScheme() const { return m_ms; }
 
+    inline int KernelScheme() const { return m_sfs; }
+    
     inline int EvolScheme(const int i) const { return m_es[i]; }
 
     inline double MuR2Factor() const { return m_rsf; }

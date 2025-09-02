@@ -31,6 +31,7 @@ namespace AMEGIC {
     ATOOLS::sbt::subtype       m_stype;
     ATOOLS::dpt::dipoletype    m_dtype;
     ATOOLS::spt::splittingtype m_ftype;
+    size_t m_kscheme;
     ATOOLS::Vec4D m_pi,m_pj,m_pk,m_ptij,m_ptk;
     int m_i,m_j,m_k,m_tij,m_tk,m_m,m_es;
     double m_k0sqf,m_k0sqi;
@@ -92,6 +93,9 @@ namespace AMEGIC {
       if (m_subtype==ATOOLS::subscheme::Dire) m_kappa=1.0; }
     inline void SetRecoil(ATOOLS::Recoil_Definition* recoil)
     { p_recoil=recoil; }
+    inline void SetKernelScheme(size_t kscheme)
+    { m_kscheme=kscheme; }
+
   };
 
   inline std::ostream & operator<<(std::ostream & s,

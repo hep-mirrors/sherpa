@@ -1,6 +1,7 @@
 #include "ALARIC++/Shower/Lorentz_FS.H"
 
 #include "MODEL/Main/Single_Vertex.H"
+#include "ALARIC++/Shower/Shower.H"
 #include "ALARIC++/Shower/Kernel.H"
 #include "ALARIC++/Tools/Amplitude.H"
 #include "PHASIC++/Channels/Transverse_Kinematics.H"
@@ -39,12 +40,17 @@ namespace ALARIC {
       Vec4D pi(s.m_pi), pk(s.m_pk), pj(s.m_pj), n(s.m_K+s.m_pj);
       if (pk[0]<0.0) pk=-pk;
       double sij(pi*pj), sik(pi*pk), skj(pj*pk);
-      double D(sij*(pk*n)+skj*(pi*n));
-      if (D==0.0) return 0.0;
       double A(2*sik/(sij*skj)
 	       -pi.Abs2()/sqr(sij)
 	       -pk.Abs2()/sqr(skj));
-      A*=sij*skj*(pi*n)/D;
+      if(p_sk->PS()->KernelScheme()&2) {
+        A *= sij*skj/(sij+skj);
+      }
+      else {
+        double D(sij*(pk*n)+skj*(pi*n));
+        if (D==0.0) return 0.0;
+        A*=sij*skj*(pi*n)/D;
+      }
       double sf(1.0);
       if (m_id) sf=p_sk->Mode()?1.0-s.m_z:s.m_z;
 #ifdef DEBUG__Kinematics

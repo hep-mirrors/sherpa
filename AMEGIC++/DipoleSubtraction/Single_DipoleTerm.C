@@ -211,6 +211,7 @@ Single_DipoleTerm::Single_DipoleTerm(const Process_Info &pinfo,
   default:
     break;
   }
+  m_kscheme = Settings::GetMainSettings()["SHOWER"]["KERNEL_SCHEME"].Get<size_t>();
   msg_Debugging()<<METHOD<<"(): "<<m_dtype<<": dalpha="<<m_dalpha
                          <<" ,  dkt2max="<<m_dkt2max<<std::endl;
 }
@@ -534,6 +535,7 @@ int Single_DipoleTerm::InitAmplitude(Amegic_Model *model,Topology* top,
   if (m_subevt.m_type==spt::soft) m_subevt.p_recoil=p_softrecoil;
   else m_subevt.p_recoil=p_collrecoil;
   p_dipole->SetRecoil(m_subevt.p_recoil);
+  p_dipole->SetKernelScheme(m_kscheme);
   msg_Debugging()<<"Initialised dipole "<<*p_dipole<<std::endl;
   Poincare cms;
   SetLOMomenta(p_testmoms,cms);
