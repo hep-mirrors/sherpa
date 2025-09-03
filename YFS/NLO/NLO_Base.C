@@ -531,8 +531,8 @@ double NLO_Base::CalculateRealReal() {
 			int isFSR_j = (j >= nISR) ? 1 : 0;
 			rr+=CalculateRealReal(k,kk,isFSR_i, isFSR_j);
 			if(m_check_rr_sub){
-				k*=2;
-				kk*=2;
+				// k*=2;
+				// kk*=2;
 				if(k.E() < 0.3*sqrt(m_s)) continue;
 				if(kk.E() < 0.1*sqrt(m_s)) continue;
 				if(!m_failcut) CheckRealRealSub(k, kk, isFSR_i, isFSR_j);
@@ -842,7 +842,7 @@ void NLO_Base::MapInitial(Vec4D_Vector &p){
 		QQ += p[i];
 	}
 	double sqq = QQ.Abs2();
-	double sign_z = (p[0][3] < 0 ? -1 : 1);
+	double sign_z = (p[0][3] > 0 ? -1 : 1);
   double m1 = m_flavs[0].Mass();
   double m2 = m_flavs[1].Mass();
   double lamCM = 0.5*sqrt(Lambda(sqq,m1*m1,m2*m2)/sqq);
