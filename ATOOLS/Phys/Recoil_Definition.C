@@ -21,7 +21,8 @@ namespace ATOOLS {
   class Recoil_ColorPartner: public Recoil_Definition {
   public:
 
-    Vec4D Recoil(const Cluster_Amplitude *ampl,size_t splits,size_t specs,int)
+    Vec4D Recoil(const Cluster_Amplitude *ampl,size_t splits,size_t specs,
+                 std::vector<int>*)
     {
       Vec4D rec;
       for (size_t i(ampl->NIn());i<ampl->Legs().size();++i)
@@ -30,7 +31,8 @@ namespace ATOOLS {
     }
 
     std::vector<int> RecoilTags
-      (const Cluster_Amplitude *ampl,size_t splits,size_t specs,int)
+      (const Cluster_Amplitude *ampl,size_t splits,size_t specs,
+        std::vector<int>*)
         {
           if (!ampl) return std::vector<int>(4);
           std::vector<int> tags(ampl->Legs().size(),0);
@@ -46,7 +48,8 @@ namespace ATOOLS {
   public:
 
 
-      Vec4D Recoil(const Cluster_Amplitude *ampl,size_t splits,size_t specs,int)
+      Vec4D Recoil(const Cluster_Amplitude *ampl,size_t splits,size_t specs,
+                   std::vector<int>*)
       {
         Vec4D rec;
         for (size_t i(ampl->NIn());i<ampl->Legs().size();++i)
@@ -55,7 +58,8 @@ namespace ATOOLS {
       }
 
       std::vector<int> RecoilTags
-        (const Cluster_Amplitude *ampl,size_t splits,size_t specs,int)
+        (const Cluster_Amplitude *ampl,size_t splits,size_t specs,
+         std::vector<int>*)
           {
             if (!ampl) return std::vector<int>(4);
             std::vector<int> tags(ampl->Legs().size(),0);
@@ -64,7 +68,7 @@ namespace ATOOLS {
             return tags;
           }
 
-      int Mode(const Cluster_Amplitude *ampl,int split) const { return -1; }
+    int Mode(const Cluster_Amplitude *ampl,int split) const { return -1; }
   };// end of class Recoil_PassiveFinalState
 
   class Recoil_FinalState: public Recoil_Definition {
@@ -74,7 +78,8 @@ namespace ATOOLS {
       m_prefac = -1;
     } 
     
-    Vec4D Recoil(const Cluster_Amplitude *ampl,size_t splits,size_t specs,int)
+    Vec4D Recoil(const Cluster_Amplitude *ampl,size_t splits,size_t specs,
+                 std::vector<int>*)
       {
         Vec4D rec;
         for (size_t i(ampl->NIn());i<ampl->Legs().size();++i)
@@ -83,7 +88,8 @@ namespace ATOOLS {
       }
 
     std::vector<int> RecoilTags
-        (const Cluster_Amplitude *ampl,size_t splits,size_t specs,int)
+        (const Cluster_Amplitude *ampl,size_t splits,size_t specs,
+         std::vector<int>*)
           {
             if (!ampl) return std::vector<int>(4);
             std::vector<int> tags(ampl->Legs().size(),0);
@@ -98,7 +104,8 @@ namespace ATOOLS {
   public:
 
 
-      Vec4D Recoil(const Cluster_Amplitude *ampl,size_t splits,size_t specs,int)
+      Vec4D Recoil(const Cluster_Amplitude *ampl,size_t splits,size_t specs,
+                   std::vector<int>*)
       {
         Vec4D rec;
         for (size_t i(ampl->NIn());i<ampl->Legs().size();++i)
@@ -107,7 +114,8 @@ namespace ATOOLS {
       }
         
       std::vector<int> RecoilTags
-        (const Cluster_Amplitude *ampl,size_t splits,size_t specs,int)
+        (const Cluster_Amplitude *ampl,size_t splits,size_t specs,
+         std::vector<int>*)
           {
             std::vector<int> tags(ampl->Legs().size(),0);
             for (size_t i(ampl->NIn());i<ampl->Legs().size();++i)
@@ -119,6 +127,11 @@ namespace ATOOLS {
   };// end of class Recoil_EWFinalState
 
   class Recoil_EWChargedMode: public Recoil_Definition {
+  public:
+    Recoil_EWChargedMode() {
+      m_needrecmodes = true;
+    }
+
     enum {
       det = -1,
       pos = 0,
@@ -126,8 +139,12 @@ namespace ATOOLS {
       all = 2
     };
 
-    Vec4D Recoil(const Cluster_Amplitude *ampl,size_t,size_t,int recmode)
+    int IDtoIDX(int i) { int res = -1; while(i>>=1) res++; return res;}
+    
+    Vec4D Recoil(const Cluster_Amplitude *ampl,size_t splits,size_t,
+                 std::vector<int>* recmodes)
     {
+      int recmode = recmodes?(*recmodes)[IDtoIDX(splits)]:Mode(ampl,splits);
       Vec4D rec;
       for (size_t i(ampl->NIn());i<ampl->Legs().size();++i)
 	if (!ampl->Leg(i)->Flav().Strong() &&
@@ -137,10 +154,11 @@ namespace ATOOLS {
           rec+=ampl->Leg(i)->Mom();
       return rec;
     }
-
-    std::vector<int> RecoilTags(const Cluster_Amplitude *ampl,size_t splits,size_t,int recmode)
+    
+    std::vector<int> RecoilTags(const Cluster_Amplitude *ampl,size_t splits,size_t,
+                                std::vector<int>* recmodes)
       {
-        if(recmode==det) recmode = Mode(ampl,splits);
+        int recmode = recmodes?(*recmodes)[IDtoIDX(splits)]:Mode(ampl,splits);
         std::vector<int> tags(ampl->Legs().size(),0);
         for (size_t i(ampl->NIn());i<ampl->Legs().size();++i)
           if (!ampl->Leg(i)->Flav().Strong() &&
@@ -173,7 +191,8 @@ namespace ATOOLS {
   class Recoil_StrongFinalState: public Recoil_Definition {
   public:
 
-    Vec4D Recoil(const Cluster_Amplitude *ampl,size_t splits,size_t specs,int)
+    Vec4D Recoil(const Cluster_Amplitude *ampl,size_t splits,size_t specs,
+                 std::vector<int>*)
     {
       Vec4D rec;
       for (size_t i(ampl->NIn());i<ampl->Legs().size();++i)
@@ -182,7 +201,8 @@ namespace ATOOLS {
     }
 
     std::vector<int> RecoilTags
-    (const Cluster_Amplitude *ampl,size_t splits,size_t specs,int)
+    (const Cluster_Amplitude *ampl,size_t splits,size_t specs,
+     std::vector<int>*)
     {
       std::vector<int> tags(ampl->Legs().size(),0);
       for (size_t i(ampl->NIn());i<ampl->Legs().size();++i)
@@ -196,7 +216,8 @@ namespace ATOOLS {
   class Recoil_PassiveStrongFinalState: public Recoil_Definition {
   public:
 
-    Vec4D Recoil(const Cluster_Amplitude *ampl,size_t splits,size_t specs,int)
+    Vec4D Recoil(const Cluster_Amplitude *ampl,size_t splits,size_t specs,
+                 std::vector<int>*)
     {
       Vec4D rec;
       for (size_t i(ampl->NIn());i<ampl->Legs().size();++i)
@@ -205,7 +226,8 @@ namespace ATOOLS {
     }
 
     std::vector<int> RecoilTags
-    (const Cluster_Amplitude *ampl,size_t splits,size_t specs,int)
+    (const Cluster_Amplitude *ampl,size_t splits,size_t specs,
+     std::vector<int>*)
     {
       if (!ampl) return std::vector<int>(4);
       std::vector<int> tags(ampl->Legs().size(),0);

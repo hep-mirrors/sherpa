@@ -142,8 +142,16 @@ int Lorentz_FS_Split::Construct(Splitting &s,const int mode) const
     }
   }
   Cluster_Amplitude *ampl(a.GetAmplitude());
-  Vec4D qa(s.p_c->Mom()), Kt(p_sk->PS()->CollRecoil()->Recoil(ampl,1<<split,0,s.p_c->RecMode()));
-  const std::vector<int> tags = p_sk->PS()->CollRecoil()->RecoilTags(ampl,1<<split,0,s.p_c->RecMode());
+  std::vector<int> recmodes;
+  if(p_sk->PS()->CollRecoil()->m_needrecmodes) {
+    for(Amplitude::const_iterator
+          it(a.begin());it!=a.end();++it) {
+      recmodes.push_back((*it)->RecMode());
+    }
+  }
+
+  Vec4D qa(s.p_c->Mom()), Kt(p_sk->PS()->CollRecoil()->Recoil(ampl,1<<split,0,&recmodes));
+  const std::vector<int> tags = p_sk->PS()->CollRecoil()->RecoilTags(ampl,1<<split,0,&recmodes);
   ampl->Delete();
   const int nk = std::count_if(tags.begin(),tags.end(),[](int t){return t&2;});
 

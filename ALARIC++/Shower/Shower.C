@@ -337,13 +337,19 @@ Splitting Shower::GeneratePoint
   Splitting win;
   Cluster_Amplitude *ampl(a.GetAmplitude());
   double tmin[2]={m_tmin[0],m_tmin[1]};
-  int recmode = -1;
-  std::vector<int> rcl = p_recoil->RecoilTags(ampl,0,0,recmode);
+  std::vector<int> rcl = p_recoil->RecoilTags(ampl,0,0);
+  std::vector<int> recmodes;
+  if(p_recoil->m_needrecmodes) {
+    for(Amplitude::const_iterator
+          it(a.begin());it!=a.end();++it) {
+      recmodes.push_back((*it)->RecMode());
+    }
+  }
+  int split = ampl->Legs().size();
   for (Amplitude::const_reverse_iterator
 	 it(a.rbegin());it!=a.rend();++it) {
-    if(recmode != (*it)->RecMode()) {
-      recmode = (*it)->RecMode();
-      rcl = p_recoil->RecoilTags(ampl,0,0,recmode);
+    if(p_recoil->m_needrecmodes) {
+      rcl = p_recoil->RecoilTags(ampl,1<<split,0,&recmodes);
     }
     for (int cm(0);cm<2;++cm) {
       double ct((*it)->T(cm)>=0.0?(*it)->T(cm):t);
@@ -353,6 +359,7 @@ Splitting Shower::GeneratePoint
       if (cur.m_t<m_tmin[cur.m_type&1]) continue;
       m_tmin[0]=m_tmin[1]=(win=cur).m_t;
     }
+    split--;
   }
   ampl->Delete();
   m_tmin[0]=tmin[0];

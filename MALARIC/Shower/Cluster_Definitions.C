@@ -48,7 +48,7 @@ Splitting Cluster_Definitions::KT2
   if (type&2) s.SetBeam(lk->Id()&3);
   Splitting sp(&c,&s);
   sp.SetType();
-  sp.m_rcl=p_shower->Recoil()->RecoilTags(&ampl);
+  sp.m_rcl=p_shower->Recoil()->RecoilTags(&ampl,(1<<i)|(1<<j),1<<k);
   for (size_t l(0);l<ampl.Legs().size();++l)
     if (sp.m_rcl[l]&2) sp.m_Kt+=ampl.Leg(l)->Mom();
   sp.m_eta=c.GetXB();

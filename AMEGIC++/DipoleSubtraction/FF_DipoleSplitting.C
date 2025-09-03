@@ -120,7 +120,7 @@ void FF_DipoleSplitting::SetMomentaAlaric(const ATOOLS::Vec4D* mom) {
       ff.m_p.push_back(mom[i]);
       ampl->CreateLeg(i<2?-mom[i]:mom[i],i<2?p_subevt->p_real->p_fl[i].Bar():p_subevt->p_real->p_fl[i]);
     }
-    ff.m_b=p_recoil->RecoilTags(ampl,(1<<m_i)|(1<<m_j),1<<m_k,p_recoil->Mode(ampl,(1<<m_i)|(1<<m_j)));
+    ff.m_b=p_recoil->RecoilTags(ampl,(1<<m_i)|(1<<m_j),1<<m_k);
     PHASIC::ClusterAntenna(ff, m_i, m_j, m_k, 0.);
 
     m_pi = ff.m_pi;
@@ -160,9 +160,8 @@ void FF_DipoleSplitting::SetMomentaAlaric(const ATOOLS::Vec4D* mom) {
     }
 
     Vec4D pij = mom[m_i]+mom[m_j];
-    int recmode = p_recoil->Mode(ampl,(1<<m_i)|(1<<m_j));
-    Vec4D K = p_recoil->Recoil(ampl,(1<<m_i)|(1<<m_j),1<<m_k,recmode);
-    std::vector<int> tags = p_recoil->RecoilTags(ampl,(1<<m_i)|(1<<m_j),1<<m_k,recmode);
+    Vec4D K = p_recoil->Recoil(ampl,(1<<m_i)|(1<<m_j),1<<m_k);
+    std::vector<int> tags = p_recoil->RecoilTags(ampl,(1<<m_i)|(1<<m_j),1<<m_k);
     int nk = std::count_if(tags.begin(),tags.end(),[](int t){return t&2;});
     
     double K2(K.Abs2());
