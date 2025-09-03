@@ -69,7 +69,7 @@ void Define_Dipoles::MakeDipolesII(ATOOLS::Flavour_Vector const &fl, ATOOLS::Vec
 
 void Define_Dipoles::MakeDipolesIF(ATOOLS::Flavour_Vector const &fl, ATOOLS::Vec4D_Vector const mom, ATOOLS::Vec4D_Vector const born) {
   if(m_mode==yfsmode::fsr) return;
-  if(m_ifisub==0) return;
+  // if(m_ifisub==0) return;
   if ((mom.size() != fl.size())) {
     msg_Out()<<"Dipole type is  =  "<<dipoletype::ifi<<std::endl
              <<" mom.size() =  "<<mom.size()<<std::endl
