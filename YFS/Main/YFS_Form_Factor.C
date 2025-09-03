@@ -873,15 +873,14 @@ DivArrD YFS_Form_Factor::BVirtTEps(YFS::Dipole &d, double kmax){
   DivArrD massph(0,-1,0,0,0,0);
   double irloop = p_virt->IRscale();
   double epsloop = p_virt->Eps_Scheme_Factor({p1,p2});
+  // (massph-log(4.*M_PI*sqr(irloop)/4./Kmax/epsloop));
   TBvirt = m_alpi*(
     (log(p1p2 * (1. + rho) / (m1*m2)) / rho - 1) * -1.*(-massph-log(4.*M_PI*sqr(irloop)/kmax/epsloop)) 
-       // (log(2*p1p2/(m1*m2))-1.0)*-1.*(-massph-log(4.*M_PI*sqr(irloop)/kmax/epsloop)) 
-       // (log(ta/(m1*m2))+log(zeta)-1.0)*-1.*(-massph-log(4.*M_PI*sqr(irloop)/kmax/epsloop)) 
-      // +0.5*zeta*log(ta*zeta/(m1*m2))
-      //   -0.5*log(ta/m1/m1)*log(ta/m2/m2)
-      // -log(zeta)*(log(ta/(m1*m2)) +0.5*log(zeta))
-      // +0.5*(zeta -1.0)*log(m1/m2)
+       +0.5*zeta*log(ta*zeta/(m1*m2))
+        -0.5*log(ta/m1/m1)*log(ta/m2/m2)
       // +DiLog(1./zeta) -1.0
+      +0.5*(zeta -1.0)*log(m1/m2)
+      -log(zeta)*(log(ta/(m1*m2)) +0.5*log(zeta))
        );
   #ifdef USING__LOOPTOOLS
     Complex form;
