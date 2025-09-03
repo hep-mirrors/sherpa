@@ -346,10 +346,10 @@ LCG_106_ATLAS_7_x86_64-el9-gcc13-opt:
 ###########################################################################
 # Here we check if we have changes to the Docker files
 
-check_commit_Fedora40:
+check_commit_Fedora42:
   variables:
     OS: Fedora
-    FREL: 40
+    FREL: 42
   extends: .check_commit_Fedora
 
 check_commit_Fedora41:
@@ -374,13 +374,13 @@ check_commit_Archlinux0:
 
 ###########################################################################
 #Build images
-build_image_Fedora40:
+build_image_Fedora42:
   variables:
     OS: Fedora
-    FREL: 40
+    FREL: 42
   extends: .build_image_Fedora
   needs:
-    - job: check_commit_Fedora40
+    - job: check_commit_Fedora42
 
 build_image_Fedora41:
   variables:
@@ -421,27 +421,27 @@ Fedora41-make-ccache-GNU:
     - job: build_image_Fedora41
 
 
-Fedora40-make-ccache-GNU:
+Fedora42-make-ccache-GNU:
   variables:
     OS: Fedora
-    FREL: 40
+    FREL: 42
     TOOLSET: GNU
     EXTRACMAKEFLAGS: $COMMON_EXTRA_CMAKE_FLAGS $EXTENDED_EXTRA_CMAKE_FLAGS $DOXYGEN_CMAKE_FLAGS
     BUILDDOCS: 1
   extends: .any-cmake-ccache
   needs:
-    - job: build_image_Fedora40
+    - job: build_image_Fedora42
 
-Fedora40-make-ccache-LLVM:
+Fedora42-make-ccache-LLVM:
   variables:
     OS: Fedora
-    FREL: 40
+    FREL: 42
     TOOLSET: LLVM
     EXTRACMAKEFLAGS: $COMMON_EXTRA_CMAKE_FLAGS $EXTENDED_EXTRA_CMAKE_FLAGS $DOXYGEN_CMAKE_FLAGS
     BUILDDOCS: 1
   extends: .any-cmake-ccache
   needs:
-    - job: build_image_Fedora40
+    - job: build_image_Fedora42
 
 
 CentOS9-make-ccache-GNU:
