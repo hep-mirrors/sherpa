@@ -200,7 +200,6 @@ LCG_106_ATLAS_7_x86_64-el9-gcc13-opt:
       - todo-Archlinux_$FREL.txt
     expire_in: 1 day
 
-
 .check_commit_Fedora:
   stage: check_if_dockerfile_updated
   image:
