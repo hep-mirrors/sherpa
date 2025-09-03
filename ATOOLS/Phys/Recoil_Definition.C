@@ -172,10 +172,12 @@ namespace ATOOLS {
 
     int Mode(const Cluster_Amplitude *ampl,int splits) const
     {
+      const Cluster_Amplitude* bampl = ampl;
+      while(bampl->Next()) bampl = bampl->Next();
       double charge = 0;
-      for (size_t i(ampl->NIn());i<ampl->Legs().size();++i) {
-        if((ampl->Leg(i)->Id()&splits)) {
-          charge += ampl->Leg(i)->Flav().Charge();
+      for (size_t i(bampl->NIn());i<bampl->Legs().size();++i) {
+        if((bampl->Leg(i)->Id()&splits)) {
+          charge += bampl->Leg(i)->Flav().Charge();
         }
       }
       if(charge == 0) {
