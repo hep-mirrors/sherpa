@@ -77,7 +77,7 @@ double YFS_Form_Factor::BVR_full(double p1p2, double E1, double E2,
 }
 
 DivArrD YFS_Form_Factor::BVR_full_eps(YFS::Dipole &d,  double Kmax, int mode) {
-  if(m_tchannel==2) return BVirtTEps(d,Kmax);
+  // if(m_tchannel==2) return BVirtTEps(d,Kmax);
   Vec4D p1,p2;
   if(d.Type()==dipoletype::initial){
     p1 = d.GetNewMomenta(0);
@@ -730,18 +730,18 @@ double YFS_Form_Factor::BVirtT(Vec4D p1, Vec4D p2,  double kmax){
   double p1p2 = p1*p2;
   double t  = (p1-p2).Abs2();
   double ta = fabs(t);
-  double zeta = 1 + M*M/ta;
+  double zeta = 1 + m1*m2/ta;
   double TBvirt, Bv;
   // double rho = sqrt(1. - sqr(m1*m2 / (p1*p2)));
   double rho = sqrt((1. - (m1*m2 / (p1*p2)))*(1. + (m1*m2 / (p1*p2))));
   TBvirt = m_alpi*(
-    // (log(p1p2 * (1. + rho) / (m1*m2)) / rho - 1) *log(pow(m_photonMass, 2)/(kmax)) 
-       (log(2*p1p2/(m1*m2))-1.0)*log(m_photonMass*m_photonMass/(m1*m2))
-       +0.5*zeta*log(ta*zeta/(m1*m2))
-        -0.5*log(ta/m1/m1)*log(ta/m2/m2)
-      +DiLog(1./zeta) -1.0
-      +0.5*(zeta -1.0)*log(m1/m2)
-      -log(zeta)*(log(ta/(m1*m2)) +0.5*log(zeta))
+    (log(p1p2 * (1. + rho) / (m1*m2)) / rho - 1) *log(pow(m_photonMass, 2)/(m1*m2)) 
+       // (log(2*p1p2/(m1*m2))-1.0)*log(m_photonMass*m_photonMass/(m1*m2))
+      //  +0.5*zeta*log(ta*zeta/(m1*m2))
+      //   -0.5*log(ta/m1/m1)*log(ta/m2/m2)
+      // +0.5*(zeta -1.0)*log(m1/m2)
+      // -log(zeta)*(log(ta/(m1*m2)) +0.5*log(zeta))
+      // +DiLog(1./zeta) -1.0
        );
   // #ifdef USING__LOOPTOOLS
   //   Complex form;
@@ -770,6 +770,14 @@ double YFS_Form_Factor::BVirtT(Vec4D p1, Vec4D p2,  double kmax){
   //   // PRINT_VAR(TBvirt.Finite());
   //   TBvirt+=form.real();
   // #endif
+  if(fabs(TBvirt)>1){
+    PRINT_VAR((log(p1p2 * (1. + rho) / (m1*m2)) / rho - 1) *log(pow(m_photonMass, 2)/(kmax)));
+    PRINT_VAR(p1);
+    PRINT_VAR(p2);
+    PRINT_VAR(rho);
+    PRINT_VAR(m1);
+    PRINT_VAR(m2);
+  }
   return TBvirt;
 }
 
@@ -875,10 +883,11 @@ DivArrD YFS_Form_Factor::BVirtTEps(YFS::Dipole &d, double kmax){
   double epsloop = p_virt->Eps_Scheme_Factor({p1,p2});
   // (massph-log(4.*M_PI*sqr(irloop)/4./Kmax/epsloop));
   TBvirt = m_alpi*(
-    (log(p1p2 * (1. + rho) / (m1*m2)) / rho - 1) * -1.*(-massph-log(4.*M_PI*sqr(irloop)/kmax/epsloop)) 
+    (log(p1p2 * (1. + rho) / (m1*m2)) / rho - 1) * -1.*(-massph-log(4.*M_PI*sqr(irloop)/m1/m2/epsloop)) 
+    // (log(2*p1p2/(m1*m2))-1.0) * -1.*(-massph-log(4.*M_PI*sqr(irloop)/m1/m2/epsloop)) 
        +0.5*zeta*log(ta*zeta/(m1*m2))
         -0.5*log(ta/m1/m1)*log(ta/m2/m2)
-      // +DiLog(1./zeta) -1.0
+      +DiLog(1./zeta) -1.0
       +0.5*(zeta -1.0)*log(m1/m2)
       -log(zeta)*(log(ta/(m1*m2)) +0.5*log(zeta))
        );
@@ -916,8 +925,8 @@ DivArrD YFS_Form_Factor::BVirtTEps(YFS::Dipole &d, double kmax){
 double YFS_Form_Factor::R1(YFS::Dipole &d){
   Vec4D p1,p2;
   if(d.Type()==dipoletype::initial){
-    p1 = d.GetNewMomenta(0);
-    p2 = d.GetNewMomenta(1);
+    p1 = d.GetBornMomenta(0);
+    p2 = d.GetBornMomenta(1);
   }
   else if(d.Type()==dipoletype::final){
     p1 = d.GetBornMomenta(0);
@@ -930,8 +939,8 @@ double YFS_Form_Factor::R1(YFS::Dipole &d){
   else{
     msg_Error()<<"Unknown Dipole type"<<std::endl;
   }
-  double R = BVR_full(p1, p2,sqrt(m_s)/2.,m_photonMass,0);
-  double V = BVirtT(d);
+  double R = BVR_full(p1 * p2, p1.E(), p2.E(), p1.Mass(), p2.Mass(), sqrt(m_s)/2., m_photonMass, 0);
+  double V = BVirtT(p1, p2, sqrt(m_s) / 2.);
   if(m_tchannel!=2){
     // add s channel 
     double Vs = BVR_full(p1, p2, sqrt(m_s) / 2.);
