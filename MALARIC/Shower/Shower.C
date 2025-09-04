@@ -304,7 +304,7 @@ Splitting Shower::GeneratePoint
       recmodes.push_back((*it)->RecMode());
     }
   }
-  int split = ampl->Legs().size();
+  int split = ampl->Legs().size()-1;
   for (Amplitude::const_reverse_iterator
 	 it(a.rbegin());it!=a.rend();++it) {
     if(p_recoil->m_needrecmodes) {

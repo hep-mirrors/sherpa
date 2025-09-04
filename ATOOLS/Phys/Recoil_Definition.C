@@ -139,12 +139,18 @@ namespace ATOOLS {
       all = 2
     };
 
-    int IDtoIDX(int i) { int res = -1; while(i>>=1) res++; return res;}
+    int IDtoIDX(const Cluster_Amplitude *ampl,int id) {
+      for(size_t i=0; i<ampl->Legs().size(); ++i) {
+        if(ampl->Leg(i)->Id()&id) return i;
+      }
+      return -1;
+    }
     
     Vec4D Recoil(const Cluster_Amplitude *ampl,size_t splits,size_t,
                  std::vector<int>* recmodes)
     {
-      int recmode = recmodes?(*recmodes)[IDtoIDX(splits)]:Mode(ampl,splits);
+      if(splits==0) return Vec4D();
+      int recmode = recmodes?(*recmodes)[IDtoIDX(ampl,splits)]:Mode(ampl,splits);
       Vec4D rec;
       for (size_t i(ampl->NIn());i<ampl->Legs().size();++i)
 	if (!ampl->Leg(i)->Flav().Strong() &&
@@ -158,7 +164,8 @@ namespace ATOOLS {
     std::vector<int> RecoilTags(const Cluster_Amplitude *ampl,size_t splits,size_t,
                                 std::vector<int>* recmodes)
       {
-        int recmode = recmodes?(*recmodes)[IDtoIDX(splits)]:Mode(ampl,splits);
+        if(splits==0) return std::vector<int> (ampl->Legs().size(),all);
+        int recmode = recmodes?(*recmodes)[IDtoIDX(ampl,splits)]:Mode(ampl,splits);
         std::vector<int> tags(ampl->Legs().size(),0);
         for (size_t i(ampl->NIn());i<ampl->Legs().size();++i)
           if (!ampl->Leg(i)->Flav().Strong() &&

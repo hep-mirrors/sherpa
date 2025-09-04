@@ -151,6 +151,7 @@ int Lorentz_FS_Split::Construct(Splitting &s,const int mode) const
   }
   Vec4D qa(s.p_c->Mom()), Kt(p_sk->PS()->CollRecoil()->Recoil(ampl,1<<split,0,&recmodes));
   const std::vector<int> tags = p_sk->PS()->CollRecoil()->RecoilTags(ampl,1<<split,0,&recmodes);
+  s.m_rcl = tags;
   ampl->Delete();
   const int nk = std::count_if(tags.begin(),tags.end(),[](int t){return t&2;});
 
