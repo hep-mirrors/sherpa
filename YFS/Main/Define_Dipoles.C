@@ -440,14 +440,15 @@ double Define_Dipoles::CalculateVirtualSubEps() {
 
 double Define_Dipoles::CalculateRealVirtualSubEps(const Vec4D &k) {
   DivArrD sub(0);
+  if(m_tchannel==2) return CalculateVirtualSubTchannel();
   // if(m_tchannel==2) return CalculateRealSub(k);
   for (auto &D : m_dipolesII) {
-    sub += D.ChargeNorm()*p_yfsFormFact->BVR_full_eps(D, sqrt(m_s) / 2., 0);
+    sub += D.ChargeNorm()*p_yfsFormFact->BVV_full_eps(D, sqrt(m_s) / 2., 0);
   }
   for (auto &D : m_dipolesFF) {
     if(D.IsFinite()) continue;
-    if(m_mode==yfsmode::fsr) sub += -D.m_QiQj*p_yfsFormFact->BVR_full_eps(D, sqrt(m_s) / 2., 0);
-    else sub += D.ChargeNorm()*p_yfsFormFact->BVR_full_eps(D, sqrt(m_s) / 2., 0);
+    if(m_mode==yfsmode::fsr) sub += -D.m_QiQj*p_yfsFormFact->BVV_full_eps(D, sqrt(m_s) / 2., 0);
+    else sub += D.ChargeNorm()*p_yfsFormFact->BVV_full_eps(D, sqrt(m_s) / 2., 0);
   }
 
   for (auto &D : m_dipolesIF){
@@ -455,7 +456,7 @@ double Define_Dipoles::CalculateRealVirtualSubEps(const Vec4D &k) {
     // Note Born momenta are redifined
     // for IFI terms.
     if(D.IsFinite()) continue;
-    sub += D.ChargeNorm()*p_yfsFormFact->BVR_full_eps(D, sqrt(m_s) / 2., 0);
+    sub += D.ChargeNorm()*p_yfsFormFact->BVV_full_eps(D, sqrt(m_s) / 2., 0);
   }
   m_virtSub=sub;
   return sub.Finite();
@@ -596,7 +597,7 @@ double Define_Dipoles::CalculateVirtualSubTchannelEps() {
 double Define_Dipoles::CalculateRealVirtualSub(const Vec4D & k) {
   double sub(0);
   for (auto &D : m_dipolesII) {
-    sub += -D.Eikonal(k);
+    // sub += -D.Eikonal(k);
     sub += -D.m_QiQj*p_yfsFormFact->BVV_full(D.GetNewMomenta(0), D.GetNewMomenta(1), m_photonMass, sqrt(m_s) / 2., 3);
   }
   for (auto &D : m_dipolesFF) {
