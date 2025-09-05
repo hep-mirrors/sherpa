@@ -229,7 +229,7 @@ template<class Scalar>
 bool CRaritaSchwinger<Scalar>::Test_Properties(const ATOOLS::Vec4D &p, int dir) {
   // Dirac equation (gamma_mu * p_mu -m)^A_B RS^B, nu -> +m for V
   msg_Debugging()<<METHOD<<": Testing Dirac equation..."<<"\n";
-  METOOLS::Gamma gammavec = Gamma<Scalar>();
+  METOOLS::Gamma<Scalar> gammavec = Gamma<Scalar>();
   bool testresult(true);
   bool single_testresult(true);
   // SComplex(-r) for distinguishing between particle and anti-particle Dirac equation

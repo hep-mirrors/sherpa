@@ -214,11 +214,11 @@ CRS<SType>::RS(const ATOOLS::Vec4D &p, const int r, const int h, const int s, co
 template<typename SType> CRaritaSchwinger<SType>
 CRS<SType>::RSPP(const ATOOLS::Vec4D &p, const int r, const int s, const int b, const int cr, const int ca,
                  const int hh, const int ms) {
-  CRaritaSchwinger<SType> wf(b>0?METOOLS::CRS<SType>::SpinorVectorProduct(CSpinor(r, abs(b), 1, p, cr, ca, hh, s,
+  CRaritaSchwinger<SType> wf(b>0?METOOLS::CRS<SType>::SpinorVectorProduct(CSpinor<SType>(r, abs(b), 1, p, cr, ca, hh, s,
                                                                                   this->m_msv?p.Abs2():0, ms),
                                                                           this->m_msv? EMM(p, cr, ca) : EM(p, cr, ca, m_k),
                                                                           1, cr, ca, s):
-                                 METOOLS::CRS<SType>::SpinorVectorProduct(CSpinor(r, abs(b), 1, p, cr, ca, hh, s,
+                                 METOOLS::CRS<SType>::SpinorVectorProduct(CSpinor<SType>(r, abs(b), 1, p, cr, ca, hh, s,
                                                                                   this->m_msv?p.Abs2():0, ms),
                                                                           this->m_msv? EMM(p, cr, ca) : EM(p, cr, ca, m_k),
                                                                           1, cr, ca, s).Bar());
@@ -233,15 +233,15 @@ CRS<SType>::RSP(const ATOOLS::Vec4D &p, int r, int s, int b, int cr, int ca, int
   else if (p[1]<0 && p[2]>=0) exp_phi = std::exp(SComplex(0, 1)*(std::atan(p[2]/p[1])+M_PI));
   else if (p[1]<0 && p[2]>0) exp_phi = std::exp(SComplex(0, 1)*(std::atan(p[2]/p[1])-M_PI));*/
   if (!this->m_msv) THROW(fatal_error, "There is no massless Rarita-Schwinger-particle with Sz=1/2!")
-  CRaritaSchwinger<SType> wf_p0(METOOLS::CRS<SType>::SpinorVectorProduct(CSpinor(r, abs(b), 1, p, cr, ca, hh, s, p.Abs2(),
+  CRaritaSchwinger<SType> wf_p0(METOOLS::CRS<SType>::SpinorVectorProduct(CSpinor<SType>(r, abs(b), 1, p, cr, ca, hh, s, p.Abs2(),
                                                                               ms), EML(p, cr, ca), 1, cr, ca, s));
-  CRaritaSchwinger<SType> wf_mp(METOOLS::CRS<SType>::SpinorVectorProduct(CSpinor(r, abs(b), -1, p, cr, ca, hh, s, p.Abs2(),
+  CRaritaSchwinger<SType> wf_mp(METOOLS::CRS<SType>::SpinorVectorProduct(CSpinor<SType>(r, abs(b), -1, p, cr, ca, hh, s, p.Abs2(),
                                                                                  ms), EMM(p, cr, ca), 1, cr, ca, s));
   CRaritaSchwinger<SType> wf = b>0?(sqrt(2.0/3.0) * wf_p0 - sqrt(1.0/3.0) * wf_mp) :
                                    (sqrt(2.0/3.0) * wf_p0 - sqrt(1.0/3.0) * wf_mp).Bar();
-  /*CRaritaSchwinger<SType> wf_p01(METOOLS::CRS<SType>::SpinorVectorProduct(CSpinor(1, abs(b), 1, Vec4D(sqrt(p.Abs2()+1.0), 0, 0, 1.0), cr, ca, hh, s, p.Abs2(),
+  /*CRaritaSchwinger<SType> wf_p01(METOOLS::CRS<SType>::SpinorVectorProduct(CSpinor<SType>(1, abs(b), 1, Vec4D(sqrt(p.Abs2()+1.0), 0, 0, 1.0), cr, ca, hh, s, p.Abs2(),
                                                                                  ms), EML(Vec4D(sqrt(p.Abs2()+1.0), 0, 0, 1.0) , cr, ca), 1, cr, ca, s));
-  CRaritaSchwinger<SType> wf_mp1(METOOLS::CRS<SType>::SpinorVectorProduct(CSpinor(1, abs(b), -1, Vec4D(sqrt(p.Abs2()+1.0), 0, 0, 1.0), cr, ca, hh, s, p.Abs2(),
+  CRaritaSchwinger<SType> wf_mp1(METOOLS::CRS<SType>::SpinorVectorProduct(CSpinor<SType>(1, abs(b), -1, Vec4D(sqrt(p.Abs2()+1.0), 0, 0, 1.0), cr, ca, hh, s, p.Abs2(),
                                                                                  ms), EMM(Vec4D(sqrt(p.Abs2()+1.0), 0, 0, 1.0), cr, ca), 1, cr, ca, s));
   SComplex exp_phi1(SComplex(0, 0));
   Vec4D p1 = Vec4D(sqrt(2), 0, 0, 1);
@@ -268,9 +268,9 @@ CRS<SType>::RSM(const ATOOLS::Vec4D &p, int r, int s, int b, int cr, int ca, int
   else if (p[1]==0) exp_phi = std::exp(SComplex(0, 1)*(M_PI/2)*((p[2]>0)?SComplex(1,0):((p[2]==0)?0.0:SComplex(-1,0))));
   else if (p[1]<0 && p[2]>=0) exp_phi = std::exp(SComplex(0, 1)*(std::atan(p[2]/p[1])+M_PI));
   else if (p[1]<0 && p[2]>0) exp_phi = std::exp(SComplex(0, 1)*(std::atan(p[2]/p[1])-M_PI));*/
-  CRaritaSchwinger<SType> wf_pm(METOOLS::CRS<SType>::SpinorVectorProduct(CSpinor(r, abs(b), 1, p, cr, ca, hh, s, p.Abs2(),
+  CRaritaSchwinger<SType> wf_pm(METOOLS::CRS<SType>::SpinorVectorProduct(CSpinor<SType>(r, abs(b), 1, p, cr, ca, hh, s, p.Abs2(),
                                                                                  ms), EMP(p, cr, ca), 1, cr, ca, s));
-  CRaritaSchwinger<SType> wf_m0(METOOLS::CRS<SType>::SpinorVectorProduct(CSpinor(r, abs(b), -1, p, cr, ca, hh, s, p.Abs2(),
+  CRaritaSchwinger<SType> wf_m0(METOOLS::CRS<SType>::SpinorVectorProduct(CSpinor<SType>(r, abs(b), -1, p, cr, ca, hh, s, p.Abs2(),
                                                                                  ms), EML(p, cr, ca), 1, cr, ca, s));
   CRaritaSchwinger<SType> wf = b>0?(sqrt(2.0/3.0) * wf_m0 + sqrt(1.0/3.0) * wf_pm) :
                                (sqrt(2.0/3.0) * wf_m0 + sqrt(1.0/3.0) * wf_pm).Bar();
@@ -285,10 +285,10 @@ CRS<SType>::RSMM(const ATOOLS::Vec4D &p, const int r, const int s, const int b, 
   else if (p[1]==0) exp_phi = std::exp(SComplex(0, 1)*(M_PI/2)*((p[2]>0)?SComplex(1,0):((p[2]==0)?0.0:SComplex(-1,0))));
   else if (p[1]<0 && p[2]>=0) exp_phi = std::exp(SComplex(0, 1)*(std::atan(p[2]/p[1])+M_PI));
   else if (p[1]<0 && p[2]>0) exp_phi = std::exp(SComplex(0, 1)*(std::atan(p[2]/p[1])-M_PI));*/
-  CRaritaSchwinger<SType> wf(b>0?METOOLS::CRS<SType>::SpinorVectorProduct(CSpinor(r, abs(b), -1, p, cr, ca, hh, s,
+  CRaritaSchwinger<SType> wf(b>0?METOOLS::CRS<SType>::SpinorVectorProduct(CSpinor<SType>(r, abs(b), -1, p, cr, ca, hh, s,
                                                                                   this->m_msv?p.Abs2():0, ms),
                                                                           this->m_msv? EMP(p, cr, ca) : EP(p, cr, ca, m_k), -1, cr, ca, s):
-                             METOOLS::CRS<SType>::SpinorVectorProduct(CSpinor(r, abs(b), -1, p, cr, ca, hh, s, this->m_msv?p.Abs2():0,
+                             METOOLS::CRS<SType>::SpinorVectorProduct(CSpinor<SType>(r, abs(b), -1, p, cr, ca, hh, s, this->m_msv?p.Abs2():0,
                                                                               ms),
                                                                       this->m_msv? EMP(p, cr, ca) : EP(p, cr, ca, m_k), -1, cr,
                                                                       ca, s).Bar());
