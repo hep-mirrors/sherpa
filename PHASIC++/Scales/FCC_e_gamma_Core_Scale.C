@@ -40,7 +40,7 @@ PDF::Cluster_Param FCC_e_gamma_Core_Scale::Calculate(Cluster_Amplitude *const am
     msg_Debugging()<<"more than 4 legs, use sqrt(Q^2+H_T'^2)/2 as scale"<<std::endl;
     double q=0.0;
     for (size_t i(0);i<campl->Legs().size();++i)
-      if (campl->Leg(i)->Flav().Strong()) q+=sqrt(dabs(campl->Leg(i)->Mom().MPerp2()));
+      if (!campl->Leg(i)->Flav().IsLepton()) q+=sqrt(dabs(campl->Leg(i)->Mom().MPerp2()));
     q = q*q; //< this now is H_{T,hadr}^2
     if (campl->Leg(0)->Flav().IsLepton() && campl->Leg(2)->Flav().IsLepton())
       q += dabs((campl->Leg(0)->Mom() + campl->Leg(2)->Mom()).Abs2());
