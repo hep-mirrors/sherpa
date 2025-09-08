@@ -45,13 +45,14 @@ CS_Shower::CS_Shower(PDF::ISR_Handler *const _isr,
   const int ckfmode { pss["CKFMODE"].Get<bool>() };
   const int pdfcheck{ pss["PDFCHECK"].Get<bool>() };
   const int _qcd    { pss["QCD_MODE"].Get<bool>() };
-  m_qed             = pss["EW_MODE"].Get<bool>();
+  const bool _qed    { pss["EW_MODE"].Get<bool>() };
+  m_cluster_qed = pss["CLUSTER_QED"].SetDefault(false).Get<bool>() || _qed;
 
-  if (m_qed==1) {
+  if (_qed) {
     s_kftable[kf_photon]->SetResummed();
   }
 
-  p_shower = new Shower(_isr,_qcd,m_qed,type);
+  p_shower = new Shower(_isr,_qcd,_qed,type);
   p_next = new All_Singlets();
   p_cluster = new CS_Cluster_Definitions(p_shower,m_kmode,pdfcheck,ckfmode);
 }
@@ -635,7 +636,7 @@ double CS_Shower::JetVeto(ATOOLS::Cluster_Amplitude *const ampl,
         if (k < ampl->NIn()) cs.m_mode |= 2;
         Splitting_Function_Base *cdip(p_cluster->GetSF(li,lj,lk,mo,cs));
         if (cdip == nullptr) cdip = p_cluster->GetSF(lj,li,lk,mo,cs);
-        if ((cdip==NULL || !cdip->On()) && m_qed) {
+        if ((cdip == nullptr || !cdip->On()) && m_cluster_qed) {
           if (li->Flav().IsPhoton()) mo = lj->Flav();
           else if (lj->Flav().IsPhoton()) mo = li->Flav();
           else mo = Flavour(kf_photon);
