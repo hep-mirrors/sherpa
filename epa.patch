@@ -1,0 +1,113 @@
+Subject: [PATCH] Remove obsolete GRS photon PDF
+---
+Index: BEAM/Spectra/EPA_FF.H
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/BEAM/Spectra/EPA_FF.H b/BEAM/Spectra/EPA_FF.H
+--- a/BEAM/Spectra/EPA_FF.H	(revision 897ef329ada93650dbfda26bc5678d608bcad71a)
++++ b/BEAM/Spectra/EPA_FF.H	(date 1739818527756)
+@@ -3,6 +3,7 @@
+ 
+ #include "ATOOLS/Math/Function_Base.H"
+ #include "ATOOLS/Math/Lookup_Tables.H"
++#include "ATOOLS/Math/Random.H"
+ #include "ATOOLS/Phys/Flavour.H"
+ #include "ATOOLS/Org/Message.H"
+ #include <fstream>
+@@ -22,6 +23,7 @@
+     dipole       = 12,
+     dipoleApprox = 13,
+     WoodSaxon    = 14,
++    testIon      = 15,
+     Test         = 99
+   };
+ 
+@@ -239,6 +241,17 @@
+     double FF(const double& Q2) override { return (*p_FF_Q2)(Q2); }
+   };
+ 
++  class EPA_testIon final : public EPA_FF_Base {
++  public:
++    EPA_testIon(const ATOOLS::Flavour& beam, int dir);
++    void   FillTables(const size_t& nx, const size_t& nb) override {};
++    double SelectB(double x) override { return 0.;
++      return m_bmin / (1. - ATOOLS::ran->Get()); };
++    double operator()(const double& x, const double& Q2) override;
++    double N(const double& x, const double& b) override;
++    double FF(const double& Q2) override { return 0.; }
++  };
++
+   class EPA_Test final : public EPA_FF_Base {
+   public:
+     explicit EPA_Test(const ATOOLS::Flavour& beam, int dir);
+Index: BEAM/Spectra/EPA_FF.C
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/BEAM/Spectra/EPA_FF.C b/BEAM/Spectra/EPA_FF.C
+--- a/BEAM/Spectra/EPA_FF.C	(revision 897ef329ada93650dbfda26bc5678d608bcad71a)
++++ b/BEAM/Spectra/EPA_FF.C	(date 1739818657056)
+@@ -14,7 +14,9 @@
+ #include "ATOOLS/Org/Settings.H"
+ 
+ #include <string>
+-
++#include <cmath>
++#include <iostream>
++#include <numbers>
+ using namespace BEAM;
+ using namespace ATOOLS;
+ using string = std::string;
+@@ -530,6 +532,32 @@
+   return (1. - x) * (1. - Q2min(x) / Q2) * (*p_FF_Q2)(Q2);
+ }
+ 
++////////////////////////////////////////////////////////////////////////////////
++//
++// Dummy test class for the Ion FF in the Electric Dipole approximation using
++// the analytical expression from 2207.03012, eq. 3.3
++//
++////////////////////////////////////////////////////////////////////////////////
++
++EPA_testIon::EPA_testIon(const ATOOLS::Flavour& beam, const int dir)
++    : EPA_FF_Base(beam, dir)
++{ }
++
++double EPA_testIon::operator()(const double& x, const double& Q2)
++{
++  return 1.;
++}
++
++double EPA_testIon::N(const double& x, const double& b)
++{
++  double bt = m_bmin / (1. - ATOOLS::ran->Get()) * m_R;
++  double Zsquared(m_beam.Kfcode() == kf_p_plus ? 1
++                                               : sqr(m_beam.GetAtomicNumber()));
++  double chi = x * m_mass * bt;
++  double wt = Zsquared * sqr(x * m_mass) * sqr(std::cyl_bessel_k(1,chi)) / M_PI;
++  return wt * m_bmin / bt;
++}
++
+ ////////////////////////////////////////////////////////////////////////////////
+ //
+ // Dummy test class for checking the Bessel_Integrator
+Index: BEAM/Spectra/EPA.C
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/BEAM/Spectra/EPA.C b/BEAM/Spectra/EPA.C
+--- a/BEAM/Spectra/EPA.C	(revision 897ef329ada93650dbfda26bc5678d608bcad71a)
++++ b/BEAM/Spectra/EPA.C	(date 1739818527770)
+@@ -99,6 +99,7 @@
+     case EPA_ff_type::dipoleApprox:
+       p_ff = new EPA_DipoleApprox(m_beam, m_dir);
+       break;
++    case EPA_ff_type::testIon: p_ff = new EPA_testIon(m_beam, m_dir); break;
+     case EPA_ff_type::WoodSaxon: p_ff = new EPA_WoodSaxon(m_beam, m_dir); break;
+     default: THROW(not_implemented, "unknown EPA form factor. ");
+   }
+

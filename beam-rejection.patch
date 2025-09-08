@@ -1,0 +1,56 @@
+Subject: [PATCH] custom core scale for e-gamma collisions at FCC
+---
+Index: BEAM/Main/Beam_Rejection.H
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/BEAM/Main/Beam_Rejection.H b/BEAM/Main/Beam_Rejection.H
+--- a/BEAM/Main/Beam_Rejection.H	(revision 8def892bced06510b040f5e705487a84091072e3)
++++ b/BEAM/Main/Beam_Rejection.H	(date 1747854798828)
+@@ -37,8 +37,9 @@
+ 
+   public:
+     Proton_Proton_Rejection(const ATOOLS::Flavour& flav1,
+-                            const ATOOLS::Flavour& flav2)
+-        : Beam_Rejection_Base(flav1, flav2)
++                            const ATOOLS::Flavour& flav2,
++                            double sNN)
++        : Beam_Rejection_Base(flav1, flav2), m_sNN(sNN)
+     {}
+     double operator()(double b) final
+     {
+Index: BEAM/Main/Collider_Weight.C
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/BEAM/Main/Collider_Weight.C b/BEAM/Main/Collider_Weight.C
+--- a/BEAM/Main/Collider_Weight.C	(revision 8def892bced06510b040f5e705487a84091072e3)
++++ b/BEAM/Main/Collider_Weight.C	(date 1747855043769)
+@@ -23,16 +23,19 @@
+   if (m_mode == collidermode::unknown)
+     THROW(fatal_error, "Bad settings for collider mode.");
+ 
+-  m_rejection = ATOOLS::Settings::GetMainSettings()["BEAM_OVERLAP_REJECTION"]
+-                        .SetDefault(false)
+-                        .Get<int>();
++  auto s      = ATOOLS::Settings::GetMainSettings();
++  m_rejection = s["BEAM_OVERLAP_REJECTION"].SetDefault(false).Get<int>();
++  std::vector<int> ffs = s["EPA"]["Form_Factor"].GetTwoVector<int>();
++  if (!std::any_of(ffs.begin(), ffs.end(), [](int n) { return n > 9; }))
++    THROW(invalid_input, "Can only do BEAM_OVERLAP_REJECTION with b-differential EPA distributions. ");
+   if (m_rejection == 0) return;
+   if (m_rejection == 1)
+     p_rejector = new Radius_Rejection(p_beams[0]->Beam(), p_beams[1]->Beam());
+   else if (m_rejection > 1 && p_beams[0]->Beam().Kfcode() == kf_p_plus &&
+            p_beams[1]->Beam().Kfcode() == kf_p_plus)
+-    p_rejector =
+-            new Proton_Proton_Rejection(p_beams[0]->Beam(), p_beams[1]->Beam());
++    p_rejector = new Proton_Proton_Rejection(
++            p_beams[0]->Beam(), p_beams[1]->Beam(),
++            (p_beams[0]->InMomentum() + p_beams[0]->InMomentum()).Abs2());
+   else if (m_rejection > 1 && (p_beams[0]->Beam().Kfcode() == kf_p_plus &&
+                                p_beams[1]->Beam().IsIon()) ||
+            (p_beams[0]->Beam().IsIon() &&
+
