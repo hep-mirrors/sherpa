@@ -79,7 +79,9 @@ namespace PHASIC {
 
     ~FCC_e_gamma_Scale_Setter();
 
-    double Calculate(const ATOOLS::Vec4D_Vector &p,const size_t &mode);
+    bool Initialize() override;
+
+    double Calculate(const ATOOLS::Vec4D_Vector &p,const size_t &mode) override;
 
     void SetScale(const std::string &mu2tag,
 		  ATOOLS::Algebra_Interpreter &mu2calc);
@@ -226,6 +228,45 @@ FCC_e_gamma_Scale_Setter::~FCC_e_gamma_Scale_Setter()
   delete p_core;
   delete p_cs;
   delete p_qdc;
+}
+
+bool FCC_e_gamma_Scale_Setter::Initialize()
+{
+  // Initialize DIS-like process for 11 22 -> X
+  Cluster_Amplitude *ampl(Cluster_Amplitude::New());
+  ampl->SetProc(p_proc);
+  ampl->SetNIn(2);
+  ampl->CreateLeg(Vec4D(),p_proc->Flavours()[0].Bar());
+  ampl->CreateLeg(Vec4D(),Flavour(kf_jet));
+  for (size_t i(2);i<p_proc->NIn()+p_proc->NOut();++i)
+    ampl->CreateLeg(Vec4D(),p_proc->Flavours()[i]);
+  bool init(p_cs->GetProcess(ampl) != nullptr);
+  if (!init) init=p_cs->Initialize(ampl);
+  ampl->Delete();
+  if (!init) return false;
+  // Initialize Compton-like process for 11 22 -> 11 22
+  Cluster_Amplitude *ampl2(Cluster_Amplitude::New());
+  ampl2->SetProc(p_proc);
+  ampl2->SetNIn(2);
+  ampl2->CreateLeg(Vec4D(),p_proc->Flavours()[0].Bar());
+  ampl2->CreateLeg(Vec4D(),Flavour(kf_photon));
+  ampl2->CreateLeg(Vec4D(),p_proc->Flavours()[2]);
+  ampl2->CreateLeg(Vec4D(),Flavour(kf_photon));
+  init = p_cs->GetProcess(ampl2) != nullptr;
+  if (!init) init=p_cs->Initialize(ampl2);
+  ampl2->Delete();
+  // Initialize DIS-like process for 11 93 -> 11 93
+  Cluster_Amplitude *ampl3(Cluster_Amplitude::New());
+  ampl3->SetProc(p_proc);
+  ampl3->SetNIn(2);
+  ampl3->CreateLeg(Vec4D(),p_proc->Flavours()[0].Bar());
+  ampl3->CreateLeg(Vec4D(),Flavour(kf_jet));
+  ampl3->CreateLeg(Vec4D(),p_proc->Flavours()[2]);
+  ampl3->CreateLeg(Vec4D(),Flavour(kf_jet));
+  init = p_cs->GetProcess(ampl3) != nullptr;
+  if (!init) init=p_cs->Initialize(ampl3);
+  ampl3->Delete();
+  return init;
 }
 
 int FCC_e_gamma_Scale_Setter::Select
