@@ -21,7 +21,7 @@ In this case, follow the instructions given in
 
 If this does not help, contact the Sherpa team (see the
 Sherpa Team section of the website
-`sherpa.hepforge.org <http://sherpa.hepforge.org>`_), providing
+`sherpa-team.gitlab.io <https://sherpa-team.gitlab.io>`_), providing
 all information on your setup. Please include
 
 #. A complete tarred and gzipped set of the :option:`Sherpa.yaml` config file
