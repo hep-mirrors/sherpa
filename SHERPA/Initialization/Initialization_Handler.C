@@ -148,6 +148,7 @@ void Initialization_Handler::RegisterDefaults()
       "VARIATIONS",
       "SCALE_VARIATIONS",
       "PDF_VARIATIONS",
+      "PION_VARIATIONS",
       "QCUT_VARIATIONS",
       "MASSIVE_PS",
       "MASSLESS_PS"
@@ -165,6 +166,7 @@ void Initialization_Handler::RegisterDefaults()
   s["VARIATIONS"].UseNoneReplacements();
   s["SCALE_VARIATIONS"].UseNoneReplacements();
   s["PDF_VARIATIONS"].UseNoneReplacements();
+  s["PION_VARIATIONS"].UseNoneReplacements();
   s["QCUT_VARIATIONS"].UseNoneReplacements().SetSynonyms({"CKKW_VARIATIONS"});
   s["PDF_LIBRARY"].UseNoneReplacements();
   s["MPI_PDF_LIBRARY"].UseNoneReplacements();
