@@ -15,7 +15,7 @@ set(ExtraXSNLO_HEADERS Logarithms.H)
 sherpa_create_git_info(ExtraXSNLO ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR})
 
 if (SHERPA_ENABLE_LOOPTOOLS) 
-    list(APPEND ExtraXSNLO_SOURCES PionPionVirtual.C eeffbar_Virtual.C ee2nunuVirtual.C)
+    list(APPEND ExtraXSNLO_SOURCES PionPionVirtual.C)
 endif()
 
 add_library(ExtraXSNLO SHARED ${ExtraXSNLO_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
