@@ -132,6 +132,8 @@ Variations::GetVariationNameAt(Variations::Parameters_Vector::size_type i,
     return m_parameters_vector.at(i)->Name(s, name_type);
   case Variations_Type::qcut:
     return m_qcut_parameters_vector.at(i).Name(s);
+  case Variations_Type::pion:
+    return m_pion_parameters_vector.at(i).Name(s);
   case Variations_Type::custom:
     THROW(fatal_error, "Variations does not manage custom variations.");
   }
@@ -147,6 +149,8 @@ size_t Variations::Size(Variations_Type t) const
     return m_parameters_vector.size();
   case Variations_Type::qcut:
     return m_qcut_parameters_vector.size();
+  case Variations_Type::pion:
+    return m_pion_parameters_vector.size();
   case Variations_Type::custom:
     THROW(fatal_error, "Variations does not manage custom variations.");
   }
@@ -284,6 +288,17 @@ void Variations::InitialiseParametersVector()
     ExpandableVariation var {single_variation_settings.Get<std::string>()};
     if (var.expand)
       scalefactorexpansions |= ScaleFactorExpansions::QCUT;
+    scalestringparams = {"1.0", "1.0", var.var};
+    AddParameterExpandingScaleFactors(scalestringparams, scalefactorexpansions,
+                                      {});
+  }
+    for (auto single_variation_settings : s["PION_VARIATIONS"].GetItems()) {
+    std::vector<std::string> scalestringparams;
+    ScaleFactorExpansions::code scalefactorexpansions(
+        ScaleFactorExpansions::None);
+    ExpandableVariation var {single_variation_settings.Get<std::string>()};
+    if (var.expand)
+      scalefactorexpansions |= ScaleFactorExpansions::PION;
     scalestringparams = {"1.0", "1.0", var.var};
     AddParameterExpandingScaleFactors(scalestringparams, scalefactorexpansions,
                                       {});
@@ -815,6 +830,7 @@ namespace ATOOLS {
     switch (t) {
       case Variations_Type::qcd:    return o << "QCD";
       case Variations_Type::qcut:   return o << "Qcut";
+      case Variations_Type::pion:   return o << "Pion";
       case Variations_Type::custom: return o << "Custom";
     }
     return o;

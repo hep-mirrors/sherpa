@@ -24,7 +24,8 @@ set(Scales_SOURCES Cluster_Definitions.C
                    MINLO_KFactor_Setter.C
                    EWVirtKFactor_Setter.C
                    Variable_KFactor_Setter.C
-                   No_KFactor_Setter.C)
+                   No_KFactor_Setter.C
+                   Pion_Core_Scale.C)
 
 set(Scales_HEADERS Cluster_Definitions.H
                    Scale_Setter_Base.H

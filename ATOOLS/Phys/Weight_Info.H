@@ -160,7 +160,20 @@ namespace ATOOLS {
      <<"\n            "<<rdai.m_csi;
     return s;
   }
+  struct PionForm_Info {
+  public:
+    double   m_wgt, m_Q2;
+    PionForm_Info(const double &wgt, const double &Q2):
+    m_wgt(wgt), m_Q2(Q2) {}
+  };
 
+  inline std::ostream & operator<<(std::ostream & s,
+                                   const ATOOLS::PionForm_Info & pform)
+  {
+    s<<"Pion Form Factor: wgt="<<pform.m_wgt<<", Q2="<<pform.m_Q2;
+    return s;
+  }
+  
   struct ME_Weight_Info {
   public:
     mewgttype::code m_type;
@@ -173,6 +186,7 @@ namespace ATOOLS {
     Cluster_Sequence_Info m_clusseqinfo;
     std::vector<DADS_Info> m_dadsinfos;
     std::vector<RDA_Info> m_rdainfos;
+    std::vector<PionForm_Info> m_pioninfos;
     ME_Weight_Info():
       m_type(mewgttype::none), m_relqcdcpl(0),
       m_B(0.0), m_VI(0.0), m_KP(0.0), m_K(0.0),
@@ -186,6 +200,9 @@ namespace ATOOLS {
 
   std::ostream & operator<<(std::ostream & s,
                             const ATOOLS::ME_Weight_Info & mwi);
+
+
+
 }
 
 #endif

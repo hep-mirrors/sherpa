@@ -165,7 +165,7 @@ namespace PHASIC {
     //! Calculate AlphaS ratio (*asnew)(mur2new) / MODEL::as(mur2old)
     double AlphaSRatio(double mur2old, double mur2new,
                        MODEL::Running_AlphaS * asnew);
-
+    double EvaluatePionForm(ATOOLS::Variations_Mode);
     ATOOLS::Weights_Map Differential(const ATOOLS::Vec4D_Vector&,
                                      ATOOLS::Variations_Mode) override;
 

@@ -746,7 +746,7 @@ Weights_Map Single_Process::Differential(const Vec4D_Vector& p,
   p_int->ISR()->SetMuF2(facscale, 0);
   p_int->ISR()->SetMuF2(facscale, 1);
   if(p_pionformfactor->On()){
-    m_last *= p_pionformfactor->Eval(p_scale->PionForm());
+    m_last *= EvaluatePionForm(varmode);
   }
   return m_last;
 }
@@ -754,7 +754,7 @@ Weights_Map Single_Process::Differential(const Vec4D_Vector& p,
 Weights_Map Single_Process::YFSDifferential(const Vec4D_Vector &p,  ATOOLS::Variations_Mode varmode){
   Partonic(p, varmode);
   if(p_pionformfactor->On()){
-    m_lastxs *= p_pionformfactor->Eval(p_scale->PionForm());
+    m_lastxs *= EvaluatePionForm(varmode);
   }
   return m_lastxs;
 }
@@ -1237,6 +1237,32 @@ bool Single_Process::CalculateTotalXSec(const std::string &resultpath,
   }
   exh->RemoveTerminatorObject(p_int);
   return 0;
+}
+
+double Single_Process::EvaluatePionForm(ATOOLS::Variations_Mode varmode){
+  double pscale, pform;
+  pscale = p_scale->CalculateScale(p_int->Momenta(),1);
+  // PionForm_Info pinfo(1,1);
+  Weights pion_wgts(Variations_Type::pion, 1.0);
+  // if (varmode != Variations_Mode::nominal_only) {
+  //   Reweight(pion_wgts,
+  //     [this](double base, size_t varindex, Pion_Variation_Params& params) -> double {
+  //     double K = 1.0;
+  //     PRINT_VAR(varindex);
+  //     // your custom reweight function here
+  //     double contrib = K * p_pionformfactor->Eval(1);
+  //     return contrib / base;  // relative weight factor
+  //   });
+  // }
+  // else{
+  //   // pscale = p_scale->CalculateScale(p_int->Momenta(),1);
+  pform = p_pionformfactor->Eval(pscale);
+  PionForm_Info pf {pform,pscale};
+  m_mewgtinfo.m_pioninfos.push_back(pf);
+  // }
+  msg_Debugging()<<"Pion Form factor"<<": wgt="<< m_mewgtinfo.m_pioninfos.back().m_wgt
+                 <<" at Q^2 = " << m_mewgtinfo.m_pioninfos.back().m_Q2 <<std::endl;
+  return pform;
 }
 
 void Single_Process::SetScale(const Scale_Setter_Arguments &args)

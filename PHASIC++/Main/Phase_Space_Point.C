@@ -210,7 +210,10 @@ bool Phase_Space_Point::DefineISRKinematics(Process_Integrator *const process) {
     if(!p_yfshandler->MakeYFS(p_moms)) return 0;
     DefineFSRKinematics();
     p_yfshandler->SetMomenta(p_moms);
-    return(p_yfshandler->CalculateFSR());
+    // return(p_yfshandler->CalculateFSR());
+    p_yfshandler->CalculateFSR(p_moms);
+    if(!p_pshandler->Active()->Process()->Trigger(p_yfshandler->m_plab)) return false;
+    return true;
   }
   else if(p_yfshandler->Mode()==YFS::yfsmode::fsr){
     DefineFSRKinematics();

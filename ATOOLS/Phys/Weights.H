@@ -102,6 +102,18 @@ namespace ATOOLS {
         Weights&,
         std::function<double(double, size_t varindex, Qcut_Variation_Params*)>);
 
+    // Pion variations
+    friend void Reweight(
+        Weights&,
+        std::function<double(double, Pion_Variation_Params&)>);
+    friend void Reweight(
+        Weights&,
+        std::function<double(double, size_t varindex, Pion_Variation_Params&)>);
+    friend void ReweightAll(
+        Weights&,
+        std::function<double(double, size_t varindex, Pion_Variation_Params*)>);
+
+
     friend std::ostream& operator<<(std::ostream&, const Weights&);
 
     friend Weights_Map;
@@ -331,6 +343,13 @@ namespace ATOOLS {
   void ReweightAll(
       Weights&,
       std::function<double(double, size_t varindex, Qcut_Variation_Params*)>);
+  void Reweight(
+      Weights&,
+      std::function<double(double, size_t varindex, Pion_Variation_Params&)>);
+  void ReweightAll(
+      Weights&,
+      std::function<double(double, size_t varindex, Pion_Variation_Params*)>);
+
 
   template <typename T>
   void Weights_Map::FillVariations(T &map, Variations_Source source,

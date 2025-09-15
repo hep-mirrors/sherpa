@@ -30,7 +30,7 @@ namespace ATOOLS {
   };
   std::ostream& operator<<(std::ostream&, const Variations_Source&);
 
-  enum class Variations_Type { qcd, qcut, custom };
+  enum class Variations_Type { qcd, qcut, pion, custom };
   enum class Variations_Mode { all, nominal_only };
   std::ostream& operator<<(std::ostream&, const Variations_Type&);
 
@@ -39,6 +39,7 @@ namespace ATOOLS {
   class Variations;
   struct QCD_Variation_Params;
   struct Qcut_Variation_Params;
+  struct Pion_Variation_Params;
 
   extern Variations* s_variations;
 
@@ -48,7 +49,8 @@ namespace ATOOLS {
       MuF             = 1,
       MuR             = 1<<1,
       SevenPoint      = 1<<2,  // vary independently, but exclude (up,down) and (down,up) variations
-      QCUT            = 1<<3
+      QCUT            = 1<<3,
+      PION            = 1<<4
     };
   };
   DEFINE_SHERPA_ENUM_FLAG_OPERATORS(ScaleFactorExpansions::code)
@@ -74,6 +76,15 @@ namespace ATOOLS {
     double m_scale_factor;
   };
 
+   struct Pion_Variation_Params {
+    Pion_Variation_Params(double scale_factor):
+      m_scale_factor{scale_factor}
+    {}
+    bool IsTrivial() const { return (m_scale_factor == 1.0); }
+    std::string Name(Variations_Source source=ATOOLS::Variations_Source::all) const;
+    double m_scale_factor;
+  };
+
   //! Initialise and hold all information that is needed for varying input parameters
   class Variations {
   public:
@@ -88,13 +99,14 @@ namespace ATOOLS {
 
     std::vector<Variations_Type> ManagedVariationTypes() const
     {
-      return {Variations_Type::qcd, Variations_Type::qcut};
+      return {Variations_Type::qcd, Variations_Type::qcut, Variations_Type::pion};
     }
 
     typedef std::vector<QCD_Variation_Params *> Parameters_Vector;
     const Parameters_Vector * GetParametersVector() const { return &m_parameters_vector; }
     QCD_Variation_Params& Parameters(size_t i) { return *m_parameters_vector[i]; }
     Qcut_Variation_Params& Qcut_Parameters(size_t i) { return m_qcut_parameters_vector[i]; }
+    Pion_Variation_Params& Pion_Parameters(size_t i) { return m_pion_parameters_vector[i]; }
     std::string
     GetVariationNameAt(Variations::Parameters_Vector::size_type,
                        Variations_Type type = Variations_Type::qcd,
@@ -148,6 +160,7 @@ namespace ATOOLS {
     bool m_enabled;
     Parameters_Vector m_parameters_vector;
     std::vector<Qcut_Variation_Params> m_qcut_parameters_vector;
+    std::vector<Pion_Variation_Params> m_pion_parameters_vector;
 
     //! (name -> counter value) map used to track warnings
     std::map<std::string, unsigned long> m_warnings;
