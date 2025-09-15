@@ -348,6 +348,11 @@ void YFS_Handler::MakeWWVecs(ATOOLS::Vec4D_Vector p) {
   m_Wm *= 0;
   m_Wp *= 0;
   Flavour_Vector wp, wm;
+  // if(!IsEqual(p.size(),m_flavs.size())){
+  // THROW(fatal_error, "Wrong vector size in 
+  //                     MakeWWVecs: p.size()="<<p.size()
+  //                     <<"and m_flavs.size()="<<m_flavs.size()<<std::endl);
+  // }
   for(size_t i = 2; i < p.size(); ++i)
   {
     if (m_flavs[i].IsAnti() && m_flavs[i].IntCharge()) {
@@ -426,7 +431,7 @@ double YFS_Handler::CalculateNLO(){
   p_nlo->SetBorn(m_born);
   p_nlo->SetFSR(p_fsr);
   p_nlo->m_ISRPhotons = m_ISRPhotons;
-  p_nlo->m_FSRPhotons = m_fsrphotonsforME;
+  p_nlo->m_FSRPhotons = m_FSRPhotons;
   return p_nlo->CalculateNLO();
 }
 
