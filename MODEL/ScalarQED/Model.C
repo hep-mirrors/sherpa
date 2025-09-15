@@ -439,19 +439,29 @@ void ScalarQED_Model::InitVertices()
   InitQEDVertices();
   InitQCDVertices();
   InitEWVertices();
-  Kabbala GF("G_F",1.0/sqrt(2.0)/std::abs(sqr(ComplexConstant("cvev"))));
-  Kabbala f_pi("F_PI",ScalarConstant("F_PI"));
-  Kabbala I("i",Complex(0.,1.)), rt2("\\sqrt{2}",sqrt(2.));
-  Kabbala g1("g_1",sqrt(4.*M_PI*ScalarConstant("alpha_QED")));
-  Kabbala cpl=g1*Kabbala("i",Complex(0.,1.));
-  m_v.push_back(Single_Vertex());
-  m_v.back().AddParticle(Flavour(kf_pi_plus));
-  m_v.back().AddParticle(Flavour(kf_pi_plus).Bar());
-  m_v.back().AddParticle(Flavour(kf_photon));
-  m_v.back().Color.push_back(Color_Function(cf::None));
-  m_v.back().Lorentz.push_back("SSV");
-  m_v.back().cpl.push_back(cpl);
-  m_v.back().order[1]=1;
+  // Kabbala GF("G_F",1.0/sqrt(2.0)/std::abs(sqr(ComplexConstant("cvev"))));
+  // Kabbala f_pi("F_PI",ScalarConstant("F_PI"));
+  // Kabbala I("i",Complex(0.,1.)), rt2("\\sqrt{2}",sqrt(2.));
+  // Kabbala g1("g_1",sqrt(4.*M_PI*ScalarConstant("alpha_QED")));
+  // Kabbala cpl=g1*Kabbala("i",Complex(0.,1.));
+  // Kabbala Q("Q_{"+Flavour(kf_pi_plus).TexName()+"}",Flavour(kf_pi_plus).Charge());
+  // m_v.push_back(Single_Vertex());
+  // m_v.back().AddParticle(Flavour(kf_photon));
+  // m_v.back().AddParticle(Flavour(kf_pi_plus).Bar());
+  // m_v.back().AddParticle(Flavour(kf_pi_plus));
+  // m_v.back().Color.push_back(Color_Function(cf::None));
+  // m_v.back().Lorentz.push_back("SSV");
+  // m_v.back().cpl.push_back(cpl*Q);
+  // m_v.back().order[1]=1;
+  // m_v.push_back(Single_Vertex());
+  // m_v.back().AddParticle(Flavour(kf_pi_plus));
+  // m_v.back().AddParticle(Flavour(kf_pi_plus).Bar());
+  // m_v.back().AddParticle(Flavour(kf_photon));
+  // m_v.back().AddParticle(Flavour(kf_photon));
+  // // m_v.back().Color.push_back(Color_Function(cf::None));
+  // m_v.back().Lorentz.push_back("SSVV");   // 2 scalars + 2 vectors
+  // m_v.back().cpl.push_back(Kabbala("i", Complex(0.,1.)) * g1 * g1);
+  // m_v.back().order[1] = 2; // QED order 2
 }
 
 void ScalarQED_Model::InitQEDVertices()
