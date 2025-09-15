@@ -235,8 +235,8 @@ void Dipole::Boost() {
 
 void Dipole::BoostNLO(ATOOLS::Vec4D &p) {
   p_Pboost->Boost(p);
-  p_rotate.RotateBack(p);
-  // RandomRotate(p);
+  // p_rotate.RotateBack(p);
+  RandomRotate(p);
   p_boost.BoostBack(p);
   // PRINT_VAR(p_boost.PL());
 }

@@ -70,7 +70,7 @@ void Define_Dipoles::MakeDipolesII(ATOOLS::Flavour_Vector const &fl, ATOOLS::Vec
 
 void Define_Dipoles::MakeDipolesIF(ATOOLS::Flavour_Vector const &fl, ATOOLS::Vec4D_Vector const mom, ATOOLS::Vec4D_Vector const born) {
   if(m_mode==yfsmode::fsr) return;
-  if(m_ifisub==0) return;
+  // if(m_ifisub==0) return;
   if ((mom.size() != fl.size())) {
     msg_Out()<<"Dipole type is  =  "<<dipoletype::ifi<<std::endl
              <<" mom.size() =  "<<mom.size()<<std::endl
@@ -475,11 +475,11 @@ double Define_Dipoles::FormFactor(){
         form += D.ChargeNorm()*p_yfsFormFact->BVR_full(D.GetBornMomenta(0), D.GetBornMomenta(1), sqrt(m_s) / 2.);
       }
     }
-  // if(m_ifisub==1){
-  //   for(auto &D: m_dipolesIF){
-  //     form += D.ChargeNorm()*p_yfsFormFact->R1(D);
-  //   }
-  // }
+  if(m_ifisub==1){
+    for(auto &D: m_dipolesIF){
+      form += D.ChargeNorm()*p_yfsFormFact->R1(D);
+    }
+  }
   return exp(form); 
 }
 

@@ -243,7 +243,7 @@ bool YFS_Handler::CalculateISR() {
 void YFS_Handler::AddFormFactor() {
   if (m_CalForm) return;
   if (m_fullform == 1) {
-    if(m_tchannel==1) m_formfactor = p_dipoles->TFormFactor();
+    if(m_tchannel!=0) m_formfactor = p_dipoles->TFormFactor();
     else {
       m_formfactor = p_dipoles->FormFactor();
     }
@@ -278,6 +278,7 @@ bool YFS_Handler::CalculateFSR(Vec4D_Vector & p) {
   CheckResonance();
   if(m_mode==yfsmode::isrfsr)  p_dipoles->MakeDipolesIF(m_flavs, m_plab, m_plab);
   m_FSRPhotons.clear();
+  m_fsrphotonsforME.clear();
   for (Dipole_Vector::iterator Dip = p_dipoles->GetDipoleFF()->begin();
        Dip != p_dipoles->GetDipoleFF()->end(); ++Dip) {
     if(!Dip->IsResonance()) continue;
@@ -302,7 +303,8 @@ bool YFS_Handler::CalculateFSR(Vec4D_Vector & p) {
       return false;
     } 
 
-    m_fsrphotonsforME = m_FSRPhotons;
+    // m_fsrphotonsforME = m_FSRPhotons;
+    for(auto &k: m_FSRPhotons) m_fsrphotonsforME.push_back(k);
     Dip->AddPhotonsToDipole(m_FSRPhotons);
     Dip->SetMEPhotons(m_fsrphotonsforME);
     Dip->Boost();

@@ -136,10 +136,11 @@ double NLO_Base::CalculateNLO() {
 	virt = result;
 	if(!m_virtual_only) result += CalculateReal();
 	real = result-virt;
-	result += CalculateRealVirtual();
-	rv = result - real - virt;
 	result += CalculateRealReal();
 	rr = result - real - virt - rv;
+	result += CalculateRealVirtual();
+	rv = result - real - virt;
+	if(m_failcut) return 0;
 	return result;
 }
 
@@ -877,7 +878,7 @@ void NLO_Base::MapInitial(Vec4D_Vector &p){
 		QQ += p[i];
 	}
 	double sqq = QQ.Abs2();
-	double sign_z = (p[0][3] < 0 ? -1 : 1);
+	double sign_z = (p[0][3] > 0 ? -1 : 1);
   double m1 = m_flavs[0].Mass();
   double m2 = m_flavs[1].Mass();
   double lamCM = 0.5*sqrt(Lambda(sqq,m1*m1,m2*m2)/sqq);
@@ -940,7 +941,6 @@ bool NLO_Base::CheckPhotonForReal(const Vec4D &k) {
 			if (sik < m_hardmin*m_plab[i].Abs2() ) {
 				msg_Debugging()<<"Rejecting photon k = "<<k<<std::endl
 								<<"sik = "<<sik<<std::endl;
-				return false;
 			}
 			// if(m_plab[i].PPerp()< m_hardmin) return false;
 		}
@@ -1098,26 +1098,26 @@ void NLO_Base::CheckRealRealSub(Vec4D k1, Vec4D k2, int fsr1, int fsr2){
 		if(ATOOLS::FileExists(filename3))  ATOOLS::Remove(filename3);
 		out_sub.open(filename1, std::ios_base::app);
 		// if(k.E() < 0.8*sqrt(m_s)/2.) return;
-		for (double i = 1; i < 20 ; i+=0.1)
+		for (double i = 1; i < 20 ; i+=0.02)
 		{
 			k1=k1/i;
 			// if(k1.E()< m_isrcut*sqrt(m_s)) break;
-			if(k1.E() <= 1e-16) break;
 			real=CalculateRealReal(k1,k2,fsr1, fsr2);
-			out_sub<<k1.E()<<","<<fabs(real)<<std::endl;
+			out_sub<<k1.E()<<","<<fabs(real)/m_born<<std::endl;
+			if(k1.E() <= 1e-16) break;
 			// m_histograms2d["Real_me_sub"]->Insert(k.E(),fabs(real), 1);
 		}
 		out_sub.close();
 		out_sub.open(filename2, std::ios_base::app);
 	 	k2 = _k2;
 	 	k1 = _k1;
-		for (double i = 1; i < 20 ; i+=0.1)
+		for (double i = 1; i < 20 ; i+=0.02)
 		{
 			k2=k2/i;
-			// if(k2.E()< m_isrcut*sqrt(m_s)) break;
-			if(k2.E() <= 1e-16 ) break;
+			// if(k2.E() <= 1e-16 ) break;
 			real=CalculateRealReal(k1,k2, fsr1, fsr2);
-			out_sub<<k2.E()<<","<<fabs(real)<<std::endl;
+			out_sub<<k2.E()<<","<<fabs(real)/m_born<<std::endl;
+			if(k2.E()< m_isrcut*sqrt(m_s)) break;
 			// if(IsZero(real)) break;
 			// m_histograms2d["Real_me_sub"]->Insert(k.E(),fabs(real), 1);
 		}
@@ -1125,13 +1125,13 @@ void NLO_Base::CheckRealRealSub(Vec4D k1, Vec4D k2, int fsr1, int fsr2){
 		out_sub.open(filename3, std::ios_base::app);
 		k2 = _k2;
 	 	k1 = _k1;
-		for (double i = 1; i < 20 ; i+=0.1)
+		for (double i = 1; i < 20 ; i+=0.02)
 		{
 			k2=k2/i;
 			k1=k1/i;
-			if(k1.E() <= 1e-16 || real==0) break;
 			real=CalculateRealReal(k1,k2,fsr1,fsr2);
-			out_sub<<k1.E()<<","<<fabs(real)<<std::endl;
+			out_sub<<k1.E()<<","<<fabs(real)/m_born<<std::endl;
+			if(k1.E() <= 1e-16 || real==0 && !m_failcut) break;
 			// if(IsZero(real)) break;
 			// m_histograms2d["Real_me_sub"]->Insert(k.E(),fabs(real), 1);
 		}
