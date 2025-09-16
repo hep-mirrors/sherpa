@@ -132,8 +132,8 @@ Variations::GetVariationNameAt(Variations::Parameters_Vector::size_type i,
     return m_parameters_vector.at(i)->Name(s, name_type);
   case Variations_Type::qcut:
     return m_qcut_parameters_vector.at(i).Name(s);
-  case Variations_Type::pion:
-    return m_pion_parameters_vector.at(i).Name(s);
+  // case Variations_Type::pion:
+  //   return m_pion_parameters_vector.at(i).Name(s);
   case Variations_Type::custom:
     THROW(fatal_error, "Variations does not manage custom variations.");
   }
@@ -149,8 +149,8 @@ size_t Variations::Size(Variations_Type t) const
     return m_parameters_vector.size();
   case Variations_Type::qcut:
     return m_qcut_parameters_vector.size();
-  case Variations_Type::pion:
-    return m_pion_parameters_vector.size();
+  // case Variations_Type::pion:
+  //   return m_pion_parameters_vector.size();
   case Variations_Type::custom:
     THROW(fatal_error, "Variations does not manage custom variations.");
   }
@@ -830,7 +830,7 @@ namespace ATOOLS {
     switch (t) {
       case Variations_Type::qcd:    return o << "QCD";
       case Variations_Type::qcut:   return o << "Qcut";
-      case Variations_Type::pion:   return o << "Pion";
+      // case Variations_Type::pion:   return o << "Pion";
       case Variations_Type::custom: return o << "Custom";
     }
     return o;

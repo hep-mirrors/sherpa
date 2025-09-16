@@ -1243,7 +1243,7 @@ double Single_Process::EvaluatePionForm(ATOOLS::Variations_Mode varmode){
   double pscale, pform;
   pscale = p_scale->CalculateScale(p_int->Momenta(),1);
   // PionForm_Info pinfo(1,1);
-  Weights pion_wgts(Variations_Type::pion, 1.0);
+  // Weights pion_wgts(Variations_Type::pion, 1.0);
   // if (varmode != Variations_Mode::nominal_only) {
   //   Reweight(pion_wgts,
   //     [this](double base, size_t varindex, Pion_Variation_Params& params) -> double {

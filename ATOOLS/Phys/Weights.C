@@ -227,33 +227,33 @@ void ATOOLS::ReweightAll(
   }
 }
 
-void ATOOLS::Reweight(Weights& w,
-                      std::function<double(double, Pion_Variation_Params&)> f)
-{
-  w.type = Variations_Type::pion;
-  w.names.clear();
-  const auto num_variation = s_variations->Size(Variations_Type::pion);
-  w.weights.resize(num_variation + 1,
-                   w.weights.empty() ? 1.0 : w.weights.front());
-  for (size_t i {1}; i < num_variation + 1; ++i) {
-    w.weights[i] = f(w.weights[i], s_variations->Pion_Parameters(i - 1));
-  }
-}
+// void ATOOLS::Reweight(Weights& w,
+//                       std::function<double(double, Pion_Variation_Params&)> f)
+// {
+//   w.type = Variations_Type::pion;
+//   w.names.clear();
+//   const auto num_variation = s_variations->Size(Variations_Type::pion);
+//   w.weights.resize(num_variation + 1,
+//                    w.weights.empty() ? 1.0 : w.weights.front());
+//   for (size_t i {1}; i < num_variation + 1; ++i) {
+//     w.weights[i] = f(w.weights[i], s_variations->Pion_Parameters(i - 1));
+//   }
+// }
 
-void ATOOLS::ReweightAll(
-    Weights& w,
-    std::function<double(double, size_t varindex, Pion_Variation_Params*)> f)
-{
-  w.type = Variations_Type::pion;
-  w.names.clear();
-  const auto num_variation = s_variations->Size(Variations_Type::pion);
-  PRINT_VAR(num_variation);
-  w.weights.resize(num_variation + 1,
-                   w.weights.empty() ? 1.0 : w.weights.front());
-  for (size_t i {0}; i < num_variation + 1; ++i) {
-    w.weights[i] = f(w.weights[i], i, (i == 0) ? nullptr : &s_variations->Pion_Parameters(i - 1));
-  }
-}
+// void ATOOLS::ReweightAll(
+//     Weights& w,
+//     std::function<double(double, size_t varindex, Pion_Variation_Params*)> f)
+// {
+//   w.type = Variations_Type::pion;
+//   w.names.clear();
+//   const auto num_variation = s_variations->Size(Variations_Type::pion);
+//   PRINT_VAR(num_variation);
+//   w.weights.resize(num_variation + 1,
+//                    w.weights.empty() ? 1.0 : w.weights.front());
+//   for (size_t i {0}; i < num_variation + 1; ++i) {
+//     w.weights[i] = f(w.weights[i], i, (i == 0) ? nullptr : &s_variations->Pion_Parameters(i - 1));
+//   }
+// }
 
 std::ostream& ATOOLS::operator<<(std::ostream& out, const Weights& w)
 {
