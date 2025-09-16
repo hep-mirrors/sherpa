@@ -7,11 +7,9 @@ MINLO
 
 The following configuration file shows how to implement the MINLO
 procedure from :cite:`Hamilton2012np`. A few things to note are
-detailed below.  MINLO can also be applied when reading NTuples, see
-:ref:`NTuple production`.  In this case, the scale and K factor must
-be defined, see :ref:`SCALES` and :ref:`KFACTOR`.
+detailed below.
 
-.. literalinclude:: /../../Examples/FixedOrder_NLO/MINLO/Sherpa.yaml
+.. literalinclude:: /../../Examples/FixedOrder/MINLO_ppenuj/Sherpa.yaml
    :language: yaml
 
 Things to notice:

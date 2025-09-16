@@ -41,3 +41,4 @@ listed in the following sections.
    customization/external-rng
    customization/external-pdf
    customization/python-interface
+   customization/userhook

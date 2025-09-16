@@ -106,20 +106,16 @@ Vector boson pairs + jets production
 
 .. include:: ./examples/vector-boson-pairs-jets-production.rst
 
-.. _BSM/UFO_SMEFTsim:
+.. _BSMexamples:
 
-**************************************
-SMEFT using UFO
-**************************************
+**********
+BSM setups
+**********
+
+.. contents::
+   :local:
 
 .. include:: ./examples/smeft-using-ufo.rst
-
-.. _MSSM/UFO:
-
-**************************************
-Event generation in the MSSM using UFO
-**************************************
-
 .. include:: ./examples/event-generation-in-the-mssm-using-ufo.rst
 
 .. _DIS:
@@ -142,7 +138,6 @@ Fixed-order next-to-leading order calculations
 .. contents::
    :local:
 
-.. include:: ./examples/production-of-ntuples.rst
 .. include:: ./examples/minlo.rst
 
 .. _SoftQCD:
@@ -190,3 +185,14 @@ Using the Python interface
 
 .. include:: ./examples/generate-events-using-scripts.rst
 .. include:: ./examples/generate-events-with-mpi-using-scripts.rst
+
+.. _UserhookExamples:
+
+***************************************
+Custom event processing with user hooks
+***************************************
+
+.. contents::
+   :local:
+
+.. include:: ./examples/userhook.rst

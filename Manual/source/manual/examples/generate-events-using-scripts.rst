@@ -10,4 +10,4 @@ to stdout. This script can be used as a basis for constructing
 interfaces to own analysis routines.
 
 .. literalinclude:: /../../Examples/API/Events/test.py.in
-   :language: text
+   :language: python
