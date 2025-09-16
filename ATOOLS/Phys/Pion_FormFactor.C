@@ -15,7 +15,20 @@ Pion_FormFactor::Pion_FormFactor(){
     m_crhopp  = 0.0614;
     m_crhoppp = 0.0047;
 
-    m_comega = 0.00158;
+    m_comega = s["c_omega_pion"].SetDefault(0.00158).Get<double>();
+    m_omega_mass = s["om0_mass"].SetDefault(0.78248).Get<double>();
+    m_omega_g    = s["om0_width"].SetDefault(0.00855).Get<double>();
+   
+    m_rho_mass   = s["rho_mass"].SetDefault(0.77456).Get<double>();
+    m_rho_g      = s["rho_width"].SetDefault(0.14832).Get<double>();
+   
+    m_rhop_mass   = s["rhop_mass"].SetDefault(1.4859).Get<double>();
+    m_rhop_g      = s["rhop_width"].SetDefault(0.37360).Get<double>();
+   
+    m_rhopp_mass   = s["rhopp_mass"].SetDefault(1.8668).Get<double>();
+    m_rhopp_g      = s["rhopp_width"].SetDefault(0.30334).Get<double>();
+   
+
     m_cphi   = 0.00045;
 
     m_prho    = 0;
@@ -90,18 +103,20 @@ double Pion_FormFactor::ppi(const double &q2){
     return num/den;
   }
 
+
   double Pion_FormFactor::Eval(const double &q2){
     if(m_form_mode==0) return 1;
     // https://gitlab.com/strong2020/monte-carlo-results/-/tree/root/pion-formfactor?ref_type=heads
-    Particle_Info rhoi(kf_rho_770,  0.77456, 0.0, 0.14832,3,0,0,0,0,1,1,"rho","rho", "rho", "rho");
+    Particle_Info rhoi(kf_rho_770,  m_rho_mass, 0.0, m_rho_g,3,0,0,0,0,1,1,"rho","rho", "rho", "rho");
     
-    Particle_Info rhopi(kf_rho_770, 1.4859, 0.0,  0.37360, 3,0,0,0,0,1,1,"rhopp","rhopp", "rho", "rho");
+    Particle_Info rhopi(kf_rho_770, m_rhop_mass, 0.0,  m_rhop_g, 3,0,0,0,0,1,1,"rhopp","rhopp", "rho", "rho");
     
-    Particle_Info rhoppi(kf_rho_770, 1.8668, 0.0, 0.30334, 3,0,0,0,0,1,1,"rho ppp","rho", "rho", "rho");
+    Particle_Info rhoppi(kf_rho_770, m_rhopp_mass, 0.0, m_rhopp_g, 3,0,0,0,0,1,1,"rho ppp","rho", "rho", "rho");
     
     Particle_Info rhopppi(kf_rho_770, 2.2645,  0.0, 0.11327, 3,0,0,0,0,1,1,"rho ppp","rho", "rho", "rho");
     
-    Particle_Info omegapi(kf_omega_782, 0.78248,  0.0, 0.00855, 3,0,0,0,0,1,1,"omega","omega", "omega", "omega");
+    Particle_Info omegapi(kf_omega_782, m_omega_mass
+,  0.0,m_omega_g, 3,0,0,0,0,1,1,"omega","omega", "omega", "omega");
     
     Particle_Info phipi(kf_phi_1020, 1.01947,  0.0, 0.00425,3,0,0,0,0,1,1,"phi","phi", "phi","phi" );
     

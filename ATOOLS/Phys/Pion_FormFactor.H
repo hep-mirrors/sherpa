@@ -30,6 +30,8 @@ namespace ATOOLS {
 
     	double m_crho, m_crhop, m_crhopp, m_crhoppp, m_comega, m_cphi;
         double m_prho, m_prhop, m_prhopp, m_prhoppp, m_pomega, m_pphi;
+        double m_omega_mass, m_omega_g, m_rho_mass, m_rho_g;
+        double m_rhop_mass, m_rhop_g, m_rhopp_mass, m_rhopp_g;;
         Flavour m_flv, m_rho, m_rhop, m_rhopp, m_rhoppp, m_omega, m_phi;
 
         Complex m_I;
