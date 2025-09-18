@@ -313,21 +313,21 @@ bool YFS_Handler::CalculateFSR(Vec4D_Vector & p) {
     Dip->AddPhotonsToDipole(m_FSRPhotons);
     p_fsr->Weight();
     m_fsrWeight *= p_fsr->GetWeight();
-    m_plab[Dip->m_leftfl]  =  Dip->GetNewMomenta(0);
-    m_plab[Dip->m_rightfl] =  Dip->GetNewMomenta(1);
-    if(!IsEqual(m_flavs[Dip->m_leftfl].Mass(), m_plab[Dip->m_leftfl].Mass(),1e-5)){
+    m_plab[Dip->Left()]  =  Dip->GetNewMomenta(0);
+    m_plab[Dip->Right()] =  Dip->GetNewMomenta(1);
+    if(!IsEqual(m_flavs[Dip->Left()].Mass(), m_plab[Dip->Left()].Mass(),1e-5)){
       msg_Debugging()<<"Missmatch in Final state mass"<<std::endl
-                 <<"Flavour = "<<m_flavs[Dip->m_leftfl]<<std::endl
-                 <<"Mass =   "<<m_flavs[Dip->m_leftfl].Mass()<<std::endl
-                 <<"Momentum =   "<<m_plab[Dip->m_leftfl]<<std::endl
-                 <<"Mass =   "<<m_plab[Dip->m_leftfl].Mass()<<std::endl;
+                 <<"Flavour = "<<m_flavs[Dip->Left()]<<std::endl
+                 <<"Mass =   "<<m_flavs[Dip->Left()].Mass()<<std::endl
+                 <<"Momentum =   "<<m_plab[Dip->Left()]<<std::endl
+                 <<"Mass =   "<<m_plab[Dip->Left()].Mass()<<std::endl;
     }
-    if(!IsEqual(m_flavs[Dip->m_rightfl].Mass(), m_plab[Dip->m_rightfl].Mass(),1e-5)){
+    if(!IsEqual(m_flavs[Dip->Right()].Mass(), m_plab[Dip->Right()].Mass(),1e-5)){
       msg_Debugging()<<"Missmatch in Final state mass"<<std::endl
-                 <<"Flavour = "<<m_flavs[Dip->m_rightfl]<<std::endl
-                 <<"Mass =   "<<m_flavs[Dip->m_rightfl].Mass()<<std::endl
-                 <<"Momentum =   "<<m_plab[Dip->m_rightfl]<<std::endl
-                 <<"Mass =   "<<m_plab[Dip->m_rightfl].Mass()<<std::endl;
+                 <<"Flavour = "<<m_flavs[Dip->Right()]<<std::endl
+                 <<"Mass =   "<<m_flavs[Dip->Right()].Mass()<<std::endl
+                 <<"Momentum =   "<<m_plab[Dip->Right()]<<std::endl
+                 <<"Mass =   "<<m_plab[Dip->Right()].Mass()<<std::endl;
     }
   }
   for(size_t i = 2; i < m_plab.size(); ++i) {
@@ -426,7 +426,7 @@ double YFS_Handler::CalculateNLO(){
   p_nlo->SetBorn(m_born);
   p_nlo->SetFSR(p_fsr);
   p_nlo->m_ISRPhotons = m_ISRPhotons;
-  p_nlo->m_FSRPhotons = m_FSRPhotons;
+  p_nlo->m_FSRPhotons = m_fsrphotonsforME;
   return p_nlo->CalculateNLO();
 }
 
@@ -573,8 +573,8 @@ void YFS_Handler::CheckResonance(){
        D2 != p_dipoles->GetDipoleFF()->end(); ++D2) {
       if(D1==D2) continue;
       // if(!D1->IsResonance() || !D2->IsResonance()) continue;
-      if(D1->m_rightfl == D2->m_rightfl ||  D1->m_rightfl == D2->m_leftfl|| 
-        D1->m_leftfl == D2->m_rightfl||  D1->m_leftfl == D2->m_leftfl){
+      if(D1->Right() == D2->Right() ||  D1->Right() == D2->Left()|| 
+        D1->Left() == D2->Right()||  D1->Left() == D2->Left()){
         if(p_dipoles->ResonantDist(*D1) < p_dipoles->ResonantDist(*D2)) D2->SetResonance(false);
         else  D1->SetResonance(false);
         }
