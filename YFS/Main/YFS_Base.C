@@ -1,4 +1,4 @@
-#include "YFS/Main/YFS_Base.H"
+YFS/Main/YFS_Base.C#include "YFS/Main/YFS_Base.H"
 #include "ATOOLS/Math/Random.H" 
 // #include "ATOOLS/Org/Run_Parameter.H" 
 #include "ATOOLS/Org/My_File.H"
@@ -81,6 +81,7 @@ void YFS_Base::RegisterDefaults(){
   s["Virtual_Sub"].SetDefault(1);
   s["Dim_Reg"].SetDefault(0);
   s["IR_SCALE"].SetDefault(100);
+  s["NLO_CUTS"].SetDefault(false);
 }
 
 void YFS_Base::RegisterSettings(){
@@ -135,6 +136,7 @@ void YFS_Base::RegisterSettings(){
   m_virt_sub = s["Virtual_Sub"].Get<int>();
   m_dim_reg = s["Dim_Reg"].Get<bool>();
   m_irscale = s["IR_SCALE"].Get<double>();
+  m_nlocuts = s["NLO_CUTS"].Get<bool>();
   m_CalForm = false;
   m_realtool = false;
   //update when beamstrahlung is added
