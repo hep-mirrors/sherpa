@@ -62,8 +62,8 @@ double Virtual::Calc_V(const ATOOLS::Vec4D_Vector& p,
   {
     p_loop_me->SetRenScale(100);
     // if(!p_rvproc->Trigger(p)) return 0;
-    // m_failcut = false;
-    if(!p_vproc->Trigger(p)) {
+    m_failcut = false;
+    if(m_nlocuts && !p_vproc->Trigger(p)) {
       m_failcut = true;
       return 0;
     }

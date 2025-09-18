@@ -88,7 +88,7 @@ RealReal::~RealReal() {
 
 double RealReal::Calc_R(const ATOOLS::Vec4D_Vector& p){
   m_failcut = false;
-  if(!p_rrproc->Trigger(p)) {
+  if(m_nlocuts && !p_rrproc->Trigger(p)) {
     m_failcut = true;
     return 0;
   }

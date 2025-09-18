@@ -61,7 +61,7 @@ double RealVirtual::Calc_V(const ATOOLS::Vec4D_Vector& p,
   {
     double V(0.0), run_corr(0.0), scale(0.0);
     m_failcut = false;
-    if(!p_rvproc->Trigger(p)) {
+    if(m_nlocuts && !p_rvproc->Trigger(p)) {
       m_failcut = true;
       return 0;
     }
@@ -73,7 +73,7 @@ double RealVirtual::Calc_V(const ATOOLS::Vec4D_Vector& p,
      run_corr = 4.*dalpha*B;
     }
     p_loop_me->Calc(p,B);
-    double gammaborn = p_loop_me->ME_Born()/2;///2./M_PI;///m_sym;
+    double gammaborn = p_loop_me->ME_Born()/m_sym;
     switch(p_loop_me->Mode())
       {
       case 0:
