@@ -66,6 +66,12 @@ void MCatNLO_Process::Init(const Process_Info &pi,
   RegisterDefaults();
   Scoped_Settings s{ Settings::GetMainSettings()["MC@NLO"] };
   Process_Info cpi(pi);
+  // book-keep user settings,
+  // if not set, need Amegic for BVI and DADS, Comix for RS, B, R
+  // (for historic reasons, still default to Amegic for B)
+  std::string usermegen(pi.m_megenerator), userrsmegen(pi.m_rsmegenerator);
+  std::string defbvimegen("Amegic"), defddmegen("Amegic");
+  std::string defrsmegen("Comix"), defbmegen("Amegic"), defrmegen("Comix");
   cpi.m_fi.SetNLOType(nlo_type::born|nlo_type::loop|
 		      nlo_type::vsub|nlo_type::real|nlo_type::rsub);
   if (pi.m_fi.m_nlocpl[0]==0. && pi.m_fi.m_nlocpl[1]==1.)
@@ -80,28 +86,47 @@ void MCatNLO_Process::Init(const Process_Info &pi,
   m_name=GenerateName(m_pinfo.m_ii,npi.m_fi);
   if (pi.Has(nlo_type::real)!=pi.Has(nlo_type::rsub))
     THROW(fatal_error, "R/S can't be initialised separately.");
+
+  // init B proc
   Process_Info spi(pi);
   ++spi.m_fi.m_nmax;
   spi.m_fi.SetNLOType(cpi.m_fi.NLOType());
-  p_bproc=InitProcess(spi,nlo_type::lo,false);
+  Process_Info bpi(spi);
+  if (bpi.m_megenerator=="") bpi.m_megenerator=defbmegen;
+  p_bproc=InitProcess(bpi,nlo_type::lo,false);
   if (p_bproc==NULL) return;
+
   for (size_t i(0);i<m_pinfo.m_fi.m_nlocpl.size();++i) {
     spi.m_maxcpl[i]+=spi.m_fi.m_nlocpl[i];
     spi.m_mincpl[i]+=spi.m_fi.m_nlocpl[i];
   }
 
+  // init R proc
   Process_Info rpi(spi);
   rpi.m_megenerator=rpi.m_rsmegenerator;
+  if (rpi.m_megenerator=="") rpi.m_megenerator=defrmegen;
   p_rproc=InitProcess(rpi,nlo_type::lo,true);
 
+  // init BVI proc
   nlo_type::code bvicode = (nlo_type::code) s["PP_BVI_MODE"].Get<int>();
-  p_bviproc=InitProcess(spi, bvicode, false);
-  p_ddproc=InitProcess(spi,nlo_type::rsub,1);
-  spi.m_integrator=spi.m_rsintegrator;
-  spi.m_megenerator=spi.m_rsmegenerator;
-  spi.m_itmin=spi.m_rsitmin;
-  spi.m_itmax=spi.m_rsitmax;
-  p_rsproc=InitProcess(spi,nlo_type::real|nlo_type::rsub,1|2);
+  Process_Info bvipi(spi);
+  if (bvipi.m_megenerator=="") bvipi.m_megenerator=defbvimegen;
+  p_bviproc=InitProcess(bvipi, bvicode, false);
+
+  // init DADS proc
+  Process_Info ddpi(spi);
+  if (ddpi.m_megenerator=="") ddpi.m_megenerator=defddmegen;
+  p_ddproc=InitProcess(ddpi,nlo_type::rsub,1);
+
+  // init RS proc
+  Process_Info rspi(spi);
+  rspi.m_integrator=rspi.m_rsintegrator;
+  rspi.m_itmin=rspi.m_rsitmin;
+  rspi.m_itmax=rspi.m_rsitmax;
+  rspi.m_megenerator=rspi.m_rsmegenerator;
+  if (rspi.m_megenerator=="") rspi.m_megenerator=defrsmegen;
+  p_rsproc=InitProcess(rspi,nlo_type::real|nlo_type::rsub,1|2);
+
   p_rsproc->FillProcessMap(p_apmap);
   p_bviproc->FillProcessMap(p_apmap);
   p_ddproc->FillProcessMap(p_apmap);
