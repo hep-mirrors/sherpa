@@ -47,7 +47,7 @@ public:
   PHASIC::Multi_Channel *p_fsrchannel;
   PHASIC::Cut_Data *p_cuts;
 
-  double m_evts, m_recola_evts, m_ranTheta, m_ranPhi, m_real,m_ravg;
+  double m_evts, m_recola_evts, m_ranTheta, m_ranPhi, m_real,m_ravg, m_eikeex, m_subloc;
   int m_is_isr;
   bool m_failcut;
 
@@ -73,7 +73,7 @@ public:
   bool CheckPhotonForReal(const Vec4D &k, const Vec4D_Vector &p);
   void CheckMasses(Vec4D_Vector &p, int realmode=0);
   bool CheckMomentumConservation(Vec4D_Vector p);
-  void CheckRealSub(Vec4D k);
+  void CheckRealSub(Vec4D k, int mode);
   void CheckRealVirtualSub(Vec4D k);
   void CheckRealRealSub(Vec4D k1, Vec4D k2, int fsr1, int fsr2);
   void RandomRotate(Vec4D &k);
