@@ -243,7 +243,7 @@ double NLO_Base::CalculateReal() {
 	for (auto k : m_ISRPhotons) {
 		if(m_check_real_sub && !HasFSR()) {
 				if(k.E() < 0.2*sqrt(m_s)) continue;
-				CheckRealSub(k);
+				CheckRealSub(k,0);
 		}
 		if(m_isr_debug || m_fsr_debug){
 			double fullreal = CalculateReal(k);
@@ -258,7 +258,7 @@ double NLO_Base::CalculateReal() {
 	for (auto k : m_FSRPhotons) {
 		if(m_check_real_sub) {
 			if(k.E() < 0.2*sqrt(m_s)) continue;
-				CheckRealSub(k);
+				CheckRealSub(k,1);
 		}
 		real+=CalculateReal(k, 1);
 		fsrcount++;
@@ -315,9 +315,11 @@ double NLO_Base::CalculateReal(Vec4D k, int fsrcount) {
 	double subloc = p_nlodipoles->CalculateRealSub(k);
 	double subb;
 	m_real = r;
-	if(fsrcount==0) subb = p_dipoles->CalculateRealSubEEX(kk);
+	if(fsrcount==0 || fsrcount==3) subb = p_dipoles->CalculateRealSubEEX(kk);
 	else subb = p_dipoles->CalculateRealSubEEX(k);
 	// if(IsZero(subb)) return 0;
+	m_eikeex = subb;
+	m_subloc = subloc;
 	if(!CheckMomentumConservation(p)) {
 		msg_Error()<<"Momentum Conservation fails in "<<METHOD<<std::endl;
 		if(m_isr_debug || m_fsr_debug){
@@ -980,36 +982,42 @@ void NLO_Base::CheckMassReg(){
 }
 
 
-void NLO_Base::CheckRealSub(Vec4D k){
+void NLO_Base::CheckRealSub(Vec4D k, int mode){
 		// if(k.E() < 20) return;
 		// k*=100;
 		double real;
 		std::string filename="Real_subtracted_";
+		std::string filename1="Sub_term_";
 		std::string filename2="Real_ME_";
 		for(auto f: m_flavs) {
 			filename+=f.IDName();
 			filename+="_";
+			filename1+=f.IDName();
+			filename1+="_";
 			filename2+=f.IDName();
 			filename2+="_";
 		}
 		filename+=".txt";
+		filename1+=".txt";
 		filename2+=".txt";
 		if(ATOOLS::FileExists(filename))  ATOOLS::Remove(filename);
+		if(ATOOLS::FileExists(filename1))  ATOOLS::Remove(filename1);
 		if(ATOOLS::FileExists(filename2))  ATOOLS::Remove(filename2);
-		out_sub.open(filename, std::ios_base::app);
+		out_finite.open(filename, std::ios_base::app);
+		out_sub.open(filename1, std::ios_base::app);
 		out_real.open(filename2, std::ios_base::app);
-		// if(k.E() < 0.8*sqrt(m_s)/2.) return;
 		for (double i = 1; i < 20 ; i+=0.1)
 		{
 			k=k/i;
-			real=CalculateReal(k);
+			real=CalculateReal(k,mode);
 			if(k.E() <= 1e-16 || real==0) break;
-			out_sub<<k.E()<<","<<fabs(real)/m_born<<std::endl;
-			out_real<<k.E()<<","<<fabs(m_real)<<std::endl;
-			// m_histograms2d["Real_me_sub"]->Insert(k.E(),fabs(real), 1);
+			out_finite<<k.E()<<","<<fabs(real)/m_born<<std::endl;
+			out_real<<k.E()<<","<<(m_real)*p_nlodipoles->CalculateFlux(k)<<std::endl;
+			out_sub<<k.E()<<","<<m_subloc*m_born/m_rescale_alpha<<std::endl;
 		}
-		out_sub.close();
+		out_finite.close();
 		out_real.close();
+		out_sub.close();
 		exit(0);
 }
 
