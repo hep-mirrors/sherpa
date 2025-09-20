@@ -1,8 +1,8 @@
 set(One2Three_SOURCES Comix1to3.C)
 
 set(One2Three_HEADERS Comix1to3.H)
-list(APPEND One2Three_SOURCES Comix1to3.C H_to_bbg_at_NLO.C H_to_bbar_virtual.C)
-list(APPEND One2Three_HEADERS Comix1to3.H H_to_bbg_at_NLO.H H_to_bbar_virtual.H)
+list(APPEND One2Three_SOURCES Comix1to3.C H_to_bbg_Real.C H_to_bb_Virtual.C H_to_bbg_NLO_Complete.C)
+list(APPEND One2Three_HEADERS Comix1to3.H H_to_bbg_Real.H H_to_bb_Virtual.H H_to_bbg_NLO_Complete.H)
 
 sherpa_create_git_info(One2Three ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR})
  

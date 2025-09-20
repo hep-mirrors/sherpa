@@ -26,8 +26,8 @@
 #include "ATOOLS/Phys/KF_Table.H"
 #include "EXTRA_XS/One2Two/Comix1to2.H"
 #include "EXTRA_XS/One2Three/Comix1to3.H"
-#include "EXTRA_XS/One2Three/H_to_bbg_at_NLO.H"
-#include "EXTRA_XS/One2Three/H_to_bbar_virtual.H"
+#include "EXTRA_XS/One2Three/H_to_bbg_Real.H"
+#include "EXTRA_XS/One2Three/H_to_bb_Virtual.H"
 
 #include <iostream>
 #include <algorithm>
@@ -558,13 +558,13 @@ offshell (or three-body) decay configurations.
       DEBUG_VAR(dc->Flavs());
       DEBUG_VAR(flavs1[j]);
 
-      Spin_Amplitudes* diagram = nullptr; // parent class for H_to_bbg_at_NLO and Comix1to3
+      Spin_Amplitudes* diagram = nullptr; // parent class for H_to_bbg_Real and Comix1to3
       if (bbbar_channel && (sv->in[2].IDName() == "G")) {
-        diagram = new H_to_bbg_at_NLO(dc->Flavs(),flavs1[1],nonprop, propi, propj);
+        diagram = new H_to_bbg_Real(dc->Flavs(),flavs1[1],nonprop, propi, propj);
 
         // here: second diagram needed for h0 -> b bbar g
         Spin_Amplitudes* diagram2 = nullptr;
-        diagram2 = new H_to_bbg_at_NLO(dc->Flavs(),flavs1[2],propj,propi,nonprop);
+        diagram2 = new H_to_bbg_Real(dc->Flavs(),flavs1[2],propj,propi,nonprop);
         Spin_Amplitudes* diagram3 = nullptr;
         diagram3 = new H_to_bbar_virtual(dc->Flavs(),flavs1[1],flavs1[2],s_model);
         dc->AddDiagram(diagram2);

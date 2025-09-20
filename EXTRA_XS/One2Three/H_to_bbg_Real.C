@@ -1,4 +1,4 @@
-#include "EXTRA_XS/One2Three/H_to_bbg_at_NLO.H"
+#include "EXTRA_XS/One2Three/H_to_bbg_Real.H"
 
 #include "METOOLS/Explicit/Current.H"
 #include "METOOLS/Explicit/Vertex.H"
@@ -14,7 +14,7 @@ using namespace METOOLS;
 using namespace PHASIC;
 using namespace std;
 
-H_to_bbg_at_NLO::H_to_bbg_at_NLO(const vector<Flavour>& flavs, const Flavour& prop,
+H_to_bbg_Real::H_to_bbg_Real(const vector<Flavour>& flavs, const Flavour& prop,
                      size_t non_prop, size_t gluon, size_t propj) :
   Spin_Amplitudes(flavs,Complex(0.0,0.0)), m_cur(4), m_anticur(4), m_nhel(4),
   m_prop(prop)
@@ -128,7 +128,7 @@ H_to_bbg_at_NLO::H_to_bbg_at_NLO(const vector<Flavour>& flavs, const Flavour& pr
   }
 }
 
-H_to_bbg_at_NLO::~H_to_bbg_at_NLO()
+H_to_bbg_Real::~H_to_bbg_Real()
 {
   for (size_t i(0);i<4;++i) {
     delete m_cur[i];
@@ -141,8 +141,16 @@ H_to_bbg_at_NLO::~H_to_bbg_at_NLO()
   if (p_ci) delete p_ci;
 }
 
-void H_to_bbg_at_NLO::Calculate(const ATOOLS::Vec4D_Vector& momenta, bool anti) {
-  DEBUG_FUNC(momenta.size());
+void H_to_bbg_Real::Born_setup(){}
+
+void H_to_bbg_Real::Calculate_born_subtraction(){}
+
+void H_to_bbg_Real::Calculate_virtual(){}
+
+void H_to_bbg_Real::Calculate_virtual_subtraction(){}
+
+void H_to_bbg_Real::Calculate(const ATOOLS::Vec4D_Vector& momenta, bool anti) {
+  /*DEBUG_FUNC(momenta.size());
   // does not do anything yet because integrating this decay channel would result in infinities
   p_ci->GeneratePoint(); // create a new integration point for the color factors
 
@@ -190,11 +198,13 @@ void H_to_bbg_at_NLO::Calculate(const ATOOLS::Vec4D_Vector& momenta, bool anti) 
   }
   for (size_t i = 0; i < p_ci->J().size(); ++i) {
       std::cout << "J[" << i << "] = " << p_ci->J()[i] << std::endl;
-  }
+  }*/
 
 }
 
-size_t H_to_bbg_at_NLO::NHel(const Flavour& fl)
+
+
+size_t H_to_bbg_Real::NHel(const Flavour& fl)
 {
   switch(fl.IntSpin()) {
   case 0:

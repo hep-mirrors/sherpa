@@ -1,4 +1,4 @@
-#include "EXTRA_XS/One2Three/H_to_bbar_virtual.H"
+#include "EXTRA_XS/One2Three/H_to_bb_Virtual.H"
 
 #include "METOOLS/Explicit/Current.H"
 #include "METOOLS/Explicit/Vertex.H"
