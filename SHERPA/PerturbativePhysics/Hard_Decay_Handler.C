@@ -577,14 +577,14 @@ offshell (or three-body) decay configurations.
           std::cout << "flavs1[0].IDName(): " << flavs1[0].IDName() << "  to  " << flavs1[1].IDName() << flavs1[2].IDName() << flavs1[3].IDName() << std::endl;
         }
       }
-      if (bbbar_channel) { // add virtual diagram for h0 -> bbbar
+      if (bbbar_channel && flavs1.size() == 3) { // add virtual diagram for h0 -> bbar
         Spin_Amplitudes* diagram3 = nullptr;
         diagram3 = new H_to_bb_Virtual(dc->Flavs(),flavs1[1],flavs1[2],s_model);
         dc->AddDiagram(diagram3);
       }
 
       dc->AddDiagram(diagram);
-      
+
       dc->SetChannels(new Multi_Channel(""));
       dc->Channels()->SetNin(1);
       dc->Channels()->SetNout(dc->NOut());
@@ -607,6 +607,27 @@ offshell (or three-body) decay configurations.
      been possible from another 1->2 where it was decided not to be resolved?
   */
 }
+
+
+void Hard_Decay_Handler::NLODecays(Decay_Channel* dc){
+  // this method first checks if the decay channel is a NLO decay. 
+  // If it is, it proceeds to set up the necessary components for NLO calculations.
+  DEBUG_FUNC(dc->Name());
+  const std::vector<ATOOLS::Flavour> flavs1(dc->Flavs());
+  if (!IsNLODecay(flavs1)) return;
+  std::cout << "NLO decay found: " << dc->Name() << std::endl;
+}
+
+
+bool Hard_Decay_Handler::IsNLODecay(const std::vector<ATOOLS::Flavour>& flavs) const {
+  // check if the decay channel is decaying at NLO
+  // so far only h0 -> b bbar (g) is included
+  if (flavs[0].IDName() == "h0" && flavs[1].IDName() == "b" && flavs[2].IDName() == "bb"){
+    return true;
+  }
+  return false;
+}
+
 
 bool Hard_Decay_Handler::CalculateWidth(Decay_Channel* dc)
 /* CalculateWidth first checks whether the decaying particle’s mass is kinematically allowed to decay into its outgoing 

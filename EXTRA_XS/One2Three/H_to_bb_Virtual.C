@@ -84,7 +84,7 @@ H_to_bb_Virtual::~H_to_bb_Virtual()
 }
 
 void H_to_bb_Virtual::Calculate_alpha_QCD(MODEL::Model_Base* s_model) {
-  s_model->GetCouplings(m_cpls);
+  /*s_model->GetCouplings(m_cpls);
   if (m_cpls.find("Alpha_QCD") != m_cpls.end())
     p_aqcd=m_cpls.Get("Alpha_QCD");
   if (p_aqcd)
@@ -101,7 +101,7 @@ void H_to_bb_Virtual::Calculate_alpha_QCD(MODEL::Model_Base* s_model) {
   std::cout << "New Scale: " << p_aqcd->Scale() << std::endl;
 
   alpha_qcd = p_aqcd->Default(); // at Z scale
-  std::cout << "The cpl value is: " << alpha_qcd << std::endl;
+  std::cout << "The cpl value is: " << alpha_qcd << std::endl;*/
 
   alpha_qcd = s_model -> ScalarFunction("alpha_S", 15625); // at Higgs scale
   std::cout << "The cpl value is: " << alpha_qcd << std::endl;
@@ -127,12 +127,13 @@ void H_to_bb_Virtual::Calculate(const ATOOLS::Vec4D_Vector& momenta, bool anti) 
 }
 
 void H_to_bb_Virtual::Calculate_ME2(const vector<Flavour>& flavs) {
-  /*double value;
+  double value;
   double g_s = std::sqrt(4 * std::acos(-1) * alpha_qcd);  // strong gauge coupling; std::acos(-1) = pi
   double G_F = 1.16637886e-5; // Fermi constant in GeV^-2; value from PDG
   double vev = 1 / std::sqrt(G_F * std::sqrt(2)); // vacuum expectation value in GeV
   double mu = flavs[0].Mass(); // Renormalisation scale: Higgs mass in GeV
   double epsilon = 0.0001; // small parameter for dimensional regularization
   double m_b = flavs[2].Mass(); // b quark mass in GeV
-  double constants = (-1) * std::pow(g_s * std::pow(mu, epsilon), 2) * m_b / vev;*/
+  double constants = (-1) * std::pow(g_s * std::pow(mu, epsilon), 2) * m_b / vev;
+
 }
