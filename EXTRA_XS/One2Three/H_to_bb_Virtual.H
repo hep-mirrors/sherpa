@@ -13,7 +13,7 @@ namespace PHASIC {
 }
 
 namespace EXTRAXS {
-  class H_to_bbar_virtual : public METOOLS::Spin_Amplitudes {
+  class H_to_bb_Virtual : public METOOLS::Spin_Amplitudes {
     std::vector<METOOLS::Current*> m_cur;
     METOOLS::Current *m_scur, *m_fcur;
     std::vector<METOOLS::Vertex*> m_v1, m_v2;
@@ -36,13 +36,14 @@ namespace EXTRAXS {
     private:
       static MODEL::Model_Base *s_model;
   public:
-    H_to_bbar_virtual(const std::vector<ATOOLS::Flavour>& flavs,
+    H_to_bb_Virtual(const std::vector<ATOOLS::Flavour>& flavs,
               const ATOOLS::Flavour& prop1, const ATOOLS::Flavour& prop2,
               MODEL::Model_Base* s_model);
-    ~H_to_bbar_virtual();
+    ~H_to_bb_Virtual();
     ATOOLS::Flavour Prop() const { return m_prop; }
     void Calculate_alpha_QCD(MODEL::Model_Base* s_model);
-    double Calculate_ME2(const std::vector<ATOOLS::Flavour>& flavs);
+    void Calculate(const ATOOLS::Vec4D_Vector& momenta, bool anti=false) override;
+    void Calculate_ME2(const std::vector<ATOOLS::Flavour>& flavs);
   };
 }
 

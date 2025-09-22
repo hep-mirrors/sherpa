@@ -38,9 +38,11 @@ void H_to_bbg_NLO_Complete::Calculate(
 double H_to_bbg_NLO_Complete::GetRealContribution() const
 {
   //return p_real ? p_real->GetMatrixElement() : 0.0;
+  return 2.0;
 }
 
 double H_to_bbg_NLO_Complete::GetVirtualContribution() const
 {
   //return p_virtual ? p_virtual->GetMatrixElement() : 0.0;
+  return 2.0;
 }

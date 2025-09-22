@@ -565,8 +565,6 @@ offshell (or three-body) decay configurations.
         // here: second diagram needed for h0 -> b bbar g
         Spin_Amplitudes* diagram2 = nullptr;
         diagram2 = new H_to_bbg_Real(dc->Flavs(),flavs1[2],propj,propi,nonprop);
-        Spin_Amplitudes* diagram3 = nullptr;
-        diagram3 = new H_to_bbar_virtual(dc->Flavs(),flavs1[1],flavs1[2],s_model);
         dc->AddDiagram(diagram2);
       } else {
         diagram = new Comix1to3(dc->Flavs(),flavs1[j],
@@ -579,9 +577,14 @@ offshell (or three-body) decay configurations.
           std::cout << "flavs1[0].IDName(): " << flavs1[0].IDName() << "  to  " << flavs1[1].IDName() << flavs1[2].IDName() << flavs1[3].IDName() << std::endl;
         }
       }
+      if (bbbar_channel) { // add virtual diagram for h0 -> bbbar
+        Spin_Amplitudes* diagram3 = nullptr;
+        diagram3 = new H_to_bb_Virtual(dc->Flavs(),flavs1[1],flavs1[2],s_model);
+        dc->AddDiagram(diagram3);
+      }
 
       dc->AddDiagram(diagram);
-
+      
       dc->SetChannels(new Multi_Channel(""));
       dc->Channels()->SetNin(1);
       dc->Channels()->SetNout(dc->NOut());
