@@ -384,6 +384,7 @@ void Hard_Decay_Handler::InitializeOffshellDecays(Decay_Table* dt) {
     Decay_Channel* dc=dt->at(i); // get the decay channel pointer stored at the i-th index
     // ResolveDecay attempts to generate additional (offshell or three-body) decay channel configurations that may arise 
     // from the original two-body decay represented by dc, and returns them in a vector of Decay_Channel pointers.
+    NLODecays(dc); // adds NLO corrections to the decay channel dc if applicable
     vector<Decay_Channel*> new_dcs=ResolveDecay(dc); 
     if (TriggerOffshell(dc, new_dcs)) { // checks if the decay channel is offshell
       dc->SetActiveAll(-1);             // deactivate the original decay channel
@@ -612,6 +613,7 @@ offshell (or three-body) decay configurations.
 void Hard_Decay_Handler::NLODecays(Decay_Channel* dc){
   // this method first checks if the decay channel is a NLO decay. 
   // If it is, it proceeds to set up the necessary components for NLO calculations.
+  // Method called in InitializeOffshellDecays
   DEBUG_FUNC(dc->Name());
   const std::vector<ATOOLS::Flavour> flavs1(dc->Flavs());
   if (!IsNLODecay(flavs1)) return;
