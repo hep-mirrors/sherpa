@@ -25,8 +25,7 @@ namespace EXTRAXS {
     static MODEL::Model_Base *s_model;
 
     size_t NHel(const ATOOLS::Flavour& fl);
-    void SetUpBornCurrents(const std::vector<ATOOLS::Flavour>& flavs);
-    void SetUpVirtualCurrents(const std::vector<ATOOLS::Flavour>& flavs);
+    void SetUpCurrents(const std::vector<ATOOLS::Flavour>& flavs);
   protected:
     double alpha_qcd;
   public:

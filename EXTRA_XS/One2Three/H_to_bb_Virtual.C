@@ -21,7 +21,7 @@ H_to_bb_Virtual::H_to_bb_Virtual(const vector<Flavour>& flavs, MODEL::Model_Base
 
   if (flavs.size()!=3) THROW(fatal_error,"Internal error.");
 
-  SetUpBornCurrents(flavs);
+  SetUpCurrents(flavs);
 }
 
 H_to_bb_Virtual::~H_to_bb_Virtual()
@@ -54,7 +54,7 @@ size_t H_to_bb_Virtual::NHel(const Flavour& fl)
 }
 
 
-void H_to_bb_Virtual::SetUpBornCurrents(const vector<Flavour>& flavs){
+void H_to_bb_Virtual::SetUpCurrents(const vector<Flavour>& flavs){
   Vec4D k(1.0,0.0,1.0,0.0); // gauge
 
   for (size_t i(1);i<3;++i) { // iterate over the 2 external flavours
@@ -82,10 +82,6 @@ void H_to_bb_Virtual::SetUpBornCurrents(const vector<Flavour>& flavs){
     m_anticur[i]->SetKey(i);
     m_anticur[i]->SetGauge(k);
   }
-}
-
-
-void H_to_bb_Virtual::SetUpVirtualCurrents(const vector<Flavour>& flavs){ 
 }
 
 
