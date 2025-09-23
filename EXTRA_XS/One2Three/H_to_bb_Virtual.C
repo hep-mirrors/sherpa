@@ -15,10 +15,8 @@ using namespace PHASIC;
 using namespace std;
 using namespace MODEL;
 
-H_to_bb_Virtual::H_to_bb_Virtual(const vector<Flavour>& flavs, const Flavour& prop1, const Flavour& prop2,
-                    MODEL::Model_Base* s_model) :
-  Spin_Amplitudes(flavs,Complex(0.0,0.0)), m_cur(2), m_anticur(2), m_nhel(2),
-  m_prop(prop1) // change this
+H_to_bb_Virtual::H_to_bb_Virtual(const vector<Flavour>& flavs, MODEL::Model_Base* s_model):
+  Spin_Amplitudes(flavs,Complex(0.0,0.0)), m_cur(3), m_anticur(3), m_nhel(3)
 {
   Calculate_alpha_QCD(s_model);
 
@@ -76,8 +74,6 @@ H_to_bb_Virtual::~H_to_bb_Virtual()
     delete m_cur[i];
     delete m_anticur[i];
   }
-  delete m_scur;
-  delete m_antiscur;
   delete m_fcur;
   delete m_antifcur;
   if (p_ci) delete p_ci;

@@ -617,7 +617,7 @@ void Hard_Decay_Handler::NLODecays(Decay_Channel* dc){
   Decay_Channel* dcNLO = new Decay_Channel(*dc); // copy old decay channel
 
   Spin_Amplitudes* VirtualDiagram = nullptr;
-  VirtualDiagram = new H_to_bb_Virtual(dc->Flavs(),flavs1[1],flavs1[2],s_model);
+  VirtualDiagram = new H_to_bb_Virtual(dc->Flavs(), s_model);
   dcNLO->AddDiagram(VirtualDiagram);
 
   // later: replace old dc with dcNLO
