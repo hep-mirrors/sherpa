@@ -25,7 +25,7 @@ H_to_bb_Virtual::H_to_bb_Virtual(const vector<Flavour>& flavs, const Flavour& pr
   //DEBUG_FUNC(flavs<<" with prop "<<prop<<" in "<<gluon<<","<<propj);
   //assert(non_prop>0 && gluon>0 && propj>0);
   //if (flavs.size()!=4) THROW(fatal_error,"Internal error."); // change later
-  Vec4D k(1.0,0.0,1.0,0.0); // gauge 
+  /*Vec4D k(1.0,0.0,1.0,0.0); // gauge 
 
   // flavs[1]: gluon; flavs[2]: b quark; flavs[3]: bbar quark
   Current_Key p1_cur(flavs[2],MODEL::s_model,1);
@@ -67,12 +67,12 @@ H_to_bb_Virtual::H_to_bb_Virtual(const vector<Flavour>& flavs, const Flavour& pr
   m_anticur[1]->SetKey(1);
   m_anticur[1]->SetGauge(k);
 
-  Calculate_ME2(flavs);
+  Calculate_ME2(flavs);*/
 }
 
 H_to_bb_Virtual::~H_to_bb_Virtual()
 {
-  for (size_t i(0);i<4;++i) {
+  for (size_t i(0);i<2;++i) {
     delete m_cur[i];
     delete m_anticur[i];
   }
@@ -84,25 +84,6 @@ H_to_bb_Virtual::~H_to_bb_Virtual()
 }
 
 void H_to_bb_Virtual::Calculate_alpha_QCD(MODEL::Model_Base* s_model) {
-  /*s_model->GetCouplings(m_cpls);
-  if (m_cpls.find("Alpha_QCD") != m_cpls.end())
-    p_aqcd=m_cpls.Get("Alpha_QCD");
-  if (p_aqcd)
-    std::cout << "p_aqcd: " << *p_aqcd << std::endl;
-  else
-    std::cout << "p_aqcd is null." << std::endl;
-
-  // this does not really work yet (setting new scale, because here we have alpha_qcd scaled with Z mass):
-  double Scale = p_aqcd->Scale();
-  std::cout << "Scale: " << Scale << std::endl;
-  double newScale = 15625; // Higgs squared
-  p_aqcd->SetScale(&newScale);
-  p_aqcd->Calculate();
-  std::cout << "New Scale: " << p_aqcd->Scale() << std::endl;
-
-  alpha_qcd = p_aqcd->Default(); // at Z scale
-  std::cout << "The cpl value is: " << alpha_qcd << std::endl;*/
-
   alpha_qcd = s_model -> ScalarFunction("alpha_S", 15625); // at Higgs scale
   std::cout << "The cpl value is: " << alpha_qcd << std::endl;
 }

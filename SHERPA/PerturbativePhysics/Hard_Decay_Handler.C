@@ -578,11 +578,6 @@ offshell (or three-body) decay configurations.
           std::cout << "flavs1[0].IDName(): " << flavs1[0].IDName() << "  to  " << flavs1[1].IDName() << flavs1[2].IDName() << flavs1[3].IDName() << std::endl;
         }
       }
-      if (bbbar_channel && flavs1.size() == 3) { // add virtual diagram for h0 -> bbar
-        Spin_Amplitudes* diagram3 = nullptr;
-        diagram3 = new H_to_bb_Virtual(dc->Flavs(),flavs1[1],flavs1[2],s_model);
-        dc->AddDiagram(diagram3);
-      }
 
       dc->AddDiagram(diagram);
 
@@ -618,6 +613,14 @@ void Hard_Decay_Handler::NLODecays(Decay_Channel* dc){
   const std::vector<ATOOLS::Flavour> flavs1(dc->Flavs());
   if (!IsNLODecay(flavs1)) return;
   std::cout << "NLO decay found: " << dc->Name() << std::endl;
+
+  Decay_Channel* dcNLO = new Decay_Channel(*dc); // copy old decay channel
+
+  Spin_Amplitudes* VirtualDiagram = nullptr;
+  VirtualDiagram = new H_to_bb_Virtual(dc->Flavs(),flavs1[1],flavs1[2],s_model);
+  dcNLO->AddDiagram(VirtualDiagram);
+
+  // later: replace old dc with dcNLO
 }
 
 
