@@ -17,22 +17,18 @@ namespace PHASIC {
 namespace EXTRAXS {
   class H_to_bb_Virtual : public METOOLS::Spin_Amplitudes {
     std::vector<METOOLS::Current*> m_cur;
-    METOOLS::Current *m_fcur;
-    std::vector<METOOLS::Vertex*> m_v1;
 
     std::vector<METOOLS::Current*> m_anticur;
-    METOOLS::Current *m_antifcur;
-    std::vector<METOOLS::Vertex*> m_antiv1;
 
     std::vector<size_t> m_nhel;
 
-    PHASIC::Color_Integrator* p_ci;
+    static MODEL::Model_Base *s_model;
 
     size_t NHel(const ATOOLS::Flavour& fl);
-    protected:
-      double alpha_qcd;
-    private:
-      static MODEL::Model_Base *s_model;
+    void SetUpBornCurrents(const std::vector<ATOOLS::Flavour>& flavs);
+    void SetUpVirtualCurrents(const std::vector<ATOOLS::Flavour>& flavs);
+  protected:
+    double alpha_qcd;
   public:
     H_to_bb_Virtual(const std::vector<ATOOLS::Flavour>& flavs, MODEL::Model_Base* s_model);
     ~H_to_bb_Virtual();

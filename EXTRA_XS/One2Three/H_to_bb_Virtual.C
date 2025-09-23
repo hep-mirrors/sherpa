@@ -6,7 +6,6 @@
 #include "MODEL/Main/Model_Base.H"
 #include "MODEL/Main/Single_Vertex.H"
 #include "PHASIC++/Main/Color_Integrator.H"
-#include <assert.h>
 
 using namespace EXTRAXS;
 using namespace ATOOLS;
@@ -20,63 +19,17 @@ H_to_bb_Virtual::H_to_bb_Virtual(const vector<Flavour>& flavs, MODEL::Model_Base
 {
   Calculate_alpha_QCD(s_model);
 
-  //DEBUG_FUNC(flavs<<" with prop "<<prop<<" in "<<gluon<<","<<propj);
-  //assert(non_prop>0 && gluon>0 && propj>0);
-  //if (flavs.size()!=4) THROW(fatal_error,"Internal error."); // change later
-  /*Vec4D k(1.0,0.0,1.0,0.0); // gauge 
+  if (flavs.size()!=3) THROW(fatal_error,"Internal error.");
 
-  // flavs[1]: gluon; flavs[2]: b quark; flavs[3]: bbar quark
-  Current_Key p1_cur(flavs[2],MODEL::s_model,1);
-  m_cur[0] = Current_Getter::GetObject("D"+p1_cur.Type(),p1_cur); // get the object that corresponds to the key "u_bar"
-  if (m_cur[0]==NULL) THROW(fatal_error, "current not found");
-  m_cur[0]->SetDirection(-1); // +1 for i=0, -1 for i=1, 2, 3
-  m_cur[0]->SetId(std::vector<int>(1,0));
-  m_cur[0]->InitPols(std::vector<int>(1,m_spins[0])); // define allowed polarization states
-  m_cur[0]->SetKey(0);
-  m_cur[0]->SetGauge(k);
-  m_nhel[0]=NHel(flavs[2]); // number of helicity states (based on spin properties)
-
-  Current_Key p2_cur(flavs[3],MODEL::s_model,1);
-  m_cur[1] = Current_Getter::GetObject("D"+p2_cur.Type(),p2_cur); // get the object that corresponds to the key "ckey"
-  if (m_cur[1]==NULL) THROW(fatal_error, "current not found");
-  m_cur[1]->SetDirection(-1); // +1 for i=0, -1 for i=1, 2, 3
-  m_cur[1]->SetId(std::vector<int>(1,1));
-  m_cur[1]->InitPols(std::vector<int>(1,m_spins[1])); // define allowed polarization states
-  m_cur[1]->SetKey(1);
-  m_cur[1]->SetGauge(k);
-  m_nhel[3]=NHel(flavs[1]); // number of helicity states (based on spin properties)
-
-// do the same for the anticurrent
-  Current_Key p1_anticur(flavs[2].Bar(),MODEL::s_model,1);
-  m_anticur[0] = Current_Getter::GetObject("D"+p1_anticur.Type(),p1_anticur);
-  if (m_anticur[0]==NULL) THROW(fatal_error, "current not found");
-  m_anticur[0]->SetDirection(-1);
-  m_anticur[0]->SetId(std::vector<int>(1,0));
-  m_anticur[0]->InitPols(std::vector<int>(1,m_spins[0]));
-  m_anticur[0]->SetKey(0);
-  m_anticur[0]->SetGauge(k);
-
-  Current_Key p2_anticur(flavs[3].Bar(),MODEL::s_model,1);
-  m_anticur[1] = Current_Getter::GetObject("D"+p2_anticur.Type(),p2_anticur);
-  if (m_anticur[1]==NULL) THROW(fatal_error, "current not found");
-  m_anticur[1]->SetDirection(-1);
-  m_anticur[1]->SetId(std::vector<int>(1,1));
-  m_anticur[1]->InitPols(std::vector<int>(1,m_spins[1]));
-  m_anticur[1]->SetKey(1);
-  m_anticur[1]->SetGauge(k);
-
-  Calculate_ME2(flavs);*/
+  SetUpBornCurrents(flavs);
 }
 
 H_to_bb_Virtual::~H_to_bb_Virtual()
 {
-  for (size_t i(0);i<2;++i) {
+  for (size_t i(0);i<3;++i) {
     delete m_cur[i];
     delete m_anticur[i];
   }
-  delete m_fcur;
-  delete m_antifcur;
-  if (p_ci) delete p_ci;
 }
 
 void H_to_bb_Virtual::Calculate_alpha_QCD(MODEL::Model_Base* s_model) {
@@ -100,8 +53,45 @@ size_t H_to_bb_Virtual::NHel(const Flavour& fl)
   }
 }
 
-void H_to_bb_Virtual::Calculate(const ATOOLS::Vec4D_Vector& momenta, bool anti) {
+
+void H_to_bb_Virtual::SetUpBornCurrents(const vector<Flavour>& flavs){
+  Vec4D k(1.0,0.0,1.0,0.0); // gauge
+
+  for (size_t i(1);i<3;++i) { // iterate over the 2 external flavours
+    // the Current_key object uniquely identify and retrieve a current
+    Current_Key ckey(i==0?flavs[i].Bar():flavs[i],MODEL::s_model,1); // for i == 0 (incoming particle), use the bar. This is because (?) for amplitude 
+    // construction the incoming state is treated as if it were outgoing but with reversed fermion flow, so using the barred version ensures that 
+    // the spinor or polarization factors contract correctly in the overall matrix element calculation.
+    m_cur[i] = Current_Getter::GetObject("D"+ckey.Type(),ckey); // get the object that corresponds to the key "ckey"
+    if (m_cur[i]==NULL) THROW(fatal_error, "current not found");
+    m_cur[i]->SetDirection(i==0?1:-1); // +1 for i=0, -1 for i=1,2
+    m_cur[i]->SetId(std::vector<int>(1,i));
+    m_cur[i]->InitPols(std::vector<int>(1,m_spins[i])); // define allowed polarization states
+    m_cur[i]->SetKey(i);
+    m_cur[i]->SetGauge(k);
+    m_nhel[i]=NHel(flavs[i]); // number of helicity states (based on spin properties)
+  }
+
+  for (size_t i(1);i<3;++i) { // do the same for the anticurrent
+    Current_Key ckey(i==0?flavs[i]:flavs[i].Bar(),MODEL::s_model,1);
+    m_anticur[i] = Current_Getter::GetObject("D"+ckey.Type(),ckey);
+    if (m_anticur[i]==NULL) THROW(fatal_error, "current not found");
+    m_anticur[i]->SetDirection(i==0?1:-1);
+    m_anticur[i]->SetId(std::vector<int>(1,i));
+    m_anticur[i]->InitPols(std::vector<int>(1,m_spins[i]));
+    m_anticur[i]->SetKey(i);
+    m_anticur[i]->SetGauge(k);
+  }
 }
+
+
+void H_to_bb_Virtual::SetUpVirtualCurrents(const vector<Flavour>& flavs){ 
+}
+
+
+void H_to_bb_Virtual::Calculate(const ATOOLS::Vec4D_Vector& momenta, bool anti) {
+} 
+
 
 void H_to_bb_Virtual::Calculate_ME2(const vector<Flavour>& flavs) {
   double value;
