@@ -7,6 +7,9 @@
 #include "MODEL/Main/Single_Vertex.H"
 #include "PHASIC++/Main/Color_Integrator.H"
 
+#include <complex>
+#include <array>
+
 using namespace EXTRAXS;
 using namespace ATOOLS;
 using namespace METOOLS;
@@ -15,14 +18,31 @@ using namespace std;
 using namespace MODEL;
 
 H_to_bb_Virtual::H_to_bb_Virtual(const vector<Flavour>& flavs, MODEL::Model_Base* s_model):
-  Spin_Amplitudes(flavs,Complex(0.0,0.0)), m_cur(3), m_anticur(3), m_nhel(3)
+  Spin_Amplitudes(flavs,Complex(0.0,0.0)), m_cur(3), m_anticur(3), m_nhel(3), 
+  BornPrefactor(1.0), VirtualPrefactor(1.0)
 {
   Calculate_alpha_QCD(s_model);
 
   if (flavs.size()!=3) THROW(fatal_error,"Internal error.");
 
   SetUpCurrents(flavs);
-  SetUpConstants(flavs);
+  SetUpPrefactors(flavs);
+  CalculateBorn();
+
+  // test:
+  std::array<double, 4> p1 = {0.0, 0.0, 0.0, 0.0};
+  std::array<double, 4> p2 = {0.0, 0.0, 0.0, 0.0};
+  std::array<std::complex<double>,16> M_finite(GetVirtualMatrixFinite(p1, p2));
+  std::array<std::complex<double>,16> M_epsilon(GetVirtualMatrixE(p1, p2));
+  std::array<std::complex<double>,16> M_epsilon2(GetVirtualMatrixE2(p1, p2));
+
+  // Einfache Ausgabe aller Elemente
+  std::cout << "\n=== M_finite Matrix ===" << std::endl;
+  std::cout << M_finite[0] << " " << M_finite[1] << " " << M_finite[2] << " " << M_finite[3] << std::endl;
+  std::cout << M_finite[4] << " " << M_finite[5] << " " << M_finite[6] << " " << M_finite[7] << std::endl;
+  std::cout << M_finite[8] << " " << M_finite[9] << " " << M_finite[10] << " " << M_finite[11] << std::endl;
+  std::cout << M_finite[12] << " " << M_finite[13] << " " << M_finite[14] << " " << M_finite[15] << std::endl;
+
 }
 
 H_to_bb_Virtual::~H_to_bb_Virtual()
@@ -87,11 +107,250 @@ void H_to_bb_Virtual::SetUpCurrents(const vector<Flavour>& flavs){
 }
 
 
+void H_to_bb_Virtual::CalculateBorn(){
+  std::vector<METOOLS::Current*> born_mcur(m_cur); 
+  METOOLS::Current* bottom_cur = born_mcur[1];
+  METOOLS::Current* antibottom_cur = born_mcur[1];
+}
+
+
+std::array<std::complex<double>,16> H_to_bb_Virtual::GetVirtualMatrixFinite(const std::array<double, 4>& p1, const std::array<double, 4>&  p2){
+    /* This method provides precomputed parts of the finite virtual correction matrix element for the H -> bb decay.
+   * p1 = bbar momentum
+   * p2 = Higgs momentum  
+   *
+   * q_1 = p_1 = bbar momentum
+   * q_2 = p_1 + p_2 = bbar + Higgs momenta = -b momentum
+   * 
+   * The matrix correspond to the expression: gamma-matrix * Loop-Integral * gamma-matrix.
+   * 
+   * Since the virtual corrections are momentum-independent for this process, the calculation
+   * could be performed externally using a Python script.
+   * 
+   * The matrix contains two components:
+   * - Finite part: The UV-finite contribution to the virtual amplitude
+   * - 1/epsilon divergence: The dimensional regularization pole that will be cancelled
+   *   by counterterms or subtracted by infrared-safe observables
+   * 
+   * Here is the original Python code located: 
+   * https://github.com/LeaBaumann/pre-calculations_integrals_and_subtraction/blob/main/Integrals_and_gammas.py
+   */
+  
+  using C = std::complex<double>;
+
+  // Calculate q1 and q2 from p1 and p2
+    std::array<double, 4> q1 = p1;  // q1 = p1
+    std::array<double, 4> q2 = {    // q2 = p1 + p2
+        p1[0] + p2[0],
+        p1[1] + p2[1], 
+        p1[2] + p2[2],
+        p1[3] + p2[3]
+    };
+
+  const double diag_re = -0.002618352*q1[0]*q1[0] + 0.005900148*q1[0]*q2[0] + 0.002618352*q1[1]*q1[1] - 0.005900148*q1[1]*q2[1]
+      + 0.002618352*q1[2]*q1[2] - 0.005900148*q1[2]*q2[2] + 0.002618352*q1[3]*q1[3] - 0.005900148*q1[3]*q2[3]
+      + 0.000698944*q2[0]*q2[0] - 0.000698944*q2[1]*q2[1] - 0.000698944*q2[2]*q2[2] - 0.000698944*q2[3]*q2[3]
+      - 26.322871021248;
+
+  const double diag_im = + 0.001209628*q1[0]*q1[0] - 0.006166716504*q1[0]*q2[0] - 0.001209628*q1[1]*q1[1] + 0.006166716504*q1[1]*q2[1]
+      - 0.001209628*q1[2]*q1[2] + 0.006166716504*q1[2]*q2[2] - 0.001209628*q1[3]*q1[3] + 0.006166716504*q1[3]*q2[3]
+      - 0.000401548*q2[0]*q2[0] + 0.000401548*q2[1]*q2[1] + 0.000401548*q2[2]*q2[2] + 0.000401548*q2[3]*q2[3]
+      + 12.33920955744;
+  
+  const C d(diag_re, diag_im);
+
+  // elements of the matrix: 
+  C M00 = d;
+  C M01 = C(0.0, 0.0);
+  C M02 = C(+0.00368220816*q1[0] - 0.00368220816*q1[3] - 0.01387288464*q2[0] + 0.01387288464*q2[3],
+              -7.57929599999995e-5*q1[0] + 7.57929599999995e-5*q1[3] + 0.01516399104*q2[0] - 0.01516399104*q2[3]);
+  C M03 = C(-0.00368220816*q1[1] + 7.57929599999995e-5*q1[2] + 0.01387288464*q2[1] - 0.01516399104*q2[2],
+               7.57929599999995e-5*q1[1] + 0.00368220816*q1[2] - 0.01516399104*q2[1] - 0.01387288464*q2[2]);
+
+  C M10 = C(0.0, 0.0);
+  C M11 = d;
+  C M12 = C(-0.00368220816*q1[1] - 7.57929599999995e-5*q1[2] + 0.01387288464*q2[1] + 0.01516399104*q2[2],
+               7.57929599999995e-5*q1[1] - 0.00368220816*q1[2] - 0.01516399104*q2[1] + 0.01387288464*q2[2]);
+  C M13 = C(+0.00368220816*q1[0] + 0.00368220816*q1[3] - 0.01387288464*q2[0] - 0.01387288464*q2[3],
+              -7.57929599999995e-5*q1[0] - 7.57929599999995e-5*q1[3] + 0.01516399104*q2[0] + 0.01516399104*q2[3]);
+
+  C M20 = C(+0.00368220816*q1[0] + 0.00368220816*q1[3] - 0.01387288464*q2[0] - 0.01387288464*q2[3],
+              -7.57929599999995e-5*q1[0] - 7.57929599999995e-5*q1[3] + 0.01516399104*q2[0] + 0.01516399104*q2[3]);
+  C M21 = C(+0.00368220816*q1[1] - 7.57929599999995e-5*q1[2] - 0.01387288464*q2[1] + 0.01516399104*q2[2],
+              -7.57929599999995e-5*q1[1] - 0.00368220816*q1[2] + 0.01516399104*q2[1] + 0.01387288464*q2[2]);
+  C M22 = d;
+  C M23 = C(0.0, 0.0);
+
+  C M30 = C(+0.00368220816*q1[1] + 7.57929599999995e-5*q1[2] - 0.01387288464*q2[1] - 0.01516399104*q2[2],
+              -7.57929599999995e-5*q1[1] + 0.00368220816*q1[2] + 0.01516399104*q2[1] - 0.01387288464*q2[2]);
+  C M31 = C(+0.00368220816*q1[0] - 0.00368220816*q1[3] - 0.01387288464*q2[0] + 0.01387288464*q2[3],
+              -7.57929599999995e-5*q1[0] + 7.57929599999995e-5*q1[3] + 0.01516399104*q2[0] - 0.01516399104*q2[3]);
+  C M32 = C(0.0, 0.0);
+  C M33 = d;
+
+  // put matrix together
+  std::array<C,16> M = {
+      M00, M01, M02, M03,
+      M10, M11, M12, M13,
+      M20, M21, M22, M23,
+      M30, M31, M32, M33
+    };
+
+  return M;
+}
+
+
+std::array<std::complex<double>,16> H_to_bb_Virtual::GetVirtualMatrixE(const std::array<double, 4>& p1, const std::array<double, 4>&  p2){
+    /* This method provides precomputed parts of the 1/epsilon divergent virtual correction matrix element for the H -> bb decay.
+   * p1 = bbar momentum
+   * p2 = Higgs momentum  
+   *
+   * q_1 = p_1 = bbar momentum
+   * q_2 = p_1 + p_2 = bbar + Higgs momenta = -b momentum
+   * 
+   * The matrix correspond to the expression: gamma-matrix * Loop-Integral * gamma-matrix.
+   * 
+   * Since the virtual corrections are momentum-independent for this process, the calculation
+   * could be performed externally using a Python script.
+   * 
+   * The matrix contains two components:
+   * - Finite part: The UV-finite contribution to the virtual amplitude
+   * - 1/epsilon divergence: The dimensional regularization pole that will be cancelled
+   *   by counterterms or subtracted by infrared-safe observables
+   * 
+   * Here is the original Python code located: 
+   * https://github.com/LeaBaumann/pre-calculations_integrals_and_subtraction/blob/main/Integrals_and_gammas.py
+   */
+  
+  using C = std::complex<double>;
+
+  // Calculate q1 and q2 from p1 and p2
+    std::array<double, 4> q1 = p1;  // q1 = p1
+    std::array<double, 4> q2 = {    // q2 = p1 + p2
+        p1[0] + p2[0],
+        p1[1] + p2[1], 
+        p1[2] + p2[2],
+        p1[3] + p2[3]
+    };
+
+      // Calculate diagonal elements
+  const double diag_re = -0.001658656*q1[0]*q2[0] + 0.001658656*q1[1]*q2[1] + 0.001658656*q1[2]*q2[2] + 0.001658656*q1[3]*q2[3] - 0.0401500905984;
+  const double diag_im = 0.000805588*q1[0]*q2[0] - 0.000805588*q1[1]*q2[1] - 0.000805588*q1[2]*q2[2] - 0.000805588*q1[3]*q2[3] + 0.0195003853632;
+  
+  const C d(diag_re, diag_im);
+
+  // elements of the matrix: 
+  C M00 = d;
+  C M01 = C(0.0, 0.0);
+  C M02 = C(0.000829328*q1[0] - 0.000829328*q1[3] + 0.00408029376*q2[0] - 0.00408029376*q2[3],
+            -0.000402794*q1[0] + 0.000402794*q1[3] - 0.00198174648*q2[0] + 0.00198174648*q2[3]);
+  C M03 = C(-0.000829328*q1[1] + 0.000402794*q1[2] - 0.00408029376*q2[1] + 0.00198174648*q2[2],
+            0.000402794*q1[1] + 0.000829328*q1[2] + 0.00198174648*q2[1] + 0.00408029376*q2[2]);
+
+  C M10 = C(0.0, 0.0);
+  C M11 = d;
+  C M12 = C(-0.000829328*q1[1] - 0.000402794*q1[2] - 0.00408029376*q2[1] - 0.00198174648*q2[2],
+            0.000402794*q1[1] - 0.000829328*q1[2] + 0.00198174648*q2[1] - 0.00408029376*q2[2]);
+  C M13 = C(0.000829328*q1[0] + 0.000829328*q1[3] + 0.00408029376*q2[0] + 0.00408029376*q2[3],
+            -0.000402794*q1[0] - 0.000402794*q1[3] - 0.00198174648*q2[0] - 0.00198174648*q2[3]);
+
+  C M20 = C(0.000829328*q1[0] + 0.000829328*q1[3] + 0.00408029376*q2[0] + 0.00408029376*q2[3],
+            -0.000402794*q1[0] - 0.000402794*q1[3] - 0.00198174648*q2[0] - 0.00198174648*q2[3]);
+  C M21 = C(0.000829328*q1[1] - 0.000402794*q1[2] + 0.00408029376*q2[1] - 0.00198174648*q2[2],
+            -0.000402794*q1[1] - 0.000829328*q1[2] - 0.00198174648*q2[1] - 0.00408029376*q2[2]);
+  C M22 = d;
+  C M23 = C(0.0, 0.0);
+
+  C M30 = C(0.000829328*q1[1] + 0.000402794*q1[2] + 0.00408029376*q2[1] + 0.00198174648*q2[2],
+            -0.000402794*q1[1] + 0.000829328*q1[2] - 0.00198174648*q2[1] + 0.00408029376*q2[2]);
+  C M31 = C(0.000829328*q1[0] - 0.000829328*q1[3] + 0.00408029376*q2[0] - 0.00408029376*q2[3],
+            -0.000402794*q1[0] + 0.000402794*q1[3] - 0.00198174648*q2[0] + 0.00198174648*q2[3]);
+  C M32 = C(0.0, 0.0);
+  C M33 = d;
+
+  // put matrix together
+  std::array<C,16> M = {
+      M00, M01, M02, M03,
+      M10, M11, M12, M13,
+      M20, M21, M22, M23,
+      M30, M31, M32, M33
+    };
+
+  return M;
+}
+
+
+std::array<std::complex<double>,16> H_to_bb_Virtual::GetVirtualMatrixE2(const std::array<double, 4>& p1, const std::array<double, 4>&  p2){
+    /* This method provides precomputed parts of the 1/epsilon^2 divergent virtual correction matrix element for the H -> bb decay.
+   * p1 = bbar momentum
+   * p2 = Higgs momentum  
+   *
+   * q_1 = p_1 = bbar momentum
+   * q_2 = p_1 + p_2 = bbar + Higgs momenta = -b momentum
+   * 
+   * The matrix correspond to the expression: gamma-matrix * Loop-Integral * gamma-matrix.
+   * 
+   * Since the virtual corrections are momentum-independent for this process, the calculation
+   * could be performed externally using a Python script.
+   * 
+   * The matrix contains two components:
+   * - Finite part: The UV-finite contribution to the virtual amplitude
+   * - 1/epsilon divergence: The dimensional regularization pole that will be cancelled
+   *   by counterterms or subtracted by infrared-safe observables
+   * 
+   * Here is the original Python code located: 
+   * https://github.com/LeaBaumann/pre-calculations_integrals_and_subtraction/blob/main/Integrals_and_gammas.py
+   */
+  
+  using C = std::complex<double>;
+
+  // Calculate q1 and q2 from p1 and p2
+    std::array<double, 4> q1 = p1;  // q1 = p1
+    std::array<double, 4> q2 = {    // q2 = p1 + p2
+        p1[0] + p2[0],
+        p1[1] + p2[1], 
+        p1[2] + p2[2],
+        p1[3] + p2[3]
+    };
+
+    // elements of the matrix: 
+  C M00 = C(0.0, 0.0);
+  C M01 = C(0.0, 0.0);
+  C M02 = C(0.0, 0.0);
+  C M03 = C(0.0, 0.0);
+
+  C M10 = C(0.0, 0.0);
+  C M11 = C(0.0, 0.0);
+  C M12 = C(0.0, 0.0);
+  C M13 = C(0.0, 0.0);
+
+  C M20 = C(0.0, 0.0);
+  C M21 = C(0.0, 0.0);
+  C M22 = C(0.0, 0.0);
+  C M23 = C(0.0, 0.0);
+
+  C M30 = C(0.0, 0.0);
+  C M31 = C(0.0, 0.0);
+  C M32 = C(0.0, 0.0);
+  C M33 = C(0.0, 0.0);
+
+  // put matrix together
+  std::array<C,16> M = {
+      M00, M01, M02, M03,
+      M10, M11, M12, M13,
+      M20, M21, M22, M23,
+      M30, M31, M32, M33
+    };
+  
+  return M;
+}
+
+
 void H_to_bb_Virtual::Calculate(const ATOOLS::Vec4D_Vector& momenta, bool anti) {
 } 
 
 
-void H_to_bb_Virtual::SetUpConstants(const vector<Flavour>& flavs) {
+void H_to_bb_Virtual::SetUpPrefactors(const vector<Flavour>& flavs) {
   /* This method collects all constants that appear in the calculation and multiplies them.
   There are constante both in the real and the virtual correction. */
   double g_s = std::sqrt(4 * std::acos(-1) * alpha_qcd);  // strong gauge coupling; std::acos(-1) = pi
@@ -103,9 +362,9 @@ void H_to_bb_Virtual::SetUpConstants(const vector<Flavour>& flavs) {
   //double mu = flavs[0].Mass(); // Renormalisation scale: Higgs mass in GeV
   //double epsilon = 0.0001; // small parameter for dimensional regularization
 
-  double VirtualConstants = (-1) * std::pow(g_s, 2) * m_b / vev;
-  std::cout << "Virtual prefactor: " << VirtualConstants << std::endl;
+  VirtualPrefactor = (-1) * std::pow(g_s, 2) * m_b / vev;
+  std::cout << "Virtual prefactor: " << VirtualPrefactor << std::endl;
 
-  double BornConstants = (-1) * m_b / vev;
-  std::cout << "Born prefactor: " << BornConstants << std::endl;
+  BornPrefactor = (-1) * m_b / vev;
+  std::cout << "Born prefactor: " << BornPrefactor << std::endl;
 }

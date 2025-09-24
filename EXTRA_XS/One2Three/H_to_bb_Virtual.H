@@ -17,15 +17,19 @@ namespace PHASIC {
 namespace EXTRAXS {
   class H_to_bb_Virtual : public METOOLS::Spin_Amplitudes {
     std::vector<METOOLS::Current*> m_cur;
-
     std::vector<METOOLS::Current*> m_anticur;
-
     std::vector<size_t> m_nhel;
-
     static MODEL::Model_Base *s_model;
+    double BornPrefactor;
+    double VirtualPrefactor;
 
     size_t NHel(const ATOOLS::Flavour& fl);
     void SetUpCurrents(const std::vector<ATOOLS::Flavour>& flavs);
+    void CalculateBorn();
+    void SetUpPrefactors(const std::vector<ATOOLS::Flavour>& flavs);
+    std::array<std::complex<double>,16> GetVirtualMatrixFinite(const std::array<double, 4>& p1, const std::array<double, 4>&  p2);
+    std::array<std::complex<double>,16> GetVirtualMatrixE(const std::array<double, 4>& p1, const std::array<double, 4>&  p2);
+    std::array<std::complex<double>,16> GetVirtualMatrixE2(const std::array<double, 4>& p1, const std::array<double, 4>&  p2);
   protected:
     double alpha_qcd;
   public:
@@ -33,7 +37,7 @@ namespace EXTRAXS {
     ~H_to_bb_Virtual();
     void Calculate_alpha_QCD(MODEL::Model_Base* s_model);
     void Calculate(const ATOOLS::Vec4D_Vector& momenta, bool anti=false) override;
-    void SetUpConstants(const std::vector<ATOOLS::Flavour>& flavs);
+
   };
 }
 
