@@ -238,7 +238,7 @@ void Initialization_Handler::RegisterDefaults()
   pss["IS_PT2MIN"].SetDefault(2.0);
   pss["PT2MIN_GSPLIT_FACTOR"].SetDefault(1.0);
   pss["FS_AS_FAC"].SetDefault(1.0);
-  pss["IS_AS_FAC"].SetDefault(0.5);
+  pss["IS_AS_FAC"].SetDefault(0.25);
   pss["PDF_FAC"].SetDefault(1.0);
   pss["SCALE_FACTOR"].SetDefault(1.);
   pss["MASS_THRESHOLD"].SetDefault(0.0);
