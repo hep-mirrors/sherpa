@@ -40,8 +40,8 @@ int Channel_Generator::MakeChannel(int& echflag,int n,string& path,string& pID)
 
   if (echflag!=0) snprintf(name,22,"%s%c",name,'a'+extrachannelflag-1);
   
-  string filename = rpa->gen.Variable("SHERPA_CPP_PATH")+string("/Process/Amegic/")+path+string("/")+
-                    string(name)+string(".C");
+  string filename = rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/"+path+"/"+
+                    name+".C";
   
   int    rannum = 0;
 

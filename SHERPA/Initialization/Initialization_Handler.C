@@ -295,6 +295,8 @@ void Initialization_Handler::RegisterDefaults()
 
   s["BBR_MODE"].SetDefault(0);
   s["BBR_VETO"].SetDefault(false);
+  int lmu = s["LEPTONIC_CURRENT_MODE"].SetDefault(0);
+  rpa->gen.SetVariable("LEPTONIC_CURRENT_MODE",ToString(lmu));
 }
 
 Initialization_Handler::~Initialization_Handler()

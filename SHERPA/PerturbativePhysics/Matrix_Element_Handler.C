@@ -939,7 +939,8 @@ void Matrix_Element_Handler::BuildSingleProcessList(
 		     <<fss<<"): {\n"<<IS<<FS<<"}\n";
       std::vector<Flavour> flavs;
       IS.GetExternal(flavs);
-      if (flavs.size()>1) {
+      if (flavs.size()>1 &&
+	  (flavs[0]!=p_isr->Flav(0) || flavs[1]!=p_isr->Flav(1))) {
         if (!p_isr->CheckConsistency(&flavs.front())) {
           msg_Error()<<METHOD<<"(): Error in initialising ISR ("
                      <<p_isr->Flav(0)<<" -> "<<flavs[0]<<") x ("

@@ -45,6 +45,7 @@ namespace METOOLS {
     void SContract
     (const Current &c,const Int_Vector &pols,
      SComplex_Vector &ress,const size_t &offset) const;
+    std::vector<std::vector<Complex> > SGetCurrent() const;
 
     /// @brief formats the current into a string
     std::string Format(const CObject *c) const;
@@ -105,6 +106,12 @@ template <typename SType> void CP<SType>::SContract
  SComplex_Vector &ress,const size_t &offset) const
 {
   THROW(fatal_error,"Multiplication of tensor particles not allowed");
+}
+
+template <typename SType> std::vector<std::vector<Complex> >
+CP<SType>::SGetCurrent() const
+{
+  THROW(fatal_error,"Current extraction of tensor particles not allowed");
 }
 
 template <typename SType>

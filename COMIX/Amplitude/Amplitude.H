@@ -79,6 +79,8 @@ namespace COMIX {
 
     typedef std::vector<DComplex> DComplex_Vector;
 
+    typedef std::map<int, std::vector<DComplex_Vector>> LeptonCurrents;
+
   private:
 
     MODEL::Model_Base *p_model;
@@ -135,6 +137,11 @@ namespace COMIX {
 #ifdef USING__Threading 
     CDBG_ME_TID_Vector *p_cts;
 #endif 
+    LeptonCurrents m_lmu;
+    bool m_calc_lmu{false};
+
+    static size_t     MakeId(const Int_Vector &ids,const int t);
+    static Int_Vector MakeId(const size_t &id,const size_t &n);
 
     void CleanUp();
     void Prune();
@@ -290,6 +297,9 @@ namespace COMIX {
     { return m_dsij; }
 
     inline double Born() const { return m_born; }
+
+    inline const LeptonCurrents &
+    LeptonicCurrent() const { return m_lmu; }
 
   };// end of class Amplitude
 
