@@ -36,6 +36,8 @@ FullAmplitude_MHV_Base::FullAmplitude_MHV_Base(Model_Base *model,MODEL::Coupling
   m_cpl=pow(4.*M_PI*p_model->ScalarConstant("alpha_S"),(double)np-2.);
   m_oqcd = (double)n_part-2;
   m_oqed = (double)0;
+  p_aqcd=m_cpls->Get("Alpha_QCD");
+  p_aqed=m_cpls->Get("Alpha_QED");
 } 
 
 
@@ -106,9 +108,6 @@ void FullAmplitude_MHV_Base::CalculateAmps(int* hlist,MomentumList* BS)
 
 double FullAmplitude_MHV_Base::MSquare(int i,int j)   
 {  
-  
-  p_aqcd=m_cpls->Get("Alpha_QCD");
-  p_aqed=m_cpls->Get("Alpha_QED");
   
   double cplfac(1.0);
   if (p_aqcd && m_oqcd) cplfac *= pow(p_aqcd->Factor(),(double)m_oqcd);

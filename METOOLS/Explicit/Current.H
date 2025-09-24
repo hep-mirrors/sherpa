@@ -94,6 +94,8 @@ namespace METOOLS {
     Contract(const Current &c,const Int_Vector &pols,
 	     std::vector<std::complex<SType> > &ress,
 	     const size_t &offset=0) const;
+    template <class SType> inline std::vector<std::vector<Complex> >
+    GetCurrent() const;
 
     virtual std::string Format(const CObject *c) const = 0;
 
@@ -188,6 +190,8 @@ namespace METOOLS {
     SContract(const Current &c,const Int_Vector &pols,
 	      std::vector<std::complex<SType> > &ress,
 	      const size_t &offset=0) const = 0;
+    virtual std::vector<std::vector<Complex> >
+    SGetCurrent() const = 0;
 
   };// end of class Current
 
@@ -197,6 +201,10 @@ namespace METOOLS {
 		    const size_t &offset) const
   { dynamic_cast<const Current_Contractor<SType>*>
       (this)->SContract(c,pols,ress,offset); }
+  template <class SType> inline std::vector<std::vector<Complex> >
+  Current::GetCurrent() const
+  { return dynamic_cast<const Current_Contractor<SType>*>
+      (this)->SGetCurrent(); }
 
   typedef ATOOLS::Getter_Function<Current,Current_Key,
 				  std::less<std::string> > Current_Getter;
