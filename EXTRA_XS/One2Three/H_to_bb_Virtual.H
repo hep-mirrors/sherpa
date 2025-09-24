@@ -33,7 +33,7 @@ namespace EXTRAXS {
     ~H_to_bb_Virtual();
     void Calculate_alpha_QCD(MODEL::Model_Base* s_model);
     void Calculate(const ATOOLS::Vec4D_Vector& momenta, bool anti=false) override;
-    void Calculate_ME2(const std::vector<ATOOLS::Flavour>& flavs);
+    void SetUpConstants(const std::vector<ATOOLS::Flavour>& flavs);
   };
 }
 

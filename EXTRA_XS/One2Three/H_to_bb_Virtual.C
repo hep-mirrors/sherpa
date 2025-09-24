@@ -22,6 +22,7 @@ H_to_bb_Virtual::H_to_bb_Virtual(const vector<Flavour>& flavs, MODEL::Model_Base
   if (flavs.size()!=3) THROW(fatal_error,"Internal error.");
 
   SetUpCurrents(flavs);
+  SetUpConstants(flavs);
 }
 
 H_to_bb_Virtual::~H_to_bb_Virtual()
@@ -36,6 +37,7 @@ void H_to_bb_Virtual::Calculate_alpha_QCD(MODEL::Model_Base* s_model) {
   alpha_qcd = s_model -> ScalarFunction("alpha_S", 15625); // at Higgs scale
   std::cout << "The cpl value is: " << alpha_qcd << std::endl;
 }
+
 
 size_t H_to_bb_Virtual::NHel(const Flavour& fl)
 {
@@ -89,14 +91,21 @@ void H_to_bb_Virtual::Calculate(const ATOOLS::Vec4D_Vector& momenta, bool anti) 
 } 
 
 
-void H_to_bb_Virtual::Calculate_ME2(const vector<Flavour>& flavs) {
-  double value;
+void H_to_bb_Virtual::SetUpConstants(const vector<Flavour>& flavs) {
+  /* This method collects all constants that appear in the calculation and multiplies them.
+  There are constante both in the real and the virtual correction. */
   double g_s = std::sqrt(4 * std::acos(-1) * alpha_qcd);  // strong gauge coupling; std::acos(-1) = pi
   double G_F = 1.16637886e-5; // Fermi constant in GeV^-2; value from PDG
-  double vev = 1 / std::sqrt(G_F * std::sqrt(2)); // vacuum expectation value in GeV
-  double mu = flavs[0].Mass(); // Renormalisation scale: Higgs mass in GeV
-  double epsilon = 0.0001; // small parameter for dimensional regularization
+  double vev = 1 / std::sqrt(G_F * std::sqrt(2)); // vacuum expectation value in GeV; doublecheck that value
   double m_b = flavs[2].Mass(); // b quark mass in GeV
-  double constants = (-1) * std::pow(g_s * std::pow(mu, epsilon), 2) * m_b / vev;
+  std::cout << "The vev value is: " << vev << std::endl;
 
+  //double mu = flavs[0].Mass(); // Renormalisation scale: Higgs mass in GeV
+  //double epsilon = 0.0001; // small parameter for dimensional regularization
+
+  double VirtualConstants = (-1) * std::pow(g_s, 2) * m_b / vev;
+  std::cout << "Virtual prefactor: " << VirtualConstants << std::endl;
+
+  double BornConstants = (-1) * m_b / vev;
+  std::cout << "Born prefactor: " << BornConstants << std::endl;
 }
