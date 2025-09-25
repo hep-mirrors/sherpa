@@ -62,7 +62,7 @@ operator()(const External_ME_Args &args) const
   OpenLoops_Interface::SetParameter("coupling_ew_1" , 0);
 
   AmplitudeType types[2] = {Loop2, Tree};
-  for (size_t i=0; i<2; ++i) 
+  for (size_t i=1; i<2; ++i) 
     {
       int id = OpenLoops_Interface::RegisterProcess(args.m_inflavs, 
 						    args.m_outflavs, 
