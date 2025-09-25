@@ -576,8 +576,21 @@ double Define_Dipoles::CalculateVirtualSubTchannel(){
 
 double Define_Dipoles::CalculateVirtualSubTchannelEps() {
   DivArrD sub(0);
+  DivArrD massph(0,-1.,0,0,0,0);
   for (auto &D : m_dipolesII) {
     sub += D.ChargeNorm()*p_yfsFormFact->BVirtTEps(D,sqrt(m_s) / 2.);
+    #ifdef USING__LOOPTOOLS
+      //ii term
+      Vec4D p1 = D.GetBornMomenta(0);
+      Vec4D p2 = D.GetBornMomenta(1);
+      double m1 = D.GetMass(0);
+      double m2 = D.GetMass(1);
+      double irloop = p_yfsFormFact->p_virt->IRscale();
+      double epsloop = p_yfsFormFact->p_virt->Eps_Scheme_Factor({p1,p1});
+      DivArrD c0 = (-massph-log(4.*M_PI*sqr(irloop)/m1/m2/epsloop));
+      // sub += m_alpi/8.*B0(0, m1*m1, m1*m1).real()-8.*m_alpi*(m1*m1)*(-massph-log(4.*M_PI*sqr(irloop)/m1/m1/epsloop));
+      // sub += m_alpi/8.*B0(0, m2*m2, m2*m2).real()-8.*m_alpi*(m2*m2)*(-massph-log(4.*M_PI*sqr(irloop)/m2/m2/epsloop));
+    #endif
   }
   for (auto &D : m_dipolesFF) {
     if(m_mode==yfsmode::fsr) sub += -D.m_QiQj*p_yfsFormFact->BVirtTEps(D,sqrt(m_s) / 2.);
@@ -589,6 +602,18 @@ double Define_Dipoles::CalculateVirtualSubTchannelEps() {
     // Note Born momenta are redifined
     // for IFI terms.
     sub += D.ChargeNorm()*p_yfsFormFact->BVirtTEps(D,sqrt(m_s) / 2.);
+    #ifdef USING__LOOPTOOLS
+      //ii term
+      Vec4D p1 = D.GetBornMomenta(0);
+      Vec4D p2 = D.GetBornMomenta(1);
+      double m1 = D.GetMass(0);
+      double m2 = D.GetMass(1);
+      double irloop = p_yfsFormFact->p_virt->IRscale();
+      double epsloop = p_yfsFormFact->p_virt->Eps_Scheme_Factor({p1,p1});
+      DivArrD c0 = (-massph-log(4.*M_PI*sqr(irloop)/m1/m2/epsloop));
+      // sub += m_alpi/8.*B0(0, m1*m1, m1*m1).real()-8.*m_alpi*(m1*m1)*(-massph-log(4.*M_PI*sqr(irloop)/m1/m1/epsloop));
+      // sub += m_alpi/8.*B0(0, m2*m2, m2*m2).real()-8.*m_alpi*(m2*m2)*(-massph-log(4.*M_PI*sqr(irloop)/m2/m2/epsloop));
+    #endif
   }
   m_virtSub=sub;
   return sub.Finite();
@@ -618,12 +643,15 @@ double Define_Dipoles::CalculateRealVirtualSub(const Vec4D & k) {
 double Define_Dipoles::CalculateEEX(){
   double eex=0;
   for (auto &D: m_dipolesII){
+    D.SetRealOnly(m_real_only);
     eex += D.EEX(m_betaorder);
   }
   for (auto &D: m_dipolesFF){
+    D.SetRealOnly(m_real_only);
     eex += D.EEX(m_betaorder);
   }
   for (auto &D: m_dipolesIF){
+    D.SetRealOnly(m_real_only);
     eex += D.EEX(m_betaorder);
   }
   return eex;
@@ -988,7 +1016,6 @@ dipoletype::code Define_Dipoles::WhichResonant(const Vec4D &k){
   }
   // for(auto &D: m_dipolesIF){
   //   mdistifi = ResonantDist(D,k);  
-  //   PRINT_VAR(mdistifi);
   //   if(mdistifi < mdistfsr) {
   //     min = dipoletype::ifi;
   //     // return dipoletype::final; 

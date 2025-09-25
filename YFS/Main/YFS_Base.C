@@ -1,4 +1,4 @@
-YFS/Main/YFS_Base.C#include "YFS/Main/YFS_Base.H"
+#include "YFS/Main/YFS_Base.H"
 #include "ATOOLS/Math/Random.H" 
 // #include "ATOOLS/Org/Run_Parameter.H" 
 #include "ATOOLS/Org/My_File.H"
@@ -58,7 +58,7 @@ void YFS_Base::RegisterDefaults(){
   s["CHECK_VIRT_BORN"].SetDefault(0);
   s["VIRTUAL_ONLY"].SetDefault(0);
   s["REAL_ONLY"].SetDefault(0);
-  s["USE_MODEL_ALPHA"].SetDefault(0);
+  s["USE_MODEL_ALPHA"].SetDefault(1);
   s["KKMC_ANG"].SetDefault(0);
   s["WEIGHT_MODE"].SetDefault(wgt::full);
   s["HARD_MIN"].SetDefault(0.);
