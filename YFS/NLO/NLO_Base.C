@@ -103,7 +103,7 @@ void NLO_Base::InitializeVirtual(const PHASIC::Process_Info& pi) {
 }
 
 void NLO_Base::InitializeReal(const PHASIC::Process_Info& pi) {
-	if(m_coll_real) return;
+	if(m_coll_real || m_realtool) return;
 	p_real = new YFS::Real(pi);
 	m_realtool = true;
 }
