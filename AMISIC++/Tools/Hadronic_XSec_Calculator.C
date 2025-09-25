@@ -431,7 +431,9 @@ void Hadronic_XSec_Calculator::Output() const {
 void Hadronic_XSec_Calculator::FixTables() {
   m_hadroncomponents = {
     { Flavour(kf_p_plus),       { Flavour(kf_p_plus) }                          },
+    { Flavour(kf_p_plus).Bar(), { Flavour(kf_p_plus).Bar() }                    },
     { Flavour(kf_n),            { Flavour(kf_n) }                               },
+    { Flavour(kf_n).Bar(),      { Flavour(kf_n).Bar() }                         },
     { Flavour(kf_photon),       { Flavour(kf_rho_770), Flavour(kf_omega_782),
 				  Flavour(kf_phi_1020), Flavour(kf_J_psi_1S) }  }
   };
@@ -445,7 +447,9 @@ void Hadronic_XSec_Calculator::FixTables() {
 //////////////////////////////////////////////////////////////////////////////////////
 std::map<kf_code, size_t> Hadronic_XSec_Calculator::s_indexmap = {
   { kf_p_plus,    0 },
+  { -kf_p_plus,    0 },
   { kf_n,         0 },
+  { -kf_n,         0 },
   { kf_rho_770,   1 },
   { kf_omega_782, 1 },
   { kf_phi_1020,  2 },

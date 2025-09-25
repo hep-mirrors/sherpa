@@ -23,7 +23,7 @@ MI_Parameters::MI_Parameters() :
   m_parameters[string("pt_0(IR)")]
     = s["PT_0(IR)"].SetDefault(0.5).Get<double>();
   m_parameters[string("pt_min(ref)")]
-    = s["PT_Min(ref)"].SetDefault(2.25).Get<double>();
+    = s["PT_Min(ref)"].SetDefault(2.583).Get<double>();
   m_parameters[string("pt_min(IR)")]
     = s["PT_Min(IR)"].SetDefault(1.00).Get<double>();
   m_parameters[string("Ecms(ref)")]
@@ -51,7 +51,7 @@ MI_Parameters::MI_Parameters() :
     = s["MU_F_FACTOR"].SetDefault(1.0).Get<double>();
   m_parameters[string("E_min")] = s["E_Min"].SetDefault(0.25).Get<double>();
   m_parameters[string("SigmaND_Norm")]
-    = s["SIGMA_ND_NORM"].SetDefault(1.02).Get<double>();
+    = s["SIGMA_ND_NORM"].SetDefault(0.619).Get<double>();
   m_parameters[string("PomeronIntercept")]
     = s["PomeronIntercept"].SetDefault(0.0808).Get<double>();
   m_parameters[string("PomeronSlope")]
