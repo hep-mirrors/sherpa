@@ -34,7 +34,7 @@ namespace YFS{
         std::vector<double> m_pk1, m_pk2;
         double m_QiQj, m_Qi, m_Qj, m_thetai, m_thetaj, m_thetaij, m_sp, m_b1, m_b2, m_gamma, m_gammap, m_alp, m_alpi,m_rescale_alpha;
         bool m_setBorn, m_setbeams=1,m_sameflav, m_irfinite, m_isduplicate;
-        int m_Nphotons, m_resonance, m_betaorder, m_leftfl, m_rightfl;
+        int m_Nphotons, m_resonance, m_betaorder, m_leftfl, m_rightfl, m_real_only;
         double m_ranPhi, m_ranTheta, m_born, m_photonscale, m_u,m_irscale;
         dipoletype::code m_type;
         Vec4D_Vector m_momenta, m_bornmomenta, m_oldmomenta, m_newmomenta, m_ghost, m_beams, m_eikmomentum,m_mephotons;
@@ -93,28 +93,32 @@ namespace YFS{
         inline Vec4D GetOldMomenta(int i) { return m_oldmomenta[i];}
         inline Vec4D GetEikMomenta(int i) { return m_eikmomentum[i];}
         const inline double GetMass(int i) { return m_masses[i];}
-        inline Flavour GetFlav(int i) { return m_flavs[i];}
-        inline Vec4D_Vector GetPhotons() { return m_dipolePhotons;}
-        inline Vec4D GetPhotonSum() { return m_photonSum;}
-        inline Vec4D GetGhost(int i) { return m_ghost[i];}
+        inline Flavour GetFlav(int i) const { return m_flavs[i];}
+        inline Vec4D_Vector GetPhotons() const { return m_dipolePhotons;}
+        inline Vec4D GetPhotonSum() const { return m_photonSum;}
+        inline Vec4D GetGhost(int i) const { return m_ghost[i];}
         inline void SetRotate(Poincare &rot) { p_rotate = rot;}
         inline void SetBoost(Poincare &boost) { p_boost = boost;}
-        inline dipoletype::code Type() {return m_type;}
+        inline dipoletype::code Type() const {return m_type;}
         inline void AddPhotonsSumToDipole(Vec4D k) {m_photonSum = k;}
-        inline double Sprime() {return m_sp;}
+        inline double Sprime() const {return m_sp;}
         inline void SetAlpha(double alp) { m_alp=alp; m_alpi=alp/M_PI;}
         inline void SetNPhoton(int N) {m_Nphotons = N; }
         inline void SetBorn(double B) {m_born = B; }
-        inline bool IsResonance() {return m_resonance;}
+        inline bool IsResonance() const {return m_resonance;}
         inline void SetResonance(bool res) { m_resonance=res;}
-        inline bool IsSame() {return m_sameflav;}
-        inline double ChargeNorm() {return -m_QiQj*m_thetaij;}
+        inline bool IsSame() const {return m_sameflav;}
+        inline double ChargeNorm() const {return -m_QiQj*m_thetaij;}
         inline void SetSudakovs(std::vector<double> y, std::vector<double> z) {m_pk1 =y; m_pk2=z;}
         inline void SetPhotonScale(double &scale) {m_photonscale = scale;}
         inline void SetMEPhotons(Vec4D_Vector &k) {m_mephotons = k;}
-        inline bool IsFinite() {return m_irfinite;}
+        inline bool IsFinite() const {return m_irfinite;}
         inline void SetDuplicate(bool dub) {m_isduplicate=dub;}
         inline void SetResonaceFlavour(Flavour &fl) {m_ResFlav = fl;}
+        inline int Left() const {return m_leftfl;}
+        inline int Right() const {return m_rightfl;}
+        inline bool RealOnly() const {return m_real_only;}
+        inline void SetRealOnly(int real) {m_real_only=real;}
 
     };
 

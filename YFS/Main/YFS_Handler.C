@@ -400,7 +400,7 @@ void YFS_Handler::CalculateBeta() {
     }
     else if(m_virtual_only) {
       if(!m_no_born) m_real = p_dipoles->CalculateEEXVirtual();
-      else m_real = p_dipoles->CalculateEEXVirtual()-m_born;
+      else m_real = p_dipoles->CalculateEEXVirtual()-1;
     }
     else {
       if(!m_no_born) m_real = p_dipoles->CalculateEEX()+p_dipoles->CalculateEEXVirtual();
@@ -413,6 +413,7 @@ void YFS_Handler::CalculateBeta() {
     if(m_no_born) m_real=CalculateNLO()/m_born;
     else m_real=(m_born+CalculateNLO())/m_born;
   }
+  if(m_nlocuts && p_nlo->m_failcut) m_real=0;
   if (m_useceex) MakeCEEX();
 }
 
