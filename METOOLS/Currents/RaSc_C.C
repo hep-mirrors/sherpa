@@ -26,7 +26,7 @@ namespace METOOLS {
 
     SComplex m_cmass2, m_cmass;
     double m_A;
-    //std::string CLabel() const;
+    std::string CLabel() const;
 
   private:
 
@@ -642,26 +642,13 @@ template <typename SType> void CRS<SType>::SContract
   msg_Debugging()<<"}\n";
 #endif
 }
-/*
+
 template <typename SType>
 std::string CRS<SType>::CLabel() const
 {
-  switch (this->m_fl.Kfcode()) {
-  case kf_gluon:
-    return "gluon,label.side=right,label.dist=1.5curly_len,label=$g$";
-  case kf_photon:
-    return "photon,label.side=right,label.dist=1wiggly_len,label=$\\gamma$";
-  case kf_Z:
-    return "dots,label.side=right,label.dist=1wiggly_len,label=$Z^0$";
-  case kf_Wplus:
-    return "dots,label.side=right,label.dist=1wiggly_len,label=$"
-      +(this->m_out.empty()?this->m_fl.Bar():this->m_fl).TexName()+"$";
-  default: break;
-  }
-  return "wiggly,label.side=right,label.dist=1wiggly_len,label=$"
-    +(this->m_out.empty()?this->m_fl.Bar():this->m_fl).TexName()+"$";
+return "dbl_plain_arrow,label.side=right,label=$"+
+    (this->m_out.empty()?this->m_fl.Bar():this->m_fl).TexName()+"$";
 }
-*/
 
 template <typename SType>
 std::string CRS<SType>::Format(const CObject *c) const
