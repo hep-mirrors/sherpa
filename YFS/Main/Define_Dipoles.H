@@ -83,6 +83,7 @@ namespace YFS {
       double CalculateFlux(const Vec4D &k);
       double CalculateFlux(const Vec4D &k, dipoletype::code &fluxtype);
       double CalculateFlux(const Vec4D &k, const Vec4D &kk);
+      double CalculateFlux(const Vec4D &k, const int &fsrmode);
       double Propagator(const double &s, int width=0);
       double CalculateVirtualSubTchannel();
       double CalculateVirtualSubTchannelEps();
