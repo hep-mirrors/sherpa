@@ -193,7 +193,8 @@ double NLO_Base::CalculateVirtual() {
 					 <<"Relative diff =  "<<reldiff<<std::endl
 					 // <<"Process =  "<<p_virt->p_loop_me->Name()<<std::endl
 					 <<"One-Loop Provider V eps^{-1}  = "<<p1<<std::endl
-					 <<"Sherpa V eps^{-1} = "<<yfspole<<std::endl;
+					 <<"Sherpa V eps^{-1} = "<<yfspole<<std::endl
+					 <<"Sherpa/One-Loop = "<<yfspole/p1<<std::endl;
 					 return 0;
 		}
 		else{
@@ -551,8 +552,8 @@ double NLO_Base::CalculateRealReal(Vec4D k1, Vec4D k2, int fsr1, int fsr2){
  	Vec4D_Vector pp = p;
 	Vec4D kk1 = k1;
 	Vec4D kk2 = k2;
-	dipoletype::code fluxtype1 = p_nlodipoles->WhichResonant(k1);
-	dipoletype::code fluxtype2 = p_nlodipoles->WhichResonant(k2);
+	// dipoletype::code fluxtype1 = p_nlodipoles->WhichResonant(k1);
+	// dipoletype::code fluxtype2 = p_nlodipoles->WhichResonant(k2);
 	p_nlodipoles->MakeDipoles(m_flavs,m_plab,m_plab);
 	// fsr1 = (fluxtype1==dipoletype::final?1:0);
 	// fsr2 = (fluxtype2==dipoletype::final?1:0);

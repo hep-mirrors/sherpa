@@ -47,7 +47,7 @@ Dipole::Dipole(ATOOLS::Flavour_Vector const &fl, ATOOLS::Vec4D_Vector const &mom
   m_sp = (mom[0]+mom[1]).Abs2();
   m_Qi = fl[0].Charge();
   m_Qj = fl[1].Charge();
-  if(fl[0].IsBoson() || fl[1].IsBoson()) m_irfinite = true;// Case for on shell ww
+  // if(fl[0].IsBoson() || fl[1].IsBoson()) m_irfinite = true;// Case for on shell ww
   m_QiQj = m_Qi*m_Qj;
   if(IsEqual(fl[0],fl[1])) m_sameflav = 1;
   else m_sameflav = 0;
@@ -68,30 +68,34 @@ Dipole::Dipole(ATOOLS::Flavour_Vector const &fl, ATOOLS::Vec4D_Vector const &mom
   for (auto &v : born) m_bornmomenta.push_back(v);
   m_eikmomentum = m_bornmomenta;
   if (ty == dipoletype::code::initial) {
-    if(fl[0].IsAnti()) m_thetai = -1;
-    else m_thetai = 1;
-    if(fl[1].IsAnti()) m_thetaj = 1;
-      else m_thetaj = -1;
-    if(IsEqual(m_Qi,m_Qj)){
-      m_thetai = m_thetaj = -1;
-    }
-    // m_thetai = m_thetaj = -1;
+    // if(fl[0].IsAnti()) m_thetai = -1;
+    // else m_thetai = 1;
+    // if(fl[1].IsAnti()) m_thetaj = 1;
+    //   else m_thetaj = -1;
+    m_thetai = m_thetaj = 1;
+    // if(IsEqual(m_Qi,m_Qj)){
+    //   m_thetai = 1 ; m_thetaj = -1;
+    // }
     // for (int i = 0; i < 2; ++i) m_beams.push_back(m_bornmomenta[i]);
   }
   else if (ty == dipoletype::code::final) {
-    if(fl[0].IsAnti()) m_thetai = 1;
-    else m_thetai = -1;
-    if(fl[1].IsAnti()) m_thetaj = -1;
-      else m_thetaj = 1;
-    if(IsEqual(m_Qi,m_Qj)){
-      m_thetai = m_thetaj = 1;
-    }
-    // m_thetai = m_thetaj = 1;
+    // if(fl[0].IsAnti()) m_thetai = 1;
+    // else m_thetai = -1;
+    // if(fl[1].IsAnti()) m_thetaj = -1;
+    //   else m_thetaj = 1;
+    m_thetai = m_thetaj = -1;
+    // if(IsEqual(m_Qi,m_Qj)){
+    //   m_thetai = 1; m_thetaj = -1;
+    // }
 
   }
   else if (ty == dipoletype::code::ifi) {
     m_thetai = -1;
     m_thetaj = 1;
+    // if(fl[0].IsAnti()) m_thetai = -1;
+    // else m_thetai = 1;
+    // if(fl[1].IsAnti()) m_thetaj = -1;
+    //   else m_thetaj = 1;
   }
   if ((m_momenta.size() != m_oldmomenta.size()) || m_newmomenta.size() != 2 || m_bornmomenta.size() != 2) {
     THROW(fatal_error, "Incorrect dipole size in YFS");
@@ -209,7 +213,7 @@ void Dipole::Boost() {
     m_ranPhi = ran->Get()*2.*M_PI;
     Vec4D qqk = m_momenta[0] + m_momenta[1] + m_photonSum;
     p_Pboost = new Poincare(qqk);
-    // m_eikmomentum = m_momenta;
+    m_eikmomentum = m_momenta;
     for (size_t i = 0; i < 2; ++i)
     {
       Boost(m_momenta[i]);
@@ -221,9 +225,9 @@ void Dipole::Boost() {
     m_photonSum*=0.;
     // m_dipolePhotonsEEX.clear();
     for (auto &k : m_dipolePhotons) {
+      m_dipolePhotonsEEX.push_back(k);
       Boost(k);
       m_photonSum+=k;
-      m_dipolePhotonsEEX.push_back(k);
     }
     if (p_Pboost) delete p_Pboost;
   }
@@ -443,6 +447,7 @@ void Dipole::CalculateGamma(){
   m_gammap *= m_alpi*abs(ChargeNorm());
   if(Type()==dipoletype::final)   delf = 0.5*m_gamma;
   if(Type()==dipoletype::initial) deli = 0.5*m_gamma;
+  if(RealOnly()) delf=deli=0;
 }
 
 void Dipole::AddPhotonsToDipole(ATOOLS::Vec4D_Vector &Photons) {
@@ -616,7 +621,7 @@ double Dipole::Hard(const Vec4D &k, int i){
   double delta = 0;
   if (Type() == dipoletype::initial) {
     double z = (1-a)*(1-b);
-    if(m_betaorder>=2){
+    if(m_betaorder>=2 && !RealOnly()){
       delta += 0.5*m_gamma
               +m_alpi*(log(a)*log(1-b)+log(b)*log(1-a)
                       +DiLog(a) + DiLog(b)
@@ -895,7 +900,7 @@ std::ostream& YFS::operator<<(std::ostream &out, const Dipole &Dip) {
       <<"Sum of Photons = "<< Dip.m_photonSum << std::endl
       << "Q+sum_i K_i = "<< Dip.m_photonSum+Dip.m_momenta[0]+Dip.m_momenta[1]<<std::endl
       << "Born Qi+Qj = "<< Dip.m_bornmomenta[0]+Dip.m_bornmomenta[0]<<std::endl
-      << "Left Fl " << Dip.m_leftfl << std::endl
+      << "Left Fl " << Dip.GetFlav(Dip.m_leftfl) << std::endl
       << "Right Fl " << Dip.m_rightfl << std::endl
       << "Mass of photon-fermion system = "
       << (Dip.m_photonSum+Dip.m_newmomenta[0]+Dip.m_newmomenta[1]).Mass()<<std::endl;
