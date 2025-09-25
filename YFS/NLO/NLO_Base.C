@@ -96,7 +96,7 @@ NLO_Base::~NLO_Base() {
 
 
 void NLO_Base::InitializeVirtual(const PHASIC::Process_Info& pi) {
-	if(!m_eex_virt){
+	if(!m_eex_virt && !m_looptool){
 		p_virt = new YFS::Virtual(pi);
 		m_looptool = true;
 	}
