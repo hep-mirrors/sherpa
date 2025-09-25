@@ -22,7 +22,7 @@ Virtual::Virtual(const PHASIC::Process_Info& pi)
     loop_pi.m_fi.m_nlotype=ATOOLS::nlo_type::loop;
     loop_pi.m_mincpl[0] = pi.m_mincpl[0];
     loop_pi.m_maxcpl[0] = pi.m_maxcpl[0];
-    loop_pi.m_mincpl[1] = pi.m_mincpl[1]+1;
+    loop_pi.m_mincpl[1] = pi.m_mincpl[1];
     loop_pi.m_maxcpl[1] = pi.m_maxcpl[1]+1;
     p_loop_me = PHASIC::Virtual_ME2_Base::GetME2(loop_pi);
     if (!p_loop_me)  {
@@ -37,7 +37,6 @@ Virtual::Virtual(const PHASIC::Process_Info& pi)
 
     double sym  = ATOOLS::Flavour::FSSymmetryFactor(args.m_outflavs);
     sym *= ATOOLS::Flavour::ISSymmetryFactor(args.m_inflavs);
-    p_corr_me = PHASIC::Color_Correlated_ME2::GetME2(args);  
     p_loop_me->SetCouplings(m_cpls);
     m_factor = p_loop_me->AlphaQED()/2.0/M_PI;
   }
