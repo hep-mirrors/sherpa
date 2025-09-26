@@ -122,7 +122,7 @@ void ATOOLS::OutputContainers(std::ostream &str) {
 }
 
 void ATOOLS::AddParticle(kf_code kfc, double mass, double radius, double width,
-                         int icharge, int strong, int spin, bool majorana,
+                         int icharge, int strong, int spin, int majorana,
                          bool on, int stable, bool massive,
                          const std::string &idname, const std::string &antiname,
                          const std::string &texname,
@@ -159,7 +159,7 @@ void ATOOLS::AddParticle(kf_code kfc, double mass, double radius, double width,
 
 void ATOOLS::AddOrUpdateParticle(kf_code kfc, double mass, double radius,
                                  double width, int icharge, int strong,
-                                 int spin, bool majorana, bool on, int stable,
+                                 int spin, int majorana, bool on, int stable,
                                  bool massive, const std::string &idname,
                                  const std::string &antiname,
                                  const std::string &texname,
@@ -200,7 +200,7 @@ void ATOOLS::AddOrUpdateParticle(kf_code kfc, double mass, double radius,
 }
 
 void ATOOLS::AddParticle(kf_code kfc, double mass, double radius, double width,
-                         int icharge, int spin, bool majorana, bool on,
+                         int icharge, int spin, int majorana, bool on,
                          int stable, const std::string &idname,
                          const std::string &texname)
 {
