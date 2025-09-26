@@ -25,6 +25,12 @@ H_to_bb_Virtual::H_to_bb_Virtual(const vector<Flavour>& flavs, MODEL::Model_Base
 
   if (flavs.size()!=3) THROW(fatal_error,"Internal error.");
 
+  // example momenta
+  std::vector<Vec4D> momenta(3);
+  momenta[0]=Vec4D(125.0,0.0,0.0,0.0); // Higgs
+  momenta[1]=Vec4D(62.54499999999998, 2.3910658074969522, 43.056947854781868, 45.033905790357714); // b
+  momenta[2]=Vec4D(62.545000000000009, -2.3910658074969575, -43.056947854781889, -45.033905790357707); // bbar
+
   SetUpCurrents(flavs);
   SetUpPrefactors(flavs);
   CalculateBorn();
@@ -32,11 +38,11 @@ H_to_bb_Virtual::H_to_bb_Virtual(const vector<Flavour>& flavs, MODEL::Model_Base
   // test:
   std::array<double, 4> p1 = {0.0, 0.0, 0.0, 0.0};
   std::array<double, 4> p2 = {0.0, 0.0, 0.0, 0.0};
-  std::array<std::complex<double>,16> M_finite(GetVirtualMatrixFinite(p1, p2));
-  std::array<std::complex<double>,16> M_epsilon(GetVirtualMatrixE(p1, p2));
-  std::array<std::complex<double>,16> M_epsilon2(GetVirtualMatrixE2(p1, p2));
+  std::array<std::complex<double>,16> M_finite(GetVirtualMatrixFinite(momenta));
+  std::array<std::complex<double>,16> M_epsilon(GetVirtualMatrixE(momenta));
+  std::array<std::complex<double>,16> M_epsilon2(GetVirtualMatrixE2(momenta));
 
-  // Einfache Ausgabe aller Elemente
+  // Ausgabe aller Elemente
   std::cout << "\n=== M_finite Matrix ===" << std::endl;
   std::cout << M_finite[0] << " " << M_finite[1] << " " << M_finite[2] << " " << M_finite[3] << std::endl;
   std::cout << M_finite[4] << " " << M_finite[5] << " " << M_finite[6] << " " << M_finite[7] << std::endl;
@@ -104,6 +110,22 @@ void H_to_bb_Virtual::SetUpCurrents(const vector<Flavour>& flavs){
     m_anticur[i]->SetKey(i);
     m_anticur[i]->SetGauge(k);
   }
+
+  p_ci=new Color_Integrator();
+    Idx_Vector cids(3,0);
+    METOOLS::Int_Vector acts(3,0), types(3,0);
+    for (size_t i(0);i<flavs.size();++i) {
+      cids[i]=i; // assign unique index
+      acts[i]=flavs[i].Strong();
+      if (acts[i]) {
+        if (flavs[i].StrongCharge()==8) types[i]=0;
+        else if (flavs[i].IsAnti()) types[i]=(i==0?1:-1);
+        else types[i]=(i==0?-1:1);
+      }
+    }
+  if (!p_ci->ConstructRepresentations(cids,types,acts)) {
+    THROW(fatal_error, "Internal error.");
+  }
 }
 
 
@@ -114,23 +136,18 @@ void H_to_bb_Virtual::CalculateBorn(){
 }
 
 
-std::array<std::complex<double>,16> H_to_bb_Virtual::GetVirtualMatrixFinite(const std::array<double, 4>& p1, const std::array<double, 4>&  p2){
+std::array<std::complex<double>,16> H_to_bb_Virtual::GetVirtualMatrixFinite(ATOOLS::Vec4D_Vector& momenta) {
     /* This method provides precomputed parts of the finite virtual correction matrix element for the H -> bb decay.
-   * p1 = bbar momentum
-   * p2 = Higgs momentum  
-   *
-   * q_1 = p_1 = bbar momentum
-   * q_2 = p_1 + p_2 = bbar + Higgs momenta = -b momentum
    * 
    * The matrix correspond to the expression: gamma-matrix * Loop-Integral * gamma-matrix.
    * 
    * Since the virtual corrections are momentum-independent for this process, the calculation
    * could be performed externally using a Python script.
    * 
-   * The matrix contains two components:
+   * The matrix contains three components:
    * - Finite part: The UV-finite contribution to the virtual amplitude
-   * - 1/epsilon divergence: The dimensional regularization pole that will be cancelled
-   *   by counterterms or subtracted by infrared-safe observables
+   * - 1/epsilon and 1/epsilon^2 divergence: The dimensional regularization poles that will be cancelled
+   *   by substraction terms
    * 
    * Here is the original Python code located: 
    * https://github.com/LeaBaumann/pre-calculations_integrals_and_subtraction/blob/main/Integrals_and_gammas.py
@@ -138,13 +155,14 @@ std::array<std::complex<double>,16> H_to_bb_Virtual::GetVirtualMatrixFinite(cons
   
   using C = std::complex<double>;
 
-  // Calculate q1 and q2 from p1 and p2
-    std::array<double, 4> q1 = p1;  // q1 = p1
-    std::array<double, 4> q2 = {    // q2 = p1 + p2
-        p1[0] + p2[0],
-        p1[1] + p2[1], 
-        p1[2] + p2[2],
-        p1[3] + p2[3]
+  // Calculate q1 and q2: q1 = p_bbar; q2 = p_bbar + p_Higgs
+    std::array<double, 4> q1 = {momenta[2][0], momenta[2][1], momenta[2][2]};
+    
+    std::array<double, 4> q2 = {
+        momenta[2][0] + momenta[0][0],
+        momenta[2][1] + momenta[0][1], 
+        momenta[2][2] + momenta[0][2],
+        momenta[2][3] + momenta[0][3]
     };
 
   const double diag_re = -0.002618352*q1[0]*q1[0] + 0.005900148*q1[0]*q2[0] + 0.002618352*q1[1]*q1[1] - 0.005900148*q1[1]*q2[1]
@@ -200,37 +218,32 @@ std::array<std::complex<double>,16> H_to_bb_Virtual::GetVirtualMatrixFinite(cons
 }
 
 
-std::array<std::complex<double>,16> H_to_bb_Virtual::GetVirtualMatrixE(const std::array<double, 4>& p1, const std::array<double, 4>&  p2){
-    /* This method provides precomputed parts of the 1/epsilon divergent virtual correction matrix element for the H -> bb decay.
-   * p1 = bbar momentum
-   * p2 = Higgs momentum  
-   *
-   * q_1 = p_1 = bbar momentum
-   * q_2 = p_1 + p_2 = bbar + Higgs momenta = -b momentum
+std::array<std::complex<double>,16> H_to_bb_Virtual::GetVirtualMatrixE(ATOOLS::Vec4D_Vector& momenta){
+    /* This method provides precomputed parts of the finite virtual correction matrix element for the H -> bb decay.
    * 
    * The matrix correspond to the expression: gamma-matrix * Loop-Integral * gamma-matrix.
    * 
    * Since the virtual corrections are momentum-independent for this process, the calculation
    * could be performed externally using a Python script.
    * 
-   * The matrix contains two components:
+   * The matrix contains three components:
    * - Finite part: The UV-finite contribution to the virtual amplitude
-   * - 1/epsilon divergence: The dimensional regularization pole that will be cancelled
-   *   by counterterms or subtracted by infrared-safe observables
+   * - 1/epsilon and 1/epsilon^2 divergence: The dimensional regularization poles that will be cancelled
+   *   by substraction terms
    * 
    * Here is the original Python code located: 
    * https://github.com/LeaBaumann/pre-calculations_integrals_and_subtraction/blob/main/Integrals_and_gammas.py
    */
-  
   using C = std::complex<double>;
 
-  // Calculate q1 and q2 from p1 and p2
-    std::array<double, 4> q1 = p1;  // q1 = p1
-    std::array<double, 4> q2 = {    // q2 = p1 + p2
-        p1[0] + p2[0],
-        p1[1] + p2[1], 
-        p1[2] + p2[2],
-        p1[3] + p2[3]
+  // Calculate q1 and q2: q1 = p_bbar; q2 = p_bbar + p_Higgs
+    std::array<double, 4> q1 = {momenta[2][0], momenta[2][1], momenta[2][2]};
+    
+    std::array<double, 4> q2 = {
+        momenta[2][0] + momenta[0][0],
+        momenta[2][1] + momenta[0][1], 
+        momenta[2][2] + momenta[0][2],
+        momenta[2][3] + momenta[0][3]
     };
 
       // Calculate diagonal elements
@@ -280,23 +293,18 @@ std::array<std::complex<double>,16> H_to_bb_Virtual::GetVirtualMatrixE(const std
 }
 
 
-std::array<std::complex<double>,16> H_to_bb_Virtual::GetVirtualMatrixE2(const std::array<double, 4>& p1, const std::array<double, 4>&  p2){
-    /* This method provides precomputed parts of the 1/epsilon^2 divergent virtual correction matrix element for the H -> bb decay.
-   * p1 = bbar momentum
-   * p2 = Higgs momentum  
-   *
-   * q_1 = p_1 = bbar momentum
-   * q_2 = p_1 + p_2 = bbar + Higgs momenta = -b momentum
+std::array<std::complex<double>,16> H_to_bb_Virtual::GetVirtualMatrixE2(ATOOLS::Vec4D_Vector& momenta){
+    /* This method provides precomputed parts of the finite virtual correction matrix element for the H -> bb decay.
    * 
    * The matrix correspond to the expression: gamma-matrix * Loop-Integral * gamma-matrix.
    * 
    * Since the virtual corrections are momentum-independent for this process, the calculation
    * could be performed externally using a Python script.
    * 
-   * The matrix contains two components:
+   * The matrix contains three components:
    * - Finite part: The UV-finite contribution to the virtual amplitude
-   * - 1/epsilon divergence: The dimensional regularization pole that will be cancelled
-   *   by counterterms or subtracted by infrared-safe observables
+   * - 1/epsilon and 1/epsilon^2 divergence: The dimensional regularization poles that will be cancelled
+   *   by substraction terms
    * 
    * Here is the original Python code located: 
    * https://github.com/LeaBaumann/pre-calculations_integrals_and_subtraction/blob/main/Integrals_and_gammas.py
@@ -304,13 +312,14 @@ std::array<std::complex<double>,16> H_to_bb_Virtual::GetVirtualMatrixE2(const st
   
   using C = std::complex<double>;
 
-  // Calculate q1 and q2 from p1 and p2
-    std::array<double, 4> q1 = p1;  // q1 = p1
-    std::array<double, 4> q2 = {    // q2 = p1 + p2
-        p1[0] + p2[0],
-        p1[1] + p2[1], 
-        p1[2] + p2[2],
-        p1[3] + p2[3]
+  // Calculate q1 and q2: q1 = p_bbar; q2 = p_bbar + p_Higgs
+    std::array<double, 4> q1 = {momenta[2][0], momenta[2][1], momenta[2][2]};
+    
+    std::array<double, 4> q2 = {
+        momenta[2][0] + momenta[0][0],
+        momenta[2][1] + momenta[0][1], 
+        momenta[2][2] + momenta[0][2],
+        momenta[2][3] + momenta[0][3]
     };
 
     // elements of the matrix: 

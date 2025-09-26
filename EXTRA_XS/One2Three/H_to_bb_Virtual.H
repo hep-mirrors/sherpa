@@ -22,14 +22,15 @@ namespace EXTRAXS {
     static MODEL::Model_Base *s_model;
     double BornPrefactor;
     double VirtualPrefactor;
+    PHASIC::Color_Integrator* p_ci;
 
     size_t NHel(const ATOOLS::Flavour& fl);
     void SetUpCurrents(const std::vector<ATOOLS::Flavour>& flavs);
     void CalculateBorn();
     void SetUpPrefactors(const std::vector<ATOOLS::Flavour>& flavs);
-    std::array<std::complex<double>,16> GetVirtualMatrixFinite(const std::array<double, 4>& p1, const std::array<double, 4>&  p2);
-    std::array<std::complex<double>,16> GetVirtualMatrixE(const std::array<double, 4>& p1, const std::array<double, 4>&  p2);
-    std::array<std::complex<double>,16> GetVirtualMatrixE2(const std::array<double, 4>& p1, const std::array<double, 4>&  p2);
+    std::array<std::complex<double>,16> GetVirtualMatrixFinite(ATOOLS::Vec4D_Vector& momenta);
+    std::array<std::complex<double>,16> GetVirtualMatrixE(ATOOLS::Vec4D_Vector& momenta);
+    std::array<std::complex<double>,16> GetVirtualMatrixE2(ATOOLS::Vec4D_Vector& momenta);
   protected:
     double alpha_qcd;
   public:
