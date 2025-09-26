@@ -10,7 +10,7 @@ namespace ATOOLS {
   void OutputContainers(std::ostream&);
 
   void AddParticle(kf_code kfc, double mass, double radius, double width,
-                   int icharge, int strong, int spin, bool majorana, bool on,
+                   int icharge, int strong, int spin, int majorana, bool on,
                    int stable, bool massive, const std::string &idname,
                    const std::string &antiname, const std::string &texname,
                    const std::string &antitexname, bool dummy = false,
@@ -18,7 +18,7 @@ namespace ATOOLS {
 
   void AddOrUpdateParticle(kf_code kfc, double mass, double radius,
                            double width, int icharge, int strong, int spin,
-                           bool majorana, bool on, int stable, bool massive,
+                           int majorana, bool on, int stable, bool massive,
                            const std::string &idname,
                            const std::string &antiname,
                            const std::string &texname,
@@ -26,7 +26,7 @@ namespace ATOOLS {
                            bool group = false);
 
   void AddParticle(kf_code kfc, double mass, double radius, double width,
-                   int icharge, int spin, bool majorana, bool on, int stable,
+                   int icharge, int spin, int majorana, bool on, int stable,
                    const std::string &idname, const std::string &texname);
 
   void AddParticle(kf_code kfc, double mass, double radius, double width,
