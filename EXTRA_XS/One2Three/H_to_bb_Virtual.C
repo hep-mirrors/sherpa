@@ -2,6 +2,7 @@
 
 #include "METOOLS/Explicit/Current.H"
 #include "METOOLS/Explicit/Vertex.H"
+#include "METOOLS/Currents/F_C.C"
 #include "EXTRA_XS/Main/ME_Tools.H"
 #include "MODEL/Main/Model_Base.H"
 #include "MODEL/Main/Single_Vertex.H"
@@ -33,7 +34,7 @@ H_to_bb_Virtual::H_to_bb_Virtual(const vector<Flavour>& flavs, MODEL::Model_Base
 
   SetUpCurrents(flavs);
   SetUpPrefactors(flavs);
-  CalculateBorn();
+  CalculateBorn(momenta);
 
   // test:
   std::array<double, 4> p1 = {0.0, 0.0, 0.0, 0.0};
@@ -85,7 +86,7 @@ size_t H_to_bb_Virtual::NHel(const Flavour& fl)
 void H_to_bb_Virtual::SetUpCurrents(const vector<Flavour>& flavs){
   Vec4D k(1.0,0.0,1.0,0.0); // gauge
 
-  for (size_t i(1);i<3;++i) { // iterate over the 2 external flavours
+  for (size_t i(0);i<3;++i) { // iterate over the 2 external flavours
     // the Current_key object uniquely identify and retrieve a current
     Current_Key ckey(i==0?flavs[i].Bar():flavs[i],MODEL::s_model,1); // for i == 0 (incoming particle), use the bar. This is because (?) for amplitude 
     // construction the incoming state is treated as if it were outgoing but with reversed fermion flow, so using the barred version ensures that 
@@ -100,7 +101,7 @@ void H_to_bb_Virtual::SetUpCurrents(const vector<Flavour>& flavs){
     m_nhel[i]=NHel(flavs[i]); // number of helicity states (based on spin properties)
   }
 
-  for (size_t i(1);i<3;++i) { // do the same for the anticurrent
+  for (size_t i(0);i<3;++i) { // do the same for the anticurrent
     Current_Key ckey(i==0?flavs[i]:flavs[i].Bar(),MODEL::s_model,1);
     m_anticur[i] = Current_Getter::GetObject("D"+ckey.Type(),ckey);
     if (m_anticur[i]==NULL) THROW(fatal_error, "current not found");
@@ -129,10 +130,42 @@ void H_to_bb_Virtual::SetUpCurrents(const vector<Flavour>& flavs){
 }
 
 
-void H_to_bb_Virtual::CalculateBorn(){
+void H_to_bb_Virtual::CalculateBorn(const ATOOLS::Vec4D_Vector& momenta){
+  // analytical try, just current, not anticurrent
+
+  // copy currents
   std::vector<METOOLS::Current*> born_mcur(m_cur); 
   METOOLS::Current* bottom_cur = born_mcur[1];
   METOOLS::Current* antibottom_cur = born_mcur[1];
+
+  // copy anticurrents
+  std::vector<METOOLS::Current*> born_anticur(m_anticur); 
+  METOOLS::Current* bottom_anticur = born_anticur[1];
+  METOOLS::Current* antibottom_anticur = born_anticur[1];
+
+  for (size_t i(0);i<m_cur.size();++i) {
+    m_cur[i]->ConstructJ(i==0?-momenta[i]:momenta[i],0,p_ci->I()[i],p_ci->J()[i],0);
+    m_cur[i]->Print();
+  }
+
+  vector<int> fill(m_n,1); // output amplitude vector
+  for (size_t i(0);i<m_n;++i) (*this)[i]=Complex(0.0,0.0);
+
+
+
+  CF<double>* b_fermion = dynamic_cast<CF<double>*>(m_cur[1]);
+  CF<double>* bbar_fermion = dynamic_cast<CF<double>*>(m_cur[2]);
+  
+  if (b_fermion && bbar_fermion) {
+    // Construct Spinors
+    b_fermion->ConstructJ(momenta[1], 0, p_ci->I()[1], p_ci->J()[1], 0);
+    bbar_fermion->ConstructJ(momenta[2], 0, p_ci->I()[2], p_ci->J()[2], 0);
+    
+    b_fermion->AddPropagator(); 
+    
+    b_fermion->Print();
+    bbar_fermion->Print();
+  }
 }
 
 
@@ -156,7 +189,7 @@ std::array<std::complex<double>,16> H_to_bb_Virtual::GetVirtualMatrixFinite(ATOO
   using C = std::complex<double>;
 
   // Calculate q1 and q2: q1 = p_bbar; q2 = p_bbar + p_Higgs
-    std::array<double, 4> q1 = {momenta[2][0], momenta[2][1], momenta[2][2]};
+    std::array<double, 4> q1 = {momenta[2][0], momenta[2][1], momenta[2][2], momenta[2][3]};
     
     std::array<double, 4> q2 = {
         momenta[2][0] + momenta[0][0],
@@ -237,7 +270,7 @@ std::array<std::complex<double>,16> H_to_bb_Virtual::GetVirtualMatrixE(ATOOLS::V
   using C = std::complex<double>;
 
   // Calculate q1 and q2: q1 = p_bbar; q2 = p_bbar + p_Higgs
-    std::array<double, 4> q1 = {momenta[2][0], momenta[2][1], momenta[2][2]};
+    std::array<double, 4> q1 = {momenta[2][0], momenta[2][1], momenta[2][2], momenta[2][3]};
     
     std::array<double, 4> q2 = {
         momenta[2][0] + momenta[0][0],
@@ -313,7 +346,7 @@ std::array<std::complex<double>,16> H_to_bb_Virtual::GetVirtualMatrixE2(ATOOLS::
   using C = std::complex<double>;
 
   // Calculate q1 and q2: q1 = p_bbar; q2 = p_bbar + p_Higgs
-    std::array<double, 4> q1 = {momenta[2][0], momenta[2][1], momenta[2][2]};
+    std::array<double, 4> q1 = {momenta[2][0], momenta[2][1], momenta[2][2], momenta[2][3]};
     
     std::array<double, 4> q2 = {
         momenta[2][0] + momenta[0][0],

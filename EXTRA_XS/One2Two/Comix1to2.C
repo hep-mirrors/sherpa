@@ -109,7 +109,7 @@ Comix1to2::~Comix1to2()
 }
 
 void Comix1to2::Calculate(const ATOOLS::Vec4D_Vector& momenta, bool anti) {
-  p_ci->GeneratePoint(); // create a new integration point for the color factors
+  p_ci->GeneratePoint();
   if (anti) {
     for (size_t i(0);i<m_anticur.size();++i) {
       m_anticur[i]->ConstructJ(i==0?-momenta[i]:momenta[i],0,p_ci->I()[i],p_ci->J()[i],0);

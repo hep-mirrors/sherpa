@@ -26,7 +26,7 @@ namespace EXTRAXS {
 
     size_t NHel(const ATOOLS::Flavour& fl);
     void SetUpCurrents(const std::vector<ATOOLS::Flavour>& flavs);
-    void CalculateBorn();
+    void CalculateBorn(const ATOOLS::Vec4D_Vector& momenta);
     void SetUpPrefactors(const std::vector<ATOOLS::Flavour>& flavs);
     std::array<std::complex<double>,16> GetVirtualMatrixFinite(ATOOLS::Vec4D_Vector& momenta);
     std::array<std::complex<double>,16> GetVirtualMatrixE(ATOOLS::Vec4D_Vector& momenta);
@@ -38,7 +38,6 @@ namespace EXTRAXS {
     ~H_to_bb_Virtual();
     void Calculate_alpha_QCD(MODEL::Model_Base* s_model);
     void Calculate(const ATOOLS::Vec4D_Vector& momenta, bool anti=false) override;
-
   };
 }
 
