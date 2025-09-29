@@ -30,6 +30,8 @@ ISR::ISR()
   m_Kmin = sqrt(m_s) * (m_isrcut) / 2.;
   m_Kmax = sqrt(m_s * (1. - m_isrcut));
   m_cut = 1.; // set to 0 if anything fails to pass cuts
+  Scoped_Settings s{ Settings::GetMainSettings()["YFS"] };
+  m_fixed_ngamma = s["ISR_NGAMMA"].SetDefault(-1).Get<int>();
   m_nsuccess = 0;
   m_nfail = 0;
   m_ntotal = 0;
@@ -64,6 +66,10 @@ void ISR::NPhotons() {
     m_n = 0;
     return;
   }
+   if(m_fixed_ngamma!=-1) {
+   m_n = m_fixed_ngamma;
+   return;
+ }
   m_nbar = m_gp * log(m_v / m_isrcut);
   if (m_nbar < 0 ) {
     msg_Error() << METHOD << "Warning: ISR photon average is less than 0" << std::endl;
