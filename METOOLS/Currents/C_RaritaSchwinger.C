@@ -258,7 +258,7 @@ bool CRaritaSchwinger<Scalar>::Test_Properties(const ATOOLS::Vec4D &p, int dir) 
   // SComplex(-r) for distinguishing between particle and anti-particle Dirac equation
   ATOOLS::TCMatrix<Scalar> intermediate = ATOOLS::TCMatrix<Scalar>(gammavec * p);
   // TODO: Stimmt das mit dem dir hier?
-  if (p.Mass()>1e-6) {
+  if (!ATOOLS::IsZero(p.Abs2())) {
     intermediate += ATOOLS::TCMatrix<Scalar>(SComplex(-m_r) * SComplex(-dir) * SComplex(p.Mass()) *
       ATOOLS::TCMatrix<Scalar>(4, true));
   }
@@ -281,7 +281,7 @@ bool CRaritaSchwinger<Scalar>::Test_Properties(const ATOOLS::Vec4D &p, int dir) 
   }
 
   for (size_t j(0); j<16; ++j){
-    if (std::abs(result1[j].real())>1e-8 || std::abs(result1[j].imag())>1e-8) {
+    if (std::abs(result1[j].real())>s_accu || std::abs(result1[j].imag())>s_accu) {
       msg_Debugging()<<"Component " << j << " of resulting Rarita-Schwinger wave function is "
       << result1[j] << " instead of zero!" << "\n";
       testresult =false;
