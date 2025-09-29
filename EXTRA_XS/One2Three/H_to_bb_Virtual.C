@@ -3,6 +3,7 @@
 #include "METOOLS/Explicit/Current.H"
 #include "METOOLS/Explicit/Vertex.H"
 #include "EXTRA_XS/One2Three/CF_Decl.H"
+#include "METOOLS/Currents/C_Spinor.H"
 #include "EXTRA_XS/Main/ME_Tools.H"
 #include "MODEL/Main/Model_Base.H"
 #include "MODEL/Main/Single_Vertex.H"
@@ -131,6 +132,7 @@ void H_to_bb_Virtual::SetUpCurrents(const vector<Flavour>& flavs){
 
 
 void H_to_bb_Virtual::CalculateBorn(const ATOOLS::Vec4D_Vector& momenta){
+  p_ci->GeneratePoint();
   // analytical try, just current, not anticurrent
 
   // copy currents
@@ -148,42 +150,26 @@ void H_to_bb_Virtual::CalculateBorn(const ATOOLS::Vec4D_Vector& momenta){
     m_cur[i]->Print();
   }
 
-  vector<int> fill(m_n,1); // output amplitude vector
-  for (size_t i(0);i<m_n;++i) (*this)[i]=Complex(0.0,0.0);
-
-
-   if (m_cur[1] && m_cur[2]) {
-    std::cout << "Fermion currents type: " << m_cur[1]->Type() << ", " << m_cur[2]->Type() << std::endl;
-    std::cout << "CalculateBorn completed successfully" << std::endl;
-  }
-
-
-  // ✅ AKTIVIERE den CF-Cast Code:
+  //vector<int> fill(m_n,1); // output amplitude vector
+  //for (size_t i(0);i<m_n;++i) (*this)[i]=Complex(0.0,0.0);
   CF<double>* b_fermion = dynamic_cast<CF<double>*>(m_cur[1]);
-  CF<double>* bbar_fermion = dynamic_cast<CF<double>*>(m_cur[2]);
-  
-  if (b_fermion && bbar_fermion) {
-    std::cout << "CF-cast successful!" << std::endl;
-    
-    // ❌ ENTFERNE doppelte ConstructJ - wurde bereits oben in der Schleife gemacht:
-    // b_fermion->ConstructJ(momenta[1], 0, p_ci->I()[1], p_ci->J()[1], 0);
-    // bbar_fermion->ConstructJ(momenta[2], 0, p_ci->I()[2], p_ci->J()[2], 0);
-    
-    // ✅ CF-spezifische Methoden verwenden:
-    b_fermion->AddPropagator(); 
-    
-    std::cout << "Used CF-specific AddPropagator() method" << std::endl;
-    
-    // Print wurde bereits oben gemacht, aber nochmal für CF-Bestätigung:
-    std::cout << "b-fermion CF details:" << std::endl;
-    b_fermion->Print();
-    std::cout << "bbar-fermion CF details:" << std::endl;
-    bbar_fermion->Print();
-  } else {
-    std::cout << "CF-cast failed, using Current interface only" << std::endl;
-  }
-  
-  std::cout << "CalculateBorn completed successfully" << std::endl;
+  //CF<double>* bbar_fermion = dynamic_cast<CF<double>*>(m_cur[2]);
+
+  typedef METOOLS::CSpinor<double> DDSpin;
+  DDSpin *spin = DDSpin::New();  
+  double m2 = 25.0;
+  const double helicity = 1;
+  const int mass_sign = 1;
+  spin->Construct(helicity, momenta[1], m2, mass_sign);
+
+  // Zugriff auf m_u über operator[]
+  std::complex<double> u0 = (*spin)[0];
+  std::complex<double> u1 = (*spin)[1];
+  std::complex<double> u2 = (*spin)[2];
+  std::complex<double> u3 = (*spin)[3];
+
+  std::cout << "CSpinor components: "
+            << u0 << " " << u1 << " " << u2 << " " << u3 << std::endl;
 }
 
 
