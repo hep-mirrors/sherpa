@@ -286,11 +286,10 @@ double NLO_Base::CalculateReal(Vec4D k, int fsrcount) {
   		 Dip->AddPhotonToDipole(k);
   		 if(!Dip->BoostNLO()) return 0;
   		 int i(0);
-  		 for (auto f : Dip->m_flavs) {
-      	p[p_nlodipoles->m_flav_label[f]] =  Dip->GetNewMomenta(i);
-      	i++;
-    	}
-    	k = Dip->m_dipolePhotons[0];
+
+  		 p[Dip->Left()]  =  Dip->GetNewMomenta(0);
+    	 p[Dip->Right()] =  Dip->GetNewMomenta(1);
+    	 k = Dip->m_dipolePhotons[0];
   	}
   }
  	else {
@@ -533,8 +532,8 @@ double NLO_Base::CalculateRealReal() {
 			if(m_check_rr_sub){
 				// k*=2;
 				// kk*=2;
-				if(k.E() < 0.3*sqrt(m_s)) continue;
-				if(kk.E() < 0.1*sqrt(m_s)) continue;
+				if(k.E() < 0.2*sqrt(m_s)) continue;
+				if(kk.E() < 0.2*sqrt(m_s)) continue;
 				if(!m_failcut) CheckRealRealSub(k, kk, isFSR_i, isFSR_j);
 			}
 		}
@@ -701,12 +700,12 @@ void NLO_Base::MapMomenta(Vec4D_Vector &p, Vec4D &k) {
 	Poincare boostQ(Q);
   Poincare pRot(m_bornMomenta[0], Vec4D(0., 0., 0., 1.));
 	for (int i = 0; i < p.size(); ++i) {
-		pRot.Rotate(p[i]);
 		boostQ.Boost(p[i]);
+		pRot.Rotate(p[i]);
 		// RandomRotate(p[i]);
 	}
-	pRot.Rotate(k);
 	boostQ.Boost(k);
+	pRot.Rotate(k);
 	// RandomRotate(k);
 	double qx(0), qy(0), qz(0);
 	for (int i = 2; i < p.size(); ++i)
@@ -749,11 +748,11 @@ void NLO_Base::MapMomenta(Vec4D_Vector &p, Vec4D &k) {
   Poincare pRot2(m_bornMomenta[0], Vec4D(0., 	0., 0, 1.));
 	for (int i = 0; i < p.size(); ++i)
 	{
-		pRot2.Rotate(p[i]);
 		boostLab.BoostBack(p[i]);
+		pRot2.Rotate(p[i]);
 	}
-	pRot2.Rotate(k);
 	boostLab.BoostBack(k);
+	pRot2.Rotate(k);
 }
 
 
@@ -1082,7 +1081,8 @@ void NLO_Base::CheckRealRealSub(Vec4D k1, Vec4D k2, int fsr1, int fsr2){
 			// if(k2.E() <= 1e-16 ) break;
 			real=CalculateRealReal(k1,k2, fsr1, fsr2);
 			out_sub<<k2.E()<<","<<fabs(real)/m_born<<std::endl;
-			if(k2.E()< m_isrcut*sqrt(m_s)) break;
+			// if(k2.E()< m_isrcut*sqrt(m_s)) break;
+			if(k2.E() <= 1e-16) break;
 			// if(IsZero(real)) break;
 			// m_histograms2d["Real_me_sub"]->Insert(k.E(),fabs(real), 1);
 		}
@@ -1096,7 +1096,7 @@ void NLO_Base::CheckRealRealSub(Vec4D k1, Vec4D k2, int fsr1, int fsr2){
 			k1=k1/i;
 			real=CalculateRealReal(k1,k2,fsr1,fsr2);
 			out_sub<<k1.E()<<","<<fabs(real)/m_born<<std::endl;
-			if(k1.E() <= 1e-16 || real==0 && !m_failcut) break;
+			if(k1.E() <= 1e-16 || k2.E() <= 1e-16 ) break;
 			// if(IsZero(real)) break;
 			// m_histograms2d["Real_me_sub"]->Insert(k.E(),fabs(real), 1);
 		}
