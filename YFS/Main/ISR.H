@@ -29,7 +29,7 @@ public:
   double  m_delta, m_betaf;
   double  m_jacW, m_Jac, m_Jac0, m_lam, m_lam0, m_diljac, m_diljac0;
   double  A;
-  int m_n, m_cut;
+  int m_n, m_cut, m_fixed_ngamma;
   double m_beta, m_betap, m_form, m_formF, m_weight, m_Kmax, m_Kmin, m_betak;
   double  m_L, m_am2, m_mass, m_mass2, m_x;
   double m_massW;
