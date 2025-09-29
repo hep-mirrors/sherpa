@@ -340,9 +340,8 @@ void FSR::RescalePhotons() {
 Vec4D FSR::ScalePhoton(const int &i) {
   Vec4D k = m_photonspreboost[i];
   Vec4D sumk;
-  for(auto _k: m_photonspreboost) sumk+=_k;
   double x = 1. / (1. - k[0]);
-  double yy = 1. / (1. + k[0]*m_xfact);
+  double yy = 1. / (1. + k[0]*x);
   double sprim = m_dip_sp * yy;
   double ener = sqrt(sprim) / 2.;
   return k*ener*x;
