@@ -120,7 +120,7 @@ namespace ATOOLS {
       return (abs2 == 0) ? 0 : abs2/(m_x[0]*m_x[0]);
     }
     Scalar Abs() const { return sqrt(Abs2()); }
-    double Mass() const {
+    Scalar Mass() const {
       return sqrt(ATOOLS::Abs<Scalar>(Abs2()));
     }
     Scalar P() const { return PSpat(); }
