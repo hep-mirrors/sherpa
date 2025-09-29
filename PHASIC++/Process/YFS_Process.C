@@ -79,7 +79,6 @@ void YFS_Process::Init(const Process_Info &pi,
     for (size_t i = 0; i < pi.m_fi.m_nlocpl.size(); ++i)
     {
       rpi.m_maxcpl[i] += rpi.m_fi.m_nlocpl[i];
-      rpi.m_mincpl[i] += rpi.m_fi.m_nlocpl[i];
     }
     rpi.m_fi.m_ps.push_back(Subprocess_Info(kf_photon, "", ""));
     p_realproc = InitProcess(rpi, nlo_type::real, false);
