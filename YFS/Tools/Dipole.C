@@ -222,6 +222,7 @@ void Dipole::Boost() {
         Boost(m_ghost[i]);
       }
     }
+    // m_eikmomentum = m_newmomenta;
     m_photonSum*=0.;
     // m_dipolePhotonsEEX.clear();
     for (auto &k : m_dipolePhotons) {
@@ -834,15 +835,15 @@ double Dipole::EikonalMassless(const Vec4D &k,const Vec4D &p1, const Vec4D &p2) 
 
 
 double Dipole::Eikonal(const Vec4D &k) {
-  Vec4D p1 = m_eikmomentum[0];
-  Vec4D p2 = m_eikmomentum[1];
+  Vec4D p1 = m_bornmomenta[0];
+  Vec4D p2 = m_bornmomenta[1];
   return m_QiQj*m_thetaij*m_alp / (4 * M_PI * M_PI) * (p1 / (p1 * k) - p2 / (p2 * k)).Abs2();
 }
 
 
 double Dipole::EikonalInterferance(const Vec4D &k) {
-  Vec4D p1 = m_eikmomentum[0];
-  Vec4D p2 = m_eikmomentum[1];
+  Vec4D p1 = m_bornmomenta[0];
+  Vec4D p2 = m_bornmomenta[1];
   return -m_QiQj*m_thetaij*m_alp / (2 * M_PI * M_PI) * (p1*p2 / (p1 * k)/(p2 * k));
 }
 
