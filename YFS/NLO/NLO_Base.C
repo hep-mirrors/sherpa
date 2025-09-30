@@ -321,7 +321,7 @@ double NLO_Base::CalculateReal(Vec4D k, int fsrcount) {
 	double subb;
 	m_real = r;
 	if(fsrcount==0 || fsrcount==3) subb = p_dipoles->CalculateRealSubEEX(kk);
-	else subb = p_dipoles->CalculateRealSubEEX(kk);
+	else subb = p_dipoles->CalculateRealSubEEX(k);
 	// if(IsZero(subb)) return 0;
 	m_eikeex = subb;
 	m_subloc = subloc;
@@ -385,7 +385,7 @@ double NLO_Base::CalculateReal(Vec4D k, int fsrcount) {
 		}
 	}
 	if(fsrcount>=3) return tot*subb;
-	return tot;
+	return 2.*tot;
 }
 
 double NLO_Base::CalculateRealVirtual() {
