@@ -32,11 +32,8 @@ namespace EXTRAXS {
               size_t nonprop, size_t propi, size_t propj);
     ~H_to_bbg_Real();
     void Born_setup();
-    void Calculate_born_subtraction();
-    void Calculate_virtual();
-    void Calculate_virtual_subtraction();
+    void Calculate_born_subtraction(const ATOOLS::Vec4D_Vector& momenta, bool anti=false);
     void Calculate(const ATOOLS::Vec4D_Vector& momenta, bool anti=false);
-
 
     ATOOLS::Flavour Prop() const { return m_prop; }
   };

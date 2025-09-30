@@ -128,6 +128,7 @@ H_to_bbg_Real::H_to_bbg_Real(const vector<Flavour>& flavs, const Flavour& prop,
   }
 }
 
+
 H_to_bbg_Real::~H_to_bbg_Real()
 {
   for (size_t i(0);i<4;++i) {
@@ -141,18 +142,19 @@ H_to_bbg_Real::~H_to_bbg_Real()
   if (p_ci) delete p_ci;
 }
 
+
 void H_to_bbg_Real::Born_setup(){}
 
-void H_to_bbg_Real::Calculate_born_subtraction(){}
 
-void H_to_bbg_Real::Calculate_virtual(){}
+void H_to_bbg_Real::Calculate_born_subtraction(const ATOOLS::Vec4D_Vector& momenta, bool anti){
+  
+}
 
-void H_to_bbg_Real::Calculate_virtual_subtraction(){}
 
 void H_to_bbg_Real::Calculate(const ATOOLS::Vec4D_Vector& momenta, bool anti) {
-  /*DEBUG_FUNC(momenta.size());
+  DEBUG_FUNC(momenta.size());
   // does not do anything yet because integrating this decay channel would result in infinities
-  p_ci->GeneratePoint(); // create a new integration point for the color factors
+ /* p_ci->GeneratePoint(); // create a new integration point for the color factors
 
 
   const std::vector<int> myI = { 0, 2, 1, 0 };
@@ -177,7 +179,7 @@ void H_to_bbg_Real::Calculate(const ATOOLS::Vec4D_Vector& momenta, bool anti) {
     m_scur->Evaluate();
     m_fcur->Evaluate();
   }
-
+/*
   vector<int> fill(m_n,1); // output amplitude vector
   for (size_t i(0);i<m_n;++i) (*this)[i]=Complex(0.0,0.0);
   if (anti) {
@@ -191,17 +193,17 @@ void H_to_bbg_Real::Calculate(const ATOOLS::Vec4D_Vector& momenta, bool anti) {
     (*this)[i] *= sqrt(p_ci->GlobalWeight()); // scale the final numerical result appropriately with the color factor
   }
   std::cout << "GlobalWeight = " << p_ci->GlobalWeight() << std::endl;
-
-
+*/
+/*
   for (size_t i = 0; i < p_ci->I().size(); ++i) {
       std::cout << "I[" << i << "] = " << p_ci->I()[i] << std::endl;
   }
   for (size_t i = 0; i < p_ci->J().size(); ++i) {
       std::cout << "J[" << i << "] = " << p_ci->J()[i] << std::endl;
-  }*/
-
+  }
+*/
+Calculate_born_subtraction(momenta, anti);
 }
-
 
 
 size_t H_to_bbg_Real::NHel(const Flavour& fl)

@@ -149,11 +149,31 @@ void H_to_bb_Virtual::CalculateBorn(const ATOOLS::Vec4D_Vector& momenta){
     m_cur[i]->ConstructJ(i==0?-momenta[i]:momenta[i],0,p_ci->I()[i],p_ci->J()[i],0);
     m_cur[i]->Print();
   }
+  METOOLS::Current* cur = m_cur[1];
 
+  typedef METOOLS::CSpinor<double> DDSpin;
+  const METOOLS::CObject_Matrix &J = cur->J();
+  for (size_t h = 0; h < J.size(); ++h) {
+    const std::vector<DDSpin*> *vec = J[h].template Get<DDSpin>();
+    if (!vec) continue;
+    for (DDSpin* sp : *vec) {
+      // sp ist der CSpinor-Zeiger
+      std::complex<double> u0 = (*sp)[0];
+      std::complex<double> u1 = (*sp)[1];
+      std::complex<double> u2 = (*sp)[2];
+      std::complex<double> u3 = (*sp)[3];
+
+      std::cout << "m_cur[1] hel=" << h
+                << " u0=" << u0 << " u1=" << u1
+                << " u2=" << u2 << " u3=" << u3 << std::endl;
+    }
+  }
+
+  /*
   //vector<int> fill(m_n,1); // output amplitude vector
   //for (size_t i(0);i<m_n;++i) (*this)[i]=Complex(0.0,0.0);
   CF<double>* b_fermion = dynamic_cast<CF<double>*>(m_cur[1]);
-  //CF<double>* bbar_fermion = dynamic_cast<CF<double>*>(m_cur[2]);
+  CF<double>* bbar_fermion = dynamic_cast<CF<double>*>(m_cur[2]);
 
   typedef METOOLS::CSpinor<double> DDSpin;
   DDSpin *spin = DDSpin::New();  
@@ -162,7 +182,6 @@ void H_to_bb_Virtual::CalculateBorn(const ATOOLS::Vec4D_Vector& momenta){
   const int mass_sign = 1;
   spin->Construct(helicity, momenta[1], m2, mass_sign);
 
-  // Zugriff auf m_u über operator[]
   std::complex<double> u0 = (*spin)[0];
   std::complex<double> u1 = (*spin)[1];
   std::complex<double> u2 = (*spin)[2];
@@ -170,7 +189,7 @@ void H_to_bb_Virtual::CalculateBorn(const ATOOLS::Vec4D_Vector& momenta){
 
   std::cout << "CSpinor components: "
             << u0 << " " << u1 << " " << u2 << " " << u3 << std::endl;
-}
+}*/
 
 
 std::array<std::complex<double>,16> H_to_bb_Virtual::GetVirtualMatrixFinite(ATOOLS::Vec4D_Vector& momenta) {
