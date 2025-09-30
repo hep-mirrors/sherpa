@@ -415,7 +415,6 @@ void YFS_Handler::CalculateBeta() {
     if(m_no_born) m_real=CalculateNLO()/m_born;
     else m_real=(m_born+CalculateNLO())/m_born;
   }
-  if(m_nlocuts && p_nlo->m_failcut) m_real=0;
   if (m_useceex) MakeCEEX();
 }
 
