@@ -253,7 +253,9 @@ double NLO_Base::CalculateReal() {
 			coll /=  p_dipoles->GetDipoleII()[0].Eikonal(k);
 			if(fullreal!=0) m_histograms2d["REAL_COLL_RATIO"]->Insert(k.E(), coll*m_born/fullreal);
 		}
-		else real+=CalculateReal(k,0);
+		else {
+			if(k.E() > m_hardmin) real+=CalculateReal(k,0);
+		}
 	}
 	int fsrcount(0);
 	for (auto k : m_FSRPhotons) {
@@ -261,8 +263,10 @@ double NLO_Base::CalculateReal() {
 			if(k.E() < 0.2*sqrt(m_s)) continue;
 				CheckRealSub(k,1);
 		}
-		real+=CalculateReal(k, 1);
-		fsrcount++;
+		if(k.E() > m_hardmin){
+			real+=CalculateReal(k, 1);
+			fsrcount++;
+		}
 	}
 	return real;
 }
