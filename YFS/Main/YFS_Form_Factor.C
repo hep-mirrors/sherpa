@@ -73,7 +73,8 @@ double YFS_Form_Factor::BVR_full(double p1p2, double E1, double E2,
                 << "\n p1p2  = " << p1p2
                 << "\n form   = " << exp(m_alpi * (t1 + t2 + 0.5 * t3)) << std::endl;
   }
-  return m_alpi * (t1 + t2 + 0.5 * t3);
+  // return m_alpi * (t1 + t2 + 0.5 * t3);
+  return m_alpi * (t1 );
 }
 
 DivArrD YFS_Form_Factor::BVR_full_eps(YFS::Dipole &d,  double Kmax, int mode) {
@@ -438,7 +439,7 @@ double YFS_Form_Factor::BVV_full(YFS::Dipole &d, double MasPhot, double Kmax, in
     p2 = d.GetBornMomenta(1);
   }
   else if(d.Type()==dipoletype::ifi){
-    p1 = d.GetNewMomenta(0);
+    p1 = d.GetBornMomenta(0);
     p2 = d.GetBornMomenta(1);
   }
   else{
@@ -730,18 +731,19 @@ double YFS_Form_Factor::BVirtT(Vec4D p1, Vec4D p2,  double kmax){
   double p1p2 = p1*p2;
   double t  = (p1-p2).Abs2();
   double ta = fabs(t);
-  double zeta = 1 + m1*m2/ta;
+  double zeta = 1 + M*M/ta;
   double TBvirt, Bv;
   // double rho = sqrt(1. - sqr(m1*m2 / (p1*p2)));
   double rho = sqrt((1. - (m1*m2 / (p1*p2)))*(1. + (m1*m2 / (p1*p2))));
   TBvirt = m_alpi*(
-    (log(p1p2 * (1. + rho) / (m1*m2)) / rho - 1) *log(pow(m_photonMass, 2)/(m1*m2)) 
+    (log(ta/m/M) +log(zeta) - 1) *log(pow(m_photonMass, 2)/(m*M)) 
+    // (log(p1p2 * (1. + rho) / (m1*m2)) / rho - 1) *log(pow(m_photonMass, 2)/(m1*m2)) 
        // (log(2*p1p2/(m1*m2))-1.0)*log(m_photonMass*m_photonMass/(m1*m2))
-      //  +0.5*zeta*log(ta*zeta/(m1*m2))
-      //   -0.5*log(ta/m1/m1)*log(ta/m2/m2)
-      // +0.5*(zeta -1.0)*log(m1/m2)
-      // -log(zeta)*(log(ta/(m1*m2)) +0.5*log(zeta))
-      // +DiLog(1./zeta) -1.0
+      +0.5*zeta*log(ta*zeta/(m1*m2))
+      -0.5*log(ta/m1/m1)*log(ta/m2/m2)
+      +0.5*(zeta -1.0)*log(m1/m2)
+      -log(zeta)*(log(ta/(m1*m2)) +0.5*log(zeta))
+      +DiLog(1./zeta) -1.0
        );
   // #ifdef USING__LOOPTOOLS
   //   Complex form;
@@ -770,14 +772,6 @@ double YFS_Form_Factor::BVirtT(Vec4D p1, Vec4D p2,  double kmax){
   //   // PRINT_VAR(TBvirt.Finite());
   //   TBvirt+=form.real();
   // #endif
-  if(fabs(TBvirt)>1){
-    PRINT_VAR((log(p1p2 * (1. + rho) / (m1*m2)) / rho - 1) *log(pow(m_photonMass, 2)/(kmax)));
-    PRINT_VAR(p1);
-    PRINT_VAR(p2);
-    PRINT_VAR(rho);
-    PRINT_VAR(m1);
-    PRINT_VAR(m2);
-  }
   return TBvirt;
 }
 
@@ -941,7 +935,8 @@ double YFS_Form_Factor::R1(YFS::Dipole &d){
   }
   double R = BVR_full(p1 * p2, p1.E(), p2.E(), p1.Mass(), p2.Mass(), sqrt(m_s)/2., m_photonMass, 0);
   double V = BVirtT(p1, p2, sqrt(m_s) / 2.);
-  if(m_tchannel!=2){
+  if(m_tchannel==3) V = BVirtGeneral(d);
+  if(m_tchannel==1){
     // add s channel 
     double Vs = BVR_full(p1, p2, sqrt(m_s) / 2.);
     return R+V-Vs;
@@ -1074,4 +1069,104 @@ Complex YFS_Form_Factor::tsub(const Vec4D &p1, const Vec4D &p2, int mode, double
     //                + 0.25*B0((theta1*p1+theta2*p2).Abs2(),m1*m1,m2*m2)));
   }
   return 0;
+}
+
+double YFS_Form_Factor::A1(const Vec4D &p1, const Vec4D &p2){
+  double m12= m_m1*m_m2;
+  double p12 = p1*p2;
+  // double xlam = sqrt((p12 - m12) * (p12 + m12));
+  double xlam = p12*sqrt(1-m12*m12/p12/p12);
+  double t1 = -1 + 0.5*(m_m1*m_m1-m_m2*m_m2)/(m_m1*m_m1+m_m2*m_m2-2.*p12)*log(m_m1/m_m2);
+  t1 += -xlam*xlam/(m_m1*m_m1+m_m2*m_m2-2.*p12)*A(p12, m_m1, m_m2);
+  if(fabs(t1)>1e4){
+    msg_Out()<<"m1 = "<<m_m1<<std::endl
+             <<"m2 = "<<m_m2<<std::endl
+             <<"xlam = "<<xlam<<std::endl
+             <<"A(p12, m_m1, m_m2) = "<<A(p12, m_m1, m_m2)<<std::endl
+             <<"(m_m1*m_m1+m_m2*m_m2-2.*p12) = "<<(m_m1*m_m1+m_m2*m_m2-2.*p12)<<std::endl;
+  }
+  return t1;
+}
+
+double YFS_Form_Factor::A2(const Vec4D &p1, const Vec4D &p2){
+  double m12= m_m1*m_m2;
+  double p12 = p1*p2;
+  double xlam = sqrt((p12 - m12) * (p12 + m12));
+  Complex omega1 = m_m1*m_m1/(xlam+p12-m_m1*m_m1);
+  Complex omega2 = m_m2*m_m2/(xlam+p12-m_m2*m_m2);
+  double scale = (p1-p2).Abs2();
+  Complex t1 = log(Complex(scale,0)/m_m1/m_m2)*A(p12, m_m1, m_m2);
+  Complex t2 = -0.5*(log(omega1*omega1)+log(omega2*omega2))
+              +0.5*log(1.+omega1)*log(1.+omega1)
+              +0.5*log(1.+omega2)*log(1.+omega2)
+              -log(1.+omega1+omega2)*(log(omega1/(1.+omega1))+log(omega2/(1.+omega2)))
+              -DiLog((1.+omega1)/(1.+omega1+omega2))
+              -DiLog((1.+omega2)/(1.+omega1+omega2))
+              +DiLog((omega1)/(1.+omega1+omega2))
+              +DiLog((omega2)/(1.+omega1+omega2));
+if(IsBad( t1+0.5/xlam*t2)){
+  msg_Error()<<"A2(p1,p2) is Nan"<<std::endl
+             <<"p1 = "<<p1<<std::endl
+             <<"p2 = "<<p2<<std::endl
+             <<"t1 = "<<t1<<std::endl
+             <<"t2 = "<<t2<<std::endl
+             <<"A0(p1,p2) = "<<A(p12, m_m1, m_m2)<<std::endl
+             <<"p12 = "<<p12<<std::endl
+             <<"omega1 = "<<omega1<<std::endl
+             <<"omega2 = "<<omega2<<std::endl
+             <<"m1 = "<<m_m1<<std::endl
+             <<"m2 = "<<m_m2<<std::endl
+             <<"p1.Theta() = "<<p1.Theta()<<std::endl
+             <<"p2.Theta() = "<<p2.Theta()<<std::endl
+             <<"xlam = "<<xlam<<std::endl;
+}
+return (t1+0.5/xlam*t2).real();
+}
+
+
+double YFS_Form_Factor::BVirtGeneral(YFS::Dipole &d, double Kmax){
+  Vec4D p1,p2;
+  if(d.Type()==dipoletype::initial){
+    p1 = d.GetBornMomenta(0);
+    p2 = d.GetBornMomenta(1);
+  }
+  else if(d.Type()==dipoletype::final){
+    p1 = d.GetBornMomenta(0);
+    p2 = d.GetBornMomenta(1);
+  }
+  else if(d.Type()==dipoletype::ifi){
+    p1 = d.GetBornMomenta(0);
+    p2 = d.GetBornMomenta(1);
+  }
+  else{
+    THROW(fatal_error, "Unknown Dipole Type");
+  }
+  m_m1 = d.GetMass(0);
+  m_m2 = d.GetMass(1);
+  double a0 = A(p1*p2, m_m1, m_m2);
+  double a2 = A2(p1, p2);
+  double form = log(m_photonMass*m_photonMass/m_m1/m_m2)*(p1*p2*a0-1);
+  form += A1(p1, p2);
+  form += -p1*p2*a2;
+  if(fabs(form)> 1e4 ){
+    msg_Out()<<"Form = "<<form<<std::endl
+             <<"p1 = "<<p1<<std::endl
+             <<"p2 = "<<p2<<std::endl
+             <<"p1.Theta() = "<<p1.Theta()<<std::endl
+             <<"p2.Theta() = "<<p2.Theta()<<std::endl
+             <<"a0 = "<<a0<<std::endl
+             <<"a1 = "<<A1(p1,p2)<<std::endl
+             <<"a2 = "<<a2<<std::endl;
+  }
+  if(IsBad(form)){
+    msg_Error()<<"YFS Btilde is NaN"<<std::endl
+                <<"A0 = "<<a0<<std::endl
+                <<"A1 = "<<A1(p1, p2)<<std::endl
+                <<"A2 = "<<a2<<std::endl
+                <<d.Type()<<std::endl
+                <<"d.Left() = "<<d.GetFlav(0)<<std::endl
+                <<"d.Right() = "<<d.GetFlav(1)<<std::endl;
+    
+  }
+  return m_alpi*form;
 }
