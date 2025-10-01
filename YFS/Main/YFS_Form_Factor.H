@@ -25,6 +25,8 @@ public:
     double BVR_cru(ATOOLS::Vec4D p1, ATOOLS::Vec4D p2, double E2);
     double A(double p1p2, double mass1, double mass2);
     double A(ATOOLS::Vec4D p1, ATOOLS::Vec4D p2);
+    double A1(const ATOOLS::Vec4D &p1, const ATOOLS::Vec4D &p2);
+    double A2(const ATOOLS::Vec4D &p1, const ATOOLS::Vec4D &p2);
     double A4(double p1p2, double En1, double En2,
               double mass1, double mass2);
     double A4light(double p1p2, double En1, double En2,
@@ -45,6 +47,8 @@ public:
     double BVirtT(Vec4D p1, Vec4D p2,  double kmax=0);
     double R1(YFS::Dipole &d);
     double R2(const Vec4D &p1, const Vec4D &p2);
+    // DivArrD BVirtGeneralEps(YFS::Dipole &d, double kmax=0);
+    double  BVirtGeneral(YFS::Dipole &d, double kmax=0);
     // double C0(double p1, double p2, double p3);
     // double C0(double p1, double p2, double p3,double m1, double m2, double m3);
     // double B0(double s, double m1, double m2);
