@@ -6,6 +6,7 @@
 #include "MODEL/Main/Model_Base.H"
 #include "MODEL/Main/Single_Vertex.H"
 #include "PHASIC++/Main/Color_Integrator.H"
+#include "METOOLS/Explicit/Dipole_Kinematics.H"
 #include <assert.h>
 
 using namespace EXTRAXS;
@@ -126,6 +127,8 @@ H_to_bbg_Real::H_to_bbg_Real(const vector<Flavour>& flavs, const Flavour& prop,
   if (!p_ci->ConstructRepresentations(cids,types,acts)) {
     THROW(fatal_error, "Internal error.");
   }
+
+  METOOLS::Current *test=CopyCurrent(m_cur[0]);
 }
 
 
@@ -147,6 +150,108 @@ void H_to_bbg_Real::Born_setup(){}
 
 
 void H_to_bbg_Real::Calculate_born_subtraction(const ATOOLS::Vec4D_Vector& momenta, bool anti){
+  const size_t gluon_idx = 1, b_idx = 2, bbar_idx = 3;
+
+  // 1) emitter = (b + g)  (use reduced from full current), spectator = bbar
+  // 2) emitter = (bbar + g), spectator = b
+  const std::pair<size_t,size_t> dipoles[2] = {
+    { b_idx, bbar_idx },   // emitter (b+g) with spectator bbar
+    { bbar_idx, b_idx }    // emitter (bbar+g) with spectator b
+  };
+
+  for (int di = 0; di < 2; ++di) {
+    const size_t emit_idx = dipoles[di].first;
+    const size_t spec_idx = dipoles[di].second;
+
+    // choose currents:
+    // emitter current: take the full 3-leg current (m_fcur) as source of the emitter pair
+    // spectator: the single-particle current from m_cur[spec_idx]
+    METOOLS::Current *c = m_fcur;
+    METOOLS::Current *s = m_cur[spec_idx];
+
+    std::cerr << "Building dipole: emitter_pair_index="<<emit_idx
+              << " spectator_index="<<spec_idx<<"\n";
+
+    // create local reduced copies (do not modify m_scur)
+    METOOLS::Current *jijt = CopyCurrent(c);
+    METOOLS::Current *jkt  = CopyCurrent(s);
+    if (!jijt || !jkt) {
+      std::cerr<<" CopyCurrent failed\n";
+      delete jijt; delete jkt;
+      continue;
+    }
+    // link as dipole pair (local only)
+    jijt->SetSub(jkt);
+    jkt->SetSub(jijt);
+    jijt->SetKey(0);
+    jkt->SetKey(0);
+
+    // Build Vertex_Key / instantiate model vertices like Amplitude::AddRSDipole
+    Vertex *cin = c->In().front(); // model input vertex of emitter current
+    Vertex_Key *svkey = Vertex_Key::New(cin->J(), jijt, MODEL::s_model);
+    svkey->m_p = std::string(1,'D');           // use D-mode as in current construction
+    // local Dipole_Info (simple default) - set massive treatment if needed
+    svkey->p_dinfo = new METOOLS::Dipole_Info();
+    // treat as QCD dipole
+    svkey->m_stype = 1;
+    svkey->p_k = s;        // spectator current (original)
+    svkey->p_kt = jkt;     // spectator reduced current (local)
+
+    // instantiate all model vertices that match this key (loop as in Amplitude)
+    MODEL::VMIterator_Pair vmp(MODEL::s_model->GetVertex(svkey->ID()));
+    for (MODEL::Vertex_Map::const_iterator vit(vmp.first);
+         vit != vmp.second; ++vit) {
+      svkey->p_mv = vit->second;
+      METOOLS::Vertex *v = new METOOLS::Vertex(*svkey);
+      v->AddJ(svkey->m_j);
+      v->SetJC(svkey->p_c);
+
+      // now the dipole-kinematics lives in v->In().front()->Kin()
+      METOOLS::Dipole_Kinematics *kin = v->In().front()->Kin();
+      if (!kin) {
+        std::cerr<<" no Dipole_Kinematics\n";
+        delete v;
+        continue;
+      }
+
+      // set the local currents for the kinematics if API needs it (try-safe)
+      try {
+        std::vector<METOOLS::Current*> curvec;
+        curvec.resize(kin->ExpectedNumberOfCurrents()?kin->ExpectedNumberOfCurrents():2,NULL);
+        // fill a minimal vector: JI = jijt, JK = jkt (ordering can differ per implementation)
+        if (curvec.size()>=1) curvec[0] = jijt;
+        if (curvec.size()>=2) curvec[1] = jkt;
+        kin->SetCurrents(curvec);
+      } catch(...) {
+        // ignore if API not present / different
+      }
+
+      // evaluate kinematics (maps real -> reduced Born)
+      kin->Evaluate();
+
+      // diagnostic output: mapped Born momenta and dipole residues
+      std::cerr<<" Dipole vertex instantiated. kin->Res = {"
+               <<kin->Res(0)<<","<<kin->Res(1)<<","<<kin->Res(2)<<"}\n";
+      const ATOOLS::Vec4D_Vector &pm = kin->Momenta();
+      for (size_t pi=0; pi<pm.size(); ++pi)
+        std::cerr<<"  Mapped p["<<pi<<"] = "<<pm[pi]<<"\n";
+
+      // we do NOT perform Contract/combination here (kept minimal). If you want full evaluation,
+      // call jkt->Contract(*jijt, pols, ress, 0) and combine ress with kin->Res(...) as in Amplitude.
+
+      // cleanup model Vertex (we only needed kin evaluation)
+      delete v;
+    } // end model-vertex loop
+
+    // delete vertex_key and local dipole-info
+    svkey->Delete();
+    delete svkey->p_dinfo;
+
+    // cleanup local reduced currents
+    delete jijt;
+    delete jkt;
+  } // end dipoles loop
+
   
 }
 
@@ -154,7 +259,7 @@ void H_to_bbg_Real::Calculate_born_subtraction(const ATOOLS::Vec4D_Vector& momen
 void H_to_bbg_Real::Calculate(const ATOOLS::Vec4D_Vector& momenta, bool anti) {
   DEBUG_FUNC(momenta.size());
   // does not do anything yet because integrating this decay channel would result in infinities
- /* p_ci->GeneratePoint(); // create a new integration point for the color factors
+  p_ci->GeneratePoint(); // create a new integration point for the color factors
 
 
   const std::vector<int> myI = { 0, 2, 1, 0 };
@@ -203,6 +308,41 @@ void H_to_bbg_Real::Calculate(const ATOOLS::Vec4D_Vector& momenta, bool anti) {
   }
 */
 Calculate_born_subtraction(momenta, anti);
+}
+
+
+METOOLS::Current *H_to_bbg_Real::CopyCurrent(METOOLS::Current *const c)
+{
+  if (!c) return NULL;
+
+  Current_Key ckey(c->Flav(),MODEL::s_model,c->Id().size()); // todo: überprüfe, dass s_model = p_model von Amplitude
+  METOOLS::Current *cur(METOOLS::Current_Getter::GetObject("D"+ckey.Type(),ckey));
+  if (cur==NULL) return NULL;
+
+  // copy simple meta-data
+  cur->SetDirection(c->Direction());
+  cur->SetCut(c->Cut());
+  cur->SetOnShell(c->OnShell());
+
+  METOOLS::Int_Vector ids(c->Id()), isfs(ids.size()), pols(ids.size());
+
+  /*for (size_t i(0);i<ids.size();++i) {
+    isfs[i]=m_fl[ids[i]].IsFermion();
+    switch (m_fl[ids[i]].IntSpin()) {
+    case 0: pols[i]=1; break;
+    case 1: pols[i]=2; break;
+    case 2: pols[i]=m_fl[ids[i]].IsMassive()?3:2; break;
+    default:
+      THROW(not_implemented,"Cannot handle spin "+
+	    ToString(m_fl[i].Spin())+" particles");
+    }
+  }*/
+  cur->SetId(ids);
+  cur->SetFId(isfs);
+  cur->FindPermutations();
+  cur->InitPols(pols);
+  cur->SetOrder(c->Order());
+  return cur;
 }
 
 

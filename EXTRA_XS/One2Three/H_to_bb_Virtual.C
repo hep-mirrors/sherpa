@@ -188,8 +188,8 @@ void H_to_bb_Virtual::CalculateBorn(const ATOOLS::Vec4D_Vector& momenta){
   std::complex<double> u3 = (*spin)[3];
 
   std::cout << "CSpinor components: "
-            << u0 << " " << u1 << " " << u2 << " " << u3 << std::endl;
-}*/
+            << u0 << " " << u1 << " " << u2 << " " << u3 << std::endl;*/
+}
 
 
 std::array<std::complex<double>,16> H_to_bb_Virtual::GetVirtualMatrixFinite(ATOOLS::Vec4D_Vector& momenta) {
