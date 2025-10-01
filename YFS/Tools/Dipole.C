@@ -909,8 +909,10 @@ std::ostream& YFS::operator<<(std::ostream &out, const Dipole &Dip) {
       <<"Sum of Photons = "<< Dip.m_photonSum << std::endl
       << "Q+sum_i K_i = "<< Dip.m_photonSum+Dip.m_momenta[0]+Dip.m_momenta[1]<<std::endl
       << "Born Qi+Qj = "<< Dip.m_bornmomenta[0]+Dip.m_bornmomenta[0]<<std::endl
-      << "Left Fl " << Dip.GetFlav(Dip.m_leftfl) << std::endl
-      << "Right Fl " << Dip.m_rightfl << std::endl
+      << "Left ID " << Dip.Left() << std::endl
+      << "Right ID " <<Dip.Right() << std::endl
+      << "Left Fl " << Dip.GetFlav(0) << std::endl
+      << "Right Fl " << Dip.GetFlav(1) << std::endl
       << "Mass of photon-fermion system = "
       << (Dip.m_photonSum+Dip.m_newmomenta[0]+Dip.m_newmomenta[1]).Mass()<<std::endl;
   for (int i = 0; i < Dip.m_dipolePhotons.size(); ++i)
