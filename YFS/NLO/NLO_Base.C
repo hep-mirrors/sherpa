@@ -385,7 +385,7 @@ double NLO_Base::CalculateReal(Vec4D k, int fsrcount) {
 		}
 	}
 	if(fsrcount>=3) return tot*subb;
-	return 2.*tot;
+	return tot;
 }
 
 double NLO_Base::CalculateRealVirtual() {
