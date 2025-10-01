@@ -150,7 +150,7 @@ void H_to_bbg_Real::Born_setup(){}
 
 
 void H_to_bbg_Real::Calculate_born_subtraction(const ATOOLS::Vec4D_Vector& momenta, bool anti){
-  const size_t gluon_idx = 1, b_idx = 2, bbar_idx = 3;
+  /*const size_t gluon_idx = 1, b_idx = 2, bbar_idx = 3;
 
   // 1) emitter = (b + g)  (use reduced from full current), spectator = bbar
   // 2) emitter = (bbar + g), spectator = b
@@ -250,7 +250,7 @@ void H_to_bbg_Real::Calculate_born_subtraction(const ATOOLS::Vec4D_Vector& momen
     // cleanup local reduced currents
     delete jijt;
     delete jkt;
-  } // end dipoles loop
+  } // end dipoles loop */
 
   
 }
