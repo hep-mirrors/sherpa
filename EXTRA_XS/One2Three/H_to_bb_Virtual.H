@@ -8,6 +8,7 @@ namespace MODEL {
 namespace METOOLS {
   class Current;
   class Vertex;
+  template<typename T> class CSpinor;
 }
 
 namespace PHASIC {
@@ -22,15 +23,19 @@ namespace EXTRAXS {
     static MODEL::Model_Base *s_model;
     double BornPrefactor;
     double VirtualPrefactor;
+    std::array<std::complex<double>,16> M_finite;
+    std::array<std::complex<double>,16> M_epsilon;
+    std::array<std::complex<double>,16> M_epsilon2;
     PHASIC::Color_Integrator* p_ci;
 
     size_t NHel(const ATOOLS::Flavour& fl);
     void SetUpCurrents(const std::vector<ATOOLS::Flavour>& flavs);
-    void CalculateBorn(const ATOOLS::Vec4D_Vector& momenta);
+    std::pair<std::vector<std::pair<METOOLS::CSpinor<double>*, int>>,
+          std::vector<std::pair<METOOLS::CSpinor<double>*, int>>> CalculateSpinors(const ATOOLS::Vec4D_Vector& momenta, bool anti);
     void SetUpPrefactors(const std::vector<ATOOLS::Flavour>& flavs);
-    std::array<std::complex<double>,16> GetVirtualMatrixFinite(ATOOLS::Vec4D_Vector& momenta);
-    std::array<std::complex<double>,16> GetVirtualMatrixE(ATOOLS::Vec4D_Vector& momenta);
-    std::array<std::complex<double>,16> GetVirtualMatrixE2(ATOOLS::Vec4D_Vector& momenta);
+    void SetVirtualMatrixFinite(ATOOLS::Vec4D_Vector& momenta);
+    void SetVirtualMatrixE(ATOOLS::Vec4D_Vector& momenta);
+    void SetVirtualMatrixE2(ATOOLS::Vec4D_Vector& momenta);
   protected:
     double alpha_qcd;
   public:

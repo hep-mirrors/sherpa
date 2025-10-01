@@ -35,14 +35,11 @@ H_to_bb_Virtual::H_to_bb_Virtual(const vector<Flavour>& flavs, MODEL::Model_Base
 
   SetUpCurrents(flavs);
   SetUpPrefactors(flavs);
-  CalculateBorn(momenta);
+  SetVirtualMatrixFinite(momenta);
+  SetVirtualMatrixE(momenta);
+  SetVirtualMatrixE2(momenta);
 
-  // test:
-  std::array<double, 4> p1 = {0.0, 0.0, 0.0, 0.0};
-  std::array<double, 4> p2 = {0.0, 0.0, 0.0, 0.0};
-  std::array<std::complex<double>,16> M_finite(GetVirtualMatrixFinite(momenta));
-  std::array<std::complex<double>,16> M_epsilon(GetVirtualMatrixE(momenta));
-  std::array<std::complex<double>,16> M_epsilon2(GetVirtualMatrixE2(momenta));
+  Calculate(momenta, false);
 
   // Ausgabe aller Elemente
   std::cout << "\n=== M_finite Matrix ===" << std::endl;
@@ -131,64 +128,68 @@ void H_to_bb_Virtual::SetUpCurrents(const vector<Flavour>& flavs){
 }
 
 
-void H_to_bb_Virtual::CalculateBorn(const ATOOLS::Vec4D_Vector& momenta){
+std::pair<std::vector<std::pair<METOOLS::CSpinor<double>*, int>>,
+          std::vector<std::pair<METOOLS::CSpinor<double>*, int>>> H_to_bb_Virtual::CalculateSpinors(const ATOOLS::Vec4D_Vector& momenta, bool anti){
   p_ci->GeneratePoint();
-  // analytical try, just current, not anticurrent
-
-
-
-
-  for (size_t i(0);i<m_cur.size();++i) {
-    m_cur[i]->ConstructJ(i==0?-momenta[i]:momenta[i],0,p_ci->I()[i],p_ci->J()[i],0);
-    m_cur[i]->Print();
-  }
-
-  METOOLS::Current* bottom_cur = m_cur[1];
-  METOOLS::Current* antibottom_cur = m_cur[2];
-  METOOLS::Current* bottom_anticur = m_anticur[1];
-  METOOLS::Current* antibottom_anticur = m_anticur[2];
-
   typedef METOOLS::CSpinor<double> DDSpin;
 
-  // get the spinor vaues from the currents
-  // bottom current
-  const METOOLS::CObject_Matrix &bottom_cur_j = bottom_cur->J();
-  for (size_t h = 0; h < bottom_cur_j.size(); ++h) {
-    const std::vector<DDSpin*> *bc_spinor_vec = bottom_cur_j[h].template Get<DDSpin>();
-    for (DDSpin* sp : *bc_spinor_vec) {
-      // sp is CSpinor-pointer
-      std::complex<double> u0 = (*sp)[0];
-      std::complex<double> u1 = (*sp)[1];
-      std::complex<double> u2 = (*sp)[2];
-      std::complex<double> u3 = (*sp)[3];
+  std::vector<std::pair<DDSpin*, int>> bottom;      // collect bottom spinors + helicity
+  std::vector<std::pair<DDSpin*, int>> antibottom;  // collect antibottom spinors + helicity
 
-      std::cout << "m_cur[1] hel=" << h
-                << " u0=" << u0 << " u1=" << u1
-                << " u2=" << u2 << " u3=" << u3 << std::endl;
+  if(anti){
+    for (size_t i(0);i<m_anticur.size();++i) {
+    m_anticur[i]->ConstructJ(i==0?-momenta[i]:momenta[i],0,p_ci->I()[i],p_ci->J()[i],0);
+    m_anticur[i]->Print();
     }
-  }
-  // antibottom current
-  const METOOLS::CObject_Matrix &antibottom_cur_j = antibottom_cur->J();
-  for (size_t h = 0; h < antibottom_cur_j.size(); ++h) {
-    const std::vector<DDSpin*> *abc_spinor_vec = antibottom_cur_j[h].template Get<DDSpin>();
-  }
+    METOOLS::Current* bottom_anticur = m_anticur[1];
+    METOOLS::Current* antibottom_anticur = m_anticur[2];
 
-  // bottom anti-current
-  const METOOLS::CObject_Matrix &bottom_acur_j = bottom_anticur->J();
-  for (size_t h = 0; h <  bottom_acur_j.size(); ++h) {
-    const std::vector<DDSpin*> *bac_spinor_vec = bottom_acur_j[h].template Get<DDSpin>();
-  }
+    // get the spinor vaues from the currents created before
+    // bottom anti-current
+    const METOOLS::CObject_Matrix &bottom_acur_j = bottom_anticur->J();
+    for (size_t h = 0; h <  bottom_acur_j.size(); ++h) {
+      const std::vector<DDSpin*> *v = bottom_acur_j[h].template Get<DDSpin>();
+      if (v) for (DDSpin* sp : *v) bottom.emplace_back(sp, static_cast<int>(h));
+    }
 
-  // antibottom anticurrent
-  const METOOLS::CObject_Matrix &antibottom_anticur_j = antibottom_anticur->J();
-  for (size_t h = 0; h < antibottom_anticur_j.size(); ++h) {
-    const std::vector<DDSpin*> *abac_spinor_vec = antibottom_anticur_j[h].template Get<DDSpin>();
+    // antibottom anticurrent
+    const METOOLS::CObject_Matrix &antibottom_anticur_j = antibottom_anticur->J();
+    for (size_t h = 0; h < antibottom_anticur_j.size(); ++h) {
+      const std::vector<DDSpin*> *v = antibottom_anticur_j[h].template Get<DDSpin>();
+      if (v) for (DDSpin* sp : *v) antibottom.emplace_back(sp, static_cast<int>(h));
+    }
+    return std::make_pair(bottom, antibottom);
   }
+  else{
+    for (size_t i(0);i<m_cur.size();++i) {
+    m_cur[i]->ConstructJ(i==0?-momenta[i]:momenta[i],0,p_ci->I()[i],p_ci->J()[i],0);
+    m_cur[i]->Print();
+    }
+    METOOLS::Current* bottom_cur = m_cur[1];
+    METOOLS::Current* antibottom_cur = m_cur[2];
 
+    // bottom current
+    const METOOLS::CObject_Matrix &bottom_cur_j = bottom_cur->J();
+    for (size_t h = 0; h < bottom_cur_j.size(); ++h) {
+      const std::vector<DDSpin*> *v = bottom_cur_j[h].template Get<DDSpin>();
+      if (v) for (DDSpin* sp : *v) bottom.emplace_back(sp, static_cast<int>(h));
+      for (DDSpin* sp : *v) {
+        std::cout << "m_cur[1] hel="<<h<<" u0="<<(*sp)[0]<<" u1="<<(*sp)[1]<<" u2="<<(*sp)[2]<<" u3="<<(*sp)[3]<<"\n";
+      }
+    }
+
+    // antibottom current
+    const METOOLS::CObject_Matrix &antibottom_cur_j = antibottom_cur->J();
+    for (size_t h = 0; h < antibottom_cur_j.size(); ++h) {
+      const std::vector<DDSpin*> *v = antibottom_cur_j[h].template Get<DDSpin>();
+      if (v) for (DDSpin* sp : *v) antibottom.emplace_back(sp, static_cast<int>(h));
+    }
+    return std::make_pair(bottom, antibottom);
+  }
 }
 
 
-std::array<std::complex<double>,16> H_to_bb_Virtual::GetVirtualMatrixFinite(ATOOLS::Vec4D_Vector& momenta) {
+void H_to_bb_Virtual::SetVirtualMatrixFinite(ATOOLS::Vec4D_Vector& momenta) {
     /* This method provides precomputed parts of the finite virtual correction matrix element for the H -> bb decay.
    * 
    * The matrix correspond to the expression: gamma-matrix * Loop-Integral * gamma-matrix.
@@ -259,18 +260,16 @@ std::array<std::complex<double>,16> H_to_bb_Virtual::GetVirtualMatrixFinite(ATOO
   C M33 = d;
 
   // put matrix together
-  std::array<C,16> M = {
+  M_finite = {
       M00, M01, M02, M03,
       M10, M11, M12, M13,
       M20, M21, M22, M23,
       M30, M31, M32, M33
     };
-
-  return M;
 }
 
 
-std::array<std::complex<double>,16> H_to_bb_Virtual::GetVirtualMatrixE(ATOOLS::Vec4D_Vector& momenta){
+void H_to_bb_Virtual::SetVirtualMatrixE(ATOOLS::Vec4D_Vector& momenta){
     /* This method provides precomputed parts of the finite virtual correction matrix element for the H -> bb decay.
    * 
    * The matrix correspond to the expression: gamma-matrix * Loop-Integral * gamma-matrix.
@@ -334,18 +333,16 @@ std::array<std::complex<double>,16> H_to_bb_Virtual::GetVirtualMatrixE(ATOOLS::V
   C M33 = d;
 
   // put matrix together
-  std::array<C,16> M = {
+  M_epsilon = {
       M00, M01, M02, M03,
       M10, M11, M12, M13,
       M20, M21, M22, M23,
       M30, M31, M32, M33
     };
-
-  return M;
 }
 
 
-std::array<std::complex<double>,16> H_to_bb_Virtual::GetVirtualMatrixE2(ATOOLS::Vec4D_Vector& momenta){
+void H_to_bb_Virtual::SetVirtualMatrixE2(ATOOLS::Vec4D_Vector& momenta){
     /* This method provides precomputed parts of the finite virtual correction matrix element for the H -> bb decay.
    * 
    * The matrix correspond to the expression: gamma-matrix * Loop-Integral * gamma-matrix.
@@ -396,18 +393,40 @@ std::array<std::complex<double>,16> H_to_bb_Virtual::GetVirtualMatrixE2(ATOOLS::
   C M33 = C(0.0, 0.0);
 
   // put matrix together
-  std::array<C,16> M = {
+  M_epsilon2 = {
       M00, M01, M02, M03,
       M10, M11, M12, M13,
       M20, M21, M22, M23,
       M30, M31, M32, M33
     };
-  
-  return M;
 }
 
 
 void H_to_bb_Virtual::Calculate(const ATOOLS::Vec4D_Vector& momenta, bool anti) {
+  typedef METOOLS::CSpinor<double> DDSpin;
+  typedef std::pair<DDSpin*, int> SpinorWithHel;
+  typedef std::vector<SpinorWithHel> SpinorVecWithHel;
+  typedef std::pair<SpinorVecWithHel, SpinorVecWithHel> SpinorPairWithHel;
+  using C = std::complex<double>;
+
+  SpinorPairWithHel pair_spinors = CalculateSpinors(momenta, anti);
+  SpinorVecWithHel &bottom_spinor = pair_spinors.first;
+  SpinorVecWithHel &antibottom_spinor = pair_spinors.second;
+
+  // calculate virtual diagram
+  std::vector<C> MV(4, C(0.0,0.0));
+  for (int i = 0; i <= 3; ++i) {
+    for (int j = 0; j <= 3; ++j) {
+      // M_finite is stored flat as 4x4 row-major: element (i,j) at index i*4 + j
+      C Mij = M_finite[i*4 + j];
+      //DDSpin* sp = antibottom_spinor[j].first;
+      // multiply matrix element by the spinor component for this row
+      //MV[i] += Mij * (*antibottom_spinor)[j];
+      //for (DDSpin* sp : *antibottom_spinor) {
+        //std::cout << "m_cur[1] hel="<<h<<" u0="<<(*sp)[0]<<" u1="<<(*sp)[1]<<" u2="<<(*sp)[2]<<" u3="<<(*sp)[3]<<"\n";
+      //}
+    }
+  }
 } 
 
 
