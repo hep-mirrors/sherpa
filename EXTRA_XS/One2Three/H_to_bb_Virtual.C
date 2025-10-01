@@ -135,29 +135,28 @@ void H_to_bb_Virtual::CalculateBorn(const ATOOLS::Vec4D_Vector& momenta){
   p_ci->GeneratePoint();
   // analytical try, just current, not anticurrent
 
-  // copy currents
-  std::vector<METOOLS::Current*> born_mcur(m_cur); 
-  METOOLS::Current* bottom_cur = born_mcur[1];
-  METOOLS::Current* antibottom_cur = born_mcur[1];
 
-  // copy anticurrents
-  std::vector<METOOLS::Current*> born_anticur(m_anticur); 
-  METOOLS::Current* bottom_anticur = born_anticur[1];
-  METOOLS::Current* antibottom_anticur = born_anticur[1];
+
 
   for (size_t i(0);i<m_cur.size();++i) {
     m_cur[i]->ConstructJ(i==0?-momenta[i]:momenta[i],0,p_ci->I()[i],p_ci->J()[i],0);
     m_cur[i]->Print();
   }
-  METOOLS::Current* cur = m_cur[1];
+
+  METOOLS::Current* bottom_cur = m_cur[1];
+  METOOLS::Current* antibottom_cur = m_cur[2];
+  METOOLS::Current* bottom_anticur = m_anticur[1];
+  METOOLS::Current* antibottom_anticur = m_anticur[2];
 
   typedef METOOLS::CSpinor<double> DDSpin;
-  const METOOLS::CObject_Matrix &J = cur->J();
-  for (size_t h = 0; h < J.size(); ++h) {
-    const std::vector<DDSpin*> *vec = J[h].template Get<DDSpin>();
-    if (!vec) continue;
-    for (DDSpin* sp : *vec) {
-      // sp ist der CSpinor-Zeiger
+
+  // get the spinor vaues from the currents
+  // bottom current
+  const METOOLS::CObject_Matrix &bottom_cur_j = bottom_cur->J();
+  for (size_t h = 0; h < bottom_cur_j.size(); ++h) {
+    const std::vector<DDSpin*> *bc_spinor_vec = bottom_cur_j[h].template Get<DDSpin>();
+    for (DDSpin* sp : *bc_spinor_vec) {
+      // sp is CSpinor-pointer
       std::complex<double> u0 = (*sp)[0];
       std::complex<double> u1 = (*sp)[1];
       std::complex<double> u2 = (*sp)[2];
@@ -168,27 +167,24 @@ void H_to_bb_Virtual::CalculateBorn(const ATOOLS::Vec4D_Vector& momenta){
                 << " u2=" << u2 << " u3=" << u3 << std::endl;
     }
   }
+  // antibottom current
+  const METOOLS::CObject_Matrix &antibottom_cur_j = antibottom_cur->J();
+  for (size_t h = 0; h < antibottom_cur_j.size(); ++h) {
+    const std::vector<DDSpin*> *abc_spinor_vec = antibottom_cur_j[h].template Get<DDSpin>();
+  }
 
-  /*
-  //vector<int> fill(m_n,1); // output amplitude vector
-  //for (size_t i(0);i<m_n;++i) (*this)[i]=Complex(0.0,0.0);
-  CF<double>* b_fermion = dynamic_cast<CF<double>*>(m_cur[1]);
-  CF<double>* bbar_fermion = dynamic_cast<CF<double>*>(m_cur[2]);
+  // bottom anti-current
+  const METOOLS::CObject_Matrix &bottom_acur_j = bottom_anticur->J();
+  for (size_t h = 0; h <  bottom_acur_j.size(); ++h) {
+    const std::vector<DDSpin*> *bac_spinor_vec = bottom_acur_j[h].template Get<DDSpin>();
+  }
 
-  typedef METOOLS::CSpinor<double> DDSpin;
-  DDSpin *spin = DDSpin::New();  
-  double m2 = 25.0;
-  const double helicity = 1;
-  const int mass_sign = 1;
-  spin->Construct(helicity, momenta[1], m2, mass_sign);
+  // antibottom anticurrent
+  const METOOLS::CObject_Matrix &antibottom_anticur_j = antibottom_anticur->J();
+  for (size_t h = 0; h < antibottom_anticur_j.size(); ++h) {
+    const std::vector<DDSpin*> *abac_spinor_vec = antibottom_anticur_j[h].template Get<DDSpin>();
+  }
 
-  std::complex<double> u0 = (*spin)[0];
-  std::complex<double> u1 = (*spin)[1];
-  std::complex<double> u2 = (*spin)[2];
-  std::complex<double> u3 = (*spin)[3];
-
-  std::cout << "CSpinor components: "
-            << u0 << " " << u1 << " " << u2 << " " << u3 << std::endl;*/
 }
 
 
