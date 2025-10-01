@@ -293,10 +293,11 @@ void Define_Dipoles::Dipole_II(ATOOLS::Flavour_Vector const &fl, ATOOLS::Vec4D_V
     bm.push_back(m_bornmomenta[i]);
   }
   Dipole D(ff, mm, bm, dipoletype::initial,m_alpha);
-  m_olddipoles.push_back(D);
-  m_dipolesII.push_back(D);
   m_g=D.m_gamma;
   m_gp=D.m_gammap;
+  D.SetFlavLab(0, 1);
+  m_olddipoles.push_back(D);
+  m_dipolesII.push_back(D);
 }
 
 
@@ -395,7 +396,7 @@ double Define_Dipoles::CalculateRealSubIF(const Vec4D &k) {
 
 double Define_Dipoles::CalculateVirtualSub() {
   double sub(0);
-  if(m_tchannel==2) return CalculateVirtualSubTchannel();
+  if(m_tchannel>=2) return CalculateVirtualSubTchannel();
   if(m_dim_reg==1) return CalculateVirtualSubEps();
   for (auto &D : m_dipolesII) {
     sub += D.ChargeNorm()*p_yfsFormFact->BVV_full(D, m_photonMass, sqrt(m_s) / 2., 3);
@@ -499,11 +500,11 @@ double Define_Dipoles::TFormFactor(){
       form += D.ChargeNorm()*p_yfsFormFact->R1(D);
     // }
   }
-  // if(m_ifisub==1){
-    // for(auto &D: m_dipolesIF){
-    //   form+= D.ChargeNorm()*p_yfsFormFact->R1(D);
-    // }
-  // }
+  if(m_ifisub==1){
+    for(auto &D: m_dipolesIF){
+      form += D.ChargeNorm()*p_yfsFormFact->R1(D);
+    }
+  }
   return exp(form); 
 }
 
