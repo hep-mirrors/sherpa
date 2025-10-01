@@ -192,6 +192,31 @@ Other missing command line tools
 can be installed through a package manager like `Homebrew <https://brew.sh/>`_
 or `MacPorts <https://www.macports.org>`_.
 
+Third-party installation methods
+================================
+
+Besides building from source, Sherpa can also be installed using third-party package managers. These packages are contributed and maintained by the community.
+
+conda
+-----
+
+Sherpa is available on the `conda-forge` channel. After installing a `conda`-based Python distribution (like Miniconda or Anaconda) and setting up the `conda-forge` channel, Sherpa can be installed with `conda`.
+
+First, configure your environment to use the `conda-forge` channel:
+
+.. code-block:: shell-session
+
+   $ conda config --add channels conda-forge
+   $ conda config --set channel_priority strict
+
+Then, install Sherpa using one of the following commands:
+
+.. code-block:: shell-session
+
+   $ conda install sherpa
+
+As noted by the package maintainer, macOS builds on `conda-forge` may not always be available. Currently, Linux builds for x86_64, aarch64, and ppc64le are supported.
+
 .. _Running Sherpa:
 
 **************
