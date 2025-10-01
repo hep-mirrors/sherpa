@@ -175,7 +175,7 @@ namespace ATOOLS {
   // only calculates for real arguments
   // -> be careful with discontinuity along pos. real axis
     if (imag(x) == 0.) {
-      std::cout<<"use real dilog ..."<<std::endl;
+      msg_Debugging()<<"use real dilog ..."<<std::endl;
       return DiLog(real(x));
     }
     else {
@@ -196,8 +196,8 @@ namespace ATOOLS {
       //!       of the American Mathematical Society, Volume 125, Number 9,
       //!       September 1997, Pages 2543-2550
       if (abs(x) < radius) {
-        std::cout<<abs(x)<<std::endl;
-        std::cout<<"region I ..."<<std::endl;
+        msg_Debugging()<<abs(x)<<std::endl;
+        msg_Debugging()<<"region I ..."<<std::endl;
         // DiLog(x) = sum_{1}^{infty} x^i/i^2
         // 50 terms give rel. error of < 6.7E-19 using 19 dec. places
         Complex prod(x);
@@ -212,7 +212,7 @@ namespace ATOOLS {
           next  = prod/((double)(i*i));
           sum  += next;
         }
-        std::cout<<"number of iterations: "<<i<<std::endl;
+        msg_Debugging()<<"number of iterations: "<<i<<std::endl;
         return sum;
         // alternatively DiLog(x) = 4x2/(1+4x+x2)*sum_{1}^{infty} x^i/(i(i+1)(i+2))^2
         //                          + 4x + 23/4 x2 + 3(1-x2)ln(1-x)
@@ -232,28 +232,28 @@ namespace ATOOLS {
 //         return factor*sum + 4.*x + 23./4.*x*x + 3.*(1.-x*x)*log(1.-x);
       }
       else if (abs(x) > 1./radius) {
-        std::cout<<abs(x)<<std::endl;
-        std::cout<<"region II ..."<<std::endl;
+        msg_Debugging()<<abs(x)<<std::endl;
+        msg_Debugging()<<"region II ..."<<std::endl;
         // DiLog(x) = -DiLog(1/x) - 1/2*ln2(-x) - pi2/6
         return -DiLog(1./x) - 0.5*sqr(log(-x)) - sqr(M_PI)/6.;
       }
       else if (abs(1.-x) < radius) {
-        std::cout<<abs(x)<<std::endl;
-        std::cout<<"region III ..."<<std::endl;
+        msg_Debugging()<<abs(x)<<std::endl;
+        msg_Debugging()<<"region III ..."<<std::endl;
         // DiLog(x) = -DiLog(1-x) - ln x ln(1-x) + pi2/6
         return -DiLog(1.-x) - log(x)*log(1.-x) + sqr(M_PI)/6.;
       }
       else if (abs(x+1.) < radius) {
-        std::cout<<abs(x)<<std::endl;
-        std::cout<<"region IV ..."<<std::endl;
+        msg_Debugging()<<abs(x)<<std::endl;
+        msg_Debugging()<<"region IV ..."<<std::endl;
         // DiLog(x) = -DiLog(-x/(1-x)) - 1/2 ln2(1-x)
 //         return -DiLog(-x/(1.-x)) - 0.5*sqr(log(1.-x));
         // DiLog(x) = -DiLog(1-x)-log(x)*log(1-x)+pi2/6;
         return -DiLog(1.-x)-log(x)*log(1.-x) + sqr(M_PI)/6.;
       }
       else if (abs(x-Complex(0.,1.)) < 0.7*radius) {
-        std::cout<<abs(x)<<std::endl;
-        std::cout<<"region V ..."<<std::endl;
+        msg_Debugging()<<abs(x)<<std::endl;
+        msg_Debugging()<<"region V ..."<<std::endl;
         // expansion around (0,i), coeffients taken from Mathematica(TM)
         Complex A[35] = {
           Complex(-0.20561675835602830456,      0.91596559417721901505),      // y^0
@@ -310,19 +310,19 @@ namespace ATOOLS {
           prod *= y;
           next  = prod*A[i];
         }
-        std::cout<<"number of iterations: "<<i<<std::endl;
+        msg_Debugging()<<"number of iterations: "<<i<<std::endl;
         return sum;
       }
       else {
-        std::cout<<abs(x)<<std::endl;
-        std::cout<<"region VI ..."<<std::endl;
+        msg_Debugging()<<abs(x)<<std::endl;
+        msg_Debugging()<<"region VI ..."<<std::endl;
         // DiLog(x) = -DiLog(1/x) - 1/2*ln2(-x) - pi2/6
         return -DiLog(1./x) - 0.5*sqr(log(-x)) - sqr(M_PI)/6.;
         // DiLog(x) = -DiLog(-x) + 1/2*DiLog(x2)
 	// return -DiLog(-x) + 0.5*DiLog(x*x);
       }
     }
-    std::cout<<"no suitable region found ..."<<std::endl;
+    msg_Error()<<"no suitable region found ..."<<std::endl;
     return 0.;
   }
 
