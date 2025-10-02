@@ -200,7 +200,7 @@ Besides building from source, Sherpa can also be installed using third-party pac
 conda
 -----
 
-Sherpa is available on the `conda-forge` channel. After installing a `conda`-based Python distribution (like Miniconda or Anaconda) and setting up the `conda-forge` channel, Sherpa can be installed with `conda`.
+`Sherpa is available as a conda package <https://github.com/conda-forge/sherpa-feedstock>`_ on the `conda-forge` channel. After setting the `conda-forge` channel priority, Sherpa can be installed with `conda`.
 
 First, configure your environment to use the `conda-forge` channel:
 
