@@ -209,7 +209,7 @@ First, configure your environment to use the `conda-forge` channel:
    $ conda config --add channels conda-forge
    $ conda config --set channel_priority strict
 
-Then, install Sherpa using one of the following commands:
+Then, install Sherpa:
 
 .. code-block:: shell-session
 
