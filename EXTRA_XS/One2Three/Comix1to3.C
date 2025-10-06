@@ -162,7 +162,6 @@ void Comix1to3::Calculate(const ATOOLS::Vec4D_Vector& momenta, bool anti) {
     m_fcur->Evaluate();
   }
 
-
   vector<int> fill(m_n,1); // output amplitude vector
   for (size_t i(0);i<m_n;++i) (*this)[i]=Complex(0.0,0.0);
   if (anti) {

@@ -402,7 +402,10 @@ void H_to_bb_Virtual::SetVirtualMatrixE2(ATOOLS::Vec4D_Vector& momenta){
 }
 
 
-void H_to_bb_Virtual::Calculate(const ATOOLS::Vec4D_Vector& momenta, bool anti) {
+std::map<std::string, std::complex<double>> H_to_bb_Virtual::CalculateV(const ATOOLS::Vec4D_Vector& momenta, bool anti) {
+  // This method calculates the virtual amplitude for the H -> bb decay for the four helicity configurations
+  // using the precomputed matrices and the spinors calculated from the currents.
+  // There are finite terms, terms proportional to 1/epsilon and terms proportional to 1/epsilon^2.
   typedef METOOLS::CSpinor<double> DDSpin;
   typedef std::pair<DDSpin*, int> SpinorWithHel;
   typedef std::vector<SpinorWithHel> SpinorVecWithHel;
@@ -410,24 +413,118 @@ void H_to_bb_Virtual::Calculate(const ATOOLS::Vec4D_Vector& momenta, bool anti) 
   using C = std::complex<double>;
 
   SpinorPairWithHel pair_spinors = CalculateSpinors(momenta, anti);
-  SpinorVecWithHel &bottom_spinor = pair_spinors.first;
-  SpinorVecWithHel &antibottom_spinor = pair_spinors.second;
+  SpinorVecWithHel &bottom = pair_spinors.first;
+  DDSpin bottom_spinor_hel0 = *(bottom[0].first); // first helicity state
+  DDSpin bottom_spinor_hel1 = *(bottom[1].first); // second helicity state
+  SpinorVecWithHel &antibottom = pair_spinors.second;
+  DDSpin antibottom_spinor_hel0 = *(antibottom[0].first); // first helicity state
+  DDSpin antibottom_spinor_hel1 = *(antibottom[1].first); // second helicity state
 
-  // calculate virtual diagram
-  std::vector<C> MV(4, C(0.0,0.0));
+  // first matrix multiplication: M_finite * v(p_bbar) = "MV_ax" with: a = f, e or e2 for finite, 1/epsilon or 1/epsilon^2 and x = 0, 1 for helicity state
+  std::vector<C> MV_f0(4, C(0.0,0.0));
+  std::vector<C> MV_f1(4, C(0.0,0.0));
+  std::vector<C> MV_e0(4, C(0.0,0.0));
+  std::vector<C> MV_e1(4, C(0.0,0.0));
+  std::vector<C> MV_e20(4, C(0.0,0.0));
+  std::vector<C> MV_e21(4, C(0.0,0.0));
+
+  // first matrix multiplication: M_finite * v(p_bbar)
   for (int i = 0; i <= 3; ++i) {
     for (int j = 0; j <= 3; ++j) {
       // M_finite is stored flat as 4x4 row-major: element (i,j) at index i*4 + j
-      C Mij = M_finite[i*4 + j];
-      //DDSpin* sp = antibottom_spinor[j].first;
-      // multiply matrix element by the spinor component for this row
-      //MV[i] += Mij * (*antibottom_spinor)[j];
-      //for (DDSpin* sp : *antibottom_spinor) {
-        //std::cout << "m_cur[1] hel="<<h<<" u0="<<(*sp)[0]<<" u1="<<(*sp)[1]<<" u2="<<(*sp)[2]<<" u3="<<(*sp)[3]<<"\n";
-      //}
+      C M_f_ij = M_finite[i*4 + j];
+      MV_f0[i] += M_f_ij * antibottom_spinor_hel0[j];
+      // 1/epsilon part
+      C M_e_ij = M_epsilon[i*4 + j];
+      MV_e0[i] += M_e_ij * antibottom_spinor_hel0[j];
+      // 1/epsilon^2 part
+      C M_e2_ij = M_epsilon2[i*4 + j];
+      MV_e20[i] += M_e2_ij * antibottom_spinor_hel0[j];
     }
   }
-} 
+  for (int i = 0; i <= 3; ++i) {
+    for (int j = 0; j <= 3; ++j) {
+      // M_finite is stored flat as 4x4 row-major: element (i,j) at index i*4 + j
+      C M_f_ij = M_finite[i*4 + j];
+      MV_f1[i] += M_f_ij * antibottom_spinor_hel1[j];
+      // 1/epsilon part
+      C M_e_ij = M_epsilon[i*4 + j];
+      MV_e1[i] += M_e_ij * antibottom_spinor_hel1[j];
+      // 1/epsilon^2 part
+      C M_e2_ij = M_epsilon2[i*4 + j];
+      MV_e21[i] += M_e2_ij * antibottom_spinor_hel1[j];
+    }
+  }
+
+  // second matrix multiplication: u(p_b) * (M_finite * v(p_bbar))
+  // helicity configuration: 0,0
+  C v_res_f00 = 0;
+  C v_res_e00 = 0;
+  C v_res_e200 = 0;
+  for (int i = 0; i <= 3; ++i) {
+    v_res_f00 += bottom_spinor_hel0[i] * MV_f0[i];
+    v_res_e00 += bottom_spinor_hel0[i] * MV_e0[i];
+    v_res_e200 += bottom_spinor_hel0[i] * MV_e20[i];
+  }
+  // helicity configuration: 1,0
+  C v_res_f10 = 0;
+  C v_res_e10 = 0;
+  C v_res_e210 = 0;
+  for (int i = 0; i <= 3; ++i) {
+    v_res_f10 += bottom_spinor_hel1[i] * MV_f0[i];
+    v_res_e10 += bottom_spinor_hel1[i] * MV_e0[i];
+    v_res_e210 += bottom_spinor_hel1[i] * MV_e20[i];
+  }
+  // helicity configuration: 0,1
+  C v_res_f01 = 0;
+  C v_res_e01 = 0;
+  C v_res_e201 = 0;
+  for (int i = 0; i <= 3; ++i) {
+    v_res_f01 += bottom_spinor_hel0[i] * MV_f1[i];
+    v_res_e01 += bottom_spinor_hel0[i] * MV_e1[i];
+    v_res_e201 += bottom_spinor_hel0[i] * MV_e21[i];
+  }
+  // helicity configuration: 1,1
+  C v_res_f11 = 0;
+  C v_res_e11 = 0;
+  C v_res_e211 = 0;
+  for (int i = 0; i <= 3; ++i) {
+    v_res_f11 += bottom_spinor_hel1[i] * MV_f1[i];
+    v_res_e11 += bottom_spinor_hel1[i] * MV_e1[i];
+    v_res_e211 += bottom_spinor_hel1[i] * MV_e21[i];
+  }
+
+  // multiply with prefactor
+  v_res_f00 *= VirtualPrefactor;
+  v_res_e00 *= VirtualPrefactor;
+  v_res_e200 *= VirtualPrefactor;
+
+  v_res_f10 *= VirtualPrefactor;
+  v_res_e10 *= VirtualPrefactor;
+  v_res_e210 *= VirtualPrefactor;
+
+  v_res_f01 *= VirtualPrefactor;
+  v_res_e01 *= VirtualPrefactor;
+  v_res_e201 *= VirtualPrefactor;
+
+  v_res_f11 *= VirtualPrefactor;
+  v_res_e11 *= VirtualPrefactor;
+  v_res_e211 *= VirtualPrefactor;
+
+  std::map<std::string, C> vres;
+  vres["v_res_f00"]  = v_res_f00;   vres["v_res_e00"]  = v_res_e00;   vres["v_res_e200"]  = v_res_e200;
+  vres["v_res_f10"]  = v_res_f10;   vres["v_res_e10"]  = v_res_e10;   vres["v_res_e210"]  = v_res_e210;
+  vres["v_res_f01"]  = v_res_f01;   vres["v_res_e01"]  = v_res_e01;   vres["v_res_e201"]  = v_res_e201;
+  vres["v_res_f11"]  = v_res_f11;   vres["v_res_e11"]  = v_res_e11;   vres["v_res_e211"]  = v_res_e211;
+
+  return vres;
+}
+
+
+void H_to_bb_Virtual::Calculate(const ATOOLS::Vec4D_Vector& momenta, bool anti) {
+  std::map<std::string, std::complex<double>> vres = CalculateV(momenta, false);
+  
+}
 
 
 void H_to_bb_Virtual::SetUpPrefactors(const vector<Flavour>& flavs) {

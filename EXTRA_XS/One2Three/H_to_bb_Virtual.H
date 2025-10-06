@@ -1,5 +1,7 @@
 #include "METOOLS/Main/Spin_Structure.H"
 #include "MODEL/Main/Model_Base.H"
+#include <map>
+#include <string>
 
 namespace MODEL { 
   class Model_Base; 
@@ -36,6 +38,7 @@ namespace EXTRAXS {
     void SetVirtualMatrixFinite(ATOOLS::Vec4D_Vector& momenta);
     void SetVirtualMatrixE(ATOOLS::Vec4D_Vector& momenta);
     void SetVirtualMatrixE2(ATOOLS::Vec4D_Vector& momenta);
+    std::map<std::string, std::complex<double>> CalculateV(const ATOOLS::Vec4D_Vector& momenta, bool anti=false);
   protected:
     double alpha_qcd;
   public:
