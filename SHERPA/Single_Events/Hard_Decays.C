@@ -35,59 +35,59 @@ Return_Value::code Hard_Decays::Treat(Blob_List * bloblist)
 	DEBUG_FUNC("Treating blob "<<blob->Id());
 	didit = true;
 	p_dechandler->SetBlobList(bloblist);
-      if (blob->OutParticle(0)->Flav().Kfcode() == kf_instanton) {
-        blob->UnsetStatus(blob_status::needs_harddecays);
-        continue;
-      }
+	if (blob->OutParticle(0)->Flav().Kfcode() == kf_instanton) {
+	  blob->UnsetStatus(blob_status::needs_harddecays);
+	  continue;
+	}
 	try {
 	  if (p_dechandler->SpinCorr()) {
 	    Blob* signal=bloblist->FindFirst(btp::Signal_Process);
 	    if (signal) {
 	      METOOLS::Amplitude2_Tensor* amps(NULL);
-            METOOLS::Amplitude2_Tensor* prod_amps(NULL);
-            bool Pol_CrossSec = p_dechandler->PolCrossSec();
-            bool Spin_Coor = p_dechandler->SpinCorr();
+	      METOOLS::Amplitude2_Tensor* prod_amps(NULL);
+	      bool Pol_CrossSec = p_dechandler->PolCrossSec();
+	      bool Spin_Coor = p_dechandler->SpinCorr();
 	      Blob_Data_Base* data = (*signal)["ATensor"];
-            if (data) {
-              amps=data->Get<METOOLS::Amplitude2_Tensor*>();
-              // save production amplitude tensor before it is changed by the spin correlation algorithm
-              if (Pol_CrossSec){
-                prod_amps = new METOOLS::Amplitude2_Tensor(*amps);
-              }
-            }
+	      if (data) {
+		amps=data->Get<METOOLS::Amplitude2_Tensor*>();
+		// save production amplitude tensor before it is changed by the spin correlation algorithm
+		if (Pol_CrossSec){
+		  prod_amps = new METOOLS::Amplitude2_Tensor(*amps);
+		}
+	      }
 	      Particle_Vector outparts=blob->GetOutParticles();
 	      p_dechandler->TreatInitialBlob(blob, amps, outparts);
-            // writing polarisation fractions to Weights_Map of signal blob
-
-            if (Pol_CrossSec) {
-              if (!Spin_Coor){
-                THROW(fatal_error, "Calculation of polarized cross sections only possible together with "
-                                   "spin correlations")
-              }
-              METOOLS::Polarized_CrossSections_Handler* pol_crosssection_handler = p_dechandler->GetPolarizationHandler();
-              if (prod_amps){
-                std::vector<METOOLS::PolWeights_Map*> polweights = pol_crosssection_handler->Treat(signal, prod_amps,
-                                                                                                   p_dechandler->GetDecayMatrices());
-                std::vector<std::string> refsystem = pol_crosssection_handler->GetRefSystems();
-                Weights_Map wgtmap = bloblist->WeightsMap();
-                for (size_t p(0); p<polweights.size(); ++p){
-                  std::string name(refsystem[p]);
-                  if (!(refsystem[p]=="Lab" || refsystem[p]=="RestFrames" || refsystem[p]=="COM" ||
-                  refsystem[p]=="PPFr")){
-                    name = "refsystem" + ToString(p);
-                  }
-                  for (auto  &e: *(polweights[p])) {
-                    wgtmap["PolWeight_"+name][e.first] = e.second.real();
-                  }
-                  delete polweights[p];
-                }
-                signal->AddData("WeightsMap", new Blob_Data<Weights_Map>(wgtmap));
-                delete prod_amps;
-              }
-              else{
-                THROW(fatal_error, "No Amplitude2_Tensor for calculation of polarized cross sections found")
-              }
-            }
+	      // writing polarisation fractions to Weights_Map of signal blob
+	    
+	      if (Pol_CrossSec) {
+		if (!Spin_Coor){
+		  THROW(fatal_error, "Calculation of polarized cross sections only possible together with "
+			"spin correlations")
+		    }
+		METOOLS::Polarized_CrossSections_Handler* pol_crosssection_handler = p_dechandler->GetPolarizationHandler();
+		if (prod_amps){
+		  std::vector<METOOLS::PolWeights_Map*> polweights = pol_crosssection_handler->Treat(signal, prod_amps,
+												     p_dechandler->GetDecayMatrices());
+		  std::vector<std::string> refsystem = pol_crosssection_handler->GetRefSystems();
+		  Weights_Map wgtmap = bloblist->WeightsMap();
+		  for (size_t p(0); p<polweights.size(); ++p){
+		    std::string name(refsystem[p]);
+		    if (!(refsystem[p]=="Lab" || refsystem[p]=="RestFrames" || refsystem[p]=="COM" ||
+			  refsystem[p]=="PPFr")){
+		      name = "refsystem" + ToString(p);
+		    }
+		    for (auto  &e: *(polweights[p])) {
+		      wgtmap["PolWeight_"+name][e.first] = e.second.real();
+		    }
+		    delete polweights[p];
+		  }
+		  signal->AddData("WeightsMap", new Blob_Data<Weights_Map>(wgtmap));
+		  delete prod_amps;
+		}
+		else{
+		  THROW(fatal_error, "No Amplitude2_Tensor for calculation of polarized cross sections found")
+		    }
+	      }
 	    }
 	  }
 	  else p_dechandler->TreatInitialBlob(blob, NULL, Particle_Vector());
