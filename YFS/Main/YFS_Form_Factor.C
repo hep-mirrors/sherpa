@@ -1076,8 +1076,8 @@ double YFS_Form_Factor::A1(const Vec4D &p1, const Vec4D &p2){
   double p12 = p1*p2;
   // double xlam = sqrt((p12 - m12) * (p12 + m12));
   double xlam = p12*sqrt(1-m12*m12/p12/p12);
-  double t1 = -1 + 0.5*(m_m1*m_m1-m_m2*m_m2)/(m_m1*m_m1+m_m2*m_m2-2.*p12)*log(m_m1/m_m2);
-  t1 += -xlam*xlam/(m_m1*m_m1+m_m2*m_m2-2.*p12)*A(p12, m_m1, m_m2);
+  double t1 = -2 + (m_m1*m_m1-m_m2*m_m2)/(m_m1*m_m1+m_m2*m_m2-2.*p12)*log(m_m1/m_m2);
+  t1 += -2.*xlam*xlam/(m_m1*m_m1+m_m2*m_m2-2.*p12)*A(p12, m_m1, m_m2);
   if(fabs(t1)>1e4){
     msg_Out()<<"m1 = "<<m_m1<<std::endl
              <<"m2 = "<<m_m2<<std::endl
