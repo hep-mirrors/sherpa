@@ -384,7 +384,6 @@ void Hard_Decay_Handler::InitializeOffshellDecays(Decay_Table* dt) {
     Decay_Channel* dc=dt->at(i); // get the decay channel pointer stored at the i-th index
     // ResolveDecay attempts to generate additional (offshell or three-body) decay channel configurations that may arise 
     // from the original two-body decay represented by dc, and returns them in a vector of Decay_Channel pointers.
-    NLODecays(dc); // adds NLO corrections to the decay channel dc if applicable
     vector<Decay_Channel*> new_dcs=ResolveDecay(dc); 
     if (TriggerOffshell(dc, new_dcs)) { // checks if the decay channel is offshell
       dc->SetActiveAll(-1);             // deactivate the original decay channel
@@ -604,34 +603,6 @@ offshell (or three-body) decay configurations.
   */
 }
 
-
-void Hard_Decay_Handler::NLODecays(Decay_Channel* dc){
-  // this method first checks if the decay channel is a NLO decay. 
-  // If it is, it proceeds to set up the necessary components for NLO calculations.
-  // Method called in InitializeOffshellDecays
-  DEBUG_FUNC(dc->Name());
-  const std::vector<ATOOLS::Flavour> flavs1(dc->Flavs());
-  if (!IsNLODecay(flavs1)) return;
-  std::cout << "NLO decay found: " << dc->Name() << std::endl;
-
-  Decay_Channel* dcNLO = new Decay_Channel(*dc); // copy old decay channel
-
-  Spin_Amplitudes* VirtualDiagram = nullptr;
-  VirtualDiagram = new H_to_bb_Virtual(dc->Flavs(), s_model);
-  dcNLO->AddDiagram(VirtualDiagram);
-
-  // later: replace old dc with dcNLO
-}
-
-
-bool Hard_Decay_Handler::IsNLODecay(const std::vector<ATOOLS::Flavour>& flavs) const {
-  // check if the decay channel is decaying at NLO
-  // so far only h0 -> b bbar (g) is included
-  if (flavs[0].IDName() == "h0" && flavs[1].IDName() == "b" && flavs[2].IDName() == "bb"){
-    return true;
-  }
-  return false;
-}
 
 
 bool Hard_Decay_Handler::CalculateWidth(Decay_Channel* dc)

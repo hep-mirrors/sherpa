@@ -30,14 +30,14 @@ namespace EXTRAXS {
     std::array<std::complex<double>,16> M_epsilon2;
     PHASIC::Color_Integrator* p_ci;
 
-    size_t NHel(const ATOOLS::Flavour& fl);
+    size_t NHel(const ATOOLS::Flavour& fl) const;
     void SetUpCurrents(const std::vector<ATOOLS::Flavour>& flavs);
     std::pair<std::vector<std::pair<METOOLS::CSpinor<double>*, int>>,
           std::vector<std::pair<METOOLS::CSpinor<double>*, int>>> CalculateSpinors(const ATOOLS::Vec4D_Vector& momenta, bool anti);
     void SetUpPrefactors(const std::vector<ATOOLS::Flavour>& flavs);
-    void SetVirtualMatrixFinite(ATOOLS::Vec4D_Vector& momenta);
-    void SetVirtualMatrixE(ATOOLS::Vec4D_Vector& momenta);
-    void SetVirtualMatrixE2(ATOOLS::Vec4D_Vector& momenta);
+    void SetVirtualMatrixFinite(const ATOOLS::Vec4D_Vector& momenta);
+    void SetVirtualMatrixE(const ATOOLS::Vec4D_Vector& momenta);
+    void SetVirtualMatrixE2(const ATOOLS::Vec4D_Vector& momenta);
     std::map<std::string, std::complex<double>> CalculateV(const ATOOLS::Vec4D_Vector& momenta, bool anti=false);
   protected:
     double alpha_qcd;

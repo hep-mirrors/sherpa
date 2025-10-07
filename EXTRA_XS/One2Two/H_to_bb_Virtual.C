@@ -1,4 +1,4 @@
-#include "EXTRA_XS/One2Three/H_to_bb_Virtual.H"
+#include "EXTRA_XS/One2Two/H_to_bb_Virtual.H"
 
 #include "METOOLS/Explicit/Current.H"
 #include "METOOLS/Explicit/Vertex.H"
@@ -64,7 +64,7 @@ void H_to_bb_Virtual::Calculate_alpha_QCD(MODEL::Model_Base* s_model) {
 }
 
 
-size_t H_to_bb_Virtual::NHel(const Flavour& fl)
+size_t H_to_bb_Virtual::NHel(const Flavour& fl) const
 {
   switch(fl.IntSpin()) {
   case 0:
@@ -189,7 +189,7 @@ std::pair<std::vector<std::pair<METOOLS::CSpinor<double>*, int>>,
 }
 
 
-void H_to_bb_Virtual::SetVirtualMatrixFinite(ATOOLS::Vec4D_Vector& momenta) {
+void H_to_bb_Virtual::SetVirtualMatrixFinite(const ATOOLS::Vec4D_Vector& momenta) {
     /* This method provides precomputed parts of the finite virtual correction matrix element for the H -> bb decay.
    * 
    * The matrix correspond to the expression: gamma-matrix * Loop-Integral * gamma-matrix.
@@ -269,7 +269,7 @@ void H_to_bb_Virtual::SetVirtualMatrixFinite(ATOOLS::Vec4D_Vector& momenta) {
 }
 
 
-void H_to_bb_Virtual::SetVirtualMatrixE(ATOOLS::Vec4D_Vector& momenta){
+void H_to_bb_Virtual::SetVirtualMatrixE(const ATOOLS::Vec4D_Vector& momenta){
     /* This method provides precomputed parts of the finite virtual correction matrix element for the H -> bb decay.
    * 
    * The matrix correspond to the expression: gamma-matrix * Loop-Integral * gamma-matrix.
@@ -342,7 +342,7 @@ void H_to_bb_Virtual::SetVirtualMatrixE(ATOOLS::Vec4D_Vector& momenta){
 }
 
 
-void H_to_bb_Virtual::SetVirtualMatrixE2(ATOOLS::Vec4D_Vector& momenta){
+void H_to_bb_Virtual::SetVirtualMatrixE2(const ATOOLS::Vec4D_Vector& momenta){
     /* This method provides precomputed parts of the finite virtual correction matrix element for the H -> bb decay.
    * 
    * The matrix correspond to the expression: gamma-matrix * Loop-Integral * gamma-matrix.

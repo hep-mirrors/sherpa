@@ -54,8 +54,6 @@ namespace SHERPA {
     void SetHOSMWidths(ATOOLS::Scoped_Settings& s);
     bool TriggerOffshell(PHASIC::Decay_Channel* dc, std::vector<PHASIC::Decay_Channel*> new_dcs);
     std::vector<PHASIC::Decay_Channel*> ResolveDecay(PHASIC::Decay_Channel* dc);
-    void NLODecays(PHASIC::Decay_Channel* dc);
-    bool IsNLODecay(const std::vector<ATOOLS::Flavour>& flavs) const;
     bool ProperVertex(MODEL::Single_Vertex* sv);
     
     void AddDecayClustering(ATOOLS::Cluster_Amplitude*& ampl,
