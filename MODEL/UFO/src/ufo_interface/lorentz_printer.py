@@ -69,7 +69,7 @@ class LorentzPrinter(CXX11CodePrinter):
                 for j, subval in enumerate(val):
                     subval = self._sanitize(subval)
                     index = f"{VECT_GAUGE_DICT[i]}+{j}*{result.shape[0]}"
-                    string += f'(*j{self.index})[{index}] = {val[j]};\n'
+                    string += f'(*j{self.index})[{index}] = {subval};\n'
         else:
             raise ValueError(f'Unknown shape {result.shape}')
         return string.replace('P', 'p')
