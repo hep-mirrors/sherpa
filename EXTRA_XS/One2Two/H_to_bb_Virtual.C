@@ -403,7 +403,60 @@ void H_to_bb_Virtual::SetVirtualMatrixE2(const ATOOLS::Vec4D_Vector& momenta){
 
 
 std::map<std::string, std::complex<double>> H_to_bb_Virtual::CalculateBorn(const ATOOLS::Vec4D_Vector& momenta, bool anti){
-  
+  typedef METOOLS::CSpinor<double> DDSpin;
+  typedef std::pair<DDSpin*, int> SpinorWithHel;
+  typedef std::vector<SpinorWithHel> SpinorVecWithHel;
+  typedef std::pair<SpinorVecWithHel, SpinorVecWithHel> SpinorPairWithHel;
+  using C = std::complex<double>;
+
+  SpinorPairWithHel pair_spinors = CalculateSpinors(momenta, anti);
+
+  const SpinorVecWithHel &bottom = pair_spinors.first;
+  const DDSpin* bottom_spinor_hel0 = (bottom[0].first); // first helicity state
+  const DDSpin* bottom_spinor_hel1 = (bottom[1].first); // second helicity state
+  const SpinorVecWithHel &antibottom = pair_spinors.second;
+  const DDSpin* antibottom_spinor_hel0 = (antibottom[0].first); // first helicity state
+  const DDSpin* antibottom_spinor_hel1 = (antibottom[1].first); // second helicity state
+
+  if (!bottom_spinor_hel0 || !bottom_spinor_hel1 || !antibottom_spinor_hel0 || !antibottom_spinor_hel1) {
+    THROW(fatal_error, "H_to_bb_Virtual::CalculateV - missing spinor(s) from currents");
+  }
+
+  // helicity configuration: 0,0 (bottom, antibottom)
+  C born_00 = 0;
+  for (int i = 0; i <= 3; ++i) {
+    born_00 += ((*antibottom_spinor_hel0)[i]) * ((*bottom_spinor_hel0)[i]);
+  }
+  born_00 *= BornPrefactor;
+
+  // helicity configuration: 1,0 (bottom, antibottom)
+  C born_10 = 0;
+  for (int i = 0; i <= 3; ++i) {
+    born_10 += ((*antibottom_spinor_hel0)[i]) * ((*bottom_spinor_hel1)[i]);
+  }
+  born_10 *= BornPrefactor;
+
+  // helicity configuration: 0,1 (bottom, antibottom)
+  C born_01 = 0;
+  for (int i = 0; i <= 3; ++i) {
+    born_01 += ((*antibottom_spinor_hel1)[i]) * ((*bottom_spinor_hel0)[i]);
+  }
+  born_01 *= BornPrefactor;
+
+  // helicity configuration: 1,1 (bottom, antibottom)
+  C born_11 = 0;
+  for (int i = 0; i <= 3; ++i) {
+    born_11 += ((*antibottom_spinor_hel1)[i]) * ((*bottom_spinor_hel1)[i]);
+  }
+  born_11 *= BornPrefactor;
+
+  std::map<std::string, C> born_res;
+  born_res["00"]  = born_00;
+  born_res["10"]  = born_10;
+  born_res["01"]  = born_01;
+  born_res["11"]  = born_11;
+
+  return born_res;
 }
 
 
@@ -418,12 +471,17 @@ std::map<std::string, std::complex<double>> H_to_bb_Virtual::CalculateV(const AT
   using C = std::complex<double>;
 
   SpinorPairWithHel pair_spinors = CalculateSpinors(momenta, anti);
-  SpinorVecWithHel &bottom = pair_spinors.first;
-  DDSpin bottom_spinor_hel0 = *(bottom[0].first); // first helicity state
-  DDSpin bottom_spinor_hel1 = *(bottom[1].first); // second helicity state
-  SpinorVecWithHel &antibottom = pair_spinors.second;
-  DDSpin antibottom_spinor_hel0 = *(antibottom[0].first); // first helicity state
-  DDSpin antibottom_spinor_hel1 = *(antibottom[1].first); // second helicity state
+
+  const SpinorVecWithHel &bottom = pair_spinors.first;
+  const DDSpin* bottom_spinor_hel0 = (bottom[0].first); // first helicity state
+  const DDSpin* bottom_spinor_hel1 = (bottom[1].first); // second helicity state
+  const SpinorVecWithHel &antibottom = pair_spinors.second;
+  const DDSpin* antibottom_spinor_hel0 = (antibottom[0].first); // first helicity state
+  const DDSpin* antibottom_spinor_hel1 = (antibottom[1].first); // second helicity state
+
+  if (!bottom_spinor_hel0 || !bottom_spinor_hel1 || !antibottom_spinor_hel0 || !antibottom_spinor_hel1) {
+    THROW(fatal_error, "H_to_bb_Virtual::CalculateV - missing spinor(s) from currents");
+  }
 
   // first matrix multiplication: M_finite * v(p_bbar) = "MV_ax" with: a = f, e or e2 for finite, 1/epsilon or 1/epsilon^2 and x = 0, 1 for helicity state
   std::vector<C> MV_f0(4, C(0.0,0.0));
@@ -438,26 +496,26 @@ std::map<std::string, std::complex<double>> H_to_bb_Virtual::CalculateV(const AT
     for (int j = 0; j <= 3; ++j) {
       // M_finite is stored flat as 4x4 row-major: element (i,j) at index i*4 + j
       C M_f_ij = M_finite[i*4 + j];
-      MV_f0[i] += M_f_ij * antibottom_spinor_hel0[j];
+      MV_f0[i] += M_f_ij * ((*antibottom_spinor_hel0)[j]);
       // 1/epsilon part
       C M_e_ij = M_epsilon[i*4 + j];
-      MV_e0[i] += M_e_ij * antibottom_spinor_hel0[j];
+      MV_e0[i] += M_e_ij * ((*antibottom_spinor_hel0)[j]);
       // 1/epsilon^2 part
       C M_e2_ij = M_epsilon2[i*4 + j];
-      MV_e20[i] += M_e2_ij * antibottom_spinor_hel0[j];
+      MV_e20[i] += M_e2_ij * ((*antibottom_spinor_hel0)[j]);
     }
   }
   for (int i = 0; i <= 3; ++i) {
     for (int j = 0; j <= 3; ++j) {
       // M_finite is stored flat as 4x4 row-major: element (i,j) at index i*4 + j
       C M_f_ij = M_finite[i*4 + j];
-      MV_f1[i] += M_f_ij * antibottom_spinor_hel1[j];
+      MV_f1[i] += M_f_ij * ((*antibottom_spinor_hel1)[j]);
       // 1/epsilon part
       C M_e_ij = M_epsilon[i*4 + j];
-      MV_e1[i] += M_e_ij * antibottom_spinor_hel1[j];
+      MV_e1[i] += M_e_ij * ((*antibottom_spinor_hel1)[j]);
       // 1/epsilon^2 part
       C M_e2_ij = M_epsilon2[i*4 + j];
-      MV_e21[i] += M_e2_ij * antibottom_spinor_hel1[j];
+      MV_e21[i] += M_e2_ij * ((*antibottom_spinor_hel1)[j]);
     }
   }
 
@@ -467,36 +525,36 @@ std::map<std::string, std::complex<double>> H_to_bb_Virtual::CalculateV(const AT
   C v_res_e00 = 0;
   C v_res_e200 = 0;
   for (int i = 0; i <= 3; ++i) {
-    v_res_f00 += bottom_spinor_hel0[i] * MV_f0[i];
-    v_res_e00 += bottom_spinor_hel0[i] * MV_e0[i];
-    v_res_e200 += bottom_spinor_hel0[i] * MV_e20[i];
+    v_res_f00 += ((*bottom_spinor_hel0)[i]) * MV_f0[i];
+    v_res_e00 += ((*bottom_spinor_hel0)[i]) * MV_e0[i];
+    v_res_e200 += ((*bottom_spinor_hel0)[i]) * MV_e20[i];
   }
   // helicity configuration: 1,0
   C v_res_f10 = 0;
   C v_res_e10 = 0;
   C v_res_e210 = 0;
   for (int i = 0; i <= 3; ++i) {
-    v_res_f10 += bottom_spinor_hel1[i] * MV_f0[i];
-    v_res_e10 += bottom_spinor_hel1[i] * MV_e0[i];
-    v_res_e210 += bottom_spinor_hel1[i] * MV_e20[i];
+    v_res_f10 += ((*bottom_spinor_hel1)[i]) * MV_f0[i];
+    v_res_e10 += ((*bottom_spinor_hel1)[i]) * MV_e0[i];
+    v_res_e210 += ((*bottom_spinor_hel1)[i]) * MV_e20[i];
   }
   // helicity configuration: 0,1
   C v_res_f01 = 0;
   C v_res_e01 = 0;
   C v_res_e201 = 0;
   for (int i = 0; i <= 3; ++i) {
-    v_res_f01 += bottom_spinor_hel0[i] * MV_f1[i];
-    v_res_e01 += bottom_spinor_hel0[i] * MV_e1[i];
-    v_res_e201 += bottom_spinor_hel0[i] * MV_e21[i];
+    v_res_f01 += ((*bottom_spinor_hel0)[i]) * MV_f1[i];
+    v_res_e01 += ((*bottom_spinor_hel0)[i]) * MV_e1[i];
+    v_res_e201 += ((*bottom_spinor_hel0)[i]) * MV_e21[i];
   }
   // helicity configuration: 1,1
   C v_res_f11 = 0;
   C v_res_e11 = 0;
   C v_res_e211 = 0;
   for (int i = 0; i <= 3; ++i) {
-    v_res_f11 += bottom_spinor_hel1[i] * MV_f1[i];
-    v_res_e11 += bottom_spinor_hel1[i] * MV_e1[i];
-    v_res_e211 += bottom_spinor_hel1[i] * MV_e21[i];
+    v_res_f11 += ((*bottom_spinor_hel1)[i]) * MV_f1[i];
+    v_res_e11 += ((*bottom_spinor_hel1)[i]) * MV_e1[i];
+    v_res_e211 += ((*bottom_spinor_hel1)[i]) * MV_e21[i];
   }
 
   // multiply with prefactor

@@ -190,6 +190,15 @@ void Comix1to2::CalculateNLO(const ATOOLS::Vec4D_Vector& momenta, bool anti) {
   if (!nlo_virtual) return;
   // results for the virtual diagram in the different helicity configurations (just finite part, epsilon divergences cancel out in NLO_Virtual class)
   std::map<std::string, std::complex<double>> v_finite = nlo_virtual->CalculateV(momenta, anti); 
+  std::map<std::string, std::complex<double>> born = nlo_virtual->CalculateBorn(momenta, anti); 
+
+  std::cout << "*this 1 = { ";
+  for (size_t i = 0; i < this->size(); ++i) {
+    std::cout << (*this)[i];
+    if (i < this->size() - 1) std::cout << ", ";
+  }
+  std::cout << " }" << std::endl;
+  
 }
 
 
