@@ -39,7 +39,7 @@ H_to_bb_Virtual::H_to_bb_Virtual(const vector<Flavour>& flavs, MODEL::Model_Base
   SetVirtualMatrixE(momenta);
   SetVirtualMatrixE2(momenta);
 
-  Calculate(momenta, false);
+  //Calculate(momenta, false);
 
   // Ausgabe aller Elemente
   std::cout << "\n=== M_finite Matrix ===" << std::endl;
@@ -402,6 +402,11 @@ void H_to_bb_Virtual::SetVirtualMatrixE2(const ATOOLS::Vec4D_Vector& momenta){
 }
 
 
+std::map<std::string, std::complex<double>> H_to_bb_Virtual::CalculateBorn(const ATOOLS::Vec4D_Vector& momenta, bool anti){
+  
+}
+
+
 std::map<std::string, std::complex<double>> H_to_bb_Virtual::CalculateV(const ATOOLS::Vec4D_Vector& momenta, bool anti) {
   // This method calculates the virtual amplitude for the H -> bb decay for the four helicity configurations
   // using the precomputed matrices and the spinors calculated from the currents.
@@ -517,13 +522,13 @@ std::map<std::string, std::complex<double>> H_to_bb_Virtual::CalculateV(const AT
   vres["v_res_f01"]  = v_res_f01;   vres["v_res_e01"]  = v_res_e01;   vres["v_res_e201"]  = v_res_e201;
   vres["v_res_f11"]  = v_res_f11;   vres["v_res_e11"]  = v_res_e11;   vres["v_res_e211"]  = v_res_e211;
 
-  return vres;
-}
+  std::map<std::string, C> v_finite;
+  v_finite["00"]  = v_res_f00;
+  v_finite["10"]  = v_res_f10;
+  v_finite["01"]  = v_res_f01;
+  v_finite["11"]  = v_res_f11;
 
-
-void H_to_bb_Virtual::Calculate(const ATOOLS::Vec4D_Vector& momenta, bool anti) {
-  std::map<std::string, std::complex<double>> vres = CalculateV(momenta, false);
-  
+  return v_finite;
 }
 
 

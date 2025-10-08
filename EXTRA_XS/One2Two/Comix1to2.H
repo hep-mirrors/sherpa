@@ -10,6 +10,7 @@ namespace PHASIC {
   class Color_Integrator;
 }
 namespace EXTRAXS { class H_to_bb_Virtual; }
+namespace EXTRAXS { class NLO_Virtual; }
 
 namespace EXTRAXS {
 
@@ -26,8 +27,9 @@ namespace EXTRAXS {
     std::vector<size_t> m_nhel;
 
     PHASIC::Color_Integrator* p_ci;
-    METOOLS::Spin_Amplitudes* nlo_virtual;
+    EXTRAXS::NLO_Virtual* nlo_virtual;
 
+    void CalculateNLO(const ATOOLS::Vec4D_Vector& momenta, bool anti=false);
     size_t NHel(const ATOOLS::Flavour& fl);
   public:
     Comix1to2(const std::vector<ATOOLS::Flavour>& flavs);
