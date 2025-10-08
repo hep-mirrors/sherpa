@@ -1,6 +1,6 @@
-set(One2Two_SOURCES Comix1to2.C)
+set(One2Two_SOURCES Comix1to2.C H_to_bb_Virtual.C)
 
-set(One2Two_HEADERS Comix1to2.H)
+set(One2Two_HEADERS Comix1to2.H H_to_bb_Virtual.H)
 
 sherpa_create_git_info(One2Two ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR})
  

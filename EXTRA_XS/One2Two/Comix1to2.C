@@ -6,7 +6,7 @@
 #include "MODEL/Main/Model_Base.H"
 #include "MODEL/Main/Single_Vertex.H"
 #include "PHASIC++/Main/Color_Integrator.H"
-#include "EXTRA_XS/One2Three/H_to_bb_Virtual.H"
+#include "EXTRA_XS/One2Two/H_to_bb_Virtual.H"
 #include <memory>
 
 using namespace EXTRAXS;
@@ -155,12 +155,16 @@ void Comix1to2::Calculate(const ATOOLS::Vec4D_Vector& momenta, bool anti) {
   else {
     m_fcur->Contract<double>(*m_cur.front(),fill,*this,0);
   }
-  //std::cout << "*this 1 = { ";
-//for (size_t i = 0; i < this->size(); ++i) {
-//    std::cout << (*this)[i];
-//    if (i < this->size() - 1) std::cout << ", ";
-//}
-//std::cout << " }" << std::endl;
+for (size_t i=0; i<size(); ++i) {
+   (*this)[i] += Complex(1.0, 0.0); // Complex is the project's complex type
+ }
+  //(*this)
+  std::cout << "*this 1 = { ";
+for (size_t i = 0; i < this->size(); ++i) {
+    std::cout << (*this)[i];
+    if (i < this->size() - 1) std::cout << ", ";
+}
+std::cout << " }" << std::endl;
 
   for (size_t i=0; i<size(); ++i) {
     (*this)[i] *= sqrt(p_ci->GlobalWeight()); // scale the final numerical result appropriately with the color factor

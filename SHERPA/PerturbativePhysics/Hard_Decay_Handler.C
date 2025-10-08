@@ -27,7 +27,7 @@
 #include "EXTRA_XS/One2Two/Comix1to2.H"
 #include "EXTRA_XS/One2Three/Comix1to3.H"
 #include "EXTRA_XS/One2Three/H_to_bbg_Real.H"
-#include "EXTRA_XS/One2Three/H_to_bb_Virtual.H"
+#include "EXTRA_XS/One2Two/H_to_bb_Virtual.H"
 
 #include <iostream>
 #include <algorithm>

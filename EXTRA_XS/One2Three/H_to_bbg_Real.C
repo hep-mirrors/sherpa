@@ -129,6 +129,7 @@ H_to_bbg_Real::H_to_bbg_Real(const vector<Flavour>& flavs, const Flavour& prop,
   }
 
   METOOLS::Current *test=CopyCurrent(m_cur[0]);
+  const std::map<std::string, Complex> &cpl = *MODEL::s_model->GetCouplings();
 }
 
 
@@ -284,7 +285,7 @@ void H_to_bbg_Real::Calculate(const ATOOLS::Vec4D_Vector& momenta, bool anti) {
     m_scur->Evaluate();
     m_fcur->Evaluate();
   }
-/*
+
   vector<int> fill(m_n,1); // output amplitude vector
   for (size_t i(0);i<m_n;++i) (*this)[i]=Complex(0.0,0.0);
   if (anti) {
@@ -298,7 +299,7 @@ void H_to_bbg_Real::Calculate(const ATOOLS::Vec4D_Vector& momenta, bool anti) {
     (*this)[i] *= sqrt(p_ci->GlobalWeight()); // scale the final numerical result appropriately with the color factor
   }
   std::cout << "GlobalWeight = " << p_ci->GlobalWeight() << std::endl;
-*/
+
 /*
   for (size_t i = 0; i < p_ci->I().size(); ++i) {
       std::cout << "I[" << i << "] = " << p_ci->I()[i] << std::endl;
@@ -308,6 +309,7 @@ void H_to_bbg_Real::Calculate(const ATOOLS::Vec4D_Vector& momenta, bool anti) {
   }
 */
 Calculate_born_subtraction(momenta, anti);
+
 }
 
 
