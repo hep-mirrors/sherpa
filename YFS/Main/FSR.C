@@ -352,7 +352,7 @@ double FSR::ScalePhoton(const Vec4D & _k) {
   // HidePhotons(m_photonspreboost);
   Vec4D k = _k;
   Vec4D ksum;
-  for(auto &kk: m_photonspreboost) ksum += kk;
+  for(auto &kk: m_photons) ksum += kk;
   k = k/m_scalek;
   double x;
   double yy = 1. / (1. + k[0]);
