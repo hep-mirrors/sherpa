@@ -302,9 +302,9 @@ double NLO_Base::CalculateReal(Vec4D k, int fsrcount) {
  		MapMomenta(p,k);
  	}
  	p.push_back(k);
- 	// CheckMasses(p,1);
  	// if(fluxtype==dipoletype::final || fsrcount==4) MapInitial(p);
  	if(fsrcount==1 || fsrcount==4) MapInitial(p);
+ 	CheckMasses(p,1);
  	Vec4D_Vector pp = p;
  	pp.pop_back();
 	p_nlodipoles->MakeDipolesII(m_flavs,pp,m_plab);
@@ -892,7 +892,6 @@ void NLO_Base::CheckMasses(Vec4D_Vector &p, int realmode){
 							 <<"Four momentum = "<<p[i]<<", with new mass = "<<p[i].Mass()<<std::endl;
 		}
 	}
-	// return true;
 }
 
 void NLO_Base::RescaleMasses(Vec4D_Vector &p, std::vector<double> masses){
