@@ -327,7 +327,7 @@ bool Dipole::BoostNLO() {
     Vec4D ref = m_bornmomenta[0];
     boost.Boost(ref);
     Poincare rot(ref, Vec4D(0,0,0,1));
-    SetBoost(boost);
+    // SetBoost(boost);
     SetRotate(rot);
     for (size_t i = 0; i < 2; ++i)
     {
@@ -393,6 +393,8 @@ void Dipole::MakePair(double cms, Vec4D &p1, Vec4D &p2) {
   double E2 = lamCM*sqrt(1+mass2*mass2/sqr(lamCM));
   p1 = {E1, 0, 0, lamCM};
   p2 =  {E2, 0, 0, -lamCM};
+  Poincare boost(p1+p2);
+  boost.Boost(m_photonSum);
   // p2 = P-p1;
 }
 
