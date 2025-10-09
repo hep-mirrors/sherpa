@@ -23,10 +23,8 @@ namespace MODEL{
       SetSMMasses();
       // Massive and Stable flags
       // are set consistently with
-      // UFO above, ReadParticleData
-      // allows to overwrite these flags.
+      // UFO above.
       // Need this before AddStandardContainers.
-      ReadParticleData();
       AddStandardContainers();
       CustomContainerInit();
       ATOOLS::OutputParticles(ATOOLS::msg->Info());
