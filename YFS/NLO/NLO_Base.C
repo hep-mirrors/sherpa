@@ -347,6 +347,7 @@ double NLO_Base::CalculateReal(Vec4D k, int fsrcount) {
 							 <<"Flux is : "<<flux<<std::endl;
 		return 0;
 	}
+	// if(fsrcount==0 || fsrcount==3) flux=1;
 	m_recola_evts+=1;
 	if(m_submode==submode::local) tot =  (r*flux-subloc*m_born/m_rescale_alpha)/subloc;
 	else if(m_submode==submode::global) tot =  (r*flux-subloc*m_born/m_rescale_alpha)/subb;
