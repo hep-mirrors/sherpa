@@ -327,7 +327,7 @@ bool Dipole::BoostNLO() {
     Vec4D ref = m_bornmomenta[0];
     boost.Boost(ref);
     Poincare rot(ref, Vec4D(0,0,0,1));
-    // SetBoost(boost);
+    SetBoost(boost);
     SetRotate(rot);
     for (size_t i = 0; i < 2; ++i)
     {
