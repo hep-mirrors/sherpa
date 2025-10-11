@@ -198,6 +198,7 @@ MEPS_Scale_Setter::MEPS_Scale_Setter
     256 - No ordering check if last qcd split
     512 - No ordering check if first RS split
     1024 - No differential for core
+    2048 - No tracking of scale sums
   */
   p_core=Core_Scale_Getter::GetObject(core,Core_Scale_Arguments(p_proc,core));
   if (p_core==NULL) THROW(fatal_error,"Invalid core scale '"+core+"'");
@@ -259,8 +260,8 @@ bool MEPS_Scale_Setter::CheckOrdering
       ampl->Prev()->Prev()==NULL) return true;
   if (ampl->KT2()<ampl->Prev()->KT2()) {
     if ((m_cmode&256) &&
-	(ampl->OrderQCD()==0 ||
-	 (ampl->OrderQCD()>1 && ampl->Legs().size()==3))) {
+	(ampl->OrderQCD()==(m_vproc?1:0) ||
+	 (ampl->OrderQCD()>(m_vproc?2:1) && ampl->Legs().size()==3))) {
       msg_Debugging()<<"No ordering veto: "<<sqrt(ampl->KT2())
 		     <<" < "<<sqrt(ampl->Prev()->KT2())<<"\n";
       return true;
@@ -318,6 +319,11 @@ void MEPS_Scale_Setter::Combine
   li->SetFlav(ci.first.m_mo);
   li->SetMom(ci.second.m_pijt);
   li->SetStat(ci.second.m_stat);
+  if (!(m_cmode&2048)) {
+    li->SetKT2(0,sqr(sqrt(ci.second.m_kt2)+
+		     sqrt(li->KT2(0))+sqrt(lj->KT2(0))));
+    li->SetKT2(1,ci.second.m_kt2+li->KT2(1)+lj->KT2(1));
+  }
   lk->SetMom(ci.second.m_pkt);
   ampl.Prev()->SetIdNew(ampl.Leg(ci.first.m_j)->Id());
   for (size_t m(0);m<ampl.Legs().size();++m) {
@@ -359,6 +365,8 @@ double MEPS_Scale_Setter::Calculate
   m_sproc=p_proc->Caller()->Info().Has(nlo_type::rsub);
   m_vproc=p_proc->Info().Has(nlo_type::vsub);
   m_rsproc=m_rproc||(m_sproc&&p_proc->Caller()->GetRSSubevtList());
+  msg_Debugging()<<"vproc = "<<m_vproc<<", sproc = "<<m_sproc
+		 <<", rproc = "<<m_rproc<<", rsproc = "<<m_rsproc<<"\n";
   const Flavour_Vector &fl=p_proc->Caller()->Flavours();
   if ((m_cmode&128) && m_sproc && !m_rproc &&
       p_proc->Caller()->GetRSSubevtList()) {
@@ -396,6 +404,8 @@ double MEPS_Scale_Setter::Calculate
       ampl->CreateLeg(m_p[i],i<p_proc->NIn()?fl[i].Bar():fl[i],
 		      ColorID(ci[i],cj[i]));
       ampl->Leg(i)->SetNMax(nmax);
+      ampl->Leg(i)->SetKT2(0,0.);
+      ampl->Leg(i)->SetKT2(1,0.);
     }
   }
   else {
@@ -404,6 +414,8 @@ double MEPS_Scale_Setter::Calculate
       int cr(ampl->Leg(i)->Flav().StrongCharge());
       ampl->Leg(i)->SetCol(ColorID((cr==3||cr==8)?1:0,(cr==-3||cr==8)?1:0));
       ampl->Leg(i)->SetNMax(nmax);
+      ampl->Leg(i)->SetKT2(0,0.);
+      ampl->Leg(i)->SetKT2(1,0.);
     }
   }
   ClusterAmplitude_Vector ampls;
@@ -773,11 +785,19 @@ double MEPS_Scale_Setter::SetScales(Cluster_Amplitude *ampl)
     ampl->SetMuF2(m_scale[stp::fac]);
     ampl->SetMuR2(m_scale[stp::ren]);
     ampl->SetMuQ2(m_scale[stp::res]);
+    for (size_t i(0);i<ampl->Legs().size();++i) {
+      ampl->Leg(i)->SetKT2(0,-1.);
+      ampl->Leg(i)->SetKT2(1,-1.);
+    }
     while (ampl->Prev()) {
       ampl=ampl->Prev();
       ampl->SetMuF2(m_scale[stp::fac]);
       ampl->SetMuR2(m_scale[stp::ren]);
       ampl->SetMuQ2(m_scale[stp::res]);
+      for (size_t i(0);i<ampl->Legs().size();++i) {
+	ampl->Leg(i)->SetKT2(0,-1.);
+	ampl->Leg(i)->SetKT2(1,-1.);
+      }
     }
   }
   return m_scale[stp::fac];
