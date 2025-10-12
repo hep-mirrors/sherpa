@@ -155,7 +155,7 @@ int Channel_Generator_Decays::MakeChannel(int& echflag,int n,string& path,string
   chf<<"void "<<name<<"::AddPoint(double Value)";
   chf<<endl<<"{"<<endl;  
   chf<<"  Single_Channel::AddPoint(Value);"<<endl;
-  chf<<"  p_vegas->AddPoint(Value,rans);"<<endl;  
+  chf<<"  p_vegas->AddPoint(Value,p_rans);"<<endl;  
   chf<<"}"<<endl;
 
   chf<<"std::string "<<name<<"::ChID()";
@@ -334,7 +334,7 @@ void Channel_Generator_Decays::GenerateMasses(int flag,Point** _plist,int pcount
     lm[i] = LinkedMasses(_plist[i]);
     mummy += lm[i];
     if (_plist[i]->left==0) {
-      if (flag==0 || flag==10) AddToVariables(flag,lm[i],string("ms[")+GetMassIndex(lm[i])+string("]"),0,sf);
+      if (flag==0 || flag==10) AddToVariables(flag,lm[i],string("p_ms[")+GetMassIndex(lm[i])+string("]"),0,sf);
       //sf<<"  double s"<<lm[i]<<" = ms["<<lm[i]<<"];"<<endl;
       momp[i]  = string("p[") + GetMassIndex(lm[i]) + string("]");
       sflag[i] = 1;
