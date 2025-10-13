@@ -93,7 +93,7 @@ MI_Parameters::MI_Parameters() :
     = s["N_MaxScatters"].SetDefault(10000).Get<size_t>();
 
 
-  size_t twopions = s["TwoPionInterference"].SetDefault(1).Get<size_t>();
+  size_t twopions = s["TwoPionInterference"].SetDefault(0).Get<size_t>();
   switch (twopions) {
   case 4:  m_twopions = two_pions::cont_only;      break;
   case 3:  m_twopions = two_pions::rho_omega_cont; break;

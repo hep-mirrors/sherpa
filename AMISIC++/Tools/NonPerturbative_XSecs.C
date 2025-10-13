@@ -404,8 +404,6 @@ bool NonPerturbative_XSecs::FixOutMomenta(const double & t) {
     m_boost.BoostBack(m_inmom[beam]);
     m_boost.BoostBack(m_outmom[2*beam]);
   }
-  for (size_t i=0;i<2;i++)
-    if (m_outflav[2*i].Kfcode()==kf_rho_770) SplitRhoIntoPions(2*i);
   return true;
 }
 
@@ -505,6 +503,10 @@ bool NonPerturbative_XSecs::SplitDiffractiveState(const size_t & pos) {
   ////////////////////////////////////////////////////////////////////////////////////
   Vec4D  diffmom  = m_outmom[2*pos];
   double M2       = diffmom.Abs2();
+  if (m_twopions!=two_pions::none && m_outflav[pos].Kfcode()==kf_rho_770) {
+    SplitRhoIntoPions(pos);
+    return true;
+  }
   if (!SelectFlavoursOfDiffraction(pos,M2)) {
     if (!SplitDiffractiveStateIntoHadrons(pos,M2)) exit(1);
   }
@@ -528,23 +530,26 @@ bool NonPerturbative_XSecs::SplitDiffractiveState(const size_t & pos) {
 
 bool NonPerturbative_XSecs::
 SelectFlavoursOfDiffraction(const size_t & pos,const double & M2) {
-  ////////////////////////////////////////////////////////////////////////////////////
-  // This method splits a diffractive sysmte of mass M into its (di-)quark constituents:
-  // - rho/omega mesons are split with equal probability either into u-ubar/d-dbar
+  ///////////////////////////////////////////////////////////////////////////
+  // This method splits a diffractive sysmte of mass M into its ﻿
+  // (di-)quark constituents:
+  // - rho/omega mesons are split with equal probability either into
+  //   u-ubar or d-dbar
   // - phi mesons are split into s-sbar pairs
   // - J/psi's are split into c-cbar pairs
   // - protons are split into
   //   d-uu_1 with probability P = 1/3, u-ud_1 with P = 1/6, and
   //                                    into u-ud_0 with P = 1/2
-  //   provided that the diffractive mass is large enough.  If this is not the case,
-  //   the rescue system will be invoked.
+  //   provided that the diffractive mass is large enough.  If this is not
+  //   the case, the rescue system will be invoked.
   // TODO: Also add neutrons
-  ////////////////////////////////////////////////////////////////////////////////////
+  ///////////////////////////////////////////////////////////////////////////
   bool    anti = m_outflav[2*pos].IsAnti();
   kf_code diff = m_outflav[2*pos].Kfcode();
   if (diff==2212) {
     double random = ran->Get();
-    if (random<1./3. && M2>sqr(Flavour(kf_d).HadMass()+Flavour(kf_uu_1).HadMass())) {
+    if (random<1./3. &&
+	M2>sqr(Flavour(kf_d).HadMass()+Flavour(kf_uu_1).HadMass())) {
       m_outflav[2*pos]=Flavour(kf_d); m_outflav[2*pos+1]=Flavour(kf_uu_1);
     }
     else if (random<1./2. &&
@@ -576,22 +581,25 @@ SelectFlavoursOfDiffraction(const size_t & pos,const double & M2) {
     m_fails++;
     return false;
   }
-  if (anti) for (size_t i=0;i<2;i++) m_outflav[2*pos+i]=m_outflav[2*pos+i].Bar();
+  if (anti) for (size_t i=0;i<2;i++)
+	      m_outflav[2*pos+i]=m_outflav[2*pos+i].Bar();
   return true;
 }
 
 bool NonPerturbative_XSecs::
 SplitDiffractiveStateIntoHadrons(const size_t & pos,const double & M2) {
-  ////////////////////////////////////////////////////////////////////////////////////
-  // This is a safety measure, currently only encoded for protons, which is only
-  // invoked if a diffractive sysmte cannot be split into its (di-)quark constituents.
-  // We tentatively split the diffracted proton p^* with equal probability either
-  // p* -> p + pi^0   or   p^* -> n + pi^+
-  // and return whether the combined decay masses are larger or smaller than the mass
-  // of the diffractive system.
-  // TODO: We need to extend this method also to neutrons and make sure we are safe for
-  // diffracted vector mesons (although this should work with default parameters).
-  ////////////////////////////////////////////////////////////////////////////////////
+  ///////////////////////////////////////////////////////////////////////////
+  // This is a safety measure, currently only encoded for protons, which is
+  // only invoked if a diffractive system cannot be split into its
+  // (di-)quark constituents.
+  // We tentatively split the diffracted proton p^* with equal probability
+  // either p* -> p + pi^0   or   p^* -> n + pi^+
+  // and return whether the combined decay masses are larger or smaller than
+  // the mass of the diffractive system.
+  // TODO: We need to extend this method also to neutrons and make sure we
+  // are safe for diffracted vector mesons (although this should work with
+  // default parameters).
+  ///////////////////////////////////////////////////////////////////////////
   Flavour split = m_inflav[pos];
   kf_code diff = m_outflav[2*pos].Kfcode();
   if (diff==2212) {
@@ -609,16 +617,19 @@ SplitDiffractiveStateIntoHadrons(const size_t & pos,const double & M2) {
 
 void NonPerturbative_XSecs::
 InitBlob(Blob * blob,const double & muR2,const double & muQ2) {
-  ////////////////////////////////////////////////////////////////////////////////////
-  // Initialising and filling the scatter blob with the outgoing particles; their
-  // flavours and momenta have been fixed before.  Incoming flavours and momenta are
-  // taken directly from the remnants, accessed through the Remnant_Handler p_remnants.
-  // Coloured outgoing particles are assigned colour indices, and in their presence the
-  // blob will also be given the "needs_showers" status, which would normally be absent
-  // and replaced with needs_beams | needs_hadrondecays.
-  ////////////////////////////////////////////////////////////////////////////////////
+  ///////////////////////////////////////////////////////////////////////////
+  // Initialising and filling the scatter blob with the outgoing particles;
+  // their flavours and momenta have been fixed before.  Incoming flavours
+  // and momenta are taken directly from the remnants, accessed through the
+  // Remnant_Handler p_remnants.
+  // Coloured outgoing particles are assigned colour indices, and in their
+  // presence the blob will also be given the "needs_showers" status, which
+  // would normally be absent and replaced with
+  // needs_beams | needs_hadrondecays.
+  ///////////////////////////////////////////////////////////////////////////
   blob->SetId();
-  blob->AddData("WeightsMap",new Blob_Data<Weights_Map>(m_xsec*rpa->Picobarn()));
+  blob->AddData("WeightsMap",
+		new Blob_Data<Weights_Map>(m_xsec*rpa->Picobarn()));
   for (size_t i=0;i<2;i++) {
     Particle * part = new Particle(-1,m_inflav[i],m_inmom[i],'I');
     part->SetNumber();
@@ -629,8 +640,10 @@ InitBlob(Blob * blob,const double & muR2,const double & muQ2) {
   for (size_t i=0;i<4;i++) {
     if (m_outflav[i]==Flavour(kf_none)) continue;
     Particle * part = new Particle(-1,m_outflav[i],m_outmom[i],'F');
-    if (part->Flav().IsQuark())        part->SetFlow(part->Flav().IsAnti()?2:1,500+i/2);
-    else if (part->Flav().IsDiQuark()) part->SetFlow(part->Flav().IsAnti()?1:2,500+i/2);
+    if (part->Flav().IsQuark())
+      part->SetFlow(part->Flav().IsAnti()?2:1,500+i/2);
+    else if (part->Flav().IsDiQuark())
+      part->SetFlow(part->Flav().IsAnti()?1:2,500+i/2);
     if (part->Flav().IsQuark() || part->Flav().IsDiQuark()) needs_showers = true;
     part->SetFinalMass(m_outmasses[i]);
     part->SetNumber();

@@ -21,7 +21,7 @@ using namespace ATOOLS;
 
 Interaction_Probability::Interaction_Probability() :
   p_mo(NULL), p_procs(NULL), p_sbins(NULL), p_bbins(NULL),
-  p_k(NULL), p_norm(NULL), p_diffxsec(NULL),
+  p_k(NULL), p_norm(NULL), p_diffxsec(NULL), p_inverted(NULL), 
   m_pdfnorm(1.), m_bmax(1.e6), m_smin(1.e99), m_xs_hard(0.), m_xs_test(0.),
   m_dynamic(false), m_test(false), m_ana(false) {}
 

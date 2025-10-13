@@ -13,9 +13,9 @@ Gluon_Splitter::~Gluon_Splitter() {
 
 void Gluon_Splitter::Init(const bool & isgluon) {
   Splitter_Base::Init(true);
-  // Gluon Decay Form: 1 = default
-  // 0: z ~ z^alpha * (1-z)^alpha
-  // 1: z ~ z^alpha + (1-z)^alpha
+  // Gluon Decay Form: 0 = default
+  // 0: z ~ z^alpha + (1-z)^alpha
+  // 1: z ~ z^alpha * (1-z)^alpha
   m_mode  = hadpars->Switch("GluonDecayForm");
   m_alpha = hadpars->Get("alphaG");
   m_analyse = true;
