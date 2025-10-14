@@ -310,25 +310,13 @@ void Amisic::UpdateForNewS() {
 
 void Amisic::AddInformationToBlob(Blob * blob) {
   if (m_evttype==evt_type::Perturbative) {
-    m_pt2     = m_singlecollision.LastPT2();
-    double x1 = 0., x2 = 0.;
-    if ((*blob)["PDFInfo"]!=NULL) {
-      x1 = (*blob)["PDFInfo"]->Get<PDF_Info>().m_x1;
-      x2 = (*blob)["PDFInfo"]->Get<PDF_Info>().m_x2;
-    }
-    /////////////////////////////////////////////////////////////////////////
-    // Form_Factor (and by extension Matter_Overlap) has radii etc. in fm,
-    // event record needs it in mm, therefore we have to divide by 10^12.
-    /////////////////////////////////////////////////////////////////////////    
-    Vec4D delta_pos = m_mo.SelectPositionForScatter(m_b,x1,m_pt2,x2,m_pt2)/1.e12;
-    UpdateDownstreamPositions(blob,delta_pos);
+    UpdateDownstreamPositions(blob,m_singlecollision.ShiftPosition());
     if (m_ana) AnalysePerturbative(false,blob);
   }
 }
 
 void Amisic::UpdateDownstreamPositions(Blob * blob,const Vec4D & delta_pos) {
   if (m_updated.find(blob)!=m_updated.end()) return;
-  //msg_Tracking()<<METHOD<<"("<<blob->Type()<<"): "<<blob->Position()<<" + "<<delta_pos<<")\n";
   blob->SetPosition(blob->Position()+delta_pos);
   m_updated.insert(blob);
   for (size_t i=0;i<blob->NOutP();i++) {

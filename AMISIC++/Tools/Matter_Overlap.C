@@ -114,26 +114,32 @@ double Matter_Overlap::SelectB() const {
   return b;
 }
 
-Vec4D Matter_Overlap::
+bool Matter_Overlap::
 SelectPositionForScatter(const double & B,
 			 const double & x0, const double & Q20,
-			 const double & x1, const double & Q21) const {
+			 const double & x1, const double & Q21,
+			 Vec4D & pos) const {
   ///////////////////////////////////////////////////////////////////////////
   // Independently select two impact paraemters b0 and b1 w.r.t.\ the incoming
   // beams, from their respective form factors until a combination that is
   // allowed given the overall impact paramter B is found.
   // Position is given in fm.
   ///////////////////////////////////////////////////////////////////////////
-  double b0, b1, cosphi2;
+  double b0, b1, cosphi2, sinphi2;
   size_t trials = 0;
   do {
     b0      = p_ffs[0]->B(x0,Q20);
     b1      = p_ffs[1]->B(x1,Q21);
     cosphi2 = (sqr(b0)-sqr(b1)-sqr(B))/(2.*b1*B);
   } while ( (cosphi2>1. || cosphi2<-1.) && (++trials)<10000);
-  if (trials>=9999) { b1 = B/2.; cosphi2 = -1.; }
-  double sinphi2 = (ran->Get()>0.5?-1.:1.)*sqrt(1.-sqr(cosphi2));
-  return Vec4D(0.,B/2.+b1*cosphi2,b1*sinphi2,0.);
+  if (trials>=9999) return false;
+  sinphi2 = (ran->Get()>0.5?-1.:1.)*sqrt(1.-sqr(cosphi2));
+  pos     = Vec4D(0.,B/2.+b1*cosphi2,b1*sinphi2,0.)/1.e12;
+  //if (dabs(pos[1])<1.e-14 && dabs(pos[2])>1.e-12)
+  //  msg_Out()<<"\n"<<METHOD<<"(B = "<<B<<", "
+  //<<"b0 = "<<b0<<", b1 = "<<b1<<" --> cos = "<<cosphi2<<") "
+  //	     <<"--> "<<pos<<"\n";
+  return true;
 }
 
 void Matter_Overlap::Initialize(Remnant_Handler * const rh,

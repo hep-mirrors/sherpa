@@ -334,7 +334,7 @@ void Remnant_Handler::SetImpactParameter(const double & b,const Vec4D & directio
   /////////////////////////////////////////////////////////////////////////////////
   // b has to be given in mm.
   /////////////////////////////////////////////////////////////////////////////////
-  Vec4D  pos = b/2. * direction / 1.e12;
+  Vec4D  pos = b/2. * direction;
   for (size_t i=0;i<2;i++) p_remnants[i]->SetPosition((i==0?1.:-1.) * pos);
 }
 

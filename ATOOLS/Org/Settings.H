@@ -268,9 +268,9 @@ namespace ATOOLS {
     const auto it = m_defaults.find(keys);
     if (it != m_defaults.end()) {
       if (it->second != stringvalues) {
-        THROW(fatal_error, "The default value for " +
-                               VectorToString(keys, 12, ":") +
-                               " is already set to a different value.");
+        //THROW(fatal_error, "The default value for " +
+	//                     VectorToString(keys, 12, ":") +
+	//                     " is already set to a different value.");
       } else {
         return;
       }

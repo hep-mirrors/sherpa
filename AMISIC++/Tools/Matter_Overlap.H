@@ -42,10 +42,10 @@ namespace AMISIC {
 
     double SelectB() const;
 
-    ATOOLS::Vec4D
-    SelectPositionForScatter(const double & b,
-			     const double & x0, const double & Q20,
-			     const double & x1, const double & Q21) const;
+    bool   SelectPositionForScatter(const double & b,
+				    const double & x0, const double & Q20,
+				    const double & x1, const double & Q21,
+				    ATOOLS::Vec4D & pos) const;
 
     inline void SetKRadius(const double & k)   { m_kradius = k; }
     inline void SetBmax(const double & bmax)   { m_bmax    = bmax; }
