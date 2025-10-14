@@ -445,8 +445,30 @@ The following formats are currently available:
   it can serve as a cross-check on the consistency of the HepMC event
   file.  Note that Sherpa conforms to the Les Houches 2013 suggestion
   (http://phystev.in2p3.fr/wiki/2013:groups:tools:hepmc) of indicating
-  interaction types through the GenVertex type-flag.  Multiple event
-  weights can also be used, cf.
+  interaction types through the GenVertex type-flag:
+
+  :samp:`{0}`
+      Undefined / no information.
+
+  :samp:`{1}`
+      Signal vertex.
+
+  :samp:`{2}`
+      Secondary partonic scatters (MPI).
+
+  :samp:`{3}`
+      Hard decays (pre-hadronisation), e.g. of gauge bosons or top quarks.
+
+  :samp:`{4}`
+      Parton shower (including QED radiation).
+
+  :samp:`{5}`
+      Primary hadron formation.
+
+  :samp:`{6}`
+      Hadron, tau and muon decays.
+
+  Multiple event weights can also be used, cf.
   :ref:`On-the-fly event weight variations`. The following additional
   customisations can be used.
 
