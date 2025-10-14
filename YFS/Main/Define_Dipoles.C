@@ -732,7 +732,7 @@ double Define_Dipoles::CalculateFlux(const Vec4D &k){
   if(HasISR()&&HasFSR()){
     // fluxtype = WhichResonant(k);
     // PRINT_VAR(fluxtype);
-    fluxtype = dipoletype::final;
+    fluxtype = dipoletype::initial;
   }
   else if(!HasFSR()){
     fluxtype = dipoletype::initial;
