@@ -214,6 +214,9 @@ void Comix1to2::CalculateNLO(const ATOOLS::Vec4D_Vector& momenta, bool anti) {
   std::cout << "ME2:" << ME2 << std::endl;
   std::cout << "ME2 * C_F:" << ME2*(3.0/4.0) << std::endl;
   std::cout << "ME2 * C_F^2:" << ME2*(9.0/16.0) << std::endl;
+
+  double total_virtual_correction = nlo_virtual->CalculateVirtualCorrection(momenta, anti); 
+  std::cout << "total_virtual_correction:" << total_virtual_correction << std::endl;
 }
 
 

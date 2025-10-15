@@ -582,11 +582,20 @@ std::map<std::string, std::complex<double>> H_to_bb_Virtual::CalculateV(const AT
 
   std::map<std::string, C> v_finite;
   v_finite["00"]  = v_res_f00;
-  v_finite["10"]  = v_res_f10;
   v_finite["01"]  = v_res_f01;
+  v_finite["10"]  = v_res_f10;
   v_finite["11"]  = v_res_f11;
 
   return v_finite;
+}
+
+
+double H_to_bb_Virtual::CalculateVirtualCorrection(const ATOOLS::Vec4D_Vector& momenta, bool anti){
+  std::map<std::string, std::complex<double>> v_finite = CalculateV(momenta, anti); 
+  std::map<std::string, std::complex<double>> born = CalculateBorn(momenta, anti); 
+  std::complex<double> BV = born["00"] * std::conj(v_finite["00"]) + born["01"] * std::conj(v_finite["01"]) + born["10"] * std::conj(v_finite["10"]) + born["11"] * std::conj(v_finite["11"]);
+  double v_correction = 2 * std::real(BV);
+  return v_correction;
 }
 
 
