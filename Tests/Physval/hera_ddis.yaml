@@ -33,11 +33,6 @@ Pomeron:
   xMax: 0.024
   xMin: 0.01
 
-Reggeon:
-  tMax: 0.6
-  xMax: 0.024
-  xMin: 0.01
-
 SELECTORS:
   - [Q2, -11, -11, 3., 85]
   - [INEL, -11, -11, 0.15, 0.75]
