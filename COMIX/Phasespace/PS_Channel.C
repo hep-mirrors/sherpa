@@ -227,7 +227,7 @@ double PS_Channel::PropWeight(const PS_Current *cur,const size_t &id,
   else {
   double sexp(m_sexp/pow(m_srbase,IdCount(id)-2.0));
   if (cur!=NULL && cur->Mass()<rpa->gen.Ecms()) {
-    if (cur->OnShell()) return (cur->Mass()*cur->Width())/M_PI;
+    if (cur->OnShell()) return M_PI/(cur->Mass()*cur->Width());
     if (cur->Width()>s_pwmin) 
       wgt=CE.MassivePropWeight(cur->Mass(),cur->Width(),smin,smax,s,rn);
     else if (cur->Mass()>s_pmmin) 
