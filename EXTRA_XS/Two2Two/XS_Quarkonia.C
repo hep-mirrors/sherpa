@@ -22,7 +22,7 @@ namespace EXTRAXS {
   class XS_qg_q1S0 : public ME2_Base {
   private:
     size_t m_g, m_q, m_S, m_a;
-    double m_alphaS, m_R02, m_mass, m_mass2, m_pref;
+    double m_alphaS, m_R02, m_mass, m_mass2, m_pref, ldme;
   public:
     XS_qg_q1S0(const External_ME_Args& args);
     double operator()(const Vec4D_Vector& mom);
@@ -32,8 +32,9 @@ namespace EXTRAXS {
   class XS_qg_q3S1 : public ME2_Base {
   private:
     size_t m_g, m_q, m_S, m_a;
-    double m_alphaS, m_R02, m_mass, m_mass2, m_pref;
+    double m_alphaS, m_R02, m_mass, m_mass2, m_pref, ldme;
   public:
+    
     XS_qg_q3S1(const External_ME_Args& args);
     double operator()(const Vec4D_Vector& mom);
     bool SetColours(const Vec4D_Vector& mom);
@@ -42,7 +43,7 @@ namespace EXTRAXS {
   class XS_qg_q3P0 : public ME2_Base {
   private:
     size_t m_g, m_q, m_S, m_a;
-    double m_alphaS, m_R12, m_mass, m_mass2, m_pref;
+    double m_alphaS, m_R12, m_mass, m_mass2, m_pref, ldme;
   public:
     XS_qg_q3P0(const External_ME_Args& args);
     double operator()(const Vec4D_Vector& mom);
@@ -52,7 +53,7 @@ namespace EXTRAXS {
   class XS_qg_q3P1 : public ME2_Base {
   private:
     size_t m_g, m_q, m_S, m_a;
-    double m_alphaS, m_R12, m_mass, m_mass2, m_pref;
+    double m_alphaS, m_R12, m_mass, m_mass2, m_pref, ldme;
   public:
     XS_qg_q3P1(const External_ME_Args& args);
     double operator()(const Vec4D_Vector& mom);
@@ -62,7 +63,7 @@ namespace EXTRAXS {
   class XS_qg_q3P2 : public ME2_Base {
   private:
     size_t m_g, m_q, m_S, m_a;
-    double m_alphaS, m_R12, m_mass, m_mass2, m_pref;
+    double m_alphaS, m_R12, m_mass, m_mass2, m_pref, ldme;
   public:
     XS_qg_q3P2(const External_ME_Args& args);
     double operator()(const Vec4D_Vector& mom);
@@ -72,7 +73,7 @@ namespace EXTRAXS {
   class XS_qqbar_g1S0 : public ME2_Base {
   private:
     size_t m_S, m_a;
-    double m_alphaS, m_R02, m_mass, m_mass2, m_pref;
+    double m_alphaS, m_R02, m_mass, m_mass2, m_pref, ldme;
   public:
     XS_qqbar_g1S0(const External_ME_Args& args);
     double operator()(const Vec4D_Vector& mom);
@@ -82,7 +83,7 @@ namespace EXTRAXS {
   class XS_qqbar_g3S1 : public ME2_Base {
   private:
     size_t m_S, m_a;
-    double m_alphaS, m_R02, m_mass, m_mass2, m_pref;
+    double m_alphaS, m_R02, m_mass, m_mass2, m_pref, ldme;
   public:
     XS_qqbar_g3S1(const External_ME_Args& args);
     double operator()(const Vec4D_Vector& mom);
@@ -92,7 +93,7 @@ namespace EXTRAXS {
    class XS_qqbar_g3P0 : public ME2_Base {
   private:
     size_t m_g, m_q, m_S, m_a;
-    double m_alphaS, m_R12, m_mass, m_mass2, m_pref;
+    double m_alphaS, m_R12, m_mass, m_mass2, m_pref, ldme;
   public:
     XS_qqbar_g3P0(const External_ME_Args& args);
     double operator()(const Vec4D_Vector& mom);
@@ -102,7 +103,7 @@ namespace EXTRAXS {
   class XS_qqbar_g3P1 : public ME2_Base {
   private:
     size_t m_g, m_q, m_S, m_a;
-    double m_alphaS, m_R12, m_mass, m_mass2, m_pref;
+    double m_alphaS, m_R12, m_mass, m_mass2, m_pref, ldme;
   public:
     XS_qqbar_g3P1(const External_ME_Args& args);
     double operator()(const Vec4D_Vector& mom);
@@ -112,7 +113,7 @@ namespace EXTRAXS {
   class XS_qqbar_g3P2 : public ME2_Base {
   private:
     size_t m_g, m_q, m_S, m_a;
-    double m_alphaS, m_R12, m_mass, m_mass2, m_pref;
+    double m_alphaS, m_R12, m_mass, m_mass2, m_pref, ldme;
   public:
     XS_qqbar_g3P2(const External_ME_Args& args);
     double operator()(const Vec4D_Vector& mom);
@@ -122,7 +123,7 @@ namespace EXTRAXS {
   class XS_gg_g1S0 : public ME2_Base {
   private:
     size_t m_S;
-    double m_alphaS, m_R02, m_mass, m_mass2, m_pref;
+    double m_alphaS, m_R02, m_mass, m_mass2, m_pref, ldme;
   public:
     XS_gg_g1S0(const External_ME_Args& args);
     double operator()(const Vec4D_Vector& mom);
@@ -132,8 +133,9 @@ namespace EXTRAXS {
   class XS_gg_g3S1 : public ME2_Base {
   private:
     size_t m_S;
-    double m_alphaS, m_R02, m_mass, m_mass2, m_pref;
-  public:
+    double m_alphaS, m_R02, m_mass, m_mass2, m_pref, ldme;
+
+    public:
     XS_gg_g3S1(const External_ME_Args& args);
     double operator()(const Vec4D_Vector& mom);
     bool SetColours(const Vec4D_Vector& mom);
@@ -143,7 +145,7 @@ namespace EXTRAXS {
   class XS_gg_g3P0 : public ME2_Base {
   private:
     size_t m_S;
-    double m_alphaS, m_R12, m_mass, m_mass2, m_pref;
+    double m_alphaS, m_R12, m_mass, m_mass2, m_pref, ldme;
   public:
     XS_gg_g3P0(const External_ME_Args& args);
     double operator()(const Vec4D_Vector& mom);
@@ -154,7 +156,7 @@ namespace EXTRAXS {
   class XS_gg_g3P1 : public ME2_Base {
   private:
     size_t m_S;
-    double m_alphaS, m_R12, m_mass, m_mass2, m_pref;
+    double m_alphaS, m_R12, m_mass, m_mass2, m_pref, ldme;
   public:
     XS_gg_g3P1(const External_ME_Args& args);
     double operator()(const Vec4D_Vector& mom);
@@ -165,7 +167,7 @@ namespace EXTRAXS {
   class XS_gg_g3P2 : public ME2_Base {
   private:
     size_t m_S;
-    double m_alphaS, m_R12, m_mass, m_mass2, m_pref;
+    double m_alphaS, m_R12, m_mass, m_mass2, m_pref, ldme;
   public:
     XS_gg_g3P2(const External_ME_Args& args);
     double operator()(const Vec4D_Vector& mom);
@@ -318,6 +320,16 @@ namespace EXTRAXS {
 
   };
 
+  class XS_gg_g3P2_oct : public ME2_Base {
+  private:
+    size_t m_S;
+    double m_alphaS, LDME, m_mass, m_mass2, m_pref;
+  public:
+    XS_gg_g3P2_oct(const External_ME_Args& args);
+    double operator()(const Vec4D_Vector& mom);
+    bool SetColours(const Vec4D_Vector& mom);
+
+  };
 }
 
 
@@ -554,11 +566,16 @@ XS_gg_g3S1::XS_gg_g3S1(const External_ME_Args& args):
     m_colours[i][0] = m_colours[i][1] = 0;
   }
   m_mass   = fl[m_S].Mass(true);  m_mass2 = sqr(m_mass); m_R02 = 0.;
-  int LDME = 0;
-  if (fl[m_S].Kfcode()==kf_J_psi_1S)   m_R02 = 0.810;
-  if (fl[m_S].Kfcode()==kf_psi_2S)     m_R02 = 0.529;
-  if (fl[m_S].Kfcode()==kf_Upsilon_1S) m_R02 = 6.477;
-  if (fl[m_S].Kfcode()==kf_Upsilon_2S) m_R02 = 3.234;
+  auto pss = Settings::GetMainSettings()["EXTRA_XS"];
+  pss["R02_443"].SetDefault(0.810);
+  pss["R02_100443"].SetDefault(0.529);
+  pss["R02_553"].SetDefault(6.477);
+  pss["R02_100553"].SetDefault(3.234);
+  if (fl[m_S].Kfcode()==kf_J_psi_1S)   m_R02 = pss["R02_443"].Get<double>();
+  if (fl[m_S].Kfcode()==kf_psi_2S)     m_R02 = pss["R02_100443"].Get<double>();
+  if (fl[m_S].Kfcode()==kf_Upsilon_1S) m_R02 = pss["R02_553"].Get<double>();
+  if (fl[m_S].Kfcode()==kf_Upsilon_2S) m_R02 = pss["R02_100553"].Get<double>();
+  // std::cout << "ldme = " << ldme << std::endl;
   m_alphaS = MODEL::s_model->ScalarConstant("alpha_S");
 
 }
@@ -569,11 +586,17 @@ double XS_gg_g3S1::operator()(const Vec4D_Vector& mom)
   double t  = (mom[0]-mom[2]).Abs2();
   double u  = (mom[0]-mom[3]).Abs2();
 
-  double alphaS = 0.41;
   double M2 = s+t+u, sM2 = sqr(s-M2), tM2 = sqr(t-M2),  uM2 = sqr(u-M2);
-  m_pref   = (5./9.)*sqr(4.*M_PI)*m_R02*sqrt(M2);
+  m_pref   = (5./9.)*sqr(4.*M_PI)*sqrt(M2)*m_R02; // <<<< it is actually R02, not ldme. Just to keep naming simple for the moment.
   double all = sqr(s)/(tM2*sM2)+sqr(t)/(uM2*sM2)+sqr(u)/(sM2*tM2);
-  return pow(alphaS,3)*CouplingFactor(3,0)*m_pref*all;
+  double prefix = 10./(9.*64.);
+  double x = M2/s;
+  double first = pow(m_alphaS,3)*CouplingFactor(3,0)*sqr(M_PI)/pow((sqrt(M2)),5);
+  double fgg = prefix*256*sqr(x)/(3*sqr(-1+x)*pow((1+x),3))*(2+x+2*sqr(x)-4*pow(x,4)-pow(x,5)+2*sqr(x)*(5+2*x+sqr(x))*log(x));
+  double all2 = first*fgg*ldme;
+  // std::cout << "all = " << all << "fgg = "<< fgg << "first = "<< first<< "x = "<< x <<std::endl;
+  // return all;
+  return pow(m_alphaS,3)*CouplingFactor(3,0)*m_pref*all+all2;
 }
 
 bool XS_gg_g3S1::SetColours(const Vec4D_Vector& mom) 
@@ -628,9 +651,14 @@ XS_qg_q3P0::XS_qg_q3P0(const External_ME_Args& args):
     m_colours[i][0] = m_colours[i][1] = 0;
   }
   m_mass   = fl[m_S].Mass(true);  m_mass2 = sqr(m_mass); m_R12 = 0.;
-  if (fl[m_S].Kfcode()==kf_chi_c0_1P) m_R12 = 0.075; 
-  if (fl[m_S].Kfcode()==kf_chi_b0_1P) m_R12 = 1.417;
-  if (fl[m_S].Kfcode()==kf_chi_b0_2P) m_R12 = 1.653;
+  auto pss = Settings::GetMainSettings()["EXTRA_XS"];
+  pss["R12_10441"].SetDefault(0.075);
+  pss["R12_10551"].SetDefault(1.417);
+  pss["R12_110551"].SetDefault(1.653);
+  if (fl[m_S].Kfcode()==kf_chi_c0_1P) m_R12 = pss["R12_10441"].Get<double>(); 
+  if (fl[m_S].Kfcode()==kf_chi_b0_1P) m_R12 = pss["R12_10551"].Get<double>();
+  if (fl[m_S].Kfcode()==kf_chi_b0_2P) m_R12 = pss["R12_110551"].Get<double>();
+  std::cout << "ldme = " << ldme << std::endl;
   m_a      = fl[m_q].IsAnti() ? 1 : 0; 
   m_alphaS = MODEL::s_model->ScalarConstant("alpha_S");
   m_pref   = 8./9.*sqr(4.*M_PI)*m_R12/pow(m_mass,3);
@@ -686,9 +714,14 @@ XS_qqbar_g3P0::XS_qqbar_g3P0(const External_ME_Args& args):
     m_colours[i][0] = m_colours[i][1] = 0;
   }
   m_mass   = fl[m_S].Mass(true);  m_mass2 = sqr(m_mass); m_R12 = 0.;
-  if (fl[m_S].Kfcode()==kf_chi_c0_1P) m_R12 = 0.075;
-  if (fl[m_S].Kfcode()==kf_chi_b0_1P) m_R12 = 1.417;
-  if (fl[m_S].Kfcode()==kf_chi_b0_2P) m_R12 = 1.653;
+  auto pss = Settings::GetMainSettings()["EXTRA_XS"];
+  pss["R12_10441"].SetDefault(0.075);
+  pss["R12_10551"].SetDefault(1.417);
+  pss["R12_110551"].SetDefault(1.653);
+  if (fl[m_S].Kfcode()==kf_chi_c0_1P) m_R12 = pss["R12_10441"].Get<double>(); 
+  if (fl[m_S].Kfcode()==kf_chi_b0_1P) m_R12 = pss["R12_10551"].Get<double>();
+  if (fl[m_S].Kfcode()==kf_chi_b0_2P) m_R12 = pss["R12_110551"].Get<double>();
+  std::cout << "ldme = " << ldme << std::endl;
   m_alphaS = MODEL::s_model->ScalarConstant("alpha_S");
   m_pref   = 64./27.*sqr(4.*M_PI)*m_R12/pow(m_mass,3);
 }
@@ -742,9 +775,13 @@ XS_gg_g3P0::XS_gg_g3P0(const External_ME_Args& args):
     m_colours[i][0] = m_colours[i][1] = 0;
   }
   m_mass   = fl[m_S].Mass(true);  m_mass2 = sqr(m_mass); m_R12 = 0.;
-  if (fl[m_S].Kfcode()==kf_chi_c0_1P)   m_R12 = 0.075;
-  if (fl[m_S].Kfcode()==kf_chi_b0_1P)   m_R12 = 1.417;
-  if (fl[m_S].Kfcode()==kf_chi_b0_2P)   m_R12 = 1.653;
+  auto pss = Settings::GetMainSettings()["EXTRA_XS"];
+  pss["R12_10441"].SetDefault(0.075);
+  pss["R12_10551"].SetDefault(1.417);
+  pss["R12_110551"].SetDefault(1.653);
+  if (fl[m_S].Kfcode()==kf_chi_c0_1P) m_R12 = pss["R12_10441"].Get<double>(); 
+  if (fl[m_S].Kfcode()==kf_chi_b0_1P) m_R12 = pss["R12_10551"].Get<double>();
+  if (fl[m_S].Kfcode()==kf_chi_b0_2P) m_R12 = pss["R12_110551"].Get<double>();
   m_alphaS = MODEL::s_model->ScalarConstant("alpha_S");
   m_pref   = 4.*sqr(4.*M_PI)*m_R12/pow(m_mass,3);
 }
@@ -816,6 +853,7 @@ XS_qg_q3P1::XS_qg_q3P1(const External_ME_Args& args):
     m_colours[i][0] = m_colours[i][1] = 0;
   }
   m_mass   = fl[m_S].Mass(true);  m_mass2 = sqr(m_mass); m_R12 = 0.;
+
   if (fl[m_S].Kfcode()==kf_chi_c1_1P)   m_R12 = 0.075;
   if (fl[m_S].Kfcode()==kf_chi_b1_1P)   m_R12 = 1.417;
   if (fl[m_S].Kfcode()==kf_chi_b1_2P)   m_R12 = 1.653;
@@ -1214,12 +1252,19 @@ XS_qg_q1S0_oct::XS_qg_q1S0_oct(const External_ME_Args& args):
     m_colours[i][0] = m_colours[i][1] = 0;
   }
   m_mass   = fl[m_S].Mass(true);  m_mass2 = sqr(m_mass); LDME = 0.;
-  if (fl[m_S].Kfcode()==kf_1S0_c_8_eta_c)      LDME = 0.018/3.;
-  if (fl[m_S].Kfcode()==kf_1S0_c_8_J_psi_1S)   LDME = 0.012/3.;
-  if (fl[m_S].Kfcode()==kf_1S0_c_8_psi_2S)     LDME = 0.005/3.;
-  if (fl[m_S].Kfcode()==kf_1S0_b_8_eta_b)      LDME = 0.0231/3.;
-  if (fl[m_S].Kfcode()==kf_1S0_b_8_Upsilon_1S) LDME = 0.0151/3.;
-  if (fl[m_S].Kfcode()==kf_1S0_b_8_Upsilon_2S) LDME = 0.0124/3.;
+  auto pss = Settings::GetMainSettings()["EXTRA_XS"];
+  pss["LDME_990000441"].SetDefault(0.018/3.);
+  pss["LDME_990000443"].SetDefault(0.012/3.);
+  pss["LDME_990100443"].SetDefault(0.005/3.);
+  pss["LDME_990000551"].SetDefault(0.0231/3.);
+  pss["LDME_990000553"].SetDefault(0.0151/3.);
+  pss["LDME_990100553"].SetDefault(0.0124/3.);
+  if (fl[m_S].Kfcode()==kf_1S0_c_8_eta_c)      LDME = pss["LDME_990000441"].Get<double>(); 
+  if (fl[m_S].Kfcode()==kf_1S0_c_8_J_psi_1S)   LDME = pss["LDME_990000443"].Get<double>(); 
+  if (fl[m_S].Kfcode()==kf_1S0_c_8_psi_2S)     LDME = pss["LDME_990100443"].Get<double>(); 
+  if (fl[m_S].Kfcode()==kf_1S0_b_8_eta_b)      LDME = pss["LDME_990000551"].Get<double>(); 
+  if (fl[m_S].Kfcode()==kf_1S0_b_8_Upsilon_1S) LDME = pss["LDME_990000553"].Get<double>(); 
+  if (fl[m_S].Kfcode()==kf_1S0_b_8_Upsilon_2S) LDME = pss["LDME_990100553"].Get<double>(); 
   m_a      = fl[m_q].IsAnti() ? 1 : 0; 
   m_alphaS = MODEL::s_model->ScalarConstant("alpha_S");
   
@@ -1295,12 +1340,19 @@ XS_qqbar_g1S0_oct::XS_qqbar_g1S0_oct(const External_ME_Args& args):
     m_colours[i][0] = m_colours[i][1] = 0;
   }
   m_mass   = fl[m_S].Mass(true);  m_mass2 = sqr(m_mass); LDME = 0.;
-  if (fl[m_S].Kfcode()==kf_1S0_c_8_eta_c)      LDME = 0.0013/3.;
-  if (fl[m_S].Kfcode()==kf_1S0_c_8_J_psi_1S)   LDME = 0.0180;
-  if (fl[m_S].Kfcode()==kf_1S0_c_8_psi_2S)     LDME = 0.008;
-  if (fl[m_S].Kfcode()==kf_1S0_b_8_eta_b)      LDME = 0.0159;
-  if (fl[m_S].Kfcode()==kf_1S0_b_8_Upsilon_1S) LDME = 0.0121;
-  if (fl[m_S].Kfcode()==kf_1S0_b_8_Upsilon_2S) LDME = 0.00537;
+  auto pss = Settings::GetMainSettings()["EXTRA_XS"];
+  pss["LDME_990000441"].SetDefault(0.018/3.);
+  pss["LDME_990000443"].SetDefault(0.012/3.);
+  pss["LDME_990100443"].SetDefault(0.005/3.);
+  pss["LDME_990000551"].SetDefault(0.0231/3.);
+  pss["LDME_990000553"].SetDefault(0.0151/3.);
+  pss["LDME_990100553"].SetDefault(0.0124/3.);
+  if (fl[m_S].Kfcode()==kf_1S0_c_8_eta_c)      LDME = pss["LDME_990000441"].Get<double>(); 
+  if (fl[m_S].Kfcode()==kf_1S0_c_8_J_psi_1S)   LDME = pss["LDME_990000443"].Get<double>(); 
+  if (fl[m_S].Kfcode()==kf_1S0_c_8_psi_2S)     LDME = pss["LDME_990100443"].Get<double>(); 
+  if (fl[m_S].Kfcode()==kf_1S0_b_8_eta_b)      LDME = pss["LDME_990000551"].Get<double>(); 
+  if (fl[m_S].Kfcode()==kf_1S0_b_8_Upsilon_1S) LDME = pss["LDME_990000553"].Get<double>(); 
+  if (fl[m_S].Kfcode()==kf_1S0_b_8_Upsilon_2S) LDME = pss["LDME_990100553"].Get<double>(); 
   m_alphaS = MODEL::s_model->ScalarConstant("alpha_S");
   
 }
@@ -1359,12 +1411,19 @@ XS_gg_g1S0_oct::XS_gg_g1S0_oct(const External_ME_Args& args):
     m_colours[i][0] = m_colours[i][1] = 0;
   }
   m_mass   = fl[m_S].Mass(true);  m_mass2 = sqr(m_mass); LDME = 0.;
-  if (fl[m_S].Kfcode()==kf_1S0_c_8_eta_c)      LDME = 0.0013/3.;
-  if (fl[m_S].Kfcode()==kf_1S0_c_8_J_psi_1S)   LDME = 0.0180;
-  if (fl[m_S].Kfcode()==kf_1S0_c_8_psi_2S)     LDME = 0.008;
-  if (fl[m_S].Kfcode()==kf_1S0_b_8_eta_b)      LDME = 0.0159;
-  if (fl[m_S].Kfcode()==kf_1S0_b_8_Upsilon_1S) LDME = 0.0121;
-  if (fl[m_S].Kfcode()==kf_1S0_b_8_Upsilon_2S) LDME = 0.00537;
+  auto pss = Settings::GetMainSettings()["EXTRA_XS"];
+  pss["LDME_990000441"].SetDefault(0.018/3.);
+  pss["LDME_990000443"].SetDefault(0.012/3.);
+  pss["LDME_990100443"].SetDefault(0.005/3.);
+  pss["LDME_990000551"].SetDefault(0.0231/3.);
+  pss["LDME_990000553"].SetDefault(0.0151/3.);
+  pss["LDME_990100553"].SetDefault(0.0124/3.);
+  if (fl[m_S].Kfcode()==kf_1S0_c_8_eta_c)      LDME = pss["LDME_990000441"].Get<double>(); 
+  if (fl[m_S].Kfcode()==kf_1S0_c_8_J_psi_1S)   LDME = pss["LDME_990000443"].Get<double>(); 
+  if (fl[m_S].Kfcode()==kf_1S0_c_8_psi_2S)     LDME = pss["LDME_990100443"].Get<double>(); 
+  if (fl[m_S].Kfcode()==kf_1S0_b_8_eta_b)      LDME = pss["LDME_990000551"].Get<double>(); 
+  if (fl[m_S].Kfcode()==kf_1S0_b_8_Upsilon_1S) LDME = pss["LDME_990000553"].Get<double>(); 
+  if (fl[m_S].Kfcode()==kf_1S0_b_8_Upsilon_2S) LDME = pss["LDME_990100553"].Get<double>(); 
   m_alphaS = MODEL::s_model->ScalarConstant("alpha_S");
   
 }
@@ -1447,18 +1506,34 @@ XS_qg_q3S1_oct::XS_qg_q3S1_oct(const External_ME_Args& args):
     m_colours[i][0] = m_colours[i][1] = 0;
   }
   m_mass   = fl[m_S].Mass(true);  m_mass2 = sqr(m_mass); LDME = 0.;
-  if (fl[m_S].Kfcode()==kf_3S1_c_8_eta_c)      LDME = 0.0180;
-  if (fl[m_S].Kfcode()==kf_3S1_c_8_J_psi_1S)   LDME = 1.5E-02 / (M_PI*M_PI); //0.0013;
-  if (fl[m_S].Kfcode()==kf_3S1_c_8_psi_2S)     LDME = 4.3E-03 / (M_PI*M_PI); //0.0033;
-  if (fl[m_S].Kfcode()==kf_3S1_c_8_chi_c0_1P)  LDME = 0.00187;
-  if (fl[m_S].Kfcode()==kf_3S1_c_8_chi_c1_1P)  LDME = 3*0.00187;
-  if (fl[m_S].Kfcode()==kf_3S1_c_8_chi_c2_1P)  LDME = 5*0.00187;
-  if (fl[m_S].Kfcode()==kf_3S1_b_8_eta_b)      LDME = 0.0121;
-  if (fl[m_S].Kfcode()==kf_3S1_b_8_Upsilon_1S) LDME = 0.0477;
-  if (fl[m_S].Kfcode()==kf_3S1_b_8_Upsilon_2S) LDME = 0.121;
-  if (fl[m_S].Kfcode()==kf_3S1_b_8_chi_b0_1P)  LDME = 0.1008;
-  if (fl[m_S].Kfcode()==kf_3S1_b_8_chi_b1_1P)  LDME = 3*0.1008;
-  if (fl[m_S].Kfcode()==kf_3S1_b_8_chi_b2_1P)  LDME = 5*0.1008;
+  auto pss = Settings::GetMainSettings()["EXTRA_XS"];
+  pss["LDME_991000441"].SetDefault(0.0180);
+  pss["LDME_991000443"].SetDefault(0.0013);
+  pss["LDME_991100443"].SetDefault(0.0033);
+  pss["LDME_991010441"].SetDefault(0.00187);
+  pss["LDME_991020443"].SetDefault(3*0.00187);
+  pss["LDME_991000445"].SetDefault(5*0.00187);
+
+  pss["LDME_991000551"].SetDefault(0.0121);
+  pss["LDME_991000553"].SetDefault(0.0477);
+  pss["LDME_991100553"].SetDefault(0.121);
+  pss["LDME_991010551"].SetDefault(0.1008);
+  pss["LDME_991020553"].SetDefault(3*0.1008);
+  pss["LDME_991000555"].SetDefault(5*0.1008);
+
+  if (fl[m_S].Kfcode()==kf_3S1_c_8_eta_c)      LDME = pss["LDME_991000441"].Get<double>(); 
+  if (fl[m_S].Kfcode()==kf_3S1_c_8_J_psi_1S)   LDME = pss["LDME_991000443"].Get<double>(); 
+  if (fl[m_S].Kfcode()==kf_3S1_c_8_psi_2S)     LDME = pss["LDME_991100443"].Get<double>(); 
+  if (fl[m_S].Kfcode()==kf_3S1_c_8_chi_c0_1P)  LDME = pss["LDME_991010441"].Get<double>(); 
+  if (fl[m_S].Kfcode()==kf_3S1_c_8_chi_c1_1P)  LDME = pss["LDME_991020443"].Get<double>(); 
+  if (fl[m_S].Kfcode()==kf_3S1_c_8_chi_c2_1P)  LDME = pss["LDME_991000445"].Get<double>(); 
+
+  if (fl[m_S].Kfcode()==kf_3S1_b_8_eta_b)      LDME = pss["LDME_991000551"].Get<double>(); 
+  if (fl[m_S].Kfcode()==kf_3S1_b_8_Upsilon_1S) LDME = pss["LDME_991000553"].Get<double>(); 
+  if (fl[m_S].Kfcode()==kf_3S1_b_8_Upsilon_2S) LDME = pss["LDME_991100553"].Get<double>(); 
+  if (fl[m_S].Kfcode()==kf_3S1_b_8_chi_b0_1P)  LDME = pss["LDME_991010551"].Get<double>(); 
+  if (fl[m_S].Kfcode()==kf_3S1_b_8_chi_b1_1P)  LDME = pss["LDME_991020553"].Get<double>(); 
+  if (fl[m_S].Kfcode()==kf_3S1_b_8_chi_b2_1P)  LDME = pss["LDME_991000555"].Get<double>(); 
   m_a      = fl[m_q].IsAnti() ? 1 : 0; 
   m_alphaS = MODEL::s_model->ScalarConstant("alpha_S");
 
@@ -1543,18 +1618,34 @@ XS_qqbar_g3S1_oct::XS_qqbar_g3S1_oct(const External_ME_Args& args):
     m_colours[i][0] = m_colours[i][1] = 0;
   }
   m_mass   = fl[m_S].Mass(true);  m_mass2 = sqr(m_mass); LDME = 0.;
-  if (fl[m_S].Kfcode()==kf_3S1_c_8_eta_c)      LDME = 0.0180;
-  if (fl[m_S].Kfcode()==kf_3S1_c_8_J_psi_1S)   LDME = 1.5E-02 / (M_PI*M_PI); //0.0013;
-  if (fl[m_S].Kfcode()==kf_3S1_c_8_psi_2S)     LDME = 4.3E-03 / (M_PI*M_PI); //0.0033;
-  if (fl[m_S].Kfcode()==kf_3S1_c_8_chi_c0_1P)  LDME = 0.00187;
-  if (fl[m_S].Kfcode()==kf_3S1_c_8_chi_c1_1P)  LDME = 3*0.00187;
-  if (fl[m_S].Kfcode()==kf_3S1_c_8_chi_c2_1P)  LDME = 5*0.00187;
-  if (fl[m_S].Kfcode()==kf_3S1_b_8_eta_b)      LDME = 0.0121;
-  if (fl[m_S].Kfcode()==kf_3S1_b_8_Upsilon_1S) LDME = 0.0477;
-  if (fl[m_S].Kfcode()==kf_3S1_b_8_Upsilon_2S) LDME = 0.121;
-  if (fl[m_S].Kfcode()==kf_3S1_b_8_chi_b0_1P)  LDME = 0.1008;
-  if (fl[m_S].Kfcode()==kf_3S1_b_8_chi_b1_1P)  LDME = 3*0.1008;
-  if (fl[m_S].Kfcode()==kf_3S1_b_8_chi_b2_1P)  LDME = 5*0.1008;
+  auto pss = Settings::GetMainSettings()["EXTRA_XS"];
+  pss["LDME_991000441"].SetDefault(0.0180);
+  pss["LDME_991000443"].SetDefault(0.0013);
+  pss["LDME_991100443"].SetDefault(0.0033);
+  pss["LDME_991010441"].SetDefault(0.00187);
+  pss["LDME_991020443"].SetDefault(3*0.00187);
+  pss["LDME_991000445"].SetDefault(5*0.00187);
+
+  pss["LDME_991000551"].SetDefault(0.0121);
+  pss["LDME_991000553"].SetDefault(0.0477);
+  pss["LDME_991100553"].SetDefault(0.121);
+  pss["LDME_991010551"].SetDefault(0.1008);
+  pss["LDME_991020553"].SetDefault(3*0.1008);
+  pss["LDME_991000555"].SetDefault(5*0.1008);
+
+  if (fl[m_S].Kfcode()==kf_3S1_c_8_eta_c)      LDME = pss["LDME_991000441"].Get<double>(); 
+  if (fl[m_S].Kfcode()==kf_3S1_c_8_J_psi_1S)   LDME = pss["LDME_991000443"].Get<double>(); 
+  if (fl[m_S].Kfcode()==kf_3S1_c_8_psi_2S)     LDME = pss["LDME_991100443"].Get<double>(); 
+  if (fl[m_S].Kfcode()==kf_3S1_c_8_chi_c0_1P)  LDME = pss["LDME_991010441"].Get<double>(); 
+  if (fl[m_S].Kfcode()==kf_3S1_c_8_chi_c1_1P)  LDME = pss["LDME_991020443"].Get<double>(); 
+  if (fl[m_S].Kfcode()==kf_3S1_c_8_chi_c2_1P)  LDME = pss["LDME_991000445"].Get<double>(); 
+
+  if (fl[m_S].Kfcode()==kf_3S1_b_8_eta_b)      LDME = pss["LDME_991000551"].Get<double>(); 
+  if (fl[m_S].Kfcode()==kf_3S1_b_8_Upsilon_1S) LDME = pss["LDME_991000553"].Get<double>(); 
+  if (fl[m_S].Kfcode()==kf_3S1_b_8_Upsilon_2S) LDME = pss["LDME_991100553"].Get<double>(); 
+  if (fl[m_S].Kfcode()==kf_3S1_b_8_chi_b0_1P)  LDME = pss["LDME_991010551"].Get<double>(); 
+  if (fl[m_S].Kfcode()==kf_3S1_b_8_chi_b1_1P)  LDME = pss["LDME_991020553"].Get<double>(); 
+  if (fl[m_S].Kfcode()==kf_3S1_b_8_chi_b2_1P)  LDME = pss["LDME_991000555"].Get<double>(); 
   m_alphaS = MODEL::s_model->ScalarConstant("alpha_S");
   
 }
@@ -1624,18 +1715,34 @@ XS_gg_g3S1_oct::XS_gg_g3S1_oct(const External_ME_Args& args):
     m_colours[i][0] = m_colours[i][1] = 0;
   }
   m_mass   = fl[m_S].Mass(true);  m_mass2 = sqr(m_mass); LDME = 0.;
-  if (fl[m_S].Kfcode()==kf_3S1_c_8_eta_c)      LDME = 0.0180;
-  if (fl[m_S].Kfcode()==kf_3S1_c_8_J_psi_1S)   LDME = 1.5E-02 / (M_PI*M_PI); //0.0013;
-  if (fl[m_S].Kfcode()==kf_3S1_c_8_psi_2S)     LDME = 4.3E-03 / (M_PI*M_PI); //0.0033;
-  if (fl[m_S].Kfcode()==kf_3S1_c_8_chi_c0_1P)  LDME = 0.00187;
-  if (fl[m_S].Kfcode()==kf_3S1_c_8_chi_c1_1P)  LDME = 3*0.00187;
-  if (fl[m_S].Kfcode()==kf_3S1_c_8_chi_c2_1P)  LDME = 5*0.00187;
-  if (fl[m_S].Kfcode()==kf_3S1_b_8_eta_b)      LDME = 0.0121;
-  if (fl[m_S].Kfcode()==kf_3S1_b_8_Upsilon_1S) LDME = 0.0477;
-  if (fl[m_S].Kfcode()==kf_3S1_b_8_Upsilon_2S) LDME = 0.12;
-  if (fl[m_S].Kfcode()==kf_3S1_b_8_chi_b0_1P)  LDME = 0.1008;
-  if (fl[m_S].Kfcode()==kf_3S1_b_8_chi_b1_1P)  LDME = 3*0.1008;
-  if (fl[m_S].Kfcode()==kf_3S1_b_8_chi_b2_1P)  LDME = 5*0.1008;
+  auto pss = Settings::GetMainSettings()["EXTRA_XS"];
+  pss["LDME_991000441"].SetDefault(0.0180);
+  pss["LDME_991000443"].SetDefault(0.0013);
+  pss["LDME_991100443"].SetDefault(0.0033);
+  pss["LDME_991010441"].SetDefault(0.00187);
+  pss["LDME_991020443"].SetDefault(3*0.00187);
+  pss["LDME_991000445"].SetDefault(5*0.00187);
+
+  pss["LDME_991000551"].SetDefault(0.0121);
+  pss["LDME_991000553"].SetDefault(0.0477);
+  pss["LDME_991100553"].SetDefault(0.121);
+  pss["LDME_991010551"].SetDefault(0.1008);
+  pss["LDME_991020553"].SetDefault(3*0.1008);
+  pss["LDME_991000555"].SetDefault(5*0.1008);
+
+  if (fl[m_S].Kfcode()==kf_3S1_c_8_eta_c)      LDME = pss["LDME_991000441"].Get<double>(); 
+  if (fl[m_S].Kfcode()==kf_3S1_c_8_J_psi_1S)   LDME = pss["LDME_991000443"].Get<double>(); 
+  if (fl[m_S].Kfcode()==kf_3S1_c_8_psi_2S)     LDME = pss["LDME_991100443"].Get<double>(); 
+  if (fl[m_S].Kfcode()==kf_3S1_c_8_chi_c0_1P)  LDME = pss["LDME_991010441"].Get<double>(); 
+  if (fl[m_S].Kfcode()==kf_3S1_c_8_chi_c1_1P)  LDME = pss["LDME_991020443"].Get<double>(); 
+  if (fl[m_S].Kfcode()==kf_3S1_c_8_chi_c2_1P)  LDME = pss["LDME_991000445"].Get<double>(); 
+
+  if (fl[m_S].Kfcode()==kf_3S1_b_8_eta_b)      LDME = pss["LDME_991000551"].Get<double>(); 
+  if (fl[m_S].Kfcode()==kf_3S1_b_8_Upsilon_1S) LDME = pss["LDME_991000553"].Get<double>(); 
+  if (fl[m_S].Kfcode()==kf_3S1_b_8_Upsilon_2S) LDME = pss["LDME_991100553"].Get<double>(); 
+  if (fl[m_S].Kfcode()==kf_3S1_b_8_chi_b0_1P)  LDME = pss["LDME_991010551"].Get<double>(); 
+  if (fl[m_S].Kfcode()==kf_3S1_b_8_chi_b1_1P)  LDME = pss["LDME_991020553"].Get<double>(); 
+  if (fl[m_S].Kfcode()==kf_3S1_b_8_chi_b2_1P)  LDME = pss["LDME_991000555"].Get<double>(); 
   m_alphaS = MODEL::s_model->ScalarConstant("alpha_S");
 }
 
@@ -1720,12 +1827,21 @@ XS_qg_q3P0_oct::XS_qg_q3P0_oct(const External_ME_Args& args):
     m_colours[i][0] = m_colours[i][1] = 0;
   }
   m_mass   = fl[m_S].Mass(true);  m_mass2 = sqr(m_mass); LDME = 0.;
-  const double mc = ATOOLS::Flavour(kf_c).Mass();
-  const double mb = ATOOLS::Flavour(kf_b).Mass();
-  if (fl[m_S].Kfcode()==kf_3P0_c_8_J_psi_1S)   LDME = 1 * 3E-03 * mc * mc;;
-  if (fl[m_S].Kfcode()==kf_3P0_c_8_psi_2S)     LDME = 0.016*(mc*mc);
-  if (fl[m_S].Kfcode()==kf_3P0_b_8_Upsilon_1S) LDME = 5*0.0121*(mb*mb);
-  if (fl[m_S].Kfcode()==kf_3P0_b_8_Upsilon_2S) LDME = 5*0.0141*(mb*mb);
+  double mc = ATOOLS::Flavour(kf_c).Mass();
+  double mb = ATOOLS::Flavour(kf_b).Mass();
+  if (mc == 0) mc = 1.4;
+  if (mb == 0) mb = 4.88;
+
+  auto pss = Settings::GetMainSettings()["EXTRA_XS"];
+  pss["LDME_992000443"].SetDefault(1 * 3E-03 * mc * mc);
+  pss["LDME_992100443"].SetDefault(0.005 * mc * mc);
+  pss["LDME_992000553"].SetDefault(5 * 0.0121 * mb * mb);
+  pss["LDME_992100553"].SetDefault(5 * 0.0141 * mb * mb);
+  
+  if (fl[m_S].Kfcode()==kf_3P0_c_8_J_psi_1S)   LDME = pss["LDME_992000443"].Get<double>(); 
+  if (fl[m_S].Kfcode()==kf_3P0_c_8_psi_2S)     LDME = pss["LDME_992100443"].Get<double>(); 
+  if (fl[m_S].Kfcode()==kf_3P0_b_8_Upsilon_1S) LDME = pss["LDME_992000553"].Get<double>(); 
+  if (fl[m_S].Kfcode()==kf_3P0_b_8_Upsilon_2S) LDME = pss["LDME_992100553"].Get<double>(); 
   m_a      = fl[m_q].IsAnti() ? 1 : 0; 
   m_alphaS = MODEL::s_model->ScalarConstant("alpha_S");
   m_pref   = -5./(54.*pow(m_mass,3))*pow(4.*M_PI*m_alphaS,3);
@@ -1801,12 +1917,21 @@ XS_qqbar_g3P0_oct::XS_qqbar_g3P0_oct(const External_ME_Args& args):
     m_colours[i][0] = m_colours[i][1] = 0;
   }
   m_mass   = fl[m_S].Mass(true);  m_mass2 = sqr(m_mass); LDME = 0.;
-  const double mc = ATOOLS::Flavour(kf_c).Mass();
-  const double mb = ATOOLS::Flavour(kf_b).Mass();
-  if (fl[m_S].Kfcode()==kf_3P0_c_8_J_psi_1S)   LDME = 1 * 3E-03 * mc * mc;;
-  if (fl[m_S].Kfcode()==kf_3P0_c_8_psi_2S)     LDME = 0.016*(mc*mc);
-  if (fl[m_S].Kfcode()==kf_3P0_b_8_Upsilon_1S) LDME = 5*0.0121*(mb*mb);
-  if (fl[m_S].Kfcode()==kf_3P0_b_8_Upsilon_2S) LDME = 5*0.0141*(mb*mb);
+  double mc = ATOOLS::Flavour(kf_c).Mass();
+  double mb = ATOOLS::Flavour(kf_b).Mass();
+  if (mc == 0) mc = 1.4;
+  if (mb == 0) mb = 4.88;
+
+  auto pss = Settings::GetMainSettings()["EXTRA_XS"];
+  pss["LDME_992000443"].SetDefault(1 * 3E-03 * mc * mc);
+  pss["LDME_992100443"].SetDefault(0.005 * mc * mc);
+  pss["LDME_992000553"].SetDefault(5 * 0.0121 * mb * mb);
+  pss["LDME_992100553"].SetDefault(5 * 0.0141 * mb * mb);
+  
+  if (fl[m_S].Kfcode()==kf_3P0_c_8_J_psi_1S)   LDME = pss["LDME_992000443"].Get<double>(); 
+  if (fl[m_S].Kfcode()==kf_3P0_c_8_psi_2S)     LDME = pss["LDME_992100443"].Get<double>(); 
+  if (fl[m_S].Kfcode()==kf_3P0_b_8_Upsilon_1S) LDME = pss["LDME_992000553"].Get<double>(); 
+  if (fl[m_S].Kfcode()==kf_3P0_b_8_Upsilon_2S) LDME = pss["LDME_992100553"].Get<double>(); 
   m_alphaS = MODEL::s_model->ScalarConstant("alpha_S");
   m_pref   = 20./(81.*pow(m_mass,3))*pow(4.*M_PI*m_alphaS,3);
 }
@@ -1864,12 +1989,21 @@ XS_gg_g3P0_oct::XS_gg_g3P0_oct(const External_ME_Args& args):
     m_colours[i][0] = m_colours[i][1] = 0;
   }
   m_mass   = fl[m_S].Mass(true);  m_mass2 = sqr(m_mass); LDME = 0.;
-  const double mc = ATOOLS::Flavour(kf_c).Mass();
-  const double mb = ATOOLS::Flavour(kf_b).Mass();
-  if (fl[m_S].Kfcode()==kf_3P0_c_8_J_psi_1S)   LDME = 1 * 3E-03 * mc * mc;;
-  if (fl[m_S].Kfcode()==kf_3P0_c_8_psi_2S)     LDME = 0.016*(mc*mc);
-  if (fl[m_S].Kfcode()==kf_3P0_b_8_Upsilon_1S) LDME = 5*0.0121*(mb*mb);
-  if (fl[m_S].Kfcode()==kf_3P0_b_8_Upsilon_2S) LDME = 5*0.0141*(mb*mb);
+  double mc = ATOOLS::Flavour(kf_c).Mass();
+  double mb = ATOOLS::Flavour(kf_b).Mass();
+  if (mc == 0) mc = 1.4;
+  if (mb == 0) mb = 4.88;
+
+  auto pss = Settings::GetMainSettings()["EXTRA_XS"];
+  pss["LDME_992000443"].SetDefault(1 * 3E-03 * mc * mc);
+  pss["LDME_992100443"].SetDefault(0.005 * mc * mc);
+  pss["LDME_992000553"].SetDefault(5 * 0.0121 * mb * mb);
+  pss["LDME_992100553"].SetDefault(5 * 0.0141 * mb * mb);
+  
+  if (fl[m_S].Kfcode()==kf_3P0_c_8_J_psi_1S)   LDME = pss["LDME_992000443"].Get<double>(); 
+  if (fl[m_S].Kfcode()==kf_3P0_c_8_psi_2S)     LDME = pss["LDME_992100443"].Get<double>(); 
+  if (fl[m_S].Kfcode()==kf_3P0_b_8_Upsilon_1S) LDME = pss["LDME_992000553"].Get<double>(); 
+  if (fl[m_S].Kfcode()==kf_3P0_b_8_Upsilon_2S) LDME = pss["LDME_992100553"].Get<double>(); 
   m_alphaS = MODEL::s_model->ScalarConstant("alpha_S");
   
 }
@@ -1961,12 +2095,20 @@ XS_qg_q3P1_oct::XS_qg_q3P1_oct(const External_ME_Args& args):
     m_colours[i][0] = m_colours[i][1] = 0;
   }
   m_mass   = fl[m_S].Mass(true);  m_mass2 = sqr(m_mass); LDME = 0.;
-  const double mc = ATOOLS::Flavour(kf_c).Mass();
-  const double mb = ATOOLS::Flavour(kf_b).Mass();
-  if (fl[m_S].Kfcode()==kf_3P1_c_8_J_psi_1S)   LDME = 3* 3E-03 * mc * mc;;
-  if (fl[m_S].Kfcode()==kf_3P1_c_8_psi_2S)     LDME = 3*0.016*(mc*mc);
-  if (fl[m_S].Kfcode()==kf_3P1_b_8_Upsilon_1S) LDME = 3*5*0.0121*(mb*mb);
-  if (fl[m_S].Kfcode()==kf_3P1_b_8_Upsilon_2S) LDME = 3*5*0.0141*(mb*mb);
+  double mc = ATOOLS::Flavour(kf_c).Mass();
+  double mb = ATOOLS::Flavour(kf_b).Mass();
+  if (mc == 0) mc = 1.4;
+  if (mb == 0) mb = 4.88;
+
+  auto pss = Settings::GetMainSettings()["EXTRA_XS"];
+  pss["LDME_993000443"].SetDefault(3 * 3E-03 * mc * mc);
+  pss["LDME_993100443"].SetDefault(3* 0.005 * mc * mc);
+  pss["LDME_993000553"].SetDefault(3 * 5 * 0.0121 * mb * mb);
+  pss["LDME_993100553"].SetDefault(3 * 5 * 0.0141 * mb * mb);
+  if (fl[m_S].Kfcode()==kf_3P1_c_8_J_psi_1S)   LDME = pss["LDME_993000443"].Get<double>(); 
+  if (fl[m_S].Kfcode()==kf_3P1_c_8_psi_2S)     LDME = pss["LDME_993100443"].Get<double>(); 
+  if (fl[m_S].Kfcode()==kf_3P1_b_8_Upsilon_1S) LDME = pss["LDME_993000553"].Get<double>(); 
+  if (fl[m_S].Kfcode()==kf_3P1_b_8_Upsilon_2S) LDME = pss["LDME_993100553"].Get<double>(); 
   m_a      = fl[m_q].IsAnti() ? 1 : 0; 
   m_alphaS = MODEL::s_model->ScalarConstant("alpha_S");
   
@@ -2045,12 +2187,20 @@ XS_qqbar_g3P1_oct::XS_qqbar_g3P1_oct(const External_ME_Args& args):
     m_colours[i][0] = m_colours[i][1] = 0;
   }
   m_mass   = fl[m_S].Mass(true);  m_mass2 = sqr(m_mass);
-  const double mc = ATOOLS::Flavour(kf_c).Mass();
-  const double mb = ATOOLS::Flavour(kf_b).Mass();
-  if (fl[m_S].Kfcode()==kf_3P1_c_8_J_psi_1S)   LDME = 3* 3E-03 * mc * mc;
-  if (fl[m_S].Kfcode()==kf_3P1_c_8_psi_2S)     LDME = 3*0.016*(mc*mc);
-  if (fl[m_S].Kfcode()==kf_3P1_b_8_Upsilon_1S) LDME = 3*5*0.0121*(mb*mb);
-  if (fl[m_S].Kfcode()==kf_3P1_b_8_Upsilon_2S) LDME = 3*5*0.0141*(mb*mb);
+  double mc = ATOOLS::Flavour(kf_c).Mass();
+  double mb = ATOOLS::Flavour(kf_b).Mass();
+  if (mc == 0) mc = 1.4;
+  if (mb == 0) mb = 4.88;
+
+  auto pss = Settings::GetMainSettings()["EXTRA_XS"];
+  pss["LDME_993000443"].SetDefault(3 * 3E-03 * mc * mc);
+  pss["LDME_993100443"].SetDefault(3* 0.005 * mc * mc);
+  pss["LDME_993000553"].SetDefault(3 * 5 * 0.0121 * mb * mb);
+  pss["LDME_993100553"].SetDefault(3 * 5 * 0.0141 * mb * mb);
+  if (fl[m_S].Kfcode()==kf_3P1_c_8_J_psi_1S)   LDME = pss["LDME_993000443"].Get<double>(); 
+  if (fl[m_S].Kfcode()==kf_3P1_c_8_psi_2S)     LDME = pss["LDME_993100443"].Get<double>(); 
+  if (fl[m_S].Kfcode()==kf_3P1_b_8_Upsilon_1S) LDME = pss["LDME_993000553"].Get<double>(); 
+  if (fl[m_S].Kfcode()==kf_3P1_b_8_Upsilon_2S) LDME = pss["LDME_993100553"].Get<double>(); 
   m_alphaS = MODEL::s_model->ScalarConstant("alpha_S");
   m_pref   = 40./(81.*pow(m_mass,3))*pow(4.*M_PI*m_alphaS,3);
 }
@@ -2109,12 +2259,20 @@ XS_gg_g3P1_oct::XS_gg_g3P1_oct(const External_ME_Args& args):
     m_colours[i][0] = m_colours[i][1] = 0;
   }
   m_mass   = fl[m_S].Mass(true);  m_mass2 = sqr(m_mass); LDME = 0.;
-  const double mc = ATOOLS::Flavour(kf_c).Mass();
-  const double mb = ATOOLS::Flavour(kf_b).Mass();
-  if (fl[m_S].Kfcode()==kf_3P1_c_8_J_psi_1S)   LDME = 3* 3E-03 * mc * mc;//3*0.0180*(mc*mc);
-  if (fl[m_S].Kfcode()==kf_3P1_c_8_psi_2S)     LDME = 3*0.016*(mc*mc);
-  if (fl[m_S].Kfcode()==kf_3P1_b_8_Upsilon_1S) LDME = 3*5*0.0121*(mb*mb);
-  if (fl[m_S].Kfcode()==kf_3P1_b_8_Upsilon_2S) LDME = 3*5*0.0141*(mb*mb);
+  double mc = ATOOLS::Flavour(kf_c).Mass();
+  double mb = ATOOLS::Flavour(kf_b).Mass();
+  if (mc == 0) mc = 1.4;
+  if (mb == 0) mb = 4.88;
+
+  auto pss = Settings::GetMainSettings()["EXTRA_XS"];
+  pss["LDME_993000443"].SetDefault(3 * 3E-03 * mc * mc);
+  pss["LDME_993100443"].SetDefault(3* 0.005 * mc * mc);
+  pss["LDME_993000553"].SetDefault(3 * 5 * 0.0121 * mb * mb);
+  pss["LDME_993100553"].SetDefault(3 * 5 * 0.0141 * mb * mb);
+  if (fl[m_S].Kfcode()==kf_3P1_c_8_J_psi_1S)   LDME = pss["LDME_993000443"].Get<double>(); 
+  if (fl[m_S].Kfcode()==kf_3P1_c_8_psi_2S)     LDME = pss["LDME_993100443"].Get<double>(); 
+  if (fl[m_S].Kfcode()==kf_3P1_b_8_Upsilon_1S) LDME = pss["LDME_993000553"].Get<double>(); 
+  if (fl[m_S].Kfcode()==kf_3P1_b_8_Upsilon_2S) LDME = pss["LDME_993100553"].Get<double>(); 
   m_alphaS = MODEL::s_model->ScalarConstant("alpha_S");
   
 }
@@ -2204,10 +2362,13 @@ XS_qg_q3P2_oct::XS_qg_q3P2_oct(const External_ME_Args& args):
     m_colours[i][0] = m_colours[i][1] = 0;
   }
   m_mass   = fl[m_S].Mass(true);  m_mass2 = sqr(m_mass); LDME = 0.;
-  const double mc = ATOOLS::Flavour(kf_c).Mass();
-  const double mb = ATOOLS::Flavour(kf_b).Mass();
+  double mc = ATOOLS::Flavour(kf_c).Mass();
+  double mb = ATOOLS::Flavour(kf_b).Mass();
+  if (mc == 0) mc = 1.4;
+  if (mb == 0) mb = 4.88;
+
   if (fl[m_S].Kfcode()==kf_3P2_c_8_J_psi_1S)   LDME = 5 * 3E-03 * mc * mc;;
-  if (fl[m_S].Kfcode()==kf_3P2_c_8_psi_2S)     LDME = 5*0.016*(mc*mc);
+  if (fl[m_S].Kfcode()==kf_3P2_c_8_psi_2S)     LDME = 5*0.005*(mc*mc);
   if (fl[m_S].Kfcode()==kf_3P2_b_8_Upsilon_1S) LDME = 5*5*0.0121*(mb*mb);
   if (fl[m_S].Kfcode()==kf_3P2_b_8_Upsilon_2S) LDME = 5*5*0.0141*(mb*mb);
   m_a      = fl[m_q].IsAnti() ? 1 : 0; 
@@ -2289,10 +2450,13 @@ XS_qqbar_g3P2_oct::XS_qqbar_g3P2_oct(const External_ME_Args& args):
     m_colours[i][0] = m_colours[i][1] = 0;
   }
   m_mass   = fl[m_S].Mass(true);  m_mass2 = sqr(m_mass); LDME = 0.;
-  const double mc = ATOOLS::Flavour(kf_c).Mass();
-  const double mb = ATOOLS::Flavour(kf_b).Mass();
+  double mc = ATOOLS::Flavour(kf_c).Mass();
+  double mb = ATOOLS::Flavour(kf_b).Mass();
+  if (mc == 0) mc = 1.4;
+  if (mb == 0) mb = 4.88;
+
   if (fl[m_S].Kfcode()==kf_3P2_c_8_J_psi_1S)   LDME = 5 * 3E-03 * mc * mc;;
-  if (fl[m_S].Kfcode()==kf_3P2_c_8_psi_2S)     LDME = 5*0.016*(mc*mc);
+  if (fl[m_S].Kfcode()==kf_3P2_c_8_psi_2S)     LDME = 5*0.005*(mc*mc);
   if (fl[m_S].Kfcode()==kf_3P2_b_8_Upsilon_1S) LDME = 5*5*0.0121*(mb*mb);
   if (fl[m_S].Kfcode()==kf_3P2_b_8_Upsilon_2S) LDME = 5*5*0.0141*(mb*mb);
   m_alphaS = MODEL::s_model->ScalarConstant("alpha_S");
@@ -2317,5 +2481,120 @@ bool XS_qqbar_g3P2_oct::SetColours(const Vec4D_Vector& mom)
   m_colours[1-m_a][0] = m_colours[3-m_a][0] = Flow::Counter();
   m_colours[m_a][1]   = m_colours[2+m_a][1] = Flow::Counter();
   m_colours[2][m_a]   = m_colours[3][1-m_a] = Flow::Counter();
+  return true;
+}
+
+DECLARE_TREEME2_GETTER(EXTRAXS::XS_gg_g3P2_oct,"1XS_gg_g3P2_oct")
+Tree_ME2_Base *ATOOLS::Getter<PHASIC::Tree_ME2_Base,
+			      PHASIC::External_ME_Args,EXTRAXS::XS_gg_g3P2_oct>::
+operator()(const External_ME_Args &args) const
+{
+  if (dynamic_cast<UFO::UFO_Model*>(MODEL::s_model)) return NULL;
+
+  const Flavour_Vector fl = args.Flavours();
+  if (fl.size()==4 && args.m_orders[0]==3 && args.m_orders[1]==0) {
+    if ( fl[0].IsGluon() && fl[1].IsGluon() && fl[2].IsGluon()  &&
+	 fl[3].IsOctetMeson() ) {
+      kf_code kfc = fl[3].Kfcode();
+      if (kfc==kf_3P2_c_8_J_psi_1S   || kfc==kf_3P2_c_8_psi_2S    ||
+          kfc==kf_3P2_b_8_Upsilon_1S || kfc==kf_3P2_b_8_Upsilon_2S)  return new XS_gg_g3P2_oct(args);
+    }
+    if ( fl[0].IsGluon() && fl[1].IsGluon() && fl[3].IsGluon()  &&
+	 fl[2].IsOctetMeson() ) {
+      kf_code kfc = fl[2].Kfcode();
+      if (kfc==kf_3P2_c_8_J_psi_1S   || kfc==kf_3P2_c_8_psi_2S    ||
+          kfc==kf_3P2_b_8_Upsilon_1S || kfc==kf_3P2_b_8_Upsilon_2S)  return new XS_gg_g3P2_oct(args);
+    }
+  }
+  return NULL;
+}
+
+XS_gg_g3P2_oct::XS_gg_g3P2_oct(const External_ME_Args& args):
+  ME2_Base(args)
+{
+  m_oqcd = 3; m_oew = 0;
+  const ATOOLS::Flavour_Vector& fl = args.Flavours();
+  for (short int i=0;i<4;i++) {
+    if (i>1 && fl[i].IsOctetMeson()) m_S = i;
+    m_colours[i][0] = m_colours[i][1] = 0;
+  }
+  m_mass   = fl[m_S].Mass(true);  m_mass2 = sqr(m_mass); LDME = 0.;
+  double mc = ATOOLS::Flavour(kf_c).Mass();
+  double mb = ATOOLS::Flavour(kf_b).Mass();
+  if (mc == 0) mc = 1.4;
+  if (mb == 0) mb = 4.88;
+
+  auto pss = Settings::GetMainSettings()["EXTRA_XS"];
+  pss["LDME_993000443"].SetDefault(3 * 3E-03 * mc * mc);
+  pss["LDME_993100443"].SetDefault(3* 0.005 * mc * mc);
+  pss["LDME_993000553"].SetDefault(3 * 5 * 0.0121 * mb * mb);
+  pss["LDME_993100553"].SetDefault(3 * 5 * 0.0141 * mb * mb);
+  if (fl[m_S].Kfcode()==kf_3P1_c_8_J_psi_1S)   LDME = pss["LDME_993000443"].Get<double>(); 
+  if (fl[m_S].Kfcode()==kf_3P1_c_8_psi_2S)     LDME = pss["LDME_993100443"].Get<double>(); 
+  if (fl[m_S].Kfcode()==kf_3P1_b_8_Upsilon_1S) LDME = pss["LDME_993000553"].Get<double>(); 
+  if (fl[m_S].Kfcode()==kf_3P1_b_8_Upsilon_2S) LDME = pss["LDME_993100553"].Get<double>(); 
+  m_alphaS = MODEL::s_model->ScalarConstant("alpha_S");
+  
+}
+
+double XS_gg_g3P2_oct::operator()(const Vec4D_Vector& mom) 
+{
+  double s  = (mom[0]+mom[1]).Abs2(), sM2 = sqr(s-m_mass2); double s2 = sqr(s), s4 = sqr(s2), s6 = pow(s,6), s8 = sqr(s4), s10 = pow(s,10), s12 = pow(s,12);
+  double t  = (mom[0]-mom[2]).Abs2(), tM2 = sqr(t-m_mass2);
+  double u  = (mom[0]-mom[3]).Abs2(), uM2 = sqr(u-m_mass2);
+
+  double M = m_mass, M2 = m_mass2;
+
+  double z = sqrt(t*u), z2 = sqr(z), z4 = sqr(z2), z6 = pow(z,6), z8 = sqr(z4), z10 = pow(z,10), z12 = pow(z,12);
+  // double heq0 = s*z2*(sqr(s2-z2)-2.*M2*s*z2-sqr(M2)*(s2+2.*z2)+pow(M,8))*(sqr(s2-z2)-M2*s*(2.*s2-z2)+sqr(M2)*s2);
+  // double heq1l1 = M2*(2.*sqr(s2-z2)*(s6-4.*s4*z2+s2*z4-z6)-M2*s*(2.*s2-z2)*(5.*s6-17.*s4*z2+9.*s2*z4-z6)+sqr(M2)*(21.*s8-49.*s6*z2+21.*s4*z4-4.*s2*z6+z8));
+  // double heq1l2 = M2*(-pow(M,6)*s*(24.*s6-30.*s4*z2+6.*s2*z4-z6)+pow(M,8)*s2*(16.*s4-9.*s2*z2+2*z4)-pow(M,10)*pow(s,3)*(6.*s2-z2)+pow(M,12)*s4);
+  // double heq = heq0 + heq1l1 + heq1l2;
+  // double dnom = pow(s-M2,4)*pow(s*M2+z2,4);
+
+  double heq0 = s*z2*(s2*pow(s2-z2,4)-M2*s*z2*sqr(s2-z2)*(11.*s2+2.*z2)
+                +sqr(M2)*(s8-12.*s6*z2+41.*s4*z4-20.*s2*z6+z8)
+                -pow(M,6)*(s8-12.*s6*z2+41.*s4*z4-20.*s2*z6+z8)
+                +pow(M,8)*(29.*s6-114.*s4*z2+108.*s2*z4-10.*z6)
+                -pow(M,10)*s*(65.*s4-104.*s2*z2-33.*z4)+ pow(M,12)*(54.*s4-20.*s2*z2+7.*z4)
+                -pow(M,14)*s*(23.*s2+5.*z2)+7.*pow(M,16)*s2);
+  double heq1 = M2*(2.*s2*sqr(s2-z2)*(s6-4.*s4*z2+s2*z4-z6)
+                  - M2*s*(10.*s10-37.*s8*z2+19.*s6*z4+11.*s4*z6-s2*z8-4*z10)
+                  + sqr(M2)*(25.*s10-61.*s8*z2+27.*s6*z4-34.*s4*z6+23.*s2*z8-2.*z10)
+                  - pow(M,6)*s*(42.*s8-77.*s6*z2+41.*s4*z4-22.*s2*z6+17.*s8)
+                  + pow(M,8)*(53.*s8-88*s6*z2+69.*s4*z4-68.*s2*z6+3*z8)
+                  - pow(M,10)*s*(54.*s6 - 85.*s4*z2 + 60.*s2*z4 - 9.*z6) + pow(M,12)*s2*(43.*s4-47.*s2*z2+20*z4)
+                  - pow(M,14)*pow(s,3)*(22.*s2-9.*z2)+5.*pow(M,16)*s4);
+  double heq2 = sqr(M2)*(2.*s2*(s12-8.*s10*z2+22.*s8*z4-24.*s6*z6+10.*s4*z8-3.*s2*z10+z12)
+                      - M2*s*(16.*s12-102.*s10*z2+210.*s8*z4-153.*s6*z6+36.*s4*z8-6.*s2*z10+4.*z12)
+                      + sqr(M2)*(60.*s12-306.*s10*z2+482*s8*z4-271.*s6*z6+77.*s4*z8-18.*s2*z10+2.*z12)
+                      - pow(M,6)*s*(140.*s10-573*s8*z2+710.*s6*z4-344.*s4*z6+91.*s2*z8-18.*z10)
+                      + pow(M,8)*(226.*s10-741.*s8*z2+737.*s6*z4-310.*s4*z6+77.*s2*z8-4.*z10)
+                      - pow(M,10)*s*(264.*s8-686.*s6*z2+541.*s4*z4-177.*s2*z6+25.*z8)
+                      + pow(M,12)*(226.*s8-452*s6*z2+261*s4*z4-55.*s2*z6+2*z8)
+                      - pow(M,14)*(140.*s6-201.*s4*z2+71.*s2*z4-6.*z6)
+                      + pow(M,16)*s2*(60.*s4-53*s2*z2+8.*z4)-2.*pow(M,18)*pow(s,3)*(8.*s2-3.*z2)+2.*pow(M,20)*s4);
+  double dnom = pow(s-M2,6)*pow(s*M2+z2,4);
+  m_pref = pow(4.*M_PI*m_alphaS,3)*CouplingFactor(3,0)/(6.*pow(m_mass,3));
+
+  return LDME*m_pref*(heq0+3*heq1+3*heq2)/dnom;
+}
+
+bool XS_gg_g3P2_oct::SetColours(const Vec4D_Vector& mom) 
+{
+  size_t bit = ran->Get()<0.5 ? 0 : 1;
+  size_t cross = ran->Get()<0.5 ? 0 : 1;
+  if (cross==0) {
+    m_colours[0][bit] = m_colours[m_S][bit] = Flow::Counter();
+    m_colours[0][1-bit] = m_colours[1][bit] = Flow::Counter();
+    m_colours[1][1-bit] = m_colours[5-m_S][1-bit] = Flow::Counter();
+    m_colours[m_S][1-bit] = m_colours[5-m_S][bit] = Flow::Counter();
+  }
+  if (cross==1) {
+    m_colours[0][bit] = m_colours[m_S][bit] = Flow::Counter();
+    m_colours[0][1-bit] = m_colours[5-m_S][1-bit] = Flow::Counter();
+    m_colours[1][bit] = m_colours[5-m_S][bit] = Flow::Counter();
+    m_colours[1][1-bit] = m_colours[m_S][1-bit] = Flow::Counter();
+  }
   return true;
 }
