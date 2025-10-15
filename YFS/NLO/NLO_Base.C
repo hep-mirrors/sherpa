@@ -385,7 +385,7 @@ double NLO_Base::CalculateReal(Vec4D k, int fsrcount) {
 			// return 0;
 		}
 	}
-	if(fsrcount>=3) return tot*subb;
+	if(fsrcount>=3) return r*flux-subloc*m_born;
 	return tot;
 }
 
@@ -586,7 +586,6 @@ double NLO_Base::CalculateRealReal(Vec4D k1, Vec4D k2, int fsr1, int fsr2){
   }
   if(!fsr1 && fsr2){
   	if(!HasFSR()) msg_Error()<<"Wrong dipole type in "<<METHOD<<endl;
-  	Dipole_Vector *diplo = p_dipoles->GetDipoleFF();
   	for (Dipole_Vector::iterator Dip = p_nlodipoles->GetDipoleFF()->begin();
        Dip != p_nlodipoles->GetDipoleFF()->end(); ++Dip) {
   		 double scalek = p_fsr->ScalePhoton(k2);
@@ -633,15 +632,15 @@ double NLO_Base::CalculateRealReal(Vec4D k1, Vec4D k2, int fsr1, int fsr2){
   	}
   }
 
-  if(!fsr1 && !fsr2) MapMomenta(p, k1, k2);
+  if(!fsr1 || !fsr2) MapMomenta(p, k1, k2);
   Vec4D_Vector _p = p;
  	p.push_back(k1);
  	p.push_back(k2);
  	if(fsr1 || fsr2) MapInitial(p);
+ 	CheckMasses(p, 2);
  	// pp.pop_back();
  	// pp.pop_back();
-  // m_plab = pp;
-	m_plab = pp;
+  m_plab = pp;
 	p_nlodipoles->MakeDipolesII(m_flavs,_p,m_plab);
 	p_nlodipoles->MakeDipolesIF(m_flavs,_p,m_plab);
 	p_nlodipoles->MakeDipoles(m_flavs,_p,m_plab);
@@ -873,7 +872,8 @@ void NLO_Base::CheckMasses(Vec4D_Vector &p, int realmode){
 	bool allonshell=true;
 	std::vector<double> masses;
 	Flavour_Vector flavs = m_flavs;
-	if(realmode) flavs.push_back(Flavour(kf_photon));
+	if(realmode>=1) flavs.push_back(Flavour(kf_photon));
+	if(realmode>=2) flavs.push_back(Flavour(kf_photon));
 	if(p.size() != flavs.size()) msg_Error()<<"Mismatch between mass and flavour vectors in "<<METHOD<<std::endl;
 	for (int i = 0; i < p.size(); ++i)
 	{
