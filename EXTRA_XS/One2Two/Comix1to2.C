@@ -198,7 +198,22 @@ void Comix1to2::CalculateNLO(const ATOOLS::Vec4D_Vector& momenta, bool anti) {
     if (i < this->size() - 1) std::cout << ", ";
   }
   std::cout << " }" << std::endl;
-  
+
+  std::cout << " Born: " << std::endl;
+  std::cout << " 00: ";
+  std::cout << born["00"] << std::endl;
+  std::cout << " 01: ";
+  std::cout << born["01"] << std::endl;
+  std::cout << " 10: ";
+  std::cout << born["10"] << std::endl;
+  std::cout << " 11: ";
+  std::cout << born["11"] << std::endl;
+
+  // test: calculate Born ME2
+  std::complex<double> ME2 = born["00"] * std::conj(born["00"]) + born["01"] * std::conj(born["01"]) + born["10"] * std::conj(born["10"]) + born["11"] * std::conj(born["11"]);
+  std::cout << "ME2:" << ME2 << std::endl;
+  std::cout << "ME2 * C_F:" << ME2*(3.0/4.0) << std::endl;
+  std::cout << "ME2 * C_F^2:" << ME2*(9.0/16.0) << std::endl;
 }
 
 

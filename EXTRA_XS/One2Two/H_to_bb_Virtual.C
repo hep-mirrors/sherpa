@@ -173,9 +173,9 @@ std::pair<std::vector<std::pair<METOOLS::CSpinor<double>*, int>>,
     for (size_t h = 0; h < bottom_cur_j.size(); ++h) {
       const std::vector<DDSpin*> *v = bottom_cur_j[h].template Get<DDSpin>();
       if (v) for (DDSpin* sp : *v) bottom.emplace_back(sp, static_cast<int>(h));
-      for (DDSpin* sp : *v) {
-        std::cout << "m_cur[1] hel="<<h<<" u0="<<(*sp)[0]<<" u1="<<(*sp)[1]<<" u2="<<(*sp)[2]<<" u3="<<(*sp)[3]<<"\n";
-      }
+      //for (DDSpin* sp : *v) {
+      //  std::cout << "m_cur[1] hel="<<h<<" u0="<<(*sp)[0]<<" u1="<<(*sp)[1]<<" u2="<<(*sp)[2]<<" u3="<<(*sp)[3]<<"\n";
+      //}
     }
 
     // antibottom current
@@ -452,8 +452,8 @@ std::map<std::string, std::complex<double>> H_to_bb_Virtual::CalculateBorn(const
 
   std::map<std::string, C> born_res;
   born_res["00"]  = born_00;
-  born_res["10"]  = born_10;
   born_res["01"]  = born_01;
+  born_res["10"]  = born_10;
   born_res["11"]  = born_11;
 
   return born_res;

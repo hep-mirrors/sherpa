@@ -289,16 +289,16 @@ void H_to_bbg_Real::Calculate(const ATOOLS::Vec4D_Vector& momenta, bool anti) {
   vector<int> fill(m_n,1); // output amplitude vector
   for (size_t i(0);i<m_n;++i) (*this)[i]=Complex(0.0,0.0);
   if (anti) {
-    //m_antifcur->Contract<double>(*m_anticur.front(),fill,*this,0); // compute amplitude
+    m_antifcur->Contract<double>(*m_anticur.front(),fill,*this,0); // compute amplitude
   }
   else {
-    //m_fcur->Contract<double>(*m_cur.front(),fill,*this,0);
+    m_fcur->Contract<double>(*m_cur.front(),fill,*this,0);
   }
 
   for (size_t i=0; i<size(); ++i) {
     (*this)[i] *= sqrt(p_ci->GlobalWeight()); // scale the final numerical result appropriately with the color factor
   }
-  std::cout << "GlobalWeight = " << p_ci->GlobalWeight() << std::endl;
+  //std::cout << "GlobalWeight = " << p_ci->GlobalWeight() << std::endl;
 
 /*
   for (size_t i = 0; i < p_ci->I().size(); ++i) {
