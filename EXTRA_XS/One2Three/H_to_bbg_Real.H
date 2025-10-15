@@ -25,7 +25,6 @@ namespace EXTRAXS {
 
     PHASIC::Color_Integrator* p_ci;
 
-    METOOLS::Current *CopyCurrent(METOOLS::Current *const c);
     size_t NHel(const ATOOLS::Flavour& fl);
   public:
     H_to_bbg_Real(const std::vector<ATOOLS::Flavour>& flavs,

@@ -8,6 +8,9 @@
 #include "PHASIC++/Main/Color_Integrator.H"
 #include "METOOLS/Explicit/Dipole_Kinematics.H"
 #include <assert.h>
+#include "ATOOLS/Math/Vec4.H"
+#include <cmath>
+#include <numbers>
 
 using namespace EXTRAXS;
 using namespace ATOOLS;
@@ -127,9 +130,6 @@ H_to_bbg_Real::H_to_bbg_Real(const vector<Flavour>& flavs, const Flavour& prop,
   if (!p_ci->ConstructRepresentations(cids,types,acts)) {
     THROW(fatal_error, "Internal error.");
   }
-
-  METOOLS::Current *test=CopyCurrent(m_cur[0]);
-  const std::map<std::string, Complex> &cpl = *MODEL::s_model->GetCouplings();
 }
 
 
@@ -148,113 +148,6 @@ H_to_bbg_Real::~H_to_bbg_Real()
 
 
 void H_to_bbg_Real::Born_setup(){}
-
-
-void H_to_bbg_Real::Calculate_born_subtraction(const ATOOLS::Vec4D_Vector& momenta, bool anti){
-  /*const size_t gluon_idx = 1, b_idx = 2, bbar_idx = 3;
-
-  // 1) emitter = (b + g)  (use reduced from full current), spectator = bbar
-  // 2) emitter = (bbar + g), spectator = b
-  const std::pair<size_t,size_t> dipoles[2] = {
-    { b_idx, bbar_idx },   // emitter (b+g) with spectator bbar
-    { bbar_idx, b_idx }    // emitter (bbar+g) with spectator b
-  };
-
-  for (int di = 0; di < 2; ++di) {
-    const size_t emit_idx = dipoles[di].first;
-    const size_t spec_idx = dipoles[di].second;
-
-    // choose currents:
-    // emitter current: take the full 3-leg current (m_fcur) as source of the emitter pair
-    // spectator: the single-particle current from m_cur[spec_idx]
-    METOOLS::Current *c = m_fcur;
-    METOOLS::Current *s = m_cur[spec_idx];
-
-    std::cerr << "Building dipole: emitter_pair_index="<<emit_idx
-              << " spectator_index="<<spec_idx<<"\n";
-
-    // create local reduced copies (do not modify m_scur)
-    METOOLS::Current *jijt = CopyCurrent(c);
-    METOOLS::Current *jkt  = CopyCurrent(s);
-    if (!jijt || !jkt) {
-      std::cerr<<" CopyCurrent failed\n";
-      delete jijt; delete jkt;
-      continue;
-    }
-    // link as dipole pair (local only)
-    jijt->SetSub(jkt);
-    jkt->SetSub(jijt);
-    jijt->SetKey(0);
-    jkt->SetKey(0);
-
-    // Build Vertex_Key / instantiate model vertices like Amplitude::AddRSDipole
-    Vertex *cin = c->In().front(); // model input vertex of emitter current
-    Vertex_Key *svkey = Vertex_Key::New(cin->J(), jijt, MODEL::s_model);
-    svkey->m_p = std::string(1,'D');           // use D-mode as in current construction
-    // local Dipole_Info (simple default) - set massive treatment if needed
-    svkey->p_dinfo = new METOOLS::Dipole_Info();
-    // treat as QCD dipole
-    svkey->m_stype = 1;
-    svkey->p_k = s;        // spectator current (original)
-    svkey->p_kt = jkt;     // spectator reduced current (local)
-
-    // instantiate all model vertices that match this key (loop as in Amplitude)
-    MODEL::VMIterator_Pair vmp(MODEL::s_model->GetVertex(svkey->ID()));
-    for (MODEL::Vertex_Map::const_iterator vit(vmp.first);
-         vit != vmp.second; ++vit) {
-      svkey->p_mv = vit->second;
-      METOOLS::Vertex *v = new METOOLS::Vertex(*svkey);
-      v->AddJ(svkey->m_j);
-      v->SetJC(svkey->p_c);
-
-      // now the dipole-kinematics lives in v->In().front()->Kin()
-      METOOLS::Dipole_Kinematics *kin = v->In().front()->Kin();
-      if (!kin) {
-        std::cerr<<" no Dipole_Kinematics\n";
-        delete v;
-        continue;
-      }
-
-      // set the local currents for the kinematics if API needs it (try-safe)
-      try {
-        std::vector<METOOLS::Current*> curvec;
-        curvec.resize(kin->ExpectedNumberOfCurrents()?kin->ExpectedNumberOfCurrents():2,NULL);
-        // fill a minimal vector: JI = jijt, JK = jkt (ordering can differ per implementation)
-        if (curvec.size()>=1) curvec[0] = jijt;
-        if (curvec.size()>=2) curvec[1] = jkt;
-        kin->SetCurrents(curvec);
-      } catch(...) {
-        // ignore if API not present / different
-      }
-
-      // evaluate kinematics (maps real -> reduced Born)
-      kin->Evaluate();
-
-      // diagnostic output: mapped Born momenta and dipole residues
-      std::cerr<<" Dipole vertex instantiated. kin->Res = {"
-               <<kin->Res(0)<<","<<kin->Res(1)<<","<<kin->Res(2)<<"}\n";
-      const ATOOLS::Vec4D_Vector &pm = kin->Momenta();
-      for (size_t pi=0; pi<pm.size(); ++pi)
-        std::cerr<<"  Mapped p["<<pi<<"] = "<<pm[pi]<<"\n";
-
-      // we do NOT perform Contract/combination here (kept minimal). If you want full evaluation,
-      // call jkt->Contract(*jijt, pols, ress, 0) and combine ress with kin->Res(...) as in Amplitude.
-
-      // cleanup model Vertex (we only needed kin evaluation)
-      delete v;
-    } // end model-vertex loop
-
-    // delete vertex_key and local dipole-info
-    svkey->Delete();
-    delete svkey->p_dinfo;
-
-    // cleanup local reduced currents
-    delete jijt;
-    delete jkt;
-  } // end dipoles loop */
-
-  
-}
 
 
 void H_to_bbg_Real::Calculate(const ATOOLS::Vec4D_Vector& momenta, bool anti) {
@@ -309,42 +202,16 @@ void H_to_bbg_Real::Calculate(const ATOOLS::Vec4D_Vector& momenta, bool anti) {
   }
 */
 Calculate_born_subtraction(momenta, anti);
-
 }
 
 
-METOOLS::Current *H_to_bbg_Real::CopyCurrent(METOOLS::Current *const c)
-{
-  if (!c) return NULL;
+void H_to_bbg_Real::Calculate_born_subtraction(const ATOOLS::Vec4D_Vector& momenta, bool anti){
+  // implementation based on the formulas in the Catani Dittmaier Seymour Trocsanyi paper from 2002
 
-  Current_Key ckey(c->Flav(),MODEL::s_model,c->Id().size()); // todo: überprüfe, dass s_model = p_model von Amplitude
-  METOOLS::Current *cur(METOOLS::Current_Getter::GetObject("D"+ckey.Type(),ckey));
-  if (cur==NULL) return NULL;
-
-  // copy simple meta-data
-  cur->SetDirection(c->Direction());
-  cur->SetCut(c->Cut());
-  cur->SetOnShell(c->OnShell());
-
-  METOOLS::Int_Vector ids(c->Id()), isfs(ids.size()), pols(ids.size());
-
-  /*for (size_t i(0);i<ids.size();++i) {
-    isfs[i]=m_fl[ids[i]].IsFermion();
-    switch (m_fl[ids[i]].IntSpin()) {
-    case 0: pols[i]=1; break;
-    case 1: pols[i]=2; break;
-    case 2: pols[i]=m_fl[ids[i]].IsMassive()?3:2; break;
-    default:
-      THROW(not_implemented,"Cannot handle spin "+
-	    ToString(m_fl[i].Spin())+" particles");
-    }
-  }*/
-  cur->SetId(ids);
-  cur->SetFId(isfs);
-  cur->FindPermutations();
-  cur->InitPols(pols);
-  cur->SetOrder(c->Order());
-  return cur;
+  // first: some variables needed later (nomination also based on paper)
+  ATOOLS::Vec4<double> p_g = momenta[1];
+  ATOOLS::Vec4<double> p_b = momenta[2];
+  ATOOLS::Vec4<double> p_bb = momenta[3];
 }
 
 
@@ -362,4 +229,77 @@ size_t H_to_bbg_Real::NHel(const Flavour& fl)
     THROW(not_implemented, "Comix not yet capable of spin > 1.");
     return 0;
   }
+}
+
+
+static double v_pq(ATOOLS::Vec4<double> p, ATOOLS::Vec4<double> q){
+  double pq = p * q;
+  return std::sqrt(1-(p*p * q*q)/(pq * pq));
+}
+
+
+static double z_i_tilde(ATOOLS::Vec4<double> p_i, ATOOLS::Vec4<double> p_j, ATOOLS::Vec4<double> p_k){
+  return p_i * p_k / (p_i * p_k + p_j * p_k);
+}
+
+
+static double y_ijk(ATOOLS::Vec4<double> p_i, ATOOLS::Vec4<double> p_j, ATOOLS::Vec4<double> p_k){
+  return p_i * p_j / (p_i * p_j + p_i * p_k + p_j * p_k);
+}
+
+
+static double mu_n(ATOOLS::Vec4<double> p_i, ATOOLS::Vec4<double> p_j, ATOOLS::Vec4<double> p_k, double m_n){
+  ATOOLS::Vec4<double> Q = p_i + p_j+ p_k;
+  return m_n / (std::sqrt(Q*Q));
+}
+
+
+static double nu_ijk(ATOOLS::Vec4<double> p_i, ATOOLS::Vec4<double> p_j, ATOOLS::Vec4<double> p_k){
+  double m_i = p_i * p_i;
+  double m_j = p_j * p_j;
+  double m_k = p_k * p_k;
+  double mu_i = mu_n(p_i, p_j, p_k, m_i);
+  double mu_j = mu_n(p_i, p_j, p_k, m_j);
+  double mu_k = mu_n(p_i, p_j, p_k, m_k);
+  double bracket = 2 * mu_k * mu_k + (1 - mu_i*mu_i - mu_j*mu_j - mu_k*mu_k)*(1 - y_ijk(p_i, p_j, p_k));
+  double numerator = std::sqrt(bracket * bracket - 4 * mu_k * mu_k);
+  double denominator = (1 - mu_i*mu_i - mu_j*mu_j - mu_k*mu_k)*(1 - y_ijk(p_i, p_j, p_k));
+  return numerator/denominator;
+}
+
+
+static double lambda(double x, double y, double z){
+  return x*x + y*y + z*z - 2*x*y - 2*x*z - 2*y*z;
+}
+
+
+static double nu_ijk_tilde(ATOOLS::Vec4<double> p_i, ATOOLS::Vec4<double> p_j, ATOOLS::Vec4<double> p_k){
+  double m_i = p_i * p_i;
+  double m_j = p_j * p_j;
+  double m_k = p_k * p_k;
+  // either i or j is the gluon and massless. Therefore, the mass m_ij equals the bottom mass. Check, which mass is the bottom mass:
+  double m_ij;
+  if((p_i * p_i) < 0.0000000001){
+    m_ij = m_j; // mass so small that p_i is the gluon
+  }
+  else{
+    m_ij = m_i;
+  }
+  double mu_ij = mu_n(p_i, p_j, p_k, m_ij);
+  double mu_k = mu_n(p_i, p_j, p_k, m_k);
+  double lambda_val = lambda(1, mu_ij*mu_ij, mu_k*mu_k);
+  return std::sqrt(lambda_val)/ (1 - mu_ij*mu_ij - mu_k*mu_k);
+}
+
+static double V_ijk(ATOOLS::Vec4<double> p_i, ATOOLS::Vec4<double> p_j, ATOOLS::Vec4<double> p_k){
+  double alpha_qcd = MODEL::s_model -> ScalarFunction("alpha_S", 15625); // at Higgs scale
+  //double pi = std::numbers::pi;
+  double C_F = 4.0 / 3.0;
+
+  //double prefactor = 8 * pi * alpha_qcd * C_F:
+  double first_summand = 2 / (1 - z_i_tilde(p_i, p_j, p_k) * (1 - y_ijk(p_i, p_j, p_k) ));
+  //double second_summand = nu_ijk_tilde(p_i, p_j, p_k) / nu_ijk(p_i, p_j, p_k) * 
+
+  double x = 1.0;
+  return x;
 }
