@@ -36,12 +36,25 @@ struct wgt {
   };
 };
 
+struct fixed_order {
+  enum code {
+    off       = 0,
+    full      = 1,
+    lo        = 2,
+    nlo       = 3,
+    nnlo      = 4,
+  };
+};
+
+
 
 std::istream &operator>>(std::istream &str, submode::code &sm);
 std::istream &operator>>(std::istream &str, yfsmode::code &sm);
 std::istream &operator>>(std::istream &str, wgt::code &sm);
+std::istream &operator>>(std::istream &str, fixed_order::code &sm);
 std::ostream &operator<<(std::ostream &str, const yfsmode::code &sm);
 std::ostream &operator<<(std::ostream &str, const wgt::code &sm);
+std::ostream &operator<<(std::ostream &str, const fixed_order::code &sm);
 
 class YFS_Base {
 protected:
@@ -76,6 +89,7 @@ public:
 
   submode::code m_submode;
   yfsmode::code m_mode;
+  fixed_order::code m_fixedOrder;
 
 
   void RegisterSettings();
@@ -84,6 +98,7 @@ public:
   double EikonalMassless(const Vec4D &k, const Vec4D &p1, const Vec4D &p2);
   inline bool  HasISR()   const {return (m_mode != yfsmode::off && m_mode != yfsmode::fsr); }
   inline bool  HasFSR()   const {return (m_mode != yfsmode::off && m_mode != yfsmode::isr); }
+  inline fixed_order::code FixedOrder()  const {return m_fixedOrder;}
 
 };
 }
