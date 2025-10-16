@@ -8,6 +8,8 @@
 #include "ATOOLS/Org/Data_Reader.H"
 #include "METOOLS/Loops/Master_Integrals.H"
 #include "clooptools.h"
+#include <iostream>
+#include "ATOOLS/Phys/FormFactor.H"
 
 using namespace PHASIC;
 using namespace ATOOLS;
@@ -28,6 +30,20 @@ namespace EXTRAXS {
     void Calc(const ATOOLS::Vec4D_Vector& momenta);
     Complex BornTriangle();
     Complex BornBox();
+    Complex BornSelf();
+    Complex Full();
+    double Kappa();
+    double Kappat(const double t, const double u);
+    Complex ISR();
+    Complex FSR();
+    Complex IFI();
+    Complex C0e(const double x, const double y, const double mass);
+    Complex C0e(const double x, const double y, const double mass1, const double mass2);
+    Complex C0e(const double x, const double mass);
+    Complex D0e(const double z, const double x, const double y, const double mass1, const double mass2);
+    inline double Den(const double &a, const double &b) {return (a==b?0.:1./(a-b));}
+    std::unique_ptr<FormFactor> p_formfactor;
+
     // Complex MBub(double a, double b, double c);
     // Complex MTri(double a, double b, double c,
     //             double aa, double bb, double cc);
@@ -43,11 +59,42 @@ using namespace EXTRAXS;
 PionPionVirtual::PionPionVirtual(const Process_Info& pi, const Flavour_Vector& flavs,
                   const double& ep2, const double& ep) :
       Virtual_ME2_Base(pi, flavs),
-      m_eps2(ep2), m_eps(ep), ME2(flavs[0].Mass()*flavs[0].Mass()),
-      MP2(flavs[3].Mass()*flavs[3].Mass()){
-        FORTRAN(ltini)();
-        Setlambda(1);
-      }
+      m_eps2(ep2), m_eps(ep)
+   {
+      // if (!s_loader->LoadLibrary("ooptools")) THROW(fatal_error, "Failed to load libooptools.");
+      ltini();
+      Setlambda(0.);
+      ME = Flavour(kf_e).Mass();
+      MM = (Flavour(kf_mu).Mass());
+      ML = (Flavour(kf_tau).Mass());
+      MP = (Flavour(kf_pi).Mass());
+      ME2 = (Flavour(kf_e).Mass()*Flavour(kf_e).Mass());
+      MM2 = (Flavour(kf_mu).Mass()*Flavour(kf_mu).Mass());
+      ML2 = (Flavour(kf_tau).Mass()*Flavour(kf_tau).Mass());
+      MP2 = (Flavour(kf_pi).Mass()*Flavour(kf_pi).Mass());
+      MZ = Flavour(kf_Z).Mass();
+      MZ2 = MZ*MZ;
+      double  MW= Flavour(kf_Wplus).Mass();
+      double MW2 = MW*MW;
+
+      MP2 = (Flavour(kf_pi).Mass()*Flavour(kf_pi).Mass());
+      SW2 = std::abs(MODEL::s_model->ComplexConstant(string("csin2_thetaW")));
+      CW2 = 1.-SW*SW;
+      CW = sqrt(CW2);
+      SW = sqrt(SW2);
+      m_mode=2;
+      m_IRscale=1.;
+      m_UVscale=1.;
+      p_formfactor = std::unique_ptr<FormFactor>(new FormFactor());
+      Scoped_Settings s{ Settings::GetMainSettings()["YFS"] };
+      m_photonmass = s["PHOTON_MASS"].Get<double>();
+      int dimreg = s["Dim_Reg"].Get<int>();
+      if(dimreg) m_photonmass = 0;
+      setcmpbits(64);
+      // setmudim(m_IRscale);
+      // setdelta(4.*M_PI);
+      // Setminmass(0.);
+   }
 
 
 void PionPionVirtual::Calc(const Vec4D_Vector& momenta) {

@@ -17,7 +17,6 @@
 #include "PHOTONS++/PhotonSplitter/Photon_Splitter.H"
 
 
-
 #include <iostream>
 #include <fstream>
 namespace ATOOLS { class Blob_Data_Base; }

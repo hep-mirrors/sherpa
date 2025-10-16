@@ -325,6 +325,8 @@
 #define      kf_f_J_1710                  9030221
 #define      kf_f_2_2300                  9050225
 #define      kf_f_2_2340                  9060225
+#define      kf_rho_2150                  9040113
+#define      kf_rho_2150_plus             9040213
 #define      kf_n                         2112
 #define      kf_p_plus                    2212
 #define      kf_Sigma_minus               3112

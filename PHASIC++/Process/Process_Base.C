@@ -40,7 +40,7 @@ Process_Base::Process_Base():
   m_mcmode(0), m_cmode(0),
   m_lookup(false), m_use_biweight(true),
   m_hasinternalscale(false), m_internalscale(sqr(rpa->gen.Ecms())),
-  p_apmap(NULL)
+  p_apmap(NULL),p_pionformfactor(std::unique_ptr<FormFactor>(new FormFactor()))
 {
   if (s_usefmm<0)
     s_usefmm =
