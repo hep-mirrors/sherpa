@@ -30,7 +30,7 @@ Exponential_RelicDensity(const double exponent,const double mass1,const double m
 void Exponential_RelicDensity::GeneratePoint(const double *rns)
 {
   double *ran = p_vegas->GeneratePoint(rns);
-  for(int i=0;i<m_rannum;i++) p_rans[i]=ran[i];
+  for(size_t i=0;i<m_rannum;i++) p_rans[i]=ran[i];
   m_spkey[3] = CE.ExponentialMomenta(m_exponent,m_spkey[0],m_spkey[1],m_mass,p_rans[0]);
 }
 
@@ -77,7 +77,7 @@ Exponential_DM_Annihilation(const double exponent,const double mass1,const doubl
 void Exponential_DM_Annihilation::GeneratePoint(const double *rns)
 {
   double *ran = p_vegas->GeneratePoint(rns);
-  for(int i=0;i<m_rannum;i++) p_rans[i]=ran[i];
+  for(size_t i=0;i<m_rannum;i++) p_rans[i]=ran[i];
   m_spkey[3] = m_spkey[2] = CE.ExponentialMomenta(m_exponent,m_spkey[0],m_spkey[1],m_mass,p_rans[0]);
   m_cosxikey[2] = CE.GenerateDMAngleUniform(p_rans[1],3);
   m_xkey[2] = CE.GenerateDMRapidityUniform(m_mass,m_spkey.Doubles(),m_xkey.Doubles(),

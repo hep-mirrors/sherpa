@@ -666,7 +666,7 @@ void VHAAG_Threshold::GeneratePoint(ATOOLS::Vec4D *p,Cut_Data *cuts,double *ran)
 {
   CalculateS0(cuts);
   double *vran = p_vegas->GeneratePoint(ran);
-  for(int i=0;i<m_rannum;i++) p_rans[i]=vran[i];
+  for(size_t i=0;i<m_rannum;i++) p_rans[i]=vran[i];
 
   GenerateBosonMass(p,vran);
   if (n_ap==4) {
