@@ -82,6 +82,7 @@ void YFS_Base::RegisterDefaults(){
   s["Dim_Reg"].SetDefault(0);
   s["IR_SCALE"].SetDefault(100);
   s["NLO_CUTS"].SetDefault(false);
+  s["Fixed_Order"].SetDefault(fixed_order::full);
 }
 
 void YFS_Base::RegisterSettings(){
@@ -137,6 +138,7 @@ void YFS_Base::RegisterSettings(){
   m_dim_reg = s["Dim_Reg"].Get<bool>();
   m_irscale = s["IR_SCALE"].Get<double>();
   m_nlocuts = s["NLO_CUTS"].Get<bool>();
+  m_fixedOrder = s["Fixed_Order"].Get<fixed_order::code>();
   m_CalForm = false;
   m_realtool = false;
   //update when beamstrahlung is added
@@ -210,6 +212,29 @@ std::istream &YFS::operator>>(std::istream &str, wgt::code &mode)
   else if (tag.find("Jacobian")!=std::string::npos) mode=wgt::jacob;
   else THROW(fatal_error, "Unknown YFS: WEIGHT_MODE")
   return str;
+}
+
+std::istream &YFS::operator>>(std::istream &str, fixed_order::code &mode)
+{
+  std::string tag;
+  str>>tag;
+  // mode=wgt::off;
+  if      (tag.find("Off")!=std::string::npos)    mode=fixed_order::off;
+  else if (tag.find("Full")!=std::string::npos)   mode=fixed_order::full;
+  else if (tag.find("NLO")!=std::string::npos) mode=fixed_order::nlo;
+  else if (tag.find("NNLO")!=std::string::npos) mode=fixed_order::nnlo;
+  else THROW(fatal_error, "Unknown YFS: Fixed_Order")
+  return str;
+}
+
+std::ostream &YFS::operator<<(std::ostream &str,const fixed_order::code &wm)
+{
+  if      (wm==fixed_order::off)    return str<<"Off";
+  else if (wm==fixed_order::full)   return str<<"Full";
+  else if (wm==fixed_order::lo)   return str<<"LO";
+  else if (wm==fixed_order::nlo)   return str<<"NLO";
+  else if (wm==fixed_order::nnlo)  return str<<"NNLO";
+  return str<<"unknown";
 }
 
 double YFS_Base::Eikonal(const Vec4D &k, const Vec4D &p1, const Vec4D &p2) {

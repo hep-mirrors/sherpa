@@ -221,7 +221,9 @@ void FSR::NPhotons() {
     if (sum <= -m_nbar) break;
   }
   m_n = N - 1;
-  m_N = m_n;
+  if(FixedOrder()==fixed_order::nlo) m_n = min(N-1, 1);
+  else  m_n = N - 1;
+  m_N=m_n;
   p_dipole->SetNPhoton(m_N);
   if (m_n < 0) msg_Error() << METHOD << std::endl << "Nphotons < 0!!" << std::endl;
 }
@@ -481,6 +483,11 @@ bool FSR::YFS_FORM(){
   }
   else m_hideW=exp(YFS_IR  +  m_volmc);
   m_YFS_IR = exp(YFS_IR+m_DelYFS);
+  if(FixedOrder()==fixed_order::nlo){
+    m_YFS_IR = 1;//+YFS_IR+m_DelYFS;
+    m_hideW  = 1;//+YFS_IR + m_DelYFS + m_volmc - m_delvol;
+    return true;
+  }
   return true;
 }
 
