@@ -75,7 +75,9 @@ void ISR::NPhotons() {
     sum += log(ran->Get());
     if (sum <= -m_nbar) break;
   }
-  m_n = N;
+
+  if(FixedOrder()==fixed_order::nlo)  m_n = min(N,1);
+  else m_n = N;
   if (m_n < 0) msg_Error() << METHOD << std::endl << "Nphotons < 0!!" << std::endl;
 }
 

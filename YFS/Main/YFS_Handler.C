@@ -211,6 +211,9 @@ bool YFS_Handler::CalculateISR() {
   if (m_isrinital) p_isr->SetIncoming(p_dipoles->GetDipoleII());
   m_isrinital = false;
   p_isr->NPhotons();
+  if(FixedOrder()==fixed_order::nlo && p_isr->GetN()>1){
+    return false;
+  }
   p_isr->GeneratePhotonMomentum();
   p_isr->Weight();
   m_g=p_dipoles->GetDipoleII()->m_gamma;
@@ -254,7 +257,10 @@ void YFS_Handler::AddFormFactor() {
     m_formfactor = 1;
   }
   else {
-    m_formfactor = exp(m_g / 4. + m_alpha / M_PI * (pow(M_PI, 2.) / 3. - 0.5));
+    if(FixedOrder()==fixed_order::nlo){
+      m_formfactor = 1 + m_g / 4. + m_alpha / M_PI * (pow(M_PI, 2.) / 3. - 0.5);
+    }
+    else m_formfactor = exp(m_g / 4. + m_alpha / M_PI * (pow(M_PI, 2.) / 3. - 0.5));
   }
 }
 
@@ -269,15 +275,19 @@ bool YFS_Handler::CalculateFSR(Vec4D_Vector & p) {
   // Final state eikonals should be constructed
   // for the final state momenta before emissions
   // of photons. 
+  m_FSRPhotons.clear();
+  m_fsrphotonsforME.clear();
   m_reallab = p;
-  if(m_mode==yfsmode::isr) return true;
   m_plab=p;
+  if(FixedOrder()==fixed_order::nlo && m_ISRPhotons.size()!=0) {
+    for(size_t i = 2; i < m_plab.size(); ++i) m_outparticles[m_particles[i]] = m_plab[i];
+    return true;
+  }
+  if(m_mode==yfsmode::isr) return true;
   m_fsrWeight=1;
   p_dipoles->MakeDipoles(m_flavs, m_plab, m_plab);
   CheckResonance();
   if(m_mode==yfsmode::isrfsr)  p_dipoles->MakeDipolesIF(m_flavs, m_plab, m_plab);
-  m_FSRPhotons.clear();
-  m_fsrphotonsforME.clear();
   for (Dipole_Vector::iterator Dip = p_dipoles->GetDipoleFF()->begin();
        Dip != p_dipoles->GetDipoleFF()->end(); ++Dip) {
     if(!Dip->IsResonance()) continue;
@@ -342,6 +352,12 @@ bool YFS_Handler::CalculateFSR(Vec4D_Vector & p) {
     for(auto &k: Dip->GetMEPhotons()) m_fsrphotonsforME.push_back(k);
   }
   if(!CheckMomentumConservation()) return false;
+  if(FixedOrder()==fixed_order::nlo){
+    int totk = m_FSRPhotons.size()+m_ISRPhotons.size();
+    if(totk > 1) {
+      msg_Error()<<"Wrong photon multiplicity at Fixed Order: "<<totk<<std::endl;
+    }
+  }
   // CheckMasses();
   return true;
 }
