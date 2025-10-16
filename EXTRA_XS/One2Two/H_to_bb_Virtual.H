@@ -41,13 +41,14 @@ namespace EXTRAXS {
     void SetVirtualMatrixE2(const ATOOLS::Vec4D_Vector& momenta) override;
     std::map<std::string, std::complex<double>> CalculateV(const ATOOLS::Vec4D_Vector& momenta, bool anti=false) override;
     std::map<std::string, std::complex<double>> CalculateBorn(const ATOOLS::Vec4D_Vector& momenta, bool anti=false) override;
-    double CalculateVirtualCorrection(const ATOOLS::Vec4D_Vector& momenta, bool anti=false) override;;
   protected:
     double alpha_qcd;
   public:
     H_to_bb_Virtual(const std::vector<ATOOLS::Flavour>& flavs, MODEL::Model_Base* s_model);
     ~H_to_bb_Virtual();
     void Calculate_alpha_QCD(MODEL::Model_Base* s_model) override;
+    double CalculateVirtualCorrection(const ATOOLS::Vec4D_Vector& momenta, bool anti=false) override;
+    void CalculateSubtraction(const ATOOLS::Vec4D_Vector& momenta);
   };
 }
 

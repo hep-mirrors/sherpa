@@ -591,6 +591,7 @@ std::map<std::string, std::complex<double>> H_to_bb_Virtual::CalculateV(const AT
 
 
 double H_to_bb_Virtual::CalculateVirtualCorrection(const ATOOLS::Vec4D_Vector& momenta, bool anti){
+  // calculate total virtual subtraction term
   std::map<std::string, std::complex<double>> v_finite = CalculateV(momenta, anti); 
   std::map<std::string, std::complex<double>> born = CalculateBorn(momenta, anti); 
   std::complex<double> BV = born["00"] * std::conj(v_finite["00"]) + born["01"] * std::conj(v_finite["01"]) + born["10"] * std::conj(v_finite["10"]) + born["11"] * std::conj(v_finite["11"]);
@@ -616,4 +617,110 @@ void H_to_bb_Virtual::SetUpPrefactors(const vector<Flavour>& flavs) {
 
   BornPrefactor = (-1) * m_b / vev;
   std::cout << "Born prefactor: " << BornPrefactor << std::endl;
+}
+
+
+static double A(){
+  // 1/epsilon prefactor in Gamma_j
+  return 4.0/ 3.0;
+}
+
+
+static double B(double m_q, double mu){
+  // epsilon-independent part in Gamma_j
+  // input: quark mass and energy scale
+  double C_F = 4.0/ 3.0;
+  return C_F * (1/2 * std::log(m_q*m_q/ mu*mu) - 2); 
+}
+
+
+static double nu_jk(ATOOLS::Vec4<double> p_j, ATOOLS::Vec4<double> p_k){
+  return std::sqrt(1 - (p_j*p_j)*(p_k*p_k) / ((p_j*p_k) * (p_j*p_k)));
+}
+
+
+static double mu_n(ATOOLS::Vec4<double> p_i, ATOOLS::Vec4<double> p_j, ATOOLS::Vec4<double> p_k, double m_n){
+  ATOOLS::Vec4<double> Q = p_i + p_j+ p_k;
+  return m_n / (std::sqrt(Q*Q));
+}
+
+
+static double lambda(double x, double y, double z){
+  return x*x + y*y + z*z - 2*x*y - 2*x*z - 2*y*z;
+}
+
+
+static double nu_ijk_tilde(ATOOLS::Vec4<double> p_i, ATOOLS::Vec4<double> p_j, ATOOLS::Vec4<double> p_k){
+  double m_i = std::sqrt(p_i * p_i);
+  double m_j = std::sqrt(p_j * p_j);
+  double m_k = std::sqrt(p_k * p_k);
+  // either i or j is the gluon and massless. Therefore, the mass m_ij equals the bottom mass. Check, which mass is the bottom mass:
+  double m_ij;
+  if((p_i * p_i) < 0.0000000001){
+    m_ij = m_j; // mass so small that p_i is the gluon
+  }
+  else{
+    m_ij = m_i;
+  }
+  double mu_ij = mu_n(p_i, p_j, p_k, m_ij);
+  double mu_k = mu_n(p_i, p_j, p_k, m_k);
+  double lambda_val = lambda(1, mu_ij*mu_ij, mu_k*mu_k);
+  return std::sqrt(lambda_val)/ (1 - mu_ij*mu_ij - mu_k*mu_k);
+}
+
+
+static double rho(ATOOLS::Vec4<double> p_i, ATOOLS::Vec4<double> p_j, ATOOLS::Vec4<double> p_k){
+  double nu_tilde = nu_ijk_tilde(p_i, p_j, p_k);
+  return std::sqrt((1 - nu_tilde) / (1 + nu_tilde));
+}
+
+
+static double C_j(ATOOLS::Vec4<double> p_i, ATOOLS::Vec4<double> p_j, ATOOLS::Vec4<double> p_k){
+  // 1/epsilon prefactor in Nu_j
+  return 1 / nu_jk(p_j, p_k) * std::log(rho(p_i, p_j, p_k));
+}
+
+
+static double Q_jk(ATOOLS::Vec4<double> p_j, ATOOLS::Vec4<double> p_k){
+  double s_jk = 2 * p_j * p_k;
+  double m2_j = p_j * p_j; // squared j mass
+  double m2_k = p_k * p_k; // squared k mass
+  double Q2_jk = s_jk + m2_j + m2_k; // squared Q_jk
+  return std::sqrt(Q2_jk);
+}
+
+
+static double D_j(ATOOLS::Vec4<double> p_j, ATOOLS::Vec4<double> p_k){
+  // prefactor of 1/T_q^2 in Nu_j
+  double C_F = 4.0 / 3.0;
+  double s_jk = 2 * p_j * p_k;
+  double gamma_q = 3.0 / 2.0 * C_F;
+  return gamma_q * std::log(s_jk/ (Q_jk(p_j, p_k) * Q_jk(p_j, p_k)));
+}
+
+
+static double E_j(){
+  return 0.0;
+}
+
+
+static double F(ATOOLS::Vec4<double> p_j, ATOOLS::Vec4<double> p_k, double mu){
+  // other terms collected
+  #ifdef M_PI
+    double pi = M_PI;
+  #else
+    const double pi = 3.14159265358979323846;
+  #endif
+
+  double C_F = 4.0 / 3.0;
+  double gamma_j = 3.0 / 2.0 * C_F; // = gmma_q
+  double s_jk = 2 * p_j * p_k;
+  double K_j = (7.0/2.0 - pi*pi / 6)*C_F; // = K_q
+
+  return gamma_j * std::log(mu*mu / s_jk) + gamma_j + K_j;
+}
+
+
+void H_to_bb_Virtual::CalculateSubtraction(const ATOOLS::Vec4D_Vector& momenta){
+
 }
