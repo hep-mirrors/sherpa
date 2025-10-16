@@ -635,12 +635,14 @@ static double B(double m_q, double mu){
 
 
 static double nu_jk(ATOOLS::Vec4<double> p_j, ATOOLS::Vec4<double> p_k){
+  // relative velocity between two massive momenta p_j and p_k
   return std::sqrt(1 - (p_j*p_j)*(p_k*p_k) / ((p_j*p_k) * (p_j*p_k)));
 }
 
 
-static double mu_n(ATOOLS::Vec4<double> p_i, ATOOLS::Vec4<double> p_j, ATOOLS::Vec4<double> p_k, double m_n){
-  ATOOLS::Vec4<double> Q = p_i + p_j+ p_k;
+static double mu_n(ATOOLS::Vec4<double> p_j, ATOOLS::Vec4<double> p_k, double m_n){
+  // rescaled parton masses
+  ATOOLS::Vec4<double> Q = p_j+ p_k; // total outgiong momentum
   return m_n / (std::sqrt(Q*Q));
 }
 
@@ -650,34 +652,28 @@ static double lambda(double x, double y, double z){
 }
 
 
-static double nu_ijk_tilde(ATOOLS::Vec4<double> p_i, ATOOLS::Vec4<double> p_j, ATOOLS::Vec4<double> p_k){
-  double m_i = std::sqrt(p_i * p_i);
+static double nu_ijk_tilde(ATOOLS::Vec4<double> p_j, ATOOLS::Vec4<double> p_k){
   double m_j = std::sqrt(p_j * p_j);
   double m_k = std::sqrt(p_k * p_k);
   // either i or j is the gluon and massless. Therefore, the mass m_ij equals the bottom mass. Check, which mass is the bottom mass:
-  double m_ij;
-  if((p_i * p_i) < 0.0000000001){
-    m_ij = m_j; // mass so small that p_i is the gluon
-  }
-  else{
-    m_ij = m_i;
-  }
-  double mu_ij = mu_n(p_i, p_j, p_k, m_ij);
-  double mu_k = mu_n(p_i, p_j, p_k, m_k);
+  double m_ij = m_j; // m_i = 0 (gluon), the emitter is only the bottom/ antibottom
+
+  double mu_ij = mu_n(p_j, p_k, m_ij);
+  double mu_k = mu_n(p_j, p_k, m_k);
   double lambda_val = lambda(1, mu_ij*mu_ij, mu_k*mu_k);
   return std::sqrt(lambda_val)/ (1 - mu_ij*mu_ij - mu_k*mu_k);
 }
 
 
-static double rho(ATOOLS::Vec4<double> p_i, ATOOLS::Vec4<double> p_j, ATOOLS::Vec4<double> p_k){
-  double nu_tilde = nu_ijk_tilde(p_i, p_j, p_k);
+static double rho(ATOOLS::Vec4<double> p_j, ATOOLS::Vec4<double> p_k){
+  double nu_tilde = nu_ijk_tilde(p_j, p_k);
   return std::sqrt((1 - nu_tilde) / (1 + nu_tilde));
 }
 
 
-static double C_j(ATOOLS::Vec4<double> p_i, ATOOLS::Vec4<double> p_j, ATOOLS::Vec4<double> p_k){
+static double C_j(ATOOLS::Vec4<double> p_j, ATOOLS::Vec4<double> p_k){
   // 1/epsilon prefactor in Nu_j
-  return 1 / nu_jk(p_j, p_k) * std::log(rho(p_i, p_j, p_k));
+  return 1 / nu_jk(p_j, p_k) * std::log(rho(p_j, p_k));
 }
 
 
@@ -699,8 +695,59 @@ static double D_j(ATOOLS::Vec4<double> p_j, ATOOLS::Vec4<double> p_k){
 }
 
 
-static double E_j(){
-  return 0.0;
+static double rho_n(ATOOLS::Vec4<double> p_j, ATOOLS::Vec4<double> p_k, ATOOLS::Vec4<double> p_n){
+  double m_n = std::sqrt(p_n*p_n);
+  double m_j = std::sqrt(p_j*p_j);
+  double m_k = std::sqrt(p_k*p_k);
+
+  double var_mu_n = mu_n(p_j, p_k, m_n);
+  double var_mu_j = mu_n(p_j, p_k, m_j);
+  double var_mu_k = mu_n(p_j, p_k, m_k);
+  double var_nu_ijk_tilde = nu_ijk_tilde(p_j, p_k);
+  double numerator = 1 - var_nu_ijk_tilde + 2*var_mu_n*var_mu_n / (1 - var_mu_j*var_mu_j - var_mu_k*var_mu_k);
+  double denominator = 1 + var_nu_ijk_tilde + 2*var_mu_n*var_mu_n / (1 - var_mu_j*var_mu_j - var_mu_k*var_mu_k);
+  return std::sqrt(numerator / denominator);
+}
+
+
+static double E_j(ATOOLS::Vec4<double> p_j, ATOOLS::Vec4<double> p_k){
+  // collects the other terms in Nu_j
+
+  #ifdef M_PI
+    double pi = M_PI;
+  #else
+    const double pi = 3.14159265358979323846;
+  #endif
+
+  // pre-calculate some variables
+  double var_rho = rho(p_j, p_k);
+  double var_rho_j = rho_n(p_j, p_k, p_j);
+  double var_rho_k = rho_n(p_j, p_k, p_k);
+  double var_Q_jk = Q_jk(p_j, p_k);
+  double s_jk = 2 * p_j * p_k;
+  double m_j = std::sqrt(p_j * p_j);
+  double m_k = std::sqrt(p_k * p_k);
+
+  // Nu^s - part (without the 1/epsilon term):
+  double sum1 = -1.0/4.0 * std::log(var_rho_j*var_rho_j) * std::log(var_rho_j*var_rho_j);
+  double sum2 = -1.0/4.0 * std::log(var_rho_k*var_rho_k) * std::log(var_rho_k*var_rho_k);
+  double sum3 = 1/nu_jk(p_j, p_k) * std::log(var_rho)* std::log(var_Q_jk*var_Q_jk/ s_jk);
+  double part1 = 1/nu_jk(p_j, p_k) * (sum1 + sum2 - pi*pi/6.0) + sum3;
+
+  // Nu^NS - part (without the 1/T_q^2 term):
+  // this expression is very long and therefore sorted according to the lines in the Catani Dittmaier paper (formula 6.21)
+  double line1 = 0.0; // todo: implement this with dilog funcion
+
+  double line2_1 = std::log((var_Q_jk - m_k) / var_Q_jk);
+  double line2_2 = -2.0 * ( (var_Q_jk - m_k)*(var_Q_jk - m_k) - m_j) / (var_Q_jk*var_Q_jk);
+  double line2_3 = 2.0*m_j*m_j / s_jk * std::log(m_j / (var_Q_jk - m_k));
+  double line2 = line2_1 + line2_2 + line2_3;
+
+  double line3_1 = -m_k / (var_Q_jk - m_k);
+  double line3_2 = (2.0 * m_k * (2 * m_k - var_Q_jk)) / s_jk;
+  double line3_3 = pi*pi/ 2.0;
+  double line3 = line3_1 + line3_2 + line3_3;
+  return part1 + line1 + line2 + line3;
 }
 
 
@@ -721,6 +768,51 @@ static double F(ATOOLS::Vec4<double> p_j, ATOOLS::Vec4<double> p_k, double mu){
 }
 
 
-void H_to_bb_Virtual::CalculateSubtraction(const ATOOLS::Vec4D_Vector& momenta){
+double H_to_bb_Virtual::CalculateFiniteSubtraction(const ATOOLS::Vec4D_Vector& momenta){
+  // finite virtual substraction term
+  #ifdef M_PI
+    double pi = M_PI;
+  #else
+    const double pi = 3.14159265358979323846;
+  #endif
 
+  ATOOLS::Vec4<double> p_b = momenta[1];
+  ATOOLS::Vec4<double> p_bb = momenta[2];
+
+  double born_ME2 = 9.0; // todo: insert correct value here and higgs scale below
+  double alpha_qcd = MODEL::s_model -> ScalarFunction("alpha_S", 15625); // at Higgs scale
+  double mu = 125; // todo: ubsert correct value
+  double C_F = 4.0/3.0;
+  double s_jk = 2 * p_b * p_bb;
+  double gamma_E = 0.57721566490153286060; // Euler-Mascheroni constant
+  double var_D_q = D_j(p_b, p_bb);
+  double var_D_qq = D_j(p_bb, p_b);
+  double var_E_q = E_j(p_b, p_bb);
+  double var_E_qq = E_j(p_bb, p_b);
+  double m_b = std::sqrt(p_b * p_b);
+
+  double prefactor = born_ME2 * alpha_qcd / (2 * pi);
+  double sum1 = (std::log(4 * pi * mu*mu / s_jk) - gamma_E) * (C_F * (C_j(p_b, p_bb) + C_j(p_bb, p_b)));
+  double sum2 = var_D_q + var_D_qq + C_F * (var_E_q + var_E_qq - 2 * pi*pi*pi / 3);
+  double sum3 = 2 * (A() * (std::log(4 * pi) - gamma_E) + B(m_b, mu) + F(p_b, p_bb, mu));
+
+  return prefactor * (sum1 + sum2 + sum3);
+}
+
+double H_to_bb_Virtual::CalculateEpsilonSubtraction(const ATOOLS::Vec4D_Vector& momenta){
+  // 1/epsilon prefactor of virtual substraction term
+  #ifdef M_PI
+    double pi = M_PI;
+  #else
+    const double pi = 3.14159265358979323846;
+  #endif
+
+  ATOOLS::Vec4<double> p_b = momenta[1];
+  ATOOLS::Vec4<double> p_bb = momenta[2];
+
+  double born_ME2 = 9.0; // todo: insert correct value here and higgs scale below
+  double alpha_qcd = MODEL::s_model -> ScalarFunction("alpha_S", 15625); // at Higgs scale
+  double C_F = 4.0/3.0;
+
+  return born_ME2 * alpha_qcd / (2 * pi) * (C_F * (C_j(p_b, p_bb) + C_j(p_bb, p_b)) + 2 * A());
 }

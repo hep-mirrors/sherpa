@@ -39,6 +39,8 @@ public:
   virtual std::map<std::string, C> CalculateV(const ATOOLS::Vec4D_Vector& momenta, bool anti=false) = 0;
   virtual std::map<std::string, C> CalculateBorn(const ATOOLS::Vec4D_Vector& momenta, bool anti=false) = 0;
   virtual double CalculateVirtualCorrection(const ATOOLS::Vec4D_Vector& momenta, bool anti=false) = 0;
+  virtual double CalculateFiniteSubtraction(const ATOOLS::Vec4D_Vector& momenta) = 0;
+  virtual double CalculateEpsilonSubtraction(const ATOOLS::Vec4D_Vector& momenta) = 0;
 };
 
 } // namespace EXTRAXS

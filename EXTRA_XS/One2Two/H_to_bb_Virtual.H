@@ -48,7 +48,8 @@ namespace EXTRAXS {
     ~H_to_bb_Virtual();
     void Calculate_alpha_QCD(MODEL::Model_Base* s_model) override;
     double CalculateVirtualCorrection(const ATOOLS::Vec4D_Vector& momenta, bool anti=false) override;
-    void CalculateSubtraction(const ATOOLS::Vec4D_Vector& momenta);
+    double CalculateFiniteSubtraction(const ATOOLS::Vec4D_Vector& momenta) override;
+    double CalculateEpsilonSubtraction(const ATOOLS::Vec4D_Vector& momenta) override;
   };
 }
 
