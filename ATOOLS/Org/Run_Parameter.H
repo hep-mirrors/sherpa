@@ -70,7 +70,7 @@ namespace ATOOLS {
       inline double    TimeOut()                          { return m_timeout;   }
       inline MyTiming &Timer()                            { return m_timer;     }
       inline int    BatchMode()                           { return m_batchmode; }
-      inline bool const IsNanoBarn()                      { return  m_use_nanobarns;}
+      constexpr bool const IsNanoBarn()                      { return  m_use_nanobarns;}
       bool CheckTime(const double limit=0.);
       inline void   SetNumberOfGeneratedEvents(const long gen) { m_ngenevents=gen; }
       inline void   SetNumberOfTrials(const long trials) { m_ntrials=trials; }
