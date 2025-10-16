@@ -57,7 +57,7 @@ trigger_pages:
 
 # Build Manual
 pages:
-  image: $CI_REGISTRY_IMAGE:Fedora_39
+  image: $CI_REGISTRY_IMAGE:Fedora_42
   stage: deploy
   script:
     - cd Manual
@@ -67,7 +67,6 @@ pages:
     - git checkout master  # we only build with master config, because
                            # this will get uploaded globaly
     - git pull
-    - pip3 install sphinx-multiversion
     - bash .build_versioned.sh build
     - mv build/_multi ../public
   artifacts:
@@ -198,7 +197,6 @@ LCG_106_ATLAS_7_x86_64-el9-gcc13-opt:
     paths:
       - todo-Archlinux_$FREL.txt
     expire_in: 1 day
-
 
 .check_commit_Fedora:
   stage: check_if_dockerfile_updated
