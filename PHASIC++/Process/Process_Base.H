@@ -74,7 +74,7 @@ namespace PHASIC {
     Scale_Setter_Base   *p_scale;
     KFactor_Setter_Base *p_kfactor;
 
-    std::unique_ptr<ATOOLS::FormFactor> p_pionformfactor;
+    std::unique_ptr<ATOOLS::FormFactor> p_formfactor;
 
     size_t      m_nin, m_nout, m_mcmode, m_cmode;
     std::string m_name, m_resname;
