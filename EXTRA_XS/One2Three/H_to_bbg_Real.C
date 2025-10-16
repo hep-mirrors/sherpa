@@ -204,6 +204,92 @@ void H_to_bbg_Real::Calculate(const ATOOLS::Vec4D_Vector& momenta, bool anti) {
 Calculate_born_subtraction(momenta, anti);
 }
 
+// in the following there are some helper functions defined for the real subtraction
+static double v_pq(ATOOLS::Vec4<double> p, ATOOLS::Vec4<double> q){
+  double pq = p * q;
+  return std::sqrt(1-(p*p * q*q)/(pq * pq));
+}
+
+
+static double z_i_tilde(ATOOLS::Vec4<double> p_i, ATOOLS::Vec4<double> p_j, ATOOLS::Vec4<double> p_k){
+  return p_i * p_k / (p_i * p_k + p_j * p_k);
+}
+
+
+static double z_j_tilde(ATOOLS::Vec4<double> p_i, ATOOLS::Vec4<double> p_j, ATOOLS::Vec4<double> p_k){
+  return p_j * p_k / (p_j * p_k + p_i * p_k);
+}
+
+
+static double y_ijk(ATOOLS::Vec4<double> p_i, ATOOLS::Vec4<double> p_j, ATOOLS::Vec4<double> p_k){
+  return p_i * p_j / (p_i * p_j + p_i * p_k + p_j * p_k);
+}
+
+
+static double mu_n(ATOOLS::Vec4<double> p_i, ATOOLS::Vec4<double> p_j, ATOOLS::Vec4<double> p_k, double m_n){
+  ATOOLS::Vec4<double> Q = p_i + p_j+ p_k;
+  return m_n / (std::sqrt(Q*Q));
+}
+
+
+static double nu_ijk(ATOOLS::Vec4<double> p_i, ATOOLS::Vec4<double> p_j, ATOOLS::Vec4<double> p_k){
+  double m_i = std::sqrt(p_i * p_i);
+  double m_j = std::sqrt(p_j * p_j);
+  double m_k = std::sqrt(p_k * p_k);
+  double mu_i = mu_n(p_i, p_j, p_k, m_i);
+  double mu_j = mu_n(p_i, p_j, p_k, m_j);
+  double mu_k = mu_n(p_i, p_j, p_k, m_k);
+  double bracket = 2 * mu_k * mu_k + (1 - mu_i*mu_i - mu_j*mu_j - mu_k*mu_k)*(1 - y_ijk(p_i, p_j, p_k));
+  double numerator = std::sqrt(bracket * bracket - 4 * mu_k * mu_k);
+  double denominator = (1 - mu_i*mu_i - mu_j*mu_j - mu_k*mu_k)*(1 - y_ijk(p_i, p_j, p_k));
+  return numerator/denominator;
+}
+
+
+static double lambda(double x, double y, double z){
+  return x*x + y*y + z*z - 2*x*y - 2*x*z - 2*y*z;
+}
+
+
+static double nu_ijk_tilde(ATOOLS::Vec4<double> p_i, ATOOLS::Vec4<double> p_j, ATOOLS::Vec4<double> p_k){
+  double m_i = std::sqrt(p_i * p_i);
+  double m_j = std::sqrt(p_j * p_j);
+  double m_k = std::sqrt(p_k * p_k);
+  // either i or j is the gluon and massless. Therefore, the mass m_ij equals the bottom mass. Check, which mass is the bottom mass:
+  double m_ij;
+  if((p_i * p_i) < 0.0000000001){
+    m_ij = m_j; // mass so small that p_i is the gluon
+  }
+  else{
+    m_ij = m_i;
+  }
+  double mu_ij = mu_n(p_i, p_j, p_k, m_ij);
+  double mu_k = mu_n(p_i, p_j, p_k, m_k);
+  double lambda_val = lambda(1, mu_ij*mu_ij, mu_k*mu_k);
+  return std::sqrt(lambda_val)/ (1 - mu_ij*mu_ij - mu_k*mu_k);
+}
+
+
+static double V_ijk(ATOOLS::Vec4<double> p_i, ATOOLS::Vec4<double> p_j, ATOOLS::Vec4<double> p_k){
+  double alpha_qcd = MODEL::s_model -> ScalarFunction("alpha_S", 15625); // at Higgs scale
+  
+  #ifdef M_PI
+    double pi = M_PI;
+  #else
+    const double pi = 3.14159265358979323846;
+  #endif
+
+  double C_F = 4.0 / 3.0;
+  ATOOLS::Vec4<double> Q = p_i + p_j + p_k;
+  double m2_Q = Q * Q; // Q mass squared
+
+  double prefactor = 8 * pi * alpha_qcd * C_F;
+  double first_summand = 2 / (1 - z_j_tilde(p_i, p_j, p_k) * (1 - y_ijk(p_i, p_j, p_k) ));
+  double second_summand = nu_ijk_tilde(p_i, p_j, p_k) / nu_ijk(p_i, p_j, p_k) * (1 + z_j_tilde(p_i, p_j, p_k) + m2_Q / (p_i * p_j));
+
+  return prefactor * (first_summand - second_summand);
+}
+
 
 void H_to_bbg_Real::Calculate_born_subtraction(const ATOOLS::Vec4D_Vector& momenta, bool anti){
   // implementation based on the formulas in the Catani Dittmaier Seymour Trocsanyi paper from 2002
@@ -212,6 +298,17 @@ void H_to_bbg_Real::Calculate_born_subtraction(const ATOOLS::Vec4D_Vector& momen
   ATOOLS::Vec4<double> p_g = momenta[1];
   ATOOLS::Vec4<double> p_b = momenta[2];
   ATOOLS::Vec4<double> p_bb = momenta[3];
+
+  double V_gb_bb = V_ijk(p_g, p_b, p_bb);
+  double V_gbb_b = V_ijk(p_g, p_bb, p_b);
+
+  double born_ME2 = 9.0; // todo: take real value
+  double m2_ij = p_b * p_b; // because m_i = 0 (gluon) and m_b = m_bb
+
+  double D_gb_bb = V_gb_bb/ ((p_g + p_b)*(p_g + p_b) - m2_ij) * born_ME2;
+  double D_gbb_b = V_gbb_b/ ((p_g + p_bb)*(p_g + p_bb) - m2_ij) * born_ME2;
+
+  double subtraction_term = D_gb_bb + D_gbb_b;
 }
 
 
@@ -231,75 +328,3 @@ size_t H_to_bbg_Real::NHel(const Flavour& fl)
   }
 }
 
-
-static double v_pq(ATOOLS::Vec4<double> p, ATOOLS::Vec4<double> q){
-  double pq = p * q;
-  return std::sqrt(1-(p*p * q*q)/(pq * pq));
-}
-
-
-static double z_i_tilde(ATOOLS::Vec4<double> p_i, ATOOLS::Vec4<double> p_j, ATOOLS::Vec4<double> p_k){
-  return p_i * p_k / (p_i * p_k + p_j * p_k);
-}
-
-
-static double y_ijk(ATOOLS::Vec4<double> p_i, ATOOLS::Vec4<double> p_j, ATOOLS::Vec4<double> p_k){
-  return p_i * p_j / (p_i * p_j + p_i * p_k + p_j * p_k);
-}
-
-
-static double mu_n(ATOOLS::Vec4<double> p_i, ATOOLS::Vec4<double> p_j, ATOOLS::Vec4<double> p_k, double m_n){
-  ATOOLS::Vec4<double> Q = p_i + p_j+ p_k;
-  return m_n / (std::sqrt(Q*Q));
-}
-
-
-static double nu_ijk(ATOOLS::Vec4<double> p_i, ATOOLS::Vec4<double> p_j, ATOOLS::Vec4<double> p_k){
-  double m_i = p_i * p_i;
-  double m_j = p_j * p_j;
-  double m_k = p_k * p_k;
-  double mu_i = mu_n(p_i, p_j, p_k, m_i);
-  double mu_j = mu_n(p_i, p_j, p_k, m_j);
-  double mu_k = mu_n(p_i, p_j, p_k, m_k);
-  double bracket = 2 * mu_k * mu_k + (1 - mu_i*mu_i - mu_j*mu_j - mu_k*mu_k)*(1 - y_ijk(p_i, p_j, p_k));
-  double numerator = std::sqrt(bracket * bracket - 4 * mu_k * mu_k);
-  double denominator = (1 - mu_i*mu_i - mu_j*mu_j - mu_k*mu_k)*(1 - y_ijk(p_i, p_j, p_k));
-  return numerator/denominator;
-}
-
-
-static double lambda(double x, double y, double z){
-  return x*x + y*y + z*z - 2*x*y - 2*x*z - 2*y*z;
-}
-
-
-static double nu_ijk_tilde(ATOOLS::Vec4<double> p_i, ATOOLS::Vec4<double> p_j, ATOOLS::Vec4<double> p_k){
-  double m_i = p_i * p_i;
-  double m_j = p_j * p_j;
-  double m_k = p_k * p_k;
-  // either i or j is the gluon and massless. Therefore, the mass m_ij equals the bottom mass. Check, which mass is the bottom mass:
-  double m_ij;
-  if((p_i * p_i) < 0.0000000001){
-    m_ij = m_j; // mass so small that p_i is the gluon
-  }
-  else{
-    m_ij = m_i;
-  }
-  double mu_ij = mu_n(p_i, p_j, p_k, m_ij);
-  double mu_k = mu_n(p_i, p_j, p_k, m_k);
-  double lambda_val = lambda(1, mu_ij*mu_ij, mu_k*mu_k);
-  return std::sqrt(lambda_val)/ (1 - mu_ij*mu_ij - mu_k*mu_k);
-}
-
-static double V_ijk(ATOOLS::Vec4<double> p_i, ATOOLS::Vec4<double> p_j, ATOOLS::Vec4<double> p_k){
-  double alpha_qcd = MODEL::s_model -> ScalarFunction("alpha_S", 15625); // at Higgs scale
-  //double pi = std::numbers::pi;
-  double C_F = 4.0 / 3.0;
-
-  //double prefactor = 8 * pi * alpha_qcd * C_F:
-  double first_summand = 2 / (1 - z_i_tilde(p_i, p_j, p_k) * (1 - y_ijk(p_i, p_j, p_k) ));
-  //double second_summand = nu_ijk_tilde(p_i, p_j, p_k) / nu_ijk(p_i, p_j, p_k) * 
-
-  double x = 1.0;
-  return x;
-}
