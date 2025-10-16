@@ -11,7 +11,7 @@
 #include "ATOOLS/Org/Library_Loader.H"
 #include "clooptools.h"
 #include <iostream>
-#include "ATOOLS/Phys/Pion_FormFactor.H"
+#include "ATOOLS/Phys/FormFactor.H"
 
 using namespace PHASIC;
 using namespace ATOOLS;
@@ -48,7 +48,7 @@ namespace EXTRAXS {
     Complex C0e(const double x, const double mass);
     Complex D0e(const double z, const double x, const double y, const double mass1, const double mass2);
     inline double Den(const double &a, const double &b) {return (a==b?0.:1./(a-b));}
-    std::unique_ptr<Pion_FormFactor> p_formfactor;
+    std::unique_ptr<FormFactor> p_formfactor;
 
     // Complex MBub(double a, double b, double c);
     // Complex MTri(double a, double b, double c,
@@ -91,7 +91,7 @@ PionPionVirtual::PionPionVirtual(const Process_Info& pi, const Flavour_Vector& f
       m_mode=2;
       m_IRscale=1.;
       m_UVscale=1.;
-      p_formfactor = std::unique_ptr<Pion_FormFactor>(new Pion_FormFactor());
+      p_formfactor = std::unique_ptr<FormFactor>(new FormFactor());
       Scoped_Settings s{ Settings::GetMainSettings()["YFS"] };
       m_photonmass = s["PHOTON_MASS"].Get<double>();
       int dimreg = s["Dim_Reg"].Get<int>();

@@ -92,6 +92,7 @@ void Standard_Model::ParticleInit()
   s_kftable[kf_reggeon] = new Particle_Info(kf_reggeon, 0.0, 0.0, 0.0, 0, 0, 1,
                                             0, "Reggeon", "{I\\!\\!R}");
   s_kftable[kf_pi_plus] = new Particle_Info(kf_pi_plus,0.13957,0.0,0,3,0,0,0,1,1,1,"Pi+","Pi-","pi^{+}","pi^{-}");
+  s_kftable[kf_K_plus] = new Particle_Info(kf_K_plus,0.493677,0.0,0,3,0,0,0,1,1,1,"K+","K-","K^{+}","K^{-}");
   ReadParticleData();
 }
 

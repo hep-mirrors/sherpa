@@ -15,7 +15,6 @@
 #include "YFS/NLO/NLO_Base.H"
 #include "ATOOLS/Phys/Momenta_Stretcher.H"
 #include "PHOTONS++/PhotonSplitter/Photon_Splitter.H"
-#include "ATOOLS/Phys/Pion_FormFactor.H"
 
 
 #include <iostream>
@@ -72,7 +71,6 @@ namespace YFS {
         YFS::YFS_Form_Factor *p_yfsFormFact;
         YFS::Define_Dipoles *p_dipoles;
         YFS::Ceex_Base *p_ceex;
-        std::unique_ptr<Pion_FormFactor> p_formfactor;
 
         void Init(std::vector<double> &splimits, const Flavour_Vector &fl);
 

@@ -30,7 +30,6 @@ YFS_Handler::YFS_Handler()
   if(Mode()!=YFS::yfsmode::off){
     rpa->gen.AddCitation(1,"The automation of YFS ISR is published in  \\cite{Krauss:2022ajk}.Which is based on \\cite{Jadach:1988gb}");
   }
-  p_formfactor = std::unique_ptr<Pion_FormFactor>(new Pion_FormFactor());
 }
 
 YFS_Handler::~YFS_Handler()

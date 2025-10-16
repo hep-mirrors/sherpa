@@ -27,7 +27,7 @@ set(Phys_SOURCES Fragmentation_Base.C
                  Variations.C
                  Weights.C
                  Hard_Process_Variation_Generator.C
-                 Pion_FormFactor.C)
+                 FormFactor.C)
 
 set(Phys_HEADERS fjcore.hh
                  Fragmentation_Base.H
@@ -59,7 +59,7 @@ set(Phys_HEADERS fjcore.hh
                  Variations.H
                  Weights.H
                  Hard_Process_Variation_Generator.H
-                 Pion_FormFactor.H)
+                 FormFactor.H)
 
 sherpa_create_git_info(Phys ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR})
  

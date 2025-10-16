@@ -9,7 +9,7 @@
 #include "ATOOLS/Phys/NLO_Subevt.H"
 #include "ATOOLS/Phys/Weight_Info.H"
 #include "ATOOLS/Org/CXXFLAGS.H"
-#include "ATOOLS/Phys/Pion_FormFactor.H"
+#include "ATOOLS/Phys/FormFactor.H"
 
 namespace ATOOLS { 
   class Cluster_Leg;
@@ -74,7 +74,7 @@ namespace PHASIC {
     Scale_Setter_Base   *p_scale;
     KFactor_Setter_Base *p_kfactor;
 
-    std::unique_ptr<ATOOLS::Pion_FormFactor> p_pionformfactor;
+    std::unique_ptr<ATOOLS::FormFactor> p_pionformfactor;
 
     size_t      m_nin, m_nout, m_mcmode, m_cmode;
     std::string m_name, m_resname;
