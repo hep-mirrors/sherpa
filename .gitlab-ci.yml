@@ -460,21 +460,8 @@ Fedora41-make-ccache-GNU-feature:
   needs:
     - job: build_image_Fedora41
 
-Fedora42-make-ccache-GNU:
-  variables:
-    OS: Fedora
-    FREL: 42
-    TOOLSET: GNU
-    EXTRACMAKEFLAGS: $COMMON_EXTRA_CMAKE_FLAGS $EXTENDED_EXTRA_CMAKE_FLAGS $DOXYGEN_CMAKE_FLAGS
-    BUILDDOCS: 1
-  extends: .any-cmake-ccache-main
-  rules:
-    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
-    - when: never
-  needs:
-    - job: build_image_Fedora42
 
-Fedora42-make-ccache-GNU-feature:
+Fedora42-make-ccache-GNU:
   variables:
     OS: Fedora
     FREL: 42
@@ -494,25 +481,12 @@ Fedora42-make-ccache-LLVM:
     TOOLSET: LLVM
     EXTRACMAKEFLAGS: $COMMON_EXTRA_CMAKE_FLAGS $EXTENDED_EXTRA_CMAKE_FLAGS $DOXYGEN_CMAKE_FLAGS
     BUILDDOCS: 1
-  extends: .any-cmake-ccache-main
-  rules:
-    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
-    - when: never
-  needs:
-    - job: build_image_Fedora42
-
-Fedora42-make-ccache-LLVM-feature:
-  variables:
-    OS: Fedora
-    FREL: 42
-    TOOLSET: LLVM
-    EXTRACMAKEFLAGS: $COMMON_EXTRA_CMAKE_FLAGS $EXTENDED_EXTRA_CMAKE_FLAGS $DOXYGEN_CMAKE_FLAGS
-    BUILDDOCS: 1
   extends: .any-cmake-ccache
   rules:
     - if: $CI_COMMIT_BRANCH && $CI_COMMIT_BRANCH != $CI_DEFAULT_BRANCH
   needs:
     - job: build_image_Fedora42
+
 
 CentOS9-make-ccache-GNU:
   variables:
