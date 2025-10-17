@@ -36,7 +36,7 @@ namespace PHASIC {
   class Multi_Channel;
   class Beam_Channels;
   class ISR_Channels;
-  class Subprocess_Info;
+  struct Subprocess_Info;
   struct Process_Info;
 
   class Phase_Space_Integrator;
