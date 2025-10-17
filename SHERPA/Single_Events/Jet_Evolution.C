@@ -34,12 +34,12 @@ void Jet_Evolution::FillPerturbativeInterfaces(Matrix_Element_Handler * me,
 					       const Soft_Collision_Handler_Map * scs,
 					       const Shower_Handler_Map & showers,
 					       REMNANTS::Remnant_Handler_Map & rhs) {
-  REMNANTS::Remnant_Handler * remnants = NULL; 
+  REMNANTS::Remnant_Handler * remnants = NULL;
   if (rhs.find(isr::hard_process)!=rhs.end()) remnants = rhs[isr::hard_process];
   else msg_Error()<<"Error in "<<METHOD<<":\n"
 		  <<"  No remnant handling found for hard part of the process.\n"
 		  <<"  Continue and hope for the best.\n";
-  
+
   Shower_Handler_Map::const_iterator shower = showers.find(isr::hard_process);
   if (shower!=showers.end() && me) {
     m_pertinterfaces["SignalMEs"] = new Perturbative_Interface(me, harddecs, shower->second);

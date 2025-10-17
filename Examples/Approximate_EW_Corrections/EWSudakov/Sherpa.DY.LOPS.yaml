@@ -12,7 +12,7 @@ MEPS:
   CORE_SCALE: VAR{sqr(91.2)}{sqr(91.2)}{sqr(91.2)}
 
 VARIATIONS:
-  - EWsud
+  - EWSud
 
 MODEL: SMGold
 

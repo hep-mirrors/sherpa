@@ -247,17 +247,33 @@ void OpenLoops_Interface::SetParametersSM(const MODEL::Model_Base* model)
     }
   }
   // Set CKM parameters
-  if (model->ComplexConstant("CKM_0_2")!=Complex(0.0,0.0) ||
-      model->ComplexConstant("CKM_2_0")!=Complex(0.0,0.0)) {
-    SetParameter("ckmorder", 3);
-  }
-  else if (model->ComplexConstant("CKM_1_2")!=Complex(0.0,0.0) ||
+  if (model->ComplexConstant("CKM_0_1")!=Complex(0.0,0.0) ||
+      model->ComplexConstant("CKM_1_0")!=Complex(0.0,0.0) ||
+      model->ComplexConstant("CKM_0_2")!=Complex(0.0,0.0) ||
+      model->ComplexConstant("CKM_2_0")!=Complex(0.0,0.0) ||
+      model->ComplexConstant("CKM_1_2")!=Complex(0.0,0.0) ||
       model->ComplexConstant("CKM_2_1")!=Complex(0.0,0.0)) {
-    SetParameter("ckmorder", 2);
-  }
-  else if (model->ComplexConstant("CKM_0_1")!=Complex(0.0,0.0) ||
-      model->ComplexConstant("CKM_1_0")!=Complex(0.0,0.0)) {
     SetParameter("ckmorder", 1);
+    // real parts
+    SetParameter("VCKMdu", model->ComplexConstant("CKM_0_0").real());
+    SetParameter("VCKMsu", model->ComplexConstant("CKM_1_0").real());
+    SetParameter("VCKMbu", model->ComplexConstant("CKM_2_0").real());
+    SetParameter("VCKMdc", model->ComplexConstant("CKM_0_1").real());
+    SetParameter("VCKMsc", model->ComplexConstant("CKM_1_1").real());
+    SetParameter("VCKMbc", model->ComplexConstant("CKM_2_1").real());
+    SetParameter("VCKMdt", model->ComplexConstant("CKM_0_2").real());
+    SetParameter("VCKMst", model->ComplexConstant("CKM_1_2").real());
+    SetParameter("VCKMbt", model->ComplexConstant("CKM_2_2").real());
+    // imaginary parts
+    SetParameter("VCKMIdu", model->ComplexConstant("CKM_0_0").imag());
+    SetParameter("VCKMIsu", model->ComplexConstant("CKM_1_0").imag());
+    SetParameter("VCKMIbu", model->ComplexConstant("CKM_2_0").imag());
+    SetParameter("VCKMIdc", model->ComplexConstant("CKM_0_1").imag());
+    SetParameter("VCKMIsc", model->ComplexConstant("CKM_1_1").imag());
+    SetParameter("VCKMIbc", model->ComplexConstant("CKM_2_1").imag());
+    SetParameter("VCKMIdt", model->ComplexConstant("CKM_0_2").imag());
+    SetParameter("VCKMIst", model->ComplexConstant("CKM_1_2").imag());
+    SetParameter("VCKMIbt", model->ComplexConstant("CKM_2_2").imag());
   }
   else {
     SetParameter("ckmorder", 0);
@@ -560,7 +576,7 @@ operator()(const ME_Generator_Key &key) const
 
 void ATOOLS::Getter<ME_Generator_Base,ME_Generator_Key,OpenLoops_Interface>::
 PrintInfo(ostream &str,const size_t width) const
-{ 
-  str<<"Interface to the OpenLoops loop ME generator"; 
+{
+  str<<"Interface to the OpenLoops loop ME generator";
 }
 

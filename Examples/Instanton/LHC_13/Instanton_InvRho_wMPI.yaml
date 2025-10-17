@@ -1,7 +1,6 @@
 # pp -> instanton
 
 # general setting
-EVENTS: 10000
 SCALES: Democratic
 #MI_HANDLER: None # multiple interaction switch
 #EVENT_GENERATION_MODE: Weighted

@@ -3,6 +3,7 @@
 #include "ATOOLS/Math/Vector.H"
 #include "ATOOLS/Phys/Particle.H"
 #include "ATOOLS/Org/Message.H"
+#include "PHOTONS++/Main/Photons.H"
 
 using namespace ATOOLS;
 using namespace PHOTONS;
@@ -24,9 +25,15 @@ Weight_YFS::~Weight_YFS() {
 }
 
 void Weight_YFS::CalculateWeight() {
-  m_weight = exp( m_Y + m_nbar );
+  if      (Photons::s_expandtoorder==0) m_weight = exp( m_nbar );
+  else if (Photons::s_expandtoorder==1) m_weight = (1.+m_Y)*exp(m_nbar);
+  else if (Photons::s_expandtoorder==2) m_weight = (1.+m_Y+0.5*m_Y*m_Y)*exp(m_nbar);
+  else                                  m_weight = exp( m_Y + m_nbar );
 }
 
 void Weight_YFS::CalculateMax() {
-  m_maxweight = exp( m_Ymax + m_nbar );
+  if      (Photons::s_expandtoorder==0) m_maxweight = exp( m_nbar );
+  else if (Photons::s_expandtoorder==1) m_maxweight = (1.+m_Ymax)*exp(m_nbar);
+  else if (Photons::s_expandtoorder==2) m_maxweight = (1.+m_Ymax+0.5*m_Ymax*m_Ymax)*exp(m_nbar);
+  else                                  m_maxweight = exp( m_Ymax + m_nbar );
 }

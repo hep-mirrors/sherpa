@@ -12,7 +12,7 @@ void Beam_Integrator::Init(Hadronic_XSec_Calculator * xsecs,
     m_variable   += (p_beams[i]->Type()==beamspectrum::EPA)*(i+1);
     m_beammoms[i] = p_beams[i]->InMomentum();
   }
-  m_smin    = Max(m_smin,1.0001*xsecs->Smin()); 
+  m_smin    = Max(m_smin,1.0001*xsecs->Smin());
   m_smax    = (m_beammoms[0]+m_beammoms[1]).Abs2();
   m_swt     = log(m_smax/m_smin);
   m_sign    = m_beammoms[0][3]>0. ? 1: -1;

@@ -672,25 +672,55 @@ void FSR::RotateDipole() {
   for (auto &p : m_dipole) {
     if (i == 0) t = t1;
     else t = t2;
-    p[2] = cos(theta) * p[2] - sin(theta) * p[3];
-    p[3] = sin(theta) * p[2] + cos(theta) * p[3];
+    double px = p[1], py = p[2], pz = p[3];
 
-    p[1] = cos(phi) * p[1] - sin(phi) * p[2];
-    p[2] = sin(phi) * p[1] + cos(phi) * p[2];
+    // Rotate around Y axis (theta)
+    double pz_theta = cos(theta) * pz - sin(theta) * px;
+    double px_theta = sin(theta) * pz + cos(theta) * px;
+
+    // Rotate around Z axis (phi)
+    double px_phi = cos(phi) * px_theta - sin(phi) * py;
+    double py_phi = sin(phi) * px_theta + cos(phi) * py;
+
+    // Assign rotated components back
+    p[1] = px_phi;
+    p[2] = py_phi;
+    p[3] = pz_theta;
     i++;
   }
   for (auto &p : m_photons) {
-    p[2] = cos(theta) * p[2] - sin(theta) * p[3];
-    p[3] = sin(theta) * p[2] + cos(theta) * p[3];
+    double px = p[1], py = p[2], pz = p[3];
 
-    p[1] = cos(phi) * p[1] - sin(phi) * p[2];
-    p[2] = sin(phi) * p[1] + cos(phi) * p[2];
+    // Rotate around Y axis (theta)
+    double pz_theta = cos(theta) * pz - sin(theta) * px;
+    double px_theta = sin(theta) * pz + cos(theta) * px;
+
+    // Rotate around Z axis (phi)
+    double px_phi = cos(phi) * px_theta - sin(phi) * py;
+    double py_phi = sin(phi) * px_theta + cos(phi) * py;
+
+    // Assign rotated components back
+    p[1] = px_phi;
+    p[2] = py_phi;
+    p[3] = pz_theta;
   }
-  m_photonSum[2] = cos(theta) * m_photonSum[3] - sin(theta) * m_photonSum[3];
-  m_photonSum[3] = sin(theta) * m_photonSum[3] + cos(theta) * m_photonSum[3];
 
-  m_photonSum[1] = cos(phi) * m_photonSum[1] - sin(phi) * m_photonSum[2];
-  m_photonSum[2] = sin(phi) * m_photonSum[1] + cos(phi) * m_photonSum[2];
+  double px = m_photonSum[1]; // x
+  double py = m_photonSum[2]; // y
+  double pz = m_photonSum[3]; // z
+
+  // Rotate around Y axis (theta) ---
+  double pz_theta = cos(theta) * pz - sin(theta) * px;
+  double px_theta = sin(theta) * pz + cos(theta) * px;
+
+  // Rotate around Z axis (phi) ---
+  double px_phi = cos(phi) * px_theta - sin(phi) * py;
+  double py_phi = sin(phi) * px_theta + cos(phi) * py;
+
+  // Assign rotated components back ---
+  m_photonSum[1] = px_phi;
+  m_photonSum[2] = py_phi;
+  m_photonSum[3] = pz_theta;
 }
 
 void FSR::RejectEvent() {
