@@ -16,12 +16,12 @@ RealVirtual::RealVirtual(const PHASIC::Process_Info& pi)
   {
 
     /* Load loop ME */
-    PHASIC::Process_Info rr_pi(pi);
-    rr_pi.m_fi.m_nlotype=ATOOLS::nlo_type::rvirt;
-    rr_pi.m_mincpl[0] = pi.m_mincpl[0];
-    rr_pi.m_maxcpl[0] = pi.m_maxcpl[0];
-    rr_pi.m_mincpl[1] = pi.m_mincpl[1]+1;
-    rr_pi.m_maxcpl[1] = pi.m_maxcpl[1]+1;
+    PHASIC::Process_Info rv_pi(pi); // real-virtual process info
+    rv_pi.m_fi.m_nlotype=ATOOLS::nlo_type::rvirt;
+    rv_pi.m_mincpl[0] = pi.m_mincpl[0];
+    rv_pi.m_maxcpl[0] = pi.m_maxcpl[0];
+    rv_pi.m_mincpl[1] = pi.m_mincpl[1]+1;
+    rv_pi.m_maxcpl[1] = pi.m_maxcpl[1]+1;
     // MODEL::Coupling_Data* aqcd=m_cpls.Get("Alpha_QCD");
     // MODEL::Coupling_Data* aqed=m_cpls.Get("Alpha_QED");
     p_loop_me = PHASIC::Virtual_ME2_Base::GetME2(rv_pi);
@@ -36,7 +36,7 @@ RealVirtual::RealVirtual(const PHASIC::Process_Info& pi)
     p_loop_me->SetCouplings(m_cpls);
     m_sym  = ATOOLS::Flavour::FSSymmetryFactor(args.m_outflavs);
     m_sym *= ATOOLS::Flavour::ISSymmetryFactor(args.m_inflavs);
-    cplfac *= pow(p_loop_me->AlphaQED(),rr_pi.m_mincpl[1]);
+    // cplfac *= pow(p_loop_me->AlphaQED(),rv_pi.m_mincpl[1]); // not neeeded, use m_factor instead
     m_factor = p_loop_me->AlphaQED()/4.0/M_PI;
   }
 
