@@ -236,7 +236,7 @@ operator()(const PHASIC::Selector_Key &key) const
   if (bounds.empty())
     THROW(critical_error,"Missing \"Ranges\" specification in variable selector");
   std::vector<std::pair<double,double> > cbounds;
-  for (const auto single_bounds : bounds) {
+  for (const auto& single_bounds : bounds) {
     if (single_bounds.size() != 2)
       THROW(critical_error,"Ranges need to have two entries.");
     cbounds.push_back(std::make_pair(single_bounds[0], single_bounds[1]));

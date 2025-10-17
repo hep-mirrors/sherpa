@@ -195,7 +195,7 @@ bool Command_Line_Interface::ParseNoneOptions(Option_Parser::Parser& parser)
     }
     m_yamlstream << "TAGS: {";
     bool first = true;
-    for (const auto tag : legacysyntaxtags) {
+    for (const auto& tag : legacysyntaxtags) {
       if (first)
         first = false;
       else
