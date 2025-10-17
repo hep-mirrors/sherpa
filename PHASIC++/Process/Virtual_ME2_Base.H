@@ -8,7 +8,7 @@
 
 namespace PHASIC {
 
-  class Process_Info;
+  struct Process_Info;
 
   class Virtual_ME2_Base {
   protected:
