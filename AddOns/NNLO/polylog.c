@@ -67,7 +67,7 @@ double hpmpm(double); // H_{1,-1,1,-1}(z)
       // omit imaginary part of pi*log(z)*sign(Im(z))
       return 2.*pi2o6 - li2(t) - lnt*lnt/2.;
     }
-
+    return 0.;
   }
 
   double li3(double z) // PolyLog[4,z] or HPL[{3},z]==HPL[{0,0,0,1},z]
@@ -114,7 +114,7 @@ double hpmpm(double); // H_{1,-1,1,-1}(z)
       // omit imaginary part of pi/2*log(z)^2*sign(Im(z))
       return -2.*pi2o6*lnt + lnt*lnt*lnt/6. + li3(t);
     }
-
+    return 0.;
   }
  
   double li4(double z) // PolyLog[4,z] or HPL[{4},z]==HPL[{0,0,0,1},z]
@@ -164,7 +164,7 @@ double hpmpm(double); // H_{1,-1,1,-1}(z)
       // omit imaginary part of pi/6*log(z)^3*sign(Im(z))
       return 2.*pi4o90 + pi2o6*lnt2 - lnt2*lnt2/24. - li4(t);
     }
-
+    return 0.;
   }
 
   double s2p2(double z) // PolyLog[2,2,z] or HPL[{3,1},z]==HPL[{0,0,1,1},z]
@@ -210,7 +210,7 @@ double hpmpm(double); // H_{1,-1,1,-1}(z)
       return 2.*pi4o90 - 2.*li4(t) + li3(t)*lnt - 3.*pi2o6*lnt*lnt/2. + 
              lnt*lnt*lnt*lnt/24. + s2p2(t) - lnt*zeta3;
     }
-
+    return 0.;
   }
 
 //-----------------
