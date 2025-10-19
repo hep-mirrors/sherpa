@@ -8,6 +8,7 @@
 #include "MODEL/Main/Model_Base.H"
 #include "MODEL/Main/Single_Vertex.H"
 #include "PHASIC++/Main/Color_Integrator.H"
+#include "AddOns/Higgs/dilog.h"
 
 #include <complex>
 #include <array>
@@ -460,7 +461,7 @@ std::map<std::string, std::complex<double>> H_to_bb_Virtual::CalculateBorn(const
 }
 
 
-std::map<std::string, std::complex<double>> H_to_bb_Virtual::CalculateV(const ATOOLS::Vec4D_Vector& momenta, bool anti) {
+std::map<std::string, std::map<std::string, std::complex<double>>> H_to_bb_Virtual::CalculateV(const ATOOLS::Vec4D_Vector& momenta, bool anti) {
   // This method calculates the virtual amplitude for the H -> bb decay for the four helicity configurations
   // using the precomputed matrices and the spinors calculated from the currents.
   // There are finite terms, terms proportional to 1/epsilon and terms proportional to 1/epsilon^2.
@@ -574,28 +575,69 @@ std::map<std::string, std::complex<double>> H_to_bb_Virtual::CalculateV(const AT
   v_res_e11 *= VirtualPrefactor;
   v_res_e211 *= VirtualPrefactor;
 
-  std::map<std::string, C> vres;
-  vres["v_res_f00"]  = v_res_f00;   vres["v_res_e00"]  = v_res_e00;   vres["v_res_e200"]  = v_res_e200;
-  vres["v_res_f10"]  = v_res_f10;   vres["v_res_e10"]  = v_res_e10;   vres["v_res_e210"]  = v_res_e210;
-  vres["v_res_f01"]  = v_res_f01;   vres["v_res_e01"]  = v_res_e01;   vres["v_res_e201"]  = v_res_e201;
-  vres["v_res_f11"]  = v_res_f11;   vres["v_res_e11"]  = v_res_e11;   vres["v_res_e211"]  = v_res_e211;
-
   std::map<std::string, C> v_finite;
   v_finite["00"]  = v_res_f00;
   v_finite["01"]  = v_res_f01;
   v_finite["10"]  = v_res_f10;
   v_finite["11"]  = v_res_f11;
 
-  return v_finite;
+  std::map<std::string, C> v_epsilon;
+  v_epsilon["00"]  = v_res_e00;
+  v_epsilon["01"]  = v_res_e01;
+  v_epsilon["10"]  = v_res_e10;
+  v_epsilon["11"]  = v_res_e11;
+
+  std::map<std::string, C> v_epsilon2;
+  v_epsilon2["00"]  = v_res_e200;
+  v_epsilon2["01"]  = v_res_e201;
+  v_epsilon2["10"]  = v_res_e210;
+  v_epsilon2["11"]  = v_res_e211;
+
+  std::map<std::string, std::map<std::string, std::complex<double>>> res;
+  res["v_finite"]  = std::move(v_finite);
+  res["v_epsilon"] = std::move(v_epsilon);
+  res["v_epsilon2"]= std::move(v_epsilon2);
+  return res;
 }
 
 
 double H_to_bb_Virtual::CalculateVirtualCorrection(const ATOOLS::Vec4D_Vector& momenta, bool anti){
-  // calculate total virtual subtraction term
-  std::map<std::string, std::complex<double>> v_finite = CalculateV(momenta, anti); 
+  // Calculates the total virtual contribution with substraction terms already applied. Checks wether the epsilon terms cancel
+  std::map<std::string, std::map<std::string, std::complex<double>>> virtual_amplitudes = CalculateV(momenta, anti);
+  std::map<std::string, std::complex<double>> &v_finite  = virtual_amplitudes["v_finite"];
+  std::map<std::string, std::complex<double>> &v_epsilon = virtual_amplitudes["v_epsilon"];
+  std::map<std::string, std::complex<double>> &v_epsilon2= virtual_amplitudes["v_epsilon2"];
+
   std::map<std::string, std::complex<double>> born = CalculateBorn(momenta, anti); 
-  std::complex<double> BV = born["00"] * std::conj(v_finite["00"]) + born["01"] * std::conj(v_finite["01"]) + born["10"] * std::conj(v_finite["10"]) + born["11"] * std::conj(v_finite["11"]);
-  double v_correction = 2 * std::real(BV);
+
+  // finite part
+  std::complex<double> BV_f = born["00"] * std::conj(v_finite["00"]) + born["01"] * std::conj(v_finite["01"]) + born["10"] * std::conj(v_finite["10"]) + born["11"] * std::conj(v_finite["11"]);
+  double v_correction_f = 2 * std::real(BV_f);
+
+  // 1/epsilon part
+  std::complex<double> BV_e = born["00"] * std::conj(v_epsilon["00"]) + born["01"] * std::conj(v_epsilon["01"]) + born["10"] * std::conj(v_epsilon["10"]) + born["11"] * std::conj(v_epsilon["11"]);
+  double v_correction_e = 2 * std::real(BV_e);
+
+  // 1/epsilon^2 part = 0 for H -> bb, because b is massive
+
+  // substract (here: sum up) the substraction terms:
+  double finite_sub = CalculateFiniteSubtraction(momenta);
+  double epsilon_sub = CalculateEpsilonSubtraction(momenta);
+
+  // todo: make sure that Epsilon terms cancel
+
+  double v_correction = v_correction_f + finite_sub;
+  double epsilon_sum = v_correction_e + epsilon_sub; // should be = 0"!!
+
+  // print for test purpose
+  std::cout << "finite_sub:" << finite_sub << std::endl;
+  std::cout << "epsilon_sub:" << epsilon_sub << std::endl;
+  std::cout << "v_correction_f:" << v_correction_f << std::endl;
+  std::cout << "v_correction_e:" << v_correction_e << std::endl;
+  std::cout << "Subtracted final results: " << std::endl;
+  std::cout << "v_correction:" << v_correction << std::endl;
+  std::cout << "v_correction_e:" << epsilon_sum << std::endl;
+
   return v_correction;
 }
 
@@ -736,7 +778,7 @@ static double E_j(ATOOLS::Vec4<double> p_j, ATOOLS::Vec4<double> p_k){
 
   // Nu^NS - part (without the 1/T_q^2 term):
   // this expression is very long and therefore sorted according to the lines in the Catani Dittmaier paper (formula 6.21)
-  double line1 = 0.0; // todo: implement this with dilog funcion
+  double line1 = 0.0;
 
   double line2_1 = std::log((var_Q_jk - m_k) / var_Q_jk);
   double line2_2 = -2.0 * ( (var_Q_jk - m_k)*(var_Q_jk - m_k) - m_j) / (var_Q_jk*var_Q_jk);

@@ -188,8 +188,6 @@ std::cout << " }" << std::endl;*/
 
 void Comix1to2::CalculateNLO(const ATOOLS::Vec4D_Vector& momenta, bool anti) {
   if (!nlo_virtual) return;
-  // results for the virtual diagram in the different helicity configurations (just finite part, epsilon divergences cancel out in NLO_Virtual class)
-  std::map<std::string, std::complex<double>> v_finite = nlo_virtual->CalculateV(momenta, anti); 
   std::map<std::string, std::complex<double>> born = nlo_virtual->CalculateBorn(momenta, anti); 
 
   std::cout << "*this 1 = { ";
@@ -215,6 +213,7 @@ void Comix1to2::CalculateNLO(const ATOOLS::Vec4D_Vector& momenta, bool anti) {
   std::cout << "ME2 * C_F:" << ME2*(3.0/4.0) << std::endl;
   std::cout << "ME2 * C_F^2:" << ME2*(9.0/16.0) << std::endl;
 
+  // results for the virtual diagram (just finite part, epsilon divergences cancel out in NLO_Virtual class)
   double total_virtual_correction = nlo_virtual->CalculateVirtualCorrection(momenta, anti); 
   std::cout << "total_virtual_correction:" << total_virtual_correction << std::endl;
 }

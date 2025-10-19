@@ -39,7 +39,7 @@ namespace EXTRAXS {
     void SetVirtualMatrixFinite(const ATOOLS::Vec4D_Vector& momenta) override;
     void SetVirtualMatrixE(const ATOOLS::Vec4D_Vector& momenta) override;
     void SetVirtualMatrixE2(const ATOOLS::Vec4D_Vector& momenta) override;
-    std::map<std::string, std::complex<double>> CalculateV(const ATOOLS::Vec4D_Vector& momenta, bool anti=false) override;
+    std::map<std::string, std::map<std::string, std::complex<double>>> CalculateV(const ATOOLS::Vec4D_Vector& momenta, bool anti=false) override;
     std::map<std::string, std::complex<double>> CalculateBorn(const ATOOLS::Vec4D_Vector& momenta, bool anti=false) override;
   protected:
     double alpha_qcd;
