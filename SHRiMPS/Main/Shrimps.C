@@ -161,6 +161,7 @@ bool Shrimps::GenerateEvent(ATOOLS::Blob * blob) {
   msg_Out()<<"  * "<<METHOD<<".\n";
   return p_generator->GenerateEvent();
   */
+  return true;
 }
 
 ATOOLS::Cluster_Amplitude * Shrimps::ClusterConfiguration(ATOOLS::Blob *const blob) {

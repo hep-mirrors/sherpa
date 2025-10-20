@@ -22,7 +22,7 @@ double deli = 0;
 int order = 0;
 static double SqLam(double x,double y,double z)
 {
-  return abs(x*x+y*y+z*z-2.*x*y-2.*x*z-2.*y*z);
+  return std::abs(x*x+y*y+z*z-2.*x*y-2.*x*z-2.*y*z);
   // double arg(sqr(s-s1-s2)-4.*s1*s2);
   // if (arg>0.) return sqrt(arg)/s;
   // return 0.;
@@ -286,8 +286,8 @@ void Dipole::CalculateGamma(){
   m_gamma  = (1.+m_b1*m_b2)/(m_b1+m_b2)*(log(logarg)-2);
   m_gammap = (1.+m_b1*m_b2)/(m_b1+m_b2)*(log(logarg));
 
-  m_gamma  *= m_alpi*abs(ChargeNorm());
-  m_gammap *= m_alpi*abs(ChargeNorm());
+  m_gamma  *= m_alpi*std::abs(ChargeNorm());
+  m_gammap *= m_alpi*std::abs(ChargeNorm());
   if(Type()==dipoletype::final)   delf = 0.5*m_gamma;
   if(Type()==dipoletype::initial) deli = 0.5*m_gamma;
 }

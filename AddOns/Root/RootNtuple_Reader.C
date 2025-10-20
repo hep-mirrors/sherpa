@@ -67,7 +67,7 @@ namespace SHERPA {
 
     Weight_Info* OneEvent(const int wmode,
                           Variations_Mode varmode=Variations_Mode::all,
-                          const int mode=0)
+                          const int mode=0)  override
     {
       return NULL;
     }
