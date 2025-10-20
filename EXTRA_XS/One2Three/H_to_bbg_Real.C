@@ -271,7 +271,7 @@ static double nu_ijk_tilde(ATOOLS::Vec4<double> p_i, ATOOLS::Vec4<double> p_j, A
 
 
 static double V_ijk(ATOOLS::Vec4<double> p_i, ATOOLS::Vec4<double> p_j, ATOOLS::Vec4<double> p_k){
-  double alpha_qcd = MODEL::s_model -> ScalarFunction("alpha_S", 15625); // at Higgs scale
+  double alpha_qcd = MODEL::s_model -> ScalarFunction("alpha_S", 125.25*125.25); // at Higgs scale
   
   #ifdef M_PI
     double pi = M_PI;
@@ -302,7 +302,8 @@ void H_to_bbg_Real::Calculate_born_subtraction(const ATOOLS::Vec4D_Vector& momen
   double V_gb_bb = V_ijk(p_g, p_b, p_bb);
   double V_gbb_b = V_ijk(p_g, p_bb, p_b);
 
-  double born_ME2 = 9.0; // todo: take real value
+  double born_ME2 = 9.1018603234124864; // value taken from the H -> bbb calculation in Comix1to2, value right out of Decay_Channel::ME2(...)
+                                        // => not multiplied with any symmetry factors/ colour factors
   double m2_ij = p_b * p_b; // because m_i = 0 (gluon) and m_b = m_bb
 
   double D_gb_bb = V_gb_bb/ ((p_g + p_b)*(p_g + p_b) - m2_ij) * born_ME2;

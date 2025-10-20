@@ -643,9 +643,13 @@ double H_to_bb_Virtual::CalculateVirtualCorrection(const ATOOLS::Vec4D_Vector& m
 
 
 void H_to_bb_Virtual::SetUpPrefactors(const vector<Flavour>& flavs) {
-  /* This method collects all constants that appear in the calculation and multiplies them.
-  There are constante both in the real and the virtual correction. */
-  double g_s = std::sqrt(4 * std::acos(-1) * alpha_qcd);  // strong gauge coupling; std::acos(-1) = pi
+  /* This method collects all constants that appear in the calculation and multiplies them.*/
+  #ifdef M_PI
+    double pi = M_PI;
+  #else
+    const double pi = 3.14159265358979323846;
+  #endif
+  double g_s = std::sqrt(4 * pi * alpha_qcd);
   double G_F = 1.16637886e-5; // Fermi constant in GeV^-2; value from PDG
   double vev = 1 / std::sqrt(G_F * std::sqrt(2)); // vacuum expectation value in GeV; doublecheck that value
   double m_b = flavs[2].Mass(); // b quark mass in GeV
@@ -854,9 +858,10 @@ double H_to_bb_Virtual::CalculateFiniteSubtraction(const ATOOLS::Vec4D_Vector& m
   ATOOLS::Vec4<double> p_b = momenta[1];
   ATOOLS::Vec4<double> p_bb = momenta[2];
 
-  double born_ME2 = 9.0; // todo: insert correct value here and higgs scale below
-  double alpha_qcd = MODEL::s_model -> ScalarFunction("alpha_S", 15625); // at Higgs scale
-  double mu = 125; // todo: ubsert correct value
+  double born_ME2 = 9.1018603234124864; // value taken from the H -> bbb calculation in Comix1to2, value right out of Decay_Channel::ME2(...)
+                                        // => not multiplied with any symmetry factors/ colour factors
+  double mu = 125.25;
+  double alpha_qcd = MODEL::s_model -> ScalarFunction("alpha_S", mu*mu); // at Higgs scale
   double C_F = 4.0/3.0;
   double s_jk = 2 * p_b * p_bb;
   double gamma_E = 0.57721566490153286060; // Euler-Mascheroni constant
@@ -885,8 +890,9 @@ double H_to_bb_Virtual::CalculateEpsilonSubtraction(const ATOOLS::Vec4D_Vector& 
   ATOOLS::Vec4<double> p_b = momenta[1];
   ATOOLS::Vec4<double> p_bb = momenta[2];
 
-  double born_ME2 = 9.0; // todo: insert correct value here and higgs scale below
-  double alpha_qcd = MODEL::s_model -> ScalarFunction("alpha_S", 15625); // at Higgs scale
+  double born_ME2 = 9.1018603234124864; // value taken from the H -> bbb calculation in Comix1to2, value right out of Decay_Channel::ME2(...)
+                                        // => not multiplied with any symmetry factors/ colour factors
+  double alpha_qcd = MODEL::s_model -> ScalarFunction("alpha_S", 125.25*125.25); // at Higgs scale
   double C_F = 4.0/3.0;
 
   return born_ME2 * alpha_qcd / (2 * pi) * (C_F * (C_j(p_b, p_bb) + C_j(p_bb, p_b)) + 2 * A());
