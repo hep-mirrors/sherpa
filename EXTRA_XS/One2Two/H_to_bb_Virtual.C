@@ -8,7 +8,6 @@
 #include "MODEL/Main/Model_Base.H"
 #include "MODEL/Main/Single_Vertex.H"
 #include "PHASIC++/Main/Color_Integrator.H"
-#include "AddOns/Higgs/dilog.h"
 
 #include <complex>
 #include <array>
@@ -19,6 +18,7 @@ using namespace METOOLS;
 using namespace PHASIC;
 using namespace std;
 using namespace MODEL;
+
 
 H_to_bb_Virtual::H_to_bb_Virtual(const vector<Flavour>& flavs, MODEL::Model_Base* s_model):
   Spin_Amplitudes(flavs,Complex(0.0,0.0)), m_cur(3), m_anticur(3), m_nhel(3), 
@@ -752,6 +752,35 @@ static double rho_n(ATOOLS::Vec4<double> p_j, ATOOLS::Vec4<double> p_k, ATOOLS::
 }
 
 
+static double li2(double x){
+  // function taken from dilog.C
+
+  // routines only valid for real values of the argument; 
+  // imaginary parts not presently given.
+  // this version uses 't Hooft and Veltman's change of variable
+  // good to ~ 10^(-16)
+  const double PISQ6  =  1.64493406684822643647;
+  double x_0 = -0.30;
+  double x_1 = 0.25;
+  double x_2 = 0.51;
+  if (x == 1.) return PISQ6;
+  if (x <= x_0){ 
+    double temp = std::log(Abs(1.0-x));
+    return -li2(-x/(1.0-x)) - temp*temp/2 ; }
+  else if (x < x_1){
+    double z = - std::log(1.0-x);
+    double temp = z*(1.0-z/4.0*(1.0-z/9.0*(1.0-z*z/100.0
+                  *(1.0-5.0*z*z/294.0*(1.0-7.0*z*z/360.0
+                  *(1.0-5.0*z*z/242.0*(1.0-7601.0*z*z/354900.0
+                  *(1.0-91.0*z*z/4146.0*(1.0-3617.0*z*z/161840.0)
+                   ))))))));
+    return temp; }
+    else if (x < x_2) return - li2(-x) + li2(x*x)/2.0 ;
+    else { return PISQ6 - li2(1.0-x) 
+                  - std::log(Abs(x))*std::log(Abs(1.0-x)) ; }
+}
+
+
 static double E_j(ATOOLS::Vec4<double> p_j, ATOOLS::Vec4<double> p_k){
   // collects the other terms in Nu_j
 
@@ -778,7 +807,11 @@ static double E_j(ATOOLS::Vec4<double> p_j, ATOOLS::Vec4<double> p_k){
 
   // Nu^NS - part (without the 1/T_q^2 term):
   // this expression is very long and therefore sorted according to the lines in the Catani Dittmaier paper (formula 6.21)
-  double line1 = 0.0;
+  double line1_1 = std::log(var_rho * var_rho) * std::log(1 + var_rho * var_rho);
+  double line1_2 = 2 * li2(var_rho * var_rho);
+  double line1_3 = - li2(1 - var_rho_j * var_rho_j);
+  double line1_4 = - li2(1 - var_rho_k * var_rho_k);
+  double line1 = 1/nu_jk(p_j, p_k) * (line1_1 + line1_2 + line1_3 + line1_4 - (pi*pi)/6.0);  
 
   double line2_1 = std::log((var_Q_jk - m_k) / var_Q_jk);
   double line2_2 = -2.0 * ( (var_Q_jk - m_k)*(var_Q_jk - m_k) - m_j) / (var_Q_jk*var_Q_jk);
