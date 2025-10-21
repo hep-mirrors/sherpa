@@ -30,9 +30,9 @@ Process_Integrator::Process_Integrator(Process_Base *const proc):
   m_nin(0), m_nout(0), m_smode(0), m_swmode(0),
   m_threshold(0.), m_enhancefac(1.0), m_maxeps(0.0), m_rsfac(1.0),
   m_n(0), m_itmin(0), m_itmax(1000000), m_max(0.), m_totalxs(0.), 
-  m_totalhsum (0.), m_totalsum (0.), m_totalhsumsqr(0.), m_totalsumsqr(0.), m_totalerr(0.), m_ssum(0.), m_shsum(0.), 
-  m_shsumsqr(0.), m_ssumsqr(0.), m_smax(0.), m_shsigma2(0.), m_ssigma2(0.), m_wmin(0.), m_mshsum(0.), 
-  m_mssum(0.), m_mshsumsqr(0.), m_mssumsqr(0.), m_msn(0.), m_sn(0), m_son(1),
+  m_totalsum (0.), m_totalsumsqr(0.), m_totalerr(0.), m_ssum(0.), 
+  m_ssumsqr(0.), m_smax(0.), m_ssigma2(0.), m_wmin(0.),
+  m_mssum(0.), m_mssumsqr(0.), m_msn(0.), m_sn(0), m_son(1),
   m_external_selectionweight(-1),
   m_writeout(false),
   p_whisto_pos(NULL),
@@ -111,21 +111,6 @@ double Process_Integrator::Sigma2() const
     ((p->m_ssumsqr/m_sn-sqr(p->m_ssum/m_sn))/(m_sn-1));
 }
 
-double Process_Integrator::EnhanceSigma2() const
-{ 
-  Process_Integrator *p(p_proc->Parent()->Integrator());
-  if (m_sn!=p->m_sn) {
-    msg_Error()<<METHOD<<"(): Inconsistent summation for '"
-	       <<p_proc->Name()<<"' \\in '"<<p->Process()->Name()
-	       <<"', m_sn = "<<m_sn<<" vs. p->m_sn = "
-	       <<p->m_sn<<"."<<std::endl;
-    if (msg_LevelIsTracking()) DO_STACK_TRACE;
-  }
-  if (m_sn<2) return 0.0;
-  return 1.0/
-    ((p->m_shsumsqr/m_sn-sqr(p->m_shsum/m_sn))/(m_sn-1));
-}
-
 double Process_Integrator::TotalSigma2() const
 { 
   return m_ssigma2+Sigma2();
@@ -138,15 +123,6 @@ double Process_Integrator::TotalResult() const
   if (m_sn<2) return m_ssigma2?m_totalsum/m_ssigma2:0.0; 
   double s2(Sigma2());
   return m_ssigma2+s2?(m_totalsum+s2*m_ssum/m_sn)/(m_ssigma2+s2):0.0;
-}
-
-double Process_Integrator::TotalEnhanceResult() const
-{ 
-  if (m_smode==0) return m_n+m_sn?(m_totalhsum+m_shsum)/(m_n+m_sn):0.0;
-  if (m_shsigma2==0.0) return m_sn?m_shsum/m_sn:0.0; 
-  if (m_sn<2) return m_shsigma2?m_totalhsum/m_shsigma2:0.0; 
-  double s2(EnhanceSigma2());
-  return m_shsigma2+s2?(m_totalhsum+s2*m_shsum/m_sn)/(m_shsigma2+s2):0.0;
 }
 
 double Process_Integrator::TotalVar() const
@@ -171,10 +147,8 @@ void Process_Integrator::OptimizeSubResult(const double &s2)
 {
   m_n+=m_sn;
   if (m_smode==0) {
-    m_totalhsum+=m_shsum;
     m_totalsum+=m_ssum;
     m_totalsumsqr+=m_ssumsqr;
-    m_totalhsumsqr+=m_shsumsqr;
   }
   else {
     double vij2((m_sn-1)/
@@ -182,13 +156,8 @@ void Process_Integrator::OptimizeSubResult(const double &s2)
     m_ssigma2+=s2; 
     m_totalsum+=s2*m_ssum/m_sn;
     m_totalsumsqr+=sqr(s2)/vij2;
-    double vij2h((m_sn-1)/
-		dabs(m_shsumsqr/m_sn-sqr(m_shsum/m_sn)));
-    m_shsigma2+=s2; 
-    m_totalhsum+=s2*m_shsum/m_sn;
-    m_totalhsumsqr+=sqr(s2)/vij2h;
   }
-  m_shsum=m_ssum=m_shsumsqr=m_ssumsqr=0.0;
+  m_ssum=m_ssumsqr=0.0;
   m_sn=0;
   if (p_colint!=NULL) p_colint->Optimize();
   if (p_proc->IsGroup())
@@ -256,8 +225,8 @@ bool Process_Integrator::ReadInXSecs(const std::string &path)
   My_In_File from(path+"/"+fname);
   if (!from.Open()) return false;
   from->precision(16);
-  *from>>name>>m_totalxs>>m_max>>m_totalerr>>m_totalhsum>>m_totalsum>>m_totalhsumsqr>>m_totalsumsqr
-      >>m_n>>m_shsum>>m_ssum>>m_shsumsqr>>m_ssumsqr>>m_smax>>m_shsigma2>>m_ssigma2>>m_sn>>m_wmin
+  *from>>name>>m_totalxs>>m_max>>m_totalerr>>m_totalsum>>m_totalsumsqr
+      >>m_n>>m_ssum>>m_ssumsqr>>m_smax>>m_ssigma2>>m_sn>>m_wmin
       >>m_son>>dummy>>dummy>>vn;
   if (name!=fname) THROW(fatal_error,"Corrupted results file");
   if (vn>100) {
@@ -265,11 +234,10 @@ bool Process_Integrator::ReadInXSecs(const std::string &path)
   }
   else {
   m_vsmax.resize(vn);
-  m_vhsum.resize(vn);
   m_vsum.resize(vn);
   m_vsn.resize(vn);
   for (size_t i(0);i<m_vsn.size();++i)
-    *from>>m_vsmax[i]>>m_vhsum[i]>>m_vsum[i]>>m_vsn[i]>>dummy;
+    *from>>m_vsmax[i]>>m_vsum[i]>>m_vsn[i]>>dummy;
   }
   msg_Tracking()<<"Found result: xs for "<<name<<" : "
 		<<m_totalxs*rpa->Picobarn()<<" pb"
@@ -306,12 +274,12 @@ void Process_Integrator::WriteOutXSecs(const std::string &path)
   if (outfile.Open()) m_writeout=1;
   outfile->precision(16);
   *outfile<<fname<<"  "<<m_totalxs<<"  "<<m_max<<"  "
-	 <<m_totalerr<<" "<<m_totalhsum<<" "<<m_totalsum<<" "<<m_totalhsumsqr<<" "<<m_totalsumsqr<<" "
-	 <<m_n<<" "<<m_shsum<<" "<<m_ssum<<" "<<m_shsumsqr<<" "<<m_ssumsqr<<" "<<m_smax<<" "
-	 <<m_shsigma2<<" "<<m_ssigma2<<" "<<m_sn<<" "<<m_wmin<<" "<<m_son<<" "
+	 <<m_totalerr<<" "<<m_totalsum<<" "<<m_totalsumsqr<<" "
+	 <<m_n<<" "<<m_ssum<<" "<<m_ssumsqr<<" "<<m_smax<<" "
+	 <<m_ssigma2<<" "<<m_sn<<" "<<m_wmin<<" "<<m_son<<" "
 	 <<-1<<" "<<-1<<"\n"<<m_vsn.size()<<"\n";
   for (size_t i(0);i<m_vsn.size();++i)
-    *outfile<<m_vsmax[i]<<" "<<m_vhsum[i]<<" "<<m_vsum[i]<<" "
+    *outfile<<m_vsmax[i]<<" "<<m_vsum[i]<<" "
 	   <<m_vsn[i]<<" "<<-1<<"\n";
   p_proc->WriteOut(path);
   if (p_colint!=NULL) p_colint->WriteOut(path+"/"+fname+"_Color");
@@ -412,8 +380,8 @@ double Process_Integrator::GetMaxEps(double epsilon)
     }
   }
 
-  if (last_filled_bin<10) msg_Error() << "WARNING: The lower bin edge of whisto might be too high for subprocess " << p_proc->ResultsName() << " to cover all weights!" << std::endl;
-  if (first_filled_bin>p_whisto->Nbin()-10) msg_Error() << "WARNING: The upper bin edge of whisto might be too low for subprocess " << p_proc->ResultsName() << " to cover all weights!" << std::endl;
+  if (last_filled_bin<10) msg_Error() << "WARNING: The lower bin edge of whisto might be to high for subprocess " << p_proc->ResultsName() << " to cover all weights!" << std::endl;
+  if (first_filled_bin>p_whisto->Nbin()-10) msg_Error() << "WARNING: The upper bin edge of whisto might be to low for subprocess " << p_proc->ResultsName() << " to cover all weights!" << std::endl;
 
   //cutxs: sum of |w| which are cut atm
   double cutxs_abs = 0.;
@@ -554,9 +522,7 @@ double Process_Integrator::GetMaxEps(double epsilon)
       //without enhancement function: whisto_sum/p_whisto->Fills() = dabs(TotalResult())
       //with enhancement function:    whisto_sum/p_whisto->Fills() = dabs(TotalResult())*m_meanenhfunc
       //defined such that: dabs(TotalResult())*m_meanenhfunc = mean_w*cut_effi = whisto_sum/whisto_fills * (whisto_fills/p_whisto->Fills())
-      //m_meanenhfunc = whisto_sum/p_whisto->Fills()/dabs(TotalResult());
-      m_meanenhfunc = TotalEnhanceResult()/TotalResult();
-      std::cout << whisto_sum/p_whisto->Fills()/dabs(TotalResult()) << " vs " << TotalEnhanceResult()/TotalResult() << std::endl; 
+      m_meanenhfunc = whisto_sum/p_whisto->Fills()/dabs(TotalResult());
       m_effi = mean_efficiency;
       m_effevperev = effevperev;
       return fin_w_max;
@@ -625,15 +591,11 @@ void Process_Integrator::AddPoint(const double value)
   double enhance = p_pshandler->EnhanceWeight();
 #ifdef USING__MPI
   m_msn++;
-  m_mshsum   += value;
   m_mssum    += value/enhance;
-  m_mshsumsqr += sqr(value);
   m_mssumsqr += sqr(value/enhance);
 #else
   m_sn++;
-  m_shsum   += value;
   m_ssum    += value/enhance;
-  m_shsumsqr += sqr(value);
   m_ssumsqr += sqr(value/enhance);
 #endif
   double max=dabs(value)/dabs(p_proc->Last())*
@@ -684,14 +646,13 @@ void Process_Integrator::SetMax(const double max)
 void Process_Integrator::Reset(const int mode)
 {
   m_n=0;
-  m_totalxs=m_totalhsum=m_totalsum=m_totalhsumsqr=m_totalsumsqr=m_totalerr=0.0;
-  m_smax=m_max=m_wmin=m_shsigma2=m_ssigma2=m_shsumsqr=m_ssumsqr=m_ssum=m_shsum=0.0;
+  m_totalxs=m_totalsum=m_totalsumsqr=m_totalerr=0.0;
+  m_smax=m_max=m_wmin=m_ssigma2=m_ssumsqr=m_ssum=0.0;
   m_sn=0;
   m_son=1;
   m_vsmax.clear(); 
   m_vsn.clear();   
   m_vsum.clear(); 
-  m_vhsum.clear(); 
   if (p_proc->IsGroup() && mode==1)
     for (size_t i(0);i<p_proc->Size();++i) 
       (*p_proc)[i]->Integrator()->Reset(mode);
@@ -709,7 +670,6 @@ void Process_Integrator::ResetMax(int flag)
     m_vsmax.clear();
     m_vsn.clear();
     m_vsum.clear();
-    m_vhsum.clear();
     m_max=0.0;
     return;
   }
@@ -718,30 +678,25 @@ void Process_Integrator::ResetMax(int flag)
       m_vsmax.erase(m_vsmax.begin());
       m_vsn.erase(m_vsn.begin());
       m_vsum.erase(m_vsum.begin());
-      m_vhsum.erase(m_vhsum.begin());
     }
     if (m_vsmax.empty()) {
       m_vsmax.push_back(m_max);
       m_vsn.push_back(m_n);
       m_vsum.push_back(m_ssum);
-      m_vhsum.push_back(m_shsum);
     }
     m_vsmax.back() = ATOOLS::Max(m_smax,m_vsmax.back());
     m_vsn.back()   = m_n;
     m_vsum.back()  = m_ssum;
-    m_vhsum.back()  = m_shsum;
   }
   else {
     if (flag==2 && m_vsmax.size()==4) {
       m_vsmax.erase(m_vsmax.begin());
       m_vsn.erase(m_vsn.begin());
       m_vsum.erase(m_vsum.begin());
-      m_vhsum.erase(m_vhsum.begin());
     }
     m_vsmax.push_back(m_smax);
     m_vsn.push_back(m_n);
     m_vsum.push_back(m_ssum);
-    m_vhsum.push_back(m_shsum);
     if (flag==2) m_smax = 0.;
   }
   m_max=0.0;
@@ -765,13 +720,11 @@ void Process_Integrator::SetPSHandler(const double &maxerr,const std::string eob
 void Process_Integrator::MPICollect
 (std::vector<double> &sv,std::vector<double> &mv,size_t &i)
 {
-  sv.resize(5*(i+1));
+  sv.resize(3*(i+1));
   mv.resize(2*(i+1));
   sv[3*i+0]=m_msn;
-  sv[3*i+1]=m_mshsum;
-  sv[3*i+2]=m_mssum;
-  sv[3*i+3]=m_mshsumsqr;
-  sv[3*i+4]=m_mssumsqr;
+  sv[3*i+1]=m_mssum;
+  sv[3*i+2]=m_mssumsqr;
   mv[2*i+0]=m_max;
   mv[2*i+1]=m_smax;
   ++i;
@@ -784,10 +737,8 @@ void Process_Integrator::MPIReturn
 (std::vector<double> &sv,std::vector<double> &mv,size_t &i)
 {
   m_msn=sv[3*i+0];
-  m_mshsum=sv[3*i+1];
-  m_mssum=sv[3*i+2];
-  m_mshsumsqr=sv[3*i+3];
-  m_mssumsqr=sv[3*i+4];
+  m_mssum=sv[3*i+1];
+  m_mssumsqr=sv[3*i+2];
   m_max=mv[2*i+0];
   m_smax=mv[2*i+1];
   ++i;
@@ -812,11 +763,9 @@ void Process_Integrator::MPISync(const int mode)
     MPIReturn(sv,mv,j);
   }
   m_sn+=m_msn;
-  m_shsum+=m_mshsum;
   m_ssum+=m_mssum;
-  m_shsumsqr+=m_mshsumsqr;
   m_ssumsqr+=m_mssumsqr;
-  m_msn=m_mshsum=m_mssum=m_mshsumsqr=m_mssumsqr=0.0;
+  m_msn=m_mssum=m_mssumsqr=0.0;
 #endif
   if (p_colint!=NULL) p_colint->MPISync();
   p_proc->MPISync(mode);
