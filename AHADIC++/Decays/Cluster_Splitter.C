@@ -131,7 +131,6 @@ bool Cluster_Splitter::MakeLongitudinalMomentaZ() {
 }
 
 bool Cluster_Splitter::MakeLongitudinalMomentaZSimple() {
-  bool mustrecalc = false;
   for (size_t i=0;i<2;i++) m_z[i]  = m_zselector(m_zmin[i],m_zmax[i],i);
   for (size_t i=0;i<2;i++) m_R2[i] = m_z[i]*(1.-m_z[1-i])*m_Q2-m_kt2;
   return (m_R2[0]>=m_mdec2[0]+m_kt2) && (m_R2[1]>=m_mdec2[1]+m_kt2);
