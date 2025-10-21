@@ -529,7 +529,7 @@ bool Rivet_Interface::Finish()
         std::vector<double> data_sum; data_sum.reserve(datalen);
         std::vector<double> data_sum_sq; data_sum_sq.reserve(datalen);
         const size_t binLen = YODA::Dbn1D::DataSize::value;
-        const size_t beaminfo_len = 2/* assuming _beaminfo->numBins() is always 2 */;
+        const size_t beaminfo_len = (m_ignorebeams?0:2)/* assuming _beaminfo->numBins() is always 2 */;
         const vector<YODA::AnalysisObjectPtr> raos = it.second->getRawAOs();
         vector<double> numEntries(raos.size(), 0.0);
         size_t idx = beaminfo_len+1;
