@@ -188,6 +188,24 @@ correlations are preserved.  An example would be
        - 24[c] -> -13 14
        - -24[d] -> 94 94
 
+Note that intermediate particles that were indistinguishable at the time 
+of their production may not be indistinguishable once their decay is taken  
+into account. To obtain the correct cross section for cases where the 
+intermediate particles decay via distinct decay channels, all possible 
+assignments between the intermediate states ``a, b, ...`` and the different
+decay channels need to be given explicitly in the ``PROCESSES`` block, 
+for example: 
+
+.. code-block:: yaml
+
+    - 93 93 -> 23[a] 23[b]:
+       Decay:
+       - 23[a] -> 11 -11
+       - 23[b] -> 13 -13
+    - 93 93 -> 23[a] 23[b]:
+       Decay:
+       - 23[a] -> 13 -13
+       - 23[b] -> 11 -11
 
 .. _DecayOS:
 
@@ -210,6 +228,9 @@ spin correlations are preserved.  An example would be
        - -6[b] -> -5 -24[d]
        - 24[c] -> -13 14
        - -24[d] -> 94 94
+
+For several identical decaying particles, see :ref:`Decay` for the correct
+handling. 
 
 .. _No_Decay:
 
