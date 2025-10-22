@@ -182,7 +182,7 @@ void Initialization_Handler::RegisterDefaults()
   s["SHOW_MODEL_SYNTAX"].SetDefault(0);
   s["SHOW_FILTER_SYNTAX"].SetDefault(0);
   s["SHOW_ANALYSIS_SYNTAX"].SetDefault(0);
-  s["SHOW_VARIABLE_SYNTAX"].SetDefault(0);
+  s["SHOW_VARIABLE_SYNTAX"].SetDefault(false);
   s["SHOW_PDF_SETS"].SetDefault(0);
 
   s["ISR_E_ORDER"].SetDefault(1);
@@ -496,8 +496,8 @@ void Initialization_Handler::ShowParameterSyntax()
       (*it)->ShowSyntax(helpi);
     THROW(normal_exit,"Syntax shown.");
   }
-  helpi = s["SHOW_VARIABLE_SYNTAX"].Get<int>();
-  if (helpi>0) {
+  helpi = s["SHOW_VARIABLE_SYNTAX"].Get<bool>();
+  if (helpi) {
     msg->SetLevel(2);
     ATOOLS::Variable_Base<double>::ShowVariables(helpi);
     THROW(normal_exit,"Syntax shown.");

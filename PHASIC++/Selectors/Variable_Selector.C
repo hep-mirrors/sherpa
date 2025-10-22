@@ -76,7 +76,7 @@ Variable_Selector::Variable_Selector(Process_Base* const proc,
   p_variable = ATOOLS::Variable_Getter::GetObject(name,name);
   if (p_variable==NULL) THROW
     (fatal_error,"Variable '"+name+"' does not exist. Run 'Sherpa"+
-       std::string(" SHOW_VARIABLE_SYNTAX=1' to list variables."));
+       std::string(" SHOW_VARIABLE_SYNTAX: true' to list variables."));
   for (auto ordering: orderings) {
     m_orders.push_back(Order_Getter::GetObject(ordering,""));
     if (m_orders.back()==NULL) 
