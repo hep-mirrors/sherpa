@@ -94,9 +94,7 @@ Sherpa::~Sherpa()
   delete ATOOLS::msg;
   delete ATOOLS::exh;
   delete ATOOLS::mpi;
-  for (KF_Table::const_iterator kfit(s_kftable.begin());kfit!=s_kftable.end();++kfit)
-    delete kfit->second;
-  ATOOLS::s_kftable.clear();
+  ATOOLS::ClearParticles();
 }
 
 bool Sherpa::InitializeTheRun()

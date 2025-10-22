@@ -117,7 +117,10 @@ int main(int argc,char **argv)
   else {
   string flname=output+"fl.tmp";
   string tmp="ls "+filter+inlist[0]+" > "+flname;
-  system(tmp.c_str());
+  int retls = system(tmp.c_str());
+  if (retls != 0) {
+    std::cerr << "Failed execute command: " << tmp << std::endl;
+  }
   std::string buf;
   ifstream from(flname.c_str());
   while (from) {
@@ -126,7 +129,10 @@ int main(int argc,char **argv)
       if (FileExists(inlist[0]+buf)) filelist.push_back(buf);
   }
   from.close();
-  system(("rm "+flname).c_str());
+  int retrm = system(("rm " + flname).c_str());
+  if (retrm != 0) {
+    std::cerr << "Failed to remove file: " << flname << std::endl;
+  }
   }
   if (check) {
     double** csmatrix=new double*[inlist.size()];
