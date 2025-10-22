@@ -860,7 +860,7 @@ double H_to_bb_Virtual::CalculateFiniteSubtraction(const ATOOLS::Vec4D_Vector& m
 
   double born_ME2 = 9.1018603234124864; // value taken from the H -> bbb calculation in Comix1to2, value right out of Decay_Channel::ME2(...)
                                         // => not multiplied with any symmetry factors/ colour factors
-  double mu = 125.25;
+  double mu = 125.09;
   double alpha_qcd = MODEL::s_model -> ScalarFunction("alpha_S", mu*mu); // at Higgs scale
   double C_F = 4.0/3.0;
   double s_jk = 2 * p_b * p_bb;
@@ -892,7 +892,7 @@ double H_to_bb_Virtual::CalculateEpsilonSubtraction(const ATOOLS::Vec4D_Vector& 
 
   double born_ME2 = 9.1018603234124864; // value taken from the H -> bbb calculation in Comix1to2, value right out of Decay_Channel::ME2(...)
                                         // => not multiplied with any symmetry factors/ colour factors
-  double alpha_qcd = MODEL::s_model -> ScalarFunction("alpha_S", 125.25*125.25); // at Higgs scale
+  double alpha_qcd = MODEL::s_model -> ScalarFunction("alpha_S", 125.09*125.09); // at Higgs scale
   double C_F = 4.0/3.0;
 
   return born_ME2 * alpha_qcd / (2 * pi) * (C_F * (C_j(p_b, p_bb) + C_j(p_bb, p_b)) + 2 * A());

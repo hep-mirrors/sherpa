@@ -147,9 +147,6 @@ H_to_bbg_Real::~H_to_bbg_Real()
 }
 
 
-void H_to_bbg_Real::Born_setup(){}
-
-
 void H_to_bbg_Real::Calculate(const ATOOLS::Vec4D_Vector& momenta, bool anti) {
   DEBUG_FUNC(momenta.size());
   // does not do anything yet because integrating this decay channel would result in infinities
@@ -159,8 +156,8 @@ void H_to_bbg_Real::Calculate(const ATOOLS::Vec4D_Vector& momenta, bool anti) {
   const std::vector<int> myI = { 0, 2, 1, 0 };
   const std::vector<int> myJ = { 0, 1, 0, 2 };
 
-  //p_ci->SetI(myI);
-  //p_ci->SetJ(myJ);
+  p_ci->SetI(myI);
+  p_ci->SetJ(myJ);
 
   if (anti) {
     for (size_t i(0);i<m_anticur.size();++i) {
@@ -191,7 +188,7 @@ void H_to_bbg_Real::Calculate(const ATOOLS::Vec4D_Vector& momenta, bool anti) {
   for (size_t i=0; i<size(); ++i) {
     (*this)[i] *= sqrt(p_ci->GlobalWeight()); // scale the final numerical result appropriately with the color factor
   }
-  //std::cout << "GlobalWeight = " << p_ci->GlobalWeight() << std::endl;
+  std::cout << "GlobalWeight = " << p_ci->GlobalWeight() << std::endl;
 
 /*
   for (size_t i = 0; i < p_ci->I().size(); ++i) {
@@ -201,7 +198,15 @@ void H_to_bbg_Real::Calculate(const ATOOLS::Vec4D_Vector& momenta, bool anti) {
       std::cout << "J[" << i << "] = " << p_ci->J()[i] << std::endl;
   }
 */
-Calculate_born_subtraction(momenta, anti);
+  // falsely the m_z scale is used for the calculation of alpha_S instead of the Higgs scale. To correct this, multiply the calculated amplitude tensor (*this)
+  // with \sqrt{alpha_S(M_H) / alpha_S(scale used here)}.
+  double alpha_qcd_h = MODEL::s_model -> ScalarFunction("alpha_S", 125.09*125.09); // at Higgs scale
+  double alpha_qcd_used = MODEL::s_model -> ScalarConstant("alpha_S"); // currently used alpha_S value
+  double global_factor = alpha_qcd_h / alpha_qcd_used;
+  for (size_t i=0; i<size(); ++i) {
+   (*this)[i] *= std::sqrt(global_factor);
+  }
+  Calculate_born_subtraction(momenta, anti);
 }
 
 // in the following there are some helper functions defined for the real subtraction
@@ -271,7 +276,7 @@ static double nu_ijk_tilde(ATOOLS::Vec4<double> p_i, ATOOLS::Vec4<double> p_j, A
 
 
 static double V_ijk(ATOOLS::Vec4<double> p_i, ATOOLS::Vec4<double> p_j, ATOOLS::Vec4<double> p_k){
-  double alpha_qcd = MODEL::s_model -> ScalarFunction("alpha_S", 125.25*125.25); // at Higgs scale
+  double alpha_qcd = MODEL::s_model -> ScalarFunction("alpha_S", 125.09*125.09); // at Higgs scale
   
   #ifdef M_PI
     double pi = M_PI;
