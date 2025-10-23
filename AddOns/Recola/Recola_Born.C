@@ -80,7 +80,7 @@ operator()(const External_ME_Args& args) const
      args.m_source != "Recola") return NULL;
  
   int amptype = Recola_Interface::GetAmpType();
-  int id = Recola_Interface::RegisterProcess(args, amptype);
+  int id = Recola_Interface::RegisterProcess(args, amptype, args.m_inflavs);
   if (id<=0) return NULL;
  
   return new Recola_Born(args,id,amptype);

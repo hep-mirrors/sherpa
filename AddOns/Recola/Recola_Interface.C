@@ -132,11 +132,16 @@ std::string Recola::Recola_Interface::particle2Recola(const std::string p){
   THROW(fatal_error, "Unknown particle id "+ToString(p));
 }
 
-std::string Recola::Recola_Interface::process2Recola(const Flavour_Vector& fl)
+std::string Recola::Recola_Interface::process2Recola(const Flavour_Vector& fl,
+                                                     const size_t insize)
 {
-  std::string process = particle2Recola(fl[0].IDName())
-    + " " + particle2Recola(fl[1].IDName()) + " -> ";
-  for(size_t i=2; i<fl.size(); ++i)
+  std::string process("");
+  for(size_t j=0; j<insize; ++j) {
+    if (j > 0) process += " ";
+    process += particle2Recola(fl[j].IDName());
+  }
+  process += " -> ";
+  for(size_t i=insize; i<fl.size(); ++i)
     process += particle2Recola(fl[i].IDName())+" ";
   return process;
 }
@@ -329,16 +334,17 @@ bool Recola::Recola_Interface::Initialize(MODEL::Model_Base *const model,
 // This function is specific for LO or Born processes since they read 
 // settings from External_ME_Args... 
 int Recola::Recola_Interface::RegisterProcess(const External_ME_Args& args,
-            const int& amptype)
+            const int& amptype, const ATOOLS::Flavour_Vector& m_inflavs)
 {
   DEBUG_FUNC("");
   increaseProcIndex();
   msg_Debugging()<<"Recola_Interface::RegisterProcess called\n";
   int procIndex(getProcIndex());
   msg_Debugging()<<"ProcIndex = " <<procIndex <<"\n"; 
-  msg_Debugging()<<"process string = "<<process2Recola(args.Flavours())<<"\n";
+  msg_Debugging()<<"process string = "<<process2Recola(args.Flavours(),
+                                                       m_inflavs.size())<<"\n";
   
-  string procstring(process2Recola(args.Flavours()));
+  string procstring(process2Recola(args.Flavours()), m_inflavs.size());
   define_process_rcl(procIndex, procstring.c_str(), "LO");
   
   

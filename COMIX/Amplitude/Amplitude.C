@@ -1466,11 +1466,9 @@ bool Amplitude::EvaluateAll(const bool& mode)
     double asf(cpl->Default()*cpl->Factor()/(2.0*M_PI));
     if (p_loop) {
       p_loop->SetRenScale(mu2);
-      m_p[0]=-m_p[0];
-      m_p[1]=-m_p[1];
+      for (size_t l(0); l<m_nin; ++l) m_p[l]=-m_p[l];
       p_loop->Calc(m_p);
-      m_p[0]=-m_p[0];
-      m_p[1]=-m_p[1];
+      for (size_t l(0); l<m_nin; ++l) m_p[l]=-m_p[l];
     }
     if (p_dinfo->Mode()==1) {
       if (!m_trig) m_born=m_res=0.0;
@@ -1530,8 +1528,7 @@ bool Amplitude::EvaluateAll(const bool& mode)
       else {
 	Dipole_Kinematics *kin=m_cur.back()[j]->
 	  Sub()->Sub()->In().front()->Kin();
-	m_p[0]=-m_p[0];
-	m_p[1]=-m_p[1];
+  for (size_t l(0); l<m_nin; ++l) m_p[l]=-m_p[l];
 	//double lf(log(2.0*M_PI*mu2/EpsSchemeFactor(m_p)/
 	//	      dabs(kin->JIJT()->P()*kin->JK()->P())));
   
@@ -1543,8 +1540,7 @@ bool Amplitude::EvaluateAll(const bool& mode)
       lf = log(2.0*M_PI*sqr(irscale)/EpsSchemeFactor(m_p)/dabs(kin->JIJT()->P()*kin->JK()->P()));
   }
 
-	m_p[0]=-m_p[0];
-	m_p[1]=-m_p[1];
+  for (size_t l(0); l<m_nin; ++l) m_p[l]=-m_p[l];
 #ifdef DEBUG__BG
 	msg_Debugging()<<"e^2 = "<<kin->Res(2)<<", e = "<<kin->Res(1)
 		       <<", f = "<<kin->Res(0)<<", l = "<<lf
