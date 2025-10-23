@@ -209,9 +209,9 @@ void Comix1to2::CalculateNLO(const ATOOLS::Vec4D_Vector& momenta, bool anti) {
 
   // test: calculate Born ME2
   std::complex<double> ME2 = born["00"] * std::conj(born["00"]) + born["01"] * std::conj(born["01"]) + born["10"] * std::conj(born["10"]) + born["11"] * std::conj(born["11"]);
-  std::cout << "ME2:" << ME2 << std::endl;
-  std::cout << "ME2 * C_F:" << ME2*(3.0/4.0) << std::endl;
-  std::cout << "ME2 * C_F^2:" << ME2*(9.0/16.0) << std::endl;
+  std::cout << "ME2: not colour summed" << ME2 << std::endl;
+  std::cout << "ME2: colour summed" << ME2*3.0 << std::endl;
+  std::cout << "ME2 / C_F:" << ME2*(3.0/4.0) << std::endl;
 
   // results for the virtual diagram (just finite part, epsilon divergences cancel out in NLO_Virtual class)
   double total_virtual_correction = nlo_virtual->CalculateVirtualCorrection(momenta, anti); 

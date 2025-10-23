@@ -663,6 +663,10 @@ void H_to_bb_Virtual::SetUpPrefactors(const vector<Flavour>& flavs) {
 
   BornPrefactor = (-1) * m_b / vev;
   std::cout << "Born prefactor: " << BornPrefactor << std::endl;
+
+  double m_h = 125.09;
+  double born_analytic_calc = 6 * (m_b/vev) * (m_b/vev) * (m_h*m_h - 4 * m_b*m_b);
+  std::cout << "born_analytic_calc: " << born_analytic_calc << std::endl;
 }
 
 
