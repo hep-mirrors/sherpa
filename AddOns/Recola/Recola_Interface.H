@@ -55,9 +55,10 @@ namespace Recola {
             PDF::ISR_Handler *const isr,
             YFS::YFS_Handler *const yfs);
 
-    static std::string process2Recola(const ATOOLS::Flavour_Vector& fl);
+    static std::string process2Recola(const ATOOLS::Flavour_Vector& fl,
+                                      const size_t insize=2);
     static std::string process2Recola(const PHASIC::Process_Info &pi)
-    { return process2Recola(pi.ExtractFlavours()); }
+    { return process2Recola(pi.ExtractFlavours(), pi.m_ii.m_ps.size()); }
     static std::string particle2Recola(const int p);
     static std::string particle2Recola(const std::string p);
 
@@ -74,7 +75,8 @@ namespace Recola {
                                     const double& muR2);
 
     static int RegisterProcess(const PHASIC::External_ME_Args& args,
-                   const int& amptype);
+                   const int& amptype, const ATOOLS::Flavour_Vector& inflavs
+                   = Flavour_Vector(0));
 
     static void EvaluateLoop(int id, const ATOOLS::Vec4D_Vector& momenta, double& bornres, METOOLS::DivArrD& virt, 
                              std::vector<double> &asscontribs);
