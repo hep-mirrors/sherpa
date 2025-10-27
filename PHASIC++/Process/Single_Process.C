@@ -93,8 +93,32 @@ Weight_Info *Single_Process::OneEvent(const int wmode,
   DEBUG_FUNC(m_name);
   p_selected = this;
   auto psh = p_int->PSHandler();
-  if (p_int->ISR())
+  if (p_int->ISR()) {
     p_int->ISR()->SetSprimeMin(psh->Cuts()->Smin());
+    if (m_nin == 2) {
+      if (m_flavs[0].Mass() != p_int->ISR()->Flav(0).Mass() ||
+          m_flavs[1].Mass() != p_int->ISR()->Flav(1).Mass()) {
+        p_int->ISR()->SetPartonMasses(m_flavs);
+      }
+    }
+  }
+  psh->InitCuts();
+  if (p_read && p_parent == NULL) {
+    // We check for p_parent == NULL, because if this process is part
+    // of a process group, then we have already dealt with p_read.
+    Cluster_Amplitude *ampl(p_read->ReadEvent());
+    if (ampl==NULL) return NULL;
+    if (p_read->SubEvt()==NULL ||
+	p_read->SubEvt()->m_n==0) SortFlavours(ampl);
+    msg_Debugging()<<*ampl<<"\n";
+    p_int->PSHandler()->SetPoint(ampl);
+    SetEventReader(p_read);
+    Weight_Info *winfo(p_int->PSHandler()->OneEvent(this,varmode,mode));
+    p_int->PSHandler()->SetPoint(NULL);
+    SetEventReader(winfo?p_read:NULL);
+    ampl->Delete();
+    return winfo;
+  }
   return p_int->PSHandler()->OneEvent(this,varmode,mode);
 }
 
