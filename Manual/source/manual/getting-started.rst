@@ -192,6 +192,37 @@ Other missing command line tools
 can be installed through a package manager like `Homebrew <https://brew.sh/>`_
 or `MacPorts <https://www.macports.org>`_.
 
+Third-party installation methods
+================================
+
+Besides building from source, Sherpa can also be installed using third-party package managers. These packages are contributed and maintained by the community.
+
+conda
+-----
+
+Sherpa is `available as a conda package <https://github.com/conda-forge/sherpa-feedstock>`_ on the `conda-forge` channel.
+
+Using `conda`, Sherpa can for example be installed with the following steps:
+
+.. code-block:: shell-session
+
+   $ conda config --add channels nodefaults # optional, to avoid proprietary user licenses
+   $ conda config --add channels conda-forge
+   $ conda config --set channel_priority strict
+   $ conda install sherpa
+
+Alternatively, `pixi` can be used:
+
+.. code-block:: shell-session
+
+   $ pixi init
+   $ pixi add sherpa
+   $ pixi shell
+
+Please refer to the respective documentation of the package manager.
+As noted by the `conda-forge` maintainer, macOS builds on `conda-forge` may not always be available.
+Currently, Linux builds for x86_64, aarch64, and ppc64le are supported.
+
 .. _Running Sherpa:
 
 **************
@@ -516,7 +547,7 @@ When the integration is complete, the output will look like:
    1677.01 pb +- ( 1.36991 pb = 0.0816873 % ) 534076 ( 534157 -> 99.9 % )
    integration time:   ( 5s elapsed / 0s left ) [09:43:58]
    2_2__j__j__e-__e+ : 1677.01 pb +- ( 1.36991 pb = 0.0816873 % )  exp. eff: 20.6675 %
-     reduce max for 2_2__j__j__e-__e+ to 1 ( eps = 0.001 -> exp. eff 0.206675 ) 
+     reduce max for 2_2__j__j__e-__e+ to 1 ( eps = 0.001 -> exp. eff 0.206675 )
 
 with the final cross section result and its statistical error displayed.
 
@@ -532,7 +563,7 @@ output looks like:
 .. code-block:: console
 
    [...]
-     Event 100 ( 1 s total ) = 1.12208e+07 evts/day                    
+     Event 100 ( 1 s total ) = 1.12208e+07 evts/day
    Summarizing the run may take some time ...
    +----------------------------------------------------------------------------+
    | Nominal or variation name     XS [pb]      RelDev  AbsErr [pb]      RelErr |
