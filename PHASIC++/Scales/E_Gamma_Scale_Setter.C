@@ -25,7 +25,7 @@
 
 namespace PHASIC {
 
-  class FCC_e_gamma_Scale_Setter: public Scale_Setter_Base {
+  class E_Gamma_Scale_Setter: public Scale_Setter_Base {
   private:
 
     PDF::Cluster_Definitions_Base *p_clu, *p_qdc;
@@ -74,10 +74,10 @@ namespace PHASIC {
 
   public:
 
-    FCC_e_gamma_Scale_Setter(const Scale_Setter_Arguments &args,
+    E_Gamma_Scale_Setter(const Scale_Setter_Arguments &args,
 		      const int mode=1);
 
-    ~FCC_e_gamma_Scale_Setter();
+    ~E_Gamma_Scale_Setter();
 
     bool Initialize() override;
 
@@ -86,7 +86,7 @@ namespace PHASIC {
     void SetScale(const std::string &mu2tag,
 		  ATOOLS::Algebra_Interpreter &mu2calc);
 
-  };// end of class FCC_e_gamma_Scale_Setter
+  };// end of class E_Gamma_Scale_Setter
 
 }// end of namespace PHASIC
 
@@ -94,28 +94,28 @@ using namespace PHASIC;
 using namespace PDF;
 using namespace ATOOLS;
 
-DECLARE_GETTER(FCC_e_gamma_Scale_Setter,"FCC_e_gamma",
+DECLARE_GETTER(E_Gamma_Scale_Setter,"E_Gamma",
 	       Scale_Setter_Base,Scale_Setter_Arguments);
 
 Scale_Setter_Base *ATOOLS::Getter
-<Scale_Setter_Base,Scale_Setter_Arguments,FCC_e_gamma_Scale_Setter>::
+<Scale_Setter_Base,Scale_Setter_Arguments,E_Gamma_Scale_Setter>::
 operator()(const Scale_Setter_Arguments &args) const
 {
-  return new FCC_e_gamma_Scale_Setter(args,1);
+  return new E_Gamma_Scale_Setter(args,1);
 }
 
 void ATOOLS::Getter<Scale_Setter_Base,Scale_Setter_Arguments,
-		    FCC_e_gamma_Scale_Setter>::
+		    E_Gamma_Scale_Setter>::
 PrintInfo(std::ostream &str,const size_t width) const
 {
-  str<<"FCC_e_gamma scale scheme";
+  str<<"E_Gamma scale scheme";
 }
 
-int FCC_e_gamma_Scale_Setter::s_nfgsplit(-1);
-int FCC_e_gamma_Scale_Setter::s_allowuo(0);
-int FCC_e_gamma_Scale_Setter::s_nlocpl(-1);
+int E_Gamma_Scale_Setter::s_nfgsplit(-1);
+int E_Gamma_Scale_Setter::s_allowuo(0);
+int E_Gamma_Scale_Setter::s_nlocpl(-1);
 
-FCC_e_gamma_Scale_Setter::FCC_e_gamma_Scale_Setter
+E_Gamma_Scale_Setter::E_Gamma_Scale_Setter
 (const Scale_Setter_Arguments &args,const int mode):
   Scale_Setter_Base(args), m_tagset(this)
 {
@@ -178,7 +178,7 @@ FCC_e_gamma_Scale_Setter::FCC_e_gamma_Scale_Setter
   if (p_proc->Shower()==NULL) {
     msg_Error()<<"\nPlease specify the renormalisation and factorisation scale e.g SCALES: VAR{H_T2}"<<endl
                <<"For detailed instructions on setting scales, please refer to the Sherpa manual."<<endl;
-    THROW(missing_input,"No shower generator found. Unable to use the FCC_e_gamma scale scheme.");
+    THROW(missing_input,"No shower generator found. Unable to use the E_Gamma scale scheme.");
   }
   p_clu=p_proc->Shower()->GetClusterDefinitions();
   p_ms=p_proc->Generator();
@@ -220,7 +220,7 @@ FCC_e_gamma_Scale_Setter::FCC_e_gamma_Scale_Setter
   p_qdc = new Cluster_Definitions(s_kfac,m_nproc,p_proc->Shower()->KTType());
 }
 
-FCC_e_gamma_Scale_Setter::~FCC_e_gamma_Scale_Setter()
+E_Gamma_Scale_Setter::~E_Gamma_Scale_Setter()
 {
   for (size_t i(0);i<m_calcs.size();++i) delete m_calcs[i];
   for (size_t i(0);i<m_ampls.size();++i) m_ampls[i]->Delete();
@@ -230,7 +230,7 @@ FCC_e_gamma_Scale_Setter::~FCC_e_gamma_Scale_Setter()
   delete p_qdc;
 }
 
-bool FCC_e_gamma_Scale_Setter::Initialize()
+bool E_Gamma_Scale_Setter::Initialize()
 {
   // Initialize DIS-like process for 11 22 -> X
   Cluster_Amplitude *ampl(Cluster_Amplitude::New());
@@ -269,7 +269,7 @@ bool FCC_e_gamma_Scale_Setter::Initialize()
   return init;
 }
 
-int FCC_e_gamma_Scale_Setter::Select
+int E_Gamma_Scale_Setter::Select
 (const ClusterInfo_Vector &ccs,const Int_Vector &on,const int mode) const
 {
   if (mode==1 || (m_cmode&4) || ((m_cmode&32) && m_nproc)) {
@@ -293,7 +293,7 @@ int FCC_e_gamma_Scale_Setter::Select
   return -1;
 }
 
-bool FCC_e_gamma_Scale_Setter::CheckOrdering
+bool E_Gamma_Scale_Setter::CheckOrdering
 (Cluster_Amplitude *const ampl,const int ord) const
 {
   if (ampl->Prev()==NULL) return true;
@@ -314,7 +314,7 @@ bool FCC_e_gamma_Scale_Setter::CheckOrdering
   return true;
 }
 
-bool FCC_e_gamma_Scale_Setter::CheckSplitting
+bool E_Gamma_Scale_Setter::CheckSplitting
 (const Cluster_Info &ci,const int ord) const
 {
   if (!CheckOrdering(ci.first.p_ampl,ord)) return false;
@@ -335,7 +335,7 @@ bool FCC_e_gamma_Scale_Setter::CheckSplitting
   return true;
 }
 
-bool FCC_e_gamma_Scale_Setter::CheckSubEvents(const Cluster_Config &cc) const
+bool E_Gamma_Scale_Setter::CheckSubEvents(const Cluster_Config &cc) const
 {
   NLO_subevtlist *subs(p_proc->Caller()->GetRSSubevtList());
   for (size_t i(0);i<subs->size()-1;++i) {
@@ -349,7 +349,7 @@ bool FCC_e_gamma_Scale_Setter::CheckSubEvents(const Cluster_Config &cc) const
   return false;
 }
 
-void FCC_e_gamma_Scale_Setter::Combine
+void E_Gamma_Scale_Setter::Combine
 (Cluster_Amplitude &ampl,const Cluster_Info &ci) const
 {
   int i(ci.first.m_i), j(ci.first.m_j);
@@ -390,7 +390,7 @@ void FCC_e_gamma_Scale_Setter::Combine
   ampl.SetKin(ci.second.m_kin);
 }
 
-double FCC_e_gamma_Scale_Setter::Calculate
+double E_Gamma_Scale_Setter::Calculate
 (const Vec4D_Vector &momenta,const size_t &mode)
 {
   m_p=momenta;
@@ -539,7 +539,7 @@ double FCC_e_gamma_Scale_Setter::Calculate
   return SetScales(m_ampls.back());
 }
 
-bool FCC_e_gamma_Scale_Setter::CoreCandidate(Cluster_Amplitude *const ampl) const
+bool E_Gamma_Scale_Setter::CoreCandidate(Cluster_Amplitude *const ampl) const
 {
   return ampl->Legs().size()==ampl->NIn()+m_nmin ||
     (ampl->Legs().size()==ampl->NIn()+2 &&
@@ -547,7 +547,7 @@ bool FCC_e_gamma_Scale_Setter::CoreCandidate(Cluster_Amplitude *const ampl) cons
      ampl->Leg(3)->Flav().Mass()==0.0);
 }
 
-void FCC_e_gamma_Scale_Setter::Cluster
+void E_Gamma_Scale_Setter::Cluster
 (Cluster_Amplitude *ampl,ClusterAmplitude_Vector &ampls,const int ord) const
 {
   ampl->SetProc(p_proc);
@@ -624,7 +624,7 @@ void FCC_e_gamma_Scale_Setter::Cluster
   if (ampl->LKF()) ampls.push_back(ampl->First()->CopyAll());
 }
 
-bool FCC_e_gamma_Scale_Setter::ClusterStep
+bool E_Gamma_Scale_Setter::ClusterStep
 (Cluster_Amplitude *ampl,ClusterAmplitude_Vector &ampls,
  const Cluster_Info &ci,const int ord) const
 {
@@ -643,7 +643,7 @@ bool FCC_e_gamma_Scale_Setter::ClusterStep
   return ampls.size()>oldsize;
 }
 
-double FCC_e_gamma_Scale_Setter::Differential
+double E_Gamma_Scale_Setter::Differential
 (Cluster_Amplitude *const ampl,const int mode) const
 {
   if (m_cmode&1024) return 1.0;
@@ -684,7 +684,7 @@ double FCC_e_gamma_Scale_Setter::Differential
   return meps;
 }
 
-void FCC_e_gamma_Scale_Setter::SetCoreScale(Cluster_Amplitude *const ampl) const
+void E_Gamma_Scale_Setter::SetCoreScale(Cluster_Amplitude *const ampl) const
 {
   PDF::Cluster_Param kt2(p_core->Calculate(ampl));
   ampl->SetKT2(kt2.m_kt2);
@@ -693,7 +693,7 @@ void FCC_e_gamma_Scale_Setter::SetCoreScale(Cluster_Amplitude *const ampl) const
        campl;campl=campl->Prev()) campl->SetMuQ2(kt2.m_op);
 }
 
-double FCC_e_gamma_Scale_Setter::UnorderedScale(Cluster_Amplitude *const ampl) const
+double E_Gamma_Scale_Setter::UnorderedScale(Cluster_Amplitude *const ampl) const
 {
   if (p_uoscale==NULL) return 0.;
   ampl->SetProc(p_proc);
@@ -701,7 +701,7 @@ double FCC_e_gamma_Scale_Setter::UnorderedScale(Cluster_Amplitude *const ampl) c
   return kt2.m_kt2;
 }
 
-double FCC_e_gamma_Scale_Setter::SetScales(Cluster_Amplitude *ampl)
+double E_Gamma_Scale_Setter::SetScales(Cluster_Amplitude *ampl)
 {
   double muf2(ampl->Last()->KT2()), mur2(m_rsf*ampl->Last()->Mu2());
   m_scale[stp::size+stp::res]=m_scale[stp::res]=ampl->MuQ2();
@@ -846,7 +846,7 @@ double FCC_e_gamma_Scale_Setter::SetScales(Cluster_Amplitude *ampl)
   return m_scale[stp::fac];
 }
 
-void FCC_e_gamma_Scale_Setter::SetScale
+void E_Gamma_Scale_Setter::SetScale
 (const std::string &mu2tag,Algebra_Interpreter &mu2calc)
 {
   if (mu2tag=="" || mu2tag=="0") THROW(fatal_error,"No scale specified");
