@@ -127,6 +127,7 @@ def simplify_symbolic(input):
     tensor = convert_indexed_to_array(input)
     tensor = simplify_tensor(tensor)
     indices = all_indices(input)
+    tensor, indices = reorder_indices(tensor, indices)
     name = NameGenerator.generate()
     if not isinstance(tensor, np.ndarray):
         shape = (1,)
@@ -190,3 +191,28 @@ def _get_einsum_string(ranks, contraction_indices):
         contraction_string += ","
     contraction_string = contraction_string[:-1]
     return contraction_string, letters_free
+
+
+def reorder_indices(tensor, indices):
+    def parse_index_name(idx):
+        name = str(idx)
+        if "_" not in name:
+            return (name, 0)
+        prefix, num = name.split("_", 1)
+        return (prefix, int(num))
+
+    L_indices = sorted(
+        [idx for idx in indices if str(idx).startswith("L_")],
+        key=lambda i: parse_index_name(i)[1]
+    )
+    S_indices = sorted(
+        [idx for idx in indices if str(idx).startswith("S_")],
+        key=lambda i: -parse_index_name(i)[1]
+    )
+
+    new_indices = L_indices + S_indices
+    if new_indices == indices:
+        return tensor, indices
+    perm = [indices.index(idx) for idx in new_indices]
+    reordered_tensor = np.transpose(tensor, axes=perm)
+    return reordered_tensor, new_indices
