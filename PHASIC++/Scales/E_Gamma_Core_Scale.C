@@ -6,10 +6,10 @@
 
 namespace PHASIC {
 
-  class FCC_e_gamma_Core_Scale: public Core_Scale_Setter {
+  class E_Gamma_Core_Scale: public Core_Scale_Setter {
   public:
 
-    FCC_e_gamma_Core_Scale(const Core_Scale_Arguments &args):
+    E_Gamma_Core_Scale(const Core_Scale_Arguments &args):
       Core_Scale_Setter(args) {}
 
     PDF::Cluster_Param Calculate(ATOOLS::Cluster_Amplitude *const ampl);
@@ -24,7 +24,7 @@ namespace PHASIC {
 using namespace PHASIC;
 using namespace ATOOLS;
 
-PDF::Cluster_Param FCC_e_gamma_Core_Scale::Calculate(Cluster_Amplitude *const ampl)
+PDF::Cluster_Param E_Gamma_Core_Scale::Calculate(Cluster_Amplitude *const ampl)
 {
   DEBUG_FUNC("");
   msg_Debugging()<<*ampl<<"\n";
@@ -64,7 +64,7 @@ PDF::Cluster_Param FCC_e_gamma_Core_Scale::Calculate(Cluster_Amplitude *const am
   return PDF::Cluster_Param(NULL,muq2,muf2,mur2,-1);
 }
 
-Cluster_Amplitude *FCC_e_gamma_Core_Scale::Cluster
+Cluster_Amplitude *E_Gamma_Core_Scale::Cluster
 (Cluster_Amplitude *const ampl) const
 {
   struct Combination { size_t i, j; Flavour fl;
@@ -122,19 +122,19 @@ Cluster_Amplitude *FCC_e_gamma_Core_Scale::Cluster
   return ampl;
 }
 
-DECLARE_ND_GETTER(FCC_e_gamma_Core_Scale,"FCC_e_gamma",
+DECLARE_ND_GETTER(E_Gamma_Core_Scale,"E_Gamma",
 		  Core_Scale_Setter,Core_Scale_Arguments,true);
 
 Core_Scale_Setter *ATOOLS::Getter
-<Core_Scale_Setter,Core_Scale_Arguments,FCC_e_gamma_Core_Scale>::
+<Core_Scale_Setter,Core_Scale_Arguments,E_Gamma_Core_Scale>::
 operator()(const Core_Scale_Arguments &args) const
 {
-  return new FCC_e_gamma_Core_Scale(args);
+  return new E_Gamma_Core_Scale(args);
 }
 
 void ATOOLS::Getter<Core_Scale_Setter,Core_Scale_Arguments,
-		    FCC_e_gamma_Core_Scale>::
+		    E_Gamma_Core_Scale>::
 PrintInfo(std::ostream &str,const size_t width) const
 {
-  str<<"FCC_e_gamma core scale";
+  str<<"E_Gamma core scale";
 }
