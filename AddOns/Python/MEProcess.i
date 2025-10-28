@@ -13,7 +13,7 @@ namespace SHERPA{
 }
 namespace ATOOLS{
   class Cluster_Amplitude;
-  class ColorID;
+  struct ColorID;
 }
 namespace PHASIC{
   class Process_Base;

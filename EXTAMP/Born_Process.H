@@ -5,7 +5,7 @@
 
 namespace PHASIC {
   class Tree_ME2_Base;
-  class Process_Info;
+  struct Process_Info;
 }
 
 namespace EXTAMP {

@@ -85,7 +85,6 @@ namespace ATOOLS {
 
   inline Lorentz_Ten3C conj(const Lorentz_Ten3C& t) {
       Complex x[4][4][4];
-      Complex z = 0.;
       for (unsigned short int i=0; i<4; ++i)
         for (unsigned short int j=0; j<4; ++j)
           for (unsigned short int k=0; k<4; ++k)

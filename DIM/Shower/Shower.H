@@ -7,7 +7,7 @@
 #include "ATOOLS/Phys/Weights.H"
 
 namespace ATOOLS {
-  class QCD_Variation_Params;
+  struct QCD_Variation_Params;
 }
 namespace MODEL {
   class Model_Base;

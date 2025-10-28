@@ -13,7 +13,7 @@ namespace REMNANTS { class Remnant_Handler; }
 namespace PHASIC   {
 
   class Process_Base;
-  class Process_Info;
+  struct Process_Info;
   class ME_Generator_Base;
 
   class ME_Generators : public std::vector<ME_Generator_Base*> {
