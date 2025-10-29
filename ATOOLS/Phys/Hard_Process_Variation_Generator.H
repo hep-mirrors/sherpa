@@ -7,7 +7,7 @@ namespace PHASIC { class Process_Base; }
 
 namespace ATOOLS {
 
-  struct Weights_Map;
+  class Weights_Map;
 
   struct Hard_Process_Variation_Generator_Arguments {
     PHASIC::Process_Base* p_proc;

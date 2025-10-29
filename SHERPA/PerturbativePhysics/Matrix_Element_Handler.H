@@ -30,7 +30,7 @@ namespace PDF {
 
 namespace PHASIC {
   class Single_Process;
-  class Selector_Key;
+  struct Selector_Key;
 }
 
 namespace YFS { class YFS_Handler; }

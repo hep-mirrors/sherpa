@@ -12,7 +12,7 @@ namespace AMEGIC {
   class Process_Base;
   class Amplitude_Handler;
   class Helicity;
-  class Amegic_Model;
+  struct Amegic_Model;
 
   class Process_Group: public Amegic_Base, public PHASIC::Process_Group {
 

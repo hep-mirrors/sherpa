@@ -49,7 +49,7 @@ namespace AMEGIC {
       
       A basic feature of many extensions of the SM, {\e e.g.} the MSSM, is the 
       occurrence of Majorana fermion fields. Due to their self--conjugated nature 
-      diagrams with ``clashing arrows'' enter and a proper determination of the 
+      diagrams with ``clashing arrows`` enter and a proper determination of the 
       Relative Sign of Interfering Feynman graphs (RSIF) is far from being trivial.
       An approach easily applicable for an automated generation of Feynman graphs has 
       been provided in \cite Denner1992vza. The Feynman rules defined there are close 
