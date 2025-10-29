@@ -79,7 +79,7 @@ void YFS_Base::RegisterDefaults(){
   s["Integrate_NLO"].SetDefault(1);
   s["Collinear_Virtual"].SetDefault(0);
   s["Virtual_Sub"].SetDefault(1);
-  s["Dim_Reg"].SetDefault(0);
+  s["Dim_Reg"].SetDefault(1);
   s["IR_SCALE"].SetDefault(100);
   s["NLO_CUTS"].SetDefault(false);
   s["Fixed_Order"].SetDefault(fixed_order::full);
