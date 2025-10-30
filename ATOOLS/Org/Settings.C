@@ -47,6 +47,87 @@ Settings::Settings(int argc, char* argv[])
       m_yamlreaders.emplace_back(new Yaml_Reader {path, *it});
     }
   }
+
+  {
+    std::vector<std::string> tune_search_paths;
+    
+    std::string default_path = rpa->gen.Variable("SHERPA_SHARE_PATH") + "TuneSets";
+    tune_search_paths.push_back(default_path);
+    
+    std::string custom_tune_path = (*this)["TUNE_PATH"].GetScalarWithOtherDefault<std::string>("");
+    if (!custom_tune_path.empty()) {
+      if (!is_absolute(custom_tune_path)) {
+        auto base = GetPath();
+        if (base.empty()) {
+          custom_tune_path = custom_tune_path;
+        } else {
+          if (base.back() == '/') base.pop_back();
+          if (custom_tune_path.front() != '/')
+            custom_tune_path = base + "/" + custom_tune_path;
+          else
+            custom_tune_path = base + custom_tune_path;
+        }
+      }
+      if (!custom_tune_path.empty() && custom_tune_path.back() == '/') {
+        custom_tune_path.pop_back();
+      }
+      tune_search_paths.insert(tune_search_paths.begin(), custom_tune_path);
+    }
+
+    std::vector<std::string> tune_names;
+    auto s_tune = (*this)["TUNE"];
+    s_tune.SetDefault(std::vector<std::string>{});
+    tune_names = s_tune.GetVector<std::string>();
+    if (tune_names.empty()) {
+      const auto single = s_tune.GetScalarWithOtherDefault<std::string>("");
+      if (!single.empty()) tune_names.push_back(single);
+    }
+    size_t insert_pos = m_yamlreaders.size();
+    for (size_t i = 0; i < m_yamlreaders.size(); ++i) {
+      const auto &nm = m_yamlreaders[i]->Name();
+      if (nm.size() >= 13 && nm.rfind("Decaydata.yaml") != std::string::npos) {
+        insert_pos = i;
+        break;
+      }
+    }
+    for (const auto &tune : tune_names) {
+      std::string filename = tune;
+      if (filename.size() < 5 || filename.substr(filename.size()-5) != ".yaml")
+        filename += ".yaml";
+      const std::string display = std::string("TUNE: ") + tune;
+      
+      bool loaded = false;
+      for (const auto &search_path : tune_search_paths) {
+        std::string full_path = search_path + "/" + filename;
+        if (FileExists(full_path)) {
+          try {
+            m_yamlreaders.insert(
+              m_yamlreaders.begin() + insert_pos,
+              std::unique_ptr<Yaml_Reader>(new Yaml_Reader{search_path + "/", filename, display})
+            );
+            loaded = true;
+            break;
+          } catch (const std::exception& e) {
+            MyStrStream str;
+            str << "Found tune set '" << tune << "' at '" << full_path 
+                << "' but failed to load it: " << e.what();
+            m_tune_warnings.push_back(str.str());
+            break;
+          }
+        }
+      }
+      
+      if (!loaded) {
+        MyStrStream str;
+        str << "Could not find tune set '" << tune << "' in any of the search paths:";
+        for (const auto &path : tune_search_paths) {
+          str << "\n  - " << path << "/" << filename;
+        }
+        m_tune_warnings.push_back(str.str());
+      }
+    }
+  }
+
   Settings_Keys tagkeys{ Setting_Key{"TAGS"} };
   for (auto it = m_yamlreaders.rbegin(); it != m_yamlreaders.rend(); ++it) {
     const auto tags = (*it)->GetKeys(tagkeys);
