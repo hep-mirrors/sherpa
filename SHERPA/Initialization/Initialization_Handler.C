@@ -373,25 +373,45 @@ void Initialization_Handler::CheckVersion()
   if (versioninfo.empty()) return;
   std::string currentversion(ToString(SHERPA_VERSION)+"."
                                       +ToString(SHERPA_SUBVERSION));
-  if (versioninfo.size()==1 && versioninfo[0]!=currentversion) {
-    THROW(normal_exit,"Run card request Sherpa "+versioninfo[0]
-                      +". This is Sherpa "+currentversion);
+  if (versioninfo.size() == 1) {
+    if (versioninfo[0] == currentversion) return;
+    size_t req_pos = 0, cur_pos = 0;
+    while (req_pos < versioninfo[0].length()) {
+      size_t req_next = versioninfo[0].find(".", req_pos);
+      size_t cur_next = currentversion.find(".", cur_pos);
+      
+      std::string req_component = (req_next == std::string::npos) ?
+                                  versioninfo[0].substr(req_pos) :
+                                  versioninfo[0].substr(req_pos, req_next - req_pos);
+      std::string cur_component = (cur_next == std::string::npos) ?
+                                  currentversion.substr(cur_pos) :
+                                  currentversion.substr(cur_pos, cur_next - cur_pos);
+      if (req_component != cur_component) {
+        THROW(normal_exit, "Run card request Sherpa " + versioninfo[0] +
+                          ". This is Sherpa " + currentversion);
+      }
+      req_pos = (req_next == std::string::npos) ? versioninfo[0].length() : req_next + 1;
+      cur_pos = (cur_next == std::string::npos) ? currentversion.length() : cur_next + 1;
+    }
+    return;
   }
   else if (versioninfo.size()==2) {
     if (versioninfo[0]==currentversion || versioninfo[1]==currentversion) return;
     size_t min1(versioninfo[0].find(".",0)),
            min2(versioninfo[0].find(".",min1+1)),
            max1(versioninfo[1].find(".",0)),
-           max2(versioninfo[1].find(".",max1+1));
+           max2(versioninfo[1].find(".",max1+1)),
+           cur1(currentversion.find(".",0)),
+           cur2(currentversion.find(".",cur1+1));
     size_t minmajvers(ToType<size_t>(versioninfo[0].substr(0,min1))),
-           minminvers(ToType<size_t>(versioninfo[0].substr(min1+1,min2))),
+           minminvers(ToType<size_t>(versioninfo[0].substr(min1+1,min2-min1-1))),
            minbugvers(ToType<size_t>(versioninfo[0].substr(min2+1))),
            maxmajvers(ToType<size_t>(versioninfo[1].substr(0,max1))),
-           maxminvers(ToType<size_t>(versioninfo[1].substr(max1+1,max2))),
+           maxminvers(ToType<size_t>(versioninfo[1].substr(max1+1,max2-max1-1))),
            maxbugvers(ToType<size_t>(versioninfo[1].substr(max2+1))),
-           curmajvers(ToType<size_t>(currentversion.substr(0,max1))),
-           curminvers(ToType<size_t>(currentversion.substr(max1+1,max2))),
-           curbugvers(ToType<size_t>(currentversion.substr(max2+1)));
+           curmajvers(ToType<size_t>(currentversion.substr(0,cur1))),
+           curminvers(ToType<size_t>(currentversion.substr(cur1+1,cur2-cur1-1))),
+           curbugvers(ToType<size_t>(currentversion.substr(cur2+1)));
     if (!(CompareVersions(minmajvers,minminvers,minbugvers,
                           curmajvers,curminvers,curbugvers)
           *CompareVersions(curmajvers,curminvers,curbugvers,
