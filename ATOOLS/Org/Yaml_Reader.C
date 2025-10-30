@@ -35,6 +35,25 @@ Yaml_Reader::Yaml_Reader(const std::string& path, const std::string& filename)
   }
 }
 
+Yaml_Reader::Yaml_Reader(const std::string& path, const std::string& filename, const std::string& display_name)
+  : m_name {display_name}
+{
+  assert(filename != "");
+  My_File<std::ifstream> file {path, filename};
+  if (!file.Open()) {
+    THROW(invalid_input, filename + " could not be opened.");
+  }
+  try {
+    Parse(*file);
+  } catch (const std::exception& e) {
+    MyStrStream str;
+    str << path << '/' << filename << " appears to contain a syntax ";
+    // append yaml-cpp error without the "yaml-cpp: " prefix
+    str << std::string{e.what()}.substr(10);
+    THROW(fatal_error, str.str());
+  }
+}
+
 std::string Yaml_Reader::Name() const
 {
   return m_name;

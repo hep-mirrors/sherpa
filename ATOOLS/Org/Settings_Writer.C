@@ -13,6 +13,16 @@ using namespace ATOOLS;
 
 void Settings_Writer::WriteSettings(Settings& s)
 {
+  // print warnings from missing tune sets
+  if (!s.m_tune_warnings.empty()) {
+    for (const auto& warning : s.m_tune_warnings) {
+      msg_Info()
+          << om::brown << om::bold << "WARNING" << om::reset
+          << ": " << warning << "\n";
+    }
+    msg_Out() << "\n";
+  }
+
   // check for settings that have not been used
   MyStrStream unused;
   bool did_find_unused {false};
@@ -248,13 +258,22 @@ void Settings_Writer::WriteSettings(Settings& s)
        << " separated by an \"`-- AND --`\" line.\n\n";
 
   file << "| parameter | default value | override by SHERPA";
-  const auto files = s.GetUserConfigFiles();
-  for (const auto& f : files)
-     file << " | " << f;
+  
+  std::vector<std::string> tune_columns;
+  std::vector<std::string> user_files = s.GetUserConfigFiles();
+  for (auto it = s.m_yamlreaders.rbegin(); it != s.m_yamlreaders.rend(); ++it) {
+    const auto &nm = (*it)->Name();
+    if (nm.rfind("TUNE: ", 0) == 0) tune_columns.push_back(nm);
+  }
+  for (const auto &tune : tune_columns) file << " | " << tune;
+  for (const auto &f : user_files) file << " | " << f;
+
   file << " | command line | final value |\n";
   file << "|-|-|-";
-  for (int i {0}; i < files.size(); ++i)
-    file << "|-";
+
+  for (size_t i = 0; i < tune_columns.size(); ++i) file << "|-";
+  for (size_t i = 0; i < user_files.size(); ++i) file << "|-";
+
   file << "|-|-|\n";
   file << customised.str();
 

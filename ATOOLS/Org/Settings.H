@@ -134,6 +134,8 @@ namespace ATOOLS {
     String_Map m_tags;
     String_Map m_globaltags;
 
+    String_Vector m_tune_warnings;
+
     // all setting readers in their order of precedence (i.e. first one with a
     // match wins)
     std::vector<std::unique_ptr<Yaml_Reader>> m_yamlreaders;
