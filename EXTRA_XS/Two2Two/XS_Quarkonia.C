@@ -2102,14 +2102,14 @@ XS_qg_q3P1_oct::XS_qg_q3P1_oct(const External_ME_Args& args):
   if (mb == 0) mb = 4.88;
 
   auto pss = Settings::GetMainSettings()["EXTRA_XS"];
-  // pss["LDME_993000443"].SetDefault(3 * 3E-03 * mc * mc);
-  // pss["LDME_993100443"].SetDefault(3* 0.005 * mc * mc);
-  // pss["LDME_993000553"].SetDefault(3 * 5 * 0.0121 * mb * mb);
-  // pss["LDME_993100553"].SetDefault(3 * 5 * 0.0141 * mb * mb);
-  if (fl[m_S].Kfcode()==kf_3P1_c_8_J_psi_1S)   LDME = 3*pss["LDME_992000443"].Get<double>(); 
-  if (fl[m_S].Kfcode()==kf_3P1_c_8_psi_2S)     LDME = 3*pss["LDME_992100443"].Get<double>(); 
-  if (fl[m_S].Kfcode()==kf_3P1_b_8_Upsilon_1S) LDME = 3*pss["LDME_992000553"].Get<double>(); 
-  if (fl[m_S].Kfcode()==kf_3P1_b_8_Upsilon_2S) LDME = 3*pss["LDME_992100553"].Get<double>(); 
+  pss["LDME_992000443"].SetDefault(3E-03 * mc * mc);
+  pss["LDME_992100443"].SetDefault(0.005 * mc * mc);
+  pss["LDME_992000553"].SetDefault(5 * 0.0121 * mb * mb);
+  pss["LDME_992100553"].SetDefault(5 * 0.0141 * mb * mb);
+  if (fl[m_S].Kfcode()==kf_3P1_c_8_J_psi_1S)   LDME = 3.*pss["LDME_992000443"].Get<double>(); 
+  if (fl[m_S].Kfcode()==kf_3P1_c_8_psi_2S)     LDME = 3.*pss["LDME_992100443"].Get<double>(); 
+  if (fl[m_S].Kfcode()==kf_3P1_b_8_Upsilon_1S) LDME = 3.*pss["LDME_992000553"].Get<double>(); 
+  if (fl[m_S].Kfcode()==kf_3P1_b_8_Upsilon_2S) LDME = 3.*pss["LDME_992100553"].Get<double>(); 
   m_a      = fl[m_q].IsAnti() ? 1 : 0; 
   m_alphaS = MODEL::s_model->ScalarConstant("alpha_S");
   
@@ -2194,14 +2194,14 @@ XS_qqbar_g3P1_oct::XS_qqbar_g3P1_oct(const External_ME_Args& args):
   if (mb == 0) mb = 4.88;
 
   auto pss = Settings::GetMainSettings()["EXTRA_XS"];
-   // pss["LDME_993000443"].SetDefault(3 * 3E-03 * mc * mc);
-  // pss["LDME_993100443"].SetDefault(3* 0.005 * mc * mc);
-  // pss["LDME_993000553"].SetDefault(3 * 5 * 0.0121 * mb * mb);
-  // pss["LDME_993100553"].SetDefault(3 * 5 * 0.0141 * mb * mb);
-  if (fl[m_S].Kfcode()==kf_3P1_c_8_J_psi_1S)   LDME = 3*pss["LDME_992000443"].Get<double>(); 
-  if (fl[m_S].Kfcode()==kf_3P1_c_8_psi_2S)     LDME = 3*pss["LDME_992100443"].Get<double>(); 
-  if (fl[m_S].Kfcode()==kf_3P1_b_8_Upsilon_1S) LDME = 3*pss["LDME_992000553"].Get<double>(); 
-  if (fl[m_S].Kfcode()==kf_3P1_b_8_Upsilon_2S) LDME = 3*pss["LDME_992100553"].Get<double>(); 
+  pss["LDME_992000443"].SetDefault(3E-03 * mc * mc);
+  pss["LDME_992100443"].SetDefault(0.005 * mc * mc);
+  pss["LDME_992000553"].SetDefault(5 * 0.0121 * mb * mb);
+  pss["LDME_992100553"].SetDefault(5 * 0.0141 * mb * mb);
+  if (fl[m_S].Kfcode()==kf_3P1_c_8_J_psi_1S)   LDME = 3.*pss["LDME_992000443"].Get<double>(); 
+  if (fl[m_S].Kfcode()==kf_3P1_c_8_psi_2S)     LDME = 3.*pss["LDME_992100443"].Get<double>(); 
+  if (fl[m_S].Kfcode()==kf_3P1_b_8_Upsilon_1S) LDME = 3.*pss["LDME_992000553"].Get<double>(); 
+  if (fl[m_S].Kfcode()==kf_3P1_b_8_Upsilon_2S) LDME = 3.*pss["LDME_992100553"].Get<double>(); 
   m_alphaS = MODEL::s_model->ScalarConstant("alpha_S");
   m_pref   = 40./(81.*pow(m_mass,3))*pow(4.*M_PI*m_alphaS,3);
 }
@@ -2266,14 +2266,14 @@ XS_gg_g3P1_oct::XS_gg_g3P1_oct(const External_ME_Args& args):
   if (mb == 0) mb = 4.88;
 
   auto pss = Settings::GetMainSettings()["EXTRA_XS"];
-  // pss["LDME_993000443"].SetDefault(3 * 3E-03 * mc * mc);
-  // pss["LDME_993100443"].SetDefault(3* 0.005 * mc * mc);
-  // pss["LDME_993000553"].SetDefault(3 * 5 * 0.0121 * mb * mb);
-  // pss["LDME_993100553"].SetDefault(3 * 5 * 0.0141 * mb * mb);
-  if (fl[m_S].Kfcode()==kf_3P1_c_8_J_psi_1S)   LDME = 3*pss["LDME_992000443"].Get<double>(); 
-  if (fl[m_S].Kfcode()==kf_3P1_c_8_psi_2S)     LDME = 3*pss["LDME_992100443"].Get<double>(); 
-  if (fl[m_S].Kfcode()==kf_3P1_b_8_Upsilon_1S) LDME = 3*pss["LDME_992000553"].Get<double>(); 
-  if (fl[m_S].Kfcode()==kf_3P1_b_8_Upsilon_2S) LDME = 3*pss["LDME_992100553"].Get<double>(); 
+  pss["LDME_992000443"].SetDefault(3E-03 * mc * mc);
+  pss["LDME_992100443"].SetDefault(0.005 * mc * mc);
+  pss["LDME_992000553"].SetDefault(5 * 0.0121 * mb * mb);
+  pss["LDME_992100553"].SetDefault(5 * 0.0141 * mb * mb);
+  if (fl[m_S].Kfcode()==kf_3P1_c_8_J_psi_1S)   LDME = 3.*pss["LDME_992000443"].Get<double>(); 
+  if (fl[m_S].Kfcode()==kf_3P1_c_8_psi_2S)     LDME = 3.*pss["LDME_992100443"].Get<double>(); 
+  if (fl[m_S].Kfcode()==kf_3P1_b_8_Upsilon_1S) LDME = 3.*pss["LDME_992000553"].Get<double>(); 
+  if (fl[m_S].Kfcode()==kf_3P1_b_8_Upsilon_2S) LDME = 3.*pss["LDME_992100553"].Get<double>(); 
   m_alphaS = MODEL::s_model->ScalarConstant("alpha_S");
   
 }
@@ -2369,14 +2369,14 @@ XS_qg_q3P2_oct::XS_qg_q3P2_oct(const External_ME_Args& args):
   if (mb == 0) mb = 4.88;
 
   auto pss = Settings::GetMainSettings()["EXTRA_XS"];
-  // pss["LDME_993000443"].SetDefault(3 * 3E-03 * mc * mc);
-  // pss["LDME_993100443"].SetDefault(3* 0.005 * mc * mc);
-  // pss["LDME_993000553"].SetDefault(3 * 5 * 0.0121 * mb * mb);
-  // pss["LDME_993100553"].SetDefault(3 * 5 * 0.0141 * mb * mb);
-  if (fl[m_S].Kfcode()==kf_3P1_c_8_J_psi_1S)   LDME = 5*pss["LDME_992000443"].Get<double>(); 
-  if (fl[m_S].Kfcode()==kf_3P1_c_8_psi_2S)     LDME = 5*pss["LDME_992100443"].Get<double>(); 
-  if (fl[m_S].Kfcode()==kf_3P1_b_8_Upsilon_1S) LDME = 5*pss["LDME_992000553"].Get<double>(); 
-  if (fl[m_S].Kfcode()==kf_3P1_b_8_Upsilon_2S) LDME = 5*pss["LDME_992100553"].Get<double>(); 
+  pss["LDME_992000443"].SetDefault(3E-03 * mc * mc);
+  pss["LDME_992100443"].SetDefault(0.005 * mc * mc);
+  pss["LDME_992000553"].SetDefault(5 * 0.0121 * mb * mb);
+  pss["LDME_992100553"].SetDefault(5 * 0.0141 * mb * mb);
+  if (fl[m_S].Kfcode()==kf_3P2_c_8_J_psi_1S)   LDME = 5.*pss["LDME_992000443"].Get<double>(); 
+  if (fl[m_S].Kfcode()==kf_3P2_c_8_psi_2S)     LDME = 5.*pss["LDME_992100443"].Get<double>(); 
+  if (fl[m_S].Kfcode()==kf_3P2_b_8_Upsilon_1S) LDME = 5.*pss["LDME_992000553"].Get<double>(); 
+  if (fl[m_S].Kfcode()==kf_3P2_b_8_Upsilon_2S) LDME = 5.*pss["LDME_992100553"].Get<double>(); 
   m_a      = fl[m_q].IsAnti() ? 1 : 0; 
   m_alphaS = MODEL::s_model->ScalarConstant("alpha_S");
   m_pref   = -1./(27.*pow(m_mass,3))*pow(4.*M_PI*m_alphaS,3);
@@ -2462,14 +2462,14 @@ XS_qqbar_g3P2_oct::XS_qqbar_g3P2_oct(const External_ME_Args& args):
   if (mb == 0) mb = 4.88;
 
   auto pss = Settings::GetMainSettings()["EXTRA_XS"];
-  // pss["LDME_993000443"].SetDefault(3 * 3E-03 * mc * mc);
-  // pss["LDME_993100443"].SetDefault(3* 0.005 * mc * mc);
-  // pss["LDME_993000553"].SetDefault(3 * 5 * 0.0121 * mb * mb);
-  // pss["LDME_993100553"].SetDefault(3 * 5 * 0.0141 * mb * mb);
-  if (fl[m_S].Kfcode()==kf_3P1_c_8_J_psi_1S)   LDME = 5*pss["LDME_992000443"].Get<double>(); 
-  if (fl[m_S].Kfcode()==kf_3P1_c_8_psi_2S)     LDME = 5*pss["LDME_992100443"].Get<double>(); 
-  if (fl[m_S].Kfcode()==kf_3P1_b_8_Upsilon_1S) LDME = 5*pss["LDME_992000553"].Get<double>(); 
-  if (fl[m_S].Kfcode()==kf_3P1_b_8_Upsilon_2S) LDME = 5*pss["LDME_992100553"].Get<double>(); 
+  pss["LDME_992000443"].SetDefault(3E-03 * mc * mc);
+  pss["LDME_992100443"].SetDefault(0.005 * mc * mc);
+  pss["LDME_992000553"].SetDefault(5 * 0.0121 * mb * mb);
+  pss["LDME_992100553"].SetDefault(5 * 0.0141 * mb * mb);
+  if (fl[m_S].Kfcode()==kf_3P2_c_8_J_psi_1S)   LDME = 5.*pss["LDME_992000443"].Get<double>(); 
+  if (fl[m_S].Kfcode()==kf_3P2_c_8_psi_2S)     LDME = 5.*pss["LDME_992100443"].Get<double>(); 
+  if (fl[m_S].Kfcode()==kf_3P2_b_8_Upsilon_1S) LDME = 5.*pss["LDME_992000553"].Get<double>(); 
+  if (fl[m_S].Kfcode()==kf_3P2_b_8_Upsilon_2S) LDME = 5.*pss["LDME_992100553"].Get<double>(); 
   m_alphaS = MODEL::s_model->ScalarConstant("alpha_S");
   m_pref   = 8./(81.*pow(m_mass,3))*pow(4.*M_PI*m_alphaS,3);
 }
@@ -2536,14 +2536,14 @@ XS_gg_g3P2_oct::XS_gg_g3P2_oct(const External_ME_Args& args):
   if (mb == 0) mb = 4.88;
 
   auto pss = Settings::GetMainSettings()["EXTRA_XS"];
-   // pss["LDME_993000443"].SetDefault(3 * 3E-03 * mc * mc);
-  // pss["LDME_993100443"].SetDefault(3* 0.005 * mc * mc);
-  // pss["LDME_993000553"].SetDefault(3 * 5 * 0.0121 * mb * mb);
-  // pss["LDME_993100553"].SetDefault(3 * 5 * 0.0141 * mb * mb);
-  if (fl[m_S].Kfcode()==kf_3P1_c_8_J_psi_1S)   LDME = 5*pss["LDME_992000443"].Get<double>(); 
-  if (fl[m_S].Kfcode()==kf_3P1_c_8_psi_2S)     LDME = 5*pss["LDME_992100443"].Get<double>(); 
-  if (fl[m_S].Kfcode()==kf_3P1_b_8_Upsilon_1S) LDME = 5*pss["LDME_992000553"].Get<double>(); 
-  if (fl[m_S].Kfcode()==kf_3P1_b_8_Upsilon_2S) LDME = 5*pss["LDME_992100553"].Get<double>(); 
+  pss["LDME_992000443"].SetDefault(3E-03 * mc * mc);
+  pss["LDME_992100443"].SetDefault(0.005 * mc * mc);
+  pss["LDME_992000553"].SetDefault(5 * 0.0121 * mb * mb);
+  pss["LDME_992100553"].SetDefault(5 * 0.0141 * mb * mb);
+  if (fl[m_S].Kfcode()==kf_3P2_c_8_J_psi_1S)   LDME = 5.*pss["LDME_992000443"].Get<double>(); 
+  if (fl[m_S].Kfcode()==kf_3P2_c_8_psi_2S)     LDME = 5.*pss["LDME_992100443"].Get<double>(); 
+  if (fl[m_S].Kfcode()==kf_3P2_b_8_Upsilon_1S) LDME = 5.*pss["LDME_992000553"].Get<double>(); 
+  if (fl[m_S].Kfcode()==kf_3P2_b_8_Upsilon_2S) LDME = 5.*pss["LDME_992100553"].Get<double>(); 
   m_alphaS = MODEL::s_model->ScalarConstant("alpha_S");
   
 }
