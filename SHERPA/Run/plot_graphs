@@ -52,10 +52,10 @@ def sub(subdir, htmlfile):
 
 
 def escapecharacters(i):
-    i = i.replace("(", "\(")
-    i = i.replace(")", "\)")
-    i = i.replace("[", "\[")
-    i = i.replace("]", "\]")
+    i = i.replace("(", r"\(")
+    i = i.replace(")", r"\)")
+    i = i.replace("[", r"\[")
+    i = i.replace("]", r"\]")
     return i
 
 
@@ -91,20 +91,14 @@ class HTMLFile:
         self.file.write("  <body>\n")
 
     def print_tablehead(self, directory):
-        self.file.write(
-            "    <h2>Contents of directory " + directory + "</h2>\n"
-        )
+        self.file.write("    <h2>Contents of directory " + directory + "</h2>\n")
         self.file.write('        <table border="1">\n')
         self.file.write("      <tr><td>Process</td><td>Graphs</td></tr>\n")
 
     def print_entry(self, directory, entry, n, pngfiles):
-        self.file.write(
-            "      <tr><td>" + str(n) + " graphs for<br>" + entry + "<br>"
-        )
+        self.file.write("      <tr><td>" + str(n) + " graphs for<br>" + entry + "<br>")
         self.file.write("<a href=" + directory + "/" + entry + ".ps>[ps]</a>")
-        self.file.write(
-            "<a href=" + directory + "/" + entry + ".pdf>[pdf]</a>"
-        )
+        self.file.write("<a href=" + directory + "/" + entry + ".pdf>[pdf]</a>")
         self.file.write("</td><td>\n")
         for f in pngfiles:
             self.file.write('<img src="' + directory + "/" + f + '">\n')
