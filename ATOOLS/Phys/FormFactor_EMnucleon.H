@@ -27,6 +27,16 @@ namespace ATOOLS {
     };
   };
 
+  // Struct to hold boson-nucleon interaction type for printing
+  struct BosonNucleonType {
+    incomingboson::code boson;
+    incomingnucleon::code nucleon;
+    
+    BosonNucleonType(incomingboson::code b = incomingboson::off, 
+                     incomingnucleon::code n = incomingnucleon::off)
+        : boson(b), nucleon(n) {}
+  };
+
   // Struct to hold nucleon form factors
   struct NucleonFormFactors {
     double F1;  // Dirac (vector) form factor
@@ -119,6 +129,11 @@ namespace ATOOLS {
     incomingboson::code m_boson_type;
     incomingnucleon::code m_nucleon_type;
   };
+
+  // Stream operators for BosonNucleonType
+  std::ostream &operator<<(std::ostream &str, const BosonNucleonType &type);
+  std::istream &operator>>(std::istream &str, BosonNucleonType &type);
+
 extern FormFactor_EMnucleon *nucleonformfactor;
 }  // namespace ATOOLS
 

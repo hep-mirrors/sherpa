@@ -10,6 +10,7 @@ FormFactor_EMnucleon::FormFactor_EMnucleon(incomingboson::code boson, incomingnu
       : m_boson_type(boson), m_nucleon_type(nucleon)
 {
   Scoped_Settings s{Settings::GetMainSettings()["Form_Factor"]};
+  
   if (boson == incomingboson::photon) 
   {
     if (nucleon == incomingnucleon::proton) 
@@ -257,4 +258,52 @@ NucleonFormFactors FormFactor_EMnucleon::GetFormFactors(const double &q2) {
   }
   // Fallback (shouldn't reach here)
   return NucleonFormFactors(0.0, 0.0, 0.0, 0.0);
+}
+
+// Stream operators for BosonNucleonType 
+std::ostream &ATOOLS::operator<<(std::ostream &str, const BosonNucleonType &type)
+{
+  if (type.boson == incomingboson::photon) {
+    if (type.nucleon == incomingnucleon::proton)
+      return str << "Photon-Proton";
+    else if (type.nucleon == incomingnucleon::neutron)
+      return str << "Photon-Neutron";
+  } else if (type.boson == incomingboson::W) {
+    return str << "W-Boson";
+  } else if (type.boson == incomingboson::Z) {
+    if (type.nucleon == incomingnucleon::proton)
+      return str << "Z-Proton";
+    else if (type.nucleon == incomingnucleon::neutron)
+      return str << "Z-Neutron";
+  }
+  return str << "Unknown FormFactor process";
+}
+
+std::istream &ATOOLS::operator>>(std::istream &str, BosonNucleonType &type)
+{
+  std::string tag;
+  str >> tag;
+  if (tag.find("Photon-Proton") != std::string::npos) {
+    type.boson = incomingboson::photon;
+    type.nucleon = incomingnucleon::proton;
+  }
+  else if (tag.find("Photon-Neutron") != std::string::npos) {
+    type.boson = incomingboson::photon;
+    type.nucleon = incomingnucleon::neutron;
+  }
+  else if (tag.find("W-Boson") != std::string::npos) {
+    type.boson = incomingboson::W;
+    type.nucleon = incomingnucleon::off; // nucleon type not specified for W
+  }
+  else if (tag.find("Z-Proton") != std::string::npos) {
+    type.boson = incomingboson::Z;
+    type.nucleon = incomingnucleon::proton;
+  }
+  else if (tag.find("Z-Neutron") != std::string::npos) {
+    type.boson = incomingboson::Z;
+    type.nucleon = incomingnucleon::neutron;
+  }
+  else
+    THROW(fatal_error, "Unknown Form_Factor: Mode ");
+  return str;
 }
