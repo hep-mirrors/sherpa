@@ -1944,7 +1944,7 @@ double XS_qqbar_g3P0_oct::operator()(const Vec4D_Vector& mom)
   double u  = (mom[0]-mom[3]).Abs2();
 
   double M2 = sqr(s-3.*m_mass2)*(sqr(t)+sqr(u))/(s*pow(s-m_mass2,4));
-  return CouplingFactor(3,0)*m_pref*M2;
+  return CouplingFactor(3,0)*m_pref*M2*LDME;
 }
 
 bool XS_qqbar_g3P0_oct::SetColours(const Vec4D_Vector& mom) 
