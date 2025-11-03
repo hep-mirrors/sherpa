@@ -3,38 +3,53 @@
 #include "ATOOLS/Org/Scoped_Settings.H"
 #include "ATOOLS/Phys/FormFactor_EMnucleon.H"
 #include "MODEL/Main/Running_AlphaQED.H"
+#include <cmath>
 
 using namespace ATOOLS;
 
 FormFactor_EMnucleon::FormFactor_EMnucleon(incomingboson::code boson, incomingnucleon::code nucleon) 
-      : m_boson_type(boson), m_nucleon_type(nucleon)
+      : m_boson_type(boson), m_nucleon_type(nucleon),
+        m_massp(0), m_mup(0), m_a0pE(0), m_a1pE(0), m_b1pE(0), m_b2pE(0), m_b3pE(0),
+        m_a0pM(0), m_a1pM(0), m_b1pM(0), m_b2pM(0), m_b3pM(0),
+        m_massn(0), m_mun(0), m_An(0), m_Bn(0), m_Deltasq(0),
+        m_a0nE(0), m_a1nE(0), m_b1nE(0), m_b2nE(0), m_b3nE(0),
+        m_a0nM(0), m_a1nM(0), m_b1nM(0), m_b2nM(0), m_b3nM(0),
+        m_massA(0), m_gA(0), m_fA(0), m_masspi(0), m_sin2thetaW(0)
 {
+  msg_Out()<<"FormFactor_EMnucleon::FormFactor_EMnucleon(): Constructor called"<<std::endl;
   Scoped_Settings s{Settings::GetMainSettings()["Form_Factor"]};
+  msg_Out()<<"FormFactor_EMnucleon::FormFactor_EMnucleon(): Got settings"<<std::endl;
   
   if (boson == incomingboson::photon) 
   {
+    msg_Out()<<"FormFactor_EMnucleon::FormFactor_EMnucleon(): Photon boson"<<std::endl;
     if (nucleon == incomingnucleon::proton) 
     {
+      msg_Out()<<"FormFactor_EMnucleon::FormFactor_EMnucleon(): Registering proton defaults"<<std::endl;
       RegisterDefaultsProton();
     } 
     else if (nucleon == incomingnucleon::neutron) 
     {
+      msg_Out()<<"FormFactor_EMnucleon::FormFactor_EMnucleon(): Registering neutron defaults"<<std::endl;
       RegisterDefaultsNeutron();
     }
   }
   else if (boson == incomingboson::W) 
   {
+    msg_Out()<<"FormFactor_EMnucleon::FormFactor_EMnucleon(): W boson"<<std::endl;
     RegisterDefaultsProton();
     RegisterDefaultsNeutron();
     RegisterDefaultsAxial();
   }
   else if (boson == incomingboson::Z)
   {
+    msg_Out()<<"FormFactor_EMnucleon::FormFactor_EMnucleon(): Z boson"<<std::endl;
     RegisterDefaultsProton();
     RegisterDefaultsNeutron();
     RegisterDefaultsAxial();
     RegisterDefaultsZ();
   }
+  msg_Out()<<"FormFactor_EMnucleon::FormFactor_EMnucleon(): Constructor complete"<<std::endl;
 }
 
 FormFactor_EMnucleon::~FormFactor_EMnucleon() {}
@@ -92,7 +107,7 @@ void FormFactor_EMnucleon::RegisterDefaultsZ() {
 }
 
 double FormFactor_EMnucleon::Q2_eval(const double &q2) {
-  return sqr(q2*q2); // ensure Q2 is positive
+  return std::abs(-q2); // ensure Q2 is positive
 }
 
 double FormFactor_EMnucleon::tau_eval(const double &q2, const double &mass) {

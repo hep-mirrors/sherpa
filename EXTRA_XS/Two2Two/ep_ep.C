@@ -6,6 +6,7 @@
 #include "PHASIC++/Process/External_ME_Args.H"
 #include "EXTRA_XS/Main/ME2_Base.H"
 #include "ATOOLS/Phys/FormFactor_EMnucleon.H"
+#include <memory>
 
 using namespace EXTRAXS;
 using namespace ATOOLS;
@@ -32,19 +33,21 @@ namespace EXTRAXS {
     ep_ep::ep_ep(const External_ME_Args &args, const incomingboson::code &boson, const incomingnucleon::code &nucleon)
         : ME2_Base(args), m_boson(boson), m_nucleon(nucleon)
     {
+        msg_Out()<<"ep_ep::ep_ep(): Constructor called"<<std::endl;
         m_oew = 0;
         m_oqcd = 0;
+        msg_Out()<<"ep_ep::ep_ep(): Getting alpha_QED"<<std::endl;
         m_alpha = MODEL::s_model->ScalarConstant("alpha_QED");
+        msg_Out()<<"ep_ep::ep_ep(): Getting strong_cpl"<<std::endl;
         m_alphas = MODEL::s_model->ScalarConstant("strong_cpl");
 
-        p_formfactor = std::unique_ptr<FormFactor_EMnucleon>(new FormFactor_EMnucleon(m_boson, m_nucleon));
+        msg_Out()<<"ep_ep::ep_ep(): Creating FormFactor_EMnucleon"<<std::endl;
+        p_formfactor = std::make_unique<FormFactor_EMnucleon>(m_boson, m_nucleon);
+        msg_Out()<<"ep_ep::ep_ep(): Constructor complete"<<std::endl;
     }
 
     double ep_ep::operator()(const ATOOLS::Vec4D_Vector &momenta)
     {
-        //double m1 = momenta[0].Mass();
-        //m_s = (momenta[2] + momenta[3]).Abs2();
-        //double t((momenta[0] - momenta[2]).Abs2());
         double Q2 = (momenta[0] - momenta[2]).Abs2();
         NucleonFormFactors ff = p_formfactor->GetFormFactors(Q2);
         double F1 = ff.F1;
@@ -61,9 +64,11 @@ operator()(const External_ME_Args &args) const
     const Flavour_Vector fl = args.Flavours();
     if (fl.size() != 4) return NULL;
     
-    // Check for correct process e- p -> e- p 
-    if (fl[0] == Flavour(kf_e) && fl[1] == Flavour(kf_p_plus) &&
-        fl[2] == Flavour(kf_e) && fl[3] == Flavour(kf_p_plus))
+    // Check for P+ e- -> P+ e- : sherpa orders hadrons first!!!!!
+    // Sherpas initial state: fl[0]=P+, fl[1]=e-
+    // Sherpas final state: fl[2]=P+, fl[3]=e-
+    if (fl[0] == Flavour(kf_p_plus) && fl[1] == Flavour(kf_e) &&
+        fl[2] == Flavour(kf_p_plus) && fl[3] == Flavour(kf_e))
     {
         return new ep_ep(args, incomingboson::photon, incomingnucleon::proton);
     }

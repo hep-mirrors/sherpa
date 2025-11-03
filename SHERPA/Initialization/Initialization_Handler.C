@@ -919,7 +919,9 @@ void Initialization_Handler::InitISRHandler(const PDF::isr::id & pid,Settings& s
     PDF_Arguments args = PDF_Arguments(flav, beam, set, version, order, scheme);
     if (pid != PDF::isr::bunch_rescatter) {
       PDF_Base* pdfbase = PDF_Base::PDF_Getter_Function::GetObject(set, args);
-      if (m_bunch_particles[beam].IsHadron() && pdfbase == nullptr)
+      // Allow special keywords for non-pdf beam hadrons (elastic/quasi-elastic scattering)
+      bool is_intact_keyword = (set == "Elastic" || set == "QuasiElastic" || set == "FormFactor");
+      if (m_bunch_particles[beam].IsHadron() && pdfbase == nullptr && !is_intact_keyword)
         THROW(critical_error,
               "PDF '" + set + "' does not exist in any of the loaded" +
                       " libraries for " + ToString(m_bunch_particles[beam]) +

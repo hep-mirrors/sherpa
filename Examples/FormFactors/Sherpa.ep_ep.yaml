@@ -1,0 +1,53 @@
+EVENT_GENERATION_MODE: 'Weighted'
+ANALYSIS: Rivet
+
+OUTPUT: 15  # More verbose output
+
+BEAMS:  [11, 2212]  # electron beam + proton beam
+BEAM_ENERGIES: [1, 0.938272]  # 10 GeV electron, proton at rest (fixed target)
+
+# model parameters
+PARTICLE_DATA:
+  2212:  # proton
+    Massive: 1
+  11:  # electron
+    Massive: 1
+
+PROCESSES:
+- 11 2212 -> 11 2212:  # e- p -> e- p (elastic scattering)
+    Order: {QCD: 0, EW: 2} # EW: 2}
+
+FRAGMENTATION: None
+BEAM_REMNANTS: None
+SHOWER_GENERATOR: None
+
+PDF_SET: [None, QuasiElastic]  # electron: None, proton: QuasiElastic
+
+ME_GENERATORS: Internal 
+
+EW_SCHEME: 1
+MODEL: SM  # Standard Model
+
+SCALES: VAR{Abs2(p[0]-p[2])}  # Q2 = momentum transfer squared
+
+NANOBARN: 0
+
+ME_QED: 
+  - ENABLED: False
+
+# Form factor stuff
+FormFactor_EMnucleon:
+  incomingnucleon: proton
+  incomingboson: photon
+
+
+YFS:
+  MODE: 0
+
+ANALYSIS: Rivet
+ANALYSIS_OUTPUT: Analysis_ep-ep
+
+# Example Rivet analysis - replace with your actual analysis
+RIVET:
+  --analyses: [MC_FSPARTICLES, MC_XS]
+  # ZEUS_2024_I2794054, H1_2009_I810046, H1_2006_I699835, ZEUS_1996_I420332, ZEUS_1999_I500267]
