@@ -613,6 +613,12 @@ bool SHERPA::HepMC3_Interface::Sherpa2HepMC(ATOOLS::Blob_List *const blobs,
     }
   } // End Blob_List loop
   if (event.beams().empty() && beamparticles.empty()) {
+    if (!psvertex) {
+      // Create a dummy vertex if no PS vertex was found
+      psvertex = std::make_shared<HepMC::GenVertex>();
+      psvertex->set_status(4); // Mark as parton shower vertex
+      event.add_vertex(psvertex);
+    }
     HepMC::GenParticlePtr inpart[2];
     for (size_t j = 0; j < 2; ++j) {
       auto flav = (j == 0) ? rpa->gen.Beam1() : rpa->gen.Beam2();
