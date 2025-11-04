@@ -449,6 +449,7 @@ double NLO_Base::CalculateRealVirtual(Vec4D k, int fsrcount) {
  	double yfspole;
  	p.push_back(k);
  	if(fsrcount) MapInitial(p);
+ 	CheckMasses(p,1);
 	// CheckMasses(p, 1);
 	Vec4D_Vector pp = p;
  	pp.pop_back();
