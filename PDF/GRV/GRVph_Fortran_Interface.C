@@ -32,9 +32,6 @@ PDF_Base *GRVph_Fortran_Interface::GetCopy() {
 
 void GRVph_Fortran_Interface::CalculateSpec(const double &_x,
                                             const double &_Q2) {
-  if (m_include_photon_in_photon)
-    m_ph = GetPhotonCoefficient(_x, _Q2);
-
   float x = _x / m_rescale, Q2 = _Q2;
   float pdf[m_nf + 1];
 

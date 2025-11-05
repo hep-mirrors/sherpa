@@ -23,42 +23,6 @@ Photon_PDF_Base::Photon_PDF_Base(const Flavour _bunch, const std::string _set, i
   m_partons.insert(Flavour(kf_jet));
   m_partons.insert(Flavour(kf_quark));
   m_partons.insert(Flavour(kf_quark).Bar());
-
-  // Insert the photon component
-  Settings& s = Settings::GetMainSettings();
-  m_include_photon_in_photon = s["INCLUDE_PHOTON_IN_PHOTON_PDF"].Get<bool>();
-  if (m_include_photon_in_photon) {
-    m_partons.insert(Flavour(kf_photon));
-  }
-}
-
-double Photon_PDF_Base::GetPhotonCoefficient(double x,double Q2) {
-  // The coefficient is proportional to a Dirac delta d(1-x)
-  double dx = Max(1.-m_xmax, 1.e-6);
-  if (x < 1. - dx)
-    return m_ph = 0.;
-  // Get the coefficient of the photon component in the photon, c.f. hep-ph/9605240
-  // It is equal 1, subtracted by the VMD and anomalous (i.e. perturbative q-qbar) terms
-  // The lepton component is neglected
-  m_ph = 1.;
-  const double alphaem = MODEL::s_model->ScalarFunction(std::string("alpha_QED"), 0);
-
-  const double cutscale = 0.5; // cut-off scale for the perturbative contribution
-  for (int i = 1; i < m_nf + 1; i++) {
-    m_ph -= alphaem / 2 / M_PI * 2 * sqr(Flavour((kf_code)(i)).Charge()) * log(Q2 / sqr(cutscale));
-  }
-
-  // meson-photon couplings for rho, omega and phi: (might need updating)
-  const std::array<double, 3> mesoncouplings = {2.2, 23.6, 18.4};
-  for (auto mit = mesoncouplings.begin(); mit != mesoncouplings.end(); mit++) {
-    m_ph -= alphaem / *mit;
-  }
-  msg_Debugging() << METHOD << ": Calculation photon->photon pdf, val = " << m_ph
-            << "\n";
-  if (m_ph < 0)
-    msg_Error() << METHOD << ": Photon component is negative! Check the point, scale = "
-                << Q2 << ", photon coefficient = " << m_ph << std::endl;
-  return m_ph/dx;
 }
 
 double Photon_PDF_Base::GetXPDF(const ATOOLS::Flavour &infl) {

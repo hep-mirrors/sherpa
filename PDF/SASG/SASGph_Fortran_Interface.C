@@ -48,9 +48,6 @@ PDF_Base *SASGph_Fortran_Interface::GetCopy() {
 
 void SASGph_Fortran_Interface::CalculateSpec(const double &_x,
                                              const double &_Q2) {
-  if (m_include_photon_in_photon)
-    m_ph = GetPhotonCoefficient(_x, _Q2);
-
   float x = _x / m_rescale, Q2 = float(_Q2);
   if (Q2==float(m_q2min)) Q2+=0.0001;
 

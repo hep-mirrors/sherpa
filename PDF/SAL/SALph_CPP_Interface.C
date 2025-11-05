@@ -27,9 +27,6 @@ PDF_Base *SALph_CPP_Interface::GetCopy() {
 }
 
 void SALph_CPP_Interface::CalculateSpec(const double &_x, const double &_Q2) {
-  if (m_include_photon_in_photon)
-    m_ph = GetPhotonCoefficient(_x, _Q2);
-
   double x = _x / m_rescale, Q2 = _Q2;
 
   if (x < m_xmin || x > m_xmax)
