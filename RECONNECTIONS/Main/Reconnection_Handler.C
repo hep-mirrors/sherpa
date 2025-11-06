@@ -13,7 +13,10 @@ Reconnection_Handler::Reconnection_Handler(const bool & on) :
   m_on(on),
   p_reconnector(new Reconnect_Statistical()),
   m_nfails(0)
-{}
+{
+  static constexpr size_t max_variations = 10;
+  wgt_sums.resize(max_variations, 0.);
+}
 
 Reconnection_Handler::~Reconnection_Handler() {
   if (m_on) {
@@ -51,6 +54,30 @@ Return_Value::code Reconnection_Handler::operator()(Blob_List *const blobs,
     break;
   }
   p_reconnector->Reset();
+
+  const auto& variation_weights_cr = p_reconnector->GetVariationWeights();
+  Blob *blob(blobs->FindFirst(btp::Signal_Process));
+  if (blob == NULL)
+    blob = blobs->FindFirst(btp::Hard_Collision);
+  auto &wgt_map = (*blob)["WeightsMap"]->Get<Weights_Map>();
+  m_nreconnections++;
+
+  static constexpr size_t warmup_events = 100;
+  static constexpr double max_weight = 1e2;
+  for(int i{0}; i<variation_weights_cr.size(); i++) {
+    const std::string name {"v" + std::to_string(i)};
+    const double wgt = variation_weights_cr[i];
+    wgt_sums[i] += wgt;
+    double norm {1.};
+    if(m_nreconnections > warmup_events) {
+      norm = wgt_sums[i] / m_nreconnections;
+    }
+    const auto clipped_wgt {std::min(wgt, max_weight)};
+    wgt_map["RECONNECTIONS"][name] = clipped_wgt / norm;
+  }
+  const size_t n_variations = variation_weights_cr.size();
+  p_reconnector->ResetVariationWeights(n_variations);
+
   return Return_Value::Success; 
 }
 

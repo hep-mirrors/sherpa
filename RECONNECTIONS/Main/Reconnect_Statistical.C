@@ -29,11 +29,21 @@ void Reconnect_Statistical::SetParameters() {
   string pm   = s["PMODE"].SetDefault("Log").Get<string>(); 
   m_Pmode     = (pm==("Power")?1 : 0); 
   m_Q02       = sqr(s["Q_0"].SetDefault(1.00).Get<double>());
-  m_etaQ      = sqr(s["ETA_Q"].SetDefault(0.1).Get<double>());
   m_R02       = sqr(s["R_0"].SetDefault(100.).Get<double>());
   m_etaR      = sqr(s["ETA_R"].SetDefault(0.16).Get<double>());
-  m_reshuffle = s["RESHUFFLE"].SetDefault(1./9.).Get<double>();
   m_kappa     = s["KAPPA"].SetDefault(1.).Get<double>();
+
+  m_etaQ      = s["ETA_Q"].SetDefault({0.1}).GetVector<double>();
+  m_reshuffle = s["RESHUFFLE"].SetDefault({1./9.}).GetVector<double>();
+
+  for (size_t i{0}; i<m_etaQ.size(); ++i)
+    m_etaQ[i] = sqr(m_etaQ[i]);
+
+  const auto max_size {std::max(m_etaQ.size(), m_reshuffle.size())};
+  m_etaQ.resize(max_size, m_etaQ[0]);
+  m_reshuffle.resize(max_size, m_reshuffle[0]);
+
+  ResetVariationWeights(max_size);
 }
 
 void Reconnect_Statistical::Reset() {
@@ -93,12 +103,30 @@ bool Reconnect_Statistical::AttemptSwap(const unsigned int col[2]) {
   for (size_t i=0;i<2;i++) {
     for (size_t j=0;j<2;j++) part[2*i+j] = m_cols[i][col[j]];
   }
-  double dist0  = Distance(part[0],part[2]), dist1  = Distance(part[1],part[3]);
-  double ndist0 = Distance(part[0],part[3]), ndist1 = Distance(part[1],part[2]);
-  double prob   = m_reshuffle*(1.-exp(-m_etaQ*((dist0+dist1)-(ndist0+ndist1))));
-  if (ran->Get()<prob) {
+  const double dist0  = Distance(part[0], part[2]);
+  const double dist1  = Distance(part[1], part[3]);
+  const double ndist0 = Distance(part[0], part[3]);
+  const double ndist1 = Distance(part[1], part[2]);
+  const double dist = (dist0 + dist1) - (ndist0 + ndist1);
+
+  std::vector<double> probs(m_reshuffle.size());
+  for(size_t i{0}; i < m_reshuffle.size(); ++i)
+    probs[i] = m_reshuffle[i] * (1. - exp(-m_etaQ[i] * dist));
+
+  if (ran->Get()<probs[0]) {
     m_cols[1][col[0]] = part[3];
     m_cols[1][col[1]] = part[2];
+    if(probs[0] > 1e-8) {
+      for (int i{0}; i<m_reshuffle.size(); ++i) {
+        m_variation_weights[i] *= probs[i] / probs[0];
+      }
+    }
+  } else {
+    if (probs[0] > 1e-8) {
+      for (int i{0}; i<m_reshuffle.size(); ++i) {
+        m_variation_weights[i] *= (1.-probs[i]) / (1.-probs[0]);
+      }
+    }
   }
   return true;
 }
@@ -132,7 +160,7 @@ double Reconnect_Statistical::PosDistance(Particle * trip,Particle * anti) {
 }
 
 double Reconnect_Statistical::ColDistance(Particle * trip,Particle * anti) {
-  return trip->GetFlow(1)==anti->GetFlow(2) ? 1. : m_reshuffle;
+  return trip->GetFlow(1)==anti->GetFlow(2) ? 1. : m_reshuffle[0];
 }
 
 double Reconnect_Statistical::TotalLength() {
