@@ -295,7 +295,7 @@ double NLO_Base::CalculateReal(Vec4D k, int fsrcount) {
       	p[p_nlodipoles->m_flav_label[f]] =  Dip->GetNewMomenta(i);
       	i++;
     	}
-    	k = Dip->m_dipolePhotons[0];
+    	// k = Dip->m_dipolePhotons[0];
   	}
   }
  	else {
