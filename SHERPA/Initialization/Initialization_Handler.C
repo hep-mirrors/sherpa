@@ -776,6 +776,10 @@ void Initialization_Handler::LoadPDFLibraries(Settings& settings) {
       deflib = PDF::pdfdefs->DefaultPDFLibrary(kf_p_plus);
       defset = PDF::pdfdefs->DefaultPDFSet(kf_p_plus);
     }
+    else if (p_beamspectra->GetBeam(beam)->Bunch(0).Kfcode()==kf_n) {
+      // Neutrons default to Intact hadron mode
+      defset = "Intact";
+    }
     else if (p_beamspectra->GetBeam(beam)->Bunch(0).Kfcode()==kf_e ||
 	     p_beamspectra->GetBeam(beam)->Bunch(0).Kfcode()==kf_mu) {
       deflib = PDF::pdfdefs->DefaultPDFLibrary(kf_e);
@@ -920,7 +924,7 @@ void Initialization_Handler::InitISRHandler(const PDF::isr::id & pid,Settings& s
     if (pid != PDF::isr::bunch_rescatter) {
       PDF_Base* pdfbase = PDF_Base::PDF_Getter_Function::GetObject(set, args);
       // Allow special keywords for non-pdf beam hadrons (elastic/quasi-elastic scattering)
-      bool is_intact_keyword = (set == "Elastic" || set == "QuasiElastic" || set == "FormFactor");
+      bool is_intact_keyword = (set == "Intact" || set == "Elastic" || set == "QuasiElastic" || set == "FormFactor");
       if (m_bunch_particles[beam].IsHadron() && pdfbase == nullptr && !is_intact_keyword)
         THROW(critical_error,
               "PDF '" + set + "' does not exist in any of the loaded" +

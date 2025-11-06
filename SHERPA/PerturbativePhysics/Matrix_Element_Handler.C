@@ -522,10 +522,10 @@ std::vector<Process_Base*> Matrix_Element_Handler::InitializeSingleProcess
 void Matrix_Element_Handler::CheckInitialStateOrdering(const Process_Info& pi)
 {
   // Skip ordering check if using intact hadron mode (QuasiElastic, etc.)
-  if (p_isr && (p_isr->Type(0) == isrtype::intact || p_isr->Type(1) == isrtype::intact))
-  {
-    return;
-  }
+  //if (p_isr && (p_isr->Type(0) == isrtype::intact || p_isr->Type(1) == isrtype::intact))
+  //{
+  //  return;
+  //}
   auto cpi = pi;
   Process_Base::SortFlavours(cpi, 1);
   if (cpi.m_ii == pi.m_ii) {

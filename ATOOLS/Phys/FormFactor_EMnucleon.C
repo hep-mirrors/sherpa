@@ -308,7 +308,7 @@ std::istream &ATOOLS::operator>>(std::istream &str, BosonNucleonType &type)
   }
   else if (tag.find("W-Boson") != std::string::npos) {
     type.boson = incomingboson::W;
-    type.nucleon = incomingnucleon::off; // nucleon type not specified for W
+    type.nucleon = incomingnucleon::off; 
   }
   else if (tag.find("Z-Proton") != std::string::npos) {
     type.boson = incomingboson::Z;

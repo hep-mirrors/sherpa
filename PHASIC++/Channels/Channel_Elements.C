@@ -220,7 +220,7 @@ double Channel_Elements::TChannelWeight
   Poincare zax(p1inh,p1inh[3]<0?-Vec4D::ZVEC:Vec4D::ZVEC);
   cms.Boost(p1outh);
   zax.Rotate(p1outh);
-  double pa1(pow(a-ctmax,1.-ctexp));
+  // double pa1(pow(a-ctmax,1.-ctexp)); //unused variable
   double ct(p1outh[3]/p1outh.PSpat());
   if (ct<ctmin || ct>ctmax) {
     msg_Error()<<METHOD<<"(): \\cos\\theta range violation: "
@@ -228,8 +228,7 @@ double Channel_Elements::TChannelWeight
     ran1=ran2=-1.;
     return 0.;
   }
-  ran2=asin(p1outh[2]/p1outh.PPerp())/(2.*M_PI);
-  if (p1outh[1]<0.) ran2=.5-ran2;
+  ran2 = atan2(p1outh[1], p1outh[2]) / (2. * M_PI); // no ambiguities when transforming with tan instead of sin
   if (ran2<0.) ran2+=1.;
   double aminct(a-ct);
   double w(PeakedWeight(0.,ctexp,a-ctmax,a-ctmin,aminct,1,ran1));
