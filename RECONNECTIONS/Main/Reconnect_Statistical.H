@@ -8,7 +8,8 @@ namespace RECONNECTIONS {
   private:
     std::vector<unsigned int> m_collist;
     int    m_Pmode;
-    double m_Q02, m_etaQ, m_R02, m_etaR, m_reshuffle, m_kappa, m_norm;
+    double m_Q02, m_R02, m_etaR, m_kappa, m_norm;
+    std::vector<double> m_etaQ, m_reshuffle;
 
     void   SetParameters();
     void   FixPMode(const std::string & pm);
