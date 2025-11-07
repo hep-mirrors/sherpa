@@ -194,6 +194,16 @@ void Channel_Elements::TChannelMomenta
   double aminct(PeakedDist(0.,ctexp,a-ctmax,a-ctmin,1,ran1));
   double ct(a-aminct), st(sqrt(1.-ct*ct));
   double phi(2.*M_PI*ran2);
+  
+  // DEBUG: Print values occasionally
+  static int debug_counter_fwd = 0;
+  if (debug_counter_fwd < 10) {
+    msg_Out()<<"[TChannelMomenta DEBUG] ran1="<<ran1<<", ran2="<<ran2<<std::endl;
+    msg_Out()<<"[TChannelMomenta DEBUG] aminct="<<aminct<<", ct="<<ct<<", st="<<st<<std::endl;
+    msg_Out()<<"[TChannelMomenta DEBUG] phi="<<phi<<" rad = "<<(phi*180./M_PI)<<" deg"<<std::endl;
+    debug_counter_fwd++;
+  }
+  
   p1out=Vec4D(e1out,m1out*Vec3D(st*cos(phi),st*sin(phi),ct));
   Poincare cms(pin);
   cms.Boost(p1in);
@@ -228,10 +238,25 @@ double Channel_Elements::TChannelWeight
     ran1=ran2=-1.;
     return 0.;
   }
-  ran2 = atan2(p1outh[1], p1outh[2]) / (2. * M_PI); // no ambiguities when transforming with tan instead of sin
-  if (ran2<0.) ran2+=1.;
+  
+  //extract phi from momentum. use tan not sin 
+  double phi = atan2(p1outh[2], p1outh[1]);
+  if (phi < 0.) phi += 2.*M_PI;
+  ran2 = phi / (2.*M_PI);
+  
   double aminct(a-ct);
   double w(PeakedWeight(0.,ctexp,a-ctmax,a-ctmin,aminct,1,ran1));
+  
+  // DEBUG: Print values occasionally (AFTER PeakedWeight computes ran1)
+  static int debug_counter = 0;
+  if (debug_counter < 5) {
+    msg_Out()<<"[TChannelWeight DEBUG] p1outh=("<<p1outh[0]<<","<<p1outh[1]<<","<<p1outh[2]<<","<<p1outh[3]<<")"<<std::endl;
+    msg_Out()<<"[TChannelWeight DEBUG] ct="<<ct<<", aminct="<<aminct<<std::endl;
+    msg_Out()<<"[TChannelWeight DEBUG] phi="<<phi<<" rad = "<<(phi*180./M_PI)<<" deg"<<std::endl;
+    msg_Out()<<"[TChannelWeight DEBUG] ran1="<<ran1<<", ran2="<<ran2<<std::endl;
+    msg_Out()<<"[TChannelWeight DEBUG] weight w="<<w<<std::endl;
+    debug_counter++;
+  }
   w*=m1out*M_PI/(2.*rs)/pow(aminct,-ctexp);
   if (IsBad(w)) msg_Error()<<METHOD<<"(): Weight is "<<w<<"."<<std::endl;
   return 1./w;

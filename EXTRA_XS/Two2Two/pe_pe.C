@@ -19,11 +19,12 @@ namespace EXTRAXS {
     class pe_pe : public ME2_Base
     {
     private:
+
     public:
         pe_pe(const External_ME_Args &args, const incomingboson::code &boson, const incomingnucleon::code &nucleon);
 
         double operator()(const ATOOLS::Vec4D_Vector &mom);
-        double m_alpha, m_alphas, m_s;
+        double m_alpha, m_alphas, m_s, Me2, Mp2;
         Flavour m_flv;
         std::unique_ptr<FormFactor_EMnucleon> p_formfactor;
         incomingboson::code m_boson;
@@ -34,7 +35,7 @@ namespace EXTRAXS {
         : ME2_Base(args), m_boson(boson), m_nucleon(nucleon)
     {
         msg_Out()<<"pe_pe::pe_pe(): Constructor called"<<std::endl;
-        m_sintt = 2;  // T-channel only 
+        m_sintt = 2;  // T-channel only , maybe look at single channel restriction later
         //m_sintt = 0;  // No s/t/u channel restriction
         m_oew = 0; // EW order zero (no loops)
         m_oqcd = 0; // QCD order zero 
@@ -46,6 +47,14 @@ namespace EXTRAXS {
         msg_Out()<<"pe_pe::pe_pe(): Creating FormFactor_EMnucleon"<<std::endl;
         p_formfactor = std::make_unique<FormFactor_EMnucleon>(m_boson, m_nucleon);
         msg_Out()<<"pe_pe::pe_pe(): Constructor complete"<<std::endl;
+        // m_flvs = args.Flavours();
+        // if (m_flvs[0].Charge() == m_flvs[1].Charge())
+        //     m_ss = true;
+        // else
+        //     m_ss = false;
+        msg_Out()<<"pe_pe::pe_pe(): Setting Me2 and Mp2"<<std::endl;
+        Me2 = pow(Flavour(kf_e).Mass(), 2);
+        Mp2 = pow(Flavour(kf_p_plus).Mass(), 2);
     }
 
     double pe_pe::operator()(const ATOOLS::Vec4D_Vector &momenta)
@@ -66,26 +75,26 @@ namespace EXTRAXS {
         
         // Add a small cutoff to avoid IR divergence at Q2=0 (forward scattering)
         // For low-energy fixed target, use a smaller cutoff
-        const double Q2_min = 1e-10; // GeV^2 (very very small for low-energy scattering)
-        if (Q2 < Q2_min) return 0.0;
-        
+        const double Q2_min = 1e-10;
+        if (Q2 < Q2_min) {
+            msg_Out() << "pe_pe::operator(): Q2 < Q2_min, returning 0.0" << std::endl;
+            return 0.0;
+        }
+
         NucleonFormFactors ff = p_formfactor->GetFormFactors(Q2);
         double F1 = ff.F1;
         double F2 = ff.F2;
         double F12 = F1 + F2;
 
-        const double Mp = 0.9382720813; 
-        const double Me = 0.0005109989461;
-        
-        double A = (s - Me*Me - Mp*Mp)/2.0;  // (ki . pi)
-        double B = -(u - Me*Me - Mp*Mp)/2.0; // (ki . pf)
-        double C = Me*Me - (t)/2.0;          // (ki . kf)
-        double D = Mp*Mp - (t)/2.0;          // (pi . pf)
+        double A = (s - Me2 - Mp2)/2.0;  // (ki . pi)
+        double B = -(u - Me2 - Mp2)/2.0; // (ki . pf)
+        double C = Me2 - (t)/2.0;       // (ki . kf)
+        double D = Mp2 - (t)/2.0;       // (pi . pf)
 
         // Calculate spin averaged matrix element squared
         double term1coeff = 4 * F12 * F12;
         double term1 = term1coeff * (2 * A * A + 2 * B * B + C * t + D * t);
-        double term2coeff = 2*( (F2*F2* (Mp + 4*D))/(8*Mp*Mp) -2*F2*F12 );
+        double term2coeff = 2*( (F2*F2* (Mp2 + 4*D))/(8*Mp2) -2*F2*F12 );
         double term2 = term2coeff * (2*( A*A + B*B +2*A*B) + (C + D +2*B)*t*0.5);
 
         double L_munu_H_munu = - (term1 + term2);

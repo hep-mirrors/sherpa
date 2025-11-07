@@ -105,7 +105,18 @@ void Cut_Data::Complete()
   smin = Max(smin,sqr(2.*etmm));
   smin = Max(smin,Getscut(str));
 
-  msg_Tracking()<<"Cut_Data::Complete(): s_{min} = "<<smin<<endl;
+  // set debug counter and exit completely to stop sherpa running further
+  static int debug_counter = 0;
+  if (debug_counter < 5)
+  {
+    msg_Tracking() << "Cut_Data::Complete(): s_{min} = " << smin << endl;
+    debug_counter++;
+  }
+  if (debug_counter == 5)
+  {
+    msg_Tracking() << "Cut_Data::Complete(): Reached maximum error output for cuts, stopping further runs." << endl;
+    //exit(0);
+  }
   m_smin_map.clear();
 }
 
