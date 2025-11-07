@@ -98,7 +98,6 @@ Standard_Model_RaSc::Standard_Model_RaSc() :
 {
   m_name="SMRaSc";
   ParticleInit();
-  ReadParticleData();
   RegisterDefaults();
   AddStandardContainers();
   CustomContainerInit();
