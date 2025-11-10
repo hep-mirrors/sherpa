@@ -585,18 +585,17 @@ double XS_gg_g3S1::operator()(const Vec4D_Vector& mom)
   double s  = (mom[0]+mom[1]).Abs2();
   double t  = (mom[0]-mom[2]).Abs2();
   double u  = (mom[0]-mom[3]).Abs2();
-
   double M2 = s+t+u, sM2 = sqr(s-M2), tM2 = sqr(t-M2),  uM2 = sqr(u-M2);
   m_pref   = (5./9.)*sqr(4.*M_PI)*sqrt(M2)*m_R02; // <<<< it is actually R02, not ldme. Just to keep naming simple for the moment.
-  double all = sqr(s)/(tM2*sM2)+sqr(t)/(uM2*sM2)+sqr(u)/(sM2*tM2);
-  double prefix = 10./(9.*64.);
-  double x = M2/s;
-  double first = pow(m_alphaS,3)*CouplingFactor(3,0)*sqr(M_PI)/pow((sqrt(M2)),5);
-  double fgg = prefix*256*sqr(x)/(3*sqr(-1+x)*pow((1+x),3))*(2+x+2*sqr(x)-4*pow(x,4)-pow(x,5)+2*sqr(x)*(5+2*x+sqr(x))*log(x));
-  double all2 = first*fgg*ldme;
+  double all = sqr(s)/(uM2*tM2)+sqr(t)/(uM2*sM2)+sqr(u)/(sM2*tM2);
+  // double prefix = 10./(9.*64.);
+  // double x = M2/s;
+  // double first = pow(m_alphaS,3)*CouplingFactor(3,0)*sqr(M_PI)/pow((sqrt(M2)),5);
+  // double fgg = prefix*256*sqr(x)/(3*sqr(-1+x)*pow((1+x),3))*(2+x+2*sqr(x)-4*pow(x,4)-pow(x,5)+2*sqr(x)*(5+2*x+sqr(x))*log(x));
+  // double all2 = first*fgg*ldme;
   // std::cout << "all = " << all << "fgg = "<< fgg << "first = "<< first<< "x = "<< x <<std::endl;
   // return all;
-  return pow(m_alphaS,3)*CouplingFactor(3,0)*m_pref*all+all2;
+  return pow(m_alphaS,3)*CouplingFactor(3,0)*m_pref*all;
 }
 
 bool XS_gg_g3S1::SetColours(const Vec4D_Vector& mom) 
