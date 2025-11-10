@@ -83,7 +83,7 @@ void Interaction_Probability::FixKandSmin() {
       p_mo->SetKRadius(k);
       InitializeTable(sbin);
       xs_test = gauss.Integrate(0.,p_mo->Bmax(),1.e-3);
-      if (dabs(xs_test/xs_nd)<1.e-3) { k = 0.; break; }
+      if (dabs(xs_test/xs_nd)<1.e-3) { k = 1.; break; }
       /////////////////////////////////////////////////////////////////////////
       // we rescale the k with the ratio of implied and exact ND cross section,
       // until we are within 2% of each other.
@@ -155,7 +155,7 @@ InitializeTable(const size_t & sbin,const bool & out) {
     double b  = p_bbins->x(bbin);
     double xs = m_pdfnorm * ( p_mo->IsDynamic() ?
 			      (*integrator)(s,p_mo,b) :
-			      xsfix * (*p_mo)(b) );
+			      xsfix * (*p_mo)(b) );  
     p_diffxsec->Fill(sbin,bbin,xs);
     if (prev!=0. && xs/prev < 1.e-6) {
       for (size_t i=bbin+1;i<p_bbins->m_nbins;i++)
@@ -207,7 +207,7 @@ void Interaction_Probability::OutputTables() {
       double b = p_mo->Bmax()*double(j)/40.;
       msg_Info()<<"   | "<<std::string(15,' ')<<" | "
 		<<std::setprecision(3)<<std::setw(6)
-		<<(b*rpa->hBar()*rpa->c()*1.e12)<<" | "
+		<<b<<" | "
 		<<std::setprecision(6)<<std::setw(14)
 		<<((*p_diffxsec)(s,b)/xsratio)<<" | "
 		<<std::string(12,' ')<<" | "
@@ -226,14 +226,14 @@ void Interaction_Probability::OutputTables() {
 }
 
 void Interaction_Probability::InitAnalysis() {
-  double bmax = 20.*rpa->hBar()*rpa->c()*1.e12;
+  double bmax = 20.;
   m_histos[std::string("b_times_P_in")] = new Histogram(0, 0., bmax, 200);
 }
 
 void Interaction_Probability::Analyse() {
   double s = sqr(rpa->gen.Ecms());
   for (size_t i=0;i<100;i++) {
-    double b = 10./double(100)*(double(i)+0.5)*rpa->hBar()*rpa->c()*1.e12;
+    double b = 10./double(100)*(double(i)+0.5);
     m_histos[std::string("b_times_P_in")]->Insert(b,b*(*this)(s,b));
   }
 }

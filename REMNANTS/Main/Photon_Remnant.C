@@ -214,7 +214,11 @@ void Photon_Remnant::MakeRemnants(Colour_Generator* colours)
   for (int i = 1; i < 3; i++) {
     part = MakeParticle(factor * quark);
     part->SetFlow(i, colours->NextColour(m_beam, i - 1));
-    part->SetPosition(m_position+(*p_ff)());
+    /////////////////////////////////////////////////////////////////////////
+    // Form_Factor has radii etc. in fm, event record needs it in mm,
+    // therefore we have to divide by 10^12.
+    /////////////////////////////////////////////////////////////////////////    
+    part->SetPosition(m_position+(*p_ff)()/1.e12);
     m_spectators.push_front(part);
     factor *= -1;
   }

@@ -224,6 +224,35 @@ Perturbative_Interface::DefineInitialConditions(ATOOLS::Blob* blob,
   return Return_Value::Success;
 }
 
+Return_Value::code
+Perturbative_Interface::DefineTrivialInitialConditions(ATOOLS::Blob* blob)
+{
+  if (blob==NULL) {
+    msg_Error()<<METHOD<<"(): Signal process not found."<<std::endl;
+    return Return_Value::Error;
+  }
+  if (blob->NInP()==2 && blob->NOutP()==2) {
+    if (!blob->InParticle(0)->Flav().Strong() &&
+	!blob->InParticle(1)->Flav().Strong() &&
+	blob->OutParticle(0)->Flav().Strong() &&
+	blob->OutParticle(1)->Flav().Strong()) {
+      if (blob->OutParticle(0)->Flav().IsQuark() &&
+	  !blob->OutParticle(0)->Flav().IsAnti()) {
+	blob->OutParticle(0)->SetFlow(1,-1);
+	blob->OutParticle(1)->SetFlow(2,blob->OutParticle(0)->GetFlow(1));
+      }
+      else if (blob->OutParticle(0)->Flav().IsGluon()) {
+	for (size_t i=0;i<2;i++) {
+	  blob->OutParticle(0)->SetFlow(i+1,-1);
+	  blob->OutParticle(1)->SetFlow(2-i,blob->OutParticle(0)->GetFlow(i+1));
+	}
+      }
+    }
+  }
+  return Return_Value::Nothing;
+}
+
+
 bool Perturbative_Interface::LocalKFactor(ATOOLS::Cluster_Amplitude* ampl)
 {
   if (m_globalkfac) {

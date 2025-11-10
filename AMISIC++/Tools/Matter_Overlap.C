@@ -42,7 +42,7 @@ Matter_Overlap::Matter_Overlap() :
   // distributions of the hadron form factors ~pi^{-3/2} times the pi^2 from
   // the time-integrated overlap when they collide.
   ///////////////////////////////////////////////////////////////////////////
-  m_norm(1./M_PI), m_invGeV2fm(rpa->hBar()*rpa->c()*1.e12)
+  m_norm(1./M_PI)
 {
   ///////////////////////////////////////////////////////////////////////////
   // This is a default initialization of default values.  Apart from the
@@ -97,6 +97,7 @@ double Matter_Overlap::SelectB() const {
   // Algorithm:
   // 1. select a radius R according to matter content:
   // 2. Select b according to d^2b O(b) = d b^2 exp(-b^2/R^2).
+  // Result is given in fm.
   ///////////////////////////////////////////////////////////////////////////
   double effradius = m_kradius * m_radius[0], b=0.;
   if (m_dynamic) effradius = m_kradius * sqrt(m_dynradius2);
@@ -108,30 +109,35 @@ double Matter_Overlap::SelectB() const {
       if (rand<=1.e-6) { effradius = m_kradius * m_radius[i]; break; }
     }
   }
-  do { b = sqrt(-log(Max(1.e-12,ran->Get())))*effradius; } while(b>=m_bmax);
+  do { b = sqrt(-log(Max(1.e-12,ran->Get())))*effradius;
+  } while(b>=m_bmax);
   return b;
 }
 
-Vec4D Matter_Overlap::
+bool Matter_Overlap::
 SelectPositionForScatter(const double & B,
 			 const double & x0, const double & Q20,
-			 const double & x1, const double & Q21) const {
+			 const double & x1, const double & Q21,
+			 Vec4D & pos) const {
   ///////////////////////////////////////////////////////////////////////////
   // Independently select two impact paraemters b0 and b1 w.r.t.\ the incoming
   // beams, from their respective form factors until a combination that is
   // allowed given the overall impact paramter B is found.
-  // Position is given in fm, calculation in 1/GeV.
+  // Position is given in fm.
   ///////////////////////////////////////////////////////////////////////////
-  double b0, b1, cosphi2;
+  double b0, b1, cosphi2, sinphi2;
   size_t trials = 0;
   do {
-    b0      = p_ffs[0]->B(x0,Q20);
-    b1      = p_ffs[1]->B(x1,Q21);
+    do {
+      b0      = p_ffs[0]->B(x0,Q20);
+      b1      = p_ffs[1]->B(x1,Q21);
+    } while (B>b0+b1);
     cosphi2 = (sqr(b0)-sqr(b1)-sqr(B))/(2.*b1*B);
   } while ( (cosphi2>1. || cosphi2<-1.) && (++trials)<10000);
-  if (trials>=9999) { b1 = B/2.; cosphi2 = -1.; }
-  double sinphi2 = (ran->Get()>0.5?-1.:1.)*sqrt(1.-sqr(cosphi2));
-  return m_invGeV2fm*Vec4D(0.,B/2.+b1*cosphi2,b1*sinphi2,0.);
+  if (trials>=9999) return false;
+  sinphi2 = (ran->Get()>0.5?-1.:1.)*sqrt(1.-sqr(cosphi2));
+  pos     = Vec4D(0.,B/2.+b1*cosphi2,b1*sinphi2,0.)/1.e12;
+  return true;
 }
 
 void Matter_Overlap::Initialize(Remnant_Handler * const rh,
@@ -265,26 +271,25 @@ void Matter_Overlap::Output(const double & check) {
   msg_Info()<<"   "<<std::string(77,'-')<<"\n"
 	    <<"   | Matter_Overlap:"<<std::string(59,' ')<<"|\n"
 	    <<"   | Integral up to b_max = "
-	    <<std::setprecision(6)<<std::setw(8)<<(m_bmax*m_invGeV2fm)<<" fm yields "
+	    <<std::setprecision(6)<<std::setw(8)<<m_bmax<<" fm yields "
 	    <<std::setprecision(6)<<std::setw(8)<<check<<"."
 	    <<std::string(23,' ')<<"|\n";
   for (size_t i=0;i<2;i++) {
     msg_Info()<<"   | "<<std::setw(20)<<m_form[i]<<", R_1 = "
 	      <<std::setprecision(4)<<std::setw(6)
-	      <<(p_ffs[0]->Radius1()*m_invGeV2fm)<<" fm";
+	      <<p_ffs[0]->Radius1()<<" fm";
     if (m_form[i]==matter_form::double_gaussian) {
       msg_Info()<<", f_1 = "<<std::setprecision(4)<<std::setw(6)
 		<<p_ffs[i]->Fraction1()<<", "
 		<<"R_2 = "<<std::setprecision(4)<<std::setw(6)
-		<<(p_ffs[i]->Radius2()*m_invGeV2fm)<<" fm"
+		<<p_ffs[i]->Radius2()<<" fm"
 		<<std::string(6,' ')<<"|\n";
     }
     else msg_Info()<<std::string(37,' ')<<"|\n";
   }
   if (m_dynamic)
     msg_Info()<<"   | Maximal x-dependent radius: "
-	      <<std::setprecision(4)<<std::setw(6)<<m_maxradius<<" 1/GeV = "
-	      <<std::setprecision(4)<<std::setw(6)<<(m_maxradius*m_invGeV2fm)<<" fm. "
+	      <<std::setprecision(4)<<std::setw(6)<<m_maxradius<<" fm. "
 	      <<std::string(20,' ')<<"|\n";
   msg_Info()<<"   "<<std::string(77,'-')<<"\n\n";
 }
