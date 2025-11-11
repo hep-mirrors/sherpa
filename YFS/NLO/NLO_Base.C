@@ -554,7 +554,7 @@ double NLO_Base::CalculateRealReal() {
 
 
 double NLO_Base::CalculateRealReal(Vec4D k1, Vec4D k2, int fsr1, int fsr2){
-	double norm = 2.*pow(2 * M_PI, 6);
+	double norm = 4.*pow(2 * M_PI, 6);
 	Vec4D_Vector p(m_plab),pi(m_bornMomenta), pf(m_bornMomenta), plab(m_plab);
  	Vec4D_Vector pp = p;
 	Vec4D kk1 = k1;
@@ -671,8 +671,8 @@ double NLO_Base::CalculateRealReal(Vec4D k1, Vec4D k2, int fsr1, int fsr2){
 	m_recola_evts+=1;
 	double real1 = CalculateReal(kk1,3+fsr1);
 	double real2 = CalculateReal(kk2,3+fsr2);
-	double sub1 = (fsr1!=1?p_dipoles->CalculateRealSubEEX(kk1):p_dipoles->CalculateRealSubEEX(kk1));
-	double sub2 = (fsr2!=1?p_dipoles->CalculateRealSubEEX(kk2):p_dipoles->CalculateRealSubEEX(kk2));
+	double sub1 = (fsr1!=1?p_dipoles->CalculateRealSubEEX(k1):p_dipoles->CalculateRealSubEEX(kk1));
+	double sub2 = (fsr2!=1?p_dipoles->CalculateRealSubEEX(k2):p_dipoles->CalculateRealSubEEX(kk2));
 	double fullsub = (-subloc2*real1 -subloc1*real2-subloc1*subloc2*m_born);
 	tot = (r*flux + fullsub)/sub1/sub2;
   if(IsBad(tot)){
