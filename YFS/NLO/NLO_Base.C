@@ -554,7 +554,7 @@ double NLO_Base::CalculateRealReal() {
 
 
 double NLO_Base::CalculateRealReal(Vec4D k1, Vec4D k2, int fsr1, int fsr2){
-	double norm = 4.*pow(2 * M_PI, 6);
+	double norm = 2.*pow(2 * M_PI, 6);
 	Vec4D_Vector p(m_plab),pi(m_bornMomenta), pf(m_bornMomenta), plab(m_plab);
  	Vec4D_Vector pp = p;
 	Vec4D kk1 = k1;
