@@ -698,6 +698,8 @@ double Define_Dipoles::CalculateRealSubEEX(const Vec4D &k) {
     sub += D.Eikonal(k, D.GetBornMomenta(0), D.GetBornMomenta(1));
   }
   for (auto &D : m_dipolesFF) {
+    // double norm=1;
+    // if(D.m_Qi == D.m_Qj) norm=-1;
     sub += D.Eikonal(k, D.GetBornMomenta(0), D.GetBornMomenta(1));
   }
   // for (auto &D : m_dipolesIF) {

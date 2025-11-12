@@ -49,6 +49,7 @@ public:
     double R2(const Vec4D &p1, const Vec4D &p2);
     // DivArrD BVirtGeneralEps(YFS::Dipole &d, double kmax=0);
     double  BVirtGeneral(YFS::Dipole &d, double kmax=0);
+    DivArrD BVirtGeneralEps(YFS::Dipole &d, double kmax=0);
     // double C0(double p1, double p2, double p3);
     // double C0(double p1, double p2, double p3,double m1, double m2, double m3);
     // double B0(double s, double m1, double m2);
