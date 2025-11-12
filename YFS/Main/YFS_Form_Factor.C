@@ -851,12 +851,12 @@ DivArrD YFS_Form_Factor::BVirtTEps(YFS::Dipole &d, double kmax){
     p2 = d.GetNewMomenta(1);
   }
   else if(d.Type()==dipoletype::final){
-    p1 = d.GetNewMomenta(0);
-    p2 = d.GetNewMomenta(1);
+    p1 = d.GetBornMomenta(0);
+    p2 = d.GetBornMomenta(1);
   }
   else if(d.Type()==dipoletype::ifi){
     p1 = d.GetNewMomenta(0);
-    p2 = d.GetNewMomenta(1);
+    p2 = d.GetBornMomenta(1);
   }
   else{
     msg_Error()<<"Unknown Dipole type"<<std::endl;
@@ -1121,6 +1121,8 @@ if(IsBad( t1+0.5/xlam*t2)){
              <<"xlam = "<<xlam<<std::endl;
 }
 return (t1+0.5/xlam*t2).real();
+// return (0.5/xlam*t2).real();
+// return (t1).real();
 }
 
 
@@ -1168,5 +1170,39 @@ double YFS_Form_Factor::BVirtGeneral(YFS::Dipole &d, double Kmax){
                 <<"d.Right() = "<<d.GetFlav(1)<<std::endl;
     
   }
+  return m_alpi*form;
+}
+
+
+DivArrD YFS_Form_Factor::BVirtGeneralEps(YFS::Dipole &d, double Kmax){
+  Vec4D p1,p2;
+  if(d.Type()==dipoletype::initial){
+    p1 = d.GetNewMomenta(0);
+    p2 = d.GetNewMomenta(1);
+  }
+  else if(d.Type()==dipoletype::final){
+    p1 = d.GetBornMomenta(0);
+    p2 = d.GetBornMomenta(1);
+  }
+  else if(d.Type()==dipoletype::ifi){
+    p1 = d.GetNewMomenta(0);
+    p2 = d.GetBornMomenta(1);
+  }
+  else{
+    THROW(fatal_error, "Unknown Dipole Type");
+  }
+  const double m1 = d.GetMass(0);
+  const double m2 = d.GetMass(1);
+  m_m1 = m1;
+  m_m2 = m2;
+  const double a0 = A(p1*p2, m1, m2);
+  const double a2 = A2(p1, p2);
+  const double irloop = p_virt->IRscale();
+  const double epsloop = p_virt->Eps_Scheme_Factor({p1,p2});
+  DivArrD massph(0,-1,0,0,0,0);
+  // double form = log(m_photonMass*m_photonMass/m_m1/m_m2)*(p1*p2*a0-1);
+  DivArrD form = (massph+log(4.*M_PI*sqr(irloop)/m1/m2/epsloop))*(p1*p2*a0-1.);
+  form += A1(p1, p2);
+  form += -p1*p2*a2;
   return m_alpi*form;
 }
