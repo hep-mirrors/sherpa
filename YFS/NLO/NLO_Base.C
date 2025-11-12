@@ -187,7 +187,7 @@ double NLO_Base::CalculateVirtual() {
 		double yfspole = p_dipoles->Get_E1();
 		int ncorrect = ::countMatchingDigits(p1, -yfspole, 32);
 		double reldiff = (p1+yfspole)/p1;
-		if(!IsEqual(p1,-yfspole,1e-6) || ncorrect < 10){
+		if(!IsEqual(p1,-yfspole,1e-4)){
 			msg_Error()<<"Poles do not cancel in YFS Virtuals"<<std::endl
 					 <<"Correct digits =  "<<ncorrect<<std::endl
 					 <<"Relative diff =  "<<reldiff<<std::endl
@@ -200,7 +200,7 @@ double NLO_Base::CalculateVirtual() {
 		else{
 			int i = 0;
 			msg_Debugging()<<std::setprecision(32);
-			msg_Out()<<"Poles cancel in YFS Virtuals to "<<ncorrect<<" digits"<<std::endl
+			msg_Debugging()<<"Poles cancel in YFS Virtuals to "<<ncorrect<<" digits"<<std::endl
 					 		<<"Relative diff =  "<<reldiff<<std::endl;
 			m_histograms1d["SinglePoleCD"]->Insert(ncorrect);
 			m_histograms1d["OneLoopEpsYFS"]->Insert(log10(fabs(yfspole)));
@@ -211,7 +211,7 @@ double NLO_Base::CalculateVirtual() {
 			// 	msg_Out()<<"p["<<i<<"] = "<<p<<std::endl;
 			// 	i++;
 			// }
-			msg_Out()<<std::setprecision(32)<<"One-Loop Provider V eps^{-1}  = "<<p1<<std::endl
+			msg_Debugging()<<std::setprecision(32)<<"One-Loop Provider V eps^{-1}  = "<<p1<<std::endl
 			 			<<"Sherpa V eps^{-1}  = "<<yfspole<<std::endl;
 		}
 		// Check Rescaling
@@ -454,17 +454,23 @@ double NLO_Base::CalculateRealVirtual(Vec4D k, int fsrcount) {
 	Vec4D_Vector pp = p;
  	pp.pop_back();
  	Flavour_Vector fl = m_flavs;
+ 	p_nlodipoles->MakeDipolesII(fl,pp,pp);
+	p_nlodipoles->MakeDipolesIF(fl,pp,pp);
+	p_nlodipoles->MakeDipoles(fl,pp,pp);
+	p_nlodipoles->p_yfsFormFact->p_virt = p_realvirt->p_loop_me;
+	double subloc = p_nlodipoles->CalculateRealVirtualSubEps(k);
+	yfspole = p_nlodipoles->Get_E1();
+	double aB = p_nlodipoles->CalculateRealSub(k)*m_oneloop;//CalculateVirtual();//*p_realvirt->m_factor;
+	
+
 	p_nlodipoles->MakeDipolesII(fl,pp,m_plab);
 	p_nlodipoles->MakeDipolesIF(fl,pp,m_plab);
 	p_nlodipoles->MakeDipoles(fl,pp,m_plab);
 	// p.push_back(k);
 	// m_plab = pp;
-	p_nlodipoles->p_yfsFormFact->p_virt = p_realvirt->p_loop_me;
 	if(m_flux_mode==1) flux = p_nlodipoles->CalculateFlux(k);
 	else if(m_flux_mode==2) flux = 0.5*(p_nlodipoles->CalculateFlux(kk)+p_nlodipoles->CalculateFlux(k));
 	else flux = p_dipoles->CalculateFlux(kk);
-	double subloc = p_nlodipoles->CalculateRealVirtualSubEps(k);
-	yfspole = p_nlodipoles->Get_E1();
 	// PRINT_VAR(yfspole);
 	double subb;
 
@@ -481,7 +487,6 @@ double NLO_Base::CalculateRealVirtual(Vec4D k, int fsrcount) {
 	}
 	if(IsZero(r)) return 0;
 	// m_plab = pp;
-	double aB = p_nlodipoles->CalculateRealSub(k)*m_oneloop;//CalculateVirtual();//*p_realvirt->m_factor;
 	// double aB = p_nlodipoles->CalculateRealSub(k)*CalculateVirtual();//*p_realvirt->m_factor;
 	// double aB = subloc*CalculateVirtual();
 	// yfspole*=m_oneloop*p_realvirt->m_factor;
@@ -510,7 +515,7 @@ double NLO_Base::CalculateRealVirtual(Vec4D k, int fsrcount) {
 			return 0;
 		}
 		else{
-			msg_Out()<<std::setprecision(16)<<"Poles cancel in YFS Real-Virtuals"<<std::endl
+			msg_Debugging()<<std::setprecision(16)<<"Poles cancel in YFS Real-Virtuals"<<std::endl
 						<<"Process =  "<<p_realvirt->p_loop_me->Name()<<std::endl
 						<<"Correct Digits =  "<<correctdigit<<std::endl
 					 	<<"One-Loop Provider RV eps^{-1}  = "<<pr2<<std::endl

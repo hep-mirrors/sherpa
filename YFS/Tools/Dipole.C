@@ -826,7 +826,9 @@ bool Dipole::IsDecayAllowed(){
 
 
 double Dipole::Eikonal(const Vec4D &k,const Vec4D &p1,const Vec4D &p2) {
-  return m_QiQj*m_thetaij*m_alp / (4 * M_PI * M_PI) * (p1 / (p1 * k) - p2 / (p2 * k)).Abs2();
+  double norm=1;
+  if(m_Qi == m_Qj) norm=-1;
+  return norm*m_QiQj*m_thetaij*m_alp / (4 * M_PI * M_PI) * (p1 / (p1 * k) - p2 / (p2 * k)).Abs2();
 }
 
 double Dipole::EikonalMassless(const Vec4D &k,const Vec4D &p1, const Vec4D &p2) {
