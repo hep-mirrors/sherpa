@@ -27,6 +27,7 @@ YFS_Handler::YFS_Handler()
   p_splitter = new PHOTONS::Photon_Splitter(m_photon_split);
   m_rmode = 0;
   m_real = 1;
+  m_negskip = 0;
   if(Mode()!=YFS::yfsmode::off){
     rpa->gen.AddCitation(1,"The automation of YFS ISR is published in  \\cite{Krauss:2022ajk}.Which is based on \\cite{Jadach:1988gb}");
   }
@@ -44,6 +45,9 @@ YFS_Handler::~YFS_Handler()
   if (p_splitter) delete p_splitter;
   for (auto &p: m_particles){
     if(p) delete p;
+  }
+  if(m_negskip!=0){
+    msg_Out()<<"Total Events Skipped: "<<m_negskip<<std::endl;
   }
 }
 
@@ -484,6 +488,11 @@ void YFS_Handler::GenerateWeight() {
              "  NLO  Correction = " << m_real << "\n" <<
              "Total Weight = " << m_yfsweight << "\n";
     m_yfsweight = 0;
+  }
+  if(m_yfsweight < 0 && m_skipNegWeights){
+    msg_Debugging()<<"Skipping negative Weight in YFS"<<std::endl;
+    m_yfsweight=0;
+    m_negskip++;
   }
 }
 
