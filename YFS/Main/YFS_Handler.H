@@ -40,7 +40,7 @@ namespace YFS {
         bool   m_setparticles, m_asymbeams;
         double m_real, m_virt;
         double m_nbar, m_formfactor, m_betatWW, m_coulSub, m_ww_formfact;
-
+        int m_negskip;
         YFS::Coulomb *p_coulomb;
         PHASIC::Process_Base *proc;
         ATOOLS::Particle_Vector m_particles;
