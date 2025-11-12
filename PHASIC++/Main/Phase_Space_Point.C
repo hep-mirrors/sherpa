@@ -224,6 +224,7 @@ bool Phase_Space_Point::DefineISRKinematics(Process_Integrator *const process) {
 
 bool Phase_Space_Point::DefineFSRKinematics() {
   p_fsrchannels->GeneratePoint(p_moms.data(), p_pshandler->Cuts());
+  // msg_Out() << "[PHASE_SPACE_POINT DEBUG] p_moms=(" << p_moms[0] << "," << p_moms[1] << "," << p_moms[2] << "," << p_moms[3] << ")" << std::endl;
   return true;
 }
 
@@ -273,6 +274,7 @@ void Phase_Space_Point::CorrectMomenta() {
   }
   for (size_t i(0); i < m_nin; ++i)
     p_moms[i] = -p_moms[i];
+  // msg_Out() << "[PHASE_SPACE_POINT DEBUG] p_moms(correct)=(" << p_moms[0] << "," << p_moms[1] << "," << p_moms[2] << "," << p_moms[3] << ")" << std::endl;
 }
 
 double Phase_Space_Point::CalculateWeight() {

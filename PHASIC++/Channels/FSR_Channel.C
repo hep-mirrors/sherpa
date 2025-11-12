@@ -142,6 +142,7 @@ void T1Channel::GeneratePoint(ATOOLS::Vec4D * p,Cut_Data *cuts,double * _ran =0)
   ctmax=Min(ctmax,sqrt(1.0-sqr(cuts->etmin[2])/E12));
   CE.TChannelMomenta(p[0],p[1],p[2],p[3],p_ms[2],p_ms[3],0.,
 		     .5,ctmax,-ctmax,ran[0],ran[1]);
+  // msg_Out() << "[FSR tchannel DEBUG] p[0]=" << p[0] << ", p[1]=" << p[1] << ", p[2]=" << p[2] << ", p[3]=" << p[3] << std::endl;
 }
 
 void T1Channel::GenerateWeight(ATOOLS::Vec4D * p,Cut_Data *cuts) 

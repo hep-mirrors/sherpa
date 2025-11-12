@@ -1,0 +1,62 @@
+EVENT_GENERATION_MODE: 'Unweighted'  # Changed from Weighted
+ANALYSIS: Rivet
+
+OUTPUT: 2  # More verbose output
+EVENTS: 32000k
+
+BEAMS:  [2212, 11]  # proton beam + electron beam
+BEAM_ENERGIES: [0.938272, 1]  # proton at rest, 1 GeV electron
+BEAM_MODE: Fixed_Target
+BEAM_SPECTRA: [Fixed_Target, Monochromatic]  # proton=fixed target, electron=beam
+
+PARTICLE_DATA:
+  2212:  # proton
+    Massive: 1
+  11:  # electron
+    Massive: 1
+
+PROCESSES:
+- 2212 11 -> 2212 11:  # p[0] e-[1] -> p[2] e-[3] 
+    Order: {QCD: 0, EW: 2} # EW: 2}
+
+# Form factor stuff
+FormFactor_EMnucleon:
+  incomingnucleon: proton
+  incomingboson: photon
+
+
+FRAGMENTATION: None
+BEAM_REMNANTS: None
+SHOWER_GENERATOR: None
+ISR_HANDLER: None  # Disable ISR for elastic scattering (should be handled by pdfs)
+
+PDF_SET: [QuasiElastic, None]  # proton: special, electron: None
+
+ME_GENERATORS: Internal 
+
+EW_SCHEME: 1
+MODEL: SM  # Standard Model
+
+SCALES: VAR{-Abs2(p[3]-p[1])}  # Q2 = momentum transfer squared
+
+# Phase space integration settings
+INTEGRATION:
+  FINISH_OPTIMIZATION: Off  # Disable adaptive optimization that might bias phi
+
+SELECTORS:
+- [Q2, 11, 11, 0.0001, 3] #[observable, flavor1, flavor2, min, max]  
+
+NANOBARN: 0
+YFS:
+  MODE: 0
+ME_QED: 
+  - ENABLED: False
+
+ANALYSIS: Rivet
+ANALYSIS_OUTPUT: Analysis_pe-pe_new
+
+# Rivet analyses - need to specify the plugin path for custom analyses
+RIVET:
+  --analyses: [MC_XS, MC_FSPARTICLES]
+  #ZEUS_2024_I2794054, H1_2009_I810046, H1_2006_I699835, ZEUS_1996_I420332, ZEUS_1999_I500267]
+

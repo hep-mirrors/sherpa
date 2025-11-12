@@ -72,12 +72,12 @@ namespace EXTRAXS {
         double u = (ki - pf).Abs2();
         
         double Q2 = -t;  // Q2 > 0 for spacelike photon exchange
-        
+
         // Add a small cutoff to avoid IR divergence at Q2=0 (forward scattering)
-        // For low-energy fixed target, use a smaller cutoff
-        const double Q2_min = 1e-10;
+        // cutoff order approx mass of electron, we dont expect slow moving electrons
+        const double Q2_min = 1e-3;
         if (Q2 < Q2_min) {
-            msg_Out() << "pe_pe::operator(): Q2 < Q2_min, returning 0.0" << std::endl;
+            // msg_Out() << "pe_pe::operator(): Q2 < Q2_min, returning 0.0" << std::endl;
             return 0.0;
         }
 
