@@ -1,6 +1,5 @@
 #include "REMNANTS/Tools/Form_Factor.H"
 #include "ATOOLS/Org/Run_Parameter.H"
-#include "ATOOLS/Org/Scoped_Settings.H"
 #include "ATOOLS/Org/Exception.H"
 
 using namespace REMNANTS;
@@ -18,7 +17,7 @@ void Form_Factor::Initialise()
 {
   /////////////////////////////////////////////////////////////////////////////
   // Radii given in fm - must be translated into mm
-  /////////////////////////////////////////////////////////////////////////////  
+  /////////////////////////////////////////////////////////////////////////////
   m_form        = rempars->Matter_Form(m_flav);
   m_radius1     = rempars->Get(m_flav,"MATTER_RADIUS_1");
   m_fraction1   = 1.;
@@ -36,44 +35,49 @@ void Form_Factor::Initialise()
 
 double Form_Factor::B(const double & x, const double & Q2) {
   /////////////////////////////////////////////////////////////////////////////
-  // Genuinely we have different forms or combinations of Gaussians, therefore
-  // an integral d^2b F(b) -> db^2 F(b^2) -> db^2 exp(-b^2/R^2)
-  // We return the impact factor B in units of mm, inherited from the radius.
+  // Sample radial distance from 2D Gaussian form factor F(b) = exp(-b^2/R^2)
+  // In polar coordinates: P(b)db = b exp(-b^2/R^2)db
+  // Inverse transform sampling gives: b = R sqrt(-ln(u)) where u ~ Uniform(0,1)
+  // Returns impact parameter b in units of millimeter.
   /////////////////////////////////////////////////////////////////////////////
-  return Radius(x, Q2) * sqrt(-log(ran->Get()));
+  return Radius(x, Q2) * sqrt(-log(std::max(1.e-12, ran->Get()))) * 1.e-12;
 }
 
 Vec4D Form_Factor::operator()(const double & x, const double & Q2) {
   /////////////////////////////////////////////////////////////////////////////
-  // Generate a position distributed according to the form-factor.
-  // This position will be only in impact parameter space (i.e. the x-y-plane),
-  // relative to the centre of the remnant, and in mm.
-  // We return the position based on the impact factor B in units of mm, see
-  // above.
+  // Generate a 2D position distributed according to the form factor.
+  // Position is in the transverse (x-y) plane relative to the parton center.
+  // Azimuthal angle \phi is uniformly distributed in [0, 2\pi).
+  // Returns position in units of millimeter.
   /////////////////////////////////////////////////////////////////////////////
-  double phi = 2.*M_PI*ran->Get();
-  return B(x,Q2)*Vec4D(0.,cos(phi),sin(phi),0.);
+  double phi = 2. * M_PI * ran->Get();
+  double b = B(x, Q2);
+  return b * Vec4D(0., std::cos(phi), std::sin(phi), 0.);
 }
 
-const double Form_Factor::Radius(const double & x,const double & Q2) const {
+const double Form_Factor::Radius(const double & x, const double & Q2) const {
   /////////////////////////////////////////////////////////////////////////////
-  // Default: assume single Gaussian, then the radius is just the radius
+  // Calculate effective transverse radius for the form factor
   /////////////////////////////////////////////////////////////////////////////
   double radius = m_radius1;
+
   /////////////////////////////////////////////////////////////////////////////
-  // If double Gaussian, account for the "other" Gaussian, with probability
-  // of 1 - (matter fraction)
+  // Model 1: Double Gaussian
   /////////////////////////////////////////////////////////////////////////////
-  if (m_form==matter_form::double_gaussian) {
-    if (m_form==matter_form::double_gaussian && ran->Get()>=m_fraction1)
+  if (m_form == matter_form::double_gaussian && ran->Get() >= m_fraction1) {
     radius = m_radius2;
   }
   /////////////////////////////////////////////////////////////////////////////
-  // If dynamic form factor, take into account the parton cloud
+  // Model 2: x-dependent Gaussian
+  // R(x) = R_0 x^(-α) reflects increasing transverse size at small x
   /////////////////////////////////////////////////////////////////////////////
-  else if (m_form==matter_form::x_dependent_gaussian) {
-    if (x<0. || x>1.) radius = m_radius1;
-    else radius = m_radius1 * pow(1./x,m_softexp);
-  }  
+  else if (m_form == matter_form::x_dependent_gaussian) {
+    if (x < 0. || x > 1.) {
+      radius = m_radius1;
+    } else {
+      radius = m_radius1 * pow(1./std::max(x, 1e-6), m_softexp);
+    }
+  }
+
   return radius;
 }

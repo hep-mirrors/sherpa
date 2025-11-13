@@ -326,7 +326,6 @@ void Amisic::UpdateDownstreamPositions(Blob * blob,const Vec4D & delta_pos) {
   }
 }
 
-
 bool Amisic::VetoEvent(const double & scale) const {
   ///////////////////////////////////////////////////////////////////////////
   // So far this has not been properly filled.

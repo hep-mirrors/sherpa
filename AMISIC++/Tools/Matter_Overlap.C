@@ -149,20 +149,8 @@ bool Matter_Overlap::
 
   sinphi1 = (ran->Get() > 0.5 ? -1. : 1.) * sqrt(1. - sqr(cosphi1));
 
-  // Sample total azimuthal angle
-  double azimuth = 2. * M_PI * ran->Get();
-  double cos_az = cos(azimuth);
-  double sin_az = sin(azimuth);
-
-  // Radial position in reference frame
-  double r_x = -B/2. + b1*cosphi1;
-  double r_y = b1*sinphi1;
-
-  // Apply rotation
-  double x = r_x * cos_az - r_y * sin_az;
-  double y = r_x * sin_az + r_y * cos_az;
-
-  pos = Vec4D(0., x, y, 0.) * 1.e-12;
+  // Position relative to beam 1 at (-B/2, 0)
+  pos = Vec4D(0., -B/2. + b1*cosphi1, b1*sinphi1, 0.) * 1.e-12;
 
   return true;
 }

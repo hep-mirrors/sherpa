@@ -165,7 +165,7 @@ const double MI_Handler::ImpactParameter() const {
   // Impact parameter B in AMISIC and SHRIMPS internally given in fm, must be
   // converted to mm, hence division by 1.e12.
   /////////////////////////////////////////////////////////////////////////////////
-  if (m_gen==genID::amisic)  return p_amisic->B()/1.e12;
+  if (m_gen==genID::amisic)  return p_amisic->B();
   if (m_gen==genID::shrimps) return p_shrimps->B()/1.e12;
   return 0.;
 }
