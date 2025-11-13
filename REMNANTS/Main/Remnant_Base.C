@@ -50,11 +50,7 @@ Particle* Remnant_Base::MakeParticle(const Flavour& flav)
   Particle* part = new Particle(-1, flav, Vec4D(0., 0., 0., 0.), 'B');
   part->SetNumber();
   part->SetBeam(m_beam);
-  /////////////////////////////////////////////////////////////////////////
-  // Form_Factor has radii etc. in fm, event record needs it in mm,
-  // therefore we have to divide by 10^12.
-  /////////////////////////////////////////////////////////////////////////    
-  part->SetPosition(m_position + (*p_ff)()/1.e12);
+  part->SetPosition(m_position + (*p_ff)());
   return part;
 }
 
@@ -64,11 +60,7 @@ void Remnant_Base::CompensateColours(Colour_Generator* colours)
          colours->Colours(m_beam, 0) != colours->Colours(m_beam, 1)) {
     Particle* gluon = MakeParticle(Flavour(kf_gluon));
     for (size_t i = 0; i < 2; i++) gluon->SetFlow(i + 1, colours->NextColour(m_beam, i));
-    /////////////////////////////////////////////////////////////////////////
-    // Form_Factor has radii etc. in fm, event record needs it in mm,
-    // therefore we have to divide by 10^12.
-    /////////////////////////////////////////////////////////////////////////    
-    gluon->SetPosition(m_position + (*p_ff)()/1.e12);
+    gluon->SetPosition(m_position + (*p_ff)());
     m_spectators.push_back(gluon);
   }
 }
