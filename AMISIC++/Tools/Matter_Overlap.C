@@ -97,7 +97,7 @@ double Matter_Overlap::SelectB() const {
   // Algorithm:
   // 1. select a radius R according to matter content:
   // 2. Select b according to d^2b O(b) = d b^2 exp(-b^2/R^2).
-  // Result is given in fm.
+  // Result is given in millimeter.
   ///////////////////////////////////////////////////////////////////////////
   double effradius = m_kradius * m_radius[0], b=0.;
   if (m_dynamic) effradius = m_kradius * sqrt(m_dynradius2);
@@ -111,7 +111,7 @@ double Matter_Overlap::SelectB() const {
   }
   do { b = sqrt(-log(Max(1.e-12,ran->Get())))*effradius;
   } while(b>=m_bmax);
-  return b;
+  return b * 1.e-12;
 }
 
 bool Matter_Overlap::
@@ -150,7 +150,7 @@ bool Matter_Overlap::
   sinphi1 = (ran->Get() > 0.5 ? -1. : 1.) * sqrt(1. - sqr(cosphi1));
 
   // Position relative to beam 1 at (-B/2, 0)
-  pos = Vec4D(0., -B/2. + b1*cosphi1, b1*sinphi1, 0.) * 1.e-12;
+  pos = Vec4D(0., -B/2. + b1*cosphi1, b1*sinphi1, 0.);
 
   return true;
 }
