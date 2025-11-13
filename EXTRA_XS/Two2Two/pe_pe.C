@@ -15,46 +15,50 @@ using namespace PHASIC;
 using namespace std;
 
 namespace EXTRAXS {
+    // NOTE: that this class also does ne-ne scattering when the nucleon is a neutron
+    //       and that all refernces to protons will become neutrons if that is the incoming nucleon
+    // NOTE: this class also works for muon nucleon scattering, as lepton mass is set 
+    //        by incoming lepton flavour
 
     class pe_pe : public ME2_Base
     {
     private:
 
     public:
-        pe_pe(const External_ME_Args &args, const incomingboson::code &boson, const incomingnucleon::code &nucleon);
+        pe_pe(const External_ME_Args &args, const incomingnucleon::code &nucleon, bool include_Z_interference = true);
 
         double operator()(const ATOOLS::Vec4D_Vector &mom);
-        double m_alpha, m_alphas, m_s, Me2, Mp2;
-        Flavour m_flv;
+        double m_alpha, m_alphas, m_s, m_massZ=91.1876; // default Z mass in GeV
+        Flavour m_flv_nucleon, m_flav_lepton;
         std::unique_ptr<FormFactor_EMnucleon> p_formfactor;
-        incomingboson::code m_boson;
+        std::unique_ptr<FormFactor_EMnucleon> p_formfactor_Z;  
         incomingnucleon::code m_nucleon;
+        bool m_include_Z;  // Include photon-Z interference for NC
     };
 
-    pe_pe::pe_pe(const External_ME_Args &args, const incomingboson::code &boson, const incomingnucleon::code &nucleon)
-        : ME2_Base(args), m_boson(boson), m_nucleon(nucleon)
+    pe_pe::pe_pe(const External_ME_Args &args, const incomingnucleon::code &nucleon, bool include_Z_interference)
+        : ME2_Base(args), m_nucleon(nucleon), m_include_Z(include_Z_interference)
     {
         msg_Out()<<"pe_pe::pe_pe(): Constructor called"<<std::endl;
         m_sintt = 2;  // T-channel only , maybe look at single channel restriction later
         //m_sintt = 0;  // No s/t/u channel restriction
         m_oew = 0; // EW order zero (no loops)
         m_oqcd = 0; // QCD order zero 
-        msg_Out()<<"pe_pe::pe_pe(): Getting alpha_QED"<<std::endl;
-        m_alpha = MODEL::s_model->ScalarConstant("alpha_QED");
-        msg_Out()<<"pe_pe::pe_pe(): Getting strong_cpl"<<std::endl;
-        m_alphas = MODEL::s_model->ScalarConstant("strong_cpl");
+        msg_Out()<<"pe_pe::pe_pe(): Getting constants"<<std::endl;
+        //m_alpha = MODEL::s_model->ScalarConstant("alpha_QED");
+        //m_alphas = MODEL::s_model->ScalarConstant("strong_cpl");
+        m_massZ = Flavour(kf_Z).Mass();
 
-        msg_Out()<<"pe_pe::pe_pe(): Creating FormFactor_EMnucleon"<<std::endl;
-        p_formfactor = std::make_unique<FormFactor_EMnucleon>(m_boson, m_nucleon);
-        msg_Out()<<"pe_pe::pe_pe(): Constructor complete"<<std::endl;
-        // m_flvs = args.Flavours();
-        // if (m_flvs[0].Charge() == m_flvs[1].Charge())
-        //     m_ss = true;
-        // else
-        //     m_ss = false;
-        msg_Out()<<"pe_pe::pe_pe(): Setting Me2 and Mp2"<<std::endl;
-        Me2 = pow(Flavour(kf_e).Mass(), 2);
-        Mp2 = pow(Flavour(kf_p_plus).Mass(), 2);
+        msg_Out()<<"pe_pe::pe_pe(): Creating FormFactor_EMnucleon for photon"<<std::endl;
+        p_formfactor = std::make_unique<FormFactor_EMnucleon>(incomingboson::photon, m_nucleon);
+        
+        // If including Z interference, create Z form factor too
+        if (m_include_Z) {
+            msg_Out()<<"pe_pe::pe_pe(): Also creating FormFactor_EMnucleon for Z (interference)"<<std::endl;
+            p_formfactor_Z = std::make_unique<FormFactor_EMnucleon>(incomingboson::Z, m_nucleon);
+        }
+        
+        msg_Out()<<"pe_pe::pe_pe(): Constructor complete for nucleon "<< m_nucleon <<std::endl;
     }
 
     double pe_pe::operator()(const ATOOLS::Vec4D_Vector &momenta)
@@ -65,6 +69,10 @@ namespace EXTRAXS {
         const auto &pi = momenta[0];
         const auto &kf = momenta[3];
         const auto &pf = momenta[2];
+
+        //masses squared (on shell)
+        const double Me2 = ki.Abs2();
+        const double Mp2 = pi.Abs2();
         
         // Mandelstraam variables
         double s = (ki + pi).Abs2();
@@ -100,7 +108,40 @@ namespace EXTRAXS {
         double L_munu_H_munu = - (term1 + term2);
         double pre_factor = 32 * M_PI * M_PI * sqr((*aqed)(m_s)) / (Q2 * Q2);
 
-        return pre_factor * L_munu_H_munu;
+        double M_squared = pre_factor * L_munu_H_munu;
+
+        if (m_include_Z && p_formfactor_Z)
+        {
+            NucleonFormFactors ff_Z = p_formfactor_Z->GetFormFactors(Q2);
+            double F1_Z = ff_Z.F1;
+            double F2_Z = ff_Z.F2;
+            double F12_Z = F1_Z + F2_Z;
+
+            double A_Z = (s - Me2 - Mp2) / 2.0;  // (ki . pi)
+            double B_Z = -(u - Me2 - Mp2) / 2.0; // (ki . pf)
+            double C_Z = Me2 - (t) / 2.0;        // (ki . kf)
+            double D_Z = Mp2 - (t) / 2.0;        // (pi . pf)
+
+            // Calculate spin averaged matrix element squared
+            double term1coeff_Z = 4 * F12_Z * F12_Z;
+            double term1_Z = term1coeff_Z * (2 * A_Z * A_Z + 2 * B_Z * B_Z + C_Z * t + D_Z * t);
+            double term2coeff_Z = 2 * ((F2_Z * F2_Z * (Mp2 + 4 * D_Z)) / (8 * Mp2) - 2 * F2_Z * F12_Z);
+            double term2_Z = term2coeff_Z * (2 * (A_Z * A_Z + B_Z * B_Z + 2 * A_Z * B_Z) + (C_Z + D_Z + 2 * B_Z) * t * 0.5);
+            // plus axial terms 
+
+            double L_munu_H_munu_Z = -(term1_Z + term2_Z);
+            double pre_factor_Z = 32 * M_PI * M_PI * sqr((*aqed)(m_s)) / pow((Q2+m_massZ*m_massZ),2);
+
+            double M_squared_Z = pre_factor_Z * L_munu_H_munu_Z;
+
+            // interference term 
+            double interference_term = 0.0; // to be calculated
+
+            // all together 
+            M_squared += M_squared_Z + interference_term;
+        }
+
+        return M_squared;
     }
 }
 
@@ -109,15 +150,29 @@ Tree_ME2_Base *ATOOLS::Getter<PHASIC::Tree_ME2_Base, PHASIC::External_ME_Args, E
 operator()(const External_ME_Args &args) const
 {
     const Flavour_Vector fl = args.Flavours();
+    incomingnucleon::code nucleon = incomingnucleon::off;
+
+    // check if elastic scattering
     if (fl.size() != 4) return NULL;
+    if (fl[0] != fl[2])
+        return NULL;
+    if (fl[1] != fl[3])
+        return NULL;
     
-    // Check for P+ e- -> P+ e- : sherpa orders hadrons first!!!!!
-    // Sherpas initial state: fl[0]=P+, fl[1]=e-
-    // Sherpas final state: fl[2]=P+, fl[3]=e-
-    if (fl[0] == Flavour(kf_p_plus) && fl[1] == Flavour(kf_e) &&
-        fl[2] == Flavour(kf_p_plus) && fl[3] == Flavour(kf_e))
-    {
-        return new pe_pe(args, incomingboson::photon, incomingnucleon::proton);
+    // Sherpa orders: fl[0]=hadron_in, fl[1]=lepton_in, fl[2]=hadron_out, fl[3]=lepton_out
+    if (fl[0] == Flavour(kf_p_plus)) {
+        nucleon = incomingnucleon::proton;
+    } else if (fl[0] == Flavour(kf_n)) {
+        nucleon = incomingnucleon::neutron;
+    } else {
+        return NULL; // Not a nucleon
     }
+    
+    // Determine boson type: 
+    if (fl[1].IsLepton() && fl[1].Charge() != 0) {
+        return new pe_pe(args, nucleon);
+    }
+
     return NULL;
 }
+

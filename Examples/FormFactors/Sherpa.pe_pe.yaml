@@ -19,10 +19,9 @@ PROCESSES:
 - 2212 11 -> 2212 11:  # p[0] e-[1] -> p[2] e-[3] 
     Order: {QCD: 0, EW: 2} # EW: 2}
 
-# Form factor stuff
-FormFactor_EMnucleon:
-  incomingnucleon: proton
-  incomingboson: photon
+# Form factor parameters (boson and nucleon type auto-detected from process)
+Form_Factor:
+  Include_Z_Interference: False
 
 
 FRAGMENTATION: None
