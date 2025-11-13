@@ -115,30 +115,59 @@ double Matter_Overlap::SelectB() const {
 }
 
 bool Matter_Overlap::
-SelectPositionForScatter(const double & B,
-			 const double & x0, const double & Q20,
-			 const double & x1, const double & Q21,
-			 Vec4D & pos) const {
+        SelectPositionForScatter(const double & B,
+                                 const double & x0, const double & Q20,
+                                 const double & x1, const double & Q21,
+                                 Vec4D & pos) const {
   ///////////////////////////////////////////////////////////////////////////
-  // Independently select two impact paraemters b0 and b1 w.r.t.\ the incoming
-  // beams, from their respective form factors until a combination that is
-  // allowed given the overall impact paramter B is found.
-  // Position is given in fm.
+  // Independently select two impact parameters b0 and b1 w.r.t. the incoming
+  // beams, from their respective Q^2-dependent form factors until a combination
+  // that is allowed given the overall impact parameter B is found.
+  //
+  // Coordinate system: Origin at midpoint between beams
+  //   - Beam 0 at (+B/2, 0)
+  //   - Beam 1 at (-B/2, 0)
+  //   - B is the full transverse distance between beam centers
+  //
+  // Position is returned in millimeters (converted from fm).
   ///////////////////////////////////////////////////////////////////////////
-  double b0, b1, cosphi2, sinphi2;
+  double b0, b1, cosphi1, sinphi1;
   size_t trials = 0;
+  const size_t max_trials = 10000;
+
+  // Sample b0 and b1 from Q^2-dependent form factors
+  // Enforce triangle inequality: B < b0 + b1
   do {
-    do {
-      b0      = p_ffs[0]->B(x0,Q20);
-      b1      = p_ffs[1]->B(x1,Q21);
-    } while (B>b0+b1);
-    cosphi2 = (sqr(b0)-sqr(b1)-sqr(B))/(2.*b1*B);
-  } while ( (cosphi2>1. || cosphi2<-1.) && (++trials)<10000);
-  if (trials>=9999) return false;
-  sinphi2 = (ran->Get()>0.5?-1.:1.)*sqrt(1.-sqr(cosphi2));
-  pos     = Vec4D(0.,B/2.+b1*cosphi2,b1*sinphi2,0.)/1.e12;
+    b0 = p_ffs[0]->B(x0, Q20);
+    b1 = p_ffs[1]->B(x1, Q21);
+  } while (B > b0 + b1 && (++trials) < max_trials);
+
+  if (trials >= max_trials) return false;
+
+  cosphi1 = (sqr(B) + sqr(b1) - sqr(b0)) / (2. * B * b1);
+  cosphi1 = std::max(-1., std::min(1., cosphi1)); // catch rounding errors
+
+  sinphi1 = (ran->Get() > 0.5 ? -1. : 1.) * sqrt(1. - sqr(cosphi1));
+
+  // Sample total azimuthal angle
+  double azimuth = 2. * M_PI * ran->Get();
+  double cos_az = cos(azimuth);
+  double sin_az = sin(azimuth);
+
+  // Radial position in reference frame
+  double r_x = -B/2. + b1*cosphi1;
+  double r_y = b1*sinphi1;
+
+  // Apply rotation
+  double x = r_x * cos_az - r_y * sin_az;
+  double y = r_x * sin_az + r_y * cos_az;
+
+  pos = Vec4D(0., x, y, 0.) * 1.e-12;
+
   return true;
 }
+
+
 
 void Matter_Overlap::Initialize(Remnant_Handler * const rh,
 				PDF::ISR_Handler * const isr) {

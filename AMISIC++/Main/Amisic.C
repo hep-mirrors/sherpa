@@ -309,7 +309,8 @@ void Amisic::UpdateForNewS() {
 }
 
 void Amisic::AddInformationToBlob(Blob * blob) {
-  if (m_evttype==evt_type::Perturbative) {
+  if (m_evttype==evt_type::Perturbative &&
+      blob->Type() == btp::code::Hard_Collision) {
     UpdateDownstreamPositions(blob,m_singlecollision.ShiftPosition());
     if (m_ana) AnalysePerturbative(false,blob);
   }
@@ -325,7 +326,7 @@ void Amisic::UpdateDownstreamPositions(Blob * blob,const Vec4D & delta_pos) {
   }
 }
 
-  
+
 bool Amisic::VetoEvent(const double & scale) const {
   ///////////////////////////////////////////////////////////////////////////
   // So far this has not been properly filled.

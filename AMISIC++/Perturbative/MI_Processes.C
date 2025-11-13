@@ -67,7 +67,7 @@ bool MI_Processes::Initialize(MODEL::Model_Base* const          model,
   // Now check if we have processes to trigger on.
   // Initialize all 2->2 scatters and the integrator ...
   ///////////////////////////////////////////////////////////////////////////
-  m_triggers = mipars->GetTriggerFlavs(); 
+  m_triggers = mipars->GetTriggerFlavs();
   InitializeAllProcesses();
   m_integrator.Initialize(isr);
   ///////////////////////////////////////////////////////////////////////////
@@ -129,7 +129,7 @@ bool MI_Processes::InitializeAllProcesses() {
 
 void MI_Processes::FilterTriggerProcesses() {
   for (list<MI_Process_Group * >::iterator git=m_groups.begin();
-       git!=m_groups.end();git++) 
+       git!=m_groups.end();git++)
     (*git)->FilterTriggerProcesses(m_triggers,&m_triggerprocs);
 }
 
@@ -152,7 +152,7 @@ operator()(const double & shat,const double & that,const double & uhat,
 	   const double & x1,const double & x2) {
   ///////////////////////////////////////////////////////////////////////////
   // Return the total parton-level scattering cross section, summed over all
-  // contributing processes.  
+  // contributing processes.
   // Note: This implicitly assumes that the PDFs have already been set.
   ///////////////////////////////////////////////////////////////////////////
   m_lastxs   = 0.;
@@ -199,6 +199,7 @@ int MI_Processes::FillHardScatterBlob(Blob *&  blob,const double & pt2veto) {
   blob->AddData("Renormalization_Scale",new Blob_Data<double>(m_muR2));
   blob->AddData("Factorization_Scale",new Blob_Data<double>(m_muF2));
   blob->AddData("Resummation_Scale",new Blob_Data<double>(Max(m_muR2,m_muF2)));
+  blob->SetTypeSpec("AMISIC++ 1.1");
   PDF_Info info(inflavs[0],inflavs[1],
 		m_integrator.X(0),m_integrator.X(1),
 		m_muF2,m_muF2);
@@ -209,7 +210,7 @@ int MI_Processes::FillHardScatterBlob(Blob *&  blob,const double & pt2veto) {
 double MI_Processes::MakeTriggerBlob(ATOOLS::Blob *& blob) {
   ///////////////////////////////////////////////////////////////////////////
   // Select a "trigger" process for the biased min-bias generation from the
-  // list of the available processes.  
+  // list of the available processes.
   // Generate the process kinematics and fill the (new) blob.
   ///////////////////////////////////////////////////////////////////////////
   MI_Process * proc;

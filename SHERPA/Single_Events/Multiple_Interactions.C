@@ -137,8 +137,6 @@ bool Multiple_Interactions::InitMPIs() {
   Blob * signal = p_bloblist->FindFirst(btp::Signal_Process);
   if (p_activeMI->GenerateHardProcess(MI_Handler::typeID::MPI,signal)) {
     p_activeMI->Remnants()->SetImpactParameter(p_activeMI->ImpactParameter());
-    Blob * shower = signal->OutParticle(0)->DecayBlob();
-    if (shower) shower->SetPosition(signal->Position());
     m_newevent[0] = false;
     return true;
   }
