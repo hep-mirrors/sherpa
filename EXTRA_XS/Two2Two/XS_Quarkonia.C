@@ -571,10 +571,10 @@ XS_gg_g3S1::XS_gg_g3S1(const External_ME_Args& args):
   pss["R02_100443"].SetDefault(0.529);
   pss["R02_553"].SetDefault(6.477);
   pss["R02_100553"].SetDefault(3.234);
-  if (fl[m_S].Kfcode()==kf_J_psi_1S)   m_R02 = 0.001*pss["R02_443"].Get<double>();
-  if (fl[m_S].Kfcode()==kf_psi_2S)     m_R02 = 0.001*pss["R02_100443"].Get<double>();
-  if (fl[m_S].Kfcode()==kf_Upsilon_1S) m_R02 = 0.001*pss["R02_553"].Get<double>();
-  if (fl[m_S].Kfcode()==kf_Upsilon_2S) m_R02 = 0.001*pss["R02_100553"].Get<double>();
+  if (fl[m_S].Kfcode()==kf_J_psi_1S)   m_R02 = pss["R02_443"].Get<double>();
+  if (fl[m_S].Kfcode()==kf_psi_2S)     m_R02 = pss["R02_100443"].Get<double>();
+  if (fl[m_S].Kfcode()==kf_Upsilon_1S) m_R02 = pss["R02_553"].Get<double>();
+  if (fl[m_S].Kfcode()==kf_Upsilon_2S) m_R02 = pss["R02_100553"].Get<double>();
   // std::cout << "ldme = " << ldme << std::endl;
   m_alphaS = MODEL::s_model->ScalarConstant("alpha_S");
 
@@ -654,9 +654,9 @@ XS_qg_q3P0::XS_qg_q3P0(const External_ME_Args& args):
   pss["R12_10441"].SetDefault(0.075);
   pss["R12_10551"].SetDefault(1.417);
   pss["R12_110551"].SetDefault(1.653);
-  if (fl[m_S].Kfcode()==kf_chi_c0_1P) m_R12 = 0.001*pss["R12_10441"].Get<double>(); 
-  if (fl[m_S].Kfcode()==kf_chi_b0_1P) m_R12 = 0.001*pss["R12_10551"].Get<double>();
-  if (fl[m_S].Kfcode()==kf_chi_b0_2P) m_R12 = 0.001*pss["R12_110551"].Get<double>();
+  if (fl[m_S].Kfcode()==kf_chi_c0_1P) m_R12 = pss["R12_10441"].Get<double>(); 
+  if (fl[m_S].Kfcode()==kf_chi_b0_1P) m_R12 = pss["R12_10551"].Get<double>();
+  if (fl[m_S].Kfcode()==kf_chi_b0_2P) m_R12 = pss["R12_110551"].Get<double>();
   //std::cout << "ldme = " << ldme << std::endl;
   m_a      = fl[m_q].IsAnti() ? 1 : 0; 
   m_alphaS = MODEL::s_model->ScalarConstant("alpha_S");
@@ -717,9 +717,9 @@ XS_qqbar_g3P0::XS_qqbar_g3P0(const External_ME_Args& args):
   pss["R12_10441"].SetDefault(0.075);
   pss["R12_10551"].SetDefault(1.417);
   pss["R12_110551"].SetDefault(1.653);
-  if (fl[m_S].Kfcode()==kf_chi_c0_1P) m_R12 = 0.001*pss["R12_10441"].Get<double>(); 
-  if (fl[m_S].Kfcode()==kf_chi_b0_1P) m_R12 = 0.001*pss["R12_10551"].Get<double>();
-  if (fl[m_S].Kfcode()==kf_chi_b0_2P) m_R12 = 0.001*pss["R12_110551"].Get<double>();
+  if (fl[m_S].Kfcode()==kf_chi_c0_1P) m_R12 = pss["R12_10441"].Get<double>(); 
+  if (fl[m_S].Kfcode()==kf_chi_b0_1P) m_R12 = pss["R12_10551"].Get<double>();
+  if (fl[m_S].Kfcode()==kf_chi_b0_2P) m_R12 = pss["R12_110551"].Get<double>();
   //std::cout << "ldme = " << ldme << std::endl;
   m_alphaS = MODEL::s_model->ScalarConstant("alpha_S");
   m_pref   = 64./27.*sqr(4.*M_PI)*m_R12/pow(m_mass,3);
@@ -778,9 +778,9 @@ XS_gg_g3P0::XS_gg_g3P0(const External_ME_Args& args):
   pss["R12_10441"].SetDefault(0.075);
   pss["R12_10551"].SetDefault(1.417);
   pss["R12_110551"].SetDefault(1.653);
-  if (fl[m_S].Kfcode()==kf_chi_c0_1P) m_R12 = 0.001*pss["R12_10441"].Get<double>(); 
-  if (fl[m_S].Kfcode()==kf_chi_b0_1P) m_R12 = 0.001*pss["R12_10551"].Get<double>();
-  if (fl[m_S].Kfcode()==kf_chi_b0_2P) m_R12 = 0.001*pss["R12_110551"].Get<double>();
+  if (fl[m_S].Kfcode()==kf_chi_c0_1P) m_R12 = pss["R12_10441"].Get<double>(); 
+  if (fl[m_S].Kfcode()==kf_chi_b0_1P) m_R12 = pss["R12_10551"].Get<double>();
+  if (fl[m_S].Kfcode()==kf_chi_b0_2P) m_R12 = pss["R12_110551"].Get<double>();
   m_alphaS = MODEL::s_model->ScalarConstant("alpha_S");
   m_pref   = 4.*sqr(4.*M_PI)*m_R12/pow(m_mass,3);
 }
@@ -1529,15 +1529,15 @@ XS_qg_q3S1_oct::XS_qg_q3S1_oct(const External_ME_Args& args):
   if (fl[m_S].Kfcode()==kf_3S1_c_8_J_psi_1S)   LDME = 0.001*pss["LDME_991000443"].Get<double>(); 
   if (fl[m_S].Kfcode()==kf_3S1_c_8_psi_2S)     LDME = 0.001*pss["LDME_991100443"].Get<double>(); 
   if (fl[m_S].Kfcode()==kf_3S1_c_8_chi_c0_1P)  LDME = 0.001*pss["LDME_991010441"].Get<double>(); 
-  if (fl[m_S].Kfcode()==kf_3S1_c_8_chi_c1_1P)  LDME = 0.001*pss["LDME_991010441"].Get<double>(); 
-  if (fl[m_S].Kfcode()==kf_3S1_c_8_chi_c2_1P)  LDME = 0.001*pss["LDME_991010441"].Get<double>(); 
+  if (fl[m_S].Kfcode()==kf_3S1_c_8_chi_c1_1P)  LDME = 3.*0.001*pss["LDME_991010441"].Get<double>(); 
+  if (fl[m_S].Kfcode()==kf_3S1_c_8_chi_c2_1P)  LDME = 5.*0.001*pss["LDME_991010441"].Get<double>(); 
 
   if (fl[m_S].Kfcode()==kf_3S1_b_8_eta_b)      LDME = 0.001*pss["LDME_991000551"].Get<double>(); 
   if (fl[m_S].Kfcode()==kf_3S1_b_8_Upsilon_1S) LDME = 0.001*pss["LDME_991000553"].Get<double>(); 
   if (fl[m_S].Kfcode()==kf_3S1_b_8_Upsilon_2S) LDME = 0.001*pss["LDME_991100553"].Get<double>(); 
   if (fl[m_S].Kfcode()==kf_3S1_b_8_chi_b0_1P)  LDME = 0.001*pss["LDME_991010551"].Get<double>(); 
-  if (fl[m_S].Kfcode()==kf_3S1_b_8_chi_b1_1P)  LDME = 0.001*pss["LDME_991010551"].Get<double>(); 
-  if (fl[m_S].Kfcode()==kf_3S1_b_8_chi_b2_1P)  LDME = 0.001*pss["LDME_991010551"].Get<double>(); 
+  if (fl[m_S].Kfcode()==kf_3S1_b_8_chi_b1_1P)  LDME = 3.*0.001*pss["LDME_991010551"].Get<double>(); 
+  if (fl[m_S].Kfcode()==kf_3S1_b_8_chi_b2_1P)  LDME = 5.*0.001*pss["LDME_991010551"].Get<double>(); 
 
   m_a      = fl[m_q].IsAnti() ? 1 : 0; 
   m_alphaS = MODEL::s_model->ScalarConstant("alpha_S");
@@ -1644,15 +1644,15 @@ XS_qqbar_g3S1_oct::XS_qqbar_g3S1_oct(const External_ME_Args& args):
   if (fl[m_S].Kfcode()==kf_3S1_c_8_J_psi_1S)   LDME = 0.001*pss["LDME_991000443"].Get<double>(); 
   if (fl[m_S].Kfcode()==kf_3S1_c_8_psi_2S)     LDME = 0.001*pss["LDME_991100443"].Get<double>(); 
   if (fl[m_S].Kfcode()==kf_3S1_c_8_chi_c0_1P)  LDME = 0.001*pss["LDME_991010441"].Get<double>(); 
-  if (fl[m_S].Kfcode()==kf_3S1_c_8_chi_c1_1P)  LDME = 0.001*pss["LDME_991010441"].Get<double>(); 
-  if (fl[m_S].Kfcode()==kf_3S1_c_8_chi_c2_1P)  LDME = 0.001*pss["LDME_991010441"].Get<double>(); 
+  if (fl[m_S].Kfcode()==kf_3S1_c_8_chi_c1_1P)  LDME = 3.*0.001*pss["LDME_991010441"].Get<double>(); 
+  if (fl[m_S].Kfcode()==kf_3S1_c_8_chi_c2_1P)  LDME = 5.*0.001*pss["LDME_991010441"].Get<double>(); 
 
   if (fl[m_S].Kfcode()==kf_3S1_b_8_eta_b)      LDME = 0.001*pss["LDME_991000551"].Get<double>(); 
   if (fl[m_S].Kfcode()==kf_3S1_b_8_Upsilon_1S) LDME = 0.001*pss["LDME_991000553"].Get<double>(); 
   if (fl[m_S].Kfcode()==kf_3S1_b_8_Upsilon_2S) LDME = 0.001*pss["LDME_991100553"].Get<double>(); 
   if (fl[m_S].Kfcode()==kf_3S1_b_8_chi_b0_1P)  LDME = 0.001*pss["LDME_991010551"].Get<double>(); 
-  if (fl[m_S].Kfcode()==kf_3S1_b_8_chi_b1_1P)  LDME = 0.001*pss["LDME_991010551"].Get<double>(); 
-  if (fl[m_S].Kfcode()==kf_3S1_b_8_chi_b2_1P)  LDME = 0.001*pss["LDME_991010551"].Get<double>(); 
+  if (fl[m_S].Kfcode()==kf_3S1_b_8_chi_b1_1P)  LDME = 3.*0.001*pss["LDME_991010551"].Get<double>(); 
+  if (fl[m_S].Kfcode()==kf_3S1_b_8_chi_b2_1P)  LDME = 5.*0.001*pss["LDME_991010551"].Get<double>(); 
   m_alphaS = MODEL::s_model->ScalarConstant("alpha_S");
   if (LDME == 0.0){
     throw std::runtime_error("\033[31mCross section is zero. Cannot continue.\033[0m");
@@ -1743,15 +1743,15 @@ XS_gg_g3S1_oct::XS_gg_g3S1_oct(const External_ME_Args& args):
   if (fl[m_S].Kfcode()==kf_3S1_c_8_J_psi_1S)   LDME = 0.001*pss["LDME_991000443"].Get<double>(); 
   if (fl[m_S].Kfcode()==kf_3S1_c_8_psi_2S)     LDME = 0.001*pss["LDME_991100443"].Get<double>(); 
   if (fl[m_S].Kfcode()==kf_3S1_c_8_chi_c0_1P)  LDME = 0.001*pss["LDME_991010441"].Get<double>(); 
-  if (fl[m_S].Kfcode()==kf_3S1_c_8_chi_c1_1P)  LDME = 0.001*pss["LDME_991010441"].Get<double>(); 
-  if (fl[m_S].Kfcode()==kf_3S1_c_8_chi_c2_1P)  LDME = 0.001*pss["LDME_991010441"].Get<double>(); 
+  if (fl[m_S].Kfcode()==kf_3S1_c_8_chi_c1_1P)  LDME = 3.*0.001*pss["LDME_991010441"].Get<double>(); 
+  if (fl[m_S].Kfcode()==kf_3S1_c_8_chi_c2_1P)  LDME = 5.*0.001*pss["LDME_991010441"].Get<double>(); 
 
   if (fl[m_S].Kfcode()==kf_3S1_b_8_eta_b)      LDME = 0.001*pss["LDME_991000551"].Get<double>(); 
   if (fl[m_S].Kfcode()==kf_3S1_b_8_Upsilon_1S) LDME = 0.001*pss["LDME_991000553"].Get<double>(); 
   if (fl[m_S].Kfcode()==kf_3S1_b_8_Upsilon_2S) LDME = 0.001*pss["LDME_991100553"].Get<double>(); 
   if (fl[m_S].Kfcode()==kf_3S1_b_8_chi_b0_1P)  LDME = 0.001*pss["LDME_991010551"].Get<double>(); 
-  if (fl[m_S].Kfcode()==kf_3S1_b_8_chi_b1_1P)  LDME = 0.001*pss["LDME_991010551"].Get<double>(); 
-  if (fl[m_S].Kfcode()==kf_3S1_b_8_chi_b2_1P)  LDME = 0.001*pss["LDME_991010551"].Get<double>(); 
+  if (fl[m_S].Kfcode()==kf_3S1_b_8_chi_b1_1P)  LDME = 3.*0.001*pss["LDME_991010551"].Get<double>(); 
+  if (fl[m_S].Kfcode()==kf_3S1_b_8_chi_b2_1P)  LDME = 5.*0.001*pss["LDME_991010551"].Get<double>(); 
   m_alphaS = MODEL::s_model->ScalarConstant("alpha_S");
   if (LDME == 0.0){
     throw std::runtime_error("\033[31mCross section is zero. Cannot continue.\033[0m");
