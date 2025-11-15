@@ -26,12 +26,15 @@ namespace UFOVariations {
         Combinations *comb = new Combinations(&variation_map); 
         comb->AddAllCombinations(&v_variations);
         msg_Debugging() << "All Variations are: " << std::endl;
-        msg_Debugging() << v_variations << std::endl;
+        for (VariationKey key : v_variations){
+            msg_Debugging() << "\t" << key << std::endl;
+        }
         // check if there are too many variations
         if (Size() >= MAX_VARIATION_NUMBER) THROW(normal_exit, "You are trying too many Variations, please reconsider.");
         // Register the dependent Kabbalas of the Model vertices
         FindDependentCouplings();
         StoreNominal();
+        msg_Debugging() << "Done Reading in the Variations." << std::endl;
     }
 
     /*
@@ -89,6 +92,7 @@ namespace UFOVariations {
         msg_Debugging() << "Store Nominal Paramter values... " << std::endl;
         std::vector<double_t> values = {};
         for (std::string name : variables){
+            if (MODEL::s_model->Constants()->count(name) != 1) return;
             values.push_back(MODEL::s_model->Constants()->at(name));
         }
         nominal = VariationKey(variables, values);

@@ -50,6 +50,12 @@ namespace UFOVariations {
         }
         static VariationKey DefaultKey() {return VariationKey{"DEFAULT", 0.0};}
     };
+
+    inline std::ostream& operator<<(std::ostream& s, VariationKey key)
+    {
+        s << key.Identifier();
+        return s;
+    }
 }
 
 #endif
