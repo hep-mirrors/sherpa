@@ -150,6 +150,7 @@ void Initialization_Handler::RegisterDefaults()
       "SCALE_VARIATIONS",
       "PDF_VARIATIONS",
       "QCUT_VARIATIONS",
+      "UFO_VARIATIONS",
       "MASSIVE_PS",
       "MASSLESS_PS"
       });
@@ -168,6 +169,7 @@ void Initialization_Handler::RegisterDefaults()
   s["PDF_VARIATIONS"].UseNoneReplacements();
   s["QCUT_VARIATIONS"].UseNoneReplacements().SetSynonyms({"CKKW_VARIATIONS"});
   s["PDF_LIBRARY"].UseNoneReplacements();
+  s["UFO_VARIATIONS"].UseNoneReplacements();
   s["MPI_PDF_LIBRARY"].UseNoneReplacements();
   s["BBR_PDF_LIBRARY"].UseNoneReplacements();
   s["ANALYSIS"].UseNoneReplacements();
@@ -706,7 +708,9 @@ bool Initialization_Handler::InitializeTheModel()
   }
   if (p_model==NULL) THROW(not_implemented,"Model not implemented");
   MODEL::s_model=p_model;
-  return 1;
+  if (s["UFO_VARIATIONS"].GetItems().empty()) return true; 
+  if (!ATOOLS::s_loader->LoadLibrary("SherpaUFOVariations")) THROW(missing_module, "Cannot load library SherpaUFOVariations");
+  return true;
 }
 
 

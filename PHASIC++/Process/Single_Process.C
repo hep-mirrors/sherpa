@@ -1253,7 +1253,7 @@ void Single_Process::InitializeTheReweighting(ATOOLS::Variations_Mode mode)
     if (varitem.IsScalar()) {
       const auto name = varitem.Get<std::string>();
       if (name == "None") {
-        return;
+        break;
       } else {
         m_hard_process_variation_generators.push_back(
             Hard_Process_Variation_Generator_Getter_Function::
@@ -1263,6 +1263,12 @@ void Single_Process::InitializeTheReweighting(ATOOLS::Variations_Mode mode)
           THROW(fatal_error, "Variation generator \"" + name + "\" not found");
       }
     }
+  }
+  if (!s["UFO_VARIATIONS"].GetItems().empty()){
+    Hard_Process_Variation_Generator_Base *vargen = ATOOLS::Getter_Function<Hard_Process_Variation_Generator_Base, Args>
+              ::GetObject("UFOVariations", Hard_Process_Variation_Generator_Arguments{this, this});
+    if (!vargen) THROW(fatal_error, "Cant get UFOVariations");
+    m_hard_process_variation_generators.push_back(vargen);
   }
 }
 

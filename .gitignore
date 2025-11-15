@@ -9,6 +9,7 @@ outputs/
 compile_commands.json
 config.log
 CTestTestfile.cmake
+CMakePresets.json
 
 # make targets and intermediate files
 /AMEGIC++/Main/make2scons
