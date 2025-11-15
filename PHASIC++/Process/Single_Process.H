@@ -100,6 +100,8 @@ namespace PHASIC {
 
     inline bool Zero() const { return m_zero; }
 
+    virtual ATOOLS::Vec4D_Vector Last4DVectors() const {return ATOOLS::Vec4D_Vector();};
+
   private:
 
     //! Generate cluster sequence info (containing the ISR+beam weight)

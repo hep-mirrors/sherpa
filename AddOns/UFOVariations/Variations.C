@@ -21,9 +21,12 @@ namespace UFOVariations {
         std::vector<ATOOLS::Scoped_Settings> items = s["UFO_VARIATIONS"].GetItems();
         std::map<std::string, std::vector<double_t>> variation_map = std::map<std::string, std::vector<double_t>>();
         for (ATOOLS::Scoped_Settings item : items) ReadSingleParamVariation(item, &variation_map);
+        msg_Debugging() << "Variable Names of Variations are: " << variables << std::endl;
         // map is done here, add variation key elements from combinations
         Combinations *comb = new Combinations(&variation_map); 
         comb->AddAllCombinations(&v_variations);
+        msg_Debugging() << "All Variations are: " << std::endl;
+        msg_Debugging() << v_variations << std::endl;
         // check if there are too many variations
         if (Size() >= MAX_VARIATION_NUMBER) THROW(normal_exit, "You are trying too many Variations, please reconsider.");
         // Register the dependent Kabbalas of the Model vertices
@@ -67,6 +70,7 @@ namespace UFOVariations {
 
     // find and register the dependencies of the couplings of all Model vertices
     void Variations::FindDependentCouplings() {
+        msg_Debugging() << "Finding Depending Coulings..." << std::endl;
         // for all the varied parameters
         for (std::string var_name : variables){
             // empty vector init
@@ -82,6 +86,7 @@ namespace UFOVariations {
     }
 
     void Variations::StoreNominal() {
+        msg_Debugging() << "Store Nominal Paramter values... " << std::endl;
         std::vector<double_t> values = {};
         for (std::string name : variables){
             values.push_back(MODEL::s_model->Constants()->at(name));

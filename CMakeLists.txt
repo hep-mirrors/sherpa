@@ -960,6 +960,7 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/EXTAMP/Example/subtraction/CMakeLists
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/Examples/V_plus_Jets/LHC_WJets/CMakeLists.txt.in ${CMAKE_CURRENT_BINARY_DIR}/Examples/V_plus_Jets/LHC_WJets/CMakeLists.txt @ONLY)
 
 if (SHERPA_ENABLE_UFO)
+add_subdirectory(AddOns/UFOVariations)
 SET(SHERPA_CMAKE_CONFIG_DIR ${CMAKE_INSTALL_PREFIX}/share/SHERPA-MC/)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/MODEL/UFO/src/ufo_interface/parser.py.in ${CMAKE_CURRENT_BINARY_DIR}/MODEL/UFO/src/ufo_interface/parser.py @ONLY)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/MODEL/UFO/bin/Sherpa-generate-model.in ${CMAKE_CURRENT_BINARY_DIR}/MODEL/UFO/bin/Sherpa-generate-model @ONLY)

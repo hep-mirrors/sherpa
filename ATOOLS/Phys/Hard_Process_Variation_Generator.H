@@ -3,14 +3,15 @@
 
 #include "ATOOLS/Org/Getter_Function.H"
 
-namespace PHASIC { class Process_Base; }
+namespace PHASIC { class Process_Base; class Single_Process;}
 
 namespace ATOOLS {
 
-  class Weights_Map;
+  struct Weights_Map;
 
   struct Hard_Process_Variation_Generator_Arguments {
     PHASIC::Process_Base* p_proc;
+    PHASIC::Single_Process* p_single = nullptr;
   };
 
   namespace {
@@ -32,7 +33,6 @@ namespace ATOOLS {
 
   using Hard_Process_Variation_Generator_Getter_Function =
     ATOOLS::Getter_Function<Hard_Process_Variation_Generator_Base, Args>;
-
 }
 
 #endif

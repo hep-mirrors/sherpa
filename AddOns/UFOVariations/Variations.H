@@ -2,7 +2,9 @@
 #define AddOns_UFOVariations_Variations_H
 
 #include "ATOOLS/Org/Scoped_Settings.H"
-#include "MODEL/UFO/UFO_Model.H"
+#include "ATOOLS/Math/Kabbala.H"
+#include "MODEL/Main/Model_Base.H"
+#include "MODEL/Main/Single_Vertex.H"
 #include "AddOns/UFOVariations/UFO_Variation_Key.H"
 #include <vector>
 #include <map>
