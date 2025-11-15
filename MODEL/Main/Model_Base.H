@@ -148,6 +148,7 @@ namespace MODEL {
     // Make this map public, such that OL interface can loop over it
     // in order to synchronize UFO model parameters
     const ScalarConstantsMap & ScalarConstants() const {return *p_constants; }
+    ScalarConstantsMap* Constants() const {return p_constants;}
 
     inline  const Vertex_Table *VertexTable() const { return &m_vtable; }
 
