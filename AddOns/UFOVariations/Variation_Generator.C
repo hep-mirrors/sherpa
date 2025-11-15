@@ -29,9 +29,10 @@ namespace UFOVariations {
         double nominal = p_proc->LastXS();
         p_proc->SetLookUp(false);
         for (VariationKey var : p_vars->GetVariations()){
+            msg_Debugging() << "switch to " << var;
             UpdateAllCouplings(var);
             double part = Calculate();
-            msg_Out() << "swichted to " << var.Identifier() << ", nominal: " << nominal << ", current: " << part << std::endl;
+            msg_Debugging() << " nominal: " << nominal << ", current: " << part << std::endl;
             wgtmap["UFOVariations"][var.Identifier()] = part/nominal;
         }
         // reset to default vertices TODO save nominal param values somewhere
@@ -41,10 +42,12 @@ namespace UFOVariations {
 
     void Variation_Generator::UpdateAllCouplings(VariationKey key){
             // update p_consts
+            //msg_Debugging() << "Updating Couplings to " << key << std::endl;
             for (size_t i = 0; i < key.Size(); i++) {
-                MODEL::s_model->Constants()->at(key.Name(i)) = key.Value(i);
+                if (MODEL::s_model->Constants()->count(key.Name(i)) == 1) MODEL::s_model->Constants()->at(key.Name(i)) = key.Value(i);
             }
             // update Kabbalas
+            //msg_Debugging() << "Updating Kabbalas with " << key << std::endl;
             for (std::string name : key.Names()){
                 for (ATOOLS::Kabbala* k : p_vars->Dependents(name))
                     k->Update(MODEL::s_model->Constants());
