@@ -1529,15 +1529,15 @@ XS_qg_q3S1_oct::XS_qg_q3S1_oct(const External_ME_Args& args):
   if (fl[m_S].Kfcode()==kf_3S1_c_8_J_psi_1S)   LDME = 0.001*pss["LDME_991000443"].Get<double>(); 
   if (fl[m_S].Kfcode()==kf_3S1_c_8_psi_2S)     LDME = 0.001*pss["LDME_991100443"].Get<double>(); 
   if (fl[m_S].Kfcode()==kf_3S1_c_8_chi_c0_1P)  LDME = 0.001*pss["LDME_991010441"].Get<double>(); 
-  if (fl[m_S].Kfcode()==kf_3S1_c_8_chi_c1_1P)  LDME = 3.*0.001*pss["LDME_991010441"].Get<double>(); 
-  if (fl[m_S].Kfcode()==kf_3S1_c_8_chi_c2_1P)  LDME = 5.*0.001*pss["LDME_991010441"].Get<double>(); 
+  if (fl[m_S].Kfcode()==kf_3S1_c_8_chi_c1_1P)  LDME = 0.001*pss["LDME_991010441"].Get<double>(); 
+  if (fl[m_S].Kfcode()==kf_3S1_c_8_chi_c2_1P)  LDME = 0.001*pss["LDME_991010441"].Get<double>(); 
 
   if (fl[m_S].Kfcode()==kf_3S1_b_8_eta_b)      LDME = 0.001*pss["LDME_991000551"].Get<double>(); 
   if (fl[m_S].Kfcode()==kf_3S1_b_8_Upsilon_1S) LDME = 0.001*pss["LDME_991000553"].Get<double>(); 
   if (fl[m_S].Kfcode()==kf_3S1_b_8_Upsilon_2S) LDME = 0.001*pss["LDME_991100553"].Get<double>(); 
   if (fl[m_S].Kfcode()==kf_3S1_b_8_chi_b0_1P)  LDME = 0.001*pss["LDME_991010551"].Get<double>(); 
-  if (fl[m_S].Kfcode()==kf_3S1_b_8_chi_b1_1P)  LDME = 3.*0.001*pss["LDME_991010551"].Get<double>(); 
-  if (fl[m_S].Kfcode()==kf_3S1_b_8_chi_b2_1P)  LDME = 5.*0.001*pss["LDME_991010551"].Get<double>(); 
+  if (fl[m_S].Kfcode()==kf_3S1_b_8_chi_b1_1P)  LDME = 0.001*pss["LDME_991010551"].Get<double>(); 
+  if (fl[m_S].Kfcode()==kf_3S1_b_8_chi_b2_1P)  LDME = 0.001*pss["LDME_991010551"].Get<double>(); 
 
   m_a      = fl[m_q].IsAnti() ? 1 : 0; 
   m_alphaS = MODEL::s_model->ScalarConstant("alpha_S");
@@ -1644,15 +1644,15 @@ XS_qqbar_g3S1_oct::XS_qqbar_g3S1_oct(const External_ME_Args& args):
   if (fl[m_S].Kfcode()==kf_3S1_c_8_J_psi_1S)   LDME = 0.001*pss["LDME_991000443"].Get<double>(); 
   if (fl[m_S].Kfcode()==kf_3S1_c_8_psi_2S)     LDME = 0.001*pss["LDME_991100443"].Get<double>(); 
   if (fl[m_S].Kfcode()==kf_3S1_c_8_chi_c0_1P)  LDME = 0.001*pss["LDME_991010441"].Get<double>(); 
-  if (fl[m_S].Kfcode()==kf_3S1_c_8_chi_c1_1P)  LDME = 3.*0.001*pss["LDME_991010441"].Get<double>(); 
-  if (fl[m_S].Kfcode()==kf_3S1_c_8_chi_c2_1P)  LDME = 5.*0.001*pss["LDME_991010441"].Get<double>(); 
+  if (fl[m_S].Kfcode()==kf_3S1_c_8_chi_c1_1P)  LDME = 0.001*pss["LDME_991010441"].Get<double>(); 
+  if (fl[m_S].Kfcode()==kf_3S1_c_8_chi_c2_1P)  LDME = 0.001*pss["LDME_991010441"].Get<double>(); 
 
   if (fl[m_S].Kfcode()==kf_3S1_b_8_eta_b)      LDME = 0.001*pss["LDME_991000551"].Get<double>(); 
   if (fl[m_S].Kfcode()==kf_3S1_b_8_Upsilon_1S) LDME = 0.001*pss["LDME_991000553"].Get<double>(); 
   if (fl[m_S].Kfcode()==kf_3S1_b_8_Upsilon_2S) LDME = 0.001*pss["LDME_991100553"].Get<double>(); 
   if (fl[m_S].Kfcode()==kf_3S1_b_8_chi_b0_1P)  LDME = 0.001*pss["LDME_991010551"].Get<double>(); 
-  if (fl[m_S].Kfcode()==kf_3S1_b_8_chi_b1_1P)  LDME = 3.*0.001*pss["LDME_991010551"].Get<double>(); 
-  if (fl[m_S].Kfcode()==kf_3S1_b_8_chi_b2_1P)  LDME = 5.*0.001*pss["LDME_991010551"].Get<double>(); 
+  if (fl[m_S].Kfcode()==kf_3S1_b_8_chi_b1_1P)  LDME = 0.001*pss["LDME_991010551"].Get<double>(); 
+  if (fl[m_S].Kfcode()==kf_3S1_b_8_chi_b2_1P)  LDME = 0.001*pss["LDME_991010551"].Get<double>(); 
   m_alphaS = MODEL::s_model->ScalarConstant("alpha_S");
   if (LDME == 0.0){
     throw std::runtime_error("\033[31mCross section is zero. Cannot continue.\033[0m");
@@ -1743,15 +1743,15 @@ XS_gg_g3S1_oct::XS_gg_g3S1_oct(const External_ME_Args& args):
   if (fl[m_S].Kfcode()==kf_3S1_c_8_J_psi_1S)   LDME = 0.001*pss["LDME_991000443"].Get<double>(); 
   if (fl[m_S].Kfcode()==kf_3S1_c_8_psi_2S)     LDME = 0.001*pss["LDME_991100443"].Get<double>(); 
   if (fl[m_S].Kfcode()==kf_3S1_c_8_chi_c0_1P)  LDME = 0.001*pss["LDME_991010441"].Get<double>(); 
-  if (fl[m_S].Kfcode()==kf_3S1_c_8_chi_c1_1P)  LDME = 3.*0.001*pss["LDME_991010441"].Get<double>(); 
-  if (fl[m_S].Kfcode()==kf_3S1_c_8_chi_c2_1P)  LDME = 5.*0.001*pss["LDME_991010441"].Get<double>(); 
+  if (fl[m_S].Kfcode()==kf_3S1_c_8_chi_c1_1P)  LDME = 0.001*pss["LDME_991010441"].Get<double>(); 
+  if (fl[m_S].Kfcode()==kf_3S1_c_8_chi_c2_1P)  LDME = 0.001*pss["LDME_991010441"].Get<double>(); 
 
   if (fl[m_S].Kfcode()==kf_3S1_b_8_eta_b)      LDME = 0.001*pss["LDME_991000551"].Get<double>(); 
   if (fl[m_S].Kfcode()==kf_3S1_b_8_Upsilon_1S) LDME = 0.001*pss["LDME_991000553"].Get<double>(); 
   if (fl[m_S].Kfcode()==kf_3S1_b_8_Upsilon_2S) LDME = 0.001*pss["LDME_991100553"].Get<double>(); 
   if (fl[m_S].Kfcode()==kf_3S1_b_8_chi_b0_1P)  LDME = 0.001*pss["LDME_991010551"].Get<double>(); 
-  if (fl[m_S].Kfcode()==kf_3S1_b_8_chi_b1_1P)  LDME = 3.*0.001*pss["LDME_991010551"].Get<double>(); 
-  if (fl[m_S].Kfcode()==kf_3S1_b_8_chi_b2_1P)  LDME = 5.*0.001*pss["LDME_991010551"].Get<double>(); 
+  if (fl[m_S].Kfcode()==kf_3S1_b_8_chi_b1_1P)  LDME = 0.001*pss["LDME_991010551"].Get<double>(); 
+  if (fl[m_S].Kfcode()==kf_3S1_b_8_chi_b2_1P)  LDME = 0.001*pss["LDME_991010551"].Get<double>(); 
   m_alphaS = MODEL::s_model->ScalarConstant("alpha_S");
   if (LDME == 0.0){
     throw std::runtime_error("\033[31mCross section is zero. Cannot continue.\033[0m");
@@ -2047,7 +2047,7 @@ double XS_gg_g3P0_oct::operator()(const Vec4D_Vector& mom)
   double dnom = s*z2*pow(s-sqr(M),4)*pow(s*sqr(M)+z2,4);
   double all = line1+line2+line3+line4+line5+line6+line7+line8;
   m_pref = 5./12.*pow(4.*M_PI*m_alphaS,3)*CouplingFactor(3,0)/pow(m_mass,3);
-
+  // std::cout<< "------gg--3P0-----"<< m_pref*all/dnom*LDME<< std::endl;
   return m_pref*all/dnom*LDME;
 }
 
@@ -2321,7 +2321,7 @@ double XS_gg_g3P1_oct::operator()(const Vec4D_Vector& mom)
 
   m_pref = 5./(6.*pow(m_mass,3))*pow(4.*M_PI*m_alphaS,3)*CouplingFactor(3,0);
 
-
+  // std::cout<< "------gg-3P1----"<< m_pref*heq/dnom*LDME<<std::endl;
   return m_pref*heq/dnom*LDME;
 }
 
@@ -2409,6 +2409,7 @@ XS_qg_q3P2_oct::XS_qg_q3P2_oct(const External_ME_Args& args):
   if (LDME == 0.0){
     throw std::runtime_error("\033[31mCross section is zero. Cannot continue.\033[0m");
   }
+
 }
 
 double XS_qg_q3P2_oct::operator()(const Vec4D_Vector& mom) 
@@ -2621,7 +2622,7 @@ double XS_gg_g3P2_oct::operator()(const Vec4D_Vector& mom)
                       + pow(M,16)*s2*(60.*s4-53*s2*z2+8.*z4)-2.*pow(M,18)*pow(s,3)*(8.*s2-3.*z2)+2.*pow(M,20)*s4)/(s*z2);
   double dnom = pow(s-M2,6)*pow(s*M2+z2,4);
   m_pref = pow(4.*M_PI*m_alphaS,3)*CouplingFactor(3,0)/(6.*pow(m_mass,3));
-
+  //  std::cout<<" ----- gg-3P2 -----" << LDME*m_pref*(heq0+3*heq1+3*heq2)/dnom << std::endl;
   return LDME*m_pref*(heq0+3*heq1+3*heq2)/dnom;
 }
 
