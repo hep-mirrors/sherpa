@@ -5,6 +5,7 @@ namespace UFOVariations {
     Constructor of the Combinations Object, needs a map of the variable names to their possible values (as a pointer)
     */
     Combinations::Combinations(std::map<std::string, std::vector<double_t>> *variations_map){
+        msg_Debugging() << "Built combinations Object" << std::endl;
         p_variations_map = variations_map;
     }
 
@@ -17,6 +18,7 @@ namespace UFOVariations {
     Adds all possible combinations of parameters and values from the map to the VariationKey vector found at the given pointer.
     */
     void Combinations::AddAllCombinations(std::vector<VariationKey> *variations){
+        msg_Debugging() << "Calculate and add all combinations..." << std::endl;
         // save all possible combinations of names to a vector
         std::vector<std::vector<std::string>> name_combinations = {};
         combine_names(&name_combinations);
@@ -30,6 +32,7 @@ namespace UFOVariations {
                 variations->push_back(VariationKey(combination, values));
             }
         }
+        msg_Debugging() << "...done" << std::endl;
     }
 
     /*
