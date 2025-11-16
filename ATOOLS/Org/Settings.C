@@ -50,11 +50,9 @@ Settings::Settings(int argc, char* argv[])
 
   {
     std::vector<std::string> tune_search_paths;
-    
     std::string default_path = rpa->gen.Variable("SHERPA_SHARE_PATH") + "TuneSets";
     tune_search_paths.push_back(default_path);
-    
-    std::string custom_tune_path = (*this)["TUNE_PATH"].GetScalarWithOtherDefault<std::string>("");
+    std::string custom_tune_path = (*this)["TUNE_PATH"].SetDefault("").GetScalar<std::string>();
     if (!custom_tune_path.empty()) {
       if (!is_absolute(custom_tune_path)) {
         auto base = GetPath();
@@ -75,12 +73,14 @@ Settings::Settings(int argc, char* argv[])
     }
 
     std::vector<std::string> tune_names;
-    auto s_tune = (*this)["TUNE"];
-    s_tune.SetDefault(std::vector<std::string>{});
-    tune_names = s_tune.GetVector<std::string>();
-    if (tune_names.empty()) {
-      const auto single = s_tune.GetScalarWithOtherDefault<std::string>("");
-      if (!single.empty()) tune_names.push_back(single);
+    auto s_tune = (*this)["TUNE"].SetDefault(std::vector<std::string>{});
+    const auto matrix = s_tune.GetMatrix<std::string>();
+    if (!matrix.empty() && !matrix[0].empty()) {
+      for (const auto& name : matrix[0]) {
+        if (!name.empty()) {
+          tune_names.push_back(name);
+        }
+      }
     }
     size_t insert_pos = m_yamlreaders.size();
     for (size_t i = 0; i < m_yamlreaders.size(); ++i) {
@@ -116,7 +116,6 @@ Settings::Settings(int argc, char* argv[])
           }
         }
       }
-      
       if (!loaded) {
         MyStrStream str;
         str << "Could not find tune set '" << tune << "' in any of the search paths:";
