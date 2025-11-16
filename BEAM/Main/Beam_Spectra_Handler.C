@@ -131,16 +131,18 @@ void Beam_Spectra_Handler::FixPositions() {
 }
 
 // TODO: Improve this handling for rescattering etc.
-bool Beam_Spectra_Handler::CheckConsistency(const ATOOLS::Flavour *_beams,
-                                            const ATOOLS::Flavour *_bunches) {
+bool Beam_Spectra_Handler::CheckConsistency(const ATOOLS::Flavour* _beams,
+                                            const ATOOLS::Flavour* _bunches)
+{
   for (int i = 0; i < 2; i++) {
-    if (_beams[i]   != GetBeam(i)->Beam() ||
-  _bunches[i] != GetBeam(i)->Bunch() ) return false;
+    if (_beams[i] != GetBeam(i)->Beam() || _bunches[i] != GetBeam(i)->Bunch())
+      return false;
   }
   return true;
 }
 
-bool Beam_Spectra_Handler::CheckConsistency(const ATOOLS::Flavour *_bunches) {
+bool Beam_Spectra_Handler::CheckConsistency(const ATOOLS::Flavour* _bunches)
+{
   for (int i = 0; i < 2; i++) {
     if (_bunches[i] != GetBeam(i)->Bunch()) return false;
   }
