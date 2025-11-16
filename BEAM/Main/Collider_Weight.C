@@ -67,13 +67,14 @@ void Collider_Weight::AssignKeys(ATOOLS::Integration_Info* const info)
 bool Collider_Weight::Calculate(const double& scale)
 {
   m_weight = 0.;
-  return (p_beams[0]->CalculateWeight(m_xkey[4], scale) &&
-          p_beams[1]->CalculateWeight(m_xkey[5], scale));
+  bool succeeded = (p_beams[0]->CalculateWeight(m_xkey[4], scale) &&
+                    p_beams[1]->CalculateWeight(m_xkey[5], scale));
+  if (succeeded && m_rejection > 0 && Reject()) return false;
+  return succeeded;
 }
 
 double Collider_Weight::operator()()
 {
-  if (m_rejection > 0 && Reject()) return 0.;
   m_weight = p_beams[0]->Weight() * p_beams[1]->Weight();
   return m_weight;
 }
@@ -83,5 +84,8 @@ bool Collider_Weight::Reject()
   double b1(p_beams[0]->ImpactParameter()), b2(p_beams[1]->ImpactParameter());
   double b = std::sqrt(b1 * b1 + b2 * b2 -
                        2 * b1 * b2 * std::cos(2 * M_PI * ATOOLS::ran->Get()));
-  return (*p_rejector)(b);
+  bool rejected = (*p_rejector)(b);
+  if (rejected)
+    msg_Debugging() << METHOD << ": Event rejected for b = " << b << "\n";
+  return rejected;
 }
