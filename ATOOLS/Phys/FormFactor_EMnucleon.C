@@ -8,53 +8,59 @@
 using namespace ATOOLS;
 
 FormFactor_EMnucleon::FormFactor_EMnucleon(incomingboson::code boson, incomingnucleon::code nucleon) 
-      : m_boson_type(boson), m_nucleon_type(nucleon),
-        m_massp(0), m_mup(0), m_a0pE(0), m_a1pE(0), m_b1pE(0), m_b2pE(0), m_b3pE(0),
-        m_a0pM(0), m_a1pM(0), m_b1pM(0), m_b2pM(0), m_b3pM(0),
-        m_massn(0), m_mun(0), m_An(0), m_Bn(0), m_Deltasq(0),
-        m_a0nE(0), m_a1nE(0), m_b1nE(0), m_b2nE(0), m_b3nE(0),
-        m_a0nM(0), m_a1nM(0), m_b1nM(0), m_b2nM(0), m_b3nM(0),
-        m_massA(0), m_gA(0), m_fA(0), m_masspi(0), m_sin2thetaW(0)
+      : m_boson_type(boson), m_nucleon_type(nucleon)
 {
   msg_Out()<<"FormFactor_EMnucleon::FormFactor_EMnucleon(): Constructor called"<<std::endl;
   Scoped_Settings s{Settings::GetMainSettings()["Form_Factor"]};
-  msg_Out()<<"FormFactor_EMnucleon::FormFactor_EMnucleon(): Got settings"<<std::endl;
+  m_formfactor_model = s["Model"].SetDefault(ffmodel::kelly).Get<ffmodel::code>();
   
-  if (boson == incomingboson::photon) 
+  // Global params
+  m_gA = s["gA"].SetDefault(1.267).Get<double>();
+  m_sin2thetaW = s["sin2thetaW"].SetDefault(0.231).Get<double>();
+  
+  msg_Out()<<"FormFactor_EMnucleon::FormFactor_EMnucleon(): Using model: "<<m_formfactor_model<<std::endl;
+  
+  // Load model-specific parameters based on m_formfactor_model
+  switch (m_formfactor_model)
   {
-    msg_Out()<<"FormFactor_EMnucleon::FormFactor_EMnucleon(): Photon boson"<<std::endl;
-    if (nucleon == incomingnucleon::proton) 
-    {
-      msg_Out()<<"FormFactor_EMnucleon::FormFactor_EMnucleon(): Registering proton defaults"<<std::endl;
-      RegisterDefaultsProton();
-    } 
-    else if (nucleon == incomingnucleon::neutron) 
-    {
-      msg_Out()<<"FormFactor_EMnucleon::FormFactor_EMnucleon(): Registering neutron defaults"<<std::endl;
-      RegisterDefaultsNeutron();
-    }
+    case ffmodel::off:
+      msg_Out()<<"FormFactor_EMnucleon::FormFactor_EMnucleon(): Off model - point-like form factors"<<std::endl;
+      RegisterDefaultsOff(); 
+      break;
+    case ffmodel::kelly:
+      msg_Out()<<"FormFactor_EMnucleon::FormFactor_EMnucleon(): Kelly model - loading parameters"<<std::endl;
+      RegisterDefaultsKelly();
+      if (boson == incomingboson::W || boson == incomingboson::Z)
+      {
+        msg_Out() << "FormFactor_EMnucleon::FormFactor_EMnucleon(): Loading axial parameters" << std::endl;
+        RegisterDefaultsAxial();
+      }
+      break;
+    default:
+      THROW(fatal_error, "Unknown form factor model: " + ToString(m_formfactor_model));
   }
-  else if (boson == incomingboson::W) 
-  {
-    msg_Out()<<"FormFactor_EMnucleon::FormFactor_EMnucleon(): W boson"<<std::endl;
-    RegisterDefaultsProton();
-    RegisterDefaultsNeutron();
-    RegisterDefaultsAxial();
-  }
-  else if (boson == incomingboson::Z)
-  {
-    msg_Out()<<"FormFactor_EMnucleon::FormFactor_EMnucleon(): Z boson"<<std::endl;
-    RegisterDefaultsProton();
-    RegisterDefaultsNeutron();
-    RegisterDefaultsAxial();
-    RegisterDefaultsZ();
-  }
+  
   msg_Out()<<"FormFactor_EMnucleon::FormFactor_EMnucleon(): Constructor complete"<<std::endl;
 }
 
 FormFactor_EMnucleon::~FormFactor_EMnucleon() {}
 
-void FormFactor_EMnucleon::RegisterDefaultsProton() {
+void FormFactor_EMnucleon::RegisterDefaultsOff() {
+  // Set form factors to point-like values
+  m_F1p = 1.0;
+  m_F1n = 0.0;
+  m_F1W = 1.0;
+  m_F1Zp = 0.5 - m_sin2thetaW;
+  m_F1Zn = -0.5;
+  m_FAW = 1.0;
+  m_FAZp = 0.5 * m_gA;
+  m_FAZn = -0.5 * m_gA;
+
+  m_F2p, m_F2n, m_F2W, m_F2Zp, m_F2Zn = 0.0;
+  m_FPW, m_FPZp, m_FPZn = 0.0;
+}
+
+void FormFactor_EMnucleon::RegisterDefaultsKelly() {
   Scoped_Settings s{Settings::GetMainSettings()["Form_Factor"]};
   m_massp = s["mass_p"].SetDefault(0.938272081).Get<double>();
   m_mup = s["mu_p"].SetDefault(2.79284734463).Get<double>();
@@ -69,10 +75,6 @@ void FormFactor_EMnucleon::RegisterDefaultsProton() {
   m_b1pM = s["b1_m"].SetDefault(10.97).Get<double>();
   m_b2pM = s["b2_m"].SetDefault(18.86).Get<double>();
   m_b3pM = s["b3_m"].SetDefault(6.55).Get<double>();
-}
-
-void FormFactor_EMnucleon::RegisterDefaultsNeutron() {
-  Scoped_Settings s{Settings::GetMainSettings()["Form_Factor"]};
   m_massn = s["mass_n"].SetDefault(0.9395654133).Get<double>();
   m_mun = s["mu_n"].SetDefault(-1.9130427).Get<double>();
   // Galster parametrisation for neutron EM form factors
@@ -96,177 +98,232 @@ void FormFactor_EMnucleon::RegisterDefaultsAxial() {
   // adjustable parameters for axial form factors
   Scoped_Settings s{Settings::GetMainSettings()["Form_Factor"]};
   m_massA = s["mass_A"].SetDefault(1.0).Get<double>();
-  m_gA = s["g_A"].SetDefault(1.2695).Get<double>();
   m_fA = s["f_A"].SetDefault(0.0).Get<double>();
   m_masspi = s["mass_pi"].SetDefault(0.13957018).Get<double>();
 }
 
-void FormFactor_EMnucleon::RegisterDefaultsZ() {
-  Scoped_Settings s{Settings::GetMainSettings()["Form_Factor"]};
-  m_sin2thetaW = s["sin2thetaW"].SetDefault(0.231).Get<double>();
+double FormFactor_EMnucleon::Q2_check(const double &Q2) {
+  // ensure Q2 is positive
+  if (Q2 < 0) {
+    msg_Out() << "FormFactor_EMnucleon::Q2_check(): Q2 is negative (" << Q2 << "). Using its absolute value." << std::endl;
+    return -Q2;
+  }
+  else {
+    return Q2;
+  }
 }
 
-double FormFactor_EMnucleon::Q2_eval(const double &q2) {
-  return std::abs(-q2); // ensure Q2 is positive
-}
-
-double FormFactor_EMnucleon::tau_eval(const double &q2, const double &mass) {
-  double Q2 = Q2_eval(q2);
+double FormFactor_EMnucleon::tau_eval(const double &Q2, const double &mass) {
   return Q2 / (4. * mass * mass);
 }
 
-double FormFactor_EMnucleon::GEp(const double &q2) {
-  double Q2 = Q2_eval(q2);
-  double tau = tau_eval(Q2, m_massp);
-  double num = m_a0pE + m_a1pE * tau;
-  double den = 1. + m_b1pE * tau + m_b2pE * tau * tau + m_b3pE * tau * tau * tau;
+double FormFactor_EMnucleon::Kelly_func(const double &Q2, const double &a0, const double &a1, const double &b1, const double &b2, const double &b3) {
+  double tau = tau_eval(Q2, m_massp); // assuming proton mass for Kelly function
+  double num = a0 + a1 * tau;
+  double den = 1. + b1 * tau + b2 * tau * tau + b3 * tau * tau * tau;
   return num / den;
 }
 
-double FormFactor_EMnucleon::GMp(const double &q2) {
-  double Q2 = Q2_eval(q2);
-  double tau = tau_eval(Q2, m_massp);
-  double num = m_a0pM + m_a1pM * tau;
-  double den = 1. + m_b1pM * tau + m_b2pM * tau * tau + m_b3pM * tau * tau * tau;
-  return m_mup * num / den;
+double FormFactor_EMnucleon::F1p(const double &Q2) {
+  switch (m_formfactor_model) {
+    case ffmodel::off:
+      return m_F1p;
+    case ffmodel::kelly: {
+      double tau = tau_eval(Q2, m_massp);
+      double GE = Kelly_func(Q2, m_a0pE, m_a1pE, m_b1pE, m_b2pE, m_b3pE);
+      double GM = m_mup * Kelly_func(Q2, m_a0pM, m_a1pM, m_b1pM, m_b2pM, m_b3pM);
+      return (GE + tau * GM) / (1. + tau);
+    }
+    default:
+      THROW(fatal_error, "Unknown form factor model in F1p");
+  }
 }
 
-double FormFactor_EMnucleon::GEn(const double &q2) {
-  double Q2 = Q2_eval(q2);
-  double tau = tau_eval(Q2, m_massn);
-  double num = m_a0nE + m_a1nE * tau;
-  double den = 1. + m_b1nE * tau + m_b2nE * tau * tau + m_b3nE * tau * tau * tau;
-  return num / den;
+double FormFactor_EMnucleon::F1n(const double &Q2) {
+  switch (m_formfactor_model) {
+    case ffmodel::off:
+      return m_F1n;
+    case ffmodel::kelly: {
+      double tau = tau_eval(Q2, m_massn);
+      double GE = Kelly_func(Q2, m_a0nE, m_a1nE, m_b1nE, m_b2nE, m_b3nE);
+      double GM = m_mun * Kelly_func(Q2, m_a0nM, m_a1nM, m_b1nM, m_b2nM, m_b3nM);
+      return (GE + tau * GM) / (1. + tau);
+    }
+    default:
+      THROW(fatal_error, "Unknown form factor model in F1n");
+  }
 }
 
-double FormFactor_EMnucleon::GMn(const double &q2) {
-  double Q2 = Q2_eval(q2);
-  double tau = tau_eval(Q2, m_massn);
-  double num = m_a0nM + m_a1nM * tau;
-  double den = 1. + m_b1nM * tau + m_b2nM * tau * tau + m_b3nM * tau * tau * tau;
-  return m_mun * num / den;
+double FormFactor_EMnucleon::F2p(const double &Q2) {
+  switch (m_formfactor_model) {
+    case ffmodel::off:
+      return m_F2p;
+    case ffmodel::kelly: {
+      double tau = tau_eval(Q2, m_massp);
+      double GE = Kelly_func(Q2, m_a0pE, m_a1pE, m_b1pE, m_b2pE, m_b3pE);
+      double GM = m_mup * Kelly_func(Q2, m_a0pM, m_a1pM, m_b1pM, m_b2pM, m_b3pM);
+      return (GM - GE) / (1. + tau);
+    }
+    default:
+      THROW(fatal_error, "Unknown form factor model in F2p");
+  }
 }
 
-double FormFactor_EMnucleon::F1p(const double &q2) {
-  double Q2 = Q2_eval(q2);
-  double tau = tau_eval(Q2, m_massp);
-  double GE = GEp(Q2);
-  double GM = GMp(Q2);
-  return (GE + tau * GM) / (1. + tau);
+double FormFactor_EMnucleon::F2n(const double &Q2) {
+  switch (m_formfactor_model) {
+    case ffmodel::off:
+      return m_F2n;
+    case ffmodel::kelly: {
+      double tau = tau_eval(Q2, m_massn);
+      double GE = Kelly_func(Q2, m_a0nE, m_a1nE, m_b1nE, m_b2nE, m_b3nE);
+      double GM = m_mun * Kelly_func(Q2, m_a0nM, m_a1nM, m_b1nM, m_b2nM, m_b3nM);
+      return (GM - GE) / (1. + tau);
+    }
+    default:
+      THROW(fatal_error, "Unknown form factor model in F2n");
+  }
 }
 
-double FormFactor_EMnucleon::F1n(const double &q2) {
-  double Q2 = Q2_eval(q2);
-  double tau = tau_eval(Q2, m_massn);
-  double GE = GEn(Q2);
-  double GM = GMn(Q2);
-  return (GE + tau * GM) / (1. + tau);
+double FormFactor_EMnucleon::F1W(const double &Q2) {
+  return F1p(Q2) - F1n(Q2);
 }
 
-double FormFactor_EMnucleon::F2p(const double &q2) {
-  double Q2 = Q2_eval(q2);
-  double tau = tau_eval(Q2, m_massp);
-  double GE = GEp(Q2);
-  double GM = GMp(Q2);
-  return (GM - GE) / (1. + tau);
+double FormFactor_EMnucleon::F2W(const double &Q2) {
+  return F2p(Q2) - F2n(Q2);
 }
 
-double FormFactor_EMnucleon::F2n(const double &q2) {
-  double Q2 = Q2_eval(q2);
-  double tau = tau_eval(Q2, m_massn);
-  double GE = GEn(Q2);
-  double GM = GMn(Q2);
-  return (GM - GE) / (1. + tau);
+double FormFactor_EMnucleon::FAW(const double &Q2) {
+  switch (m_formfactor_model) {
+    case ffmodel::off:
+      return m_FAW;
+    case ffmodel::kelly:
+      return m_gA / pow(1. + Q2 / (m_massA * m_massA), 2);
+    default:
+      THROW(fatal_error, "Unknown form factor model in FAW");
+  }
 }
 
-double FormFactor_EMnucleon::F1W(const double &q2) {
-  return F1p(q2) - F1n(q2);
+double FormFactor_EMnucleon::FPW(const double &Q2) {
+  switch (m_formfactor_model) {
+    case ffmodel::off:
+      return m_FPW;
+    case ffmodel::kelly: {
+      // PCAC relation and pion-pole dominance
+      double FA = FAW(Q2);
+      return (4 * m_massp * m_massp * FA) / (Q2 + m_masspi * m_masspi);
+    }
+    default:
+      THROW(fatal_error, "Unknown form factor model in FPW");
+  }
 }
 
-double FormFactor_EMnucleon::F2W(const double &q2) {
-  return F2p(q2) - F2n(q2);
+double FormFactor_EMnucleon::F1Zp(const double &Q2) {
+  switch (m_formfactor_model) {
+    case ffmodel::off:
+      return m_F1Zp;
+    case ffmodel::kelly:
+      return (0.5 - 2 * m_sin2thetaW) * F1p(Q2) - 0.5 * F1n(Q2);
+  }
 }
 
-double FormFactor_EMnucleon::FAW(const double &q2) {
-  double Q2 = Q2_eval(q2);
-  return m_gA / pow(1. + Q2 / (m_massA * m_massA), 2);
+double FormFactor_EMnucleon::F2Zp(const double &Q2) {
+  switch (m_formfactor_model) {
+    case ffmodel::off:
+      return m_F2Zp;
+    case ffmodel::kelly:
+      return (0.5 - 2 * m_sin2thetaW) * F2p(Q2) - 0.5 * F2n(Q2);
+  }
 }
 
-double FormFactor_EMnucleon::FPW(const double &q2) {
-  // PCAC relation
-  double Q2 = Q2_eval(q2);
-  return (2. * m_massp * m_gA) / (Q2 + m_masspi * m_masspi) * pow(1. + Q2 / (m_massA * m_massA), -2);
+double FormFactor_EMnucleon::FAZp(const double &Q2) {
+  switch (m_formfactor_model) {
+    case ffmodel::off:
+      return m_FAZp;
+    case ffmodel::kelly:
+      return 0.5 * FAW(Q2);
+  }
 }
 
-double FormFactor_EMnucleon::F1Zp(const double &q2) {
-  return (0.5 - 2 * m_sin2thetaW) * F1p(q2) - 0.5 * F1n(q2);
+double FormFactor_EMnucleon::FPZp(const double &Q2) {
+  switch (m_formfactor_model) {
+    case ffmodel::off:
+      return m_FPZp;
+    case ffmodel::kelly:
+      return 0.5 * FPW(Q2); //check
+  }
 }
 
-double FormFactor_EMnucleon::F2Zp(const double &q2) {
-  return (0.5 - 2 * m_sin2thetaW) * F2p(q2) - 0.5 * F2n(q2);
-}
-
-double FormFactor_EMnucleon::FAZp(const double &q2) {
-  return 0.5 * FAW(q2);
-}
-
-double FormFactor_EMnucleon::FPZp(const double &q2) {
-  // TODO: check 
-  return 0.5 * FPW(q2);
-}
-
-double FormFactor_EMnucleon::F1Zn(const double &q2) {
-  return (0.5 - 2 * m_sin2thetaW) * F1n(q2) - 0.5 * F1p(q2);
+double FormFactor_EMnucleon::F1Zn(const double &Q2) {
+  switch (m_formfactor_model) {
+    case ffmodel::off:
+      return m_F1Zn;
+    case ffmodel::kelly:
+      return (0.5 - 2 * m_sin2thetaW) * F1n(Q2) - 0.5 * F1p(Q2);
+  }
 } 
 
-double FormFactor_EMnucleon::F2Zn(const double &q2) {
-  return (0.5 - 2 * m_sin2thetaW) * F2n(q2) - 0.5 * F2p(q2);
+double FormFactor_EMnucleon::F2Zn(const double &Q2) {
+  switch (m_formfactor_model) {
+    case ffmodel::off:
+      return m_F2Zn;
+    case ffmodel::kelly:
+      return (0.5 - 2 * m_sin2thetaW) * F2n(Q2) - 0.5 * F2p(Q2);
+  }
 }
 
-double FormFactor_EMnucleon::FAZn(const double &q2) {
-  return -0.5 * FAW(q2);
+double FormFactor_EMnucleon::FAZn(const double &Q2) {
+  switch (m_formfactor_model) {
+    case ffmodel::off:
+      return m_FAZn;
+    case ffmodel::kelly:
+      return -0.5 * FAW(Q2);
+  }
 }
 
-double FormFactor_EMnucleon::FPZn(const double &q2) {
-  // TODO: check
-  return -0.5 * FPW(q2);
+double FormFactor_EMnucleon::FPZn(const double &Q2) {
+  switch (m_formfactor_model) {
+    case ffmodel::off:
+      return m_FPZn;
+    case ffmodel::kelly:
+      return -0.5 * FPW(Q2); //check
+  }
 }
 
-NucleonFormFactors FormFactor_EMnucleon::Photon_Proton(const double &q2) {
-  return NucleonFormFactors(F1p(q2), F2p(q2), 0.0, 0.0);
+NucleonFormFactors FormFactor_EMnucleon::Photon_Proton(const double &Q2) {
+  return NucleonFormFactors(F1p(Q2), F2p(Q2), 0.0, 0.0);
 }
 
-NucleonFormFactors FormFactor_EMnucleon::Photon_Neutron(const double &q2) {
-  return NucleonFormFactors(F1n(q2), F2n(q2), 0.0, 0.0);
+NucleonFormFactors FormFactor_EMnucleon::Photon_Neutron(const double &Q2) {
+  return NucleonFormFactors(F1n(Q2), F2n(Q2), 0.0, 0.0);
 }
 
-NucleonFormFactors FormFactor_EMnucleon::W_Boson(const double &q2) {
-  return NucleonFormFactors(F1W(q2), F2W(q2), FAW(q2), FPW(q2));
+NucleonFormFactors FormFactor_EMnucleon::W_Boson(const double &Q2) {
+  return NucleonFormFactors(F1W(Q2), F2W(Q2), FAW(Q2), FPW(Q2));
 }
 
-NucleonFormFactors FormFactor_EMnucleon::Z_Proton(const double &q2) {
-  return NucleonFormFactors(F1Zp(q2), F2Zp(q2), FAZp(q2), FPZp(q2));
+NucleonFormFactors FormFactor_EMnucleon::Z_Proton(const double &Q2) {
+  return NucleonFormFactors(F1Zp(Q2), F2Zp(Q2), FAZp(Q2), FPZp(Q2));
 }
 
-NucleonFormFactors FormFactor_EMnucleon::Z_Neutron(const double &q2) {
-  return NucleonFormFactors(F1Zn(q2), F2Zn(q2), FAZn(q2), FPZn(q2));
+NucleonFormFactors FormFactor_EMnucleon::Z_Neutron(const double &Q2) {
+  return NucleonFormFactors(F1Zn(Q2), F2Zn(Q2), FAZn(Q2), FPZn(Q2));
 }
 
-NucleonFormFactors FormFactor_EMnucleon::GetFormFactors(const double &q2) {
+NucleonFormFactors FormFactor_EMnucleon::GetFormFactors(const double &Q2) {
   switch (m_boson_type) {
     case incomingboson::photon:
       if (m_nucleon_type == incomingnucleon::proton)
-        return Photon_Proton(q2);
+        return Photon_Proton(Q2);
       else if (m_nucleon_type == incomingnucleon::neutron)
-        return Photon_Neutron(q2);
+        return Photon_Neutron(Q2);
       break;
     case incomingboson::W:
-      return W_Boson(q2);
+      return W_Boson(Q2);
     case incomingboson::Z:
       if (m_nucleon_type == incomingnucleon::proton)
-        return Z_Proton(q2);
+        return Z_Proton(Q2);
       else if (m_nucleon_type == incomingnucleon::neutron)
-        return Z_Neutron(q2);
+        return Z_Neutron(Q2);
       break;
     default:
       THROW(fatal_error, "Unknown boson type in GetFormFactors");
@@ -318,6 +375,32 @@ std::istream &ATOOLS::operator>>(std::istream &str, BosonNucleonType &type)
     type.boson = incomingboson::Z;
     type.nucleon = incomingnucleon::neutron;
   }
+  else
+    THROW(fatal_error, "Unknown Form_Factor: Mode ");
+  return str;
+}
+
+std::ostream &ATOOLS::operator<<(std::ostream &str,
+                                 const ffmodel::code &ff)
+{
+  if (ff == ffmodel::kelly)
+    return str << "Kelly";
+  else if (ff == ffmodel::off)
+    return str << "Off";
+  return str << "unknown";
+}
+
+std::istream &ATOOLS::operator>>(std::istream &str, ffmodel::code &mode)
+{
+  std::string tag;
+  str >> tag;
+  // mode=wgt::off;
+  if (tag.find("Kelly") != std::string::npos)
+    mode = ffmodel::kelly;
+  else if (tag.find("Off") != std::string::npos)
+    mode = ffmodel::off;
+  else if (tag.find("None") != std::string::npos)
+    mode = ffmodel::off;
   else
     THROW(fatal_error, "Unknown Form_Factor: Mode ");
   return str;
