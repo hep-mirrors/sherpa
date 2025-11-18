@@ -16,7 +16,7 @@ EPA::EPA(const Flavour& beam, const double energy, const double pol,
          const int dir)
     : Beam_Base(beamspectrum::EPA, beam, energy, pol, dir),
       m_fftype(EPA_ff_type::point), p_ff(nullptr), m_mass(beam.Mass(true)),
-      m_aqed(1. / 127), m_pref(0.), m_q2(0.), m_pt2max(-1.), m_xmin(0.),
+      m_aqed(1. / 137.03599976), m_pref(0.), m_q2(0.), m_pt2max(-1.), m_xmin(0.),
       m_xmax(1.), m_plotting(0)
 {
   if (m_beam.Charge() == 0.)
@@ -30,7 +30,6 @@ EPA::EPA(const Flavour& beam, const double energy, const double pol,
   m_vecouts[0] = Vec4D(m_energy, 0., 0., m_dir * m_energy);
   m_vecouts[1] = Vec4D(0., 0., 0., 0.);
   m_on         = true;
-  m_pref       = m_aqed / M_PI;
 
   RegisterDefaults();
   Initialise();
@@ -69,6 +68,7 @@ void EPA::Initialise()
   const auto& s = Settings::GetMainSettings()["EPA"];
   size_t      b = m_dir > 0 ? 0 : 1;
   m_aqed        = s["AlphaQED"].Get<double>();
+  m_pref       = m_aqed / M_PI;
   m_plotting    = s["PlotSpectra"].Get<bool>();
   m_pt2max      = !m_beam.IsIon()
                           ? sqr(m_energy * s["ThetaMax"].GetTwoVector<double>()[b])
@@ -78,26 +78,22 @@ void EPA::Initialise()
 
   m_fftype = static_cast<EPA_ff_type>(s["Form_Factor"].GetTwoVector<int>()[b]);
   switch (m_fftype) {
-    case EPA_ff_type::point:
-      p_ff = new EPA_Point(m_beam, m_dir); break;
+    case EPA_ff_type::point: p_ff = new EPA_Point(m_beam, m_dir); break;
     case EPA_ff_type::pointApprox:
-      p_ff = new EPA_PointApprox(m_beam, m_dir); break;
-    case EPA_ff_type::proton:
-      p_ff = new EPA_Proton(m_beam, m_dir); break;
+      p_ff = new EPA_PointApprox(m_beam, m_dir);
+      break;
+    case EPA_ff_type::proton: p_ff = new EPA_Proton(m_beam, m_dir); break;
     case EPA_ff_type::protonApprox:
-      p_ff = new EPA_ProtonApprox(m_beam, m_dir); break;
-    case EPA_ff_type::Gauss:
-      p_ff = new EPA_Gauss(m_beam, m_dir); break;
-    case EPA_ff_type::hcs:
-      p_ff = new EPA_HCS(m_beam, m_dir); break;
-    case EPA_ff_type::dipole:
-      p_ff = new EPA_Dipole(m_beam, m_dir); break;
+      p_ff = new EPA_ProtonApprox(m_beam, m_dir);
+      break;
+    case EPA_ff_type::Gauss: p_ff = new EPA_Gauss(m_beam, m_dir); break;
+    case EPA_ff_type::hcs: p_ff = new EPA_HCS(m_beam, m_dir); break;
+    case EPA_ff_type::dipole: p_ff = new EPA_Dipole(m_beam, m_dir); break;
     case EPA_ff_type::dipoleApprox:
-      p_ff = new EPA_DipoleApprox(m_beam, m_dir); break;
-    case EPA_ff_type::ionApprox:
-      p_ff = new EPA_IonApprox(m_beam, m_dir); break;
-    case EPA_ff_type::WoodSaxon:
-      p_ff = new EPA_WoodSaxon(m_beam, m_dir); break;
+      p_ff = new EPA_DipoleApprox(m_beam, m_dir);
+      break;
+    case EPA_ff_type::ionApprox: p_ff = new EPA_IonApprox(m_beam, m_dir); break;
+    case EPA_ff_type::WoodSaxon: p_ff = new EPA_WoodSaxon(m_beam, m_dir); break;
     default: THROW(not_implemented, "unknown EPA form factor. ");
   }
   p_ff->SetPT2Max(m_pt2max);
@@ -124,7 +120,7 @@ void EPA::RegisterDefaults() const
                               ? 0.71
                               : sqr(2. / m_beam.Radius() * rpa->hBar_c()));
   s["WoodSaxon_d"].SetDefault(0.5);
-  s["AlphaQED"].SetDefault(0.0072992701);
+  s["AlphaQED"].SetDefault(1. / 137.03599976);
   s["ThetaMax"].SetDefault(0.3);
   s["PlotSpectra"].SetDefault(false);
 }
