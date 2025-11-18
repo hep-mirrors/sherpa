@@ -431,9 +431,10 @@ The following formats are currently available:
   ``3`` (ROOT file output with every event written as an object of class GenEvent),
   ``4`` (ROOT file output with GenEvent objects written into TTree) and
   ``5`` (Output via custom HepMC3 plugin). For the later option one should also set 
-  the location of the plugin file :option:`HEPMC3_OUTPUT_PLUGIN` and the name of the 
-  output function :option:`HEPMC3_OUTPUT_FUNCTION`, which is called for the creation of 
-  the HepMC3::Writer.
+  the location of the plugin file :option:`HEPMC3_OUTPUT_PLUGIN`, e.g. `libMyWriter.so`
+  and the name of the output function :option:`HEPMC3_OUTPUT_FUNCTION`, which is called 
+  for the creation of the HepMC3::Writer, e.g. `newMyWriterstream`. 
+  See HepMC3 documentation,  e.g. `HEPMC3_DECLARE_WRITER_STREAM` macro for details.
   
 
   The HepMC::GenEvent::m_weights weight vector stores the
