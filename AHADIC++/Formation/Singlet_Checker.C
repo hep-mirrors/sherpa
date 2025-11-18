@@ -309,13 +309,13 @@ bool Singlet_Checker::TransitProblematicSinglets() {
   size_t   n      = m_transitions.size(), i=0;
   Vec4D *  moms   = new Vec4D[n],  totmom  = Vec4D(0.,0.,0.,0.);
   double * masses = new double[n], totmass = 0;
-  for (const auto t : m_transitions) {
+  for (const auto& t : m_transitions) {
     totmom += moms[i] = t.first->Momentum();
     totmass += masses[i] = t.second.Mass();
     ++i;
   }
   if (totmom.Abs2()<sqr(totmass)) {
-    for (const auto t : m_transitions) {
+    for (const auto& t : m_transitions) {
       msg_Debugging()<<"Singlet with "<<t.first->Momentum()<<" --> "
         <<t.second<<" ("<<t.second.Mass()<<")\n";
     }
@@ -326,7 +326,7 @@ bool Singlet_Checker::TransitProblematicSinglets() {
   bool success = hadpars->AdjustMomenta(n,moms,masses);
   if (success) {
     i = 0;
-    for (const auto t : m_transitions) {
+    for (const auto& t : m_transitions) {
       bool isbeam = (t.first->front()->IsBeam() ||
 		     t.first->back()->IsBeam());
       Proto_Particle * part = new Proto_Particle(t.second,moms[i],

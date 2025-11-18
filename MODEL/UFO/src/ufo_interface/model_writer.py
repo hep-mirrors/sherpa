@@ -6,7 +6,7 @@ from string import Template
 from pathlib import Path
 from .lorentz_writer import _filter_lorentz
 import pkgutil
-from .message import progress
+from .message import progress, warning
 import time
 
 
@@ -30,12 +30,32 @@ def _physical_particle(particle):
     return True
 
 
+def _parse_version(version):
+    """Parse the UFO version string and return a semvar string."""
+    version_parts = version.split('.')
+    if len(version_parts) < 1 or len(version_parts) > 3:
+        raise ValueError(f'Invalid version format: {version}')
+
+    # Ensure all parts are integers
+    for part in version_parts:
+        if not part.isdigit():
+            raise ValueError(f'Invalid version part: {part}')
+
+    # Return the version as a string
+    return '.'.join(version_parts)
+
+
 class ModelWriter:
     def __init__(self, name, ufo, opts):
         self._lorentz_files = []
         self._name = name
         self._ufo = ufo
-        self._version = ufo.__version__
+        try:
+            self._version = _parse_version(ufo.__version__)
+        except (AttributeError, ValueError):
+            msg = 'Invalid UFO version format. Using default version 1.0.0.'
+            warning(msg)
+            self._version = '1.0.0'
         self._opts = opts
         self._params = ''
         self._particles = ''

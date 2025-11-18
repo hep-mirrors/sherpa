@@ -94,6 +94,7 @@ namespace SHERPA {
 
     ATOOLS::Return_Value::code DefineInitialConditions(ATOOLS::Blob*,
                                                        ATOOLS::Blob_List*);
+    ATOOLS::Return_Value::code DefineTrivialInitialConditions(ATOOLS::Blob*);
 
     bool FillBlobs();
 

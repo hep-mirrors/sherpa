@@ -5,9 +5,10 @@
 
 namespace PHASIC {
 
-  /* This struct is to be passed to the getters for external MEs and
-     correlated MEs. Specifies flavours, couplings and source (i.e
-     OpenLoops, MadGraph, etc) */
+  /*
+    This struct is to be passed to the getters for external MEs and
+    correlated MEs. Specifies flavours, couplings and source (i.e
+    OpenLoops, BlackHat, MCFM, etc) */
 
   struct External_ME_Args {
     

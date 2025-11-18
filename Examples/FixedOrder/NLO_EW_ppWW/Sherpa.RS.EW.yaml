@@ -1,4 +1,3 @@
-EVENTS: 500k
 MI_HANDLER: None
 FRAGMENTATION: None
 SHOWER_GENERATOR: None
@@ -11,10 +10,10 @@ PDF_LIBRARY: LHAPDFSherpa
 PDF_SET: NNPDF23_nlo_as_0118_qed
 SCALES: VAR{sqr(80.385)}
 PARTICLE_DATA:
-  5: {Massive: 1},
-  6: {Mass: 173.2, Width: 1.5},
-  23: {Mass: 91.1876, Width: 2.49},
-  24: {Mass: 80.385, Width: 0.0},
+  5: {Massive: 1}
+  6: {Mass: 173.2, Width: 1.5}
+  23: {Mass: 91.1876, Width: 2.49}
+  24: {Mass: 80.385, Width: 0.0}
   25: {Mass: 126.0, Width: 0.00407}
 EW_SCHEME: 3
 GF: 1.16637e-5

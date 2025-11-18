@@ -123,7 +123,7 @@ MEPS_Scale_Setter::MEPS_Scale_Setter
     Scoped_Settings s(Settings::GetMainSettings()["MEPS"]);
     s_nmaxall=s["NMAX_ALLCONFIGS"].GetScalarWithOtherDefault<int>(-1);
     s_nmaxnloall=s["NLO_NMAX_ALLCONFIGS"].GetScalarWithOtherDefault<int>(-1);
-    s_cmode=s["CLUSTER_MODE"].GetScalarWithOtherDefault<int>(8|32|64|256);
+    s_cmode=s["CLUSTER_MODE"].GetScalarWithOtherDefault<int>(8|32|64);
     s_nlocpl=s["NLO_COUPLING_MODE"].GetScalarWithOtherDefault<int>(2);
     s_csmode=s["MEPS_COLORSET_MODE"].GetScalarWithOtherDefault<int>(0);
     s_core=s["CORE_SCALE"].GetScalarWithOtherDefault<std::string>("Default");

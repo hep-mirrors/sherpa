@@ -70,7 +70,7 @@ void TwoResonances::GeneratePoint(ATOOLS::Vec4D * p,PHASIC::Cut_Data * cuts,
 				  double * _ran)
 {
   double *ran = p_vegas->GeneratePoint(_ran);
-  for(int i=0;i<m_rannum;i++) p_rans[i]=ran[i];
+  for(size_t i=0;i<m_rannum;i++) p_rans[i]=ran[i];
   Vec4D  p1234 = p[0];
   // kinematic variables
   double s1_min = p_ms[m_i];

@@ -20,6 +20,7 @@ namespace ATOOLS {
     Vec4D TotalFourMomentum() const;
     Vec4D IncomingFourMomentum() const;
     Vec4D OutgoingFourMomentum() const;
+    double Weight() const;
 
     %extend {
       const Blob &GetFirst(const int code) const

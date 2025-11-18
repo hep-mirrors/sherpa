@@ -82,7 +82,7 @@ namespace EXTRAXS {
 		<<"   will read defaults from 1911.09726v1.\n";
       return false;
     }
-    for (const auto xs : allxs) {
+    for (const auto& xs : allxs) {
       /*
 	read data from file in ASCII format: in each line we have
 	\sqrt{s} (GeV) , 1/\rho (GeV) , \alpha_s(1/rho) ,  number of gluons ,

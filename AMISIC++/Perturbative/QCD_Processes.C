@@ -26,6 +26,8 @@ void gg_gg::Calc(const double & s,const double & t,const double & u) {
 }
 
 bool gg_gg::SetColours(const ATOOLS::Flavour_Vector & flavs) {
+  m_colours[0][0] = Flow::Counter();
+  m_colours[1][1] = Flow::Counter();
   double rr = ran->Get() * (m_Ms+m_Mt+m_Mu);
   if (rr-m_Mt<0.) {
     /*
@@ -37,10 +39,12 @@ bool gg_gg::SetColours(const ATOOLS::Flavour_Vector & flavs) {
       1====++====3
       
     */
+    m_colours[1][0] = Flow::Counter();
+    m_colours[3][0] = Flow::Counter();
     m_colours[2][0] = m_colours[0][0];
     m_colours[3][1] = m_colours[1][1];
-    m_colours[0][1] = m_colours[1][0] = Flow::Counter();
-    m_colours[2][1] = m_colours[3][0] = Flow::Counter();
+    m_colours[0][1] = m_colours[1][0];
+    m_colours[2][1] = m_colours[3][0];
   }
   else if (rr-m_Mt-m_Mu<0.) {
     /*
@@ -52,10 +56,12 @@ bool gg_gg::SetColours(const ATOOLS::Flavour_Vector & flavs) {
 	1====++====2
 	   
     */
+    m_colours[1][0] = Flow::Counter();
+    m_colours[2][0] = Flow::Counter();
     m_colours[3][0] = m_colours[0][0];
     m_colours[2][1] = m_colours[1][1];
-    m_colours[0][1] = m_colours[1][0] = Flow::Counter();
-    m_colours[3][1] = m_colours[2][0] = Flow::Counter();
+    m_colours[0][1] = m_colours[1][0];
+    m_colours[3][1] = m_colours[2][0];
   }
   else {
     /*
@@ -67,10 +73,12 @@ bool gg_gg::SetColours(const ATOOLS::Flavour_Vector & flavs) {
 	3====++====1
 	   
     */
+    m_colours[0][1] = Flow::Counter();
+    m_colours[1][0] = Flow::Counter();
     m_colours[2][0] = m_colours[0][0];
-    m_colours[3][1] = m_colours[0][1] = Flow::Counter();
+    m_colours[3][1] = m_colours[0][1];
     m_colours[2][1] = m_colours[1][1];
-    m_colours[3][0] = m_colours[1][0] = Flow::Counter();
+    m_colours[3][0] = m_colours[1][0];
   }
   return true; 
 }
@@ -116,8 +124,9 @@ bool gg_qqbar::SetColours(const ATOOLS::Flavour_Vector & flavs) {
       1====+------3
 
     */
+    m_colours[1][1] = Flow::Counter();
     m_colours[2][0] = m_colours[0][0];
-    m_colours[3][1] = m_colours[1][1] = Flow::Counter();
+    m_colours[3][1] = m_colours[1][1];
     m_colours[1][0] = m_colours[0][1];
   }
   else {
@@ -130,7 +139,8 @@ bool gg_qqbar::SetColours(const ATOOLS::Flavour_Vector & flavs) {
       1====+------2
 
     */
-    m_colours[2][0] = m_colours[1][0] = Flow::Counter();
+    m_colours[1][0] = Flow::Counter();
+    m_colours[2][0] = m_colours[1][0];
     m_colours[3][1] = m_colours[0][1];
     m_colours[1][1] = m_colours[0][0];
   }
@@ -183,9 +193,10 @@ bool qqbar_gg::SetColours(const ATOOLS::Flavour_Vector & flavs) {
       1------+====3
 
     */
+    m_colours[3][anti] = Flow::Counter();
     m_colours[2][anti] = m_colours[0][anti];
     m_colours[3][part] = m_colours[1][part];
-    m_colours[2][part] = m_colours[3][anti] = Flow::Counter();
+    m_colours[2][part] = m_colours[3][anti];
   }
   else {
      /*
@@ -197,9 +208,10 @@ bool qqbar_gg::SetColours(const ATOOLS::Flavour_Vector & flavs) {
       1------+====2
 
     */
+    m_colours[2][anti] = Flow::Counter();
     m_colours[3][anti] = m_colours[0][anti];
     m_colours[2][part] = m_colours[1][part];
-    m_colours[3][part] = m_colours[2][anti] = Flow::Counter();
+    m_colours[3][part] = m_colours[2][anti];
   }
   return true;
 }
@@ -249,9 +261,10 @@ bool qg_qg::SetColours(const ATOOLS::Flavour_Vector & flavs) {
       2======++====3
 
     */
+    m_colours[gluon+2][trip] = Flow::Counter();
     m_colours[gluon][anti]   = m_colours[quark][trip];
     m_colours[gluon+2][anti] = m_colours[quark+2][trip];
-    m_colours[gluon][trip]   = m_colours[gluon+2][trip] = Flow::Counter();
+    m_colours[gluon][trip]   = m_colours[gluon+2][trip];
   }
   else {
      /*
@@ -263,9 +276,10 @@ bool qg_qg::SetColours(const ATOOLS::Flavour_Vector & flavs) {
       1======+----2
 
     */
+    m_colours[gluon+2][anti] = Flow::Counter();
     m_colours[gluon+2][trip] = m_colours[quark][trip];
     m_colours[gluon][trip]   = m_colours[quark+2][trip];
-    m_colours[gluon][anti]   = m_colours[gluon+2][anti] = Flow::Counter();
+    m_colours[gluon][anti]   = m_colours[gluon+2][anti];
   }
   return true;
 }
@@ -307,6 +321,8 @@ void qq_qq::Calc(const double & s,const double & t,const double & u) {
 bool qq_qq::SetColours(const ATOOLS::Flavour_Vector & flavs) {
   size_t anti(flavs[0].IsAnti());
   for (size_t i=0;i<4;i++) m_colours[i][1-anti] = 0;
+  m_colours[3][anti] = Flow::Counter();
+  m_colours[2][anti] = Flow::Counter();
   if ((m_Mt+m_Mu) * ran->Get() < m_Mt) {
      /*
     
@@ -317,8 +333,8 @@ bool qq_qq::SetColours(const ATOOLS::Flavour_Vector & flavs) {
       1------++-----3
 
     */
-    m_colours[0][anti] = m_colours[3][anti] = Flow::Counter();
-    m_colours[1][anti] = m_colours[2][anti] = Flow::Counter();
+    m_colours[0][anti] = m_colours[3][anti];
+    m_colours[1][anti] = m_colours[2][anti];
   }
   else {
      /*
@@ -330,8 +346,8 @@ bool qq_qq::SetColours(const ATOOLS::Flavour_Vector & flavs) {
       1------++-----2
 
     */
-    m_colours[0][anti] = m_colours[2][anti] = Flow::Counter();
-    m_colours[1][anti] = m_colours[3][anti] = Flow::Counter();
+    m_colours[0][anti] = m_colours[2][anti];
+    m_colours[1][anti] = m_colours[3][anti];
   }
   return true;
 }
@@ -376,8 +392,10 @@ bool qqbar_qqbar::SetColours(const ATOOLS::Flavour_Vector & flavs) {
       1/         \3, if fl[0]==fl[2]
 
     */
-    m_colours[0][anti0] = m_colours[2][anti0] = Flow::Counter();	
-    m_colours[1][anti1] = m_colours[3][anti1] = Flow::Counter();
+    m_colours[2][anti0] = Flow::Counter();
+    m_colours[3][anti1] = Flow::Counter();
+    m_colours[0][anti0] = m_colours[2][anti0];
+    m_colours[1][anti1] = m_colours[3][anti1];
   }
   else {
     /*
@@ -389,8 +407,10 @@ bool qqbar_qqbar::SetColours(const ATOOLS::Flavour_Vector & flavs) {
       1----+ +----3
 
     */
-    m_colours[0][anti0] = m_colours[1][anti1] = Flow::Counter();	
-    m_colours[2][anti0] = m_colours[3][anti1] = Flow::Counter();
+    m_colours[1][anti1] = Flow::Counter();
+    m_colours[3][anti1] = Flow::Counter();
+    m_colours[0][anti0] = m_colours[1][anti1];
+    m_colours[2][anti0] = m_colours[3][anti1];
   }
   m_colours[0][1-anti0] = m_colours[2][1-anti0] = 0;
   m_colours[1][1-anti1] = m_colours[3][1-anti1] = 0;
@@ -426,15 +446,19 @@ bool q1q2_q1q2::SetColours(const ATOOLS::Flavour_Vector & flavs) {
   size_t anti0(flavs[0].IsAnti()), anti1(flavs[1].IsAnti());
   if (anti0==anti1) {
     // particle--particle or anti-particle--anti-particle: u channel colours
-    m_colours[0][anti0] = m_colours[3][anti0] = Flow::Counter();
-    m_colours[1][anti1] = m_colours[2][anti1] = Flow::Counter();
+    m_colours[3][anti0] = Flow::Counter();
+    m_colours[2][anti1] = Flow::Counter();
+    m_colours[0][anti0] = m_colours[3][anti0];
+    m_colours[1][anti1] = m_colours[2][anti1];
     m_colours[0][1-anti0] = m_colours[3][1-anti0] = 0;
     m_colours[1][1-anti1] = m_colours[2][1-anti1] = 0;
   }
   else {
     // particle--anti-particle: t-channel colours
-    m_colours[0][anti0] = m_colours[1][anti1] = Flow::Counter();
-    m_colours[2][anti0] = m_colours[3][anti1] = Flow::Counter();
+    m_colours[1][anti1] = Flow::Counter();
+    m_colours[3][anti1] = Flow::Counter();
+    m_colours[0][anti0] = m_colours[1][anti1];
+    m_colours[2][anti0] = m_colours[3][anti1];
     m_colours[0][1-anti0] = m_colours[1][1-anti1] = 0;
     m_colours[2][1-anti0] = m_colours[3][1-anti1] = 0;
   }
@@ -470,8 +494,10 @@ void q1q1bar_q2q2bar::Calc(const double & s,const double & t,const double & u) {
 
 bool q1q1bar_q2q2bar::SetColours(const ATOOLS::Flavour_Vector & flavs) {
   size_t anti(flavs[0].IsAnti()), part=1-anti;
-  m_colours[0][anti] = m_colours[2][anti] = Flow::Counter();
-  m_colours[1][part] = m_colours[3][part] = Flow::Counter();
+  m_colours[2][anti] = Flow::Counter();
+  m_colours[3][part] = Flow::Counter();
+  m_colours[0][anti] = m_colours[2][anti];
+  m_colours[1][part] = m_colours[3][part];
   m_colours[0][1-anti] = m_colours[2][1-anti] = 0;
   m_colours[1][1-part] = m_colours[3][1-part] = 0;
   return true;

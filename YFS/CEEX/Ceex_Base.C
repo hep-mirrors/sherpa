@@ -429,7 +429,7 @@ Complex Ceex_Base::Soft(Vec4D k, Vec4D p1, Vec4D p2, int hel) {
   Complex soft;
   Vec4D phat1 = p1 - m_zeta * sqr(p1.Mass()) / (2 * m_zeta * p1);
   Vec4D phat2 = p2 - m_zeta * sqr(p2.Mass()) / (2 * m_zeta * p2);
-  if (hel == 1)  soft = coeff1 * Splus(k, phat1) / (2 * k * phat1) - coeff2 * Splus(k, phat2) / (2 * k * phat1);
+  if (hel == 1)  soft = coeff1 * Splus(k, phat1) / (2 * k * phat1) - coeff2 * Splus(k, phat2) / (2 * k * phat2);
   else if (hel == -1)  soft = -coeff1 * Sminus(k, phat1) / (2 * k * phat1) + coeff2 * Sminus(k, phat2) / (2 * k * phat2);
   else msg_Error() << METHOD << "\n Wrong photon hel\n";
   return soft;

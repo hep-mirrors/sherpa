@@ -40,32 +40,32 @@ namespace ATOOLS {
 
   std::ostream& operator<<( std::ostream& ostr, const Blob & bl) {
   std::ios_base::fmtflags flags=ostr.flags();
-    ostr<<std::setw(4)<<std::setprecision(4);
-    ostr<<"Blob ["<<bl.Status()<<"]( "<<bl.Id()<<", "<<bl.Type()<<", ";
-    if (bl.Beam() != -1) {
-      ostr<<" from Beam "<<bl.Beam()<<", ";
+  ostr<<std::setw(4)<<std::setprecision(4);
+  ostr<<"Blob ["<<bl.Status()<<"]( "<<bl.Id()<<", "<<bl.Type()<<", ";
+  if (bl.Beam() != -1) {
+    ostr<<" from Beam "<<bl.Beam()<<", ";
+  }
+  ostr<<bl.NInP()<<" -> "<<bl.NOutP()<<" @ "<<bl.Position()
+      <<", "<<bl.TypeSpec()<<std::endl;
+  ostr<<"Incoming particles :"<<std::endl;
+  for (Particle_Vector::const_iterator part = bl.m_inparticles.begin();
+       part != bl.m_inparticles.end(); ++part) {
+    ostr<<**part<<std::endl;
+  }
+  ostr<<"Outgoing particles :"<<std::endl;
+  for (Particle_Vector::const_iterator part = bl.m_outparticles.begin();
+       part != bl.m_outparticles.end(); ++part) {
+    ostr<<**part<<std::endl;
+  }
+  if (bl.m_datacontainer.size()>0) {
+    ostr<<"Data_Container:"<<std::endl;
+    for (String_BlobDataBase_Map::const_iterator it=bl.m_datacontainer.begin();
+	 it!=bl.m_datacontainer.end(); ++it) {
+      ostr<<"   * "<<it->first<<" ("<<*(it->second)<<")"<<std::endl;
     }
-    ostr<<bl.NInP()<<" -> "<<bl.NOutP()<<" @ "<<bl.Position()
-        <<", "<<bl.TypeSpec()<<std::endl;
-    ostr<<"Incoming particles :"<<std::endl;
-    for (Particle_Vector::const_iterator part = bl.m_inparticles.begin();
-	 part != bl.m_inparticles.end(); ++part) {
-      ostr<<**part<<std::endl;
-    }
-    ostr<<"Outgoing particles :"<<std::endl;
-    for (Particle_Vector::const_iterator part = bl.m_outparticles.begin();
-	 part != bl.m_outparticles.end(); ++part) {
-      ostr<<**part<<std::endl;
-    }
-    if (bl.m_datacontainer.size()>0) {
-      ostr<<"Data_Container:"<<std::endl;
-      for (String_BlobDataBase_Map::const_iterator it=bl.m_datacontainer.begin();
-	   it!=bl.m_datacontainer.end(); ++it) {
-	ostr<<"   * "<<it->first<<" ("<<*(it->second)<<")"<<std::endl;
-      }
-    }
-    ostr.setf(flags);
-    return ostr;
+  }
+  ostr.setf(flags);
+  return ostr;
   }
 
 }

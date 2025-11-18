@@ -96,8 +96,6 @@ namespace MODEL {
     void CustomContainerInit();
 
     virtual void ParticleInit() = 0;
-    void ReadParticleData();
-    // Needs to be called by subclasses after initialising particle data
     virtual void RegisterDefaults() const;
     void AddStandardContainers();
     void InitMEInfo();

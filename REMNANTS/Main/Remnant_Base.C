@@ -30,7 +30,7 @@ Remnant_Base::Remnant_Base(const ATOOLS::Flavour& flav, const size_t& beam, cons
     : m_beamflav(flav), m_type(FixType(m_beamflav)), m_beam(beam), m_tag(tag), p_beam(nullptr),
       p_ff(nullptr), p_beamblob(nullptr), m_position(Vec4D(0., 0., 0., 0.)), m_residualE(0.),
       m_scale2(-1.)
-{}
+{ }
 
 Remnant_Base::~Remnant_Base() {
   if (p_ff!=nullptr) { delete p_ff; p_ff = nullptr; }
@@ -50,7 +50,11 @@ Particle* Remnant_Base::MakeParticle(const Flavour& flav)
   Particle* part = new Particle(-1, flav, Vec4D(0., 0., 0., 0.), 'B');
   part->SetNumber();
   part->SetBeam(m_beam);
-  part->SetPosition(m_position + (*p_ff)());
+  /////////////////////////////////////////////////////////////////////////
+  // Form_Factor has radii etc. in fm, event record needs it in mm,
+  // therefore we have to divide by 10^12.
+  /////////////////////////////////////////////////////////////////////////    
+  part->SetPosition(m_position + (*p_ff)()/1.e12);
   return part;
 }
 
@@ -60,13 +64,22 @@ void Remnant_Base::CompensateColours(Colour_Generator* colours)
          colours->Colours(m_beam, 0) != colours->Colours(m_beam, 1)) {
     Particle* gluon = MakeParticle(Flavour(kf_gluon));
     for (size_t i = 0; i < 2; i++) gluon->SetFlow(i + 1, colours->NextColour(m_beam, i));
-    gluon->SetPosition(m_position + (*p_ff)());
+    /////////////////////////////////////////////////////////////////////////
+    // Form_Factor has radii etc. in fm, event record needs it in mm,
+    // therefore we have to divide by 10^12.
+    /////////////////////////////////////////////////////////////////////////    
+    gluon->SetPosition(m_position + (*p_ff)()/1.e12);
     m_spectators.push_back(gluon);
   }
 }
 
 bool Remnant_Base::Extract(ATOOLS::Particle* parton, Colour_Generator* colours)
 {
+  // If the parton equals the beam we can extract it.
+  // TODO: There may be knock-on effects for the line in EPA etc., which we
+  // have to monitor.
+  if (parton->Flav()==m_beamflav &&
+      IsEqual(parton->Momentum(), IncomingMomentum(), 1.e-8)) return true;
   // Extracting a parton from a remnant (usually stemming from a shower blob)
   // and, if necessary, create a spectator to compensate flavour.
   if (TestExtract(parton->Flav(), parton->Momentum())) {
@@ -122,4 +135,15 @@ Vec4D Remnant_Base::IncomingMomentum() { return p_beam->OutMomentum(m_tag); }
 void Remnant_Base::Reset(const bool & resc,const bool &DIS) {
   m_extracted.clear();
   p_beamblob = nullptr;
+}
+
+void Remnant_Base::Output() {
+  msg_Out()<<"------------------------------------------------------------\n"
+	   <<METHOD<<"("<<m_beam<<"): extracted :\n";
+  for (Part_List::iterator pit=m_extracted.begin();pit!=m_extracted.end();pit++)
+    msg_Out()<<(**pit);
+  msg_Out()<<METHOD<<"("<<m_beam<<"): spectators :\n";
+  for (Part_List::iterator pit=m_spectators.begin();pit!=m_spectators.end();pit++)
+    msg_Out()<<(**pit);
+  msg_Out()<<"------------------------------------------------------------\n";
 }

@@ -37,8 +37,9 @@ Return_Value::code Reconnection_Handler::operator()(Blob_List *const blobs,
   switch ((*p_reconnector)(blobs)) {
   case -1:
     // things went wrong, try new event and hope it works better
-    msg_Tracking()<<"Error in "<<METHOD<<": reconnections didn't work out.\n"
-		  <<"   Ask for new event and hope for the best.\n";
+    if (m_nfails<5)
+      msg_Error()<<"Error in "<<METHOD<<": reconnections didn't work out.\n"
+		 <<"   Ask for new event and hope for the best.\n";
     p_reconnector->Reset();
     m_nfails++;
     return Return_Value::New_Event;

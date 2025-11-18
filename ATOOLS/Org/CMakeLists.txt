@@ -89,3 +89,6 @@ add_dependencies(ToolsOrg Org_Git_Info)
 
 target_link_libraries(ToolsOrg PRIVATE LibZip::LibZip)
 target_link_libraries(ToolsOrg PRIVATE ${CMAKE_DL_LIBS})
+if (SHERPA_ENABLE_THREADING)
+  target_link_libraries(ToolsOrg PRIVATE Threads::Threads)
+endif()

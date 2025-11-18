@@ -9,8 +9,6 @@ HADRON_DECAYS:
   Max_Proper_Lifetime: 10.0
 
 HEPMC_TREE_LIKE: 1
-PRETTY_PRINT: Off
-#EXTERNAL_RNG: Atlas_RNG
 RANDOM_SEED: 12345
 
 OVERWEIGHT_THRESHOLD: 10
@@ -79,7 +77,6 @@ HARD_DECAYS:
 OL_PARAMETERS:
   preset: 2
   write_parameters: 1
-OL_PREFIX: /cvmfs/atlas.cern.ch/repo/sw/software/21.6/sw/lcg/releases/LCG_88b/MCGenerators/openloops/2.1.2/x86_64-centos7-gcc62-opt
 
 HEPMC_USE_NAMED_WEIGHTS: true
 SHOWER:
@@ -92,13 +89,6 @@ VARIATIONS_INCLUDE_CV: true
 SCALE_VARIATIONS: 4.0*  # 7-point scale variations
 
 
-# EXAMPLE SHERPA INSTANTON RUN CARD WITH TWEAKS
-# ---------------------------------------------
-# https://gitlab.com/sherpa-team/sherpa/-/blob/master/Examples/Instanton/LHC_13/Instanton.yaml
-# INSTANTON_MIN_MASS: 300.
-
-EVENTS: 10000
-#EVT_OUTPUT: 2
 SCALES: Democratic
 #FRAGMENTATION: None
 
@@ -131,7 +121,7 @@ INSTANTON_MIN_MASS: 300.
 INSTANTON_ALPHAS_FACTOR:     1.
 INSTANTON_SCALE_CHOICE:      shat/N
 INSTANTON_SCALE_FACTOR:      1.
-INSTANTON_INCLUDE_QUARKS:    5 
+INSTANTON_INCLUDE_QUARKS:    5
 INSTANTON_B_PRODUCTION_THRESHOLD: 100.
 INSTANTON_C_PRODUCTION_THRESHOLD: 20.
 
@@ -147,5 +137,5 @@ HARD_DECAYS:
 # me generator settings
 ME_GENERATORS: Internal
 PROCESSES:
-- 21 21 -> 999:      
+- 21 21 -> 999:
      Order: {EW: 2, QCD: Any}

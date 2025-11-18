@@ -68,6 +68,7 @@ Variable_Enhance_Observable::Variable_Enhance_Observable
   p_p=&p_proc->Integrator()->Momenta().front();
   for (int i(0);i<m_n;++i)
     m_calc.AddTag("p["+ToString(i)+"]",ToString(Vec4D()));
+  m_calc.AddTag("P_SUM",ToString(Vec4D()));
   m_calc.AddTag("H_T2","1.0");
   m_calc.AddTag("H_TM2","1.0");
   m_calc.AddTag("H_Tp2","1.0");
@@ -126,6 +127,12 @@ Term *Variable_Enhance_Observable::ReplaceTags(Term *term) const
     term->Set(sqr(htm+ewsum.PPerp()));
     return term;
   }
+  if (term->Id()==8) {
+    Vec4D psum(0.0,0.0,0.0,0.0);
+    for (size_t i(p_proc->NIn());i<m_n;++i) psum+=p_p[i];
+    term->Set(psum);
+    return term;
+  }
   return term;
 }
 
@@ -135,6 +142,7 @@ void Variable_Enhance_Observable::AssignId(Term *term)
   else if (term->Tag()=="H_T2") term->SetId(5);
   else if (term->Tag()=="H_TMp2") term->SetId(6);
   else if (term->Tag()=="H_Tp2") term->SetId(7);
+  else if (term->Tag()=="P_SUM") term->SetId(8);
   else {
     int idx(ToType<int>(term->Tag().substr(2,term->Tag().length()-3)));
     if (idx>=m_n) THROW(fatal_error,"Invalid syntax");

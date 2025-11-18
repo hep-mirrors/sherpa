@@ -9,7 +9,7 @@ namespace MODEL { struct Coupling_Map; }
 
 namespace PHASIC {
 
-  class External_ME_Args;
+  struct External_ME_Args;
 
   class Tree_ME2_Base {
   public:

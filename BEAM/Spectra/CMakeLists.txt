@@ -3,7 +3,6 @@ set(Spectra_SOURCES Monochromatic.C
                     EPA.C
                     Pomeron.C
                     Reggeon.C
-                    Fixed_Target.C
                     DM_beam.C)
 
 set(Spectra_HEADERS Monochromatic.H
@@ -11,7 +10,6 @@ set(Spectra_HEADERS Monochromatic.H
                     EPA.H
                     Pomeron.H
                     Reggeon.H
-                    Fixed_Target.H
                     DM_beam.H)
 
 sherpa_create_git_info(Spectra ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR})

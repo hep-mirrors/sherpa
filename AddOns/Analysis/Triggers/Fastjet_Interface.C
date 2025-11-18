@@ -95,7 +95,7 @@ public:
 	if (nb!=0) flav=kf_bjet;
       }
       Vec4D jetmom(jets[i][3],jets[i][0],jets[i][1],jets[i][2]);
-      if (jetmom.PPerp()>m_ptmin && abs(jetmom.Eta())<m_etamax)
+      if (jetmom.PPerp()>m_ptmin && std::abs(jetmom.Eta())<m_etamax)
         outlist.push_back(new Particle (1,Flavour(flav),jetmom));
     }
     std::sort(outlist.begin(),outlist.end(),Order_PT());
