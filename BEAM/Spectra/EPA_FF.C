@@ -55,7 +55,7 @@ EPA_FF_Base::EPA_FF_Base(const ATOOLS::Flavour& beam, const int dir)
   m_xmin           = s["xMin"].GetTwoVector<double>()[b];
   m_xmax           = s["xMax"].GetTwoVector<double>()[b];
   m_bmin           = s["bMin"].GetTwoVector<double>()[b];
-  m_b_pl_threshold = s["bThreshold"].GetTwoVector<double>()[b];
+  m_b_pl_threshold = s["bThreshold"].GetTwoVector<double>()[b] * m_R;
   m_bmax           = s["bMax"].GetTwoVector<double>()[b];
 
   // Pre-calculate the normalisation of the  distribution \in [bmin, bmax]
@@ -88,7 +88,7 @@ void EPA_FF_Base::FillTables()
             << "b in [" << baxis.m_xmin << ", " << baxis.m_xmax << "], "
             << "from R = " << m_R << " 1/GeV = " << (m_R * rpa->hBar_c())
             << " fm.\n";
-  p_N_xb                   = new TwoDim_Table(xaxis, baxis);
+  p_N_xb                   = std::make_unique<TwoDim_Table>(xaxis, baxis);
   N_xb_int*         kernel = new N_xb_int(this);
   Bessel_Integrator bessel(kernel, 1);
   for (size_t i = 0; i < xaxis.m_nbins; i++) {
@@ -329,13 +329,34 @@ EPA_DipoleApprox::EPA_DipoleApprox(const ATOOLS::Flavour& beam, const int dir)
 // - Radius in 1/GeV, therefore "nucelar skin" m_d also in 1/GeV
 ////////////////////////////////////////////////////////////////////////////////
 
+double EPA_WoodSaxon::IntegrateWithAdaptiveRange(
+        std::function<double(double)> integrand, double initial_rmax, double tolerance)
+{
+  auto functor = new Lambda_Functor(&integrand);
+  Gauss_Integrator gauss(functor);
+  double rmin = 0., rmax = initial_rmax;
+  double total_result = gauss.Integrate(rmin, rmax, tolerance);
+  double segment_increment = 0.;
+
+  // Adaptively extend the integration range until the tail contributes negligibly.
+  do {
+    rmin = rmax;
+    rmax *= 2.;
+    segment_increment = gauss.Integrate(rmin, rmax, tolerance);
+    total_result += segment_increment;
+  } while (std::abs(segment_increment) > tolerance * std::abs(total_result) + 1.e-12);
+
+  delete functor;
+
+  return total_result;
+}
+
 EPA_WoodSaxon::EPA_WoodSaxon(const ATOOLS::Flavour& beam, const int dir)
-    : EPA_FF_Base(beam, dir), m_d(0.5 / rpa->hBar_c()), p_FF_Q2(nullptr),
-      m_rho0(0.)
+    : EPA_FF_Base(beam, dir), m_d(0.5 / rpa->hBar_c()), m_rho0(0.)
 {
   const auto& s = Settings::GetMainSettings()["EPA"];
   size_t      b = dir > 0 ? 0 : 1;
-  m_d           = s["WoodSaxon_d"].GetTwoVector<double>()[b];
+  m_d           = s["WoodSaxon_d"].GetTwoVector<double>()[b] / rpa->hBar_c();
   if (!m_beam.IsIon())
     THROW(fatal_error, "Wrong form factor for " + m_beam.IDName());
 
@@ -344,98 +365,49 @@ EPA_WoodSaxon::EPA_WoodSaxon(const ATOOLS::Flavour& beam, const int dir)
   FillTables();
 }
 
-void EPA_WoodSaxon::InitFFTable(const double& q2min, const double& q2max)
-{
-  p_FF_Q2 = new OneDim_Table(axis(100000, q2min, q2max, axis_mode::log));
-  WS_potential*    ws = new WS_potential(m_R, m_d);
-  Gauss_Integrator gauss(ws);
-  for (size_t i = 0; i < p_FF_Q2->GetAxis().m_nbins; i++) {
-    ws->SetQ(sqrt(p_FF_Q2->GetAxis().x(i)));
-    double rmin = 0., rmax = m_R;
-    double res = m_rho0 * gauss.Integrate(rmin, rmax, 1.e-6, 0);
-    double inc(0.);
-    do {// TODO what's the logic here?
-      rmin = rmax;
-      rmax *= 2.;
-      res += inc = m_rho0 * gauss.Integrate(rmin, rmax, 1.e-6, 0);
-    } while (rmax < 4. * m_R || std::abs(inc) > 1.e-6 * std::abs(res) + 1.e-12);
-    p_FF_Q2->Fill(i, res);
-  }
-  delete ws;
-}
-
 double EPA_WoodSaxon::CalculateDensity()
 {
-  Rho_argument*    rho = new Rho_argument(m_R, m_d);
-  Gauss_Integrator gauss(rho);
-  double           rmin = 0., rmax = m_R;
-  double           res = gauss.Integrate(rmin, rmax, 1.e-3), inc = 0.;
-  do {// TODO what's the logic here?
-    rmin = rmax;
-    rmax *= 2.;
-    res += inc = gauss.Integrate(rmin, rmax, 1.e-6);
-  } while (inc > 1.e-6 * res);
-  return 1. / res;
+  auto rho_integrand_lambda = [this](double r) {
+    return r * r / (1. + std::exp((r - m_R) / m_d));
+  };
+
+  double res = IntegrateWithAdaptiveRange(rho_integrand_lambda, m_R, 1.e-6);
+
+  return 1.0 / res / 4. / M_PI;
+}
+
+void EPA_WoodSaxon::InitFFTable(const double& q2min, const double& q2max)
+{
+  p_FF_Q2 = std::make_unique<OneDim_Table>(axis(100000, q2min, q2max, axis_mode::log));
+
+  for (size_t i = 0; i < p_FF_Q2->GetAxis().m_nbins; i++) {
+    const double q = std::sqrt(p_FF_Q2->GetAxis().x(i));
+
+    // Define the form factor integrand as a lambda inside the loop.
+    auto ff_integrand = [this, q](double r) {
+      if (q * r < 1.e-4) { // Numerically stable limit for q*r -> 0
+        return r * r / (1. + std::exp((r - m_R) / m_d));
+      }
+      return std::sin(q * r) / q * r / (1. + std::exp((r - m_R) / m_d));
+    };
+
+    double ff_integral = IntegrateWithAdaptiveRange(ff_integrand, m_R, 1.e-6);
+
+    double form_factor = 4. * M_PI * m_rho0 * ff_integral;
+    p_FF_Q2->Fill(i, form_factor);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// Dummy test class for the Ion FF in the Electric Dipole approximation using
+// Class for the Ion FF in the Electric Dipole approximation using
 // the analytical expression from 2207.03012, eq. 3.3
 ////////////////////////////////////////////////////////////////////////////////
 
 EPA_IonApprox::EPA_IonApprox(const ATOOLS::Flavour& beam, const int dir)
     : EPA_FF_Base(beam, dir)
 {
-  FillTables();
-}
-
-void EPA_IonApprox::FillTables()
-{
-  axis xaxis(m_nxbins, m_xmin, m_xmax, axis_mode::log);
-  axis baxis(m_nbbins, m_bmin * m_R, m_bmax * m_R, axis_mode::log);
-
-  //////////////////////////////////////////////////////////////////////////////
-  //
-  // N(x,b) is given by the square of the Fourier transform of
-  // kt^2/(kt^2+m^2x^2) F(kt^2+m^2x^2), which leads to a Bessel function.
-  // We assume that the units in the b axis are in 1/GeV
-  //
-  //////////////////////////////////////////////////////////////////////////////
-  msg_Out() << METHOD << " in " << xaxis.m_nbins << " * " << baxis.m_nbins
-            << " bins:\n"
-            << "   x in [" << xaxis.m_xmin << ", " << xaxis.m_xmax << "], "
-            << "b in [" << baxis.m_xmin << ", " << baxis.m_xmax << "], "
-            << "from R = " << m_R << " 1/GeV = " << (m_R * rpa->hBar_c())
-            << " fm.\n";
-  p_N_xb = new TwoDim_Table(xaxis, baxis);
-  for (size_t i = 0; i < xaxis.m_nbins; i++) {
-    for (size_t j = 0; j < baxis.m_nbins; j++) {
-      double chi   = xaxis.x(i) * m_mass * baxis.x(j);
-      double value = 2 * m_Zsquared * baxis.x(j) * xaxis.x(i) * sqr(m_mass) *
-                     sqr(SF.Kn(1, chi));
-      // correction term seems to be negligible;
-      // removed because K_0 not implemented for large values
-      // double value = 2 * m_b * x * sqr(m_mass) * (sqr(SF.Kn(1, chi)) +
-      //   sqr(m_mass / m_energy) * sqr(SF.Kn(0, chi))) * wt;
-      p_N_xb->Fill(i, j, value);
-    }
-  }
-}
-
-double EPA_IonApprox::N(const double& x)
-{
-  // Analytically integrated out the b
-  // double chi = x * m_mass * m_R;
-  // return 2 / x * (chi * std::cyl_bessel_k(1, chi) * std::cyl_bessel_k(0, chi)
-  //    - sqr(chi)/2. * (sqr(std::cyl_bessel_k(1, chi)) -
-  //    sqr(std::cyl_bessel_k(0, chi))));
-  double wt  = SampleImpactParameter();
-  double chi = x * m_mass * m_b;
-  return 2 * m_Zsquared * m_b * x * sqr(m_mass) * sqr(SF.Kn(1, chi)) * wt;
-  // correction term seems to be negligible;
-  // removed because K_0 not implemented for large values
-  // return 2 * m_b * x * sqr(m_mass) * (sqr(SF.Kn(1, chi)) +
-  //   sqr(m_mass / m_energy) * sqr(SF.Kn(0, chi))) * wt;
+  m_b_pl_threshold = m_bmin * m_R;
+  p_N_xb.reset();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
