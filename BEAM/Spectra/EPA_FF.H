@@ -8,8 +8,11 @@
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Phys/Flavour.H"
+#include <cmath>
 #include <fstream>
+#include <functional>
 #include <iostream>
+#include <memory>
 #include <random>
 
 namespace ATOOLS {
@@ -34,42 +37,43 @@ namespace BEAM {
   class EPA_FF_Base {
   private:
     double m_norm_distribution;
+
   protected:
     ATOOLS::Flavour m_beam;
     double          m_mass, m_mass2, m_R;
     double          m_q2min, m_q2max, m_pt2max;
     double          m_xmin, m_xmax;
-    double          m_bmin, m_b_pl_threshold,
-            m_bmax;//< bmin, b_pl_threshold, bmax only relative to radius
-    double                m_Zsquared, m_b;//< b later is the absolute distance
-    ATOOLS::TwoDim_Table* p_N_xb;
+    double          m_bmin,
+            m_bmax;//< bmin, bmax only relative to radius
+    double m_Zsquared, m_b,
+            m_b_pl_threshold;//< b, b_pl_threshold are absolute distances
+    std::unique_ptr<ATOOLS::TwoDim_Table> p_N_xb;
 
     size_t m_nxbins, m_nbbins;
 
     double SampleImpactParameter()
     {
-      m_b = sqrt((ATOOLS::sqr(m_bmin) + 1.) * std::exp(2. * ATOOLS::ran->Get() * m_norm_distribution) - 1.);
-      return m_norm_distribution * (ATOOLS::sqr(m_b) + 1.)/m_b;
+      m_b = sqrt((ATOOLS::sqr(m_bmin) + 1.) * std::exp(2. * ATOOLS::ran->Get() *
+                                                       m_norm_distribution) -
+                 1.);
+      return m_norm_distribution * (ATOOLS::sqr(m_b) + 1.) / m_b;
     };
     virtual void FillTables();
 
   public:
     EPA_FF_Base(const ATOOLS::Flavour& beam, int dir);
-    virtual ~EPA_FF_Base()
-    {
-      if (p_N_xb) delete p_N_xb;
-    }
+    virtual ~EPA_FF_Base() = default;
     virtual double N(const double& x)
     {
       double wt = SampleImpactParameter();
-      // multiply radius to convert b to physical distance and as Jacobian on weight
+      // multiply radius to convert b to physical distance
       m_b *= m_R;
       wt *= m_R;
       if (m_b < m_b_pl_threshold) return (*p_N_xb)(x, m_b) * wt;
       else {
         // use point-like approximation for large impact parameters
         double chi = x * m_mass * m_b;
-        return 2 * m_Zsquared * m_b * x * ATOOLS::sqr(m_mass) *
+        return 2 * m_Zsquared * m_b * x * m_mass2 *
                ATOOLS::sqr(ATOOLS::SF.Kn(1, chi)) * wt;
       }
     };
@@ -116,14 +120,14 @@ namespace BEAM {
     }
     double operator()(double y) override
     {
-      //////////////////////////////////////////////////////////////////////////////
+      //////////////////////////////////////////////////////////////////////////
       // Integration argument y here is bT*qT as mandated by the Bessel
       // function:
       // - argument of form factor Q^2 = qT^2+x^2m^2 with qT^2 = y^2/bT^2
       // - we assume that m_b is in units of 1/GeV, qT is in GeV, overall
       // results
       //   are in GeV.
-      //////////////////////////////////////////////////////////////////////////////
+      //////////////////////////////////////////////////////////////////////////
       double qT = y / m_b, qT2 = ATOOLS::sqr(qT);
       double Q2 = (qT2 + ATOOLS::sqr(m_x * p_ff->Mass())) / (1. - m_x);
       // integration variable is qT, so dy/dqT = b, hence Jacobian 1/b needed
@@ -215,66 +219,23 @@ namespace BEAM {
 
   class EPA_WoodSaxon final : public EPA_FF_Base {
   private:
-    class Rho_argument : public ATOOLS::Function_Base {
-    private:
-      double m_R, m_d;
+    double                                m_d, m_rho0;
+    std::unique_ptr<ATOOLS::OneDim_Table> p_FF_Q2;
 
-    public:
-      Rho_argument(const double& R, const double& d) : m_R(R), m_d(d) {}
-      double operator()(double r) override
-      {
-        return 4. * M_PI * r * r / (1. + exp((r - m_R) / m_d));
-      }
-    };
-    class WS_potential : public ATOOLS::Function_Base {
-    private:
-      double m_R, m_d, m_q;
-
-    public:
-      WS_potential(const double& R, const double& d) : m_R(R), m_d(d), m_q(1.)
-      {}
-      inline void SetQ(const double& q) { m_q = q; }
-      double      operator()(double r) override
-      {
-        if (m_q * r < 1.e-6)
-          return 4. * M_PI * r * r / (1. + exp((r - m_R) / m_d));
-        return 4. * M_PI * sin(m_q * r) / m_q * r / (1. + exp((r - m_R) / m_d));
-      }
-    };
-    class N_argument : public ATOOLS::Function_Base {
-    private:
-      EPA_WoodSaxon* p_ws;
-      double         m_x;
-
-    public:
-      explicit N_argument(EPA_WoodSaxon* ws) : p_ws(ws), m_x(0.) {}
-      inline void SetX(const double& x) { m_x = x; }
-    };
-
-    double                m_d, m_rho0;
-    ATOOLS::OneDim_Table *p_FF_Q2;
-
+    static double IntegrateWithAdaptiveRange(std::function<double(double)> integrand,
+                                      double initial_rmax, double tolerance);
     double CalculateDensity();
     void   InitFFTable(const double& q2min, const double& q2max);
 
   public:
     EPA_WoodSaxon(const ATOOLS::Flavour& beam, int dir);
-    ~EPA_WoodSaxon() override
-    {
-      if (p_FF_Q2) {
-        delete p_FF_Q2;
-        p_FF_Q2 = nullptr;
-      }
-    }
     double FF(const double& Q2) override { return (*p_FF_Q2)(Q2); }
   };
 
   class EPA_IonApprox final : public EPA_FF_Base {
   public:
     EPA_IonApprox(const ATOOLS::Flavour& beam, int dir);
-    void   FillTables() override;
     double FF(const double& Q2) override { return 0.; }
-    double N(const double& x) override;
   };
 
   class EPA_Test final : public EPA_FF_Base {
