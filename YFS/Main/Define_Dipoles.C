@@ -363,19 +363,15 @@ double Define_Dipoles::CalculateRealSub(const Vec4D &k) {
   for (auto &D : m_dipolesII) {
     for(size_t i = 0; i < D.GetBornMomenta().size(); ++i)
     {
-      Vec4D p = D.GetMomenta(i);
+      Vec4D p = D.GetBornMomenta(i);
       eik += D.m_Q[i]*p/(p*k);
     }
   }
   for (auto &D : m_dipolesFF) {
     for(size_t i = 0; i < D.GetBornMomenta().size(); ++i)
     {
-      // if(D.IsFinite()) continue;
-      // Vec4D p = D.GetBornMomenta(i);
-      // Vec4D p = D.GetNewMomenta(i);
       Vec4D p = D.GetBornMomenta(i);
-      if(D.IsResonance()) eik += -D.m_Q[i]*p/(p*k);
-      // eik += -D.m_Q[i]*p/(p*k);
+      eik += -D.m_Q[i]*p/(p*k);
     }
   }
   sub = -m_alpha / (4 * M_PI * M_PI)*eik*eik;
@@ -765,9 +761,9 @@ double Define_Dipoles::CalculateFlux(const Vec4D &k){
     for (auto &D : m_dipolesFF) {
       Q  = D.GetBornMomenta(0)+D.GetBornMomenta(1);
       QX = D.GetNewMomenta(0)+D.GetNewMomenta(1);
-      sq = (Q).Abs2();
-      sx = (Q+k).Abs2();
-      flux += (sq/sx);
+      sq = (QX).Abs2();
+      sx = (QX+k).Abs2();
+      flux += sqr(sq/sx);
       // flux = Propagator(sx)/Propagator(sq);
     }
     return flux/m_dipolesFF.size();
