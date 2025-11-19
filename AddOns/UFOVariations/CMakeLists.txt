@@ -12,3 +12,4 @@ sherpa_create_git_info(UFOVariations ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT
 add_library(SherpaUFOVariations SHARED ${UFOVariations_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
 sherpa_handle_shared_library(SherpaUFOVariations SherpaUFOVariations)
 add_dependencies(SherpaUFOVariations UFOVariations_Git_Info)
+add_subdirectory(Tests)

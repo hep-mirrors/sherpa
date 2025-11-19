@@ -32,9 +32,15 @@ namespace UFOVariations {
         // check if there are too many variations
         if (Size() >= MAX_VARIATION_NUMBER) THROW(normal_exit, "You are trying too many Variations, please reconsider.");
         // Register the dependent Kabbalas of the Model vertices
-        FindDependentCouplings();
+        FindDependentVertices();
         StoreNominal();
         msg_Debugging() << "Done Reading in the Variations." << std::endl;
+        // some Testing TODO remove
+        for (auto& d : dependent_vertices) {
+            auto& s_v = d.second;
+            msg_Out() << d.first << ":     " << s_v->size() << std::endl;
+        }
+        msg_Out() << "nominal: " << nominal << std::endl;
     }
 
     /*
@@ -72,18 +78,17 @@ namespace UFOVariations {
     }
 
     // find and register the dependencies of the couplings of all Model vertices
-    void Variations::FindDependentCouplings() {
+    void Variations::FindDependentVertices() {
         msg_Debugging() << "Finding Depending Coulings..." << std::endl;
         // for all the varied parameters
         for (std::string var_name : variables){
-            // empty vector init
-            dependent_couplings.insert(std::make_pair(var_name, std::vector<ATOOLS::Kabbala*>()));
-            // go through vertices
-            for (MODEL::Single_Vertex v : MODEL::s_model->Vertices()) {
-                // go through couplings of the vertex and store a pointer to it if its dependent
-                for (ATOOLS::Kabbala k : v.cpl) {
-                    if (k.DependsOn(var_name)) dependent_couplings[var_name].push_back(&k);
-                }
+            // empty set init
+            dependent_vertices.insert(std::make_pair(var_name, new std::set<MODEL::Single_Vertex*>()));
+            // go through vertices TODO is this passed by reference???
+            std::vector<MODEL::Single_Vertex>* p_vertices = MODEL::s_model->Vertices_Pointer();
+            for (std::vector<MODEL::Single_Vertex>::iterator it_v = p_vertices->begin(); it_v != p_vertices->end(); ++it_v) {
+                MODEL::Single_Vertex* v = it_v.base(); 
+                if (v->DependsOn(var_name)) dependent_vertices[var_name]->emplace(v);
             }
         }
     }

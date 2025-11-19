@@ -49,8 +49,12 @@ namespace UFOVariations {
             // update Kabbalas
             //msg_Debugging() << "Updating Kabbalas with " << key << std::endl;
             for (std::string name : key.Names()){
-                for (ATOOLS::Kabbala* k : p_vars->Dependents(name))
-                    k->Update(MODEL::s_model->Constants());
+                std::set<MODEL::Single_Vertex*>* s_dependents = p_vars->Dependents(name);
+                for (std::set<MODEL::Single_Vertex*>::iterator it_v = s_dependents->begin(); it_v != s_dependents->end(); it_v++){
+                    MODEL::Single_Vertex* p_v = *it_v;
+                    p_v->UpdateCouplings(MODEL::s_model->Constants());
+                }
+                   
             }
     }
 

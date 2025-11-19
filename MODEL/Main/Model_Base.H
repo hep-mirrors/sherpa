@@ -143,6 +143,9 @@ namespace MODEL {
     int MaxNumber() const;
 
     const std::vector<Single_Vertex> &Vertices() const;
+
+    std::vector<Single_Vertex>* Vertices_Pointer() {return &m_v;}
+
     const std::vector<Single_Vertex> &OriginalVertices() const;
 
     // Make this map public, such that OL interface can loop over it
