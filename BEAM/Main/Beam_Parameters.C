@@ -153,7 +153,6 @@ Beam_Base* Beam_Parameters::InitializeEPA(int num)
 {
   Flavour beam_particle = GetFlavour("BEAMS", num);
   double beam_energy = m_settings["BEAM_ENERGIES"].GetTwoVector<double>()[num];
-  if (beam_particle.IsIon()) beam_energy *= beam_particle.GetMassNumber();
   double beam_polarization =
           m_settings["BEAM_POLARIZATIONS"].GetTwoVector<double>()[num];
   return new EPA(beam_particle, beam_energy, beam_polarization, 1 - 2 * num);
