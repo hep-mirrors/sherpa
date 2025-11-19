@@ -56,6 +56,19 @@ bool Single_Vertex::operator==(const Single_Vertex& probe)
 	  Lorentz==probe.Lorentz);
 }
 
+void Single_Vertex::UpdateCouplings(std::map<std::string, double_t>* consts_map){
+  for (ATOOLS::Kabbala& k : cpl){
+    k.Update(consts_map);
+  }
+}
+
+bool Single_Vertex::DependsOn(std::string constant_name){
+  for (const ATOOLS::Kabbala& k : cpl) {
+    if (k.DependsOn(constant_name)) return true;
+  }
+  return false;
+}
+
 namespace MODEL{ 
 
   std::ostream &operator<<(std::ostream& s, const Single_Vertex& sv)
