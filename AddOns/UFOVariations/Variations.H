@@ -8,6 +8,7 @@
 #include "AddOns/UFOVariations/UFO_Variation_Key.H"
 #include <vector>
 #include <map>
+#include <set>
 
 namespace UFOVariations{
     class Variations {
@@ -21,7 +22,7 @@ namespace UFOVariations{
             size_t Size() const {return v_variations.size();}
             VariationKey Nominal() const {return nominal;}
             const std::vector<std::string>& VariableNames() const {return variables;}
-            inline std::vector<ATOOLS::Kabbala*> Dependents(std::string var_name) {if (dependent_couplings.count(var_name) != 1) return std::vector<ATOOLS::Kabbala*>(); return dependent_couplings[var_name];};
+            inline std::set<MODEL::Single_Vertex*>* Dependents(std::string var_name) const {if (dependent_vertices.count(var_name) != 1) return new std::set<MODEL::Single_Vertex*>(); return dependent_vertices.at(var_name);};
 
         protected:
             Variations();
@@ -31,9 +32,9 @@ namespace UFOVariations{
             VariationKey nominal = VariationKey::DefaultKey();
             std::vector<std::string> variables;
             std::vector<VariationKey> v_variations;
-            std::map<std::string, std::vector<ATOOLS::Kabbala*>> dependent_couplings;
+            std::map<std::string, std::set<MODEL::Single_Vertex*>*> dependent_vertices;
 
-            void FindDependentCouplings();
+            void FindDependentVertices();
             void StoreNominal();
             void ReadSingleParamVariation(ATOOLS::Scoped_Settings& s, std::map<std::string, std::vector<double_t>> *variation_map);
     };

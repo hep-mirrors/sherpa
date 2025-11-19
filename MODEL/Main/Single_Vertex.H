@@ -34,8 +34,12 @@ namespace MODEL {
     inline void AddParticle(const ATOOLS::Flavour &fl,const int n=-1)
     { in.push_back(fl); id.push_back(n>=0?n:in.size()-1); }
 
-    inline const Complex &Coupling(const size_t &i) const
+    inline Complex Coupling(const size_t &i) const
     { return cpl[i].Value(); }
+    inline std::vector<ATOOLS::Kabbala>* Couplings() {return &cpl;}
+    void UpdateCouplings(std::map<std::string, double_t>* consts_map);
+    bool DependsOn(std::string constant_name);
+
 
     bool operator==(const Single_Vertex&);
 
