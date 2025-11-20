@@ -40,7 +40,8 @@ namespace UFOVariations {
             auto& s_v = d.second;
             msg_Out() << d.first << ":     " << s_v->size() << std::endl;
         }
-        msg_Out() << "nominal: " << nominal << std::endl;
+        msg_Debugging() << "nominal: " << nominal << std::endl;
+        msg_Out() << "UFO Variations read." << std::endl << std::endl;
     }
 
     /*
