@@ -49,7 +49,16 @@ namespace PHASIC {
                         METOOLS::Spin_Density* sigma=NULL,
                         const std::vector<ATOOLS::Particle*>& p=
                           std::vector<ATOOLS::Particle*>());
+    bool isNLO();
     double ME2(const ATOOLS::Vec4D_Vector& momenta, bool anti,
+               METOOLS::Spin_Density* sigma=NULL,
+               const std::vector<ATOOLS::Particle*>& p=
+               std::vector<ATOOLS::Particle*>());
+    double ME2_LO(const ATOOLS::Vec4D_Vector& momenta, bool anti,
+               METOOLS::Spin_Density* sigma=NULL,
+               const std::vector<ATOOLS::Particle*>& p=
+               std::vector<ATOOLS::Particle*>());
+    double ME2_NLO(const ATOOLS::Vec4D_Vector& momenta, bool anti,
                METOOLS::Spin_Density* sigma=NULL,
                const std::vector<ATOOLS::Particle*>& p=
                std::vector<ATOOLS::Particle*>());

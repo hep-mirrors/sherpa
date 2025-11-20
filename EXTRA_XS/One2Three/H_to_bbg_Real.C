@@ -147,6 +147,11 @@ H_to_bbg_Real::~H_to_bbg_Real()
 }
 
 
+bool H_to_bbg_Real::IsNLODecay(){
+  return true;
+}
+
+
 void H_to_bbg_Real::Calculate(const ATOOLS::Vec4D_Vector& momenta, bool anti) {
   DEBUG_FUNC(momenta.size());
   // does not do anything yet because integrating this decay channel would result in infinities
@@ -175,7 +180,7 @@ void H_to_bbg_Real::Calculate(const ATOOLS::Vec4D_Vector& momenta, bool anti) {
     m_scur->Evaluate();
     m_fcur->Evaluate();
   }
-
+  
   vector<int> fill(m_n,1); // output amplitude vector
   for (size_t i(0);i<m_n;++i) (*this)[i]=Complex(0.0,0.0);
   if (anti) {
@@ -188,7 +193,6 @@ void H_to_bbg_Real::Calculate(const ATOOLS::Vec4D_Vector& momenta, bool anti) {
   for (size_t i=0; i<size(); ++i) {
     (*this)[i] *= sqrt(p_ci->GlobalWeight()); // scale the final numerical result appropriately with the color factor
   }
-  std::cout << "GlobalWeight = " << p_ci->GlobalWeight() << std::endl;
 
 /*
   for (size_t i = 0; i < p_ci->I().size(); ++i) {
@@ -206,8 +210,9 @@ void H_to_bbg_Real::Calculate(const ATOOLS::Vec4D_Vector& momenta, bool anti) {
   for (size_t i=0; i<size(); ++i) {
    (*this)[i] *= std::sqrt(global_factor);
   }
-  Calculate_born_subtraction(momenta, anti);
+  Calculate_real_subtraction(momenta, anti);
 }
+
 
 // in the following there are some helper functions defined for the real subtraction
 static double v_pq(ATOOLS::Vec4<double> p, ATOOLS::Vec4<double> q){
@@ -238,13 +243,15 @@ static double mu_n(ATOOLS::Vec4<double> p_i, ATOOLS::Vec4<double> p_j, ATOOLS::V
 
 
 static double nu_ijk(ATOOLS::Vec4<double> p_i, ATOOLS::Vec4<double> p_j, ATOOLS::Vec4<double> p_k){
+  double m_i = std::sqrt(p_i * p_i);
   double m_j = std::sqrt(p_j * p_j);
   double m_k = std::sqrt(p_k * p_k);
+  double mu_i = mu_n(p_i, p_j, p_k, m_i);
   double mu_j = mu_n(p_i, p_j, p_k, m_j);
   double mu_k = mu_n(p_i, p_j, p_k, m_k);
-  double bracket = 2 * mu_k * mu_k + (1 - mu_j*mu_j - mu_k*mu_k)*(1 - y_ijk(p_i, p_j, p_k));
+  double bracket = 2 * mu_k * mu_k + (1 - mu_i*mu_i - mu_j*mu_j - mu_k*mu_k)*(1 - y_ijk(p_i, p_j, p_k));
   double numerator = std::sqrt(bracket * bracket - 4 * mu_k * mu_k);
-  double denominator = (1 - mu_j*mu_j - mu_k*mu_k)*(1 - y_ijk(p_i, p_j, p_k));
+  double denominator = (1 - mu_i*mu_i - mu_j*mu_j - mu_k*mu_k)*(1 - y_ijk(p_i, p_j, p_k));
   return numerator/denominator;
 }
 
@@ -260,7 +267,7 @@ static double nu_ijk_tilde(ATOOLS::Vec4<double> p_i, ATOOLS::Vec4<double> p_j, A
   double m_k = std::sqrt(p_k * p_k);
   // either i or j is the gluon and massless. Therefore, the mass m_ij equals the bottom mass. Check, which mass is the bottom mass:
   double m_ij;
-  if((p_i * p_i) < 0.0000000001){
+  if((p_i * p_i) < 0.00001){
     m_ij = m_j; // mass so small that p_i is the gluon
   }
   else{
@@ -274,7 +281,11 @@ static double nu_ijk_tilde(ATOOLS::Vec4<double> p_i, ATOOLS::Vec4<double> p_j, A
 
 
 static double V_ijk(ATOOLS::Vec4<double> p_i, ATOOLS::Vec4<double> p_j, ATOOLS::Vec4<double> p_k){
-  double alpha_qcd = MODEL::s_model -> ScalarFunction("alpha_S", 125.09*125.09); // at Higgs scale
+  double C_F = 4.0 / 3.0;
+  ATOOLS::Vec4<double> Q = p_i + p_j + p_k;
+  double m2_Q = Q * Q; // Q mass squared
+
+  double alpha_qcd = MODEL::s_model -> ScalarFunction("alpha_S", m2_Q); // at Higgs scale
   
   #ifdef M_PI
     double pi = M_PI;
@@ -282,9 +293,7 @@ static double V_ijk(ATOOLS::Vec4<double> p_i, ATOOLS::Vec4<double> p_j, ATOOLS::
     const double pi = 3.14159265358979323846;
   #endif
 
-  double C_F = 4.0 / 3.0;
-  ATOOLS::Vec4<double> Q = p_i + p_j + p_k;
-  double m2_Q = Q * Q; // Q mass squared
+  
 
   double prefactor = 8 * pi * alpha_qcd * C_F;
   double first_summand = 2 / (1 - z_j_tilde(p_i, p_j, p_k) * (1 - y_ijk(p_i, p_j, p_k) ));
@@ -294,7 +303,7 @@ static double V_ijk(ATOOLS::Vec4<double> p_i, ATOOLS::Vec4<double> p_j, ATOOLS::
 }
 
 
-void H_to_bbg_Real::Calculate_born_subtraction(const ATOOLS::Vec4D_Vector& momenta, bool anti){
+void H_to_bbg_Real::Calculate_real_subtraction(const ATOOLS::Vec4D_Vector& momenta, bool anti){
   // implementation based on the formulas in the Catani Dittmaier Seymour Trocsanyi paper from 2002
 
   // first: some variables needed later (nomination also based on paper)
@@ -305,14 +314,20 @@ void H_to_bbg_Real::Calculate_born_subtraction(const ATOOLS::Vec4D_Vector& momen
   double V_gb_bb = V_ijk(p_g, p_b, p_bb);
   double V_gbb_b = V_ijk(p_g, p_bb, p_b);
 
-  double born_ME2 = 9.1018603234124864; // value taken from the H -> bbb calculation in Comix1to2, value right out of Decay_Channel::ME2(...)
+  double born_ME2 = 37.2554398987324764; // value taken from the H -> b bb calculation in Comix1to2, value right out of Decay_Channel::ME2(...)
                                         // => not multiplied with any symmetry factors/ colour factors
   double m2_ij = p_b * p_b; // because m_i = 0 (gluon) and m_b = m_bb
 
   double D_gb_bb = V_gb_bb/ ((p_g + p_b)*(p_g + p_b) - m2_ij) * born_ME2;
   double D_gbb_b = V_gbb_b/ ((p_g + p_bb)*(p_g + p_bb) - m2_ij) * born_ME2;
 
-  double subtraction_term = D_gb_bb + D_gbb_b;
+  subtraction_term = D_gb_bb + D_gbb_b;
+  std::cout << "S: " << subtraction_term << std::endl;
+}
+
+
+double H_to_bbg_Real::get_NLO_part(){
+  return (-1) * subtraction_term;
 }
 
 

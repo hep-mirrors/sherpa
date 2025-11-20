@@ -21,8 +21,6 @@ namespace PHASIC {
   std::map<std::string,double> Decay_Channel::s_kinmaxfails;
 }
 
-
-
 Decay_Channel::Decay_Channel(const Flavour & _flin,
                              const ATOOLS::Mass_Selector* ms) :
   m_width(0.), m_deltawidth(-1.), m_minmass(0.), m_max(0.), m_symfac(-1.0),
@@ -58,7 +56,6 @@ bool Decay_Channel::FlavourSort(const Flavour &fl1,const Flavour &fl2)
   if (!fl1.IsAnti() && fl2.IsAnti()) return true;
   else return false;
 }
-
 
 void Decay_Channel::SortFlavours(Flavour_Vector& flavs)
 {
@@ -305,7 +302,30 @@ double Decay_Channel::Differential(ATOOLS::Vec4D_Vector& momenta, bool anti,
   return dsigma_lab*Channels()->Weight();
 }
 
+
 double Decay_Channel::ME2(const ATOOLS::Vec4D_Vector& momenta, bool anti,
+                          METOOLS::Spin_Density* sigma,
+                          const std::vector<ATOOLS::Particle*>& p)
+{
+  if (isNLO()){
+    return ME2_NLO(momenta, anti, sigma, p);
+  }
+  else{
+    return ME2_LO(momenta, anti, sigma, p);
+  }
+}
+
+
+bool Decay_Channel::isNLO(){
+  /* Checks, if the diagram is an NLO diagram. Otherwise, it's LO.*/
+  for(size_t i(0); i<GetDiagrams().size(); ++i) {
+    return GetDiagrams()[i]->IsNLODecay();
+  }
+  return false;
+}
+
+
+double Decay_Channel::ME2_LO(const ATOOLS::Vec4D_Vector& momenta, bool anti,
                           METOOLS::Spin_Density* sigma,
                           const std::vector<ATOOLS::Particle*>& p)
 {
@@ -353,6 +373,84 @@ double Decay_Channel::ME2(const ATOOLS::Vec4D_Vector& momenta, bool anti,
   value /= SymmetryFactor();
   return value;
 }
+
+
+double Decay_Channel::ME2_NLO(const ATOOLS::Vec4D_Vector& momenta, bool anti,
+                          METOOLS::Spin_Density* sigma,
+                          const std::vector<ATOOLS::Particle*>& p)
+{
+  // test soft limit: insert manually soft momenta
+  //ATOOLS::Vec4<double> p_g = momenta[1];
+  //ATOOLS::Vec4<double> p_b = momenta[2];
+  //ATOOLS::Vec4<double> p_bb = momenta[3];
+  /*
+  if (momenta.size() > 3){
+  ATOOLS::Vec4D_Vector mom = momenta;
+  double E_g = 0.001; 
+  mom[0] = momenta[0];
+  mom[1] = Vec4D(E_g, 0.0, 0.0, E_g);
+  double abs_p_b = 1;
+  double m_b2 =  momenta[2] * momenta[2];
+  double E_b = std::sqrt(abs_p_b*abs_p_b + m_b2);
+  mom[2] = Vec4D(E_b, abs_p_b, 0.0, 0.0);
+  mom[3] = mom[0] - mom[1] - mom[2];
+  for(size_t i(0); i<GetDiagrams().size(); ++i) {
+    GetDiagrams()[i]->Calculate(mom, anti);
+  }  
+  }
+  else{
+    for(size_t i(0); i<GetDiagrams().size(); ++i) {
+      GetDiagrams()[i]->Calculate(momenta, anti);
+    }
+  }*/
+  for(size_t i(0); i<GetDiagrams().size(); ++i) {
+      GetDiagrams()[i]->Calculate(momenta, anti);
+    }
+
+  double NLO_part = GetDiagrams()[0]->get_NLO_part(); // either -S or V+I
+  Complex sumijlambda_AiAj(0.0,0.0);
+
+  if (sigma) {
+    for (size_t i(0); i<m_diagrams.size(); ++i) DEBUG_VAR(*m_diagrams[i]);
+    if (p_amps) delete p_amps;
+    vector<int> spin_i(p.size(), -1), spin_j(p.size(), -1);
+    p_amps=new Amplitude2_Tensor(p,0,m_diagrams,spin_i, spin_j);
+    DEBUG_VAR(*p_amps);
+    sumijlambda_AiAj=(*sigma)*p_amps->ReduceToMatrix(sigma->Particle());
+  }
+  else {
+    for (size_t i(0); i<GetDiagrams().size(); ++i) {
+      Spin_Amplitudes* Ai=GetDiagrams()[i];
+      for (size_t j(0); j<GetDiagrams().size(); ++j) { // 0?
+        Spin_Amplitudes* Aj=GetDiagrams()[j];
+  
+        // for debugging:
+        if (Ai->size()!=Aj->size())
+          THROW(fatal_error,"Trying to multiply two amplitudes with different "+
+                string("number of helicity combinations."));
+  
+        for (size_t lambda=0; lambda<Ai->size(); ++lambda) {
+          sumijlambda_AiAj+=(*Ai)[lambda]*conj((*Aj)[lambda]);
+        }
+      }
+    }
+  }
+  if (!IsZero(sumijlambda_AiAj.imag(),1.0e-6)) {
+    PRINT_INFO("Sum-Squaring matrix element yielded imaginary part.");
+    PRINT_VAR(sumijlambda_AiAj);
+  }
+
+  double value=sumijlambda_AiAj.real();
+  std::cout << "Born or R: " << value << std::endl;
+  value += NLO_part;
+  value /= double(GetDecaying().IntSpin()+1);
+  if (GetDecaying().StrongCharge())
+    value/=double(abs(GetDecaying().StrongCharge()));
+  value /= SymmetryFactor();
+  return value;
+}
+
+
 
 void Decay_Channel::
 GenerateKinematics(ATOOLS::Vec4D_Vector& momenta, bool anti,

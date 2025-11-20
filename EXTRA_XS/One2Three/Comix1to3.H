@@ -31,6 +31,8 @@ namespace EXTRAXS {
               const ATOOLS::Flavour& prop,
               size_t nonprop, size_t propi, size_t propj);
     ~Comix1to3();
+    bool IsNLODecay();
+    double get_NLO_part();
     void Calculate(const ATOOLS::Vec4D_Vector& momenta, bool anti=false);
     ATOOLS::Flavour Prop() const { return m_prop; }
   };

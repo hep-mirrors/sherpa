@@ -25,7 +25,7 @@ public:
   virtual ~NLO_Virtual() = default;
 
   // setup
-  virtual void Calculate_alpha_QCD(MODEL::Model_Base* s_model) = 0;
+  virtual void CalculateAlphaQCD(double scale) = 0;
   virtual void SetUpCurrents(const std::vector<ATOOLS::Flavour>& flavs) = 0;
   virtual void SetUpPrefactors(const std::vector<ATOOLS::Flavour>& flavs) = 0;
 
@@ -39,8 +39,7 @@ public:
   virtual std::map<std::string, std::map<std::string, C>> CalculateV(const ATOOLS::Vec4D_Vector& momenta, bool anti=false) = 0;
   virtual std::map<std::string, C> CalculateBorn(const ATOOLS::Vec4D_Vector& momenta, bool anti=false) = 0;
   virtual double CalculateVirtualCorrection(const ATOOLS::Vec4D_Vector& momenta, bool anti=false) = 0;
-  virtual double CalculateFiniteSubtraction(const ATOOLS::Vec4D_Vector& momenta) = 0;
-  virtual double CalculateEpsilonSubtraction(const ATOOLS::Vec4D_Vector& momenta) = 0;
+  virtual double CalculateFiniteSubtraction(const ATOOLS::Vec4D_Vector& momenta, double born_ME2) = 0;
+  virtual double CalculateEpsilonSubtraction(const ATOOLS::Vec4D_Vector& momenta, double born_ME2) = 0;
 };
-
-} // namespace EXTRAXS
+}

@@ -174,6 +174,8 @@ namespace METOOLS
     virtual ~Spin_Amplitudes();
     double  SumSquare() const;
     virtual void Calculate(const ATOOLS::Vec4D_Vector& momenta,bool anti=false);
+    virtual bool IsNLODecay();
+    virtual double get_NLO_part();
   };
 
   /*! 

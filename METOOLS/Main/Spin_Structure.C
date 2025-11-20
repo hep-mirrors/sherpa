@@ -51,3 +51,13 @@ void Spin_Amplitudes::Calculate(const Vec4D_Vector& momenta, bool anti) {
   msg_Error()<<METHOD<<": Virtual function called."<<endl;
   Abort();
 }
+
+
+bool Spin_Amplitudes::IsNLODecay(){
+  return false;
+}
+
+
+double Spin_Amplitudes::get_NLO_part(){
+  return 0.0;
+}

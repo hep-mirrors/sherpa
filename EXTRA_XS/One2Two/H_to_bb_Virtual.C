@@ -20,36 +20,18 @@ using namespace std;
 using namespace MODEL;
 
 
-H_to_bb_Virtual::H_to_bb_Virtual(const vector<Flavour>& flavs, MODEL::Model_Base* s_model):
+H_to_bb_Virtual::H_to_bb_Virtual(const vector<Flavour>& flavs):
   Spin_Amplitudes(flavs,Complex(0.0,0.0)), m_cur(3), m_anticur(3), m_nhel(3), 
   BornPrefactor(1.0), VirtualPrefactor(1.0)
 {
-  Calculate_alpha_QCD(s_model);
+  CalculateAlphaQCD(125.09);
 
   if (flavs.size()!=3) THROW(fatal_error,"Internal error.");
 
-  // example momenta
-  std::vector<Vec4D> momenta(3);
-  momenta[0]=Vec4D(125.0,0.0,0.0,0.0); // Higgs
-  momenta[1]=Vec4D(62.54499999999998, 2.3910658074969522, 43.056947854781868, 45.033905790357714); // b
-  momenta[2]=Vec4D(62.545000000000009, -2.3910658074969575, -43.056947854781889, -45.033905790357707); // bbar
-
   SetUpCurrents(flavs);
   SetUpPrefactors(flavs);
-  SetVirtualMatrixFinite(momenta);
-  SetVirtualMatrixE(momenta);
-  SetVirtualMatrixE2(momenta);
-
-  //Calculate(momenta, false);
-
-  // Ausgabe aller Elemente
-  std::cout << "\n=== M_finite Matrix ===" << std::endl;
-  std::cout << M_finite[0] << " " << M_finite[1] << " " << M_finite[2] << " " << M_finite[3] << std::endl;
-  std::cout << M_finite[4] << " " << M_finite[5] << " " << M_finite[6] << " " << M_finite[7] << std::endl;
-  std::cout << M_finite[8] << " " << M_finite[9] << " " << M_finite[10] << " " << M_finite[11] << std::endl;
-  std::cout << M_finite[12] << " " << M_finite[13] << " " << M_finite[14] << " " << M_finite[15] << std::endl;
-
 }
+
 
 H_to_bb_Virtual::~H_to_bb_Virtual()
 {
@@ -57,11 +39,12 @@ H_to_bb_Virtual::~H_to_bb_Virtual()
     delete m_cur[i];
     delete m_anticur[i];
   }
+  if (p_ci) delete p_ci;
 }
 
-void H_to_bb_Virtual::Calculate_alpha_QCD(MODEL::Model_Base* s_model) {
-  alpha_qcd = s_model -> ScalarFunction("alpha_S", 15625); // at Higgs scale
-  std::cout << "The cpl value is: " << alpha_qcd << std::endl;
+
+void H_to_bb_Virtual::CalculateAlphaQCD(double scale) {
+  alpha_qcd = (MODEL::s_model) -> ScalarFunction("alpha_S", scale*scale); // at Higgs scale
 }
 
 
@@ -79,6 +62,25 @@ size_t H_to_bb_Virtual::NHel(const Flavour& fl) const
     THROW(not_implemented, "Comix not yet capable of spin > 1.");
     return 0;
   }
+}
+
+
+void H_to_bb_Virtual::SetUpPrefactors(const vector<Flavour>& flavs) {
+  /* This method collects all constants (despite colour factors) that appear in the calculation and multiplies them.*/
+  #ifdef M_PI
+    double pi = M_PI;
+  #else
+    const double pi = 3.14159265358979323846;
+  #endif
+  double g_s = std::sqrt(4 * pi * alpha_qcd);
+  double G_F = 1.16637886e-5; // Fermi constant in GeV^-2; value from PDG
+  double vev = 1 / std::sqrt(G_F * std::sqrt(2)); // vacuum expectation value in GeV; doublecheck that value
+  double m_b = flavs[2].Mass(); // b quark mass in GeV
+
+  VirtualPrefactor = (-1) * std::pow(g_s, 2) * m_b / vev;
+  BornPrefactor = (-1) * m_b / vev;
+  double m_h = 125.09;
+  double born_analytic_calc = 6 * (m_b/vev) * (m_b/vev) * (m_h*m_h - 4 * m_b*m_b);
 }
 
 
@@ -206,8 +208,6 @@ void H_to_bb_Virtual::SetVirtualMatrixFinite(const ATOOLS::Vec4D_Vector& momenta
    * Here is the original Python code located: 
    * https://github.com/LeaBaumann/pre-calculations_integrals_and_subtraction/blob/main/Integrals_and_gammas.py
    */
-  
-  using C = std::complex<double>;
 
   // Calculate q1 and q2: q1 = p_bbar; q2 = p_bbar + p_Higgs
     std::array<double, 4> q1 = {momenta[2][0], momenta[2][1], momenta[2][2], momenta[2][3]};
@@ -219,54 +219,24 @@ void H_to_bb_Virtual::SetVirtualMatrixFinite(const ATOOLS::Vec4D_Vector& momenta
         momenta[2][3] + momenta[0][3]
     };
 
-  const double diag_re = -0.002618352*q1[0]*q1[0] + 0.005900148*q1[0]*q2[0] + 0.002618352*q1[1]*q1[1] - 0.005900148*q1[1]*q2[1]
-      + 0.002618352*q1[2]*q1[2] - 0.005900148*q1[2]*q2[2] + 0.002618352*q1[3]*q1[3] - 0.005900148*q1[3]*q2[3]
-      + 0.000698944*q2[0]*q2[0] - 0.000698944*q2[1]*q2[1] - 0.000698944*q2[2]*q2[2] - 0.000698944*q2[3]*q2[3]
-      - 26.322871021248;
-
-  const double diag_im = + 0.001209628*q1[0]*q1[0] - 0.006166716504*q1[0]*q2[0] - 0.001209628*q1[1]*q1[1] + 0.006166716504*q1[1]*q2[1]
-      - 0.001209628*q1[2]*q1[2] + 0.006166716504*q1[2]*q2[2] - 0.001209628*q1[3]*q1[3] + 0.006166716504*q1[3]*q2[3]
-      - 0.000401548*q2[0]*q2[0] + 0.000401548*q2[1]*q2[1] + 0.000401548*q2[2]*q2[2] + 0.000401548*q2[3]*q2[3]
-      + 12.33920955744;
-  
-  const C d(diag_re, diag_im);
-
-  // elements of the matrix: 
-  C M00 = d;
-  C M01 = C(0.0, 0.0);
-  C M02 = C(+0.00368220816*q1[0] - 0.00368220816*q1[3] - 0.01387288464*q2[0] + 0.01387288464*q2[3],
-              -7.57929599999995e-5*q1[0] + 7.57929599999995e-5*q1[3] + 0.01516399104*q2[0] - 0.01516399104*q2[3]);
-  C M03 = C(-0.00368220816*q1[1] + 7.57929599999995e-5*q1[2] + 0.01387288464*q2[1] - 0.01516399104*q2[2],
-               7.57929599999995e-5*q1[1] + 0.00368220816*q1[2] - 0.01516399104*q2[1] - 0.01387288464*q2[2]);
-
-  C M10 = C(0.0, 0.0);
-  C M11 = d;
-  C M12 = C(-0.00368220816*q1[1] - 7.57929599999995e-5*q1[2] + 0.01387288464*q2[1] + 0.01516399104*q2[2],
-               7.57929599999995e-5*q1[1] - 0.00368220816*q1[2] - 0.01516399104*q2[1] + 0.01387288464*q2[2]);
-  C M13 = C(+0.00368220816*q1[0] + 0.00368220816*q1[3] - 0.01387288464*q2[0] - 0.01387288464*q2[3],
-              -7.57929599999995e-5*q1[0] - 7.57929599999995e-5*q1[3] + 0.01516399104*q2[0] + 0.01516399104*q2[3]);
-
-  C M20 = C(+0.00368220816*q1[0] + 0.00368220816*q1[3] - 0.01387288464*q2[0] - 0.01387288464*q2[3],
-              -7.57929599999995e-5*q1[0] - 7.57929599999995e-5*q1[3] + 0.01516399104*q2[0] + 0.01516399104*q2[3]);
-  C M21 = C(+0.00368220816*q1[1] - 7.57929599999995e-5*q1[2] - 0.01387288464*q2[1] + 0.01516399104*q2[2],
-              -7.57929599999995e-5*q1[1] - 0.00368220816*q1[2] + 0.01516399104*q2[1] + 0.01387288464*q2[2]);
-  C M22 = d;
-  C M23 = C(0.0, 0.0);
-
-  C M30 = C(+0.00368220816*q1[1] + 7.57929599999995e-5*q1[2] - 0.01387288464*q2[1] - 0.01516399104*q2[2],
-              -7.57929599999995e-5*q1[1] + 0.00368220816*q1[2] + 0.01516399104*q2[1] - 0.01387288464*q2[2]);
-  C M31 = C(+0.00368220816*q1[0] - 0.00368220816*q1[3] - 0.01387288464*q2[0] + 0.01387288464*q2[3],
-              -7.57929599999995e-5*q1[0] + 7.57929599999995e-5*q1[3] + 0.01516399104*q2[0] - 0.01516399104*q2[3]);
-  C M32 = C(0.0, 0.0);
-  C M33 = d;
-
-  // put matrix together
-  M_finite = {
-      M00, M01, M02, M03,
-      M10, M11, M12, M13,
-      M20, M21, M22, M23,
-      M30, M31, M32, M33
-    };
+M_finite = {
+std::array<std::complex<double>, 4>{  std::complex<double>(-0.0026183680000000003*pow(q1[0], 2) - 0.0021095360000000004*q1[0]*q2[0] + 0.0026183680000000003*pow(q1[1], 2) + 0.002109536*q1[1]*q2[1] + 0.0026183680000000003*pow(q1[2], 2) + 0.0021095360000000004*q1[2]*q2[2] + 0.0026183680000000003*pow(q1[3], 2) + 0.0021095360000000004*q1[3]*q2[3] + 0.00069894399999999995*pow(q2[0], 2) - 0.00069894399999999995*pow(q2[1], 2) - 0.00069894399999999995*pow(q2[2], 2) - 0.00069894399999999995*pow(q2[3], 2) - 7.2006282487232003, 0.0012096279999999999*pow(q1[0], 2) - 0.002276524504*q1[0]*q2[0] - 0.0012096279999999999*pow(q1[1], 2) + 0.002276524504*q1[1]*q2[1] - 0.0012096279999999999*pow(q1[2], 2) + 0.002276524504*q1[2]*q2[2] - 0.0012096279999999999*pow(q1[3], 2) + 0.002276524504*q1[3]*q2[3] - 0.000401548*pow(q2[0], 2) + 0.000401548*pow(q2[1], 2) + 0.000401548*pow(q2[2], 2) + 0.000401548*pow(q2[3], 2) + 12.4333771010688), 
+  std::complex<double>(0, 0), 
+  std::complex<double>(0.0058309379999999999*q1[0] - 0.0058309379999999999*q1[3] + 0.0058309379999999999*q2[0] - 0.0058309379999999999*q2[3], 0.0055941187200000001*q1[0] - 0.0055941187200000001*q1[3] + 0.0055941187200000001*q2[0] - 0.0055941187200000001*q2[3]), 
+  std::complex<double>(-0.0058309379999999999*q1[1] - 0.0055941187200000001*q1[2] - 0.0058309379999999999*q2[1] - 0.0055941187200000001*q2[2], -0.0055941187200000001*q1[1] + 0.0058309379999999999*q1[2] - 0.0055941187200000001*q2[1] + 0.0058309379999999999*q2[2])},
+std::array<std::complex<double>, 4>{  std::complex<double>(0, 0), 
+  std::complex<double>(-0.0026183680000000003*pow(q1[0], 2) - 0.0021095360000000004*q1[0]*q2[0] + 0.0026183680000000003*pow(q1[1], 2) + 0.002109536*q1[1]*q2[1] + 0.0026183680000000003*pow(q1[2], 2) + 0.0021095360000000004*q1[2]*q2[2] + 0.0026183680000000003*pow(q1[3], 2) + 0.0021095360000000004*q1[3]*q2[3] + 0.00069894399999999995*pow(q2[0], 2) - 0.00069894399999999995*pow(q2[1], 2) - 0.00069894399999999995*pow(q2[2], 2) - 0.00069894399999999995*pow(q2[3], 2) - 7.2006282487232003, 0.0012096279999999999*pow(q1[0], 2) - 0.002276524504*q1[0]*q2[0] - 0.0012096279999999999*pow(q1[1], 2) + 0.002276524504*q1[1]*q2[1] - 0.0012096279999999999*pow(q1[2], 2) + 0.002276524504*q1[2]*q2[2] - 0.0012096279999999999*pow(q1[3], 2) + 0.002276524504*q1[3]*q2[3] - 0.000401548*pow(q2[0], 2) + 0.000401548*pow(q2[1], 2) + 0.000401548*pow(q2[2], 2) + 0.000401548*pow(q2[3], 2) + 12.4333771010688), 
+  std::complex<double>(-0.0058309379999999999*q1[1] + 0.0055941187200000001*q1[2] - 0.0058309379999999999*q2[1] + 0.0055941187200000001*q2[2], -0.0055941187200000001*q1[1] - 0.0058309379999999999*q1[2] - 0.0055941187200000001*q2[1] - 0.0058309379999999999*q2[2]), 
+  std::complex<double>(0.0058309379999999999*q1[0] + 0.0058309379999999999*q1[3] + 0.0058309379999999999*q2[0] + 0.0058309379999999999*q2[3], 0.0055941187200000001*q1[0] + 0.0055941187200000001*q1[3] + 0.0055941187200000001*q2[0] + 0.0055941187200000001*q2[3])},
+std::array<std::complex<double>, 4>{  std::complex<double>(0.0058309379999999999*q1[0] + 0.0058309379999999999*q1[3] + 0.0058309379999999999*q2[0] + 0.0058309379999999999*q2[3], 0.0055941187200000001*q1[0] + 0.0055941187200000001*q1[3] + 0.0055941187200000001*q2[0] + 0.0055941187200000001*q2[3]), 
+  std::complex<double>(0.0058309379999999999*q1[1] + 0.0055941187200000001*q1[2] + 0.0058309379999999999*q2[1] + 0.0055941187200000001*q2[2], 0.0055941187200000001*q1[1] - 0.0058309379999999999*q1[2] + 0.0055941187200000001*q2[1] - 0.0058309379999999999*q2[2]), 
+  std::complex<double>(-0.0026183680000000003*pow(q1[0], 2) - 0.0021095360000000004*q1[0]*q2[0] + 0.0026183680000000003*pow(q1[1], 2) + 0.002109536*q1[1]*q2[1] + 0.0026183680000000003*pow(q1[2], 2) + 0.0021095360000000004*q1[2]*q2[2] + 0.0026183680000000003*pow(q1[3], 2) + 0.0021095360000000004*q1[3]*q2[3] + 0.00069894399999999995*pow(q2[0], 2) - 0.00069894399999999995*pow(q2[1], 2) - 0.00069894399999999995*pow(q2[2], 2) - 0.00069894399999999995*pow(q2[3], 2) - 7.2006282487232003, 0.0012096279999999999*pow(q1[0], 2) - 0.002276524504*q1[0]*q2[0] - 0.0012096279999999999*pow(q1[1], 2) + 0.002276524504*q1[1]*q2[1] - 0.0012096279999999999*pow(q1[2], 2) + 0.002276524504*q1[2]*q2[2] - 0.0012096279999999999*pow(q1[3], 2) + 0.002276524504*q1[3]*q2[3] - 0.000401548*pow(q2[0], 2) + 0.000401548*pow(q2[1], 2) + 0.000401548*pow(q2[2], 2) + 0.000401548*pow(q2[3], 2) + 12.4333771010688), 
+  std::complex<double>(0, 0)},
+std::array<std::complex<double>, 4>{  std::complex<double>(0.0058309379999999999*q1[1] - 0.0055941187200000001*q1[2] + 0.0058309379999999999*q2[1] - 0.0055941187200000001*q2[2], 0.0055941187200000001*q1[1] + 0.0058309379999999999*q1[2] + 0.0055941187200000001*q2[1] + 0.0058309379999999999*q2[2]), 
+  std::complex<double>(0.0058309379999999999*q1[0] - 0.0058309379999999999*q1[3] + 0.0058309379999999999*q2[0] - 0.0058309379999999999*q2[3], 0.0055941187200000001*q1[0] - 0.0055941187200000001*q1[3] + 0.0055941187200000001*q2[0] - 0.0055941187200000001*q2[3]), 
+  std::complex<double>(0, 0), 
+  std::complex<double>(-0.0026183680000000003*pow(q1[0], 2) - 0.0021095360000000004*q1[0]*q2[0] + 0.0026183680000000003*pow(q1[1], 2) + 0.002109536*q1[1]*q2[1] + 0.0026183680000000003*pow(q1[2], 2) + 0.0021095360000000004*q1[2]*q2[2] + 0.0026183680000000003*pow(q1[3], 2) + 0.0021095360000000004*q1[3]*q2[3] + 0.00069894399999999995*pow(q2[0], 2) - 0.00069894399999999995*pow(q2[1], 2) - 0.00069894399999999995*pow(q2[2], 2) - 0.00069894399999999995*pow(q2[3], 2) - 7.2006282487232003, 0.0012096279999999999*pow(q1[0], 2) - 0.002276524504*q1[0]*q2[0] - 0.0012096279999999999*pow(q1[1], 2) + 0.002276524504*q1[1]*q2[1] - 0.0012096279999999999*pow(q1[2], 2) + 0.002276524504*q1[2]*q2[2] - 0.0012096279999999999*pow(q1[3], 2) + 0.002276524504*q1[3]*q2[3] - 0.000401548*pow(q2[0], 2) + 0.000401548*pow(q2[1], 2) + 0.000401548*pow(q2[2], 2) + 0.000401548*pow(q2[3], 2) + 12.4333771010688)},
+};
 }
 
 
@@ -286,7 +256,6 @@ void H_to_bb_Virtual::SetVirtualMatrixE(const ATOOLS::Vec4D_Vector& momenta){
    * Here is the original Python code located: 
    * https://github.com/LeaBaumann/pre-calculations_integrals_and_subtraction/blob/main/Integrals_and_gammas.py
    */
-  using C = std::complex<double>;
 
   // Calculate q1 and q2: q1 = p_bbar; q2 = p_bbar + p_Higgs
     std::array<double, 4> q1 = {momenta[2][0], momenta[2][1], momenta[2][2], momenta[2][3]};
@@ -297,49 +266,25 @@ void H_to_bb_Virtual::SetVirtualMatrixE(const ATOOLS::Vec4D_Vector& momenta){
         momenta[2][2] + momenta[0][2],
         momenta[2][3] + momenta[0][3]
     };
-
-      // Calculate diagonal elements
-  const double diag_re = -0.001658656*q1[0]*q2[0] + 0.001658656*q1[1]*q2[1] + 0.001658656*q1[2]*q2[2] + 0.001658656*q1[3]*q2[3] - 0.0401500905984;
-  const double diag_im = 0.000805588*q1[0]*q2[0] - 0.000805588*q1[1]*q2[1] - 0.000805588*q1[2]*q2[2] - 0.000805588*q1[3]*q2[3] + 0.0195003853632;
-  
-  const C d(diag_re, diag_im);
-
-  // elements of the matrix: 
-  C M00 = d;
-  C M01 = C(0.0, 0.0);
-  C M02 = C(0.000829328*q1[0] - 0.000829328*q1[3] + 0.00408029376*q2[0] - 0.00408029376*q2[3],
-            -0.000402794*q1[0] + 0.000402794*q1[3] - 0.00198174648*q2[0] + 0.00198174648*q2[3]);
-  C M03 = C(-0.000829328*q1[1] + 0.000402794*q1[2] - 0.00408029376*q2[1] + 0.00198174648*q2[2],
-            0.000402794*q1[1] + 0.000829328*q1[2] + 0.00198174648*q2[1] + 0.00408029376*q2[2]);
-
-  C M10 = C(0.0, 0.0);
-  C M11 = d;
-  C M12 = C(-0.000829328*q1[1] - 0.000402794*q1[2] - 0.00408029376*q2[1] - 0.00198174648*q2[2],
-            0.000402794*q1[1] - 0.000829328*q1[2] + 0.00198174648*q2[1] - 0.00408029376*q2[2]);
-  C M13 = C(0.000829328*q1[0] + 0.000829328*q1[3] + 0.00408029376*q2[0] + 0.00408029376*q2[3],
-            -0.000402794*q1[0] - 0.000402794*q1[3] - 0.00198174648*q2[0] - 0.00198174648*q2[3]);
-
-  C M20 = C(0.000829328*q1[0] + 0.000829328*q1[3] + 0.00408029376*q2[0] + 0.00408029376*q2[3],
-            -0.000402794*q1[0] - 0.000402794*q1[3] - 0.00198174648*q2[0] - 0.00198174648*q2[3]);
-  C M21 = C(0.000829328*q1[1] - 0.000402794*q1[2] + 0.00408029376*q2[1] - 0.00198174648*q2[2],
-            -0.000402794*q1[1] - 0.000829328*q1[2] - 0.00198174648*q2[1] - 0.00408029376*q2[2]);
-  C M22 = d;
-  C M23 = C(0.0, 0.0);
-
-  C M30 = C(0.000829328*q1[1] + 0.000402794*q1[2] + 0.00408029376*q2[1] + 0.00198174648*q2[2],
-            -0.000402794*q1[1] + 0.000829328*q1[2] - 0.00198174648*q2[1] + 0.00408029376*q2[2]);
-  C M31 = C(0.000829328*q1[0] - 0.000829328*q1[3] + 0.00408029376*q2[0] - 0.00408029376*q2[3],
-            -0.000402794*q1[0] + 0.000402794*q1[3] - 0.00198174648*q2[0] + 0.00198174648*q2[3]);
-  C M32 = C(0.0, 0.0);
-  C M33 = d;
-
-  // put matrix together
-  M_epsilon = {
-      M00, M01, M02, M03,
-      M10, M11, M12, M13,
-      M20, M21, M22, M23,
-      M30, M31, M32, M33
-    };
+    
+    M_epsilon = {
+  std::array<std::complex<double>, 4>{  std::complex<double>(-0.0016586560000000001*q1[0]*q2[0] + 0.0016586560000000001*q1[1]*q2[1] + 0.0016586560000000001*q1[2]*q2[2] + 0.0016586560000000001*q1[3]*q2[3] - 0.040150090598400003, 0.00080558799999999999*q1[0]*q2[0] - 0.00080558799999999999*q1[1]*q2[1] - 0.00080558799999999999*q1[2]*q2[2] - 0.00080558799999999999*q1[3]*q2[3] + 0.0195003853632), 
+    std::complex<double>(0, 0), 
+    std::complex<double>(0.00408029376*q1[0] - 0.00408029376*q1[3] + 0.00408029376*q2[0] - 0.00408029376*q2[3], -0.0019817464799999998*q1[0] + 0.0019817464799999998*q1[3] - 0.0019817464799999998*q2[0] + 0.0019817464799999998*q2[3]), 
+    std::complex<double>(-0.00408029376*q1[1] + 0.0019817464799999998*q1[2] - 0.00408029376*q2[1] + 0.0019817464799999998*q2[2], 0.0019817464799999998*q1[1] + 0.00408029376*q1[2] + 0.0019817464799999998*q2[1] + 0.00408029376*q2[2])},
+  std::array<std::complex<double>, 4>{  std::complex<double>(0, 0), 
+    std::complex<double>(-0.0016586560000000001*q1[0]*q2[0] + 0.0016586560000000001*q1[1]*q2[1] + 0.0016586560000000001*q1[2]*q2[2] + 0.0016586560000000001*q1[3]*q2[3] - 0.040150090598400003, 0.00080558799999999999*q1[0]*q2[0] - 0.00080558799999999999*q1[1]*q2[1] - 0.00080558799999999999*q1[2]*q2[2] - 0.00080558799999999999*q1[3]*q2[3] + 0.0195003853632), 
+    std::complex<double>(-0.00408029376*q1[1] - 0.0019817464799999998*q1[2] - 0.00408029376*q2[1] - 0.0019817464799999998*q2[2], 0.0019817464799999998*q1[1] - 0.00408029376*q1[2] + 0.0019817464799999998*q2[1] - 0.00408029376*q2[2]), 
+    std::complex<double>(0.00408029376*q1[0] + 0.00408029376*q1[3] + 0.00408029376*q2[0] + 0.00408029376*q2[3], -0.0019817464799999998*q1[0] - 0.0019817464799999998*q1[3] - 0.0019817464799999998*q2[0] - 0.0019817464799999998*q2[3])},
+  std::array<std::complex<double>, 4>{  std::complex<double>(0.00408029376*q1[0] + 0.00408029376*q1[3] + 0.00408029376*q2[0] + 0.00408029376*q2[3], -0.0019817464799999998*q1[0] - 0.0019817464799999998*q1[3] - 0.0019817464799999998*q2[0] - 0.0019817464799999998*q2[3]), 
+    std::complex<double>(0.00408029376*q1[1] - 0.0019817464799999998*q1[2] + 0.00408029376*q2[1] - 0.0019817464799999998*q2[2], -0.0019817464799999998*q1[1] - 0.00408029376*q1[2] - 0.0019817464799999998*q2[1] - 0.00408029376*q2[2]), 
+    std::complex<double>(-0.0016586560000000001*q1[0]*q2[0] + 0.0016586560000000001*q1[1]*q2[1] + 0.0016586560000000001*q1[2]*q2[2] + 0.0016586560000000001*q1[3]*q2[3] - 0.040150090598400003, 0.00080558799999999999*q1[0]*q2[0] - 0.00080558799999999999*q1[1]*q2[1] - 0.00080558799999999999*q1[2]*q2[2] - 0.00080558799999999999*q1[3]*q2[3] + 0.0195003853632), 
+    std::complex<double>(0, 0)},
+  std::array<std::complex<double>, 4>{  std::complex<double>(0.00408029376*q1[1] + 0.0019817464799999998*q1[2] + 0.00408029376*q2[1] + 0.0019817464799999998*q2[2], -0.0019817464799999998*q1[1] + 0.00408029376*q1[2] - 0.0019817464799999998*q2[1] + 0.00408029376*q2[2]), 
+    std::complex<double>(0.00408029376*q1[0] - 0.00408029376*q1[3] + 0.00408029376*q2[0] - 0.00408029376*q2[3], -0.0019817464799999998*q1[0] + 0.0019817464799999998*q1[3] - 0.0019817464799999998*q2[0] + 0.0019817464799999998*q2[3]), 
+    std::complex<double>(0, 0), 
+    std::complex<double>(-0.0016586560000000001*q1[0]*q2[0] + 0.0016586560000000001*q1[1]*q2[1] + 0.0016586560000000001*q1[2]*q2[2] + 0.0016586560000000001*q1[3]*q2[3] - 0.040150090598400003, 0.00080558799999999999*q1[0]*q2[0] - 0.00080558799999999999*q1[1]*q2[1] - 0.00080558799999999999*q1[2]*q2[2] - 0.00080558799999999999*q1[3]*q2[3] + 0.0195003853632)},
+  };
 }
 
 
@@ -359,8 +304,6 @@ void H_to_bb_Virtual::SetVirtualMatrixE2(const ATOOLS::Vec4D_Vector& momenta){
    * Here is the original Python code located: 
    * https://github.com/LeaBaumann/pre-calculations_integrals_and_subtraction/blob/main/Integrals_and_gammas.py
    */
-  
-  using C = std::complex<double>;
 
   // Calculate q1 and q2: q1 = p_bbar; q2 = p_bbar + p_Higgs
     std::array<double, 4> q1 = {momenta[2][0], momenta[2][1], momenta[2][2], momenta[2][3]};
@@ -372,34 +315,24 @@ void H_to_bb_Virtual::SetVirtualMatrixE2(const ATOOLS::Vec4D_Vector& momenta){
         momenta[2][3] + momenta[0][3]
     };
 
-    // elements of the matrix: 
-  C M00 = C(0.0, 0.0);
-  C M01 = C(0.0, 0.0);
-  C M02 = C(0.0, 0.0);
-  C M03 = C(0.0, 0.0);
-
-  C M10 = C(0.0, 0.0);
-  C M11 = C(0.0, 0.0);
-  C M12 = C(0.0, 0.0);
-  C M13 = C(0.0, 0.0);
-
-  C M20 = C(0.0, 0.0);
-  C M21 = C(0.0, 0.0);
-  C M22 = C(0.0, 0.0);
-  C M23 = C(0.0, 0.0);
-
-  C M30 = C(0.0, 0.0);
-  C M31 = C(0.0, 0.0);
-  C M32 = C(0.0, 0.0);
-  C M33 = C(0.0, 0.0);
-
-  // put matrix together
-  M_epsilon2 = {
-      M00, M01, M02, M03,
-      M10, M11, M12, M13,
-      M20, M21, M22, M23,
-      M30, M31, M32, M33
-    };
+    M_epsilon2 = {
+  std::array<std::complex<double>, 4>{  std::complex<double>(0, 0), 
+    std::complex<double>(0, 0), 
+    std::complex<double>(0, 0), 
+    std::complex<double>(0, 0)},
+  std::array<std::complex<double>, 4>{  std::complex<double>(0, 0), 
+    std::complex<double>(0, 0), 
+    std::complex<double>(0, 0), 
+    std::complex<double>(0, 0)},
+  std::array<std::complex<double>, 4>{  std::complex<double>(0, 0), 
+    std::complex<double>(0, 0), 
+    std::complex<double>(0, 0), 
+    std::complex<double>(0, 0)},
+  std::array<std::complex<double>, 4>{  std::complex<double>(0, 0), 
+    std::complex<double>(0, 0), 
+    std::complex<double>(0, 0), 
+    std::complex<double>(0, 0)},
+  };
 }
 
 
@@ -451,13 +384,13 @@ std::map<std::string, std::complex<double>> H_to_bb_Virtual::CalculateBorn(const
   }
   born_11 *= BornPrefactor;
 
-  std::map<std::string, C> born_res;
-  born_res["00"]  = born_00;
-  born_res["01"]  = born_01;
-  born_res["10"]  = born_10;
-  born_res["11"]  = born_11;
+  std::map<std::string, C> born_hel;
+  born_hel["00"]  = born_00;
+  born_hel["01"]  = born_01;
+  born_hel["10"]  = born_10;
+  born_hel["11"]  = born_11;
 
-  return born_res;
+  return born_hel;
 }
 
 
@@ -465,6 +398,10 @@ std::map<std::string, std::map<std::string, std::complex<double>>> H_to_bb_Virtu
   // This method calculates the virtual amplitude for the H -> bb decay for the four helicity configurations
   // using the precomputed matrices and the spinors calculated from the currents.
   // There are finite terms, terms proportional to 1/epsilon and terms proportional to 1/epsilon^2.
+  SetVirtualMatrixFinite(momenta);
+  SetVirtualMatrixE(momenta);
+  SetVirtualMatrixE2(momenta);
+
   typedef METOOLS::CSpinor<double> DDSpin;
   typedef std::pair<DDSpin*, int> SpinorWithHel;
   typedef std::vector<SpinorWithHel> SpinorVecWithHel;
@@ -484,7 +421,7 @@ std::map<std::string, std::map<std::string, std::complex<double>>> H_to_bb_Virtu
     THROW(fatal_error, "H_to_bb_Virtual::CalculateV - missing spinor(s) from currents");
   }
 
-  // first matrix multiplication: M_finite * v(p_bbar) = "MV_ax" with: a = f, e or e2 for finite, 1/epsilon or 1/epsilon^2 and x = 0, 1 for helicity state
+  // first matrix multiplication: M_finite * v(p_bbar) = "MV_ax" with: a = f, e or e2 for finite, 1/epsilon or 1/epsilon^2 and x = 0, 1 for helicity state of v(p_bbar)
   std::vector<C> MV_f0(4, C(0.0,0.0));
   std::vector<C> MV_f1(4, C(0.0,0.0));
   std::vector<C> MV_e0(4, C(0.0,0.0));
@@ -493,39 +430,30 @@ std::map<std::string, std::map<std::string, std::complex<double>>> H_to_bb_Virtu
   std::vector<C> MV_e21(4, C(0.0,0.0));
 
   // first matrix multiplication: M_finite * v(p_bbar)
-  for (int i = 0; i <= 3; ++i) {
-    for (int j = 0; j <= 3; ++j) {
-      // M_finite is stored flat as 4x4 row-major: element (i,j) at index i*4 + j
-      C M_f_ij = M_finite[i*4 + j];
-      MV_f0[i] += M_f_ij * ((*antibottom_spinor_hel0)[j]);
+  for (int i = 0; i < 4; ++i) {
+    for (int j = 0; j < 4; ++j) {
+      // M_finite is a 4x4 matrix: element (i,j) at M_finite[i][j]
+      MV_f0[i] += M_finite[i][j] * ((*antibottom_spinor_hel0)[j]);
+      MV_f1[i] += M_finite[i][j] * ((*antibottom_spinor_hel1)[j]);
       // 1/epsilon part
-      C M_e_ij = M_epsilon[i*4 + j];
-      MV_e0[i] += M_e_ij * ((*antibottom_spinor_hel0)[j]);
+      MV_e0[i] += M_epsilon[i][j] * ((*antibottom_spinor_hel0)[j]);
+      MV_e1[i] += M_epsilon[i][j] * ((*antibottom_spinor_hel1)[j]);
       // 1/epsilon^2 part
-      C M_e2_ij = M_epsilon2[i*4 + j];
-      MV_e20[i] += M_e2_ij * ((*antibottom_spinor_hel0)[j]);
-    }
-  }
-  for (int i = 0; i <= 3; ++i) {
-    for (int j = 0; j <= 3; ++j) {
-      // M_finite is stored flat as 4x4 row-major: element (i,j) at index i*4 + j
-      C M_f_ij = M_finite[i*4 + j];
-      MV_f1[i] += M_f_ij * ((*antibottom_spinor_hel1)[j]);
-      // 1/epsilon part
-      C M_e_ij = M_epsilon[i*4 + j];
-      MV_e1[i] += M_e_ij * ((*antibottom_spinor_hel1)[j]);
-      // 1/epsilon^2 part
-      C M_e2_ij = M_epsilon2[i*4 + j];
-      MV_e21[i] += M_e2_ij * ((*antibottom_spinor_hel1)[j]);
+      MV_e20[i] += M_epsilon2[i][j] * ((*antibottom_spinor_hel0)[j]);
+      MV_e21[i] += M_epsilon2[i][j] * ((*antibottom_spinor_hel1)[j]);
     }
   }
 
   // second matrix multiplication: u(p_b) * (M_finite * v(p_bbar))
+  std::map<std::string, C> v_finite;
+  std::map<std::string, C> v_epsilon;
+  std::map<std::string, C> v_epsilon2;
+
   // helicity configuration: 0,0
   C v_res_f00 = 0;
   C v_res_e00 = 0;
   C v_res_e200 = 0;
-  for (int i = 0; i <= 3; ++i) {
+  for (int i = 0; i < 4; ++i) {
     v_res_f00 += ((*bottom_spinor_hel0)[i]) * MV_f0[i];
     v_res_e00 += ((*bottom_spinor_hel0)[i]) * MV_e0[i];
     v_res_e200 += ((*bottom_spinor_hel0)[i]) * MV_e20[i];
@@ -534,7 +462,7 @@ std::map<std::string, std::map<std::string, std::complex<double>>> H_to_bb_Virtu
   C v_res_f10 = 0;
   C v_res_e10 = 0;
   C v_res_e210 = 0;
-  for (int i = 0; i <= 3; ++i) {
+  for (int i = 0; i < 4; ++i) {
     v_res_f10 += ((*bottom_spinor_hel1)[i]) * MV_f0[i];
     v_res_e10 += ((*bottom_spinor_hel1)[i]) * MV_e0[i];
     v_res_e210 += ((*bottom_spinor_hel1)[i]) * MV_e20[i];
@@ -543,7 +471,7 @@ std::map<std::string, std::map<std::string, std::complex<double>>> H_to_bb_Virtu
   C v_res_f01 = 0;
   C v_res_e01 = 0;
   C v_res_e201 = 0;
-  for (int i = 0; i <= 3; ++i) {
+  for (int i = 0; i < 4; ++i) {
     v_res_f01 += ((*bottom_spinor_hel0)[i]) * MV_f1[i];
     v_res_e01 += ((*bottom_spinor_hel0)[i]) * MV_e1[i];
     v_res_e201 += ((*bottom_spinor_hel0)[i]) * MV_e21[i];
@@ -552,46 +480,31 @@ std::map<std::string, std::map<std::string, std::complex<double>>> H_to_bb_Virtu
   C v_res_f11 = 0;
   C v_res_e11 = 0;
   C v_res_e211 = 0;
-  for (int i = 0; i <= 3; ++i) {
+  for (int i = 0; i < 4; ++i) {
     v_res_f11 += ((*bottom_spinor_hel1)[i]) * MV_f1[i];
     v_res_e11 += ((*bottom_spinor_hel1)[i]) * MV_e1[i];
     v_res_e211 += ((*bottom_spinor_hel1)[i]) * MV_e21[i];
   }
 
-  // multiply with prefactor
-  v_res_f00 *= VirtualPrefactor;
-  v_res_e00 *= VirtualPrefactor;
-  v_res_e200 *= VirtualPrefactor;
+  // additional prefactor due to integral mismatch
+  std::complex<double> FinitePrefactor(0.0, 1/(16*M_PI*M_PI));
+  double gamma_E = 0.57721566490153286060; // Euler-Mascheroni constant
+  std::complex<double> EpsilonPrefactor(0.0, 1/(16*M_PI*M_PI) * (std::log(4*M_PI) - gamma_E) );
 
-  v_res_f10 *= VirtualPrefactor;
-  v_res_e10 *= VirtualPrefactor;
-  v_res_e210 *= VirtualPrefactor;
+  v_finite["00"]  = (v_res_f00 * VirtualPrefactor * FinitePrefactor) + v_res_e00 * VirtualPrefactor * EpsilonPrefactor;
+  v_finite["01"]  = (v_res_f01 * VirtualPrefactor* FinitePrefactor) + v_res_e01 * VirtualPrefactor * EpsilonPrefactor;
+  v_finite["10"]  = (v_res_f10 * VirtualPrefactor* FinitePrefactor) + v_res_e10 * VirtualPrefactor * EpsilonPrefactor;
+  v_finite["11"]  = (v_res_f11 * VirtualPrefactor* FinitePrefactor) + v_res_e11 * VirtualPrefactor * EpsilonPrefactor;
 
-  v_res_f01 *= VirtualPrefactor;
-  v_res_e01 *= VirtualPrefactor;
-  v_res_e201 *= VirtualPrefactor;
+  v_epsilon["00"]  = v_res_e00 * VirtualPrefactor * FinitePrefactor;
+  v_epsilon["01"]  = v_res_e01 * VirtualPrefactor * FinitePrefactor;
+  v_epsilon["10"]  = v_res_e10 * VirtualPrefactor * FinitePrefactor;
+  v_epsilon["11"]  = v_res_e11 * VirtualPrefactor * FinitePrefactor;
 
-  v_res_f11 *= VirtualPrefactor;
-  v_res_e11 *= VirtualPrefactor;
-  v_res_e211 *= VirtualPrefactor;
-
-  std::map<std::string, C> v_finite;
-  v_finite["00"]  = v_res_f00;
-  v_finite["01"]  = v_res_f01;
-  v_finite["10"]  = v_res_f10;
-  v_finite["11"]  = v_res_f11;
-
-  std::map<std::string, C> v_epsilon;
-  v_epsilon["00"]  = v_res_e00;
-  v_epsilon["01"]  = v_res_e01;
-  v_epsilon["10"]  = v_res_e10;
-  v_epsilon["11"]  = v_res_e11;
-
-  std::map<std::string, C> v_epsilon2;
-  v_epsilon2["00"]  = v_res_e200;
-  v_epsilon2["01"]  = v_res_e201;
-  v_epsilon2["10"]  = v_res_e210;
-  v_epsilon2["11"]  = v_res_e211;
+  v_epsilon2["00"]  = v_res_e200 * VirtualPrefactor;
+  v_epsilon2["01"]  = v_res_e201 * VirtualPrefactor;
+  v_epsilon2["10"]  = v_res_e210 * VirtualPrefactor;
+  v_epsilon2["11"]  = v_res_e211 * VirtualPrefactor;
 
   std::map<std::string, std::map<std::string, std::complex<double>>> res;
   res["v_finite"]  = std::move(v_finite);
@@ -603,12 +516,15 @@ std::map<std::string, std::map<std::string, std::complex<double>>> H_to_bb_Virtu
 
 double H_to_bb_Virtual::CalculateVirtualCorrection(const ATOOLS::Vec4D_Vector& momenta, bool anti){
   // Calculates the total virtual contribution with substraction terms already applied. Checks wether the epsilon terms cancel
-  std::map<std::string, std::map<std::string, std::complex<double>>> virtual_amplitudes = CalculateV(momenta, anti);
-  std::map<std::string, std::complex<double>> &v_finite  = virtual_amplitudes["v_finite"];
-  std::map<std::string, std::complex<double>> &v_epsilon = virtual_amplitudes["v_epsilon"];
-  std::map<std::string, std::complex<double>> &v_epsilon2= virtual_amplitudes["v_epsilon2"];
-
   std::map<std::string, std::complex<double>> born = CalculateBorn(momenta, anti); 
+  double ME2_Born = 3 * std::real(born["00"] * std::conj(born["00"]) + born["01"] * std::conj(born["01"]) + born["10"] * std::conj(born["10"]) + born["11"] * std::conj(born["11"]));
+  // 3 * because of colour sum 
+  // here: ME2_Born = 37.255084078123176 doesn't match exactly the value out of Decay_Channel -> ME2(), which is 37.255439898732476
+
+  std::map<std::string, std::map<std::string, std::complex<double>>> virtual_amplitudes = CalculateV(momenta, anti);
+  std::map<std::string, std::complex<double>> &v_finite   = virtual_amplitudes["v_finite"];
+  std::map<std::string, std::complex<double>> &v_epsilon  = virtual_amplitudes["v_epsilon"];
+  std::map<std::string, std::complex<double>> &v_epsilon2 = virtual_amplitudes["v_epsilon2"];
 
   // finite part
   std::complex<double> BV_f = born["00"] * std::conj(v_finite["00"]) + born["01"] * std::conj(v_finite["01"]) + born["10"] * std::conj(v_finite["10"]) + born["11"] * std::conj(v_finite["11"]);
@@ -618,68 +534,53 @@ double H_to_bb_Virtual::CalculateVirtualCorrection(const ATOOLS::Vec4D_Vector& m
   std::complex<double> BV_e = born["00"] * std::conj(v_epsilon["00"]) + born["01"] * std::conj(v_epsilon["01"]) + born["10"] * std::conj(v_epsilon["10"]) + born["11"] * std::conj(v_epsilon["11"]);
   double v_correction_e = 2 * std::real(BV_e);
 
-  // 1/epsilon^2 part = 0 for H -> bb, because b is massive
+  std::complex<double> BV_e2 = born["00"] * std::conj(v_epsilon2["00"]) + born["01"] * std::conj(v_epsilon2["01"]) + born["10"] * std::conj(v_epsilon2["10"]) + born["11"] * std::conj(v_epsilon2["11"]);
+  double v_correction_e2 = 2 * std::real(BV_e2);
+
+  // 1/epsilon^2 part = 0 for H -> bb, because b is massive.
+  const double epsilon_tol = 1e-12;
+  if(std::abs(v_correction_e2) > epsilon_tol){
+    THROW(fatal_error,
+        "In EXTRA_XS/One2Two/H_to_bb_Virtual.C: 1/epsilon^2 virtual correction term of H -> bb (v_correction_e2) should vanish for massive b-quarks. Value: " 
+        + std::to_string(v_correction_e2));
+  }
 
   // substract (here: sum up) the substraction terms:
-  double finite_sub = CalculateFiniteSubtraction(momenta);
-  double epsilon_sub = CalculateEpsilonSubtraction(momenta);
+  double finite_sub = CalculateFiniteSubtraction(momenta, ME2_Born);
+  double epsilon_sub = CalculateEpsilonSubtraction(momenta, ME2_Born);
 
-  // todo: make sure that Epsilon terms cancel
+  // todo: make sure that epsilon terms cancel
 
   double v_correction = v_correction_f + finite_sub;
-  double epsilon_sum = v_correction_e + epsilon_sub; // should be = 0"!!
+  double epsilon_sum = v_correction_e + epsilon_sub; // should be = 0!!
 
   // print for test purpose
-  std::cout << "finite_sub:" << finite_sub << std::endl;
-  std::cout << "epsilon_sub:" << epsilon_sub << std::endl;
-  std::cout << "v_correction_f:" << v_correction_f << std::endl;
-  std::cout << "v_correction_e:" << v_correction_e << std::endl;
-  std::cout << "Subtracted final results: " << std::endl;
-  std::cout << "v_correction:" << v_correction << std::endl;
-  std::cout << "v_correction_e:" << epsilon_sum << std::endl;
+  std::cout << std::endl << "===================" << std::endl;
+  std::cout << "Virtual results:" << std::endl;
+  std::cout << "v_correction = v_correction_f + finite_sub: " << v_correction << " = " << v_correction_f << " + " << finite_sub << std::endl;
+  std::cout << "epsilon_sum = v_correction_e + epsilon_sub: " << epsilon_sum << " = " << v_correction_e << " + " << epsilon_sub << std::endl;
+  std::cout << "===================" << std::endl;
 
+  std::cout << "Subtracted Decay Width (V + I):" << v_correction * 0.0001585476052942902277969280107304838 << std::endl;
+  std::cout << "Not subtracted Decay Width (V):" << v_correction_f * 0.0001585476052942902277969280107304838 << std::endl;
+  std::cout << "vs. Recola Width value (V):" << 0.00498717 << std::endl;
+  std::cout << "I Decay Width:" << finite_sub * 0.0001585476052942902277969280107304838 << std::endl;
+  std::cout << "vs. Recola I value:" << -0.00783014 << std::endl;
   return v_correction;
 }
 
 
-void H_to_bb_Virtual::SetUpPrefactors(const vector<Flavour>& flavs) {
-  /* This method collects all constants that appear in the calculation and multiplies them.*/
-  #ifdef M_PI
-    double pi = M_PI;
-  #else
-    const double pi = 3.14159265358979323846;
-  #endif
-  double g_s = std::sqrt(4 * pi * alpha_qcd);
-  double G_F = 1.16637886e-5; // Fermi constant in GeV^-2; value from PDG
-  double vev = 1 / std::sqrt(G_F * std::sqrt(2)); // vacuum expectation value in GeV; doublecheck that value
-  double m_b = flavs[2].Mass(); // b quark mass in GeV
-  std::cout << "The vev value is: " << vev << std::endl;
-
-  //double mu = flavs[0].Mass(); // Renormalisation scale: Higgs mass in GeV
-  //double epsilon = 0.0001; // small parameter for dimensional regularization
-
-  VirtualPrefactor = (-1) * std::pow(g_s, 2) * m_b / vev;
-  std::cout << "Virtual prefactor: " << VirtualPrefactor << std::endl;
-
-  BornPrefactor = (-1) * m_b / vev;
-  std::cout << "Born prefactor: " << BornPrefactor << std::endl;
-
-  double m_h = 125.09;
-  double born_analytic_calc = 6 * (m_b/vev) * (m_b/vev) * (m_h*m_h - 4 * m_b*m_b);
-  std::cout << "born_analytic_calc: " << born_analytic_calc << std::endl;
-}
-
-
 static double A(){
-  // 1/epsilon prefactor in Gamma_j
-  return 4.0/ 3.0;
+  // 1/epsilon prefactor in Gamma_j; C_F
+  double C_F = 4.0/3.0;
+  return C_F;
 }
 
 
 static double B(double m_q, double mu){
   // epsilon-independent part in Gamma_j
   // input: quark mass and energy scale
-  double C_F = 4.0/ 3.0;
+  double C_F = 4.0/3.0;
   return C_F * (1/2 * std::log(m_q*m_q/ mu*mu) - 2); 
 }
 
@@ -702,21 +603,19 @@ static double lambda(double x, double y, double z){
 }
 
 
-static double nu_ijk_tilde(ATOOLS::Vec4<double> p_j, ATOOLS::Vec4<double> p_k){
+static double nu_jk_tilde(ATOOLS::Vec4<double> p_j, ATOOLS::Vec4<double> p_k){
   double m_j = std::sqrt(p_j * p_j);
   double m_k = std::sqrt(p_k * p_k);
-  // either i or j is the gluon and massless. Therefore, the mass m_ij equals the bottom mass. Check, which mass is the bottom mass:
-  double m_ij = m_j; // m_i = 0 (gluon), the emitter is only the bottom/ antibottom
 
-  double mu_ij = mu_n(p_j, p_k, m_ij);
+  double mu_j = mu_n(p_j, p_k, m_j);
   double mu_k = mu_n(p_j, p_k, m_k);
-  double lambda_val = lambda(1, mu_ij*mu_ij, mu_k*mu_k);
-  return std::sqrt(lambda_val)/ (1 - mu_ij*mu_ij - mu_k*mu_k);
+  double lambda_val = lambda(1, mu_j*mu_j, mu_k*mu_k);
+  return std::sqrt(lambda_val)/ (1 - mu_j*mu_j - mu_k*mu_k);
 }
 
 
 static double rho(ATOOLS::Vec4<double> p_j, ATOOLS::Vec4<double> p_k){
-  double nu_tilde = nu_ijk_tilde(p_j, p_k);
+  double nu_tilde = nu_jk_tilde(p_j, p_k);
   return std::sqrt((1 - nu_tilde) / (1 + nu_tilde));
 }
 
@@ -728,17 +627,16 @@ static double C_j(ATOOLS::Vec4<double> p_j, ATOOLS::Vec4<double> p_k){
 
 
 static double Q_jk(ATOOLS::Vec4<double> p_j, ATOOLS::Vec4<double> p_k){
-  double s_jk = 2 * p_j * p_k;
-  double m2_j = p_j * p_j; // squared j mass
-  double m2_k = p_k * p_k; // squared k mass
-  double Q2_jk = s_jk + m2_j + m2_k; // squared Q_jk
+  ATOOLS::Vec4<double> Q_jk = p_j + p_k;
+  double Q2_jk = (p_j + p_k) * (p_j + p_k);
+
   return std::sqrt(Q2_jk);
 }
 
 
 static double D_j(ATOOLS::Vec4<double> p_j, ATOOLS::Vec4<double> p_k){
   // prefactor of 1/T_q^2 in Nu_j
-  double C_F = 4.0 / 3.0;
+  double C_F = 4.0/3.0;
   double s_jk = 2 * p_j * p_k;
   double gamma_q = 3.0 / 2.0 * C_F;
   return gamma_q * std::log(s_jk/ (Q_jk(p_j, p_k) * Q_jk(p_j, p_k)));
@@ -753,9 +651,9 @@ static double rho_n(ATOOLS::Vec4<double> p_j, ATOOLS::Vec4<double> p_k, ATOOLS::
   double var_mu_n = mu_n(p_j, p_k, m_n);
   double var_mu_j = mu_n(p_j, p_k, m_j);
   double var_mu_k = mu_n(p_j, p_k, m_k);
-  double var_nu_ijk_tilde = nu_ijk_tilde(p_j, p_k);
-  double numerator = 1 - var_nu_ijk_tilde + 2*var_mu_n*var_mu_n / (1 - var_mu_j*var_mu_j - var_mu_k*var_mu_k);
-  double denominator = 1 + var_nu_ijk_tilde + 2*var_mu_n*var_mu_n / (1 - var_mu_j*var_mu_j - var_mu_k*var_mu_k);
+  double var_nu_jk_tilde = nu_jk_tilde(p_j, p_k);
+  double numerator = 1 - var_nu_jk_tilde + 2*var_mu_n*var_mu_n / (1 - var_mu_j*var_mu_j - var_mu_k*var_mu_k);
+  double denominator = 1 + var_nu_jk_tilde + 2*var_mu_n*var_mu_n / (1 - var_mu_j*var_mu_j - var_mu_k*var_mu_k);
   return std::sqrt(numerator / denominator);
 }
 
@@ -822,8 +720,8 @@ static double E_j(ATOOLS::Vec4<double> p_j, ATOOLS::Vec4<double> p_k){
   double line1 = 1/nu_jk(p_j, p_k) * (line1_1 + line1_2 + line1_3 + line1_4 - (pi*pi)/6.0);  
 
   double line2_1 = std::log((var_Q_jk - m_k) / var_Q_jk);
-  double line2_2 = -2.0 * ( (var_Q_jk - m_k)*(var_Q_jk - m_k) - m_j) / (var_Q_jk*var_Q_jk);
-  double line2_3 = 2.0*m_j*m_j / s_jk * std::log(m_j / (var_Q_jk - m_k));
+  double line2_2 = -2.0 * std::log(((var_Q_jk - m_k)*(var_Q_jk - m_k) - m_j) / (var_Q_jk*var_Q_jk));
+  double line2_3 = -2.0*m_j*m_j / s_jk * std::log(m_j / (var_Q_jk - m_k));
   double line2 = line2_1 + line2_2 + line2_3;
 
   double line3_1 = -m_k / (var_Q_jk - m_k);
@@ -841,17 +739,16 @@ static double F(ATOOLS::Vec4<double> p_j, ATOOLS::Vec4<double> p_k, double mu){
   #else
     const double pi = 3.14159265358979323846;
   #endif
-
-  double C_F = 4.0 / 3.0;
+  double C_F = 4.0/3.0;
   double gamma_j = 3.0 / 2.0 * C_F; // = gmma_q
   double s_jk = 2 * p_j * p_k;
-  double K_j = (7.0/2.0 - pi*pi / 6)*C_F; // = K_q
+  double K_q = (7.0/2.0 - pi*pi / 6)*C_F; // = K_q
 
-  return gamma_j * std::log(mu*mu / s_jk) + gamma_j + K_j;
+  return gamma_j * std::log(mu*mu / s_jk) + gamma_j + K_q;
 }
 
 
-double H_to_bb_Virtual::CalculateFiniteSubtraction(const ATOOLS::Vec4D_Vector& momenta){
+double H_to_bb_Virtual::CalculateFiniteSubtraction(const ATOOLS::Vec4D_Vector& momenta, double born_ME2){
   // finite virtual substraction term
   #ifdef M_PI
     double pi = M_PI;
@@ -861,12 +758,9 @@ double H_to_bb_Virtual::CalculateFiniteSubtraction(const ATOOLS::Vec4D_Vector& m
 
   ATOOLS::Vec4<double> p_b = momenta[1];
   ATOOLS::Vec4<double> p_bb = momenta[2];
-
-  double born_ME2 = 9.1018603234124864; // value taken from the H -> bbb calculation in Comix1to2, value right out of Decay_Channel::ME2(...)
-                                        // => not multiplied with any symmetry factors/ colour factors
-  double mu = 125.09;
-  double alpha_qcd = MODEL::s_model -> ScalarFunction("alpha_S", mu*mu); // at Higgs scale
   double C_F = 4.0/3.0;
+
+  double mu = std::sqrt( (p_b + p_bb) * (p_b + p_bb));
   double s_jk = 2 * p_b * p_bb;
   double gamma_E = 0.57721566490153286060; // Euler-Mascheroni constant
   double var_D_q = D_j(p_b, p_bb);
@@ -883,7 +777,8 @@ double H_to_bb_Virtual::CalculateFiniteSubtraction(const ATOOLS::Vec4D_Vector& m
   return prefactor * (sum1 + sum2 + sum3);
 }
 
-double H_to_bb_Virtual::CalculateEpsilonSubtraction(const ATOOLS::Vec4D_Vector& momenta){
+
+double H_to_bb_Virtual::CalculateEpsilonSubtraction(const ATOOLS::Vec4D_Vector& momenta, double born_ME2){
   // 1/epsilon prefactor of virtual substraction term
   #ifdef M_PI
     double pi = M_PI;
@@ -893,10 +788,6 @@ double H_to_bb_Virtual::CalculateEpsilonSubtraction(const ATOOLS::Vec4D_Vector& 
 
   ATOOLS::Vec4<double> p_b = momenta[1];
   ATOOLS::Vec4<double> p_bb = momenta[2];
-
-  double born_ME2 = 9.1018603234124864; // value taken from the H -> bbb calculation in Comix1to2, value right out of Decay_Channel::ME2(...)
-                                        // => not multiplied with any symmetry factors/ colour factors
-  double alpha_qcd = MODEL::s_model -> ScalarFunction("alpha_S", 125.09*125.09); // at Higgs scale
   double C_F = 4.0/3.0;
 
   return born_ME2 * alpha_qcd / (2 * pi) * (C_F * (C_j(p_b, p_bb) + C_j(p_bb, p_b)) + 2 * A());

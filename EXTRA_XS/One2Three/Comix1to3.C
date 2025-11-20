@@ -142,6 +142,17 @@ Comix1to3::~Comix1to3()
   if (p_ci) delete p_ci;
 }
 
+
+bool Comix1to3::IsNLODecay() {
+  return false;
+}
+
+
+double Comix1to3::get_NLO_part(){
+  return 0; // this is a purely LO class, therefore the NLO part = 0
+}
+
+
 void Comix1to3::Calculate(const ATOOLS::Vec4D_Vector& momenta, bool anti) {
   DEBUG_FUNC(momenta.size());
   p_ci->GeneratePoint(); // create a new integration point for the color factors

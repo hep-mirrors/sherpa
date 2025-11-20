@@ -17,15 +17,15 @@ using namespace PHASIC;
 using namespace std;
 
 Comix1to2::Comix1to2(const vector<Flavour>& flavs) :
-  Spin_Amplitudes(flavs,Complex(0.0,0.0)), m_cur(3), m_anticur(3), m_nhel(3), nlo_virtual(nullptr)
+  Spin_Amplitudes(flavs,Complex(0.0,0.0)), m_cur(3), m_anticur(3), m_nhel(3), nlo_virtual(nullptr), m_flavs(flavs)
 {
   if (flavs.size()!=3) THROW(fatal_error,"Internal error.");
 
-  IsNLODecay(flavs); // sets the isNLO flag true if this decay is an NLO decay. False otherwise.
+  IsNLODecay(); // sets the isNLO flag true if this decay is an NLO decay. False otherwise.
   if (isNLO){
     // prepare the corresponding NLO class
     if (flavs[0].IDName() == "h0" && flavs[1].IDName() == "b" && flavs[2].IDName() == "bb"){
-      nlo_virtual = new EXTRAXS::H_to_bb_Virtual(flavs, MODEL::s_model);
+      nlo_virtual = new EXTRAXS::H_to_bb_Virtual(flavs);
     }    
   }
 
@@ -121,14 +121,15 @@ Comix1to2::~Comix1to2()
 }
 
 
-void Comix1to2::IsNLODecay(const std::vector<ATOOLS::Flavour>& flavs) {
+bool Comix1to2::IsNLODecay() {
   // check if the decay channel is decaying at NLO
   // so far only h0 -> b bbar at NLO is included
-  if (flavs[0].IDName() == "h0" && flavs[1].IDName() == "b" && flavs[2].IDName() == "bb"){
+  if (m_flavs[0].IDName() == "h0" && m_flavs[1].IDName() == "b" && m_flavs[2].IDName() == "bb"){
     isNLO = true;
   } else{
     isNLO = false;
   }
+  return isNLO;
 }
 
 
@@ -195,27 +196,20 @@ void Comix1to2::CalculateNLO(const ATOOLS::Vec4D_Vector& momenta, bool anti) {
     std::cout << (*this)[i];
     if (i < this->size() - 1) std::cout << ", ";
   }
-  std::cout << " }" << std::endl;
-
-  std::cout << " Born: " << std::endl;
-  std::cout << " 00: ";
-  std::cout << born["00"] << std::endl;
-  std::cout << " 01: ";
-  std::cout << born["01"] << std::endl;
-  std::cout << " 10: ";
-  std::cout << born["10"] << std::endl;
-  std::cout << " 11: ";
-  std::cout << born["11"] << std::endl;
 
   // test: calculate Born ME2
   std::complex<double> ME2 = born["00"] * std::conj(born["00"]) + born["01"] * std::conj(born["01"]) + born["10"] * std::conj(born["10"]) + born["11"] * std::conj(born["11"]);
-  std::cout << "ME2: not colour summed" << ME2 << std::endl;
-  std::cout << "ME2: colour summed" << ME2*3.0 << std::endl;
-  std::cout << "ME2 / C_F:" << ME2*(3.0/4.0) << std::endl;
 
   // results for the virtual diagram (just finite part, epsilon divergences cancel out in NLO_Virtual class)
-  double total_virtual_correction = nlo_virtual->CalculateVirtualCorrection(momenta, anti); 
-  std::cout << "total_virtual_correction:" << total_virtual_correction << std::endl;
+  total_virtual_correction = nlo_virtual->CalculateVirtualCorrection(momenta, anti); 
+}
+
+
+double Comix1to2::get_NLO_part(){
+  if (isNLO){
+    return total_virtual_correction; // V + I
+  }
+  return 0;
 }
 
 

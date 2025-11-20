@@ -26,13 +26,16 @@ namespace EXTRAXS {
     PHASIC::Color_Integrator* p_ci;
 
     size_t NHel(const ATOOLS::Flavour& fl);
+    double subtraction_term;
   public:
     H_to_bbg_Real(const std::vector<ATOOLS::Flavour>& flavs,
               const ATOOLS::Flavour& prop,
               size_t nonprop, size_t propi, size_t propj);
     ~H_to_bbg_Real();
-    void Calculate_born_subtraction(const ATOOLS::Vec4D_Vector& momenta, bool anti=false);
+    bool IsNLODecay();
+    void Calculate_real_subtraction(const ATOOLS::Vec4D_Vector& momenta, bool anti=false);
     void Calculate(const ATOOLS::Vec4D_Vector& momenta, bool anti=false);
+    double get_NLO_part();
 
     ATOOLS::Flavour Prop() const { return m_prop; }
   };

@@ -23,12 +23,11 @@ namespace EXTRAXS {
     std::vector<METOOLS::Current*> m_cur;
     std::vector<METOOLS::Current*> m_anticur;
     std::vector<size_t> m_nhel;
-    static MODEL::Model_Base *s_model;
     double BornPrefactor;
     double VirtualPrefactor;
-    std::array<std::complex<double>,16> M_finite;
-    std::array<std::complex<double>,16> M_epsilon;
-    std::array<std::complex<double>,16> M_epsilon2;
+    std::array<std::array<std::complex<double>, 4>, 4> M_finite;
+    std::array<std::array<std::complex<double>, 4>, 4> M_epsilon;
+    std::array<std::array<std::complex<double>, 4>, 4> M_epsilon2;
     PHASIC::Color_Integrator* p_ci;
 
     size_t NHel(const ATOOLS::Flavour& fl) const;
@@ -44,12 +43,12 @@ namespace EXTRAXS {
   protected:
     double alpha_qcd;
   public:
-    H_to_bb_Virtual(const std::vector<ATOOLS::Flavour>& flavs, MODEL::Model_Base* s_model);
+    H_to_bb_Virtual(const std::vector<ATOOLS::Flavour>& flavs);
     ~H_to_bb_Virtual();
-    void Calculate_alpha_QCD(MODEL::Model_Base* s_model) override;
+    void CalculateAlphaQCD(double scale) override;
     double CalculateVirtualCorrection(const ATOOLS::Vec4D_Vector& momenta, bool anti=false) override;
-    double CalculateFiniteSubtraction(const ATOOLS::Vec4D_Vector& momenta) override;
-    double CalculateEpsilonSubtraction(const ATOOLS::Vec4D_Vector& momenta) override;
+    double CalculateFiniteSubtraction(const ATOOLS::Vec4D_Vector& momenta, double born_ME2) override;
+    double CalculateEpsilonSubtraction(const ATOOLS::Vec4D_Vector& momenta, double born_ME2) override;
   };
 }
 
