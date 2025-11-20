@@ -3,6 +3,7 @@
 namespace METOOLS {
   class Current;
   class Vertex;
+  template<typename T> class CSpinor;
 }
 
 namespace PHASIC {
@@ -11,6 +12,12 @@ namespace PHASIC {
 
 namespace EXTRAXS {
   class H_to_bbg_Real : public METOOLS::Spin_Amplitudes {
+    size_t m_non_prop;
+    size_t m_gluon;
+    size_t m_propj;
+    double BornPrefactor;
+    double alpha_qcd;
+
     std::vector<METOOLS::Current*> m_cur;
     METOOLS::Current *m_scur, *m_fcur;
     std::vector<METOOLS::Vertex*> m_v1, m_v2;
@@ -19,14 +26,25 @@ namespace EXTRAXS {
     METOOLS::Current *m_antiscur, *m_antifcur;
     std::vector<METOOLS::Vertex*> m_antiv1, m_antiv2;
 
+    std::vector<METOOLS::Current*> m_cur_born;
+    std::vector<METOOLS::Current*> m_anticur_born;
+
     std::vector<size_t> m_nhel;
     
     ATOOLS::Flavour m_prop;
 
     PHASIC::Color_Integrator* p_ci;
+    PHASIC::Color_Integrator* p_ci_born;
 
     size_t NHel(const ATOOLS::Flavour& fl);
     double subtraction_term;
+
+    std::map<std::string, std::complex<double>> CalculateBorn(const ATOOLS::Vec4D_Vector& momenta, bool anti);
+    std::pair<std::vector<std::pair<METOOLS::CSpinor<double>*, int>>,
+          std::vector<std::pair<METOOLS::CSpinor<double>*, int>>> CalculateSpinors(const ATOOLS::Vec4D_Vector& momenta, bool anti);
+    void SetUpBornCurrents(const std::vector<ATOOLS::Flavour>& flavs);
+    void SetUpBornPrefactor(const std::vector<ATOOLS::Flavour>& flavs);
+    void CalculateAlphaQCD(double scale);
   public:
     H_to_bbg_Real(const std::vector<ATOOLS::Flavour>& flavs,
               const ATOOLS::Flavour& prop,

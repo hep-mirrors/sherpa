@@ -11,6 +11,9 @@
 #include "ATOOLS/Math/Vec4.H"
 #include <cmath>
 #include <numbers>
+#include "EXTRA_XS/One2Three/CF_Decl.H"
+#include "METOOLS/Currents/C_Spinor.H"
+
 
 using namespace EXTRAXS;
 using namespace ATOOLS;
@@ -20,13 +23,26 @@ using namespace std;
 
 H_to_bbg_Real::H_to_bbg_Real(const vector<Flavour>& flavs, const Flavour& prop,
                      size_t non_prop, size_t gluon, size_t propj) :
-  Spin_Amplitudes(flavs,Complex(0.0,0.0)), m_cur(4), m_anticur(4), m_nhel(4),
-  m_prop(prop)
+  Spin_Amplitudes(flavs,Complex(0.0,0.0)), m_cur(4), m_anticur(4), m_cur_born(3), m_anticur_born(3), m_nhel(4),
+  m_prop(prop), m_non_prop(non_prop), m_gluon(gluon), m_propj(propj)
 {
-  DEBUG_FUNC(flavs<<" with prop "<<prop<<" in "<<gluon<<","<<propj);
-  assert(non_prop>0 && gluon>0 && propj>0);
+  DEBUG_FUNC(flavs<<" with prop "<<prop<<" in "<<m_gluon<<","<<m_propj);
+  assert(m_non_prop>0 && m_gluon>0 && m_propj>0);
   if (flavs.size()!=4) THROW(fatal_error,"Internal error.");
   Vec4D k(1.0,0.0,1.0,0.0); // gauge
+
+  std::vector<Flavour> born_flavs;
+  for (size_t i = 0; i < flavs.size(); ++i) {
+    if(flavs[i].IDName() == "G"){
+      continue;
+    }
+    else{
+      born_flavs.push_back(flavs[i]);
+    }
+} 
+  CalculateAlphaQCD(flavs[0].Mass());
+  SetUpBornCurrents(born_flavs);
+  SetUpBornPrefactor(born_flavs);
 
   for (size_t i(0);i<4;++i) { // iterate over the 4 flavours resp. particles
     // the Current_key object uniquely identify and retrieve a "current"; current = off-shell wave function/ building block to construct amplitude
@@ -45,10 +61,10 @@ H_to_bbg_Real::H_to_bbg_Real(const vector<Flavour>& flavs, const Flavour& prop,
   Current_Key ckey(prop,MODEL::s_model,2);
    m_scur = Current_Getter::GetObject("D"+ckey.Type(),ckey); // combine the two currents from i and j to one s-channel current
   METOOLS::Int_Vector isfs(2), ids(2), pols(2); // stores information about the outgoing particles: is fermion? Identifier, polarization
-  isfs[0]=flavs[gluon].IsFermion();
-  isfs[1]=flavs[propj].IsFermion();
-  pols[0]=m_spins[ids[0]=gluon];
-  pols[1]=m_spins[ids[1]=propj];
+  isfs[0]=flavs[m_gluon].IsFermion();
+  isfs[1]=flavs[m_propj].IsFermion();
+  pols[0]=m_spins[ids[0]=m_gluon];
+  pols[1]=m_spins[ids[1]=m_propj];
   m_scur->SetId(ids);
   m_scur->SetFId(isfs);
   m_scur->FindPermutations();
@@ -66,10 +82,10 @@ H_to_bbg_Real::H_to_bbg_Real(const vector<Flavour>& flavs, const Flavour& prop,
   m_fcur->SetFId(isfs2);
   m_fcur->FindPermutations(); // sets up allowed permutations of the outgoing particles
   // connect (2) & (3) into (2,3)
-  m_v1=ConstructVertices(m_cur[gluon], m_cur[propj], m_scur); // vertex with b, gluon, bbar; bbar is actually an incoming b
+  m_v1=ConstructVertices(m_cur[m_gluon], m_cur[m_propj], m_scur); // vertex with b, gluon, bbar; bbar is actually an incoming b
   DEBUG_VAR(m_v1.size());
   // connect (1) & (2,3) into (1,2,3)
-  m_v2=ConstructVertices(m_cur[non_prop],m_scur,m_fcur); //vertex with bbar, b, higgs
+  m_v2=ConstructVertices(m_cur[m_non_prop],m_scur,m_fcur); //vertex with bbar, b, higgs
   DEBUG_VAR(m_v2.size());
   m_scur->Print();
   m_fcur->Print();
@@ -102,10 +118,10 @@ H_to_bbg_Real::H_to_bbg_Real(const vector<Flavour>& flavs, const Flavour& prop,
   m_antifcur->SetFId(isfs2);
   m_antifcur->FindPermutations();
   // connect (2) & (3) into (2,3)
-  m_antiv1=ConstructVertices(m_anticur[gluon], m_anticur[propj], m_antiscur); // vertex with gluon, bbar, b; b is an incoming bbar
+  m_antiv1=ConstructVertices(m_anticur[m_gluon], m_anticur[m_propj], m_antiscur); // vertex with gluon, bbar, b; b is an incoming bbar
   DEBUG_VAR(m_antiv1.size());
   // connect (1) & (2,3) into (1,2,3)
-  m_antiv2=ConstructVertices(m_anticur[non_prop],m_antiscur,m_antifcur); // vertex with b, bbar, higgs
+  m_antiv2=ConstructVertices(m_anticur[m_non_prop],m_antiscur,m_antifcur); // vertex with b, bbar, higgs
   DEBUG_VAR(m_antiv2.size());
   m_antiscur->Print();
   m_antifcur->Print();
@@ -144,6 +160,7 @@ H_to_bbg_Real::~H_to_bbg_Real()
   delete m_fcur;
   delete m_antifcur;
   if (p_ci) delete p_ci;
+  if (p_ci_born) delete p_ci_born;
 }
 
 
@@ -157,6 +174,7 @@ void H_to_bbg_Real::Calculate(const ATOOLS::Vec4D_Vector& momenta, bool anti) {
   // does not do anything yet because integrating this decay channel would result in infinities
   p_ci->GeneratePoint(); // create a new integration point for the color factors
 
+  std::map<std::string, std::complex<double>> born = CalculateBorn(momenta, anti);
 
   const std::vector<int> myI = { 0, 2, 1, 0 };
   const std::vector<int> myJ = { 0, 1, 0, 2 };
@@ -343,5 +361,223 @@ size_t H_to_bbg_Real::NHel(const Flavour& fl)
     THROW(not_implemented, "Comix not yet capable of spin > 1.");
     return 0;
   }
+}
+
+
+static ATOOLS::Vec4<double> p_ij_tilde(ATOOLS::Vec4<double> p_i, ATOOLS::Vec4<double> p_j, ATOOLS::Vec4<double> p_k){
+  ATOOLS::Vec4<double> Q = p_i + p_j + p_k;
+  double Q2 = Q*Q;
+
+  double m_i = std::sqrt(p_i * p_i);
+  double m_j = std::sqrt(p_j * p_j);
+  double m_ij;
+  if((p_i * p_i) < 0.00001){
+    m_ij = m_j; // mass so small that p_i is the gluon
+  }
+  else{
+    m_ij = m_i;
+  }
+  double m_k = std::sqrt(p_k*p_k);
+
+  double factor1 = std::sqrt(lambda(Q2, m_ij*m_ij, m_k*m_k)) / std::sqrt(lambda(Q2, (p_i + p_j) * (p_i + p_j), m_k*m_k));
+  double factor2 = (Q2 + m_k*m_k - m_ij*m_ij) / (2 * Q2);
+  return factor1 * (p_k - (Q*p_k/Q2) * Q) + factor2 * Q;
+}
+
+
+// calculate the Born Matrix Element:
+std::map<std::string, std::complex<double>> H_to_bbg_Real::CalculateBorn(const ATOOLS::Vec4D_Vector& momenta, bool anti){
+  typedef METOOLS::CSpinor<double> DDSpin;
+  typedef std::pair<DDSpin*, int> SpinorWithHel;
+  typedef std::vector<SpinorWithHel> SpinorVecWithHel;
+  typedef std::pair<SpinorVecWithHel, SpinorVecWithHel> SpinorPairWithHel;
+  using C = std::complex<double>;
+
+  ATOOLS::Vec4D_Vector born_momenta(3);
+  born_momenta[0] = momenta[0];                       // higgs momentum stays the same
+  // map the final momenta to the emitter and spectator momenta (formulas taken from Catani Seymour paper)
+  ATOOLS::Vec4<double> Q = momenta[m_gluon] + momenta[m_propj] + momenta[m_non_prop];
+  ATOOLS::Vec4<double> var_p_ij_tilde = p_ij_tilde(momenta[m_gluon], momenta[m_propj], momenta[m_non_prop]); // emitter
+  ATOOLS::Vec4<double> p_k_tilde = Q - var_p_ij_tilde; // spectator
+  born_momenta[1] = var_p_ij_tilde;  
+  born_momenta[2] = p_k_tilde;                
+
+  SpinorPairWithHel pair_spinors = CalculateSpinors(born_momenta, anti);
+
+  const SpinorVecWithHel &bottom = pair_spinors.first;
+  const DDSpin* bottom_spinor_hel0 = (bottom[0].first); // first helicity state
+  const DDSpin* bottom_spinor_hel1 = (bottom[1].first); // second helicity state
+  const SpinorVecWithHel &antibottom = pair_spinors.second;
+  const DDSpin* antibottom_spinor_hel0 = (antibottom[0].first); // first helicity state
+  const DDSpin* antibottom_spinor_hel1 = (antibottom[1].first); // second helicity state
+
+  // helicity configuration: 0,0 (bottom, antibottom)
+  C born_00 = 0;
+  for (int i = 0; i <= 3; ++i) {
+    born_00 += ((*antibottom_spinor_hel0)[i]) * ((*bottom_spinor_hel0)[i]);
+  }
+  born_00 *= BornPrefactor;
+
+  // helicity configuration: 1,0 (bottom, antibottom)
+  C born_10 = 0;
+  for (int i = 0; i <= 3; ++i) {
+    born_10 += ((*antibottom_spinor_hel0)[i]) * ((*bottom_spinor_hel1)[i]);
+  }
+  born_10 *= BornPrefactor;
+
+  // helicity configuration: 0,1 (bottom, antibottom)
+  C born_01 = 0;
+  for (int i = 0; i <= 3; ++i) {
+    born_01 += ((*antibottom_spinor_hel1)[i]) * ((*bottom_spinor_hel0)[i]);
+  }
+  born_01 *= BornPrefactor;
+
+  // helicity configuration: 1,1 (bottom, antibottom)
+  C born_11 = 0;
+  for (int i = 0; i <= 3; ++i) {
+    born_11 += ((*antibottom_spinor_hel1)[i]) * ((*bottom_spinor_hel1)[i]);
+  }
+  born_11 *= BornPrefactor;
+
+  std::map<std::string, C> born_hel;
+  born_hel["00"]  = born_00;
+  born_hel["01"]  = born_01;
+  born_hel["10"]  = born_10;
+  born_hel["11"]  = born_11;
+
+  double ME2_Born = 3 * std::real(born_hel["00"] * std::conj(born_hel["00"]) + born_hel["01"] * std::conj(born_hel["01"]) + born_hel["10"] * std::conj(born_hel["10"]) + born_hel["11"] * std::conj(born_hel["11"]));
+  // 3 * because of colour sum 
+  // here: ME2_Born = 37.255084078123176 doesn't match exactly the value out of Decay_Channel -> ME2(), which is 37.255439898732476
+
+  return born_hel;
+}
+
+
+std::pair<std::vector<std::pair<METOOLS::CSpinor<double>*, int>>,
+          std::vector<std::pair<METOOLS::CSpinor<double>*, int>>> H_to_bbg_Real::CalculateSpinors(const ATOOLS::Vec4D_Vector& momenta, bool anti){
+  p_ci_born->GeneratePoint();
+  typedef METOOLS::CSpinor<double> DDSpin;
+
+  std::vector<std::pair<DDSpin*, int>> bottom;      // collect bottom spinors + helicity
+  std::vector<std::pair<DDSpin*, int>> antibottom;  // collect antibottom spinors + helicity
+
+  if(anti){
+    for (size_t i(0);i<m_anticur_born.size();++i) {
+    m_anticur_born[i]->ConstructJ(i==0?-momenta[i]:momenta[i],0,p_ci_born->I()[i],p_ci_born->J()[i],0);
+    m_anticur_born[i]->Print();
+    }
+    METOOLS::Current* bottom_anticur = m_anticur_born[1];
+    METOOLS::Current* antibottom_anticur = m_anticur_born[2];
+
+    // get the spinor vaues from the currents created before
+    // bottom anti-current
+    const METOOLS::CObject_Matrix &bottom_acur_j = bottom_anticur->J();
+    for (size_t h = 0; h <  bottom_acur_j.size(); ++h) {
+      const std::vector<DDSpin*> *v = bottom_acur_j[h].template Get<DDSpin>();
+      if (v) for (DDSpin* sp : *v) bottom.emplace_back(sp, static_cast<int>(h));
+    }
+
+    // antibottom anticurrent
+    const METOOLS::CObject_Matrix &antibottom_anticur_j = antibottom_anticur->J();
+    for (size_t h = 0; h < antibottom_anticur_j.size(); ++h) {
+      const std::vector<DDSpin*> *v = antibottom_anticur_j[h].template Get<DDSpin>();
+      if (v) for (DDSpin* sp : *v) antibottom.emplace_back(sp, static_cast<int>(h));
+    }
+    return std::make_pair(bottom, antibottom);
+  }
+  else{
+    for (size_t i(0);i<m_cur_born.size();++i) {
+    m_cur_born[i]->ConstructJ(i==0?-momenta[i]:momenta[i],0,p_ci_born->I()[i],p_ci_born->J()[i],0);
+    m_cur_born[i]->Print();
+    }
+    METOOLS::Current* bottom_cur = m_cur_born[1];
+    METOOLS::Current* antibottom_cur = m_cur_born[2];
+
+    // bottom current
+    const METOOLS::CObject_Matrix &bottom_cur_j = bottom_cur->J();
+    for (size_t h = 0; h < bottom_cur_j.size(); ++h) {
+      const std::vector<DDSpin*> *v = bottom_cur_j[h].template Get<DDSpin>();
+      if (v) for (DDSpin* sp : *v) bottom.emplace_back(sp, static_cast<int>(h));
+      //for (DDSpin* sp : *v) {
+      //  std::cout << "m_cur_born[1] hel="<<h<<" u0="<<(*sp)[0]<<" u1="<<(*sp)[1]<<" u2="<<(*sp)[2]<<" u3="<<(*sp)[3]<<"\n";
+      //}
+    }
+
+    // antibottom current
+    const METOOLS::CObject_Matrix &antibottom_cur_j = antibottom_cur->J();
+    for (size_t h = 0; h < antibottom_cur_j.size(); ++h) {
+      const std::vector<DDSpin*> *v = antibottom_cur_j[h].template Get<DDSpin>();
+      if (v) for (DDSpin* sp : *v) antibottom.emplace_back(sp, static_cast<int>(h));
+    }
+    return std::make_pair(bottom, antibottom);
+  }
+}
+
+
+void H_to_bbg_Real::SetUpBornCurrents(const vector<Flavour>& flavs){
+  Vec4D k(1.0,0.0,1.0,0.0); // gauge
+
+  for (size_t i(0);i<3;++i) { // iterate over the 2 external flavours
+    // the Current_key object uniquely identify and retrieve a current
+    Current_Key ckey(i==0?flavs[i].Bar():flavs[i],MODEL::s_model,1); // for i == 0 (incoming particle), use the bar. This is because (?) for amplitude 
+    // construction the incoming state is treated as if it were outgoing but with reversed fermion flow, so using the barred version ensures that 
+    // the spinor or polarization factors contract correctly in the overall matrix element calculation.
+    m_cur_born[i] = Current_Getter::GetObject("D"+ckey.Type(),ckey); // get the object that corresponds to the key "ckey"
+    if (m_cur_born[i]==NULL) THROW(fatal_error, "current not found");
+    m_cur_born[i]->SetDirection(i==0?1:-1); // +1 for i=0, -1 for i=1,2
+    m_cur_born[i]->SetId(std::vector<int>(1,i));
+    m_cur_born[i]->InitPols(std::vector<int>(1,m_spins[i])); // define allowed polarization states
+    m_cur_born[i]->SetKey(i);
+    m_cur_born[i]->SetGauge(k);
+    m_nhel[i]=NHel(flavs[i]); // number of helicity states (based on spin properties)
+  }
+
+  for (size_t i(0);i<3;++i) { // do the same for the anticurrent
+    Current_Key ckey(i==0?flavs[i]:flavs[i].Bar(),MODEL::s_model,1);
+    m_anticur_born[i] = Current_Getter::GetObject("D"+ckey.Type(),ckey);
+    if (m_anticur_born[i]==NULL) THROW(fatal_error, "current not found");
+    m_anticur_born[i]->SetDirection(i==0?1:-1);
+    m_anticur_born[i]->SetId(std::vector<int>(1,i));
+    m_anticur_born[i]->InitPols(std::vector<int>(1,m_spins[i]));
+    m_anticur_born[i]->SetKey(i);
+    m_anticur_born[i]->SetGauge(k);
+  }
+
+  p_ci_born=new Color_Integrator();
+    Idx_Vector cids(3,0);
+    METOOLS::Int_Vector acts(3,0), types(3,0);
+    for (size_t i(0);i<flavs.size();++i) {
+      cids[i]=i; // assign unique index
+      acts[i]=flavs[i].Strong();
+      if (acts[i]) {
+        if (flavs[i].StrongCharge()==8) types[i]=0;
+        else if (flavs[i].IsAnti()) types[i]=(i==0?1:-1);
+        else types[i]=(i==0?-1:1);
+      }
+    }
+  if (!p_ci_born->ConstructRepresentations(cids,types,acts)) {
+    THROW(fatal_error, "Internal error.");
+  }
+}
+
+
+void H_to_bbg_Real::SetUpBornPrefactor(const vector<Flavour>& flavs) {
+  /* This method collects all constants (despite colour factors) that appear in the calculation and multiplies them.*/
+  #ifdef M_PI
+    double pi = M_PI;
+  #else
+    const double pi = 3.14159265358979323846;
+  #endif
+  double g_s = std::sqrt(4 * pi * alpha_qcd);
+  double G_F = 1.16637886e-5; // Fermi constant in GeV^-2; value from PDG
+  double vev = 1 / std::sqrt(G_F * std::sqrt(2)); // vacuum expectation value in GeV; doublecheck that value
+  double m_b = flavs[2].Mass(); // b quark mass in GeV
+
+  BornPrefactor = (-1) * m_b / vev;
+}
+
+
+void H_to_bbg_Real::CalculateAlphaQCD(double scale) {
+  alpha_qcd = (MODEL::s_model) -> ScalarFunction("alpha_S", scale*scale); // at Higgs scale
 }
 
