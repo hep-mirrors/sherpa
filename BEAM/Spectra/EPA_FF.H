@@ -40,6 +40,7 @@ namespace BEAM {
 
   protected:
     ATOOLS::Flavour m_beam;
+    size_t          m_A;
     double          m_mass, m_mass2, m_R;
     double          m_q2min, m_q2max, m_pt2max;
     double          m_xmin, m_xmax;
@@ -69,7 +70,7 @@ namespace BEAM {
       // multiply radius to convert b to physical distance
       m_b *= m_R;
       wt *= m_R;
-      if (m_b < m_b_pl_threshold) return (*p_N_xb)(x, m_b) * wt;
+      if (m_b < m_b_pl_threshold) return (*p_N_xb)(x / m_A, m_b) * wt / m_A;
       else {
         // use point-like approximation for large impact parameters
         double chi = x * m_mass * m_b;
