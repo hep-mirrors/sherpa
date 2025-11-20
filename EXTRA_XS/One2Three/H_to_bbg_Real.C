@@ -243,15 +243,13 @@ static double mu_n(ATOOLS::Vec4<double> p_i, ATOOLS::Vec4<double> p_j, ATOOLS::V
 
 
 static double nu_ijk(ATOOLS::Vec4<double> p_i, ATOOLS::Vec4<double> p_j, ATOOLS::Vec4<double> p_k){
-  double m_i = std::sqrt(p_i * p_i);
   double m_j = std::sqrt(p_j * p_j);
   double m_k = std::sqrt(p_k * p_k);
-  double mu_i = mu_n(p_i, p_j, p_k, m_i);
   double mu_j = mu_n(p_i, p_j, p_k, m_j);
   double mu_k = mu_n(p_i, p_j, p_k, m_k);
-  double bracket = 2 * mu_k * mu_k + (1 - mu_i*mu_i - mu_j*mu_j - mu_k*mu_k)*(1 - y_ijk(p_i, p_j, p_k));
+  double bracket = 2 * mu_k * mu_k + (1 - mu_j*mu_j - mu_k*mu_k)*(1 - y_ijk(p_i, p_j, p_k));
   double numerator = std::sqrt(bracket * bracket - 4 * mu_k * mu_k);
-  double denominator = (1 - mu_i*mu_i - mu_j*mu_j - mu_k*mu_k)*(1 - y_ijk(p_i, p_j, p_k));
+  double denominator = (1 - mu_j*mu_j - mu_k*mu_k)*(1 - y_ijk(p_i, p_j, p_k));
   return numerator/denominator;
 }
 
