@@ -82,6 +82,7 @@ Phase_Space_Handler::Differential(Process_Integrator *const process,
   m_cmode  = mode;
   p_active = process;
   m_wgtmap = 0.0;
+  std::cout << "Before generating a new meaningful phase space point" << std::endl;
   // check for failure to generate a meaningful phase space point
   if (!process->Process()->GeneratePoint() ||
       !m_pspoint(process,m_cmode))
@@ -90,8 +91,10 @@ Phase_Space_Handler::Differential(Process_Integrator *const process,
     if (p.Nan()) return 0.0;
   }
   // phase space trigger, calculate and construct weights
+  std::cout << "In new process: " << process->Process()->Name() << std::endl;
   if (process->Process()->Trigger(p_lab)) {
     if (!p_active->Process()->Selector()->Pass()) return 0.0;
+    std::cout << process->Process()->Name() << " passed Pass check" << std::endl;
     m_psweight = CalculatePS();
     m_wgtmap   = CalculateME(varmode);
     m_wgtmap  *= m_psweight;

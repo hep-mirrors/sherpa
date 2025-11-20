@@ -54,6 +54,7 @@ Jet_Finder::~Jet_Finder()
 
 bool Jet_Finder::Trigger(Selector_List &sl)
 {
+  std::cout << "m_pass is set" << std::endl; 
   m_pass=true;
   m_results = {Weights_Map{}};
   p_ampl->SetProc(p_proc);

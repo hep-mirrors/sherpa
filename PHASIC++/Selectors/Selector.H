@@ -103,7 +103,7 @@ namespace PHASIC {
 
     inline std::string Name() const { return m_name; }
 
-    inline int Pass() const { return m_pass; }
+    inline int Pass() const { std::cout << "m_pass is checked: " << m_pass << std::endl; return m_pass; }
 
     /// after Trigger(), this can be used to retrieve variations of the result
     /// (e.g. when varying the QCUT scale)
