@@ -40,7 +40,7 @@ EPA_FF_Base::EPA_FF_Base(const ATOOLS::Flavour& beam, const int dir)
      // note that the particle radius is in fm and transformed into 1/GeV
      //
      //////////////////////////////////////////////////////////////////////////////
-      m_beam(beam), m_mass(beam.Mass(true)),
+      m_beam(beam), m_A(beam.IsIon() ? beam.GetMassNumber() : 1), m_mass(beam.Mass(true)),
       m_R(beam.Radius() / rpa->hBar_c()), m_q2min(-1.),
       m_q2max(1.), m_pt2max(-1.),
       m_Zsquared(beam.IsIon() ? sqr(m_beam.GetAtomicNumber()) : 1.), m_b(0.),
