@@ -37,7 +37,7 @@ Kabbala::Kabbala(const Kabbala& k) {
 }
 
 
-Complex Kabbala::Update(Function_Argument map){msg_Out() << "Updating " << String() << std::endl; return rishbon = lambda(map);}
+Complex Kabbala::Update(Function_Argument map){return rishbon = lambda(map);}
 
 bool Kabbala::DependsOn(std::string param) const {return shem.find(param) != std::string::npos;}
 
