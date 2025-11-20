@@ -716,9 +716,22 @@ bool COMIX::Single_Process::Trigger(const ATOOLS::Vec4D_Vector &p)
   if (m_pinfo.m_fi.NLOType()&nlo_type::rsub) {
     Amplitude *bg(p_map!=NULL?p_map->p_bg:p_bg);
     Selector()->SetResult(1);
-    if (bg->SetMomenta(p)) return true;
-    Selector()->SetResult(0);
-    return false;
+    bool thisres = bg->SetMomenta(p);
+    if (!thisres) Selector()->SetResult(0);
+
+    // ensure RSTrigger is called before Pass check via the following lines.
+    // todo: RSTrigger is called again in CalculateME -> do not need this call
+    //std::cout << "I was here 1" << std::endl;
+    PHASIC::Combined_Selector *cs =
+      dynamic_cast<PHASIC::Combined_Selector*>(this->Selector());
+    if (cs) {
+      ATOOLS::NLO_subevtlist *subs = this->GetRSSubevtList();
+      if (subs && !subs->empty()) {
+	//std::cout << "I was here 2" << std::endl;
+	cs->RSTrigger(subs);
+      }
+    }
+    return thisres;
   }
   (p_map!=NULL?p_map->p_bg:p_bg)->SetMomenta(p);
   return Selector()->Trigger(p);

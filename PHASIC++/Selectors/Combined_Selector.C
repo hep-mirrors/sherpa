@@ -94,14 +94,20 @@ bool Combined_Selector::RSTrigger(NLO_subevtlist *const subs)
     sl.SetReal(p_sub->IsReal());
     p_sub->m_trig=Trigger(sl);
     if (p_sub->m_trig) pass=1;
+    std::cout << " sub: " << n << " trig: " << p_sub->m_trig<< std::endl;
     p_sub=NULL;
   }
   m_rsres=pass;
+  std::cout << "m_rsres is set to: " << m_rsres << std::endl;
   return pass;
 }
 
 bool Combined_Selector::Pass() const
 {
+  if (m_isnlo) {
+    return (m_rsres != 0);
+  }
+
   for (size_t i=0;i<m_sels.size();++i)
     if (!m_sels[i]->Pass()) return false;
   return true;

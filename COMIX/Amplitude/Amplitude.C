@@ -1256,7 +1256,7 @@ bool Amplitude::RSTrigger
 (PHASIC::Combined_Selector *const sel,const int mode)
 {
   if (m_subs.empty() || sel==NULL) return true;
-  sel->RSTrigger(&m_subs);
+  sel->RSTrigger(&m_subs);//this call might not be needed, because this line is now always? triggered by Trigger call in Phase_Space_Handler
   int trig=m_trig=m_subs.back()->m_trig;
   for (size_t i(0);i<m_scur.size();++i) {
     Dipole_Kinematics *kin(m_scur[i]->Sub()->In().front()->Kin());
