@@ -109,16 +109,16 @@ bool Test_Standard_Model::ModelInit()
        it!=p_complexconstants->end();++it) DEBUG_INFO(it->first+" = "<<it->second);
 
   // some testing TODO remove
-  p_constants->at("alpha_QED") = 0.001;
-  msg_Out() << "Constants:" << std::endl << std::endl;
+  //p_constants->at("alpha_QED") = 0.001;
+  msg_Debugging() << "Constants:" << std::endl << std::endl;
   for (auto c : *p_constants){
-    msg_Out() << c.first << ": " << c.second << std::endl;
+    msg_Debugging() << c.first << ": " << c.second << std::endl;
   }  
-  msg_Out() << "Kabbalas:" << std::endl << std::endl;
+  msg_Debugging() << "Kabbalas:" << std::endl << std::endl;
   for (auto k : k_constants){
-    msg_Out() << k.first << ": " << k.second << std::endl;
+    msg_Debugging() << k.first << ": " << k.second << std::endl;
     k.second.Update(p_constants);
-    msg_Out() << k.first << "| " << k.second << std::endl;
+    msg_Debugging() << k.first << "| " << k.second << std::endl;
   }
 
   return true;
@@ -477,7 +477,6 @@ void Test_Standard_Model::InitQEDVertices()
 	 Color_Function(cf::D,1,2));
       m_v.back().Lorentz.push_back("FFV");
       m_v.back().cpl.push_back(cpl*Q);
-      msg_Out() << "kabbala address: " << &(m_v.back().cpl.back()) << std::endl;
       m_v.back().order[1]=1;
     }
   }
@@ -500,7 +499,6 @@ void Test_Standard_Model::InitQCDVertices()
     m_v.back().Color.push_back(Color_Function(cf::T,3,2,1));
     m_v.back().Lorentz.push_back("FFV");
     m_v.back().cpl.push_back(cpl0);
-    msg_Out() << "kabbala address: " << &(m_v.back().cpl.back()) << std::endl;
     m_v.back().order[0]=1;
   }
   Kabbala cpl1=-g3;
@@ -517,7 +515,6 @@ void Test_Standard_Model::InitQCDVertices()
     m_v.back().Color.push_back(Color_Function(cf::F,1,2,3));
     m_v.back().Lorentz.push_back("VVP");
     m_v.back().cpl.push_back(cpl1);
-    msg_Out() << "kabbala address: " << &(m_v.back().cpl.back()) << std::endl;
     m_v.back().order[0]=1;
     m_v.back().dec=1;
   }
@@ -571,7 +568,6 @@ void Test_Standard_Model::InitEWVertices()
 	   Color_Function(cf::D,1,2));
 	m_v.back().Lorentz.push_back("FFVL");
 	m_v.back().cpl.push_back(cpl*ckm);
-      msg_Out() << "kabbala address: " << &(m_v.back().cpl.back()) << std::endl;
 	m_v.back().order[1]=1;
 	m_v.push_back(Single_Vertex());
 	m_v.back().AddParticle(flav2.Bar());
