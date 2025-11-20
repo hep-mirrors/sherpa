@@ -197,16 +197,13 @@ void H_to_bb_Virtual::SetVirtualMatrixFinite(const ATOOLS::Vec4D_Vector& momenta
    * 
    * The matrix correspond to the expression: gamma-matrix * Loop-Integral * gamma-matrix.
    * 
-   * Since the virtual corrections are momentum-independent for this process, the calculation
-   * could be performed externally using a Python script.
+   * The calculation was performed externally using a Python script.
+   * The Python script can be found in a comment in the end of this page.
    * 
    * The matrix contains three components:
    * - Finite part: The UV-finite contribution to the virtual amplitude
-   * - 1/epsilon and 1/epsilon^2 divergence: The dimensional regularization poles that will be cancelled
+   * - 1/epsilon and 1/epsilon^2 divergence: The IR poles that will be cancelled
    *   by substraction terms
-   * 
-   * Here is the original Python code located: 
-   * https://github.com/LeaBaumann/pre-calculations_integrals_and_subtraction/blob/main/Integrals_and_gammas.py
    */
 
   // Calculate q1 and q2: q1 = p_bbar; q2 = p_bbar + p_Higgs
@@ -245,16 +242,13 @@ void H_to_bb_Virtual::SetVirtualMatrixE(const ATOOLS::Vec4D_Vector& momenta){
    * 
    * The matrix correspond to the expression: gamma-matrix * Loop-Integral * gamma-matrix.
    * 
-   * Since the virtual corrections are momentum-independent for this process, the calculation
-   * could be performed externally using a Python script.
+   * The calculation was performed externally using a Python script.
+   * The Python script can be found in a comment in the end of this page.
    * 
    * The matrix contains three components:
    * - Finite part: The UV-finite contribution to the virtual amplitude
-   * - 1/epsilon and 1/epsilon^2 divergence: The dimensional regularization poles that will be cancelled
+   * - 1/epsilon and 1/epsilon^2 divergence: The IR poles that will be cancelled
    *   by substraction terms
-   * 
-   * Here is the original Python code located: 
-   * https://github.com/LeaBaumann/pre-calculations_integrals_and_subtraction/blob/main/Integrals_and_gammas.py
    */
 
   // Calculate q1 and q2: q1 = p_bbar; q2 = p_bbar + p_Higgs
@@ -293,16 +287,13 @@ void H_to_bb_Virtual::SetVirtualMatrixE2(const ATOOLS::Vec4D_Vector& momenta){
    * 
    * The matrix correspond to the expression: gamma-matrix * Loop-Integral * gamma-matrix.
    * 
-   * Since the virtual corrections are momentum-independent for this process, the calculation
-   * could be performed externally using a Python script.
+   * The calculation was performed externally using a Python script.
+   * The Python script can be found in a comment in the end of this page.
    * 
    * The matrix contains three components:
    * - Finite part: The UV-finite contribution to the virtual amplitude
-   * - 1/epsilon and 1/epsilon^2 divergence: The dimensional regularization poles that will be cancelled
+   * - 1/epsilon and 1/epsilon^2 divergence: The IR poles that will be cancelled
    *   by substraction terms
-   * 
-   * Here is the original Python code located: 
-   * https://github.com/LeaBaumann/pre-calculations_integrals_and_subtraction/blob/main/Integrals_and_gammas.py
    */
 
   // Calculate q1 and q2: q1 = p_bbar; q2 = p_bbar + p_Higgs
@@ -792,3 +783,159 @@ double H_to_bb_Virtual::CalculateEpsilonSubtraction(const ATOOLS::Vec4D_Vector& 
 
   return born_ME2 * alpha_qcd / (2 * pi) * (C_F * (C_j(p_b, p_bb) + C_j(p_bb, p_b)) + 2 * A());
 }
+
+// Python code for the first part of the virtual calculation:
+/*
+from sympy import symbols, Matrix, I, diag, eye, simplify, expand, ccode, re, im
+
+# C-coefficients from LoopTools
+# Finite:
+c0 = complex(0.000236753, -0.000971302)
+c1 = complex(-0.000414664,0.000201397)
+c2 = complex(-0.000414664,0.000201397)
+c00 = complex(-0.451472,0.782964)
+c11 = complex(0.000174736,-0.000100387)
+c22 = complex(0.000174736,-0.000100387)
+c12 = complex(3.25955e-05,-3.11563e-07)
+
+#e^-1
+c0_e = complex(-0.000414664,0.000201397)
+c1_e = complex(0,0)
+c2_e = complex(0,0)
+c00_e = complex(0,0)
+c11_e = complex(0,0)
+c22_e = complex(0,0)
+c12_e = complex(0,0)
+
+#e^-2
+c0_e2 = complex(0,0)
+c1_e2 = complex(0,0)
+c2_e2 = complex(0,0)
+c00_e2 = complex(0,0)
+c11_e2 = complex(0,0)
+c22_e2 = complex(0,0)
+c12_e2 = complex(0,0)
+
+q1_0, q1_1, q1_2, q1_3 = symbols("q1_0 q1_1 q1_2 q1_3", real=True) # 4 components of q1
+q2_0, q2_1, q2_2, q2_3 = symbols("q2_0 q2_1 q2_2 q2_3", real=True) # 4 components of q2
+
+m_b = 4.9199999999999999 # bottom mass (the same that is used in the LO calculation in Sherpa)
+
+# Weyl gamma matrices:
+gamma0 = Matrix([[0,0,1,0],
+                 [0,0,0,1],
+                 [1,0,0,0],
+                 [0,1,0,0]])
+
+gamma1 = Matrix([[0,0,0,1],
+                 [0,0,1,0],
+                 [0,-1,0,0],
+                 [-1,0,0,0]])
+
+gamma2 = Matrix([[0,0,0,-I],
+                 [0,0, I, 0],
+                 [0, I, 0, 0],
+                 [-I,0, 0, 0]])
+
+gamma3 = Matrix([[0,0, 1, 0],
+                 [0,0, 0,-1],
+                 [-1,0,0, 0],
+                 [0, 1,0, 0]])
+
+gamma_up = [gamma0, gamma1, gamma2, gamma3] # gammas with upper indices
+# transfer them to lower index:
+eta = diag(1, -1, -1, -1) # minkowski metric
+
+# --- Gammas with lower index: gamma_mu = g_{mu nu} gamma^nu ---
+gamma_down = [eta[i,i] * gamma_up[i] for i in range(4)]
+
+slash_q1 = gamma_down[0]*q1_0 + gamma_down[1]*q1_1 + gamma_down[2]*q1_2 + gamma_down[3]*q1_3
+slash_q2 = gamma_down[0]*q2_0 + gamma_down[1]*q2_1 + gamma_down[2]*q2_2 + gamma_down[3]*q2_3
+
+""" Composition of scalar, linear, and quadratic integrals, including prefactors. 
+    The calculations are done for the finite, 1/epsilon and 1/epsilon^2 terms.
+"""
+# scalar:
+sc_integral = c0 * (slash_q1 * slash_q2 + (slash_q1 + slash_q2) * m_b + m_b**2 * eye(4))
+sc_integral_e = c0_e * (slash_q1 * slash_q2 + (slash_q1 + slash_q2) * m_b + m_b**2 * eye(4))
+sc_integral_e2 = c0_e2 * (slash_q1 * slash_q2 + (slash_q1 + slash_q2) * m_b + m_b**2 * eye(4))
+
+# linear:
+lin_integral = (c1 * slash_q1 + c2 * slash_q2) * (slash_q1 + slash_q1 + 2*m_b * eye(4))
+lin_integral_e = (c1_e * slash_q1 + c2_e * slash_q2) * (slash_q1 + slash_q1 + 2*m_b * eye(4))
+lin_integral_e2 = (c1_e2 * slash_q1 + c2_e2 * slash_q2) * (slash_q1 + slash_q1 + 2*m_b * eye(4))
+
+# quadratic:
+Z = Matrix.zeros(4, 4)
+gamma_mu_gamma_up = sum((gamma_down[i] * gamma_up[i] for i in range(4)), Z)
+quad_integral = c00 * gamma_mu_gamma_up + c11*slash_q1*slash_q1 + c22*slash_q2*slash_q2 + 2 * c12 * slash_q1*slash_q2
+quad_integral_e = c00_e * gamma_mu_gamma_up + c11_e*slash_q1*slash_q1 + c22_e*slash_q2*slash_q2 + 2 * c12_e * slash_q1*slash_q2
+quad_integral_e2 = c00_e2 * gamma_mu_gamma_up + c11_e2*slash_q1*slash_q1 + c22_e2*slash_q2*slash_q2 + 2 * c12_e2 * slash_q1*slash_q2
+
+integral = sc_integral + lin_integral + quad_integral
+integral_e = sc_integral_e + lin_integral_e + quad_integral_e
+integral_e2 = sc_integral_e2 + lin_integral_e2 + quad_integral_e2
+
+# final 4x4 matrix:
+gamma_integral_gamma = sum((gamma_down[mu] * integral * gamma_up[mu] for mu in range(4)), Z)
+gamma_integral_gamma_e = sum((gamma_down[mu] * integral_e * gamma_up[mu] for mu in range(4)), Z)
+gamma_integral_gamma_e2 = sum((gamma_down[mu] * integral_e2 * gamma_up[mu] for mu in range(4)), Z)
+
+def to_a_plus_i_b(e):
+    # simplifies expression
+    e = expand(e, complex=True)
+    # extract real and imaginary parts
+    re_part, im_part = e.as_real_imag()
+    # simplify further
+    return simplify(re_part) + I*simplify(im_part)
+
+def to_a_plus_i_b_matrix(M):
+    # apply simplification-function to each element of the matrix
+    return M.applyfunc(to_a_plus_i_b)
+
+result_finite = to_a_plus_i_b_matrix(gamma_integral_gamma)
+result_e = to_a_plus_i_b_matrix(gamma_integral_gamma_e)
+result_e2 = to_a_plus_i_b_matrix(gamma_integral_gamma_e2)
+
+
+
+def print_cpp_complex_matrix(M, name):
+    """
+    Prints a Sympy 4x4 complex matrix in C++ format:
+
+    name = {
+      std::array<std::complex<double>, 4>{std::complex<double>(Re00, Im00), ...},
+      std::array<std::complex<double>, 4>{std::complex<double>(Re10, Im10), ...},
+      ...
+    };
+    """
+    nrows, ncols = M.shape
+    assert nrows == 4 and ncols == 4, "Matrix must be 4x4"
+
+    print(f"{name} = {{")
+    for i in range(nrows):
+        row_entries = []
+        for j in range(ncols):
+            re_ = ccode(simplify(re(M[i, j])))
+            im_ = ccode(simplify(im(M[i, j])))
+
+            # replace q1_µ and q2_µ by q1[µ] / q2[µ]
+            for k in range(4):
+                re_ = re_.replace(f"q1_{k}", f"q1[{k}]").replace(f"q2_{k}", f"q2[{k}]")
+                im_ = im_.replace(f"q1_{k}", f"q1[{k}]").replace(f"q2_{k}", f"q2[{k}]")
+
+            row_entries.append(f"  std::complex<double>({re_}, {im_})")
+        line = ", \n".join(row_entries)
+        print(f"std::array<std::complex<double>, 4>{{{line}}},")
+    print("};\n")
+
+# print results
+print("\n// === finite part ===")
+print_cpp_complex_matrix(result_finite, "M_finite")
+
+print("\n// === 1/epsilon part ===")
+print_cpp_complex_matrix(result_e, "M_epsilon")
+
+print("\n// === 1/epsilon^2 part ===")
+print_cpp_complex_matrix(result_e2, "M_epsilon2")
+*/
