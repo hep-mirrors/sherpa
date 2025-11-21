@@ -132,6 +132,7 @@ void Amisic::SetB(const double & b) {
 
 int Amisic::InitMinBiasEvent() {
   if (m_isFirst) {
+    Reset();
     m_isFirst   = false;
     m_isMinBias = true;
     SetB();
@@ -142,6 +143,7 @@ int Amisic::InitMinBiasEvent() {
 
 int Amisic::InitRescatterEvent() {
   if (m_isFirst) {
+    Reset();
     m_isFirst   = false;
     m_isMinBias = true;
     SetB(m_singlecollision.B());
@@ -159,14 +161,24 @@ Blob * Amisic::GenerateScatter() {
   Blob * blob = m_singlecollision.NextScatter();
   if (blob) {
     m_pt2 = m_singlecollision.LastPT2();
-    blob->SetPosition(m_impact.SelectPositionForScatter(m_b));
-    blob->SetTypeSpec("AMISIC++ 1.1");
+    UpdateDownstreamPositions(blob,m_impact.SelectPositionForScatter(m_b));
     if (m_ana) Analyse(false);
     return blob;
   }
   if (m_ana) Analyse(true);
   return nullptr;
 }
+
+void Amisic::UpdateDownstreamPositions(Blob * blob,const Vec4D & delta_pos) {
+  if (m_updated.find(blob)!=m_updated.end()) return;
+  blob->SetPosition(blob->Position()+delta_pos);
+  m_updated.insert(blob);
+  for (size_t i=0;i<blob->NOutP();i++) {
+    Blob * decay = blob->OutParticle(i)->DecayBlob();
+    if (decay!=NULL) UpdateDownstreamPositions(decay,delta_pos);
+  }
+}
+
 
 bool Amisic::VetoEvent(const double & scale) const {
   if (scale<0.) return true;
@@ -216,7 +228,9 @@ void Amisic::CleanUpMinBias() {
   m_isMinBias = false;
 }
 
-void Amisic::Reset() {}
+void Amisic::Reset() {
+  m_updated.clear();
+}
 
 void Amisic::InitAnalysis() {
   m_nscatters = 0;

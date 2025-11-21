@@ -8,7 +8,7 @@ using namespace std;
 
 Single_Collision_Handler::Single_Collision_Handler() :
   p_processes(NULL), p_overestimator(NULL),
-  m_pt2(0.), m_pt2min(0.),  
+  m_pt2(0.), m_pt2min(0.),
   m_S((rpa->gen.PBeam(0)+rpa->gen.PBeam(1)).Abs2()), m_lastpt2(m_S),
   m_residualx1(1.), m_residualx2(1.), m_Ycms(0.),
   m_xt(1.), m_y3(0.), m_y4(0.), m_x1(1.), m_x2(1.),
@@ -96,6 +96,7 @@ Blob * Single_Collision_Handler::MakeBlob() {
   blob->AddData("Renormalization_Scale",new Blob_Data<double>(m_pt2));
   blob->AddData("Factorization_Scale",new Blob_Data<double>(m_pt2));
   blob->AddData("Resummation_Scale",new Blob_Data<double>(m_pt2));
+  blob->SetTypeSpec("AMISIC++ 1.1");
   for (size_t i=0;i<2;i++) blob->AddToInParticles(p_proc->GetParticle(i));
   for (size_t i=2;i<4;i++) blob->AddToOutParticles(p_proc->GetParticle(i));
   if (m_ana) Analyse(m_pt2,blob);
@@ -113,7 +114,7 @@ void Single_Collision_Handler::UpdateSandY(double s, double y) {
 
 bool Single_Collision_Handler::SelectRapidities() {
   // Generate two trial rapidities and keep the volume of the rapidity range -
-  // it has to be divided out of the approximated/overestimated differential cross section 
+  // it has to be divided out of the approximated/overestimated differential cross section
   // as the prefactor there includes the volume to allow fast pt^2 generation.
   m_xt   = sqrt(4.*m_pt2/m_S);
   if (m_xt>1.) return false;
@@ -160,7 +161,7 @@ void Single_Collision_Handler::InitAnalysis() {
 void Single_Collision_Handler::FinishAnalysis() {
   Histogram * histo;
   string name;
-  for (map<string,Histogram *>::iterator 
+  for (map<string,Histogram *>::iterator
 	 hit=m_histos.begin();hit!=m_histos.end();hit++) {
     histo = hit->second;
     name  = string("MPI_Analysis/")+hit->first+string(".dat");
@@ -175,7 +176,7 @@ void Single_Collision_Handler::AnalyseWeight(const double & weight) {
   m_histos[string("weights")]->Insert(weight);
   m_histos[string("weights_low")]->Insert(weight);
 }
-  
+
 void Single_Collision_Handler::Analyse(const double & pt2,Blob * blob) {
   m_histos[string("pt")]->Insert(sqrt(pt2));
   Flavour flav1 = blob->OutParticle(0)->Flav();
@@ -191,7 +192,7 @@ void Single_Collision_Handler::Analyse(const double & pt2,Blob * blob) {
   m_histos[string("flavs")]->Insert(fl1);
   m_histos[string("flavs")]->Insert(fl2);
 }
-  
+
 void Single_Collision_Handler::Test(const double & Q2,const long int & n) {
   msg_Out()<<METHOD<<" for Q^2 = "<<Q2<<", s = "<<m_S<<".\n";
   Histogram histo(0,0.0,Q2,100);

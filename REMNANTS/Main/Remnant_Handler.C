@@ -270,8 +270,11 @@ bool Remnant_Handler::CheckBeamBreakup(Blob_List *bloblist) {
   return ok;
 }
 
-void Remnant_Handler::SetImpactParameter(const double & b) {
-  Vec4D  pos = b/2.*Vec4D(0.,1.,0.,0.);
+void Remnant_Handler::SetImpactParameter(const double & b,const Vec4D & direction) {
+  /////////////////////////////////////////////////////////////////////////////////
+  // b has to be given in mm.
+  /////////////////////////////////////////////////////////////////////////////////
+  Vec4D  pos = b/2. * direction;
   for (size_t i=0;i<2;i++) p_remnants[i]->SetPosition((i==0?1.:-1.) * pos);
 }
 

@@ -33,7 +33,7 @@ std::string Multiple_Interactions::MakeNameSpec() {
     add   = true;
   }
   if (p_mihandlers->find(PDF::isr::bunch_rescatter)!=p_mihandlers->end()) {
-    if (add) spec += std::string(" + "); 
+    if (add) spec += std::string(" + ");
     spec          += ( (*p_mihandlers)[PDF::isr::bunch_rescatter]->Name()+
 		       std::string(" (rescatter)") );
   }
@@ -45,7 +45,7 @@ bool Multiple_Interactions::CheckMIHandlers() {
        mihit!=p_mihandlers->end();mihit++) {
     if (mihit->second->Type()!=0) {
       for (size_t i=0;i<2;i++) {
-	if (mihit->second->Remnants()->GetRemnant(i)==NULL) return false;	  
+	if (mihit->second->Remnants()->GetRemnant(i)==NULL) return false;
       }
     }
   }
@@ -54,10 +54,10 @@ bool Multiple_Interactions::CheckMIHandlers() {
 
 bool Multiple_Interactions::CheckForMinBias() {
   ///////////////////////////////////////////////////////////////////////////////
-  // Min Bias events are initialised by having an empty Soft_Collsion blob 
+  // Min Bias events are initialised by having an empty Soft_Collsion blob
   // which needs_minBias.
   ///////////////////////////////////////////////////////////////////////////////
-  if (p_bloblist->empty()) THROW(fatal_error,"Empty bloblist - this is odd."); 
+  if (p_bloblist->empty()) THROW(fatal_error,"Empty bloblist - this is odd.");
   if (p_bloblist->size()==1) {
     Blob * signal = (*p_bloblist)[0];
     if (signal->Type()==ATOOLS::btp::Soft_Collision &&
@@ -90,7 +90,7 @@ Return_Value::code Multiple_Interactions::InitMinBias() {
   // and inform the remnants about the impact parameter of the collision
   /////////////////////////////////////////////////////////////////////////////////
   p_lastblob = p_activeMI->GenerateHardProcess();
-  if (p_lastblob) {  
+  if (p_lastblob) {
     Blob * signal         = (*p_bloblist)[0];
     Particle_Vector * ins = p_lastblob->InParticles();
     while (!ins->empty()) {
@@ -153,9 +153,6 @@ bool Multiple_Interactions::InitMPIs() {
   Blob * blob = p_bloblist->FindFirst(btp::Signal_Process);
   m_ptmax     = ExtractMPIStartingScale(blob);
   p_activeMI->InitialiseMPIs(m_ptmax_fac*m_ptmax);
-  blob->SetPosition(p_activeMI->SelectPositionForScatter());
-  Blob * showerblob = blob->OutParticle(0)->DecayBlob();
-  if (showerblob) showerblob->SetPosition(p_activeMI->SelectPositionForScatter());
   p_activeMI->Remnants()->SetImpactParameter(p_activeMI->ImpactParameter());
   m_newevent[0] = false;
   return true;
@@ -181,7 +178,7 @@ bool Multiple_Interactions::CheckForRescatter() {
   // In rescatter events - similar to MinBias - we look for a soft collision blob
   // that still needs to be filled with MinBias methods.
   ///////////////////////////////////////////////////////////////////////////////
-  if (p_bloblist->empty()) THROW(fatal_error,"Empty bloblist - this is odd."); 
+  if (p_bloblist->empty()) THROW(fatal_error,"Empty bloblist - this is odd.");
   if (!m_newevent[1]) return false;
   Blob * blob = p_bloblist->FindLast(ATOOLS::btp::Soft_Collision);
   return (blob && blob->Has(ATOOLS::blob_status::needs_beamRescatter));
@@ -209,7 +206,7 @@ ATOOLS::Return_Value::code Multiple_Interactions::InitRescatter() {
   /////////////////////////////////////////////////////////////////////////////////
   Blob * blob = p_bloblist->FindLast(ATOOLS::btp::Soft_Collision);
   p_lastblob  = p_activeMI->GenerateHardProcess();
-  if (p_lastblob) {  
+  if (p_lastblob) {
     Particle_Vector * ins = p_lastblob->InParticles();
     while (!ins->empty()) {
       blob->AddToInParticles(p_lastblob->RemoveInParticle(ins->back()));
@@ -280,9 +277,9 @@ Return_Value::code Multiple_Interactions::Treat(Blob_List *bloblist) {
   /////////////////////////////////////////////////////////////////////////////////
   p_bloblist = bloblist;
   if (CheckForMinBias())                 return InitMinBias();
-  if (CheckForRescatter())               return InitRescatter(); 
-  if (CheckForMPIs() && !InitMPIs())     return Return_Value::Nothing;  
-  if (!p_activeMI || p_activeMI->Done()) return Return_Value::Nothing;  
+  if (CheckForRescatter())               return InitRescatter();
+  if (CheckForMPIs() && !InitMPIs())     return Return_Value::Nothing;
+  if (!p_activeMI || p_activeMI->Done()) return Return_Value::Nothing;
   /////////////////////////////////////////////////////////////////////////////////
   // Sanity checks on blob_list: four-momentum is conserved, no blob in there
   // that needs to parton shower, beams are viable.
@@ -336,13 +333,13 @@ bool Multiple_Interactions::TestHardScatter() {
   return true;
 }
 
-bool Multiple_Interactions::CheckBlobList() 
+bool Multiple_Interactions::CheckBlobList()
 {
   // check if there is a blob that must shower first.
   for (Blob_List::const_iterator bit=p_bloblist->begin();
        bit!=p_bloblist->end();++bit) {
     if (((*bit)->Type()==btp::Hard_Collision ||
-	 (*bit)->Type()==btp::Signal_Process) && 
+	 (*bit)->Type()==btp::Signal_Process) &&
 	(*bit)->Has(blob_status::needs_showers)) {
       return false;
     }
@@ -395,7 +392,7 @@ void Multiple_Interactions::Reset() {
 
 void Multiple_Interactions::Finish(const std::string &resultpath) {}
 
-void Multiple_Interactions::CleanUp(const size_t & mode) 
+void Multiple_Interactions::CleanUp(const size_t & mode)
 {
   for (MI_Handler_Map::iterator mihit=p_mihandlers->begin();
        mihit!=p_mihandlers->end();mihit++) {

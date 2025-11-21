@@ -61,7 +61,7 @@ double Matter_Overlap::SelectB(const bool & mode) const {
 void Matter_Overlap::
 InitializeFormFactors(REMNANTS::Remnant_Handler * remnant_handler) {
   /////////////////////////////////////////////////////////////////////////////////
-  // Initialise matter overlap from the form factors: 
+  // Initialise matter overlap from the form factors:
   // could be single- or double Gaussians
   /////////////////////////////////////////////////////////////////////////////////
   double fraction[2], radius[2][2];
@@ -87,7 +87,7 @@ InitializeFormFactors(REMNANTS::Remnant_Handler * remnant_handler) {
   }
   m_bstep = minR/100.;
 }
-  
+
 void Matter_Overlap::CalculateIntegral() {
   // Integral int d^2b O(b), numerator Eq.(32)
   MO_Integrand moint(this);
@@ -106,10 +106,12 @@ Vec4D Matter_Overlap::SelectPositionForScatter(const double & b) const {
   do {
     b1 = SelectB();
     b2 = SelectB();
-    cosphi2 = (b1*b1-b2*b2-b*b)/(2.*b2*b);
+    // This calculates \cos(\phi_2), i.e. the angle at nucleon B,
+    // for which we assume position (0, -b/2, 0, 0)
+    cosphi2 = (b*b + b2*b2 - b1*b1) / (2.*b2*b);
   } while (cosphi2>1. || cosphi2<-1.);
   double sinphi2 = (ran->Get()>0.5?-1.:1.)*sqrt(1.-sqr(cosphi2));
-  return Vec4D(0.,b/2.+b2*cosphi2,b2*sinphi2,0.);
+  return Vec4D(0., -b/2. + b2*cosphi2, b2*sinphi2, 0.)/1e12;
 }
 
 ATOOLS::Vec4D Matter_Overlap::SelectRelativePositionForParton() const {

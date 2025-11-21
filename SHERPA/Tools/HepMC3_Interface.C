@@ -349,7 +349,7 @@ bool SHERPA::HepMC3_Interface::Sherpa2ShortHepMC(ATOOLS::Blob_List *const blobs,
   Blob *sp(blobs->FindFirst(btp::Signal_Process));
   if (!sp) sp=blobs->FindFirst(btp::Hard_Collision);
   Blob *mp(blobs->FindFirst(btp::Hard_Collision));  
-  if (!mp) event.add_attribute("mpi", std::make_shared<HepMC::IntAttribute>(-1));
+  Blob *bm(blobs->FindFirst(btp::Beam));
   
   EventInfo3 evtinfo(sp,weight,
                     m_usenamedweights,m_extendedweights,m_includemeonlyweights);
@@ -407,8 +407,10 @@ bool SHERPA::HepMC3_Interface::Sherpa2ShortHepMC(ATOOLS::Blob_List *const blobs,
       }
     }
   
-      if (mp==(*blit)) event.add_attribute("mpi", std::make_shared<HepMC::IntAttribute>(vertex->id()));
-      if (sp==(*blit)) event.add_attribute("signal_process_vertex", std::make_shared<HepMC::IntAttribute>(vertex->id()));
+    if (bm==(*blit)) event.add_attribute("beam", std::make_shared<HepMC::IntAttribute>(vertex->id()));
+    if (mp==(*blit)) event.add_attribute("mpi", std::make_shared<HepMC::IntAttribute>(vertex->id()));
+    if (sp==(*blit)) event.add_attribute("signal_process_vertex", make_shared<HepMC::IntAttribute>(vertex->id()));
+
   
   }
   event.add_vertex(vertex);
@@ -559,7 +561,7 @@ bool SHERPA::HepMC3_Interface::Sherpa2HepMC(ATOOLS::Blob_List *const blobs,
   Blob *sp(blobs->FindFirst(btp::Signal_Process));
   if (!sp) sp=blobs->FindFirst(btp::Hard_Collision);
   Blob *mp(blobs->FindFirst(btp::Hard_Collision));
-  if (!mp) event.add_attribute("mpi", std::make_shared<HepMC::IntAttribute>(-1));
+  Blob *bm(blobs->FindFirst(btp::Beam));
   
   
   // Meta info
@@ -586,8 +588,10 @@ bool SHERPA::HepMC3_Interface::Sherpa2HepMC(ATOOLS::Blob_List *const blobs,
         }
       }
 
+      if (bm==(*blit)) event.add_attribute("beam", std::make_shared<HepMC::IntAttribute>(vertex->id()));
       if (mp==(*blit)) event.add_attribute("mpi", std::make_shared<HepMC::IntAttribute>(vertex->id()));
       if (sp==(*blit)) event.add_attribute("signal_process_vertex", std::make_shared<HepMC::IntAttribute>(vertex->id()));
+
       
       if ((*blit)->Type()==ATOOLS::btp::Signal_Process) {
         if ((**blit)["NLO_subeventlist"]) {
@@ -690,6 +694,7 @@ bool HepMC3_Interface::Sherpa2HepMCBlobtoGenVertex(ATOOLS::Blob * blob, HepMC::G
              blob->Type()==btp::QED_Radiation)  vertex->set_status(4); // PS/QED
     else if (blob->Type()==btp::Fragmentation)  vertex->set_status(5); // frag
     else if (blob->Type()==btp::Hadron_Decay)   vertex->set_status(6); // had-decay
+    else if (blob->Type()==btp::Beam)           vertex->set_status(7); // beam
       //{  
       //if ((*blob)["Partonic"]!=NULL) vertex->set_status(-6);
       //else vertex->set_status(6);

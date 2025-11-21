@@ -69,7 +69,8 @@ namespace REMNANTS {
 					     ATOOLS::Particle_List *const=nullptr,
 					     const bool & isrescatter=false);
 
-    void SetImpactParameter(const double & b);
+    void SetImpactParameter(const double & b,
+                            const ATOOLS::Vec4D & direction=ATOOLS::Vec4D(0.,1.,0.,0.));
     
     inline bool NeedsToMakeBeamBlobs() {
       return (m_colours.HasColours(0) || m_colours.HasColours(0));

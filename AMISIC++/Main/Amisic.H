@@ -63,8 +63,12 @@ namespace AMISIC {
     size_t       m_nscatters;
     std::map<std::string,ATOOLS::Histogram *> m_histos;
 
+    std::set<ATOOLS::Blob*> m_updated;
+
     void InitParametersAndType(PDF::ISR_Handler *const isr);
     void UpdateForNewS();
+    void UpdateDownstreamPositions(ATOOLS::Blob * blob,
+		                               const ATOOLS::Vec4D & delta_pos);
     void CreateAmplitudeLegs(ATOOLS::Cluster_Amplitude * ampl,
 			     ATOOLS::Blob * blob);
     void FillAmplitudeSettings(ATOOLS::Cluster_Amplitude * ampl);
