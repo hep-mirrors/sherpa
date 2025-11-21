@@ -28,7 +28,10 @@ set(Phys_SOURCES Fragmentation_Base.C
                  Weights.C
                  Hard_Process_Variation_Generator.C
                  FormFactor.C
-                 FormFactor_EMnucleon.C)
+                 FormFactor_EMnucleon.C
+                 FormFactor_EMnucleon_Kelly.C
+                 FormFactor_EMnucleon_Dipole.C
+                 )
 
 set(Phys_HEADERS fjcore.hh
                  Fragmentation_Base.H
@@ -61,7 +64,10 @@ set(Phys_HEADERS fjcore.hh
                  Weights.H
                  Hard_Process_Variation_Generator.H
                  FormFactor.H
-                 FormFactor_EMnucleon.H)
+                 FormFactor_EMnucleon.H
+                 FormFactor_EMnucleon_Kelly.H
+                 FormFactor_EMnucleon_Dipole.H
+                 )
 
 sherpa_create_git_info(Phys ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR})
  
