@@ -9,6 +9,7 @@
 #include "EXTRA_XS/One2Two/H_to_bb_Virtual.H"
 #include "EXTRA_XS/One2Two/NLO_Virtual.H"
 #include <memory>
+#include "METOOLS/SpinCorrelations/Amplitude2_Tensor.H"
 
 using namespace EXTRAXS;
 using namespace ATOOLS;
@@ -211,6 +212,11 @@ double Comix1to2::get_NLO_part(){
     return total_virtual_correction; // V + I
   }
   return 0;
+}
+
+
+METOOLS::Amplitude2_Tensor Comix1to2::AddNLOTensor(METOOLS::Amplitude2_Tensor old_tensor){
+  return old_tensor;
 }
 
 

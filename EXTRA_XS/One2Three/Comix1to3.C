@@ -7,6 +7,7 @@
 #include "MODEL/Main/Single_Vertex.H"
 #include "PHASIC++/Main/Color_Integrator.H"
 #include <assert.h>
+#include "METOOLS/SpinCorrelations/Amplitude2_Tensor.H"
 
 using namespace EXTRAXS;
 using namespace ATOOLS;
@@ -151,6 +152,12 @@ bool Comix1to3::IsNLODecay() {
 double Comix1to3::get_NLO_part(){
   return 0; // this is a purely LO class, therefore the NLO part = 0
 }
+
+
+METOOLS::Amplitude2_Tensor Comix1to3::AddNLOTensor(METOOLS::Amplitude2_Tensor old_tensor){
+  return old_tensor;
+}
+
 
 
 void Comix1to3::Calculate(const ATOOLS::Vec4D_Vector& momenta, bool anti) {

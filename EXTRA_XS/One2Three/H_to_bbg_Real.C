@@ -13,6 +13,7 @@
 #include <numbers>
 #include "EXTRA_XS/One2Three/CF_Decl.H"
 #include "METOOLS/Currents/C_Spinor.H"
+#include "METOOLS/SpinCorrelations/Amplitude2_Tensor.H"
 
 
 using namespace EXTRAXS;
@@ -199,7 +200,7 @@ void H_to_bbg_Real::Calculate(const ATOOLS::Vec4D_Vector& momenta, bool anti) {
     m_scur->Evaluate();
     m_fcur->Evaluate();
   }
-  
+  /*
   vector<int> fill(m_n,1); // output amplitude vector
   for (size_t i(0);i<m_n;++i) (*this)[i]=Complex(0.0,0.0);
   if (anti) {
@@ -207,7 +208,7 @@ void H_to_bbg_Real::Calculate(const ATOOLS::Vec4D_Vector& momenta, bool anti) {
   }
   else {
     m_fcur->Contract<double>(*m_cur.front(),fill,*this,0);
-  }
+  }*/
 
   for (size_t i=0; i<size(); ++i) {
     (*this)[i] *= sqrt(p_ci->GlobalWeight()); // scale the final numerical result appropriately with the color factor
@@ -575,3 +576,8 @@ void H_to_bbg_Real::CalculateAlphaQCD(double scale) {
   alpha_qcd = (MODEL::s_model) -> ScalarFunction("alpha_S", scale*scale); // at Higgs scale
 }
 
+
+METOOLS::Amplitude2_Tensor H_to_bbg_Real::AddNLOTensor(METOOLS::Amplitude2_Tensor old_tensor){
+
+  return old_tensor;
+}

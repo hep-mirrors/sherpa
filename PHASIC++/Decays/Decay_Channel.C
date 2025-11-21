@@ -383,10 +383,10 @@ double Decay_Channel::ME2_NLO(const ATOOLS::Vec4D_Vector& momenta, bool anti,
   //ATOOLS::Vec4<double> p_g = momenta[1];
   //ATOOLS::Vec4<double> p_b = momenta[2];
   //ATOOLS::Vec4<double> p_bb = momenta[3];
-  /*
-  if (momenta.size() > 3){
+  
+  /*if (momenta.size() > 3){
   ATOOLS::Vec4D_Vector mom = momenta;
-  double E_g = 0.001; 
+  double E_g = 0.0000000000001; 
   mom[0] = momenta[0];
   mom[1] = Vec4D(E_g, 0.0, 0.0, E_g);
   double abs_p_b = 1;
@@ -396,7 +396,7 @@ double Decay_Channel::ME2_NLO(const ATOOLS::Vec4D_Vector& momenta, bool anti,
   mom[3] = mom[0] - mom[1] - mom[2];
   for(size_t i(0); i<GetDiagrams().size(); ++i) {
     GetDiagrams()[i]->Calculate(mom, anti);
-  }  
+    }  
   }
   else{
     for(size_t i(0); i<GetDiagrams().size(); ++i) {
@@ -407,7 +407,11 @@ double Decay_Channel::ME2_NLO(const ATOOLS::Vec4D_Vector& momenta, bool anti,
       GetDiagrams()[i]->Calculate(momenta, anti);
     }
 
-  double NLO_part = GetDiagrams()[0]->get_NLO_part(); // either -S or V+I
+  double NLO_part = 0;
+  for(size_t i(0); i<GetDiagrams().size(); ++i) {
+    NLO_part += GetDiagrams()[i]->get_NLO_part(); // either -S or V+I
+  }
+  //NLO_part += GetDiagrams()[0]->get_NLO_part();
   Complex sumijlambda_AiAj(0.0,0.0);
 
   if (sigma) {
@@ -415,6 +419,11 @@ double Decay_Channel::ME2_NLO(const ATOOLS::Vec4D_Vector& momenta, bool anti,
     if (p_amps) delete p_amps;
     vector<int> spin_i(p.size(), -1), spin_j(p.size(), -1);
     p_amps=new Amplitude2_Tensor(p,0,m_diagrams,spin_i, spin_j);
+
+    for(size_t i(0); i<GetDiagrams().size(); ++i) {
+      p_amps = GetDiagrams()[i]->AddNLOTensor(p_amps); // override amplitude tensor: add NLO parts to it
+    }
+
     DEBUG_VAR(*p_amps);
     sumijlambda_AiAj=(*sigma)*p_amps->ReduceToMatrix(sigma->Particle());
   }

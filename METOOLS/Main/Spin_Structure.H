@@ -9,6 +9,7 @@
 #include <algorithm>
 #include <iomanip>
 #include "ATOOLS/Org/Exception.H"
+#include "METOOLS/SpinCorrelations/Amplitude2_Tensor.H"
 
 namespace METOOLS
 {
@@ -176,6 +177,7 @@ namespace METOOLS
     virtual void Calculate(const ATOOLS::Vec4D_Vector& momenta,bool anti=false);
     virtual bool IsNLODecay();
     virtual double get_NLO_part();
+    METOOLS::Amplitude2_Tensor AddNLOTensor(METOOLS::Amplitude2_Tensor old_tensor);
   };
 
   /*! 
