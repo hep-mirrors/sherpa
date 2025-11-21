@@ -27,7 +27,7 @@ RESPECT_MASSIVE_FLAG: 1
 NLO_BVI_MODE: 15
 
 PROCESSES:
-- 93 93 -> 25 93{1}:
+- 93 93 -> 93 93:
     NLO_Mode: MC@NLO
     NLO_Order: {QCD: 1, EW: 0}
     Loop_Generator: Internal

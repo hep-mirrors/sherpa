@@ -21,10 +21,10 @@ SCALE_VARIATIONS:
   - [4.0,  4.0]
 
 PDF_VARIATIONS:
-  - PDF4LHC21_40_pdfas*
-  - NNPDF40_nnlo_as_01180
-  - MSHT20nnlo_as118
-  - CT18NNLO_as_0118
+    - PDF4LHC21_40_pdfas
+    - NNPDF40_nnlo_as_01180*
+    - MSHT20nnlo_as118
+    - CT18NNLO_as_0118
 
 # EW setup and corrections
 EW_SCHEME: alphamZsW

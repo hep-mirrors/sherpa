@@ -79,7 +79,7 @@ double MesonMeson::XStot(const ATOOLS::Flavour & A,const ATOOLS::Flavour & B,
 			 const double & s) {
   if (!(A.IsMeson() && B.IsMeson())) return 0.;
   HR_Res psps    = HR_Res::none;
-  // pi^+ pi^- scattering
+  // pi^+ pi^- scattering  
   if ( A.Kfcode()==211 && B.Kfcode()==211 && 
        (( A.IsAnti() && !B.IsAnti()) ||
 	(!A.IsAnti() &&  B.IsAnti())) )            psps = HR_Res::pip_pim;
@@ -99,8 +99,9 @@ double MesonMeson::XStot(const ATOOLS::Flavour & A,const ATOOLS::Flavour & B,
 	    ((B.Kfcode()==311 ||
 	      B.Kfcode()==310 || B.Kfcode()==130) &&
 	     A.Kfcode()==211) )                    psps = HR_Res::K0_pip;
+
   map<HR_Res,HR_resonances>::iterator lrit = m_resonances.find(psps);
-  double xstot = 5.;
+  double xstot = 5.;//(??)
   msg_Out()<<METHOD<<" ["<<A<<", "<<B<<", E = "<<sqrt(s)<<"] : "<<int(psps)<<"\n";
   if (lrit!=m_resonances.end()) {
     for (HR_resonances::iterator rit=lrit->second.begin();
