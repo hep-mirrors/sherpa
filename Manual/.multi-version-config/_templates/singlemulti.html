@@ -1,0 +1,17 @@
+{# THIS IS VERY SPECIFIC (and a bit ugly) #}
+
+{% if mode or pdf %}
+<h3>Other Formats</h3>
+<ul>
+    {% if mode == "singlehtml" %}
+    <li><a href="index.html">Multi Page</a></li>
+    <li>Single Page</li>
+    {% elif mode == "html" %}
+    <li>Multi Page</li>
+    <li><a href="{{ pathto('index_single.html', 1) }}">Single Page</a></li>
+    {% endif %}
+    {% if pdf %}
+    <li><a href="{{ pathto(pdf, 1) }}">PDF</a></li>
+    {% endif %}
+</ul>
+{% endif %}

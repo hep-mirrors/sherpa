@@ -13,7 +13,7 @@ BATCH_MODE: 7
 ME_GENERATORS:
   - Comix
   - Amegic
-  - OpenLoops
+  #- OpenLoops
   - Internal
 
 TAGS: {QCUT: 5, NJET: 2, FSF: 1., RSF: 1., QSF: 1}

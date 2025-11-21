@@ -16,6 +16,10 @@ BaryonBaryon::~BaryonBaryon() {}
 double BaryonBaryon::
 XStot(const ATOOLS::Flavour & A,const ATOOLS::Flavour & B,
       const double & s) {
+
+  msg_Out() << "BaryonBaryon::XStot Constructor called" << std::endl;
+  //Scoped_Settings s{Settings::GetMainSettings()["FormFactors"]};
+  //m_bb_xstot = s["BBScattering"].SetDefault(scatmodel::off).Get<scatmodel::code>();
   if (!(A.IsBaryon() && B.IsBaryon())) return 0.;
   if ((A.Kfcode()==2212 && B.Kfcode()==2212) ||
       (A.Kfcode()==2112 && B.Kfcode()==2112)) {
