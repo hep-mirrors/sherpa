@@ -79,7 +79,7 @@ void H_to_bb_Virtual::SetUpPrefactors(const vector<Flavour>& flavs) {
 
   VirtualPrefactor = (-1) * std::pow(g_s, 2) * m_b / vev;
   BornPrefactor = (-1) * m_b / vev;
-  double m_h = 125.09;
+  double m_h = flavs[0].Mass();
   double born_analytic_calc = 6 * (m_b/vev) * (m_b/vev) * (m_h*m_h - 4 * m_b*m_b);
 }
 
