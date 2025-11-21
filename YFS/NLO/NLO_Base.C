@@ -321,7 +321,7 @@ double NLO_Base::CalculateReal(Vec4D k, int fsrcount) {
 	double subb;
 	m_real = r;
 	if(fsrcount==0 || fsrcount==3) subb = p_dipoles->CalculateRealSubEEX(kk);
-	else subb = p_dipoles->CalculateRealSubEEX(k);
+	else subb = p_dipoles->CalculateRealSubEEX(kk);
 	// if(IsZero(subb)) return 0;
 	m_eikeex = subb;
 	m_subloc = subloc;
@@ -440,7 +440,7 @@ double NLO_Base::CalculateRealVirtual(Vec4D k, int fsrcount) {
       	p[p_nlodipoles->m_flav_label[f]] =  Dip->GetNewMomenta(i);
       	i++;
     		}
-    	k = Dip->m_dipolePhotons[0];
+    	// k = Dip->m_dipolePhotons[0];
   	}
   }
  	else {
@@ -566,6 +566,8 @@ double NLO_Base::CalculateRealReal(Vec4D k1, Vec4D k2, int fsr1, int fsr2){
 	Vec4D kk2 = k2;
 	// dipoletype::code fluxtype1 = p_nlodipoles->WhichResonant(k1);
 	// dipoletype::code fluxtype2 = p_nlodipoles->WhichResonant(k2);
+	p_nlodipoles->MakeDipolesII(m_flavs,m_plab,m_plab);
+	p_nlodipoles->MakeDipolesIF(m_flavs,m_plab,m_plab);
 	p_nlodipoles->MakeDipoles(m_flavs,m_plab,m_plab);
 	// fsr1 = (fluxtype1==dipoletype::final?1:0);
 	// fsr2 = (fluxtype2==dipoletype::final?1:0);
@@ -588,7 +590,7 @@ double NLO_Base::CalculateRealReal(Vec4D k1, Vec4D k2, int fsr1, int fsr2){
       	p[p_nlodipoles->m_flav_label[f]] =  Dip->GetNewMomenta(i);
       	i++;
     	}
-    	k1 = Dip->m_dipolePhotons[0];
+    	// k1 = Dip->m_dipolePhotons[0];
   	}
   }
   if(!fsr1 && fsr2){
@@ -609,7 +611,7 @@ double NLO_Base::CalculateRealReal(Vec4D k1, Vec4D k2, int fsr1, int fsr2){
       	p[p_nlodipoles->m_flav_label[f]] =  Dip->GetNewMomenta(i);
       	i++;
     	}
-    	k2 = Dip->m_dipolePhotons[0];
+    	// k2 = Dip->m_dipolePhotons[0];
   	}
   }
   if(fsr1 && fsr2){
@@ -634,8 +636,8 @@ double NLO_Base::CalculateRealReal(Vec4D k1, Vec4D k2, int fsr1, int fsr2){
       	p[p_nlodipoles->m_flav_label[f]] =  Dip->GetNewMomenta(i);
       	i++;
     	}
-    	k1 = Dip->m_dipolePhotons[0];
-    	k2 = Dip->m_dipolePhotons[1];
+    	// k1 = Dip->m_dipolePhotons[0];
+    	// k2 = Dip->m_dipolePhotons[1];
   	}
   }
 
@@ -654,7 +656,7 @@ double NLO_Base::CalculateRealReal(Vec4D k1, Vec4D k2, int fsr1, int fsr2){
 	double subloc1 = p_nlodipoles->CalculateRealSub(k1);
 	double subloc2 = p_nlodipoles->CalculateRealSub(k2);
 	double flux;
-	if(m_flux_mode==1) flux = p_nlodipoles->CalculateFlux(k1+k2);//*p_nlodipoles->CalculateFlux(k2);
+	if(m_flux_mode==1) flux = p_nlodipoles->CalculateFlux(k1)*p_nlodipoles->CalculateFlux(k2);
 	// if(m_flux_mode==1) flux = p_nlodipoles->CalculateFlux(k1,k2);
 	else flux = p_dipoles->CalculateFlux(k1)*p_dipoles->CalculateFlux(k2);
 	double tot,rcoll;
@@ -676,8 +678,8 @@ double NLO_Base::CalculateRealReal(Vec4D k1, Vec4D k2, int fsr1, int fsr2){
 	m_recola_evts+=1;
 	double real1 = CalculateReal(kk1,3+fsr1);
 	double real2 = CalculateReal(kk2,3+fsr2);
-	double sub1 = (fsr1!=1?p_dipoles->CalculateRealSubEEX(k1):p_dipoles->CalculateRealSubEEX(kk1));
-	double sub2 = (fsr2!=1?p_dipoles->CalculateRealSubEEX(k2):p_dipoles->CalculateRealSubEEX(kk2));
+	double sub1 = (fsr1!=1?p_dipoles->CalculateRealSubEEX(kk1):p_dipoles->CalculateRealSubEEX(kk1));
+	double sub2 = (fsr2!=1?p_dipoles->CalculateRealSubEEX(kk2):p_dipoles->CalculateRealSubEEX(kk2));
 	double fullsub = (-subloc2*real1 -subloc1*real2-subloc1*subloc2*m_born);
 	tot = (r*flux + fullsub)/sub1/sub2;
   if(IsBad(tot)){
