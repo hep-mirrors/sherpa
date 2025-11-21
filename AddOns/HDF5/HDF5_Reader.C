@@ -309,6 +309,16 @@ namespace LHEH5 {
       p_file = OpenFile(m_files[m_ifile]);
       p_sub = new NLO_subevt();
       s_objects.push_back(this);
+
+      // Guard against a setting that will, in general, cause synchronization
+      // to break in MPI runs, such that the entire run stalls.
+      Settings& s {Settings::GetMainSettings()};
+      bool m_printmpixs {s["PRINT_MPI_XS"].Get<bool>()};
+      if (m_printmpixs && mpi->MySize() > 1) {
+        THROW(invalid_input,
+              "`PRINT_MPI_XS: true` can not be used when reading parton-level "
+              "events from an HDF5 file. Please use `PRINT_MPI_XS: false`.");
+      }
     }
 
     ~HDF5_Reader()
