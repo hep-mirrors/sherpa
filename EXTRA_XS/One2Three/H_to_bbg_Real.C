@@ -43,6 +43,7 @@ H_to_bbg_Real::H_to_bbg_Real(const vector<Flavour>& flavs, const Flavour& prop,
   CalculateAlphaQCD(flavs[0].Mass());
   SetUpBornCurrents(born_flavs);
   SetUpBornPrefactor(born_flavs);
+  scale = flavs[0].Mass(); // scale = mass of incoming particle
 
   for (size_t i(0);i<4;++i) { // iterate over the 4 flavours resp. particles
     // the Current_key object uniquely identify and retrieve a "current"; current = off-shell wave function/ building block to construct amplitude
@@ -174,7 +175,7 @@ void H_to_bbg_Real::Calculate(const ATOOLS::Vec4D_Vector& momenta, bool anti) {
   // does not do anything yet because integrating this decay channel would result in infinities
   p_ci->GeneratePoint(); // create a new integration point for the color factors
 
-  std::map<std::string, std::complex<double>> born = CalculateBorn(momenta, anti);
+  CalculateBorn(momenta, anti);
 
   const std::vector<int> myI = { 0, 2, 1, 0 };
   const std::vector<int> myJ = { 0, 1, 0, 2 };
@@ -222,9 +223,9 @@ void H_to_bbg_Real::Calculate(const ATOOLS::Vec4D_Vector& momenta, bool anti) {
 */
   // falsely the m_z scale is used for the calculation of alpha_S instead of the Higgs scale. To correct this, multiply the calculated amplitude tensor (*this)
   // with \sqrt{alpha_S(M_H) / alpha_S(scale used here)}.
-  double alpha_qcd_h = MODEL::s_model -> ScalarFunction("alpha_S", 125.09*125.09); // at Higgs scale
+
   double alpha_qcd_used = MODEL::s_model -> ScalarConstant("alpha_S"); // currently used alpha_S value
-  double global_factor = alpha_qcd_h / alpha_qcd_used;
+  double global_factor = alpha_qcd / alpha_qcd_used;
   for (size_t i=0; i<size(); ++i) {
    (*this)[i] *= std::sqrt(global_factor);
   }
@@ -309,8 +310,6 @@ static double V_ijk(ATOOLS::Vec4<double> p_i, ATOOLS::Vec4<double> p_j, ATOOLS::
     const double pi = 3.14159265358979323846;
   #endif
 
-  
-
   double prefactor = 8 * pi * alpha_qcd * C_F;
   double first_summand = 2 / (1 - z_j_tilde(p_i, p_j, p_k) * (1 - y_ijk(p_i, p_j, p_k) ));
   double second_summand = nu_ijk_tilde(p_i, p_j, p_k) / nu_ijk(p_i, p_j, p_k) * (1 + z_j_tilde(p_i, p_j, p_k) + m2_Q / (p_i * p_j));
@@ -330,12 +329,10 @@ void H_to_bbg_Real::Calculate_real_subtraction(const ATOOLS::Vec4D_Vector& momen
   double V_gb_bb = V_ijk(p_g, p_b, p_bb);
   double V_gbb_b = V_ijk(p_g, p_bb, p_b);
 
-  double born_ME2 = 37.2554398987324764; // value taken from the H -> b bb calculation in Comix1to2, value right out of Decay_Channel::ME2(...)
-                                        // => not multiplied with any symmetry factors/ colour factors
   double m2_ij = p_b * p_b; // because m_i = 0 (gluon) and m_b = m_bb
 
-  double D_gb_bb = V_gb_bb/ ((p_g + p_b)*(p_g + p_b) - m2_ij) * born_ME2;
-  double D_gbb_b = V_gbb_b/ ((p_g + p_bb)*(p_g + p_bb) - m2_ij) * born_ME2;
+  double D_gb_bb = V_gb_bb/ ((p_g + p_b)*(p_g + p_b) - m2_ij) * ME2_Born;
+  double D_gbb_b = V_gbb_b/ ((p_g + p_bb)*(p_g + p_bb) - m2_ij) * ME2_Born;
 
   subtraction_term = D_gb_bb + D_gbb_b;
   std::cout << "S: " << subtraction_term << std::endl;
@@ -386,7 +383,7 @@ static ATOOLS::Vec4<double> p_ij_tilde(ATOOLS::Vec4<double> p_i, ATOOLS::Vec4<do
 
 
 // calculate the Born Matrix Element:
-std::map<std::string, std::complex<double>> H_to_bbg_Real::CalculateBorn(const ATOOLS::Vec4D_Vector& momenta, bool anti){
+void H_to_bbg_Real::CalculateBorn(const ATOOLS::Vec4D_Vector& momenta, bool anti){
   typedef METOOLS::CSpinor<double> DDSpin;
   typedef std::pair<DDSpin*, int> SpinorWithHel;
   typedef std::vector<SpinorWithHel> SpinorVecWithHel;
@@ -439,17 +436,14 @@ std::map<std::string, std::complex<double>> H_to_bbg_Real::CalculateBorn(const A
   }
   born_11 *= BornPrefactor;
 
-  std::map<std::string, C> born_hel;
   born_hel["00"]  = born_00;
   born_hel["01"]  = born_01;
   born_hel["10"]  = born_10;
   born_hel["11"]  = born_11;
 
-  double ME2_Born = 3 * std::real(born_hel["00"] * std::conj(born_hel["00"]) + born_hel["01"] * std::conj(born_hel["01"]) + born_hel["10"] * std::conj(born_hel["10"]) + born_hel["11"] * std::conj(born_hel["11"]));
+  ME2_Born = 3 * std::real(born_hel["00"] * std::conj(born_hel["00"]) + born_hel["01"] * std::conj(born_hel["01"]) + born_hel["10"] * std::conj(born_hel["10"]) + born_hel["11"] * std::conj(born_hel["11"]));
   // 3 * because of colour sum 
   // here: ME2_Born = 37.255084078123176 doesn't match exactly the value out of Decay_Channel -> ME2(), which is 37.255439898732476
-
-  return born_hel;
 }
 
 

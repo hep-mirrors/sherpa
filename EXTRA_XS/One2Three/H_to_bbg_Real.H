@@ -15,8 +15,11 @@ namespace EXTRAXS {
     size_t m_non_prop;
     size_t m_gluon;
     size_t m_propj;
+    double scale;
     double BornPrefactor;
     double alpha_qcd;
+    std::map<std::string, std::complex<double>> born_hel;
+    double ME2_Born;
 
     std::vector<METOOLS::Current*> m_cur;
     METOOLS::Current *m_scur, *m_fcur;
@@ -39,7 +42,7 @@ namespace EXTRAXS {
     size_t NHel(const ATOOLS::Flavour& fl);
     double subtraction_term;
 
-    std::map<std::string, std::complex<double>> CalculateBorn(const ATOOLS::Vec4D_Vector& momenta, bool anti);
+    void CalculateBorn(const ATOOLS::Vec4D_Vector& momenta, bool anti);
     std::pair<std::vector<std::pair<METOOLS::CSpinor<double>*, int>>,
           std::vector<std::pair<METOOLS::CSpinor<double>*, int>>> CalculateSpinors(const ATOOLS::Vec4D_Vector& momenta, bool anti);
     void SetUpBornCurrents(const std::vector<ATOOLS::Flavour>& flavs);
