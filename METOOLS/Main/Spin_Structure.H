@@ -9,12 +9,12 @@
 #include <algorithm>
 #include <iomanip>
 #include "ATOOLS/Org/Exception.H"
-#include "METOOLS/SpinCorrelations/Amplitude2_Tensor.H"
+//#include "METOOLS/SpinCorrelations/Amplitude2_Tensor.H"
 
 namespace METOOLS
 {
   bool SortByFirst(const std::pair<int,int> p1, const std::pair<int,int> p2);
-
+  class Amplitude2_Tensor;  // Vorwärtsdeklaration reicht hier
   template<class Value>
   class Spin_Structure : public std::vector<Value>, public Polarization_Index {
   protected:

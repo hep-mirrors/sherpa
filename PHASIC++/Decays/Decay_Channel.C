@@ -420,9 +420,9 @@ double Decay_Channel::ME2_NLO(const ATOOLS::Vec4D_Vector& momenta, bool anti,
     vector<int> spin_i(p.size(), -1), spin_j(p.size(), -1);
     p_amps=new Amplitude2_Tensor(p,0,m_diagrams,spin_i, spin_j);
 
-    for(size_t i(0); i<GetDiagrams().size(); ++i) {
-      p_amps = GetDiagrams()[i]->AddNLOTensor(p_amps); // override amplitude tensor: add NLO parts to it
-    }
+    //for(size_t i(0); i<GetDiagrams().size(); ++i) {
+      //*p_amps = *GetDiagrams()[i]->AddNLOTensor(p_amps); // override amplitude tensor: add NLO parts to it
+    //}
 
     DEBUG_VAR(*p_amps);
     sumijlambda_AiAj=(*sigma)*p_amps->ReduceToMatrix(sigma->Particle());

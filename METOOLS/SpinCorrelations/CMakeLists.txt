@@ -3,14 +3,16 @@ set(SpinCorrelations_SOURCES Amplitude2_Tensor.C
                              Decay_Matrix.C
                              Spin_Density.C
                              PolWeights_Map.C
-                             Polarized_CrossSections_Handler.C)
+                             Polarized_CrossSections_Handler.C
+                             Spin_Amplitudes.C)
 
 set(SpinCorrelations_HEADERS Amplitude2_Tensor.H
                              Amplitude2_Matrix.H
                              Decay_Matrix.H
                              Spin_Density.H
                              PolWeights_Map.H
-                             Polarized_CrossSections_Handler.H)
+                             Polarized_CrossSections_Handler.H
+                             Spin_Amplitudes.H)
 
 sherpa_create_git_info(SpinCorrelations ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR})
  
