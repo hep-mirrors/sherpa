@@ -353,11 +353,11 @@ namespace LHEH5 {
 	  e->Version()[2]==0) m_unitwgt*=rpa->Picobarn();
       long int nevts(file.getDataSet("events").getSpace().
 		     getDimensions().front());
-      if (mpi->Rank()==0) {
-	msg_Info()<<METHOD<<"(): File '"<<fname
-		  <<"' contains "<<nevts
-		  <<" events ( read "<<m_nstart<<" ).\n";
-      }
+      msg_Info() << "Reading events from file: '" << m_files[m_ifile]
+                 << "' (total per rank: " << nevts / mpi->MySize();
+      if (m_nstart > 0)
+        msg_Info() << ", read: " << m_nstart;
+      msg_Info() << ").\n";
       mpi->Bcast(&nevts,1,MPI_LONG_INT);
       size_t iStart(rank*nevts/size);
       size_t iStop((rank+1)*nevts/size-1);
