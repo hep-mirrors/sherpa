@@ -189,6 +189,7 @@ AnalysisHandler* Rivet_Interface::GetRivet(std::string proc,
   if (it==m_rivet.end()) {
     msg_Debugging()<<"create new "<<key.first<<" "<<key.second<<std::endl;
     m_rivet[key] = new AnalysisHandler();
+    Log::setLevel("Rivet", m_loglevel);
     m_rivet[key]->addAnalyses(m_analyses);
 #ifdef USING__RIVET4
     m_rivet[key]->setCheckBeams(!m_ignorebeams);
@@ -207,7 +208,6 @@ AnalysisHandler* Rivet_Interface::GetRivet(std::string proc,
     m_rivet[key]->setNLOSmearing(m_nlosmearing);
     if (dummyevent)
       m_rivet[key]->init(*dummyevent);
-    Log::setLevel("Rivet", m_loglevel);
   }
   return m_rivet[key];
 }
