@@ -275,6 +275,8 @@ bool Sherpa::GenerateOneEvent(bool reset)
     if (((rpa->gen.BatchMode()&4 && i%m_displayinterval==0) ||
 	 (!(rpa->gen.BatchMode()&4) && i%int(pow(10,exp))==0)) &&
 	i<rpa->gen.NumberOfEvents()) {
+      if (!(rpa->gen.BatchMode()&2))
+	msg->BeginTaskProgressUpdate(2);
       double diff=rpa->gen.Timer().RealTime()-m_evt_starttime;
       msg_Info()<<"  Event "<<i;
       if (m_showtrials)
@@ -303,6 +305,8 @@ bool Sherpa::GenerateOneEvent(bool reset)
 	msg_Info()<<mm(1,mm::up);
       if (rpa->gen.BatchMode()&2) { msg_Info()<<std::endl; }
       else { msg_Info()<<bm::cr<<std::flush; }
+      if (!(rpa->gen.BatchMode()&2))
+        msg->EndTaskProgressUpdate();
     }
     return 1;
   }

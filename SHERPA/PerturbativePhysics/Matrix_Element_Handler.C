@@ -573,9 +573,11 @@ int Matrix_Element_Handler::InitializeProcesses(
   double retime(ATOOLS::rpa->gen.Timer().RealTime());
   double etime(ATOOLS::rpa->gen.Timer().UserTime());
   size_t rss(GetCurrentRSS());
+  msg->BeginTaskProgressUpdate(1);
   msg_Info()<<" done ("<<rss/(1<<20)<<" MB, "
 	    <<FormatTime(size_t(retime-rbtime))<<"/"
-	    <<FormatTime(size_t(etime-btime))<<")"<<std::endl;
+	    <<FormatTime(size_t(etime-btime))<<")";
+  msg->EndTaskProgressUpdate();
   if (m_procs.empty() && m_gens.size()>0)
     THROW(normal_exit,"No hard process found");
   msg_Info()<<"Performing tests "<<std::flush;
@@ -585,9 +587,11 @@ int Matrix_Element_Handler::InitializeProcesses(
   retime=ATOOLS::rpa->gen.Timer().RealTime();
   etime=ATOOLS::rpa->gen.Timer().UserTime();
   rss=GetCurrentRSS();
+  msg->BeginTaskProgressUpdate(1);
   msg_Info()<<" done ("<<rss/(1<<20)<<" MB, "
 	    <<FormatTime(size_t(retime-rbtime))<<"/"
-	    <<FormatTime(size_t(etime-btime))<<")"<<std::endl;
+	    <<FormatTime(size_t(etime-btime))<<")";
+  msg->EndTaskProgressUpdate();
   msg_Debugging()<<METHOD<<"(): Processes {\n";
   msg_Debugging()<<"  m_procs:\n";
   for (size_t i(0);i<m_procs.size();++i)
@@ -635,7 +639,9 @@ void Matrix_Element_Handler::BuildProcesses()
   // init processes
   msg_Info()<<"Building processes ("<<m_gens.size()<<" ME generators, "
 	    <<s["PROCESSES"].GetItems().size()<<" process blocks) ...\n";
-  msg_Info()<<"Setting up processes "<<std::flush;
+  msg->BeginTaskProgressUpdate(1);
+  msg_Out()<<"Setting up processes"<<std::flush;
+  msg->EndTaskProgressUpdate();
   if (msg_LevelIsTracking()) msg_Info()<<"\n";
   if (!m_gens.empty() && s["PROCESSES"].GetItemsCount() == 0) {
     if (!msg_LevelIsTracking()) msg_Info()<<"\n";

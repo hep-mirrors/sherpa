@@ -188,7 +188,7 @@ std::ostream &ATOOLS::operator<<(std::ostream &str, const Frame_Line &f)
 
 
 indentbuf::indentbuf(std::streambuf* basebuf) :
-  m_basebuf(basebuf), m_indent(0), at_start(true)
+  m_basebuf(basebuf), m_indent(0), at_start(true), m_updatedlines(0), m_passthrough(false)
 {
 }
 
@@ -208,12 +208,16 @@ void indentbuf::DeIndent(size_t i)
 
 std::streambuf::int_type indentbuf::overflow(int_type ch)
 {
-  if (traits_type::eq_int_type(ch, traits_type::to_int_type('\r'))) {
-  }
   if (ch == traits_type::eof())
     return traits_type::not_eof(ch);
 
   if (traits_type::not_eof(ch)) {
+    if (!m_passthrough && !at_start && m_updatedlines > 0) {
+      for (size_t i = 0; i < m_updatedlines; ++i)
+        m_basebuf->sputc(traits_type::to_char_type('\n'));
+      at_start = true;
+      m_passthrough = true;
+    }
     if (at_start)
       for (size_t i = 0; i < m_indent; ++i)
         m_basebuf->sputc(traits_type::to_char_type(' '));
@@ -439,4 +443,15 @@ void Message::PrintRates() const {
                 << "' exceeded frequency limit: " << item.second \
                 << "/" << m_limit << "\n" << ATOOLS::om::reset;
   }
+}
+
+void Message::BeginTaskProgressUpdate(size_t lines)
+{
+  m_buf.SetUpdatedLines(lines);
+  m_buf.SetPassthrough(true);
+}
+
+void Message::EndTaskProgressUpdate()
+{
+  m_buf.SetPassthrough(false);
 }

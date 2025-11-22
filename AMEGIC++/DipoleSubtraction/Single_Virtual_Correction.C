@@ -387,7 +387,11 @@ int Single_Virtual_Correction::InitAmplitude(Amegic_Model * model,Topology* top,
     m_mewgtinfo.m_type|=mewgttype::KP;
   Minimize();
   if (p_partner==this && (Result()>0. || Result()<0.)) SetUpIntegrator();
-  if (p_partner==this) msg_Info()<<"."<<std::flush;
+  if (p_partner==this) {
+    msg->BeginTaskProgressUpdate(1);
+    msg_Out()<<'.'<<std::flush;
+    msg->EndTaskProgressUpdate();
+  }
 
   return 1;
 }

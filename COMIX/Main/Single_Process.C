@@ -702,7 +702,11 @@ bool COMIX::Single_Process::Tests()
     msg_Info()<<METHOD<<"(): Gauge test failed for '"
 	      <<m_name<<"'."<<std::endl;
   }
-  else if (!msg_LevelIsTracking()) msg_Info()<<"."<<std::flush;
+  else if (!msg_LevelIsTracking()) {
+    msg->BeginTaskProgressUpdate(1);
+    msg_Out()<<'.'<<std::flush;
+    msg->EndTaskProgressUpdate();
+  }
   return res;
 }
 
