@@ -2,6 +2,7 @@
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/CXXFLAGS_PACKAGES.H"
 #include "ATOOLS/Org/CXXFLAGS.H"
+#include "ATOOLS/Org/My_MPI.H"
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Scoped_Settings.H"
@@ -58,6 +59,8 @@ LHAPDF_CPP_Interface::LHAPDF_CPP_Interface(const ATOOLS::Flavour _bunch,
   static std::set<std::string> s_init;
   if (s_init.find(m_set)==s_init.end()) {
     m_member=abs(m_smember);
+    if (mpi->MyRank() > 0)
+      LHAPDF::setVerbosity(0);
     int lhapdfverb(LHAPDF::verbosity());
     LHAPDF::setVerbosity(msg_LevelIsDebugging()?lhapdfverb:0);
     p_pdf = LHAPDF::mkPDF(m_set,m_smember);
