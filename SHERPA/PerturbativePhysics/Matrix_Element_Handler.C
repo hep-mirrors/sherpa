@@ -293,7 +293,10 @@ Matrix_Element_Handler::GenerateOneTrialEvent()
       proc->ResetEvent();
       info=proc->OneEvent(m_eventmode, Variations_Mode::all);
       assert(info);
-      if (!IsEqual(m_evtinfo.m_weightsmap.Nominal(), info->m_weightsmap.Nominal(), 1e-6)) {
+      if (!IsEqual(m_evtinfo.m_weightsmap.Nominal(),
+                   info->m_weightsmap.Nominal(), 1e-6) &&
+          !(IsNan(m_evtinfo.m_weightsmap.Nominal()) &&
+            IsNan(info->m_weightsmap.Nominal()))) {
         msg_Error()
           <<"ERROR: The results of the pilot run and the re-run are not"
           <<" the same:\n"
