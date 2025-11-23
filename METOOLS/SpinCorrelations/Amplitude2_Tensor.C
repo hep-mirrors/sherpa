@@ -236,8 +236,6 @@ Amplitude2_Matrix Amplitude2_Tensor::ReduceToMatrix(const Particle* left) const
 }
 
 
-
-
 void Amplitude2_Tensor::Add(const Amplitude2_Tensor* amp, const Complex& factor)
 {
   if (p_part!=amp->p_part) THROW(fatal_error,"Particles don't match.");

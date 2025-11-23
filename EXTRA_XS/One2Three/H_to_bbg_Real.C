@@ -183,7 +183,7 @@ void H_to_bbg_Real::Calculate(const ATOOLS::Vec4D_Vector& momenta, bool anti) {
 
   p_ci->SetI(myI);
   p_ci->SetJ(myJ);
-
+/*
   if (anti) {
     for (size_t i(0);i<m_anticur.size();++i) {
       m_anticur[i]->ConstructJ(i==0?-momenta[i]:momenta[i],0,p_ci->I()[i],p_ci->J()[i],0);
@@ -199,7 +199,7 @@ void H_to_bbg_Real::Calculate(const ATOOLS::Vec4D_Vector& momenta, bool anti) {
     }
     m_scur->Evaluate();
     m_fcur->Evaluate();
-  }
+  }*/
   /*
   vector<int> fill(m_n,1); // output amplitude vector
   for (size_t i(0);i<m_n;++i) (*this)[i]=Complex(0.0,0.0);

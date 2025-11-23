@@ -421,9 +421,11 @@ double Decay_Channel::ME2_NLO(const ATOOLS::Vec4D_Vector& momenta, bool anti,
     p_amps=new Amplitude2_Tensor(p,0,m_diagrams,spin_i, spin_j);
 
     for(size_t i(0); i<GetDiagrams().size(); ++i) {
-      *p_amps = GetDiagrams()[i]->AddNLOTensor(*p_amps); // override amplitude tensor: add NLO parts to it
+     *p_amps = GetDiagrams()[i]->AddNLOTensor(*p_amps); // override amplitude tensor: add NLO parts to it
     }
-
+  //if (p_amps) {
+  //  p_amps->Trace();
+  //}
     DEBUG_VAR(*p_amps);
     sumijlambda_AiAj=(*sigma)*p_amps->ReduceToMatrix(sigma->Particle());
   }
@@ -451,7 +453,9 @@ double Decay_Channel::ME2_NLO(const ATOOLS::Vec4D_Vector& momenta, bool anti,
 
   double value=sumijlambda_AiAj.real();
   std::cout << "Born or R: " << value << std::endl;
-  value += NLO_part;
+  if(!sigma){  // if sigma: NLO_Part was already added by AddNLOTensor above, does not need to be added again
+    //value += NLO_part;
+  }
   value /= double(GetDecaying().IntSpin()+1);
   if (GetDecaying().StrongCharge())
     value/=double(abs(GetDecaying().StrongCharge()));
