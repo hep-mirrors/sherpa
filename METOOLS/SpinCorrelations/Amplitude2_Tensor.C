@@ -5,7 +5,7 @@
 #include "ATOOLS/Phys/Blob.H"
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Math/Poincare.H"
-#include "METOOLS/Main/Spin_Structure.H"   // <- das fehlt noch
+#include "METOOLS/Main/Spin_Structure.H"
 
 
 using namespace METOOLS;

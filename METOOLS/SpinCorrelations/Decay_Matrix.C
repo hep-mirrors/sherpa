@@ -1,6 +1,6 @@
 #include "METOOLS/SpinCorrelations/Decay_Matrix.H"
 #include "METOOLS/SpinCorrelations/Amplitude2_Tensor.H"
-#include "ATOOLS/Org/Run_Parameter.H"   // <- neu
+#include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Message.H"
 
 

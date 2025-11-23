@@ -6,7 +6,7 @@
 #include "PHASIC++/Scales/Scale_Setter_Base.H"
 #include "PHASIC++/Main/Process_Integrator.H"
 #include "METOOLS/SpinCorrelations/Amplitude2_Tensor.H"
-#include "METOOLS/Main/Spin_Structure.H"   // <- das fehlt noch
+#include "METOOLS/Main/Spin_Structure.H"
 #include "METOOLS/SpinCorrelations/Decay_Matrix.H"
 #include "METOOLS/SpinCorrelations/Spin_Density.H"
 #include "ATOOLS/Org/Run_Parameter.H"

@@ -5,13 +5,12 @@
 #include <memory>
 #include "ATOOLS/Math/MyComplex.H"
 #include "METOOLS/SpinCorrelations/Amplitude2_Matrix.H"
-//#include "METOOLS/Main/Spin_Structure.H"
 #include "ATOOLS/Phys/Particle.H"
 #include "ATOOLS/Math/Vector.H"
 
 namespace METOOLS {
   class Decay_Matrix;
-  class Spin_Amplitudes;  // nur Vorwärtsdeklaration, kein include Spin_Structure.H
+  class Spin_Amplitudes;  // only forward declaration, no include Spin_Structure.H
 
 
   class Amplitude2_Tensor {
