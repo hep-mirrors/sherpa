@@ -3,6 +3,7 @@
 #include "ATOOLS/Org/My_MPI.H"
 #include "ATOOLS/Phys/Blob.H"
 #include <iomanip>
+#include "METOOLS/SpinCorrelations/Amplitude2_Tensor.H"
 
 using namespace METOOLS;
 using namespace ATOOLS;
@@ -60,4 +61,9 @@ bool Spin_Amplitudes::IsNLODecay(){
 
 double Spin_Amplitudes::get_NLO_part(){
   return 0.0;
+}
+
+
+METOOLS::Amplitude2_Tensor Spin_Amplitudes::AddNLOTensor(METOOLS::Amplitude2_Tensor old_tensor){
+  return old_tensor;
 }
