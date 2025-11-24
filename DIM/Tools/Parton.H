@@ -8,7 +8,7 @@
 namespace DIM {
 
   class Amplitude;
-  class Splitting;
+  struct Splitting;
 
   class Parton {
   public:

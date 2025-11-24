@@ -8,7 +8,6 @@ stages:
   - test
   - deploy
 
-
 variables:
   DOCKER_DRIVER: overlay2
   DOXYGEN_CMAKE_FLAGS: -DSHERPA_ENABLE_DOXYGEN=ON -DDOXYGEN_WARN_AS_ERROR=YES
@@ -17,6 +16,10 @@ variables:
   EXTENDED_EXTRA_CMAKE_FLAGS: -DSHERPA_ENABLE_ANALYSIS:BOOL=ON -DSHERPA_ENABLE_BINRELOC:BOOL=ON -DSHERPA_ENABLE_BLACKHAT:BOOL=ON -DSHERPA_ENABLE_DIHIGGS:BOOL=OFF -DSHERPA_ENABLE_EXAMPLES:BOOL=ON -DSHERPA_ENABLE_GOSAM:BOOL=ON -DSHERPA_ENABLE_GZIP:BOOL=ON -DSHERPA_ENABLE_HEPMC3:BOOL=ON -DSHERPA_ENABLE_HEPMC3_ROOT:BOOL=OFF -DSHERPA_ENABLE_INTERNAL_PDFS:BOOL=ON -DSHERPA_ENABLE_INSTALL_LIBZIP:BOOL=OFF -DSHERPA_ENABLE_INSTALL_LHAPDF:BOOL=OFF -DSHERPA_ENABLE_LHOLE:BOOL=ON -DSHERPA_ENABLE_MADLOOP:BOOL=ON -DSHERPA_ENABLE_MANUAL:BOOL=OFF -DSHERPA_ENABLE_MCFM:BOOL=OFF -DSHERPA_ENABLE_MPI:BOOL=OFF -DSHERPA_ENABLE_OPENLOOPS:BOOL=ON -DSHERPA_ENABLE_PYTHIA8:BOOL=ON -DSHERPA_ENABLE_PYTHON:BOOL=ON -DSHERPA_ENABLE_RECOLA:BOOL=ON -DSHERPA_ENABLE_RIVET:BOOL=ON -DSHERPA_ENABLE_ROOT:BOOL=ON -DSHERPA_ENABLE_THREADING:BOOL=ON -DSHERPA_ENABLE_UFO:BOOL=ON
   NCOMPILATION_JOBS: 1
   MAKE_FLAGS: -j4
+  # Cache optimization settings
+  CCACHE_MAXSIZE: 500M
+  CCACHE_COMPRESS: 1
+  CCACHE_COMPILERCHECK: content
 
 build-manual:
   stage: build
@@ -33,14 +36,13 @@ build-manual:
   rules:
     - changes:
         - Manual/**/*
+      if: '$CI_SERVER_HOST=="gitlab.com"'
       when: always
     - when: never
-    - if: '$CI_SERVER_HOST=="gitlab.com"'
 
 #
 # Deploy
 #
-
 
 # Rebuild the Website to include this tag in the changelogs.
 trigger_pages:
@@ -48,10 +50,9 @@ trigger_pages:
   variables:
     GIT_STRATEGY: none  # we only need the artifacts from the build
   rules:
-    - if: '$CI_COMMIT_TAG'
+    - if: '$CI_COMMIT_TAG && $CI_SERVER_HOST=="gitlab.com"'
       when: always
     - when: never
-    - if: '$CI_SERVER_HOST=="gitlab.com"'
   script:
     - "curl -X POST -F token=$PAGES_TRIGGER_TOKEN -F ref=master https://gitlab.com/api/v4/projects/8892644/trigger/pipeline"
   needs: []
@@ -72,17 +73,16 @@ pages:
     - mv build/_multi ../public
   artifacts:
     paths:
-    - public
+      - public
   rules:
     - changes:
         - Manual/**/*
+      if: '$CI_SERVER_HOST=="gitlab.com"'
       when: always
     - when: never
-    - if: '$CI_SERVER_HOST=="gitlab.com"'
 
 ##########################################################################
 ##########################################################################
-
 
 LCG_106_ATLAS_7_x86_64-el9-gcc13-opt:
   only:
@@ -154,10 +154,14 @@ LCG_106_ATLAS_7_x86_64-el9-gcc13-opt:
       - cmake --build BUILD -j $NCOMPILATION_JOBS
       - cmake --install BUILD
       - ctest --test-dir BUILD --output-on-failure
+  artifacts:
+    expire_in: 7 days
+    paths:
+      - BUILD/Tests/
+    when: on_failure
+
 ##########################################################################
 ##########################################################################
-
-
 
 .check_commit_CentOS:
   stage: check_if_dockerfile_updated
@@ -269,7 +273,6 @@ LCG_106_ATLAS_7_x86_64-el9-gcc13-opt:
     GIT_DEPTH: "1"
   retry: 2
 
-
 .any:
   image: $CI_REGISTRY_IMAGE:${OS}_${FREL}
   stage: build
@@ -283,10 +286,10 @@ LCG_106_ATLAS_7_x86_64-el9-gcc13-opt:
     expire_in: 2 days
     paths:
       - BUILD/Tests/*/*.pdf
-      - BUILD/Tests/*/*.yoda
       - BUILD/Tests/*/rivet-plots
       - BUILD/Tests/coverage.info
       - BUILD/Tests/html
+    when: on_failure
 
 .cmake: &cmake
     - export CMAKE=cmake3
@@ -317,29 +320,51 @@ LCG_106_ATLAS_7_x86_64-el9-gcc13-opt:
 
 .any-cmake-ccache:
   extends: .any
-  script:
-    - if [ $CI_COMMIT_MESSAGE == "cleancache" ]; then rm -rf cmake-$TOOLSET-cache-$FREL; fi
-    - if [ $CI_PIPELINE_SOURCE == "schedule" ]; then rm -rf cmake-$TOOLSET-cache-$FREL; fi
+  before_script:
+    - *ex
+    # Cache cleanup logic
+    - if [ "$CI_COMMIT_MESSAGE" = "cleancache" ]; then rm -rf cmake-$TOOLSET-cache-$FREL; fi
+    - if [ "$CI_PIPELINE_SOURCE" = "schedule" ]; then rm -rf cmake-$TOOLSET-cache-$FREL; fi
     - df -h ./
     - df -h /tmp
+    # Set ccache limits to prevent unbounded growth
     - export CCACHE_BASEDIR=`pwd`/cmake-$TOOLSET-cache-$FREL
     - export CCACHE_DIR=`pwd`/cmake-$TOOLSET-cache-$FREL/ccache
+    - export CCACHE_MAXSIZE=${CCACHE_MAXSIZE:-500M}
+    - export CCACHE_COMPRESS=${CCACHE_COMPRESS:-1}
+    - export CCACHE_COMPILERCHECK=${CCACHE_COMPILERCHECK:-content}
     - mkdir -p ${CCACHE_DIR}
     - mkdir -p ${CCACHE_BASEDIR}
-    - export CCACHE_COMPILERCHECK=content
+    # f90cache setup with size limits
     - export F90CACHE_DIR=`pwd`/cmake-$TOOLSET-cache-$FREL/f90cache
     - export F90CACHE_TMPDIR=`pwd`/tmpf90cache
+    - export F90CACHE_MAXSIZE=300M
     - mkdir -p ${F90CACHE_DIR}
     - mkdir -p ${F90CACHE_TMPDIR}
     - export CACHINGFLAGS="-DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_Fortran_COMPILER_LAUNCHER=f90cache"
     - 'if [ "${FREL}" == "7" ]; then export CACHINGFLAGS="-DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DCMAKE_C_COMPILER_LAUNCHER=ccache "; fi'
     - 'if [ "${FREL}" == "0" ]; then export CACHINGFLAGS="-DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DCMAKE_C_COMPILER_LAUNCHER=ccache "; fi'
-    - *ex
+    # Display cache stats
+    - ccache -s || true
+  script:
     - *cmake
   cache:
-   - key: cmake-$TOOLSET-cache-$FREL
-     paths:
-       - cmake-$TOOLSET-cache-$FREL/
+    - key: cmake-$TOOLSET-cache-$FREL
+      paths:
+        - cmake-$TOOLSET-cache-$FREL/
+      # Use variable to control policy based on branch
+      policy: pull
+      when: on_success
+
+# Override for main branch to enable push
+.any-cmake-ccache-main:
+  extends: .any-cmake-ccache
+  cache:
+    - key: cmake-$TOOLSET-cache-$FREL
+      paths:
+        - cmake-$TOOLSET-cache-$FREL/
+      policy: pull-push
+      when: on_success
 
 ###########################################################################
 # Here we check if we have changes to the Docker files
@@ -404,9 +429,9 @@ build_image_Archlinux0:
   needs:
     - job: check_commit_Archlinux0
 
-
 ###########################################################################
 
+# Main branch jobs use pull-push policy
 Fedora41-make-ccache-GNU:
   variables:
     OS: Fedora
@@ -414,10 +439,26 @@ Fedora41-make-ccache-GNU:
     TOOLSET: GNU
     EXTRACMAKEFLAGS: $COMMON_EXTRA_CMAKE_FLAGS $EXTENDED_EXTRA_CMAKE_FLAGS $DOXYGEN_CMAKE_FLAGS
     BUILDDOCS: 1
-  extends: .any-cmake-ccache
+  extends: .any-cmake-ccache-main
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+    - when: never
   needs:
     - job: build_image_Fedora41
 
+# Feature branch variant uses pull-only policy
+Fedora41-make-ccache-GNU-feature:
+  variables:
+    OS: Fedora
+    FREL: 41
+    TOOLSET: GNU
+    EXTRACMAKEFLAGS: $COMMON_EXTRA_CMAKE_FLAGS $EXTENDED_EXTRA_CMAKE_FLAGS $DOXYGEN_CMAKE_FLAGS
+    BUILDDOCS: 1
+  extends: .any-cmake-ccache
+  rules:
+    - if: $CI_COMMIT_BRANCH && $CI_COMMIT_BRANCH != $CI_DEFAULT_BRANCH
+  needs:
+    - job: build_image_Fedora41
 
 Fedora42-make-ccache-GNU:
   variables:
@@ -426,7 +467,23 @@ Fedora42-make-ccache-GNU:
     TOOLSET: GNU
     EXTRACMAKEFLAGS: $COMMON_EXTRA_CMAKE_FLAGS $EXTENDED_EXTRA_CMAKE_FLAGS $DOXYGEN_CMAKE_FLAGS
     BUILDDOCS: 1
+  extends: .any-cmake-ccache-main
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+    - when: never
+  needs:
+    - job: build_image_Fedora42
+
+Fedora42-make-ccache-GNU-feature:
+  variables:
+    OS: Fedora
+    FREL: 42
+    TOOLSET: GNU
+    EXTRACMAKEFLAGS: $COMMON_EXTRA_CMAKE_FLAGS $EXTENDED_EXTRA_CMAKE_FLAGS $DOXYGEN_CMAKE_FLAGS
+    BUILDDOCS: 1
   extends: .any-cmake-ccache
+  rules:
+    - if: $CI_COMMIT_BRANCH && $CI_COMMIT_BRANCH != $CI_DEFAULT_BRANCH
   needs:
     - job: build_image_Fedora42
 
@@ -437,10 +494,25 @@ Fedora42-make-ccache-LLVM:
     TOOLSET: LLVM
     EXTRACMAKEFLAGS: $COMMON_EXTRA_CMAKE_FLAGS $EXTENDED_EXTRA_CMAKE_FLAGS $DOXYGEN_CMAKE_FLAGS
     BUILDDOCS: 1
-  extends: .any-cmake-ccache
+  extends: .any-cmake-ccache-main
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+    - when: never
   needs:
     - job: build_image_Fedora42
 
+Fedora42-make-ccache-LLVM-feature:
+  variables:
+    OS: Fedora
+    FREL: 42
+    TOOLSET: LLVM
+    EXTRACMAKEFLAGS: $COMMON_EXTRA_CMAKE_FLAGS $EXTENDED_EXTRA_CMAKE_FLAGS $DOXYGEN_CMAKE_FLAGS
+    BUILDDOCS: 1
+  extends: .any-cmake-ccache
+  rules:
+    - if: $CI_COMMIT_BRANCH && $CI_COMMIT_BRANCH != $CI_DEFAULT_BRANCH
+  needs:
+    - job: build_image_Fedora42
 
 CentOS9-make-ccache-GNU:
   variables:
@@ -448,7 +520,22 @@ CentOS9-make-ccache-GNU:
     FREL: 9
     TOOLSET: GNU
     EXTRACMAKEFLAGS: $COMMON_EXTRA_CMAKE_FLAGS
+  extends: .any-cmake-ccache-main
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+    - when: never
+  needs:
+    - job: build_image_CentOS9
+
+CentOS9-make-ccache-GNU-feature:
+  variables:
+    OS: CentOS
+    FREL: 9
+    TOOLSET: GNU
+    EXTRACMAKEFLAGS: $COMMON_EXTRA_CMAKE_FLAGS
   extends: .any-cmake-ccache
+  rules:
+    - if: $CI_COMMIT_BRANCH && $CI_COMMIT_BRANCH != $CI_DEFAULT_BRANCH
   needs:
     - job: build_image_CentOS9
 
@@ -459,6 +546,23 @@ Archlinux0-make-ccache-GNU:
     TOOLSET: GNU
     EXTRACMAKEFLAGS: $COMMON_EXTRA_CMAKE_FLAGS $CATCH2_CMAKE_FLAGS $DOXYGEN_CMAKE_FLAGS
     BUILDDOCS: 1
-  extends: .any-cmake-ccache
+  extends: .any-cmake-ccache-main
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+    - when: never
   needs:
     - job: build_image_Archlinux0
+
+Archlinux0-make-ccache-GNU-feature:
+  variables:
+    OS: Archlinux
+    FREL: 0
+    TOOLSET: GNU
+    EXTRACMAKEFLAGS: $COMMON_EXTRA_CMAKE_FLAGS $CATCH2_CMAKE_FLAGS $DOXYGEN_CMAKE_FLAGS
+    BUILDDOCS: 1
+  extends: .any-cmake-ccache
+  rules:
+    - if: $CI_COMMIT_BRANCH && $CI_COMMIT_BRANCH != $CI_DEFAULT_BRANCH
+  needs:
+    - job: build_image_Archlinux0
+

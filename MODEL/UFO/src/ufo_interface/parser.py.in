@@ -20,7 +20,7 @@ class Sherpa:
         self.model_flags = '-g -O0 -fno-var-tracking'
         self.lorentz_flags = '-g -O2 -ffast-math'
         self.root_dir = '@SHERPA_CMAKE_CONFIG_DIR@'
-        self.install_dir = self.root_dir + '/../../lib/SHERPA-MC/'
+        self.install_dir = '@CMAKE_INSTALL_PREFIX@/@CMAKE_INSTALL_LIBDIR@/SHERPA-MC@VERSIONING@'
 
 
 def parse_args(args):

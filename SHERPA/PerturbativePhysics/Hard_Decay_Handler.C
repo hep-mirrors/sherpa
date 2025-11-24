@@ -549,6 +549,8 @@ void Hard_Decay_Handler::CreateDecayBlob(ATOOLS::Particle* inpart)
   if(inpart->DecayBlob()) THROW(fatal_error,"Decay blob already exists.");
   if(!Decays(inpart->Flav())) return;
   Blob* blob = p_bloblist->AddBlob(btp::Hard_Decay);
+  double lifetime = inpart->LifeTime();
+  blob->SetPosition(Vec4D(lifetime,inpart->Distance(lifetime)));
   blob->SetStatus(blob_status::needs_showers);
   blob->AddStatus(blob_status::needs_extraQED);
   blob->AddToInParticles(inpart);

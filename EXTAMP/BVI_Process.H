@@ -6,7 +6,7 @@
 namespace PHASIC {
   class Virtual_ME2_Base;
   class Color_Correlated_ME2;
-  class Process_Info;
+  struct Process_Info;
   class KP_Terms;
 }
 

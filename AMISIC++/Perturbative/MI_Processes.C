@@ -14,7 +14,7 @@ using namespace PHASIC;
 MI_Processes::MI_Processes() :
   ME_Generator_Base("Amisic"),
   m_integrator(MI_Integrator(this)),
-  p_xsecs(NULL), m_fm2GeV2(sqr(rpa->hBar()*rpa->c()*1.e12)) {}
+  p_xsecs(NULL) {}
 
 MI_Processes::~MI_Processes() {
   while (!m_groups.empty()) {

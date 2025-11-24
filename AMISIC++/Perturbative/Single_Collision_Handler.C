@@ -99,7 +99,13 @@ bool Single_Collision_Handler::FirstMPI(Blob * signal) {
   double x2      = (*signal)["PDFInfo"]->Get<PDF_Info>().m_x2;
   p_overlap->FixDynamicRadius(x1,x2,pt2veto,pt2veto);
   do {
-    m_b   = p_overlap->SelectB();
+    /////////////////////////////////////////////////////////////////////////
+    // Form_Factor (and by extension Matter_Overlap) has radii etc. in fm,
+    // event record needs it in mm, therefore we have to divide by 10^12.
+    /////////////////////////////////////////////////////////////////////////    
+    do {
+      m_b   = p_overlap->SelectB();
+    } while (!p_overlap->SelectPositionForScatter(m_b,x1,m_pt2,x2,m_pt2,m_deltapos));
     m_pt2 = m_lastpt2 = m_S/4.;
   } while (SelectPT2()==0 && m_pt2>pt2veto);
   m_lastpt2 = m_pt2;
@@ -210,6 +216,13 @@ bool Single_Collision_Handler::NextScatter(Blob * blob) {
       fill = p_processes->FillHardScatterBlob(blob,m_lastpt2);
       if (fill==1) {
         m_lastpt2 = m_pt2;
+	double x1 = 0., x2 = 0.;
+	if ((*blob)["PDFInfo"]!=NULL) {
+	  x1 = (*blob)["PDFInfo"]->Get<PDF_Info>().m_x1;
+	  x2 = (*blob)["PDFInfo"]->Get<PDF_Info>().m_x2;
+	}
+	m_deltapos = Vec4D(0.,0.,0.,0.);
+	p_overlap->SelectPositionForScatter(m_b,x1,m_pt2,x2,m_pt2,m_deltapos);
 	blob->SetType(btp::Hard_Collision);
 	blob->SetStatus(blob_status::needs_showers);
 	blob->SetId();

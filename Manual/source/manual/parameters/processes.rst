@@ -131,7 +131,8 @@ could be declared as
        Flavs: [1, -1, 3, -3, 5, -5]
 
 Note that, if wanted, you have to add both particles and
-anti-particles.
+anti-particles. Note also that the identifying codes of each container
+are saved as unsigned integers and therefore have to strictly be positive.
 
 .. _Parentheses:
 
@@ -707,7 +708,7 @@ Enhance_Observable
 Specifies a phase-space dependent biasing of parton-level events (before
 showering). Events will be statistically flat in the given observable and
 range. An example would be:
-   
+
 .. code-block:: yaml
 
    - 93 93 -> 11 -11 93{1}:
@@ -728,7 +729,7 @@ multiplicity separately, and also affects the relative selection weights of
 each sub-sample (e.g. 2-jet vs. 3-jet).
 
 .. note::
-   
+
    The convergence of the Monte Carlo integration can be worse if enhance
    functions/observables are employed and therefore the integration can
    take significantly longer. The reason is that the default phase space
@@ -737,7 +738,7 @@ each sub-sample (e.g. 2-jet vs. 3-jet).
    including enhancement. It must first be adapted, which, depending on
    the enhance function and the final state multiplicity, can be an
    intricate task.
-   
+
    If Sherpa cannot achieve an integration error target due to the use
    of enhance functions, it might be appropriate to locally redefine this
    error target, see :ref:`Integration_Error`.

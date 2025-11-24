@@ -231,6 +231,7 @@ bool Amisic::FirstRescatter(Blob * blob) {
 }
 
 bool Amisic::FirstMinBias(Blob * blob) {
+  Reset();
   if (m_evttype==evt_type::Perturbative) {
     if (m_xsecs.XSratio(m_S)<1.) return false;
   }
@@ -244,6 +245,7 @@ bool Amisic::FirstMinBias(Blob * blob) {
 }
 
 bool Amisic::FirstMPI(Blob * blob) {
+  Reset();
   UpdateForNewS();
   if (!m_singlecollision.FirstMPI(blob)) return false;
   m_b = m_singlecollision.B();
@@ -306,19 +308,24 @@ void Amisic::UpdateForNewS() {
   m_singlecollision.UpdateSandY(m_S, m_Y);
 }
 
-void Amisic::AddInformationToBlob(ATOOLS::Blob * blob) {
+void Amisic::AddInformationToBlob(Blob * blob) {
   if (m_evttype==evt_type::Perturbative) {
-    m_pt2     = m_singlecollision.LastPT2();
-    double x1 = 0., x2 = 0.;
-    if ((*blob)["PDFInfo"]!=NULL) {
-      x1 = (*blob)["PDFInfo"]->Get<PDF_Info>().m_x1;
-      x2 = (*blob)["PDFInfo"]->Get<PDF_Info>().m_x2;
-    }
-    blob->SetPosition(m_mo.SelectPositionForScatter(m_b,x1,m_pt2,x2,m_pt2));
+    UpdateDownstreamPositions(blob,m_singlecollision.ShiftPosition());
     if (m_ana) AnalysePerturbative(false,blob);
   }
 }
 
+void Amisic::UpdateDownstreamPositions(Blob * blob,const Vec4D & delta_pos) {
+  if (m_updated.find(blob)!=m_updated.end()) return;
+  blob->SetPosition(blob->Position()+delta_pos);
+  m_updated.insert(blob);
+  for (size_t i=0;i<blob->NOutP();i++) {
+    Blob * decay = blob->OutParticle(i)->DecayBlob();
+    if (decay!=NULL) UpdateDownstreamPositions(decay,delta_pos);
+  }
+}
+
+  
 bool Amisic::VetoEvent(const double & scale) const {
   ///////////////////////////////////////////////////////////////////////////
   // So far this has not been properly filled.
@@ -375,6 +382,7 @@ void Amisic::Reset() {
   m_weight    = 1.;
   m_Nscatters = 0;
   m_singlecollision.Reset();
+  m_updated.clear();
 }
 
 void Amisic::InitAnalysis() {

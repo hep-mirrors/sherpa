@@ -4,7 +4,7 @@
 #include "AddOns/EWSud/Comix_Interface.H"
 
 namespace MODEL {
-  class EWParameters;
+  struct EWParameters;
 }
 
 namespace EWSud {

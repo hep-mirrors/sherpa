@@ -26,6 +26,7 @@ namespace AMISIC {
     
     MI_Process   * p_proc;
     double         m_pt2, m_pt2min, m_b;
+    ATOOLS::Vec4D  m_deltapos;
     double         m_S, m_lastpt2, m_nextpt2, m_residualx1, m_residualx2, m_Ycms;
     double         m_xsec;
     bool           m_done, m_needsTrigger;
@@ -83,6 +84,9 @@ namespace AMISIC {
     }
     inline ATOOLS::Vec4D Position(const size_t & beam) const {
       return p_remnants[beam]->Position();
+    }
+    inline ATOOLS::Vec4D ShiftPosition() const {
+      return m_deltapos;
     }
     inline ATOOLS::Vec4D InMomentum(const size_t & beam) const {
       return p_remnants[beam]->InMomentum();

@@ -9,7 +9,7 @@
 #include "recola.h"
 
 namespace PHASIC {
-  class External_ME_Args;
+  struct External_ME_Args;
 }
 
 namespace Recola {

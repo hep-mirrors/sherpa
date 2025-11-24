@@ -222,7 +222,7 @@ void Hadronic_XSec_Calculator::OutputXSratios(axis * sbins) {
   }
   msg_Info()<<"   "<<string(85,'-')<<"\n"
 	    <<"   | E_cms [GeV] | sigma_tot   | sigma_hd    | "
-	    <<"sigma_ND    | ratio       |             |\n";
+	    <<"sigma_ND    | ND_norm     | ratio       |\n";
   for (size_t sbin=0;sbin<sbins->m_nbins;sbin++) {
     double s    = sbins->x(sbin), E = sqrt(s);
     (*this)(s);
@@ -232,9 +232,9 @@ void Hadronic_XSec_Calculator::OutputXSratios(axis * sbins) {
 	      <<setprecision(6)<<setw(11)<<E<<" | "
 	      <<setprecision(6)<<setw(11)<<(m_xstot*fac)<<" | "
 	      <<setprecision(6)<<setw(11)<<(xshard*fac*m_GeV2mb)<<" | "
-	      <<setprecision(6)<<setw(11)<<(xsnd*fac*m_GeV2mb)<<" | "
-	      <<setprecision(6)<<setw(11)<<ratio<<" |"
-	      <<string(13,' ')<<"|\n";
+	      <<setprecision(6)<<setw(11)<<(XSnd()*fac*m_GeV2mb)<<" | "
+	      <<setprecision(6)<<setw(11)<<XSndNorm()<<" | "
+	      <<setprecision(6)<<setw(11)<<ratio<<" |\n";
   }
   msg_Info()<<"   "<<string(85,'-')<<"\n\n";
 }
