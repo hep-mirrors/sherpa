@@ -27,7 +27,7 @@ namespace UFOVariations {
         const std::vector<std::string>& Names() const {return names;}
         void UpdateIdentifier() {
             std::stringstream ss;
-            for (int i = 0; i < Size(); i++) {ss << names[i] << "[" << values[i] << "].";}
+            for (int i = 0; i < Size(); i++) {ss << names[i] << "-" << values[i] << "-.";}
             id = ss.str();
         }
         std::string Identifier() const {return id;}
