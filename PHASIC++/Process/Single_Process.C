@@ -1266,7 +1266,7 @@ void Single_Process::InitializeTheReweighting(ATOOLS::Variations_Mode mode)
   }
   if (!s["UFO_VARIATIONS"].GetItems().empty()){
     Hard_Process_Variation_Generator_Base *vargen = ATOOLS::Getter_Function<Hard_Process_Variation_Generator_Base, Args>
-              ::GetObject("UFOVariations", Hard_Process_Variation_Generator_Arguments{this, this});
+              ::GetObject("UFOVariations", Hard_Process_Variation_Generator_Arguments{this});
     if (!vargen) THROW(fatal_error, "Cant get UFOVariations");
     m_hard_process_variation_generators.push_back(vargen);
   }

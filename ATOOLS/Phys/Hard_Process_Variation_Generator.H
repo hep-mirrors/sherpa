@@ -11,7 +11,6 @@ namespace ATOOLS {
 
   struct Hard_Process_Variation_Generator_Arguments {
     PHASIC::Process_Base* p_proc;
-    PHASIC::Single_Process* p_single = nullptr;
   };
 
   namespace {
