@@ -25,22 +25,20 @@ namespace UFOVariations {
         // map is done here, add variation key elements from combinations
         Combinations *comb = new Combinations(&variation_map); 
         comb->AddAllCombinations(&v_variations);
-        msg_Debugging() << "All Variations are: " << std::endl;
-        for (VariationKey key : v_variations){
-            msg_Debugging() << "\t" << key << std::endl;
+        if (msg_LevelIsDebugging()) {
+            msg_Out() << "All read Variations are: " << std::endl;
+            for (VariationKey key : v_variations){
+                msg_Out() << "\t" << key << std::endl;
+            }
+        }
+        else {
+            msg_Out() << "\t--> Found " << Size() << " variations" << std::endl;
         }
         // check if there are too many variations
-        if (Size() >= MAX_VARIATION_NUMBER) THROW(normal_exit, "You are trying too many Variations, please reconsider.");
+        if (Size() >= MAX_VARIATION_NUMBER) THROW(invalid_input, "You are trying too many Variations, please reconsider.");
         // Register the dependent Kabbalas of the Model vertices
         FindDependentVertices();
         StoreNominal();
-        msg_Debugging() << "Done Reading in the Variations." << std::endl;
-        // some Testing TODO remove
-        for (auto& d : dependent_vertices) {
-            auto& s_v = d.second;
-            msg_Out() << d.first << ":     " << s_v->size() << std::endl;
-        }
-        msg_Debugging() << "nominal: " << nominal << std::endl;
         msg_Out() << "UFO Variations read." << std::endl << std::endl;
     }
 
@@ -58,9 +56,24 @@ namespace UFOVariations {
         variables.push_back(name);
         if (name == "None") THROW(invalid_input, "Variable name must be given for UFO Variation");
         // read in values
-        std::vector<double_t> values = s["VALUES"].SetDefault("0").GetVector<double_t>();
-        // TODO :: check values
-        // save to map
+        std::vector<double_t> values = s["VALUES"].SetDefault("-1").GetVector<double_t>();
+        if (values.back() == -1.) {
+            std::vector<double_t> range = s["RANGE"].SetDefault("-1").GetVector<double_t>();
+            if (range.back() == -1.) THROW(invalid_input, "Please specify concrete parameter values with VALUES: ... or a range with RANGE: [from, to, nr]");
+            if (range.size()!=3) THROW(invalid_input, "Please specify a range like this: RANGE: [from, to, nr]");
+            long nr(roundl(range[2]));
+            if (nr > MAX_VARIATION_NUMBER) THROW(invalid_input, "You are trying too many Variations, please reconsider.");
+            double from(range[0]), to(range[1]);
+            values.clear();
+            if (to < from) std::swap(to, from);
+            values.push_back(from);
+            if (to == from) {variation_map->insert(std::make_pair(name, values)); return;}
+            double step = (to - from)/(nr-2);
+            for (int i = 1; i < nr-1; ++i){
+                values.push_back(from + i*step);
+            }
+            values.push_back(to);
+        }
         variation_map->insert(std::make_pair(name, values));
     }
 

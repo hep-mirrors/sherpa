@@ -12,8 +12,8 @@
 
 namespace UFOVariations {
     Variation_Generator::Variation_Generator(const Args& args){
-        if (!args.p_single) THROW(invalid_input, "Something is wrong, no single process");
-        p_proc = args.p_single;
+        p_proc = dynamic_cast<PHASIC::Single_Process*> (args.p_proc);
+        if (!p_proc) THROW(fatal_error, "No Single Process was given for Variation.")
         p_vars = Variations::Get();
     }
 
