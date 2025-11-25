@@ -10,6 +10,15 @@ Kabbala::Kabbala(){
   rishbon = C_ZERO;
   lambda = [](Function_Argument map) {return C_ZERO;};
 }
+//Constructor for fixed constant.
+Kabbala::Kabbala(Complex c){
+  MyStrStream ss;
+  ss << c;
+  ss >> shem;
+  rishbon = c;
+  Complex c1 (c);
+  lambda = [c1](Function_Argument map) {return c1;};
+}
 // constructor without using initial value, that will be calculated from the function
 Kabbala::Kabbala(std::string str, Func func, Function_Argument map){
   shem = str;
@@ -252,6 +261,14 @@ Kabbala pow(const Kabbala& k1, const Complex& c) {
   Complex c1 (c);
   k.SetLambda([copy, c1](Kabbala::Function_Argument m){return std::pow(copy(m), c1);});
   return k;
+}
+
+Kabbala complexconjugate(const Kabbala& k1){
+  Kabbala k(k1);
+  k.SetValue(Complex(k.Value().real(), -k.Value().imag()));
+  k.SetString("(" + k.String() +")*");
+  Kabbala::Func copy(k.Lambda());
+  k.SetLambda([copy](Kabbala::Function_Argument m){return Complex(copy(m).real(), -copy(m).imag());});
 }
 
 /*Kabbala abs(const Kabbala& k1) {

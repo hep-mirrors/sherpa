@@ -6,6 +6,7 @@
 #include "MODEL/Main/Model_Base.H"
 #include "AddOns/UFOVariations/UFO_Variation_Key.H"
 #include "AddOns/UFOVariations/Variations.H"
+#include "PHASIC++/Process/Single_Process.H"
 #include <vector>
 #include <map>
 
@@ -19,12 +20,13 @@ namespace UFOVariations{
             ~Variation_Generator() override;
             void GenerateAndFillWeightsMap(ATOOLS::Weights_Map&) override;
             void ResetWeightsMap(ATOOLS::Weights_Map&) override;
-            void UpdateAllCouplings(VariationKey key);
 
-        protected:
+        protected:  
             PHASIC::Single_Process* p_proc;
             Variations* p_vars;
-            double Calculate();
+
+            double Calculate();            
+            void UpdateAllCouplings(VariationKey key);
     };
 };
 
