@@ -110,8 +110,6 @@ namespace COMIX {
 
     size_t SetMCMode(const size_t mcmode);
     void   SetLookUp(const bool lookup);
-    
-    Vec4D_Vector Last4DVectors() const override {return m_p;}
 
   };// end of class Single_Process
 

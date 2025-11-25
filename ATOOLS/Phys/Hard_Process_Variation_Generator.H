@@ -3,7 +3,7 @@
 
 #include "ATOOLS/Org/Getter_Function.H"
 
-namespace PHASIC { class Process_Base; class Single_Process;}
+namespace PHASIC {class Process_Base;}
 
 namespace ATOOLS {
 
@@ -33,5 +33,4 @@ namespace ATOOLS {
   using Hard_Process_Variation_Generator_Getter_Function =
     ATOOLS::Getter_Function<Hard_Process_Variation_Generator_Base, Args>;
 }
-
 #endif

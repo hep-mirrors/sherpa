@@ -3,6 +3,7 @@
 #include "AddOns/UFOVariations/Combinations.H"
 #include "ATOOLS/Org/Settings.H"
 #include "PHASIC++/Process/Single_Process.H"
+#include "PHASIC++/Main/Process_Integrator.H"
 #include "ATOOLS/Math/Vector.H"
 #include "ATOOLS/Math/Kabbala.H"
 #include <ostream>
@@ -68,13 +69,7 @@ namespace UFOVariations {
     Calculates the weight of the event under the specified variation
     */
     double Variation_Generator::Calculate(){
-        // TODO figure out how to redo calculation here
-        ATOOLS::Vec4D_Vector vec = p_proc->Last4DVectors();
-        if (vec.empty()) {
-            msg_Out() << "Empty Vector for recalculating ME, returning weight 1" << std::endl;
-            return 1;
-        }
-        return p_proc->Partonic(vec);
+        return p_proc->Partonic(p_proc->Integrator()->Momenta());
     }
 
     /*
