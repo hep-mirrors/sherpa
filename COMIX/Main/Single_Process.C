@@ -767,6 +767,11 @@ Flavour COMIX::Single_Process::ReMap
   if (fit!=m_fmap.end()) return fit->second;
   fit=m_fmap.find(fl.Bar());
   if (fit!=m_fmap.end()) return fit->second.Bar();
+  // TODO this fails sometimes --> why?
+  ATOOLS::GenerateStackTrace(msg_Out());
+  for (fit = m_fmap.begin(); fit != m_fmap.end(); fit++){
+    msg_Out() << ToString(fit->first) << ": " << ToString(fit->second) << std::endl;
+  }
   THROW(fatal_error,"Invalid flavour '"+ToString(fl)+"'");
   return fl;
 }

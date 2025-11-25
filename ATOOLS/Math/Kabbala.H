@@ -23,6 +23,7 @@ namespace ATOOLS {
     public:
       //constructors
       Kabbala();
+      Kabbala(Complex C);
       Kabbala(std::string str, Func func, Function_Argument map);
       Kabbala(std::string str ,Complex C);
       Kabbala(std::string str, Complex C, Func func);
@@ -107,6 +108,7 @@ namespace ATOOLS {
   Kabbala sqrt(const Kabbala& k1);
   Kabbala pow(const Kabbala& k1, const Complex& c);
   inline Kabbala sqr(const Kabbala& k1) {return pow(k1, Complex(2.));}
+  Kabbala complexconjugate(const Kabbala& k1);
   //Kabbala abs(const Kabbala& k1);
 
   /*
@@ -137,6 +139,12 @@ namespace ATOOLS {
   Kabbala operator/(const Complex& c,  const Kabbala& k);
   inline Kabbala operator/(const int& i,      const Kabbala& k) {return Complex(i)/k;}
   inline Kabbala operator/(const double& d,   const Kabbala& k) {return Complex(d)/k;}
+
+  /*
+  some conversion; TODO only here because model not written properly yet
+  */
+  inline double ToDouble(const Kabbala& k) {return k.Value().real();}
+  inline std::string ToString(const Kabbala& k) {return k.String();}
 }
 
 #endif
