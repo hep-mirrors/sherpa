@@ -307,7 +307,8 @@ namespace PHASIC {
 
     inline Cut_Data          * Cuts() const { return p_cuts; }
     inline Combined_Selector * Selector() const 
-    { return p_mapproc?p_mapproc->p_selector:p_selector; }
+    { return p_selector; }
+    //p_mapproc?p_mapproc->p_selector:p_selector; }
     inline virtual const double SPrimeMin() const { return -1.; }
     inline virtual const double SPrimeMax() const { return -1.; }
     template <class PType> inline PType *Get() 

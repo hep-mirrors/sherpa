@@ -431,9 +431,15 @@ double COMIX::Single_Process::Partonic(const Vec4D_Vector &p,
     return m_lastxs=m_dxs+KPTerms(mode,p_int->ISR()->PDF(0),
                                        p_int->ISR()->PDF(1));
   }
+  DEBUG_VAR(Name());
+  DEBUG_VAR(Selector()->Result());
+  //DEBUG_VAR(p_map->Selector()->Result());
   if (m_zero || !Selector()->Result()) return m_lastxs;
+  int lookup(m_lookup);
+  if (p_map && !p_map->Selector()->Result()) m_lookup=0;
+  DEBUG_VAR(mode);
   for (size_t i(0);i<m_nin+m_nout;++i) m_p[i]=p[i];
-  if (p_map!=NULL && m_lookup && p_map->m_lookup) {
+  if (p_map!=NULL && m_lookup && p_map->m_lookup && mode==1) {
     m_dxs=p_map->m_dxs;
     m_w=p_map->m_w;
     if (m_pinfo.m_fi.NLOType()&nlo_type::rsub) {
@@ -449,8 +455,10 @@ double COMIX::Single_Process::Partonic(const Vec4D_Vector &p,
   }
   else {
     if (m_pinfo.m_fi.NLOType()&nlo_type::rsub &&
-        !sp->p_bg->RSTrigger(Selector(),m_mcmode))
-      return m_lastxs=m_dxs=0.0;
+        !sp->p_bg->RSTrigger(Selector(),m_mcmode)) {
+      m_lookup = lookup;
+      return m_lastxs = m_dxs = 0.0;
+    }
     sp->p_scale->CalculateScale(p);
     if (m_pinfo.m_cls==cls::sample) {
       m_dxs=sp->p_bg->Differential();
@@ -500,6 +508,7 @@ double COMIX::Single_Process::Partonic(const Vec4D_Vector &p,
   FillMEWeights(m_mewgtinfo);
   m_mewgtinfo*=m_w;
   m_mewgtinfo.m_KP=kpterms;
+  m_lookup = lookup;
   return m_lastxs=m_dxs+kpterms;
 }
 
@@ -711,8 +720,8 @@ bool COMIX::Single_Process::Trigger(const ATOOLS::Vec4D_Vector &p)
 {
   DEBUG_FUNC(m_pinfo.m_fi.NLOType());
   if (m_zero) return false;
-  if (p_map!=NULL && m_lookup && p_map->m_lookup)
-    return Selector()->Result();
+//  if (p_map!=NULL && m_lookup && p_map->m_lookup)
+//    return Selector()->Result();
   if (m_pinfo.m_fi.NLOType()&nlo_type::rsub) {
     Amplitude *bg(p_map!=NULL?p_map->p_bg:p_bg);
     Selector()->SetResult(1);

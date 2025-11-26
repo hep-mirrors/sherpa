@@ -57,6 +57,7 @@ bool Combined_Selector::Initialize(const Selector_Key &key)
 bool Combined_Selector::Trigger(const Vec4D_Vector &p,
                                 const Flavour *fl, size_t n)
 {
+  DEBUG_VAR(p_proc->Name());
   DEBUG_FUNC(p.size()<<" momenta, "<<n<<" flavours");
   Selector_List sl(n?Selector_List(fl,n,p,m_nin):
                      Selector_List(p_proc->Flavours(),p,m_nin));

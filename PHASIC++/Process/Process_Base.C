@@ -541,7 +541,8 @@ void Process_Base::FillAmplitudes(std::vector<METOOLS::Spin_Amplitudes>& amp,
 
 void Process_Base::SetSelector(const Selector_Key &key)
 {
-  if (IsMapped()) return;
+  //if (IsMapped()) return;
+  DEBUG_VAR(Name());
   if (p_selector==NULL) p_selector = new Combined_Selector(this);
   p_selector->Initialize(key);
 }

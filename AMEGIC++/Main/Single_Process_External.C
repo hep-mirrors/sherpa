@@ -144,6 +144,7 @@ double AMEGIC::Single_Process_External::Partonic(const Vec4D_Vector &moms,
                                                  Variations_Mode varmode,
                                                  int mode)
 {
+  if (IsMapped() && !p_partner->Selector()->Result()) mode=0;  
   if (mode==1) return m_mewgtinfo.m_B=m_lastbxs=m_lastxs;
   if (!Selector()->Result()) return m_mewgtinfo.m_B=m_lastbxs=m_lastxs = 0.0;
   if (!(IsMapped() && LookUp())) {
