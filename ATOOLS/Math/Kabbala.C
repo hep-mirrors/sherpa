@@ -269,6 +269,7 @@ Kabbala complexconjugate(const Kabbala& k1){
   k.SetString("(" + k.String() +")*");
   Kabbala::Func copy(k.Lambda());
   k.SetLambda([copy](Kabbala::Function_Argument m){return Complex(copy(m).real(), -copy(m).imag());});
+  return k;
 }
 
 /*Kabbala abs(const Kabbala& k1) {
