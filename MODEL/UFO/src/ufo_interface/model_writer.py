@@ -104,21 +104,18 @@ class ModelWriter:
             output.write(template.safe_substitute(substitution))
 
     def _write_external_param(self, parameter):
-        fmt = 'double {0} = p_dataread->GetEntry<double>("{1}", {2}, 0.0);\n'
-        fmt += 'p_constants->insert(std::make_pair(std::string("{0}"), {0}));\n'
+        fmt = 'double {0}_val = p_dataread->GetEntry<double>("{1}", {2}, 0.0);\n'
+        fmt += 'p_constants->insert(std::make_pair(std::string("{0}"), {0}_val));\n'
+        fmt += 'ATOOLS::Kabbala {0} = ATOOLS::Kabbala("{0}", {0}_val);\n'
         if len(parameter.lhacode) > 2:
             raise ValueError(f'Unknown lhacode format \"{parameter.lhacode}\"')
         lha_indices = ", ".join([str(code) for code in parameter.lhacode])
         return fmt.format(parameter.name, parameter.lhablock, lha_indices)
 
     def _write_internal_param(self, parameter):
-        if parameter.type == 'real':
-            fmt = 'double {0} = ToDouble({1});\n'
-        else:
-            fmt = 'Complex {0} = {1};\n'
+        fmt = 'ATOOLS::Kabbala {0} = ATOOLS::Kabbala({1});\n'
         fmt += 'DEBUG_VAR({0});\n'
         value = calc_parameter(parameter.value)
-
         return fmt.format(parameter.name, value)
 
     def _write_parameters(self, parameters):
@@ -156,8 +153,10 @@ class ModelWriter:
             self._params += self._write_particle_mass(particle)
 
     def _write_couplings(self, couplings):
-        fmt = 'p_complexconstants->insert(std::make_pair(std::string("{0}"), {1}));\n'
+        fmt = 'ATOOLS::Kabbala {0} = ATOOLS::Kabbala({1}); \n'
+        fmt += 'p_complexconstants->insert(std::make_pair("{0}", {0}.Value()));\n'
         fmt += 'DEBUG_VAR((*p_complexconstants)["{0}"]);\n'
+        fmt += 'm_cpls.insert(std::make_pair("{0}", {0}));\n'
         for i, coupling in enumerate(couplings):
             print(f"Writing couplings: {float(i)/len(couplings)*100:0.2f}% finished", end='\r')
             self._params += fmt.format(coupling.name, calc_parameter(coupling.value))

@@ -7,6 +7,7 @@
 #include <iomanip>
 
 using namespace std;
+using namespace ATOOLS;
 
 namespace MODEL{
 

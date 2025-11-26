@@ -56,8 +56,7 @@ def vertex_implementation(vertex_list, hierachy):
                     color = 'None'
                 coupling = coupling_info[1]
                 func_impl += (indent +
-                              'm_v.back().cpl.push_back(ATOOLS::Kabbala("{0}",'
-                              + ' ComplexConstant(std::string("{0}"))));').format(coupling.name)
+                              'm_v.back().cpl.push_back(m_cpls["{0}"]);').format(coupling.name)
                 func_impl += (indent +
                               'm_v.back().Color.push_back(UFO::UFO_CF("{0}"));').format(color)
                 func_impl += (indent +

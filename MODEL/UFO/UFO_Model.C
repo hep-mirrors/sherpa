@@ -151,7 +151,7 @@ namespace UFO{
       return it->second;
     return label;
   }
-
+  /*
   Complex UFO_Model::complexconjugate(const Complex& arg) { return conj(arg); }
   Complex UFO_Model::re(const Complex& arg) { return real(arg); }
   Complex UFO_Model::im(const Complex& arg) { return imag(arg); }
@@ -166,6 +166,6 @@ namespace UFO{
     if (arg.imag()!=0.0)
       THROW(fatal_error, "Initializing double from complex with nonzero imaginary part");
     return arg.real();
-  }
+  }*/
 
 }
