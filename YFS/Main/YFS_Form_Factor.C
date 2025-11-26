@@ -1150,16 +1150,16 @@ double YFS_Form_Factor::BVirtGeneral(YFS::Dipole &d, double Kmax){
   double form = log(m_photonMass*m_photonMass/m_m1/m_m2)*(p1*p2*a0-1);
   form += A1(p1, p2);
   form += -p1*p2*a2;
-  if(fabs(form)> 1e4 ){
-    msg_Out()<<"Form = "<<form<<std::endl
-             <<"p1 = "<<p1<<std::endl
-             <<"p2 = "<<p2<<std::endl
-             <<"p1.Theta() = "<<p1.Theta()<<std::endl
-             <<"p2.Theta() = "<<p2.Theta()<<std::endl
-             <<"a0 = "<<a0<<std::endl
-             <<"a1 = "<<A1(p1,p2)<<std::endl
-             <<"a2 = "<<a2<<std::endl;
-  }
+  // if(fabs(form)> 1e4 ){
+  //   msg_Out()<<"Form = "<<form<<std::endl
+  //            <<"p1 = "<<p1<<std::endl
+  //            <<"p2 = "<<p2<<std::endl
+  //            <<"p1.Theta() = "<<p1.Theta()<<std::endl
+  //            <<"p2.Theta() = "<<p2.Theta()<<std::endl
+  //            <<"a0 = "<<a0<<std::endl
+  //            <<"a1 = "<<A1(p1,p2)<<std::endl
+  //            <<"a2 = "<<a2<<std::endl;
+  // }
   if(IsBad(form)){
     msg_Error()<<"YFS Btilde is NaN"<<std::endl
                 <<"A0 = "<<a0<<std::endl

@@ -362,6 +362,7 @@ bool YFS_Handler::CalculateFSR(Vec4D_Vector & p) {
       msg_Error()<<"Wrong photon multiplicity at Fixed Order: "<<totk<<std::endl;
     }
   }
+  if(FixedOrder()==fixed_order::nlo && m_FSRPhotons.size()==0) return false;
   // CheckMasses();
   return true;
 }
