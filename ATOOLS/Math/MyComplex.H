@@ -11,5 +11,7 @@ inline std::ostream& operator<<(std::ostream& ss, const Complex& c) {
     else ss << a << " + i*" << b;
     return ss;
 }
+inline Complex complexconjugate(const Complex& c) {return Complex(c.real(), -c.imag());}
+inline double ToDouble(const Complex& c) {return c.real();}
 
 #endif
