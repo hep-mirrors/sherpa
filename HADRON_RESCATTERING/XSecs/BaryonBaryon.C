@@ -8,7 +8,7 @@ using namespace std;
 
 BaryonBaryon::BaryonBaryon() :
   m_test(true) {
-  // if (m_test) { Tests(); exit(1); }
+   if (m_test) { Tests(); exit(1); }
 }
 
 BaryonBaryon::~BaryonBaryon() {}
@@ -64,7 +64,8 @@ double BaryonBaryon::xsel(long int & A, long int & B, const double & plab) {
 
 void BaryonBaryon::Tests() {
   size_t bins = 10000;
-  double pmin = 0., pmax = 10., pinc = (pmax-pmin)/double(bins);
+  msg_Out()<<"baronbaryon test has been called"<<std::endl;
+  double pmin = 0., pmax = 20., pinc = (pmax-pmin)/double(bins);
   map<string,Histogram *>  histos;
   histos["pp_total_low"]      = new Histogram(0,pmin,pmax,bins);
   histos["pp_elastic_low"]    = new Histogram(0,pmin,pmax,bins);

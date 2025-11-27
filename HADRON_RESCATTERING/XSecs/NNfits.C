@@ -173,15 +173,16 @@ double NNfits::pnB(const double & s) {
 double NNfits::ppbartot(const double & s) {
   if (s<4.*m_mn2) return 0.;
   double plab = sqrt(sqr(s)-4.*m_mp2*s)/(2.*m_mp);
-  if (plab>=6.5) return m_hpr1r2.xs_tot(hpr1r2::ppbar,s);
+  //if (plab>=6.5) return m_hpr1r2.xs_tot(hpr1r2::ppbar,s);
+  if (plab>=5) return 38.4+77.6*pow(plab, -0.64)+0.26*sqr(log(plab))-1.2*log(plab);
   if (plab>0.3) return 75.+43.1/plab+2.6/sqr(plab)-3.9*plab;
-  return 271.6*exp(-1.1*plab);
+  return 271.6*exp(-1.1*sqr(plab));
 }
 
 double NNfits::ppbarel(const double & s) {
   if (s<4.*m_mn2) return 0.;
   double plab = sqrt(sqr(s)-4.*m_mp2*s)/(2.*m_mp);
-  if (sqrt(s)>5.) return (10.2 + 52.7*pow(plab,-1.16) +
+  if (plab>5.) return (10.2 + 52.7*pow(plab,-1.16) +
 			  0.125*sqr(log(plab)) - 1.28*log(plab) );
   if (plab>0.3)   return 31.6+18.3/plab-1.1/sqr(plab)-3.8*plab;
   return 78.6;
