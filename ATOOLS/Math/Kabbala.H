@@ -10,6 +10,11 @@
 #define C_ZERO Complex(0., 0.)
 
 namespace ATOOLS {
+  /*
+  Class for storing (complex) constants which can be updated later on.
+
+  Each object can update based on external real constants, which need to be passed.
+  */
   class Kabbala {
     public:
       // types for the Lambda Functions for better readability

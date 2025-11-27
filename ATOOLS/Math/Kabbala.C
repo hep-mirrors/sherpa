@@ -173,14 +173,14 @@ Kabbala& Kabbala::operator/=(const Kabbala& k) {
 Kabbala& Kabbala::operator/=(const Complex& c) {
   if (ATOOLS::IsZero(c)) THROW(fatal_error, "division by zero :(");
   if (c == Complex(1., 0.)) return *this;
-  rishbon *= c;
+  rishbon /= c;
   std::string save = shem;
   MyStrStream sstr;  
   sstr<<"("<<save<<")/("<< c <<")";
   sstr >> shem;
   Func copy(lambda);
   Complex c2(c);
-  lambda = [c2, copy](Function_Argument m) {return c2*copy(m);};
+  lambda = [c2, copy](Function_Argument m) {return copy(m)/c2;};
   return *this;
 }
 
