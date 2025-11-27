@@ -22,12 +22,13 @@ namespace METOOLS {
     Complex ContractRemaining(const std::vector<ATOOLS::Particle*> &parts,
                               const std::vector<int> &permutation,
                               size_t level,
-                              const std::vector<Spin_Amplitudes> &diagrams,
+                              const std::vector<Spin_Amplitudes> &diagrams1,
+                              const std::vector<Spin_Amplitudes> &diagrams2,
                               std::vector<int> &spin_i, std::vector<int> &spin_j,
                               double factor) const;
 
   public:
-    Amplitude2_Tensor(const std::vector<ATOOLS::Particle*>& parts, size_t level);
+    Amplitude2_Tensor(const std::vector<ATOOLS::Particle*>& parts, size_t level, Complex value=Complex(1.0, 0.0));
     Amplitude2_Tensor(const std::vector<ATOOLS::Particle*>& parts,
                       size_t level,
                       const std::vector<Spin_Amplitudes*>& diagrams,
@@ -38,8 +39,18 @@ namespace METOOLS {
                       size_t level,
                       const std::vector<Spin_Amplitudes>& diagrams,
                       std::vector<int>& spin_i, std::vector<int>& spin_j);
+    // Amplitude2_Tensor for diagram interference terms, i.e. virtual corrections
+    Amplitude2_Tensor(const std::vector<ATOOLS::Particle*>& parts,
+                      const std::vector<int>& permutation,
+                      size_t level,
+                      const std::vector<Spin_Amplitudes>& diagrams1,
+                      const std::vector<Spin_Amplitudes>& diagrams2,
+                      std::vector<int>& spin_i, std::vector<int>& spin_j,
+                      double factor=1.0);
     Amplitude2_Tensor(const Amplitude2_Tensor& other);
     ~Amplitude2_Tensor();
+
+    void SetZero();
 
     void Contract(const Amplitude2_Matrix* D);
     Amplitude2_Matrix ReduceToMatrix(const ATOOLS::Particle* leftover) const;
@@ -72,6 +83,17 @@ namespace METOOLS {
     */
     std::pair<const int, const ATOOLS::Particle*> Search(int part_number, int level=1) const;
     /**
+    * @param level level of Amplitude2_Tensor which describes the searched particle, numbering starts with 1
+    * @param current_level current level of Amplitude2_Tensor, only for recursive calls;
+     * default: 1
+    *
+    * @return Pointer to particle corresponding to the respective level in the amplitude tensor; if the Amplitude2_Tensor
+     *        has not a enough levels than a NULL pointer is returned
+    *
+    * method for identifying the particle which is associated with a certain level in the amplitude tensor
+    */
+    const ATOOLS::Particle* Which_part(int level, int current_level=1) const;
+    /**
     * @param num current number of particles, necessary for recursive call of the function; default: 0
     *
     * @return The number of particles in the Amplitude2_Tensor
@@ -79,6 +101,18 @@ namespace METOOLS {
     * method for determining the number of particles in the Amplitude2_Tensor
     */
     int NumberParticles(int num=0) const;
+    /**
+    * @param particles Vector of particles of the current events who's helicities are not yet contracted in the
+    *                  Amplitude2_Tensor ordered according to the ordering in the tensor, for recursive calls only;
+    *                  default: empty vector
+    *
+    * @return Vector of particles of the current events who's helicities are not yet contracted in the
+    *         Amplitude2_Tensor ordered according to the ordering in the tensor
+    *
+    * method for determining the particles of the current events who's helicities are not yet contracted
+    */
+    const std::vector<ATOOLS::Particle> Particles(std::vector<ATOOLS::Particle> particles=std::vector<ATOOLS::Particle>()) const;
+    std::vector<ATOOLS::Particle*> ParticlesP(std::vector<ATOOLS::Particle*> particles=std::vector<ATOOLS::Particle*>()) const;
     /**
     * @return bool; false if the end of an Amplitude2_Tensor branch is reached
     * method for determining whether the end of an Amplitude2_Tensor branch is reached

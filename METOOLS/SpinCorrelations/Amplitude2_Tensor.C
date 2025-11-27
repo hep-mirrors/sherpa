@@ -13,13 +13,13 @@ using namespace ATOOLS;
 using namespace std;
 
 Amplitude2_Tensor::Amplitude2_Tensor(const std::vector<ATOOLS::Particle*>& parts,
-                                     size_t level) :
+                                     size_t level, Complex value) :
   p_next(NULL), m_value(-1.0,0.0), p_part(NULL), m_nhel(0)
 {
   if (level>parts.size()) THROW(fatal_error, "Internal error 1");
 
   if (level==parts.size()) {
-    m_value=Complex(1.0,0.0);
+    m_value=value;
   }
   else {
     p_part=parts[level];
@@ -29,7 +29,7 @@ Amplitude2_Tensor::Amplitude2_Tensor(const std::vector<ATOOLS::Particle*>& parts
 
     p_next=new vector<Amplitude2_Tensor*>(m_nhel*m_nhel);
     for (size_t i=0; i<p_next->size(); ++i) {
-      (*p_next)[i]=new Amplitude2_Tensor(parts, level+1);
+      (*p_next)[i]=new Amplitude2_Tensor(parts, level+1, value);
     }
   }
 }
@@ -74,13 +74,12 @@ Amplitude2_Tensor::Amplitude2_Tensor(const std::vector<ATOOLS::Particle*>& parts
                                      const std::vector<int>& permutation,
                                      size_t level,
                                      const std::vector<Spin_Amplitudes>& diagrams,
-                                     std::vector<int>& spin_i, std::vector<int>& spin_j) :
-  p_next(NULL), m_value(-1.0,0.0), p_part(NULL), m_nhel(0)
+                                     std::vector<int>& spin_i, std::vector<int>& spin_j) :p_next(NULL), m_value(-1.0,0.0), p_part(NULL), m_nhel(0)
 {
   if (level>parts.size()) THROW(fatal_error, "Internal error 1");
 
   if (level==parts.size() || parts[level]->RefFlav().IsStable()) {
-    m_value=ContractRemaining(parts,permutation,level,diagrams,
+    m_value=ContractRemaining(parts,permutation,level, diagrams, diagrams,
                               spin_i,spin_j, 1.0);
   }
   else {
@@ -99,6 +98,37 @@ Amplitude2_Tensor::Amplitude2_Tensor(const std::vector<ATOOLS::Particle*>& parts
   }
 }
 
+Amplitude2_Tensor::Amplitude2_Tensor(const std::vector<ATOOLS::Particle*>& parts,
+                                     const std::vector<int>& permutation,
+                                     size_t level,
+                                     const std::vector<Spin_Amplitudes>& diagrams1,
+                                     const std::vector<Spin_Amplitudes>& diagrams2,
+                                     std::vector<int>& spin_i,
+                                     std::vector<int>& spin_j, double factor) :
+  p_next(NULL), m_value(-1.0,0.0), p_part(NULL), m_nhel(0)
+{
+  if (level>parts.size()) THROW(fatal_error, "Internal error 1");
+
+  if (level==parts.size() || parts[level]->RefFlav().IsStable()) {
+    m_value=ContractRemaining(parts,permutation,level,diagrams1, diagrams2,
+                              spin_i,spin_j, factor);
+  }
+  else {
+    p_part=parts[level];
+
+    m_nhel=p_part->RefFlav().IntSpin()+1;
+    if (m_nhel==3 && IsZero(p_part->RefFlav().Mass())) m_nhel=2;
+
+    p_next=new vector<Amplitude2_Tensor*>(m_nhel*m_nhel);
+    for (size_t i=0; i<p_next->size(); ++i) {
+      spin_i[level]=(i%m_nhel);
+      spin_j[level]=(i/m_nhel);
+      (*p_next)[i]=new Amplitude2_Tensor(parts, permutation, level+1,
+                                         diagrams1, diagrams2, spin_i, spin_j,
+                                         factor);
+    }
+  }
+}
 
 Amplitude2_Tensor::Amplitude2_Tensor(const Amplitude2_Tensor& other)
 {
@@ -115,11 +145,19 @@ Amplitude2_Tensor::Amplitude2_Tensor(const Amplitude2_Tensor& other)
   else p_next=NULL;
 }
 
+void Amplitude2_Tensor::SetZero()
+{
+  if (p_next)
+    for (size_t i=0; i<p_next->size(); ++i)
+      (*p_next)[i]->SetZero();
+  else m_value=Complex(0.,0.);
+}
+
 Complex Amplitude2_Tensor::ContractRemaining
 (const std::vector<ATOOLS::Particle*>& parts,
  const vector<int>& permutation,
  size_t level,
- const vector<Spin_Amplitudes>& diagrams,
+ const vector<Spin_Amplitudes>& diagrams1, const vector<Spin_Amplitudes>& diagrams2,
  vector<int>& spin_i, vector<int>& spin_j, double factor) const
 {
   if (level>parts.size()) THROW(fatal_error, "Internal error 1");
@@ -132,22 +170,32 @@ Complex Amplitude2_Tensor::ContractRemaining
       spin_i_perm[p]=spin_i[permutation[p]];
       spin_j_perm[p]=spin_j[permutation[p]];
     }
-    for (size_t i(0); i<diagrams.size(); ++i) {
-      for (size_t j(0); j<diagrams.size(); ++j) {
-        ret+=diagrams[i].Get(spin_i_perm)*
-          conj(diagrams[j].Get(spin_j_perm))*factor;
+    for (size_t i(0); i<diagrams1.size(); ++i) {
+      if (diagrams1==diagrams2) {
+        ret += diagrams1[i].Get(spin_i_perm) *
+               conj(diagrams1[i].Get(spin_j_perm)) * factor;
+      }
+      else{
+        // TODO: What is the better definition of the polarization interference terms: keeping the polarization of the
+        //       matrix element and complex conjugate matrix element or keeping helicity of LO and Virt ME for the
+        //       two terms that are added here
+        ret += diagrams1[i].Get(spin_i_perm) *
+               conj(diagrams2[i].Get(spin_j_perm)) * factor;
+        ret += diagrams2[i].Get(spin_i_perm) *
+               conj(diagrams1[i].Get(spin_j_perm)) * factor;
       }
     }
   }
   else {
     int nlambda=parts[level]->RefFlav().IntSpin()+1;
     if (nlambda==3 && IsZero(parts[level]->RefFlav().Mass())) nlambda=2;
-    double newfactor=factor/double(nlambda);
+    double newfactor(factor);
+    if (parts[level]->Number()<3) newfactor /= double(nlambda);
     for (size_t i=0; i<nlambda; ++i) {
       spin_i[level]=i;
       spin_j[level]=i;
       ret+=ContractRemaining(parts, permutation, level+1,
-                             diagrams, spin_i, spin_j, newfactor);
+                             diagrams1, diagrams2, spin_i, spin_j, newfactor);
     }
   }
   return ret;
@@ -238,7 +286,7 @@ Amplitude2_Matrix Amplitude2_Tensor::ReduceToMatrix(const Particle* left) const
 
 void Amplitude2_Tensor::Add(const Amplitude2_Tensor* amp, const Complex& factor)
 {
-  if (p_part!=amp->p_part) THROW(fatal_error,"Particles don't match.");
+  if (p_part!=amp->p_part) {DO_STACK_TRACE; THROW(fatal_error,"Particles don't match."); }
   if (p_next) {
     if (p_next->size() != amp->p_next->size()) THROW(fatal_error, "Internal1.");
     for (size_t i(0);i<p_next->size();++i) {
@@ -487,6 +535,29 @@ std::pair<const int, const ATOOLS::Particle*> Amplitude2_Tensor::Search(const in
     }
   }
   return std::make_pair(level, nullptr);
+}
+
+const ATOOLS::Particle* Amplitude2_Tensor::Which_part(int level, int current_level) const{
+  if (level==current_level) return p_part;
+  else if (p_next) return (*p_next)[0]->Which_part(level, current_level+1);
+  return nullptr;
+}
+
+const std::vector<ATOOLS::Particle> Amplitude2_Tensor::Particles(std::vector<ATOOLS::Particle> particles) const {
+  if (p_next) {
+      particles.push_back(*p_part);
+      return (*p_next)[0]->Particles(particles);
+    }
+  else return particles;
+}
+
+std::vector<ATOOLS::Particle*> Amplitude2_Tensor::
+ParticlesP(std::vector<ATOOLS::Particle*> particles) const {
+  if (p_next) {
+    particles.push_back(p_part);
+    return (*p_next)[0]->ParticlesP(particles);
+  }
+  else return particles;
 }
 
 namespace ATOOLS {
