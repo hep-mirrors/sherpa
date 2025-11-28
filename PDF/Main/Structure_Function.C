@@ -7,11 +7,12 @@ using namespace ATOOLS;
 
 Structure_Function::Structure_Function(PDF::PDF_Base *_p_pdf,
                                        const ATOOLS::Flavour &_m_bunch)
-    : ISR_Base(_p_pdf) {
+    : ISR_Base(_p_pdf), m_A(1) {
   m_bunch = _m_bunch;
   if (m_bunch.IsChargedLepton()) m_type = isrtype::lepton;
   else if (m_bunch.IsPhoton() || m_bunch.IsHadron())
     m_type = isrtype::hadron;
+  if (m_bunch.IsIon()) m_A = m_bunch.GetMassNumber();
 }
 
 bool Structure_Function::CalculateWeight(double x, double z, double kp2,
@@ -38,5 +39,5 @@ bool Structure_Function::CalculateWeight(double x, double z, double kp2,
 }
 
 double Structure_Function::Weight(ATOOLS::Flavour flin) {
-  return m_weight * p_pdf->GetXPDF(flin);
+  return m_weight * p_pdf->GetXPDF(flin) * m_A;
 }

@@ -4,9 +4,11 @@
 #include "PDF/Main/ISR_Base.H"
 #include "PDF/Main/PDF_Base.H"
 
-namespace PDF {  
+namespace PDF {
 
   class Structure_Function : public ISR_Base {
+  private:
+    unsigned int m_A;
   public:
 
     // constructor
@@ -19,7 +21,7 @@ namespace PDF {
   };// end of class Structure_Function
 
   /*!
-    \file 
+    \file
     \brief contains the class PDF::Structure_Function.
   */
   /*!
@@ -28,7 +30,7 @@ namespace PDF {
            by energy fractions and scales of the hard interaction, i.e. structure functions
 	   and PDFs.
 
-    This class is used for treatment of initial state radiation through structure functions 
+    This class is used for treatment of initial state radiation through structure functions
     or PDFs that are consequently fully incorporated via a pointer to a suitable PDF_Base.
     It should be stressed here that for instance electromagnetic radiation off an electron
     is described through a structure function that is cast into the form of a PDF_Base.
@@ -37,11 +39,11 @@ namespace PDF {
     The type related to this ISR_Base is "(SF)".
 
     \param _p_pdf
-    The pointer to the pdf for the structure function. It is handed over to the 
-    constructor, after having been instantiated by the PDF::PDF_Handler. Note that also 
+    The pointer to the pdf for the structure function. It is handed over to the
+    constructor, after having been instantiated by the PDF::PDF_Handler. Note that also
     structure functions like the one for the electron are handed over as PDF_Base.
   */
-  /*! 
+  /*!
     \var bool Structure_Function::CalculateWeight(double,double);
     After checking the ranges of the arguments, the energy fraction of the parton and
     the scale, this calculates the parton densities/weights for the structure function
