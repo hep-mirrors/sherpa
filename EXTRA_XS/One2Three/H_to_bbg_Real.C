@@ -298,11 +298,12 @@ static double nu_ijk_tilde(ATOOLS::Vec4<double> p_i, ATOOLS::Vec4<double> p_j, A
 }
 
 
-static double V_ijk(ATOOLS::Vec4<double> p_i, ATOOLS::Vec4<double> p_j, ATOOLS::Vec4<double> p_k){
+static double V_ijk(ATOOLS::Vec4<double> p_i, ATOOLS::Vec4<double> p_j,
+                    ATOOLS::Vec4<double> p_k, const ATOOLS::Flavour& prop){
   double C_F = 4.0 / 3.0;
   ATOOLS::Vec4<double> Q = p_i + p_j + p_k;
-  double m2_Q = Q * Q; // Q mass squared
-
+  double m2_Q = Q*Q;
+  double m2_q = sqr(prop.Mass()); // Q mass squared
   double alpha_qcd = MODEL::s_model -> ScalarFunction("alpha_S", m2_Q); // at Higgs scale
   
   #ifdef M_PI
@@ -327,8 +328,8 @@ void H_to_bbg_Real::Calculate_real_subtraction(const ATOOLS::Vec4D_Vector& momen
   ATOOLS::Vec4<double> p_b = momenta[2];
   ATOOLS::Vec4<double> p_bb = momenta[3];
 
-  double V_gb_bb = V_ijk(p_g, p_b, p_bb);
-  double V_gbb_b = V_ijk(p_g, p_bb, p_b);
+  double V_gb_bb = V_ijk(p_g, p_b, p_bb, m_prop);
+  double V_gbb_b = V_ijk(p_g, p_bb, p_b, m_prop);
 
   double m2_ij = p_b * p_b; // because m_i = 0 (gluon) and m_b = m_bb
 
