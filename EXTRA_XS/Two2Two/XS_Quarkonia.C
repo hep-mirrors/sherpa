@@ -1226,14 +1226,14 @@ operator()(const External_ME_Args &args) const
 	 fl[3].IsOctetMeson() ) {
       kf_code kfc = fl[3].Kfcode();
       if (kfc==kf_1S0_c_8_eta_c || kfc==kf_1S0_c_8_J_psi_1S   || kfc==kf_1S0_c_8_psi_2S     ||
-          kfc==kf_1S0_b_8_eta_b || kfc==kf_1S0_b_8_Upsilon_1S || kfc==kf_1S0_b_8_Upsilon_2S) return new XS_qg_q1S0_oct(args);
+          kfc==kf_1S0_b_8_eta_b || kfc==kf_1S0_b_8_Upsilon_1S || kfc==kf_1S0_b_8_Upsilon_2S || kfc==kf_1S0_b_8_Upsilon_3S) return new XS_qg_q1S0_oct(args);
     }
     if ( ((fl[0].IsQuark() && fl[1].IsGluon() && fl[3]==fl[0]) ||
 	  (fl[0].IsGluon() && fl[1].IsQuark() && fl[3]==fl[1])) &&
 	 fl[2].IsOctetMeson() ) {
       kf_code kfc = fl[2].Kfcode();
       if (kfc==kf_1S0_c_8_eta_c || kfc==kf_1S0_c_8_J_psi_1S   || kfc==kf_1S0_c_8_psi_2S     ||
-          kfc==kf_1S0_b_8_eta_b || kfc==kf_1S0_b_8_Upsilon_1S || kfc==kf_1S0_b_8_Upsilon_2S) return new XS_qg_q1S0_oct(args);
+          kfc==kf_1S0_b_8_eta_b || kfc==kf_1S0_b_8_Upsilon_1S || kfc==kf_1S0_b_8_Upsilon_2S || kfc==kf_1S0_b_8_Upsilon_3S) return new XS_qg_q1S0_oct(args);
     }
   }
   return NULL;
@@ -1252,18 +1252,20 @@ XS_qg_q1S0_oct::XS_qg_q1S0_oct(const External_ME_Args& args):
   }
   m_mass   = fl[m_S].Mass(true);  m_mass2 = sqr(m_mass); LDME = 0.;
   auto pss = Settings::GetMainSettings()["EXTRA_XS"];
-  pss["LDME_990000441"].SetDefault(0.018/3.);
-  pss["LDME_990000443"].SetDefault(0.012/3.);
-  pss["LDME_990100443"].SetDefault(0.005/3.);
-  pss["LDME_990000551"].SetDefault(0.0231/3.);
-  pss["LDME_990000553"].SetDefault(0.0151/3.);
-  pss["LDME_990100553"].SetDefault(0.0124/3.);
+  pss["LDME_990000441"].SetDefault(0.018/3.*1000);
+  pss["LDME_990000443"].SetDefault(0.012/3.*1000);
+  pss["LDME_990100443"].SetDefault(0.005/3.*1000);
+  pss["LDME_990000551"].SetDefault(0.0231/3.*1000);
+  pss["LDME_990000553"].SetDefault(0.0151/3.*1000);
+  pss["LDME_990100553"].SetDefault(0.0124/3.*1000);
+  pss["LDME_990200553"].SetDefault(0.0101/3.*1000);
   if (fl[m_S].Kfcode()==kf_1S0_c_8_eta_c)      LDME = 0.001*pss["LDME_990000441"].Get<double>(); 
   if (fl[m_S].Kfcode()==kf_1S0_c_8_J_psi_1S)   LDME = 0.001*pss["LDME_990000443"].Get<double>(); 
   if (fl[m_S].Kfcode()==kf_1S0_c_8_psi_2S)     LDME = 0.001*pss["LDME_990100443"].Get<double>(); 
   if (fl[m_S].Kfcode()==kf_1S0_b_8_eta_b)      LDME = 0.001*pss["LDME_990000551"].Get<double>(); 
   if (fl[m_S].Kfcode()==kf_1S0_b_8_Upsilon_1S) LDME = 0.001*pss["LDME_990000553"].Get<double>(); 
   if (fl[m_S].Kfcode()==kf_1S0_b_8_Upsilon_2S) LDME = 0.001*pss["LDME_990100553"].Get<double>(); 
+  if (fl[m_S].Kfcode()==kf_1S0_b_8_Upsilon_3S) LDME = 0.001*pss["LDME_990200553"].Get<double>(); 
   m_a      = fl[m_q].IsAnti() ? 1 : 0; 
   m_alphaS = MODEL::s_model->ScalarConstant("alpha_S");
   if (LDME == 0.0){
@@ -1317,13 +1319,13 @@ operator()(const External_ME_Args &args) const
 	fl[2].IsGluon() && fl[3].IsOctetMeson() ) {
 	    kf_code kfc = fl[3].Kfcode();
       if (kfc==kf_1S0_c_8_eta_c || kfc==kf_1S0_c_8_J_psi_1S   || kfc==kf_1S0_c_8_psi_2S     ||
-          kfc==kf_1S0_b_8_eta_b || kfc==kf_1S0_b_8_Upsilon_1S || kfc==kf_1S0_b_8_Upsilon_2S) return new XS_qqbar_g1S0_oct(args);
+          kfc==kf_1S0_b_8_eta_b || kfc==kf_1S0_b_8_Upsilon_1S || kfc==kf_1S0_b_8_Upsilon_2S || kfc==kf_1S0_b_8_Upsilon_3S) return new XS_qqbar_g1S0_oct(args);
     }
     if (fl[0].IsQuark() && fl[1].IsQuark() && fl[1]==fl[0].Bar() &&
 	fl[3].IsGluon() && fl[2].IsOctetMeson() ) {
       kf_code kfc = fl[2].Kfcode();
       if (kfc==kf_1S0_c_8_eta_c || kfc==kf_1S0_c_8_J_psi_1S   || kfc==kf_1S0_c_8_psi_2S     ||
-          kfc==kf_1S0_b_8_eta_b || kfc==kf_1S0_b_8_Upsilon_1S || kfc==kf_1S0_b_8_Upsilon_2S) return new XS_qqbar_g1S0_oct(args);
+          kfc==kf_1S0_b_8_eta_b || kfc==kf_1S0_b_8_Upsilon_1S || kfc==kf_1S0_b_8_Upsilon_2S || kfc==kf_1S0_b_8_Upsilon_3S) return new XS_qqbar_g1S0_oct(args);
     }
   }
   return NULL;
@@ -1341,18 +1343,20 @@ XS_qqbar_g1S0_oct::XS_qqbar_g1S0_oct(const External_ME_Args& args):
   }
   m_mass   = fl[m_S].Mass(true);  m_mass2 = sqr(m_mass); LDME = 0.;
   auto pss = Settings::GetMainSettings()["EXTRA_XS"];
-  pss["LDME_990000441"].SetDefault(0.018/3.);
-  pss["LDME_990000443"].SetDefault(0.012/3.);
-  pss["LDME_990100443"].SetDefault(0.005/3.);
-  pss["LDME_990000551"].SetDefault(0.0231/3.);
-  pss["LDME_990000553"].SetDefault(0.0151/3.);
-  pss["LDME_990100553"].SetDefault(0.0124/3.);
+  pss["LDME_990000441"].SetDefault(0.018/3.*1000);
+  pss["LDME_990000443"].SetDefault(0.012/3.*1000);
+  pss["LDME_990100443"].SetDefault(0.005/3.*1000);
+  pss["LDME_990000551"].SetDefault(0.0231/3.*1000);
+  pss["LDME_990000553"].SetDefault(0.0151/3.*1000);
+  pss["LDME_990100553"].SetDefault(0.0124/3.*1000);
+  pss["LDME_990200553"].SetDefault(0.0101/3.*1000);
   if (fl[m_S].Kfcode()==kf_1S0_c_8_eta_c)      LDME = 0.001*pss["LDME_990000441"].Get<double>(); 
   if (fl[m_S].Kfcode()==kf_1S0_c_8_J_psi_1S)   LDME = 0.001*pss["LDME_990000443"].Get<double>(); 
   if (fl[m_S].Kfcode()==kf_1S0_c_8_psi_2S)     LDME = 0.001*pss["LDME_990100443"].Get<double>(); 
   if (fl[m_S].Kfcode()==kf_1S0_b_8_eta_b)      LDME = 0.001*pss["LDME_990000551"].Get<double>(); 
   if (fl[m_S].Kfcode()==kf_1S0_b_8_Upsilon_1S) LDME = 0.001*pss["LDME_990000553"].Get<double>(); 
   if (fl[m_S].Kfcode()==kf_1S0_b_8_Upsilon_2S) LDME = 0.001*pss["LDME_990100553"].Get<double>(); 
+  if (fl[m_S].Kfcode()==kf_1S0_b_8_Upsilon_3S) LDME = 0.001*pss["LDME_990200553"].Get<double>(); 
   m_alphaS = MODEL::s_model->ScalarConstant("alpha_S");
   if (LDME == 0.0){
     throw std::runtime_error("\033[31mCross section is zero. Cannot continue.\033[0m");
@@ -1391,13 +1395,13 @@ operator()(const External_ME_Args &args) const
 	 fl[3].IsOctetMeson() ) {
       kf_code kfc = fl[3].Kfcode();
       if (kfc==kf_1S0_c_8_eta_c || kfc==kf_1S0_c_8_J_psi_1S   || kfc==kf_1S0_c_8_psi_2S     ||
-          kfc==kf_1S0_b_8_eta_b || kfc==kf_1S0_b_8_Upsilon_1S || kfc==kf_1S0_b_8_Upsilon_2S) return new XS_gg_g1S0_oct(args);
+          kfc==kf_1S0_b_8_eta_b || kfc==kf_1S0_b_8_Upsilon_1S || kfc==kf_1S0_b_8_Upsilon_2S || kfc==kf_1S0_b_8_Upsilon_3S) return new XS_gg_g1S0_oct(args);
     }
     if ( fl[0].IsGluon() && fl[1].IsGluon() && fl[3].IsGluon()  &&
 	 fl[2].IsOctetMeson() ) {
       kf_code kfc = fl[2].Kfcode();
       if (kfc==kf_1S0_c_8_eta_c || kfc==kf_1S0_c_8_J_psi_1S   || kfc==kf_1S0_c_8_psi_2S     ||
-          kfc==kf_1S0_b_8_eta_b || kfc==kf_1S0_b_8_Upsilon_1S || kfc==kf_1S0_b_8_Upsilon_2S)return new XS_gg_g1S0_oct(args);
+          kfc==kf_1S0_b_8_eta_b || kfc==kf_1S0_b_8_Upsilon_1S || kfc==kf_1S0_b_8_Upsilon_2S || kfc==kf_1S0_b_8_Upsilon_3S)return new XS_gg_g1S0_oct(args);
     }
   }
   return NULL;
@@ -1414,18 +1418,20 @@ XS_gg_g1S0_oct::XS_gg_g1S0_oct(const External_ME_Args& args):
   }
   m_mass   = fl[m_S].Mass(true);  m_mass2 = sqr(m_mass); LDME = 0.;
   auto pss = Settings::GetMainSettings()["EXTRA_XS"];
-  pss["LDME_990000441"].SetDefault(0.018/3.);
-  pss["LDME_990000443"].SetDefault(0.012/3.);
-  pss["LDME_990100443"].SetDefault(0.005/3.);
-  pss["LDME_990000551"].SetDefault(0.0231/3.);
-  pss["LDME_990000553"].SetDefault(0.0151/3.);
-  pss["LDME_990100553"].SetDefault(0.0124/3.);
+  pss["LDME_990000441"].SetDefault(0.018/3.*1000);
+  pss["LDME_990000443"].SetDefault(0.012/3.*1000);
+  pss["LDME_990100443"].SetDefault(0.005/3.*1000);
+  pss["LDME_990000551"].SetDefault(0.0231/3.*1000);
+  pss["LDME_990000553"].SetDefault(0.0151/3.*1000);
+  pss["LDME_990100553"].SetDefault(0.0124/3.*1000);
+  pss["LDME_990200553"].SetDefault(0.0101/3.*1000);
   if (fl[m_S].Kfcode()==kf_1S0_c_8_eta_c)      LDME = 0.001*pss["LDME_990000441"].Get<double>(); 
   if (fl[m_S].Kfcode()==kf_1S0_c_8_J_psi_1S)   LDME = 0.001*pss["LDME_990000443"].Get<double>(); 
   if (fl[m_S].Kfcode()==kf_1S0_c_8_psi_2S)     LDME = 0.001*pss["LDME_990100443"].Get<double>(); 
   if (fl[m_S].Kfcode()==kf_1S0_b_8_eta_b)      LDME = 0.001*pss["LDME_990000551"].Get<double>(); 
   if (fl[m_S].Kfcode()==kf_1S0_b_8_Upsilon_1S) LDME = 0.001*pss["LDME_990000553"].Get<double>(); 
   if (fl[m_S].Kfcode()==kf_1S0_b_8_Upsilon_2S) LDME = 0.001*pss["LDME_990100553"].Get<double>(); 
+  if (fl[m_S].Kfcode()==kf_1S0_b_8_Upsilon_3S) LDME = 0.001*pss["LDME_990200553"].Get<double>(); 
   m_alphaS = MODEL::s_model->ScalarConstant("alpha_S");
   if (LDME == 0.0){
     throw std::runtime_error("\033[31mCross section is zero. Cannot continue.\033[0m");
@@ -1482,8 +1488,8 @@ operator()(const External_ME_Args &args) const
       kf_code kfc = fl[3].Kfcode();
       if (kfc==kf_3S1_c_8_J_psi_1S  || kfc==kf_3S1_c_8_psi_2S     || kfc==kf_3S1_c_8_eta_c      || 
           kfc==kf_3S1_c_8_chi_c0_1P || kfc==kf_3S1_c_8_chi_c1_1P  || kfc==kf_3S1_c_8_chi_c2_1P  ||
-          kfc==kf_3S1_b_8_Upsilon_1S|| kfc==kf_3S1_b_8_Upsilon_2S || kfc==kf_3S1_b_8_eta_b      ||
-          kfc==kf_3S1_b_8_chi_b0_1P || kfc==kf_3S1_b_8_chi_b1_1P  || kfc==kf_3S1_b_8_chi_b2_1P) return new XS_qg_q3S1_oct(args);
+          kfc==kf_3S1_b_8_Upsilon_1S|| kfc==kf_3S1_b_8_Upsilon_2S || kfc==kf_3S1_b_8_Upsilon_3S || kfc==kf_3S1_b_8_eta_b      ||
+          kfc==kf_3S1_b_8_chi_b0_1P || kfc==kf_3S1_b_8_chi_b1_1P  || kfc==kf_3S1_b_8_chi_b2_1P ) return new XS_qg_q3S1_oct(args);
     }
     if ( ((fl[0].IsQuark() && fl[1].IsGluon() && fl[3]==fl[0]) ||
 	  (fl[0].IsGluon() && fl[1].IsQuark() && fl[3]==fl[1])) &&
@@ -1491,7 +1497,7 @@ operator()(const External_ME_Args &args) const
       kf_code kfc = fl[2].Kfcode();
       if (kfc==kf_3S1_c_8_J_psi_1S  || kfc==kf_3S1_c_8_psi_2S     || kfc==kf_3S1_c_8_eta_c      || 
           kfc==kf_3S1_c_8_chi_c0_1P || kfc==kf_3S1_c_8_chi_c1_1P  || kfc==kf_3S1_c_8_chi_c2_1P  ||
-          kfc==kf_3S1_b_8_Upsilon_1S|| kfc==kf_3S1_b_8_Upsilon_2S || kfc==kf_3S1_b_8_eta_b      ||
+          kfc==kf_3S1_b_8_Upsilon_1S|| kfc==kf_3S1_b_8_Upsilon_2S || kfc==kf_3S1_b_8_Upsilon_3S || kfc==kf_3S1_b_8_eta_b      ||
           kfc==kf_3S1_b_8_chi_b0_1P || kfc==kf_3S1_b_8_chi_b1_1P  || kfc==kf_3S1_b_8_chi_b2_1P) return new XS_qg_q3S1_oct(args);
     }
   }
@@ -1511,17 +1517,18 @@ XS_qg_q3S1_oct::XS_qg_q3S1_oct(const External_ME_Args& args):
   }
   m_mass   = fl[m_S].Mass(true);  m_mass2 = sqr(m_mass); LDME = 0.;
   auto pss = Settings::GetMainSettings()["EXTRA_XS"];
-  pss["LDME_991000441"].SetDefault(0.0180);
-  pss["LDME_991000443"].SetDefault(0.0013);
-  pss["LDME_991100443"].SetDefault(0.0033);
-  pss["LDME_991010441"].SetDefault(0.00187);
+  pss["LDME_991000441"].SetDefault(0.0180*1000);
+  pss["LDME_991000443"].SetDefault(0.0013*1000);
+  pss["LDME_991100443"].SetDefault(0.0033*1000);
+  pss["LDME_991010441"].SetDefault(0.00187*1000);
   // pss["LDME_991020443"].SetDefault(3*0.00187);
   // pss["LDME_991000445"].SetDefault(5*0.00187);
 
-  pss["LDME_991000551"].SetDefault(0.0121);
-  pss["LDME_991000553"].SetDefault(0.0477);
-  pss["LDME_991100553"].SetDefault(0.121);
-  pss["LDME_991010551"].SetDefault(0.1008);
+  pss["LDME_991000551"].SetDefault(0.0121*1000);
+  pss["LDME_991000553"].SetDefault(0.0477*1000);
+  pss["LDME_991100553"].SetDefault(0.121*1000);
+  pss["LDME_991200553"].SetDefault(0.307*1000);
+  pss["LDME_991010551"].SetDefault(0.1008*1000);
   // pss["LDME_991020553"].SetDefault(3*0.1008);
   // pss["LDME_991000555"].SetDefault(5*0.1008);
 
@@ -1535,6 +1542,7 @@ XS_qg_q3S1_oct::XS_qg_q3S1_oct(const External_ME_Args& args):
   if (fl[m_S].Kfcode()==kf_3S1_b_8_eta_b)      LDME = 0.001*pss["LDME_991000551"].Get<double>(); 
   if (fl[m_S].Kfcode()==kf_3S1_b_8_Upsilon_1S) LDME = 0.001*pss["LDME_991000553"].Get<double>(); 
   if (fl[m_S].Kfcode()==kf_3S1_b_8_Upsilon_2S) LDME = 0.001*pss["LDME_991100553"].Get<double>(); 
+  if (fl[m_S].Kfcode()==kf_3S1_b_8_Upsilon_3S) LDME = 0.001*pss["LDME_991200553"].Get<double>(); 
   if (fl[m_S].Kfcode()==kf_3S1_b_8_chi_b0_1P)  LDME = 0.001*pss["LDME_991010551"].Get<double>(); 
   if (fl[m_S].Kfcode()==kf_3S1_b_8_chi_b1_1P)  LDME = 0.001*pss["LDME_991010551"].Get<double>(); 
   if (fl[m_S].Kfcode()==kf_3S1_b_8_chi_b2_1P)  LDME = 0.001*pss["LDME_991010551"].Get<double>(); 
@@ -1599,7 +1607,7 @@ operator()(const External_ME_Args &args) const
 	    kf_code kfc = fl[3].Kfcode();
       if (kfc==kf_3S1_c_8_J_psi_1S  || kfc==kf_3S1_c_8_psi_2S     || kfc==kf_3S1_c_8_eta_c      || 
           kfc==kf_3S1_c_8_chi_c0_1P || kfc==kf_3S1_c_8_chi_c1_1P  || kfc==kf_3S1_c_8_chi_c2_1P  ||
-          kfc==kf_3S1_b_8_Upsilon_1S|| kfc==kf_3S1_b_8_Upsilon_2S || kfc==kf_3S1_b_8_eta_b      ||
+          kfc==kf_3S1_b_8_Upsilon_1S|| kfc==kf_3S1_b_8_Upsilon_2S || kfc==kf_3S1_b_8_Upsilon_3S || kfc==kf_3S1_b_8_eta_b      ||
           kfc==kf_3S1_b_8_chi_b0_1P || kfc==kf_3S1_b_8_chi_b1_1P  || kfc==kf_3S1_b_8_chi_b2_1P) return new XS_qqbar_g3S1_oct(args);
     }
     if (fl[0].IsQuark() && fl[1].IsQuark() && fl[1]==fl[0].Bar() &&
@@ -1607,7 +1615,7 @@ operator()(const External_ME_Args &args) const
       kf_code kfc = fl[2].Kfcode();
       if (kfc==kf_3S1_c_8_J_psi_1S  || kfc==kf_3S1_c_8_psi_2S     || kfc==kf_3S1_c_8_eta_c      || 
           kfc==kf_3S1_c_8_chi_c0_1P || kfc==kf_3S1_c_8_chi_c1_1P  || kfc==kf_3S1_c_8_chi_c2_1P  ||
-          kfc==kf_3S1_b_8_Upsilon_1S|| kfc==kf_3S1_b_8_Upsilon_2S || kfc==kf_3S1_b_8_eta_b      ||
+          kfc==kf_3S1_b_8_Upsilon_1S|| kfc==kf_3S1_b_8_Upsilon_2S || kfc==kf_3S1_b_8_Upsilon_3S || kfc==kf_3S1_b_8_eta_b      ||
           kfc==kf_3S1_b_8_chi_b0_1P || kfc==kf_3S1_b_8_chi_b1_1P  || kfc==kf_3S1_b_8_chi_b2_1P) return new XS_qqbar_g3S1_oct(args);
     }
   }
@@ -1626,17 +1634,18 @@ XS_qqbar_g3S1_oct::XS_qqbar_g3S1_oct(const External_ME_Args& args):
   }
   m_mass   = fl[m_S].Mass(true);  m_mass2 = sqr(m_mass); LDME = 0.;
   auto pss = Settings::GetMainSettings()["EXTRA_XS"];
-  pss["LDME_991000441"].SetDefault(0.0180);
-  pss["LDME_991000443"].SetDefault(0.0013);
-  pss["LDME_991100443"].SetDefault(0.0033);
-  pss["LDME_991010441"].SetDefault(0.00187);
+  pss["LDME_991000441"].SetDefault(0.0180*1000);
+  pss["LDME_991000443"].SetDefault(0.0013*1000);
+  pss["LDME_991100443"].SetDefault(0.0033*1000);
+  pss["LDME_991010441"].SetDefault(0.00187*1000);
   // pss["LDME_991020443"].SetDefault(3*0.00187);
   // pss["LDME_991000445"].SetDefault(5*0.00187);
 
-  pss["LDME_991000551"].SetDefault(0.0121);
-  pss["LDME_991000553"].SetDefault(0.0477);
-  pss["LDME_991100553"].SetDefault(0.121);
-  pss["LDME_991010551"].SetDefault(0.1008);
+  pss["LDME_991000551"].SetDefault(0.0121*1000);
+  pss["LDME_991000553"].SetDefault(0.0477*1000);
+  pss["LDME_991100553"].SetDefault(0.121*1000);
+  pss["LDME_991200553"].SetDefault(0.307*1000);
+  pss["LDME_991010551"].SetDefault(0.1008*1000);
   // pss["LDME_991020553"].SetDefault(3*0.1008);
   // pss["LDME_991000555"].SetDefault(5*0.1008);
 
@@ -1650,6 +1659,7 @@ XS_qqbar_g3S1_oct::XS_qqbar_g3S1_oct(const External_ME_Args& args):
   if (fl[m_S].Kfcode()==kf_3S1_b_8_eta_b)      LDME = 0.001*pss["LDME_991000551"].Get<double>(); 
   if (fl[m_S].Kfcode()==kf_3S1_b_8_Upsilon_1S) LDME = 0.001*pss["LDME_991000553"].Get<double>(); 
   if (fl[m_S].Kfcode()==kf_3S1_b_8_Upsilon_2S) LDME = 0.001*pss["LDME_991100553"].Get<double>(); 
+  if (fl[m_S].Kfcode()==kf_3S1_b_8_Upsilon_3S) LDME = 0.001*pss["LDME_991200553"].Get<double>(); 
   if (fl[m_S].Kfcode()==kf_3S1_b_8_chi_b0_1P)  LDME = 0.001*pss["LDME_991010551"].Get<double>(); 
   if (fl[m_S].Kfcode()==kf_3S1_b_8_chi_b1_1P)  LDME = 0.001*pss["LDME_991010551"].Get<double>(); 
   if (fl[m_S].Kfcode()==kf_3S1_b_8_chi_b2_1P)  LDME = 0.001*pss["LDME_991010551"].Get<double>(); 
@@ -1699,7 +1709,7 @@ operator()(const External_ME_Args &args) const
       kf_code kfc = fl[3].Kfcode();
       if (kfc==kf_3S1_c_8_J_psi_1S  || kfc==kf_3S1_c_8_psi_2S     || kfc==kf_3S1_c_8_eta_c      || 
           kfc==kf_3S1_c_8_chi_c0_1P || kfc==kf_3S1_c_8_chi_c1_1P  || kfc==kf_3S1_c_8_chi_c2_1P  ||
-          kfc==kf_3S1_b_8_Upsilon_1S|| kfc==kf_3S1_b_8_Upsilon_2S || kfc==kf_3S1_b_8_eta_b      ||
+          kfc==kf_3S1_b_8_Upsilon_1S|| kfc==kf_3S1_b_8_Upsilon_2S || kfc==kf_3S1_b_8_Upsilon_3S || kfc==kf_3S1_b_8_eta_b      ||
           kfc==kf_3S1_b_8_chi_b0_1P || kfc==kf_3S1_b_8_chi_b1_1P  || kfc==kf_3S1_b_8_chi_b2_1P) return new XS_gg_g3S1_oct(args);
     }
     if ( fl[0].IsGluon() && fl[1].IsGluon() && fl[3].IsGluon()  &&
@@ -1707,7 +1717,7 @@ operator()(const External_ME_Args &args) const
       kf_code kfc = fl[2].Kfcode();
       if (kfc==kf_3S1_c_8_J_psi_1S  || kfc==kf_3S1_c_8_psi_2S     || kfc==kf_3S1_c_8_eta_c      || 
           kfc==kf_3S1_c_8_chi_c0_1P || kfc==kf_3S1_c_8_chi_c1_1P  || kfc==kf_3S1_c_8_chi_c2_1P  ||
-          kfc==kf_3S1_b_8_Upsilon_1S|| kfc==kf_3S1_b_8_Upsilon_2S || kfc==kf_3S1_b_8_eta_b      ||
+          kfc==kf_3S1_b_8_Upsilon_1S|| kfc==kf_3S1_b_8_Upsilon_2S || kfc==kf_3S1_b_8_Upsilon_3S || kfc==kf_3S1_b_8_eta_b      ||
           kfc==kf_3S1_b_8_chi_b0_1P || kfc==kf_3S1_b_8_chi_b1_1P  || kfc==kf_3S1_b_8_chi_b2_1P) return new XS_gg_g3S1_oct(args);
     }
   }
@@ -1725,17 +1735,18 @@ XS_gg_g3S1_oct::XS_gg_g3S1_oct(const External_ME_Args& args):
   }
   m_mass   = fl[m_S].Mass(true);  m_mass2 = sqr(m_mass); LDME = 0.;
   auto pss = Settings::GetMainSettings()["EXTRA_XS"];
-  pss["LDME_991000441"].SetDefault(0.0180);
-  pss["LDME_991000443"].SetDefault(0.0013);
-  pss["LDME_991100443"].SetDefault(0.0033);
-  pss["LDME_991010441"].SetDefault(0.00187);
+  pss["LDME_991000441"].SetDefault(0.0180*1000);
+  pss["LDME_991000443"].SetDefault(0.0013*1000);
+  pss["LDME_991100443"].SetDefault(0.0033*1000);
+  pss["LDME_991010441"].SetDefault(0.00187*1000);
   // pss["LDME_991020443"].SetDefault(3*0.00187);
   // pss["LDME_991000445"].SetDefault(5*0.00187);
 
-  pss["LDME_991000551"].SetDefault(0.0121);
-  pss["LDME_991000553"].SetDefault(0.0477);
-  pss["LDME_991100553"].SetDefault(0.121);
-  pss["LDME_991010551"].SetDefault(0.1008);
+  pss["LDME_991000551"].SetDefault(0.0121*1000);
+  pss["LDME_991000553"].SetDefault(0.0477*1000);
+  pss["LDME_991100553"].SetDefault(0.121*1000);
+  pss["LDME_991200553"].SetDefault(0.307*1000);
+  pss["LDME_991010551"].SetDefault(0.1008*1000);
   // pss["LDME_991020553"].SetDefault(3*0.1008);
   // pss["LDME_991000555"].SetDefault(5*0.1008);
 
@@ -1749,6 +1760,7 @@ XS_gg_g3S1_oct::XS_gg_g3S1_oct(const External_ME_Args& args):
   if (fl[m_S].Kfcode()==kf_3S1_b_8_eta_b)      LDME = 0.001*pss["LDME_991000551"].Get<double>(); 
   if (fl[m_S].Kfcode()==kf_3S1_b_8_Upsilon_1S) LDME = 0.001*pss["LDME_991000553"].Get<double>(); 
   if (fl[m_S].Kfcode()==kf_3S1_b_8_Upsilon_2S) LDME = 0.001*pss["LDME_991100553"].Get<double>(); 
+  if (fl[m_S].Kfcode()==kf_3S1_b_8_Upsilon_3S) LDME = 0.001*pss["LDME_991200553"].Get<double>(); 
   if (fl[m_S].Kfcode()==kf_3S1_b_8_chi_b0_1P)  LDME = 0.001*pss["LDME_991010551"].Get<double>(); 
   if (fl[m_S].Kfcode()==kf_3S1_b_8_chi_b1_1P)  LDME = 0.001*pss["LDME_991010551"].Get<double>(); 
   if (fl[m_S].Kfcode()==kf_3S1_b_8_chi_b2_1P)  LDME = 0.001*pss["LDME_991010551"].Get<double>(); 
@@ -1764,7 +1776,6 @@ double XS_gg_g3S1_oct::operator()(const Vec4D_Vector& mom)
   double t  = (mom[0]-mom[2]).Abs2(), tM2 = sqr(t-m_mass2);
   double u  = (mom[0]-mom[3]).Abs2(), uM2 = sqr(u-m_mass2);
 
-  double alphaS = 0.41;
   double M2 = s+t+u;
   double heq0 = 2.*s*M2*(sqr(t)+sqr(u))*t*u;
   double heq1 = sqr(s)*(sqr(sM2)+pow(t,4)+pow(u,4)+2.*sqr(M2)*sqr(t*u/s));
@@ -1814,14 +1825,14 @@ operator()(const External_ME_Args &args) const
 	 fl[3].IsOctetMeson() ) {
       kf_code kfc = fl[3].Kfcode();
       if (kfc==kf_3P0_c_8_J_psi_1S   || kfc==kf_3P0_c_8_psi_2S    ||
-          kfc==kf_3P0_b_8_Upsilon_1S || kfc==kf_3P0_b_8_Upsilon_2S) return new XS_qg_q3P0_oct(args);
+          kfc==kf_3P0_b_8_Upsilon_1S || kfc==kf_3P0_b_8_Upsilon_2S|| kfc==kf_3P0_b_8_Upsilon_3S) return new XS_qg_q3P0_oct(args);
     }
     if ( ((fl[0].IsQuark() && fl[1].IsGluon() && fl[3]==fl[0]) ||
 	  (fl[0].IsGluon() && fl[1].IsQuark() && fl[3]==fl[1])) &&
 	 fl[2].IsOctetMeson() ) {
       kf_code kfc = fl[2].Kfcode();
       if (kfc==kf_3P0_c_8_J_psi_1S   || kfc==kf_3P0_c_8_psi_2S    ||
-          kfc==kf_3P0_b_8_Upsilon_1S || kfc==kf_3P0_b_8_Upsilon_2S)  return new XS_qg_q3P0_oct(args);
+          kfc==kf_3P0_b_8_Upsilon_1S || kfc==kf_3P0_b_8_Upsilon_2S|| kfc==kf_3P0_b_8_Upsilon_3S)  return new XS_qg_q3P0_oct(args);
     }
   }
   return NULL;
@@ -1845,15 +1856,17 @@ XS_qg_q3P0_oct::XS_qg_q3P0_oct(const External_ME_Args& args):
   if (mb == 0) mb = 4.88;
 
   auto pss = Settings::GetMainSettings()["EXTRA_XS"];
-  pss["LDME_992000443"].SetDefault(1 * 3E-03 * mc * mc);
-  pss["LDME_992100443"].SetDefault(0.005 * mc * mc);
-  pss["LDME_992000553"].SetDefault(5 * 0.0121 * mb * mb);
-  pss["LDME_992100553"].SetDefault(5 * 0.0141 * mb * mb);
+  pss["LDME_992000443"].SetDefault(1 * 3E-03 * mc * mc*1000);
+  pss["LDME_992100443"].SetDefault(0.005 * mc * mc*1000);
+  pss["LDME_992000553"].SetDefault(5 * 0.0121 * mb * mb*1000);
+  pss["LDME_992100553"].SetDefault(5 * 0.0141 * mb * mb*1000);
+  pss["LDME_992200553"].SetDefault(5 * 0.0164 * mb * mb*1000);
   
   if (fl[m_S].Kfcode()==kf_3P0_c_8_J_psi_1S)   LDME = 0.001*pss["LDME_992000443"].Get<double>(); 
   if (fl[m_S].Kfcode()==kf_3P0_c_8_psi_2S)     LDME = 0.001*pss["LDME_992100443"].Get<double>(); 
   if (fl[m_S].Kfcode()==kf_3P0_b_8_Upsilon_1S) LDME = 0.001*pss["LDME_992000553"].Get<double>(); 
   if (fl[m_S].Kfcode()==kf_3P0_b_8_Upsilon_2S) LDME = 0.001*pss["LDME_992100553"].Get<double>(); 
+  if (fl[m_S].Kfcode()==kf_3P0_b_8_Upsilon_3S) LDME = 0.001*pss["LDME_992200553"].Get<double>(); 
   m_a      = fl[m_q].IsAnti() ? 1 : 0; 
   m_alphaS = MODEL::s_model->ScalarConstant("alpha_S");
   m_pref   = -5./(54.*pow(m_mass,3))*pow(4.*M_PI*m_alphaS,3);
@@ -1909,13 +1922,13 @@ operator()(const External_ME_Args &args) const
 	fl[2].IsGluon() && fl[3].IsOctetMeson() ) {
 	    kf_code kfc = fl[3].Kfcode();
       if (kfc==kf_3P0_c_8_J_psi_1S   || kfc==kf_3P0_c_8_psi_2S    ||
-          kfc==kf_3P0_b_8_Upsilon_1S || kfc==kf_3P0_b_8_Upsilon_2S)  return new XS_qqbar_g3P0_oct(args);
+          kfc==kf_3P0_b_8_Upsilon_1S || kfc==kf_3P0_b_8_Upsilon_2S|| kfc==kf_3P0_b_8_Upsilon_3S)  return new XS_qqbar_g3P0_oct(args);
     }
     if (fl[0].IsQuark() && fl[1].IsQuark() && fl[1]==fl[0].Bar() &&
 	fl[3].IsGluon() && fl[2].IsOctetMeson() ) {
       kf_code kfc = fl[2].Kfcode();
       if  (kfc==kf_3P0_c_8_J_psi_1S   || kfc==kf_3P0_c_8_psi_2S    ||
-          kfc==kf_3P0_b_8_Upsilon_1S || kfc==kf_3P0_b_8_Upsilon_2S)  return new XS_qqbar_g3P0_oct(args);
+          kfc==kf_3P0_b_8_Upsilon_1S || kfc==kf_3P0_b_8_Upsilon_2S || kfc==kf_3P0_b_8_Upsilon_3S)  return new XS_qqbar_g3P0_oct(args);
     }
   }
   return NULL;
@@ -1938,15 +1951,17 @@ XS_qqbar_g3P0_oct::XS_qqbar_g3P0_oct(const External_ME_Args& args):
   if (mb == 0) mb = 4.88;
 
   auto pss = Settings::GetMainSettings()["EXTRA_XS"];
-  pss["LDME_992000443"].SetDefault(1 * 3E-03 * mc * mc);
-  pss["LDME_992100443"].SetDefault(0.005 * mc * mc);
-  pss["LDME_992000553"].SetDefault(5 * 0.0121 * mb * mb);
-  pss["LDME_992100553"].SetDefault(5 * 0.0141 * mb * mb);
+  pss["LDME_992000443"].SetDefault(1 * 3E-03 * mc * mc*1000);
+  pss["LDME_992100443"].SetDefault(0.005 * mc * mc*1000);
+  pss["LDME_992000553"].SetDefault(5 * 0.0121 * mb * mb*1000);
+  pss["LDME_992100553"].SetDefault(5 * 0.0141 * mb * mb*1000);
+  pss["LDME_992200553"].SetDefault(5 * 0.0164 * mb * mb*1000);
   
   if (fl[m_S].Kfcode()==kf_3P0_c_8_J_psi_1S)   LDME = 0.001*pss["LDME_992000443"].Get<double>(); 
   if (fl[m_S].Kfcode()==kf_3P0_c_8_psi_2S)     LDME = 0.001*pss["LDME_992100443"].Get<double>(); 
   if (fl[m_S].Kfcode()==kf_3P0_b_8_Upsilon_1S) LDME = 0.001*pss["LDME_992000553"].Get<double>(); 
-  if (fl[m_S].Kfcode()==kf_3P0_b_8_Upsilon_2S) LDME = 0.001*pss["LDME_992100553"].Get<double>(); 
+  if (fl[m_S].Kfcode()==kf_3P0_b_8_Upsilon_2S) LDME = 0.001*pss["LDME_992100553"].Get<double>();
+  if (fl[m_S].Kfcode()==kf_3P0_b_8_Upsilon_3S) LDME = 0.001*pss["LDME_992200553"].Get<double>();  
   m_alphaS = MODEL::s_model->ScalarConstant("alpha_S");
   m_pref   = 20./(81.*pow(m_mass,3))*pow(4.*M_PI*m_alphaS,3);
   if (LDME == 0.0){
@@ -1985,13 +2000,13 @@ operator()(const External_ME_Args &args) const
 	 fl[3].IsOctetMeson() ) {
       kf_code kfc = fl[3].Kfcode();
       if (kfc==kf_3P0_c_8_J_psi_1S   || kfc==kf_3P0_c_8_psi_2S    ||
-          kfc==kf_3P0_b_8_Upsilon_1S || kfc==kf_3P0_b_8_Upsilon_2S)  return new XS_gg_g3P0_oct(args);
+          kfc==kf_3P0_b_8_Upsilon_1S || kfc==kf_3P0_b_8_Upsilon_2S|| kfc==kf_3P0_b_8_Upsilon_3S)  return new XS_gg_g3P0_oct(args);
     }
     if ( fl[0].IsGluon() && fl[1].IsGluon() && fl[3].IsGluon()  &&
 	 fl[2].IsOctetMeson() ) {
       kf_code kfc = fl[2].Kfcode();
       if (kfc==kf_3P0_c_8_J_psi_1S   || kfc==kf_3P0_c_8_psi_2S    ||
-          kfc==kf_3P0_b_8_Upsilon_1S || kfc==kf_3P0_b_8_Upsilon_2S)  return new XS_gg_g3P0_oct(args);
+          kfc==kf_3P0_b_8_Upsilon_1S || kfc==kf_3P0_b_8_Upsilon_2S|| kfc==kf_3P0_b_8_Upsilon_3S)  return new XS_gg_g3P0_oct(args);
     }
   }
   return NULL;
@@ -2013,15 +2028,17 @@ XS_gg_g3P0_oct::XS_gg_g3P0_oct(const External_ME_Args& args):
   if (mb == 0) mb = 4.88;
 
   auto pss = Settings::GetMainSettings()["EXTRA_XS"];
-  pss["LDME_992000443"].SetDefault(1 * 3E-03 * mc * mc);
-  pss["LDME_992100443"].SetDefault(0.005 * mc * mc);
-  pss["LDME_992000553"].SetDefault(5 * 0.0121 * mb * mb);
-  pss["LDME_992100553"].SetDefault(5 * 0.0141 * mb * mb);
+  pss["LDME_992000443"].SetDefault(1 * 3E-03 * mc * mc*1000);
+  pss["LDME_992100443"].SetDefault(0.005 * mc * mc*1000);
+  pss["LDME_992000553"].SetDefault(5 * 0.0121 * mb * mb*1000);
+  pss["LDME_992100553"].SetDefault(5 * 0.0141 * mb * mb*1000);
+  pss["LDME_992200553"].SetDefault(5 * 0.0164 * mb * mb*1000);
   
   if (fl[m_S].Kfcode()==kf_3P0_c_8_J_psi_1S)   LDME = 0.001*pss["LDME_992000443"].Get<double>(); 
   if (fl[m_S].Kfcode()==kf_3P0_c_8_psi_2S)     LDME = 0.001*pss["LDME_992100443"].Get<double>(); 
   if (fl[m_S].Kfcode()==kf_3P0_b_8_Upsilon_1S) LDME = 0.001*pss["LDME_992000553"].Get<double>(); 
   if (fl[m_S].Kfcode()==kf_3P0_b_8_Upsilon_2S) LDME = 0.001*pss["LDME_992100553"].Get<double>(); 
+  if (fl[m_S].Kfcode()==kf_3P0_b_8_Upsilon_3S) LDME = 0.001*pss["LDME_992200553"].Get<double>(); 
   m_alphaS = MODEL::s_model->ScalarConstant("alpha_S");
   if (LDME == 0.0){
     throw std::runtime_error("\033[31mCross section is zero. Cannot continue.\033[0m");
@@ -2090,14 +2107,14 @@ operator()(const External_ME_Args &args) const
 	 fl[3].IsOctetMeson() ) {
       kf_code kfc = fl[3].Kfcode();
       if (kfc==kf_3P1_c_8_J_psi_1S   || kfc==kf_3P1_c_8_psi_2S    ||
-          kfc==kf_3P1_b_8_Upsilon_1S || kfc==kf_3P1_b_8_Upsilon_2S)  return new XS_qg_q3P1_oct(args);
+          kfc==kf_3P1_b_8_Upsilon_1S || kfc==kf_3P1_b_8_Upsilon_2S|| kfc==kf_3P1_b_8_Upsilon_3S)  return new XS_qg_q3P1_oct(args);
     }
     if ( ((fl[0].IsQuark() && fl[1].IsGluon() && fl[3]==fl[0]) ||
 	  (fl[0].IsGluon() && fl[1].IsQuark() && fl[3]==fl[1])) &&
 	 fl[2].IsOctetMeson() ) {
       kf_code kfc = fl[2].Kfcode();
       if (kfc==kf_3P1_c_8_J_psi_1S   || kfc==kf_3P1_c_8_psi_2S    ||
-          kfc==kf_3P1_b_8_Upsilon_1S || kfc==kf_3P1_b_8_Upsilon_2S)  return new XS_qg_q3P1_oct(args);
+          kfc==kf_3P1_b_8_Upsilon_1S || kfc==kf_3P1_b_8_Upsilon_2S|| kfc==kf_3P1_b_8_Upsilon_3S)  return new XS_qg_q3P1_oct(args);
     }
   }
   return NULL;
@@ -2121,14 +2138,16 @@ XS_qg_q3P1_oct::XS_qg_q3P1_oct(const External_ME_Args& args):
   if (mb == 0) mb = 4.88;
 
   auto pss = Settings::GetMainSettings()["EXTRA_XS"];
-  pss["LDME_992000443"].SetDefault(3E-03 * mc * mc);
-  pss["LDME_992100443"].SetDefault(0.005 * mc * mc);
-  pss["LDME_992000553"].SetDefault(5 * 0.0121 * mb * mb);
-  pss["LDME_992100553"].SetDefault(5 * 0.0141 * mb * mb);
+  pss["LDME_992000443"].SetDefault(3E-03 * mc * mc*1000);
+  pss["LDME_992100443"].SetDefault(0.005 * mc * mc*1000);
+  pss["LDME_992000553"].SetDefault(5 * 0.0121 * mb * mb*1000);
+  pss["LDME_992100553"].SetDefault(5 * 0.0141 * mb * mb*1000);
+  pss["LDME_992200553"].SetDefault(5 * 0.0164 * mb * mb*1000);
   if (fl[m_S].Kfcode()==kf_3P1_c_8_J_psi_1S)   LDME = 3.*0.001*pss["LDME_992000443"].Get<double>(); 
   if (fl[m_S].Kfcode()==kf_3P1_c_8_psi_2S)     LDME = 3.*0.001*pss["LDME_992100443"].Get<double>(); 
   if (fl[m_S].Kfcode()==kf_3P1_b_8_Upsilon_1S) LDME = 3.*0.001*pss["LDME_992000553"].Get<double>(); 
-  if (fl[m_S].Kfcode()==kf_3P1_b_8_Upsilon_2S) LDME = 3.*0.001*pss["LDME_992100553"].Get<double>(); 
+  if (fl[m_S].Kfcode()==kf_3P1_b_8_Upsilon_2S) LDME = 3.*0.001*pss["LDME_992100553"].Get<double>();
+  if (fl[m_S].Kfcode()==kf_3P1_b_8_Upsilon_3S) LDME = 3.*0.001*pss["LDME_992200553"].Get<double>();  
   m_a      = fl[m_q].IsAnti() ? 1 : 0; 
   m_alphaS = MODEL::s_model->ScalarConstant("alpha_S");
   if (LDME == 0.0){
@@ -2186,13 +2205,13 @@ operator()(const External_ME_Args &args) const
 	fl[2].IsGluon() && fl[3].IsOctetMeson() ) {
 	    kf_code kfc = fl[3].Kfcode();
       if (kfc==kf_3P1_c_8_J_psi_1S   || kfc==kf_3P1_c_8_psi_2S    ||
-          kfc==kf_3P1_b_8_Upsilon_1S || kfc==kf_3P1_b_8_Upsilon_2S)  return new XS_qqbar_g3P1_oct(args);
+          kfc==kf_3P1_b_8_Upsilon_1S || kfc==kf_3P1_b_8_Upsilon_2S|| kfc==kf_3P1_b_8_Upsilon_3S)  return new XS_qqbar_g3P1_oct(args);
     }
     if (fl[0].IsQuark() && fl[1].IsQuark() && fl[1]==fl[0].Bar() &&
 	fl[3].IsGluon() && fl[2].IsOctetMeson() ) {
       kf_code kfc = fl[2].Kfcode();
       if (kfc==kf_3P1_c_8_J_psi_1S   || kfc==kf_3P1_c_8_psi_2S    ||
-          kfc==kf_3P1_b_8_Upsilon_1S || kfc==kf_3P1_b_8_Upsilon_2S)  return new XS_qqbar_g3P1_oct(args);
+          kfc==kf_3P1_b_8_Upsilon_1S || kfc==kf_3P1_b_8_Upsilon_2S|| kfc==kf_3P1_b_8_Upsilon_3S)  return new XS_qqbar_g3P1_oct(args);
     }
   }
   return NULL;
@@ -2215,14 +2234,16 @@ XS_qqbar_g3P1_oct::XS_qqbar_g3P1_oct(const External_ME_Args& args):
   if (mb == 0) mb = 4.88;
 
   auto pss = Settings::GetMainSettings()["EXTRA_XS"];
-  pss["LDME_992000443"].SetDefault(3E-03 * mc * mc);
-  pss["LDME_992100443"].SetDefault(0.005 * mc * mc);
-  pss["LDME_992000553"].SetDefault(5 * 0.0121 * mb * mb);
-  pss["LDME_992100553"].SetDefault(5 * 0.0141 * mb * mb);
+  pss["LDME_992000443"].SetDefault(3E-03 * mc * mc*1000);
+  pss["LDME_992100443"].SetDefault(0.005 * mc * mc*1000);
+  pss["LDME_992000553"].SetDefault(5 * 0.0121 * mb * mb*1000);
+  pss["LDME_992100553"].SetDefault(5 * 0.0141 * mb * mb*1000);
+  pss["LDME_992200553"].SetDefault(5 * 0.0164 * mb * mb*1000);
   if (fl[m_S].Kfcode()==kf_3P1_c_8_J_psi_1S)   LDME = 3.*0.001*pss["LDME_992000443"].Get<double>(); 
   if (fl[m_S].Kfcode()==kf_3P1_c_8_psi_2S)     LDME = 3.*0.001*pss["LDME_992100443"].Get<double>(); 
   if (fl[m_S].Kfcode()==kf_3P1_b_8_Upsilon_1S) LDME = 3.*0.001*pss["LDME_992000553"].Get<double>(); 
   if (fl[m_S].Kfcode()==kf_3P1_b_8_Upsilon_2S) LDME = 3.*0.001*pss["LDME_992100553"].Get<double>(); 
+  if (fl[m_S].Kfcode()==kf_3P1_b_8_Upsilon_3S) LDME = 3.*0.001*pss["LDME_992200553"].Get<double>(); 
   m_alphaS = MODEL::s_model->ScalarConstant("alpha_S");
   m_pref   = 40./(81.*pow(m_mass,3))*pow(4.*M_PI*m_alphaS,3);
   if (LDME == 0.0){
@@ -2262,13 +2283,13 @@ operator()(const External_ME_Args &args) const
 	 fl[3].IsOctetMeson() ) {
       kf_code kfc = fl[3].Kfcode();
       if (kfc==kf_3P1_c_8_J_psi_1S   || kfc==kf_3P1_c_8_psi_2S    ||
-          kfc==kf_3P1_b_8_Upsilon_1S || kfc==kf_3P1_b_8_Upsilon_2S)  return new XS_gg_g3P1_oct(args);
+          kfc==kf_3P1_b_8_Upsilon_1S || kfc==kf_3P1_b_8_Upsilon_2S|| kfc==kf_3P1_b_8_Upsilon_3S)  return new XS_gg_g3P1_oct(args);
     }
     if ( fl[0].IsGluon() && fl[1].IsGluon() && fl[3].IsGluon()  &&
 	 fl[2].IsOctetMeson() ) {
       kf_code kfc = fl[2].Kfcode();
       if (kfc==kf_3P1_c_8_J_psi_1S   || kfc==kf_3P1_c_8_psi_2S    ||
-          kfc==kf_3P1_b_8_Upsilon_1S || kfc==kf_3P1_b_8_Upsilon_2S)  return new XS_gg_g3P1_oct(args);
+          kfc==kf_3P1_b_8_Upsilon_1S || kfc==kf_3P1_b_8_Upsilon_2S|| kfc==kf_3P1_b_8_Upsilon_3S)  return new XS_gg_g3P1_oct(args);
     }
   }
   return NULL;
@@ -2290,14 +2311,16 @@ XS_gg_g3P1_oct::XS_gg_g3P1_oct(const External_ME_Args& args):
   if (mb == 0) mb = 4.88;
 
   auto pss = Settings::GetMainSettings()["EXTRA_XS"];
-  pss["LDME_992000443"].SetDefault(3E-03 * mc * mc);
-  pss["LDME_992100443"].SetDefault(0.005 * mc * mc);
-  pss["LDME_992000553"].SetDefault(5 * 0.0121 * mb * mb);
-  pss["LDME_992100553"].SetDefault(5 * 0.0141 * mb * mb);
+  pss["LDME_992000443"].SetDefault(3E-03 * mc * mc*1000);
+  pss["LDME_992100443"].SetDefault(0.005 * mc * mc*1000);
+  pss["LDME_992000553"].SetDefault(5 * 0.0121 * mb * mb*1000);
+  pss["LDME_992100553"].SetDefault(5 * 0.0141 * mb * mb*1000);
+  pss["LDME_992200553"].SetDefault(5 * 0.0164 * mb * mb*1000);
   if (fl[m_S].Kfcode()==kf_3P1_c_8_J_psi_1S)   LDME = 3.*0.001*pss["LDME_992000443"].Get<double>(); 
   if (fl[m_S].Kfcode()==kf_3P1_c_8_psi_2S)     LDME = 3.*0.001*pss["LDME_992100443"].Get<double>(); 
   if (fl[m_S].Kfcode()==kf_3P1_b_8_Upsilon_1S) LDME = 3.*0.001*pss["LDME_992000553"].Get<double>(); 
   if (fl[m_S].Kfcode()==kf_3P1_b_8_Upsilon_2S) LDME = 3.*0.001*pss["LDME_992100553"].Get<double>(); 
+  if (fl[m_S].Kfcode()==kf_3P1_b_8_Upsilon_3S) LDME = 3.*0.001*pss["LDME_992200553"].Get<double>(); 
   m_alphaS = MODEL::s_model->ScalarConstant("alpha_S");
   if (LDME == 0.0){
     throw std::runtime_error("\033[31mCross section is zero. Cannot continue.\033[0m");
@@ -2364,14 +2387,14 @@ operator()(const External_ME_Args &args) const
 	 fl[3].IsOctetMeson() ) {
       kf_code kfc = fl[3].Kfcode();
       if (kfc==kf_3P2_c_8_J_psi_1S   || kfc==kf_3P2_c_8_psi_2S    ||
-          kfc==kf_3P2_b_8_Upsilon_1S || kfc==kf_3P2_b_8_Upsilon_2S)  return new XS_qg_q3P2_oct(args);
+          kfc==kf_3P2_b_8_Upsilon_1S || kfc==kf_3P2_b_8_Upsilon_2S|| kfc==kf_3P2_b_8_Upsilon_3S)  return new XS_qg_q3P2_oct(args);
     }
     if ( ((fl[0].IsQuark() && fl[1].IsGluon() && fl[3]==fl[0]) ||
 	  (fl[0].IsGluon() && fl[1].IsQuark() && fl[3]==fl[1])) &&
 	 fl[2].IsOctetMeson() ) {
       kf_code kfc = fl[2].Kfcode();
       if (kfc==kf_3P2_c_8_J_psi_1S   || kfc==kf_3P2_c_8_psi_2S    ||
-          kfc==kf_3P2_b_8_Upsilon_1S || kfc==kf_3P2_b_8_Upsilon_2S)  return new XS_qg_q3P2_oct(args);
+          kfc==kf_3P2_b_8_Upsilon_1S || kfc==kf_3P2_b_8_Upsilon_2S|| kfc==kf_3P2_b_8_Upsilon_3S)  return new XS_qg_q3P2_oct(args);
     }
   }
   return NULL;
@@ -2395,14 +2418,16 @@ XS_qg_q3P2_oct::XS_qg_q3P2_oct(const External_ME_Args& args):
   if (mb == 0) mb = 4.88;
 
   auto pss = Settings::GetMainSettings()["EXTRA_XS"];
-  pss["LDME_992000443"].SetDefault(3E-03 * mc * mc);
-  pss["LDME_992100443"].SetDefault(0.005 * mc * mc);
-  pss["LDME_992000553"].SetDefault(5 * 0.0121 * mb * mb);
-  pss["LDME_992100553"].SetDefault(5 * 0.0141 * mb * mb);
+  pss["LDME_992000443"].SetDefault(3E-03 * mc * mc*1000);
+  pss["LDME_992100443"].SetDefault(0.005 * mc * mc*1000);
+  pss["LDME_992000553"].SetDefault(5 * 0.0121 * mb * mb*1000);
+  pss["LDME_992100553"].SetDefault(5 * 0.0141 * mb * mb*1000);
+  pss["LDME_992200553"].SetDefault(5 * 0.0164 * mb * mb*1000);
   if (fl[m_S].Kfcode()==kf_3P2_c_8_J_psi_1S)   LDME = 5.*0.001*pss["LDME_992000443"].Get<double>(); 
   if (fl[m_S].Kfcode()==kf_3P2_c_8_psi_2S)     LDME = 5.*0.001*pss["LDME_992100443"].Get<double>(); 
   if (fl[m_S].Kfcode()==kf_3P2_b_8_Upsilon_1S) LDME = 5.*0.001*pss["LDME_992000553"].Get<double>(); 
   if (fl[m_S].Kfcode()==kf_3P2_b_8_Upsilon_2S) LDME = 5.*0.001*pss["LDME_992100553"].Get<double>(); 
+  if (fl[m_S].Kfcode()==kf_3P2_b_8_Upsilon_3S) LDME = 5.*0.001*pss["LDME_992200553"].Get<double>(); 
   m_a      = fl[m_q].IsAnti() ? 1 : 0; 
   m_alphaS = MODEL::s_model->ScalarConstant("alpha_S");
   m_pref   = -1./(27.*pow(m_mass,3))*pow(4.*M_PI*m_alphaS,3);
@@ -2463,13 +2488,13 @@ operator()(const External_ME_Args &args) const
 	fl[2].IsGluon() && fl[3].IsOctetMeson() ) {
 	    kf_code kfc = fl[3].Kfcode();
       if (kfc==kf_3P2_c_8_J_psi_1S   || kfc==kf_3P2_c_8_psi_2S    ||
-          kfc==kf_3P2_b_8_Upsilon_1S || kfc==kf_3P2_b_8_Upsilon_2S)  return new XS_qqbar_g3P2_oct(args);
+          kfc==kf_3P2_b_8_Upsilon_1S || kfc==kf_3P2_b_8_Upsilon_2S|| kfc==kf_3P2_b_8_Upsilon_3S)  return new XS_qqbar_g3P2_oct(args);
     }
     if (fl[0].IsQuark() && fl[1].IsQuark() && fl[1]==fl[0].Bar() &&
 	fl[3].IsGluon() && fl[2].IsOctetMeson() ) {
       kf_code kfc = fl[2].Kfcode();
       if (kfc==kf_3P2_c_8_J_psi_1S   || kfc==kf_3P2_c_8_psi_2S    ||
-          kfc==kf_3P2_b_8_Upsilon_1S || kfc==kf_3P2_b_8_Upsilon_2S)  return new XS_qqbar_g3P2_oct(args);
+          kfc==kf_3P2_b_8_Upsilon_1S || kfc==kf_3P2_b_8_Upsilon_2S|| kfc==kf_3P2_b_8_Upsilon_3S)  return new XS_qqbar_g3P2_oct(args);
     }
   }
   return NULL;
@@ -2492,14 +2517,16 @@ XS_qqbar_g3P2_oct::XS_qqbar_g3P2_oct(const External_ME_Args& args):
   if (mb == 0) mb = 4.88;
 
   auto pss = Settings::GetMainSettings()["EXTRA_XS"];
-  pss["LDME_992000443"].SetDefault(3E-03 * mc * mc);
-  pss["LDME_992100443"].SetDefault(0.005 * mc * mc);
-  pss["LDME_992000553"].SetDefault(5 * 0.0121 * mb * mb);
-  pss["LDME_992100553"].SetDefault(5 * 0.0141 * mb * mb);
+  pss["LDME_992000443"].SetDefault(3E-03 * mc * mc*1000);
+  pss["LDME_992100443"].SetDefault(0.005 * mc * mc*1000);
+  pss["LDME_992000553"].SetDefault(5 * 0.0121 * mb * mb*1000);
+  pss["LDME_992100553"].SetDefault(5 * 0.0141 * mb * mb*1000);
+  pss["LDME_992200553"].SetDefault(5 * 0.0164 * mb * mb*1000);
   if (fl[m_S].Kfcode()==kf_3P2_c_8_J_psi_1S)   LDME = 5.*0.001*pss["LDME_992000443"].Get<double>(); 
   if (fl[m_S].Kfcode()==kf_3P2_c_8_psi_2S)     LDME = 5.*0.001*pss["LDME_992100443"].Get<double>(); 
   if (fl[m_S].Kfcode()==kf_3P2_b_8_Upsilon_1S) LDME = 5.*0.001*pss["LDME_992000553"].Get<double>(); 
   if (fl[m_S].Kfcode()==kf_3P2_b_8_Upsilon_2S) LDME = 5.*0.001*pss["LDME_992100553"].Get<double>(); 
+  if (fl[m_S].Kfcode()==kf_3P2_b_8_Upsilon_3S) LDME = 5.*0.001*pss["LDME_992200553"].Get<double>(); 
   m_alphaS = MODEL::s_model->ScalarConstant("alpha_S");
   m_pref   = 8./(81.*pow(m_mass,3))*pow(4.*M_PI*m_alphaS,3);
   if (LDME == 0.0){
@@ -2541,13 +2568,13 @@ operator()(const External_ME_Args &args) const
 	 fl[3].IsOctetMeson() ) {
       kf_code kfc = fl[3].Kfcode();
       if (kfc==kf_3P2_c_8_J_psi_1S   || kfc==kf_3P2_c_8_psi_2S    ||
-          kfc==kf_3P2_b_8_Upsilon_1S || kfc==kf_3P2_b_8_Upsilon_2S)  return new XS_gg_g3P2_oct(args);
+          kfc==kf_3P2_b_8_Upsilon_1S || kfc==kf_3P2_b_8_Upsilon_2S|| kfc==kf_3P2_b_8_Upsilon_3S)  return new XS_gg_g3P2_oct(args);
     }
     if ( fl[0].IsGluon() && fl[1].IsGluon() && fl[3].IsGluon()  &&
 	 fl[2].IsOctetMeson() ) {
       kf_code kfc = fl[2].Kfcode();
       if (kfc==kf_3P2_c_8_J_psi_1S   || kfc==kf_3P2_c_8_psi_2S    ||
-          kfc==kf_3P2_b_8_Upsilon_1S || kfc==kf_3P2_b_8_Upsilon_2S)  return new XS_gg_g3P2_oct(args);
+          kfc==kf_3P2_b_8_Upsilon_1S || kfc==kf_3P2_b_8_Upsilon_2S|| kfc==kf_3P2_b_8_Upsilon_3S)  return new XS_gg_g3P2_oct(args);
     }
   }
   return NULL;
@@ -2569,14 +2596,16 @@ XS_gg_g3P2_oct::XS_gg_g3P2_oct(const External_ME_Args& args):
   if (mb == 0) mb = 4.88;
 
   auto pss = Settings::GetMainSettings()["EXTRA_XS"];
-  pss["LDME_992000443"].SetDefault(3E-03 * mc * mc);
-  pss["LDME_992100443"].SetDefault(0.005 * mc * mc);
-  pss["LDME_992000553"].SetDefault(5 * 0.0121 * mb * mb);
-  pss["LDME_992100553"].SetDefault(5 * 0.0141 * mb * mb);
+  pss["LDME_992000443"].SetDefault(3E-03 * mc * mc*1000);
+  pss["LDME_992100443"].SetDefault(0.005 * mc * mc*1000);
+  pss["LDME_992000553"].SetDefault(5 * 0.0121 * mb * mb*1000);
+  pss["LDME_992100553"].SetDefault(5 * 0.0141 * mb * mb*1000);
+  pss["LDME_992200553"].SetDefault(5 * 0.0164 * mb * mb*1000);
   if (fl[m_S].Kfcode()==kf_3P2_c_8_J_psi_1S)   LDME = 5.*0.001*pss["LDME_992000443"].Get<double>(); 
   if (fl[m_S].Kfcode()==kf_3P2_c_8_psi_2S)     LDME = 5.*0.001*pss["LDME_992100443"].Get<double>(); 
   if (fl[m_S].Kfcode()==kf_3P2_b_8_Upsilon_1S) LDME = 5.*0.001*pss["LDME_992000553"].Get<double>(); 
   if (fl[m_S].Kfcode()==kf_3P2_b_8_Upsilon_2S) LDME = 5.*0.001*pss["LDME_992100553"].Get<double>(); 
+  if (fl[m_S].Kfcode()==kf_3P2_b_8_Upsilon_3S) LDME = 5.*0.001*pss["LDME_992200553"].Get<double>(); 
   m_alphaS = MODEL::s_model->ScalarConstant("alpha_S");
   if (LDME == 0.0){
     throw std::runtime_error("\033[31mCross section is zero. Cannot continue.\033[0m");
