@@ -366,7 +366,7 @@ EPA_WoodSaxon::EPA_WoodSaxon(const ATOOLS::Flavour& beam, const int dir)
     THROW(fatal_error, "Wrong form factor for " + m_beam.IDName());
 
   m_rho0 = CalculateDensity();
-  InitFFTable(1.e-12, 1.e4);
+  InitFFTable();
   FillTables();
 }
 
@@ -381,9 +381,9 @@ double EPA_WoodSaxon::CalculateDensity()
   return 1.0 / res / 4. / M_PI;
 }
 
-void EPA_WoodSaxon::InitFFTable(const double& q2min, const double& q2max)
+void EPA_WoodSaxon::InitFFTable()
 {
-  p_FF_Q2 = std::make_unique<OneDim_Table>(axis(100000, q2min, q2max, axis_mode::log));
+  p_FF_Q2 = std::make_unique<OneDim_Table>(axis(1e6, 1e-5, 1e1, axis_mode::log));
 
   for (size_t i = 0; i < p_FF_Q2->GetAxis().m_nbins; i++) {
     const double q = std::sqrt(p_FF_Q2->GetAxis().x(i));
