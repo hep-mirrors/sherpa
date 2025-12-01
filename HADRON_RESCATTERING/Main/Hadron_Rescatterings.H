@@ -3,6 +3,7 @@
 
 #include "HADRON_RESCATTERING/XSecs/BaryonBaryon.H"
 #include "HADRON_RESCATTERING/XSecs/MesonMeson.H"
+#include "HADRON_RESCATTERING/XSecs/BaryonMeson.H"
 #include "HADRON_RESCATTERING/XSecs/HR_Parameters.H"
 
 #include "ATOOLS/Phys/Blob_List.H"
@@ -16,6 +17,8 @@ namespace HADRON_RESCATTERING {
     double              m_mm2mb;
     BaryonBaryon *      p_BB;
     MesonMeson *        p_MM;
+    BaryonMeson *       p_BM;
+
  public:
     Hadron_Rescatterings(const bool & on);
     ~Hadron_Rescatterings();

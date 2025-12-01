@@ -1,6 +1,7 @@
 #include "HADRON_RESCATTERING/XSecs/NNfits.H"
 #include "ATOOLS/Phys/Flavour.H"
 #include "ATOOLS/Org/Message.H"
+#include <math.h>
 
 using namespace HADRON_RESCATTERING;
 using namespace ATOOLS;
@@ -59,7 +60,7 @@ double NNfits::pptot(const double & s) {
 double NNfits::ppel(const double & s) {
   if (s<4.*m_mn2) return 0.;
   double plab = sqrt(sqr(s)-4.*m_mp2*s)/(2.*m_mp);
-  if (sqrt(s)>2.6)   return ( 11.9 + 26.9*pow(plab,-1.21) +
+  if (sqrt(s)>2.6)   return ( 11.9 + 26.9*pow(plab,-1.21) + //the one on the paper
 			      0.169*sqr(log(plab)) - 1.85*log(plab) );
   if (plab>=2.0)     return 77./(plab+1.5);
   if (plab>=0.8)     return 1250./(plab+50.)-4.*sqr(plab-1.3);

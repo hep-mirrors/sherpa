@@ -8,11 +8,11 @@ using namespace HADRON_RESCATTERING;
 using namespace ATOOLS;
 using namespace std;
 
-MesonMeson::MesonMeson() :
-  m_test(true)
+MesonMeson::MesonMeson() 
+  //m_test(true)
 {
-  InitialiseResonances();
-  if (m_test) { Tests(); exit(1); }
+  //InitialiseResonances();
+  //if (m_test) { Tests(); exit(1); }
 }
 
 MesonMeson::~MesonMeson() {}

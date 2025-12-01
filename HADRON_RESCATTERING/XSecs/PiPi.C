@@ -250,6 +250,16 @@ const Complex PiPi::sigma_I2(const double & s,const double & t) const {
 void PiPi::Test() {
   size_t Nsteps = 100;
   double step = (1.45-2.*m_mpi)/double(Nsteps);
+
+  msg_Out()<<"PIPI test called";
+  msg_Out()<<"PIPI test called";
+  msg_Out()<<"PIPI test called";
+  msg_Out()<<"PIPI test called";
+  msg_Out()<<"PIPI test called";
+  msg_Out()<<"PIPI test called";
+  msg_Out()<<"PIPI test called";
+  msg_Out()<<"PIPI test called";
+
   for (size_t i=1;i<Nsteps;i++) {
     double  s       = sqr(2.*m_mpi+i*step);
     double  eta00   = eta(0,0,s);

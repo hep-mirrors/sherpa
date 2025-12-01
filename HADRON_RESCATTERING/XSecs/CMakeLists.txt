@@ -5,7 +5,10 @@ set(HadronRescatteringXSecs_SOURCES
   HPR1R2.C
   PiPi.C
   PiK.C
-  HR_Parameters.C)
+  HR_Parameters.C
+  BaryonMeson.C
+  Helper.C
+  NPion.C)
 
 set(HadronRescatteringXSecs_HEADERS
   BaryonBaryon.H
@@ -14,7 +17,10 @@ set(HadronRescatteringXSecs_HEADERS
   HPR1R2.H
   PiPi.H
   PiK.H
-  HR_Parameters.H)
+  HR_Parameters.H
+  BaryonMeson.H
+  Helper.H
+  NPion.H)
 
 sherpa_create_git_info(HadronRescatteringXSecs ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR})
  

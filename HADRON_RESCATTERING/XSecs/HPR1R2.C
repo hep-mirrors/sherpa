@@ -55,6 +55,20 @@ void HPR1R2::InitParams() {
   m_params[hpr1r2::pp]    = { 0.272, 34.41, 13.07, -7.394, 15.98, 13. };
   m_params[hpr1r2::ppbar] = { 0.272, 34.41, 13.07,  7.394, 15.98, 13. };
   m_params[hpr1r2::pn]    = { 0.272, 34.71, 12.52,  6.660, 15.98, 13. };
+  //newly added
+  // parameters are               H,     P,    R1,     R2,    s0,  B
+
+  m_params[hpr1r2::pPiMinus]    = { 0.272, 18.75, 9.56,  1.767, 15.98, 13. };
+  m_params[hpr1r2::pPiPlus]    = { 0.272, 18.75, 9.56,  -1.767, 15.98, 13. };
+  m_params[hpr1r2::nPiMinus]    = { 0.272, 18.75, 9.56,  1.767, 15.98, 13. };
+  m_params[hpr1r2::nPiPlus]    = { 0.272, 18.75, 9.56,  -1.767, 15.98, 13. };
+  m_params[hpr1r2::pKMinus]    = { 0.272, 16.36, 4.29,  3.408, 15.98, 13. };
+  m_params[hpr1r2::pKBarZero]    = { 0.272, 16.36, 4.29, 3.408, 15.98, 13. };
+  m_params[hpr1r2::nKMinus]    = { 0.272, 16.31, 3.70,  1.826, 15.98, 13. };
+  m_params[hpr1r2::nKBarZero]    = { 0.272, 16.31, 3.70,  1.826, 15.98, 13. };
+
+
+  
 }
 
   

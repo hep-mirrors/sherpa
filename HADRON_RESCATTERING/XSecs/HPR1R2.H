@@ -7,10 +7,18 @@
 namespace HADRON_RESCATTERING {
   struct hpr1r2 {
     enum code {
-      unknown = 0,
-      pp      = 1,
-      pn      = 2,
-      ppbar   = 3
+      unknown   = 0,
+      pp        = 1,
+      pn        = 2,
+      ppbar     = 3,
+      pPiMinus  =4,
+      pPiPlus   = 5,
+      nPiMinus  = 6,
+      nPiPlus   = 7,
+      pKMinus   = 8,
+      pKBarZero = 9,
+      nKMinus   = 10,
+      nKBarZero = 11
     };
   };
     

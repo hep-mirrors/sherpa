@@ -17,7 +17,7 @@ double BaryonBaryon::
 XStot(const ATOOLS::Flavour & A,const ATOOLS::Flavour & B,
       const double & s) {
 
-  msg_Out() << "BaryonBaryon::XStot Constructor called" << std::endl;
+  //msg_Out() << "BaryonBaryon::XStot Constructor called" << std::endl;
   //Scoped_Settings s{Settings::GetMainSettings()["FormFactors"]};
   //m_bb_xstot = s["BBScattering"].SetDefault(scatmodel::off).Get<scatmodel::code>();
   if (!(A.IsBaryon() && B.IsBaryon())) return 0.;
@@ -63,8 +63,8 @@ double BaryonBaryon::xsel(long int & A, long int & B, const double & plab) {
 }
 
 void BaryonBaryon::Tests() {
+
   size_t bins = 10000;
-  msg_Out()<<"baronbaryon test has been called"<<std::endl;
   double pmin = 0., pmax = 20., pinc = (pmax-pmin)/double(bins);
   map<string,Histogram *>  histos;
   histos["pp_total_low"]      = new Histogram(0,pmin,pmax,bins);
