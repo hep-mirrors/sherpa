@@ -383,14 +383,14 @@ double EPA_WoodSaxon::CalculateDensity()
 
 void EPA_WoodSaxon::InitFFTable()
 {
-  p_FF_Q2 = std::make_unique<OneDim_Table>(axis(1e6, 1e-5, 1e1, axis_mode::log));
+  p_FF_Q2 = std::make_unique<OneDim_Table>(axis(1e6, 1e-6, 1e1, axis_mode::log));
 
   for (size_t i = 0; i < p_FF_Q2->GetAxis().m_nbins; i++) {
     const double q = std::sqrt(p_FF_Q2->GetAxis().x(i));
 
     // Define the form factor integrand as a lambda inside the loop.
     auto ff_integrand = [this, q](double r) {
-      if (q * r < 1.e-4) { // Numerically stable limit for q*r -> 0
+      if (q * r < 1.e-6) { // Numerically stable limit for q*r -> 0
         return r * r / (1. + std::exp((r - m_R) / m_d));
       }
       return std::sin(q * r) / q * r / (1. + std::exp((r - m_R) / m_d));
