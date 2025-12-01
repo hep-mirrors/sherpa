@@ -708,8 +708,6 @@ bool Initialization_Handler::InitializeTheModel()
   }
   if (p_model==NULL) THROW(not_implemented,"Model not implemented");
   MODEL::s_model=p_model;
-  if (s["UFO_VARIATIONS"].GetItems().empty()) return true; 
-  if (!ATOOLS::s_loader->LoadLibrary("SherpaUFOVariations")) THROW(missing_module, "Cannot load library SherpaUFOVariations");
   return true;
 }
 

@@ -20,6 +20,7 @@ namespace UFO{
     p_constants        = new MODEL::ScalarConstantsMap();
     p_complexconstants = new MODEL::ComplexConstantsMap();
     p_functions        = new MODEL::ScalarFunctionsMap();
+    p_variations       = new Variations();
 
     auto& s = ATOOLS::Settings::GetMainSettings();
     const auto& paramcard = s["UFO_PARAM_CARD"].SetDefault("").Get<std::string>();
@@ -32,6 +33,7 @@ namespace UFO{
 
   UFO_Model::~UFO_Model(){
     delete p_dataread;
+    delete p_variations;
   }
 
   // Overwrite masses of SM particles if they are

@@ -1,12 +1,10 @@
-#ifndef AddOns_UFOVariations__UFO_Variation_Key_H
-#define AddOns_UFOVariations__UFO_Variation_Key_H
+#ifndef MODEL_UFO__UFO_Variation_Key_H
+#define MODEL_UFO__UFO_Variation_Key_H
 
-#include <string>
-#include <sstream>
 #include "ATOOLS/Org/Exception.H"
 #include <math.h>
 
-namespace UFOVariations {
+namespace UFO {
     struct VariationKey
         {
         VariationKey(std::string var_name, double_t var_value) {

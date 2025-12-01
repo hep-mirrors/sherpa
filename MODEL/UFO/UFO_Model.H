@@ -4,6 +4,7 @@
 #include "MODEL/Main/Model_Base.H"
 #include "MODEL/UFO/UFO_Param_Reader.H"
 #include "ATOOLS/Math/Kabbala.H"
+#include "MODEL/UFO/Variations.H"
 
 namespace UFO{
 
@@ -21,12 +22,14 @@ namespace UFO{
     void SetSMMasses();
     void SetMassiveFlags();
     void SetStableFlags();
+    Variations* GetParameterVariations() {return p_variations;};
 
   protected:
 
     StringMap m_lorentz_map;
     std::map<std::string, ATOOLS::Kabbala> m_cpls;
     UFO::UFO_Param_Reader* p_dataread;
+    Variations* p_variations;
 
     /*
     static Complex complexconjugate(const Complex& arg);
