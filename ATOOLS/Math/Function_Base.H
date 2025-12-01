@@ -56,14 +56,13 @@ namespace ATOOLS {
    */
   class Lambda_Functor : public ATOOLS::Function_Base {
   private:
-    std::function<double(double)>* p_func;
+    const std::function<double(double)>* p_func;
 
   public:
     // Constructor takes any callable object that can be converted to a
     // std::function
-    explicit Lambda_Functor(std::function<double(double)>* func)
-        : p_func(std::move(func))
-    {}
+    explicit Lambda_Functor(const std::function<double(double)>* func)
+      : p_func(func) {}
 
     // The overridden virtual function calls the stored lambda
     double operator()(double x) override { return (*p_func)(x); }
