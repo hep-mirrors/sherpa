@@ -1,4 +1,4 @@
-#include "AddOns/UFOVariations/Tests/Model.H"
+#include "MODEL/UFO/tests/Model.H"
 #include "ATOOLS/Phys/KF_Table.H"
 #include "ATOOLS/Org/Scoped_Settings.H"
 #include "MODEL/Main/Running_AlphaQED.H"
