@@ -1,21 +1,12 @@
-#include "AddOns/UFOVariations/Variation_Generator.H"
+#include "MODEL/UFO/Variation_Generator.H"
 
-#include "AddOns/UFOVariations/Combinations.H"
-#include "ATOOLS/Org/Settings.H"
-#include "PHASIC++/Process/Single_Process.H"
-#include "PHASIC++/Main/Process_Integrator.H"
-#include "ATOOLS/Math/Vector.H"
-#include "ATOOLS/Math/Kabbala.H"
-#include <ostream>
-#include <map>
-#include <algorithm>
-
-
-namespace UFOVariations {
+namespace UFO {
     Variation_Generator::Variation_Generator(const Args& args){
         p_proc = dynamic_cast<PHASIC::Single_Process*> (args.p_proc);
         if (!p_proc) THROW(fatal_error, "No Single Process was given for Variation.")
-        p_vars = Variations::Get();
+        UFO_Model* model = dynamic_cast<UFO_Model*> (MODEL::s_model);
+        if (!model) THROW(fatal_error, "The model does not seem to implement Variations of external parameters :(")
+        p_vars = model->GetParameterVariations();
     }
 
     /*
@@ -82,15 +73,15 @@ namespace UFOVariations {
     }
 }
 
-DECLARE_GETTER(UFOVariations::Variation_Generator, "UFOVariations", Base, Args);
+DECLARE_GETTER(UFO::Variation_Generator, "UFOVariations", Base, Args);
 
-Base* ATOOLS::Getter<Base, Args, UFOVariations::Variation_Generator>::
+Base* ATOOLS::Getter<Base, Args, UFO::Variation_Generator>::
 operator()(const Args& args) const
 {
-    return new UFOVariations::Variation_Generator(args);
+    return new UFO::Variation_Generator(args);
 }
 
-void ATOOLS::Getter<Base, Args, UFOVariations::Variation_Generator>::
+void ATOOLS::Getter<Base, Args, UFO::Variation_Generator>::
 PrintInfo(std::ostream& str, const size_t width) const
 { 
 str << "Info for UFO Param Variations \n";
