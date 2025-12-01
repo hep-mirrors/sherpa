@@ -344,6 +344,7 @@ double EPA_WoodSaxon::IntegrateWithAdaptiveRange(
   double rmin = 0., rmax = initial_rmax;
   double total_result = gauss.Integrate(rmin, rmax, tolerance);
   double segment_increment = 0.;
+  int n(0);
 
   // Adaptively extend the integration range until the tail contributes negligibly.
   do {
@@ -351,7 +352,8 @@ double EPA_WoodSaxon::IntegrateWithAdaptiveRange(
     rmax *= 2.;
     segment_increment = gauss.Integrate(rmin, rmax, tolerance);
     total_result += segment_increment;
-  } while (std::abs(segment_increment) > tolerance * std::abs(total_result) + 1.e-12);
+    ++n;
+  } while (n < 3 && std::abs(segment_increment) > tolerance * std::abs(total_result));
 
   return total_result;
 }
