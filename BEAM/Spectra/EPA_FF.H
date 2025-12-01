@@ -223,8 +223,8 @@ namespace BEAM {
     double                                m_d, m_rho0;
     std::unique_ptr<ATOOLS::OneDim_Table> p_FF_Q2;
 
-    static double IntegrateWithAdaptiveRange(std::function<double(double)> integrand,
-                                      double initial_rmax, double tolerance);
+    static double IntegrateWithAdaptiveRange(const std::function<double(double)>& integrand,
+        double initial_rmax, double tolerance);
     double CalculateDensity();
     void   InitFFTable(const double& q2min, const double& q2max);
 
