@@ -126,8 +126,7 @@ namespace BEAM {
       // function:
       // - argument of form factor Q^2 = qT^2+x^2m^2 with qT^2 = y^2/bT^2
       // - we assume that m_b is in units of 1/GeV, qT is in GeV, overall
-      // results
-      //   are in GeV.
+      // results are in GeV.
       //////////////////////////////////////////////////////////////////////////
       double qT = y / m_b, qT2 = ATOOLS::sqr(qT);
       double Q2 = (qT2 + ATOOLS::sqr(m_x * p_ff->Mass())) / (1. - m_x);
@@ -226,11 +225,16 @@ namespace BEAM {
     static double IntegrateWithAdaptiveRange(const std::function<double(double)>& integrand,
         double initial_rmax, double tolerance);
     double CalculateDensity();
-    void   InitFFTable(const double& q2min, const double& q2max);
+    void   InitFFTable();
 
   public:
     EPA_WoodSaxon(const ATOOLS::Flavour& beam, int dir);
-    double FF(const double& Q2) override { return (*p_FF_Q2)(Q2); }
+    double FF(const double& Q2) override
+    {
+      if (Q2 < p_FF_Q2->GetAxis().m_xmin) return 1.;
+      double res = (*p_FF_Q2)(Q2);
+      return ATOOLS::IsZero(res) ? 0. : res;
+    }
   };
 
   class EPA_IonApprox final : public EPA_FF_Base {
