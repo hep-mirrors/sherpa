@@ -114,8 +114,7 @@ Comix1to3::Comix1to3(const vector<Flavour>& flavs, const Flavour& prop,
 
   p_ci=new Color_Integrator();
   Idx_Vector cids(4,0);
-  METOOLS::Int_Vector acts(4,0), types(4,0); // (?) acts holds flags indicating whether each particle participates in strong interactions; 
-  // (?) types stores the specific type of color charge for each particle
+  METOOLS::Int_Vector acts(4,0), types(4,0);
   for (size_t i(0);i<flavs.size();++i) {
     cids[i]=i; // assign unique index
     acts[i]=flavs[i].Strong();

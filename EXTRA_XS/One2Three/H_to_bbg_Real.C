@@ -134,8 +134,7 @@ H_to_bbg_Real::H_to_bbg_Real(const vector<Flavour>& flavs, const Flavour& prop,
 
   p_ci=new Color_Integrator();
   Idx_Vector cids(4,0);
-  METOOLS::Int_Vector acts(4,0), types(4,0); // (?) acts holds flags indicating whether each particle participates in strong interactions; 
-  // (?) types stores the specific type of color charge for each particle
+  METOOLS::Int_Vector acts(4,0), types(4,0);
   for (size_t i(0);i<flavs.size();++i) {
     cids[i]=i; // assign unique index
     acts[i]=flavs[i].Strong();
@@ -173,7 +172,6 @@ bool H_to_bbg_Real::IsNLODecay(){
 
 void H_to_bbg_Real::Calculate(const ATOOLS::Vec4D_Vector& momenta, bool anti) {
   DEBUG_FUNC(momenta.size());
-  // does not do anything yet because integrating this decay channel would result in infinities
   p_ci->GeneratePoint(); // create a new integration point for the color factors
 
   CalculateBorn(momenta, anti);
@@ -183,7 +181,7 @@ void H_to_bbg_Real::Calculate(const ATOOLS::Vec4D_Vector& momenta, bool anti) {
 
   p_ci->SetI(myI);
   p_ci->SetJ(myJ);
-/*
+
   if (anti) {
     for (size_t i(0);i<m_anticur.size();++i) {
       m_anticur[i]->ConstructJ(i==0?-momenta[i]:momenta[i],0,p_ci->I()[i],p_ci->J()[i],0);
@@ -199,8 +197,8 @@ void H_to_bbg_Real::Calculate(const ATOOLS::Vec4D_Vector& momenta, bool anti) {
     }
     m_scur->Evaluate();
     m_fcur->Evaluate();
-  }*/
-  /*
+  }
+  
   vector<int> fill(m_n,1); // output amplitude vector
   for (size_t i(0);i<m_n;++i) (*this)[i]=Complex(0.0,0.0);
   if (anti) {
@@ -208,20 +206,12 @@ void H_to_bbg_Real::Calculate(const ATOOLS::Vec4D_Vector& momenta, bool anti) {
   }
   else {
     m_fcur->Contract<double>(*m_cur.front(),fill,*this,0);
-  }*/
+  }
 
   for (size_t i=0; i<size(); ++i) {
     (*this)[i] *= sqrt(p_ci->GlobalWeight()); // scale the final numerical result appropriately with the color factor
   }
 
-/*
-  for (size_t i = 0; i < p_ci->I().size(); ++i) {
-      std::cout << "I[" << i << "] = " << p_ci->I()[i] << std::endl;
-  }
-  for (size_t i = 0; i < p_ci->J().size(); ++i) {
-      std::cout << "J[" << i << "] = " << p_ci->J()[i] << std::endl;
-  }
-*/
   // falsely the m_z scale is used for the calculation of alpha_S instead of the Higgs scale. To correct this, multiply the calculated amplitude tensor (*this)
   // with \sqrt{alpha_S(M_H) / alpha_S(scale used here)}.
 
@@ -337,7 +327,6 @@ void H_to_bbg_Real::Calculate_real_subtraction(const ATOOLS::Vec4D_Vector& momen
   double D_gbb_b = V_gbb_b/ ((p_g + p_bb)*(p_g + p_bb) - m2_ij) * ME2_Born;
 
   subtraction_term = D_gb_bb + D_gbb_b;
-  std::cout << "S: " << subtraction_term << std::endl;
 }
 
 
@@ -494,9 +483,6 @@ std::pair<std::vector<std::pair<METOOLS::CSpinor<double>*, int>>,
     for (size_t h = 0; h < bottom_cur_j.size(); ++h) {
       const std::vector<DDSpin*> *v = bottom_cur_j[h].template Get<DDSpin>();
       if (v) for (DDSpin* sp : *v) bottom.emplace_back(sp, static_cast<int>(h));
-      //for (DDSpin* sp : *v) {
-      //  std::cout << "m_cur_born[1] hel="<<h<<" u0="<<(*sp)[0]<<" u1="<<(*sp)[1]<<" u2="<<(*sp)[2]<<" u3="<<(*sp)[3]<<"\n";
-      //}
     }
 
     // antibottom current

@@ -176,9 +176,7 @@ std::pair<std::vector<std::pair<METOOLS::CSpinor<double>*, int>>,
     for (size_t h = 0; h < bottom_cur_j.size(); ++h) {
       const std::vector<DDSpin*> *v = bottom_cur_j[h].template Get<DDSpin>();
       if (v) for (DDSpin* sp : *v) bottom.emplace_back(sp, static_cast<int>(h));
-      //for (DDSpin* sp : *v) {
-      //  std::cout << "m_cur[1] hel="<<h<<" u0="<<(*sp)[0]<<" u1="<<(*sp)[1]<<" u2="<<(*sp)[2]<<" u3="<<(*sp)[3]<<"\n";
-      //}
+
     }
 
     // antibottom current
@@ -540,23 +538,11 @@ double H_to_bb_Virtual::CalculateVirtualCorrection(const ATOOLS::Vec4D_Vector& m
   double finite_sub = CalculateFiniteSubtraction(momenta, ME2_Born);
   double epsilon_sub = CalculateEpsilonSubtraction(momenta, ME2_Born);
 
-  // todo: make sure that epsilon terms cancel
+  // todo: make sure that epsilon terms cancel; Write check/ warning, if they don*t cancel
 
   double v_correction = v_correction_f + finite_sub;
-  double epsilon_sum = v_correction_e + epsilon_sub; // should be = 0!!
+  double epsilon_sum = v_correction_e + epsilon_sub;
 
-  // print for test purpose
-  std::cout << std::endl << "===================" << std::endl;
-  std::cout << "Virtual results:" << std::endl;
-  std::cout << "v_correction = v_correction_f + finite_sub: " << v_correction << " = " << v_correction_f << " + " << finite_sub << std::endl;
-  std::cout << "epsilon_sum = v_correction_e + epsilon_sub: " << epsilon_sum << " = " << v_correction_e << " + " << epsilon_sub << std::endl;
-  std::cout << "===================" << std::endl;
-
-  std::cout << "Subtracted Decay Width (V + I):" << v_correction * 0.0001585476052942902277969280107304838 << std::endl;
-  std::cout << "Not subtracted Decay Width (V):" << v_correction_f * 0.0001585476052942902277969280107304838 << std::endl;
-  std::cout << "vs. Recola Width value (V):" << 0.00498717 << std::endl;
-  std::cout << "I Decay Width:" << finite_sub * 0.0001585476052942902277969280107304838 << std::endl;
-  std::cout << "vs. Recola I value:" << -0.00783014 << std::endl;
   return v_correction;
 }
 

@@ -59,8 +59,7 @@ public:
 };
 
 Hard_Decay_Handler::Hard_Decay_Handler() :
-/* Sets the variable values. It often checkes if there is a value specified, and if not, it sets a default value.
-*/
+/* Sets the variable values. */
 
   p_newsublist(NULL), m_resultdir(""), m_offshell(""),
   m_decay_tau(false), m_set_widths(false),
@@ -349,10 +348,6 @@ void Hard_Decay_Handler::InitializeDirectDecays(Decay_Table* dt)
     Decay_Channel* dc=new Decay_Channel(inflav, this);
     for (int j=1; j<sv->NLegs(); ++j) dc->AddDecayProduct(sv->in[j]);
 
-    if (dc->Flavs()[0].IDName() == "h0" && dc->Flavs()[1].IDName() == "b" && dc->Flavs()[2].IDName() == "bb"){
-          std::cout << "flavs1[0].IDName(): " << dc->Flavs()[0].IDName() << "  to  " << dc->Flavs()[1].IDName() << dc->Flavs()[2].IDName() << std::endl;
-        }
-
     Comix1to2* diagram=new Comix1to2(dc->Flavs());
     dc->AddDiagram(diagram);
 
@@ -505,11 +500,6 @@ offshell (or three-body) decay configurations.
   if (flavs1[0].IDName() == "h0" && flavs1[1].IDName() == "b" && flavs1[2].IDName() == "bb"){
     bbbar_channel = true;
   }
-  std::cout << "candidate: " << flavs1[0].IDName() << "  to  " << flavs1[1].IDName() << flavs1[2].IDName() << std::endl;
-  if (flavs1[0].IDName() == "h0" && flavs1[1].IDName() == "Z" && flavs1[2].IDName() == "Z"){
-    bbbar_channel = false;
-  }
-
 
   for (size_t j=1;j<flavs1.size();++j) { // iterate over each daughter flavor (starting at index 1)
     bool ignore=false;
@@ -561,21 +551,13 @@ offshell (or three-body) decay configurations.
       Spin_Amplitudes* diagram = nullptr; // parent class for H_to_bbg_Real and Comix1to3
       if (bbbar_channel && (sv->in[2].IDName() == "G")) {
         diagram = new H_to_bbg_Real(dc->Flavs(),flavs1[1],nonprop, propi, propj);
-
-        // here: second diagram needed for h0 -> b bbar g
+        // second diagram needed for h0 -> b bbar g
         Spin_Amplitudes* diagram2 = nullptr;
         diagram2 = new H_to_bbg_Real(dc->Flavs(),flavs1[2],propj,propi,nonprop);
         dc->AddDiagram(diagram2);
       } else {
         diagram = new Comix1to3(dc->Flavs(),flavs1[j],
         nonprop, propi, propj);
-
-        // test (delete this later):
-        const std::vector<ATOOLS::Flavour> flavs1(dc->Flavs());
-        std::cout << "flavs1[0].IDName(): " << flavs1[0].IDName() << "  to  " << flavs1[1].IDName() << flavs1[2].IDName() << flavs1[3].IDName() << std::endl;
-        if (flavs1[0].IDName() == "h0" && flavs1[1].IDName() == "Z" && flavs1[2].IDName() == "b"){
-          std::cout << "flavs1[0].IDName(): " << flavs1[0].IDName() << "  to  " << flavs1[1].IDName() << flavs1[2].IDName() << flavs1[3].IDName() << std::endl;
-        }
       }
 
       dc->AddDiagram(diagram);

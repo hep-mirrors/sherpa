@@ -379,39 +379,13 @@ double Decay_Channel::ME2_NLO(const ATOOLS::Vec4D_Vector& momenta, bool anti,
                           METOOLS::Spin_Density* sigma,
                           const std::vector<ATOOLS::Particle*>& p)
 {
-  // test soft limit: insert manually soft momenta
-  //ATOOLS::Vec4<double> p_g = momenta[1];
-  //ATOOLS::Vec4<double> p_b = momenta[2];
-  //ATOOLS::Vec4<double> p_bb = momenta[3];
-  
-  /*if (momenta.size() > 3){
-  ATOOLS::Vec4D_Vector mom = momenta;
-  double E_g = 0.0000000000001; 
-  mom[0] = momenta[0];
-  mom[1] = Vec4D(E_g, 0.0, 0.0, E_g);
-  double abs_p_b = 1;
-  double m_b2 =  momenta[2] * momenta[2];
-  double E_b = std::sqrt(abs_p_b*abs_p_b + m_b2);
-  mom[2] = Vec4D(E_b, abs_p_b, 0.0, 0.0);
-  mom[3] = mom[0] - mom[1] - mom[2];
-  for(size_t i(0); i<GetDiagrams().size(); ++i) {
-    GetDiagrams()[i]->Calculate(mom, anti);
-    }  
-  }
-  else{
-    for(size_t i(0); i<GetDiagrams().size(); ++i) {
-      GetDiagrams()[i]->Calculate(momenta, anti);
-    }
-  }*/
   for(size_t i(0); i<GetDiagrams().size(); ++i) {
       GetDiagrams()[i]->Calculate(momenta, anti);
     }
-
   double NLO_part = 0;
   for(size_t i(0); i<GetDiagrams().size(); ++i) {
     NLO_part += GetDiagrams()[i]->get_NLO_part(); // either -S or V+I
   }
-  //NLO_part += GetDiagrams()[0]->get_NLO_part();
   Complex sumijlambda_AiAj(0.0,0.0);
 
   if (sigma) {
@@ -423,9 +397,6 @@ double Decay_Channel::ME2_NLO(const ATOOLS::Vec4D_Vector& momenta, bool anti,
     for(size_t i(0); i<GetDiagrams().size(); ++i) {
      *p_amps = GetDiagrams()[i]->AddNLOTensor(*p_amps); // override amplitude tensor: add NLO parts to it
     }
-  //if (p_amps) {
-  //  p_amps->Trace();
-  //}
     DEBUG_VAR(*p_amps);
     sumijlambda_AiAj=(*sigma)*p_amps->ReduceToMatrix(sigma->Particle());
   }
@@ -452,9 +423,8 @@ double Decay_Channel::ME2_NLO(const ATOOLS::Vec4D_Vector& momenta, bool anti,
   }
 
   double value=sumijlambda_AiAj.real();
-  std::cout << "Born or R: " << value << std::endl;
   if(!sigma){  // if sigma: NLO_Part was already added by AddNLOTensor above, does not need to be added again
-    //value += NLO_part;
+    value += NLO_part;
   }
   value /= double(GetDecaying().IntSpin()+1);
   if (GetDecaying().StrongCharge())

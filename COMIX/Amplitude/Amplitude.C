@@ -1574,9 +1574,6 @@ bool Amplitude::EvaluateAll(const bool& mode)
 		     <<e1l<<", I -> "<<e1p<<", rel. diff. "
 		     <<(e1p/e1l-1.0)<<".\n";
       }
-      if (m_fl[0].IDName() == "bb"){
-        double x = 0.0;
-      }
       csum+=cw*asf*p_loop->ME_Finite();
       if (m_murcoeffvirt && p_loop->ProvidesPoles()) {
         if (m_sccmur) {

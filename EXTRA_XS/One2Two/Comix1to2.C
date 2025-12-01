@@ -92,8 +92,7 @@ Comix1to2::Comix1to2(const vector<Flavour>& flavs) :
 
   p_ci=new Color_Integrator();
   Idx_Vector cids(3,0);
-  METOOLS::Int_Vector acts(3,0), types(3,0); // (?) acts holds flags indicating whether each particle participates in strong interactions; 
-  // (?) types stores the specific type of color charge for each particle
+  METOOLS::Int_Vector acts(3,0), types(3,0);
   for (size_t i(0);i<flavs.size();++i) {
     cids[i]=i; // assign unique index
     acts[i]=flavs[i].Strong();
@@ -165,43 +164,14 @@ void Comix1to2::Calculate(const ATOOLS::Vec4D_Vector& momenta, bool anti) {
     CalculateNLO(momenta, anti);
   }
 
-//for (size_t i=0; i<size(); ++i) {
-//   (*this)[i] += Complex(1.0, 0.0);
-// }
-/*
-std::cout << "*this 1 = { ";
-for (size_t i = 0; i < this->size(); ++i) {
-    std::cout << (*this)[i];
-    if (i < this->size() - 1) std::cout << ", ";
-}
-std::cout << " }" << std::endl;*/
-
   for (size_t i=0; i<size(); ++i) {
     (*this)[i] *= sqrt(p_ci->GlobalWeight()); // scale the final numerical result appropriately with the color factor
   }
-//  std::cout << "*this 2 = { ";
-//for (size_t i = 0; i < this->size(); ++i) {
-//    std::cout << (*this)[i];
-//    if (i < this->size() - 1) std::cout << ", ";
-//}
-//std::cout << " }" << *this << std::endl;
-//test
 }
 
 
 void Comix1to2::CalculateNLO(const ATOOLS::Vec4D_Vector& momenta, bool anti) {
   if (!nlo_virtual) return;
-  std::map<std::string, std::complex<double>> born = nlo_virtual->CalculateBorn(momenta, anti); 
-
-  std::cout << "*this 1 = { ";
-  for (size_t i = 0; i < this->size(); ++i) {
-    std::cout << (*this)[i];
-    if (i < this->size() - 1) std::cout << ", ";
-  }
-
-  // test: calculate Born ME2
-  std::complex<double> ME2 = born["00"] * std::conj(born["00"]) + born["01"] * std::conj(born["01"]) + born["10"] * std::conj(born["10"]) + born["11"] * std::conj(born["11"]);
-
   // results for the virtual diagram (just finite part, epsilon divergences cancel out in NLO_Virtual class)
   total_virtual_correction = nlo_virtual->CalculateVirtualCorrection(momenta, anti); 
 }
