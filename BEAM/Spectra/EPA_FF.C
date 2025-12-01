@@ -335,10 +335,12 @@ EPA_DipoleApprox::EPA_DipoleApprox(const ATOOLS::Flavour& beam, const int dir)
 ////////////////////////////////////////////////////////////////////////////////
 
 double EPA_WoodSaxon::IntegrateWithAdaptiveRange(
-        std::function<double(double)> integrand, double initial_rmax, double tolerance)
+        const std::function<double(double)>& integrand,
+        double initial_rmax, double tolerance)
 {
-  auto functor = new Lambda_Functor(&integrand);
-  Gauss_Integrator gauss(functor);
+  Lambda_Functor functor(&integrand);
+  Gauss_Integrator gauss(&functor);
+
   double rmin = 0., rmax = initial_rmax;
   double total_result = gauss.Integrate(rmin, rmax, tolerance);
   double segment_increment = 0.;
@@ -350,8 +352,6 @@ double EPA_WoodSaxon::IntegrateWithAdaptiveRange(
     segment_increment = gauss.Integrate(rmin, rmax, tolerance);
     total_result += segment_increment;
   } while (std::abs(segment_increment) > tolerance * std::abs(total_result) + 1.e-12);
-
-  delete functor;
 
   return total_result;
 }
