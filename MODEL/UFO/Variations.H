@@ -3,7 +3,7 @@
 
 #include "ATOOLS/Org/Scoped_Settings.H"
 #include "MODEL/Main/Single_Vertex.H"
-#include "MODEL/UFO/UFO_Variation_Key.H"
+#include "MODEL/UFO/Variation_Key.H"
 #include "MODEL/Main/Model_Base.H"
 #include <vector>
 #include <map>

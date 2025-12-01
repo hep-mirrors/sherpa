@@ -2,7 +2,6 @@
 #define MODEL_UFO_Variation_Generator_H
 
 #include "ATOOLS/Phys/Hard_Process_Variation_Generator.H"
-#include "MODEL/UFO/UFO_Variation_Key.H"
 #include "MODEL/UFO/Variations.H"
 #include "MODEL/Main/Model_Base.H"
 #include "PHASIC++/Process/Single_Process.H"
