@@ -22,14 +22,15 @@ namespace UFO{
     void SetSMMasses();
     void SetMassiveFlags();
     void SetStableFlags();
-    Variations* GetParameterVariations() {return p_variations;};
+    Variations* GetParameterVariations() override {return p_variations;}
+    bool InitVariations() override {if (!p_variations) p_variations = new Variations(); return true;}
 
   protected:
 
     StringMap m_lorentz_map;
     std::map<std::string, ATOOLS::Kabbala> m_cpls;
     UFO::UFO_Param_Reader* p_dataread;
-    Variations* p_variations;
+    Variations* p_variations = nullptr;
 
     /*
     static Complex complexconjugate(const Complex& arg);

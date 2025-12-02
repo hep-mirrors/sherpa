@@ -20,7 +20,6 @@ namespace UFO{
     p_constants        = new MODEL::ScalarConstantsMap();
     p_complexconstants = new MODEL::ComplexConstantsMap();
     p_functions        = new MODEL::ScalarFunctionsMap();
-    p_variations       = new Variations();
 
     auto& s = ATOOLS::Settings::GetMainSettings();
     const auto& paramcard = s["UFO_PARAM_CARD"].SetDefault("").Get<std::string>();

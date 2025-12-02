@@ -11,6 +11,8 @@
 #include "PDF/Main/ISR_Handler.H"
 #include <map>
 
+namespace UFO {class Variations;}
+
 namespace MODEL {
 
   class Single_Vertex;
@@ -178,6 +180,9 @@ namespace MODEL {
     void CheckForNegativeCouplingOrders();
     inline bool HasNegativeCouplingOrders() const 
     { return m_hasnegativecouplingorders; }
+
+    virtual UFO::Variations* GetParameterVariations() {return nullptr;}
+    virtual bool InitVariations() {return false;}
   };
 
   extern Model_Base *s_model;
