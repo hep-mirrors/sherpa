@@ -67,14 +67,13 @@ void Collider_Weight::AssignKeys(ATOOLS::Integration_Info* const info)
 bool Collider_Weight::Calculate(const double& scale)
 {
   m_weight = 0.;
-  bool succeeded = (p_beams[0]->CalculateWeight(m_xkey[4], scale) &&
-                    p_beams[1]->CalculateWeight(m_xkey[5], scale));
-  if (succeeded && m_rejection > 0 && Reject()) return false;
-  return succeeded;
+  return (p_beams[0]->CalculateWeight(m_xkey[4], scale) &&
+          p_beams[1]->CalculateWeight(m_xkey[5], scale));
 }
 
 double Collider_Weight::operator()()
 {
+  if (m_rejection > 0 && Reject()) return 0.;
   m_weight = p_beams[0]->Weight() * p_beams[1]->Weight();
   return m_weight;
 }
