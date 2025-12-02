@@ -3,10 +3,9 @@
 namespace UFO {
     Variation_Generator::Variation_Generator(const Args& args){
         p_proc = dynamic_cast<PHASIC::Single_Process*> (args.p_proc);
-        if (!p_proc) THROW(fatal_error, "No Single Process was given for Variation.")
-        UFO_Model* model = dynamic_cast<UFO_Model*> (MODEL::s_model);
-        if (!model) THROW(fatal_error, "The model does not seem to implement Variations of external parameters :(")
-        p_vars = model->GetParameterVariations();
+        if (!p_proc) THROW(fatal_error, "No Single Process was given for Variation.");
+        if (!MODEL::s_model->InitVariations()) THROW(fatal_error, "The model does not seem to implement Variations of external parameters :(");
+        p_vars = MODEL::s_model->GetParameterVariations();
     }
 
     /*
@@ -15,7 +14,7 @@ namespace UFO {
     Variation_Generator::~Variation_Generator(){}
 
     /*
-    generate the map for the weights under "UFOVariations", then calculates the weights
+    generate the map for the weights under "ParameterVariations", then calculates the weights
     */
     void Variation_Generator::GenerateAndFillWeightsMap(ATOOLS::Weights_Map& wgtmap){
         double nominal = p_proc->LastXS();
@@ -25,7 +24,7 @@ namespace UFO {
             UpdateAllCouplings(var);
             double part = Calculate();
             msg_Debugging() << " nominal: " << nominal << ", current: " << part << std::endl;
-            wgtmap["UFOVariations"][var.Identifier()] = part/nominal;
+            wgtmap["ParameterVariations"][var.Identifier()] = part/nominal;
         }
         // reset to default vertices TODO save nominal param values somewhere
         UpdateAllCouplings(p_vars->Nominal());
@@ -68,12 +67,12 @@ namespace UFO {
     */
     void Variation_Generator::ResetWeightsMap(ATOOLS::Weights_Map& wgtmap){
         for (auto var : p_vars->GetVariations()){
-            wgtmap["UFOVariations"][var.Identifier()] = 1.0;
+            wgtmap["ParameterVariations"][var.Identifier()] = 1.0;
         }
     }
 }
 
-DECLARE_GETTER(UFO::Variation_Generator, "UFOVariations", Base, Args);
+DECLARE_GETTER(UFO::Variation_Generator, "MODEL_PARAMETERS", Base, Args);
 
 Base* ATOOLS::Getter<Base, Args, UFO::Variation_Generator>::
 operator()(const Args& args) const
@@ -84,6 +83,6 @@ operator()(const Args& args) const
 void ATOOLS::Getter<Base, Args, UFO::Variation_Generator>::
 PrintInfo(std::ostream& str, const size_t width) const
 { 
-str << "Info for UFO Param Variations \n";
+str << "Info for Model Param Variations \n";
 }
 
