@@ -5,15 +5,8 @@
 #include "ATOOLS/Math/Lookup_Tables.H"
 #include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Math/Special_Functions.H"
-#include "ATOOLS/Org/Message.H"
-#include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Phys/Flavour.H"
 #include <cmath>
-#include <fstream>
-#include <functional>
-#include <iostream>
-#include <memory>
-#include <random>
 
 namespace ATOOLS {
   class Settings;
@@ -54,10 +47,14 @@ namespace BEAM {
 
     double SampleImpactParameter()
     {
+      // Sampling from b_abs/(b_abs^2 + R^2) with b_abs = b * R
       m_b = sqrt((ATOOLS::sqr(m_bmin) + 1.) * std::exp(2. * ATOOLS::ran->Get() *
                                                        m_norm_distribution) -
                  1.);
-      return m_norm_distribution * (ATOOLS::sqr(m_b) + 1.) / m_b;
+      double weight = m_norm_distribution * (ATOOLS::sqr(m_b) + 1.) / m_b * m_R;
+      // multiply radius to convert b to physical distance
+      m_b *= m_R;
+      return weight;
     };
     virtual void FillTables();
 
@@ -67,10 +64,7 @@ namespace BEAM {
     virtual double N(const double& x)
     {
       double wt = SampleImpactParameter();
-      // multiply radius to convert b to physical distance
-      m_b *= m_R;
-      wt *= m_R;
-      if (m_b < m_b_pl_threshold) return (*p_N_xb)(x / m_A, m_b) * wt / m_A;
+      if (m_b < m_b_pl_threshold) return (*p_N_xb)(x / m_A, m_b) * wt;
       else {
         // use point-like approximation for large impact parameters
         double chi = x * m_mass * m_b;
@@ -88,14 +82,14 @@ namespace BEAM {
     double Radius() const { return m_R; }
     double ImpactParameter() const { return m_b; }
 
-    inline double Q2min(const double& x) const
+    double Q2min(const double& x) const
     {
       return ATOOLS::Max(m_q2min, ATOOLS::sqr(m_mass * x) / (1 - x));
     }
     // Use maximal angle for the scattered electron in Q^2_max,
     // compare with hep-ph/9610406 and hep-ph/9310350 for the
     // inclusion of term ~(x m)^2
-    inline double Q2max(const double& x) const
+    double Q2max(const double& x) const
     {
       return (m_pt2max > 0.)
                      ? ATOOLS::Min(m_q2max,
@@ -232,6 +226,7 @@ namespace BEAM {
     double FF(const double& Q2) override
     {
       if (Q2 < p_FF_Q2->GetAxis().m_xmin) return 1.;
+      if (Q2 > p_FF_Q2->GetAxis().m_xmax) return 0.;
       double res = (*p_FF_Q2)(Q2);
       return ATOOLS::IsZero(res) ? 0. : res;
     }
@@ -246,7 +241,7 @@ namespace BEAM {
   class EPA_Test final : public EPA_FF_Base {
   public:
     explicit EPA_Test(const ATOOLS::Flavour& beam, int dir);
-    void   FillTables() override;
+    void   FillTables() override {};
     double FF(const double& Q2) override { return 0.; }
   };
 }// end of namespace BEAM
