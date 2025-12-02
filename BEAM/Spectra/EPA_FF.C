@@ -15,7 +15,6 @@
 #include <string>
 using namespace BEAM;
 using namespace ATOOLS;
-using string = std::string;
 
 ////////////////////////////////////////////////////////////////////////////////
 //
@@ -218,6 +217,7 @@ EPA_Proton::EPA_Proton(const ATOOLS::Flavour& beam, const int dir)
   m_Q02         = s["Q02"].GetTwoVector<double>()[b];
   if (m_beam.Kfcode() != kf_p_plus)
     THROW(fatal_error, "Wrong form factor for " + m_beam.IDName());
+  m_b = 1.001 * m_R;
 }
 
 double EPA_Proton::N(const double& x)
@@ -259,6 +259,7 @@ EPA_ProtonApprox::EPA_ProtonApprox(const ATOOLS::Flavour& beam, const int dir)
   m_mu2         = sqr(s["MagneticMu"].GetTwoVector<double>()[b]);
   if (m_beam.Kfcode() != kf_p_plus)
     THROW(fatal_error, "Wrong form factor for " + m_beam.IDName());
+  m_b = 1.001 * m_R;
 }
 
 double EPA_ProtonApprox::N(const double& x)
@@ -425,11 +426,4 @@ EPA_Test::EPA_Test(const ATOOLS::Flavour& beam, const int dir)
     : EPA_FF_Base(beam, dir)
 {
   FillTables();
-}
-
-void EPA_Test::FillTables()
-{
-  axis xaxis(100, 1.e-4, 1., axis_mode::log);
-  axis baxis(100, 1.e-6, 1.e4, axis_mode::log);
-  // Fill_Nxb_Table(xaxis, baxis);
 }
