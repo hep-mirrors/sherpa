@@ -24,7 +24,7 @@ H_to_bb_Virtual::H_to_bb_Virtual(const vector<Flavour>& flavs):
   Spin_Amplitudes(flavs,Complex(0.0,0.0)), m_cur(3), m_anticur(3), m_nhel(3), 
   BornPrefactor(1.0), VirtualPrefactor(1.0)
 {
-  CalculateAlphaQCD(125.09);
+  CalculateAlphaQCD(flavs[0].Mass()); // Higgs mass
 
   if (flavs.size()!=3) THROW(fatal_error,"Internal error.");
 
