@@ -515,16 +515,18 @@ double H_to_bb_Virtual::CalculateVirtualCorrection(const ATOOLS::Vec4D_Vector& m
   std::map<std::string, std::complex<double>> &v_epsilon  = virtual_amplitudes["v_epsilon"];
   std::map<std::string, std::complex<double>> &v_epsilon2 = virtual_amplitudes["v_epsilon2"];
 
+  double colour_factor = 4.0;
+
   // finite part
   std::complex<double> BV_f = born["00"] * std::conj(v_finite["00"]) + born["01"] * std::conj(v_finite["01"]) + born["10"] * std::conj(v_finite["10"]) + born["11"] * std::conj(v_finite["11"]);
-  double v_correction_f = 2 * std::real(BV_f);
+  double v_correction_f = colour_factor * 2 * std::real(BV_f);
 
   // 1/epsilon part
   std::complex<double> BV_e = born["00"] * std::conj(v_epsilon["00"]) + born["01"] * std::conj(v_epsilon["01"]) + born["10"] * std::conj(v_epsilon["10"]) + born["11"] * std::conj(v_epsilon["11"]);
-  double v_correction_e = 2 * std::real(BV_e);
+  double v_correction_e = colour_factor * 2 * std::real(BV_e);
 
   std::complex<double> BV_e2 = born["00"] * std::conj(v_epsilon2["00"]) + born["01"] * std::conj(v_epsilon2["01"]) + born["10"] * std::conj(v_epsilon2["10"]) + born["11"] * std::conj(v_epsilon2["11"]);
-  double v_correction_e2 = 2 * std::real(BV_e2);
+  double v_correction_e2 = colour_factor * 2 * std::real(BV_e2);
 
   // 1/epsilon^2 part = 0 for H -> bb, because b is massive.
   const double epsilon_tol = 1e-12;
