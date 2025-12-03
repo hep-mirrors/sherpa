@@ -20,11 +20,12 @@ namespace CSSHOWER {
     double m_k0sqi, m_k0sqf, m_k0sq_gsplit_fac, m_sphi;
     double m_deltaz, m_st, m_sz, m_sy, m_ymin, m_ymax, m_scale;
     double m_zmin,m_zmax, m_weight;
-    int m_qcdmode,m_ewmode;
+    int m_qcdmode,m_ewmode, m_enableQuarkonia;
     ATOOLS::Flavour m_cfl, m_flspec;
     Parton * p_split, * p_spect;
     SF_EEE_Map m_fffmap, m_ffimap, m_iffmap, m_ifimap, m_fifmap, m_fiimap;
     SF_EEE_Map m_sffmap, m_sfimap, m_sifmap, m_siimap;
+    ST_Map     m_stmap;
     std::vector<Splitting_Function_Base *> m_addsplittings;
     Shower *p_shower;
     std::vector<SFC_Getter*> m_cgets;
@@ -32,6 +33,11 @@ namespace CSSHOWER {
     double m_reweightscalecutoff, m_gluon_xscaling_in_forced_splittings;
     std::pair<double, double> m_pdfmin;
     static bool s_init;
+    
+    void AddDiQuarkSplittingFunctions(MODEL::Model_Base *md,const int kfmode);
+    void AddQuarkoniaSplittingFunctions(MODEL::Model_Base *md,const int kfmode);
+    void AddOctetMesonSplittingFunctions(MODEL::Model_Base *md,const int kfmode);
+    void AddGluonThresholds(MODEL::Model_Base *md);
     double ProduceT(double t);
     bool Veto(double,double,double,double,double);
     bool Splitting(double,double,double,double,double);
@@ -39,7 +45,6 @@ namespace CSSHOWER {
     bool DefineFIBoundaries(double,double,int);
     bool DefineIFBoundaries(double,double,int);
     bool DefineIIBoundaries(double,double,int);
-    void AddDiQuarkSplittingFunctions(MODEL::Model_Base *md,const int kfmode);
     void Add(Splitting_Function_Base * split);
     void AddToMaps(Splitting_Function_Base * split,const int mode=1);
   public:
@@ -89,12 +94,14 @@ namespace CSSHOWER {
 
     inline void SetShower(Shower *const shower) { p_shower=shower; }
     inline double Weight() const { return m_weight; }
+    inline void SetQuarkoniaMode(const int mode) { m_enableQuarkonia = mode;}
   };
 
   void Sudakov::GetSplittingParameters
   (double & kt2,double & z,double & y,double & phi) {
     kt2 = m_st; z = m_sz; y = m_sy; phi = m_sphi;
   }
+
 }
 
 #endif

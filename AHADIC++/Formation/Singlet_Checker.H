@@ -14,8 +14,8 @@ namespace AHADIC {
     std::list<std::list<Singlet *>::iterator> m_badones;
 
     using Transition = std::pair<Singlet*, ATOOLS::Flavour>;
-    std::vector<Transition> m_transitions;
-    std::list<Proto_Particle *>             * p_hadrons;
+    std::vector<Transition>       m_transitions;
+    std::list<Proto_Particle *> * p_hadrons;
     
     Soft_Cluster_Handler * p_softclusters;
     Trivial_Splitter       m_splitter;

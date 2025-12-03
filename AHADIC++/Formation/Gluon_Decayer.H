@@ -5,7 +5,6 @@
 #include "AHADIC++/Formation/Trivial_Splitter.H"
 #include "AHADIC++/Tools/Singlet_Tools.H"
 #include "AHADIC++/Tools/Soft_Cluster_Handler.H"
-#include "AHADIC++/Tools/Proto_Particle.H"
 #include <list>
 
 namespace AHADIC {

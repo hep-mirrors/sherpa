@@ -89,8 +89,8 @@ double CF_QCD::CplMax(MODEL::Running_AlphaS * as, double rsf) const
 {
   double minscale = Min(1.0, CplFac(m_k0sq)) * m_k0sq;
   double ct(0.);
-  if (rsf < 1.) // only for f<1 cpl gets larger
-    ct = as->BoundedAlphaS(minscale) / M_PI * as->Beta0(0.) * log(rsf);
+  if (rsf > 1.) // only for f>1 cpl gets larger
+    ct = -as->BoundedAlphaS(minscale) / M_PI * as->Beta0(0.) * log(rsf);
   return as->BoundedAlphaS(minscale) * (1. - ct) * m_q;
 }
 
@@ -156,14 +156,14 @@ double CF_QCD::Coupling(const double &scale,const int pol)
     msg_Debugging()<<"as(\\mu_R^2)*(1-ct)="<<cpl<<std::endl;
 #endif
   }
+  m_last=cpl;
   cpl*=m_q;
   if (cpl>cplinfo.MaxCoupling()->front()) {
-    msg_Tracking()<<"CSS::"<<METHOD<<"(q="<<m_q<<"): Value "<<cpl
-		  <<" exceeds maximum "<<cplinfo.MaxCoupling()->front()
-		  <<" at t = "<<sqrt(CplFac(scale))<<" * "<<sqrt(scale)
-		  <<" * "<<sqrt(cplinfo.RSF())<<" -> \\mu_R = "<<sqrt(scl)
-		  <<", qmin = "<<sqrt(cplinfo.Coupling()->CutQ2())<<std::endl;
-    cpl=cplinfo.MaxCoupling()->front();
+    msg_Tracking()<<METHOD<<"(): Value exceeds maximum at t = "
+               <<sqrt(t)<<" -> \\mu_R = "<<sqrt(scl)
+               <<", qmin = "<<sqrt(cplinfo.Coupling()->CutQ2())<<std::endl;
+    m_last=cplinfo.MaxCoupling()->front()/m_q;
+    return cplinfo.MaxCoupling()->front();
   }
 #ifdef DEBUG__Trial_Weight
   msg_Debugging()<<"as weight kt = "<<sqrt(CplFac(scale))<<" * "
@@ -173,24 +173,24 @@ double CF_QCD::Coupling(const double &scale,const int pol)
   return m_last = cpl;
 }
 
-bool CF_QCD::AllowSpec(const ATOOLS::Flavour &fl,const int mode)
+bool CF_QCD::AllowSpec(const ATOOLS::Flavour &fl,const int mode) 
 {
   if (mode) return fl.Strong();
   if (abs(fl.StrongCharge())==3) {
     switch (m_type) {
-    case cstp::FF:
+    case cstp::FF: 
       if (abs(p_lf->FlA().StrongCharge())==3)
 	return p_lf->FlA().StrongCharge()==-fl.StrongCharge();
       break;
-    case cstp::FI:
+    case cstp::FI: 
       if (abs(p_lf->FlA().StrongCharge())==3)
 	return p_lf->FlA().StrongCharge()==fl.StrongCharge();
       break;
-    case cstp::IF:
+    case cstp::IF: 
       if (abs(p_lf->FlB().StrongCharge())==3)
 	return p_lf->FlB().StrongCharge()==fl.StrongCharge();
       break;
-    case cstp::II:
+    case cstp::II: 
       if (abs(p_lf->FlB().StrongCharge())==3)
 	return p_lf->FlB().StrongCharge()==-fl.StrongCharge();
       break;
@@ -233,9 +233,10 @@ operator()(const SFC_Filler_Key &key) const
 {
   DEBUG_FUNC("model = "<<key.p_md->Name());
   const Vertex_Table *vtab(key.p_md->VertexTable());
+  bool found = false;
   for (Vertex_Table::const_iterator
 	 vlit=vtab->begin();vlit!=vtab->end();++vlit) {
-    for (Vertex_List::const_iterator
+    for (Vertex_List::const_iterator 
 	   vit=vlit->second.begin();vit!=vlit->second.end();++vit) {
       Single_Vertex *v(*vit);
       if (v->NLegs()>3) continue;
@@ -247,6 +248,11 @@ operator()(const SFC_Filler_Key &key) const
       key.p_gets->push_back(new CF_QCD_Getter(atag+btag+ctag));
     }
   }
+  key.p_gets->push_back(new CF_QCD_Getter("{"+Flavour(kf_c).IDName()+"}"+"{"+Flavour(kf_c).IDName()+"}"+"{"+Flavour(kf_J_psi_1S).IDName()+"}"));
+  key.p_gets->push_back(new CF_QCD_Getter("{"+Flavour(kf_c).Bar().IDName()+"}"+"{"+Flavour(kf_c).Bar().IDName()+"}"+"{"+Flavour(kf_J_psi_1S).IDName()+"}"));
+  key.p_gets->push_back(new CF_QCD_Getter("{"+Flavour(kf_c).IDName()+"}"+"{"+Flavour(kf_c).IDName()+"}"+"{"+Flavour(kf_3S1_c_8_J_psi_1S).IDName()+"}"));
+  key.p_gets->push_back(new CF_QCD_Getter("{"+Flavour(kf_c).Bar().IDName()+"}"+"{"+Flavour(kf_c).Bar().IDName()+"}"+"{"+Flavour(kf_3S1_c_8_J_psi_1S).IDName()+"}"));
+  key.p_gets->push_back(new CF_QCD_Getter("{"+Flavour(kf_gluon).IDName()+"}"+"{"+Flavour(kf_eta_c_1S).IDName()+"}"+"{"+Flavour(kf_gluon).IDName()+"}"));
   return NULL;
 }
 

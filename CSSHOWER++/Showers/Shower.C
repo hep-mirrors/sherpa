@@ -1,5 +1,6 @@
 #include "CSSHOWER++/Showers/Shower.H"
 #include "CSSHOWER++/Tools/Parton.H"
+#include "MODEL/Main/Model_Base.H"
 #include "PHASIC++/Selectors/Jet_Finder.H"
 #include "REMNANTS/Main/Remnant_Base.H"
 #include "ATOOLS/Org/Run_Parameter.H"
@@ -38,6 +39,7 @@ Shower::Shower(PDF::ISR_Handler* isr, const int qcd, const int qed, int type)
   m_recdec            = pss["RECO_DECAYS"].Get<int>();
   m_maxpart           = pss["MAXPART"].Get<int>();
   m_scvmode           = pss["SCALE_VARIATION_SCHEME"].Get<int>();
+  m_sudakov.SetQuarkoniaMode( pss["ENABLE_QUARKONIA"].Get<int>());
   if (type) {
     kfmode=pss["MI_KFACTOR_SCHEME"].Get<int>();
     k0sqf=pss["MI_FS_PT2MIN"].Get<double>();
@@ -311,6 +313,51 @@ int Shower::MakeKinematics
   return 1;
 }
 
+void Shower::MakeTransition(Parton *split, const ATOOLS::Flavour &fla,
+		       const ATOOLS::Flavour &flb) {
+    DEBUG_FUNC("");
+  Parton *spect(split->GetSpect());
+  Vec4D pemitt(split->Momentum()), // momentum of transitioning gluon
+   pspect(spect->Momentum());     // momentum of the spectator
+  int stype(-1), stat(-1);
+  double mbefore2 = split->Mass2();
+  double mafter2 = flb.Mass(1)*flb.Mass(1);
+  double mspect2 = spect->Mass2();
+  if (fla.Kfcode() != kf_gluon || mbefore2 != 0.0) {
+    msg_Error() << METHOD << "Somehow trying to transition something else than a gluon.";
+    exit(EXIT_FAILURE);
+  }
+  if (split->GetType()==pst::FS) {
+    if (spect->GetType()==pst::FS) {
+      const Vec4D q = (pemitt+pspect);
+      const double Q2 = q.Abs2(); 
+      const double lam = sqr(Q2 - mafter2 - mspect2) - 4*mafter2*mspect2;
+      pspect = (pspect - 0.5*(1.+mspect2/Q2)*q)*sqrt(lam/sqr(Q2-mspect2)) + 0.5*(Q2+mspect2-mafter2)/Q2*q;
+      pemitt = q-pspect;
+      //recoils the spector so that the emitter now has the correct mass
+      //while keeping the correct spectator mass
+    }
+    else {
+      const Vec4D q = (pspect - pemitt);
+      const Vec4D qLong = Vec4D(q[0],0.0,0.0,q[3]);
+      const double Q2 = q.Abs2(); 
+      const double lam = sqr(Q2 - mafter2 - mspect2) - 4*mafter2*mspect2;
+      pspect = (pspect - 0.5*(mspect2+Q2)/qLong.Abs2()*qLong)
+          *sqrt((lam-4*mspect2*pemitt.PPerp2())/(sqr(Q2-mspect2) - 4*mspect2*pemitt.PPerp2()))
+          + 0.5*(Q2+mspect2-mafter2)/(qLong.Abs2())*qLong;
+      pemitt = pspect - q;
+    }
+  }
+  else {
+    msg_Error() << METHOD << "Something horrible happened.";
+    exit(EXIT_FAILURE);
+  }
+  split->SetMomentum(pemitt);
+  split->SetMass2(mafter2);
+  split->SetFlavour(flb);
+  spect->SetMomentum(pspect);
+}
+
 bool Shower::EvolveSinglet(Singlet * act,const size_t &maxem,size_t &nem)
 {
   p_actual=act;
@@ -349,13 +396,16 @@ bool Shower::EvolveSinglet(Singlet * act,const size_t &maxem,size_t &nem)
   }
   m_sudakov.SetKeepReweightingInfo(m_reweight);
   while (true) {
-    for (Singlet::const_iterator it=p_actual->begin();it!=p_actual->end();++it)
-      if ((*it)->GetType()==pst::IS) SetXBj(*it);
+    // Main splitting loop
+    for (Singlet::const_iterator it = p_actual->begin(); it != p_actual->end();
+         ++it)
+      if ((*it)->GetType() == pst::IS)
+        SetXBj(*it);
     kt2win = 0.;
-    Parton *split=SelectSplitting(kt2win);
-    //no shower anymore
-    if (split==NULL) {
-      msg_Debugging()<<"No emission\n";
+    Parton *split = SelectSplitting(kt2win);
+
+    if (split == NULL) { // Singlet evolution is terminated
+      msg_Debugging() << "No emission\n";
       ResetScales(p_actual->KtNext());
       for (Singlet::const_iterator it=p_actual->begin(); it!=p_actual->end();++it) {
         const double singlet_weight {(*it)->Weight()};
@@ -376,24 +426,41 @@ bool Shower::EvolveSinglet(Singlet * act,const size_t &maxem,size_t &nem)
 	p_actual->SetNLO(0);
       }
       return true;
-    }
-    else {
-      msg_Debugging()<<"Emission "<<m_flavA<<" -> "<<m_flavB<<" "<<m_flavC
-		     <<" at kt = "<<sqrt(split->KtTest())
-		     <<"( "<<sqrt(split->GetSing()->KtNext())<<" .. "
-		     <<sqrt(split->KtStart())<<" ), z = "<<split->ZTest()<<", y = "
-		     <<split->YTest()<<" for\n"<<*split
-		     <<*split->GetSpect()<<"\n";
-      m_last[0]=m_last[1]=m_last[2]=m_last[3]=NULL;
-      if (kt2win<split->GetSing()->KtNext()) {
-	msg_Debugging()<<"... Defer split ...\n\n";
-	ResetScales(split->GetSing()->KtNext());
-	if (p_actual->NLO()&32) {
-	  p_actual->Reduce();
-	  p_actual->SetNLO(0);
-	  ResetScales(p_actual->KtNext());
-	}
-	return true;
+    } else if (split->Transition() && m_flavC == (ATOOLS::Flavour)(kf_none)) {
+      // Handles transitions
+      const double tr_weight {split->Weight()};
+      msg_Debugging() << "Transition " << m_flavA << " -> " << m_flavB << "  ("
+                      << m_flavC << ") "
+                      << " at kt = " << sqrt(split->KtTest()) << "( "
+                      << sqrt(split->GetSing()->KtNext()) << " .. "
+                      << sqrt(split->KtStart()) << " ), z = " << split->ZTest()
+                      << ", y = " << split->YTest() << " for\n"
+                      << *split << "\n" << *split->GetSpect() << "\n"
+                      << "Transition weight: " << tr_weight << endl
+                      << "Resetting transition tag from " << split->Transition()
+                      << " to false.\n";
+      m_weightsmap["Sudakov"] *= tr_weight;
+      MakeTransition(split, m_flavA, m_flavB);
+      msg_Debugging() << "after transition\n" << *split << "\n" << *split->GetSpect() << "\n";
+      msg_Debugging() << "FS --> Exiting Transition handling in" << METHOD
+                      << " Shower weight: " << m_weightsmap["PS"] << endl;
+    } else {
+      msg_Debugging() << "Emission " << m_flavA << " -> " << m_flavB << " "
+                      << m_flavC << " at kt = " << sqrt(split->KtTest()) << "( "
+                      << sqrt(split->GetSing()->KtNext()) << " .. "
+                      << sqrt(split->KtStart()) << " ), z = " << split->ZTest()
+                      << ", y = " << split->YTest() << " for\n"
+                      << *split << *split->GetSpect() << "\n";
+      m_last[0] = m_last[1] = m_last[2] = m_last[3] = NULL;
+      if (kt2win < split->GetSing()->KtNext()) { // FS: Edge case
+        msg_Debugging() << "... Defer split ...\n\n";
+        ResetScales(split->GetSing()->KtNext());
+        if (p_actual->NLO() & 32) {
+          p_actual->Reduce();
+          p_actual->SetNLO(0);
+          ResetScales(p_actual->KtNext());
+        }
+        return true;
       }
       ResetScales(kt2win);
       if (p_actual->NSkip()) {
@@ -463,7 +530,7 @@ bool Shower::EvolveSinglet(Singlet * act,const size_t &maxem,size_t &nem)
               return 0.0;
             }
           });
-      if (p_actual->NLO()&2) {
+      if (p_actual->NLO() & 2) {
         const int nqcdvars = s_variations->Size(Variations_Type::qcd);
         if (skips[0])
           nskips += nqcdvars;
@@ -508,6 +575,7 @@ bool Shower::EvolveSinglet(Singlet * act,const size_t &maxem,size_t &nem)
             (*it)->Weights().clear();
           }
           if (m_reweight) {
+            // FS is the on-the-fly reweighting facility
             ATOOLS::Reweight(
                 m_weightsmap["Sudakov"],
                 [this, it](double varweight,
@@ -523,7 +591,7 @@ bool Shower::EvolveSinglet(Singlet * act,const size_t &maxem,size_t &nem)
 	return true;
       }
     }
-  }
+  } // FS this closes the main sudakov loop
   return true;
 }
 
@@ -545,15 +613,21 @@ bool Shower::TrialEmission(double & kt2win,Parton * split)
     if (m_sudakov.Generate(split,kt2win)) {
       m_sudakov.GetSplittingParameters(kt2,z,y,phi);
       split->SetWeight(m_sudakov.Weight());
-      if (kt2>kt2win) {
-	kt2win  = kt2;
-	m_flavA = m_sudakov.GetFlavourA();
-	m_flavB = m_sudakov.GetFlavourB();
-	m_flavC = m_sudakov.GetFlavourC();
-	m_lastcpl = m_sudakov.Selected()->Coupling()->Last();
-	split->SetCol(m_sudakov.GetCol());
-	split->SetTest(kt2,z,y,phi);
-	return true;
+      if (kt2 > kt2win) {
+        kt2win = kt2;
+        m_flavA = m_sudakov.GetFlavourA();
+        m_flavB = m_sudakov.GetFlavourB();
+        m_flavC = m_sudakov.GetFlavourC();
+        if (split->Transition() && m_flavC == (ATOOLS::Flavour)(kf_none)) {
+          kt2win = kt2 * (1.01);
+          // split->SetFlavour(m_sudakov.Selected()->GetFlavourB());
+          split->SetTest(kt2, z, y, phi);
+        } else {
+          m_lastcpl = m_sudakov.Selected()->Coupling()->Last();
+          split->SetCol(m_sudakov.GetCol());
+          split->SetTest(kt2, z, y, phi);
+        }
+        return true;
       }
     }
     else {

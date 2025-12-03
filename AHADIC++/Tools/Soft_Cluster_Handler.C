@@ -162,6 +162,11 @@ bool Soft_Cluster_Handler::Rescue(Cluster * cluster) {
       totmom = mom;
     }
   }
+  if (winner==NULL) {
+    //msg_Out()<<METHOD<<"(newmass = "<<newmass<<") for\n"<<(*cluster)<<"\n";
+    //exit(1);
+    return false;
+  }
   double totmass2 = totmom.Abs2(), totmass = sqrt(totmass2), wmass2 = sqr(winner->Flavour().Mass());
   Vec4D  wvec     = winner->Momentum();
   Poincare boost  = Poincare(totmom);
