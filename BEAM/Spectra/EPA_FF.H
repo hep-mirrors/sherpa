@@ -64,7 +64,7 @@ namespace BEAM {
     virtual double N(const double& x)
     {
       double wt = SampleImpactParameter();
-      if (m_b < m_b_pl_threshold) return (*p_N_xb)(x / m_A, m_b) * wt;
+      if (m_b < m_b_pl_threshold) return (*p_N_xb)(x / m_A, m_b) * wt / m_A;
       else {
         // use point-like approximation for large impact parameters
         double chi = x * m_mass * m_b;
