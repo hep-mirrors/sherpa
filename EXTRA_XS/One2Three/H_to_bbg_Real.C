@@ -293,7 +293,7 @@ static double V_ijk(ATOOLS::Vec4<double> p_i, ATOOLS::Vec4<double> p_j,
   double C_F = 4.0 / 3.0;
   ATOOLS::Vec4<double> Q = p_i + p_j + p_k;
   double m2_Q = Q*Q;
-  double m2_q = sqr(prop.Mass()); // Q mass squared
+  double m2_quark = sqr(prop.Mass()); // Q mass squared
   double alpha_qcd = MODEL::s_model -> ScalarFunction("alpha_S", m2_Q); // at Higgs scale
   
   #ifdef M_PI
@@ -304,7 +304,7 @@ static double V_ijk(ATOOLS::Vec4<double> p_i, ATOOLS::Vec4<double> p_j,
 
   double prefactor = 8 * pi * alpha_qcd * C_F;
   double first_summand = 2 / (1 - z_j_tilde(p_i, p_j, p_k) * (1 - y_ijk(p_i, p_j, p_k) ));
-  double second_summand = nu_ijk_tilde(p_i, p_j, p_k) / nu_ijk(p_i, p_j, p_k) * (1 + z_j_tilde(p_i, p_j, p_k) + m2_Q / (p_i * p_j));
+  double second_summand = nu_ijk_tilde(p_i, p_j, p_k) / nu_ijk(p_i, p_j, p_k) * (1 + z_j_tilde(p_i, p_j, p_k) + m2_quark / (p_i * p_j));
 
   return prefactor * (first_summand - second_summand);
 }
