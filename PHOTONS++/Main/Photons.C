@@ -98,7 +98,7 @@ Photons::Photons() :
   rpa->gen.AddCitation(1,
                        "Photons is published under \\cite{Schonherr:2008av}.");
   s_mode     = s["MODE"].Get<yfsmode::code>();
-  s_useme    = (bool)s["USE_ME"].Get<int>();
+  s_useme    = s["USE_ME"].UseNoneReplacements().Get<bool>();
   s_ircutoff = s["IR_CUTOFF"].Get<double>();
   s_uvcutoff = s["UV_CUTOFF"].Get<double>();
   s_alpha_input   = s["1/ALPHAQED"].Get<double>();
