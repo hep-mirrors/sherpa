@@ -171,6 +171,12 @@ def gen_color(color, out_dir):
 
 
 def main(args):
+    # Fix for macOS multiprocessing spawn issue
+    if sys.platform == 'darwin':
+        try:
+            multiprocessing.set_start_method('fork')
+        except RuntimeError:
+            pass 
     args = parse_args(args)
     ufo_path = Path(args.ufo_path) / '__init__.py'
     ufo_mod = try_import(ufo_path, args.auto_convert)
