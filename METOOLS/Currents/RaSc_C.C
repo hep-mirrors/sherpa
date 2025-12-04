@@ -221,11 +221,11 @@ CRS<SType>::RS(const ATOOLS::Vec4D &p, const int r, const int h, const int s, co
 template<typename SType> CRaritaSchwinger<SType>
 CRS<SType>::RSPP(const ATOOLS::Vec4D &p, const int r, const int s, const int b, const int cr, const int ca,
                  const int hh, const int ms) {
-  CRaritaSchwinger<SType> wf(b>0?METOOLS::CRS<SType>::SpinorVectorProduct(CSpinor(r, abs(b), 1, p, cr, ca, hh, s,
+  CRaritaSchwinger<SType> wf(b>0?METOOLS::CRS<SType>::SpinorVectorProduct(CSpinor<SType>(r, abs(b), 1, p, cr, ca, hh, s,
                                                                                   this->m_msv?p.Abs2():0, ms),
                                                                           this->m_msv? EMM(p, cr, ca) : EM(p, cr, ca, m_k),
                                                                           1, cr, ca, s):
-                                 METOOLS::CRS<SType>::SpinorVectorProduct(CSpinor(r, abs(b), 1, p, cr, ca, hh, s,
+                                 METOOLS::CRS<SType>::SpinorVectorProduct(CSpinor<SType>(r, abs(b), 1, p, cr, ca, hh, s,
                                                                                   this->m_msv?p.Abs2():0, ms),
                                                                           this->m_msv? EMM(p, cr, ca) : EM(p, cr, ca, m_k),
                                                                           1, cr, ca, s).Bar());
@@ -236,9 +236,9 @@ template<typename SType> CRaritaSchwinger<SType>
 CRS<SType>::RSP(const ATOOLS::Vec4D &p, int r, int s, int b, int cr, int ca, int hh, int ms){
   if (!this->m_msv) THROW(fatal_error, "There is no massless Rarita-Schwinger-particle with Sz=1/2!")
 
-  CRaritaSchwinger<SType> wf_p0(METOOLS::CRS<SType>::SpinorVectorProduct(CSpinor(r, abs(b), 1, p, cr, ca, hh, s, p.Abs2(),
+  CRaritaSchwinger<SType> wf_p0(METOOLS::CRS<SType>::SpinorVectorProduct(CSpinor<SType>(r, abs(b), 1, p, cr, ca, hh, s, p.Abs2(),
                                                                             ms), EML(p, cr, ca), 1, cr, ca, s));
-  CRaritaSchwinger<SType> wf_mp(METOOLS::CRS<SType>::SpinorVectorProduct(CSpinor(r, abs(b), -1, p, cr, ca, hh, s, p.Abs2(),
+  CRaritaSchwinger<SType> wf_mp(METOOLS::CRS<SType>::SpinorVectorProduct(CSpinor<SType>(r, abs(b), -1, p, cr, ca, hh, s, p.Abs2(),
                                                                                ms), EMM(p, cr, ca), 1, cr, ca, s));
   CRaritaSchwinger<SType> wf = b>0?(sqrt(2.0/3.0) * wf_p0 - sqrt(1.0/3.0) * wf_mp) :
                                    (sqrt(2.0/3.0) * wf_p0 - sqrt(1.0/3.0) * wf_mp).Bar();
@@ -249,9 +249,9 @@ template<typename SType> CRaritaSchwinger<SType>
 CRS<SType>::RSM(const ATOOLS::Vec4D &p, int r, int s, int b, int cr, int ca, int hh, int ms){
   if (!this->m_msv) THROW(fatal_error, "There is no massless Rarita-Schwinger-particle with Sz=1/2!")
 
-  CRaritaSchwinger<SType> wf_pm(METOOLS::CRS<SType>::SpinorVectorProduct(CSpinor(r, abs(b), 1, p, cr, ca, hh, s, p.Abs2(),
+  CRaritaSchwinger<SType> wf_pm(METOOLS::CRS<SType>::SpinorVectorProduct(CSpinor<SType>(r, abs(b), 1, p, cr, ca, hh, s, p.Abs2(),
                                                                                  ms), EMP(p, cr, ca), 1, cr, ca, s));
-  CRaritaSchwinger<SType> wf_m0(METOOLS::CRS<SType>::SpinorVectorProduct(CSpinor(r, abs(b), -1, p, cr, ca, hh, s, p.Abs2(),
+  CRaritaSchwinger<SType> wf_m0(METOOLS::CRS<SType>::SpinorVectorProduct(CSpinor<SType>(r, abs(b), -1, p, cr, ca, hh, s, p.Abs2(),
                                                                                  ms), EML(p, cr, ca), 1, cr, ca, s));
   //std::complex<SType> ephi = p.PPerp()==0.0?1.0:(p[1]-std::complex<SType>(0.,1.)*p[2]) * (1./p.PPerp());
   CRaritaSchwinger<SType> wf = b>0?-(sqrt(2.0/3.0) * wf_m0 + sqrt(1.0/3.0) * wf_pm) :
@@ -262,10 +262,10 @@ CRS<SType>::RSM(const ATOOLS::Vec4D &p, int r, int s, int b, int cr, int ca, int
 template<typename SType> CRaritaSchwinger<SType>
 CRS<SType>::RSMM(const ATOOLS::Vec4D &p, const int r, const int s, const int b, const int cr, const int ca,
                  const int hh, const int ms) {
-  CRaritaSchwinger<SType> wf(b>0?METOOLS::CRS<SType>::SpinorVectorProduct(CSpinor(r, abs(b), -1, p, cr, ca, hh, s,
+  CRaritaSchwinger<SType> wf(b>0?METOOLS::CRS<SType>::SpinorVectorProduct(CSpinor<SType>(r, abs(b), -1, p, cr, ca, hh, s,
                                                                                   this->m_msv?p.Abs2():0, ms),
                                                                           this->m_msv? EMP(p, cr, ca) : EP(p, cr, ca, m_k), -1, cr, ca, s):
-                             METOOLS::CRS<SType>::SpinorVectorProduct(CSpinor(r, abs(b), -1, p, cr, ca, hh, s, this->m_msv?p.Abs2():0,
+                             METOOLS::CRS<SType>::SpinorVectorProduct(CSpinor<SType>(r, abs(b), -1, p, cr, ca, hh, s, this->m_msv?p.Abs2():0,
                                                                               ms),
                                                                       this->m_msv? EMP(p, cr, ca) : EP(p, cr, ca, m_k), -1, cr,
                                                                       ca, s).Bar());
