@@ -3,11 +3,10 @@
 #include "ATOOLS/Org/Scoped_Settings.H"
 #include "ATOOLS/Phys/Spinor.H"
 
-template <class Scalar>
+template<class Scalar>
 METOOLS::PauliVector<Scalar>::PauliVector() : sigma0(ATOOLS::TCMatrix<Scalar>(2, SComplex(0.0))),
-                                              sigma1(ATOOLS::TCMatrix<Scalar>(2, SComplex(0.0))), sigma2(ATOOLS::TCMatrix<Scalar>(2, SComplex(0.0))),
-                                              sigma3(ATOOLS::TCMatrix<Scalar>(2, SComplex(0.0)))
-{
+sigma1(ATOOLS::TCMatrix<Scalar>(2, SComplex(0.0))), sigma2(ATOOLS::TCMatrix<Scalar>(2, SComplex(0.0))),
+sigma3(ATOOLS::TCMatrix<Scalar>(2, SComplex(0.0)))  {
   sigma0[0][0] = sigma0[1][1] = sigma1[0][1] = sigma1[1][0] = sigma3[0][0] = SComplex(1);
   sigma3[1][1]=SComplex(-1);
   sigma2[0][1]=SComplex(0, -1);
@@ -23,11 +22,10 @@ ATOOLS::TCMatrix<Scalar> METOOLS::PauliVector<Scalar>::operator[](int i) const {
   if (i==3) return sigma3;
 }
 
-template <class Scalar>
+template<class Scalar>
 METOOLS::Gamma<Scalar>::Gamma() : gamma0(ATOOLS::TCMatrix<Scalar>(4, SComplex(0.0))),
-                                  gamma1(ATOOLS::TCMatrix<Scalar>(4, SComplex(0.0))), gamma2(ATOOLS::TCMatrix<Scalar>(4, SComplex(0.0))),
-                                  gamma3(ATOOLS::TCMatrix<Scalar>(4, SComplex(0.0)))
-{
+gamma1(ATOOLS::TCMatrix<Scalar>(4, SComplex(0.0))), gamma2(ATOOLS::TCMatrix<Scalar>(4, SComplex(0.0))),
+gamma3(ATOOLS::TCMatrix<Scalar>(4, SComplex(0.0))) {
 
   std::vector<unsigned int> gauge_vec = GetGauge();
   // Gamma vector in Weyl basis

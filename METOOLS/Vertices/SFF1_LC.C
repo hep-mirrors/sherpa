@@ -34,7 +34,7 @@ namespace METOOLS {
         DEBUG_VAR(q);
         DEBUG_VAR(j0);
         DEBUG_VAR(j1);
-        METOOLS::Gamma gammavec = Gamma<SType>();
+        METOOLS::Gamma<SType> gammavec = Gamma<SType>();
         ATOOLS::TCMatrix<SType> gammamugamma5q = (gammavec[0] * q[0] + std::complex<SType>(-1., 0) * gammavec[1] * q[1]
                                                   + std::complex<SType>(-1., 0) * gammavec[2] * q[2] +
                                                   std::complex<SType>(-1., 0) * gammavec[3] * q[3]) * gammavec.Gamma5();
@@ -61,7 +61,7 @@ namespace METOOLS {
         DEBUG_VAR(q);
         DEBUG_VAR(j0);
         DEBUG_VAR(j1);
-        METOOLS::Gamma gammavec = Gamma<SType>();
+        METOOLS::Gamma<SType> gammavec = Gamma<SType>();
         ATOOLS::TCMatrix<SType> gammamugamma5q = (gammavec[0] * q[0] + std::complex<SType>(-1., 0) * gammavec[1] * q[1]
                                                   + std::complex<SType>(-1., 0) * gammavec[2] * q[2] +
                                                   std::complex<SType>(-1., 0) * gammavec[3] * q[3]) * gammavec.Gamma5();
