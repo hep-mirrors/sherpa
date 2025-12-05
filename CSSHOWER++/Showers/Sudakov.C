@@ -276,11 +276,11 @@ void Sudakov::AddGluonThresholds(Model_Base *md) {
   m_stmap[Flavour(kf_gluon)] = stset = new ST_Set;
   map<kf_code, double> LDME = {
       // numerical LDME [GeV^3] from ph/9507398, PhysRevD.50.3176
-      {kf_3S1_c_8_J_psi_1S, 1.5E-02 / sqr(M_PI)},
+      {kf_3S1_c_8_J_psi_1S, 100* 1.5E-02 / sqr(M_PI)},
       {kf_3S1_c_8_psi_2S,   4.3E-03 / sqr(M_PI)},
       {kf_3P0_c_8_J_psi_1S, 2./3/M_PI * 1 * 3E-03},
       {kf_3P1_c_8_J_psi_1S, 2./3/M_PI * 3 * 3E-03},
-      {kf_3P2_c_8_J_psi_1S, 2./3/M_PI * 5 * 3E-03}};
+      {kf_3P2_c_8_J_psi_1S, 100*2./3/M_PI * 5 * 3E-03}};
   double arg;
   for (list<kf_code>::iterator octit = octetvectors.begin();
        octit != octetvectors.end(); octit++) {

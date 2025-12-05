@@ -40,6 +40,7 @@
 #include "ATOOLS/Org/My_MPI.H"
 #include "ATOOLS/Org/Scoped_Settings.H"
 #include "ATOOLS/Org/Run_Parameter.H"
+#include "ATOOLS/Phys/KF_Table.H"
 
 using namespace SHERPA;
 using namespace MODEL;
@@ -181,7 +182,7 @@ void Initialization_Handler::RegisterDefaults()
   s["SHOW_MODEL_SYNTAX"].SetDefault(0);
   s["SHOW_FILTER_SYNTAX"].SetDefault(0);
   s["SHOW_ANALYSIS_SYNTAX"].SetDefault(0);
-  s["SHOW_VARIABLE_SYNTAX"].SetDefault(0);
+  s["SHOW_VARIABLE_SYNTAX"].SetDefault(false);
   s["SHOW_PDF_SETS"].SetDefault(0);
 
   s["ISR_E_ORDER"].SetDefault(1);
@@ -227,6 +228,7 @@ void Initialization_Handler::RegisterDefaults()
   s["JET_CRITERION"].SetDefault(showergen);
   s["NLOMC_GENERATOR"].SetDefault(showergen);
   auto pss = s["SHOWER"], nlopss = s["MC@NLO"];
+  pss["JET_CRITERION"].SetDefault(1);
   pss["EVOLUTION_SCHEME"].SetDefault(30+30*100);
   pss["KFACTOR_SCHEME"].SetDefault(1);
   pss["SCALE_SCHEME"].SetDefault(14);
@@ -237,7 +239,7 @@ void Initialization_Handler::RegisterDefaults()
   pss["IS_PT2MIN"].SetDefault(2.0);
   pss["PT2MIN_GSPLIT_FACTOR"].SetDefault(1.0);
   pss["FS_AS_FAC"].SetDefault(1.0);
-  pss["IS_AS_FAC"].SetDefault(0.25);
+  pss["IS_AS_FAC"].SetDefault(0.5);
   pss["PDF_FAC"].SetDefault(1.0);
   pss["SCALE_FACTOR"].SetDefault(1.);
   pss["MASS_THRESHOLD"].SetDefault(0.0);
@@ -251,7 +253,7 @@ void Initialization_Handler::RegisterDefaults()
   pss["MAX_REWEIGHT_FACTOR"].SetDefault(1e3);
   nlopss["REWEIGHT_EM"].SetDefault(1);
   pss["REWEIGHT_SCALE_CUTOFF"].SetDefault(5.0);
-  pss["KIN_SCHEME"].SetDefault(1);
+  pss["KIN_SCHEME"].SetDefault(0);
   nlopss["KIN_SCHEME"].SetDefault(1);
   pss["OEF"].SetDefault(3.0);
   pss["KMODE"].SetDefault(2);
@@ -282,7 +284,7 @@ void Initialization_Handler::RegisterDefaults()
   pss["MI_PT2MIN_GSPLIT_FACTOR"].SetDefault(1.0);
   pss["MI_IS_AS_FAC"].SetDefault(0.66);
   pss["MI_FS_AS_FAC"].SetDefault(0.66);
-  pss["MI_KIN_SCHEME"].SetDefault(1);
+  pss["MI_KIN_SCHEME"].SetDefault(0);
   pss["ENABLE_QUARKONIA"].SetDefault(99);
 
   s["COMIX_DEFAULT_GAUGE"].SetDefault(1);
@@ -495,8 +497,8 @@ void Initialization_Handler::ShowParameterSyntax()
       (*it)->ShowSyntax(helpi);
     THROW(normal_exit,"Syntax shown.");
   }
-  helpi = s["SHOW_VARIABLE_SYNTAX"].Get<int>();
-  if (helpi>0) {
+  helpi = s["SHOW_VARIABLE_SYNTAX"].Get<bool>();
+  if (helpi) {
     msg->SetLevel(2);
     ATOOLS::Variable_Base<double>::ShowVariables(helpi);
     THROW(normal_exit,"Syntax shown.");
@@ -561,9 +563,6 @@ bool Initialization_Handler::InitializeTheFramework(int nr)
     else {
       THROW(not_implemented,"Unknown event type '"+eventtype+"'");
     }
-    //msg_Out()<<METHOD<<": mode = "<<m_mode<<", type = "<<eventtype<<": "
-    //<<"ME = "<<s["ME_GENERATORS"].Get<string>()<<", "
-    //	     <<"MI = "<<s["SOFT_COLLISIONS"].Get<string>()<<"\n";
   }
   okay = okay && InitializeTheBeams();
   okay = okay && InitializeThePDFs();
@@ -774,9 +773,6 @@ void Initialization_Handler::LoadPDFLibraries(Settings& settings) {
   m_defsets[PDF::isr::hard_process]    = std::array<std::string, 2>();
   m_defsets[PDF::isr::hard_subprocess] = std::array<std::string, 2>();
   m_defsets[PDF::isr::bunch_rescatter] = std::array<std::string, 2>();
-  //msg_Out()<<METHOD<<": "
-  //	   <<"bunch(0) = "<<p_beamspectra->GetBeam(0)->Bunch(0)<<" & "
-  //	   <<"bunch(1) = "<<p_beamspectra->GetBeam(1)->Bunch(0)<<".\n";
   for (size_t beam=0;beam<2;++beam) {
     /////////////////////////////////////////////////////////
     // define bunch particle-dependent PDF libraries and sets here
@@ -837,11 +833,6 @@ void Initialization_Handler::LoadPDFLibraries(Settings& settings) {
     }
     m_defsets[PDF::isr::bunch_rescatter][beam] = defset;
   }
-  //msg_Out()<<"   * (mode = "<<m_mode<<"), default sets: "
-  //	   <<"beam 0 = "<<m_defsets[PDF::isr::hard_process][0]<<" + "
-  //	   <<m_defsets[PDF::isr::hard_subprocess][0]<<", "
-  //	   <<"beam 1 = "<<m_defsets[PDF::isr::hard_process][1]<<" + "
-  //	   <<m_defsets[PDF::isr::hard_subprocess][1]<<"\n";
   // add LHAPDF if necessary and load the relevant libraries
   if (Variations::NeedsLHAPDF6Interface()) {
     m_pdflibs.insert("LHAPDFSherpa");
@@ -874,8 +865,7 @@ void Initialization_Handler::LoadPDFLibraries(Settings& settings) {
 void Initialization_Handler::
 InitISRHandler(const PDF::isr::id & pid,Settings& settings) {
   if (m_isrhandlers.find(pid)!=m_isrhandlers.end()) delete m_isrhandlers[pid];
-  bool needs_resc = ( settings["BEAM_RESCATTERING"].Get<string>()!=
-		      string("None") );
+  bool needs_resc  = settings["BEAM_RESCATTERING"].Get<string>()!=string("None");
   /////////////////////////////////////////////////////////////
   // make sure rescatter ISR bases are only initialised if necessary
   /////////////////////////////////////////////////////////////
@@ -937,7 +927,6 @@ InitISRHandler(const PDF::isr::id & pid,Settings& settings) {
     }
     PDF_Arguments args = PDF_Arguments(flav,beam,set,version,order,scheme);
     if (pid != PDF::isr::bunch_rescatter) {
-      msg_Out()<<METHOD<<"("<<pid<<"): before getter for set = "<<set<<".\n";
       PDF_Base* pdfbase = PDF_Base::PDF_Getter_Function::GetObject(set, args);
       if (m_bunch_particles[beam].IsHadron() && pdfbase == nullptr)
         THROW(critical_error,
@@ -945,11 +934,6 @@ InitISRHandler(const PDF::isr::id & pid,Settings& settings) {
                       " libraries for " + ToString(m_bunch_particles[beam]) +
                       " bunch.");
       if (pid == PDF::isr::hard_process) rpa->gen.SetPDF(beam, pdfbase);
-      msg_Out()<<METHOD<<"[beam = "<<beam<<", "<<pid<<"]: "
-	       <<m_bunch_particles[beam]<<" --> "<<pdfbase<<"\n"
-	       <<"   from flav = "<<flav<<", set = "<<set<<", "
-	       <<"version = "<<version<<", "
-	       <<"order = "<<order<<", scheme = "<<scheme<<"\n";
       if (pdfbase == nullptr) {
         isrbases[beam] = new Intact(flav);
         needs_resc     = false;
@@ -971,9 +955,6 @@ InitISRHandler(const PDF::isr::id & pid,Settings& settings) {
   }
   if ((pid == PDF::isr::bunch_rescatter && needs_resc) ||
       pid != isr::bunch_rescatter) {
-    msg_Out()<<METHOD<<"["<<pid<<"]: "
-	     <<m_bunch_particles[0]<<" ("<<isrbases[0]<<") & "
-	     <<m_bunch_particles[1]<<" ("<<isrbases[1]<<").\n";
     ISR_Handler* isr = new ISR_Handler(isrbases, pid);
     for (size_t beam = 0; beam < 2; beam++)
       isr->SetBeam(p_beamspectra->GetBeam(beam), beam);
@@ -1111,7 +1092,6 @@ bool Initialization_Handler::InitializeTheUnderlyingEvents()
     isrtypes.push_back(isr::bunch_rescatter);
   for (isr::id id : isrtypes) {
     as->SetActiveAs(isr::hard_subprocess);
-    msg_Out()<<METHOD<<"["<<id<<"]:\n";
     MI_Handler * mih = new MI_Handler(p_model,m_isrhandlers[id], p_yfshandler, m_remnanthandlers[id]);
     mih->SetShowerHandler(m_showerhandlers[id]);
     as->SetActiveAs(isr::hard_process);// really needed?
@@ -1122,10 +1102,12 @@ bool Initialization_Handler::InitializeTheUnderlyingEvents()
     MI_Handler * mih = m_mihandlers[id];
     msg_Info() << "    MI[" << id << "]: on = " << mih->On() << " "
                << "(type = " ;
-    if (mih->Generator()==MI_Handler::genID::none)          msg_Info()<<"None, ";
-    else if ( mih->Generator()==MI_Handler::genID::amisic)  msg_Info()<<"Amisic, ";
-    else if (mih->Generator()==MI_Handler::genID::shrimps)  msg_Info()<<"Shrimps, ";
-    else                                                    msg_Info()<<"Unkown, ";
+    switch (mih->Generator()) {
+      case(MI_Handler::genID::none): msg_Info()<<"None, "; break;
+      case(MI_Handler::genID::amisic): msg_Info()<<"Amisic, "; break;
+      case(MI_Handler::genID::shrimps): msg_Info()<<"Shrimps, "; break;
+      default: msg_Info()<<"Unkown, ";
+    }
     msg_Info() <<  mih->Name() << ")\n";
   }
   return true;
@@ -1199,8 +1181,8 @@ bool Initialization_Handler::InitializeTheFragmentation()
       msg_Error()<<METHOD<<om::red<<": Fragmentation called without beam remnants, "<<
         "hadronization might not be possible due to missing colour partners "<<
         "in the beam!\nFragmentation might stall, please consider aborting manually.\n"<<om::reset;
-    Hadron_Init().Init();
-    ATOOLS::OutputHadrons(msg->Tracking());
+    if (msg_LevelIsTracking())
+      ATOOLS::OutputHadrons(msg->Out());
   }
   p_fragmentation = Fragmentation_Getter::GetObject
     (fragmentationmodel,
