@@ -853,9 +853,9 @@ XS_qg_q3P1::XS_qg_q3P1(const External_ME_Args& args):
   }
   m_mass   = fl[m_S].Mass(true);  m_mass2 = sqr(m_mass); m_R12 = 0.;
 
-  if (fl[m_S].Kfcode()==kf_chi_c1_1P)   m_R12 = 0.075;
-  if (fl[m_S].Kfcode()==kf_chi_b1_1P)   m_R12 = 1.417;
-  if (fl[m_S].Kfcode()==kf_chi_b1_2P)   m_R12 = 1.653;
+  if (fl[m_S].Kfcode()==kf_chi_c1_1P)   m_R12 = 3.*0.075;
+  if (fl[m_S].Kfcode()==kf_chi_b1_1P)   m_R12 = 3.*1.417;
+  if (fl[m_S].Kfcode()==kf_chi_b1_2P)   m_R12 = 3.*1.653;
   m_a      = fl[m_q].IsAnti() ? 1 : 0; 
   m_alphaS = MODEL::s_model->ScalarConstant("alpha_S");
   m_pref   = 16./3.*sqr(4.*M_PI)*m_R12/pow(m_mass,3);
@@ -911,9 +911,9 @@ XS_qqbar_g3P1::XS_qqbar_g3P1(const External_ME_Args& args):
     m_colours[i][0] = m_colours[i][1] = 0;
   }
   m_mass   = fl[m_S].Mass(true);  m_mass2 = sqr(m_mass); m_R12 = 0.;
-  if (fl[m_S].Kfcode()==kf_chi_c1_1P)   m_R12 = 0.075;
-  if (fl[m_S].Kfcode()==kf_chi_b1_1P)   m_R12 = 1.417;
-  if (fl[m_S].Kfcode()==kf_chi_b1_2P)   m_R12 = 1.653;
+  if (fl[m_S].Kfcode()==kf_chi_c1_1P)   m_R12 = 3.*0.075;
+  if (fl[m_S].Kfcode()==kf_chi_b1_1P)   m_R12 = 3.*1.417;
+  if (fl[m_S].Kfcode()==kf_chi_b1_2P)   m_R12 = 3.*1.653;
   m_alphaS = MODEL::s_model->ScalarConstant("alpha_S");
   m_pref   = -8./3.*16./3.*sqr(4.*M_PI)*m_R12/pow(m_mass,3);
 }
@@ -967,9 +967,9 @@ XS_gg_g3P1::XS_gg_g3P1(const External_ME_Args& args):
     m_colours[i][0] = m_colours[i][1] = 0;
   }
   m_mass   = fl[m_S].Mass(true);  m_mass2 = sqr(m_mass); m_R12 = 0.;
-  if (fl[m_S].Kfcode()==kf_chi_c1_1P)   m_R12 = 0.075;
-  if (fl[m_S].Kfcode()==kf_chi_b1_1P)   m_R12 = 1.417;
-  if (fl[m_S].Kfcode()==kf_chi_b1_2P)   m_R12 = 1.653;
+  if (fl[m_S].Kfcode()==kf_chi_c1_1P)   m_R12 = 3.*0.075;
+  if (fl[m_S].Kfcode()==kf_chi_b1_1P)   m_R12 = 3.*1.417;
+  if (fl[m_S].Kfcode()==kf_chi_b1_2P)   m_R12 = 3.*1.653;
   m_alphaS = MODEL::s_model->ScalarConstant("alpha_S");
   m_pref   = 12.*sqr(4.*M_PI)*m_R12/pow(m_mass,3);
 }
@@ -1040,9 +1040,9 @@ XS_qg_q3P2::XS_qg_q3P2(const External_ME_Args& args):
     m_colours[i][0] = m_colours[i][1] = 0;
   }
   m_mass   = fl[m_S].Mass(true);  m_mass2 = sqr(m_mass); m_R12 = 0.;
-  if (fl[m_S].Kfcode()==kf_chi_c2_1P)   m_R12 = 0.075;
-  if (fl[m_S].Kfcode()==kf_chi_b2_1P)   m_R12 = 1.417;
-  if (fl[m_S].Kfcode()==kf_chi_b2_2P)   m_R12 = 1.653;
+  if (fl[m_S].Kfcode()==kf_chi_c2_1P)   m_R12 = 5.*0.075;
+  if (fl[m_S].Kfcode()==kf_chi_b2_1P)   m_R12 = 5.*1.417;
+  if (fl[m_S].Kfcode()==kf_chi_b2_2P)   m_R12 = 5.*1.653;
   m_a      = fl[m_q].IsAnti() ? 1 : 0; 
   m_alphaS = MODEL::s_model->ScalarConstant("alpha_S");
   m_pref   = 16./9.*sqr(4.*M_PI)*m_R12/pow(m_mass,3);
@@ -1098,9 +1098,9 @@ XS_qqbar_g3P2::XS_qqbar_g3P2(const External_ME_Args& args):
     m_colours[i][0] = m_colours[i][1] = 0;
   }
   m_mass   = fl[m_S].Mass(true);  m_mass2 = sqr(m_mass); m_R12 = 0.;
-  if (fl[m_S].Kfcode()==kf_chi_c2_1P)   m_R12 = 0.075;
-  if (fl[m_S].Kfcode()==kf_chi_b2_1P)   m_R12 = 1.417;
-  if (fl[m_S].Kfcode()==kf_chi_b2_2P)   m_R12 = 1.653;
+  if (fl[m_S].Kfcode()==kf_chi_c2_1P)   m_R12 = 5.*0.075;
+  if (fl[m_S].Kfcode()==kf_chi_b2_1P)   m_R12 = 5.*1.417;
+  if (fl[m_S].Kfcode()==kf_chi_b2_2P)   m_R12 = 5.*1.653;
   m_alphaS = MODEL::s_model->ScalarConstant("alpha_S");
   m_pref   = -8./3.*16./9.*sqr(4.*M_PI)*m_R12/pow(m_mass,3);
 }
@@ -1154,9 +1154,9 @@ XS_gg_g3P2::XS_gg_g3P2(const External_ME_Args& args):
     m_colours[i][0] = m_colours[i][1] = 0;
   }
   m_mass   = fl[m_S].Mass(true);  m_mass2 = sqr(m_mass); m_R12 = 0.;
-  if (fl[m_S].Kfcode()==kf_chi_c2_1P)   m_R12 = 0.075;
-  if (fl[m_S].Kfcode()==kf_chi_b2_1P)   m_R12 = 1.417;
-  if (fl[m_S].Kfcode()==kf_chi_b2_2P)   m_R12 = 1.653;
+  if (fl[m_S].Kfcode()==kf_chi_c2_1P)   m_R12 = 5.*0.075;
+  if (fl[m_S].Kfcode()==kf_chi_b2_1P)   m_R12 = 5.*1.417;
+  if (fl[m_S].Kfcode()==kf_chi_b2_2P)   m_R12 = 5.*1.653;
   m_alphaS = MODEL::s_model->ScalarConstant("alpha_S");
   m_pref   = 4.*sqr(4.*M_PI)*m_R12/pow(m_mass,3);
 }
