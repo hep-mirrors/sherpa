@@ -27,6 +27,7 @@
 #include "EXTRA_XS/One2Two/Comix1to2.H"
 #include "EXTRA_XS/One2Three/Comix1to3.H"
 #include "EXTRA_XS/One2Three/H_to_bbg_Real.H"
+#include "EXTRA_XS/One2Three/Massive_Real_Subtraction.H"
 #include "EXTRA_XS/One2Two/H_to_bb_Virtual.H"
 
 #include <iostream>
@@ -551,10 +552,15 @@ offshell (or three-body) decay configurations.
       Spin_Amplitudes* diagram = nullptr; // parent class for H_to_bbg_Real and Comix1to3
       if (bbbar_channel && (sv->in[2].IDName() == "G")) {
         diagram = new H_to_bbg_Real(dc->Flavs(),flavs1[1],nonprop, propi, propj);
+        
         // second diagram needed for h0 -> b bbar g
         Spin_Amplitudes* diagram2 = nullptr;
         diagram2 = new H_to_bbg_Real(dc->Flavs(),flavs1[2],propj,propi,nonprop);
         dc->AddDiagram(diagram2);
+
+        Spin_Amplitudes* real_subtraction = nullptr;
+        real_subtraction = new Massive_Real_Subtraction(dc->Flavs(),flavs1[2],propj,propi,nonprop);
+        dc->AddDiagram(real_subtraction);
       } else {
         diagram = new Comix1to3(dc->Flavs(),flavs1[j],
         nonprop, propi, propj);
