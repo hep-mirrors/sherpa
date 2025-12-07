@@ -36,7 +36,7 @@ namespace EXTRAXS {
     ~Comix1to2();
     bool IsNLODecay();
     void Calculate(const ATOOLS::Vec4D_Vector& momenta, bool anti=false);
-    double get_NLO_part();
+    double get_NLO_ME2();
     std::string getType();
     METOOLS::Amplitude2_Tensor AddNLOTensor(METOOLS::Amplitude2_Tensor old_tensor);
   }; 

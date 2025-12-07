@@ -547,6 +547,11 @@ std::string H_to_bb_Virtual::getType(){
 }
 
 
+double H_to_bb_Virtual::get_NLO_ME2(){
+  return 0;  // todo: fill with correct value
+}
+
+
 // Python code for the first part of the virtual calculation:
 /*
 from sympy import symbols, Matrix, I, diag, eye, simplify, expand, ccode, re, im

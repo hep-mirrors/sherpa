@@ -48,7 +48,7 @@ namespace EXTRAXS {
     bool IsNLODecay();
     void Calculate_real_subtraction(const ATOOLS::Vec4D_Vector& momenta, bool anti=false);
     void Calculate(const ATOOLS::Vec4D_Vector& momenta, bool anti=false);
-    double get_NLO_part();
+    double get_NLO_ME2();
     METOOLS::Amplitude2_Tensor AddNLOTensor(METOOLS::Amplitude2_Tensor old_tensor);
     std::string getType();
     ATOOLS::Flavour Prop() const { return m_prop; }

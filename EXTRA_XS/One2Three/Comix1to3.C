@@ -148,7 +148,7 @@ bool Comix1to3::IsNLODecay() {
 }
 
 
-double Comix1to3::get_NLO_part(){
+double Comix1to3::get_NLO_ME2(){
   return 0; // this is a purely LO class, therefore the NLO part = 0
 }
 

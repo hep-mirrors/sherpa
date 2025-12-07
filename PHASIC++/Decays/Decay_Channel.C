@@ -379,6 +379,7 @@ double Decay_Channel::ME2_NLO(const ATOOLS::Vec4D_Vector& momenta, bool anti,
                           METOOLS::Spin_Density* sigma,
                           const std::vector<ATOOLS::Particle*>& p)
 {
+  // Calculates either the ME2 for B + V + I or for R - S
   for(size_t i(0); i<GetDiagrams().size(); ++i) {
       GetDiagrams()[i]->Calculate(momenta, anti);
     }
@@ -390,6 +391,9 @@ double Decay_Channel::ME2_NLO(const ATOOLS::Vec4D_Vector& momenta, bool anti,
     for (size_t i(0); i<m_diagrams.size(); ++i) DEBUG_VAR(*m_diagrams[i]);
     if (p_amps) delete p_amps;
     vector<int> spin_i(p.size(), -1), spin_j(p.size(), -1);
+
+    
+
     p_amps=new Amplitude2_Tensor(p,0,m_diagrams,spin_i, spin_j);
 
     for(size_t i(0); i<GetDiagrams().size(); ++i) {

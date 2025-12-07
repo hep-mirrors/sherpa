@@ -47,7 +47,8 @@ namespace EXTRAXS {
     ~H_to_bb_Virtual();
     void CalculateAlphaQCD(double scale) override;
     void Calculate(const ATOOLS::Vec4D_Vector& momenta, bool anti=false) override;
-    std::string getType() override;;
+    double get_NLO_ME2();
+    std::string getType() override;
   };
 }
 

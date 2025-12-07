@@ -209,8 +209,9 @@ void H_to_bbg_Real::Calculate(const ATOOLS::Vec4D_Vector& momenta, bool anti) {
 }
 
 
-double H_to_bbg_Real::get_NLO_part(){
-  return 0;
+double H_to_bbg_Real::get_NLO_ME2(){
+  return 0;   // even though this is technically a NLO class, the real contribution is calculated analog to LO in the Decay_Channel.
+              // Therefore, adding it's ME2 contribution via the get_NLO_part method is not necessary.
 }
 
 

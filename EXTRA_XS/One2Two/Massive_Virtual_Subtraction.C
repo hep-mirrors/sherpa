@@ -141,6 +141,11 @@ void Massive_Virtual_Subtraction::Calculate(const ATOOLS::Vec4D_Vector& momenta,
 }
 
 
+double Massive_Virtual_Subtraction::get_NLO_ME2(){
+  return 0;  // todo: fill with correct value
+}
+
+
 std::pair<std::vector<std::pair<METOOLS::CSpinor<double>*, int>>,
           std::vector<std::pair<METOOLS::CSpinor<double>*, int>>> Massive_Virtual_Subtraction::CalculateBornSpinors(const ATOOLS::Vec4D_Vector& momenta, bool anti){
   p_ci->GeneratePoint();

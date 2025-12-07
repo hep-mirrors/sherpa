@@ -33,7 +33,7 @@ namespace EXTRAXS {
               size_t nonprop, size_t propi, size_t propj);
     ~Comix1to3();
     bool IsNLODecay();
-    double get_NLO_part();
+    double get_NLO_ME2();
     METOOLS::Amplitude2_Tensor AddNLOTensor(METOOLS::Amplitude2_Tensor old_tensor);
     void Calculate(const ATOOLS::Vec4D_Vector& momenta, bool anti=false);
     std::string getType();

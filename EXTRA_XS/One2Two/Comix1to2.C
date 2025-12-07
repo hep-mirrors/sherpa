@@ -157,8 +157,8 @@ void Comix1to2::Calculate(const ATOOLS::Vec4D_Vector& momenta, bool anti) {
 }
 
 
-double Comix1to2::get_NLO_part(){
-  return 0;
+double Comix1to2::get_NLO_ME2(){
+  return 0;  // this is a LO-class => NLO part is 0
 }
 
 
