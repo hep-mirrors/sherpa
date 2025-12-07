@@ -392,9 +392,16 @@ double Decay_Channel::ME2_NLO(const ATOOLS::Vec4D_Vector& momenta, bool anti,
     if (p_amps) delete p_amps;
     vector<int> spin_i(p.size(), -1), spin_j(p.size(), -1);
 
-    
+    std::vector<METOOLS::Spin_Amplitudes*> leading_diagrams;  // start with building the Amplitude2_Tensor for B resp. R
+    for (size_t i = 0; i < GetDiagrams().size(); ++i) {
+      METOOLS::Spin_Amplitudes* diag = GetDiagrams()[i];
+      const std::string& type = diag->getType();
+      if (type == "LO" || type == "R") {
+        leading_diagrams.push_back(diag);
+      }
+    }
 
-    p_amps=new Amplitude2_Tensor(p,0,m_diagrams,spin_i, spin_j);
+    p_amps=new Amplitude2_Tensor(p,0,leading_diagrams,spin_i, spin_j);
 
     for(size_t i(0); i<GetDiagrams().size(); ++i) {
      *p_amps = GetDiagrams()[i]->AddNLOTensor(*p_amps); // override amplitude tensor: add NLO parts to it
