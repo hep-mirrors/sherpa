@@ -33,7 +33,7 @@ namespace EXTRAXS {
     size_t NHel(const ATOOLS::Flavour& fl) const;
     void SetUpCurrents(const std::vector<ATOOLS::Flavour>& flavs) override;
     std::pair<std::vector<std::pair<METOOLS::CSpinor<double>*, int>>,
-          std::vector<std::pair<METOOLS::CSpinor<double>*, int>>> CalculateSpinors(const ATOOLS::Vec4D_Vector& momenta, bool anti) override;
+          std::vector<std::pair<METOOLS::CSpinor<double>*, int>>> CalculateBornSpinors(const ATOOLS::Vec4D_Vector& momenta, bool anti) override;
     void SetUpPrefactors(const std::vector<ATOOLS::Flavour>& flavs) override;
     void SetVirtualMatrixFinite(const ATOOLS::Vec4D_Vector& momenta) override;
     void SetVirtualMatrixE(const ATOOLS::Vec4D_Vector& momenta) override;
@@ -47,8 +47,6 @@ namespace EXTRAXS {
     ~H_to_bb_Virtual();
     void CalculateAlphaQCD(double scale) override;
     void Calculate(const ATOOLS::Vec4D_Vector& momenta, bool anti=false) override;
-    double CalculateFiniteSubtraction(const ATOOLS::Vec4D_Vector& momenta, double born_ME2) override;
-    double CalculateEpsilonSubtraction(const ATOOLS::Vec4D_Vector& momenta, double born_ME2) override;
   };
 }
 

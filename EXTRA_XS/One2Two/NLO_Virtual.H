@@ -30,7 +30,7 @@ public:
   virtual void SetUpPrefactors(const std::vector<ATOOLS::Flavour>& flavs) = 0;
 
   // spinor / matrix builders
-  virtual SpinorPairWithHel CalculateSpinors(const ATOOLS::Vec4D_Vector& momenta, bool anti) = 0;
+  virtual SpinorPairWithHel CalculateBornSpinors(const ATOOLS::Vec4D_Vector& momenta, bool anti) = 0;
   virtual void SetVirtualMatrixFinite(const ATOOLS::Vec4D_Vector& momenta) = 0;
   virtual void SetVirtualMatrixE(const ATOOLS::Vec4D_Vector& momenta) = 0;
   virtual void SetVirtualMatrixE2(const ATOOLS::Vec4D_Vector& momenta) = 0;
@@ -38,7 +38,5 @@ public:
   // calculation
   virtual std::map<std::string, std::map<std::string, C>> CalculateV(const ATOOLS::Vec4D_Vector& momenta, bool anti=false) = 0;
   virtual std::map<std::string, C> CalculateBorn(const ATOOLS::Vec4D_Vector& momenta, bool anti=false) = 0;
-  virtual double CalculateFiniteSubtraction(const ATOOLS::Vec4D_Vector& momenta, double born_ME2) = 0;
-  virtual double CalculateEpsilonSubtraction(const ATOOLS::Vec4D_Vector& momenta, double born_ME2) = 0;
 };
 }

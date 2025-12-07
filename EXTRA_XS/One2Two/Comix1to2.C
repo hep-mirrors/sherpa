@@ -22,9 +22,6 @@ Comix1to2::Comix1to2(const vector<Flavour>& flavs) :
   if (flavs.size()!=3) THROW(fatal_error,"Internal error.");
 
   IsNLODecay(); // sets the isNLO flag true if this decay is an NLO decay. False otherwise.
-  if (isNLO){
-    // prepare the corresponding NLO class 
-  }
 
   Vec4D k(1.0,0.0,1.0,0.0); // gauge
 
