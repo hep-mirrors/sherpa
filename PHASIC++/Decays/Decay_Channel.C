@@ -399,9 +399,13 @@ double Decay_Channel::ME2_NLO(const ATOOLS::Vec4D_Vector& momenta, bool anti,
     sumijlambda_AiAj=(*sigma)*p_amps->ReduceToMatrix(sigma->Particle());
   }
   else {
+    // Calculates either the Born ME2 or the Real diagrams. Skip V, I, S here (all elements of B, V, I, R, S have to be calculated seperately).
+    // V, I, S is added below with NLO_part
     for (size_t i(0); i<GetDiagrams().size(); ++i) {
+      if (GetDiagrams()[i]->getType() != "LO" && GetDiagrams()[i]->getType() != "R") continue;
       Spin_Amplitudes* Ai=GetDiagrams()[i];
       for (size_t j(0); j<GetDiagrams().size(); ++j) { // 0?
+        if (GetDiagrams()[i]->getType() != "LO" && GetDiagrams()[i]->getType() != "R") continue;
         Spin_Amplitudes* Aj=GetDiagrams()[j];
   
         // for debugging:
