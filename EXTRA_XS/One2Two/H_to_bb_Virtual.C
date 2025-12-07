@@ -201,7 +201,7 @@ void H_to_bb_Virtual::SetVirtualMatrixFinite(const ATOOLS::Vec4D_Vector& momenta
    * The matrix contains three components:
    * - Finite part: The UV-finite contribution to the virtual amplitude
    * - 1/epsilon and 1/epsilon^2 divergence: The IR poles that will be cancelled
-   *   by substraction terms
+   *   by subtraction terms
    */
 
   // Calculate q1 and q2: q1 = p_bbar; q2 = p_bbar + p_Higgs
@@ -246,7 +246,7 @@ void H_to_bb_Virtual::SetVirtualMatrixE(const ATOOLS::Vec4D_Vector& momenta){
    * The matrix contains three components:
    * - Finite part: The UV-finite contribution to the virtual amplitude
    * - 1/epsilon and 1/epsilon^2 divergence: The IR poles that will be cancelled
-   *   by substraction terms
+   *   by subtraction terms
    */
 
   // Calculate q1 and q2: q1 = p_bbar; q2 = p_bbar + p_Higgs
@@ -291,7 +291,7 @@ void H_to_bb_Virtual::SetVirtualMatrixE2(const ATOOLS::Vec4D_Vector& momenta){
    * The matrix contains three components:
    * - Finite part: The UV-finite contribution to the virtual amplitude
    * - 1/epsilon and 1/epsilon^2 divergence: The IR poles that will be cancelled
-   *   by substraction terms
+   *   by subtraction terms
    */
 
   // Calculate q1 and q2: q1 = p_bbar; q2 = p_bbar + p_Higgs
@@ -503,8 +503,8 @@ std::map<std::string, std::map<std::string, std::complex<double>>> H_to_bb_Virtu
 }
 
 
-double H_to_bb_Virtual::CalculateVirtualCorrection(const ATOOLS::Vec4D_Vector& momenta, bool anti){
-  // Calculates the total virtual contribution with substraction terms already applied. Checks wether the epsilon terms cancel
+void H_to_bb_Virtual::Calculate(const ATOOLS::Vec4D_Vector& momenta, bool anti){
+  // Calculates the total virtual contribution with subtraction terms already applied. Checks wether the epsilon terms cancel
   std::map<std::string, std::complex<double>> born = CalculateBorn(momenta, anti); 
   double ME2_Born = 3 * std::real(born["00"] * std::conj(born["00"]) + born["01"] * std::conj(born["01"]) + born["10"] * std::conj(born["10"]) + born["11"] * std::conj(born["11"]));
   // 3 * because of colour sum 
@@ -536,7 +536,7 @@ double H_to_bb_Virtual::CalculateVirtualCorrection(const ATOOLS::Vec4D_Vector& m
         + std::to_string(v_correction_e2));
   }
 
-  // substract (here: sum up) the substraction terms:
+  // subtract (here: sum up) the subtraction terms:
   double finite_sub = CalculateFiniteSubtraction(momenta, ME2_Born);
   double epsilon_sub = CalculateEpsilonSubtraction(momenta, ME2_Born);
 
@@ -544,8 +544,8 @@ double H_to_bb_Virtual::CalculateVirtualCorrection(const ATOOLS::Vec4D_Vector& m
 
   double v_correction = v_correction_f + finite_sub;
   double epsilon_sum = v_correction_e + epsilon_sub;
-
-  return v_correction;
+  // todo: write finite in spin amplitudes form 
+  // todo: write getter for epsilon term
 }
 
 
@@ -728,7 +728,7 @@ static double F(ATOOLS::Vec4<double> p_j, ATOOLS::Vec4<double> p_k, double mu){
 
 
 double H_to_bb_Virtual::CalculateFiniteSubtraction(const ATOOLS::Vec4D_Vector& momenta, double born_ME2){
-  // finite virtual substraction term
+  // finite virtual subtraction term
   #ifdef M_PI
     double pi = M_PI;
   #else
@@ -758,7 +758,7 @@ double H_to_bb_Virtual::CalculateFiniteSubtraction(const ATOOLS::Vec4D_Vector& m
 
 
 double H_to_bb_Virtual::CalculateEpsilonSubtraction(const ATOOLS::Vec4D_Vector& momenta, double born_ME2){
-  // 1/epsilon prefactor of virtual substraction term
+  // 1/epsilon prefactor of virtual subtraction term
   #ifdef M_PI
     double pi = M_PI;
   #else

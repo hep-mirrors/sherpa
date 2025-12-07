@@ -352,6 +352,12 @@ void Hard_Decay_Handler::InitializeDirectDecays(Decay_Table* dt)
     Comix1to2* diagram=new Comix1to2(dc->Flavs());
     dc->AddDiagram(diagram);
 
+    if (dc->Flavs()[0].IDName() == "h0" && dc->Flavs()[1].IDName() == "b" && dc->Flavs()[2].IDName() == "bb"){
+      Spin_Amplitudes* hbb_virtual = nullptr;
+      hbb_virtual = new EXTRAXS::H_to_bb_Virtual(dc->Flavs());
+      dc->AddDiagram(hbb_virtual);
+    }   
+
     dc->SetChannels(new Multi_Channel(""));
     dc->Channels()->SetNin(1); // One incoming particle
     dc->Channels()->SetNout(dc->NOut()); // Number of outgoing particles
@@ -496,7 +502,6 @@ offshell (or three-body) decay configurations.
   const std::vector<ATOOLS::Flavour> flavs1(dc1->Flavs());
 
   bool bbbar_channel = false; // flag to check if the decay channel is Higgs to b bbar
-
   // filter out the b bbar channel to manually add h0 to bbarg later
   if (flavs1[0].IDName() == "h0" && flavs1[1].IDName() == "b" && flavs1[2].IDName() == "bb"){
     bbbar_channel = true;
@@ -545,14 +550,16 @@ offshell (or three-body) decay configurations.
         else if (l!=nonprop && propi==0) propi=l;
       }
 
-      assert(dc1->GetDiagrams().size()==1); // assert that original two-body decay channel has only one diagram (to catch inconsistencies)
+      if (!(bbbar_channel && (sv->in[2].IDName() == "G"))) { // let NLO calculation pass (there is correctly more than one diagram)
+        assert(dc1->GetDiagrams().size()==1); // assert that original two-body decay channel has only one diagram (to catch inconsistencies)
+      }
       DEBUG_VAR(dc->Flavs());
       DEBUG_VAR(flavs1[j]);
 
       Spin_Amplitudes* diagram = nullptr; // parent class for H_to_bbg_Real and Comix1to3
       if (bbbar_channel && (sv->in[2].IDName() == "G")) {
         diagram = new H_to_bbg_Real(dc->Flavs(),flavs1[1],nonprop, propi, propj);
-        
+
         // second diagram needed for h0 -> b bbar g
         Spin_Amplitudes* diagram2 = nullptr;
         diagram2 = new H_to_bbg_Real(dc->Flavs(),flavs1[2],propj,propi,nonprop);

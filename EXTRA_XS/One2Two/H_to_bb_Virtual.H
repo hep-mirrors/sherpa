@@ -46,7 +46,7 @@ namespace EXTRAXS {
     H_to_bb_Virtual(const std::vector<ATOOLS::Flavour>& flavs);
     ~H_to_bb_Virtual();
     void CalculateAlphaQCD(double scale) override;
-    double CalculateVirtualCorrection(const ATOOLS::Vec4D_Vector& momenta, bool anti=false) override;
+    void Calculate(const ATOOLS::Vec4D_Vector& momenta, bool anti=false) override;
     double CalculateFiniteSubtraction(const ATOOLS::Vec4D_Vector& momenta, double born_ME2) override;
     double CalculateEpsilonSubtraction(const ATOOLS::Vec4D_Vector& momenta, double born_ME2) override;
   };

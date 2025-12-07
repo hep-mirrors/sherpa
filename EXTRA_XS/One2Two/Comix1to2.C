@@ -7,7 +7,6 @@
 #include "MODEL/Main/Single_Vertex.H"
 #include "PHASIC++/Main/Color_Integrator.H"
 #include "EXTRA_XS/One2Two/H_to_bb_Virtual.H"
-#include "EXTRA_XS/One2Two/NLO_Virtual.H"
 #include <memory>
 #include "METOOLS/SpinCorrelations/Amplitude2_Tensor.H"
 
@@ -18,16 +17,13 @@ using namespace PHASIC;
 using namespace std;
 
 Comix1to2::Comix1to2(const vector<Flavour>& flavs) :
-  Spin_Amplitudes(flavs,Complex(0.0,0.0)), m_cur(3), m_anticur(3), m_nhel(3), nlo_virtual(nullptr), m_flavs(flavs)
+  Spin_Amplitudes(flavs,Complex(0.0,0.0)), m_cur(3), m_anticur(3), m_nhel(3), m_flavs(flavs)
 {
   if (flavs.size()!=3) THROW(fatal_error,"Internal error.");
 
   IsNLODecay(); // sets the isNLO flag true if this decay is an NLO decay. False otherwise.
   if (isNLO){
-    // prepare the corresponding NLO class
-    if (flavs[0].IDName() == "h0" && flavs[1].IDName() == "b" && flavs[2].IDName() == "bb"){
-      nlo_virtual = new EXTRAXS::H_to_bb_Virtual(flavs);
-    }    
+    // prepare the corresponding NLO class 
   }
 
   Vec4D k(1.0,0.0,1.0,0.0); // gauge
@@ -116,7 +112,6 @@ Comix1to2::~Comix1to2()
   }
   delete m_fcur;
   delete m_antifcur;
-  if (nlo_virtual) delete nlo_virtual;
   if (p_ci) delete p_ci;
 }
 
@@ -159,28 +154,13 @@ void Comix1to2::Calculate(const ATOOLS::Vec4D_Vector& momenta, bool anti) {
     m_fcur->Contract<double>(*m_cur.front(),fill,*this,0);
   }
 
-  // calculate virtual NLO amplitude
-  if (isNLO){
-    CalculateNLO(momenta, anti);
-  }
-
   for (size_t i=0; i<size(); ++i) {
     (*this)[i] *= sqrt(p_ci->GlobalWeight()); // scale the final numerical result appropriately with the color factor
   }
 }
 
 
-void Comix1to2::CalculateNLO(const ATOOLS::Vec4D_Vector& momenta, bool anti) {
-  if (!nlo_virtual) return;
-  // results for the virtual diagram (just finite part, epsilon divergences cancel out in NLO_Virtual class)
-  total_virtual_correction = nlo_virtual->CalculateVirtualCorrection(momenta, anti); 
-}
-
-
 double Comix1to2::get_NLO_part(){
-  if (isNLO){
-    return total_virtual_correction; // V + I
-  }
   return 0;
 }
 

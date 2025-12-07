@@ -29,11 +29,8 @@ namespace EXTRAXS {
     std::vector<size_t> m_nhel;
 
     PHASIC::Color_Integrator* p_ci;
-    EXTRAXS::NLO_Virtual* nlo_virtual;
 
-    void CalculateNLO(const ATOOLS::Vec4D_Vector& momenta, bool anti=false);
     size_t NHel(const ATOOLS::Flavour& fl);
-    double total_virtual_correction = 0.0;
   public:
     Comix1to2(const std::vector<ATOOLS::Flavour>& flavs);
     ~Comix1to2();
