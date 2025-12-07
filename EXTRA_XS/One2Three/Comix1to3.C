@@ -208,3 +208,8 @@ size_t Comix1to3::NHel(const Flavour& fl)
     return 0;
   }
 }
+
+
+std::string Comix1to3::getType(){
+  return "LO";
+}

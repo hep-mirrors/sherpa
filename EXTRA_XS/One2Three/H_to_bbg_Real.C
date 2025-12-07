@@ -239,3 +239,8 @@ void H_to_bbg_Real::CalculateAlphaQCD(double scale) {
 METOOLS::Amplitude2_Tensor H_to_bbg_Real::AddNLOTensor(METOOLS::Amplitude2_Tensor old_tensor){
   return old_tensor;
 }
+
+
+std::string H_to_bbg_Real::getType(){
+  return "R";
+}

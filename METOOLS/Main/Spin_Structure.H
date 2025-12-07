@@ -176,6 +176,7 @@ namespace METOOLS
     virtual void Calculate(const ATOOLS::Vec4D_Vector& momenta,bool anti=false);
     virtual bool IsNLODecay();
     virtual double get_NLO_part();
+    virtual std::string getType();
     virtual METOOLS::Amplitude2_Tensor AddNLOTensor(METOOLS::Amplitude2_Tensor old_tensor);
   };
 

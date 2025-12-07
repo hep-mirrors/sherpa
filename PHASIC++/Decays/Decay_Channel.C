@@ -317,7 +317,7 @@ double Decay_Channel::ME2(const ATOOLS::Vec4D_Vector& momenta, bool anti,
 
 
 bool Decay_Channel::isNLO(){
-  /* Checks, if the diagram is an NLO diagram. Otherwise, it's LO.*/
+  /* Checks, if the diagram is an NLO diagram. Otherwise, it is LO.*/
   for(size_t i(0); i<GetDiagrams().size(); ++i) {
     return GetDiagrams()[i]->IsNLODecay();
   }

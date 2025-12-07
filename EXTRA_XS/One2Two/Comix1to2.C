@@ -167,6 +167,11 @@ METOOLS::Amplitude2_Tensor Comix1to2::AddNLOTensor(METOOLS::Amplitude2_Tensor ol
 }
 
 
+std::string Comix1to2::getType(){
+  return "LO";
+}
+
+
 size_t Comix1to2::NHel(const Flavour& fl)
 {
   switch(fl.IntSpin()) {

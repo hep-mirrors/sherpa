@@ -542,6 +542,11 @@ void H_to_bb_Virtual::Calculate(const ATOOLS::Vec4D_Vector& momenta, bool anti){
 }
 
 
+std::string H_to_bb_Virtual::getType(){
+  return "V";
+}
+
+
 // Python code for the first part of the virtual calculation:
 /*
 from sympy import symbols, Matrix, I, diag, eye, simplify, expand, ccode, re, im

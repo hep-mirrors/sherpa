@@ -41,6 +41,7 @@ namespace EXTRAXS {
     void Calculate(const ATOOLS::Vec4D_Vector& momenta, bool anti=false);
     double CalculateFiniteSubtraction(const ATOOLS::Vec4D_Vector& momenta, double born_ME2);
     double CalculateEpsilonSubtraction(const ATOOLS::Vec4D_Vector& momenta, double born_ME2);
+    std::string getType();
   };
 }
 

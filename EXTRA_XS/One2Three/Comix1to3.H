@@ -36,6 +36,7 @@ namespace EXTRAXS {
     double get_NLO_part();
     METOOLS::Amplitude2_Tensor AddNLOTensor(METOOLS::Amplitude2_Tensor old_tensor);
     void Calculate(const ATOOLS::Vec4D_Vector& momenta, bool anti=false);
+    std::string getType();
     ATOOLS::Flavour Prop() const { return m_prop; }
   };
 }

@@ -64,6 +64,11 @@ size_t Massive_Virtual_Subtraction::NHel(const Flavour& fl) const
 }
 
 
+std::string Massive_Virtual_Subtraction::getType(){
+  return "I";
+}
+
+
 void Massive_Virtual_Subtraction::SetUpBornPrefactor(const vector<Flavour>& flavs) {
   /* This method collects all constants (despite colour factors) that appear in the calculation and multiplies them.*/
   #ifdef M_PI

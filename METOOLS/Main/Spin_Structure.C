@@ -64,6 +64,12 @@ double Spin_Amplitudes::get_NLO_part(){
 }
 
 
+std::string METOOLS::Spin_Amplitudes::getType(){
+  // Default type for base; derived classes override (e.g., "R", "V", "I").
+  return "LO";
+}
+
+
 METOOLS::Amplitude2_Tensor Spin_Amplitudes::AddNLOTensor(METOOLS::Amplitude2_Tensor old_tensor){
   return old_tensor;
 }

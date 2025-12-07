@@ -38,5 +38,7 @@ public:
   // calculation
   virtual std::map<std::string, std::map<std::string, C>> CalculateV(const ATOOLS::Vec4D_Vector& momenta, bool anti=false) = 0;
   virtual std::map<std::string, C> CalculateBorn(const ATOOLS::Vec4D_Vector& momenta, bool anti=false) = 0;
+
+  virtual std::string getType() = 0;
 };
 }
