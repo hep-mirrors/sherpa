@@ -379,11 +379,15 @@ double Decay_Channel::ME2_NLO(const ATOOLS::Vec4D_Vector& momenta, bool anti,
                           METOOLS::Spin_Density* sigma,
                           const std::vector<ATOOLS::Particle*>& p)
 {
-  // Calculates either the ME2 for B + V + I or for R - S
+  // This class calculates either the ME2 for B + V + I or for R - S
   for(size_t i(0); i<GetDiagrams().size(); ++i) {
       GetDiagrams()[i]->Calculate(momenta, anti);
     }
-  double NLO_part = GetDiagrams()[0]->get_NLO_part(); // either -S or V+I
+  double NLO_part = 0;
+  for(size_t i(0); i<GetDiagrams().size(); ++i) {
+    if(GetDiagrams()[i]->getType() == "LO" || GetDiagrams()[i]->getType() == "R") continue;
+    GetDiagrams()[i]->get_NLO_part(); // either V, I or S
+  }
 
   Complex sumijlambda_AiAj(0.0,0.0);
 
