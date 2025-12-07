@@ -135,14 +135,14 @@ void Massive_Virtual_Subtraction::Calculate(const ATOOLS::Vec4D_Vector& momenta,
   std::map<std::string, std::complex<double>> born = CalculateBorn(momenta, anti); 
   double ME2_Born = 3 * std::real(born["00"] * std::conj(born["00"]) + born["01"] * std::conj(born["01"]) + born["10"] * std::conj(born["10"]) + born["11"] * std::conj(born["11"]));
 
-  double finite_sub = CalculateFiniteSubtraction(momenta, ME2_Born);
+  finite_sub = CalculateFiniteSubtraction(momenta, ME2_Born);
   double epsilon_sub = CalculateEpsilonSubtraction(momenta, ME2_Born);
   // todo: fill this spin amplitue object with helicity-dependent values of I
 }
 
 
 double Massive_Virtual_Subtraction::get_NLO_ME2(){
-  return 0;  // todo: fill with correct value
+  return finite_sub;
 }
 
 

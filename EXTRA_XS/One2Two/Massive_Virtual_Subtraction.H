@@ -25,6 +25,7 @@ namespace EXTRAXS {
     std::vector<size_t> m_nhel;
     double BornPrefactor;
     PHASIC::Color_Integrator* p_ci;
+    double finite_sub;
 
     size_t NHel(const ATOOLS::Flavour& fl) const;
     void SetUpBornCurrents(const std::vector<ATOOLS::Flavour>& flavs);

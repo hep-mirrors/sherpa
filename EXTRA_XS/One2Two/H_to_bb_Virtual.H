@@ -29,6 +29,7 @@ namespace EXTRAXS {
     std::array<std::array<std::complex<double>, 4>, 4> M_epsilon;
     std::array<std::array<std::complex<double>, 4>, 4> M_epsilon2;
     PHASIC::Color_Integrator* p_ci;
+    double v_correction_f;
 
     size_t NHel(const ATOOLS::Flavour& fl) const;
     void SetUpCurrents(const std::vector<ATOOLS::Flavour>& flavs) override;

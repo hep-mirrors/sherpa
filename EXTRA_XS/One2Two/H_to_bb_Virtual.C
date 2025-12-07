@@ -519,7 +519,7 @@ void H_to_bb_Virtual::Calculate(const ATOOLS::Vec4D_Vector& momenta, bool anti){
 
   // finite part
   std::complex<double> BV_f = born["00"] * std::conj(v_finite["00"]) + born["01"] * std::conj(v_finite["01"]) + born["10"] * std::conj(v_finite["10"]) + born["11"] * std::conj(v_finite["11"]);
-  double v_correction_f = colour_factor * 2 * std::real(BV_f);
+  v_correction_f = colour_factor * 2 * std::real(BV_f);
 
   // 1/epsilon part
   std::complex<double> BV_e = born["00"] * std::conj(v_epsilon["00"]) + born["01"] * std::conj(v_epsilon["01"]) + born["10"] * std::conj(v_epsilon["10"]) + born["11"] * std::conj(v_epsilon["11"]);
@@ -538,7 +538,7 @@ void H_to_bb_Virtual::Calculate(const ATOOLS::Vec4D_Vector& momenta, bool anti){
 
   // todo: write finite in spin amplitudes form 
   // todo: write getter for epsilon term
-  // todo: make sure that epsilon terms cancel; Write check/ warning, if they don*t cancel
+  // todo: make sure that epsilon terms cancel; Write check/ warning, if they don't cancel
 }
 
 
@@ -548,7 +548,7 @@ std::string H_to_bb_Virtual::getType(){
 
 
 double H_to_bb_Virtual::get_NLO_ME2(){
-  return 0;  // todo: fill with correct value
+  return v_correction_f;
 }
 
 
