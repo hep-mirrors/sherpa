@@ -29,6 +29,7 @@
 #include "EXTRA_XS/One2Three/H_to_bbg_Real.H"
 #include "EXTRA_XS/One2Three/Massive_Real_Subtraction.H"
 #include "EXTRA_XS/One2Two/H_to_bb_Virtual.H"
+#include "EXTRA_XS/One2Two/Massive_Virtual_Subtraction.H"
 
 #include <iostream>
 #include <algorithm>
@@ -356,6 +357,10 @@ void Hard_Decay_Handler::InitializeDirectDecays(Decay_Table* dt)
       Spin_Amplitudes* hbb_virtual = nullptr;
       hbb_virtual = new EXTRAXS::H_to_bb_Virtual(dc->Flavs());
       dc->AddDiagram(hbb_virtual);
+
+      Spin_Amplitudes* hbb_virtual_subtraction = nullptr;
+      hbb_virtual_subtraction = new EXTRAXS::Massive_Virtual_Subtraction(dc->Flavs());
+      dc->AddDiagram(hbb_virtual_subtraction);
     }   
 
     dc->SetChannels(new Multi_Channel(""));
