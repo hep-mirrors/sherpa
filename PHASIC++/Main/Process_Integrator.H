@@ -205,7 +205,7 @@ namespace PHASIC {
 
     inline std::string ResultPath() const { return m_resultpath; }
 
-    inline ATOOLS::Histogram *WeightHisto() const { ATOOLS::Histogram *p_whisto(p_whisto_pos); *p_whisto += *p_whisto_neg; return p_whisto; }
+    inline ATOOLS::Histogram *WeightHisto() const { ATOOLS::Histogram *p_whisto = new ATOOLS::Histogram(p_whisto_pos); *p_whisto += *p_whisto_neg; return p_whisto; }
     inline ATOOLS::Histogram *WeightHistoPos() const { return p_whisto_pos; }
     inline ATOOLS::Histogram *WeightHistoNeg() const { return p_whisto_neg; }
     inline void SetUnweightingSelectionWeight(double new_weight)    { m_external_selectionweight=new_weight;    }

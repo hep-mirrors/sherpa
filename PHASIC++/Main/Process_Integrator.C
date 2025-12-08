@@ -334,7 +334,7 @@ double Process_Integrator::GetMaxEps(double epsilon)
 {
   if (!p_whisto_pos) return m_max;
   //construct whisto having all pos and neg weights
-  ATOOLS::Histogram *p_whisto(p_whisto_pos);
+  ATOOLS::Histogram *p_whisto = new Histogram(p_whisto_pos);
   *p_whisto += *p_whisto_neg;
   if (epsilon<=-1.) {
     int nsamples(-epsilon), npoints(p_whisto->Fills());
