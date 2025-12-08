@@ -400,6 +400,7 @@ double Process_Integrator::GetMaxEps(double epsilon)
     double whisto_sum_abs_fraction = 0;
     int whisto_fills_fraction = 0;
     double fraction_pxs = target_fraction*whisto_sum;
+    double whisto_sum_sign = whisto_sum/dabs(whisto_sum);
     for (int i=first_filled_bin+1;i>last_filled_bin-1;i--) {
       if (p_whisto->Value(i)!=0) {
         double w = exp(log(10.)*(p_whisto->Xmin()+(i-0.5)*p_whisto->BinSize()));
@@ -409,7 +410,7 @@ double Process_Integrator::GetMaxEps(double epsilon)
         whisto_sum2_fraction += p_whisto->Value(i)*w*w;
         whisto_fills_fraction += p_whisto->Value(i);
         //it is rounded up the target_fraction -> for fraction of 0 largest weight is picked
-        if (whisto_sum_fraction>=fraction_pxs) break;
+        if (whisto_sum_sign*whisto_sum_fraction>=whisto_sum_sign*fraction_pxs) break;
       }
     }
 
@@ -434,13 +435,13 @@ double Process_Integrator::GetMaxEps(double epsilon)
       cutxs2+= p_whisto->Value(i) * pow(w,2);
       cnt+= p_whisto->Value(i);
       //manual epsilon_max definition
-      while (cutxs>=next_pxs_manual and (curr_epsilon_max_manual_index!=epsilon_max_values.size()-1 or last_filled_bin==i)) {
+      while (whisto_sum_sign*cutxs>=whisto_sum_sign*next_pxs_manual and (curr_epsilon_max_manual_index!=epsilon_max_values.size()-1 or last_filled_bin==i)) {
         double fin_w_max = Min(exp(log(10.)*(p_whisto->Xmin()+i*p_whisto->BinSize())),dabs(m_max));
         double this_cutxs2 = cutxs2;
         double this_cutxs = cutxs;
         double this_cutxs_abs = cutxs_abs;
         double this_cnt = cnt;
-        if (cutxs==next_pxs_manual) {//needed for epsilon=1
+        if (cutxs==next_pxs_manual or whisto_sum_sign<0) {//needed for epsilon=1
           fin_w_max = Min(exp(log(10.)*(p_whisto->Xmin()+(i-1)*p_whisto->BinSize())),dabs(m_max));
         } else {
           this_cutxs2 = prev_cutxs2;
