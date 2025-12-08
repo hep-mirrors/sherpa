@@ -175,7 +175,7 @@ namespace METOOLS
     double  SumSquare() const;
     virtual void Calculate(const ATOOLS::Vec4D_Vector& momenta,bool anti=false);
     virtual bool IsNLODecay();
-    virtual double get_NLO_part();
+    virtual double get_NLO_ME2();
     virtual std::string getType();
     virtual METOOLS::Amplitude2_Tensor AddNLOTensor(METOOLS::Amplitude2_Tensor old_tensor);
   };

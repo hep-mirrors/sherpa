@@ -386,7 +386,7 @@ double Decay_Channel::ME2_NLO(const ATOOLS::Vec4D_Vector& momenta, bool anti,
   double NLO_part = 0;
   for(size_t i(0); i<GetDiagrams().size(); ++i) {
     if(GetDiagrams()[i]->getType() == "LO" || GetDiagrams()[i]->getType() == "R") continue;
-    GetDiagrams()[i]->get_NLO_part(); // either V, I or S
+    NLO_part += GetDiagrams()[i]->get_NLO_ME2(); // either V, I or S
   }
 
   Complex sumijlambda_AiAj(0.0,0.0);

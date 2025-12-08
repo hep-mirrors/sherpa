@@ -59,7 +59,7 @@ bool Spin_Amplitudes::IsNLODecay(){
 }
 
 
-double Spin_Amplitudes::get_NLO_part(){
+double Spin_Amplitudes::get_NLO_ME2(){
   return 0.0;
 }
 
