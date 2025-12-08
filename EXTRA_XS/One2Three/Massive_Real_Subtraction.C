@@ -232,7 +232,7 @@ void Massive_Real_Subtraction::Calculate_real_subtraction(const ATOOLS::Vec4D_Ve
 
 
 double Massive_Real_Subtraction::get_NLO_ME2(){
-  return subtraction_term;
+  return (-1) * subtraction_term;
 }
 
 
