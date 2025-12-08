@@ -108,9 +108,9 @@ void EPA::RegisterDefaults() const
   s["xMin"].SetDefault(m_beam.IsIon() ? 1.e-8 : 1.e-6);
   s["xBins"].SetDefault(50);
   s["bMin"].SetDefault(0.1);
-  s["bThreshold"].SetDefault(4.);
+  s["bThreshold"].SetDefault(10.);
   s["bMax"].SetDefault(1.e3);
-  s["bBins"].SetDefault(50);
+  s["bBins"].SetDefault(100);
   s["Form_Factor"].SetDefault(size_t(m_beam.IsIon() ? EPA_ff_type::WoodSaxon
                                      : m_beam.IsNucleon() ? EPA_ff_type::dipole
                                      : m_beam.IsMeson()   ? EPA_ff_type::dipole
