@@ -68,7 +68,7 @@ namespace PHASIC {
     std::vector<Selector_Base*> m_sels;
 
     size_t m_nin, m_nout, m_n;
-    int m_pass;
+
     std::vector<ATOOLS::Weights_Map> m_results;
 
     ATOOLS::Flavour *p_fl;
@@ -102,8 +102,6 @@ namespace PHASIC {
     { return p_proc; }
 
     inline std::string Name() const { return m_name; }
-
-    inline int Pass() const { std::cout << "m_pass is checked: " << m_pass << std::endl; return m_pass; }
 
     /// after Trigger(), this can be used to retrieve variations of the result
     /// (e.g. when varying the QCUT scale)

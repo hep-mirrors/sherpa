@@ -82,34 +82,13 @@ Phase_Space_Handler::Differential(Process_Integrator *const process,
   m_cmode  = mode;
   p_active = process;
   m_wgtmap = 0.0;
-  std::cout << "Before generating a new meaningful phase space point" << std::endl;
-  // check for failure to generate a meaningful phase space point
   if (!process->Process()->GeneratePoint() ||
       !m_pspoint(process,m_cmode))
     return 0.0;
   for (auto p : p_lab) {
     if (p.Nan()) return 0.0;
   }
-  // phase space trigger, calculate and construct weights
-  std::cout << "In new process: " << process->Process()->Name() << std::endl;
   if (process->Process()->Trigger(p_lab)) {
-    //this block is only for debugging - in the end the "Pass" line should come back here. RSTrigger is intended to be called before this in "Trigger" in the line before.
-    if (process->Process()->GetSubevtList()) {
-      // Use Combined_Selector::RSTrigger for NLO - it returns the passed information
-      bool before_pass = p_active->Process()->Selector()->Pass();
-      bool this_restrigger = process->Process()->Selector()->RSTrigger(process->Process()->GetSubevtList());
-      //bool this_restrigger2 = process->Process()->Selector()->RSTrigger(process->Process()->GetSubevtList());
-      bool after_pass = p_active->Process()->Selector()->Pass();
-      std::cout << "timcompare1" << this_restrigger << " " << before_pass << std::endl;
-      //std::cout << "timcompare11" << this_restrigger2 << " " << this_restrigger << std::endl;
-      std::cout << "timcompare2" << this_restrigger << " " << after_pass << std::endl;
-    } else {
-      // for LO
-      if (!p_active->Process()->Selector()->Pass()) return 0.0;
-    }
-    //this line has to come back after rearranging
-    //if (!p_active->Process()->Selector()->Pass()) return 0.0;
-    std::cout << process->Process()->Name() << " passed Pass check" << std::endl;
     m_psweight = CalculatePS();
     m_wgtmap   = CalculateME(varmode);
     m_wgtmap  *= m_psweight;
