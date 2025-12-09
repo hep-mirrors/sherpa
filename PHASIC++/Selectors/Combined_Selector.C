@@ -100,13 +100,6 @@ bool Combined_Selector::RSTrigger(NLO_subevtlist *const subs)
   return pass;
 }
 
-bool Combined_Selector::Pass() const
-{
-  for (size_t i=0;i<m_sels.size();++i)
-    if (!m_sels[i]->Pass()) return false;
-  return true;
-}
-
 void Combined_Selector::BuildCuts(Cut_Data * cuts)
 {
   for (size_t i=0; i<m_sels.size(); ++i) m_sels[i]->BuildCuts(cuts);
