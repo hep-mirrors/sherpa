@@ -26,8 +26,6 @@ namespace PHASIC {
     bool RSTrigger(ATOOLS::NLO_subevtlist *const subs);
     bool Trigger(ATOOLS::Selector_List &sl);
 
-    bool Pass() const;
-
     void BuildCuts(Cut_Data *);
     void AddOnshellCondition(size_t,double);
 
