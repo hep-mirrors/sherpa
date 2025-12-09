@@ -180,7 +180,7 @@ static double nu_ijk_tilde(ATOOLS::Vec4<double> p_i, ATOOLS::Vec4<double> p_j, A
 }
 
 
-static double V_ijk(ATOOLS::Vec4<double> p_i, ATOOLS::Vec4<double> p_j,
+double Massive_Real_Subtraction::V_ijk(ATOOLS::Vec4<double> p_i, ATOOLS::Vec4<double> p_j,
                     ATOOLS::Vec4<double> p_k, const ATOOLS::Flavour& prop){
   double C_F = 4.0 / 3.0;
   ATOOLS::Vec4<double> Q = p_i + p_j + p_k;
@@ -214,10 +214,6 @@ void Massive_Real_Subtraction::Calculate_real_subtraction(const ATOOLS::Vec4D_Ve
   double V_gbb_b = V_ijk(p_g, p_bb, p_b, m_prop);
 
   double m2_ij = p_b * p_b; // because m_i = 0 (gluon) and m_b = m_bb
-
-  for (size_t i=0; i<size(); ++i) {
-    std:cout << (*this)[i] << endl;
-  }
 
   double D_gb_bb = V_gb_bb/ ((p_g + p_b)*(p_g + p_b) - m2_ij) * ME2_Born;
   double D_gbb_b = V_gbb_b/ ((p_g + p_bb)*(p_g + p_bb) - m2_ij) * ME2_Born;

@@ -19,20 +19,15 @@ namespace EXTRAXS {
     double scale;
     double BornPrefactor;
     double alpha_qcd;
-    std::map<std::string, std::complex<double>> born_hel;
-    double ME2_Born;
 
     std::vector<METOOLS::Current*> m_cur_born;
     std::vector<METOOLS::Current*> m_anticur_born;
 
     std::vector<size_t> m_nhel;
-    
-    ATOOLS::Flavour m_prop;
 
     PHASIC::Color_Integrator* p_ci_born;
 
     size_t NHel(const ATOOLS::Flavour& fl);
-    double subtraction_term;
 
     void CalculateBorn(const ATOOLS::Vec4D_Vector& momenta, bool anti);
     std::pair<std::vector<std::pair<METOOLS::CSpinor<double>*, int>>,
@@ -46,12 +41,21 @@ namespace EXTRAXS {
               size_t nonprop, size_t propi, size_t propj);
     ~Massive_Real_Subtraction();
     bool IsNLODecay();
-    void Calculate_real_subtraction(const ATOOLS::Vec4D_Vector& momenta, bool anti=false);
+    virtual void Calculate_real_subtraction(const ATOOLS::Vec4D_Vector& momenta, bool anti=false);
     void Calculate(const ATOOLS::Vec4D_Vector& momenta, bool anti=false);
     double get_NLO_ME2();
     METOOLS::Amplitude2_Tensor AddNLOTensor(METOOLS::Amplitude2_Tensor old_tensor);
     std::string getType();
     ATOOLS::Flavour Prop() const { return m_prop; }
+  
+  protected:
+    double ME2_Born;
+    std::map<std::string, std::complex<double>> born_hel;
+    ATOOLS::Flavour m_prop;
+    double subtraction_term;
+
+    static double V_ijk(ATOOLS::Vec4<double> p_i, ATOOLS::Vec4<double> p_j,
+                    ATOOLS::Vec4<double> p_k, const ATOOLS::Flavour& prop);
   };
 }
 
