@@ -17,7 +17,7 @@ using namespace PHASIC;
 using namespace std;
 
 Comix1to2::Comix1to2(const vector<Flavour>& flavs) :
-  Spin_Amplitudes(flavs,Complex(0.0,0.0)), m_cur(3), m_anticur(3), m_nhel(3), m_flavs(flavs)
+  Spin_Amplitudes(flavs,Complex(0.0,0.0)), m_cur(3), m_anticur(3), m_nhel(3), m_flavs(flavs), m_cpointgen(false)
 {
   if (flavs.size()!=3) THROW(fatal_error,"Internal error.");
 
@@ -112,7 +112,6 @@ Comix1to2::~Comix1to2()
   if (p_ci) delete p_ci;
 }
 
-
 bool Comix1to2::IsNLODecay() {
   // check if the decay channel is decaying at NLO
   // so far only h0 -> b bbar at NLO is included
@@ -126,7 +125,8 @@ bool Comix1to2::IsNLODecay() {
 
 
 void Comix1to2::Calculate(const ATOOLS::Vec4D_Vector& momenta, bool anti) {
-  p_ci->GeneratePoint();
+  // Check if color point is already set
+  if (!m_cpointgen) p_ci->GeneratePoint();
   if (anti) {
     for (size_t i(0);i<m_anticur.size();++i) {
       m_anticur[i]->ConstructJ(i==0?-momenta[i]:momenta[i],0,p_ci->I()[i],p_ci->J()[i],0);
@@ -187,3 +187,10 @@ size_t Comix1to2::NHel(const Flavour& fl)
     return 0;
   }
 }
+
+void Comix1to2::SetColors(const vector<int> &ci, const vector<int> &cj) {
+  p_ci->SetPoint(ci, cj);
+  m_cpointgen = true;
+}
+
+

@@ -31,6 +31,10 @@ namespace EXTRAXS {
     PHASIC::Color_Integrator* p_ci;
 
     size_t NHel(const ATOOLS::Flavour& fl);
+
+    // true, if a color point was already set externally
+    bool m_cpointgen;
+
   public:
     Comix1to2(const std::vector<ATOOLS::Flavour>& flavs);
     ~Comix1to2();
@@ -40,6 +44,10 @@ namespace EXTRAXS {
     std::string getType();
     METOOLS::Amplitude2_Tensor AddNLOTensor(METOOLS::Amplitude2_Tensor old_tensor);
   }; 
-
+    const PHASIC::Color_Integrator* GetColors() const override { return p_ci; };
+    void SetColors(const std::vector<int>& ci,
+                   const std::vector<int>& cj) override;
+    void FixColor(bool yes) override { m_cpointgen = yes; }
+  };
 }
 

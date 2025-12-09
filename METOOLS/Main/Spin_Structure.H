@@ -178,6 +178,10 @@ namespace METOOLS
     virtual double get_NLO_ME2();
     virtual std::string getType();
     virtual METOOLS::Amplitude2_Tensor AddNLOTensor(METOOLS::Amplitude2_Tensor old_tensor);
+    virtual const PHASIC::Color_Integrator* GetColors() const;
+    virtual void SetColors(const std::vector<int>& ci,
+                           const std::vector<int>& cj);
+    virtual void FixColor(bool yes);
   };
 
   /*! 

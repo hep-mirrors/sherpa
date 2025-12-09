@@ -27,6 +27,9 @@ namespace EXTRAXS {
     PHASIC::Color_Integrator* p_ci;
 
     size_t NHel(const ATOOLS::Flavour& fl);
+
+    // true, if a color point was already set externally
+    bool m_cpointgen;
   public:
     Comix1to3(const std::vector<ATOOLS::Flavour>& flavs,
               const ATOOLS::Flavour& prop,
@@ -38,6 +41,9 @@ namespace EXTRAXS {
     void Calculate(const ATOOLS::Vec4D_Vector& momenta, bool anti=false);
     std::string getType();
     ATOOLS::Flavour Prop() const { return m_prop; }
+    void SetColors(const std::vector<int>& ci,
+                   const std::vector<int>& cj) override;
+    void FixColor(bool yes) override { m_cpointgen = yes; }
   };
 }
 
