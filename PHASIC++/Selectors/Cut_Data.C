@@ -34,9 +34,11 @@ Cut_Data::~Cut_Data() {
   for (short int i=0;i<ncut;i++) {
     delete[] scut[i];
     delete[] scut_save[i];
+    delete[] scut_set[i];
   }
   delete[] scut;
   delete[] scut_save;
+  delete[] scut_set;
   delete[] energymin;
   delete[] energymin_save;
   delete[] etmin;
@@ -53,10 +55,12 @@ void Cut_Data::Init(int _nin,const Flavour_Vector &_fl) {
   etmin          = new double[ncut];
   scut           = new double*[ncut];
   scut_save      = new double*[ncut];
+  scut_set       = new int*[ncut];
 
   for (int i=0;i<ncut;i++) {
     scut[i]        = new double[ncut];
     scut_save[i]   = new double[ncut];
+    scut_set[i]    = new int[ncut];
     energymin[i]   = Max(0.,fl[i].SelMass());
     if (fl[i].IsKK()) energymin[i] = 0.;
     smin += energymin_save[i] = energymin[i];
@@ -70,8 +74,18 @@ void Cut_Data::Init(int _nin,const Flavour_Vector &_fl) {
     for (int j=i;j<ncut;j++) {
       scut[i][j] = scut[j][i] = scut_save[i][j] =
               (i<nin)^(j<nin)?0.0:sijminfac*sqr(rpa->gen.Ecms());
+      scut_set[i][j] = scut_set[j][i] = 0;
     }
   }  
+}
+
+void Cut_Data::Init()
+{
+  for (short int i=0;i<ncut;i++) {
+    for (short int j=0;j<ncut;j++) {
+      scut[i][j]=0;
+    }
+  }
 }
 
 void Cut_Data::Complete()
@@ -79,8 +93,11 @@ void Cut_Data::Complete()
   for (int i=0;i<ncut;i++) {
     for (int j=i+1;j<ncut;j++) {
       if ((i<nin)^(j<nin)) continue;
-      scut[i][j] = scut[j][i] =
-	Max(scut[i][j],sqr(fl[i].SelMass()+fl[j].SelMass()));
+      double ijmin=sqr(fl[i].SelMass()+fl[j].SelMass());
+      scut[i][j] = scut[j][i] =Max(scut_set[i][j]?
+				   Min(scut[i][j],scut_save[i][j]):scut[i][j],
+				   ijmin);
+      scut_set[i][j] = scut_set[j][i] = 1;
     }
   } 
 

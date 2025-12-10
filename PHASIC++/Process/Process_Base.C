@@ -575,7 +575,12 @@ void Process_Base::InitCuts(Cut_Data *const cuts)
 
 void Process_Base::BuildCuts(Cut_Data *const cuts)
 {
-  if (IsMapped() && LookUp()) return;
+  if (IsGroup()) {
+    for (size_t i=0;i<Size();++i)
+      (*this)[i]->BuildCuts(cuts);
+    return;
+  }
+  cuts->Init();
   Selector()->BuildCuts(cuts);
 }
 

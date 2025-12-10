@@ -181,8 +181,6 @@ bool Process_Group::CalculateTotalXSec(const std::string &resultpath,
       }
     }
     psh->InitCuts();
-    for (size_t i=0;i<m_procs.size();++i)
-      m_procs[i]->BuildCuts(psh->Cuts());
     p_int->ISR()->SetSprimeMin(psh->Cuts()->Smin());
     p_int->Beam()->SetSprimeMin(psh->Cuts()->Smin());
   }

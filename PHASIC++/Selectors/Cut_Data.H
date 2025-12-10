@@ -17,13 +17,14 @@ namespace PHASIC {
     double ** scut;
     double *  energymin;
     double *  etmin;
-    int       nin, ncut;
+    int       nin, ncut, **scut_set;
     double    smin, minsijfac;
 
     Cut_Data();
     ~Cut_Data();
     void Init(int,const ATOOLS::Flavour_Vector &fl);
 
+    void Init();
     void Complete();
     double Smin() const { return smin; }
     double GetscutAmegic(std::string);
