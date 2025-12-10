@@ -46,7 +46,7 @@ Cut_Data::~Cut_Data() {
 
 void Cut_Data::Init(int _nin,const Flavour_Vector &_fl) {
   if (energymin != 0) return;
-  smin = 0.;
+  smin = -1;
   nin            = _nin;
   ncut           = _fl.size();
   fl             = &_fl.front();
@@ -63,10 +63,9 @@ void Cut_Data::Init(int _nin,const Flavour_Vector &_fl) {
     scut_set[i]    = new int[ncut];
     energymin[i]   = Max(0.,fl[i].SelMass());
     if (fl[i].IsKK()) energymin[i] = 0.;
-    smin += energymin_save[i] = energymin[i];
+    energymin_save[i] = energymin[i];
     etmin[i]       = 0.;
   }
-  smin = sqr(smin);
 
   Settings& s = Settings::GetMainSettings();
   double sijminfac{ s["INT_MINSIJ_FACTOR"].SetDefault(0.).Get<double>() };
@@ -114,15 +113,17 @@ void Cut_Data::Complete()
   double e1=0.,e2=0.;
   for (int i=2;i<ncut;i++) {
     if (etmin[i]>etmm) etmm = etmin[i];
-    local_smin += etmin[i];
+    local_smin += Max(etmin[i], energymin[i]);
     e1 += energymin[i];
   }
-  smin = Max(smin,sqr(local_smin));
-  smin = Max(smin,sqr(e1)-sqr(e2));
-  smin = Max(smin,sqr(2.*etmm));
-  smin = Max(smin,Getscut(str));
+  local_smin = sqr(local_smin);
+  local_smin = Max(local_smin,sqr(e1)-sqr(e2));
+  local_smin = Max(local_smin,sqr(2.*etmm));
+  local_smin = Max(local_smin,Getscut(str));
+  smin = smin>=0?Min(smin,local_smin):local_smin;
 
-  msg_Tracking()<<"Cut_Data::Complete(): s_{min} = "<<smin<<endl;
+  msg_Tracking()<<"Cut_Data::Complete(): Q_{min} = "
+		<<sqrt(smin)<<" <- "<<sqrt(local_smin)<<endl;
   m_smin_map.clear();
 }
 
