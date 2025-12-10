@@ -6,6 +6,7 @@
 #include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Math/Special_Functions.H"
 #include "ATOOLS/Phys/Flavour.H"
+#include <ATOOLS/Org/Run_Parameter.H>
 #include <cmath>
 
 namespace ATOOLS {
@@ -18,6 +19,7 @@ namespace BEAM {
     pointApprox  = 1,
     proton       = 2,
     protonApprox = 3,
+    ionApproxInt = 4,
     Gauss        = 10,
     hcs          = 11,
     dipole       = 12,
@@ -237,6 +239,14 @@ namespace BEAM {
   public:
     EPA_IonApprox(const ATOOLS::Flavour& beam, int dir);
     double FF(const double& Q2) override { return 0.; }
+  };
+
+  class EPA_IonApproxIntegrated final : public EPA_FF_Base {
+  public:
+    EPA_IonApproxIntegrated(const ATOOLS::Flavour& beam, int dir);
+    void   FillTables() override {};
+    double N(const double& x) override;
+    double FF(const double& Q2) override { return 1.; }
   };
 
   class EPA_Test final : public EPA_FF_Base {

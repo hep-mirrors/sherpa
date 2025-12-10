@@ -419,6 +419,27 @@ EPA_IonApprox::EPA_IonApprox(const ATOOLS::Flavour& beam, const int dir)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+// Class for the Ion FF in the Electric Dipole approximation integrated in b
+////////////////////////////////////////////////////////////////////////////////
+
+EPA_IonApproxIntegrated::EPA_IonApproxIntegrated(const ATOOLS::Flavour& beam,
+                                                 const int              dir)
+    : EPA_FF_Base(beam, dir)
+{
+  m_b_pl_threshold = m_bmin * m_R;
+  p_N_xb.reset();
+  m_b = 1.001 * m_R;
+}
+
+double EPA_IonApproxIntegrated::N(const double& x)
+{
+  double chi = x * m_mass * m_R;
+  return 2 * m_Zsquared / x *
+         (chi * SF.Kn(0, chi) * SF.Kn(1, chi) -
+          chi * chi / 2. * (sqr(SF.Kn(1, chi)) - sqr(SF.Kn(0, chi))));
+}
+
+////////////////////////////////////////////////////////////////////////////////
 // Dummy test class for checking the Bessel_Integrator
 ////////////////////////////////////////////////////////////////////////////////
 

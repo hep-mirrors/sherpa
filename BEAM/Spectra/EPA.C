@@ -93,6 +93,9 @@ void EPA::Initialise()
       p_ff = new EPA_DipoleApprox(m_beam, m_dir);
       break;
     case EPA_ff_type::ionApprox: p_ff = new EPA_IonApprox(m_beam, m_dir); break;
+    case EPA_ff_type::ionApproxInt:
+      p_ff = new EPA_IonApproxIntegrated(m_beam, m_dir);
+      break;
     case EPA_ff_type::WoodSaxon: p_ff = new EPA_WoodSaxon(m_beam, m_dir); break;
     default: THROW(not_implemented, "unknown EPA form factor. ");
   }
@@ -170,6 +173,10 @@ void EPA::Tests()
   auto* ff_p_ionApprox = new EPA_IonApprox(Flavour(kf_p_plus), 0);
   ff_p_ionApprox->OutputToCSV("ionApprox");
   delete ff_p_ionApprox;
+  // Ion Approx Integrated
+  auto* ff_p_ionApproxInt = new EPA_IonApproxIntegrated(Flavour(kf_p_plus), 0);
+  ff_p_ionApproxInt->OutputToCSV("ionApproxInt");
+  delete ff_p_ionApproxInt;
 
   std::vector<kf_code> ions({kf_lead208, kf_calcium40});
   for (kf_code ion : ions) {
@@ -197,5 +204,9 @@ void EPA::Tests()
     auto* ff_ionApprox = new EPA_IonApprox(Flavour(ion), 0);
     ff_ionApprox->OutputToCSV("ionApprox");
     delete ff_ionApprox;
+    // Ion Approx Integrated
+    auto* ff_ionApproxInt = new EPA_IonApproxIntegrated(Flavour(ion), 0);
+    ff_ionApproxInt->OutputToCSV("ionApproxInt");
+    delete ff_ionApproxInt;
   }
 }
