@@ -109,7 +109,7 @@ void EPA::RegisterDefaults() const
   s["Q2Min"].SetDefault(-1.);
   s["xMax"].SetDefault(1.);
   s["xMin"].SetDefault(m_beam.IsIon() ? 1.e-8 : 1.e-6);
-  s["xBins"].SetDefault(50);
+  s["xBins"].SetDefault(100);
   s["bMin"].SetDefault(0.1);
   s["bThreshold"].SetDefault(10.);
   s["bMax"].SetDefault(1.e3);
