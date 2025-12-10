@@ -65,12 +65,13 @@ namespace BEAM {
     {
       double wt = SampleImpactParameter();
       if (m_b < m_b_pl_threshold) return (*p_N_xb)(x / m_A, m_b) * wt / m_A;
-      else {
-        // use point-like approximation for large impact parameters
-        double chi = x * m_mass * m_b;
-        return 2 * m_Zsquared * m_b * x * m_mass2 *
-               ATOOLS::sqr(ATOOLS::SF.Kn(1, chi)) * wt;
-      }
+      // use point-like approximation for large impact parameters
+      double chi = x * m_mass * m_b;
+      return 2 * m_Zsquared * m_b * x * m_mass2 *
+             (ATOOLS::sqr(ATOOLS::SF.Kn(1, chi)) +
+              2. * m_mass / ATOOLS::rpa->gen.Ecms() *
+                      ATOOLS::sqr(ATOOLS::SF.Kn(0, chi))) *
+             wt;
     };
     virtual double FF(const double& Q2) = 0;
 
