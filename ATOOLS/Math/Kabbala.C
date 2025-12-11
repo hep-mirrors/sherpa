@@ -158,7 +158,10 @@ Kabbala& Kabbala::operator*=(const Complex& c) {
 // Division in place, with constant
 Kabbala& Kabbala::operator/=(const Kabbala& k) {
   // here the check is necessary, this is still unsafe if updated
-  if (abs(k.Value()) == 0.0) THROW(fatal_error, "division by zero :(");
+  if (abs(k.Value()) == 0.0) {
+    msg_Out() << this << " divided by " << k << " where the latter is zero!" << std::endl << std::endl; 
+    THROW(fatal_error, "division by zero :(");
+  }
   rishbon /= k.Value();
   std::string save = shem;
   shem  = std::string("(") + save + std::string(")/(");
@@ -171,7 +174,10 @@ Kabbala& Kabbala::operator/=(const Kabbala& k) {
 }
 
 Kabbala& Kabbala::operator/=(const Complex& c) {
-  if (ATOOLS::IsZero(c)) THROW(fatal_error, "division by zero :(");
+  if (ATOOLS::IsZero(c))  {
+    msg_Out() << this << " divided by " << c << " where the latter is zero!" << std::endl << std::endl; 
+    THROW(fatal_error, "division by zero :(");
+  }
   if (c == Complex(1., 0.)) return *this;
   rishbon /= c;
   std::string save = shem;
@@ -185,7 +191,10 @@ Kabbala& Kabbala::operator/=(const Complex& c) {
 }
 
 Kabbala operator/(const Complex& c, const Kabbala& k1) {
-  if (abs(k1.Value()) == 0.0) THROW(fatal_error, "division by zero :(");
+  if (abs(k1.Value()) == 0.0)  {
+    msg_Out() << c << " divided by " << k1 << " where the latter is zero!" << std::endl << std::endl; 
+    THROW(fatal_error, "division by zero :(");
+  }
   if (ATOOLS::IsZero(c)) return Kabbala();
   Kabbala k(k1);
   k.SetValue(c/k1.Value());
