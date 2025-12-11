@@ -33,10 +33,6 @@ EPA::EPA(const Flavour& beam, const double energy, const double pol,
 
   RegisterDefaults();
   Initialise();
-  if (m_plotting) {
-    Tests();
-    THROW(normal_exit, "Tests done.");
-  }
 }
 
 bool EPA::CalculateWeight(double x, double q2)
@@ -76,6 +72,10 @@ void EPA::Initialise()
                           : sqr(rpa->hBar_c() / m_beam.Radius());
   m_xmin        = s["xMin"].GetTwoVector<double>()[b];
   m_xmax        = s["xMax"].GetTwoVector<double>()[b];
+  if (m_plotting) {
+    Tests();
+    THROW(normal_exit, "Tests done.");
+  }
 
   m_fftype = static_cast<EPA_ff_type>(s["Form_Factor"].GetTwoVector<int>()[b]);
   switch (m_fftype) {
@@ -131,6 +131,8 @@ void EPA::RegisterDefaults() const
 
 void EPA::Tests()
 {
+  msg_Out() << METHOD << ": Beginning writing the output files\n";
+
   // Test
   //auto* ff_test = new EPA_Test(Flavour(kf_photon), 0);
   //ff_test->OutputToCSV("test");
@@ -185,18 +187,10 @@ void EPA::Tests()
     auto* ff_ion_gauss = new EPA_Gauss(Flavour(ion), 0);
     ff_ion_gauss->OutputToCSV("gauss");
     delete ff_ion_gauss;
-    // HCS
-    auto* ff_ion_hcs = new EPA_HCS(Flavour(ion), 0);
-    ff_ion_hcs->OutputToCSV("hcs");
-    delete ff_ion_hcs;
     // Dipole
     auto* ff_ion_dip = new EPA_Dipole(Flavour(ion), 0);
     ff_ion_dip->OutputToCSV("dipole");
     delete ff_ion_dip;
-    // DipoleApprox
-    auto* ff_ion_dipApprox = new EPA_DipoleApprox(Flavour(ion), 0);
-    ff_ion_dipApprox->OutputToCSV("dipoleApprox");
-    delete ff_ion_dipApprox;
     // Woods-Saxon
     auto* ff_ion_ws = new EPA_WoodSaxon(Flavour(ion), 0);
     ff_ion_ws->OutputToCSV("ws");
