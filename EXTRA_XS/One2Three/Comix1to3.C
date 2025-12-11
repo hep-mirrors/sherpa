@@ -162,7 +162,8 @@ METOOLS::Amplitude2_Tensor Comix1to3::AddNLOTensor(METOOLS::Amplitude2_Tensor ol
 void Comix1to3::Calculate(const ATOOLS::Vec4D_Vector& momenta, bool anti) {
   DEBUG_FUNC(momenta.size());
   // create a new integration point for the color factors
-  if (!m_cpointgen)  p_ci->GeneratePoint();
+  //if (!m_cpointgen)  
+  p_ci->GeneratePoint();
 
   if (anti) {
     for (size_t i(0);i<m_anticur.size();++i) {
@@ -215,7 +216,7 @@ std::string Comix1to3::getType(){
   return "LO";
 }
 
-void Comix1to3::SetColors(const vector<int> &ci, const vector<int> &cj) {
-  p_ci->SetPoint(ci, cj);
-  m_cpointgen = true;
-}
+//void Comix1to3::SetColors(const vector<int> &ci, const vector<int> &cj) {
+//  p_ci->SetPoint(ci, cj);
+//  m_cpointgen = true;
+//}

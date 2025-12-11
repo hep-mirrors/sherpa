@@ -572,7 +572,7 @@ offshell (or three-body) decay configurations.
 
         Spin_Amplitudes* real_subtraction_term1 = nullptr;
 
-        std::vector<Flavour> sub_flavs;  // the subtraction term has different flavours (remove the gluon)
+        /*std::vector<Flavour> sub_flavs;  // the subtraction term has different flavours (remove the gluon)
         for (size_t i = 0; i < dc->Flavs().size(); ++i) {
           if(dc->Flavs()[i].IDName() == "G"){
             continue;
@@ -582,7 +582,10 @@ offshell (or three-body) decay configurations.
           }
         } 
         real_subtraction_term1 = new Massive_Real_Subtraction_Term1(sub_flavs,flavs1[2],propj,propi,nonprop);
-        dc->AddDiagram(real_subtraction_term1);
+        dc->AddDiagram(real_subtraction_term1);*/
+        Spin_Amplitudes* real_subtraction = nullptr;
+        real_subtraction = new Massive_Real_Subtraction(dc->Flavs(),flavs1[2],propj,propi,nonprop);
+        dc->AddDiagram(real_subtraction);
       } else {
         diagram = new Comix1to3(dc->Flavs(),flavs1[j],
         nonprop, propi, propj);

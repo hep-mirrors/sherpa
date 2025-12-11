@@ -438,7 +438,9 @@ double Decay_Channel::ME2_NLO(const ATOOLS::Vec4D_Vector& momenta, bool anti,
     PRINT_INFO("Sum-Squaring matrix element yielded imaginary part.");
     PRINT_VAR(sumijlambda_AiAj);
   }
-
+  if(GetDiagrams()[1]->getType() == "S"){
+    NLO_part *= 15.0/8.0;
+  }
   double value=sumijlambda_AiAj.real();
   if(!sigma){  // if sigma: NLO_Part was already added by AddNLOTensor above, does not need to be added again
     value += NLO_part;
