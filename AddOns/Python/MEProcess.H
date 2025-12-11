@@ -15,7 +15,7 @@ namespace SHERPA{
 }
 namespace ATOOLS{
   class Cluster_Amplitude;
-  class ColorID;
+  struct ColorID;
   class Mass_Selector;
 }
 namespace PHASIC{

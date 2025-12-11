@@ -1,0 +1,26 @@
+EVENTS: 20k
+BEAMS: [2212, 2212]
+BEAM_ENERGIES: 980
+EVENT_GENERATION_MODE: Weighted
+BATCH_MODE: 3
+
+PROCESSES:
+- 93 93 -> 11 -11 93{1}:
+    Order: {QCD: 0, EW: 2}
+    CKKW: 20
+    ME_Generator: Amegic
+
+- 93 93 -> 13 -13 93{1}:
+    Order: {QCD: 0, EW: 2}
+    CKKW: 20
+    ME_Generator: Amegic
+
+SELECTORS:
+- [Mass, 13, -13, 65, 115] #analysis cuts are 70 - 110
+- [Mass, 11, -11, 65, 115]
+
+ANALYSIS: Rivet
+RIVET:
+  IGNORE_BEAMS: 1
+  ANALYSES:
+    - CDF_2010_I849042:MODE=DY

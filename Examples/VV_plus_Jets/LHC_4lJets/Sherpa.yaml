@@ -4,7 +4,7 @@ BEAM_ENERGIES: 6500
 
 # me generator settings
 ME_GENERATORS: [Comix, Amegic, OpenLoops]
-METS: { CLUSTER_MODE: 16 }
+MEPS: { CLUSTER_MODE: 16 }
 
 PROCESSES:
 - 93 93 -> 90 90 90 90 93{3}:

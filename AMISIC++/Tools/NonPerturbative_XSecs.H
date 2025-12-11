@@ -26,7 +26,7 @@ namespace AMISIC {
     };
   };
 
-  
+
   class NonPerturbative_XSecs {
   private:
     REMNANTS::Remnant_Handler   * p_remnants;
@@ -35,10 +35,10 @@ namespace AMISIC {
     bool                          m_variableS;
     Beam_Integrator               m_integrator;
     ATOOLS::Poincare              m_boost;
-    
+
     evt_type::code                m_evttype;
     std::array<ATOOLS::Flavour,2> m_inflav;
-    std::array<double,2>          m_masses, m_masses2; 
+    std::array<double,2>          m_masses, m_masses2;
     std::array<ATOOLS::Flavour,4> m_outflav;
     std::array<double,4>          m_outmasses, m_outmasses2;
     std::array<size_t,2>          m_hadtags;
@@ -53,14 +53,15 @@ namespace AMISIC {
     two_pions::code m_twopions;
 
     unsigned long int m_calls, m_fails;
-    
-    inline const double beta(const size_t hadtag,const double & t) const {
-      return sqrt(p_xsecs->s_X[hadtag][hadtag]) * exp(p_xsecs->s_slopes[hadtag]*t);
+
+    inline double beta(const size_t hadtag,const double & t) const {
+      return sqrt(Hadronic_XSec_Calculator::s_X[hadtag][hadtag]) *
+             exp(Hadronic_XSec_Calculator::s_slopes[hadtag]*t);
     }
-    inline const double F_SD(const double & M2,const double & Mres2) const {
+    inline double F_SD(const double & M2,const double & Mres2) const {
       return ( (1.-M2/m_s) * (1.+m_cres*Mres2/(Mres2+M2)) );
     }
-    inline const double F_DD(const std::array<double, 2> & M2,
+    inline double F_DD(const std::array<double, 2> & M2,
 			     const std::array<double, 2> & Mres2) const {
       double averMass = sqrt(M2[0])+sqrt(M2[1])/2., Mass2 = 4.*averMass*averMass;
       return ( (1.-Mass2/m_s) *
@@ -84,10 +85,10 @@ namespace AMISIC {
       }
       return ATOOLS::Flavour(kf_none);
     }
-    
+
     inline const double ExponentialDist(const double & smin,const double & smax,
 					const double & pref) {
-      double ran = ATOOLS::ran->Get(); 
+      double ran = ATOOLS::ran->Get();
       return log(ran*exp(pref*smax) + (1.-ran)*exp(pref*smin))/pref;
     }
     inline const double ExponentialWeight(const double & smin,const double & smax,
@@ -96,7 +97,7 @@ namespace AMISIC {
     }
     inline const double PowerDist(const double & smin,const double & smax,
 				  const double & expo) {
-      double ran = ATOOLS::ran->Get(); 
+      double ran = ATOOLS::ran->Get();
       if (expo==-1.) return smin*pow(smax/smin,ran);
       return pow(ran*pow(smax,expo+1.)+(1.-ran)*pow(smin,expo+1.), 1./(expo+1.));
     }
@@ -105,7 +106,7 @@ namespace AMISIC {
       if (expo==-1.) return log(smax/smin);
       return (pow(smax,expo+1.)-pow(smin,expo+1.))/(expo+1.);
     }
-    
+
     const event_mode::code SelectMode();
     bool   FixFS(std::array<ATOOLS::Flavour, 2> & flavs);
     bool   FixOutMomenta(const double & t);
@@ -124,7 +125,7 @@ namespace AMISIC {
     size_t m_Nsteps, m_Nevents;
     double m_maxT, m_minM, m_maxM;
     std::map<std::string,ATOOLS::Histogram *> m_histos;
-    
+
     void InitHistos();
     void WriteHistos();
     void Tests();
@@ -137,14 +138,14 @@ namespace AMISIC {
     ~NonPerturbative_XSecs();
     void SetBeams(BEAM::Beam_Base * beam1,BEAM::Beam_Base * beam2);
     void CalculateSDependentCrossSections();
-    
+
     bool MakeScatter(ATOOLS::Blob * blob);
 
     inline const double & Weight() const { return m_weight; }
     inline const double & Smin()   const { return m_smin; }
     inline const double & MuF2()   const { return m_muf2; }
     inline const double & MuR2()   const { return m_mur2; }
-    
+
     inline void SetHadTags(const std::array<size_t,2> tags) {
       for (size_t i=0;i<2;i++) m_hadtags[i] = tags[i];
     }

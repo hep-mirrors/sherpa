@@ -4,7 +4,7 @@ BEAM_ENERGIES: 6500
 
 # me generator settings
 ME_GENERATORS: [Comix, Amegic, OpenLoops]
-METS: { CLUSTER_MODE: 16 }
+MEPS: { CLUSTER_MODE: 16 }
 
 # define parton container without b-quarks to
 # remove 0 processes with top contributions

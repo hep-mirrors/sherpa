@@ -442,7 +442,7 @@ the matrix element level. Its syntax is
 
 The ``Variable`` parameter defines the name of the variable to cut
 on. The keywords for available predefined can be figured by running
-Sherpa :option:`SHOW_VARIABLE_SYNTAX: true`.  Or alternatively, an
+:option:`Sherpa "SHOW_VARIABLE_SYNTAX: true"`.  Or alternatively, an
 arbitrary cut variable can be constructed using the internal
 interpreter, see :ref:`Interpreter`. This is invoked with the command
 ``Calc(...)``. In the formula specified there you have to use place

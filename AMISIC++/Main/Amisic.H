@@ -64,9 +64,11 @@ namespace AMISIC {
     double         m_sigmaND_norm, m_b, m_bfac, m_S, m_Y, m_pt2, m_weight;
 
     bool         m_isMinBias, m_isFirst, m_producedSoft;
-    size_t       m_maxNscatters, m_Nscatters; 
+    size_t       m_maxNscatters, m_Nscatters;
     double       m_f;
-    
+
+    std::set<ATOOLS::Blob *> m_updated;
+
     void InitParametersAndType(PDF::ISR_Handler *const isr,
 			       REMNANTS::Remnant_Handler * remnant_handler);
     void UpdateForNewS();
@@ -74,6 +76,8 @@ namespace AMISIC {
     bool FirstMinBias(ATOOLS::Blob * blob);
     bool FirstMPI(ATOOLS::Blob * blob);
     void AddInformationToBlob(ATOOLS::Blob * blob);
+    void UpdateDownstreamPositions(ATOOLS::Blob * blob,
+				   const ATOOLS::Vec4D & delta_pos);
     void CreateAmplitudeLegs(ATOOLS::Cluster_Amplitude * ampl,
 			     ATOOLS::Blob * blob);
 

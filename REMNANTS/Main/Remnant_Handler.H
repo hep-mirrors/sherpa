@@ -73,7 +73,8 @@ namespace REMNANTS {
     ATOOLS::Return_Value::code MakeBeamBlobs(ATOOLS::Blob_List* const blobs,
                                              const bool& isrescatter = false);
 
-    void SetImpactParameter(const double & b);
+    void SetImpactParameter(const double & b,
+			    const ATOOLS::Vec4D & direction=ATOOLS::Vec4D(0.,1.,0.,0.));
 
     inline bool NeedsToMakeBeamBlobs() const
     {

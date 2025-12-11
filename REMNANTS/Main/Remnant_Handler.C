@@ -63,7 +63,7 @@ Remnant_Handler(std::array<std::shared_ptr<Remnant_Base>, 2> remnants,
   m_id(isr->Id()), p_remnants(remnants), m_tags(tags), p_softblob(nullptr),
   m_check(true), m_output(false), m_fails(0)
 {
-  // this constructor is to create remnants, where one of the remnants 
+  // this constructor is to create remnants, where one of the remnants
   // has already been created; needed for the beam rescatterings
   int beam = 0;
   if (p_remnants[1] == nullptr) beam = 1;
@@ -219,9 +219,11 @@ Return_Value::code Remnant_Handler::MakeBeamBlobs(Blob_List* const bloblist,
   // This still needs debugging - therefore it is commented out.
   Return_Value::code rv = Return_Value::Success;
   if (!m_kinematics.FillBlobs(bloblist)) {
+    msg_Debugging() << METHOD << ": Filling of beam blobs failed.\n";
     rv = Return_Value::New_Event;
   }
   else if (!CheckBeamBreakup() || !m_decorrelator(p_softblob)) {
+    msg_Error() << METHOD << " failed. Will return new event\n";
     rv = Return_Value::New_Event;
   }
   Reset();
@@ -305,14 +307,13 @@ bool Remnant_Handler::CheckBeamBreakup()
     if (!p_remnants[beam]->GetBlob()->MomentumConserved() ||
         !p_remnants[beam]->GetBlob()->CheckColour()) {
       ok = false;
-      //if (m_output) {
-      msg_Error() << "Error in " << METHOD << ": "
-		  << "colour or four-momentum not conserved in softblob:\n"
-		  << (*p_remnants[beam]->GetBlob()) << "\n";
-      p_remnants[0]->Output();
-      p_remnants[1]->Output();
-      exit(1);
-      //}
+      if (m_output) {
+        msg_Error() << "Error in " << METHOD << ": "
+                    << "colour or four-momentum not conserved in beamblob:\n"
+                    << (*p_remnants[beam]->GetBlob()) << "\n";
+        p_remnants[0]->Output();
+        p_remnants[1]->Output();
+      }
     }
   }
   if (!p_softblob) return ok;
@@ -320,18 +321,20 @@ bool Remnant_Handler::CheckBeamBreakup()
     ok = false;
     if (m_output) {
       msg_Error() << "Error in " << METHOD << ": "
-		  << "colour or four-momentum not conserved in softblob:\n"
-		  << (*p_softblob) << "\n";
+                  << "colour or four-momentum not conserved in softblob:\n"
+                  << (*p_softblob) << "\n";
       p_remnants[0]->Output();
       p_remnants[1]->Output();
-      exit(1);
     }
   }
   return ok;
 }
 
-void Remnant_Handler::SetImpactParameter(const double & b) {
-  Vec4D  pos = (b*m_invGeV2fm)/2. * Vec4D(0.,1.,0.,0.);
+void Remnant_Handler::SetImpactParameter(const double & b,const Vec4D & direction) {
+  /////////////////////////////////////////////////////////////////////////////////
+  // b has to be given in mm.
+  /////////////////////////////////////////////////////////////////////////////////
+  Vec4D  pos = b/2. * direction;
   for (size_t i=0;i<2;i++) p_remnants[i]->SetPosition((i==0?1.:-1.) * pos);
 }
 

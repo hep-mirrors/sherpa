@@ -91,15 +91,8 @@ Weight_Info *Single_Process::OneEvent(const int wmode,
                                       const int mode) {
   p_selected = this;
   auto psh = p_int->PSHandler();
-  if (p_int->ISR()) {
-    if (m_nin == 2) {
-      if (m_flavs[0].Mass() != p_int->ISR()->Flav(0).Mass() ||
-          m_flavs[1].Mass() != p_int->ISR()->Flav(1).Mass()) {
-        p_int->ISR()->SetPartonMasses(m_flavs);
-      }
-    }
-  }
-  psh->InitCuts();
+  if (p_int->ISR())
+    p_int->ISR()->SetSprimeMin(psh->Cuts()->Smin());
   return p_int->PSHandler()->OneEvent(this,varmode,mode);
 }
 
@@ -279,7 +272,7 @@ void Single_Process::AddISR(ATOOLS::Cluster_Sequence_Info &csi,
     double yfsW = p_int->YFS()->GetWeight();
     if(IsBad(yfsW)){
       msg_Error()<<"YFS Weight is "<<yfsW<<std::endl;
-    } 
+    }
     csi.AddWeight(yfsW);
   }
   if (p_int->ISR()) {
@@ -1197,6 +1190,8 @@ bool Single_Process::CalculateTotalXSec(const std::string &resultpath,
   }
   psh->CreateIntegrators();
   psh->InitCuts();
+  if (p_int->ISR())
+    p_int->ISR()->SetSprimeMin(psh->Cuts()->Smin());
   p_int->SetResultPath(resultpath);
   p_int->ReadResults();
   exh->AddTerminatorObject(p_int);

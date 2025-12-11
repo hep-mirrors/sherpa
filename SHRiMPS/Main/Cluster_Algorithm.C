@@ -107,7 +107,6 @@ double Cluster_Algorithm::SetShowerScales() {
   size_t nlegs(legs.size());
 
   double kt2, kt2max(0.), sijmax(0.);
-  int connected;
   for (size_t i=2;i<nlegs;i++) {
     kt2 = 0.;
     for (size_t j=2;j<nlegs;j++) {

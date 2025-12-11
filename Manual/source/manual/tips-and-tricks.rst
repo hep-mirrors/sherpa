@@ -126,9 +126,9 @@ with Rivet v4.0.0). This behaviour can be disabled using the ``--skip-merge=1`` 
 If memory-based merging is used, it's possible to veto statistical outliers on the fly
 by specifying a threshold in terms of standard deviation. For example, the option
 ``--outlier-thresholds: [3.0, 5.0]`` would write out additional versions of the
-output file where outlying ranks ("rmrank") or outlying bins ("rmbin") have been
-removed at the 3- and 5-sigma level, respectively. The default output
-file for which no outliers have been removed will always be written out.
+output file where outlying ranks ("rmrank") have been removed at the 3- and 5-sigma level,
+respectively. The default output file for which no outliers have been removed will always
+be written out.
 
 .. _MCFM interface:
 
@@ -455,7 +455,7 @@ necessary and both ``HEPMC_USE_NAMED_WEIGHTS: true`` and
 ``HEPMC_EXTENDED_WEIGHTS: true`` have to enabled. Detailed
 instructions on how to use this information to construct the new event
 weight can be found here
-`<https://sherpa.hepforge.org/doc/ScaleVariations-Sherpa-2.2.0.pdf>`_.
+`<https://zenodo.org/records/16738342/files/ScaleVariations-Sherpa-2.2.0.pdf>`_.
 
 .. _A posteriori scale and PDF variations using the ROOT NTuple Output:
 

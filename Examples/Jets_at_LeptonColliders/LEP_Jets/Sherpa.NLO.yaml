@@ -7,9 +7,10 @@ TAGS:
   YCUT: 2.0
   # tags for ME generators
   LOOPGEN0: Internal
-  LOOPGEN1: <my-loop-gen-for-3j>
-  LOOPGEN2: <my-loop-gen-for-4j>
-  LOOPMGEN: <my=loop-gen-for-massive-2j>
+  LOOPGEN1: OpenLoops
+  LOOPGEN2: OpenLoops
+  # For the 4jet, use MCFM or pplljj from OL
+  #LOOPMGEN: MCFM
 
 # settings for ME generators
 ME_GENERATORS:
@@ -18,7 +19,7 @@ ME_GENERATORS:
   - $(LOOPGEN0)
   - $(LOOPGEN1)
   - $(LOOPGEN2)
-  - $(LOOPMGEN)
+  #- $(LOOPMGEN)
 AMEGIC: {INTEGRATOR: 4}
 
 # model parameters
@@ -44,7 +45,7 @@ PROCESSES:
 - 11 -11 -> 5 -5 93{3}:
     CKKW: pow(10,-$(YCUT)/2.00)*E_CMS
     Order: {QCD: 0, EW: 2}
-    Loop_Generator: $(LOOPMGEN)
+    Loop_Generator: $(LOOPGEN2)
     RS_Enhance_Factor: 10
     2->2:
       NLO_Mode: MC@NLO

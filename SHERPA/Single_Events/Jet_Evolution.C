@@ -34,12 +34,12 @@ void Jet_Evolution::FillPerturbativeInterfaces(Matrix_Element_Handler * me,
 					       const Soft_Collision_Handler_Map * scs,
 					       const Shower_Handler_Map & showers,
 					       REMNANTS::Remnant_Handler_Map & rhs) {
-  REMNANTS::Remnant_Handler * remnants = NULL; 
+  REMNANTS::Remnant_Handler * remnants = NULL;
   if (rhs.find(isr::hard_process)!=rhs.end()) remnants = rhs[isr::hard_process];
   else msg_Error()<<"Error in "<<METHOD<<":\n"
 		  <<"  No remnant handling found for hard part of the process.\n"
 		  <<"  Continue and hope for the best.\n";
-  
+
   Shower_Handler_Map::const_iterator shower = showers.find(isr::hard_process);
   if (shower!=showers.end() && me) {
     m_pertinterfaces["SignalMEs"] = new Perturbative_Interface(me, harddecs, shower->second);
@@ -196,10 +196,13 @@ Jet_Evolution::AttachShowers(Blob *blob, Blob_List *bloblist,
   if (!pertinterface->Shower()->On() ||
       (pertinterface->MEHandler() &&
        pertinterface->MEHandler()->Process()->Info().m_nlomode ==
-           nlo_mode::fixedorder)) {
+       nlo_mode::fixedorder)) {
+    if (!pertinterface->Shower()->On())
+      pertinterface->DefineTrivialInitialConditions(blob);
     AftermathOfNoShower(blob, bloblist);
     Blob * noshowerblob = bloblist->FindLast(btp::Shower);
-    noshowerblob->AddStatus(blob_status::needs_extraQED);
+    if (noshowerblob)
+      noshowerblob->AddStatus(blob_status::needs_extraQED);
     return Return_Value::Nothing;
   }
   int shower(0);
@@ -282,13 +285,24 @@ Jet_Evolution::AttachShowers(Blob *blob, Blob_List *bloblist,
 }
 
 bool Jet_Evolution::AftermathOfNoShower(Blob *blob, Blob_List *bloblist) {
-  Blob *noshowerblob = new Blob();
+  Blob * noshowerblob = new Blob();
   noshowerblob->SetType(btp::Shower);
-  for (size_t i = 0; i < blob->GetInParticles().size(); ++i) {
-    noshowerblob->AddToOutParticles(blob->InParticle(i));
-    noshowerblob->AddToInParticles(new Particle(*blob->InParticle(i)));
-    noshowerblob->InParticle(i)->SetBeam(i);
-    blob->InParticle(i)->SetStatus(part_status::decayed);
+  if (blob->Type()==btp::Hadron_Decay) {
+    Particle * decayer = blob->InParticle(0);
+    blob->RemoveInParticle(decayer);
+    decayer->SetDecayBlob(NULL);
+    noshowerblob->AddToInParticles(decayer);
+    Particle * copy = new Particle(*decayer);
+    noshowerblob->AddToOutParticles(copy);
+    blob->AddToInParticles(copy);
+  }
+  else {
+    for (size_t i = 0; i < blob->GetInParticles().size(); ++i) {
+      noshowerblob->AddToOutParticles(blob->InParticle(i));
+      noshowerblob->AddToInParticles(new Particle(*blob->InParticle(i)));
+      noshowerblob->InParticle(i)->SetBeam(i);
+      blob->InParticle(i)->SetStatus(part_status::decayed);
+    }
   }
   for (size_t i = 0; i < blob->GetOutParticles().size(); ++i) {
     if (blob->OutParticle(i)->DecayBlob())
@@ -297,8 +311,12 @@ bool Jet_Evolution::AftermathOfNoShower(Blob *blob, Blob_List *bloblist) {
     noshowerblob->AddToOutParticles(new Particle(*blob->OutParticle(i)));
     blob->OutParticle(i)->SetStatus(part_status::decayed);
   }
-  noshowerblob->SetStatus(blob_status::needs_beams |
-                          blob_status::needs_hadronization);
+  noshowerblob->SetStatus(blob_status::needs_hadronization);
+  if (blob->Type() == btp::Signal_Process ||
+      blob->Type() == btp::Hard_Collision ||
+      blob->Type() == btp::Soft_Collision) {
+    noshowerblob->AddStatus(blob_status::needs_beams);
+  }
   if (blob->Type() != btp::Hadron_Decay) {
     noshowerblob->AddStatus(blob_status::needs_reconnections);
   }
@@ -306,7 +324,8 @@ bool Jet_Evolution::AftermathOfNoShower(Blob *blob, Blob_List *bloblist) {
   noshowerblob->SetTypeSpec("No_Shower");
   bloblist->push_back(noshowerblob);
   blob->SetStatus(blob_status::inactive);
-  return p_remnants->ExtractShowerInitiators(noshowerblob);
+  return (!noshowerblob->Has(blob_status::needs_beams) ? true :
+	  p_remnants->ExtractShowerInitiators(noshowerblob));
 }
 
 bool Jet_Evolution::AftermathOfSuccessfulShower(Blob *blob, Blob_List *bloblist,

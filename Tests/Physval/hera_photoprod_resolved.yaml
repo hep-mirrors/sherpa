@@ -7,18 +7,21 @@ BEAMS: [-11, 2212]
 BEAM_ENERGIES: [27.5, 820]
 BEAM_SPECTRA: [EPA, Monochromatic]
 
-SCALES: METS{max(16.,H_T2/4)}{max(16.,H_T2/4)}{max(16.,H_T2/4)}
+SCALES: METS{H_T2/4}{H_T2/4}{H_T2/4}
 
 ME_GENERATORS: [Comix, Amegic, OpenLoops]
 NLO_SUBTRACTION_MODE: QCD+QED
 
-SCALE_VARIATIONS: None
+SCALE_VARIATIONS: 4.0*
 
 EPA:
   Q2Max: 1
 
-PARTICLE_DATA: {5: {Massive: true}}
+PARTICLE_DATA: {4: {Massive: true}, 5: {Massive: true}}
 PARTICLE_CONTAINERS:
+  996:
+    Name: C
+    Flavours: [4, -4]
   997:
     Name: B
     Flavours: [5, -5]
@@ -39,13 +42,13 @@ SELECTORS:
 
 ANALYSIS: Rivet
 RIVET:
-  --analyses: ZEUS_2001_S4815815
+  --analyses: ZEUS_2001_I568665
 
 PROCESSES:
-  - 93 93 -> (93,997) (93,997):
+  - 93 93 -> (93,996,997) (93,996,997):
       Order: {QCD: 2, EW: 0}
       NLO_Mode: MC@NLO
-      NLO_Order: {QCD: 1, EW: 0}
+      NLO_Order: { QCD: 1, EW: 0 }
       ME_Generator: Amegic
       RS_ME_Generator: Comix
       Loop_Generator: OpenLoops

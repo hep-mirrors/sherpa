@@ -52,10 +52,12 @@ MI_Handler::MI_Handler(MODEL::Model_Base *model,
 	m_name==string("Shrimps")) InitShrimps(model);
   }
   msg_Info()<<METHOD<<"(id = "<<m_id<<", name = "<<m_name<<", gen = ";
-  if (m_gen==genID::none)         msg_Info()<<"None)\n";
-  else if (m_gen==genID::amisic)  msg_Info()<<"Amisic)\n";
-  else if (m_gen==genID::shrimps) msg_Info()<<"Shrimps)\n";
-  else                            msg_Info()<<"Unkown)\n";
+  switch (m_gen) {
+    case(genID::none): msg_Info()<<"None)\n"; break;
+    case(genID::amisic): msg_Info()<<"Amisic)\n"; break;
+    case(genID::shrimps): msg_Info()<<"Shrimps)\n"; break;
+    default: msg_Info()<<"Unkown)\n"; break;
+  }
 }
 
 MI_Handler::~MI_Handler()
@@ -165,8 +167,12 @@ const double MI_Handler::ScaleMax() const
 
 
 const double MI_Handler::ImpactParameter() const {
-  if (m_gen==genID::amisic)  return p_amisic->B();
-  if (m_gen==genID::shrimps) return p_shrimps->B();
+  /////////////////////////////////////////////////////////////////////////////////
+  // Impact parameter B in AMISIC and SHRIMPS internally given in fm, must be
+  // converted to mm, hence division by 1.e12.
+  /////////////////////////////////////////////////////////////////////////////////
+  if (m_gen==genID::amisic)  return p_amisic->B()/1.e12;
+  if (m_gen==genID::shrimps) return p_shrimps->B()/1.e12;
   return 0.;
 }
 

@@ -134,7 +134,7 @@ namespace SHRIMPS {
     const double & Kappa_k() const { return p_ff2->Kappa(); }
 
     const Form_Factor * FF1() const { return p_ff1; }
-    const Form_Factor * FF2() const { return p_ff1; }
+    const Form_Factor * FF2() const { return p_ff2; }
   };
 }
 
