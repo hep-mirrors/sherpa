@@ -769,6 +769,7 @@ Flavour COMIX::Single_Process::ReMap
   if (fit!=m_fmap.end()) return fit->second.Bar();
   // TODO this fails sometimes --> why?
   ATOOLS::GenerateStackTrace(msg_Out());
+  msg_Out() << "Process: " << m_name << std::endl;
   for (fit = m_fmap.begin(); fit != m_fmap.end(); fit++){
     msg_Out() << ToString(fit->first) << ": " << ToString(fit->second) << std::endl;
   }
