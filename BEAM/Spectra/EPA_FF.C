@@ -415,7 +415,38 @@ EPA_IonApprox::EPA_IonApprox(const ATOOLS::Flavour& beam, const int dir)
     : EPA_FF_Base(beam, dir)
 {
   m_b_pl_threshold = m_bmin * m_R;
-  p_N_xb.reset();
+  FillTables();
+}
+
+void EPA_IonApprox::FillTables()
+{
+  // This is NOT used for the calculation of the flux in the integration,
+  // instead only filled for debugging purposes using the "PlotSpectra" setting
+  axis xaxis(m_nxbins, m_xmin, m_xmax, axis_mode::log);
+  axis baxis(m_nbbins, m_bmin * m_R, m_bmax * m_R, axis_mode::log);
+
+  //////////////////////////////////////////////////////////////////////////////
+  //
+  // N(x,b) is given by the square of the Fourier transform of
+  // kt^2/(kt^2+m^2x^2) F(kt^2+m^2x^2), which leads to a Bessel function.
+  // We assume that the units in the b axis are in 1/GeV
+  //
+  //////////////////////////////////////////////////////////////////////////////
+  msg_Out() << METHOD << " in " << xaxis.m_nbins << " * " << baxis.m_nbins
+            << " bins:\n"
+            << "   x in [" << xaxis.m_xmin << ", " << xaxis.m_xmax << "], "
+            << "b in [" << baxis.m_xmin << ", " << baxis.m_xmax << "], "
+            << "from R = " << m_R << " 1/GeV = " << (m_R * rpa->hBar_c())
+            << " fm.\n";
+  p_N_xb                   = std::make_unique<TwoDim_Table>(xaxis, baxis);
+  for (size_t i = 0; i < xaxis.m_nbins; i++) {
+    for (size_t j = 0; j < baxis.m_nbins; j++) {
+      double chi = xaxis.x(i) * m_mass * baxis.x(j);
+      double val = 2 * m_Zsquared * baxis.x(j) * xaxis.x(i) * m_mass2 *
+             ATOOLS::sqr(ATOOLS::SF.Kn(1, chi));
+      p_N_xb->Fill(i, j, val);
+    }
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
