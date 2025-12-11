@@ -6,6 +6,17 @@ namespace SHERPA {
   class Hadron_Init {
   public:
     void Init();
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+
+  private:
+    void OverrideProperties();
+
+    std::unordered_set<kf_code> m_addedhadrons;
+=======
+>>>>>>> upstream/quarkonia-new
+>>>>>>> rebased-quarkonia-2
   };
 
 }

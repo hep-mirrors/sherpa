@@ -238,6 +238,7 @@ Return_Value::code Multiple_Interactions::Treat(Blob_List *bloblist) {
   if (CheckForMinBias())                 return InitMinBias();
   if (CheckForRescatter())               return InitRescatter();
   if (CheckForMPIs() && !InitMPIs())     return Return_Value::Nothing;
+  //msg_Out()<<"=== "<<METHOD<<": done = "<<p_activeMI->Done()<<"\n";
   if (!p_activeMI || p_activeMI->Done()) return Return_Value::Nothing;
   ////////////////////////////////////////////////////////////////////////////
   // Sanity checks on blob_list: four-momentum is conserved, no blob in there
@@ -367,6 +368,7 @@ void Multiple_Interactions::Finish(const std::string &resultpath) {}
 
 void Multiple_Interactions::CleanUp(const size_t& mode)
 {
+  //msg_Out()<<"=== "<<METHOD<<"("<<int(mode)<<")\n";
   for (MI_Handler_Map::iterator mihit=p_mihandlers->begin();
        mihit!=p_mihandlers->end();mihit++) {
     mihit->second->CleanUp();
@@ -374,4 +376,5 @@ void Multiple_Interactions::CleanUp(const size_t& mode)
   m_vetoed      = false;
   m_newevent[0] = m_newevent[1] = true;
   p_activeMI    = NULL;
+  //msg_Out()<<"================================================\n\n";
 }
