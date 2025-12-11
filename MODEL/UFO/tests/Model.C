@@ -152,9 +152,12 @@ void Test_Standard_Model::FixEWParameters()
     // SM parameters given by alphaQED0, M_W, M_Z, M_H
     ewschemename="alpha(0) scheme, input: 1/\\alphaQED(0), m_W, m_Z, m_h, widths";
     SetAlphaQEDByScale(s["ALPHAQED_DEFAULT_SCALE"].Get<double>());
+    CreateKabbalaFromConst("alpha_QED");
+    msg_Out() << k_constants["alpha_QED"] << std::endl;
     ccos2thetaW=sqr(MW/MZ);
-    csin2thetaW=1.-ccos2thetaW;
-    cvev=2.*MW*sqrt(csin2thetaW/(4.*M_PI*aqed->Default()));
+    k_constants.insert(std::make_pair("COS2THETAW", ccos2thetaW));
+    k_constants.insert(std::make_pair("SIN2THETAW", 1.-Kabbala_Constant("COS2THETAW")));
+    k_constants.insert(std::make_pair("CVEV", 2.*MW*sqrt(Kabbala_Constant("COS2THETAW")/(4.*M_PI*Kabbala_Constant("alpha_QED")))));
     if (widthscheme=="CMS") {
       Complex muW2(MW*(MW-I*GW)), muZ2(MZ*(MZ-I*GZ));
       ccos2thetaW=muW2/muZ2;

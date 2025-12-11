@@ -20,11 +20,17 @@ namespace UFO {
         double nominal = p_proc->LastXS();
         p_proc->SetLookUp(false);
         for (VariationKey var : p_vars->GetVariations()){
+            if (ATOOLS::IsZero(nominal)) {
+                // save some time, fix ratio
+                wgtmap["ParameterVariations"][var.Identifier()] = 0;
+                continue;
+            }
             msg_Debugging() << "switch to " << var;
             UpdateAllCouplings(var);
             double part = Calculate();
-            msg_Debugging() << " nominal: " << nominal << ", current: " << part << std::endl;
-            wgtmap["ParameterVariations"][var.Identifier()] = part/nominal;
+            double weight = part/nominal;
+            msg_Debugging() << " nominal: " << nominal << ", current: " << part << ", weight: " << weight << std::endl;
+            wgtmap["ParameterVariations"][var.Identifier()] = weight;
         }
         // reset to default vertices TODO save nominal param values somewhere
         UpdateAllCouplings(p_vars->Nominal());
