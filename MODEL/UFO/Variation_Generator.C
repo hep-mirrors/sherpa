@@ -18,7 +18,7 @@ namespace UFO {
     */
     void Variation_Generator::GenerateAndFillWeightsMap(ATOOLS::Weights_Map& wgtmap){
         double nominal = p_proc->LastXS();
-        p_proc->SetLookUp(false);
+        //p_proc->SetLookUp(false);
         for (VariationKey var : p_vars->GetVariations()){
             if (ATOOLS::IsZero(nominal)) {
                 // save some time, fix ratio
@@ -34,7 +34,7 @@ namespace UFO {
         }
         // reset to default vertices TODO save nominal param values somewhere
         UpdateAllCouplings(p_vars->Nominal());
-        p_proc->SetLookUp(true);
+        //p_proc->SetLookUp(true);
     }
 
     void Variation_Generator::UpdateAllCouplings(VariationKey key){
