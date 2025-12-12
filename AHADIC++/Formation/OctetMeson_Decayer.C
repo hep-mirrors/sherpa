@@ -127,7 +127,7 @@ bool OctetMeson_Decayer::FixKinematics() {
   // have to check: (Q^2-m1^2/(1-z)-m2^2)^2 + 4m1^2 m2^2/(1-z) >
   // replace with Q^2-m2^2 > m1^2/(1-z) ==> 1-z > m1^2/(Q^2-m2^2) ==> z < zmax =
   // 1-m1^2/(Q^2-m2^2)
-  // m12 = m12 / (1. - z);
+  m12 = m12 / (1. - z);
   double beta2 = 1. / (2. * Q2) *
                  (Q2 - m12 + m22 + sqrt(sqr(Q2 - m12 - m22) + 4. * m12 * m22));
   double alpha2 = m12 / Q2 / (1. - beta2);
