@@ -420,8 +420,8 @@ double Decay_Channel::ME2_NLO(const ATOOLS::Vec4D_Vector& momenta, bool anti,
     for (size_t i(0); i<GetDiagrams().size(); ++i) {
       if (GetDiagrams()[i]->getType() != "LO" && GetDiagrams()[i]->getType() != "R") continue;
       Spin_Amplitudes* Ai=GetDiagrams()[i];
-      for (size_t j(0); j<GetDiagrams().size(); ++j) { // 0?
-        if (GetDiagrams()[i]->getType() != "LO" && GetDiagrams()[i]->getType() != "R") continue;
+      for (size_t j(0); j<GetDiagrams().size(); ++j) {
+        if (GetDiagrams()[j]->getType() != "LO" && GetDiagrams()[j]->getType() != "R") continue;
         Spin_Amplitudes* Aj=GetDiagrams()[j];
   
         // for debugging:

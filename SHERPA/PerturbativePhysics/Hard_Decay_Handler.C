@@ -28,6 +28,7 @@
 #include "EXTRA_XS/One2Three/Comix1to3.H"
 #include "EXTRA_XS/One2Three/H_to_bbg_Real.H"
 #include "EXTRA_XS/One2Three/Massive_Real_Subtraction_Term1.H"
+#include "EXTRA_XS/One2Three/Massive_Real_Subtraction_Term2.H"
 #include "EXTRA_XS/One2Two/H_to_bb_Virtual.H"
 #include "EXTRA_XS/One2Two/Massive_Virtual_Subtraction.H"
 
@@ -571,21 +572,12 @@ offshell (or three-body) decay configurations.
         dc->AddDiagram(diagram2);
 
         Spin_Amplitudes* real_subtraction_term1 = nullptr;
+        real_subtraction_term1 = new Massive_Real_Subtraction_Term1(dc->Flavs(),flavs1[2],propj,propi,nonprop);
+        dc->AddDiagram(real_subtraction_term1);
 
-        /*std::vector<Flavour> sub_flavs;  // the subtraction term has different flavours (remove the gluon)
-        for (size_t i = 0; i < dc->Flavs().size(); ++i) {
-          if(dc->Flavs()[i].IDName() == "G"){
-            continue;
-          }
-          else{
-            sub_flavs.push_back(dc->Flavs()[i]);
-          }
-        } 
-        real_subtraction_term1 = new Massive_Real_Subtraction_Term1(sub_flavs,flavs1[2],propj,propi,nonprop);
-        dc->AddDiagram(real_subtraction_term1);*/
-        Spin_Amplitudes* real_subtraction = nullptr;
-        real_subtraction = new Massive_Real_Subtraction(dc->Flavs(),flavs1[2],propj,propi,nonprop);
-        dc->AddDiagram(real_subtraction);
+        Spin_Amplitudes* real_subtraction_term2 = nullptr;
+        real_subtraction_term2 = new Massive_Real_Subtraction_Term2(dc->Flavs(),flavs1[2],propj,propi,nonprop);
+        dc->AddDiagram(real_subtraction_term2);
       } else {
         diagram = new Comix1to3(dc->Flavs(),flavs1[j],
         nonprop, propi, propj);

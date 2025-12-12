@@ -19,12 +19,22 @@ void Massive_Real_Subtraction_Term1::Calculate_real_subtraction(const ATOOLS::Ve
   double V_gb_bb = V_ijk(p_g, p_b, p_bb, m_prop);
 
   double m2_ij = p_b * p_b; // because m_i = 0 (gluon) and m_b = m_bb
+  double prefactor = V_gb_bb/ ((p_g + p_b)*(p_g + p_b) - m2_ij);
 
-  for (size_t i=0; i<size(); ++i) {
-    std::cout << (*this)[i] << std::endl;
+  double D_gb_bb = prefactor * ME2_Born;
+  subtraction_term = D_gb_bb;
+
+  for (size_t i = 0; i < this->size(); ++i) {
+    (*this)[i] = 0;
   }
 
-  double D_gb_bb = V_gb_bb/ ((p_g + p_b)*(p_g + p_b) - m2_ij) * ME2_Born;
-  
-  subtraction_term = D_gb_bb;
+  // filling this spin-amplitudes object with the correct values:
+  (*this)[0] = born_hel["00"];
+  (*this)[1] = born_hel["10"];
+  (*this)[2] = born_hel["01"];
+  (*this)[3] = born_hel["11"];
+
+  for (size_t i = 0; i < this->size(); ++i) {
+    (*this)[i] *= std::sqrt(prefactor);
+  }
 }
