@@ -351,13 +351,13 @@ operator()(const External_ME_Args &args) const
 	  (fl[0].IsGluon() && fl[1].IsQuark() && fl[2]==fl[1])) &&
 	 fl[3].IsMeson() ) {
       kf_code kfc = fl[3].Kfcode();
-      if (kfc==kf_eta_c_1S || kfc==kf_eta_b) return new XS_qg_q1S0(args);
+      if ((kfc==kf_eta_c_1S && fl[2].Kfcode() == kf_c) || (kfc==kf_eta_b && fl[2].Kfcode() == kf_b)) return new XS_qg_q1S0(args);
     }
     if ( ((fl[0].IsQuark() && fl[1].IsGluon() && fl[3]==fl[0]) ||
 	  (fl[0].IsGluon() && fl[1].IsQuark() && fl[3]==fl[1])) &&
 	 fl[2].IsMeson() ) {
       kf_code kfc = fl[2].Kfcode();
-      if (kfc==kf_eta_c_1S || kfc==kf_eta_b) return new XS_qg_q1S0(args);
+      if ((kfc==kf_eta_c_1S && fl[3].Kfcode() == kf_c) || (kfc==kf_eta_b && fl[3].Kfcode() == kf_b)) return new XS_qg_q1S0(args);
     }
   }
   return NULL;
@@ -410,12 +410,12 @@ operator()(const External_ME_Args &args) const
     if (fl[0].IsQuark() && fl[1].IsQuark() && fl[1]==fl[0].Bar() &&
 	fl[2].IsGluon() && fl[3].IsMeson() ) {
 	    kf_code kfc = fl[3].Kfcode();
-      if (kfc==kf_eta_c_1S || kfc==kf_eta_b) return new XS_qqbar_g1S0(args);
+      if ((kfc==kf_eta_c_1S && abs(fl[1].Kfcode()) == kf_c) || (kfc==kf_eta_b && abs(fl[1].Kfcode()) == kf_b)) return new XS_qqbar_g1S0(args);
     }
     if (fl[0].IsQuark() && fl[1].IsQuark() && fl[1]==fl[0].Bar() &&
 	fl[3].IsGluon() && fl[2].IsMeson() ) {
       kf_code kfc = fl[2].Kfcode();
-      if (kfc==kf_eta_c_1S || kfc==kf_eta_b) return new XS_qqbar_g1S0(args);
+      if ((kfc==kf_eta_c_1S && abs(fl[1].Kfcode()) == kf_c) || (kfc==kf_eta_b && abs(fl[1].Kfcode()) == kf_b)) return new XS_qqbar_g1S0(args);
     }
   }
   return NULL;
@@ -586,7 +586,7 @@ double XS_gg_g3S1::operator()(const Vec4D_Vector& mom)
   double t  = (mom[0]-mom[2]).Abs2();
   double u  = (mom[0]-mom[3]).Abs2();
   double M2 = s+t+u, sM2 = sqr(s-M2), tM2 = sqr(t-M2),  uM2 = sqr(u-M2);
-  m_pref   = (5./9.)*sqr(4.*M_PI)*sqrt(M2)*m_R02; // <<<< it is actually R02, not ldme. Just to keep naming simple for the moment.
+  m_pref   = (5./9.)*sqr(4.*M_PI)*sqrt(M2)*m_R02;
   double all = sqr(s)/(uM2*tM2)+sqr(t)/(uM2*sM2)+sqr(u)/(sM2*tM2);
   // double prefix = 10./(9.*64.);
   // double x = M2/s;
@@ -626,13 +626,15 @@ operator()(const External_ME_Args &args) const
 	  (fl[0].IsGluon() && fl[1].IsQuark() && fl[2]==fl[1])) &&
 	 fl[3].IsMeson() ) {
       kf_code kfc = fl[3].Kfcode();
-      if (kfc==kf_chi_c0_1P ||kfc==kf_chi_b0_1P || kfc==kf_chi_b0_2P) return new XS_qg_q3P0(args);
+      if ((kfc==kf_chi_c0_1P && fl[2].Kfcode() == kf_c) || (kfc==kf_chi_b0_1P && fl[2].Kfcode() == kf_b) ||
+      (kfc==kf_chi_b0_2P && fl[2].Kfcode() == kf_b)) return new XS_qg_q3P0(args);
     }
     if ( ((fl[0].IsQuark() && fl[1].IsGluon() && fl[3]==fl[0]) ||
 	  (fl[0].IsGluon() && fl[1].IsQuark() && fl[3]==fl[1])) &&
 	 fl[2].IsMeson() ) {
       kf_code kfc = fl[2].Kfcode();
-      if (kfc==kf_chi_c0_1P || kfc==kf_chi_b0_1P || kfc==kf_chi_b0_2P) return new XS_qg_q3P0(args);
+      if ((kfc==kf_chi_c0_1P && fl[3].Kfcode() == kf_c) || (kfc==kf_chi_b0_1P && fl[3].Kfcode() == kf_b) || 
+      (kfc==kf_chi_b0_2P && fl[3].Kfcode() == kf_b)) return new XS_qg_q3P0(args);
     }
   }
   return NULL;
@@ -691,12 +693,14 @@ operator()(const External_ME_Args &args) const
     if (fl[0].IsQuark() && fl[1].IsQuark() && fl[1]==fl[0].Bar() &&
 	fl[2].IsGluon() && fl[3].IsMeson() ) {
 	    kf_code kfc = fl[3].Kfcode();
-      if (kfc==kf_chi_c0_1P || kfc==kf_chi_b0_1P || kfc==kf_chi_b0_2P) return new XS_qqbar_g3P0(args);
+      if ((kfc==kf_chi_c0_1P == kf_c && abs(fl[1].Kfcode())== kf_c ) || (kfc==kf_chi_b0_1P && abs(fl[1].Kfcode()) == kf_b)||
+      (kfc==kf_chi_b0_2P&& abs(l[1].Kfcode()) == kf_b)) return new XS_qqbar_g3P0(args);
     }
     if (fl[0].IsQuark() && fl[1].IsQuark() && fl[1]==fl[0].Bar() &&
 	fl[3].IsGluon() && fl[2].IsMeson() ) {
       kf_code kfc = fl[2].Kfcode();
-      if (kfc==kf_chi_c0_1P || kfc==kf_chi_b0_1P || kfc==kf_chi_b0_2P) return new XS_qqbar_g3P0(args);
+      if ((kfc==kf_chi_c0_1P == kf_c && abs(fl[1].Kfcode())== kf_c ) || (kfc==kf_chi_b0_1P && abs(fl[1].Kfcode()) == kf_b)||
+      (kfc==kf_chi_b0_2P&& abs(l[1].Kfcode()) == kf_b)) return new XS_qqbar_g3P0(args);
     }
   }
   return NULL;
@@ -828,13 +832,15 @@ operator()(const External_ME_Args &args) const
 	  (fl[0].IsGluon() && fl[1].IsQuark() && fl[2]==fl[1])) &&
 	 fl[3].IsMeson() ) {
       kf_code kfc = fl[3].Kfcode();
-      if (kfc==kf_chi_c1_1P || kfc==kf_chi_b1_1P || kfc==kf_chi_b1_2P) return new XS_qg_q3P1(args);
+      if ((kfc==kf_chi_c1_1P && fl[2].Kfcode()==kf_c) || (kfc==kf_chi_b1_1P && fl[2].Kfcode()==kf_b) ||
+       (kfc==kf_chi_b1_2P && fl[2].Kfcode()==kf_b)) return new XS_qg_q3P1(args);
     }
     if ( ((fl[0].IsQuark() && fl[1].IsGluon() && fl[3]==fl[0]) ||
 	  (fl[0].IsGluon() && fl[1].IsQuark() && fl[3]==fl[1])) &&
 	 fl[2].IsMeson() ) {
       kf_code kfc = fl[2].Kfcode();
-      if (kfc==kf_chi_c1_1P || kfc==kf_chi_b1_1P || kfc==kf_chi_b1_2P) return new XS_qg_q3P1(args);
+      if ((kfc==kf_chi_c1_1P && fl[3].Kfcode()==kf_c) || (kfc==kf_chi_b1_1P && fl[3].Kfcode()==kf_b) ||
+       (kfc==kf_chi_b1_2P && fl[3].Kfcode()==kf_b)) return new XS_qg_q3P1(args);
     }
   }
   return NULL;
@@ -889,12 +895,14 @@ operator()(const External_ME_Args &args) const
     if (fl[0].IsQuark() && fl[1].IsQuark() && fl[1]==fl[0].Bar() &&
   fl[2].IsGluon() && fl[3].IsMeson() ) {
       kf_code kfc = fl[3].Kfcode();
-      if (kfc==kf_chi_c1_1P || kfc==kf_chi_b1_1P || kfc==kf_chi_b1_2P) return new XS_qqbar_g3P1(args);
+      if ((kfc==kf_chi_c1_1P && abs(fl[1].Kfcode())==kf_c)|| (kfc==kf_chi_b1_1P && abs(fl[1].Kfcode())==kf_b) || 
+      (kfc==kf_chi_b1_2P && abs(fl[1].Kfcode())==kf_b)) return new XS_qqbar_g3P1(args);
     }
     if (fl[0].IsQuark() && fl[1].IsQuark() && fl[1]==fl[0].Bar() &&
   fl[3].IsGluon() && fl[2].IsMeson() ) {
       kf_code kfc = fl[2].Kfcode();
-      if (kfc==kf_chi_c1_1P || kfc==kf_chi_b1_1P || kfc==kf_chi_b1_2P) return new XS_qqbar_g3P1(args);
+      if ((kfc==kf_chi_c1_1P && abs(fl[1].Kfcode())==kf_c)|| (kfc==kf_chi_b1_1P && abs(fl[1].Kfcode())==kf_b) || 
+      (kfc==kf_chi_b1_2P && abs(fl[1].Kfcode())==kf_b)) return new XS_qqbar_g3P1(args);
     }
   }
   return NULL;
@@ -1016,13 +1024,15 @@ operator()(const External_ME_Args &args) const
 	  (fl[0].IsGluon() && fl[1].IsQuark() && fl[2]==fl[1])) &&
 	 fl[3].IsMeson() ) {
       kf_code kfc = fl[3].Kfcode();
-      if (kfc==kf_chi_c2_1P || kfc==kf_chi_b2_1P || kfc==kf_chi_b2_2P) return new XS_qg_q3P2(args);
+      if ((kfc==kf_chi_c2_1P && fl[2].Kfcode()==kf_c) || (kfc==kf_chi_b2_1P && fl[2].Kfcode())==kf_b || 
+      (kfc==kf_chi_b2_2P && fl[2].Kfcode())==kf_b) return new XS_qg_q3P2(args);
     }
     if ( ((fl[0].IsQuark() && fl[1].IsGluon() && fl[3]==fl[0]) ||
 	  (fl[0].IsGluon() && fl[1].IsQuark() && fl[3]==fl[1])) &&
 	 fl[2].IsMeson() ) {
       kf_code kfc = fl[2].Kfcode();
-      if (kfc==kf_chi_c2_1P || kfc==kf_chi_b2_1P || kfc==kf_chi_b2_2P) return new XS_qg_q3P2(args);
+      if ((kfc==kf_chi_c2_1P && fl[3].Kfcode()==kf_c) || (kfc==kf_chi_b2_1P && fl[3].Kfcode())==kf_b || 
+      (kfc==kf_chi_b2_2P && fl[3].Kfcode())==kf_b)return new XS_qg_q3P2(args);
     }
   }
   return NULL;
@@ -1076,12 +1086,14 @@ operator()(const External_ME_Args &args) const
     if (fl[0].IsQuark() && fl[1].IsQuark() && fl[1]==fl[0].Bar() &&
 	fl[2].IsGluon() && fl[3].IsMeson() ) {
 	    kf_code kfc = fl[3].Kfcode();
-      if (kfc==kf_chi_c2_1P || kfc==kf_chi_b2_1P || kfc==kf_chi_b2_2P) return new XS_qqbar_g3P2(args);
+      if ((kfc==kf_chi_c2_1P && abs(fl[1].Kfcode())==kf_c) || (kfc==kf_chi_b2_1P && abs(fl[2].Kfcode())==kf_b) || 
+      (kfc==kf_chi_b2_2P && abs(fl[1].Kfcode())==kf_b)) return new XS_qqbar_g3P2(args);
     }
     if (fl[0].IsQuark() && fl[1].IsQuark() && fl[1]==fl[0].Bar() &&
 	fl[3].IsGluon() && fl[2].IsMeson() ) {
       kf_code kfc = fl[2].Kfcode();
-      if (kfc==kf_chi_c2_1P || kfc==kf_chi_b2_1P || kfc==kf_chi_b2_2P) return new XS_qqbar_g3P2(args);
+      if ((kfc==kf_chi_c2_1P && abs(fl[1].Kfcode())==kf_c) || (kfc==kf_chi_b2_1P && abs(fl[2].Kfcode())==kf_b) || 
+      (kfc==kf_chi_b2_2P && abs(fl[1].Kfcode())==kf_b)) return new XS_qqbar_g3P2(args);
     }
   }
   return NULL;
