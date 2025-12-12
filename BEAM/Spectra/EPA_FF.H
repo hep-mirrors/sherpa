@@ -81,7 +81,7 @@ namespace BEAM {
     void SetPT2Max(const double& pt2max) { m_pt2max = pt2max; }
     void SetQ2Max(const double q2max) { m_q2max = q2max; }
 
-    double Mass() const { return m_beam.Mass(); }
+    double Mass() const { return m_mass; }
     double Radius() const { return m_R; }
     double ImpactParameter() const { return m_b; }
 
