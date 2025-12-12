@@ -79,25 +79,30 @@ void EPA::Initialise()
 
   m_fftype = static_cast<EPA_ff_type>(s["Form_Factor"].GetTwoVector<int>()[b]);
   switch (m_fftype) {
-    case EPA_ff_type::point: p_ff = new EPA_Point(m_beam, m_dir); break;
+    case EPA_ff_type::point:
+      p_ff = new EPA_Point(m_beam, m_dir); break;
     case EPA_ff_type::pointApprox:
-      p_ff = new EPA_PointApprox(m_beam, m_dir);
-      break;
-    case EPA_ff_type::proton: p_ff = new EPA_Proton(m_beam, m_dir); break;
+      p_ff = new EPA_PointApprox(m_beam, m_dir); break;
+    case EPA_ff_type::proton:
+      p_ff = new EPA_Proton(m_beam, m_dir); break;
     case EPA_ff_type::protonApprox:
-      p_ff = new EPA_ProtonApprox(m_beam, m_dir);
-      break;
-    case EPA_ff_type::Gauss: p_ff = new EPA_Gauss(m_beam, m_dir); break;
-    case EPA_ff_type::hcs: p_ff = new EPA_HCS(m_beam, m_dir); break;
-    case EPA_ff_type::dipole: p_ff = new EPA_Dipole(m_beam, m_dir); break;
+      p_ff = new EPA_ProtonApprox(m_beam, m_dir); break;
+    case EPA_ff_type::Gauss:
+      p_ff = new EPA_Gauss(m_beam, m_dir); break;
+    case EPA_ff_type::hcs:
+      p_ff = new EPA_HCS(m_beam, m_dir); break;
+    case EPA_ff_type::dipole:
+      p_ff = new EPA_Dipole(m_beam, m_dir); break;
     case EPA_ff_type::dipoleApprox:
-      p_ff = new EPA_DipoleApprox(m_beam, m_dir);
-      break;
-    case EPA_ff_type::ionApprox: p_ff = new EPA_IonApprox(m_beam, m_dir); break;
+      p_ff = new EPA_DipoleApprox(m_beam, m_dir); break;
+    case EPA_ff_type::ionApprox:
+      p_ff = new EPA_IonApprox(m_beam, m_dir); break;
     case EPA_ff_type::ionApproxInt:
-      p_ff = new EPA_IonApproxIntegrated(m_beam, m_dir);
-      break;
-    case EPA_ff_type::WoodSaxon: p_ff = new EPA_WoodSaxon(m_beam, m_dir); break;
+      p_ff = new EPA_IonApproxIntegrated(m_beam, m_dir); break;
+    case EPA_ff_type::WoodSaxon:
+      p_ff = new EPA_WoodSaxon(m_beam, m_dir); break;
+    case EPA_ff_type::WoodSaxonApprox:
+      p_ff = new EPA_WoodSaxonApprox(m_beam, m_dir); break;
     default: THROW(not_implemented, "unknown EPA form factor. ");
   }
   p_ff->SetPT2Max(m_pt2max);
@@ -124,6 +129,7 @@ void EPA::RegisterDefaults() const
                               ? 0.71
                               : sqr(2. / m_beam.Radius() * rpa->hBar_c()));
   s["WoodSaxon_d"].SetDefault(0.5);
+  s["WoodSaxonApprox_a"].SetDefault(0.7);
   s["AlphaQED"].SetDefault(1. / 137.03599976);
   s["ThetaMax"].SetDefault(0.3);
   s["PlotSpectra"].SetDefault(false);
@@ -195,6 +201,10 @@ void EPA::Tests()
     auto* ff_ion_ws = new EPA_WoodSaxon(Flavour(ion), 0);
     ff_ion_ws->OutputToCSV("ws");
     delete ff_ion_ws;
+    // Woods-Saxon approximation
+    auto* ff_ion_wsApprox = new EPA_WoodSaxonApprox(Flavour(ion), 0);
+    ff_ion_wsApprox->OutputToCSV("wsApprox");
+    delete ff_ion_wsApprox;
     // Ion Approx
     auto* ff_ionApprox = new EPA_IonApprox(Flavour(ion), 0);
     ff_ionApprox->OutputToCSV("ionApprox");

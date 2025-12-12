@@ -25,7 +25,8 @@ namespace BEAM {
     dipole       = 12,
     dipoleApprox = 13,
     WoodSaxon    = 14,
-    ionApprox    = 15,
+    WoodSaxonApprox = 15,
+    ionApprox    = 16,
     Test         = 99
   };
 
@@ -232,6 +233,23 @@ namespace BEAM {
       if (Q2 > p_FF_Q2->GetAxis().m_xmax) return 0.;
       double res = (*p_FF_Q2)(Q2);
       return ATOOLS::IsZero(res) ? 0. : res;
+    }
+  };
+
+  class EPA_WoodSaxonApprox final : public EPA_FF_Base {
+  private:
+    double m_a;
+
+  public:
+    explicit EPA_WoodSaxonApprox(const ATOOLS::Flavour& beam, int dir);
+    double FF(const double& Q2) override
+    {
+      // from eq. 14 in hep-ph/9902259
+      // according to Ilkka, a = r = 0.7 fm
+      // Normalising the form factor/nuclear density can be performed
+      // analytically and it yields \rho_0 = A / 4 / \pi * 3 / R^3
+      const double qR = sqrt(Q2) * m_R;
+      return 3. / std::pow(qR, 3) * (std::sin(qR) - qR * std::cos(qR)) / (1. + ATOOLS::sqr(m_a) * Q2);
     }
   };
 

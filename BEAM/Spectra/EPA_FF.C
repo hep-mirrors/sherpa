@@ -39,8 +39,8 @@ EPA_FF_Base::EPA_FF_Base(const ATOOLS::Flavour& beam, const int dir)
      // note that the particle radius is in fm and transformed into 1/GeV
      //
      //////////////////////////////////////////////////////////////////////////////
-      m_beam(beam), m_A(beam.IsIon() ? beam.GetMassNumber() : 1), m_mass(beam.Mass(true)),
-      m_R(beam.Radius() / rpa->hBar_c()), m_q2min(-1.),
+      m_beam(beam), m_A(beam.IsIon() ? beam.GetMassNumber() : 1),
+      m_mass(beam.Mass(true)), m_R(beam.Radius() / rpa->hBar_c()), m_q2min(-1.),
       m_q2max(1.), m_pt2max(-1.),
       m_Zsquared(beam.IsIon() ? sqr(m_beam.GetAtomicNumber()) : 1.), m_b(0.),
       p_N_xb(nullptr)
@@ -63,7 +63,8 @@ EPA_FF_Base::EPA_FF_Base(const ATOOLS::Flavour& beam, const int dir)
   m_mass2 = ATOOLS::sqr(m_mass);
 
   // Pre-calculate the normalisation of the  distribution \in [bmin, bmax]
-  m_norm_distribution = 0.5 * std::log((ATOOLS::sqr(m_bmax) + 1.) / (ATOOLS::sqr(m_bmin) + 1.));
+  m_norm_distribution = 0.5 * std::log((ATOOLS::sqr(m_bmax) + 1.) /
+                                       (ATOOLS::sqr(m_bmin) + 1.));
 
   if (m_bmin <= 0. || m_bmin > m_bmax)
     THROW(invalid_input, "Unphysical input for EPA impact parameter. ");
@@ -336,16 +337,16 @@ EPA_DipoleApprox::EPA_DipoleApprox(const ATOOLS::Flavour& beam, const int dir)
 ////////////////////////////////////////////////////////////////////////////////
 
 double EPA_WoodSaxon::IntegrateWithAdaptiveRange(
-        const std::function<double(double)>& integrand,
-        double initial_rmax, double tolerance)
+        const std::function<double(double)>& integrand, double initial_rmax,
+        double tolerance)
 {
-  Lambda_Functor functor(&integrand);
+  Lambda_Functor   functor(&integrand);
   Gauss_Integrator gauss(&functor);
 
   double rmin = 0., rmax = initial_rmax;
-  double total_result = gauss.Integrate(rmin, rmax, tolerance);
+  double total_result      = gauss.Integrate(rmin, rmax, tolerance);
   double segment_increment = 0.;
-  int n(0);
+  int    n(0);
 
   // Adaptively extend the integration range until the tail contributes negligibly.
   do {
@@ -354,7 +355,8 @@ double EPA_WoodSaxon::IntegrateWithAdaptiveRange(
     segment_increment = gauss.Integrate(rmin, rmax, tolerance);
     total_result += segment_increment;
     ++n;
-  } while (n < 3 && std::abs(segment_increment) > tolerance * std::abs(total_result));
+  } while (n < 3 &&
+           std::abs(segment_increment) > tolerance * std::abs(total_result) + std::numeric_limits<double>::epsilon());
 
   return total_result;
 }
@@ -393,7 +395,7 @@ void EPA_WoodSaxon::InitFFTable()
 
     // Define the form factor integrand as a lambda inside the loop.
     auto ff_integrand = [this, q](double r) {
-      if (q * r < 1.e-6) { // Numerically stable limit for q*r -> 0
+      if (q * r < 1.e-6) {// Numerically stable limit for q*r -> 0
         return r * r / (1. + std::exp((r - m_R) / m_d));
       }
       return std::sin(q * r) / q * r / (1. + std::exp((r - m_R) / m_d));
@@ -404,6 +406,23 @@ void EPA_WoodSaxon::InitFFTable()
     double form_factor = 4. * M_PI * m_rho0 * ff_integral;
     p_FF_Q2->Fill(i, form_factor);
   }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// Approximation of the Woods-Saxon the Woods-Saxon distribution as a hard
+// sphere, with radius RA, convoluted with a Yukawa potential with
+// range a = 0.7 fm
+////////////////////////////////////////////////////////////////////////////////
+
+EPA_WoodSaxonApprox::EPA_WoodSaxonApprox(const ATOOLS::Flavour& beam,
+                                         const int              dir)
+    : EPA_FF_Base(beam, dir)
+{
+  const auto& s = Settings::GetMainSettings()["EPA"];
+  size_t      b = dir > 0 ? 0 : 1;
+  m_a = s["WoodSaxonApprox_a"].GetTwoVector<double>()[b] / rpa->hBar_c();
+
+  FillTables();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -438,12 +457,12 @@ void EPA_IonApprox::FillTables()
             << "b in [" << baxis.m_xmin << ", " << baxis.m_xmax << "], "
             << "from R = " << m_R << " 1/GeV = " << (m_R * rpa->hBar_c())
             << " fm.\n";
-  p_N_xb                   = std::make_unique<TwoDim_Table>(xaxis, baxis);
+  p_N_xb = std::make_unique<TwoDim_Table>(xaxis, baxis);
   for (size_t i = 0; i < xaxis.m_nbins; i++) {
     for (size_t j = 0; j < baxis.m_nbins; j++) {
       double chi = xaxis.x(i) * m_mass * baxis.x(j);
       double val = 2 * m_Zsquared * baxis.x(j) * xaxis.x(i) * m_mass2 *
-             ATOOLS::sqr(ATOOLS::SF.Kn(1, chi));
+                   ATOOLS::sqr(ATOOLS::SF.Kn(1, chi));
       p_N_xb->Fill(i, j, val);
     }
   }
