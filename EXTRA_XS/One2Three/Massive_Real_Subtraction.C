@@ -19,19 +19,10 @@ Massive_Real_Subtraction::Massive_Real_Subtraction(const vector<Flavour>& flavs,
                      size_t non_prop, size_t gluon, size_t propj) :
   Spin_Amplitudes(flavs,Complex(0.0,0.0)), m_cur_born(3), m_anticur_born(3), m_nhel(4), m_prop(prop), m_non_prop(non_prop), m_gluon(gluon), m_propj(propj)
 {
-  std::vector<Flavour> born_flavs;
-  for (size_t i = 0; i < flavs.size(); ++i) {
-    if(flavs[i].IDName() == "G"){
-      continue;
-    }
-    else{
-      born_flavs.push_back(flavs[i]);
-    }
-  } 
   scale = flavs[0].Mass(); // scale = mass of incoming particle
   CalculateAlphaQCD(scale);
-  SetUpBornCurrents(born_flavs);
-  SetUpBornPrefactor(born_flavs);
+  SetUpBornCurrents(flavs);
+  SetUpBornPrefactor(flavs);
 }
 
 
