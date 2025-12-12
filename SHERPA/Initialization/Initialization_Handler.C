@@ -927,6 +927,7 @@ InitISRHandler(const PDF::isr::id & pid,Settings& settings) {
     }
     PDF_Arguments args = PDF_Arguments(flav,beam,set,version,order,scheme);
     if (pid != PDF::isr::bunch_rescatter) {
+      msg_Out()<<METHOD<<"("<<pid<<"): before getter for set = "<<set<<".\n";
       PDF_Base* pdfbase = PDF_Base::PDF_Getter_Function::GetObject(set, args);
       if (m_bunch_particles[beam].IsHadron() && pdfbase == nullptr)
         THROW(critical_error,
@@ -934,6 +935,11 @@ InitISRHandler(const PDF::isr::id & pid,Settings& settings) {
                       " libraries for " + ToString(m_bunch_particles[beam]) +
                       " bunch.");
       if (pid == PDF::isr::hard_process) rpa->gen.SetPDF(beam, pdfbase);
+      msg_Out()<<METHOD<<"[beam = "<<beam<<", "<<pid<<"]: "
+	       <<m_bunch_particles[beam]<<" --> "<<pdfbase<<"\n"
+	       <<"   from flav = "<<flav<<", set = "<<set<<", "
+	       <<"version = "<<version<<", "
+	       <<"order = "<<order<<", scheme = "<<scheme<<"\n";
       if (pdfbase == nullptr) {
         isrbases[beam] = new Intact(flav);
         needs_resc     = false;
@@ -955,6 +961,9 @@ InitISRHandler(const PDF::isr::id & pid,Settings& settings) {
   }
   if ((pid == PDF::isr::bunch_rescatter && needs_resc) ||
       pid != isr::bunch_rescatter) {
+    msg_Out()<<METHOD<<"["<<pid<<"]: "
+	     <<m_bunch_particles[0]<<" ("<<isrbases[0]<<") & "
+	     <<m_bunch_particles[1]<<" ("<<isrbases[1]<<").\n";
     ISR_Handler* isr = new ISR_Handler(isrbases, pid);
     for (size_t beam = 0; beam < 2; beam++)
       isr->SetBeam(p_beamspectra->GetBeam(beam), beam);
@@ -1092,6 +1101,7 @@ bool Initialization_Handler::InitializeTheUnderlyingEvents()
     isrtypes.push_back(isr::bunch_rescatter);
   for (isr::id id : isrtypes) {
     as->SetActiveAs(isr::hard_subprocess);
+    msg_Out()<<METHOD<<"["<<id<<"]:\n";
     MI_Handler * mih = new MI_Handler(p_model,m_isrhandlers[id], p_yfshandler, m_remnanthandlers[id]);
     mih->SetShowerHandler(m_showerhandlers[id]);
     as->SetActiveAs(isr::hard_process);// really needed?
