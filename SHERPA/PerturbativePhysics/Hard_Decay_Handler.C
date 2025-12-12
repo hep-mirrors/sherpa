@@ -555,7 +555,7 @@ offshell (or three-body) decay configurations.
         else if (l!=nonprop && propi==0) propi=l;
       }
 
-      if (!(bbbar_channel && (sv->in[2].IDName() == "G"))) { // let NLO calculation pass (there is correctly more than one diagram)
+      if (!(bbbar_channel)) { // let NLO calculation pass (there is correctly more than one diagram)
         assert(dc1->GetDiagrams().size()==1); // assert that original two-body decay channel has only one diagram (to catch inconsistencies)
       }
       DEBUG_VAR(dc->Flavs());
