@@ -459,12 +459,25 @@ double Massive_Virtual_Subtraction::CalculateFiniteSubtraction(const ATOOLS::Vec
   double var_E_qq = E_j(p_bb, p_b);
   double m_b = std::sqrt(p_b * p_b);
 
-  double prefactor = born_ME2 * alpha_qcd / (2 * pi);
+  double prefactor = alpha_qcd / (2 * pi);
   double sum1 = (std::log(4 * pi * mu*mu / s_jk) - gamma_E) * (C_F * (C_j(p_b, p_bb) + C_j(p_bb, p_b)));
   double sum2 = var_D_q + var_D_qq + C_F * (var_E_q + var_E_qq - 2 * pi*pi*pi / 3);
   double sum3 = 2 * (A() * (std::log(4 * pi) - gamma_E) + B(m_b, mu) + F(p_b, p_bb, mu));
 
-  return prefactor * (sum1 + sum2 + sum3);
+  for (size_t i=0; i<size(); ++i) { // reset values of spin_amplitude object
+     (*this)[i] = Complex(0.0, 0.0);
+  }
+  
+  (*this)[0] = born_hel["00"];
+  (*this)[1] = born_hel["10"];
+  (*this)[2] = born_hel["01"];
+  (*this)[3] = born_hel["11"];
+
+  for (size_t i=0; i<size(); ++i) {
+   (*this)[i] *= std::sqrt(prefactor * (sum1 + sum2 + sum3));
+  }
+
+  return born_ME2 * prefactor * (sum1 + sum2 + sum3);
 }
 
 
