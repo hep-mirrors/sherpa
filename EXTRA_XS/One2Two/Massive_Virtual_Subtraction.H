@@ -26,13 +26,14 @@ namespace EXTRAXS {
     double BornPrefactor;
     PHASIC::Color_Integrator* p_ci;
     double finite_sub;
+    std::map<std::string, std::complex<double>> born_hel;
 
     size_t NHel(const ATOOLS::Flavour& fl) const;
     void SetUpBornCurrents(const std::vector<ATOOLS::Flavour>& flavs);
     std::pair<std::vector<std::pair<METOOLS::CSpinor<double>*, int>>,
           std::vector<std::pair<METOOLS::CSpinor<double>*, int>>> CalculateBornSpinors(const ATOOLS::Vec4D_Vector& momenta, bool anti);
     void SetUpBornPrefactor(const std::vector<ATOOLS::Flavour>& flavs);
-    std::map<std::string, std::complex<double>> CalculateBorn(const ATOOLS::Vec4D_Vector& momenta, bool anti=false);
+    void CalculateBorn(const ATOOLS::Vec4D_Vector& momenta, bool anti=false);
   protected:
     double alpha_qcd;
   public:

@@ -132,8 +132,8 @@ void Massive_Virtual_Subtraction::SetUpBornCurrents(const vector<Flavour>& flavs
 
 
 void Massive_Virtual_Subtraction::Calculate(const ATOOLS::Vec4D_Vector& momenta, bool anti){
-  std::map<std::string, std::complex<double>> born = CalculateBorn(momenta, anti); 
-  double ME2_Born = 3 * std::real(born["00"] * std::conj(born["00"]) + born["01"] * std::conj(born["01"]) + born["10"] * std::conj(born["10"]) + born["11"] * std::conj(born["11"]));
+  CalculateBorn(momenta, anti); 
+  double ME2_Born = 3 * std::real(born_hel["00"] * std::conj(born_hel["00"]) + born_hel["01"] * std::conj(born_hel["01"]) + born_hel["10"] * std::conj(born_hel["10"]) + born_hel["11"] * std::conj(born_hel["11"]));
 
   finite_sub = CalculateFiniteSubtraction(momenta, ME2_Born);
   double epsilon_sub = CalculateEpsilonSubtraction(momenta, ME2_Born);
@@ -205,7 +205,7 @@ std::pair<std::vector<std::pair<METOOLS::CSpinor<double>*, int>>,
 }
 
 
-std::map<std::string, std::complex<double>> Massive_Virtual_Subtraction::CalculateBorn(const ATOOLS::Vec4D_Vector& momenta, bool anti){
+void Massive_Virtual_Subtraction::CalculateBorn(const ATOOLS::Vec4D_Vector& momenta, bool anti){
   typedef METOOLS::CSpinor<double> DDSpin;
   typedef std::pair<DDSpin*, int> SpinorWithHel;
   typedef std::vector<SpinorWithHel> SpinorVecWithHel;
@@ -253,13 +253,10 @@ std::map<std::string, std::complex<double>> Massive_Virtual_Subtraction::Calcula
   }
   born_11 *= BornPrefactor;
 
-  std::map<std::string, C> born_hel;
   born_hel["00"]  = born_00;
   born_hel["01"]  = born_01;
   born_hel["10"]  = born_10;
   born_hel["11"]  = born_11;
-
-  return born_hel;
 }
 
 
