@@ -473,8 +473,11 @@ double Massive_Virtual_Subtraction::CalculateFiniteSubtraction(const ATOOLS::Vec
   (*this)[2] = born_hel["01"];
   (*this)[3] = born_hel["11"];
 
+  std::complex<double> coeff(0.0, 0.0);
+  coeff += prefactor * (sum1 + sum2 + sum3) * 3;  // 3 = colour factor
+
   for (size_t i=0; i<size(); ++i) {
-   (*this)[i] *= std::sqrt(prefactor * (sum1 + sum2 + sum3));
+   (*this)[i] *= std::sqrt(coeff);
   }
 
   return born_ME2 * prefactor * (sum1 + sum2 + sum3);
