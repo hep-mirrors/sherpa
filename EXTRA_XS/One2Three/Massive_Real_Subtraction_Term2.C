@@ -19,7 +19,22 @@ void Massive_Real_Subtraction_Term2::Calculate_real_subtraction(const ATOOLS::Ve
 
   double V_gbb_b = V_ijk(p_g, p_bb, p_b, m_prop);
 
-  double D_gbb_b = V_gbb_b/ ((p_g + p_bb)*(p_g + p_bb) - m2_ij) * ME2_Born;
+  double prefactor = V_gbb_b/ ((p_g + p_b)*(p_g + p_b) - m2_ij);
+  double D_gbb_b = prefactor * ME2_Born;
   
   subtraction_term = D_gbb_b;
+  
+  for (size_t i = 0; i < this->size(); ++i) {
+    (*this)[i] = 0;
+  }
+
+  // filling this spin-amplitudes object with the correct values:
+  (*this)[0] = born_hel["00"];
+  (*this)[1] = born_hel["10"];
+  (*this)[2] = born_hel["01"];
+  (*this)[3] = born_hel["11"];
+
+  for (size_t i = 0; i < this->size(); ++i) {
+    (*this)[i] *= std::sqrt(prefactor * 3);   // * 3 for born colour factor
+  }
 }
