@@ -523,10 +523,10 @@ void H_to_bb_Virtual::Calculate(const ATOOLS::Vec4D_Vector& momenta, bool anti){
 
   // 1/epsilon part
   std::complex<double> BV_e = born["00"] * std::conj(v_epsilon["00"]) + born["01"] * std::conj(v_epsilon["01"]) + born["10"] * std::conj(v_epsilon["10"]) + born["11"] * std::conj(v_epsilon["11"]);
-  double v_correction_e = colour_factor * 2 * std::real(BV_e);
+  v_correction_e = colour_factor * 2 * std::real(BV_e);
 
   std::complex<double> BV_e2 = born["00"] * std::conj(v_epsilon2["00"]) + born["01"] * std::conj(v_epsilon2["01"]) + born["10"] * std::conj(v_epsilon2["10"]) + born["11"] * std::conj(v_epsilon2["11"]);
-  double v_correction_e2 = colour_factor * 2 * std::real(BV_e2);
+  v_correction_e2 = colour_factor * 2 * std::real(BV_e2);
 
   // 1/epsilon^2 part = 0 for H -> bb, because b is massive.
   const double epsilon_tol = 1e-12;
@@ -536,8 +536,12 @@ void H_to_bb_Virtual::Calculate(const ATOOLS::Vec4D_Vector& momenta, bool anti){
         + std::to_string(v_correction_e2));
   }
 
-  // todo: write finite in spin amplitudes form 
-  // todo: write getter for epsilon term
+  // fill this Spin Amplitudes object with values
+  (*this)[0] = v_finite["00"];
+  (*this)[1] = v_finite["10"];
+  (*this)[2] = v_finite["01"];
+  (*this)[3] = v_finite["11"];
+
   // todo: make sure that epsilon terms cancel; Write check/ warning, if they don't cancel
 }
 
@@ -549,6 +553,16 @@ std::string H_to_bb_Virtual::getType(){
 
 double H_to_bb_Virtual::get_NLO_ME2(){
   return v_correction_f;
+}
+
+
+double H_to_bb_Virtual::get_epsilon_pole(){
+  return v_correction_e;
+}
+
+
+double H_to_bb_Virtual::get_epsilon2_pole(){
+  return v_correction_e2;
 }
 
 

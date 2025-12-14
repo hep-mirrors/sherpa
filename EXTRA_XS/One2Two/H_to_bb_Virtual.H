@@ -30,6 +30,8 @@ namespace EXTRAXS {
     std::array<std::array<std::complex<double>, 4>, 4> M_epsilon2;
     PHASIC::Color_Integrator* p_ci;
     double v_correction_f;
+    double v_correction_e;
+    double v_correction_e2;
 
     size_t NHel(const ATOOLS::Flavour& fl) const;
     void SetUpCurrents(const std::vector<ATOOLS::Flavour>& flavs) override;
@@ -50,6 +52,8 @@ namespace EXTRAXS {
     void Calculate(const ATOOLS::Vec4D_Vector& momenta, bool anti=false) override;
     double get_NLO_ME2();
     std::string getType() override;
+    double get_epsilon_pole();
+    double get_epsilon2_pole();
   };
 }
 
