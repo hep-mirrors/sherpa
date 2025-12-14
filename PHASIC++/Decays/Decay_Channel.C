@@ -406,13 +406,27 @@ double Decay_Channel::ME2_NLO(const ATOOLS::Vec4D_Vector& momenta, bool anti,
       }
     }
 
-    p_amps=new Amplitude2_Tensor(p,0,leading_diagrams,spin_i, spin_j);
+    p_amps = new Amplitude2_Tensor(p,0,leading_diagrams,spin_i, spin_j);
 
-    //for(size_t i(0); i<GetDiagrams().size(); ++i) {
-    // *p_amps = GetDiagrams()[i]->AddNLOTensor(*p_amps); // override amplitude tensor: add NLO parts to it
-    //}
+    std::vector<METOOLS::Amplitude2_Tensor*> NLO_tensor_list;  // build the Amplitude2_Tensor for S resp. I
+    for (size_t i = 0; i < GetDiagrams().size(); ++i) {
+      METOOLS::Spin_Amplitudes* diag = GetDiagrams()[i];
+      const std::string& type = diag->getType();
+      if (type == "S" || type == "I") {
+        std::vector<METOOLS::Spin_Amplitudes*> single_diag_list{ diag }; // to create Amplitude2_Tensor, the diagram needs to be in a list. S, I and V are seperate Amplitude2_Tensor objects.
+        METOOLS::Amplitude2_Tensor* NLO_tensor = new Amplitude2_Tensor(p, 0, single_diag_list, spin_i, spin_j);
+
+        NLO_tensor_list.push_back(NLO_tensor);
+      }
+    }
+
     DEBUG_VAR(*p_amps);
     sumijlambda_AiAj=(*sigma)*p_amps->ReduceToMatrix(sigma->Particle());
+
+    for (size_t i = 0; i < NLO_tensor_list.size(); ++i) {    // reducee NLO Amplitude2_Tensor
+      sumijlambda_AiAj += (*sigma)*NLO_tensor_list[i]->ReduceToMatrix(sigma->Particle());
+    }
+
   }
   else {
     // Calculates either the Born ME2 or the Real diagrams. Skip V, I, S here (all elements of B, V, I, R, S have to be calculated seperately).
