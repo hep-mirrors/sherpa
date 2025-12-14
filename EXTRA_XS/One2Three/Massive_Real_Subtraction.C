@@ -388,11 +388,6 @@ std::pair<std::vector<std::pair<METOOLS::CSpinor<double>*, int>>,
 }
 
 
-METOOLS::Amplitude2_Tensor Massive_Real_Subtraction::AddNLOTensor(METOOLS::Amplitude2_Tensor old_tensor){
-  return old_tensor;
-}
-
-
 std::string Massive_Real_Subtraction::getType(){
   return "S";
 }

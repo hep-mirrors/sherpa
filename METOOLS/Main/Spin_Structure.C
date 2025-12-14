@@ -69,10 +69,6 @@ std::string METOOLS::Spin_Amplitudes::getType(){
   return "LO";
 }
 
-
-METOOLS::Amplitude2_Tensor Spin_Amplitudes::AddNLOTensor(METOOLS::Amplitude2_Tensor old_tensor){
-  return old_tensor;
-}
 /*
 const PHASIC::Color_Integrator* Spin_Amplitudes::GetColors() const {
   msg_Error()<<METHOD<<": Virtual function called."<<endl;

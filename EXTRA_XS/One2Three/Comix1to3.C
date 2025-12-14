@@ -153,12 +153,6 @@ double Comix1to3::get_NLO_ME2(){
 }
 
 
-METOOLS::Amplitude2_Tensor Comix1to3::AddNLOTensor(METOOLS::Amplitude2_Tensor old_tensor){
-  return old_tensor;
-}
-
-
-
 void Comix1to3::Calculate(const ATOOLS::Vec4D_Vector& momenta, bool anti) {
   DEBUG_FUNC(momenta.size());
   // create a new integration point for the color factors

@@ -164,11 +164,6 @@ double Comix1to2::get_NLO_ME2(){
 }
 
 
-METOOLS::Amplitude2_Tensor Comix1to2::AddNLOTensor(METOOLS::Amplitude2_Tensor old_tensor){
-  return old_tensor;
-}
-
-
 std::string Comix1to2::getType(){
   return "LO";
 }

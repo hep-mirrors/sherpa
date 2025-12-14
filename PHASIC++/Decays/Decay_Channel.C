@@ -457,7 +457,7 @@ double Decay_Channel::ME2_NLO(const ATOOLS::Vec4D_Vector& momenta, bool anti,
     NLO_part *= 15.0/8.0;
   }
   double value=sumijlambda_AiAj.real();
-  if(!sigma){  // if sigma: NLO_Part was already added by AddNLOTensor above, does not need to be added again
+  if(!sigma){  // if sigma: NLO_Part was already added above, does not need to be added again
     value += NLO_part;
   }
   value /= double(GetDecaying().IntSpin()+1);
