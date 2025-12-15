@@ -217,8 +217,10 @@ namespace BEAM {
 
   class EPA_WoodSaxon final : public EPA_FF_Base {
   private:
-    double                                m_d, m_rho0;
+    double                                m_d, m_R_WS, m_rho0;
     std::unique_ptr<ATOOLS::OneDim_Table> p_FF_Q2;
+    static constexpr double               m_q2_min = 1.e-8, m_q2_max = 1.e1;
+    static constexpr int                  m_q2_n = 1e7;
 
     static double IntegrateWithAdaptiveRange(const std::function<double(double)>& integrand,
         double initial_rmax, double tolerance);
@@ -229,8 +231,8 @@ namespace BEAM {
     EPA_WoodSaxon(const ATOOLS::Flavour& beam, int dir);
     double FF(const double& Q2) override
     {
-      if (Q2 < p_FF_Q2->GetAxis().m_xmin) return 1.;
-      if (Q2 > p_FF_Q2->GetAxis().m_xmax) return 0.;
+      if (Q2 < m_q2_min) return 1.;
+      if (Q2 > m_q2_max) return 0.;
       double res = (*p_FF_Q2)(Q2);
       return ATOOLS::IsZero(res) ? 0. : res;
     }
