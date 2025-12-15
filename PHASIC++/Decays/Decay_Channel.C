@@ -317,7 +317,7 @@ double Decay_Channel::ME2(const ATOOLS::Vec4D_Vector& momenta, bool anti,
 
 
 bool Decay_Channel::isNLO(){
-  /* Checks, if the diagram is an NLO diagram. Otherwise, it is LO.*/
+  /* Checks, if one of the diagrams is an NLO diagram. Then use NLO methods for this decay channel.*/
   bool isNLO = false;
   for(size_t i(0); i<GetDiagrams().size(); ++i) {
     if (GetDiagrams()[i]->IsNLODecay()) isNLO = true;
@@ -447,17 +447,11 @@ double Decay_Channel::ME2_NLO(const ATOOLS::Vec4D_Vector& momenta, bool anti,
       }
     }
 
-    for (size_t j = 0; j < GetDiagrams().size(); ++j) {
-      std::cout << "Type: " << GetDiagrams()[j]->getType() << std::endl;
-    }
-
-
     DEBUG_VAR(*p_amps);
     sumijlambda_AiAj=(*sigma)*p_amps->ReduceToMatrix(sigma->Particle());
 
     for (size_t i = 0; i < NLO_tensor_list.size(); ++i) {    // reduce NLO Amplitude2_Tensor
       sumijlambda_AiAj += (*sigma)*NLO_tensor_list[i]->ReduceToMatrix(sigma->Particle());
-      std::cout << "sumijlambda_AiAj: " << NLO_tensor_list[i]->ReduceToMatrix(sigma->Particle()) << std::endl;
     }
 
     for (size_t i = 0; i < NLO_tensor_list.size(); ++i) {
@@ -490,9 +484,6 @@ double Decay_Channel::ME2_NLO(const ATOOLS::Vec4D_Vector& momenta, bool anti,
   if (!IsZero(sumijlambda_AiAj.imag(),1.0e-6)) {
     PRINT_INFO("Sum-Squaring matrix element yielded imaginary part.");
     PRINT_VAR(sumijlambda_AiAj);
-  }
-  if(GetDiagrams()[1]->getType() == "S"){
-    NLO_part *= 15.0/8.0;
   }
   double value=sumijlambda_AiAj.real();
   if(!sigma){  // if sigma: NLO_Part was already added above, does not need to be added again

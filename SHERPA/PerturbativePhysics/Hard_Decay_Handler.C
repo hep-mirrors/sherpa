@@ -393,8 +393,17 @@ void Hard_Decay_Handler::InitializeOffshellDecays(Decay_Table* dt) {
     // ResolveDecay attempts to generate additional (offshell or three-body) decay channel configurations that may arise 
     // from the original two-body decay represented by dc, and returns them in a vector of Decay_Channel pointers.
     vector<Decay_Channel*> new_dcs=ResolveDecay(dc); 
+
+    bool nlo_dc = false;
+    for (size_t k=0; k<new_dcs.size(); ++k){  // check of one of the resolved dc is NLO. Then: don't delete original dc (is also NLO), don't delete NLO dc
+      if (new_dcs[k]->isNLO()) nlo_dc = true;
+      break;
+    }
+
     if (TriggerOffshell(dc, new_dcs)) { // checks if the decay channel is offshell
-      dc->SetActiveAll(-1);             // deactivate the original decay channel
+      if (!(nlo_dc)){ 
+        dc->SetActiveAll(-1);           // deactivate the original decay channel if not NLO
+      }
       for (size_t j=0; j<new_dcs.size(); ++j) {
         // check for duplicates
         Decay_Channel* dup=dt->GetDecayChannel(new_dcs[j]->Flavs());
@@ -423,7 +432,17 @@ void Hard_Decay_Handler::InitializeOffshellDecays(Decay_Table* dt) {
     else { // offshell decay not triggered
       DEBUG_INFO("Keeping factorised.");
       for (size_t j=0; j<new_dcs.size(); ++j) {
-        if (new_dcs[j]) new_dcs[j]->SetActiveAll(-1); // mark all new decay channels as inactive
+        if (!(new_dcs[j]->isNLO())){  // only deactivate resolved dc if it's not NLO
+          if (new_dcs[j]) new_dcs[j]->SetActiveAll(-1); // mark all new decay channels as inactive
+        }
+      }
+      for (size_t l=0; l<new_dcs.size(); ++l){  // check of one of the resolved dc is NLO. Then: don't delete original dc (is also NLO), don't delete NLO dc
+        if (new_dcs[l]->isNLO()){
+          DEBUG_INFO("Adding "<<new_dcs[l]->Name());
+          auto s = Settings::GetMainSettings()["HARD_DECAYS"]["Channels"][new_dcs[l]->IDCode()];
+          new_dcs[l]->SetActive(s["Status"].SetDefault(new_dcs[l]->Active()).GetVector<int>());
+          dt->AddDecayChannel(new_dcs[l]);
+        }
       }
     }
   }

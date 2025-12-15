@@ -49,7 +49,6 @@ namespace PHASIC {
                         METOOLS::Spin_Density* sigma=NULL,
                         const std::vector<ATOOLS::Particle*>& p=
                           std::vector<ATOOLS::Particle*>());
-    bool isNLO();
     double ME2(const ATOOLS::Vec4D_Vector& momenta, bool anti,
                METOOLS::Spin_Density* sigma=NULL,
                const std::vector<ATOOLS::Particle*>& p=
@@ -104,6 +103,7 @@ namespace PHASIC {
     void AddDecayProduct(const ATOOLS::Flavour & flout,const bool & sort=true);
     inline void SetWidth(const double & width) { m_width =width; }
     inline void SetDeltaWidth(const double & delta) { m_deltawidth=delta; }
+    bool isNLO();
 
     std::string Name() const;
     std::string IDCode() const;
