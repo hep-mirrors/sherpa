@@ -37,19 +37,28 @@ Amplitude2_Tensor::Amplitude2_Tensor(const std::vector<ATOOLS::Particle*>& parts
 
 Amplitude2_Tensor::Amplitude2_Tensor(const std::vector<ATOOLS::Particle*>& parts,
                                      size_t level,
-                                     const std::vector<Spin_Amplitudes*>& diagrams,
+                                     const std::vector<Spin_Amplitudes*>& diagrams1,
+                                     const std::vector<Spin_Amplitudes*>& diagrams2,
                                      std::vector<int>& spin_i,
-                                     std::vector<int>& spin_j) :
+                                     std::vector<int>& spin_j, double factor) :
   p_next(NULL), m_value(-1.0,0.0), p_part(NULL), m_nhel(0)
 {
   if (level>parts.size()) THROW(fatal_error, "Internal error 1");
 
   if (level==parts.size()) {
     m_value=Complex(0.0, 0.0);
-    for (size_t i(0); i<diagrams.size(); ++i) {
-      for (size_t j(0); j<diagrams.size(); ++j) {
-        m_value+=diagrams[i]->Get(spin_i)*
-          conj(diagrams[j]->Get(spin_j));
+    for (size_t i(0); i<diagrams1.size(); ++i) {
+      for (size_t j(0); j<diagrams2.size(); ++j) {
+        if (diagrams1==diagrams2){
+          m_value+=diagrams1[i]->Get(spin_i) *
+                   conj(diagrams1[j]->Get(spin_j)) * factor;
+        }
+        else{
+          m_value+=diagrams1[i]->Get(spin_i) *
+                   conj(diagrams2[j]->Get(spin_j)) * factor;
+          m_value+= diagrams2[j]->Get(spin_i) * conj(diagrams1[i]->Get(spin_j))
+                    * factor;
+        }
       }
     }
   }
@@ -64,9 +73,21 @@ Amplitude2_Tensor::Amplitude2_Tensor(const std::vector<ATOOLS::Particle*>& parts
       spin_i[level]=(i%m_nhel);
       spin_j[level]=(i/m_nhel);
       (*p_next)[i]=new Amplitude2_Tensor(parts, level+1,
-                                         diagrams, spin_i, spin_j);
+                                         diagrams1, diagrams2, spin_i, spin_j,
+                                         factor);
     }
   }
+}
+
+
+Amplitude2_Tensor::Amplitude2_Tensor(const std::vector<ATOOLS::Particle*>& parts,
+                                     size_t level,
+                                     const std::vector<Spin_Amplitudes*>& diagrams,
+                                     std::vector<int>& spin_i,
+                                     std::vector<int>& spin_j) :
+                                     Amplitude2_Tensor(parts, level, diagrams,
+                                                       diagrams, spin_i, spin_j)
+{
 }
 
 
@@ -74,7 +95,9 @@ Amplitude2_Tensor::Amplitude2_Tensor(const std::vector<ATOOLS::Particle*>& parts
                                      const std::vector<int>& permutation,
                                      size_t level,
                                      const std::vector<Spin_Amplitudes>& diagrams,
-                                     std::vector<int>& spin_i, std::vector<int>& spin_j) :p_next(NULL), m_value(-1.0,0.0), p_part(NULL), m_nhel(0)
+                                     std::vector<int>& spin_i, std::vector<int>&
+                                     spin_j) :p_next(NULL), m_value(-1.0,0.0),
+                                     p_part(NULL), m_nhel(0)
 {
   if (level>parts.size()) THROW(fatal_error, "Internal error 1");
 
@@ -171,18 +194,19 @@ Complex Amplitude2_Tensor::ContractRemaining
       spin_j_perm[p]=spin_j[permutation[p]];
     }
     for (size_t i(0); i<diagrams1.size(); ++i) {
-      if (diagrams1==diagrams2) {
-        ret += diagrams1[i].Get(spin_i_perm) *
-               conj(diagrams1[i].Get(spin_j_perm)) * factor;
-      }
-      else{
-        // TODO: What is the better definition of the polarization interference terms: keeping the polarization of the
-        //       matrix element and complex conjugate matrix element or keeping helicity of LO and Virt ME for the
-        //       two terms that are added here
-        ret += diagrams1[i].Get(spin_i_perm) *
-               conj(diagrams2[i].Get(spin_j_perm)) * factor;
-        ret += diagrams2[i].Get(spin_i_perm) *
-               conj(diagrams1[i].Get(spin_j_perm)) * factor;
+      for (size_t j(0); j<diagrams2.size(); ++j) {
+        if (diagrams1==diagrams2) {
+          ret += diagrams1[i].Get(spin_i_perm) *
+                 conj(diagrams1[j].Get(spin_j_perm)) * factor;
+        }
+        else{
+          // spin combination as to stay the same for M and conj(M) to ensure
+          // correct combination with decay matrix elements
+          ret += diagrams1[i].Get(spin_i_perm) *
+                 conj(diagrams2[j].Get(spin_j_perm)) * factor;
+          ret += diagrams2[j].Get(spin_i_perm) *
+                 conj(diagrams1[i].Get(spin_j_perm)) * factor;
+        }
       }
     }
   }

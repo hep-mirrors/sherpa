@@ -41,6 +41,12 @@ namespace METOOLS {
                       std::vector<int>& spin_i, std::vector<int>& spin_j);
     // Amplitude2_Tensor for diagram interference terms, i.e. virtual corrections
     Amplitude2_Tensor(const std::vector<ATOOLS::Particle*>& parts,
+                      size_t level,
+                      const std::vector<Spin_Amplitudes*>& diagrams1,
+                      const std::vector<Spin_Amplitudes*>& diagrams2,
+                      std::vector<int>& spin_i,
+                      std::vector<int>& spin_j, double factor=1.0);
+    Amplitude2_Tensor(const std::vector<ATOOLS::Particle*>& parts,
                       const std::vector<int>& permutation,
                       size_t level,
                       const std::vector<Spin_Amplitudes>& diagrams1,
