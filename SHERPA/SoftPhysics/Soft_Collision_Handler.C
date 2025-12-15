@@ -113,6 +113,7 @@ Soft_Collision_Handler::GenerateBunchRescatter(ATOOLS::Blob_List * blobs) {
   Blob * soft;
   switch (outcome) {
   case 1:
+    msg_Out()<<"WTF?\n"; exit(1);
     soft = new Blob();
     soft->SetType(btp::Soft_Collision);
     soft->AddStatus(blob_status::needs_beamRescatter);

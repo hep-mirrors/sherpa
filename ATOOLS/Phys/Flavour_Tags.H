@@ -424,18 +424,23 @@
 #define      kf_1S0_b_8_eta_b        990000551
 #define      kf_1S0_b_8_Upsilon_1S   990000553
 #define      kf_1S0_b_8_Upsilon_2S   990100553
+#define      kf_1S0_b_8_Upsilon_3S   990200553
 #define      kf_3S1_b_8_eta_b        991000551
 #define      kf_3S1_b_8_Upsilon_1S   991000553
 #define      kf_3S1_b_8_Upsilon_2S   991100553
+#define      kf_3S1_b_8_Upsilon_3S   991200553   
 #define      kf_3S1_b_8_chi_b0_1P    991010551
 #define      kf_3S1_b_8_chi_b1_1P    991020553
 #define      kf_3S1_b_8_chi_b2_1P    991000555
 #define      kf_3P0_b_8_Upsilon_1S   992000553
 #define      kf_3P0_b_8_Upsilon_2S   992100553
+#define      kf_3P0_b_8_Upsilon_3S   992200553
 #define      kf_3P1_b_8_Upsilon_1S   993000553
 #define      kf_3P1_b_8_Upsilon_2S   993100553
+#define      kf_3P1_b_8_Upsilon_3S   993200553
 #define      kf_3P2_b_8_Upsilon_1S   994000555
 #define      kf_3P2_b_8_Upsilon_2S   994100555
+#define      kf_3P2_b_8_Upsilon_3S   994200553
 // hadrons we do not (yet) use with dodgy naming
 // #define      kf_Sigma_c_2455            204112
 // #define      kf_Lambda_c_plus           204122

@@ -123,6 +123,8 @@ bool MI_Handler::VetoScatter(Blob *blob)
 
 void MI_Handler::Reset()
 {
+  //msg_Out()<<"--- "<<METHOD<<"\n"
+  //	   <<"-------------------------------------------------------------\n";
   m_stop = false;
   if (m_gen==genID::amisic) p_amisic->Reset();
   for (short unsigned int i=0;i<2;++i) {
@@ -134,6 +136,8 @@ void MI_Handler::Reset()
 
 void MI_Handler::CleanUp()
 {
+  //msg_Out()<<"--- "<<METHOD<<"\n"
+  //	   <<"-------------------------------------------------------------\n";
   m_stop           = false;
   m_firstrescatter = (m_id==PDF::isr::bunch_rescatter) ? true : false;
   if (m_gen==genID::amisic)  p_amisic->CleanUp();
