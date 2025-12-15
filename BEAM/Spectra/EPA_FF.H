@@ -219,7 +219,7 @@ namespace BEAM {
   private:
     double                                m_d, m_R_WS, m_rho0;
     std::unique_ptr<ATOOLS::OneDim_Table> p_FF_Q2;
-    static constexpr double               m_q2_min = 1.e-8, m_q2_max = 1.e1;
+    static constexpr double               m_q2_min = 1.e-12, m_q2_max = 1.e1;
     static constexpr int                  m_q2_n = 1e7;
 
     static double IntegrateWithAdaptiveRange(const std::function<double(double)>& integrand,
@@ -233,14 +233,13 @@ namespace BEAM {
     {
       if (Q2 < m_q2_min) return 1.;
       if (Q2 > m_q2_max) return 0.;
-      double res = (*p_FF_Q2)(Q2);
-      return ATOOLS::IsZero(res) ? 0. : res;
+      return (*p_FF_Q2)(Q2);
     }
   };
 
   class EPA_WoodSaxonApprox final : public EPA_FF_Base {
   private:
-    double m_a;
+    double m_R_WS, m_a;
 
   public:
     explicit EPA_WoodSaxonApprox(const ATOOLS::Flavour& beam, int dir);
@@ -250,7 +249,7 @@ namespace BEAM {
       // according to Ilkka, a = r = 0.7 fm
       // Normalising the form factor/nuclear density can be performed
       // analytically and it yields \rho_0 = A / 4 / \pi * 3 / R^3
-      const double qR = sqrt(Q2) * m_R;
+      const double qR = sqrt(Q2) * m_R_WS;
       return 3. / std::pow(qR, 3) * (std::sin(qR) - qR * std::cos(qR)) / (1. + ATOOLS::sqr(m_a) * Q2);
     }
   };
