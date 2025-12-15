@@ -16,7 +16,7 @@ PARTICLE_DATA:
     Massive: true
     Mass: 4.75  # consistent with MSTW 2008 nf 4 set
   23:
-    Width: 0
+    Narrow: 1
     Stable: 0
 
 MI_HANDLER: None

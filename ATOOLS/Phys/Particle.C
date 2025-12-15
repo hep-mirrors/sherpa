@@ -170,7 +170,7 @@ double Particle::ProperTime()
   }
   else {
     if (m_fl.Strong()) tau2 = 1./sqr(0.2); 
-    else if (!m_fl.IsStable()) tau2 = 1./sqr(m_fl.Width());
+    else if (!m_fl.IsStable()) tau2 = 1./sqr(m_fl.Width(true));
   }
   return rpa->hBar() * sqrt(tau2);
 }

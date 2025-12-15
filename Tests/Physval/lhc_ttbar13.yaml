@@ -21,7 +21,7 @@ SCALE_VARIATIONS:
 # exclude tau (15) from (massless) lepton container (90)
 PARTICLE_DATA:
   6:
-    Width:  0
+    Narrow:  1
     Stable: 0
   15:
     Massive: 1

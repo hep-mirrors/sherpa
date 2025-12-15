@@ -16,7 +16,7 @@ HARD_DECAYS:
 # model parameters
 MODEL: HEFT
 PARTICLE_DATA:
-  25: {Mass: 125, Width: 0}
+  25: {Mass: 125, Narrow: 1}
 
 # finite top mass effects
 KFACTOR: GGH

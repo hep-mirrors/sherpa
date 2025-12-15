@@ -21,8 +21,8 @@ HARD_DECAYS:
     23,16,-16: {Status: 2}
 
 PARTICLE_DATA:
-  23: {Width: 0}
-  24: {Width: 0}
+  23: {Narrow: 1}
+  24: {Narrow: 1}
 
 PROCESSES:
 - 93 93 -> 24 23 93{3}:

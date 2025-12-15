@@ -28,7 +28,7 @@ HARD_DECAYS:
 
 # particle properties (width of external particles of the MEs must be zero)
 PARTICLE_DATA:
-  6: {Width: 0}
+  6: {Narrow: 1}
 
 # speed and neg weight fraction improvements
 MC@NLO:

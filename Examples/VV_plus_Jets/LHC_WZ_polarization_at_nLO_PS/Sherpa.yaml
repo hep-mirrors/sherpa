@@ -15,9 +15,9 @@ SCALES: METS{0.25*sqr(80.352+91.153)}
 # width 0 for the stable vector bosons in the hard matrix element
 PARTICLE_DATA:
   24: 
-    Width: 0
+    Narrow: 1
   23:
-    Width: 0
+    Narrow: 1
 WIDTH_SCHEME: Fixed
 
 # speed and neg weight fraction improvements

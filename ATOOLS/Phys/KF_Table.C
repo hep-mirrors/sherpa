@@ -145,8 +145,10 @@ void ATOOLS::AddParticle(kf_code kfc, double mass, double radius, double width,
       pdata[key]["Active"].SetDefault(on).Get<bool>();
   s_kftable[kfc]->m_stable =
       pdata[key]["Stable"].SetDefault(stable).Get<int>();
+  s_kftable[kfc]->m_narrow =
+      pdata[key]["Narrow"].SetDefault(0).Get<int>();
   s_kftable[kfc]->m_massive =
-      pdata[ToString(kfc)]["Massive"].SetDefault(massive).Get<bool>();
+      pdata[key]["Massive"].SetDefault(massive).Get<bool>();
   s_kftable[kfc]->m_icharge =
       pdata[key]["IntCharge"].SetDefault(icharge).Get<int>();
   s_kftable[kfc]->m_strong =
@@ -191,6 +193,8 @@ void ATOOLS::AddOrUpdateParticle(kf_code kfc, double mass, double radius,
       pdata[key]["Active"].GetScalarWithOtherDefault(on);
   s_kftable[kfc]->m_stable =
       pdata[key]["Stable"].GetScalarWithOtherDefault(stable);
+    s_kftable[kfc]->m_narrow =
+      pdata[key]["Narrow"].SetDefault(0).Get<int>();
   s_kftable[kfc]->m_massive =
       pdata[key]["Massive"].GetScalarWithOtherDefault(massive);
   s_kftable[kfc]->m_icharge =
@@ -219,6 +223,8 @@ void ATOOLS::AddParticle(kf_code kfc, double mass, double radius, double width,
       pdata[key]["Active"].SetDefault(on).Get<bool>();
   s_kftable[kfc]->m_stable =
       pdata[key]["Stable"].SetDefault(stable).Get<int>();
+  s_kftable[kfc]->m_narrow =
+    pdata[key]["Narrow"].SetDefault(0).Get<int>();
   s_kftable[kfc]->m_massive =
       pdata[key]["Massive"].SetDefault(s_kftable[kfc]->m_massive).Get<bool>();
   s_kftable[kfc]->m_icharge =
@@ -251,6 +257,8 @@ void ATOOLS::AddParticle(kf_code kfc, double mass, double radius, double width,
       pdata[key]["Active"].SetDefault(on).Get<bool>();
   s_kftable[kfc]->m_stable =
       pdata[key]["Stable"].SetDefault(stable).Get<int>();
+  s_kftable[kfc]->m_narrow =
+    pdata[key]["Narrow"].SetDefault(0).Get<int>();
   s_kftable[kfc]->m_massive =
       pdata[key]["Massive"].SetDefault(s_kftable[kfc]->m_massive).Get<bool>();
   s_kftable[kfc]->m_icharge =
@@ -282,6 +290,8 @@ void ATOOLS::AddParticle(kf_code kfc, double mass, double radius, int icharge,
       pdata[key]["Active"].SetDefault(s_kftable[kfc]->m_on).Get<bool>();
   s_kftable[kfc]->m_stable =
       pdata[key]["Stable"].SetDefault(s_kftable[kfc]->m_stable).Get<int>();
+  s_kftable[kfc]->m_narrow =
+    pdata[key]["Narrow"].SetDefault(0).Get<int>();
   s_kftable[kfc]->m_massive =
       pdata[key]["Massive"].SetDefault(s_kftable[kfc]->m_massive).Get<bool>();
   s_kftable[kfc]->m_icharge =

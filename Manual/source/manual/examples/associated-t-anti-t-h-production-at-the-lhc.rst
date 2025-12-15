@@ -24,7 +24,8 @@ Things to notice:
   They are decayed using the internal decay module, indicated by
   the settings in the :option:`HARD_DECAYS` and :option:`PARTICLE_DATA` blocks.
 
-* Widths of top and Higgs are set to 0 for the matrix element calculation.
+* Widths of top and Higgs are treated as 0 for the matrix element calculation,
+  by specifying :option:`Narrow: 1` in :option:`PARTICLE_DATA` for both particles.
   A kinematical Breit-Wigner distribution will be imposed a-posteriori in the
   decay module.
 

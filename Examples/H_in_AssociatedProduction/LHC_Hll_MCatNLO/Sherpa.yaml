@@ -9,7 +9,7 @@ MEPS:
 PARTICLE_DATA:
   5: {Massive: true}
   15: {Massive: true}
-  25: {Stable: 0, Width: 0.0}
+  25: {Stable: 0, Narrow: 1}
 
 # hard decays setup, specify allowed decay channels h->bb
 HARD_DECAYS:
