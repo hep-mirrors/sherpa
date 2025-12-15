@@ -420,12 +420,50 @@ double Decay_Channel::ME2_NLO(const ATOOLS::Vec4D_Vector& momenta, bool anti,
       }
     }
 
+    // build Amplitude2_Tensor for V if corresponding diagram exists
+    bool virtual_channel = false;
+    for (size_t i = 0; i < GetDiagrams().size(); ++i) {
+      METOOLS::Spin_Amplitudes* diag = GetDiagrams()[i];
+      if(diag->getType() == "V"){
+        virtual_channel = true;
+
+        // Collect LO (Born) diagrams by value
+        std::vector<METOOLS::Spin_Amplitudes> born_diagram_val;
+        for (size_t j = 0; j < GetDiagrams().size(); ++j) {
+          METOOLS::Spin_Amplitudes* d = GetDiagrams()[j];
+          if (d->getType() == "LO") born_diagram_val.push_back(*d);
+        }
+
+        // For virtual diagram, construct its interference tensor with Born
+        METOOLS::Spin_Amplitudes* v_diag_ptr = GetDiagrams()[i];
+        std::vector<METOOLS::Spin_Amplitudes> v_diagram_val;
+        v_diagram_val.push_back(*v_diag_ptr);
+
+        std::vector<int> permutation(p.size());
+        for (size_t k = 0; k < permutation.size(); ++k) permutation[k] = int(k);
+
+        METOOLS::Amplitude2_Tensor* v_tensor = new Amplitude2_Tensor(p, permutation, 0, v_diagram_val, born_diagram_val, spin_i, spin_j, 1.0); // in this case, leading_diagram is the born diagram
+        NLO_tensor_list.push_back(v_tensor);
+      }
+    }
+
+    for (size_t j = 0; j < GetDiagrams().size(); ++j) {
+      std::cout << "Type: " << GetDiagrams()[j]->getType() << std::endl;
+    }
+
+
     DEBUG_VAR(*p_amps);
     sumijlambda_AiAj=(*sigma)*p_amps->ReduceToMatrix(sigma->Particle());
 
-    for (size_t i = 0; i < NLO_tensor_list.size(); ++i) {    // reducee NLO Amplitude2_Tensor
+    for (size_t i = 0; i < NLO_tensor_list.size(); ++i) {    // reduce NLO Amplitude2_Tensor
       sumijlambda_AiAj += (*sigma)*NLO_tensor_list[i]->ReduceToMatrix(sigma->Particle());
+      std::cout << "sumijlambda_AiAj: " << NLO_tensor_list[i]->ReduceToMatrix(sigma->Particle()) << std::endl;
     }
+
+    for (size_t i = 0; i < NLO_tensor_list.size(); ++i) {
+      delete NLO_tensor_list[i];
+    }
+    NLO_tensor_list.clear();
 
   }
   else {

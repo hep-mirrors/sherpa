@@ -481,9 +481,9 @@ std::map<std::string, std::map<std::string, std::complex<double>>> H_to_bb_Virtu
   std::complex<double> EpsilonPrefactor(0.0, 1/(16*M_PI*M_PI) * (std::log(4*M_PI) - gamma_E) );
 
   v_finite["00"]  = (v_res_f00 * VirtualPrefactor * FinitePrefactor) + v_res_e00 * VirtualPrefactor * EpsilonPrefactor;
-  v_finite["01"]  = (v_res_f01 * VirtualPrefactor* FinitePrefactor) + v_res_e01 * VirtualPrefactor * EpsilonPrefactor;
-  v_finite["10"]  = (v_res_f10 * VirtualPrefactor* FinitePrefactor) + v_res_e10 * VirtualPrefactor * EpsilonPrefactor;
-  v_finite["11"]  = (v_res_f11 * VirtualPrefactor* FinitePrefactor) + v_res_e11 * VirtualPrefactor * EpsilonPrefactor;
+  v_finite["01"]  = (v_res_f01 * VirtualPrefactor * FinitePrefactor) + v_res_e01 * VirtualPrefactor * EpsilonPrefactor;
+  v_finite["10"]  = (v_res_f10 * VirtualPrefactor * FinitePrefactor) + v_res_e10 * VirtualPrefactor * EpsilonPrefactor;
+  v_finite["11"]  = (v_res_f11 * VirtualPrefactor * FinitePrefactor) + v_res_e11 * VirtualPrefactor * EpsilonPrefactor;
 
   v_epsilon["00"]  = v_res_e00 * VirtualPrefactor * FinitePrefactor;
   v_epsilon["01"]  = v_res_e01 * VirtualPrefactor * FinitePrefactor;
@@ -541,6 +541,10 @@ void H_to_bb_Virtual::Calculate(const ATOOLS::Vec4D_Vector& momenta, bool anti){
   (*this)[1] = v_finite["10"];
   (*this)[2] = v_finite["01"];
   (*this)[3] = v_finite["11"];
+
+  for (size_t i=0; i<size(); ++i) {  // scale with remaining constants. 1/3.0 removes the colour factor of the Born Amplitude that is included in the Born Spin Amplitude in the Decay Channel
+   (*this)[i] *= colour_factor * 2 / 3.0;
+  }
 
   // todo: make sure that epsilon terms cancel; Write check/ warning, if they don't cancel
 }
