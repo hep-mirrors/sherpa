@@ -389,6 +389,7 @@ double EPA_WoodSaxon::CalculateDensity()
 
 void EPA_WoodSaxon::InitFFTable()
 {
+  msg_Out() << METHOD << ": Filling table for Woods-Saxon form factor with " << m_q2_n << " bins.\n";
   p_FF_Q2 = std::make_unique<OneDim_Table>(axis(m_q2_n, m_q2_min, m_q2_max, axis_mode::log));
 
   for (size_t i = 0; i < m_q2_n; i++) {
@@ -420,7 +421,8 @@ EPA_WoodSaxonApprox::EPA_WoodSaxonApprox(const ATOOLS::Flavour& beam,
 {
   const auto& s = Settings::GetMainSettings()["EPA"];
   size_t      b = dir > 0 ? 0 : 1;
-  m_a = s["WoodSaxonApprox_a"].GetTwoVector<double>()[b] / rpa->hBar_c();
+  m_R_WS        = s["WoodSaxon_R"].GetTwoVector<double>()[b] / rpa->hBar_c();
+  m_a           = s["WoodSaxonApprox_a"].GetTwoVector<double>()[b] / rpa->hBar_c();
 
   FillTables();
 }
