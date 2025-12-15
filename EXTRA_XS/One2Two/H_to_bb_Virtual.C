@@ -73,8 +73,8 @@ void H_to_bb_Virtual::SetUpPrefactors(const vector<Flavour>& flavs) {
     const double pi = 3.14159265358979323846;
   #endif
   double g_s = std::sqrt(4 * pi * alpha_qcd);
-  double G_F = 1.16637886e-5; // Fermi constant in GeV^-2; value from PDG
-  double vev = 1 / std::sqrt(G_F * std::sqrt(2)); // vacuum expectation value in GeV; doublecheck that value
+  
+  double vev = std::real((MODEL::s_model) -> ComplexConstant(std::string("cvev")));
   double m_b = flavs[2].Mass(); // b quark mass in GeV
 
   VirtualPrefactor = (-1) * std::pow(g_s, 2) * m_b / vev;
@@ -508,8 +508,7 @@ void H_to_bb_Virtual::Calculate(const ATOOLS::Vec4D_Vector& momenta, bool anti){
   std::map<std::string, std::complex<double>> born = CalculateBorn(momenta, anti); 
   double ME2_Born = 3 * std::real(born["00"] * std::conj(born["00"]) + born["01"] * std::conj(born["01"]) + born["10"] * std::conj(born["10"]) + born["11"] * std::conj(born["11"]));
   // 3 * because of colour sum 
-  // here: ME2_Born = 37.255084078123176 doesn't match exactly the value out of Decay_Channel -> ME2(), which is 37.255439898732476
-
+  
   std::map<std::string, std::map<std::string, std::complex<double>>> virtual_amplitudes = CalculateV(momenta, anti);
   std::map<std::string, std::complex<double>> &v_finite   = virtual_amplitudes["v_finite"];
   std::map<std::string, std::complex<double>> &v_epsilon  = virtual_amplitudes["v_epsilon"];

@@ -76,8 +76,7 @@ void Massive_Virtual_Subtraction::SetUpBornPrefactor(const vector<Flavour>& flav
   #else
     const double pi = 3.14159265358979323846;
   #endif
-  double G_F = 1.16637886e-5; // Fermi constant in GeV^-2; value from PDG
-  double vev = 1 / std::sqrt(G_F * std::sqrt(2)); // vacuum expectation value in GeV; doublecheck that value
+  double vev = std::real((MODEL::s_model) -> ComplexConstant(std::string("cvev")));
   double m_b = flavs[2].Mass(); // b quark mass in GeV
 
   BornPrefactor = (-1) * m_b / vev;
