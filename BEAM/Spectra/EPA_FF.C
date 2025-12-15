@@ -119,7 +119,7 @@ void EPA_FF_Base::OutputToCSV(const std::string& type)
   bs[0] = m_bmin * m_R;
   for (int i = 1; i < m_nbbins; ++i) { bs[i] = bs[i - 1] * std::exp(step_b); }
 
-  double              q2max(100.), q2min(1.e-5);
+  double              q2max(100.), q2min(1.e-7);
   int                 nq2steps(1000);
   double              step_q2(std::log(q2max / q2min) / double(nq2steps));
   std::vector<double> q2s(nq2steps);
@@ -362,10 +362,11 @@ double EPA_WoodSaxon::IntegrateWithAdaptiveRange(
 }
 
 EPA_WoodSaxon::EPA_WoodSaxon(const ATOOLS::Flavour& beam, const int dir)
-    : EPA_FF_Base(beam, dir), m_d(0.5 / rpa->hBar_c()), m_rho0(0.)
+    : EPA_FF_Base(beam, dir), m_d(0.55 / rpa->hBar_c()), m_R_WS(6.49 / rpa->hBar_c()), m_rho0(0.)
 {
   const auto& s = Settings::GetMainSettings()["EPA"];
   size_t      b = dir > 0 ? 0 : 1;
+  m_R_WS        = s["WoodSaxon_R"].GetTwoVector<double>()[b] / rpa->hBar_c();
   m_d           = s["WoodSaxon_d"].GetTwoVector<double>()[b] / rpa->hBar_c();
   if (!m_beam.IsIon())
     THROW(fatal_error, "Wrong form factor for " + m_beam.IDName());
@@ -378,32 +379,31 @@ EPA_WoodSaxon::EPA_WoodSaxon(const ATOOLS::Flavour& beam, const int dir)
 double EPA_WoodSaxon::CalculateDensity()
 {
   auto rho_integrand_lambda = [this](double r) {
-    return r * r / (1. + std::exp((r - m_R) / m_d));
+    return r * r / (1. + std::exp((r - m_R_WS) / m_d));
   };
 
-  double res = IntegrateWithAdaptiveRange(rho_integrand_lambda, m_R, 1.e-6);
+  double res = IntegrateWithAdaptiveRange(rho_integrand_lambda, m_R_WS, 1.e-6);
 
-  return 1.0 / res / 4. / M_PI;
+  return 1.0 / res;
 }
 
 void EPA_WoodSaxon::InitFFTable()
 {
-  p_FF_Q2 = std::make_unique<OneDim_Table>(axis(1e6, 1e-6, 1e1, axis_mode::log));
+  p_FF_Q2 = std::make_unique<OneDim_Table>(axis(m_q2_n, m_q2_min, m_q2_max, axis_mode::log));
 
-  for (size_t i = 0; i < p_FF_Q2->GetAxis().m_nbins; i++) {
+  for (size_t i = 0; i < m_q2_n; i++) {
     const double q = std::sqrt(p_FF_Q2->GetAxis().x(i));
 
     // Define the form factor integrand as a lambda inside the loop.
     auto ff_integrand = [this, q](double r) {
       if (q * r < 1.e-6) {// Numerically stable limit for q*r -> 0
-        return r * r / (1. + std::exp((r - m_R) / m_d));
+        return r * r / (1. + std::exp((r - m_R_WS) / m_d));
       }
-      return std::sin(q * r) / q * r / (1. + std::exp((r - m_R) / m_d));
+      return std::sin(q * r) / q * r / (1. + std::exp((r - m_R_WS) / m_d));
     };
 
-    double ff_integral = IntegrateWithAdaptiveRange(ff_integrand, m_R, 1.e-6);
-
-    double form_factor = 4. * M_PI * m_rho0 * ff_integral;
+    double form_factor =
+            m_rho0 * IntegrateWithAdaptiveRange(ff_integrand, m_R_WS, 1.e-6);
     p_FF_Q2->Fill(i, form_factor);
   }
 }
@@ -444,13 +444,6 @@ void EPA_IonApprox::FillTables()
   axis xaxis(m_nxbins, m_xmin, m_xmax, axis_mode::log);
   axis baxis(m_nbbins, m_bmin * m_R, m_bmax * m_R, axis_mode::log);
 
-  //////////////////////////////////////////////////////////////////////////////
-  //
-  // N(x,b) is given by the square of the Fourier transform of
-  // kt^2/(kt^2+m^2x^2) F(kt^2+m^2x^2), which leads to a Bessel function.
-  // We assume that the units in the b axis are in 1/GeV
-  //
-  //////////////////////////////////////////////////////////////////////////////
   msg_Out() << METHOD << " in " << xaxis.m_nbins << " * " << baxis.m_nbins
             << " bins:\n"
             << "   x in [" << xaxis.m_xmin << ", " << xaxis.m_xmax << "], "
