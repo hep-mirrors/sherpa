@@ -4,39 +4,27 @@ MI_HANDLER: None
 ALPHAS(MZ): 0.1188
 ORDER_ALPHAS: 1
 
-SHOWER:
-  ENABLE_QUARKONIA: 0 
-  # 0 for gluon transitions to octets, 1 and 2 for actually slittings
-  # 99 is default as turns quarkonia off
-YFS:
-  MODE: None
-HADRON_DECAYS:
-  Max_Proper_Lifetime: 100
-# BEAM_REMNANTS: true
-# FRAGMENTATION: None
+
 PARTICLE_DATA:
   4:
     Massive: 1
   5: 
     Massive: 1
 
-PARTICLE_CONTAINERS:
-  993:
-    Name: qs
-    Flavours: [1,2,3,-1,-2,-3]
-  994:
-    Name: cs
-    Flavours: [4,-4]
-  995:
-    Name: bs
-    Flavours: [5,-5]
+QUARKONIA:
+  # LDME:    # Set LDMEs by hand
+  #   3S1_c_8_J_psi_1S: 0.01 
+  SHOWER:
+    Enable_all: True     # Otherwise, set individually:
+    # Enable_quark_splitting_singlet: true
+    # Enable_gluon_fragmentation: true
+    # Enable_quark_splitting_octet: true
 
 PROCESSES:
 - 93 93 -> 21 93:
     Order: {QCD: 2, EW: 0}
     Enhance_Function: VAR{PPerp2(p[3])/400}
-#  - 11 -11 -> 4 -4:
-#       Order: {QCD: 0, EW: 2}
+
 
 SELECTORS:
 - [PT, 93, 5, E_CMS]
