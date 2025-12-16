@@ -113,15 +113,11 @@ void Sudakov::InitSplittingFunctions(MODEL::Model_Base *md,const int kfmode)
   auto onia_ldme = onia["LDME"];
   auto onia_shower = onia["SHOWER"];
   onia_ldme["3S1_c_8_J_psi_1S"].SetDefault(3.488E-03);
-  double ldme_3S1_c_8_J_psi_1S = onia_ldme["3S1_c_8_J_psi_1S"].Get<double>();
   onia_ldme["3S1_c_8_J_psi_2S"].SetDefault(2.918E-03);
-  double ldme_3S1_c_8_J_psi_2S = onia_ldme["3S1_c_8_J_psi_2S"].Get<double>();
   onia_ldme["3S1_c_8_chi_c0_1P"].SetDefault(5.912E-03);
   double ldme_3S1_c_8_chi_c0_1P = onia_ldme["3S1_c_8_chi_c0_1P"].Get<double>();
   onia_ldme["3S1_c_8_chi_c1_1P"].SetDefault(ldme_3S1_c_8_chi_c0_1P);
-  double ldme_3S1_c_8_chi_c1_1P = onia_ldme["3S1_c_8_chi_c1_1P"].Get<double>();
   onia_ldme["3S1_c_8_chi_c2_1P"].SetDefault(ldme_3S1_c_8_chi_c0_1P);
-  double ldme_3S1_c_8_chi_c2_1P = onia_ldme["3S1_c_8_chi_c2_1P"].Get<double>();
   onia_shower["Enable_all"].SetDefault(false);
   bool enable_all = onia_shower["Enable_all"].Get<bool>();
   onia_shower["Enable_quark_splitting_singlet"].SetDefault(false);
@@ -260,8 +256,9 @@ void Sudakov::AddOctetMesonSplittingFunctions(Model_Base *md,
   Kabbala g3("g_3", sqrt(4. * M_PI * md->ScalarConstant("alpha_S")));
   Kabbala cpl0 = g3 * Kabbala("i", Complex(0., 1.));
   list<kf_code> octetmesons = {
-      kf_1S0_c_8_eta_c,   kf_3S1_c_8_J_psi_1S,   kf_3P0_c_8_J_psi_1S,
-      kf_3P1_c_8_J_psi_1S, kf_3S1_c_8_chi_c0_1P,
+      kf_1S0_c_8_eta_c,  kf_1S0_c_8_psi_2S, kf_1S0_c_8_psi_2S, kf_3S1_c_8_J_psi_1S, kf_3S1_c_8_psi_2S,
+      kf_3P0_c_8_J_psi_1S, kf_3P1_c_8_J_psi_1S, kf_3P2_c_8_J_psi_1S,
+      kf_3S1_c_8_chi_c0_1P, kf_3S1_c_8_chi_c1_1P, kf_3S1_c_8_chi_c2_1P,
       kf_1S0_b_8_eta_b,      kf_3S1_b_8_Upsilon_1S, kf_3S1_b_8_Upsilon_2S,
       kf_3P0_b_8_Upsilon_1S,  kf_3P1_b_8_Upsilon_1S,
       kf_3P2_b_8_Upsilon_1S}; //, kf_chi_b2_3P_oct};
@@ -301,15 +298,10 @@ void Sudakov::AddGluonThresholds(Model_Base *md) {
   m_stmap[Flavour(kf_gluon)] = stset = new ST_Set;
   auto onia = Settings::GetMainSettings()["QUARKONIA"];
   auto onia_ldme = onia["LDME"];
-  onia_ldme["3S1_c_8_J_psi_1S"].SetDefault(3.488E-03);
   double ldme_3S1_c_8_J_psi_1S = onia_ldme["3S1_c_8_J_psi_1S"].Get<double>();
-  onia_ldme["3S1_c_8_J_psi_2S"].SetDefault(2.918E-03);
   double ldme_3S1_c_8_J_psi_2S = onia_ldme["3S1_c_8_J_psi_2S"].Get<double>();
-  onia_ldme["3S1_c_8_chi_c0_1P"].SetDefault(5.912E-03);
   double ldme_3S1_c_8_chi_c0_1P = onia_ldme["3S1_c_8_chi_c0_1P"].Get<double>();
-  onia_ldme["3S1_c_8_chi_c1_1P"].SetDefault(ldme_3S1_c_8_chi_c0_1P);
   double ldme_3S1_c_8_chi_c1_1P = onia_ldme["3S1_c_8_chi_c1_1P"].Get<double>();
-  onia_ldme["3S1_c_8_chi_c2_1P"].SetDefault(ldme_3S1_c_8_chi_c0_1P);
   double ldme_3S1_c_8_chi_c2_1P = onia_ldme["3S1_c_8_chi_c2_1P"].Get<double>();
 
   map<kf_code, double> LDME = {
