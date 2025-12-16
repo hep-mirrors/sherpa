@@ -219,7 +219,7 @@ namespace BEAM {
   private:
     double                                m_d, m_R_WS, m_rho0;
     std::unique_ptr<ATOOLS::OneDim_Table> p_FF_Q2;
-    static constexpr double               m_q2_min = 1.e-12, m_q2_max = 1.e1;
+    static constexpr double               m_q2_min = 1.e-12, m_q2_max = 1.e5;
     static constexpr int                  m_q2_n = 1e7;
 
     static double IntegrateWithAdaptiveRange(const std::function<double(double)>& integrand,

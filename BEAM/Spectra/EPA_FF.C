@@ -355,8 +355,8 @@ double EPA_WoodSaxon::IntegrateWithAdaptiveRange(
     segment_increment = gauss.Integrate(rmin, rmax, tolerance);
     total_result += segment_increment;
     ++n;
-  } while (n < 3 &&
-           std::abs(segment_increment) > tolerance * std::abs(total_result) + std::numeric_limits<double>::epsilon());
+  } while (n < 10 && //< this ensures to maximally integrate to 1000*R
+           std::abs(segment_increment) > tolerance * std::abs(total_result));
 
   return total_result;
 }
