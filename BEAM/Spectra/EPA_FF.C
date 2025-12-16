@@ -103,6 +103,9 @@ void EPA_FF_Base::FillTables()
 
 void EPA_FF_Base::OutputToCSV(const std::string& type)
 {
+  msg_Out() << METHOD << ": Writing output for " << m_beam.IDName() << " and "
+            << type << "\n";
+
   double              step_x(std::log(m_xmax / m_xmin) / double(m_nxbins));
   std::vector<double> xs(m_nxbins);
   xs[0] = m_xmin;
@@ -350,7 +353,7 @@ double EPA_WoodSaxon::IntegrateWithAdaptiveRange(
     segment_increment = gauss.Integrate(rmin, rmax, tolerance);
     total_result += segment_increment;
     ++n;
-  } while (n < 10 && //< this ensures to maximally integrate to 1000*R
+  } while (n < 3 &&//< safe-guard to maximally integrate to 8*R
            std::abs(segment_increment) > tolerance * std::abs(total_result));
 
   return total_result;
