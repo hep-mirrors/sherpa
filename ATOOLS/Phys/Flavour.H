@@ -286,6 +286,9 @@ namespace ATOOLS {
     inline bool IsDummy() const
     { return p_info->m_dummy; }
 
+    inline bool IsNone() const
+    { return Kfcode()==kf_none; }
+
     inline bool operator<(const Flavour &f) const
     {
       if (Kfcode()<f.Kfcode()) return true;

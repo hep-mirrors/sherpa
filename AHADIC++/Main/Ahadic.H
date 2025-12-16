@@ -43,6 +43,7 @@ namespace AHADIC {
     void FillOutgoingParticles(ATOOLS::Blob * blob);
 
     bool SanityCheck(ATOOLS::Blob * blob,double norm2);
+    bool CheckKfcodes(ATOOLS::Blob * blob);
     void CleanUp(ATOOLS::Blob * blob);
   public:
     Ahadic(std::string shower);

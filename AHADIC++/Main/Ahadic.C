@@ -105,6 +105,12 @@ Return_Value::code Ahadic::Hadronize(Blob * blob, int retry) {
     Reset(blob);
     return Return_Value::Retry_Event;
   }
+  if (!CheckKfcodes(blob)) {
+    msg_Error()<<"\n"<<METHOD<<" produces kf_none particle. Will retry.\n";
+    msg_Debugging()<<*blob<<"\n";
+    Reset(blob);
+    return Return_Value::Retry_Event;
+  }
   return Return_Value::Success;
 }
 
@@ -196,6 +202,13 @@ bool Ahadic::SanityCheck(Blob * blob,double norm2) {
     //	       <<checkmom<<" ("<<sqrt(Max(0.,checkmom.Abs2()))<<")\n"
     //	       <<(*blob)<<"\n";
     return false;
+  }
+  return true;
+}
+
+bool Ahadic::CheckKfcodes(Blob * blob) {
+  for(Particle* p: blob->GetOutParticles()) {
+    if(p->Flav().IsNone()) return false;
   }
   return true;
 }
