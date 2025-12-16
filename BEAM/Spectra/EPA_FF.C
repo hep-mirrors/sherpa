@@ -10,8 +10,6 @@
 #include "ATOOLS/Org/Settings.H"
 
 #include <cmath>
-#include <iostream>
-#include <numbers>
 #include <string>
 using namespace BEAM;
 using namespace ATOOLS;
@@ -40,8 +38,9 @@ EPA_FF_Base::EPA_FF_Base(const ATOOLS::Flavour& beam, const int dir)
      //
      //////////////////////////////////////////////////////////////////////////////
       m_beam(beam), m_A(beam.IsIon() ? beam.GetMassNumber() : 1),
-      m_mass(beam.Mass(true)), m_R(beam.Radius() / rpa->hBar_c()), m_q2min(-1.),
-      m_q2max(1.), m_pt2max(-1.),
+      m_mass(beam.Mass(true) / m_A), m_mass2(m_mass * m_mass),
+      m_R(beam.Radius() / rpa->hBar_c()), m_q2min(-1.), m_q2max(1.),
+      m_pt2max(-1.),
       m_Zsquared(beam.IsIon() ? sqr(m_beam.GetAtomicNumber()) : 1.), m_b(0.),
       p_N_xb(nullptr)
 {
@@ -56,11 +55,6 @@ EPA_FF_Base::EPA_FF_Base(const ATOOLS::Flavour& beam, const int dir)
   m_bmin           = s["bMin"].GetTwoVector<double>()[b];
   m_b_pl_threshold = s["bThreshold"].GetTwoVector<double>()[b] * m_R;
   m_bmax           = s["bMax"].GetTwoVector<double>()[b];
-
-  if (beam.IsIon()) {
-    m_mass /= beam.GetMassNumber();
-  }
-  m_mass2 = ATOOLS::sqr(m_mass);
 
   // Pre-calculate the normalisation of the  distribution \in [bmin, bmax]
   m_norm_distribution = 0.5 * std::log((ATOOLS::sqr(m_bmax) + 1.) /
@@ -119,8 +113,8 @@ void EPA_FF_Base::OutputToCSV(const std::string& type)
   bs[0] = m_bmin * m_R;
   for (int i = 1; i < m_nbbins; ++i) { bs[i] = bs[i - 1] * std::exp(step_b); }
 
-  double              q2max(100.), q2min(1.e-7);
-  int                 nq2steps(1000);
+  double              q2max(1e4), q2min(1.e-12);
+  int                 nq2steps(10000);
   double              step_q2(std::log(q2max / q2min) / double(nq2steps));
   std::vector<double> q2s(nq2steps);
   q2s[0] = q2min;
@@ -162,7 +156,7 @@ EPA_Point::EPA_Point(const ATOOLS::Flavour& beam, const int dir)
   // for point-like particles (i.e. leptons) we use the "classical"
   // lepton radius given by 1/alpha lambda_l/(2 pi)
   // with the Compton wavelength lambda_l
-  m_b = rpa->hBar_c() / beam.Mass(true) / (2. * M_PI / 137.);
+  m_b = rpa->hBar_c() / m_mass / (2. * M_PI / 137.);
 }
 
 double EPA_Point::N(const double& x)
@@ -189,7 +183,7 @@ EPA_PointApprox::EPA_PointApprox(const ATOOLS::Flavour& beam, const int dir)
   // for point-like particles (i.e. leptons) we use the "classical"
   // lepton radius given by 1/alpha lambda_l/(2 pi)
   // with the Compton wavelength lambda_l
-  m_b = rpa->hBar_c() / beam.Mass(true) / (2. * M_PI / 137.);
+  m_b = rpa->hBar_c() / m_mass / (2. * M_PI / 137.);
 }
 
 double EPA_PointApprox::N(const double& x)
@@ -281,7 +275,7 @@ EPA_Gauss::EPA_Gauss(const ATOOLS::Flavour& beam, const int dir)
   const auto& s = Settings::GetMainSettings()["EPA"];
   size_t      b = dir > 0 ? 0 : 1;
   m_Q02         = s["Q02"].GetTwoVector<double>()[b];
-  FillTables();
+  EPA_FF_Base::FillTables();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -293,7 +287,7 @@ EPA_Gauss::EPA_Gauss(const ATOOLS::Flavour& beam, const int dir)
 EPA_HCS::EPA_HCS(const ATOOLS::Flavour& beam, const int dir)
     : EPA_FF_Base(beam, dir)
 {
-  FillTables();
+  EPA_FF_Base::FillTables();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -308,7 +302,7 @@ EPA_Dipole::EPA_Dipole(const ATOOLS::Flavour& beam, const int dir)
   size_t      b = dir > 0 ? 0 : 1;
   m_Q02         = s["Q02"].GetTwoVector<double>()[b];
 
-  FillTables();
+  EPA_FF_Base::FillTables();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -323,7 +317,7 @@ EPA_DipoleApprox::EPA_DipoleApprox(const ATOOLS::Flavour& beam, const int dir)
   size_t      b = dir > 0 ? 0 : 1;
   m_Q02         = s["Q02"].GetTwoVector<double>()[b];
 
-  FillTables();
+  EPA_FF_Base::FillTables();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -348,7 +342,8 @@ double EPA_WoodSaxon::IntegrateWithAdaptiveRange(
   double segment_increment = 0.;
   int    n(0);
 
-  // Adaptively extend the integration range until the tail contributes negligibly.
+  // Adaptively extend the integration range until the tail contributes
+  // negligibly.
   do {
     rmin = rmax;
     rmax *= 2.;
@@ -362,7 +357,8 @@ double EPA_WoodSaxon::IntegrateWithAdaptiveRange(
 }
 
 EPA_WoodSaxon::EPA_WoodSaxon(const ATOOLS::Flavour& beam, const int dir)
-    : EPA_FF_Base(beam, dir), m_d(0.55 / rpa->hBar_c()), m_R_WS(6.49 / rpa->hBar_c()), m_rho0(0.)
+    : EPA_FF_Base(beam, dir), m_d(0.55 / rpa->hBar_c()),
+      m_R_WS(6.49 / rpa->hBar_c()), m_rho0(0.)
 {
   const auto& s = Settings::GetMainSettings()["EPA"];
   size_t      b = dir > 0 ? 0 : 1;
@@ -373,7 +369,7 @@ EPA_WoodSaxon::EPA_WoodSaxon(const ATOOLS::Flavour& beam, const int dir)
 
   m_rho0 = CalculateDensity();
   InitFFTable();
-  FillTables();
+  EPA_FF_Base::FillTables();
 }
 
 double EPA_WoodSaxon::CalculateDensity()
@@ -389,8 +385,10 @@ double EPA_WoodSaxon::CalculateDensity()
 
 void EPA_WoodSaxon::InitFFTable()
 {
-  msg_Out() << METHOD << ": Filling table for Woods-Saxon form factor with " << m_q2_n << " bins.\n";
-  p_FF_Q2 = std::make_unique<OneDim_Table>(axis(m_q2_n, m_q2_min, m_q2_max, axis_mode::log));
+  msg_Out() << METHOD << ": Filling table for Woods-Saxon form factor with "
+            << m_q2_n << " bins.\n";
+  p_FF_Q2 = std::make_unique<OneDim_Table>(
+          axis(m_q2_n, m_q2_min, m_q2_max, axis_mode::log));
 
   for (size_t i = 0; i < m_q2_n; i++) {
     const double q = std::sqrt(p_FF_Q2->GetAxis().x(i));
@@ -422,9 +420,9 @@ EPA_WoodSaxonApprox::EPA_WoodSaxonApprox(const ATOOLS::Flavour& beam,
   const auto& s = Settings::GetMainSettings()["EPA"];
   size_t      b = dir > 0 ? 0 : 1;
   m_R_WS        = s["WoodSaxon_R"].GetTwoVector<double>()[b] / rpa->hBar_c();
-  m_a           = s["WoodSaxonApprox_a"].GetTwoVector<double>()[b] / rpa->hBar_c();
+  m_a = s["WoodSaxonApprox_a"].GetTwoVector<double>()[b] / rpa->hBar_c();
 
-  FillTables();
+  EPA_FF_Base::FillTables();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -436,7 +434,7 @@ EPA_IonApprox::EPA_IonApprox(const ATOOLS::Flavour& beam, const int dir)
     : EPA_FF_Base(beam, dir)
 {
   m_b_pl_threshold = m_bmin * m_R;
-  FillTables();
+  EPA_IonApprox::FillTables();
 }
 
 void EPA_IonApprox::FillTables()
