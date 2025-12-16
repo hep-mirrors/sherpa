@@ -15,9 +15,8 @@ using string = std::string;
 EPA::EPA(const Flavour& beam, const double energy, const double pol,
          const int dir)
     : Beam_Base(beamspectrum::EPA, beam, energy, pol, dir),
-      m_fftype(EPA_ff_type::point), p_ff(nullptr), m_mass(beam.Mass(true)),
-      m_aqed(1. / 137.03599976), m_pref(0.), m_q2(0.), m_pt2max(-1.), m_xmin(0.),
-      m_xmax(1.), m_plotting(0)
+      m_fftype(EPA_ff_type::point), p_ff(nullptr), m_pref(0.), m_pt2max(-1.),
+      m_xmin(0.), m_xmax(1.), m_plotting(false)
 {
   if (m_beam.Charge() == 0.)
     THROW(fatal_error,
@@ -38,7 +37,6 @@ EPA::EPA(const Flavour& beam, const double energy, const double pol,
 bool EPA::CalculateWeight(double x, double q2)
 {
   m_x      = x;
-  m_q2     = q2;
   m_weight = (x > m_xmin && x < m_xmax) ? ATOOLS::Max(0., m_pref * p_ff->N(x))
                                         : 0.;
   if (m_weight < std::numeric_limits<double>::epsilon()) m_weight = 0.;
@@ -57,15 +55,13 @@ void EPA::SetOutMomentum(const ATOOLS::Vec4D& out)
 {
   m_vecouts[0] = out;
   m_vecouts[1] = m_lab - out;
-  m_q2         = dabs(out.Abs2());
 }
 
 void EPA::Initialise()
 {
   const auto& s = Settings::GetMainSettings()["EPA"];
   size_t      b = m_dir > 0 ? 0 : 1;
-  m_aqed        = s["AlphaQED"].Get<double>();
-  m_pref       = m_aqed / M_PI;
+  m_pref        = s["AlphaQED"].Get<double>() / M_PI;
   m_plotting    = s["PlotSpectra"].Get<bool>();
   m_pt2max      = !m_beam.IsIon()
                           ? sqr(m_energy * s["ThetaMax"].GetTwoVector<double>()[b])
@@ -141,9 +137,9 @@ void EPA::Tests()
   msg_Out() << METHOD << ": Beginning writing the output files\n";
 
   // Test
-  //auto* ff_test = new EPA_Test(Flavour(kf_photon), 0);
-  //ff_test->OutputToCSV("test");
-  //delete ff_test;
+  // auto* ff_test = new EPA_Test(Flavour(kf_photon), 0);
+  // ff_test->OutputToCSV("test");
+  // delete ff_test;
 
   // Lepton
   auto* ff_e = new EPA_Point(Flavour(kf_e), 0);
@@ -188,7 +184,7 @@ void EPA::Tests()
   ff_p_ionApproxInt->OutputToCSV("ionApproxInt");
   delete ff_p_ionApproxInt;
 
-  std::vector<kf_code> ions({kf_lead208, kf_calcium40});
+  std::vector<kf_code> ions({kf_lead208});
   for (kf_code ion : ions) {
     // Woods-Saxon
     auto* ff_ion_ws = new EPA_WoodSaxon(Flavour(ion), 0);
