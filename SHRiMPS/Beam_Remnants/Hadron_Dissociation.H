@@ -53,6 +53,7 @@ namespace SHRIMPS {
     inline void SetFormFactor(Form_Factor * ff)       { p_ff = ff; }
     inline Continued_PDF * GetPDF() const { return p_pdf; }
     inline ATOOLS::Blob  * GetSoftBlob()  { return p_softblob; }
+    inline ATOOLS::Vec4D & Momentum()     { return m_beamvec; }
    };
 }
 #endif

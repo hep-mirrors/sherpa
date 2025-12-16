@@ -38,6 +38,9 @@ namespace SHRIMPS {
     inline Continued_PDF * GetPDF(const size_t & beam) {
       return m_hadrons[beam]->GetPDF();
     }
+    inline PDF::PDF_Base * GetCollinearPDF(const size_t & beam) {
+      return m_hadrons[beam]->GetPDF()->PDF();
+    }
   };
 }
 #endif

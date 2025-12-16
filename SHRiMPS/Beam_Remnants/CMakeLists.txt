@@ -1,9 +1,11 @@
 set(Beam_Remnants_SOURCES Continued_PDF.C
+                          Pseudo_TMD.C
                           Hadron_Dissociation.C
                           Remnant_Handler.C
                           Colour_Generator.C)
 
 set(Beam_Remnants_HEADERS Continued_PDF.H
+                          Pseudo_TMD.H
                           Hadron_Dissociation.H
                           Remnant_Handler.H
                           Colour_Generator.H)

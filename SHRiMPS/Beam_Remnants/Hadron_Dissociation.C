@@ -31,6 +31,7 @@ void Hadron_Dissociation::Reset() {
 }
 
 bool Hadron_Dissociation::FillBeamBlob(Blob_List * blobs, const double & B) {
+  msg_Out()<<METHOD<<"\n"; exit(1);
   AddBeamBlob(blobs, B);
   HarvestCollision(blobs);
   if (m_outmom[0] < 2.) {
