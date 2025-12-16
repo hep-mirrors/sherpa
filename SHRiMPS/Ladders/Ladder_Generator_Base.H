@@ -1,23 +1,25 @@
 #ifndef SHRIMPS_Ladders_Ladder_Generator_Base_H
 #define SHRIMPS_Ladders_Ladder_Generator_Base_H
 
-#include "SHRiMPS/Cross_Sections/Sigma_Partonic.H"
+//#include "SHRiMPS/Cross_Sections/Sigma_Partonic.H"
+//#include "SHRiMPS/Ladders/MEs.H"
+//#include "SHRiMPS/Beam_Remnants/Remnant_Handler.H"
+
 #include "SHRiMPS/Eikonals/Rapidity_Density.H"
-#include "SHRiMPS/Ladders/MEs.H"
 #include "SHRiMPS/Ladders/Ladder.H"
-#include "SHRiMPS/Beam_Remnants/Remnant_Handler.H"
 #include "MODEL/Main/Strong_Coupling.H"
+#include "PDF/Main/ISR_Handler.H"
 #include "ATOOLS/Math/Histogram.H"
 
 namespace SHRIMPS {
   class Ladder_Generator_Base {
   protected:
-    Sigma_Partonic           m_partonic;
-    double                   m_Ymax, m_deltaY, m_beamY, m_Yrange;
+    //Sigma_Partonic           m_partonic;
+    double                   m_Ymax, m_Yhat, m_deltaY, m_beamY, m_Yrange;
     double                   m_qt2min, m_qt2minFF, m_kt2min, m_kt2minShower;
     MODEL::Strong_Coupling * p_alphaS;
     Rapidity_Density         m_density;
-    MEs                      m_me;
+    //MEs                      m_me;
     Omega_ik               * p_eikonal;
     Ladder                 * p_ladder;
     LadderMap              * p_emissions;
@@ -54,7 +56,7 @@ namespace SHRIMPS {
     Ladder_Generator_Base();
     virtual ~Ladder_Generator_Base();
 
-    virtual void Initialise(Remnant_Handler * remnants);
+    virtual void Initialise(PDF::ISR_Handler * isr) = 0;
     virtual void Test();
     virtual Ladder * operator()(const ATOOLS::Vec4D & pos) = 0;
     virtual void QuarkReplace();
@@ -63,7 +65,8 @@ namespace SHRIMPS {
       m_Yrange = 1.;
       //m_Yrange = 0.1*m_beamY;
       //m_Yrange = 0.01*m_beamY;
-      //msg_Out() << "----> in Ladders, m_beamY = " << m_beamY << " and m_Yrange = " << m_Yrange << std::endl;
+      //msg_Out() << "----> in Ladders, m_beamY = "
+      //<< m_beamY << " and m_Yrange = " << m_Yrange << std::endl;
       p_ladder->FixType(-m_beamY+m_Yrange, m_beamY-m_Yrange);
     }
     inline virtual void InitCollision(Omega_ik * eikonal,const double & B) {
@@ -76,10 +79,11 @@ namespace SHRIMPS {
     inline virtual void SetMaximalScale(const double & E1,const double & E2) {
       m_E[0] = E1; m_E[1] = E2;
     }
-    inline virtual const double Yhat()         const { return m_partonic.YHat(); }
     inline virtual const double Ymax()         const { return m_Ymax; }
+    inline virtual const double Yhat()         const { return m_Yhat; }
     inline virtual const double KT2min()       const { return m_kt2minShower; }
     inline virtual const double Weight()       const { return m_weight; } 
+    // inline virtual const double Yhat()         const { return m_partonic.YHat(); }
   };
 }
 #endif

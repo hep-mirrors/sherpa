@@ -4,7 +4,7 @@ set(Cross_Sections_SOURCES Cross_Sections.C
                            Sigma_Inelastic.C
                            Sigma_Elastic.C
                            Sigma_SD.C
-                           Sigma_Partonic.C)
+                           Sigma_TMD.C)
 
 set(Cross_Sections_HEADERS Cross_Sections.H
                            Sigma_Base.H
@@ -12,7 +12,7 @@ set(Cross_Sections_HEADERS Cross_Sections.H
                            Sigma_Inelastic.H
                            Sigma_Elastic.H
                            Sigma_SD.H
-                           Sigma_Partonic.H)
+                           Sigma_TMD.H)
 
 sherpa_create_git_info(Cross_Sections ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR})
  

@@ -1,8 +1,5 @@
 #include "SHRiMPS/Ladders/Primary_Ladders.H"
-#include "SHRiMPS/Ladders/Ladder_Generator_QT.H"
-#include "SHRiMPS/Ladders/Ladder_Generator_KT.H"
-#include "SHRiMPS/Ladders/Ladder_Generator_Eik.H"
-#include "SHRiMPS/Ladders/Ladder_Generator_Seeded.H"
+#include "SHRiMPS/Ladders/Ladder_Generator_TMD.H"
 #include "SHRiMPS/Tools/MinBias_Parameters.H"
 #include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Org/Message.H"
@@ -12,7 +9,7 @@ using namespace SHRIMPS;
 using namespace ATOOLS;
 
 Primary_Ladders::Primary_Ladders() :
-  p_laddergenerator(new Ladder_Generator_Seeded()),
+  p_laddergenerator(new Ladder_Generator_TMD()),
   m_Ecms(rpa->gen.Ecms()/2.),
   m_test(true),
   n_calls(0), n_start(0), n_gen(0)
@@ -51,27 +48,28 @@ Primary_Ladders::~Primary_Ladders() {
   }
 }
 
-void Primary_Ladders::Initialise(Remnant_Handler * remnants) {
-  p_laddergenerator->Initialise(remnants);
+void Primary_Ladders::Initialise(PDF::ISR_Handler *const isr) {
+  for (size_t beam=0;beam<2;beam++) m_pz[beam] = rpa->gen.PBunch(beam)[3];
+  p_laddergenerator->Initialise(isr);
 }
 
 void Primary_Ladders::Test() { return; if (m_test) p_laddergenerator->Test(); }
 
 bool Primary_Ladders::operator()(Omega_ik * eikonal,const double & B,const size_t & N) {
   Reset();
-  msg_Out()<<"     -------------------------------------------------------------\n"
-  	   <<"     --- Make "<<N<<" new ladders at B = "<<B<<"\n";
+  //msg_Out()<<"     -------------------------------------------------------------\n"
+  //	   <<"     --- "<<METHOD<<": make "<<N<<" new ladders at B = "<<B<<"\n";
   p_laddergenerator->InitCollision(eikonal,B);
   size_t Ngen = 0, trials = 0;
   double b1, b2;
   bool   contains_one_inelastic = false;
-  msg_Out()<<"--------------------------------------------------------------\n";
+  //msg_Out()<<"     --------------------------------------------------------------\n";
   while (Ngen<N) {
     Vec4D position = eikonal->SelectB1B2(b1,b2,B);
     p_laddergenerator->SetImpactParameters(b1,b2);
     p_laddergenerator->SetMaximalScale(m_E[0],m_E[1]);
-    msg_Out()<<"   - "<<METHOD<<" generates new ladder with energy limits = "
-	     <<m_E[0]<<" and "<<m_E[1]<<"\n";
+    //msg_Out()<<"     - "<<METHOD<<" generates new ladder with energy limits = "
+    //	     <<m_E[0]<<" and "<<m_E[1]<<"\n";
     Ladder * ladder = (*p_laddergenerator)(position);
     if (m_test && ladder) FillAnalysis(ladder,"trial");
     if (IsAllowed(ladder) && m_colourgenerator(ladder)) {	
@@ -93,8 +91,8 @@ bool Primary_Ladders::operator()(Omega_ik * eikonal,const double & B,const size_
     m_histos[std::string("N_start")]->Insert(N);
     m_histos[std::string("N_gen")]->Insert(Ngen);
   }
-  //msg_Out()<<"contains one inelastic ladder = "<<contains_one_inelastic<<"\n"
-  //	   <<"--------------------------------------------------------------\n";
+  //msg_Out()<<"     "<<METHOD<<" yields one inelastic ladder = "<<contains_one_inelastic<<"\n"
+  //	   <<"     --------------------------------------------------------------\n";
   return contains_one_inelastic;
 }
  
@@ -111,7 +109,9 @@ void Primary_Ladders::Reset() {
 bool Primary_Ladders::IsAllowed(Ladder * ladder) {
   if (ladder==NULL) return false;
   for (size_t i=0;i<2;i++) {
-    if (m_E[i]-ladder->InPart(i)->Momentum()[0] < 5.) return false;
+    Vec4D inmom = ladder->InPart(i)->Momentum();
+    if (m_E[i]-inmom[0] < 5.)  return false;
+    if (m_pz[i]*inmom[3] < 0.) return false;
   }
   return true;
 }

@@ -4,15 +4,17 @@
 #include "SHRiMPS/Event_Generation/Event_Generator_Base.H"
 #include "SHRiMPS/Cross_Sections/Sigma_Inelastic.H"
 #include "SHRiMPS/Ladders/Primary_Ladders.H"
-#include "SHRiMPS/Beam_Remnants/Colour_Generator.H"
 #include "SHRiMPS/Event_Generation/Collinear_Emission_Generator.H"
 #include "ATOOLS/Org/CXXFLAGS.H"
 #include "ATOOLS/Math/Histogram.H"
 #include <map>
 
+namespace PDF { class ISR_Handler; }
+
+
 namespace SHRIMPS {
   class Cluster_Algorithm;
-
+  
   class Inelastic_Event_Generator : public Event_Generator_Base {
   private:
     Sigma_Inelastic * p_sigma;
@@ -31,15 +33,15 @@ namespace SHRIMPS {
         
     bool SelectEikonal();
     bool SelectB();
-    ATOOLS::Blob * MakePrimaryScatterBlob();
+    bool FillPrimaryScatterBlob(ATOOLS::Blob * blob);
   public:
     Inelastic_Event_Generator(Sigma_Inelastic * sigma,const int & test);
     ~Inelastic_Event_Generator();
 
     void Reset();
-    void Initialise(Remnant_Handler * remnants,Cluster_Algorithm * cluster);
+    void Initialise(PDF::ISR_Handler *const isr,Cluster_Algorithm * cluster);
     int InitEvent(ATOOLS::Blob_List * blobs);
-    ATOOLS::Blob * GenerateEvent();
+    bool GenerateEvent(ATOOLS::Blob * blob);
 
 
     inline Colour_Generator * GetColourGenerator()  {

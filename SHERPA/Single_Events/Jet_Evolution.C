@@ -163,9 +163,10 @@ PertInterfaceIter Jet_Evolution::SelectInterface(Blob * blob) {
     break;
   case (int(btp::Hard_Collision)):
     if (blob->Has(blob_status::needs_beamRescatter)) tag = string("BR_");
-    tag += string("MPIs");
-    if (blob->TypeSpec() == "MinBias" || blob->TypeSpec()=="Shrimps")
+    if (blob->TypeSpec() == "MinBias" || blob->TypeSpec()=="Shrimps") 
       tag += string("SoftCollisions");
+    else
+      tag += string("MPIs");
     MODEL::as->SetActiveAs(PDF::isr::hard_subprocess);
     break;
   case (int(btp::Hadron_Decay)):

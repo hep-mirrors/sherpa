@@ -11,8 +11,8 @@ using namespace ATOOLS;
 using namespace std;
 
 Ladder_Generator_Base::Ladder_Generator_Base() :
-  m_partonic(Sigma_Partonic(xs_mode::perturbative)),
-  m_Ymax(MBpars.GetEikonalParameters().Ymax),
+  //m_partonic(Sigma_Partonic(xs_mode::perturbative)),
+  m_Ymax(MBpars.GetEikonalParameters().Ymax), m_Yhat(0.),
   m_deltaY(MBpars.GetEikonalParameters().cutoffY),
   m_beamY(m_Ymax+m_deltaY),
   m_qt2min(MBpars.GetLadderParameters().Q02),
@@ -24,19 +24,16 @@ Ladder_Generator_Base::Ladder_Generator_Base() :
 	    MBpars.GetEikonalParameters().absorp),
   p_ladder(0)
 {
-  Running_AlphaS * as = static_cast<Running_AlphaS *>(s_model->GetScalarFunction(string("alpha_S")));
-  p_alphaS   = new Strong_Coupling(as,asform::smooth,MBpars.GetLadderParameters().Qas2);
-  m_partonic.SetAlphaS(p_alphaS);
-  m_me.SetPartonic(&m_partonic);
+  Running_AlphaS * as = (static_cast<Running_AlphaS *>
+			 (s_model->GetScalarFunction(string("alpha_S"))));
+  p_alphaS   = new Strong_Coupling(as,asform::smooth,
+				   MBpars.GetLadderParameters().Qas2);
+  //m_partonic.SetAlphaS(p_alphaS);
+  //m_me.SetPartonic(&m_partonic);
 }
 
 Ladder_Generator_Base::~Ladder_Generator_Base() {
   delete p_alphaS;
-}
-
-
-void Ladder_Generator_Base::Initialise(Remnant_Handler * remnants) {
-  m_partonic.Initialise(remnants);
 }
 
 void Ladder_Generator_Base::InitLadder(const Vec4D & pos) {

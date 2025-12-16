@@ -1,6 +1,7 @@
 #include "SHRiMPS/Main/Shrimps.H"
 #include "SHRiMPS/Main/Hadron_Init.H"
 #include "SHRiMPS/Eikonals/Eikonal_Creator.H"
+#include "REMNANTS/Main/Remnant_Handler.H"
 #include "ATOOLS/Phys/Cluster_Amplitude.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Message.H"
@@ -16,9 +17,10 @@ using namespace std;
 
 
 Shrimps::Shrimps(PDF::ISR_Handler *const isr) :
-  p_remnants(NULL), p_generator(NULL),
+  p_generator(NULL),
   m_ana(true)
 {
+  msg_Out()<<METHOD<<" starting simple checks.\n";
   ATOOLS::rpa->gen.AddCitation(1,"SHRiMPS is not published yet.");
   MBpars.Init();
   if (MBpars.RunMode()==run_mode::unknown) {
@@ -35,6 +37,7 @@ Shrimps::Shrimps(PDF::ISR_Handler *const isr) :
     msg_Events()<<METHOD<<": run tests.\n";
     TestShrimps(isr);
   }
+  msg_Out()<<METHOD<<": trying to init the run.\n";
   InitialiseTheRun(isr);
   if (m_ana) {
     m_histos[std::string("Yasym_core")]    = new ATOOLS::Histogram(0,  0.0,  8.0, 32);
@@ -49,7 +52,6 @@ Shrimps::Shrimps(PDF::ISR_Handler *const isr) :
 Shrimps::~Shrimps() 
 {
   if (p_xsecs)     delete p_xsecs;
-  if (p_remnants)  delete p_remnants;
   if (p_generator) delete p_generator;
   if (m_ana) {
     std::string name  = std::string("Ladder_Analysis/");
@@ -66,8 +68,7 @@ void Shrimps::InitialiseTheRun(PDF::ISR_Handler *const isr) {
   Hadron_Init().Init();
   InitialiseFormFactors();
   InitialiseSingleChannelEikonals();
-  InitialiseRemnants(isr);
-  InitialiseTheEventGenerator();  
+  InitialiseTheEventGenerator(isr);  
 }
 
 void Shrimps::InitialiseFormFactors() {
@@ -98,22 +99,17 @@ void Shrimps::InitialiseSingleChannelEikonals()
   }
 }
 
-void Shrimps::InitialiseRemnants(PDF::ISR_Handler *const isr) { 
-  p_remnants = new Remnant_Handler(isr);
-}
-
-void Shrimps::InitialiseTheEventGenerator() {
+void Shrimps::
+InitialiseTheEventGenerator(PDF::ISR_Handler *const isr) {
   p_xsecs = new Cross_Sections();
   p_xsecs->CalculateCrossSections();
   p_generator = new Event_Generator(p_xsecs,false);
-  p_generator->Initialise(p_remnants,&m_cluster);
-  p_remnants->SetColourGenerator(p_generator->GetColourGenerator());
+  p_generator->Initialise(isr,&m_cluster);
   m_cluster.SetYmax(p_generator->Ymax());
   m_cluster.SetMinKT2(p_generator->MinKT2());
   m_cluster.SetShowerParams(ShowerMode(),ShowerMinKT2());
   m_cluster.SetShowerFac(ShowerFac());
   p_generator->Reset();
-  p_remnants->Reset();
 }
 
 int Shrimps::InitMinBiasEvent(ATOOLS::Blob_List * blobs) {
@@ -156,12 +152,7 @@ void Shrimps::Analyse(ATOOLS::Blob * blob,std::string tag) {
 
 
 bool Shrimps::GenerateEvent(ATOOLS::Blob * blob) {
-  /*
-    will have to fix this later.
-  msg_Out()<<"  * "<<METHOD<<".\n";
-  return p_generator->GenerateEvent();
-  */
-  return true;
+  return p_generator->GenerateEvent(blob);
 }
 
 ATOOLS::Cluster_Amplitude * Shrimps::ClusterConfiguration(ATOOLS::Blob *const blob) {
@@ -177,15 +168,8 @@ ATOOLS::Cluster_Amplitude * Shrimps::ClusterConfiguration(ATOOLS::Blob *const bl
   return m_cluster.Amplitude();
 }
 
-ATOOLS::Return_Value::code Shrimps::MakeBeamBlobs(ATOOLS::Blob_List * blobs) {
-  p_remnants->SetFormFactors(p_generator->GetEikonal()->FF1(),
-			     p_generator->GetEikonal()->FF2());
-  return p_remnants->FillBeamBlobs(blobs, p_generator->B());
-}
-
 void Shrimps::CleanUp(const size_t & mode) {
   p_generator->Reset();
-  p_remnants->Reset();
 }
 
 void Shrimps::GenerateXsecs() {
@@ -371,7 +355,6 @@ void Shrimps::TestShrimps(PDF::ISR_Handler *const isr) {
   std::string dirname = std::string("Tests");
   ATOOLS::MakeDir(dirname);
   InitialiseFormFactors();
-  InitialiseRemnants(isr);
   InitialiseSingleChannelEikonals();
 
   PrintAlphaS(dirname);
@@ -383,6 +366,7 @@ void Shrimps::TestShrimps(PDF::ISR_Handler *const isr) {
   msg_Info()<<"Tests done.  Results to be found in "<<dirname<<".\n";
 }
 
+/*
 void Shrimps::PrintPDFs(const std::string & dirname) {
   int nxval(100);
   double xmin(1.e-5),x;
@@ -409,6 +393,7 @@ void Shrimps::PrintPDFs(const std::string & dirname) {
     was.close();
   }
 }
+*/
 
 void Shrimps::PrintAlphaS(const std::string & dirname) {
   int    nQ2val(1000);

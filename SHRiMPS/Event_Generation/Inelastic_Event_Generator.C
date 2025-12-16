@@ -30,21 +30,22 @@ Inelastic_Event_Generator::~Inelastic_Event_Generator() {
 }
 
 void Inelastic_Event_Generator::
-Initialise(Remnant_Handler * remnants,Cluster_Algorithm * cluster) {
+Initialise(PDF::ISR_Handler *const isr,Cluster_Algorithm * cluster) {
   m_sigma = 0.;
   Sigma_Inelastic sigma;
   vector<vector<Omega_ik *> > * eikonals(MBpars.GetEikonals());
   for (size_t i=0;i<eikonals->size();i++) {
     for (size_t j=0;j<(*eikonals)[i].size();j++) {
       Omega_ik * eikonal = (*eikonals)[i][j];
-      m_Bgrids[eikonal] = sigma.FillBGrid(eikonal);
-      m_sigma += m_xsecs[eikonal] = m_Bgrids[eikonal]->back() * rpa->Picobarn();
+      m_Bgrids[eikonal]  = sigma.FillBGrid(eikonal);
+      m_sigma += m_xsecs[eikonal] =
+	m_Bgrids[eikonal]->back() * rpa->Picobarn();
     }
   }
   msg_Info()<<METHOD<<" yields effective inelastic cross section "
 	    <<"sigma = "<<m_sigma/1.e9<<" mbarn.\n";
   p_cluster  = cluster;
-  m_primaries.Initialise(remnants);
+  m_primaries.Initialise(isr);
   Reset();
 }
 
@@ -54,7 +55,7 @@ void Inelastic_Event_Generator::Reset() {
 }
 
 int Inelastic_Event_Generator::InitEvent(ATOOLS::Blob_List * blobs) {
-  msg_Out()<<"   - "<<METHOD<<"\n";
+  //msg_Out()<<"   - "<<METHOD<<"\n";
   Blob * blob = blobs->FindFirst(ATOOLS::btp::Soft_Collision);
   if (!blob || blob->Status()!=ATOOLS::blob_status::needs_minBias) return -1;
   if (blob->NInP()>0)  {
@@ -69,7 +70,9 @@ int Inelastic_Event_Generator::InitEvent(ATOOLS::Blob_List * blobs) {
   p_eikonal  = 0; m_B = -1;
   for (size_t trials=0;trials<1000;trials++) {
     if (SelectEikonal() && SelectB()) {
-      m_Nladders = 1+int(ran->Poissonian((*p_eikonal)(m_B)));
+      do {
+	m_Nladders = int(ran->Poissonian((*p_eikonal)(m_B)));
+      } while (m_Nladders<1);
       if (m_Nladders>0) {
 	do { } while (!m_primaries(p_eikonal,m_B,m_Nladders));
 	return 0;
@@ -79,15 +82,13 @@ int Inelastic_Event_Generator::InitEvent(ATOOLS::Blob_List * blobs) {
   return -1;
 }
 
-Blob * Inelastic_Event_Generator::GenerateEvent() {
-  msg_Out()<<"   - "<<METHOD<<"\n";
-  return MakePrimaryScatterBlob();
+bool Inelastic_Event_Generator::GenerateEvent(ATOOLS::Blob * blob) {
+  return FillPrimaryScatterBlob(blob);
 }
 
-Blob * Inelastic_Event_Generator::MakePrimaryScatterBlob() {
+bool Inelastic_Event_Generator::FillPrimaryScatterBlob(ATOOLS::Blob * blob) {
   if (m_primaries.GetLadders()->empty()) return 0;
   Ladder * ladder = m_primaries.GetLadders()->front();
-  Blob * blob     = new Blob();
   blob->SetId();
   //blob->AddData("Weight",new Blob_Data<double>(1.));
   blob->AddData("Renormalization_Scale",new Blob_Data<double>(1.));
@@ -108,6 +109,8 @@ Blob * Inelastic_Event_Generator::MakePrimaryScatterBlob() {
   delete ladder;
   m_primaries.GetLadders()->pop_front();
   //return p_collemgen->GenerateEmissions(blobs);
+  msg_Out()<<"   --- "<<METHOD<<" creates\n"<<(*blob)<<"\n"
+  	   <<"------------------------------------------------------\n";
   return blob;
 }
 

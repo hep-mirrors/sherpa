@@ -2,7 +2,7 @@
 #define SHRIMPS_Ladders_Primary_Ladders_H
 
 #include "SHRiMPS/Ladders/Ladder_Generator_Base.H"
-#include "SHRiMPS/Beam_Remnants/Colour_Generator.H"
+#include "SHRiMPS/Ladders/Colour_Generator.H"
 #include "ATOOLS/Math/Histogram.H"
 
 namespace SHRIMPS {
@@ -10,7 +10,7 @@ namespace SHRIMPS {
   private:
     Ladder_Generator_Base * p_laddergenerator;
     Colour_Generator        m_colourgenerator;
-    double                  m_Ecms, m_E[2];
+    double                  m_Ecms, m_E[2], m_pz[2];
     std::list<Ladder *>     m_ladders;
 
     bool m_test;
@@ -25,7 +25,7 @@ namespace SHRIMPS {
     ~Primary_Ladders();
     
     bool operator()(Omega_ik * eikonal,const double & B,const size_t & N);
-    void Initialise(Remnant_Handler * remnants);
+    void Initialise(PDF::ISR_Handler *const isr);
     void Test();
     void Reset();
 
@@ -34,8 +34,8 @@ namespace SHRIMPS {
     }
     inline Colour_Generator    * GetColourGenerator()  { return &m_colourgenerator; }
     inline std::list<Ladder *> * GetLadders()          { return &m_ladders; }
-    inline const double Yhat()   const { return p_laddergenerator->Yhat(); }
     inline const double Ymax()   const { return p_laddergenerator->Ymax(); }
+    inline const double Yhat()   const { return p_laddergenerator->Yhat(); }
     inline const double KT2min() const { return p_laddergenerator->KT2min(); }
   };
 }

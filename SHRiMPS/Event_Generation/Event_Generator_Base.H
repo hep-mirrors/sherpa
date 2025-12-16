@@ -21,7 +21,7 @@ namespace SHRIMPS {
     virtual void Initialise(Remnant_Handler * remnants=NULL,
 			    Cluster_Algorithm * cluster=NULL) {}
     virtual int          InitEvent(ATOOLS::Blob_List * blobs) = 0;
-    virtual ATOOLS::Blob * GenerateEvent() = 0;
+    virtual bool         GenerateEvent(ATOOLS::Blob * blob)   = 0;
     virtual Omega_ik   * GetEikonal()      const { return p_eikonal;}
     virtual const double XSec()            const { return m_xsec; }
     virtual const double Smin()            const { return m_smin;}

@@ -50,7 +50,8 @@ namespace REMNANTS {
     void DefineRemnantStrategy();
     void InitializeKinematicsAndColours();
     bool CheckBeamBreakup();
-    void InitBeamAndSoftBlobs(ATOOLS::Blob_List* const blobs, const bool& isrescatter);
+    void InitBeamAndSoftBlobs(ATOOLS::Blob_List* const blobs,
+			      const bool& isrescatter);
     int  FindInsertPositionForRescatter(ATOOLS::Blob_List* const bloblist,
 					const bool& isrescatter);
 
@@ -74,7 +75,8 @@ namespace REMNANTS {
                                              const bool& isrescatter = false);
 
     void SetImpactParameter(const double & b,
-			    const ATOOLS::Vec4D & direction=ATOOLS::Vec4D(0.,1.,0.,0.));
+			    const ATOOLS::Vec4D & direction=
+			    ATOOLS::Vec4D(0.,1.,0.,0.));
 
     inline bool NeedsToMakeBeamBlobs() const
     {

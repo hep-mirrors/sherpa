@@ -18,27 +18,33 @@ Event_Generator::Event_Generator(Cross_Sections * xsecs,const bool & test) :
 
 Event_Generator::~Event_Generator() 
 {   
-  if (p_inelastic) delete p_inelastic; p_inelastic=NULL;
-  if (p_elastic) delete p_elastic; p_elastic=NULL;
-  if (p_soft_diffractive) delete p_soft_diffractive; p_soft_diffractive=NULL;
+  if (p_inelastic)        { delete p_inelastic; p_inelastic=NULL; }
+  if (p_elastic)          { delete p_elastic; p_elastic=NULL; }
+  if (p_soft_diffractive) { delete p_soft_diffractive; p_soft_diffractive=NULL; }
 }
 
 void Event_Generator::InitGenerator(Cross_Sections * xsecs,const bool & test) {
   msg_Out()<<METHOD<<"(runmode = "<<int(m_runmode)<<")\n";
   switch (m_runmode) {
   case run_mode::inelastic_events:
-    p_inelastic = new Inelastic_Event_Generator(xsecs->GetSigmaInelastic(),test);
+    p_inelastic =
+      new Inelastic_Event_Generator(xsecs->GetSigmaInelastic(),test);
     break; 
   case run_mode::elastic_events:
-    p_elastic = new Elastic_Event_Generator(xsecs->GetSigmaElastic(),test);
+    p_elastic =
+      new Elastic_Event_Generator(xsecs->GetSigmaElastic(),test);
     break;
   case run_mode::soft_diffractive_events:
-    p_soft_diffractive = new Soft_Diffractive_Event_Generator(xsecs->GetSigmaSD(),test);
+    p_soft_diffractive =
+      new Soft_Diffractive_Event_Generator(xsecs->GetSigmaSD(),test);
     break;
   case run_mode::all_min_bias:
-    p_inelastic = new Inelastic_Event_Generator(xsecs->GetSigmaInelastic(),test);
-    p_elastic = new Elastic_Event_Generator(xsecs->GetSigmaElastic(),test);
-    p_soft_diffractive = new Soft_Diffractive_Event_Generator(xsecs->GetSigmaSD(),test);
+    p_inelastic =
+      new Inelastic_Event_Generator(xsecs->GetSigmaInelastic(),test);
+    p_elastic =
+      new Elastic_Event_Generator(xsecs->GetSigmaElastic(),test);
+    p_soft_diffractive =
+      new Soft_Diffractive_Event_Generator(xsecs->GetSigmaSD(),test);
     break;
   case run_mode::test:
     break;
@@ -58,9 +64,9 @@ void Event_Generator::InitGenerator(Cross_Sections * xsecs,const bool & test) {
 } 
 
 void Event_Generator::
-Initialise(Remnant_Handler * remnants,Cluster_Algorithm * cluster) {
+Initialise(PDF::ISR_Handler *const isr,Cluster_Algorithm * cluster) {
   if (p_inelastic) {
-    p_inelastic->Initialise(remnants,cluster);
+    p_inelastic->Initialise(isr,cluster);
     m_xsec += p_inelastic->XSec();
     m_xsec_inel += p_inelastic->XSec();
   }
@@ -135,8 +141,8 @@ int Event_Generator::InitMinimumBiasEvent(ATOOLS::Blob_List * blobs) {
   return p_active->InitEvent(blobs);
 }
 
-Blob * Event_Generator::GenerateEvent() {
-  return p_active->GenerateEvent();
+bool Event_Generator::GenerateEvent(Blob * blob) {
+  return p_active->GenerateEvent(blob);
 }
 
 void Event_Generator::Test(const std::string & dirname) {

@@ -12,7 +12,6 @@ Beam_Remnant_Handler::Beam_Remnant_Handler(
         REMNANTS::Remnant_Handler* const  remnants,
         Soft_Collision_Handler* const     softcollisions)
     : p_remnants(remnants), p_bunchremnants(nullptr),
-      p_shrimps(softcollisions ? softcollisions->GetShrimps() : nullptr),
       p_beam(beam), m_bunchrescatter(false), m_fill(true), m_vmode(false)
 {
   Settings& s = Settings::GetMainSettings();
@@ -33,8 +32,7 @@ Return_Value::code Beam_Remnant_Handler::FillBeamAndBunchBlobs(
     if (bit->Type() == btp::Beam) return fbc;
   }
   if (!onlyBunch) {
-    if (p_shrimps) fbc = p_shrimps->MakeBeamBlobs(bloblist);
-    else           fbc = p_remnants->MakeBeamBlobs(bloblist);
+    fbc = p_remnants->MakeBeamBlobs(bloblist);
     if (fbc==Return_Value::New_Event && m_vmode)
       THROW(fatal_error,"Four Momentum not conserved.");
     if (fbc!=Return_Value::Success) return fbc;

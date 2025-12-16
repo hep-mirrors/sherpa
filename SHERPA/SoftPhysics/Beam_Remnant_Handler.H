@@ -3,13 +3,11 @@
 
 #include "SHERPA/SoftPhysics/Soft_Collision_Handler.H"
 #include "REMNANTS/Main/Remnant_Handler.H"
-#include "SHRiMPS/Main/Shrimps.H"
 
 namespace SHERPA {
   class Beam_Remnant_Handler {
   private:
     REMNANTS::Remnant_Handler  * p_remnants, * p_bunchremnants;
-    SHRIMPS::Shrimps           * p_shrimps;
     BEAM::Beam_Spectra_Handler * p_beam;
     std::array<ATOOLS::Blob*, 2> p_beamblobs;
     Soft_Collision_Handler     * p_schandler;
@@ -44,13 +42,6 @@ namespace SHERPA {
       }
     }
 
-    inline void SetShrimps(SHRIMPS::Shrimps* shrimps)
-    {
-      if (shrimps != nullptr) {
-        p_shrimps = shrimps;
-        m_name    = std::string("Shrimps");
-      }
-    }
     inline bool NeedsToDealWithRescattering() const
     {
       return p_bunchremnants->NeedsToMakeBeamBlobs();

@@ -45,7 +45,7 @@ namespace SHRIMPS {
     ~Soft_Diffractive_Event_Generator();
 				       
     int InitEvent(ATOOLS::Blob_List * blobs);
-    ATOOLS::Blob * GenerateEvent() { return NULL; }
+    bool GenerateEvent(ATOOLS::Blob * blob) { return false; }
   };
 }
 #endif

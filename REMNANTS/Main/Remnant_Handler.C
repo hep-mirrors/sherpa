@@ -307,7 +307,7 @@ bool Remnant_Handler::CheckBeamBreakup()
     if (!p_remnants[beam]->GetBlob()->MomentumConserved() ||
         !p_remnants[beam]->GetBlob()->CheckColour()) {
       ok = false;
-      if (m_output) {
+      if (true || m_output) {
         msg_Error() << "Error in " << METHOD << ": "
                     << "colour or four-momentum not conserved in beamblob:\n"
                     << (*p_remnants[beam]->GetBlob()) << "\n";

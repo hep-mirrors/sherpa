@@ -29,8 +29,8 @@ namespace SHRIMPS {
     Elastic_Event_Generator(Sigma_Elastic * sigma,const int & test=0);
     ~Elastic_Event_Generator();
 
-    int InitEvent(ATOOLS::Blob_List * blobs); 
-    ATOOLS::Blob * GenerateEvent() { return NULL; }
+    int  InitEvent(ATOOLS::Blob_List * blobs); 
+    bool GenerateEvent(ATOOLS::Blob * blob) { return false; }
   };
 }
 #endif

@@ -5,7 +5,6 @@
 #include "SHRiMPS/Tools/MinBias_Parameters.H"
 #include "SHRiMPS/Cross_Sections/Cross_Sections.H"
 #include "SHRiMPS/Event_Generation/Event_Generator.H"
-#include "SHRiMPS/Beam_Remnants/Remnant_Handler.H"
 #include "ATOOLS/Phys/Blob_List.H"
 #include "ATOOLS/Phys/Flavour.H"
 #include "ATOOLS/Math/Histogram.H"
@@ -13,8 +12,9 @@
 #include "ATOOLS/Org/Message.H"
 #include <list>
 
-namespace PDF    { class ISR_Handler; }
-namespace ATOOLS { class Cluster_Amplitude; }
+namespace REMNANTS { class Remnant_Handler; }
+namespace PDF      { class ISR_Handler; }
+namespace ATOOLS   { class Cluster_Amplitude; }
 
 namespace SHRIMPS {
   /*!
@@ -40,7 +40,6 @@ namespace SHRIMPS {
     */
     int               m_test;
     Cross_Sections  * p_xsecs;
-    Remnant_Handler * p_remnants;
     Event_Generator * p_generator;
     Cluster_Algorithm m_cluster;
 
@@ -67,8 +66,7 @@ namespace SHRIMPS {
     void InitialiseTheRun(PDF::ISR_Handler *const isr);
     void InitialiseFormFactors();
     void InitialiseSingleChannelEikonals();
-    void InitialiseRemnants(PDF::ISR_Handler *const isr);
-    void InitialiseTheEventGenerator();
+    void InitialiseTheEventGenerator(PDF::ISR_Handler *const isr);
     
     void TestShrimps(PDF::ISR_Handler *const isr);
     void PrintAlphaS(const std::string & dirname);
@@ -79,21 +77,21 @@ namespace SHRIMPS {
     void Analyse(ATOOLS::Blob_List * blobs);
     void Analyse(ATOOLS::Blob * blob,std::string tag);
   public:
-    Shrimps(PDF::ISR_Handler *const);
+    Shrimps(PDF::ISR_Handler *const isr);
     ~Shrimps();
 
     int  InitMinBiasEvent(ATOOLS::Blob_List * blobs);
     bool GenerateEvent(ATOOLS::Blob * blob);
     ATOOLS::Cluster_Amplitude * ClusterConfiguration(ATOOLS::Blob *const blob);
     void CleanUp(const size_t & mode=0);
-
-    ATOOLS::Return_Value::code MakeBeamBlobs(ATOOLS::Blob_List * blobs);
     
     inline void SetMaxEnergies(const double & E1,const double & E2) {
       p_generator->SetMaxEnergies(E1,E2);
     }
-    inline int    ShowerMode()       const { return 1; }// MBpars("shower_mode"); }
-    inline double ShowerFac()        const { return 1; }//MBpars("kt2_factor"); }
+    inline int    ShowerMode()       const { return 1; }
+    // MBpars("shower_mode"); }
+    inline double ShowerFac()        const { return 1; }
+    //MBpars("kt2_factor"); }
     inline double ShowerMinKT2()     const { return p_generator->MinKT2(); }
     inline const double XSec()       const { return p_generator->XSec(); }
     inline const double ScaleMin()   const { return p_generator->MinKT2(); }

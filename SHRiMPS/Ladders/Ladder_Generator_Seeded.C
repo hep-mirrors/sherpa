@@ -13,7 +13,8 @@ using namespace std;
 
 Ladder_Generator_Seeded::Ladder_Generator_Seeded() : Ladder_Generator_Base() {
   m_E[0] = m_E[1] = rpa->gen.Ecms()/2.;
-  for (size_t i=0;i<2;i++) m_pbeam[i] = rpa->gen.Ecms()/2. * Vec4D(1.,0.,0.,i==0?1:-1);
+  for (size_t i=0;i<2;i++)
+    m_pbeam[i] = rpa->gen.Ecms()/2. * Vec4D(1.,0.,0.,i==0?1:-1);
 }
 
 Ladder_Generator_Seeded::~Ladder_Generator_Seeded() {}
