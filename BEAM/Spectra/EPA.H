@@ -13,17 +13,16 @@ namespace BEAM {
   private:
     EPA_ff_type  m_fftype;
     EPA_FF_Base* p_ff;
-    double       m_mass;
-    double       m_aqed, m_pref;
-    double       m_q2, m_pt2max;
+    double       m_pref;
+    double       m_pt2max;
     double       m_xmin, m_xmax;
 
-    size_t m_plotting;
+    bool m_plotting;
 
     void Initialise();
     void RegisterDefaults() const;
 
-    void Tests();
+    static void Tests();
 
   public:
     EPA(const ATOOLS::Flavour& beam, double energy, double pol, int dir);
@@ -34,10 +33,10 @@ namespace BEAM {
     void FixPosition() override;
     void SetOutMomentum(const ATOOLS::Vec4D& out) override;
 
-    inline double Xmax() const override { return m_xmax; }
-    inline double Xmin() const override { return m_xmin; }
+    double Xmax() const override { return m_xmax; }
+    double Xmin() const override { return m_xmin; }
 
-    inline double ImpactParameter() const final { return p_ff->ImpactParameter(); }
+    double ImpactParameter() const override { return p_ff->ImpactParameter(); }
   };// end of class EPA
 
 }// end of namespace BEAM
