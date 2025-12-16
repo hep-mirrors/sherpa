@@ -15,19 +15,19 @@ namespace ATOOLS {
 
 namespace BEAM {
   enum class EPA_ff_type {
-    point        = 0,
-    pointApprox  = 1,
-    proton       = 2,
-    protonApprox = 3,
-    ionApproxInt = 4,
-    Gauss        = 10,
-    hcs          = 11,
-    dipole       = 12,
-    dipoleApprox = 13,
-    WoodSaxon    = 14,
+    point           = 0,
+    pointApprox     = 1,
+    proton          = 2,
+    protonApprox    = 3,
+    ionApproxInt    = 4,
+    Gauss           = 10,
+    hcs             = 11,
+    dipole          = 12,
+    dipoleApprox    = 13,
+    WoodSaxon       = 14,
     WoodSaxonApprox = 15,
-    ionApprox    = 16,
-    Test         = 99
+    ionApprox       = 16,
+    Test            = 99
   };
 
   class EPA_FF_Base {
@@ -222,8 +222,9 @@ namespace BEAM {
     static constexpr double               m_q2_min = 1.e-12, m_q2_max = 1.e5;
     static constexpr int                  m_q2_n = 1e7;
 
-    static double IntegrateWithAdaptiveRange(const std::function<double(double)>& integrand,
-        double initial_rmax, double tolerance);
+    static double IntegrateWithAdaptiveRange(
+            const std::function<double(double)>& integrand, double initial_rmax,
+            double tolerance);
     double CalculateDensity();
     void   InitFFTable();
 
@@ -250,7 +251,8 @@ namespace BEAM {
       // Normalising the form factor/nuclear density can be performed
       // analytically and it yields \rho_0 = A / 4 / \pi * 3 / R^3
       const double qR = sqrt(Q2) * m_R_WS;
-      return 3. / std::pow(qR, 3) * (std::sin(qR) - qR * std::cos(qR)) / (1. + ATOOLS::sqr(m_a) * Q2);
+      return 3. / std::pow(qR, 3) * (std::sin(qR) - qR * std::cos(qR)) /
+             (1. + ATOOLS::sqr(m_a) * Q2);
     }
   };
 
