@@ -32,7 +32,6 @@ namespace UFO {
             wgtmap["ParameterVariations"][var.Identifier()] = weight;
         }
         // reset to default vertices
-        wgtmap.NominalIgnoringVariationType
         UpdateAllCouplings(p_vars->Nominal());
     }
 
