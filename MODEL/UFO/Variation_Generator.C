@@ -18,9 +18,8 @@ namespace UFO {
     */
     void Variation_Generator::GenerateAndFillWeightsMap(ATOOLS::Weights_Map& wgtmap){
         double nominal = p_proc->LastXS();
-        //p_proc->SetLookUp(false);
         for (VariationKey var : p_vars->GetVariations()){
-            if (ATOOLS::IsZero(nominal)) {
+            if (nominal == 0.0) {
                 // save some time, fix ratio
                 wgtmap["ParameterVariations"][var.Identifier()] = 0;
                 continue;
@@ -32,9 +31,9 @@ namespace UFO {
             msg_Debugging() << " nominal: " << nominal << ", current: " << part << ", weight: " << weight << std::endl;
             wgtmap["ParameterVariations"][var.Identifier()] = weight;
         }
-        // reset to default vertices TODO save nominal param values somewhere
+        // reset to default vertices
+        wgtmap.NominalIgnoringVariationType
         UpdateAllCouplings(p_vars->Nominal());
-        //p_proc->SetLookUp(true);
     }
 
     void Variation_Generator::UpdateAllCouplings(VariationKey key){

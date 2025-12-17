@@ -94,13 +94,14 @@ Kabbala& Kabbala::operator+=(const Complex& c){
   return *this;
 }
 
-// in place subtract
+// negation
 Kabbala Kabbala::operator-() {
-  rishbon = -rishbon;
-  shem = std::string("-(")+shem+std::string(")");
+  Kabbala k (*this);
+  k.SetValue(-rishbon);
+  k.SetString("-(" + shem + ")");
   Func copy(lambda);
-  lambda = [copy](Function_Argument m) {return -copy(m);};
-  return *this;
+  k.SetLambda([copy](Function_Argument m) {return -copy(m);});
+  return k;
 }
 
 Kabbala& Kabbala::operator-=(const Kabbala& k) {
@@ -289,4 +290,31 @@ Kabbala complexconjugate(const Kabbala& k1){
   k.SetLambda([copy](Kabbala::Function_Argument m){return std::abs(copy(m));});
   return k;
 }*/
+
+//TODO remove
+void Kabbala::TestFunctionality(){
+  //Test Kabbalas
+  msg_Out() << "Testing Kabbalas" << std::endl;
+  Kabbala k1 = Kabbala("c1", 1);
+  Kabbala k2 = Kabbala("c2", 2);
+  k1 += 3;  PRINT_VAR((k1.Value() == 4));
+  k1 += k2; PRINT_VAR((k1.Value() == 6));
+  k1 -= 3;  PRINT_VAR((k1.Value() == 3));
+  k1 -= k2; PRINT_VAR((k1.Value() == 1));
+  k1 *= 4;  PRINT_VAR((k1.Value() == 4));
+  k1 *= k2; PRINT_VAR((k1.Value() == 8));
+  k1 /= 4;  PRINT_VAR((k1.Value() == 2));
+  k1 /= k2; PRINT_VAR((k1.Value() == 1));
+  Kabbala k3 = -k1; PRINT_VAR((k3.Value() == -1));
+  k1 = Kabbala("c1", 1);
+  k2 = Kabbala("c2", 2); 
+  k3 = k1 + k2;  PRINT_VAR((k3.Value() == 3));
+  k3 = k1 + 3;   PRINT_VAR((k3.Value() == 4));
+  k3 = k1 - k2;  PRINT_VAR((k3.Value() == -1));
+  k3 = k1 - 3;   PRINT_VAR((k3.Value() == -2));
+  k3 = k1 * k2;  PRINT_VAR((k3.Value() == 2));
+  k3 = k1 * 3;   PRINT_VAR((k3.Value() == 3));
+  k3 = k1 / k2;  PRINT_VAR((k3.Value() == 0.5));
+  k3 = k1 / 4;   PRINT_VAR((k3.Value() == 0.25));
+}
 }

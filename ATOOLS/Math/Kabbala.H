@@ -38,6 +38,8 @@ namespace ATOOLS {
       Complex Update(Function_Argument map);
       bool DependsOn(std::string param) const;
       Func BasicLookUpFunction();
+      // TODO remove
+      void TestFunctionality();
 
       // Member access
       Complex Value() const {return rishbon;} 

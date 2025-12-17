@@ -100,7 +100,6 @@ namespace PHASIC {
 
     inline bool Zero() const { return m_zero; }
 
-
   private:
 
     //! Generate cluster sequence info (containing the ISR+beam weight)
