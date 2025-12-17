@@ -52,8 +52,9 @@ bool Kabbala::DependsOn(std::string param) const {return shem.find(param) != std
 
 Kabbala::Func Kabbala::BasicLookUpFunction(){
   std::string copy(shem);
-  return [copy](Function_Argument map) {
-    if (map->count(copy) == 0) return C_ZERO; 
+  Complex value_copy(rishbon);
+  return [copy, value_copy](Function_Argument map) {
+    if (map->count(copy) == 0) return value_copy; 
     return Complex(map->at(copy), .0); 
   };
 }
@@ -292,29 +293,10 @@ Kabbala complexconjugate(const Kabbala& k1){
 }*/
 
 //TODO remove
-void Kabbala::TestFunctionality(){
-  //Test Kabbalas
-  msg_Out() << "Testing Kabbalas" << std::endl;
-  Kabbala k1 = Kabbala("c1", 1);
-  Kabbala k2 = Kabbala("c2", 2);
-  k1 += 3;  PRINT_VAR((k1.Value() == 4));
-  k1 += k2; PRINT_VAR((k1.Value() == 6));
-  k1 -= 3;  PRINT_VAR((k1.Value() == 3));
-  k1 -= k2; PRINT_VAR((k1.Value() == 1));
-  k1 *= 4;  PRINT_VAR((k1.Value() == 4));
-  k1 *= k2; PRINT_VAR((k1.Value() == 8));
-  k1 /= 4;  PRINT_VAR((k1.Value() == 2));
-  k1 /= k2; PRINT_VAR((k1.Value() == 1));
-  Kabbala k3 = -k1; PRINT_VAR((k3.Value() == -1));
-  k1 = Kabbala("c1", 1);
-  k2 = Kabbala("c2", 2); 
-  k3 = k1 + k2;  PRINT_VAR((k3.Value() == 3));
-  k3 = k1 + 3;   PRINT_VAR((k3.Value() == 4));
-  k3 = k1 - k2;  PRINT_VAR((k3.Value() == -1));
-  k3 = k1 - 3;   PRINT_VAR((k3.Value() == -2));
-  k3 = k1 * k2;  PRINT_VAR((k3.Value() == 2));
-  k3 = k1 * 3;   PRINT_VAR((k3.Value() == 3));
-  k3 = k1 / k2;  PRINT_VAR((k3.Value() == 0.5));
-  k3 = k1 / 4;   PRINT_VAR((k3.Value() == 0.25));
+void Kabbala::TestFunctionality(Kabbala::Function_Argument map){
+  // trust that the map contains nominal params 
+  Complex val(rishbon);
+  Update(map);
+  if (rishbon != val) msg_Out() << "doesn't work :(((((, value of " << shem << " was " << val << " got updated to " << rishbon << std::endl;
 }
 }

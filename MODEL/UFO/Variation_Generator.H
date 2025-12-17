@@ -25,6 +25,10 @@ namespace UFO {
 
             double Calculate();            
             void UpdateAllCouplings(VariationKey key);
+            void SetConstants(VariationKey key);
+            void SetCouplings(VariationKey key);
+            
+            void ResetAllCouplings();
     };
 };
 
