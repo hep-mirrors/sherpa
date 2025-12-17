@@ -1,0 +1,32 @@
+[build-system]
+requires = [ "scikit-build-core>=0.9", "setuptools", "cmake", "swig" ]
+build-backend = "scikit_build_core.build"
+
+[project]
+name = 'sherpa-mc'
+version = '3.0.3'
+description = 'The Sherpa event generator for High Energy Physics'
+authors = [ { name = "Enrico Bothmann et al.",  email = "sherpa@projects.hepforge.org" } ]
+readme = 'README.md'
+license = { text = "GPLv3 License" }
+classifiers = [
+    'Intended Audience :: Science/Research',
+    'License :: OSI Approved :: GNU General Public License v3 (GPLv3)',
+    'Operating System :: POSIX :: Linux',
+]
+keywords = ["sherpa"]
+dependencies = [ ]
+requires-python = ">=3.8"
+
+[tool.scikit-build]
+build-dir = "build/{wheel_tag}"
+build.verbose = true
+cmake.minimum-version = "3.18"
+wheel.packages = ["sherpa-mc"]
+cmake.args = [ "-Wno-dev",
+  "-DCMAKE_BUILD_TYPE=RelWithDebInfo",
+  "-DSHERPA_ENABLE_INSTALL_LHAPDF=ON",
+  "-DSHERPA_ENABLE_PYTHON=ON",
+  "-DSHERPA_ENABLE_UFO=ON",
+  "-DSHERPA_ENABLE_BINRELOC=ON",
+]
