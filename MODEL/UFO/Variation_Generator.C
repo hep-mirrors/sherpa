@@ -6,6 +6,12 @@ namespace UFO {
         if (!p_proc) THROW(fatal_error, "No Single Process was given for Variation.");
         if (!MODEL::s_model->InitVariations()) THROW(fatal_error, "The model does not seem to implement Variations of external parameters :(");
         p_vars = MODEL::s_model->GetParameterVariations();
+        // TODO maybe remove
+        for (auto v : *MODEL::s_model->Vertices_Pointer()) {
+            for (auto k : *v.Couplings()){
+                k.TestFunctionality(MODEL::s_model->Constants());
+            }
+        }
     }
 
     /*
@@ -31,32 +37,37 @@ namespace UFO {
             msg_Debugging() << " nominal: " << nominal << ", current: " << part << ", weight: " << weight << std::endl;
             wgtmap["ParameterVariations"][var.Identifier()] = weight;
         }
-        // reset to default vertices
-        UpdateAllCouplings(p_vars->Nominal());
+        ResetAllCouplings();
     }
 
     void Variation_Generator::UpdateAllCouplings(VariationKey key){
-            // reset p_consts
-            msg_Debugging() << "Resetting Constants..." << std::endl;
-            VariationKey nominal = p_vars->Nominal();
-            for (size_t i = 0; i < nominal.Size(); i++) {
-                if (MODEL::s_model->Constants()->count(nominal.Name(i)) == 1) MODEL::s_model->Constants()->at(nominal.Name(i)) = nominal.Value(i);
+        // reset first
+        SetConstants(p_vars->Nominal());
+        SetConstants(key);
+        SetCouplings(key);
+    }
+
+    void Variation_Generator::SetConstants(VariationKey key){
+        msg_Debugging() << "Updating Constants to " << key.Identifier() << std::endl;
+        for (size_t i = 0; i < key.Size(); i++) {
+            if (MODEL::s_model->Constants()->count(key.Name(i)) == 1) MODEL::s_model->Constants()->at(key.Name(i)) = key.Value(i);
+        }
+    }
+
+    void Variation_Generator::SetCouplings(VariationKey key){
+        msg_Debugging() << "Updating dependent Vertices..." << std::endl;
+        for (std::string name : key.Names()){
+            std::set<MODEL::Single_Vertex*>* s_dependents = p_vars->Dependents(name);
+            for (std::set<MODEL::Single_Vertex*>::iterator it_v = s_dependents->begin(); it_v != s_dependents->end(); it_v++){
+                MODEL::Single_Vertex* p_v = *it_v;
+                p_v->UpdateCouplings(MODEL::s_model->Constants());
             }
-            // update p_consts
-            msg_Debugging() << "Updating Constants to " << key.Identifier() << std::endl;
-            for (size_t i = 0; i < key.Size(); i++) {
-                if (MODEL::s_model->Constants()->count(key.Name(i)) == 1) MODEL::s_model->Constants()->at(key.Name(i)) = key.Value(i);
-            }
-            // update Kabbalas
-            msg_Debugging() << "Updating dependent Vertices..." << std::endl;
-            for (std::string name : key.Names()){
-                std::set<MODEL::Single_Vertex*>* s_dependents = p_vars->Dependents(name);
-                for (std::set<MODEL::Single_Vertex*>::iterator it_v = s_dependents->begin(); it_v != s_dependents->end(); it_v++){
-                    MODEL::Single_Vertex* p_v = *it_v;
-                    p_v->UpdateCouplings(MODEL::s_model->Constants());
-                }
-                   
-            }
+        }
+    }
+
+    void Variation_Generator::ResetAllCouplings(){
+        SetConstants(p_vars->Nominal());
+        SetCouplings(p_vars->Nominal());
     }
 
     /*
