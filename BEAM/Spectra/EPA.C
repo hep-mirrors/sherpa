@@ -16,7 +16,7 @@ EPA::EPA(const Flavour& beam, const double energy, const double pol,
          const int dir)
     : Beam_Base(beamspectrum::EPA, beam, energy, pol, dir),
       m_fftype(EPA_ff_type::point), p_ff(nullptr), m_pref(0.), m_pt2max(-1.),
-      m_xmin(0.), m_xmax(1.), m_plotting(false)
+      m_plotting(false)
 {
   if (m_beam.Charge() == 0.)
     THROW(fatal_error,
@@ -37,8 +37,7 @@ EPA::EPA(const Flavour& beam, const double energy, const double pol,
 bool EPA::CalculateWeight(double x, double q2)
 {
   m_x      = x;
-  m_weight = (x > m_xmin && x < m_xmax) ? ATOOLS::Max(0., m_pref * p_ff->N(x))
-                                        : 0.;
+  m_weight = m_pref * p_ff->N(x);
   if (m_weight < std::numeric_limits<double>::epsilon()) m_weight = 0.;
   if (IsNan(m_weight))
     msg_Out() << "Boink! " << METHOD << "(x = " << x << ") yields NaN.\n";
@@ -66,8 +65,6 @@ void EPA::Initialise()
   m_pt2max      = !m_beam.IsIon()
                           ? sqr(m_energy * s["ThetaMax"].GetTwoVector<double>()[b])
                           : sqr(rpa->hBar_c() / m_beam.Radius());
-  m_xmin        = s["xMin"].GetTwoVector<double>()[b];
-  m_xmax        = s["xMax"].GetTwoVector<double>()[b];
   if (m_plotting) {
     Tests();
     THROW(normal_exit, "Tests done.");

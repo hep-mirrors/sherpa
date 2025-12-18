@@ -144,6 +144,8 @@ namespace BEAM {
     double Mass() const { return m_mass; }
     double Radius() const { return m_R; }
     double ImpactParameter() const { return m_b; }
+    double Xmin() const {return m_xmin; }
+    double Xmax() const {return m_xmax; }
 
     double Q2min(const double& x) const
     {
