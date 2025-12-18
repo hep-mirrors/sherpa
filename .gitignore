@@ -9,6 +9,8 @@ outputs/
 compile_commands.json
 config.log
 CTestTestfile.cmake
+EXTERNALSRC
+EXTERNALINSTALL
 
 # make targets and intermediate files
 /AMEGIC++/Main/make2scons
