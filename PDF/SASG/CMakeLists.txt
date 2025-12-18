@@ -7,3 +7,4 @@ sherpa_create_git_info(SASG)
  
 add_library(SASGSherpa SHARED ${SASG_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
 sherpa_handle_shared_library(SASGSherpa SASGSherpa)
+target_link_libraries(SASGSherpa PRIVATE PDF ToolsPhys ToolsMath ToolsYaml ToolsOrg)

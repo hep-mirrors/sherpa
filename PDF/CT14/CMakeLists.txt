@@ -5,3 +5,4 @@ sherpa_create_git_info(CT14)
  
 add_library(CT14Sherpa SHARED ${CT14_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
 sherpa_handle_shared_library(CT14Sherpa CT14Sherpa)
+target_link_libraries(CT14Sherpa PRIVATE PDF ToolsPhys ToolsMath ToolsYaml ToolsOrg)

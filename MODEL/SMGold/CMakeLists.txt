@@ -10,4 +10,5 @@ set(SMGold_SOURCES Model.C
 sherpa_create_git_info(SMGold)
  
 add_library(SherpaSMGold SHARED ${SMGold_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
+target_link_libraries(SherpaSMGold ModelMain ToolsPhys ToolsMath ToolsYaml ToolsOrg)
 sherpa_handle_shared_library(SherpaSMGold SherpaSMGold)

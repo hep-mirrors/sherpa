@@ -10,3 +10,4 @@ sherpa_create_git_info(CJK)
 
 add_library(CJKSherpa SHARED ${CJK_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
 sherpa_handle_shared_library(CJKSherpa CJKSherpa)
+target_link_libraries(CJKSherpa PRIVATE PDF ToolsPhys ToolsMath ToolsYaml ToolsOrg)

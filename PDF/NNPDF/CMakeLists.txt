@@ -9,3 +9,4 @@ sherpa_create_git_info(NNPDF)
  
 add_library(NNPDFSherpa SHARED ${NNPDF_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
 sherpa_handle_shared_library(NNPDFSherpa NNPDFSherpa)
+target_link_libraries(NNPDFSherpa PRIVATE PDF ToolsPhys ToolsMath ToolsYaml ToolsOrg)
