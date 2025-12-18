@@ -29,6 +29,8 @@ requires-python = ">=3.8"
 build.verbose = true
 cmake.minimum-version = "3.18"
 wheel.packages = ["sherpa-mc"]
+sdist.exclude = [ "venv", "dist" ]
+wheel.exclude = [ "venv", "dist" ]
 cmake.args = [ "-Wno-dev",
   "-DCMAKE_BUILD_TYPE=RelWithDebInfo",
   "-DSHERPA_ENABLE_INSTALL_LIBZIP=ON",
