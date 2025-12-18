@@ -268,9 +268,6 @@ namespace BEAM {
   };
 
   class EPA_DipoleApprox final : public EPA_FF_Base {
-  private:
-    double m_Q02;
-
   public:
     explicit EPA_DipoleApprox(const ATOOLS::Flavour& beam, int dir);
     double FF(const double& Q2) override { return 1.; }

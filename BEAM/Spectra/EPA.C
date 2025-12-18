@@ -121,9 +121,9 @@ void EPA::RegisterDefaults() const
   s["Q02"].SetDefault(m_beam.IsNucleon()
                               ? 0.71
                               : sqr(2. / m_beam.Radius() * rpa->hBar_c()));
-  s["WoodSaxon_R"].SetDefault(6.49);
-  s["WoodSaxon_d"].SetDefault(0.54);
-  s["WoodSaxonApprox_a"].SetDefault(0.7);
+  s["WoodsSaxon_R"].SetDefault(6.49);
+  s["WoodsSaxon_d"].SetDefault(0.54);
+  s["WoodsSaxonApprox_a"].SetDefault(0.7);
   s["AlphaQED"].SetDefault(1. / 137.03599976);
   s["ThetaMax"].SetDefault(0.3);
   s["PlotSpectra"].SetDefault(false);
