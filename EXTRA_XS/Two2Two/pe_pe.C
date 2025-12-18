@@ -25,19 +25,24 @@ namespace EXTRAXS {
     private:
 
     public:
-        pe_pe(const External_ME_Args &args, const incomingnucleon::code &nucleon, bool include_Z_interference = true);
-
+        pe_pe(const External_ME_Args &args, const incomingnucleon::code &nucleon, 
+              const Flavour &lepton_fl, const Flavour &nucleon_fl, 
+              bool include_Z_interference = true);
+        
         double operator()(const ATOOLS::Vec4D_Vector &mom);
-        double m_alpha, m_alphas, m_s, m_massZ=91.1876; // default Z mass in GeV
-        Flavour m_flv_nucleon, m_flav_lepton;
+        double m_alpha, m_alphas, m_e2, m_massZ, m_massW; 
+        Flavour m_fl_lepton, m_fl_nucleon;
         std::unique_ptr<FormFactor_EMnucleon> p_formfactor;
         std::unique_ptr<FormFactor_EMnucleon> p_formfactor_Z;  
         incomingnucleon::code m_nucleon;
         bool m_include_Z;  // Include photon-Z interference for NC
     };
 
-    pe_pe::pe_pe(const External_ME_Args &args, const incomingnucleon::code &nucleon, bool include_Z_interference)
-        : ME2_Base(args), m_nucleon(nucleon), m_include_Z(include_Z_interference)
+    pe_pe::pe_pe(const External_ME_Args &args, const incomingnucleon::code &nucleon,
+                 const Flavour &lepton_fl, const Flavour &nucleon_fl,
+                 bool include_Z_interference)
+        : ME2_Base(args), m_nucleon(nucleon), m_fl_lepton(lepton_fl), 
+          m_fl_nucleon(nucleon_fl), m_include_Z(include_Z_interference)
     {
         msg_Out()<<"pe_pe::pe_pe(): Constructor called"<<std::endl;
         m_sintt = 2;  // T-channel only , maybe look at single channel restriction later
@@ -45,7 +50,8 @@ namespace EXTRAXS {
         m_oew = 0; // EW order zero (no loops)
         m_oqcd = 0; // QCD order zero 
         msg_Out()<<"pe_pe::pe_pe(): Getting constants"<<std::endl;
-        //m_alpha = MODEL::s_model->ScalarConstant("alpha_QED");
+        m_alpha = 1.0/137.0; //MODEL::s_model->ScalarConstant("fine_structure_const");
+        m_e2 = 4 * M_PI * m_alpha;
         //m_alphas = MODEL::s_model->ScalarConstant("strong_cpl");
         m_massZ = Flavour(kf_Z).Mass();
 
@@ -63,6 +69,7 @@ namespace EXTRAXS {
 
     double pe_pe::operator()(const ATOOLS::Vec4D_Vector &momenta)
     {
+        msg_Out()<<"pe_pe::operator(): Called with " << std::endl;
         // indices: # p[0] e-[1] -> p[2] e-[3]
         // k: lepton, p: hadron
         const auto &ki = momenta[1];
@@ -70,16 +77,28 @@ namespace EXTRAXS {
         const auto &kf = momenta[3];
         const auto &pf = momenta[2];
 
+        msg_Out()<<"pe_pe::operator(): ki = " << ki << std::endl;
+        msg_Out()<<"pe_pe::operator(): pi = " << pi << std::endl;
+        msg_Out()<<"pe_pe::operator(): kf = " << kf << std::endl;
+        msg_Out()<<"pe_pe::operator(): pf = " << pf << std::endl;
+
         //masses squared (on shell)
-        const double Me2 = ki.Abs2();
-        const double Mp2 = pi.Abs2();
+        const double Me2 = m_fl_lepton.Mass() * m_fl_lepton.Mass();
+        const double Mp2 = m_fl_nucleon.Mass() * m_fl_nucleon.Mass();
+
+        msg_Out()<<"pe_pe::operator(): Me2 = " << Me2 << std::endl;
+        msg_Out()<<"pe_pe::operator(): Mp2 = " << Mp2 << std::endl; 
         
         // Mandelstraam variables
         double s = (ki + pi).Abs2();
-        double t = (ki - kf).Abs2();  // t < 0 for spacelike
+        double t = (ki - kf).Abs2();  // t < 0 virtual boson exchange
         double u = (ki - pf).Abs2();
+
+        msg_Out()<<"pe_pe::operator(): s = " << s << std::endl;
+        msg_Out()<<"pe_pe::operator(): t = " << t << std::endl;
+        msg_Out()<<"pe_pe::operator(): u = " << u << std::endl;
         
-        double Q2 = -t;  // Q2 > 0 for spacelike photon exchange
+        double Q2 = -t;  // Q2 > 0 for virtual boson exchange
 
         // Add a small cutoff to avoid IR divergence at Q2=0 (forward scattering)
         // cutoff order approx mass of electron, we dont expect slow moving electrons
@@ -106,7 +125,7 @@ namespace EXTRAXS {
         double term2 = term2coeff * (2*( A*A + B*B +2*A*B) + (C + D +2*B)*t*0.5);
 
         double L_munu_H_munu = - (term1 + term2);
-        double pre_factor = 32 * M_PI * M_PI * sqr((*aqed)(m_s)) / (Q2 * Q2);
+        double pre_factor = 2* m_e2 * m_e2 / (Q2 * Q2);
 
         double M_squared = pre_factor * L_munu_H_munu;
 
@@ -115,6 +134,8 @@ namespace EXTRAXS {
             NucleonFormFactors ff_Z = p_formfactor_Z->GetFormFactors(Q2);
             double F1_Z = ff_Z.F1;
             double F2_Z = ff_Z.F2;
+            double FA_Z = ff_Z.FA;
+            double FP_Z = ff_Z.FP;
             double F12_Z = F1_Z + F2_Z;
 
             double A_Z = (s - Me2 - Mp2) / 2.0;  // (ki . pi)
@@ -130,7 +151,7 @@ namespace EXTRAXS {
             // plus axial terms 
 
             double L_munu_H_munu_Z = -(term1_Z + term2_Z);
-            double pre_factor_Z = 32 * M_PI * M_PI * sqr((*aqed)(m_s)) / pow((Q2+m_massZ*m_massZ),2);
+            double pre_factor_Z = 2 * m_e2 * m_e2 / pow((Q2+m_massZ*m_massZ),2);
 
             double M_squared_Z = pre_factor_Z * L_munu_H_munu_Z;
 
@@ -149,16 +170,16 @@ DECLARE_TREEME2_GETTER(EXTRAXS::pe_pe, "pe_pe")
 Tree_ME2_Base *ATOOLS::Getter<PHASIC::Tree_ME2_Base, PHASIC::External_ME_Args, EXTRAXS::pe_pe>::
 operator()(const External_ME_Args &args) const
 {
-    const Flavour_Vector fl = args.Flavours();
+    const Flavour_Vector &fl = args.Flavours();
     incomingnucleon::code nucleon = incomingnucleon::off;
 
-    // check if elastic scattering
+    // check if elastic NC scattering
     if (fl.size() != 4) return NULL;
     if (fl[0] != fl[2])
         return NULL;
     if (fl[1] != fl[3])
         return NULL;
-    
+
     // Sherpa orders: fl[0]=hadron_in, fl[1]=lepton_in, fl[2]=hadron_out, fl[3]=lepton_out
     if (fl[0] == Flavour(kf_p_plus)) {
         nucleon = incomingnucleon::proton;
@@ -168,9 +189,9 @@ operator()(const External_ME_Args &args) const
         return NULL; // Not a nucleon
     }
     
-    // Determine boson type: 
-    if (fl[1].IsLepton() && fl[1].Charge() != 0) {
-        return new pe_pe(args, nucleon);
+    // check leptons for NC interaction (electron, muon, or tau)
+    if (fl[1].IsChargedLepton()) {
+        return new pe_pe(args, nucleon, fl[1], fl[0]);
     }
 
     return NULL;

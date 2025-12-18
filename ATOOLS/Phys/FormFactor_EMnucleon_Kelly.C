@@ -8,6 +8,8 @@
 
 using namespace ATOOLS;
 
+// Computationally simple better fitted calculations based on Kelly: https://journals.aps.org/prc/pdf/10.1103/PhysRevC.70.068202
+
 FormFactor_EMnucleon_Kelly::FormFactor_EMnucleon_Kelly(incomingboson::code boson, incomingnucleon::code nucleon, double gA, double sin2thetaW) 
       : m_boson_type(boson), m_nucleon_type(nucleon), m_gA(gA), m_sin2thetaW(sin2thetaW), m_formfactor_model(ffmodel::kelly)
 {

@@ -8,6 +8,8 @@
 
 using namespace ATOOLS;
 
+// Very simple experimental independent dipole form factor model based on https://arxiv.org/abs/nucl-ex/0307001v1 
+
 FormFactor_EMnucleon_Dipole::FormFactor_EMnucleon_Dipole(incomingboson::code boson, incomingnucleon::code nucleon, double gA, double sin2thetaW) 
       : m_boson_type(boson), m_nucleon_type(nucleon), m_gA(gA), m_sin2thetaW(sin2thetaW), m_formfactor_model(ffmodel::dipole)
 {
@@ -103,7 +105,7 @@ double FormFactor_EMnucleon_Dipole::F2W(const double &Q2) {
 }
 
 double FormFactor_EMnucleon_Dipole::FAW(const double &Q2) {
-  return m_gA / pow(1. + Q2 / (m_massA * m_massA), 2);
+  return Dipole_func(Q2, m_massA * m_massA, m_gA);
 }
 
 double FormFactor_EMnucleon_Dipole::FPW(const double &Q2) {

@@ -8,7 +8,9 @@ set(Two2Two_SOURCES XS_Drell_Yan.C
                     emu_emu.C
                     DMDM_mumu.C
                     pe_pe.C
-                    vn_ep.C)
+                    pe_nv.C
+                    pv_pv.C
+                    )
 
 sherpa_create_git_info(Two2Two ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR})
  
