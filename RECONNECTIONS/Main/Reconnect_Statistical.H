@@ -10,13 +10,9 @@ namespace RECONNECTIONS {
     int    m_Pmode;
     double m_Q02, m_R02, m_etaR, m_kappa, m_norm;
     std::vector<double> m_etaQ, m_reshuffle;
-    std::string m_algorithm, m_table_size_expr;
 
     void   SetParameters();
     void   FixPMode(const std::string & pm);
-    bool   SelectColourPair(const size_t & N,unsigned int & col1, unsigned int & col2);
-    bool   AttemptSwap(const unsigned int col[2]);
-    size_t EvaluateTableSize(const size_t & N);
     bool   PerformTableReconnections(const size_t & N);
     void   UpdateColours();
     
