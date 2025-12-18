@@ -1,6 +1,4 @@
 @LOADMPIFORPY@
-import sys
-sys.path.append('@PYLIBDIR@')
 import Sherpa
 
 Generator=Sherpa.Sherpa(len(sys.argv),sys.argv)

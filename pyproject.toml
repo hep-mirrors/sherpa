@@ -1,3 +1,10 @@
+## docker run -it -u $(id -u $USER) -v $HOME:$HOME -w $PWD quay.io/pypa/manylinux_2_34_x86_64
+## export PATH=/opt/python/cp312-cp312/bin:$PATH
+## python -m venv venv
+## . venv/bin/activate
+## pip install cmake==3.28.3
+## python -m build
+
 [build-system]
 requires = [ "scikit-build-core>=0.9", "setuptools", "swig" ]
 build-backend = "scikit_build_core.build"
