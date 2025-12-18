@@ -1,5 +1,5 @@
 @LOADMPIFORPY@
-import Sherpa
+import sys, Sherpa
 
 Generator=Sherpa.Sherpa(len(sys.argv),sys.argv)
 try:
