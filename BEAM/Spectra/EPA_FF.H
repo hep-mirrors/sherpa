@@ -27,8 +27,67 @@ namespace BEAM {
     WoodSaxon       = 14,
     WoodSaxonApprox = 15,
     ionApprox       = 16,
-    Test            = 99
+    Test            = 99,
+    Undefined       = -1
   };
+  inline std::ostream& operator<<(std::ostream& os, EPA_ff_type type)
+  {
+    switch (type) {
+      case EPA_ff_type::point: return os << "Lepton";
+      case EPA_ff_type::pointApprox: return os << "Approx_Lepton";
+      case EPA_ff_type::proton: return os << "Proton";
+      case EPA_ff_type::protonApprox: return os << "Approx_Proton";
+      case EPA_ff_type::ionApproxInt: return os << "Point-like_Integrated";
+      case EPA_ff_type::Gauss: return os << "Gaussian";
+      case EPA_ff_type::hcs: return os << "HCS";
+      case EPA_ff_type::dipole: return os << "Dipole";
+      case EPA_ff_type::dipoleApprox: return os << "Approx_Dipole";
+      case EPA_ff_type::WoodSaxon: return os << "Woods-Saxon";
+      case EPA_ff_type::WoodSaxonApprox: return os << "Approx_Woods-Saxon";
+      case EPA_ff_type::ionApprox: return os << "Point-like";
+      case EPA_ff_type::Test: return os << "Test";
+    }
+
+    return os << "Unknown EPA form factor " << type << "\n";
+  }
+
+  inline std::istream& operator>>(std::istream& is, EPA_ff_type& type)
+  {
+    std::string token;
+    if (!(is >> token)) { return is; }
+
+    if (token == "Lepton" || token == "0")
+      type = EPA_ff_type::point;
+    else if (token == "Approx_Lepton" || token == "1")
+      type = EPA_ff_type::pointApprox;
+    else if (token == "Proton" || token == "2")
+      type = EPA_ff_type::proton;
+    else if (token == "Approx_Proton" || token == "3")
+      type = EPA_ff_type::protonApprox;
+    else if (token == "Point-like_Integrated" || token == "4")
+      type = EPA_ff_type::ionApproxInt;
+    else if (token == "Gaussian" || token == "10")
+      type = EPA_ff_type::Gauss;
+    else if (token == "HCS" || token == "11")
+      type = EPA_ff_type::hcs;
+    else if (token == "Dipole" || token == "12")
+      type = EPA_ff_type::dipole;
+    else if (token == "Approx_Dipole" || token == "13")
+      type = EPA_ff_type::dipoleApprox;
+    else if (token == "Woods-Saxon" || token == "14")
+      type = EPA_ff_type::WoodSaxon;
+    else if (token == "Approx_Woods-Saxon" || token == "15")
+      type = EPA_ff_type::WoodSaxonApprox;
+    else if (token == "Point-like" || token == "16")
+      type = EPA_ff_type::ionApprox;
+    else if (token == "Test" || token == "99")
+      type = EPA_ff_type::Test;
+    else {
+      type = EPA_ff_type::Undefined;
+    }
+
+    return is;
+  }
 
   class EPA_FF_Base {
   private:
