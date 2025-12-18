@@ -824,8 +824,8 @@ void Amplitude::ConstructNLOEvents()
     sub->m_k=kin->JK()->Id().front();
     bool order(true);
     if (sub->m_i>m_nin && sub->m_j>m_nin &&
-	kin->JI()->Flav().IsBoson() &&
-        kin->JJ()->Flav().IsFermion()) order=false;
+	    kin->JI()->Flav().IsBoson() &&
+      kin->JJ()->Flav().IsFermion()) order=false;
     sub->m_oqcd=m_maxcpl[0]/2;
     sub->m_oew=m_maxcpl[1]/2;
     Current_Vector cur(sub->m_n,NULL);
@@ -834,15 +834,15 @@ void Amplitude::ConstructNLOEvents()
           (k==sub->m_i && !order)) continue;
       if ((k==sub->m_i && order) ||
           (k==sub->m_j && !order)) {
-	cur[j]=kin->JIJT();
-	sub->m_ijt=j;
+	      cur[j]=kin->JIJT();
+	      sub->m_ijt=j;
       }
       else if (k==sub->m_k) {
-	cur[j]=kin->JKT();
-	sub->m_kt=j;
+	      cur[j]=kin->JKT();
+	      sub->m_kt=j;
       }
       else {
-	cur[j]=m_cur[1][k];
+	      cur[j]=m_cur[1][k];
       }
       fls[j]=cur[j]->Flav();
       ids[j]=cur[j]->CId();
@@ -900,8 +900,8 @@ void Amplitude::ConstructNLOEvents()
     else
       for (size_t j(0);j<m_scur.size();++j)
       if (m_cur.back()[i]->Sub()==m_scur[j]) {
-	m_sid[i]=j;
-	break;
+	      m_sid[i]=j;
+	      break;
       }
   msg_Debugging()<<"}\n";
 }
