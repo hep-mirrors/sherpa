@@ -73,7 +73,7 @@ void EPA::Initialise()
     THROW(normal_exit, "Tests done.");
   }
 
-  m_fftype = static_cast<EPA_ff_type>(s["Form_Factor"].GetTwoVector<int>()[b]);
+  m_fftype = s["Form_Factor"].GetTwoVector<EPA_ff_type>()[b];
   switch (m_fftype) {
     case EPA_ff_type::point:
       p_ff = new EPA_Point(m_beam, m_dir); break;
