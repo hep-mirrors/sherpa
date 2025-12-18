@@ -316,10 +316,6 @@ EPA_Dipole::EPA_Dipole(const ATOOLS::Flavour& beam, const int dir)
 EPA_DipoleApprox::EPA_DipoleApprox(const ATOOLS::Flavour& beam, const int dir)
     : EPA_FF_Base(beam, dir)
 {
-  const auto& s = Settings::GetMainSettings()["EPA"];
-  size_t      b = dir > 0 ? 0 : 1;
-  m_Q02         = s["Q02"].GetTwoVector<double>()[b];
-
   EPA_FF_Base::FillTables();
 }
 
@@ -365,8 +361,8 @@ EPA_WoodSaxon::EPA_WoodSaxon(const ATOOLS::Flavour& beam, const int dir)
 {
   const auto& s = Settings::GetMainSettings()["EPA"];
   size_t      b = dir > 0 ? 0 : 1;
-  m_R_WS        = s["WoodSaxon_R"].GetTwoVector<double>()[b] / rpa->hBar_c();
-  m_d           = s["WoodSaxon_d"].GetTwoVector<double>()[b] / rpa->hBar_c();
+  m_R_WS        = s["WoodsSaxon_R"].GetTwoVector<double>()[b] / rpa->hBar_c();
+  m_d           = s["WoodsSaxon_d"].GetTwoVector<double>()[b] / rpa->hBar_c();
   if (!m_beam.IsIon())
     THROW(fatal_error, "Wrong form factor for " + m_beam.IDName());
 
@@ -422,8 +418,8 @@ EPA_WoodSaxonApprox::EPA_WoodSaxonApprox(const ATOOLS::Flavour& beam,
 {
   const auto& s = Settings::GetMainSettings()["EPA"];
   size_t      b = dir > 0 ? 0 : 1;
-  m_R_WS        = s["WoodSaxon_R"].GetTwoVector<double>()[b] / rpa->hBar_c();
-  m_a = s["WoodSaxonApprox_a"].GetTwoVector<double>()[b] / rpa->hBar_c();
+  m_R_WS        = s["WoodsSaxon_R"].GetTwoVector<double>()[b] / rpa->hBar_c();
+  m_a = s["WoodsSaxonApprox_a"].GetTwoVector<double>()[b] / rpa->hBar_c();
 
   EPA_FF_Base::FillTables();
 }
@@ -436,6 +432,7 @@ EPA_WoodSaxonApprox::EPA_WoodSaxonApprox(const ATOOLS::Flavour& beam,
 EPA_IonApprox::EPA_IonApprox(const ATOOLS::Flavour& beam, const int dir)
     : EPA_FF_Base(beam, dir)
 {
+  m_bmin = 1.;
   m_b_pl_threshold = m_bmin * m_R;
   EPA_IonApprox::FillTables();
 }
