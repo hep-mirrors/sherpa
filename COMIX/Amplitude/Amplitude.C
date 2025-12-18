@@ -1481,76 +1481,76 @@ bool Amplitude::EvaluateAll(const bool& mode)
     }
     for (size_t k(0);k<m_son.size();++k) {
       int i(m_son[k].first), j(m_son[k].second);
-#ifdef DEBUG__BG
+      #ifdef DEBUG__BG
       std::vector<int> cpls(m_cur.back()[i]->Order());
       if (cpls.size()<m_cur.back()[j]->Order().size())
-	cpls.resize(m_cur.back()[j]->Order().size(),0);
+	    cpls.resize(m_cur.back()[j]->Order().size(),0);
       for (size_t l(0);l<m_cur.back()[j]->Order().size();++l)
-	cpls[l]+=m_cur.back()[j]->Order()[l];
+	    cpls[l]+=m_cur.back()[j]->Order()[l];
       msg_Debugging()<<"ME^2 "<<cpls<<" from "
 		     <<m_cur.back()[i]->Order()<<"x"
 		     <<m_cur.back()[j]->Order()<<", dipole "
 		     <<m_cur.back()[i]->Sub()->Sub()->Id()
 		     <<m_cur.back()[i]->Sub()->Id()<<" (type="
 		     <<m_cur.back()[i]->Sub()->Sub()->In().front()->SType()<<") {\n";
-#endif
+      #endif
       double ccsum(0.0);
       for (size_t k(0);k<m_ress[i].size();++k)
-	if (m_ress[i][k]!=Complex(0.0,0.0) &&
-	    m_ress[j][k]!=Complex(0.0,0.0)) {
-#ifdef DEBUG__BG
-	  msg_Debugging()<<"  A["<<i<<"/"<<j<<"]"<<m_ress[i](k)<<" = "
-			 <<m_ress[i][k]<<" * "<<m_cress[j][k]<<" -> "
-			 <<m_ress[i][k]*std::conj(m_cress[j][k])<<"\n";
-#endif
-	ccsum+=(m_ress[i][k]*std::conj(m_cress[j][k])).real();
+	    if (m_ress[i][k]!=Complex(0.0,0.0) &&
+	      m_ress[j][k]!=Complex(0.0,0.0)) {
+        #ifdef DEBUG__BG
+	      msg_Debugging()<<"  A["<<i<<"/"<<j<<"]"<<m_ress[i](k)<<" = "
+			  <<m_ress[i][k]<<" * "<<m_cress[j][k]<<" -> "
+			  <<m_ress[i][k]*std::conj(m_cress[j][k])<<"\n";
+        #endif
+	      ccsum+=(m_ress[i][k]*std::conj(m_cress[j][k])).real();
       }
-#ifdef DEBUG__BG
+      #ifdef DEBUG__BG
       msg_Debugging()<<"}\nccsum = "<<ccsum<<"\n";
-#endif
+      #endif
       ccsum/=m_sf;
       if (p_dinfo->Mode()==1) {
-	if (m_smth) {
-	  Dipole_Kinematics *kin=m_cur.back()[i]->
-	    Sub()->Sub()->In().front()->Kin();
-	  if (kin->F()!=1.0) {
-	    double x(dabs(kin->F()));
-	    if (m_trig) {
-	      m_subs.back()->m_me+=(1.0-x)*ccsum;
-	      m_subs.back()->m_mewgt+=(1.0-x)*ccsum;
-	    }
-	    if (kin->F()<0.0) x=0.0;
-	    ccsum*=x;
-	  }
-	}
-	m_subs[m_sid[i]]->m_me=m_subs[m_sid[i]]->m_mewgt=ccsum;
+	      if (m_smth) {
+	        Dipole_Kinematics *kin=m_cur.back()[i]->
+	        Sub()->Sub()->In().front()->Kin();
+	        if (kin->F()!=1.0) {
+	          double x(dabs(kin->F()));
+	          if (m_trig) {
+	            m_subs.back()->m_me+=(1.0-x)*ccsum;
+	            m_subs.back()->m_mewgt+=(1.0-x)*ccsum;
+	          }
+	          if (kin->F()<0.0) x=0.0;
+	          ccsum*=x;
+	        }
+	      }
+	      m_subs[m_sid[i]]->m_me=m_subs[m_sid[i]]->m_mewgt=ccsum;
       }
       else {
-	Dipole_Kinematics *kin=m_cur.back()[j]->
-	  Sub()->Sub()->In().front()->Kin();
-  for (size_t l(0); l<m_nin; ++l) m_p[l]=-m_p[l];
-	//double lf(log(2.0*M_PI*mu2/EpsSchemeFactor(m_p)/
+	      Dipole_Kinematics *kin=m_cur.back()[j]->
+	      Sub()->Sub()->In().front()->Kin();
+        for (size_t l(0); l<m_nin; ++l) m_p[l]=-m_p[l];
+	      //double lf(log(2.0*M_PI*mu2/EpsSchemeFactor(m_p)/
 	//	      dabs(kin->JIJT()->P()*kin->JK()->P())));
   
-  double lf(0.);
-  if (!p_loop || !(p_loop->fixedIRscale())) 
-      lf = log(2.0*M_PI*mu2/EpsSchemeFactor(m_p)/dabs(kin->JIJT()->P()*kin->JK()->P()));
-  else{
-      double irscale=p_loop->IRscale();
-      lf = log(2.0*M_PI*sqr(irscale)/EpsSchemeFactor(m_p)/dabs(kin->JIJT()->P()*kin->JK()->P()));
-  }
+        double lf(0.);
+        if (!p_loop || !(p_loop->fixedIRscale())) 
+          lf = log(2.0*M_PI*mu2/EpsSchemeFactor(m_p)/dabs(kin->JIJT()->P()*kin->JK()->P()));
+        else{
+          double irscale=p_loop->IRscale();
+          lf = log(2.0*M_PI*sqr(irscale)/EpsSchemeFactor(m_p)/dabs(kin->JIJT()->P()*kin->JK()->P()));
+        }
 
-  for (size_t l(0); l<m_nin; ++l) m_p[l]=-m_p[l];
-#ifdef DEBUG__BG
-	msg_Debugging()<<"e^2 = "<<kin->Res(2)<<", e = "<<kin->Res(1)
+        for (size_t l(0); l<m_nin; ++l) m_p[l]=-m_p[l];
+        #ifdef DEBUG__BG
+	      msg_Debugging()<<"e^2 = "<<kin->Res(2)<<", e = "<<kin->Res(1)
 		       <<", f = "<<kin->Res(0)<<", l = "<<lf
 		       <<" ( "<<p_loop<<" )\n";
-#endif
-	m_dsij[m_dsm[j].first][m_dsm[j].second]+=ccsum;
-	m_dsij[m_dsm[j].second][m_dsm[j].first]+=ccsum;
-	m_cmur[1]-=ccsum*asf*kin->Res(2);
-	m_cmur[0]-=ccsum*asf*(kin->Res(1)+lf*kin->Res(2));
-	ccsum*=-asf*(kin->Res(0)+lf*kin->Res(1)+0.5*sqr(lf)*kin->Res(2));
+        #endif
+	      m_dsij[m_dsm[j].first][m_dsm[j].second]+=ccsum;
+	      m_dsij[m_dsm[j].second][m_dsm[j].first]+=ccsum;
+	      m_cmur[1]-=ccsum*asf*kin->Res(2);
+	      m_cmur[0]-=ccsum*asf*(kin->Res(1)+lf*kin->Res(2));
+	      ccsum*=-asf*(kin->Res(0)+lf*kin->Res(1)+0.5*sqr(lf)*kin->Res(2));
       }
       if (mode || p_dinfo->IType()&cs_itype::I) csum+=ccsum;
     }
@@ -1559,20 +1559,20 @@ bool Amplitude::EvaluateAll(const bool& mode)
       if (p_loop->Mode() && p_loop->ColMode()==0)
          cw*=1.0/p_colint->GlobalWeight();
       if (p_dinfo->Mode()&8) {
-	double e1p(-m_cmur[0]/m_res/asf), e2p(-m_cmur[1]/m_res/asf);
-	double e1l(p_loop->ME_E1()), e2l(p_loop->ME_E2());
-	if (p_loop->Mode()) {
-	  e1l/=p_loop->ME_Born()*m_sf;
-	  e2l/=p_loop->ME_Born()*m_sf;
-	}
-	if (!IsEqual(e2p,e2l))
-	  msg_Error()<<METHOD<<"(): Double pole does not match. V -> "
-		     <<e2l<<", I -> "<<e2p<<", rel. diff. "
-		     <<(e2p/e2l-1.0)<<".\n";
-	if (!IsEqual(e1p,e1l))
-	  msg_Error()<<METHOD<<"(): Single pole does not match. V -> "
-		     <<e1l<<", I -> "<<e1p<<", rel. diff. "
-		     <<(e1p/e1l-1.0)<<".\n";
+	      double e1p(-m_cmur[0]/m_res/asf), e2p(-m_cmur[1]/m_res/asf);
+	      double e1l(p_loop->ME_E1()), e2l(p_loop->ME_E2());
+	      if (p_loop->Mode()) {
+	        e1l/=p_loop->ME_Born()*m_sf;
+	        e2l/=p_loop->ME_Born()*m_sf;
+	      }
+	      if (!IsEqual(e2p,e2l))
+	        msg_Error()<<METHOD<<"(): Double pole does not match. V -> "
+		      <<e2l<<", I -> "<<e2p<<", rel. diff. "
+		      <<(e2p/e2l-1.0)<<".\n";
+	      if (!IsEqual(e1p,e1l))
+	        msg_Error()<<METHOD<<"(): Single pole does not match. V -> "
+		      <<e1l<<", I -> "<<e1p<<", rel. diff. "
+		      <<(e1p/e1l-1.0)<<".\n";
       }
       csum+=cw*asf*p_loop->ME_Finite();
       if (m_murcoeffvirt && p_loop->ProvidesPoles()) {
@@ -1587,7 +1587,7 @@ bool Amplitude::EvaluateAll(const bool& mode)
         }
       }
       else {
-	double b0(11.0/6.0*3.0-2.0/3.0*0.5*Flavour(kf_quark).Size()/2.);
+	      double b0(11.0/6.0*3.0-2.0/3.0*0.5*Flavour(kf_quark).Size()/2.);
         m_cmur[0]=cw*asf*m_maxcpl[0]/2.*b0;
         m_cmur[1]=0.;
       }
