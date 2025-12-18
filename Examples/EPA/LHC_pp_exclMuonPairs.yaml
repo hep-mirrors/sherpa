@@ -1,0 +1,50 @@
+EVENT_GENERATION_MODE: W
+BATCH_MODE: 7
+EVENT_DISPLAY_INTERVAL: 1000
+
+MI_HANDLER: None
+
+EW_SCHEME: alpha0
+
+BEAM_REMNANTS: false
+REMNANTS:
+  22:
+    KT_FORM: None
+  2212:
+    KT_FORM: None
+SHOWER: {MAXEM: 0}
+MI_HANDLER: None
+FRAGMENTATION: None
+YFS: {MODE: off}
+ME_QED: {ENABLED: false}
+# collider setup
+BEAMS: 2212
+BEAM_ENERGIES: 6500
+BEAM_SPECTRA: EPA
+PDF_LIBRARY: None
+PDF_SET: None
+
+YFS:
+  MODE: None
+
+TAGS:
+  FF: 12
+
+EPA:
+  Form_Factor: $(FF)
+
+SCALES: METS{Abs2(p[2]+p[3])}
+
+PROCESSES:
+  - 22 22 -> 13 -13:
+      Order: {QCD: 0, EW: 2}
+
+SELECTORS:
+  - [PT, 90, 4.5, E_CMS] # pt > 6 GeV
+  - [Eta, 90, -3.0, 3.0] # eta \in [-2.4, 2.4]
+
+ANALYSIS: Rivet
+RIVET:
+  --ignore-beams: 1
+  --analyses: ATLAS_2018_I1615866
+

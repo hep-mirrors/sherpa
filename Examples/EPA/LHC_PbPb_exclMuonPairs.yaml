@@ -1,0 +1,31 @@
+EVENT_GENERATION_MODE: W
+
+BEAM_REMNANTS: false # Remnants for nuclei not implemented yet
+
+# collider setup
+BEAMS: 1000822080
+BEAM_ENERGIES: 2510
+BEAM_SPECTRA: EPA
+PDF_LIBRARY: None
+PDF_SET: None
+
+EW_SCHEME: alpha0
+
+EPA:
+  Form_Factor: Approx_Woods-Saxon
+
+SCALES: METS{Abs2(p[2]+p[3])}
+
+PROCESSES:
+  - 22 22 -> 13 -13:
+      Order: {QCD: 0, EW: 2}
+
+SELECTORS:
+  - [PT, 90, 3, E_CMS]
+  - [Eta, 90, -3.0, 3.0]
+
+ANALYSIS: Rivet
+RIVET:
+  --ignore-beams: 1
+  --analyses: ATLAS_2021_I1832628
+
