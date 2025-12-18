@@ -33,8 +33,10 @@ void Reconnect_Statistical::SetParameters() {
   m_etaR      = sqr(s["ETA_R"].SetDefault(0.16).Get<double>());
   m_kappa     = s["KAPPA"].SetDefault(1.).Get<double>();
 
-  m_etaQ      = s["ETA_Q"].SetDefault({0.1}).GetVector<double>();
-  m_reshuffle = s["RESHUFFLE"].SetDefault({1./9.}).GetVector<double>();
+  m_etaQ            = s["ETA_Q"].SetDefault({0.1}).GetVector<double>();
+  m_reshuffle       = s["RESHUFFLE"].SetDefault({1./9.}).GetVector<double>();
+  m_algorithm       = s["ALGORITHM"].SetDefault("random").Get<string>();
+  m_table_size_expr = s["TABLE_SIZE"].SetDefault("1").Get<string>();
 
   for (size_t i{0}; i<m_etaQ.size(); ++i)
     m_etaQ[i] = sqr(m_etaQ[i]);
@@ -69,9 +71,15 @@ int Reconnect_Statistical::operator()(Blob_List *const blobs) {
        cit!=m_cols[0].end();cit++) m_collist.push_back(cit->first);
   size_t N = m_collist.size();
   unsigned int col[2];
-  for (size_t i=0;i<sqr(N);i++) {
-    if (!SelectColourPair(N,col[0],col[1])) break;
-    if (!AttemptSwap(col)) return 0;
+
+  if (m_algorithm == "table") {
+    if (!PerformTableReconnections(N)) return 0;
+  } else {
+    unsigned int col[2];
+    for (size_t i=0;i<sqr(N);i++) {
+      if (!SelectColourPair(N,col[0],col[1])) break;
+      if (!AttemptSwap(col)) return 0;
+    }
   }
   UpdateColours();
   m_collist.clear();
@@ -109,22 +117,201 @@ bool Reconnect_Statistical::AttemptSwap(const unsigned int col[2]) {
   const double ndist1 = Distance(part[1], part[2]);
   const double dist = (dist0 + dist1) - (ndist0 + ndist1);
 
+  if (dist < 0.0) {
+    return true;
+  }
+
   std::vector<double> probs(m_reshuffle.size());
   for(size_t i{0}; i < m_reshuffle.size(); ++i)
     probs[i] = m_reshuffle[i] * (1. - exp(-m_etaQ[i] * dist));
 
-  if (ran->Get()<probs[0]) {
+  if (ran->Get() < probs[0]) {
     m_cols[1][col[0]] = part[3];
     m_cols[1][col[1]] = part[2];
     if(probs[0] > 1e-8) {
-      for (int i{0}; i<m_reshuffle.size(); ++i) {
+      for (int i{0}; i < m_reshuffle.size(); ++i) {
         m_variation_weights[i] *= probs[i] / probs[0];
       }
     }
   } else {
     if (probs[0] > 1e-8) {
-      for (int i{0}; i<m_reshuffle.size(); ++i) {
-        m_variation_weights[i] *= (1.-probs[i]) / (1.-probs[0]);
+      for (int i{0}; i < m_reshuffle.size(); ++i) {
+        m_variation_weights[i] *= (1. - probs[i]) / (1. - probs[0]);
+      }
+    }
+  }
+  return true;
+}
+
+size_t Reconnect_Statistical::EvaluateTableSize(const size_t & N) {
+  std::string expr = m_table_size_expr;
+  std::function<double(const std::string&)> evaluate = [&](const std::string& s) -> double {
+    std::string trimmed = s;
+    size_t start = trimmed.find_first_not_of(" \t");
+    size_t end = trimmed.find_last_not_of(" \t");
+
+    if (start == std::string::npos) return 0.0;
+    trimmed = trimmed.substr(start, end - start + 1);
+
+    if (trimmed.find("sqr(") == 0) {
+      size_t close_paren = trimmed.find(')');
+      if (close_paren != std::string::npos) {
+        std::string inner = trimmed.substr(4, close_paren - 4);
+        double inner_val = evaluate(inner);
+        double result = inner_val * inner_val;
+        if (close_paren + 1 < trimmed.length() && trimmed[close_paren + 1] == '/') {
+          std::string divisor_expr = trimmed.substr(close_paren + 2);
+          result /= evaluate(divisor_expr);
+        }
+        return result;
+      }
+    }
+
+    if (trimmed.find("sqrt(") == 0) {
+      size_t close_paren = trimmed.find(')');
+      if (close_paren != std::string::npos) {
+        std::string inner = trimmed.substr(5, close_paren - 5);
+        double inner_val = evaluate(inner);
+        double result = sqrt(inner_val);
+        if (close_paren + 1 < trimmed.length() && trimmed[close_paren + 1] == '/') {
+          std::string divisor_expr = trimmed.substr(close_paren + 2);
+          result /= evaluate(divisor_expr);
+        }
+        return result;
+      }
+    }
+
+    if (trimmed.find("N") != std::string::npos) {
+      size_t n_pos = trimmed.find("N");
+      double multiplier = 1.0;
+      if (n_pos > 0) {
+        std::string before_n = trimmed.substr(0, n_pos);
+        if (!before_n.empty() && before_n.back() == '*') {
+          before_n = before_n.substr(0, before_n.length() - 1);
+        }
+        if (!before_n.empty()) {
+          multiplier = std::stod(before_n);
+        }
+      }
+      double result = multiplier * static_cast<double>(N);
+      if (n_pos + 1 < trimmed.length()) {
+        std::string after_n = trimmed.substr(n_pos + 1);
+        size_t op_pos = after_n.find_first_not_of(" \t");
+        if (op_pos != std::string::npos) {
+          if (after_n[op_pos] == '*') {
+            std::string multiplier_expr = after_n.substr(op_pos + 1);
+            result *= evaluate(multiplier_expr);
+          }
+          else if (after_n[op_pos] == '/') {
+            std::string divisor_expr = after_n.substr(op_pos + 1);
+            result /= evaluate(divisor_expr);
+          }
+        }
+      }
+      return result;
+    }
+    return std::stod(trimmed);
+  };
+  double value = evaluate(expr);
+  return std::max<size_t>(1, static_cast<size_t>(value));
+}
+
+bool Reconnect_Statistical::PerformTableReconnections(const size_t & N) {
+  struct SwapProposal {
+    unsigned int col1, col2;
+    double dist;
+  };
+  auto worseByDist = [](const SwapProposal &a, const SwapProposal &b) {
+    return a.dist < b.dist;
+  };
+
+  const size_t sample_size = EvaluateTableSize(N);
+  const size_t n_iters     = sqr(N) / sample_size;
+
+  for (size_t iter = 0; iter < n_iters; ++iter) {
+    std::vector<SwapProposal> candidates;
+    candidates.reserve(sample_size);
+
+    for (size_t k = 0; k < sample_size; ++k) {
+      unsigned int col1 = 0, col2 = 0;
+      unsigned int trials = 0;
+
+      do {
+        col1 = m_collist[int(ran->Get() * N)];
+        col2 = m_collist[int(ran->Get() * N)];
+        if ((trials++) == 100) break;
+      } while (col1 == col2 ||
+               m_cols[0][col1] == m_cols[1][col2] ||
+               m_cols[0][col2] == m_cols[1][col1]);
+      if (trials >= 100) {
+        return true;
+      }
+      if (m_cols[0].find(col1) == m_cols[0].end() ||
+          m_cols[0].find(col2) == m_cols[0].end() ||
+          m_cols[1].find(col1) == m_cols[1].end() ||
+          m_cols[1].find(col2) == m_cols[1].end()) {
+        continue;
+      }
+
+      Particle *part[4];
+      part[0] = m_cols[0][col1];
+      part[1] = m_cols[0][col2];
+      part[2] = m_cols[1][col1];
+      part[3] = m_cols[1][col2];
+
+      const double dist0  = Distance(part[0], part[2]);
+      const double dist1  = Distance(part[1], part[3]);
+      const double ndist0 = Distance(part[0], part[3]);
+      const double ndist1 = Distance(part[1], part[2]);
+      const double dist   = (dist0 + dist1) - (ndist0 + ndist1);
+
+      if (dist < 0.0) {
+        continue;
+      }
+      candidates.push_back({col1, col2, dist});
+    }
+    if (candidates.empty()) {
+      continue;
+    }
+
+    auto best_it = std::max_element(candidates.begin(), candidates.end(), worseByDist);
+    const SwapProposal best = *best_it;
+
+    if (m_cols[0].find(best.col1) == m_cols[0].end() ||
+        m_cols[0].find(best.col2) == m_cols[0].end() ||
+        m_cols[1].find(best.col1) == m_cols[1].end() ||
+        m_cols[1].find(best.col2) == m_cols[1].end()) {
+      msg_Error()<<"Error in "<<METHOD<<": ill-defined colours.\n";
+      return false;
+    }
+
+    unsigned int col[2] = {best.col1, best.col2};
+
+    Particle *part[4];
+    part[0] = m_cols[0][col[0]];
+    part[1] = m_cols[0][col[1]];
+    part[2] = m_cols[1][col[0]];
+    part[3] = m_cols[1][col[1]];
+
+    const double dist = best.dist;
+
+    std::vector<double> probs(m_reshuffle.size());
+    for (size_t i = 0; i < m_reshuffle.size(); ++i)
+      probs[i] = m_reshuffle[i] * (1. - exp(-m_etaQ[i] * dist));
+
+    if (ran->Get() < probs[0]) {
+      m_cols[1][col[0]] = part[3];
+      m_cols[1][col[1]] = part[2];
+      if (probs[0] > 1e-8) {
+        for (size_t i{0}; i < m_reshuffle.size(); ++i) {
+          m_variation_weights[i] *= probs[i] / probs[0];
+        }
+      }
+    } else {
+      if (probs[0] > 1e-8) {
+        for (size_t i{0}; i < m_reshuffle.size(); ++i) {
+          m_variation_weights[i] *= (1. - probs[i]) / (1. - probs[0]);
+        }
       }
     }
   }
@@ -164,7 +351,7 @@ double Reconnect_Statistical::ColDistance(Particle * trip,Particle * anti) {
 }
 
 double Reconnect_Statistical::TotalLength() {
-  double total = 1.;
+  double total = 0.;
   Particle * part1, * part2;
   for (map<unsigned int, Particle *>::iterator cit=m_cols[0].begin();
        cit!=m_cols[0].end();cit++) {

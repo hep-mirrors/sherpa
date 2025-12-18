@@ -12,8 +12,6 @@ namespace RECONNECTIONS {
     long unsigned int   m_nfails;
     Reconnection_Base * p_reconnector;
     void AddReconnectionBlob(ATOOLS::Blob_List * blobs);
-    int m_nreconnections {0};
-    std::vector<double> wgt_sums;
  public:
     Reconnection_Handler(const bool & on);
     ~Reconnection_Handler();
