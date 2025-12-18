@@ -61,10 +61,10 @@ void Remnants_Parameters::SetNucleonDefaults()
   parmsP->params["BEAM_SPECTATOR_KTEXPO"]   = 5.00;
   parmsP->params["REFERENCE_ENERGY"]        = 7000.;
   parmsP->params["ENERGY_SCALING_EXPO"]     = 0.08;
-  parmsP->m_form                            = matter_form::single_gaussian;
-  parmsP->params["MATTER_RADIUS_1"]         = 0.86;
-  parmsP->params["MATTER_RADIUS_2"]         = 0.00;
-  parmsP->params["MATTER_FRACTION_1"]       = 0.50;
+  parmsP->m_form                            = matter_form::double_gaussian;
+  parmsP->params["MATTER_RADIUS_1"]         = 0.855;
+  parmsP->params["MATTER_RADIUS_2"]         = 1.00;
+  parmsP->params["MATTER_FRACTION_1"]       = 0.535;
   parmsP->params["SOFT_EXPONENT"]           = 0.08;
   m_defaults[Flavour(kf_p_plus)]            = parmsP;
   m_defaults[Flavour(kf_p_plus).Bar()]      = new remnant_parameters(*parmsP);

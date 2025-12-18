@@ -23,13 +23,13 @@ MI_Parameters::MI_Parameters() :
   m_parameters[string("pt_0(IR)")]
     = s["PT_0(IR)"].SetDefault(0.5).Get<double>();
   m_parameters[string("pt_min(ref)")]
-    = s["PT_Min(ref)"].SetDefault(2.25).Get<double>();
+    = s["PT_Min(ref)"].SetDefault(1.813).Get<double>();
   m_parameters[string("pt_min(IR)")]
     = s["PT_Min(IR)"].SetDefault(1.00).Get<double>();
   m_parameters[string("Ecms(ref)")]
     = s["E(ref)"].SetDefault(7000.).Get<double>();
   m_parameters[string("eta")]
-    = s["Eta"].SetDefault(0.16).Get<double>();
+    = s["Eta"].SetDefault(0.08).Get<double>();
   m_pt02ref   = sqr(m_parameters[string("pt_0(ref)")]);
   m_pt02IR    = sqr(m_parameters[string("pt_0(IR)")]);
   m_ptmin2ref = sqr(m_parameters[string("pt_min(ref)")]);
@@ -37,9 +37,10 @@ MI_Parameters::MI_Parameters() :
   m_Sref      = sqr(m_Eref = m_parameters[string("Ecms(ref)")]);
   m_Scms      = sqr(m_Ecms = rpa->gen.Ecms());
   m_eta       = m_parameters[string("eta")];
+  double pt_min = sqrt(CalculatePTmin2(m_Scms));
   double pt_0 = sqrt(CalculatePT02(m_Scms));
   m_parameters[string("pt_min")]
-    = s["PT_Min"].SetDefault(m_parameters[string("pt_min(ref)")]).Get<double>();
+    = s["PT_Min"].SetDefault(pt_min).Get<double>();
   m_parameters[string("pt_0")]
     = s["PT_0"].SetDefault(pt_0).Get<double>();
   m_scaleRscheme = s["MU_R_SCHEME"].SetDefault("PT").Get<scale_scheme>();
@@ -50,7 +51,7 @@ MI_Parameters::MI_Parameters() :
     = s["MU_F_FACTOR"].SetDefault(1.0).Get<double>();
   m_parameters[string("E_min")] = s["E_Min"].SetDefault(0.25).Get<double>();
   m_parameters[string("SigmaND_Norm")]
-    = s["SIGMA_ND_NORM"].SetDefault(1.02).Get<double>();
+    = s["SIGMA_ND_NORM"].SetDefault(0.762).Get<double>();
   m_parameters[string("PomeronIntercept")]
     = s["PomeronIntercept"].SetDefault(0.0808).Get<double>();
   m_parameters[string("PomeronSlope")]
@@ -92,7 +93,7 @@ MI_Parameters::MI_Parameters() :
     = s["N_MaxScatters"].SetDefault(10000).Get<size_t>();
 
 
-  size_t twopions = s["TwoPionInterference"].SetDefault(1).Get<size_t>();
+  size_t twopions = s["TwoPionInterference"].SetDefault(0).Get<size_t>();
   switch (twopions) {
   case 4:  m_twopions = two_pions::cont_only;      break;
   case 3:  m_twopions = two_pions::rho_omega_cont; break;
@@ -107,11 +108,11 @@ MI_Parameters::MI_Parameters() :
 }
 
 double MI_Parameters::CalculatePT02(const double & s) const {
-  return Max(m_pt02IR, m_pt02ref * pow((s<0 ? m_Scms : s)/m_Sref,m_eta));
+  return Max(m_pt02IR, m_pt02ref * pow((s<0 ? m_Scms : s)/m_Sref,2*m_eta));
 }
 
 double MI_Parameters::CalculatePTmin2(const double & s) const {
-  return Max(m_ptmin2IR, m_ptmin2ref * pow((s<0 ? m_Scms : s)/m_Sref,m_eta));
+  return Max(m_ptmin2IR, m_ptmin2ref * pow((s<0 ? m_Scms : s)/m_Sref,2*m_eta));
 }
 
 

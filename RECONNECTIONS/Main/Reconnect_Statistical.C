@@ -33,8 +33,8 @@ void Reconnect_Statistical::SetParameters() {
   m_etaR      = sqr(s["ETA_R"].SetDefault(0.16).Get<double>());
   m_kappa     = s["KAPPA"].SetDefault(1.).Get<double>();
 
-  m_etaQ            = s["ETA_Q"].SetDefault({0.1}).GetVector<double>();
-  m_reshuffle       = s["RESHUFFLE"].SetDefault({1./9.}).GetVector<double>();
+  m_etaQ      = s["ETA_Q"].SetDefault({0.436}).GetVector<double>();
+  m_reshuffle = s["RESHUFFLE"].SetDefault({1./9.}).GetVector<double>();
 
   for (size_t i{0}; i<m_etaQ.size(); ++i)
     m_etaQ[i] = sqr(m_etaQ[i]);
