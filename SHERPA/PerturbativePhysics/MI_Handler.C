@@ -41,7 +41,7 @@ MI_Handler::MI_Handler(MODEL::Model_Base *model,
     if ((scm==string("Shrimps") && p_amisic==NULL) ||
 	m_name==string("Shrimps")) InitShrimps(model);
   }
-  msg_Out()<<"Multiple interactions initialized\n"
+  msg_Info()<<"Multiple interactions initialized\n"
            <<"  id = "<<m_id<<", name = "<<m_name<<", type = "<<m_type<<"\n";
 }
 

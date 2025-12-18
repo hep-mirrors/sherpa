@@ -18,7 +18,7 @@ Primordial_KPerp::~Primordial_KPerp() {
 }
 
 void Primordial_KPerp::Initialize(Remnant_Handler * rhandler) {
-  msg_Out()<<"Initializing primordial transverse momentum ...\n";
+  msg_Info()<<"Initializing primordial transverse momentum ...\n";
   m_on = Settings::GetMainSettings()["INTRINSIC_KPERP"].Get<bool>();
   if (!m_on) {
     m_form = {primkT_form::none, primkT_form::none};
