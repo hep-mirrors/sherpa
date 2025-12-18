@@ -62,7 +62,7 @@ EPA_FF_Base::EPA_FF_Base(const ATOOLS::Flavour& beam, const int dir)
 
   if (m_bmin <= 0. || m_bmin > m_bmax)
     THROW(invalid_input, "Unphysical input for EPA impact parameter. ");
-  if (m_xmin < 0. || m_xmin > m_xmax)
+  if (m_xmin <= 0. || m_xmin > m_xmax || m_xmax > 1.)
     THROW(invalid_input, "Unphysical input for EPA x-limits. ");
   if (m_q2min > m_q2max)
     THROW(invalid_input, "Unphysical input for EPA Q2-limits. ");
