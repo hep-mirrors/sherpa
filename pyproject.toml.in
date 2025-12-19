@@ -13,7 +13,7 @@ build-backend = "scikit_build_core.build"
 name = 'sherpa-mc'
 version = '@SHERPA_VERSION@'
 description = 'The Sherpa event generator for High Energy Physics'
-authors = [ { name = "Enrico Bothmann et al.",  email = "sherpa@projects.hepforge.org" } ]
+authors = [ { name = "Enrico Bothmann et al.",  email = "sherpa-developers@cern.ch" } ]
 readme = 'README.md'
 license = { text = "GPLv3 License" }
 classifiers = [
