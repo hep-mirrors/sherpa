@@ -16,8 +16,9 @@ Decay_Table::Decay_Table(const Flavour _flin, const ATOOLS::Mass_Selector* ms) :
 Decay_Table::~Decay_Table()
 {
   for (size_t i=0; i<size(); i++) {
-    delete at(i); at(i)=NULL;
+    delete at(i);
   }
+  clear();
 }
 
 void Decay_Table::AddDecayChannel(Decay_Channel * _dc)

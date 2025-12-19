@@ -56,6 +56,8 @@ Hadron_Decay_Handler::~Hadron_Decay_Handler()
   Hadron_Decay_Map* dmap=dynamic_cast<Hadron_Decay_Map*>(p_decaymap);
   delete dmap; p_decaymap=NULL;
   delete p_mixinghandler; p_mixinghandler=NULL;
+  HADRONS::Tools::partonic_b->clear();
+  HADRONS::Tools::partonic_c->clear();
 }
 
 void Hadron_Decay_Handler::TreatInitialBlob(ATOOLS::Blob* blob,

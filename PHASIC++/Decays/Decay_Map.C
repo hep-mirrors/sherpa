@@ -16,6 +16,7 @@ Decay_Map::~Decay_Map()
   for (Decay_Map::iterator pos = this->begin(); pos != this->end(); ++pos) {
     delete pos->second;
   }
+  clear();
 }
 
 bool Decay_Map::Knows(const ATOOLS::Flavour & decayer)
