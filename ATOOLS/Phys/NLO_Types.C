@@ -14,6 +14,7 @@ std::ostream &ATOOLS::operator<<(std::ostream &str,const nlo_type::code &c)
   if (c&nlo_type::rsub) out+="S";
   if (c&nlo_type::rvirt) out+="E";
   if (c&nlo_type::realreal) out+="W";
+  if (c&nlo_type::vv) out+="M";
   return str<<out;
 }
 
@@ -29,6 +30,7 @@ std::istream &ATOOLS::operator>>(std::istream &str,nlo_type::code &c)
   if (tag.find('S')!=std::string::npos) c|=nlo_type::rsub;
   if (tag.find('E')!=std::string::npos) c|=nlo_type::rvirt;
   if (tag.find('W')!=std::string::npos) c|=nlo_type::realreal;
+  if (tag.find('M')!=std::string::npos) c|=nlo_type::vv;
   return str;
 }
 
