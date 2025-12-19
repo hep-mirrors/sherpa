@@ -2,7 +2,7 @@
 ## export PATH=/opt/python/cp312-cp312/bin:$PATH
 ## python -m venv venv
 ## . venv/bin/activate
-## pip install cmake==3.28.3
+## pip install build cmake==3.28.3
 ## python -m build
 
 [build-system]
