@@ -7,6 +7,7 @@
 #include "YFS/NLO/Real.H"
 #include "YFS/NLO/RealReal.H"
 #include "YFS/NLO/RealVirtual.H"
+#include "YFS/NLO/VirtualVirtual.H"
 #include "YFS/Main/YFS_Form_Factor.H"
 #include "YFS/Main/Define_Dipoles.H"
 #include "ATOOLS/Math/Histogram_2D.H"
@@ -33,6 +34,7 @@ public:
   YFS::Real        *p_real;
   YFS::RealReal    *p_realreal;
   YFS::RealVirtual *p_realvirt;
+  YFS::VirtualVirtual *p_vv;
   YFS::Define_Dipoles *p_nlodipoles;
   YFS::YFS_Form_Factor *p_yfsFormFact;
   YFS::FSR  *p_fsr;
@@ -56,6 +58,7 @@ public:
   void InitializeReal(const PHASIC::Process_Info& pi);
   void InitializeRealReal(const PHASIC::Process_Info& pi);
   void InitializeRealVirtual(const PHASIC::Process_Info& pi);
+  void InitializeVV(const PHASIC::Process_Info& pi);
   double CalculateVirtual();
   double CalculateReal();
   double CalculateRealReal();
@@ -63,6 +66,7 @@ public:
   double CalculateRealReal(Vec4D k1, Vec4D k2, int fsrmode1=0, int fsrmode2=0);
   double CalculateRealVirtual();
   double CalculateRealVirtual(Vec4D k, int submode=0);
+  double CalculateVV();
   void MakeHardMomenta();
   void MapMomenta(ATOOLS::Vec4D_Vector &p, ATOOLS::Vec4D &k);
   void MapMomenta(ATOOLS::Vec4D_Vector &p, ATOOLS::Vec4D &k1, ATOOLS::Vec4D &k2);

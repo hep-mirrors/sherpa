@@ -436,6 +436,30 @@ double Define_Dipoles::CalculateVirtualSubEps() {
   return sub.Finite();
 }
 
+double Define_Dipoles::CalculateVVSubEps() {
+  DivArrD sub(0);
+  for (auto &D : m_dipolesII) {
+    sub += D.ChargeNorm()*p_yfsFormFact->BVV_full_eps(D, sqrt(m_s) / 2., 3);
+  if(IsBad(sub.Finite())) msg_Error()<<"YFS subtraction is Nan For dipole:"<<D<<std::endl;
+  }
+  for (auto &D : m_dipolesFF) {
+    if(D.IsFinite()) continue;
+    if(m_mode==yfsmode::fsr) sub += -D.m_QiQj*p_yfsFormFact->BVV_full_eps(D, sqrt(m_s) / 2., 3);
+    else sub += D.ChargeNorm()*p_yfsFormFact->BVV_full_eps(D, sqrt(m_s) / 2., 3);
+    if(IsBad(sub.Finite())) msg_Error()<<"YFS subtraction is Nan For dipole:"<<D<<std::endl;
+  }
+
+  for (auto &D : m_dipolesIF){
+    if(D.IsFinite()) continue;
+    sub += D.ChargeNorm()*p_yfsFormFact->BVV_full_eps(D, sqrt(m_s) / 2., 3);
+    if(IsBad(sub.Finite())) {
+      msg_Error()<<"YFS subtraction is Nan For dipole:"<<D<<std::endl;
+      // THROW(fatal_error, "YFS Subtraction fails");
+    }
+  }
+  m_vvSub=0.5*sub*sub;
+  return (0.5*sub*sub).Finite();
+}
 
 double Define_Dipoles::CalculateRealVirtualSubEps(const Vec4D &k) {
   DivArrD sub(0);

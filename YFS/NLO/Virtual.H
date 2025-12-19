@@ -1,5 +1,5 @@
- #ifndef YFS_Virtual_Virtual_H
-#define YFS_Virtual_Virtual_H
+ #ifndef YFS_Virtual_H
+#define YFS_Virtual_H
 #include "PHASIC++/Process/Virtual_ME2_Base.H"
 #include "PHASIC++/Process/Tree_ME2_Base.H"
 #include "PHASIC++/Process/Color_Correlated_ME2.H"

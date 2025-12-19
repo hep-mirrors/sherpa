@@ -847,6 +847,7 @@ void Matrix_Element_Handler::ReadFinalStateMultiSpecificProcessSettings(
     else if (subkey == "RS_ME_Generator")    ExtractMPvalues(value, range, nf, args.pbi.m_vrsmegen);
     else if (subkey == "Loop_Generator")     ExtractMPvalues(value, range, nf, args.pbi.m_vloopgen);
     else if (subkey == "RV_Generator")     ExtractMPvalues(value, range, nf, args.pbi.m_rvloopgen);
+    else if (subkey == "VV_Generator")     ExtractMPvalues(value, range, nf, args.pbi.m_vvloopgen);
     else if (subkey == "Integrator")         ExtractMPvalues(value, range, nf, args.pbi.m_vint);
     else if (subkey == "RS_Integrator")      ExtractMPvalues(value, range, nf, args.pbi.m_vrsint);
     else if (subkey == "PSI_ItMin")          ExtractMPvalues(value, range, nf, args.pbi.m_vitmin);
@@ -1063,6 +1064,10 @@ void Matrix_Element_Handler::BuildSingleProcessList(
   if (GetMPvalue(args.pbi.m_rvloopgen,nfs,pnid,ds)) {
     m_gens.LoadGenerator(ds);
     cpi.m_rvgenerator=ds;
+  }
+  if (GetMPvalue(args.pbi.m_vvloopgen,nfs,pnid,ds)) {
+    m_gens.LoadGenerator(ds);
+    cpi.m_vvgenerator=ds;
   }
 	if (GetMPvalue(args.pbi.m_vint,nfs,pnid,ds)) cpi.m_integrator=ds;
 	if (GetMPvalue(args.pbi.m_vrsint,nfs,pnid,ds)) cpi.m_rsintegrator=ds;

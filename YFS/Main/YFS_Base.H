@@ -82,7 +82,7 @@ public:
   int m_no_born, m_check_real_sub, m_check_rr_sub, m_no_subtraction, m_tchannel, m_check_virt_born, m_noflux, m_massless_sub;
   
   bool m_looptool, m_virtual_only, m_real_only, m_use_model_alpha,m_failcut,m_nlocuts;
-  bool m_isrinital, m_realtool, m_realvirt, m_useceex, m_coll_real, m_rrtool, m_dim_reg;
+  bool m_isrinital, m_realtool, m_realvirt, m_useceex, m_coll_real, m_rrtool, m_vvtool, m_dim_reg;
   bool m_skipNegWeights;
   int m_flux_mode, m_hidephotons, m_photon_split, m_int_nlo, m_eex_virt;
   std::string m_name, m_type, m_debugDIR_ISR, m_debugDIR_FSR, m_debugDIR_NLO;

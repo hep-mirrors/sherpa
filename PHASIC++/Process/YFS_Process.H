@@ -65,7 +65,7 @@ namespace PHASIC {
 
     ~YFS_Process();
     void RegisterDefaults();
-    Process_Base     *p_bornproc, *p_realproc, *p_virtproc, *p_realvirtproc, *p_realrealproc;
+    Process_Base     *p_bornproc, *p_realproc, *p_virtproc, *p_realvirtproc, *p_realrealproc, *p_vv;
 
     Process_Base* Selected();
     /*!

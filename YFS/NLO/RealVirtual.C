@@ -60,11 +60,11 @@ double RealVirtual::Calc_V(const ATOOLS::Vec4D_Vector& p,
            const double mur)
   {
     double V(0.0), run_corr(0.0), scale(0.0);
-    m_failcut = false;
-    if(m_nlocuts && !p_rvproc->Trigger(p)) {
-      m_failcut = true;
-      return 0;
-    }
+    // m_failcut = false;
+    // if(m_nlocuts && !p_rvproc->Trigger(p)) {
+    //   m_failcut = true;
+    //   return 0;
+    // }
     // p_loop_me->SetRenScale(mur);
     if(aqed->m_mode!=vpmode::off) {
      if(m_tchannel) scale = -(p[0]-p[2]).Abs2();  

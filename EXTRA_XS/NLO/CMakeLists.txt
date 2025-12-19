@@ -6,7 +6,8 @@ set(ExtraXSNLO_SOURCES Logarithms.C
                 Higgs_Jet_QCD_Virtual.C
                 ee3jet_CSS_approx.C
                 ppll1jet_CSS_approx.C
-                epe2jet_CSS_approx.C)
+                epe2jet_CSS_approx.C
+                eenunu_TwoLoop.C)
 
 set(ExtraXSNLO_HEADERS Logarithms.H)
 
