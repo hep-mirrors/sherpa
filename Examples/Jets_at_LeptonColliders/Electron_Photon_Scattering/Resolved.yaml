@@ -1,0 +1,45 @@
+EVENT_GENERATION_MODE: W
+
+# collider setup
+BEAMS: [11, -11]
+BEAM_ENERGIES: 125
+BEAM_SPECTRA: [None, EPA]
+EPA:
+  Q2Max: 4.
+  ThetaMax: 0.07
+PDF_LIBRARY: [None, SASGSherpa]
+PDF_SET: [None, SAS1M]
+MPI_PDF_LIBRARY: None
+
+ALPHAS(MZ): 0.118
+ORDER_ALPHAS: 3
+ALPHAS: {USE_PDF: 0}
+
+SCALES: E_Gamma[M:2]
+MEPS:
+  CORE_SCALE: E_Gamma
+SHOWER:
+  KIN_SCHEME: 1
+  CLUSTER_QED: true
+
+SCALE_VARIATIONS: 4.0*
+
+TAGS:
+  QCUT: 10
+  SDIS: 1.
+
+PROCESSES:
+  - 11 93 -> 11 93 93{2}:
+      Order: {QCD: 0, EW: 2}
+      Enhance_Function: VAR{Abs2(p[0]-p[2])}
+      CKKW: $(QCUT)/sqrt(1.0+sqr($(QCUT)/$(SDIS))/Abs2(p[2]-p[0]))
+
+SELECTORS:
+  - [Q2, 11, 11, 16, 4000000]
+  - [INEL, 11, 11, 0.1, 0.9]
+
+ANALYSIS: Rivet
+RIVET:
+  IGNORE_BEAMS: 1
+  ANALYSES:
+    - MC_FSPARTICLES
