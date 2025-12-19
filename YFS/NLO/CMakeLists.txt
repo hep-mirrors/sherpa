@@ -2,13 +2,15 @@ set(YFSNLO_SOURCES NLO_Base.C
                  Real.C
                  RealReal.C
                  RealVirtual.C
-                 Virtual.C)
+                 Virtual.C
+                 VirtualVirtual.C)
 
 set(YFSNLO_HEADERS  NLO_Base.H
                  Real.H
                  RealReal.H
                  RealVirtual.H
-                 Virtual.H)
+                 Virtual.H
+                 VirtualVirtual.H)
 
 
 sherpa_create_git_info(YFSNLO ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR})

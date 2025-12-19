@@ -1,3 +1,5 @@
+#include "ATOOLS/Phys/NLO_Types.H"
+#include "PHASIC++/Process/Process_Info.H"
 #include "PHASIC++/Process/YFS_Process.H"
 
 #include "ATOOLS/Phys/Cluster_Amplitude.H"
@@ -23,6 +25,7 @@
 
 
 #include <cassert>
+#include <cstddef>
 
 using namespace ATOOLS;
 using namespace PHASIC;
@@ -50,6 +53,7 @@ YFS_Process::~YFS_Process() {
   if (p_virtproc) delete p_virtproc;
   if (p_realrealproc) delete p_realrealproc;
   if (p_realvirtproc) delete p_realvirtproc;
+  if (p_vv) delete p_vv;
   if (p_int) delete p_int;
   if (p_yfs) delete p_yfs;
   if (p_apmap) delete p_apmap;
@@ -132,6 +136,16 @@ void YFS_Process::Init(const Process_Info &pi,
     p_yfs->SetNLOType(nlo_type::realreal);
     p_yfs->NLO()->p_realreal->SetProc(p_realrealproc);
     // p_yfs->InitializeVirtual(vpi);
+  }
+  if(pi.Has(nlo_type::vv)) {
+    Process_Info vvpi(pi);
+    for(size_t i=0;  i < pi.m_fi.m_nlocpl.size(); ++i)
+    {
+      vvpi.m_maxacpl[i] += vvpi.m_fi.m_nlocpl[i]+vvpi.m_fi.m_nlocpl[i];
+      vvpi.m_mincpl[i] += vvpi.m_fi.m_nlocpl[i]+vvpi.m_fi.m_nlocpl[i];
+    }
+    p_vv = InitProcess(vvpi, nlo_type::vv, false);
+    p_yfs->NLO()->InitializeVV(vvpi);
   }
   p_bornproc->SetLookUp(false);
   // p_bornproc->SetParent(p_bornproc);
