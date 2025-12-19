@@ -15,7 +15,8 @@ namespace ATOOLS {
       real = 8,
       rsub = 16,
       rvirt = 32,
-      realreal = 64
+      realreal = 64,
+      vv = 128
     };
   };// end of struct nlo_type
 
