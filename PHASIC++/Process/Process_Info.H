@@ -28,7 +28,7 @@ namespace PHASIC {
     ATOOLS::nlo_mode::code m_nlomode;
 
     std::string m_scale, m_coupling, m_kfactor, m_gpath, m_addname;
-    std::string m_megenerator, m_rsmegenerator, m_loopgenerator, m_special,m_rvgenerator;
+    std::string m_megenerator, m_rsmegenerator, m_loopgenerator, m_special,m_rvgenerator,m_vvgenerator;
     std::string m_integrator, m_rsintegrator;
 
     ATOOLS::Scoped_Settings m_selectors;

@@ -1,7 +1,10 @@
 #include "ATOOLS/Math/MathTools.H"
 #include "ATOOLS/Math/Random.H"
+#include "ATOOLS/Org/Message.H"
 #include "YFS/NLO/NLO_Base.H"
 #include "MODEL/Main/Running_AlphaQED.H"
+#include "YFS/NLO/Virtual.H"
+#include "YFS/NLO/VirtualVirtual.H"
 
 using namespace YFS;
 using namespace MODEL;
@@ -26,12 +29,14 @@ NLO_Base::NLO_Base() {
   p_real = NULL;
   p_virt = NULL;
   p_realvirt = NULL;
+  p_vv = NULL;
   m_evts = 0;
   m_recola_evts = 0;
   m_realtool = 0;
   m_realvirt = 0;
   m_looptool = 0;
   m_rrtool = 0;
+  m_vvtool = 0;
   if(m_isr_debug || m_fsr_debug){
   	m_histograms2d["IFI_EIKONAL"] = new Histogram_2D(0, -1., 1., 20, 0, 5., 20 );
   	m_histograms2d["REAL_SUB"] = new Histogram_2D(0,  0, sqrt(m_s), 200, 0, sqrt(m_s)/2., 20);
@@ -51,6 +56,8 @@ NLO_Base::NLO_Base() {
   if(m_check_poles==1){
   	if (!ATOOLS::DirectoryExists(m_debugDIR_NLO)) ATOOLS::MakeDir(m_debugDIR_NLO);
   	m_histograms1d["SinglePoleCD"] = new Histogram(0, 0, 25, 25);
+  	m_histograms1d["SinglePoleVV"] = new Histogram(0, 0, 25, 25);
+  	m_histograms1d["DoublePoleVV"] = new Histogram(0, 0, 25, 25);
   	m_histograms1d["OneLoopEpsLP"] = new Histogram(0, -1.5, -0.5, 50);
   	m_histograms1d["OneLoopEpsYFS"] = new Histogram(0, -1.5, -0.5, 50);
   	m_histograms1d["RealLoopEpsLP"] = new Histogram(0, -5,  0.0, 50);
@@ -92,6 +99,7 @@ NLO_Base::~NLO_Base() {
 	if(p_realvirt) delete p_realvirt;
 	if(p_real) delete p_real;
 	if(p_virt) delete p_virt;
+	if(p_vv) delete p_vv;
 }
 
 
@@ -120,6 +128,11 @@ void NLO_Base::InitializeRealReal(const PHASIC::Process_Info& pi) {
 	m_rrtool = true;
 }
 
+void NLO_Base::InitializeVV(const PHASIC::Process_Info& pi) {
+	p_vv = new YFS::VirtualVirtual(pi);
+	m_vvtool = true;
+}
+
 
 void NLO_Base::Init(Flavour_Vector &flavs, Vec4D_Vector &plab, Vec4D_Vector &born) {
 	m_flavs = flavs;
@@ -139,6 +152,7 @@ double NLO_Base::CalculateNLO() {
 	result += CalculateRealReal();
 	rr = result - real - virt - rv;
 	result += CalculateRealVirtual();
+	result += CalculateVV();
 	rv = result - real - virt;
 	if(m_failcut) return 0;
 	return result;
@@ -394,17 +408,17 @@ double NLO_Base::CalculateRealVirtual() {
 	double realvirtual(0);
 	for (auto k : m_ISRPhotons) {
 		if(m_check_rv) {
-			if(k.E() < 0.2*sqrt(m_s)) continue;
+			if(k.E() < 0.3*sqrt(m_s)) continue;
 			CheckRealVirtualSub(k);
 		}
 		if(CheckPhotonForReal(k))	realvirtual+=CalculateRealVirtual(k,0);
 		// realvirtual+=CalculateRealVirtual(k,0);
 	}
 	for (auto k : m_FSRPhotons) {
-		if(m_check_rv) {
-			if(k.E() < 0.2*sqrt(m_s)) continue;
-			CheckRealVirtualSub(k);
-		}
+		// if(m_check_rv) {
+		// 	if(k.E() < 0.2*sqrt(m_s)) continue;
+		// 	CheckRealVirtualSub(k);
+		// }
 		if(CheckPhotonForReal(k)) realvirtual+=CalculateRealVirtual(k, 1);
 		// realvirtual+=CalculateRealVirtual(k, 1);
 	}
@@ -479,11 +493,15 @@ double NLO_Base::CalculateRealVirtual(Vec4D k, int fsrcount) {
 		msg_Error()<<"Real-Virtual is "<<r<<std::endl;
 		return 0;
 	}
-	if(IsZero(r)) return 0;
+	if(IsZero(r)) {
+		// PRINT_VAR(r);
+		// PRINT_VAR(k);
+		return 0;
+	}
 	// m_plab = pp;
-	double aB = p_nlodipoles->CalculateRealSub(k)*m_oneloop;//CalculateVirtual();//*p_realvirt->m_factor;
-	// double aB = p_nlodipoles->CalculateRealSub(k)*CalculateVirtual();//*p_realvirt->m_factor;
-	// double aB = subloc*CalculateVirtual();
+	// double aB = subloc*m_oneloop;//CalculateVirtual();//*p_realvirt->m_factor;
+	double aB = p_nlodipoles->CalculateRealSub(k)*m_oneloop;//*p_realvirt->m_factor;
+	// double aB = subloc*CalculateVirtual()*p_realvirt->m_factor;
 	// yfspole*=m_oneloop*p_realvirt->m_factor;
 	// double aB = subloc*(p_virt->Calc(pp, m_born) - m_born*p_nlodipoles->CalculateVirtualSub());
 	// yfspole*=(p_virt->p_loop_me->ME_E1()*p_virt->m_factor-m_born*p_nlodipoles->Get_E1());
@@ -680,6 +698,83 @@ double NLO_Base::CalculateRealReal(Vec4D k1, Vec4D k2, int fsr1, int fsr2){
   }
   m_plab = plab;
 	return tot;
+}
+
+
+double NLO_Base::CalculateVV() {
+	if (!m_vvtool) return 0;
+	if(m_eex_virt){
+		return p_dipoles->CalculateEEXVirtual()*m_born-m_born;
+	}
+	double virt;
+	double sub;
+	// CheckMassReg();
+	if(!HasISR()) virt = p_vv->Calc(m_bornMomenta, m_born);
+	else virt = p_vv->Calc(m_plab, m_born);
+	if(m_check_virt_born) {
+			if (!IsEqual(m_born, p_virt->p_loop_me->ME_Born(), 1e-6)) {
+			msg_Error() << METHOD << "\n Warning! Loop provider's born is different! YFS Subtraction likely fails\n"
+									<< "Loop Provider " << ":  "<<p_virt->p_loop_me->ME_Born()
+									<< "\nSherpa" << ":  "<<m_born<<std::endl
+									<<"PhaseSpace Point = ";
+			for(auto _p: m_plab) msg_Error()<<_p<<std::endl;
+		}
+	}	
+	if(p_vv->FailCut()) return 0;
+	if(m_virt_sub && p_virt->p_loop_me->Mode()!=1) sub = p_dipoles->CalculateVirtualSub();
+	else sub = 0;
+	double sub2 = p_dipoles->CalculateVVSubEps();
+	// m_oneloop = (virt- sub * m_born/m_rescale_alpha );
+	m_oneloop = (virt- sub * CalculateVirtual()/m_rescale_alpha -0.5*sub*sub*m_born/m_rescale_alpha);
+	if(p_virt->p_loop_me->Mode()==1) {
+		m_oneloop /= m_rescale_alpha; 
+		// PRINT_VAR(m_rescale_alpha);
+	}
+	if(IsBad(m_oneloop) || IsBad(sub)){
+		msg_Error()<<"YFS Virtual is NaN"<<std::endl
+							 <<"Virtual:  "<<virt<<std::endl
+							 <<"Subtraction: "<<sub*m_born<<std::endl
+							 <<"PhaseSpace Point: "<<std::endl<<m_plab<<std::endl;
+	}
+	double loope1 = p_vv->p_loop_me->ME_E1()*p_vv->m_factor;//*p_vv->m_factor;//+p_virt->p_loop_me->ME_E1()*p_virt->m_factor;;
+	double loope2 = 2.*p_vv->p_loop_me->ME_E2()*p_vv->m_factor*p_vv->m_factor;
+	double yfse1 = p_dipoles->Get_E1();
+	double yfse2 = p_dipoles->GetVV_E2();
+	// PRINT_VAR(::countMatchingDigits(loope1, yfse1));
+	// PRINT_VAR(::countMatchingDigits(loope2, -yfse2));
+	// PRINT_VAR(loope1);
+	// PRINT_VAR(loope1);
+	// PRINT_VAR(loope1/yfse1);
+	// PRINT_VAR(loope2);
+	// PRINT_VAR(yfse2);
+	// PRINT_VAR(loope2/yfse2);
+	// PRINT_VAR(m_born);
+	// PRINT_VAR(1./m_born);
+	// PRINT_VAR(p_dipoles->Get_E1()+0.5*pow(p_dipoles->Get_E1(),2));
+	if(m_check_poles==1){
+		if(m_virt_sub==0) sub = p_dipoles->CalculateVirtualSub();
+		const double p1 =  p_vv->p_loop_me->ME_E1()*p_vv->m_factor;
+		const double p2 =  2.*p_vv->p_loop_me->ME_E2()*p_vv->m_factor*p_vv->m_factor;
+		const double yfspole1 =  (p_dipoles->Get_E1());
+		const double yfspole2 =  p_dipoles->GetVV_E2();
+		PRINT_VAR(p1/yfspole1);
+		int ncorrect1 = ::countMatchingDigits(p1, yfspole1, 32);
+		int ncorrect2 = ::countMatchingDigits(p2, -yfspole2, 32);
+		if(!IsEqual(p2,-yfspole2,1e-6) || ncorrect1 < 10){
+			msg_Error()<<"Poles do not cancel in YFS Double Virtuals"<<std::endl
+					 <<"Correct digits \epsion^{-1} =  "<<ncorrect1<<std::endl
+					 <<"Correct digits \epsion^{-2} =  "<<ncorrect2<<std::endl;
+					 return 0;
+		}
+		else{
+			int i = 0;
+			msg_Debugging()<<std::setprecision(32);
+			msg_Out()<<"Poles cancel in YFS double Virtuals to "<<ncorrect2<<" digits"<<std::endl;
+			m_histograms1d["SinglePoleVV"]->Insert(ncorrect1);
+			m_histograms1d["DoublePoleVV"]->Insert(ncorrect2);
+		}
+	}
+	return 0;
 }
 
 
@@ -1045,8 +1140,9 @@ void NLO_Base::CheckRealVirtualSub(Vec4D k){
 		{
 			k=k/i;
 			real=CalculateRealVirtual(k);
-			out_sub<<k.E()<<","<<fabs(real)<<std::endl;
-			if(k.E() < 1e-10 || real==0) break;
+			PRINT_VAR(real);
+			out_sub<<k.E()<<","<<fabs(real)/m_born<<std::endl;
+			if(k.E() < m_isrcut ) break;
 			// m_histograms2d["Real_me_sub"]->Insert(k.E(),fabs(real), 1);
 		}
 		out_sub.close();

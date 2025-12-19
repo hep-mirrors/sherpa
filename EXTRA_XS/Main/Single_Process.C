@@ -1,3 +1,4 @@
+#include "ATOOLS/Phys/NLO_Types.H"
 #include "EXTRA_XS/Main/Single_Process.H"
 
 #include "ATOOLS/Org/Message.H"
@@ -55,8 +56,7 @@ bool Single_Process::Initialize()
   }
 
   m_nlotype=m_pinfo.m_fi.NLOType();
-
-  if (m_nlotype==nlo_type::loop) {
+  if (m_nlotype==nlo_type::loop || m_pinfo.Has(nlo_type::vv)) {
     DEBUG_INFO("searching loop process");
     p_virtual_me2=PHASIC::Virtual_ME2_Base::GetME2(m_pinfo);
     if (p_virtual_me2!=NULL) {
