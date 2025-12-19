@@ -308,6 +308,12 @@ The scale setter options which are currently available are
   catering specifically to topologies with two colour-separated parton lines like in VBF/VBS
   processes for the incoming quarks.
 
+:option:`E_Gamma`
+  This follows closely the :option:`METS` scale setter, but allows the
+  computation of jet production in lepton-photon collision, analogously to
+  deep-inelastic scattering in lepton-hadron collisions. Essentially, it
+  initialises all necessary amplitudes. To be used with the corresponding
+  core scale setter, see below.
 
 
 .. _METS scale setting with multiparton core processes:
@@ -406,6 +412,13 @@ Possible choices for the core scale setter are:
     - :math:`\gamma j`: :math:`\mu_f=\mu_r=\mu_q=p_{\perp,\gamma}`
     - :math:`jj`: same as QCD core scale (harmonic mean of s, t, u)
 
+:option:`E_Gamma`
+  Cose scale setter for jet production in lepton-photon scattering.
+  Ensures that the scale is calculated as the momentum transfer
+  :math:`Q^2` on the lepton line and, for higher multiplicities, additionally
+  the scalar sum of hadronic transverse momenta, :math:`H_{T,\mathrm{had}}^2`,
+  i.e. :math:`\mu^2 = (Q^2 + \sum_h p_{\perp,h})/4`.
+  To be used with the corresponding scale setter, see above.
 
 
 Unordered cluster histories are by default not allowed. Instead, if during
