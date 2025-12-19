@@ -46,6 +46,7 @@ namespace BEAM {
       case EPA_ff_type::WoodSaxonApprox: return os << "Approx_Woods-Saxon";
       case EPA_ff_type::ionApprox: return os << "Point-like";
       case EPA_ff_type::Test: return os << "Test";
+      case EPA_ff_type::Undefined: return os << "Undefined";
     }
 
     return os << "Unknown EPA form factor " << type << "\n";
