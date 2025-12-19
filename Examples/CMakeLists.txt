@@ -78,7 +78,8 @@ set (INSTALL_PATHS
      BSM/UFO_MUED/MUED/vertices.py
      BSM/UFO_MUED/MUED/write_param_card.py
      BSM/UFO_SMEFT/Sherpa.yaml
-     EPA/LHC_EPA_JetProduction.yaml
+     EPA/LHC_PbPb_exclMuonPairs.yaml
+     EPA/LHC_pp_exclMuonPairs.yaml
      FixedOrder/MINLO_ppenuj/Sherpa.yaml
      FixedOrder/NLO_EW_ppWW/Sherpa.LO.yaml
      FixedOrder/NLO_EW_ppWW/Sherpa.RS.EW.yaml
