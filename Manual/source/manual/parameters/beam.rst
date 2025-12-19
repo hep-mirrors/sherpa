@@ -86,6 +86,8 @@ If desired, you can also specify spectra for beamstrahlung through
 :option:`Reggeon`
   This enables the Proton--Reggeon flux, see details below.
 
+.. _Laser Backscattering:
+
 Laser Backscattering
 ====================
 
@@ -106,6 +108,8 @@ each beam.  The ``LASER_MODE`` takes the values ``-1``, ``0``, and
 ``LASER_NONLINEARITY`` can be set to ``true`` or to ``false``
 (default).
 
+.. _Simple Compton:
+
 Simple Compton
 ==============
 
@@ -113,6 +117,8 @@ This corresponds to a simple light backscattering off the initial
 lepton beam and produces initial-state photons with a corresponding
 energy spectrum.  It is a special case of the above Laser
 Backscattering with ``LASER_MODE: -1``.
+
+.. _EPA:
 
 EPA
 ===
@@ -154,6 +160,8 @@ EPA is enabled through :option:`BEAMSPECTRA: EPA`. Parameters are set in an
 
 .. contents::
    :local:
+
+.. _EPAPhysics-details:
 
 Physics details
 ---------------
@@ -219,6 +227,8 @@ Thus, we arrive at the following factorisation formula:
 
 The fluxes :math:`N(x)` and :math:`N(x, b)` will be defined with the settings below.
 The impact parameter can then be computed as :math:`b = |\mathbf{r_1} - \mathbf{r_2}|`.
+
+.. _EPA Parameters:
 
 EPA Parameters
 --------------
@@ -345,7 +355,7 @@ EPA Parameters
         \mbox{ with }\ \chi = x m_N R
 
   The above form factors do **not** depend on the impact parameter.
-  Following the formulae above in :ref:`Physics details`, we implement form factors :math:`F(Q^2)`
+  Following the formulae above in :ref:`EPAPhysics-details`, we implement form factors :math:`F(Q^2)`
   and perform a numerical Fourier transfrom into impact-parameter space.
   In this procedure, the following form factors are available:
 
@@ -412,7 +422,7 @@ EPA Parameters
 
 :option:`ThetaMax`
   Maximum lepton scattering angle in radians, sets
-  :math:`p_T^2_\mathrm{max}=E^2\theta^2_\mathrm{max}` used to
+  :math:`p^2_{T,\mathrm{max}}=E^2\theta^2_\mathrm{max}` used to
   determine :math:`Q^2_\text{max}`. Defaults to ``0.3``.
 
 :option:`bMin`
@@ -452,6 +462,8 @@ EPA Parameters
   If ``true``, output CSV files with :math:`N(x,b)` and :math:`F(Q^2)` for all form factors.
   Defaults to ``false``.
 
+.. _Pomeron:
+
 Pomeron
 =======
 
@@ -483,6 +495,8 @@ Please note that ``tMax`` is the absolute value, i.e. a positive number.
 ``xMax`` denotes the fraction of the proton momentum taken by the Pomeron.
 
 Other fluxes can be implemented upon request.
+
+.. _Reggeon:
 
 Reggeon
 =======
