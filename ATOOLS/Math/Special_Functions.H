@@ -6,6 +6,7 @@
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/MyStrStream.H"
+#include <limits>
 
 // TOOD check this file for correct implementations on this branch
 namespace ATOOLS {
