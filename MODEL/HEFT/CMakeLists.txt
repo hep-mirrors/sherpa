@@ -10,5 +10,5 @@ set(HEFT_HEADERS Effective_Higgs_Coupling.H)
 sherpa_create_git_info(HEFT)
  
 add_library(SherpaHEFT SHARED ${HEFT_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
-target_link_libraries(SherpaHEFT ModelMain ToolsPhys ToolsMath ToolsYaml ToolsOrg)
+target_link_libraries(SherpaHEFT PRIVATE ModelMain ToolsPhys ToolsMath ToolsYaml ToolsOrg)
 sherpa_handle_shared_library(SherpaHEFT SherpaHEFT)
