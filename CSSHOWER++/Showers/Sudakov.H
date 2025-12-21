@@ -29,7 +29,8 @@ namespace CSSHOWER {
     Shower *p_shower;
     std::vector<SFC_Getter*> m_cgets;
     bool m_keeprewinfo, m_forced_splittings;
-    double m_reweightscalecutoff, m_gluon_xscaling_in_forced_splittings;
+    double m_isreweightpt2min, m_fsreweightpt2min;
+    double m_gluon_xscaling_in_forced_splittings;
     std::pair<double, double> m_pdfmin;
     static bool s_init;
     double ProduceT(double t);
@@ -52,7 +53,8 @@ namespace CSSHOWER {
 		     const double &isfac,const double &fsfac,
 		     const double &k0sq_gsplit_fac);
     void SetKeepReweightingInfo(bool on)  { m_keeprewinfo = on; }
-    void SetReweightScaleCutoff(double v) { m_reweightscalecutoff = v; }
+    void SetISReweightPT2Min(double v) { m_isreweightpt2min = v; }
+    void SetFSReweightPT2Min(double v) { m_fsreweightpt2min = v; }
     void SetPDFMin(std::pair<double, double>& m) { m_pdfmin = m; }
     void SetForcedHQSplittings(bool on, const double &expo) {
       m_forced_splittings                   = on;

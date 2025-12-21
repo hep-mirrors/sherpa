@@ -17,7 +17,7 @@ using namespace std;
 
 Sudakov::Sudakov(PDF::ISR_Handler *isr,const int qed) : 
   p_rms(NULL), m_pdfmin(1.0e-4, 1.0e-2),
-  m_reweightscalecutoff {0.0}, m_keeprewinfo {false}
+  m_isreweightpt2min {0.0}, m_fsreweightpt2min {0.0}, m_keeprewinfo {false}
 {
   m_ewmode=qed;
   p_pdf = new PDF::PDF_Base*[2];
@@ -375,7 +375,10 @@ bool Sudakov::Generate(Parton * split)
     if (m_keeprewinfo) {
       const double accwgt(Selected()->LastAcceptanceWeight());
       const double lastscale(Selected()->LastScale());
-      if (accwgt < 1.0 && accwgt > 0.0 && lastscale > m_reweightscalecutoff) {
+      const double pt2min{(m_type == cstp::IF || m_type == cstp::II)
+                              ? m_isreweightpt2min
+                              : m_fsreweightpt2min};
+      if (accwgt < 1.0 && accwgt > 0.0 && lastscale > pt2min) {
         Sudakov_Reweighting_Info info;
         info.accepted = veto;
         info.scale = lastscale;

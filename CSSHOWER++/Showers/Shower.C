@@ -11,6 +11,11 @@
 #include "ATOOLS/Org/My_Limits.H"
 #include "ATOOLS/Org/Scoped_Settings.H"
 
+#ifdef SUDAKOV_REWEIGHTING_DEBUG
+#include "ATOOLS/Math/Histogram.H"
+ATOOLS::Histogram s_rewfachist{11, 0.0001, 10000.0, 100, "logrewfac"};
+#endif
+
 using namespace CSSHOWER;
 using namespace PHASIC;
 using namespace ATOOLS;
@@ -64,8 +69,8 @@ Shower::Shower(PDF::ISR_Handler* isr, const int qcd, const int qed, int type)
   m_sudakov.SetPDFMin(pdfmin);
   m_sudakov.InitSplittingFunctions(MODEL::s_model,kfmode);
   m_sudakov.SetCoupling(MODEL::s_model,k0sqi,k0sqf,is_as_fac,fs_as_fac,gsplit_fac);
-  m_sudakov.SetReweightScaleCutoff(
-      pss["REWEIGHT_SCALE_CUTOFF"].Get<double>());
+  m_sudakov.SetISReweightPT2Min(pss["IS_REWEIGHT_PT2MIN"].Get<double>());
+  m_sudakov.SetFSReweightPT2Min(pss["FS_REWEIGHT_PT2MIN"].Get<double>());
   m_sudakov.SetForcedHQSplittings(forced_splittings,forced_splittings_gluon_scaling);
   m_kinFF.SetEvolScheme(evol-100*(evol/100));
   m_kinFI.SetEvolScheme(evol-100*(evol/100));
@@ -80,6 +85,13 @@ Shower::~Shower()
 {
   p_old[0]->Delete();
   p_old[1]->Delete();
+
+#ifdef SUDAKOV_REWEIGHTING_DEBUG
+  s_rewfachist.MPISync();
+  s_rewfachist.Finalize();
+  s_rewfachist.Scale(1.0);
+  s_rewfachist.Output("rewfachist.dat");
+#endif
 }
 
 double Shower::EFac(const std::string &sfk) const
@@ -678,12 +690,31 @@ double Shower::Reweight(QCD_Variation_Params* varparams,
     overallrewfactor *= rewfactor;
   }
 
+#ifdef SUDAKOV_REWEIGHTING_DEBUG
+  s_rewfachist.Insert(std::abs(overallrewfactor), 1.0, 1);
+#endif
+
   // guard against gigantic accumulated reweighting factors
-  if (std::abs(overallrewfactor) > m_maxreweightfactor) {
+  if (m_maxreweightfactor < 0.0) {
+    msg_Debugging()
+        << "Veto negative CSS Sudakov reweighting factor for parton: "
+        << splitter;
+    varparams->IncrementOrInitialiseWarningCounter(
+        "vetoed negative reweighting factor");
+    return 1.0;
+  }
+  if (1.0 / overallrewfactor > m_maxreweightfactor) {
+    msg_Debugging() << "Veto small CSS Sudakov reweighting factor for parton: "
+                    << splitter;
+    varparams->IncrementOrInitialiseWarningCounter(
+        "vetoed small reweighting factor");
+    return 1.0;
+  }
+  if (overallrewfactor > m_maxreweightfactor) {
     msg_Debugging() << "Veto large CSS Sudakov reweighting factor for parton: "
                     << splitter;
     varparams->IncrementOrInitialiseWarningCounter(
-        "vetoed large reweighting factor for parton");
+        "vetoed large reweighting factor");
     return 1.0;
   }
 

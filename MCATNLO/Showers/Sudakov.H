@@ -29,7 +29,7 @@ namespace MCATNLO {
     Shower *p_shower;
     std::vector<SFC_Getter*> m_cgets;
     bool m_keeprewinfo;
-    double m_reweightscalecutoff;
+    double m_isreweightpt2min, m_fsreweightpt2min;
     std::pair<double, double> m_pdfmin;
     std::vector<size_t> m_disallowflav;
     void RegisterDefaults() const;
@@ -52,7 +52,8 @@ namespace MCATNLO {
 		     const double &isfac,const double &fsfac,
 		     const double &k0sq_gsplit_fac);
     void SetKeepReweightingInfo(bool on)  { m_keeprewinfo = on; }
-    void SetReweightScaleCutoff(double v) { m_reweightscalecutoff = v; }
+    void SetISReweightPT2Min(double v) { m_isreweightpt2min = v; }
+    void SetFSReweightPT2Min(double v) { m_fsreweightpt2min = v; }
     void SetPDFMin(std::pair<double, double>& m) { m_pdfmin = m; }
     bool   Generate(Parton *);
     double OverIntegrated(const double,const double,const double,
