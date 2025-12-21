@@ -16,7 +16,7 @@ namespace BEAM {
     double       m_pref;
     double       m_pt2max;
 
-    bool m_plotting;
+    bool m_output, m_outputAll;
 
     void Initialise();
     void RegisterDefaults() const;
