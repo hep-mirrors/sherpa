@@ -60,6 +60,7 @@ namespace AMISIC {
     two_pions::code  m_twopions;
     std::vector<int> m_triggerflavs;
     std::map<std::string,double> m_parameters;
+    std::map<std::string,std::vector<double>> m_parameters_vector; // ue-reweighting
     std::map<std::string,int>    m_flags;
 
     axis * p_sbins;
@@ -69,6 +70,7 @@ namespace AMISIC {
 
     double operator()(const std::string& keyword) const;
     int    operator[](const std::string& keyword) const;
+    std::vector<double> GetVariationVector(const std::string& keyword) const; // ue-reweighting
     double CalculatePT02(const double & s=-1) const;
     double CalculatePTmin2(const double & s=-1) const;
 

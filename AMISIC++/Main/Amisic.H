@@ -66,6 +66,11 @@ namespace AMISIC {
     bool         m_isMinBias, m_isFirst, m_producedSoft;
     size_t       m_maxNscatters, m_Nscatters;
     double       m_f;
+     // ue-reweighting
+    std::vector<double> m_variation_weights;
+    std::vector<double> m_wgt_sums;
+    int m_nevents_mpi;
+     // ue-reweighting
 
     void InitParametersAndType(PDF::ISR_Handler *const isr,
 			       REMNANTS::Remnant_Handler * remnant_handler);
@@ -84,6 +89,7 @@ namespace AMISIC {
     void InitAnalysis();
     void FinishAnalysis();
     void AnalysePerturbative(const bool & last,ATOOLS::Blob * blob=nullptr);
+    void ResetVariationWeights(int n_variations);  // ue-reweighting
  public:
     Amisic();
     ~Amisic();
@@ -139,6 +145,12 @@ namespace AMISIC {
       m_singlecollision.Reset();
       m_isFirst = true;
     }
+    // ue-reweighting
+    void ApplyVariationWeights(ATOOLS::Blob * blob);
+    inline std::vector<double> & GetVariationWeights() { 
+      return m_variation_weights; 
+    }
+    // ue-reweighting
   };
 
 }

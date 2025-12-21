@@ -50,8 +50,8 @@ MI_Parameters::MI_Parameters() :
   m_parameters[string("FacScale_Factor")]
     = s["MU_F_FACTOR"].SetDefault(1.0).Get<double>();
   m_parameters[string("E_min")] = s["E_Min"].SetDefault(0.25).Get<double>();
-  m_parameters[string("SigmaND_Norm")]
-    = s["SIGMA_ND_NORM"].SetDefault(0.619).Get<double>();
+  m_parameters_vector[string("SigmaND_Norm")]
+    = s["SIGMA_ND_NORM"].SetDefault({0.619}).GetVector<double>(); // ue-reweighting
   m_parameters[string("PomeronIntercept")]
     = s["PomeronIntercept"].SetDefault(0.0808).Get<double>();
   m_parameters[string("PomeronSlope")]
@@ -129,6 +129,14 @@ int MI_Parameters::operator[](const string& keyword) const
   if (piter!=m_flags.end()) return piter->second;
   THROW(fatal_error,"Keyword not found in MI_Parameters.");
 }
+// ue-reweighting
+std::vector<double> MI_Parameters::GetVariationVector(const std::string& keyword) const
+{
+  auto piter = m_parameters_vector.find(keyword);
+  if (piter != m_parameters_vector.end()) return piter->second;
+  THROW(fatal_error,"Keyword not found in MI_Parameters vector map.");
+}
+// ue-reweighting
 
 std::ostream& AMISIC::operator<<(std::ostream& s, const evt_type::code& f)
 {

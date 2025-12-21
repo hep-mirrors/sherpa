@@ -10,7 +10,8 @@ Amisic::Amisic() :
   m_processes(MI_Processes()), p_soft(nullptr),
   m_sigmaND_norm(1.),
   m_Nscatters(0), m_producedSoft(false), m_isMinBias(false),
-  m_ana(false)
+  m_ana(false), 
+  m_nevents_mpi(0) // ue-reweighting
 {}
 
 Amisic::~Amisic() {
@@ -85,6 +86,11 @@ bool Amisic::Initialize(MODEL::Model_Base *const model,
   if (m_ana) InitAnalysis();
   m_isFirst   = true;
   m_isMinBias = false;
+  // ue-reweighting
+  std::vector<double> sigma_nd_variations = (*mipars).GetVariationVector("SigmaND_Norm");
+  const auto max_size = sigma_nd_variations.size();
+  ResetVariationWeights(max_size);
+  // ue-reweighting
   return true;
 }
 
@@ -446,3 +452,56 @@ void Amisic::AnalysePerturbative(const bool & last,Blob * blob) {
     m_nscatters = 0;
   }
 }
+
+// ue-reweighting
+void Amisic::ResetVariationWeights(int n_variations) {
+  ///////////////////////////////////////////////////////////////////////////
+  // Reset variation weights to 1.0 for a new event.
+  // Following the pattern from Reconnection_Base.
+  ///////////////////////////////////////////////////////////////////////////
+  m_variation_weights.resize(n_variations);
+  std::fill(m_variation_weights.begin(), m_variation_weights.end(), 1.);
+  m_wgt_sums.resize(n_variations, 0.);
+}
+
+void Amisic::ApplyVariationWeights(ATOOLS::Blob * blob) {
+  ///////////////////////////////////////////////////////////////////////////
+  // Apply the accumulated variation weights to the event.
+  // This method should be called after all MPI scatters have been generated.
+  // It stores the weights in the WeightsMap of the signal/hard process blob.
+  ///////////////////////////////////////////////////////////////////////////
+  if (m_variation_weights.empty()) return;
+  
+  // Find the signal process or hard collision blob to store weights
+  Blob * signal_blob = blob;
+  if (signal_blob == NULL || signal_blob->Type() == btp::Fragmentation) {
+    // If we don't have the right blob, we need to search for it
+    // For now, we'll just use the provided blob
+    msg_Debugging()<<METHOD<<": Using provided blob for weight storage.\n";
+  }
+  auto &wgt_map = (*signal_blob)["WeightsMap"]->Get<Weights_Map>();
+  
+  m_nevents_mpi++;
+  
+  // static constexpr size_t warmup_events = 100;
+  static constexpr double max_weight = 2e2;
+  
+  for(size_t i{0}; i < m_variation_weights.size(); ++i) {
+    const std::string name {"v" + std::to_string(i)};
+    const double wgt = m_variation_weights[i];
+    m_wgt_sums[i] += wgt;
+    
+    // double norm {1.};
+    // if(m_nevents_mpi > warmup_events) {
+    //   norm = m_wgt_sums[i] / m_nevents_mpi;
+    // }
+    
+    const auto clipped_wgt {std::min(wgt, max_weight)};
+    // wgt_map["MPI"][name] = clipped_wgt / norm;
+    wgt_map["MPI"][name] = clipped_wgt;
+  }
+  
+  const size_t n_variations = m_variation_weights.size();
+  ResetVariationWeights(n_variations);
+}
+// ue-reweighting
