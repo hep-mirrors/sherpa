@@ -250,7 +250,7 @@ EPA Parameters
 .. index:: EPA:WoodsSaxon_R
 .. index:: EPA:WoodsSaxon_d
 .. index:: EPA:WoodsSaxonApprox_a
-.. index:: EPA:PlotSpectra
+.. index:: EPA:OutputSpectra
 
 :option:`Q2Max`
   Maximum photon virtuality :math:`Q^2_\mathrm{max}` in GeV^2.
@@ -458,8 +458,8 @@ EPA Parameters
 :option:`WoodsSaxonApprox_a`
   Yukawa range :math:`a` in fm in the ``Approx_Woods-Saxon`` form factor. Defaults to ``0.7``.
 
-:option:`PlotSpectra`
-  If ``true``, output CSV files with :math:`N(x,b)` and :math:`F(Q^2)` for all form factors.
+:option:`OutputSpectra`
+  If ``true``, output CSV files with :math:`N(x,b)` and :math:`F(Q^2)` for the photon fluxes.
   Defaults to ``false``.
 
 .. _Pomeron:
