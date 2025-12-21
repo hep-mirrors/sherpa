@@ -38,7 +38,6 @@ bool EPA::CalculateWeight(double x, double q2)
 {
   m_x      = x;
   m_weight = m_pref * p_ff->N(x);
-  if (m_weight < std::numeric_limits<double>::epsilon()) m_weight = 0.;
   if (IsNan(m_weight))
     msg_Out() << "Boink! " << METHOD << "(x = " << x << ") yields NaN.\n";
   return true;
