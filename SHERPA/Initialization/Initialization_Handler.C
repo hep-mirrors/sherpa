@@ -250,9 +250,10 @@ void Initialization_Handler::RegisterDefaults()
   pss["MAXEM"].SetDefault(std::numeric_limits<size_t>::max());
   pss["REWEIGHT"].SetDefault(showergen != "None");
   s["OUTPUT_ME_ONLY_VARIATIONS"].SetDefault(showergen != "None");
-  pss["MAX_REWEIGHT_FACTOR"].SetDefault(1e3);
+  pss["MAX_REWEIGHT_FACTOR"].SetDefault(1e2);
   nlopss["REWEIGHT_EM"].SetDefault(1);
-  pss["REWEIGHT_SCALE_CUTOFF"].SetDefault(5.0);
+  pss["IS_REWEIGHT_PT2MIN"].SetDefault(25.0);
+  pss["FS_REWEIGHT_PT2MIN"].SetDefault(16.0);
   pss["KIN_SCHEME"].SetDefault(0);
   nlopss["KIN_SCHEME"].SetDefault(1);
   pss["OEF"].SetDefault(3.0);

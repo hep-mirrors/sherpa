@@ -47,8 +47,8 @@ Shower::Shower(PDF::ISR_Handler * isr,const int qed) :
   m_sudakov.SetDisallowFlavour(disallowflavs);
   m_sudakov.InitSplittingFunctions(MODEL::s_model,kfmode);
   m_sudakov.SetCoupling(MODEL::s_model,k0sqi,k0sqf,is_as_fac,fs_as_fac,gsplit_fac);
-  m_sudakov.SetReweightScaleCutoff(
-      pss["REWEIGHT_SCALE_CUTOFF"].Get<double>());
+  m_sudakov.SetISReweightPT2Min(pss["IS_REWEIGHT_PT2MIN"].Get<double>());
+  m_sudakov.SetFSReweightPT2Min(pss["FS_REWEIGHT_PT2MIN"].Get<double>());
   m_kinFF.SetSudakov(&m_sudakov);
   m_kinFI.SetSudakov(&m_sudakov);
   m_kinIF.SetSudakov(&m_sudakov);
@@ -451,11 +451,26 @@ double Shower::Reweight(QCD_Variation_Params* varparams,
   }
 
   // guard against gigantic accumulated reweighting factors
-  if (std::abs(overallrewfactor) > m_maxreweightfactor) {
+  if (m_maxreweightfactor < 0.0) {
+    msg_Debugging()
+        << "Veto negative CSS Sudakov reweighting factor for parton: "
+        << splitter;
+    varparams->IncrementOrInitialiseWarningCounter(
+        "MCatNLO vetoed negative reweighting factor");
+    return 1.0;
+  }
+  if (1.0 / overallrewfactor > m_maxreweightfactor) {
+    msg_Debugging() << "Veto small CSS Sudakov reweighting factor for parton: "
+                    << splitter;
+    varparams->IncrementOrInitialiseWarningCounter(
+        "MCatNLO vetoed small reweighting factor");
+    return 1.0;
+  }
+  if (overallrewfactor > m_maxreweightfactor) {
     msg_Debugging() << "Veto large MC@NLO Sudakov reweighting factor for parton: "
                     << splitter;
     varparams->IncrementOrInitialiseWarningCounter(
-        "MCatNLOvetoed large reweighting factor for parton");
+        "MCatNLO vetoed large reweighting factor");
     return 1.0;
   }
 

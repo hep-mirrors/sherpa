@@ -81,7 +81,8 @@ bool Shower::Init(MODEL::Model_Base *const model,
   m_maxem=pss["MAXEM"].Get<size_t>();
   m_maxpart=pss["MAXPART"].Get<int>();
   m_reweight=pss["REWEIGHT"].Get<bool>();
-  m_rewtmin=pss["REWEIGHT_SCALE_CUTOFF"].Get<double>();
+  m_rewtmin[0]=pss["FS_REWEIGHT_PT2MIN"].Get<double>();
+  m_rewtmin[1]=pss["IS_REWEIGHT_PT2MIN"].Get<double>();
   m_oef=pss["OEF"].Get<double>();
   if (msg_LevelIsDebugging()) {
     msg_Out()<<METHOD<<"(): {\n\n"
@@ -424,7 +425,7 @@ Splitting Shower::GeneratePoint
 	    win.m_w=kit->second[j]->GetWeight(win,m_oef);
             win.m_vars = std::vector<double>(s_variations->Size(), 1.0);
             if (win.m_w.MC() < ran->Get()) {
-              if (m_reweight && win.m_t > m_rewtmin) {
+              if (m_reweight && win.m_t > m_rewtmin[win.m_type&1]) {
                 const Reweight_Args args(&win, 0);
                 s_variations->ForEach(
                     [this, &args](size_t varindex,
@@ -438,7 +439,7 @@ Splitting Shower::GeneratePoint
 			       <<win.p_c->Id()<<"<->"<<win.p_s->Id()<<"]\n";
 	      break;
             }
-            if (m_reweight && win.m_t > m_rewtmin) {
+            if (m_reweight && win.m_t > m_rewtmin[win.m_type&1]) {
               const Reweight_Args args(&win, 1);
               s_variations->ForEach(
                   [this, &args](size_t varindex,

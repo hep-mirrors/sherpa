@@ -18,7 +18,7 @@ bool CSSHOWER::Sudakov::s_init=false;
 
 Sudakov::Sudakov(PDF::ISR_Handler *isr,const int qcd,const int qed) :
   m_qcdmode(qcd), m_ewmode(qed), m_pdfmin(1.0e-4, 1.0e-2),
-  m_reweightscalecutoff {0.0}, m_keeprewinfo {false}
+  m_isreweightpt2min {0.0}, m_fsreweightpt2min {0.0}, m_keeprewinfo {false}
 {
   p_pdf = new PDF::PDF_Base*[2];
   for (int i=0;i<2; i++) p_pdf[i] = isr->PDF(i);
@@ -488,7 +488,10 @@ int Sudakov::Generate(Parton *split,Parton *spect,
     if (m_keeprewinfo) {
       const double accwgt(Selected()->LastAcceptanceWeight());
       const double lastscale(Selected()->LastScale());
-      if (accwgt < 1.0 && accwgt > 0.0 && lastscale > m_reweightscalecutoff) {
+      const double pt2min{(m_type == cstp::IF || m_type == cstp::II)
+                              ? m_isreweightpt2min
+                              : m_fsreweightpt2min};
+      if (accwgt < 1.0 && accwgt > 0.0 && lastscale > pt2min) {
         Sudakov_Reweighting_Info info;
         info.accepted = veto;
         info.scale = lastscale;
