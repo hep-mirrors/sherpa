@@ -440,7 +440,7 @@ EPA_IonApprox::EPA_IonApprox(const ATOOLS::Flavour& beam, const int dir)
 void EPA_IonApprox::FillTables()
 {
   // This is NOT used for the calculation of the flux in the integration,
-  // instead only filled for debugging purposes using the "PlotSpectra" setting
+  // instead only filled for debugging purposes using the "OutputAllSpectra" setting
   axis xaxis(m_nxbins, m_xmin, m_xmax, axis_mode::log);
   axis baxis(m_nbbins, m_bmin * m_R, m_bmax * m_R, axis_mode::log);
 

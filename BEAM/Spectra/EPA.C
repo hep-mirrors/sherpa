@@ -16,7 +16,7 @@ EPA::EPA(const Flavour& beam, const double energy, const double pol,
          const int dir)
     : Beam_Base(beamspectrum::EPA, beam, energy, pol, dir),
       m_fftype(EPA_ff_type::point), p_ff(nullptr), m_pref(0.), m_pt2max(-1.),
-      m_plotting(false)
+      m_output(false), m_outputAll(false)
 {
   if (m_beam.Charge() == 0.)
     THROW(fatal_error,
@@ -60,11 +60,12 @@ void EPA::Initialise()
   const auto& s = Settings::GetMainSettings()["EPA"];
   size_t      b = m_dir > 0 ? 0 : 1;
   m_pref        = s["AlphaQED"].Get<double>() / M_PI;
-  m_plotting    = s["PlotSpectra"].Get<bool>();
+  m_output      = s["OutputSpectra"].Get<bool>();
+  m_outputAll    = s["OutputAllSpectra"].Get<bool>();
   m_pt2max      = !m_beam.IsIon()
                           ? sqr(m_energy * s["ThetaMax"].GetTwoVector<double>()[b])
                           : sqr(rpa->hBar_c() / m_beam.Radius());
-  if (m_plotting) {
+  if (m_outputAll) {
     Tests();
     THROW(normal_exit, "Tests done.");
   }
@@ -98,6 +99,9 @@ void EPA::Initialise()
     default: THROW(not_implemented, "unknown EPA form factor. ");
   }
   p_ff->SetPT2Max(m_pt2max);
+
+  if (m_output)
+    p_ff->OutputToCSV("beam" + ToString(b));
 }
 
 void EPA::RegisterDefaults() const
@@ -125,7 +129,8 @@ void EPA::RegisterDefaults() const
   s["WoodsSaxonApprox_a"].SetDefault(0.7);
   s["AlphaQED"].SetDefault(1. / 137.03599976);
   s["ThetaMax"].SetDefault(0.3);
-  s["PlotSpectra"].SetDefault(false);
+  s["OutputSpectra"].SetDefault(false);
+  s["OutputAllSpectra"].SetDefault(false);
 }
 
 void EPA::Tests()
