@@ -80,6 +80,27 @@ double Matter_Overlap::operator()(double b) {
 		m_rnorm[i] * exp(-b2/(sqr(m_kradius)* m_radius2[i])) );
   return m_norm/sqr(m_kradius) * result;
 }
+// ue-reweighting
+double Matter_Overlap::EvaluateAt(const double & b,const double & k) const {
+  const double b2 = b*b;
+  const double k2 = sqr(k);
+  if (k2<=0.) return 0.;
+  if (m_dynamic || (m_form[0]==matter_form::single_gaussian &&
+	      m_form[1]==matter_form::single_gaussian)) {
+    double effradius2 = k2 * (m_dynamic ? m_dynradius2 : m_radius2[0]);
+    if (effradius2<=0.) return 0.;
+    return m_norm/effradius2 * exp(-b2/effradius2);
+  }
+  double result = 0.;
+  for (size_t i=0;i<4;i++) {
+    if (m_rnorm[i]<=0.) continue;
+    double denom = k2 * m_radius2[i];
+    if (denom<=0.) continue;
+    result += m_rnorm[i] * exp(-b2/denom);
+  }
+  return m_norm/k2 * result;
+}
+// ue-reweighting
 
 double Matter_Overlap::MaxValue(const double & b) {
   ///////////////////////////////////////////////////////////////////////////

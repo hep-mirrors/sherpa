@@ -1,6 +1,8 @@
 #include "AMISIC++/Main/Amisic.H"
 #include "MODEL/Main/Model_Base.H"
 #include "ATOOLS/Org/Run_Parameter.H"
+#include <cmath> // ue-reweighting
+#include <iomanip> // ue-reweighting
 
 using namespace AMISIC;
 using namespace ATOOLS;
@@ -11,7 +13,8 @@ Amisic::Amisic() :
   m_sigmaND_norm(1.),
   m_Nscatters(0), m_producedSoft(false), m_isMinBias(false),
   m_ana(false), 
-  m_nevents_mpi(0) // ue-reweighting
+  m_nevents_mpi(0), // ue-reweighting
+  m_lambda_nominal(0.), m_pint_nominal(0.), m_mpi_scatter_count(0) // ue-reweighting
 {}
 
 Amisic::~Amisic() {
@@ -87,8 +90,8 @@ bool Amisic::Initialize(MODEL::Model_Base *const model,
   m_isFirst   = true;
   m_isMinBias = false;
   // ue-reweighting
-  std::vector<double> sigma_nd_variations = (*mipars).GetVariationVector("SigmaND_Norm");
-  const auto max_size = sigma_nd_variations.size();
+  m_sigma_nd_variations = (*mipars).GetVariationVector("SigmaND_Norm");
+  const auto max_size = m_sigma_nd_variations.size();
   ResetVariationWeights(max_size);
   // ue-reweighting
   return true;
@@ -253,6 +256,7 @@ bool Amisic::FirstMPI(Blob * blob) {
   UpdateForNewS();
   if (!m_singlecollision.FirstMPI(blob)) return false;
   m_b = m_singlecollision.B();
+  ApplyKFactorReweighting(m_S); // ue-reweighting
   return true;
 }
 
@@ -282,6 +286,11 @@ bool Amisic::GenerateScatter(const size_t & type,Blob * blob) {
     default: THROW(fatal_error,"Unknown type: "+to_string(type));
     }
     if (outcome) {
+      // ue-reweighting
+      if (type==3) {
+        ++m_mpi_scatter_count;
+      }
+      // ue-reweighting
       AddInformationToBlob(blob);
       m_Nscatters++;
       if (m_singlecollision.Done()) {
@@ -457,32 +466,82 @@ void Amisic::AnalysePerturbative(const bool & last,Blob * blob) {
 void Amisic::ResetVariationWeights(int n_variations) {
   ///////////////////////////////////////////////////////////////////////////
   // Reset variation weights to 1.0 for a new event.
-  // Following the pattern from Reconnection_Base.
   ///////////////////////////////////////////////////////////////////////////
   m_variation_weights.resize(n_variations);
   std::fill(m_variation_weights.begin(), m_variation_weights.end(), 1.);
   m_wgt_sums.resize(n_variations, 0.);
+  m_lambda_ratios.assign(n_variations, 1.);
+  m_pint_ratios.assign(n_variations, 1.);
+  m_lambda_nominal = 0.;
+  m_pint_nominal = 0.;
+  m_mpi_scatter_count = 0;
+}
+
+void Amisic::ApplyKFactorReweighting(const double & s) {
+  ///////////////////////////////////////////////////////////////////////////
+  // Cache per-event information needed to evaluate SIGMA_ND_NORM weights.
+  ///////////////////////////////////////////////////////////////////////////
+  if (m_variation_weights.empty()) return;
+
+  const size_t n_variations = m_lambda_ratios.size();
+
+  // Compute nominal lambda(b), P_int(b), overlap at K_nom(s)
+  m_lambda_nominal = m_pint.DiffXSec(s, m_b);
+  m_pint_nominal = 1. - std::exp(-m_lambda_nominal);
+  const double K_nom = m_pint.K(s);
+  const double overlap_nom = m_mo.EvaluateAt(m_b, K_nom);
+
+  // Compute lambda(b) and P_int(b) ratios for each variation
+  for (size_t i = 0; i < n_variations; ++i) {
+    const double K_var = m_pint.KVariation(s, i);
+    const double overlap_var = m_mo.EvaluateAt(m_b, K_var);
+    double lambda_ratio = overlap_var / overlap_nom;
+    if (!std::isfinite(lambda_ratio) || lambda_ratio<=0.) lambda_ratio = 1.;
+    m_lambda_ratios[i] = lambda_ratio;
+    
+    // P_int_var(b) = 1 - exp(-lambda_var(b))
+    const double lambda_var = m_lambda_nominal * lambda_ratio;
+    const double pint_var = 1. - std::exp(-lambda_var);
+    double pint_ratio = pint_var / m_pint_nominal;
+    if (!std::isfinite(pint_ratio) || pint_ratio<=0.) pint_ratio = 1.;
+    m_pint_ratios[i] = pint_ratio;
+  }
 }
 
 void Amisic::ApplyVariationWeights(ATOOLS::Blob * blob) {
   ///////////////////////////////////////////////////////////////////////////
-  // Apply the accumulated variation weights to the event.
-  // This method should be called after all MPI scatters have been generated.
-  // It stores the weights in the WeightsMap of the signal/hard process blob.
+  // Compute and apply variation weights to the event.
+  // The total weight is:
+  // w_total = w_poisson * w_b
+  // where w_poisson accounts for the changed MPI multiplicity distribution
+  // and w_b accounts for the changed impact parameter sampling distribution.
   ///////////////////////////////////////////////////////////////////////////
   if (m_variation_weights.empty()) return;
-  
-  // Find the signal process or hard collision blob to store weights
-  Blob * signal_blob = blob;
-  if (signal_blob == NULL || signal_blob->Type() == btp::Fragmentation) {
-    // If we don't have the right blob, we need to search for it
-    // For now, we'll just use the provided blob
-    msg_Debugging()<<METHOD<<": Using provided blob for weight storage.\n";
+
+  for (size_t i = 0; i < m_variation_weights.size(); ++i) {
+    // w_poisson = [lambda_var^n * exp(-lambda_var)] /
+    //             [lambda_nom^n * exp(-lambda_nom)]
+    //           = (lambda_ratio)^n * exp(-(lambda_ratio - 1) * lambda_nom)
+    const double lambda_ratio = m_lambda_ratios[i];
+    const double w_poisson = ComputeWeightFactor(lambda_ratio, m_mpi_scatter_count);
+    
+    // w_b = [P_int_var(b) / sigma_ND_var] / [P_int_nom(b) / sigma_ND_nom]
+    //     = P_int_var(b) / P_int_nom(b) * sigma_ND_nom / sigma_ND_var
+    //     = P_int_ratio(b) * 1 / sigma_nd_ratio
+    const double pint_ratio = m_pint_ratios[i];
+    const double sigma_nd_ratio = (m_sigma_nd_variations.empty() || m_sigma_nd_variations[i]<=0.) ? 
+                                    1. : (m_sigma_nd_variations[i] / m_sigma_nd_variations[0]);
+    const double w_b = pint_ratio * 1 / sigma_nd_ratio;
+    
+    // w_total = w_poisson * w_b
+    m_variation_weights[i] *= w_poisson * w_b;
   }
-  auto &wgt_map = (*signal_blob)["WeightsMap"]->Get<Weights_Map>();
+  if (blob == NULL) {
+    return;
+  }
+  auto &wgt_map = (*blob)["WeightsMap"]->Get<Weights_Map>();
   
   m_nevents_mpi++;
-  
   // static constexpr size_t warmup_events = 100;
   static constexpr double max_weight = 2e2;
   
@@ -490,18 +549,29 @@ void Amisic::ApplyVariationWeights(ATOOLS::Blob * blob) {
     const std::string name {"v" + std::to_string(i)};
     const double wgt = m_variation_weights[i];
     m_wgt_sums[i] += wgt;
-    
+    const auto clipped_wgt {std::min(wgt, max_weight)};
+
+    wgt_map["MPI"][name] = clipped_wgt;
+
     // double norm {1.};
     // if(m_nevents_mpi > warmup_events) {
     //   norm = m_wgt_sums[i] / m_nevents_mpi;
     // }
-    
-    const auto clipped_wgt {std::min(wgt, max_weight)};
     // wgt_map["MPI"][name] = clipped_wgt / norm;
-    wgt_map["MPI"][name] = clipped_wgt;
   }
   
   const size_t n_variations = m_variation_weights.size();
   ResetVariationWeights(n_variations);
+}
+
+double Amisic::ComputeWeightFactor(const double & ratio,
+                                   const size_t & nscatters) const {
+  if (!std::isfinite(ratio) || ratio<=0.) return 1.;
+  double log_weight = 0.;
+  if (nscatters>0 && ratio!=1.) {
+    log_weight += double(nscatters)*std::log(ratio);
+  }
+  log_weight -= m_lambda_nominal*(ratio-1.);
+  return std::exp(log_weight);
 }
 // ue-reweighting

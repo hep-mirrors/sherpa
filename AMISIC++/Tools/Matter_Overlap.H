@@ -33,6 +33,7 @@ namespace AMISIC {
     Matter_Overlap();
     ~Matter_Overlap();
 
+    double EvaluateAt(const double & b,const double & k) const; // ue-reweighting
     void   Initialize(REMNANTS::Remnant_Handler * const rh,
 		      PDF::ISR_Handler * const isr);
     void   FixDynamicRadius(const double & x1=-1.,  const double & x2=-1.,

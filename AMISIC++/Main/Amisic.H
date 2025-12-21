@@ -66,11 +66,17 @@ namespace AMISIC {
     bool         m_isMinBias, m_isFirst, m_producedSoft;
     size_t       m_maxNscatters, m_Nscatters;
     double       m_f;
-     // ue-reweighting
+    // ue-reweighting
     std::vector<double> m_variation_weights;
     std::vector<double> m_wgt_sums;
+    std::vector<double> m_lambda_ratios;
+    std::vector<double> m_pint_ratios;
+    std::vector<double> m_sigma_nd_variations;
+    size_t m_mpi_scatter_count;
+    double m_lambda_nominal;
+    double m_pint_nominal;
     int m_nevents_mpi;
-     // ue-reweighting
+    // ue-reweighting
 
     void InitParametersAndType(PDF::ISR_Handler *const isr,
 			       REMNANTS::Remnant_Handler * remnant_handler);
@@ -89,7 +95,12 @@ namespace AMISIC {
     void InitAnalysis();
     void FinishAnalysis();
     void AnalysePerturbative(const bool & last,ATOOLS::Blob * blob=nullptr);
-    void ResetVariationWeights(int n_variations);  // ue-reweighting
+    // ue-reweighting
+    void ResetVariationWeights(int n_variations);
+    void ApplyKFactorReweighting(const double & s);
+    double ComputeWeightFactor(const double & ratio,
+          const size_t & nscatters) const;
+    // ue-reweighting
  public:
     Amisic();
     ~Amisic();

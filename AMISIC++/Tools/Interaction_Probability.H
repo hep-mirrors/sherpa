@@ -19,6 +19,7 @@ namespace AMISIC {
     TwoDim_Table   * p_diffxsec, * p_inverted;
     double           m_pdfnorm, m_xs_test, m_xs_hard, m_bmax, m_smin;
     bool             m_dynamic;
+    std::vector<OneDim_Table*> p_k_variations; // ue-reweighting
 
     void FixKandSmin();
     void FillIntegrated();
@@ -61,6 +62,12 @@ namespace AMISIC {
     // The s-dependent radius multiplier
     //////////////////////////////////////////////////////////////////////////
     inline double K(const double & s) const { return (*p_k)(s); }
+    // ue-reweighting
+    inline double KVariation(const double & s, size_t i) const { 
+      return (*p_k_variations[i])(s); 
+    }
+    inline size_t NVariations() const { return p_k_variations.size(); }
+    // ue-reweighting
   };
 
   //////////////////////////////////////////////////////////////////////////
