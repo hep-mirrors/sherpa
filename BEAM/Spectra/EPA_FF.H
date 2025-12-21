@@ -130,6 +130,8 @@ namespace BEAM {
       if (m_b < m_b_pl_threshold) return (*p_N_xb)(x, m_b) * wt;
       // use point-like approximation for large impact parameters
       double chi = x * m_mass * m_b;
+      // do not compute the large-b large-x region, suppression by O(1e-45)
+      if (chi > 100) return 0.;
       return 2 * m_Zsquared * m_b * x * m_mass2 *
              (ATOOLS::sqr(ATOOLS::SF.Kn(1, chi)) +
               2. * m_mass / ATOOLS::rpa->gen.Ecms() *
