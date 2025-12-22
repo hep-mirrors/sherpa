@@ -103,10 +103,16 @@ void Shower::Init(MODEL::Model_Base *const model,
 		       <<v->in[1]<<" "<<v->in[2]<<" {\n";
       {
 	msg_Indent();
-	for (int type(0);type<4;++type)
+	for (int type(0);type<4;++type) {
+	  if (!Flavour(kf_jet).Includes(v->in[2]) &&
+	      !Flavour(kf_jet).Includes(v->in[(type&1)?0:1])) {
+	    msg_IODebugging()<<"Veto mode "<<type<<"\n";
+	    continue;
+	  }
 	  if (types&(1<<type))
 	    for (int mode(0);mode<2;++mode)
 	      AddKernel(new Kernel(this,Kernel_Key(v,mode,type)));
+	}
       }
       msg_IODebugging()<<"}\n";
     }

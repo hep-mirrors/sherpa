@@ -352,7 +352,7 @@ bool Sudakov::Generate(Parton * split)
 				    (*m_splitter)->GetFlavourB(),
 				    (*m_splitter)->GetFlavourC());
       m_x   = split->Xbj();
-      if (m_y<0.0 || m_y>1.0 || m_z<m_x) continue;
+      if (m_kperp2<m_k0sqi || m_y<0.0 || m_y>1.0 || m_z<m_x) continue;
     }
       break;
     case (cstp::II) : {
@@ -364,7 +364,7 @@ bool Sudakov::Generate(Parton * split)
 				    (*m_splitter)->GetFlavourB(),
 				    (*m_splitter)->GetFlavourC());
       m_x   = split->Xbj();
-      if (m_y<0.0 || m_y>1.0-m_z || m_z<m_x) continue;
+      if (m_kperp2<m_k0sqi || m_y<0.0 || m_y>1.0-m_z || m_z<m_x) continue;
     }
       break;
   default:

@@ -659,14 +659,14 @@ double Single_Virtual_Correction::Calc_V(const ATOOLS::Vec4D_Vector &mom,
     res = m_lastb*cplfac*p_loopme->ME_Finite();
     if (m_murcoeffvirt) {
       if (p_loopme->ProvidesPoles()) {
-      if (m_sccmur) {
-        p_partner->m_cmur[0]+=(p_loopme->ME_E1()+bornorderqcd*beta0qcd)*m_lastb*cplfac;
-        p_partner->m_cmur[1]+=p_loopme->ME_E2()*m_lastb*cplfac;
-      }
-      else {
-        p_partner->m_cmur[0]+=m_lastb*cplfac*p_loopme->ScaleDependenceCoefficient(1);
-        p_partner->m_cmur[1]+=m_lastb*cplfac*p_loopme->ScaleDependenceCoefficient(2);
-      }
+        if (m_sccmur) {
+          p_partner->m_cmur[0]+=(p_loopme->ME_E1()+bornorderqcd*beta0qcd)*m_lastb*cplfac;
+          p_partner->m_cmur[1]+=p_loopme->ME_E2()*m_lastb*cplfac;
+        }
+        else {
+          p_partner->m_cmur[0]+=m_lastb*cplfac*p_loopme->ScaleDependenceCoefficient(1);
+          p_partner->m_cmur[1]+=m_lastb*cplfac*p_loopme->ScaleDependenceCoefficient(2);
+        }
       }
       else {
 	p_partner->m_cmur[0]+=-m_singlepole+bornorderqcd*beta0qcd*m_lastb*cplfac;
@@ -679,14 +679,14 @@ double Single_Virtual_Correction::Calc_V(const ATOOLS::Vec4D_Vector &mom,
     res = cplfac*p_loopme->ME_Finite();
     if (m_murcoeffvirt) {
       if (p_loopme->ProvidesPoles()) {
-      if (m_sccmur) {
-        p_partner->m_cmur[0]+=(p_loopme->ME_E1()+bornorderqcd*beta0qcd*m_lastb)*cplfac;
-        p_partner->m_cmur[1]+=p_loopme->ME_E2()*cplfac;
-      }
-      else {
-        p_partner->m_cmur[0]+=cplfac*p_loopme->ScaleDependenceCoefficient(1);
-        p_partner->m_cmur[1]+=cplfac*p_loopme->ScaleDependenceCoefficient(2);
-      }
+        if (m_sccmur) {
+          p_partner->m_cmur[0]+=(p_loopme->ME_E1()+bornorderqcd*beta0qcd*m_lastb)*cplfac;
+          p_partner->m_cmur[1]+=p_loopme->ME_E2()*cplfac;
+        }
+        else {
+          p_partner->m_cmur[0]+=cplfac*p_loopme->ScaleDependenceCoefficient(1);
+          p_partner->m_cmur[1]+=cplfac*p_loopme->ScaleDependenceCoefficient(2);
+        }
       }
       else {
 	p_partner->m_cmur[0]+=-m_singlepole+bornorderqcd*beta0qcd*m_lastb*cplfac;
