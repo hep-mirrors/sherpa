@@ -33,6 +33,7 @@ sdist.exclude = [ "venv", "dist" ]
 wheel.exclude = [ "venv", "dist" ]
 cmake.args = [ "-Wno-dev",
   "-DCMAKE_BUILD_TYPE=RelWithDebInfo",
+  "-DCMAKE_POLICY_VERSION_MINIMUM=3.5",
   "-DSHERPA_ENABLE_INSTALL_LIBZIP=ON",
   "-DSHERPA_ENABLE_INSTALL_LHAPDF=ON",
   "-DSHERPA_ENABLE_PYTHON=ON",

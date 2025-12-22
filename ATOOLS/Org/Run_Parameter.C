@@ -26,9 +26,7 @@
 #include <limits>
 #include <dlfcn.h>
 
-extern "C" void InitATOOLSLib() {
-  return;
-}
+extern "C" void InitToolsOrgLib() { return; }
 
 namespace ATOOLS {
   Run_Parameter *rpa(NULL);
@@ -168,6 +166,18 @@ void Run_Parameter::AnalyseEnvironment()
     librarypath=BR_prefix+"/"+SHERPA_LIBRARY_SUBDIR;
   }
 
+  // check if share path exists
+  if(!DirectoryExists(gen.m_variables["SHERPA_SHARE_PATH"])) {
+    Dl_info dl_info;
+    if (dladdr((void*)InitToolsOrgLib, &dl_info)==0)
+      msg_Error()<<METHOD<<": dladdr failed to find the ToolsOrg library path."<<std::endl;
+    std::string dlname(dl_info.dli_fname);
+    gen.m_variables["SHERPA_SHARE_PATH"]
+      =dlname.substr(0,dlname.find("libToolsOrg"))+"../../share/SHERPA-MC/";
+    gen.m_variables["SHERPA_INC_PATH"]
+      =dlname.substr(0,dlname.find("libToolsOrg"))+"../../include/SHERPA-MC/";
+  }
+
   gen.m_variables["SHERPA_SHARE_PATH"]=
     (var=getenv("SHERPA_SHARE_PATH"))==NULL?sharepath:var;
 
@@ -179,17 +189,6 @@ void Run_Parameter::AnalyseEnvironment()
   gen.m_variables["SHERPA_LIBRARY_PATH"]=
     (var=getenv("SHERPA_LIBRARY_PATH"))==NULL?librarypath:var;
 
-  // check if share path exists
-  if(!DirectoryExists(gen.m_variables["SHERPA_SHARE_PATH"])) {
-    Dl_info dl_info;
-    if (dladdr((void*)InitATOOLSLib, &dl_info)==0)
-      msg_Error()<<METHOD<<": dladdr failed to find the InitATOOLSLib lib path."<<std::endl;
-    std::string dlname(dl_info.dli_fname);
-    gen.m_variables["SHERPA_SHARE_PATH"]
-      =dlname.substr(0,dlname.find("libToolsOrg"))+"../../share/SHERPA-MC/";
-    gen.m_variables["SHERPA_INC_PATH"]
-      =dlname.substr(0,dlname.find("libToolsOrg"))+"../../include/SHERPA-MC/";
-  }
 }
 
 void Run_Parameter::RegisterDefaults()
