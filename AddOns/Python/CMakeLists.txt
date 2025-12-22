@@ -47,6 +47,8 @@ set_target_properties(_Sherpa   PROPERTIES      ARCHIVE_OUTPUT_DIRECTORY ${PROJE
 if(NOT (CMAKE_SYSTEM_NAME MATCHES Darwin))
   target_link_options(_Sherpa PRIVATE LINKER:--no-as-needed)
   set_target_properties(_Sherpa PROPERTIES INSTALL_RPATH "\$ORIGIN/${CMAKE_INSTALL_LIBDIR}/SHERPA-MC")
+else()
+  set_target_properties(_Sherpa PROPERTIES INSTALL_RPATH "@loader_path/${CMAKE_INSTALL_LIBDIR}/SHERPA-MC")
 endif()
 target_include_directories(_Sherpa PUBLIC ${CMAKE_CURRENT_BINARY_DIR}/ ${PROJECT_SOURCE_DIR} ${PROJECT_BINARY_DIR})
 install(TARGETS _Sherpa DESTINATION ${SHERPA_Python_SITEARCH}/  COMPONENT python)
