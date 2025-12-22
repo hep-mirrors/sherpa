@@ -69,6 +69,12 @@ std::string METOOLS::Spin_Amplitudes::getType(){
   return "LO";
 }
 
+
+void Spin_Amplitudes::setBornAmplitude(Spin_Amplitudes* born) {
+  // Default: not doing anything
+}
+
+
 /*
 const PHASIC::Color_Integrator* Spin_Amplitudes::GetColors() const {
   msg_Error()<<METHOD<<": Virtual function called."<<endl;

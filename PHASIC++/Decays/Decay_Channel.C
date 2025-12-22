@@ -11,6 +11,7 @@
 #include "METOOLS/SpinCorrelations/Amplitude2_Tensor.H"
 #include "METOOLS/SpinCorrelations/Spin_Density.H"
 #include <algorithm>
+#include "EXTRA_XS/One2Two/Massive_Virtual_Subtraction.H"
 
 using namespace PHASIC;
 using namespace ATOOLS;
@@ -412,37 +413,37 @@ double Decay_Channel::ME2_NLO(const ATOOLS::Vec4D_Vector& momenta, bool anti,
     for (size_t i = 0; i < GetDiagrams().size(); ++i) {
       METOOLS::Spin_Amplitudes* diag = GetDiagrams()[i];
       const std::string& type = diag->getType();
-      if (type == "S" || type == "I") {
+      if (type == "S") {
         std::vector<METOOLS::Spin_Amplitudes*> single_diag_list{ diag }; // to create Amplitude2_Tensor, the diagram needs to be in a list. S, I and V are seperate Amplitude2_Tensor objects.
         METOOLS::Amplitude2_Tensor* NLO_tensor = new Amplitude2_Tensor(p, 0, single_diag_list, spin_i, spin_j);
+        NLO_tensor_list.push_back(NLO_tensor);
+      }
+      if (type == "I") {
+        diag -> setBornAmplitude(leading_diagrams[0]);   // The amplitude has to be re-calculated with the correct Born amplitude
 
+        std::vector<METOOLS::Spin_Amplitudes*> single_diag_list{ diag }; // to create Amplitude2_Tensor, the diagram needs to be in a list. S, I and V are seperate Amplitude2_Tensor objects.
+        METOOLS::Amplitude2_Tensor* NLO_tensor = new Amplitude2_Tensor(p, 0, single_diag_list, leading_diagrams, spin_i, spin_j, 1.0); ;
         NLO_tensor_list.push_back(NLO_tensor);
       }
     }
 
     // build Amplitude2_Tensor for V if corresponding diagram exists
-    bool virtual_channel = false;
     for (size_t i = 0; i < GetDiagrams().size(); ++i) {
       METOOLS::Spin_Amplitudes* diag = GetDiagrams()[i];
       if(diag->getType() == "V"){
-        virtual_channel = true;
-
-        // Collect LO (Born) diagrams by value
-        std::vector<METOOLS::Spin_Amplitudes> born_diagram_val;
+        // Collect LO (Born) diagrams
+        std::vector<METOOLS::Spin_Amplitudes*> born_diagram_list;
         for (size_t j = 0; j < GetDiagrams().size(); ++j) {
           METOOLS::Spin_Amplitudes* d = GetDiagrams()[j];
-          if (d->getType() == "LO") born_diagram_val.push_back(*d);
+          if (d->getType() == "LO") born_diagram_list.push_back(d);
         }
 
         // For virtual diagram, construct its interference tensor with Born
         METOOLS::Spin_Amplitudes* v_diag_ptr = GetDiagrams()[i];
-        std::vector<METOOLS::Spin_Amplitudes> v_diagram_val;
-        v_diagram_val.push_back(*v_diag_ptr);
+        std::vector<METOOLS::Spin_Amplitudes*> v_diagram_list;
+        v_diagram_list.push_back(v_diag_ptr);
 
-        std::vector<int> permutation(p.size());
-        for (size_t k = 0; k < permutation.size(); ++k) permutation[k] = int(k);
-
-        METOOLS::Amplitude2_Tensor* v_tensor = new Amplitude2_Tensor(p, permutation, 0, v_diagram_val, born_diagram_val, spin_i, spin_j, 1.0); // in this case, leading_diagram is the born diagram
+        METOOLS::Amplitude2_Tensor* v_tensor = new Amplitude2_Tensor(p, 0, v_diagram_list, born_diagram_list, spin_i, spin_j, 1.0); // in this case, leading_diagram is the born diagram
         NLO_tensor_list.push_back(v_tensor);
       }
     }
@@ -451,6 +452,7 @@ double Decay_Channel::ME2_NLO(const ATOOLS::Vec4D_Vector& momenta, bool anti,
     sumijlambda_AiAj=(*sigma)*p_amps->ReduceToMatrix(sigma->Particle());
 
     for (size_t i = 0; i < NLO_tensor_list.size(); ++i) {    // reduce NLO Amplitude2_Tensor
+      std::cout << "sumijlambda_AiAj: " << NLO_tensor_list[i]->ReduceToMatrix(sigma->Particle()) << std::endl;
       sumijlambda_AiAj += (*sigma)*NLO_tensor_list[i]->ReduceToMatrix(sigma->Particle());
     }
 

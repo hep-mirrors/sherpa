@@ -27,6 +27,7 @@ namespace EXTRAXS {
     PHASIC::Color_Integrator* p_ci;
     double finite_sub;
     std::map<std::string, std::complex<double>> born_hel;
+    std::complex<double> coeff;
 
     size_t NHel(const ATOOLS::Flavour& fl) const;
     void SetUpBornCurrents(const std::vector<ATOOLS::Flavour>& flavs);
@@ -45,6 +46,7 @@ namespace EXTRAXS {
     double CalculateEpsilonSubtraction(const ATOOLS::Vec4D_Vector& momenta, double born_ME2);
     double get_NLO_ME2();
     std::string getType();
+    void setBornAmplitude(Spin_Amplitudes* born) override;
   };
 }
 

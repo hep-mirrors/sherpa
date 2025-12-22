@@ -136,7 +136,6 @@ void Massive_Virtual_Subtraction::Calculate(const ATOOLS::Vec4D_Vector& momenta,
 
   finite_sub = CalculateFiniteSubtraction(momenta, ME2_Born);
   double epsilon_sub = CalculateEpsilonSubtraction(momenta, ME2_Born);
-  // todo: fill this spin amplitue object with helicity-dependent values of I
 }
 
 
@@ -471,16 +470,25 @@ double Massive_Virtual_Subtraction::CalculateFiniteSubtraction(const ATOOLS::Vec
   (*this)[1] = born_hel["10"];
   (*this)[2] = born_hel["01"];
   (*this)[3] = born_hel["11"];
+  
+  coeff = (0.0, 0.0);
+  coeff += prefactor * (sum1 + sum2 + sum3);
+  double d_coeff = coeff.real();
 
-  std::complex<double> coeff(0.0, 0.0);
-  coeff += prefactor * (sum1 + sum2 + sum3) * 3;  // 3 = colour factor
-
-  for (size_t i=0; i<size(); ++i) {
-   (*this)[i] *= std::sqrt(coeff);
-  }
-
-  return born_ME2 * prefactor * (sum1 + sum2 + sum3);
+  return born_ME2 * d_coeff;
 }
+
+
+void Massive_Virtual_Subtraction::setBornAmplitude(Spin_Amplitudes* born){
+  using C = std::complex<double>;
+
+  for (size_t l = 0; l < born->size(); ++l) {
+    (*this)[l] = (*born)[l] * coeff * 0.5;  // 0.5 is a scaling factor that is needed because the Amplitude Tensor is calculated for the 
+    // interference term between Born and Born * Subtraction-prefactor. 
+    // The interference term contains an additional factor of 2 that has to be removed here again
+  }
+}
+
 
 
 double Massive_Virtual_Subtraction::CalculateEpsilonSubtraction(const ATOOLS::Vec4D_Vector& momenta, double born_ME2){
