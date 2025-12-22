@@ -10,7 +10,6 @@
 #include "ATOOLS/Phys/Flavour.H"
 
 #include "LHAPDF/LHAPDF.h"
-#include <dlfcn.h>
 
 namespace PDF {
   class LHAPDF_CPP_Interface : public PDF_Base {
@@ -277,13 +276,7 @@ extern "C" void InitPDFLib()
     LHAPDF::setPaths(s["GRID_PATH"].Get<std::string>());
   std::vector<std::string> sets(LHAPDF::availablePDFSets());
   if (sets.empty()) {
-    Dl_info dl_info;
-    if (dladdr((void*)InitPDFLib, &dl_info)==0)
-      msg_Error()<<METHOD<<": dladdr failed to find the LHAPDF library path."<<std::endl;
-    std::string dlname(dl_info.dli_fname);
-    dlname=dlname.substr(0,dlname.find("libLHAPDFSherpa"))+"../../share/SHERPA-MC/LHAPDF";
-    msg_Debugging()<<METHOD<<": PDF sets not found, retrying with path '"<<dlname<<"'.\n";
-    LHAPDF::setPaths(dlname);
+    LHAPDF::setPaths(rpa->gen.Variable("SHERPA_SHARE_PATH")+"/LHAPDF");
     sets=LHAPDF::availablePDFSets();
   }
   msg_Debugging()<<METHOD<<"(): LHAPDF paths: "<<LHAPDF::paths()<<std::endl;
