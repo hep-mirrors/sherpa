@@ -517,7 +517,11 @@ double Single_Real_Correction::operator()(const ATOOLS::Vec4D_Vector &_mom,const
 
   if (!m_no_tree) {
     realtrg=p_tree_process->Trigger(_mom);
-    if (res && realtrg) {
+    bool alltrg(realtrg);
+    for (size_t i(0);i<m_subevtlist.size();++i) {
+      alltrg|=m_subevtlist[i]->m_trig;
+    }
+    if (res && alltrg) {
       p_tree_process->ScaleSetter()->CalculateScale(_mom,m_cmode);
       m_realevt.m_mu2[stp::fac]=p_tree_process->ScaleSetter()->Scale(stp::fac);
       m_realevt.m_mu2[stp::ren]=p_tree_process->ScaleSetter()->Scale(stp::ren);
@@ -527,6 +531,8 @@ double Single_Real_Correction::operator()(const ATOOLS::Vec4D_Vector &_mom,const
         m_realevt.p_ampl = p_tree_process->ScaleSetter(1)->Amplitudes().front()->CopyAll();
         m_realevt.p_ampl->SetProc(this);
       }
+    }
+    if (res && realtrg) {
       double real = p_tree_process->operator()(&mom.front())*p_tree_process->Norm();
       if (IsBad(real) || real == 0. ) res=false;
       m_realevt.m_me = real;
