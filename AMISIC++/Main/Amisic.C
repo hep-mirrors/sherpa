@@ -13,7 +13,6 @@ Amisic::Amisic() :
   m_sigmaND_norm(1.),
   m_Nscatters(0), m_producedSoft(false), m_isMinBias(false),
   m_ana(false), 
-  m_nevents_mpi(0), // ue-reweighting
   m_lambda_nominal(0.), m_pint_nominal(0.), m_mpi_scatter_count(0) // ue-reweighting
 {}
 
@@ -469,7 +468,6 @@ void Amisic::ResetVariationWeights(int n_variations) {
   ///////////////////////////////////////////////////////////////////////////
   m_variation_weights.resize(n_variations);
   std::fill(m_variation_weights.begin(), m_variation_weights.end(), 1.);
-  m_wgt_sums.resize(n_variations, 0.);
   m_lambda_ratios.assign(n_variations, 1.);
   m_pint_ratios.assign(n_variations, 1.);
   m_lambda_nominal = 0.;
@@ -485,7 +483,8 @@ void Amisic::ApplyKFactorReweighting(const double & s) {
 
   const size_t n_variations = m_lambda_ratios.size();
 
-  // Compute nominal lambda(b), P_int(b), overlap at K_nom(s)
+  // Compute nominal lambda(b) and P_int(b)
+  // lambda(b) = DiffXSec(s,b) = d sigma_hard(s)/d^2b is the Poisson mean
   m_lambda_nominal = m_pint.DiffXSec(s, m_b);
   m_pint_nominal = 1. - std::exp(-m_lambda_nominal);
   const double K_nom = m_pint.K(s);
@@ -541,23 +540,14 @@ void Amisic::ApplyVariationWeights(ATOOLS::Blob * blob) {
   }
   auto &wgt_map = (*blob)["WeightsMap"]->Get<Weights_Map>();
   
-  m_nevents_mpi++;
-  // static constexpr size_t warmup_events = 100;
   static constexpr double max_weight = 2e2;
   
   for(size_t i{0}; i < m_variation_weights.size(); ++i) {
     const std::string name {"v" + std::to_string(i)};
     const double wgt = m_variation_weights[i];
-    m_wgt_sums[i] += wgt;
     const auto clipped_wgt {std::min(wgt, max_weight)};
 
     wgt_map["MPI"][name] = clipped_wgt;
-
-    // double norm {1.};
-    // if(m_nevents_mpi > warmup_events) {
-    //   norm = m_wgt_sums[i] / m_nevents_mpi;
-    // }
-    // wgt_map["MPI"][name] = clipped_wgt / norm;
   }
   
   const size_t n_variations = m_variation_weights.size();

@@ -68,14 +68,12 @@ namespace AMISIC {
     double       m_f;
     // ue-reweighting
     std::vector<double> m_variation_weights;
-    std::vector<double> m_wgt_sums;
     std::vector<double> m_lambda_ratios;
     std::vector<double> m_pint_ratios;
     std::vector<double> m_sigma_nd_variations;
     size_t m_mpi_scatter_count;
     double m_lambda_nominal;
     double m_pint_nominal;
-    int m_nevents_mpi;
     // ue-reweighting
 
     void InitParametersAndType(PDF::ISR_Handler *const isr,
