@@ -18,7 +18,6 @@ Decay_Table::~Decay_Table()
   for (size_t i=0; i<size(); i++) {
     delete at(i);
   }
-  clear();
 }
 
 void Decay_Table::AddDecayChannel(Decay_Channel * _dc)
