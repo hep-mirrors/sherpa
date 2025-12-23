@@ -6,7 +6,7 @@ particle collisions.
 For more information, visit [our homepage](http://sherpa-team.gitlab.io)
 or our [project site on GitLab](https://gitlab.com/sherpa-team/sherpa).
 You can file a bug report on our [issue tracker](https://gitlab.com/sherpa-team/sherpa/issues)
-or send us an [e-mail](sherpa@projects.hepforge.org).
+or send us an [e-mail](sherpa-developers@cern.ch).
 
 To install use the commands
 ```
