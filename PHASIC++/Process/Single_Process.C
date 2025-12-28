@@ -1233,6 +1233,12 @@ void Single_Process::SetKFactor(const KFactor_Setter_Arguments &args)
 {
   if (IsMapped()) return;
   KFactor_Setter_Arguments cargs(args);
+  const std::string &rkfac(p_scale->RequiredKFactor());
+  if (rkfac!=cargs.m_kfac) {
+    if (cargs.m_kfac!="None")
+      msg_Info()<<METHOD<<"(): Redefine KFactor to '"<<rkfac<<"'\n";
+    cargs.m_kfac=rkfac;
+  }
   cargs.p_proc=this;
   m_pinfo.m_kfactor=cargs.m_kfac;
   p_kfactor = KFactor_Setter_Base::KFactor_Getter_Function::
