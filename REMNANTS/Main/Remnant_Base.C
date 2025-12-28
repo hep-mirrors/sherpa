@@ -92,7 +92,7 @@ bool Remnant_Base::Extract(ATOOLS::Particle* parton, Colour_Generator* colours)
     }
     return true;
   }
-  msg_Error() << METHOD << ": Cannot extract particle:\n"
+  msg_Tracking() << METHOD << ": Cannot extract particle:\n"
               << (*parton) << "\n  from: " << p_beam->Bunch()
               << " with momentum " << p_beam->OutMomentum()
               << ", difference = " << parton->Momentum()-p_beam->OutMomentum()
