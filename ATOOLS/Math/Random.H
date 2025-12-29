@@ -28,6 +28,11 @@ namespace ATOOLS {
     virtual bool CanRestoreStatus() const { return false; }
     virtual void SaveStatus() {}
     virtual void RestoreStatus() {}
+    // Variant to store more than one status. Passing 0 must be equivalent
+    // to using the above functions without a `label` parameter.
+    virtual bool CanRestoreMultipleStatus() const { return false; }
+    virtual void SaveStatus(size_t label) {}
+    virtual void RestoreStatus(size_t label) {}
 
   };
 
@@ -40,14 +45,16 @@ namespace ATOOLS {
 
     int      activeGenerator;
 
-    long int m_id, m_sid;
+    long int m_id;
+
+    std::map<size_t, std::vector<long int>> m_status;
 
     std::stringstream m_lastincrementedseed;
     size_t m_nsinceinit, m_increment;
 
     External_RNG *p_external;
 
-    Marsaglia *p_ran4[2];
+    std::map<size_t, Marsaglia> m_ran4;
 
     double Ran2(long *idum);
     double Ran4();
@@ -61,8 +68,8 @@ namespace ATOOLS {
     int  WriteOutSavedStatus4(const char *outfile);
     void ReadInStatus4(const char * filename);
     size_t ReadInStatus4(std::istream &is,const size_t &idx);
-    void SaveStatus4();
-    void RestoreStatus4();
+    void SaveStatus4(size_t label);
+    void RestoreStatus4(size_t label);
 
   public:
 
@@ -87,8 +94,9 @@ namespace ATOOLS {
     void ReadInStatus(const char *infile);
     size_t ReadInStatus(std::istream &is,const size_t &idx);
     bool CanRestoreStatus() const;
-    void SaveStatus();
-    void RestoreStatus();
+    bool CanRestoreMultipleStatus() const;
+    void SaveStatus(size_t label = 0);
+    void RestoreStatus(size_t label = 0);
     void FastForward(const size_t &n);
     void ResetToLastIncrementedSeed();
     void EraseLastIncrementedSeed()

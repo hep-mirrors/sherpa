@@ -45,24 +45,19 @@ ATOOLS::Random::Random(long nid):
   ATOOLS::exh->AddTerminatorObject(this);
   SetSeed(nid);
   SaveStatus();
-  p_ran4[0] = new Marsaglia();
-  p_ran4[1] = new Marsaglia();
+  m_ran4[0] = Marsaglia();
+  m_ran4[1] = Marsaglia();
 }
 
 
 ATOOLS::Random::~Random()
 {
-  delete p_ran4[0];
-  delete p_ran4[1];
   if (p_external) delete p_external;
 }
 
 static long idum2=123456789;
-static long sidum2=123456789;
 static long iy=0;
-static long siy=0;
 static long iv[NTAB];
-static long siv[NTAB];
 
 double ATOOLS::Random::Ran2(long *idum)
 {
@@ -138,9 +133,9 @@ int ATOOLS::Random::WriteOutSavedStatus(const char * filename)
   // remove old random file
   if (FileExists(filename)) remove(filename);
   std::ofstream outstream(filename);
-  outstream<<0<<"\t"<<m_sid<<"\t";
-  outstream<<siy<<"\t"<<sidum2<<"\t";
-  for (int i=0;i<NTAB;++i) outstream<<siv[i]<<"\t";
+  outstream<<0<<"\t"<<m_status[0][0]<<"\t";
+  outstream<<m_status[0][1]<<"\t"<<m_status[0][2]<<"\t";
+  for (int i=0;i<NTAB;++i) outstream<<m_status[0][3+i]<<"\t";
   outstream<<endl;
   return 1;
 }
@@ -239,32 +234,53 @@ bool ATOOLS::Random::CanRestoreStatus() const
   return true;
 }
 
-
-void ATOOLS::Random::SaveStatus()
+bool ATOOLS::Random::CanRestoreMultipleStatus() const
 {
-  if (p_external!=NULL) {
-    p_external->SaveStatus();
-    return;
-  }
-  if (activeGenerator==4) { return SaveStatus4(); };
-  m_sid=m_id;
-  siy=iy;
-  sidum2=idum2;
-  for (int i=0;i<NTAB;++i) siv[i]=iv[i];
+  if (p_external)
+    return p_external->CanRestoreMultipleStatus();
+  return true;
 }
 
-
-void ATOOLS::Random::RestoreStatus()
+void ATOOLS::Random::SaveStatus(size_t label)
 {
   if (p_external!=NULL) {
-    p_external->RestoreStatus();
+    if (label == 0)
+      p_external->SaveStatus();
+    else if (p_external->CanRestoreMultipleStatus())
+      p_external->SaveStatus(label);
+    else
+      THROW(fatal_error, "External RNG can not store multiple status");
     return;
   }
-  if (activeGenerator==4) { return RestoreStatus4(); };
-  m_id=m_sid;
-  iy=siy;
-  idum2=sidum2;
-  for (int i=0;i<NTAB;++i) iv[i]=siv[i];
+  if (activeGenerator==4) { return SaveStatus4(label); };
+  m_status[label].resize(3 + NTAB);
+  m_status[label][0] = m_id;
+  m_status[label][1] = iy;
+  m_status[label][2] = idum2;
+  for (int i = 0; i < NTAB; ++i)
+    m_status[label][3 + i] = iv[i];
+}
+
+void ATOOLS::Random::RestoreStatus(size_t label)
+{
+  if (p_external!=NULL) {
+    if (label == 0)
+      p_external->RestoreStatus();
+    else if (p_external->CanRestoreMultipleStatus())
+      p_external->RestoreStatus(label);
+    else
+      THROW(fatal_error, "External RNG can not store multiple status");
+    return;
+  }
+  if (activeGenerator==4) { return RestoreStatus4(label); };
+  auto it = m_status.find(label);
+  if (it == m_status.end())
+    THROW(fatal_error, "RNG status " + ToString(label) + " does not exist");
+  m_id = it->second[0];
+  iy = it->second[1];
+  idum2 = it->second[2];
+  for (int i = 0; i < NTAB; ++i)
+    iv[i] = it->second[3 + i];
 }
 
 void ATOOLS::Random:: ResetToLastIncrementedSeed()
@@ -333,9 +349,9 @@ ATOOLS::Random::Random(unsigned int i1,unsigned int i2,unsigned int i3,
   m_nsinceinit(0), m_increment(0), p_external(NULL)
 {
   ATOOLS::exh->AddTerminatorObject(this);
-  p_ran4[0] = new Marsaglia();
+  m_ran4[0] = Marsaglia();
   SetSeed(i1,i2,i3,i4);
-  p_ran4[1] = new Marsaglia(*p_ran4[0]);
+  m_ran4[1] = Marsaglia(m_ran4[0]);
 }
 
 
@@ -344,15 +360,15 @@ void ATOOLS::Random::SetSeed(unsigned int i1,unsigned int i2,
 {
   msg_Info()<<METHOD<<"(): Seeds set to "<<i1<<" "<<i2
 	    <<" "<<i3<<" "<<i4<<std::endl;
-  p_ran4[0]->Init(i1,i2,i3,i4);
-  *p_ran4[1]=*p_ran4[0];
+  m_ran4[0].Init(i1,i2,i3,i4);
+  m_ran4[1]=m_ran4[0];
   activeGenerator = 4;
 }
 
 
 double ATOOLS::Random::Ran4()
 {
-  return p_ran4[0]->Get();
+  return m_ran4[0].Get();
 }
 
 
@@ -362,7 +378,7 @@ int ATOOLS::Random::WriteOutStatus4(const char * filename)
   if (FileExists(filename)) remove(filename);
   // open file and append status of Random Generator at the end if possible
   std::ofstream file((std::string(filename)+".msg").c_str());
-  p_ran4[0]->WriteStatus(file);
+  m_ran4[0].WriteStatus(file);
   return 1;
 }
 
@@ -372,7 +388,7 @@ int ATOOLS::Random::WriteOutSavedStatus4(const char * filename)
   if (FileExists(filename)) remove(filename);
   // open file and append status of Random Generator at the end if possible
   std::ofstream file((std::string(filename)+".msg").c_str());
-  p_ran4[1]->WriteStatus(file);
+  m_ran4[1].WriteStatus(file);
   return 1;
 }
 
@@ -387,10 +403,10 @@ void ATOOLS::Random::ReadInStatus4(const char * filename)
   msg_Info()<<"Random::ReadInStatus from "<<filename<<".msg"<<endl;
 
   std::ifstream file((std::string(filename)+".msg").c_str());
-  if (file.good()) p_ran4[0]->ReadStatus(file);
+  if (file.good()) m_ran4[0].ReadStatus(file);
   else
     msg_Error()<<"ERROR in Random::ReadInStatus4 : "<<filename<<" not found!!"<<endl;
-  *p_ran4[1]=*p_ran4[0];
+  m_ran4[1]=m_ran4[0];
 }
 
 size_t ATOOLS::Random::ReadInStatus4(std::istream &is,const size_t &idx)
@@ -399,8 +415,13 @@ size_t ATOOLS::Random::ReadInStatus4(std::istream &is,const size_t &idx)
   return 0;
 }
 
-void ATOOLS::Random::SaveStatus4() { *p_ran4[1]=*p_ran4[0]; }
-void ATOOLS::Random::RestoreStatus4() { *p_ran4[0]=*p_ran4[1]; }
+void ATOOLS::Random::SaveStatus4(size_t label) {
+  m_ran4[label + 1] = m_ran4[0];
+}
+
+void ATOOLS::Random::RestoreStatus4(size_t label) {
+  m_ran4[0] = m_ran4[label + 1];
+}
 
 void ATOOLS::Random::FastForward(const size_t &n)
 {
