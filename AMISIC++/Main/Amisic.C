@@ -524,13 +524,9 @@ void Amisic::ApplyVariationWeights(ATOOLS::Blob * blob) {
     const double lambda_ratio = m_lambda_ratios[i];
     const double w_poisson = ComputeWeightFactor(lambda_ratio, m_mpi_scatter_count);
     
-    // w_b = [P_int_var(b) / sigma_ND_var] / [P_int_nom(b) / sigma_ND_nom]
-    //     = P_int_var(b) / P_int_nom(b) * sigma_ND_nom / sigma_ND_var
-    //     = P_int_ratio(b) * 1 / sigma_nd_ratio
-    const double pint_ratio = m_pint_ratios[i];
-    const double sigma_nd_ratio = (m_sigma_nd_variations.empty() || m_sigma_nd_variations[i]<=0.) ? 
-                                    1. : (m_sigma_nd_variations[i] / m_sigma_nd_variations[0]);
-    const double w_b = pint_ratio * 1 / sigma_nd_ratio;
+    // Impact-parameter sampling for perturbative MPIs is from O(b),
+    // so the correct density ratio under K-variations is O_var/O_nom.
+    const double w_b = (std::isfinite(lambda_ratio) && lambda_ratio>0.) ? lambda_ratio : 1.;
     
     // w_total = w_poisson * w_b
     m_variation_weights[i] *= w_poisson * w_b;
