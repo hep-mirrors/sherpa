@@ -154,6 +154,7 @@ void Run_Parameter::AnalyseEnvironment()
   // 1. Environment variable
   // 2. binreloc (if enabled during configure)
   // 3. Hard coded value in installation directory
+
   // set share path
   string sharepath=SHERPA_SHARE_PATH;
   string includepath=SHERPA_INCLUDE_PATH;
@@ -177,8 +178,8 @@ void Run_Parameter::AnalyseEnvironment()
   gen.m_variables["SHERPA_LIBRARY_PATH"]=
     (var=getenv("SHERPA_LIBRARY_PATH"))==NULL?librarypath:var;
 
-  // check if share path exists
-  if(!DirectoryExists(gen.m_variables["SHERPA_SHARE_PATH"])) {
+  // check if library path exists
+  if(!DirectoryExists(gen.m_variables["SHERPA_LIBRARY_PATH"])) {
     Dl_info dl_info;
     if (dladdr((void*)InitToolsOrgLib, &dl_info)==0)
       msg_Error()<<METHOD<<": dladdr failed to find the ToolsOrg library path."<<std::endl;
@@ -187,6 +188,8 @@ void Run_Parameter::AnalyseEnvironment()
       =dlname.substr(0,dlname.find("libToolsOrg"))+"../../share/SHERPA-MC/";
     gen.m_variables["SHERPA_INC_PATH"]
       =dlname.substr(0,dlname.find("libToolsOrg"))+"../../include/SHERPA-MC/";
+    gen.m_variables["SHERPA_LIBRARY_PATH"]
+      =dlname.substr(0,dlname.find("libToolsOrg"))+"../../"+SHERPA_LIBRARY_SUBDIR;
   }
 }
 
