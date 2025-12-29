@@ -185,7 +185,7 @@ double NLO_Base::CalculateVirtual() {
 		if(m_virt_sub==0) sub = p_dipoles->CalculateVirtualSub();
 		double p1 = p_virt->p_loop_me->ME_E1()*p_virt->m_factor;
 		double yfspole = p_dipoles->Get_E1();
-		int ncorrect = ::countMatchingDigits(p1, -yfspole, 32);
+		int ncorrect = ::countMatchingDigits(p1, -yfspole);
 		double reldiff = (p1+yfspole)/p1;
 		if(!IsEqual(p1,-yfspole,1e-4)){
 			msg_Error()<<"Poles do not cancel in YFS Virtuals"<<std::endl
