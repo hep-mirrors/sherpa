@@ -317,6 +317,7 @@ Scale setting in multi-parton processes (METS)
 
 .. index:: METS
 .. index:: CORE_SCALE
+.. index:: ALLOW_SCALE_UNORDERING
 
 ``METS`` is the default scale setting in Sherpa, since it is employed
 for multi-leg merging, both at leading and next-to-leading order.
@@ -417,8 +418,9 @@ will be used, or alternatively a user-defined scale specified, e.g.
    MEPS:
      UNORDERED_SCALE: VAR{H_Tp2/sqr(N_FS-2)}
 
-If instead you want to allow unordered histories you can also enable them with
-``ALLOW_SCALE_UNORDERING: 1``.
+If instead you want to allow unordered histories you can enable them with
+``ALLOW_SCALE_UNORDERING: 1``. This will automatically request the
+:ref:`CCFM KFactor scheme <CCFM KFactor>`.
 
 Clusterings onto 2->n (n>2) configurations is possible and for complicated
 processes can warrant the implementation of a custom core scale, cf. :ref:`Customization`.
@@ -659,6 +661,14 @@ on the command line. Currently available options are
 
 It is possible to implement a dedicated K-factor scheme within Sherpa.
 For advice on this topic please contact the authors, :ref:`Authors`.
+
+.. _CCFM KFactor:
+:option:`CCFM`
+  Requires the :ref:`METS <METS scale setting with multiparton core processes>`
+  scale and is automatically requested by this scale if
+  :ref:`ALLOW_SCALE_UNORDERING <METS scale setting with multiparton core processes>`
+  is enabled. Implements the non-Sudakov factors from
+  :cite:`Ciafaloni:1987ur,Catani:1989yc`.
 
 .. _YUKAWA_MASSES:
 
