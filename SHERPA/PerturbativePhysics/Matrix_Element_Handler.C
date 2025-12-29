@@ -127,7 +127,7 @@ Matrix_Element_Handler::Matrix_Element_Handler(MODEL::Model_Base *model):
     const size_t incr{ s["EVENT_SEED_INCREMENT"].Get<size_t>() };
     ran->SetSeedStorageIncrement(incr);
   }
-  m_pilotrunenabled = ran->CanRestoreStatus() && (m_eventmode != 0);
+  m_pilotrunenabled = ran->CanRestoreMultipleStatus() && (m_eventmode != 0);
   msg_Debugging()<<"Pilot run mode: "<<m_pilotrunenabled<<"\n";
 }
 
@@ -241,7 +241,7 @@ bool Matrix_Element_Handler::GenerateOneTrialEvent()
     // in pilot run mode, calculate nominal only, and prepare to restore
     // the rng to re-run with variations after unweighting
     varmode = Variations_Mode::nominal_only;
-    ran->SaveStatus();
+    ran->SaveStatus(1);
   }
 
   // try to generate an event for the selected process
@@ -281,7 +281,7 @@ bool Matrix_Element_Handler::GenerateOneTrialEvent()
     if (hasvars && m_pilotrunenabled) {
       // re-run with same rng state and include the calculation of variations
       // this time
-      ran->RestoreStatus();
+      ran->RestoreStatus(1);
       info=proc->OneEvent(m_eventmode, Variations_Mode::all);
       assert(info);
       if (!IsEqual(m_evtinfo.m_weightsmap.Nominal(), info->m_weightsmap.Nominal(), 1e-6)) {
