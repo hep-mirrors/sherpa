@@ -42,6 +42,7 @@ namespace EXTRAXS {
     void Calculate(const ATOOLS::Vec4D_Vector& momenta, bool anti=false);
     double get_NLO_ME2();
     std::string getType();
+    void setBornAmplitude(std::map<std::string, std::complex<double>> born) override;
   }; 
     //const PHASIC::Color_Integrator* GetColors() const override { return p_ci; };
     //void SetColors(const std::vector<int>& ci,

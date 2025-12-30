@@ -32,6 +32,7 @@ namespace EXTRAXS {
     double v_correction_f;
     double v_correction_e;
     double v_correction_e2;
+    std::map<std::string, C> born_hel;
 
     size_t NHel(const ATOOLS::Flavour& fl) const;
     void SetUpCurrents(const std::vector<ATOOLS::Flavour>& flavs) override;
@@ -54,6 +55,7 @@ namespace EXTRAXS {
     std::string getType() override;
     double get_epsilon_pole();
     double get_epsilon2_pole();
+    std::map<std::string, std::complex<double>> getBornAmplitude() override;
   };
 }
 

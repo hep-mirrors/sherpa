@@ -75,6 +75,17 @@ void Spin_Amplitudes::setBornAmplitude(Spin_Amplitudes* born) {
 }
 
 
+void Spin_Amplitudes::setBornAmplitude(std::map<std::string, std::complex<double>> born) {
+  // Default: not doing anything
+}
+
+
+std::map<std::string, std::complex<double>> Spin_Amplitudes::getBornAmplitude() {
+  return {};
+  // Default: not doing anything
+}
+
+
 /*
 const PHASIC::Color_Integrator* Spin_Amplitudes::GetColors() const {
   msg_Error()<<METHOD<<": Virtual function called."<<endl;

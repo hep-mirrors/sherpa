@@ -169,6 +169,14 @@ std::string Comix1to2::getType(){
 }
 
 
+void Comix1to2::setBornAmplitude(std::map<std::string, std::complex<double>> born) {
+  (*this)[0] = born["00"];
+  (*this)[1] = born["10"];
+  (*this)[2] = born["01"];
+  (*this)[3] = born["11"];
+}
+
+
 size_t Comix1to2::NHel(const Flavour& fl)
 {
   switch(fl.IntSpin()) {

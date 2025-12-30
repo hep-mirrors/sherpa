@@ -480,8 +480,6 @@ double Massive_Virtual_Subtraction::CalculateFiniteSubtraction(const ATOOLS::Vec
 
 
 void Massive_Virtual_Subtraction::setBornAmplitude(Spin_Amplitudes* born){
-  using C = std::complex<double>;
-
   for (size_t l = 0; l < born->size(); ++l) {
     (*this)[l] = (*born)[l] * coeff * 0.5;  // 0.5 is a scaling factor that is needed because the Amplitude Tensor is calculated for the 
     // interference term between Born and Born * Subtraction-prefactor. 

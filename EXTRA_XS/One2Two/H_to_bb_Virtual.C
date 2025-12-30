@@ -373,7 +373,6 @@ std::map<std::string, std::complex<double>> H_to_bb_Virtual::CalculateBorn(const
   }
   born_11 *= BornPrefactor;
 
-  std::map<std::string, C> born_hel;
   born_hel["00"]  = born_00;
   born_hel["01"]  = born_01;
   born_hel["10"]  = born_10;
@@ -566,6 +565,11 @@ double H_to_bb_Virtual::get_epsilon_pole(){
 
 double H_to_bb_Virtual::get_epsilon2_pole(){
   return v_correction_e2;
+}
+
+
+std::map<std::string, std::complex<double>> H_to_bb_Virtual::getBornAmplitude() {
+  return born_hel;   // does not contain any colour factors yet
 }
 
 

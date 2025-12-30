@@ -178,6 +178,8 @@ namespace METOOLS
     virtual double get_NLO_ME2();
     virtual std::string getType();
     virtual void setBornAmplitude(Spin_Amplitudes* born);
+    virtual void setBornAmplitude(std::map<std::string, std::complex<double>> born);
+    virtual std::map<std::string, std::complex<double>> getBornAmplitude();
     /*virtual const PHASIC::Color_Integrator* GetColors() const;
     virtual void SetColors(const std::vector<int>& ci,
                            const std::vector<int>& cj);
