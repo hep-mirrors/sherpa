@@ -1,6 +1,7 @@
 #ifndef BEAM_Main_Beam_Parameters_H
 #define BEAM_Main_Beam_Parameters_H
 
+#include "ATOOLS/Org/Return_Value.H"
 #include "ATOOLS/Phys/Flavour.H"
 #include "ATOOLS/Math/Vector.H"
 #include "ATOOLS/Math/Poincare.H"
@@ -107,6 +108,7 @@ namespace BEAM {
 
     inline beammode     GetMode() const { return m_beammode; }
     inline beamspectrum GetSpectrum(const size_t & pos) const {
+      if(GetMode()==beammode::Fixed_Target) return beamspectrum::Fixed_Target;
       if (pos==0 || pos==1) return m_beamspec[pos];
       return beamspectrum::unknown;
     }

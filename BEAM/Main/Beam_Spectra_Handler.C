@@ -105,7 +105,7 @@ bool Beam_Spectra_Handler::InitTheKinematics() {
     p_kinematics = new DM_Annihilation_Kinematics(p_BeamBase);
     break;
   case beammode::Fixed_Target:
-    m_type       = std::string("Collider Setup");
+    m_type       = std::string("Fixed Target Setup");
     p_kinematics = new Collider_Kinematics(p_BeamBase);
     break;
   case beammode::unknown:
@@ -159,18 +159,18 @@ bool Beam_Spectra_Handler::CheckConsistency(const ATOOLS::Flavour *_bunches) {
   return true;
 }
 
-void BeamSpectraHandler::BoostFixedTarget()
+void Beam_Spectra_Handler::BoostFixedTarget()
 {
-  Vec4D p1_lab = beams[0]->InMomentum();
-  Vec4D p2_lab = beams[1]->InMomentum();
+  Vec4D p1_lab = p_BeamBase[0]->InMomentum();
+  Vec4D p2_lab = p_BeamBase[1]->InMomentum();
 
-  beams[0]->SetInMomentum(p1_lab);
-  beams[1]->SetInMomentum(p2_lab);
+  p_BeamBase[0]->SetInMomentum(p1_lab);
+  p_BeamBase[1]->SetInMomentum(p2_lab);
 
   const double s = (p1_lab + p2_lab).Abs2();
 
-  const double m1 = beams[0]->Beam().Mass();
-  const double m2 = beams[1]->Beam().Mass();
+  const double m1 = p_BeamBase[0]->Beam().Mass();
+  const double m2 = p_BeamBase[1]->Beam().Mass();
   
   const double p_cm =
     0.5 * std::sqrt(SqLam(s, m1*m1, m2*m2) / s);
@@ -181,12 +181,12 @@ void BeamSpectraHandler::BoostFixedTarget()
   Vec4D p1_cm{E1, 0.0, 0.0,  p_cm};
   Vec4D p2_cm{E2, 0.0, 0.0, -p_cm};
 
-  beams[0]->SetOutMomentum(p1_cm);
-  beams[1]->SetOutMomentum(p2_cm);
+  p_BeamBase[0]->SetOutMomentum(p1_cm);
+  p_BeamBase[1]->SetOutMomentum(p2_cm);
 
   auto& gen = rpa->gen;
-  gen.SetBeam1(beams[0]->Beam());
-  gen.SetBeam2(beams[1]->Beam());
+  gen.SetBeam1(p_BeamBase[0]->Beam());
+  gen.SetBeam2(p_BeamBase[1]->Beam());
   gen.SetPBeam(0, p1_cm);
   gen.SetPBeam(1, p2_cm);
   gen.SetPBunch(0, p1_cm);
