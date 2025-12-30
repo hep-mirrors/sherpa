@@ -105,16 +105,10 @@ Beam_Base * Beam_Parameters::InitSpectrum(const size_t & num) {
   case beamspectrum::Reggeon: return InitializeReggeon(num);
   case beamspectrum::DM :
     return InitializeDM_beam(num);
-<<<<<<< HEAD
-||||||| parent of 05103757d (Attempt of beamstrahlung)
-  case beamspectrum::Fixed_Target :
-    return InitializeFixed_Target(num);
-=======
   case beamspectrum::Fixed_Target :
     return InitializeFixed_Target(num);
   case beamspectrum::Leptonic :
     return InitializeLeptonic(num);
->>>>>>> 05103757d (Attempt of beamstrahlung)
   default :
     break;
   }
@@ -389,16 +383,10 @@ bool Beam_Parameters::SpecifySpectra() {
       m_beamspec[num] = beamspectrum::Reggeon;
     else if (bs == "DM_beam")
       m_beamspec[num] = beamspectrum::DM;
-<<<<<<< HEAD
-||||||| parent of 05103757d (Attempt of beamstrahlung)
-    else if (bs == "Fixed_Target")
-      m_beamspec[num] = beamspectrum::Fixed_Target;
-=======
     else if (bs == "Fixed_Target")
       m_beamspec[num] = beamspectrum::Fixed_Target;
     else if (bs == "Leptonic")
       m_beamspec[num] = beamspectrum::Leptonic;
->>>>>>> 05103757d (Attempt of beamstrahlung)
     else
       m_beamspec[num] = beamspectrum::unknown;
   }
