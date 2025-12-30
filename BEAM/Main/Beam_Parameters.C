@@ -4,6 +4,7 @@
 #include "BEAM/Main/Beam_Base.H"
 #include "BEAM/Main/Beam_Parameters.H"
 #include "BEAM/Spectra/DM_beam.H"
+#include "BEAM/Spectra/Fixed_Target.H"
 #include "BEAM/Spectra/EPA.H"
 #include "BEAM/Spectra/Laser_Backscattering.H"
 #include "BEAM/Spectra/Lepton_Beam.H"
@@ -24,6 +25,8 @@ std::ostream& BEAM::operator<<(std::ostream& ostr, const beammode bmode) {
     return ostr<<"Collider";
   case beammode::DM_annihilation:
     return ostr<<"Dark Matter annihilation";
+  case beammode::Fixed_Target:
+    return ostr<<"Fixed Target annihilation";
   default:
     break;
   }
@@ -230,6 +233,14 @@ Beam_Base * Beam_Parameters::InitializeDM_beam(int num)
 		     formfactor,relativistic,1-2*num);
 }
 
+Beam_Base * Beam_Parameters::InitializeFixed_Target(int num)
+{
+  double beam_energy        = (*this)("BEAM_ENERGIES",num);
+  double beam_polarization  = (*this)("BEAM_POLARIZATIONS",num);
+  Flavour beam_particle    = GetFlavour("BEAMS",num);
+  return new Fixed_Target(beam_particle,beam_energy,beam_polarization,1-2*num);
+}
+
 const Flavour Beam_Parameters::GetFlavour(const std::string & tag,const size_t & pos) {
   std::vector<int> beam{m_settings[tag].GetVector<int>()};
   if (beam.size() != 1 && beam.size() != 2)
@@ -355,6 +366,8 @@ bool Beam_Parameters::SpecifyMode() {
     m_beammode = beammode::collider;
   else if (mode==string("DM_Annihilation"))
     m_beammode = beammode::DM_annihilation;
+  else if (mode==string("Fixed_Target"))
+    m_beammode = beammode::Fixed_Target;
   else
     m_beammode = beammode::unknown;
   return (m_beammode!=beammode::unknown);

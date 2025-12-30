@@ -13,7 +13,8 @@ namespace BEAM {
     unknown              = 0,
     relic_density        = 1,
     collider             = 2,
-    DM_annihilation      = 10
+    DM_annihilation      = 10,
+    Fixed_Target         = 12
   };
   std::ostream& operator<<(std::ostream&,const beammode mode);
 

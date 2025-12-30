@@ -74,6 +74,8 @@ namespace BEAM {
     int    Polarisation() const { return m_polarisation; }
     bool   CheckConsistency(const ATOOLS::Flavour *,const ATOOLS::Flavour *);
     bool   CheckConsistency(const ATOOLS::Flavour *);
+    void   BoostFixedTarget();
+    double SqLam(double s,double s1,double s2);
   };
 
   /*!
