@@ -40,7 +40,7 @@ public:
   YFS::FSR  *p_fsr;
   PHASIC::Single_Process *p_born;
   YFS::Define_Dipoles *p_dipoles;
-  Vec4D_Vector m_plab, m_reallab, m_FSRPhotons, m_ISRPhotons, m_bornMomenta, m_eikmom;
+  Vec4D_Vector m_plab, m_reallab, m_FSRPhotons, m_ISRPhotons, m_bornMomenta, m_eikmom, m_borngamma;
   Vec4D m_nvec, m_realsum, m_ksum;
   ATOOLS::Flavour_Vector m_flavs;
   histograms2d m_histograms2d;

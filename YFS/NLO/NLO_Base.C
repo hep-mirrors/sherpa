@@ -138,6 +138,10 @@ void NLO_Base::Init(Flavour_Vector &flavs, Vec4D_Vector &plab, Vec4D_Vector &bor
 	m_flavs = flavs;
 	m_plab = plab;
 	m_bornMomenta = born;
+	m_borngamma.clear();
+	for (int i=0; i<flavs.size(); i++) {
+		if(m_flavs[i].IsPhoton()) m_borngamma.push_back(m_plab[i]);
+	}
 }
 
 
@@ -282,6 +286,16 @@ double NLO_Base::CalculateReal() {
 			fsrcount++;
 		}
 	}
+	for (auto k : m_borngamma) {
+		if(m_check_real_sub) {
+			if(k.E() < 0.2*sqrt(m_s)) continue;
+				CheckRealSub(k,1);
+		}
+		if(k.E() > m_hardmin){
+			real+=CalculateReal(k, 1);
+			fsrcount++;
+		}
+	}
 	return real;
 }
 
@@ -297,7 +311,7 @@ double NLO_Base::CalculateReal(Vec4D k, int fsrcount) {
 	fluxtype = p_nlodipoles->WhichResonant(k);
   // if(fluxtype==dipoletype::final || fsrcount==4){
   if(fsrcount==1 || fsrcount==4){
-  	if(!HasFSR()) msg_Error()<<"Wrong dipole type in "<<METHOD<<endl;
+  	if(!HasFSR() && m_borngamma.size()==0) msg_Error()<<"Wrong dipole type in "<<METHOD<<endl;
   	for (Dipole_Vector::iterator Dip = p_nlodipoles->GetDipoleFF()->begin();
        Dip != p_nlodipoles->GetDipoleFF()->end(); ++Dip) {
   		 double scalek = p_fsr->ScalePhoton(k);
@@ -504,14 +518,6 @@ double NLO_Base::CalculateRealVirtual(Vec4D k, int fsrcount) {
 		// PRINT_VAR(k);
 		return 0;
 	}
-	// m_plab = pp;
-	// double aB = subloc*m_oneloop;//CalculateVirtual();//*p_realvirt->m_factor;
-	double aB = p_nlodipoles->CalculateRealSub(k)*m_oneloop;//*p_realvirt->m_factor;
-	// double aB = subloc*CalculateVirtual()*p_realvirt->m_factor;
-	// yfspole*=m_oneloop*p_realvirt->m_factor;
-	// double aB = subloc*(p_virt->Calc(pp, m_born) - m_born*p_nlodipoles->CalculateVirtualSub());
-	// yfspole*=(p_virt->p_loop_me->ME_E1()*p_virt->m_factor-m_born*p_nlodipoles->Get_E1());
-	// double tot = (r-aB) / subloc;
 	if(m_submode==submode::local) tot =  (r*flux-aB/m_rescale_alpha)/subloc;
 	else if(m_submode==submode::global) tot =  (r*flux-aB/m_rescale_alpha)/subb;
 	else if(m_submode==submode::off) tot =  (r*flux)/subb;
