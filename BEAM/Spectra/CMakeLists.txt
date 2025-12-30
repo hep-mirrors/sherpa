@@ -3,7 +3,6 @@ set(Spectra_SOURCES Monochromatic.C
                     EPA.C
                     Pomeron.C
                     Reggeon.C
-                    Fixed_Target.C
                     DM_beam.C
                     Lepton_Beam.C)
 
@@ -12,7 +11,6 @@ set(Spectra_HEADERS Monochromatic.H
                     EPA.H
                     Pomeron.H
                     Reggeon.H
-                    Fixed_Target.H
                     DM_beam.H
                     Lepton_Beam.H)
 
