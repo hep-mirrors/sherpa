@@ -1,6 +1,7 @@
 #ifndef BEAM_Main_Beam_Parameters_H
 #define BEAM_Main_Beam_Parameters_H
 
+#include "ATOOLS/Org/Return_Value.H"
 #include "ATOOLS/Phys/Flavour.H"
 #include "ATOOLS/Math/Vector.H"
 #include "ATOOLS/Math/Poincare.H"
