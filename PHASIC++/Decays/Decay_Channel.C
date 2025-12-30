@@ -453,7 +453,12 @@ double Decay_Channel::ME2_NLO(const ATOOLS::Vec4D_Vector& momenta, bool anti,
 
     for (size_t i = 0; i < NLO_tensor_list.size(); ++i) {    // reduce NLO Amplitude2_Tensor
       std::cout << "sumijlambda_AiAj: " << NLO_tensor_list[i]->ReduceToMatrix(sigma->Particle()) << std::endl;
-      sumijlambda_AiAj += (*sigma)*NLO_tensor_list[i]->ReduceToMatrix(sigma->Particle());
+      Complex nlo_part = (*sigma)*NLO_tensor_list[i]->ReduceToMatrix(sigma->Particle());
+      if (nlo_part.real() < 0.0){
+        nlo_part.real(-nlo_part.real());
+        std::cout << "Warning: Decay_Channel::ME2_NLO gets a negative NLO ME2 value.  " << std::endl;
+      }
+      sumijlambda_AiAj += nlo_part;
     }
 
     for (size_t i = 0; i < NLO_tensor_list.size(); ++i) {
@@ -498,6 +503,7 @@ double Decay_Channel::ME2_NLO(const ATOOLS::Vec4D_Vector& momenta, bool anti,
   if (GetDecaying().StrongCharge())
     value/=double(abs(GetDecaying().StrongCharge()));
   value /= SymmetryFactor();
+
   return value;
 }
 
@@ -536,8 +542,8 @@ GenerateKinematics(ATOOLS::Vec4D_Vector& momenta, bool anti,
         msg_Tracking()<<METHOD<<"("<<Name()<<") warning:"<<endl
 		      <<"  d\\Gamma(x)="<<value<<" > max(d\\Gamma)="<<m_max
                   <<std::endl;
-	if (s_kinmaxfails.find(Name())==s_kinmaxfails.end()) s_kinmaxfails[Name()] = value/m_max;
-	else if (s_kinmaxfails[Name()] < value/m_max) s_kinmaxfails[Name()] = value/m_max;
+	      if (s_kinmaxfails.find(Name())==s_kinmaxfails.end()) s_kinmaxfails[Name()] = value/m_max;
+	      else if (s_kinmaxfails[Name()] < value/m_max) s_kinmaxfails[Name()] = value/m_max;
       }
       //m_max=value; // should not change m_max during run (kills individual event reproducability)
       Return_Value::IncRetryMethod(mname);
