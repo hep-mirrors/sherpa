@@ -28,6 +28,8 @@ Beam_Base::Beam_Base(beamspectrum _type, const ATOOLS::Flavour& _beam,
     double pz = m_dir * m_energy * sqrt(disc);
     m_lab     = ATOOLS::Vec4D(m_energy, 0., 0., pz);
   }
+  double pz = m_dir * m_energy * sqrt(disc);
+  m_lab     = ATOOLS::Vec4D(m_energy, 0., 0., pz);
   m_bunches.resize(m_Nbunches, m_beam);
   m_vecouts.resize(m_Nbunches, m_lab);
 }

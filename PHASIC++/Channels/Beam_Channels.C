@@ -61,6 +61,15 @@ bool Beam_Channels::MakeChannels() {
                     << "   Will not initialize integration over spectra.\n";
       }
       break;
+    case beammode::Fixed_Target:
+      if(!DefineColliderChannels()) {
+        msg_Error() << "Error in " << METHOD << " for collider set-up:\n"
+                    << "   Don't know how to deal with combination of beamspectra: "
+                    << m_beamtype[0] << " + " << m_beamtype[1] << ".\n"
+                    << "   Will not initialize integration over spectra.\n";
+      }
+      // CheckForStructuresFromME();
+      break;
     case beammode::unknown:
     default:
       msg_Error() << "Error in " << METHOD << ":\n"

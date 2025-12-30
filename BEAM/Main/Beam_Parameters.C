@@ -4,6 +4,7 @@
 #include "BEAM/Main/Beam_Base.H"
 #include "BEAM/Main/Beam_Parameters.H"
 #include "BEAM/Spectra/DM_beam.H"
+#include "BEAM/Spectra/Fixed_Target.H"
 #include "BEAM/Spectra/EPA.H"
 #include "BEAM/Spectra/Laser_Backscattering.H"
 #include "BEAM/Spectra/Lepton_Beam.H"
@@ -24,8 +25,9 @@ std::ostream& BEAM::operator<<(std::ostream& ostr, const beammode bmode)
   case beammode::collider:
     return ostr << "Collider";
   case beammode::DM_annihilation:
-    return ostr << "Dark Matter annihilation";
-
+    return ostr<<"Dark Matter annihilation";
+  case beammode::Fixed_Target:
+    return ostr<<"Fixed Target annihilation";
   default:
     break;
   }
@@ -337,6 +339,8 @@ bool Beam_Parameters::SpecifyMode()
     m_beammode = beammode::collider;
   else if (mode == string("DM_Annihilation"))
     m_beammode = beammode::DM_annihilation;
+  else if (mode==string("Fixed_Target"))
+    m_beammode = beammode::Fixed_Target;
   else
     m_beammode = beammode::unknown;
   return (m_beammode != beammode::unknown);
