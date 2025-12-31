@@ -10,6 +10,10 @@
 #include <iomanip>
 #include "ATOOLS/Org/Exception.H"
 
+namespace PHASIC {
+  class Color_Integrator;
+}
+
 namespace METOOLS
 {
   bool SortByFirst(const std::pair<int,int> p1, const std::pair<int,int> p2);
@@ -180,10 +184,10 @@ namespace METOOLS
     virtual void setBornAmplitude(Spin_Amplitudes* born);
     virtual void setBornAmplitude(std::map<std::string, std::complex<double>> born);
     virtual std::map<std::string, std::complex<double>> getBornAmplitude();
-    /*virtual const PHASIC::Color_Integrator* GetColors() const;
+    virtual const PHASIC::Color_Integrator* GetColors() const;
     virtual void SetColors(const std::vector<int>& ci,
                            const std::vector<int>& cj);
-    virtual void FixColor(bool yes);*/
+    virtual void FixColor(bool yes);
   };
 
   /*! 

@@ -86,7 +86,6 @@ std::map<std::string, std::complex<double>> Spin_Amplitudes::getBornAmplitude() 
 }
 
 
-/*
 const PHASIC::Color_Integrator* Spin_Amplitudes::GetColors() const {
   msg_Error()<<METHOD<<": Virtual function called."<<endl;
   Abort();
@@ -101,5 +100,5 @@ void Spin_Amplitudes::SetColors(const vector<int> &ci, const vector<int> &cj) {
 void Spin_Amplitudes::FixColor(bool yes) {
   msg_Error()<<METHOD<<": Virtual function called."<<endl;
   Abort();
-}*/
+}
 
