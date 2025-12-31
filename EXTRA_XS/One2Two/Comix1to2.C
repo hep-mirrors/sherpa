@@ -170,10 +170,11 @@ std::string Comix1to2::getType(){
 
 
 void Comix1to2::setBornAmplitude(std::map<std::string, std::complex<double>> born) {
-  (*this)[0] = born["00"];
-  (*this)[1] = born["10"];
-  (*this)[2] = born["01"];
-  (*this)[3] = born["11"];
+  double colour_factor = std::sqrt(3.0);
+  (*this)[0] = born["00"] * colour_factor;
+  (*this)[1] = born["10"] * colour_factor;
+  (*this)[2] = born["01"] * colour_factor;
+  (*this)[3] = born["11"] * colour_factor;
 }
 
 

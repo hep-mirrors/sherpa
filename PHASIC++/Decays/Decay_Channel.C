@@ -427,39 +427,11 @@ double Decay_Channel::ME2_NLO(const ATOOLS::Vec4D_Vector& momenta, bool anti,
       }
       if (type == "V") {
         std::map<std::string, std::complex<double>> born_hel = diag -> getBornAmplitude();
-/*
-Ideas: Either re-set already existing Comix1to2 Diagram or initialize a new one and set Amplitude (don't apply calculate)
-      => try second idea first
-
-        diag -> setBornAmplitude(leading_diagrams[0]);   // The amplitude has to be re-calculated with the correct Born amplitude
+        leading_diagrams[0] -> setBornAmplitude(born_hel); // The amplitude has to be re-calculated with the correct Born amplitude
 
         std::vector<METOOLS::Spin_Amplitudes*> single_diag_list{ diag }; // to create Amplitude2_Tensor, the diagram needs to be in a list. S, I and V are seperate Amplitude2_Tensor objects.
         METOOLS::Amplitude2_Tensor* NLO_tensor = new Amplitude2_Tensor(p, 0, single_diag_list, leading_diagrams, spin_i, spin_j, 1.0); ;
-        NLO_tensor_list.push_back(NLO_tensor);*/
-      }
-    }
-
-    // build Amplitude2_Tensor for V if corresponding diagram exists
-    for (size_t i = 0; i < GetDiagrams().size(); ++i) {
-      METOOLS::Spin_Amplitudes* diag = GetDiagrams()[i];
-      if(diag->getType() == "V"){
-        // Collect LO (Born) diagrams
-        std::vector<METOOLS::Spin_Amplitudes*> born_diagram_list;
-        for (size_t j = 0; j < GetDiagrams().size(); ++j) {
-          METOOLS::Spin_Amplitudes* d = GetDiagrams()[j];
-          if (d->getType() == "LO") born_diagram_list.push_back(d);
-        }
-
-        // For virtual diagram, construct its interference tensor with Born
-        METOOLS::Spin_Amplitudes* v_diag_ptr = GetDiagrams()[i];
-
-        v_diag_ptr -> setBornAmplitude(born_diagram_list[0]);   // The amplitude has to be re-calculated with the correct Born amplitude
-
-        std::vector<METOOLS::Spin_Amplitudes*> v_diagram_list;
-        v_diagram_list.push_back(v_diag_ptr);
-
-        METOOLS::Amplitude2_Tensor* v_tensor = new Amplitude2_Tensor(p, 0, v_diagram_list, born_diagram_list, spin_i, spin_j, 1.0); // in this case, leading_diagram is the born diagram
-        NLO_tensor_list.push_back(v_tensor);
+        NLO_tensor_list.push_back(NLO_tensor);
       }
     }
 
@@ -467,7 +439,6 @@ Ideas: Either re-set already existing Comix1to2 Diagram or initialize a new one 
     sumijlambda_AiAj=(*sigma)*p_amps->ReduceToMatrix(sigma->Particle());
 
     for (size_t i = 0; i < NLO_tensor_list.size(); ++i) {    // reduce NLO Amplitude2_Tensor
-      std::cout << "sumijlambda_AiAj: " << NLO_tensor_list[i]->ReduceToMatrix(sigma->Particle()) << std::endl;
       Complex nlo_part = (*sigma)*NLO_tensor_list[i]->ReduceToMatrix(sigma->Particle());
       if (nlo_part.real() < 0.0){
         nlo_part.real(-nlo_part.real());

@@ -541,7 +541,7 @@ void H_to_bb_Virtual::Calculate(const ATOOLS::Vec4D_Vector& momenta, bool anti){
   (*this)[3] = v_finite["11"];
 
   for (size_t i=0; i<size(); ++i) {  // scale with remaining constants. 1/3.0 removes the colour factor of the Born Amplitude that is included in the Born Spin Amplitude in the Decay Channel
-   (*this)[i] *= colour_factor * 2 / 3.0;
+   (*this)[i] *= colour_factor / std::sqrt(3.0);
   }
 
   // todo: make sure that epsilon terms cancel; Write check/ warning, if they don't cancel
