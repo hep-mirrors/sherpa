@@ -32,6 +32,7 @@ namespace EXTRAXS {
     ATOOLS::Flavour m_prop;
 
     PHASIC::Color_Integrator* p_ci;
+    bool m_cpointgen;
 
     size_t NHel(const ATOOLS::Flavour& fl);
 
@@ -46,6 +47,11 @@ namespace EXTRAXS {
     double get_NLO_ME2();
     std::string getType();
     ATOOLS::Flavour Prop() const { return m_prop; }
+
+    const PHASIC::Color_Integrator* GetColors() const override { return p_ci; };
+    void SetColors(const std::vector<int>& ci,
+                   const std::vector<int>& cj) override;
+    void FixColor(bool yes) override { m_cpointgen = yes; }
   };
 }
 

@@ -12,6 +12,7 @@
 #include "METOOLS/SpinCorrelations/Spin_Density.H"
 #include <algorithm>
 #include "EXTRA_XS/One2Two/Massive_Virtual_Subtraction.H"
+#include "PHASIC++/Main/Color_Integrator.H"
 
 using namespace PHASIC;
 using namespace ATOOLS;
@@ -382,9 +383,20 @@ double Decay_Channel::ME2_NLO(const ATOOLS::Vec4D_Vector& momenta, bool anti,
                           const std::vector<ATOOLS::Particle*>& p)
 {
   // This class calculates either the ME2 for B + V + I or for R - S
+  const PHASIC::Color_Integrator* real_p_ci = nullptr;
   for(size_t i(0); i<GetDiagrams().size(); ++i) {
-      GetDiagrams()[i]->Calculate(momenta, anti);
+    GetDiagrams()[i]->Calculate(momenta, anti);
+    if (GetDiagrams()[i] -> getType() == "R"){
+      if (real_p_ci == nullptr) {
+        real_p_ci =  GetDiagrams()[i] -> GetColors();
+      }
+      else {
+        GetDiagrams()[i] -> SetColors(real_p_ci->I(), real_p_ci->J());
+        GetDiagrams()[i] -> Calculate(momenta, anti); // call Calculate() again with the correct colour factors
+      }
     }
+  }
+  
   double NLO_part = 0;
   for(size_t i(0); i<GetDiagrams().size(); ++i) {
     if(GetDiagrams()[i]->getType() == "LO" || GetDiagrams()[i]->getType() == "R") continue;

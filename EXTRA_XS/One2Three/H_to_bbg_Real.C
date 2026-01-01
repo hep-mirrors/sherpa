@@ -25,7 +25,7 @@ using namespace std;
 H_to_bbg_Real::H_to_bbg_Real(const vector<Flavour>& flavs, const Flavour& prop,
                      size_t non_prop, size_t gluon, size_t propj) :
   Spin_Amplitudes(flavs,Complex(0.0,0.0)), m_cur(4), m_anticur(4), m_nhel(4),
-  m_prop(prop), m_non_prop(non_prop), m_gluon(gluon), m_propj(propj)
+  m_prop(prop), m_non_prop(non_prop), m_gluon(gluon), m_propj(propj), m_cpointgen(false)
 {
   DEBUG_FUNC(flavs<<" with prop "<<prop<<" in "<<m_gluon<<","<<m_propj);
   assert(m_non_prop>0 && m_gluon>0 && m_propj>0);
@@ -160,13 +160,7 @@ bool H_to_bbg_Real::IsNLODecay(){
 
 void H_to_bbg_Real::Calculate(const ATOOLS::Vec4D_Vector& momenta, bool anti) {
   DEBUG_FUNC(momenta.size());
-  p_ci->GeneratePoint(); // create a new integration point for the color factors
-
-  const std::vector<int> myI = { 0, 2, 1, 0 };
-  const std::vector<int> myJ = { 0, 1, 0, 2 };
-
-  p_ci->SetI(myI);
-  p_ci->SetJ(myJ);
+  if (!m_cpointgen) p_ci->GeneratePoint(); // create a new integration point for the color factors
 
   if (anti) {
     for (size_t i(0);i<m_anticur.size();++i) {
@@ -239,4 +233,10 @@ void H_to_bbg_Real::CalculateAlphaQCD(double scale) {
 
 std::string H_to_bbg_Real::getType(){
   return "R";
+}
+
+
+void H_to_bbg_Real::SetColors(const vector<int> &ci, const vector<int> &cj) {
+  p_ci->SetPoint(ci, cj);
+  m_cpointgen = true;
 }
