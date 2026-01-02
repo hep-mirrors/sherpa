@@ -428,17 +428,9 @@ if (SHERPA_ENABLE_LHAPDF)
   else()
     # Decide how to launch ./configure
     set(LHAPDF_CONFIGURE_LAUNCH "")
-    if(SHERPA_ENABLE_BINRELOC)
-      if(CMAKE_SYSTEM_NAME MATCHES Darwin)
-        set(LHAPDF_LDFLAGS "-Wl,-install_name,@loader_path/libLHAPDF${CMAKE_SHARED_LIBRARY_SUFFIX}")
-      else()
-        set(LHAPDF_LDFLAGS "-Wl,-install_name,\$ORIGIN/libLHAPDF${CMAKE_SHARED_LIBRARY_SUFFIX}")
-      endif()
-
+    if(SHERPA_ENABLE_BINRELOC AND CMAKE_SYSTEM_NAME MATCHES Darwin)
       set(LHAPDF_CONFIGURE_LAUNCH
-      ${CMAKE_COMMAND} -E env
-      LDFLAGS=${LHAPDF_LDFLAGS}
-      )
+          ${CMAKE_COMMAND} -E env LDFLAGS=-Wl,-install_name,@loader_path/libLHAPDF${CMAKE_SHARED_LIBRARY_SUFFIX})
     endif()
 
     message(STATUS "SHERPA: LHAPDF will be downloaded and compiled")
