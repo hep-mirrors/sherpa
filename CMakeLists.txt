@@ -386,7 +386,7 @@ else()
   include(FetchContent)
   ExternalProject_Add(downloadedlibzip
     GIT_REPOSITORY https://github.com/nih-at/libzip
-    GIT_TAG v1.9.2
+    GIT_TAG v1.11.4
     STEP_TARGETS build
     GIT_SHALLOW 1
     UPDATE_COMMAND ""
@@ -397,7 +397,7 @@ else()
   )
   unset(LibZip_ROOT)
   set(LibZip_DIR ${PROJECT_BINARY_DIR}/EXTERNALINSTALL/libzip)
-  set(LibZip_VERSION 1.9.2)
+  set(LibZip_VERSION 1.11.4)
   set(LibZip_LIBRARIES ${LibZip_DIR}/lib/libzip${CMAKE_SHARED_LIBRARY_SUFFIX})
   set(LibZip_INCLUDE_DIRS ${LibZip_DIR}/include)
   file(MAKE_DIRECTORY ${LibZip_DIR}/include)
