@@ -25,7 +25,7 @@ namespace SHRIMPS {
     const bool   Calculate();
     void  SelectFlavours(const bool & fixflavour);
   public:
-    Sigma_TMD();
+    Sigma_TMD(const double & pt02);
     ~Sigma_TMD();
     
     void Initialise(REMNANTS::Pseudo_TMD * tmd[2]); 

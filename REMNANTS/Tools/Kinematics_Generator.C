@@ -14,8 +14,8 @@ Kinematics_Generator::Kinematics_Generator() :
 
 Kinematics_Generator::~Kinematics_Generator() {
   if (m_warns>0 || m_errors>0) {
-    msg_Info() << "Remnant Kinematics: " << m_errors << " errors (no kinematics found) and\n"<<"                    "
-               <<  m_warns
+    msg_Info() << "Remnant Kinematics: " << m_errors << " errors (no kinematics found) and\n"
+	       <<"                    " <<  m_warns
                << " warnings (scale kt down by factor of 10).\n";
   }
 }
@@ -524,8 +524,12 @@ bool Kinematics_Generator::AdjustShowerInitiators() {
   // initiators, obtain constructed momenta with kperp from the
   // Kinematocs_Generator and boost the blobs downstream.
   Part_Iterator plit[2];
-  for (size_t beam = 0; beam < 2; beam++)
+  for (size_t beam = 0; beam < 2; beam++) {
     plit[beam] = p_remnants[beam]->GetExtracted()->begin();
+    //msg_Out()<<METHOD<<"["<<beam<<"]: "
+    //	     <<p_remnants[beam]->GetExtracted()->size()<<" extracted particles.\n";
+    //msg_Out()<<(*(plit[beam]))<<"\n";
+  }
   bool runit = true;
   Particle *part[2];
   while (runit) {

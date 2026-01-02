@@ -13,11 +13,11 @@ namespace SHRIMPS {
     double        m_xprev[2], m_xtmdprev[2], m_thetaprev[2];
     double        m_ytest, m_qt2test, m_kttest, m_xtest, m_xtmdtest;
     size_t        m_ngluons;
-    ATOOLS::Vec4D m_qtvectest, m_ktvectest, m_ktsum;
+    ATOOLS::Vec4D m_qtvectest, m_ktvectest, m_ktsum, m_Pplus, m_Pminus;
     
     REMNANTS::Pseudo_TMD * p_tmd[2];
     Sigma_TMD              m_sigmaTMD;
-    
+
     void   CalculateWeight() {}
     void   InitialiseLadder(const ATOOLS::Vec4D & pos);
     void   FillZeroEmissionLadder();
@@ -28,6 +28,9 @@ namespace SHRIMPS {
     void   AddInitialState();
     void   AddPropagators();
     void   SelectPropagatorColours();
+
+    bool   m_test;
+    void   FillAnalysis();
   public:
     Ladder_Generator_TMD();
     ~Ladder_Generator_TMD();

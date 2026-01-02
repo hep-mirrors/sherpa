@@ -2,6 +2,7 @@
 #include "REMNANTS/Tools/Colour_Generator.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include <algorithm>
+#include <set>
 
 using namespace REMNANTS;
 using namespace ATOOLS;
@@ -88,13 +89,56 @@ bool Hadron_Remnant::FillBlob(Colour_Generator* colours, ParticleMomMap* ktmap, 
     msg_Debugging() << METHOD << ": Cannot put all particles on mass-shell, returning false.\n";
     return false;
   }
-  bool colourconserved = p_beamblob->CheckColour(true);
-  if (!colourconserved) {
-    msg_Error()<<"Error in "<<METHOD<<" for \n"<<(*p_beamblob)<<"\n";
-    colours->Output();
+  if (!p_beamblob->CheckColour(true) && !FixResidualColours()) {
+    msg_Debugging() << METHOD << ": Cannot fix overall colour, returning false.\n";
     return false;
   }
   return true;
+}
+
+bool Hadron_Remnant::FixResidualColours() {
+  std::set<unsigned int> trips, antis;
+  for (Part_List::iterator git=m_spectators.begin();
+       git!=m_spectators.end();git++) {
+    if ((*git)->GetFlow(1)!=0) trips.insert((*git)->GetFlow(1));
+    if ((*git)->GetFlow(2)!=0) antis.insert((*git)->GetFlow(2));
+  }
+  for (Part_List::iterator git=m_extracted.begin();
+       git!=m_extracted.end();git++) {
+    if ((*git)->GetFlow(1)!=0) trips.insert((*git)->GetFlow(1));
+    if ((*git)->GetFlow(2)!=0) antis.insert((*git)->GetFlow(2));
+  }
+  bool found = true;
+  while (found) {
+    found = false;
+    for (std::set<unsigned int>::iterator trit=trips.begin();trit!=trips.end();trit++) {
+      int trip = (*trit);
+      if (antis.find(trip)!=antis.end()) {
+	antis.erase(trip);
+	trips.erase(trip);
+	found = true;
+	break;
+      }
+    }
+  }
+  if (trips.size()==antis.size() && trips.size()>0) {
+    Vec4D donmom  = p_donor->Momentum();
+    Vec4D softmom = 0.25*(donmom[3]>0. ? Vec4D(1.,0.,0.,1.) : Vec4D(1.,0.,0.,-1.));
+    while (!trips.empty()) {
+      Particle * softgluon = new Particle(-1, Flavour(kf_gluon), softmom, 'B');
+      softgluon->SetNumber();
+      softgluon->SetBeam(m_beam);
+      softgluon->SetFlow(1,*antis.begin());
+      softgluon->SetFlow(2,*trips.begin());
+      trips.erase(trips.begin());
+      antis.erase(antis.begin());
+      donmom -= softmom;
+      p_beamblob->AddToOutParticles(softgluon);
+    }
+    p_donor->SetMomentum(donmom);
+    return true;
+  }
+  return false;
 }
 
 void Hadron_Remnant::SquashColourSinglets() {
@@ -111,6 +155,7 @@ void Hadron_Remnant::SquashColourSinglets() {
     if (git==m_spectators.end()) return;
     for (size_t i=0;i<2;i++) col[i] = (*git)->GetFlow(i+1);
     for (Part_List::iterator sit=m_spectators.begin();sit!=m_spectators.end();sit++) {
+      if (sit==git) continue;
       for (size_t i=0;i<2;i++) {
 	if ((*sit)->GetFlow(2-i)==col[i] && (*sit)->GetFlow(1+i)!=col[1-i]) {
 	  (*sit)->SetFlow(2-i,col[1-i]);
@@ -275,32 +320,31 @@ bool Hadron_Remnant::MakeLongitudinalMomenta(ParticleMomMap *ktmap,const bool & 
     else p_beamblob->AddToOutParticles(pmit);
     (*ktmap)[pmit] = Vec4D();
   }
-  msg_Debugging() << METHOD << ": Longitudinal momentum left for remnants = " << availMom
-		  << "\n";
   double remnant_masses = 0.;
-  for (Particle  const * pit : m_spectators) {
+  for (Particle const * pit : m_spectators) {
     remnant_masses += Max(pit->Flav().HadMass(), m_LambdaQCD);
   }
-  if (remnant_masses > availMom[0]) {
-    msg_Debugging() << METHOD
-                    << ": Warning, HadMasses of remnants = " << remnant_masses
-                    << " vs. residual energy = " << availMom[0] << "\n";
-    return false;
-  }
+  if (remnant_masses > availMom[0]) return false;
+  p_donor     = NULL;
+  double maxE = 0.;
   for (auto part : m_spectators) {
     if (part==m_spectators.back()) part->SetMomentum(availMom);
     else {
-      part->SetMomentum(SelectZ(part->Flav(),availMom[0], remnant_masses)*availMom);
-      availMom -= part->Momentum();
+      part->SetMomentum(SelectZ(part->Flav(),availMom[0], remnant_masses)*
+			availMom);
+      availMom       -= part->Momentum();
       remnant_masses -= Max(part->Flav().HadMass(), m_LambdaQCD);
     }
-    msg_Debugging() << METHOD << ": set momentum for "<<part->Flav()<<" to "
-              << part->Momentum() << "\n";
+    if (part->Momentum()[0]>maxE) {
+      maxE    = part->Momentum()[0];
+      p_donor = part;
+    }
     if (copy) {
       auto pcopy = new Particle(*part);
       pcopy->SetNumber();
       pcopy->SetBeam(m_beam);
       p_beamblob->AddToOutParticles(pcopy);
+      if (p_donor==part) p_donor = pcopy;
     }
     else p_beamblob->AddToOutParticles(part);
     (*ktmap)[part] = Vec4D();

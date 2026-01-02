@@ -551,7 +551,7 @@ bool Initialization_Handler::InitializeTheFramework(int nr)
       if (s["SOFT_COLLISIONS"].Get<string>()==string("Amisic"))
         s["MI_HANDLER"].OverrideScalar<std::string>("Amisic");
       else if (s["SOFT_COLLISIONS"].Get<string>()==string("Shrimps"))
-        s["MI_HANDLER"].OverrideScalar<std::string>("None");
+        s["MI_HANDLER"].OverrideScalar<std::string>("Shrimps");
       s["ME_GENERATORS"].OverrideScalar<std::string>("None");
     }
     else if (eventtype=="HadronDecay") {

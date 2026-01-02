@@ -152,6 +152,7 @@ void Shrimps::Analyse(ATOOLS::Blob * blob,std::string tag) {
 
 
 bool Shrimps::GenerateEvent(ATOOLS::Blob * blob) {
+  msg_Out()<<"=== "<<METHOD<<": blob = "<<blob->Id()<<"\n";
   return p_generator->GenerateEvent(blob);
 }
 
@@ -366,8 +367,9 @@ void Shrimps::TestShrimps(PDF::ISR_Handler *const isr) {
   msg_Info()<<"Tests done.  Results to be found in "<<dirname<<".\n";
 }
 
-/*
+
 void Shrimps::PrintPDFs(const std::string & dirname) {
+  /*
   int nxval(100);
   double xmin(1.e-5),x;
   for (int i=0; i<5; i++){
@@ -392,8 +394,8 @@ void Shrimps::PrintPDFs(const std::string & dirname) {
     }
     was.close();
   }
+  */
 }
-*/
 
 void Shrimps::PrintAlphaS(const std::string & dirname) {
   int    nQ2val(1000);

@@ -38,6 +38,7 @@ MI_Handler::MI_Handler(MODEL::Model_Base *model,
   // Pomerons and Reggeons are hadrons, but don't have
   // Multiple Interactions (yet?)
   ///////////////////////////////////////////////////////////////////////
+  msg_Out()<<METHOD<<"(id = "<<m_id<<"): name = "<<m_name<<", sc = "<<scm<<"\n";
   if (m_name == "None" ||
       isr->Mode() != PDF::isrmode::hadron_hadron ||
       isr->Flav(0).Kfcode() == kf_pomeron ||
@@ -80,6 +81,7 @@ void MI_Handler::InitAmisic(MODEL::Model_Base *model)
 
 void MI_Handler::InitShrimps(MODEL::Model_Base *model)
 {
+  msg_Out()<<METHOD<<"\n";
   p_shrimps = new SHRIMPS::Shrimps(p_isr);
   m_gen = genID::shrimps;
 }

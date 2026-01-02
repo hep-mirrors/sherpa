@@ -6,6 +6,7 @@
 #include "ATOOLS/Org/Exception.H"
 
 #include "MODEL/Main/Model_Base.H"
+#include "MODEL/Main/Running_AlphaS.H"
 #include "BEAM/Main/Beam_Spectra_Handler.H"
 #include "PDF/Main/ISR_Handler.H"
 #include "REMNANTS/Main/Remnant_Handler.H"

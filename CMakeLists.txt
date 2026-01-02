@@ -682,13 +682,12 @@ install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/PHASIC++/Main/plot_stats.sh
                 ${CMAKE_CURRENT_BINARY_DIR}/SHERPA/Run/Sherpa${VERSIONING}-config
                 DESTINATION  ${CMAKE_INSTALL_BINDIR}  PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE )
 
-
 add_library(SHERPAAll INTERFACE)
 add_library(SHERPA::All ALIAS SHERPAAll)
 set_target_properties(SHERPAAll PROPERTIES EXPORT_NAME SHERPA::All)
 target_link_libraries(SHERPAAll INTERFACE
 SherpaMain SherpaInitialization SherpaSingleEvents SherpaSoftPhysics SherpaPerturbativePhysics SherpaTools
-ShrimpsMain ShrimpsEvents ShrimpsLadders ShrimpsBeamRemnants ShrimpsXsecs ShrimpsEikonals ShrimpsTools
+ShrimpsMain ShrimpsEvents ShrimpsLadders ShrimpsXsecs ShrimpsEikonals ShrimpsTools
 HadronsMain HadronsMEs HadronsCurrents HadronsPSs
 Reconnections
 AhadicMain AhadicTools AhadicFormation AhadicDecays

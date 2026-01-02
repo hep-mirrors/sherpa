@@ -13,7 +13,7 @@ namespace REMNANTS {
     const ATOOLS::Flavour_Set * p_partons;
     FlavourList                 m_constituents;
 
-    ATOOLS::Particle * p_valence, * p_remnant, * p_recoiler, * p_spectator;
+    ATOOLS::Particle * p_valence, * p_remnant, * p_recoiler, * p_spectator, * p_donor;
 
     bool   m_valence;
     double m_alpha, m_gamma, m_beta, m_invb, m_LambdaQCD, m_minE;
@@ -24,6 +24,7 @@ namespace REMNANTS {
 
     void   SquashFlavourSinglets();
     void   SquashColourSinglets();
+    bool   FixResidualColours();
     bool   ReplaceInBlob(ATOOLS::Blob* shower, const bool& check, const size_t& pos, size_t col[2]);
     bool   MakeRemnants(Colour_Generator* colours);
     bool   MakeLongitudinalMomenta(ATOOLS::ParticleMomMap* ktmap, const bool& copy = true);
