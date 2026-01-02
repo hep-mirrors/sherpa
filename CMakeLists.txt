@@ -426,6 +426,21 @@ if (SHERPA_ENABLE_LHAPDF)
       message(FATAL_ERROR "SHERPA: LHAPDF not found! Terminating!\n To use installed LHAPDF add to the cmake configuration -DLHAPDF_DIR=/installation/path/to/lhapdf or use -DSHERPA_ENABLE_INSTALL_LHAPDF=ON to download and compile LHAPDF")
     endif()
   else()
+    # Decide how to launch ./configure
+    set(LHAPDF_CONFIGURE_LAUNCH "")
+    if(SHERPA_ENABLE_BINRELOC)
+      if(CMAKE_SYSTEM_NAME MATCHES Darwin)
+        set(LHAPDF_LDFLAGS "-Wl,-install_name,@loader_path/libLHAPDF${CMAKE_SHARED_LIBRARY_SUFFIX}")
+      else()
+        set(LHAPDF_LDFLAGS "-Wl,-install_name,\$ORIGIN/libLHAPDF${CMAKE_SHARED_LIBRARY_SUFFIX}")
+      endif()
+
+      set(LHAPDF_CONFIGURE_LAUNCH
+      ${CMAKE_COMMAND} -E env
+      LDFLAGS=${LHAPDF_LDFLAGS}
+      )
+    endif()
+
     message(STATUS "SHERPA: LHAPDF will be downloaded and compiled")
     include(ExternalProject)
     include(FetchContent)
@@ -438,7 +453,7 @@ if (SHERPA_ENABLE_LHAPDF)
       #PATCH_COMMAND  "sed -i 's/ac_cv_path_DOXYGEN/DOXYGEN/g' configure"
       BUILD_IN_SOURCE     1
       PREFIX ${PROJECT_BINARY_DIR}/EXTERNALSRC
-      CONFIGURE_COMMAND ./configure --disable-python --without-doxygen --prefix=${CMAKE_INSTALL_PREFIX} --libdir=${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/SHERPA-MC${VERSIONING} --datadir=${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_DATADIR}/SHERPA-MC${VERSIONING}
+      CONFIGURE_COMMAND ${LHAPDF_CONFIGURE_LAUNCH} ./configure --disable-python --without-doxygen --prefix=${CMAKE_INSTALL_PREFIX} --libdir=${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/SHERPA-MC${VERSIONING} --datadir=${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_DATADIR}/SHERPA-MC${VERSIONING}
       BUILD_COMMAND make -j 8
       INSTALL_COMMAND make install DESTDIR=${LHAPDFDESTDIR}
       BUILD_BYPRODUCTS
