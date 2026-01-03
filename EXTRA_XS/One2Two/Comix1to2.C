@@ -193,7 +193,8 @@ size_t Comix1to2::NHel(const Flavour& fl)
 }
 
 void Comix1to2::SetColors(const vector<int> &ci, const vector<int> &cj) {
-  p_ci->SetPoint(ci, cj);
+  p_ci->SetI(ci);
+  p_ci->SetJ(cj);
   m_cpointgen = true;
 }
 

@@ -210,6 +210,7 @@ std::string Comix1to3::getType(){
 }
 
 void Comix1to3::SetColors(const vector<int> &ci, const vector<int> &cj) {
-  p_ci->SetPoint(ci, cj);
+  p_ci->SetI(ci);
+  p_ci->SetJ(cj);
   m_cpointgen = true;
 }
