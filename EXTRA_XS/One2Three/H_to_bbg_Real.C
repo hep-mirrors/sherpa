@@ -237,6 +237,7 @@ std::string H_to_bbg_Real::getType(){
 
 
 void H_to_bbg_Real::SetColors(const vector<int> &ci, const vector<int> &cj) {
-  p_ci->SetPoint(ci, cj);
+  p_ci->SetI(ci);
+  p_ci->SetJ(cj);
   m_cpointgen = true;
 }
