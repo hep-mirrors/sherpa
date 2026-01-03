@@ -282,7 +282,7 @@ void Decay_Channel::CalculateWidth(double acc, double ref, int iter)
     crit = (ref>0.0?ref:result);
   }
 
-  m_iwidth  = flux*sum/n;
+  m_iwidth  = abs(flux*sum/n);
   m_ideltawidth *= flux;
   disc   = sqr(m_iwidth)/((sum2*sqr(flux)/n - sqr(m_iwidth))/(n-1));
   if (disc!=0.0) m_ideltawidth  = m_iwidth/sqrt(abs(disc));
@@ -417,6 +417,7 @@ double Decay_Channel::ME2_NLO(const ATOOLS::Vec4D_Vector& momenta, bool anti,
       if (type == "LO" || type == "R") {
         leading_diagrams.push_back(diag);
       }
+      std::cout << GetDiagrams()[i]->getType() << std::endl;
     }
 
     p_amps = new Amplitude2_Tensor(p,0,leading_diagrams,spin_i, spin_j);

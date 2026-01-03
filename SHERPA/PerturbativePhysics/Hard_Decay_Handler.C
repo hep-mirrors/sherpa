@@ -395,7 +395,7 @@ void Hard_Decay_Handler::InitializeOffshellDecays(Decay_Table* dt) {
     vector<Decay_Channel*> new_dcs=ResolveDecay(dc); 
 
     bool nlo_dc = false;
-    for (size_t k=0; k<new_dcs.size(); ++k){  // check of one of the resolved dc is NLO. Then: don't delete original dc (is also NLO), don't delete NLO dc
+    for (size_t k=0; k<new_dcs.size(); ++k){  // check of one of the resolved dc is NLO. Then: don't delete original dc (is also NLO)
       if (new_dcs[k]->isNLO()) nlo_dc = true;
       break;
     }
@@ -435,13 +435,11 @@ void Hard_Decay_Handler::InitializeOffshellDecays(Decay_Table* dt) {
         if (!(new_dcs[j]->isNLO())){  // only deactivate resolved dc if it's not NLO
           if (new_dcs[j]) new_dcs[j]->SetActiveAll(-1); // mark all new decay channels as inactive
         }
-      }
-      for (size_t l=0; l<new_dcs.size(); ++l){  // check of one of the resolved dc is NLO. Then: don't delete original dc (is also NLO), don't delete NLO dc
-        if (new_dcs[l]->isNLO()){
-          DEBUG_INFO("Adding "<<new_dcs[l]->Name());
-          auto s = Settings::GetMainSettings()["HARD_DECAYS"]["Channels"][new_dcs[l]->IDCode()];
-          new_dcs[l]->SetActive(s["Status"].SetDefault(new_dcs[l]->Active()).GetVector<int>());
-          dt->AddDecayChannel(new_dcs[l]);
+        else{ // add NLO dc to decay table
+          DEBUG_INFO("Adding "<<new_dcs[j]->Name());
+          auto s = Settings::GetMainSettings()["HARD_DECAYS"]["Channels"][new_dcs[j]->IDCode()];
+          new_dcs[j]->SetActive(s["Status"].SetDefault(new_dcs[j]->Active()).GetVector<int>());
+          dt->AddDecayChannel(new_dcs[j]);
         }
       }
     }
