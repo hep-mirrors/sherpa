@@ -817,6 +817,15 @@ void Hard_Decay_Handler::TreatInitialBlob(ATOOLS::Blob* blob,
   // create decay subevent
   NLO_subevt *sub(new NLO_subevt());
 
+  // collect Higgs momentum per out-particle index; else zero
+  ATOOLS::Vec4D decaying_mom;
+  for (size_t i = 0; i < blob->NOutP(); ++i) {
+    const ATOOLS::Particle* op = blob->ConstOutParticle(i);
+    if (op && op->Flav() == ATOOLS::Flavour(kf_h0)) {
+      decaying_mom = op->Momentum();
+    }
+  }
+
   if (sublist) {
     // If the blob contains a NLO_subeventlist, we have to attach decays
     // in the sub-events as well. The decay has to be identical for infrared

@@ -417,7 +417,6 @@ double Decay_Channel::ME2_NLO(const ATOOLS::Vec4D_Vector& momenta, bool anti,
       if (type == "LO" || type == "R") {
         leading_diagrams.push_back(diag);
       }
-      std::cout << GetDiagrams()[i]->getType() << std::endl;
     }
 
     p_amps = new Amplitude2_Tensor(p,0,leading_diagrams,spin_i, spin_j);
