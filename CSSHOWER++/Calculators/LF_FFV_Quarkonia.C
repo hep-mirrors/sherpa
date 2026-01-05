@@ -4,7 +4,7 @@ namespace CSSHOWER {
 
 class LF_FFV_Quarkonia_FF : public SF_Lorentz {
 public:
-  inline LF_FFV_Quarkonia_FF(const SF_Key &key) : SF_Lorentz(key) {}
+  LF_FFV_Quarkonia_FF(const SF_Key &key);
 
   double operator()(const double, const double, const double, const double,
                     const double);
@@ -13,13 +13,14 @@ public:
   double Z();
 };
 
+
 class LF_FFV_Quarkonia_FI : public SF_Lorentz {
 
 protected:
   double m_Jmax;
 
 public:
-  inline LF_FFV_Quarkonia_FI(const SF_Key &key) : SF_Lorentz(key) {}
+  LF_FFV_Quarkonia_FI(const SF_Key &key);
 
   double operator()(const double, const double, const double, const double,
                     const double);
@@ -34,7 +35,7 @@ protected:
   double m_Jmax;
 
 public:
-  inline LF_FFV_Quarkonia_IF(const SF_Key &key) : SF_Lorentz(key) {}
+  LF_FFV_Quarkonia_IF(const SF_Key &key);
 
   double operator()(const double, const double, const double, const double,
                     const double);
@@ -49,7 +50,7 @@ protected:
   double m_Jmax;
 
 public:
-  inline LF_FFV_Quarkonia_II(const SF_Key &key) : SF_Lorentz(key) {}
+  LF_FFV_Quarkonia_II(const SF_Key &key);
 
   double operator()(const double, const double, const double, const double,
                     const double);
@@ -60,7 +61,7 @@ public:
 
 class LF_FVF_Quarkonia_FF : public SF_Lorentz {
 public:
-  inline LF_FVF_Quarkonia_FF(const SF_Key &key) : SF_Lorentz(key) {}
+  LF_FVF_Quarkonia_FF(const SF_Key &key);
 
   double operator()(const double, const double, const double, const double,
                     const double);
@@ -72,9 +73,74 @@ public:
 
 #include "ATOOLS/Math/Random.H"
 #include "MODEL/Main/Single_Vertex.H"
+#include "ATOOLS/Org/Settings.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
+#include <unordered_map>
 
 using namespace CSSHOWER;
 using namespace ATOOLS;
+
+std::unordered_map<int, double> ldme_map;
+
+void LoadLDME()
+{
+  static bool loaded = false;
+  if (loaded) return;
+  auto onia = Settings::GetMainSettings()["QUARKONIA"];
+  auto onia_ldme = onia["LDME"];
+
+
+  ldme_map[kf_J_psi_1S] = 0.0001;
+  ldme_map[kf_psi_2S] = 0.0001;
+  ldme_map[kf_1S0_c_8_J_psi_1S] = 0.011111;
+  ldme_map[kf_1S0_c_8_psi_2S] = 0.0111111;
+  ldme_map[kf_3S1_c_8_J_psi_1S] = onia_ldme["3S1_c_8_J_psi_1S"].Get<double>();
+  ldme_map[kf_3S1_c_8_psi_2S]   = onia_ldme["3S1_c_8_J_psi_2S"].Get<double>();
+  ldme_map[kf_3S1_c_8_chi_c0_1P] = onia_ldme["3S1_c_8_chi_c0_1P"].Get<double>();
+  ldme_map[kf_3S1_c_8_chi_c1_1P] = onia_ldme["3S1_c_8_chi_c1_1P"].Get<double>();
+  ldme_map[kf_3S1_c_8_chi_c2_1P] = onia_ldme["3S1_c_8_chi_c2_1P"].Get<double>();
+  loaded = true;
+}
+
+LF_FFV_Quarkonia_FF::LF_FFV_Quarkonia_FF(const SF_Key &key)
+  : SF_Lorentz(key)
+{
+  LoadLDME();
+}
+
+LF_FFV_Quarkonia_FI::LF_FFV_Quarkonia_FI(const SF_Key &key)
+  : SF_Lorentz(key)
+{
+  LoadLDME();
+}
+
+LF_FFV_Quarkonia_IF::LF_FFV_Quarkonia_IF(const SF_Key &key)
+  : SF_Lorentz(key)
+{
+  LoadLDME();
+}
+
+LF_FFV_Quarkonia_II::LF_FFV_Quarkonia_II(const SF_Key &key)
+  : SF_Lorentz(key)
+{
+  LoadLDME();
+}
+
+LF_FVF_Quarkonia_FF::LF_FVF_Quarkonia_FF(const SF_Key &key)
+  : SF_Lorentz(key)
+{
+  LoadLDME();
+}
+
+double GetLDME(int kfc)
+{
+  auto it = ldme_map.find(kfc);
+  if (it == ldme_map.end()) {
+    std::cout<<kfc<<std::endl;
+    throw std::runtime_error("Unknown LDME");
+  }
+  return it->second;
+}
 
 double LF_FFV_Quarkonia_FF::operator()(const double zz, const double y,
                                        const double eta, const double scale,
@@ -101,7 +167,7 @@ double LF_FFV_Quarkonia_FF::operator()(const double zz, const double y,
       + 4*z*(1-z)/(2-z)*sij*(sij-mij2) - 4*(8-7*z-5*z*z)/(2-z)*mi2*(sij-mij2) + 
       12*z*z*(1-z)/sqr(2-z)*sqr(sij-mij2)
     );
-    const double LDME = p_cf->Coupling(newscale,0)/(2*M_PI) * pow(0.82,2); // GeV^3 //(m_flavs[2].IsOctetMeson() ? (1.5E-02) : pow(0.82, 3));
+    const double LDME = p_cf->Coupling(newscale,0)/(2*M_PI) * GetLDME(m_flavs[2].Kfcode());//pow(0.82,2); // GeV^3 //(m_flavs[2].IsOctetMeson() ? (1.5E-02) : pow(0.82, 3));
     const double Jprop = 1./ (1 + (mui2 + muj2 - muij2)/y/(1-mui2-muj2-muk2) );
     return 16. / 27 / sqrt(mij2) * p_cf->Coupling(scale, 0) * LDME * value / (sij - mij2) * JFF(y, mui2, muj2, muk2, muij2);
   }
@@ -111,7 +177,7 @@ double LF_FFV_Quarkonia_FF::OverIntegrated(const double zmin, const double zmax,
                                            const double scale,
                                            const double xbj) {
   const double mij = p_ms->Mass(m_flavs[0]); // mass of heavy quark
-  const double preF = ( 16. / 27 / mij * p_cf->MaxCoupling(0) )  * p_cf->Coupling(sqr(3*mij),0)/(2*M_PI) * pow(0.82,2);
+  const double preF = ( 16. / 27 / mij * p_cf->MaxCoupling(0) )  * p_cf->Coupling(sqr(3*mij),0)/(2*M_PI) * GetLDME(m_flavs[2].Kfcode());//pow(0.82,2);
   m_zmin = zmin; 
   m_zmax = zmax;
   return  preF * 236. / 100. / (8*sqr(mij));
@@ -119,7 +185,7 @@ double LF_FFV_Quarkonia_FF::OverIntegrated(const double zmin, const double zmax,
 
 double LF_FFV_Quarkonia_FF::OverEstimated(const double z, const double y) {
   const double mij = p_ms->Mass(m_flavs[0]);
-  const double preF = ( 16. / 27 / mij * p_cf->MaxCoupling(0) )  * p_cf->Coupling(sqr(3*mij),0)/(2*M_PI) * pow(0.82,2);
+  const double preF = ( 16. / 27 / mij * p_cf->MaxCoupling(0) )  * p_cf->Coupling(sqr(3*mij),0)/(2*M_PI) * GetLDME(m_flavs[2].Kfcode());//pow(0.82,2);
   return preF * 236. / 100. / (8*sqr(mij));
 }
 
@@ -340,6 +406,7 @@ double LF_FVF_Quarkonia_FF::OverIntegrated(const double zmin, const double zmax,
                                            const double xbj) {
   m_zmin = zmin;
   m_zmax = zmax;
+  std::cout<<"------FF-----"<<std::endl;
   return (2 * p_cf->MaxCoupling(1)) * log((1. - zmin) / (1. - zmax));
 }
 

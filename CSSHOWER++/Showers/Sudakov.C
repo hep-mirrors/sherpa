@@ -111,21 +111,28 @@ void Sudakov::InitSplittingFunctions(MODEL::Model_Base *md,const int kfmode)
   }
   auto onia = Settings::GetMainSettings()["QUARKONIA"];
   auto onia_ldme = onia["LDME"];
-  auto onia_shower = onia["SHOWER"];
   onia_ldme["3S1_c_8_J_psi_1S"].SetDefault(3.488E-03);
   onia_ldme["3S1_c_8_J_psi_2S"].SetDefault(2.918E-03);
   onia_ldme["3S1_c_8_chi_c0_1P"].SetDefault(5.912E-03);
-  double ldme_3S1_c_8_chi_c0_1P = onia_ldme["3S1_c_8_chi_c0_1P"].Get<double>();
+  ldme_3S1_c_8_chi_c0_1P = onia_ldme["3S1_c_8_chi_c0_1P"].Get<double>();
   onia_ldme["3S1_c_8_chi_c1_1P"].SetDefault(ldme_3S1_c_8_chi_c0_1P);
   onia_ldme["3S1_c_8_chi_c2_1P"].SetDefault(ldme_3S1_c_8_chi_c0_1P);
+  ldme_3S1_c_8_J_psi_1S = onia_ldme["3S1_c_8_J_psi_1S"].Get<double>();
+  ldme_3S1_c_8_J_psi_2S = onia_ldme["3S1_c_8_J_psi_2S"].Get<double>();
+  ldme_3S1_c_8_chi_c1_1P = onia_ldme["3S1_c_8_chi_c1_1P"].Get<double>();
+  ldme_3S1_c_8_chi_c2_1P = onia_ldme["3S1_c_8_chi_c2_1P"].Get<double>();
+
+  auto onia_shower = onia["SHOWER"];
+  onia_shower["v8_2"].SetDefault(0.21);
+  double v8_2 = onia_shower["v8_2"].Get<double>();
   onia_shower["Enable_all"].SetDefault(false);
   bool enable_all = onia_shower["Enable_all"].Get<bool>();
-  onia_shower["Enable_quark_splitting_singlet"].SetDefault(false);
-  bool quark_splitting_s = onia_shower["Enable_quark_splitting_singlet"].Get<bool>();
-  onia_shower["Enable_gluon_fragmentation"].SetDefault(false);
-  bool gluon_frag = onia_shower["Enable_gluon_fragmentation"].Get<bool>();
-  onia_shower["Enable_quark_splitting_octet"].SetDefault(false);
-  bool quark_splitting_o = onia_shower["Enable_quark_splitting_octet"].Get<bool>();
+  onia_shower["Enable_QuarkoniaSplittingFunctions"].SetDefault(false);
+  bool quark_splitting_s = onia_shower["Enable_QuarkoniaSplittingFunctions"].Get<bool>();
+  onia_shower["Enable_GluonFragmentation"].SetDefault(false);
+  bool gluon_frag = onia_shower["Enable_GluonFragmentation"].Get<bool>();
+  onia_shower["Enable_OctetMesonSplitting"].SetDefault(true);
+  bool quark_splitting_o = onia_shower["Enable_OctetMesonSplitting"].Get<bool>();
 
   AddDiQuarkSplittingFunctions(md, kfmode);
   if(quark_splitting_s||enable_all){AddQuarkoniaSplittingFunctions(md, kfmode);; std::cout<< " QuarkoniaSingletSplitting added."<<std::endl;}
@@ -188,62 +195,99 @@ void Sudakov::AddQuarkoniaSplittingFunctions(Model_Base *md, const int kfmode) {
   Kabbala cpl0 = g3 * Kabbala("i", Complex(0., 1.));
   Flavour Quark_flav(kf_c);
   Flavour Gluon_flav(kf_gluon);
+  Single_Vertex v;
   // if (!flav.IsOn()) continue;
   // This is c -> c J/psi(1S)
-  Single_Vertex v;
-  v.AddParticle(Quark_flav.Bar());
-  v.AddParticle(Quark_flav);
-  v.AddParticle(Flavour(kf_J_psi_1S));
-  v.Color.push_back(Color_Function(cf::D, 1, 2));
-  v.Lorentz.push_back("FFV_Quarkonia");
-  v.cpl.push_back(cpl0); // Check later
-  v.order[0] = 1;
-  Add(new Splitting_Function_Base(
-      SF_Key(&v, 0, cstp::FF, kfmode, m_qcdmode, m_ewmode, 1, m_pdfmin)));
+  list<kf_code> singlets = {kf_Upsilon_10860}; //, kf_chi_b2_3P_oct};
+  for (list<kf_code>::iterator kfit = singlets.begin();
+       kfit != singlets.end(); kfit++) 
+  {   
+      Flavour singletflav(*kfit);
+      v = Single_Vertex();
+      v.AddParticle(Quark_flav.Bar());
+      v.AddParticle(Quark_flav);
+      v.AddParticle(singletflav);
+      v.Color.push_back(Color_Function(cf::D, 1, 2));
+      v.Lorentz.push_back("FFV_Quarkonia");
+      v.cpl.push_back(cpl0); // Check later
+      v.order[0] = 1;
+      Add(new Splitting_Function_Base(
+          SF_Key(&v, 0, cstp::FF, kfmode, m_qcdmode, m_ewmode, 1, m_pdfmin)));
+      v.in[0] = v.in[0].Bar();
+      v.in[1] = v.in[1].Bar();
+      Add(new Splitting_Function_Base(
+          SF_Key(&v, 0, cstp::FF, kfmode, m_qcdmode, m_ewmode, 1, m_pdfmin)));
   // Add(new Splitting_Function_Base(
   //   SF_Key(&v, 0, cstp::II, kfmode, m_qcdmode, m_ewmode, 1, m_pdfmin)));
-  v = Single_Vertex();
-  v.AddParticle(Quark_flav);
-  v.AddParticle(Quark_flav.Bar());
-  v.AddParticle(Flavour(kf_J_psi_1S));
-  v.Color.push_back(Color_Function(cf::D, 1, 2));
-  v.Lorentz.push_back("FFV_Quarkonia");
-  v.cpl.push_back(cpl0); // Check later
-  v.order[0] = 1;
-  Add(new Splitting_Function_Base(
-      SF_Key(&v, 0, cstp::FF, kfmode, m_qcdmode, m_ewmode, 1, m_pdfmin)));
+      // v = Single_Vertex();
+      // v.AddParticle(Quark_flav);
+      // v.AddParticle(Quark_flav.Bar());
+      // v.AddParticle(singletflav);
+      // v.Color.push_back(Color_Function(cf::D, 1, 2));
+      // v.Lorentz.push_back("FFV_Quarkonia");
+      // v.cpl.push_back(cpl0); // Check later
+      // v.order[0] = 1;
+      // Add(new Splitting_Function_Base(
+      //     SF_Key(&v, 0, cstp::FF, kfmode, m_qcdmode, m_ewmode, 1, m_pdfmin)));
+  }
   // Add(new Splitting_Function_Base(
   //   SF_Key(&v, 0, cstp::II, kfmode, m_qcdmode, m_ewmode, 1, m_pdfmin)));
   
   // This is c -> c J/Psi(1S)8
-  // v = Single_Vertex();
-  // v.AddParticle(Quark_flav.Bar());
-  // v.AddParticle(Quark_flav);
-  // v.AddParticle(Flavour(kf_3S1_c_8_J_psi_1S));
-  // // No clue of how to write T^a_{i,j} T^{a}_{k,l} in this form 
-  // v.Color.push_back(Color_Function(cf::T,3,2,1));
-  // v.Lorentz.push_back("FFV_Quarkonia");
-  // v.cpl.push_back(cpl0); // Check later
-  // v.order[0] = 1;
-  // // Add(new Splitting_Function_Base(
-  // //     SF_Key(&v, 0, cstp::FF, kfmode, m_qcdmode, m_ewmode, 1, m_pdfmin)));
-  // v.in[0] = v.in[0].Bar();
-  // v.in[1] = v.in[1].Bar();
-  // Add(new Splitting_Function_Base(
-  //     SF_Key(&v, 0, cstp::FF, kfmode, m_qcdmode, m_ewmode, 1, m_pdfmin)));
-  
+  list<kf_code> octetmesonsV = {kf_3S1_c_8_J_psi_1S, kf_3S1_c_8_psi_2S, kf_3S1_c_8_chi_c1_1P, kf_3S1_c_8_chi_c2_1P}; //, kf_chi_b2_3P_oct};
+  for (list<kf_code>::iterator kfit = octetmesonsV.begin();
+       kfit != octetmesonsV.end(); kfit++) 
+  {
+      Flavour octetflav(*kfit);
+      v = Single_Vertex();
+      v.AddParticle(Quark_flav.Bar());
+      v.AddParticle(Quark_flav);
+      v.AddParticle(octetflav);
+      // No clue of how to write T^a_{i,j} T^{a}_{k,l} in this form 
+      v.Color.push_back(Color_Function(cf::T,3,2,1));
+      v.Lorentz.push_back("FFV_Quarkonia");
+      v.cpl.push_back(cpl0); // Check later
+      v.order[0] = 1;
+      Add(new Splitting_Function_Base(
+          SF_Key(&v, 0, cstp::FF, kfmode, m_qcdmode, m_ewmode, 1, m_pdfmin)));
+      v.in[0] = v.in[0].Bar();
+      v.in[1] = v.in[1].Bar();
+      Add(new Splitting_Function_Base(
+          SF_Key(&v, 0, cstp::FF, kfmode, m_qcdmode, m_ewmode, 1, m_pdfmin)));
+  }
+  list<kf_code> octetmesonsS = {kf_1S0_c_8_J_psi_1S, kf_1S0_c_8_psi_2S}; //, kf_chi_b2_3P_oct};
+  for (list<kf_code>::iterator kfit = octetmesonsS.begin();
+       kfit != octetmesonsS.end(); kfit++) 
+  {
+      Flavour octetflav(*kfit);
+      v = Single_Vertex();
+      v.AddParticle(Quark_flav.Bar());
+      v.AddParticle(Quark_flav);
+      v.AddParticle(octetflav);
+      // No clue of how to write T^a_{i,j} T^{a}_{k,l} in this form 
+      v.Color.push_back(Color_Function(cf::T,3,2,1));
+      v.Lorentz.push_back("FFS_Quarkonia");
+      v.cpl.push_back(cpl0); // Check later
+      v.order[0] = 1;
+      Add(new Splitting_Function_Base(
+          SF_Key(&v, 0, cstp::FF, kfmode, m_qcdmode, m_ewmode, 1, m_pdfmin)));
+      v.in[0] = v.in[0].Bar();
+      v.in[1] = v.in[1].Bar();
+      Add(new Splitting_Function_Base(
+          SF_Key(&v, 0, cstp::FF, kfmode, m_qcdmode, m_ewmode, 1, m_pdfmin)));
+  } 
   // This if g -> eta_c g
   // still needs substantial debugging and tuning
-  // v = Single_Vertex();
-  // v.AddParticle(Gluon_flav);
-  // v.AddParticle(Flavour(kf_eta_c_1S));
-  // v.AddParticle(Gluon_flav);
-  // v.Color.push_back(Color_Function(cf::G, 1, 3));
-  // v.Lorentz.push_back("VSV_Quarkonia");
-  // v.cpl.push_back(cpl0); // Check later
-  // v.order[0] = 1;
-  // Add(new Splitting_Function_Base(
-  //     SF_Key(&v, 0, cstp::FF, kfmode, m_qcdmode, m_ewmode, 1, m_pdfmin)));
+  v = Single_Vertex();
+  v.AddParticle(Gluon_flav);
+  v.AddParticle(Flavour(kf_eta_c_1S));
+  v.AddParticle(Gluon_flav);
+  v.Color.push_back(Color_Function(cf::G, 1, 3));
+  v.Lorentz.push_back("VSV_Quarkonia");
+  v.cpl.push_back(cpl0); // Check later
+  v.order[0] = 1;
+  Add(new Splitting_Function_Base(
+      SF_Key(&v, 0, cstp::FF, kfmode, m_qcdmode, m_ewmode, 1, m_pdfmin)));
   msg_Out() << METHOD << ": by now " << m_splittings.size()
             << " splitting functions\n"
             << "============================================================\n";
@@ -290,19 +334,12 @@ void Sudakov::AddOctetMesonSplittingFunctions(Model_Base *md,
 
 void Sudakov::AddGluonThresholds(Model_Base *md) {
   Running_AlphaS as = md->ScalarConstant("alpha_S");
-  const double mc = ATOOLS::Flavour(kf_c).Mass();
-  const double mb = ATOOLS::Flavour(kf_b).Mass();
+  double mc = ATOOLS::Flavour(kf_c).Mass(true);
+  double mb = ATOOLS::Flavour(kf_b).Mass(true);
   list<kf_code> octetvectors = {kf_3S1_c_8_J_psi_1S, kf_3S1_c_8_psi_2S, kf_3S1_c_8_chi_c0_1P, kf_3S1_c_8_chi_c1_1P, kf_3S1_c_8_chi_c2_1P
   };
   ST_Set *stset;
   m_stmap[Flavour(kf_gluon)] = stset = new ST_Set;
-  auto onia = Settings::GetMainSettings()["QUARKONIA"];
-  auto onia_ldme = onia["LDME"];
-  double ldme_3S1_c_8_J_psi_1S = onia_ldme["3S1_c_8_J_psi_1S"].Get<double>();
-  double ldme_3S1_c_8_J_psi_2S = onia_ldme["3S1_c_8_J_psi_2S"].Get<double>();
-  double ldme_3S1_c_8_chi_c0_1P = onia_ldme["3S1_c_8_chi_c0_1P"].Get<double>();
-  double ldme_3S1_c_8_chi_c1_1P = onia_ldme["3S1_c_8_chi_c1_1P"].Get<double>();
-  double ldme_3S1_c_8_chi_c2_1P = onia_ldme["3S1_c_8_chi_c2_1P"].Get<double>();
 
   map<kf_code, double> LDME = {
       // ldmes from FO tune. ------- old -> numerical LDME [GeV^3] from ph/9507398, PhysRevD.50.3176
@@ -315,10 +352,11 @@ void Sudakov::AddGluonThresholds(Model_Base *md) {
   for (list<kf_code>::iterator octit = octetvectors.begin();
        octit != octetvectors.end(); octit++) {
     arg = 0.5 * (M_PI * as(sqr(2*mc)) / (24 * pow(mc, 3))) *
-          LDME[*octit]; // SDME for g -> ccb (3S_1)_8
+          LDME[*octit] * (1. - (11./6. * v8_2)); // SDME for g -> ccb (3S_1)_8
     stset->insert(
         One2One_Transition_Base(Flavour(kf_gluon), Flavour(*octit), arg, 1));
   }
+  //std::cout<<"-----alphas(2mc) "<<as(2*mc)<<" as(sqr(2*mc)): "<<as(sqr(2*mc))<<std::endl;
   stset->insert(One2One_Transition_Base(
       Flavour(kf_gluon), Flavour(kf_3S1_b_8_Upsilon_1S),
       0.5 * (M_PI * as(2 * mb) / (24 * pow(mb, 3))) * (0.0477), 1));

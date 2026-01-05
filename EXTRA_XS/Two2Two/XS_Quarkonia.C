@@ -1269,7 +1269,7 @@ XS_qg_q1S0_oct::XS_qg_q1S0_oct(const External_ME_Args& args):
   m_a      = fl[m_q].IsAnti() ? 1 : 0; 
   m_alphaS = MODEL::s_model->ScalarConstant("alpha_S");
   if (LDME == 0.0){
-    throw std::runtime_error("\033[31mCross section is zero. Cannot continue.\033[0m");
+    throw std::runtime_error("\033[31mLong Distance Matrix Element for " + fl[m_S].IDName() + " is zero. Cannot continue.\033[0m");
   }
 }
 
@@ -1359,7 +1359,7 @@ XS_qqbar_g1S0_oct::XS_qqbar_g1S0_oct(const External_ME_Args& args):
   if (fl[m_S].Kfcode()==kf_1S0_b_8_Upsilon_3S) LDME = 0.001*pss["LDME_990200553"].Get<double>(); 
   m_alphaS = MODEL::s_model->ScalarConstant("alpha_S");
   if (LDME == 0.0){
-    throw std::runtime_error("\033[31mCross section is zero. Cannot continue.\033[0m");
+    throw std::runtime_error("\033[31mLong Distance Matrix Element for " + fl[m_S].IDName() + " is zero. Cannot continue.\033[0m");
   }
 }
 
@@ -1434,7 +1434,7 @@ XS_gg_g1S0_oct::XS_gg_g1S0_oct(const External_ME_Args& args):
   if (fl[m_S].Kfcode()==kf_1S0_b_8_Upsilon_3S) LDME = 0.001*pss["LDME_990200553"].Get<double>(); 
   m_alphaS = MODEL::s_model->ScalarConstant("alpha_S");
   if (LDME == 0.0){
-    throw std::runtime_error("\033[31mCross section is zero. Cannot continue.\033[0m");
+    throw std::runtime_error("\033[31mLong Distance Matrix Element for " + fl[m_S].IDName() + " is zero. Cannot continue.\033[0m");
   }
 }
 
@@ -1550,7 +1550,7 @@ XS_qg_q3S1_oct::XS_qg_q3S1_oct(const External_ME_Args& args):
   m_a      = fl[m_q].IsAnti() ? 1 : 0; 
   m_alphaS = MODEL::s_model->ScalarConstant("alpha_S");
   if (LDME == 0.0){
-    throw std::runtime_error("\033[31mCross section is zero. Cannot continue.\033[0m");
+    throw std::runtime_error("\033[31mLong Distance Matrix Element for " + fl[m_S].IDName() + " is zero. Cannot continue.\033[0m");
   }
 }
 
@@ -1665,7 +1665,7 @@ XS_qqbar_g3S1_oct::XS_qqbar_g3S1_oct(const External_ME_Args& args):
   if (fl[m_S].Kfcode()==kf_3S1_b_8_chi_b2_1P)  LDME = 0.001*pss["LDME_991010551"].Get<double>(); 
   m_alphaS = MODEL::s_model->ScalarConstant("alpha_S");
   if (LDME == 0.0){
-    throw std::runtime_error("\033[31mCross section is zero. Cannot continue.\033[0m");
+    throw std::runtime_error("\033[31mLong Distance Matrix Element for " + fl[m_S].IDName() + " is zero. Cannot continue.\033[0m");
   }
 }
 
@@ -1766,7 +1766,7 @@ XS_gg_g3S1_oct::XS_gg_g3S1_oct(const External_ME_Args& args):
   if (fl[m_S].Kfcode()==kf_3S1_b_8_chi_b2_1P)  LDME = 0.001*pss["LDME_991010551"].Get<double>(); 
   m_alphaS = MODEL::s_model->ScalarConstant("alpha_S");
   if (LDME == 0.0){
-    throw std::runtime_error("\033[31mCross section is zero. Cannot continue.\033[0m");
+    throw std::runtime_error("\033[31mLong Distance Matrix Element for " + fl[m_S].IDName() + " is zero. Cannot continue.\033[0m");
   }
 }
 
@@ -1871,7 +1871,7 @@ XS_qg_q3P0_oct::XS_qg_q3P0_oct(const External_ME_Args& args):
   m_alphaS = MODEL::s_model->ScalarConstant("alpha_S");
   m_pref   = -5./(54.*pow(m_mass,3))*pow(4.*M_PI*m_alphaS,3);
   if (LDME == 0.0){
-    throw std::runtime_error("\033[31mCross section is zero. Cannot continue.\033[0m");
+    throw std::runtime_error("\033[31mLong Distance Matrix Element for " + fl[m_S].IDName() + " is zero. Cannot continue.\033[0m");
   }
 }
 
@@ -1965,7 +1965,7 @@ XS_qqbar_g3P0_oct::XS_qqbar_g3P0_oct(const External_ME_Args& args):
   m_alphaS = MODEL::s_model->ScalarConstant("alpha_S");
   m_pref   = 20./(81.*pow(m_mass,3))*pow(4.*M_PI*m_alphaS,3);
   if (LDME == 0.0){
-    throw std::runtime_error("\033[31mCross section is zero. Cannot continue.\033[0m");
+    throw std::runtime_error("\033[31mLong Distance Matrix Element for " + fl[m_S].IDName() + " is zero. Cannot continue.\033[0m");
   }
 }
 
@@ -2041,7 +2041,7 @@ XS_gg_g3P0_oct::XS_gg_g3P0_oct(const External_ME_Args& args):
   if (fl[m_S].Kfcode()==kf_3P0_b_8_Upsilon_3S) LDME = 0.001*pss["LDME_992200553"].Get<double>(); 
   m_alphaS = MODEL::s_model->ScalarConstant("alpha_S");
   if (LDME == 0.0){
-    throw std::runtime_error("\033[31mCross section is zero. Cannot continue.\033[0m");
+    throw std::runtime_error("\033[31mLong Distance Matrix Element for " + fl[m_S].IDName() + " is zero. Cannot continue.\033[0m");
   }
 }
 
@@ -2151,7 +2151,7 @@ XS_qg_q3P1_oct::XS_qg_q3P1_oct(const External_ME_Args& args):
   m_a      = fl[m_q].IsAnti() ? 1 : 0; 
   m_alphaS = MODEL::s_model->ScalarConstant("alpha_S");
   if (LDME == 0.0){
-    throw std::runtime_error("\033[31mCross section is zero. Cannot continue.\033[0m");
+    throw std::runtime_error("\033[31mLong Distance Matrix Element for " + fl[m_S].IDName() + " is zero. Cannot continue.\033[0m");
   }
 }
 
@@ -2247,7 +2247,7 @@ XS_qqbar_g3P1_oct::XS_qqbar_g3P1_oct(const External_ME_Args& args):
   m_alphaS = MODEL::s_model->ScalarConstant("alpha_S");
   m_pref   = 40./(81.*pow(m_mass,3))*pow(4.*M_PI*m_alphaS,3);
   if (LDME == 0.0){
-    throw std::runtime_error("\033[31mCross section is zero. Cannot continue.\033[0m");
+    throw std::runtime_error("\033[31mLong Distance Matrix Element for " + fl[m_S].IDName() + " is zero. Cannot continue.\033[0m");
   }
 }
 
@@ -2323,7 +2323,7 @@ XS_gg_g3P1_oct::XS_gg_g3P1_oct(const External_ME_Args& args):
   if (fl[m_S].Kfcode()==kf_3P1_b_8_Upsilon_3S) LDME = 3.*0.001*pss["LDME_992200553"].Get<double>(); 
   m_alphaS = MODEL::s_model->ScalarConstant("alpha_S");
   if (LDME == 0.0){
-    throw std::runtime_error("\033[31mCross section is zero. Cannot continue.\033[0m");
+    throw std::runtime_error("\033[31mLong Distance Matrix Element for " + fl[m_S].IDName() + " is zero. Cannot continue.\033[0m");
   }
 }
 
@@ -2432,7 +2432,7 @@ XS_qg_q3P2_oct::XS_qg_q3P2_oct(const External_ME_Args& args):
   m_alphaS = MODEL::s_model->ScalarConstant("alpha_S");
   m_pref   = -1./(27.*pow(m_mass,3))*pow(4.*M_PI*m_alphaS,3);
   if (LDME == 0.0){
-    throw std::runtime_error("\033[31mCross section is zero. Cannot continue.\033[0m");
+    throw std::runtime_error("\033[31mLong Distance Matrix Element for " + fl[m_S].IDName() + " is zero. Cannot continue.\033[0m");
   }
 
 }
@@ -2530,7 +2530,7 @@ XS_qqbar_g3P2_oct::XS_qqbar_g3P2_oct(const External_ME_Args& args):
   m_alphaS = MODEL::s_model->ScalarConstant("alpha_S");
   m_pref   = 8./(81.*pow(m_mass,3))*pow(4.*M_PI*m_alphaS,3);
   if (LDME == 0.0){
-    throw std::runtime_error("\033[31mCross section is zero. Cannot continue.\033[0m");
+    throw std::runtime_error("\033[31mLong Distance Matrix Element for " + fl[m_S].IDName() + " is zero. Cannot continue.\033[0m");
   }
 }
 
@@ -2608,7 +2608,7 @@ XS_gg_g3P2_oct::XS_gg_g3P2_oct(const External_ME_Args& args):
   if (fl[m_S].Kfcode()==kf_3P2_b_8_Upsilon_3S) LDME = 5.*0.001*pss["LDME_992200553"].Get<double>(); 
   m_alphaS = MODEL::s_model->ScalarConstant("alpha_S");
   if (LDME == 0.0){
-    throw std::runtime_error("\033[31mCross section is zero. Cannot continue.\033[0m");
+    throw std::runtime_error("\033[31mLong Distance Matrix Element for " + fl[m_S].IDName() + " is zero. Cannot continue.\033[0m");
   }
 }
 
