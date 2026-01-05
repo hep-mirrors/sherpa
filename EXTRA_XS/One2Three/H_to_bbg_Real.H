@@ -52,6 +52,7 @@ namespace EXTRAXS {
     void SetColors(const std::vector<int>& ci,
                    const std::vector<int>& cj) override;
     void FixColor(bool yes) override { m_cpointgen = yes; }
+    double GetColourWeight() override;
   };
 }
 

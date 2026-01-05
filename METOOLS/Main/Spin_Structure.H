@@ -188,6 +188,7 @@ namespace METOOLS
     virtual void SetColors(const std::vector<int>& ci,
                            const std::vector<int>& cj);
     virtual void FixColor(bool yes);
+    virtual double GetColourWeight();
   };
 
   /*! 

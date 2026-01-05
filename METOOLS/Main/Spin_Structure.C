@@ -102,3 +102,9 @@ void Spin_Amplitudes::FixColor(bool yes) {
   Abort();
 }
 
+double Spin_Amplitudes::GetColourWeight(){
+  msg_Error()<<METHOD<<": Virtual function called."<<endl;
+  Abort();
+}
+
+

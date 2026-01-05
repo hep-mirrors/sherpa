@@ -241,3 +241,7 @@ void H_to_bbg_Real::SetColors(const vector<int> &ci, const vector<int> &cj) {
   p_ci->SetJ(cj);
   m_cpointgen = true;
 }
+
+double H_to_bbg_Real::GetColourWeight() {
+  return p_ci->GlobalWeight();
+}
