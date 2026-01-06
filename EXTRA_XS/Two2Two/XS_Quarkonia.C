@@ -545,12 +545,12 @@ operator()(const External_ME_Args &args) const
     if ( fl[0].IsGluon() && fl[1].IsGluon() && fl[2].IsGluon()  &&
 	 fl[3].IsMeson() ) {
       kf_code kfc = fl[3].Kfcode();
-      if ((kfc==kf_J_psi_1S || kfc == kf_psi_2S || kfc==kf_Upsilon_1S || kfc == kf_Upsilon_2S)) return new XS_gg_g3S1(args); 
+      if (kfc==kf_J_psi_1S || kfc == kf_psi_2S || kfc==kf_Upsilon_1S || kfc == kf_Upsilon_2S || kfc == kf_Upsilon_3S) return new XS_gg_g3S1(args); 
     }
     if ( fl[0].IsGluon() && fl[1].IsGluon() && fl[3].IsGluon()  &&
 	 fl[2].IsMeson() ) {
       kf_code kfc = fl[2].Kfcode();
-      if ((kfc==kf_J_psi_1S || kfc == kf_psi_2S || kfc==kf_Upsilon_1S || kfc == kf_Upsilon_2S)) return new XS_gg_g3S1(args);
+      if (kfc==kf_J_psi_1S || kfc == kf_psi_2S || kfc==kf_Upsilon_1S || kfc == kf_Upsilon_2S || kfc == kf_Upsilon_3S) return new XS_gg_g3S1(args);
     }
   }
   return NULL;
@@ -571,10 +571,12 @@ XS_gg_g3S1::XS_gg_g3S1(const External_ME_Args& args):
   pss["R02_100443"].SetDefault(0.529);
   pss["R02_553"].SetDefault(6.477);
   pss["R02_100553"].SetDefault(3.234);
+  pss["R02_200553"].SetDefault(2.474);
   if (fl[m_S].Kfcode()==kf_J_psi_1S)   m_R02 = pss["R02_443"].Get<double>();
   if (fl[m_S].Kfcode()==kf_psi_2S)     m_R02 = pss["R02_100443"].Get<double>();
   if (fl[m_S].Kfcode()==kf_Upsilon_1S) m_R02 = pss["R02_553"].Get<double>();
   if (fl[m_S].Kfcode()==kf_Upsilon_2S) m_R02 = pss["R02_100553"].Get<double>();
+  if (fl[m_S].Kfcode()==kf_Upsilon_3S) m_R02 = pss["R02_200553"].Get<double>();
   // std::cout << "ldme = " << ldme << std::endl;
   m_alphaS = MODEL::s_model->ScalarConstant("alpha_S");
 
