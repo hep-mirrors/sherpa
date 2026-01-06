@@ -271,39 +271,6 @@ void ATOOLS::AddParticle(kf_code kfc, double mass, double radius, double width,
       pdata[key]["Priority"].SetDefault(s_kftable[kfc]->m_priority).Get<int>();
 }
 
-void ATOOLS::AddParticle(kf_code kfc, double mass, double radius, int icharge,
-                         int spin, int formfactor, const std::string &idname,
-                         const std::string &texname)
-{
-  if (s_kftable.find(kfc) != s_kftable.end()) {
-    THROW(fatal_error, "Particle already added.");
-  }
-  auto pdata = Settings::GetMainSettings()["PARTICLE_DATA"];
-  const std::string key {ToString(kfc)};
-  s_kftable[kfc] = new Particle_Info(kfc, mass, radius, icharge, spin,
-                                     formfactor, idname, texname);
-  s_kftable[kfc]->m_mass = s_kftable[kfc]->m_hmass =
-      pdata[key]["Mass"].SetDefault(mass).Get<double>();
-  s_kftable[kfc]->m_width =
-      pdata[key]["Width"].SetDefault(s_kftable[kfc]->m_width).Get<double>();
-  s_kftable[kfc]->m_on =
-      pdata[key]["Active"].SetDefault(s_kftable[kfc]->m_on).Get<bool>();
-  s_kftable[kfc]->m_stable =
-      pdata[key]["Stable"].SetDefault(s_kftable[kfc]->m_stable).Get<int>();
-  s_kftable[kfc]->m_narrow =
-    pdata[key]["Narrow"].SetDefault(0).Get<int>();
-  s_kftable[kfc]->m_massive =
-      pdata[key]["Massive"].SetDefault(s_kftable[kfc]->m_massive).Get<bool>();
-  s_kftable[kfc]->m_icharge =
-      pdata[key]["IntCharge"].SetDefault(icharge).Get<int>();
-  s_kftable[kfc]->m_strong =
-      pdata[key]["StrongCharge"].SetDefault(s_kftable[kfc]->m_strong).Get<int>();
-  s_kftable[kfc]->m_yuk =
-      pdata[key]["Yukawa"].SetDefault(s_kftable[kfc]->m_yuk).Get<double>();
-  s_kftable[kfc]->m_priority =
-      pdata[key]["Priority"].SetDefault(s_kftable[kfc]->m_priority).Get<int>();
-}
-
 void ATOOLS::ClearParticles()
 {
   for (KF_Table::const_iterator kfit(s_kftable.begin());kfit!=s_kftable.end();++kfit)

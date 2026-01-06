@@ -14,18 +14,18 @@ using namespace ATOOLS;
 Particle_Info::Particle_Info(const Particle_Info &info):
   m_kfc(info.m_kfc), m_mass(info.m_mass), m_hmass(info.m_hmass), m_radius(info.m_radius),
   m_yuk(info.m_yuk), m_width(info.m_width),
-  m_dg(info.m_dg), m_dm(info.m_dm), m_qoverp2(info.m_qoverp2), 
+  m_dg(info.m_dg), m_dm(info.m_dm), m_qoverp2(info.m_qoverp2),
   m_icharge(info.m_icharge),
   m_strong(info.m_strong), m_resummed(info.m_resummed), m_priority(info.m_priority),
-  m_spin(info.m_spin), m_stable(info.m_stable), 
-  m_masssign(info.m_masssign), m_dummy(info.m_dummy), m_majorana(info.m_majorana), 
+  m_spin(info.m_spin), m_stable(info.m_stable),
+  m_masssign(info.m_masssign), m_dummy(info.m_dummy), m_majorana(info.m_majorana),
   m_formfactor(0), m_on(info.m_on), m_massive(info.m_massive), m_hadron(info.m_hadron),
   m_isgroup(info.m_isgroup), m_idname(info.m_idname), m_antiname(info.m_antiname),
   m_texname(info.m_texname), m_antitexname(info.m_antitexname)
 {
   m_content.resize(info.m_content.size());
-  for (size_t i(0);i<info.m_content.size();++i) 
-    m_content[i] = new Flavour(*info.m_content[i]); 
+  for (size_t i(0);i<info.m_content.size();++i)
+    m_content[i] = new Flavour(*info.m_content[i]);
 }
 
 Particle_Info::Particle_Info
@@ -37,11 +37,11 @@ Particle_Info::Particle_Info
  const std::string &antitexname, const bool dummy, const bool isgroup):
   m_kfc(kfc), m_mass(mass), m_hmass(mass), m_radius(radius), m_yuk(-1.0), m_width(width),
   m_dg(0.0), m_dm(0.0), m_qoverp2(1.0), m_icharge(icharge),
-  m_strong(strong), m_resummed(0), m_priority(0), m_spin(spin), 
-  m_stable(stable), m_masssign(1), m_dummy(dummy), m_majorana(majorana), 
-  m_formfactor(0), m_on(on), m_massive(massive), m_hadron(0), 
+  m_strong(strong), m_resummed(0), m_priority(0), m_spin(spin),
+  m_stable(stable), m_masssign(1), m_dummy(dummy), m_majorana(majorana),
+  m_formfactor(0), m_on(on), m_massive(massive), m_hadron(0),
   m_isgroup(isgroup), m_idname(idname), m_antiname(antiname),
-  m_texname(texname), m_antitexname(antitexname)  
+  m_texname(texname), m_antitexname(antitexname)
 {
   m_content.push_back(new Flavour(*this));
 }
@@ -52,9 +52,9 @@ Particle_Info::Particle_Info
  const int stable,const std::string &idname,const std::string &texname):
   m_kfc(kfc), m_mass(mass), m_hmass(mass), m_radius(radius), m_yuk(-1.0), m_width(width),
   m_dg(0.0), m_dm(0.0), m_qoverp2(1.0),
-  m_icharge(icharge), m_strong(0), m_resummed(0), m_priority(0), 
-  m_spin(spin), m_stable(stable), m_masssign(1), m_dummy(0), m_majorana(0), 
-  m_formfactor(0), m_on(on), m_massive(1), m_hadron(1), m_isgroup(0), 
+  m_icharge(icharge), m_strong(0), m_resummed(0), m_priority(0),
+  m_spin(spin), m_stable(stable), m_masssign(1), m_dummy(0), m_majorana(0),
+  m_formfactor(0), m_on(on), m_massive(1), m_hadron(1), m_isgroup(0),
   m_idname(idname), m_texname(texname)
 {
   m_antiname=m_idname+"b";
@@ -67,9 +67,9 @@ Particle_Info::Particle_Info
  const int formfactor, const std::string &idname, const std::string &antiname):
   m_kfc(kfc), m_mass(mass), m_hmass(mass), m_radius(radius), m_yuk(-1.0), m_width(0),
   m_dg(0.0), m_dm(0.0), m_qoverp2(1.0),
-  m_icharge(icharge), m_strong(0), m_resummed(0), m_priority(0), m_spin(spin), 
-  m_stable(1), m_masssign(1), m_dummy(0), m_majorana(0), 
-  m_formfactor(formfactor), m_on(1), m_massive(1), m_hadron(1), m_isgroup(0), 
+  m_icharge(icharge), m_strong(0), m_resummed(0), m_priority(0), m_spin(spin),
+  m_stable(1), m_masssign(1), m_dummy(0), m_majorana(0),
+  m_formfactor(formfactor), m_on(1), m_massive(1), m_hadron(1), m_isgroup(0),
   m_idname(idname), m_antiname(antiname)
 {
   m_antiname=m_idname+"b";
@@ -78,14 +78,14 @@ Particle_Info::Particle_Info
 }
 
 Particle_Info::~Particle_Info()
-{ 
+{
   Clear();
 }
 
 void Particle_Info::Clear()
-{ 
-  for (size_t i(0);i<m_content.size();++i) 
-    delete m_content[i]; 
+{
+  for (size_t i(0);i<m_content.size();++i)
+    delete m_content[i];
   m_content.clear();
 }
 
@@ -97,7 +97,7 @@ void Particle_Info::SetResummed()
 }
 
 void Particle_Info::Add(const Flavour &fl)
-{ 
+{
   if (m_mass>=0.0) {
     if (m_content.empty()) {
       m_mass=fl.Mass();
@@ -116,13 +116,13 @@ void Particle_Info::Add(const Flavour &fl)
       }
     }
   }
-  for (size_t i(0);i<fl.Size();++i) 
-    m_content.push_back(new Flavour(fl[i])); 
+  for (size_t i(0);i<fl.Size();++i)
+    m_content.push_back(new Flavour(fl[i]));
 }
 
 Flavour Particle_Info::operator[](const size_t &i) const
-{ 
-  return *m_content[i]; 
+{
+  return *m_content[i];
 }
 
 bool Particle_Info::Includes(const Flavour &fl) const
@@ -130,9 +130,9 @@ bool Particle_Info::Includes(const Flavour &fl) const
   for (size_t j(0);j<fl.Size();++j) {
     bool found(false);
     for (size_t i(0);i<m_content.size();++i)
-      if (m_content[i]->Kfcode()==fl[j].Kfcode()) { 
-	found=true; 
-	break; 
+      if (m_content[i]->Kfcode()==fl[j].Kfcode()) {
+	found=true;
+	break;
       }
     if (!found) return false;
   }
@@ -182,7 +182,7 @@ void Flavour::InitializeParticleInfo(kf_code kfc)
 double Flavour::ISSymmetryFactor(const ATOOLS::Flavour_Vector& flavs)
 {
   double sf(1.0);
-  for (ATOOLS::Flavour_Vector::const_iterator 
+  for (ATOOLS::Flavour_Vector::const_iterator
 	 it=flavs.begin(); it!=flavs.end(); ++it)
     {
       double pols(2.0*it->Spin()+1.0);
@@ -198,24 +198,24 @@ double Flavour::FSSymmetryFactor(const ATOOLS::Flavour_Vector& flavs)
 {
   double sf(1.0);
   std::map<ATOOLS::Flavour,size_t> fc;
-  for (ATOOLS::Flavour_Vector::const_iterator 
+  for (ATOOLS::Flavour_Vector::const_iterator
 	 it=flavs.begin(); it!=flavs.end(); ++it)
     fc[*it] = 0;
-  for (ATOOLS::Flavour_Vector::const_iterator 
+  for (ATOOLS::Flavour_Vector::const_iterator
 	 it=flavs.begin(); it!=flavs.end(); ++it)
     fc[*it] +=1;
-  for (std::map<ATOOLS::Flavour,size_t>::const_iterator 
-	 it(fc.begin()); it!=fc.end(); ++it) 
+  for (std::map<ATOOLS::Flavour,size_t>::const_iterator
+	 it(fc.begin()); it!=fc.end(); ++it)
     sf*=Factorial(it->second);
   return sf;
 }
 
-std::string Flavour::TexName() const 
+std::string Flavour::TexName() const
 {
   if (!IsHadron()) return m_anti?p_info->m_antitexname:p_info->m_texname;
   std::string name, idname(IDName());
   bool barit(false);
-  if (m_anti && (!SelfAnti()) && IsHadron()) { 
+  if (m_anti && (!SelfAnti()) && IsHadron()) {
     if (idname.find("++")!=std::string::npos ||
 	idname.find("+")!=std::string::npos  ||
 	idname.find("-")!=std::string::npos  ||
@@ -238,7 +238,7 @@ std::string Flavour::TexName() const
       else if (name.find("--")!=std::string::npos) name=StringReplace(name, "--", "++");
       else if (name.find("-")!=std::string::npos)  name=StringReplace(name, "-", "+");
     }
-    
+
     if (name.find("++")!=std::string::npos)      name=StringReplace(name, "++", "^{++}");
     else if (name.find("--")!=std::string::npos) name=StringReplace(name, "--", "^{--}");
     else if (name.find("*+")!=std::string::npos) name=StringReplace(name, "*+", "^{*+}");
@@ -283,7 +283,7 @@ std::string Flavour::RootName() const
   return name;
 }
 
-std::string Flavour::ShellName() const 
+std::string Flavour::ShellName() const
 {
   std::string name(IDName());
   size_t pos(0);
@@ -349,27 +349,27 @@ std::string Flavour::LegacyShellName() const
   return ShellName();
 }
 
-std::string Flavour::IDName() const 
+std::string Flavour::IDName() const
 {
   return m_anti?p_info->m_antiname:p_info->m_idname;
 }
 
-bool Flavour::IsDiQuark() const 
+bool Flavour::IsDiQuark() const
 {
   if(Kfcode() >= 1103 && Kfcode() <= 5505) {
-    double help = Kfcode()/100.0 - int(Kfcode()/100.0); 
+    double help = Kfcode()/100.0 - int(Kfcode()/100.0);
     if(help<0.031) return true;
   }
   return false;
 }
 
-bool Flavour::IsBaryon() const 
+bool Flavour::IsBaryon() const
 {
   if (Kfcode() % 10000 < 1000) return false;
   return !IsDiQuark();
 }
 
-bool Flavour::IsMeson() const 
+bool Flavour::IsMeson() const
 {
   if (Kfcode() % 1000 < 100) return false;
   return !IsDiQuark();
@@ -380,7 +380,7 @@ bool Flavour::IsNucleon() const
   return (Kfcode()==2212 || Kfcode()==2112);
 }
 
-bool Flavour::IsB_Hadron() const 
+bool Flavour::IsB_Hadron() const
 {
   if (Kfcode() < 100)                               return 0;
   if (Kfcode()-100*int(Kfcode()/100)<10)            return 0;
@@ -390,7 +390,7 @@ bool Flavour::IsB_Hadron() const
   return 0;
 }
 
-bool Flavour::IsC_Hadron() const 
+bool Flavour::IsC_Hadron() const
 {
   if (Kfcode() < 100)                               return 0;
   if (Kfcode()-100*int(Kfcode()/100)<10)            return 0;

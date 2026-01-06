@@ -94,7 +94,7 @@ void EPA::RegisterDefaults() const {
   s["EPA"]["xMax"].SetDefault(1.);
   s["EPA"]["xMin"].SetDefault(0.);
   s["EPA"]["PTMin"].SetDefault(0.0);
-  s["EPA"]["Form_Factor"].SetDefault(m_beam.FormFactor());
+  s["EPA"]["Form_Factor"].SetDefault(2);
   s["EPA"]["AlphaQED"].SetDefault(0.0072992701);
   s["EPA"]["ThetaMax"].SetDefault(0.3);
   s["EPA"]["Use_old_WW"].SetDefault(false);

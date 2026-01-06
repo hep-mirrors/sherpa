@@ -14,9 +14,9 @@ using namespace ATOOLS;
 
 bool ATOOLS::Particle::operator==(Particle part) const
 {
-  if ((part.m_status==m_status)&&         
+  if ((part.m_status==m_status)&&
       (part.m_info==m_info)&&
-      (part.m_fl==m_fl)&&         
+      (part.m_fl==m_fl)&&
       (part.m_momentum==m_momentum)&&
       (part.m_dec_time==m_dec_time)) {
     return true;
@@ -30,7 +30,7 @@ std::ostream& ATOOLS::operator<<(std::ostream& str, const Particle &part) {
   case part_status::undefined : // null entry
     return str<<"--- empty entry ---"<<std::endl;
   case part_status::active :  // active (final state) particle
-  case part_status::decayed : // decayed particle 
+  case part_status::decayed : // decayed particle
   case part_status::fragmented : // or fragmented particle
   case part_status::documentation : // documentation line
     io=str.precision(4);
@@ -72,25 +72,25 @@ namespace ATOOLS {
 }
 
 
-Particle::~Particle() 
+Particle::~Particle()
 {
   --s_totalnumber;
 }
 
 Particle::Particle():
-  m_number(-1), m_beam(-1), m_meid(0), m_status(part_status::undefined), 
-  m_info('X'), 
-  m_fl(Flavour(kf_none)), m_momentum(Vec4D()), m_position(Vec4D()), 
+  m_number(-1), m_beam(-1), m_meid(0), m_status(part_status::undefined),
+  m_info('X'),
+  m_fl(Flavour(kf_none)), m_momentum(Vec4D()), m_position(Vec4D()),
   p_startblob(NULL),p_endblob(NULL), p_originalpart(this),
   m_dec_time(0.), m_finalmass(0.), m_ownpos(false), m_fromdec(false)
 {
   ++s_totalnumber;
 }
 
-Particle::Particle(const Particle &in): 
-  m_number(in.m_number), m_beam(in.m_beam), m_meid(in.m_meid), m_status(in.m_status), 
-  m_info(in.m_info), 
-  m_fl(in.m_fl), m_momentum(in.m_momentum), m_position(in.m_position), 
+Particle::Particle(const Particle &in):
+  m_number(in.m_number), m_beam(in.m_beam), m_meid(in.m_meid), m_status(in.m_status),
+  m_info(in.m_info),
+  m_fl(in.m_fl), m_momentum(in.m_momentum), m_position(in.m_position),
   p_startblob(NULL),p_endblob(NULL), p_originalpart(in.p_originalpart),
   m_dec_time(in.m_dec_time), m_finalmass(in.m_finalmass), m_ownpos(in.m_ownpos), m_fromdec(in.m_fromdec)
 {
@@ -125,8 +125,8 @@ Particle& Particle::operator=(const Particle &in)
 
 Particle::Particle(int number, Flavour fl, Vec4D p, char a) :
   m_number(number), m_beam(-1), m_meid(0), m_status(part_status::active),
-  m_info(a), 
-  m_fl(fl), m_momentum(p), m_position(Vec4D()), 
+  m_info(a),
+  m_fl(fl), m_momentum(p), m_position(Vec4D()),
   p_startblob(NULL),p_endblob(NULL), p_originalpart(this),
   m_dec_time(0.), m_finalmass(fl.Mass()), m_ownpos(false), m_fromdec(false)
 {
@@ -154,55 +154,55 @@ void Particle::Copy(Particle * in)  {
   m_flow.SetCode(2,in->GetFlow(2));
 }
 
-double Particle::ProperTime() 
+double Particle::ProperTime()
 {
-  double q2    = m_momentum.Abs2();
-  double m2    = sqr(m_fl.Mass());
+  double q2   = m_momentum.Abs2();
+  double m2   = sqr(m_fl.Mass());
   double tau2  = 1.e96;
-  if (!( (q2-m2 < rpa->gen.Accu()) && 
-         (m_fl.Width() < rpa->gen.Accu()) )) { // off-shell or big width
-    if (m2>rpa->gen.Accu()) { 
-      tau2 = q2/(sqr(q2-m2)+sqr(q2*m_fl.Width())/m2);
+  if (!((q2 - m2 < rpa->gen.Accu()) &&
+        (m_fl.Width() < rpa->gen.Accu()))) {// off-shell or big width
+    if (m2 > rpa->gen.Accu()) {
+      tau2 = q2 / (sqr(q2 - m2) + sqr(q2 * m_fl.Width()) / m2);
+    } else {
+      if (dabs(q2) > rpa->gen.Accu()) tau2 = 1 / dabs(q2);
     }
-    else {
-      if (dabs(q2)>rpa->gen.Accu()) tau2 = 1/dabs(q2);
-    }
-  }
-  else {
-    if (m_fl.Strong()) tau2 = 1./sqr(0.2); 
+  } else {
+    if (m_fl.Strong()) tau2 = 1. / sqr(0.2);
     else if (!m_fl.IsStable()) tau2 = 1./sqr(m_fl.Width(true));
   }
   return rpa->hBar() * sqrt(tau2);
 }
 
-double Particle::LifeTime() {
-  double t   = -ProperTime()*log(1.-ran->Get());  
-  if (t>1.e6) t = 1.e6;
-  double gamma = 1./rpa->gen.Accu();
-  if (m_fl.Mass()>rpa->gen.Accu()) gamma = E()/m_fl.Mass();
+double Particle::LifeTime()
+{
+  double t = -ProperTime() * log(1. - ran->Get());
+  if (t > 1.e6) t = 1.e6;
+  double gamma = 1. / rpa->gen.Accu();
+  if (m_fl.Mass() > rpa->gen.Accu()) gamma = E() / m_fl.Mass();
   else {
-    double q2    = dabs(m_momentum.Abs2());
-    if (q2>rpa->gen.Accu()) gamma = E()/sqrt(q2);
+    double q2 = dabs(m_momentum.Abs2());
+    if (q2 > rpa->gen.Accu()) gamma = E() / sqrt(q2);
   }
-  return gamma * t;      
+  return gamma * t;
 }
 
-Vec3D Particle::Distance(double _lifetime) {
-  Vec3D v = Vec3D(m_momentum)/E()*rpa->c();
-  if (_lifetime<0.) _lifetime = LifeTime();
-  return v*_lifetime;
+Vec3D Particle::Distance(double _lifetime)
+{
+  Vec3D v = Vec3D(m_momentum) / E() * rpa->c();
+  if (_lifetime < 0.) _lifetime = LifeTime();
+  return v * _lifetime;
 }
 
-void Particle::SetProductionBlob(Blob *blob)  
-{ 
+void Particle::SetProductionBlob(Blob *blob)
+{
   if (p_startblob!=NULL && blob!=NULL) {
-    if (p_startblob->Id()>-1) 
+    if (p_startblob->Id()>-1)
       msg_Out()<<"WARNING in Particle::SetProductionBlob("<<blob<<"):"<<std::endl
 	       <<"   blob->Id() = "<<blob->Id()<<std::endl
 	       <<"   Particle ["<<this<<"]already has a production blob!"<<std::endl
 	       <<"   "<<*this<<std::endl;
   }
-  p_startblob=blob; 
+  p_startblob=blob;
 }
 
 // Numbers etc.
@@ -258,18 +258,18 @@ void           Particle::SetFlow(const int index, const int code) {
 }
 
 
-void Particle::SetDecayBlob(Blob *blob)       
-{ 
-  p_endblob=blob; 
+void Particle::SetDecayBlob(Blob *blob)
+{
+  p_endblob=blob;
 }
 
 void Particle::SetOriginalPart(Particle *part)
-{ 
-  p_originalpart=part; 
+{
+  p_originalpart=part;
 }
 
-void Particle::SetNumber(const int n)           
-{ 
+void Particle::SetNumber(const int n)
+{
   if (n<0) m_number = -n;
   else {
     if (m_number<=0) m_number=++s_currentnumber;
@@ -297,6 +297,6 @@ void   Particle::SetFinalMass(const double _lower,const double _upper) {
   if (ylow*yup<-1.) {
     if (yup>0) yrange = yrange + M_PI;
     if (yup<0) yrange = yrange - M_PI;
-  }     
+  }
   m_finalmass = sqrt(mass2+mw*tan(ran->Get()*yrange + ymin));
 }

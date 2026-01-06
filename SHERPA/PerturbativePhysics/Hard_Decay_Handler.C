@@ -125,7 +125,7 @@ Hard_Decay_Handler::Hard_Decay_Handler() :
       ReadDecayTable(flav.Bar());
     }
   }
-  
+
   // initialize them sorted by masses:
   Decay_Map::iterator dmit;
   msg_Debugging()<<"Initialising hard decay tables: two-body decays.\n";
@@ -610,7 +610,7 @@ void Hard_Decay_Handler::TreatInitialBlob(ATOOLS::Blob* blob,
     // 	     <<"BR = "<<brfactor<<") for\n"<<"   "
     // 	     <<blob->InParticle(0)->Flav()<<" "
     // 	     <<blob->InParticle(1)->Flav()<<" -->";
-    // for (size_t i=0;i<blob->NOutP();i++) 
+    // for (size_t i=0;i<blob->NOutP();i++)
     //   msg_Out()<<" "<<blob->OutParticle(i)->Flav();
     // msg_Out()<<".\n";
     bdbmeweight->Set<double>(brfactor*bdbmeweight->Get<double>());
@@ -870,7 +870,7 @@ void Hard_Decay_Handler::AddDecayClustering(ATOOLS::Cluster_Amplitude*& ampl,
       step1->Leg(i)->SetK(0);
       if (step1->Leg(i)->Id()!=idmother)
 	if (step1->Leg(i)->Col().m_i==lij->Col().m_j ||
-	    step1->Leg(i)->Col().m_j==lij->Col().m_i) 
+	    step1->Leg(i)->Col().m_j==lij->Col().m_i)
 	  idk=step1->Leg(i)->Id();
     }
     if (lij->Col().m_i==0 && lij->Col().m_j==0) {
@@ -933,7 +933,7 @@ void Hard_Decay_Handler::AddDecayClustering(ATOOLS::Cluster_Amplitude*& ampl,
       DEBUG_VAR(*tmp);
     }
 
-    
+
     Cluster_Amplitude* step2=step1->InitPrev();
     step2->CopyFrom(step1);
     step2->SetNLO(0);
