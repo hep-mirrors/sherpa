@@ -826,6 +826,15 @@ void Hard_Decay_Handler::TreatInitialBlob(ATOOLS::Blob* blob,
     }
   }
 
+  // collect decay channel
+  Decay_Channel* dc(NULL);
+  Blob_Data_Base * data((*blob)["dc"]);
+  if(data){
+    dc = data -> Get<Decay_Channel*>();
+  }
+  //bool NLO_Decay;
+  //NLO_Decay = dc -> isNLO();
+
   if (sublist) {
     // If the blob contains a NLO_subeventlist, we have to attach decays
     // in the sub-events as well. The decay has to be identical for infrared
