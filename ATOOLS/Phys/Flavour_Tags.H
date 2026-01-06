@@ -438,8 +438,8 @@
 #define      kf_3P1_b_8_Upsilon_1S   993000553
 #define      kf_3P1_b_8_Upsilon_2S   993100553
 #define      kf_3P1_b_8_Upsilon_3S   993200553
-#define      kf_3P2_b_8_Upsilon_1S   994000555
-#define      kf_3P2_b_8_Upsilon_2S   994100555
+#define      kf_3P2_b_8_Upsilon_1S   994000553
+#define      kf_3P2_b_8_Upsilon_2S   994100553
 #define      kf_3P2_b_8_Upsilon_3S   994200553
 // hadrons we do not (yet) use with dodgy naming
 // #define      kf_Sigma_c_2455            204112

@@ -198,7 +198,7 @@ void Sudakov::AddQuarkoniaSplittingFunctions(Model_Base *md, const int kfmode) {
   Single_Vertex v;
   // if (!flav.IsOn()) continue;
   // This is c -> c J/psi(1S)
-  list<kf_code> singlets = {kf_Upsilon_10860}; //, kf_chi_b2_3P_oct};
+  list<kf_code> singlets = {kf_J_psi_1S}; //, kf_chi_b2_3P_oct};
   for (list<kf_code>::iterator kfit = singlets.begin();
        kfit != singlets.end(); kfit++) 
   {   
