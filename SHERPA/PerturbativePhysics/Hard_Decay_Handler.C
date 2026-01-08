@@ -803,6 +803,8 @@ void Hard_Decay_Handler::TreatInitialBlob(ATOOLS::Blob* blob,
     bdbmeweight->Set<double>(brfactor*bdbmeweight->Get<double>()); // if data exists, multiply it by the branching ratio factor so that the 
                                                                   // weight reflects the decay’s branching ratio.
   }
+  double ME_Weight = bdbmeweight->Get<double>();
+
   // update also MEWeightInfo and WeightsMap with the branching ratio factor
   Blob_Data_Base * wgtinfo((*blob)["MEWeightInfo"]);
   if (wgtinfo) *wgtinfo->Get<ME_Weight_Info*>()*=brfactor;
@@ -819,21 +821,34 @@ void Hard_Decay_Handler::TreatInitialBlob(ATOOLS::Blob* blob,
 
   // collect Higgs momentum per out-particle index; else zero
   ATOOLS::Vec4D decaying_mom;
+  const ATOOLS::Particle* decaying_particle;
   for (size_t i = 0; i < blob->NOutP(); ++i) {
     const ATOOLS::Particle* op = blob->ConstOutParticle(i);
     if (op && op->Flav() == ATOOLS::Flavour(kf_h0)) {
       decaying_mom = op->Momentum();
+      decaying_particle = op;
     }
   }
 
+  Blob* out_blob = decaying_particle->DecayBlob();
   // collect decay channel
   Decay_Channel* dc(NULL);
-  Blob_Data_Base * data((*blob)["dc"]);
-  if(data){
-    dc = data -> Get<Decay_Channel*>();
+  Blob_Data_Base * decay_data((*out_blob)["dc"]);
+  if(decay_data){
+    dc = decay_data -> Get<Decay_Channel*>();
   }
-  //bool NLO_Decay;
-  //NLO_Decay = dc -> isNLO();
+  bool NLO_Decay;
+  NLO_Decay = dc -> isNLO();
+
+  for(size_t i = 0; i < dc->GetDiagrams().size(); ++i) {
+    if(dc->GetDiagrams()[i]->getType() == "R"){
+      std::cout << "create R subevent" << std::endl;    // todo: insert subevent creation here
+    } else if(dc->GetDiagrams()[i]->getType() == "S") {
+      ATOOLS::Vec4D_Vector mapped_mom = dc->GetDiagrams()[i]-> GetMappedMomenta();
+      std::cout << "create S subevent" << std::endl;    // todo: insert subevent creation here
+    }
+  }
+
 
   if (sublist) {
     // If the blob contains a NLO_subeventlist, we have to attach decays
