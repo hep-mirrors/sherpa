@@ -189,6 +189,7 @@ namespace METOOLS
                            const std::vector<int>& cj);
     virtual void FixColor(bool yes);
     virtual double GetColourWeight();
+    virtual ATOOLS::Vec4D_Vector GetMappedMomenta(); // only set for the case that the input momenta are mapped, e.g. for subtraction terms
   };
 
   /*! 

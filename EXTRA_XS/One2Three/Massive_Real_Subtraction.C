@@ -17,7 +17,7 @@ using namespace std;
 
 Massive_Real_Subtraction::Massive_Real_Subtraction(const vector<Flavour>& flavs, const Flavour& prop,
                      size_t non_prop, size_t gluon, size_t propj) :
-  Spin_Amplitudes(flavs,Complex(0.0,0.0)), m_cur_born(3), m_anticur_born(3), m_nhel(4), m_prop(prop), m_non_prop(non_prop), m_gluon(gluon), m_propj(propj)
+  Spin_Amplitudes(flavs,Complex(0.0,0.0)), m_cur_born(3), m_anticur_born(3), m_nhel(4), born_momenta(3), m_prop(prop), m_non_prop(non_prop), m_gluon(gluon), m_propj(propj)
 {
   scale = flavs[0].Mass(); // scale = mass of incoming particle
   CalculateAlphaQCD(scale);
@@ -273,7 +273,6 @@ void Massive_Real_Subtraction::CalculateBorn(const ATOOLS::Vec4D_Vector& momenta
   typedef std::pair<SpinorVecWithHel, SpinorVecWithHel> SpinorPairWithHel;
   using C = std::complex<double>;
 
-  ATOOLS::Vec4D_Vector born_momenta(3);
   born_momenta[0] = momenta[0];                       // incoming momentum stays the same
   // map the final momenta to the emitter and spectator momenta (formulas taken from Catani Seymour paper)
   ATOOLS::Vec4<double> Q = momenta[m_gluon] + momenta[m_propj] + momenta[m_non_prop];

@@ -20,6 +20,7 @@ namespace EXTRAXS {
     double scale;
     double BornPrefactor;
     double alpha_qcd;
+    ATOOLS::Vec4D_Vector born_momenta;
 
     std::vector<METOOLS::Current*> m_cur_born;
     std::vector<METOOLS::Current*> m_anticur_born;
@@ -47,6 +48,7 @@ namespace EXTRAXS {
     double get_NLO_ME2();
     std::string getType();
     ATOOLS::Flavour Prop() const { return m_prop; }
+    ATOOLS::Vec4D_Vector GetMappedMomenta() override { return born_momenta; }
   
   protected:
     double ME2_Born;

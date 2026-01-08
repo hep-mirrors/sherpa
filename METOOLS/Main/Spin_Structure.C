@@ -105,6 +105,13 @@ void Spin_Amplitudes::FixColor(bool yes) {
 double Spin_Amplitudes::GetColourWeight(){
   msg_Error()<<METHOD<<": Virtual function called."<<endl;
   Abort();
+  return 0.0;
+}
+
+ATOOLS::Vec4D_Vector Spin_Amplitudes::GetMappedMomenta() {
+  msg_Error()<<METHOD<<": Virtual function called."<<endl;
+  Abort();
+  return ATOOLS::Vec4D_Vector(0);
 }
 
 
