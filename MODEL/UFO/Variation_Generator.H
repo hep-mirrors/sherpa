@@ -6,7 +6,6 @@
 #include "MODEL/Main/Model_Base.H"
 #include "PHASIC++/Process/Single_Process.H"
 #include "PHASIC++/Main/Process_Integrator.H"
-#include "MODEL/UFO/UFO_Model.H"
 
 using Base = ATOOLS::Hard_Process_Variation_Generator_Base;
 using Args = ATOOLS::Hard_Process_Variation_Generator_Arguments;

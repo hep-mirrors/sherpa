@@ -27,17 +27,24 @@ namespace UFO {
         else {
             msg_Out() << "\t--> Found " << Size() << " variations" << std::endl;
         }
-        // Register the dependent Model vertices
+        // Register the dependent Model vertices, check for unknown/unused variations
         FindDependentVertices();
+        for (std::string var_name : variables) {
+            if (dependent_vertices[var_name]->size() == 0) THROW(normal_exit, var_name + " does not seem to have anything depending on it. Remove Variation or fix this.") 
+        }
         // Store the nominal parameter values 
         StoreNominal();
         msg_Out() << "UFO Variations read." << std::endl << std::endl;
     }
 
     /*
-    Destructor, does nothing
+    Destructor, does something
     */
-    Variations::~Variations(){}
+    Variations::~Variations(){
+        for (auto set : dependent_vertices) {
+            delete set.second;
+        }
+    }
 
     /*
     read a single param variation (one variable, mulitple values) and put it in a map
