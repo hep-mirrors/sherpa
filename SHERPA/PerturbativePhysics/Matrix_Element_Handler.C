@@ -63,6 +63,8 @@ void Matrix_Element_Handler::RegisterDefaults()
   s["NLO_MUR_COEFFICIENT_FROM_VIRTUAL"].SetDefault(true);
 
   s["PSI"]["ASYNC"].SetDefault(false);
+
+  s["EVENT_FILES_ENABLED"].SetDefault(true);
 }
 
 void Matrix_Element_Handler::RegisterMainProcessDefaults(
@@ -102,6 +104,7 @@ Matrix_Element_Handler::Matrix_Element_Handler(MODEL::Model_Base *model):
   m_ewaddmode = s["MEH_EWADDMODE"].Get<int>();
   m_qcdaddmode = s["MEH_QCDADDMODE"].Get<int>();
   std::string seedfile{ s["EVENT_SEED_FILE"].Get<std::string>() };
+  m_eventfilesenabled = s["EVENT_FILES_ENABLED"].Get<bool>();
 #ifdef USING__GZIP
   seedfile+=".gz";
 #endif
@@ -1110,8 +1113,9 @@ void Matrix_Element_Handler::BuildSingleProcessList(
 	  if (GetMPvalue(args.pbi.m_vefunc,nfs,pnid,ds)) efunc=ds;
 	  proc[i]->InitPSHandler(maxerr,eobs,efunc);
 	  proc[i]->SetShower(p_shower->GetShower());
-	  if (GetMPvalue(args.pbi.m_vfiles,nfs,pnid,ds))
-	    proc[i]->SetupEventReader(ds);
+          if (m_eventfilesenabled &&
+              GetMPvalue(args.pbi.m_vfiles, nfs, pnid, ds))
+            proc[i]->SetupEventReader(ds);
 	}
 	if (loprocs==0) loprocs=procs.size();
       }

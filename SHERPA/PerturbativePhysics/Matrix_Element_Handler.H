@@ -80,7 +80,7 @@ namespace SHERPA {
 
     std::string m_respath;
     int         m_eventmode, m_seedmode, m_hasnlo;
-    bool        m_pilotrunenabled;
+    bool        m_pilotrunenabled, m_eventfilesenabled;
     int         m_nloadd, m_ewaddmode, m_qcdaddmode;
 
     ATOOLS::Weight_Info m_evtinfo;
