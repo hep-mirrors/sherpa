@@ -10,7 +10,6 @@
 #include <unistd.h>
 
 #include <highfive/H5File.hpp>
-#include <highfive/H5FileDriver.hpp>
 #include <highfive/H5DataSet.hpp>
 
 #include "ATOOLS/Org/Message.H"
