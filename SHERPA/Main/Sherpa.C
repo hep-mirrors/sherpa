@@ -125,7 +125,7 @@ bool Sherpa::InitializeTheRun()
     m_debugstep     = s["DEBUG_STEP"].Get<long int>();
 
     m_displayinterval=s["EVENT_DISPLAY_INTERVAL"].Get<int>();
-    m_printmpixs=s["PRINT_MPI_XS"].Get<int>();
+    m_printmpixs=s["PRINT_MPI_XS"].Get<bool>();
     m_evt_output = s["EVT_OUTPUT"].Get<int>();
     m_evt_output_start = s["EVT_OUTPUT_START"].Get<int>();
 
@@ -147,7 +147,7 @@ void Sherpa::RegisterDefaults()
   s["DEBUG_INTERVAL"].SetDefault(0);
   s["DEBUG_STEP"].SetDefault(-1);
   s["EVENT_DISPLAY_INTERVAL"].SetDefault(100);
-  s["PRINT_MPI_XS"].SetDefault(1);
+  s["PRINT_MPI_XS"].SetDefault(true);
   s["EVT_OUTPUT"].SetDefault(msg->Level());
   s["MSG_LIMIT"].SetDefault(20);
   msg->SetLimit(s["MSG_LIMIT"].Get<int>());
