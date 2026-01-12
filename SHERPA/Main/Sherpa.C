@@ -496,6 +496,7 @@ bool Sherpa::SummarizeRun()
 
     //epsilon_max scan manual definition
     std::vector<double> epsilon_values = rpa->gen.EpsilonValues();
+    std::vector<double> fraction_values = rpa->gen.EpsilonValues();
     std::map<std::string, std::vector<double>> alpha_manual_map = rpa->gen.AlphaManualMapAll();
     std::map<std::string, std::vector<double>> wmax_manual_map = rpa->gen.WmaxManualMapAll();
     std::map<std::string, std::vector<double>> efficiency_manual_map = rpa->gen.EfficiencyManualMapAll();
@@ -632,6 +633,72 @@ bool Sherpa::SummarizeRun()
       }
     }
 
+
+
+
+
+    //same as above, but for all fractions
+    //fraction scan manual definition
+    std::map<std::string, std::vector<std::vector<double>>> alpha_manual_fscan_map = rpa->gen.AlphaManualFScanMapAll();
+    std::map<std::string, std::vector<std::vector<double>>> efficiency_manual_fscan_map = rpa->gen.EfficiencyManualFScanMapAll();
+    std::vector<double> mean_manual_alpha_fscan(fraction_values.size(), -1);
+    std::vector<double> mean_manual_events_fscan(fraction_values.size(), -1);
+    std::vector<double> mean_manual_eff_events_fscan(fraction_values.size(), -1);
+    for(int fi=0; fi < fraction_values.size(); fi++){
+      double sum_alpha = 0;
+      double sum_t_trial = 0;
+      double sum_p_unw = 0;
+      double sum_p_eff = 0;
+      for (auto const& [key, val] : alpha_manual_fscan_map) {
+	std::string sub_name = key;
+	//msg_Info() << "  " << sub_name << std::endl;
+	double opt_alpha = -1;
+	double opt_t_trial = 0;
+	double opt_p_unw = 0;
+	double opt_p_eff = 0;
+	for(int i=0; i < epsilon_values.size(); i++){	
+	  //msg_Info() << "   " << i << std::endl;
+	  double curr_xsec = dabs(xsec_map[sub_name])/efficiency_manual_fscan_map[sub_name][fi][i]/alpha_manual_fscan_map[sub_name][fi][i];
+	  if (alpha_manual_fscan_map[sub_name][fi][i]==-1) {
+	    msg_Info() << "WARNING: for " << sub_name << " there is no alpha value for i=" << i << " corresponding to fraction=" << exp(log(10)*fraction_values[i]) << std::endl;
+	  }
+	  double tges  = (time_map["sum_total_"+sub_name])/number_map["n_total_"+sub_name]; //in s
+	  if (number_map["n_total_"+sub_name]==0) {
+	    tges = 0; //critical, because underestimate - need to make sure that enough events generated...unc estimate hard, because 0 is 0
+	  }
+	  double overhead_after = (time_map["sum_overhead_after_kept_"+sub_name]+time_map["sum_overhead_after_"+sub_name])/number_map["n_gen_"+sub_name];
+	  if (number_map["n_gen_"+sub_name]==0) {
+	    overhead_after = 0;
+	  }
+	  double this_alpha = alpha_manual_fscan_map[sub_name][fi][i]*efficiency_manual_fscan_map[sub_name][fi][i]*sudakov_efficiency[sub_name]*curr_xsec; //=sum_p_eff - everything consistent :)
+	  double this_t_trial = (tges+efficiency_manual_fscan_map[sub_name][fi][i]*(overhead_after+sudakov_efficiency[sub_name]*timing_statistics_det_sim))*curr_xsec;
+	  double this_p_unw = efficiency_manual_fscan_map[sub_name][fi][i]*sudakov_efficiency[sub_name]*curr_xsec;
+	  double this_p_eff = efficiency_manual_fscan_map[sub_name][fi][i]*sudakov_efficiency[sub_name]*alpha_manual_fscan_map[sub_name][fi][i]*curr_xsec;
+	  if (opt_alpha==-1 or opt_t_trial/opt_p_eff/(this_t_trial/this_p_eff)>1.0001 or (opt_t_trial/opt_p_eff/(this_t_trial/this_p_eff)>0.9999 and opt_alpha/opt_p_unw/(this_alpha/this_p_unw)<1)) {
+	    opt_alpha = this_alpha;
+	    opt_t_trial = this_t_trial;
+	    opt_p_unw = this_p_unw;
+	    opt_p_eff = this_p_eff;
+	  }
+	}
+	sum_t_trial += opt_t_trial;
+	sum_p_unw += opt_p_unw;
+	sum_p_eff += opt_p_eff;
+	sum_alpha += opt_alpha;
+      }
+      mean_manual_alpha_fscan[fi] = sum_alpha/sum_p_unw;
+      mean_manual_events_fscan[fi] = 60*60*24/(sum_t_trial/sum_p_unw);
+      mean_manual_eff_events_fscan[fi] = 60*60*24/(sum_t_trial/sum_p_eff);
+    }
+
+
+
+
+
+
+
+
+    
     //make nice final table IV (for chosen emax)
     if (timing_statistics>3) {
       std::map<std::string, double> chosen_alpha_map = rpa->gen.AlphaMap();
@@ -702,14 +769,25 @@ bool Sherpa::SummarizeRun()
       std::cout << "└─────────────┴─────────────────────────────────────────────┘" << std::endl;
     }
 
+    //make nice final table I.5
+    std::cout << "┌─────────────────────────────┬─────────────────────────────────┐" << std::endl;
+    std::cout << "│                             │      Corresponding region       │" << std::endl;
+    std::cout << "│ Fraction       Events/day   │ Eff. events/day     Sample size │" << std::endl;
+    std::cout << "├─────────────────────────────┼─────────────────────────────────┤" << std::endl;
+    const auto default_precision{std::cout.precision()};
+    std::cout << std::setprecision(4);
+    for(int i=0; i < fraction_values.size(); i++){
+      std::cout << "│ 1e" <<std::left<<std::setw(9)<< fraction_values[i] << "    " <<std::setw(12)<< mean_manual_events_fscan[i] << " │ ";
+      std::cout <<std::setw(15)<< mean_manual_eff_events_fscan[i] << "     " <<std::left<<std::setw(11) << 1./mean_manual_alpha_fscan[i] << " │ " << std::endl;
+    }
+    std::cout << "└─────────────────────────────┴─────────────────────────────────┘" << std::endl;
+    
     //make nice final table I
     std::cout << "┌─────────────────────────────┬─────────────────────────────────┬─────────────────────────────────┐" << std::endl;
     std::cout << "│                             │          Average region         │       Large weight region       │" << std::endl;
     std::cout << "│                             │           (fraction: 1)         │        (fraction: "<< timing_statistics_large_weight_fraction <<")        │" << std::endl;
     std::cout << "│ Max_Epsilon    events/day   │ eff. events/day     sample size │ eff. events/day     sample size │" << std::endl;
     std::cout << "├─────────────────────────────┼─────────────────────────────────┼─────────────────────────────────┤" << std::endl;
-    const auto default_precision{std::cout.precision()};
-    std::cout << std::setprecision(4);
     for(int i=0; i < epsilon_values.size(); i++){
       std::cout << "│ 1e" <<std::left<<std::setw(9)<< epsilon_values[i] << "    " <<std::setw(12)<< mean_manual_events[i] << " │ ";
       if (i==optimal_manual_i) {

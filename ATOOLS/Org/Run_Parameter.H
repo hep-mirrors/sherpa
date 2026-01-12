@@ -43,7 +43,9 @@ namespace ATOOLS {
       std::map<std::string, std::vector<double>> m_wmax_manual_map;
       std::map<std::string, std::vector<double>> m_alpha_manual_map;
       std::map<std::string, std::vector<double>> m_alpha_manual_fraction_map;
+      std::map<std::string, std::vector<std::vector<double>>> m_alpha_manual_fscan_map;
       std::map<std::string, std::vector<double>> m_efficiency_manual_map;
+      std::map<std::string, std::vector<std::vector<double>>> m_efficiency_manual_fscan_map;
       long int            m_seeds[4];
       double              m_ecms;
       double              m_accu, m_sqrtaccu;
@@ -76,7 +78,9 @@ namespace ATOOLS {
       inline std::map<std::string, std::vector<double>> WmaxManualMapAll()   { return m_wmax_manual_map; }
       inline std::map<std::string, std::vector<double>> AlphaManualMapAll()   { return m_alpha_manual_map; }
       inline std::map<std::string, std::vector<double>> AlphaManualFractionMapAll()   { return m_alpha_manual_fraction_map; }
+      inline std::map<std::string, std::vector<std::vector<double>>> AlphaManualFScanMapAll()   { return m_alpha_manual_fscan_map; }
       inline std::map<std::string, std::vector<double>> EfficiencyManualMapAll()   { return m_efficiency_manual_map; }
+      inline std::map<std::string, std::vector<std::vector<double>>> EfficiencyManualFScanMapAll()   { return m_efficiency_manual_fscan_map; }
       inline std::vector<double> EpsilonValues()   { return epsilon_max_values; }
       inline std::map<std::string, double> XsecMap()   { return m_xsec_map; }
       inline std::map<std::string, int> FillsMap()   { return m_fills_map; }
@@ -114,7 +118,9 @@ namespace ATOOLS {
       inline void   SetWmaxManualMap(std::string name, const std::vector<double> vec) { m_wmax_manual_map[name]=vec; }
       inline void   SetAlphaManualMap(std::string name, const std::vector<double> vec) { m_alpha_manual_map[name]=vec; }
       inline void   SetAlphaManualFractionMap(std::string name, const std::vector<double> vec) { m_alpha_manual_fraction_map[name]=vec; }
+      inline void   SetAlphaManualFScanMap(std::string name, const std::vector<std::vector<double>> vec) { m_alpha_manual_fscan_map[name]=vec; }
       inline void   SetEfficiencyManualMap(std::string name, const std::vector<double> vec) { m_efficiency_manual_map[name]=vec; }
+      inline void   SetEfficiencyManualFScanMap(std::string name, const std::vector<std::vector<double>> vec) { m_efficiency_manual_fscan_map[name]=vec; }
       inline void   SetXsecMap(std::string name, const double xsec) { m_xsec_map[name]=xsec; }
       inline void   SetFillsMap(std::string name, const int fills) { m_fills_map[name]=fills; }
       inline void   SetIsGen(bool isgen) { m_isgen=isgen; }

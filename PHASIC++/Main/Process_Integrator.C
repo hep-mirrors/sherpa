@@ -547,6 +547,84 @@ double Process_Integrator::GetMaxEps(double epsilon)
     rpa->gen.SetAlphaManualFractionMap(p_proc->ResultsName(), alpha_manual_fraction_list);
     rpa->gen.SetWmaxManualMap(p_proc->ResultsName(), wmax_manual_list);
 
+    //extra loop for fraction scan
+    std::vector<double> fraction_values = rpa->gen.EpsilonValues();
+    vector<vector<double>> alpha_manual_fscan_list(fraction_values.size(), vector<double>(epsilon_max_values.size(),-1));
+    vector<vector<double>> efficiency_manual_fscan_list(fraction_values.size(), vector<double>(epsilon_max_values.size(),-1));
+    for (int fi=0;fi<fraction_values.size();fi++) {
+      double target_fraction = exp(log(10.)*fraction_values[fi]);
+      double whisto_sum2_fraction = 0;
+      double whisto_sum_fraction = 0;
+      double whisto_sum_abs_fraction = 0;
+      int whisto_fills_fraction = 0;
+      double fraction_pxs = (1-target_fraction)*whisto_abs_sum;
+      for (int i=first_filled_bin-1;i<last_filled_bin+1;i++) {
+        if (p_whisto->Value(i)!=0) {
+          double w = exp(log(10.)*(p_whisto->Xmin()+(i-0.5)*p_whisto->BinSize()));
+	  if (exp(log(10.)*(p_whisto->Xmin()+i*p_whisto->BinSize())) > m_max) w = m_max;
+          //it is rounded up the target_fraction -> for fraction of 0 largest weight is picked
+          if ((whisto_sum_abs_fraction+(p_whisto_pos->Value(i)+p_whisto_neg->Value(i))*w)>fraction_pxs) break;
+          whisto_sum_abs_fraction += p_whisto->Value(i)*w;
+          whisto_sum_fraction += p_whisto_pos->Value(i)*w;
+          whisto_sum_fraction -= p_whisto_neg->Value(i)*w;
+          whisto_sum2_fraction += p_whisto->Value(i)*w*w;
+          whisto_fills_fraction += p_whisto->Value(i);
+        }
+      }
+      
+      double this_cutxs_abs = 0.;
+      double this_cutxs = 0.;
+      double this_cutxs2 = 0.;
+      double this_cnt = 0.;
+      int curr_epsilon_max_manual_index = epsilon_max_values.size()-1;
+      double next_pxs_manual = whisto_abs_sum*(1-exp(log(10.)*epsilon_max_values[curr_epsilon_max_manual_index]));
+      for (int i=first_filled_bin-1;i<last_filled_bin+1;i++) {
+        //bin middle times count is added
+        double w = exp(log(10.)*(p_whisto->Xmin()+(i-0.5)*p_whisto->BinSize()));
+        if (exp(log(10.)*(p_whisto->Xmin()+i*p_whisto->BinSize())) > m_max) w = m_max;
+        this_cutxs_abs+= p_whisto->Value(i) * w;
+        this_cutxs+= p_whisto_pos->Value(i) * w;
+        this_cutxs-= p_whisto_neg->Value(i) * w;
+        this_cutxs2+= p_whisto->Value(i) * pow(w,2);
+        this_cnt+= p_whisto->Value(i);
+	
+        while (this_cutxs_abs>=next_pxs_manual and (curr_epsilon_max_manual_index!=0 or last_filled_bin==i)) {
+          double fin_w_max = Min(exp(log(10.)*(p_whisto->Xmin()+i*p_whisto->BinSize())),dabs(m_max));
+          //double mean_overweight = (1*(whisto_fills-this_cnt)+this_cutxs/fin_w_max)/whisto_fills;
+          double mean_efficiency = (whisto_fills-this_cnt+this_cutxs_abs/fin_w_max)/whisto_fills;
+          msg_Debugging() << "Manual: " << epsilon_max_values[curr_epsilon_max_manual_index] << ": "<< mean_efficiency << std::endl;
+          msg_Debugging() << "Manual: " << "this_cnt: "<< this_cnt << "whisto_fills: "<< whisto_fills<< "whisto_sum-this_cutxs: "<< whisto_sum-this_cutxs << "(whisto_sum-this_cutxs)/fin_w_max: "<< (whisto_sum-this_cutxs)/fin_w_max << std::endl;
+          //according to equation (39) in arXiv:2506.06203v2
+          double alpha = pow(whisto_sum/fin_w_max,2)/(((this_cutxs_abs+(whisto_sum2-this_cutxs2)/fin_w_max)/fin_w_max)*mean_efficiency*whisto_fills);
+          double mean_efficiency_fraction = (whisto_fills-this_cnt+(this_cutxs_abs-whisto_sum_abs_fraction)/fin_w_max)/(whisto_fills-whisto_fills_fraction);
+          if (this_cutxs_abs<whisto_sum_abs_fraction) {//when over fraction, then efficiency is 1
+            mean_efficiency_fraction = 1;
+          }
+          double beta_raw_absolute_fraction = (whisto_abs_sum/whisto_fills/mean_efficiency)/((whisto_abs_sum-whisto_sum_abs_fraction)/(whisto_fills-whisto_fills_fraction)/mean_efficiency_fraction); //is "beta absolute raw"
+          double beta_fraction = (whisto_sum*whisto_sum/whisto_fills*(whisto_abs_sum-whisto_sum_abs_fraction)/mean_efficiency)/((whisto_sum-whisto_sum_fraction)*(whisto_sum-whisto_sum_fraction)/(whisto_fills-whisto_fills_fraction)*whisto_abs_sum/mean_efficiency_fraction); //is "beta"
+          double alpha_fraction = 0;
+          double alpha_times_beta_fraction = 0;//in one variable, because "whisto_sum-whisto_sum_fraction" can be 0, but cancels in product
+          double alpha_raw_absolute_fraction = 0;
+          if (this_cutxs_abs>whisto_sum_abs_fraction) {//alpha is const else, because wmax is smaller than lowest w of fraction -> wmax cancels -> const
+            alpha_fraction = pow((whisto_sum-whisto_sum_fraction)/fin_w_max,2)/(((-whisto_sum_abs_fraction+this_cutxs_abs+(whisto_sum2-this_cutxs2)/fin_w_max)/fin_w_max)*mean_efficiency_fraction*(whisto_fills-whisto_fills_fraction));
+            alpha_raw_absolute_fraction = pow((whisto_abs_sum-whisto_sum_abs_fraction)/fin_w_max,2)/(((-whisto_sum_abs_fraction+this_cutxs_abs+(whisto_sum2-this_cutxs2)/fin_w_max)/fin_w_max)*mean_efficiency_fraction*(whisto_fills-whisto_fills_fraction));
+	    alpha_times_beta_fraction = (whisto_sum*whisto_sum/whisto_fills*(whisto_abs_sum-whisto_sum_abs_fraction)/mean_efficiency)/(whisto_abs_sum)*(1.0/fin_w_max)/(((-whisto_sum_abs_fraction+this_cutxs_abs+(whisto_sum2-this_cutxs2)/fin_w_max)));
+          } else {
+            alpha_fraction = pow(whisto_sum-whisto_sum_fraction,2)/((whisto_sum2-whisto_sum2_fraction)*(whisto_fills-whisto_fills_fraction));
+            alpha_raw_absolute_fraction = pow(whisto_abs_sum-whisto_sum_abs_fraction,2)/((whisto_sum2-whisto_sum2_fraction)*(whisto_fills-whisto_fills_fraction));
+	    alpha_times_beta_fraction = (whisto_sum*whisto_sum/whisto_fills*(whisto_abs_sum-whisto_sum_abs_fraction)/mean_efficiency)/(whisto_abs_sum/mean_efficiency_fraction)*1.0/((whisto_sum2-whisto_sum2_fraction));
+          }
+	  alpha_manual_fscan_list[fi][curr_epsilon_max_manual_index] = alpha_times_beta_fraction;
+	  //efficiency_manual_fscan_list[fi][curr_epsilon_max_manual_index] = mean_efficiency_fraction*whisto_fills/p_whisto->Fills();
+	  efficiency_manual_fscan_list[fi][curr_epsilon_max_manual_index] = mean_efficiency*whisto_fills/p_whisto->Fills();
+	  if (curr_epsilon_max_manual_index==0) break;
+	  curr_epsilon_max_manual_index -= 1;
+	  next_pxs_manual = whisto_abs_sum*(1-exp(log(10.)*epsilon_max_values[curr_epsilon_max_manual_index]));
+	}
+      }
+    }
+    rpa->gen.SetEfficiencyManualFScanMap(p_proc->ResultsName(), efficiency_manual_fscan_list);
+    rpa->gen.SetAlphaManualFScanMap(p_proc->ResultsName(), alpha_manual_fscan_list);
     cutxs_abs = 0.;
     cutxs = 0.;
     cutxs2 = 0.;
