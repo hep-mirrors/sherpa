@@ -3,15 +3,16 @@
 namespace UFO {
     Variation_Generator::Variation_Generator(const Args& args){
         p_proc = dynamic_cast<PHASIC::Single_Process*> (args.p_proc);
-        if (!p_proc) THROW(fatal_error, "No Single Process was given for Variation.");
+        if (!p_proc) THROW(fatal_error, "No Single Process was given for parameter Variation.");
         if (!MODEL::s_model->InitVariations()) THROW(fatal_error, "The model does not seem to implement Variations of external parameters :(");
         p_vars = MODEL::s_model->GetParameterVariations();
+        if (!p_vars) THROW(fatal_error, "Something went wrong when getting the parameter Variations.")
         // TODO maybe remove
-        for (auto v : *MODEL::s_model->Vertices_Pointer()) {
+        /*for (auto v : *MODEL::s_model->Vertices_Pointer()) {
             for (auto k : *v.Couplings()){
                 k.TestFunctionality(MODEL::s_model->Constants());
             }
-        }
+        }*/
     }
 
     /*
