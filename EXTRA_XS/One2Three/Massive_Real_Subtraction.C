@@ -21,8 +21,18 @@ Massive_Real_Subtraction::Massive_Real_Subtraction(const vector<Flavour>& flavs,
 {
   scale = flavs[0].Mass(); // scale = mass of incoming particle
   CalculateAlphaQCD(scale);
-  SetUpBornCurrents(flavs);
-  SetUpBornPrefactor(flavs);
+
+  std::vector<Flavour> sub_flavs;  // the subtraction term has different flavours (remove the gluon)
+  for (size_t i = 0; i < flavs.size(); ++i) {
+    if(flavs[i].IDName() == "G"){
+      continue;
+    }
+    else{
+      sub_flavs.push_back(flavs[i]);
+    }
+  } 
+  SetUpBornCurrents(sub_flavs);
+  SetUpBornPrefactor(sub_flavs);
 }
 
 
