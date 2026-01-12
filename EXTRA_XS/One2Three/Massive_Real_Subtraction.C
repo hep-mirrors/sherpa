@@ -212,22 +212,8 @@ double Massive_Real_Subtraction::V_ijk(ATOOLS::Vec4<double> p_i, ATOOLS::Vec4<do
 
 
 void Massive_Real_Subtraction::Calculate_real_subtraction(const ATOOLS::Vec4D_Vector& momenta, bool anti){
-  // implementation based on the formulas in the Catani Dittmaier Seymour Trocsanyi paper from 2002
-
-  // first: some variables needed later (nomination also based on paper)
-  ATOOLS::Vec4<double> p_g = momenta[1];
-  ATOOLS::Vec4<double> p_b = momenta[2];
-  ATOOLS::Vec4<double> p_bb = momenta[3];
-
-  double V_gb_bb = V_ijk(p_g, p_b, p_bb, m_prop);
-  double V_gbb_b = V_ijk(p_g, p_bb, p_b, m_prop);
-
-  double m2_ij = p_b * p_b; // because m_i = 0 (gluon) and m_b = m_bb
-
-  double D_gb_bb = V_gb_bb/ ((p_g + p_b)*(p_g + p_b) - m2_ij) * ME2_Born;
-  double D_gbb_b = V_gbb_b/ ((p_g + p_bb)*(p_g + p_bb) - m2_ij) * ME2_Born;
-
-  subtraction_term = D_gb_bb + D_gbb_b;
+  msg_Error()<<METHOD<<": Virtual function called."<<endl;
+  Abort();
 }
 
 
