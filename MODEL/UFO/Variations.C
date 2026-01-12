@@ -10,6 +10,7 @@ namespace UFO {
     Variations::Variations(){
         // Deal with UFO Param Variations
         // get settings and read them to map
+        msg_Out() << "Reading the paramter variations..." << std::endl;
         ATOOLS::Settings& s = ATOOLS::Settings::GetMainSettings();
         std::vector<ATOOLS::Scoped_Settings> items = s["UFO_VARIATIONS"].GetItems();
         m_variations = std::map<std::string, std::vector<double_t>>();
