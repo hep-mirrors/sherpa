@@ -283,6 +283,7 @@ Kabbala complexconjugate(const Kabbala& k1){
   return k;
 }
 
+// TODO add this function which for some reason gets linked improperly
 /*Kabbala abs(const Kabbala& k1) {
   Kabbala k(k1);
   k.SetValue(std::abs(k.Value()));
@@ -291,12 +292,4 @@ Kabbala complexconjugate(const Kabbala& k1){
   k.SetLambda([copy](Kabbala::Function_Argument m){return std::abs(copy(m));});
   return k;
 }*/
-
-//TODO remove
-void Kabbala::TestFunctionality(Kabbala::Function_Argument map){
-  // trust that the map contains nominal params 
-  Complex val(rishbon);
-  Update(map);
-  if (rishbon != val) msg_Out() << "doesn't work :(((((, value of " << shem << " was " << val << " got updated to " << rishbon << std::endl;
-}
 }
