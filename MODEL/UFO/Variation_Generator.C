@@ -7,12 +7,6 @@ namespace UFO {
         if (!MODEL::s_model->InitVariations()) THROW(fatal_error, "The model does not seem to implement Variations of external parameters :(");
         p_vars = MODEL::s_model->GetParameterVariations();
         if (!p_vars) THROW(fatal_error, "Something went wrong when getting the parameter Variations.");
-        // TODO maybe remove
-        /*for (auto v : *MODEL::s_model->Vertices_Pointer()) {
-            for (auto k : *v.Couplings()){
-                k.TestFunctionality(MODEL::s_model->Constants());
-            }
-        }*/
     }
 
     /*

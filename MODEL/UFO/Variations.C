@@ -10,7 +10,7 @@ namespace UFO {
     Variations::Variations(){
         // Deal with UFO Param Variations
         // get settings and read them to map
-        msg_Out() << "Reading the paramter variations..." << std::endl;
+        msg_Out() << std::endl << "Reading the parameter variations..." << std::endl;
         ATOOLS::Settings& s = ATOOLS::Settings::GetMainSettings();
         std::vector<ATOOLS::Scoped_Settings> items = s["UFO_VARIATIONS"].GetItems();
         m_variations = std::map<std::string, std::vector<double_t>>();
@@ -86,7 +86,7 @@ namespace UFO {
         for (std::string var_name : variables){
             // empty set init
             dependent_vertices.insert(std::make_pair(var_name, new std::set<MODEL::Single_Vertex*>()));
-            // go through vertices TODO is this passed by reference???
+            // go through vertices
             std::vector<MODEL::Single_Vertex>* p_vertices = MODEL::s_model->Vertices_Pointer();
             for (std::vector<MODEL::Single_Vertex>::iterator it_v = p_vertices->begin(); it_v != p_vertices->end(); ++it_v) {
                 MODEL::Single_Vertex* v = it_v.base(); 
