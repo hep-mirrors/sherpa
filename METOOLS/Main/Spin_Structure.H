@@ -181,6 +181,7 @@ namespace METOOLS
     virtual bool IsNLODecay();
     virtual double get_NLO_ME2();
     virtual std::string getType();
+    virtual double getColourFactor(const PHASIC::Color_Integrator* p_ci);
     virtual void setBornAmplitude(Spin_Amplitudes* born);
     virtual void setBornAmplitude(std::map<std::string, std::complex<double>> born);
     virtual std::map<std::string, std::complex<double>> getBornAmplitude();

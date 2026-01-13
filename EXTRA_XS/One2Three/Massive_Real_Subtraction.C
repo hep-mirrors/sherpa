@@ -125,6 +125,17 @@ void Massive_Real_Subtraction::Calculate(const ATOOLS::Vec4D_Vector& momenta, bo
 }
 
 
+double Massive_Real_Subtraction::getColourFactor(const PHASIC::Color_Integrator* p_ci){
+  // New path: accept Color_Integrator pointer; keep current behaviour (unity)
+  // If needed later, this can use p_ci->I(), p_ci->J(), or p_ci->GlobalWeight()
+  if (p_ci == nullptr) {
+    msg_Error()<<METHOD<<": Null Color_Integrator pointer."<<endl;
+    Abort();
+  }
+  return 1.0;
+}
+
+
 // in the following there are some helper functions defined for the real subtraction
 static double v_pq(ATOOLS::Vec4<double> p, ATOOLS::Vec4<double> q){
   double pq = p * q;

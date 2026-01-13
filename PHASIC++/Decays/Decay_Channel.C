@@ -385,7 +385,7 @@ double Decay_Channel::ME2_NLO(const ATOOLS::Vec4D_Vector& momenta, bool anti,
   // This class calculates either the ME2 for B + V + I or for R - S
   const PHASIC::Color_Integrator* real_p_ci = nullptr;
   double real_colourweight = 0;
-  for(size_t i(0); i<GetDiagrams().size(); ++i) {
+  for(size_t i(0); i<GetDiagrams().size(); ++i) { // extract colour point from R and set it for 2. R Diagram
     GetDiagrams()[i]->Calculate(momenta, anti);
     if (GetDiagrams()[i] -> getType() == "R"){
       if (real_p_ci == nullptr) {
@@ -400,9 +400,15 @@ double Decay_Channel::ME2_NLO(const ATOOLS::Vec4D_Vector& momenta, bool anti,
   }
   
   double NLO_part = 0;
+  double Scolourfactor(1.0);
   for(size_t i(0); i<GetDiagrams().size(); ++i) {
     if(GetDiagrams()[i]->getType() == "LO" || GetDiagrams()[i]->getType() == "R") continue;
-    NLO_part += GetDiagrams()[i]->get_NLO_ME2(); // either V, I or S
+    else if(GetDiagrams()[i]->getType() == "S") {
+      Scolourfactor = GetDiagrams()[i]->getColourFactor(real_p_ci);
+      NLO_part += GetDiagrams()[i]->get_NLO_ME2() * Scolourfactor;
+    } else {
+      NLO_part += GetDiagrams()[i]->get_NLO_ME2(); // either V or I
+    }
   }
 
   Complex sumijlambda_AiAj(0.0,0.0);
@@ -461,7 +467,7 @@ double Decay_Channel::ME2_NLO(const ATOOLS::Vec4D_Vector& momenta, bool anti,
         std::cout << "Warning: Decay_Channel::ME2_NLO gets a negative NLO ME2 value.  " << std::endl;
       }
       if(isRealChannel){
-        sumijlambda_AiAj += nlo_part * real_colourweight/8.0;
+        sumijlambda_AiAj += nlo_part * real_colourweight/8.0 * Scolourfactor;
       } else sumijlambda_AiAj += nlo_part;
     }
 

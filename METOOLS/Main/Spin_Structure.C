@@ -115,3 +115,11 @@ ATOOLS::Vec4D_Vector Spin_Amplitudes::GetMappedMomenta() {
 }
 
 
+double Spin_Amplitudes::getColourFactor(const PHASIC::Color_Integrator* p_ci){
+  // Default implementation bridges to the legacy signature using I/J
+  msg_Error()<<METHOD<<": Virtual function called."<<endl;
+  Abort();
+  return 1.0;
+}
+
+

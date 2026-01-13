@@ -49,6 +49,8 @@ namespace EXTRAXS {
     std::string getType();
     ATOOLS::Flavour Prop() const { return m_prop; }
     ATOOLS::Vec4D_Vector GetMappedMomenta() override { return born_momenta; }
+    double getColourFactor(const PHASIC::Color_Integrator* p_ci) override;
+
   
   protected:
     double ME2_Born;
