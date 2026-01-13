@@ -422,6 +422,7 @@ double Decay_Channel::ME2_NLO(const ATOOLS::Vec4D_Vector& momenta, bool anti,
     }
 
     p_amps = new Amplitude2_Tensor(p,0,leading_diagrams,spin_i, spin_j);
+    bool isRealChannel(false);
 
     std::vector<METOOLS::Amplitude2_Tensor*> NLO_tensor_list;  // build the Amplitude2_Tensor for S resp. I
     for (size_t i = 0; i < GetDiagrams().size(); ++i) {
@@ -431,6 +432,7 @@ double Decay_Channel::ME2_NLO(const ATOOLS::Vec4D_Vector& momenta, bool anti,
         std::vector<METOOLS::Spin_Amplitudes*> single_diag_list{ diag }; // to create Amplitude2_Tensor, the diagram needs to be in a list. S, I and V are seperate Amplitude2_Tensor objects.
         METOOLS::Amplitude2_Tensor* NLO_tensor = new Amplitude2_Tensor(p, 0, single_diag_list, spin_i, spin_j);
         NLO_tensor_list.push_back(NLO_tensor);
+        isRealChannel = true;
       }
       if (type == "I") {
         diag -> setBornAmplitude(leading_diagrams[0]);   // The amplitude has to be re-calculated with the correct Born amplitude
@@ -458,7 +460,9 @@ double Decay_Channel::ME2_NLO(const ATOOLS::Vec4D_Vector& momenta, bool anti,
         nlo_part.real(-nlo_part.real());
         std::cout << "Warning: Decay_Channel::ME2_NLO gets a negative NLO ME2 value.  " << std::endl;
       }
-      sumijlambda_AiAj += nlo_part;
+      if(isRealChannel){
+        sumijlambda_AiAj += nlo_part * real_colourweight/8.0;
+      } else sumijlambda_AiAj += nlo_part;
     }
 
     for (size_t i = 0; i < NLO_tensor_list.size(); ++i) {
