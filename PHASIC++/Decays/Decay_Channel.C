@@ -384,13 +384,11 @@ double Decay_Channel::ME2_NLO(const ATOOLS::Vec4D_Vector& momenta, bool anti,
 {
   // This class calculates either the ME2 for B + V + I or for R - S
   const PHASIC::Color_Integrator* real_p_ci = nullptr;
-  double real_colourweight = 0;
   for(size_t i(0); i<GetDiagrams().size(); ++i) { // extract colour point from R and set it for 2. R Diagram
     GetDiagrams()[i]->Calculate(momenta, anti);
     if (GetDiagrams()[i] -> getType() == "R"){
       if (real_p_ci == nullptr) {
         real_p_ci =  GetDiagrams()[i] -> GetColors();
-        real_colourweight = GetDiagrams()[i] -> GetColourWeight();
       }
       else {
         GetDiagrams()[i] -> SetColors(real_p_ci->I(), real_p_ci->J());
@@ -467,7 +465,7 @@ double Decay_Channel::ME2_NLO(const ATOOLS::Vec4D_Vector& momenta, bool anti,
         std::cout << "Warning: Decay_Channel::ME2_NLO gets a negative NLO ME2 value.  " << std::endl;
       }
       if(isRealChannel){
-        sumijlambda_AiAj += nlo_part * real_colourweight/8.0 * Scolourfactor;
+        sumijlambda_AiAj += nlo_part * 1.0/8.0 * Scolourfactor;
       } else sumijlambda_AiAj += nlo_part;
     }
 
@@ -503,7 +501,7 @@ double Decay_Channel::ME2_NLO(const ATOOLS::Vec4D_Vector& momenta, bool anti,
     PRINT_VAR(sumijlambda_AiAj);
   }
   if(GetDiagrams()[1]->getType() == "S"){
-    NLO_part *= real_colourweight/8.0;
+    NLO_part *= 1.0/8.0;
   }
   double value=sumijlambda_AiAj.real();
   if(!sigma){  // if sigma: NLO_Part was already added above, does not need to be added again

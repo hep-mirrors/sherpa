@@ -126,13 +126,29 @@ void Massive_Real_Subtraction::Calculate(const ATOOLS::Vec4D_Vector& momenta, bo
 
 
 double Massive_Real_Subtraction::getColourFactor(const PHASIC::Color_Integrator* p_ci){
-  // New path: accept Color_Integrator pointer; keep current behaviour (unity)
-  // If needed later, this can use p_ci->I(), p_ci->J(), or p_ci->GlobalWeight()
+  // calculates and returns the colour factor, depending on the colour configuration. 
+  // This colour factor is valid for squared amplitudes and for the case that a gluon is splitting from a quark in the real correction.
   if (p_ci == nullptr) {
     msg_Error()<<METHOD<<": Null Color_Integrator pointer."<<endl;
     Abort();
   }
-  return 1.0;
+  double globalweight = p_ci -> GlobalWeight();
+
+  // calculate colour configuration dependent value (switching from colour trace base into colourflow base)
+  // for further information, see Recola Manual
+  Int_Vector I = p_ci -> I();
+  Int_Vector J = p_ci -> J();
+
+  double K(1.0); // conversion factor K
+  if (I[1] != J[1]){ // pure octet configuration (gluon colour and anticolour are different)
+    K = 1.0;
+  } else if (I[1] != I[2]){  // pure singlet configuration (gluon colour does not equal quark colour)
+    K = 1.0/9.0;
+  } else {           // mix configuration (all non-zero colours/ anticolours are the same)
+    K = 4.0/9.0;
+  }
+
+  return K * globalweight;
 }
 
 

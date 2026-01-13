@@ -1,6 +1,7 @@
 #pragma once
 #include "METOOLS/Main/Spin_Structure.H"
 #include "METOOLS/SpinCorrelations/Amplitude2_Tensor.H"
+typedef std::vector<int>    Int_Vector;
 
 namespace METOOLS {
   class Current;
