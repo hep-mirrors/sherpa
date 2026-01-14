@@ -425,7 +425,18 @@ double Decay_Channel::ME2_NLO(const ATOOLS::Vec4D_Vector& momenta, bool anti,
       }
     }
 
-    p_amps = new Amplitude2_Tensor(p,0,leading_diagrams,spin_i, spin_j);
+    std::vector<METOOLS::Amplitude2_Tensor*> leading_tensor_list;
+    for (size_t i = 0; i < leading_diagrams.size(); ++i){
+      std::vector<METOOLS::Spin_Amplitudes*> single_diag_list;
+      single_diag_list.push_back(leading_diagrams[i]);
+      METOOLS::Amplitude2_Tensor* leading_tensor = new Amplitude2_Tensor(p,0,single_diag_list,spin_i, spin_j);
+      leading_tensor_list.push_back(leading_tensor);
+    }
+
+    p_amps = leading_tensor_list[0];
+    for (size_t i = 1; i < leading_tensor_list.size(); ++i) {
+      p_amps->Add(leading_tensor_list[i], Complex(1.0, 0.0));
+    }
     bool isRealChannel(false);
 
     std::vector<METOOLS::Amplitude2_Tensor*> NLO_tensor_list;  // build the Amplitude2_Tensor for S resp. I
@@ -455,11 +466,13 @@ double Decay_Channel::ME2_NLO(const ATOOLS::Vec4D_Vector& momenta, bool anti,
         NLO_tensor_list.push_back(NLO_tensor);
       }
     }
-
-    DEBUG_VAR(*p_amps);
-    sumijlambda_AiAj=(*sigma)*p_amps->ReduceToMatrix(sigma->Particle());
+    
+    for (size_t i = 0; i < leading_tensor_list.size(); ++i){
+      sumijlambda_AiAj=(*sigma)*leading_tensor_list[i]->ReduceToMatrix(sigma->Particle());
+    }
 
     for (size_t i = 0; i < NLO_tensor_list.size(); ++i) {    // reduce NLO Amplitude2_Tensor
+      p_amps->Add(NLO_tensor_list[i], Complex(1.0, 0.0));
       Complex nlo_part = (*sigma)*NLO_tensor_list[i]->ReduceToMatrix(sigma->Particle());
       if (nlo_part.real() < 0.0){
         nlo_part.real(-nlo_part.real());
@@ -474,6 +487,7 @@ double Decay_Channel::ME2_NLO(const ATOOLS::Vec4D_Vector& momenta, bool anti,
       delete NLO_tensor_list[i];
     }
     NLO_tensor_list.clear();
+    DEBUG_VAR(*p_amps);
   }
   else {
     // Calculates either the Born ME2 or the Real diagrams. Skip V, I, S here (all elements of B, V, I, R, S have to be calculated seperately).
