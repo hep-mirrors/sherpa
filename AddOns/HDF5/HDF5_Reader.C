@@ -337,8 +337,6 @@ namespace LHEH5 {
     {
       m_ievt=0;
       int size(mpi->MySize()), rank(mpi->MyRank());
-      MPI_Info info;
-      MPI_Info_create(&info);
       FileAccessProps fapl;
       fapl.add(MPIOFileAccess{MPI_COMM_WORLD,m_info});
       fapl.add(MPIOCollectiveMetadata{});
