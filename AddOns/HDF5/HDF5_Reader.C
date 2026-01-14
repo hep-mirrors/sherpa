@@ -1,7 +1,5 @@
 #include "ATOOLS/Org/CXXFLAGS_PACKAGES.H"
 #include "ATOOLS/Org/CXXFLAGS.H"
-#include "ATOOLS/Org/My_MPI.H"
-#ifdef USING__MPI
 
 #include <mpi.h>
 #include <iostream>
@@ -160,7 +158,9 @@ namespace LHEH5 {
     void ReadHeader(File &file)
     {
       auto xfer_props = DataTransferProps{};
+#if MPI_FOUND && H5_HAVE_PARALLEL
       xfer_props.add(UseCollectiveIO{});
+#endif
       file.getDataSet("version").read(version,xfer_props);
       file.getDataSet("procInfo").read(pinfo,xfer_props);
       DataSet events(file.getDataSet("events"));
@@ -172,7 +172,9 @@ namespace LHEH5 {
     void ReadEvents(File &file,size_t first_event,size_t n_events)
     {
       auto xfer_props = DataTransferProps{};
+#if MPI_FOUND && H5_HAVE_PARALLEL
       xfer_props.add(UseCollectiveIO{});
+#endif
       DataSet events(file.getDataSet("events"));
       std::vector<size_t> eoffsets{first_event,0};
       std::vector<size_t> ecounts{n_events,9+wgtnames.size()};
@@ -337,10 +339,14 @@ namespace LHEH5 {
     {
       m_ievt=0;
       int size(mpi->MySize()), rank(mpi->MyRank());
+#if MPI_FOUND && H5_HAVE_PARALLEL
       FileAccessProps fapl;
       fapl.add(MPIOFileAccess{MPI_COMM_WORLD,m_info});
       fapl.add(MPIOCollectiveMetadata{});
       File file(fname,File::ReadOnly,fapl);
+#else
+      File file(fname,File::ReadOnly);
+#endif
       LHEFile *e(new LHEFile());
       e->ReadHeader(file);
       m_totalxs=e->TotalXS();
@@ -422,5 +428,3 @@ PrintInfo(std::ostream &str,const size_t width) const
 {
   str<<"HDF5 reader (version 2)";
 }
-
-#endif
