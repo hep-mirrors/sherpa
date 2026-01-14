@@ -39,8 +39,13 @@ void Massive_Real_Subtraction_Term2::Calculate_real_subtraction(const ATOOLS::Ve
   (*this)[7] = born_hel["11"];
   // all values are taken 2 times, because the spin_Amplitude of S needs to have the same size as R. R has additional gluon degrees of freedom, therefore,
   // these additional degrees of freedom are needed here as well. Divide all entries by 2 in order to correct the double counting.
+  if(prefactor < 0.0){
+    sign = -1.0;
+    prefactor *= -1.0;
+  } else sign = 1.0;
+  double factor(0.5 * std::sqrt(prefactor * 3));
 
   for (size_t i = 0; i < this->size(); ++i) {
-    (*this)[i] *= 0.5 * std::sqrt(prefactor * 3);   // * 3 for born colour factor * 0.5 (0.5 to correct double counting)
+    (*this)[i] *= factor;   // * 3 for born colour factor * 0.5 (0.5 to correct double counting)
   }
 }

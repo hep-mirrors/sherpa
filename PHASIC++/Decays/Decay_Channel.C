@@ -433,8 +433,9 @@ double Decay_Channel::ME2_NLO(const ATOOLS::Vec4D_Vector& momenta, bool anti,
       METOOLS::Spin_Amplitudes* diag = GetDiagrams()[i];
       const std::string& type = diag->getType();
       if (type == "S") {
+        double sign; // is either 1 or -1
         std::vector<METOOLS::Spin_Amplitudes*> single_diag_list{ diag }; // to create Amplitude2_Tensor, the diagram needs to be in a list. S, I and V are seperate Amplitude2_Tensor objects.
-        METOOLS::Amplitude2_Tensor* NLO_tensor = new Amplitude2_Tensor(p, 0, single_diag_list, spin_i, spin_j);
+        METOOLS::Amplitude2_Tensor* NLO_tensor = new Amplitude2_Tensor(p, 0, single_diag_list, single_diag_list, spin_i, spin_j, sign);
         NLO_tensor_list.push_back(NLO_tensor);
         isRealChannel = true;
       }
@@ -467,13 +468,12 @@ double Decay_Channel::ME2_NLO(const ATOOLS::Vec4D_Vector& momenta, bool anti,
       if(isRealChannel){
         sumijlambda_AiAj += nlo_part * 1.0/8.0 * Scolourfactor;
       } else sumijlambda_AiAj += nlo_part;
-    }
+  }
 
     for (size_t i = 0; i < NLO_tensor_list.size(); ++i) {
       delete NLO_tensor_list[i];
     }
     NLO_tensor_list.clear();
-
   }
   else {
     // Calculates either the Born ME2 or the Real diagrams. Skip V, I, S here (all elements of B, V, I, R, S have to be calculated seperately).

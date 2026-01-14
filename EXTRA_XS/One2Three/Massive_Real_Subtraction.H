@@ -51,13 +51,14 @@ namespace EXTRAXS {
     ATOOLS::Flavour Prop() const { return m_prop; }
     ATOOLS::Vec4D_Vector GetMappedMomenta() override { return born_momenta; }
     double getColourFactor(const PHASIC::Color_Integrator* p_ci) override;
-
+    double getSign() override;
   
   protected:
     double ME2_Born;
     std::map<std::string, std::complex<double>> born_hel;
     ATOOLS::Flavour m_prop;
     double subtraction_term;
+    double sign;
 
     static double V_ijk(ATOOLS::Vec4<double> p_i, ATOOLS::Vec4<double> p_j,
                     ATOOLS::Vec4<double> p_k, const ATOOLS::Flavour& prop);

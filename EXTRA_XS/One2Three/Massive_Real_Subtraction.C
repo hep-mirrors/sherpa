@@ -412,3 +412,9 @@ std::pair<std::vector<std::pair<METOOLS::CSpinor<double>*, int>>,
 std::string Massive_Real_Subtraction::getType(){
   return "S";
 }
+
+
+double Massive_Real_Subtraction::getSign(){
+  if(sign) return sign;
+  return 1.0;
+}
