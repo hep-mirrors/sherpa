@@ -403,7 +403,7 @@ double Decay_Channel::ME2_NLO(const ATOOLS::Vec4D_Vector& momenta, bool anti,
     if(GetDiagrams()[i]->getType() == "LO" || GetDiagrams()[i]->getType() == "R") continue;
     else if(GetDiagrams()[i]->getType() == "S") {
       Scolourfactor = GetDiagrams()[i]->getColourFactor(real_p_ci);
-      NLO_part += GetDiagrams()[i]->get_NLO_ME2() * Scolourfactor;
+      NLO_part += GetDiagrams()[i]->get_NLO_ME2() * Scolourfactor * 1.0/8.0; 
     } else {
       NLO_part += GetDiagrams()[i]->get_NLO_ME2(); // either V or I
     }
@@ -499,9 +499,6 @@ double Decay_Channel::ME2_NLO(const ATOOLS::Vec4D_Vector& momenta, bool anti,
   if (!IsZero(sumijlambda_AiAj.imag(),1.0e-6)) {
     PRINT_INFO("Sum-Squaring matrix element yielded imaginary part.");
     PRINT_VAR(sumijlambda_AiAj);
-  }
-  if(GetDiagrams()[1]->getType() == "S"){
-    NLO_part *= 1.0/8.0;
   }
   double value=sumijlambda_AiAj.real();
   if(!sigma){  // if sigma: NLO_Part was already added above, does not need to be added again
