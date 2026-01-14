@@ -413,7 +413,6 @@ double Decay_Channel::ME2_NLO(const ATOOLS::Vec4D_Vector& momenta, bool anti,
 
   if (sigma) {
     for (size_t i(0); i<m_diagrams.size(); ++i) DEBUG_VAR(*m_diagrams[i]);
-    if (p_amps) delete p_amps;
     vector<int> spin_i(p.size(), -1), spin_j(p.size(), -1);
 
     std::vector<METOOLS::Spin_Amplitudes*> leading_diagrams;  // start with building the Amplitude2_Tensor for B resp. R
@@ -425,7 +424,14 @@ double Decay_Channel::ME2_NLO(const ATOOLS::Vec4D_Vector& momenta, bool anti,
       }
     }
 
-    p_amps = new Amplitude2_Tensor(p,0,leading_diagrams,spin_i, spin_j);
+    std::vector<METOOLS::Amplitude2_Tensor*> leading_tensor_list;
+    for (size_t i = 0; i < leading_diagrams.size(); ++i){
+      std::vector<METOOLS::Spin_Amplitudes*> single_diag_list;
+      single_diag_list.push_back(leading_diagrams[i]);
+      METOOLS::Amplitude2_Tensor* leading_tensor = new Amplitude2_Tensor(p,0,single_diag_list,spin_i, spin_j);
+      leading_tensor_list.push_back(leading_tensor);
+    }
+
     bool isRealChannel(false);
 
     std::vector<METOOLS::Amplitude2_Tensor*> NLO_tensor_list;  // build the Amplitude2_Tensor for S resp. I
@@ -455,12 +461,13 @@ double Decay_Channel::ME2_NLO(const ATOOLS::Vec4D_Vector& momenta, bool anti,
         NLO_tensor_list.push_back(NLO_tensor);
       }
     }
+    for (size_t i = 0; i < leading_tensor_list.size(); ++i){
+      //sumijlambda_AiAj+=(*sigma)*leading_tensor_list[i]->ReduceToMatrix(sigma->Particle());
+    }
 
-    DEBUG_VAR(*p_amps);
-    sumijlambda_AiAj=(*sigma)*p_amps->ReduceToMatrix(sigma->Particle());
-
+    Complex nlo_part(0.0, 0.0);
     for (size_t i = 0; i < NLO_tensor_list.size(); ++i) {    // reduce NLO Amplitude2_Tensor
-      Complex nlo_part = (*sigma)*NLO_tensor_list[i]->ReduceToMatrix(sigma->Particle());
+      //nlo_part += (*sigma)*NLO_tensor_list[i]->ReduceToMatrix(sigma->Particle());
       if (nlo_part.real() < 0.0){
         nlo_part.real(-nlo_part.real());
         std::cout << "Warning: Decay_Channel::ME2_NLO gets a negative NLO ME2 value.  " << std::endl;
