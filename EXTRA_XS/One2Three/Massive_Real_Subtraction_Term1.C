@@ -15,9 +15,10 @@ void Massive_Real_Subtraction_Term1::Calculate_real_subtraction(const ATOOLS::Ve
   ATOOLS::Vec4<double> p_g = momenta[1];
   ATOOLS::Vec4<double> p_b = momenta[2];
   ATOOLS::Vec4<double> p_bb = momenta[3];
-  double m2_ij = p_b * p_b; // because m_i = 0 (gluon) and m_b = m_bb
 
   double V_gb_bb = V_ijk(p_g, p_b, p_bb, m_prop);
+
+  double m2_ij = p_b * p_b; // because m_i = 0 (gluon) and m_b = m_bb
 
   double prefactor = V_gb_bb/ ((p_g + p_b)*(p_g + p_b) - m2_ij);
   double D_gb_bb = prefactor * ME2_Born;

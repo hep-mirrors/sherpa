@@ -19,7 +19,7 @@ void Massive_Real_Subtraction_Term2::Calculate_real_subtraction(const ATOOLS::Ve
 
   double V_gbb_b = V_ijk(p_g, p_bb, p_b, m_prop);
 
-  double prefactor = V_gbb_b/ ((p_g + p_b)*(p_g + p_b) - m2_ij);
+  double prefactor = V_gbb_b/ ((p_g + p_bb)*(p_g + p_bb) - m2_ij);
   double D_gbb_b = prefactor * ME2_Born;
   
   subtraction_term = D_gbb_b;
