@@ -446,7 +446,7 @@ double Decay_Channel::ME2_NLO(const ATOOLS::Vec4D_Vector& momenta, bool anti,
       if (type == "S") {
         double sign; // is either 1 or -1
         std::vector<METOOLS::Spin_Amplitudes*> single_diag_list{ diag }; // to create Amplitude2_Tensor, the diagram needs to be in a list. S, I and V are seperate Amplitude2_Tensor objects.
-        METOOLS::Amplitude2_Tensor* NLO_tensor = new Amplitude2_Tensor(p, 0, single_diag_list, single_diag_list, spin_i, spin_j, sign);
+        METOOLS::Amplitude2_Tensor* NLO_tensor = new Amplitude2_Tensor(p, 0, single_diag_list, spin_i, spin_j);
         NLO_tensor_list.push_back(NLO_tensor);
         isRealChannel = true;
       }
@@ -462,13 +462,24 @@ double Decay_Channel::ME2_NLO(const ATOOLS::Vec4D_Vector& momenta, bool anti,
         leading_diagrams[0] -> setBornAmplitude(born_hel); // The amplitude has to be re-calculated with the correct Born amplitude
 
         std::vector<METOOLS::Spin_Amplitudes*> single_diag_list{ diag }; // to create Amplitude2_Tensor, the diagram needs to be in a list. S, I and V are seperate Amplitude2_Tensor objects.
-        METOOLS::Amplitude2_Tensor* NLO_tensor = new Amplitude2_Tensor(p, 0, single_diag_list, leading_diagrams, spin_i, spin_j, 1.0); ;
+        METOOLS::Amplitude2_Tensor* NLO_tensor = new Amplitude2_Tensor(p, 0, single_diag_list, leading_diagrams, spin_i, spin_j, 1.0);
         NLO_tensor_list.push_back(NLO_tensor);
       }
     }
+
+    if(isRealChannel){
+      std::vector<METOOLS::Spin_Amplitudes*> single_diag_list1;
+      single_diag_list1.push_back(leading_diagrams[1]);
+      std::vector<METOOLS::Spin_Amplitudes*> single_diag_list2;
+      single_diag_list2.push_back(leading_diagrams[2]);
+      //METOOLS::Amplitude2_Tensor* real_tensor = new Amplitude2_Tensor(p, 0, single_diag_list1, single_diag_list2, spin_i, spin_j, 1.0);
+      //sumijlambda_AiAj = (*sigma)*real_tensor->ReduceToMatrix(sigma->Particle());
+      double x;
+    }
     
+    sumijlambda_AiAj=(*sigma)*p_amps->ReduceToMatrix(sigma->Particle()); // #1 mit add
     for (size_t i = 0; i < leading_tensor_list.size(); ++i){
-      sumijlambda_AiAj=(*sigma)*leading_tensor_list[i]->ReduceToMatrix(sigma->Particle());
+      sumijlambda_AiAj+=(*sigma)*leading_tensor_list[i]->ReduceToMatrix(sigma->Particle()); // #2 ohne Interferenz
     }
 
     for (size_t i = 0; i < NLO_tensor_list.size(); ++i) {    // reduce NLO Amplitude2_Tensor
