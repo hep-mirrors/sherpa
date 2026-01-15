@@ -23,7 +23,7 @@ using namespace ATOOLS;
 
 Over_Estimator::Over_Estimator() :
   m_muR_fac(1.), m_muF_fac(1.), m_pref(0.), m_npt2bins(1000),
-  p_prefs(nullptr)
+  p_prefs(nullptr), p_procs(nullptr), p_sbins(nullptr), m_overlapmax(1.0) // ue-reweighting
 {}
 
 Over_Estimator::~Over_Estimator() { if (p_prefs) delete p_prefs; }
@@ -38,6 +38,8 @@ Initialize(PDF::ISR_Handler * isr,MI_Processes * procs,axis * sbins) {
   m_pt02      = procs->PT02();
   m_ptmin2    = procs->PT2Min();
   p_alphaS    = procs->AlphaS();
+  p_procs     = procs; // ue-reweighting
+  p_sbins     = sbins; // ue-reweighting
   m_muR_fac   = (*mipars)("RenScale_Factor");
   m_muF_fac   = (*mipars)("FacScale_Factor");
   for (size_t i=0;i<2;i++) {
@@ -94,7 +96,7 @@ void Over_Estimator::FixMaximum(MI_Processes * procs,axis * sbins) {
       // volume to define a constant prefactor that ensures that the
       // approximation is always larger than the exact calculation.
       ///////////////////////////////////////////////////////////////////////
-      double test   = procs->PDFnorm()*Max(approx,exact)*yvol*sqr(pt2+m_pt02/4.);
+      double test   = procs->PDFnorm()*Max(approx,exact)*yvol*sqr(pt2+m_pt02/4.) * m_overlapmax; // ue-reweighting;
       if (test > maxpref) { maxpref = test; }
     }
     p_prefs->Fill(sbin,maxpref);

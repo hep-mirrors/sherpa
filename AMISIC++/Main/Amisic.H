@@ -80,6 +80,8 @@ namespace AMISIC {
     std::ofstream m_poisson_weight_file; // output
     std::ofstream m_sudakov_weight_file; // output
     std::ofstream m_total_weight_file;   // output
+    std::ofstream m_accept_reject_file;  // output
+    std::ofstream m_overlap_file;        // output
     // ue-reweighting
 
     void InitParametersAndType(PDF::ISR_Handler *const isr,

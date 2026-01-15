@@ -34,6 +34,12 @@ Amisic::~Amisic() {
   if (m_total_weight_file.is_open()) {
     m_total_weight_file.close();
   }
+  if (m_accept_reject_file.is_open()) {
+    m_accept_reject_file.close();
+  }
+  if (m_overlap_file.is_open()) {
+    m_overlap_file.close();
+  }
   // ue-reweighting
 }
 
@@ -112,6 +118,21 @@ bool Amisic::Initialize(MODEL::Model_Base *const model,
   m_sigma_nd_variations = (*mipars).GetVariationVector("SigmaND_Norm");
   const auto max_size = m_sigma_nd_variations.size();
   ResetVariationWeights(max_size);
+
+  const double K_nom = m_pint.K(m_S);
+  double overlap_max = m_mo.EvaluateAt(0.0, K_nom);
+  msg_Info() << METHOD << "(): Overlap at b = 0: nominal   (k = " << K_nom << ") = " << overlap_max << "\n";
+  for (size_t i = 0; i < max_size; ++i) {
+    const double K_var = m_pint.KVariation(m_S, i);
+    const double overlap_var = m_mo.EvaluateAt(0.0, K_var);
+    msg_Info() << METHOD << "():                 variation " << i << " (k = " << K_var << ") = " << overlap_var << "\n";
+    if (overlap_var > overlap_max) {
+      overlap_max = overlap_var;
+    }
+  }
+  msg_Info() << METHOD << "(): Using maximum overlap = " << overlap_max <<  " for overestimator\n";
+  m_overestimator.SetOverlapMax(overlap_max);
+  m_overestimator.UpdatePrefactors();
   
   // output
   const bool print_files = false;
@@ -187,6 +208,40 @@ bool Amisic::Initialize(MODEL::Model_Base *const model,
       m_total_weight_file << "# n_mpi\n";
     }
     m_total_weight_file << std::scientific << std::setprecision(10);
+  }
+  m_accept_reject_file.open("accept_reject_stats.dat");
+  if (m_accept_reject_file.is_open()) {
+    m_accept_reject_file << "# accepted prob_nom";
+    for (size_t i = 0; i < max_size; ++i) {
+      m_accept_reject_file << " prob_var" << i;
+    }
+    m_accept_reject_file << "\n";
+    m_accept_reject_file << std::scientific << std::setprecision(10);
+  }
+  m_overlap_file.open("overlap_info.dat");
+  if (m_overlap_file.is_open()) {
+    m_overlap_file << "# b_value overlap_nom";
+    for (size_t i = 0; i < max_size; ++i) {
+      m_overlap_file << " overlap_var" << i;
+    }
+    m_overlap_file << "\n";
+    m_overlap_file << std::scientific << std::setprecision(10);
+    
+    const double hbarc_factor = rpa->hBar() * rpa->c() * 1.e12;
+    const double K_nom = m_pint.K(m_S);
+    for (int ib = 0; ib <= 500; ++ib) {
+      const double b_fm = ib * 0.01;
+      const double b = b_fm / hbarc_factor;
+      const double overlap_nom = m_mo.EvaluateAt(b, K_nom);
+      m_overlap_file << b_fm << " " << overlap_nom;
+      for (size_t i = 0; i < max_size; ++i) {
+        const double K_var = m_pint.KVariation(m_S, i);
+        const double overlap_var = m_mo.EvaluateAt(b, K_var);
+        m_overlap_file << " " << overlap_var;
+      }
+      m_overlap_file << "\n";
+    }
+    m_overlap_file.flush();
   }
 
   // ue-reweighting
@@ -616,11 +671,9 @@ void Amisic::ApplyVariationWeights(ATOOLS::Blob * blob) {
   if (m_variation_weights.empty()) return;
 
   // output
-  static size_t event_counter = 0;
-  event_counter++;
   const bool print_diag = false;
   if (print_diag) {
-    msg_Out()<<"[Reweighting] Event "<<event_counter<<": b="<<m_b<<", n_mpi="<<m_mpi_scatter_count<<", lambda_nom="<<m_lambda_nominal<<"\n";
+    msg_Out()<<"[Reweighting] b="<<m_b<<", n_mpi="<<m_mpi_scatter_count<<", lambda_nom="<<m_lambda_nominal<<"\n";
   }
   std::vector<double> w_b_vec(m_variation_weights.size());
   std::vector<double> w_poisson_vec(m_variation_weights.size());
@@ -734,6 +787,16 @@ void Amisic::OnAcceptReject(const bool accepted, const double prob_nom) {
     // p = dsigma/dpt2 * overlap(b,K_var) / overestimator
     // The ratio is: p_var/p_nom = overlap_var/overlap_nom = lambda_ratio
     const double prob_var = prob_nom * m_lambda_ratios[i];
+
+    // output
+    if (m_accept_reject_file.is_open()) {
+      m_accept_reject_file << (accepted ? 1 : 0) << " " << prob_nom;
+      for (size_t i = 0; i < n_variations; ++i) {
+        const double prob_var = prob_nom * m_lambda_ratios[i];
+        m_accept_reject_file << " " << prob_var;
+      }
+      m_accept_reject_file << "\n";
+    }
     
     if (accepted) {
       // Accepted: weight *= p_var / p_nom

@@ -19,11 +19,14 @@ namespace AMISIC {
     double m_muR_fac, m_muF_fac, m_pt02, m_ptmin2;
     std::array<double, 2> m_xmin, m_xmax;
     double m_s, m_pref;
+    double m_overlapmax; // ue-reweighting
     size_t m_npt2bins;
     
     std::array<PDF::PDF_Base *, 2> p_pdf;
     MODEL::One_Running_AlphaS * p_alphaS;
     OneDim_Table              * p_prefs;
+    MI_Processes              * p_procs; // ue-reweighting
+    axis                      * p_sbins; // ue-reweighting
 
     void   FixMaximum(MI_Processes * procs,axis * sbins);
     double ApproxME(const double & pt2,const double & xt);
@@ -42,6 +45,12 @@ namespace AMISIC {
     double TrialPT2(const double & Q2);
 
     void Test(const double & Q2,const long int & n);
+
+    // ue-reweighting
+    void SetOverlapMax(double omax) { m_overlapmax = omax; }
+    double OverlapMax() const { return m_overlapmax; }
+    void UpdatePrefactors() { if (p_procs && p_sbins) FixMaximum(p_procs, p_sbins); }
+    // ue-reweighting
   };
 }
 
