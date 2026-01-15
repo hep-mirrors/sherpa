@@ -63,24 +63,6 @@ bool Variations::NeedsLHAPDF6Interface()
   return false;
 }
 
-void Variations::CheckConsistencyWithBeamSpectra(BEAM::Beam_Spectra_Handler *beamspectra)
-{
-  // make sure we deal with (anti-)protonic beam, otherwise warn
-  bool shouldwarn(false);
-  for (int beam(0); beam <= 1; ++beam) {
-    if (beamspectra->GetBeam(beam)->Bunch().Kfcode() != kf_p_plus) {
-      shouldwarn = true;
-      break;
-    }
-  }
-  if (shouldwarn) {
-    msg_Error()<<"WARNING in "<<METHOD<<": "<<std::endl
-    <<"   The internal reweighting is only tested"<<std::endl
-    <<"   for hadronic beams of (anti-)protons."<<std::endl
-    <<"   Will continue and hope for the best."<<std::endl;
-  }
-}
-
 Variations::Variations(Variations_Mode mode)
 {
   m_enabled = true;
