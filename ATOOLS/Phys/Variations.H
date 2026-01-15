@@ -78,7 +78,6 @@ namespace ATOOLS {
   class Variations {
   public:
     static bool NeedsLHAPDF6Interface();
-    static void CheckConsistencyWithBeamSpectra(BEAM::Beam_Spectra_Handler *);
 
     Variations(Variations_Mode mode=Variations_Mode::all);
     ~Variations();
