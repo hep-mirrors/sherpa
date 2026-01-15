@@ -1,6 +1,4 @@
 #include "ATOOLS/Org/CXXFLAGS_PACKAGES.H"
-#include "ATOOLS/Org/My_MPI.H"
-#ifdef USING__MPI
 
 #include "SHERPA/Tools/Output_Base.H"
 #include "SHERPA/Initialization/Initialization_Handler.H"
@@ -11,13 +9,11 @@
 #include "PHASIC++/Main/Color_Integrator.H"
 #include "PDF/Main/PDF_Base.H"
 #include "MODEL/Main/Running_AlphaS.H"
-#include "SHERPA/Tools/Variations.H"
 #include "ATOOLS/Math/Random.H"
-#include "ATOOLS/Org/CXXFLAGS.H"
+#include "ATOOLS/Phys/Variations.H"
+#include "ATOOLS/Org/My_MPI.H"
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/Run_Parameter.H"
-#include "ATOOLS/Org/Data_Reader.H"
-#include "ATOOLS/Org/Shell_Tools.H"
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/Exception.H"
 
@@ -37,7 +33,9 @@ namespace SHERPA {
     File *p_file;
     std::map<std::string,DataSet> m_dss;
     std::vector<std::vector<double> > m_ecache, m_pcache;
-    double m_xs, m_xserr, m_max, m_trials;
+    ATOOLS::Weights_Map m_xs;
+    ATOOLS::Weights_Map m_err;
+    double m_max, m_trials;
     std::string m_basename;
     int m_setcol, m_ncache, m_events, m_unweight, m_offset, m_nmax;
     size_t m_nweights, m_neprops, m_npprops, m_clabel;
@@ -47,29 +45,47 @@ namespace SHERPA {
   public:
 
     Output_HDF5(const Output_Arguments &args):
-      Output_Base("HDF5"), m_xs(1.0), m_xserr(1.0), m_max(1.0),
-      m_trials(0.0), m_events(0), m_offset(0), m_nmax(0)
+      Output_Base("HDF5"), m_max(1.0),
+      m_trials(0.0), m_events(0), m_offset(0), m_nmax(0),
+      m_basename(args.m_outpath+"/"+args.m_outfile)
     {
-      m_basename=args.m_outpath+"/"+args.m_outfile;
-      m_setcol=args.p_reader->GetValue<int>("HDF5_SET_COLORS",1);
-      m_ncache=args.p_reader->GetValue<int>("HDF5_CACHE_SIZE",10000);
-      m_unweight=args.p_reader->GetValue<int>("HDF5_UNWEIGHT",0);
-      m_clabel=args.p_reader->GetValue<int>("HDF5_START_COLOR_LABEL",500);
+      Settings& s {Settings::GetMainSettings()};
+      m_setcol = s["HDF5_SET_COLORS"].SetDefault(1).Get<int>();
+      m_ncache = s["HDF5_CACHE_SIZE"].SetDefault(10000).Get<int>();
+      m_unweight = s["HDF5_UNWEIGHT"].SetDefault(0).Get<int>();
+      m_clabel = s["HDF5_START_COLOR_LABEL"].SetDefault(500).Get<int>();
+
       m_ncache=std::min(m_ncache,(int)rpa->gen.NumberOfEvents());
       p_me=args.p_init->GetMatrixElementHandler();
       p_vars=args.p_init->GetVariations();
-      std::vector<std::string> params;
-      args.p_reader->VectorFromFile(params,"HDF5_MPIIO_PARAMS");
+
       MPI_Info info;
       MPI_Info_create(&info);
-      for (size_t i(0);i+1<params.size();i+=2) {
+      for (const auto& key : s["HDF5_MPIIO_PARAMS"].GetKeys()) {
+        const auto val {
+            s["HDF5_MPIIO_PARAMS"][key].SetDefault("").Get<std::string>()};
 	msg_Info()<<METHOD<<"(): Add MPIIO parameters '"
-		  <<params[i]<<"' -> '"<<params[i+1]<<"'\n";
-	MPI_Info_set(info,params[i].c_str(),params[i+1].c_str());
+		  <<key<<"' -> '"<<val<<"'\n";
+	MPI_Info_set(info,key.c_str(),val.c_str());
       }
+
+#if MPI_FOUND && H5_HAVE_PARALLEL
       p_file = new File(m_basename+".hdf5",
 			File::ReadWrite|File::Create|File::Truncate,
 			MPIOFileDriver(MPI_COMM_WORLD,MPI_INFO_NULL));
+#else
+      p_file = new File(m_basename+".hdf5",
+			File::ReadWrite|File::Create|File::Truncate);
+#endif
+
+      // Guard against a setting that will, in general, cause synchronization
+      // to break in MPI runs, such that the entire run stalls.
+      bool m_printmpixs {s["PRINT_MPI_XS"].Get<bool>()};
+      if (m_printmpixs && mpi->MySize() > 1) {
+        THROW(invalid_input,
+              "`PRINT_MPI_XS: true` can not be used when writing parton-level "
+              "events to an HDF5 file. Please use `PRINT_MPI_XS: false`.");
+      }
     }
 
     ~Output_HDF5()
@@ -78,17 +94,19 @@ namespace SHERPA {
       delete p_file;
     }
 
-    void SetXS(const double& xs, const double& xserr)
+    void SetXS(const ATOOLS::Weights_Map &xs,
+               const ATOOLS::Weights_Map &err) override
     {
       m_xs = xs;
-      m_xserr = xserr;
-      m_max =1.;
+      m_err = err;
+      m_max = 1.;
     }
 
     bool SetSumSqrColors(Cluster_Amplitude *const ampl)
     {
       Process_Base *proc(ampl->Proc<Process_Base>());
-      SP(Color_Integrator) colint(proc->Integrator()->ColorIntegrator());
+      std::shared_ptr<Color_Integrator> colint{
+          proc->Integrator()->ColorIntegrator()};
       colint->GenerateOrders();
       const Idx_Matrix &orders(colint->Orders());
       std::vector<double> psum(orders.size());
@@ -129,8 +147,10 @@ namespace SHERPA {
 	      fl->Col().m_i==fl->Col().m_j) valid=false;
 	}
 	if (!valid) continue;
-	csum+=psum[i]=dabs(proc->Differential(*ampl,1|2|4));
-	msg_Debugging()<<"sc: csum = "<<psum[i]<<"\n";
+        csum += psum[i] = dabs(
+            proc->Differential(*ampl, Variations_Mode::nominal_only, 1 | 2 | 4)
+                .Nominal());
+        msg_Debugging()<<"sc: csum = "<<psum[i]<<"\n";
       }
       if (csum==0.0) return false;
       double disc(csum*ran->Get()), sum(0.0);
@@ -171,7 +191,8 @@ namespace SHERPA {
     {
       Blob *sp(blobs->FindFirst(btp::Signal_Process));
       Process_Base *proc((*sp)["Process"]->Get<Process_Base*>());
-      SP(Color_Integrator) ci(proc->Integrator()->ColorIntegrator());
+      std::shared_ptr<Color_Integrator> ci{
+          proc->Integrator()->ColorIntegrator()};
       Cluster_Amplitude *ampl(Cluster_Amplitude::New());
       ampl->SetNIn(sp->NInP());
       ampl->SetProc(proc);
@@ -211,7 +232,7 @@ namespace SHERPA {
       ampl->Delete();
     }
     
-    void Header()
+    void Header() override
     {
       std::vector<int> versionno = {2, 0, 0};
       m_dss["version"]=p_file->createDataSet<int>
@@ -284,11 +305,11 @@ namespace SHERPA {
       Initialize(m_nmax);
     }
 
-    void ChangeFile()
+    void ChangeFile() override
     {
     }
 
-    void Footer()
+    void Footer() override
     {
       Write(1);
     }
@@ -306,7 +327,7 @@ namespace SHERPA {
 	const Variations::Parameters_Vector *params
 	  (p_vars->GetParametersVector());
 	for (size_t i(0);i<params->size();++i)
-	  wnames.push_back((*params)[i]->m_name);
+	  wnames.push_back((*params)[i]->Name());
       }
       m_nweights=wnames.size();
       // LHEF event information
@@ -370,7 +391,9 @@ namespace SHERPA {
     void Write(const int &mode=0)
     {
       auto xfer_props = DataTransferProps{};
+#if MPI_FOUND && H5_HAVE_PARALLEL
       xfer_props.add(UseCollectiveIO{});
+#endif
       if (mode!=1 && m_events<m_ncache) return;
       if (m_events==0 && m_trials==0) return;
       if (m_ecache.empty()) {
@@ -408,7 +431,7 @@ namespace SHERPA {
       m_pcache.clear();
     }
 
-    void Output(Blob_List* blobs,double _weight)
+    void Output(Blob_List* blobs) override
     {
       DEBUG_FUNC(m_basename);
       ++m_events;
@@ -418,8 +441,8 @@ namespace SHERPA {
       const auto trials((*sp)["Trials"]->Get<double>());
       Process_Base *proc((*sp)["Process"]->Get<Process_Base*>());
       if (m_unweight) {
-	double weight((*sp)["Weight"]->Get<double>());
-	double max((*sp)["Max"]->Get<double>());
+        double weight((*sp)["WeightsMap"]->Get<Weights_Map>().Nominal());
+        double max((*sp)["Max"]->Get<double>());
 	const auto disc = max * ran->Get();
 	if (std::abs(weight) < disc) {
 	  m_trials+=trials;
@@ -433,10 +456,12 @@ namespace SHERPA {
       m_ecache.push_back(std::vector<double>(m_neprops,-1));
       m_ecache.back().push_back(weight*wratio);
       if (p_vars) {
-	Variation_Weights wgts
-	  ((*sp)["Variation_Weights"]->Get<Variation_Weights>());
-	for (size_t i(0);i<wgts.GetNumberOfVariations();++i)
-	  m_ecache.back().push_back(wgts.GetVariationWeightAt(i)*wratio);
+	Weights_Map& wgtmap((*sp)["WeightsMap"]->Get<Weights_Map>());
+	std::map<std::string, double> wgts;
+	wgtmap.FillVariations(wgts);
+	for (const auto& [key, value] : wgts) {
+	  m_ecache.back().push_back(wgts[key]*wratio);
+	}
       }
       m_ecache.back()[0]=0;
       if (proc) {
@@ -517,6 +542,3 @@ PrintInfo(std::ostream &str,const size_t width) const
 {
   str<<"HDF5 output v2";
 }
-
-#endif
-#endif

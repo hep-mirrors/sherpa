@@ -43,8 +43,11 @@ if(NOT HighFive_FOUND)
 endif()
 
 sherpa_create_git_info(HDF5 ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR})
+
+# Reader
 set(HDF5_READER_SOURCES HDF5_Reader.C)
-add_library(SherpaHDF5Reader SHARED ${HDF5_READER_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
+add_library(SherpaHDF5Reader SHARED ${HDF5_READER_SOURCES}
+  ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C)
 sherpa_handle_shared_library(SherpaHDF5Reader SherpaHDF5Reader)
 # HighFive is a header-only library. By adding it only
 # to the build interface, we can avoid to expose it to consumers of SherpaHDF5Reader,
@@ -53,3 +56,16 @@ sherpa_handle_shared_library(SherpaHDF5Reader SherpaHDF5Reader)
 target_link_libraries(SherpaHDF5Reader PRIVATE
   $<BUILD_INTERFACE:HighFive::HighFive> HDF5::HDF5)
 add_dependencies(SherpaHDF5Reader HDF5_Git_Info)
+
+# Output
+set(HDF5_OUTPUT_SOURCES Output_HDF5.C)
+add_library(SherpaHDF5Output SHARED ${HDF5_OUTPUT_SOURCES}
+  ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C)
+sherpa_handle_shared_library(SherpaHDF5Output SherpaHDF5Output)
+# HighFive is a header-only library. By adding it only
+# to the build interface, we can avoid to expose it to consumers of SherpaHDF5Output,
+# and thus do not need to install it. A consequence is that we need
+# to explicitly link to HDF5 to make sure that consumers link against it.
+target_link_libraries(SherpaHDF5Output PRIVATE
+  $<BUILD_INTERFACE:HighFive::HighFive> HDF5::HDF5)
+add_dependencies(SherpaHDF5Output HDF5_Git_Info)
