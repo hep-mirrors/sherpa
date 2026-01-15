@@ -99,18 +99,23 @@ double Matter_Overlap::SelectB() const {
   // 2. Select b according to d^2b O(b) = d b^2 exp(-b^2/R^2).
   // Result is given in fm.
   ///////////////////////////////////////////////////////////////////////////
-  double effradius = m_kradius * m_radius[0], b=0.;
+  // TODO: refactor this code, not sure what it's doing
+  double effradius = m_kradius * m_radius[0], b = 0.;
   if (m_dynamic) effradius = m_kradius * sqrt(m_dynradius2);
-  else if (m_form[0]==matter_form::double_gaussian ||
-	   m_form[1]==matter_form::double_gaussian) {
+  else if (m_form[0] == matter_form::double_gaussian ||
+           m_form[1] == matter_form::double_gaussian) {
     double rand = ran->Get();
-    for (int i=3;i>=0;i--) {
+    for (int i = 3; i >= 0; i--) {
       rand -= m_fraction[i];
-      if (rand<=1.e-6) { effradius = m_kradius * m_radius[i]; break; }
+      if (rand <= 1.e-6) {
+        effradius = m_kradius * m_radius[i];
+        break;
+      }
     }
   }
-  do { b = sqrt(-log(Max(1.e-12,ran->Get())))*effradius;
-  } while(b>=m_bmax);
+  do {
+    b = sqrt(-log(Max(1.e-12, ran->Get()))) * effradius;
+  } while (b >= m_bmax);
   return b;
 }
 
@@ -133,8 +138,8 @@ bool Matter_Overlap::
   ///////////////////////////////////////////////////////////////////////////
   // converting the impact parameter B from the internal unit fm to millimeters
   B *= 1.e-12;
-  double b0, b1, cosphi1, sinphi1;
-  size_t trials = 0;
+  double       b0, b1, cosphi1, sinphi1;
+  size_t       trials     = 0;
   const size_t max_trials = 10000;
 
   // Sample b0 and b1 from Q^2-dependent form factors
@@ -142,22 +147,21 @@ bool Matter_Overlap::
   do {
     b0 = p_ffs[0]->B(x0, Q20);
     b1 = p_ffs[1]->B(x1, Q21);
-  } while (B > b0 + b1 && (++trials) < max_trials);
+  } while (B > b0 + b1 && b0 > B + b1 && b1 > B + b0 &&
+           (++trials) < max_trials);
 
   if (trials >= max_trials) return false;
 
   cosphi1 = (sqr(B) + sqr(b1) - sqr(b0)) / (2. * B * b1);
-  cosphi1 = std::max(-1., std::min(1., cosphi1)); // catch rounding errors
+  cosphi1 = std::max(-1., std::min(1., cosphi1));// catch rounding errors
 
   sinphi1 = (ran->Get() > 0.5 ? -1. : 1.) * sqrt(1. - sqr(cosphi1));
 
   // Position relative to beam 1 at (-B/2, 0)
-  pos = Vec4D(0., -B/2. + b1*cosphi1, b1*sinphi1, 0.);
+  pos = Vec4D(0., -B / 2. + b1 * cosphi1, b1 * sinphi1, 0.);
 
   return true;
 }
-
-
 
 void Matter_Overlap::Initialize(Remnant_Handler * const rh,
 				PDF::ISR_Handler * const isr) {
