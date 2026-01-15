@@ -108,7 +108,7 @@ double Spin_Amplitudes::GetColourWeight(){
   return 0.0;
 }
 
-ATOOLS::Vec4D_Vector Spin_Amplitudes::GetMappedMomenta() {
+ATOOLS::Vec4D_Vector Spin_Amplitudes::GetMomenta() {
   msg_Error()<<METHOD<<": Virtual function called."<<endl;
   Abort();
   return ATOOLS::Vec4D_Vector(0);

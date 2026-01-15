@@ -858,6 +858,7 @@ void Hard_Decay_Handler::TreatInitialBlob(ATOOLS::Blob* blob,
     for(size_t i = 0; i < NLO_dc->GetDiagrams().size(); ++i) {
       if(NLO_dc->GetDiagrams()[i]->getType() == "R"){
         size_t newn(4);
+        ATOOLS::Vec4D_Vector dipole_mom = NLO_dc->GetDiagrams()[i]-> GetMomenta();
         static size_t decay_ids[4] = {1, 2, 4, 8};
 
         const std::vector<Flavour>& flav_vec = NLO_dc->Flavs();
@@ -875,7 +876,7 @@ void Hard_Decay_Handler::TreatInitialBlob(ATOOLS::Blob* blob,
 
       } else if(NLO_dc->GetDiagrams()[i]->getType() == "S") {
         size_t newn(3);
-        ATOOLS::Vec4D_Vector dipole_mom = NLO_dc->GetDiagrams()[i]-> GetMappedMomenta();
+        ATOOLS::Vec4D_Vector dipole_mom = NLO_dc->GetDiagrams()[i]-> GetMomenta();
         static size_t decay_ids[3] = {1, 2, 12};
 
         Flavour* newfls = new Flavour[newn];

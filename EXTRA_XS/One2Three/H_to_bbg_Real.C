@@ -25,7 +25,7 @@ using namespace std;
 H_to_bbg_Real::H_to_bbg_Real(const vector<Flavour>& flavs, const Flavour& prop,
                      size_t non_prop, size_t gluon, size_t propj) :
   Spin_Amplitudes(flavs,Complex(0.0,0.0)), m_cur(4), m_anticur(4), m_nhel(4),
-  m_prop(prop), m_non_prop(non_prop), m_gluon(gluon), m_propj(propj), m_cpointgen(false)
+  m_prop(prop), m_non_prop(non_prop), m_gluon(gluon), m_propj(propj), m_cpointgen(false), m_momenta(4)
 {
   DEBUG_FUNC(flavs<<" with prop "<<prop<<" in "<<m_gluon<<","<<m_propj);
   assert(m_non_prop>0 && m_gluon>0 && m_propj>0);
@@ -159,6 +159,7 @@ bool H_to_bbg_Real::IsNLODecay(){
 
 
 void H_to_bbg_Real::Calculate(const ATOOLS::Vec4D_Vector& momenta, bool anti) {
+  m_momenta = momenta;
   DEBUG_FUNC(momenta.size());
   if (!m_cpointgen) p_ci->GeneratePoint(); // create a new integration point for the color factors
 

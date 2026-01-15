@@ -18,6 +18,7 @@ namespace EXTRAXS {
     size_t m_propj;
     double scale;
     double alpha_qcd;
+    ATOOLS::Vec4D_Vector m_momenta;
 
     std::vector<METOOLS::Current*> m_cur;
     METOOLS::Current *m_scur, *m_fcur;
@@ -53,6 +54,7 @@ namespace EXTRAXS {
                    const std::vector<int>& cj) override;
     void FixColor(bool yes) override { m_cpointgen = yes; }
     double GetColourWeight() override;
+    ATOOLS::Vec4D_Vector GetMomenta() override { return m_momenta; }
   };
 }
 
