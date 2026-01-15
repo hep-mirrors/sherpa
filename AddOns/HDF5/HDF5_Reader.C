@@ -297,23 +297,24 @@ namespace LHEH5 {
       Event_Reader(key), m_ievt(0), m_ifile(0), m_trials(0),
       m_nstart(0), m_ncache(0)
     {
-      Data_Reader read(" ",";","#","=");
-      m_ncache=read.GetValue<int>("HDF5_CACHE_SIZE",10000);
-      std::vector<std::string> params;
-      read.VectorFromFile(params,"HDF5_MPIIO_PARAMS");
+      Settings& s {Settings::GetMainSettings()};
+      m_ncache = s["HDF5_CACHE_SIZE"].SetDefault(10000).Get<int>();
+
       MPI_Info_create(&m_info);
-      for (size_t i(0);i+1<params.size();i+=2) {
+      for (const auto& key : s["HDF5_MPIIO_PARAMS"].GetKeys()) {
+        const auto val {
+            s["HDF5_MPIIO_PARAMS"][key].SetDefault("").Get<std::string>()};
 	msg_Info()<<METHOD<<"(): Add MPIIO parameters '"
-		  <<params[i]<<"' -> '"<<params[i+1]<<"'\n";
-	MPI_Info_set(m_info,params[i].c_str(),params[i+1].c_str());
+		  <<key<<"' -> '"<<val<<"'\n";
+	MPI_Info_set(m_info,key.c_str(),val.c_str());
       }
+
       p_file = OpenFile(m_files[m_ifile]);
       p_sub = new NLO_subevt();
       s_objects.push_back(this);
 
       // Guard against a setting that will, in general, cause synchronization
       // to break in MPI runs, such that the entire run stalls.
-      Settings& s {Settings::GetMainSettings()};
       bool m_printmpixs {s["PRINT_MPI_XS"].Get<bool>()};
       if (m_printmpixs && mpi->MySize() > 1) {
         THROW(invalid_input,
