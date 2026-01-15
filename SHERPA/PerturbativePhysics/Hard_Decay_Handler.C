@@ -823,6 +823,7 @@ void Hard_Decay_Handler::TreatInitialBlob(ATOOLS::Blob* blob,
   ATOOLS::Vec4D decaying_mom;
   const ATOOLS::Particle* decaying_particle;
   Flavour decaying_flav;
+  p_newsublist=new NLO_subevtlist();
   
 
   for (size_t i = 0; i < blob->NOutP(); ++i) {
@@ -867,7 +868,8 @@ void Hard_Decay_Handler::TreatInitialBlob(ATOOLS::Blob* blob,
         // get new flavours
 
         // Constructor signature: (n, id_ptr, fl_ptr, mom_ptr, i, j, k)
-        //NLO_subevt *sub(new NLO_subevt(newn, decay_ids, newfls, newmoms, 0, 0, 0)); 
+        //NLO_subevt *newsub(new NLO_subevt(newn, decay_ids, newfls, newmoms, 0, 0, 0)); 
+        //p_newsublist->push_back(newsub);
 
         std::cout << "create R subevent" << std::endl;    // todo: insert subevent creation here
 
@@ -884,6 +886,16 @@ void Hard_Decay_Handler::TreatInitialBlob(ATOOLS::Blob* blob,
 
         std::cout << "create S subevent" << std::endl;    // todo: insert subevent creation here
       }
+    }
+    //bdb->Set<NLO_subevtlist*>(p_newsublist);
+    for (size_t i=0;i<p_newsublist->size();++i) {
+      //if (wgtmap_bdb) (*p_newsublist)[i]->m_results = wgtmap_bdb;
+
+      (*p_newsublist)[i]->m_result*=brfactor;  // todo: change to new values
+      (*p_newsublist)[i]->m_results["BR"]*=brfactor;
+      (*p_newsublist)[i]->m_me*=brfactor;
+      (*p_newsublist)[i]->m_mewgt*=brfactor;
+      DEBUG_VAR(*(*p_newsublist)[i]);
     }
   }
 
