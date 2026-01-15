@@ -10,6 +10,7 @@
 #include "ATOOLS/Math/Histogram.H"
 #include <map>
 #include <string>
+#include <functional> // ue-reweighting
 
 namespace AMISIC {
   class Single_Collision_Handler {
@@ -31,6 +32,8 @@ namespace AMISIC {
     bool           m_done, m_needsTrigger;
     ATOOLS::Blob * m_nextblob;
     std::map<double, ATOOLS::Blob *> m_prefabs;
+    
+    std::function<void(bool, double)> m_reweight_callback; // ue-reweighting
     
     double MakeHardScatterBlob(ATOOLS::Blob * blob);
     void   DefinePossibleNext();
@@ -80,6 +83,9 @@ namespace AMISIC {
     inline void SetDone(const bool & done) { m_done = done; }
     inline void AddPrefabricatedBlob(const double & pt2,ATOOLS::Blob * blob) {
       m_prefabs[pt2] = blob;
+    }
+    inline void SetReweightCallback(std::function<void(bool, double)> callback) {
+      m_reweight_callback = callback;
     }
     inline ATOOLS::Vec4D Position(const size_t & beam) const {
       return p_remnants[beam]->Position();

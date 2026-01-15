@@ -274,7 +274,15 @@ int Single_Collision_Handler::SelectPT2() {
 		  (*p_overestimator)(m_pt2,p_integrator->Yvol()) *
 		  (*p_overlap)(m_b) );
     if (m_ana) AnalyseWeight(wt);
-    if (wt>=ran->Get()) break;
+    
+    // ue-reweighting
+    bool accepted = (wt >= ran->Get());
+    if (m_reweight_callback) {
+      m_reweight_callback(accepted, wt);
+    }
+    
+    if (accepted) break;
+    // ue-reweighting
   }
   return 0;
 }

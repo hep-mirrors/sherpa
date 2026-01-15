@@ -74,6 +74,12 @@ namespace AMISIC {
     size_t m_mpi_scatter_count;
     double m_lambda_nominal;
     double m_pint_nominal;
+    std::vector<double> m_sudakov_weights;
+    
+    std::ofstream m_b_weight_file;       // output
+    std::ofstream m_poisson_weight_file; // output
+    std::ofstream m_sudakov_weight_file; // output
+    std::ofstream m_total_weight_file;   // output
     // ue-reweighting
 
     void InitParametersAndType(PDF::ISR_Handler *const isr,
@@ -96,8 +102,9 @@ namespace AMISIC {
     // ue-reweighting
     void ResetVariationWeights(int n_variations);
     void ApplyKFactorReweighting(const double & s);
-    double ComputeWeightFactor(const double & ratio,
+    double ComputePoissonFactor(const double & ratio,
           const size_t & nscatters) const;
+    void OnAcceptReject(const bool accepted, const double prob_nom);
     // ue-reweighting
  public:
     Amisic();
@@ -156,8 +163,8 @@ namespace AMISIC {
     }
     // ue-reweighting
     void ApplyVariationWeights(ATOOLS::Blob * blob);
-    inline std::vector<double> & GetVariationWeights() { 
-      return m_variation_weights; 
+    inline std::vector<double> & GetVariationWeights() {
+      return m_variation_weights;
     }
     // ue-reweighting
   };

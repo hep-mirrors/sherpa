@@ -78,7 +78,7 @@ void Interaction_Probability::FixKandSmin() {
   // ue-reweighting
   std::vector<double> sigma_nd_variations = (*mipars).GetVariationVector("SigmaND_Norm");
   const size_t n_variations = sigma_nd_variations.size();
-  
+
   // Initialize K-factor tables for variations
   p_k_variations.resize(n_variations);
   for (size_t i = 0; i < n_variations; ++i) {
@@ -86,12 +86,12 @@ void Interaction_Probability::FixKandSmin() {
   }
   // ue-reweighting
   PInt_Dyn_Integrand integrand(p_diffxsec);
-  Gauss_Integrator   gauss(&integrand);  
+  Gauss_Integrator   gauss(&integrand);
   for (size_t sbin=0;sbin<p_sbins->m_nbins;sbin++) {
     double s     = p_sbins->x(sbin), k=1., xs_test = 0.;
     double xs_nd = (m_pdfnorm * sigma_nd_variations[0] * p_procs->GetXSecs()->XSnd(s));
     if (s<=4. || p_procs->GetXSecs()->XSratio(s)<=1.) continue;
-    integrand.SetS(s);    
+    integrand.SetS(s);
     do {
       if (p_procs->GetXSecs()->XSratio(s)<=0.5) { k = 1.; break; }
       p_mo->SetKRadius(k);
@@ -111,14 +111,14 @@ void Interaction_Probability::FixKandSmin() {
 	      <<"ratio = "<<std::setw(12)<<std::setprecision(6)
 	      <<p_procs->GetXSecs()->XSratio(s)<<" -> "
 	      <<"k = "<<std::setw(8)<<std::setprecision(6)<<k<<"  |\n";
-    
+
     // ue-reweighting
     for (size_t i = 0; i < n_variations; ++i) {
-      double xs_nd_var = (m_pdfnorm * sigma_nd_variations[i] * 
+      double xs_nd_var = (m_pdfnorm * sigma_nd_variations[i] *
                           p_procs->GetXSecs()->XSnd(s));
       double k_var = 1.0;
       double xs_test_var = 0.0;
-      
+
       // Solve for K-factor for this variation
       do {
         if (p_procs->GetXSecs()->XSratio(s)<=0.5) { k_var = 1.; break; }
@@ -128,15 +128,15 @@ void Interaction_Probability::FixKandSmin() {
         if (dabs(xs_test_var/xs_nd_var)<1.e-3) { k_var = 0.; break; }
         k_var *= Min(5., Max(0.2, sqrt(xs_nd_var/xs_test_var)));
       } while (dabs(1.-xs_test_var/xs_nd_var)>0.02);
-      
+
       p_k_variations[i]->Fill(sbin, k_var);
-      
+
       msg_Info()<<"   |  Variation "<<i<<" (SigmaND_Norm = "
                 <<std::setw(4)<<std::setprecision(2)<<sigma_nd_variations[i]<<"): "
                 <<"xs_ND = "<<std::setw(12)<<std::setprecision(6)<<xs_nd_var<<" -> "
                 <<"k = "<<std::setw(8)<<std::setprecision(6)<<k_var<<"  |\n";
     }
-    
+
     // Restore nominal K-factor in matter overlap
     p_mo->SetKRadius(k);
     InitializeTable(sbin);
@@ -268,20 +268,20 @@ void Interaction_Probability::OutputTables() {
 	    <<" (without overlap) vs. "<<std::setprecision(5)<<std::setw(6)
 	    <<(m_xs_test*rpa->Picobarn()/1.e9)<<" (with overlap) mb.      |\n"
 	    <<"   "<<std::string(77,'-')<<"\n\n\n";
-  
+
   // ue-reweighting
   for (size_t i = 0; i < p_k_variations.size(); ++i) {
     // Save nominal state
     TwoDim_Table * p_diffxsec_nominal = p_diffxsec;
     p_diffxsec = new TwoDim_Table(*p_sbins,*p_bbins);
-    
+
     // Compute tables with variation K-factor
     for (size_t sbin=0;sbin<p_sbins->m_nbins;sbin++) {
       double k_var = p_k_variations[i]->Value(sbin);
       p_mo->SetKRadius(k_var);
       InitializeTable(sbin);
     }
-    
+
     msg_Info()<<"   "<<std::string(77,'-')<<"\n"
               <<"   | "<<METHOD<<" Variation "<<i<<" (SigmaND_Norm = "<<std::setw(4)<<std::setprecision(2)<<sigma_nd_variations[i]<<"):  |\n"
               <<"   | "<<std::setw(15)<<"E_{c.m.} [GeV]"<<" | "
@@ -289,13 +289,13 @@ void Interaction_Probability::OutputTables() {
               <<std::setw(14)<<"xs_hard/xs_ND"<<" | "
               <<std::setw(12)<<"k"<<" | "
               <<std::setw(14)<<"b*dP_int(b)"<<" |\n";
-    
+
     for (size_t j=0;j<p_sbins->m_nbins;j++) {
       double s           = p_sbins->x(j);
       double xs_nd_var   = (m_pdfnorm * sigma_nd_variations[i] * p_procs->GetXSecs()->XSnd(s));
       double xs_hard     = p_procs->GetXSecs()->XShard(s);
       double xsratio_var = xs_hard / xs_nd_var;
-      
+
       msg_Info()<<"   | "<<std::setprecision(6)<<std::setw(15)<<sqrt(s)<<" | "
                 <<std::string(6,' ')<<" | "
                 <<std::setprecision(6)<<std::setw(14)<<xsratio_var<<" | "
@@ -314,11 +314,11 @@ void Interaction_Probability::OutputTables() {
       }
     }
     msg_Info()<<"   "<<std::string(77,'-')<<"\n\n\n";
-    
+
     // Restore nominal state
     delete p_diffxsec;
     p_diffxsec = p_diffxsec_nominal;
-    
+
     // Restore nominal K-factor
     if (p_sbins->m_nbins > 0) {
       double k_nom = p_k->Value(0);

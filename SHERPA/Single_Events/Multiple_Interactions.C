@@ -245,7 +245,7 @@ Return_Value::code Multiple_Interactions::Treat(Blob_List *bloblist) {
     // Apply MPI reweighting weights when all MPIs are done
     // Only apply once: when there IS an active MI handler and it's done
     ////////////////////////////////////////////////////////////////////////////
-    if (p_activeMI && p_activeMI->Done() && 
+    if (p_activeMI && p_activeMI->Done() &&
         p_activeMI->Generator() == MI_Handler::genID::amisic) {
       Blob * signal = p_bloblist->FindFirst(btp::Signal_Process);
       if (!signal) signal = p_bloblist->FindFirst(btp::Hard_Collision);

@@ -63,8 +63,8 @@ namespace AMISIC {
     //////////////////////////////////////////////////////////////////////////
     inline double K(const double & s) const { return (*p_k)(s); }
     // ue-reweighting
-    inline double KVariation(const double & s, size_t i) const { 
-      return (*p_k_variations[i])(s); 
+    inline double KVariation(const double & s, size_t i) const {
+      return (*p_k_variations[i])(s);
     }
     inline size_t NVariations() const { return p_k_variations.size(); }
     // ue-reweighting
