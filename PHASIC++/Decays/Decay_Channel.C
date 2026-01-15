@@ -413,7 +413,6 @@ double Decay_Channel::ME2_NLO(const ATOOLS::Vec4D_Vector& momenta, bool anti,
 
   if (sigma) {
     for (size_t i(0); i<m_diagrams.size(); ++i) DEBUG_VAR(*m_diagrams[i]);
-    if (p_amps) delete p_amps;
     vector<int> spin_i(p.size(), -1), spin_j(p.size(), -1);
 
     std::vector<METOOLS::Spin_Amplitudes*> leading_diagrams;  // start with building the Amplitude2_Tensor for B resp. R
@@ -465,6 +464,9 @@ double Decay_Channel::ME2_NLO(const ATOOLS::Vec4D_Vector& momenta, bool anti,
         METOOLS::Amplitude2_Tensor* NLO_tensor = new Amplitude2_Tensor(p, 0, single_diag_list, leading_diagrams, spin_i, spin_j, 1.0);
         NLO_tensor_list.push_back(NLO_tensor);
       }
+    }
+    for (size_t i = 0; i < leading_tensor_list.size(); ++i){
+      //sumijlambda_AiAj+=(*sigma)*leading_tensor_list[i]->ReduceToMatrix(sigma->Particle());
     }
 
     if(isRealChannel){
