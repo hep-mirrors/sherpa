@@ -490,7 +490,7 @@ double Decay_Channel::ME2_NLO(const ATOOLS::Vec4D_Vector& momenta, bool anti,
         std::cout << "Warning: Decay_Channel::ME2_NLO gets a negative NLO ME2 value.  " << std::endl;
       }
       if(isRealChannel){
-        sumijlambda_AiAj += nlo_part * 1.0/8.0 * Scolourfactor;
+        sumijlambda_AiAj += nlo_part * Scolourfactor;
       } else sumijlambda_AiAj += nlo_part;
   }
 

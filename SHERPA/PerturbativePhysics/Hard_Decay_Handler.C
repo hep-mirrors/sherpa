@@ -816,43 +816,77 @@ void Hard_Decay_Handler::TreatInitialBlob(ATOOLS::Blob* blob,
   Blob_Data_Base * bdb((*blob)["NLO_subeventlist"]);
   if (bdb) sublist=bdb->Get<NLO_subevtlist*>();
 
-  // collect Higgs momentum per out-particle index; else zero
+
+  
+  bool NLO_Decay;
+  Decay_Channel* NLO_dc(NULL);
   ATOOLS::Vec4D decaying_mom;
   const ATOOLS::Particle* decaying_particle;
   Flavour decaying_flav;
+  
+
   for (size_t i = 0; i < blob->NOutP(); ++i) {
+    list<Particle*> decayprods_i;
+    FindDecayProducts(blob->OutParticle(i), decayprods_i);
+    DEBUG_VAR(blob->OutParticle(i)->Flav());
+
     const ATOOLS::Particle* op = blob->ConstOutParticle(i);
-    if (op && op->Flav() == ATOOLS::Flavour(kf_h0)) {
+    Blob* out_blob = op->DecayBlob(); // check, if NLO decay
+    Decay_Channel* dc(NULL);
+    Blob_Data_Base * decay_data((*out_blob)["dc"]);
+    dc = decay_data -> Get<Decay_Channel*>();
+
+
+    for(size_t i = 0; i < dc->GetDiagrams().size(); ++i) {
+      if(dc->GetDiagrams()[i]->getType() == "R"){
+        std::cout << "R subevent" << std::endl;
+      }
+    }
+
+
+    if(dc -> isNLO()){
+      NLO_Decay = true;
+      NLO_dc = dc;
       decaying_mom = op->Momentum();
       decaying_particle = op;
       decaying_flav = op->Flav();
     }
   }
 
-  Blob* out_blob = decaying_particle->DecayBlob();
-  // collect decay channel
-  Decay_Channel* dc(NULL);
-  Blob_Data_Base * decay_data((*out_blob)["dc"]);
-  if(decay_data){
-    dc = decay_data -> Get<Decay_Channel*>();
-  }
-  bool NLO_Decay;
-  NLO_Decay = dc -> isNLO();
+  if(NLO_Decay){  // create real subevents
+    for(size_t i = 0; i < NLO_dc->GetDiagrams().size(); ++i) {
+      if(NLO_dc->GetDiagrams()[i]->getType() == "R"){
+        size_t newn(4);
+        static size_t decay_ids[4] = {1, 2, 4, 8};
 
-  for(size_t i = 0; i < dc->GetDiagrams().size(); ++i) {
-    if(dc->GetDiagrams()[i]->getType() == "R"){
-      std::cout << "create R subevent" << std::endl;    // todo: insert subevent creation here
-    } else if(dc->GetDiagrams()[i]->getType() == "S") {
-      ATOOLS::Vec4D_Vector mapped_mom = dc->GetDiagrams()[i]-> GetMappedMomenta();
-      std::cout << "create S subevent" << std::endl;    // todo: insert subevent creation here
+        const std::vector<Flavour>& flav_vec = NLO_dc->Flavs();
+        const Flavour* newfls = const_cast<Flavour*>(flav_vec.data());
+
+        Vec4D* newmoms = new Vec4D[newn];
+        // todo: get momentum
+        // get new flavours
+
+        // Constructor signature: (n, id_ptr, fl_ptr, mom_ptr, i, j, k)
+        //NLO_subevt *sub(new NLO_subevt(newn, decay_ids, newfls, newmoms, 0, 0, 0)); 
+
+        std::cout << "create R subevent" << std::endl;    // todo: insert subevent creation here
+
+      } else if(NLO_dc->GetDiagrams()[i]->getType() == "S") {
+        size_t newn(3);
+        ATOOLS::Vec4D_Vector dipole_mom = NLO_dc->GetDiagrams()[i]-> GetMappedMomenta();
+        static size_t decay_ids[3] = {1, 2, 12};
+
+        Flavour* newfls = new Flavour[newn];
+        Vec4D* newmoms = new Vec4D[newn];
+        // todo: get momentum
+        // get new flavours
+
+
+        std::cout << "create S subevent" << std::endl;    // todo: insert subevent creation here
+      }
     }
   }
 
-  // create decay subevent
-  // Constructor signature: (n, id_ptr, fl_ptr, mom_ptr, i, j, k)
-  // id is a pointer to an array of size m_n; use 1 for all legs here.
-  static size_t decay_ids[3] = {1, 2, 3};
-  NLO_subevt *sub(new NLO_subevt(3, decay_ids, &decaying_flav, &decaying_mom, 0, 0, 0));
 
   if (sublist) {
     // If the blob contains a NLO_subeventlist, we have to attach decays
