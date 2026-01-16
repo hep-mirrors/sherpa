@@ -56,6 +56,7 @@ PrintInfo(ostream &str,const size_t width) const
 Test_Standard_Model::Test_Standard_Model() :
   Model_Base(true)
 {
+  implements_variations = true;
   m_name="SM-TEST";
   ParticleInit();
   RegisterDefaults();

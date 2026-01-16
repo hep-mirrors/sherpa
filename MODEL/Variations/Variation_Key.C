@@ -1,6 +1,6 @@
-#include "MODEL/UFO/Variation_Key.H"
+#include "MODEL/Variations/Variation_Key.H"
 
-namespace UFO {
+namespace MODELVARIATIONS {
     /*
     Constructor from 1 parameter with value
     */

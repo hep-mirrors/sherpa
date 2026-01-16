@@ -10,7 +10,6 @@ namespace MODEL {
   class Test_Standard_Model: public Model_Base {
   private:
 
-    UFO::Variations* p_variations = nullptr;
     int  m_ckmorder, m_dec_g4;
     std::map<std::string, ATOOLS::Kabbala> k_constants;
     ATOOLS::Kabbala Kabbala_Constant(std::string name) {if (k_constants.count(name)!=1) return ATOOLS::Kabbala(); return k_constants[name];}
@@ -31,8 +30,6 @@ namespace MODEL {
     bool ModelInit();
     void InitVertices();
     
-    UFO::Variations* GetParameterVariations() override {return p_variations;}
-    bool InitVariations() override {if (!p_variations) p_variations = new UFO::Variations(); return true;}
   };
 
 }

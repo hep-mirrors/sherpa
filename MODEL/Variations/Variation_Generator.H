@@ -1,8 +1,7 @@
-#ifndef MODEL_UFO_Variation_Generator_H
-#define MODEL_UFO_Variation_Generator_H
+#ifndef MODEL_Variations_Variation_Generator_H
+#define MODEL_Variations_Variation_Generator_H
 
 #include "ATOOLS/Phys/Hard_Process_Variation_Generator.H"
-#include "MODEL/UFO/Variations.H"
 #include "MODEL/Main/Model_Base.H"
 #include "PHASIC++/Process/Single_Process.H"
 #include "PHASIC++/Main/Process_Integrator.H"
@@ -10,7 +9,7 @@
 using Base = ATOOLS::Hard_Process_Variation_Generator_Base;
 using Args = ATOOLS::Hard_Process_Variation_Generator_Arguments;
 
-namespace UFO {
+namespace MODELVARIATIONS {
     class Variation_Generator : public Base{
         public:
             Variation_Generator(const Args& args);
