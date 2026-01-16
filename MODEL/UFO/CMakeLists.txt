@@ -1,16 +1,10 @@
 set(UFO_SOURCES UFO_Param_Reader.C
                 UFO_Model.C
-                UFO_Color_Functions.C
-                Variation_Generator.C
-                Variation_Key.C
-                Variations.C)
+                UFO_Color_Functions.C)
 
 set(UFO_HEADERS UFO_Param_Reader.H
                 UFO_Model.H
-                UFO_Color_Functions.H
-                Variation_Generator.H
-                Variation_Key.H
-                Variations.H)
+                UFO_Color_Functions.H)
 
 sherpa_create_git_info(UFO ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR})
  

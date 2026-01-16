@@ -21,3 +21,4 @@ sherpa_create_git_info(ModelMain ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BIN
 add_library(ModelMain SHARED ${ModelMain_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
 sherpa_handle_shared_library(ModelMain ModelMain)
 add_dependencies(ModelMain ModelMain_Git_Info)
+target_link_libraries(ModelMain PRIVATE ModelVariations)

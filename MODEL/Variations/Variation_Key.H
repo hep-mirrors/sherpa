@@ -1,10 +1,10 @@
-#ifndef MODEL_UFO__UFO_Variation_Key_H
-#define MODEL_UFO__UFO_Variation_Key_H
+#ifndef MODEL_Variations__Variation_Key_H
+#define MODEL_Variations__Variation_Key_H
 
 #include "ATOOLS/Org/Exception.H"
 #include <math.h>
 
-namespace UFO {
+namespace MODELVARIATIONS {
     class VariationKey {
         public:
             // Constructors

@@ -1,10 +1,11 @@
-#include "MODEL/UFO/Variation_Generator.H"
+#include "MODEL/Variations/Variation_Generator.H"
 
-namespace UFO {
+namespace MODELVARIATIONS {
     Variation_Generator::Variation_Generator(const Args& args){
         p_proc = dynamic_cast<PHASIC::Single_Process*> (args.p_proc);
         if (!p_proc) THROW(fatal_error, "No Single Process was given for parameter Variation.");
-        if (!MODEL::s_model->InitVariations()) THROW(fatal_error, "The model does not seem to implement Variations of external parameters :(");
+        if (!MODEL::s_model->ImplementsVariations()) THROW(fatal_error, "The model does not seem to implement Variations of external parameters :(");
+        if (!MODEL::s_model->InitVariations()) THROW(fatal_error, "Something went wrong trying to create Model-Variations");
         p_vars = MODEL::s_model->GetParameterVariations();
         if (!p_vars) THROW(fatal_error, "Something went wrong when getting the parameter Variations.");
     }
@@ -82,15 +83,15 @@ namespace UFO {
     }
 }
 
-DECLARE_GETTER(UFO::Variation_Generator, "MODEL_PARAMETERS", Base, Args);
+DECLARE_GETTER(MODELVARIATIONS::Variation_Generator, "MODEL_PARAMETERS", Base, Args);
 
-Base* ATOOLS::Getter<Base, Args, UFO::Variation_Generator>::
+Base* ATOOLS::Getter<Base, Args, MODELVARIATIONS::Variation_Generator>::
 operator()(const Args& args) const
 {
-    return new UFO::Variation_Generator(args);
+    return new MODELVARIATIONS::Variation_Generator(args);
 }
 
-void ATOOLS::Getter<Base, Args, UFO::Variation_Generator>::
+void ATOOLS::Getter<Base, Args, MODELVARIATIONS::Variation_Generator>::
 PrintInfo(std::ostream& str, const size_t width) const
 { 
 str << "Info for Model Param Variations \n";

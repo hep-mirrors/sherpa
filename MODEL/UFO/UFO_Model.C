@@ -20,6 +20,7 @@ namespace UFO{
     p_constants        = new MODEL::ScalarConstantsMap();
     p_complexconstants = new MODEL::ComplexConstantsMap();
     p_functions        = new MODEL::ScalarFunctionsMap();
+    implements_variations = true;
 
     auto& s = ATOOLS::Settings::GetMainSettings();
     const auto& paramcard = s["UFO_PARAM_CARD"].SetDefault("").Get<std::string>();
@@ -32,7 +33,6 @@ namespace UFO{
 
   UFO_Model::~UFO_Model(){
     delete p_dataread;
-    delete p_variations;
   }
 
   // Overwrite masses of SM particles if they are
@@ -152,21 +152,4 @@ namespace UFO{
       return it->second;
     return label;
   }
-  /*
-  Complex UFO_Model::complexconjugate(const Complex& arg) { return conj(arg); }
-  Complex UFO_Model::re(const Complex& arg) { return real(arg); }
-  Complex UFO_Model::im(const Complex& arg) { return imag(arg); }
-  Complex UFO_Model::complex(double real, double imag) { return Complex(real, imag); }
-  // Need to resolve the complex std::sqrt() /  double std::sqrt() ambiguity
-  // to avoid 'nans' when double std::sqrt() is called with negative double arg
-  Complex UFO_Model::sqrt(const double& arg) { return std::sqrt(Complex(arg));}
-  Complex UFO_Model::sqrt(const Complex& arg) { return std::sqrt(arg);}
-  // Initializing doubles with expressions involving the above sqrt
-  // then requires explicit conversion
-  double  UFO_Model::ToDouble(const Complex& arg){
-    if (arg.imag()!=0.0)
-      THROW(fatal_error, "Initializing double from complex with nonzero imaginary part");
-    return arg.real();
-  }*/
-
 }

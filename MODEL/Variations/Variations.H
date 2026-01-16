@@ -1,18 +1,17 @@
-#ifndef MODEL_UFO_Variations_H
-#define MODEL_UFO_Variations_H
+#ifndef MODEL_Variations_Variations_H
+#define MODEL_Variations_Variations_H
 
 #include "ATOOLS/Org/Scoped_Settings.H"
 #include "MODEL/Main/Single_Vertex.H"
-#include "MODEL/UFO/Variation_Key.H"
-#include "MODEL/Main/Model_Base.H"
+#include "MODEL/Variations/Variation_Key.H"
 #include <vector>
 #include <map>
 #include <set>
 
-namespace UFO{
+namespace MODELVARIATIONS{
     class Variations {
         public:            
-            Variations();
+            Variations(std::vector<MODEL::Single_Vertex>* vertices_pointer, std::map<std::string, double_t>* constants_poiner);
             ~Variations();
     
             inline size_t Size() const {return v_variations.size();}
@@ -22,6 +21,8 @@ namespace UFO{
             inline std::set<MODEL::Single_Vertex*>* Dependents(std::string var_name) const {if (dependent_vertices.count(var_name) != 1) return new std::set<MODEL::Single_Vertex*>(); return dependent_vertices.at(var_name);};
 
         protected:
+            std::vector<MODEL::Single_Vertex>* p_vertices = nullptr;
+            std::map<std::string,double> * p_constants = nullptr;
             VariationKey nominal = VariationKey::DefaultKey();
             std::vector<std::string> variables;
             std::map<std::string, std::vector<double_t>> m_variations;

@@ -1,13 +1,16 @@
-#include "MODEL/UFO/Variations.H"
+#include "MODEL/Variations/Variations.H"
 
 #define MAX_VARIATION_NUMBER 1000
 
-namespace UFO {
+namespace MODELVARIATIONS {
     /*
     Constructs the Variations Object
     Iterates over the "UFO_VARIATIONS" Setting and adds the Variations to its own list
     */
-    Variations::Variations(){
+    Variations::Variations(std::vector<MODEL::Single_Vertex>* vertices_pointer, std::map<std::string, double_t>* constants_poiner){
+        if (!vertices_pointer && !constants_poiner) THROW(fatal_error, "no vertices or constants given.")
+        p_vertices = vertices_pointer;
+        p_constants = constants_poiner;
         // Deal with UFO Param Variations
         // get settings and read them to map
         msg_Out() << std::endl << "Reading the parameter variations..." << std::endl;
@@ -86,8 +89,7 @@ namespace UFO {
         for (std::string var_name : variables){
             // empty set init
             dependent_vertices.insert(std::make_pair(var_name, new std::set<MODEL::Single_Vertex*>()));
-            // go through vertices
-            std::vector<MODEL::Single_Vertex>* p_vertices = MODEL::s_model->Vertices_Pointer();
+            // go through vertices;
             for (std::vector<MODEL::Single_Vertex>::iterator it_v = p_vertices->begin(); it_v != p_vertices->end(); ++it_v) {
                 MODEL::Single_Vertex* v = it_v.base(); 
                 if (v->DependsOn(var_name)) dependent_vertices[var_name]->emplace(v);
@@ -102,8 +104,8 @@ namespace UFO {
         msg_Debugging() << "Store Nominal Paramter values... " << std::endl;
         std::vector<double_t> values = {};
         for (std::string name : variables){
-            if (MODEL::s_model->Constants()->count(name) != 1) return;
-            values.push_back(MODEL::s_model->Constants()->at(name));
+            if (p_constants->count(name) != 1) return;
+            values.push_back(p_constants->at(name));
         }
         nominal = VariationKey(variables, values);
     }
