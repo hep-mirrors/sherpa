@@ -254,6 +254,9 @@ bool Signal_Processes::FillBlob(Blob_List *const bloblist,Blob *const blob)
                 (ToString(proc->Info().m_fi.m_nlotype)));
   blob->AddData("NLOOrder",new Blob_Data<std::vector<double> >
                 (proc->Info().m_fi.m_nlocpl));
+  blob->AddData("Process",new Blob_Data<PHASIC::Process_Base*>
+		(p_mehandler->Process()));
+
 
   ME_Weight_Info* wgtinfo=proc->GetMEwgtinfo();
   if (wgtinfo) {

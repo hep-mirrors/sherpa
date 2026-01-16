@@ -984,3 +984,10 @@ Color_Matrix Process_Base::ColorMatrix(const Flavour_Vector &fls) const
   }
   return cij;
 }
+
+template Process_Base* &Blob_Data_Base::Get<Process_Base*>();
+
+namespace ATOOLS {
+  template <> Blob_Data<Process_Base*>::~Blob_Data() {}
+  template class Blob_Data<Process_Base*>;
+}
