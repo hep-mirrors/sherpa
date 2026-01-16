@@ -9,9 +9,8 @@
 #include "ATOOLS/Org/Getter_Function.H"
 #include "MODEL/Main/Coupling_Data.H"
 #include "PDF/Main/ISR_Handler.H"
+#include "MODEL/Variations/Variations.H"
 #include <map>
-
-namespace UFO {class Variations;}
 
 namespace MODEL {
 
@@ -73,6 +72,7 @@ namespace MODEL {
     std::string               m_name;
     bool                      m_elementary;
     bool                      m_hasnegativecouplingorders;
+    bool                      implements_variations = false;
 
     ScalarNumbersMap        * p_numbers;
     ScalarConstantsMap      * p_constants;
@@ -90,6 +90,8 @@ namespace MODEL {
     tscmap m_cplmap;   
 
     const PDF::ISR_Handler_Map* p_isrhandlermap;
+
+    MODELVARIATIONS::Variations* p_variations = nullptr;
 
     virtual void InitVertices() = 0;
 
@@ -146,8 +148,6 @@ namespace MODEL {
 
     const std::vector<Single_Vertex> &Vertices() const;
 
-    std::vector<Single_Vertex>* Vertices_Pointer() {return &m_v;}
-
     const std::vector<Single_Vertex> &OriginalVertices() const;
 
     // Make this map public, such that OL interface can loop over it
@@ -181,8 +181,13 @@ namespace MODEL {
     inline bool HasNegativeCouplingOrders() const 
     { return m_hasnegativecouplingorders; }
 
-    virtual UFO::Variations* GetParameterVariations() {return nullptr;}
-    virtual bool InitVariations() {return false;}
+
+    /*
+    Things for variations of parameters, per default Models dont implement them
+    */
+    inline MODELVARIATIONS::Variations* GetParameterVariations() {return p_variations;}
+    bool InitVariations() {if (!implements_variations) return false; if (!p_variations) p_variations = new MODELVARIATIONS::Variations(&m_v, p_constants); return true;}
+    inline bool ImplementsVariations() {return implements_variations;}
   };
 
   extern Model_Base *s_model;
