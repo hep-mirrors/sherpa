@@ -146,6 +146,7 @@ void Recola::Recola_Interface::RegisterDefaults() const
 {
   Settings& s = Settings::GetMainSettings();
   s["RECOLA_VERBOSITY"].SetDefault(0);
+  s["RECOLA_DRAW_LEVEL"].SetDefault(0);
   s["RECOLA_IGNORE_MODEL"].SetDefault(0);
   s["RECOLA_EXIT_ON_ERROR"].SetDefault(1);
   s["RECOLA_USE_I_IN_EWAPPROX"].SetDefault(false);
@@ -163,6 +164,7 @@ void Recola::Recola_Interface::RegisterDefaults() const
   s["RECOLA_PHOTON_MASS"].SetDefault(0.1);
   s["RECOLA_MASS_REG"].SetDefault(false);
   s["RECOLA_USE_DECAY"].SetDefault(false);
+  s["RECOLA_DISABLE_EW_ee_VERTEX"].SetDefault(false);
   // find RECOLA installation prefix with several overwrite options
   char *var=NULL;
   s_recolaprefix = rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Recola";
@@ -201,6 +203,9 @@ bool Recola::Recola_Interface::Initialize(MODEL::Model_Base *const model,
   set_print_level_squared_amplitude_rcl(recolaVerbosity);
   set_print_level_amplitude_rcl(recolaVerbosity);
   set_print_level_correlations_rcl(recolaVerbosity);
+
+  int recolaDraw = s["RECOLA_DRAW_LEVEL"].Get<int>();
+  set_draw_level_branches_rcl(recolaDraw);
 
   string recolaOutput = s["RECOLA_OUTPUT"].Get<std::string>();
   s_amptype           = s["RECOLA_AMPTYPE"].Get<int>();
@@ -356,6 +361,12 @@ int Recola::Recola_Interface::RegisterProcess(const External_ME_Args& args,
   }
   else
     select_gs_power_BornAmpl_rcl(procIndex,args.m_orders[0]);
+  
+  // disable ee coupling to Z and photon
+  if (s["RECOLA_DISABLE_EW_ee_VERTEX"].Get<bool>()) {
+    switchoff_coupling3_rcl("Z","e-","e+");
+    switchoff_coupling3_rcl("A","e-","e+");
+  }
   return procIndex;
 }
     
@@ -407,6 +418,13 @@ size_t Recola::Recola_Interface::RegisterProcess(const Process_Info& pi,
   // set collier caching level
   int cc=s["RECOLA_COLLIER_CACHE"].Get<int>();
   if (cc>=0) split_collier_cache_rcl(procIndex,cc);
+
+  // disable ee coupling to Z and photon
+  msg_Info()<<METHOD<<'\n';
+  if (s["RECOLA_DISABLE_EW_ee_VERTEX"].Get<bool>()) {
+    switchoff_coupling3_rcl("Z","e-","e+");
+    switchoff_coupling3_rcl("A","e-","e+");
+  }
 
   // find out whether we need multiple orders or not
   s_asscontribs[procIndex]=pi.m_fi.m_asscontribs;
