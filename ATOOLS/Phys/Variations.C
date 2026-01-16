@@ -831,6 +831,12 @@ namespace ATOOLS {
     return s;
   }
 
+  std::ostream &operator<<(std::ostream &s, const QCD_Variation_Params &c) {
+    return s << c.Name(Variations_Source::all,
+                       Variations_Name_Type::weight_name_convention)
+             << '\n';
+  }
+
   bool IsQCDVariationTrivial(
       double muR2fac, double muF2fac,
       PDF::PDF_Base * const pdf1,
