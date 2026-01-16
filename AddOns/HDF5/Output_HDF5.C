@@ -1,4 +1,4 @@
-#include "ATOOLS/Org/CXXFLAGS_PACKAGES.H"
+#include "ATOOLS/Org/CXXFLAGS.H"
 
 #include "SHERPA/Tools/Output_Base.H"
 #include "SHERPA/Initialization/Initialization_Handler.H"
@@ -59,6 +59,7 @@ namespace SHERPA {
       p_me=args.p_init->GetMatrixElementHandler();
       p_vars=args.p_init->GetVariations();
 
+#if defined(USING__MPI) && defined(H5_HAVE_PARALLEL)
       MPI_Info info;
       MPI_Info_create(&info);
       for (const auto& key : s["HDF5_MPIIO_PARAMS"].GetKeys()) {
@@ -68,14 +69,14 @@ namespace SHERPA {
 		  <<key<<"' -> '"<<val<<"'\n";
 	MPI_Info_set(info,key.c_str(),val.c_str());
       }
-
-#if MPI_FOUND && H5_HAVE_PARALLEL
-      p_file = new File(m_basename+".hdf5",
-			File::ReadWrite|File::Create|File::Truncate,
-			MPIOFileDriver(MPI_COMM_WORLD,MPI_INFO_NULL));
+      FileAccessProps fapl;
+      fapl.add(MPIOFileAccess{MPI_COMM_WORLD,info});
+      fapl.add(MPIOCollectiveMetadata{});
+      p_file = new File(m_basename + ".hdf5",
+                        File::ReadWrite | File::Create | File::Truncate, fapl);
 #else
-      p_file = new File(m_basename+".hdf5",
-			File::ReadWrite|File::Create|File::Truncate);
+      p_file = new File(m_basename + ".hdf5",
+                        File::ReadWrite | File::Create | File::Truncate);
 #endif
 
       // Guard against a setting that will, in general, cause synchronization
@@ -391,7 +392,7 @@ namespace SHERPA {
     void Write(const int &mode=0)
     {
       auto xfer_props = DataTransferProps{};
-#if MPI_FOUND && H5_HAVE_PARALLEL
+#if defined(USING__MPI) && defined(H5_HAVE_PARALLEL)
       xfer_props.add(UseCollectiveIO{});
 #endif
       if (mode!=1 && m_events<m_ncache) return;

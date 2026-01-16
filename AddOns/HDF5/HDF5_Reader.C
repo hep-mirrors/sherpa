@@ -1,4 +1,3 @@
-#include "ATOOLS/Org/CXXFLAGS_PACKAGES.H"
 #include "ATOOLS/Org/CXXFLAGS.H"
 
 #include <mpi.h>
@@ -158,7 +157,7 @@ namespace LHEH5 {
     void ReadHeader(File &file)
     {
       auto xfer_props = DataTransferProps{};
-#if MPI_FOUND && H5_HAVE_PARALLEL
+#if defined(USING__MPI) && defined(H5_HAVE_PARALLEL)
       xfer_props.add(UseCollectiveIO{});
 #endif
       file.getDataSet("version").read(version,xfer_props);
@@ -172,7 +171,7 @@ namespace LHEH5 {
     void ReadEvents(File &file,size_t first_event,size_t n_events)
     {
       auto xfer_props = DataTransferProps{};
-#if MPI_FOUND && H5_HAVE_PARALLEL
+#if defined(USING__MPI) && defined(H5_HAVE_PARALLEL)
       xfer_props.add(UseCollectiveIO{});
 #endif
       DataSet events(file.getDataSet("events"));
@@ -340,7 +339,7 @@ namespace LHEH5 {
     {
       m_ievt=0;
       int size(mpi->MySize()), rank(mpi->MyRank());
-#if MPI_FOUND && H5_HAVE_PARALLEL
+#if defined(USING__MPI) && defined(H5_HAVE_PARALLEL)
       FileAccessProps fapl;
       fapl.add(MPIOFileAccess{MPI_COMM_WORLD,m_info});
       fapl.add(MPIOCollectiveMetadata{});
