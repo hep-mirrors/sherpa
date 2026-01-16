@@ -16,6 +16,11 @@ remnant_parameters::remnant_parameters(const remnant_parameters& parms)
        pit != parms.params.end(); pit++) {
     params[pit->first] = pit->second;
   }
+  for (std::map<std::string, std::vector<double> >::const_iterator vit =
+         parms.param_variations.begin();
+       vit != parms.param_variations.end(); vit++) {
+    param_variations[vit->first] = vit->second;
+  }
 }
 
 Remnants_Parameters::Remnants_Parameters()
@@ -65,6 +70,9 @@ void Remnants_Parameters::SetNucleonDefaults()
   parmsP->params["MATTER_RADIUS_1"]         = 0.851;
   parmsP->params["MATTER_RADIUS_2"]         = 1.00;
   parmsP->params["MATTER_FRACTION_1"]       = 0.447;
+  parmsP->param_variations["MATTER_RADIUS_1"]   = {0.851};
+  parmsP->param_variations["MATTER_RADIUS_2"]   = {1.00};
+  parmsP->param_variations["MATTER_FRACTION_1"] = {0.447};
   parmsP->params["SOFT_EXPONENT"]           = 0.08;
   m_defaults[Flavour(kf_p_plus)]            = parmsP;
   m_defaults[Flavour(kf_p_plus).Bar()]      = new remnant_parameters(*parmsP);
@@ -93,6 +101,9 @@ void Remnants_Parameters::SetMesonDefaults()
   parmsP->params["MATTER_RADIUS_1"]         = 0.75;
   parmsP->params["MATTER_RADIUS_2"]         = 0.00;
   parmsP->params["MATTER_FRACTION_1"]       = 1.00;
+  parmsP->param_variations["MATTER_RADIUS_1"]   = {0.75};
+  parmsP->param_variations["MATTER_RADIUS_2"]   = {0.00};
+  parmsP->param_variations["MATTER_FRACTION_1"] = {1.00};
   m_defaults[Flavour(kf_pi)]                = parmsP;
   m_defaults[Flavour(kf_pi_plus)]           = new remnant_parameters(*parmsP);
   m_defaults[Flavour(kf_pi_plus).Bar()]     = new remnant_parameters(*parmsP);
@@ -120,6 +131,9 @@ void Remnants_Parameters::SetPhotonDefaults()
   parmsP->params["MATTER_RADIUS_1"]         = 0.75;
   parmsP->params["MATTER_RADIUS_2"]         = 0.00;
   parmsP->params["MATTER_FRACTION_1"]       = 1.00;
+  parmsP->param_variations["MATTER_RADIUS_1"]   = {0.75};
+  parmsP->param_variations["MATTER_RADIUS_2"]   = {0.00};
+  parmsP->param_variations["MATTER_FRACTION_1"] = {1.00};
   m_defaults[Flavour(kf_photon)]            = parmsP;
 }
 
@@ -145,6 +159,9 @@ void Remnants_Parameters::SetLeptonDefaults()
   parmsE->params["MATTER_RADIUS_1"]         = 1.e-12;
   parmsE->params["MATTER_RADIUS_2"]         = 0.;
   parmsE->params["MATTER_FRACTION_1"]       = 1.00;
+  parmsE->param_variations["MATTER_RADIUS_1"]   = {1.e-12};
+  parmsE->param_variations["MATTER_RADIUS_2"]   = {0.};
+  parmsE->param_variations["MATTER_FRACTION_1"] = {1.00};
   m_defaults[Flavour(kf_e)]                 = parmsE;
   m_defaults[Flavour(kf_e).Bar()]           = new remnant_parameters(*parmsE);
   m_defaults[Flavour(kf_mu)]                = new remnant_parameters(*parmsE);
@@ -233,18 +250,26 @@ void Remnants_Parameters::Init()
       (data[pid]["MATTER_FORM"]
        .SetDefault(defaults->m_form)
        .Get<matter_form>());
-    actuals->params["MATTER_RADIUS_1"] =
+
+    const std::vector<double> radius1_vec =
       (data[pid]["MATTER_RADIUS_1"]
-       .SetDefault(defaults->params["MATTER_RADIUS_1"])
-       .Get<double>());
-    actuals->params["MATTER_RADIUS_2"] =
+       .SetDefault(std::vector<double>{defaults->params["MATTER_RADIUS_1"]})
+       .GetVector<double>());
+    const std::vector<double> radius2_vec =
       (data[pid]["MATTER_RADIUS_2"]
-       .SetDefault(defaults->params["MATTER_RADIUS_2"])
-       .Get<double>());
-    actuals->params["MATTER_FRACTION_1"] =
+       .SetDefault(std::vector<double>{defaults->params["MATTER_RADIUS_2"]})
+       .GetVector<double>());
+    const std::vector<double> fraction_vec =
       (data[pid]["MATTER_FRACTION_1"]
-       .SetDefault(defaults->params["MATTER_FRACTION_1"])
-       .Get<double>());
+       .SetDefault(std::vector<double>{defaults->params["MATTER_FRACTION_1"]})
+       .GetVector<double>());
+
+    actuals->params["MATTER_RADIUS_1"]        = radius1_vec.front();
+    actuals->params["MATTER_RADIUS_2"]        = radius2_vec.front();
+    actuals->params["MATTER_FRACTION_1"]      = fraction_vec.front();
+    actuals->param_variations["MATTER_RADIUS_1"]   = radius1_vec;
+    actuals->param_variations["MATTER_RADIUS_2"]   = radius2_vec;
+    actuals->param_variations["MATTER_FRACTION_1"] = fraction_vec;
     m_actuals[flav] = actuals;
     msg_Out()<<"Reading in parameters for "<<flav<<" yields:\n"
               <<(*m_actuals[flav])<<"\n";
@@ -264,6 +289,26 @@ double Remnants_Parameters::Get(const ATOOLS::Flavour& flav,
   else if (flav.IsBaryon()) return m_defaults[kf_p_plus]->params[keyword];
   else if (flav.IsMeson())  return m_defaults[kf_pi_plus]->params[keyword];
   return m_defaults[kf_e]->params[keyword];
+}
+
+const std::vector<double> &
+Remnants_Parameters::GetVariationVector(const ATOOLS::Flavour& flav,
+                                   std::string            keyword) const
+{
+  static const std::vector<double> empty_variations;
+  std::map<Flavour, remnant_parameters*>::const_iterator fit = m_actuals.find(flav);
+  if (fit!=m_actuals.end()) {
+    std::map<std::string, std::vector<double> >::const_iterator vit =
+      fit->second->param_variations.find(keyword);
+    if (vit!=fit->second->param_variations.end()) return vit->second;
+  }
+  std::map<Flavour, remnant_parameters*>::const_iterator dfit = m_defaults.find(flav);
+  if (dfit!=m_defaults.end()) {
+    std::map<std::string, std::vector<double> >::const_iterator vit =
+      dfit->second->param_variations.find(keyword);
+    if (vit!=dfit->second->param_variations.end()) return vit->second;
+  }
+  return empty_variations;
 }
 
 primkT_form Remnants_Parameters::KT_Form(const ATOOLS::Flavour& flav)

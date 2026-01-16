@@ -13,6 +13,10 @@ namespace REMNANTS {
     matter_form       m_form;
     double m_GeV_fm;
     double m_fraction1, m_radius1, m_radius2, m_softexp;
+    size_t m_variation_size;
+    std::vector<double> m_fraction_variations;
+    std::vector<double> m_radius1_variations;
+    std::vector<double> m_radius2_variations;
 
     void SetDefaults(const ATOOLS::Flavour & flav);
     void Initialise();
@@ -28,6 +32,19 @@ namespace REMNANTS {
     inline const double      & Radius2()      const { return m_radius2; }
     inline const double      & Fraction1()    const { return m_fraction1; }
     inline const double      & SoftExponent() const { return m_softexp; }
+    inline size_t VariationSize() const { return m_variation_size; }
+    double Fraction1At(size_t i) const;
+    double Radius1At(size_t i) const;
+    double Radius2At(size_t i) const;
+    inline const std::vector<double> & FractionVariations() const {
+      return m_fraction_variations;
+    }
+    inline const std::vector<double> & Radius1Variations() const {
+      return m_radius1_variations;
+    }
+    inline const std::vector<double> & Radius2Variations() const {
+      return m_radius2_variations;
+    }
   };
 }
 

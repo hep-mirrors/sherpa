@@ -6,6 +6,8 @@
 #include "PDF/Main/ISR_Handler.H"
 #include "ATOOLS/Math/Function_Base.H"
 #include "ATOOLS/Math/Vector.H"
+#include <algorithm>
+#include <array>
 
 
 namespace AMISIC {
@@ -22,6 +24,9 @@ namespace AMISIC {
     double m_radius[4], m_radius2[4], m_rnorm[4], m_fraction[4];
     double m_fixradius, m_dynradius2, m_maxradius;
     double m_xmin[2], m_xmax[2];
+    size_t m_variation_index;
+    std::vector<std::array<double,4>> m_r2_variations;
+    std::vector<std::array<double,4>> m_rnorm_variations;
 
 
     void   InitializeFFParams(PDF::ISR_Handler * const isr);
@@ -60,6 +65,8 @@ namespace AMISIC {
     inline const double & DynamicRadius2()  const { return m_dynradius2; }
     inline const double & FixRadius()       const { return m_fixradius; }
     inline const double & Radius2(size_t i) const { return m_radius2[i]; }
+    size_t VariationSize() const;
+    inline void SetVariationIndex(size_t i) { m_variation_index = i; }
     inline       axis   * GetBBins()        const { return p_bbins; }
   };
 

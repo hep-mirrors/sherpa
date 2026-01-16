@@ -1,6 +1,7 @@
 #include "AMISIC++/Main/Amisic.H"
 #include "MODEL/Main/Model_Base.H"
 #include "ATOOLS/Org/Run_Parameter.H"
+#include <algorithm>
 #include <cmath> // ue-reweighting
 #include <fstream> // ue-reweighting: output
 #include <sstream> // ue-reweighting: output
@@ -116,13 +117,18 @@ bool Amisic::Initialize(MODEL::Model_Base *const model,
   m_isMinBias = false;
   // ue-reweighting
   m_sigma_nd_variations = (*mipars).GetVariationVector("SigmaND_Norm");
-  const auto max_size = m_sigma_nd_variations.size();
+  const size_t matter_variations = m_mo.VariationSize();
+  size_t max_size = std::max(m_sigma_nd_variations.size(), matter_variations);
+  if (max_size==0) max_size = 1;
+
   ResetVariationWeights(max_size);
 
   const double K_nom = m_pint.K(m_S);
+  m_mo.SetVariationIndex(0);
   double overlap_max = m_mo.EvaluateAt(0.0, K_nom);
   msg_Info() << METHOD << "(): Overlap at b = 0: nominal   (k = " << K_nom << ") = " << overlap_max << "\n";
   for (size_t i = 0; i < max_size; ++i) {
+    m_mo.SetVariationIndex(i);
     const double K_var = m_pint.KVariation(m_S, i);
     const double overlap_var = m_mo.EvaluateAt(0.0, K_var);
     msg_Info() << METHOD << "():                 variation " << i << " (k = " << K_var << ") = " << overlap_var << "\n";
@@ -130,6 +136,7 @@ bool Amisic::Initialize(MODEL::Model_Base *const model,
       overlap_max = overlap_var;
     }
   }
+  m_mo.SetVariationIndex(0);
   msg_Info() << METHOD << "(): Using maximum overlap = " << overlap_max <<  " for overestimator\n";
   m_overestimator.SetOverlapMax(overlap_max);
   m_overestimator.UpdatePrefactors();
@@ -233,13 +240,16 @@ bool Amisic::Initialize(MODEL::Model_Base *const model,
     for (int ib = 0; ib <= 500; ++ib) {
       const double b_fm = ib * 0.01;
       const double b = b_fm / hbarc_factor;
+      m_mo.SetVariationIndex(0);
       const double overlap_nom = m_mo.EvaluateAt(b, K_nom);
       m_overlap_file << b_fm << " " << overlap_nom;
       for (size_t i = 0; i < max_size; ++i) {
         const double K_var = m_pint.KVariation(m_S, i);
+        m_mo.SetVariationIndex(i);
         const double overlap_var = m_mo.EvaluateAt(b, K_var);
         m_overlap_file << " " << overlap_var;
       }
+      m_mo.SetVariationIndex(0);
       m_overlap_file << "\n";
     }
     m_overlap_file.flush();
@@ -639,6 +649,7 @@ void Amisic::ApplyKFactorReweighting(const double & s) {
 
   // Compute nominal lambda(b) and P_int(b)
   // lambda(b) = DiffXSec(s,b) = d sigma_hard(s)/d^2b
+  m_mo.SetVariationIndex(0);
   m_lambda_nominal = m_pint.DiffXSec(s, m_b);
   m_pint_nominal = 1. - std::exp(-m_lambda_nominal);
   const double K_nom = m_pint.K(s);
@@ -646,6 +657,7 @@ void Amisic::ApplyKFactorReweighting(const double & s) {
 
   // Compute lambda(b) and P_int(b) ratios for each variation
   for (size_t i = 0; i < n_variations; ++i) {
+    m_mo.SetVariationIndex(i);
     const double K_var = m_pint.KVariation(s, i);
     const double overlap_var = m_mo.EvaluateAt(m_b, K_var);
     double lambda_ratio = overlap_var / overlap_nom;
@@ -659,6 +671,7 @@ void Amisic::ApplyKFactorReweighting(const double & s) {
     if (!std::isfinite(pint_ratio) || pint_ratio<=0.) pint_ratio = 1.;
     m_pint_ratios[i] = pint_ratio;
   }
+  m_mo.SetVariationIndex(0);
 }
 
 void Amisic::ApplyVariationWeights(ATOOLS::Blob * blob) {

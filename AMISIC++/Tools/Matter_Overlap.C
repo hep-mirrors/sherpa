@@ -42,7 +42,8 @@ Matter_Overlap::Matter_Overlap() :
   // distributions of the hadron form factors ~pi^{-3/2} times the pi^2 from
   // the time-integrated overlap when they collide.
   ///////////////////////////////////////////////////////////////////////////
-  m_norm(1./M_PI), m_invGeV2fm(rpa->hBar()*rpa->c()*1.e12)
+  m_norm(1./M_PI), m_invGeV2fm(rpa->hBar()*rpa->c()*1.e12),
+  m_variation_index(0)
 {
   ///////////////////////////////////////////////////////////////////////////
   // This is a default initialization of default values.  Apart from the
@@ -67,36 +68,27 @@ double Matter_Overlap::operator()(double b) {
   // Matter overlap in three forms available: Dynamic (i.e. kinematics
   // dependent single Gaussian), single_gaussian and double_gaussian
   ///////////////////////////////////////////////////////////////////////////
-  double b2 = b*b;
-  if (m_dynamic || (m_form[0]==matter_form::single_gaussian &&
-		    m_form[1]==matter_form::single_gaussian )) {
-    double effradius2 = ( sqr(m_kradius) *
-			  (m_dynamic ? m_dynradius2 : m_radius2[0]) );
-    return m_norm/effradius2 * exp(-b2/effradius2);
-  }
-  double result = 0.;
-  for (size_t i=0;i<4;i++)
-    result += ( (m_rnorm[i]<=0.) ? 0. :
-		m_rnorm[i] * exp(-b2/(sqr(m_kradius)* m_radius2[i])) );
-  return m_norm/sqr(m_kradius) * result;
+  return EvaluateAt(b, m_kradius);
 }
 // ue-reweighting
 double Matter_Overlap::EvaluateAt(const double & b,const double & k) const {
   const double b2 = b*b;
   const double k2 = sqr(k);
   if (k2<=0.) return 0.;
-  if (m_dynamic || (m_form[0]==matter_form::single_gaussian &&
-	      m_form[1]==matter_form::single_gaussian)) {
-    double effradius2 = k2 * (m_dynamic ? m_dynradius2 : m_radius2[0]);
+  if (m_dynamic) {
+    double effradius2 = k2 * m_dynradius2;
     if (effradius2<=0.) return 0.;
     return m_norm/effradius2 * exp(-b2/effradius2);
   }
+  const size_t idx = m_variation_index;
+  const std::array<double,4> & r2 = m_r2_variations[idx];
+  const std::array<double,4> & rnorm = m_rnorm_variations[idx];
   double result = 0.;
   for (size_t i=0;i<4;i++) {
-    if (m_rnorm[i]<=0.) continue;
-    double denom = k2 * m_radius2[i];
+    if (rnorm[i]<=0.) continue;
+    double denom = k2 * r2[i];
     if (denom<=0.) continue;
-    result += m_rnorm[i] * exp(-b2/denom);
+    result += rnorm[i] * exp(-b2/denom);
   }
   return m_norm/k2 * result;
 }
@@ -168,6 +160,12 @@ void Matter_Overlap::Initialize(Remnant_Handler * const rh,
   p_bbins = new axis(nbins, bmin, m_bmax, axis_mode::log);
 }
 
+size_t Matter_Overlap::VariationSize() const {
+  size_t n0 = p_ffs[0] ? p_ffs[0]->VariationSize() : size_t(1);
+  size_t n1 = p_ffs[1] ? p_ffs[1]->VariationSize() : size_t(1);
+  return std::max(n0, n1);
+}
+
 void Matter_Overlap::InitializeFFParams(PDF::ISR_Handler * const isr) {
   ///////////////////////////////////////////////////////////////////////////
   //  Initialize form factor parameter with a suitable integrand for the
@@ -198,6 +196,9 @@ void Matter_Overlap::InitializeStaticFFParams() {
   // could be single- or double Gaussians, e.g. from Eq (SZ 19)
   ///////////////////////////////////////////////////////////////////////////
   m_dynamic = false;
+  const size_t nvar = VariationSize();
+  m_r2_variations.assign(nvar, std::array<double,4>{0.,0.,0.,0.});
+  m_rnorm_variations.assign(nvar, std::array<double,4>{0.,0.,0.,0.});
   double fraction[2], radius[2][2];
   for (size_t i=0;i<2;i++) {
     fraction[i] = ( (m_form[i]==matter_form::single_gaussian) ?
@@ -222,6 +223,31 @@ void Matter_Overlap::InitializeStaticFFParams() {
   }
   m_dynradius2 = m_radius2[0];
   m_bstep = minR/100.;
+
+  for (size_t ivar=0; ivar<nvar; ++ivar) {
+    double frac[2];
+    double rad[2][2];
+    frac[0] = (p_ffs[0]->GetForm()==matter_form::double_gaussian) ?
+      p_ffs[0]->Fraction1At(ivar) : 1.0;
+    frac[1] = (p_ffs[1]->GetForm()==matter_form::double_gaussian) ?
+      p_ffs[1]->Fraction1At(ivar) : 1.0;
+    rad[0][0] = p_ffs[0]->Radius1At(ivar);
+    rad[0][1] = p_ffs[0]->Radius2At(ivar);
+    rad[1][0] = p_ffs[1]->Radius1At(ivar);
+    rad[1][1] = p_ffs[1]->Radius2At(ivar);
+
+    for (size_t i=0;i<2;i++) {
+      for (size_t j=0;j<2;j++) {
+        const size_t idx = 2*i+j;
+        const double frac_pair = ( (i==0 ? frac[0] : 1.-frac[0]) *
+                                   (j==0 ? frac[1] : 1.-frac[1]) );
+        const double r2 = sqr(rad[0][i]) + sqr(rad[1][j]);
+        const double rnorm = (rad[0][i]>0. && rad[1][j]>0.) ? frac_pair/r2 : 0.;
+        m_r2_variations[ivar][idx] = r2;
+        m_rnorm_variations[ivar][idx] = rnorm;
+      }
+    }
+  }
 }
 
 void Matter_Overlap::InitializeDynamicFFParams(PDF::ISR_Handler * const isr) {

@@ -4,6 +4,7 @@
 #include "ATOOLS/Math/Histogram.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Message.H"
+#include <algorithm>
 
 using namespace AMISIC;
 using namespace ATOOLS;
@@ -77,7 +78,10 @@ void Interaction_Probability::FixKandSmin() {
 	    <<string(22,' ')<<"|\n";
   // ue-reweighting
   std::vector<double> sigma_nd_variations = (*mipars).GetVariationVector("SigmaND_Norm");
-  const size_t n_variations = sigma_nd_variations.size();
+  size_t n_variations = std::max(sigma_nd_variations.size(), p_mo->VariationSize());
+  if (n_variations==0) n_variations = 1;
+  const double sigma_nominal = sigma_nd_variations.empty() ? 1.0 : sigma_nd_variations.front();
+  sigma_nd_variations.resize(n_variations, sigma_nominal);
 
   // Initialize K-factor tables for variations
   p_k_variations.resize(n_variations);
@@ -96,14 +100,14 @@ void Interaction_Probability::FixKandSmin() {
       if (p_procs->GetXSecs()->XSratio(s)<=0.5) { k = 1.; break; }
       p_mo->SetKRadius(k);
       InitializeTable(sbin);
-      xs_test = gauss.Integrate(0.,p_mo->Bmax(),1.e-3);
+      xs_test = gauss.Integrate(0.,p_mo->Bmax(),1.e-8);
       if (dabs(xs_test/xs_nd)<1.e-3) { k = 0.; break; }
       /////////////////////////////////////////////////////////////////////////
       // we rescale the k with the ratio of implied and exact ND cross section,
       // until we are within 2% of each other.
       /////////////////////////////////////////////////////////////////////////
       k *= Min(5., Max(0.2, sqrt(xs_nd/xs_test)));
-    } while (dabs(1.-xs_test/xs_nd)>0.02);
+    } while (dabs(1.-xs_test/xs_nd)>0.0001);
     p_k->Fill(sbin,k);
     msg_Info()<<"   | "
 	      <<"E = "<<std::setw(8)<<std::setprecision(6)<<sqrt(s)<<": "
@@ -122,12 +126,13 @@ void Interaction_Probability::FixKandSmin() {
       // Solve for K-factor for this variation
       do {
         if (p_procs->GetXSecs()->XSratio(s)<=0.5) { k_var = 1.; break; }
+        p_mo->SetVariationIndex(i);
         p_mo->SetKRadius(k_var);
         InitializeTable(sbin);
-        xs_test_var = gauss.Integrate(0.,p_mo->Bmax(),1.e-3);
+        xs_test_var = gauss.Integrate(0.,p_mo->Bmax(),1.e-8);
         if (dabs(xs_test_var/xs_nd_var)<1.e-3) { k_var = 0.; break; }
         k_var *= Min(5., Max(0.2, sqrt(xs_nd_var/xs_test_var)));
-      } while (dabs(1.-xs_test_var/xs_nd_var)>0.02);
+      } while (dabs(1.-xs_test_var/xs_nd_var)>0.0001);
 
       p_k_variations[i]->Fill(sbin, k_var);
 
@@ -138,6 +143,7 @@ void Interaction_Probability::FixKandSmin() {
     }
 
     // Restore nominal K-factor in matter overlap
+    p_mo->SetVariationIndex(0);
     p_mo->SetKRadius(k);
     InitializeTable(sbin);
     // ue-reweighting
@@ -233,6 +239,8 @@ bool Interaction_Probability::CheckTables() {
 
 void Interaction_Probability::OutputTables() {
   std::vector<double> sigma_nd_variations = (*mipars).GetVariationVector("SigmaND_Norm"); // ue-reweighting
+  if (sigma_nd_variations.empty()) sigma_nd_variations.push_back(1.0);
+  sigma_nd_variations.resize(p_k_variations.size(), sigma_nd_variations.front());
   msg_Info()<<"   "<<std::string(77,'-')<<"\n"
 	    <<"   | "<<METHOD<<" look-up tables and values:          |\n"
 	    <<"   | "<<std::setw(15)<<"E_{c.m.} [GeV]"<<" | "
@@ -278,6 +286,7 @@ void Interaction_Probability::OutputTables() {
     // Compute tables with variation K-factor
     for (size_t sbin=0;sbin<p_sbins->m_nbins;sbin++) {
       double k_var = p_k_variations[i]->Value(sbin);
+      p_mo->SetVariationIndex(i);
       p_mo->SetKRadius(k_var);
       InitializeTable(sbin);
     }
@@ -320,6 +329,7 @@ void Interaction_Probability::OutputTables() {
     p_diffxsec = p_diffxsec_nominal;
 
     // Restore nominal K-factor
+    p_mo->SetVariationIndex(0);
     if (p_sbins->m_nbins > 0) {
       double k_nom = p_k->Value(0);
       p_mo->SetKRadius(k_nom);
