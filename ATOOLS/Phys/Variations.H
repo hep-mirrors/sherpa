@@ -235,6 +235,9 @@ namespace ATOOLS {
     const int m_deletepdfmask;
     const bool m_deletealphas;
 
+    friend std::ostream &operator<<(std::ostream &,
+                                    const QCD_Variation_Params &);
+
   private:
     //! (name -> counter value) map used to track warnings
     std::map<std::string, unsigned long> m_warnings;
