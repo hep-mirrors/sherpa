@@ -133,6 +133,7 @@ bool Amisic::Initialize(MODEL::Model_Base *const model,
   msg_Info() << METHOD << "(): Using maximum overlap = " << overlap_max <<  " for overestimator\n";
   m_overestimator.SetOverlapMax(overlap_max);
   m_overestimator.UpdatePrefactors();
+  m_overestimator.Output();
   
   // output
   const bool print_files = false;

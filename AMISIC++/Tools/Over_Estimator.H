@@ -32,7 +32,7 @@ namespace AMISIC {
     double ApproxME(const double & pt2,const double & xt);
     double ExactME(const double & pt2,const double & xt);
 
-    void Output();
+    // void Output(); // ue-reweighting
   public:
     Over_Estimator();
     ~Over_Estimator();
@@ -50,6 +50,7 @@ namespace AMISIC {
     void SetOverlapMax(double omax) { m_overlapmax = omax; }
     double OverlapMax() const { return m_overlapmax; }
     void UpdatePrefactors() { if (p_procs && p_sbins) FixMaximum(p_procs, p_sbins); }
+    void Output();
     // ue-reweighting
   };
 }
