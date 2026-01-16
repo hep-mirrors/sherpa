@@ -8,7 +8,6 @@
 #include "SHERPA/SoftPhysics/Soft_Collision_Handler.H"
 #include "PDF/Main/Shower_Base.H"
 #include "ATOOLS/Phys/Cluster_Amplitude.H"
-#include "ATOOLS/Phys/Variations.H"
 #include "PHASIC++/Main/Process_Integrator.H"
 #include "PHASIC++/Process/Single_Process.H"
 #include "PHASIC++/Process/ME_Generator_Base.H"
