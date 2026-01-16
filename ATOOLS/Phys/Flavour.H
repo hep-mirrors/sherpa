@@ -286,6 +286,10 @@ namespace ATOOLS {
     { if (!IsKK()) return 0;
       return (Kfcode()-1000000*(Kfcode()/1000000))/100000; }
 
+    inline bool CanHavePDF() const {
+      return IsHadron() || IsIon() || IsPhoton();
+    }
+
     inline bool IsDummy() const
     { return p_info->m_dummy; }
 
