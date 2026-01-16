@@ -101,7 +101,7 @@ void Interaction_Probability::FixKandSmin() {
       p_mo->SetKRadius(k);
       InitializeTable(sbin);
       xs_test = gauss.Integrate(0.,p_mo->Bmax(),1.e-8);
-      if (dabs(xs_test/xs_nd)<1.e-3) { k = 0.; break; }
+      if (dabs(xs_test/xs_nd)<1.e-8) { k = 0.; break; }
       /////////////////////////////////////////////////////////////////////////
       // we rescale the k with the ratio of implied and exact ND cross section,
       // until we are within 2% of each other.
@@ -130,7 +130,7 @@ void Interaction_Probability::FixKandSmin() {
         p_mo->SetKRadius(k_var);
         InitializeTable(sbin);
         xs_test_var = gauss.Integrate(0.,p_mo->Bmax(),1.e-8);
-        if (dabs(xs_test_var/xs_nd_var)<1.e-3) { k_var = 0.; break; }
+        if (dabs(xs_test_var/xs_nd_var)<1.e-8) { k_var = 0.; break; }
         k_var *= Min(5., Max(0.2, sqrt(xs_nd_var/xs_test_var)));
       } while (dabs(1.-xs_test_var/xs_nd_var)>0.0001);
 

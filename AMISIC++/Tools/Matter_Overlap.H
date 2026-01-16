@@ -66,7 +66,10 @@ namespace AMISIC {
     inline const double & FixRadius()       const { return m_fixradius; }
     inline const double & Radius2(size_t i) const { return m_radius2[i]; }
     size_t VariationSize() const;
-    inline void SetVariationIndex(size_t i) { m_variation_index = i; }
+    inline void SetVariationIndex(size_t i) {
+      const size_t max_idx = VariationSize() ? VariationSize() - 1 : size_t(0);
+      m_variation_index = std::min(i, max_idx);
+    }
     inline       axis   * GetBBins()        const { return p_bbins; }
   };
 
