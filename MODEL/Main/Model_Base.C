@@ -92,6 +92,7 @@ Model_Base::~Model_Base()
   }
   if (p_constants!=NULL)         delete p_constants;
   if (p_complexconstants!=NULL)  delete p_complexconstants;
+  if (p_variations)              delete p_variations;
 }
 
 void Model_Base::RegisterDefaults() const
