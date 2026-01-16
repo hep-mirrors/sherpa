@@ -2,7 +2,6 @@
 #define SHERPA_Single_Events_EvtReadin_Phase_H
 
 #include "ATOOLS/Phys/Blob_List.H"
-#include "ATOOLS/Phys/Variations.H"
 #include "SHERPA/Tools/Event_Reader_Base.H"
 #include "SHERPA/Single_Events/Event_Phase_Handler.H"
 
