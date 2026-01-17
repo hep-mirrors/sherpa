@@ -150,7 +150,6 @@ void Initialization_Handler::RegisterDefaults()
       "SCALE_VARIATIONS",
       "PDF_VARIATIONS",
       "QCUT_VARIATIONS",
-      "UFO_VARIATIONS",
       "MASSIVE_PS",
       "MASSLESS_PS"
       });
@@ -169,7 +168,6 @@ void Initialization_Handler::RegisterDefaults()
   s["PDF_VARIATIONS"].UseNoneReplacements();
   s["QCUT_VARIATIONS"].UseNoneReplacements().SetSynonyms({"CKKW_VARIATIONS"});
   s["PDF_LIBRARY"].UseNoneReplacements();
-  s["UFO_VARIATIONS"].UseNoneReplacements();
   s["MPI_PDF_LIBRARY"].UseNoneReplacements();
   s["BBR_PDF_LIBRARY"].UseNoneReplacements();
   s["ANALYSIS"].UseNoneReplacements();
