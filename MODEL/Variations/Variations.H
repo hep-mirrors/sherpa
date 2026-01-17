@@ -23,6 +23,7 @@ namespace MODELVARIATIONS{
         protected:
             std::vector<MODEL::Single_Vertex>* p_vertices = nullptr;
             std::map<std::string,double> * p_constants = nullptr;
+            ATOOLS::Settings& s = ATOOLS::Settings::GetMainSettings();
             VariationKey nominal = VariationKey::DefaultKey();
             std::vector<std::string> variables;
             std::map<std::string, std::vector<double_t>> m_variations;
@@ -31,7 +32,7 @@ namespace MODELVARIATIONS{
 
             void FindDependentVertices();
             void StoreNominal();
-            void ReadSingleParamVariation(ATOOLS::Scoped_Settings& s);
+            void ReadSingleParamVariation(std::string parameter);
 
             void CombineNames(std::vector<std::vector<std::string>> *name_combinations);
             void CombineValues(std::vector<std::string> combination, std::vector<std::vector<double_t>> *result_lists);
