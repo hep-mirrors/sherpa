@@ -13,15 +13,29 @@ namespace MODELVARIATIONS {
         p_constants = constants_poiner;
         // Deal with UFO Param Variations
         // get settings and read them to map
-        msg_Out() << std::endl << "Reading the parameter variations..." << std::endl;
-        ATOOLS::Settings& s = ATOOLS::Settings::GetMainSettings();
-        std::vector<ATOOLS::Scoped_Settings> items = s["UFO_VARIATIONS"].GetItems();
+        msg_Out() << std::endl << "Reading the model parameter variations..." << std::endl;
+        // TODO maybe put in Settings_Report
         m_variations = std::map<std::string, std::vector<double_t>>();
-        for (ATOOLS::Scoped_Settings item : items) ReadSingleParamVariation(item);
+        variables = std::vector<std::string>();
+        for (const std::string& parameter : s["MODEL_VARIATIONS"].GetKeys()) {
+            DEBUG_INFO("Reading variations of " + parameter);
+            variables.push_back(parameter);
+            ReadSingleParamVariation(parameter);
+        }
+        // Register the dependent Model vertices, check for unknown/unused variations
+        FindDependentVertices();
+        for (auto var_it=variables.begin(); var_it != variables.end(); var_it++) {
+            if (dependent_vertices[*var_it]->size() == 0){
+                msg_Out() << "\t" << *var_it << " does not seem to have anything depending on it. Ignoring it..." << std::endl;
+                variables.erase(var_it);
+                var_it--;
+            }
+        }
         // map is done here, add variation key elements from combinations
         AddAllCombinations();        
         // check if there are too many variations
         if (Size() >= MAX_VARIATION_NUMBER) THROW(invalid_input, "You are trying too many Variations, please reconsider.");
+        // Output
         if (msg_LevelIsDebugging()) {
             msg_Out() << "All read Variations are: " << std::endl;
             for (VariationKey key : v_variations){
@@ -31,14 +45,10 @@ namespace MODELVARIATIONS {
         else {
             msg_Out() << "\t--> Found " << Size() << " variations" << std::endl;
         }
-        // Register the dependent Model vertices, check for unknown/unused variations
-        FindDependentVertices();
-        for (std::string var_name : variables) {
-            if (dependent_vertices[var_name]->size() == 0) THROW(normal_exit, var_name + " does not seem to have anything depending on it. Remove Variation or fix this.") 
-        }
+
         // Store the nominal parameter values 
         StoreNominal();
-        msg_Out() << "UFO Variations read." << std::endl << std::endl;
+        msg_Out() << "Model Variations read." << std::endl << std::endl;
     }
 
     /*
@@ -53,31 +63,35 @@ namespace MODELVARIATIONS {
     /*
     read a single param variation (one variable, mulitple values) and put it in a map
     */
-    void Variations::ReadSingleParamVariation(ATOOLS::Scoped_Settings& s){
-        // read and check variable name
-        std::string name = s["NAME"].SetDefault("None").Get<std::string>();
-        variables.push_back(name);
-        if (name == "None") THROW(invalid_input, "Variable name must be given for UFO Variation");
-        // read in values
-        std::vector<double_t> values = s["VALUES"].SetDefault("-1").GetVector<double_t>();
-        if (values.back() == -1.) {
-            std::vector<double_t> range = s["RANGE"].SetDefault("-1").GetVector<double_t>();
-            if (range.back() == -1.) THROW(invalid_input, "Please specify concrete parameter values with VALUES: ... or a range with RANGE: [from, to, nr]");
-            if (range.size()!=3) THROW(invalid_input, "Please specify a range like this: RANGE: [from, to, nr]");
-            long nr(roundl(range[2]));
-            if (nr > MAX_VARIATION_NUMBER) THROW(invalid_input, "You are trying too many Variations, please reconsider.");
-            double from(range[0]), to(range[1]);
-            values.clear();
-            if (to < from) std::swap(to, from);
-            values.push_back(from);
-            if (to == from) {m_variations.insert(std::make_pair(name, values)); return;}
-            double step = (to - from)/(nr-2);
-            for (int i = 1; i < nr-1; ++i){
-                values.push_back(from + i*step);
+    void Variations::ReadSingleParamVariation(std::string parameter){
+        ATOOLS::Scoped_Settings ss = s["MODEL_VARIATIONS"][parameter].SetDefault(-1.);
+        std::vector<double_t> values = std::vector<double_t>();
+        if (ss.IsMap()){
+            DEBUG_INFO("was map");
+            if (!(ss["From"].SetDefault(-1.).IsScalar() && ss["To"].SetDefault(-1.).IsScalar() && ss["Step"].SetDefault(-1.).IsScalar()))
+                THROW(fatal_error, "Variations not formatted properly.");
+            double from = ss["From"].GetScalar<double_t>();
+            double to = ss["To"].GetScalar<double_t>();
+            double step = ss["Step"].GetScalar<double_t>();
+            if (!(from > 0 && to > 0 && step > 0 && from < to)) 
+                THROW(fatal_error, "you didnt specify the range for " + parameter + " correctly.")
+            double val = from;
+            // this is supposed to fixed FP errors
+            while (val - to <= step/2) {
+                values.push_back(val);
+                val += step;
             }
-            values.push_back(to);
         }
-        m_variations.insert(std::make_pair(name, values));
+        else if (ss.IsList()) {
+            DEBUG_INFO("was list");
+            values = ss.GetVector<double_t>();
+        }
+        else if (ss.IsScalar()) {
+            DEBUG_INFO("was scalar");
+            values.push_back(ss.GetScalar<double_t>());
+        }
+        if (values.empty() || values.back() < 0) THROW(fatal_error, "Variations not formatted properly.")
+        m_variations.insert(std::make_pair(parameter, values));
     }
 
     /*
@@ -136,10 +150,7 @@ namespace MODELVARIATIONS {
     */
     void Variations::CombineNames(std::vector<std::vector<std::string>> *name_combinations){
         // get sorted list of all variable names from the map
-        std::vector<std::string> sorted_names = {};
-        for (auto item : m_variations){
-            sorted_names.push_back(item.first);
-        }
+        std::vector<std::string> sorted_names (variables);
         std::sort(sorted_names.begin(), sorted_names.end());
         *name_combinations = {};
         for (std::string name : sorted_names)

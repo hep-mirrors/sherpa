@@ -127,6 +127,7 @@ void Model_Base::RegisterDefaults() const
     s["ALPHAQED_DEFAULT_SCALE"].SetDefault(sqr(Flavour(kf_Z).Mass()));
   else
     s["ALPHAQED_DEFAULT_SCALE"].SetDefault(0.0);
+  s["MODEL_VARIATIONS"].SetDefault("None");
 }
 
 void Model_Base::RotateVertices()
