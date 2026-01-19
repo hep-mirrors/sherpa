@@ -8,7 +8,7 @@ namespace MODELVARIATIONS {
         okay &= MODEL::s_model->InitVariations();
         p_vars = MODEL::s_model->GetParameterVariations();
         okay &= (p_vars != nullptr);
-        okay &= p_vars->IsOkay();
+        if (okay) okay &= p_vars->IsOkay();
     }
 
     /*
