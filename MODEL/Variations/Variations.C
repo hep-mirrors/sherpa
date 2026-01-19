@@ -8,46 +8,24 @@ namespace MODELVARIATIONS {
     Iterates over the "UFO_VARIATIONS" Setting and adds the Variations to its own list
     */
     Variations::Variations(std::vector<MODEL::Single_Vertex>* vertices_pointer, std::map<std::string, double_t>* constants_poiner){
-        if (!vertices_pointer && !constants_poiner) THROW(fatal_error, "no vertices or constants given.")
+        // check arguments and init attributes
+        if (!vertices_pointer && !constants_poiner) THROW(fatal_error, "no vertices or constants given by the model")
         p_vertices = vertices_pointer;
-        p_constants = constants_poiner;
-        // Deal with UFO Param Variations
-        // get settings and read them to map
-        msg_Out() << std::endl << "Reading the model parameter variations..." << std::endl;
-        // TODO maybe put in Settings_Report
+        p_constants = constants_poiner;       
         m_variations = std::map<std::string, std::vector<double_t>>();
         variables = std::vector<std::string>();
-        for (const std::string& parameter : s["MODEL_VARIATIONS"].GetKeys()) {
-            DEBUG_INFO("Reading variations of " + parameter);
-            variables.push_back(parameter);
-            ReadSingleParamVariation(parameter);
-        }
+        // read settings
+        msg_Out() << std::endl << "Reading the model parameter variations..." << std::endl;
+        ReadVariations();
         // Register the dependent Model vertices, check for unknown/unused variations
         FindDependentVertices();
-        for (auto var_it=variables.begin(); var_it != variables.end(); var_it++) {
-            if (dependent_vertices[*var_it]->size() == 0){
-                msg_Out() << "\t" << *var_it << " does not seem to have anything depending on it. Ignoring it..." << std::endl;
-                variables.erase(var_it);
-                var_it--;
-            }
-        }
-        // map is done here, add variation key elements from combinations
-        AddAllCombinations();        
-        // check if there are too many variations
-        if (Size() >= MAX_VARIATION_NUMBER) THROW(invalid_input, "You are trying too many Variations, please reconsider.");
-        // Output
-        if (msg_LevelIsDebugging()) {
-            msg_Out() << "All read Variations are: " << std::endl;
-            for (VariationKey key : v_variations){
-                msg_Out() << "\t" << key << std::endl;
-            }
-        }
-        else {
-            msg_Out() << "\t--> Found " << Size() << " variations" << std::endl;
-        }
-
+        CheckForUnusedVertices();
+        // add variation key elements from combinations
+        AddAllCombinations();         
         // Store the nominal parameter values 
         StoreNominal();
+        // check if there are too many variations
+        CheckVariationNumber();
         msg_Out() << "Model Variations read." << std::endl << std::endl;
     }
 
@@ -68,13 +46,19 @@ namespace MODELVARIATIONS {
         std::vector<double_t> values = std::vector<double_t>();
         if (ss.IsMap()){
             DEBUG_INFO("was map");
-            if (!(ss["From"].SetDefault(-1.).IsScalar() && ss["To"].SetDefault(-1.).IsScalar() && ss["Step"].SetDefault(-1.).IsScalar()))
-                THROW(fatal_error, "Variations not formatted properly.");
+            if (!(ss["From"].SetDefault(-1.).IsScalar() && ss["To"].SetDefault(-1.).IsScalar() && ss["Step"].SetDefault(-1.).IsScalar())) {
+                msg_Error() << "Variations of " << parameter << ": range not formatted properly. Ignoring it..." << std::endl;
+                variables.pop_back();
+                return;
+            }
             double from = ss["From"].GetScalar<double_t>();
             double to = ss["To"].GetScalar<double_t>();
             double step = ss["Step"].GetScalar<double_t>();
-            if (!(from > 0 && to > 0 && step > 0 && from < to)) 
-                THROW(fatal_error, "you didnt specify the range for " + parameter + " correctly.")
+            if (!(from > 0 && to > 0 && step > 0 && from < to)) {
+                msg_Error() << "Range for " << parameter << " is not specified correctly. Ignoring it..." << std::endl;
+                variables.pop_back();
+                return;
+            }
             double val = from;
             // this is supposed to fixed FP errors
             while (val - to <= step/2) {
@@ -90,7 +74,11 @@ namespace MODELVARIATIONS {
             DEBUG_INFO("was scalar");
             values.push_back(ss.GetScalar<double_t>());
         }
-        if (values.empty() || values.back() < 0) THROW(fatal_error, "Variations not formatted properly.")
+        if (values.empty() || values.back() < 0) {
+            msg_Error() << "Variations of " << parameter << " not formatted properly. Ignoring it..." << std::endl;
+            variables.pop_back();
+            return;
+        }
         m_variations.insert(std::make_pair(parameter, values));
     }
 
@@ -112,6 +100,19 @@ namespace MODELVARIATIONS {
     }
 
     /*
+    go over the parameters and remove those who dont have dependents
+    */
+    void Variations::CheckForUnusedVertices() {
+        for (auto var_it=variables.begin(); var_it != variables.end(); var_it++) {
+            if (dependent_vertices[*var_it]->size() == 0){
+                msg_Out() << "\t" << *var_it << " does not seem to have anything depending on it. Ignoring it..." << std::endl;
+                variables.erase(var_it);
+                var_it--;
+            }
+        }
+    }
+
+    /*
     Store the nominal parameter values for later reset
     */
     void Variations::StoreNominal() {
@@ -122,6 +123,17 @@ namespace MODELVARIATIONS {
             values.push_back(p_constants->at(name));
         }
         nominal = VariationKey(variables, values);
+    }
+
+    /*
+    Read the parameters from settings
+    */
+    void Variations::ReadVariations() {
+        for (const std::string& parameter : s["MODEL_VARIATIONS"].GetKeys()) {
+            DEBUG_INFO("Reading variations of " + parameter);
+            variables.push_back(parameter);
+            ReadSingleParamVariation(parameter);
+        }
     }
 
     /*
@@ -200,6 +212,32 @@ namespace MODELVARIATIONS {
             }
             *result_lists = next_result;
             i++;
+        }
+    }
+
+    /*
+    Checks the Size of the Variations to make sure everything is alright
+    */
+    void Variations::CheckVariationNumber(){
+        if (Size() >= MAX_VARIATION_NUMBER){
+            msg_Error() << "You are trying too many Variations, please reconsider. Ignoring variations... " << std::endl;
+            okay = false;
+        }
+        else if (Size() == 0) {
+            msg_Error() << "No useful Variations are found, ignoring them..." << std::endl;
+            okay = false;
+        }
+        else {
+            // Output
+            if (msg_LevelIsDebugging()) {
+                msg_Out() << "All read Variations are: " << std::endl;
+                for (VariationKey key : v_variations){
+                    msg_Out() << "\t" << key << std::endl;
+                }
+            }
+            else {
+                msg_Out() << "\t--> Found " << Size() << " variations" << std::endl;
+            }
         }
     }
 }

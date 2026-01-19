@@ -127,7 +127,7 @@ void Model_Base::RegisterDefaults() const
     s["ALPHAQED_DEFAULT_SCALE"].SetDefault(sqr(Flavour(kf_Z).Mass()));
   else
     s["ALPHAQED_DEFAULT_SCALE"].SetDefault(0.0);
-  s["MODEL_VARIATIONS"].SetDefault("None");
+  if (s["MODEL_VARIATIONS"].SetDefault("None").Get<std::string>() != "None" && !implements_variations) msg_Error() << "The model does not implement variations, ignoring them..." << std::endl;
 }
 
 void Model_Base::RotateVertices()

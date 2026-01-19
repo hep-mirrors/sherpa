@@ -1268,8 +1268,7 @@ void Single_Process::InitializeTheReweighting(ATOOLS::Variations_Mode mode)
   if (s["MODEL_VARIATIONS"].IsMap()){
     Hard_Process_Variation_Generator_Base *vargen = ATOOLS::Getter_Function<Hard_Process_Variation_Generator_Base, Args>
               ::GetObject("MODEL_PARAMETERS", Hard_Process_Variation_Generator_Arguments{this});
-    if (!vargen) THROW(fatal_error, "Cant get UFOVariations");
-    m_hard_process_variation_generators.push_back(vargen);
+    if (vargen) m_hard_process_variation_generators.push_back(vargen);
   }
 }
 
