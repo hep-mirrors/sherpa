@@ -3,6 +3,7 @@
 
 #include "BEAM/Main/Beam_Parameters.H"
 #include "ATOOLS/Phys/Flavour.H"
+#include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Math/Vector.H"
 
 namespace BEAM {
@@ -19,6 +20,7 @@ namespace BEAM {
     double             m_energy, m_polarisation;
     double             m_x, m_Q2, m_weight;
     bool               m_on;
+    double             m_R;
 
   public:
     Beam_Base(beamspectrum type,const ATOOLS::Flavour& _beam,
@@ -52,7 +54,7 @@ namespace BEAM {
     virtual inline double Xmax()          const { return 1.; }
     virtual inline double Peak()          const { return 1.; }
 
-    virtual inline double ImpactParameter() const { return 0.; }
+    virtual inline double ImpactParameter() const { return ATOOLS::ran->Get() * m_R; }
 
     virtual inline void SetInMomentum(const ATOOLS::Vec4D &in)   { m_lab = in; }
     virtual inline void SetOutMomentum(const ATOOLS::Vec4D &out) { m_vecouts[0] = out; }
