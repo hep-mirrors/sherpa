@@ -38,3 +38,11 @@ UFO Model Interface
 .. index:: UFO_PARAM_CARD
 
 .. include:: ./models/ufo-interface.rst
+
+Variation of Model Parameters
+=============================
+
+.. index:: MODEL_VARIATIONS
+
+.. include:: ./models/model_variations.rst
+

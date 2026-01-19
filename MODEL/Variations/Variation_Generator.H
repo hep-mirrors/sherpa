@@ -16,8 +16,10 @@ namespace MODELVARIATIONS {
             ~Variation_Generator() override;
             void GenerateAndFillWeightsMap(ATOOLS::Weights_Map&) override;
             void ResetWeightsMap(ATOOLS::Weights_Map&) override;
+            inline bool IsOkay() const {return okay;}
 
         protected:  
+            bool okay;
             PHASIC::Single_Process* p_proc;
             Variations* p_vars;
 
