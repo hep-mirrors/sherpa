@@ -3,11 +3,12 @@
 namespace MODELVARIATIONS {
     Variation_Generator::Variation_Generator(const Args& args){
         p_proc = dynamic_cast<PHASIC::Single_Process*> (args.p_proc);
-        if (!p_proc) THROW(fatal_error, "No Single Process was given for parameter Variation.");
-        if (!MODEL::s_model->ImplementsVariations()) THROW(fatal_error, "The model does not seem to implement Variations of external parameters :(");
-        if (!MODEL::s_model->InitVariations()) THROW(fatal_error, "Something went wrong trying to create Model-Variations");
+        okay = true;
+        okay &= (p_proc != nullptr);
+        okay &= MODEL::s_model->InitVariations();
         p_vars = MODEL::s_model->GetParameterVariations();
-        if (!p_vars) THROW(fatal_error, "Something went wrong when getting the parameter Variations.");
+        okay &= (p_vars != nullptr);
+        okay &= p_vars->IsOkay();
     }
 
     /*
@@ -88,7 +89,9 @@ DECLARE_GETTER(MODELVARIATIONS::Variation_Generator, "MODEL_PARAMETERS", Base, A
 Base* ATOOLS::Getter<Base, Args, MODELVARIATIONS::Variation_Generator>::
 operator()(const Args& args) const
 {
-    return new MODELVARIATIONS::Variation_Generator(args);
+    MODELVARIATIONS::Variation_Generator* var_gen = new MODELVARIATIONS::Variation_Generator(args);
+    if (var_gen->IsOkay()) return var_gen;
+    return nullptr;
 }
 
 void ATOOLS::Getter<Base, Args, MODELVARIATIONS::Variation_Generator>::
