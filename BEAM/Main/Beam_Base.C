@@ -2,6 +2,7 @@
 
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/My_MPI.H"
+#include "ATOOLS/Org/Run_Parameter.H"
 
 using namespace BEAM;
 
@@ -13,7 +14,8 @@ Beam_Base::Beam_Base(beamspectrum _type, const ATOOLS::Flavour& _beam,
   m_dir(_dir),
   m_energy(m_type==beamspectrum::Fixed_Target ? m_beam.Mass() : _energy),
   m_polarisation(_polarisation),
-  m_x(1.), m_Q2(0.), m_weight(1.), m_on(false) {
+  m_x(1.), m_Q2(0.), m_weight(1.), m_on(false),
+  m_R(_beam.Radius() / ATOOLS::rpa->hBar_c()) {
   if (_energy == 0.) { // Fixed Target mode
     m_lab = ATOOLS::Vec4D(m_beam.Mass(true), 0., 0., 0.);
   } else {
