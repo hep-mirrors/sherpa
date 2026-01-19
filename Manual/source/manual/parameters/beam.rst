@@ -352,7 +352,7 @@ EPA Parameters
 
         N(x) = \frac{2}{x} \left[ \chi K_0(\chi) K_1(\chi) - \frac{\chi^2}{2}
         \left( K_1^2(\chi) - K_0^2(\chi) \right) \right] \
-        \mbox{ with }\ \chi = x m_N R
+        \mbox{ with }\ \chi = x m_N R \mathrm{max}(1, b_{min})
 
   The above form factors do **not** depend on the impact parameter.
   Following the formulae above in :ref:`EPAPhysics-details`, we implement form factors :math:`F(Q^2)`
@@ -411,12 +411,13 @@ EPA Parameters
     .. math::
 
         N(x, b) = 2 b x m_N^2 \left( K_1^2(\chi) + \frac{2 m_N}{E_N} K_0^2(\chi) \right)\
-        \mbox{ with }\ \chi = x m_N R
+        \mbox{ with }\ \chi = x m_N R \mathrm{max}(1, b_{min})
 
     Please note that with this form factor, there is no need to numerically
     Fourier-transform, as it has been computed analytically.
     However, because it diverges for :math:`b \to 0`, the minimal impact parameter
-    is automatically set equal to the radius.
+    is automatically set equal to the radius (or larger,
+    depending on user-input for :math:`b_\mathrm{min}`).
 
   Defaults are ``Lepton`` for leptons, ``Dipole`` for protons and ``Woods-Saxon`` for nuclei.
 
@@ -539,4 +540,56 @@ The flavour of :option:`BEAM_1/BEAM_2` follows the definition given to  :option:
 BEAM_OVERLAP_REJECTION
 ======================
 
+.. index:: BEAM_OVERLAP_REJECTION
 
+This parameter controls the rejection of events based on the impact parameter
+:math:`b` between the colliding beams, modeling the survival probability
+against hadronic interactions. This is particularly important for
+ultra-peripheral collisions, where it implements the survival factor.
+
+The following modes are available:
+
+:samp:`{0}`
+  No impact-parameter rejection (default). **Not recommended for UPCs.**
+
+:samp:`{1}`
+  Hard-sphere rejection based on nuclear radii. Events with impact parameter
+  :math:`b < R_1 + R_2` are rejected, where :math:`R_1` and :math:`R_2` are
+  the radii of the two beam particles.
+
+:samp:`{2}`
+  Model-dependent hadronic survival probability. The specific model is
+  automatically selected based on the beam configuration:
+
+  **Proton-proton collisions:**
+    Uses the :math:`\sqrt{s}`-dependent parameterization from
+    :cite:`Bertulani:2021umy` (Section 3):
+
+    .. math::
+
+       P_{\text{surv}}(b) = \left[ 1 - \exp\left(-\frac{b^2}{2 b_0(\sqrt{s})}\right) \right]^2
+
+    with
+
+    .. math::
+
+       b_0(\sqrt{s}) = 9.81 + 0.211 \log(\sqrt{s}) + 0.0185 \log^2(\sqrt{s})
+       \quad [\text{GeV}^{-2}]
+
+    where :math:`\sqrt{s}` is the nucleon-nucleon center-of-mass energy. Events
+    are accepted with probability :math:`P_{\text{surv}}(b)`.
+
+  **Proton-nucleus and nucleus-nucleus collisions:**
+    Currently not implemented. Please contact the authors if you require these
+    modes for your analysis.
+
+The default value is ``0`` (no rejection).
+
+.. note::
+
+   For UPC processes with impact-parameter-dependent fluxes (see above), setting
+   ``BEAM_OVERLAP_REJECTION: 1`` (or `2` for proton-proton)
+   is **strongly recommended** to obtain
+   physically meaningful cross sections. Without this, the calculated cross
+   section will include unphysical contributions from small impact parameters
+   where hadronic interactions dominate.

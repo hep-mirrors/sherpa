@@ -476,7 +476,7 @@ EPA_IonApproxIntegrated::EPA_IonApproxIntegrated(const ATOOLS::Flavour& beam,
 
 double EPA_IonApproxIntegrated::N(const double& x)
 {
-  double chi = x * m_mass * m_R;
+  double chi = x * m_mass * m_R * Max(1., m_bmin);
   return 2 * m_Zsquared / x *
          (chi * SF.Kn(0, chi) * SF.Kn(1, chi) -
           chi * chi / 2. * (sqr(SF.Kn(1, chi)) - sqr(SF.Kn(0, chi))));
