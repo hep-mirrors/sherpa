@@ -244,5 +244,9 @@ class LorentzWriter:
         args = [(self._path, self._nmax, s) for s in filtered]
 
         # Run workers
-        with multiprocessing.Pool(ncores) as pool:
-            pool.map(_worker_write, args)
+        for a in args:
+            _worker_write(a)
+# Unfortunatelly multiprocessing does not work here. But let us keep the code so maybe at
+# some point the code can be re-enabled.
+#        with multiprocessing.Pool(ncores) as pool:
+#            pool.map(_worker_write, args)
