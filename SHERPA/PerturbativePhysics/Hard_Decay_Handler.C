@@ -789,6 +789,8 @@ void Hard_Decay_Handler::TreatInitialBlob(ATOOLS::Blob* blob,
   */
   Decay_Handler_Base::TreatInitialBlob(blob, amps, origparts);
 
+  // todo: scale variations
+
   double brfactor=m_br_weights ? BRFactor(blob) : 1.0;
   DEBUG_VAR(brfactor);
   Blob_Data_Base * bdbmeweight((*blob)["MEWeight"]); // retrieve the ME weight from the blob data
@@ -816,16 +818,13 @@ void Hard_Decay_Handler::TreatInitialBlob(ATOOLS::Blob* blob,
   Blob_Data_Base * bdb((*blob)["NLO_subeventlist"]);
   if (bdb) sublist=bdb->Get<NLO_subevtlist*>();
 
-
-  
-  bool NLO_Decay;
+  bool NLO_Decay(false);
   Decay_Channel* NLO_dc(NULL);
   ATOOLS::Vec4D decaying_mom;
   const ATOOLS::Particle* decaying_particle;
   Flavour decaying_flav;
   p_newsublist=new NLO_subevtlist();
   
-
   for (size_t i = 0; i < blob->NOutP(); ++i) {
     list<Particle*> decayprods_i;
     FindDecayProducts(blob->OutParticle(i), decayprods_i);
@@ -836,14 +835,6 @@ void Hard_Decay_Handler::TreatInitialBlob(ATOOLS::Blob* blob,
     Decay_Channel* dc(NULL);
     Blob_Data_Base * decay_data((*out_blob)["dc"]);
     dc = decay_data -> Get<Decay_Channel*>();
-
-
-    for(size_t i = 0; i < dc->GetDiagrams().size(); ++i) {
-      if(dc->GetDiagrams()[i]->getType() == "R"){
-        std::cout << "R subevent" << std::endl;
-      }
-    }
-
 
     if(dc -> isNLO()){
       NLO_Decay = true;
@@ -865,41 +856,50 @@ void Hard_Decay_Handler::TreatInitialBlob(ATOOLS::Blob* blob,
         const Flavour* newfls = const_cast<Flavour*>(flav_vec.data());
 
         Vec4D* newmoms = new Vec4D[newn];
-        // todo: get momentum
-        // get new flavours
+        for (int j = 0; j < newn; ++j) {
+          newmoms[j] = dipole_mom[j];
+        }
 
         // Constructor signature: (n, id_ptr, fl_ptr, mom_ptr, i, j, k)
-        //NLO_subevt *newsub(new NLO_subevt(newn, decay_ids, newfls, newmoms, 0, 0, 0)); 
-        //p_newsublist->push_back(newsub);
-
-        std::cout << "create R subevent" << std::endl;    // todo: insert subevent creation here
-
+        NLO_subevt *newsub(new NLO_subevt(newn, decay_ids, newfls, newmoms, 0, 0, 0)); 
+        p_newsublist->push_back(newsub);
       } else if(NLO_dc->GetDiagrams()[i]->getType() == "S") {
         size_t newn(3);
         ATOOLS::Vec4D_Vector dipole_mom = NLO_dc->GetDiagrams()[i]-> GetMomenta();
         static size_t decay_ids[3] = {1, 2, 12};
 
-        Flavour* newfls = new Flavour[newn];
+        const std::vector<Flavour>& flav_vec = NLO_dc->Flavs();
+        std::vector<Flavour> new_flav_vec;
+        
+        for (int i = 0; i < newn+1; ++i) {
+          if (flav_vec[i].IDName() == "G") continue;
+          new_flav_vec.push_back(flav_vec[i]);
+        }
+        const Flavour* newfls = const_cast<Flavour*>(new_flav_vec.data());
+
         Vec4D* newmoms = new Vec4D[newn];
-        // todo: get momentum
-        // get new flavours
+        for (int j = 0; j < newn; ++j) {
+          newmoms[j] = dipole_mom[j];
+        }
 
-
-        std::cout << "create S subevent" << std::endl;    // todo: insert subevent creation here
+        // Constructor signature: (n, id_ptr, fl_ptr, mom_ptr, i, j, k)
+        NLO_subevt *newsub(new NLO_subevt(newn, decay_ids, newfls, newmoms, 0, 0, 0));  // todo: change i, j, k
+        p_newsublist->push_back(newsub);
       }
     }
     //bdb->Set<NLO_subevtlist*>(p_newsublist);
     for (size_t i=0;i<p_newsublist->size();++i) {
-      //if (wgtmap_bdb) (*p_newsublist)[i]->m_results = wgtmap_bdb;
+      //if (wgtmap_bdb) (*p_newsublist)[i]->m_results = wgtmap_bdb; // ist evtl. mit m_results Get<Weights_Map>()["BR"] gemeint? 
 
-      (*p_newsublist)[i]->m_result*=brfactor;  // todo: change to new values
-      (*p_newsublist)[i]->m_results["BR"]*=brfactor;
-      (*p_newsublist)[i]->m_me*=brfactor;
-      (*p_newsublist)[i]->m_mewgt*=brfactor;
+      (*p_newsublist)[i]->m_result*=brfactor;  // Produktionsgewicht * branching ratio; 
+                                               // ist Produktionsgewicht Blob_Data_Base * bdbmeweight((*blob)["MEWeight"]); ME_Weight = bdbmeweight->Get<double>(); oder 
+                                               // Blob_Data_Base * wgtinfo((*blob)["MEWeightInfo"]); *wgtinfo->Get<ME_Weight_Info*>()?
+      (*p_newsublist)[i]->m_results["BR"]*=brfactor; // weights map: nur BR?
+      (*p_newsublist)[i]->m_me*=brfactor;     // was ist das?
+      (*p_newsublist)[i]->m_mewgt*=brfactor;  // von oben: double ME_Weight = bdbmeweight->Get<double>();?
       DEBUG_VAR(*(*p_newsublist)[i]);
     }
   }
-
 
   if (sublist) {
     // If the blob contains a NLO_subeventlist, we have to attach decays

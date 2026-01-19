@@ -489,7 +489,7 @@ double Decay_Channel::ME2_NLO(const ATOOLS::Vec4D_Vector& momenta, bool anti,
       Complex nlo_part = (*sigma)*NLO_tensor_list[i]->ReduceToMatrix(sigma->Particle());
       if (nlo_part.real() < 0.0){
         nlo_part.real(-nlo_part.real());
-        std::cout << "Warning: Decay_Channel::ME2_NLO gets a negative NLO ME2 value.  " << std::endl;
+        //std::cout << "Warning: Decay_Channel::ME2_NLO gets a negative NLO ME2 value.  " << std::endl;
       }
       if(isRealChannel){
         sumijlambda_AiAj += nlo_part * Scolourfactor;
