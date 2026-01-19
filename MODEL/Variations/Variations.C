@@ -15,7 +15,7 @@ namespace MODELVARIATIONS {
         m_variations = std::map<std::string, std::vector<double_t>>();
         variables = std::vector<std::string>();
         // read settings
-        msg_Out() << std::endl << "Reading the model parameter variations..." << std::endl;
+        msg_Out() << std::endl << "\x1b[34mReading the model parameter variations...\x1b[0m" << std::endl;
         ReadVariations();
         // Register the dependent Model vertices, check for unknown/unused variations
         FindDependentVertices();
@@ -26,7 +26,7 @@ namespace MODELVARIATIONS {
         StoreNominal();
         // check if there are too many variations
         CheckVariationNumber();
-        msg_Out() << "Model Variations read." << std::endl << std::endl;
+        msg_Out() << "\x1b[34mModel Variations read.\x1b[0m" << std::endl << std::endl;
     }
 
     /*
@@ -47,7 +47,7 @@ namespace MODELVARIATIONS {
         if (ss.IsMap()){
             DEBUG_INFO("was map");
             if (!(ss["From"].SetDefault(-1.).IsScalar() && ss["To"].SetDefault(-1.).IsScalar() && ss["Step"].SetDefault(-1.).IsScalar())) {
-                msg_Error() << "Variations of " << parameter << ": range not formatted properly. Ignoring it..." << std::endl;
+                msg_Out() << "\x1b[31m\tVariations of " << parameter << ": range not formatted properly. Ignoring it...\x1b[0m" << std::endl;
                 variables.pop_back();
                 return;
             }
@@ -55,7 +55,7 @@ namespace MODELVARIATIONS {
             double to = ss["To"].GetScalar<double_t>();
             double step = ss["Step"].GetScalar<double_t>();
             if (!(from > 0 && to > 0 && step > 0 && from < to)) {
-                msg_Error() << "Range for " << parameter << " is not specified correctly. Ignoring it..." << std::endl;
+                msg_Out() << "\x1b[31m\tRange for " << parameter << " is not specified correctly. Ignoring it...\x1b[0m" << std::endl;
                 variables.pop_back();
                 return;
             }
@@ -75,7 +75,7 @@ namespace MODELVARIATIONS {
             values.push_back(ss.GetScalar<double_t>());
         }
         if (values.empty() || values.back() < 0) {
-            msg_Error() << "Variations of " << parameter << " not formatted properly. Ignoring it..." << std::endl;
+            msg_Out() << "\x1b[31m\tVariations of " << parameter << " not formatted properly. Ignoring it...\x1b[0m" << std::endl;
             variables.pop_back();
             return;
         }
@@ -105,7 +105,7 @@ namespace MODELVARIATIONS {
     void Variations::CheckForUnusedVertices() {
         for (auto var_it=variables.begin(); var_it != variables.end(); var_it++) {
             if (dependent_vertices[*var_it]->size() == 0){
-                msg_Out() << "\t" << *var_it << " does not seem to have anything depending on it. Ignoring it..." << std::endl;
+                msg_Out() << "\t\x1b[31m" << *var_it << " does not seem to have anything depending on it. Ignoring it...\x1b[0m" << std::endl;
                 variables.erase(var_it);
                 var_it--;
             }
@@ -220,11 +220,11 @@ namespace MODELVARIATIONS {
     */
     void Variations::CheckVariationNumber(){
         if (Size() >= MAX_VARIATION_NUMBER){
-            msg_Error() << "You are trying too many Variations, please reconsider. Ignoring variations... " << std::endl;
+            msg_Out() << "\x1b[31m\tYou are trying too many Variations, please reconsider. Ignoring variations...\x1b[0m" << std::endl;
             okay = false;
         }
         else if (Size() == 0) {
-            msg_Error() << "No useful Variations are found, ignoring them..." << std::endl;
+            msg_Out() << "\x1b[31m\tNo useful variations are found, ignoring them...\x1b[0m" << std::endl;
             okay = false;
         }
         else {
@@ -236,7 +236,7 @@ namespace MODELVARIATIONS {
                 }
             }
             else {
-                msg_Out() << "\t--> Found " << Size() << " variations" << std::endl;
+                msg_Out() << "\x1b[34m\t--> Found " << Size() << " variations.\x1b[0m" << std::endl;
             }
         }
     }
