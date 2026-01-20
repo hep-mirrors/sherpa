@@ -432,6 +432,9 @@
 #define      kf_3S1_b_8_chi_b0_1P    991010551
 #define      kf_3S1_b_8_chi_b1_1P    991020553
 #define      kf_3S1_b_8_chi_b2_1P    991000555
+#define      kf_3S1_b_8_chi_b0_2P    991110551
+#define      kf_3S1_b_8_chi_b1_2P    991120553
+#define      kf_3S1_b_8_chi_b2_2P    991100555
 #define      kf_3P0_b_8_Upsilon_1S   992000553
 #define      kf_3P0_b_8_Upsilon_2S   992100553
 #define      kf_3P0_b_8_Upsilon_3S   992200553

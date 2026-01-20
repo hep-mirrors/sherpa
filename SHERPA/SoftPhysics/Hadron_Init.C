@@ -328,13 +328,18 @@ void Hadron_Init::Init() {
   AddHadron(kf_1S0_b_8_Upsilon_1S, 9.46037,  0.65, 5.25e-05, 0, 0, false, 1, 0, "1S0(b)8_Upsilon(1S)","1S0_{b}^{(8)}Upsilon(1S)");
   AddHadron(kf_1S0_b_8_Upsilon_2S, 10.0233,  0.65, 4.4e-05,  0, 0, false, 1, 0, "1S0(b)8_Upsilon(2S)","1S0_{b}^{(8)}Upsilon(2S)");
   AddHadron(kf_1S0_b_8_Upsilon_3S, 10.3553,  0.65, 2.63e-05, 0, 0, false, 1, 0, "1S0(b)8_Upsilon(3S)","1S0_{b}^{(8)}Upsilon(3S)");
-  AddHadron(kf_3S1_b_8_eta_b,      9.4,      0.65, 0.050,    0, 0, false, 1 ,0, "3S1(b)8_eta(b)(1S)","3S1_{b}^{(8)}eta_{b}(1S)");
+  
+  AddHadron(kf_3S1_b_8_eta_b,      9.4,      0.65, 0.050,    0, 2, false, 1 ,0, "3S1(b)8_eta(b)(1S)","3S1_{b}^{(8)}eta_{b}(1S)");
   AddHadron(kf_3S1_b_8_Upsilon_1S, 9.46037,  0.65, 5.25e-05, 0, 2, false, 1, 0, "3S1(b)8_Upsilon(1S)","3S1_{b}^{(8)}Upsilon(1S)");
   AddHadron(kf_3S1_b_8_Upsilon_2S, 10.0233,  0.65, 4.4e-05,  0, 2, false, 1, 0, "3S1(b)8_Upsilon(2S)","3S1_{b}^{(8)}Upsilon(2S)");
   AddHadron(kf_3S1_b_8_Upsilon_3S, 10.3553,  0.65, 2.63e-05, 0, 2, false, 1, 0, "3S1(b)8_Upsilon(3S)","3S1_{b}^{(8)}Upsilon(3S)");
   AddHadron(kf_3S1_b_8_chi_b0_1P,  9.8598,   0.65, 0.050,    0, 2, false, 1, 0, "3S1(b)8_chi(b0)(1P)","3S1_{b}^{(8)}chi_{b0}(1P)");
   AddHadron(kf_3S1_b_8_chi_b1_1P,  9.8919,   0.65, 0.001,    0, 2, false, 1, 0, "3S1(b)8_chi(b1)(1P)","3S1_{b}^{(8)}chi_{b1}(1P)");
   AddHadron(kf_3S1_b_8_chi_b2_1P,  9.9132,   0.65, 0.001,    0, 2, false, 1, 0, "3S1(b)8_chi(b2)(1P)","3S1_{b}^{(8)}chi_{b2}(1P)");
+  AddHadron(kf_3S1_b_8_chi_b0_2P,  10.2321,  0.65, 0.001,    0, 2, false, 1, 0, "3S1(b)8_chi(b0)(2P)","3S1_{b}^{(8)}chi_{b0}(2P)");
+  AddHadron(kf_3S1_b_8_chi_b1_2P,  10.2552,  0.65, 0.001,    0, 2, false, 1, 0, "3S1(b)8_chi(b1)(2P)","3S1_{b}^{(8)}chi_{b1}(2P)");
+  AddHadron(kf_3S1_b_8_chi_b2_2P,  10.2685,  0.65, 0.001,    0, 2, false, 1, 0, "3S1(b)8_chi(b2)(2P)","3S1_{b}^{(8)}chi_{b2}(2P)");
+
   AddHadron(kf_3P0_b_8_Upsilon_1S, 9.46037,  0.65, 5.25e-05, 0, 0, false, 1, 0, "3P0(b)8_Upsilon(1S)","3P0_{b}^{(8)}Upsilon(1S)");
   AddHadron(kf_3P0_b_8_Upsilon_2S, 10.0233,  0.65, 4.4e-05,  0, 0, false, 1, 0, "3P0(b)8_Upsilon(2S)","3P0_{b}^{(8)}Upsilon(2S)");
   AddHadron(kf_3P0_b_8_Upsilon_3S, 10.3553,  0.65, 2.63e-05, 0, 0, false, 1, 0, "3P0(b)8_Upsilon(3S)","3P0_{b}^{(8)}Upsilon(3S)");
