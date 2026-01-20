@@ -32,34 +32,34 @@ namespace BEAM {
     virtual bool        CalculateWeight(double, double) = 0;
     virtual void FixPosition() {}
 
-    inline bool On()                                              const { return m_on; }
-    inline const beamspectrum & Type()                            const { return m_type; }
-    inline const size_t             & NBunches()                  const { return m_Nbunches; }
-    inline const ATOOLS::Flavour    & Beam()                      const { return m_beam; }
-    inline const ATOOLS::Flavour    & Bunch(const size_t & i=0)   const { return m_bunches[i]; }
-    inline const ATOOLS::Flavour    & Remnant()                   const { return m_beam; }
-    inline const ATOOLS::Vec4D & OutMomentum(const size_t & i=0)  const { return m_vecouts[i]; }
-    inline const ATOOLS::Vec4D & InMomentum()                     const { return m_lab; }
-    inline const ATOOLS::Vec4D & Position()                       const { return m_position; }
-    inline const std::vector<ATOOLS::Flavour> & Bunches()         const { return m_bunches; }
-    inline const std::vector<ATOOLS::Vec4D> & OutMomenta()        const { return m_vecouts; }
-    inline const double & Energy()                                const { return m_energy; }
-    inline const double & Polarisation()                          const { return m_polarisation; }
-    inline bool PolarisationOn()                                  const { return (m_polarisation!=0.); }
-    inline double X()                                             const { return m_x; }
-    inline double Weight()                                        const { return m_weight; }
+    bool On()                                              const { return m_on; }
+    const beamspectrum & Type()                            const { return m_type; }
+    const size_t             & NBunches()                  const { return m_Nbunches; }
+    const ATOOLS::Flavour    & Beam()                      const { return m_beam; }
+    const ATOOLS::Flavour    & Bunch(const size_t & i=0)   const { return m_bunches[i]; }
+    const ATOOLS::Flavour    & Remnant()                   const { return m_beam; }
+    const ATOOLS::Vec4D & OutMomentum(const size_t & i=0)  const { return m_vecouts[i]; }
+    const ATOOLS::Vec4D & InMomentum()                     const { return m_lab; }
+    const ATOOLS::Vec4D & Position()                       const { return m_position; }
+    const std::vector<ATOOLS::Flavour> & Bunches()         const { return m_bunches; }
+    const std::vector<ATOOLS::Vec4D> & OutMomenta()        const { return m_vecouts; }
+    const double & Energy()                                const { return m_energy; }
+    const double & Polarisation()                          const { return m_polarisation; }
+    bool PolarisationOn()                                  const { return (m_polarisation!=0.); }
+    double X()                                             const { return m_x; }
+    double Weight()                                        const { return m_weight; }
 
-    virtual inline double Exponent()      const { return 0.; }
-    virtual inline double Xmin()          const { return 0.; }
-    virtual inline double Xmax()          const { return 1.; }
-    virtual inline double Peak()          const { return 1.; }
+    virtual double Exponent()      const { return 0.; }
+    virtual double Xmin()          const { return 0.; }
+    virtual double Xmax()          const { return 1.; }
+    virtual double Peak()          const { return 1.; }
 
-    virtual inline double ImpactParameter() const { return ATOOLS::ran->Get() * m_R; }
+    virtual double ImpactParameter() const { return ATOOLS::ran->Get() * m_R; }
 
-    virtual inline void SetInMomentum(const ATOOLS::Vec4D &in)   { m_lab = in; }
-    virtual inline void SetOutMomentum(const ATOOLS::Vec4D &out) { m_vecouts[0] = out; }
+    virtual void SetInMomentum(const ATOOLS::Vec4D &in)   { m_lab = in; }
+    virtual void SetOutMomentum(const ATOOLS::Vec4D &out) { m_vecouts[0] = out; }
 
-    inline void SetX(const double &x) { m_x=x; }
+    void SetX(const double &x) { m_x=x; }
   };
   /*!
     \file
