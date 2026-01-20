@@ -196,53 +196,35 @@ class _LorentzImpl:
         return f'j{index}->SetS({spin_or});\nreturn j{index};\n}}\n'
 
 
-def _worker_write(args):
-    path, nmax, struct = args
-
-    # Recreate writer inside the worker process
-    lorentz_template = pkgutil.get_data(
-        __name__, "Templates/lorentz_calc_template.C"
-    ).decode("utf-8")
-
-    template = Template(lorentz_template)
-    outpath = Path(path)
-
-    # Compute implementation
-    lorentz_impl = _LorentzImpl(struct)
-    lorentz_impl()
-    impl, ff_impl, ff_decl = (
-        lorentz_impl.impl,
-        lorentz_impl.ff_impl,
-        lorentz_impl.ff_decl,
-    )
-
-    # Write file
-    subs = {
-        "vertex_name": struct.name,
-        "implementation": impl,
-        "form_factor_impl": ff_impl,
-        "form_factor_decl": ff_decl,
-    }
-
-    with open(outpath / f"{struct.name}.C", "w") as f:
-        f.write(template.substitute(subs))
-
-
-
 class LorentzWriter:
     def __init__(self, path, nmax):
-        self._path = Path(path)
+        lorentz_template = pkgutil.get_data(__name__,
+                                            "Templates/lorentz_calc_template.C")
+        lorentz_template = lorentz_template.decode('utf-8')
+        self._template = Template(lorentz_template)
+        self._path = Path(path) if not isinstance(path, Path) else path
         self._nmax = nmax
 
+    def _get_impl(self, struct):
+        lorentz_impl = _LorentzImpl(struct)
+        lorentz_impl()
+        return lorentz_impl.impl, lorentz_impl.ff_impl, lorentz_impl.ff_decl
+
     def write_all(self, structs, ncores):
-        # Filter first (still in main process)
-        filtered = [
-            s for s in structs if _filter_lorentz(s, self._nmax)
-        ]
+        structs = filter(lambda struct: _filter_lorentz(struct, self._nmax),
+                         structs)
+        # minimal change: replace multiprocessing with simple loop
+        for struct in structs:
+            self.write(struct)
 
-        # Prepare arguments for workers
-        args = [(self._path, self._nmax, s) for s in filtered]
-
-        # Run workers
-        with multiprocessing.Pool(ncores) as pool:
-            pool.map(_worker_write, args)
+    def write(self, struct):
+        progress(f"Calculating lorentz structure: {struct.name}")
+        impl, ff_impl, ff_decl = self._get_impl(struct)
+        subs = {
+            'vertex_name': struct.name,
+            'implementation': impl,
+            'form_factor_impl': ff_impl,
+            'form_factor_decl': ff_decl,
+        }
+        with open(f'{self._path}/{struct.name}.C', 'w') as output:
+            output.write(self._template.substitute(subs))
