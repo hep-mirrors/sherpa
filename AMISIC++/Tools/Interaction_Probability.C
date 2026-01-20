@@ -100,14 +100,14 @@ void Interaction_Probability::FixKandSmin() {
       if (p_procs->GetXSecs()->XSratio(s)<=0.5) { k = 1.; break; }
       p_mo->SetKRadius(k);
       InitializeTable(sbin);
-      xs_test = gauss.Integrate(0.,p_mo->Bmax(),1.e-8);
-      if (dabs(xs_test/xs_nd)<1.e-8) { k = 0.; break; }
+      xs_test = gauss.Integrate(0.,p_mo->Bmax(),1.e-3);
+      if (dabs(xs_test/xs_nd)<1.e-3) { k = 0.; break; }
       /////////////////////////////////////////////////////////////////////////
       // we rescale the k with the ratio of implied and exact ND cross section,
       // until we are within 2% of each other.
       /////////////////////////////////////////////////////////////////////////
       k *= Min(5., Max(0.2, sqrt(xs_nd/xs_test)));
-    } while (dabs(1.-xs_test/xs_nd)>0.0001);
+    } while (dabs(1.-xs_test/xs_nd)>0.02);
     p_k->Fill(sbin,k);
     msg_Info()<<"   | "
 	      <<"E = "<<std::setw(8)<<std::setprecision(6)<<sqrt(s)<<": "
@@ -129,10 +129,10 @@ void Interaction_Probability::FixKandSmin() {
         p_mo->SetVariationIndex(i);
         p_mo->SetKRadius(k_var);
         InitializeTable(sbin);
-        xs_test_var = gauss.Integrate(0.,p_mo->Bmax(),1.e-8);
-        if (dabs(xs_test_var/xs_nd_var)<1.e-8) { k_var = 0.; break; }
+        xs_test_var = gauss.Integrate(0.,p_mo->Bmax(),1.e-3);
+        if (dabs(xs_test_var/xs_nd_var)<1.e-3) { k_var = 0.; break; }
         k_var *= Min(5., Max(0.2, sqrt(xs_nd_var/xs_test_var)));
-      } while (dabs(1.-xs_test_var/xs_nd_var)>0.0001);
+      } while (dabs(1.-xs_test_var/xs_nd_var)>0.02);
 
       p_k_variations[i]->Fill(sbin, k_var);
 

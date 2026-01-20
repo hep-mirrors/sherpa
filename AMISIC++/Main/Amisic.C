@@ -15,7 +15,7 @@ Amisic::Amisic() :
   m_sigmaND_norm(1.),
   m_Nscatters(0), m_producedSoft(false), m_isMinBias(false),
   m_ana(false),
-  m_lambda_nominal(0.), m_pint_nominal(0.), m_mpi_scatter_count(0) // ue-reweighting
+  m_lambda_nominal(0.), m_mpi_scatter_count(0) // ue-reweighting
 {}
 
 Amisic::~Amisic() {
@@ -25,9 +25,6 @@ Amisic::~Amisic() {
   // ue-reweighting: output
   if (m_b_weight_file.is_open()) {
     m_b_weight_file.close();
-  }
-  if (m_poisson_weight_file.is_open()) {
-    m_poisson_weight_file.close();
   }
   if (m_sudakov_weight_file.is_open()) {
     m_sudakov_weight_file.close();
@@ -162,24 +159,6 @@ bool Amisic::Initialize(MODEL::Model_Base *const model,
       m_b_weight_file << "# b_value\n";
     }
     m_b_weight_file << std::scientific << std::setprecision(10);
-  }
-  std::string poisson_filename;
-  if (max_size == 3) {
-    poisson_filename = "poisson_weights_rew.dat";
-  } else {
-    double nominal_value = m_sigma_nd_variations[0];
-    std::ostringstream oss;
-    oss << "poisson_weights_" << nominal_value << ".dat";
-    poisson_filename = oss.str();
-  }
-  m_poisson_weight_file.open(poisson_filename);
-  if (m_poisson_weight_file.is_open()) {
-    if (max_size == 3) {
-      m_poisson_weight_file << "# n_mpi w_poisson_var0 w_poisson_var1 w_poisson_var2\n";
-    } else {
-      m_poisson_weight_file << "# n_mpi\n";
-    }
-    m_poisson_weight_file << std::scientific << std::setprecision(10);
   }
   std::string sudakov_filename;
   if (max_size == 3) {
@@ -415,10 +394,20 @@ bool Amisic::FirstMinBias(Blob * blob) {
 }
 
 bool Amisic::FirstMPI(Blob * blob) {
+  ///////////////////////////////////////////////////////////////////////////
+  // ue-reweighting: Refactored FirstMPI with loop at Amisic level.
+  // This allows lambda ratios to be computed with the actual impact parameter
+  // BEFORE Sudakov evolution, ensuring correct reweighting.
+  ///////////////////////////////////////////////////////////////////////////
   UpdateForNewS();
-  if (!m_singlecollision.FirstMPI(blob)) return false;
-  m_b = m_singlecollision.B();
-  ApplyKFactorReweighting(m_S); // ue-reweighting
+  double pt2veto = sqr((*blob)["MI_Scale"]->Get<double>());
+  if (!m_singlecollision.InitFirstMPI(blob)) return false;
+  int sudakov_result;
+  do {
+    m_singlecollision.SelectNewB();
+    m_b = m_singlecollision.B();
+    ApplyKFactorReweighting(m_S);
+  } while (m_singlecollision.RunFirstMPISudakov(pt2veto) == 1);
   return true;
 }
 
@@ -449,7 +438,7 @@ bool Amisic::GenerateScatter(const size_t & type,Blob * blob) {
     }
     if (outcome) {
       // ue-reweighting
-      if (type==3) {
+      if (type==3 && blob->Type()!=btp::Signal_Process) {
         ++m_mpi_scatter_count;
       }
       // ue-reweighting
@@ -631,11 +620,10 @@ void Amisic::ResetVariationWeights(int n_variations) {
   ///////////////////////////////////////////////////////////////////////////
   m_variation_weights.resize(n_variations);
   std::fill(m_variation_weights.begin(), m_variation_weights.end(), 1.);
-  m_lambda_ratios.assign(n_variations, 1.);
-  m_pint_ratios.assign(n_variations, 1.);
-  m_sudakov_weights.assign(n_variations, 1.);
+  m_b_weights.assign(n_variations, 1.);
   m_lambda_nominal = 0.;
-  m_pint_nominal = 0.;
+  m_lambda_ratios.assign(n_variations, 1.);
+  m_sudakov_weights.assign(n_variations, 1.);
   m_mpi_scatter_count = 0;
 }
 
@@ -647,15 +635,13 @@ void Amisic::ApplyKFactorReweighting(const double & s) {
 
   const size_t n_variations = m_lambda_ratios.size();
 
-  // Compute nominal lambda(b) and P_int(b)
-  // lambda(b) = DiffXSec(s,b) = d sigma_hard(s)/d^2b
+  // Compute nominal lambda(b) = DiffXSec(s,b) = d sigma_hard(s)/d^2b
   m_mo.SetVariationIndex(0);
   m_lambda_nominal = m_pint.DiffXSec(s, m_b);
-  m_pint_nominal = 1. - std::exp(-m_lambda_nominal);
   const double K_nom = m_pint.K(s);
   const double overlap_nom = m_mo.EvaluateAt(m_b, K_nom);
 
-  // Compute lambda(b) and P_int(b) ratios for each variation
+  // Compute lambda(b) ratios for each variation
   for (size_t i = 0; i < n_variations; ++i) {
     m_mo.SetVariationIndex(i);
     const double K_var = m_pint.KVariation(s, i);
@@ -664,12 +650,9 @@ void Amisic::ApplyKFactorReweighting(const double & s) {
     if (!std::isfinite(lambda_ratio) || lambda_ratio<=0.) lambda_ratio = 1.;
     m_lambda_ratios[i] = lambda_ratio;
     
-    // P_int_var(b) = 1 - exp(-lambda_var(b))
-    const double lambda_var = m_lambda_nominal * lambda_ratio;
-    const double pint_var = 1. - std::exp(-lambda_var);
-    double pint_ratio = pint_var / m_pint_nominal;
-    if (!std::isfinite(pint_ratio) || pint_ratio<=0.) pint_ratio = 1.;
-    m_pint_ratios[i] = pint_ratio;
+    // Accumulate w_b = O_var/O_nom for this b selection
+    // This accounts for all b values tried in FirstMPI loop
+    m_b_weights[i] *= lambda_ratio;
   }
   m_mo.SetVariationIndex(0);
 }
@@ -678,8 +661,8 @@ void Amisic::ApplyVariationWeights(ATOOLS::Blob * blob) {
   ///////////////////////////////////////////////////////////////////////////
   // Compute and apply variation weights to the event.
   // The total weight is:
-  // w_total = w_poisson * w_b
-  // where w_poisson accounts for the changed MPI multiplicity distribution
+  // w_total = w_b * w_(n|b) = w_b * w_sudakov
+  // where w_sudakov accounts for the changed MPI multiplicity distribution
   // and w_b accounts for the changed impact parameter sampling distribution.
   ///////////////////////////////////////////////////////////////////////////
   if (m_variation_weights.empty()) return;
@@ -690,22 +673,14 @@ void Amisic::ApplyVariationWeights(ATOOLS::Blob * blob) {
     msg_Out()<<"[Reweighting] b="<<m_b<<", n_mpi="<<m_mpi_scatter_count<<", lambda_nom="<<m_lambda_nominal<<"\n";
   }
   std::vector<double> w_b_vec(m_variation_weights.size());
-  std::vector<double> w_poisson_vec(m_variation_weights.size());
   std::vector<double> w_sudakov_vec(m_variation_weights.size());
   std::vector<double> w_total_vec(m_variation_weights.size());
 
   for (size_t i = 0; i < m_variation_weights.size(); ++i) {
-    const double lambda_ratio = m_lambda_ratios[i];
-
     // b is selected according to d^2b O(b)
-    // w_b = O_var(b) / O_nom(b) = lambda_var / lambda_nom 
+    // w_b = O_var(b) / O_nom(b) = lambda_var / lambda_nom
     //     = lambda_ratio
-    const double w_b = (std::isfinite(lambda_ratio) && lambda_ratio>0.) ? lambda_ratio : 1.;
-
-    // w_poisson = [lambda_var^n * exp(-lambda_var)] /
-    //             [lambda_nom^n * exp(-lambda_nom)]
-    //           = (lambda_ratio)^n * exp(-(lambda_ratio - 1) * lambda_nom)
-    const double w_poisson = ComputePoissonFactor(lambda_ratio, m_mpi_scatter_count);
+    const double w_b = m_b_weights[i];
     
     // During the MPI evolution, the Sudakov weights are accumulated in
     // OnAcceptReject() calls, stored in m_sudakov_weights[i]
@@ -717,12 +692,11 @@ void Amisic::ApplyVariationWeights(ATOOLS::Blob * blob) {
 
     // output
     w_b_vec[i]       = w_b;
-    w_poisson_vec[i] = w_poisson;
     w_sudakov_vec[i] = w_sudakov;
     w_total_vec[i]   = w_total;
     if (print_diag) {
-      msg_Out()<<"                Variation "<<i<<": lambda_ratio="<<lambda_ratio<<", pint_ratio="<<m_pint_ratios[i]
-               <<"\n              w_b="<<w_b<<", w_poisson="<<w_poisson<<", w_sudakov="<<w_sudakov<<", w_total="<<w_total<<"\n";
+      msg_Out()<<"                Variation "<<i<<": "
+               <<"\n              w_b="<<w_b<<", w_sudakov="<<w_sudakov<<", w_total="<<w_total<<"\n";
     }
   }
   if (m_b_weight_file.is_open()) {
@@ -731,13 +705,6 @@ void Amisic::ApplyVariationWeights(ATOOLS::Blob * blob) {
       m_b_weight_file << " " << w_b_vec[0] << " " << w_b_vec[1] << " " << w_b_vec[2];
     }
     m_b_weight_file << "\n";
-  }
-  if (m_poisson_weight_file.is_open()) {
-    m_poisson_weight_file << m_mpi_scatter_count;
-    if (m_variation_weights.size() == 3) {
-      m_poisson_weight_file << " " << w_poisson_vec[0] << " " << w_poisson_vec[1] << " " << w_poisson_vec[2];
-    }
-    m_poisson_weight_file << "\n";
   }
   if (m_sudakov_weight_file.is_open()) {
     m_sudakov_weight_file << m_mpi_scatter_count;
@@ -774,17 +741,6 @@ void Amisic::ApplyVariationWeights(ATOOLS::Blob * blob) {
   ResetVariationWeights(n_variations);
 }
 
-double Amisic::ComputePoissonFactor(const double & ratio,
-                                   const size_t & nscatters) const {
-  if (!std::isfinite(ratio) || ratio<=0.) return 1.;
-  double log_weight = 0.;
-  if (nscatters>0 && ratio!=1.) {
-    log_weight += double(nscatters)*std::log(ratio);
-  }
-  log_weight -= m_lambda_nominal*(ratio-1.);
-  return std::exp(log_weight);
-}
-
 void Amisic::OnAcceptReject(const bool accepted, const double prob_nom) {
   ///////////////////////////////////////////////////////////////////////////
   // Callback from Single_Collision_Handler for each accept/reject event
@@ -795,7 +751,7 @@ void Amisic::OnAcceptReject(const bool accepted, const double prob_nom) {
   if (m_sudakov_weights.empty()) return;
   
   const size_t n_variations = m_sudakov_weights.size();
-  
+
   for (size_t i = 0; i < n_variations; ++i) {
     // Compute the probability for this variation
     // p = dsigma/dpt2 * overlap(b,K_var) / overestimator
@@ -803,14 +759,14 @@ void Amisic::OnAcceptReject(const bool accepted, const double prob_nom) {
     const double prob_var = prob_nom * m_lambda_ratios[i];
 
     // output
-    if (m_accept_reject_file.is_open()) {
-      m_accept_reject_file << (accepted ? 1 : 0) << " " << prob_nom;
-      for (size_t i = 0; i < n_variations; ++i) {
-        const double prob_var = prob_nom * m_lambda_ratios[i];
-        m_accept_reject_file << " " << prob_var;
-      }
-      m_accept_reject_file << "\n";
-    }
+    // if (m_accept_reject_file.is_open()) {
+    //   m_accept_reject_file << (accepted ? 1 : 0) << " " << prob_nom;
+    //   for (size_t i = 0; i < n_variations; ++i) {
+    //     const double prob_var = prob_nom * m_lambda_ratios[i];
+    //     m_accept_reject_file << " " << prob_var;
+    //   }
+    //   m_accept_reject_file << "\n";
+    // }
     
     if (accepted) {
       // Accepted: weight *= p_var / p_nom
@@ -820,14 +776,14 @@ void Amisic::OnAcceptReject(const bool accepted, const double prob_nom) {
       }
     } else {
       // Rejected: weight *= (1 - p_var) / (1 - p_nom)
-      if (prob_var >= 1.0) {
-        msg_Error()<<"WARNING in Sudakov reweighting: prob_var="<<prob_var
-                   <<" >= 1.0 for variation "<<i<<"\n"
-                   <<"  prob_nom="<<prob_nom<<", lambda_ratio="<<m_lambda_ratios[i]<<", b="<<m_b<<"\n"
-                   <<"  Cannot compute (1 - p_var)/(1 - p_nom)!\n";
-        m_sudakov_weights[i] = 0.;
-        continue;
-      }
+      // if (prob_var >= 1.0) {
+      //   msg_Error()<<"WARNING in Sudakov reweighting: prob_var="<<prob_var
+      //              <<" >= 1.0 for variation "<<i<<"\n"
+      //              <<"  prob_nom="<<prob_nom<<", lambda_ratio="<<m_lambda_ratios[i]<<", b="<<m_b<<"\n"
+      //              <<"  Cannot compute (1 - p_var)/(1 - p_nom)!\n";
+      //   m_sudakov_weights[i] = 0.;
+      //   continue;
+      // }
       const double ratio = (1. - prob_var) / (1. - prob_nom);
       if (std::isfinite(ratio) && ratio > 0.) {
         m_sudakov_weights[i] *= ratio;

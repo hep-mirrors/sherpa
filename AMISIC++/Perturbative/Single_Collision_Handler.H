@@ -61,6 +61,11 @@ namespace AMISIC {
     bool   FirstRescatter(ATOOLS::Blob * first);
     bool   FirstMinBiasScatter(ATOOLS::Blob * first);
     bool   FirstMPI(ATOOLS::Blob * signal);
+    // ue-reweighting
+    bool   InitFirstMPI(ATOOLS::Blob * signal);
+    void   SelectNewB();
+    int    RunFirstMPISudakov(double pt2veto);
+    // ue-reweighting
     bool   NextScatter(ATOOLS::Blob * blob);
     
     inline void SetResidualX(const double & E1, const double & E2) {

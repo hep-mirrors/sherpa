@@ -82,6 +82,9 @@ double Single_Collision_Handler::PrefabricateBlob(const int & mode) {
 
 bool Single_Collision_Handler::FirstMPI(Blob * signal) {
   ///////////////////////////////////////////////////////////////////////////
+  // Legacy method: Amisic::FirstMPI now uses the
+  // refactored methods InitFirstMPI, SelectNewB, and RunFirstMPISudakov.
+  //
   // Initialising the MPI sequence along the following steps:
   // 1. Extract the relevant kinematics variables, including in particular the
   //    hardest pt^2_veto scale, from the signal blob and adjust the effective
@@ -106,6 +109,50 @@ bool Single_Collision_Handler::FirstMPI(Blob * signal) {
   if (m_pt2<=m_pt2min) m_done = true;
   return true;
 }
+
+// ue-reweighting
+bool Single_Collision_Handler::InitFirstMPI(Blob * signal) {
+  ///////////////////////////////////////////////////////////////////////////
+  // Initialize FirstMPI: extract kinematics and fix dynamic radius.
+  // Does NOT select b or run Sudakov - those happen in separate steps
+  // to allow lambda ratio computation with actual b.
+  ///////////////////////////////////////////////////////////////////////////
+  double pt2veto = sqr((*signal)["MI_Scale"]->Get<double>());
+  double x1      = (*signal)["PDFInfo"]->Get<PDF_Info>().m_x1;
+  double x2      = (*signal)["PDFInfo"]->Get<PDF_Info>().m_x2;
+  p_overlap->FixDynamicRadius(x1, x2, pt2veto, pt2veto);
+  return true;
+}
+
+void Single_Collision_Handler::SelectNewB() {
+  ///////////////////////////////////////////////////////////////////////////
+  // Select a new impact parameter from the matter overlap distribution.
+  ///////////////////////////////////////////////////////////////////////////
+  m_b = p_overlap->SelectB();
+  m_pt2 = m_lastpt2 = m_S / 4.;
+}
+
+int Single_Collision_Handler::RunFirstMPISudakov(double pt2veto) {
+  ///////////////////////////////////////////////////////////////////////////
+  // Run Sudakov evolution for FirstMPI.
+  // Returns:
+  //   0 = found scatter with pt2 < pt2veto (success)
+  //  -1 = pt2 fell below pt2min (no scatter possible)
+  //   1 = pt2 still above pt2veto (need new b)
+  ///////////////////////////////////////////////////////////////////////////
+  int result = SelectPT2();
+  if (result == -1) {
+    m_lastpt2 = m_pt2;
+    m_done = true;
+    return -1;
+  }
+  if (result == 0 && m_pt2 > pt2veto) {
+    return 1;
+  }
+  m_lastpt2 = m_pt2;
+  return 0;
+}
+// ue-reweighting
 
 bool Single_Collision_Handler::FirstMinBiasScatter(Blob * blob) {
   ///////////////////////////////////////////////////////////////////////////
