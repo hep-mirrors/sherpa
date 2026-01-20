@@ -5,8 +5,6 @@
 #include "PHASIC++/Channels/ISR_Channels.H"
 #include "PHASIC++/Channels/FSR_Channels.H"
 #include "ATOOLS/Org/Info_Key.H"
-#include "ATOOLS/Org/CXXFLAGS.H"
-#include <iostream>
 
 namespace BEAM { class Beam_Spectra_Handler; }
 namespace PDF  { class ISR_Handler; }
@@ -17,7 +15,7 @@ namespace PHASIC {
   class Process_Integrator;
   class Cut_Data;
 
-  struct psmode {    
+  struct psmode {
     enum code {
       normal_call = 0,
       no_lim_isr  = 32,
@@ -31,7 +29,7 @@ namespace PHASIC {
     return (psmode::code)((int)c1&(int)c2);
   }
 
-  
+
   class Phase_Space_Point {
   private:
     Phase_Space_Handler             * p_pshandler;
@@ -42,8 +40,8 @@ namespace PHASIC {
     Cut_Data                        * p_cuts;
     Multi_Channel  * p_beamchannels, * p_isrchannels, * p_fsrchannels;
     ATOOLS::Info_Key m_beamspkey, m_beamykey, m_isrspkey, m_isrykey;
-    
-    psmode::code        m_mode;    
+
+    psmode::code        m_mode;
     size_t              m_nin, m_nout, m_nvec;
     double              m_Ecms, m_Eprime, m_smin, m_sprime, m_y;
     double              m_fixedsprime, m_fixedy;
@@ -66,6 +64,14 @@ namespace PHASIC {
       p_moms[0] = m_ISmoms[0];
       p_moms[1] = m_ISmoms[1];
     }
+
+    void SetBeamERan()
+    {
+      if (p_beamhandler->GetBeam(0)->Type() == BEAM::beamspectrum::EPA)
+        p_beamhandler->GetBeam(0)->SetERan(p_beamchannels->ERan("b_0"));
+      if (p_beamhandler->GetBeam(1)->Type() == BEAM::beamspectrum::EPA)
+        p_beamhandler->GetBeam(1)->SetERan(p_beamchannels->ERan("b_1"));
+    }
   public:
     Phase_Space_Point(Phase_Space_Handler * psh);
     ~Phase_Space_Point();
@@ -76,7 +82,7 @@ namespace PHASIC {
 		      const psmode::code & mode=psmode::normal_call);
 
     double CalculateWeight();
-    
+
     inline void SetBeamIntegrator(Multi_Channel * channels) { p_beamchannels = channels; }
     inline void SetISRIntegrator(Multi_Channel * channels)  { p_isrchannels  = channels; }
     inline void SetFSRIntegrator(Multi_Channel * channels)  { p_fsrchannels  = channels; }
@@ -131,9 +137,9 @@ namespace PHASIC {
       if (p_isrchannels && !(exclude&2))  okay = okay && p_isrchannels->ReadIn(pID+"/MC_ISR");
       if (p_fsrchannels && !(exclude&16)) okay = okay && p_fsrchannels->ReadIn(pID+"/MC_FSR");
       return okay;
-    }    
-    
-    
+    }
+
+
     void Print(std::ostream & str);
   };
 }

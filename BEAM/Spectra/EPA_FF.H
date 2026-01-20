@@ -108,25 +108,26 @@ namespace BEAM {
 
     size_t m_nxbins, m_nbbins;
 
-    double SampleImpactParameter()
+    double SampleImpactParameter(const double& ran)
     {
       // Sampling from b_abs/(b_abs^2 + R^2) with b_abs = b * R
-      m_b = sqrt((ATOOLS::sqr(m_bmin) + 1.) * std::exp(2. * ATOOLS::ran->Get() *
+      m_b = sqrt((ATOOLS::sqr(m_bmin) + 1.) * std::exp(2. * ran *
                                                        m_norm_distribution) -
                  1.);
       double weight = m_norm_distribution * (ATOOLS::sqr(m_b) + 1.) / m_b * m_R;
       // multiply radius to convert b to physical distance
       m_b *= m_R;
       return weight;
-    };
+    }
     virtual void FillTables();
 
   public:
     EPA_FF_Base(const ATOOLS::Flavour& beam, int dir);
     virtual ~EPA_FF_Base() = default;
-    virtual double N(const double& x)
+    virtual double N(const double& x, const double& ran)
     {
-      double wt = SampleImpactParameter();
+      double wt = SampleImpactParameter(ran);
+      DEBUG_FUNC("x = " << x << ", ran = " << ran << ", b = " << m_b);
       if (m_b < m_b_pl_threshold) return (*p_N_xb)(x, m_b) * wt;
       // use point-like approximation for large impact parameters
       double chi = x * m_mass * m_b;
@@ -137,7 +138,7 @@ namespace BEAM {
               2. * m_mass / ATOOLS::rpa->gen.Ecms() *
                       ATOOLS::sqr(ATOOLS::SF.Kn(0, chi))) *
              wt;
-    };
+    }
     virtual double FF(const double& Q2) = 0;
 
     void SetRadius(const double& R) { m_R = R; }
@@ -202,7 +203,7 @@ namespace BEAM {
   public:
     EPA_Point(const ATOOLS::Flavour& beam, int dir);
     void   FillTables() override {};
-    double N(const double& x) override;
+    double N(const double& x, const double& ran) override;
     double FF(const double& Q2) override { return 1.; }
   };
 
@@ -210,7 +211,7 @@ namespace BEAM {
   public:
     EPA_PointApprox(const ATOOLS::Flavour& beam, int dir);
     void   FillTables() override {};
-    double N(const double& x) override;
+    double N(const double& x, const double& ran) override;
     double FF(const double& Q2) override { return 1.; }
   };
 
@@ -225,7 +226,7 @@ namespace BEAM {
     {
       return std::pow(1. + Q2 / m_Q02, -2);
     }
-    double N(const double& x) override;
+    double N(const double& x, const double& ran) override;
   };
 
   class EPA_ProtonApprox final : public EPA_FF_Base {
@@ -236,7 +237,7 @@ namespace BEAM {
     EPA_ProtonApprox(const ATOOLS::Flavour& beam, int dir);
     void   FillTables() override {};
     double FF(const double& Q2) override { return 1.; }
-    double N(const double& x) override;
+    double N(const double& x, const double& ran) override;
   };
 
   class EPA_Gauss final : public EPA_FF_Base {
@@ -328,7 +329,7 @@ namespace BEAM {
   public:
     EPA_IonApproxIntegrated(const ATOOLS::Flavour& beam, int dir);
     void   FillTables() override {};
-    double N(const double& x) override;
+    double N(const double& x, const double& ran) override;
     double FF(const double& Q2) override { return 1.; }
   };
 

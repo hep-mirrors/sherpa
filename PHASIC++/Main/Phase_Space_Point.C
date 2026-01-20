@@ -149,6 +149,7 @@ bool Phase_Space_Point::DefineBeamKinematics() {
     p_beamchannels->GeneratePoint();
     if (!p_beamhandler->MakeBeams(p_moms))
       return false;
+    SetBeamERan();
   }
   m_sprime = p_beamhandler->Sprime();
   m_y = (p_beamhandler->GetBeam(0)->InMomentum() +

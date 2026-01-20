@@ -37,7 +37,7 @@ EPA::EPA(const Flavour& beam, const double energy, const double pol,
 bool EPA::CalculateWeight(double x, double q2)
 {
   m_x      = x;
-  m_weight = m_pref * p_ff->N(x);
+  m_weight = m_pref * p_ff->N(x, m_eran);
   if (IsNan(m_weight))
     msg_Out() << "Boink! " << METHOD << "(x = " << x << ") yields NaN.\n";
   return true;
