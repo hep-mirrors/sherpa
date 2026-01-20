@@ -138,7 +138,7 @@ void EPA_FF_Base::OutputToCSV(const std::string& type)
   } else {
     std::ofstream outfile_Nxb(prefix + "N_x_b.csv");
     outfile_Nxb << "x,b,N" << std::endl;
-    for (auto& x : xs) { outfile_Nxb << x << ",0," << N(x) << std::endl; }
+    for (auto& x : xs) { outfile_Nxb << x << ",0," << N(x, 0.) << std::endl; }
     outfile_Nxb.close();
   }
 
@@ -162,7 +162,7 @@ EPA_Point::EPA_Point(const ATOOLS::Flavour& beam, const int dir)
   m_b = rpa->hBar_c() / m_mass / (2. * M_PI / 137.);
 }
 
-double EPA_Point::N(const double& x)
+double EPA_Point::N(const double& x, const double& ran)
 {
   // Budnev et al., Phys. Rep. C15 (1974) 181, Eq. (6.17b)
   // This is in units of [1]
@@ -189,7 +189,7 @@ EPA_PointApprox::EPA_PointApprox(const ATOOLS::Flavour& beam, const int dir)
   m_b = rpa->hBar_c() / m_mass / (2. * M_PI / 137.);
 }
 
-double EPA_PointApprox::N(const double& x)
+double EPA_PointApprox::N(const double& x, const double& ran)
 {
   // Budnev et al., Phys. Rep. C15 (1974) 181, Eq. (6.17b)
   // This is in units of [1]
@@ -218,7 +218,7 @@ EPA_Proton::EPA_Proton(const ATOOLS::Flavour& beam, const int dir)
   m_b = 1.001 * m_R;
 }
 
-double EPA_Proton::N(const double& x)
+double EPA_Proton::N(const double& x, const double& ran)
 {
   auto phi = [this](double x, double z) {
     double y   = x * x / (1. - x);
@@ -260,7 +260,7 @@ EPA_ProtonApprox::EPA_ProtonApprox(const ATOOLS::Flavour& beam, const int dir)
   m_b = 1.001 * m_R;
 }
 
-double EPA_ProtonApprox::N(const double& x)
+double EPA_ProtonApprox::N(const double& x, const double& ran)
 {
   double q2min = Q2min(x);
   return (1. - x + m_mu2 * x * x / 2.) / x * log(m_q2max / q2min) -
@@ -474,7 +474,7 @@ EPA_IonApproxIntegrated::EPA_IonApproxIntegrated(const ATOOLS::Flavour& beam,
   m_b = 1.001 * m_R;
 }
 
-double EPA_IonApproxIntegrated::N(const double& x)
+double EPA_IonApproxIntegrated::N(const double& x, const double& ran)
 {
   double chi = x * m_mass * m_R * Max(1., m_bmin);
   return 2 * m_Zsquared / x *

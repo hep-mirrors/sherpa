@@ -21,6 +21,7 @@ namespace BEAM {
     double             m_x, m_Q2, m_weight;
     bool               m_on;
     double             m_R;
+    double             m_eran;
 
   public:
     Beam_Base(beamspectrum type,const ATOOLS::Flavour& _beam,
@@ -53,6 +54,8 @@ namespace BEAM {
     virtual double Xmin()          const { return 0.; }
     virtual double Xmax()          const { return 1.; }
     virtual double Peak()          const { return 1.; }
+
+    void SetERan(double eran) { m_eran = eran; }
 
     virtual double ImpactParameter() const { return ATOOLS::ran->Get() * m_R; }
 
