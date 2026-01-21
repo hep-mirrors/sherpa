@@ -129,3 +129,11 @@ double Spin_Amplitudes::getSign(){
 }
 
 
+std::array<int, 3> Spin_Amplitudes::getDipoleIndices(){
+  msg_Error()<<METHOD<<": Virtual function called."<<endl;
+  Abort();
+  std::array<int, 3> a = {0, 0, 0};
+  return a;
+}
+
+

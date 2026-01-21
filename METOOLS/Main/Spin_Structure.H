@@ -9,6 +9,7 @@
 #include <algorithm>
 #include <iomanip>
 #include "ATOOLS/Org/Exception.H"
+#include <array>
 
 namespace PHASIC {
   class Color_Integrator;
@@ -192,6 +193,7 @@ namespace METOOLS
     virtual double GetColourWeight();
     virtual ATOOLS::Vec4D_Vector GetMomenta();
     virtual double getSign();
+    virtual std::array<int, 3> getDipoleIndices();
   };
 
   /*! 

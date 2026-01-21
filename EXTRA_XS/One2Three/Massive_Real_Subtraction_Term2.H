@@ -11,5 +11,9 @@ namespace EXTRAXS {
 
     void Calculate_real_subtraction(const ATOOLS::Vec4D_Vector& momenta,
                                     bool anti=false) override;
+
+    std::array<int, 3> getDipoleIndices() override {
+      return std::array<int, 3>{3, 1, 2};
+    }
   };
 }

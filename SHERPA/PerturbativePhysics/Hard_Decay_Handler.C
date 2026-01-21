@@ -882,8 +882,11 @@ void Hard_Decay_Handler::TreatInitialBlob(ATOOLS::Blob* blob,
           newmoms[j] = dipole_mom[j];
         }
 
+        std::array<int, 3> dipole_indices;
+        dipole_indices = NLO_dc->GetDiagrams()[i]-> getDipoleIndices();
+
         // Constructor signature: (n, id_ptr, fl_ptr, mom_ptr, i, j, k)
-        NLO_subevt *newsub(new NLO_subevt(newn, decay_ids, newfls, newmoms, 0, 0, 0));  // todo: change i, j, k
+        NLO_subevt *newsub(new NLO_subevt(newn, decay_ids, newfls, newmoms, dipole_indices[0], dipole_indices[1], dipole_indices[2]));  // todo: change i, j, k
         p_newsublist->push_back(newsub);
       }
     }
