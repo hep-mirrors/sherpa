@@ -136,9 +136,8 @@ void Interaction_Probability::FixKandSmin() {
 
       p_k_variations[i]->Fill(sbin, k_var);
 
-      msg_Info()<<"   |  Variation "<<i<<" (SigmaND_Norm = "
-                <<std::setw(4)<<std::setprecision(2)<<sigma_nd_variations[i]<<"): "
-                <<"xs_ND = "<<std::setw(12)<<std::setprecision(6)<<xs_nd_var<<" -> "
+      msg_Info()<<"   | Variation "<<i<<" : "
+                <<"xs_ND = "<<std::setw(34)<<std::setprecision(6)<<xs_nd_var<<" -> "
                 <<"k = "<<std::setw(8)<<std::setprecision(6)<<k_var<<"  |\n";
     }
 
@@ -292,7 +291,7 @@ void Interaction_Probability::OutputTables() {
     }
 
     msg_Info()<<"   "<<std::string(77,'-')<<"\n"
-              <<"   | "<<METHOD<<" Variation "<<i<<" (SigmaND_Norm = "<<std::setw(4)<<std::setprecision(2)<<sigma_nd_variations[i]<<"):  |\n"
+              <<"   | "<<METHOD<<" Variation "<<i<<std::setw(25)<<": "<<"|\n"
               <<"   | "<<std::setw(15)<<"E_{c.m.} [GeV]"<<" | "
               <<std::setw(6)<<"b [fm]"<<" | "
               <<std::setw(14)<<"xs_hard/xs_ND"<<" | "
