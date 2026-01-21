@@ -7,8 +7,6 @@
 namespace PDF {
 
   class Structure_Function : public ISR_Base {
-  private:
-    unsigned int m_A;
   public:
 
     // constructor

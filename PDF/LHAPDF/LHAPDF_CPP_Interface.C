@@ -20,6 +20,7 @@ namespace PDF {
     std::map<int, bool>   m_calculated;
     double        m_x,m_Q2;
     std::vector<int> m_disallowedflavour;
+    unsigned int m_A;
   public:
     LHAPDF_CPP_Interface(const ATOOLS::Flavour,std::string,int);
     ~LHAPDF_CPP_Interface();
@@ -32,7 +33,7 @@ namespace PDF {
     double GetDefaultAlpha();
     double GetDefaultScale();
     int GetFlavourScheme();
-    
+
     void SetAlphaSInfo();
     void SetPDFMember();
 
@@ -46,7 +47,7 @@ using namespace ATOOLS;
 LHAPDF_CPP_Interface::LHAPDF_CPP_Interface(const ATOOLS::Flavour _bunch,
                                            const std::string _set,
                                            const int _member) :
-  p_pdf(NULL)
+  p_pdf(NULL), m_A(1)
 {
   m_set=_set;
   m_smember=_member;
@@ -55,6 +56,7 @@ LHAPDF_CPP_Interface::LHAPDF_CPP_Interface(const ATOOLS::Flavour _bunch,
   Scoped_Settings s{ Settings::GetMainSettings()["LHAPDF"] };
 
   m_bunch = _bunch;
+  if (m_bunch.IsIon()) m_A = m_bunch.GetMassNumber();
   static std::set<std::string> s_init;
   if (s_init.find(m_set)==s_init.end()) {
     m_member=abs(m_smember);
@@ -195,7 +197,7 @@ LHAPDF_CPP_Interface::~LHAPDF_CPP_Interface()
 }
 
 
-PDF_Base * LHAPDF_CPP_Interface::GetCopy() 
+PDF_Base * LHAPDF_CPP_Interface::GetCopy()
 {
   return new LHAPDF_CPP_Interface(m_bunch,m_set,m_smember);
 }
@@ -249,7 +251,7 @@ double LHAPDF_CPP_Interface::GetXPDF(const kf_code& kf, bool anti) {
     m_xfx[kfc]=p_pdf->xfxQ2(kfc,m_x,m_Q2);
     m_calculated[kfc]=true;
   }
-  return m_rescale*m_xfx[kfc];
+  return m_rescale*m_xfx[kfc]*m_A;
 }
 
 DECLARE_PDF_GETTER(LHAPDF_Getter);
