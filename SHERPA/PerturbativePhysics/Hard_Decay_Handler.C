@@ -818,12 +818,11 @@ void Hard_Decay_Handler::TreatInitialBlob(ATOOLS::Blob* blob,
   Blob_Data_Base * bdb((*blob)["NLO_subeventlist"]);
   if (bdb) sublist=bdb->Get<NLO_subevtlist*>();
 
-  bool NLO_Decay(false);
+  bool real_decay(false);
   Decay_Channel* NLO_dc(NULL);
   ATOOLS::Vec4D decaying_mom;
   const ATOOLS::Particle* decaying_particle;
   Flavour decaying_flav;
-  p_newsublist=new NLO_subevtlist();
   
   for (size_t i = 0; i < blob->NOutP(); ++i) {
     list<Particle*> decayprods_i;
@@ -836,16 +835,17 @@ void Hard_Decay_Handler::TreatInitialBlob(ATOOLS::Blob* blob,
     Blob_Data_Base * decay_data((*out_blob)["dc"]);
     dc = decay_data -> Get<Decay_Channel*>();
 
-    if(dc -> isNLO()){
-      NLO_Decay = true;
+    if(dc -> GetDiagrams()[0]->getType() == "R" || dc -> GetDiagrams()[0]->getType() == "S"){
+      real_decay = true;
       NLO_dc = dc;
       decaying_mom = op->Momentum();
       decaying_particle = op;
       decaying_flav = op->Flav();
+      p_newsublist=new NLO_subevtlist();
     }
   }
 
-  if(NLO_Decay){  // create real subevents
+  if(real_decay){  // create real subevents
     for(size_t i = 0; i < NLO_dc->GetDiagrams().size(); ++i) {
       if(NLO_dc->GetDiagrams()[i]->getType() == "R"){
         size_t newn(4);
