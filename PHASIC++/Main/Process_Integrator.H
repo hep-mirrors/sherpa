@@ -51,16 +51,16 @@ namespace PHASIC {
     double m_threshold, m_enhancefac, m_maxeps, m_rsfac, m_meanenhfunc=-1, m_effi = -1, m_effevperev=-1;
     double m_external_selectionweight;
 
-    long unsigned int m_n, m_itmin, m_itmax;
+    long unsigned int m_n, m_ncut, m_itmin, m_itmax;
 
-    double m_max, m_totalxs, m_totalsum, m_totalsumsqr, m_totalerr;
-    double m_ssum, m_ssumsqr, m_smax, m_ssigma2, m_wmin;
-    double m_mssum, m_mssumsqr, m_msn;
+    double m_max, m_totalxs, m_totalsum, m_totalsumabs, m_totalsumenh, m_totalsumenhabs, m_totalsumenhsqr, m_totalsumsqr, m_totalerr;
+    double m_ssum, m_ssumabs, m_ssumenh, m_ssumenhabs, m_ssumenhsqr, m_ssumsqr, m_smax, m_ssigma2, m_wmin;
+    double m_mssum, m_mssumabs, m_mssumenh, m_mssumenhabs, m_mssumenhsqr, m_mssumsqr, m_msn, m_msncut;
 
     std::vector<double> m_vsmax, m_vsum;
     std::vector<long unsigned int> m_vsn;
 
-    long unsigned int m_sn, m_son;
+    long unsigned int m_sn, m_son, m_sncut;
 
     bool m_writeout;
 
@@ -77,6 +77,7 @@ namespace PHASIC {
     double TotalSigma2() const;
     double TotalResult() const;
     double TotalVar() const;
+    std::vector<double> TotalEffiAndEffEvPerEv(bool unweighted) const;
 
   public:
 
@@ -161,6 +162,9 @@ namespace PHASIC {
     inline const ATOOLS::Vec4D_Vector &Momenta() const { return p_momenta;  }
     inline ATOOLS::Vec4D_Vector       &Momenta()       { return p_momenta;  }
 
+    inline double   GetSSumEnh() const     { return m_ssumenh;    }
+    inline double   GetSSumEnhAbs() const  { return m_ssumenhabs;    }
+    inline double   GetSNCut() const       { return m_sncut;    }
     inline double   Sum() const     { return m_totalsum;    }
     inline double   SumSqr() const  { return m_totalsumsqr; }
     inline long int Points() const  { return m_n+m_sn;      }
@@ -178,6 +182,7 @@ namespace PHASIC {
     inline hls::scheme HelicityScheme() const { return m_helicityscheme; }
 
     inline double Efficiency() const { return m_effi; }
+    inline double EffEvPerEv() const { return m_effevperev; }
 
     inline void SetBeam(BEAM::Beam_Spectra_Handler *const beam) 
     { p_beamhandler=beam; }

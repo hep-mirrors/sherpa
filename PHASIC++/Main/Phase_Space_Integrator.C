@@ -226,6 +226,9 @@ bool Phase_Space_Integrator::AddPoint(const double value)
     bool optimized=false;
     bool fotime = false;
     msg_Tracking()<<" n="<<m_ncontrib<<"  iter="<<m_iter<<endl;
+    //call TotalEffiAndEffEvPerEv() before OptimizeResult to get Neff/N from current step
+    std::vector<double> weighted_effiandeffevperev = p_psh->Process()->TotalEffiAndEffEvPerEv(0);
+    std::vector<double> unweighted_effiandeffevperev = p_psh->Process()->TotalEffiAndEffEvPerEv(1);
     if (p_psh->Stats().size()<m_nopt-1) {
       p_psh->Optimize();
       p_psh->Process()->OptimizeResult();
@@ -236,6 +239,11 @@ bool Phase_Space_Integrator::AddPoint(const double value)
       m_iter*=pow(2.,m_npower);
     }
     else if (p_psh->Stats().size()==m_nopt-1) {
+      p_psh->Optimize();
+      //reset partial result to separate before and after optmisation
+      p_psh->Process()->OptimizeResult();
+      //restart calculation of cut efficiency
+      optimized = true;
       p_psh->Process()->ResetMax(0);
       p_psh->EndOptimize();
       p_psh->Process()->ResetMax(1);
@@ -256,7 +264,7 @@ bool Phase_Space_Integrator::AddPoint(const double value)
                 <<p_psh->Process()->TotalVar()*rpa->Picobarn()
                 <<" pb <-> "<<m_maxabserror<<" pb"<<om::reset<<" ) "
                 <<m_ncontrib<<" ( "<<m_n<<" -> "<<(m_ncstep*1000/m_nstep)/10.0
-                <<" % )"<<endl;
+                <<" % )";
     }
     else {
       msg_Info()<<om::blue
@@ -265,8 +273,10 @@ bool Phase_Space_Integrator::AddPoint(const double value)
                 <<p_psh->Process()->TotalVar()*rpa->Picobarn()
                 <<" pb = "<<error*100<<" %"<<om::reset<<" ) "
                 <<m_ncontrib<<" ( "<<m_n<<" -> "<<(m_ncstep*1000/m_nstep)/10.0
-                <<" % )"<<endl;
+                <<" % )";
     }
+    msg_Info()<<" <- "<<weighted_effiandeffevperev[1]<<" Neff/N (weighted)";
+    msg_Info()<<" <- "<<" exp.eff.: "<<unweighted_effiandeffevperev[0]<<", "<<unweighted_effiandeffevperev[1]<<" Neff/N (unweighted)"<<endl;
     if (optimized) m_nstep = m_ncstep = 0;
     if (fotime) { msg_Info()<<"full optimization: "; }
     else        { msg_Info()<<"integration time:  "; }
