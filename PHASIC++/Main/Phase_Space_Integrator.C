@@ -225,6 +225,9 @@ bool Phase_Space_Integrator::AddPoint(const double value)
     bool optimized=false;
     bool fotime = false;
     msg_Tracking()<<" n="<<m_ncontrib<<"  iter="<<m_iter<<endl;
+    //call TotalEffiAndEffEvPerEv() before OptimizeResult to get Neff/N from current step
+    std::vector<double> weighted_effiandeffevperev = p_psh->Process()->TotalEffiAndEffEvPerEv(0);
+    std::vector<double> unweighted_effiandeffevperev = p_psh->Process()->TotalEffiAndEffEvPerEv(1);
     if (p_psh->Stats().size()<m_nopt-1) {
       p_psh->Optimize();
       p_psh->Process()->OptimizeResult();
@@ -260,7 +263,7 @@ bool Phase_Space_Integrator::AddPoint(const double value)
                 <<p_psh->Process()->TotalVar()*rpa->Picobarn()
                 <<" pb <-> "<<m_maxabserror<<" pb"<<om::reset<<" ) "
                 <<m_ncontrib<<" ( "<<m_n<<" -> "<<(m_ncstep*1000/m_nstep)/10.0
-                <<" % )"<<endl;
+                <<" % )";
     }
     else {
       msg_Info()<<om::blue
@@ -269,11 +272,13 @@ bool Phase_Space_Integrator::AddPoint(const double value)
                 <<p_psh->Process()->TotalVar()*rpa->Picobarn()
                 <<" pb = "<<error*100<<" %"<<om::reset<<" ) "
                 <<m_ncontrib<<" ( "<<m_n<<" -> "<<(m_ncstep*1000/m_nstep)/10.0
-                <<" % )"<<endl;
+                <<" % )";
     }
+    msg_Info()<<endl<<om::brown<<" "<<weighted_effiandeffevperev[1]<<om::reset<<" Neff/N (weighted)";
+    msg_Info()<<" | "<<" exp.eff.: "<<om::brown<<unweighted_effiandeffevperev[0]<<om::reset<<", "<<om::brown<<unweighted_effiandeffevperev[1]<<om::reset<<" Neff/N (unweighted)"<<endl;
     if (optimized) m_nstep = m_ncstep = 0;
-    if (fotime) { msg_Info()<<"full optimization: "; }
-    else        { msg_Info()<<"integration time:  "; }
+    if (fotime) { msg_Info()<<" full optimization: "; }
+    else        { msg_Info()<<" integration time:  "; }
     msg_Info()<<" ( "<<FormatTime(size_t(time-m_starttime))<<" elapsed / "
               <<FormatTime(size_t(timeest)-size_t((time-m_starttime)))
               <<" left ) ["<<rpa->gen.Timer().StrFTime("%H:%M:%S")<<"]"<<endl;
