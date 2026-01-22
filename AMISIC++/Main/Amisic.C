@@ -90,7 +90,7 @@ bool Amisic::Initialize(MODEL::Model_Base *const model,
     m_singlecollision.Init(&m_processes,&m_overestimator,&m_pint,&m_mo);
     // ue-reweighting
     m_singlecollision.SetReweightCallback(
-      [this](bool accepted, double prob) { this->OnAcceptReject(accepted, prob); }
+      [this](bool accepted, double prob) { this->AcceptRejectReweighting(accepted, prob); }
     );
     // ue-reweighting
   }
@@ -116,7 +116,7 @@ bool Amisic::Initialize(MODEL::Model_Base *const model,
   m_sigma_nd_variations = (*mipars).GetVariationVector("SigmaND_Norm");
   m_pt0_variations      = (*mipars).GetVariationVector("pt_0");
   m_ptmin_variations    = (*mipars).GetVariationVector("pt_min");
-  const size_t matter_variations = m_mo.VariationSize();
+  const size_t matter_variations = m_mo.MatterFormVariationSize();
   size_t max_size = std::max({m_sigma_nd_variations.size(), 
                            m_pt0_variations.size(),
                            m_ptmin_variations.size(),
@@ -126,11 +126,11 @@ bool Amisic::Initialize(MODEL::Model_Base *const model,
   ResetVariationWeights(max_size);
 
   const double K_nom = m_pint.K(m_S);
-  m_mo.SetVariationIndex(0);
+  m_mo.SetMatterFormVariationIndex(0);
   double overlap_max = m_mo.EvaluateAt(0.0, K_nom);
   msg_Info() << METHOD << "(): Overlap at b = 0: nominal   (k = " << K_nom << ") = " << overlap_max << "\n";
   for (size_t i = 0; i < max_size; ++i) {
-    m_mo.SetVariationIndex(i);
+    m_mo.SetMatterFormVariationIndex(i);
     const double K_var = m_pint.KVariation(m_S, i);
     const double overlap_var = m_mo.EvaluateAt(0.0, K_var);
     msg_Info() << METHOD << "():                 variation " << i << " (k = " << K_var << ") = " << overlap_var << "\n";
@@ -138,14 +138,14 @@ bool Amisic::Initialize(MODEL::Model_Base *const model,
       overlap_max = overlap_var;
     }
   }
-  m_mo.SetVariationIndex(0);
+  m_mo.SetMatterFormVariationIndex(0);
   msg_Info() << METHOD << "(): Using maximum overlap = " << overlap_max <<  " for overestimator\n";
   m_overestimator.SetOverlapMax(overlap_max);
   m_overestimator.UpdatePrefactors();
   m_overestimator.Output();
   
   // output
-  const bool print_files = false;
+  const bool print_files = true;
   if (!print_files) return true;
   std::string filename;
   if (max_size == 3) {
@@ -224,16 +224,16 @@ bool Amisic::Initialize(MODEL::Model_Base *const model,
     for (int ib = 0; ib <= 500; ++ib) {
       const double b_fm = ib * 0.01;
       const double b = b_fm / hbarc_factor;
-      m_mo.SetVariationIndex(0);
+      m_mo.SetMatterFormVariationIndex(0);
       const double overlap_nom = m_mo.EvaluateAt(b, K_nom);
       m_overlap_file << b_fm << " " << overlap_nom;
       for (size_t i = 0; i < max_size; ++i) {
         const double K_var = m_pint.KVariation(m_S, i);
-        m_mo.SetVariationIndex(i);
+        m_mo.SetMatterFormVariationIndex(i);
         const double overlap_var = m_mo.EvaluateAt(b, K_var);
         m_overlap_file << " " << overlap_var;
       }
-      m_mo.SetVariationIndex(0);
+      m_mo.SetMatterFormVariationIndex(0);
       m_overlap_file << "\n";
     }
     m_overlap_file.flush();
@@ -411,7 +411,7 @@ bool Amisic::FirstMPI(Blob * blob) {
   do {
     m_singlecollision.SelectNewB();
     m_b = m_singlecollision.B();
-    ApplyKFactorReweighting(m_S);
+    ImpactParameterReweighting(m_S);
   } while (m_singlecollision.RunFirstMPISudakov(pt2veto) == 1);
   return true;
 }
@@ -632,34 +632,35 @@ void Amisic::ResetVariationWeights(int n_variations) {
   m_mpi_scatter_count = 0;
 }
 
-void Amisic::ApplyKFactorReweighting(const double & s) {
+void Amisic::ImpactParameterReweighting(const double & s) {
   ///////////////////////////////////////////////////////////////////////////
-  // Cache per-event information needed to evaluate SIGMA_ND_NORM weights.
+  // Cache per-event information needed for Sudakov reweighting
+  // and compute impact-parameter reweighting factors.
   ///////////////////////////////////////////////////////////////////////////
   if (m_variation_weights.empty()) return;
 
   const size_t n_variations = m_lambda_ratios.size();
 
   // Compute nominal lambda(b) = DiffXSec(s,b) = d sigma_hard(s)/d^2b
-  m_mo.SetVariationIndex(0);
+  m_mo.SetMatterFormVariationIndex(0);
   m_lambda_nominal = m_pint.DiffXSec(s, m_b);
   const double K_nom = m_pint.K(s);
   const double overlap_nom = m_mo.EvaluateAt(m_b, K_nom);
 
   // Compute lambda(b) ratios for each variation
-  for (size_t i = 0; i < n_variations; ++i) {
-    m_mo.SetVariationIndex(i);
-    const double K_var = m_pint.KVariation(s, i);
+  for (size_t ivar=0; ivar<n_variations; ++ivar) {
+    m_mo.SetMatterFormVariationIndex(ivar);
+    const double K_var = m_pint.KVariation(s, ivar);
     const double overlap_var = m_mo.EvaluateAt(m_b, K_var);
     double lambda_ratio = overlap_var / overlap_nom;
     if (!std::isfinite(lambda_ratio) || lambda_ratio<=0.) lambda_ratio = 1.;
-    m_lambda_ratios[i] = lambda_ratio;
+    m_lambda_ratios[ivar] = lambda_ratio;
     
     // Accumulate w_b = O_var/O_nom for this b selection
     // This accounts for all b values tried in FirstMPI loop
-    m_b_weights[i] *= lambda_ratio;
+    m_b_weights[ivar] *= lambda_ratio;
   }
-  m_mo.SetVariationIndex(0);
+  m_mo.SetMatterFormVariationIndex(0);
 }
 
 void Amisic::ApplyVariationWeights(ATOOLS::Blob * blob) {
@@ -681,26 +682,26 @@ void Amisic::ApplyVariationWeights(ATOOLS::Blob * blob) {
   std::vector<double> w_sudakov_vec(m_variation_weights.size());
   std::vector<double> w_total_vec(m_variation_weights.size());
 
-  for (size_t i = 0; i < m_variation_weights.size(); ++i) {
+  for (size_t ivar=0; ivar<m_variation_weights.size(); ++ivar) {
     // b is selected according to d^2b O(b)
     // w_b = O_var(b) / O_nom(b) = lambda_var / lambda_nom
     //     = lambda_ratio
-    const double w_b = m_b_weights[i];
+    const double w_b = m_b_weights[ivar];
     
     // During the MPI evolution, the Sudakov weights are accumulated in
-    // OnAcceptReject() calls, stored in m_sudakov_weights[i]
-    const double w_sudakov = m_sudakov_weights[i];
+    // AcceptRejectReweighting() calls, stored in m_sudakov_weights
+    const double w_sudakov = m_sudakov_weights[ivar];
 
     // w_total = w_b * w_(n|b) = w_b * w_sudakov
     const double w_total = w_b * w_sudakov;
-    m_variation_weights[i] *= w_total;
+    m_variation_weights[ivar] *= w_total;
 
     // output
-    w_b_vec[i]       = w_b;
-    w_sudakov_vec[i] = w_sudakov;
-    w_total_vec[i]   = w_total;
+    w_b_vec[ivar]       = w_b;
+    w_sudakov_vec[ivar] = w_sudakov;
+    w_total_vec[ivar]   = w_total;
     if (print_diag) {
-      msg_Out()<<"                Variation "<<i<<": "
+      msg_Out()<<"                Variation "<<ivar<<": "
                <<"\n              w_b="<<w_b<<", w_sudakov="<<w_sudakov<<", w_total="<<w_total<<"\n";
     }
   }
@@ -746,7 +747,7 @@ void Amisic::ApplyVariationWeights(ATOOLS::Blob * blob) {
   ResetVariationWeights(n_variations);
 }
 
-void Amisic::OnAcceptReject(const bool accepted, const double prob_nom) {
+void Amisic::AcceptRejectReweighting(const bool accepted, const double prob_nom) {
   ///////////////////////////////////////////////////////////////////////////
   // Callback from Single_Collision_Handler for each accept/reject event
   // during Sudakov evolution of MPI scatters.
@@ -757,17 +758,16 @@ void Amisic::OnAcceptReject(const bool accepted, const double prob_nom) {
   
   const size_t n_variations = m_sudakov_weights.size();
 
-  for (size_t i = 0; i < n_variations; ++i) {
+  for (size_t ivar=0; ivar<n_variations; ++ivar) {
     // Compute the probability for this variation
     // p = dsigma/dpt2 * overlap(b,K_var) / overestimator
     // The ratio is: p_var/p_nom = overlap_var/overlap_nom = lambda_ratio
-    const double prob_var = prob_nom * m_lambda_ratios[i];
-
+    const double prob_var = prob_nom * m_lambda_ratios[ivar];
     // output
     // if (m_accept_reject_file.is_open()) {
     //   m_accept_reject_file << (accepted ? 1 : 0) << " " << prob_nom;
-    //   for (size_t i = 0; i < n_variations; ++i) {
-    //     const double prob_var = prob_nom * m_lambda_ratios[i];
+    //   for (size_t ivar=0; ivar<n_variations; ++ivar) {
+    //     const double prob_var = prob_nom * m_lambda_ratios[ivar];
     //     m_accept_reject_file << " " << prob_var;
     //   }
     //   m_accept_reject_file << "\n";
@@ -777,21 +777,13 @@ void Amisic::OnAcceptReject(const bool accepted, const double prob_nom) {
       // Accepted: weight *= p_var / p_nom
       const double ratio = prob_var / prob_nom;
       if (std::isfinite(ratio) && ratio > 0.) {
-        m_sudakov_weights[i] *= ratio;
+        m_sudakov_weights[ivar] *= ratio;
       }
     } else {
       // Rejected: weight *= (1 - p_var) / (1 - p_nom)
-      // if (prob_var >= 1.0) {
-      //   msg_Error()<<"WARNING in Sudakov reweighting: prob_var="<<prob_var
-      //              <<" >= 1.0 for variation "<<i<<"\n"
-      //              <<"  prob_nom="<<prob_nom<<", lambda_ratio="<<m_lambda_ratios[i]<<", b="<<m_b<<"\n"
-      //              <<"  Cannot compute (1 - p_var)/(1 - p_nom)!\n";
-      //   m_sudakov_weights[i] = 0.;
-      //   continue;
-      // }
       const double ratio = (1. - prob_var) / (1. - prob_nom);
       if (std::isfinite(ratio) && ratio > 0.) {
-        m_sudakov_weights[i] *= ratio;
+        m_sudakov_weights[ivar] *= ratio;
       }
     }
   }

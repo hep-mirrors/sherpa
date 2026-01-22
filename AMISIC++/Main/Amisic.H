@@ -103,8 +103,8 @@ namespace AMISIC {
     void AnalysePerturbative(const bool & last,ATOOLS::Blob * blob=nullptr);
     // ue-reweighting
     void ResetVariationWeights(int n_variations);
-    void ApplyKFactorReweighting(const double & s);
-    void OnAcceptReject(const bool accepted, const double prob_nom);
+    void ImpactParameterReweighting(const double & s);
+    void AcceptRejectReweighting(const bool accepted, const double prob_nom);
     // ue-reweighting
  public:
     Amisic();

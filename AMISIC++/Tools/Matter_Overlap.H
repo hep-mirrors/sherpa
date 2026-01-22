@@ -65,10 +65,11 @@ namespace AMISIC {
     inline const double & DynamicRadius2()  const { return m_dynradius2; }
     inline const double & FixRadius()       const { return m_fixradius; }
     inline const double & Radius2(size_t i) const { return m_radius2[i]; }
-    size_t VariationSize() const;
-    inline void SetVariationIndex(size_t i) {
-      const size_t max_idx = VariationSize() ? VariationSize() - 1 : size_t(0);
-      m_variation_index = std::min(i, max_idx);
+    size_t MatterFormVariationSize() const;
+    inline void SetMatterFormVariationIndex(size_t i) {
+      const size_t max_idx = MatterFormVariationSize() ? MatterFormVariationSize() - 1 : size_t(0);
+      if (i > max_idx) m_variation_index = size_t(0);
+      else m_variation_index = i;
     }
     inline       axis   * GetBBins()        const { return p_bbins; }
   };

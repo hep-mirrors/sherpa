@@ -160,9 +160,9 @@ void Matter_Overlap::Initialize(Remnant_Handler * const rh,
   p_bbins = new axis(nbins, bmin, m_bmax, axis_mode::log);
 }
 
-size_t Matter_Overlap::VariationSize() const {
-  size_t n0 = p_ffs[0] ? p_ffs[0]->VariationSize() : size_t(1);
-  size_t n1 = p_ffs[1] ? p_ffs[1]->VariationSize() : size_t(1);
+size_t Matter_Overlap::MatterFormVariationSize() const {
+  size_t n0 = p_ffs[0] ? p_ffs[0]->MatterFormVariationSize() : size_t(1);
+  size_t n1 = p_ffs[1] ? p_ffs[1]->MatterFormVariationSize() : size_t(1);
   return std::max(n0, n1);
 }
 
@@ -196,9 +196,9 @@ void Matter_Overlap::InitializeStaticFFParams() {
   // could be single- or double Gaussians, e.g. from Eq (SZ 19)
   ///////////////////////////////////////////////////////////////////////////
   m_dynamic = false;
-  const size_t nvar = VariationSize();
-  m_r2_variations.assign(nvar, std::array<double,4>{0.,0.,0.,0.});
-  m_rnorm_variations.assign(nvar, std::array<double,4>{0.,0.,0.,0.});
+  const size_t n_variations = MatterFormVariationSize();
+  m_r2_variations.assign(n_variations, std::array<double,4>{0.,0.,0.,0.});
+  m_rnorm_variations.assign(n_variations, std::array<double,4>{0.,0.,0.,0.});
   double fraction[2], radius[2][2];
   for (size_t i=0;i<2;i++) {
     fraction[i] = ( (m_form[i]==matter_form::single_gaussian) ?
@@ -224,7 +224,7 @@ void Matter_Overlap::InitializeStaticFFParams() {
   m_dynradius2 = m_radius2[0];
   m_bstep = minR/100.;
 
-  for (size_t ivar=0; ivar<nvar; ++ivar) {
+  for (size_t ivar=0; ivar<n_variations; ++ivar) {
     double frac[2];
     double rad[2][2];
     frac[0] = (p_ffs[0]->GetForm()==matter_form::double_gaussian) ?
@@ -335,12 +335,12 @@ void Matter_Overlap::Output(const double & check) {
 	      <<std::string(20,' ')<<"|\n";
   
   // ue-reweighting
-  const size_t nvar = VariationSize();
-  if (nvar > 1) {
+  const size_t n_variations = MatterFormVariationSize();
+  if (n_variations > 1) {
     MO_Integrand moint(this);
     Gauss_Integrator integrator(&moint);
-    for (size_t ivar=0; ivar<nvar; ++ivar) {
-      SetVariationIndex(ivar);
+    for (size_t ivar=0; ivar<n_variations; ++ivar) {
+      SetMatterFormVariationIndex(ivar);
       const double bmax_var = Bmax();
       double bmin = 0., bstep = m_bstep, previous, result = 0.;
       do {
@@ -368,7 +368,7 @@ void Matter_Overlap::Output(const double & check) {
         else msg_Info()<<std::string(37,' ')<<"|\n";
       }
     }
-    SetVariationIndex(0);
+    SetMatterFormVariationIndex(0);
   }
   // ue-reweighting
   

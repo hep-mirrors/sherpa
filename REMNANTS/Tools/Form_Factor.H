@@ -32,7 +32,7 @@ namespace REMNANTS {
     inline const double      & Radius2()      const { return m_radius2; }
     inline const double      & Fraction1()    const { return m_fraction1; }
     inline const double      & SoftExponent() const { return m_softexp; }
-    inline size_t VariationSize() const { return m_variation_size; }
+    inline size_t MatterFormVariationSize() const { return m_variation_size; }
     double Fraction1At(size_t i) const;
     double Radius1At(size_t i) const;
     double Radius2At(size_t i) const;
