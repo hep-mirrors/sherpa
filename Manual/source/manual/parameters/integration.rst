@@ -141,3 +141,9 @@ The following sub-settings exist:
 ``ITMAX_BY_NODE``
   Same as ``ITMAX``, but specified per node to allow tuning of
   integration performance in large-scale MPI runs.
+
+During optimization and integration, the number of effective events per generated event (``Neff/N``) for weighted events, the efficiency of unweighted event generation and its number of effective events per generated event (``Neff/N``) are shown after each cycle. All three metrics should converge individually for efficient event generation. The default PSI settings are set such that this should be reached.
+
+All three metrics are sensitive to large weights. Thus, some residual fluctuations are expected. The more points are generated, the more robust the prediction becomes. Increasing ``MAXOPT`` to 5-10 to reduce uncertainties in the expected weight distribution at the end of the integration is recommended for time expensive event generation.
+
+For experts: If the metrics do not converge, then increasing ``NOPT`` is a solution. If it takes too long, then adjusting ``ITMIN``, ``NPOWER`` and ``NOPT`` to try to reach higher ``Neff/N`` for the same total number of points might help.
