@@ -29,10 +29,11 @@ Process_Integrator::Process_Integrator(Process_Base *const proc):
   p_beamhandler(NULL), p_isrhandler(NULL),
   m_nin(0), m_nout(0), m_smode(0), m_swmode(0),
   m_threshold(0.), m_enhancefac(1.0), m_maxeps(0.0), m_rsfac(1.0),
-  m_n(0), m_itmin(0), m_itmax(1000000), m_max(0.), m_weightmax(0.), m_totalxs(0.), 
-  m_totalsum (0.), m_totalsumsqr(0.), m_totalerr(0.), m_ssum(0.), 
-  m_ssumsqr(0.), m_smax(0.), m_ssigma2(0.), m_wmin(0.),
-  m_mssum(0.), m_mssumsqr(0.), m_msn(0.), m_sn(0), m_son(1),
+  m_n(0), m_itmin(0), m_itmax(1000000), m_max(0.), m_weightmax(0.), m_totalxs(0.),
+  m_totalsum (0.), m_totalsumsqr(0.), m_totalerr(0.), m_ssum(0.), m_ssumenh(0.),
+  m_ssumenhabs(0.), m_ssumsqr(0.), m_ssumenhsqr(0.), m_smax(0.), m_ssigma2(0.), m_wmin(0.),
+  m_mssum(0.), m_mssumabs(0.), m_mssumsqr(0.), m_mssumenh(0.), m_mssumenhabs(0.), m_mssumenhsqr(0.),
+  m_msn(0.), m_msncut(0.), m_sn(0), m_sncut(0), m_son(1),
   m_external_selectionweight(-1),
   m_writeout(false),
   p_whisto_pos(NULL),
@@ -123,6 +124,52 @@ double Process_Integrator::TotalResult() const
   return m_ssigma2+s2?(m_totalsum+s2*m_ssum/m_sn)/(m_ssigma2+s2):0.0;
 }
 
+std::vector<double> Process_Integrator::TotalEffiAndEffEvPerEv(bool unweighted) const
+{
+  std::vector<double> totaleffiandeffevperev(2,-1.0);
+  if (p_proc->IsGroup()) {
+    //weight effevperev with selection weight
+    double sum_selw=0.0;
+    double sum_effi=0.0;
+    double sum_xsec=0.0;
+    double sum_xsec_abs=0.0;
+    for (size_t i(0);i<p_proc->Size();++i) {
+      //need to sum up weighted with wsel
+      std::vector<double> proci_totaleffiandeffevperev = (*p_proc)[i]->Integrator()->TotalEffiAndEffEvPerEv(unweighted);
+      double proci_effevperev = proci_totaleffiandeffevperev[1];
+      if (proci_effevperev==-1.0) continue;
+      double proci_effi = proci_totaleffiandeffevperev[0];
+      double proci_xsec = (*p_proc)[i]->Integrator()->GetSSumEnh()/m_sn;
+      double proci_selw = dabs(proci_xsec)/sqrt(proci_effevperev)/proci_effi;
+
+      sum_xsec += proci_xsec;
+      sum_xsec_abs += dabs(proci_xsec);
+      sum_selw += proci_selw;
+      sum_effi+=proci_effi*proci_selw;
+      //this is from whisto, but want to be more correct by not relying on bin width approximation
+      //sum_selw += (*p_proc)[i]->Integrator()->SelectionWeight(wmode);
+      //sum_effi+=(*p_proc)[i]->Integrator()->Efficiency()*(*p_proc)[i]->Integrator()->SelectionWeight(wmode);
+    }
+    if (sum_selw!=0) {
+      totaleffiandeffevperev[0] = sum_effi/sum_selw;
+      totaleffiandeffevperev[1] = pow(sum_xsec_abs/sum_effi,2)*pow(sum_xsec/sum_xsec_abs,2);
+    }
+    return totaleffiandeffevperev;
+  }
+  if (m_sncut == 0) return totaleffiandeffevperev;
+  double meanweight = m_ssumenh/m_sncut;
+  double meanabsweight = m_ssumenhabs/m_sncut;
+  double meansqrweight = m_ssumenhsqr/m_sncut;
+  if (unweighted) {
+    totaleffiandeffevperev[0] = dabs(meanabsweight)/m_smax;
+    totaleffiandeffevperev[1] = pow(meanweight,2)/pow(meanabsweight,2);
+  } else {
+    totaleffiandeffevperev[0] = 1;
+    totaleffiandeffevperev[1] = pow(meanweight,2)/meansqrweight;
+  }
+  return totaleffiandeffevperev;
+}
+
 double Process_Integrator::TotalVar() const
 {
   if (m_nin==1 && m_nout==2) return 0.;
@@ -143,6 +190,7 @@ double Process_Integrator::TotalVar() const
 
 void Process_Integrator::OptimizeSubResult(const double &s2)
 {
+  //called after each optimisation cycle
   m_n+=m_sn;
   if (m_smode==0) {
     m_totalsum+=m_ssum;
@@ -155,8 +203,9 @@ void Process_Integrator::OptimizeSubResult(const double &s2)
     m_totalsum+=s2*m_ssum/m_sn;
     m_totalsumsqr+=sqr(s2)/vij2;
   }
-  m_ssum=m_ssumsqr=0.0;
+  m_ssum=m_ssumenh=m_ssumenhabs=m_ssumsqr=m_ssumenhsqr=0.0;
   m_sn=0;
+  m_sncut=0;
   if (p_colint!=NULL) p_colint->Optimize();
   if (p_proc->IsGroup())
     for (size_t i(0);i<p_proc->Size();++i)
@@ -224,9 +273,22 @@ bool Process_Integrator::ReadInXSecs(const std::string &path)
   My_In_File from(path+"/"+fname);
   if (!from.Open()) return false;
   from->precision(16);
-  *from>>name>>m_totalxs>>m_weightmax>>m_totalerr>>m_totalsum>>m_totalsumsqr
-      >>m_n>>m_ssum>>m_ssumsqr>>m_smax>>m_ssigma2>>m_sn>>m_wmin
-      >>m_son>>dummy>>dummy>>vn;
+  if (integration_sherpa_version=="before 3.1") {
+    *from>>name>>m_totalxs>>m_weightmax>>m_totalerr>>m_totalsum>>m_totalsumsqr
+	 >>m_n>>m_ssum>>m_ssumsqr>>m_smax>>m_ssigma2>>m_sn>>m_wmin
+	 >>m_son>>dummy>>dummy>>vn;
+    int wmode = ToType<int>(rpa->gen.Variable("EVENT_GENERATION_MODE"));
+    if (wmode!=0) msg_Error() << "WARNING: Exact information about enhancement is missing for: "<< p_proc->ResultsName() << ". Please use Sherpa 3.1 or newer to consider them. Assuming that there is no enhancement during sampling. There is no ehancement backward-compatibility implemented yet." << std::endl;
+    m_ssumenh = m_ssum;
+    m_ssumenhsqr = m_ssumsqr;
+    m_ssumenhabs = dabs(m_ssumenh);
+    msg_Tracking() << "Note: Information about cut efficiency missing for: "<< p_proc->ResultsName() << ". Please use Sherpa 3.1 or newer to separate it. Exp. eff. includes cut efficiency." << std::endl;
+    m_sncut = m_sn;
+  } else {
+    *from>>name>>m_totalxs>>m_weightmax>>m_totalerr>>m_totalsum>>m_totalsumsqr
+	 >>m_n>>m_ssum>>m_ssumenh>>m_ssumenhabs>>m_ssumsqr>>m_ssumenhsqr>>m_smax>>m_ssigma2>>m_sn>>m_sncut>>m_wmin
+	 >>m_son>>dummy>>dummy>>vn;
+  }
   if (name!=fname) THROW(fatal_error,"Corrupted results file");
   if (vn>100) {
     msg_Error()<<METHOD<<"(): Invalid vn in '"<<fname<<"'."<<std::endl;
@@ -309,8 +371,8 @@ void Process_Integrator::WriteOutXSecs(const std::string &path)
   outfile->precision(16);
   *outfile<<fname<<"  "<<m_totalxs<<"  "<<m_weightmax<<"  "
 	 <<m_totalerr<<" "<<m_totalsum<<" "<<m_totalsumsqr<<" "
-	 <<m_n<<" "<<m_ssum<<" "<<m_ssumsqr<<" "<<m_smax<<" "
-	 <<m_ssigma2<<" "<<m_sn<<" "<<m_wmin<<" "<<m_son<<" "
+	 <<m_n<<" "<<m_ssum<<" "<<m_ssumenh<<" "<<m_ssumenhabs<<" "<<m_ssumsqr<<" "<<m_ssumenhsqr<<" "<<m_smax<<" "
+	 <<m_ssigma2<<" "<<m_sn<<" "<<m_sncut<<" "<<m_wmin<<" "<<m_son<<" "
 	 <<-1<<" "<<-1<<"\n"<<m_vsn.size()<<"\n";
   for (size_t i(0);i<m_vsn.size();++i)
     *outfile<<m_vsmax[i]<<" "<<m_vsum[i]<<" "
@@ -350,17 +412,17 @@ void Process_Integrator::SetTotal(const int mode)
     if (p_proc->NIn()==1) {
       msg_Info()<<om::bold<<p_proc->ResultsName()<<om::reset<<" : "<<om::blue<<om::bold
                 <<m_totalxs<<" GeV"<<om::reset<<" +- ( "<<om::red
-                <<m_totalerr<<" GeV = "<<dabs(m_totalerr/m_totalxs)*100.
-                <<" %"<<om::reset<<" ) "<<om::bold<<" exp. eff: "
-                <<om::red<<(100.*dabs(m_totalxs/m_weightmax))<<" %"<<om::reset<<std::endl;
+                <<m_totalerr<<" GeV = "<<dabs(m_totalerr/m_totalxs)*100.;
     }
     else {
       msg_Info()<<om::bold<<p_proc->ResultsName()<<om::reset<<" : "<<om::blue<<om::bold
                 <<m_totalxs*rpa->Picobarn()<<" pb"<<om::reset<<" +- ( "<<om::red
-                <<m_totalerr*rpa->Picobarn()<<" pb = "<<dabs(m_totalerr/m_totalxs)*100.
-                <<" %"<<om::reset<<" ) "<<om::bold<<" exp. eff: "
-                <<om::red<<(100.*dabs(m_totalxs/m_weightmax))<<" %"<<om::reset<<std::endl;
+                <<m_totalerr*rpa->Picobarn()<<" pb = "<<dabs(m_totalerr/m_totalxs)*100.;
     }
+    std::vector<double> meaneffiandeffevperev = TotalEffiAndEffEvPerEv(1);
+    msg_Info()<<" %"<<om::reset<<" ) "<<om::bold<<" exp. eff: "
+	      <<om::red<<(100.*meaneffiandeffevperev[0])<<" % "<<om::reset
+	      <<om::bold<<" Neff/N: "<<om::brown<<meaneffiandeffevperev[1]<<om::reset<<std::endl;
   }
 }
 
@@ -435,8 +497,8 @@ double Process_Integrator::GetMaxEps(double epsilon)
   if (whisto_abs_sum==0) {
     int wmode = ToType<int>(rpa->gen.Variable("EVENT_GENERATION_MODE"));
     if (wmode!=0) msg_Error()<<"Warning: The weight histogram for "<< p_proc->ResultsName() << " is empty. Partial unweighting is not possible."<<std::endl;
-    m_effi = m_ssum/m_sn/m_weightmax;
-    m_effevperev = 1.0;
+    m_effi = m_ssumenhabs/m_sncut/m_weightmax;
+    m_effevperev = pow(m_ssumenh/m_ssumenhabs,2);
     return m_weightmax;
   }
   for (int i=first_filled_bin-1;i<last_filled_bin+1;i++) {
@@ -456,7 +518,7 @@ double Process_Integrator::GetMaxEps(double epsilon)
       //without enhancement function: whisto_sum/p_whisto->Fills() = dabs(TotalResult())
       //with enhancement function:    whisto_sum/p_whisto->Fills() = dabs(TotalResult())*m_meanenhfunc
       //defined such that: dabs(TotalResult())*m_meanenhfunc = mean_w*cut_effi = whisto_sum/whisto_fills * (whisto_fills/p_whisto->Fills())
-      m_meanenhfunc = whisto_sum/p_whisto->Fills()/dabs(TotalResult());
+      //m_meanenhfunc = whisto_sum/p_whisto->Fills()/dabs(TotalResult());
       m_effi = mean_efficiency;
       m_effevperev = effevperev;
       return fin_w_max;
@@ -467,51 +529,49 @@ double Process_Integrator::GetMaxEps(double epsilon)
 
 void Process_Integrator::SetUpEnhance(const int omode) 
 {
-  if (m_maxeps!=0.0 && !p_proc->IsGroup()) {
-    double max(GetMaxEps(m_maxeps));
-    if (omode || msg->LevelIsTracking()) {
-      msg_Info()<<"  reduce max for "<<p_proc->ResultsName()<<" to "
-		<<max/m_weightmax<<" ( eps = "<<m_maxeps<<" -> exp. eff "
-                <<  m_effi <<" ) "<<std::endl;
-    }
-    SetMax(max);
-  } else if (!p_proc->IsGroup()) {
-    //should rely on m_weightmax here -> to be compatible with partially unweighting the m_effi etc needs to be set
-    int whisto_fills = 0;
-    double whisto_sum = 0;
-    double whisto_sum_abs = 0;
-    //add it forward, because have to add small numbers first for numerical stability
-    for (int i=1;i<p_whisto_pos->Nbin()+2;i++) {
-      if (p_whisto_pos->Value(i)!=0 or p_whisto_neg->Value(i)!=0 ) {
-	whisto_fills += p_whisto_pos->Value(i) + p_whisto_neg->Value(i);
-	//bin middle times count is added
-	double w = exp(log(10.)*(p_whisto_pos->Xmin()+(i-0.5)*p_whisto_pos->BinSize()));
-	if (exp(log(10.)*(p_whisto_pos->Xmin()+i*p_whisto_pos->BinSize())) > m_weightmax) w = m_weightmax;
-	whisto_sum     += (p_whisto_pos->Value(i) - p_whisto_neg->Value(i)) * w;
-	whisto_sum_abs += (p_whisto_pos->Value(i) + p_whisto_neg->Value(i)) * w;
-      }
-    }
-    m_meanenhfunc = whisto_sum/(p_whisto_pos->Fills()+p_whisto_neg->Fills())/dabs(TotalResult());
-    m_effi = whisto_sum_abs/m_weightmax/whisto_fills;
-    m_effevperev = pow(whisto_sum/whisto_sum_abs,2);
-    SetMax(m_weightmax);
-  }
   if (p_proc->IsGroup()) {
     //this is the only place where m_max is calculated for groups
     m_max=0.0;
     m_effi=0.0;
+    m_effevperev=0.0;
+    double effevperev_signed=0.0;
     int wmode = ToType<int>(rpa->gen.Variable("EVENT_GENERATION_MODE"));
     for (size_t i(0);i<p_proc->Size();++i) {
       (*p_proc)[i]->Integrator()->SetUpEnhance(msg_LevelIsTracking());
       m_max+=(*p_proc)[i]->Integrator()->Max();
       //need to sum up weighted with wsel: m_effi
       m_effi+=(*p_proc)[i]->Integrator()->Efficiency()*(*p_proc)[i]->Integrator()->SelectionWeight(wmode);
+      //interested in average effevperev after unweighting: multiply with efficiency
+      double effevperev = sqrt((*p_proc)[i]->Integrator()->EffEvPerEv())*(*p_proc)[i]->Integrator()->Efficiency()*(*p_proc)[i]->Integrator()->SelectionWeight(wmode);
+      m_effevperev+=effevperev;
+      effevperev_signed+=effevperev*(*p_proc)[i]->Integrator()->TotalResult()/dabs((*p_proc)[i]->Integrator()->TotalResult());
     }
+    m_effevperev = pow(m_effevperev/m_effi,2)*pow(effevperev_signed/m_effevperev,2);
+    m_effi = m_effi/SelectionWeight(wmode);
     if (omode || p_proc->Parent()==p_proc)
       if (p_whisto_pos)
     msg_Info()<<"  reduce max for "<<p_proc->ResultsName()<<" to "
 	      <<m_max/m_weightmax<<" ( eps = "<<m_maxeps<<" -> exp. eff "
-	      << m_effi/SelectionWeight(wmode)<<" ) "<<std::endl;
+	      << m_effi<<", Neff/N "
+	      << m_effevperev << " ) "<<std::endl;
+    return;
+  }
+  //to get the cross section, the sum of weights need to divided by number of events before cuts: m_sn
+  m_meanenhfunc = TotalResult()?m_ssumenh/m_sn/dabs(TotalResult()):1;
+  if (m_maxeps!=0.0) {
+    double max(GetMaxEps(m_maxeps));
+    if (omode || msg->LevelIsTracking()) {
+      msg_Info()<<"  reduce max for "<<p_proc->ResultsName()<<" to "
+                <<max/m_weightmax<<" ( eps = "<<m_maxeps<<" -> exp. eff "
+                <<  m_effi <<", Neff/N " << m_effevperev << " ) "<<std::endl;
+    }
+    SetMax(max);
+  } else {
+    //should rely on m_weightmax here -> to be compatible with partially unweighting the m_effi etc needs to be set
+    SetMax(m_weightmax);
+    //the unweighting efficiency m_effi is defined for events passing cuts: m_sncut
+    m_effi = m_ssumenhabs/m_sncut/m_max;
+    m_effevperev = pow(m_ssumenh/m_ssumenhabs,2);//alpha_sign
   }
 }
 
@@ -544,10 +604,19 @@ void Process_Integrator::AddPoint(const double value)
   double enhance = p_pshandler->EnhanceWeight();
 #ifdef USING__MPI
   m_msn++;
+  if (dabs(value)!=0) m_msncut++;
+  m_mssumenh    += value;
+  m_mssumenhabs += dabs(value);
+  m_mssumenhsqr += sqr(value);
   m_mssum    += value/enhance;
+  m_mssumabs += dabs(value/enhance);
   m_mssumsqr += sqr(value/enhance);
 #else
   m_sn++;
+  if (dabs(value)!=0) m_sncut++;
+  m_ssumenh    += value;
+  m_ssumenhabs += dabs(value);
+  m_ssumenhsqr += sqr(value);
   m_ssum    += value/enhance;
   m_ssumsqr += sqr(value/enhance);
 #endif
@@ -583,8 +652,9 @@ void Process_Integrator::Reset(const int mode)
 {
   m_n=0;
   m_totalxs=m_totalsum=m_totalsumsqr=m_totalerr=0.0;
-  m_smax=m_weightmax=m_max=m_wmin=m_ssigma2=m_ssumsqr=m_ssum=0.0;
+  m_smax=m_weightmax=m_max=m_wmin=m_ssigma2=m_ssumsqr=m_ssum=m_ssumenh=m_ssumenhabs=m_ssumenhsqr=0.0;
   m_sn=0;
+  m_sncut=0;
   m_son=1;
   m_vsmax.clear(); 
   m_vsn.clear();   
@@ -657,11 +727,16 @@ void Process_Integrator::SetPSHandler(const double &maxerr,const std::string eob
 void Process_Integrator::MPICollect
 (std::vector<double> &sv,std::vector<double> &mv,size_t &i)
 {
-  sv.resize(3*(i+1));
+  sv.resize(8*(i+1));
   mv.resize(2*(i+1));
-  sv[3*i+0]=m_msn;
-  sv[3*i+1]=m_mssum;
-  sv[3*i+2]=m_mssumsqr;
+  sv[8*i+0]=m_msn;
+  sv[8*i+1]=m_msncut;
+  sv[8*i+2]=m_mssum;
+  sv[8*i+3]=m_mssumabs;
+  sv[8*i+4]=m_mssumenh;
+  sv[8*i+5]=m_mssumenhabs;
+  sv[8*i+6]=m_mssumenhsqr;
+  sv[8*i+7]=m_mssumsqr;
   mv[2*i+0]=m_weightmax;
   mv[2*i+1]=m_smax;
   ++i;
@@ -673,9 +748,14 @@ void Process_Integrator::MPICollect
 void Process_Integrator::MPIReturn
 (std::vector<double> &sv,std::vector<double> &mv,size_t &i)
 {
-  m_msn=sv[3*i+0];
-  m_mssum=sv[3*i+1];
-  m_mssumsqr=sv[3*i+2];
+  m_msn=sv[8*i+0];
+  m_msncut=sv[8*i+1];
+  m_mssum=sv[8*i+2];
+  m_mssumabs=sv[8*i+3];
+  m_mssumenh=sv[8*i+4];
+  m_mssumenhabs=sv[8*i+5];
+  m_mssumenhsqr=sv[8*i+6];
+  m_mssumsqr=sv[8*i+7];
   m_weightmax=mv[2*i+0];
   m_smax=mv[2*i+1];
   ++i;
@@ -700,9 +780,13 @@ void Process_Integrator::MPISync(const int mode)
     MPIReturn(sv,mv,j);
   }
   m_sn+=m_msn;
+  m_sncut+=m_msncut;
+  m_ssumenh+=m_mssumenh;
+  m_ssumenhabs+=m_mssumenhabs;
+  m_ssumenhsqr+=m_mssumenhsqr;
   m_ssum+=m_mssum;
   m_ssumsqr+=m_mssumsqr;
-  m_msn=m_mssum=m_mssumsqr=0.0;
+  m_msn=m_msncut=m_mssumenh=m_mssumenhabs=m_mssumenhsqr=m_mssum=m_mssumabs=m_mssumsqr=0.0;
 #endif
   if (p_colint!=NULL) p_colint->MPISync();
   p_proc->MPISync(mode);
