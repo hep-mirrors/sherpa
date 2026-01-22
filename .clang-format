@@ -1,0 +1,56 @@
+---
+Language: Cpp
+BasedOnStyle: LLVM
+
+# General Formatting
+AccessModifierOffset: -2          # Indents 'public:' 2 spaces less than members (aligns with class start)
+ColumnLimit: 80                   # Enforces strict 80-character line width
+IndentWidth: 2
+TabWidth: 2
+UseTab: Never
+NamespaceIndentation: All         # Indents code inside namespaces
+
+# Pointers and References
+PointerAlignment: Left            # Enforces 'Type* var'
+ReferenceAlignment: Left          # Enforces 'Type& var' (overrides snippet style)
+DerivePointerAlignment: false     # Disables auto-detection to enforce your preference
+
+# Access Modifier Spacing
+EmptyLineBeforeAccessModifier: Always
+EmptyLineAfterAccessModifier: Always
+IndentAccessModifiers: false      # Works with Offset -2 to keep modifiers aligned with class def
+
+# Braces and Wrapping
+BreakBeforeBraces: Custom
+BraceWrapping:
+  AfterClass: false               # Class brace on same line
+  AfterControlStatement: Never    # 'if (...) {' on same line
+  AfterEnum: false
+  AfterFunction: true             # Function body brace on NEW line
+  AfterNamespace: false
+  AfterStruct: false
+  BeforeElse: false               # '} else {'
+  SplitEmptyFunction: true
+
+# Short Statements
+AllowShortIfStatementsOnASingleLine: WithoutElse  # Allows 'if (x) return;'
+AllowShortFunctionsOnASingleLine: Empty           # Allows 'void foo() {}'
+AllowShortBlocksOnASingleLine: Never
+
+# Spacing Details
+SpaceBeforeParens: ControlStatements    # Space in 'if (x)', no space in 'func(x)'
+SpaceBeforeCtorInitializerColon: false  # Matches 'Comix():' (no space before colon)
+SpaceBeforeInheritanceColon: false      # Matches 'class X: public Y'
+SpaceAfterCStyleCast: false
+SpaceBeforeAssignmentOperators: true    # Ensures 'a = b'
+
+# Includes
+SortIncludes: true                # Enables automatic alphabetical sorting
+IncludeBlocks: Preserve           # Sorts within existing blocks, keeps blank lines between blocks
+
+# Arguments and Parameters
+AlignAfterOpenBracket: Align      # Aligns arguments: func(a,
+                                  #                      b)
+BinPackArguments: false           # Forces arguments to new lines if they don't fit
+BinPackParameters: false
+MaxEmptyLinesToKeep: 2
