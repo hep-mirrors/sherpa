@@ -80,8 +80,7 @@ void Interaction_Probability::FixKandSmin() {
   std::vector<double> sigma_nd_variations = (*mipars).GetVariationVector("SigmaND_Norm");
   size_t n_variations = std::max(sigma_nd_variations.size(), p_mo->VariationSize());
   if (n_variations==0) n_variations = 1;
-  const double sigma_nominal = sigma_nd_variations.empty() ? 1.0 : sigma_nd_variations.front();
-  sigma_nd_variations.resize(n_variations, sigma_nominal);
+  sigma_nd_variations.resize(n_variations, sigma_nd_variations[0]);
 
   // Initialize K-factor tables for variations
   p_k_variations.resize(n_variations);
@@ -96,6 +95,7 @@ void Interaction_Probability::FixKandSmin() {
     double xs_nd = (m_pdfnorm * sigma_nd_variations[0] * p_procs->GetXSecs()->XSnd(s));
     if (s<=4. || p_procs->GetXSecs()->XSratio(s)<=1.) continue;
     integrand.SetS(s);
+    p_mo->SetVariationIndex(0);
     do {
       if (p_procs->GetXSecs()->XSratio(s)<=0.5) { k = 1.; break; }
       p_mo->SetKRadius(k);
@@ -238,8 +238,7 @@ bool Interaction_Probability::CheckTables() {
 
 void Interaction_Probability::OutputTables() {
   std::vector<double> sigma_nd_variations = (*mipars).GetVariationVector("SigmaND_Norm"); // ue-reweighting
-  if (sigma_nd_variations.empty()) sigma_nd_variations.push_back(1.0);
-  sigma_nd_variations.resize(p_k_variations.size(), sigma_nd_variations.front());
+  sigma_nd_variations.resize(p_k_variations.size(), sigma_nd_variations[0]);
   msg_Info()<<"   "<<std::string(77,'-')<<"\n"
 	    <<"   | "<<METHOD<<" look-up tables and values:          |\n"
 	    <<"   | "<<std::setw(15)<<"E_{c.m.} [GeV]"<<" | "

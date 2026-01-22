@@ -70,6 +70,8 @@ namespace AMISIC {
     std::vector<double> m_variation_weights;
     std::vector<double> m_lambda_ratios;
     std::vector<double> m_sigma_nd_variations;
+    std::vector<double> m_pt0_variations;
+    std::vector<double> m_ptmin_variations;
     std::vector<double> m_b_weights;
     std::vector<double> m_sudakov_weights;
     size_t m_mpi_scatter_count;

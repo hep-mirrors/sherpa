@@ -114,9 +114,14 @@ bool Amisic::Initialize(MODEL::Model_Base *const model,
   m_isMinBias = false;
   // ue-reweighting
   m_sigma_nd_variations = (*mipars).GetVariationVector("SigmaND_Norm");
+  m_pt0_variations      = (*mipars).GetVariationVector("pt_0");
+  m_ptmin_variations    = (*mipars).GetVariationVector("pt_min");
   const size_t matter_variations = m_mo.VariationSize();
-  size_t max_size = std::max(m_sigma_nd_variations.size(), matter_variations);
-  if (max_size==0) max_size = 1;
+  size_t max_size = std::max({m_sigma_nd_variations.size(), 
+                           m_pt0_variations.size(),
+                           m_ptmin_variations.size(),
+                           matter_variations,
+                           size_t(1)});
 
   ResetVariationWeights(max_size);
 
