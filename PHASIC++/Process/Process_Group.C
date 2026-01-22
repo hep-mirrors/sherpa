@@ -82,8 +82,6 @@ Weight_Info *Process_Group::OneEvent(const int wmode,
   return NULL;
 }
 
-void Process_Group::ResetEvent() { if (p_read) p_read->StepBackward(); }
-
 ATOOLS::Weights_Map Process_Group::Differential(const Vec4D_Vector &p,
                                                 Variations_Mode varmode)
 {

@@ -156,7 +156,7 @@ namespace PHASIC {
         const int wmode,
         ATOOLS::Variations_Mode varmode=ATOOLS::Variations_Mode::all,
         const int mode=0) = 0;
-    virtual void ResetEvent() {}
+    virtual void ResetEvent();
 
     /*!
      * Calculate the nominal differential

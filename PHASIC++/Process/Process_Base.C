@@ -152,6 +152,12 @@ void Process_Base::SetSelectorOn(const bool on) { Selector()->SetOn(on); }
 
 void Process_Base::SetUseBIWeight(bool on) { m_use_biweight=on; }
 
+void Process_Base::ResetEvent()
+{
+  if (p_read)
+    p_read->StepBackward();
+}
+
 Weights_Map Process_Base::Differential(const Cluster_Amplitude &ampl,
                                        Variations_Mode varmode,
                                        int mode)
