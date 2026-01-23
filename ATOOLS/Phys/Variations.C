@@ -227,9 +227,10 @@ void Variations::InitialiseParametersVector()
   for (auto single_variation_settings : s["PDF_VARIATIONS"].GetItems()) {
     PDFs_And_AlphaS_List pdfsandalphaslist =
         PDFsAndAlphaSList(single_variation_settings.Get<std::string>());
-    AddParameterExpandingScaleFactors({"1.0", "1.0", "1.0"},
-                                      ScaleFactorExpansions::None,
-                                      pdfsandalphaslist);
+    if (!pdfsandalphaslist.items.empty())
+      AddParameterExpandingScaleFactors({"1.0", "1.0", "1.0"},
+                                        ScaleFactorExpansions::None,
+                                        pdfsandalphaslist);
   }
 
   for (auto single_variation_settings : s["SCALE_VARIATIONS"].GetItems()) {
@@ -261,9 +262,11 @@ void Variations::InitialiseParametersVector()
 
   for (auto single_variation_settings : s["QCUT_VARIATIONS"].GetItems()) {
     std::vector<std::string> scalestringparams;
+    ExpandableVariation var {single_variation_settings.Get<std::string>()};
+    if (var.var == "None")
+      continue;
     ScaleFactorExpansions::code scalefactorexpansions(
         ScaleFactorExpansions::None);
-    ExpandableVariation var {single_variation_settings.Get<std::string>()};
     if (var.expand)
       scalefactorexpansions |= ScaleFactorExpansions::QCUT;
     scalestringparams = {"1.0", "1.0", var.var};
