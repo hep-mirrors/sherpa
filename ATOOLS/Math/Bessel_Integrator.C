@@ -4,9 +4,9 @@
 using namespace ATOOLS;
 
 Bessel_Integrator::Bessel_Integrator(ATOOLS::Function_Base* f,
-                                     const size_t&          order)
-    : m_kernel(f, order), m_order(order), m_maxbins(20), m_depth(10),
-      m_maxdepth(10), m_iterator(1)
+                                     const size_t& order)
+    : m_kernel(f, order), m_order(order), m_maxbins(300), m_depth(30),
+      m_iterator(0)
 {
   FixBins(false);
   m_F.resize(m_maxbins + 1, 0.);
@@ -17,51 +17,30 @@ Bessel_Integrator::Bessel_Integrator(ATOOLS::Function_Base* f,
     m_M[i].resize(m_maxbins + 1, 0.);
     m_N[i].resize(m_maxbins + 1, 0.);
   }
+  m_gauss = Gauss_Integrator(&m_kernel);
 }
 
-double Bessel_Integrator::operator()()
+double Bessel_Integrator::operator()(double tolerance, bool output)
 {
-  if (FillBins(false)) return (m_M[m_maxdepth - 1][0] / m_N[m_maxdepth - 1][0]);
-  return 0.;
-}
-
-bool Bessel_Integrator::FillBins(const bool& output)
-{
-  double tolerance = 1.e-16;
+  size_t stability_counter = 0;
 
   if (output)
     msg_Out() << "=== " << METHOD << " start filling the supports, "
-              << "max depth = " << m_maxdepth << ":\n";
-  Gauss_Integrator gauss(&m_kernel);
-  double           F = 0.;
-  double           xmin, xmax;
+              << "depth = " << m_depth << ":\n";
+  double F = 0.;
+  double xmin, xmax;
   for (size_t i = 1; i < m_maxbins + 1; i++) {
     if (m_iterator == 0) {
       xmin = m_zeroes[i - 1];
       xmax = m_zeroes[i];
-    } else if (m_iterator == 1) {
+    } else {
       xmin = m_extrema[i - 1];
       xmax = m_extrema[i];
-    } else
-      exit(1);
-    F += m_Psi[i - 1] = gauss.Integrate(xmin, xmax, 1.e-6);
-    if (dabs(m_Psi[i - 1]) < tolerance && i < m_maxdepth + 1) {
-      if (output)
-        msg_Out() << "   found a zero in integral over "
-                  << "x in [" << xmin << ", " << xmax << "]: " << m_Psi[i - 1]
-                  << " for "
-                  << "i = " << i << " --> new max depth = " << (i - 1) << "\n";
-      m_maxdepth = i == 1 ? 1 : i - 1;
-      return false;
     }
+    F += m_Psi[i - 1] = AdaptiveIntegrate(xmin, xmax, tolerance);
     m_F[i - 1] = F;
-    if (dabs(m_Psi[i - 1]) > tolerance) {
-      m_M[0][i - 1] = m_F[i - 1] / m_Psi[i - 1];
-      m_N[0][i - 1] = 1. / m_Psi[i - 1];
-    } else {
-      m_M[0][i - 1] = 0.;
-      m_N[0][i - 1] = 0.;
-    }
+    m_M[0][i - 1] = m_F[i - 1] / m_Psi[i - 1];
+    m_N[0][i - 1] = 1. / m_Psi[i - 1];
     if (output) {
       msg_Out() << "  bin i = " << std::setw(2) << i << ": "
                 << "Psi[" << std::setw(8) << xmin << ", " << std::setw(8)
@@ -77,70 +56,185 @@ bool Bessel_Integrator::FillBins(const bool& output)
     }
   }
   // adapted the naming from eq. 1.12 and 1.13 in DOI:10.2307/2008589
-  for (size_t p = 1; p < m_maxdepth; p++) {
+  for (size_t p = 1; p < m_depth; p++) {
     for (size_t s = 1; s < m_maxbins + 1; s++) {
       if (m_iterator == 0) {
         xmin = m_zeroes[s];
         xmax = s + 1 + p > m_maxbins ? m_zeroes[s] + (p + 1) * M_PI
                                      : m_zeroes[s + 1 + p];
-      } else if (m_iterator == 1) {
+      } else {
         xmin = m_extrema[s];
         xmax = s + 1 + p > m_maxbins ? m_extrema[s] + (p + 1) * M_PI
                                      : m_extrema[s + 1 + p];
-      } else
-        exit(1);
-      m_M[p][s - 1] = (m_M[p - 1][s - 1] - m_M[p - 1][s]) * xmin * xmax / (xmax - xmin);
-      m_N[p][s - 1] = (m_N[p - 1][s - 1] - m_N[p - 1][s]) * xmin * xmax / (xmax - xmin);
+      }
+      m_M[p][s - 1] =
+          (m_M[p - 1][s - 1] - m_M[p - 1][s]) * xmin * xmax / (xmax - xmin);
+      m_N[p][s - 1] =
+          (m_N[p - 1][s - 1] - m_N[p - 1][s]) * xmin * xmax / (xmax - xmin);
     }
-    if (output && p != m_maxdepth - 1) {
-      msg_Out() << "=== " << METHOD << "(depth = " << std::setw(2) << p
-                << "): " << std::setw(12) << std::setprecision(6)
-                << (m_M[p][0] / m_N[p][0]) << "\n";
+    // Calculate current and previous approximations
+    double current_result = m_M[p][0] / m_N[p][0];
+    double prev_result = m_M[p - 1][0] / m_N[p - 1][0];
+
+    // Calculate relative error (protected against division by zero)
+    double abs_current = std::abs(current_result);
+    double diff = std::abs(current_result - prev_result);
+    double rel_error = diff / (abs_current + 1.0e-20);
+
+    // Check for convergence
+    // 1. Ensure we have gone deep enough (p > 5) to avoid early accidental
+    // matches
+    // 2. Ensure the result is stable for 2 consecutive iterations
+    if (p > 5) {
+      if (rel_error < tolerance) {
+        stability_counter++;
+      } else {
+        stability_counter = 0;
+      }
+
+      if (stability_counter >= 2) {
+        if (output)
+          msg_Out() << "=== " << METHOD << ": Converged at depth " << p << "\n";
+
+
+        return (m_M[p - 1][0] / m_N[p - 1][0]);
+      }
     }
   }
+
+  // Fallback if loop finishes without convergence
   if (output)
     msg_Out() << "=== " << METHOD << ": Integral value("
-              << "depth = " << std::setw(2) << m_maxdepth
-              << "): " << std::setw(12) << std::setprecision(6)
-              << (m_M[m_maxdepth - 1][0] / m_N[m_maxdepth - 1][0]) << " "
+              << "depth = " << std::setw(2) << m_depth << "): " << std::setw(12)
+              << std::setprecision(6)
+              << (m_M[m_depth - 1][0] / m_N[m_depth - 1][0]) << " "
               << "for f(x) * J_{" << m_order << "}(x)\n";
-  return true;
+  return (m_M[m_depth - 1][0] / m_N[m_depth - 1][0]);
 }
+
+double Bessel_Integrator::AdaptiveIntegrate(double a, double b, double tol)
+{
+  double fine = m_gauss.Legendre(a, b, 21);   // N=21
+  double coarse = m_gauss.Legendre(a, b, 10); // N=10 (subset for error est)
+
+  // 3. Error Estimate
+  double diff = std::abs(fine - coarse);
+  double mag = std::abs(fine);
+
+  // 4. Convergence Check
+  // limit tolerance to machine precision to prevent infinite depth
+  double effective_tol = std::max(tol, 1.0e-14);
+
+  if (diff < (effective_tol * mag + 1.0e-15)) {
+    return fine;
+  }
+
+  // 5. Recursion Guard
+  // Stop if interval is too small (prevent stack overflow)
+  if (std::abs(b - a) < 1.0e-13 * (std::abs(a) + 1.0)) {
+    return fine;
+  }
+
+  // 6. Split and Recurse
+  double mid = 0.5 * (a + b);
+  return AdaptiveIntegrate(a, mid, tol / 2.0) +
+         AdaptiveIntegrate(mid, b, tol / 2.0);
+}
+
 
 void Bessel_Integrator::FixBins(const bool& output)
 {
-  m_zeroes.resize(m_maxbins + 1);
+  m_zeroes.clear();
+  m_zeroes.reserve(m_maxbins + 1);
   m_extrema.resize(m_maxbins + 1);
   // We fix the first value at zero anyway, as the integration
   // always starts at 0 for our purposes
   switch (m_order) {
-    case 0:
-      m_zeroes.assign({0., 2.404825, 5.520078, 8.653727, 11.791534, 14.930917,
-                       18.071063, 21.211636, 24.352471, 27.493479, 30.634606});
-      break;
-    case 1:
-      m_zeroes.assign({0., 3.831705, 7.015586, 10.173468, 13.323691, 16.470630,
-                       19.615858, 22.760084, 25.903672, 29.046828, 32.189679});
-      break;
-      /*
-       * these are not needed as in fact the higher order Bessel functions are
-       * not implemented in our code. Are left here in case one day we need to
-       * extend. case 2:
-       *   m_zeroes.assign({0., 5.1356, 8.4172, 11.6198, 14.7960, 17.9598});
-       *   break;
-       * default:
-       *     m_zeroes.assign({0.,
-       *                      (m_order + 1.8557571 * pow(m_order, 1. / 3.) +
-       *                    1.033150 * pow(m_order, -1. / 3.) - 0.00397 /
-       * m_order - 0.0908 * pow(m_order, -5. / 3.) + 0.043 * pow(m_order, -7.
-       * / 3.)), (m_order + 3.2446076 * pow(m_order, 1. / 3.) + 3.158244 *
-       * pow(m_order, -1. / 3.) - 0.08331 / m_order - 0.8437 * pow(m_order, -5.
-       * / 3.) + 0.864 * pow(m_order, -7. / 3.))}); break;
-       */
+  case 0:
+    m_zeroes.assign({0.,
+                     2.404825557695773,
+                     5.520078110286311,
+                     8.653727912911012,
+                     11.79153443901428,
+                     14.93091770848779,
+                     18.07106396791092,
+                     21.21163662987926,
+                     24.35247153074930,
+                     27.49347913204025,
+                     30.63460646843198,
+                     33.77582021357357,
+                     36.91709835366404,
+                     40.05842576462824,
+                     43.19979171317673,
+                     46.34118837166181,
+                     49.48260989739782,
+                     52.62405184111500,
+                     55.76551075501998,
+                     58.90698392608094,
+                     62.04846919022717,
+                     65.18996480020686,
+                     68.33146932985680,
+                     71.47298160359373,
+                     74.61450064370184,
+                     77.75602563038806,
+                     80.89755587113763,
+                     84.03909077693819,
+                     87.18062984364115,
+                     90.32217263721048,
+                     93.46371878194477});
+    break;
+  case 1:
+    m_zeroes.assign({0.,
+                     3.831705970207515,
+                     7.015586669815619,
+                     10.17346813506272,
+                     13.32369193631422,
+                     16.47063005087763,
+                     19.61585851046824,
+                     22.76008438059277,
+                     25.90367208761838,
+                     29.04682853491686,
+                     32.18967991097440,
+                     35.33230755008387,
+                     38.47476623477162,
+                     41.61709421281445,
+                     44.75931899765282,
+                     47.90146088718545,
+                     51.04353518357151,
+                     54.18555364106132,
+                     57.32752543790101,
+                     60.46945784534749,
+                     63.61135669848123,
+                     66.75322673409849,
+                     69.89507183749577,
+                     73.03689522557383,
+                     76.17869958464146,
+                     79.32048717547630,
+                     82.46225991437356,
+                     85.60401943635023,
+                     88.74576714492631,
+                     91.88750425169499,
+                     95.02923180804470});
+    break;
+    /*
+     * these are not needed as in fact the higher order Bessel functions are
+     * not implemented in our code. Are left here in case one day we need to
+     * extend. case 2:
+     *   m_zeroes.assign({0., 5.1356, 8.4172, 11.6198, 14.7960, 17.9598});
+     *   break;
+     * default:
+     *     m_zeroes.assign({0.,
+     *                      (m_order + 1.8557571 * pow(m_order, 1. / 3.) +
+     *                    1.033150 * pow(m_order, -1. / 3.) - 0.00397 /
+     * m_order - 0.0908 * pow(m_order, -5. / 3.) + 0.043 * pow(m_order, -7.
+     * / 3.)), (m_order + 3.2446076 * pow(m_order, 1. / 3.) + 3.158244 *
+     * pow(m_order, -1. / 3.) - 0.08331 / m_order - 0.8437 * pow(m_order, -5.
+     * / 3.) + 0.864 * pow(m_order, -7. / 3.))}); break;
+     */
   }
   // Fill in the remaining zeroes
-  for (int i = 11; i < m_maxbins + 1; ++i)
-    m_zeroes[i] = m_zeroes[i - 1] + M_PI;
+  for (int i = m_zeroes.size(); i < m_maxbins + 1; ++i)
+    m_zeroes.push_back(m_zeroes[i - 1] + M_PI);
   // approximate the extrema as midpoints between zeroes; again, the
   // integration starts at 0, so we fix the first value there
   m_extrema[0] = 0.;
@@ -158,29 +252,5 @@ void Bessel_Integrator::FixBins(const bool& output)
                 << "} = " << std::setw(12) << std::setprecision(8)
                 << m_extrema[i] << ".\n";
     }
-  }
-}
-
-double Bessel_Integrator::TestFunction::operator()(double x)
-{
-  switch (m_mode) {
-    case 4: return (1. - exp(-x)) / (x * log(1. + sqrt(2.)));
-    case 3: return x / (1. + x * x);
-    case 2: return log(1. + x * x) / 2.;
-    case 1: return x * x;
-    case 0:
-    default: break;
-  }
-  return 1;
-}
-
-void Bessel_Integrator::Test()
-{
-  Function_Base* f;
-  for (size_t i = 0; i < 5; i++) {
-    m_kernel.SetFunc(f = new Bessel_Integrator::TestFunction(i));
-    m_kernel.SetOrder((i == 2 || i == 0) ? 1 : 0);
-    FillBins(true);
-    delete f;
   }
 }
