@@ -49,3 +49,9 @@ void Massive_Real_Subtraction_Term2::Calculate_real_subtraction(const ATOOLS::Ve
     (*this)[i] *= factor;   // * 3 for born colour factor * 0.5 (0.5 to correct double counting)
   }
 }
+
+
+double Massive_Real_Subtraction_Term2::getSign(){
+  if(sign) return sign;
+  return 1.0;
+}

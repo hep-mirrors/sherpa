@@ -15,5 +15,6 @@ namespace EXTRAXS {
     std::array<int, 3> getDipoleIndices() override {
       return std::array<int, 3>{3, 1, 2};
     }
+    double getSign() override;
   };
 }

@@ -392,7 +392,7 @@ double Decay_Channel::ME2_NLO(const ATOOLS::Vec4D_Vector& momenta, bool anti,
       }
       else {
         GetDiagrams()[i] -> SetColors(real_p_ci->I(), real_p_ci->J());
-        GetDiagrams()[i] -> Calculate(momenta, anti); // call Calculate() again with the correct colour factors
+        GetDiagrams()[i] -> Calculate(momenta, anti); // call Calculate() again with the correct colour configuration
       }
     }
   }
@@ -424,26 +424,16 @@ double Decay_Channel::ME2_NLO(const ATOOLS::Vec4D_Vector& momenta, bool anti,
       }
     }
 
-    std::vector<METOOLS::Amplitude2_Tensor*> leading_tensor_list;
-    for (size_t i = 0; i < leading_diagrams.size(); ++i){
-      std::vector<METOOLS::Spin_Amplitudes*> single_diag_list;
-      single_diag_list.push_back(leading_diagrams[i]);
-      METOOLS::Amplitude2_Tensor* leading_tensor = new Amplitude2_Tensor(p,0,single_diag_list,spin_i, spin_j);
-      leading_tensor_list.push_back(leading_tensor);
-    }
-
-    p_amps = leading_tensor_list[0];
-    for (size_t i = 1; i < leading_tensor_list.size(); ++i) {
-      p_amps->Add(leading_tensor_list[i], Complex(1.0, 0.0));
-    }
+    METOOLS::Amplitude2_Tensor* leading_tensor = new Amplitude2_Tensor(p,0,leading_diagrams,spin_i, spin_j);
+    p_amps = leading_tensor;
     bool isRealChannel(false);
 
-    std::vector<METOOLS::Amplitude2_Tensor*> NLO_tensor_list;  // build the Amplitude2_Tensor for S resp. I
+    std::vector<METOOLS::Amplitude2_Tensor*> NLO_tensor_list;  // build the Amplitude2_Tensor for S, V resp. I
     for (size_t i = 0; i < GetDiagrams().size(); ++i) {
       METOOLS::Spin_Amplitudes* diag = GetDiagrams()[i];
       const std::string& type = diag->getType();
       if (type == "S") {
-        double sign; // is either 1 or -1
+        double sign(diag -> getSign()); // is either 1 or -1
         std::vector<METOOLS::Spin_Amplitudes*> single_diag_list{ diag }; // to create Amplitude2_Tensor, the diagram needs to be in a list. S, I and V are seperate Amplitude2_Tensor objects.
         METOOLS::Amplitude2_Tensor* NLO_tensor = new Amplitude2_Tensor(p, 0, single_diag_list, spin_i, spin_j);
         NLO_tensor_list.push_back(NLO_tensor);
@@ -465,36 +455,35 @@ double Decay_Channel::ME2_NLO(const ATOOLS::Vec4D_Vector& momenta, bool anti,
         NLO_tensor_list.push_back(NLO_tensor);
       }
     }
-    for (size_t i = 0; i < leading_tensor_list.size(); ++i){
-      //sumijlambda_AiAj+=(*sigma)*leading_tensor_list[i]->ReduceToMatrix(sigma->Particle());
-    }
-
-    if(isRealChannel){
-      std::vector<METOOLS::Spin_Amplitudes*> single_diag_list1;
-      single_diag_list1.push_back(leading_diagrams[1]);
-      std::vector<METOOLS::Spin_Amplitudes*> single_diag_list2;
-      single_diag_list2.push_back(leading_diagrams[2]);
-      //METOOLS::Amplitude2_Tensor* real_tensor = new Amplitude2_Tensor(p, 0, single_diag_list1, single_diag_list2, spin_i, spin_j, 1.0);
-      //sumijlambda_AiAj = (*sigma)*real_tensor->ReduceToMatrix(sigma->Particle());
-      double x;
-    }
     
-    sumijlambda_AiAj=(*sigma)*p_amps->ReduceToMatrix(sigma->Particle()); // #1 mit add
-    for (size_t i = 0; i < leading_tensor_list.size(); ++i){
-      sumijlambda_AiAj+=(*sigma)*leading_tensor_list[i]->ReduceToMatrix(sigma->Particle()); // #2 ohne Interferenz
+    sumijlambda_AiAj=(*sigma)*p_amps->ReduceToMatrix(sigma->Particle()); // only B or R part 
+
+    Complex full_nlo_part(0.0, 0.0);
+    for (size_t i = 0; i < NLO_tensor_list.size(); ++i) {    // get NLO part
+      if(isRealChannel){
+        p_amps->Add(NLO_tensor_list[i], Complex(-Scolourfactor, 0.0)); // todo: remove - and put sign there
+      } else{
+        p_amps->Add(NLO_tensor_list[i], Complex(1.0, 0.0));
+      }
+      
+      if(isRealChannel){
+        full_nlo_part += (*sigma)*NLO_tensor_list[i]->ReduceToMatrix(sigma->Particle()) * Scolourfactor;
+      } else {
+        full_nlo_part += (*sigma)*NLO_tensor_list[i]->ReduceToMatrix(sigma->Particle());
+      }
     }
 
-    for (size_t i = 0; i < NLO_tensor_list.size(); ++i) {    // reduce NLO Amplitude2_Tensor
-      p_amps->Add(NLO_tensor_list[i], Complex(1.0, 0.0));
-      Complex nlo_part = (*sigma)*NLO_tensor_list[i]->ReduceToMatrix(sigma->Particle());
-      if (nlo_part.real() < 0.0){
-        nlo_part.real(-nlo_part.real());
-        //std::cout << "Warning: Decay_Channel::ME2_NLO gets a negative NLO ME2 value.  " << std::endl;
-      }
-      if(isRealChannel){
-        sumijlambda_AiAj += nlo_part * Scolourfactor;
-      } else sumijlambda_AiAj += nlo_part;
-  }
+    if (full_nlo_part.real() < 0.0){
+      // to avoid endless loop if B+V+I < 0:
+      full_nlo_part.real(-full_nlo_part.real()); // todo: remove this if values for V and I are correct.
+      //std::cout << "Warning: Decay_Channel::ME2_NLO gets a negative NLO ME2 value.  " << std::endl;
+    }
+
+    sumijlambda_AiAj += full_nlo_part;
+
+    Complex test_result(0.0, 0.0);
+    test_result = (*sigma)*p_amps->ReduceToMatrix(sigma->Particle());
+
 
     for (size_t i = 0; i < NLO_tensor_list.size(); ++i) {
       delete NLO_tensor_list[i];
@@ -533,7 +522,7 @@ double Decay_Channel::ME2_NLO(const ATOOLS::Vec4D_Vector& momenta, bool anti,
   }
   value /= double(GetDecaying().IntSpin()+1);
   if (GetDecaying().StrongCharge())
-    value/=double(abs(GetDecaying().StrongCharge()));
+    value/=double(abs(GetDecaying().StrongCharge())); // todo: remove abs when BVI + RS dc are combined
   value /= SymmetryFactor();
 
   return value;

@@ -51,7 +51,6 @@ namespace EXTRAXS {
     ATOOLS::Flavour Prop() const { return m_prop; }
     ATOOLS::Vec4D_Vector GetMomenta() override { return born_momenta; }
     double getColourFactor(const PHASIC::Color_Integrator* p_ci) override;
-    double getSign() override;
   
   protected:
     double ME2_Born;

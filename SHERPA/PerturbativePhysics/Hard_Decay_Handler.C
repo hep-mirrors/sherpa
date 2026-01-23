@@ -893,13 +893,17 @@ void Hard_Decay_Handler::TreatInitialBlob(ATOOLS::Blob* blob,
     //bdb->Set<NLO_subevtlist*>(p_newsublist);
     for (size_t i=0;i<p_newsublist->size();++i) {
       //if (wgtmap_bdb) (*p_newsublist)[i]->m_results = wgtmap_bdb; // ist evtl. mit m_results Get<Weights_Map>()["BR"] gemeint? 
-
-      (*p_newsublist)[i]->m_result*=brfactor;  // Produktionsgewicht * branching ratio; 
+      
+      // everything below is not set yet
+      (*p_newsublist)[i]->m_result*=brfactor;  // Produktionsgewicht * branching ratio; -> noch nichts gesetzt
                                                // ist Produktionsgewicht Blob_Data_Base * bdbmeweight((*blob)["MEWeight"]); ME_Weight = bdbmeweight->Get<double>(); oder 
                                                // Blob_Data_Base * wgtinfo((*blob)["MEWeightInfo"]); *wgtinfo->Get<ME_Weight_Info*>()?
-      (*p_newsublist)[i]->m_results["BR"]*=brfactor; // weights map: nur BR?
+                                               // Base weight: double baseweight =    wgtmap.BaseWeight();
+                                               // double baseweight =    wgtmap.Nominal(); -> das nicht mehr mit BR multiplizieren
+      (*p_newsublist)[i]->m_results["BR"]*=brfactor; // weights map: nur BR? nicht mit BR multiplizieren laut Mareen
       (*p_newsublist)[i]->m_me*=brfactor;     // was ist das?
       (*p_newsublist)[i]->m_mewgt*=brfactor;  // von oben: double ME_Weight = bdbmeweight->Get<double>();?
+      // Mareen sagt: müssen alle auf den selben Wert gesetzt werden
       DEBUG_VAR(*(*p_newsublist)[i]);
     }
   }
