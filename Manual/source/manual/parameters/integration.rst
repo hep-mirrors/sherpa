@@ -17,6 +17,7 @@ INTEGRATION_ERROR
 .. index:: INTEGRATION_ERROR
 
 Specifies the relative integration error target.
+If ``STOPOPT`` is too low, then the target might not be reached.
 
 .. _int_INTEGRATOR:
 
@@ -112,16 +113,16 @@ The sub-settings for the phase space integrator can be customised as follows:
 The following sub-settings exist:
 
 ``ITMIN``
-  The minimum number of points used for every optimisation cycle. Please note
+  The minimum number of points used for the first optimisation cycle. Please note
   that it might be increased automatically for complicated processes.
 
 ``ITMAX``
-  The maximum number of points used for every optimisation cycle. Please note
+  The maximum number of points used for the first optimisation cycle. Please note
   that for complicated processes the number given might be insufficient for
   a meaningful optimisation.
 
 ``NPOWER``
-  The power of two, by which the number of points increases with every step of the
+  The power of two, by which the number of points increases with every cycle of the
   optimisation.
 
 ``NOPT``
