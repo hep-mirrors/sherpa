@@ -210,8 +210,8 @@ void Matter_Overlap::InitializeStaticFFParams() {
   m_fixradius = 0.;
   for (size_t i=0;i<2;i++) {
     for (size_t j=0;j<2;j++) {
-      m_fraction[2*i+j] = ( (i==0 ? fraction[i] : 1.-fraction[i] ) *
-			    (j==0 ? fraction[j] : 1.-fraction[j] ) );
+      m_fraction[2*i+j] = ( (i==0 ? fraction[0] : 1.-fraction[0] ) *
+			    (j==0 ? fraction[1] : 1.-fraction[1] ) );
       m_radius2[2*i+j]  = sqr(radius[0][i]) + sqr(radius[1][j]);
       m_radius[2*i+j]   = sqrt(m_radius2[2*i+j]);
       m_rnorm[2*i+j]    = ( radius[0][i] > 0. && radius[1][j]>0. ?
@@ -318,7 +318,7 @@ void Matter_Overlap::Output(const double & check) {
   for (size_t i=0;i<2;i++) {
     msg_Info()<<"   | "<<std::setw(20)<<m_form[i]<<", R_1 = "
 	      <<std::setprecision(4)<<std::setw(6)
-	      <<(p_ffs[0]->Radius1()*m_invGeV2fm)<<" fm";
+	      <<(p_ffs[i]->Radius1()*m_invGeV2fm)<<" fm";
     if (m_form[i]==matter_form::double_gaussian) {
       msg_Info()<<", f_1 = "<<std::setprecision(4)<<std::setw(6)
 		<<p_ffs[i]->Fraction1()<<", "

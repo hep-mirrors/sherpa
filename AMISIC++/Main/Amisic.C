@@ -117,11 +117,11 @@ bool Amisic::Initialize(MODEL::Model_Base *const model,
   m_pt0_variations      = (*mipars).GetVariationVector("pt_0");
   m_ptmin_variations    = (*mipars).GetVariationVector("pt_min");
   const size_t matter_variations = m_mo.MatterFormVariationSize();
-  size_t max_size = std::max({m_sigma_nd_variations.size(), 
-                           m_pt0_variations.size(),
-                           m_ptmin_variations.size(),
-                           matter_variations,
-                           size_t(1)});
+  size_t max_size = std::max({m_sigma_nd_variations.size(),
+                              m_pt0_variations.size(),
+                              m_ptmin_variations.size(),
+                              matter_variations,
+                              size_t(1)});
 
   ResetVariationWeights(max_size);
 
@@ -400,7 +400,7 @@ bool Amisic::FirstMinBias(Blob * blob) {
 
 bool Amisic::FirstMPI(Blob * blob) {
   ///////////////////////////////////////////////////////////////////////////
-  // ue-reweighting: Refactored FirstMPI with loop at Amisic level.
+  // Refactored FirstMPI with loop at Amisic level.
   // This allows lambda ratios to be computed with the actual impact parameter
   // BEFORE Sudakov evolution, ensuring correct reweighting.
   ///////////////////////////////////////////////////////////////////////////
@@ -755,6 +755,10 @@ void Amisic::AcceptRejectReweighting(const bool accepted, const double prob_nom)
   // For rejected scatter: multiply weight by (1-p_var)/(1-p_nom)
   ///////////////////////////////////////////////////////////////////////////
   if (m_sudakov_weights.empty()) return;
+
+  // msg_Out() << METHOD << " LastPT2() = " << m_singlecollision.LastPT2()
+  //           << ", accepted = " << (accepted ? "true" : "false")
+  //           << ", PT2Min() = " << m_singlecollision.PT2Min() << "\n";
   
   const size_t n_variations = m_sudakov_weights.size();
 
@@ -775,10 +779,13 @@ void Amisic::AcceptRejectReweighting(const bool accepted, const double prob_nom)
     
     if (accepted) {
       // Accepted: weight *= p_var / p_nom
-      const double ratio = prob_var / prob_nom;
-      if (std::isfinite(ratio) && ratio > 0.) {
-        m_sudakov_weights[ivar] *= ratio;
-      }
+      if (m_singlecollision.PT2() > sqr(m_ptmin_variations[ivar])) 
+      {
+        const double ratio = prob_var / prob_nom;
+        if (std::isfinite(ratio) && ratio > 0.) {
+          m_sudakov_weights[ivar] *= ratio;
+        }
+      } else { m_sudakov_weights[ivar] *= 0.; }
     } else {
       // Rejected: weight *= (1 - p_var) / (1 - p_nom)
       const double ratio = (1. - prob_var) / (1. - prob_nom);

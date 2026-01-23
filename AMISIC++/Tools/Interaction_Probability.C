@@ -78,8 +78,13 @@ void Interaction_Probability::FixKandSmin() {
 	    <<string(22,' ')<<"|\n";
   // ue-reweighting
   std::vector<double> sigma_nd_variations = (*mipars).GetVariationVector("SigmaND_Norm");
-  size_t n_variations = std::max(sigma_nd_variations.size(), p_mo->MatterFormVariationSize());
-  if (n_variations==0) n_variations = 1;
+  std::vector<double> pt0_variations      = (*mipars).GetVariationVector("pt_0");
+  std::vector<double> ptmin_variations    = (*mipars).GetVariationVector("pt_min");
+  size_t n_variations = std::max({sigma_nd_variations.size(), 
+                                  pt0_variations.size(),
+                                  ptmin_variations.size(),
+                                  p_mo->MatterFormVariationSize(),
+                                  size_t(1)});
   sigma_nd_variations.resize(n_variations, sigma_nd_variations[0]);
 
   // Initialize K-factor tables for variations
@@ -237,8 +242,15 @@ bool Interaction_Probability::CheckTables() {
 }
 
 void Interaction_Probability::OutputTables() {
-  std::vector<double> sigma_nd_variations = (*mipars).GetVariationVector("SigmaND_Norm"); // ue-reweighting
-  sigma_nd_variations.resize(p_k_variations.size(), sigma_nd_variations[0]);
+  std::vector<double> sigma_nd_variations = (*mipars).GetVariationVector("SigmaND_Norm");
+  std::vector<double> pt0_variations      = (*mipars).GetVariationVector("pt_0");
+  std::vector<double> ptmin_variations    = (*mipars).GetVariationVector("pt_min");
+  size_t n_variations = std::max({sigma_nd_variations.size(), 
+                                  pt0_variations.size(),
+                                  ptmin_variations.size(),
+                                  p_mo->MatterFormVariationSize(),
+                                  size_t(1)});
+  sigma_nd_variations.resize(n_variations, sigma_nd_variations[0]);
   msg_Info()<<"   "<<std::string(77,'-')<<"\n"
 	    <<"   | "<<METHOD<<" look-up tables and values:          |\n"
 	    <<"   | "<<std::setw(15)<<"E_{c.m.} [GeV]"<<" | "

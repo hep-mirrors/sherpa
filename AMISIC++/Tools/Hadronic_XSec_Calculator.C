@@ -52,7 +52,7 @@ Initialize(const Flavour & fl1,const Flavour & fl2,
   m_alphaP_pomeron = (*mipars)("PomeronSlope");
   m_triple_pomeron = (*mipars)("TriplePomeronCoupling");
   m_eta_reggeon    = (*mipars)("ReggeonIntercept");
-  m_xsnd_norm      = (*mipars).GetVariationVector("SigmaND_Norm")[0]; // ue-reweighting
+  m_xsnd_norm      = (*mipars)("SigmaND_Norm");
   m_s0             = 1./m_alphaP_pomeron;
   m_cres           = (*mipars)("Diffractive_cres");
   m_mres           = (*mipars)("Diffractive_Mres");

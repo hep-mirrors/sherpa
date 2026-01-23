@@ -19,17 +19,15 @@ MI_Parameters::MI_Parameters() :
   m_evttype =
     s["EVENT_TYPE"].SetDefault(evt_type::Perturbative).Get<evt_type::code>();
   m_parameters_vector[string("pt_0(ref)")]
-    = s["PT_0(ref)_Variations"].SetDefault({2.05}).GetVector<double>(); // ue-reweighting
+    = s["PT_0(ref)"].SetDefault({2.05}).GetVector<double>(); // ue-reweighting
   m_parameters[string("pt_0(ref)")]
     = m_parameters_vector[string("pt_0(ref)")][0]; // ue-reweighting
   m_parameters[string("pt_0(IR)")]
     = s["PT_0(IR)"].SetDefault(0.5).Get<double>();
   m_parameters_vector[string("pt_min(ref)")]
-    = s["PT_Min(ref)_Variations"].SetDefault({2.583}).GetVector<double>(); // ue-reweighting
+    = s["PT_Min(ref)"].SetDefault({2.583}).GetVector<double>(); // ue-reweighting
   m_parameters[string("pt_min(ref)")]
     = m_parameters_vector[string("pt_min(ref)")][0]; // ue-reweighting
-  m_parameters[string("pt_min(ref)")]
-    = s["PT_Min(ref)"].SetDefault(2.583).Get<double>();
   m_parameters[string("pt_min(IR)")]
     = s["PT_Min(IR)"].SetDefault(1.00).Get<double>();
   m_parameters[string("Ecms(ref)")]
@@ -42,11 +40,11 @@ MI_Parameters::MI_Parameters() :
   {
     m_pt02ref_variations.push_back(sqr(m_parameters_vector[string("pt_0(ref)")][i]));
   }
-  m_ptmin2ref = m_pt02ref_variations[0];
   for (size_t i=0; i<m_parameters_vector[string("pt_min(ref)")].size(); ++i)
   {
     m_ptmin2ref_variations.push_back(sqr(m_parameters_vector[string("pt_min(ref)")][i]));
   }
+  m_pt02ref   = m_pt02ref_variations[0];
   m_ptmin2ref = m_ptmin2ref_variations[0];
   m_ptmin2IR  = sqr(m_parameters[string("pt_min(IR)")]);
   m_Sref      = sqr(m_Eref = m_parameters[string("Ecms(ref)")]);

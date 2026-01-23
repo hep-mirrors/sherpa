@@ -41,7 +41,7 @@ void Form_Factor::Initialise()
                                m_radius1_variations.size(),
                                m_radius2_variations.size(),
                                size_t(1)});
-  const double frac_nom   = m_fraction_variations.empty() ? m_fraction1 : m_fraction_variations.front();
+  const double frac_nom    = m_fraction_variations.empty() ? m_fraction1 : m_fraction_variations.front();
   const double radius1_nom = m_radius1_variations.empty() ? m_radius1*m_GeV_fm : m_radius1_variations.front();
   const double radius2_nom = m_radius2_variations.empty() ? m_radius2*m_GeV_fm : m_radius2_variations.front();
 
@@ -66,6 +66,7 @@ double Form_Factor::Radius1At(size_t i) const {
 }
 
 double Form_Factor::Radius2At(size_t i) const {
+  if (m_form!=matter_form::double_gaussian) return 0.0;
   if (i>=m_radius2_variations.size()) return m_radius2;
   return m_radius2_variations[i]/m_GeV_fm;
 }
