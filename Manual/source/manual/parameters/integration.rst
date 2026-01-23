@@ -132,7 +132,7 @@ The following sub-settings exist:
   The minimal number of integration cycles after the optimization is done.
 
 ``STOPOPT``
-  The maximal number of additional cycles in the integration performed to reach the
+  The maximal number (default: 0) of additional cycles in the integration performed to reach the
   integration error goal.
 
 ``ITMIN_BY_NODE``
