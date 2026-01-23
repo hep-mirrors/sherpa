@@ -11,8 +11,8 @@ this task. It employes a YFS-type resummation :cite:`Yennie1961ad` of
 all infrared singular terms to all orders and is equipped with
 complete first order corrections for the most relevant cases (all
 other ones receive approximate real emission corrections built up by
-Catani-Seymour splitting kernels). The module is also equipped with 
-an algorithm to allow any photons produced to split into charged 
+Catani-Seymour splitting kernels). The module is also equipped with
+an algorithm to allow any photons produced to split into charged
 particle pairs.
 
 .. contents::
@@ -99,7 +99,7 @@ PHOTON_SPLITTER_MODE
 
 .. index:: PHOTON_SPLITTER_MODE
 
-The parameter :OPTION:`PHOTON_SPLITTER_MODE` determines which particles, if any, may be produced in 
+The parameter :OPTION:`PHOTON_SPLITTER_MODE` determines which particles, if any, may be produced in
 photon splittings:
 
   :option:`0`
@@ -116,7 +116,7 @@ photon splittings:
 The settings are additive, e.g. ``PHOTON_SPLITTER_MODE: 3``
 allows splittings into electron-positron and muon-antimuon pairs.
 The default is ``PHOTON_SPLITTER_MODE: 15`` (all splittings turned on).
-This parameter is of course only effective if the Photons module is 
+This parameter is of course only effective if the Photons module is
 switched on using the ``MODE`` keyword.
 
 .. _PHOTON_SPLITTER_MAX_HADMASS:
@@ -126,10 +126,10 @@ PHOTON_SPLITTER_MAX_HADMASS
 
 .. index:: PHOTON_SPLITTER_MAX_HADMASS
 
-``PHOTON_SPLITTER_MAX_HADMASS`` sets the mass (in GeV) of the heaviest 
-hadron which may be produced in photon splittings. Note that vector 
-splitting functions are currently not implemented: only fermions, 
-scalars and pseudoscalars up to this cutoff will be considered. 
+``PHOTON_SPLITTER_MAX_HADMASS`` sets the mass (in GeV) of the heaviest
+hadron which may be produced in photon splittings. Note that vector
+splitting functions are currently not implemented: only fermions,
+scalars and pseudoscalars up to this cutoff will be considered.
 The default is 0.5 GeV.
 
 .. _QED Corrections to the Hard Interaction:
@@ -228,7 +228,7 @@ Higher order matrix element corrections can be
 included by setting :option:`BETA` to either
 :option:`1/2` to the desired order of accuray.
 For example :option:`BETA: 0` disables all higer-order
-corrections:cite:`Jadach:2000ir`
+corrections :cite:`Jadach:2000ir`.
 
 
 .. _COULOMB:
