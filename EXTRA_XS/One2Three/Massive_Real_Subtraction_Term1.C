@@ -53,6 +53,5 @@ void Massive_Real_Subtraction_Term1::Calculate_real_subtraction(const ATOOLS::Ve
 
 
 double Massive_Real_Subtraction_Term1::getSign(){
-  if(sign) return sign;
-  return 1.0;
+  return (-1.0) * sign;
 }

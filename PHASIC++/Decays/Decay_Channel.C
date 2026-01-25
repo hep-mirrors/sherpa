@@ -429,6 +429,7 @@ double Decay_Channel::ME2_NLO(const ATOOLS::Vec4D_Vector& momenta, bool anti,
     bool isRealChannel(false);
 
     std::vector<METOOLS::Amplitude2_Tensor*> NLO_tensor_list;  // build the Amplitude2_Tensor for S, V resp. I
+    std::vector<double> s_sign_list{};
     for (size_t i = 0; i < GetDiagrams().size(); ++i) {
       METOOLS::Spin_Amplitudes* diag = GetDiagrams()[i];
       const std::string& type = diag->getType();
@@ -437,6 +438,7 @@ double Decay_Channel::ME2_NLO(const ATOOLS::Vec4D_Vector& momenta, bool anti,
         std::vector<METOOLS::Spin_Amplitudes*> single_diag_list{ diag }; // to create Amplitude2_Tensor, the diagram needs to be in a list. S, I and V are seperate Amplitude2_Tensor objects.
         METOOLS::Amplitude2_Tensor* NLO_tensor = new Amplitude2_Tensor(p, 0, single_diag_list, spin_i, spin_j);
         NLO_tensor_list.push_back(NLO_tensor);
+        s_sign_list.push_back(sign);
         isRealChannel = true;
       }
       if (type == "I") {
@@ -461,33 +463,31 @@ double Decay_Channel::ME2_NLO(const ATOOLS::Vec4D_Vector& momenta, bool anti,
     Complex full_nlo_part(0.0, 0.0);
     for (size_t i = 0; i < NLO_tensor_list.size(); ++i) {    // get NLO part
       if(isRealChannel){
-        p_amps->Add(NLO_tensor_list[i], Complex(-Scolourfactor, 0.0)); // todo: remove - and put sign there
+        p_amps->Add(NLO_tensor_list[i], Complex(s_sign_list[i] * Scolourfactor * 0.25, 0.0));
       } else{
         p_amps->Add(NLO_tensor_list[i], Complex(1.0, 0.0));
       }
       
-      if(isRealChannel){
+      /*if(isRealChannel){ // todo: remove this if everything works
         full_nlo_part += (*sigma)*NLO_tensor_list[i]->ReduceToMatrix(sigma->Particle()) * Scolourfactor;
       } else {
         full_nlo_part += (*sigma)*NLO_tensor_list[i]->ReduceToMatrix(sigma->Particle());
-      }
+      }*/
     }
 
-    if (full_nlo_part.real() < 0.0){
+    if (full_nlo_part.real() < 0.0 & !isRealChannel){
       // to avoid endless loop if B+V+I < 0:
       full_nlo_part.real(-full_nlo_part.real()); // todo: remove this if values for V and I are correct.
       //std::cout << "Warning: Decay_Channel::ME2_NLO gets a negative NLO ME2 value.  " << std::endl;
     }
 
-    sumijlambda_AiAj += full_nlo_part;
-
-    Complex test_result(0.0, 0.0);
-    test_result = (*sigma)*p_amps->ReduceToMatrix(sigma->Particle());
-
+    //sumijlambda_AiAj += full_nlo_part; // todo: remove this (just here for test purpose)
+    sumijlambda_AiAj = (*sigma)*p_amps->ReduceToMatrix(sigma->Particle());  // RS value
 
     for (size_t i = 0; i < NLO_tensor_list.size(); ++i) {
       delete NLO_tensor_list[i];
     }
+    s_sign_list.clear();
     NLO_tensor_list.clear();
     DEBUG_VAR(*p_amps);
   }
