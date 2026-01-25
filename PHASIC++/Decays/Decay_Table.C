@@ -107,7 +107,7 @@ const double Decay_Table::ActiveWidth(const size_t& counter) const
 {
   double activewidth=0.0;
   for (size_t i=0;i<size();++i) {
-    if (at(i)->Active(counter)>0) activewidth += at(i)->Width();
+    if (at(i)->Active(counter)>0) activewidth += at(i)->Width(); // todo: abs( at(i)->Width()) => doublicate
   }
   return activewidth;
 }
@@ -137,7 +137,7 @@ Decay_Channel* Decay_Table::Select()
   // starting counting at 1, since 0 is reserved for nominal table
   m_counter++;
   DEBUG_VAR(m_counter);
-  double disc = ActiveWidth(m_counter)*ran->Get();
+  double disc = ActiveWidth(m_counter)*ran->Get();   // todo: active absolute width, give abs width to every dc
   for (size_t i=0;i<size();++i) {
     if (at(i)->Active(m_counter)<1) continue;
     disc -= at(i)->Width();

@@ -860,7 +860,7 @@ void Hard_Decay_Handler::TreatInitialBlob(ATOOLS::Blob* blob,
           newmoms[j] = dipole_mom[j];
         }
 
-        // Constructor signature: (n, id_ptr, fl_ptr, mom_ptr, i, j, k)
+        // Constructor: (n, id_ptr, fl_ptr, mom_ptr, i, j, k)
         NLO_subevt *newsub(new NLO_subevt(newn, decay_ids, newfls, newmoms, 0, 0, 0)); 
         p_newsublist->push_back(newsub);
       } else if(NLO_dc->GetDiagrams()[i]->getType() == "S") {
@@ -885,25 +885,24 @@ void Hard_Decay_Handler::TreatInitialBlob(ATOOLS::Blob* blob,
         std::array<int, 3> dipole_indices;
         dipole_indices = NLO_dc->GetDiagrams()[i]-> getDipoleIndices();
 
-        // Constructor signature: (n, id_ptr, fl_ptr, mom_ptr, i, j, k)
-        NLO_subevt *newsub(new NLO_subevt(newn, decay_ids, newfls, newmoms, dipole_indices[0], dipole_indices[1], dipole_indices[2]));  // todo: change i, j, k
-        p_newsublist->push_back(newsub);
+        // Constructor: (n, id_ptr, fl_ptr, mom_ptr, i, j, k)
+        NLO_subevt *newsub(new NLO_subevt(newn, decay_ids, newfls, newmoms, dipole_indices[0], dipole_indices[1], dipole_indices[2]));
       }
     }
-    //bdb->Set<NLO_subevtlist*>(p_newsublist);
     for (size_t i=0;i<p_newsublist->size();++i) {
       //if (wgtmap_bdb) (*p_newsublist)[i]->m_results = wgtmap_bdb; // ist evtl. mit m_results Get<Weights_Map>()["BR"] gemeint? 
       
       // everything below is not set yet
-      (*p_newsublist)[i]->m_result*=brfactor;  // Produktionsgewicht * branching ratio; -> noch nichts gesetzt
-                                               // ist Produktionsgewicht Blob_Data_Base * bdbmeweight((*blob)["MEWeight"]); ME_Weight = bdbmeweight->Get<double>(); oder 
+      double baseweight = wgtmap_bdb->Get<Weights_Map>().Nominal(); // already mutliplied with BR // with PDF's
+      double baseweight_1 = wgtmap_bdb->Get<Weights_Map>().BaseWeight(); 
+      (*p_newsublist)[i]->m_result=baseweight; // Produktionsgewicht * branching ratio; -> noch nichts gesetzt
+                                               // ist Produktionsgewicht:
+                                               // Blob_Data_Base * bdbmeweight((*blob)["MEWeight"]); ME_Weight = bdbmeweight->Get<double>(); oder 
                                                // Blob_Data_Base * wgtinfo((*blob)["MEWeightInfo"]); *wgtinfo->Get<ME_Weight_Info*>()?
-                                               // Base weight: double baseweight =    wgtmap.BaseWeight();
-                                               // double baseweight =    wgtmap.Nominal(); -> das nicht mehr mit BR multiplizieren
-      (*p_newsublist)[i]->m_results["BR"]*=brfactor; // weights map: nur BR? nicht mit BR multiplizieren laut Mareen
-      (*p_newsublist)[i]->m_me*=brfactor;     // was ist das?
-      (*p_newsublist)[i]->m_mewgt*=brfactor;  // von oben: double ME_Weight = bdbmeweight->Get<double>();?
-      // Mareen sagt: müssen alle auf den selben Wert gesetzt werden
+      (*p_newsublist)[i]->m_results["BR"]=1; // weights map: nur BR? nicht mit BR multiplizieren laut Mareen
+      (*p_newsublist)[i]->m_me=1;    // no PDF // was ist das?
+      (*p_newsublist)[i]->m_mewgt=1; // no PDF // von oben: double ME_Weight = bdbmeweight->Get<double>(); => keine PDF's? Contians flux
+      // m_subevt.m_me = m_subevt.m_mewgt = -m_lastxs; berechnete cross section aus dc, hier gleich ran multiplizieren, nominal als ProduktionsCS nehmen; BR nicht aktiv; BRBR noch ran
       DEBUG_VAR(*(*p_newsublist)[i]);
     }
   }
