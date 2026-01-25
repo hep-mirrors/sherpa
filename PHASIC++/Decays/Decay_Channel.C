@@ -257,7 +257,7 @@ void Decay_Channel::CalculateWidth(double acc, double ref, int iter)
       mv[1] += value;
       mv[2] += ATOOLS::sqr(value);
       p_channels->AddPoint(value);
-      if (value>m_max) {
+      if (abs(value)>m_max) {
         m_max = value;
       }
     }
@@ -468,11 +468,11 @@ double Decay_Channel::ME2_NLO(const ATOOLS::Vec4D_Vector& momenta, bool anti,
         p_amps->Add(NLO_tensor_list[i], Complex(1.0, 0.0));
       }
       
-      /*if(isRealChannel){ // todo: remove this if everything works
+      if(isRealChannel){ // todo: remove this if everything works
         full_nlo_part += (*sigma)*NLO_tensor_list[i]->ReduceToMatrix(sigma->Particle()) * Scolourfactor;
       } else {
         full_nlo_part += (*sigma)*NLO_tensor_list[i]->ReduceToMatrix(sigma->Particle());
-      }*/
+      }
     }
 
     if (full_nlo_part.real() < 0.0 & !isRealChannel){
@@ -481,7 +481,7 @@ double Decay_Channel::ME2_NLO(const ATOOLS::Vec4D_Vector& momenta, bool anti,
       //std::cout << "Warning: Decay_Channel::ME2_NLO gets a negative NLO ME2 value.  " << std::endl;
     }
 
-    //sumijlambda_AiAj += full_nlo_part; // todo: remove this (just here for test purpose)
+    sumijlambda_AiAj += full_nlo_part; // todo: remove this (just here for test purpose)
     sumijlambda_AiAj = (*sigma)*p_amps->ReduceToMatrix(sigma->Particle());  // RS value
 
     for (size_t i = 0; i < NLO_tensor_list.size(); ++i) {
@@ -522,12 +522,10 @@ double Decay_Channel::ME2_NLO(const ATOOLS::Vec4D_Vector& momenta, bool anti,
   }
   value /= double(GetDecaying().IntSpin()+1);
   if (GetDecaying().StrongCharge())
-    value/=double(abs(GetDecaying().StrongCharge())); // todo: remove abs when BVI + RS dc are combined
+    value/=double(abs(GetDecaying().StrongCharge()));
   value /= SymmetryFactor();
-
   return value;
 }
-
 
 
 void Decay_Channel::
@@ -558,7 +556,7 @@ GenerateKinematics(ATOOLS::Vec4D_Vector& momenta, bool anti,
       break;
     }
     value = Differential(momenta,anti,sigma, parts);
-    if(value/m_max>1.05 && m_max>1e-30) {
+    if(value/m_max>1.05 && abs(m_max)>1e-30) {
       if(value/m_max>1.3) {
         msg_Tracking()<<METHOD<<"("<<Name()<<") warning:"<<endl
 		      <<"  d\\Gamma(x)="<<value<<" > max(d\\Gamma)="<<m_max
