@@ -20,11 +20,13 @@ namespace AMISIC {
     double           m_pdfnorm, m_xs_test, m_xs_hard, m_bmax, m_smin;
     bool             m_dynamic;
     std::vector<OneDim_Table*> p_k_variations; // ue-reweighting
+    std::vector<TwoDim_Table*> p_diffxsec_variations; // ue-reweighting
 
     void FixKandSmin();
     void FillIntegrated();
     void InitializeTables();
     void InitializeTable(const size_t & sbin,const bool & out=false);
+    void InitializeTable(const size_t & sbin, TwoDim_Table* diffxsec, size_t variation_index); // ue-reweighting
     bool CheckTables();
     void OutputTables();
     

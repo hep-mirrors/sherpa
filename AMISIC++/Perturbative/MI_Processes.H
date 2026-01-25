@@ -49,6 +49,7 @@ namespace AMISIC {
                       PDF::ISR_Handler *const isr,
                       YFS::YFS_Handler *const yfs);
     double TotalCrossSection(const double & s,const bool & output=false);
+    double TotalCrossSection(const double & s,const bool & output,size_t variation_index); // ue-reweighting
     void   UpdateS(const double & s);
     /////////////////////////////////////////////////////////////////////////
     // The sum over the PDF-weighted matrix elements, grouped by parton

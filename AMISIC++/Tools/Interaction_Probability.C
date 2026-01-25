@@ -36,6 +36,9 @@ Interaction_Probability::~Interaction_Probability() {
   for (auto p : p_k_variations) {
     if (p) delete p;
   }
+  for (auto p : p_diffxsec_variations) {
+    if (p) delete p;
+  }
   // ue-reweighting
 }
 
@@ -87,10 +90,12 @@ void Interaction_Probability::FixKandSmin() {
                                   size_t(1)});
   sigma_nd_variations.resize(n_variations, sigma_nd_variations[0]);
 
-  // Initialize K-factor tables for variations
+  // Initialize K-factor tables and differential XS tables for variations
   p_k_variations.resize(n_variations);
+  p_diffxsec_variations.resize(n_variations);
   for (size_t ivar=0; ivar<n_variations; ++ivar) {
     p_k_variations[ivar] = new OneDim_Table(*p_sbins);
+    p_diffxsec_variations[ivar] = new TwoDim_Table(*p_sbins, *p_bbins);
   }
   // ue-reweighting
   PInt_Dyn_Integrand integrand(p_diffxsec);
@@ -127,14 +132,19 @@ void Interaction_Probability::FixKandSmin() {
                           p_procs->GetXSecs()->XSnd(s));
       double k_var = 1.0;
       double xs_test_var = 0.0;
+      double xsratio_var = p_procs->GetXSecs()->XSratio(s, ivar);
+
+      PInt_Dyn_Integrand integrand_var(p_diffxsec_variations[ivar]);
+      Gauss_Integrator gauss_var(&integrand_var);
+      integrand_var.SetS(s);
 
       // Solve for K-factor for this variation
       do {
-        if (p_procs->GetXSecs()->XSratio(s)<=0.5) { k_var = 1.; break; }
+        if (xsratio_var<=0.5) { k_var = 1.; break; }
         p_mo->SetMatterFormVariationIndex(ivar);
         p_mo->SetKRadius(k_var);
-        InitializeTable(sbin);
-        xs_test_var = gauss.Integrate(0.,p_mo->Bmax(),1.e-3);
+        InitializeTable(sbin, p_diffxsec_variations[ivar], ivar);
+        xs_test_var = gauss_var.Integrate(0.,p_mo->Bmax(),1.e-3);
         if (dabs(xs_test_var/xs_nd_var)<1.e-3) { k_var = 0.; break; }
         k_var *= Min(5., Max(0.2, sqrt(xs_nd_var/xs_test_var)));
       } while (dabs(1.-xs_test_var/xs_nd_var)>0.02);
@@ -142,7 +152,8 @@ void Interaction_Probability::FixKandSmin() {
       p_k_variations[ivar]->Fill(sbin, k_var);
 
       msg_Info()<<"   | Variation "<<ivar<<" : "
-                <<"xs_ND = "<<std::setw(34)<<std::setprecision(6)<<xs_nd_var<<" -> "
+                <<"xs_ND = "<<std::setw(12)<<std::setprecision(6)<<xs_nd_var<<", "
+                <<"ratio = "<<std::setw(12)<<std::setprecision(6)<<xsratio_var<<" -> "
                 <<"k = "<<std::setw(8)<<std::setprecision(6)<<k_var<<"  |\n";
     }
 
@@ -219,6 +230,36 @@ InitializeTable(const size_t & sbin,const bool & out) {
     prev = xs;
   }
 }
+
+// ue-reweighting
+void Interaction_Probability::
+InitializeTable(const size_t & sbin, TwoDim_Table* diffxsec, size_t variation_index) {
+  MI_Integrator * integrator = p_procs->GetIntegrator();
+  double s  = p_sbins->x(sbin), prev = 0., xsfix = 0.;
+  p_procs->UpdateS(s);
+
+  double ptmin2_var = mipars->CalculatePTmin2(s, variation_index);
+  integrator->SetPT2min(ptmin2_var);
+  
+  if (!p_mo->IsDynamic()) xsfix = (*integrator)(s,nullptr,0.);
+  
+  for (size_t bbin=0;bbin<p_bbins->m_nbins;bbin++) {
+    double b  = p_bbins->x(bbin);
+    double xs = m_pdfnorm * ( p_mo->IsDynamic() ?
+                              (*integrator)(s,p_mo,b) :
+                              xsfix * (*p_mo)(b) );
+    diffxsec->Fill(sbin,bbin,xs);
+    if (prev!=0. && xs/prev < 1.e-6) {
+      for (size_t i=bbin+1;i<p_bbins->m_nbins;i++)
+        diffxsec->Fill(sbin,i,0.);
+      break;
+    }
+    prev = xs;
+  }
+
+  integrator->SetPT2min(mipars->CalculatePTmin2(s));
+}
+// ue-reweighting
 
 bool Interaction_Probability::CheckTables() {
   XS_Integrand     integrand(p_diffxsec,0.);
@@ -332,7 +373,6 @@ void Interaction_Probability::OutputTables() {
                   <<(b*(1.-exp(-(*p_diffxsec)(s,b))))<<" |\n";
       }
     }
-    msg_Info()<<"   "<<std::string(77,'-')<<"\n\n\n";
 
     // Restore nominal state
     delete p_diffxsec;
@@ -345,6 +385,7 @@ void Interaction_Probability::OutputTables() {
       p_mo->SetKRadius(k_nom);
     }
   }
+  msg_Info()<<"   "<<std::string(77,'-')<<"\n\n\n";
   // ue-reweighting
 }
 

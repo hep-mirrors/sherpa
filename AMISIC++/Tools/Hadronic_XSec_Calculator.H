@@ -49,6 +49,8 @@ namespace AMISIC {
     std::map<std::pair<ATOOLS::Flavour, ATOOLS::Flavour>, double> m_sigmaDD;
     double m_GeV2mb;
     OneDim_Table * p_xsratio, * p_xshard;
+    std::vector<OneDim_Table*> p_xsratio_variations; // ue-reweighting
+    std::vector<OneDim_Table*> p_xshard_variations;  // ue-reweighting
     size_t m_testmode;
 
     void   FixType();
@@ -62,6 +64,7 @@ namespace AMISIC {
     double IntDDXSec(const size_t hadtags[2], const double masses[2]) const;
     double CalculateDoubleDXSec() const;
     void OutputXSratios(axis * sbins);
+    void OutputXSratiosVariations(axis * sbins); // ue-reweighting
   public:
     explicit Hadronic_XSec_Calculator();
     ~Hadronic_XSec_Calculator();
@@ -80,6 +83,12 @@ namespace AMISIC {
     //////////////////////////////////////////////////////////////////////////
     inline OneDim_Table * GetXSratio() { return p_xsratio; }
     inline double XSratio(const double & s=-1.) { return (*p_xsratio)(s); }
+    // ue-reweighting
+    inline double XSratio(const double & s, size_t variation_index) {
+      if (variation_index >= p_xsratio_variations.size()) return XSratio(s);
+      return s<0 ? 0. : (*p_xsratio_variations[variation_index])(s);
+    }
+    // ue-reweighting
     //////////////////////////////////////////////////////////////////////////
     // Hard cross section
     //////////////////////////////////////////////////////////////////////////

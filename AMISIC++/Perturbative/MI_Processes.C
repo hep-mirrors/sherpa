@@ -263,6 +263,29 @@ double MI_Processes::TotalCrossSection(const double & s,const bool & output) {
   return m_xshard;
 }
 
+// ue-reweighting
+double MI_Processes::TotalCrossSection(const double & s,const bool & output,
+                                       size_t variation_index) {
+  ///////////////////////////////////////////////////////////////////////////
+  // Calculate the hard cross section with a specific PT_Min variation.
+  ///////////////////////////////////////////////////////////////////////////
+  double ptmin2_var = mipars->CalculatePTmin2(s, variation_index);
+  m_integrator.SetPT2min(ptmin2_var);
+  double xshard_var = m_integrator(s,nullptr,0.);
+  if (output) {
+    msg_Info()<<"   | "<<"                    Variation "<<variation_index<<": xs_pert = "
+              <<std::setprecision(4)<<std::setw(10)
+              <<(xshard_var*rpa->Picobarn()/1.e9)<<" mb "
+              <<"+- "<<std::setprecision(0)<<std::setw(3)
+              <<(100.*m_integrator.Uncertainty()/xshard_var)
+              <<"%."<<std::string(17,' ')<<"|\n";
+  }
+  // Restore nominal PT2min after calculation
+  m_integrator.SetPT2min(mipars->CalculatePTmin2(s));
+  return xshard_var;
+}
+// ue-reweighting
+
 void MI_Processes::
 CalcScales(const double & shat,const double & that,const double & uhat) {
   ///////////////////////////////////////////////////////////////////////////

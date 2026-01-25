@@ -145,7 +145,7 @@ bool Amisic::Initialize(MODEL::Model_Base *const model,
   m_overestimator.Output();
   
   // output
-  const bool print_files = true;
+  const bool print_files = false;
   if (!print_files) return true;
   std::string filename;
   if (max_size == 3) {
@@ -732,7 +732,7 @@ void Amisic::ApplyVariationWeights(ATOOLS::Blob * blob) {
   }
   auto &wgt_map = (*blob)["WeightsMap"]->Get<Weights_Map>();
   
-  static constexpr double max_weight = 2e2;
+  // static constexpr double max_weight = 2e2;
   
   for(size_t i{0}; i < m_variation_weights.size(); ++i) {
     const std::string name {"v" + std::to_string(i)};
@@ -755,10 +755,6 @@ void Amisic::AcceptRejectReweighting(const bool accepted, const double prob_nom)
   // For rejected scatter: multiply weight by (1-p_var)/(1-p_nom)
   ///////////////////////////////////////////////////////////////////////////
   if (m_sudakov_weights.empty()) return;
-
-  // msg_Out() << METHOD << " LastPT2() = " << m_singlecollision.LastPT2()
-  //           << ", accepted = " << (accepted ? "true" : "false")
-  //           << ", PT2Min() = " << m_singlecollision.PT2Min() << "\n";
   
   const size_t n_variations = m_sudakov_weights.size();
 
@@ -788,10 +784,17 @@ void Amisic::AcceptRejectReweighting(const bool accepted, const double prob_nom)
       } else { m_sudakov_weights[ivar] *= 0.; }
     } else {
       // Rejected: weight *= (1 - p_var) / (1 - p_nom)
-      const double ratio = (1. - prob_var) / (1. - prob_nom);
-      if (std::isfinite(ratio) && ratio > 0.) {
-        m_sudakov_weights[ivar] *= ratio;
-      }
+      if (m_singlecollision.PT2() > sqr(m_ptmin_variations[ivar]))
+      {
+        const double ratio = (1. - prob_var) / (1. - prob_nom);
+        if (std::isfinite(ratio) && ratio > 0.) {
+          m_sudakov_weights[ivar] *= ratio;
+        }
+      } else {
+        const double ratio = 1. / (1. - prob_nom);
+        if (std::isfinite(ratio) && ratio > 0.) {
+          m_sudakov_weights[ivar] *= ratio;
+        } }
     }
   }
 }

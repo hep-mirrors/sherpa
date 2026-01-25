@@ -141,6 +141,7 @@ double MI_Parameters::CalculatePT02(const double & s) const {
 }
 
 double MI_Parameters::CalculatePT02(const double & s, size_t variation_index) const {
+  if (variation_index >= m_pt02ref_variations.size()) return CalculatePT02(s);
   return Max(m_pt02IR, m_pt02ref_variations[variation_index] * pow((s<0 ? m_Scms : s)/m_Sref,2*m_eta));
 }
 
@@ -149,6 +150,7 @@ double MI_Parameters::CalculatePTmin2(const double & s) const {
 }
 
 double MI_Parameters::CalculatePTmin2(const double & s, size_t variation_index) const {
+  if (variation_index >= m_ptmin2ref_variations.size()) return CalculatePTmin2(s);
   return Max(m_ptmin2IR, m_ptmin2ref_variations[variation_index] * pow((s<0 ? m_Scms : s)/m_Sref,2*m_eta));
 }
 
