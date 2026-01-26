@@ -7,33 +7,10 @@ BEAM_ENERGIES: 6500
 # matrix-element calculation
 ME_GENERATORS:
   - Comix
-  - Amegic
-  - OpenLoops
-
-## OTF variations
-SCALE_VARIATIONS:
-  - [0.25, 0.25]
-  - [1.0,  0.25]
-  - [0.25, 1.0]
-  - [1.0,  1.0]
-  - [4.0,  1.0]
-  - [1.0,  4.0]
-  - [4.0,  4.0]
-
-PDF_VARIATIONS:
-  - PDF4LHC21_40_pdfas*
-  - NNPDF40_nnlo_as_01180
-  - MSHT20nnlo_as118
-  - CT18NNLO_as_0118
 
 # EW setup and corrections
 EW_SCHEME: alphamZsW
 SIN2THETAW: 0.23113
-ASSOCIATED_CONTRIBUTIONS_VARIATIONS:
-  - [EW]
-  - [EW, LO1]
-  - [EW, LO1, LO2]
-  - [EW, LO1, LO2, LO3]
 
 # speed and neg weight fraction improvements
 MC@NLO:
@@ -42,7 +19,7 @@ MC@NLO:
 
 # pp -> Z[ee]+jets
 PROCESSES:
-- 93 93 -> 11 -11 93{5}:
+- 93 93 -> 11 -11 93:
     Order: {QCD: 0, EW: 2}
     CKKW: 20
     # set up NLO+PS final-state multiplicities

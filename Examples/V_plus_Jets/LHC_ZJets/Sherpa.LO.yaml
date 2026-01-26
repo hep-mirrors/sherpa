@@ -7,9 +7,6 @@ BEAM_ENERGIES: 6500
 # matrix-element calculation
 ME_GENERATORS: [Comix]
 
-## 7-point variations
-SCALE_VARIATIONS: 4.0*
-
 # pp -> Z[ee]
 PROCESSES:
 - 93 93 -> 11 -11:
@@ -17,3 +14,10 @@ PROCESSES:
 
 SELECTORS:
 - [Mass, 11, -11, 66, E_CMS]
+
+ANALYSIS: Rivet
+
+RIVET: 
+  --analyses: [MC_DILEPTON]
+  
+EVENTS: 1000

@@ -905,6 +905,7 @@ void Hard_Decay_Handler::TreatInitialBlob(ATOOLS::Blob* blob,
       // m_subevt.m_me = m_subevt.m_mewgt = -m_lastxs; berechnete cross section aus dc, hier gleich ran multiplizieren, nominal als ProduktionsCS nehmen; BR nicht aktiv; BRBR noch ran
       DEBUG_VAR(*(*p_newsublist)[i]);
     }
+    blob->AddData("NLO_subeventlist",new Blob_Data<NLO_subevtlist*>(p_newsublist)); 
   }
 
   if (sublist) {
