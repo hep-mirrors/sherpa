@@ -22,7 +22,8 @@ namespace MODEL {
             FindDependentVertices();
             CheckForUnusedVertices();
             // add variation key elements from combinations
-            AddAllCombinations();         
+            if (CheckForCombinations()) AddAllCombinations();
+            else AddWithoutCombining();  
             // Store the nominal parameter values 
             StoreNominal();
             // check if there are too many variations
@@ -36,6 +37,26 @@ namespace MODEL {
         Variations::~Variations(){
             for (auto set : dependent_vertices) {
                 delete set.second;
+            }
+        }
+
+        /*
+        Check if combination of parameters is wanted or not, using the flag:   MODEL_VARIATIONS_COMBINE: <0/1>
+        */
+        bool Variations::CheckForCombinations() {
+            if (!s["MODEL_VARIATIONS_COMBINE"].SetDefault(1.).IsScalar()) return true;
+            if (s["MODEL_VARIATIONS_COMBINE"].SetDefault(1.).Get<double>() == 1.) return true;
+            return false;
+        }
+
+        /*
+        add the variations from the map without combining different parameters together
+        */
+        void Variations::AddWithoutCombining() {
+            for (std::pair<std::string, std::vector<double_t>> item : m_variations) {
+                for (double value : item.second){
+                    v_variations.push_back(VariationKey(item.first, value));
+                }
             }
         }
 
