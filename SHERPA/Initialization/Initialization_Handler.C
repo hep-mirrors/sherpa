@@ -706,7 +706,7 @@ bool Initialization_Handler::InitializeTheModel()
   }
   if (p_model==NULL) THROW(not_implemented,"Model not implemented");
   MODEL::s_model=p_model;
-  return true;
+  return 1;
 }
 
 

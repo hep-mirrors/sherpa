@@ -91,7 +91,7 @@ namespace MODEL {
 
     const PDF::ISR_Handler_Map* p_isrhandlermap;
 
-    MODELVARIATIONS::Variations* p_variations = nullptr;
+    MODEL::VARIATIONS::Variations* p_variations = nullptr;
 
     virtual void InitVertices() = 0;
 
@@ -185,8 +185,8 @@ namespace MODEL {
     /*
     Things for variations of parameters, per default Models dont implement them
     */
-    inline MODELVARIATIONS::Variations* GetParameterVariations() {return p_variations;}
-    bool InitVariations() {if (!implements_variations) return false; if (!p_variations) p_variations = new MODELVARIATIONS::Variations(&m_v, p_constants); return true;}
+    inline MODEL::VARIATIONS::Variations* GetParameterVariations() {return p_variations;}
+    bool InitVariations() {if (!implements_variations) return false; if (!p_variations) p_variations = new MODEL::VARIATIONS::Variations(&m_v, p_constants); return true;}
     inline bool ImplementsVariations() {return implements_variations;}
   };
 
