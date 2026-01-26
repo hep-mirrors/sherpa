@@ -137,3 +137,9 @@ std::array<int, 3> Spin_Amplitudes::getDipoleIndices(){
 }
 
 
+void Spin_Amplitudes::MergeDiagrams(const METOOLS::Spin_Amplitudes* second_diagram){
+  msg_Error()<<METHOD<<": Virtual function called."<<endl;
+  Abort();
+}
+
+

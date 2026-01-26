@@ -55,6 +55,7 @@ namespace EXTRAXS {
     void FixColor(bool yes) override { m_cpointgen = yes; }
     double GetColourWeight() override;
     ATOOLS::Vec4D_Vector GetMomenta() override { return m_momenta; }
+    void MergeDiagrams(const METOOLS::Spin_Amplitudes* second_diagram) override;
   };
 }
 

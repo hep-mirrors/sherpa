@@ -243,6 +243,17 @@ void H_to_bbg_Real::SetColors(const vector<int> &ci, const vector<int> &cj) {
   m_cpointgen = true;
 }
 
+
 double H_to_bbg_Real::GetColourWeight() {
   return p_ci->GlobalWeight();
+}
+
+
+void H_to_bbg_Real::MergeDiagrams(const METOOLS::Spin_Amplitudes* second_diagram){
+  if (!second_diagram) return;
+  assert(size() == second_diagram->size());
+
+  for (size_t i=0; i<size(); ++i) {
+    (*this)[i] += (*second_diagram)[i];
+  }
 }

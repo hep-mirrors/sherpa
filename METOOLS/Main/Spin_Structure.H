@@ -194,6 +194,7 @@ namespace METOOLS
     virtual ATOOLS::Vec4D_Vector GetMomenta();
     virtual double getSign();
     virtual std::array<int, 3> getDipoleIndices();
+    virtual void MergeDiagrams(const METOOLS::Spin_Amplitudes* second_diagram);
   };
 
   /*! 
