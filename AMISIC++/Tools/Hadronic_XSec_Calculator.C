@@ -192,11 +192,15 @@ CalculateXSratios(MI_Processes * processes,axis * sbins)
   p_xshard     = new OneDim_Table(*sbins);
   
   // ue-reweighting: Get PT_Min variations and initialize variation tables
-  std::vector<double> ptmin_variations = (*mipars).GetVariationVector("pt_min");
   std::vector<double> sigma_nd_variations = (*mipars).GetVariationVector("SigmaND_Norm");
-  size_t n_variations = std::max({ptmin_variations.size(),
-                                  sigma_nd_variations.size(), size_t(1)});
-  ptmin_variations.resize(n_variations, ptmin_variations[0]);
+  std::vector<double> ptmin_variations    = (*mipars).GetVariationVector("pt_min");
+  std::vector<double> pt0_variations      = (*mipars).GetVariationVector("pt_0");
+  std::vector<double> eta_variations      = (*mipars).GetVariationVector("eta");
+  size_t n_variations = std::max({sigma_nd_variations.size(),
+                                  ptmin_variations.size(),
+                                  pt0_variations.size(),
+                                  eta_variations.size(),
+                                  size_t(1)});
   sigma_nd_variations.resize(n_variations, sigma_nd_variations[0]);
   p_xsratio_variations.resize(n_variations);
   p_xshard_variations.resize(n_variations);

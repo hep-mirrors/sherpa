@@ -48,7 +48,7 @@ Initialize(PDF::ISR_Handler * isr,MI_Processes * procs,axis * sbins) {
     m_xmax[i] = Max(1.-1.e-6,p_pdf[i]->XMax());
   }
   FixMaximum(procs,sbins);
-  Output();
+  // Output();
 }
 
 void Over_Estimator::UpdateS(const double & s,const double & pt02,const double & ptmin2) {

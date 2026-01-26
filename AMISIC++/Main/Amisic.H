@@ -67,20 +67,20 @@ namespace AMISIC {
     size_t       m_maxNscatters, m_Nscatters;
     double       m_f;
     // ue-reweighting
-    std::vector<double> m_variation_weights;
-    std::vector<double> m_lambda_ratios;
     std::vector<double> m_sigma_nd_variations;
     std::vector<double> m_pt0_variations;
     std::vector<double> m_ptmin_variations;
+    std::vector<double> m_eta_variations;
+    std::vector<double> m_variation_weights;
     std::vector<double> m_b_weights;
     std::vector<double> m_sudakov_weights;
+    std::vector<double> m_lambda_ratios;
     size_t m_mpi_scatter_count;
     double m_lambda_nominal;
     
     std::ofstream m_b_weight_file;       // output
     std::ofstream m_sudakov_weight_file; // output
     std::ofstream m_total_weight_file;   // output
-    std::ofstream m_accept_reject_file;  // output
     std::ofstream m_overlap_file;        // output
     // ue-reweighting
 

@@ -32,8 +32,10 @@ MI_Parameters::MI_Parameters() :
     = s["PT_Min(IR)"].SetDefault(1.00).Get<double>();
   m_parameters[string("Ecms(ref)")]
     = s["E(ref)"].SetDefault(7000.).Get<double>();
+  m_parameters_vector[string("eta")]
+    = s["Eta"].SetDefault({0.08}).GetVector<double>(); // ue-reweighting
   m_parameters[string("eta")]
-    = s["Eta"].SetDefault(0.08).Get<double>();
+    = m_parameters_vector[string("eta")][0]; // ue-reweighting
   m_pt02ref   = sqr(m_parameters[string("pt_0(ref)")]);
   m_pt02IR    = sqr(m_parameters[string("pt_0(IR)")]);
   for (size_t i=0; i<m_parameters_vector[string("pt_0(ref)")].size(); ++i)
@@ -49,17 +51,20 @@ MI_Parameters::MI_Parameters() :
   m_ptmin2IR  = sqr(m_parameters[string("pt_min(IR)")]);
   m_Sref      = sqr(m_Eref = m_parameters[string("Ecms(ref)")]);
   m_Scms      = sqr(m_Ecms = rpa->gen.Ecms());
+  m_eta_variations = m_parameters_vector[string("eta")];
   m_eta       = m_parameters[string("eta")];
   std::vector<double> ptmin_variations; // ue-reweighting
-  for (size_t i=0; i<m_parameters_vector[string("pt_min(ref)")].size(); ++i)
+  for (size_t ivar=0; ivar<std::max({m_parameters_vector[string("pt_min(ref)")].size(),
+                               m_parameters_vector[string("eta")].size()}); ++ivar)
   {
-    ptmin_variations.push_back(sqrt(CalculatePTmin2(m_Scms, i)));
+    ptmin_variations.push_back(sqrt(CalculatePTmin2(m_Scms, ivar)));
   }
   double pt_min = ptmin_variations[0]; // ue-reweighting
   std::vector<double> pt0_variations; // ue-reweighting
-  for (size_t i=0; i<m_parameters_vector[string("pt_0(ref)")].size(); ++i)
+  for (size_t ivar=0; ivar<std::max({m_parameters_vector[string("pt_0(ref)")].size(),
+                               m_parameters_vector[string("eta")].size()}); ++ivar)
   {
-    pt0_variations.push_back(sqrt(CalculatePT02(m_Scms, i)));
+    pt0_variations.push_back(sqrt(CalculatePT02(m_Scms, ivar)));
   }
   double pt_0 = pt0_variations[0]; // ue-reweighting
   m_parameters_vector[string("pt_min")]
@@ -140,18 +145,24 @@ double MI_Parameters::CalculatePT02(const double & s) const {
   return Max(m_pt02IR, m_pt02ref * pow((s<0 ? m_Scms : s)/m_Sref,2*m_eta));
 }
 
-double MI_Parameters::CalculatePT02(const double & s, size_t variation_index) const {
-  if (variation_index >= m_pt02ref_variations.size()) return CalculatePT02(s);
-  return Max(m_pt02IR, m_pt02ref_variations[variation_index] * pow((s<0 ? m_Scms : s)/m_Sref,2*m_eta));
+double MI_Parameters::CalculatePT02(const double & s, size_t ivar) const {
+  double pt02ref = m_pt02ref;
+  double eta = m_eta;
+  if (ivar < m_pt02ref_variations.size()) pt02ref = m_pt02ref_variations[ivar];
+  if (ivar < m_eta_variations.size()) eta = m_eta_variations[ivar];
+  return Max(m_pt02IR, pt02ref * pow((s<0 ? m_Scms : s)/m_Sref,2*eta));
 }
 
 double MI_Parameters::CalculatePTmin2(const double & s) const {
   return Max(m_ptmin2IR, m_ptmin2ref * pow((s<0 ? m_Scms : s)/m_Sref,2*m_eta));
 }
 
-double MI_Parameters::CalculatePTmin2(const double & s, size_t variation_index) const {
-  if (variation_index >= m_ptmin2ref_variations.size()) return CalculatePTmin2(s);
-  return Max(m_ptmin2IR, m_ptmin2ref_variations[variation_index] * pow((s<0 ? m_Scms : s)/m_Sref,2*m_eta));
+double MI_Parameters::CalculatePTmin2(const double & s, size_t ivar) const {
+  double ptmin2ref = m_ptmin2ref;
+  double eta = m_eta;
+  if (ivar < m_ptmin2ref_variations.size()) ptmin2ref = m_ptmin2ref_variations[ivar];
+  if (ivar < m_eta_variations.size()) eta = m_eta_variations[ivar];
+  return Max(m_ptmin2IR, ptmin2ref * pow((s<0 ? m_Scms : s)/m_Sref,2*eta));
 }
 
 

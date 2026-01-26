@@ -81,11 +81,13 @@ void Interaction_Probability::FixKandSmin() {
 	    <<string(22,' ')<<"|\n";
   // ue-reweighting
   std::vector<double> sigma_nd_variations = (*mipars).GetVariationVector("SigmaND_Norm");
-  std::vector<double> pt0_variations      = (*mipars).GetVariationVector("pt_0");
   std::vector<double> ptmin_variations    = (*mipars).GetVariationVector("pt_min");
+  std::vector<double> pt0_variations      = (*mipars).GetVariationVector("pt_0");
+  std::vector<double> eta_variations      = (*mipars).GetVariationVector("eta");
   size_t n_variations = std::max({sigma_nd_variations.size(), 
-                                  pt0_variations.size(),
                                   ptmin_variations.size(),
+                                  pt0_variations.size(),
+                                  eta_variations.size(),
                                   p_mo->MatterFormVariationSize(),
                                   size_t(1)});
   sigma_nd_variations.resize(n_variations, sigma_nd_variations[0]);
@@ -239,7 +241,9 @@ InitializeTable(const size_t & sbin, TwoDim_Table* diffxsec, size_t variation_in
   p_procs->UpdateS(s);
 
   double ptmin2_var = mipars->CalculatePTmin2(s, variation_index);
+  double pt02_var   = mipars->CalculatePT02(s, variation_index);
   integrator->SetPT2min(ptmin2_var);
+  p_procs->SetPT02(pt02_var);
   
   if (!p_mo->IsDynamic()) xsfix = (*integrator)(s,nullptr,0.);
   
@@ -257,7 +261,9 @@ InitializeTable(const size_t & sbin, TwoDim_Table* diffxsec, size_t variation_in
     prev = xs;
   }
 
+  // Restore nominal values
   integrator->SetPT2min(mipars->CalculatePTmin2(s));
+  p_procs->SetPT02(mipars->CalculatePT02(s));
 }
 // ue-reweighting
 
@@ -284,11 +290,13 @@ bool Interaction_Probability::CheckTables() {
 
 void Interaction_Probability::OutputTables() {
   std::vector<double> sigma_nd_variations = (*mipars).GetVariationVector("SigmaND_Norm");
-  std::vector<double> pt0_variations      = (*mipars).GetVariationVector("pt_0");
   std::vector<double> ptmin_variations    = (*mipars).GetVariationVector("pt_min");
+  std::vector<double> pt0_variations      = (*mipars).GetVariationVector("pt_0");
+  std::vector<double> eta_variations      = (*mipars).GetVariationVector("eta");
   size_t n_variations = std::max({sigma_nd_variations.size(), 
-                                  pt0_variations.size(),
                                   ptmin_variations.size(),
+                                  pt0_variations.size(),
+                                  eta_variations.size(),
                                   p_mo->MatterFormVariationSize(),
                                   size_t(1)});
   sigma_nd_variations.resize(n_variations, sigma_nd_variations[0]);

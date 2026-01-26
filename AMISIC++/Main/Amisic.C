@@ -32,9 +32,6 @@ Amisic::~Amisic() {
   if (m_total_weight_file.is_open()) {
     m_total_weight_file.close();
   }
-  if (m_accept_reject_file.is_open()) {
-    m_accept_reject_file.close();
-  }
   if (m_overlap_file.is_open()) {
     m_overlap_file.close();
   }
@@ -116,12 +113,15 @@ bool Amisic::Initialize(MODEL::Model_Base *const model,
   m_sigma_nd_variations = (*mipars).GetVariationVector("SigmaND_Norm");
   m_pt0_variations      = (*mipars).GetVariationVector("pt_0");
   m_ptmin_variations    = (*mipars).GetVariationVector("pt_min");
-  const size_t matter_variations = m_mo.MatterFormVariationSize();
+  m_eta_variations      = (*mipars).GetVariationVector("eta");
   size_t max_size = std::max({m_sigma_nd_variations.size(),
                               m_pt0_variations.size(),
                               m_ptmin_variations.size(),
-                              matter_variations,
+                              m_eta_variations.size(),
+                              m_mo.MatterFormVariationSize(),
                               size_t(1)});
+  m_pt0_variations.resize(max_size, m_pt0_variations[0]);
+  m_ptmin_variations.resize(max_size, m_ptmin_variations[0]);
 
   ResetVariationWeights(max_size);
 
@@ -200,15 +200,6 @@ bool Amisic::Initialize(MODEL::Model_Base *const model,
       m_total_weight_file << "# n_mpi\n";
     }
     m_total_weight_file << std::scientific << std::setprecision(10);
-  }
-  m_accept_reject_file.open("accept_reject_stats.dat");
-  if (m_accept_reject_file.is_open()) {
-    m_accept_reject_file << "# accepted prob_nom";
-    for (size_t i = 0; i < max_size; ++i) {
-      m_accept_reject_file << " prob_var" << i;
-    }
-    m_accept_reject_file << "\n";
-    m_accept_reject_file << std::scientific << std::setprecision(10);
   }
   m_overlap_file.open("overlap_info.dat");
   if (m_overlap_file.is_open()) {
@@ -755,46 +746,33 @@ void Amisic::AcceptRejectReweighting(const bool accepted, const double prob_nom)
   // For rejected scatter: multiply weight by (1-p_var)/(1-p_nom)
   ///////////////////////////////////////////////////////////////////////////
   if (m_sudakov_weights.empty()) return;
-  
+
+  const double xs_nom = (m_processes)();
   const size_t n_variations = m_sudakov_weights.size();
 
   for (size_t ivar=0; ivar<n_variations; ++ivar) {
     // Compute the probability for this variation
     // p = dsigma/dpt2 * overlap(b,K_var) / overestimator
     // The ratio is: p_var/p_nom = overlap_var/overlap_nom = lambda_ratio
-    const double prob_var = prob_nom * m_lambda_ratios[ivar];
-    // output
-    // if (m_accept_reject_file.is_open()) {
-    //   m_accept_reject_file << (accepted ? 1 : 0) << " " << prob_nom;
-    //   for (size_t ivar=0; ivar<n_variations; ++ivar) {
-    //     const double prob_var = prob_nom * m_lambda_ratios[ivar];
-    //     m_accept_reject_file << " " << prob_var;
-    //   }
-    //   m_accept_reject_file << "\n";
-    // }
-    
+    double prob_var = 0.;
+    if (m_singlecollision.PT2() > sqr(m_ptmin_variations[ivar])) {
+      (&m_processes)->SetPT02(sqr(m_pt0_variations[ivar]));
+      const double xs_var = (m_processes)();
+      (&m_processes)->SetPT02(sqr(m_pt0_variations[0]));
+      prob_var = prob_nom * m_lambda_ratios[ivar] * xs_var / xs_nom;
+    }
     if (accepted) {
       // Accepted: weight *= p_var / p_nom
-      if (m_singlecollision.PT2() > sqr(m_ptmin_variations[ivar])) 
-      {
-        const double ratio = prob_var / prob_nom;
-        if (std::isfinite(ratio) && ratio > 0.) {
-          m_sudakov_weights[ivar] *= ratio;
-        }
-      } else { m_sudakov_weights[ivar] *= 0.; }
+      const double ratio = prob_var / prob_nom;
+      if (std::isfinite(ratio) && ratio >= 0.) {
+        m_sudakov_weights[ivar] *= ratio;
+      }
     } else {
       // Rejected: weight *= (1 - p_var) / (1 - p_nom)
-      if (m_singlecollision.PT2() > sqr(m_ptmin_variations[ivar]))
-      {
-        const double ratio = (1. - prob_var) / (1. - prob_nom);
-        if (std::isfinite(ratio) && ratio > 0.) {
-          m_sudakov_weights[ivar] *= ratio;
-        }
-      } else {
-        const double ratio = 1. / (1. - prob_nom);
-        if (std::isfinite(ratio) && ratio > 0.) {
-          m_sudakov_weights[ivar] *= ratio;
-        } }
+      const double ratio = (1. - prob_var) / (1. - prob_nom);
+      if (std::isfinite(ratio) && ratio >= 0.) {
+        m_sudakov_weights[ivar] *= ratio;
+      }
     }
   }
 }

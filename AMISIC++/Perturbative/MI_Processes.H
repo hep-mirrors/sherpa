@@ -98,6 +98,10 @@ namespace AMISIC {
     inline void SetResidualX(const double & r1,const double & r2) {
       m_resx[0] = r1; m_resx[1] = r2;
     }
+    inline void SetPT02(const double & pt02) {
+      m_pt02 = pt02;
+      for (auto mig : m_groups) mig->SetPT02(pt02);
+    }
     inline int  PerformTests() { return 0; }
     inline bool NewLibraries() { return false; }
     PHASIC::Process_Base *InitializeProcess(const PHASIC::Process_Info &,
