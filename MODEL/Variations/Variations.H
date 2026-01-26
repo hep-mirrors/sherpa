@@ -43,7 +43,9 @@ namespace MODEL{
                 void CombineNames(std::vector<std::vector<std::string>> *name_combinations);
                 void CombineValues(std::vector<std::string> combination, std::vector<std::vector<double_t>> *result_lists);
                 void AddAllCombinations();
+                void AddWithoutCombining();
                 void CheckVariationNumber();
+                bool CheckForCombinations();
         };
     };
 };
