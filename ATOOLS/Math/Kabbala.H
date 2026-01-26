@@ -20,7 +20,7 @@ namespace ATOOLS {
       // types for the Lambda Functions for better readability
       using Function_Argument = std::map<std::string, double_t>*;
       using Func = std::function<Complex(Function_Argument)>;
-    public:
+    private:
       // members are a string, the current value and the lambda to update this value
       std::string  shem;
       Complex rishbon;
