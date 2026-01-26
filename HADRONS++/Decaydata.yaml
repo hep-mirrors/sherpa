@@ -16722,6 +16722,10 @@ HADRON_DECAYS:
         BR: [0.099, 0.01]
         Origin: PDG
 
+      22, 22:
+        BR: [0.60, 0.60]
+        Origin: I made it up
+
     555:
       553,22:
         BR: [0.22, 0.04]
@@ -16745,6 +16749,10 @@ HADRON_DECAYS:
 
       100553, 22:
         BR: [0.089,0.012]
+        Origin: PDG
+      
+      22, 22:
+        BR: [0.845,0.845]
         Origin: PDG
 
     100553:
