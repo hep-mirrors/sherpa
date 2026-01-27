@@ -140,6 +140,7 @@ namespace PHASIC {
     inline const std::vector<METOOLS::Spin_Amplitudes*>& GetDiagrams() const
     { return m_diagrams; }
     void AddDiagram(METOOLS::Spin_Amplitudes* amp);
+    bool DeleteDiagram(METOOLS::Spin_Amplitudes* amp);
     inline PHASIC::Multi_Channel* Channels() const { return p_channels; }
     inline void SetChannels(PHASIC::Multi_Channel* chans) { p_channels=chans; }
     void AddChannel(PHASIC::Single_Channel* chan);

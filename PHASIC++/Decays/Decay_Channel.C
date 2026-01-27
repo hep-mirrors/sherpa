@@ -89,6 +89,20 @@ void Decay_Channel::AddDiagram(METOOLS::Spin_Amplitudes* amp) {
   m_diagrams.push_back(amp);
 }
 
+
+bool Decay_Channel::DeleteDiagram(METOOLS::Spin_Amplitudes* amp){
+    auto old_size = m_diagrams.size();
+
+    m_diagrams.erase(
+        std::remove(m_diagrams.begin(), m_diagrams.end(), amp),
+        m_diagrams.end()
+    );
+
+    delete amp;
+    return m_diagrams.size() != old_size;
+  }
+
+
 void Decay_Channel::AddChannel(PHASIC::Single_Channel* chan)
 {
   p_channels->Add(chan);
@@ -395,11 +409,10 @@ double Decay_Channel::ME2_NLO(const ATOOLS::Vec4D_Vector& momenta, bool anti,
       else {
         GetDiagrams()[i] -> SetColors(real_p_ci->I(), real_p_ci->J());
         GetDiagrams()[i] -> Calculate(momenta, anti); // call Calculate() again with the correct colour configuration
-        //first_real_diag -> MergeDiagrams(GetDiagrams()[i]); // merge second diagram into first
+        first_real_diag -> MergeDiagrams(GetDiagrams()[i]); // merge second diagram into first
         // here: delete GetDiagrams()[i]
-        //delete GetDiagrams()[i]; 
-        //GetDiagrams().erase(GetDiagrams().begin() + i);
-        //--i; // prevent skipping next element
+        DeleteDiagram(GetDiagrams()[i]);
+        --i; // prevent skipping next element
       }
     }
   }
