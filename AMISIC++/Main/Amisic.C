@@ -1,6 +1,7 @@
 #include "AMISIC++/Main/Amisic.H"
 #include "MODEL/Main/Model_Base.H"
 #include "ATOOLS/Org/Run_Parameter.H"
+#include "ATOOLS/Org/Exception.H"
 #include <algorithm>
 #include <cmath>
 #include <fstream> // output
@@ -205,6 +206,27 @@ void Amisic::InitParameterVariations() {
   m_pt0_variations.resize(m_n_variations, m_pt0_variations[0]);
   m_ptmin_variations.resize(m_n_variations, m_ptmin_variations[0]);
   m_eta_variations.resize(m_n_variations, m_eta_variations[0]);
+
+  if (m_n_variations > 1) {
+    for (size_t ivar=0; ivar<m_n_variations; ivar++) {
+      if (m_pt0_variations[ivar]<m_pt0_variations[0]) {
+        THROW(fatal_error, std::string("Reweighting of MPI only possible for upward variations of PT_0 and PT_Min.\n")
+                          + "Found PT_0 variation " + std::to_string(ivar) + " = "
+                          + std::to_string(m_pt0_variations[ivar]) + " < "
+                          + std::to_string(m_pt0_variations[0]) + " = PT_0 nominal.\n"
+                          + "Please adjust your parameter variation settings (PT_0 or/and Eta).");
+      }
+    }
+    for (size_t ivar=0; ivar<m_n_variations; ivar++) {
+      if (m_ptmin_variations[ivar]<m_ptmin_variations[0]) {
+        THROW(fatal_error, std::string("Reweighting of MPI only possible for upward variations of PT_0 and PT_Min.\n")
+                          + "Found PT_Min variation " + std::to_string(ivar) + " = "
+                          + std::to_string(m_ptmin_variations[ivar]) + " < "
+                          + std::to_string(m_ptmin_variations[0]) + " = PT_Min nominal.\n"
+                          + "Please adjust your parameter variation settings (PT_Min or/and Eta).");
+      }
+    }
+  }
   
   ResetVariationWeights();
 
