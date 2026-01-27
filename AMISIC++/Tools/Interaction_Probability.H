@@ -19,14 +19,16 @@ namespace AMISIC {
     TwoDim_Table   * p_diffxsec, * p_inverted;
     double           m_pdfnorm, m_xs_test, m_xs_hard, m_bmax, m_smin;
     bool             m_dynamic;
-    std::vector<OneDim_Table*> p_k_variations; // ue-reweighting
-    std::vector<TwoDim_Table*> p_diffxsec_variations; // ue-reweighting
+    size_t m_n_variations;
+    std::vector<double> m_sigma_nd_variations;
+    std::vector<OneDim_Table*> p_k_variations;
+    std::vector<TwoDim_Table*> p_diffxsec_variations;
 
     void FixKandSmin();
     void FillIntegrated();
     void InitializeTables();
     void InitializeTable(const size_t & sbin,const bool & out=false);
-    void InitializeTable(const size_t & sbin, TwoDim_Table* diffxsec, size_t variation_index); // ue-reweighting
+    void InitializeTable(const size_t & sbin, TwoDim_Table* diffxsec, size_t ivar);
     bool CheckTables();
     void OutputTables();
     
@@ -64,12 +66,13 @@ namespace AMISIC {
     // The s-dependent radius multiplier
     //////////////////////////////////////////////////////////////////////////
     inline double K(const double & s) const { return (*p_k)(s); }
-    // ue-reweighting
-    inline double KVariation(const double & s, size_t i) const {
-      return (*p_k_variations[i])(s);
+    inline double KVariation(const double & s, size_t ivar) const {
+      return (*p_k_variations[ivar])(s);
     }
-    inline size_t NVariations() const { return p_k_variations.size(); }
-    // ue-reweighting
+    inline void SetVariations(size_t n_variations, const std::vector<double>& sigma_nd_variations) {
+      m_n_variations = n_variations;
+      m_sigma_nd_variations = sigma_nd_variations;
+    }
   };
 
   //////////////////////////////////////////////////////////////////////////

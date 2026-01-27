@@ -110,7 +110,6 @@ bool Single_Collision_Handler::FirstMPI(Blob * signal) {
   return true;
 }
 
-// ue-reweighting
 bool Single_Collision_Handler::InitFirstMPI(Blob * signal) {
   ///////////////////////////////////////////////////////////////////////////
   // Initialize FirstMPI: extract kinematics and fix dynamic radius.
@@ -152,7 +151,6 @@ int Single_Collision_Handler::RunFirstMPISudakov(double pt2veto) {
   m_lastpt2 = m_pt2;
   return 0;
 }
-// ue-reweighting
 
 bool Single_Collision_Handler::FirstMinBiasScatter(Blob * blob) {
   ///////////////////////////////////////////////////////////////////////////
@@ -322,14 +320,12 @@ int Single_Collision_Handler::SelectPT2() {
 		  (*p_overlap)(m_b) );
     if (m_ana) AnalyseWeight(wt);
     
-    // ue-reweighting
     bool accepted = (wt >= ran->Get());
     if (m_reweight_callback) {
       m_reweight_callback(accepted, wt);
     }
     
     if (accepted) break;
-    // ue-reweighting
   }
   return 0;
 }

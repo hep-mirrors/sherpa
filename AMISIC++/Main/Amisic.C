@@ -2,9 +2,9 @@
 #include "MODEL/Main/Model_Base.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include <algorithm>
-#include <cmath> // ue-reweighting
-#include <fstream> // ue-reweighting: output
-#include <sstream> // ue-reweighting: output
+#include <cmath>
+#include <fstream> // output
+#include <sstream> // output
 
 using namespace AMISIC;
 using namespace ATOOLS;
@@ -15,27 +15,22 @@ Amisic::Amisic() :
   m_sigmaND_norm(1.),
   m_Nscatters(0), m_producedSoft(false), m_isMinBias(false),
   m_ana(false),
-  m_lambda_nominal(0.), m_mpi_scatter_count(0) // ue-reweighting
+  m_n_variations(1), 
+  m_mpi_scatter_count(0) // output
 {}
 
 Amisic::~Amisic() {
   if (mipars) delete mipars;
   if (p_soft) delete p_soft;
   if (m_ana) FinishAnalysis();
-  // ue-reweighting: output
+  // output
   if (m_b_weight_file.is_open()) {
     m_b_weight_file.close();
-  }
-  if (m_sudakov_weight_file.is_open()) {
-    m_sudakov_weight_file.close();
   }
   if (m_total_weight_file.is_open()) {
     m_total_weight_file.close();
   }
-  if (m_overlap_file.is_open()) {
-    m_overlap_file.close();
-  }
-  // ue-reweighting
+  // output
 }
 
 bool Amisic::Initialize(MODEL::Model_Base *const model,
@@ -46,6 +41,7 @@ bool Amisic::Initialize(MODEL::Model_Base *const model,
   msg_Info()<<"   "<<std::string(77,'=')<<"\n"
 	    <<"   | "<<METHOD<<std::string(56,' ')<<"|\n";
   InitParametersAndType(isr,remnant_handler);
+  InitParameterVariations();
   ///////////////////////////////////////////////////////////////////////////
   // Calculate hadronic non-diffractive cross sections, the normalization
   // for the multiple scattering probability.
@@ -78,18 +74,16 @@ bool Amisic::Initialize(MODEL::Model_Base *const model,
     // - assuming that the product of the PDFs f(x_1)f(x_2) is largest for
     //   mid-rapidity where x_1 and x_2 are identical
     ///////////////////////////////////////////////////////////////////////////
-    m_overestimator.Initialize(isr,&m_processes,p_sbins);
+    m_overestimator.Initialize(isr,&m_processes,p_sbins,&m_pint,&m_mo);
     ///////////////////////////////////////////////////////////////////////////
     // Initializing the Single_Collision_Handler which creates the next
     // scatter: it needs the processes, overestimator, interaction probability
     // and matter overlap
     ///////////////////////////////////////////////////////////////////////////
     m_singlecollision.Init(&m_processes,&m_overestimator,&m_pint,&m_mo);
-    // ue-reweighting
     m_singlecollision.SetReweightCallback(
       [this](bool accepted, double prob) { this->AcceptRejectReweighting(accepted, prob); }
     );
-    // ue-reweighting
   }
   else {
     p_soft = new NonPerturbative_XSecs(remnant_handler,&m_xsecs);
@@ -109,128 +103,6 @@ bool Amisic::Initialize(MODEL::Model_Base *const model,
   if (m_ana) InitAnalysis();
   m_isFirst   = true;
   m_isMinBias = false;
-  // ue-reweighting
-  m_sigma_nd_variations = (*mipars).GetVariationVector("SigmaND_Norm");
-  m_pt0_variations      = (*mipars).GetVariationVector("pt_0");
-  m_ptmin_variations    = (*mipars).GetVariationVector("pt_min");
-  m_eta_variations      = (*mipars).GetVariationVector("eta");
-  size_t max_size = std::max({m_sigma_nd_variations.size(),
-                              m_pt0_variations.size(),
-                              m_ptmin_variations.size(),
-                              m_eta_variations.size(),
-                              m_mo.MatterFormVariationSize(),
-                              size_t(1)});
-  m_pt0_variations.resize(max_size, m_pt0_variations[0]);
-  m_ptmin_variations.resize(max_size, m_ptmin_variations[0]);
-
-  ResetVariationWeights(max_size);
-
-  const double K_nom = m_pint.K(m_S);
-  m_mo.SetMatterFormVariationIndex(0);
-  double overlap_max = m_mo.EvaluateAt(0.0, K_nom);
-  msg_Info() << METHOD << "(): Overlap at b = 0: nominal   (k = " << K_nom << ") = " << overlap_max << "\n";
-  for (size_t i = 0; i < max_size; ++i) {
-    m_mo.SetMatterFormVariationIndex(i);
-    const double K_var = m_pint.KVariation(m_S, i);
-    const double overlap_var = m_mo.EvaluateAt(0.0, K_var);
-    msg_Info() << METHOD << "():                 variation " << i << " (k = " << K_var << ") = " << overlap_var << "\n";
-    if (overlap_var > overlap_max) {
-      overlap_max = overlap_var;
-    }
-  }
-  m_mo.SetMatterFormVariationIndex(0);
-  msg_Info() << METHOD << "(): Using maximum overlap = " << overlap_max <<  " for overestimator\n";
-  m_overestimator.SetOverlapMax(overlap_max);
-  m_overestimator.UpdatePrefactors();
-  m_overestimator.Output();
-  
-  // output
-  const bool print_files = false;
-  if (!print_files) return true;
-  std::string filename;
-  if (max_size == 3) {
-    filename = "b_weights_rew.dat";
-  } else {
-    double nominal_value = m_sigma_nd_variations[0];
-    std::ostringstream oss;
-    oss << "b_weights_" << nominal_value << ".dat";
-    filename = oss.str();
-  }
-  m_b_weight_file.open(filename);
-  if (m_b_weight_file.is_open()) {
-    if (max_size == 3) {
-      m_b_weight_file << "# b_value w_b_var0 w_b_var1 w_b_var2\n";
-    } else {
-      m_b_weight_file << "# b_value\n";
-    }
-    m_b_weight_file << std::scientific << std::setprecision(10);
-  }
-  std::string sudakov_filename;
-  if (max_size == 3) {
-    sudakov_filename = "sudakov_weights_rew.dat";
-  } else {
-    double nominal_value = m_sigma_nd_variations[0];
-    std::ostringstream oss;
-    oss << "sudakov_weights_" << nominal_value << ".dat";
-    sudakov_filename = oss.str();
-  }
-  m_sudakov_weight_file.open(sudakov_filename);
-  if (m_sudakov_weight_file.is_open()) {
-    if (max_size == 3) {
-      m_sudakov_weight_file << "# n_mpi w_sudakov_var0 w_sudakov_var1 w_sudakov_var2\n";
-    } else {
-      m_sudakov_weight_file << "# n_mpi\n";
-    }
-    m_sudakov_weight_file << std::scientific << std::setprecision(10);
-  }
-  std::string total_filename;
-  if (max_size == 3) {
-    total_filename = "total_weights_rew.dat";
-  } else {
-    double nominal_value = m_sigma_nd_variations[0];
-    std::ostringstream oss;
-    oss << "total_weights_" << nominal_value << ".dat";
-    total_filename = oss.str();
-  }
-  m_total_weight_file.open(total_filename);
-  if (m_total_weight_file.is_open()) {
-    if (max_size == 3) {
-      m_total_weight_file << "# n_mpi w_total_var0 w_total_var1 w_total_var2\n";
-    } else {
-      m_total_weight_file << "# n_mpi\n";
-    }
-    m_total_weight_file << std::scientific << std::setprecision(10);
-  }
-  m_overlap_file.open("overlap_info.dat");
-  if (m_overlap_file.is_open()) {
-    m_overlap_file << "# b_value overlap_nom";
-    for (size_t i = 0; i < max_size; ++i) {
-      m_overlap_file << " overlap_var" << i;
-    }
-    m_overlap_file << "\n";
-    m_overlap_file << std::scientific << std::setprecision(10);
-    
-    const double hbarc_factor = rpa->hBar() * rpa->c() * 1.e12;
-    const double K_nom = m_pint.K(m_S);
-    for (int ib = 0; ib <= 500; ++ib) {
-      const double b_fm = ib * 0.01;
-      const double b = b_fm / hbarc_factor;
-      m_mo.SetMatterFormVariationIndex(0);
-      const double overlap_nom = m_mo.EvaluateAt(b, K_nom);
-      m_overlap_file << b_fm << " " << overlap_nom;
-      for (size_t i = 0; i < max_size; ++i) {
-        const double K_var = m_pint.KVariation(m_S, i);
-        m_mo.SetMatterFormVariationIndex(i);
-        const double overlap_var = m_mo.EvaluateAt(b, K_var);
-        m_overlap_file << " " << overlap_var;
-      }
-      m_mo.SetMatterFormVariationIndex(0);
-      m_overlap_file << "\n";
-    }
-    m_overlap_file.flush();
-  }
-
-  // ue-reweighting
   return true;
 }
 
@@ -312,6 +184,74 @@ void Amisic::InitParametersAndType(PDF::ISR_Handler *const isr,
     }
   }
   m_maxNscatters = size_t((*mipars)["nMaxScatters"]);
+}
+
+void Amisic::InitParameterVariations() {
+  ///////////////////////////////////////////////////////////////////////////
+  // Initialize the parameter variations for MPI reweighting.
+  ///////////////////////////////////////////////////////////////////////////
+  if (!mipars) return;
+  m_sigma_nd_variations = (*mipars).GetVariationVector("SigmaND_Norm");
+  m_pt0_variations      = (*mipars).GetVariationVector("pt_0");
+  m_ptmin_variations    = (*mipars).GetVariationVector("pt_min");
+  m_eta_variations      = (*mipars).GetVariationVector("eta");
+  m_n_variations = std::max({m_sigma_nd_variations.size(),
+                              m_pt0_variations.size(),
+                              m_ptmin_variations.size(),
+                              m_eta_variations.size(),
+                              m_mo.MatterFormVariationSize(),
+                              size_t(1)});
+  m_sigma_nd_variations.resize(m_n_variations, m_sigma_nd_variations[0]);
+  m_pt0_variations.resize(m_n_variations, m_pt0_variations[0]);
+  m_ptmin_variations.resize(m_n_variations, m_ptmin_variations[0]);
+  m_eta_variations.resize(m_n_variations, m_eta_variations[0]);
+  
+  ResetVariationWeights();
+
+  m_xsecs.SetVariations(m_n_variations, m_sigma_nd_variations);
+  m_pint.SetVariations(m_n_variations, m_sigma_nd_variations);
+  m_overestimator.SetVariations(m_n_variations);
+
+  // output
+  const bool print_files = false;
+  if (!print_files) return;
+  std::string filename;
+  if (m_n_variations == 3) {
+    filename = "b_weights_rew.dat";
+  } else {
+    double nominal_value = m_sigma_nd_variations[0];
+    std::ostringstream oss;
+    oss << "b_weights_" << nominal_value << ".dat";
+    filename = oss.str();
+  }
+  m_b_weight_file.open(filename);
+  if (m_b_weight_file.is_open()) {
+    if (m_n_variations == 3) {
+      m_b_weight_file << "# b_value w_b_var0 w_b_var1 w_b_var2\n";
+    } else {
+      m_b_weight_file << "# b_value\n";
+    }
+    m_b_weight_file << std::scientific << std::setprecision(10);
+  }
+  std::string total_filename;
+  if (m_n_variations == 3) {
+    total_filename = "total_weights_rew.dat";
+  } else {
+    double nominal_value = m_sigma_nd_variations[0];
+    std::ostringstream oss;
+    oss << "total_weights_" << nominal_value << ".dat";
+    total_filename = oss.str();
+  }
+  m_total_weight_file.open(total_filename);
+  if (m_total_weight_file.is_open()) {
+    if (m_n_variations == 3) {
+      m_total_weight_file << "# n_mpi w_total_var0 w_total_var1 w_total_var2\n";
+    } else {
+      m_total_weight_file << "# n_mpi\n";
+    }
+    m_total_weight_file << std::scientific << std::setprecision(10);
+  }
+  // output
 }
 
 bool Amisic::InitMPIs(const double & ptmax,const double & x1,const double & x2,
@@ -433,11 +373,9 @@ bool Amisic::GenerateScatter(const size_t & type,Blob * blob) {
     default: THROW(fatal_error,"Unknown type: "+to_string(type));
     }
     if (outcome) {
-      // ue-reweighting
       if (type==3 && blob->Type()!=btp::Signal_Process) {
-        ++m_mpi_scatter_count;
+        ++m_mpi_scatter_count; // output
       }
-      // ue-reweighting
       AddInformationToBlob(blob);
       m_Nscatters++;
       if (m_singlecollision.Done()) {
@@ -609,18 +547,16 @@ void Amisic::AnalysePerturbative(const bool & last,Blob * blob) {
   }
 }
 
-// ue-reweighting
-void Amisic::ResetVariationWeights(int n_variations) {
+void Amisic::ResetVariationWeights() {
   ///////////////////////////////////////////////////////////////////////////
   // Reset variation weights to 1.0 for a new event.
   ///////////////////////////////////////////////////////////////////////////
-  m_variation_weights.resize(n_variations);
+  m_variation_weights.resize(m_n_variations);
   std::fill(m_variation_weights.begin(), m_variation_weights.end(), 1.);
-  m_b_weights.assign(n_variations, 1.);
-  m_lambda_nominal = 0.;
-  m_lambda_ratios.assign(n_variations, 1.);
-  m_sudakov_weights.assign(n_variations, 1.);
-  m_mpi_scatter_count = 0;
+  m_b_weights.assign(m_n_variations, 1.);
+  m_lambda_ratios.assign(m_n_variations, 1.);
+  m_sudakov_weights.assign(m_n_variations, 1.);
+  m_mpi_scatter_count = 0; // output
 }
 
 void Amisic::ImpactParameterReweighting(const double & s) {
@@ -630,16 +566,14 @@ void Amisic::ImpactParameterReweighting(const double & s) {
   ///////////////////////////////////////////////////////////////////////////
   if (m_variation_weights.empty()) return;
 
-  const size_t n_variations = m_lambda_ratios.size();
-
-  // Compute nominal lambda(b) = DiffXSec(s,b) = d sigma_hard(s)/d^2b
+  // b is selected according to d^2b O(b)
+  // w_b = O_var(b) / O_nom(b) = lambda_var / lambda_nom = lambda_ratio
   m_mo.SetMatterFormVariationIndex(0);
-  m_lambda_nominal = m_pint.DiffXSec(s, m_b);
   const double K_nom = m_pint.K(s);
   const double overlap_nom = m_mo.EvaluateAt(m_b, K_nom);
 
   // Compute lambda(b) ratios for each variation
-  for (size_t ivar=0; ivar<n_variations; ++ivar) {
+  for (size_t ivar=0; ivar<m_n_variations; ++ivar) {
     m_mo.SetMatterFormVariationIndex(ivar);
     const double K_var = m_pint.KVariation(s, ivar);
     const double overlap_var = m_mo.EvaluateAt(m_b, K_var);
@@ -647,95 +581,10 @@ void Amisic::ImpactParameterReweighting(const double & s) {
     if (!std::isfinite(lambda_ratio) || lambda_ratio<=0.) lambda_ratio = 1.;
     m_lambda_ratios[ivar] = lambda_ratio;
     
-    // Accumulate w_b = O_var/O_nom for this b selection
     // This accounts for all b values tried in FirstMPI loop
     m_b_weights[ivar] *= lambda_ratio;
   }
   m_mo.SetMatterFormVariationIndex(0);
-}
-
-void Amisic::ApplyVariationWeights(ATOOLS::Blob * blob) {
-  ///////////////////////////////////////////////////////////////////////////
-  // Compute and apply variation weights to the event.
-  // The total weight is:
-  // w_total = w_b * w_(n|b) = w_b * w_sudakov
-  // where w_sudakov accounts for the changed MPI multiplicity distribution
-  // and w_b accounts for the changed impact parameter sampling distribution.
-  ///////////////////////////////////////////////////////////////////////////
-  if (m_variation_weights.empty()) return;
-
-  // output
-  const bool print_diag = false;
-  if (print_diag) {
-    msg_Out()<<"[Reweighting] b="<<m_b<<", n_mpi="<<m_mpi_scatter_count<<", lambda_nom="<<m_lambda_nominal<<"\n";
-  }
-  std::vector<double> w_b_vec(m_variation_weights.size());
-  std::vector<double> w_sudakov_vec(m_variation_weights.size());
-  std::vector<double> w_total_vec(m_variation_weights.size());
-
-  for (size_t ivar=0; ivar<m_variation_weights.size(); ++ivar) {
-    // b is selected according to d^2b O(b)
-    // w_b = O_var(b) / O_nom(b) = lambda_var / lambda_nom
-    //     = lambda_ratio
-    const double w_b = m_b_weights[ivar];
-    
-    // During the MPI evolution, the Sudakov weights are accumulated in
-    // AcceptRejectReweighting() calls, stored in m_sudakov_weights
-    const double w_sudakov = m_sudakov_weights[ivar];
-
-    // w_total = w_b * w_(n|b) = w_b * w_sudakov
-    const double w_total = w_b * w_sudakov;
-    m_variation_weights[ivar] *= w_total;
-
-    // output
-    w_b_vec[ivar]       = w_b;
-    w_sudakov_vec[ivar] = w_sudakov;
-    w_total_vec[ivar]   = w_total;
-    if (print_diag) {
-      msg_Out()<<"                Variation "<<ivar<<": "
-               <<"\n              w_b="<<w_b<<", w_sudakov="<<w_sudakov<<", w_total="<<w_total<<"\n";
-    }
-  }
-  if (m_b_weight_file.is_open()) {
-    m_b_weight_file << m_b;
-    if (m_variation_weights.size() == 3) {
-      m_b_weight_file << " " << w_b_vec[0] << " " << w_b_vec[1] << " " << w_b_vec[2];
-    }
-    m_b_weight_file << "\n";
-  }
-  if (m_sudakov_weight_file.is_open()) {
-    m_sudakov_weight_file << m_mpi_scatter_count;
-    if (m_variation_weights.size() == 3) {
-      m_sudakov_weight_file << " " << w_sudakov_vec[0] << " " << w_sudakov_vec[1] << " " << w_sudakov_vec[2];
-    }
-    m_sudakov_weight_file << "\n";
-  }
-  if (m_total_weight_file.is_open()) {
-    m_total_weight_file << m_mpi_scatter_count;
-    if (m_variation_weights.size() == 3) {
-      m_total_weight_file << " " << w_total_vec[0] << " " << w_total_vec[1] << " " << w_total_vec[2];
-    }
-    m_total_weight_file << "\n";
-  }
-  
-  if (blob == NULL) {
-    return;
-  }
-  auto &wgt_map = (*blob)["WeightsMap"]->Get<Weights_Map>();
-  
-  // static constexpr double max_weight = 2e2;
-  
-  for(size_t i{0}; i < m_variation_weights.size(); ++i) {
-    const std::string name {"v" + std::to_string(i)};
-    const double wgt = m_variation_weights[i];
-    wgt_map["MPI"][name] = wgt;
-
-    // const auto clipped_wgt {std::min(wgt, max_weight)};
-    // wgt_map["MPI"][name] = clipped_wgt;
-  }
-  
-  const size_t n_variations = m_variation_weights.size();
-  ResetVariationWeights(n_variations);
 }
 
 void Amisic::AcceptRejectReweighting(const bool accepted, const double prob_nom) {
@@ -748,12 +597,12 @@ void Amisic::AcceptRejectReweighting(const bool accepted, const double prob_nom)
   if (m_sudakov_weights.empty()) return;
 
   const double xs_nom = (m_processes)();
-  const size_t n_variations = m_sudakov_weights.size();
 
-  for (size_t ivar=0; ivar<n_variations; ++ivar) {
-    // Compute the probability for this variation
-    // p = dsigma/dpt2 * overlap(b,K_var) / overestimator
-    // The ratio is: p_var/p_nom = overlap_var/overlap_nom = lambda_ratio
+  for (size_t ivar=0; ivar<m_n_variations; ++ivar) {
+    // p_nom = dsigma/dpt2 * overlap(b,K_var) / overestimator
+    // The ratio is: p_var/p_nom = overlap_var/overlap_nom * (dsigma/dpt2)_nom / (dsigma/dpt2)_var
+    //                           = lambda_ratio * xs_ratio
+    // p_var = 0 for pt2 <= (ptmin2)_var
     double prob_var = 0.;
     if (m_singlecollision.PT2() > sqr(m_ptmin_variations[ivar])) {
       (&m_processes)->SetPT02(sqr(m_pt0_variations[ivar]));
@@ -776,5 +625,67 @@ void Amisic::AcceptRejectReweighting(const bool accepted, const double prob_nom)
     }
   }
 }
-// ue-reweighting
+
+void Amisic::ApplyVariationWeights(ATOOLS::Blob * blob) {
+  ///////////////////////////////////////////////////////////////////////////
+  // Compute and apply variation weights to the event.
+  // The total weight is:
+  // w_total = w_b * w_(n|b) = w_b * w_sudakov
+  // where w_sudakov accounts for the changed MPI multiplicity distribution
+  // and w_b accounts for the changed impact parameter sampling distribution.
+  ///////////////////////////////////////////////////////////////////////////
+  if (m_variation_weights.empty()) return;
+
+  // output
+  std::vector<double> w_b_vec(m_variation_weights.size());
+  std::vector<double> w_sudakov_vec(m_variation_weights.size());
+  std::vector<double> w_total_vec(m_variation_weights.size());
+
+  for (size_t ivar=0; ivar<m_variation_weights.size(); ++ivar) {
+    // The impact-parameter reweighting factor w_b is accumulated in
+    // ImpactParameterReweighting() calls, stored in m_b_weights
+    const double w_b = m_b_weights[ivar];
+    
+    // During the MPI evolution, the Sudakov weights are accumulated in
+    // AcceptRejectReweighting() calls, stored in m_sudakov_weights
+    const double w_sudakov = m_sudakov_weights[ivar];
+
+    // w_total = w_b * w_(n|b) = w_b * w_sudakov
+    const double w_total = w_b * w_sudakov;
+    m_variation_weights[ivar] *= w_total;
+
+    // output
+    w_b_vec[ivar]       = w_b;
+    w_total_vec[ivar]   = w_total;
+    // output
+  }
+  // output
+  if (m_b_weight_file.is_open()) {
+    m_b_weight_file << m_b;
+    if (m_variation_weights.size() == 3) {
+      m_b_weight_file << " " << w_b_vec[0] << " " << w_b_vec[1] << " " << w_b_vec[2];
+    }
+    m_b_weight_file << "\n";
+  }
+  if (m_total_weight_file.is_open()) {
+    m_total_weight_file << m_mpi_scatter_count;
+    if (m_variation_weights.size() == 3) {
+      m_total_weight_file << " " << w_total_vec[0] << " " << w_total_vec[1] << " " << w_total_vec[2];
+    }
+    m_total_weight_file << "\n";
+  }
+  // output
+  
+  if (blob == NULL) {
+    return;
+  }
+  auto &wgt_map = (*blob)["WeightsMap"]->Get<Weights_Map>();
+  
+  for(size_t ivar=0; ivar<m_n_variations; ++ivar) {
+    const std::string name {"v" + std::to_string(ivar)};
+    const double wgt = m_variation_weights[ivar];
+    wgt_map["MPI"][name] = wgt;
+  }
+  ResetVariationWeights();
+}
 

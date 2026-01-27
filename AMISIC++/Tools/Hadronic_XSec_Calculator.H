@@ -49,8 +49,10 @@ namespace AMISIC {
     std::map<std::pair<ATOOLS::Flavour, ATOOLS::Flavour>, double> m_sigmaDD;
     double m_GeV2mb;
     OneDim_Table * p_xsratio, * p_xshard;
-    std::vector<OneDim_Table*> p_xsratio_variations; // ue-reweighting
-    std::vector<OneDim_Table*> p_xshard_variations;  // ue-reweighting
+    size_t m_n_variations;
+    std::vector<double> m_sigma_nd_variations;
+    std::vector<OneDim_Table*> p_xsratio_variations;
+    std::vector<OneDim_Table*> p_xshard_variations;
     size_t m_testmode;
 
     void   FixType();
@@ -64,7 +66,7 @@ namespace AMISIC {
     double IntDDXSec(const size_t hadtags[2], const double masses[2]) const;
     double CalculateDoubleDXSec() const;
     void OutputXSratios(axis * sbins);
-    void OutputXSratiosVariations(axis * sbins); // ue-reweighting
+    void OutputXSratiosVariations(axis * sbins);
   public:
     explicit Hadronic_XSec_Calculator();
     ~Hadronic_XSec_Calculator();
@@ -83,12 +85,10 @@ namespace AMISIC {
     //////////////////////////////////////////////////////////////////////////
     inline OneDim_Table * GetXSratio() { return p_xsratio; }
     inline double XSratio(const double & s=-1.) { return (*p_xsratio)(s); }
-    // ue-reweighting
-    inline double XSratio(const double & s, size_t variation_index) {
-      if (variation_index >= p_xsratio_variations.size()) return XSratio(s);
-      return s<0 ? 0. : (*p_xsratio_variations[variation_index])(s);
+    inline double XSratio(const double & s, size_t ivar) {
+      if (ivar>=m_n_variations) return XSratio(s);
+      return s<0 ? 0. : (*p_xsratio_variations[ivar])(s);
     }
-    // ue-reweighting
     //////////////////////////////////////////////////////////////////////////
     // Hard cross section
     //////////////////////////////////////////////////////////////////////////
@@ -153,6 +153,10 @@ namespace AMISIC {
 	  m_hadroncomponents[m_flavs[beam]].end() &&
 	  s_indexmap.find(flav)!=s_indexmap.end()) return s_indexmap[flav];
       return 0;
+    }
+    inline void SetVariations(size_t n_variations, const std::vector<double>& sigma_nd_variations) {
+      m_n_variations = n_variations;
+      m_sigma_nd_variations = sigma_nd_variations;
     }
   };
 }

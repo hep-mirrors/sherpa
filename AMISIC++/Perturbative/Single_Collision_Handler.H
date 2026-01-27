@@ -10,7 +10,7 @@
 #include "ATOOLS/Math/Histogram.H"
 #include <map>
 #include <string>
-#include <functional> // ue-reweighting
+#include <functional>
 
 namespace AMISIC {
   class Single_Collision_Handler {
@@ -33,7 +33,7 @@ namespace AMISIC {
     ATOOLS::Blob * m_nextblob;
     std::map<double, ATOOLS::Blob *> m_prefabs;
     
-    std::function<void(bool, double)> m_reweight_callback; // ue-reweighting
+    std::function<void(bool, double)> m_reweight_callback;
     
     double MakeHardScatterBlob(ATOOLS::Blob * blob);
     void   DefinePossibleNext();
@@ -61,11 +61,9 @@ namespace AMISIC {
     bool   FirstRescatter(ATOOLS::Blob * first);
     bool   FirstMinBiasScatter(ATOOLS::Blob * first);
     bool   FirstMPI(ATOOLS::Blob * signal);
-    // ue-reweighting
     bool   InitFirstMPI(ATOOLS::Blob * signal);
     void   SelectNewB();
     int    RunFirstMPISudakov(double pt2veto);
-    // ue-reweighting
     bool   NextScatter(ATOOLS::Blob * blob);
     
     inline void SetResidualX(const double & E1, const double & E2) {

@@ -10,7 +10,7 @@
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/Scoped_Settings.H"
 #include "MODEL/Main/Running_AlphaS.H"
-#include "AMISIC++/Main/Amisic.H" // ue-reweighting
+#include "AMISIC++/Main/Amisic.H"
 
 using namespace SHERPA;
 using namespace ATOOLS;
@@ -239,7 +239,6 @@ Return_Value::code Multiple_Interactions::Treat(Blob_List *bloblist) {
   if (CheckForMinBias())                 return InitMinBias();
   if (CheckForRescatter())               return InitRescatter();
   if (CheckForMPIs() && !InitMPIs())     return Return_Value::Nothing;
-  // ue-reweighting
   if (!p_activeMI || p_activeMI->Done()) {
     ////////////////////////////////////////////////////////////////////////////
     // Apply MPI reweighting weights when all MPIs are done
@@ -256,7 +255,6 @@ Return_Value::code Multiple_Interactions::Treat(Blob_List *bloblist) {
     }
     return Return_Value::Nothing;
   }
-  // ue-reweighting
   ////////////////////////////////////////////////////////////////////////////
   // Sanity checks on blob_list: four-momentum is conserved, no blob in there
   // that needs to parton shower, beams are viable.

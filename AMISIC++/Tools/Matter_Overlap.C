@@ -43,7 +43,7 @@ Matter_Overlap::Matter_Overlap() :
   // the time-integrated overlap when they collide.
   ///////////////////////////////////////////////////////////////////////////
   m_norm(1./M_PI), m_invGeV2fm(rpa->hBar()*rpa->c()*1.e12),
-  m_variation_index(0)
+  m_matter_form_ivar(0)
 {
   ///////////////////////////////////////////////////////////////////////////
   // This is a default initialization of default values.  Apart from the
@@ -70,7 +70,6 @@ double Matter_Overlap::operator()(double b) {
   ///////////////////////////////////////////////////////////////////////////
   return EvaluateAt(b, m_kradius);
 }
-// ue-reweighting
 double Matter_Overlap::EvaluateAt(const double & b,const double & k) const {
   const double b2 = b*b;
   const double k2 = sqr(k);
@@ -80,9 +79,8 @@ double Matter_Overlap::EvaluateAt(const double & b,const double & k) const {
     if (effradius2<=0.) return 0.;
     return m_norm/effradius2 * exp(-b2/effradius2);
   }
-  const size_t idx = m_variation_index;
-  const std::array<double,4> & r2 = m_r2_variations[idx];
-  const std::array<double,4> & rnorm = m_rnorm_variations[idx];
+  const std::array<double,4> & r2 = m_r2_variations[m_matter_form_ivar];
+  const std::array<double,4> & rnorm = m_rnorm_variations[m_matter_form_ivar];
   double result = 0.;
   for (size_t i=0;i<4;i++) {
     if (rnorm[i]<=0.) continue;
@@ -92,7 +90,6 @@ double Matter_Overlap::EvaluateAt(const double & b,const double & k) const {
   }
   return m_norm/k2 * result;
 }
-// ue-reweighting
 
 double Matter_Overlap::MaxValue(const double & b) {
   ///////////////////////////////////////////////////////////////////////////
@@ -196,9 +193,9 @@ void Matter_Overlap::InitializeStaticFFParams() {
   // could be single- or double Gaussians, e.g. from Eq (SZ 19)
   ///////////////////////////////////////////////////////////////////////////
   m_dynamic = false;
-  const size_t n_variations = MatterFormVariationSize();
-  m_r2_variations.assign(n_variations, std::array<double,4>{0.,0.,0.,0.});
-  m_rnorm_variations.assign(n_variations, std::array<double,4>{0.,0.,0.,0.});
+  const size_t n_matter_form_variations = MatterFormVariationSize();
+  m_r2_variations.assign(n_matter_form_variations, std::array<double,4>{0.,0.,0.,0.});
+  m_rnorm_variations.assign(n_matter_form_variations, std::array<double,4>{0.,0.,0.,0.});
   double fraction[2], radius[2][2];
   for (size_t i=0;i<2;i++) {
     fraction[i] = ( (m_form[i]==matter_form::single_gaussian) ?
@@ -224,7 +221,7 @@ void Matter_Overlap::InitializeStaticFFParams() {
   m_dynradius2 = m_radius2[0];
   m_bstep = minR/100.;
 
-  for (size_t ivar=0; ivar<n_variations; ++ivar) {
+  for (size_t ivar=0; ivar<n_matter_form_variations; ++ivar) {
     double frac[2];
     double rad[2][2];
     frac[0] = (p_ffs[0]->GetForm()==matter_form::double_gaussian) ?
@@ -334,43 +331,39 @@ void Matter_Overlap::Output(const double & check) {
 	      <<std::setprecision(4)<<std::setw(6)<<(m_maxradius*m_invGeV2fm)<<" fm. "
 	      <<std::string(20,' ')<<"|\n";
   
-  // ue-reweighting
-  const size_t n_variations = MatterFormVariationSize();
-  if (n_variations > 1) {
-    MO_Integrand moint(this);
-    Gauss_Integrator integrator(&moint);
-    for (size_t ivar=0; ivar<n_variations; ++ivar) {
-      SetMatterFormVariationIndex(ivar);
-      const double bmax_var = Bmax();
-      double bmin = 0., bstep = m_bstep, previous, result = 0.;
-      do {
-        result  += previous = integrator.Integrate(bmin,bmin+bstep,1.e-8,1);
-        bmin    += bstep;
-      } while (dabs(previous/result)>1.e-10 && bmin < bmax_var);
-      
-      msg_Info()<<"   "<<std::string(77,'-')<<"\n"
-                <<"   | Variation "<<ivar<<":"<<std::string(62,' ')<<"|\n"
-                <<"   | Integral up to b_max = "
-                <<std::setprecision(6)<<std::setw(8)<<(bmax_var*m_invGeV2fm)<<" fm yields "
-                <<std::setprecision(6)<<std::setw(8)<<result<<"."
-                <<std::string(23,' ')<<"|\n";
-      for (size_t i=0;i<2;i++) {
-        msg_Info()<<"   | "<<std::setw(20)<<m_form[i]<<", R_1 = "
-                  <<std::setprecision(4)<<std::setw(6)
-                  <<(p_ffs[i]->Radius1At(ivar)*m_invGeV2fm)<<" fm";
-        if (m_form[i]==matter_form::double_gaussian) {
-          msg_Info()<<", f_1 = "<<std::setprecision(4)<<std::setw(6)
-                    <<p_ffs[i]->Fraction1At(ivar)<<", "
-                    <<"R_2 = "<<std::setprecision(4)<<std::setw(6)
-                    <<(p_ffs[i]->Radius2At(ivar)*m_invGeV2fm)<<" fm"
-                    <<std::string(6,' ')<<"|\n";
-        }
-        else msg_Info()<<std::string(37,' ')<<"|\n";
+  const size_t n_matter_form_variations = MatterFormVariationSize();
+  MO_Integrand moint(this);
+  Gauss_Integrator integrator(&moint);
+  for (size_t ivar=0; ivar<n_matter_form_variations; ++ivar) {
+    SetMatterFormVariationIndex(ivar);
+    const double bmax_var = Bmax();
+    double bmin = 0., bstep = m_bstep, previous, result = 0.;
+    do {
+      result  += previous = integrator.Integrate(bmin,bmin+bstep,1.e-8,1);
+      bmin    += bstep;
+    } while (dabs(previous/result)>1.e-10 && bmin < bmax_var);
+    
+    msg_Info()<<"   "<<std::string(77,'-')<<"\n"
+              <<"   | Variation "<<ivar<<":"<<std::string(62,' ')<<"|\n"
+              <<"   | Integral up to b_max = "
+              <<std::setprecision(6)<<std::setw(8)<<(bmax_var*m_invGeV2fm)<<" fm yields "
+              <<std::setprecision(6)<<std::setw(8)<<result<<"."
+              <<std::string(23,' ')<<"|\n";
+    for (size_t i=0;i<2;i++) {
+      msg_Info()<<"   | "<<std::setw(20)<<m_form[i]<<", R_1 = "
+                <<std::setprecision(4)<<std::setw(6)
+                <<(p_ffs[i]->Radius1At(ivar)*m_invGeV2fm)<<" fm";
+      if (m_form[i]==matter_form::double_gaussian) {
+        msg_Info()<<", f_1 = "<<std::setprecision(4)<<std::setw(6)
+                  <<p_ffs[i]->Fraction1At(ivar)<<", "
+                  <<"R_2 = "<<std::setprecision(4)<<std::setw(6)
+                  <<(p_ffs[i]->Radius2At(ivar)*m_invGeV2fm)<<" fm"
+                  <<std::string(6,' ')<<"|\n";
       }
+      else msg_Info()<<std::string(37,' ')<<"|\n";
     }
-    SetMatterFormVariationIndex(0);
   }
-  // ue-reweighting
+  SetMatterFormVariationIndex(0);
   
   msg_Info()<<"   "<<std::string(77,'-')<<"\n\n";
 }

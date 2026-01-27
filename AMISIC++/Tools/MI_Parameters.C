@@ -19,23 +19,23 @@ MI_Parameters::MI_Parameters() :
   m_evttype =
     s["EVENT_TYPE"].SetDefault(evt_type::Perturbative).Get<evt_type::code>();
   m_parameters_vector[string("pt_0(ref)")]
-    = s["PT_0(ref)"].SetDefault({2.05}).GetVector<double>(); // ue-reweighting
+    = s["PT_0(ref)"].SetDefault({2.05}).GetVector<double>();
   m_parameters[string("pt_0(ref)")]
-    = m_parameters_vector[string("pt_0(ref)")][0]; // ue-reweighting
+    = m_parameters_vector[string("pt_0(ref)")][0];
   m_parameters[string("pt_0(IR)")]
     = s["PT_0(IR)"].SetDefault(0.5).Get<double>();
   m_parameters_vector[string("pt_min(ref)")]
-    = s["PT_Min(ref)"].SetDefault({2.583}).GetVector<double>(); // ue-reweighting
+    = s["PT_Min(ref)"].SetDefault({2.583}).GetVector<double>();
   m_parameters[string("pt_min(ref)")]
-    = m_parameters_vector[string("pt_min(ref)")][0]; // ue-reweighting
+    = m_parameters_vector[string("pt_min(ref)")][0];
   m_parameters[string("pt_min(IR)")]
     = s["PT_Min(IR)"].SetDefault(1.00).Get<double>();
   m_parameters[string("Ecms(ref)")]
     = s["E(ref)"].SetDefault(7000.).Get<double>();
   m_parameters_vector[string("eta")]
-    = s["Eta"].SetDefault({0.08}).GetVector<double>(); // ue-reweighting
+    = s["Eta"].SetDefault({0.08}).GetVector<double>();
   m_parameters[string("eta")]
-    = m_parameters_vector[string("eta")][0]; // ue-reweighting
+    = m_parameters_vector[string("eta")][0];
   m_pt02ref   = sqr(m_parameters[string("pt_0(ref)")]);
   m_pt02IR    = sqr(m_parameters[string("pt_0(IR)")]);
   for (size_t i=0; i<m_parameters_vector[string("pt_0(ref)")].size(); ++i)
@@ -53,28 +53,28 @@ MI_Parameters::MI_Parameters() :
   m_Scms      = sqr(m_Ecms = rpa->gen.Ecms());
   m_eta_variations = m_parameters_vector[string("eta")];
   m_eta       = m_parameters[string("eta")];
-  std::vector<double> ptmin_variations; // ue-reweighting
+  std::vector<double> ptmin_variations;
   for (size_t ivar=0; ivar<std::max({m_parameters_vector[string("pt_min(ref)")].size(),
                                m_parameters_vector[string("eta")].size()}); ++ivar)
   {
     ptmin_variations.push_back(sqrt(CalculatePTmin2(m_Scms, ivar)));
   }
-  double pt_min = ptmin_variations[0]; // ue-reweighting
-  std::vector<double> pt0_variations; // ue-reweighting
+  double pt_min = ptmin_variations[0];
+  std::vector<double> pt0_variations;
   for (size_t ivar=0; ivar<std::max({m_parameters_vector[string("pt_0(ref)")].size(),
                                m_parameters_vector[string("eta")].size()}); ++ivar)
   {
     pt0_variations.push_back(sqrt(CalculatePT02(m_Scms, ivar)));
   }
-  double pt_0 = pt0_variations[0]; // ue-reweighting
+  double pt_0 = pt0_variations[0];
   m_parameters_vector[string("pt_min")]
-    = s["PT_Min"].SetDefault(ptmin_variations).GetVector<double>(); // ue-reweighting
+    = s["PT_Min"].SetDefault(ptmin_variations).GetVector<double>();
   m_parameters[string("pt_min")]
-    = m_parameters_vector[string("pt_min")][0]; // ue-reweighting
+    = m_parameters_vector[string("pt_min")][0];
   m_parameters_vector[string("pt_0")]
-    = s["PT_0"].SetDefault(pt0_variations).GetVector<double>(); // ue-reweighting
+    = s["PT_0"].SetDefault(pt0_variations).GetVector<double>();
   m_parameters[string("pt_0")]
-    = m_parameters_vector[string("pt_0")][0]; // ue-reweighting
+    = m_parameters_vector[string("pt_0")][0];
   m_scaleRscheme = s["MU_R_SCHEME"].SetDefault("PT").Get<scale_scheme>();
   m_scaleFscheme = s["MU_F_SCHEME"].SetDefault("PT").Get<scale_scheme>();
   m_parameters[string("RenScale_Factor")]
@@ -83,9 +83,9 @@ MI_Parameters::MI_Parameters() :
     = s["MU_F_FACTOR"].SetDefault(1.0).Get<double>();
   m_parameters[string("E_min")] = s["E_Min"].SetDefault(0.25).Get<double>();
   m_parameters_vector[string("SigmaND_Norm")]
-    = s["SIGMA_ND_NORM"].SetDefault({0.619}).GetVector<double>(); // ue-reweighting
+    = s["SIGMA_ND_NORM"].SetDefault({0.619}).GetVector<double>();
   m_parameters[string("SigmaND_Norm")]
-    = m_parameters_vector[string("SigmaND_Norm")][0]; // ue-reweighting
+    = m_parameters_vector[string("SigmaND_Norm")][0];
   m_parameters[string("PomeronIntercept")]
     = s["PomeronIntercept"].SetDefault(0.0808).Get<double>();
   m_parameters[string("PomeronSlope")]
@@ -179,14 +179,13 @@ int MI_Parameters::operator[](const string& keyword) const
   if (piter!=m_flags.end()) return piter->second;
   THROW(fatal_error,"Keyword not found in MI_Parameters.");
 }
-// ue-reweighting
+
 std::vector<double> MI_Parameters::GetVariationVector(const std::string& keyword) const
 {
   auto piter = m_parameters_vector.find(keyword);
   if (piter != m_parameters_vector.end()) return piter->second;
   THROW(fatal_error,"Keyword not found in MI_Parameters vector map.");
 }
-// ue-reweighting
 
 std::ostream& AMISIC::operator<<(std::ostream& s, const evt_type::code& f)
 {

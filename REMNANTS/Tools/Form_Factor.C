@@ -12,7 +12,7 @@ Form_Factor::Form_Factor(const Flavour & flav) :
   m_flav(flav), m_form(matter_form::single_gaussian),
   m_GeV_fm(rpa->hBar()*rpa->c()*1.e12), 
   m_radius1(1.), m_radius2(0.), m_fraction1(1.), m_softexp(0.),
-  m_variation_size(1)
+  m_n_matter_form_variations(1)
 {
   Initialise();
 }
@@ -37,7 +37,7 @@ void Form_Factor::Initialise()
   m_radius1_variations  = rempars->GetVariationVector(m_flav,"MATTER_RADIUS_1");
   m_radius2_variations  = rempars->GetVariationVector(m_flav,"MATTER_RADIUS_2");
 
-  m_variation_size = std::max({m_fraction_variations.size(),
+  m_n_matter_form_variations = std::max({m_fraction_variations.size(),
                                m_radius1_variations.size(),
                                m_radius2_variations.size(),
                                size_t(1)});
@@ -45,9 +45,9 @@ void Form_Factor::Initialise()
   const double radius1_nom = m_radius1_variations.empty() ? m_radius1*m_GeV_fm : m_radius1_variations.front();
   const double radius2_nom = m_radius2_variations.empty() ? m_radius2*m_GeV_fm : m_radius2_variations.front();
 
-  m_fraction_variations.resize(m_variation_size, frac_nom);
-  m_radius1_variations.resize(m_variation_size, radius1_nom);
-  m_radius2_variations.resize(m_variation_size, radius2_nom);
+  m_fraction_variations.resize(m_n_matter_form_variations, frac_nom);
+  m_radius1_variations.resize(m_n_matter_form_variations, radius1_nom);
+  m_radius2_variations.resize(m_n_matter_form_variations, radius2_nom);
 
   msg_Out()<<METHOD<<"("<<m_flav<<"): "
 	   <<"R = "<<m_radius1<<" 1/GeV = "<<(m_radius1*m_GeV_fm)<<" fm, "
@@ -56,18 +56,18 @@ void Form_Factor::Initialise()
 
 double Form_Factor::Fraction1At(size_t i) const {
   if (m_form!=matter_form::double_gaussian) return 1.0;
-  if (i>=m_fraction_variations.size()) return m_fraction1;
+  if (i>=m_n_matter_form_variations) return m_fraction1;
   return m_fraction_variations[i];
 }
 
 double Form_Factor::Radius1At(size_t i) const {
-  if (i>=m_radius1_variations.size()) return m_radius1;
+  if (i>=m_n_matter_form_variations) return m_radius1;
   return m_radius1_variations[i]/m_GeV_fm;
 }
 
 double Form_Factor::Radius2At(size_t i) const {
   if (m_form!=matter_form::double_gaussian) return 0.0;
-  if (i>=m_radius2_variations.size()) return m_radius2;
+  if (i>=m_n_matter_form_variations) return m_radius2;
   return m_radius2_variations[i]/m_GeV_fm;
 }
 

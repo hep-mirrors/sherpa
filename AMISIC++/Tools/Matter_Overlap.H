@@ -24,7 +24,7 @@ namespace AMISIC {
     double m_radius[4], m_radius2[4], m_rnorm[4], m_fraction[4];
     double m_fixradius, m_dynradius2, m_maxradius;
     double m_xmin[2], m_xmax[2];
-    size_t m_variation_index;
+    size_t m_matter_form_ivar;
     std::vector<std::array<double,4>> m_r2_variations;
     std::vector<std::array<double,4>> m_rnorm_variations;
 
@@ -38,7 +38,7 @@ namespace AMISIC {
     Matter_Overlap();
     ~Matter_Overlap();
 
-    double EvaluateAt(const double & b,const double & k) const; // ue-reweighting
+    double EvaluateAt(const double & b,const double & k) const;
     void   Initialize(REMNANTS::Remnant_Handler * const rh,
 		      PDF::ISR_Handler * const isr);
     void   FixDynamicRadius(const double & x1=-1.,  const double & x2=-1.,
@@ -68,8 +68,8 @@ namespace AMISIC {
     size_t MatterFormVariationSize() const;
     inline void SetMatterFormVariationIndex(size_t i) {
       const size_t max_idx = MatterFormVariationSize() ? MatterFormVariationSize() - 1 : size_t(0);
-      if (i > max_idx) m_variation_index = size_t(0);
-      else m_variation_index = i;
+      if (i > max_idx) m_matter_form_ivar = size_t(0);
+      else m_matter_form_ivar = i;
     }
     inline       axis   * GetBBins()        const { return p_bbins; }
   };

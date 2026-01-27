@@ -66,7 +66,6 @@ namespace AMISIC {
     bool         m_isMinBias, m_isFirst, m_producedSoft;
     size_t       m_maxNscatters, m_Nscatters;
     double       m_f;
-    // ue-reweighting
     std::vector<double> m_sigma_nd_variations;
     std::vector<double> m_pt0_variations;
     std::vector<double> m_ptmin_variations;
@@ -75,17 +74,15 @@ namespace AMISIC {
     std::vector<double> m_b_weights;
     std::vector<double> m_sudakov_weights;
     std::vector<double> m_lambda_ratios;
-    size_t m_mpi_scatter_count;
-    double m_lambda_nominal;
-    
+    size_t m_n_variations;
+
+    size_t m_mpi_scatter_count;          // output
     std::ofstream m_b_weight_file;       // output
-    std::ofstream m_sudakov_weight_file; // output
     std::ofstream m_total_weight_file;   // output
-    std::ofstream m_overlap_file;        // output
-    // ue-reweighting
 
     void InitParametersAndType(PDF::ISR_Handler *const isr,
 			       REMNANTS::Remnant_Handler * remnant_handler);
+    void InitParameterVariations();
     void UpdateForNewS();
     bool FirstRescatter(ATOOLS::Blob * blob);
     bool FirstMinBias(ATOOLS::Blob * blob);
@@ -101,11 +98,9 @@ namespace AMISIC {
     void InitAnalysis();
     void FinishAnalysis();
     void AnalysePerturbative(const bool & last,ATOOLS::Blob * blob=nullptr);
-    // ue-reweighting
-    void ResetVariationWeights(int n_variations);
+    void ResetVariationWeights();
     void ImpactParameterReweighting(const double & s);
     void AcceptRejectReweighting(const bool accepted, const double prob_nom);
-    // ue-reweighting
  public:
     Amisic();
     ~Amisic();
@@ -161,12 +156,7 @@ namespace AMISIC {
       m_singlecollision.Reset();
       m_isFirst = true;
     }
-    // ue-reweighting
     void ApplyVariationWeights(ATOOLS::Blob * blob);
-    inline std::vector<double> & GetVariationWeights() {
-      return m_variation_weights;
-    }
-    // ue-reweighting
   };
 
 }

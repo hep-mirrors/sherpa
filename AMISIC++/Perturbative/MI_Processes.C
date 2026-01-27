@@ -263,20 +263,19 @@ double MI_Processes::TotalCrossSection(const double & s,const bool & output) {
   return m_xshard;
 }
 
-// ue-reweighting
 double MI_Processes::TotalCrossSection(const double & s,const bool & output,
-                                       size_t variation_index) {
+                                       size_t ivar) {
   ///////////////////////////////////////////////////////////////////////////
   // Calculate the hard cross section with a specific PT_Min variation.
   ///////////////////////////////////////////////////////////////////////////
-  double ptmin2_var = mipars->CalculatePTmin2(s, variation_index);
-  double pt02_var   = mipars->CalculatePT02(s, variation_index);
+  double ptmin2_var = mipars->CalculatePTmin2(s, ivar);
+  double pt02_var   = mipars->CalculatePT02(s, ivar);
   m_integrator.SetPT2min(ptmin2_var);
   for (list<MI_Process_Group *>::iterator mig = m_groups.begin();
        mig!=m_groups.end();mig++)  (*mig)->SetPT02(pt02_var);
   double xshard_var = m_integrator(s,nullptr,0.);
   if (output) {
-    msg_Info()<<"   | "<<"                    Variation "<<variation_index<<": xs_pert = "
+    msg_Info()<<"   | "<<"                    Variation "<<ivar<<": xs_pert = "
               <<std::setprecision(4)<<std::setw(10)
               <<(xshard_var*rpa->Picobarn()/1.e9)<<" mb "
               <<"+- "<<std::setprecision(0)<<std::setw(3)
@@ -289,7 +288,6 @@ double MI_Processes::TotalCrossSection(const double & s,const bool & output,
        mig!=m_groups.end();mig++)  (*mig)->SetPT02(m_pt02);
   return xshard_var;
 }
-// ue-reweighting
 
 void MI_Processes::
 CalcScales(const double & shat,const double & that,const double & uhat) {

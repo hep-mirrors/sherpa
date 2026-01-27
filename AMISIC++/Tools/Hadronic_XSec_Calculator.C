@@ -31,7 +31,8 @@ Hadronic_XSec_Calculator::Hadronic_XSec_Calculator() :
   m_Ypp(-1.), m_c0(2.24), m_c1(2.1),
   m_GeV2mb(rpa->Picobarn()/1e9),
   p_xsratio(NULL), p_xshard(NULL),
-  m_testmode(0)
+  m_testmode(0),
+  m_n_variations(1)
 { }
 
 void Hadronic_XSec_Calculator::
@@ -82,10 +83,8 @@ Initialize(const Flavour & fl1,const Flavour & fl2,
 Hadronic_XSec_Calculator::~Hadronic_XSec_Calculator() {
   if (p_xsratio) delete p_xsratio;
   if (p_xshard)  delete p_xshard;
-  // ue-reweighting
   for (auto p : p_xsratio_variations) delete p;
   for (auto p : p_xshard_variations) delete p;
-  // ue-reweighting
 }
 
 void Hadronic_XSec_Calculator::FixType() {
@@ -191,24 +190,12 @@ CalculateXSratios(MI_Processes * processes,axis * sbins)
   p_xsratio    = new OneDim_Table(*sbins);
   p_xshard     = new OneDim_Table(*sbins);
   
-  // ue-reweighting: Get PT_Min variations and initialize variation tables
-  std::vector<double> sigma_nd_variations = (*mipars).GetVariationVector("SigmaND_Norm");
-  std::vector<double> ptmin_variations    = (*mipars).GetVariationVector("pt_min");
-  std::vector<double> pt0_variations      = (*mipars).GetVariationVector("pt_0");
-  std::vector<double> eta_variations      = (*mipars).GetVariationVector("eta");
-  size_t n_variations = std::max({sigma_nd_variations.size(),
-                                  ptmin_variations.size(),
-                                  pt0_variations.size(),
-                                  eta_variations.size(),
-                                  size_t(1)});
-  sigma_nd_variations.resize(n_variations, sigma_nd_variations[0]);
-  p_xsratio_variations.resize(n_variations);
-  p_xshard_variations.resize(n_variations);
-  for (size_t ivar=0; ivar<n_variations; ++ivar) {
+  p_xsratio_variations.resize(m_n_variations);
+  p_xshard_variations.resize(m_n_variations);
+  for (size_t ivar=0; ivar<m_n_variations; ++ivar) {
     p_xsratio_variations[ivar] = new OneDim_Table(*sbins);
     p_xshard_variations[ivar] = new OneDim_Table(*sbins);
   }
-  // ue-reweighting
   
   for (size_t sbin=0;sbin<sbins->m_nbins;sbin++) {
     double s      = sbins->x(sbin);
@@ -218,16 +205,14 @@ CalculateXSratios(MI_Processes * processes,axis * sbins)
     p_xshard->Fill(sbin, xshard);
     p_xsratio->Fill(sbin, xshard/(XSndNorm() * XSnd()));
     
-    // ue-reweighting: Compute cross sections for each PT_Min variation
-    for (size_t ivar=0; ivar<n_variations; ++ivar) {
+    for (size_t ivar=0; ivar<m_n_variations; ++ivar) {
       double xshard_var = processes->TotalCrossSection(s,sbin==0,ivar);
       p_xshard_variations[ivar]->Fill(sbin, xshard_var);
-      p_xsratio_variations[ivar]->Fill(sbin, xshard_var/(sigma_nd_variations[ivar] * XSnd()));
+      p_xsratio_variations[ivar]->Fill(sbin, xshard_var/(m_sigma_nd_variations[ivar] * XSnd()));
     }
-    // ue-reweighting
   }
   OutputXSratios(sbins);
-  OutputXSratiosVariations(sbins); // ue-reweighting
+  OutputXSratiosVariations(sbins);
 }
 
 void Hadronic_XSec_Calculator::OutputXSratios(axis * sbins) {
@@ -273,17 +258,13 @@ void Hadronic_XSec_Calculator::OutputXSratios(axis * sbins) {
 }
 
 void Hadronic_XSec_Calculator::OutputXSratiosVariations(axis * sbins) {
-  std::vector<double> sigma_nd_variations = (*mipars).GetVariationVector("SigmaND_Norm");
-  size_t n_variations = std::max({p_xsratio_variations.size(),
-                                  sigma_nd_variations.size(), size_t(1)});
-  sigma_nd_variations.resize(n_variations, sigma_nd_variations[0]);
   (*this)(sbins->x(0));
   double fac = 1;
   string units = string("mb");
   if      (m_xstot<1.e-6) { fac = 1.e9; units = string("pb"); }
   else if (m_xstot<1.e-3) { fac = 1.e6; units = string("nb"); }
   else if (m_xstot<1.)    { fac = 1.e3; units = string("ub"); }
-  for (size_t ivar=0; ivar<p_xsratio_variations.size(); ++ivar) {
+  for (size_t ivar=0; ivar<m_n_variations; ++ivar) {
     msg_Info()<<"   "<<string(85,'-')<<"\n"
         <<"   | "<<"                             Variation "<<ivar<<": hadronic cross sections (all in "<<units<<")"
         <<"     |\n"
@@ -306,7 +287,7 @@ void Hadronic_XSec_Calculator::OutputXSratiosVariations(axis * sbins) {
     for (size_t sbin=0;sbin<sbins->m_nbins;sbin++) {
       double s    = sbins->x(sbin), E = sqrt(s);
       (*this)(s);
-      double xshard = (*p_xshard_variations[ivar])(s), xsnd  = sigma_nd_variations[ivar] * XSnd();
+      double xshard = (*p_xshard_variations[ivar])(s), xsnd  = m_sigma_nd_variations[ivar] * XSnd();
       double ratio  = (*p_xsratio_variations[ivar])(s);
       msg_Info()<<"   | "
           <<setprecision(6)<<setw(11)<<E<<" | "

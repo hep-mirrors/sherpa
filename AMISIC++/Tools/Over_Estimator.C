@@ -1,5 +1,7 @@
 #include "AMISIC++/Tools/Over_Estimator.H"
 #include "AMISIC++/Perturbative/MI_Processes.H"
+#include "AMISIC++/Tools/Interaction_Probability.H"
+#include "AMISIC++/Tools/Matter_Overlap.H"
 #include "PDF/Main/ISR_Handler.H"
 #include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Math/Histogram.H"
@@ -23,13 +25,14 @@ using namespace ATOOLS;
 
 Over_Estimator::Over_Estimator() :
   m_muR_fac(1.), m_muF_fac(1.), m_pref(0.), m_npt2bins(1000),
-  p_prefs(nullptr), p_procs(nullptr), p_sbins(nullptr), m_overlapmax(1.0) // ue-reweighting
+  p_prefs(nullptr), m_overlapmax(1.0), m_n_variations(1)
 {}
 
 Over_Estimator::~Over_Estimator() { if (p_prefs) delete p_prefs; }
 
 void Over_Estimator::
-Initialize(PDF::ISR_Handler * isr,MI_Processes * procs,axis * sbins) {
+Initialize(PDF::ISR_Handler * isr,MI_Processes * procs,axis * sbins,
+           Interaction_Probability * pint,Matter_Overlap * overlap) {
   ///////////////////////////////////////////////////////////////////////////
   // Inheriting all relevant inputs from the MI_Processes which we aim to
   // over-estimate.  
@@ -38,8 +41,6 @@ Initialize(PDF::ISR_Handler * isr,MI_Processes * procs,axis * sbins) {
   m_pt02      = procs->PT02();
   m_ptmin2    = procs->PT2Min();
   p_alphaS    = procs->AlphaS();
-  p_procs     = procs; // ue-reweighting
-  p_sbins     = sbins; // ue-reweighting
   m_muR_fac   = (*mipars)("RenScale_Factor");
   m_muF_fac   = (*mipars)("FacScale_Factor");
   for (size_t i=0;i<2;i++) {
@@ -47,8 +48,21 @@ Initialize(PDF::ISR_Handler * isr,MI_Processes * procs,axis * sbins) {
     m_xmin[i] = Max(1.e-6,p_pdf[i]->XMin());
     m_xmax[i] = Max(1.-1.e-6,p_pdf[i]->XMax());
   }
+  const double K_nom = pint->K(m_s);
+  overlap->SetMatterFormVariationIndex(0);
+  double overlap_max = overlap->EvaluateAt(0.0, K_nom);
+  for (size_t i = 0; i < m_n_variations; ++i) {
+    overlap->SetMatterFormVariationIndex(i);
+    const double K_var = pint->KVariation(m_s, i);
+    const double overlap_var = overlap->EvaluateAt(0.0, K_var);
+    if (overlap_var > overlap_max) {
+      overlap_max = overlap_var;
+    }
+  }
+  overlap->SetMatterFormVariationIndex(0);
+  m_overlapmax = overlap_max;
   FixMaximum(procs,sbins);
-  // Output();
+  Output();
 }
 
 void Over_Estimator::UpdateS(const double & s,const double & pt02,const double & ptmin2) {
@@ -96,7 +110,7 @@ void Over_Estimator::FixMaximum(MI_Processes * procs,axis * sbins) {
       // volume to define a constant prefactor that ensures that the
       // approximation is always larger than the exact calculation.
       ///////////////////////////////////////////////////////////////////////
-      double test   = procs->PDFnorm()*Max(approx,exact)*yvol*sqr(pt2+m_pt02/4.) * m_overlapmax; // ue-reweighting;
+      double test   = procs->PDFnorm()*Max(approx,exact)*yvol*sqr(pt2+m_pt02/4.) * m_overlapmax;
       if (test > maxpref) { maxpref = test; }
     }
     p_prefs->Fill(sbin,maxpref);

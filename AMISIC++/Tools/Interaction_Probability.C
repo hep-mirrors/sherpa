@@ -24,7 +24,7 @@ Interaction_Probability::Interaction_Probability() :
   p_mo(NULL), p_procs(NULL), p_sbins(NULL), p_bbins(NULL),
   p_k(NULL), p_norm(NULL), p_diffxsec(NULL), p_inverted(NULL), 
   m_pdfnorm(1.), m_bmax(1.e6), m_smin(1.e99), m_xs_hard(0.), m_xs_test(0.),
-  m_dynamic(false), m_test(false), m_ana(false) {}
+  m_dynamic(false), m_test(false), m_ana(false), m_n_variations(1) {}
 
 Interaction_Probability::~Interaction_Probability() {
   if (m_ana) FinishAnalysis();
@@ -32,14 +32,12 @@ Interaction_Probability::~Interaction_Probability() {
   if (p_norm)     delete p_norm;
   if (p_diffxsec) delete p_diffxsec;
   if (p_inverted) delete p_inverted;
-  // ue-reweighting
   for (auto p : p_k_variations) {
     if (p) delete p;
   }
   for (auto p : p_diffxsec_variations) {
     if (p) delete p;
   }
-  // ue-reweighting
 }
 
 void Interaction_Probability::
@@ -79,32 +77,21 @@ void Interaction_Probability::FixKandSmin() {
   msg_Info()<<"   "<<string(77,'-')<<"\n"
 	    <<"   | Initializing the Interaction Probability: fixing K's"
 	    <<string(22,' ')<<"|\n";
-  // ue-reweighting
-  std::vector<double> sigma_nd_variations = (*mipars).GetVariationVector("SigmaND_Norm");
-  std::vector<double> ptmin_variations    = (*mipars).GetVariationVector("pt_min");
-  std::vector<double> pt0_variations      = (*mipars).GetVariationVector("pt_0");
-  std::vector<double> eta_variations      = (*mipars).GetVariationVector("eta");
-  size_t n_variations = std::max({sigma_nd_variations.size(), 
-                                  ptmin_variations.size(),
-                                  pt0_variations.size(),
-                                  eta_variations.size(),
-                                  p_mo->MatterFormVariationSize(),
-                                  size_t(1)});
-  sigma_nd_variations.resize(n_variations, sigma_nd_variations[0]);
 
   // Initialize K-factor tables and differential XS tables for variations
-  p_k_variations.resize(n_variations);
-  p_diffxsec_variations.resize(n_variations);
-  for (size_t ivar=0; ivar<n_variations; ++ivar) {
+  p_k_variations.resize(m_n_variations);
+  p_diffxsec_variations.resize(m_n_variations);
+  for (size_t ivar=0; ivar<m_n_variations; ++ivar) {
     p_k_variations[ivar] = new OneDim_Table(*p_sbins);
     p_diffxsec_variations[ivar] = new TwoDim_Table(*p_sbins, *p_bbins);
   }
-  // ue-reweighting
+
   PInt_Dyn_Integrand integrand(p_diffxsec);
   Gauss_Integrator   gauss(&integrand);
   for (size_t sbin=0;sbin<p_sbins->m_nbins;sbin++) {
     double s     = p_sbins->x(sbin), k=1., xs_test = 0.;
-    double xs_nd = (m_pdfnorm * sigma_nd_variations[0] * p_procs->GetXSecs()->XSnd(s));
+    double xs_nd = (m_pdfnorm * p_procs->GetXSecs()->XSndNorm() * 
+                    p_procs->GetXSecs()->XSnd(s));
     if (s<=4. || p_procs->GetXSecs()->XSratio(s)<=1.) continue;
     integrand.SetS(s);
     p_mo->SetMatterFormVariationIndex(0);
@@ -128,9 +115,8 @@ void Interaction_Probability::FixKandSmin() {
 	      <<p_procs->GetXSecs()->XSratio(s)<<" -> "
 	      <<"k = "<<std::setw(8)<<std::setprecision(6)<<k<<"  |\n";
 
-    // ue-reweighting
-    for (size_t ivar=0; ivar<n_variations; ++ivar) {
-      double xs_nd_var = (m_pdfnorm * sigma_nd_variations[ivar] *
+    for (size_t ivar=0; ivar<m_n_variations; ++ivar) {
+      double xs_nd_var = (m_pdfnorm * m_sigma_nd_variations[ivar] *
                           p_procs->GetXSecs()->XSnd(s));
       double k_var = 1.0;
       double xs_test_var = 0.0;
@@ -163,7 +149,7 @@ void Interaction_Probability::FixKandSmin() {
     p_mo->SetMatterFormVariationIndex(0);
     p_mo->SetKRadius(k);
     InitializeTable(sbin);
-    // ue-reweighting
+
     if (s<m_smin) m_smin = s;
   }
   msg_Info()<<"   "<<string(77,'-')<<"\n";
@@ -233,15 +219,14 @@ InitializeTable(const size_t & sbin,const bool & out) {
   }
 }
 
-// ue-reweighting
 void Interaction_Probability::
-InitializeTable(const size_t & sbin, TwoDim_Table* diffxsec, size_t variation_index) {
+InitializeTable(const size_t & sbin, TwoDim_Table* diffxsec, size_t ivar) {
   MI_Integrator * integrator = p_procs->GetIntegrator();
   double s  = p_sbins->x(sbin), prev = 0., xsfix = 0.;
   p_procs->UpdateS(s);
 
-  double ptmin2_var = mipars->CalculatePTmin2(s, variation_index);
-  double pt02_var   = mipars->CalculatePT02(s, variation_index);
+  double ptmin2_var = mipars->CalculatePTmin2(s, ivar);
+  double pt02_var   = mipars->CalculatePT02(s, ivar);
   integrator->SetPT2min(ptmin2_var);
   p_procs->SetPT02(pt02_var);
   
@@ -265,7 +250,6 @@ InitializeTable(const size_t & sbin, TwoDim_Table* diffxsec, size_t variation_in
   integrator->SetPT2min(mipars->CalculatePTmin2(s));
   p_procs->SetPT02(mipars->CalculatePT02(s));
 }
-// ue-reweighting
 
 bool Interaction_Probability::CheckTables() {
   XS_Integrand     integrand(p_diffxsec,0.);
@@ -289,17 +273,6 @@ bool Interaction_Probability::CheckTables() {
 }
 
 void Interaction_Probability::OutputTables() {
-  std::vector<double> sigma_nd_variations = (*mipars).GetVariationVector("SigmaND_Norm");
-  std::vector<double> ptmin_variations    = (*mipars).GetVariationVector("pt_min");
-  std::vector<double> pt0_variations      = (*mipars).GetVariationVector("pt_0");
-  std::vector<double> eta_variations      = (*mipars).GetVariationVector("eta");
-  size_t n_variations = std::max({sigma_nd_variations.size(), 
-                                  ptmin_variations.size(),
-                                  pt0_variations.size(),
-                                  eta_variations.size(),
-                                  p_mo->MatterFormVariationSize(),
-                                  size_t(1)});
-  sigma_nd_variations.resize(n_variations, sigma_nd_variations[0]);
   msg_Info()<<"   "<<std::string(77,'-')<<"\n"
 	    <<"   | "<<METHOD<<" look-up tables and values:          |\n"
 	    <<"   | "<<std::setw(15)<<"E_{c.m.} [GeV]"<<" | "
@@ -336,8 +309,7 @@ void Interaction_Probability::OutputTables() {
 	    <<(m_xs_test*rpa->Picobarn()/1.e9)<<" (with overlap) mb.      |\n"
 	    <<"   "<<std::string(77,'-')<<"\n\n\n";
 
-  // ue-reweighting
-  for (size_t ivar=0; ivar<p_k_variations.size(); ++ivar) {
+  for (size_t ivar=0; ivar<m_n_variations; ++ivar) {
     // Save nominal state
     TwoDim_Table * p_diffxsec_nominal = p_diffxsec;
     p_diffxsec = new TwoDim_Table(*p_sbins,*p_bbins);
@@ -360,7 +332,7 @@ void Interaction_Probability::OutputTables() {
 
     for (size_t j=0;j<p_sbins->m_nbins;j++) {
       double s           = p_sbins->x(j);
-      double xs_nd_var   = (m_pdfnorm * sigma_nd_variations[ivar] * p_procs->GetXSecs()->XSnd(s));
+      double xs_nd_var   = (m_pdfnorm * m_sigma_nd_variations[ivar] * p_procs->GetXSecs()->XSnd(s));
       double xs_hard     = p_procs->GetXSecs()->XShard(s);
       double xsratio_var = xs_hard / xs_nd_var;
 
@@ -394,7 +366,6 @@ void Interaction_Probability::OutputTables() {
     }
   }
   msg_Info()<<"   "<<std::string(77,'-')<<"\n\n\n";
-  // ue-reweighting
 }
 
 void Interaction_Probability::InitAnalysis() {
