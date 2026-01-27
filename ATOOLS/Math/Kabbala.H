@@ -110,10 +110,14 @@ namespace ATOOLS {
   Kabbala exp(const Kabbala& k1);
   Kabbala sin(const Kabbala& k1);
   Kabbala cos(const Kabbala& k1);
+  Kabbala tan(const Kabbala& k1);
   Kabbala sqrt(const Kabbala& k1);
   Kabbala pow(const Kabbala& k1, const Complex& c);
   inline Kabbala sqr(const Kabbala& k1) {return pow(k1, Complex(2.));}
   Kabbala complexconjugate(const Kabbala& k1);
+  Kabbala asin(const Kabbala& k1);
+  Kabbala acos(const Kabbala& k1);
+  Kabbala atan(const Kabbala& k1);
   //Kabbala abs(const Kabbala& k1);
 
   /*
