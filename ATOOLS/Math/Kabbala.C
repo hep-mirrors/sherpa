@@ -251,6 +251,15 @@ Kabbala cos(const Kabbala& k1) {
   return k;
 }
 
+Kabbala tan(const Kabbala& k1) {
+  Kabbala k(k1);
+  k.SetValue(std::tan(k.Value()));
+  k.SetString(std::string("tan(") + k.String() + std::string(")"));
+  Kabbala::Func copy(k.Lambda());
+  k.SetLambda([copy](Kabbala::Function_Argument m){return std::tan(copy(m));});
+  return k;
+}
+
 Kabbala sqrt(const Kabbala& k1) {
   Kabbala k(k1);
   k.SetValue(std::sqrt(k.Value()));
@@ -283,6 +292,34 @@ Kabbala complexconjugate(const Kabbala& k1){
   return k;
 }
 
+Kabbala asin(const Kabbala& k1) {
+  Kabbala k(k1);
+  k.SetValue(std::asin(k.Value()));
+  k.SetString(std::string("asin(") + k.String() + std::string(")"));
+  Kabbala::Func copy(k.Lambda());
+  k.SetLambda([copy](Kabbala::Function_Argument m){return std::asin(copy(m));});
+  return k;
+}
+
+Kabbala acos(const Kabbala& k1) {
+  Kabbala k(k1);
+  k.SetValue(std::acos(k.Value()));
+  k.SetString(std::string("acos(") + k.String() + std::string(")"));
+  Kabbala::Func copy(k.Lambda());
+  k.SetLambda([copy](Kabbala::Function_Argument m){return std::acos(copy(m));});
+  return k;
+}
+
+Kabbala atan(const Kabbala& k1) {
+  Kabbala k(k1);
+  k.SetValue(std::atan(k.Value()));
+  k.SetString(std::string("atan(") + k.String() + std::string(")"));
+  Kabbala::Func copy(k.Lambda());
+  k.SetLambda([copy](Kabbala::Function_Argument m){return std::atan(copy(m));});
+  return k;
+}
+}
+
 // TODO add this function which for some reason gets linked improperly
 /*Kabbala abs(const Kabbala& k1) {
   Kabbala k(k1);
@@ -292,4 +329,3 @@ Kabbala complexconjugate(const Kabbala& k1){
   k.SetLambda([copy](Kabbala::Function_Argument m){return std::abs(copy(m));});
   return k;
 }*/
-}
