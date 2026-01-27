@@ -22,9 +22,9 @@ public:
     case 0:
       return std::exp(-x);
     case 1:
-      return std::sin(x) / x / x;
+      return std::sin(x / 2) / (1. + x * x);
     case 2:
-      return log(1. + x) / 2. / x / x;
+      return std::sin(x * x / 3) / x;
     case 3:
       return x / (1. + x * x);
     case 4:
@@ -33,7 +33,9 @@ public:
         return 2. / log(1. + sqrt(2.)); // Limit behaviour
       return (1. - exp(-x)) / (x * log(1. + sqrt(2.)));
     case 5:
-      return std::exp(-x) * std::cos(x);
+      return std::exp(-x) * std::cos(3. * x);
+    case 6:
+      return std::sin(x / 10.) / 10. / (x + 1.);
     default:
       return 1.0;
     }
@@ -53,7 +55,7 @@ TEST_CASE("Bessel_Integrator Integration Modes",
           "[ATOOLS::Math::Bessel_Integrator]")
 {
 
-  const double REL_TOL = 1e-4;
+  const double REL_TOL = 1e-5;
 
   // Define the test data structure
   struct TestConfig {
@@ -66,12 +68,13 @@ TEST_CASE("Bessel_Integrator Integration Modes",
   vector<TestConfig> configs = {
       {0, 0, 0.707106781186547524400844, "f(x)=exp(-x), J0(x)"},
       {0, 1, 0.292893218813452475599155, "f(x)=exp(-x), J1(x)"},
-      {1, 1, 0.785398163397448309615660, "f(x)=sin(x)/x^2, J1(x)"},
-      {2, 1, 0.355382786301201558104902, "f(x)=0.5*log(1+x)/x^2, J1(x)"},
+      {1, 1, 0.222146354934442148139912, "f(x)=sin(x/2)/(1+x^2), J1(x)"},
+      {2, 1, 0.425189666999595468010652, "f(x)=sin(x^2/3)/x, J1(x)"},
       {3, 0, 0.421024438240708333335627, "f(x)=x/(1+x^2), J0(x)"},
       {4, 0, 1.0, "f(x)=(1-exp(-x))/(x*log(1+sqrt(2))), J0(x)"},
-      {5, 0, 0.568864481005783107278307, "f(x)=exp(-x)*cos(x), J0(x)"},
-      {5, 1, 0.079557934740073964234634, "f(x)=exp(-x)*cos(x), J1(x)"}};
+      {5, 0, 0.114263484396498030486956, "f(x)=exp(-x)*cos(x), J0(x)"},
+      {5, 1, -0.040914316903594003073207, "f(x)=exp(-x)*cos(3*x), J1(x)"},
+      {6, 1, 0.00539632971919505751151192, "f(x)=sin(x/10)/(x + 1)/10, J1(x)"}};
 
   for (const auto& config : configs) {
     DYNAMIC_SECTION("Mode " << config.mode << ": " << config.description)
@@ -89,7 +92,6 @@ TEST_CASE("Bessel_Integrator Integration Modes",
                    << std::abs(result - config.expected_val) /
                           config.expected_val);
 
-      // Assertion uses the wider TARGET_TOL
       CHECK_THAT(result,
                  Catch::Matchers::WithinRel(config.expected_val, REL_TOL));
     }
