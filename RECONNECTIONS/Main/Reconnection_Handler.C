@@ -51,6 +51,23 @@ Return_Value::code Reconnection_Handler::operator()(Blob_List *const blobs,
     break;
   }
   p_reconnector->Reset();
+
+  const auto& variation_weights = p_reconnector->GetVariationWeights();
+  Blob *blob(blobs->FindFirst(btp::Signal_Process));
+  if (blob == NULL)
+    blob = blobs->FindFirst(btp::Hard_Collision);
+  auto &wgt_map = (*blob)["WeightsMap"]->Get<Weights_Map>();
+
+  // static constexpr double max_weight = 2e2;
+  const size_t n_variations = variation_weights.size();
+  for(int i{0}; i<n_variations; i++) {
+    const std::string name {"v" + std::to_string(i)};
+    const double wgt = variation_weights[i];
+    // const auto clipped_wgt {std::min(wgt, max_weight)};
+    wgt_map["RECONNECTIONS"][name] = wgt;
+  }
+  p_reconnector->ResetVariationWeights(n_variations);
+
   return Return_Value::Success; 
 }
 
