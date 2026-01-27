@@ -25,7 +25,6 @@ namespace RECONNECTIONS {
     void FillMassesInHistogram(ATOOLS::Histogram * histo);
 
     std::vector<double> m_variation_weights;
-    std::vector<double> m_tmp_variation_weights;
   public:
     Reconnection_Base();
     virtual ~Reconnection_Base();
@@ -38,15 +37,10 @@ namespace RECONNECTIONS {
     ATOOLS::Part_List              * GetParticles()               { return &m_particles; }
     ATOOLS::ParticleSet            * GetParts(const size_t & pos) { return &m_parts[pos]; }
 
-    void ResetTmpVariationWeights() {
-      std::fill(m_tmp_variation_weights.begin(), m_tmp_variation_weights.end(), 1.);
-    }
     std::vector<double> & GetVariationWeights() {
       return m_variation_weights;
     }
-    void ResetVariationWeights(int n_variations) {
-      m_tmp_variation_weights.resize(n_variations);
-      ResetTmpVariationWeights();
+    void ResetVariationWeights(size_t n_variations) {
       m_variation_weights.resize(n_variations);
       std::fill(m_variation_weights.begin(), m_variation_weights.end(), 1.);
     }

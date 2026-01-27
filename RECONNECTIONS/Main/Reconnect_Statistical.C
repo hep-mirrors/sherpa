@@ -39,11 +39,11 @@ void Reconnect_Statistical::SetParameters() {
   for (size_t i{0}; i<m_etaQ.size(); ++i)
     m_etaQ[i] = sqr(m_etaQ[i]);
 
-  const auto max_size {std::max(m_etaQ.size(), m_reshuffle.size())};
-  m_etaQ.resize(max_size, m_etaQ[0]);
-  m_reshuffle.resize(max_size, m_reshuffle[0]);
+  size_t n_variations = std::max({m_etaQ.size(), m_reshuffle.size()});
+  m_etaQ.resize(n_variations, m_etaQ[0]);
+  m_reshuffle.resize(n_variations, m_reshuffle[0]);
 
-  ResetVariationWeights(max_size);
+  ResetVariationWeights(n_variations);
 }
 
 void Reconnect_Statistical::Reset() {
