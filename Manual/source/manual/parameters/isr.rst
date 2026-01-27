@@ -4,33 +4,15 @@
 ISR parameters
 **************
 
-.. index:: BUNCH_1
-.. index:: BUNCH_2
 .. index:: ISR_E_ORDER
 .. index:: ISR_E_SCHEME
 .. index:: PDF_LIBRARY
-.. index:: PDF_LIBRARY_1
-.. index:: PDF_LIBRARY_2
 .. index:: PDF_SET
-.. index:: PDF_SET_1
-.. index:: PDF_SET_2
-.. index:: PDF_SET_VERSION
-.. index:: PDF_SET_VERSION_1
-.. index:: PDF_SET_VERSION_2
+.. index:: PDF_SET_VERSIONS
 .. index:: SHOW_PDF_SETS
 
 The following parameters are used to steer the setup of beam substructure and
 initial state radiation (ISR).
-
-:OPTION:`BUNCHES`
-  Specify the PDG ID of the first (left) and second (right) bunch
-  particle (or both if only one value is provided), i.e. the particle
-  after eventual Beamstrahlung specified through the beam parameters,
-  see :ref:`Beam Parameters`.  Per default these are taken to be
-  identical to the values set using :OPTION:`BEAMS`, assuming the default
-  beam spectrum is Monochromatic. In case the Simple Compton or Laser
-  Backscattering spectra are enabled the bunch particles would have to
-  be set to 22, the PDG code of the photon.
 
 Sherpa provides access to a variety of structure functions.
 They can be configured with the following parameters.
