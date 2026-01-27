@@ -1,7 +1,6 @@
 BEAMS:         [11,2212]
 BEAM_ENERGIES: [27.5,920]
 BEAM_SPECTRA:  [EPA,Monochromatic]
-BUNCHES:       [22,2212]
 
 # FRAGMENTATION: None
 
