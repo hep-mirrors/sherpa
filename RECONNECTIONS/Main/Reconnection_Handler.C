@@ -58,14 +58,47 @@ Return_Value::code Reconnection_Handler::operator()(Blob_List *const blobs,
     blob = blobs->FindFirst(btp::Hard_Collision);
   auto &wgt_map = (*blob)["WeightsMap"]->Get<Weights_Map>();
 
-  // static constexpr double max_weight = 2e2;
   const size_t n_variations = variation_weights.size();
-  for(int i{0}; i<n_variations; i++) {
-    const std::string name {"v" + std::to_string(i)};
-    const double wgt = variation_weights[i];
-    // const auto clipped_wgt {std::min(wgt, max_weight)};
-    wgt_map["RECONNECTIONS"][name] = wgt;
+  const size_t n_mpi_variations = wgt_map["MPI"].Size() - 1;
+
+  // static constexpr double max_weight = 2e2;
+  // for (size_t i=0; i<n_variations; i++) {
+  //     variation_weights[i] = std::min(variation_weights[i], max_weight);
+  // }
+
+  wgt_map["RECONNECTIONS"]["v0"] = variation_weights[0];
+  if (n_mpi_variations>0) wgt_map["MPI+RECONNECTIONS"]["v0"] = wgt_map["MPI"]["v0"] * variation_weights[0];
+
+  const size_t n_combined = std::min(n_mpi_variations, n_variations);
+  for (size_t i=1; i<n_combined; ++i) {
+    const std::string name = "v" + std::to_string(i);
+    wgt_map["MPI+RECONNECTIONS"][name] = wgt_map["MPI"][name] * variation_weights[i];
   }
+  for (size_t i=n_combined==0 ? 1 : n_combined; i<n_variations; ++i) {
+    const std::string name = "v" + std::to_string(i);
+    wgt_map["RECONNECTIONS"][name] = variation_weights[i];
+  }
+
+  if (n_mpi_variations>0) {
+    const double tmp_mpi_nominal = wgt_map["MPI"]["v0"];
+    std::vector<double> tmp_mpi_weights;
+    if(n_mpi_variations > n_variations) {
+      tmp_mpi_weights.resize(n_mpi_variations - n_variations, 1.0);
+      for (size_t i=n_variations; i<n_mpi_variations; ++i) {
+        const std::string name = "v" + std::to_string(i);
+        tmp_mpi_weights[i - n_variations] = wgt_map["MPI"][name];
+      }
+    }
+    wgt_map.erase("MPI");
+    wgt_map["MPI"]["v0"] = tmp_mpi_nominal;
+    if (n_mpi_variations > n_variations) {
+      for (size_t i=n_variations; i<n_mpi_variations; ++i) {
+        const std::string name = "v" + std::to_string(i);
+        wgt_map["MPI"][name] = tmp_mpi_weights[i - n_variations];
+      }
+    }
+  }
+
   p_reconnector->ResetVariationWeights(n_variations);
 
   return Return_Value::Success; 
