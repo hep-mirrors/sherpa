@@ -196,17 +196,16 @@ void Amisic::InitParameterVariations() {
   m_pt0_variations      = (*mipars).GetVariationVector("pt_0");
   m_ptmin_variations    = (*mipars).GetVariationVector("pt_min");
   m_eta_variations      = (*mipars).GetVariationVector("eta");
-  m_n_variations = std::max({m_sigma_nd_variations.size(),
-                              m_pt0_variations.size(),
-                              m_ptmin_variations.size(),
-                              m_eta_variations.size(),
-                              m_mo.MatterFormVariationSize(),
-                              size_t(1)});
-  m_sigma_nd_variations.resize(m_n_variations, m_sigma_nd_variations[0]);
+  size_t n_variations_without_matterform = std::max({m_sigma_nd_variations.size(),
+                                                     m_pt0_variations.size(),
+                                                     m_ptmin_variations.size(),
+                                                     m_eta_variations.size(),
+                                                     size_t(1)});
+  m_n_variations = std::max(n_variations_without_matterform,
+                              m_mo.MatterFormVariationSize());
+
   m_pt0_variations.resize(m_n_variations, m_pt0_variations[0]);
   m_ptmin_variations.resize(m_n_variations, m_ptmin_variations[0]);
-  m_eta_variations.resize(m_n_variations, m_eta_variations[0]);
-
   if (m_n_variations > 1) {
     for (size_t ivar=0; ivar<m_n_variations; ivar++) {
       if (m_pt0_variations[ivar]<m_pt0_variations[0]) {
@@ -228,11 +227,19 @@ void Amisic::InitParameterVariations() {
     }
   }
   
-  ResetVariationWeights();
+  m_sigma_nd_variations.resize(n_variations_without_matterform, m_sigma_nd_variations[0]);
+  
+  // Set relevant variations for total cross section computation (matter form independent)
+  m_xsecs.SetVariations(n_variations_without_matterform, m_sigma_nd_variations);
 
-  m_xsecs.SetVariations(m_n_variations, m_sigma_nd_variations);
+  if (m_n_variations > n_variations_without_matterform) {
+  m_sigma_nd_variations.resize(m_n_variations, m_sigma_nd_variations[0]); }
+
+  // Set relevant variations for interaction probability and overestimator (matter form dependent)
   m_pint.SetVariations(m_n_variations, m_sigma_nd_variations);
   m_overestimator.SetVariations(m_n_variations);
+
+  ResetVariationWeights();
 
   // output
   const bool print_files = false;
