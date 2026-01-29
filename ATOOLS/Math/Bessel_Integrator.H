@@ -40,23 +40,7 @@ namespace ATOOLS {
 
     explicit Bessel_Integrator(Function_Base* f, const size_t& order = 1);
 
-    double operator()(double tolerance = 1.e-6, bool output = false);
-    void SetOrder(const size_t& order)
-    {
-      m_order = order;
-    }
-    void SetMaxBins(const size_t& maxbins)
-    {
-      m_maxbins = maxbins;
-    }
-    void SetDepth(const size_t& depth)
-    {
-      m_depth = depth;
-    }
-    void SetIterator(const size_t& iterator)
-    {
-      m_iterator = iterator;
-    }
+    double operator()(double tolerance = 1.e-4, bool output = false);
   };
 } // namespace ATOOLS
 

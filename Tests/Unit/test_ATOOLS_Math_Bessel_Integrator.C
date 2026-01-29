@@ -55,7 +55,7 @@ TEST_CASE("Bessel_Integrator Integration Modes",
           "[ATOOLS::Math::Bessel_Integrator]")
 {
 
-  const double REL_TOL = 1e-5;
+  const double REL_TOL = 1e-4;
 
   // Define the test data structure
   struct TestConfig {
@@ -74,7 +74,7 @@ TEST_CASE("Bessel_Integrator Integration Modes",
       {4, 0, 1.0, "f(x)=(1-exp(-x))/(x*log(1+sqrt(2))), J0(x)"},
       {5, 0, 0.114263484396498030486956, "f(x)=exp(-x)*cos(x), J0(x)"},
       {5, 1, -0.040914316903594003073207, "f(x)=exp(-x)*cos(3*x), J1(x)"},
-      {6, 1, 0.00539632971919505751151192, "f(x)=sin(x/10)/(x + 1)/10, J1(x)"}};
+    {6, 1, 0.00539632971919505751151192, "f(x)=sin(x/10)/(x + 1)/10, J1(x)"}};
 
   for (const auto& config : configs) {
     DYNAMIC_SECTION("Mode " << config.mode << ": " << config.description)
@@ -95,23 +95,5 @@ TEST_CASE("Bessel_Integrator Integration Modes",
       CHECK_THAT(result,
                  Catch::Matchers::WithinRel(config.expected_val, REL_TOL));
     }
-  }
-}
-
-TEST_CASE("Bessel_Integrator Limits and Cutoffs",
-          "[ATOOLS::Math::Bessel_Integrator]")
-{
-  // Test that changing maxbins or depth affects the result/performance
-  // (This is a regression test for the configuration setters)
-  BesselTestFunc func(0);
-  Bessel_Integrator integrator(&func, 1);
-
-  SECTION("Setters function correctly")
-  {
-    integrator.SetMaxBins(100);
-    integrator.SetDepth(5);
-    // If these didn't crash, we assume setters work (state inspection is hard
-    // without getters)
-    REQUIRE(true);
   }
 }
