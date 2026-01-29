@@ -176,6 +176,7 @@ namespace ATOOLS {
         jn = amplitude * (std::cos(xx) * P0 - z * std::sin(xx) * Q0);
       }
       return jn;
+#endif
     }
 
     /*!
@@ -240,6 +241,7 @@ namespace ATOOLS {
         jn = amplitude * (std::cos(xx) * P1 - z * std::sin(xx) * Q1);
       }
       return sign * jn;
+#endif
     }
 
     /*!
