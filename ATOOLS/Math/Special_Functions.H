@@ -8,6 +8,35 @@
 #include "ATOOLS/Org/MyStrStream.H"
 #include <limits>
 
+#if __cplusplus >= 201703L
+  #if defined(__cpp_lib_math_special_functions) && __cpp_lib_math_special_functions >= 201603L
+    #define ATOOLS_HAS_STD_BESSEL 1
+
+  #elif defined(__GLIBCXX__)
+    #if __GLIBCXX__ >= 20170502
+      #define ATOOLS_HAS_STD_BESSEL 1
+    #else
+      #define ATOOLS_HAS_STD_BESSEL 0
+    #endif
+
+  #elif defined(_LIBCPP_VERSION)
+    #define ATOOLS_HAS_STD_BESSEL 0
+
+  #elif defined(_MSC_VER)
+    #if _MSC_VER >= 1914
+      #define ATOOLS_HAS_STD_BESSEL 1
+    #else
+      #define ATOOLS_HAS_STD_BESSEL 0
+    #endif
+
+  #else
+    #define ATOOLS_HAS_STD_BESSEL 0
+  #endif
+
+#else
+  #define ATOOLS_HAS_STD_BESSEL 0
+#endif
+
 // TOOD check this file for correct implementations on this branch
 namespace ATOOLS {
   /*!
@@ -97,6 +126,9 @@ namespace ATOOLS {
      */
     double J0(const double& arg) const
     {
+#if ATOOLS_HAS_STD_BESSEL
+      return std::cyl_bessel_j(0, arg);
+#else
       const double darg = std::abs(arg);
 
       if (darg == 0.0) return 1.0;
@@ -158,6 +190,9 @@ namespace ATOOLS {
      */
     double J1(const double& arg) const
     {
+#if ATOOLS_HAS_STD_BESSEL
+      return std::cyl_bessel_j(1, arg);
+#else
       const double darg = std::abs(arg);
       const double sign = (arg >= 0.0) ? 1.0 : -1.0;
 
