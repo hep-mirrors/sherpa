@@ -5,17 +5,17 @@ using namespace ATOOLS;
 
 Bessel_Integrator::Bessel_Integrator(ATOOLS::Function_Base* f,
                                      const size_t& order)
-    : m_kernel(f, order), m_order(order), m_maxbins(300), m_depth(30),
+    : m_kernel(f, order), m_order(order), m_maxbins(300), m_depth(20),
       m_iterator(0)
 {
   FixBins(false);
-  m_F.resize(m_maxbins + 1, 0.);
-  m_Psi.resize(m_maxbins + 1, 0.);
+  m_F.resize(m_maxbins, 0.);
+  m_Psi.resize(m_maxbins, 0.);
   m_M.resize(m_depth);
   m_N.resize(m_depth);
   for (size_t i = 0; i < m_depth; i++) {
-    m_M[i].resize(m_maxbins + 1, 0.);
-    m_N[i].resize(m_maxbins + 1, 0.);
+    m_M[i].resize(m_maxbins, 0.);
+    m_N[i].resize(m_maxbins, 0.);
   }
   m_gauss = Gauss_Integrator(&m_kernel);
 }
@@ -24,9 +24,13 @@ double Bessel_Integrator::operator()(double tolerance, bool output)
 {
   size_t stability_counter = 0;
 
+  double integration_tol = tolerance / (4.0 * m_maxbins);
+  double accel_tol = tolerance / 4.0;
+
   if (output)
     msg_Out() << "=== " << METHOD << " start filling the supports, "
-              << "depth = " << m_depth << ":\n";
+              << "depth = " << m_depth << ", maxbins = " << m_maxbins << "\n";
+
   double F = 0.;
   double xmin, xmax;
   for (size_t i = 1; i < m_maxbins + 1; i++) {
@@ -37,11 +41,11 @@ double Bessel_Integrator::operator()(double tolerance, bool output)
       xmin = m_extrema[i - 1];
       xmax = m_extrema[i];
     }
-    F += m_Psi[i - 1] = AdaptiveIntegrate(xmin, xmax, tolerance);
+    F += m_Psi[i - 1] = AdaptiveIntegrate(xmin, xmax, integration_tol);
     m_F[i - 1] = F;
     m_M[0][i - 1] = m_F[i - 1] / m_Psi[i - 1];
     m_N[0][i - 1] = 1. / m_Psi[i - 1];
-    if (output) {
+  if (output) {
       msg_Out() << "  bin i = " << std::setw(2) << i << ": "
                 << "Psi[" << std::setw(8) << xmin << ", " << std::setw(8)
                 << xmax << "] = " << std::setw(12) << std::setprecision(6)
@@ -55,6 +59,7 @@ double Bessel_Integrator::operator()(double tolerance, bool output)
                 << std::setprecision(6) << m_N[0][i - 1] << "\n";
     }
   }
+
   // adapted the naming from eq. 1.12 and 1.13 in DOI:10.2307/2008589
   for (size_t p = 1; p < m_depth; p++) {
     for (size_t s = 1; s < m_maxbins + 1; s++) {
@@ -72,44 +77,38 @@ double Bessel_Integrator::operator()(double tolerance, bool output)
       m_N[p][s - 1] =
           (m_N[p - 1][s - 1] - m_N[p - 1][s]) * xmin * xmax / (xmax - xmin);
     }
-    // Calculate current and previous approximations
-    double current_result = m_M[p][0] / m_N[p][0];
-    double prev_result = m_M[p - 1][0] / m_N[p - 1][0];
 
-    // Calculate relative error (protected against division by zero)
-    double abs_current = std::abs(current_result);
-    double diff = std::abs(current_result - prev_result);
-    double rel_error = diff / (abs_current + 1.0e-20);
+    // Convergence check
+    if (p >= 5 && std::abs(m_N[p][0]) > 1.e-30 && std::abs(m_N[p-1][0]) > 1.e-30) {
+      double current_result = m_M[p][0] / m_N[p][0];
+      double prev_result = m_M[p - 1][0] / m_N[p - 1][0];
+      double rel_error = std::abs(current_result - prev_result)
+                         / (std::abs(current_result) + 1.0e-20);
 
-    // Check for convergence
-    // 1. Ensure we have gone deep enough (p > 5) to avoid early accidental
-    // matches
-    // 2. Ensure the result is stable for 2 consecutive iterations
-    if (p > 5) {
-      if (rel_error < tolerance) {
+      if (rel_error < accel_tol) {
         stability_counter++;
       } else {
         stability_counter = 0;
       }
 
-      if (stability_counter >= 2) {
-        if (output)
-          msg_Out() << "=== " << METHOD << ": Converged at depth " << p << "\n";
-
-
-        return (m_M[p - 1][0] / m_N[p - 1][0]);
+      if (stability_counter >= 3) {
+        if (output) {
+          msg_Out() << "=== " << METHOD << ": Converged at depth " << p
+                    << ", Result = " << std::setprecision(8) << m_M[p - 1][0] / m_N[p - 1][0] << "\n";
+        }
+        return m_M[p - 1][0] / m_N[p - 1][0];
       }
     }
   }
 
-  // Fallback if loop finishes without convergence
-  if (output)
-    msg_Out() << "=== " << METHOD << ": Integral value("
-              << "depth = " << std::setw(2) << m_depth << "): " << std::setw(12)
-              << std::setprecision(6)
-              << (m_M[m_depth - 1][0] / m_N[m_depth - 1][0]) << " "
-              << "for f(x) * J_{" << m_order << "}(x)\n";
-  return (m_M[m_depth - 1][0] / m_N[m_depth - 1][0]);
+  // Fallback
+  if (output) {
+    msg_Out() << "=== " << METHOD << ": Did NOT converge within depth=" << m_depth
+              << "\n";
+    msg_Out() << "    Will fall back to cumulatd sum: " << std::setprecision(16)
+              << m_F.back() << "\n";
+  }
+  return m_F.back();
 }
 
 double Bessel_Integrator::AdaptiveIntegrate(double a, double b, double tol)
