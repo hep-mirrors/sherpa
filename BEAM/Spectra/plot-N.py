@@ -5,10 +5,11 @@
 # Each CSV must have exactly 3 columns: x, b, N. The header is ignored.
 
 import sys
-import numpy as np
-import matplotlib.pyplot as plt
-from matplotlib.colors import LogNorm
 from pathlib import Path
+
+import matplotlib.pyplot as plt
+import numpy as np
+from matplotlib.colors import LogNorm
 
 
 def plot_csv(filepath):
@@ -28,22 +29,25 @@ def plot_csv(filepath):
 
     x, y, z = data[:, 0], data[:, 1], data[:, 2]
 
+    # Handle 1D edge case where y (column 2) is all zeros
     if np.allclose(y, 0):
         fig, ax = plt.subplots(figsize=(8, 6))
-        
-        ax.plot(x, z)
-        
+
+        # Sort by x to ensure a clean line plot
+        sort_idx = np.argsort(x)
+        ax.plot(x[sort_idx], z[sort_idx])
+
         ax.set_xscale("log")
         ax.set_yscale("log")
         ax.set_xlabel("x")
         ax.set_ylabel(r"$N(x)$")
         ax.grid(True, linestyle="--", alpha=0.7)
-        
+
         output_path = Path(filepath).with_suffix(".pdf")
         plt.tight_layout()
         plt.savefig(output_path, format="pdf")
         plt.close()
-        
+
         print(f"Saved (1D mode): {output_path}")
         return True
 
@@ -76,8 +80,8 @@ def plot_csv(filepath):
     if z_min == z_max:
         z_min, z_max = z_min * 0.9, z_max * 1.1
 
-    # Generate 100 explicit log-spaced levels based on valid range
-    levels = np.logspace(np.log10(z_min), np.log10(z_max), 50)
+    # Generate log-spaced levels based on valid range
+    levels = np.logspace(np.log10(z_min), np.log10(z_max), 18)
 
     if len(x_unique) * len(y_unique) == len(x):
         # Regular grid: reshape and use contourf
@@ -95,7 +99,10 @@ def plot_csv(filepath):
     ax.set_xlabel("x")
     ax.set_ylabel(r"$b$ [1/GeV]")
 
-    cbar = plt.colorbar(contour, ax=ax)
+    # Generates 6 evenly spaced ticks in log space between min and max
+    cbar_ticks = np.geomspace(z_min, z_max, 6)
+
+    cbar = plt.colorbar(contour, ax=ax, ticks=cbar_ticks, format="%.1e")
     cbar.set_label(r"$N(x, b)$ [GeV]")
 
     # Save with same base name as input
