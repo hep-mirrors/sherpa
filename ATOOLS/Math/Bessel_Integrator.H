@@ -40,7 +40,7 @@ namespace ATOOLS {
 
     explicit Bessel_Integrator(Function_Base* f, const size_t& order = 1);
 
-    double operator()(double tolerance = 1.e-4, bool output = false);
+    double operator()(double tolerance = 1.e-3, bool output = false);
   };
 } // namespace ATOOLS
 

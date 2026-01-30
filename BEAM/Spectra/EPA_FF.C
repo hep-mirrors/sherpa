@@ -401,7 +401,7 @@ void EPA_WoodSaxon::InitFFTable()
     };
 
     double form_factor =
-            m_rho0 * IntegrateWithAdaptiveRange(ff_integrand, m_R_WS, 1.e-6);
+            m_rho0 * IntegrateWithAdaptiveRange(ff_integrand, m_R_WS, 1.e-3);
     p_FF_Q2->Fill(i, form_factor);
   }
 }
