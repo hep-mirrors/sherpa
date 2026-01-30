@@ -42,9 +42,6 @@ namespace ATOOLS {
   /*!
     \file
     This file contains an assortment of special functions
-
-    \todo We should use the C++23 libraries there and match e.g. the
-          various Bessel functions or the exponential integral here.
   */
   class Special_Functions {
   public:
@@ -126,11 +123,10 @@ namespace ATOOLS {
      */
     double J0(const double& arg) const
     {
-#if ATOOLS_HAS_STD_BESSEL
-      return std::cyl_bessel_j(0, arg);
-#else
       const double darg = std::abs(arg);
-
+#if ATOOLS_HAS_STD_BESSEL
+      return std::cyl_bessel_j(0, darg);
+#else
       if (darg == 0.0) return 1.0;
 
       if (darg <= 1.0e-6) return 1.0;
@@ -191,11 +187,11 @@ namespace ATOOLS {
      */
     double J1(const double& arg) const
     {
-#if ATOOLS_HAS_STD_BESSEL
-      return std::cyl_bessel_j(1, arg);
-#else
       const double darg = std::abs(arg);
       const double sign = (arg >= 0.0) ? 1.0 : -1.0;
+#if ATOOLS_HAS_STD_BESSEL
+      return sign * std::cyl_bessel_j(1, darg);
+#else
 
       if (darg == 0.0) return 0.0;
 
