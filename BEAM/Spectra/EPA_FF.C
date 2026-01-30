@@ -31,12 +31,12 @@ using namespace ATOOLS;
 ////////////////////////////////////////////////////////////////////////////////
 
 EPA_FF_Base::EPA_FF_Base(const ATOOLS::Flavour& beam, const int dir)
-    ://////////////////////////////////////////////////////////////////////////////
-     //
-     // Initialisation of relevant beam parameters:
-     // note that the particle radius is in fm and transformed into 1/GeV
-     //
-     //////////////////////////////////////////////////////////////////////////////
+    : //////////////////////////////////////////////////////////////////////////////
+      //
+      // Initialisation of relevant beam parameters:
+      // note that the particle radius is in fm and transformed into 1/GeV
+      //
+      //////////////////////////////////////////////////////////////////////////////
       m_beam(beam), m_A(beam.IsIon() ? beam.GetMassNumber() : 1),
       m_mass(beam.Mass(true) / m_A), m_mass2(m_mass * m_mass),
       m_R(beam.Radius() / rpa->hBar_c()), m_q2min(-1.), m_q2max(1.),
@@ -44,21 +44,21 @@ EPA_FF_Base::EPA_FF_Base(const ATOOLS::Flavour& beam, const int dir)
       m_Zsquared(beam.IsIon() ? sqr(m_beam.GetAtomicNumber()) : 1.), m_b(0.),
       p_N_xb(nullptr)
 {
-  const auto& s    = Settings::GetMainSettings()["EPA"];
-  size_t      b    = dir > 0 ? 0 : 1;
-  m_q2max          = s["Q2Max"].GetTwoVector<double>()[b];
-  m_q2min          = s["Q2Min"].GetTwoVector<double>()[b];
-  m_nxbins         = s["xBins"].GetTwoVector<int>()[b];
-  m_nbbins         = s["bBins"].GetTwoVector<int>()[b];
-  m_xmin           = s["xMin"].GetTwoVector<double>()[b];
-  m_xmax           = s["xMax"].GetTwoVector<double>()[b];
-  m_bmin           = s["bMin"].GetTwoVector<double>()[b];
+  const auto& s = Settings::GetMainSettings()["EPA"];
+  size_t b = dir > 0 ? 0 : 1;
+  m_q2max = s["Q2Max"].GetTwoVector<double>()[b];
+  m_q2min = s["Q2Min"].GetTwoVector<double>()[b];
+  m_nxbins = s["xBins"].GetTwoVector<int>()[b];
+  m_nbbins = s["bBins"].GetTwoVector<int>()[b];
+  m_xmin = s["xMin"].GetTwoVector<double>()[b];
+  m_xmax = s["xMax"].GetTwoVector<double>()[b];
+  m_bmin = s["bMin"].GetTwoVector<double>()[b];
   m_b_pl_threshold = s["bThreshold"].GetTwoVector<double>()[b] * m_R;
-  m_bmax           = s["bMax"].GetTwoVector<double>()[b];
+  m_bmax = s["bMax"].GetTwoVector<double>()[b];
 
   // Pre-calculate the normalisation of the  distribution \in [bmin, bmax]
-  m_norm_distribution = 0.5 * std::log((ATOOLS::sqr(m_bmax) + 1.) /
-                                       (ATOOLS::sqr(m_bmin) + 1.));
+  m_norm_distribution =
+      0.5 * std::log((ATOOLS::sqr(m_bmax) + 1.) / (ATOOLS::sqr(m_bmin) + 1.));
 
   if (m_bmin <= 0. || m_bmin > m_bmax)
     THROW(invalid_input, "Unphysical input for EPA impact parameter. ");
@@ -71,7 +71,9 @@ EPA_FF_Base::EPA_FF_Base(const ATOOLS::Flavour& beam, const int dir)
 void EPA_FF_Base::FillTables()
 {
   axis xaxis(m_nxbins, m_xmin, m_xmax, axis_mode::log);
-  axis baxis(m_nbbins, m_bmin * m_R, std::min(m_b_pl_threshold, m_bmax) * m_R,
+  axis baxis(m_nbbins,
+             m_bmin * m_R,
+             std::min(m_b_pl_threshold, m_bmax) * m_R,
              axis_mode::log);
 
   //////////////////////////////////////////////////////////////////////////////
@@ -87,11 +89,13 @@ void EPA_FF_Base::FillTables()
             << "b in [" << baxis.m_xmin << ", " << baxis.m_xmax << "], "
             << "from R = " << m_R << " 1/GeV = " << (m_R * rpa->hBar_c())
             << " fm.\n";
-  p_N_xb                   = std::make_unique<TwoDim_Table>(xaxis, baxis);
-  N_xb_int*         kernel = new N_xb_int(this);
+  p_N_xb = std::make_unique<TwoDim_Table>(xaxis, baxis);
+  N_xb_int* kernel = new N_xb_int(this);
   Bessel_Integrator bessel(kernel, 1);
   for (size_t i = 0; i < xaxis.m_nbins; i++) {
     for (size_t j = 0; j < baxis.m_nbins; j++) {
+      msg_Debugging() << METHOD << ": Filling table for x = " << xaxis.x(i)
+                      << ", and b = " << baxis.x(j) << "\n";
       kernel->SetXB(xaxis.x(i), baxis.x(j));
       // Jacobian is d^2b = b db dphi and phi can be integrated out immediately
       double value = 2 * m_Zsquared * sqr(bessel()) / xaxis.x(i) * baxis.x(j);
@@ -106,19 +110,23 @@ void EPA_FF_Base::OutputToCSV(const std::string& type)
   msg_Out() << METHOD << ": Writing output for " << m_beam.IDName() << " and "
             << type << "\n";
 
-  double              step_x(std::log(m_xmax / m_xmin) / double(m_nxbins));
+  double step_x(std::log(m_xmax / m_xmin) / double(m_nxbins));
   std::vector<double> xs(m_nxbins);
   xs[0] = m_xmin;
-  for (int i = 1; i < m_nxbins; ++i) { xs[i] = xs[i - 1] * std::exp(step_x); }
+  for (int i = 1; i < m_nxbins; ++i) {
+    xs[i] = xs[i - 1] * std::exp(step_x);
+  }
 
-  double              step_b(std::log(m_bmax / m_bmin) / double(m_nbbins));
+  double step_b(std::log(m_bmax / m_bmin) / double(m_nbbins));
   std::vector<double> bs(m_nbbins);
   bs[0] = m_bmin * m_R;
-  for (int i = 1; i < m_nbbins; ++i) { bs[i] = bs[i - 1] * std::exp(step_b); }
+  for (int i = 1; i < m_nbbins; ++i) {
+    bs[i] = bs[i - 1] * std::exp(step_b);
+  }
 
-  double              q2max(1e4), q2min(1.e-12);
-  int                 nq2steps(10000);
-  double              step_q2(std::log(q2max / q2min) / double(nq2steps));
+  double q2max(1e4), q2min(1.e-12);
+  int nq2steps(10000);
+  double step_q2(std::log(q2max / q2min) / double(nq2steps));
   std::vector<double> q2s(nq2steps);
   q2s[0] = q2min;
   for (int i = 1; i < nq2steps; ++i) {
@@ -138,13 +146,16 @@ void EPA_FF_Base::OutputToCSV(const std::string& type)
   } else {
     std::ofstream outfile_Nxb(prefix + "N_x_b.csv");
     outfile_Nxb << "x,b,N" << std::endl;
-    for (auto& x : xs) { outfile_Nxb << x << ",0," << N(x, 0.) << std::endl; }
+    for (auto& x : xs) {
+      outfile_Nxb << x << ",0," << N(x, 0.) << std::endl;
+    }
     outfile_Nxb.close();
   }
 
   std::ofstream outfile_FFq2(prefix + "FF_q2.csv");
   outfile_FFq2 << "q2,FF" << std::endl;
-  for (auto& q2 : q2s) outfile_FFq2 << q2 << "," << FF(q2) << std::endl;
+  for (auto& q2 : q2s)
+    outfile_FFq2 << q2 << "," << FF(q2) << std::endl;
   outfile_FFq2.close();
 }
 
@@ -210,9 +221,9 @@ EPA_Proton::EPA_Proton(const ATOOLS::Flavour& beam, const int dir)
     : EPA_FF_Base(beam, dir)
 {
   const auto& s = Settings::GetMainSettings()["EPA"];
-  size_t      b = dir > 0 ? 0 : 1;
-  m_mu2         = sqr(s["MagneticMu"].GetTwoVector<double>()[b]);
-  m_Q02         = s["Q02"].GetTwoVector<double>()[b];
+  size_t b = dir > 0 ? 0 : 1;
+  m_mu2 = sqr(s["MagneticMu"].GetTwoVector<double>()[b]);
+  m_Q02 = s["Q02"].GetTwoVector<double>()[b];
   if (m_beam.Kfcode() != kf_p_plus)
     THROW(fatal_error, "Wrong form factor for " + m_beam.IDName());
   m_b = 1.001 * m_R;
@@ -221,10 +232,10 @@ EPA_Proton::EPA_Proton(const ATOOLS::Flavour& beam, const int dir)
 double EPA_Proton::N(const double& x, const double& ran)
 {
   auto phi = [this](double x, double z) {
-    double y   = x * x / (1. - x);
-    double a   = (1. + m_mu2) / 4. + 4. * m_mass2 / m_Q02;
-    double b   = 1. - 4. * m_mass2 / m_Q02;
-    double c   = (m_mu2 - 1.) * std::pow(b, -4);
+    double y = x * x / (1. - x);
+    double a = (1. + m_mu2) / 4. + 4. * m_mass2 / m_Q02;
+    double b = 1. - 4. * m_mass2 / m_Q02;
+    double c = (m_mu2 - 1.) * std::pow(b, -4);
     double zp1 = 1. + z;
 
     double term1 = (1. + a * y) *
@@ -253,8 +264,8 @@ EPA_ProtonApprox::EPA_ProtonApprox(const ATOOLS::Flavour& beam, const int dir)
     : EPA_FF_Base(beam, dir)
 {
   const auto& s = Settings::GetMainSettings()["EPA"];
-  size_t      b = dir > 0 ? 0 : 1;
-  m_mu2         = sqr(s["MagneticMu"].GetTwoVector<double>()[b]);
+  size_t b = dir > 0 ? 0 : 1;
+  m_mu2 = sqr(s["MagneticMu"].GetTwoVector<double>()[b]);
   if (m_beam.Kfcode() != kf_p_plus)
     THROW(fatal_error, "Wrong form factor for " + m_beam.IDName());
   m_b = 1.001 * m_R;
@@ -276,8 +287,8 @@ EPA_Gauss::EPA_Gauss(const ATOOLS::Flavour& beam, const int dir)
     : EPA_FF_Base(beam, dir), m_Q02(1.)
 {
   const auto& s = Settings::GetMainSettings()["EPA"];
-  size_t      b = dir > 0 ? 0 : 1;
-  m_Q02         = s["Q02"].GetTwoVector<double>()[b];
+  size_t b = dir > 0 ? 0 : 1;
+  m_Q02 = s["Q02"].GetTwoVector<double>()[b];
   EPA_FF_Base::FillTables();
 }
 
@@ -302,8 +313,8 @@ EPA_Dipole::EPA_Dipole(const ATOOLS::Flavour& beam, const int dir)
     : EPA_FF_Base(beam, dir)
 {
   const auto& s = Settings::GetMainSettings()["EPA"];
-  size_t      b = dir > 0 ? 0 : 1;
-  m_Q02         = s["Q02"].GetTwoVector<double>()[b];
+  size_t b = dir > 0 ? 0 : 1;
+  m_Q02 = s["Q02"].GetTwoVector<double>()[b];
 
   EPA_FF_Base::FillTables();
 }
@@ -330,16 +341,17 @@ EPA_DipoleApprox::EPA_DipoleApprox(const ATOOLS::Flavour& beam, const int dir)
 ////////////////////////////////////////////////////////////////////////////////
 
 double EPA_WoodSaxon::IntegrateWithAdaptiveRange(
-        const std::function<double(double)>& integrand, double initial_rmax,
-        double tolerance)
+    const std::function<double(double)>& integrand,
+    double initial_rmax,
+    double tolerance)
 {
-  Lambda_Functor   functor(&integrand);
+  Lambda_Functor functor(&integrand);
   Gauss_Integrator gauss(&functor);
 
   double rmin = 0., rmax = initial_rmax;
-  double total_result      = gauss.Integrate(rmin, rmax, tolerance);
+  double total_result = gauss.Integrate(rmin, rmax, tolerance);
   double segment_increment = 0.;
-  int    n(0);
+  int n(0);
 
   // Adaptively extend the integration range until the tail contributes
   // negligibly.
@@ -349,7 +361,7 @@ double EPA_WoodSaxon::IntegrateWithAdaptiveRange(
     segment_increment = gauss.Integrate(rmin, rmax, tolerance);
     total_result += segment_increment;
     ++n;
-  } while (n < 3 &&//< safe-guard to maximally integrate to 8*R
+  } while (n < 3 && //< safe-guard to maximally integrate to 8*R
            std::abs(segment_increment) > tolerance * std::abs(total_result));
 
   return total_result;
@@ -360,9 +372,9 @@ EPA_WoodSaxon::EPA_WoodSaxon(const ATOOLS::Flavour& beam, const int dir)
       m_R_WS(6.49 / rpa->hBar_c()), m_rho0(0.)
 {
   const auto& s = Settings::GetMainSettings()["EPA"];
-  size_t      b = dir > 0 ? 0 : 1;
-  m_R_WS        = s["WoodsSaxon_R"].GetTwoVector<double>()[b] / rpa->hBar_c();
-  m_d           = s["WoodsSaxon_d"].GetTwoVector<double>()[b] / rpa->hBar_c();
+  size_t b = dir > 0 ? 0 : 1;
+  m_R_WS = s["WoodsSaxon_R"].GetTwoVector<double>()[b] / rpa->hBar_c();
+  m_d = s["WoodsSaxon_d"].GetTwoVector<double>()[b] / rpa->hBar_c();
   if (!m_beam.IsIon())
     THROW(fatal_error, "Wrong form factor for " + m_beam.IDName());
 
@@ -387,21 +399,21 @@ void EPA_WoodSaxon::InitFFTable()
   msg_Out() << METHOD << ": Filling table for Woods-Saxon form factor with "
             << m_q2_n << " bins.\n";
   p_FF_Q2 = std::make_unique<OneDim_Table>(
-          axis(m_q2_n, m_q2_min, m_q2_max, axis_mode::log));
+      axis(m_q2_n, m_q2_min, m_q2_max, axis_mode::log));
 
   for (size_t i = 0; i < m_q2_n; i++) {
     const double q = std::sqrt(p_FF_Q2->GetAxis().x(i));
 
     // Define the form factor integrand as a lambda inside the loop.
     auto ff_integrand = [this, q](double r) {
-      if (q * r < 1.e-6) {// Numerically stable limit for q*r -> 0
+      if (q * r < 1.e-6) { // Numerically stable limit for q*r -> 0
         return r * r / (1. + std::exp((r - m_R_WS) / m_d));
       }
       return std::sin(q * r) / q * r / (1. + std::exp((r - m_R_WS) / m_d));
     };
 
     double form_factor =
-            m_rho0 * IntegrateWithAdaptiveRange(ff_integrand, m_R_WS, 1.e-3);
+        m_rho0 * IntegrateWithAdaptiveRange(ff_integrand, m_R_WS, 1.e-3);
     p_FF_Q2->Fill(i, form_factor);
   }
 }
@@ -413,12 +425,12 @@ void EPA_WoodSaxon::InitFFTable()
 ////////////////////////////////////////////////////////////////////////////////
 
 EPA_WoodSaxonApprox::EPA_WoodSaxonApprox(const ATOOLS::Flavour& beam,
-                                         const int              dir)
+                                         const int dir)
     : EPA_FF_Base(beam, dir)
 {
   const auto& s = Settings::GetMainSettings()["EPA"];
-  size_t      b = dir > 0 ? 0 : 1;
-  m_R_WS        = s["WoodsSaxon_R"].GetTwoVector<double>()[b] / rpa->hBar_c();
+  size_t b = dir > 0 ? 0 : 1;
+  m_R_WS = s["WoodsSaxon_R"].GetTwoVector<double>()[b] / rpa->hBar_c();
   m_a = s["WoodsSaxonApprox_a"].GetTwoVector<double>()[b] / rpa->hBar_c();
 
   EPA_FF_Base::FillTables();
@@ -440,7 +452,8 @@ EPA_IonApprox::EPA_IonApprox(const ATOOLS::Flavour& beam, const int dir)
 void EPA_IonApprox::FillTables()
 {
   // This is NOT used for the calculation of the flux in the integration,
-  // instead only filled for debugging purposes using the "OutputAllSpectra" setting
+  // instead only filled for debugging purposes using the "OutputAllSpectra"
+  // setting
   axis xaxis(m_nxbins, m_xmin, m_xmax, axis_mode::log);
   axis baxis(m_nbbins, m_bmin * m_R, m_bmax * m_R, axis_mode::log);
 
@@ -466,7 +479,7 @@ void EPA_IonApprox::FillTables()
 ////////////////////////////////////////////////////////////////////////////////
 
 EPA_IonApproxIntegrated::EPA_IonApproxIntegrated(const ATOOLS::Flavour& beam,
-                                                 const int              dir)
+                                                 const int dir)
     : EPA_FF_Base(beam, dir)
 {
   m_b_pl_threshold = m_bmin * m_R;
