@@ -3,6 +3,7 @@
 #include "ATOOLS/Org/My_MPI.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "BEAM/Main/Beam_Base.H"
+#include "BEAM/Main/Beam_Parameters.H"
 #include "BEAM/Main/Beam_Spectra_Handler.H"
 #include "BEAM/Main/Collider_Kinematics.H"
 #include "BEAM/Main/Collider_Weight.H"
@@ -35,7 +36,7 @@ Beam_Spectra_Handler::Beam_Spectra_Handler()
              << "  Beam 1: " << p_BeamBase[0]->Beam()
              << " (enabled = " << p_BeamBase[0]->On() << ", "
              << "momentum = " << p_BeamBase[0]->InMomentum() << ")" << std::endl
-             << "  Beam 2: " << p_BeamBase[1]->Beam()
+             << (m_beammode!=beammode::Fixed_Target?"  Beam 2: ":"  Target: ") << p_BeamBase[1]->Beam()
              << " (enabled = " << p_BeamBase[0]->On() << ", "
              << "momentum = " << p_BeamBase[1]->InMomentum() << ")" << std::endl;
 }
