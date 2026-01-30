@@ -3,6 +3,7 @@
 #include "ATOOLS/Org/My_MPI.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "BEAM/Main/Beam_Base.H"
+#include "BEAM/Main/Beam_Parameters.H"
 #include "BEAM/Main/Beam_Spectra_Handler.H"
 #include "BEAM/Main/Collider_Kinematics.H"
 #include "BEAM/Main/Collider_Weight.H"
