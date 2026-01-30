@@ -72,8 +72,8 @@ namespace AMISIC {
     std::vector<double> m_eta_variations;
     std::vector<double> m_variation_weights;
     std::vector<double> m_b_weights;
+    std::vector<double> m_overlap_ratios;
     std::vector<double> m_sudakov_weights;
-    std::vector<double> m_lambda_ratios;
     size_t m_n_variations;
 
     size_t m_mpi_scatter_count;          // output

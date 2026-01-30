@@ -9,11 +9,19 @@ using namespace std;
 
 Reconnect_Statistical::Reconnect_Statistical() :
   Reconnection_Base(),
-  m_Pmode(0), m_Q02(1.), m_etaQ(0.16), m_reshuffle(1./9.), m_kappa(1.) {}
+  m_Pmode(0), m_Q02(1.), m_etaQ(0.16), m_reshuffle(1./9.), m_kappa(1.),
+  m_n_variations(1),
+  m_n_reconnection_count(0) // output
+{}
 
 
 Reconnect_Statistical::~Reconnect_Statistical() {
   m_collist.clear();
+  // output
+  if (m_weight_file.is_open()) {
+    m_weight_file.close();
+  }
+  // output
 }
 
 void Reconnect_Statistical::SetParameters() {
@@ -39,16 +47,32 @@ void Reconnect_Statistical::SetParameters() {
   for (size_t i{0}; i<m_etaQ.size(); ++i)
     m_etaQ[i] = sqr(m_etaQ[i]);
 
-  size_t n_variations = std::max({m_etaQ.size(), m_reshuffle.size(), size_t(1)});
-  m_etaQ.resize(n_variations, m_etaQ[0]);
-  m_reshuffle.resize(n_variations, m_reshuffle[0]);
+  m_n_variations = std::max({m_etaQ.size(), m_reshuffle.size(), size_t(1)});
+  m_etaQ.resize(m_n_variations, m_etaQ[0]);
+  m_reshuffle.resize(m_n_variations, m_reshuffle[0]);
 
-  ResetVariationWeights(n_variations);
+  ResetVariationWeights(m_n_variations);
+
+  // output
+  const bool print_files = false;
+  if (!print_files) return;
+  std::string filename = "reconnection_weights.dat";
+  m_weight_file.open(filename);
+  if (m_weight_file.is_open()) {
+    m_weight_file << "# n_reconnections";
+    for (size_t i=0; i<m_n_variations; i++) {
+      m_weight_file << " w_var" << i;
+    }
+    m_weight_file << "\n";
+    m_weight_file << std::scientific << std::setprecision(10);
+  }
+  // output
 }
 
 void Reconnect_Statistical::Reset() {
   m_collist.clear();
   Reconnection_Base::Reset();
+  m_n_reconnection_count = 0; // output
 }
 
 void Reconnect_Statistical::FixPMode(const string & pm) {
@@ -72,6 +96,17 @@ int Reconnect_Statistical::operator()(Blob_List *const blobs) {
 
   if (!PerformTableReconnections(N)) return 0;
   UpdateColours();
+
+  // output
+  if (m_weight_file.is_open()) {
+    m_weight_file << m_n_reconnection_count;
+    for (size_t i=0; i<m_n_variations; ++i) {
+      m_weight_file << " " << m_variation_weights[i];
+    }
+    m_weight_file << "\n";
+  }
+  // output
+
   m_collist.clear();
   return 1;
 }
@@ -155,21 +190,24 @@ bool Reconnect_Statistical::PerformTableReconnections(const size_t & N) {
 
     const double dist = best.dist;
 
-    std::vector<double> probs(m_reshuffle.size());
-    for (size_t i = 0; i < m_reshuffle.size(); ++i)
+    std::vector<double> probs(m_n_variations);
+    for (size_t i = 0; i < m_n_variations; ++i)
       probs[i] = m_reshuffle[i] * (1. - exp(-m_etaQ[i] * dist));
 
     if (ran->Get() < probs[0]) {
+      // accepted
+      m_n_reconnection_count++; // output
       m_cols[1][col[0]] = part[3];
       m_cols[1][col[1]] = part[2];
       if (probs[0] > 1e-8) {
-        for (size_t i{0}; i < m_reshuffle.size(); ++i) {
+        for (size_t i{0}; i < m_n_variations; ++i) {
           m_variation_weights[i] *= probs[i] / probs[0];
         }
       }
     } else {
+      // rejected
       if (probs[0] > 1e-8) {
-        for (size_t i{0}; i < m_reshuffle.size(); ++i) {
+        for (size_t i{0}; i < m_n_variations; ++i) {
           m_variation_weights[i] *= (1. - probs[i]) / (1. - probs[0]);
         }
       }

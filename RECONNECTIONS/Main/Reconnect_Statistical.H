@@ -15,6 +15,10 @@ namespace RECONNECTIONS {
     void   FixPMode(const std::string & pm);
     bool   PerformTableReconnections(const size_t & N);
     void   UpdateColours();
+    size_t m_n_variations;
+
+    size_t m_n_reconnection_count;  // output
+    std::ofstream m_weight_file;    // output
     
     double MomDistance(ATOOLS::Particle * trip,ATOOLS::Particle * anti);
     double PosDistance(ATOOLS::Particle * trip,ATOOLS::Particle * anti);

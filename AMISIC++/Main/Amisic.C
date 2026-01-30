@@ -5,7 +5,6 @@
 #include <algorithm>
 #include <cmath>
 #include <fstream> // output
-#include <sstream> // output
 
 using namespace AMISIC;
 using namespace ATOOLS;
@@ -244,40 +243,24 @@ void Amisic::InitParameterVariations() {
   // output
   const bool print_files = false;
   if (!print_files) return;
-  std::string filename;
-  if (m_n_variations == 3) {
-    filename = "b_weights_rew.dat";
-  } else {
-    double nominal_value = m_sigma_nd_variations[0];
-    std::ostringstream oss;
-    oss << "b_weights_" << nominal_value << ".dat";
-    filename = oss.str();
-  }
+  std::string filename = "b_weights.dat";
   m_b_weight_file.open(filename);
   if (m_b_weight_file.is_open()) {
-    if (m_n_variations == 3) {
-      m_b_weight_file << "# b_value w_b_var0 w_b_var1 w_b_var2\n";
-    } else {
-      m_b_weight_file << "# b_value\n";
+    m_b_weight_file << "# b_value";
+    for (size_t ivar=0; ivar<m_n_variations; ivar++) {
+      m_b_weight_file << " w_b_var" << ivar;
     }
+    m_b_weight_file << "\n";
     m_b_weight_file << std::scientific << std::setprecision(10);
   }
-  std::string total_filename;
-  if (m_n_variations == 3) {
-    total_filename = "total_weights_rew.dat";
-  } else {
-    double nominal_value = m_sigma_nd_variations[0];
-    std::ostringstream oss;
-    oss << "total_weights_" << nominal_value << ".dat";
-    total_filename = oss.str();
-  }
+  std::string total_filename = "total_weights.dat";
   m_total_weight_file.open(total_filename);
   if (m_total_weight_file.is_open()) {
-    if (m_n_variations == 3) {
-      m_total_weight_file << "# n_mpi w_total_var0 w_total_var1 w_total_var2\n";
-    } else {
-      m_total_weight_file << "# n_mpi\n";
+    m_total_weight_file << "# m_mpi";
+    for (size_t ivar=0; ivar<m_n_variations; ivar++) {
+      m_total_weight_file << " w_total_var" << ivar;
     }
+    m_total_weight_file << "\n";
     m_total_weight_file << std::scientific << std::setprecision(10);
   }
   // output
@@ -583,7 +566,7 @@ void Amisic::ResetVariationWeights() {
   m_variation_weights.resize(m_n_variations);
   std::fill(m_variation_weights.begin(), m_variation_weights.end(), 1.);
   m_b_weights.assign(m_n_variations, 1.);
-  m_lambda_ratios.assign(m_n_variations, 1.);
+  m_overlap_ratios.assign(m_n_variations, 1.);
   m_sudakov_weights.assign(m_n_variations, 1.);
   m_mpi_scatter_count = 0; // output
 }
@@ -596,7 +579,7 @@ void Amisic::ImpactParameterReweighting(const double & s) {
   if (m_variation_weights.empty()) return;
 
   // b is selected according to d^2b O(b)
-  // w_b = O_var(b) / O_nom(b) = lambda_var / lambda_nom = lambda_ratio
+  // w_b = O_var(b) / O_nom(b) = O_ratio
   m_mo.SetMatterFormVariationIndex(0);
   const double K_nom = m_pint.K(s);
   const double overlap_nom = m_mo.EvaluateAt(m_b, K_nom);
@@ -606,12 +589,12 @@ void Amisic::ImpactParameterReweighting(const double & s) {
     m_mo.SetMatterFormVariationIndex(ivar);
     const double K_var = m_pint.KVariation(s, ivar);
     const double overlap_var = m_mo.EvaluateAt(m_b, K_var);
-    double lambda_ratio = overlap_var / overlap_nom;
-    if (!std::isfinite(lambda_ratio) || lambda_ratio<=0.) lambda_ratio = 1.;
-    m_lambda_ratios[ivar] = lambda_ratio;
+    double overlap_ratio = overlap_var / overlap_nom;
+    if (!std::isfinite(overlap_ratio) || overlap_ratio<=0.) overlap_ratio = 1.;
+    m_overlap_ratios[ivar] = overlap_ratio;
     
     // This accounts for all b values tried in FirstMPI loop
-    m_b_weights[ivar] *= lambda_ratio;
+    m_b_weights[ivar] *= overlap_ratio;
   }
   m_mo.SetMatterFormVariationIndex(0);
 }
@@ -630,14 +613,14 @@ void Amisic::AcceptRejectReweighting(const bool accepted, const double prob_nom)
   for (size_t ivar=0; ivar<m_n_variations; ++ivar) {
     // p_nom = dsigma/dpt2 * overlap(b,K_var) / overestimator
     // The ratio is: p_var/p_nom = overlap_var/overlap_nom * (dsigma/dpt2)_nom / (dsigma/dpt2)_var
-    //                           = lambda_ratio * xs_ratio
+    //                           = overlap_ratio * xs_ratio
     // p_var = 0 for pt2 <= (ptmin2)_var
     double prob_var = 0.;
     if (m_singlecollision.PT2() > sqr(m_ptmin_variations[ivar])) {
       (&m_processes)->SetPT02(sqr(m_pt0_variations[ivar]));
       const double xs_var = (m_processes)();
       (&m_processes)->SetPT02(sqr(m_pt0_variations[0]));
-      prob_var = prob_nom * m_lambda_ratios[ivar] * xs_var / xs_nom;
+      prob_var = prob_nom * m_overlap_ratios[ivar] * xs_var / xs_nom;
     }
     if (accepted) {
       // Accepted: weight *= p_var / p_nom
@@ -691,15 +674,15 @@ void Amisic::ApplyVariationWeights(ATOOLS::Blob * blob) {
   // output
   if (m_b_weight_file.is_open()) {
     m_b_weight_file << m_b;
-    if (m_variation_weights.size() == 3) {
-      m_b_weight_file << " " << w_b_vec[0] << " " << w_b_vec[1] << " " << w_b_vec[2];
+    for (size_t ivar=0; ivar<m_n_variations; ++ivar) {
+      m_b_weight_file << " " << w_b_vec[ivar];
     }
     m_b_weight_file << "\n";
   }
   if (m_total_weight_file.is_open()) {
     m_total_weight_file << m_mpi_scatter_count;
-    if (m_variation_weights.size() == 3) {
-      m_total_weight_file << " " << w_total_vec[0] << " " << w_total_vec[1] << " " << w_total_vec[2];
+    for (size_t ivar=0; ivar<m_n_variations; ++ivar) {
+      m_total_weight_file << " " << w_total_vec[ivar];
     }
     m_total_weight_file << "\n";
   }
