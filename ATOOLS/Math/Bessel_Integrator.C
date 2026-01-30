@@ -5,8 +5,8 @@ using namespace ATOOLS;
 
 Bessel_Integrator::Bessel_Integrator(ATOOLS::Function_Base* f,
                                      const size_t& order)
-    : m_kernel(f, order), m_order(order), m_maxbins(300), m_depth(20),
-      m_iterator(0)
+    : m_kernel(f, order), m_order(order), m_maxbins(300), m_depth(15),
+      m_iterator(1)
 {
   FixBins(false);
   m_F.resize(m_maxbins, 0.);
@@ -79,7 +79,7 @@ double Bessel_Integrator::operator()(double tolerance, bool output)
     }
 
     // Convergence check
-    if (p >= 5 && std::abs(m_N[p][0]) > 1.e-30 && std::abs(m_N[p-1][0]) > 1.e-30) {
+    if (p >= 3 && std::abs(m_N[p][0]) > 1.e-30 && std::abs(m_N[p-1][0]) > 1.e-30) {
       double current_result = m_M[p][0] / m_N[p][0];
       double prev_result = m_M[p - 1][0] / m_N[p - 1][0];
       double rel_error = std::abs(current_result - prev_result)
@@ -91,7 +91,7 @@ double Bessel_Integrator::operator()(double tolerance, bool output)
         stability_counter = 0;
       }
 
-      if (stability_counter >= 3) {
+      if (stability_counter >= 2) {
         if (output) {
           msg_Out() << "=== " << METHOD << ": Converged at depth " << p
                     << ", Result = " << std::setprecision(8) << m_M[p - 1][0] / m_N[p - 1][0] << "\n";
