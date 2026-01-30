@@ -5,7 +5,7 @@ using namespace ATOOLS;
 
 Bessel_Integrator::Bessel_Integrator(ATOOLS::Function_Base* f,
                                      const size_t& order)
-    : m_kernel(f, order), m_order(order), m_maxbins(300), m_depth(15),
+    : m_kernel(f, order), m_order(order), m_maxbins(300), m_depth(10),
       m_iterator(1)
 {
   FixBins(false);
@@ -24,8 +24,8 @@ double Bessel_Integrator::operator()(double tolerance, bool output)
 {
   size_t stability_counter = 0;
 
-  double integration_tol = tolerance / (4.0 * m_maxbins);
-  double accel_tol = tolerance / 4.0;
+  double integration_tol = tolerance / std::sqrt(2.0 * m_maxbins);
+  double accel_tol = tolerance / std::sqrt(2.0);
 
   if (output)
     msg_Out() << "=== " << METHOD << " start filling the supports, "
@@ -114,30 +114,23 @@ double Bessel_Integrator::operator()(double tolerance, bool output)
 double Bessel_Integrator::AdaptiveIntegrate(double a, double b, double tol)
 {
   double fine = m_gauss.Legendre(a, b, 21);   // N=21
-  double coarse = m_gauss.Legendre(a, b, 10); // N=10 (subset for error est)
-
-  // 3. Error Estimate
-  double diff = std::abs(fine - coarse);
-  double mag = std::abs(fine);
-
-  // 4. Convergence Check
-  // limit tolerance to machine precision to prevent infinite depth
-  double effective_tol = std::max(tol, 1.0e-14);
-
-  if (diff < (effective_tol * mag + 1.0e-15)) {
-    return fine;
-  }
-
-  // 5. Recursion Guard
-  // Stop if interval is too small (prevent stack overflow)
   if (std::abs(b - a) < 1.0e-13 * (std::abs(a) + 1.0)) {
     return fine;
   }
+  double coarse = m_gauss.Legendre(a, b, 10); // N=10 (subset for error est)
 
-  // 6. Split and Recurse
+  double diff = std::abs(fine - coarse);
+  double mag = std::abs(fine);
+
+  double effective_tol = std::max(tol, 1.0e-5);
+
+  if (diff < (effective_tol * mag + 1.0e-13)) {
+    return fine;
+  }
+
   double mid = 0.5 * (a + b);
-  return AdaptiveIntegrate(a, mid, tol / 2.0) +
-         AdaptiveIntegrate(mid, b, tol / 2.0);
+  return AdaptiveIntegrate(a, mid, tol) +
+         AdaptiveIntegrate(mid, b, tol);
 }
 
 
