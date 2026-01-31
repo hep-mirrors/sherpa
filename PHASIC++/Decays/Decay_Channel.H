@@ -82,6 +82,7 @@ namespace PHASIC {
     std::vector<int> m_active;
 
     ATOOLS::Flavour_Vector m_flavours;
+    ATOOLS::Flavour_Vector m_sub_flavours;
     std::vector<METOOLS::Spin_Amplitudes*> m_diagrams;
     PHASIC::Multi_Channel* p_channels;
     METOOLS::Amplitude2_Tensor* p_amps;
@@ -133,6 +134,8 @@ namespace PHASIC {
 
     inline int NOut() const { return m_flavours.size()-1; }
     inline const std::vector<ATOOLS::Flavour>& Flavs() const{return m_flavours;}
+    inline const std::vector<ATOOLS::Flavour>& Sub_Flavs() const{return m_sub_flavours;}
+    void Add_Sub_Flavs(const ATOOLS::Flavour& fl_in) {m_sub_flavours.push_back(fl_in); }
     inline const ATOOLS::Flavour& GetDecaying() const { return m_flavours[0]; }
     inline const ATOOLS::Flavour& GetDecayProduct(size_t i) const {
       return m_flavours[i+1];

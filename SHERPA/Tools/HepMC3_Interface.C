@@ -18,6 +18,8 @@
 #include "HepMC3/GenParticle.h"
 #include "HepMC3/GenCrossSection.h"
 #include "HepMC3/Units.h"
+#include <csignal>
+
 
 
 using namespace SHERPA;
@@ -524,8 +526,9 @@ std::shared_ptr<HepMC::GenParticle> HepMC3_Interface::MakeGenParticle(
 {
   HepMC::FourVector momentum(mom[1], mom[2], mom[3], mom[0]);
   int status = 1;
-  if (incoming)
+  if (incoming){
     status = (flav.StrongCharge() == 0) ? 4 : 11;
+  }
   return std::make_shared<HepMC::GenParticle>(momentum, (long int)flav, status);
 }
 

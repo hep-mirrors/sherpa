@@ -868,14 +868,16 @@ void Hard_Decay_Handler::TreatInitialBlob(ATOOLS::Blob* blob,
         ATOOLS::Vec4D_Vector dipole_mom = NLO_dc->GetDiagrams()[i]-> GetMomenta();
         static size_t decay_ids[3] = {1, 2, 12};
 
-        const std::vector<Flavour>& flav_vec = NLO_dc->Flavs();
-        std::vector<Flavour> new_flav_vec;
-        
+        if(NLO_dc->Sub_Flavs().size()==0){
         for (int i = 0; i < newn+1; ++i) {
-          if (flav_vec[i].IDName() == "G") continue;
-          new_flav_vec.push_back(flav_vec[i]);
+          if (NLO_dc->Flavs()[i].IDName() == "G") continue;
+          NLO_dc->Add_Sub_Flavs(NLO_dc->Flavs()[i]);
         }
-        const Flavour* newfls = const_cast<Flavour*>(new_flav_vec.data());
+      }
+
+        const std::vector<Flavour>& flav_vec = NLO_dc->Sub_Flavs();
+
+        const Flavour* newfls = const_cast<Flavour*>(flav_vec.data());
 
         Vec4D* newmoms = new Vec4D[newn];
         for (int j = 0; j < newn; ++j) {
@@ -887,6 +889,7 @@ void Hard_Decay_Handler::TreatInitialBlob(ATOOLS::Blob* blob,
 
         // Constructor: (n, id_ptr, fl_ptr, mom_ptr, i, j, k)
         NLO_subevt *newsub(new NLO_subevt(newn, decay_ids, newfls, newmoms, dipole_indices[0], dipole_indices[1], dipole_indices[2]));
+        p_newsublist->push_back(newsub);
       }
     }
     for (size_t i=0;i<p_newsublist->size();++i) {
