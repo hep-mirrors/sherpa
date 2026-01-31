@@ -100,7 +100,7 @@ double CCFM_KFactor_Setter::KFactor(const ATOOLS::NLO_subevt &evt)
 
 double CCFM_KFactor_Setter::KFactor(const int mode)
 {
-  if (!m_on) return m_weight=1.0;
+  if (!m_on || p_meps->Amplitudes().empty()) return m_weight=1.0;
   Cluster_Amplitude *ampl(p_meps->Amplitudes().back());
   if (p_proc->Info().Has(nlo_type::real)) {
     if (p_proc->GetSubevtList()->back()->p_ampl &&
