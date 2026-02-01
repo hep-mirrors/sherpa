@@ -81,8 +81,13 @@ namespace PHASIC {
 	if (dt.TotalWidth()>0. && dt.at(i)->Width()>0.) 
 	  os<<", BR= "<<setw(5)<<(dt.at(i)->Width()/dt.TotalWidth()*100.)
 	    <<" %";
+      os<<" STATUS= ";
+        os<<dt.at(i)->Active(0);
 	os<<endl;
       }
+        
+
+        
     }
     os<<"----------------------------------------"<<endl;
     return os;
