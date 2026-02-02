@@ -114,7 +114,7 @@ double Bessel_Integrator::operator()(double tolerance, bool output)
 double Bessel_Integrator::AdaptiveIntegrate(double a, double b, double tol)
 {
   double fine = m_gauss.Legendre(a, b, 21);   // N=21
-  if (std::abs(b - a) < 1.0e-13 * (std::abs(a) + 1.0)) {
+  if (std::abs(b - a) < 1.0e-3 * (std::abs(a) + 1.0)) {
     return fine;
   }
   double coarse = m_gauss.Legendre(a, b, 10); // N=10 (subset for error est)
