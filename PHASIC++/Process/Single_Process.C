@@ -506,7 +506,6 @@ void Single_Process::AddBeam(ATOOLS::Cluster_Sequence_Info& csi,
                              const double& Q2)
 {
   if (p_int->Beam() && p_int->Beam()->On()) {
-    PRINT_FUNC(Q2);
     p_int->Beam()->CalculateWeight(Q2);
     msg_Debugging()<<"Types = ("<<p_int->Beam()->GetBeam(0)->Type()<<", "
                     <<p_int->Beam()->GetBeam(1)->Type()<<")"
