@@ -444,7 +444,6 @@ EPA_WoodSaxonApprox::EPA_WoodSaxonApprox(const ATOOLS::Flavour& beam,
 EPA_IonApprox::EPA_IonApprox(const ATOOLS::Flavour& beam, const int dir)
     : EPA_FF_Base(beam, dir)
 {
-  m_bmin = Max(1., m_bmin);
   m_b_pl_threshold = m_R;
   EPA_IonApprox::FillTables();
 }
