@@ -1,11 +1,14 @@
 #include "CSSHOWER++/Showers/Splitting_Function_Base.H"
 
+#include "CSSHOWER++/Tools/Parton.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
+
 namespace CSSHOWER {
   
   class LF_FFV_FF: public SF_Lorentz {
   public:
 
-    inline LF_FFV_FF(const SF_Key &key): SF_Lorentz(key) {}
+    inline LF_FFV_FF(const SF_Key &key): SF_Lorentz(key) { m_col=1; }
 
     double operator()(const double,const double,const double,
 		      const double,const double);
@@ -23,7 +26,7 @@ namespace CSSHOWER {
 
   public:
 
-    inline LF_FFV_FI(const SF_Key &key): SF_Lorentz(key) {}
+    inline LF_FFV_FI(const SF_Key &key): SF_Lorentz(key) { m_col=1; }
 
     double operator()(const double,const double,const double,
 		      const double,const double);
@@ -41,7 +44,7 @@ namespace CSSHOWER {
 
   public:
 
-    inline LF_FFV_IF(const SF_Key &key): SF_Lorentz(key) {}
+    inline LF_FFV_IF(const SF_Key &key): SF_Lorentz(key) { m_col=1; }
 
     double operator()(const double,const double,const double,
 		      const double,const double);
@@ -59,7 +62,7 @@ namespace CSSHOWER {
 
   public:
 
-    inline LF_FFV_II(const SF_Key &key): SF_Lorentz(key) {}
+    inline LF_FFV_II(const SF_Key &key): SF_Lorentz(key) { m_col=1; }
 
     double operator()(const double,const double,const double,
 		      const double,const double);
@@ -73,7 +76,7 @@ namespace CSSHOWER {
   class LF_FVF_FF: public SF_Lorentz {
   public:
 
-    inline LF_FVF_FF(const SF_Key &key): SF_Lorentz(key) {}
+    inline LF_FVF_FF(const SF_Key &key): SF_Lorentz(key) { m_col=-1; }
 
     double operator()(const double,const double,const double,
 		      const double,const double);
@@ -91,7 +94,7 @@ namespace CSSHOWER {
 
   public:
 
-    inline LF_FVF_FI(const SF_Key &key): SF_Lorentz(key) {}
+    inline LF_FVF_FI(const SF_Key &key): SF_Lorentz(key) { m_col=-1; }
 
     double operator()(const double,const double,const double,
 		      const double,const double);
@@ -143,9 +146,17 @@ namespace CSSHOWER {
   };
 
   class LF_VFF_FF: public SF_Lorentz {
+  protected:
+
+    int m_sc;
+
   public:
 
-    inline LF_VFF_FF(const SF_Key &key): SF_Lorentz(key) {}
+    inline LF_VFF_FF(const SF_Key &key): SF_Lorentz(key)
+    {
+      auto pss = ATOOLS::Settings::GetMainSettings()["SHOWER"];
+      m_sc = pss["SPIN_CORRELATIONS"].Get<int>();
+    }
 
     double Scale(const double z,const double y,
 		 const double _scale,const double Q2) const;
@@ -161,11 +172,16 @@ namespace CSSHOWER {
   class LF_VFF_FI: public SF_Lorentz {
   protected:
 
+    int m_sc;
     double m_Jmax;
 
   public:
 
-    inline LF_VFF_FI(const SF_Key &key): SF_Lorentz(key) {}
+    inline LF_VFF_FI(const SF_Key &key): SF_Lorentz(key)
+    {
+      auto pss = ATOOLS::Settings::GetMainSettings()["SHOWER"];
+      m_sc = pss["SPIN_CORRELATIONS"].Get<int>();
+    }
 
     double Scale(const double z,const double y,
 		 const double _scale,const double Q2) const;
@@ -571,8 +587,20 @@ double LF_VFF_FF::operator()
   double mui2  = sqr(p_ms->Mass(m_flavs[1]))/Q2;
   double muj2  = sqr(p_ms->Mass(m_flavs[2]))/Q2;
   double muk2  = sqr(p_ms->Mass(m_flspec))/Q2;
+  double sct = 1.;
+  if (m_sc && p_scp[0] && p_scp[1]) {
+    const Vec4D &pi(p_scp[0]->Momentum());
+    const Vec4D &pj(p_scp[1]->Momentum());
+    Vec4D jd = z*pj-(1-z)*pi, pij = pi+pj;
+    if (p_ms->Mass(m_flavs[0])) jd=pj-pi;
+    double n0 = (m_scr[0]+pij).Abs2(), n1 = (m_scr[1]+pij).Abs2();
+    if (n0==0 || n1==0) return 0;
+    Vec4D jp = (2*m_scr[0]+pij)/n0-(2*m_scr[1]+pij)/n1;
+    if (jd.Abs2()==0 || jp.Abs2()==0) return 0;
+    sct = 2*sqr(jp*jd)/(jd.Abs2()*jp.Abs2());
+  }
   //the massless case 
-  double massless = (1.-2.*z*(1.-z));
+  double massless = (1.-2.*z*(1.-z)*sct);
   double longpol = 0.5;
   if (mui2==0. && muj2==0. && muk2==0.) {
     double value = 2.0 * p_cf->Coupling(scale,0) * massless + p_cf->Coupling(scale,1) * longpol;
@@ -588,7 +616,7 @@ double LF_VFF_FF::operator()
     double frac = (2.*mui2+fac*y)/(2.*(mui2+muj2+fac*y));
     double zm = frac*(1.- viji*vijk);  
     double zp = frac*(1.+ viji*vijk);
-    double massive = 1.0/vijk * (1.- 2.*(z*(1.-z) - zp*zm));
+    double massive = 1.0/vijk * (1.- 2.*(z*(1.-z)*sct - zp*zm));
     massive *= 1./((1.-mui2-muj2-muk2)+1./y*(mui2+muj2));
     double value = 2.0 * p_cf->Coupling(scale,0) * massive + p_cf->Coupling(scale,1) * longpol;
     return value * JFF(y,mui2,muj2,muk2,0.0);
@@ -625,8 +653,20 @@ double LF_VFF_FI::operator()
    const double scale,const double Q2)
 {
   double muQ2 = sqr(p_ms->Mass(m_flavs[1]))*(1.-y)/Q2;
+  double sct = 1.;
+  if (m_sc && p_scp[0] && p_scp[1]) {
+    const Vec4D &pi(p_scp[0]->Momentum());
+    const Vec4D &pj(p_scp[1]->Momentum());
+    Vec4D jd = z*pj-(1-z)*pi, pij = pi+pj;
+    if (p_ms->Mass(m_flavs[0])) jd=pj-pi;
+    double n0 = (m_scr[0]+pij).Abs2(), n1 = (m_scr[1]+pij).Abs2();
+    if (n0==0 || n1==0) return 0;
+    Vec4D jp = (2*m_scr[0]+pij)/n0-(2*m_scr[1]+pij)/n1;
+    if (jd.Abs2()==0 || jp.Abs2()==0) return 0;
+    sct = 2*sqr(jp*jd)/(jd.Abs2()*jp.Abs2());
+  }
   //the massless case 
-  double massless = 1.-2.*z*(1.-z);
+  double massless = 1.-2.*z*(1.-z)*sct;
   double longpol = 0.5;
   if (muQ2==0.) {
     double value = 2.0 * p_cf->Coupling(scale,0) * massless + p_cf->Coupling(scale,1) * longpol;
@@ -639,7 +679,7 @@ double LF_VFF_FI::operator()
     delta = sqrt(delta)/y; 
     double zp      = 0.5 * (1. + delta);
     double zm      = 0.5 * (1  - delta); 
-    double massive = (1.-2.*(zp-z)*(z-zm));
+    double massive = (1.-2.*(zp-z)*(z-zm)*sct);
     if (massive < 0.) std::cout<<" massive V_FF FI < 0. "<<massive<<std::endl; 
     double value = 2.0 * p_cf->Coupling(scale,0) * massive + p_cf->Coupling(scale,1) * longpol;
     return value * JFI(y,eta,scale);
@@ -751,7 +791,7 @@ DECLARE_GETTER(LF_FFV_FF,"FFV",SF_Lorentz,SF_Key);
 SF_Lorentz *ATOOLS::Getter<SF_Lorentz,SF_Key,LF_FFV_FF>::
 operator()(const Parameter_Type &args) const
 {
-  if (args.m_col<0) return NULL;
+  if (args.m_col<=0) return NULL;
   if ((args.m_mode==0 &&
        args.p_v->in[0].IntSpin()==1 &&
        args.p_v->in[1].IntSpin()==1 &&
@@ -809,7 +849,7 @@ DECLARE_GETTER(LF_FFV_II,"FFV1",SF_Lorentz,SF_Key);
 SF_Lorentz *ATOOLS::Getter<SF_Lorentz,SF_Key,LF_FFV_II>::
 operator()(const Parameter_Type &args) const
 {
-  if (args.m_col<0) return NULL;
+  if (args.m_col<=0) return NULL;
   if ((args.m_mode==0 &&
        args.p_v->in[0].IntSpin()==1 &&
        args.p_v->in[1].IntSpin()==1 &&

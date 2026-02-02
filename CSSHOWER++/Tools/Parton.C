@@ -10,7 +10,7 @@ using namespace std;
 
 namespace CSSHOWER {
   std::ostream& operator<<(std::ostream& str, const Parton &part) {
-    str<<"  Parton ["<<ATOOLS::ID(part.m_id)<<"], stat="
+    str<<"  Parton ["<<part.m_pid<<","<<ATOOLS::ID(part.m_id)<<"], stat="
       //    str<<"  Parton ["<<&part<<"], stat="
        <<part.m_stat<<", kin="<<part.m_kin<<", kscheme="<<part.m_kscheme
        <<", col="<<part.m_col<<" : "<<part.m_flav<<" : "<<part.m_mom
@@ -20,9 +20,12 @@ namespace CSSHOWER {
     else if (part.m_pst==pst::FS) str<<"     (Final state parton)  ";
     else                     str<<"                           ";
     str<<"  Colour partners ("
-       <<(part.p_left?ATOOLS::ID(part.p_left->m_id):vector<int>())<<","
-       <<(part.p_right?ATOOLS::ID(part.p_right->m_id):vector<int>())<<"), "
-       <<"spectator = "<<(part.p_spect?to_string(part.p_spect->m_id):"none")<<"\n";
+       <<(part.p_left?int(part.p_left->m_pid):-1)<<","
+       <<(part.p_right?int(part.p_right->m_pid):-1)<<"), "
+       <<"spectator = "<<(part.p_spect?int(part.p_spect->m_pid):-1)<<"\n";
+    if (part.p_scr!=NULL) str<<"  Current ref "<<part.p_scr->m_pid<<"\n";
+    if (part.m_scr[0]!=Vec4D() || part.m_scr[1]!=Vec4D())
+      str<<"  Current sources ("<<part.m_scr[0]<<","<<part.m_scr[1]<<")\n";
     //<<part.p_left<<","<<part.p_right<<"), spectator = "<<part.p_spect<<"\n";
     if (part.m_kt_soft[0]<std::numeric_limits<double>::max() ||
 	part.m_kt_soft[1]<std::numeric_limits<double>::max()) {
@@ -32,7 +35,8 @@ namespace CSSHOWER {
     str<<"  k_T test : "<<sqrt(part.m_kt_test);
     str<<"  k_T veto : "<<sqrt(part.m_kt_veto);
     str<<"  x_B : "<<part.m_xBj<<std::endl;
-    str<<"  fromdec : "<<part.m_fromdec <<std::endl;
+    str<<"  fromdec : "<<part.m_fromdec
+       <<"  col : "<<part.m_col<<std::endl;
     if (part.p_prev || part.p_next) {
       if (part.p_prev) str<<"  P="<<part.p_prev;
       if (part.p_next) str<<"  N="<<part.p_next;
@@ -41,6 +45,8 @@ namespace CSSHOWER {
     return str;
   }
 }
+
+int Parton::s_id=0;
 
 void Parton::DeleteAll()
 {
@@ -61,11 +67,25 @@ void Parton::UpdateDaughters()
     msg_Indent();
     Parton *left(p_sing->GetLeft()), *right(p_sing->GetRight());
     Vec4D pl(left->Momentum()), pr(right->Momentum());
+    Vec4D scl0(left->SCP(0)), scl1(left->SCP(1));
+    Vec4D scr0(left->SCP(0)), scr1(left->SCP(1));
     Poincare oldcms(pl+pr), newcms(m_mom);
     oldcms.Boost(pl);
     oldcms.Boost(pr);
+    oldcms.Boost(scl0);
+    oldcms.Boost(scl1);
+    oldcms.Boost(scr0);
+    oldcms.Boost(scr1);
     newcms.BoostBack(pl);
     newcms.BoostBack(pr);
+    newcms.BoostBack(scl0);
+    newcms.BoostBack(scl1);
+    newcms.BoostBack(scr0);
+    newcms.BoostBack(scr1);
+    left->SetSCP(0,scl0);
+    left->SetSCP(1,scl1);
+    right->SetSCP(0,scr0);
+    right->SetSCP(1,scr1);
     if (dabs(pl[0])>dabs(pr[0])) {
       left->SetMomentum(m_mom-pr);
       right->SetMomentum(pr);

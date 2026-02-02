@@ -4,9 +4,11 @@
 #include "CSSHOWER++/Showers/SF_Key.H"
 #include "ATOOLS/Org/Getter_Function.H"
 #include "ATOOLS/Phys/Flavour.H"
+#include "ATOOLS/Math/Vector.H"
 
 namespace CSSHOWER {
 
+  class Parton;
   class SF_Coupling;
   class Splitting_Function_Base;
 
@@ -28,6 +30,9 @@ namespace CSSHOWER {
     std::pair<double, double> m_pdfmin;
 
     static double s_kappa;
+
+    const Parton *p_scp[2];
+    ATOOLS::Vec4D m_scr[2];
 
     double Lambda(const double &a,const double &b,const double &c) const;
     bool PDFValueAllowedAsDenominator(const double& val,
@@ -89,6 +94,10 @@ namespace CSSHOWER {
     inline int Col() const { return m_col; }
 
     inline static void SetKappa(const double &kap) { s_kappa=kap; }
+
+    inline void SetSCInfo(const Parton *pi,const Parton *pj,
+			  const ATOOLS::Vec4D &r0,const ATOOLS::Vec4D &r1)
+    { p_scp[0]=pi; p_scp[1]=pj; m_scr[0]=r0; m_scr[1]=r1; }
 
   };
 

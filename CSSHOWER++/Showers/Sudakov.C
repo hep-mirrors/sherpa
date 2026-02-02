@@ -67,7 +67,8 @@ void Sudakov::InitSplittingFunctions(MODEL::Model_Base *md,const int kfmode)
       msg_Out()<<"\n}"<<std::endl;
     }
   }
-  msg_Debugging()<<METHOD<<"(): Init splitting functions {\n";
+  msg_Debugging()<<METHOD<<"(): Init splitting functions (qcd="
+		 <<m_qcdmode<<",ew="<<m_ewmode<<") {\n";
   msg_Indent();
   std::set<FTrip> sfs;
   const Vertex_Table *vtab(md->VertexTable());
@@ -89,8 +90,10 @@ void Sudakov::InitSplittingFunctions(MODEL::Model_Base *md,const int kfmode)
 		 v->in[1].IsAnti() && !v->in[2].IsAnti()) dmode=1;
 	Add(new Splitting_Function_Base(SF_Key(v,dmode,cstp::FF,kfmode,m_qcdmode,m_ewmode,1,m_pdfmin)));
 	Add(new Splitting_Function_Base(SF_Key(v,dmode,cstp::FF,kfmode,m_qcdmode,m_ewmode,-1,m_pdfmin)));
+	Add(new Splitting_Function_Base(SF_Key(v,dmode,cstp::FF,kfmode,m_qcdmode,m_ewmode,0,m_pdfmin)));
 	Add(new Splitting_Function_Base(SF_Key(v,dmode,cstp::FI,kfmode,m_qcdmode,m_ewmode,1,m_pdfmin)));
 	Add(new Splitting_Function_Base(SF_Key(v,dmode,cstp::FI,kfmode,m_qcdmode,m_ewmode,-1,m_pdfmin)));
+	Add(new Splitting_Function_Base(SF_Key(v,dmode,cstp::FI,kfmode,m_qcdmode,m_ewmode,0,m_pdfmin)));
 	if (v->in[0].Bar().Mass()<100.0 && v->in[1].Mass()<100.0 && v->in[2].Mass()<100.0) {
 	  Add(new Splitting_Function_Base(SF_Key(v,dmode,cstp::IF,kfmode,m_qcdmode,m_ewmode,1,m_pdfmin)));
 	  Add(new Splitting_Function_Base(SF_Key(v,dmode,cstp::IF,kfmode,m_qcdmode,m_ewmode,-1,m_pdfmin)));
@@ -391,8 +394,9 @@ int Sudakov::Generate(Parton *split,Parton *spect,
   }
   double x = 0.0;
 
-  while (t>=Max(t0,kt2win)) {
+  while (t>=(p_split->OSD()?0.0:Max(t0,kt2win))) {
     t=ProduceT(t);
+    if (p_split->OSD()) t=p_split->Momentum().Abs2()*(1.+rpa->gen.Accu());
     p_split->SetForcedSplitting(false);
     if (m_forced_splittings &&
 	p_split->GetType()==pst::IS &&
@@ -417,6 +421,7 @@ int Sudakov::Generate(Parton *split,Parton *spect,
     SelectOne();
     split->SetSpect(p_spect=p_selected->SelectSpec());
     z = Z();
+    phi = 2.0*M_PI*ran->Get();
     double k0sq(p_split->GetType()==pst::IS?m_k0sqi:m_k0sqf);
     if (t<Max(t0,k0sq))  return false;
     if (p_selected->GetFlavourA().IsGluon() &&
@@ -427,37 +432,52 @@ int Sudakov::Generate(Parton *split,Parton *spect,
     m_type=split->GetType()==pst::FS?
       (split->GetSpect()->GetType()==pst::FS?cstp::FF:cstp::FI):
       (split->GetSpect()->GetType()==pst::FS?cstp::IF:cstp::II);
+    Parton *pj(NULL);
+    Vec4D peo(split->Momentum()), pso(p_spect->Momentum());
     const Mass_Selector *ms(p_selected->Lorentz()->MS());
     switch (m_type) {
     case (cstp::FF) : {
       double mi2 = sqr(ms->Mass(((*m_splitter)->GetFlavourB())));
+      if (split->KScheme()) mi2=p_split->Mass2();
       double mj2 = sqr(ms->Mass(((*m_splitter)->GetFlavourC())));
       double mk2 = sqr(ms->Mass(m_flspec));
       Q2 = (split->Momentum()+split->GetSpect()->Momentum()).Abs2();
       if (Q2<=mi2+mj2+mk2) return false;
+      p_shower->KinFF()->SetOSD(p_split->OSD());
       y = p_shower->KinFF()->GetY(Q2,t,z,mi2,mj2,mk2,
 				  (*m_splitter)->GetFlavourA(),
 				  (*m_splitter)->GetFlavourC());
       x = 0.;
       if (y<0.0 || y>1.0) continue;
+      if (p_split->OSD() && mi2+mj2>t) continue;
+      split->SetTest(t,z,y,phi);
+      if (p_shower->KinFF()->MakeKinematics
+	  (split,mi2,mj2,(*m_splitter)->GetFlavourC(),pj)!=1) continue;
     }
       break;
     case (cstp::FI) : {
       double mi2 = sqr(ms->Mass(((*m_splitter)->GetFlavourB())));
+      if (split->KScheme()) mi2=p_split->Mass2();
       double mj2 = sqr(ms->Mass(((*m_splitter)->GetFlavourC())));
       double ma2 = sqr(ms->Mass(m_flspec));
       double mij2= sqr(ms->Mass(((*m_splitter)->GetFlavourA())));
       Q2 = -(split->Momentum()-split->GetSpect()->Momentum()).Abs2();
+      p_shower->KinFI()->SetOSD(split->OSD());
       y = p_shower->KinFI()->GetY(-Q2,t,z,mi2,mj2,ma2,
 				  (*m_splitter)->GetFlavourA(),
 				  (*m_splitter)->GetFlavourC());
+      split->SetTest(t,z,y,phi);
       y = 1.0-y*(-Q2-mij2-ma2)/(-Q2-mi2-mj2-ma2);
       x = split->GetSpect()->Xbj();
       if (y<0.0 || y>1.0-x) continue;
+      if (p_split->OSD() && mi2+mj2>t) continue;
+      if (p_shower->KinFI()->MakeKinematics
+	  (split,mi2,mj2,(*m_splitter)->GetFlavourC(),pj)!=1) continue;
     }
       break;
     case (cstp::IF) : {
       double ma2 = sqr(ms->Mass(((*m_splitter)->GetFlavourA())));
+      double mj2 = sqr(ms->Mass(((*m_splitter)->GetFlavourB())));
       double mi2 = sqr(ms->Mass(((*m_splitter)->GetFlavourC())));
       double mk2 = sqr(ms->Mass(m_flspec));
       Q2 = -(split->Momentum()-split->GetSpect()->Momentum()).Abs2();
@@ -466,10 +486,14 @@ int Sudakov::Generate(Parton *split,Parton *spect,
 				  (*m_splitter)->GetFlavourC());
       x = split->Xbj();
       if (t<m_k0sqi || y<0.0 || y>1.0 || z<x) continue;
+      split->SetTest(t,z,y,phi);
+      // if (p_shower->KinIF()->MakeKinematics
+      // 	  (split,mi2,mj2,(*m_splitter)->GetFlavourB(),pj)!=1) continue;
     }
       break;
     case (cstp::II) : {
       double ma2 = sqr(ms->Mass(((*m_splitter)->GetFlavourA())));
+      double mj2 = sqr(ms->Mass(((*m_splitter)->GetFlavourB())));
       double mi2 = sqr(ms->Mass(((*m_splitter)->GetFlavourC())));
       double mb2 = sqr(ms->Mass(m_flspec));
       Q2 = (split->Momentum()+split->GetSpect()->Momentum()).Abs2();
@@ -478,13 +502,21 @@ int Sudakov::Generate(Parton *split,Parton *spect,
 				  (*m_splitter)->GetFlavourC());
       x   = split->Xbj();
       if (t<m_k0sqi || y<0.0 || y>1.0-z || z<x) continue;
+      split->SetTest(t,z,y,phi);
+      // if (p_shower->KinII()->MakeKinematics
+      // 	  (split,mi2,mj2,(*m_splitter)->GetFlavourB(),pj)!=1) continue;
     }
       break;
     default:
       msg_Error()<<"Error in Sudakov::Generate!"<<std::endl;
       Abort();
     }
+    p_selected->Lorentz()->SetSCInfo
+      (split,pj,p_split->SCP(0),p_split->SCP(1));
     const bool veto(Veto(Q2, x,t,y,z));
+    split->SetMomentum(peo);
+    p_spect->SetMomentum(pso);
+    if (pj!=NULL) delete pj;
     if (m_keeprewinfo) {
       const double accwgt(Selected()->LastAcceptanceWeight());
       const double lastscale(Selected()->LastScale());
@@ -504,7 +536,6 @@ int Sudakov::Generate(Parton *split,Parton *spect,
       }
     }
     if (veto) {
-      phi = 2.0*M_PI*ran->Get();
       return 1;
     }
   }

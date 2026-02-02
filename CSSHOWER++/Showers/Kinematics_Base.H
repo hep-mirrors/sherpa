@@ -11,11 +11,11 @@ namespace CSSHOWER {
   class Kinematics_Base {
   public:
     const ATOOLS::Mass_Selector *p_ms;
-    int m_evolscheme;
+    int m_evolscheme, m_osd;
     int MakeForcedSplittingKinematics(Parton *const split,Parton *& pnew,
 				      PHASIC::Kin_Args & args,const int mode=0) const;
   public:
-    Kinematics_Base(): m_evolscheme(0), p_ms(NULL) {}
+    Kinematics_Base(): p_ms(NULL), m_evolscheme(0), m_osd(0) {}
     virtual ~Kinematics_Base() {}
     virtual int MakeKinematics(Parton *const,const double &,
 			       const double &,const ATOOLS::Flavour &,
@@ -34,6 +34,7 @@ namespace CSSHOWER {
       }
       return true;
     }
+    inline void SetOSD(const int osd) { m_osd=osd; }
   };
 
   class Kinematics_FF : public Kinematics_Base {

@@ -106,19 +106,14 @@ int Singlet::SplitParton(Parton * mother, Parton * part1, Parton * part2)
 
   Flavour flav    = mother->GetFlavour(), flav1 = part1->GetFlavour(), flav2 = part2->GetFlavour();
 
-  PLiter pos1,pos2;
-  plit = insert(plit,part1);
-  pos1 = plit;
-  plit++;
-  plit = insert(plit,part2);
-  pos2 = plit;
+  insert(end(),part1);
+  insert(end(),part2);
 
   part1->SetSing(this);
   part2->SetSing(this);
 
   if (part2->GetNext()) part2->GetNext()->GetSing()->AddParton(part2->GetNext());
 
-  plit++;
   if (mother==p_split) p_split=part1;
   delete mother;
   plit = erase(plit);
@@ -366,6 +361,8 @@ void Singlet::BoostAllFS(Parton *l,Parton *r,Parton *s,bool onlyFS)
 	IsZero(p.PPerp2())) p[1]=p[2]=0.0;
     if ((*plit)->Mass2()==0.0) p[0]=p.PSpat();
     (*plit)->SetMomentum(p);
+    (*plit)->SetSCP(0,l->LT()*(*plit)->SCP(0));
+    (*plit)->SetSCP(1,l->LT()*(*plit)->SCP(1));
   }
 }
 
@@ -383,6 +380,8 @@ void Singlet::BoostBackAllFS(Parton *l,Parton *r,Parton *s,bool onlyFS)
 	IsZero(p.PPerp2())) p[1]=p[2]=0.0;
     if ((*plit)->Mass2()==0.0) p[0]=p.PSpat();
     (*plit)->SetMomentum(p);
+    (*plit)->SetSCP(0,lt*(*plit)->SCP(0));
+    (*plit)->SetSCP(1,lt*(*plit)->SCP(1));
   }
 }
 

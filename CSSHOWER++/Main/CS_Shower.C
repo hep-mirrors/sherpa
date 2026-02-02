@@ -45,7 +45,7 @@ CS_Shower::CS_Shower(PDF::ISR_Handler *const _isr,
   const int ckfmode { pss["CKFMODE"].Get<bool>() };
   const int pdfcheck{ pss["PDFCHECK"].Get<bool>() };
   const int _qcd    { pss["QCD_MODE"].Get<bool>() };
-  const int _qed    { pss["EW_MODE"].Get<bool>() };
+  const int _qed    { pss["EW_MODE"].Get<int>() };
 
   if (_qed==1) {
     s_kftable[kf_photon]->SetResummed();
@@ -170,6 +170,7 @@ bool CS_Shower::ExtractPartons(Blob_List *const blist) {
 void CS_Shower::CleanUp()
 {
   m_nem=0;
+  Parton::ResetID();
   for (All_Singlets::const_iterator 
 	 sit(m_allsinglets.begin());sit!=m_allsinglets.end();++sit) {
     if (*sit) delete *sit;

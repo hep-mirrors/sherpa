@@ -229,6 +229,7 @@ void Initialization_Handler::RegisterDefaults()
   s["NLOMC_GENERATOR"].SetDefault(showergen);
   auto pss = s["SHOWER"], nlopss = s["MC@NLO"];
   pss["JET_CRITERION"].SetDefault(1);
+  pss["SPIN_CORRELATIONS"].SetDefault(1);
   pss["EVOLUTION_SCHEME"].SetDefault(30+30*100);
   pss["KFACTOR_SCHEME"].SetDefault(1);
   pss["SCALE_SCHEME"].SetDefault(14);

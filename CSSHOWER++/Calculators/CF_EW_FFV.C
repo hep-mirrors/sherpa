@@ -148,7 +148,7 @@ double CF_EW_FFW::Coupling(const double &scale,const int pol)
 
 bool CF_EW_FFW::AllowSpec(const ATOOLS::Flavour &fl,const int mode) 
 {
-  return true;
+  return fl.IsFermion() || (fl.Kfcode()>=22 && fl.Kfcode()<=24);
 }
 
 namespace CSSHOWER {

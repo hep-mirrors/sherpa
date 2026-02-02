@@ -1,4 +1,7 @@
 #include "CSSHOWER++/Showers/Splitting_Function_Base.H"
+
+#include "CSSHOWER++/Tools/Parton.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
 #include "ATOOLS/Org/Message.H"
 
 namespace CSSHOWER {
@@ -21,6 +24,28 @@ namespace CSSHOWER {
   public:
 
     inline LF_VVV2_FF(const SF_Key &key): SF_Lorentz(key) { m_col=-1; }
+
+    double operator()(const double,const double,const double,
+		      const double,const double);
+    double OverIntegrated(const double,const double,
+			  const double,const double);
+    double OverEstimated(const double,const double);
+    double Z();
+
+  };
+
+  class LF_VVVS_FF: public SF_Lorentz {
+  protected:
+
+    int m_sc;
+
+  public:
+
+    inline LF_VVVS_FF(const SF_Key &key): SF_Lorentz(key)
+    {
+      auto pss = ATOOLS::Settings::GetMainSettings()["SHOWER"];
+      m_sc = pss["SPIN_CORRELATIONS"].Get<int>();
+    }
 
     double operator()(const double,const double,const double,
 		      const double,const double);
@@ -57,6 +82,29 @@ namespace CSSHOWER {
   public:
 
     inline LF_VVV2_FI(const SF_Key &key): SF_Lorentz(key) { m_col=-1; }
+
+    double operator()(const double,const double,const double,
+		      const double,const double);
+    double OverIntegrated(const double,const double,
+			  const double,const double);
+    double OverEstimated(const double,const double);
+    double Z();
+
+  };
+
+  class LF_VVVS_FI: public SF_Lorentz {
+  protected:
+
+    int m_sc;
+    double m_Jmax;
+
+  public:
+
+    inline LF_VVVS_FI(const SF_Key &key): SF_Lorentz(key)
+    {
+      auto pss = ATOOLS::Settings::GetMainSettings()["SHOWER"];
+      m_sc = pss["SPIN_CORRELATIONS"].Get<int>();
+    }
 
     double operator()(const double,const double,const double,
 		      const double,const double);
@@ -157,7 +205,7 @@ double LF_VVV1_FF::operator()
 {
   double muk2  = sqr(p_ms->Mass(m_flspec))/Q2;
   //the massless case
-  double massless = 2. * ( 1./(1.-z+z*y) -1. + z*(1.-z)/2.0 );
+  double massless = 2. * ( 1./(1.-z+z*y) -1. );
   if (muk2==0.) {
     double value = 2.0 * p_cf->Coupling(scale,0) * massless;
     return value * JFF(y,0.0,0.0,0.0,0.0);
@@ -167,9 +215,9 @@ double LF_VVV1_FF::operator()
     double vijk = sqr(2.*muk2+(1.-muk2)*(1.-y))-4.*muk2;
     if (vijk<0.0) return 0.0;
     vijk = sqrt(vijk)/((1.-muk2)*(1.-y));
-    double zm = 0.5*(1.- vijk);  
+    double zm = 0.5*(1.- vijk);
     double zp = 0.5*(1.+ vijk);
-    double massive = 2. * ( 1./(1.-z+z*y) + (z*(1.-z)/2. - (1.0-s_kappa)*zp*zm/2. - 1.)/vijk );
+    double massive = 2. * ( 1./(1.-z+z*y) + ( - (1.0-s_kappa)*zp*zm/2. - 1.)/vijk );
     double pipj  = Q2*(1.0-muk2)*y/2.0;
     double pkpj  = Q2*(1.0-muk2)*(1.-y)*(1.-z)/2.0;
     massive -= Q2*muk2/pkpj*pipj/(pipj+pkpj);
@@ -202,7 +250,7 @@ double LF_VVV2_FF::operator()
 {
   double muk2  = sqr(p_ms->Mass(m_flspec))/Q2;
   //the massless case
-  double massless = 2. * ( 1./(z+y-z*y) -1. + z*(1.-z)/2.0 );
+  double massless = 2. * ( 1./(z+y-z*y) -1. );
   if (muk2==0.) {
     double value = 2.0 * p_cf->Coupling(scale,0) * massless;
     return value * JFF(y,0.0,0.0,0.0,0.0);
@@ -214,7 +262,7 @@ double LF_VVV2_FF::operator()
     vijk = sqrt(vijk)/((1.-muk2)*(1.-y));
     double zm = 0.5*(1.- vijk);  
     double zp = 0.5*(1.+ vijk);
-    double massive = 2. * ( 1./(z+y-z*y) + (z*(1.-z)/2. - (1.0-s_kappa)*zp*zm/2. - 1.)/vijk );
+    double massive = 2. * ( 1./(z+y-z*y) + ( - (1.0-s_kappa)*zp*zm/2. - 1.)/vijk );
     double pipj  = Q2*(1.0-muk2)*y/2.0;
     double pkpi  = Q2*(1.0-muk2)*(1.-y)*z/2.0;
     massive -= Q2*muk2/pkpi*pipj/(pipj+pkpi);
@@ -241,11 +289,68 @@ double LF_VVV2_FF::Z()
   return m_zmin*pow(m_zmax/m_zmin,ATOOLS::ran->Get());
 }
 
+double LF_VVVS_FF::operator()
+  (const double z,const double y,const double eta,
+   const double scale,const double Q2)
+{
+  double muk2  = sqr(p_ms->Mass(m_flspec))/Q2;
+  //the massless case
+  double sct = 1.;
+  if (m_sc && p_scp[0] && p_scp[1]) {
+    const Vec4D &pi(p_scp[0]->Momentum());
+    const Vec4D &pj(p_scp[1]->Momentum());
+    Vec4D jd = z*pj-(1-z)*pi, pij = pi+pj;
+    if (p_ms->Mass(m_flavs[0])) jd=pj-pi;
+    double n0 = (m_scr[0]+pij).Abs2(), n1 = (m_scr[1]+pij).Abs2();
+    if (n0==0 || n1==0) return 0;
+    Vec4D jp = (2*m_scr[0]+pij)/n0-(2*m_scr[1]+pij)/n1;
+    if (jd.Abs2()==0 || jp.Abs2()==0) return 0;
+    sct = 2*sqr(jp*jd)/(jd.Abs2()*jp.Abs2());
+  }
+  double massless = 2. * ( z*(1.-z)*sct );
+  if (muk2==0.) {
+    double value = 2.0 * p_cf->Coupling(scale,0) * massless;
+    return value * JFF(y,0.0,0.0,0.0,0.0);
+  }
+  else {
+    //the massive case
+    double vijk = sqr(2.*muk2+(1.-muk2)*(1.-y))-4.*muk2;
+    if (vijk<0.0) return 0.0;
+    vijk = sqrt(vijk)/((1.-muk2)*(1.-y));
+    double zm = 0.5*(1.- vijk);
+    double zp = 0.5*(1.+ vijk);
+    double massive = 2. * ( z*(1.-z)*sct/vijk );
+    double pipj  = Q2*(1.0-muk2)*y/2.0;
+    double pkpj  = Q2*(1.0-muk2)*(1.-y)*(1.-z)/2.0;
+    massive -= Q2*muk2/pkpj*pipj/(pipj+pkpj);
+    massive *= 1./(1.-muk2);
+    double value = 2.0 * p_cf->Coupling(scale,0) * massive;
+    return value * JFF(y,0.0,0.0,muk2,0.0);
+  }
+}
+
+double LF_VVVS_FF::OverIntegrated
+(const double zmin,const double zmax,const double scale,const double xbj)
+{
+  m_zmin = zmin; m_zmax = zmax;
+  return 4.*p_cf->MaxCoupling(0);
+}
+
+double LF_VVVS_FF::OverEstimated(const double z,const double y)
+{
+  return 4.*p_cf->MaxCoupling(0);
+}
+
+double LF_VVVS_FF::Z()
+{
+  return m_zmin+(m_zmax-m_zmin)*ATOOLS::ran->Get();
+}
+
 double LF_VVV1_FI::operator()
   (const double z,const double y,const double eta,
    const double scale,const double Q2)
 {
-  double value = 4.0*p_cf->Coupling(scale,0) * ( z/(1.-z+y) + z*(1.-z)/2.0 );
+  double value = 4.0*p_cf->Coupling(scale,0) * ( z/(1.-z+y) );
   return value * JFI(y,eta,scale);
 }
 
@@ -271,7 +376,7 @@ double LF_VVV2_FI::operator()
   (const double z,const double y,const double eta,
    const double scale,const double Q2)
 {
-  double value = 4.0*p_cf->Coupling(scale,0) * ( (1.-z)/(z+y) + z*(1.-z)/2.0 );
+  double value = 4.0*p_cf->Coupling(scale,0) * ( (1.-z)/(z+y) );
   return value * JFI(y,eta,scale);
 }
 
@@ -291,6 +396,44 @@ double LF_VVV2_FI::OverEstimated(const double z,const double y)
 double LF_VVV2_FI::Z()
 {
   return m_zmin*pow(m_zmax/m_zmin,ATOOLS::ran->Get());
+}
+
+double LF_VVVS_FI::operator()
+  (const double z,const double y,const double eta,
+   const double scale,const double Q2)
+{
+  double sct = 1.;
+  if (m_sc && p_scp[0] && p_scp[1]) {
+    const Vec4D &pi(p_scp[0]->Momentum());
+    const Vec4D &pj(p_scp[1]->Momentum());
+    Vec4D jd = z*pj-(1-z)*pi, pij = pi+pj;
+    if (p_ms->Mass(m_flavs[0])) jd=pj-pi;
+    double n0 = (m_scr[0]+pij).Abs2(), n1 = (m_scr[1]+pij).Abs2();
+    if (n0==0 || n1==0) return 0;
+    Vec4D jp = (2*m_scr[0]+pij)/n0-(2*m_scr[1]+pij)/n1;
+    if (jd.Abs2()==0 || jp.Abs2()==0) return 0;
+    sct = 2*sqr(jp*jd)/(jd.Abs2()*jp.Abs2());
+  }
+  double value = 4.0*p_cf->Coupling(scale,0) * ( z*(1.-z)*sct );
+  return value * JFI(y,eta,scale);
+}
+
+double LF_VVVS_FI::OverIntegrated
+(const double zmin,const double zmax,const double scale,const double xbj)
+{
+  m_zmin = zmin; m_zmax = zmax;
+  m_Jmax=5.;
+  return 4.*p_cf->MaxCoupling(0) * m_Jmax;
+}
+
+double LF_VVVS_FI::OverEstimated(const double z,const double y)
+{
+  return 4.*p_cf->MaxCoupling(0) * m_Jmax;
+}
+
+double LF_VVVS_FI::Z()
+{
+  return m_zmin+(m_zmax-m_zmin)*ATOOLS::ran->Get();
 }
 
 double LF_VVV1_IF::operator() 
@@ -453,12 +596,19 @@ operator()(const Parameter_Type &args) const
     case cstp::none: break;
     }
   }
-  else {
+  else if (args.m_col==-1) {
     switch (args.m_type) {
     case cstp::FF: return new LF_VVV2_FF(args);
     case cstp::FI: return new LF_VVV2_FI(args);
     case cstp::IF: return new LF_VVV2_IF(args);
     case cstp::II: return new LF_VVV2_II(args);
+    case cstp::none: break;
+    }
+  }
+  else {
+    switch (args.m_type) {
+    case cstp::FF: return new LF_VVVS_FF(args);
+    case cstp::FI: return new LF_VVVS_FI(args);
     case cstp::none: break;
     }
   }
@@ -485,12 +635,19 @@ operator()(const Parameter_Type &args) const
     case cstp::none: break;
     }
   }
-  else {
+  else if (args.m_col==-1) {
     switch (args.m_type) {
     case cstp::FF: return new LF_VVV2_FF(args);
     case cstp::FI: return new LF_VVV2_FI(args);
     case cstp::IF: return new LF_VVV2_IF(args);
     case cstp::II: return new LF_VVV2_II(args);
+    case cstp::none: break;
+    }
+  }
+  else {
+    switch (args.m_type) {
+    case cstp::FF: return new LF_VVVS_FF(args);
+    case cstp::FI: return new LF_VVVS_FI(args);
     case cstp::none: break;
     }
   }

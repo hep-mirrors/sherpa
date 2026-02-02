@@ -44,6 +44,7 @@ double Kinematics_FF::GetY(const double &Q2,const double &_kt2,const double &z,
 {
   if (!force && (z<=0.0 || z>=1.0 || Q2<=mi2+mj2+mk2)) return -1.0;
   double kt2=_kt2;
+  if (m_osd) return kt2/(Q2-mi2-mj2-mk2);
   if (m_evolscheme==2  || m_evolscheme==3)  kt2=kt2-mi2-mj2;
   if (m_evolscheme==20 || m_evolscheme==30)
     kt2=(fla.IsGluon())?(kt2-mi2-mj2):kt2;
@@ -72,6 +73,7 @@ int Kinematics_FF::MakeKinematics
 
   double mij2 = split->Mass2(), mk2 = spect->Mass2();
 
+  m_osd=split->OSD();
   double y=GetY((p1+p2).Abs2(),split->KtTest(),split->ZTest(),mi2,mj2,mk2,
 		split->GetFlavour(),flj,1);
   Kin_Args ff(y,split->ZTest(),split->Phi());
@@ -124,6 +126,7 @@ double Kinematics_FI::GetY(const double &Q2,const double &_kt2,const double &z,
 {
   if (!force && (z<=0.0 || z>=1.0 || Q2>=mi2+mj2+ma2)) return -1.0;
   double kt2=_kt2;
+  if (m_osd) return 1.0/(1.0-kt2/(Q2-mi2-mj2-ma2));
   if (m_evolscheme==2 || m_evolscheme==3) kt2=kt2-mi2-mj2;
   if (m_evolscheme==20 || m_evolscheme==30)
     kt2=(fla.IsGluon())?(kt2-mi2-mj2):kt2;
@@ -153,6 +156,7 @@ int Kinematics_FI::MakeKinematics
   double ma2 = spect->Mass2(), mij2 = split->Mass2();
 
   double Q2((p1-p2).Abs2());
+  m_osd=split->OSD();
   double y=GetY(Q2,split->KtTest(),split->ZTest(),mi2,mj2,ma2,
 		split->GetFlavour(),flj,1);
   Kin_Args fi(1.0-y,split->ZTest(),split->Phi(),8);

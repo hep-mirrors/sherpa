@@ -93,6 +93,12 @@ Splitting_Function_Base::Splitting_Function_Base(const SF_Key &key):
   if (!m_on && (ckey.m_ewmode&1) &&
       (p_lf->FlA().IsPhoton() || p_lf->FlB().IsPhoton() ||
        p_lf->FlC().IsPhoton())) m_on=true;
+  if (!m_on && (ckey.m_ewmode&2) &&
+      (p_lf->FlA().Kfcode()==24 || p_lf->FlB().Kfcode()==24 ||
+       p_lf->FlC().Kfcode()==24)) m_on=true;
+  if (!m_on && (ckey.m_ewmode&4) &&
+      (p_lf->FlA().Kfcode()==23 || p_lf->FlB().Kfcode()==23 ||
+       p_lf->FlC().Kfcode()==23)) m_on=true;
   if (key.p_v->in[1].Mass()>10.0 &&
       key.p_v->in[2].Mass()>10.0) m_on=0;
   if (key.p_v->in[1]==key.p_v->in[2] &&

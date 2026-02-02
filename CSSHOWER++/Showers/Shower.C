@@ -277,10 +277,32 @@ int Shower::MakeKinematics
   pi->SetId(split->Id());
   pi->SetKScheme(split->KScheme());
   pi->SetKin(split->Kin());
+  pi->SetSCP(0,split->SCP(0));
+  pi->SetSCP(1,split->SCP(1));
+  pi->SetSCR(split->SCR());
   pj->SetKin(m_kscheme);
   pi->SetLT(split->LT());
   SetSplitInfo(peo,pso,split,pi,pj,stype);
   split->GetSing()->AddParton(pj);
+  if (split->Col()==1) {
+    pj->SetSCP(0,split->Momentum());
+    pj->SetSCP(1,spect->Momentum());
+  }
+  else if (split->Col()==-1) {
+    pi->SetSCP(0,pj->Momentum());
+    pi->SetSCP(1,spect->Momentum());
+  }
+  else if (fla.IsVector()) {
+    if (pi->SCR()) {
+      pi->SCR()->SetSCP(0,split->Momentum());
+      pi->SCR()->SetSCP(1,pj->Momentum());
+      pi->SetSCR(NULL);
+    }
+    else {
+      pj->SetSCR(pi);
+      pi->SetSCR(pj);
+    }
+  }
   if (stype) split->GetSing()->BoostAllFS(pi,pj,spect,split->ForcedSplitting());
   int ustat(UpdateDaughters(split,pi,pj,jcv,mode));
   if (ustat<=0 || (split->GetSing()->GetLeft() &&
@@ -309,6 +331,20 @@ int Shower::MakeKinematics
        plit!=singlet->end();++plit)
     (*plit)->UpdateDaughters();
   return 1;
+}
+
+int Shower::CheckDecay(Singlet *cur)
+{
+  int stat(0);
+  DEBUG_FUNC(cur);
+  for (Singlet::const_iterator it=cur->begin();it!=cur->end();++it) {
+    Parton *s=*it;
+    if (s->GetType()==pst::IS || s->KtStart()>=s->GetFlavour().Width()) continue;
+    DEBUG_VAR(*s);
+    s->SetOSD(1);
+    stat=1;
+  }
+  return stat;
 }
 
 bool Shower::EvolveSinglet(Singlet * act,const size_t &maxem,size_t &nem)
@@ -357,6 +393,7 @@ bool Shower::EvolveSinglet(Singlet * act,const size_t &maxem,size_t &nem)
     if (split==NULL) {
       msg_Debugging()<<"No emission\n";
       ResetScales(p_actual->KtNext());
+      if (CheckDecay(act)) continue;
       for (Singlet::const_iterator it=p_actual->begin(); it!=p_actual->end();++it) {
         const double singlet_weight {(*it)->Weight()};
         if (singlet_weight != 1.0)
@@ -385,7 +422,8 @@ bool Shower::EvolveSinglet(Singlet * act,const size_t &maxem,size_t &nem)
 		     <<split->YTest()<<" for\n"<<*split
 		     <<*split->GetSpect()<<"\n";
       m_last[0]=m_last[1]=m_last[2]=m_last[3]=NULL;
-      if (kt2win<split->GetSing()->KtNext()) {
+      if (kt2win<split->GetSing()->KtNext() ||
+	  kt2win<split->GetFlavour().Width()) {
 	msg_Debugging()<<"... Defer split ...\n\n";
 	ResetScales(split->GetSing()->KtNext());
 	if (p_actual->NLO()&32) {
@@ -519,6 +557,7 @@ bool Shower::EvolveSinglet(Singlet * act,const size_t &maxem,size_t &nem)
         }
       }
       ++nem;
+      CheckDecay(act);
       if (p_actual->NME()+nem>m_maxpart || nem >= maxem) {
 	return true;
       }
@@ -539,7 +578,8 @@ Parton *Shower::SelectSplitting(double & kt2win) {
 bool Shower::TrialEmission(double & kt2win,Parton * split)
 {
   if (split->KtStart()==0.0 ||
-      split->KtStart()<split->GetSing()->KtNext()) return false;
+      split->KtStart()<split->GetSing()->KtNext())
+    if (split->OSD()==0) return false;
   double kt2(0.),z(0.),y(0.),phi(0.);
   while (true) {
     if (m_sudakov.Generate(split,kt2win)) {

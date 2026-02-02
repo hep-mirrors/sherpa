@@ -35,28 +35,32 @@ namespace CSSHOWER {
   class Parton {
   private:
     ATOOLS::Flavour m_flav;
-    ATOOLS::Vec4D   m_mom;
+    ATOOLS::Vec4D   m_mom, m_scr[2];
     ATOOLS::Flow    m_flow;
     pst::code       m_pst;
     bool            m_forcedsplitting;
-    int             m_beam,m_stat,m_kin,m_kscheme,m_col,m_nforced;
+    int             m_beam,m_stat,m_kin,m_kscheme,m_col,m_nforced,m_osd;
     double          m_kt_start, m_kt_veto, m_kt_test;
     double          m_z_test, m_y_test, m_phi, m_weight, m_xBj, m_t;
     double          m_kt_soft[2];
     bool            m_fromdec;
-    Parton        * p_left, * p_right;
+    Parton        * p_left, * p_right, * p_scr;
     Parton        * p_spect, * p_prev, * p_next;
     Singlet       * p_sing;
-    size_t          m_id;
+    size_t          m_pid, m_id;
     ATOOLS::Poincare_Sequence m_lt;
 
     std::vector<std::pair<double,double> > m_weights;
     Sudakov_Reweighting_Infos m_sudakovrewinfos;
+    static int s_id;
 
   public:
     inline Parton();
     inline Parton(const ATOOLS::Flavour &,const ATOOLS::Vec4D &,pst::code=pst::none);
     inline Parton(const ATOOLS::Particle *,pst::code=pst::none);
+
+    static int NewID() { return s_id++; }
+    static void ResetID() { s_id=0; }
 
     void DeleteAll();
 
@@ -96,6 +100,7 @@ namespace CSSHOWER {
     inline double                  Mass2()        const { return m_t; }
     inline double                  Phi()          const;
     inline bool                    ForcedSplitting() const;
+    inline int                     OSD() const { return m_osd; }
     inline size_t                  ForcedTrials() const { return m_nforced; }
     inline Parton *                GetLeft();
     inline Parton *                GetRight();
@@ -118,6 +123,7 @@ namespace CSSHOWER {
     inline void SetXbj(const double);
     inline void SetMass2(const double t) { m_t=t; }
     inline void SetPhi(const double);
+    inline void SetOSD(const int osd) { m_osd=osd; }
     inline void SetForcedSplitting(const bool);
     inline void IncForcedTrials() { m_nforced++; }
     void SetLeftOf(Parton *);
@@ -137,18 +143,23 @@ namespace CSSHOWER {
     inline void SetFromDec(const bool &val){m_fromdec=val;}
     inline bool FromDec() const {return m_fromdec;}
     friend std::ostream& operator<<(std::ostream &,const Parton &);
+    inline const ATOOLS::Vec4D SCP(const int i) const { return m_scr[i]; }
+    inline void SetSCP(const int i,const ATOOLS::Vec4D &p) { m_scr[i]=p; }
+    inline Parton *SCR() const { return p_scr; }
+    inline void SetSCR(Parton *p) { p_scr=p; }
   };
 
   Parton::Parton() : 
     m_flav(ATOOLS::Flavour(kf_none)),
     m_mom(ATOOLS::Vec4D(0.,0.,0.,0.)), 
     m_pst(pst::none), m_forcedsplitting(false),
-    m_beam(0), m_stat(0), m_kin(0), m_kscheme(0), m_col(0), m_nforced(0),
+    m_beam(0), m_stat(0), m_kin(0), m_kscheme(0), m_col(0), m_nforced(0), m_osd(0),
     m_kt_start(0.), m_kt_veto(0.), m_kt_test(0.),
     m_z_test(1.), m_y_test(1.), m_phi(2.0*M_PI), m_weight(1.0), m_xBj(1.),
     p_left(NULL), p_right(NULL), p_spect(NULL), p_prev(NULL), p_next(NULL), p_sing(NULL), 
-    m_id(0),m_fromdec(false)
-  { 
+    m_pid(NewID()), m_id(0),m_fromdec(false)
+  {
+    p_scr=NULL;
     m_kt_soft[0]=m_kt_soft[1]=std::numeric_limits<double>::max();
     m_flow.SetCode(1,0);
     m_flow.SetCode(2,0);
@@ -156,12 +167,13 @@ namespace CSSHOWER {
 
   Parton::Parton(const ATOOLS::Flavour & flav,const ATOOLS::Vec4D & mom,pst::code pst) : 
     m_flav(flav), m_mom(mom), m_pst(pst), m_forcedsplitting(false),
-    m_beam(0), m_stat(0), m_kin(0), m_kscheme(0), m_col(0), m_nforced(0),
+    m_beam(0), m_stat(0), m_kin(0), m_kscheme(0), m_col(0), m_nforced(0), m_osd(0),
     m_kt_start(0.), m_kt_veto(0.), m_kt_test(0.),
     m_z_test(1.), m_y_test(1.), m_phi(2.0*M_PI), m_weight(1.0), m_xBj(1.),
     p_left(NULL), p_right(NULL), p_spect(NULL), p_prev(NULL), p_next(NULL), p_sing(NULL), 
-    m_id(0), m_fromdec(false)
+    m_pid(NewID()), m_id(0), m_fromdec(false)
   {
+    p_scr=NULL;
     m_kt_soft[0]=m_kt_soft[1]=std::numeric_limits<double>::max();
     m_flow.SetCode(1,0);
     m_flow.SetCode(2,0);
@@ -170,12 +182,13 @@ namespace CSSHOWER {
   Parton::Parton(const ATOOLS::Particle * part,pst::code pst) : 
     m_flav(part->Flav()), m_mom(part->Momentum()), 
     m_pst(pst), m_forcedsplitting(false),
-    m_beam(0), m_stat(0), m_kin(0), m_kscheme(0), m_col(0), m_nforced(0),
+    m_beam(0), m_stat(0), m_kin(0), m_kscheme(0), m_col(0), m_nforced(0), m_osd(0),
     m_kt_start(0.), m_kt_veto(0.), m_kt_test(0.),
     m_z_test(1.), m_y_test(1.), m_phi(2.0*M_PI), m_weight(1.0), m_xBj(1.),
     p_left(NULL), p_right(NULL), p_spect(NULL), p_prev(NULL), p_next(NULL), p_sing(NULL), 
-    m_id(0), m_fromdec(part->FromDec())
+    m_pid(NewID()), m_id(0), m_fromdec(part->FromDec())
   {
+    p_scr=NULL;
     m_kt_soft[0]=m_kt_soft[1]=std::numeric_limits<double>::max();
     if (m_pst==pst::FS) {
       m_flow.SetCode(1,part->GetFlow(1));

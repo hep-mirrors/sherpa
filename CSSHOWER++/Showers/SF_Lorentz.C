@@ -1,6 +1,7 @@
 #include "CSSHOWER++/Showers/SF_Lorentz.H"
 
 #include "ATOOLS/Math/MathTools.H"
+#include "ATOOLS/Org/Run_Parameter.H"
 #include "CSSHOWER++/Showers/Splitting_Function_Base.H"
 #include "MODEL/Main/Single_Vertex.H"
 
@@ -12,6 +13,7 @@ double SF_Lorentz::s_kappa=2.0/3.0;
 SF_Lorentz::SF_Lorentz(const SF_Key &key):
   p_ms(NULL), p_cf(key.p_cf), m_col(0), m_pdfmin{ key.m_pdfmin }
 {
+  p_scp[0]=p_scp[1]=NULL;
   m_flavs[0]=key.p_v->in[0].Bar();
   if (key.m_mode==0) {
     m_flavs[1]=key.p_v->in[1];
@@ -48,6 +50,7 @@ double SF_Lorentz::JFF(const double &y,const double &mui2,
 double SF_Lorentz::JFI(const double &y,const double &eta,
 		       const double &scale)
 {
+  if (IsEqual(1.0-y,1.0,rpa->gen.SqrtAccu())) return m_lastJ = 1.0;
   if (scale < 0.0) {
     m_lastJ = 1.0;
   } else {
