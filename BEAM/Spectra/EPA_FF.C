@@ -73,7 +73,7 @@ void EPA_FF_Base::FillTables()
   axis xaxis(m_nxbins, m_xmin, m_xmax, axis_mode::log);
   axis baxis(m_nbbins,
              m_bmin * m_R,
-             std::min(m_b_pl_threshold, m_bmax) * m_R,
+             std::min(m_b_pl_threshold, m_bmax * m_R),
              axis_mode::log);
 
   //////////////////////////////////////////////////////////////////////////////
@@ -481,7 +481,7 @@ EPA_IonApproxIntegrated::EPA_IonApproxIntegrated(const ATOOLS::Flavour& beam,
                                                  const int dir)
     : EPA_FF_Base(beam, dir)
 {
-  m_b_pl_threshold = m_bmin * m_R;
+  m_b_pl_threshold = m_R;
   p_N_xb.reset();
   m_b = 1.001 * m_R;
 }
