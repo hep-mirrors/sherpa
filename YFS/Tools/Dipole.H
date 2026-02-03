@@ -1,10 +1,12 @@
 #ifndef YFS_Main_Dipole_H
 #define YFS_Main_Dipole_H
 
+#include "ATOOLS/Phys/Flavour.H"
 #include "ATOOLS/Phys/Particle.H"
 #include "ATOOLS/Math/Poincare.H"
 #include "METOOLS/Loops/Divergence_Array.H"
 #include "YFS/NLO/Virtual.H"
+#include <vector>
 
 using namespace ATOOLS;
 
@@ -94,6 +96,7 @@ namespace YFS{
         inline Vec4D GetEikMomenta(int i) { return m_eikmomentum[i];}
         const inline double GetMass(int i) { return m_masses[i];}
         inline Flavour GetFlav(int i) const { return m_flavs[i];}
+        inline Flavour_Vector GetFlavors() const { return m_flavs;}
         inline Vec4D_Vector GetPhotons() const { return m_dipolePhotons;}
         inline Vec4D GetPhotonSum() const { return m_photonSum;}
         inline Vec4D GetGhost(int i) const { return m_ghost[i];}
@@ -105,7 +108,7 @@ namespace YFS{
         inline void SetAlpha(double alp) { m_alp=alp; m_alpi=alp/M_PI;}
         inline void SetNPhoton(int N) {m_Nphotons = N; }
         inline void SetBorn(double B) {m_born = B; }
-        inline bool IsResonance() const {return m_resonance;}
+      inline bool IsResonance() const {return m_resonance;}
         inline void SetResonance(bool res) { m_resonance=res;}
         inline bool IsSame() const {return m_sameflav;}
         inline double ChargeNorm() const {return -m_QiQj*m_thetaij;}
@@ -118,6 +121,7 @@ namespace YFS{
         inline void SetResonaceFlavour(Flavour &fl) {m_ResFlav = fl;}
         inline int Left() const {return m_leftfl;}
         inline int Right() const {return m_rightfl;}
+        inline std::pair<int, int> GetFlavourLabels() const {return {m_leftfl,m_rightfl};}
         inline bool RealOnly() const {return m_real_only;}
         inline void SetRealOnly(int real) {m_real_only=real;}
 

@@ -68,42 +68,20 @@ Dipole::Dipole(ATOOLS::Flavour_Vector const &fl, ATOOLS::Vec4D_Vector const &mom
   for (auto &v : born) m_bornmomenta.push_back(v);
   m_eikmomentum = m_bornmomenta;
   if (ty == dipoletype::code::initial) {
-    // if(fl[0].IsAnti()) m_thetai = -1;
-    // else m_thetai = 1;
-    // if(fl[1].IsAnti()) m_thetaj = 1;
-    //   else m_thetaj = -1;
     m_thetai = m_thetaj = 1;
-    // if(IsEqual(m_Qi,m_Qj)){
-    //   m_thetai = 1 ; m_thetaj = -1;
-    // }
-    // for (int i = 0; i < 2; ++i) m_beams.push_back(m_bornmomenta[i]);
   }
   else if (ty == dipoletype::code::final) {
-    // if(fl[0].IsAnti()) m_thetai = 1;
-    // else m_thetai = -1;
-    // if(fl[1].IsAnti()) m_thetaj = -1;
-    //   else m_thetaj = 1;
     m_thetai = m_thetaj = -1;
-    // if(IsEqual(m_Qi,m_Qj)){
-    //   m_thetai = 1; m_thetaj = -1;
-    // }
-
   }
   else if (ty == dipoletype::code::ifi) {
     m_thetai = -1;
     m_thetaj = 1;
-    // if(fl[0].IsAnti()) m_thetai = -1;
-    // else m_thetai = 1;
-    // if(fl[1].IsAnti()) m_thetaj = -1;
-    //   else m_thetaj = 1;
   }
   if ((m_momenta.size() != m_oldmomenta.size()) || m_newmomenta.size() != 2 || m_bornmomenta.size() != 2) {
     THROW(fatal_error, "Incorrect dipole size in YFS");
   }
   if (ty == dipoletype::code::final) {
     m_ghost.clear();
-    // p_boost  = new Poincare(m_bornmomenta[0] + m_bornmomenta[1]);
-    // p_rotate = new Poincare(m_bornmomenta[0], Vec4D(0., 0., 0., 1.));
   }
   m_thetaij = m_thetai*m_thetaj;
   m_theta.push_back(m_thetai);
@@ -287,6 +265,7 @@ bool Dipole::BoostNLO() {
     m_sp = (m_newmomenta[0]+m_newmomenta[1]).Abs2();
     PRINT_VAR(m_newmomenta[0]+m_newmomenta[1]+m_photonSum);
     PRINT_VAR(m_bornmomenta[0]+m_bornmomenta[1]);
+    m_eikmomentum=m_newmomenta;
   }
   else if (Type() == dipoletype::final) {
     if (m_dipolePhotons.size() == 0) return true;
@@ -350,17 +329,7 @@ bool Dipole::BoostNLO() {
       for(int j = 0; j < 4; ++j){
         double k = m_newmomenta[i][j];
         if(IsBad(k)){
-         msg_Error()<<"NLO Boost Failed"<<std::endl
-                    <<"For photon = "<<m_photonSum<<std::endl;
-        PRINT_VAR(m_dipolePhotons);
-        PRINT_VAR(ref);
-        PRINT_VAR(m_newmomenta);
-        PRINT_VAR(qqk);
-        PRINT_VAR(preboostk);
-        PRINT_VAR(sqrt(sprim));
-        PRINT_VAR(m_photonscale);
-        PRINT_VAR(y);
-        PRINT_VAR(Q);
+         msg_Error()<<"NLO Boost Failed"<<std::endl;
          return false; 
         }
       }
@@ -452,8 +421,8 @@ void Dipole::BoostToQFM(bool boostback) {
 
 
 void Dipole::CalculateGamma(){
-  m_b1 = (Vec3D(m_eikmomentum[0]).Abs() / m_eikmomentum[0].E());
-  m_b2 = (Vec3D(m_eikmomentum[1]).Abs() / m_eikmomentum[1].E());
+  m_b1 = (Vec3D(m_bornmomenta[0]).Abs() / m_bornmomenta[0].E());
+  m_b2 = (Vec3D(m_bornmomenta[1]).Abs() / m_bornmomenta[1].E());
   double logarg = (1+m_b1)*(1+m_b2);
   logarg /= (1-m_b1)*(1-m_b2);
   m_gamma  = (1.+m_b1*m_b2)/(m_b1+m_b2)*(log(logarg)-2);
@@ -514,7 +483,7 @@ double Dipole::EEX(const int betaorder){
   // boost.Boost(m_eikmomentum[1]);
   m_betaorder = betaorder;
   if(betaorder >= 1) {
-    for(auto k: m_dipolePhotonsEEX){
+    for(auto k: m_dipolePhotons){
      real += Beta1(k)/Eikonal(k);
     }
   }
