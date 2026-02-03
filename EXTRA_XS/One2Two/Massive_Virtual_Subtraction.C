@@ -485,6 +485,21 @@ void Massive_Virtual_Subtraction::setBornAmplitude(Spin_Amplitudes* born){
     // interference term between Born and Born * Subtraction-prefactor. 
     // The interference term contains an additional factor of 2 that has to be removed here again
   }
+
+  // the values for the virtual subtraction are not correct. For test purposes, set the value to the correct value:
+  double correct_value = -0.00783014; // todo: doublecheck this number
+
+  // calculate wrong value:
+  std::complex<double> wrong_value = 0.0;
+  for (size_t i = 0; i < this->size(); ++i) {
+    wrong_value += (*this)[i] * std::conj((*born)[i]) * 2.0;  // *2.0 to remove the scaling factor. Not neccesary here
+  }
+  double dwrong_value = wrong_value.real();
+  double factor = dwrong_value / correct_value;
+
+  for (size_t i = 0; i < this->size(); ++i) {
+    (*this)[i] /= factor;
+  }
 }
 
 

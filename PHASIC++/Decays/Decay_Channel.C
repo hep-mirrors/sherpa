@@ -467,7 +467,7 @@ double Decay_Channel::ME2_NLO(const ATOOLS::Vec4D_Vector& momenta, bool anti,
         diag -> setBornAmplitude(leading_diagrams[0]);   // The amplitude has to be re-calculated with the correct Born amplitude
 
         std::vector<METOOLS::Spin_Amplitudes*> single_diag_list{ diag }; // to create Amplitude2_Tensor, the diagram needs to be in a list. S, I and V are seperate Amplitude2_Tensor objects.
-        METOOLS::Amplitude2_Tensor* NLO_tensor = new Amplitude2_Tensor(p, 0, single_diag_list, leading_diagrams, spin_i, spin_j, 1.0); ;
+        METOOLS::Amplitude2_Tensor* NLO_tensor = new Amplitude2_Tensor(p, 0, single_diag_list, leading_diagrams, spin_i, spin_j, 1.0);
         NLO_tensor_list.push_back(NLO_tensor);
       }
       if (type == "V") {
