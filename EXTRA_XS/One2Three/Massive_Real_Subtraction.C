@@ -412,3 +412,13 @@ std::pair<std::vector<std::pair<METOOLS::CSpinor<double>*, int>>,
 std::string Massive_Real_Subtraction::getType(){
   return "S";
 }
+
+
+void Massive_Real_Subtraction::SetFullME2(double fullME2){
+  m_fullME2 = fullME2;
+}
+
+
+double Massive_Real_Subtraction::GetFullME2(){
+  return m_fullME2;
+}

@@ -195,6 +195,8 @@ namespace METOOLS
     virtual double getSign();
     virtual std::array<int, 3> getDipoleIndices();
     virtual void MergeDiagrams(const METOOLS::Spin_Amplitudes* second_diagram);
+    virtual void SetFullME2(double fullME2);
+    virtual double GetFullME2();
   };
 
   /*! 

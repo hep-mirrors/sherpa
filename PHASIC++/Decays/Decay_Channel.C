@@ -448,6 +448,9 @@ double Decay_Channel::ME2_NLO(const ATOOLS::Vec4D_Vector& momenta, bool anti,
 
     METOOLS::Amplitude2_Tensor* leading_tensor = new Amplitude2_Tensor(p,0,leading_diagrams,spin_i, spin_j);
     p_amps = leading_tensor;
+
+    double fullME2_R = ((*sigma)*p_amps->ReduceToMatrix(sigma->Particle())).real();
+
     bool isRealChannel(false);
 
     std::vector<METOOLS::Amplitude2_Tensor*> NLO_tensor_list;  // build the Amplitude2_Tensor for S, V resp. I
@@ -455,12 +458,19 @@ double Decay_Channel::ME2_NLO(const ATOOLS::Vec4D_Vector& momenta, bool anti,
     for (size_t i = 0; i < GetDiagrams().size(); ++i) {
       METOOLS::Spin_Amplitudes* diag = GetDiagrams()[i];
       const std::string& type = diag->getType();
+      if (type == "R"){
+        GetDiagrams()[i]->SetFullME2(fullME2_R);
+      }
       if (type == "S") {
         double sign(diag -> getSign()); // is either 1 or -1
         std::vector<METOOLS::Spin_Amplitudes*> single_diag_list{ diag }; // to create Amplitude2_Tensor, the diagram needs to be in a list. S, I and V are seperate Amplitude2_Tensor objects.
         METOOLS::Amplitude2_Tensor* NLO_tensor = new Amplitude2_Tensor(p, 0, single_diag_list, spin_i, spin_j);
         NLO_tensor_list.push_back(NLO_tensor);
         s_sign_list.push_back(sign);
+
+        double fullME2_S = ((*sigma)*NLO_tensor->ReduceToMatrix(sigma->Particle())).real();
+        GetDiagrams()[i]->SetFullME2(fullME2_S);
+
         isRealChannel = true;
       }
       if (type == "I") {

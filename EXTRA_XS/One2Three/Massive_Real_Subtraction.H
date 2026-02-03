@@ -22,6 +22,7 @@ namespace EXTRAXS {
     double BornPrefactor;
     double alpha_qcd;
     ATOOLS::Vec4D_Vector born_momenta;
+    double m_fullME2;
 
     std::vector<METOOLS::Current*> m_cur_born;
     std::vector<METOOLS::Current*> m_anticur_born;
@@ -51,6 +52,8 @@ namespace EXTRAXS {
     ATOOLS::Flavour Prop() const { return m_prop; }
     ATOOLS::Vec4D_Vector GetMomenta() override { return born_momenta; }
     double getColourFactor(const PHASIC::Color_Integrator* p_ci) override;
+    void SetFullME2(double fullME2) override;
+    double GetFullME2() override;
   
   protected:
     double ME2_Born;

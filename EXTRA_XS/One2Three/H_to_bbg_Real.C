@@ -257,3 +257,13 @@ void H_to_bbg_Real::MergeDiagrams(const METOOLS::Spin_Amplitudes* second_diagram
     (*this)[i] += (*second_diagram)[i];
   }
 }
+
+
+void H_to_bbg_Real::SetFullME2(double fullME2){
+  m_fullME2 = fullME2;
+}
+
+
+double H_to_bbg_Real::GetFullME2(){
+  return m_fullME2;
+}

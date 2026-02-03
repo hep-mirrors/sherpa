@@ -143,3 +143,15 @@ void Spin_Amplitudes::MergeDiagrams(const METOOLS::Spin_Amplitudes* second_diagr
 }
 
 
+void Spin_Amplitudes::SetFullME2(double fullME2){
+  msg_Error()<<METHOD<<": Virtual function called."<<endl;
+  Abort();
+}
+
+
+double Spin_Amplitudes::GetFullME2(){
+  msg_Error()<<METHOD<<": Virtual function called."<<endl;
+  Abort();
+  return 0.0;
+}
+

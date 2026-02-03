@@ -34,6 +34,7 @@ namespace EXTRAXS {
 
     PHASIC::Color_Integrator* p_ci;
     bool m_cpointgen;
+    double m_fullME2;
 
     size_t NHel(const ATOOLS::Flavour& fl);
 
@@ -56,6 +57,8 @@ namespace EXTRAXS {
     double GetColourWeight() override;
     ATOOLS::Vec4D_Vector GetMomenta() override { return m_momenta; }
     void MergeDiagrams(const METOOLS::Spin_Amplitudes* second_diagram) override;
+    void SetFullME2(double fullME2) override;
+    double GetFullME2() override;
   };
 }
 

@@ -869,9 +869,7 @@ void Hard_Decay_Handler::TreatInitialBlob(ATOOLS::Blob* blob,
           NLO_dc->Add_Sub_Flavs(NLO_dc->Flavs()[i]);
         }
       }
-
         const std::vector<Flavour>& flav_vec = NLO_dc->Sub_Flavs();
-
         const Flavour* newfls = const_cast<Flavour*>(flav_vec.data());
 
         Vec4D* newmoms = new Vec4D[newn];
@@ -889,18 +887,16 @@ void Hard_Decay_Handler::TreatInitialBlob(ATOOLS::Blob* blob,
     }
     for (size_t i=0;i<p_newsublist->size();++i) {
       //if (wgtmap_bdb) (*p_newsublist)[i]->m_results = wgtmap_bdb; // ist evtl. mit m_results Get<Weights_Map>()["BR"] gemeint? 
+
+      double fullME2DecayWeight = NLO_dc->GetDiagrams()[i]-> GetFullME2();
       
       // everything below is not set yet
       double baseweight = wgtmap_bdb->Get<Weights_Map>().Nominal(); // already mutliplied with BR // with PDF's
       double baseweight_1 = wgtmap_bdb->Get<Weights_Map>().BaseWeight(); 
-      (*p_newsublist)[i]->m_result=baseweight; // Produktionsgewicht * branching ratio; -> noch nichts gesetzt
-                                               // ist Produktionsgewicht:
-                                               // Blob_Data_Base * bdbmeweight((*blob)["MEWeight"]); ME_Weight = bdbmeweight->Get<double>(); oder 
-                                               // Blob_Data_Base * wgtinfo((*blob)["MEWeightInfo"]); *wgtinfo->Get<ME_Weight_Info*>()?
+      (*p_newsublist)[i]->m_result=baseweight; 
       (*p_newsublist)[i]->m_results["BR"]=1; // weights map: nur BR? nicht mit BR multiplizieren laut Mareen
-      (*p_newsublist)[i]->m_me=1;    // no PDF // was ist das?
-      (*p_newsublist)[i]->m_mewgt=1; // no PDF // von oben: double ME_Weight = bdbmeweight->Get<double>(); => keine PDF's? Contians flux
-      // m_subevt.m_me = m_subevt.m_mewgt = -m_lastxs; berechnete cross section aus dc, hier gleich ran multiplizieren, nominal als ProduktionsCS nehmen; BR nicht aktiv; BRBR noch ran
+      (*p_newsublist)[i]->m_me= fullME2DecayWeight * ME_Weight;
+      (*p_newsublist)[i]->m_mewgt=fullME2DecayWeight * ME_Weight;
       DEBUG_VAR(*(*p_newsublist)[i]);
     }
     blob->AddData("NLO_subeventlist",new Blob_Data<NLO_subevtlist*>(p_newsublist)); 
