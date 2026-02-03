@@ -50,13 +50,15 @@ bool Single_Process::Initialize()
 
   // can't do any BSM
   if (/*m_pinfo.m_special!="MPI_Process" && */
-      MODEL::s_model->Name()!="SM" && MODEL::s_model->Name()!="SMDM") {
+      MODEL::s_model->Name()!="SM" && MODEL::s_model->Name()!="SMDM"&&
+      MODEL::s_model->Name()!="ScalarQED") {
     DEBUG_INFO("Requested BSM, Internal can't cope, it's too dumb...");
     return false;
   }
 
   m_nlotype=m_pinfo.m_fi.NLOType();
-  if (m_nlotype==nlo_type::loop || m_pinfo.Has(nlo_type::vv)) {
+  // PRINT_VAR((m_nlotype==nlo_type::real));
+  if (m_nlotype==nlo_type::loop) {
     DEBUG_INFO("searching loop process");
     p_virtual_me2=PHASIC::Virtual_ME2_Base::GetME2(m_pinfo);
     if (p_virtual_me2!=NULL) {
@@ -69,7 +71,8 @@ bool Single_Process::Initialize()
     }
   }
   else if (m_nlotype==nlo_type::lo || m_nlotype==nlo_type::born ||
-           m_nlotype==nlo_type::real || m_nlotype==nlo_type::rsub) {
+           m_nlotype==nlo_type::real || m_nlotype==nlo_type::rsub
+          || m_pinfo.Has(nlo_type::real)) {
     DEBUG_INFO("searching tree process");
     p_born_me2=dynamic_cast<ME2_Base*>
       (PHASIC::Tree_ME2_Base::GetME2(m_pinfo));
@@ -85,9 +88,44 @@ bool Single_Process::Initialize()
       return true;
     }
     else {
+      // try external tools
+      PRINT_VAR("Looking for ME2");
+      p_tree_me2 = dynamic_cast<PHASIC::Tree_ME2_Base*>(PHASIC::Tree_ME2_Base::GetME2(m_pinfo));
+      if (p_tree_me2!=NULL) {
+        DEBUG_INFO("found external ME2");
+        return true;
+      }
       DEBUG_INFO("not found ...");
       return false;
     }
+  }
+  else if(m_pinfo.Has(nlo_type::loop)){
+    // if(!m_pinfo.Has(nlo_type::lo)){
+    //   DEBUG_INFO("Need born process for Extra_XS");
+    //   return false;
+    // }
+    DEBUG_INFO("searching loop process");
+    p_virtual_me2=PHASIC::Virtual_ME2_Base::GetME2(m_pinfo);
+    if (p_virtual_me2!=NULL) {
+      DEBUG_INFO("found");
+    }
+    else {
+      DEBUG_INFO("not found ...");
+      return false;
+    }
+    p_born_me2=dynamic_cast<ME2_Base*>
+      (PHASIC::Tree_ME2_Base::GetME2(m_pinfo));
+    if (p_born_me2!=NULL) {
+      DEBUG_INFO("found");
+      p_born_me2->SetCouplings(m_cpls);
+      m_maxcpl[0]=m_mincpl[0]=p_born_me2->OrderQCD();
+      m_maxcpl[1]=m_mincpl[1]=p_born_me2->OrderEW();
+      p_born_me2->FillCombinations(m_ccombs,m_cfls);
+      m_sprimemin = p_born_me2->SPrimeMin()>0.?p_born_me2->SPrimeMin():-1.;
+      m_sprimemax = p_born_me2->SPrimeMax()>0.?p_born_me2->SPrimeMax():-1.;
+      return true;
+    }
+    return false;
   }
   else {
     DEBUG_INFO("don't know about processes of type "<<m_nlotype);

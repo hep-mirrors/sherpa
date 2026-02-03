@@ -336,10 +336,10 @@ int OpenLoops_Interface::RegisterProcess(const Subprocess_Info& is,
   if (s_ass_ew==0) SetParameter("add_associated_ew",0);
   if (s_procmap.find(procid)==s_procmap.end())
     s_procmap[procid]=shprocname;
-  msg_Tracking()<<"OpenLoops_Interface process list:"<<std::endl;
+  msg_Debugging()<<"OpenLoops_Interface process list:"<<std::endl;
   for (std::map<int,std::string>::const_iterator it=s_procmap.begin();
        it!=s_procmap.end();++it)
-    msg_Tracking()<<it->first<<": "<<it->second<<std::endl;
+    msg_Debugging()<<it->first<<": "<<it->second<<std::endl;
   return procid;
 }
 
