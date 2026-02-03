@@ -220,7 +220,6 @@ void FSR::NPhotons() {
     sum += log(ran->Get());
     if (sum <= -m_nbar) break;
   }
-  m_n = N - 1;
   if(FixedOrder()==fixed_order::nlo) m_n = min(N-1, 1);
   else  m_n = N - 1;
   m_N=m_n;
