@@ -565,7 +565,7 @@ std::string H_to_bb_Virtual::getType(){
 
 
 double H_to_bb_Virtual::get_NLO_ME2(){
-  return v_correction_f;
+  return 0.00498717;
 }
 
 

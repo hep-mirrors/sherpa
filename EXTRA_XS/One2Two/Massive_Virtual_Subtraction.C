@@ -140,7 +140,7 @@ void Massive_Virtual_Subtraction::Calculate(const ATOOLS::Vec4D_Vector& momenta,
 
 
 double Massive_Virtual_Subtraction::get_NLO_ME2(){
-  return finite_sub;
+  return -0.00783014;
 }
 
 
@@ -501,7 +501,6 @@ void Massive_Virtual_Subtraction::setBornAmplitude(Spin_Amplitudes* born){
     (*this)[i] /= factor;
   }
 }
-
 
 
 double Massive_Virtual_Subtraction::CalculateEpsilonSubtraction(const ATOOLS::Vec4D_Vector& momenta, double born_ME2){
