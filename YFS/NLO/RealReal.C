@@ -25,7 +25,6 @@ RealReal::RealReal(const PHASIC::Process_Info& pi)  {
   m_writemom = s["Write_RR_Momenta"].SetDefault(0).Get<bool>();
   m_nmom = s["N_RR_Momenta"].SetDefault(100).Get<int>();/* Load RealReal ME */
   PHASIC::Process_Info real_pi(pi);
-  for(auto f: pi.ExtractFlavours()) m_flavs.push_back(f);
   if(m_check && gen=="") THROW(fatal_error, "Need two generators to compare.");
   if(gen!=""){
     PHASIC::External_ME_Args args(pi.m_ii.GetExternal(),
@@ -41,7 +40,6 @@ RealReal::RealReal(const PHASIC::Process_Info& pi)  {
      p_real_me->SetCouplings(m_cpls);
      for(auto f: args.m_inflavs) m_flavs.push_back(f);
      for(auto f: args.m_outflavs) m_flavs.push_back(f);
-     // p_real_me->SetSubType(sbt::qed);
      m_sym  = ATOOLS::Flavour::FSSymmetryFactor(args.m_outflavs);
      m_sym *= ATOOLS::Flavour::ISSymmetryFactor(args.m_inflavs);
      m_factor =  1./m_sym;
