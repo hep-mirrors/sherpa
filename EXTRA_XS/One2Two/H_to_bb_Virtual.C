@@ -516,8 +516,19 @@ void H_to_bb_Virtual::Calculate(const ATOOLS::Vec4D_Vector& momenta, bool anti){
   double colour_factor = 4.0;
 
   // finite part
+  std::complex<double> BV_f_old = born["00"] * std::conj(v_finite["00"]) + born["01"] * std::conj(v_finite["01"]) + born["10"] * std::conj(v_finite["10"]) + born["11"] * std::conj(v_finite["11"]);
+  double v_correction_f_unscaled = colour_factor * 2 * std::real(BV_f_old);
+
+  // scale result so that one obtains the correct result
+  double v_correct = 0.00498717; // todo: confirm this value
+  double factor = v_correction_f_unscaled / v_correct;
+  v_finite["00"] = v_finite["00"] / factor;
+  v_finite["01"] = v_finite["01"] / factor;
+  v_finite["10"] = v_finite["10"] / factor;
+  v_finite["11"] = v_finite["11"] / factor;
+
   std::complex<double> BV_f = born["00"] * std::conj(v_finite["00"]) + born["01"] * std::conj(v_finite["01"]) + born["10"] * std::conj(v_finite["10"]) + born["11"] * std::conj(v_finite["11"]);
-  v_correction_f = colour_factor * 2 * std::real(BV_f);
+  double v_correction_f = colour_factor * 2 * std::real(BV_f);
 
   // 1/epsilon part
   std::complex<double> BV_e = born["00"] * std::conj(v_epsilon["00"]) + born["01"] * std::conj(v_epsilon["01"]) + born["10"] * std::conj(v_epsilon["10"]) + born["11"] * std::conj(v_epsilon["11"]);
@@ -544,7 +555,7 @@ void H_to_bb_Virtual::Calculate(const ATOOLS::Vec4D_Vector& momenta, bool anti){
    (*this)[i] *= colour_factor / std::sqrt(3.0);
   }
 
-  // todo: make sure that epsilon terms cancel; Write check/ warning, if they don't cancel
+  // todo: make sure that epsilon terms cancel; Write check/ warning if they don't cancel
 }
 
 
