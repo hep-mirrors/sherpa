@@ -53,6 +53,7 @@ Tree_ME2_Base* ATOOLS::Getter<PHASIC::Tree_ME2_Base,
 			      OpenLoops::OpenLoops_Born>::
 operator()(const External_ME_Args &args) const
 {
+  PRINT_VAR(args.m_source);
   if (!args.m_source.empty() && args.m_source != "OpenLoops")
     return NULL;
 

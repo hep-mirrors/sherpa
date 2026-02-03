@@ -3,7 +3,7 @@
 
 #include "PHASIC++/Process/Single_Process.H"
 
-namespace PHASIC { class Virtual_ME2_Base; }
+namespace PHASIC { class Virtual_ME2_Base; class Tree_ME2_Base; }
 
 namespace EXTRAXS {
 
@@ -13,6 +13,7 @@ namespace EXTRAXS {
   private:
     ME2_Base                              * p_born_me2;
     PHASIC::Virtual_ME2_Base              * p_virtual_me2;
+    PHASIC::Tree_ME2_Base                 * p_tree_me2;
     ATOOLS::nlo_type::code                  m_nlotype;
     std::set<std::pair<size_t,size_t> >     m_ccombs;
     std::map<size_t,ATOOLS::Flavour_Vector> m_cfls;
