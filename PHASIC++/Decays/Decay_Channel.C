@@ -545,6 +545,9 @@ double Decay_Channel::ME2_NLO(const ATOOLS::Vec4D_Vector& momenta, bool anti,
   if (GetDecaying().StrongCharge())
     value/=double(abs(GetDecaying().StrongCharge()));
   value /= SymmetryFactor();
+  if(value<0.0){
+    int h = 1;
+  }
   return value;
 }
 

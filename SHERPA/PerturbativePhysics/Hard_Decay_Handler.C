@@ -171,9 +171,7 @@ user settings, and computed integration results, ensuring that the decays are tr
   Decay_Map::iterator dmit;
   msg_Debugging()<<"Initialising hard decay tables: two-body decays.\n";
   for (dmit=p_decaymap->begin(); dmit!=p_decaymap->end(); ++dmit) {
-    InitializeDirectDecays(dmit->second); // dmit->second retrieves the value of the p_decaymap that is currently being iterated over (flavour, decay table dt)
-                                          // dt is a pointer to a Decay_Table object, which is essentially a container holding pointers to Decay_Channel objects. 
-                                          // It behaves like a vector (or similar container) where you can iterate over its elements (each element being a Decay_Channel*)
+    InitializeDirectDecays(dmit->second);
   }
   msg_Debugging()<<"Initialising hard decay tables: three-body decays.\n";
   for (dmit=p_decaymap->begin(); dmit!=p_decaymap->end(); ++dmit) {
@@ -315,12 +313,10 @@ void Hard_Decay_Handler::InitializeDirectDecays(Decay_Table* dt)
 {
   DEBUG_FUNC(dt->Flav());
   Flavour inflav=dt->Flav();
-  Vertex_Table::const_iterator vlit=s_model->VertexTable()->find(inflav);  // vertex list iterator; s_model is a global pointer (or reference) to the current 
+  Vertex_Table::const_iterator vlit=s_model->VertexTable()->find(inflav); // vertex list iterator; s_model is a global pointer (or reference) to the current 
                                                                           // model instance, typically of type Model_Base or a similar class. It contains all 
                                                                           // the model-specific information—such as the vertex table, the list of included particle 
                                                                           // flavours, and other interaction data
-  // Check if the iterator "vlit" is valid (i.e. not equal to the end of the vertex table); 
-  // if so, assign "vlit->second" (the vertex list associated with the found key) to "vlist,"
   const Vertex_List& vlist=(vlit!=s_model->VertexTable()->end()) ? (vlit->second) : Vertex_List(); 
   // temporary hack:
   // prepare reduced vertex list, not containing duplicates
@@ -634,7 +630,6 @@ offshell (or three-body) decay configurations.
      been possible from another 1->2 where it was decided not to be resolved?
   */
 }
-
 
 
 bool Hard_Decay_Handler::CalculateWidth(Decay_Channel* dc)
