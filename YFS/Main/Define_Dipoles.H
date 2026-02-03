@@ -12,16 +12,72 @@ namespace MODEL {
   typedef std::vector<Single_Vertex *> Vertex_List;
 }
 
+namespace {
+    constexpr size_t INITIAL_STATE_PARTICLES = 2;
+    constexpr size_t TWO_BODY_FINAL_STATE = 4;
+}
 
+// Particle information container
+struct ParticleInfo {
+    ATOOLS::Flavour flavor;
+    ATOOLS::Vec4D momentum;
+    ATOOLS::Vec4D born_momentum;
+    size_t index;
+    bool is_initial_state;
+    
+    ParticleInfo(const ATOOLS::Flavour& f, 
+                 const ATOOLS::Vec4D& p, 
+                 const ATOOLS::Vec4D& b, 
+                 size_t i, 
+                 bool initial = false)
+        : flavor(f), momentum(p), born_momentum(b), 
+          index(i), is_initial_state(initial) {}
+};
 
 namespace YFS {
   typedef std::vector<YFS::Dipole> Dipole_Vector;
 
- 
-
 
   class Define_Dipoles : YFS_Base {
     public:
+    std::vector<ParticleInfo> ExtractChargedParticles(
+        const ATOOLS::Flavour_Vector& flavors,
+        const ATOOLS::Vec4D_Vector& momenta,
+        const ATOOLS::Vec4D_Vector& born_momenta,
+        size_t start_index,
+        size_t end_index,
+        bool is_initial_state = false) const;
+    
+    std::vector<ParticleInfo> ExtractInitialStateCharged(
+        const ATOOLS::Flavour_Vector& flavors,
+        const ATOOLS::Vec4D_Vector& momenta,
+        const ATOOLS::Vec4D_Vector& born_momenta) const;
+    
+    std::vector<ParticleInfo> ExtractFinalStateCharged(
+        const ATOOLS::Flavour_Vector& flavors,
+        const ATOOLS::Vec4D_Vector& momenta,
+        const ATOOLS::Vec4D_Vector& born_momenta) const;
+    
+    Dipole CreateDipole(
+        const ParticleInfo& particle1,
+        const ParticleInfo& particle2,
+        dipoletype::code type) const;
+    
+    // Dipole creation by type
+    void CreateInitialDipoles(const std::vector<ParticleInfo>& initial_particles);
+    void CreateFinalDipoles(const std::vector<ParticleInfo>& final_particles);
+    void CreateInitialFinalDipoles(const std::vector<ParticleInfo>& initial_particles,
+                                   const std::vector<ParticleInfo>& final_particles);
+    
+    // Individual dipole creation
+    void CreateFinalStateDipole(const ParticleInfo& particle1,
+                               const ParticleInfo& particle2);
+    void CreateResonantDipole(const ParticleInfo& particle1,
+                             const ParticleInfo& particle2);
+    
+    // State management
+    void ResetAllDipoleState();
+    // public:
       bool                    m_success;
       bool                    m_photonsadded;
       int m_N;
@@ -45,11 +101,16 @@ namespace YFS {
       ~Define_Dipoles();
 
       int m_in, m_out;
+      double m_N_born_Gamma;
       std::vector<double> m_massInC, m_massInN;
       std::vector<double> m_massOutC, m_massOutN;
 
       ATOOLS::Flavour_Vector m_dipoleFlav;
       ATOOLS::Vec4D_Vector m_dipoleMom;
+      void CreateAllDipoles(const ATOOLS::Flavour_Vector& flavors,
+                         const ATOOLS::Vec4D_Vector& momenta,
+                         const ATOOLS::Vec4D_Vector& born_momenta);
+    
       void AddRadiation();
       void MakeDipolesII(ATOOLS::Flavour_Vector const &fl, ATOOLS::Vec4D_Vector const &mom, ATOOLS::Vec4D_Vector const &born);
       void MakeDipolesIF(ATOOLS::Flavour_Vector const &fl, ATOOLS::Vec4D_Vector const mom, ATOOLS::Vec4D_Vector const born);
@@ -103,6 +164,7 @@ namespace YFS {
       inline Dipole_Vector * GetDipoleFF() { return &m_dipolesFF; }
       inline Dipole_Vector * GetDipoleIF() { return &m_dipolesIF; }
       inline void SetProcResMap(std::map<std::string,MODEL::Vertex_List> map) {m_proc_restab_map=map;}
+      inline double Get_Finite() {return m_virtSub.GetFinite();}
       inline double Get_E1() {return m_virtSub.GetIR();}
       inline double GetVV_E1() {return m_vvSub.GetIR();}
       inline double GetVV_E2() {return m_vvSub.GetIR2();}

@@ -95,28 +95,27 @@ DivArrD YFS_Form_Factor::BVR_full_eps(YFS::Dipole &d,  double Kmax, int mode) {
   else{
     msg_Error()<<"Unknown Dipole type"<<std::endl;
   }
-  double p1p2 = p1*p2;
-  double E1 = p1.E();
-  double E2 = p2.E();
-  double Mas1 = d.GetMass(0);//p1.Mass();
-  double Mas2 = d.GetMass(1);//p2.Mass();
-  double alpi = m_alpi;
-  double m12 = Mas1 * Mas2;
+  const double p1p2 = p1*p2;
+  const  double E1 = p1.E();
+  const double E2 = p2.E();
+  const double Mas1 = d.GetMass(0);//p1.Mass();
+  const double Mas2 = d.GetMass(1);//p2.Mass();
+  const double alpi = m_alpi;
+  const double m12 = Mas1 * Mas2;
   DivArrD t1; 
   double t2, AA4;
   if (p1p2 - m12 < 1e-10) return 0;
-  double beta1 = sqrt(1. - sqr(Mas1 / E1));
-  double beta2 = sqrt(1. - sqr(Mas2 / E2));
-  double rho = sqrt(1 - sqr(m12 / p1p2));
-  double irloop = m_irscale;//p_virt->IRscale();
-  double epsloop = (p_virt?p_virt->Eps_Scheme_Factor({p1,p2}):4*M_PI);
+  const double beta1 = sqrt(1. - sqr(Mas1 / E1));
+  const double beta2 = sqrt(1. - sqr(Mas2 / E2));
+  const double rho = sqrt(1 - sqr(m12 / p1p2));
+  const double irloop = m_irscale;//p_virt->IRscale();
+  const double epsloop = (p_virt?p_virt->Eps_Scheme_Factor({p1,p2}):4*M_PI);
   DivArrD massph(0,-1,0,0,0,0);
   t1 = (p1p2 * A(p1p2, Mas1, Mas2) - 1) * (massph-log(4.*M_PI*sqr(irloop)/4./Kmax/epsloop));
   if ( mode == 0 ) {
     t2 = p1p2 * A4(p1p2, E1, E2, Mas1, Mas2);
   }
   else if(mode==1) {
-    // alpi = 1./137.03599976000001/M_PI;
     t1 = (p1p2 * A(p1p2, Mas1, Mas2)) * (massph-log(4.*M_PI*sqr(irloop)/4./Kmax/epsloop));
     t2 = p1p2 * A4(p1p2, E1, E2, Mas1, Mas2);
     
@@ -156,11 +155,35 @@ double YFS_Form_Factor::BVR_full(Vec4D p1, Vec4D p2,  double Kmax, double MasPho
 }
 
 
+double YFS_Form_Factor::BVR_full(YFS::Dipole &d, double omega) {
+  double R, V;
+  Vec4D p1,p2;
+  if(d.Type()==dipoletype::initial){
+    p1 = d.GetBornMomenta(0);
+    p2 = d.GetBornMomenta(1);
+  }
+  else if(d.Type()==dipoletype::final){
+    p1 = d.GetBornMomenta(0);
+    p2 = d.GetBornMomenta(1);
+  }
+  else if(d.Type()==dipoletype::ifi){
+    p1 = d.GetBornMomenta(0);
+    p2 = d.GetBornMomenta(1);
+  }
+  else{
+    msg_Error()<<"Unknown Dipole type"<<std::endl;
+  }
+  R =  BVR_full(p1 * p2, p1.E(), p2.E(), p1.Mass(), p2.Mass(), omega, m_photonMass, 0);
+  V =  BVirtGeneral(d);
+  return (R+V);
+}
+
 double YFS_Form_Factor::BVR_full(Vec4D p1, Vec4D p2, double omega) {
   double R, V;
   // if(!m_dim_reg){
     R =  BVR_full(p1 * p2, p1.E(), p2.E(), p1.Mass(), p2.Mass(), omega, m_photonMass, 0);
     V =  BVV_full(p1, p2, m_photonMass, omega, 0);
+    // BVirtGeneral()
   // }
   // else{
   //   DivArrD DR, DV;

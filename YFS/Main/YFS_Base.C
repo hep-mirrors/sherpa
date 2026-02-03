@@ -20,7 +20,7 @@ YFS_Base::YFS_Base()
 {
   // p_yfsFormFact = new YFS::YFS_Form_Factor();
   RegisterDefaults();
-  RegisterSettings();  
+  RegisterSettings();
 }
 
 YFS_Base::~YFS_Base() 
