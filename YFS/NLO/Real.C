@@ -38,12 +38,8 @@ Real::Real(const PHASIC::Process_Info& pi)  {
      if (!p_real_me)  THROW(not_implemented, "Couldn't find real ME for this process.");
      MODEL::s_model->GetCouplings(m_cpls);
      p_real_me->SetCouplings(m_cpls);
-     Flavour_Vector born_flavs;
-     for (int i = 0; i < args.m_outflavs.size()-1; ++i) born_flavs.push_back(args.m_outflavs[i]);
      m_sym =  ATOOLS::Flavour::ISSymmetryFactor(args.m_inflavs);
      m_sym *= ATOOLS::Flavour::FSSymmetryFactor(args.m_outflavs);
-     double bornsym = ATOOLS::Flavour::ISSymmetryFactor(args.m_inflavs);
-     bornsym*= ATOOLS::Flavour::FSSymmetryFactor(born_flavs);
      m_factor = 1./m_sym;
     }
     if(m_check_real){

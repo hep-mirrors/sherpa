@@ -1,3 +1,5 @@
+#include "ATOOLS/Org/Message.H"
+#include "ATOOLS/Org/Return_Value.H"
 #include "YFS/Main/YFS_Handler.H"
 
 #include "BEAM/Main/Beam_Base.H"
@@ -153,6 +155,7 @@ bool YFS_Handler::MakeYFS(){
 bool YFS_Handler::MakeYFS(ATOOLS::Vec4D_Vector &p)
 {
   Reset();
+  // p_dipoles->CreateAllDipoles(m_flavs, m_plab, m_bornMomenta);
   if (m_isrinital) {
     p_dipoles->MakeDipolesII(m_flavs, m_plab, m_bornMomenta);
   }
@@ -167,7 +170,6 @@ bool YFS_Handler::MakeYFS(ATOOLS::Vec4D_Vector &p)
   }
   p_isr->SetV(m_v);
   if (m_v <= m_deltacut && m_mode!=yfsmode::fsr) { // correction weight included in Generate photon
-    m_yfsweight = 0.0;
     Reset();
     return false;
   }
@@ -290,8 +292,11 @@ bool YFS_Handler::CalculateFSR(Vec4D_Vector & p) {
   if(m_mode==yfsmode::isr) return true;
   m_fsrWeight=1;
   p_dipoles->MakeDipoles(m_flavs, m_plab, m_plab);
+  // p_dipoles->CreateAllDipoles(m_flavs, m_plab, m_plab);
   CheckResonance();
+  // p_dipoles->CreateAllDipoles(m_flavs, m_plab, m_plab);
   if(m_mode==yfsmode::isrfsr)  p_dipoles->MakeDipolesIF(m_flavs, m_plab, m_plab);
+  // if(m_mode==yfsmode::isrfsr)  p_dipoles->MakeDipolesIF(m_flavs, m_plab, m_plab);
   for (Dipole_Vector::iterator Dip = p_dipoles->GetDipoleFF()->begin();
        Dip != p_dipoles->GetDipoleFF()->end(); ++Dip) {
     if(!Dip->IsResonance()) continue;
