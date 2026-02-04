@@ -28,23 +28,33 @@ namespace MODEL {
                     wgtmap["ParameterVariations"][var.Identifier()] = 0;
                     continue;
                 }
+                // set couplings
                 msg_Debugging() << "switch to " << var;
                 UpdateAllCouplings(var);
+                // recalculate cross section
                 double part = Calculate();
+                // set weight to this fraction
                 double weight = part/nominal;
                 msg_Debugging() << " nominal: " << nominal << ", current: " << part << ", weight: " << weight << std::endl;
                 wgtmap["ParameterVariations"][var.Identifier()] = weight;
             }
+            // reset for next nominal
             ResetAllCouplings();
         }
 
+        /*
+        method to be used to update constants and couplings 
+        */
         void Variation_Generator::UpdateAllCouplings(VariationKey key){
             // reset first
-            SetConstants(p_vars->Nominal());
+            ResetAllCouplings();
             SetConstants(key);
             SetCouplings(key);
         }
 
+        /*
+        Set model constants to the specified values, couplings are NOT updated
+        */
         void Variation_Generator::SetConstants(VariationKey key){
             msg_Debugging() << "Updating Constants to " << key.Identifier() << std::endl;
             for (size_t i = 0; i < key.Size(); i++) {
@@ -52,6 +62,9 @@ namespace MODEL {
             }
         }
 
+        /*
+        Set Couplings to the specified values, need to call SetConstants before this
+        */
         void Variation_Generator::SetCouplings(VariationKey key){
             msg_Debugging() << "Updating dependent Vertices..." << std::endl;
             for (std::string name : key.Names()){
@@ -63,13 +76,16 @@ namespace MODEL {
             }
         }
 
+        /*
+        Reset Couplings to the nominal values
+        */
         void Variation_Generator::ResetAllCouplings(){
             SetConstants(p_vars->Nominal());
             SetCouplings(p_vars->Nominal());
         }
 
         /*
-        Calculates the weight of the event under the specified variation
+        Calculates the partonic cross section of the event under the specified variation
         */
         double Variation_Generator::Calculate(){
             return p_proc->Partonic(p_proc->Integrator()->Momenta());
@@ -88,17 +104,21 @@ namespace MODEL {
 
 DECLARE_GETTER(MODEL::VARIATIONS::Variation_Generator, "MODEL_PARAMETERS", Base, Args);
 
-Base* ATOOLS::Getter<Base, Args, MODEL::VARIATIONS::Variation_Generator>::
-operator()(const Args& args) const
+/*
+Get this object, but only if it is okay, return nullptr otherwise
+*/
+Base* ATOOLS::Getter<Base, Args, MODEL::VARIATIONS::Variation_Generator>::operator()(const Args& args) const
 {
     MODEL::VARIATIONS::Variation_Generator* var_gen = new MODEL::VARIATIONS::Variation_Generator(args);
     if (var_gen->IsOkay()) return var_gen;
     return nullptr;
 }
 
-void ATOOLS::Getter<Base, Args, MODEL::VARIATIONS::Variation_Generator>::
-PrintInfo(std::ostream& str, const size_t width) const
+/*
+Print Information on this, TODO
+*/
+void ATOOLS::Getter<Base, Args, MODEL::VARIATIONS::Variation_Generator>::PrintInfo(std::ostream& str, const size_t width) const
 { 
-str << "Info for Model Param Variations \n";
+str << "Info for Model Param Variations TODO \n";
 }
 
