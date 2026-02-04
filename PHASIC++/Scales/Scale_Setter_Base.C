@@ -172,6 +172,14 @@ double Scale_Setter_Base::hHT() const
   return htj;
 }
 
+double Scale_Setter_Base::PionForm() const
+{
+  if(m_nin!=2){
+    msg_Error()<<"PionForm is for e+e- -> pi+pi- only"<<std::endl;
+  }
+  return (m_p[0]+m_p[1]).Abs2();
+}
+
 double Scale_Setter_Base::CalculateScale
 (const ATOOLS::Vec4D_Vector &p,const size_t mode)
 {

@@ -200,6 +200,11 @@ Weights_Map Process_Base::Differential(const Cluster_Amplitude &ampl,
   if (mode&4) SetUseBIWeight(true);
   if (mode&2) SetFixedScale(std::vector<double>());
   if (Selector()->On()!=selon) SetSelectorOn(selon);
+  if(p_pionformfactor->On()){
+    // Calculate Scale
+    double pscale = p_scale->PionForm();
+    wgtmap *= p_pionformfactor->Eval(pscale);
+  }
   return wgtmap;
 }
 

@@ -1,7 +1,9 @@
+#include "ATOOLS/Math/MathTools.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Math/MyComplex.H"
 #include "ATOOLS/Math/Random.H"
+#include "ATOOLS/Phys/Flavour.H"
 #include "MODEL/Main/Running_AlphaQED.H"
 #include "PHASIC++/Process/External_ME_Args.H"
 #include "EXTRA_XS/Main/ME2_Base.H"
@@ -46,6 +48,9 @@ namespace EXTRAXS {
       case finalstate::kplus:
         m_flv = Flavour(kf_K_plus);
         break;
+      case finalstate::kls:
+        m_flv = Flavour(kf_K_L);
+        break;
       case finalstate::off:
         m_flv = Flavour(args.m_outflavs[0]);
       default:
@@ -59,7 +64,11 @@ namespace EXTRAXS {
     double m2 = 4.*m_flv.Mass()*m_flv.Mass();
     double v = 2.*sqrt((m_s-4.*m2)/m_s);
     v /= 1. + (m_s-m2)/m_s;
-    double z = 2.*M_PI*(*aqed)(m_s)/v;
+    const double z = 2.*M_PI*(*aqed)(m_s)/v;
+    if(IsBad(z)){
+      msg_Debugging()<<METHOD<<"\n Kaon Coulomb is NaN"<<std::endl;
+      return 0.5;//correct for factor
+    }
     return z/(1-exp(-z));
   }
 
@@ -77,8 +86,10 @@ namespace EXTRAXS {
         amp *= 1;
         break;
       case finalstate::kplus:
-        amp *= Coulomb();
+        amp *= 2.*Coulomb();
         break;
+      case finalstate::kls:
+        amp *= 1;
       case finalstate::off:
         break;
     }
@@ -102,6 +113,11 @@ operator()(const External_ME_Args &args) const
   else if (fl[0]==Flavour(kf_e) && fl[1]==fl[0].Bar() &&
       (fl[2].Kfcode()==kf_K_plus || fl[2].Kfcode()==-kf_K_plus) && fl[3]==fl[2].Bar()){
       return new ee_PiPi(args, finalstate::kplus);
+  }
+  else if (fl[0]==Flavour(kf_e) && fl[1]==fl[0].Bar() &&
+      (fl[2].Kfcode()==kf_K_L || fl[2].Kfcode()==kf_K_S) || 
+      (fl[2].Kfcode()==kf_K_S || fl[2].Kfcode()==kf_K_L)){
+      return new ee_PiPi(args, finalstate::kls);
   }
   return NULL;
 }
