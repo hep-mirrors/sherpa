@@ -885,16 +885,23 @@ void Hard_Decay_Handler::TreatInitialBlob(ATOOLS::Blob* blob,
         p_newsublist->push_back(newsub);
       }
     }
+    double decay_ME2 = 0.0;
     for (size_t i=0;i<p_newsublist->size();++i) {
-      //if (wgtmap_bdb) (*p_newsublist)[i]->m_results = wgtmap_bdb; // ist evtl. mit m_results Get<Weights_Map>()["BR"] gemeint? 
+      decay_ME2 += NLO_dc->GetDiagrams()[i]-> GetFullME2();
+    }
 
+    for (size_t i=0;i<p_newsublist->size();++i) {
       double fullME2DecayWeight = NLO_dc->GetDiagrams()[i]-> GetFullME2();
+      double br_subfactor = fullME2DecayWeight / decay_ME2;
       
       // everything below is not set yet
-      double baseweight = wgtmap_bdb->Get<Weights_Map>().Nominal(); // already mutliplied with BR // with PDF's
-      double baseweight_1 = wgtmap_bdb->Get<Weights_Map>().BaseWeight(); 
-      (*p_newsublist)[i]->m_result=baseweight; 
-      (*p_newsublist)[i]->m_results["BR"]=1; // weights map: nur BR? nicht mit BR multiplizieren laut Mareen
+      double baseweight = wgtmap_bdb->Get<Weights_Map>().BaseWeight(); 
+      Weights_Map wm(baseweight);
+      wm["BR"] = brfactor * br_subfactor;   // multiply BR from production with sub part. sub part = fullME2DecayWeight / (Sum over all fullME2DecayWeight)
+      double nominalweight = wm.Nominal();
+
+      (*p_newsublist)[i]->m_result=nominalweight; 
+      (*p_newsublist)[i]->m_results=wm;
       (*p_newsublist)[i]->m_me= fullME2DecayWeight * ME_Weight;
       (*p_newsublist)[i]->m_mewgt=fullME2DecayWeight * ME_Weight;
       DEBUG_VAR(*(*p_newsublist)[i]);
