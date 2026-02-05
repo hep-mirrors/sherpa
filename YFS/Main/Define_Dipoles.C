@@ -594,7 +594,7 @@ double Define_Dipoles::FormFactor(){
       }
     if(m_ifisub==1){
       for(auto &D: m_dipolesIF){
-        form += D.ChargeNorm()*p_yfsFormFact->R1(D);
+        form += D.ChargeNorm()*p_yfsFormFact->BVR_full(D,sqrt(m_s)/2);
       }
     }
   }
