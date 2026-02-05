@@ -189,6 +189,7 @@ double NLO_Base::CalculateVirtual() {
 	if(m_virt_sub && p_virt->p_loop_me->Mode()!=1) sub = p_dipoles->CalculateVirtualSub();
 	else sub = 0;
 	m_oneloop = (virt- sub * m_born/m_rescale_alpha );
+	if(IsZero(virt)) return 0;
 	if(p_virt->p_loop_me->Mode()==1) {
 		m_oneloop /= m_rescale_alpha; 
 		// PRINT_VAR(m_rescale_alpha);
