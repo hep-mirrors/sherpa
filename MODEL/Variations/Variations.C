@@ -224,7 +224,6 @@ namespace MODEL {
         void Variations::CombineParameters(){
             std::vector<std::vector<VariationKey>> individual_variations_list;
             std::vector<VariationKey> individual_variations;
-            PRINT_VAR(1);
             // deal with the correlations first, reading is dealt with earlier
             for (const std::vector<std::string>& list : correlated_variables){
                 individual_variations.clear();
@@ -242,7 +241,6 @@ namespace MODEL {
                 individual_variations.push_back(key);
                 individual_variations_list.push_back(individual_variations);
             }
-            PRINT_VAR(2);
             // now push all other uncorrelated parameters to the individuals list
             for (const std::string& variable : variable_names){
                 individual_variations.clear();
@@ -256,15 +254,11 @@ namespace MODEL {
                 }
                 if (skip) continue;
                 // now push to the list
-                PRINT_VAR(8);
                 for (double_t value : variations_map[variable]) individual_variations.push_back(VariationKey(variable, value));
                 // add nominal
-                PRINT_VAR(9);
                 individual_variations.push_back(VariationKey(variable, p_constants->at(variable)));
-                PRINT_VAR(10);
                 individual_variations_list.push_back(individual_variations);
             }
-            PRINT_VAR(3);
             // now we are ready to combine the things on the indivduals list
             // first get mode, 0 for no combining, 1 for combining all (default)
             int mode = 1;
@@ -272,7 +266,6 @@ namespace MODEL {
             // maybe more modes in the future???
             switch (mode) {
                 case 0: 
-                            PRINT_VAR("4a");
                     // no combination, just put all keys into the variations list
                     // dont add the nominals though, which are the last key
                     for (const std::vector<VariationKey>& keys : individual_variations_list)
@@ -280,7 +273,6 @@ namespace MODEL {
                             variations_list.push_back(*(it));
                     break;
                 default:
-                            PRINT_VAR("4b");
                     // combine all the elements from the individual lists
                     // to do this nominal value was added to each list
                     std::vector<VariationKey> new_list;
