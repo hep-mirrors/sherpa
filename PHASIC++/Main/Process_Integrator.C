@@ -516,6 +516,7 @@ void Process_Integrator::ResetMax(int flag)
     if (flag==2) m_smax = 0.;
   }
   m_max=0.0;
+  if (flag==1) return; //restart m_max determination after "full optimisation"
   for (size_t i=0;i<m_vsmax.size();i++) {
     m_max=ATOOLS::Max(m_max,m_vsmax[i]);
   }
