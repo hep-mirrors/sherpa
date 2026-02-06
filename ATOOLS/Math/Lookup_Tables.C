@@ -11,13 +11,16 @@ axis::axis(size_t nbins, double xmin, double xmax,
            axis_mode::code mode)
     : m_nbins(nbins), m_xmin(xmin), m_xmax(xmax), m_mode(mode), m_xstep(0.0)
 {
-  if (m_nbins > 0) {
-    if (m_mode == axis_mode::linear) {
-      m_xstep = (m_xmax - m_xmin) / double(m_nbins);
-    } else if (m_mode == axis_mode::log) {
-      if (m_xmin <= 0.0 || m_xmax <= 0.0) THROW(fatal_error, "Log axis requires positive min/max.");
-      m_xstep = log(m_xmax / m_xmin) / double(m_nbins);
-    }
+  if (m_nbins < 1)
+    THROW(fatal_error, "Cannot create table with no bins.");
+  if (xmin > xmax)
+    THROW(fatal_error, "X_min must be smaller than X_max for table.");
+  if (m_mode == axis_mode::linear) {
+    m_xstep = (m_xmax - m_xmin) / double(m_nbins);
+  } else if (m_mode == axis_mode::log) {
+    if (m_xmin <= 0.0 || m_xmax <= 0.0)
+      THROW(fatal_error, "Log axis requires positive min/max.");
+    m_xstep = log(m_xmax / m_xmin) / double(m_nbins);
   }
 }
 
@@ -65,17 +68,14 @@ void OneDim_Table::Rescale(double factor)
 
 double OneDim_Table::operator()(double x) const
 {
-  if (m_x.m_nbins == 0) return m_values.empty() ? 0.0 : m_values[0];
   if (x < m_x.m_xmin || x > m_x.m_xmax) return 0.0;
 
   size_t bin = m_x.bin(x);
-  // Clamp bin to the last interval
-  if (bin >= m_x.m_nbins) bin = m_x.m_nbins - 1;
 
   double x1 = m_x.x(bin);
   double dx = (m_x.m_mode == axis_mode::linear) ? m_x.m_xstep : m_x.x(bin + 1) - x1;
 
-  if (std::fabs(dx) < 1.e-12 * std::fabs(x1)) return m_values[bin];
+  if (dx < 1.e-12 * std::fabs(x1)) return m_values[bin];
 
   double w = (x - x1) / dx; // Normalized weight
   return m_values[bin] * (1.0 - w) + m_values[bin + 1] * w;
