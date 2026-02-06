@@ -129,20 +129,16 @@ operator()(const Process_Info &pi) const
         return new GGH_QCD_Virtual(pi, fl, con);
       }
     }
-    else if (fl[0].Kfcode() == kf_e  // TODO!!! h->gg s.RECOLA_DISABLE_EW_ee_VERTEX() == false &&
-             //pi.m_fi.m_ps.size() == 2 &&
-             //pi.m_fi.m_ps[0].m_fl.IsGluon() && pi.m_fi.m_ps[1].m_fl.IsGluon()
-  )
-    {
+    else if (fl[0].Kfcode() == kf_e && fl[1].Kfcode() == kf_e   // TODO!!! h->gg s.RECOLA_DISABLE_EW_ee_VERTEX() == false &&
+             && pi.m_fi.m_ps.size() == 2 &&
+             pi.m_fi.m_ps[0].m_fl.IsGluon() && pi.m_fi.m_ps[1].m_fl.IsGluon()) {
       msg_Out() << "in zara joanne getter. you have been warned \n" ;
-      // if (pi.m_maxcpl[0] == 3 && (pi.m_maxcpl[1] == 1 || (pi.m_maxcpl.size() > 2 && pi.m_maxcpl[2] == 2)) &&
-      //     pi.m_mincpl[0] == 3 && (pi.m_mincpl[1] == 1 || (pi.m_mincpl.size() > 2 && pi.m_mincpl[2] == 1)))
-      {
-      //   for (size_t i = 2; i < fl.size(); ++i)
-      //   {
-      //     if (fl[i].Strong())
-      //       return NULL;
-      //  }
+      if (pi.m_maxcpl[0] == 3 && (pi.m_maxcpl[1] == 1 || (pi.m_maxcpl.size() > 2 && pi.m_maxcpl[2] == 2)) &&
+          pi.m_mincpl[0] == 3 && (pi.m_mincpl[1] == 1 || (pi.m_mincpl.size() > 2 && pi.m_mincpl[2] == 2))) {
+        for (size_t i = 0; i < pi.m_ii.m_ps.size(); ++i) {
+          if (fl[i].Strong())
+            return NULL;
+        }
         return new HGG_QCD_Virtual(pi, fl, con);
       }
     }
