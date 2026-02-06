@@ -362,8 +362,9 @@ int Recola::Recola_Interface::RegisterProcess(const External_ME_Args& args,
   else
     select_gs_power_BornAmpl_rcl(procIndex,args.m_orders[0]);
   
+  // NOTE dont edit here 
   // disable ee coupling to Z, goldstone, and photon
-  if (s["RECOLA_DISABLE_EW_ee_VERTEX"].Get<bool>()) {
+  if (s["RECOLA_DISABLE_EW_ee_VERTEX"].Get<bool>()) { 
     switchoff_coupling3_rcl("Z","e-","e+");
     switchoff_coupling3_rcl("A","e-","e+");
     switchoff_coupling3_rcl("p0","e-","e+");
@@ -420,6 +421,7 @@ size_t Recola::Recola_Interface::RegisterProcess(const Process_Info& pi,
   int cc=s["RECOLA_COLLIER_CACHE"].Get<int>();
   if (cc>=0) split_collier_cache_rcl(procIndex,cc);
 
+  // NOTE edit here 
   // disable ee coupling to Z, goldstone, and photon
   msg_Info()<<METHOD<<'\n';
   if (s["RECOLA_DISABLE_EW_ee_VERTEX"].Get<bool>()) {
