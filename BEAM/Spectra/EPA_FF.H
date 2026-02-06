@@ -145,7 +145,7 @@ namespace BEAM {
     void SetPT2Max(const double& pt2max) { m_pt2max = pt2max; }
     void SetQ2Max(const double q2max) { m_q2max = q2max; }
 
-    double Mass() const { return m_mass; }
+    double Mass2() const { return m_mass2; }
     double Radius() const { return m_R; }
     double ImpactParameter() const { return m_b; }
     double Xmin() const {return m_xmin; }
@@ -192,7 +192,7 @@ namespace BEAM {
       // results are in GeV.
       //////////////////////////////////////////////////////////////////////////
       double qT = y / m_b, qT2 = ATOOLS::sqr(qT);
-      double Q2 = (qT2 + ATOOLS::sqr(m_x * p_ff->Mass())) / (1. - m_x);
+      double Q2 = (qT2 + m_x * m_x * p_ff->Mass2()) / (1. - m_x);
       // integration variable is qT, so dy/dqT = b, hence Jacobian 1/b needed
       double res = qT2 / Q2 * p_ff->FF(Q2) / m_b;
       return res;
@@ -280,9 +280,9 @@ namespace BEAM {
   class EPA_WoodSaxon final : public EPA_FF_Base {
   private:
     double                                m_d, m_R_WS, m_rho0;
-    std::unique_ptr<ATOOLS::OneDim_Table> p_FF_Q2;
-    static constexpr double               m_q2_min = 1.e-12, m_q2_max = 1.e4;
-    static constexpr int                  m_q2_n = 1e6;
+    std::unique_ptr<ATOOLS::OneDim_Table> p_FF_Q;
+    static constexpr double               m_q_min = 0., m_q_max = 1.e2;
+    static constexpr int                  m_q_n = 1e3;
 
     static double IntegrateWithAdaptiveRange(
             const std::function<double(double)>& integrand, double initial_rmax,
@@ -294,9 +294,9 @@ namespace BEAM {
     EPA_WoodSaxon(const ATOOLS::Flavour& beam, int dir);
     double FF(const double& Q2) override
     {
-      if (Q2 < m_q2_min) return 1.;
-      if (Q2 > m_q2_max) return 0.;
-      return (*p_FF_Q2)(Q2);
+      const double Q = sqrt(Q2);
+      if (Q > m_q_max) return 0.;
+      return (*p_FF_Q)(Q);
     }
   };
 
