@@ -389,7 +389,7 @@ double EPA_WoodSaxon::CalculateDensity()
     return r * r / (1. + std::exp((r - m_R_WS) / m_d));
   };
 
-  double res = IntegrateWithAdaptiveRange(rho_integrand_lambda, m_R_WS, 1.e-6);
+  double res = IntegrateWithAdaptiveRange(rho_integrand_lambda, m_R_WS, 1.e-4);
 
   return 1.0 / res;
 }
@@ -397,12 +397,12 @@ double EPA_WoodSaxon::CalculateDensity()
 void EPA_WoodSaxon::InitFFTable()
 {
   msg_Out() << METHOD << ": Filling table for Woods-Saxon form factor with "
-            << m_q2_n << " bins.\n";
-  p_FF_Q2 = std::make_unique<OneDim_Table>(
-      axis(m_q2_n, m_q2_min, m_q2_max, axis_mode::log));
+            << m_q_n << " bins.\n";
+  p_FF_Q = std::make_unique<OneDim_Table>(
+      axis(m_q_n, m_q_min, m_q_max, axis_mode::linear));
 
-  for (size_t i = 0; i < m_q2_n; i++) {
-    const double q = std::sqrt(p_FF_Q2->GetAxis().x(i));
+  for (size_t i = 0; i < m_q_n; i++) {
+    const double q = p_FF_Q->GetAxis().x(i);
 
     // Define the form factor integrand as a lambda inside the loop.
     auto ff_integrand = [this, q](double r) {
@@ -414,7 +414,7 @@ void EPA_WoodSaxon::InitFFTable()
 
     double form_factor =
         m_rho0 * IntegrateWithAdaptiveRange(ff_integrand, m_R_WS, 1.e-3);
-    p_FF_Q2->Fill(i, form_factor);
+    p_FF_Q->Fill(i, form_factor);
   }
 }
 
