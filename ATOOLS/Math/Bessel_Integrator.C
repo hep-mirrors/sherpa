@@ -24,9 +24,6 @@ double Bessel_Integrator::operator()(double tolerance, bool output)
 {
   size_t stability_counter = 0;
 
-  double integration_tol = tolerance / std::sqrt(2.0 * m_maxbins);
-  double accel_tol = tolerance / std::sqrt(2.0);
-
   if (output)
     msg_Out() << "=== " << METHOD << " start filling the supports, "
               << "depth = " << m_depth << ", maxbins = " << m_maxbins << "\n";
@@ -41,7 +38,7 @@ double Bessel_Integrator::operator()(double tolerance, bool output)
       xmin = m_extrema[i - 1];
       xmax = m_extrema[i];
     }
-    F += m_Psi[i - 1] = AdaptiveIntegrate(xmin, xmax, integration_tol);
+    F += m_Psi[i - 1] = m_gauss.Integrate(xmin, xmax, tolerance);
     m_F[i - 1] = F;
     m_M[0][i - 1] = m_F[i - 1] / m_Psi[i - 1];
     m_N[0][i - 1] = 1. / m_Psi[i - 1];
@@ -85,7 +82,7 @@ double Bessel_Integrator::operator()(double tolerance, bool output)
       double rel_error = std::abs(current_result - prev_result)
                          / (std::abs(current_result) + 1.0e-20);
 
-      if (rel_error < accel_tol) {
+      if (rel_error < tolerance) {
         stability_counter++;
       } else {
         stability_counter = 0;
@@ -110,29 +107,6 @@ double Bessel_Integrator::operator()(double tolerance, bool output)
   }
   return m_F.back();
 }
-
-double Bessel_Integrator::AdaptiveIntegrate(double a, double b, double tol)
-{
-  double fine = m_gauss.Legendre(a, b, 21);   // N=21
-  if (std::abs(b - a) < 1.0e-3 * (std::abs(a) + 1.0)) {
-    return fine;
-  }
-  double coarse = m_gauss.Legendre(a, b, 10); // N=10 (subset for error est)
-
-  double diff = std::abs(fine - coarse);
-  double mag = std::abs(fine);
-
-  double effective_tol = std::max(tol, 1.0e-5);
-
-  if (diff < (effective_tol * mag + 1.0e-13)) {
-    return fine;
-  }
-
-  double mid = 0.5 * (a + b);
-  return AdaptiveIntegrate(a, mid, tol) +
-         AdaptiveIntegrate(mid, b, tol);
-}
-
 
 void Bessel_Integrator::FixBins(const bool& output)
 {

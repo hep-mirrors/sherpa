@@ -34,7 +34,6 @@ namespace ATOOLS {
     std::vector<std::vector<double>> m_M, m_N;
     void Test();
     void FixBins(const bool& output = false);
-    double AdaptiveIntegrate(double a, double b, double tol);
 
   public:
 
