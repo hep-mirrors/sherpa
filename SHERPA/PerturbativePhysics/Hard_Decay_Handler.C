@@ -892,7 +892,14 @@ void Hard_Decay_Handler::TreatInitialBlob(ATOOLS::Blob* blob,
       decay_ME2 += NLO_dc->GetDiagrams()[i]-> GetFullME2();
     }
 
-    for (size_t i=0;i<p_newsublist->size();++i) {
+    int sublist_index = 0;
+    int real_counter2 = 0;
+    for (size_t i=0;i<NLO_dc->GetDiagrams().size();++i) {
+      if(NLO_dc->GetDiagrams()[i]->getType() == "R" && real_counter2 != 0) continue; // skip second R diagram. There is only one real subevent.
+
+      if(NLO_dc->GetDiagrams()[i]->getType() == "R"){
+        real_counter2++;
+      }
       double fullME2DecayWeight = NLO_dc->GetDiagrams()[i]-> GetFullME2();
       double br_subfactor = fullME2DecayWeight / decay_ME2;
       
@@ -902,11 +909,13 @@ void Hard_Decay_Handler::TreatInitialBlob(ATOOLS::Blob* blob,
       wm["BR"] = brfactor * br_subfactor;   // multiply BR from production with sub part. sub part = fullME2DecayWeight / (Sum over all fullME2DecayWeight)
       double nominalweight = wm.Nominal();
 
-      (*p_newsublist)[i]->m_result=nominalweight; 
-      (*p_newsublist)[i]->m_results=wm;
-      (*p_newsublist)[i]->m_me= fullME2DecayWeight * ME_Weight;
-      (*p_newsublist)[i]->m_mewgt=fullME2DecayWeight * ME_Weight;
+      (*p_newsublist)[sublist_index]->m_result=nominalweight; 
+      (*p_newsublist)[sublist_index]->m_results=wm;
+      (*p_newsublist)[sublist_index]->m_me= fullME2DecayWeight * ME_Weight;
+      (*p_newsublist)[sublist_index]->m_mewgt=fullME2DecayWeight * ME_Weight;
       DEBUG_VAR(*(*p_newsublist)[i]);
+
+      sublist_index++;
     }
     blob->AddData("NLO_subeventlist",new Blob_Data<NLO_subevtlist*>(p_newsublist)); 
   }
