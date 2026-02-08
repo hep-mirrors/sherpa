@@ -398,23 +398,15 @@ double Decay_Channel::ME2_NLO(const ATOOLS::Vec4D_Vector& momenta, bool anti,
 {
   // This class calculates either the ME2 for B + V + I or for R - S
   const PHASIC::Color_Integrator* real_p_ci = nullptr;
-  METOOLS::Spin_Amplitudes* first_real_diag = nullptr;
-  for(size_t i(0); i<GetDiagrams().size(); ++i) { // extract colour point from R and set it for 2. R Diagram. Then merge both diagrams.
+  for(size_t i(0); i<GetDiagrams().size(); ++i) { // extract colour point from R and set it for 2. R Diagram.
     GetDiagrams()[i]->Calculate(momenta, anti);
     if (GetDiagrams()[i] -> getType() == "R"){
       if (real_p_ci == nullptr) {
         real_p_ci =  GetDiagrams()[i] -> GetColors();
-        first_real_diag = GetDiagrams()[i];
       }
       else {
         GetDiagrams()[i] -> SetColors(real_p_ci->I(), real_p_ci->J());
         GetDiagrams()[i] -> Calculate(momenta, anti); // call Calculate() again with the correct colour configuration
-        if(sigma){
-          first_real_diag -> MergeDiagrams(GetDiagrams()[i]); // merge second diagram into first
-
-          DeleteDiagram(GetDiagrams()[i]);
-          --i; // prevent skipping next element
-        }
       }
     }
   }
@@ -468,7 +460,7 @@ double Decay_Channel::ME2_NLO(const ATOOLS::Vec4D_Vector& momenta, bool anti,
         NLO_tensor_list.push_back(NLO_tensor);
         s_sign_list.push_back(sign);
 
-        double fullME2_S = ((*sigma)*NLO_tensor->ReduceToMatrix(sigma->Particle())).real();
+        double fullME2_S = ((*sigma)*NLO_tensor->ReduceToMatrix(sigma->Particle())).real() * sign * Scolourfactor * 0.25;
         GetDiagrams()[i]->SetFullME2(fullME2_S);
 
         isRealChannel = true;

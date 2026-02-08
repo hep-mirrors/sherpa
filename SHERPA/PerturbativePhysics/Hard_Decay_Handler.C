@@ -841,8 +841,10 @@ void Hard_Decay_Handler::TreatInitialBlob(ATOOLS::Blob* blob,
   }
 
   if(real_decay){  // create real subevents
+    int real_counter = 0;
     for(size_t i = 0; i < NLO_dc->GetDiagrams().size(); ++i) {
-      if(NLO_dc->GetDiagrams()[i]->getType() == "R"){
+      if(NLO_dc->GetDiagrams()[i]->getType() == "R" && real_counter == 0){
+        real_counter ++;
         size_t newn(4);
         ATOOLS::Vec4D_Vector dipole_mom = NLO_dc->GetDiagrams()[i]-> GetMomenta();
         static size_t decay_ids[4] = {1, 2, 4, 8};
