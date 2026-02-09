@@ -458,6 +458,24 @@ is at most the epsilon factor times the total cross section. In other
 words, the relative contribution of overweighted events to the
 inclusive cross section is at most epsilon.
 
+Precisely, the reduced maximum is the smallest weight :math:`w_\text{max}`
+for which the weights above it sum to at most epsilon times the sum of all
+weights, :math:`\sum_{|w_i|>w_\text{max}} |w_i| \le \epsilon \sum_i |w_i|`,
+determined per subprocess from the weight histogram of the integration.
+The weights include the enhancement of :ref:`Enhance_Function`, as in the
+unweighting, and enter with their absolute value, such that positive and
+negative weights are treated alike.
+
+.. note::
+
+   Before Sherpa 3.1, the reduced maximum was the one for which the excess
+   of the overweights, :math:`\sum_{|w_i|>w_\text{max}} (|w_i|-w_\text{max})`,
+   is at most epsilon times the total cross section. For the same value of
+   epsilon and weights of one sign the maximum is now larger, which gives a
+   lower unweighting efficiency and fewer and smaller overweights. Setups
+   that keep their ``Max_Epsilon`` therefore change their event generation
+   time.
+
 .. _NLO_Mode:
 
 NLO_Mode
