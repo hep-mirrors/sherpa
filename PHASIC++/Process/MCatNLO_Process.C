@@ -457,6 +457,8 @@ Weights_Map MCatNLO_Process::OneHEvent(const int wmode)
   Process_Base *rproc((*p_rproc)[selectedindex]);
   rproc->Integrator()->SetMax
     (p_rsproc->Selected()->Integrator()->Max());
+  rproc->Integrator()->SetUnweightingSelectionWeight
+    (p_rsproc->Selected()->Integrator()->SelectionWeight(1));
   Vec4D_Vector &p(p_rsproc->Selected()->Integrator()->Momenta());
   rproc->SetFixedScale(p_rsproc->Selected()->ScaleSetter(1)->Scales());
   rproc->ScaleSetter(1)->CalculateScale(Vec4D_Vector());
@@ -558,6 +560,7 @@ Weights_Map MCatNLO_Process::OneSEvent(const int wmode)
     p_rproc->SetSelected(rproc);
     rproc->Integrator()->PSHandler()->SetEnhanceWeight(bproc->Integrator()->PSHandler()->EnhanceWeight());
     rproc->Integrator()->SetMax(bproc->Integrator()->Max());
+    rproc->Integrator()->SetUnweightingSelectionWeight(bproc->Integrator()->SelectionWeight(1));
     rproc->Integrator()->SetMomenta(*ampl);
     rproc->GetMEwgtinfo()->m_mur2=bproc->GetMEwgtinfo()->m_mur2;
     Cluster_Leg *lij(NULL);
@@ -731,9 +734,12 @@ bool MCatNLO_Process::CalculateTotalXSec(const std::string &resultpath,
 #ifndef USING__Threading
   if (!p_rsproc->CalculateTotalXSec(resultpath,create)) res=false;
 #endif
-  for (size_t i(0);i<p_bviproc->Size();++i)
+  for (size_t i(0);i<p_bviproc->Size();++i){
     (*p_bproc)[i]->Integrator()->SetMax
       ((*p_bviproc)[i]->Integrator()->Max());
+    (*p_bproc)[i]->Integrator()->SetUnweightingSelectionWeight
+      ((*p_bviproc)[i]->Integrator()->SelectionWeight(1));
+  }
   return res;
 }
 
