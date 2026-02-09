@@ -111,20 +111,57 @@ void Sudakov::InitSplittingFunctions(MODEL::Model_Base *md,const int kfmode)
   }
   auto onia = Settings::GetMainSettings()["QUARKONIA"];
   auto onia_ldme = onia["LDME"];
-  onia_ldme["3S1_c_8_J_psi_1S"].SetDefault(3.488E-03);
-  onia_ldme["3S1_c_8_J_psi_2S"].SetDefault(2.918E-03);
-  onia_ldme["3S1_c_8_chi_c0_1P"].SetDefault(5.912E-03);
-  ldme_3S1_c_8_chi_c0_1P = onia_ldme["3S1_c_8_chi_c0_1P"].Get<double>();
-  onia_ldme["3S1_c_8_chi_c1_1P"].SetDefault(ldme_3S1_c_8_chi_c0_1P);
-  onia_ldme["3S1_c_8_chi_c2_1P"].SetDefault(ldme_3S1_c_8_chi_c0_1P);
-  ldme_3S1_c_8_J_psi_1S = onia_ldme["3S1_c_8_J_psi_1S"].Get<double>();
-  ldme_3S1_c_8_J_psi_2S = onia_ldme["3S1_c_8_J_psi_2S"].Get<double>();
-  ldme_3S1_c_8_chi_c1_1P = onia_ldme["3S1_c_8_chi_c1_1P"].Get<double>();
-  ldme_3S1_c_8_chi_c2_1P = onia_ldme["3S1_c_8_chi_c2_1P"].Get<double>();
+  //OCTETS
+  auto octet_ldme = onia_ldme["Octets"];
+  //CHARM
+  octet_ldme["1S0_441"].SetDefault(0.1E-03);
+  octet_ldme["1S0_443"].SetDefault(15.081E-03);
+  octet_ldme["1S0_100443"].SetDefault(21.395E-03);
+  octet_ldme["3S1_441"].SetDefault(0.1E-03);
+  octet_ldme["3S1_443"].SetDefault(3.430E-03);
+  octet_ldme["3S1_100443"].SetDefault(2.628E-03);
+  octet_ldme["3S1_10441"].SetDefault(2.704E-03);
+  ldme_3S1_c_8_chi_c0_1P = octet_ldme["3S1_10441"].Get<double>();
+  octet_ldme["3S1_20443"].SetDefault(ldme_3S1_c_8_chi_c0_1P);
+  octet_ldme["3S1_445"].SetDefault(ldme_3S1_c_8_chi_c0_1P);
+  octet_ldme["3P0_443"].SetDefault(0.0);
+  octet_ldme["3P0_100443"].SetDefault(0.0);
+  octet_ldme["3P1_443"].SetDefault(0.0);
+  octet_ldme["3P1_100443"].SetDefault(0.0);
+  octet_ldme["3P2_443"].SetDefault(0.0);
+  octet_ldme["3P2_100443"].SetDefault(0.0);
+  ldme_3S1_c_8_J_psi_1S = octet_ldme["3S1_443"].Get<double>();
+  ldme_3S1_c_8_psi_2S = octet_ldme["3S1_100443"].Get<double>();
+  ldme_3S1_c_8_chi_c1_1P = octet_ldme["3S1_20443"].Get<double>();
+  ldme_3S1_c_8_chi_c2_1P = octet_ldme["3S1_445"].Get<double>();
+  //BOTTOM
+
+  //SINGLETS
+  auto singlet_ldme = onia_ldme["Singlets"];
+  //CHARM
+  singlet_ldme["1S0_441"].SetDefault(3.*3.*0.810/(2.*M_PI));
+  singlet_ldme["3S1_443"].SetDefault(3.*3.*0.810/(2.*M_PI));
+  ldme_J_psi_1S = singlet_ldme["3S1_443"].Get<double>();
+  singlet_ldme["3S1_100443"].SetDefault(3.*3.*0.529/(2.*M_PI));
+  singlet_ldme["3P0_10441"].SetDefault(3.*3.*0.075/(2.*M_PI));
+  singlet_ldme["3P1_20443"].SetDefault(3.*3.*3.*0.075/(2.*M_PI));
+  singlet_ldme["3P2_445"].SetDefault(5.*3.*3.*0.075/(2.*M_PI));
+  //BOTTOM
+  singlet_ldme["1S0_551"].SetDefault(3.*3.*6.477/(2.*M_PI));
+  singlet_ldme["3S1_553"].SetDefault(3.*3.*6.477/(2.*M_PI));
+  singlet_ldme["3S1_100553"].SetDefault(3.*3.*3.234/(2.*M_PI));
+  singlet_ldme["3S1_200553"].SetDefault(3.*3.*3.*2.474/(2.*M_PI));
+  singlet_ldme["3P0_10551"].SetDefault(3.*3.*1.417/(2.*M_PI));
+  singlet_ldme["3P1_20553"].SetDefault(3.*3.*3.*1.417/(2.*M_PI));
+  singlet_ldme["3P2_555"].SetDefault(5.*3.*3.*1.417/(2.*M_PI));
+  singlet_ldme["3P0_110551"].SetDefault(3.*3.*1.654/(2.*M_PI));
+  singlet_ldme["3P1_120553"].SetDefault(3.*3.*3.*1.654/(2.*M_PI));
+  singlet_ldme["3P2_100555"].SetDefault(5.*3.*3.*1.654/(2.*M_PI));
+
 
   auto onia_shower = onia["SHOWER"];
   onia_shower["v8_2"].SetDefault(0.21);
-  double v8_2 = onia_shower["v8_2"].Get<double>();
+  v8_2 = onia_shower["v8_2"].Get<double>();
   onia_shower["Enable_all"].SetDefault(false);
   bool enable_all = onia_shower["Enable_all"].Get<bool>();
   onia_shower["Enable_QuarkoniaSplittingFunctions"].SetDefault(false);
@@ -133,6 +170,8 @@ void Sudakov::InitSplittingFunctions(MODEL::Model_Base *md,const int kfmode)
   bool gluon_frag = onia_shower["Enable_GluonFragmentation"].Get<bool>();
   onia_shower["Enable_OctetMesonSplitting"].SetDefault(true);
   bool quark_splitting_o = onia_shower["Enable_OctetMesonSplitting"].Get<bool>();
+  onia_shower["Enhance"].SetDefault(1.0);
+  g_efac = onia_shower["Enhance"].Get<double>();
 
   AddDiQuarkSplittingFunctions(md, kfmode);
   if(quark_splitting_s||enable_all){AddQuarkoniaSplittingFunctions(md, kfmode);; std::cout<< " QuarkoniaSingletSplitting added."<<std::endl;}
@@ -198,7 +237,7 @@ void Sudakov::AddQuarkoniaSplittingFunctions(Model_Base *md, const int kfmode) {
   Single_Vertex v;
   // if (!flav.IsOn()) continue;
   // This is c -> c J/psi(1S)
-  list<kf_code> singlets = {kf_J_psi_1S}; //, kf_chi_b2_3P_oct};
+  list<kf_code> singlets = {kf_J_psi_1S, kf_psi_2S, kf_chi_c1_1P}; //, kf_chi_b2_3P_oct};
   for (list<kf_code>::iterator kfit = singlets.begin();
        kfit != singlets.end(); kfit++) 
   {   
@@ -234,7 +273,8 @@ void Sudakov::AddQuarkoniaSplittingFunctions(Model_Base *md, const int kfmode) {
   //   SF_Key(&v, 0, cstp::II, kfmode, m_qcdmode, m_ewmode, 1, m_pdfmin)));
   
   // This is c -> c J/Psi(1S)8
-  list<kf_code> octetmesonsV = {kf_3S1_c_8_J_psi_1S, kf_3S1_c_8_psi_2S, kf_3S1_c_8_chi_c1_1P, kf_3S1_c_8_chi_c2_1P}; //, kf_chi_b2_3P_oct};
+  list<kf_code> octetmesonsV = {
+    kf_3S1_c_8_J_psi_1S, kf_3S1_c_8_psi_2S, kf_3S1_c_8_chi_c1_1P, kf_3S1_c_8_chi_c2_1P, kf_3P1_c_8_J_psi_1S, kf_3P1_c_8_psi_2S}; //, kf_chi_b2_3P_oct};
   for (list<kf_code>::iterator kfit = octetmesonsV.begin();
        kfit != octetmesonsV.end(); kfit++) 
   {
@@ -255,7 +295,7 @@ void Sudakov::AddQuarkoniaSplittingFunctions(Model_Base *md, const int kfmode) {
       Add(new Splitting_Function_Base(
           SF_Key(&v, 0, cstp::FF, kfmode, m_qcdmode, m_ewmode, 1, m_pdfmin)));
   }
-  list<kf_code> octetmesonsS = {kf_1S0_c_8_J_psi_1S, kf_1S0_c_8_psi_2S}; //, kf_chi_b2_3P_oct};
+  list<kf_code> octetmesonsS = {kf_1S0_c_8_J_psi_1S, kf_1S0_c_8_psi_2S, kf_3P0_c_8_J_psi_1S, kf_3P0_c_8_psi_2S}; //, kf_chi_b2_3P_oct};
   for (list<kf_code>::iterator kfit = octetmesonsS.begin();
        kfit != octetmesonsS.end(); kfit++) 
   {
@@ -340,22 +380,24 @@ void Sudakov::AddGluonThresholds(Model_Base *md) {
   };
   ST_Set *stset;
   m_stmap[Flavour(kf_gluon)] = stset = new ST_Set;
-
   map<kf_code, double> LDME = {
       // ldmes from FO tune. ------- old -> numerical LDME [GeV^3] from ph/9507398, PhysRevD.50.3176
       {kf_3S1_c_8_J_psi_1S,  ldme_3S1_c_8_J_psi_1S},// 1.5E-02 / sqr(M_PI)},
-      {kf_3S1_c_8_psi_2S,    ldme_3S1_c_8_J_psi_2S},//4.3E-03 / sqr(M_PI)},
+      {kf_3S1_c_8_psi_2S,    ldme_3S1_c_8_psi_2S},//4.3E-03 / sqr(M_PI)},
       {kf_3S1_c_8_chi_c0_1P, ldme_3S1_c_8_chi_c0_1P},//2./3/M_PI * 1 * 3E-03},
-      {kf_3S1_c_8_chi_c1_1P, ldme_3S1_c_8_chi_c1_1P },//2./3/M_PI * 3 * 3E-03},
+      {kf_3S1_c_8_chi_c1_1P, ldme_3S1_c_8_chi_c1_1P},//2./3/M_PI * 3 * 3E-03},
       {kf_3S1_c_8_chi_c2_1P, ldme_3S1_c_8_chi_c2_1P}};//100*2./3/M_PI * 5 * 3E-03}};
   double arg;
   for (list<kf_code>::iterator octit = octetvectors.begin();
        octit != octetvectors.end(); octit++) {
-    arg = 0.5 * (M_PI * as(2*mc) / (24 * pow(mc, 3))) *
-          LDME[*octit] * (1. - (11./6. * v8_2)); // SDME for g -> ccb (3S_1)_8
+    arg = 0.5 * (M_PI * as(sqr(2*mc)) / (24 * pow(mc, 3))) *
+          LDME[*octit] * (1. - (11./6. * v8_2))*g_efac; // SDME for g -> ccb (3S_1)_8
     stset->insert(
         One2One_Transition_Base(Flavour(kf_gluon), Flavour(*octit), arg, 1));
   }
+  // stset->insert(One2One_Transition_Base(
+  //     Flavour(kf_gluon), Flavour(kf_J_psi_1S),
+  //       0.5 * 10E5 * 8.28E-04 * pow(as(sqr(2*mc))/mc,3)*ldme_J_psi_1S, 1));
   //std::cout<<"-----alphas(2mc) "<<as(2*mc)<<" as(sqr(2*mc)): "<<as(sqr(2*mc))<<std::endl;
   stset->insert(One2One_Transition_Base(
       Flavour(kf_gluon), Flavour(kf_3S1_b_8_Upsilon_1S),
@@ -715,6 +757,10 @@ int Sudakov::Generate(Parton *split,Parton *spect,
           split->SetSpect(p_spect);
           p_selected = (Splitting_Function_Base *)(&*transit);
           split->SetTransition(true); // make this a transition tag.
+          double orig_P = 1. - exp(-tr_phw * transit->SudArg()/g_efac);
+          double enh_P = 1. - exp(-tr_phw * transit->SudArg());
+          // std::cout<<"----- Original probability: "<<(orig_P/enh_P)<<"\n"; 
+          m_weight = orig_P/enh_P;
           return true;
         }
       }

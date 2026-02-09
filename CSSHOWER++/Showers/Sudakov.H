@@ -20,8 +20,8 @@ namespace CSSHOWER {
     double m_k0sqi, m_k0sqf, m_k0sq_gsplit_fac, m_sphi;
     double m_deltaz, m_st, m_sz, m_sy, m_ymin, m_ymax, m_scale;
     double m_zmin,m_zmax, m_weight;
-    double ldme_3S1_c_8_J_psi_1S, ldme_3S1_c_8_J_psi_2S, ldme_3S1_c_8_chi_c0_1P, ldme_3S1_c_8_chi_c1_1P, ldme_3S1_c_8_chi_c2_1P;
-    double v8_2;
+    double ldme_3S1_c_8_J_psi_1S, ldme_3S1_c_8_psi_2S, ldme_3S1_c_8_chi_c0_1P, ldme_3S1_c_8_chi_c1_1P, ldme_3S1_c_8_chi_c2_1P, ldme_J_psi_1S;
+    double v8_2, g_efac;
     int m_qcdmode,m_ewmode, m_enableQuarkonia;
     ATOOLS::Flavour m_cfl, m_flspec;
     Parton * p_split, * p_spect;
