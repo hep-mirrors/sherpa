@@ -828,8 +828,6 @@ void Single_Process::ReweightBVI(ClusterAmplitude_Vector& ampls)
         m_mewgtinfo.m_type == mewgttype::METS) {
 
       const auto res = ReweightBornLike(varparams, info);
-      PRINT_VAR(res);
-      PRINT_VAR(m_last.BaseWeight());
       m_lastb["Main"].Variation(varindex) =
       m_lastb["All"].Variation(varindex) =
           (m_lastbxs != 0.0) ? res / m_lastb.BaseWeight() : 0.0;
@@ -1027,7 +1025,6 @@ double
 Single_Process::ReweightBornLike(ATOOLS::QCD_Variation_Params& varparams,
                                  Single_Process::BornLikeReweightingInfo& info)
 {
-  PRINT_FUNC(varparams);
   if (info.m_wgt == 0.0) {
     return 0.0;
   }
@@ -1046,9 +1043,6 @@ Single_Process::ReweightBornLike(ATOOLS::QCD_Variation_Params& varparams,
     return newweight;
   }
   const double alphasratio(AlphaSRatio(info.m_muR2, muR2new, varparams.p_alphas));
-  PRINT_VAR(alphasratio);
-  PRINT_VAR(m_csi.m_pdfwgt);
-  PRINT_VAR(csi.m_pdfwgt);
   const double alphasfac(pow(alphasratio, info.m_orderqcd));
   const double newweight(info.m_wgt * alphasfac * csi.m_pdfwgt);
   return newweight;
@@ -1070,21 +1064,6 @@ ATOOLS::Cluster_Sequence_Info Single_Process::ClusterSequenceInfo(
   const double xf2 = p_int->ISR()->XF2();
   p_int->ISR()->SetPDF(varparams.p_pdf1, 0);
   p_int->ISR()->SetPDF(varparams.p_pdf2, 1);
-
-  PRINT_VAR(nominalpdf1);
-  PRINT_VAR(nominalpdf2);
-  if (nominalpdf1) PRINT_VAR(nominalpdf1->Set());
-  if (nominalpdf2) PRINT_VAR(nominalpdf2->Set());
-  if (nominalpdf1) PRINT_VAR(nominalpdf1->Member());
-  if (nominalpdf2) PRINT_VAR(nominalpdf2->Member());
-
-  PRINT_VAR(varparams.p_pdf1);
-  PRINT_VAR(varparams.p_pdf2);
-  if (varparams.p_pdf1) PRINT_VAR(varparams.p_pdf1->Set());
-  if (varparams.p_pdf2) PRINT_VAR(varparams.p_pdf2->Set());
-  if (varparams.p_pdf1) PRINT_VAR(varparams.p_pdf1->Member());
-  if (varparams.p_pdf2) PRINT_VAR(varparams.p_pdf2->Member());
-
 
   double muF2fac {1.0};
   if (varparams.m_showermuF2enabled)
