@@ -757,10 +757,19 @@ bool Initialization_Handler::InitializeThePDFs()
     if (pid == 3) {
       msg_Info() << "  Beam re-scattering: ";
     }
-    msg_Info() << (it.second->PDF(0) ? it.second->PDF(0)->Set() : "None")
-               << " + "
-               << (it.second->PDF(1) ? it.second->PDF(1)->Set() : "None")
-               << "\n";
+    for (int i{0}; i < 2; ++i) {
+      if (i > 0)
+        msg_Info() << " + ";
+      if (it.second->PDF(i)) {
+        msg_Info() << it.second->PDF(i)->Set();
+        if (it.second->PDF(i)->Member() > 0)
+          msg_Info() << "/" << it.second->PDF(i)->Member();
+      }
+      else {
+        msg_Info() << "None";
+      }
+    }
+    msg_Info() << '\n';
   }
   return true;
 }
