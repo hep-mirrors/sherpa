@@ -49,7 +49,7 @@ public:
   PHASIC::Multi_Channel *p_fsrchannel;
   PHASIC::Cut_Data *p_cuts;
 
-  double m_evts, m_recola_evts, m_ranTheta, m_ranPhi, m_real,m_ravg, m_eikeex, m_subloc;
+  double m_evts, m_recola_evts, m_ranTheta, m_ranPhi, m_real,m_ravg, m_rv, m_rvsub, m_eikeex, m_subloc;
   int m_is_isr;
   bool m_failcut;
 

@@ -20,7 +20,6 @@ namespace YFS{
         ~RealVirtual();
         double Calc(const ATOOLS::Vec4D_Vector momenta, double b);    
         PHASIC::Virtual_ME2_Base     *p_loop_me;
-        PHASIC::Color_Correlated_ME2* p_corr_me;
         double Calc_V(const ATOOLS::Vec4D_Vector& p,
                     const double B,
                     const double mur);
