@@ -474,7 +474,7 @@ void Process_Integrator::Reset(const int mode)
       (*p_proc)[i]->Integrator()->Reset(mode);
 }
 
-void Process_Integrator::ResetMax(int flag) 
+void Process_Integrator::ResetMax(const int flag)
 {
   if (p_proc->IsGroup()) {
     m_max=0.0;
