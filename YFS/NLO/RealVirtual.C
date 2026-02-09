@@ -14,7 +14,6 @@ using namespace YFS;
 
 RealVirtual::RealVirtual(const PHASIC::Process_Info& pi)
   {
-
     /* Load loop ME */
     PHASIC::Process_Info rr_pi(pi);
     rr_pi.m_fi.m_nlotype=ATOOLS::nlo_type::rvirt;
@@ -22,8 +21,6 @@ RealVirtual::RealVirtual(const PHASIC::Process_Info& pi)
     rr_pi.m_maxcpl[0] = pi.m_maxcpl[0];
     rr_pi.m_mincpl[1] = pi.m_mincpl[1]+1;
     rr_pi.m_maxcpl[1] = pi.m_maxcpl[1]+1;
-    // MODEL::Coupling_Data* aqcd=m_cpls.Get("Alpha_QCD");
-    // MODEL::Coupling_Data* aqed=m_cpls.Get("Alpha_QED");
     p_loop_me = PHASIC::Virtual_ME2_Base::GetME2(rr_pi);
     if (!p_loop_me)  THROW(not_implemented, "Couldn't find RealVirtual ME for this process.");
     MODEL::s_model->GetCouplings(m_cpls);
@@ -32,13 +29,12 @@ RealVirtual::RealVirtual(const PHASIC::Process_Info& pi)
     PHASIC::External_ME_Args args(rr_pi.m_ii.GetExternal(),
           rr_pi.m_fi.GetExternal(),
           rr_pi.m_maxcpl);
-    p_corr_me = PHASIC::Color_Correlated_ME2::GetME2(args);  
     p_loop_me->SetCouplings(m_cpls);
     m_sym  = ATOOLS::Flavour::FSSymmetryFactor(args.m_outflavs);
     m_sym *= ATOOLS::Flavour::ISSymmetryFactor(args.m_inflavs);
     double cplfac(1.0);
     cplfac *= pow(p_loop_me->AlphaQED(),rr_pi.m_mincpl[1]);
-    m_factor = p_loop_me->AlphaQED()/2.0/M_PI;
+    m_factor = p_loop_me->AlphaQED()/2./M_PI;
   }
 
 RealVirtual::~RealVirtual()
@@ -60,24 +56,25 @@ double RealVirtual::Calc_V(const ATOOLS::Vec4D_Vector& p,
            const double mur)
   {
     double V(0.0), run_corr(0.0), scale(0.0);
-    // m_failcut = false;
-    // if(m_nlocuts && !p_rvproc->Trigger(p)) {
-    //   m_failcut = true;
-    //   return 0;
-    // }
+    m_failcut = false;
+    if(m_nlocuts && !p_rvproc->Trigger(p)) {
+      m_failcut = true;
+      return 0;
+    }
     // p_loop_me->SetRenScale(mur);
     if(aqed->m_mode!=vpmode::off) {
      if(m_tchannel) scale = -(p[0]-p[2]).Abs2();  
      else scale = (p[0]+p[1]).Abs2();
-     double dalpha = ((*aqed)(scale) - aqed->AqedThomson());
+     const double dalpha = ((*aqed)(scale) - aqed->AqedThomson());
      run_corr = 4.*dalpha*B;
     }
-    p_loop_me->Calc(p,B);
-    double gammaborn = p_loop_me->ME_Born()/m_sym;
+    p_loop_me->Calc(p,1);
+    const double gammaborn = p_loop_me->ME_Born();
+    // m_factor *= p_loop_me->ME_Born();
     switch(p_loop_me->Mode())
       {
       case 0:
-        V =  m_factor * p_loop_me->ME_Finite()*gammaborn; break;
+        V =  m_factor * p_loop_me->ME_Finite() * gammaborn; break;
 
       case 1:
         V =  m_factor *  p_loop_me->ME_Finite(); break;
