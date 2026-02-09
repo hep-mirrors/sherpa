@@ -570,26 +570,18 @@ void Histogram::Insert(double coordinate) {
   if (m_logarithmic>0) coordinate = log(coordinate)/m_logbase;
   if (coordinate<m_lower) { m_mvalues[0][0]       += double(1); return; }
   if (coordinate>m_upper) { m_mvalues[0][m_nbin-1] += double(1); return; }
-  for (int i=1;i<m_nbin-1;i++) {
-    if ( (coordinate >= m_lower + (i-1)*m_binsize) &&
-	 (coordinate <  m_lower + i*m_binsize) ) {
-      m_mvalues[0][i] += double(1); 
-      return; 
-    }
-  }
+  // direct bin lookup, coordinate==m_upper stays unbinned as before
+  int bin=int((coordinate-m_lower)/m_binsize)+1;
+  if (bin>=1 && bin<m_nbin-1) m_mvalues[0][bin] += double(1);
 #else
   m_fills++;
 
   if (m_logarithmic>0) coordinate = log(coordinate)/m_logbase;
   if (coordinate<m_lower) { m_yvalues[0 ]       += double(1); return; }
   if (coordinate>m_upper) { m_yvalues[m_nbin-1] += double(1); return; }
-  for (int i=1;i<m_nbin-1;i++) {
-    if ( (coordinate >= m_lower + (i-1)*m_binsize) &&
-	 (coordinate <  m_lower + i*m_binsize) ) {
-      m_yvalues[i] += double(1); 
-      return; 
-    }
-  }
+  // direct bin lookup, coordinate==m_upper stays unbinned as before
+  int bin=int((coordinate-m_lower)/m_binsize)+1;
+  if (bin>=1 && bin<m_nbin-1) m_yvalues[bin] += double(1);
 #endif
 }
 
