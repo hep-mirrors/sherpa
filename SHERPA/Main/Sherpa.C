@@ -367,7 +367,6 @@ bool Sherpa::SummarizeRun()
     int generation_mode=ToType<int>(rpa->gen.Variable("EVENT_GENERATION_MODE"));
     if (not timing_statistics) return true;
     double m_ovwth = s["OVERWEIGHT_THRESHOLD"].SetDefault(1e12).Get<double>();
-    
 
     std::map<std::string, double>  time_map = rpa->gen.TimeMapAll();
     std::map<std::string, int>     number_map = rpa->gen.NumberMapAll();
@@ -492,15 +491,32 @@ bool Sherpa::SummarizeRun()
 	sepsum += this_sepsum;
       }
     }
-    if (timing_statistics>4) msg_Info() << "Total separate sum: " << sepsum << "s resulting in: " << 60*60*24/sepsum*sum_map["kept"] << "evts/day" << std::endl;
 
+    //calculate chosen effevperev
+    std::map<std::string, double> chosen_alpha_map = rpa->gen.AlphaMap();
+    std::map<std::string, double> chosen_efficiency_map = rpa->gen.EfficiencyMap();
+    std::map<std::string, double> xsec_map = rpa->gen.XsecMap();
+    double sum_p_unw = 0;
+    double sum_p_eff = 0;
+    for (auto const& [key, val] : chosen_alpha_map) {
+      std::string sub_name = key;
+      double curr_xsec = dabs(xsec_map[sub_name])/chosen_efficiency_map[sub_name]/chosen_alpha_map[sub_name];
+      sum_p_unw += chosen_efficiency_map[sub_name]*sudakov_efficiency[sub_name]*curr_xsec;
+      sum_p_eff += chosen_efficiency_map[sub_name]*sudakov_efficiency[sub_name]*chosen_alpha_map[sub_name]*curr_xsec;
+    }
+    double chosen_effevperev = sum_p_eff/sum_p_unw;
+    if (timing_statistics>4) {
+      msg_Info() << "Total separate sum: " << sepsum << "s resulting in: " << 60*60*24/sepsum*sum_map["kept"] << "evts/day" << std::endl;
+      msg_Info() << "  with  " << chosen_effevperev << " Neff/evt" << std::endl;
+    } else {
+      msg_Info()<<"Generated "<< chosen_effevperev << " Neff/evt           "<<std::endl;
+    }
     //epsilon_max scan manual definition
     std::vector<double> epsilon_values = rpa->gen.EpsilonValues();
     std::vector<double> fraction_values = rpa->gen.EpsilonValues();
     std::map<std::string, std::vector<double>> alpha_manual_map = rpa->gen.AlphaManualMapAll();
     std::map<std::string, std::vector<double>> wmax_manual_map = rpa->gen.WmaxManualMapAll();
     std::map<std::string, std::vector<double>> efficiency_manual_map = rpa->gen.EfficiencyManualMapAll();
-    std::map<std::string, double> xsec_map = rpa->gen.XsecMap();
     std::vector<double> mean_manual_alpha(epsilon_values.size(), -1);
     std::vector<double> mean_manual_events(epsilon_values.size(), -1);
     std::vector<double> mean_manual_eff_events(epsilon_values.size(), -1);
@@ -701,8 +717,6 @@ bool Sherpa::SummarizeRun()
     
     //make nice final table IV (for chosen emax)
     if (timing_statistics>3) {
-      std::map<std::string, double> chosen_alpha_map = rpa->gen.AlphaMap();
-      std::map<std::string, double> chosen_efficiency_map = rpa->gen.EfficiencyMap();
       std::cout << "┌──────────────────────────────┬──────────────┬─────────────────────────────────────────────────────────┐" << std::endl;
       std::cout << "│    sampling contribution     │              │                                                         │" << std::endl;
       std::cout << "│ xsec*h  efficiency  stat.dil │ time |xsec*h|│ subprocess                                              │" << std::endl;
