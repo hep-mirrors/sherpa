@@ -310,13 +310,8 @@ Complex String_Tree::Evaluate(sknot* m)
   case '+': return Evaluate(m->left)+Evaluate(m->right);
   case '-': return Evaluate(m->left)-Evaluate(m->right);
   case '*': return Evaluate(m->left)*Evaluate(m->right);
-#ifndef __GNUC__
   case 'e': return std::exp(Evaluate(m->right));
   case 's': return std::sin(Evaluate(m->right));
-#else
-  case 'e': return std::exp(Evaluate(m->right));
-  case 's': return std::sin(Evaluate(m->right));
-#endif
   default:
     if (m->Str()==string("0")) return Complex(0.,0.);
     return m->value->Value();
