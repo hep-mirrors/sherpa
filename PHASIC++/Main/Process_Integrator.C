@@ -580,7 +580,6 @@ double Process_Integrator::GetMaxEps(double epsilon)
     wmax_manual_list[epsilon_max_values.size()+1]=1;
     //save number of generatead events after cuts
     rpa->gen.SetFillsMap(p_proc->ResultsName(), whisto_fills);//only to check average fill of weight-histo for Warning-printing
-    rpa->gen.SetXsecMap(p_proc->ResultsName(), whisto_sum/p_whisto->Fills()*m_enhancefac);//to be consistent with above psel: whisto_sum/p_whisto->Fills()*m_enhancefac
     rpa->gen.SetEfficiencyManualMap(p_proc->ResultsName(), efficiency_manual_list);
     rpa->gen.SetAlphaManualMap(p_proc->ResultsName(), alpha_manual_list);
     rpa->gen.SetAlphaManualFractionMap(p_proc->ResultsName(), alpha_manual_fraction_list);
@@ -670,6 +669,7 @@ double Process_Integrator::GetMaxEps(double epsilon)
     cnt = 0.;
   }
 
+  rpa->gen.SetXsecMap(p_proc->ResultsName(), whisto_sum/p_whisto->Fills()*m_enhancefac);//to be consistent with above psel: whisto_sum/p_whisto->Fills()*m_enhancefac
   double pxs = whisto_abs_sum*(1-epsilon);
   //fallback for empty WD histogram
   if (whisto_abs_sum==0) {
@@ -763,9 +763,10 @@ void Process_Integrator::SetUpEnhance(const int omode)
   } else {
     //should rely on m_max here -> to be compatible with partially unweighting the m_effi etc needs to be set
     m_effi = m_ssumenhabs/m_sncut/m_max;
-
     m_effevperev = pow(m_ssumenh/m_ssumenhabs,2);//alpha_sign
-
+    rpa->gen.SetXsecMap(p_proc->ResultsName(), m_ssumenh/m_sn*m_enhancefac);
+    rpa->gen.SetChosenEfficiencyMap(p_proc->ResultsName(), m_effi);
+    rpa->gen.SetChosenAlphaMap(p_proc->ResultsName(), m_effevperev);
   }
 }
 
