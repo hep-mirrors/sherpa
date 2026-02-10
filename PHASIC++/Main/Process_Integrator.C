@@ -717,7 +717,6 @@ double Process_Integrator::GetMaxEps(double epsilon)
     wmax_manual_list[epsilon_max_values.size()+1]=1;
     //save number of generatead events after cuts
     rpa->gen.SetFillsMap(p_proc->ResultsName(), whisto_fills);//only to check average fill of weight-histo for Warning-printing
-    rpa->gen.SetXsecMap(p_proc->ResultsName(), whisto_sum/p_whisto->Fills()*m_enhancefac);//to be consistent with above psel: whisto_sum/p_whisto->Fills()*m_enhancefac
     rpa->gen.SetEfficiencyManualMap(p_proc->ResultsName(), efficiency_manual_list);
     rpa->gen.SetAlphaManualMap(p_proc->ResultsName(), alpha_manual_list);
     rpa->gen.SetAlphaManualFractionMap(p_proc->ResultsName(), alpha_manual_fraction_list);
@@ -809,6 +808,7 @@ double Process_Integrator::GetMaxEps(double epsilon)
     cnt = 0.;
   }
 
+  rpa->gen.SetXsecMap(p_proc->ResultsName(), whisto_sum/p_whisto->Fills()*m_enhancefac);//to be consistent with above psel: whisto_sum/p_whisto->Fills()*m_enhancefac
   double pxs = whisto_abs_sum*(1-epsilon);
   for (int i=first_filled_bin-1;i<last_filled_bin+1;i++) {
     //bin middle times count is added
