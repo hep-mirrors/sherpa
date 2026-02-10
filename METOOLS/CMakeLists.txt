@@ -1,5 +1,6 @@
 add_subdirectory(Colors)
 add_subdirectory(Currents)
+add_subdirectory(HadronCurrents)
 add_subdirectory(Explicit)
 add_subdirectory(Loops)
 add_subdirectory(Main)

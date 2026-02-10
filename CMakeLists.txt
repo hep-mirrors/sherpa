@@ -707,7 +707,7 @@ PhasicMain PhasicChannels PhasicProcess PhasicSelectors PhasicEnhance PhasicDeca
 Amegic DipoleSubtraction Amplitude AmegicPSGen
 String Zfunctions
 ExtAmp ExtraXSNLO ExtraXSSpecial ExtraXS2_2 ExtraXS1_2 ExtraXS1_3 ExtraXS
-METoolsExplicit METoolsCurrents METoolsVertices METoolsColors METoolsSpinCorrelations METoolsLoops METoolsMain ModelUFO ModelMain
+METoolsExplicit METoolsCurrents METoolsHadronCurrents METoolsVertices METoolsColors METoolsSpinCorrelations METoolsLoops METoolsMain ModelUFO ModelMain
 PDF
 BeamMain BeamSpectra
 ToolsPhys ToolsMath ToolsYaml ToolsOrg
