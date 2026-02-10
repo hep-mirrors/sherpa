@@ -10,6 +10,7 @@ namespace ATOOLS {
   private:
 
     std::string m_info, m_class, m_method, m_type;
+    int m_line;
 
   protected:
 
@@ -19,7 +20,8 @@ namespace ATOOLS {
 
     Exception(const std::string& name="",
 	      const std::string& info="",
-	      const std::string& cmethod="");
+	      const std::string& cmethod="",
+        const int& line = -1);
 
     ~Exception() = default;
 
@@ -31,73 +33,82 @@ namespace ATOOLS {
   class normal_exit : public Exception {
   public:
     normal_exit(const std::string& info,
-                const std::string& cmethod)
+                const std::string& cmethod,
+                const int& line)
       : Exception("Normal exit",
-		  info, cmethod) {}
+		  info, cmethod, line) {}
   };
 
   class inconsistent_option : public Exception {
   public:
     inconsistent_option(const std::string& info,
-                        const std::string& cmethod)
+                        const std::string& cmethod,
+                        const int& line)
     : Exception("Inconsistent option",
-		info, cmethod) {}
+		info, cmethod, line) {}
   };
 
   class not_implemented : public Exception {
   public:
     not_implemented(const std::string& info,
-                    const std::string& cmethod)
+                    const std::string& cmethod,
+                    const int& line)
       : Exception("Not implemented",
-		  info, cmethod) {}
+		  info, cmethod, line) {}
   };
 
   class critical_error : public Exception {
   public:
     critical_error(const std::string& info,
-                   const std::string& cmethod)
+                   const std::string& cmethod,
+                   const int& line)
       : Exception("Critical error",
-		  info, cmethod) {}
+		  info, cmethod, line) {}
   };
 
   class fatal_error : public Exception {
   public:
     fatal_error(const std::string& info,
-                const std::string& cmethod)
+                const std::string& cmethod,
+                const int& line)
       : Exception("Fatal error",
-		  info, cmethod) {}
+		  info, cmethod, line) {}
   };
 
   class missing_module : public Exception {
   public:
     missing_module(const std::string& info,
-                   const std::string& cmethod)
+                   const std::string& cmethod,
+                   const int& line)
       : Exception("Missing module",
-		  info, cmethod) {}
+		  info, cmethod, line) {}
   };
 
   class missing_input : public Exception {
   public:
     missing_input(const std::string& info,
-		  const std::string& cmethod)
+		              const std::string& cmethod,
+                  const int& line)
       : Exception("Missing input",
-		  info, cmethod) {}
+		  info, cmethod, line) {}
   };
 
   class invalid_input : public Exception {
   public:
     invalid_input(const std::string& info,
-		  const std::string& cmethod)
+		              const std::string& cmethod,
+                  const int& line)
       : Exception("Invalid input",
-		  info, cmethod) {}
+		  info, cmethod, line) {}
   };
 
   class numerical_instability : public Exception {
   public:
     numerical_instability(const std::string& info,
-			  const std::string& cmethod)
+			                    const std::string& cmethod,
+                          const int& line)
       : Exception("Numerical instability",
-		  info, cmethod) {}
+		  info, cmethod, line) {}
   };
 
 
@@ -105,12 +116,12 @@ namespace ATOOLS {
 
 }
 
-#if defined(__PRETTY_FUNCTION__)
+#ifdef __GNUC__
 #define THROW(exception,message)			 \
-  throw(ATOOLS::exception(message,__PRETTY_FUNCTION__));
+  throw(ATOOLS::exception(message, __PRETTY_FUNCTION__, __LINE__));
 #else
 #define THROW(exception,message)					\
-  throw(ATOOLS::exception(message,"<unknown class>::<unknown function>"));
+  throw(ATOOLS::exception(message,"<unknown class>::<unknown function>", __LINE__));
 #endif
 
 #include "ATOOLS/Org/Stacktrace.H"
