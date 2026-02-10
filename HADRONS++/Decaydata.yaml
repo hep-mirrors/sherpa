@@ -2513,7 +2513,7 @@ HADRON_DECAYS:
     # Two pseudoscalars
     ######################################################
       -211,111,16:
-        BR: [1., 0.] # [0.255, 0.255]
+        BR: [0., 0.] # [0.255, 0.255]
         ME:
           - Current_ME:
               J1:
@@ -2524,8 +2524,8 @@ HADRON_DECAYS:
               J2:
                 Type: VA_0_PiPi
                 Indices: [2, 1]
-                RUNNING_WIDTH: 1
-                FORM_FACTOR: 2
+                RUNNING_WIDTH: 2
+                FORM_FACTOR: 1
         PhaseSpace:
           - Dalitz_rho(770)+_12:
               Weight: 1.0
@@ -2540,7 +2540,7 @@ HADRON_DECAYS:
         IntResults: [5.396e-05, 1.919e-07, 0.0004206]
 
       -321,310,16:
-        BR: [0., 0.] # [0.0007, 0.0007]
+        BR: [1., 0.] # [0.0007, 0.0007]
         ME:
           - Current_ME:
               J1:
@@ -2568,7 +2568,7 @@ HADRON_DECAYS:
                 Type: VA_0_PiPi
                 Indices: [2, 1]
                 RUNNING_WIDTH: 1
-                FORM_FACTOR: 2
+                FORM_FACTOR: 1
         IntResults: [2.123e-15, 7.341e-18, 1.111e-14]
 
       310,-211,16:
@@ -2600,7 +2600,7 @@ HADRON_DECAYS:
                 Type: VA_0_PiPi
                 Indices: [1, 2]
                 RUNNING_WIDTH: 1
-                FORM_FACTOR: 2
+                FORM_FACTOR: 1
         IntResults: [2.27265e-14, 2.27208e-17, 1.4063e-12]
 
       -321,111,16:
