@@ -38,7 +38,7 @@ extern "C" Single_Channel * Getter_C3_12(int nin,int nout,Flavour* fl,Integratio
 void C3_12::GeneratePoint(Vec4D * p,Cut_Data * cuts,double * _ran)
 {
   double *ran = p_vegas->GeneratePoint(_ran);
-  for(int i=0;i<m_rannum;i++) p_rans[i]=ran[i];
+  for(size_t i=0;i<m_rannum;i++) p_rans[i]=ran[i];
   Vec4D p234=p[0]+p[1];
   double s234_max = p234.Abs2();
   double s4 = p_ms[4];

@@ -57,7 +57,7 @@ void Single_Channel::AddPoint(double Value) {
 
 void Single_Channel::GeneratePoint(Vec4D* p,Cut_Data * cuts)
 {
-  for (int i=0;i<m_rannum;i++) p_rans[i] = ran->Get();
+  for (size_t i=0;i<m_rannum;i++) p_rans[i] = ran->Get();
   GeneratePoint(p,cuts,p_rans);
 }
 
