@@ -465,9 +465,10 @@ double Define_Dipoles::CalculateRealSub(const Vec4D &k) {
     }
   }
   for (auto &D : m_dipolesFF) {
+     if(!D.IsResonance()) continue;
     for(size_t i = 0; i < D.GetBornMomenta().size(); ++i)
     {
-      Vec4D p = D.GetBornMomenta(i);
+      Vec4D p = D.GetMomenta(i);
       eik += -D.m_Q[i]*p/(p*k);
     }
   }
@@ -592,10 +593,10 @@ double Define_Dipoles::FormFactor(){
       for(auto &D: m_dipolesFF){
         form+= D.ChargeNorm()*p_yfsFormFact->BVR_full(D, sqrt(m_s)/2);
       }
-    }
-  if(m_ifisub==1){
-    for(auto &D: m_dipolesIF){
-      form += D.ChargeNorm()*p_yfsFormFact->BVR_full(D,sqrt(m_s)/2);
+    if(m_ifisub==1){
+      for(auto &D: m_dipolesIF){
+        form += D.ChargeNorm()*p_yfsFormFact->BVR_full(D,sqrt(m_s)/2);
+      }
     }
   }
   if(FixedOrder()==fixed_order::nlo){
