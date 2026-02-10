@@ -7,8 +7,9 @@ using namespace ATOOLS;
 
 Exception::Exception(const std::string& type,
 		     const std::string& info,
-		     const std::string& cmethod):
-  m_info(info), m_type(type)
+		     const std::string& cmethod,
+         const int& line):
+  m_info(info), m_type(type), m_line(line)
 {
   std::string cmethod_
     =cmethod.substr(0,ATOOLS::Min(cmethod.length(),cmethod.find("(")));
@@ -36,6 +37,10 @@ std::ostream &ATOOLS::operator<<(std::ostream &str,
 	 <<om::blue
 	 <<exception.m_class<<"::"
 	 <<exception.m_method
+	 <<om::reset;
+
+   str << om::green << "(line "
+	 <<exception.m_line << ")"
 	 <<om::reset;
 
    str<<":\n"<<om::red
