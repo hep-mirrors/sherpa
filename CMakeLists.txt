@@ -1047,6 +1047,18 @@ $<IF:$<BOOL:${SHERPA_ENABLE_BINRELOC}>,#define ENABLE_BINRELOC \"1\",/* #undef E
 /* Using colour */\n\
 #define USING__COLOUR \"1\"\n\n\
 #define PYTHON_LIBS \"${SHERPA_Python_SITEARCH}\"\n\n\
+#if defined(__has_cpp_attribute)\n\
+#if __has_cpp_attribute(SHERPA_MAYBE_UNUSED)\n\
+#define SHERPA_MAYBE_UNUSED [[SHERPA_MAYBE_UNUSED]]\n\
+#endif\n\
+#endif\n\
+#ifndef SHERPA_MAYBE_UNUSED\n\
+#if defined(__GNUC__) || defined(__clang__)\n\
+#define SHERPA_MAYBE_UNUSED __attribute__((unused))\n\
+#else\n\
+#define SHERPA_MAYBE_UNUSED\n\
+#endif\n\
+#endif\n\
 #endif\n")
 file(GENERATE OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/ATOOLS/Org/CXXFLAGS.H CONTENT "${CXXFLAGS_H_CONTENT}")
 ########################################################################

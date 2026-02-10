@@ -506,7 +506,7 @@ void  Channel_Generator_Decays::AddToVariables(int flag,const string& lhs,const 
     // daoes not exist
     declarations[name]=rhs;
 
-    if (type == 0) sf<<"  double s";
+    if (type == 0) sf<<"SHERPA_MAYBE_UNUSED  double s";
               else sf<<"  Vec4D  p";
     sf<<lhso<<" = "<<rhs<<";"<<endl;
   } 

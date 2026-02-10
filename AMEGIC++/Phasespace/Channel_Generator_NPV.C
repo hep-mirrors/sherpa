@@ -717,12 +717,12 @@ void Channel_Generator_NPV::GenerateMassChain(int flag,Point* p,Point* clmp,int&
   case 0:
     sf<<"  Vec4D  p"<<mummy<<";"<<endl;
     if (maxpole>0.) {
-      sf<<"  double s"<< mummy
+      sf<<"SHERPA_MAYBE_UNUSED  double s"<< mummy
 	<<" = CE.MassivePropMomenta(fl"<<mummy<<".Mass(),"<<"fl"<<mummy<<".Width(),"
 	<<"s"<<mummy<<"_min,s"<<mummy<<"_max,ran["<<rannum<<"]);"<<endl;
     }
     else {
-      sf<<"  double s"<<mummy<<" = CE.ThresholdMomenta(m_thexp,"
+      sf<<"SHERPA_MAYBE_UNUSED  double s"<<mummy<<" = CE.ThresholdMomenta(m_thexp,"
 	<<hi<<".*sqrt(s"<<mummy<<"_min),s"<<mummy<<"_min,"
 	<<"s"<<mummy<<"_max,ran["<<rannum<<"]);"<<endl;
     }
@@ -806,12 +806,12 @@ void Channel_Generator_NPV::GenerateMassFwd(int flag,Point* p,int& rannum,ofstre
   case 0: 
     sf<<"  Vec4D  p"<<mummy<<";"<<endl;
     if (maxpole>0.) {
-      sf<<"  double s"<< mummy
+      sf<<"SHERPA_MAYBE_UNUSED  double s"<< mummy
 	  <<" = CE.MassivePropMomenta(fl"<<mummy<<".Mass(),"<<"fl"<<mummy<<".Width(),"
 	<<"s"<<mummy<<"_min,s"<<mummy<<"_max,ran["<<rannum<<"]);"<<endl;
     }
     else {
-      sf<<"  double s"<<mummy<<" = CE.MasslessPropMomenta(1.,s"<<mummy<<"_min,"
+      sf<<"SHERPA_MAYBE_UNUSED  double s"<<mummy<<" = CE.MasslessPropMomenta(1.,s"<<mummy<<"_min,"
 	<<"s"<<mummy<<"_max,ran["<<rannum<<"]);"<<endl;
     }
     rannum++;
@@ -1068,7 +1068,7 @@ void  Channel_Generator_NPV::AddToVariables(int flag,const string& lhs,const str
     if (rhs!=string("")) {
       declarations[name]=rhs;
       
-      if (type == 0) sf<<"  double s";
+      if (type == 0) sf<<"SHERPA_MAYBE_UNUSED  double s";
       else           sf<<"  Vec4D  p";
       sf<<lhso<<" = "<<rhs<<";"<<endl;
     }

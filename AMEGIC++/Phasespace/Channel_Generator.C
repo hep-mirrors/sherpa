@@ -524,7 +524,7 @@ void Channel_Generator::SingleTStep(int flag,string* s,Point** propt,int tcount,
       break;
     case 0:
       sf<<"  Vec4D  p"<<Order(pout0sum)<<";"<<endl;
-      sf<<"  double s"<<Order(pout0sum);
+      sf<<"SHERPA_MAYBE_UNUSED  double s"<<Order(pout0sum);
 
       if (pout1.size()==1 && pin1.size()==1 && pout1[0].length()==1 && extrachannelflag==0) {
 	//check for extra LL-Channel
@@ -590,7 +590,7 @@ void Channel_Generator::SingleTStep(int flag,string* s,Point** propt,int tcount,
       m_idc.push_back(string("MlP_")+Order(pout1sum)); break;
     case 0:
       sf<<"  Vec4D  p"<<Order(pout1sum)<<";"<<endl
-	<<"  double s"<<Order(pout1sum)
+	<<"SHERPA_MAYBE_UNUSED  double s"<<Order(pout1sum)
 	<<" = CE.MasslessPropMomenta(0.5,s"<<Order(pout1sum)<<"_min,"
 	<<"s"<<Order(pout1sum)<<"_max,ran["<<rannum<<"]);"<<endl;
       rannum++;
@@ -895,7 +895,7 @@ void Channel_Generator::CalcTSmin(int flag,vector<string>& p,ofstream& sf)
   }
   s += string(")");
 
-  sf<<"  double s"<<Order(psum)<<"_min = "<<s<<";"<<endl;
+  sf<<"SHERPA_MAYBE_UNUSED  double s"<<Order(psum)<<"_min = "<<s<<";"<<endl;
 }
 
 
@@ -1039,7 +1039,7 @@ void  Channel_Generator::AddToVariables(int flag,const string& lhs,const string&
     // daoes not exist
     declarations[name]=rhs;
 
-    if (type == 0) sf<<"  double s";
+    if (type == 0) sf<<"SHERPA_MAYBE_UNUSED  double s";
               else sf<<"  Vec4D  p";
     sf<<lhso<<" = "<<rhs<<";"<<endl;
   } 
