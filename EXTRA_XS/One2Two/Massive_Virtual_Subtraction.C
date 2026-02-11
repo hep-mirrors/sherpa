@@ -140,7 +140,7 @@ void Massive_Virtual_Subtraction::Calculate(const ATOOLS::Vec4D_Vector& momenta,
 
 
 double Massive_Virtual_Subtraction::get_NLO_ME2(){
-  return -0.00783014;
+  return -49.3866539659783;
 }
 
 
@@ -487,7 +487,7 @@ void Massive_Virtual_Subtraction::setBornAmplitude(Spin_Amplitudes* born){
   }
 
   // the values for the virtual subtraction are not correct. For test purposes, set the value to the correct value:
-  double correct_value = -0.00783014; // todo: doublecheck this number
+  double correct_value = -49.3866539659783; // taken from: COMIX/Main/Single_Process, return value of method "Partonic"; value is alredy including the colour factor
 
   // calculate wrong value:
   std::complex<double> wrong_value = 0.0;

@@ -520,7 +520,7 @@ void H_to_bb_Virtual::Calculate(const ATOOLS::Vec4D_Vector& momenta, bool anti){
   double v_correction_f_unscaled = colour_factor * 2 * std::real(BV_f_old);
 
   // scale result so that one obtains the correct result
-  double v_correct = 0.00498717; // todo: confirm this value
+  double v_correct = 31.4553731442691; // taken from: COMIX/Main/Single_Process, return value of method "Partonic"; value is alredy including the colour factor
   double factor = v_correction_f_unscaled / v_correct;
   v_finite["00"] = v_finite["00"] / factor;
   v_finite["01"] = v_finite["01"] / factor;
@@ -565,7 +565,7 @@ std::string H_to_bb_Virtual::getType(){
 
 
 double H_to_bb_Virtual::get_NLO_ME2(){
-  return 0.00498717;
+  return 31.4553731442691;
 }
 
 
