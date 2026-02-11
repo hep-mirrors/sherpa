@@ -383,22 +383,22 @@ void Beam_Parameters::InitializeFlav(kf_code flav) {
       AddParticle(kf_e, 0.000511, .0, .0, -3, 0, 1, 0, 1, 1, 0, "e-", "e+", "e^{-}", "e^{+}");
     }
     else if (flav==kf_photon) {
-      AddParticle(22, .0, .0, .0, 0, 0, 2, -1, 1, 1, 0, "P", "P", "P", "P");
+      AddParticle(kf_photon, .0, .0, .0, 0, 0, 2, -1, 1, 1, 0, "P", "P", "P", "P");
     }
     else if (flav==kf_lead208) {
-      AddParticle(1000822080, 193.75, 5.5012, 246, 0, 0, "Pb208", "Pb208");
+      AddParticle(kf_lead208, 193.75, 5.5012, 0., 246, 0, 1, 1, "Pb208", "Pb208");
     }
     else if (flav==kf_lead207) {
-      AddParticle(1000822070, 192.82, 5.4943, 246, -1, 2, "Pb207", "Pb207");
+      AddParticle(kf_lead207, 192.82, 5.4943, 0.,246, -1, 1, 1, "Pb207", "Pb207");
     }
     else if (flav==kf_lead206) {
-      AddParticle(1000822060, 192.82, 5.4902, 246, 0, 2, "Pb206", "Pb206");
+      AddParticle(kf_lead206, 192.82, 5.4902, 0.,246, 0, 1, 1, "Pb206", "Pb206");
     }
     else if (flav==kf_gold197) {
-      AddParticle(1000791970, 183.5, 5.4371, 237, 3, 2, "Au197", "Au197");
+      AddParticle(kf_gold197, 183.5, 5.4371, 0.,237, 3, 1, 1, "Au197", "Au197");
     }
     else if (flav==kf_calcium40) {
-      AddParticle(1000200400, 37.26, 3.4776, 60, 0, 2, "Ca40", "Ca40");
+      AddParticle(kf_calcium40, 37.26, 3.4776, 0., 60, 0, 1, 1, "Ca40", "Ca40");
     }
     else {
       THROW(fatal_error,"You specified a beam particle "+ToString(flav)+

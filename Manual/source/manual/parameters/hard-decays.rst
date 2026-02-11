@@ -242,16 +242,15 @@ Set_Widths
 The decay handler computes LO partial and total decay widths and
 generates decays with corresponding branching fractions, independently
 from the particle widths specified by
-:option:`PARTICLE_DATA:<id>:Width`. The latter are relevant only for
-the core process and should be set to zero for all unstable particles
-appearing in the core-process final state. This guarantees
-on-shellness and gauge invariance of the core process, and subsequent
-decays can be handled by the afterburner.  In contrast,
-:option:`PARTICLE_DATA:<id>:Width` should be set to the physical width
-when unstable particles appear (only) as intermediate states in the
-core process, i.e. when production and decay are handled as a full
-process or using ``Decay``/``DecayOS``.  In this case, the option
-:option:`HARD_DECAYS: { Set_Widths: true }` permits to overwrite the
+:option:`PARTICLE_DATA:<id>:Width`. The latter should be set to the physical
+width of the particle and will be used to calculate the lifetime and hence the
+decay vertex positions. If an unstable particle appears as a final state of the
+core process, its :option:`PARTICLE_DATA:<id>:Narrow` property should be set
+to :option:`1`.  This way the width is treated as zero in the matrix-element,
+which guarantees on-shellness and gauge invariance of the core process, and
+subsequent decays can be handled by the afterburner.
+
+The option :option:`HARD_DECAYS: { Set_Widths: true }` permits to overwrite the
 :option:`PARTICLE_DATA:<id>:Width` values of unstable particles by the
 LO widths computed by the decay handler.
 
@@ -442,9 +441,9 @@ scattering with the :math:`\mathrm{W}^+` boson decaying to electrons or muons.
 
    PARTICLE_DATA:
      24: 
-       Width: 0
+       Narrow: 1
      23:
-       Width: 0
+       Narrow: 1
 
    WIDTH_SCHEME: Fixed
 
@@ -462,11 +461,11 @@ scattering with the :math:`\mathrm{W}^+` boson decaying to electrons or muons.
 
 Things to notice:
 
-* In :option:`PARTICLE_DATA` the :option:`Width` of the intermediate particles must
-  be set to zero since they are handled as stable for the hard process
+* In :option:`PARTICLE_DATA` the :option:`Narrow` property of the intermediate particles must
+  be set to :option:`1` since they are handled as stable (narrow width) for the hard process
   matrix element calculation. The particles are then decayed by the internal (hard) 
   decay module. If VBs are considered as intermediate particles, the width of all VBs 
-  must be set to zero to preserve SU(2) Ward-Identities.
+  must be set to be narrow to preserve SU(2) Ward-Identities.
   This also holds true for processes where only one VB type participates as intermediate
   particle (e.g. same-sign :math:`\mathrm{W}^\pm \mathrm{W}^\pm` scattering process).
 
@@ -478,7 +477,8 @@ Things to notice:
   shell effects, details cf. :ref:`Hard decays` section (corresponding setting can be omitted since 
   it is the default). 
 
-* :option:`WIDTH_SCHEME` is set to :option:`Fixed` to be consistent with setting all VB widths to zero.
+* :option:`WIDTH_SCHEME` is set to :option:`Fixed` to be consistent with setting
+  all VB widths to zero (i.e. treating them as narrow).
 
 The central setting to enable the calculation of polarized cross sections is:
 

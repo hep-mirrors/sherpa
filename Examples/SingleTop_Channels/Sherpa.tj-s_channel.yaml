@@ -27,7 +27,7 @@ HARD_DECAYS:
 EW_SCHEME: 3
 
 # required for using top-quark in ME
-PARTICLE_DATA: { 6: {Width: 0} }
+PARTICLE_DATA: { 6: {Narrow: 1} }
 
 # there is no bottom in the initial-state in s-channel production
 PARTICLE_CONTAINERS:

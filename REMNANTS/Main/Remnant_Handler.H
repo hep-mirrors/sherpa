@@ -41,7 +41,6 @@ namespace REMNANTS {
 
     std::set<ATOOLS::Blob *> m_treatedshowerblobs;
 
-    double   m_invGeV2fm;
     bool     m_check, m_output;
     long int m_fails;
 

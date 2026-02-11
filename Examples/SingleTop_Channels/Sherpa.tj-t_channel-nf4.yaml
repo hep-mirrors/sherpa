@@ -27,7 +27,7 @@ HARD_DECAYS:
 EW_SCHEME: 3
 
 PARTICLE_DATA:
-  6: {Width: 0}  # required for using top-quark in ME
+  6: {Narrow: 1}  # required for using top-quark in ME
   5: {Massive: true, Mass: 4.18}  # mass as in NNPDF30_nlo_as_0118_nf_4
 
 # configure for N_f = 4

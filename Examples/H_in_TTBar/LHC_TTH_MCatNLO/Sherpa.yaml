@@ -8,9 +8,9 @@ MEPS:
 
 PARTICLE_DATA:
   5: {Yukawa: 4.92}
-  6: {Stable: 0, Width: 0.0}
+  6: {Stable: 0, Narrow: 1}
   24: {Stable: 0}
-  25: {Stable: 0, Width: 0.0}
+  25: {Stable: 0, Narrow: 1}
 
 # hard decays setup, specify allowed decay channels h->bb
 HARD_DECAYS:

@@ -224,6 +224,12 @@ following:
 :option:`Width`
   Sets the width (in GeV) of the particle.
 
+:option:`Narrow`
+  Specifies whether the finite width of a particle is to be considered in the
+  matix-element calculation or not. Should be :option:`1` for unstable
+  particles that are final states of the matrix-element calculation,
+  otherwise the default is :option:`0`.
+  
 :option:`Active`
   Enables/disables the particle with PDG id :option:`<id>`. Can be
   :option:`true` or :option:`false`.
@@ -263,5 +269,5 @@ following:
 .. note::
 
    :OPTION:`PARTICLE_DATA` can also be used to the properties of hadrons,
-   you can use the same switches (except for :option:`Massive`), see
+   you can use the same switches (except for :option:`Massive` and :option:`Narrow`), see
    :ref:`Hadronization`.

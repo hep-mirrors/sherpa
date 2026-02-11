@@ -20,7 +20,7 @@ HARD_DECAYS:
 
 # particle properties (width of external particles of the MEs must be zero)
 PARTICLE_DATA:
-  6: {Width: 0}
+  6: {Narrow: 1}
 
 # on-the-fly variations
 SCALE_VARIATIONS: 4.0*  # 7-point scale variations

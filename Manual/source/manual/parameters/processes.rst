@@ -188,6 +188,24 @@ correlations are preserved.  An example would be
        - 24[c] -> -13 14
        - -24[d] -> 94 94
 
+Note that intermediate particles that were indistinguishable at the time
+of their production may not be indistinguishable once their decay is taken
+into account. To obtain the correct cross section for cases where the
+intermediate particles decay via distinct decay channels, all possible
+assignments between the intermediate states ``a, b, ...`` and the different
+decay channels need to be given explicitly in the ``PROCESSES`` block,
+for example:
+
+.. code-block:: yaml
+
+    - 93 93 -> 23[a] 23[b]:
+       Decay:
+       - 23[a] -> 11 -11
+       - 23[b] -> 13 -13
+    - 93 93 -> 23[a] 23[b]:
+       Decay:
+       - 23[a] -> 13 -13
+       - 23[b] -> 11 -11
 
 .. _DecayOS:
 
@@ -210,6 +228,9 @@ spin correlations are preserved.  An example would be
        - -6[b] -> -5 -24[d]
        - 24[c] -> -13 14
        - -24[d] -> 94 94
+
+For several identical decaying particles, see :ref:`Decay` for the correct
+handling.
 
 .. _No_Decay:
 
@@ -697,7 +718,7 @@ the effective enhancement is frozen to its value at the boundaries. Example:
        Enhance_Function: VAR{PPerp2(p[2]+p[3])/400}|1.0|100.0
 
 This implements again an enhancement with :math:`(p_\perp(Z)/20)^2` but only
-in the range of 20-2000 GeV. As you can see, you have to take into account
+in the range of 20-200 GeV. As you can see, you have to take into account
 the normalisation, here the factor :math:`1/20`, also in the range specification.
 
 .. _Enhance_Observable:

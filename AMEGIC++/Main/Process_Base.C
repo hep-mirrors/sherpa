@@ -126,17 +126,7 @@ bool AMEGIC::Process_Base::FillIntegrator(Phase_Space_Handler *const psh)
 
 double AMEGIC::Process_Base::SymmetryFactors()
 {
-  Flavour* flav  = new Flavour[m_nin+m_nout];
-  double sym = 1.;
-  int ndecays=p_pinfo->Ndecays();
-  for (int i=0;i<=ndecays;i++) {
-    int j=i;
-    Process_Tags* pi=p_pinfo->GetDecay(j);
-    size_t nout=pi->GetStableFlavList(flav);
-    sym*=SBSymmetryFactor(flav,nout);
-  }
-  delete[] flav;
-  return sym;
+  return 1./m_pinfo.m_fi.FSSymmetryFactor();
 }
 
 double AMEGIC::Process_Base::SBSymmetryFactor(Flavour* flout,size_t nout)

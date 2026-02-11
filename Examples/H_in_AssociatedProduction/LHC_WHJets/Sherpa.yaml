@@ -11,10 +11,10 @@ PARTICLE_CONTAINERS:
 MC@NLO:
   DISALLOW_FLAVOUR: 5
 
-# particle properties (ME widths need to be zero if external)
+# particle properties (Narrow: 1 sets width to 0 in ME)
 PARTICLE_DATA:
-  24: {Width: 0}
-  25: {Mass: 125.5, Width: 0}
+  24: {Narrow: 1}
+  25: {Mass: 125.5, Narrow: 1}
   15: {Stable: 0, Massive: true}
 
 # hard decays setup, specify allowed decay channels, ie.:

@@ -27,8 +27,8 @@ EW_SCHEME: 3
 
 # required for using top-quark/W-boson in ME
 PARTICLE_DATA:
-  6: {Width: 0}
-  24: {Width: 0}
+  6: {Narrow: 1}
+  24: {Narrow: 1}
 
 PROCESSES:
 - 93 93 -> 6 -24:
