@@ -813,6 +813,8 @@ void Hard_Decay_Handler::TreatInitialBlob(ATOOLS::Blob* blob,
   Blob_Data_Base * bdb((*blob)["NLO_subeventlist"]);
   if (bdb) sublist=bdb->Get<NLO_subevtlist*>();
 
+  double mur2 = (blob->OutParticle(0) -> Flav().Mass()) * (blob->OutParticle(0) -> Flav().Mass()); // renormalization scale
+
   bool real_decay(false);
   Decay_Channel* NLO_dc(NULL);
   ATOOLS::Vec4D decaying_mom;
@@ -903,16 +905,21 @@ void Hard_Decay_Handler::TreatInitialBlob(ATOOLS::Blob* blob,
       double fullME2DecayWeight = NLO_dc->GetDiagrams()[i]-> GetFullME2();
       double br_subfactor = fullME2DecayWeight / decay_ME2;
       
-      // everything below is not set yet
+      double channel_BR = 1.0; // todo: insert correct value here
+
+      double iwidth = NLO_dc -> IWidth();
+
       double baseweight = wgtmap_bdb->Get<Weights_Map>().BaseWeight(); 
       Weights_Map wm(baseweight);
-      wm["BR"] = brfactor * br_subfactor;   // multiply BR from production with sub part. sub part = fullME2DecayWeight / (Sum over all fullME2DecayWeight)
+      wm["BR"] = br_subfactor * channel_BR;   // multiply BR of the channel with sub part. sub part = fullME2DecayWeight / (Sum over all fullME2DecayWeight)
       double nominalweight = wm.Nominal();
 
       (*p_newsublist)[sublist_index]->m_result=nominalweight; 
       (*p_newsublist)[sublist_index]->m_results=wm;
       (*p_newsublist)[sublist_index]->m_me= fullME2DecayWeight * ME_Weight;
       (*p_newsublist)[sublist_index]->m_mewgt=fullME2DecayWeight * ME_Weight;
+
+      (*p_newsublist)[sublist_index] -> m_mu2[stp::ren] = mur2;  // set squared renormalization scale
       DEBUG_VAR(*(*p_newsublist)[i]);
 
       sublist_index++;
