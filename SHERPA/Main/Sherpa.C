@@ -357,17 +357,8 @@ bool Sherpa::SummarizeRun()
               <<" s total ) = "
               << rpa->gen.NumberOfGeneratedEvents()*3600*24/
                  ((size_t) rpa->gen.Timer().RealTime()-m_evt_starttime)
-              <<" evts/day                    "<<std::endl;
-    p_eventhandler->Finish();
-
-    Settings& s = Settings::GetMainSettings();
-    double timing_statistics_large_weight_fraction=s["TIMING_STATISTICS_LARGE_WEIGHT_FRACTION"].SetDefault(0.001).Get<double>();
-    double timing_statistics_det_sim=s["TIMING_STATISTICS_DET_SIM_IN_S"].SetDefault(0.0).Get<double>();
-    int timing_statistics=s["TIMING_STATISTICS"].SetDefault(0).Get<int>();
-    int generation_mode=ToType<int>(rpa->gen.Variable("EVENT_GENERATION_MODE"));
-    if (not timing_statistics) return true;
-    double m_ovwth = s["OVERWEIGHT_THRESHOLD"].SetDefault(1e12).Get<double>();
-
+              <<" evts/day ";
+    //calculate sum_map etc.
     std::map<std::string, double>  time_map = rpa->gen.TimeMapAll();
     std::map<std::string, int>     number_map = rpa->gen.NumberMapAll();
     std::vector<std::string> num_types = {"total", "trial", "PS", "ME", "gen", "overw", "maxoverw", "kept"};//
@@ -376,6 +367,87 @@ bool Sherpa::SummarizeRun()
     for (const std::string& num_type : num_types) {
       sum_map[num_type] = 0;
     }
+    for (auto const& [key, val] : time_map) {
+      if (key.rfind("sum_PS_", 0) == 0) {
+        std::string sub_name = key.substr(7);
+        for (const std::string& num_type : num_types) {
+          sum_map[num_type] += number_map["n_"+num_type+"_"+sub_name];
+          std::string mult=sub_name.substr(0,4);
+          if (sum_mult_map.find(mult+"_"+num_type) == sum_mult_map.end()) {
+            sum_mult_map[mult+"_"+num_type] = 0;
+          }
+          sum_mult_map[mult+"_"+num_type] += number_map["n_"+num_type+"_"+sub_name];
+        }
+      }
+    }
+    
+    //calculate sudakov_efficiency per process (needs sum_map etc.)
+    double sepsum = 0;
+    std::map<std::string, double> sudakov_efficiency;
+    //uncorrelated between subprocesses
+    std::map<std::string, double> sudakov_efficiency_up;
+    std::map<std::string, double> sudakov_efficiency_down;
+    //correlated between subprocesses
+    std::map<std::string, double> sudakov_efficiency_up_corr;
+    std::map<std::string, double> sudakov_efficiency_down_corr;
+    for (auto const& [key, val] : time_map) {
+      if (key.rfind("sum_PS_", 0) == 0) {
+	std::string sub_name = key.substr(7);
+	if (number_map["n_kept_"+sub_name]>0) {//take sub specific
+	  sudakov_efficiency[sub_name] = number_map["n_kept_"+sub_name]*1.0/number_map["n_gen_"+sub_name];
+	  double d_sud = pow(number_map["n_kept_"+sub_name]*max(1, number_map["n_gen_"+sub_name]-number_map["n_kept_"+sub_name])*1.0/pow(number_map["n_gen_"+sub_name],3),0.5);
+	  sudakov_efficiency_up[sub_name] = sudakov_efficiency[sub_name]+d_sud;
+	  sudakov_efficiency_down[sub_name] = sudakov_efficiency[sub_name]-d_sud;
+	  sudakov_efficiency_up_corr[sub_name] = sudakov_efficiency[sub_name];
+	  sudakov_efficiency_down_corr[sub_name] = sudakov_efficiency[sub_name];
+	} else {
+	  std::string mult=sub_name.substr(0,4);
+	  if (sum_mult_map.find(mult+"_kept") != sum_mult_map.end() and sum_mult_map[mult+"_kept"]>0) {
+	    //assume average of same multi: e.g. 2_6
+	    sudakov_efficiency[sub_name] = sum_mult_map[mult+"_kept"]/sum_mult_map[mult+"_gen"];
+	  } else {
+	    //assume average of whole sample
+	    sudakov_efficiency[sub_name] = sum_map["kept"]/sum_map["gen"];
+	  }
+	  sudakov_efficiency_up[sub_name] = sudakov_efficiency[sub_name];
+	  sudakov_efficiency_down[sub_name] = sudakov_efficiency[sub_name];
+	  sudakov_efficiency_up_corr[sub_name] = 1.0;
+	  sudakov_efficiency_down_corr[sub_name] = 0.0;
+	}
+	//msg_Info() << sub_name << ": sudakov_efficiency[sub_name]: " << sudakov_efficiency[sub_name] << std::endl;
+	double this_sepsum = time_map["sum_overhead_after_"+sub_name]+time_map["sum_overhead_after_kept_"+sub_name]+time_map["sum_total_"+sub_name];
+	sepsum += this_sepsum;
+      }
+    }
+    //calculate chosen effevperev (needs sudakov_efficiency)
+    std::map<std::string, double> chosen_alpha_map = rpa->gen.AlphaMap();
+    std::map<std::string, double> chosen_efficiency_map = rpa->gen.EfficiencyMap();
+    std::map<std::string, double> xsec_map = rpa->gen.XsecMap();
+    double sum_p_unw = 0;
+    double sum_p_eff = 0;
+    for (auto const& [key, val] : chosen_alpha_map) {
+      std::string sub_name = key;
+      double curr_xsec = dabs(xsec_map[sub_name])/chosen_efficiency_map[sub_name]/chosen_alpha_map[sub_name];
+      sum_p_unw += chosen_efficiency_map[sub_name]*sudakov_efficiency[sub_name]*curr_xsec;
+      sum_p_eff += chosen_efficiency_map[sub_name]*sudakov_efficiency[sub_name]*chosen_alpha_map[sub_name]*curr_xsec;
+    }
+    double chosen_effevperev = sum_p_eff/sum_p_unw;
+    int generation_mode=ToType<int>(rpa->gen.Variable("EVENT_GENERATION_MODE"));
+    if (generation_mode!=0) {
+      msg_Info()<<"with "<< chosen_effevperev << " Neff/evt           "<<std::endl;
+    } else {
+      //for weighted the chosen efficiency is not correctly set yet - one can see it in epsilon_scan. If weighted stays implemented with its own selectionWeight, then one could add it here later
+      msg_Info()<<"                      "<<std::endl;
+    }
+    p_eventhandler->Finish();
+
+    Settings& s = Settings::GetMainSettings();
+    double timing_statistics_large_weight_fraction=s["TIMING_STATISTICS_LARGE_WEIGHT_FRACTION"].SetDefault(0.001).Get<double>();
+    double timing_statistics_det_sim=s["TIMING_STATISTICS_DET_SIM_IN_S"].SetDefault(0.0).Get<double>();
+    int timing_statistics=s["TIMING_STATISTICS"].SetDefault(0).Get<int>();
+    if (not timing_statistics) return true;
+    double m_ovwth = s["OVERWEIGHT_THRESHOLD"].SetDefault(1e12).Get<double>();
+
     //loop over subprocesses
     std::vector<std::string> sum_types = {"total", "PS", "ME", "overhead", "overhead_after_kept", "overhead_after"};//
     std::map<std::string, double> total;
@@ -385,36 +457,26 @@ bool Sherpa::SummarizeRun()
     for (auto const& [key, val] : time_map) {
       if (key.rfind("sum_PS_", 0) == 0) {
         std::string sub_name = key.substr(7);
-        //msg_Info() << sub_name << std::endl;
-        msg_Info() << std::endl;
-        for (const std::string& num_type : num_types) {
-          if (timing_statistics>4) {
-            msg_Info()<<sub_name<<" : "<< "n_"<<num_type<<": "<<number_map["n_"+num_type+"_"+sub_name]<<std::endl;
-          }
-          sum_map[num_type] += number_map["n_"+num_type+"_"+sub_name];
-          std::string mult=sub_name.substr(0,4);
-          if (sum_mult_map.find(mult+"_"+num_type) == sum_mult_map.end()) {
-            sum_mult_map[mult+"_"+num_type] = 0;
-          }
-          sum_mult_map[mult+"_"+num_type] += number_map["n_"+num_type+"_"+sub_name];
-        }
-        double w, w2, unc;
         if (timing_statistics>4) {
-          for (const std::string& sum_type : sum_types) {
-            if (sum_type=="overhead") continue;
-            printTime(sub_name, sum_type, time_map, number_map);
-          }
-          printEffi(sub_name, "Cut", "ME", "trial", number_map);
-          printEffi(sub_name, "Unweighting", "gen", "ME", number_map);
-          printEffi(sub_name, "Total", "gen", "trial", number_map);
-          w = time_map["sum_PS_"+sub_name]+time_map["sum_ME_"+sub_name];
-          msg_Info()<< sub_name << " : "<<"Summed time: "<<w<<" s"<<std::endl;
+	  msg_Info() << std::endl;
+	  for (const std::string& num_type : num_types) {
+	    msg_Info()<<sub_name<<" : "<< "n_"<<num_type<<": "<<number_map["n_"+num_type+"_"+sub_name]<<std::endl;
+	  }
+	  for (const std::string& sum_type : sum_types) {
+	    if (sum_type=="overhead") continue;
+	    printTime(sub_name, sum_type, time_map, number_map);
+	  }
+	  printEffi(sub_name, "Cut", "ME", "trial", number_map);
+	  printEffi(sub_name, "Unweighting", "gen", "ME", number_map);
+	  printEffi(sub_name, "Total", "gen", "trial", number_map);
+	  double w = time_map["sum_PS_"+sub_name]+time_map["sum_ME_"+sub_name];
+	  msg_Info()<< sub_name << " : "<<"Summed time: "<<w<<" s"<<std::endl;
         }
         total["PS"] += time_map["sum_PS_"+sub_name];
         total["ME"] += time_map["sum_ME_"+sub_name];
         total["overhead"] += time_map["sum_total_"+sub_name]-(time_map["sum_PS_"+sub_name]+time_map["sum_ME_"+sub_name]);
 
-        w = time_map["sum_total_"+sub_name];
+        double w = time_map["sum_total_"+sub_name];
         if (timing_statistics>4) {
           msg_Info()<< sub_name << " : "<<"Total time: "<<w<<" s"<<std::endl;
         }
@@ -453,64 +515,8 @@ bool Sherpa::SummarizeRun()
         msg_Info()<<" "<< std::right<<std::setw(2) << round(total[sum_type]/(total["total"]+total["overhead_after"])*100)<<"% in '"<<sum_type<<"'"<<std::endl;
       }
     }
-    //split by subprocesses
-    double sepsum = 0;
-    std::map<std::string, double> sudakov_efficiency;
-    //uncorrelated between subprocesses
-    std::map<std::string, double> sudakov_efficiency_up;
-    std::map<std::string, double> sudakov_efficiency_down;
-    //correlated between subprocesses
-    std::map<std::string, double> sudakov_efficiency_up_corr;
-    std::map<std::string, double> sudakov_efficiency_down_corr;
-    for (auto const& [key, val] : time_map) {
-      if (key.rfind("sum_PS_", 0) == 0) {
-	std::string sub_name = key.substr(7);
-	if (number_map["n_kept_"+sub_name]>0) {//take sub specific
-	  sudakov_efficiency[sub_name] = number_map["n_kept_"+sub_name]*1.0/number_map["n_gen_"+sub_name];
-	  double d_sud = pow(number_map["n_kept_"+sub_name]*max(1, number_map["n_gen_"+sub_name]-number_map["n_kept_"+sub_name])*1.0/pow(number_map["n_gen_"+sub_name],3),0.5);
-	  sudakov_efficiency_up[sub_name] = sudakov_efficiency[sub_name]+d_sud;
-	  sudakov_efficiency_down[sub_name] = sudakov_efficiency[sub_name]-d_sud;
-	  sudakov_efficiency_up_corr[sub_name] = sudakov_efficiency[sub_name];
-	  sudakov_efficiency_down_corr[sub_name] = sudakov_efficiency[sub_name];
-	} else {
-	  std::string mult=sub_name.substr(0,4);
-	  if (sum_mult_map.find(mult+"_kept") != sum_mult_map.end() and sum_mult_map[mult+"_kept"]>0) {
-	    //assume average of same multi: e.g. 2_6
-	    sudakov_efficiency[sub_name] = sum_mult_map[mult+"_kept"]/sum_mult_map[mult+"_gen"];
-	  } else {
-	    //assume average of whole sample
-	    sudakov_efficiency[sub_name] = sum_map["kept"]/sum_map["gen"];
-	  }
-	  sudakov_efficiency_up[sub_name] = sudakov_efficiency[sub_name];
-	  sudakov_efficiency_down[sub_name] = sudakov_efficiency[sub_name];
-	  sudakov_efficiency_up_corr[sub_name] = 1.0;
-	  sudakov_efficiency_down_corr[sub_name] = 0.0;
-	}
-	//msg_Info() << sub_name << ": sudakov_efficiency[sub_name]: " << sudakov_efficiency[sub_name] << std::endl;
-	double this_sepsum = time_map["sum_overhead_after_"+sub_name]+time_map["sum_overhead_after_kept_"+sub_name]+time_map["sum_total_"+sub_name];
-	sepsum += this_sepsum;
-      }
-    }
+    if (timing_statistics>4) msg_Info() << "Total separate sum: " << sepsum << "s resulting in: " << 60*60*24/sepsum*sum_map["kept"] << "evts/day" << std::endl;
 
-    //calculate chosen effevperev
-    std::map<std::string, double> chosen_alpha_map = rpa->gen.AlphaMap();
-    std::map<std::string, double> chosen_efficiency_map = rpa->gen.EfficiencyMap();
-    std::map<std::string, double> xsec_map = rpa->gen.XsecMap();
-    double sum_p_unw = 0;
-    double sum_p_eff = 0;
-    for (auto const& [key, val] : chosen_alpha_map) {
-      std::string sub_name = key;
-      double curr_xsec = dabs(xsec_map[sub_name])/chosen_efficiency_map[sub_name]/chosen_alpha_map[sub_name];
-      sum_p_unw += chosen_efficiency_map[sub_name]*sudakov_efficiency[sub_name]*curr_xsec;
-      sum_p_eff += chosen_efficiency_map[sub_name]*sudakov_efficiency[sub_name]*chosen_alpha_map[sub_name]*curr_xsec;
-    }
-    double chosen_effevperev = sum_p_eff/sum_p_unw;
-    if (timing_statistics>4) {
-      msg_Info() << "Total separate sum: " << sepsum << "s resulting in: " << 60*60*24/sepsum*sum_map["kept"] << "evts/day" << std::endl;
-      msg_Info() << "  with  " << chosen_effevperev << " Neff/evt" << std::endl;
-    } else {
-      msg_Info()<<"Generated "<< chosen_effevperev << " Neff/evt           "<<std::endl;
-    }
     //epsilon_max scan manual definition
     std::vector<double> epsilon_values = rpa->gen.EpsilonValues();
     std::vector<double> fraction_values = rpa->gen.EpsilonValues();
