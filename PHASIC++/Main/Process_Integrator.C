@@ -141,7 +141,8 @@ std::vector<double> Process_Integrator::TotalEffiAndEffEvPerEv(bool unweighted) 
 
       sum_swelw += proci_selw;
       sum_effi+=proci_effi*proci_selw;
-      sum_effevperev+=proci_effevperev*proci_selw;
+      //interested in average effevperev after unweighting: multiply with efficiency
+      sum_effevperev+=proci_effevperev*proci_selw*proci_effi;
       //this is from whisto, but want to be more correct by not relying on bin width approximation
       //sum_swelw += (*p_proc)[i]->Integrator()->SelectionWeight(wmode);
       //sum_effi+=(*p_proc)[i]->Integrator()->Efficiency()*(*p_proc)[i]->Integrator()->SelectionWeight(wmode);
@@ -149,7 +150,7 @@ std::vector<double> Process_Integrator::TotalEffiAndEffEvPerEv(bool unweighted) 
     }
     if (sum_swelw!=0) {
       totaleffiandeffevperev[0] = sum_effi/sum_swelw;
-      totaleffiandeffevperev[1] = sum_effevperev/sum_swelw;
+      totaleffiandeffevperev[1] = sum_effevperev/sum_effi;
     }
     return totaleffiandeffevperev;
   }
@@ -486,14 +487,15 @@ void Process_Integrator::SetUpEnhance(const int omode)
       m_max+=(*p_proc)[i]->Integrator()->Max();
       //need to sum up weighted with wsel: m_effi
       m_effi+=(*p_proc)[i]->Integrator()->Efficiency()*(*p_proc)[i]->Integrator()->SelectionWeight(wmode);
-      m_effevperev+=(*p_proc)[i]->Integrator()->EffEvPerEv()*(*p_proc)[i]->Integrator()->SelectionWeight(wmode);
+      //interested in average effevperev after unweighting: multiply with efficiency
+      m_effevperev+=(*p_proc)[i]->Integrator()->EffEvPerEv()*(*p_proc)[i]->Integrator()->Efficiency()*(*p_proc)[i]->Integrator()->SelectionWeight(wmode);
     }
     if (omode || p_proc->Parent()==p_proc)
       if (p_whisto_pos)
     msg_Info()<<"  reduce max for "<<p_proc->ResultsName()<<" to "
 	      <<m_max/oldmax<<" ( eps = "<<m_maxeps<<" -> exp. eff "
 	      << m_effi/SelectionWeight(wmode)<<", Neff/N "
-	      << m_effevperev/SelectionWeight(wmode) << " ) "<<std::endl;
+	      << m_effevperev/m_effi << " ) "<<std::endl;
     return;
   }
   m_meanenhfunc = TotalResult()?m_ssumenh/m_sn/dabs(TotalResult()):1;
