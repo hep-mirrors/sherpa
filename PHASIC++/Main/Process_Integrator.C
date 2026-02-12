@@ -140,18 +140,23 @@ std::vector<double> Process_Integrator::TotalEffiAndEffEvPerEv(bool unweighted) 
     double sum_swelw=0.0;
     double sum_effi=0.0;
     double sum_effevperev=0.0;
+    double sum_xsec=0.0;
+    double sum_xsec_abs=0.0;
     for (size_t i(0);i<p_proc->Size();++i) {
       //need to sum up weighted with wsel
       std::vector<double> proci_totaleffiandeffevperev = (*p_proc)[i]->Integrator()->TotalEffiAndEffEvPerEv(unweighted);
       double proci_effevperev = proci_totaleffiandeffevperev[1];
       if (proci_effevperev==-1.0) continue;
       double proci_effi = proci_totaleffiandeffevperev[0];
-      double proci_selw = dabs((*p_proc)[i]->Integrator()->GetSSumEnh())/m_sn/proci_effevperev/proci_effi;
+      double proci_xsec = (*p_proc)[i]->Integrator()->GetSSumEnh()/m_sn;
+      double proci_selw = dabs(proci_xsec)/proci_effevperev/proci_effi;
 
+      sum_xsec += proci_xsec;
+      sum_xsec_abs += dabs(proci_xsec);
       sum_swelw += proci_selw;
       sum_effi+=proci_effi*proci_selw;
       //interested in average effevperev after unweighting: multiply with efficiency
-      sum_effevperev+=proci_effevperev*proci_selw*proci_effi;
+      sum_effevperev+=proci_effevperev*proci_selw*proci_effi;//=sum_xsec_abs
       //this is from whisto, but want to be more correct by not relying on bin width approximation
       //sum_swelw += (*p_proc)[i]->Integrator()->SelectionWeight(wmode);
       //sum_effi+=(*p_proc)[i]->Integrator()->Efficiency()*(*p_proc)[i]->Integrator()->SelectionWeight(wmode);
@@ -159,7 +164,7 @@ std::vector<double> Process_Integrator::TotalEffiAndEffEvPerEv(bool unweighted) 
     }
     if (sum_swelw!=0) {
       totaleffiandeffevperev[0] = sum_effi/sum_swelw;
-      totaleffiandeffevperev[1] = sum_effevperev/sum_effi;
+      totaleffiandeffevperev[1] = sum_effevperev/sum_effi*pow(sum_xsec/sum_xsec_abs,2);
     }
     return totaleffiandeffevperev;
   }
@@ -681,6 +686,7 @@ void Process_Integrator::SetUpEnhance(const int omode)
     m_max=0.0;
     m_effi=0.0;
     m_effevperev=0.0;
+    double effevperev_signed=0.0;
     int wmode = ToType<int>(rpa->gen.Variable("EVENT_GENERATION_MODE"));
     for (size_t i(0);i<p_proc->Size();++i) {
       (*p_proc)[i]->Integrator()->SetUpEnhance(msg_LevelIsTracking());
@@ -688,14 +694,18 @@ void Process_Integrator::SetUpEnhance(const int omode)
       //need to sum up weighted with wsel: m_effi
       m_effi+=(*p_proc)[i]->Integrator()->Efficiency()*(*p_proc)[i]->Integrator()->SelectionWeight(wmode);
       //interested in average effevperev after unweighting: multiply with efficiency
-      m_effevperev+=(*p_proc)[i]->Integrator()->EffEvPerEv()*(*p_proc)[i]->Integrator()->Efficiency()*(*p_proc)[i]->Integrator()->SelectionWeight(wmode);
+      double effevperev = (*p_proc)[i]->Integrator()->EffEvPerEv()*(*p_proc)[i]->Integrator()->Efficiency()*(*p_proc)[i]->Integrator()->SelectionWeight(wmode);
+      m_effevperev+=effevperev;
+      effevperev_signed+=effevperev*(*p_proc)[i]->Integrator()->TotalResult()/dabs((*p_proc)[i]->Integrator()->TotalResult());
     }
+    m_effevperev = m_effevperev/m_effi*pow(effevperev_signed/m_effevperev,2);
+    m_effi = m_effi/SelectionWeight(wmode);
     if (omode || p_proc->Parent()==p_proc)
       if (p_whisto_pos)
     msg_Info()<<"  reduce max for "<<p_proc->ResultsName()<<" to "
 	      <<m_max/oldmax<<" ( eps = "<<m_maxeps<<" -> exp. eff "
-	      << m_effi/SelectionWeight(wmode)<<", Neff/N "
-	      << m_effevperev/m_effi << " ) "<<std::endl;
+	      << m_effi<<", Neff/N "
+	      << m_effevperev << " ) "<<std::endl;
     return;
   }
   m_meanenhfunc = TotalResult()?m_ssumenh/m_sn/dabs(TotalResult()):1;
