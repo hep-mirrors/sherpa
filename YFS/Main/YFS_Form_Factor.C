@@ -73,8 +73,7 @@ double YFS_Form_Factor::BVR_full(double p1p2, double E1, double E2,
                 << "\n p1p2  = " << p1p2
                 << "\n form   = " << exp(m_alpi * (t1 + t2 + 0.5 * t3)) << std::endl;
   }
-  // return m_alpi * (t1 + t2 + 0.5 * t3);
-  return m_alpi * (t1 );
+  return m_alpi * (t1 +  t2 + 0.5 * t3);
 }
 
 DivArrD YFS_Form_Factor::BVR_full_eps(YFS::Dipole &d,  double Kmax, int mode) {
@@ -175,7 +174,8 @@ double YFS_Form_Factor::BVR_full(YFS::Dipole &d, double omega) {
   }
   R =  BVR_full(p1 * p2, p1.E(), p2.E(), p1.Mass(), p2.Mass(), omega, m_photonMass, 0);
   V =  BVirtGeneral(d);
-  return (R+V);
+  double Vold =  BVV_full(p1, p2, m_photonMass, omega, 0);
+  return (R+Vold);
 }
 
 double YFS_Form_Factor::BVR_full(Vec4D p1, Vec4D p2, double omega) {
