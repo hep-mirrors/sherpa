@@ -118,7 +118,7 @@ MI_Parameters::MI_Parameters() :
   m_flags[string("nPT_bins")]
     = s["nPT_bins"].SetDefault(200).Get<size_t>();
   m_flags[string("nMC_points")]
-    = s["nMC_points"].SetDefault(1000).Get<size_t>();
+    = s["nMC_points"].SetDefault(2000).Get<size_t>();
   m_flags[string("nS_bins")]
     = s["nS_bins"].SetDefault(40).Get<size_t>();
   m_flags[string("nB_bins")]

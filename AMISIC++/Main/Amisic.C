@@ -350,7 +350,6 @@ bool Amisic::FirstMPI(Blob * blob) {
   UpdateForNewS();
   double pt2veto = sqr((*blob)["MI_Scale"]->Get<double>());
   if (!m_singlecollision.InitFirstMPI(blob)) return false;
-  int sudakov_result;
   do {
     m_singlecollision.SelectNewB();
     m_b = m_singlecollision.B();
