@@ -525,16 +525,16 @@ bool Sherpa::SummarizeRun()
     std::map<std::string, std::vector<double>> alpha_manual_map = rpa->gen.AlphaManualMapAll();
     std::map<std::string, std::vector<double>> wmax_manual_map = rpa->gen.WmaxManualMapAll();
     std::map<std::string, std::vector<double>> efficiency_manual_map = rpa->gen.EfficiencyManualMapAll();
-    std::vector<double> mean_manual_alpha(epsilon_values.size(), -1);
-    std::vector<double> mean_manual_events(epsilon_values.size(), -1);
-    std::vector<double> mean_manual_eff_events(epsilon_values.size(), -1);
-    std::vector<double> mean_manual_events_up(epsilon_values.size(), -1);
-    std::vector<double> mean_manual_events_down(epsilon_values.size(), -1);
-    std::vector<std::map<std::string, double>> mean_manual_events_time(epsilon_values.size());
+    std::vector<double> mean_manual_alpha(epsilon_values.size()+2, -1);
+    std::vector<double> mean_manual_events(epsilon_values.size()+2, -1);
+    std::vector<double> mean_manual_eff_events(epsilon_values.size()+2, -1);
+    std::vector<double> mean_manual_events_up(epsilon_values.size()+1, -1);
+    std::vector<double> mean_manual_events_down(epsilon_values.size()+1, -1);
+    std::vector<std::map<std::string, double>> mean_manual_events_time(epsilon_values.size()+1);
     int optimal_manual_i = 0;
     double optimal_manual_sum_t_trial = 0;
     double plain_xsec_sum = 0;
-    for(int i=0; i < epsilon_values.size(); i++){
+    for(int i=0; i < epsilon_values.size()+1; i++){
       double sum_alpha = 0;
       double sum_t_trial = 0;
       double sum_p_unw = 0;
@@ -599,18 +599,54 @@ bool Sherpa::SummarizeRun()
       mean_manual_events_time[i]["ov_after"] = sum_t_ov_after;
       mean_manual_events_time[i]["sum"] = sum_t_trial;
       //"=" to update optimal_manual_sum_eff, if i=0 is optimal
-      if (mean_manual_eff_events[i]>=mean_manual_eff_events[optimal_manual_i]) {
+      if (mean_manual_eff_events[i]>=mean_manual_eff_events[optimal_manual_i] && epsilon_values.size()>i) {
 	optimal_manual_i=i;
 	optimal_manual_sum_t_trial=sum_t_trial;
       }
     }
+    //for weighted: take care of potentially non-optimal selection weight
+    int i = epsilon_values.size()+1;
+    double sum_t_trial = 0;
+    sum_p_unw = 0;
+    double sum_xsec = 0;
+    double sum_complex = 0;
+    double sum_effiselw = 0;
+    for (auto const& [key, val] : alpha_manual_map) {
+      std::string sub_name = key;
+      if (wmax_manual_map[sub_name][i]==-2) continue; //this means that whisto is empty
+      //std::cout << sub_name << std::endl;
+      double selw = efficiency_manual_map[sub_name][i];//used as selw - also set like this in integrator
+      double tges  = (time_map["sum_total_"+sub_name])/number_map["n_total_"+sub_name]; //in s
+      if (number_map["n_total_"+sub_name]==0) {
+	tges = 0; //critical, because underestimate - need to make sure that enough events generated...unc estimate hard, because 0 is 0
+      }
+      double overhead_after = (time_map["sum_overhead_after_kept_"+sub_name]+time_map["sum_overhead_after_"+sub_name])/number_map["n_gen_"+sub_name];
+      if (number_map["n_gen_"+sub_name]==0) {
+	overhead_after = 0;
+      }
+      sum_t_trial += (tges+(overhead_after+sudakov_efficiency[sub_name]*timing_statistics_det_sim))*selw;
+      sum_p_unw += sudakov_efficiency[sub_name]*selw;
+
+      sum_xsec += xsec_map[sub_name]*sudakov_efficiency[sub_name];
+      sum_effiselw += sudakov_efficiency[sub_name]*selw;
+      //std::cout << " alpha_manual_map[sub_name][i]:" << alpha_manual_map[sub_name][i] << std::endl;
+      //std::cout << " sudakov_efficiency[sub_name]:" << sudakov_efficiency[sub_name] << std::endl;
+      //std::cout << " selw:" << selw << std::endl;
+      //std::cout << " xsec_map[sub_name]:" << xsec_map[sub_name] << std::endl;
+      //std::cout << " sum_complex+:" << pow(xsec_map[sub_name]*sudakov_efficiency[sub_name],2)/(alpha_manual_map[sub_name][i]*sudakov_efficiency[sub_name]*selw) << std::endl;
+      sum_complex += pow(xsec_map[sub_name],2)*sudakov_efficiency[sub_name]/(alpha_manual_map[sub_name][i]*selw);
+      //std::cout << " sum_complex:" << sum_complex << std::endl;
+    }
+    mean_manual_alpha[i] = pow(sum_xsec,2)/(sum_effiselw*sum_complex);//von Zettel
+    mean_manual_events[i] = 60*60*24/(sum_t_trial/sum_p_unw);
+    mean_manual_eff_events[i] = mean_manual_events[i]*mean_manual_alpha[i];
 
     //same as above, but for fraction 0.001
     //epsilon_max scan manual definition
     std::map<std::string, std::vector<double>> alpha_manual_fraction_map = rpa->gen.AlphaManualFractionMapAll();
-    std::vector<double> mean_manual_fraction_alpha(epsilon_values.size(), -1);
-    std::vector<double> mean_manual_fraction_events(epsilon_values.size(), -1);
-    std::vector<double> mean_manual_fraction_eff_events(epsilon_values.size(), -1);
+    std::vector<double> mean_manual_fraction_alpha(epsilon_values.size()+1, -1);
+    std::vector<double> mean_manual_fraction_events(epsilon_values.size()+1, -1);
+    std::vector<double> mean_manual_fraction_eff_events(epsilon_values.size()+1, -1);
     int optimal_manual_fraction_i = 0;
     double optimal_manual_fraction_sum_t_trial = 0;
     for(int i=0; i < epsilon_values.size(); i++){
@@ -808,6 +844,10 @@ bool Sherpa::SummarizeRun()
     std::cout << "│                             │           (fraction: 1)         │        (fraction: "<< timing_statistics_large_weight_fraction <<")        │" << std::endl;
     std::cout << "│ Max_Epsilon    events/day   │ eff. events/day     sample size │ eff. events/day     sample size │" << std::endl;
     std::cout << "├─────────────────────────────┼─────────────────────────────────┼─────────────────────────────────┤" << std::endl;
+    std::cout << "│ 0.0 (unw.) " <<std::left<< "    " <<std::setw(12)<< mean_manual_events[epsilon_values.size()] << " │ ";
+    std::cout <<std::setw(15)<< mean_manual_eff_events[epsilon_values.size()] << "     " <<std::left<<std::setw(11) << 1./mean_manual_alpha[epsilon_values.size()] << " │ ";
+    std::cout << "-                   -          " << " │" << std::endl;
+    //std::cout <<std::setw(15)<< mean_manual_fraction_eff_events[epsilon_values.size()] << "     " <<std::left<<std::setw(11) << 1./mean_manual_fraction_alpha[epsilon_values.size()] << " │" << std::endl;
     for(int i=0; i < epsilon_values.size(); i++){
       std::cout << "│ 1e" <<std::left<<std::setw(9)<< epsilon_values[i] << "    " <<std::setw(12)<< mean_manual_events[i] << " │ ";
       if (i==optimal_manual_i) {
@@ -821,6 +861,9 @@ bool Sherpa::SummarizeRun()
         std::cout <<std::setw(15)<< mean_manual_fraction_eff_events[i] << "     " <<std::left<<std::setw(11) << 1./mean_manual_fraction_alpha[i] << " │" << std::endl;
       }
     }
+    std::cout << "│ weighted   " <<std::left<< "    " <<std::setw(12)<< mean_manual_events[epsilon_values.size()+1] << " │ ";
+    std::cout <<std::setw(15)<< mean_manual_eff_events[epsilon_values.size()+1] << "     " <<std::left<<std::setw(11) << 1./mean_manual_alpha[epsilon_values.size()+1] << " │ ";
+    std::cout << "-                   -          " << " │" << std::endl;
     std::cout << "└─────────────────────────────┴─────────────────────────────────┴─────────────────────────────────┘" << std::endl;
     //show relative sudakov uncertainty for average region optimal point
     std::cout << "Relative Sudakov uncertainty for average region optimal point: +"<< (mean_manual_events_up[optimal_manual_i]/mean_manual_events[optimal_manual_i]-1)*100. <<"% -"<< (1-mean_manual_events_down[optimal_manual_i]/mean_manual_events[optimal_manual_i])*100. <<"%" << std::endl;

@@ -484,10 +484,10 @@ double Process_Integrator::GetMaxEps(double epsilon)
 
 
     std::vector<double> epsilon_max_values = rpa->gen.EpsilonValues();
-    vector<double> wmax_manual_list(epsilon_max_values.size(),-1-1*(first_filled_bin==0));
-    vector<double> alpha_manual_list(epsilon_max_values.size(),-1);
+    vector<double> wmax_manual_list(epsilon_max_values.size()+2,-1-1*(first_filled_bin==0));
+    vector<double> alpha_manual_list(epsilon_max_values.size()+2,-1);
     vector<double> alpha_manual_fraction_list(epsilon_max_values.size(),-1);
-    vector<double> efficiency_manual_list(epsilon_max_values.size(),-1);
+    vector<double> efficiency_manual_list(epsilon_max_values.size()+2,-1);
     int curr_epsilon_max_manual_index = epsilon_max_values.size()-1;
     double next_pxs_manual = whisto_abs_sum*(1-exp(log(10.)*epsilon_max_values[curr_epsilon_max_manual_index]));
     for (int i=first_filled_bin-1;i<last_filled_bin+1;i++) {
@@ -545,6 +545,19 @@ double Process_Integrator::GetMaxEps(double epsilon)
         next_pxs_manual = whisto_abs_sum*(1-exp(log(10.)*epsilon_max_values[curr_epsilon_max_manual_index]));
       }
     }
+    //unweighted with eps=0.0
+    std::vector<double> unweighted_effiandeffevperev = TotalEffiAndEffEvPerEv(1);
+    efficiency_manual_list[epsilon_max_values.size()]=unweighted_effiandeffevperev[0]*whisto_fills/p_whisto->Fills();//directly multiply with cut efficiency for manual definition
+    alpha_manual_list[epsilon_max_values.size()]=unweighted_effiandeffevperev[1];
+    //efficiency_manual_list[epsilon_max_values.size()]=m_ssumenhabs/m_sncut/m_max;
+    //alpha_manual_list[epsilon_max_values.size()]=pow(m_ssumenh/m_ssumenhabs,2);//alpha_sign
+    wmax_manual_list[epsilon_max_values.size()]=m_max;
+    //weighted with selw
+    efficiency_manual_list[epsilon_max_values.size()+1]=SelectionWeight(0);
+    std::vector<double> weighted_effiandeffevperev = TotalEffiAndEffEvPerEv(0);
+    alpha_manual_list[epsilon_max_values.size()+1]=weighted_effiandeffevperev[1];
+    //alpha_manual_list[epsilon_max_values.size()+1]=alpha_manual_list[0];//from weighted from whisto
+    wmax_manual_list[epsilon_max_values.size()+1]=1;
     //save number of generatead events after cuts
     rpa->gen.SetFillsMap(p_proc->ResultsName(), whisto_fills);//only to check average fill of weight-histo for Warning-printing
     rpa->gen.SetEfficiencyManualMap(p_proc->ResultsName(), efficiency_manual_list);
