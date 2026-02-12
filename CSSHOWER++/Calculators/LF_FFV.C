@@ -588,6 +588,7 @@ double LF_VFF_FF::operator()
   double muj2  = sqr(p_ms->Mass(m_flavs[2]))/Q2;
   double muk2  = sqr(p_ms->Mass(m_flspec))/Q2;
   double sct = 1.;
+  if (Q2*((1.-mui2-muj2-muk2)*y+mui2+muj2)<p_ms->Mass2(m_flavs[0])) return 0.;
   if (m_sc && p_scp[0] && p_scp[1]) {
     const Vec4D &pi(p_scp[0]->Momentum());
     const Vec4D &pj(p_scp[1]->Momentum());
@@ -627,12 +628,12 @@ double LF_VFF_FF::OverIntegrated
 (const double zmin,const double zmax,const double scale,const double xbj)
 {
   m_zmin = zmin; m_zmax = zmax;
-  return (2.0*p_cf->MaxCoupling(0) + 0.5*p_cf->MaxCoupling(1)) * (m_zmax-m_zmin);
+  return (4.0*p_cf->MaxCoupling(0) + 0.5*p_cf->MaxCoupling(1)) * (m_zmax-m_zmin);
 }
 
 double LF_VFF_FF::OverEstimated(const double z,const double y)
 {
-  return (2.0*p_cf->MaxCoupling(0) + 0.5*p_cf->MaxCoupling(1));
+  return (4.0*p_cf->MaxCoupling(0) + 0.5*p_cf->MaxCoupling(1));
 }
 
 double LF_VFF_FF::Z() {
