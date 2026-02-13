@@ -71,6 +71,8 @@ namespace AMISIC {
       if (i > max_idx) m_matter_form_ivar = size_t(0);
       else m_matter_form_ivar = i;
     }
+    double ComputeBmaxForVariation(size_t ivar);
+    double ComputeBminForVariation(size_t ivar) const;
     inline       axis   * GetBBins()        const { return p_bbins; }
   };
 

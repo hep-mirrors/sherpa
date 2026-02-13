@@ -35,9 +35,6 @@ Interaction_Probability::~Interaction_Probability() {
   for (auto p : p_k_variations) {
     if (p) delete p;
   }
-  for (auto p : p_diffxsec_variations) {
-    if (p) delete p;
-  }
 }
 
 void Interaction_Probability::
@@ -80,10 +77,8 @@ void Interaction_Probability::FixKandSmin() {
 
   // Initialize K-factor tables and differential XS tables for variations
   p_k_variations.resize(m_n_variations);
-  p_diffxsec_variations.resize(m_n_variations);
   for (size_t ivar=0; ivar<m_n_variations; ++ivar) {
     p_k_variations[ivar] = new OneDim_Table(*p_sbins);
-    p_diffxsec_variations[ivar] = new TwoDim_Table(*p_sbins, *p_bbins);
   }
 
   PInt_Dyn_Integrand integrand(p_diffxsec);
@@ -122,17 +117,27 @@ void Interaction_Probability::FixKandSmin() {
       double xs_test_var = 0.0;
       double xsratio_var = p_procs->GetXSecs()->XSratio(s, ivar);
 
-      PInt_Dyn_Integrand integrand_var(p_diffxsec_variations[ivar]);
+      // Compute the variation's own bmax and bmin
+      double bmax_var = p_mo->ComputeBmaxForVariation(ivar);
+      double bmin_var = p_mo->ComputeBminForVariation(ivar);
+
+      // Create a temporary b-grid for this variation
+      size_t nbbins = size_t((*mipars)["nB_bins"]);
+      axis temp_bbins(nbbins, bmin_var, bmax_var, axis_mode::log);
+      TwoDim_Table * temp_diffxsec = new TwoDim_Table(*p_sbins, temp_bbins);
+
+      PInt_Dyn_Integrand integrand_var(temp_diffxsec);
       Gauss_Integrator gauss_var(&integrand_var);
       integrand_var.SetS(s);
+
+      p_mo->SetMatterFormVariationIndex(ivar);
 
       // Solve for K-factor for this variation
       do {
         if (xsratio_var<=0.5) { k_var = 1.; break; }
-        p_mo->SetMatterFormVariationIndex(ivar);
         p_mo->SetKRadius(k_var);
-        InitializeTable(sbin, p_diffxsec_variations[ivar], ivar);
-        xs_test_var = gauss_var.Integrate(0.,p_mo->Bmax(),1.e-3);
+        FillTableOnAxis(sbin, temp_diffxsec, &temp_bbins, ivar);
+        xs_test_var = gauss_var.Integrate(0., bmax_var, 1.e-3);
         if (dabs(xs_test_var/xs_nd_var)<1.e-3) { k_var = 0.; break; }
         k_var *= Min(5., Max(0.2, sqrt(xs_nd_var/xs_test_var)));
       } while (dabs(1.-xs_test_var/xs_nd_var)>0.02);
@@ -220,7 +225,8 @@ InitializeTable(const size_t & sbin,const bool & out) {
 }
 
 void Interaction_Probability::
-InitializeTable(const size_t & sbin, TwoDim_Table* diffxsec, size_t ivar) {
+FillTableOnAxis(const size_t & sbin, TwoDim_Table* diffxsec,
+                axis* bbins, size_t ivar) {
   MI_Integrator * integrator = p_procs->GetIntegrator();
   double s  = p_sbins->x(sbin), prev = 0., xsfix = 0.;
   p_procs->UpdateS(s);
@@ -232,14 +238,14 @@ InitializeTable(const size_t & sbin, TwoDim_Table* diffxsec, size_t ivar) {
   
   if (!p_mo->IsDynamic()) xsfix = (*integrator)(s,nullptr,0.);
   
-  for (size_t bbin=0;bbin<p_bbins->m_nbins;bbin++) {
-    double b  = p_bbins->x(bbin);
+  for (size_t bbin=0;bbin<bbins->m_nbins;bbin++) {
+    double b  = bbins->x(bbin);
     double xs = m_pdfnorm * ( p_mo->IsDynamic() ?
                               (*integrator)(s,p_mo,b) :
                               xsfix * (*p_mo)(b) );
     diffxsec->Fill(sbin,bbin,xs);
     if (prev!=0. && xs/prev < 1.e-6) {
-      for (size_t i=bbin+1;i<p_bbins->m_nbins;i++)
+      for (size_t i=bbin+1;i<bbins->m_nbins;i++)
         diffxsec->Fill(sbin,i,0.);
       break;
     }
@@ -274,52 +280,55 @@ bool Interaction_Probability::CheckTables() {
 
 void Interaction_Probability::OutputTables() {
   msg_Info()<<"   "<<std::string(77,'-')<<"\n"
-	    <<"   | "<<METHOD<<" look-up tables and values:          |\n"
-	    <<"   | "<<std::setw(15)<<"E_{c.m.} [GeV]"<<" | "
-	    <<std::setw(6)<<"b [fm]"<<" | "
-	    <<std::setw(14)<<"xs_hard/xs_ND"<<" | "
-	    <<std::setw(12)<<"k"<<" | "
-	    <<std::setw(14)<<"b*dP_int(b)"<<" |\n";
+            <<"   | "<<METHOD<<" look-up tables and values:          |\n"
+            <<"   | "<<std::setw(15)<<"E_{c.m.} [GeV]"<<" | "
+            <<std::setw(6)<<"b [fm]"<<" | "
+            <<std::setw(14)<<"xs_hard/xs_ND"<<" | "
+            <<std::setw(12)<<"k"<<" | "
+            <<std::setw(14)<<"b*dP_int(b)"<<" |\n";
   for (size_t i=0;i<p_sbins->m_nbins;i++) {
     double s       = p_sbins->x(i);
     double xsratio = p_procs->XSratio(s);
     msg_Info()<<"   | "<<std::setprecision(6)<<std::setw(15)<<sqrt(s)<<" | "
-	      <<std::string(6,' ')<<" | "
-	      <<std::setprecision(6)<<std::setw(14)<<xsratio<<" | "
-	      <<std::setprecision(6)<<std::setw(12)<<p_k->Value(i)<<" | "
-	      <<std::string(14,' ')<<" |\n";
+              <<std::string(6,' ')<<" | "
+              <<std::setprecision(6)<<std::setw(14)<<xsratio<<" | "
+              <<std::setprecision(6)<<std::setw(12)<<p_k->Value(i)<<" | "
+              <<std::string(14,' ')<<" |\n";
     for (size_t j=0;j<20;j++) {
       double b = p_mo->Bmax()*double(j)/40.;
       msg_Info()<<"   | "<<std::string(15,' ')<<" | "
-		<<std::setprecision(3)<<std::setw(6)
-		<<(b*rpa->hBar()*rpa->c()*1.e12)<<" | "
-		<<std::setprecision(6)<<std::setw(14)
-		<<((*p_diffxsec)(s,b)/xsratio)<<" | "
-		<<std::string(12,' ')<<" | "
-		<<std::setprecision(6)<<std::setw(14)
-		<<(b*(*this)(s,b))<<" |\n";
+                <<std::setprecision(3)<<std::setw(6)
+                <<(b*rpa->hBar()*rpa->c()*1.e12)<<" | "
+                <<std::setprecision(6)<<std::setw(14)
+                <<((*p_diffxsec)(s,b)/xsratio)<<" | "
+                <<std::string(12,' ')<<" | "
+                <<std::setprecision(6)<<std::setw(14)
+                <<(b*(*this)(s,b))<<" |\n";
     }
   }
   msg_Info()<<"   "<<std::string(77,'-')<<"\n"
-	    <<"   | hard cross section with and without overlap:"
-	    <<std::string(30,' ')<<"|\n"
-	    <<"   | xs_hard = "<<std::setprecision(5)<<std::setw(6)
-	    <<(m_xs_hard*rpa->Picobarn()/1.e9)<<" mb "
-	    <<" (without overlap) vs. "<<std::setprecision(5)<<std::setw(6)
-	    <<(m_xs_test*rpa->Picobarn()/1.e9)<<" (with overlap) mb.      |\n"
-	    <<"   "<<std::string(77,'-')<<"\n\n\n";
+            <<"   | hard cross section with and without overlap:"
+            <<std::string(30,' ')<<"|\n"
+            <<"   | xs_hard = "<<std::setprecision(5)<<std::setw(6)
+            <<(m_xs_hard*rpa->Picobarn()/1.e9)<<" mb "
+            <<" (without overlap) vs. "<<std::setprecision(5)<<std::setw(6)
+            <<(m_xs_test*rpa->Picobarn()/1.e9)<<" (with overlap) mb.      |\n"
+            <<"   "<<std::string(77,'-')<<"\n\n\n";
 
   for (size_t ivar=0; ivar<m_n_variations; ++ivar) {
-    // Save nominal state
-    TwoDim_Table * p_diffxsec_nominal = p_diffxsec;
-    p_diffxsec = new TwoDim_Table(*p_sbins,*p_bbins);
+    double bmax_var = p_mo->ComputeBmaxForVariation(ivar);
+    double bmin_var = p_mo->ComputeBminForVariation(ivar);
+
+    size_t nbbins = size_t((*mipars)["nB_bins"]);
+    axis temp_bbins(nbbins, bmin_var, bmax_var, axis_mode::log);
+    TwoDim_Table * temp_diffxsec = new TwoDim_Table(*p_sbins, temp_bbins);
 
     // Compute tables with variation K-factor
     for (size_t sbin=0;sbin<p_sbins->m_nbins;sbin++) {
       double k_var = p_k_variations[ivar]->Value(sbin);
       p_mo->SetMatterFormVariationIndex(ivar);
       p_mo->SetKRadius(k_var);
-      InitializeTable(sbin);
+      FillTableOnAxis(sbin, temp_diffxsec, &temp_bbins, ivar);
     }
 
     msg_Info()<<"   "<<std::string(77,'-')<<"\n"
@@ -342,21 +351,18 @@ void Interaction_Probability::OutputTables() {
                 <<std::setprecision(6)<<std::setw(12)<<p_k_variations[ivar]->Value(j)<<" | "
                 <<std::string(14,' ')<<" |\n";
       for (size_t k=0;k<20;k++) {
-        double b = p_mo->Bmax()*double(k)/40.;
+        double b = bmax_var*double(k)/40.;
         msg_Info()<<"   | "<<std::string(15,' ')<<" | "
                   <<std::setprecision(3)<<std::setw(6)
                   <<(b*rpa->hBar()*rpa->c()*1.e12)<<" | "
                   <<std::setprecision(6)<<std::setw(14)
-                  <<((*p_diffxsec)(s,b)/xsratio_var)<<" | "
+                  <<((*temp_diffxsec)(s,b)/xsratio_var)<<" | "
                   <<std::string(12,' ')<<" | "
                   <<std::setprecision(6)<<std::setw(14)
-                  <<(b*(1.-exp(-(*p_diffxsec)(s,b))))<<" |\n";
+                  <<(b*(1.-exp(-(*temp_diffxsec)(s,b))))<<" |\n";
       }
     }
-
-    // Restore nominal state
-    delete p_diffxsec;
-    p_diffxsec = p_diffxsec_nominal;
+    delete temp_diffxsec;
 
     // Restore nominal K-factor
     p_mo->SetMatterFormVariationIndex(0);

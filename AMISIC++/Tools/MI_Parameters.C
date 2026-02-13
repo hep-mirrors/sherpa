@@ -122,7 +122,7 @@ MI_Parameters::MI_Parameters() :
   m_flags[string("nS_bins")]
     = s["nS_bins"].SetDefault(40).Get<size_t>();
   m_flags[string("nB_bins")]
-    = s["nB_bins"].SetDefault(1000).Get<size_t>();
+    = s["nB_bins"].SetDefault(20).Get<size_t>();
   m_flags[string("nMaxScatters")]
     = s["N_MaxScatters"].SetDefault(10000).Get<size_t>();
 

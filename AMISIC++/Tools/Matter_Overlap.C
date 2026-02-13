@@ -305,6 +305,59 @@ double MO_Integrand::operator()(double b) {
   return 2.*M_PI*b*(*p_mo)(b);
 }
 
+double Matter_Overlap::ComputeBmaxForVariation(size_t ivar) {
+  ///////////////////////////////////////////////////////////////////////////
+  // Compute bmax for a specific matter form variation using the same
+  // algorithm as CalculateIntegral, but without modifying the permanent
+  // m_bmax member.  Temporarily switches m_matter_form_ivar and m_kradius,
+  // then restores them.
+  ///////////////////////////////////////////////////////////////////////////
+  if (m_dynamic) return m_bmax;
+
+  // Save current state
+  const size_t saved_ivar    = m_matter_form_ivar;
+  const double saved_kradius = m_kradius;
+
+  SetMatterFormVariationIndex(ivar);
+  SetKRadius(1.0);
+
+  double minR = 1.e6;
+  if (ivar < m_r2_variations.size()) {
+    for (size_t i = 0; i < 4; i++) {
+      if (m_rnorm_variations[ivar][i] <= 0.) continue;
+      double r = sqrt(m_r2_variations[ivar][i]);
+      if (r > 0. && r < minR) minR = r;
+    }
+  }
+  double bstep = minR / 100.;
+
+  MO_Integrand moint(this);
+  Gauss_Integrator integrator(&moint);
+  double bmin_calc = 0., previous, result = 0.;
+  do {
+    result += previous = integrator.Integrate(bmin_calc, bmin_calc+bstep, 1.e-8, 1);
+    bmin_calc += bstep;
+  } while (dabs(previous/result) > 1.e-10 && bmin_calc < 1000.0);
+  double bmax_var = bmin_calc + bstep;
+
+  // Restore state
+  SetMatterFormVariationIndex(saved_ivar);
+  SetKRadius(saved_kradius);
+
+  return bmax_var;
+}
+
+double Matter_Overlap::ComputeBminForVariation(size_t ivar) const {
+  ///////////////////////////////////////////////////////////////////////////
+  // Compute bmin for a specific matter form variation, analogous to how
+  // the nominal bmin = 0.00001 * m_radius[0] is computed in Initialize.
+  ///////////////////////////////////////////////////////////////////////////
+  if (m_dynamic || ivar >= m_r2_variations.size())
+    return 0.00001 * sqrt(m_radius2[0]);
+  double r0 = sqrt(m_r2_variations[ivar][0]);
+  return 0.00001 * r0;
+}
+
 void Matter_Overlap::Output(const double & check) {
   msg_Info()<<"   "<<std::string(77,'-')<<"\n"
 	    <<"   | Matter_Overlap:"<<std::string(59,' ')<<"|\n"

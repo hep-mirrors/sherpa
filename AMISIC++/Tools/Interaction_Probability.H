@@ -28,7 +28,8 @@ namespace AMISIC {
     void FillIntegrated();
     void InitializeTables();
     void InitializeTable(const size_t & sbin,const bool & out=false);
-    void InitializeTable(const size_t & sbin, TwoDim_Table* diffxsec, size_t ivar);
+    void FillTableOnAxis(const size_t & sbin, TwoDim_Table* diffxsec, 
+      axis* bbins, size_t ivar);
     bool CheckTables();
     void OutputTables();
     
