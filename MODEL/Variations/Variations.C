@@ -12,9 +12,7 @@ namespace MODEL {
             // check arguments and init attributes
             if (!vertices_pointer && !constants_poiner) THROW(fatal_error, "no vertices or constants given by the model")
             p_vertices = vertices_pointer;
-            p_constants = constants_poiner;       
-            variations_map = std::map<std::string, std::vector<double_t>>();
-            variable_names = std::vector<std::string>();
+            p_constants = constants_poiner;
             // read settings
             msg_Out() << std::endl << "\x1b[34mReading the model parameter variations...\x1b[0m" << std::endl;
             ReadVariations();
@@ -260,10 +258,10 @@ namespace MODEL {
                 individual_variations_list.push_back(individual_variations);
             }
             // now we are ready to combine the things on the indivduals list
-            // first get mode, 0 for no combining, 1 for combining all (default)
+            // first get mode, 0 for no combining, 1 for combining all (default), 2 for one each combination (ignores all correlations and values)
             int mode = 1;
             if (s["MODEL_VARIATIONS_COMBINE"].SetDefault(1.).IsScalar()) mode = s["MODEL_VARIATIONS_COMBINE"].SetDefault(1.).Get<int>();
-            // maybe more modes in the future???
+            // maybe more modes in the future
             switch (mode) {
                 case 0: 
                     // no combination, just put all keys into the variations list
@@ -271,6 +269,17 @@ namespace MODEL {
                     for (const std::vector<VariationKey>& keys : individual_variations_list)
                         for (std::vector<VariationKey>::const_iterator it = keys.begin(); it != keys.end() - 1; it++)
                             variations_list.push_back(*(it));
+                    break;
+                case 2:
+                    // one each (meaning all zero except 1) for EFT scans
+                    // ignore the correlations and the given values
+                    // just use nominal value for 1 variable and 0 for the others
+                    for (const std::string& var_name1 : variable_names){
+                        VariationKey key = VariationKey(var_name1, p_constants->at(var_name1));
+                        for (const std::string& var_name2 : variable_names)
+                            if (var_name1 != var_name2) key.Add(var_name2, 0.);
+                        variations_list.push_back(key);
+                    }
                     break;
                 default:
                     // combine all the elements from the individual lists
