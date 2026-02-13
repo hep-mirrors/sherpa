@@ -250,7 +250,7 @@ bool YFS_Handler::CalculateISR() {
 
 void YFS_Handler::AddFormFactor() {
   if (m_CalForm) return;
-  if (m_fullform == 1) {
+  if (m_fullform >= 1) {
     if(m_tchannel!=0) m_formfactor = p_dipoles->TFormFactor();
     else {
       m_formfactor = p_dipoles->FormFactor();
