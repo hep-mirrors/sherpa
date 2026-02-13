@@ -475,7 +475,9 @@ namespace SHERPA {
       std::size_t size(mpi->Size());
       std::size_t crank(mpi->Rank());
       std::vector<int> ncaches(size,ncache);
+#if defined(USING__MPI) && defined(H5_HAVE_PARALLEL)
       mpi->Allgather(MPI_IN_PLACE,0,MPI_DATATYPE_NULL,&ncaches[0],1,MPI_INT);
+#endif
       size_t sumcache(0), rank(0);
       for (size_t i(0);i<size;++i) sumcache+=ncaches[i];
       for (size_t i(0);i<crank;++i) rank+=ncaches[i];
@@ -533,9 +535,9 @@ namespace SHERPA {
 	Weights_Map& wgtmap((*sp)["WeightsMap"]->Get<Weights_Map>());
 	std::map<std::string, double> wgts;
 	wgtmap.FillVariations(wgts);
-	for (const auto& [key, value] : wgts) {
-	  m_ecache.back().push_back(wgts[key]*wratio);
-	}
+        for (const auto &pair : wgts) {
+          m_ecache.back().push_back(pair.second * wratio);
+        }
       }
       m_ecache.back()[0]=0;
       if (proc) {

@@ -361,7 +361,9 @@ namespace LHEH5 {
       if (m_nstart > 0)
         msg_Info() << ", read: " << m_nstart;
       msg_Info() << ").\n";
+#if defined(USING__MPI) && defined(H5_HAVE_PARALLEL)
       mpi->Bcast(&nevts,1,MPI_LONG_INT);
+#endif
       size_t iStart(rank*nevts/size);
       size_t iStop((rank+1)*nevts/size-1);
       if (rank==size-1) iStop=nevts-1;
