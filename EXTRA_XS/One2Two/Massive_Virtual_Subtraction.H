@@ -35,17 +35,18 @@ namespace EXTRAXS {
           std::vector<std::pair<METOOLS::CSpinor<double>*, int>>> CalculateBornSpinors(const ATOOLS::Vec4D_Vector& momenta, bool anti);
     void SetUpBornPrefactor(const std::vector<ATOOLS::Flavour>& flavs);
     void CalculateBorn(const ATOOLS::Vec4D_Vector& momenta, bool anti=false);
+    void CalculateAlphaQCD(double scale);
+    double CalculateFiniteSubtraction(const ATOOLS::Vec4D_Vector& momenta, double born_ME2);
+    double CalculateEpsilonSubtraction(const ATOOLS::Vec4D_Vector& momenta, double born_ME2);
   protected:
     double alpha_qcd;
   public:
     Massive_Virtual_Subtraction(const std::vector<ATOOLS::Flavour>& flavs);
     ~Massive_Virtual_Subtraction();
-    void CalculateAlphaQCD(double scale);
     void Calculate(const ATOOLS::Vec4D_Vector& momenta, bool anti=false);
-    double CalculateFiniteSubtraction(const ATOOLS::Vec4D_Vector& momenta, double born_ME2);
-    double CalculateEpsilonSubtraction(const ATOOLS::Vec4D_Vector& momenta, double born_ME2);
-    double get_NLO_ME2();
+
     std::string getType();
+    double get_NLO_ME2();
     void setBornAmplitude(Spin_Amplitudes* born) override;
   };
 }

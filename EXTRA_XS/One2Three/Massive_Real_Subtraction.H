@@ -44,16 +44,18 @@ namespace EXTRAXS {
               const ATOOLS::Flavour& prop,
               size_t nonprop, size_t propi, size_t propj);
     ~Massive_Real_Subtraction();
-    bool IsNLODecay();
-    virtual void Calculate_real_subtraction(const ATOOLS::Vec4D_Vector& momenta, bool anti=false);
     void Calculate(const ATOOLS::Vec4D_Vector& momenta, bool anti=false);
-    double get_NLO_ME2();
-    std::string getType();
     ATOOLS::Flavour Prop() const { return m_prop; }
-    ATOOLS::Vec4D_Vector GetMomenta() override { return born_momenta; }
-    double getColourFactor(const PHASIC::Color_Integrator* p_ci) override;
+
+    bool IsNLODecay();
+    std::string getType();
+    double get_NLO_ME2();
     void SetFullME2(double fullME2) override;
     double GetFullME2() override;
+    double getColourFactor(const PHASIC::Color_Integrator* p_ci) override;
+    ATOOLS::Vec4D_Vector GetMomenta() override { return born_momenta; }
+
+    virtual void Calculate_real_subtraction(const ATOOLS::Vec4D_Vector& momenta, bool anti=false);
   
   protected:
     double ME2_Born;

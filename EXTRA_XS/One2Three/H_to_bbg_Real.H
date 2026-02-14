@@ -44,21 +44,23 @@ namespace EXTRAXS {
               const ATOOLS::Flavour& prop,
               size_t nonprop, size_t propi, size_t propj);
     ~H_to_bbg_Real();
-    bool IsNLODecay();
     void Calculate(const ATOOLS::Vec4D_Vector& momenta, bool anti=false);
-    double get_NLO_ME2();
-    std::string getType();
     ATOOLS::Flavour Prop() const { return m_prop; }
 
-    const PHASIC::Color_Integrator* GetColors() const override { return p_ci; };
+    bool IsNLODecay();
+    std::string getType();
+    double get_NLO_ME2();
+    void SetFullME2(double fullME2) override;
+    double GetFullME2() override;
+    const PHASIC::Color_Integrator* GetColorIntegrator() const override { return p_ci; };
     void SetColors(const std::vector<int>& ci,
                    const std::vector<int>& cj) override;
     void FixColor(bool yes) override { m_cpointgen = yes; }
-    double GetColourWeight() override;
     ATOOLS::Vec4D_Vector GetMomenta() override { return m_momenta; }
+    
+
+    double GetColourWeight() override;
     void MergeDiagrams(const METOOLS::Spin_Amplitudes* second_diagram) override;
-    void SetFullME2(double fullME2) override;
-    double GetFullME2() override;
   };
 }
 

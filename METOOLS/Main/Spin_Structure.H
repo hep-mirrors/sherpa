@@ -186,7 +186,7 @@ namespace METOOLS
     virtual void setBornAmplitude(Spin_Amplitudes* born);
     virtual void setBornAmplitude(std::map<std::string, std::complex<double>> born);
     virtual std::map<std::string, std::complex<double>> getBornAmplitude();
-    virtual const PHASIC::Color_Integrator* GetColors() const;
+    virtual const PHASIC::Color_Integrator* GetColorIntegrator() const;
     virtual void SetColors(const std::vector<int>& ci,
                            const std::vector<int>& cj);
     virtual void FixColor(bool yes);

@@ -402,7 +402,7 @@ double Decay_Channel::ME2_NLO(const ATOOLS::Vec4D_Vector& momenta, bool anti,
     GetDiagrams()[i]->Calculate(momenta, anti);
     if (GetDiagrams()[i] -> getType() == "R"){
       if (real_p_ci == nullptr) {
-        real_p_ci =  GetDiagrams()[i] -> GetColors();
+        real_p_ci =  GetDiagrams()[i] -> GetColorIntegrator();
       }
       else {
         GetDiagrams()[i] -> SetColors(real_p_ci->I(), real_p_ci->J());
@@ -505,7 +505,7 @@ double Decay_Channel::ME2_NLO(const ATOOLS::Vec4D_Vector& momenta, bool anti,
       //std::cout << "Warning: Decay_Channel::ME2_NLO gets a negative NLO ME2 value.  " << std::endl;
     }
 
-    sumijlambda_AiAj = (*sigma)*p_amps->ReduceToMatrix(sigma->Particle());  // RS value
+    sumijlambda_AiAj = (*sigma)*p_amps->ReduceToMatrix(sigma->Particle());  // RS value 
 
     for (size_t i = 0; i < NLO_tensor_list.size(); ++i) {
       delete NLO_tensor_list[i];

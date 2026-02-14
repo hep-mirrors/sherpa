@@ -44,18 +44,20 @@ namespace EXTRAXS {
     void SetVirtualMatrixE2(const ATOOLS::Vec4D_Vector& momenta) override;
     std::map<std::string, std::map<std::string, std::complex<double>>> CalculateV(const ATOOLS::Vec4D_Vector& momenta, bool anti=false) override;
     std::map<std::string, std::complex<double>> CalculateBorn(const ATOOLS::Vec4D_Vector& momenta, bool anti=false) override;
+    void CalculateAlphaQCD(double scale) override;
   protected:
     double alpha_qcd;
   public:
     H_to_bb_Virtual(const std::vector<ATOOLS::Flavour>& flavs);
     ~H_to_bb_Virtual();
-    void CalculateAlphaQCD(double scale) override;
     void Calculate(const ATOOLS::Vec4D_Vector& momenta, bool anti=false) override;
-    double get_NLO_ME2();
+
     std::string getType() override;
+    double get_NLO_ME2();
+    std::map<std::string, std::complex<double>> getBornAmplitude() override;
+    
     double get_epsilon_pole();
     double get_epsilon2_pole();
-    std::map<std::string, std::complex<double>> getBornAmplitude() override;
   };
 }
 

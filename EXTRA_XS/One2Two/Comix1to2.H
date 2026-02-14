@@ -43,7 +43,7 @@ namespace EXTRAXS {
     double get_NLO_ME2();
     std::string getType();
     void setBornAmplitude(std::map<std::string, std::complex<double>> born) override;
-    const PHASIC::Color_Integrator* GetColors() const override { return p_ci; };
+    const PHASIC::Color_Integrator* GetColorIntegrator() const override { return p_ci; };
     void SetColors(const std::vector<int>& ci,
                    const std::vector<int>& cj) override;
     void FixColor(bool yes) override { m_cpointgen = yes; }
