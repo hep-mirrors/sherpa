@@ -79,6 +79,7 @@ Process_Integrator::~Process_Integrator()
 double Process_Integrator::SelectionWeight(const int mode) const
 {
   if (!p_proc->IsGroup()) {
+    //mode: weighted=0, unweighted=1, partially=2
     if (mode!=0) {
       if (m_external_selectionweight != -1) {
 	return m_external_selectionweight;
@@ -88,6 +89,9 @@ double Process_Integrator::SelectionWeight(const int mode) const
     }
     if (m_n+m_sn==0.0) return -1.0;
     if (m_totalxs==0.0) return 0.0;
+    //m_swmode: SELECTION_WEIGHT_MODE default: 0
+    //for default: optimal variance reduction a la Kleiss multi-channel (equivalent for partially: TIMING_STATISTICS_MIN_UNC)
+    //it assumes that all processes need the same computational time (solved for partially: TIMING_STATISTICS_MIN_UNC_PER_DAY)
     double selweight = m_swmode==0 ?
       sqrt((m_n+m_sn-1) * sqr(TotalVar()) + sqr(TotalResult())) :
       dabs(m_totalxs);
