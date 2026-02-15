@@ -4,6 +4,7 @@ import re
 import sys
 import subprocess
 import time
+import importlib
 from importlib.machinery import SourceFileLoader
 from pathlib import Path
 import multiprocessing
@@ -126,28 +127,90 @@ def fix_param_writer(path):
             f.write(line)
 
 
+def _fix_py2_syntax(ufo_dir):
+    """Convert Python 2 syntax to Python 3 in a UFO model directory.
+
+    Handles implicit relative imports and raise statements.
+    Fallback for when 2to3 is not available (removed in Python 3.13+).
+    """
+    ufo_dir = Path(ufo_dir)
+    local_modules = {f.stem for f in ufo_dir.glob('*.py') if f.name != '__init__.py'}
+
+    for py_file in ufo_dir.glob('*.py'):
+        with open(py_file, 'r') as f:
+            lines = f.readlines()
+
+        new_lines = []
+        for line in lines:
+            stripped = line.lstrip()
+            indent = line[:len(line) - len(stripped)]
+
+            # import X [as Y]
+            m = re.match(r'^import\s+(\w+)(\s+as\s+\w+)?\s*$', stripped)
+            if m and m.group(1) in local_modules:
+                alias = m.group(2) or ''
+                new_lines.append(f'{indent}from . import {m.group(1)}{alias}\n')
+                continue
+
+            # from X import ...
+            m = re.match(r'^from\s+(\w+)\s+(import\s+.+)$', stripped)
+            if m and m.group(1) in local_modules:
+                new_lines.append(f'{indent}from .{m.group(1)} {m.group(2)}\n')
+                continue
+
+            # raise X, Y -> raise X(Y)
+            m = re.match(r'^raise\s+(\w+)\s*,\s*(.+)$', stripped)
+            if m:
+                new_lines.append(f'{indent}raise {m.group(1)}({m.group(2)})\n')
+                continue
+
+            new_lines.append(line)
+
+        with open(py_file, 'w') as f:
+            f.writelines(new_lines)
+
+
 def try_import(ufo_path, auto_convert=False):
+    pkg_name = ufo_path.parts[-2]
+    parent_dir = str(ufo_path.parent.parent)
+    if parent_dir not in sys.path:
+        sys.path.insert(0, parent_dir)
+
     try:
-        ufo_src = SourceFileLoader("ufo", ufo_path.as_posix())
-        fix_param_writer(Path(ufo_src.path).parent)
-        ufo_mod = ufo_src.load_module("ufo")
+        fix_param_writer(ufo_path.parent)
+        ufo_mod = importlib.import_module(pkg_name)
     except FileNotFoundError:
         error(f'UFO model not found at {ufo_path}.')
         error('Please check the path and try again.')
         return
-    except ModuleNotFoundError:
+    except (ModuleNotFoundError, SyntaxError):
         warning(f'UFO model at {ufo_path} may be written in python 2.')
         if not auto_convert:
             response = input('Would you like to convert to python3? (y/n): ')
         else:
             response = 'y'
         if response.lower()[0] == 'y':
-            model_name = ufo_path.parts[-2] + '_py3'
+            model_name = pkg_name + '_py3'
             new_path = ufo_path.parent.parent / model_name
             print(f'Writing python3 model to {new_path}')
-            # TODO: Update to different method for when 2to3 is removed
-            subprocess.run(['2to3', '-W', ufo_path.parent.as_posix(),
-                            '-o', new_path, '-n', '--no-diffs'])
+            # Try 2to3 first, fall back to manual import fix
+            converted = False
+            try:
+                result = subprocess.run(
+                    ['2to3', '-W', ufo_path.parent.as_posix(),
+                     '-o', new_path, '-n', '--no-diffs'],
+                    capture_output=True)
+                if result.returncode == 0:
+                    converted = True
+            except (FileNotFoundError, OSError):
+                pass
+            if not converted:
+                import shutil
+                warning('2to3 not available, falling back to manual import conversion')
+                if new_path.exists():
+                    shutil.rmtree(new_path)
+                shutil.copytree(ufo_path.parent, new_path)
+                _fix_py2_syntax(new_path)
             ufo_mod = try_import(new_path / '__init__.py')
 
     return ufo_mod
