@@ -16,12 +16,32 @@ from .message import error, progress, warning
 from .model_writer import ModelWriter
 
 
+def _find_sherpa_prefix():
+    """Find the SHERPA-MC installation prefix.
+
+    Checks multiple candidate locations to support both pip/wheel installs
+    (where everything is under site-packages/) and CMake installs (where
+    share/ and lib/ are under CMAKE_INSTALL_PREFIX).
+    """
+    candidates = [
+        # pip/wheel: share/SHERPA-MC is alongside this package
+        str(Path(__file__).resolve().parent.parent),
+        # CMake: share/SHERPA-MC is under the Python prefix (e.g. venv root)
+        sys.prefix,
+    ]
+    for prefix in candidates:
+        if os.path.isdir(os.path.join(prefix, 'share', 'SHERPA-MC')):
+            return prefix
+    return candidates[0]
+
+
 class Sherpa:
     def __init__(self):
         self.model_flags = '-g -O0 -fno-var-tracking'
         self.lorentz_flags = '-g -O2 -ffast-math'
-        self.root_dir = '@SHERPA_CMAKE_CONFIG_DIR@'
-        self.install_dir = '@CMAKE_INSTALL_PREFIX@/@CMAKE_INSTALL_LIBDIR@/SHERPA-MC@VERSIONING@'
+        _prefix = _find_sherpa_prefix()
+        self.root_dir = os.path.join(_prefix, 'share', 'SHERPA-MC')
+        self.install_dir = os.path.join(_prefix, 'lib', 'SHERPA-MC')
 
 
 def parse_args(args):
@@ -121,10 +141,19 @@ def fix_param_writer(path):
             future_imports += 1
         if lines[future_imports] != 'import functools\n':
             f.write('import functools\n')
+        has_ns = any('_ns = {' in l for l in lines)
         for line in lines:
             if 'need_writing.sort(self.order_param)' in line:
                 line = line.replace('self.order_param', 'key=functools.cmp_to_key(self.order_param)')
+            if 'exec("%s = %s" % (parameter.name, parameter.value))' in line:
+                line = line.replace(
+                    'exec("%s = %s" % (parameter.name, parameter.value))',
+                    'exec("%s = %s" % (parameter.name, parameter.value), _ns)')
+            if 'eval(param.value)' in line:
+                line = line.replace('eval(param.value)', 'eval(param.value, _ns)')
             f.write(line)
+            if 'import cmath' in line and not has_ns:
+                f.write('        _ns = {\'cmath\': __import__(\'cmath\')}\n')
 
 
 def _fix_py2_syntax(ufo_dir):

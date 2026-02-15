@@ -47,10 +47,8 @@ SHERPA/Run/Sherpa-config
 install_manifest.txt
 Manual/sherpa-completion
 Manual/sherpamanual.fls
-MODEL/UFO/bin/Sherpa-generate-model
 MODEL/UFO/src/opt_einsum/*.py
 MODEL/UFO/src/opt_einsum/backends
-MODEL/UFO/src/ufo_interface/parser.py
 test.py
 Examples/VBF_Interference/BH_Interface/BlackHat.py
 Examples/VBF_Interference/BH_Interface/Comix.py

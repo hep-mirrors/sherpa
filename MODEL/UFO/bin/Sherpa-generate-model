@@ -1,0 +1,15 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+import re
+import sys
+try:
+    # CMake install: ufo_interface is in site-packages (already on sys.path)
+    from ufo_interface.parser import main  # noqa: E402
+except ImportError:
+    # pip/wheel install: ufo_interface is alongside bin/
+    import os
+    sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    from ufo_interface.parser import main  # noqa: E402
+if __name__ == '__main__':
+    sys.argv[0] = re.sub(r'(-script\.pyw|\.exe)?$', '', sys.argv[0])
+    sys.exit(main(sys.argv[1:]))
