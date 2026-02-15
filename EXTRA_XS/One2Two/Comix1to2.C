@@ -125,6 +125,7 @@ bool Comix1to2::IsNLODecay() {
 
 
 void Comix1to2::Calculate(const ATOOLS::Vec4D_Vector& momenta, bool anti) {
+  m_momenta = momenta;
   // Check if color point is already set
   if (!m_cpointgen) p_ci->GeneratePoint();
   if (anti) {

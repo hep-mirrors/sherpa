@@ -25,6 +25,7 @@ namespace EXTRAXS {
     ATOOLS::Flavour m_prop;
 
     PHASIC::Color_Integrator* p_ci;
+    ATOOLS::Vec4D_Vector m_momenta;
 
     size_t NHel(const ATOOLS::Flavour& fl);
 
@@ -43,6 +44,7 @@ namespace EXTRAXS {
     void SetColors(const std::vector<int>& ci,
                    const std::vector<int>& cj) override;
     void FixColor(bool yes) override { m_cpointgen = yes; }
+    ATOOLS::Vec4D_Vector GetMomenta() override { return m_momenta; }
   };
 }
 

@@ -154,6 +154,7 @@ double Comix1to3::get_NLO_ME2(){
 
 
 void Comix1to3::Calculate(const ATOOLS::Vec4D_Vector& momenta, bool anti) {
+  m_momenta = momenta;
   DEBUG_FUNC(momenta.size());
   // create a new integration point for the color factors
   if (!m_cpointgen) p_ci->GeneratePoint();

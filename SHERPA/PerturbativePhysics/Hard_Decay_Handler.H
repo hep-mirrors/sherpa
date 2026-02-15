@@ -47,6 +47,9 @@ namespace SHERPA {
     ATOOLS::NLO_subevtlist *p_newsublist;
     double                   m_int_accuracy;
     int                      m_int_niter, m_int_target_mode;
+    std::vector<std::vector<ATOOLS::Flavour>> m_flavour_sets;
+
+
 
     void SetDecayMasses();
     void InitializeDirectDecays(PHASIC::Decay_Table* dt);
@@ -88,7 +91,6 @@ namespace SHERPA {
     void FindDecayProducts(ATOOLS::Particle* decayer,
                            std::list<ATOOLS::Particle*>& decayproducts);
     double BRFactor(ATOOLS::Blob* blob) const;
-
   public :
     Hard_Decay_Handler();
     ~Hard_Decay_Handler();

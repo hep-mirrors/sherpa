@@ -820,6 +820,7 @@ void Hard_Decay_Handler::TreatInitialBlob(ATOOLS::Blob* blob,
   ATOOLS::Vec4D decaying_mom;
   const ATOOLS::Particle* decaying_particle;
   Flavour decaying_flav;
+  std::vector<Decay_Channel*> LO_dc_list;
   
   for (size_t i = 0; i < blob->NOutP(); ++i) {
     list<Particle*> decayprods_i;
@@ -839,47 +840,103 @@ void Hard_Decay_Handler::TreatInitialBlob(ATOOLS::Blob* blob,
       decaying_particle = op;
       decaying_flav = op->Flav();
       p_newsublist=new NLO_subevtlist();
+    } else {
+      LO_dc_list.push_back(dc);
     }
   }
+
+  std::vector<Flavour> LO_flav; 
+  std::vector<Vec4D> LO_mom; 
+
+  // extract LO momenta and flavours
+  for(size_t j = 0; j < LO_dc_list.size(); ++j){
+    for(size_t k = 0; k < LO_dc_list[j]->Flavs().size(); ++k) {
+      LO_flav.push_back(LO_dc_list[j]->Flavs()[k]);
+    }
+    for(size_t k = 0; k < LO_dc_list[j]->Flavs().size(); ++k) {
+      LO_mom.push_back((LO_dc_list[j] -> GetDiagrams()[0]-> GetMomenta())[k]);
+    }
+  }
+  int number_LO_part = LO_flav.size();
 
   if(real_decay){  // create real subevents
     int real_counter = 0;
     for(size_t i = 0; i < NLO_dc->GetDiagrams().size(); ++i) {
       if(NLO_dc->GetDiagrams()[i]->getType() == "R" && real_counter == 0){
         real_counter ++;
-        size_t newn(4);
-        ATOOLS::Vec4D_Vector dipole_mom = NLO_dc->GetDiagrams()[i]-> GetMomenta();
-        static size_t decay_ids[4] = {1, 2, 4, 8};
+        size_t newn(7);
+        ATOOLS::Vec4D_Vector dipole_mom = NLO_dc->GetDiagrams()[i]->GetMomenta();
+        static size_t decay_ids[7] = {1, 2, 4, 8, 16, 32, 64};
 
         const std::vector<Flavour>& flav_vec = NLO_dc->Flavs();
-        const Flavour* newfls = const_cast<Flavour*>(flav_vec.data());
 
-        Vec4D* newmoms = new Vec4D[newn];
-        for (int j = 0; j < newn; ++j) {
+        // neuen Slot anlegen (hinten anhängen)
+        m_flavour_sets.emplace_back();
+        auto& dst = m_flavour_sets.back();
+
+        dst.clear();
+        dst.reserve(flav_vec.size() + LO_flav.size());
+        dst.insert(dst.end(), flav_vec.begin(), flav_vec.end());
+        dst.insert(dst.end(), LO_flav.begin(), LO_flav.end());
+
+        Flavour* newfls = dst.data();
+
+        //const Flavour* newfls = const_cast<Flavour*>(flav_vec.data());
+
+        Vec4D* newmoms = new Vec4D[4 + number_LO_part];
+        for (int j = 0; j < 4; ++j) {
           newmoms[j] = dipole_mom[j];
+        }
+        for(int j = 0; j < number_LO_part; ++j){
+          newmoms[j+4] = LO_mom[j];
         }
 
         // Constructor: (n, id_ptr, fl_ptr, mom_ptr, i, j, k)
         NLO_subevt *newsub(new NLO_subevt(newn, decay_ids, newfls, newmoms, 0, 0, 0)); 
         p_newsublist->push_back(newsub);
       } else if(NLO_dc->GetDiagrams()[i]->getType() == "S") {
-        size_t newn(3);
+        size_t newn(6);
         ATOOLS::Vec4D_Vector dipole_mom = NLO_dc->GetDiagrams()[i]-> GetMomenta();
-        static size_t decay_ids[3] = {1, 2, 12};
+        static size_t decay_ids[6] = {1, 2, 12, 13, 14, 15};
 
         if(NLO_dc->Sub_Flavs().size()==0){
-        for (int i = 0; i < newn+1; ++i) {
-          if (NLO_dc->Flavs()[i].IDName() == "G") continue;
-          NLO_dc->Add_Sub_Flavs(NLO_dc->Flavs()[i]);
+          for (int i = 0; i < 4; ++i) {
+            if (NLO_dc->Flavs()[i].IDName() == "G") continue;
+            NLO_dc->Add_Sub_Flavs(NLO_dc->Flavs()[i]);
+          }
         }
-      }
-        const std::vector<Flavour>& flav_vec = NLO_dc->Sub_Flavs();
-        const Flavour* newfls = const_cast<Flavour*>(flav_vec.data());
 
-        Vec4D* newmoms = new Vec4D[newn];
-        for (int j = 0; j < newn; ++j) {
+        const std::vector<Flavour>& flav_vec = NLO_dc->Sub_Flavs();
+
+        // neuen Slot anlegen (hinten anhängen)
+        m_flavour_sets.emplace_back();
+        auto& dst = m_flavour_sets.back();
+
+        dst.clear();
+        dst.reserve(flav_vec.size() + LO_flav.size());
+        dst.insert(dst.end(), flav_vec.begin(), flav_vec.end());
+        dst.insert(dst.end(), LO_flav.begin(), LO_flav.end());
+
+        Flavour* newfls = dst.data();
+
+        //const std::vector<Flavour>& flav_vec = NLO_dc->Sub_Flavs();
+        //const Flavour* newfls = const_cast<Flavour*>(flav_vec.data());
+
+
+        Vec4D* newmoms = new Vec4D[3 + number_LO_part];
+        for (int j = 0; j < 3; ++j) {
           newmoms[j] = dipole_mom[j];
         }
+        for(int j = 0; j < number_LO_part; ++j){
+          newmoms[j+3] = LO_mom[j];
+        }
+
+        //Vec4D* newmoms = new Vec4D[newn];
+        //for (int j = 0; j < newn; ++j) {
+        //  newmoms[j] = dipole_mom[j];
+        //}
+
+
 
         std::array<int, 3> dipole_indices;
         dipole_indices = NLO_dc->GetDiagrams()[i]-> getDipoleIndices();
