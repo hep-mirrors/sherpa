@@ -18,7 +18,7 @@ if [ $# -lt 1 ]; then
     exit 1
 fi
 
-WHEEL="$1"
+WHEEL="$(cd "$(dirname "$1")" && pwd)/$(basename "$1")"
 WORKDIR=$(mktemp -d)
 trap "rm -rf $WORKDIR" EXIT
 
