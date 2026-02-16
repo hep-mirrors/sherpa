@@ -430,7 +430,7 @@ bool Sherpa::SummarizeRun()
     for (auto const& [key, val] : chosen_alpha_map) {
       std::string sub_name = key;
       double curr_xsec = dabs(xsec_map[sub_name])/chosen_efficiency_map[sub_name]/chosen_alpha_map[sub_name];
-      if (m_min_tot_unc) curr_xsec = dabs(xsec_map[sub_name])/pow(chosen_efficiency_map[sub_name]*chosen_alpha_map[sub_name],0.5);
+      if (m_min_tot_unc) curr_xsec = dabs(xsec_map[sub_name])/chosen_efficiency_map[sub_name]/pow(chosen_alpha_map[sub_name],0.5);
       sum_p_unw += chosen_efficiency_map[sub_name]*sudakov_efficiency[sub_name]*curr_xsec;
       sum_p_eff += dabs(xsec_map[sub_name])*sudakov_efficiency[sub_name];
       sum_p_eff_sign += xsec_map[sub_name]*sudakov_efficiency[sub_name];
@@ -557,7 +557,7 @@ bool Sherpa::SummarizeRun()
 	if (wmax_manual_map[sub_name][i]==-2) continue; //this means that whisto is empty
 	//std::cout << sub_name << std::endl;
 	double curr_xsec = dabs(xsec_map[sub_name])/efficiency_manual_map[sub_name][i]/alpha_manual_map[sub_name][i]; //need to weight with sampling probability in manual approach. Why not sudakov? - bacause happens afterwards - but still more events needed for optimal eff events? no
-	if (m_min_tot_unc) curr_xsec = dabs(xsec_map[sub_name])/pow(efficiency_manual_map[sub_name][i]*alpha_manual_map[sub_name][i],0.5);
+	if (m_min_tot_unc) curr_xsec = dabs(xsec_map[sub_name])/efficiency_manual_map[sub_name][i]/pow(alpha_manual_map[sub_name][i],0.5);
 	if (i==0) plain_xsec_sum += dabs(xsec_map[sub_name]);//todo: this seems to be not called for max_epsilon=0.0
 	if (alpha_manual_map[sub_name][i]==-1) {
 	  msg_Info() << "WARNING: for " << sub_name << " there is no alpha value for i=" << i << " corresponding to eps=" << exp(log(10)*epsilon_values[i]) << std::endl;
@@ -664,7 +664,7 @@ bool Sherpa::SummarizeRun()
 	if (wmax_manual_map[sub_name][i]==-2) continue; //this means that whisto is empty
 	//msg_Info() << sub_name << std::endl;
 	double curr_xsec = dabs(xsec_map[sub_name])/efficiency_manual_map[sub_name][i]/alpha_manual_map[sub_name][i]; //need to weight with sampling probability in manual approach. Why not sudakov? - bacause happens afterwards - but still more events needed for optimal eff events? no
-	if (m_min_tot_unc) curr_xsec = dabs(xsec_map[sub_name])/pow(efficiency_manual_map[sub_name][i]*alpha_manual_map[sub_name][i],0.5);
+	if (m_min_tot_unc) curr_xsec = dabs(xsec_map[sub_name])/efficiency_manual_map[sub_name][i]/pow(alpha_manual_map[sub_name][i],0.5);
 	if (alpha_manual_fraction_map[sub_name][i]==-1) {
 	  msg_Info() << "WARNING: for " << sub_name << " there is no alpha value for i=" << i << " corresponding to eps=" << exp(log(10)*epsilon_values[i]) << std::endl;
 	}
@@ -719,7 +719,7 @@ bool Sherpa::SummarizeRun()
 	for(int i=0; i < epsilon_values.size(); i++){	
 	  //msg_Info() << "   " << i << std::endl;
 	  double curr_xsec = dabs(xsec_map[sub_name])/efficiency_manual_fscan_map[sub_name][fi][i]/alpha_manual_fscan_map[sub_name][fi][i];
-	  if (m_min_tot_unc) curr_xsec = dabs(xsec_map[sub_name])/pow(efficiency_manual_fscan_map[sub_name][fi][i]*alpha_manual_fscan_map[sub_name][fi][i],0.5);
+	  if (m_min_tot_unc) curr_xsec = dabs(xsec_map[sub_name])/efficiency_manual_fscan_map[sub_name][fi][i]/pow(alpha_manual_fscan_map[sub_name][fi][i],0.5);
 	  if (alpha_manual_fscan_map[sub_name][fi][i]==-1) {
 	    msg_Info() << "WARNING: for " << sub_name << " there is no alpha value for i=" << i << " corresponding to fraction=" << exp(log(10)*fraction_values[i]) << std::endl;
 	  }
