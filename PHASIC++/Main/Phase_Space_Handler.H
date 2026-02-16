@@ -69,6 +69,7 @@ namespace PHASIC {
     std::vector<std::vector<double> > m_stats;
 
     std::string m_enhanceObs, m_enhanceFunc;
+    std::string m_integration_sherpa_version;
 
     void RegisterDefaults() const;
     void InitParameters(const double & error);
@@ -168,6 +169,7 @@ namespace PHASIC {
     inline YFS::YFS_Handler              * GetYFSHandler() const { return p_yfshandler; }
     inline Phase_Space_Integrator           * Integrator() const { return p_integrator; }
     inline const std::vector<std::vector<double> > Stats() const { return m_stats; }
+    inline const std::string    IntegrationSherpaVersion() const { return m_integration_sherpa_version;  }
     inline ATOOLS::Vec4D_Vector &                Momenta()       { return p_lab; }
     inline ATOOLS::Flavour_Vector &                Flavs()       { return p_flavours; }
     inline Cut_Data                               * Cuts()       { return m_pspoint.Cuts(); }
