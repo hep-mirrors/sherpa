@@ -37,7 +37,7 @@ Phase_Space_Handler::Phase_Space_Handler(Process_Integrator *proc,double error,
       p_isrhandler(proc->ISR()), p_yfshandler(proc->YFS()), p_flavours(proc->Process()->Flavours()),
       m_nin(proc->NIn()), m_nout(proc->NOut()), m_nvec(m_nin + m_nout),
       m_initialized(false), m_sintegrator(0), m_killedpoints(0),
-      m_printpspoint(false), m_enhanceObs(eobs), m_enhanceFunc(efunc) {
+      m_printpspoint(false), m_enhanceObs(eobs), m_enhanceFunc(efunc), m_integration_sherpa_version("") {
   RegisterDefaults();
   InitParameters(error);
   p_process->SetPSHandler(this);
@@ -215,11 +215,23 @@ void Phase_Space_Handler::WriteOut(const std::string &pID)
   writer.SetOutputPath(pID+"/");
   writer.SetOutputFile("Statistics.dat");
   writer.MatrixToFile(m_stats);
+  Data_Writer writer_props;
+  writer_props.SetOutputPath(pID+"/");
+  writer_props.SetOutputFile("Properties.dat");
+  writer_props.WriteToFile(ToString(SHERPA_VERSION)+"."+ToString(SHERPA_SUBVERSION), "integration_sherpa_version");
 }
 
 bool Phase_Space_Handler::ReadIn(const std::string &pID,const size_t exclude)
 {
   msg_Info()<<"Read in channels from directory: "<<pID<<std::endl;
+  Data_Reader reader_props;
+  reader_props.SetInputPath(pID+"/");
+  reader_props.SetInputFile("Properties.dat");
+  std::string integration_sherpa_version;
+  if (reader_props.ReadFromFile(integration_sherpa_version,"integration_sherpa_version"))
+    m_integration_sherpa_version = integration_sherpa_version;
+  else
+    m_integration_sherpa_version = "before 3.1";
   if (m_pspoint.ReadIn(pID,exclude)) {
     m_psenhance.ReadIn(pID);
     Data_Reader reader;

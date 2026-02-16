@@ -275,6 +275,7 @@ void Process_Integrator::InitWeightHistogram()
 bool Process_Integrator::ReadInXSecs(const std::string &path)
 {
   std::string fname(p_proc->ResultsName());
+  std::string integration_sherpa_version(p_pshandler->IntegrationSherpaVersion());
   size_t vn;
   std::string name, dummy;
   My_In_File from(path+"/"+fname);
@@ -311,6 +312,7 @@ bool Process_Integrator::ReadInXSecs(const std::string &path)
 
 void Process_Integrator::ReadInHistogram(std::string dir)
 {
+  std::string integration_sherpa_version(p_pshandler->IntegrationSherpaVersion());
   std::string filename = dir+"/"+p_proc->ResultsName();
   if (!FileExists(filename+"_pos")) return;
   if (p_whisto_pos) delete p_whisto_pos;
@@ -811,9 +813,10 @@ void Process_Integrator::ReadResults()
 {
   if (m_resultpath.length()==0) return;
   std::string fname(p_proc->ResultsName());
+  //needs to be called before the next two, to set p_pshandler->IntegrationSherpaVersion())
+  p_pshandler->ReadIn(m_resultpath+"/"+p_proc->Generator()->Name()+"/MC_"+fname);
   if (!ReadInXSecs(m_resultpath+"/"+p_proc->Generator()->Name()+"/XS_"+fname)) return;
   ReadInHistogram(m_resultpath+"/"+p_proc->Generator()->Name()+"/WD_"+fname);
-  p_pshandler->ReadIn(m_resultpath+"/"+p_proc->Generator()->Name()+"/MC_"+fname);
   SetTotal(0); 
 }
 
