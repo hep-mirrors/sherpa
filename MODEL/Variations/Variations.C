@@ -4,17 +4,13 @@
 
 namespace MODEL {
     namespace VARIATIONS {
-        /*
-        Constructs the Variations Object
-        Iterates over the "UFO_VARIATIONS" Setting and adds the Variations to its own list
-        */
         Variations::Variations(std::vector<MODEL::Single_Vertex>* vertices_pointer, std::map<std::string, double_t>* constants_poiner){
             // check arguments and init attributes
             if (!vertices_pointer && !constants_poiner) THROW(fatal_error, "no vertices or constants given by the model")
             p_vertices = vertices_pointer;
             p_constants = constants_poiner;
             // read settings
-            msg_Out() << std::endl << "\x1b[34mReading the model parameter variations...\x1b[0m" << std::endl;
+            msg_Out() << std::endl << "Reading the model parameter variations..." << std::endl;
             ReadVariations();
             // Register the dependent Model vertices, check for unknown/unused variations
             FindDependentVertices();
@@ -27,24 +23,19 @@ namespace MODEL {
             StoreNominal();
             // check if there are too many variations
             CheckVariationNumber();
-            msg_Out() << "\x1b[34mModel Variations read.\x1b[0m" << std::endl << std::endl;
+            msg_Out() << "Model Variations read." << std::endl << std::endl;
         }
 
-        /*
-        Destructor, does something
-        */
         Variations::~Variations(){
             for (auto set : dependent_vertices) {
                 delete set.second;
             }
         }
         
-        /*
-        Read Correlations from MODEL_VARIATIONS_CORRELATE, as list of lists of parameter names
-        */
         void Variations::ReadCorrelations(){
-            if (!s["MODEL_VARIATIONS_CORRELATE"].SetDefault(1.).IsList()) {
-                msg_Out() << "\x1b[31m\tParameter correlations of not formatted properly. Ignoring them...\x1b[0m" << std::endl;
+            if (!s["MODEL_VARIATIONS_CORRELATE"].SetDefault("None").IsList()) {
+                if (s["MODEL_VARIATIONS_CORRELATE"].Get<std::string>() != "None")
+                    msg_Out() << "\x1b[31m\tParameter correlations of not formatted properly. Ignoring them...\x1b[0m" << std::endl;
                 return;
             }
             for (ATOOLS::Scoped_Settings& ss : s["MODEL_VARIATIONS_CORRELATE"].GetItems()){
@@ -86,9 +77,6 @@ namespace MODEL {
             }
         }
 
-        /*
-        read a single param variation (one variable, mulitple values) and put it in a map
-        */
         void Variations::ReadSingleParamVariation(std::string parameter){
             ATOOLS::Scoped_Settings ss = s["MODEL_VARIATIONS"][parameter].SetDefault(-1.);
             std::vector<double_t> values = std::vector<double_t>();
@@ -130,9 +118,6 @@ namespace MODEL {
             variations_map.insert(std::make_pair(parameter, values));
         }
 
-        /*
-        find and register the dependencies of the couplings of all Model vertices
-        */
         void Variations::FindDependentVertices() {
             msg_Debugging() << "Finding Depending Coulings..." << std::endl;
             // for all the varied parameters
@@ -147,9 +132,6 @@ namespace MODEL {
             }
         }
 
-        /*
-        go over the parameters and remove those who dont have dependents
-        */
         void Variations::CheckParameters() {
             for (auto var_it=variable_names.begin(); var_it != variable_names.end(); var_it++) {
                 if (dependent_vertices[*var_it]->size() == 0){
@@ -165,9 +147,6 @@ namespace MODEL {
             }
         }
 
-        /*
-        Store the nominal parameter values for later reset
-        */
         void Variations::StoreNominal() {
             msg_Debugging() << "Store Nominal Paramter values... " << std::endl;
             std::vector<double_t> values = {};
@@ -178,9 +157,6 @@ namespace MODEL {
             nominal = VariationKey(variable_names, values);
         }
 
-        /*
-        Read the parameters from settings
-        */
         void Variations::ReadVariations() {
             for (const std::string& parameter : s["MODEL_VARIATIONS"].GetKeys()) {
                 DEBUG_INFO("Reading variations of " + parameter);
@@ -189,9 +165,6 @@ namespace MODEL {
             }
         }
 
-        /*
-        Checks the Size of the Variations to make sure everything is alright
-        */
         void Variations::CheckVariationNumber(){
             if (Size() >= MAX_VARIATION_NUMBER){
                 msg_Out() << "\x1b[31m\tYou are trying too many Variations, please reconsider. Ignoring variations...\x1b[0m" << std::endl;
@@ -210,15 +183,11 @@ namespace MODEL {
                     }
                 }
                 else {
-                    msg_Out() << "\x1b[34m\t--> Found " << Size() << " variations.\x1b[0m" << std::endl;
+                    msg_Out() << "\t--> Found " << Size() << " variations." << std::endl;
                 }
             }
         }
 
-        /*
-        Combine Parameters depending on the settings and correlations
-        TODO this function is too long
-        */
         void Variations::CombineParameters(){
             std::vector<std::vector<VariationKey>> individual_variations_list;
             std::vector<VariationKey> individual_variations;

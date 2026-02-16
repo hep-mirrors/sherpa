@@ -14,11 +14,14 @@ To use the on-the-fly variation of a model parameter, add this to your configura
          Step: <value>
 
 The values to be varied over for a parameter can be specified by a list or in a range statement as shown above.
-Multiple parameters for variation can be added, which will be combined for variation by default. The combination can be turned off by adding this to the configuration:
+Multiple parameters for variation can be added, which will be combined for variation according to the setting :OPTION:`MODEL_VARIATIONS_COMBINE`:
 
-.. code-block:: yaml
-
-   MODEL_VARIATIONS_COMBINE: 0
+  :option:`0`
+    Turn off combinations.
+  :option:`1`
+    Combine all different values (default).
+  :option:`2`
+    One each, ignores given values and adds one variation for each parameter with the others set to 0.
 
 Also, for some parameters it might be useful to have them fully correlated. To achieve this, use the following syntax and make sure the variation numbers are the same. 
 Other parameters will be combined according to the previous settings.

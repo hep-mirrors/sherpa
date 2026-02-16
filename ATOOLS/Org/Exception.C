@@ -8,8 +8,9 @@ using namespace ATOOLS;
 Exception::Exception(const std::string& type,
 		     const std::string& info,
 		     const std::string& cmethod,
+         const std::string& file,
          const int& line):
-  m_info(info), m_type(type), m_line(line)
+  m_info(info), m_type(type), m_file(file) ,m_line(line)
 {
   std::string cmethod_
     =cmethod.substr(0,ATOOLS::Min(cmethod.length(),cmethod.find("(")));
@@ -28,24 +29,29 @@ Exception::Exception(const std::string& type,
 std::ostream &ATOOLS::operator<<(std::ostream &str,
 				 const Exception &exception)
 {
-   str<<om::bold<<om::red
-      <<exception.TypeName()<<om::reset
-      <<om::bold<<" thrown" <<om::reset;
+    str<<om::bold<<om::red
+        <<exception.TypeName()<<om::reset
+        <<om::bold<<" thrown" <<om::reset;
 
-   if (exception.m_class.length()>0)
-     str <<om::bold<< " in "<<om::reset
-	 <<om::blue
-	 <<exception.m_class<<"::"
-	 <<exception.m_method
-	 <<om::reset;
+    if (exception.m_class.length()>0)
+        str <<om::bold<< " in "<<om::reset
+        <<om::blue
+        <<exception.m_class<<"::"
+        <<exception.m_method
+        <<om::reset;
 
-   str << om::green << "(line "
-	 <<exception.m_line << ")"
-	 <<om::reset;
+    if (exception.m_file.length() || exception.m_line > 0){
+        str << om::green << "(in ";
+        if (exception.m_file.length()) 
+            str << exception.m_file;
+        if (exception.m_line > 0) 
+            str << " line " << exception.m_line;
+        str << ")" << om::reset;
+    }
 
-   str<<":\n"<<om::red
-      <<exception.m_info
-      <<om::reset;
+    str<<":\n"<<om::red
+        <<exception.m_info
+        <<om::reset;
 
-   return str;
+    return str;
 }
