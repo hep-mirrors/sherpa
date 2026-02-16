@@ -12,15 +12,8 @@ namespace MODEL {
             if (okay) okay &= p_vars->IsOkay();
         }
 
-        /*
-        Destructor, does nothing
-        */
-        Variation_Generator::~Variation_Generator(){}
-
-        /*
-        generate the map for the weights under "ParameterVariations", then calculates the weights
-        */
         void Variation_Generator::GenerateAndFillWeightsMap(ATOOLS::Weights_Map& wgtmap){
+            // nominal cs to compare
             double nominal = p_proc->LastXS();
             for (VariationKey var : p_vars->GetVariations()){
                 if (nominal == 0.0) {
@@ -28,12 +21,12 @@ namespace MODEL {
                     wgtmap["ParameterVariations"][var.Identifier()] = 0;
                     continue;
                 }
-                // set couplings
+                // update couplings
                 msg_Debugging() << "switch to " << var;
                 UpdateAllCouplings(var);
                 // recalculate cross section
                 double part = Calculate();
-                // set weight to this fraction
+                // weight is the ratio of new cs and nominal cs
                 double weight = part/nominal;
                 msg_Debugging() << " nominal: " << nominal << ", current: " << part << ", weight: " << weight << std::endl;
                 wgtmap["ParameterVariations"][var.Identifier()] = weight;
@@ -42,9 +35,6 @@ namespace MODEL {
             ResetAllCouplings();
         }
 
-        /*
-        method to be used to update constants and couplings 
-        */
         void Variation_Generator::UpdateAllCouplings(VariationKey key){
             // reset first
             ResetAllCouplings();
@@ -52,9 +42,6 @@ namespace MODEL {
             SetCouplings(key);
         }
 
-        /*
-        Set model constants to the specified values, couplings are NOT updated
-        */
         void Variation_Generator::SetConstants(VariationKey key){
             msg_Debugging() << "Updating Constants to " << key.Identifier() << std::endl;
             for (size_t i = 0; i < key.Size(); i++) {
@@ -62,9 +49,6 @@ namespace MODEL {
             }
         }
 
-        /*
-        Set Couplings to the specified values, need to call SetConstants before this
-        */
         void Variation_Generator::SetCouplings(VariationKey key){
             msg_Debugging() << "Updating dependent Vertices..." << std::endl;
             for (std::string name : key.Names()){
@@ -76,24 +60,15 @@ namespace MODEL {
             }
         }
 
-        /*
-        Reset Couplings to the nominal values
-        */
         void Variation_Generator::ResetAllCouplings(){
             SetConstants(p_vars->Nominal());
             SetCouplings(p_vars->Nominal());
         }
 
-        /*
-        Calculates the partonic cross section of the event under the specified variation
-        */
         double Variation_Generator::Calculate(){
             return p_proc->Partonic(p_proc->Integrator()->Momenta());
         }
 
-        /*
-        Reset all weights, specifically set them to 1.0
-        */
         void Variation_Generator::ResetWeightsMap(ATOOLS::Weights_Map& wgtmap){
             for (auto var : p_vars->GetVariations()){
                 wgtmap["ParameterVariations"][var.Identifier()] = 1.0;
