@@ -150,6 +150,18 @@ void GGHG_QCD_Virtual::Calc(const Vec4D_Vector& momenta) {
   double s((momenta[0]+momenta[1]).Abs2());
   double t((momenta[1]-momenta.back()).Abs2());
   double u((momenta[0]-momenta.back()).Abs2());
+  // check
+  msg_Out() << "GGHG_QCD_Virtual::Calc(): Calculating gg->hg virtual matrix element for: " << "\n";
+  msg_Out() << "   s = " << s << "\n";
+  msg_Out() << "   t = " << t << "\n";
+  msg_Out() << "   u = " << u << "\n";
+  msg_Out() << "   mom[0]     = " << momenta[0] << "\n";
+  msg_Out() << "   mom[1]     = " << momenta[1] << "\n";
+  msg_Out() << "   mom.back() = " << momenta.back() << "\n";
+  msg_Out() << "   mom[0].mass     = " << momenta[0].Mass() << "\n";
+  msg_Out() << "   mom[1].mass     = " << momenta[1].Mass() << "\n";
+  msg_Out() << "   mom.back().mass = " << momenta.back().Mass() << "\n";
+
   double mh2(s+t+u);
   double logg((sqr(mh2*mh2)+sqr(s*s)+sqr(t*t)+sqr(u*u))/(s*t*u));
   double lnm(log(m_mur2/mh2));
@@ -236,6 +248,17 @@ void HGQQ_QCD_Virtual::Calc(const Vec4D_Vector &momenta) // h->gqq virtual calc
   double s((momenta[0] + momenta[1]).Abs2());
   double t((momenta[1] - momenta.back()).Abs2());
   double u((momenta[0] - momenta.back()).Abs2());
+  // check
+  msg_Out() << "HGQQ_QCD_Virtual::Calc(): Calculating h->gqq virtual matrix element for: " << "\n";
+  msg_Out() << "   s = " << s << "\n";
+  msg_Out() << "   t = " << t << "\n";
+  msg_Out() << "   u = " << u << "\n";
+  msg_Out() << "   mom[0]     = " << momenta[0] << "\n";
+  msg_Out() << "   mom[1]     = " << momenta[1] << "\n";
+  msg_Out() << "   mom.back() = " << momenta.back() << "\n";
+  msg_Out() << "   mom[0].mass     = " << momenta[0].Mass() << "\n";
+  msg_Out() << "   mom[1].mass     = " << momenta[1].Mass() << "\n";
+  msg_Out() << "   mom.back().mass = " << momenta.back().Mass() << "\n";
   double mh2(s + t + u);
   double lnm(log(m_mur2 / mh2));
   double lns(log(s / mh2)), lnt(log(-t / mh2)), lnu(log(-u / mh2));
@@ -270,6 +293,17 @@ void HGGG_QCD_Virtual::Calc(const Vec4D_Vector &momenta)
   double s((momenta[0] + momenta[1]).Abs2());
   double t((momenta[1] - momenta.back()).Abs2());
   double u((momenta[0] - momenta.back()).Abs2());
+  // check
+  msg_Out() << "HGGG_QCD_Virtual::Calc(): Calculating h->ggg virtual matrix element for: " << "\n";
+  msg_Out() << "   s = " << s << "\n";
+  msg_Out() << "   t = " << t << "\n";
+  msg_Out() << "   u = " << u << "\n";
+  msg_Out() << "   mom[0]     = " << momenta[0] << "\n";
+  msg_Out() << "   mom[1]     = " << momenta[1] << "\n";
+  msg_Out() << "   mom.back() = " << momenta.back() << "\n";
+  msg_Out() << "   mom[0].mass     = " << momenta[0].Mass() << "\n";
+  msg_Out() << "   mom[1].mass     = " << momenta[1].Mass() << "\n";
+  msg_Out() << "   mom.back().mass = " << momenta.back().Mass() << "\n";
   double mh2(s + t + u);
   double logg((sqr(mh2 * mh2) + sqr(s * s) + sqr(t * t) + sqr(u * u)) / (s * t * u));
   double lnm(log(m_mur2 / mh2));
@@ -337,28 +371,16 @@ operator()(const Process_Info &pi) const
       }
       return new QQHG_QCD_Virtual(pi, fl, false, con);
     }
-    if (fl[0].IsQuark() && fl[1] == fl[0].Bar() && // THESE IF STATESMENTS ARE WRONG!!! 
-        pi.m_fi.m_ps.size() == 2 &&
-        pi.m_fi.m_ps[0].m_fl.Kfcode() == kf_h0 &&
-        pi.m_fi.m_ps[1].m_fl.IsGluon())
+    if (fl[0].Kfcode() == kf_e)
     {
-      for (size_t i = 2; i < fl.size() - 1; ++i)
-      {
-        if (fl[i].Strong())
-          return NULL;
-      }
+      msg_Out() << "in HGQQ unchecked getter. you have been warned \n";
+      
       return new HGQQ_QCD_Virtual(pi, fl, false, con);
     }
-    if (fl[0].IsQuark() && fl[1] == fl[0].Bar() &&
-        pi.m_fi.m_ps.size() == 2 &&
-        pi.m_fi.m_ps[0].m_fl.Kfcode() == kf_h0 &&
-        pi.m_fi.m_ps[1].m_fl.IsGluon())
+    if (fl[0].Kfcode() == kf_e)
     {
-      for (size_t i = 2; i < fl.size() - 1; ++i)
-      {
-        if (fl[i].Strong())
-          return NULL;
-      }
+      msg_Out() << "in HGGG unchecked getter. you have been warned \n";
+      
       return new HGGG_QCD_Virtual(pi, fl, false, con);
     }
   }
