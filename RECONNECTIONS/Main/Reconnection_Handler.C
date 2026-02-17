@@ -52,7 +52,19 @@ Return_Value::code Reconnection_Handler::operator()(Blob_List *const blobs,
   }
   p_reconnector->Reset();
 
-  const auto& variation_weights = p_reconnector->GetVariationWeights();
+  auto variation_weights = p_reconnector->GetVariationWeights();
+  
+  if (auto* statistical_reconnector = dynamic_cast<Reconnect_Statistical*>(p_reconnector)) {
+    const double weight_cutoff = statistical_reconnector->GetWeightCutoff();
+    if (weight_cutoff > 0.) {
+      for (size_t i = 0; i < variation_weights.size(); ++i) {
+        if (variation_weights[i] > weight_cutoff) {
+          variation_weights[i] = weight_cutoff;
+        }
+      }
+    }
+  }
+  
   Blob *blob(blobs->FindFirst(btp::Signal_Process));
   if (blob == NULL)
     blob = blobs->FindFirst(btp::Hard_Collision);
@@ -60,11 +72,6 @@ Return_Value::code Reconnection_Handler::operator()(Blob_List *const blobs,
 
   const size_t n_variations = variation_weights.size();
   const size_t n_mpi_variations = wgt_map["MPI"].Size() - 1;
-
-  // static constexpr double max_weight = 2e2;
-  // for (size_t i=0; i<n_variations; i++) {
-  //     variation_weights[i] = std::min(variation_weights[i], max_weight);
-  // }
 
   wgt_map["RECONNECTIONS"]["v0"] = variation_weights[0];
   if (n_mpi_variations>0) wgt_map["MPI+RECONNECTIONS"]["v0"] = wgt_map["MPI"]["v0"] * variation_weights[0];

@@ -238,6 +238,7 @@ void Amisic::InitParameterVariations() {
   m_pint.SetVariations(m_n_variations, m_sigma_nd_variations);
   m_overestimator.SetVariations(m_n_variations);
 
+  m_weight_cutoff = (*mipars)("weight_cutoff");
   ResetVariationWeights();
 
   // output
@@ -606,6 +607,7 @@ void Amisic::AcceptRejectReweighting(const bool accepted, const double prob_nom)
   // For rejected scatter: multiply weight by (1-p_var)/(1-p_nom)
   ///////////////////////////////////////////////////////////////////////////
   if (m_sudakov_weights.empty()) return;
+  if (prob_nom < 1e-8) return;
 
   const double xs_nom = (m_processes)();
 
@@ -662,7 +664,10 @@ void Amisic::ApplyVariationWeights(ATOOLS::Blob * blob) {
     const double w_sudakov = m_sudakov_weights[ivar];
 
     // w_total = w_b * w_(n|b) = w_b * w_sudakov
-    const double w_total = w_b * w_sudakov;
+    double w_total = w_b * w_sudakov;
+    if (m_weight_cutoff > 0. && w_total > m_weight_cutoff) {
+      w_total = m_weight_cutoff;
+    }
     m_variation_weights[ivar] *= w_total;
 
     // output

@@ -75,6 +75,7 @@ namespace AMISIC {
     std::vector<double> m_overlap_ratios;
     std::vector<double> m_sudakov_weights;
     size_t m_n_variations;
+    double m_weight_cutoff;
 
     size_t m_mpi_scatter_count;          // output
     std::ofstream m_b_weight_file;       // output
