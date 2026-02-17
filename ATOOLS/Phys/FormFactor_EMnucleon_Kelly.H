@@ -22,6 +22,10 @@ namespace ATOOLS {
     double tau_eval(const double &Q2, const double &mass);
     double Kelly_func(const double &Q2, const double &a0, const double &a1,
                       const double &b1, const double &b2, const double &b3);
+    
+    // Optimized helpers to compute both GE and GM at once
+    void ComputeGEGM_proton(const double &Q2, double &GE, double &GM, double &tau);
+    void ComputeGEGM_neutron(const double &Q2, double &GE, double &GM, double &tau);
 
     // Individual form factor functions (override virtual functions from interface)
     virtual double F1p(const double &Q2) override;

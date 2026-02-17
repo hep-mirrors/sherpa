@@ -43,6 +43,9 @@ namespace ATOOLS {
       neutron = 2
     };
   };
+  // Stream operators for incomingnucleon
+  std::istream &operator>>(std::istream &str, incomingnucleon::code &nucleon);
+  std::ostream &operator<<(std::ostream &str, const incomingnucleon::code &nucleon);
 
   // Struct to hold boson-nucleon interaction type for printing
   struct BosonNucleonType {
@@ -63,7 +66,10 @@ namespace ATOOLS {
     double F2;  // Pauli (anomalous magnetic) form factor
     double FA;  // Axial form factor
     double FP;  // Pseudoscalar form factor
-    
+
+    // J_mu = Vector_mu - Axial_mu 
+    //      = F1*gamma_mu + F2*i*sigma_mu_nu*q_nu/(2M) - FA*gamma_mu*gamma5   - FP*q_mu*gamma5/(2M)
+
     // default values
     NucleonFormFactors(double f1 = 0.0, double f2 = 0.0, double fa = 0.0, double fp = 0.0)
         : F1(f1), F2(f2), FA(fa), FP(fp) {}
@@ -136,8 +142,12 @@ namespace ATOOLS {
     NucleonFormFactors Z_Neutron(const double &q2);
 
     // global parameters
+    bool m_PCAC;
     double m_sin2thetaW;
+    double m_cos2thetaW;
     double m_gA;
+    double m_g;
+    double m_masspi;
 
     // Off form factor model parameters
     double m_F1p, m_F2p;

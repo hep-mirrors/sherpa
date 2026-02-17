@@ -17,9 +17,13 @@ FormFactor_EMnucleon::FormFactor_EMnucleon(incomingboson::code boson, incomingnu
   m_formfactor_model = s["Model"].SetDefault(ffmodel::off).Get<ffmodel::code>();
   
   // Global params
+  m_PCAC = s["PCAC"].SetDefault(false).Get<bool>();
   m_gA = s["gA"].SetDefault(1.267).Get<double>();
   m_sin2thetaW = s["sin2thetaW"].SetDefault(0.231).Get<double>();
-  
+  m_cos2thetaW = 1.0 - m_sin2thetaW;
+  m_g = s["g"].SetDefault(0.652).Get<double>();
+  m_masspi = s["mpi"].SetDefault(0.13957).Get<double>();
+
   msg_Out()<<"FormFactor_EMnucleon::FormFactor_EMnucleon(): Using model: "<<m_formfactor_model<<std::endl;
   
   // Create model-specific implementation (ONE check, then pointer handles everything!)
@@ -50,14 +54,16 @@ FormFactor_EMnucleon::FormFactor_EMnucleon(incomingboson::code boson, incomingnu
 FormFactor_EMnucleon::~FormFactor_EMnucleon() {}
 
 void FormFactor_EMnucleon::RegisterDefaultsOff() {
+  // note that FF's are implimented as: 
+  // F1*gamma_mu + F2*i*sigma_mu_nu*q_nu/(2M) - FA*gamma_mu*gamma5   - FP*q_mu*gamma5/(2M)
   // Set form factors to point-like values
   m_F1p = 1.0;
   m_F1n = 0.0;
   m_F1W = 1.0;
-  m_F1Zp = 0.5 - m_sin2thetaW;
+  m_F1Zp = 0.5 - 2*m_sin2thetaW;
   m_F1Zn = -0.5;
-  m_FAW = 1.0;
-  m_FAZp = 0.5 * m_gA;
+  m_FAW = m_gA; // 1/2 * gamma_mu * (F1W - FAW * gamma5)
+  m_FAZp = 0.5 * m_gA; // 
   m_FAZn = -0.5 * m_gA;
 
   m_F2p = 0.0;
@@ -66,8 +72,8 @@ void FormFactor_EMnucleon::RegisterDefaultsOff() {
   m_F2Zp = 0.0;
   m_F2Zn = 0.0;
   m_FPW = 0.0;
-  m_FPZp = 0.0;
-  m_FPZn = 0.0;
+  m_FPZp = 0.0;  
+  m_FPZn = 0.0;  
 }
 
 double FormFactor_EMnucleon::F1p(const double &q2) {
@@ -127,7 +133,10 @@ double FormFactor_EMnucleon::FAZp(const double &q2) {
 
 double FormFactor_EMnucleon::FPZp(const double &q2) {
   if (p_model_impl) return p_model_impl->FPZp(q2);  
-  return m_FPZp; 
+  // Off model: compute Q2-dependent pseudoscalar FF using PCAC relation
+  if (!m_PCAC) return m_FPZp;
+  double Mp = Flavour(kf_p_plus).Mass();
+  return 4.0 * Mp * Mp * m_FAZp / (-q2 + m_masspi * m_masspi);
 }
 
 double FormFactor_EMnucleon::F1Zn(const double &q2) {
@@ -146,8 +155,11 @@ double FormFactor_EMnucleon::FAZn(const double &q2) {
 }
 
 double FormFactor_EMnucleon::FPZn(const double &q2) {
-  if (p_model_impl) return p_model_impl->FPZn(q2);  
-  return m_FPZn; 
+  if (p_model_impl) return p_model_impl->FPZn(q2); 
+  if (!m_PCAC) return m_FPZn; 
+  // Off model: compute Q2-dependent pseudoscalar FF using PCAC relation
+  double Mn = Flavour(kf_n).Mass();
+  return 4.0 * Mn * Mn * m_FAZn / (-q2 + m_masspi * m_masspi);
 }
 
 NucleonFormFactors FormFactor_EMnucleon::Photon_Proton(const double &q2) {
@@ -267,5 +279,32 @@ std::istream &ATOOLS::operator>>(std::istream &str, ffmodel::code &mode)
     mode = ffmodel::off;
   else
     THROW(fatal_error, "Unknown Form_Factor: Mode ");
+  return str;
+}
+
+// Stream operators for incomingnucleon
+std::ostream &ATOOLS::operator<<(std::ostream &str, const incomingnucleon::code &nucleon)
+{
+  if (nucleon == incomingnucleon::proton)
+    return str << "proton";
+  else if (nucleon == incomingnucleon::neutron)
+    return str << "neutron";
+  else if (nucleon == incomingnucleon::off)
+    return str << "off";
+  return str << "unknown";
+}
+
+std::istream &ATOOLS::operator>>(std::istream &str, incomingnucleon::code &nucleon)
+{
+  std::string tag;
+  str >> tag;
+  if (tag.find("proton") != std::string::npos)
+    nucleon = incomingnucleon::proton;
+  else if (tag.find("neutron") != std::string::npos)
+    nucleon = incomingnucleon::neutron;
+  else if (tag.find("off") != std::string::npos)
+    nucleon = incomingnucleon::off;
+  else
+    THROW(fatal_error, "Unknown incomingnucleon type");
   return str;
 }

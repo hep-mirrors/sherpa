@@ -29,9 +29,9 @@ FormFactor_EMnucleon_Dipole::~FormFactor_EMnucleon_Dipole() {}
 
 void FormFactor_EMnucleon_Dipole::RegisterDefaultsDipole() {
   Scoped_Settings s{Settings::GetMainSettings()["Form_Factor"]};
-  m_massp = s["mass_p"].SetDefault(0.938272081).Get<double>();
+  m_massp = s["mass_p"].SetDefault(Flavour(kf_p_plus).Mass()).Get<double>(); //0.9382720813
   m_mup = s["mu_p"].SetDefault(2.79284734463).Get<double>();
-  m_massn = s["mass_n"].SetDefault(0.9395654133).Get<double>();
+  m_massn = s["mass_n"].SetDefault(Flavour(kf_n).Mass()).Get<double>(); //0.9395654133
   m_mun = s["mu_n"].SetDefault(-1.9130427).Get<double>();
   // Dipole parametrisation parameters
   m_Lambda2 = s["Lambda2"].SetDefault(0.71).Get<double>();
@@ -43,7 +43,7 @@ void FormFactor_EMnucleon_Dipole::RegisterDefaultsAxial() {
   Scoped_Settings s{Settings::GetMainSettings()["Form_Factor"]};
   m_massA = s["mass_A"].SetDefault(1.0).Get<double>();
   m_fA = s["f_A"].SetDefault(0.0).Get<double>();
-  m_masspi = s["mass_pi"].SetDefault(0.13957018).Get<double>();
+  m_masspi = s["mass_pi"].SetDefault(Flavour(kf_pi_plus).Mass()).Get<double>(); //0.13957018
 }
 
 double FormFactor_EMnucleon_Dipole::Q2_check(const double &Q2) {
@@ -71,21 +71,21 @@ double FormFactor_EMnucleon_Dipole::Dipole_func(const double &Q2, const double &
 double FormFactor_EMnucleon_Dipole::F1p(const double &Q2) {
   double tau = tau_eval(Q2, m_massp);
   double GE = Dipole_func(Q2, m_Lambda2, m_norm);
-  double GM = m_mup * Dipole_func(Q2, m_Lambda2, m_norm);
+  double GM = m_mup * Dipole_func(Q2, m_Lambda2, m_norm); //+ve mag mom
   return (GE + tau * GM) / (1. + tau);
 }
 
 double FormFactor_EMnucleon_Dipole::F1n(const double &Q2) {
   double tau = tau_eval(Q2, m_massn);
   double GE = Dipole_func(Q2, m_Lambda2, m_norm);
-  double GM = m_mun * Dipole_func(Q2, m_Lambda2, m_norm);
+  double GM = m_mun * Dipole_func(Q2, m_Lambda2, m_norm); // -ve mag mom
   return (GE + tau * GM) / (1. + tau);
 }
 
 double FormFactor_EMnucleon_Dipole::F2p(const double &Q2) {
   double tau = tau_eval(Q2, m_massp);
   double GE = Dipole_func(Q2, m_Lambda2, m_norm);
-  double GM = m_mup * Dipole_func(Q2, m_Lambda2, m_norm);
+  double GM = m_mup * Dipole_func(Q2, m_Lambda2, m_norm); 
   return (GM - GE) / (1. + tau);
 }
 
