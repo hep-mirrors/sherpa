@@ -281,9 +281,33 @@ bool Process_Integrator::ReadInXSecs(const std::string &path)
   My_In_File from(path+"/"+fname);
   if (!from.Open()) return false;
   from->precision(16);
-  *from>>name>>m_totalxs>>m_max>>m_totalerr>>m_totalsum>>m_totalsumabs>>m_totalsumenh>>m_totalsumenhabs>>m_totalsumenhsqr>>m_totalsumsqr
-      >>m_n>>m_ncut>>m_ssum>>m_ssumenh>>m_ssumabs>>m_ssumenhabs>>m_ssumsqr>>m_ssumenhsqr>>m_smax>>m_ssigma2>>m_sn>>m_sncut>>m_wmin
-      >>m_son>>dummy>>dummy>>vn;
+  if (integration_sherpa_version=="before 3.1") {
+    *from>>name>>m_totalxs>>m_max>>m_totalerr>>m_totalsum>>m_totalsumsqr
+	 >>m_n>>m_ssum>>m_ssumsqr>>m_smax>>m_ssigma2>>m_sn>>m_wmin
+	 >>m_son>>dummy>>dummy>>vn;
+    msg_Error() << "WARNING: Exact information about enhancement is missing for: "<< p_proc->ResultsName() << ". Please use Sherpa 3.1 or newer to consider them. Assuming that there is no enhancement during sampling. There is no ehancement backward-compatibility implemented yet." << std::endl;
+    m_ssumenh = m_ssum;
+    m_ssumenhsqr = m_ssumsqr;
+    //msg_Error() << "WARNING: Information of the weight sign distribution from integration are missing for: "<< p_proc->ResultsName() << ". Please use Sherpa 3.1 or newer to consider them. Assuming that all weights have the same sign - unweighted sampling might have an inefficient process selection." << std::endl;
+    m_ssumenhabs = dabs(m_ssumenh);
+    msg_Error() << "WARNING: Information about cut efficiency missing for: "<< p_proc->ResultsName() << ". Please use Sherpa 3.1 or newer to separate it. Exp. eff. includes cut efficiency." << std::endl;
+    m_sncut = m_sn;
+    //todo: remove following in extra commit
+    //rest only written out, but not used
+    m_ssumabs = m_ssum;
+    //rest only relevant if one wants to use information from optimisation+integration during event generation:
+    m_totalsumabs = dabs(m_totalsum);
+    //sum of weights including enhancement
+    m_totalsumenh = m_totalsum;
+    m_totalsumenhabs = dabs(m_totalsumabs);
+    m_totalsumenhsqr = m_totalsumsqr;
+    //number of events passing cut in combined optimisation+integration
+    m_ncut = m_n;
+  } else {
+    *from>>name>>m_totalxs>>m_max>>m_totalerr>>m_totalsum>>m_totalsumabs>>m_totalsumenh>>m_totalsumenhabs>>m_totalsumenhsqr>>m_totalsumsqr
+	 >>m_n>>m_ncut>>m_ssum>>m_ssumenh>>m_ssumabs>>m_ssumenhabs>>m_ssumsqr>>m_ssumenhsqr>>m_smax>>m_ssigma2>>m_sn>>m_sncut>>m_wmin
+	 >>m_son>>dummy>>dummy>>vn;
+  }
   if (name!=fname) THROW(fatal_error,"Corrupted results file");
   if (vn>100) {
     msg_Error()<<METHOD<<"(): Invalid vn in '"<<fname<<"'."<<std::endl;
@@ -314,11 +338,25 @@ void Process_Integrator::ReadInHistogram(std::string dir)
 {
   std::string integration_sherpa_version(p_pshandler->IntegrationSherpaVersion());
   std::string filename = dir+"/"+p_proc->ResultsName();
-  if (!FileExists(filename+"_pos")) return;
-  if (p_whisto_pos) delete p_whisto_pos;
-  if (p_whisto_neg) delete p_whisto_neg;
-  p_whisto_pos = new Histogram(filename+"_pos");
-  p_whisto_neg = new Histogram(filename+"_neg");
+  if (integration_sherpa_version=="before 3.1") {
+    msg_Error() << "WARNING: Information of the weight sign distribution from integration are missing for: "<< p_proc->ResultsName() << ". Please use Sherpa 3.1 or newer to consider them. Assuming that all weights have the same sign - unweighted sampling might have an inefficient process selection. Also all estimates regarding the number of effective events are likly off." << std::endl;
+    msg_Error() << "WARNING: Information for partial unweighting might be incomplete for: "<< p_proc->ResultsName() << ". Please use Sherpa 3.1 or newer to be able to choose any max_epsilon. Partial unweighting has no effect above a certain point." << std::endl;
+    if (!FileExists(filename)) return;
+    if (p_whisto_pos) delete p_whisto_pos;
+    if (p_whisto_neg) delete p_whisto_neg;
+    p_whisto_pos = new Histogram(filename);
+    p_whisto_neg = new Histogram(p_whisto_pos);
+    if (TotalResult()>0)
+      p_whisto_neg->Reset();
+    else
+      p_whisto_pos->Reset();
+  } else {
+    if (!FileExists(filename+"_pos")) return;
+    if (p_whisto_pos) delete p_whisto_pos;
+    if (p_whisto_neg) delete p_whisto_neg;
+    p_whisto_pos = new Histogram(filename+"_pos");
+    p_whisto_neg = new Histogram(filename+"_neg");
+  }
   if (p_proc->IsGroup())
     for (size_t i(0);i<p_proc->Size();++i)
       (*p_proc)[i]->Integrator()->ReadInHistogram(dir);
@@ -453,8 +491,13 @@ double Process_Integrator::GetMaxEps(double epsilon)
   //cnt: number of events cut atm
   double cnt = 0.;
 
-  double pxs = whisto_abs_sum*(1-epsilon); //use this definition, because very slight differences, but most impotrant: mean enhancement missing!
-  //double pxs = dabs(TotalResult())*p_whisto->Fills()*epsilon; //use this definition, because very slight differences, but most impotrant: mean enhancement missing!
+  double pxs = whisto_abs_sum*(1-epsilon);
+  //if integration with MAXOPT=0, then whisto is empty
+  if (whisto_abs_sum==0) {
+    m_effi = m_ssumenhabs/m_sncut/m_max;
+    m_effevperev = pow(m_ssumenh/m_ssumenhabs,2);//alpha_sign
+    return m_max;
+  }
   for (int i=first_filled_bin-1;i<last_filled_bin+1;i++) {
     //bin middle times count is added
     double w = exp(log(10.)*(p_whisto->Xmin()+(i-0.5)*p_whisto->BinSize()));
