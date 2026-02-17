@@ -602,7 +602,8 @@ double LF_VFF_FF::operator()
   }
   //the massless case 
   double massless = (1.-2.*z*(1.-z)*sct);
-  double longpol = 0.5;
+  if (p_ms->Mass2(m_flavs[0])) massless = (1.-1./3.*sct);
+  double longpol = 0.;
   if (mui2==0. && muj2==0. && muk2==0.) {
     double value = 2.0 * p_cf->Coupling(scale,0) * massless + p_cf->Coupling(scale,1) * longpol;
     return value * JFF(y,0.0,0.0,0.0,0.0);
