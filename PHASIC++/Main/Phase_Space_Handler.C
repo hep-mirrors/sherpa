@@ -105,6 +105,14 @@ Phase_Space_Handler::Differential(Process_Integrator *const process,
   }
   // phase space trigger, calculate and construct weights
   if (process->Process()->Trigger(p_lab)) {
+    if (process->Process()->GetSubevtList()) {
+      // Use Combined_Selector::RSTrigger for NLO - it returns the passed information
+      if (!process->Process()->Selector()->RSTrigger(process->Process()->GetSubevtList()))
+	return 0.0;
+    } else {
+      // for LO
+      if (!p_active->Process()->Selector()->Pass()) return 0.0;
+    }
     std::chrono::high_resolution_clock::time_point begin1 = std::chrono::high_resolution_clock::now();
     m_psweight = CalculatePS();
     std::chrono::high_resolution_clock::time_point end1 = std::chrono::high_resolution_clock::now();
