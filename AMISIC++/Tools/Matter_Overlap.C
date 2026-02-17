@@ -309,7 +309,7 @@ double Matter_Overlap::ComputeBmaxForVariation(size_t ivar) {
   ///////////////////////////////////////////////////////////////////////////
   // Compute bmax for a specific matter form variation using the same
   // algorithm as CalculateIntegral, but without modifying the permanent
-  // m_bmax member.  Temporarily switches m_matter_form_ivar and m_kradius,
+  // m_bmax member. Temporarily switches m_matter_form_ivar and m_kradius,
   // then restores them.
   ///////////////////////////////////////////////////////////////////////////
   if (m_dynamic) return m_bmax;
@@ -322,12 +322,11 @@ double Matter_Overlap::ComputeBmaxForVariation(size_t ivar) {
   SetKRadius(1.0);
 
   double minR = 1.e6;
-  if (ivar < m_r2_variations.size()) {
-    for (size_t i = 0; i < 4; i++) {
-      if (m_rnorm_variations[ivar][i] <= 0.) continue;
-      double r = sqrt(m_r2_variations[ivar][i]);
-      if (r > 0. && r < minR) minR = r;
-    }
+  size_t ivar_matter = (ivar < m_r2_variations.size()) ? ivar : 0;
+  for (size_t i = 0; i < 4; i++) {
+    if (m_rnorm_variations[ivar_matter][i] <= 0.) continue;
+    double r = sqrt(m_r2_variations[ivar_matter][i]);
+    if (r > 0. && r < minR) minR = r;
   }
   double bstep = minR / 100.;
 
@@ -354,8 +353,7 @@ double Matter_Overlap::ComputeBminForVariation(size_t ivar) const {
   ///////////////////////////////////////////////////////////////////////////
   if (m_dynamic || ivar >= m_r2_variations.size())
     return 0.00001 * sqrt(m_radius2[0]);
-  double r0 = sqrt(m_r2_variations[ivar][0]);
-  return 0.00001 * r0;
+  return 0.00001 * sqrt(m_r2_variations[ivar][0]);
 }
 
 void Matter_Overlap::Output(const double & check) {
