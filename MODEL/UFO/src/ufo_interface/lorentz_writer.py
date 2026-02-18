@@ -213,8 +213,9 @@ class LorentzWriter:
     def write_all(self, structs, ncores):
         structs = filter(lambda struct: _filter_lorentz(struct, self._nmax),
                          structs)
-        with multiprocessing.Pool(ncores) as pool:
-            pool.map(self.write, structs)
+        # minimal change: replace multiprocessing with simple loop
+        for struct in structs:
+            self.write(struct)
 
     def write(self, struct):
         progress(f"Calculating lorentz structure: {struct.name}")

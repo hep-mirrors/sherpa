@@ -117,8 +117,10 @@ class ParamCardWriter(object):
     def write_dep_param_block(self, lhablock):
         import cmath
         from .parameters import all_parameters
-        for parameter in all_parameters:
-            exec("%s = %s" % (parameter.name, parameter.value))
+        ns = { "cmath": cmath, "complexconjugate": lambda x: x.conjugate(), }
+        for par in all_parameters: # par.value must be a valid Python expression string 
+          code = f"{par.name} = {par.value}" 
+          exec(code, ns)
         text = "##  Not dependent paramater.\n"
         text += "## Those values should be edited following analytical the \n"
         text += "## analytical expression. Some generator could simply ignore \n"
