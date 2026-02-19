@@ -700,7 +700,7 @@ void Amisic::ApplyVariationWeights(ATOOLS::Blob * blob) {
   for(size_t ivar=0; ivar<m_n_variations; ++ivar) {
     const std::string name {"v" + std::to_string(ivar)};
     const double wgt = m_variation_weights[ivar];
-    wgt_map["MPI"][name] = wgt;
+    wgt_map["MPI+RECONNECTIONS"][name] = wgt;
   }
   ResetVariationWeights();
 }

@@ -70,43 +70,23 @@ Return_Value::code Reconnection_Handler::operator()(Blob_List *const blobs,
     blob = blobs->FindFirst(btp::Hard_Collision);
   auto &wgt_map = (*blob)["WeightsMap"]->Get<Weights_Map>();
 
-  const size_t n_variations = variation_weights.size();
-  const size_t n_mpi_variations = wgt_map["MPI"].Size() - 1;
+  const size_t n_rec_variations = variation_weights.size();
 
-  wgt_map["RECONNECTIONS"]["v0"] = variation_weights[0];
-  if (n_mpi_variations>0) wgt_map["MPI+RECONNECTIONS"]["v0"] = wgt_map["MPI"]["v0"] * variation_weights[0];
+  auto it = wgt_map.find("MPI+RECONNECTIONS");
+  const bool has_mpi = (it != wgt_map.end());
+  const size_t n_mpi_variations = has_mpi ? (it->second.Size() - 1) : 0;
 
-  const size_t n_combined = std::min(n_mpi_variations, n_variations);
-  for (size_t i=1; i<n_combined; ++i) {
+  const size_t n_max = std::max(n_mpi_variations, n_rec_variations);
+  auto& wgt_category = wgt_map["MPI+RECONNECTIONS"];
+  
+  for (size_t i = 0; i < n_max; ++i) {
     const std::string name = "v" + std::to_string(i);
-    wgt_map["MPI+RECONNECTIONS"][name] = wgt_map["MPI"][name] * variation_weights[i];
-  }
-  for (size_t i=n_combined==0 ? 1 : n_combined; i<n_variations; ++i) {
-    const std::string name = "v" + std::to_string(i);
-    wgt_map["RECONNECTIONS"][name] = variation_weights[i];
+    const double mpi_wgt = (i < n_mpi_variations) ? wgt_category[name] : 1.;
+    const double rec_wgt = (i < n_rec_variations) ? variation_weights[i] : 1.;
+    wgt_category[name] = mpi_wgt * rec_wgt;
   }
 
-  if (n_mpi_variations>0) {
-    const double tmp_mpi_nominal = wgt_map["MPI"]["v0"];
-    std::vector<double> tmp_mpi_weights;
-    if(n_mpi_variations > n_variations) {
-      tmp_mpi_weights.resize(n_mpi_variations - n_variations, 1.0);
-      for (size_t i=n_variations; i<n_mpi_variations; ++i) {
-        const std::string name = "v" + std::to_string(i);
-        tmp_mpi_weights[i - n_variations] = wgt_map["MPI"][name];
-      }
-    }
-    wgt_map.erase("MPI");
-    wgt_map["MPI"]["v0"] = tmp_mpi_nominal;
-    if (n_mpi_variations > n_variations) {
-      for (size_t i=n_variations; i<n_mpi_variations; ++i) {
-        const std::string name = "v" + std::to_string(i);
-        wgt_map["MPI"][name] = tmp_mpi_weights[i - n_variations];
-      }
-    }
-  }
-
-  p_reconnector->ResetVariationWeights(n_variations);
+  p_reconnector->ResetVariationWeights(n_rec_variations);
 
   return Return_Value::Success; 
 }
