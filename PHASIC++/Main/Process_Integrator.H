@@ -98,7 +98,18 @@ namespace PHASIC {
     void SetMax(const double max);
     void SetTotal(const int mode=1);
 
-    void ResetMax(int);  
+    //ResetMax: sets m_smax and m_max. Additionally, it fills value-tuple m_(s)max, m_n, m_ssum into m_vsmax, m_vsn, m_vsum, which are written out into the xsec file
+    //flag: 0-2: append current values m_(s)max, m_n, m_ssum into m_vsmax, m_vsn, m_vsum
+    //flag=0: sets m_max=m_vsmax.back(); empties m_vsmax, m_vsn, m_vsum and only stores current values,
+    //                  with m_vsmax.back = m_max if first tuple, else m_vsmax.back = max(m_vsmax.back, m_smax)
+    //  --> called between "full optimization" and "integration"
+    //flag=1: sets m_max=0; m_vsmax.back=m_smax
+    //  --> called between "full optimization" and "integration", between above and this is only psh->EndOptimize()
+    //flag=2: sets m_max=max(m_vsmax) and m_smax=0; m_vsmax.back=m_smax; only store last 4 value-tuples
+    //  --> called after each optimization cycle, but before aboves calls
+    //flag=3: sets m_max=0; empties m_vsmax, m_vsn, m_vsum
+    //  --> never called
+    void ResetMax(const int flag);
     void OptimizeSubResult(const double &s2);
 
     //void SetPSHandler(const std::shared_ptr<Phase_Space_Handler> &pshandler);
