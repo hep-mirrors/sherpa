@@ -499,14 +499,14 @@ double NLO_Base::CalculateRealVirtual(Vec4D k, int fsrcount) {
 	p_nlodipoles->p_yfsFormFact->p_virt = p_realvirt->p_loop_me;
 	double subloc = p_nlodipoles->CalculateRealVirtualSubEps(k);
 	yfspole = p_nlodipoles->Get_E1();
-	PRINT_VAR(m_ISRPhotons.size());
+	// PRINT_VAR(m_ISRPhotons.size());
 	// double aB = p_nlodipoles->CalculateRealSub(k)*m_oneloop;
 	const double aB = p_nlodipoles->CalculateRealSub(k)*m_oneloop;//-0.5*subloc*subloc;
 	// PRINT_VAR()
-	// if(aB<0) {
-		PRINT_VAR(m_oneloop);
-		PRINT_VAR(m_oneloop/m_born/m_alpi);
-		PRINT_VAR(m_born/m_oneloop);
+	// // if(aB<0) {
+	// 	PRINT_VAR(m_oneloop);
+	// 	PRINT_VAR(m_oneloop/m_born/m_alpi);
+	// 	PRINT_VAR(m_born/m_oneloop);
 	// }
 	// const double aB = subloc* p_virt->Calc(m_plab, m_born);;//m_oneloop;//CalculateVirtual();//*p_realvirt->m_factor;
 	// PRINT_VAR(0.278318/m_rescale_alpha);
@@ -549,7 +549,7 @@ double NLO_Base::CalculateRealVirtual(Vec4D k, int fsrcount) {
 	// PRINT_VAR(subb);
 	// // PRINT_VAR(r*flux-aB/m_rescale_alpha);
 	// PRINT_VAR((r-aB/m_rescale_alpha)/subb);
-	PRINT_VAR((r/aB/m_rescale_alpha));
+	// PRINT_VAR((r/aB/m_rescale_alpha));
 	// PRINT_VAR((r/aB/subb/m_oneloop));
 	// PRINT_VAR((r/subloc/m_rescale_alpha));
 	// PRINT_VAR((r/subloc/aB/m_rescale_alpha));
