@@ -36,6 +36,7 @@ Process_Integrator::Process_Integrator(Process_Base *const proc):
   m_writeout(false),
   p_whisto(NULL)
 {
+  m_sw[0]=m_sw[1]=std::numeric_limits<double>::quiet_NaN();
   m_colorscheme=cls::sum;
   m_helicityscheme=hls::sum;
 }
@@ -67,22 +68,22 @@ Process_Integrator::~Process_Integrator()
   if (p_whisto!=NULL) delete p_whisto;
 }
 
-double Process_Integrator::SelectionWeight(const int mode) const
+double Process_Integrator::SetSelectionWeight(const int mode)
 {
   if (!p_proc->IsGroup()) {
-    if (mode!=0) return m_max*m_enhancefac;
-    if (m_n+m_sn==0.0) return -1.0;
-    if (m_totalxs==0.0) return 0.0;
+    if (mode!=0) return m_sw[mode]=m_max*m_enhancefac;
+    if (m_n+m_sn==0.0) return m_sw[mode]=-1.0;
+    if (m_totalxs==0.0) return m_sw[mode]=0.0;
     double selweight = m_swmode==0 ?
       sqrt((m_n+m_sn-1) * sqr(TotalVar()) + sqr(TotalResult())) :
       dabs(m_totalxs);
-    return selweight*m_enhancefac;
+    return m_sw[mode]=selweight*m_enhancefac;
   }
   double sw(0.0);
   for (size_t i(0);i<p_proc->Size();++i) {
     sw+=dabs((*p_proc)[i]->Integrator()->SelectionWeight(mode));
   }
-  return sw;
+  return m_sw[mode]=sw;
 }
 
 double Process_Integrator::Sigma2() const
@@ -309,6 +310,8 @@ void Process_Integrator::SetTotal(const int mode)
                 <<om::red<<(100.*dabs(m_totalxs/m_max))<<" %"<<om::reset<<std::endl;
     }
   }
+  SetSelectionWeight(0);
+  SetSelectionWeight(1);
 }
 
 double Process_Integrator::GetMaxEps(double epsilon)
@@ -357,7 +360,7 @@ void Process_Integrator::SetUpEnhance(const int omode)
 {
   if (m_maxeps!=0.0 && !p_proc->IsGroup()) {
     double max(GetMaxEps(m_maxeps));
-    if (omode || msg->LevelIsTracking())
+    if (omode || p_proc->Parent()==p_proc)
       msg_Info()<<"  reduce max for "<<p_proc->ResultsName()<<" to "
 		<<max/Max()<<" ( eps = "<<m_maxeps<<" -> exp. eff "
                 <<dabs(m_totalxs/max)<<" ) "<<std::endl;

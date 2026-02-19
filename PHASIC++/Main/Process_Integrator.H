@@ -54,7 +54,7 @@ namespace PHASIC {
 
     double m_max, m_totalxs, m_totalsum, m_totalsumsqr, m_totalerr;
     double m_ssum, m_ssumsqr, m_smax, m_ssigma2, m_wmin;
-    double m_mssum, m_mssumsqr, m_msn;
+    double m_mssum, m_mssumsqr, m_msn, m_sw[2];
 
     std::vector<double> m_vsmax, m_vsum;
     std::vector<long unsigned int> m_vsn;
@@ -127,7 +127,7 @@ namespace PHASIC {
     void SetMaxEpsilon(const double &maxeps);
     void SetRSEnhanceFactor(const double &rsfac);
 
-    double SelectionWeight(const int mode) const;
+    double SetSelectionWeight(const int mode);
 
     void MPISync(const int mode=0);
     void MPICollect(std::vector<double> &sv,std::vector<double> &mv,size_t &i);
@@ -156,6 +156,8 @@ namespace PHASIC {
     inline double TotalXS() const    { return m_totalxs;  }
     inline double TotalError() const { return m_totalerr; }
     inline double Max() const        { return m_max;      }
+
+    inline double SelectionWeight(const int mode) const { return m_sw[mode]; }
 
     inline double ISRThreshold() const      { return m_threshold;   }
     inline double EnhanceFactor() const     { return m_enhancefac;  }
