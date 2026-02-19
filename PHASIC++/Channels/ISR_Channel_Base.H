@@ -15,7 +15,7 @@ namespace PHASIC {
       return (s2>0.0?s2:s1);
     }
   public:
-    ISR_Channel_Base(ATOOLS::Integration_Info *info) {}
+    ISR_Channel_Base(ATOOLS::Integration_Info *info): p_rans(NULL) {}
     ~ISR_Channel_Base() {
       if (p_vegas) delete p_vegas;
       if (p_rans)  delete[] p_rans;
