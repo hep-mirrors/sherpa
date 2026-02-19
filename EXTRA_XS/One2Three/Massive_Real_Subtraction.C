@@ -153,12 +153,6 @@ double Massive_Real_Subtraction::getColourFactor(const PHASIC::Color_Integrator*
 
 
 // in the following there are some helper functions defined for the real subtraction
-static double v_pq(ATOOLS::Vec4<double> p, ATOOLS::Vec4<double> q){
-  double pq = p * q;
-  return std::sqrt(1-(p*p * q*q)/(pq * pq));
-}
-
-
 static double z_i_tilde(ATOOLS::Vec4<double> p_i, ATOOLS::Vec4<double> p_j, ATOOLS::Vec4<double> p_k){
   return p_i * p_k / (p_i * p_k + p_j * p_k);
 }

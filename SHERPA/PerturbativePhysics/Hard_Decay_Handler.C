@@ -869,19 +869,14 @@ void Hard_Decay_Handler::TreatInitialBlob(ATOOLS::Blob* blob,
         static size_t decay_ids[7] = {1, 2, 4, 8, 16, 32, 64};
 
         const std::vector<Flavour>& flav_vec = NLO_dc->Flavs();
-
-        // neuen Slot anlegen (hinten anhängen)
         m_flavour_sets.emplace_back();
         auto& dst = m_flavour_sets.back();
-
         dst.clear();
         dst.reserve(flav_vec.size() + LO_flav.size());
         dst.insert(dst.end(), flav_vec.begin(), flav_vec.end());
         dst.insert(dst.end(), LO_flav.begin(), LO_flav.end());
 
         Flavour* newfls = dst.data();
-
-        //const Flavour* newfls = const_cast<Flavour*>(flav_vec.data());
 
         Vec4D* newmoms = new Vec4D[4 + number_LO_part];
         for (int j = 0; j < 4; ++j) {
@@ -907,21 +902,14 @@ void Hard_Decay_Handler::TreatInitialBlob(ATOOLS::Blob* blob,
         }
 
         const std::vector<Flavour>& flav_vec = NLO_dc->Sub_Flavs();
-
-        // neuen Slot anlegen (hinten anhängen)
         m_flavour_sets.emplace_back();
         auto& dst = m_flavour_sets.back();
-
         dst.clear();
         dst.reserve(flav_vec.size() + LO_flav.size());
         dst.insert(dst.end(), flav_vec.begin(), flav_vec.end());
         dst.insert(dst.end(), LO_flav.begin(), LO_flav.end());
 
         Flavour* newfls = dst.data();
-
-        //const std::vector<Flavour>& flav_vec = NLO_dc->Sub_Flavs();
-        //const Flavour* newfls = const_cast<Flavour*>(flav_vec.data());
-
 
         Vec4D* newmoms = new Vec4D[3 + number_LO_part];
         for (int j = 0; j < 3; ++j) {
@@ -930,13 +918,6 @@ void Hard_Decay_Handler::TreatInitialBlob(ATOOLS::Blob* blob,
         for(int j = 0; j < number_LO_part; ++j){
           newmoms[j+3] = LO_mom[j];
         }
-
-        //Vec4D* newmoms = new Vec4D[newn];
-        //for (int j = 0; j < newn; ++j) {
-        //  newmoms[j] = dipole_mom[j];
-        //}
-
-
 
         std::array<int, 3> dipole_indices;
         dipole_indices = NLO_dc->GetDiagrams()[i]-> getDipoleIndices();
