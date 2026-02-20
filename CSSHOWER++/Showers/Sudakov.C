@@ -171,7 +171,7 @@ void Sudakov::InitSplittingFunctions(MODEL::Model_Base *md,const int kfmode)
   onia_shower["Enable_OctetMesonSplitting"].SetDefault(true);
   bool quark_splitting_o = onia_shower["Enable_OctetMesonSplitting"].Get<bool>();
   onia_shower["Enhance"].SetDefault(1.0);
-  g_efac = onia_shower["Enhance"].Get<double>();
+  tr_efac = onia_shower["Enhance"].Get<double>();
 
   AddDiQuarkSplittingFunctions(md, kfmode);
   if(quark_splitting_s||enable_all){AddQuarkoniaSplittingFunctions(md, kfmode);; std::cout<< " QuarkoniaSingletSplitting added."<<std::endl;}
@@ -340,12 +340,7 @@ void Sudakov::AddOctetMesonSplittingFunctions(Model_Base *md,
   Kabbala g3("g_3", sqrt(4. * M_PI * md->ScalarConstant("alpha_S")));
   Kabbala cpl0 = g3 * Kabbala("i", Complex(0., 1.));
   list<kf_code> octetmesons = {
-      kf_1S0_c_8_eta_c,  kf_1S0_c_8_psi_2S, kf_1S0_c_8_psi_2S, kf_3S1_c_8_J_psi_1S, kf_3S1_c_8_psi_2S,
-      kf_3P0_c_8_J_psi_1S, kf_3P1_c_8_J_psi_1S, kf_3P2_c_8_J_psi_1S,
-      kf_3S1_c_8_chi_c0_1P, kf_3S1_c_8_chi_c1_1P, kf_3S1_c_8_chi_c2_1P,
-      kf_1S0_b_8_eta_b,      kf_3S1_b_8_Upsilon_1S, kf_3S1_b_8_Upsilon_2S,
-      kf_3P0_b_8_Upsilon_1S,  kf_3P1_b_8_Upsilon_1S,
-      kf_3P2_b_8_Upsilon_1S}; //, kf_chi_b2_3P_oct};
+      kf_1S0_c_8_eta_c,  kf_1S0_c_8_J_psi_1S, kf_1S0_c_8_psi_2S}; //, kf_chi_b2_3P_oct};
   for (list<kf_code>::iterator kfit = octetmesons.begin();
        kfit != octetmesons.end(); kfit++) {
     Flavour flav(*kfit);
@@ -376,11 +371,11 @@ void Sudakov::AddGluonThresholds(Model_Base *md) {
   Running_AlphaS as = md->ScalarConstant("alpha_S");
   double mc = ATOOLS::Flavour(kf_c).Mass(true);
   double mb = ATOOLS::Flavour(kf_b).Mass(true);
-  list<kf_code> octetvectors = {kf_3S1_c_8_J_psi_1S, kf_3S1_c_8_psi_2S, kf_3S1_c_8_chi_c0_1P, kf_3S1_c_8_chi_c1_1P, kf_3S1_c_8_chi_c2_1P
+  list<kf_code> c_octetvectors = {kf_3S1_c_8_J_psi_1S, kf_3S1_c_8_psi_2S, kf_3S1_c_8_chi_c0_1P, kf_3S1_c_8_chi_c1_1P, kf_3S1_c_8_chi_c2_1P
   };
   ST_Set *stset;
   m_stmap[Flavour(kf_gluon)] = stset = new ST_Set;
-  map<kf_code, double> LDME = {
+  map<kf_code, double> cLDME = {
       // ldmes from FO tune. ------- old -> numerical LDME [GeV^3] from ph/9507398, PhysRevD.50.3176
       {kf_3S1_c_8_J_psi_1S,  ldme_3S1_c_8_J_psi_1S},// 1.5E-02 / sqr(M_PI)},
       {kf_3S1_c_8_psi_2S,    ldme_3S1_c_8_psi_2S},//4.3E-03 / sqr(M_PI)},
@@ -388,10 +383,10 @@ void Sudakov::AddGluonThresholds(Model_Base *md) {
       {kf_3S1_c_8_chi_c1_1P, ldme_3S1_c_8_chi_c1_1P},//2./3/M_PI * 3 * 3E-03},
       {kf_3S1_c_8_chi_c2_1P, ldme_3S1_c_8_chi_c2_1P}};//100*2./3/M_PI * 5 * 3E-03}};
   double arg;
-  for (list<kf_code>::iterator octit = octetvectors.begin();
-       octit != octetvectors.end(); octit++) {
+  for (list<kf_code>::iterator octit = c_octetvectors.begin();
+       octit != c_octetvectors.end(); octit++) {
     arg = 0.5 * (M_PI * as(sqr(2*mc)) / (24 * pow(mc, 3))) *
-          LDME[*octit] * (1. - (11./6. * v8_2))*g_efac; // SDME for g -> ccb (3S_1)_8
+          cLDME[*octit] * (1. - (11./6. * v8_2))*tr_efac; // SDME for g -> ccb (3S_1)_8
     stset->insert(
         One2One_Transition_Base(Flavour(kf_gluon), Flavour(*octit), arg, 1));
   }
@@ -399,12 +394,29 @@ void Sudakov::AddGluonThresholds(Model_Base *md) {
   //     Flavour(kf_gluon), Flavour(kf_J_psi_1S),
   //       0.5 * 10E5 * 8.28E-04 * pow(as(sqr(2*mc))/mc,3)*ldme_J_psi_1S, 1));
   //std::cout<<"-----alphas(2mc) "<<as(2*mc)<<" as(sqr(2*mc)): "<<as(sqr(2*mc))<<std::endl;
-  stset->insert(One2One_Transition_Base(
-      Flavour(kf_gluon), Flavour(kf_3S1_b_8_Upsilon_1S),
-      0.5 * (M_PI * as(2 * mb) / (24 * pow(mb, 3))) * (0.0477), 1));
-  stset->insert(One2One_Transition_Base(
-      Flavour(kf_gluon), Flavour(kf_3S1_b_8_Upsilon_2S),
-      0.5 * (M_PI * as(2 * mb) / (24 * pow(mb, 3))) * (0.121), 1));
+  // list<kf_code> octetvectorsb = {kf_3S1_b_8_Upsilon_1S, kf_3S1_b_8_Upsilon_2S, kf_3S1_b_8_Upsilon_3S, kf_3S1_b_8_chi_b0_1P, kf_3S1_b_8_chi_b0_2P,
+  //   kf_3S1_b_8_chi_b1_1P, kf_3S1_b_8_chi_b1_2P, kf_3S1_b_8_chi_b2_1P, kf_3S1_b_8_chi_b2_2P};
+  // map<kf_code, double> bLDME = {
+  //     // ldmes from FO tune. ------- old -> numerical LDME [GeV^3] from ph/9507398, PhysRevD.50.3176
+  //     {kf_3S1_c_8_J_psi_1S,  ldme_3S1_c_8_J_psi_1S},// 1.5E-02 / sqr(M_PI)},
+  //     {kf_3S1_c_8_psi_2S,    ldme_3S1_c_8_psi_2S},//4.3E-03 / sqr(M_PI)},
+  //     {kf_3S1_c_8_chi_c0_1P, ldme_3S1_c_8_chi_c0_1P},//2./3/M_PI * 1 * 3E-03},
+  //     {kf_3S1_c_8_chi_c1_1P, ldme_3S1_c_8_chi_c1_1P},//2./3/M_PI * 3 * 3E-03},
+  //     {kf_3S1_c_8_chi_c2_1P, ldme_3S1_c_8_chi_c2_1P}};//100*2./3/M_PI * 5 * 3E-03}};
+  // double arg;
+  // for (list<kf_code>::iterator octit = octetvectorsb.begin();
+  //      octit != octetvectorsb.end(); octit++) {
+  //   arg = 0.5 * (M_PI * as(sqr(2*mb)) / (24 * pow(mb, 3))) *
+  //         bLDME[*octit] * (1. - (11./6. * v8_2))*tr_efac; // SDME for g -> ccb (3S_1)_8
+  //   stset->insert(
+  //       One2One_Transition_Base(Flavour(kf_gluon), Flavour(*octit), arg, 1));
+  // }
+  // stset->insert(One2One_Transition_Base(
+  //     Flavour(kf_gluon), Flavour(kf_3S1_b_8_Upsilon_1S),
+  //     0.5 * (M_PI * as(sqr(2 * mb)) / (24 * pow(mb, 3))) * (0.0477)*tr_efac, 1));
+  // stset->insert(One2One_Transition_Base(
+  //     Flavour(kf_gluon), Flavour(kf_3S1_b_8_Upsilon_2S),
+  //     0.5 * (M_PI * as(sqr(2 * mb)) / (24 * pow(mb, 3))) * (0.121*tr_efac), 1));
 
   // stset->insert(One2One_Transition_Base(
   //     Flavour(kf_gluon), Flavour(kf_Upsilon_1S_oct),
@@ -608,6 +620,7 @@ bool Sudakov::Generate(Parton* split, double kt2win)
     p_spect=spect;
     p_split->SetSpect(p_spect);
     p_selected=selected;
+    if(p_selected->GetFlavourB().IsOctetMeson()) m_weight *= tr_efac;
     msg_IODebugging()<<"selected "<<p_spect<<", t = "<<m_st
 		     <<", y = "<<m_sy<<", z = "<<m_sz<<", phi = "<<m_sphi<<"\n";
   }
@@ -750,17 +763,11 @@ int Sudakov::Generate(Parton *split,Parton *spect,
                           << "Invariant mass = " << (p_split->Momentum() + p_spect->Momentum()).Abs2() 
                           << " > " << sqr(transit->OutMass() + sqrt(Max(0., p_spect->Momentum().Abs2())))
                           << ".\n";
-          t = transit->OutMass2(); // need to increase a bit after
-                                   // transition is done.
           z = 1;
           phi = 0.;
           split->SetSpect(p_spect);
           p_selected = (Splitting_Function_Base *)(&*transit);
           split->SetTransition(true); // make this a transition tag.
-          double orig_P = 1. - exp(-tr_phw * transit->SudArg()/g_efac);
-          double enh_P = 1. - exp(-tr_phw * transit->SudArg());
-          // std::cout<<"----- Original probability: "<<(orig_P/enh_P)<<"\n"; 
-          m_weight = orig_P/enh_P;
           return true;
         }
       }

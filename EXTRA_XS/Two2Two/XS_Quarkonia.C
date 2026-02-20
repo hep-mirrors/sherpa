@@ -353,6 +353,8 @@ void LoadLDME()
   auto onia_ldme = onia["LDME"];
   auto singlet_ldme = onia_ldme["Singlets"];
   auto octet_ldme  = onia_ldme["Octets"];
+  octet_ldme["3S1_443"].SetDefault(3.430E-03);
+  octet_ldme["3S1_100443"].SetDefault(2.628E-03);
 
   auto load = [&](auto& group, kf_code kfc, const char* key)
   {
@@ -1604,7 +1606,7 @@ double XS_gg_g1S0_oct::operator()(const Vec4D_Vector& mom)
 bool XS_gg_g1S0_oct::SetColours(const Vec4D_Vector& mom) 
 {
   size_t bit = ran->Get()<0.5 ? 0 : 1;
-  size_t cross = ran->Get()<0.5 ? 0 : 1;
+  size_t cross = 0;//ran->Get()<0.5 ? 0 : 1;
   if (cross==0) {
     m_colours[0][bit] = m_colours[m_S][bit] = Flow::Counter();
     m_colours[0][1-bit] = m_colours[1][bit] = Flow::Counter();
@@ -1859,6 +1861,7 @@ XS_gg_g3S1_oct::XS_gg_g3S1_oct(const External_ME_Args& args):
   LDME = GetLDME(fl[m_S].Kfcode());
   std::cout<<"LDME for "<<fl[m_S].Kfcode()<<" is set at: "<< LDME<<"\n";
   m_alphaS = MODEL::s_model->ScalarConstant("alpha_S");
+  m_pref = pow(4.*M_PI*m_alphaS,3)*CouplingFactor(3,0);
   
 }
 
@@ -1873,8 +1876,6 @@ double XS_gg_g3S1_oct::operator()(const Vec4D_Vector& mom)
   double heq1 = sqr(s)*(sqr(sM2)+pow(t,4)+pow(u,4)+2.*sqr(M2)*sqr(t*u/s));
   double nom = 27.*(s*t+t*u+u*s)-19.*sqr(M2);
   double dnom = sM2*sM2*tM2*uM2;
-  m_pref = pow(4.*M_PI*m_alphaS,3)*CouplingFactor(3,0);
-  // std::cout<<"LDME = "<<LDME<< " all = " << -1./(144.*pow(m_mass,3))*m_pref*(heq0+heq1)*nom/dnom*LDME<< std::endl;
   return -1./(144.*pow(m_mass,3))*m_pref*(heq0+heq1)*nom/dnom*LDME;
 }
 
