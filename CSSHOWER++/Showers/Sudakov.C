@@ -134,7 +134,19 @@ void Sudakov::InitSplittingFunctions(MODEL::Model_Base *md,const int kfmode)
   ldme_3S1_c_8_psi_2S = octet_ldme["3S1_100443"].Get<double>();
   ldme_3S1_c_8_chi_c1_1P = octet_ldme["3S1_20443"].Get<double>();
   ldme_3S1_c_8_chi_c2_1P = octet_ldme["3S1_445"].Get<double>();
-  //BOTTOM
+  
+   //BOTTOM
+
+  ldme_3S1_b_8_chi_b0_1P = 0;
+  ldme_3S1_b_8_chi_b0_2P = 0;
+  ldme_3S1_b_8_chi_b1_1P = 0;
+  ldme_3S1_b_8_chi_b1_2P = 0;
+  ldme_3S1_b_8_chi_b2_1P = 0;
+  ldme_3S1_b_8_chi_b2_2P = 0;
+  ldme_3S1_b_8_Upsilon_1S = 0;
+  ldme_3S1_b_8_Upsilon_2S = 0;
+  ldme_3S1_b_8_Upsilon_3S = 0;
+
 
   //SINGLETS
   auto singlet_ldme = onia_ldme["Singlets"];
@@ -393,58 +405,28 @@ void Sudakov::AddGluonThresholds(Model_Base *md) {
   // stset->insert(One2One_Transition_Base(
   //     Flavour(kf_gluon), Flavour(kf_J_psi_1S),
   //       0.5 * 10E5 * 8.28E-04 * pow(as(sqr(2*mc))/mc,3)*ldme_J_psi_1S, 1));
-  //std::cout<<"-----alphas(2mc) "<<as(2*mc)<<" as(sqr(2*mc)): "<<as(sqr(2*mc))<<std::endl;
-  // list<kf_code> octetvectorsb = {kf_3S1_b_8_Upsilon_1S, kf_3S1_b_8_Upsilon_2S, kf_3S1_b_8_Upsilon_3S, kf_3S1_b_8_chi_b0_1P, kf_3S1_b_8_chi_b0_2P,
+
+
+  // list<kf_code> b_octetvectors = {kf_3S1_b_8_Upsilon_1S, kf_3S1_b_8_Upsilon_2S, kf_3S1_b_8_Upsilon_3S, kf_3S1_b_8_chi_b0_1P, kf_3S1_b_8_chi_b0_2P,
   //   kf_3S1_b_8_chi_b1_1P, kf_3S1_b_8_chi_b1_2P, kf_3S1_b_8_chi_b2_1P, kf_3S1_b_8_chi_b2_2P};
   // map<kf_code, double> bLDME = {
-  //     // ldmes from FO tune. ------- old -> numerical LDME [GeV^3] from ph/9507398, PhysRevD.50.3176
-  //     {kf_3S1_c_8_J_psi_1S,  ldme_3S1_c_8_J_psi_1S},// 1.5E-02 / sqr(M_PI)},
-  //     {kf_3S1_c_8_psi_2S,    ldme_3S1_c_8_psi_2S},//4.3E-03 / sqr(M_PI)},
-  //     {kf_3S1_c_8_chi_c0_1P, ldme_3S1_c_8_chi_c0_1P},//2./3/M_PI * 1 * 3E-03},
-  //     {kf_3S1_c_8_chi_c1_1P, ldme_3S1_c_8_chi_c1_1P},//2./3/M_PI * 3 * 3E-03},
-  //     {kf_3S1_c_8_chi_c2_1P, ldme_3S1_c_8_chi_c2_1P}};//100*2./3/M_PI * 5 * 3E-03}};
-  // double arg;
-  // for (list<kf_code>::iterator octit = octetvectorsb.begin();
-  //      octit != octetvectorsb.end(); octit++) {
+  //     // ldmes from FO tune.
+  //     {kf_3S1_b_8_Upsilon_1S,  ldme_3S1_b_8_Upsilon_1S},
+  //     {kf_3S1_b_8_Upsilon_2S,  ldme_3S1_b_8_Upsilon_2S},
+  //     {kf_3S1_b_8_Upsilon_3S,  ldme_3S1_b_8_Upsilon_3S},
+  //     {kf_3S1_b_8_chi_b0_1P,   ldme_3S1_b_8_chi_b0_1P},
+  //     {kf_3S1_b_8_chi_b0_2P,   ldme_3S1_b_8_chi_b0_2P},
+  //     {kf_3S1_b_8_chi_b1_1P,   ldme_3S1_b_8_chi_b1_1P},
+  //     {kf_3S1_b_8_chi_b1_2P,   ldme_3S1_b_8_chi_b1_2P},
+  //     {kf_3S1_b_8_chi_b2_1P,   ldme_3S1_b_8_chi_b2_1P},
+  //     {kf_3S1_b_8_chi_b2_2P,   ldme_3S1_b_8_chi_b2_2P}};
+  // for (list<kf_code>::iterator octit = b_octetvectors.begin();
+  //      octit != b_octetvectors.end(); octit++) {
   //   arg = 0.5 * (M_PI * as(sqr(2*mb)) / (24 * pow(mb, 3))) *
-  //         bLDME[*octit] * (1. - (11./6. * v8_2))*tr_efac; // SDME for g -> ccb (3S_1)_8
+  //         bLDME[*octit] * tr_efac; // SDME for g -> ccb (3S_1)_8
   //   stset->insert(
   //       One2One_Transition_Base(Flavour(kf_gluon), Flavour(*octit), arg, 1));
   // }
-  // stset->insert(One2One_Transition_Base(
-  //     Flavour(kf_gluon), Flavour(kf_3S1_b_8_Upsilon_1S),
-  //     0.5 * (M_PI * as(sqr(2 * mb)) / (24 * pow(mb, 3))) * (0.0477)*tr_efac, 1));
-  // stset->insert(One2One_Transition_Base(
-  //     Flavour(kf_gluon), Flavour(kf_3S1_b_8_Upsilon_2S),
-  //     0.5 * (M_PI * as(sqr(2 * mb)) / (24 * pow(mb, 3))) * (0.121*tr_efac), 1));
-
-  // stset->insert(One2One_Transition_Base(
-  //     Flavour(kf_gluon), Flavour(kf_Upsilon_1S_oct),
-  //     0.5 * (M_PI * as(2 * mb) / (24 * pow(mb, 3))) * (305.0E-03), 1)); //
-  //     this will capture almost all Y(1S) production but it's a guess
-  
-  // stset->insert(One2One_Transition_Base(
-  //     Flavour(kf_gluon), Flavour(kf_3S1_b_8_Upsilon_1S),
-  //     0.5 * (M_PI * as(2 * mb) / (24 * pow(mb, 3))) * (228.0E-03), 1));
-  // stset->insert(One2One_Transition_Base(
-  //     Flavour(kf_gluon), Flavour(kf_3S1_b_8_Upsilon_2S),
-  //     0.5 * (M_PI * as(2 * mb) / (24 * pow(mb, 3))) * (119.0E-03), 1));
-  
-  // stset->insert(One2One_Transition_Base(
-  //     Flavour(kf_gluon), Flavour(kf_Upsilon_3S_oct),
-  //     0.5 * (M_PI * as(2 * mb) / (24 * pow(mb, 3))) * (39.0E-03), 1));
-  // stset->insert(
-  //     One2One_Transition_Base(Flavour(kf_gluon), Flavour(kf_chi_b1_1P_oct),
-  //     0.5 *
-  //         (M_PI * as(2 * mb) / (24 * pow(mb, 3))) * (9.4E-03), 1));
-  // stset->insert(
-  //     One2One_Transition_Base(Flavour(kf_gluon), Flavour(kf_chi_b1_2P_oct),
-  //     0.5 *
-  //         (M_PI * as(2 * mb) / (24 * pow(mb, 3))) * (10.9E-03), 1));
-  // stset->insert(
-  //     One2One_Transition_Base(Flavour(kf_gluon), Flavour(kf_chi_b1_3P_oct),
-  //     0.5 *
-  //         (M_PI * as(2 * mb) / (24 * pow(mb, 3))) * (6.9E-03), 1));
 }
 
 void Sudakov::SetCoupling(Model_Base *md, const double &k0sqi,

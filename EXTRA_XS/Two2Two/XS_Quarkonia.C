@@ -1606,7 +1606,7 @@ double XS_gg_g1S0_oct::operator()(const Vec4D_Vector& mom)
 bool XS_gg_g1S0_oct::SetColours(const Vec4D_Vector& mom) 
 {
   size_t bit = ran->Get()<0.5 ? 0 : 1;
-  size_t cross = 0;//ran->Get()<0.5 ? 0 : 1;
+  size_t cross = ran->Get()<0.5 ? 0 : 1;
   if (cross==0) {
     m_colours[0][bit] = m_colours[m_S][bit] = Flow::Counter();
     m_colours[0][1-bit] = m_colours[1][bit] = Flow::Counter();
