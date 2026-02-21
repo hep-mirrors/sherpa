@@ -64,7 +64,7 @@ void Massive_Real_Subtraction_Term1::Calculate_mapped_momenta(
   Vec4<double> p_ij = p_ij_tilde(input[1], input[2], input[3]); // input[3] is the spectator
   Vec4<double> Q = input[1] + input[2] + input[3];              // total outgoing momenta
   Vec4<double> p_k = Q - p_ij;                        // spectator momentum
-  output.push_back(input[0]);
+  output.insert(output.begin(), input[0]);     // put incoming particle to front
   output.push_back(p_ij);
   output.push_back(p_k);
 }

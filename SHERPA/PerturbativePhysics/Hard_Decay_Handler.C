@@ -870,9 +870,11 @@ void Hard_Decay_Handler::TreatInitialBlob(ATOOLS::Blob* blob,
         auto& dst = m_flavour_sets.back();
         dst.clear();
         dst.reserve(7);
-        Vec4D* newmoms = new Vec4D[7];
+        m_momentum_sets.emplace_back();
+        auto& d_newmoms = m_momentum_sets.back();
+        d_newmoms.clear();
+        d_newmoms.reserve(7);
         
-        int mom_counter(0);
         for (size_t l = 0; l < blob->NOutP(); ++l) {
           const ATOOLS::Particle* op = blob->ConstOutParticle(l);
           Blob* out_blob = op->DecayBlob();
@@ -881,12 +883,17 @@ void Hard_Decay_Handler::TreatInitialBlob(ATOOLS::Blob* blob,
             Particle* outPart = out_blob -> GetParticle(m);
             const Vec4D mom = outPart->Momentum();
             const Flavour flav = outPart->Flav();
-            dst.push_back(flav);
-            newmoms[mom_counter] = mom;
-            mom_counter++;
+            if(m == 0) {
+              dst.insert(dst.begin(), flav);
+              d_newmoms.insert(d_newmoms.begin(), mom);
+            } else {
+              dst.push_back(flav);
+              d_newmoms.push_back(mom);
+            }
           }
         } 
         Flavour* newfls = dst.data();
+        Vec4D* newmoms = d_newmoms.data();
 
         // Constructor: (n, id_ptr, fl_ptr, mom_ptr, i, j, k)
         NLO_subevt *newsub(new NLO_subevt(newn, decay_ids, newfls, newmoms, 0, 0, 0)); 
@@ -929,22 +936,28 @@ void Hard_Decay_Handler::TreatInitialBlob(ATOOLS::Blob* blob,
             const Vec4D mom = outPart->Momentum();
             const Flavour flav = outPart->Flav();
             if(!nlo_blob){
-              dst.push_back(flav);
-              d_newmoms.push_back(mom);
+              if(m == 0) {
+                dst.insert(dst.begin(), flav);
+                d_newmoms.insert(d_newmoms.begin(), mom);
+              } else {
+                dst.push_back(flav);
+                d_newmoms.push_back(mom);
+              }
             } else{
               if(!(flav.IDName() == "G")){ // skip gluon
-                dst.push_back(flav);
+                if(m == 0) {
+                  dst.insert(dst.begin(), flav);
+                } else {
+                  dst.push_back(flav);
+                }
               }
               nlo_momenta.push_back(mom);
-              //d_newmoms.push_back(Vec4D(10.0, 1.0, 2.0, 3.0));
             }
           }
           if(nlo_blob){
             S_diag -> Calculate_mapped_momenta(nlo_momenta,d_newmoms);
           }
-        } 
-        
-
+        }
         Flavour* newfls = dst.data();
         Vec4D* newmoms = d_newmoms.data();
 
