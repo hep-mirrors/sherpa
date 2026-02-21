@@ -915,11 +915,11 @@ void Hard_Decay_Handler::TreatInitialBlob(ATOOLS::Blob* blob,
         m_flavour_sets.emplace_back();
         auto& dst = m_flavour_sets.back();
         dst.clear();
-        dst.reserve(7);
+        dst.reserve(6);
         m_momentum_sets.emplace_back();
         auto& d_newmoms = m_momentum_sets.back();
         d_newmoms.clear();
-        d_newmoms.reserve(7);
+        d_newmoms.reserve(6);
         
         
         bool nlo_blob(false);
@@ -957,6 +957,7 @@ void Hard_Decay_Handler::TreatInitialBlob(ATOOLS::Blob* blob,
           if(nlo_blob){
             S_diag -> Calculate_mapped_momenta(nlo_momenta,d_newmoms);
           }
+          nlo_blob = false;
         }
         Flavour* newfls = dst.data();
         Vec4D* newmoms = d_newmoms.data();
