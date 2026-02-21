@@ -48,6 +48,7 @@ namespace SHERPA {
     double                   m_int_accuracy;
     int                      m_int_niter, m_int_target_mode;
     std::vector<std::vector<ATOOLS::Flavour>> m_flavour_sets;
+    std::vector<std::vector<ATOOLS::Vec4D>> m_momentum_sets;
 
 
 

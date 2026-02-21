@@ -595,7 +595,7 @@ offshell (or three-body) decay configurations.
         } 
 
         Spin_Amplitudes* real_subtraction_term1 = nullptr;
-        real_subtraction_term1 = new Massive_Real_Subtraction_Term1(dc->Flavs(),flavs1[2],propj,propi,nonprop);
+        real_subtraction_term1 = new Massive_Real_Subtraction_Term1(dc->Flavs(),flavs1[1],propj,propi,nonprop); 
         dc->AddDiagram(real_subtraction_term1);
 
         Spin_Amplitudes* real_subtraction_term2 = nullptr;
@@ -828,6 +828,7 @@ void Hard_Decay_Handler::TreatInitialBlob(ATOOLS::Blob* blob,
     DEBUG_VAR(blob->OutParticle(i)->Flav());
 
     const ATOOLS::Particle* op = blob->ConstOutParticle(i);
+
     Blob* out_blob = op->DecayBlob(); // check, if NLO decay
     Decay_Channel* dc(NULL);
     Blob_Data_Base * decay_data((*out_blob)["dc"]);
@@ -836,9 +837,6 @@ void Hard_Decay_Handler::TreatInitialBlob(ATOOLS::Blob* blob,
     if(dc -> GetDiagrams()[0]->getType() == "R" || dc -> GetDiagrams()[0]->getType() == "S"){
       real_decay = true;
       NLO_dc = dc;
-      decaying_mom = op->Momentum();
-      decaying_particle = op;
-      decaying_flav = op->Flav();
       p_newsublist=new NLO_subevtlist();
     } else {
       LO_dc_list.push_back(dc);
@@ -868,28 +866,34 @@ void Hard_Decay_Handler::TreatInitialBlob(ATOOLS::Blob* blob,
         ATOOLS::Vec4D_Vector dipole_mom = NLO_dc->GetDiagrams()[i]->GetMomenta();
         static size_t decay_ids[7] = {1, 2, 4, 8, 16, 32, 64};
 
-        const std::vector<Flavour>& flav_vec = NLO_dc->Flavs();
         m_flavour_sets.emplace_back();
         auto& dst = m_flavour_sets.back();
         dst.clear();
-        dst.reserve(flav_vec.size() + LO_flav.size());
-        dst.insert(dst.end(), flav_vec.begin(), flav_vec.end());
-        dst.insert(dst.end(), LO_flav.begin(), LO_flav.end());
-
+        dst.reserve(7);
+        Vec4D* newmoms = new Vec4D[7];
+        
+        int mom_counter(0);
+        for (size_t l = 0; l < blob->NOutP(); ++l) {
+          const ATOOLS::Particle* op = blob->ConstOutParticle(l);
+          Blob* out_blob = op->DecayBlob();
+          int out_blob_size =  out_blob->GetOutParticles().size()+out_blob->GetInParticles().size();
+          for (size_t m = 0; m < (out_blob_size); ++m) {
+            Particle* outPart = out_blob -> GetParticle(m);
+            const Vec4D mom = outPart->Momentum();
+            const Flavour flav = outPart->Flav();
+            dst.push_back(flav);
+            newmoms[mom_counter] = mom;
+            mom_counter++;
+          }
+        } 
         Flavour* newfls = dst.data();
-
-        Vec4D* newmoms = new Vec4D[4 + number_LO_part];
-        for (int j = 0; j < 4; ++j) {
-          newmoms[j] = dipole_mom[j];
-        }
-        for(int j = 0; j < number_LO_part; ++j){
-          newmoms[j+4] = LO_mom[j];
-        }
 
         // Constructor: (n, id_ptr, fl_ptr, mom_ptr, i, j, k)
         NLO_subevt *newsub(new NLO_subevt(newn, decay_ids, newfls, newmoms, 0, 0, 0)); 
         p_newsublist->push_back(newsub);
       } else if(NLO_dc->GetDiagrams()[i]->getType() == "S") {
+        Massive_Real_Subtraction* S_diag = dynamic_cast<Massive_Real_Subtraction*>(NLO_dc->GetDiagrams()[i]);
+
         size_t newn(6);
         ATOOLS::Vec4D_Vector dipole_mom = NLO_dc->GetDiagrams()[i]-> GetMomenta();
         static size_t decay_ids[6] = {1, 2, 12, 13, 14, 15};
@@ -901,23 +905,48 @@ void Hard_Decay_Handler::TreatInitialBlob(ATOOLS::Blob* blob,
           }
         }
 
-        const std::vector<Flavour>& flav_vec = NLO_dc->Sub_Flavs();
         m_flavour_sets.emplace_back();
         auto& dst = m_flavour_sets.back();
         dst.clear();
-        dst.reserve(flav_vec.size() + LO_flav.size());
-        dst.insert(dst.end(), flav_vec.begin(), flav_vec.end());
-        dst.insert(dst.end(), LO_flav.begin(), LO_flav.end());
+        dst.reserve(7);
+        m_momentum_sets.emplace_back();
+        auto& d_newmoms = m_momentum_sets.back();
+        d_newmoms.clear();
+        d_newmoms.reserve(7);
+        
+        
+        bool nlo_blob(false);
+        Vec4D_Vector nlo_momenta;
+
+        for (size_t l = 0; l < blob->NOutP(); ++l) {
+          const ATOOLS::Particle* op = blob->ConstOutParticle(l);
+          Blob* out_blob = op->DecayBlob();
+          int out_blob_size =  out_blob->GetOutParticles().size()+out_blob->GetInParticles().size();
+          if(out_blob -> GetParticle(0) -> Flav().IDName() == "h0") nlo_blob=true;
+
+          for (size_t m = 0; m < (out_blob_size); ++m) {
+            Particle* outPart = out_blob -> GetParticle(m);
+            const Vec4D mom = outPart->Momentum();
+            const Flavour flav = outPart->Flav();
+            if(!nlo_blob){
+              dst.push_back(flav);
+              d_newmoms.push_back(mom);
+            } else{
+              if(!(flav.IDName() == "G")){ // skip gluon
+                dst.push_back(flav);
+              }
+              nlo_momenta.push_back(mom);
+              //d_newmoms.push_back(Vec4D(10.0, 1.0, 2.0, 3.0));
+            }
+          }
+          if(nlo_blob){
+            S_diag -> Calculate_mapped_momenta(nlo_momenta,d_newmoms);
+          }
+        } 
+        
 
         Flavour* newfls = dst.data();
-
-        Vec4D* newmoms = new Vec4D[3 + number_LO_part];
-        for (int j = 0; j < 3; ++j) {
-          newmoms[j] = dipole_mom[j];
-        }
-        for(int j = 0; j < number_LO_part; ++j){
-          newmoms[j+3] = LO_mom[j];
-        }
+        Vec4D* newmoms = d_newmoms.data();
 
         std::array<int, 3> dipole_indices;
         dipole_indices = NLO_dc->GetDiagrams()[i]-> getDipoleIndices();

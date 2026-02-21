@@ -16,5 +16,8 @@ namespace EXTRAXS {
       return std::array<int, 3>{3, 1, 2};
     }
     double getSign() override;
+    void Calculate_mapped_momenta(
+    const ATOOLS::Vec4D_Vector& input,
+    ATOOLS::Vec4D_Vector& output) override;
   };
 }

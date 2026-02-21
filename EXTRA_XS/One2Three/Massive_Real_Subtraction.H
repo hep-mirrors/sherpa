@@ -56,6 +56,9 @@ namespace EXTRAXS {
     ATOOLS::Vec4D_Vector GetMomenta() override { return born_momenta; }
 
     virtual void Calculate_real_subtraction(const ATOOLS::Vec4D_Vector& momenta, bool anti=false);
+    virtual void Calculate_mapped_momenta(
+    const ATOOLS::Vec4D_Vector& input,
+    ATOOLS::Vec4D_Vector& output);
   
   protected:
     double ME2_Born;
@@ -66,6 +69,7 @@ namespace EXTRAXS {
 
     static double V_ijk(ATOOLS::Vec4<double> p_i, ATOOLS::Vec4<double> p_j,
                     ATOOLS::Vec4<double> p_k, const ATOOLS::Flavour& prop);
+    ATOOLS::Vec4<double> p_ij_tilde(ATOOLS::Vec4<double> p_i, ATOOLS::Vec4<double> p_j, ATOOLS::Vec4<double> p_k);
   };
 }
 

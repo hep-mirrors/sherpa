@@ -260,7 +260,7 @@ size_t Massive_Real_Subtraction::NHel(const Flavour& fl)
 }
 
 
-static ATOOLS::Vec4<double> p_ij_tilde(ATOOLS::Vec4<double> p_i, ATOOLS::Vec4<double> p_j, ATOOLS::Vec4<double> p_k){
+ATOOLS::Vec4<double> Massive_Real_Subtraction::p_ij_tilde(ATOOLS::Vec4<double> p_i, ATOOLS::Vec4<double> p_j, ATOOLS::Vec4<double> p_k){
   // mapping of momenta from real to subtraction kinematics
   ATOOLS::Vec4<double> Q = p_i + p_j + p_k;
   double Q2 = Q*Q;
@@ -415,4 +415,13 @@ void Massive_Real_Subtraction::SetFullME2(double fullME2){
 
 double Massive_Real_Subtraction::GetFullME2(){
   return m_fullME2;
+}
+
+
+void Massive_Real_Subtraction::Calculate_mapped_momenta(
+    const Vec4D_Vector& input,
+    Vec4D_Vector& output)
+{
+  msg_Error()<<METHOD<<": Virtual function called."<<endl;
+  Abort();
 }
