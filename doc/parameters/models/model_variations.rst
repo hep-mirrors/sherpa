@@ -22,6 +22,8 @@ Multiple parameters for variation can be added, which will be combined for varia
     Combine all different values (default).
   :option:`2`
     One each, ignores given values and adds one variation for each parameter with the others set to 0.
+  :option:`3`
+    Two each, ignores given values and adds one variation for each combination of 2 parameters with the others set to 0.
 
 Also, for some parameters it might be useful to have them fully correlated. To achieve this, use the following syntax and make sure the variation numbers are the same. 
 Other parameters will be combined according to the previous settings.
