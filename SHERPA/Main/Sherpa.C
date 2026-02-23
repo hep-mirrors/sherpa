@@ -424,8 +424,9 @@ bool Sherpa::SummarizeRun()
     double timing_statistics_large_weight_fraction=s["TIMING_STATISTICS_LARGE_WEIGHT_FRACTION"].SetDefault(0.001).Get<double>();
     double timing_statistics_det_sim=s["TIMING_STATISTICS_DET_SIM_IN_S"].SetDefault(0.0).Get<double>();
     int timing_statistics=s["TIMING_STATISTICS"].SetDefault(0).Get<int>();
-    int m_min_tot_unc=s["TIMING_STATISTICS_MIN_UNC"].SetDefault(0).Get<int>();//per event
+    int m_min_tot_unc=s["TIMING_STATISTICS_MIN_UNC"].SetDefault(0).Get<int>();//per event - todo: is similar to "SELECTION_WEIGHT_MODE" - its 0 corresponds to my 1; its 1 corresponds to my 0, only if effevperev=const across processes - let the default change for partially unweighted and use same flag?
     int m_min_tot_unc_per_day=s["TIMING_STATISTICS_MIN_UNC_PER_DAY"].SetDefault(0).Get<int>();//per day
+    m_min_tot_unc_per_day=0; //todo: needs further debugging and timing provided via timing.zip during event generation
     //calculate chosen effevperev (needs sudakov_efficiency)
     std::map<std::string, double> chosen_alpha_map = rpa->gen.AlphaMap();
     std::map<std::string, double> chosen_efficiency_map = rpa->gen.EfficiencyMap();
@@ -433,10 +434,11 @@ bool Sherpa::SummarizeRun()
     double sum_p_unw = 0;
     double sum_p_eff = 0;
     double sum_p_eff_sign = 0;
+    int generation_mode=ToType<int>(rpa->gen.Variable("EVENT_GENERATION_MODE"));
     for (auto const& [key, val] : chosen_alpha_map) {
       std::string sub_name = key;
       double curr_xsec = dabs(xsec_map[sub_name])/chosen_efficiency_map[sub_name]/chosen_alpha_map[sub_name];
-      if (m_min_tot_unc) curr_xsec = dabs(xsec_map[sub_name])/chosen_efficiency_map[sub_name]/pow(chosen_alpha_map[sub_name],0.5);
+      if (m_min_tot_unc || generation_mode==0) curr_xsec = dabs(xsec_map[sub_name])/chosen_efficiency_map[sub_name]/pow(chosen_alpha_map[sub_name],0.5);
       double tges  = (time_map["sum_total_"+sub_name])/number_map["n_total_"+sub_name]; //in s
       if (number_map["n_total_"+sub_name]==0) {
 	tges = 0; //critical, because underestimate - need to make sure that enough events generated...unc estimate hard, because 0 is 0
@@ -452,14 +454,8 @@ bool Sherpa::SummarizeRun()
       sum_p_eff_sign += xsec_map[sub_name]*sudakov_efficiency[sub_name];
     }
     double chosen_effevperev = sum_p_eff/sum_p_unw*pow(sum_p_eff_sign/sum_p_eff,2);
-    if (m_min_tot_unc || m_min_tot_unc_per_day) chosen_effevperev = pow(sum_p_eff/sum_p_unw,2)*pow(sum_p_eff_sign/sum_p_eff,2);
-    int generation_mode=ToType<int>(rpa->gen.Variable("EVENT_GENERATION_MODE"));
-    if (generation_mode!=0) {
-      msg_Info()<<"with "<< chosen_effevperev << " Neff/evt           "<<std::endl;
-    } else {
-      //for weighted the chosen efficiency is not correctly set yet - one can see it in epsilon_scan. If weighted stays implemented with its own selectionWeight, then one could add it here later
-      msg_Info()<<"                      "<<std::endl;
-    }
+    if (m_min_tot_unc || m_min_tot_unc_per_day || generation_mode==0) chosen_effevperev = pow(sum_p_eff/sum_p_unw,2)*pow(sum_p_eff_sign/sum_p_eff,2);
+    msg_Info()<<"with "<< chosen_effevperev << " Neff/evt           "<<std::endl;
     p_eventhandler->Finish();
 
     if (not timing_statistics) return true;
