@@ -602,7 +602,6 @@ bool Sudakov::Generate(Parton* split, double kt2win)
     p_spect=spect;
     p_split->SetSpect(p_spect);
     p_selected=selected;
-    if(p_selected->GetFlavourB().IsOctetMeson()) m_weight *= tr_efac;
     msg_IODebugging()<<"selected "<<p_spect<<", t = "<<m_st
 		     <<", y = "<<m_sy<<", z = "<<m_sz<<", phi = "<<m_sphi<<"\n";
   }
@@ -750,6 +749,7 @@ int Sudakov::Generate(Parton *split,Parton *spect,
           split->SetSpect(p_spect);
           p_selected = (Splitting_Function_Base *)(&*transit);
           split->SetTransition(true); // make this a transition tag.
+          m_weight = 1./tr_efac;
           return true;
         }
       }
