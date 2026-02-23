@@ -57,6 +57,8 @@ bool Process_Integrator::Initialize
   p_yfshandler=yfshandler;
   m_timing_statistics_large_weight_fraction=s["TIMING_STATISTICS_LARGE_WEIGHT_FRACTION"].SetDefault(0.001).Get<double>();
   m_timing_statistics=s["TIMING_STATISTICS"].SetDefault(0).Get<int>();
+  m_timing_statistics_min_unc=s["TIMING_STATISTICS_MIN_UNC"].SetDefault(0).Get<int>();
+  m_timing_statistics_min_unc_per_day=s["TIMING_STATISTICS_MIN_UNC_PER_DAY"].SetDefault(0).Get<int>();
   if (m_timing_statistics) {
     m_ovwth = s["OVERWEIGHT_THRESHOLD"].SetDefault(1e12).Get<double>();
   }
@@ -85,6 +87,8 @@ double Process_Integrator::SelectionWeight(const int mode) const
 	return m_external_selectionweight;
       }
       //needs m_ssumenh from Sherpa 3.1 - otherweise m_meanenhfunc ("mean enhancement function") set to 1
+      if (m_timing_statistics_min_unc_extra) 
+	return dabs(TotalResult()*m_meanenhfunc*m_enhancefac/m_effi/m_effevperev);
       return dabs(TotalResult()*m_meanenhfunc*m_enhancefac/m_effi/sqrt(m_effevperev));
     }
     if (m_n+m_sn==0.0) return -1.0;
@@ -150,18 +154,19 @@ std::vector<double> Process_Integrator::TotalEffiAndEffEvPerEv(bool unweighted) 
       double proci_effi = proci_totaleffiandeffevperev[0];
       double proci_xsec = (*p_proc)[i]->Integrator()->GetSSumEnh()/m_sn;
       double proci_selw = dabs(proci_xsec)/sqrt(proci_effevperev)/proci_effi;
-
+      if (m_timing_statistics_min_unc_extra) 
+	proci_selw = dabs(proci_xsec)/proci_effevperev/proci_effi;
       sum_xsec += proci_xsec;
       sum_xsec_abs += dabs(proci_xsec);
       sum_selw += proci_selw;
       sum_effi+=proci_effi*proci_selw;
-      //this is from whisto, but want to be more correct by not relying on bin width approximation
-      //sum_selw += (*p_proc)[i]->Integrator()->SelectionWeight(wmode);
-      //sum_effi+=(*p_proc)[i]->Integrator()->Efficiency()*(*p_proc)[i]->Integrator()->SelectionWeight(wmode);
+      //could also take information from whisto, but want to be more correct by not relying on bin width approximation
     }
     if (sum_selw!=0) {
       totaleffiandeffevperev[0] = sum_effi/sum_selw;
       totaleffiandeffevperev[1] = pow(sum_xsec_abs/sum_effi,2)*pow(sum_xsec/sum_xsec_abs,2);
+      if (m_timing_statistics_min_unc_extra)
+	totaleffiandeffevperev[1] = sum_xsec_abs/sum_effi*pow(sum_xsec/sum_xsec_abs,2);
     }
     return totaleffiandeffevperev;
   }
