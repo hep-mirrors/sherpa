@@ -250,6 +250,29 @@ namespace MODEL {
                         variations_list.push_back(key);
                     }
                     break;
+                case 3:
+                    // two each (meaning all zero except 1 or 2) for EFT scans
+                    // ignore the correlations and the given values
+                    // just use nominal value for 1 or 2 variables and 0 for the others
+                    for (const std::string& var_name1 : variable_names){
+                        // one each loop, as before
+                        VariationKey key = VariationKey(var_name1, p_constants->at(var_name1));
+                        for (const std::string& var_name2 : variable_names)
+                            if (var_name1 != var_name2) key.Add(var_name2, 0.);
+                        variations_list.push_back(key);
+                    }
+                    for (const std::string& var_name1 : variable_names){
+                        // two each loop
+                        for (const std::string& var_name2 : variable_names){
+                            if (var_name1 == var_name2) continue;
+                            VariationKey key = VariationKey(var_name1, p_constants->at(var_name1));
+                            key.Add(var_name2, p_constants->at(var_name2));
+                            for (const std::string& var_name3 : variable_names)
+                                if (var_name1 != var_name3 && var_name2 != var_name3) key.Add(var_name3, 0.);
+                            variations_list.push_back(key);
+                        }
+                    }
+                    break;
                 default:
                     // combine all the elements from the individual lists
                     // to do this nominal value was added to each list
