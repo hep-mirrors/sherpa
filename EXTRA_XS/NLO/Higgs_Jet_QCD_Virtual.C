@@ -345,12 +345,7 @@ void HGQQ_QCD_Virtual::Calc(const Vec4D_Vector &momenta) // ee->h->gqq virtual c
     throw ATOOLS::Exception("Invalid renormalization scale");
   }
   double lnm(log(m_mur2 / mh2));
-  if (s <= 0. || t >= 0. || u >= 0.)
-  {
-    msg_Error() << "HGQQ_QCD_Virtual::Calc(): Log Error: ! kinematic invariants must satisfy s>0, t<0, u<0, but are s=" << s << ", t=" << t << ", u=" << u << "\n";
-    // throw ATOOLS::Exception("Invalid kinematics"); //breaks here
-  }
-  double lns(log(s / mh2)), lnt(log(-t / mh2)), lnu(log(-u / mh2));
+  double lns(log(Abs(s) / mh2)), lnt(log(Abs(t) / mh2)), lnu(log(Abs(u)/ mh2));
   if (mh2 - t <= 0. || mh2 - u <= 0.) {
     msg_Error() << "HGQQ_QCD_Virtual::Calc(): Log Error: kinematic invariants must satisfy mh2-t>0, mh2-u>0, but are mh2-t=" << mh2 - t << ", mh2-u=" << mh2 - u << "\n";
     throw ATOOLS::Exception("Invalid kinematics");
@@ -369,7 +364,8 @@ void HGQQ_QCD_Virtual::Calc(const Vec4D_Vector &momenta) // ee->h->gqq virtual c
   m_res.Finite() = m_nlf * (-10. / 9. - 2. / 3. * lnm + 2. / 3. * lnt) + NC * (40. / 9. + Li2u + 2. * Li2t + Li2s - 13. / 6. * (lnt - lnm) + (lnm - lnt) * (lns + lnu) - sqr(lnm) - 0.5 * sqr(lnu) + 2. * lnt * ln2t + lnu * ln2u) + 
                       +1. / NC * (4. - Li2u - Li2s + lns * lnu + 0.5 * sqr(lnt) - 0.5 * sqr(lns) - lnm * lnt + 0.5 * sqr(lnm) - lnu * ln2u - 1.5 * (lnt - lnm)) + 4. / 3. * sqr(M_PI) * NC + 0.25 * (NC * sqr(NC) - 1. / NC) * (u + s) / loqq + (m_con ? 0. : 11.);
   msg_Tracking() << "HGQQ_QCD_Virtual::Calc(): Calculated virtual correction: IR2=" << m_res.IR2() << ", IR=" << m_res.IR() << ", Finite=" << m_res.Finite() << "\n";
-  throw ATOOLS::Exception("Break here for debugging");
+  // throw ATOOLS::Exception("Break here for debugging");
+  THROW(fatal_error,"new error!!");
 }
 
 void HGGG_QCD_Virtual::Calc(const Vec4D_Vector &momenta)
