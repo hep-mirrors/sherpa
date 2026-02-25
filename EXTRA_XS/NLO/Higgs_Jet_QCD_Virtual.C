@@ -359,24 +359,15 @@ void HGQQ_QCD_Virtual::Calc(const Vec4D_Vector &momenta) // ee->h->gqq virtual c
   double Li2s(DiLog((s - mh2) / s)), Li2t(DiLog(t / mh2)), Li2u(DiLog(u / mh2));
 
   // qq<->hg kinematics
-  if (NC*CF/s*(sqr(t)+sqr(u))<=0.) {
-    msg_Error() << "HGQQ_QCD_Virtual::Calc(): Log Error: LO matrix element is less than zero, cannot compute virtual correction.\n";
-    throw ATOOLS::Exception("Invalid kinematics");
-  }
   double loqq(NC * CF / s * (sqr(t) + sqr(u)));
+  msg_Tracking() << "HGQQ_QCD_Virtual::Calc(): Calculated leading order term: loqq = " << loqq << "\n";
   // 1/epsIR
   m_res.IR() = -2. / 3. * m_nlf + NC * (13. / 6. - 2. * lnm + lnt + lnu) + 1. / NC * (1.5 - lns + lnm) - 3. * m_b0;
   // 1/epsIR2
   m_res.IR2() = -2. * NC + 1. / NC;
   // finite
-  if (lnt <= 0. || lnu <= 0. || lns <= 0.|| lnm <= 0.) {
-    msg_Error() << "HGQQ_QCD_Virtual::Calc(): Log Error: Input is less than or equal to zero. " << " lnt=" << lnt << ", lnu=" << lnu << ", lns=" << lns << ", lnm=" << lnm << "\n";
-    msg_Error() << "   loqq = " << loqq << "\n";
-    // throw ATOOLS::Exception("Invalid kinematics or model parameters"); //breaks here too 
-  }
   m_res.Finite() = m_nlf * (-10. / 9. - 2. / 3. * lnm + 2. / 3. * lnt) + NC * (40. / 9. + Li2u + 2. * Li2t + Li2s - 13. / 6. * (lnt - lnm) + (lnm - lnt) * (lns + lnu) - sqr(lnm) - 0.5 * sqr(lnu) + 2. * lnt * ln2t + lnu * ln2u) + 
                       +1. / NC * (4. - Li2u - Li2s + lns * lnu + 0.5 * sqr(lnt) - 0.5 * sqr(lns) - lnm * lnt + 0.5 * sqr(lnm) - lnu * ln2u - 1.5 * (lnt - lnm)) + 4. / 3. * sqr(M_PI) * NC + 0.25 * (NC * sqr(NC) - 1. / NC) * (u + s) / loqq + (m_con ? 0. : 11.);
-  
   msg_Tracking() << "HGQQ_QCD_Virtual::Calc(): Calculated virtual correction: IR2=" << m_res.IR2() << ", IR=" << m_res.IR() << ", Finite=" << m_res.Finite() << "\n";
   throw ATOOLS::Exception("Break here for debugging");
 }
