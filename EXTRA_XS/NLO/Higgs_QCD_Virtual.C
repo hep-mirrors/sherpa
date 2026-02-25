@@ -52,11 +52,7 @@ namespace EXTRAXS {
   public:
     HGG_QCD_Virtual(const Process_Info &pi, const Flavour_Vector &flavs, int con) : Virtual_ME2_Base(pi, flavs)
     {
-      // put extra cuts in to ensure we are in h->gg kinematics
-      // and only OUR yaml files will find it by only calling when photon and Z are deactivated
-      Flavour photon(kf_photon);
-      Flavour zboson(kf_Z);
-      msg_Out() << "HGG_QCD_Virtual(): Using h->gg virtual matrix element." << std::endl;
+      msg_Tracking() << "HGG_QCD_Virtual(): Using h->gg virtual matrix element." << "\n";
       Flavour lq(kf_quark); // light quarks: u,d,s
       double nlf = double(lq.Size()) / 2.0; 
       m_b0 = (11.0 / 3.0 * CA - 4.0 / 3.0 * TR * nlf) / 4.0 / M_PI;
@@ -80,13 +76,7 @@ namespace EXTRAXS {
 using namespace EXTRAXS;
 
 void GGH_QCD_Virtual::Calc(const Vec4D_Vector& momenta) {
-  double p2  = 2.*momenta[0]*momenta[1]; // s for gg->h
-  // check
-  msg_Out() << "GGH_QCD_Virtual::Calc(): Calculating h->gg virtual matrix element for p2 = " << p2 << std::endl;
-  msg_Out() << "   mom[0] = " << momenta[0] << "\n";
-  msg_Out() << "   mom[1] = " << momenta[1] << "\n";
-  msg_Out() << "   mom[0].mass = " << momenta[0].Mass() << "\n";
-  msg_Out() << "   mom[1].mass = " << momenta[1].Mass() << "\n";
+  double p2  = 2.*momenta[0]*momenta[1]; // (mom_h)^2 = s = (mom0 + mom1)^2 = 2*mom0*mom1 for gg->h, since gluon massless
   // 1/epsIR
   m_res.IR()=(-2.*m_pij+2.*log(p2/m_mur2))*m_fac;
   // 1/epsIR2
@@ -96,15 +86,8 @@ void GGH_QCD_Virtual::Calc(const Vec4D_Vector& momenta) {
 }
 
 void HGG_QCD_Virtual::Calc(const Vec4D_Vector &momenta)
-{ //TODO: currently identical to GGH_QCD_Virtual
-  double p2 = (momenta[0] + momenta[1]) * (momenta[0] + momenta[1]); // mom0 and mom1 would be e+e- momenta , higgs mom = mom1 + mom0
-  // check 
-  msg_Out() << "HGG_QCD_Virtual::Calc(): Calculating h->gg virtual matrix element for p2 = " << p2 << std::endl;
-  msg_Out() << "   mom[0] = " << momenta[0] << "\n";
-  msg_Out() << "   mom[1] = " << momenta[1] << "\n";
-  msg_Out() << "   mom[0].mass = " << momenta[0].Mass() << "\n";
-  msg_Out() << "   mom[1].mass = " << momenta[1].Mass() << "\n";
-  
+{
+  double p2 = (momenta[0] + momenta[1]) * (momenta[0] + momenta[1]); // mom0 and mom1 would be e+e- momenta , higgs mom = mom1 + mom0 = s
   // 1/epsIR (soft or collinear divergences)
   m_res.IR() = (-2. * m_pij + 2. * log(p2 / m_mur2)) * m_fac;
   // 1/epsIR2 (soft and collinear divergences)
@@ -142,20 +125,25 @@ operator()(const Process_Info &pi) const
         return new GGH_QCD_Virtual(pi, fl, con);
       }
     }
-    else if (fl[0].Kfcode() == kf_e && fl[1].Kfcode() == kf_e   // TODO!!! h->gg s.RECOLA_DISABLE_EW_ee_VERTEX() == false &&
-             && pi.m_fi.m_ps.size() == 2 &&
-             pi.m_fi.m_ps[0].m_fl.IsGluon() && pi.m_fi.m_ps[1].m_fl.IsGluon()) {
-      msg_Out() << "in HGG unchecked getter. you have been warned \n";
-      if (pi.m_maxcpl[0] == 3 && (pi.m_maxcpl[1] == 1 || (pi.m_maxcpl.size() > 2 && pi.m_maxcpl[2] == 2)) &&
-          pi.m_mincpl[0] == 3 && (pi.m_mincpl[1] == 1 || (pi.m_mincpl.size() > 2 && pi.m_mincpl[2] == 2)))
+    else if (fl[0].Kfcode() == kf_e && fl[1].Kfcode() == kf_e // ee->h->gg
+             && pi.m_fi.m_ps.size() == 2 
+             && pi.m_fi.m_ps[0].m_fl.IsGluon() && pi.m_fi.m_ps[1].m_fl.IsGluon()
+            //  && s["MODEL"].Get<std::string>() == "HEFT"
+            )
       {
-        for (size_t i = 0; i < pi.m_ii.m_ps.size(); ++i) {
-          if (fl[i].Strong())
-            return NULL;
+        msg_Tracking() << " \n In HGG getter, only valid for ee->h->gg+jets since we use e-momenta for calc. \n";
+        msg_Debugging() << "  fl[0] = " << fl[0] << ", fl[1] = " << fl[1] << ", fl[2] = " << fl[2] << ", fl[3] = " << fl[3] << std::endl;
+        if (pi.m_maxcpl[0] == 3 && pi.m_maxcpl[1] == 0 && pi.m_maxcpl[2] == 2 &&
+            pi.m_mincpl[0] == 3 && pi.m_mincpl[1] == 0 && pi.m_mincpl[2] == 2) // these checks ensure we dont need to check explicitly for h
+        {
+          for (size_t i = 0; i < pi.m_ii.m_ps.size(); ++i)
+          {
+            if (fl[i].Strong())
+              return NULL;
+          }
+          return new HGG_QCD_Virtual(pi, fl, con);
         }
-        return new HGG_QCD_Virtual(pi, fl, con);
       }
-    }
   }
   return NULL;
 }
