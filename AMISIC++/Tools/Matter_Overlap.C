@@ -383,6 +383,10 @@ void Matter_Overlap::Output(const double & check) {
 	      <<std::string(20,' ')<<"|\n";
   
   const size_t n_matter_form_variations = MatterFormVariationSize();
+  if (n_matter_form_variations == 1) {
+    msg_Info()<<"   "<<std::string(77,'-')<<"\n\n";
+    return;
+  }
   MO_Integrand moint(this);
   Gauss_Integrator integrator(&moint);
   for (size_t ivar=0; ivar<n_matter_form_variations; ++ivar) {

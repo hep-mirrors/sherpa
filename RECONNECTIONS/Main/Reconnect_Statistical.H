@@ -18,8 +18,7 @@ namespace RECONNECTIONS {
     void   UpdateColours();
     size_t m_n_variations;
 
-    size_t m_n_reconnection_count;  // output
-    std::ofstream m_weight_file;    // output
+    size_t m_n_reconnection_count;
     
     double MomDistance(ATOOLS::Particle * trip,ATOOLS::Particle * anti);
     double PosDistance(ATOOLS::Particle * trip,ATOOLS::Particle * anti);
@@ -33,6 +32,8 @@ namespace RECONNECTIONS {
     void   Reset();
     double Distance(ATOOLS::Particle * trip,ATOOLS::Particle * anti);
     double GetWeightCutoff() const { return m_weight_cutoff; }
+    int    GetVariationSize() const { return m_n_variations; }
+    size_t GetReconnectionCount() const { return m_n_reconnection_count; }
   };
 }
 #endif

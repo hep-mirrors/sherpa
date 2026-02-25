@@ -12,19 +12,53 @@ using namespace std;
 Reconnection_Handler::Reconnection_Handler(const bool & on) :
   m_on(on),
   p_reconnector(new Reconnect_Statistical()),
-  m_nfails(0)
-{}
+  m_nfails(0),
+  m_n_variations(0),
+  m_n_mpi_variations(SIZE_MAX),
+  m_total_events(0)
+{
+  // output
+  const bool print_files = false;
+  if (print_files && m_on) {
+    std::string filename = "reconnection_weights.dat";
+    m_weight_file.open(filename);
+  }
+  // output
+}
 
 Reconnection_Handler::~Reconnection_Handler() {
   if (m_on) {
     msg_Info()<<METHOD<<": reconnection handler winds down with "
 	      <<m_nfails<<" errors overall.\n";
+    PrintVariationStatistics();
   }
+  // output
+  if (m_weight_file.is_open()) {
+    m_weight_file.close();
+  }
+  // output
   delete p_reconnector;
 }
 
 void Reconnection_Handler::Initialize() {
   if (m_on) p_reconnector->Initialize();
+
+  m_n_variations = p_reconnector->GetVariationSize();
+  m_weight_cutoff = p_reconnector->GetWeightCutoff();
+  m_cutoff_count.resize(m_n_variations, 0);
+  m_sum_weights.resize(m_n_variations, 0.0);
+  m_sum_weights_squared.resize(m_n_variations, 0.0);
+
+  // output
+  if (m_weight_file.is_open()) {
+    m_weight_file << "# n_reconnections";
+    for (size_t i=0; i<m_n_variations; i++) {
+      m_weight_file << " w_var" << i;
+    }
+    m_weight_file << "\n";
+    m_weight_file << std::scientific << std::setprecision(10);
+  }
+  // output
 }
 
 void Reconnection_Handler::Reset() {
@@ -50,17 +84,17 @@ Return_Value::code Reconnection_Handler::operator()(Blob_List *const blobs,
     // didn't find any blob that needed reconnections
     break;
   }
-  p_reconnector->Reset();
 
   auto variation_weights = p_reconnector->GetVariationWeights();
+  size_t n_reconnections = p_reconnector->GetReconnectionCount();
   
-  if (auto* statistical_reconnector = dynamic_cast<Reconnect_Statistical*>(p_reconnector)) {
-    const double weight_cutoff = statistical_reconnector->GetWeightCutoff();
-    if (weight_cutoff > 0.) {
-      for (size_t i = 0; i < variation_weights.size(); ++i) {
-        if (variation_weights[i] > weight_cutoff) {
-          variation_weights[i] = weight_cutoff;
-        }
+  p_reconnector->Reset();
+  
+  if (m_weight_cutoff > 0.) {
+    for (size_t i = 0; i < m_n_variations; ++i) {
+      if (variation_weights[i] > m_weight_cutoff) {
+        variation_weights[i] = m_weight_cutoff;
+        m_cutoff_count[i]++;
       }
     }
   }
@@ -70,23 +104,47 @@ Return_Value::code Reconnection_Handler::operator()(Blob_List *const blobs,
     blob = blobs->FindFirst(btp::Hard_Collision);
   auto &wgt_map = (*blob)["WeightsMap"]->Get<Weights_Map>();
 
-  const size_t n_rec_variations = variation_weights.size();
-
   auto it = wgt_map.find("MPI+RECONNECTIONS");
-  const bool has_mpi = (it != wgt_map.end());
-  const size_t n_mpi_variations = has_mpi ? (it->second.Size() - 1) : 0;
-
-  const size_t n_max = std::max(n_mpi_variations, n_rec_variations);
-  auto& wgt_category = wgt_map["MPI+RECONNECTIONS"];
   
-  for (size_t i = 0; i < n_max; ++i) {
-    const std::string name = "v" + std::to_string(i);
-    const double mpi_wgt = (i < n_mpi_variations) ? wgt_category[name] : 1.;
-    const double rec_wgt = (i < n_rec_variations) ? variation_weights[i] : 1.;
-    wgt_category[name] = mpi_wgt * rec_wgt;
+  size_t n_mpi_variations;
+  if (m_n_mpi_variations == SIZE_MAX) {
+    const bool has_mpi = (it != wgt_map.end());
+    n_mpi_variations = has_mpi ? (it->second.Size() - 1) : 0;
+    m_n_mpi_variations = n_mpi_variations;
+  } else {
+    n_mpi_variations = m_n_mpi_variations;
   }
 
-  p_reconnector->ResetVariationWeights(n_rec_variations);
+  const size_t n_max = std::max(n_mpi_variations, m_n_variations);
+  auto& wgt_category = wgt_map["MPI+RECONNECTIONS"];
+  
+  std::vector<double> combined_weights(n_max);
+  for (size_t i = 0; i < n_max; ++i) {
+    const std::string name = "v" + std::to_string(i);
+    const double w_mpi = (i < n_mpi_variations) ? wgt_category[name] : 1.;
+    const double w_rec = (i < m_n_variations) ? variation_weights[i] : 1.;
+    combined_weights[i] = w_mpi * w_rec;
+    wgt_category[name] = combined_weights[i];
+  }
+  
+  // output
+  if (m_weight_file.is_open() && n_mpi_variations <= 1) {
+    m_weight_file << n_reconnections;
+    for (size_t i = 0; i < n_max; ++i) {
+      m_weight_file << " " << combined_weights[i];
+    }
+    m_weight_file << "\n";
+  // output
+  }
+  
+  m_total_events++;
+  for (size_t i = 0; i < m_n_variations; ++i) {
+    double w = variation_weights[i];
+    m_sum_weights[i] += w;
+    m_sum_weights_squared[i] += w * w;
+  }
+
+  p_reconnector->ResetVariationWeights(m_n_variations);
 
   return Return_Value::Success; 
 }
@@ -107,3 +165,38 @@ void Reconnection_Handler::AddReconnectionBlob(Blob_List *const blobs) {
   blobs->push_back(blob);
 }
 
+void Reconnection_Handler::PrintVariationStatistics() {
+  if (m_n_variations > 1 && m_total_events > 0) {
+    msg_Info() << "\n" 
+               << "   " << std::string(77, '-') << "\n"
+               << "   | CR Reweighting Statistics: Total events: " 
+               << std::setw(15) << m_total_events 
+               << std::string(18,' ') << "|\n";
+    
+    msg_Info() << "   " << std::string(77, '-') << "\n"
+               << "   | " 
+               << std::setw(8) << "v#" 
+               << " | " << std::setw(15) << "ESS"
+               << " | " << std::setw(10) << "ESS ratio"
+               << " | " << std::setw(10) << "Cutoffs"
+               << " | " << std::setw(18) << "Cutoffs ratio"
+               << std::string(1,' ') << "|\n";
+
+    msg_Info() << "   " << std::string(77, '-') << "\n";
+    for (size_t ivar = 0; ivar < m_n_variations; ++ivar) {
+      double sum_w = m_sum_weights[ivar];
+      double sum_w2 = m_sum_weights_squared[ivar];
+      double ess = (sum_w2 > 0) ? (sum_w * sum_w) / sum_w2 : 0.0;
+      double ess_ratio = (m_total_events > 0) ? ess / m_total_events : 0.0;
+      double cutoff_ratio = (m_total_events > 0) ? static_cast<double>(m_cutoff_count[ivar]) / m_total_events : 0.0;
+      
+      msg_Info() << "   | " << std::setw(8) << ivar
+                 << " | " << std::setw(15) << std::fixed << std::setprecision(1) << ess
+                 << " | " << std::setw(10) << std::fixed << std::setprecision(6) << ess_ratio
+                 << " | " << std::setw(10) << m_cutoff_count[ivar]
+                 << " | " << std::setw(10) << std::fixed << std::setprecision(6) << cutoff_ratio
+                 << std::string(9,' ') << "|\n";
+    }
+    msg_Info() << "   " << std::string(77, '-') << "\n";
+  }
+}

@@ -313,8 +313,9 @@ void Interaction_Probability::OutputTables() {
             <<(m_xs_hard*rpa->Picobarn()/1.e9)<<" mb "
             <<" (without overlap) vs. "<<std::setprecision(5)<<std::setw(6)
             <<(m_xs_test*rpa->Picobarn()/1.e9)<<" (with overlap) mb.      |\n"
-            <<"   "<<std::string(77,'-')<<"\n\n\n";
+            <<"   "<<std::string(77,'-')<<"\n\n";
 
+  if (m_n_variations == 1) return;
   for (size_t ivar=0; ivar<m_n_variations; ++ivar) {
     double bmax_var = p_mo->ComputeBmaxForVariation(ivar);
     double bmin_var = p_mo->ComputeBminForVariation(ivar);
@@ -371,7 +372,7 @@ void Interaction_Probability::OutputTables() {
       p_mo->SetKRadius(k_nom);
     }
   }
-  msg_Info()<<"   "<<std::string(77,'-')<<"\n\n\n";
+  msg_Info()<<"   "<<std::string(77,'-')<<"\n\n";
 }
 
 void Interaction_Probability::InitAnalysis() {

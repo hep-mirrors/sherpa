@@ -212,6 +212,7 @@ CalculateXSratios(MI_Processes * processes,axis * sbins)
     }
   }
   OutputXSratios(sbins);
+  if (m_n_variations == 1) return;
   OutputXSratiosVariations(sbins);
 }
 

@@ -16,13 +16,15 @@ Amisic::Amisic() :
   m_Nscatters(0), m_producedSoft(false), m_isMinBias(false),
   m_ana(false),
   m_n_variations(1), 
-  m_mpi_scatter_count(0) // output
+  m_mpi_scatter_count(0), // output
+  m_total_events(0)
 {}
 
 Amisic::~Amisic() {
   if (mipars) delete mipars;
   if (p_soft) delete p_soft;
   if (m_ana) FinishAnalysis();
+  PrintVariationStatistics();
   // output
   if (m_b_weight_file.is_open()) {
     m_b_weight_file.close();
@@ -239,7 +241,13 @@ void Amisic::InitParameterVariations() {
   m_overestimator.SetVariations(m_n_variations);
 
   m_weight_cutoff = (*mipars)("weight_cutoff");
+  m_cutoff_count.resize(m_n_variations, 0);
+
   ResetVariationWeights();
+
+  m_sum_weights.resize(m_n_variations, 0.0);
+  m_sum_weights_squared.resize(m_n_variations, 0.0);
+  m_total_events = 0;
 
   // output
   const bool print_files = false;
@@ -257,7 +265,7 @@ void Amisic::InitParameterVariations() {
   std::string total_filename = "total_weights.dat";
   m_total_weight_file.open(total_filename);
   if (m_total_weight_file.is_open()) {
-    m_total_weight_file << "# m_mpi";
+    m_total_weight_file << "# n_mpi";
     for (size_t ivar=0; ivar<m_n_variations; ivar++) {
       m_total_weight_file << " w_total_var" << ivar;
     }
@@ -665,9 +673,12 @@ void Amisic::ApplyVariationWeights(ATOOLS::Blob * blob) {
 
     // w_total = w_b * w_(n|b) = w_b * w_sudakov
     double w_total = w_b * w_sudakov;
+    double w_total_no_cutoff = w_total;
+    
     if (m_weight_cutoff > 0. && w_total > m_weight_cutoff) {
       w_total = m_weight_cutoff;
-    }
+      m_cutoff_count[ivar]++;
+    }    
     m_variation_weights[ivar] *= w_total;
 
     // output
@@ -692,6 +703,13 @@ void Amisic::ApplyVariationWeights(ATOOLS::Blob * blob) {
   }
   // output
   
+  m_total_events++;
+  for (size_t ivar = 0; ivar < m_n_variations; ++ivar) {
+    double w = m_variation_weights[ivar];
+    m_sum_weights[ivar] += w;
+    m_sum_weights_squared[ivar] += w * w; 
+  }
+  
   if (blob == NULL) {
     return;
   }
@@ -705,3 +723,38 @@ void Amisic::ApplyVariationWeights(ATOOLS::Blob * blob) {
   ResetVariationWeights();
 }
 
+void Amisic::PrintVariationStatistics() {
+  if (m_n_variations > 1 && m_total_events > 0) {
+    msg_Info() << "\n" 
+               << "   " << std::string(77, '-') << "\n"
+               << "   | MPI Reweighting Statistics: Total events: " 
+               << std::setw(15) << m_total_events 
+               << std::string(17,' ') << "|\n";
+    
+    msg_Info() << "   " << std::string(77, '-') << "\n"
+               << "   | " 
+               << std::setw(8) << "v#" 
+               << " | " << std::setw(15) << "ESS"
+               << " | " << std::setw(10) << "ESS ratio"
+               << " | " << std::setw(10) << "Cutoffs"
+               << " | " << std::setw(18) << "Cutoffs ratio"
+               << std::string(1,' ') << "|\n";
+
+    msg_Info() << "   " << std::string(77, '-') << "\n";
+    for (size_t ivar = 0; ivar < m_n_variations; ++ivar) {
+      double sum_w = m_sum_weights[ivar];
+      double sum_w2 = m_sum_weights_squared[ivar];
+      double ess = (sum_w2 > 0) ? (sum_w * sum_w) / sum_w2 : 0.0;
+      double ess_ratio = (m_total_events > 0) ? ess / m_total_events : 0.0;
+      double cutoff_ratio = (m_total_events > 0) ? static_cast<double>(m_cutoff_count[ivar]) / m_total_events : 0.0;
+      
+      msg_Info() << "   | " << std::setw(8) << ivar
+                 << " | " << std::setw(15) << std::fixed << std::setprecision(1) << ess
+                 << " | " << std::setw(10) << std::fixed << std::setprecision(6) << ess_ratio
+                 << " | " << std::setw(10) << m_cutoff_count[ivar]
+                 << " | " << std::setw(10) << std::fixed << std::setprecision(6) << cutoff_ratio
+                 << std::string(9,' ') << "|\n";
+    }
+    msg_Info() << "   " << std::string(77, '-') << "\n";
+  }
+}

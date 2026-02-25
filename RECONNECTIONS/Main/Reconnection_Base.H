@@ -33,6 +33,9 @@ namespace RECONNECTIONS {
     virtual void   Reset();
     virtual int    operator()(ATOOLS::Blob_List *const blobs) = 0;
     virtual double Distance(ATOOLS::Particle * trip,ATOOLS::Particle * anti) = 0;
+    virtual int    GetVariationSize() const { return 1; }
+    virtual double GetWeightCutoff() const { return -1.; }
+    virtual size_t GetReconnectionCount() const { return 0; }
 
     ATOOLS::Part_List              * GetParticles()               { return &m_particles; }
     ATOOLS::ParticleSet            * GetParts(const size_t & pos) { return &m_parts[pos]; }

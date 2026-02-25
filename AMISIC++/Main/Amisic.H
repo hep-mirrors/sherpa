@@ -76,10 +76,16 @@ namespace AMISIC {
     std::vector<double> m_sudakov_weights;
     size_t m_n_variations;
     double m_weight_cutoff;
+    std::vector<size_t> m_cutoff_count;
 
     size_t m_mpi_scatter_count;          // output
     std::ofstream m_b_weight_file;       // output
     std::ofstream m_total_weight_file;   // output
+    std::vector<double> m_sum_weights;
+    std::vector<double> m_sum_weights_squared;
+    size_t m_total_events;
+    
+    void UpdateDynamicCutoffs();
 
     void InitParametersAndType(PDF::ISR_Handler *const isr,
 			       REMNANTS::Remnant_Handler * remnant_handler);
@@ -102,6 +108,7 @@ namespace AMISIC {
     void ResetVariationWeights();
     void ImpactParameterReweighting(const double & s);
     void AcceptRejectReweighting(const bool accepted, const double prob_nom);
+    void PrintVariationStatistics();
  public:
     Amisic();
     ~Amisic();
