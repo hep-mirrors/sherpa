@@ -8,6 +8,7 @@
 #include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Org/My_Limits.H"
 #include "ATOOLS/Org/My_MPI.H"
+#include "SHERPA/SoftPhysics/LDME.H"
 
 using namespace CSSHOWER;
 using namespace MODEL;
@@ -109,86 +110,16 @@ void Sudakov::InitSplittingFunctions(MODEL::Model_Base *md,const int kfmode)
       msg_Debugging()<<"}\n";
     }
   }
+
   auto onia = Settings::GetMainSettings()["QUARKONIA"];
-  auto onia_ldme = onia["LDME"];
-  //OCTETS
-  auto octet_ldme = onia_ldme["Octets"];
-  //CHARM
-  octet_ldme["1S0_441"].SetDefault(0.1E-03);
-  octet_ldme["1S0_443"].SetDefault(15.081E-03);
-  octet_ldme["1S0_100443"].SetDefault(21.395E-03);
-  octet_ldme["3S1_441"].SetDefault(0.1E-03);
-  octet_ldme["3S1_443"].SetDefault(3.430E-03);
-  octet_ldme["3S1_100443"].SetDefault(2.628E-03);
-  octet_ldme["3S1_10441"].SetDefault(2.704E-03);
-  ldme_3S1_c_8_chi_c0_1P = octet_ldme["3S1_10441"].Get<double>();
-  octet_ldme["3S1_20443"].SetDefault(ldme_3S1_c_8_chi_c0_1P);
-  octet_ldme["3S1_445"].SetDefault(ldme_3S1_c_8_chi_c0_1P);
-  octet_ldme["3P0_443"].SetDefault(0.0);
-  octet_ldme["3P0_100443"].SetDefault(0.0);
-  octet_ldme["3P1_443"].SetDefault(0.0);
-  octet_ldme["3P1_100443"].SetDefault(0.0);
-  octet_ldme["3P2_443"].SetDefault(0.0);
-  octet_ldme["3P2_100443"].SetDefault(0.0);
-  ldme_3S1_c_8_J_psi_1S = octet_ldme["3S1_443"].Get<double>();
-  ldme_3S1_c_8_psi_2S = octet_ldme["3S1_100443"].Get<double>();
-  ldme_3S1_c_8_chi_c1_1P = octet_ldme["3S1_20443"].Get<double>();
-  ldme_3S1_c_8_chi_c2_1P = octet_ldme["3S1_445"].Get<double>();
   
-   //BOTTOM
+  onia["v8_2"].SetDefault(0.21);
+  v8_2 = onia["v8_2"].Get<double>();
+  onia["Enhance"].SetDefault(1.0);
+  tr_efac = onia["Enhance"].Get<double>();
 
-  ldme_3S1_b_8_chi_b0_1P = 0;
-  ldme_3S1_b_8_chi_b0_2P = 0;
-  ldme_3S1_b_8_chi_b1_1P = 0;
-  ldme_3S1_b_8_chi_b1_2P = 0;
-  ldme_3S1_b_8_chi_b2_1P = 0;
-  ldme_3S1_b_8_chi_b2_2P = 0;
-  ldme_3S1_b_8_Upsilon_1S = 0;
-  ldme_3S1_b_8_Upsilon_2S = 0;
-  ldme_3S1_b_8_Upsilon_3S = 0;
-
-
-  //SINGLETS
-  auto singlet_ldme = onia_ldme["Singlets"];
-  //CHARM
-  singlet_ldme["1S0_441"].SetDefault(3.*3.*0.810/(2.*M_PI));
-  singlet_ldme["3S1_443"].SetDefault(3.*3.*0.810/(2.*M_PI));
-  ldme_J_psi_1S = singlet_ldme["3S1_443"].Get<double>();
-  singlet_ldme["3S1_100443"].SetDefault(3.*3.*0.529/(2.*M_PI));
-  singlet_ldme["3P0_10441"].SetDefault(3.*3.*0.075/(2.*M_PI));
-  singlet_ldme["3P1_20443"].SetDefault(3.*3.*3.*0.075/(2.*M_PI));
-  singlet_ldme["3P2_445"].SetDefault(5.*3.*3.*0.075/(2.*M_PI));
-  //BOTTOM
-  singlet_ldme["1S0_551"].SetDefault(3.*3.*6.477/(2.*M_PI));
-  singlet_ldme["3S1_553"].SetDefault(3.*3.*6.477/(2.*M_PI));
-  singlet_ldme["3S1_100553"].SetDefault(3.*3.*3.234/(2.*M_PI));
-  singlet_ldme["3S1_200553"].SetDefault(3.*3.*3.*2.474/(2.*M_PI));
-  singlet_ldme["3P0_10551"].SetDefault(3.*3.*1.417/(2.*M_PI));
-  singlet_ldme["3P1_20553"].SetDefault(3.*3.*3.*1.417/(2.*M_PI));
-  singlet_ldme["3P2_555"].SetDefault(5.*3.*3.*1.417/(2.*M_PI));
-  singlet_ldme["3P0_110551"].SetDefault(3.*3.*1.654/(2.*M_PI));
-  singlet_ldme["3P1_120553"].SetDefault(3.*3.*3.*1.654/(2.*M_PI));
-  singlet_ldme["3P2_100555"].SetDefault(5.*3.*3.*1.654/(2.*M_PI));
-
-
-  auto onia_shower = onia["SHOWER"];
-  onia_shower["v8_2"].SetDefault(0.21);
-  v8_2 = onia_shower["v8_2"].Get<double>();
-  onia_shower["Enable_all"].SetDefault(false);
-  bool enable_all = onia_shower["Enable_all"].Get<bool>();
-  onia_shower["Enable_QuarkoniaSplittingFunctions"].SetDefault(false);
-  bool quark_splitting_s = onia_shower["Enable_QuarkoniaSplittingFunctions"].Get<bool>();
-  onia_shower["Enable_GluonFragmentation"].SetDefault(false);
-  bool gluon_frag = onia_shower["Enable_GluonFragmentation"].Get<bool>();
-  onia_shower["Enable_OctetMesonSplitting"].SetDefault(true);
-  bool quark_splitting_o = onia_shower["Enable_OctetMesonSplitting"].Get<bool>();
-  onia_shower["Enhance"].SetDefault(1.0);
-  tr_efac = onia_shower["Enhance"].Get<double>();
 
   AddDiQuarkSplittingFunctions(md, kfmode);
-  if(quark_splitting_s||enable_all){AddQuarkoniaSplittingFunctions(md, kfmode);; std::cout<< " QuarkoniaSingletSplitting added."<<std::endl;}
-  if(quark_splitting_o||enable_all){AddOctetMesonSplittingFunctions(md, kfmode); std::cout << " OctetMesonSplitting added."<<std::endl;}
-  if(gluon_frag||enable_all){AddGluonThresholds(md); std::cout << " Gluon threshold added."<<std::endl;}
 
   PRINT_VAR(m_enableQuarkonia);
   switch (m_enableQuarkonia)
@@ -387,13 +318,14 @@ void Sudakov::AddGluonThresholds(Model_Base *md) {
   };
   ST_Set *stset;
   m_stmap[Flavour(kf_gluon)] = stset = new ST_Set;
+  LoadLDME();
   map<kf_code, double> cLDME = {
       // ldmes from FO tune. ------- old -> numerical LDME [GeV^3] from ph/9507398, PhysRevD.50.3176
-      {kf_3S1_c_8_J_psi_1S,  ldme_3S1_c_8_J_psi_1S},// 1.5E-02 / sqr(M_PI)},
-      {kf_3S1_c_8_psi_2S,    ldme_3S1_c_8_psi_2S},//4.3E-03 / sqr(M_PI)},
-      {kf_3S1_c_8_chi_c0_1P, ldme_3S1_c_8_chi_c0_1P},//2./3/M_PI * 1 * 3E-03},
-      {kf_3S1_c_8_chi_c1_1P, ldme_3S1_c_8_chi_c1_1P},//2./3/M_PI * 3 * 3E-03},
-      {kf_3S1_c_8_chi_c2_1P, ldme_3S1_c_8_chi_c2_1P}};//100*2./3/M_PI * 5 * 3E-03}};
+      {GetLDME(kf_3S1_c_8_J_psi_1S),  ldme_3S1_c_8_J_psi_1S},// 1.5E-02 / sqr(M_PI)},
+      {GetLDME(kf_3S1_c_8_psi_2S),    ldme_3S1_c_8_psi_2S},//4.3E-03 / sqr(M_PI)},
+      {GetLDME(kf_3S1_c_8_chi_c0_1P), ldme_3S1_c_8_chi_c0_1P},//2./3/M_PI * 1 * 3E-03},
+      {GetLDME(kf_3S1_c_8_chi_c1_1P), ldme_3S1_c_8_chi_c1_1P},//2./3/M_PI * 3 * 3E-03},
+      {GetLDME(kf_3S1_c_8_chi_c2_1P), ldme_3S1_c_8_chi_c2_1P}};//100*2./3/M_PI * 5 * 3E-03}};
   double arg;
   for (list<kf_code>::iterator octit = c_octetvectors.begin();
        octit != c_octetvectors.end(); octit++) {

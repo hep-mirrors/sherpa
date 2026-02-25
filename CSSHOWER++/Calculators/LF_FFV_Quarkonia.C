@@ -76,65 +76,11 @@ public:
 #include "ATOOLS/Org/Settings.H"
 #include "ATOOLS/Org/Scoped_Settings.H"
 #include <unordered_map>
+#include "SHERPA/SoftPhysics/LDME.H"
 
 using namespace CSSHOWER;
 using namespace ATOOLS;
 
-std::unordered_map<int, double> ldme_map;
-void LoadLDME()
-{
-  static bool loaded = false;
-  if (loaded) return;
-
-  auto onia = Settings::GetMainSettings()["QUARKONIA"];
-  auto onia_ldme = onia["LDME"];
-  auto singlet_ldme = onia_ldme["Singlets"];
-  auto octet_ldme  = onia_ldme["Octets"];
-
-  auto load = [&](auto& group, kf_code kfc, const char* key)
-  {
-    auto entry = group[key];
-    ldme_map[kfc] = entry.template Get<double>();
-  };
-
-  // --- Singlets ---
-  load(singlet_ldme, kf_eta_c_1S,  "1S0_441");
-  load(singlet_ldme, kf_J_psi_1S,  "3S1_443");
-  load(singlet_ldme, kf_psi_2S,    "3S1_100443");
-  load(singlet_ldme, kf_chi_c0_1P, "3P0_10441");
-  load(singlet_ldme, kf_chi_c1_1P, "3P1_20443");
-  load(singlet_ldme, kf_chi_c2_1P, "3P2_445");
-
-  load(singlet_ldme, kf_eta_b,     "1S0_551");
-  load(singlet_ldme, kf_Upsilon_1S,"3S1_553");
-  load(singlet_ldme, kf_Upsilon_2S,"3S1_100553");
-  load(singlet_ldme, kf_Upsilon_3S,"3S1_200553");
-  load(singlet_ldme, kf_chi_b0_1P, "3P0_10551");
-  load(singlet_ldme, kf_chi_b1_1P, "3P1_20553");
-  load(singlet_ldme, kf_chi_b2_1P, "3P2_555");
-  load(singlet_ldme, kf_chi_b0_2P, "3P0_110551");
-  load(singlet_ldme, kf_chi_b1_2P, "3P1_120553");
-  load(singlet_ldme, kf_chi_b2_2P, "3P2_100555");
-
-  // --- Octets ---
-  load(octet_ldme, kf_1S0_c_8_eta_c,        "1S0_441");
-  load(octet_ldme, kf_1S0_c_8_J_psi_1S,     "1S0_443");
-  load(octet_ldme, kf_1S0_c_8_psi_2S,       "1S0_100443");
-  load(octet_ldme, kf_3S1_c_8_eta_c,        "3S1_441");
-  load(octet_ldme, kf_3S1_c_8_J_psi_1S,     "3S1_443");
-  load(octet_ldme, kf_3S1_c_8_psi_2S,       "3S1_100443");
-  load(octet_ldme, kf_3S1_c_8_chi_c0_1P,    "3S1_10441");
-  load(octet_ldme, kf_3S1_c_8_chi_c1_1P,    "3S1_20443");
-  load(octet_ldme, kf_3S1_c_8_chi_c2_1P,    "3S1_445");
-  load(octet_ldme, kf_3P0_c_8_J_psi_1S,     "3P0_443");
-  load(octet_ldme, kf_3P0_c_8_psi_2S,       "3P0_100443");
-  load(octet_ldme, kf_3P1_c_8_J_psi_1S,     "3P1_443");
-  load(octet_ldme, kf_3P1_c_8_psi_2S,       "3P1_100443");
-  load(octet_ldme, kf_3P2_c_8_J_psi_1S,     "3P2_443");
-  load(octet_ldme, kf_3P2_c_8_psi_2S,       "3P2_100443");
-
-  loaded = true;
-}
 
 
 LF_FFV_Quarkonia_FF::LF_FFV_Quarkonia_FF(const SF_Key &key)
@@ -165,16 +111,6 @@ LF_FVF_Quarkonia_FF::LF_FVF_Quarkonia_FF(const SF_Key &key)
   : SF_Lorentz(key)
 {
   LoadLDME();
-}
-
-double GetLDME(int kfc)
-{
-  auto it = ldme_map.find(kfc);
-  if (it == ldme_map.end()) {
-    std::cout<<kfc<<std::endl;
-    throw std::runtime_error("Unknown LDME");
-  }
-  return it->second;
 }
 
 double LF_FFV_Quarkonia_FF::operator()(const double zz, const double y,

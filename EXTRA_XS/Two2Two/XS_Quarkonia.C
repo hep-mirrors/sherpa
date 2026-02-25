@@ -8,7 +8,7 @@
 #include "PHASIC++/Process/External_ME_Args.H"
 #include "PHASIC++/Process/Process_Base.H"
 #include "MODEL/UFO/UFO_Model.H"
-
+#include "SHERPA/SoftPhysics/LDME.H"
 #include "EXTRA_XS/Main/ME2_Base.H"
 
 #define PropID(i,j) ((1<<i)|(1<<j))
@@ -333,94 +333,6 @@ namespace EXTRAXS {
   };
 }
 
-std::unordered_map<int, double> ldme_map;
-
-void msgLDME(kf_code kfc, double LDME)
-{
-  msg_Info()
-    <<"LDME for kf_code "
-    << kfc
-    << " has been set to "
-    << LDME<<std::endl;
-}
-
-void LoadLDME()
-{
-  static bool loaded = false;
-  if (loaded) return;
-
-  auto onia = Settings::GetMainSettings()["QUARKONIA"];
-  auto onia_ldme = onia["LDME"];
-  auto singlet_ldme = onia_ldme["Singlets"];
-  auto octet_ldme  = onia_ldme["Octets"];
-  octet_ldme["3S1_443"].SetDefault(3.430E-03);
-  octet_ldme["3S1_100443"].SetDefault(2.628E-03);
-
-  auto load = [&](auto& group, kf_code kfc, const char* key)
-  {
-    auto entry = group[key];
-    ldme_map[kfc] = entry.template Get<double>();
-    if (entry.IsSetExplicitly())
-      msgLDME(kfc, ldme_map[kfc]);
-  };
-
-  // --- Singlets ---
-  load(singlet_ldme, kf_eta_c_1S,  "1S0_441");
-  load(singlet_ldme, kf_J_psi_1S,  "3S1_443");
-  load(singlet_ldme, kf_psi_2S,    "3S1_100443");
-  load(singlet_ldme, kf_chi_c0_1P, "3P0_10441");
-  load(singlet_ldme, kf_chi_c1_1P, "3P1_20443");
-  load(singlet_ldme, kf_chi_c2_1P, "3P2_445");
-
-  load(singlet_ldme, kf_eta_b,     "1S0_551");
-  load(singlet_ldme, kf_Upsilon_1S,"3S1_553");
-  load(singlet_ldme, kf_Upsilon_2S,"3S1_100553");
-  load(singlet_ldme, kf_Upsilon_3S,"3S1_200553");
-  load(singlet_ldme, kf_chi_b0_1P, "3P0_10551");
-  load(singlet_ldme, kf_chi_b1_1P, "3P1_20553");
-  load(singlet_ldme, kf_chi_b2_1P, "3P2_555");
-  load(singlet_ldme, kf_chi_b0_2P, "3P0_110551");
-  load(singlet_ldme, kf_chi_b1_2P, "3P1_120553");
-  load(singlet_ldme, kf_chi_b2_2P, "3P2_100555");
-
-  // --- Octets ---
-  load(octet_ldme, kf_1S0_c_8_eta_c,        "1S0_441");
-  load(octet_ldme, kf_1S0_c_8_J_psi_1S,     "1S0_443");
-  load(octet_ldme, kf_1S0_c_8_psi_2S,       "1S0_100443");
-  load(octet_ldme, kf_3S1_c_8_eta_c,        "3S1_441");
-  load(octet_ldme, kf_3S1_c_8_J_psi_1S,     "3S1_443");
-  load(octet_ldme, kf_3S1_c_8_psi_2S,       "3S1_100443");
-  load(octet_ldme, kf_3S1_c_8_chi_c0_1P,    "3S1_10441");
-  load(octet_ldme, kf_3S1_c_8_chi_c1_1P,    "3S1_20443");
-  load(octet_ldme, kf_3S1_c_8_chi_c2_1P,    "3S1_445");
-  load(octet_ldme, kf_3P0_c_8_J_psi_1S,     "3P0_443");
-  load(octet_ldme, kf_3P0_c_8_psi_2S,       "3P0_100443");
-  load(octet_ldme, kf_3P1_c_8_J_psi_1S,     "3P1_443");
-  load(octet_ldme, kf_3P1_c_8_psi_2S,       "3P1_100443");
-  load(octet_ldme, kf_3P2_c_8_J_psi_1S,     "3P2_443");
-  load(octet_ldme, kf_3P2_c_8_psi_2S,       "3P2_100443");
-
-  loaded = true;
-}
-
-
-double GetLDME(kf_code kfc)
-{
-  auto it = ldme_map.find(kfc);
-  if (it == ldme_map.end()) {
-    return 0.;
-  }
-  return it->second;
-}
-
-void WarnZeroLDME(kf_code kfc)
-{
-  std::cerr
-    << "Warning: LDME for kf_code "
-    << kfc
-    << " is zero. Skipping channel...\n";
-}
-
 //////////////////////////////////////////////////////////////////////////
 //
 // Singlet production of eta states (1S0 = 441, 551)
@@ -696,7 +608,6 @@ XS_gg_g3S1::XS_gg_g3S1(const External_ME_Args& args):
   m_mass   = fl[m_S].Mass(true);  m_mass2 = sqr(m_mass);
 
   m_R02 = GetLDME(fl[m_S])*2.*M_PI/(3.*3.);
-  // std::cout << "ldme = " << ldme << std::endl;
   m_alphaS = MODEL::s_model->ScalarConstant("alpha_S");
 
 }
@@ -707,15 +618,8 @@ double XS_gg_g3S1::operator()(const Vec4D_Vector& mom)
   double t  = (mom[0]-mom[2]).Abs2();
   double u  = (mom[0]-mom[3]).Abs2();
   double M2 = s+t+u, sM2 = sqr(s-M2), tM2 = sqr(t-M2),  uM2 = sqr(u-M2);
-  m_pref   = (5./9.)*sqr(4.*M_PI)*sqrt(M2)*m_R02; // <<<< it is actually R02, not ldme. Just to keep naming simple for the moment.
+  m_pref   = (5./9.)*sqr(4.*M_PI)*sqrt(M2)*m_R02;
   double all = sqr(s)/(uM2*tM2)+sqr(t)/(uM2*sM2)+sqr(u)/(sM2*tM2);
-  // double prefix = 10./(9.*64.);
-  // double x = M2/s;
-  // double first = pow(m_alphaS,3)*CouplingFactor(3,0)*sqr(M_PI)/pow((sqrt(M2)),5);
-  // double fgg = prefix*256*sqr(x)/(3*sqr(-1+x)*pow((1+x),3))*(2+x+2*sqr(x)-4*pow(x,4)-pow(x,5)+2*sqr(x)*(5+2*x+sqr(x))*log(x));
-  // double all2 = first*fgg*ldme;
-  // std::cout << "all = " << all << "fgg = "<< fgg << "first = "<< first<< "x = "<< x <<std::endl;
-  // return all;
   return pow(m_alphaS,3)*CouplingFactor(3,0)*m_pref*all;
 }
 
@@ -847,7 +751,6 @@ XS_qqbar_g3P0::XS_qqbar_g3P0(const External_ME_Args& args):
   m_mass   = fl[m_S].Mass(true);  m_mass2 = sqr(m_mass);
 
   m_R12 = GetLDME(fl[m_S])*2.*M_PI/(3.*3.);
-  //std::cout << "ldme = " << ldme << std::endl;
   m_alphaS = MODEL::s_model->ScalarConstant("alpha_S");
   m_pref   = 64./27.*sqr(4.*M_PI)*m_R12/pow(m_mass,3);
 }
@@ -934,7 +837,7 @@ bool XS_gg_g3P0::SetColours(const Vec4D_Vector& mom)
 {
   size_t bit = ran->Get()<0.5 ? 0 : 1;
   m_colours[0][bit] = m_colours[1][1-bit]     = Flow::Counter();
-  m_colours[0][1-bit] = m_colours[5-m_S][1-bit] = Flow::Counter(); //bug fixed. Original: m_colours[0][bit]=...
+  m_colours[0][1-bit] = m_colours[5-m_S][1-bit] = Flow::Counter();
   m_colours[1][bit] = m_colours[5-m_S][bit]   = Flow::Counter();
   return true;
 }
@@ -1202,7 +1105,7 @@ XS_qg_q3P2::XS_qg_q3P2(const External_ME_Args& args):
   }
   m_mass   = fl[m_S].Mass(true);  m_mass2 = sqr(m_mass);
 
-  //we use the wave function for the calculations and not the LDME. The division by 3 appears because of the conversion
+  //we use the wave function for the calculations and not the LDME. The division by 5 appears because of the conversion
   m_R12 = GetLDME(fl[m_S])*2.*M_PI/(3.*3.)/5.;
   m_a      = fl[m_q].IsAnti() ? 1 : 0; 
   m_alphaS = MODEL::s_model->ScalarConstant("alpha_S");
@@ -1268,7 +1171,7 @@ XS_qqbar_g3P2::XS_qqbar_g3P2(const External_ME_Args& args):
   }
   m_mass   = fl[m_S].Mass(true);  m_mass2 = sqr(m_mass);
 
-  //we use the wave function for the calculations and not the LDME. The division by 3 appears because of the conversion
+  //we use the wave function for the calculations and not the LDME. The division by 5 appears because of the conversion
   m_R12 = GetLDME(fl[m_S])*2.*M_PI/(3.*3.)/5.;
   m_alphaS = MODEL::s_model->ScalarConstant("alpha_S");
   m_pref   = -8./3.*16./9.*sqr(4.*M_PI)*m_R12/pow(m_mass,3);
@@ -1332,7 +1235,7 @@ XS_gg_g3P2::XS_gg_g3P2(const External_ME_Args& args):
   }
   m_mass   = fl[m_S].Mass(true);  m_mass2 = sqr(m_mass);
 
-  //we use the wave function for the calculations and not the LDME. The division by 3 appears because of the conversion
+  //we use the wave function for the calculations and not the LDME. The division by 5 appears because of the conversion
   m_R12 = GetLDME(fl[m_S])*2.*M_PI/(3.*3.)/5.;
   m_alphaS = MODEL::s_model->ScalarConstant("alpha_S");
   m_pref   = 4.*sqr(4.*M_PI)*m_R12/pow(m_mass,3);
@@ -1859,7 +1762,6 @@ XS_gg_g3S1_oct::XS_gg_g3S1_oct(const External_ME_Args& args):
   m_mass   = fl[m_S].Mass(true);  m_mass2 = sqr(m_mass);
   LoadLDME(); //temporary
   LDME = GetLDME(fl[m_S].Kfcode());
-  std::cout<<"LDME for "<<fl[m_S].Kfcode()<<" is set at: "<< LDME<<"\n";
   m_alphaS = MODEL::s_model->ScalarConstant("alpha_S");
   m_pref = pow(4.*M_PI*m_alphaS,3)*CouplingFactor(3,0);
   
