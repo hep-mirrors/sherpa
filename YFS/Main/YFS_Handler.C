@@ -289,7 +289,13 @@ bool YFS_Handler::CalculateFSR(Vec4D_Vector & p) {
     for(size_t i = 2; i < m_plab.size(); ++i) m_outparticles[m_particles[i]] = m_plab[i];
     return true;
   }
-  if(m_mode==yfsmode::isr) return true;
+  if(m_mode==yfsmode::isr) {
+    // if(m_ISRPhotons.size() < m_mingammaN){
+    //   m_isrWeight=0;
+    //   return false;
+    // }
+    return true;
+  }
   m_fsrWeight=1;
   p_dipoles->MakeDipoles(m_flavs, m_plab, m_plab);
   // p_dipoles->CreateAllDipoles(m_flavs, m_plab, m_plab);
@@ -368,6 +374,10 @@ bool YFS_Handler::CalculateFSR(Vec4D_Vector & p) {
     }
   }
   if(FixedOrder()==fixed_order::nlo && m_FSRPhotons.size()==0) return false;
+  // if((m_ISRPhotons.size() +  m_FSRPhotons.size()) < m_mingammaN) {
+  //   m_fsrWeight=0;
+  //   return false;
+  // }
   // CheckMasses();
   return true;
 }
