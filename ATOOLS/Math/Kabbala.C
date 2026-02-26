@@ -4,35 +4,52 @@
 
 namespace ATOOLS {
 
-//Default constructor
-Kabbala::Kabbala() : shem("0"), rishbon(C_ZERO), lambda([](Function_Argument map) {return C_ZERO;}) {}
+//Default constructor, zero
+Kabbala::Kabbala() {
+  shem = "0";
+  rishbon = C_ZERO;
+  lambda = [](Function_Argument map){
+    return C_ZERO;
+  };
+}
 
 //Constructor for fixed constant.
 Kabbala::Kabbala(const Complex& c) : rishbon(c) {
-
+  rishbon = c;
   shem = ToString(c);
   Complex c1 (c);
-  lambda = [c1](Function_Argument map) {return c1;};
+  lambda = [c1](Function_Argument map) {
+    return c1;
+  };
 }
 
-// constructor without using initial value, that will be calculated from the function
-Kabbala::Kabbala(const std::string& str, const Func& func, Function_Argument map) : shem(str), lambda(func) {
+// constructor without using initial value, that will be calculated from the function, the function should deal with KeyErrors
+Kabbala::Kabbala(const std::string& str, const Func& func, Function_Argument map) {
+  shem = str;
+  lambda = func;
   Update(map);
 }
 
 // legacy constructor, reverts lambda to basic look up of the given String
-Kabbala::Kabbala(const std::string& str , const Complex& c) : shem(str), rishbon(c) {
+Kabbala::Kabbala(const std::string& str, const Complex& c) {
+  shem = str;
+  rishbon = c;
   msg_Debugging() << "No proper function set for the Kabbala. Choosing Basic Lookup." << std::endl;
   lambda = BasicLookUpFunction();
 }
+
 // constructor with lambda and initial value, these may be different values, the value is NOT updated
-Kabbala::Kabbala(const std::string& str, const Complex& c, const Func& func) : shem(str), lambda(func), rishbon(c) {}
+Kabbala::Kabbala(const std::string& str, const Complex& c, const Func& func) {
+  shem = str;
+  rishbon = c;
+  lambda = func;
+}
 
 // copy constructor, maybe explicit form unnecessary
 Kabbala::Kabbala(const Kabbala& k) {
   shem    = k.String();
   rishbon = k.Value();
-  lambda = k.Lambda();
+  lambda  = k.Lambda();
 }
 
 Complex Kabbala::Update(Function_Argument map){return rishbon = lambda(map);}
@@ -40,11 +57,11 @@ Complex Kabbala::Update(Function_Argument map){return rishbon = lambda(map);}
 bool Kabbala::DependsOn(std::string param) const {return shem.find(param) != std::string::npos;}
 
 Kabbala::Func Kabbala::BasicLookUpFunction(){
-  std::string copy(shem);
+  std::string str_copy(shem);
   Complex value_copy(rishbon);
-  return [copy, value_copy](Function_Argument map) {
-    if (map->count(copy) == 0) return value_copy; 
-    return Complex(map->at(copy), .0); 
+  return [str_copy, value_copy](Function_Argument map) {
+    if (map->count(str_copy) == 0) return value_copy; 
+    return Complex(map->at(str_copy), .0); 
   };
 }
 
@@ -94,6 +111,7 @@ Kabbala Kabbala::operator-() {
   return k;
 }
 
+// in place subtraction
 Kabbala& Kabbala::operator-=(const Kabbala& k) {
   rishbon -= k.Value();
   shem    += std::string("-(");
@@ -146,9 +164,9 @@ Kabbala& Kabbala::operator*=(const Complex& c) {
   return *this;
 }
 
-// Division in place, with constant
+// Division in place
 Kabbala& Kabbala::operator/=(const Kabbala& k) {
-  // here the check is necessary, this is still unsafe if updated
+  // here the check is necessary, ATTENTION: this is still unsafe if updated
   if (abs(k.Value()) == 0.0) {
     msg_Out() << this << " divided by " << k << " where the latter is zero!" << std::endl << std::endl; 
     THROW(fatal_error, "division by zero :(");
@@ -181,6 +199,7 @@ Kabbala& Kabbala::operator/=(const Complex& c) {
   return *this;
 }
 
+// division with operands the other way around
 Kabbala operator/(const Complex& c, const Kabbala& k1) {
   if (abs(k1.Value()) == 0.0)  {
     msg_Out() << c << " divided by " << k1 << " where the latter is zero!" << std::endl << std::endl; 
