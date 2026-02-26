@@ -81,7 +81,7 @@ void Cluster_Decayer::Test(const double & Q, const Flavour & flav,
   }
   double momz    = 0.5*sqrt(Q*Q-sqr(hadpars->GetConstituents()->Mass(flav)));
   for (long int i=0;i<1000000;i++) {
-    if (i%10000==0) msg_Out()<<"* "<<int(i/10000)<<" M clusters.\n";
+    //if (i%10000==0) msg_Out()<<"* "<<int(i/10000)<<" M clusters.\n";
     Proto_Particle * q    = new Proto_Particle(flav,
 					       Vec4D(Q/2.,0.,0.,momz));
     Proto_Particle * qbar = new Proto_Particle(flav.Bar(),

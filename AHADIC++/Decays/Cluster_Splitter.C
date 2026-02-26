@@ -273,8 +273,9 @@ void Cluster_Splitter::FillHadronAndDeleteCluster(size_t i) {
   Proto_Particle * part = new Proto_Particle(m_fl[i],m_newmom[i],false);
   part->SetXProd(p_out[i]->DecayPosition());
   p_softclusters->GetHadrons()->push_back(part);
-  msg_Out()<<METHOD<<": ["<<part->Flavour()<<", E = "<<part->Momentum()[0]<<"]: "
-	   <<part->XProd()<<"\n";
+  //msg_Out()<<METHOD<<": ["<<part->Flavour()<<", "
+  //	   <<"E = "<<part->Momentum()[0]<<"]: "
+  //	   <<part->XProd()<<"\n";
   delete p_out[i];
 }
 

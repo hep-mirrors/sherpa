@@ -149,13 +149,13 @@ void Event_Handler::ResetNonPerturbativePhases()
 
 bool Event_Handler::GenerateEvent(eventtype::code mode)
 {
-  //msg_Out()<<"=========================================================\n"
-  //	   <<"=========================================================\n"
-  //	   <<"=========================================================\n"
-  //	   <<METHOD<<": "<<int(mode)<<"\n"
-  //	   <<"=========================================================\n"
-  //	   <<"=========================================================\n"
-  //	   <<"=========================================================\n";
+  msg_Out()<<"=========================================================\n"
+  	   <<"=========================================================\n"
+  	   <<"=========================================================\n"
+  	   <<METHOD<<": "<<int(mode)<<"\n"
+	   <<"=========================================================\n"
+  	   <<"=========================================================\n"
+  	   <<"=========================================================\n";
   DEBUG_FUNC(rpa->gen.NumberOfGeneratedEvents());
   ATOOLS::ran->SaveStatus();
   if (m_checkweight&4 && rpa->gen.NumberOfGeneratedEvents()==0)
@@ -230,10 +230,10 @@ bool Event_Handler::AnalyseEvent() {
 }
 
 int Event_Handler::IterateEventPhases(eventtype::code & mode) {
-  //msg_Out()<<"\n\n\n"
-  //	   <<"===================================================================\n"
-  //	   <<"===================================================================\n"
-  //	   <<"===================================================================\n";
+  msg_Out()<<"\n\n\n"
+  	   <<"============================================================\n"
+  	   <<"============================================================\n"
+  	   <<"============================================================\n";
   Phase_Iterator pit=p_phases->begin();
   int retry = 0;
   bool hardps = true, filter = p_filter!=NULL;
@@ -257,12 +257,12 @@ int Event_Handler::IterateEventPhases(eventtype::code & mode) {
       }
     }
     DEBUG_INFO("Treating "<<(*pit)->Name());
-    //msg_Out()<<METHOD<<" tries "<<(*pit)->Name()<<"\n";
+    msg_Out()<<METHOD<<" tries "<<(*pit)->Name()<<"\n";
     Return_Value::code rv((*pit)->Treat(&m_blobs));
     if (rv!=Return_Value::Nothing) {
       msg_Tracking()<<METHOD<<"(): run '"<<(*pit)->Name()<<"' -> "
                     <<rv<<std::endl;
-      //msg_Out()<<" -> "<<rv<<" ("<<m_blobs.size()<<" blobs)"<<std::endl;
+      msg_Out()<<" -> "<<rv<<" ("<<m_blobs.size()<<" blobs)"<<std::endl;
     }
     switch (rv) {
     case Return_Value::Success :

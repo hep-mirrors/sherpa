@@ -55,7 +55,8 @@ namespace CSSHOWER {
 
   public:
     inline Parton();
-    inline Parton(const ATOOLS::Flavour &,const ATOOLS::Vec4D &,pst::code=pst::none);
+    inline Parton(const ATOOLS::Flavour &,const ATOOLS::Vec4D &,
+		  pst::code=pst::none);
     inline Parton(const ATOOLS::Particle *,pst::code=pst::none);
 
     void DeleteAll();

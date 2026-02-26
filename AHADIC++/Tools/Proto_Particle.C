@@ -56,9 +56,9 @@ void Proto_Particle::Reset() {
 Particle * Proto_Particle::operator()() {
   Particle * part = new Particle(-1,m_flav,m_momentum,'P');
   part->SetPosition(m_xprod);
-  msg_Out()<<METHOD<<" ["<<std::setw(12)<<part->Flav()<<", "
-	   <<std::setw(12)<<(part->Momentum()[0]/part->Flav().HadMass())<<"]: "
-	   <<part->Position()<<"\n";
+  //msg_Out()<<METHOD<<" ["<<std::setw(12)<<part->Flav()<<", "
+  //	   <<std::setw(12)<<(part->Momentum()[0]/part->Flav().HadMass())<<"]: "
+  //	   <<part->Position()<<"\n";
   return part;
 }
 

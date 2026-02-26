@@ -76,8 +76,8 @@ void Singlet_Checker::Reset() {
 
 bool Singlet_Checker::operator()() {
   Reset();
-  msg_Out()<<"================================================================\n"
-	   <<METHOD<<" for "<<p_singlets->size()<<" singlets:\n";
+  //msg_Out()<<"===============================================\n"
+  //	   <<METHOD<<" for "<<p_singlets->size()<<" singlets:\n";
   list<Singlet *>::iterator lsit(p_singlets->begin());
   while (lsit!=p_singlets->end()) {
     p_singlet = (*lsit);
@@ -88,7 +88,7 @@ bool Singlet_Checker::operator()() {
       // we put all of those into a separate list to be deatl with in
       // rescue system
       if (p_singlet->size()==2) {
-	msg_Out()<<"--> will have to deal with it later.\n";
+	//msg_Out()<<"--> will have to deal with it later.\n";
 	m_badones.push_back(lsit);
 	lsit++;
       }
@@ -123,14 +123,15 @@ bool Singlet_Checker::operator()() {
 
 bool Singlet_Checker::CheckSinglet() {
   // Checking the mass for pairs of colour-connected particles
-  msg_Out()<<METHOD<<" for "<<p_singlet->size()<<":\n";
+  //msg_Out()<<METHOD<<" for "<<p_singlet->size()<<":\n";
+  //for (list<Proto_Particle *>::iterator plit=p_singlet->begin();
+  //     plit!=p_singlet->end();plit++) {
+  //  msg_Out()<<"* "<<(*plit)->Flavour()<<" at "<<(*plit)->XProd()<<"\n";
+  //}
   for (list<Proto_Particle *>::iterator plit=p_singlet->begin();
        plit!=p_singlet->end();plit++) {
-    msg_Out()<<"* "<<(*plit)->Flavour()<<" at "<<(*plit)->XProd()<<"\n";
-  }
-  for (list<Proto_Particle *>::iterator plit=p_singlet->begin();
-       plit!=p_singlet->end();plit++) {
-    if ((*plit)->Momentum()[0]<0. || (*plit)->Momentum().RelAbs2()<-rpa->gen.SqrtAccu()) {
+    if ((*plit)->Momentum()[0]<0. ||
+	(*plit)->Momentum().RelAbs2()<-rpa->gen.SqrtAccu()) {
       msg_Tracking()<<"Error in "<<METHOD<<":\n"
 		    <<"   negative energy or mass^2 particle in singlet:\n"
 		    <<(*p_singlet)<<"n";
