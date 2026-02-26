@@ -149,7 +149,7 @@ void Event_Handler::ResetNonPerturbativePhases()
 
 bool Event_Handler::GenerateEvent(eventtype::code mode)
 {
-  //msg_Out()<<"=========================================================\n";
+  msg_Out()<<"=========================================================\n";
   DEBUG_FUNC(rpa->gen.NumberOfGeneratedEvents());
   ATOOLS::ran->SaveStatus();
   if (m_checkweight&4 && rpa->gen.NumberOfGeneratedEvents()==0)
@@ -382,6 +382,7 @@ bool Event_Handler::GenerateStandardPerturbativeEvent(eventtype::code &mode)
       if (fabs((*bit)->CheckChargeConservation())>1e-12) {
 	msg_Error()<<"Charge conservation failed for "<<(*bit)->Type()<<": "
                    <<(*bit)->CheckChargeConservation()<<". Rejecting event.\n";
+	msg_Out()<<METHOD<<"\n"<<(**bit)<<"\n";
 	return false;
       }
     }

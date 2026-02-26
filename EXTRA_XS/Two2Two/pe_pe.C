@@ -300,6 +300,10 @@ operator()(const External_ME_Args &args) const
     const Flavour_Vector &fl = args.Flavours();
     incomingnucleon::code nucleon = incomingnucleon::off;
 
+    msg_Out()<<"\n\n"
+	     <<"----------------------------------------------\n"
+	     <<METHOD<<": "
+	     <<fl[0]<<" "<<fl[1]<<" --> "<<fl[2]<<" "<<fl[3]<<"\n";
     // check if elastic NC scattering
     if (fl.size() != 4) return NULL;
     if (fl[0] != fl[2])
@@ -308,17 +312,17 @@ operator()(const External_ME_Args &args) const
         return NULL;
 
     // Sherpa orders: fl[0]=hadron_in, fl[1]=lepton_in, fl[2]=hadron_out, fl[3]=lepton_out
-    if (fl[0] == Flavour(kf_p_plus)) {
+    if (fl[1] == Flavour(kf_p_plus)) {
         nucleon = incomingnucleon::proton;
-    } else if (fl[0] == Flavour(kf_n)) {
+    } else if (fl[1] == Flavour(kf_n)) {
         nucleon = incomingnucleon::neutron;
     } else {
         return NULL; // Not a nucleon
     }
     
     // check leptons for NC interaction (electron, muon, or tau)
-    if (fl[1].IsChargedLepton()) {
-        return new pe_pe(args, nucleon, fl[1], fl[0]);
+    if (fl[0].IsChargedLepton()) {
+        return new pe_pe(args, nucleon, fl[0], fl[1]);
     }
 
     return NULL;

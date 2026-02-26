@@ -660,6 +660,9 @@ void Matrix_Element_Handler::BuildProcesses()
       THROW(invalid_input, std::string{"Invalid PROCESSES definition.\n\n"} +
                                Strings::ProcessesSyntaxExamples);
     }
+    msg_Out()<<"\n=========================================================\n"
+	     <<METHOD<<": ["<<name<<"]\n"
+	     <<"\n=========================================================\n";
     Scoped_Settings procsettings {proc[name]};
     // tags are not automatically resolved in setting keys, hence let's do this
     // manually, to allow for tags within process specifications as e.g.

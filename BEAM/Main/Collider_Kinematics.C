@@ -7,8 +7,10 @@ using namespace ATOOLS;
 
 Collider_Kinematics::Collider_Kinematics(std::array<Beam_Base*, 2> beams)
     : Kinematics_Base(beams), m_mode(collidermode::unknown) {
-  if (p_beams[0]->Type() == beamspectrum::monochromatic &&
-      p_beams[1]->Type() == beamspectrum::monochromatic)
+  if ((p_beams[0]->Type() == beamspectrum::monochromatic ||
+       p_beams[0]->Type() == beamspectrum::Fixed_Target ) &&
+      (p_beams[1]->Type() == beamspectrum::monochromatic ||
+       p_beams[1]->Type() == beamspectrum::Fixed_Target ))
     m_mode = collidermode::monochromatic;
   else if (p_beams[0]->Type() != beamspectrum::monochromatic &&
            p_beams[1]->Type() == beamspectrum::monochromatic)

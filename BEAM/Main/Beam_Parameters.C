@@ -235,9 +235,9 @@ Beam_Base * Beam_Parameters::InitializeDM_beam(int num)
 
 Beam_Base * Beam_Parameters::InitializeFixed_Target(int num)
 {
-  double beam_energy        = (*this)("BEAM_ENERGIES",num);
+  Flavour beam_particle     = GetFlavour("BEAMS",num);
+  double beam_energy        = beam_particle.Mass(true);
   double beam_polarization  = (*this)("BEAM_POLARIZATIONS",num);
-  Flavour beam_particle    = GetFlavour("BEAMS",num);
   return new Fixed_Target(beam_particle,beam_energy,beam_polarization,1-2*num);
 }
 

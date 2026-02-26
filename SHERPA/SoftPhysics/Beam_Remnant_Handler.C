@@ -151,8 +151,8 @@ Blob * Beam_Remnant_Handler::FillBunchBlob(int beam,Particle * particle)
     p->SetFinalMass();
     blob->AddToInParticles(p);
     p = new Particle(-1, p_beam->GetBeam(beam)->Remnant(),
-                     p_beam->GetBeam(beam)->InMomentum() -
-                             particle->Momentum());
+                     (p_beam->GetBeam(beam)->InMomentum() -
+		      particle->Momentum()));
     p->SetNumber(0);
     p->SetStatus(part_status::decayed);
     p->SetFinalMass();
@@ -160,6 +160,8 @@ Blob * Beam_Remnant_Handler::FillBunchBlob(int beam,Particle * particle)
     blob->SetPosition(p_beam->GetBeam(beam)->Position());
   }
   m_beam++;
+  msg_Out()<<METHOD<<"("<<beam<<", "<<particle->Number()<<"/"<<particle->Flav()<<") "
+	   <<"--> "<<blob->NOutP()<<"\n";
   return blob;
 }
 

@@ -15,10 +15,12 @@ using namespace ATOOLS;
 using namespace BEAM;
 using namespace std;
 
-Beam_Spectra_Handler::Beam_Spectra_Handler()
-    : p_kinematics(nullptr), p_weight(nullptr), m_beammode(beammode::collider),
-      m_collidermode(collidermode::monochromatic), m_mode(0),
-      m_polarisation(0) {
+Beam_Spectra_Handler::Beam_Spectra_Handler() :
+  p_kinematics(nullptr), p_weight(nullptr),
+  m_beammode(beammode::collider),
+  m_collidermode(collidermode::monochromatic), m_mode(0),
+  m_polarisation(0), m_on(false)
+{
   msg_Info() << "Initializing beam spectra ...\n";
   for (size_t i = 0; i < 2; i++)
     p_BeamBase[i] = nullptr;
@@ -34,10 +36,10 @@ Beam_Spectra_Handler::Beam_Spectra_Handler()
   msg_Info() << "  Type: " << m_type << std::endl
              << "  Beam 1: " << p_BeamBase[0]->Beam()
              << " (enabled = " << p_BeamBase[0]->On() << ", "
-             << "momentum = " << p_BeamBase[0]->InMomentum() << ")" << std::endl
+             << "momentum = " << p_BeamBase[0]->InMomentum() << ")\n"
              << "  Beam 2: " << p_BeamBase[1]->Beam()
              << " (enabled = " << p_BeamBase[0]->On() << ", "
-             << "momentum = " << p_BeamBase[1]->InMomentum() << ")" << std::endl;
+             << "momentum = " << p_BeamBase[1]->InMomentum() << ")\n";
 }
 
 Beam_Spectra_Handler::~Beam_Spectra_Handler() {
@@ -61,6 +63,13 @@ bool Beam_Spectra_Handler::InitTheBeams() {
     if (p_BeamBase[i]->PolarisationOn())
       m_polarisation += i + 1;
   }
+  msg_Out()<<"==============================================\n"
+	   <<METHOD<<" with mode = "<<m_mode<<", on = "<<m_on<<"\n"
+	   <<"type = "
+	   <<p_BeamBase[0]->Type()<<": "<<p_BeamBase[0]->InMomentum()<<" / "
+	   <<p_BeamBase[1]->Type()<<": "<<p_BeamBase[1]->InMomentum()<<"\n"
+	   <<"==============================================\n";
+  //exit(1);
   switch (m_mode) {
   case 1:
     m_collidermode = collidermode::spectral_1;
@@ -74,10 +83,11 @@ bool Beam_Spectra_Handler::InitTheBeams() {
   default:
     break;
   }
-  if(p_BeamBase[0]->Type()==beamspectrum::Fixed_Target){
-    BoostFixedTarget();
-    return true;
-  }
+  //if(p_BeamBase[0]->Type()==beamspectrum::Fixed_Target ||
+  // p_BeamBase[1]->Type()==beamspectrum::Fixed_Target) {
+  //BoostFixedTarget();
+  //return true;
+  //}
   rpa->gen.SetBeam1(p_BeamBase[0]->Beam());
   rpa->gen.SetBeam2(p_BeamBase[1]->Beam());
   rpa->gen.SetPBeam(0, p_BeamBase[0]->InMomentum());
@@ -91,6 +101,9 @@ bool Beam_Spectra_Handler::InitTheBeams() {
 }
 
 bool Beam_Spectra_Handler::InitTheKinematics() {
+  msg_Out()<<"==================================================\n"
+	   <<METHOD<<": beammode = "<<m_beammode<<"\n"
+	   <<"==================================================\n";
   switch (m_beammode) {
   case beammode::relic_density:
       m_type       = std::string("Relic Density");
@@ -159,13 +172,18 @@ bool Beam_Spectra_Handler::CheckConsistency(const ATOOLS::Flavour *_bunches) {
   return true;
 }
 
+// Need to fix this.
 void Beam_Spectra_Handler::BoostFixedTarget(){
   // p_BeamBase[0] is the beam in the lab frame
   // p_BeamBase[1] is the fixed target
   Vec4D pmu_lab = p_BeamBase[0]->InMomentum();
   Vec4D pe_lab  = p_BeamBase[1]->InMomentum();
+  msg_Out()<<METHOD<<": "<<pmu_lab<<" / "<<pe_lab<<"\n";
   p_BeamBase[0]->SetInMomentum(pmu_lab);
   p_BeamBase[1]->SetInMomentum(pe_lab);
+  msg_Out()<<METHOD<<": "
+	   <<p_BeamBase[0]->InMomentum()<<" / "
+	   <<p_BeamBase[1]->InMomentum()<<"\n";
 
   double slab = (pmu_lab+pe_lab).Abs2();
   double m1 = p_BeamBase[0]->Beam().Mass();
@@ -181,6 +199,9 @@ void Beam_Spectra_Handler::BoostFixedTarget(){
 
   p_BeamBase[0]->SetOutMomentum(pmu);
   p_BeamBase[1]->SetOutMomentum(pe);
+  msg_Out()<<METHOD<<": "
+	   <<p_BeamBase[0]->OutMomentum()<<" / "
+	   <<p_BeamBase[1]->OutMomentum()<<"\n";
 
   rpa->gen.SetBeam1(p_BeamBase[0]->Beam());
   rpa->gen.SetBeam2(p_BeamBase[1]->Beam());
