@@ -28,10 +28,10 @@ namespace ATOOLS {
     public:
       //constructors
       Kabbala();
-      Kabbala(Complex C);
-      Kabbala(std::string str, Func func, Function_Argument map);
-      Kabbala(std::string str ,Complex C);
-      Kabbala(std::string str, Complex C, Func func);
+      Kabbala(const Complex& c);
+      Kabbala(const std::string& str, const Func& func, Function_Argument map);
+      Kabbala(const std::string& str ,const Complex& c);
+      Kabbala(const std::string& str, const Complex& c, const Func& func);
       Kabbala(const Kabbala& k);
 
       // Stuff for the lambda functions
@@ -40,14 +40,14 @@ namespace ATOOLS {
       Func BasicLookUpFunction();
 
       // Member access
-      Complex Value() const {return rishbon;} 
-      std::string String() const {return shem;}
-      Func Lambda() const {return lambda;}
+      inline const Complex& Value() const {return rishbon;} 
+      inline const std::string& String() const {return shem;}
+      inline const Func& Lambda() const {return lambda;}
     
       // Member setters
-      void SetValue(Complex val) {rishbon = val;}
-      void SetString(std::string str) {shem = str;} 
-      void SetLambda(Func func) {lambda = func;}
+      inline void SetValue(Complex val) {rishbon = val;}
+      inline void SetString(std::string str) {shem = str;} 
+      inline void SetLambda(Func func) {lambda = func;}
 
       /*
       a LOT of useful operators :)
@@ -150,7 +150,7 @@ namespace ATOOLS {
   inline Kabbala operator/(const double& d,   const Kabbala& k) {return Complex(d)/k;}
 
   /*
-  some conversion; TODO only here because model not written properly yet
+  some conversion; only here because old models will need it
   */
   inline double ToDouble(const Kabbala& k) {return k.Value().real();}
   inline std::string ToString(const Kabbala& k) {return k.String();}
