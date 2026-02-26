@@ -706,9 +706,9 @@ double NLO_Base::CalculateRealReal(Vec4D k1, Vec4D k2, int fsr1, int fsr2){
  	_p.pop_back();
  	_p.pop_back();
   m_plab = pp;
-	// p_nlodipoles->MakeDipolesII(m_flavs,_p,m_plab);
-	// p_nlodipoles->MakeDipoles(m_flavs,_p,m_plab);
-	p_nlodipoles->CreateAllDipoles(m_flavs,_p,m_plab);
+	p_nlodipoles->MakeDipolesII(m_flavs,_p,m_plab);
+	p_nlodipoles->MakeDipoles(m_flavs,_p,m_plab);
+	// p_nlodipoles->CreateAllDipoles(m_flavs,_p,m_plab);
 	p_nlodipoles->MakeDipolesIF(m_flavs,_p,m_plab);
 
 	double subloc1 = p_nlodipoles->CalculateRealSub(k1);

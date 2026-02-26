@@ -84,6 +84,7 @@ void YFS_Base::RegisterDefaults(){
   s["NLO_CUTS"].SetDefault(false);
   s["Fixed_Order"].SetDefault(fixed_order::full);
   s["SKIP_NEG_WEIGHTS"].SetDefault(false);
+  s["MIN_PHOTON"].SetDefault<int>(-1);
 }
 
 void YFS_Base::RegisterSettings(){
@@ -141,6 +142,7 @@ void YFS_Base::RegisterSettings(){
   m_nlocuts = s["NLO_CUTS"].Get<bool>();
   m_fixedOrder = s["Fixed_Order"].Get<fixed_order::code>();
   m_skipNegWeights = s["SKIP_NEG_WEIGHTS"].Get<bool>();
+  m_mingammaN = s["MIN_PHOTON"].Get<int>();
   m_CalForm = false;
   m_realtool = false;
   //update when beamstrahlung is added

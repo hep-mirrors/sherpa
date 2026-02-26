@@ -391,7 +391,7 @@ bool FSR::F() {
     if (m_eikonal_mode == 1) {
       m_f    = Eikonal(m_photons[i]);
       m_fbar = EikonalInterferance(m_photons[i]);
-      m_fbar *= m_sprim/m_sQ;
+      // m_fbar *= m_sprim/m_sQ;
       // m_fbar = m_alpi / (2  * M_PI) * m_fbarvec[i];
 
     }
