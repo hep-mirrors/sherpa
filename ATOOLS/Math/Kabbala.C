@@ -5,46 +5,35 @@
 namespace ATOOLS {
 
 //Default constructor
-Kabbala::Kabbala(){
-  shem = "0";
-  rishbon = C_ZERO;
-  lambda = [](Function_Argument map) {return C_ZERO;};
-}
+Kabbala::Kabbala() : shem("0"), rishbon(C_ZERO), lambda([](Function_Argument map) {return C_ZERO;}) {}
+
 //Constructor for fixed constant.
-Kabbala::Kabbala(Complex c){
-  MyStrStream ss;
-  ss << c;
-  ss >> shem;
-  rishbon = c;
+Kabbala::Kabbala(const Complex& c) : rishbon(c) {
+
+  shem = ToString(c);
   Complex c1 (c);
   lambda = [c1](Function_Argument map) {return c1;};
 }
+
 // constructor without using initial value, that will be calculated from the function
-Kabbala::Kabbala(std::string str, Func func, Function_Argument map){
-  shem = str;
-  lambda = func;
+Kabbala::Kabbala(const std::string& str, const Func& func, Function_Argument map) : shem(str), lambda(func) {
   Update(map);
 }
+
 // legacy constructor, reverts lambda to basic look up of the given String
-Kabbala::Kabbala(std::string str ,Complex C) {
-  shem    = str;
-  rishbon = C;
+Kabbala::Kabbala(const std::string& str , const Complex& c) : shem(str), rishbon(c) {
   msg_Debugging() << "No proper function set for the Kabbala. Choosing Basic Lookup." << std::endl;
   lambda = BasicLookUpFunction();
 }
 // constructor with lambda and initial value, these may be different values, the value is NOT updated
-Kabbala::Kabbala(std::string str, Complex C, Func func){
-  shem = str;
-  lambda = func;
-  rishbon = C;
-}
-// copy constructor, this may be the reason the lambdas need to be copied explicitly edit: no
+Kabbala::Kabbala(const std::string& str, const Complex& c, const Func& func) : shem(str), lambda(func), rishbon(c) {}
+
+// copy constructor, maybe explicit form unnecessary
 Kabbala::Kabbala(const Kabbala& k) {
   shem    = k.String();
   rishbon = k.Value();
   lambda = k.Lambda();
 }
-
 
 Complex Kabbala::Update(Function_Argument map){return rishbon = lambda(map);}
 
