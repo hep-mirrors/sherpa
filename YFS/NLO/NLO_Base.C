@@ -38,6 +38,7 @@ NLO_Base::NLO_Base() {
   m_looptool = 0;
   m_rrtool = 0;
   m_vvtool = 0;
+  m_zeroRV = 0;
   if (m_isr_debug || m_fsr_debug) {
     m_histograms2d["IFI_EIKONAL"] = new Histogram_2D(0, -1., 1., 20, 0, 5., 20);
     m_histograms2d["REAL_SUB"] =
@@ -117,6 +118,8 @@ NLO_Base::~NLO_Base() {
     delete p_virt;
   if (p_vv)
     delete p_vv;
+  msg_Out()<<"Total zero RV: "<<m_zeroRV<<std::endl;
+  msg_Out()<<"Total events : "<<m_evts<<std::endl;
 }
 
 void NLO_Base::InitializeVirtual(const PHASIC::Process_Info &pi) {
@@ -604,10 +607,12 @@ double NLO_Base::CalculateRealVirtual(Vec4D k, int fsrcount) {
     m_failcut = true;
   ;
   if (IsBad(r)) {
+    m_zeroRV++;
     msg_Error() << "Real-Virtual is " << r << std::endl;
     return 0;
   }
   if (IsZero(r)) {
+    m_zeroRV++;
     // PRINT_VAR(r);
     // PRINT_VAR(k);
     return 0;
