@@ -35,12 +35,12 @@ namespace MODEL {
         void Variations::ReadCorrelations(){
             if (!s["MODEL_VARIATIONS_CORRELATE"].SetDefault("None").IsList()) {
                 if (s["MODEL_VARIATIONS_CORRELATE"].Get<std::string>() != "None")
-                    msg_Out() << "\x1b[31m\tParameter correlations of not formatted properly. Ignoring them...\x1b[0m" << std::endl;
+                    msg_Out() << "\x1b[31m\tParameter correlations not formatted properly (reason: not a list). Ignoring them...\x1b[0m" << std::endl;
                 return;
             }
             for (ATOOLS::Scoped_Settings& ss : s["MODEL_VARIATIONS_CORRELATE"].GetItems()){
                 if (!ss.IsList()) {
-                    msg_Out() << "\x1b[31m\tParameter correlations of not formatted properly. Ignoring them...\x1b[0m" << std::endl;
+                    msg_Out() << "\x1b[31m\tParameter correlations not formatted properly (reason: elements have to be lists). Ignoring them...\x1b[0m" << std::endl;
                     return;
                 }
                 std::vector<std::string> variables = ss.GetVector<std::string>();
