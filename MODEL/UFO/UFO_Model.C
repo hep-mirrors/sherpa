@@ -15,13 +15,13 @@ namespace UFO{
   UFO_Model::UFO_Model(bool elementary):
     Model_Base(elementary)
   {
+    implements_variations = true;
     RegisterDefaults();
     p_numbers          = new MODEL::ScalarNumbersMap();
     p_constants        = new MODEL::ScalarConstantsMap();
     p_complexconstants = new MODEL::ComplexConstantsMap();
     p_functions        = new MODEL::ScalarFunctionsMap();
-    implements_variations = true;
-
+    
     auto& s = ATOOLS::Settings::GetMainSettings();
     const auto& paramcard = s["UFO_PARAM_CARD"].SetDefault("").Get<std::string>();
     p_dataread = new UFO::UFO_Param_Reader(paramcard);
