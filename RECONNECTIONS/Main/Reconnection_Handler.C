@@ -20,8 +20,10 @@ Reconnection_Handler::Reconnection_Handler(const bool & on) :
   // output
   const bool print_files = false;
   if (print_files && m_on) {
-    std::string filename = "reconnection_weights.dat";
-    m_weight_file.open(filename);
+    std::string filename = "cr_weights.dat";
+    m_cr_weight_file.open(filename);
+    std::string total_filename = "total_weights.dat";
+    m_total_weight_file.open(total_filename);
   }
   // output
 }
@@ -33,8 +35,11 @@ Reconnection_Handler::~Reconnection_Handler() {
     PrintVariationStatistics();
   }
   // output
-  if (m_weight_file.is_open()) {
-    m_weight_file.close();
+  if (m_cr_weight_file.is_open()) {
+    m_cr_weight_file.close();
+  }
+  if (m_total_weight_file.is_open()) {
+    m_total_weight_file.close();
   }
   // output
   delete p_reconnector;
@@ -50,13 +55,21 @@ void Reconnection_Handler::Initialize() {
   m_sum_weights_squared.resize(m_n_variations, 0.0);
 
   // output
-  if (m_weight_file.is_open()) {
-    m_weight_file << "# n_reconnections";
+  if (m_cr_weight_file.is_open()) {
+    m_cr_weight_file << "# n_cr";
     for (size_t i=0; i<m_n_variations; i++) {
-      m_weight_file << " w_var" << i;
+      m_cr_weight_file << " w_cr_v" << i;
     }
-    m_weight_file << "\n";
-    m_weight_file << std::scientific << std::setprecision(10);
+    m_cr_weight_file << "\n";
+    m_cr_weight_file << std::scientific << std::setprecision(10);
+  }
+  if (m_total_weight_file.is_open()) {
+      m_total_weight_file << "#";
+      for (size_t i=0; i<m_n_variations; i++) {
+        m_total_weight_file << " w_total_v" << i;
+      }
+      m_total_weight_file << "\n";
+    m_total_weight_file << std::scientific << std::setprecision(10);
   }
   // output
 }
@@ -128,13 +141,20 @@ Return_Value::code Reconnection_Handler::operator()(Blob_List *const blobs,
   }
   
   // output
-  if (m_weight_file.is_open() && n_mpi_variations <= 1) {
-    m_weight_file << n_reconnections;
+  if (m_cr_weight_file.is_open()) {
+    m_cr_weight_file << n_reconnections;
     for (size_t i = 0; i < n_max; ++i) {
-      m_weight_file << " " << combined_weights[i];
+      m_cr_weight_file << " " << variation_weights[i];
     }
-    m_weight_file << "\n";
+    m_cr_weight_file << "\n";
   // output
+  }
+  if (m_total_weight_file.is_open()) {
+    for (size_t i = 0; i < n_max; ++i) {
+      if (i > 0) m_total_weight_file << " ";
+      m_total_weight_file << combined_weights[i];
+    }
+    m_total_weight_file << "\n";
   }
   
   m_total_events++;

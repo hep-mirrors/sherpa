@@ -78,9 +78,9 @@ namespace AMISIC {
     double m_weight_cutoff;
     std::vector<size_t> m_cutoff_count;
 
-    size_t m_mpi_scatter_count;          // output
-    std::ofstream m_b_weight_file;       // output
-    std::ofstream m_total_weight_file;   // output
+    size_t m_mpi_scatter_count;      // output
+    std::ofstream m_b_weight_file;   // output
+    std::ofstream m_mpi_weight_file; // output
     std::vector<double> m_sum_weights;
     std::vector<double> m_sum_weights_squared;
     size_t m_total_events;

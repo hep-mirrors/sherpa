@@ -21,7 +21,8 @@ namespace RECONNECTIONS {
     std::vector<double> m_sum_weights_squared;
     size_t m_total_events;
     
-    std::ofstream m_weight_file; // output
+    std::ofstream m_cr_weight_file;    // output
+    std::ofstream m_total_weight_file; // output
     
     void AddReconnectionBlob(ATOOLS::Blob_List * blobs);
     void PrintVariationStatistics();

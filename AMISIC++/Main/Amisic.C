@@ -29,8 +29,8 @@ Amisic::~Amisic() {
   if (m_b_weight_file.is_open()) {
     m_b_weight_file.close();
   }
-  if (m_total_weight_file.is_open()) {
-    m_total_weight_file.close();
+  if (m_mpi_weight_file.is_open()) {
+    m_mpi_weight_file.close();
   }
   // output
 }
@@ -257,20 +257,20 @@ void Amisic::InitParameterVariations() {
   if (m_b_weight_file.is_open()) {
     m_b_weight_file << "# b_value";
     for (size_t ivar=0; ivar<m_n_variations; ivar++) {
-      m_b_weight_file << " w_b_var" << ivar;
+      m_b_weight_file << " w_b_v" << ivar;
     }
     m_b_weight_file << "\n";
     m_b_weight_file << std::scientific << std::setprecision(10);
   }
-  std::string total_filename = "total_weights.dat";
-  m_total_weight_file.open(total_filename);
-  if (m_total_weight_file.is_open()) {
-    m_total_weight_file << "# n_mpi";
+  std::string total_filename = "mpi_weights.dat";
+  m_mpi_weight_file.open(total_filename);
+  if (m_mpi_weight_file.is_open()) {
+    m_mpi_weight_file << "# n_mpi";
     for (size_t ivar=0; ivar<m_n_variations; ivar++) {
-      m_total_weight_file << " w_total_var" << ivar;
+      m_mpi_weight_file << " w_mpi_v" << ivar;
     }
-    m_total_weight_file << "\n";
-    m_total_weight_file << std::scientific << std::setprecision(10);
+    m_mpi_weight_file << "\n";
+    m_mpi_weight_file << std::scientific << std::setprecision(10);
   }
   // output
 }
@@ -694,12 +694,12 @@ void Amisic::ApplyVariationWeights(ATOOLS::Blob * blob) {
     }
     m_b_weight_file << "\n";
   }
-  if (m_total_weight_file.is_open()) {
-    m_total_weight_file << m_mpi_scatter_count;
+  if (m_mpi_weight_file.is_open()) {
+    m_mpi_weight_file << m_mpi_scatter_count;
     for (size_t ivar=0; ivar<m_n_variations; ++ivar) {
-      m_total_weight_file << " " << w_total_vec[ivar];
+      m_mpi_weight_file << " " << w_total_vec[ivar];
     }
-    m_total_weight_file << "\n";
+    m_mpi_weight_file << "\n";
   }
   // output
   
