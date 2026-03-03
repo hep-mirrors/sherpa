@@ -39,6 +39,7 @@ NLO_Base::NLO_Base() {
   m_rrtool = 0;
   m_vvtool = 0;
   m_zeroRV = 0;
+  m_zeroV = 0;
   if (m_isr_debug || m_fsr_debug) {
     m_histograms2d["IFI_EIKONAL"] = new Histogram_2D(0, -1., 1., 20, 0, 5., 20);
     m_histograms2d["REAL_SUB"] =
@@ -118,6 +119,7 @@ NLO_Base::~NLO_Base() {
     delete p_virt;
   if (p_vv)
     delete p_vv;
+  msg_Out()<<"Total zero V: "<<m_zeroV<<std::endl;
   msg_Out()<<"Total zero RV: "<<m_zeroRV<<std::endl;
   msg_Out()<<"Total events : "<<m_evts<<std::endl;
 }
@@ -220,8 +222,10 @@ double NLO_Base::CalculateVirtual() {
   else
     sub = 0;
   m_oneloop = (virt - sub * m_born / m_rescale_alpha);
-  if (IsZero(virt))
+  if (IsZero(virt)){
+    m_zeroV++;
     return 0;
+  }
   if (p_virt->p_loop_me->Mode() == 1) {
     m_oneloop /= m_rescale_alpha;
     // PRINT_VAR(m_rescale_alpha);
