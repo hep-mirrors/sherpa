@@ -626,9 +626,12 @@ void Amisic::AcceptRejectReweighting(const bool accepted, const double prob_nom)
     // p_var = 0 for pt2 <= (ptmin2)_var
     double prob_var = 0.;
     if (m_singlecollision.PT2() > sqr(m_ptmin_variations[ivar])) {
-      (&m_processes)->SetPT02(sqr(m_pt0_variations[ivar]));
-      const double xs_var = (m_processes)();
-      (&m_processes)->SetPT02(sqr(m_pt0_variations[0]));
+      double xs_var = xs_nom;
+      if (m_pt0_variations[ivar] != m_pt0_variations[0]) {
+        (&m_processes)->SetPT02(sqr(m_pt0_variations[ivar]));
+        xs_var = (m_processes)();
+        (&m_processes)->SetPT02(sqr(m_pt0_variations[0]));
+      }
       prob_var = prob_nom * m_overlap_ratios[ivar] * xs_var / xs_nom;
     }
     if (accepted) {
