@@ -67,12 +67,12 @@ void Remnants_Parameters::SetNucleonDefaults()
   parmsP->params["REFERENCE_ENERGY"]        = 7000.;
   parmsP->params["ENERGY_SCALING_EXPO"]     = 0.08;
   parmsP->m_form                            = matter_form::double_gaussian;
-  parmsP->params["MATTER_RADIUS_1"]         = 0.851;
+  parmsP->params["MATTER_RADIUS_1"]         = 0.806;
   parmsP->params["MATTER_RADIUS_2"]         = 1.00;
-  parmsP->params["MATTER_FRACTION_1"]       = 0.447;
-  parmsP->param_variations["MATTER_RADIUS_1"]   = {0.851};
+  parmsP->params["MATTER_FRACTION_1"]       = 0.653;
+  parmsP->param_variations["MATTER_RADIUS_1"]   = {0.806, 0.706, 0.906};
   parmsP->param_variations["MATTER_RADIUS_2"]   = {1.00};
-  parmsP->param_variations["MATTER_FRACTION_1"] = {0.447};
+  parmsP->param_variations["MATTER_FRACTION_1"] = {0.653, 0.553, 0.753};
   parmsP->params["SOFT_EXPONENT"]           = 0.08;
   m_defaults[Flavour(kf_p_plus)]            = parmsP;
   m_defaults[Flavour(kf_p_plus).Bar()]      = new remnant_parameters(*parmsP);
