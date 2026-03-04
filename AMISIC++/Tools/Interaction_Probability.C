@@ -342,9 +342,7 @@ void Interaction_Probability::OutputTables() {
 
     for (size_t j=0;j<p_sbins->m_nbins;j++) {
       double s           = p_sbins->x(j);
-      double xs_nd_var   = (m_pdfnorm * m_sigma_nd_variations[ivar] * p_procs->GetXSecs()->XSnd(s));
-      double xs_hard     = p_procs->GetXSecs()->XShard(s);
-      double xsratio_var = xs_hard / xs_nd_var;
+      double xsratio_var = p_procs->GetXSecs()->XSratio(s, ivar);
 
       msg_Info()<<"   | "<<std::setprecision(6)<<std::setw(15)<<sqrt(s)<<" | "
                 <<std::string(6,' ')<<" | "
