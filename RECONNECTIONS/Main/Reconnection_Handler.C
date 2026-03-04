@@ -16,17 +16,7 @@ Reconnection_Handler::Reconnection_Handler(const bool & on) :
   m_n_variations(0),
   m_n_mpi_variations(SIZE_MAX),
   m_total_events(0)
-{
-  // output
-  const bool print_files = false;
-  if (print_files && m_on) {
-    std::string filename = "cr_weights.dat";
-    m_cr_weight_file.open(filename);
-    std::string total_filename = "total_weights.dat";
-    m_total_weight_file.open(total_filename);
-  }
-  // output
-}
+{}
 
 Reconnection_Handler::~Reconnection_Handler() {
   if (m_on) {
@@ -55,6 +45,14 @@ void Reconnection_Handler::Initialize() {
   m_sum_weights_squared.resize(m_n_variations, 0.0);
 
   // output
+  const bool print_files = p_reconnector->GetWeightOutput();
+  if (print_files && m_on) {
+    std::string filename = "cr_weights.dat";
+    m_cr_weight_file.open(filename);
+    std::string total_filename = "total_weights.dat";
+    m_total_weight_file.open(total_filename);
+  }
+  
   if (m_cr_weight_file.is_open()) {
     m_cr_weight_file << "# n_cr";
     for (size_t i=0; i<m_n_variations; i++) {
@@ -65,9 +63,7 @@ void Reconnection_Handler::Initialize() {
   }
   if (m_total_weight_file.is_open()) {
       m_total_weight_file << "#";
-      for (size_t i=0; i<m_n_variations; i++) {
-        m_total_weight_file << " w_total_v" << i;
-      }
+      m_total_weight_file << " w_total";
       m_total_weight_file << "\n";
     m_total_weight_file << std::scientific << std::setprecision(10);
   }
@@ -143,7 +139,7 @@ Return_Value::code Reconnection_Handler::operator()(Blob_List *const blobs,
   // output
   if (m_cr_weight_file.is_open()) {
     m_cr_weight_file << n_reconnections;
-    for (size_t i = 0; i < n_max; ++i) {
+    for (size_t i = 0; i < m_n_variations; ++i) {
       m_cr_weight_file << " " << variation_weights[i];
     }
     m_cr_weight_file << "\n";

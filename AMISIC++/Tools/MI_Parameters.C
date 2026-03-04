@@ -127,6 +127,8 @@ MI_Parameters::MI_Parameters() :
     = s["nB_bins"].SetDefault(20).Get<size_t>();
   m_flags[string("nMaxScatters")]
     = s["N_MaxScatters"].SetDefault(10000).Get<size_t>();
+  m_flags[string("weight_output")]
+    = s["WEIGHT_OUTPUT"].SetDefault(0).Get<size_t>();
 
 
   size_t twopions = s["TwoPionInterference"].SetDefault(0).Get<size_t>();

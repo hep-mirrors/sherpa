@@ -11,6 +11,7 @@ namespace RECONNECTIONS {
     double m_Q02, m_R02, m_etaR, m_kappa, m_norm;
     std::vector<double> m_etaQ, m_reshuffle;
     double m_weight_cutoff;
+    bool m_weight_output;
 
     void   SetParameters();
     void   FixPMode(const std::string & pm);
@@ -32,6 +33,7 @@ namespace RECONNECTIONS {
     void   Reset();
     double Distance(ATOOLS::Particle * trip,ATOOLS::Particle * anti);
     double GetWeightCutoff() const { return m_weight_cutoff; }
+    bool   GetWeightOutput() const { return m_weight_output; }
     int    GetVariationSize() const { return m_n_variations; }
     size_t GetReconnectionCount() const { return m_n_reconnection_count; }
   };

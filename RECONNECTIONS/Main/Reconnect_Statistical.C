@@ -47,6 +47,7 @@ void Reconnect_Statistical::SetParameters() {
   m_reshuffle.resize(m_n_variations, m_reshuffle[0]);
 
   m_weight_cutoff = s["WEIGHT_CUTOFF"].SetDefault(-1.).Get<double>();
+  m_weight_output = s["WEIGHT_OUTPUT"].SetDefault(0).Get<int>() > 0;
   ResetVariationWeights(m_n_variations);
 }
 

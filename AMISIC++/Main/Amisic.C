@@ -250,7 +250,7 @@ void Amisic::InitParameterVariations() {
   m_total_events = 0;
 
   // output
-  const bool print_files = false;
+  const bool print_files = ((*mipars)["weight_output"]) > 0;
   if (!print_files) return;
   std::string filename = "b_weights.dat";
   m_b_weight_file.open(filename);
@@ -601,8 +601,7 @@ void Amisic::ImpactParameterReweighting(const double & s) {
     if (!std::isfinite(overlap_ratio) || overlap_ratio<=0.) overlap_ratio = 1.;
     m_overlap_ratios[ivar] = overlap_ratio;
     
-    // This accounts for all b values tried in FirstMPI loop
-    m_b_weights[ivar] *= overlap_ratio;
+    m_b_weights[ivar] = overlap_ratio;
   }
   m_mo.SetMatterFormVariationIndex(0);
 }
