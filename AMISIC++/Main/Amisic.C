@@ -353,7 +353,7 @@ bool Amisic::FirstMinBias(Blob * blob) {
 bool Amisic::FirstMPI(Blob * blob) {
   ///////////////////////////////////////////////////////////////////////////
   // Refactored FirstMPI with loop at Amisic level.
-  // This allows lambda ratios to be computed with the actual impact parameter
+  // This allows overlap ratios to be computed with the actual impact parameter
   // BEFORE Sudakov evolution, ensuring correct reweighting.
   ///////////////////////////////////////////////////////////////////////////
   UpdateForNewS();
@@ -592,7 +592,7 @@ void Amisic::ImpactParameterReweighting(const double & s) {
   const double K_nom = m_pint.K(s);
   const double overlap_nom = m_mo.EvaluateAt(m_b, K_nom);
 
-  // Compute lambda(b) ratios for each variation
+  // Compute overlap ratios for each variation
   for (size_t ivar=0; ivar<m_n_variations; ++ivar) {
     m_mo.SetMatterFormVariationIndex(ivar);
     const double K_var = m_pint.KVariation(s, ivar);
