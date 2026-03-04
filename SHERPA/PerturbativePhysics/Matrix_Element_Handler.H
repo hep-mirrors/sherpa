@@ -82,6 +82,7 @@ namespace SHERPA {
     int         m_eventmode, m_seedmode, m_hasnlo;
     bool        m_pilotrunenabled;
     int         m_nloadd, m_ewaddmode, m_qcdaddmode;
+    bool        m_mustcheckISorder, m_mustcheckFSorder;
 
     ATOOLS::Weight_Info m_evtinfo;
 

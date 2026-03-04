@@ -87,7 +87,8 @@ Matrix_Element_Handler::Matrix_Element_Handler(MODEL::Model_Base *model):
   m_nloadd(1), m_ewaddmode(0), m_qcdaddmode(0),
   m_evtinfo(Weight_Info()),
   m_ovwth(10.), m_weightfactor(1.),
-  m_nlomode(nlo_mode::none)
+  m_nlomode(nlo_mode::none),
+  m_mustcheckISorder(true), m_mustcheckFSorder(true)
 {
   Settings& s = Settings::GetMainSettings();
   RegisterDefaults();
@@ -522,14 +523,12 @@ std::vector<Process_Base*> Matrix_Element_Handler::InitializeSingleProcess
 void Matrix_Element_Handler::CheckInitialStateOrdering(const Process_Info& pi)
 {
   // Skip ordering check if using intact hadron mode (QuasiElastic, etc.)
-  //if (p_isr && (p_isr->Type(0) == isrtype::intact || p_isr->Type(1) == isrtype::intact))
-  //{
-  //  return;
-  //}
+  if (!m_mustcheckISorder) return;
   auto cpi = pi;
   Process_Base::SortFlavours(cpi, 1);
   if (cpi.m_ii == pi.m_ii) {
-  } else {
+  }
+  else {
     msg_Error() << ATOOLS::om::red << "\n\nERROR:" << ATOOLS::om::reset
       << " Wrong ordering of initial-state particles detected.\n"
       << "Please re-order the initial state in your Process definition(s) "
@@ -555,6 +554,18 @@ int Matrix_Element_Handler::InitializeProcesses(
   Settings& s = Settings::GetMainSettings();
   int initonly=s["INIT_ONLY"].Get<int>();
   if (initonly&4) return 1;
+
+  PDF_Base * pdf[2];
+  for (size_t i=0;i<2;i++) pdf[i] = p_isr->PDF(i);
+  msg_Out()<<METHOD<<": "
+	   <<"["<<p_isr->Type(0)<<", "<<(pdf[0] ? pdf[0]->Set() : "None")<<"] & "
+	   <<"["<<p_isr->Type(1)<<", "<<(pdf[1] ? pdf[1]->Set() : "None")<<"]\n";
+  if (p_isr &&
+      (p_isr->Type(0) == isrtype::intact && !p_isr->Flav(0).IsHadron() && !pdf[0] &&       
+       p_isr->Type(1) == isrtype::intact &&  p_isr->Flav(1).IsHadron() && !pdf[1])) {
+    m_mustcheckISorder = false;
+  }
+  
   double rbtime(ATOOLS::rpa->gen.Timer().RealTime());
   double btime(ATOOLS::rpa->gen.Timer().UserTime());
   MakeDir(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process",true);

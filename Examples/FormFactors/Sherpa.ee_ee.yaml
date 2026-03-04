@@ -4,33 +4,26 @@ ANALYSIS: Rivet
 OUTPUT: 4
 EVENTS: 10k
 
-BEAMS:  [11, 2212]  # proton beam + electron beam (neutron avaiable too, just adjust beam energy)
-BEAM_ENERGIES: [1., 0]  # proton at rest, 1 GeV electron
+BEAMS:  [11, -11]  # proton beam + electron beam (neutron avaiable too, just adjust beam energy)
+BEAM_ENERGIES: [1., 1.]  # proton at rest, 1 GeV electron
 BEAM_MODE: Fixed_Target
 BEAM_SPECTRA: [Monochromatic, Fixed_Target]  # proton=fixed target, electron=beam
 
 PARTICLE_DATA:
-  2212:  # proton
-    Massive: 1
   11:  # electron
     Massive: 1
 
 PROCESSES:
-- 11 2212 -> 11 2212:  # p[0] e-[1] -> p[2] e-[3] 
+- 11 -11 -> -11 11:  # p[0] e-[1] -> p[2] e-[3] 
     Order: {QCD: 0, EW: 2} 
-
-# Form factor parameters (boson and nucleon type auto-detected from process)
-Form_Factor:
-  Model: Off # Kelly or Dipole available
-  Include_Z_Interference: false
 
 FRAGMENTATION: None
 SHOWER_GENERATOR: None
 ISR_HANDLER: None  # Disable ISR for elastic scattering (should be handled by pdfs)
 
-PDF_SET: [None, QuasiElastic]  # proton: special, electron: None
+PDF_SET: [None, None]  # proton: special, electron: None
 
-ME_GENERATORS: Internal 
+ME_GENERATORS: Amegic
 
 EW_SCHEME: 1
 MODEL: SM  # Standard Model
@@ -49,13 +42,4 @@ YFS:
   MODE: 0
 ME_QED: 
   - ENABLED: False
-
-ANALYSIS: Rivet
-ANALYSIS_OUTPUT: Analysis_pe-pe
-
-# Rivet analyses - need to specify the plugin path for custom analyses
-RIVET:
-  --analyses: [MC_XS, MC_FSPARTICLES]
-  #--pwd: /Users/.../MyRivetAnalyses
-
 
