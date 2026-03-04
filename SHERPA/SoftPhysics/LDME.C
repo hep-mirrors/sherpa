@@ -25,7 +25,7 @@ void LoadLDME()
   static bool loaded = false;
   if (loaded) return;
 
-  //OCTETS
+  //OCTETS values from tune
   //CCBAR
   auto onia = Settings::GetMainSettings()["QUARKONIA"];
   onia["1S0_441"].SetDefault(0.1E-03);
@@ -36,23 +36,22 @@ void LoadLDME()
   onia["3S1_100443"].SetDefault(2.628E-03);
   onia["3S1_10441"].SetDefault(2.704E-03);
   double ldme_3S1_c_8_chi_c0_1P = onia["3S1_10441"].Get<double>();
-  onia["3S1_20443"].SetDefault(ldme_3S1_c_8_chi_c0_1P);
-  onia["3S1_445"].SetDefault(ldme_3S1_c_8_chi_c0_1P);
+  onia["3S1_20443"].SetDefault(3.*ldme_3S1_c_8_chi_c0_1P);
+  onia["3S1_445"].SetDefault(5.*ldme_3S1_c_8_chi_c0_1P);
   onia["3P0_443"].SetDefault(0.0);
   double ldme_3P0_443 = onia["3P0_443"].Get<double>();
   onia["3P0_100443"].SetDefault(0.0);
-  double ldme_3P0_100443 = onia["3P0_443"].Get<double>();
+  double ldme_3P0_100443 = onia["3P0_100443"].Get<double>();
   onia["3P1_443"].SetDefault(3.*ldme_3P0_443);
-  onia["3P1_100443"].SetDefault(3.*ldme_3P0_443);
-  onia["3P2_443"].SetDefault(5.*ldme_3P0_100443);
+  onia["3P1_100443"].SetDefault(3.*ldme_3P0_100443);
+  onia["3P2_443"].SetDefault(5.*ldme_3P0_443);
   onia["3P2_100443"].SetDefault(5.*ldme_3P0_100443);
 
   //BBBAR
 
 
   //---------------------------------------------------
-  //SINGLETS
-
+  //SINGLETS   values from hep-ph/9503356
   //CCBAR
   onia["441"].SetDefault(3.*3.*0.810/(2.*M_PI));
   onia["443"].SetDefault(3.*3.*0.810/(2.*M_PI));

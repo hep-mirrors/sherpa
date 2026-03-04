@@ -685,7 +685,6 @@ XS_qg_q3P0::XS_qg_q3P0(const External_ME_Args& args):
   m_mass   = fl[m_S].Mass(true);  m_mass2 = sqr(m_mass);
   double LDME =  GetLDME(fl[m_S].Kfcode());
   m_R12 = LDME*2.*M_PI/(3.*3.);
-  msgLDME(fl[m_S].Kfcode(),LDME);
   m_a      = fl[m_q].IsAnti() ? 1 : 0; 
   m_alphaS = MODEL::s_model->ScalarConstant("alpha_S");
   m_pref   = 8./9.*sqr(4.*M_PI)*m_R12/pow(m_mass,3);
