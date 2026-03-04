@@ -253,15 +253,15 @@ void Remnants_Parameters::Init()
 
     const std::vector<double> radius1_vec =
       (data[pid]["MATTER_RADIUS_1"]
-       .SetDefault(std::vector<double>{defaults->params["MATTER_RADIUS_1"]})
+       .SetDefault(defaults->param_variations["MATTER_RADIUS_1"])
        .GetVector<double>());
     const std::vector<double> radius2_vec =
       (data[pid]["MATTER_RADIUS_2"]
-       .SetDefault(std::vector<double>{defaults->params["MATTER_RADIUS_2"]})
+       .SetDefault(defaults->param_variations["MATTER_RADIUS_2"])
        .GetVector<double>());
     const std::vector<double> fraction_vec =
       (data[pid]["MATTER_FRACTION_1"]
-       .SetDefault(std::vector<double>{defaults->params["MATTER_FRACTION_1"]})
+       .SetDefault(defaults->param_variations["MATTER_FRACTION_1"])
        .GetVector<double>());
 
     actuals->params["MATTER_RADIUS_1"]        = radius1_vec.front();
