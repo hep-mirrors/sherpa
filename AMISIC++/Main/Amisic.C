@@ -360,6 +360,7 @@ bool Amisic::FirstMPI(Blob * blob) {
   double pt2veto = sqr((*blob)["MI_Scale"]->Get<double>());
   if (!m_singlecollision.InitFirstMPI(blob)) return false;
   do {
+    ResetVariationWeights();
     m_singlecollision.SelectNewB();
     m_b = m_singlecollision.B();
     ImpactParameterReweighting(m_S);
