@@ -321,11 +321,11 @@ void Sudakov::AddGluonThresholds(Model_Base *md) {
   LoadLDME();
   map<kf_code, double> cLDME = {
       // ldmes from FO tune. ------- old -> numerical LDME [GeV^3] from ph/9507398, PhysRevD.50.3176
-      {GetLDME(kf_3S1_c_8_J_psi_1S),  ldme_3S1_c_8_J_psi_1S},// 1.5E-02 / sqr(M_PI)},
-      {GetLDME(kf_3S1_c_8_psi_2S),    ldme_3S1_c_8_psi_2S},//4.3E-03 / sqr(M_PI)},
-      {GetLDME(kf_3S1_c_8_chi_c0_1P), ldme_3S1_c_8_chi_c0_1P},//2./3/M_PI * 1 * 3E-03},
-      {GetLDME(kf_3S1_c_8_chi_c1_1P), ldme_3S1_c_8_chi_c1_1P},//2./3/M_PI * 3 * 3E-03},
-      {GetLDME(kf_3S1_c_8_chi_c2_1P), ldme_3S1_c_8_chi_c2_1P}};//100*2./3/M_PI * 5 * 3E-03}};
+      {kf_3S1_c_8_J_psi_1S,  GetLDME(kf_3S1_c_8_J_psi_1S)},// 1.5E-02 / sqr(M_PI)},
+      {kf_3S1_c_8_psi_2S,    GetLDME(kf_3S1_c_8_psi_2S)},//4.3E-03 / sqr(M_PI)},
+      {kf_3S1_c_8_chi_c0_1P, GetLDME(kf_3S1_c_8_chi_c0_1P)},//2./3/M_PI * 1 * 3E-03},
+      {kf_3S1_c_8_chi_c1_1P, GetLDME(kf_3S1_c_8_chi_c1_1P)},//2./3/M_PI * 3 * 3E-03},
+      {kf_3S1_c_8_chi_c2_1P, GetLDME(kf_3S1_c_8_chi_c2_1P)}};//100*2./3/M_PI * 5 * 3E-03}};
   double arg;
   for (list<kf_code>::iterator octit = c_octetvectors.begin();
        octit != c_octetvectors.end(); octit++) {
