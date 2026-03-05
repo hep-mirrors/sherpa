@@ -90,18 +90,43 @@ void Interaction_Probability::FixKandSmin() {
     if (s<=4. || p_procs->GetXSecs()->XSratio(s)<=1.) continue;
     integrand.SetS(s);
     p_mo->SetMatterFormVariationIndex(0);
+    
+    MI_Integrator * integrator = p_procs->GetIntegrator();
+    double xsfix = 0.;
+    if (!p_mo->IsDynamic()) {
+      p_procs->UpdateS(s);
+      xsfix = p_procs->GetXSecs()->XShard(s);
+    }
+    
     do {
       if (p_procs->GetXSecs()->XSratio(s)<=0.5) { k = 1.; break; }
       p_mo->SetKRadius(k);
-      InitializeTable(sbin);
-      xs_test = gauss.Integrate(0.,p_mo->Bmax(),1.e-3);
+      
+      if (!p_mo->IsDynamic()) {
+        double prev = 0.;
+        for (size_t bbin=0;bbin<p_bbins->m_nbins;bbin++) {
+          double b  = p_bbins->x(bbin);
+          double xs = m_pdfnorm * xsfix * (*p_mo)(b);
+          p_diffxsec->Fill(sbin,bbin,xs);
+          if (prev!=0. && xs/prev < 1.e-6) {
+            for (size_t i=bbin+1;i<p_bbins->m_nbins;i++)
+              p_diffxsec->Fill(sbin,i,0.);
+            break;
+          }
+          prev = xs;
+        }
+      } else {
+        InitializeTable(sbin);
+      }
+      
+      xs_test = gauss.Integrate(0.,p_mo->Bmax(),1.e-5);
       if (dabs(xs_test/xs_nd)<1.e-3) { k = 0.; break; }
       /////////////////////////////////////////////////////////////////////////
       // we rescale the k with the ratio of implied and exact ND cross section,
-      // until we are within 2% of each other.
+      // until we are within 0.01% of each other.
       /////////////////////////////////////////////////////////////////////////
       k *= Min(5., Max(0.2, sqrt(xs_nd/xs_test)));
-    } while (dabs(1.-xs_test/xs_nd)>0.02);
+    } while (dabs(1.-xs_test/xs_nd)>0.0001);
     p_k->Fill(sbin,k);
     msg_Info()<<"   | "
 	      <<"E = "<<std::setw(8)<<std::setprecision(6)<<sqrt(s)<<": "
@@ -132,15 +157,37 @@ void Interaction_Probability::FixKandSmin() {
 
       p_mo->SetMatterFormVariationIndex(ivar);
 
+      double xsfix_var = 0.;
+      if (!p_mo->IsDynamic()) {
+        xsfix_var = p_procs->GetXSecs()->XShard(s, ivar);
+      }
+
       // Solve for K-factor for this variation
       do {
         if (xsratio_var<=0.5) { k_var = 1.; break; }
         p_mo->SetKRadius(k_var);
-        FillTableOnAxis(sbin, temp_diffxsec, &temp_bbins, ivar);
-        xs_test_var = gauss_var.Integrate(0., bmax_var, 1.e-3);
+        
+        if (!p_mo->IsDynamic()) {
+          double prev = 0.;
+          for (size_t bbin=0;bbin<temp_bbins.m_nbins;bbin++) {
+            double b  = temp_bbins.x(bbin);
+            double xs = m_pdfnorm * xsfix_var * (*p_mo)(b);
+            temp_diffxsec->Fill(sbin,bbin,xs);
+            if (prev!=0. && xs/prev < 1.e-6) {
+              for (size_t i=bbin+1;i<temp_bbins.m_nbins;i++)
+                temp_diffxsec->Fill(sbin,i,0.);
+              break;
+            }
+            prev = xs;
+          }
+        } else {
+          FillTableOnAxis(sbin, temp_diffxsec, &temp_bbins, ivar);
+        }
+        
+        xs_test_var = gauss_var.Integrate(0., bmax_var, 1.e-5);
         if (dabs(xs_test_var/xs_nd_var)<1.e-3) { k_var = 0.; break; }
         k_var *= Min(5., Max(0.2, sqrt(xs_nd_var/xs_test_var)));
-      } while (dabs(1.-xs_test_var/xs_nd_var)>0.02);
+      } while (dabs(1.-xs_test_var/xs_nd_var)>0.0001);
 
       p_k_variations[ivar]->Fill(sbin, k_var);
 
@@ -153,7 +200,9 @@ void Interaction_Probability::FixKandSmin() {
     // Restore nominal K-factor in matter overlap
     p_mo->SetMatterFormVariationIndex(0);
     p_mo->SetKRadius(k);
-    InitializeTable(sbin);
+    if (p_mo->IsDynamic()) {
+      InitializeTable(sbin);
+    }
 
     if (s<m_smin) m_smin = s;
   }
@@ -230,13 +279,15 @@ FillTableOnAxis(const size_t & sbin, TwoDim_Table* diffxsec,
   MI_Integrator * integrator = p_procs->GetIntegrator();
   double s  = p_sbins->x(sbin), prev = 0., xsfix = 0.;
   p_procs->UpdateS(s);
-
-  double ptmin2_var = mipars->CalculatePTmin2(s, ivar);
-  double pt02_var   = mipars->CalculatePT02(s, ivar);
-  integrator->SetPT2min(ptmin2_var);
-  p_procs->SetPT02(pt02_var);
   
-  if (!p_mo->IsDynamic()) xsfix = (*integrator)(s,nullptr,0.);
+  if (!p_mo->IsDynamic()) {
+    xsfix = p_procs->GetXSecs()->XShard(s, ivar);
+  } else {
+    double ptmin2_var = mipars->CalculatePTmin2(s, ivar);
+    double pt02_var   = mipars->CalculatePT02(s, ivar);
+    integrator->SetPT2min(ptmin2_var);
+    p_procs->SetPT02(pt02_var);
+  }
   
   for (size_t bbin=0;bbin<bbins->m_nbins;bbin++) {
     double b  = bbins->x(bbin);

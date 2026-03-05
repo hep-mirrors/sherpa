@@ -93,6 +93,10 @@ namespace AMISIC {
     // Hard cross section
     //////////////////////////////////////////////////////////////////////////
     inline double XShard(const double & s=-1.)  { return (*p_xshard)(s); }
+    inline double XShard(const double & s, size_t ivar) {
+      if (ivar>=m_n_variations) return XShard(s);
+      return s<0 ? 0. : (*p_xshard_variations[ivar])(s);
+    }
     //////////////////////////////////////////////////////////////////////////
     // Non-diffractive cross section, given in GeV^-2
     //////////////////////////////////////////////////////////////////////////
