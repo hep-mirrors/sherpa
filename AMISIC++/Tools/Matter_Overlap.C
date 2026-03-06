@@ -399,7 +399,7 @@ void Matter_Overlap::Output(const double & check) {
     } while (dabs(previous/result)>1.e-10 && bmin < bmax_var);
     
     msg_Info()<<"   "<<std::string(77,'-')<<"\n"
-              <<"   | Variation "<<ivar<<":"<<std::string(62,' ')<<"|\n"
+              <<"   |       v"<<std::setw(4)<<ivar<<":"<<std::string(62,' ')<<"|\n"
               <<"   | Integral up to b_max = "
               <<std::setprecision(6)<<std::setw(8)<<(bmax_var*m_invGeV2fm)<<" fm yields "
               <<std::setprecision(6)<<std::setw(8)<<result<<"."

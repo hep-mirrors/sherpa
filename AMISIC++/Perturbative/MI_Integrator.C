@@ -66,6 +66,7 @@ operator()(const double & s,Matter_Overlap * mo,const double & b) {
   double sum  = 0., sum2 = 0., xsec = 0., uncert = 1.e12, xs;
   double mowt = mo ? ( mo->IsDynamic() ? 0. : (*mo)(b)) : 1.;
   unsigned int sumtrials = 0.;
+  const unsigned int max_trials = 1000 * m_MCpoints;
   do {
     ////////////////////////////////////////////////////////////////////////
     // Select pt^2 according to 1/pt^4 and calculate the Jacobean
@@ -84,11 +85,16 @@ operator()(const double & s,Matter_Overlap * mo,const double & b) {
       sum  += xs * mowt;
       sum2 += sqr(xs * mowt);
     }
-    if (++sumtrials%(100*m_MCpoints)==0) {
+    if (++sumtrials % m_MCpoints==0) {
       xsec   = sum/double(sumtrials);
       uncert = sqrt(sum2 - sqr(xsec))/double(sumtrials);
     }
-  } while (xsec==0 || (uncert/xsec>5.e-2));
+    if (sumtrials >= max_trials) {
+      msg_Error()<<"   | "<<METHOD<<": xs integration did not converge after "<<std::setw(17)<<max_trials<<"  |\n"
+                 <<"   |    trials. Target accuracy: uncert/xs_pert = "<<(100.*5.e-4)<<"%."<<std::string(31,' ')<<"|\n";
+      break;
+    }
+  } while (xsec==0 || (uncert/xsec>5.e-4));
   m_xsec   = sum/double(sumtrials);
   m_uncert = sqrt(sum2 - sqr(m_xsec))/double(sumtrials);
   msg_Tracking()<<"*** "<<METHOD<<"(E = "<<std::setprecision(6)<<sqrt(s)<<", "

@@ -98,6 +98,8 @@ void Interaction_Probability::FixKandSmin() {
       xsfix = p_procs->GetXSecs()->XShard(s);
     }
     
+    size_t iter = 0;
+    const size_t max_iter = 1000;
     do {
       if (p_procs->GetXSecs()->XSratio(s)<=0.5) { k = 1.; break; }
       p_mo->SetKRadius(k);
@@ -126,6 +128,13 @@ void Interaction_Probability::FixKandSmin() {
       // until we are within 0.01% of each other.
       /////////////////////////////////////////////////////////////////////////
       k *= Min(5., Max(0.2, sqrt(xs_nd/xs_test)));
+      iter++;
+      if (iter >= max_iter) {
+        msg_Error()<<"   | "<<METHOD<<" k-factor iteration did not converge  |\n"
+                   <<"   |     after "<<max_iter <<" iterations. Final ratio: xs_test/xs_nd = "
+                   <<std::setw(8)<<std::setprecision(8)<<(xs_test/xs_nd)<<".        |\n";
+        break;
+      }
     } while (dabs(1.-xs_test/xs_nd)>0.0001);
     p_k->Fill(sbin,k);
     msg_Info()<<"   | "
@@ -163,6 +172,8 @@ void Interaction_Probability::FixKandSmin() {
       }
 
       // Solve for K-factor for this variation
+      size_t iter_var = 0;
+      const size_t max_iter_var = 1000;
       do {
         if (xsratio_var<=0.5) { k_var = 1.; break; }
         p_mo->SetKRadius(k_var);
@@ -187,11 +198,18 @@ void Interaction_Probability::FixKandSmin() {
         xs_test_var = gauss_var.Integrate(0., bmax_var, 1.e-5);
         if (dabs(xs_test_var/xs_nd_var)<1.e-3) { k_var = 0.; break; }
         k_var *= Min(5., Max(0.2, sqrt(xs_nd_var/xs_test_var)));
+        iter_var++;
+        if (iter_var >= max_iter_var) {
+        msg_Error()<<"   | "<<METHOD<<" k-factor iteration did not converge  |\n"
+                   <<"   |     after "<<max_iter <<" iterations. Final ratio: xs_test/xs_nd = "
+                   <<std::setw(8)<<std::setprecision(8)<<(xs_test/xs_nd)<<".        |\n";
+        break;
+        }
       } while (dabs(1.-xs_test_var/xs_nd_var)>0.0001);
 
       p_k_variations[ivar]->Fill(sbin, k_var);
 
-      msg_Info()<<"   | Variation "<<ivar<<" : "
+      msg_Info()<<"   |       v"<<std::setw(4)<<ivar<<" : "
                 <<"xs_ND = "<<std::setw(12)<<std::setprecision(6)<<xs_nd_var<<", "
                 <<"ratio = "<<std::setw(12)<<std::setprecision(6)<<xsratio_var<<" -> "
                 <<"k = "<<std::setw(8)<<std::setprecision(6)<<k_var<<"  |\n";
@@ -384,7 +402,7 @@ void Interaction_Probability::OutputTables() {
     }
 
     msg_Info()<<"   "<<std::string(77,'-')<<"\n"
-              <<"   | "<<METHOD<<" Variation "<<ivar<<std::setw(25)<<": "<<"|\n"
+              <<"   | "<<METHOD<<": v"<<std::setw(4)<<ivar<<std::setw(30)<<": "<<"|\n"
               <<"   | "<<std::setw(15)<<"E_{c.m.} [GeV]"<<" | "
               <<std::setw(6)<<"b [fm]"<<" | "
               <<std::setw(14)<<"xs_hard/xs_ND"<<" | "

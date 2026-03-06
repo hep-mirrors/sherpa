@@ -249,15 +249,16 @@ double MI_Processes::TotalCrossSection(const double & s,const bool & output) {
   // b-integration yields unity.
   ///////////////////////////////////////////////////////////////////////////
   m_integrator.SetPT2min(mipars->CalculatePTmin2(s));
+  if (output) { msg_Info()<<"   "<<std::string(85,'-')<<"\n"; }
   m_xshard      = m_integrator(s,nullptr,0.);
   if (output) {
-    msg_Info()<<"   "<<std::string(85,'-')<<"\n"
+    msg_Info()
 	      <<"   | "<<METHOD<<": xs_pert = "
 	      <<std::setprecision(4)<<std::setw(10)
 	      <<(m_xshard*rpa->Picobarn()/1.e9)<<" mb "
-	      <<"+- "<<std::setprecision(0)<<std::setw(3)
+	      <<"+- "<<std::setw(4)<<std::setprecision(3)
 	      <<(100.*m_integrator.Uncertainty()/m_xshard)
-	      <<"%."<<std::string(17,' ')<<"|\n";
+	      <<"%."<<std::string(16,' ')<<"|\n";
   }
   return m_xshard;
 }
@@ -274,12 +275,12 @@ double MI_Processes::TotalCrossSection(const double & s,const bool & output,
        mig!=m_groups.end();mig++)  (*mig)->SetPT02(pt02_var);
   double xshard_var = m_integrator(s,nullptr,0.);
   if (output) {
-    msg_Info()<<"   | "<<"                    Variation "<<ivar<<": xs_pert = "
+    msg_Info()<<"   | "<<std::string(26,' ')<<"v"<<std::setw(4)<<ivar<<": xs_pert = "
               <<std::setprecision(4)<<std::setw(10)
               <<(xshard_var*rpa->Picobarn()/1.e9)<<" mb "
-              <<"+- "<<std::setprecision(0)<<std::setw(3)
+              <<"+- "<<std::setw(4)<<std::setprecision(3)
               <<(100.*m_integrator.Uncertainty()/xshard_var)
-              <<"%."<<std::string(17,' ')<<"|\n";
+              <<"%."<<std::string(16,' ')<<"|\n";
   }
   // Restore nominal PT2min after calculation
   m_integrator.SetPT2min(m_ptmin2);

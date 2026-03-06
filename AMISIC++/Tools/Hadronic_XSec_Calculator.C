@@ -267,7 +267,7 @@ void Hadronic_XSec_Calculator::OutputXSratiosVariations(axis * sbins) {
   else if (m_xstot<1.)    { fac = 1.e3; units = string("ub"); }
   for (size_t ivar=0; ivar<m_n_variations; ++ivar) {
     msg_Info()<<"   "<<string(85,'-')<<"\n"
-        <<"   | "<<"                             Variation "<<ivar<<": hadronic cross sections (all in "<<units<<")"
+        <<"   | "<<"                                   v"<<std::setw(4)<<ivar<<": hadronic cross sections (all in "<<units<<")"
         <<"     |\n"
         <<"   | E_cms [GeV] | sigma_tot   | sigma_el    |"
         <<"sigma_SDA    | sigma_SDB   | sigma_DD    |\n";
