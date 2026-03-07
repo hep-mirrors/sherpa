@@ -505,7 +505,7 @@ double Decay_Channel::ME2_NLO(const ATOOLS::Vec4D_Vector& momenta, bool anti,
       //std::cout << "Warning: Decay_Channel::ME2_NLO gets a negative NLO ME2 value.  " << std::endl;
     }
 
-    sumijlambda_AiAj = (*sigma)*p_amps->ReduceToMatrix(sigma->Particle());  // RS value 
+    sumijlambda_AiAj = (*sigma)*p_amps->ReduceToMatrix(sigma->Particle());  // RS/ BVI value 
 
     for (size_t i = 0; i < NLO_tensor_list.size(); ++i) {
       delete NLO_tensor_list[i];
