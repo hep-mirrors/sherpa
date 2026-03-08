@@ -329,7 +329,7 @@ void Sudakov::AddGluonThresholds(Model_Base *md) {
   double arg;
   for (list<kf_code>::iterator octit = c_octetvectors.begin();
        octit != c_octetvectors.end(); octit++) {
-    arg = 0.5 * (M_PI * as(sqr(2.*mc)) / (4. * pow(ATOOLS::Flavour(*octit).Mass(), 3))) *
+    arg = 0.5 * (M_PI * as(sqr(2*mc)) / (24 * pow(mc, 3))) *
           cLDME[*octit] * (1. - (11./6. * v8_2))*tr_efac; // SDME for g -> ccb (3S_1)_8
     stset->insert(
         One2One_Transition_Base(Flavour(kf_gluon), Flavour(*octit), arg, 1));
