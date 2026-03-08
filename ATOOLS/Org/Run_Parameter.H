@@ -93,15 +93,9 @@ namespace ATOOLS {
       friend class Run_Parameter;
     } gen;
 
-#if defined(__GNUC__) &&  __GNUC__ < 5
-    double Picobarn()             { return 3.89379656e8;}   // pb GeV^2
-    double c()                    { return 299.792458e9;}   // mm/s
-    double hBar()                 { return 6.58211889e-25;} // GeV s
-#else
     constexpr double Picobarn()             { return 3.89379656e8;}   // pb GeV^2
     constexpr double c()                    { return 299.792458e9;}   // mm/s
     constexpr double hBar()                 { return 6.58211889e-25;} // GeV s
-#endif
     std::string GetPath()                   { return m_path;}
     std::string SetPath(std::string path)   { return m_path = path;}
   };
