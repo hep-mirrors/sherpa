@@ -236,6 +236,11 @@ bool Phase_Space_Integrator::AddPoint(const double value)
       m_iter*=pow(2.,m_npower);
     }
     else if (p_psh->Stats().size()==m_nopt-1) {
+      p_psh->Optimize();
+      //reset partial result to separate: before and after optimisation
+      p_psh->Process()->OptimizeResult();
+      //restart calculation of cut efficiency
+      optimized = true;
       p_psh->Process()->ResetMax(0);
       p_psh->EndOptimize();
       p_psh->Process()->ResetMax(1);
