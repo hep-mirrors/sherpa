@@ -56,6 +56,7 @@ namespace PHOTONS {
     static double               s_uvcutoff;
     static int                  s_ircutoffframe;
     static double               s_accu;
+    static int                  s_expandtoorder;
     static int                  s_nmax;
     static int                  s_nmin;
     static double               s_drcut;
