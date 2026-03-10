@@ -91,7 +91,6 @@ Phase_Space_Handler::Differential(Process_Integrator *const process,
   }
   // phase space trigger, calculate and construct weights
   if (process->Process()->Trigger(p_lab)) {
-    if (!p_active->Process()->Selector()->Pass()) return 0.0;
     m_psweight = CalculatePS();
     m_wgtmap   = CalculateME(varmode);
     m_wgtmap  *= m_psweight;
