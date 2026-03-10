@@ -12,13 +12,14 @@ Hadron_Rescatterings::Hadron_Rescatterings(const bool & on) :
 
 void Hadron_Rescatterings::Initialize() {
   p_BM = new BaryonMeson();
-  p_BB = new BaryonBaryon();
-  p_MM = new MesonMeson();
+  // p_MM = new MesonMeson();
+  // p_BB = new BaryonBaryon();
 }
 
 Hadron_Rescatterings::~Hadron_Rescatterings() {
   if (p_BB)   { delete p_BB;   p_BB   = NULL; }
   if (p_MM)   { delete p_MM;   p_MM   = NULL; }
+  if (p_BM)   { delete p_BM;   p_BM   = NULL; }
   if (hrpars) { delete hrpars; hrpars = NULL; }
 }
     

@@ -3,6 +3,9 @@
 #include "HADRON_RESCATTERING/XSecs/HR_Parameters.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Message.H"
+#include "ATOOLS/Math/Histogram.H"
+#include "ATOOLS/Org/Message.H"
+#include "ATOOLS/Math/MathTools.H"
 
 using namespace HADRON_RESCATTERING;
 using namespace ATOOLS;
@@ -186,5 +189,3 @@ void PiK::Test() {
 	   <<setw(12)<<setprecision(4)<<(XStot(2.25,1,1)*rpa->Picobarn()*1.e-9)
 	   <<"\n";
 }
-
-

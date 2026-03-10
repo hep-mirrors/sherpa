@@ -11,7 +11,7 @@ namespace HADRON_RESCATTERING {
       pp        = 1,
       pn        = 2,
       ppbar     = 3,
-      pPiMinus  =4,
+      pPiMinus  = 4,
       pPiPlus   = 5,
       nPiMinus  = 6,
       nPiPlus   = 7,

@@ -1248,6 +1248,7 @@ bool Initialization_Handler::InitializeTheSoftPhotons()
   p_softphotons = new Soft_Photon_Handler(p_mehandler);
   if (p_harddecays) p_harddecays->SetSoftPhotonHandler(p_softphotons);
   if (p_hdhandler)  p_hdhandler->SetSoftPhotonHandler(p_softphotons);
+  msg_Out()<<"Soft photons initialized THIS IS WHAT YOU SEE IN THE TERMINAL= "<<"\n";
   msg_Info()<<"Initialized soft photons"<<endl;
   return true;
 }

@@ -12,6 +12,7 @@ Hadron_Rescattering_Handler::Hadron_Rescattering_Handler() :
 {
   if (!m_on) return;
   m_rescattering.Initialize();
+
   m_particles.clear();
 }
 
@@ -23,13 +24,16 @@ void Hadron_Rescattering_Handler::HarvestParticles(Blob * blob) {
     msg_Out()<<"* Blob "<<blob->Id()<<" already harvested.\n";
     return;
   }
-  for (size_t i=0;i<blob->NOutP();i++) {
+  for (size_t i=0;i<blob->NOutP();i++) 
+  {
     Particle * part1 = blob->OutParticle(i);
-    if (m_particles.size()>0) {
-      for (std::set<Particle * >::iterator pit=m_particles.begin();
-	   pit!=m_particles.end();pit++) {
-	Particle * part2 = (*pit);
-	Schedule(part1,part2);
+    if (m_particles.size()>0) 
+    {
+      for (std::set<Particle * >::iterator pit=m_particles.begin(); pit!=m_particles.end();pit++)
+      {
+	      Particle * part2 = (*pit);
+
+	      Schedule(part1,part2);
       }
     } 
     m_particles.insert(part1);
@@ -42,7 +46,10 @@ Schedule(Particle * part1,Particle * part2) {
   Vec3D  v2   = Vec3D(part2->Momentum())/part2->Momentum()[0];
   double v12  = v1.Sqr(),                 v22 = v2.Sqr(); 
   double t1   = part1->Position()[0],     t2  = part2->Position()[0];
-  Vec3D  x1   = Vec3D(part1->Position()), x2  = part2->Position();
+  Vec3D  x1   = Vec3D(part1->Position()), x2  = Vec3D(part2->Position()); // used to not have Vec3D casting for part2.  
+  msg_Out()<<"==============================================="<<std::endl;
+  msg_Out()<<"==============================================="<<std::endl;
+
   Vec3D  d12  = x1-t1*v1-x2+t2*v2,        dv = v1-v2;
   double t    = (d12*dv)/(v22-v12);
   Flavour fl1 = part1->Flav(),            fl2 = part2->Flav();

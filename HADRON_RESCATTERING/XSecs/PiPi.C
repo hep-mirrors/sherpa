@@ -12,7 +12,7 @@ PiPi::PiPi() :
   m_mK(Flavour(kf_K_plus).HadMass()),   m_mK2(sqr(m_mK))
 {
   Test();
-  exit(1);
+  // exit(1);
 }
 
 const double PiPi::

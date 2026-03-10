@@ -6,14 +6,16 @@
 #include "HADRON_RESCATTERING/XSecs/HPR1R2.H"
 #include "ATOOLS/Phys/Flavour.H"
 #include "HADRON_RESCATTERING/XSecs/NPion.H"
+#include "HADRON_RESCATTERING/XSecs/NKaon.H"
 
 
 namespace HADRON_RESCATTERING {
   class BaryonMeson {
     NNfits  m_BM;
     NPion m_NP;
-    
+    NKaon m_NK;
     HPR1R2  m_hpr1r2;
+    
     double  m_s, m_mA, m_mA2, m_mB, m_mB2;
     
     double xstot(long int & A, long int & B, const double & plab);

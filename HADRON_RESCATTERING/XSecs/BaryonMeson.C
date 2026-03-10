@@ -1,8 +1,10 @@
 #include "HADRON_RESCATTERING/XSecs/BaryonMeson.H"
+#include "HADRON_RESCATTERING/XSecs/HPR1R2.H"
 #include "ATOOLS/Math/Histogram.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Math/MathTools.H"
 #include "NPion.H"
+#include "NKaon.H"
 
 using namespace HADRON_RESCATTERING;
 using namespace ATOOLS;
@@ -17,7 +19,7 @@ BaryonMeson::BaryonMeson()
         exit(1); 
     }
 }
-
+BaryonMeson::~BaryonMeson() {}
 double BaryonMeson::XStot(const ATOOLS::Flavour & A,const ATOOLS::Flavour & B, const double & s)
 {   
     // msg_Out() << "BaryonMeson::XStot Function is called" << std::endl;
@@ -27,6 +29,33 @@ double BaryonMeson::XStot(const ATOOLS::Flavour & A,const ATOOLS::Flavour & B, c
 
     if ( (A.IsMeson() && B.IsBaryon()) || (A.IsBaryon() && B.IsMeson()))
     {
+
+        //p-Kaon^- or p-Kaon^+
+        if ((A.Kfcode()==2212 && B.Kfcode()==321) || (A.Kfcode()==321 && B.Kfcode()==2212))
+        {
+
+            if ((A.IsAnti() && B.Kfcode() == 2212) || (A.Kfcode()==2212 && B.IsAnti()))
+            {
+                // msg_Out() << "BaryonMeson::XStot Function is called for proton- Kaon-" << std::endl;
+                return m_NK.pKaonMinus(s);
+                
+                //return m_hpr1r2.xs_tot(hpr1r2::pKMinus,s);
+
+            }
+            // msg_Out() << "BaryonMeson::XStot Function is called for proton- Kaon^+" << std::endl;
+        }
+
+
+
+
+
+        if (( A.Kfcode() == 2212 && B.Kfcode()==111 ) || (A.Kfcode() == 111 && B.Kfcode() == 2212))
+        {
+        //   msg_Out() << "No reference for Proton-Pion0 " << std::endl;
+        //   return m_NP.pPiZeroWignerEckart(s);
+            return m_NP.pPiZero(s);
+
+        }
         //p-Pi^- or p-Pi^+
         if ((A.Kfcode()==2212 && B.Kfcode()==211) || (A.Kfcode()==211 && B.Kfcode()==2212)) 
         {
@@ -34,26 +63,35 @@ double BaryonMeson::XStot(const ATOOLS::Flavour & A,const ATOOLS::Flavour & B, c
 
             if ((A.IsAnti() && B.Kfcode() == 2212) || (A.Kfcode()==2212 && B.IsAnti()))
             {
-                msg_Out() << "BaryonMeson::XStot Function is called for pPi-" << std::endl;
+                // msg_Out() << "BaryonMeson::XStot Function is called for pPi-" << std::endl;
+                return m_NP.pPiMinus(s);
 
-                // return m_BM.pPiMinus(s); 
             }
             // return m_BM.pPiPlus(s);
             return m_NP.pPiPlus(s);
         }
-        // //n-Pi^- or n-Pi^+
-        // if ((A.Kfcode()==2112 && B.Kfcode()==211) || (A.Kfcode()==211 && B.Kfcode()==2112)) 
-        // {
-        //     msg_Out() << "BaryonMeson::XStot Function is called for nPi+" << std::endl;
+        //n-Pi^- or n-Pi^+
+        if ((A.Kfcode()==2112 && B.Kfcode()==211) || (A.Kfcode()==211 && B.Kfcode()==2112)) 
+        {
+            msg_Out() << "BaryonMeson::XStot Function is called for nPi+" << std::endl;
+            return m_NP.nPiPlus(s);
 
-        //     if ((A.IsAnti() && B.Kfcode() == 2112) || (A.Kfcode()==2112 && B.IsAnti()))
-        //     {
-        //         msg_Out() << "BaryonMeson::XStot Function is called for nPi-" << std::endl;
+            if ((A.IsAnti() && B.Kfcode() == 2112) || (A.Kfcode()==2112 && B.IsAnti()))
+            {
+                msg_Out() << "BaryonMeson::XStot Function is called for nPi-" << std::endl;
 
-        //         return m_BM.nPiMinus(s); 
-        //     }
-        //     return m_BM.nPiPlus(s);
-        // }
+                return m_NP.nPiMinus(s);
+
+            }
+            // return m_BM.nPiPlus(s);
+        }
+
+        if ( A.Kfcode() == 2112 && B.Kfcode()==111 || A.Kfcode() == 111 && B.Kfcode()==2112)
+        {
+          msg_Out() << "Neutron-Pion0 " << std::endl;
+          return m_NP.nPiZero(s);
+
+        }
         // //pK- 
         // if ( (A.Kfcode() == 2212 && B.Kfcode()==321) || (A.Kfcode() == 321 && B.Kfcode()==2212))
         // {
@@ -69,13 +107,13 @@ double BaryonMeson::XStot(const ATOOLS::Flavour & A,const ATOOLS::Flavour & B, c
         //     return m_BM.pKBarZero(s);
         // }
 
-        // //nK- 
-        // if ( (A.Kfcode() == 2112 && B.Kfcode()==321) || (A.Kfcode() == 321 && B.Kfcode()==2112))
-        // {
-        //     msg_Out() << "BaryonMeson::XStot Function is called for nK-" << std::endl;
+        //nK- 
+        if ( (A.Kfcode() == 2112 && B.Kfcode()==321) || (A.Kfcode() == 321 && B.Kfcode()==2112))
+        {
+            msg_Out() << "BaryonMeson::XStot Function is called for nK-" << std::endl;
 
-        //     return m_BM.nKMinus(s);
-        // }
+            return m_NK.nKaonMinus(s);
+        }
         // //nKBar0
         // if ( (A.Kfcode() == 2112 && B.Kfcode()==311) || (A.Kfcode() == 311 && B.Kfcode()==2112))
         // {
@@ -118,19 +156,24 @@ void BaryonMeson::Tests() {
 //Must Fix the test function for different interactions. 
 
   size_t bins = 10000;
-  double pmin = 0., pmax = 30., pinc = (pmax-pmin)/double(bins);
+  double pmin = 0. , pmax = 30., pinc = (pmax-pmin)/double(bins);
   map<string,Histogram *>  histos;
-  histos["pPi_total"]      = new Histogram(0,pmin,pmax,bins);
+  histos["protonPionZero_Total"] = new Histogram(0,pmin,pmax,bins);
   Flavour flA(kf_p_plus);
   double  plab, s;
-  Flavour flB(kf_pi_plus);
+  // Flavour flB(kf_pi_plus);
+  Flavour flB(kf_pi);
+//   flB = flB.Bar();
+ 
+  // Flavour flA(kf_n);
+  // flB = flB.Bar();
 
   for (int i=0;i<bins;i++) 
   {
     plab   = pmin+i*pinc;
     s      = ( sqr(flA.HadMass()) + sqr(flB.HadMass()) +
 	       2.*flA.HadMass()*sqrt(sqr(flB.HadMass())+sqr(plab)) );
-    histos["pPi_total"]->Insert(i,   XStot(flA,flB,s));
+    histos["protonPionZero_Total"]->Insert(i,   XStot(flA,flB,s));
   }
 
   Histogram * histo;

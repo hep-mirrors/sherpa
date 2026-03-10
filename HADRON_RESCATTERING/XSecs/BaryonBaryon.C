@@ -8,10 +8,10 @@ using namespace std;
 
 BaryonBaryon::BaryonBaryon() :
   m_test(true) {
-   if (m_test) { Tests(); exit(1); }
+   if (m_test) { Tests();} //exit(1); }
 }
 
-BaryonBaryon::~BaryonBaryon() {}
+BaryonBaryon::~BaryonBaryon() {msg_Out() << "BaryonBaryon::Destructor called" << std::endl;}
 
 double BaryonBaryon::
 XStot(const ATOOLS::Flavour & A,const ATOOLS::Flavour & B,
@@ -63,6 +63,8 @@ double BaryonBaryon::xsel(long int & A, long int & B, const double & plab) {
 }
 
 void BaryonBaryon::Tests() {
+
+msg_Out() << "BaryonBaryon::Tests Function is called" << std::endl;
 
   size_t bins = 10000;
   double pmin = 0., pmax = 20., pinc = (pmax-pmin)/double(bins);
