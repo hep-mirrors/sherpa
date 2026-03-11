@@ -660,6 +660,44 @@ on the command line. Currently available options are
 It is possible to implement a dedicated K-factor scheme within Sherpa.
 For advice on this topic please contact the authors, :ref:`Authors`.
 
+.. _METS_BBAR_MODE:
+
+METS_BBAR_MODE
+==============
+
+.. index:: METS_BBAR_MODE
+
+This parameter governs how the local K-factor applied to the
+higher-multiplicity LO matrix element that are merged on top
+of NLO matrix elements is calculated :cite:`Hoeche2014rya`.
+The following options exist
+
+:option:`None`
+  The K factor disabled.
+
+:option:`Enabled`
+  The K factor is applied.
+
+:option:`LowestMulti`
+  While the local K-factor is computed on the basis of the
+  highest multiplicity available at NLO accuracy, this setting
+  instead causes it to be computed by the lowest-multiplicity
+  configuration that is arrived at after clustering the final state.
+  Computed in this way, the local K-factor is much cheaper to compute,
+  but might miss some dynamical phase-space dependence it may otherwise
+  have.
+
+:option:`ExclCluster`
+  The local K factor is calculated not using the cluster sequence
+  determined by the METS scale setter, but instead a new cluster
+  sequence is computed using QCD splittings only, ensuring that in
+  an MEPS@NLO QCD multijet merged sample the local K-factor is
+  always computed by the highest multiplicity available at NLO.
+
+All settings options can be applied concurrently by simply
+combining them in the string passed.
+The default setting is ``Enabled+ExclCluster``.
+
 .. _YUKAWA_MASSES:
 
 YUKAWA_MASSES
