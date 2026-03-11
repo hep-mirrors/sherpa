@@ -929,7 +929,7 @@ void Initialization_Handler::InitISRHandler(const PDF::isr::id & pid,Settings& s
         THROW(critical_error,
               "PDF '" + set + "' does not exist in any of the loaded" +
                       " libraries for " + ToString(m_bunch_particles[beam]) +
-                      " bunch.");
+                      " beam.");
       if (pid == PDF::isr::hard_process) rpa->gen.SetPDF(beam, pdfbase);
       if (pdfbase == nullptr) {
         isrbases[beam] = new Intact(flav);

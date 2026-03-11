@@ -43,7 +43,7 @@ namespace EXTRAXS
         : ME2_Base(args), m_nucleon(nucleon), m_fl_neutrino(neutrino_fl), m_fl_nucleon(nucleon_fl)
     {
         msg_Out() << "pv_pv::pv_pv(): Constructor called" << std::endl;
-        m_sintt = 2; // T-channel only , maybe look at single channel restriction later
+        // m_sintt = 2; // T-channel only , maybe look at single channel restriction later
         // m_sintt = 0;  // No s/t/u channel restriction
         m_oew = 0;  // EW order zero (no loops)
         m_oqcd = 0; // QCD order zero
@@ -66,15 +66,15 @@ namespace EXTRAXS
     {
         // indices: # p[0] v[1] -> p[2] v[3]
         // k: lepton, p: hadron
-        const auto &ki = momenta[1];
-        const auto &pi = momenta[0];
-        const auto &kf = momenta[3];
-        const auto &pf = momenta[2];
+        const auto &ki = momenta[0];
+        const auto &pi = momenta[1];
+        const auto &kf = momenta[2];
+        const auto &pf = momenta[3];
 
-        msg_Out() << "pe_nv::operator(): ki = " << ki << std::endl;
-        msg_Out() << "pe_nv::operator(): pi = " << pi << std::endl;
-        msg_Out() << "pe_nv::operator(): kf = " << kf << std::endl;
-        msg_Out() << "pe_nv::operator(): pf = " << pf << std::endl;
+        msg_Out() << "pv_pv::operator(): ki = " << ki << std::endl;
+        msg_Out() << "pv_pv::operator(): pi = " << pi << std::endl;
+        msg_Out() << "pv_pv::operator(): kf = " << kf << std::endl;
+        msg_Out() << "pv_pv::operator(): pf = " << pf << std::endl;
 
         // Calculate scattering angle theta between initial and final lepton
         Vec3D ki_vec(ki);
@@ -89,36 +89,37 @@ namespace EXTRAXS
         // masses squared (on shell)
         const double m = m_fl_nucleon.Mass();
         const double m2 = m * m;
-        msg_Out() << "pv_pv::operator():  m2 = " << m2 << std::endl;
+        msg_Out() << "pv_pv::operator():  m_nucleon = " << m << std::endl;
+        msg_Out() << " inv mass from mom: m_ki: " << ki.Abs() << ", m_pi: " << pi.Abs() << ", \n";
+        msg_Out() << "                    m_kf: " << kf.Abs() << ", m_pf: " << pf.Abs() << std::endl;
+        msg_Out() << " check mass nan. ki.ki= " << ki * ki << ", kf.kf= " << kf * kf << "\n";
 
         // Mandelstraam variables
         double s = (ki + pi).Abs2();
         double t = (ki - kf).Abs2(); // t < 0 for spacelike
         double u = (ki - pf).Abs2();
+        msg_Out() << "pe_pe::operator(): s = " << s << ", t = " << t << ", u = " << u << std::endl;
 
         double Q2 = -t; // Q2 > 0 for spacelike photon exchange
-        // msg_Out() << "pe_pe::operator(): Q2 = " << Q2 << std::endl;
-        // msg_Out() << "pe_pe::operator(): s = " << s << ", t = " << t << ", u = " << u << std::endl;
 
         // Add a small cutoff to avoid IR divergence at Q2=0 (forward scattering)
         // cutoff order less than mass of electron
-        const double Q2_min = 1e-5;
+        const double Q2_min = 1e-9;
         if (Q2 < Q2_min)
         {
-            // msg_Out() << "pv_pv::operator(): Q2 < Q2_min, returning 0.0" << std::endl;
-            return 0.0;
+            msg_Out() << "pv_pv::operator(): Q2 < "<< Q2_min << ", returning 0.0" << std::endl;
+            // return 0.0;
         }
 
         NucleonFormFactors ff = p_formfactor->GetFormFactors(Q2);
         const double F1 = ff.F1;
         const double F2 = ff.F2;
-        const double FA_Z = ff.FA;
-        const double FP_Z = ff.FP;
+        const double FA = ff.FA;
+        msg_Out() << "pv_pv::operator(): Form factors at Q2 = " << Q2 << ": F1 = " << F1 << ", F2 = " << F2 << ", FA = " << FA << std::endl;
 
         // Get coupling constants and masses
         double gA = 0.5; // Axial coupling (Z boson)
-        double gV = -0.5; // Vector coupling (Z boson)
-        double FA = FA_Z;
+        double gV = 0.5; // Vector coupling (Z boson)
 
         // Precalculate 
         const double MZ2 = m_massZ * m_massZ;
@@ -130,24 +131,26 @@ namespace EXTRAXS
         const double gz4 = m_gz * m_gz * m_gz * m_gz;
 
         // calculate
-        double term1 = 2.0 * F1 * F1 * (sum1) *
+        double term1 = 2.0 * F1 * F1 * m2 * (sum1) *
                         (2.0 * m4 - 2.0 * m2 * (sum2) + s2 + u2);
 
-        double term2 = 4.0 * F1 * (2.0 * m2 - s - u) * 
+        double term2 = 4.0 * F1 * m2 * (2.0 * m2 - s - u) * 
                        (F2 * t * (sum1) + 2.0 * FA * gA * gV * (u-s));
         
         double term3 = F2 * F2 * t * (sum1) * 
-                       (m2 - (sum2) + (1/m2) * s * u);
+                       (m4 - m2 * (sum2) +  s * u);
         
-        double term4 = 8.0 * F2 * FA * gA * gV * t * (u-s);
+        double term4 = 8.0 * F2 * FA * gA * gV * m2 * t * (u-s);
         
-        double term5 = 2.0 * FA * FA * (sum1) * 
+        double term5 = 2.0 * FA * FA * m2 * (sum1) * 
                        (2.0 * m4 - 2.0 * m2 * (s+t+u) + s2 + u2);
         
-        double coeff = gz4 / ((MZ2 + Q2) * (MZ2 + Q2));
-        double M_squared = coeff * 
-                          (term1 + term2 + term3 + term4 + term5);
-        
+        double coeff = gz4 / (m2 * (MZ2 + Q2) * (MZ2 + Q2));
+        msg_Out() << "pv_pv::operator(): coeff = " << coeff << std::endl;
+        double M_squared = coeff *
+                           (term1 + term2 + term3 + term4 + term5);
+
+        msg_Out() << "pv_pv::operator(): M_squared = " << M_squared << std::endl;
         return M_squared;
     }
 }
@@ -160,19 +163,21 @@ operator()(const External_ME_Args &args) const
     incomingnucleon::code nucleon = incomingnucleon::off;
 
     // check if elastic scattering
-    // if (fl.size() != 4)
-    //     return NULL;
-    msg_Out() << "pv_pv Getter: Flavour vector size = " << fl.size() << std::endl;
-    for (size_t i = 0; i < fl.size(); ++i)
-    {
-        msg_Out() << "pv_pv Getter: fl[" << i << "] = " << fl[i] << std::endl;
-    }
+    if (fl.size() != 4)
+        return NULL;
+    if (!fl[0].IsLepton() || !fl[1].IsNucleon() || !fl[2].IsLepton() || !fl[3].IsNucleon())
+        return NULL;
+    if (fl[0] != fl[2])
+        return NULL;
+    if (fl[1] != fl[3])
+        return NULL;
+
     // Sherpa orders: fl[0]=hadron_in, fl[1]=lepton_in, fl[2]=hadron_out, fl[3]=lepton_out ??
-    if (fl[0] == Flavour(kf_p_plus))
+    if (fl[1] == Flavour(kf_p_plus))
     {
         nucleon = incomingnucleon::proton;
     }
-    else if (fl[0] == Flavour(kf_n))
+    else if (fl[1] == Flavour(kf_n))
     {
         nucleon = incomingnucleon::neutron;
     }
@@ -182,9 +187,15 @@ operator()(const External_ME_Args &args) const
     }
 
     // Check for neutrino (NC interaction)
-    if (fl[1].IsNeutrino())
+    if (fl[0].IsNeutrino())
     {
-        return new pv_pv(args, nucleon, fl[1], fl[0]);
+        msg_Out() << "\n===============================" << std::endl;
+        msg_Out() << "pv_pv Getter: Flavour vector size = " << fl.size() << std::endl;
+        for (size_t i = 0; i < fl.size(); ++i)
+        {
+            msg_Out() << "pv_pv Getter: fl[" << i << "] = " << fl[i] << std::endl;
+        }
+        return new pv_pv(args, nucleon, fl[0], fl[1]);
     }
 
     return NULL;

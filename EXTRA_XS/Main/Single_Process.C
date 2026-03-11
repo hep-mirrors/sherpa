@@ -40,6 +40,7 @@ bool Single_Process::Initialize()
   if (m_nin!=2) return false;
 
   // can't do resonant processes, with one exception: ee -> Y(4S) -> B Bbar
+  // todo add delta resonances here 
   if (m_pinfo.m_fi.m_ps.size()!=m_pinfo.m_fi.NExternal()) {
     if (m_pinfo.m_fi.m_ps[0].m_fl.Kfcode()!=kf_Upsilon_4S) {
       DEBUG_INFO("found decay process, which Internal can't handle.");

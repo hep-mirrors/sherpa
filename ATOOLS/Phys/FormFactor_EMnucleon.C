@@ -21,7 +21,7 @@ FormFactor_EMnucleon::FormFactor_EMnucleon(incomingboson::code boson, incomingnu
   m_gA = s["gA"].SetDefault(1.267).Get<double>();
   m_sin2thetaW = s["sin2thetaW"].SetDefault(0.231).Get<double>();
   m_cos2thetaW = 1.0 - m_sin2thetaW;
-  m_g = s["g"].SetDefault(0.652).Get<double>();
+  m_g = s["g"].SetDefault(0.653).Get<double>();
   m_masspi = s["mpi"].SetDefault(0.13957).Get<double>();
 
   msg_Out()<<"FormFactor_EMnucleon::FormFactor_EMnucleon(): Using model: "<<m_formfactor_model<<std::endl;

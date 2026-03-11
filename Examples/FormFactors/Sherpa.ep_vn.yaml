@@ -5,13 +5,10 @@ OUTPUT: 4  # More verbose output
 EVENTS: 1 #00k
 
 
-#NOTE THIS DOESNT WORK FOR THE REVERSE PROCESS YET
-
-
-BEAMS:  [2212, 11]  # proton beam + electron beam 
-BEAM_ENERGIES: [0.938272, 1]  # proton at rest, 1 GeV electron
+BEAMS:  [11, 2212]  # electron beam + proton beam
+BEAM_ENERGIES: [1, 0]  # proton at rest, 1 GeV electron
 BEAM_MODE: Fixed_Target
-BEAM_SPECTRA: [Fixed_Target, Monochromatic]  # proton=fixed target, electron=beam
+BEAM_SPECTRA: [Monochromatic, Fixed_Target]  # proton=fixed target, electron=beam
 
 PARTICLE_DATA:
   2212:  # proton
@@ -24,7 +21,7 @@ PARTICLE_DATA:
     Massive: 0
 
 PROCESSES:
-- 2212 11 -> 2112 12:  # p[0] e-[1] -> n[2] v[3] 
+- 11 2212 -> 12 2112:  # e-[0] p[1] -> v[2] n[3] 
     Order: {QCD: 0, EW: 2} 
     Print_Graphs: Graphs # can draw Feynman diagrams by running ./plot_graphs Graphs
 
@@ -35,11 +32,10 @@ Form_Factor:
   # Model: Dipole
 
 FRAGMENTATION: None
-BEAM_REMNANTS: None
 SHOWER_GENERATOR: None
 ISR_HANDLER: None  # Disable ISR for elastic scattering (should be handled by pdfs)
 
-PDF_SET: [FormFactor, None]  # proton: special, electron: None
+PDF_SET: [None, QuasiElastic]  # proton: special, electron: None
 
 ME_GENERATORS: Internal 
 
@@ -47,7 +43,7 @@ EW_SCHEME: 1
 MODEL: SM  # Standard Model
 
 # wrong scale here will cause errors in alpha_s and negative (or at least tiny) Q2, but doesnt change output
-SCALES: VAR{-Abs2(p[2]-p[1])}  # Q2 = momentum transfer squared but sherpa reorders nv to vn
+SCALES: VAR{-Abs2(p[2]-p[0])}  # Q2 = momentum transfer squared but sherpa reorders nv to vn
 
 # Phase space integration settings
 INTEGRATION:
@@ -63,7 +59,7 @@ ME_QED:
   ENABLED: false
 
 ANALYSIS: Rivet
-ANALYSIS_OUTPUT: Analysis_pe-nv
+ANALYSIS_OUTPUT: Analysis_ep_vn
 
 # Rivet analyses - need to specify the plugin path for custom analyses
 RIVET:

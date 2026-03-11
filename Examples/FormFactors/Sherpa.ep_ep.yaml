@@ -16,7 +16,7 @@ PARTICLE_DATA:
     Massive: 1
 
 PROCESSES:
-- 11 2212 -> 11 2212:  # p[0] e-[1] -> p[2] e-[3] 
+- 11 2212 -> 11 2212:  # e-[0] p[1] -> e-[2] p[3] 
     Order: {QCD: 0, EW: 2} 
 
 # Form factor parameters (boson and nucleon type auto-detected from process)
@@ -35,7 +35,7 @@ ME_GENERATORS: Internal
 EW_SCHEME: 1
 MODEL: SM  # Standard Model
 
-SCALES: VAR{-Abs2(p[3]-p[1])}  # Q2 = momentum transfer squared
+SCALES: VAR{-Abs2(p[2]-p[0])}  # Q2 = momentum transfer squared
 
 # Phase space integration settings
 INTEGRATION:
@@ -51,7 +51,7 @@ ME_QED:
   - ENABLED: False
 
 ANALYSIS: Rivet
-ANALYSIS_OUTPUT: Analysis_pe-pe
+ANALYSIS_OUTPUT: Analysis_ep_ep
 
 # Rivet analyses - need to specify the plugin path for custom analyses
 RIVET:

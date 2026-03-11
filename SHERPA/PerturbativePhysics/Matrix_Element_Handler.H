@@ -83,6 +83,7 @@ namespace SHERPA {
     bool        m_pilotrunenabled;
     int         m_nloadd, m_ewaddmode, m_qcdaddmode;
     bool        m_mustcheckISorder, m_mustcheckFSorder;
+    size_t      m_default_sort;
 
     ATOOLS::Weight_Info m_evtinfo;
 

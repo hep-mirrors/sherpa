@@ -69,7 +69,7 @@ void Matrix_Element_Handler::RegisterMainProcessDefaults(
     Scoped_Settings& procsettings)
 {
   procsettings["Cut_Core"].SetDefault(0);
-  procsettings["Sort_Flavors"].SetDefault(3);
+  procsettings["Sort_Flavors"].SetDefault(m_default_sort);
   procsettings["CKKW"].SetDefault("");
   procsettings.DeclareVectorSettingsWithEmptyDefault(
       {"Decay", "DecayOS", "No_Decay"});
@@ -88,7 +88,8 @@ Matrix_Element_Handler::Matrix_Element_Handler(MODEL::Model_Base *model):
   m_evtinfo(Weight_Info()),
   m_ovwth(10.), m_weightfactor(1.),
   m_nlomode(nlo_mode::none),
-  m_mustcheckISorder(true), m_mustcheckFSorder(true)
+  m_mustcheckISorder(true), m_mustcheckFSorder(true),
+  m_default_sort(3)
 {
   Settings& s = Settings::GetMainSettings();
   RegisterDefaults();
@@ -315,7 +316,7 @@ bool Matrix_Element_Handler::GenerateOneTrialEvent()
 std::vector<Process_Base*> Matrix_Element_Handler::InitializeProcess(
     Process_Info pi, NLOTypeStringProcessMap_Map*& pmap)
 {
-  CheckInitialStateOrdering(pi);
+  CheckInitialStateOrdering(pi); // turned off for intact hadrons
   std::vector<Process_Base*> procs;
   std::set<Process_Info> initialized_pi_set;
   std::vector<Flavour_Vector> fls(pi.ExtractMPL());
@@ -329,7 +330,13 @@ std::vector<Process_Base*> Matrix_Element_Handler::InitializeProcess(
     size_t n{0};
     pi.m_ii.SetExternal(cfl, n);
     pi.m_fi.SetExternal(cfl, n);
-    Process_Base::SortFlavours(pi,1);
+    msg_Out() << "=================================================\n";
+    msg_Out() << METHOD << "(): IS flavours BEFORE SortFlavours (m_sort="
+                    << pi.m_sort << "):\n";
+    Process_Base::SortFlavours(pi,pi.m_sort);
+    msg_Out() << METHOD << "(): IS flavours AFTER:\n  ";
+    pi.m_ii.PrintFlavours(ATOOLS::msg->Out());
+    msg_Out() << "\n";
     if (initialized_pi_set.find(pi)==initialized_pi_set.end()) {
       initialized_pi_set.insert(pi);
       std::vector<Process_Base*> cp=InitializeSingleProcess(pi,pmap);
@@ -523,7 +530,13 @@ std::vector<Process_Base*> Matrix_Element_Handler::InitializeSingleProcess
 void Matrix_Element_Handler::CheckInitialStateOrdering(const Process_Info& pi)
 {
   // Skip ordering check if using intact hadron mode (QuasiElastic, etc.)
-  if (!m_mustcheckISorder) return;
+  if (!m_mustcheckISorder) {
+    msg_Out() << METHOD << "(): m_mustcheckISorder=false, skipping IS order check.\n"
+                    << "  IS flavours as given (should remain unchanged):\n  ";
+    pi.m_ii.PrintFlavours(ATOOLS::msg->Out());
+    msg_Out() << "\n";
+    return;
+  }
   auto cpi = pi;
   Process_Base::SortFlavours(cpi, 1);
   if (cpi.m_ii == pi.m_ii) {
@@ -563,9 +576,14 @@ int Matrix_Element_Handler::InitializeProcesses(
   if (p_isr &&
       (p_isr->Type(0) == isrtype::intact && !p_isr->Flav(0).IsHadron() && !pdf[0] &&       
        p_isr->Type(1) == isrtype::intact &&  p_isr->Flav(1).IsHadron() && !pdf[1])) {
-    m_mustcheckISorder = false;
+      // m_mustcheckISorder = false;
+      // msg_Out() << " Set m_mustcheckISorder to false since using intact hadron mode with hadron in second beam.\n";
+      // DIS/fixed-target: default to no IS reordering unless user overrides
+      msg_Out() << METHOD << "(): intact lepton+hadron beams detected."
+                << " \nSetting default Sort_Flavors=0 (user can override in runcard).\n";
+      // m_default_sort = 0;
   }
-  
+
   double rbtime(ATOOLS::rpa->gen.Timer().RealTime());
   double btime(ATOOLS::rpa->gen.Timer().UserTime());
   MakeDir(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process",true);

@@ -38,33 +38,50 @@ namespace EXTRAXS
                 // Swap initial and final state
                 static const size_t map[4] = {0,1,3,2};
                 return map[input_idx];
-            } else {
+            }
+            else if (m_order == 2)
+            {
                 // neutron case: n[0] ve[1] -> p[2] e-[3]
                 // ki=0, pi=1, kf=3, pf=2
                 // Swap initial and final state
                 static const size_t map[4] = {1, 0, 3, 2};
                 return map[input_idx];
             }
+            else if (m_order == 3)
+            {
+                // neutron case: ve[0] n[1] -> e-[2] p[3]
+                // ki=0, pi=1, kf=2, pf=3
+                // Swap initial and final state
+                static const size_t map[4] = {0, 1, 2, 3};
+                return map[input_idx];
+            }
+            else
+            {
+                throw std::runtime_error("Invalid m_order value in pe_nv::GetMomentumIndex");
+            }
         }
         
     public:
         pe_nv(const External_ME_Args &args, const incomingnucleon::code &nucleon,
-              const Flavour &fl0, const Flavour &fl1, const Flavour &fl2, const Flavour &fl3, int &order);
+              const Flavour_Vector &flvs, int &order);
 
         double operator()(const ATOOLS::Vec4D_Vector &mom);
         double m_alpha, m_alphas, m_g, m_gA, m_massW;
-        Flavour m_fl0, m_fl1, m_fl2, m_fl3;
+        const Flavour_Vector m_flvs;
         std::unique_ptr<FormFactor_EMnucleon> p_formfactor;
         incomingnucleon::code m_nucleon; // neutron or proton decides ordering
     };
 
     pe_nv::pe_nv(const External_ME_Args &args, const incomingnucleon::code &nucleon,
-                 const Flavour &fl0, const Flavour &fl1, const Flavour &fl2, const Flavour &fl3, int &order)
-        : ME2_Base(args), m_nucleon(nucleon), m_fl0(fl0), m_fl1(fl1), m_fl2(fl2), m_fl3(fl3), m_order(order)
+                 const Flavour_Vector &flvs, int &order)
+        : ME2_Base(args), m_nucleon(nucleon), m_flvs(flvs), m_order(order)
     {
         msg_Out() << "pe_nv::pe_nv(): Constructor called" << std::endl;
         msg_Out() << "  with flavours" << std::endl;
-        msg_Out() << "  fl[0]:" << m_fl0 << " fl[1]:" << m_fl1 << " fl[2]:" << m_fl2 << " fl[3]:" << m_fl3 << std::endl;
+        for (size_t i = 0; i < flvs.size(); ++i)
+        {
+            msg_Out() << "    flvs[" << i << "] = " << flvs[i] << std::endl;
+        }
         msg_Out() << "  m_order = " << m_order << std::endl;
 
         m_sintt = 2;  // T-channel only , needed for nv-pe to integrate...
@@ -118,15 +135,18 @@ namespace EXTRAXS
         const double Me2 = Me * Me;
         const double Mp2 = Mp * Mp;
         const double Mn2 = Mn * Mn;
-        msg_Out() << "pe_nv::operator(): Me2 = " << Me2 << ", Mp2 = " << Mp2 << ", Mn2 = " << Mn2 << std::endl;
-        // msg_Out() << " inv mass from mom: m_ki^2" << ki.Abs2() << "m_pi ^ 2 " << pi.Abs2() << "m_kf^2" << kf.Abs2() << "m_pf^2" << pf.Abs2() << std::endl;
+        msg_Out() << "pe_nv::operator(): Me = " << Me << ", Mp = " << Mp << ", Mn = " << Mn << std::endl;
+        msg_Out() << " inv mass from mom: m_ki: " << ki.Abs() << ", m_pi: " << pi.Abs() << ", \n";
+        msg_Out() << "                    m_kf: " << kf.Abs() << ", m_pf: " << pf.Abs() << std::endl;
+        msg_Out() << " check mass nan. ki.ki= " << ki*ki << ", kf.kf= " << kf*kf << "\n";
+
         // Mandelstraam variables
         const double s = (ki + pi).Abs2();
         const double t = (ki - kf).Abs2(); // t < 0 virtual boson exchange
         const double u = (ki - pf).Abs2(); // u very small, so dont use in calculation to avoid rounding errors.
 
         const double Q2 = -t; // Q2 > 0 for virtual boson exchange
-        msg_Out() << "pe_nv::operator(): Q2 = " << Q2 << std::endl;
+        // msg_Out() << "pe_nv::operator(): Q2 = " << Q2 << std::endl;
         msg_Out() << "pe_nv::operator(): s = " << s << ", t = " << t << ", u = " << u << std::endl;
 
         // Add a small cutoff to avoid IR divergence at Q2=0 (forward scattering)
@@ -200,36 +220,64 @@ operator()(const External_ME_Args &args) const
     // check if 2-2 CC scattering
     if (fl.size() != 4)
         return NULL;
-    // check lepton family (any ordering)
-    if (fl[1].LeptonFamily() != fl[2].LeptonFamily()) {
-        if (fl[1].LeptonFamily() != fl[3].LeptonFamily())
-        {
-            return NULL;
-        }
-    }
+    if (!fl[0].IsLepton() || !fl[1].IsNucleon() || !fl[2].IsLepton() || !fl[3].IsNucleon())
+        return NULL;
+    if (fl[0] == fl[2])
+        return NULL;
+    if (fl[1] == fl[3])
+        return NULL;
+
+    // check lepton family matching (any ordering)
+    // if (fl[1].LeptonFamily() != fl[2].LeptonFamily()) {
+    //     if (fl[1].LeptonFamily() != fl[3].LeptonFamily()) {
+    //         if (fl[0].LeptonFamily() != fl[2].LeptonFamily()) {
+    //             if (fl[0].LeptonFamily() != fl[3].LeptonFamily()) {
+    //                 return NULL;
+    //             }
+    //         }
+    //     }
+    // } 
 
     // p e- -> n ve (after Sherpa reordering: p e- -> ve n)
-    if (fl[0] == Flavour(kf_p_plus) && fl[1].IsChargedLepton() && 
+    if (fl[1] == Flavour(kf_p_plus) && fl[0].IsChargedLepton() && 
          (fl[3] == Flavour(kf_n) && fl[2].IsNeutrino()))
     {
         int m_order = 0;
-        return new pe_nv(args, incomingnucleon::proton, fl[0], fl[1], fl[2], fl[3], m_order);
+        msg_Out() << "pe_nv Getter: Identified process with ordering p[0] e-[1] -> ve[2] n[3]" << std::endl;
+        return new pe_nv(args, incomingnucleon::proton, fl, m_order);
     } 
     // n ve -> p e- (after Sherpa reordering: ve n  -> p e- )
     else if (fl[1] == Flavour(kf_n) && fl[0].IsNeutrino() && 
              (fl[2] == Flavour(kf_p_plus) && fl[3].IsChargedLepton()))
     {
         int m_order = 1;
-        return new pe_nv(args, incomingnucleon::neutron, fl[0], fl[1], fl[2], fl[3], m_order);
+        msg_Out() << "pe_nv Getter: Identified process with ordering ve[0] n[1] -> p[2] e-[3]" << std::endl;
+        return new pe_nv(args, incomingnucleon::neutron, fl, m_order);
     }
-    else if (fl[0] == Flavour(kf_n) && fl[1].IsNeutrino() &&
+    else if (fl[1] == Flavour(kf_n) && fl[0].IsNeutrino() &&
              (fl[2] == Flavour(kf_p_plus) && fl[3].IsChargedLepton()))
     {
         int m_order = 2;
-        return new pe_nv(args, incomingnucleon::neutron, fl[0], fl[1], fl[2], fl[3], m_order);
+        msg_Out() << "pe_nv Getter: Identified process with ordering n[0] ve[1] -> p[2] e-[3]" << std::endl;
+        return new pe_nv(args, incomingnucleon::neutron, fl, m_order);
+    }
+    else if (fl[1] == Flavour(kf_n) && fl[0].IsNeutrino() &&
+             (fl[3] == Flavour(kf_p_plus) && fl[2].IsChargedLepton()))
+    {
+        int m_order = 3;
+        msg_Out() << "pe_nv Getter: Identified process with ordering ve[0] n[1] -> e-[2] p[3]" << std::endl;
+        return new pe_nv(args, incomingnucleon::neutron, fl, m_order);
+    }
+    else if (fl[1] == Flavour(kf_p_plus) && fl[0].IsChargedLepton() &&
+             (fl[3] == Flavour(kf_n) && fl[2].IsNeutrino()))
+    {
+        int m_order = 3;
+        msg_Out() << "pe_nv Getter: Identified process with ordering e-[0] p[1] -> ve[2] n[3]" << std::endl;
+        return new pe_nv(args, incomingnucleon::neutron, fl, m_order);
     }
     else
     {
+        msg_Out() << "pe_nv Getter: No matching process found for given flavours." << std::endl;
         return NULL; // Not an appropriate process
     }
 

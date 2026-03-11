@@ -160,7 +160,7 @@ Blob * Beam_Remnant_Handler::FillBunchBlob(int beam,Particle * particle)
     blob->SetPosition(p_beam->GetBeam(beam)->Position());
   }
   m_beam++;
-  msg_Out()<<METHOD<<"("<<beam<<", "<<particle->Number()<<"/"<<particle->Flav()<<") "
+  msg_Debugging()<<METHOD<<"("<<beam<<", "<<particle->Number()<<"/"<<particle->Flav()<<") "
 	   <<"--> "<<blob->NOutP()<<"\n";
   return blob;
 }

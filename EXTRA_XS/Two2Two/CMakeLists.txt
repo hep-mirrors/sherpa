@@ -7,6 +7,7 @@ set(Two2Two_SOURCES XS_Drell_Yan.C
                     gg_yy.C
                     emu_emu.C
                     DMDM_mumu.C
+                    # LN_LN.C
                     pe_pe.C
                     pe_nv.C
                     pv_pv.C

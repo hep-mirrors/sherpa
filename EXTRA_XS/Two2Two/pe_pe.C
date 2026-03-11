@@ -76,10 +76,10 @@ namespace EXTRAXS {
         // msg_Out()<<"pe_pe::operator(): Called with " << std::endl;
         // indices: # p[0] e-[1] -> p[2] e-[3]
         // k: lepton, p: hadron
-        const auto &ki = momenta[1];
-        const auto &pi = momenta[0];
-        const auto &kf = momenta[3];
-        const auto &pf = momenta[2];
+        const auto &ki = momenta[0];
+        const auto &pi = momenta[1];
+        const auto &kf = momenta[2];
+        const auto &pf = momenta[3];
 
         // msg_Out() << "pe_pe::operator(): ki = " << ki << std::endl;
         // msg_Out() << "pe_pe::operator(): pi = " << pi << std::endl;
@@ -300,12 +300,10 @@ operator()(const External_ME_Args &args) const
     const Flavour_Vector &fl = args.Flavours();
     incomingnucleon::code nucleon = incomingnucleon::off;
 
-    msg_Out()<<"\n\n"
-	     <<"----------------------------------------------\n"
-	     <<METHOD<<": "
-	     <<fl[0]<<" "<<fl[1]<<" --> "<<fl[2]<<" "<<fl[3]<<"\n";
     // check if elastic NC scattering
     if (fl.size() != 4) return NULL;
+    if (!fl[0].IsLepton() || !fl[1].IsNucleon() || !fl[2].IsLepton() || !fl[3].IsNucleon())
+        return NULL;
     if (fl[0] != fl[2])
         return NULL;
     if (fl[1] != fl[3])
@@ -322,6 +320,11 @@ operator()(const External_ME_Args &args) const
     
     // check leptons for NC interaction (electron, muon, or tau)
     if (fl[0].IsChargedLepton()) {
+        msg_Out() << "\n\n"
+                  << "----------------------------------------------\n"
+                  << METHOD << ": "
+                  << fl[0] << " " << fl[1] << " --> " << fl[2] << " " << fl[3] << "\n";
+
         return new pe_pe(args, nucleon, fl[0], fl[1]);
     }
 
