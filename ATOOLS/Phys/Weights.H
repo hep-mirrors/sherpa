@@ -108,7 +108,7 @@ namespace ATOOLS {
 
   private:
 
-    /// Check if only a single value is present, and that no type has been set.
+    /// Check if only a single value is present, and a custom type is used.
     bool IsUnnamedScalar() const;
 
     Variations_Type type;
