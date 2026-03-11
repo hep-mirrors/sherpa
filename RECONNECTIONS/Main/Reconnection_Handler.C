@@ -44,6 +44,8 @@ void Reconnection_Handler::Initialize() {
   m_sum_weights.resize(m_n_variations, 0.0);
   m_sum_weights_squared.resize(m_n_variations, 0.0);
 
+  p_reconnector->ResetVariationWeights(m_n_variations);
+
   // output
   const bool print_files = p_reconnector->GetWeightOutput();
   if (print_files && m_on) {
@@ -84,6 +86,7 @@ Return_Value::code Reconnection_Handler::operator()(Blob_List *const blobs,
       msg_Error()<<"Error in "<<METHOD<<": reconnections didn't work out.\n"
 		 <<"   Ask for new event and hope for the best.\n";
     p_reconnector->Reset();
+    p_reconnector->ResetVariationWeights(m_n_variations);
     m_nfails++;
     return Return_Value::New_Event;
   case 1:
@@ -96,6 +99,12 @@ Return_Value::code Reconnection_Handler::operator()(Blob_List *const blobs,
 
   auto variation_weights = p_reconnector->GetVariationWeights();
   size_t n_reconnections = p_reconnector->GetReconnectionCount();
+
+  msg_Out() << METHOD << ": " << n_reconnections << " WEIHGTS: ";
+  for (size_t i = 0; i < m_n_variations; ++i) {
+    msg_Out() << variation_weights[i] << " ";
+  }
+  msg_Out() << "\n";
   
   p_reconnector->Reset();
   
