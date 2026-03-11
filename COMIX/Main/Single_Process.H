@@ -84,7 +84,7 @@ namespace COMIX {
      ATOOLS::Variations_Mode type=ATOOLS::Variations_Mode::nominal_only,
      int mode=0);
 
-    bool Trigger(const ATOOLS::Vec4D_Vector &p);
+    bool TriggerAndSanityCheck(const ATOOLS::Vec4D_Vector &p);
 
     bool GeneratePoint();
     bool Tests();

@@ -207,7 +207,7 @@ namespace PHASIC {
     virtual void InitCuts(Cut_Data *const cuts);
     virtual void BuildCuts(Cut_Data *const cuts);
 
-    virtual bool Trigger(const ATOOLS::Vec4D_Vector &p);
+    virtual bool TriggerAndSanityCheck(const ATOOLS::Vec4D_Vector &p);
 
     virtual ATOOLS::NLO_subevtlist *GetSubevtList();
     virtual ATOOLS::NLO_subevtlist *GetRSSubevtList();

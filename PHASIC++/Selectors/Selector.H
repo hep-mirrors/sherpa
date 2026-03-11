@@ -68,6 +68,8 @@ namespace PHASIC {
     std::vector<Selector_Base*> m_sels;
 
     size_t m_nin, m_nout, m_n;
+    size_t m_trigger_calls_called;
+    size_t m_trigger_calls_passed;
 
     std::vector<ATOOLS::Weights_Map> m_results;
 
@@ -88,6 +90,7 @@ namespace PHASIC {
     virtual bool Trigger(const ATOOLS::Vec4D_Vector &p,
                          const ATOOLS::Flavour *fl=NULL, size_t n=0);
     virtual bool Trigger(ATOOLS::Selector_List &sl) = 0;
+    bool TriggerAndSanityCheck(const ATOOLS::Vec4D_Vector &p,const ATOOLS::Flavour *fl=NULL, size_t n=0);
 
     virtual void BuildCuts(Cut_Data *) = 0;
     virtual void AddOnshellCondition(std::string,double);
