@@ -86,7 +86,7 @@ double COMIX::Single_Dipole_Term::Partonic(const Vec4D_Vector &p,
   return m_lastxs*=m_w;
 }
 
-bool Single_Dipole_Term::Trigger(const ATOOLS::Vec4D_Vector &p)
+bool Single_Dipole_Term::TriggerAndSanityCheck(const ATOOLS::Vec4D_Vector &p)
 {
   Selector()->SetResult(1);
   return p_bg->SetMomenta(p);

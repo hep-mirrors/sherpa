@@ -90,7 +90,7 @@ Phase_Space_Handler::Differential(Process_Integrator *const process,
     if (p.Nan()) return 0.0;
   }
   // phase space trigger, calculate and construct weights
-  if (process->Process()->Trigger(p_lab)) {
+  if (process->Process()->TriggerAndSanityCheck(p_lab)) {
     m_psweight = CalculatePS();
     m_wgtmap   = CalculateME(varmode);
     m_wgtmap  *= m_psweight;
@@ -292,7 +292,7 @@ void Phase_Space_Handler::CheckSinglePoint()
   } else
     return ;
   Process_Base *proc(p_active->Process());
-  proc->Trigger(p_lab);
+  proc->TriggerAndSanityCheck(p_lab);
   CalculateME(Variations_Mode::nominal_only);
   msg->SetPrecision(16);
   msg_Out()<<"// "<<proc->Name()<<"\n";

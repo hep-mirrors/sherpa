@@ -516,7 +516,7 @@ double Single_Real_Correction::operator()(const ATOOLS::Vec4D_Vector &_mom,const
   bool realtrg(true);
 
   if (!m_no_tree) {
-    realtrg=p_tree_process->Trigger(_mom);
+    realtrg=p_tree_process->TriggerAndSanityCheck(_mom);
     bool alltrg(realtrg);
     for (size_t i(0);i<m_subevtlist.size();++i) {
       alltrg|=m_subevtlist[i]->m_trig;
@@ -578,7 +578,7 @@ void Single_Real_Correction::FillAmplitudes(vector<METOOLS::Spin_Amplitudes>& am
   p_tree_process->FillAmplitudes(amps, cols);
 }
 
-bool Single_Real_Correction::Trigger(const ATOOLS::Vec4D_Vector &p)
+bool Single_Real_Correction::TriggerAndSanityCheck(const ATOOLS::Vec4D_Vector &p)
 {
   return true;
 }

@@ -126,7 +126,7 @@ namespace AMEGIC {
     void FillAmplitudes(std::vector<METOOLS::Spin_Amplitudes>& amps,
                         std::vector<std::vector<Complex> >& cols);
 
-    bool Trigger(const ATOOLS::Vec4D_Vector &p);
+    bool TriggerAndSanityCheck(const ATOOLS::Vec4D_Vector &p);
 
     void SetScale(const PHASIC::Scale_Setter_Arguments &args);
     void SetKFactor(const PHASIC::KFactor_Setter_Arguments &args);

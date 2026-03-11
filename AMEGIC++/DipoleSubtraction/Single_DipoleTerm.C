@@ -601,7 +601,7 @@ void Single_DipoleTerm::Minimize()
   m_subevt.p_mom = p_partner->GetSubevt()->p_mom;
 }
 
-bool Single_DipoleTerm::Trigger(const ATOOLS::Vec4D_Vector &p)
+bool Single_DipoleTerm::TriggerAndSanityCheck(const ATOOLS::Vec4D_Vector &p)
 {
   return true;
 }
@@ -648,7 +648,7 @@ double Single_DipoleTerm::operator()(const ATOOLS::Vec4D * mom,
   ((_mode&2)?p_LO_process->Partner():p_LO_process)->SetSubevtList(p_subevtlist);
 
   if (p_LO_process->Selector()->On())
-    m_subevt.m_trig=p_dipole->KinCheck()?p_LO_process->Trigger(p_LO_labmom):0;
+    m_subevt.m_trig=p_dipole->KinCheck()?p_LO_process->TriggerAndSanityCheck(p_LO_labmom):0;
   else m_subevt.m_trig=true;
   msg_Debugging()<<"Trigger: "<<m_subevt.m_trig
                  <<", kinematics check: "<<p_dipole->KinCheck()<<std::endl;
