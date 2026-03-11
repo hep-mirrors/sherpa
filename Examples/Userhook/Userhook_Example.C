@@ -32,12 +32,14 @@ public:
   ATOOLS::Return_Value::code Run(ATOOLS::Blob_List* blobs) {
     DEBUG_INFO("Let's do something with the bloblist for each event:");
 
+    // Example how to access/count particles from the event (= Blob_List)
     ++m_nevents;
     m_nvertices += blobs->size();
     for (auto blob : *blobs) {
       m_nparticles += blob->OutParticles()->size();
     }
 
+    // Example how to work with HepMC::Gen_Event instead of Blob_List
 #ifdef USING__HEPMC3
     // and now convert into a HepMC event
     SHERPA::HepMC3_Interface hepmc_converter;
@@ -46,6 +48,12 @@ public:
     // ... do something with HepMC event here ...
     DEBUG_VAR(hepmc_event.particles().size());
 #endif
+
+    // Example how to add some event weight
+    double weight_factor = 1.3;
+    Weights_Map& wmap = (*blobs->FindFirst(btp::Signal_Process))["WeightsMap"]->Get<Weights_Map>();
+    wmap["MyExample"]["Nominal"] = weight_factor;
+    wmap["MyExample"]["NoCorrection"] = 1.0;
 
     if(blobs->FourMomentumConservation()) {
       return Return_Value::Nothing;
