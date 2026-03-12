@@ -34,7 +34,6 @@ Kabbala::Kabbala(const std::string& str, const Func& func, Function_Argument map
 Kabbala::Kabbala(const std::string& str, const Complex& c) {
   shem = str;
   rishbon = c;
-  msg_Debugging() << "No proper function set for the Kabbala. Choosing Basic Lookup." << std::endl;
   lambda = BasicLookUpFunction();
 }
 
