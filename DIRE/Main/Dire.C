@@ -151,10 +151,6 @@ bool Dire::ExtractPartons(Blob_List *const bl)
       if ((*pit)->Beam()&&nois) continue;
       if ((*pit)->Out(0)==NULL) ExtractParton(b,*pit);
     }
-  Cluster_Amplitude * ampl = m_ampls.back()->ClusterAmplitude();
-  while(ampl->Next()) ampl = ampl->Next();
-  //caution: amplitude constructed inverse than in case of the CS-Shower. Keep in mind for event filter!
-  b->AddData("AllAmplitudes",new Blob_Data<std::shared_ptr<Cluster_Amplitude> >(std::shared_ptr<Cluster_Amplitude>(ampl)));
   return true;
 }
 
@@ -181,7 +177,6 @@ Amplitude *Dire::Convert
     Cluster_Leg *cl(campl->Leg(i));
     Parton *p(new Parton(ampl,cl->Flav(),cl->Mom(),
 			 Color(cl->Col().m_i,cl->Col().m_j)));
-    p->SetFromDec(cl->FromDec());
     ampl->push_back(p);
     p->SetId(p->Counter());
     for (int i(0);i<2;++i) p->SetT(i,cl->KT2(i));
