@@ -376,11 +376,11 @@ Its settings are also steered within the ``HADRON_DECAYS`` block as follows:
   The levels are structured first by decaying particle and then by decay
   products. For each decay channel the following settings are available:
 
-  * ``BR: [<br>, <deltabr>]`` branching ratio and its uncertainty
+  * ``BR: [<br>, <deltabr>]`` branching ratio and its uncertainty. Note that the effective BR in the simulation might differ from this value if the specified BRs of a given decayer do not add up to 100\%.
 
   * ``Origin: <...>`` origin of BR for documentation purposes
 
-  * ``Status:`` TODO
+  * ``Status:`` specifies whether the decay channel is enabled or disabled. It can take on values of ``Status: 0`` (disabled), ``Status: 1`` (enabled) and ``Status: 2`` (forced, i.e. all other decay channels of the given decayer will be disabled). If you specify multiple values, the n'th status will apply to the n'th decay of this particle flavour within the event.
 
   * ``ME:`` lists the matrix elements used for the decay kinematics
     and the permutation that maps the external momenta of the decay into the
