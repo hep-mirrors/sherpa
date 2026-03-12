@@ -39,7 +39,7 @@ namespace AHADIC {
     bool FixBetaAndZ();
     bool ConstructMomenta();
     bool CheckKinematics();
-
+    bool GluonsToQuarks();
     bool Rescue();
     void ConstructRescueMomenta();
  public:

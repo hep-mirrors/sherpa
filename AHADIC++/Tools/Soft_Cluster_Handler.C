@@ -481,6 +481,8 @@ PhaseSpace(const double & m2,const double & m3,const bool heavyB) {
 
 double Soft_Cluster_Handler::
 MinSingleMass(const Flavour & fl1,const Flavour & fl2) {
+  // Two-gluon singlets with mass < 1 GeV should directly transfer into hadrons.
+  if (fl1.IsGluon() && fl2.IsGluon()) return 1.;
   m_flavs.first  = fl1;
   m_flavs.second = fl2;
   return p_singletransitions->GetLightestMass(m_flavs);
@@ -495,6 +497,7 @@ LowestTransition(const ATOOLS::Flavour & fl1,const ATOOLS::Flavour & fl2) {
 
 double Soft_Cluster_Handler::
 MinDoubleMass(const Flavour & fl1,const Flavour & fl2) {
+  if (fl1.IsGluon() && fl2.IsGluon()) return 1.;
   m_flavs.first  = fl1;
   m_flavs.second = fl2;
   return p_doubletransitions->GetLightestMass(m_flavs);

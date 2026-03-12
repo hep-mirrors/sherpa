@@ -28,9 +28,18 @@ bool Singlet::ReorderCriterion(Proto_Particle * first) {
 
 void Singlet::Reorder(Proto_Particle * first) {
   // rotating the singlet until a quark or anti-diquark is fronting it
-  while (ReorderCriterion(first)) {
-    push_back(front());
-    pop_front();
+  bool allgluons = true;
+  for (list<Proto_Particle *>::iterator pit=begin();pit!=end();pit++) {
+    if (!(*pit)->Flavour().IsGluon()) { allgluons = false; break; }
+  }
+  if (allgluons) {
+    if (size()==2) return;
+  }
+  else {
+    while (ReorderCriterion(first)) {
+      push_back(front());
+      pop_front();
+    }
   }
 }
 

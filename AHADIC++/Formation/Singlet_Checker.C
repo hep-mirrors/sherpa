@@ -80,7 +80,8 @@ bool Singlet_Checker::operator()() {
   while (lsit!=p_singlets->end()) {
     p_singlet = (*lsit);
     // check if singlet is too light
-    // (mass smaller than summed constituent masses - may hint at problem) 
+    // (mass smaller than summed constituent masses - may hint at problem)
+    //msg_Out()<<METHOD<<": "<<p_singlet->size()<<", "<<sqrt(p_singlet->Mass2())<<"\n";
     if (!CheckSinglet()) {
       // there are only two partons in it - this will have to be fixed
       // we put all of those into a separate list to be deatl with in
@@ -93,8 +94,8 @@ bool Singlet_Checker::operator()() {
       // if fusing does not work we will re-try the event
       else if (!FusePartonsInLowMassSinglet()) {
 	m_errors++;
-	msg_Tracking()<<METHOD<<" throws error - fusing didn't work out.\n"
-		      <<(*p_singlet)<<"\n";
+	//msg_Out()<<METHOD<<" throws error - fusing didn't work out.\n"
+	//	 <<(*p_singlet)<<"\n";
 	return false;
       }
     }
@@ -105,13 +106,10 @@ bool Singlet_Checker::operator()() {
   if (m_badones.size()>0) {
     if (!DealWithProblematicSinglets()) {
       m_errors++;
-      msg_Out()<<METHOD<<" throws error - no rescue possible.\n";
-      //if (msg_LevelIsTracking()) {
-	for (list<list<Singlet *>::iterator>::iterator bit=m_badones.begin();
-	     bit!=m_badones.end();bit++) {
-	  msg_Tracking()<<(***bit)<<"\n";
-	}
-	//}
+      for (list<list<Singlet *>::iterator>::iterator bit=m_badones.begin();
+	   bit!=m_badones.end();bit++) {
+	msg_Tracking()<<(***bit)<<"\n";
+      }
       return false;
     }
   }
@@ -139,7 +137,7 @@ bool Singlet_Checker::CheckSinglet() {
 						       (*plit2)->Flavour()),
 			 p_softclusters->MinDoubleMass((*plit1)->Flavour(),
 						       (*plit2)->Flavour()));
-    //if (mass<minmass) msg_Out()<<"Upsi 1.\n";
+    //if (mass<minmass) msg_Out()<<METHOD<<" ooopsiiiie 1.\n";
     return (mass > minmass);
   }
   while (plit2!=p_singlet->end()) {
@@ -148,7 +146,9 @@ bool Singlet_Checker::CheckSinglet() {
     p_part1 = (*plit1);
     p_part2 = (*plit2);
     if (!CheckMass(p_part1,p_part2)) {
-      //msg_Out()<<"Upsi 2: "<<p_part1->Flavour()<<" + "<<p_part2->Flavour()<<"\n";
+      //msg_Out()<<METHOD<<": check mass(2) for "
+      //       <<p_part1->Flavour()<<" ("<<p_part1->Momentum()[0]<<") "
+      //       <<p_part2->Flavour()<<" ("<<p_part2->Momentum()[0]<<")\n";
       return false;
     }
     plit2++;
@@ -160,7 +160,9 @@ bool Singlet_Checker::CheckSinglet() {
     p_part1 = (*plit1);
     p_part2 = p_singlet->front();
     if (!CheckMass(p_part1,p_part2)) {
-      //msg_Out()<<"Upsi 1.\n";
+      //msg_Out()<<METHOD<<": check mass(2) for "
+      //       <<p_part1->Flavour()<<" ("<<p_part1->Momentum()[0]<<") "
+      //       <<p_part2->Flavour()<<" ("<<p_part2->Momentum()[0]<<")\n";
       return false;
     }
   }
@@ -210,7 +212,7 @@ bool Singlet_Checker::DealWithProblematicSinglets() {
   SortProblematicSinglets();
   if (m_transitions.size()>1) {
     if (!TransitProblematicSinglets()) {
-      msg_Out()<<METHOD<<" throws error for more than one transition.\n";
+      //msg_Out()<<METHOD<<" throws error for more than one transition.\n";
       m_errors++;
       return false;
     }
@@ -220,7 +222,7 @@ bool Singlet_Checker::DealWithProblematicSinglets() {
     // to sort them out - two birds with one stone.
     if (FindOtherSingletToTransit()) {
       if (!TransitProblematicSinglets()) {
-	msg_Out()<<METHOD<<" throws error for one transition (1).\n";
+	//msg_Out()<<METHOD<<" throws error for one transition (1).\n";
 	m_errors++;
 	return false;
       }
@@ -228,7 +230,7 @@ bool Singlet_Checker::DealWithProblematicSinglets() {
     // if this does not work, we'll try to find a "regular" singlet ....
     else if (FindRecoilerForTransit()) {
       if (!TransitProblematicSingletWithRecoiler()) {
-	msg_Out()<<METHOD<<" throws error for one transition (2).\n";
+	//msg_Out()<<METHOD<<" throws error for one transition (2).\n";
 	m_errors++;
 	return false;
       }
@@ -242,10 +244,10 @@ bool Singlet_Checker::DealWithProblematicSinglets() {
 						 mom,false,isbeam);
       p_hadrons->push_back(part);
       m_direct_transitions++;
-      msg_Out()<<METHOD<<" with a transition for "
-	       <<"("<<p_singlets->size()<<" singlets).\n"
-	       <<transition.second<<" from "
-	       <<(*transition.first)<<"\n";
+      //msg_Out()<<METHOD<<" with a transition for "
+      //       <<"("<<p_singlets->size()<<" singlets).\n"
+      //       <<transition.second<<" from "
+      //       <<(*transition.first)<<"\n";
       return true;
     }
   }

@@ -43,17 +43,22 @@ bool Trivial_Splitter::operator()(Singlet * singlet) {
   p_part1    = (*ppit1);
   p_part2    = (*ppit2);
   m_spectmom = p_singlet->back()->Momentum();
-  if (!InitKinematics(false)) return Rescue();
+  if (!InitKinematics(false)) {
+    return GluonsToQuarks();
+  }
+  //msg_Out()<<"   * "<<METHOD<<"(2)\n";
   do {
-    SelectFlavour();
+    SelectFlavour();    
   } while (!FixTrialKinematics() || !CheckKinematics());
+  //msg_Out()<<"   * "<<METHOD<<"(3)\n";
 
   p_part1->SetFlavour(m_newflav);
   p_part1->SetMomentum(m_q1mom);
   p_part2->SetMomentum(m_glumom);
-
+  
   p_singlet->push_back(new Proto_Particle(m_newflav.Bar(),m_q2mom));
   p_singlet->back()->SetKT2_Max(m_kt2max);
+  //msg_Out()<<*singlet<<"\n";
   return true;
 }
 
@@ -66,7 +71,10 @@ bool Trivial_Splitter::InitKinematics(bool rescue) {
   m_boost.Boost(mom1);
   m_rotat     = Poincare(mom1,m_E*s_AxisP); 
   if (rescue) return (m_E>m_minmass);
-  if (m_E<4.*m_minmass) return false;
+  if (m_E<4.*m_minmass) {
+    //msg_Out()<<METHOD<<" E = "<<m_E<<" vs. "<<m_minmass<<"\n";
+    return false;
+  }
   double R2   = 3.*sqr(m_minmass);
   double arg1 = 1.-4.*sqr(m_minmass)/m_Q2;
   double arg2 = sqr(1.-R2/m_Q2)-4.*sqr(m_minmass)/m_Q2;
@@ -133,6 +141,30 @@ bool Trivial_Splitter::FixTrialKinematics() {
 bool Trivial_Splitter::CheckKinematics() {
   // check if (last quark--gluon) pairing is heavy enough.
   return (sqrt((m_spectmom+m_q2mom).Abs()) > m_popped_mass + 2.*m_minmass);
+}
+
+bool Trivial_Splitter::GluonsToQuarks() {
+  if (!(p_part1->Flavour().IsGluon() && p_part2->Flavour().IsGluon()))
+    return false;
+  SelectFlavour();
+  double p = sqrt(1.-4.*m_popped_mass2/m_Q2);
+  m_q1mom  = m_E*Vec4D(1., 0., 0.,  p);
+  m_q2mom  = m_E*Vec4D(1., 0., 0., -p);
+  m_rotat.RotateBack(m_q1mom);
+  m_rotat.RotateBack(m_q2mom);
+  m_boost.BoostBack(m_q1mom);
+  m_boost.BoostBack(m_q2mom);
+  p_part1->SetFlavour(m_newflav.Bar());
+  p_part1->SetMomentum(m_q1mom);
+  p_part2->SetFlavour(m_newflav);
+  p_part2->SetMomentum(m_q2mom);
+  p_singlet->push_back(p_part1);
+  p_singlet->pop_front();
+  //msg_Out()<<"Boom!  E = "<<m_E<<"  --> "<<m_newflav<<" / "<<m_popped_mass2<<"\n"
+  //	   <<m_q1mom<<" ("<<m_q1mom.Abs2()<<") + "
+  //	   <<m_q2mom<<" ("<<m_q2mom.Abs2()<<")\n"
+  //	   <<(*singlet)<<"\n";
+  return true;
 }
 
 bool Trivial_Splitter::Rescue() {
