@@ -41,22 +41,14 @@ public:
   ATOOLS::Return_Value::code Run(ATOOLS::Blob_List* blobs) {
     DEBUG_FUNC(p_sherpa->GetInitHandler()->GetMatrixElementHandler()->Process()->Parent()->Name());
 
+    // correction for MC@NLO S events
     auto me_w_info = (*blobs->FindFirst(btp::Signal_Process))["MEWeightInfo"]->Get<ME_Weight_Info*>();
     double new_weight_factor = 1.0;
+    PHASIC::MCatNLO_Process * mcproc = dynamic_cast<PHASIC::MCatNLO_Process* >
+      (p_sherpa->GetInitHandler()->GetMatrixElementHandler()->Process()->Parent());
+    if (mcproc && me_w_info->m_type != (ATOOLS::mewgttype::METS |ATOOLS::mewgttype::H)) {
 
-    //apply only to S-Events
-    if (me_w_info->m_type != (ATOOLS::mewgttype::METS |ATOOLS::mewgttype::H)){
-
-      PHASIC::MCatNLO_Process * mcproc = dynamic_cast<PHASIC::MCatNLO_Process* >
-        (p_sherpa->GetInitHandler()->GetMatrixElementHandler()->Process()->Parent());
-      if (mcproc==NULL){
-        THROW(fatal_error,"no MC@NLO process found! For use with separate LO-Process, use K-Factor!");
-      }
-      // TODO: make more efficient, without whole amplitude copying!
-      Cluster_Amplitude * ampl = mcproc->GetAmplitude();
-      double muf2 = ampl->KT2();
-      ampl->Delete();
-
+      double muf2 = mcproc->Amplitude()->KT2();
       double mur2 = me_w_info->m_mur2;
       ATOOLS::Flavour bquark(kf_b);
       double mb2 = bquark.Mass()*bquark.Mass();
@@ -84,17 +76,11 @@ public:
       double sum_meweight = me_w_info->m_B + me_w_info->m_K + me_w_info->m_KP + me_w_info->m_VI;
       new_weight_factor = (1. - correction* born_weight/sum_meweight);
     }
-    else {
-      msg_Debugging() << "H-Event, skip alpha_s correction." << std::endl;
-      new_weight_factor = 1.0;
-      // cannot return here, because each event needs to have the same weight structure!
-    }
 
     DEBUG_VAR(new_weight_factor);
-    Weights_Map& wmap = (*blobs->FindFirst(btp::Signal_Process))["WeightsMap"]->Get<Weights_Map>();
-    wmap["Fusing"] = new_weight_factor;
-    wmap["Fusing"]["Nominal"] = new_weight_factor;
-    wmap["Fusing"]["NoDirectCorrection"] = 1.0;
+    blobs->WeightsMap()["Fusing"]["Nominal"] = new_weight_factor;
+    blobs->WeightsMap()["Fusing"]["NoDirectCorrection"] = 1.0;
+
     // TODO: calculate counter-terms based on the muR variations. not done yet, since numerical impact is small.
 
     return Return_Value::Nothing;

@@ -52,7 +52,6 @@ namespace ATOOLS {
 
 
   public:
-    // TODO fusing: this should be protected, but then the shared_ptr compilation fails in CS_Shower.C
     ~Cluster_Amplitude();
 
     static Cluster_Amplitude* New(Cluster_Amplitude *const prev=NULL);

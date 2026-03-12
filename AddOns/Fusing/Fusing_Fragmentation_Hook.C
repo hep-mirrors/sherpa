@@ -99,9 +99,8 @@ public:
 
     if (m_store) {
       // if m_store: store additional weight (zero) in bloblist and skip veto
-      Weights_Map& wmap = (*blobs->FindFirst(btp::Signal_Process))["WeightsMap"]->Get<Weights_Map>();
-      wmap["Fusing"]["Nominal"] = 1.0;
-      wmap["Fusing"]["Fragmentation"] = veto ? 0.0 : 1.0;
+      blobs->WeightsMap()["Fusing"]["Nominal"] = 1.0;
+      blobs->WeightsMap()["Fusing"]["Fragmentation"] = veto ? 0.0 : 1.0;
       return Return_Value::Nothing;
     }
     else {
