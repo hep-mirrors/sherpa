@@ -2,6 +2,9 @@ EVENTS: 1k
 BATCH_MODE: 7
 EVENT_GENERATION_MODE: W
 
+BEAMS: 2212
+BEAM_ENERGIES: 6500
+
 ME_SIGNAL_GENERATOR:
   - Comix
   - Amegic
@@ -36,3 +39,9 @@ SELECTORS:
   - [IsolationCut, 22, 0.1, 2, 0.10]
   - [DR, 22, 90, 0.1, 1000.0]
   - [Mass, 11,  -11,  10.0,  E_CMS]
+
+ANALYSIS: Rivet
+RIVET:
+  --analyses:
+    - ATLAS_2022_I2614196
+    - ATLAS_2019_I1764342

@@ -2,6 +2,9 @@ EVENTS: 1k
 BATCH_MODE: 7
 EVENT_GENERATION_MODE: W
 
+BEAMS: 2212
+BEAM_ENERGIES: 3500
+
 # me generator settings
 ME_SIGNAL_GENERATOR:
   - Comix
@@ -12,12 +15,6 @@ ME_SIGNAL_GENERATOR:
 OL_PARAMETERS:
   ew_renorm_scheme: 1
   write_paraemeters: 1
-
-ASSOCIATED_CONTRIBUTIONS_VARIATIONS:
-  - [EW]
-  - [EW, LO1]
-  - [EW, LO1, LO2]
-  - [EW, LO1, LO2, LO3]
 
 EW_SCHEME: 3
 GF: 1.166397e-5
@@ -32,7 +29,6 @@ PROCESSES:
       Order: {QCD: 0, EW: 2}
       CKKW: 20
       2->2-4:
-        Associated_Contributions: [EW, LO1, LO2, LO3]
         Enhance_Observable: VAR{log10(max(sqrt(H_T2)-PPerp(p[2])-PPerp(p[3]),MPerp(p[2]+p[3])))}|1|3.3 {3,4,5,6,7}
         NLO_QCD_Mode: MC@NLO
         ME_Generator: Amegic
@@ -48,7 +44,6 @@ PROCESSES:
       Order: {QCD: 0, EW: 2}
       CKKW: 20
       2->2-4:
-        Associated_Contributions: [EW, LO1, LO2, LO3]
         Enhance_Observable: VAR{log10(max(sqrt(H_T2)-PPerp(p[2])-PPerp(p[3]),MPerp(p[2]+p[3])))}|1|3.3 {3,4,5,6,7}
         NLO_QCD_Mode: MC@NLO
         ME_Generator: Amegic
@@ -63,3 +58,15 @@ PROCESSES:
 SELECTORS:
   - [Mass, 13, -14, 2.0, E_CMS]
   - [Mass, -13, 14, 2.0, E_CMS]
+
+ANALYSIS: Rivet
+RIVET:
+  --analyses:
+    - ATLAS_2014_I1319490:LMODE=MU
+    - ATLAS_2014_I1282447
+    - ATLAS_2013_I1219109:LMODE=MU
+    - ATLAS_2013_I1217867    
+    - ATLAS_2011_I925932
+    - CMS_2014_I1303894
+    - MC_WJETS:LMODE=MU
+    - MC_WINC:LMODE=MU

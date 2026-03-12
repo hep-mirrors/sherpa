@@ -2,6 +2,9 @@ EVENTS: 1k
 BATCH_MODE: 7
 EVENT_GENERATION_MODE: W
 
+BEAMS: 2212
+BEAM_ENERGIES: 4000
+
 # scales
 MEPS:
   CORE_SCALE: VAR{Abs2(p[0]+p[1])}
@@ -49,3 +52,8 @@ PROCESSES:
       ME_Generator: Amegic
       RS_ME_Generator: Comix
       Loop_Generator: OpenLoops
+
+ANALYSIS: Rivet
+RIVET:
+  --analyses:
+    - ATLAS_2016_I1492320:LMODE=3L
