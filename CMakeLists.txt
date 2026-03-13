@@ -28,6 +28,10 @@ endif(CMAKE_BUILD_TYPE)
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake/Modules ${CMAKE_MODULE_PATH} )
 cmake_policy(SET CMP0069 NEW)
 
+set(CMAKE_CXX_STANDARD 17 CACHE STRING "C++ standard to use")
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+
 IF(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
   SET(CMAKE_INSTALL_PREFIX ${PROJECT_BINARY_DIR} CACHE PATH "Default prefix" FORCE)
 ENDIF(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
@@ -336,7 +340,6 @@ macro(sherpa_handle_shared_library  mylib mylibname)
   set_target_properties(${mylib}        PROPERTIES POSITION_INDEPENDENT_CODE ON  SOVERSION 0.0.0)
   set_target_properties(${mylib}        PROPERTIES DEFINE_SYMBOL "")
   set_target_properties(${mylib}        PROPERTIES OUTPUT_NAME ${mylibname})
-  target_compile_features(${mylib} PRIVATE cxx_std_11)
   set_target_properties(${mylib} PROPERTIES  ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/outputs/${CMAKE_INSTALL_LIBDIR}/SHERPA-MC/$<0:>
                                              LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/outputs/${CMAKE_INSTALL_LIBDIR}/SHERPA-MC/$<0:>
                                              RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/outputs/${CMAKE_INSTALL_LIBDIR}/SHERPA-MC/$<0:>
@@ -359,7 +362,6 @@ macro(sherpa_handle_executable  mylib )
    if(NOT (CMAKE_SYSTEM_NAME MATCHES Darwin))
      target_link_options(${mylib} PRIVATE "LINKER:-no-as-needed")
    endif()
-   target_compile_features(${mylib} PRIVATE cxx_std_11)
 endmacro(sherpa_handle_executable  mylib )
 
 
