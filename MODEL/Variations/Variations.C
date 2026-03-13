@@ -19,7 +19,9 @@ namespace MODEL {
             ReadCorrelations();
             // add variation key elements from combinations
             CombineParameters();
-            // Store the nominal parameter values 
+            // Naming Scheme
+            ReviewNaming();
+            // Store the m_nominal parameter values 
             StoreNominal();
             // check if there are too many variations
             CheckVariationNumber();
@@ -27,7 +29,7 @@ namespace MODEL {
         }
 
         Variations::~Variations(){
-            for (auto set : dependent_vertices) {
+            for (auto set : m_dependent_vertices) {
                 delete set.second;
             }
         }
@@ -123,18 +125,18 @@ namespace MODEL {
             // for all the varied parameters
             for (std::string var_name : variable_names){
                 // empty set init
-                dependent_vertices.insert(std::make_pair(var_name, new std::set<MODEL::Single_Vertex*>()));
+                m_dependent_vertices.insert(std::make_pair(var_name, new std::set<MODEL::Single_Vertex*>()));
                 // go through vertices;
                 for (std::vector<MODEL::Single_Vertex>::iterator it_v = p_vertices->begin(); it_v != p_vertices->end(); ++it_v) {
                     MODEL::Single_Vertex* v = it_v.base(); 
-                    if (v->DependsOn(var_name)) dependent_vertices[var_name]->emplace(v);
+                    if (v->DependsOn(var_name)) m_dependent_vertices[var_name]->emplace(v);
                 }
             }
         }
 
         void Variations::CheckParameters() {
             for (auto var_it=variable_names.begin(); var_it != variable_names.end(); var_it++) {
-                if (dependent_vertices[*var_it]->size() == 0){
+                if (m_dependent_vertices[*var_it]->size() == 0){
                     msg_Out() << "\t\x1b[31m" << *var_it << " does not seem to have anything depending on it. Ignoring it...\x1b[0m" << std::endl;
                     variable_names.erase(var_it);
                     var_it--;
@@ -154,7 +156,7 @@ namespace MODEL {
                 if (p_constants->count(name) != 1) return;
                 values.push_back(p_constants->at(name));
             }
-            nominal = VariationKey(variable_names, values);
+            m_nominal = VariationKey(variable_names, values);
         }
 
         void Variations::ReadVariations() {
@@ -168,17 +170,17 @@ namespace MODEL {
         void Variations::CheckVariationNumber(){
             if (Size() >= MAX_VARIATION_NUMBER){
                 msg_Out() << "\x1b[31m\tYou are trying too many Variations, please reconsider. Ignoring variations...\x1b[0m" << std::endl;
-                okay = false;
+                m_okay = false;
             }
             else if (Size() == 0) {
                 msg_Out() << "\x1b[31m\tNo useful variations are found, ignoring them...\x1b[0m" << std::endl;
-                okay = false;
+                m_okay = false;
             }
             else {
                 // Output
                 if (msg_LevelIsDebugging()) {
                     msg_Out() << "All read Variations are: " << std::endl;
-                    for (VariationKey key : variations_list){
+                    for (VariationKey key : m_variations_list){
                         msg_Out() << "\t" << key << std::endl;
                     }
                 }
@@ -189,7 +191,7 @@ namespace MODEL {
         }
 
         void Variations::CombineParameters(){
-            std::vector<std::vector<VariationKey>> individual_variations_list;
+            std::vector<std::vector<VariationKey>> individual_m_variations_list;
             std::vector<VariationKey> individual_variations;
             // deal with the correlations first, reading is dealt with earlier
             for (const std::vector<std::string>& list : correlated_variables){
@@ -202,11 +204,11 @@ namespace MODEL {
                     }
                     individual_variations.push_back(VariationKey(list, values));
                 }
-                // add nominal values as a key
+                // add m_nominal values as a key
                 VariationKey key = VariationKey();
                 for (const std::string& variable : list) key.Add(variable, p_constants->at(variable));
                 individual_variations.push_back(key);
-                individual_variations_list.push_back(individual_variations);
+                individual_m_variations_list.push_back(individual_variations);
             }
             // now push all other uncorrelated parameters to the individuals list
             for (const std::string& variable : variable_names){
@@ -222,9 +224,9 @@ namespace MODEL {
                 if (skip) continue;
                 // now push to the list
                 for (double_t value : variations_map[variable]) individual_variations.push_back(VariationKey(variable, value));
-                // add nominal
+                // add m_nominal
                 individual_variations.push_back(VariationKey(variable, p_constants->at(variable)));
-                individual_variations_list.push_back(individual_variations);
+                individual_m_variations_list.push_back(individual_variations);
             }
             // now we are ready to combine the things on the indivduals list
             // first get mode, 0 for no combining, 1 for combining all (default), 2 for one each combination (ignores all correlations and values)
@@ -234,32 +236,34 @@ namespace MODEL {
             switch (mode) {
                 case 0: 
                     // no combination, just put all keys into the variations list
-                    // dont add the nominals though, which are the last key
-                    for (const std::vector<VariationKey>& keys : individual_variations_list)
+                    // dont add the m_nominals though, which are the last key
+                    for (const std::vector<VariationKey>& keys : individual_m_variations_list)
                         for (std::vector<VariationKey>::const_iterator it = keys.begin(); it != keys.end() - 1; it++)
-                            variations_list.push_back(*(it));
+                            m_variations_list.push_back(*(it));
                     break;
                 case 2:
                     // one each (meaning all zero except 1) for EFT scans
                     // ignore the correlations and the given values
-                    // just use nominal value for 1 variable and 0 for the others
+                    // just use m_nominal value for 1 variable and 0 for the others
+                    m_shorten_names = true;
                     for (const std::string& var_name1 : variable_names){
                         VariationKey key = VariationKey(var_name1, p_constants->at(var_name1));
                         for (const std::string& var_name2 : variable_names)
                             if (var_name1 != var_name2) key.Add(var_name2, 0.);
-                        variations_list.push_back(key);
+                        m_variations_list.push_back(key);
                     }
                     break;
                 case 3:
                     // two each (meaning all zero except 1 or 2) for EFT scans
                     // ignore the correlations and the given values
-                    // just use nominal value for 1 or 2 variables and 0 for the others
+                    // just use m_nominal value for 1 or 2 variables and 0 for the others
+                    m_shorten_names = true;
                     for (const std::string& var_name1 : variable_names){
                         // one each loop, as before
                         VariationKey key = VariationKey(var_name1, p_constants->at(var_name1));
                         for (const std::string& var_name2 : variable_names)
                             if (var_name1 != var_name2) key.Add(var_name2, 0.);
-                        variations_list.push_back(key);
+                        m_variations_list.push_back(key);
                     }
                     for (const std::string& var_name1 : variable_names){
                         // two each loop
@@ -269,28 +273,40 @@ namespace MODEL {
                             key.Add(var_name2, p_constants->at(var_name2));
                             for (const std::string& var_name3 : variable_names)
                                 if (var_name1 != var_name3 && var_name2 != var_name3) key.Add(var_name3, 0.);
-                            variations_list.push_back(key);
+                            m_variations_list.push_back(key);
                         }
                     }
                     break;
                 default:
                     // combine all the elements from the individual lists
-                    // to do this nominal value was added to each list
+                    // to do this m_nominal value was added to each list
                     std::vector<VariationKey> new_list;
-                    variations_list.push_back(VariationKey());
-                    for (int i = 0; i < individual_variations_list.size(); i++){
-                        for (const VariationKey& key : individual_variations_list[i]) {
-                            for (const VariationKey& old_key : variations_list) {
+                    m_variations_list.push_back(VariationKey());
+                    for (int i = 0; i < individual_m_variations_list.size(); i++){
+                        for (const VariationKey& key : individual_m_variations_list[i]) {
+                            for (const VariationKey& old_key : m_variations_list) {
                                 new_list.push_back(key + old_key);
                             }
                         }
-                        variations_list = new_list;
+                        m_variations_list = new_list;
                         new_list.clear();
                     }
-                    // remove the nominal
-                    variations_list.pop_back();
+                    // remove the m_nominal
+                    m_variations_list.pop_back();
                     break;
+            } // switch
+        } // CombineParameters
+
+        void Variations::ReviewNaming(){
+            if (!m_shorten_names) return;
+            for (VariationKey& key : m_variations_list) {
+                const size_t size = key.Size();
+                std::string new_id = "";
+                for (int i = 0; i < size; i++){
+                    if (key.Value(i) != 0) new_id += key.Name(i) + " ";
+                }
+                key.SetIdentifier(new_id);
             }
         }
-    }
-}
+    } // namespace VARIATIONS
+} // namespace MODEL
