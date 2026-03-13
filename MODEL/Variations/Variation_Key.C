@@ -5,29 +5,29 @@ namespace MODEL {
         VariationKey::VariationKey(std::vector<std::string> var_names, std::vector<double_t> var_values) {
             // check inputs
             if (var_names.size() != var_values.size()) THROW(invalid_input, "input lists are incompatible");
-            names = var_names; values = var_values;
+            m_names = var_names; m_values = var_values;
             UpdateIdentifier();
         }
 
         void VariationKey::Add(std::vector<std::string> var_names, std::vector<double_t> var_values){
             if (var_names.size() != var_values.size()) THROW(invalid_input, "input lists are incompatible");
-            names.insert(names.end(), var_names.begin(), var_names.end());
-            values.insert(values.end(), var_values.begin(), var_values.end());
+            m_names.insert(m_names.end(), var_names.begin(), var_names.end());
+            m_values.insert(m_values.end(), var_values.begin(), var_values.end());
             UpdateIdentifier();
             return;
         }
         
         void VariationKey::Add(std::string var_name, double_t var_value){
-            names.push_back(var_name);
-            values.push_back(var_value);
+            m_names.push_back(var_name);
+            m_values.push_back(var_value);
             UpdateIdentifier();
             return;
         }
 
         void VariationKey::UpdateIdentifier() {
             std::stringstream ss;
-            for (int i = 0; i < Size(); i++) {ss << names[i] << "-" << values[i] << "-.";}
-            id = ss.str();
+            for (int i = 0; i < Size(); i++) {ss << m_names[i] << "-" << m_values[i] << "-.";}
+            m_id = ss.str();
         }
 
         bool const VariationKey::operator< (const VariationKey& other) const {

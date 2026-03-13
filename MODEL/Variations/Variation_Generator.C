@@ -4,12 +4,12 @@ namespace MODEL {
     namespace VARIATIONS {
         Variation_Generator::Variation_Generator(const Args& args){
             p_proc = dynamic_cast<PHASIC::Single_Process*> (args.p_proc);
-            okay = true;
-            okay &= (p_proc != nullptr);
-            okay &= MODEL::s_model->InitVariations();
+            m_okay = true;
+            m_okay &= (p_proc != nullptr);
+            m_okay &= MODEL::s_model->InitVariations();
             p_vars = MODEL::s_model->GetParameterVariations();
-            okay &= (p_vars != nullptr);
-            if (okay) okay &= p_vars->IsOkay();
+            m_okay &= (p_vars != nullptr);
+            if (m_okay) m_okay &= p_vars->IsOkay();
         }
 
         void Variation_Generator::GenerateAndFillWeightsMap(ATOOLS::Weights_Map& wgtmap){

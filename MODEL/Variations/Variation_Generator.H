@@ -22,11 +22,11 @@ namespace MODEL{
                 /* Public Functions */
                 void GenerateAndFillWeightsMap(ATOOLS::Weights_Map& wgtmap) override;   // generate additional weights for an event @param wgtmap Weights_Map, this is filled with new weights @returns None
                 void ResetWeightsMap(ATOOLS::Weights_Map& wgtmap) override;             // reset the weightsmap regarding these variations @param wgtmap Weights_Map, to be reset @returns None
-                inline bool IsOkay() const {return okay;}                               // check if this object is valid @param None @returns bool
+                inline bool IsOkay() const {return m_okay;}                               // check if this object is valid @param None @returns bool
 
             protected:  
                 /* Attributes */
-                bool okay;                                  // validity of this object
+                bool m_okay;                                  // validity of this object
                 PHASIC::Single_Process* p_proc;             // pointer to the Single_Process this belongs to
                 Variations* p_vars;                         // pointer to the variations of the model
 
