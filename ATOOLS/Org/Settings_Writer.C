@@ -20,7 +20,6 @@ void Settings_Writer::WriteSettings(Settings& s)
           << om::brown << om::bold << "WARNING" << om::reset
           << ": " << warning << "\n";
     }
-    msg_Out() << "\n";
   }
 
   // check for settings that have not been used
