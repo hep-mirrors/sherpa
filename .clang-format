@@ -34,7 +34,7 @@ BraceWrapping:
 
 # Short Statements
 AllowShortIfStatementsOnASingleLine: WithoutElse  # Allows 'if (x) return;'
-AllowShortFunctionsOnASingleLine: Empty           # Allows 'void foo() {}'
+AllowShortFunctionsOnASingleLine: All             # Allows 'void foo() {}'
 AllowShortBlocksOnASingleLine: Never
 
 # Spacing Details
@@ -51,6 +51,4 @@ IncludeBlocks: Preserve           # Sorts within existing blocks, keeps blank li
 # Arguments and Parameters
 AlignAfterOpenBracket: Align      # Aligns arguments: func(a,
                                   #                      b)
-BinPackArguments: false           # Forces arguments to new lines if they don't fit
-BinPackParameters: false
 MaxEmptyLinesToKeep: 2
