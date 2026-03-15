@@ -51,7 +51,7 @@ cat <<EOF
 
               <h2>Main development branch (next x.y.0)</h2>
               <ul class="simple">
-                <li><a class="reference external" href="master/index.html"></a></li>
+                <li><a class="reference external" href="master/index.html">Main development branch</a></li>
               </ul>
 
               <div class="toctree-wrapper compound">
