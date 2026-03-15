@@ -70,7 +70,7 @@ manual-index:
     - cd ..
     - git checkout master
     - git pull
-    - bash Manual/make-index.sh;
+    - bash Manual/make-index.sh > public/index.html;
 
   artifacts:
     paths:
