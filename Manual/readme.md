@@ -1,10 +1,8 @@
-<!-- If you have questions or requests ask Valentin Boettcher <hiro@protagon.space> (Gitlab: vale9811) -->
-
 # Sherpa Manual
 This is the source for the sherpa manual, powered by the [sphinx
 documentation generator](http://www.sphinx-doc.org/en/).
 
-The online Version is available under: https://sherpa-team.gitlab.io/sherpa/
+The online Version is available under: https://sherpa-team.gitlab.io/sherpa/index.html
 
 ## Important Directories
  - `source/` the source of the
@@ -32,15 +30,8 @@ The online Version is available under: https://sherpa-team.gitlab.io/sherpa/
 See also `requirements.txt` for pinned versions of the python packages.
 
 ## Building the Docs
- - run `configure` with `--enable-manual`
+ - run `cmake` with `-DSHERPA_ENABLE_MANUAL=ON`
  - run `make` in the Manual directory to build all targets
-   - run `make sherpamanual_html` to build the html manual
-   - run `make sherpamanual.pdf` to build the pdf manual
-   - run `make sherpamanual.info` to build the info manual
-   - run `make Sherpa.1` to build the manpage
-
-Note that the manual is always built as if you specified `-j1` to
-prevent race conditions.
 
 ## Caveats
 If you see something like:
@@ -59,8 +50,7 @@ by running: `make completion.index`.
 This will create `completion.index` and `options.index`.
 
 ## Version/Release Number
-The `release` option in `conf.py` may not be set, as it is automatically read from `../configure.ac`.
+The `release` option in `conf.py` may not be set, as it is automatically set in the sphinx call in `CMakeLists.txt`.
 
 ## Distribution
-The tarball created by `make-dist` will include the rendered manual in
-all formats if it was configured with `--enable-manual`.
+The manual will be automatically deployed to Gitlab pages through the `manual` and `manual-index` jobs.

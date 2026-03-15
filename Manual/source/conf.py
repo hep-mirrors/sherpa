@@ -17,15 +17,15 @@ import re
 sys.path.insert(0, os.path.abspath('.'))
 sys.path.insert(0, os.path.abspath('./_extensions/'))
 
-from shared_conf import *
+copyright = '2022, Sherpa Team'
+author = 'Sherpa Team'
 
 # -- Project information -----------------------------------------------------
 
 project = 'Sherpa Manual'
 
-release = '[GIT]' # will be read from `configure.ac`
+release = '[GIT]' # will be defined from CMakeLists.txt
 
-release = '3.0.0'
 # -- General configuration ---------------------------------------------------
 
 # Add any Sphinx extension module names here, as strings. They can be
@@ -44,12 +44,33 @@ bibtex_bibfiles = ['manual/references.bib']
 # This pattern also affects html_static_path and html_extra_path.
 exclude_patterns = ['manual/examples/*', 'manual/parameters/models/*']
 
+templates_path = ["_templates"]
 
 # -- Options for HTML output -------------------------------------------------
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
+html_theme = 'alabaster'
+html_sidebars = {
+    '**': [
+        'about.html',
+        'navigation.html',
+        'relations.html',
+        'searchbox.html',
+        'donate.html',
+        "singlemulti.html"
+    ]
+}
+
+html_theme_options = {
+    'logo': 'images/sherpa-logo.png',
+    'logo_name': False, # Remove logo name, because the logo already contains the string "SHERPA"
+    'logo_text_align': 'center',
+    'extra_nav_links': {
+        'Sherpa Homepage': 'https://sherpa-team.gitlab.io',
+    }
+}
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
@@ -57,14 +78,6 @@ exclude_patterns = ['manual/examples/*', 'manual/parameters/models/*']
 html_static_path = ['_static']
 
 html_favicon = '_static/images/favicon.ico'
-
-html_theme_options['extra_nav_links'] = {
-    'Project Home': 'https://sherpa-team.gitlab.io',
-    'Pre 3.0.0 Manuals': 'https://sherpa.hepforge.org/doc/',
-}
-
-# Remove logo name, because the logo already contains the string "SHERPA".
-html_theme_options['logo_name'] = False
 
 suppress_warnings = ['ref.option']
 
