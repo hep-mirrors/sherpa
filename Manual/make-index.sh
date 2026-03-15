@@ -1,8 +1,8 @@
 #!/bin/bash
 
-# this is supposed to run within the CI's "manual" job to build the index.html
+# this is supposed to run within the CI's "manual-index" job to build the index.html
 
-releases=$1
+releases=$(git ls-remote --tags | cut -d '^' -f 1 | cut -d "/" -f 3- | cut -c 2- | sort -r | uniq); 
 
 cat <<EOF
 <!DOCTYPE html>
@@ -79,7 +79,7 @@ cat <<EOF
           </ul>
           <hr />
           <ul>
-            <li class="toctree-l1"><a href="https://sherpa-team.gitlab.io/sherpa/master/">Manuals</a></li>
+            <li class="toctree-l1"><a href="https://sherpa-team.gitlab.io/sherpa/">Manuals</a></li>
             <li class="toctree-l1"><a href="https://gitlab.com/sherpa-team/sherpa/issues/">Issue Tracker</a></li>
             <li class="toctree-l1"><a href="https://gitlab.com/sherpa-team/sherpa/">Git Repo</a></li>
             <li class="toctree-l1"><a href="https://www.hepforge.org/lists/listinfo/sherpa-announce">Mailing List</a></li>

@@ -63,13 +63,14 @@ manual-index:
   stage: deploy
   image: $CI_REGISTRY_IMAGE:Fedora_42
   script:
+    - rm -rf public
     - mkdir public
     - cd public
     - if wget https://sherpa.web.cern.ch/doc/old-manuals.tar.gz; then tar xzf old-manuals.tar.gz; rm old-manuals.tar.gz; fi
     - cd ..
     - git checkout master
     - git pull
-    - releases=$(git ls-remote --tags | cut -d '^' -f 1 | cut -d "/" -f 3- | cut -c 2- | sort -r | uniq); bash Manual/make-index.sh "$releases";
+    - bash Manual/make-index.sh;
 
   artifacts:
     paths:
