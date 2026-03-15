@@ -68,25 +68,43 @@ TUNE
 
 .. index:: TUNE
 
-.. warning::
+This parameter specifies one or more tune sets to be loaded. Tune 
+sets allow multiple parameters to be set simultaneously to predefined 
+values. They are loaded before the steering files specified on the 
+command line. Multiple tune sets can be specified by providing a list 
+in square brackets. In this case, they are loaded in the given order.
+Each tune is referenced by name and stored as a YAML file. For example, 
+the tune ``MPI-CRon`` is defined in the file ``MPI-CRon.yaml``.
 
-   This parameter is currently not supported.
+Possible values are:
 
-..
-   This parameter specifies which tune is to be used. Setting different
-   tunes using this parameter ensures, that consistent settings are
-   employed. This affects mostly :ref:`MPI Parameters` and
-   :ref:`Intrinsic Transverse Momentum` parameters. Possible values are
-   (for Sherpa 2.1.1):
+* ``MPI-CRoff``
+  MPI tune with colour reconnections disabled. This is the default tune.
 
-   * ``CT10`` MPI tune for the Sherpa's default PDF, CT10. This is the default tune.
+* ``MPI-CRon``
+  Combined tune of MPI and colour reconnections.
 
-   * ``CT10_UEup`` Upward variation of MPI activity, variation of the CT10 tune to
-     assess MPI uncertainties.
+Users can also define their own tune sets and load them by adding 
+their directory to the search paths via :ref:`TUNE_PATH`.
 
-   * ``CT10_UEdown`` Downward variation of MPI activity, variation of the CT10 tune to
-     assess MPI uncertainties.
+.. _TUNE_PATH:
 
+TUNE_PATH
+=========
+
+.. index:: TUNE_PATH
+
+This parameter specifies an additional search path for tune sets. The 
+path should be given relative to the run directory.
+
+For example, if you have a directory ``MyTuneSets/`` in your run 
+directory containing a tune set ``MyTune.yaml``, you can load it by 
+adding the following to your steering file:
+
+.. code-block:: yaml
+
+   TUNE: MyTune
+   TUNE_PATH: ./MyTuneSets/
 
 .. _OUTPUT:
 
