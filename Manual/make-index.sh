@@ -65,7 +65,7 @@ cat <<EOF
         <div class="sphinxsidebarwrapper">
           <p class="logo">
             <a href="#">
-              <img class="logo" src="_static/images/sherpa-logo.png" alt="Logo"/>
+              <img class="logo" src="https://sherpa-team.gitlab.io/_static/images/sherpa-logo.png" alt="Logo"/>
             </a>
           </p>
           
