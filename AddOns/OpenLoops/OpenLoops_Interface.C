@@ -58,6 +58,7 @@ bool OpenLoops_Interface::s_exit_on_error = true;
 bool OpenLoops_Interface::s_ass_func = false;
 int  OpenLoops_Interface::s_ass_ew = 0;
 std::map<std::string, std::string> OpenLoops_Interface::s_evgen_params;
+photon_scheme OpenLoops_Interface::s_photon_scheme = photon_scheme::Default;
 
 // private static member definitions
 std::map<int,std::string> OpenLoops_Interface::s_procmap;
@@ -81,6 +82,7 @@ void OpenLoops_Interface::RegisterDefaults() const
   s["OL_VMODE"].SetDefault(0);
   s["OL_EXIT_ON_ERROR"].SetDefault(true);
   s["OL_IGNORE_MODEL"].SetDefault(false);
+  s["OL_PHOTON_SCHEME"].SetDefault(photon_scheme::Default);
 
   // find OL installation prefix with several overwrite options
   char *var=NULL;
@@ -129,6 +131,7 @@ bool OpenLoops_Interface::Initialize(MODEL::Model_Base* const model,
   }
   s_vmode = s["OL_VMODE"].Get<int>();
   msg_Tracking()<<METHOD<<"(): Set V-mode to "<<s_vmode<<endl;
+  s_photon_scheme = s["OL_PHOTON_SCHEME"].Get<photon_scheme>();
 
   // check for existance of separate access to associated contribs
   void *assfunc(s_loader->GetLibraryFunction("SherpaOpenLoops",
@@ -232,7 +235,8 @@ void OpenLoops_Interface::SetParametersSM(const MODEL::Model_Base* model)
                   kf_Wplus, kf_Z, kf_h0};
   vector<int> pdgids (tmparr, tmparr + sizeof(tmparr) / sizeof(tmparr[0]) );
   for (size_t i=0; i<pdgids.size(); ++i) {
-    const int& id(pdgids[i]); const Flavour& flav(id);
+    const int& id(pdgids[i]);
+    const Flavour& flav(id);
     if (flav.Mass()>0.0) SetParameter("mass("+ToString(id)+")", flav.Mass());
     if (flav.Width()>0.0) SetParameter("width("+ToString(id)+")", flav.Width());
     if (flav.IsFermion() && flav.Yuk()>0.0 &&
@@ -314,12 +318,24 @@ int OpenLoops_Interface::RegisterProcess(const Subprocess_Info& is,
   string shprocname(PHASIC::Process_Base::GenerateName(is,fs)),olprocname("");
   Flavour_Vector isflavs(is.GetExternal());
 
-  for (size_t i=0; i<isflavs.size(); ++i)
-    olprocname += ToString((long int)isflavs[i]) + " ";
+  for (size_t i=0; i<isflavs.size(); ++i) {
+    long int pdgid = (long int)isflavs[i];
+    if (pdgid == 22) {
+      if      (s_photon_scheme == photon_scheme::On_shell)  pdgid =  2002;
+      else if (s_photon_scheme == photon_scheme::Off_shell) pdgid = -2002;
+    }
+    olprocname += ToString(pdgid) + " ";
+  }
   olprocname += "-> ";
   Flavour_Vector fsflavs(fs.GetExternal());
-  for (size_t i=0; i<fsflavs.size(); ++i)
-    olprocname += ToString((long int)fsflavs[i]) + " ";
+  for (size_t i=0; i<fsflavs.size(); ++i) {
+    long int pdgid = (long int)fsflavs[i];
+    if (pdgid == 22) {
+      if      (s_photon_scheme == photon_scheme::On_shell)  pdgid =  2002;
+      else if (s_photon_scheme == photon_scheme::Off_shell) pdgid = -2002;
+    }
+    olprocname += ToString(pdgid) + " ";
+  }
   msg_Debugging()<<"looking for "<<shprocname<<" ("<<olprocname<<")\n";
 
   // exit if ass contribs requested but not present
