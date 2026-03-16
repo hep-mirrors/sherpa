@@ -16,8 +16,8 @@ Electron_Remnant::Electron_Remnant(PDF::PDF_Base* pdf, const unsigned int& beam,
   m_constituents.push_back(Flavour(kf_photon));
 }
 
-Electron_Remnant::
-Electron_Remnant(YFS::YFS_Handler * yfs,const unsigned int & beam,const unsigned int & tag):
+Electron_Remnant::Electron_Remnant(YFS::YFS_Handler * yfs,
+				   const unsigned int & beam,const unsigned int & tag):
 Remnant_Base(yfs->GetInFlav(beam),beam,tag),p_yfs(yfs)
 {
   // this is a *** very *** specific ordering - lepton at front, photon at back.
@@ -27,7 +27,8 @@ Remnant_Base(yfs->GetInFlav(beam),beam,tag),p_yfs(yfs)
   m_constituents.push_back(Flavour(kf_photon));
 }
 
-bool Electron_Remnant::FillBlob(Colour_Generator* colours, ParticleMomMap* ktmap, const bool& copy)
+bool Electron_Remnant::FillBlob(Colour_Generator* colours, ParticleMomMap* ktmap,
+				const bool& copy)
 {
   if (m_extracted.size() != 1) {
     THROW(critical_error, "None or too many particles extracted from intact beam.");

@@ -14,7 +14,8 @@ namespace SHERPA {
     std::array<ATOOLS::Blob*, 2> p_beamblobs;
     Soft_Collision_Handler     * p_schandler;
 
-    bool m_bunchrescatter, m_fill, m_vmode;
+    ATOOLS::Vec4D m_bunchmoms[2];
+    bool m_bunchrescatter, m_fill, m_vmode, m_boosted;
     int  m_beam;
     std::string m_name;
 

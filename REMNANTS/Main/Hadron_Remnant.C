@@ -6,7 +6,8 @@
 using namespace REMNANTS;
 using namespace ATOOLS;
 
-Hadron_Remnant::Hadron_Remnant(PDF::PDF_Base * pdf,const unsigned int & beam,const unsigned int & tag):
+Hadron_Remnant::Hadron_Remnant(PDF::PDF_Base * pdf,const unsigned int & beam,
+			       const unsigned int & tag):
   Remnant_Base(pdf->Bunch(),beam,tag),
   p_pdf(pdf), p_partons(&(p_pdf->Partons())),
   p_valence(nullptr), p_remnant(nullptr), p_recoiler(nullptr), p_spectator(nullptr),
@@ -71,7 +72,8 @@ void Hadron_Remnant::MakeSpectator(Particle* parton, Colour_Generator* colours)
   m_spectators.push_front(p_spectator);
 }
 
-bool Hadron_Remnant::FillBlob(Colour_Generator* colours, ParticleMomMap* ktmap, const bool& copy)
+bool Hadron_Remnant::FillBlob(Colour_Generator* colours,
+			      ParticleMomMap* ktmap, const bool& copy)
 {
   // Add remnants, diquark and quark, if necessary.
   if (!p_valence || !p_remnant) MakeRemnants(colours);
@@ -82,7 +84,8 @@ bool Hadron_Remnant::FillBlob(Colour_Generator* colours, ParticleMomMap* ktmap, 
   SquashFlavourSinglets();
   SquashColourSinglets();
   if (!MakeLongitudinalMomenta(ktmap, copy)) {
-    msg_Debugging() << METHOD << ": Cannot put all particles on mass-shell, returning false.\n";
+    msg_Debugging() << METHOD
+		    << ": Cannot put all particles on mass-shell, returning false.\n";
     return false;
   }
   bool colourconserved = p_beamblob->CheckColour(true);
@@ -192,7 +195,8 @@ void Hadron_Remnant::SquashFlavourSinglets() {
 	    (*pit1)->GetFlow(1)!=(*pit2)->GetFlow(2) :
 	    (*pit1)->GetFlow(2)!=(*pit2)->GetFlow(1) ) {
 	  Particle * gluon = MakeParticle(Flavour(kf_gluon));
-	  for (size_t i=1;i<3;i++) gluon->SetFlow(i,(*pit1)->GetFlow(i)+(*pit2)->GetFlow(i));
+	  for (size_t i=1;i<3;i++)
+	    gluon->SetFlow(i,(*pit1)->GetFlow(i)+(*pit2)->GetFlow(i));
 	  m_spectators.push_back(gluon);
 	}
 	delete (*pit1);

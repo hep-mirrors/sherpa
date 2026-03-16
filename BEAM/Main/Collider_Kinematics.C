@@ -7,8 +7,11 @@ using namespace ATOOLS;
 
 Collider_Kinematics::Collider_Kinematics(std::array<Beam_Base*, 2> beams)
     : Kinematics_Base(beams), m_mode(collidermode::unknown) {
-  if (p_beams[0]->Type() == beamspectrum::monochromatic &&
-      p_beams[1]->Type() == beamspectrum::monochromatic)
+  // This needs to be extended ....
+  if ((p_beams[0]->Type() == beamspectrum::monochromatic ||
+       p_beams[0]->Type() == beamspectrum::Fixed_Target) &&
+      (p_beams[1]->Type() == beamspectrum::monochromatic ||
+       p_beams[1]->Type() == beamspectrum::Fixed_Target))
     m_mode = collidermode::monochromatic;
   else if (p_beams[0]->Type() != beamspectrum::monochromatic &&
            p_beams[1]->Type() == beamspectrum::monochromatic)
@@ -27,13 +30,15 @@ Collider_Kinematics::Collider_Kinematics(std::array<Beam_Base*, 2> beams)
 
 void Collider_Kinematics::InitSystem() {
   m_Ecms = sqrt(m_S);
-
-  m_on = (m_mode != collidermode::monochromatic);
+  m_on   = (m_mode != collidermode::monochromatic);
   m_x[0] = m_x[1] = 0.;
-  if (p_beams[0]->Type() == beamspectrum::Fixed_Target){
-    m_on = false;
+  if (m_mode==collidermode::monochromatic) {
+    for (size_t i = 0; i < 2; ++i) {
+      p_beams[i]->SetOutMomentum(p_beams[i]->InMomentum());
+      rpa->gen.SetPBunch(i, p_beams[i]->InMomentum());
+    }
   }
-  m_LabBoost = Poincare(p_beams[0]->InMomentum() + p_beams[1]->InMomentum());
+  m_LabBoost = Poincare(p_beams[0]->InMomentum()  + p_beams[1]->InMomentum());
   m_CMSBoost = Poincare(p_beams[0]->OutMomentum() + p_beams[1]->OutMomentum());
 }
 
@@ -56,8 +61,9 @@ bool Collider_Kinematics::operator()(ATOOLS::Vec4D_Vector& moms) {
                 << m_sprime << std::endl;
     return false;
   }
-  if (m_mode == collidermode::monochromatic)
+  if (m_mode == collidermode::monochromatic) {
     return true;
+  }
   Vec4D pa = p_beams[0]->InMomentum();
   Vec4D pb = p_beams[1]->InMomentum();
   double gam = pa * pb + sqrt(sqr(pa * pb) - pa.Abs2() * pb.Abs2());
@@ -68,18 +74,19 @@ bool Collider_Kinematics::operator()(ATOOLS::Vec4D_Vector& moms) {
   if (m_mode == collidermode::spectral_1) {
     m_x[1] = m_xkey[5] = p_beams[1]->InMomentum().PMinus() / m_p_minus.PMinus();
     m_x[0] = m_xkey[4] = tau / m_x[1];
-  } else if (m_mode == collidermode::spectral_2) {
+  }
+  else if (m_mode == collidermode::spectral_2) {
     m_x[0] = m_xkey[4] = p_beams[0]->InMomentum().PPlus() / m_p_plus.PPlus();
     m_x[1] = m_xkey[5] = tau / m_x[0];
-  } else if (m_mode == collidermode::both_spectral) {
+  }
+  else if (m_mode == collidermode::both_spectral) {
     double yt =
-        exp(m_ykey[2] - 0.5 * log((tau + m_m2[1] / m_S) / (tau + m_m2[0] / m_S )));
+      exp(m_ykey[2] - 0.5 * log((tau + m_m2[1] / m_S) / (tau + m_m2[0] / m_S )));
     m_x[0] = m_xkey[4] = sqrt(tau) * yt;
     m_x[1] = m_xkey[5] = sqrt(tau) / yt;
-  } else
-    return false;
-  if (m_x[0] > 1. || m_x[1] > 1.)
-    return false;
+  }
+  else                            return false;
+  if (m_x[0] > 1. || m_x[1] > 1.) return false;
   moms[0] = m_xkey[4] * m_p_plus + m_m2[0] / m_S / m_xkey[4] * m_p_minus;
   moms[1] = m_xkey[5] * m_p_minus + m_m2[1] / m_S / m_xkey[5] * m_p_plus;
   for (size_t i = 0; i < 2; ++i) {

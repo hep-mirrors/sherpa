@@ -81,13 +81,7 @@ Return_Value::code Ahadic::Hadronize(Blob_List * blobs)
     blit++;
   }
   if (m_shrink) Shrink(blobs);
-<<<<<<< HEAD
   return hadronized ? Return_Value::Success : Return_Value::Nothing;
-=======
-  // return Return_Value::Success;
-  return hadronized ? Return_Value::Success : Return_Value::Nothing;
-
->>>>>>> e04b15bd9 (included NKaon)
 }
 
 Return_Value::code Ahadic::Hadronize(Blob * blob, int retry) {

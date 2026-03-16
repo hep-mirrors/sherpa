@@ -150,8 +150,8 @@ void Decay_Handler_Base::BoostAndStretch(Blob* blob, const Vec4D& labmom)
   Poincare labboost(labmom);
   labboost.Invert();
 
-  blob->Boost(twiddle2rest);
-  blob->Boost(labboost);
+  blob->Boost(&twiddle2rest);
+  blob->Boost(&labboost);
   DEBUG_VAR(blob->MomentumConserved());
 
   // 3.

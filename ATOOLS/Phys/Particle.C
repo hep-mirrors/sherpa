@@ -154,6 +154,11 @@ void Particle::Copy(Particle * in)  {
   m_flow.SetCode(2,in->GetFlow(2));
 }
 
+void Particle::Boost(const Poincare * boost) {
+  m_momentum = (*boost)*m_momentum;
+  m_position = (*boost)*m_position;
+}
+
 double Particle::ProperTime() 
 {
   double q2    = m_momentum.Abs2();

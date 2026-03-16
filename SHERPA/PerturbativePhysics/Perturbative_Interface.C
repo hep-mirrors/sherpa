@@ -182,6 +182,12 @@ Perturbative_Interface::DefineInitialConditions(ATOOLS::Blob* blob,
   }
   m_weightsmap.Clear();
   m_lkfweightsmap.Clear();
+  msg_Out()<<METHOD<<" before potential boost:\n"<<(*p_ampl)<<"\n";
+  Poincare * cmsboost = p_remnants->GetCMSBoost();
+  if (cmsboost!=nullptr) {
+    p_ampl->Boost(cmsboost);
+    msg_Out()<<METHOD<<" after potential boost:\n"<<(*p_ampl)<<"\n";
+  }
   if (p_me->Process()->Info().m_ckkw&1) {
     if ((m_bbarmode&mets_bbar_mode::enabled) && p_me->HasNLO() &&
         p_me->Process()->Parent()->Info().m_fi.NLOType()==nlo_type::lo) {
