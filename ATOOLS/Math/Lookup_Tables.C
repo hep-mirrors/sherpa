@@ -1,18 +1,16 @@
 #include "ATOOLS/Math/Lookup_Tables.H"
 #include "ATOOLS/Org/Exception.H"
-#include <fstream>
-#include <iostream>
 #include <algorithm> // For std::lower_bound, std::min
 #include <cmath>     // For std::fabs, std::sqrt, std::exp, etc.
+#include <fstream>
+#include <iostream>
 
 using namespace ATOOLS;
 
-axis::axis(size_t nbins, double xmin, double xmax,
-           axis_mode::code mode)
+axis::axis(size_t nbins, double xmin, double xmax, axis_mode::code mode)
     : m_nbins(nbins), m_xmin(xmin), m_xmax(xmax), m_mode(mode), m_xstep(0.0)
 {
-  if (m_nbins < 1)
-    THROW(fatal_error, "Cannot create table with no bins.");
+  if (m_nbins < 1) THROW(fatal_error, "Cannot create table with no bins.");
   if (xmin > xmax)
     THROW(fatal_error, "X_min must be smaller than X_max for table.");
   if (m_mode == axis_mode::linear) {
@@ -51,7 +49,7 @@ size_t axis::bin(double x) const
 //////////////////////////////////////////////////////////////////////////////
 // One-dimensional look-up table
 //////////////////////////////////////////////////////////////////////////////
-OneDim_Table::OneDim_Table(const axis& xbins) : m_x(xbins)
+OneDim_Table::OneDim_Table(const axis& xbins): m_x(xbins)
 {
   if (m_x.m_nbins > 0) m_values.resize(m_x.m_nbins + 1, 0.0);
 }
@@ -63,7 +61,8 @@ void OneDim_Table::Fill(size_t xbin, double value)
 
 void OneDim_Table::Rescale(double factor)
 {
-  for (size_t i = 0; i <= m_x.m_nbins; ++i) m_values[i] *= factor;
+  for (size_t i = 0; i <= m_x.m_nbins; ++i)
+    m_values[i] *= factor;
 }
 
 double OneDim_Table::operator()(double x) const
@@ -73,7 +72,8 @@ double OneDim_Table::operator()(double x) const
   size_t bin = m_x.bin(x);
 
   double x1 = m_x.x(bin);
-  double dx = (m_x.m_mode == axis_mode::linear) ? m_x.m_xstep : m_x.x(bin + 1) - x1;
+  double dx =
+      (m_x.m_mode == axis_mode::linear) ? m_x.m_xstep : m_x.x(bin + 1) - x1;
 
   if (dx < 1.e-12 * std::fabs(x1)) return m_values[bin];
 
@@ -83,7 +83,8 @@ double OneDim_Table::operator()(double x) const
 
 double OneDim_Table::Inverse(double value) const
 {
-  // This method only works for suitably normalised, monotonic "cumulative" tables.
+  // This method only works for suitably normalised, monotonic "cumulative"
+  // tables.
   if (m_values.empty()) return 0.0;
 
   // Use binary search (std::lower_bound) for efficiency
@@ -99,19 +100,22 @@ double OneDim_Table::Inverse(double value) const
 
   if (std::fabs(val2 - val1) < 1.e-12 * std::fabs(val1)) return m_x.x(bin);
 
-  return (m_x.x(bin) * (val2 - value) + m_x.x(bin + 1) * (value - val1)) / (val2 - val1);
+  return (m_x.x(bin) * (val2 - value) + m_x.x(bin + 1) * (value - val1)) /
+         (val2 - val1);
 }
 
 double OneDim_Table::Integral() const
 {
   double integral = 0;
   for (size_t i = 0; i < m_x.m_nbins; ++i) {
-    integral += (m_x.x(i + 1) - m_x.x(i)) * (m_values[i] + m_values[i + 1]) / 2.0;
+    integral +=
+        (m_x.x(i + 1) - m_x.x(i)) * (m_values[i] + m_values[i + 1]) / 2.0;
   }
   return integral;
 }
 
-std::unique_ptr<OneDim_Table> OneDim_Table::Cumulative(double expo, double& integral) const
+std::unique_ptr<OneDim_Table> OneDim_Table::Cumulative(double expo,
+                                                       double& integral) const
 {
   auto cumulative = std::make_unique<OneDim_Table>(m_x);
   integral = 0.0;
@@ -142,20 +146,24 @@ void OneDim_Table::OutputToCSV(std::ofstream& outfile) const
 //////////////////////////////////////////////////////////////////////////////
 // Two-dimensional look-up table
 //////////////////////////////////////////////////////////////////////////////
-TwoDim_Table::TwoDim_Table(const axis& xbins, const axis& ybins) : m_x(xbins), m_y(ybins)
+TwoDim_Table::TwoDim_Table(const axis& xbins, const axis& ybins)
+    : m_x(xbins), m_y(ybins)
 {
-  if (m_y.m_nbins == 0) THROW(fatal_error, "Zero bins in y direction not supported.");
+  if (m_y.m_nbins == 0)
+    THROW(fatal_error, "Zero bins in y direction not supported.");
   m_values.resize((m_x.m_nbins + 1) * (m_y.m_nbins + 1), 0.0);
 }
 
 void TwoDim_Table::Fill(size_t xbin, size_t ybin, double value)
 {
-  if (xbin <= m_x.m_nbins && ybin <= m_y.m_nbins) m_values[Index(xbin, ybin)] = value;
+  if (xbin <= m_x.m_nbins && ybin <= m_y.m_nbins)
+    m_values[Index(xbin, ybin)] = value;
 }
 
 double TwoDim_Table::operator()(double x, double y) const
 {
-  if (x < m_x.m_xmin || x > m_x.m_xmax || y < m_y.m_xmin || y > m_y.m_xmax) return 0.0;
+  if (x < m_x.m_xmin || x > m_x.m_xmax || y < m_y.m_xmin || y > m_y.m_xmax)
+    return 0.0;
 
   size_t xbin = m_x.bin(x);
   size_t ybin = m_y.bin(y);
@@ -164,11 +172,13 @@ double TwoDim_Table::operator()(double x, double y) const
 
   // Get weights for interpolation
   double x1 = m_x.x(xbin);
-  double dx = (m_x.m_mode == axis_mode::linear) ? m_x.m_xstep : m_x.x(xbin + 1) - x1;
+  double dx =
+      (m_x.m_mode == axis_mode::linear) ? m_x.m_xstep : m_x.x(xbin + 1) - x1;
   double wx = (std::fabs(dx) > 0) ? (x - x1) / dx : 0.0;
 
   double y1 = m_y.x(ybin);
-  double dy = (m_y.m_mode == axis_mode::linear) ? m_y.m_xstep : m_y.x(ybin + 1) - y1;
+  double dy =
+      (m_y.m_mode == axis_mode::linear) ? m_y.m_xstep : m_y.x(ybin + 1) - y1;
   double wy = (std::fabs(dy) > 0) ? (y - y1) / dy : 0.0;
 
   // Bilinear interpolation
@@ -189,17 +199,20 @@ double TwoDim_Table::Integral(size_t naxis, size_t bin) const
   if (naxis == 0) { // Integrate along X-axis for a fixed Y-bin
     if (bin > m_y.m_nbins) return 0.0;
     for (size_t i = 0; i < m_x.m_nbins; ++i)
-      integral += (m_x.x(i + 1) - m_x.x(i)) * (Value(i + 1, bin) + Value(i, bin)) / 2.0;
+      integral +=
+          (m_x.x(i + 1) - m_x.x(i)) * (Value(i + 1, bin) + Value(i, bin)) / 2.0;
   } else { // Integrate along Y-axis for a fixed X-bin
     if (bin > m_x.m_nbins) return 0.0;
     for (size_t i = 0; i < m_y.m_nbins; ++i)
-      integral += (m_y.x(i + 1) - m_y.x(i)) * (Value(bin, i + 1) + Value(bin, i)) / 2.0;
+      integral +=
+          (m_y.x(i + 1) - m_y.x(i)) * (Value(bin, i + 1) + Value(bin, i)) / 2.0;
   }
   return integral;
 }
 
-std::unique_ptr<OneDim_Table> TwoDim_Table::Cumulative(double expo, size_t naxis,
-                                                       size_t bin, double& integral) const
+std::unique_ptr<OneDim_Table> TwoDim_Table::Cumulative(double expo,
+                                                       size_t naxis, size_t bin,
+                                                       double& integral) const
 {
   std::unique_ptr<OneDim_Table> cumulative;
   integral = 0.0;
@@ -209,7 +222,8 @@ std::unique_ptr<OneDim_Table> TwoDim_Table::Cumulative(double expo, size_t naxis
     cumulative = std::make_unique<OneDim_Table>(m_x);
     cumulative->Fill(0, 0.0);
     for (size_t i = 1; i <= m_x.m_nbins; ++i) {
-      double estimate = (m_x.x(i) - m_x.x(i - 1)) * (Value(i, bin) + Value(i - 1, bin)) / 2.0;
+      double estimate =
+          (m_x.x(i) - m_x.x(i - 1)) * (Value(i, bin) + Value(i - 1, bin)) / 2.0;
       estimate *= std::pow((m_x.x(i) + m_x.x(i - 1)) / 2.0, expo);
       integral += estimate;
       cumulative->Fill(i, integral);
@@ -219,7 +233,8 @@ std::unique_ptr<OneDim_Table> TwoDim_Table::Cumulative(double expo, size_t naxis
     cumulative = std::make_unique<OneDim_Table>(m_y);
     cumulative->Fill(0, 0.0);
     for (size_t i = 1; i <= m_y.m_nbins; ++i) {
-      double estimate = (m_y.x(i) - m_y.x(i - 1)) * (Value(bin, i) + Value(bin, i - 1)) / 2.0;
+      double estimate =
+          (m_y.x(i) - m_y.x(i - 1)) * (Value(bin, i) + Value(bin, i - 1)) / 2.0;
       estimate *= std::pow((m_y.x(i) + m_y.x(i - 1)) / 2.0, expo);
       integral += estimate;
       cumulative->Fill(i, integral);
@@ -238,11 +253,14 @@ void TwoDim_Table::OutputToCSV(std::ofstream& outfile) const
 //////////////////////////////////////////////////////////////////////////////
 // Three-dimensional look-up table
 //////////////////////////////////////////////////////////////////////////////
-ThreeDim_Table::ThreeDim_Table(const axis& xbins, const axis& ybins, const axis& zbins)
+ThreeDim_Table::ThreeDim_Table(const axis& xbins, const axis& ybins,
+                               const axis& zbins)
     : m_x(xbins), m_y(ybins), m_z(zbins)
 {
-  if (m_z.m_nbins == 0) THROW(fatal_error, "Zero bins in z direction not supported.");
-  m_values.resize((m_x.m_nbins + 1) * (m_y.m_nbins + 1) * (m_z.m_nbins + 1), 0.0);
+  if (m_z.m_nbins == 0)
+    THROW(fatal_error, "Zero bins in z direction not supported.");
+  m_values.resize((m_x.m_nbins + 1) * (m_y.m_nbins + 1) * (m_z.m_nbins + 1),
+                  0.0);
 }
 
 void ThreeDim_Table::Fill(size_t xbin, size_t ybin, size_t zbin, double value)
@@ -251,7 +269,8 @@ void ThreeDim_Table::Fill(size_t xbin, size_t ybin, size_t zbin, double value)
     m_values[Index(xbin, ybin, zbin)] = value;
 }
 
-inline double lerp(double v0, double v1, double w) {
+inline double lerp(double v0, double v1, double w)
+{
   return v0 * (1.0 - w) + v1 * w;
 }
 
@@ -270,15 +289,18 @@ double ThreeDim_Table::operator()(double x, double y, double z) const
 
   // Get weights for interpolation
   double x1 = m_x.x(xbin);
-  double dx = (m_x.m_mode == axis_mode::linear) ? m_x.m_xstep : m_x.x(xbin + 1) - x1;
+  double dx =
+      (m_x.m_mode == axis_mode::linear) ? m_x.m_xstep : m_x.x(xbin + 1) - x1;
   double wx = (std::fabs(dx) > 0) ? (x - x1) / dx : 0.0;
 
   double y1 = m_y.x(ybin);
-  double dy = (m_y.m_mode == axis_mode::linear) ? m_y.m_xstep : m_y.x(ybin + 1) - y1;
+  double dy =
+      (m_y.m_mode == axis_mode::linear) ? m_y.m_xstep : m_y.x(ybin + 1) - y1;
   double wy = (std::fabs(dy) > 0) ? (y - y1) / dy : 0.0;
 
   double z1 = m_z.x(zbin);
-  double dz = (m_z.m_mode == axis_mode::linear) ? m_z.m_xstep : m_z.x(zbin + 1) - z1;
+  double dz =
+      (m_z.m_mode == axis_mode::linear) ? m_z.m_xstep : m_z.x(zbin + 1) - z1;
   double wz = (std::fabs(dz) > 0) ? (z - z1) / dz : 0.0;
 
   // Get 8 corner values
@@ -309,5 +331,5 @@ void ThreeDim_Table::OutputToCSV(std::ofstream& outfile) const
     for (size_t j = 0; j <= m_y.m_nbins; ++j)
       for (size_t k = 0; k <= m_z.m_nbins; ++k)
         outfile << m_x.x(i) << "," << m_y.x(j) << "," << m_z.x(k) << ","
-                << Value(i,j,k) << std::endl;
+                << Value(i, j, k) << std::endl;
 }

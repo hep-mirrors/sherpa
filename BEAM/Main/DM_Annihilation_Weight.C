@@ -10,7 +10,7 @@ DM_Annihilation_Weight::DM_Annihilation_Weight(Kinematics_Base * kinematics) :
 {
   auto& s = Settings::GetMainSettings();
   m_relativistic = s["DM_RELATIVISTIC"].Get<bool>();
-  m_temperature  = s["DM_TEMPERATURE"].Get<double>();
+  m_temperature = s["DM_TEMPERATURE"].Get<double>();
   for (size_t i=0;i<2;i++) {
     m_m[i]        = p_kinematics->m(i);
     m_m2[i]       = p_kinematics->m2(i);

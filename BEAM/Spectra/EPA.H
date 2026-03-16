@@ -11,10 +11,11 @@ namespace ATOOLS {
 namespace BEAM {
   class EPA final : public Beam_Base {
   private:
-    EPA_ff_type  m_fftype;
+
+    EPA_ff_type m_fftype;
     EPA_FF_Base* p_ff;
-    double       m_pref;
-    double       m_pt2max;
+    double m_pref;
+    double m_pt2max;
 
     bool m_output, m_outputAll;
 
@@ -24,6 +25,7 @@ namespace BEAM {
     static void Tests();
 
   public:
+
     EPA(const ATOOLS::Flavour& beam, double energy, double pol, int dir);
     ~EPA() override = default;
     Beam_Base* Copy() override { return new EPA(*this); }
@@ -38,6 +40,6 @@ namespace BEAM {
     double ImpactParameter() const override { return p_ff->ImpactParameter(); }
   };// end of class EPA
 
-}// end of namespace BEAM
+} // end of namespace BEAM
 
 #endif

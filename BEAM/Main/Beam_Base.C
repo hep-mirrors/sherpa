@@ -8,11 +8,12 @@ using namespace BEAM;
 
 Beam_Base::Beam_Base(beamspectrum _type, const ATOOLS::Flavour& _beam,
                      const double _energy, const double _polarisation,
-                     const int _dir, int mode) :
-  m_type(_type), m_Nbunches(1), m_beam(_beam),
-  m_position(ATOOLS::Vec4D(0.,0.,0.,0.)),
-  m_dir(_dir), m_energy(_energy), m_polarisation(_polarisation),
-  m_x(1.), m_Q2(0.), m_weight(1.), m_on(false), m_R(_beam.Radius() / ATOOLS::rpa->hBar_c()) {
+                     const int _dir, int mode)
+    : m_type(_type), m_Nbunches(1), m_beam(_beam),
+      m_position(ATOOLS::Vec4D(0., 0., 0., 0.)), m_dir(_dir), m_energy(_energy),
+      m_polarisation(_polarisation), m_x(1.), m_Q2(0.), m_weight(1.),
+      m_on(false), m_R(_beam.Radius() / ATOOLS::rpa->hBar_c())
+{
   if (_energy == 0.) { // Fixed Target mode
     m_lab = ATOOLS::Vec4D(m_beam.Mass(true), 0., 0., 0.);
   } else {
