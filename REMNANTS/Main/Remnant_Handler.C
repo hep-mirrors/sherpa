@@ -266,11 +266,6 @@ Return_Value::code Remnant_Handler::MakeBeamBlobs(Blob_List* const bloblist,
     msg_Error() << METHOD << " failed. Will return new event\n";
     rv = Return_Value::New_Event;
   }
-  else {
-    if (!CheckBeamBreakup() || !m_decorrelator(p_softblob)) {
-      rv = Return_Value::New_Event;
-    }
-  }
   Reset();
   return rv;
 }
