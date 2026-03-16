@@ -170,6 +170,13 @@ bool Blob_List::TotalFourMomentum(Blob *blob,std::set<Blob*> &summed,
   return success;
 }
 
+void Blob_List::Boost(const Poincare * boost,
+		      std::set<Particle *> * treateds) {
+  for (Blob_List::iterator bit(begin());bit!=end();++bit) {
+    (*bit)->Boost(boost,treateds);
+  }
+}
+
 Vec4D Blob_List::TotalFourMomentum() const
 {
   if (empty()) return Vec4D();

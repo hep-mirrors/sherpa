@@ -6,7 +6,7 @@
 #include "ATOOLS/Org/CXXFLAGS.H"
 #include "ATOOLS/Phys/Flow.H"
 #include "ATOOLS/Phys/Blob.H"
-
+#include "ATOOLS/Math/Poincare.H"
 
 using namespace ATOOLS;
 
@@ -83,6 +83,13 @@ Cluster_Amplitude *Cluster_Amplitude::New
   if (ca->p_prev!=NULL) ca->p_prev->p_next=ca;
   return ca;
 }
+
+void Cluster_Amplitude::Boost(const Poincare * boost) {
+  if (p_next) p_next->Boost(boost);
+  for (size_t i(0);i<m_legs.size();++i)
+    m_legs[i]->SetMom((*boost)*m_legs[i]->Mom());
+}
+
 
 void Cluster_Amplitude::Delete()
 {

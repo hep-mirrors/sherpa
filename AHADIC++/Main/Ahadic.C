@@ -40,6 +40,7 @@ Ahadic::~Ahadic()
 Return_Value::code Ahadic::Hadronize(Blob_List * blobs)
 {
   static std::string mname(METHOD);
+  bool hadronized = false;
   Return_Value::IncCall(mname);
   for (Blob_List::iterator blit=blobs->begin();blit!=blobs->end();) {
     if ((*blit)->Has(blob_status::needs_hadronization) &&
@@ -48,6 +49,7 @@ Return_Value::code Ahadic::Hadronize(Blob_List * blobs)
       const auto result = Hadronize(blob);
       switch (result) {
       case Return_Value::Success :
+	hadronized = true;
 	break;
       case Return_Value::Retry_Event :
       case Return_Value::New_Event:
@@ -79,7 +81,7 @@ Return_Value::code Ahadic::Hadronize(Blob_List * blobs)
     blit++;
   }
   if (m_shrink) Shrink(blobs);
-  return Return_Value::Success;
+  return hadronized ? Return_Value::Success : Return_Value::Nothing;
 }
 
 Return_Value::code Ahadic::Hadronize(Blob * blob, int retry) {
