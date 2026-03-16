@@ -112,6 +112,9 @@ void Remnant_Handler::InitializeRemnants(PDF::ISR_Handler* isr,
   // each other, their beam, the Colour_Generator, and hand them also to
   // the ISR_Handler.
   // TODO: this latter part may become obsolete - I will have to check this.
+  msg_Out()<<METHOD<<" for beams: "
+	   <<beam->GetBeam(0)->Beam()<<" ("<<beam->GetBeam(0)->Type()<<") & "
+	   <<beam->GetBeam(1)->Beam()<<" ("<<beam->GetBeam(1)->Type()<<")\n";
   for (size_t i = 0; i < 2; ++i) {
     p_remnants[i]->SetBeam(beam->GetBeam(i));
     p_remnants[i]->Reset();
@@ -253,14 +256,15 @@ Return_Value::code Remnant_Handler::MakeBeamBlobs(Blob_List* const bloblist,
   // Check for colour connected parton-pairs including beam partons and
   // add soft gluons in between them if their invariant mass is too large.
   // This still needs debugging - therefore it is commented out.
+  msg_Out()<<METHOD<<" going for the beam blobs.\n";
   Return_Value::code rv = Return_Value::Success;
-  if (!m_kinematics.FillBlobs(bloblist,p_labboost)) {
+  if (!m_kinematics.FillBlobs(bloblist)) {
+    msg_Debugging() << METHOD << ": Filling of beam blobs failed.\n";
     rv = Return_Value::New_Event;
   }
-  else {
-    if (!CheckBeamBreakup() || !m_decorrelator(p_softblob)) {
-      rv = Return_Value::New_Event;
-    }
+  else if (!CheckBeamBreakup() || !m_decorrelator(p_softblob)) {
+    msg_Error() << METHOD << " failed. Will return new event\n";
+    rv = Return_Value::New_Event;
   }
   Reset();
   return rv;
