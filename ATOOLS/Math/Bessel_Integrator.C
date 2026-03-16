@@ -42,7 +42,7 @@ double Bessel_Integrator::operator()(double tolerance, bool output)
     m_F[i - 1] = F;
     m_M[0][i - 1] = m_F[i - 1] / m_Psi[i - 1];
     m_N[0][i - 1] = 1. / m_Psi[i - 1];
-  if (output) {
+    if (output) {
       msg_Out() << "  bin i = " << std::setw(2) << i << ": "
                 << "Psi[" << std::setw(8) << xmin << ", " << std::setw(8)
                 << xmax << "] = " << std::setw(12) << std::setprecision(6)
@@ -76,11 +76,12 @@ double Bessel_Integrator::operator()(double tolerance, bool output)
     }
 
     // Convergence check
-    if (p >= 3 && std::abs(m_N[p][0]) > 1.e-30 && std::abs(m_N[p-1][0]) > 1.e-30) {
+    if (p >= 3 && std::abs(m_N[p][0]) > 1.e-30 &&
+        std::abs(m_N[p - 1][0]) > 1.e-30) {
       double current_result = m_M[p][0] / m_N[p][0];
       double prev_result = m_M[p - 1][0] / m_N[p - 1][0];
-      double rel_error = std::abs(current_result - prev_result)
-                         / (std::abs(current_result) + 1.0e-20);
+      double rel_error = std::abs(current_result - prev_result) /
+                         (std::abs(current_result) + 1.0e-20);
 
       if (rel_error < tolerance) {
         stability_counter++;
@@ -91,7 +92,8 @@ double Bessel_Integrator::operator()(double tolerance, bool output)
       if (stability_counter >= 2) {
         if (output) {
           msg_Out() << "=== " << METHOD << ": Converged at depth " << p
-                    << ", Result = " << std::setprecision(8) << m_M[p - 1][0] / m_N[p - 1][0] << "\n";
+                    << ", Result = " << std::setprecision(8)
+                    << m_M[p - 1][0] / m_N[p - 1][0] << "\n";
         }
         return m_M[p - 1][0] / m_N[p - 1][0];
       }
@@ -100,8 +102,8 @@ double Bessel_Integrator::operator()(double tolerance, bool output)
 
   // Fallback
   if (output) {
-    msg_Out() << "=== " << METHOD << ": Did NOT converge within depth=" << m_depth
-              << "\n";
+    msg_Out() << "=== " << METHOD
+              << ": Did NOT converge within depth=" << m_depth << "\n";
     msg_Out() << "    Will fall back to cumulatd sum: " << std::setprecision(16)
               << m_F.back() << "\n";
   }

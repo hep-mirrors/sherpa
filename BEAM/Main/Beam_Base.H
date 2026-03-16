@@ -1,10 +1,10 @@
 #ifndef BEAM_Main_Beam_Base_H
 #define BEAM_Main_Beam_Base_H
 
-#include "BEAM/Main/Beam_Parameters.H"
-#include "ATOOLS/Phys/Flavour.H"
 #include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Math/Vector.H"
+#include "ATOOLS/Phys/Flavour.H"
+#include "BEAM/Main/Beam_Parameters.H"
 
 namespace BEAM {
 
@@ -20,8 +20,8 @@ namespace BEAM {
     double             m_energy, m_polarisation;
     double             m_x, m_Q2, m_weight;
     bool               m_on;
-    double             m_R;
-    double             m_eran;
+    double m_R;
+    double m_eran;
 
   public:
     Beam_Base(beamspectrum type,const ATOOLS::Flavour& _beam,
@@ -29,40 +29,49 @@ namespace BEAM {
 	      const int _dir, int mode = 0);
     virtual ~Beam_Base() = default;
 
-    virtual Beam_Base * Copy()                          = 0;
-    virtual bool        CalculateWeight(double, double) = 0;
+    virtual Beam_Base* Copy() = 0;
+    virtual bool CalculateWeight(double, double) = 0;
     virtual void FixPosition() {}
 
-    bool On()                                              const { return m_on; }
-    const beamspectrum & Type()                            const { return m_type; }
-    const size_t             & NBunches()                  const { return m_Nbunches; }
-    const ATOOLS::Flavour    & Beam()                      const { return m_beam; }
-    const ATOOLS::Flavour    & Bunch(const size_t & i=0)   const { return m_bunches[i]; }
-    const ATOOLS::Flavour    & Remnant()                   const { return m_beam; }
-    const ATOOLS::Vec4D & OutMomentum(const size_t & i=0)  const { return m_vecouts[i]; }
-    const ATOOLS::Vec4D & InMomentum()                     const { return m_lab; }
-    const ATOOLS::Vec4D & Position()                       const { return m_position; }
-    const std::vector<ATOOLS::Flavour> & Bunches()         const { return m_bunches; }
-    const std::vector<ATOOLS::Vec4D> & OutMomenta()        const { return m_vecouts; }
-    const double & Energy()                                const { return m_energy; }
-    const double & Polarisation()                          const { return m_polarisation; }
-    bool PolarisationOn()                                  const { return (m_polarisation!=0.); }
-    double X()                                             const { return m_x; }
-    double Weight()                                        const { return m_weight; }
+    bool On() const { return m_on; }
+    const beamspectrum& Type() const { return m_type; }
+    const size_t& NBunches() const { return m_Nbunches; }
+    const ATOOLS::Flavour& Beam() const { return m_beam; }
+    const ATOOLS::Flavour& Bunch(const size_t& i = 0) const
+    {
+      return m_bunches[i];
+    }
+    const ATOOLS::Flavour& Remnant() const { return m_beam; }
+    const ATOOLS::Vec4D& OutMomentum(const size_t& i = 0) const
+    {
+      return m_vecouts[i];
+    }
+    const ATOOLS::Vec4D& InMomentum() const { return m_lab; }
+    const ATOOLS::Vec4D& Position() const { return m_position; }
+    const std::vector<ATOOLS::Flavour>& Bunches() const { return m_bunches; }
+    const std::vector<ATOOLS::Vec4D>& OutMomenta() const { return m_vecouts; }
+    const double& Energy() const { return m_energy; }
+    const double& Polarisation() const { return m_polarisation; }
+    bool PolarisationOn() const { return (m_polarisation != 0.); }
+    double X() const { return m_x; }
+    double Weight() const { return m_weight; }
 
-    virtual double Exponent()      const { return 0.; }
-    virtual double Xmin()          const { return 0.; }
-    virtual double Xmax()          const { return 1.; }
-    virtual double Peak()          const { return 1.; }
+    virtual double Exponent() const { return 0.; }
+    virtual double Xmin() const { return 0.; }
+    virtual double Xmax() const { return 1.; }
+    virtual double Peak() const { return 1.; }
 
     void SetERan(double eran) { m_eran = eran; }
 
     virtual double ImpactParameter() const { return ATOOLS::ran->Get() * m_R; }
 
-    virtual void SetInMomentum(const ATOOLS::Vec4D &in)   { m_lab = in; }
-    virtual void SetOutMomentum(const ATOOLS::Vec4D &out) { m_vecouts[0] = out; }
+    virtual void SetInMomentum(const ATOOLS::Vec4D& in) { m_lab = in; }
+    virtual void SetOutMomentum(const ATOOLS::Vec4D& out)
+    {
+      m_vecouts[0] = out;
+    }
 
-    void SetX(const double &x) { m_x=x; }
+    void SetX(const double& x) { m_x = x; }
   };
   /*!
     \file

@@ -71,9 +71,7 @@ EPA_FF_Base::EPA_FF_Base(const ATOOLS::Flavour& beam, const int dir)
 void EPA_FF_Base::FillTables()
 {
   axis xaxis(m_nxbins, m_xmin, m_xmax, axis_mode::log);
-  axis baxis(m_nbbins,
-             m_bmin * m_R,
-             std::min(m_b_pl_threshold, m_bmax * m_R),
+  axis baxis(m_nbbins, m_bmin * m_R, std::min(m_b_pl_threshold, m_bmax * m_R),
              axis_mode::log);
 
   //////////////////////////////////////////////////////////////////////////////
@@ -341,8 +339,7 @@ EPA_DipoleApprox::EPA_DipoleApprox(const ATOOLS::Flavour& beam, const int dir)
 ////////////////////////////////////////////////////////////////////////////////
 
 double EPA_WoodSaxon::IntegrateWithAdaptiveRange(
-    const std::function<double(double)>& integrand,
-    double initial_rmax,
+    const std::function<double(double)>& integrand, double initial_rmax,
     double tolerance)
 {
   Lambda_Functor functor(&integrand);

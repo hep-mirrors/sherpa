@@ -74,7 +74,7 @@ TEST_CASE("Bessel_Integrator Integration Modes",
       {4, 0, 1.0, "f(x)=(1-exp(-x))/(x*log(1+sqrt(2))), J0(x)"},
       {5, 0, 0.114263484396498030486956, "f(x)=exp(-x)*cos(x), J0(x)"},
       {5, 1, -0.040914316903594003073207, "f(x)=exp(-x)*cos(3*x), J1(x)"},
-    {6, 1, 0.00539632971919505751151192, "f(x)=sin(x/10)/(x + 1)/10, J1(x)"}};
+      {6, 1, 0.00539632971919505751151192, "f(x)=sin(x/10)/(x + 1)/10, J1(x)"}};
 
   for (const auto& config : configs) {
     DYNAMIC_SECTION("Mode " << config.mode << ": " << config.description)

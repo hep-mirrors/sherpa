@@ -19,6 +19,7 @@ using string = std::string;
 std::ostream& BEAM::operator<<(std::ostream& ostr, const beammode bmode) {
   switch (bmode) {
   case beammode::relic_density:
+<<<<<<< HEAD
     return ostr<<"Relic Density calculation";
   case beammode::collider:
     return ostr<<"Collider";
@@ -26,6 +27,14 @@ std::ostream& BEAM::operator<<(std::ostream& ostr, const beammode bmode) {
     return ostr<<"Dark Matter annihilation";
   case beammode::Fixed_Target:
     return ostr<<"Fixed Target annihilation";
+=======
+    return ostr << "Relic Density calculation";
+  case beammode::collider:
+    return ostr << "Collider";
+  case beammode::DM_annihilation:
+    return ostr << "Dark Matter annihilation";
+
+>>>>>>> b6dce69ca (Formatting [physval])
   default:
     break;
   }
@@ -35,6 +44,7 @@ std::ostream& BEAM::operator<<(std::ostream& ostr, const beammode bmode) {
 std::ostream& BEAM::operator<<(std::ostream& ostr, const collidermode cmode) {
   switch (cmode) {
   case collidermode::monochromatic:
+<<<<<<< HEAD
     return ostr<<"no spectra";
   case collidermode::spectral_1:
     return ostr<<"spectrum for 1";
@@ -42,6 +52,15 @@ std::ostream& BEAM::operator<<(std::ostream& ostr, const collidermode cmode) {
     return ostr<<"spectrum for 2";
   case collidermode::both_spectral:
     return ostr<<"spectra for both";
+=======
+    return ostr << "no spectra";
+  case collidermode::spectral_1:
+    return ostr << "spectrum for 1";
+  case collidermode::spectral_2:
+    return ostr << "spectrum for 2";
+  case collidermode::both_spectral:
+    return ostr << "spectra for both";
+>>>>>>> b6dce69ca (Formatting [physval])
   default:
     break;
   }
@@ -51,6 +70,7 @@ std::ostream& BEAM::operator<<(std::ostream& ostr, const collidermode cmode) {
 std::ostream& BEAM::operator<<(std::ostream& ostr, const beamspectrum spect) {
   switch (spect) {
   case beamspectrum::monochromatic:
+<<<<<<< HEAD
     return ostr<<"Monochromatic";
   case beamspectrum::EPA:
     return ostr<<"Equivalent Photons";
@@ -64,14 +84,32 @@ std::ostream& BEAM::operator<<(std::ostream& ostr, const beamspectrum spect) {
     return ostr<<"Dark Matter";
   case beamspectrum::Fixed_Target:
     return ostr<<"Fixed Target";
+=======
+    return ostr << "Monochromatic";
+  case beamspectrum::EPA:
+    return ostr << "Equivalent Photons";
+  case beamspectrum::Pomeron:
+    return ostr << "Pomeron";
+  case beamspectrum::Reggeon:
+    return ostr << "Reggeon";
+  case beamspectrum::laser_backscattering:
+    return ostr << "Laser Backscattering";
+  case beamspectrum::DM:
+    return ostr << "Dark Matter";
+
+>>>>>>> b6dce69ca (Formatting [physval])
   default:
     break;
   }
   return ostr<<"Undefined";
 }
 
+<<<<<<< HEAD
 Beam_Parameters::Beam_Parameters() :
   m_settings(Settings::GetMainSettings())
+=======
+Beam_Parameters::Beam_Parameters(): m_settings(Settings::GetMainSettings())
+>>>>>>> b6dce69ca (Formatting [physval])
 {
   RegisterDefaults();
 }
@@ -90,6 +128,7 @@ void Beam_Parameters::RegisterDefaults()
 
 Beam_Base * Beam_Parameters::InitSpectrum(const size_t & num) {
   switch (GetSpectrum(num)) {
+<<<<<<< HEAD
   case beamspectrum::monochromatic :
     return InitializeMonochromatic(num);
   case beamspectrum::Gaussian :
@@ -108,6 +147,26 @@ Beam_Base * Beam_Parameters::InitSpectrum(const size_t & num) {
   case beamspectrum::Fixed_Target :
     return InitializeFixed_Target(num);
   default :
+=======
+  case beamspectrum::monochromatic:
+    return InitializeMonochromatic(num);
+  case beamspectrum::Gaussian:
+    THROW(fatal_error, "Gaussian beam spectrum not yet implemented");
+  case beamspectrum::laser_backscattering:
+    return InitializeLaserBackscattering(num);
+  case beamspectrum::simple_Compton:
+    return InitializeSimpleCompton(num);
+  case beamspectrum::EPA:
+    return InitializeEPA(num);
+  case beamspectrum::Pomeron:
+    return InitializePomeron(num);
+  case beamspectrum::Reggeon:
+    return InitializeReggeon(num);
+  case beamspectrum::DM:
+    return InitializeDM_beam(num);
+
+  default:
+>>>>>>> b6dce69ca (Formatting [physval])
     break;
   }
   msg_Error() << "Warning in Beam_Initialization::SpecifySpectra :\n"
@@ -118,10 +177,21 @@ Beam_Base * Beam_Parameters::InitSpectrum(const size_t & num) {
 
 Beam_Base * Beam_Parameters::InitializeMonochromatic(int num)
 {
+<<<<<<< HEAD
   Flavour beam_particle     = GetFlavour("BEAMS",num);
   double beam_energy        = Max((*this)("BEAM_ENERGIES",num), beam_particle.Mass());
   double beam_polarization  = (*this)("BEAM_POLARIZATIONS",num);
   return new Monochromatic(beam_particle,beam_energy,beam_polarization,1-2*num);
+=======
+  Flavour beam_particle = GetFlavour("BEAMS", num);
+  double beam_energy =
+      Max(m_settings["BEAM_ENERGIES"].GetTwoVector<double>()[num],
+          beam_particle.Mass());
+  double beam_polarization =
+      m_settings["BEAM_POLARIZATIONS"].GetTwoVector<double>()[num];
+  return new Monochromatic(beam_particle, beam_energy, beam_polarization,
+                           1 - 2 * num);
+>>>>>>> b6dce69ca (Formatting [physval])
 }
 
 Beam_Base * Beam_Parameters::InitializeLaserBackscattering(int num)
@@ -133,6 +203,7 @@ Beam_Base * Beam_Parameters::InitializeLaserBackscattering(int num)
 	       <<beam_particle<<".\n";
     return nullptr;
   }
+<<<<<<< HEAD
   double beam_energy        = (*this)("BEAM_ENERGIES",num);
   double beam_polarization  = (*this)("BEAM_POLARIZATIONS",num);
   double laser_energy       = (*this)("E_LASER",num);
@@ -144,6 +215,19 @@ Beam_Base * Beam_Parameters::InitializeLaserBackscattering(int num)
 				  beam_energy,beam_polarization,
 				  laser_energy,laser_polarization,
 				  mode,(int)angles,(int)nonlin,1-2*num);
+=======
+  double beam_energy = m_settings["BEAM_ENERGIES"].GetTwoVector<double>()[num];
+  double beam_polarization =
+      m_settings["BEAM_POLARIZATIONS"].GetTwoVector<double>()[num];
+  double laser_energy = m_settings["E_LASER"].GetTwoVector<double>()[num];
+  double laser_polarization = m_settings["P_LASER"].GetTwoVector<double>()[num];
+  int mode = m_settings["LASER_MODE"].Get<int>();
+  bool angles = m_settings["LASER_ANGLES"].Get<bool>();
+  bool nonlin = m_settings["LASER_NONLINEARITY"].Get<bool>();
+  return new Laser_Backscattering(beam_particle, beam_energy, beam_polarization,
+                                  laser_energy, laser_polarization, mode,
+                                  (int)angles, (int)nonlin, 1 - 2 * num);
+>>>>>>> b6dce69ca (Formatting [physval])
 }
 
 Beam_Base * Beam_Parameters::InitializeSimpleCompton(int num)
@@ -155,6 +239,7 @@ Beam_Base * Beam_Parameters::InitializeSimpleCompton(int num)
 	       <<beam_particle<<".\n";
     return nullptr;
   }
+<<<<<<< HEAD
   double beam_energy        = (*this)("BEAM_ENERGIES",num);
   double beam_polarization  = (*this)("BEAM_POLARIZATIONS",num);
   double laser_energy       = (*this)("E_LASER",num);
@@ -163,6 +248,16 @@ Beam_Base * Beam_Parameters::InitializeSimpleCompton(int num)
 				  beam_energy,beam_polarization,
 				  laser_energy,laser_polarization,
 				  -1,0,0,1-2*num);
+=======
+  double beam_energy = m_settings["BEAM_ENERGIES"].GetTwoVector<double>()[num];
+  double beam_polarization =
+      m_settings["BEAM_POLARIZATIONS"].GetTwoVector<double>()[num];
+  double laser_energy = m_settings["E_LASER"].GetTwoVector<double>()[num];
+  double laser_polarization = m_settings["P_LASER"].GetTwoVector<double>()[num];
+  return new Laser_Backscattering(beam_particle, beam_energy, beam_polarization,
+                                  laser_energy, laser_polarization, -1, 0, 0,
+                                  1 - 2 * num);
+>>>>>>> b6dce69ca (Formatting [physval])
 }
 
 Beam_Base * Beam_Parameters::InitializeEPA(int num)
@@ -170,7 +265,7 @@ Beam_Base * Beam_Parameters::InitializeEPA(int num)
   Flavour beam_particle = GetFlavour("BEAMS", num);
   double beam_energy = m_settings["BEAM_ENERGIES"].GetTwoVector<double>()[num];
   double beam_polarization =
-          m_settings["BEAM_POLARIZATIONS"].GetTwoVector<double>()[num];
+      m_settings["BEAM_POLARIZATIONS"].GetTwoVector<double>()[num];
   return new EPA(beam_particle, beam_energy, beam_polarization, 1 - 2 * num);
 }
 
@@ -203,12 +298,13 @@ Beam_Base* Beam_Parameters::InitializeReggeon(int num)
 
 Beam_Base * Beam_Parameters::InitializeDM_beam(int num)
 {
-  Flavour beam_particle    = GetFlavour("BEAMS",num);
-  double  temperature      = (*this)("DM_TEMPERATURE");
-  DM_type::code formfactor = DM_type::code(Switch("DM_ENERGY_DISTRIBUTION"));
-  bool    relativistic     = On("DM_RELATIVISTIC");
-  return new DM_beam(beam_particle,temperature,
-		     formfactor,relativistic,1-2*num);
+  Flavour beam_particle = GetFlavour("BEAMS", num);
+  double temperature = m_settings["DM_TEMPERATURE"].Get<double>();
+  DM_type::code formfactor = static_cast<DM_type::code>(
+      m_settings["DM_ENERGY_DISTRIBUTION"].Get<int>());
+  bool relativistic = m_settings["DM_RELATIVISTIC"].Get<bool>();
+  return new DM_beam(beam_particle, temperature, formfactor, relativistic,
+                     1 - 2 * num);
 }
 
 Beam_Base * Beam_Parameters::InitializeFixed_Target(int num)
@@ -223,10 +319,10 @@ const Flavour Beam_Parameters::GetFlavour(const std::string & tag,const size_t &
   std::vector<int> beam{m_settings[tag].GetVector<int>()};
   if (beam.size() != 1 && beam.size() != 2)
     THROW(fatal_error, "Specify either one or two values for `BEAMS'.");
-  int flav{ (pos == 0) ? beam.front() : beam.back() };
+  int flav{(pos == 0) ? beam.front() : beam.back()};
   InitializeFlav((kf_code)abs(flav));
-  Flavour beam_particle     = Flavour((kf_code)abs(flav));
-  if (flav<0) beam_particle = beam_particle.Bar();
+  Flavour beam_particle = Flavour((kf_code)abs(flav));
+  if (flav < 0) beam_particle = beam_particle.Bar();
   return beam_particle;
 }
 
@@ -338,9 +434,9 @@ void Beam_Parameters::RegisterLaserDefaults() {
 
 bool Beam_Parameters::SpecifyMode() {
   string mode = m_settings["BEAM_MODE"].Get<string>();
-  if      (mode==string("Relic_Density"))
+  if (mode == string("Relic_Density"))
     m_beammode = beammode::relic_density;
-  else if (mode==string("Collider"))
+  else if (mode == string("Collider"))
     m_beammode = beammode::collider;
   else if (mode==string("DM_Annihilation"))
     m_beammode = beammode::DM_annihilation;
