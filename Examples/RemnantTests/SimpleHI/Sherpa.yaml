@@ -1,0 +1,23 @@
+# collider setup
+BEAMS:         [12,            2212]
+BEAM_ENERGIES: [1000.,         0.]
+BEAM_SPECTRA:  [Monochromatic, Fixed_Target] 
+PDF_SET:       [None,          Default]
+
+# general setting
+EVENTS: 100000
+ERROR: 0.99
+FRAGMENTATION: Ahadic
+MI_HANDLER: None
+
+# me generator settings
+ME_GENERATORS: Comix
+EVENT_GENERATION_MODE: Weighted
+SHOWER_GENERATOR: CSS
+
+PROCESSES:
+- 12 93 -> 12 93: {}
+
+SELECTORS:
+- [Q2, 12, 12, 4, 1e12]
+
