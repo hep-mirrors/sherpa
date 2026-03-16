@@ -17,7 +17,7 @@ import re
 sys.path.insert(0, os.path.abspath('.'))
 sys.path.insert(0, os.path.abspath('./_extensions/'))
 
-copyright = '2022, Sherpa Team'
+copyright = '2026, Sherpa Team'
 author = 'Sherpa Team'
 
 # -- Project information -----------------------------------------------------
@@ -67,9 +67,6 @@ html_theme_options = {
     'logo': 'images/sherpa-logo.png',
     'logo_name': False, # Remove logo name, because the logo already contains the string "SHERPA"
     'logo_text_align': 'center',
-    'extra_nav_links': {
-        'Sherpa Homepage': 'https://sherpa-team.gitlab.io',
-    }
 }
 
 # Add any paths that contain custom static files (such as style sheets) here,
