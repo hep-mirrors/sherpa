@@ -78,6 +78,7 @@ namespace SHERPA {
     REMNANTS::Remnant_Handler  *p_remnants;
     MODEL::Model_Base          *p_model;
 
+    ATOOLS::Poincare           *p_cmsboost;
     std::string m_respath;
     int         m_eventmode, m_seedmode, m_hasnlo;
     bool        m_pilotrunenabled;
