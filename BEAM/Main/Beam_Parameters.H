@@ -95,8 +95,9 @@ namespace BEAM {
     Beam_Base * InitSpectrum(const size_t & num);
 
     const ATOOLS::Flavour GetFlavour(const std::string & tag,const size_t & pos=-1);
-    inline beammode       GetMode() const { return m_beammode; }
-    inline beamspectrum   GetSpectrum(const size_t & pos) const {
+    inline beammode GetMode() const { return m_beammode; }
+    inline beamspectrum GetSpectrum(const size_t& pos) const
+    {
       if (pos==0 || pos==1) return m_beamspec[pos];
       return beamspectrum::unknown;
     }

@@ -32,8 +32,7 @@ Collider_Weight::Collider_Weight(Kinematics_Base* kinematics)
   else if (m_rejection > 1 && p_beams[0]->Beam().Kfcode() == kf_p_plus &&
            p_beams[1]->Beam().Kfcode() == kf_p_plus)
     p_rejector = new Proton_Proton_Rejection(
-        p_beams[0]->Beam(),
-        p_beams[1]->Beam(),
+        p_beams[0]->Beam(), p_beams[1]->Beam(),
         (p_beams[0]->InMomentum() + p_beams[1]->InMomentum()).Abs2());
   else if (m_rejection > 1 && (p_beams[0]->Beam().Kfcode() == kf_p_plus &&
                                p_beams[1]->Beam().IsIon()) ||

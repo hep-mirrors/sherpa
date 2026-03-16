@@ -36,7 +36,7 @@ EPA::EPA(const Flavour& beam, const double energy, const double pol,
 
 bool EPA::CalculateWeight(double x, double q2)
 {
-  m_x      = x;
+  m_x = x;
   m_weight = m_pref * p_ff->N(x, m_eran);
   if (IsNan(m_weight))
     msg_Out() << "Boink! " << METHOD << "(x = " << x << ") yields NaN.\n";
@@ -58,13 +58,13 @@ void EPA::SetOutMomentum(const ATOOLS::Vec4D& out)
 void EPA::Initialise()
 {
   const auto& s = Settings::GetMainSettings()["EPA"];
-  size_t      b = m_dir > 0 ? 0 : 1;
-  m_pref        = s["AlphaQED"].Get<double>() / M_PI;
-  m_output      = s["OutputSpectra"].Get<bool>();
-  m_outputAll    = s["OutputAllSpectra"].Get<bool>();
-  m_pt2max      = !m_beam.IsIon()
-                          ? sqr(m_energy * s["ThetaMax"].GetTwoVector<double>()[b])
-                          : sqr(rpa->hBar_c() / m_beam.Radius());
+  size_t b = m_dir > 0 ? 0 : 1;
+  m_pref = s["AlphaQED"].Get<double>() / M_PI;
+  m_output = s["OutputSpectra"].Get<bool>();
+  m_outputAll = s["OutputAllSpectra"].Get<bool>();
+  m_pt2max = !m_beam.IsIon()
+                 ? sqr(m_energy * s["ThetaMax"].GetTwoVector<double>()[b])
+                 : sqr(rpa->hBar_c() / m_beam.Radius());
   if (m_outputAll) {
     Tests();
     THROW(normal_exit, "Tests done.");
@@ -72,36 +72,48 @@ void EPA::Initialise()
 
   m_fftype = s["Form_Factor"].GetTwoVector<EPA_ff_type>()[b];
   switch (m_fftype) {
-    case EPA_ff_type::point:
-      p_ff = new EPA_Point(m_beam, m_dir); break;
-    case EPA_ff_type::pointApprox:
-      p_ff = new EPA_PointApprox(m_beam, m_dir); break;
-    case EPA_ff_type::proton:
-      p_ff = new EPA_Proton(m_beam, m_dir); break;
-    case EPA_ff_type::protonApprox:
-      p_ff = new EPA_ProtonApprox(m_beam, m_dir); break;
-    case EPA_ff_type::Gauss:
-      p_ff = new EPA_Gauss(m_beam, m_dir); break;
-    case EPA_ff_type::hcs:
-      p_ff = new EPA_HCS(m_beam, m_dir); break;
-    case EPA_ff_type::dipole:
-      p_ff = new EPA_Dipole(m_beam, m_dir); break;
-    case EPA_ff_type::dipoleApprox:
-      p_ff = new EPA_DipoleApprox(m_beam, m_dir); break;
-    case EPA_ff_type::ionApprox:
-      p_ff = new EPA_IonApprox(m_beam, m_dir); break;
-    case EPA_ff_type::ionApproxInt:
-      p_ff = new EPA_IonApproxIntegrated(m_beam, m_dir); break;
-    case EPA_ff_type::WoodSaxon:
-      p_ff = new EPA_WoodSaxon(m_beam, m_dir); break;
-    case EPA_ff_type::WoodSaxonApprox:
-      p_ff = new EPA_WoodSaxonApprox(m_beam, m_dir); break;
-    default: THROW(not_implemented, "unknown EPA form factor. ");
+  case EPA_ff_type::point:
+    p_ff = new EPA_Point(m_beam, m_dir);
+    break;
+  case EPA_ff_type::pointApprox:
+    p_ff = new EPA_PointApprox(m_beam, m_dir);
+    break;
+  case EPA_ff_type::proton:
+    p_ff = new EPA_Proton(m_beam, m_dir);
+    break;
+  case EPA_ff_type::protonApprox:
+    p_ff = new EPA_ProtonApprox(m_beam, m_dir);
+    break;
+  case EPA_ff_type::Gauss:
+    p_ff = new EPA_Gauss(m_beam, m_dir);
+    break;
+  case EPA_ff_type::hcs:
+    p_ff = new EPA_HCS(m_beam, m_dir);
+    break;
+  case EPA_ff_type::dipole:
+    p_ff = new EPA_Dipole(m_beam, m_dir);
+    break;
+  case EPA_ff_type::dipoleApprox:
+    p_ff = new EPA_DipoleApprox(m_beam, m_dir);
+    break;
+  case EPA_ff_type::ionApprox:
+    p_ff = new EPA_IonApprox(m_beam, m_dir);
+    break;
+  case EPA_ff_type::ionApproxInt:
+    p_ff = new EPA_IonApproxIntegrated(m_beam, m_dir);
+    break;
+  case EPA_ff_type::WoodSaxon:
+    p_ff = new EPA_WoodSaxon(m_beam, m_dir);
+    break;
+  case EPA_ff_type::WoodSaxonApprox:
+    p_ff = new EPA_WoodSaxonApprox(m_beam, m_dir);
+    break;
+  default:
+    THROW(not_implemented, "unknown EPA form factor. ");
   }
   p_ff->SetPT2Max(m_pt2max);
 
-  if (m_output)
-    p_ff->OutputToCSV("beam" + ToString(b));
+  if (m_output) p_ff->OutputToCSV("beam" + ToString(b));
 }
 
 void EPA::RegisterDefaults() const
@@ -121,10 +133,10 @@ void EPA::RegisterDefaults() const
                                      : m_beam.IsMeson()   ? EPA_ff_type::dipole
                                                         : EPA_ff_type::point));
   s["MagneticMu"].SetDefault(m_beam.IsNucleon() ? 2.79 : 0.);
-  s["Q02"].SetDefault(m_beam.IsNucleon()
-                              ? 0.71
-                              : sqr(2. / m_beam.Radius() * rpa->hBar_c()));
-  s["WoodsSaxon_R"].SetDefault(1.118 * std::pow(m_beam.GetMassNumber(), 1./3.));
+  s["Q02"].SetDefault(
+      m_beam.IsNucleon() ? 0.71 : sqr(2. / m_beam.Radius() * rpa->hBar_c()));
+  s["WoodsSaxon_R"].SetDefault(1.118 *
+                               std::pow(m_beam.GetMassNumber(), 1. / 3.));
   s["WoodsSaxon_d"].SetDefault(0.54);
   s["WoodsSaxonApprox_a"].SetDefault(0.7);
   s["AlphaQED"].SetDefault(1. / 137.03599976);

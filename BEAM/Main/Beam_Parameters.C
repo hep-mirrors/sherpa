@@ -18,11 +18,15 @@ using string = std::string;
 std::ostream& BEAM::operator<<(std::ostream& ostr, const beammode bmode)
 {
   switch (bmode) {
-    case beammode::relic_density: return ostr << "Relic Density calculation";
-    case beammode::collider: return ostr << "Collider";
-    case beammode::DM_annihilation: return ostr << "Dark Matter annihilation";
+  case beammode::relic_density:
+    return ostr << "Relic Density calculation";
+  case beammode::collider:
+    return ostr << "Collider";
+  case beammode::DM_annihilation:
+    return ostr << "Dark Matter annihilation";
 
-    default: break;
+  default:
+    break;
   }
   return ostr << "Undefined";
 }
@@ -30,11 +34,16 @@ std::ostream& BEAM::operator<<(std::ostream& ostr, const beammode bmode)
 std::ostream& BEAM::operator<<(std::ostream& ostr, const collidermode cmode)
 {
   switch (cmode) {
-    case collidermode::monochromatic: return ostr << "no spectra";
-    case collidermode::spectral_1: return ostr << "spectrum for 1";
-    case collidermode::spectral_2: return ostr << "spectrum for 2";
-    case collidermode::both_spectral: return ostr << "spectra for both";
-    default: break;
+  case collidermode::monochromatic:
+    return ostr << "no spectra";
+  case collidermode::spectral_1:
+    return ostr << "spectrum for 1";
+  case collidermode::spectral_2:
+    return ostr << "spectrum for 2";
+  case collidermode::both_spectral:
+    return ostr << "spectra for both";
+  default:
+    break;
   }
   return ostr << "Undefined";
 }
@@ -42,20 +51,26 @@ std::ostream& BEAM::operator<<(std::ostream& ostr, const collidermode cmode)
 std::ostream& BEAM::operator<<(std::ostream& ostr, const beamspectrum spect)
 {
   switch (spect) {
-    case beamspectrum::monochromatic: return ostr << "Monochromatic";
-    case beamspectrum::EPA: return ostr << "Equivalent Photons";
-    case beamspectrum::Pomeron: return ostr << "Pomeron";
-    case beamspectrum::Reggeon: return ostr << "Reggeon";
-    case beamspectrum::laser_backscattering:
-      return ostr << "Laser Backscattering";
-    case beamspectrum::DM: return ostr << "Dark Matter";
+  case beamspectrum::monochromatic:
+    return ostr << "Monochromatic";
+  case beamspectrum::EPA:
+    return ostr << "Equivalent Photons";
+  case beamspectrum::Pomeron:
+    return ostr << "Pomeron";
+  case beamspectrum::Reggeon:
+    return ostr << "Reggeon";
+  case beamspectrum::laser_backscattering:
+    return ostr << "Laser Backscattering";
+  case beamspectrum::DM:
+    return ostr << "Dark Matter";
 
-    default: break;
+  default:
+    break;
   }
   return ostr << "Undefined";
 }
 
-Beam_Parameters::Beam_Parameters() : m_settings(Settings::GetMainSettings())
+Beam_Parameters::Beam_Parameters(): m_settings(Settings::GetMainSettings())
 {
   RegisterDefaults();
 }
@@ -75,18 +90,25 @@ void Beam_Parameters::RegisterDefaults()
 Beam_Base* Beam_Parameters::InitSpectrum(const size_t& num)
 {
   switch (GetSpectrum(num)) {
-    case beamspectrum::monochromatic: return InitializeMonochromatic(num);
-    case beamspectrum::Gaussian:
-      THROW(fatal_error, "Gaussian beam spectrum not yet implemented");
-    case beamspectrum::laser_backscattering:
-      return InitializeLaserBackscattering(num);
-    case beamspectrum::simple_Compton: return InitializeSimpleCompton(num);
-    case beamspectrum::EPA: return InitializeEPA(num);
-    case beamspectrum::Pomeron: return InitializePomeron(num);
-    case beamspectrum::Reggeon: return InitializeReggeon(num);
-    case beamspectrum::DM: return InitializeDM_beam(num);
+  case beamspectrum::monochromatic:
+    return InitializeMonochromatic(num);
+  case beamspectrum::Gaussian:
+    THROW(fatal_error, "Gaussian beam spectrum not yet implemented");
+  case beamspectrum::laser_backscattering:
+    return InitializeLaserBackscattering(num);
+  case beamspectrum::simple_Compton:
+    return InitializeSimpleCompton(num);
+  case beamspectrum::EPA:
+    return InitializeEPA(num);
+  case beamspectrum::Pomeron:
+    return InitializePomeron(num);
+  case beamspectrum::Reggeon:
+    return InitializeReggeon(num);
+  case beamspectrum::DM:
+    return InitializeDM_beam(num);
 
-    default: break;
+  default:
+    break;
   }
   msg_Error() << "Warning in Beam_Initialization::SpecifySpectra :\n"
               << "   No beam spectrum specified for beam " << num + 1
@@ -97,11 +119,11 @@ Beam_Base* Beam_Parameters::InitSpectrum(const size_t& num)
 Beam_Base* Beam_Parameters::InitializeMonochromatic(int num)
 {
   Flavour beam_particle = GetFlavour("BEAMS", num);
-  double  beam_energy =
-          Max(m_settings["BEAM_ENERGIES"].GetTwoVector<double>()[num],
-              beam_particle.Mass());
+  double beam_energy =
+      Max(m_settings["BEAM_ENERGIES"].GetTwoVector<double>()[num],
+          beam_particle.Mass());
   double beam_polarization =
-          m_settings["BEAM_POLARIZATIONS"].GetTwoVector<double>()[num];
+      m_settings["BEAM_POLARIZATIONS"].GetTwoVector<double>()[num];
   return new Monochromatic(beam_particle, beam_energy, beam_polarization,
                            1 - 2 * num);
 }
@@ -118,15 +140,15 @@ Beam_Base* Beam_Parameters::InitializeLaserBackscattering(int num)
   }
   double beam_energy = m_settings["BEAM_ENERGIES"].GetTwoVector<double>()[num];
   double beam_polarization =
-          m_settings["BEAM_POLARIZATIONS"].GetTwoVector<double>()[num];
-  double laser_energy       = m_settings["E_LASER"].GetTwoVector<double>()[num];
+      m_settings["BEAM_POLARIZATIONS"].GetTwoVector<double>()[num];
+  double laser_energy = m_settings["E_LASER"].GetTwoVector<double>()[num];
   double laser_polarization = m_settings["P_LASER"].GetTwoVector<double>()[num];
-  int    mode               = m_settings["LASER_MODE"].Get<int>();
-  bool   angles             = m_settings["LASER_ANGLES"].Get<bool>();
-  bool   nonlin             = m_settings["LASER_NONLINEARITY"].Get<bool>();
+  int mode = m_settings["LASER_MODE"].Get<int>();
+  bool angles = m_settings["LASER_ANGLES"].Get<bool>();
+  bool nonlin = m_settings["LASER_NONLINEARITY"].Get<bool>();
   return new Laser_Backscattering(beam_particle, beam_energy, beam_polarization,
                                   laser_energy, laser_polarization, mode,
-                                  (int) angles, (int) nonlin, 1 - 2 * num);
+                                  (int)angles, (int)nonlin, 1 - 2 * num);
 }
 
 Beam_Base* Beam_Parameters::InitializeSimpleCompton(int num)
@@ -141,8 +163,8 @@ Beam_Base* Beam_Parameters::InitializeSimpleCompton(int num)
   }
   double beam_energy = m_settings["BEAM_ENERGIES"].GetTwoVector<double>()[num];
   double beam_polarization =
-          m_settings["BEAM_POLARIZATIONS"].GetTwoVector<double>()[num];
-  double laser_energy       = m_settings["E_LASER"].GetTwoVector<double>()[num];
+      m_settings["BEAM_POLARIZATIONS"].GetTwoVector<double>()[num];
+  double laser_energy = m_settings["E_LASER"].GetTwoVector<double>()[num];
   double laser_polarization = m_settings["P_LASER"].GetTwoVector<double>()[num];
   return new Laser_Backscattering(beam_particle, beam_energy, beam_polarization,
                                   laser_energy, laser_polarization, -1, 0, 0,
@@ -154,7 +176,7 @@ Beam_Base* Beam_Parameters::InitializeEPA(int num)
   Flavour beam_particle = GetFlavour("BEAMS", num);
   double beam_energy = m_settings["BEAM_ENERGIES"].GetTwoVector<double>()[num];
   double beam_polarization =
-          m_settings["BEAM_POLARIZATIONS"].GetTwoVector<double>()[num];
+      m_settings["BEAM_POLARIZATIONS"].GetTwoVector<double>()[num];
   return new EPA(beam_particle, beam_energy, beam_polarization, 1 - 2 * num);
 }
 
@@ -188,24 +210,24 @@ Beam_Base* Beam_Parameters::InitializeReggeon(int num)
 
 Beam_Base* Beam_Parameters::InitializeDM_beam(int num)
 {
-  Flavour       beam_particle = GetFlavour("BEAMS", num);
-  double        temperature   = m_settings["DM_TEMPERATURE"].Get<double>();
-  DM_type::code formfactor    = static_cast<DM_type::code>(
-          m_settings["DM_ENERGY_DISTRIBUTION"].Get<int>());
+  Flavour beam_particle = GetFlavour("BEAMS", num);
+  double temperature = m_settings["DM_TEMPERATURE"].Get<double>();
+  DM_type::code formfactor = static_cast<DM_type::code>(
+      m_settings["DM_ENERGY_DISTRIBUTION"].Get<int>());
   bool relativistic = m_settings["DM_RELATIVISTIC"].Get<bool>();
   return new DM_beam(beam_particle, temperature, formfactor, relativistic,
                      1 - 2 * num);
 }
 
 const Flavour Beam_Parameters::GetFlavour(const std::string& tag,
-                                          const size_t&      pos)
+                                          const size_t& pos)
 {
   std::vector<int> beam{m_settings[tag].GetVector<int>()};
   if (beam.size() != 1 && beam.size() != 2)
     THROW(fatal_error, "Specify either one or two values for `BEAMS'.");
   int flav{(pos == 0) ? beam.front() : beam.back()};
-  InitializeFlav((kf_code) abs(flav));
-  Flavour beam_particle = Flavour((kf_code) abs(flav));
+  InitializeFlav((kf_code)abs(flav));
+  Flavour beam_particle = Flavour((kf_code)abs(flav));
   if (flav < 0) beam_particle = beam_particle.Bar();
   return beam_particle;
 }
@@ -218,24 +240,24 @@ void Beam_Parameters::RegisterDefaultBeams()
   // cards less error-prone.
   const auto defmode = string("Collider");
   const auto beammode =
-          m_settings["BEAM_MODE"].SetDefault(defmode).Get<string>();
+      m_settings["BEAM_MODE"].SetDefault(defmode).Get<string>();
   const auto defbeam = 0;
-  const auto beam1   = m_settings["BEAM_1"].SetDefault(defbeam).Get<int>();
-  const auto beam2   = m_settings["BEAM_2"].SetDefault(defbeam).Get<int>();
+  const auto beam1 = m_settings["BEAM_1"].SetDefault(defbeam).Get<int>();
+  const auto beam2 = m_settings["BEAM_2"].SetDefault(defbeam).Get<int>();
   m_settings["BEAMS"].SetDefault({beam1, beam2});
 
-  string     defspectrum{"Monochromatic"};
+  string defspectrum{"Monochromatic"};
   const auto spectrum1 =
-          m_settings["BEAM_SPECTRUM_1"].SetDefault(defspectrum).Get<string>();
+      m_settings["BEAM_SPECTRUM_1"].SetDefault(defspectrum).Get<string>();
   const auto spectrum2 =
-          m_settings["BEAM_SPECTRUM_2"].SetDefault(defspectrum).Get<string>();
+      m_settings["BEAM_SPECTRUM_2"].SetDefault(defspectrum).Get<string>();
   m_settings["BEAM_SPECTRA"].SetDefault({spectrum1, spectrum2});
 
   const auto defenergy = 0.0;
   const auto energy1 =
-          m_settings["BEAM_ENERGY_1"].SetDefault(defenergy).Get<double>();
+      m_settings["BEAM_ENERGY_1"].SetDefault(defenergy).Get<double>();
   const auto energy2 =
-          m_settings["BEAM_ENERGY_2"].SetDefault(defenergy).Get<double>();
+      m_settings["BEAM_ENERGY_2"].SetDefault(defenergy).Get<double>();
   m_settings["BEAM_ENERGIES"].SetDefault({energy1, energy2});
 
   m_settings["BEAM_POLARIZATIONS"].SetDefault({0.0, 0.0});
@@ -245,8 +267,8 @@ void Beam_Parameters::RegisterDarkMatterDefaults()
 {
   m_settings["DM_TEMPERATURE"].SetDefault(1.).Get<double>();
   m_settings["DM_ENERGY_DISTRIBUTION"]
-          .SetDefault(int(DM_type::Boltzmann))
-          .Get<int>();
+      .SetDefault(int(DM_type::Boltzmann))
+      .Get<int>();
   m_settings["DM_beam_weighted"].SetDefault(true).Get<bool>();
   m_settings["DM_RELATIVISTIC"].SetDefault(true).Get<bool>();
   m_settings["RELIC_DENSITY_EMAX"].SetDefault(1.e6).Get<double>();
@@ -293,7 +315,8 @@ void Beam_Parameters::RegisterLaserDefaults()
 bool Beam_Parameters::SpecifyMode()
 {
   string mode = m_settings["BEAM_MODE"].Get<string>();
-  if (mode == string("Relic_Density")) m_beammode = beammode::relic_density;
+  if (mode == string("Relic_Density"))
+    m_beammode = beammode::relic_density;
   else if (mode == string("Collider"))
     m_beammode = beammode::collider;
   else if (mode == string("DM_Annihilation"))
@@ -367,24 +390,24 @@ void Beam_Parameters::InitializeFlav(kf_code flav)
       AddParticle(kf_silver107, 106.905097 * A, 5.6970, 0., 141, 0, true, 1,
                   "silver107", "Ag$_{107}$");
     } else if (flav == kf_gold197) {
-      AddParticle(kf_gold197, 196.966552 * A, 6.9823, 0., 237, 0,
-                                true, 1, "gold197", "Au$_{197}$");
-    }
-    else if (flav==kf_lead206) {
-      AddParticle(kf_lead206, 205.9744653 * A, 5.4902, 0., 82, 0, 1, 1, "Pb208", "Pb208");
-    }
-    else if (flav==kf_lead207) {
-      AddParticle(kf_lead207, 206.9758969 * A, 5.4943, 0.,82, -1, 1, 1, "Pb207", "Pb207");
-    }
-    else if (flav==kf_lead208) {
-      AddParticle(kf_lead208, 207.9766521 * A, 5.5012, 0.,82, 0, 1, 1, "Pb206", "Pb206");
+      AddParticle(kf_gold197, 196.966552 * A, 6.9823, 0., 237, 0, true, 1,
+                  "gold197", "Au$_{197}$");
+    } else if (flav == kf_lead206) {
+      AddParticle(kf_lead206, 205.9744653 * A, 5.4902, 0., 82, 0, 1, 1, "Pb208",
+                  "Pb208");
+    } else if (flav == kf_lead207) {
+      AddParticle(kf_lead207, 206.9758969 * A, 5.4943, 0., 82, -1, 1, 1,
+                  "Pb207", "Pb207");
+    } else if (flav == kf_lead208) {
+      AddParticle(kf_lead208, 207.9766521 * A, 5.5012, 0., 82, 0, 1, 1, "Pb206",
+                  "Pb206");
     } else if (flav == kf_uranium238) {
       AddParticle(kf_uranium238, 238.0507900 * A, 7.4366, 0., 276, 0, true, 1,
                   "uranium238", "U$_{238}$");
-    }
-    else {
-      THROW(fatal_error,"You specified a beam particle "+ToString(flav)+
-                    "which is not contained in your chosen model. Will abort.");
+    } else {
+      THROW(fatal_error,
+            "You specified a beam particle " + ToString(flav) +
+                "which is not contained in your chosen model. Will abort.");
     }
     if (initialize_diquarks) {
       // Particle_Info(kfc,mass,radius,width,
