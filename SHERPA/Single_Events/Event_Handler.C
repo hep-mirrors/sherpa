@@ -247,7 +247,8 @@ int Event_Handler::IterateEventPhases(eventtype::code & mode) {
     }
     DEBUG_INFO("Treating "<<(*pit)->Name());
     Return_Value::code rv((*pit)->Treat(&m_blobs));
-    if (rv!=Return_Value::Nothing)
+    msg_Out()<<METHOD<<" yields "<<rv<<"\n";
+    if (rv!=Return_Value::Nothing) {
       msg_Tracking()<<METHOD<<"(): run '"<<(*pit)->Name()<<"' -> "
                     <<rv<<std::endl;
       msg_Debugging()<<" -> "<<rv<<" ("<<m_blobs.size()<<" blobs)"<<std::endl;

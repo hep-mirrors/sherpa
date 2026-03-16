@@ -3,6 +3,7 @@
 #include "ATOOLS/Math/Poincare.H"
 #include "ATOOLS/Org/Message.H"
 #include <iomanip>
+#include <set>
 
 using namespace ATOOLS;
 
@@ -476,11 +477,20 @@ bool Blob::CheckColour(const bool & transient) {
   return (trips.empty() && antis.empty());
 }
 
-void Blob::Boost(const Poincare& boost) {
-  for (int i=0;i<NInP();i++)
-    InParticle(i)->SetMomentum(boost*InParticle(i)->Momentum());
-  for (int i=0;i<NOutP();i++)
-    OutParticle(i)->SetMomentum(boost*OutParticle(i)->Momentum());
+void Blob::Boost(const Poincare * boost,std::set<Particle *> * treateds) {
+  for (int i=0;i<NInP();i++)  {
+    Particle * part = InParticle(i);
+    if (treateds && treateds->find(part)!=treateds->end()) continue;
+    part->Boost(boost);
+    if (treateds) treateds->insert(part);
+  }
+  for (int i=0;i<NOutP();i++) {
+    Particle * part = OutParticle(i);
+    if (treateds && treateds->find(part)!=treateds->end()) continue;
+    part->Boost(boost);
+    if (treateds) treateds->insert(part);
+  }
+  m_position = (*boost)*m_position;
 }
 
 void Blob::BoostInCMS() {
