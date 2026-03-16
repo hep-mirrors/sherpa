@@ -1,7 +1,7 @@
 {% if theme_logo %}
-<p class="logo">
+<p class="logo" style="display: block !important;">
 {# change the logo link to point back to the Sherpa main page #}
-  <a href="../"> 
+  <a href="../../"> 
     <img class="logo" src="{{ pathto('_static/' ~ theme_logo, 1) }}" alt="Logo" />
     {% if theme_logo_name|lower == 'true' %}
     <h1 class="logo logo-name">{{ project }}</h1>

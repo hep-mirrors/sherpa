@@ -62,8 +62,8 @@ cat <<EOF
       
       <div class="sphinxsidebar" role="navigation" aria-label="Main">
         <div class="sphinxsidebarwrapper">
-          <p class="logo">
-            <a href="#">
+          <p class="logo" style="display: block !important;">
+            <a href="../">
               <img class="logo" src="../_static/images/sherpa-logo.png" alt="Logo"/>
             </a>
           </p>
