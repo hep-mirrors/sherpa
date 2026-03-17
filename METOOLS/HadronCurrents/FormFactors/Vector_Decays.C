@@ -1,5 +1,5 @@
-#include "METOOLS/HadronCurrents/Vector_Decays.H"
-#include "METOOLS/HadronCurrents/Line_Shapes.H"
+#include "METOOLS/HadronCurrents/FormFactors/Vector_Decays.H"
+#include "METOOLS/HadronCurrents/FormFactors/Line_Shapes.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/Exception.H"
 #include <set>

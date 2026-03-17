@@ -2,7 +2,7 @@
 #define HADRONS_Main_Hadron_Decay_Table_H
 
 #include "PHASIC++/Decays/Decay_Table.H"
-#include "HADRONS++/Main/Tools.H"
+#include "METOOLS/HadronCurrents/Tools.H"
 #include "ATOOLS/Org/Scoped_Settings.H"
 
 namespace ATOOLS {
@@ -56,7 +56,7 @@ namespace HADRONS {
      * 
      * @param s Settings block from HADRON_DECAYS:Channels:\<pdgid\>
      */
-    void Read(ATOOLS::Scoped_Settings s, GeneralModel& startmd);
+    void Read(ATOOLS::Scoped_Settings s, METOOLS::GeneralModel& startmd);
 
     /** 
      * Outputs the Latex lines for a hadron decay table (to be embedded in a

@@ -5,7 +5,6 @@
 #include "ATOOLS/Phys/Flavour.H"
 #include "ATOOLS/Math/Vector.H"
 #include <string>
-#include "HADRONS++/Main/Tools.H"
 #include "ATOOLS/Org/Scoped_Settings.H"
 
 namespace HADRONS {

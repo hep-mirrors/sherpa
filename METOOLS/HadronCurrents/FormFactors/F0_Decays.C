@@ -1,5 +1,5 @@
-#include "METOOLS/HadronCurrents/F0_Decays.H"
-#include "METOOLS/HadronCurrents/Scalar_Decays.H"
+#include "METOOLS/HadronCurrents/FormFactors/F0_Decays.H"
+#include "METOOLS/HadronCurrents/FormFactors/Scalar_Decays.H"
 #include "ATOOLS/Phys/Flavour.H"
 
 

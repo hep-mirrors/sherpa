@@ -1,7 +1,7 @@
 #ifndef METOOLS_HadronCurrents_Line_Shapes_H
 #define METOOLS_HadronCurrents_Line_Shapes_H
 
-#include "METOOLS/HadronCurrents/Resonance_Base.H"
+#include "METOOLS/HadronCurrents/FormFactors/Resonance_Base.H"
 #include <map>
 
 namespace METOOLS {

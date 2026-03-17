@@ -13,7 +13,7 @@ namespace HADRONS {
                 const std::string& name):
       HD_ME_Base(flavs,decayindices,name) {};
     void Calculate(const ATOOLS::Vec4D_Vector& momenta, bool anti=false);
-    void SetModelParameters( GeneralModel _md );
+    void SetModelParameters(METOOLS::GeneralModel _md );
   };
 
   class B3_Bpi_pwave : public HD_ME_Base {
@@ -24,7 +24,7 @@ namespace HADRONS {
                  const std::string& name):
       HD_ME_Base(flavs,decayindices,name) {};
     void Calculate(const ATOOLS::Vec4D_Vector& momenta, bool anti=false);
-    void SetModelParameters( GeneralModel _md );
+    void SetModelParameters(METOOLS::GeneralModel _md );
   };
 
   class B_Bpi_swave : public HD_ME_Base {
@@ -35,7 +35,7 @@ namespace HADRONS {
                 const std::string& name):
       HD_ME_Base(flavs,decayindices,name) {};
     void Calculate(const ATOOLS::Vec4D_Vector& momenta, bool anti=false);
-    void SetModelParameters( GeneralModel _md );
+    void SetModelParameters(METOOLS::GeneralModel _md );
   };
 
   class B3_Bpi_dwave : public HD_ME_Base {
@@ -46,7 +46,7 @@ namespace HADRONS {
                  const std::string& name):
       HD_ME_Base(flavs,decayindices,name) {};
     void Calculate(const ATOOLS::Vec4D_Vector& momenta, bool anti=false);
-    void SetModelParameters( GeneralModel _md );
+    void SetModelParameters(METOOLS::GeneralModel _md );
   };
 
   class B_Bphoton_M1 : public HD_ME_Base {
@@ -57,7 +57,7 @@ namespace HADRONS {
                  const std::string& name):
       HD_ME_Base(flavs,decayindices,name) {};
     void Calculate(const ATOOLS::Vec4D_Vector& momenta, bool anti=false);
-    void SetModelParameters( GeneralModel _md );
+    void SetModelParameters(METOOLS::GeneralModel _md );
   };
 
   class B3_Bphoton_M1 : public HD_ME_Base {
@@ -68,7 +68,7 @@ namespace HADRONS {
                   const std::string& name):
       HD_ME_Base(flavs,decayindices,name) {};
     void Calculate(const ATOOLS::Vec4D_Vector& momenta, bool anti=false);
-    void SetModelParameters( GeneralModel _md );
+    void SetModelParameters(METOOLS::GeneralModel _md );
   };
 
   class B3_Bphoton_M1_2 : public HD_ME_Base {
@@ -79,7 +79,7 @@ namespace HADRONS {
                     const std::string& name):
       HD_ME_Base(flavs,decayindices,name) {};
     void Calculate(const ATOOLS::Vec4D_Vector& momenta, bool anti=false);
-    void SetModelParameters( GeneralModel _md );
+    void SetModelParameters(METOOLS::GeneralModel _md );
   };
 
   class B_Bphoton_E1 : public HD_ME_Base {
@@ -90,7 +90,7 @@ namespace HADRONS {
                  const std::string& name):
       HD_ME_Base(flavs,decayindices,name) {};
     void Calculate(const ATOOLS::Vec4D_Vector& momenta, bool anti=false);
-    void SetModelParameters( GeneralModel _md );
+    void SetModelParameters(METOOLS::GeneralModel _md );
   };
 
   class B3_Bphoton_E1 : public HD_ME_Base {
@@ -101,7 +101,7 @@ namespace HADRONS {
                   const std::string& name):
       HD_ME_Base(flavs,decayindices,name) {};
     void Calculate(const ATOOLS::Vec4D_Vector& momenta, bool anti=false);
-    void SetModelParameters( GeneralModel _md );
+    void SetModelParameters(METOOLS::GeneralModel _md );
   };
 
   class QQ_QVQ_Spectator : public HD_ME_Base {
@@ -111,7 +111,7 @@ namespace HADRONS {
 		     const std::vector<int>& decayindices,
 		     const std::string& name);
     void Calculate(const ATOOLS::Vec4D_Vector& momenta, bool anti=false);
-    void SetModelParameters( GeneralModel _md );
+    void SetModelParameters(METOOLS::GeneralModel _md );
     bool SetColorFlow(std::vector<ATOOLS::Particle*> outparts,
 		      int n_q, int n_g, bool anti);
   };
@@ -124,7 +124,7 @@ namespace HADRONS {
            const std::string& name):
       HD_ME_Base(flavs,decayindices,name) {};
     void Calculate(const ATOOLS::Vec4D_Vector& momenta, bool anti=false);
-    void SetModelParameters( GeneralModel _md );
+    void SetModelParameters(METOOLS::GeneralModel _md );
   };
 
 //   class P_GammaFF : public HD_ME_Base {
@@ -185,7 +185,7 @@ namespace HADRONS {
       HD_ME_Base(flavs,decayindices,name) {};
     double operator()(const ATOOLS::Vec4D *);
     void Calculate(const ATOOLS::Vec4D_Vector& p, bool m_anti);
-    void SetModelParameters( GeneralModel _md );
+    void SetModelParameters(METOOLS::GeneralModel _md );
   };
 
 }

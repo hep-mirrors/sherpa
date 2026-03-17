@@ -6,14 +6,15 @@
 #include <string>
 #include <utility>
 #include "METOOLS/Main/Spin_Structure.H"
-#include "HADRONS++/Main/Tools.H"
+#include "METOOLS/HadronCurrents/Current_Base.H"
+#include "METOOLS/HadronCurrents/Tools.H"
 #include "ATOOLS/Org/Getter_Function.H"
 #include "ATOOLS/Org/Scoped_Settings.H"
 
 #define DEFINE_ME_GETTER(CLASS,TAG)				       \
-  DECLARE_GETTER(CLASS,TAG,HADRONS::HD_ME_Base,HADRONS::ME_Parameters);		       \
-  HD_ME_Base* ATOOLS::Getter<HADRONS::HD_ME_Base,HADRONS::ME_Parameters,CLASS>::	       \
-  operator()(const HADRONS::ME_Parameters &parameters) const		       \
+  DECLARE_GETTER(CLASS,TAG,HADRONS::HD_ME_Base,METOOLS::ME_Parameters);		       \
+  HD_ME_Base* ATOOLS::Getter<HADRONS::HD_ME_Base,METOOLS::ME_Parameters,CLASS>::	       \
+  operator()(const METOOLS::ME_Parameters &parameters) const		       \
   { return new CLASS(parameters.flavs, parameters.indices,TAG); }
 
 namespace HADRONS {
@@ -70,7 +71,7 @@ namespace HADRONS {
      * @param s Settings scoped to the ME's scope within the decay data
      */
     virtual void   SetModelParameters(ATOOLS::Scoped_Settings& s);
-    virtual void   SetModelParameters( GeneralModel _md ) {};
+    virtual void   SetModelParameters(METOOLS::GeneralModel _md ) {};
 
     /** 
      * Tries to set the color flow for the particles given. This can be needed
@@ -92,7 +93,7 @@ namespace HADRONS {
     //@}
   };
 
-  typedef ATOOLS::Getter_Function<HD_ME_Base,ME_Parameters>
+  typedef ATOOLS::Getter_Function<HD_ME_Base,METOOLS::ME_Parameters>
   HD_ME_Getter_Function;
 }
 

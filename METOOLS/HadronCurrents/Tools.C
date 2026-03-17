@@ -1,4 +1,4 @@
-#include "HADRONS++/Main/Tools.H"
+#include "METOOLS/HadronCurrents/Tools.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/Run_Parameter.H"
@@ -10,7 +10,7 @@
 //  general tools  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-using namespace HADRONS;
+using namespace METOOLS;
 using namespace ATOOLS;
 using namespace std;
 
@@ -53,7 +53,8 @@ Complex Tools::BreitWignerFix( double s, double Mass2, double MassWidth )
 }
 
 // off shell mass * width (2 particle final state with same mass)
-double Tools::OffShellMassWidth( double s, double Mass2, double Width, double ms )
+double Tools::OffShellMassWidth( double s, double Mass2, double Width,
+				 double ms )
 {
   if (s>4.*ms && Mass2>4.*ms)
     return( sqrt(s)*Width*Mass2/s * pow( (s-4.*ms)/(Mass2-4.*ms), 1.5 ) );
@@ -61,11 +62,13 @@ double Tools::OffShellMassWidth( double s, double Mass2, double Width, double ms
 }
 
 // off shell mass * width (2 particle final state with different masses)
-double Tools::OffShellMassWidth( double s, double Mass2, double Width, double ms1, double ms2 )
+double Tools::OffShellMassWidth( double s, double Mass2, double Width,
+				 double ms1, double ms2 )
 {
   double threshold = ms1+ms2+2.*sqrt(ms1*ms2);
   if (Mass2>threshold && s>threshold)
-	  return( sqrt(s)*Width*Mass2/s * pow( Mass2/s*Lambda(s,ms1,ms2)/Lambda(Mass2,ms1,ms2), 1.5 ) );
+	  return( sqrt(s)*Width*Mass2/s *
+		  pow( Mass2/s*Lambda(s,ms1,ms2)/Lambda(Mass2,ms1,ms2), 1.5 ) );
   return 0;
 }
 

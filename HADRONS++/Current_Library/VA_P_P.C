@@ -1,6 +1,7 @@
 #include "HADRONS++/Current_Library/VA_P_P.H"
 
 using namespace HADRONS;
+using namespace METOOLS;
 using namespace ATOOLS;
 
 #include "ATOOLS/Org/My_MPI.H"
@@ -153,7 +154,8 @@ void VA_P_P::Calc(const ATOOLS::Vec4D_Vector& moms, bool m_anti)
 
 DEFINE_CURRENT_GETTER(HADRONS::VA_P_P,"VA_P_P")
 
-void ATOOLS::Getter<HADRONS::Current_Base,HADRONS::ME_Parameters,HADRONS::VA_P_P>::
+void ATOOLS::Getter<METOOLS::Current_Base,
+		    METOOLS::ME_Parameters,HADRONS::VA_P_P>::
 PrintInfo(std::ostream &st,const size_t width) const {
   st<<"Example: $ B \\rightarrow D (l \\nu_l) $ \n\n"
     <<"Order: 0 = (Pseudo)Scalar, 1 = (Pseudo)Scalar \n\n"

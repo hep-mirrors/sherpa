@@ -184,7 +184,7 @@ Complex B_K_Semileptonic::gSD(double mhat, double shat)
 
 DEFINE_ME_GETTER(HADRONS::B_K_Semileptonic,"B_K_Semileptonic")
 
-void ATOOLS::Getter<HADRONS::HD_ME_Base,HADRONS::ME_Parameters,HADRONS::B_K_Semileptonic>::
+void ATOOLS::Getter<HADRONS::HD_ME_Base,METOOLS::ME_Parameters,HADRONS::B_K_Semileptonic>::
 PrintInfo(std::ostream &st,const size_t width) const {
   st<<"Example: $ B \\rightarrow K \\; l^- \\; l^+ $ \n \n"
     <<"Order: 0 = $B$, 1 = $K$, 2 = $l^-$, 3 = $l^+$ \n\n"

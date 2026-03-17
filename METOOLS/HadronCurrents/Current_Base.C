@@ -1,15 +1,15 @@
-#include "HADRONS++/Current_Library/Current_Base.H"
+#include "METOOLS/HadronCurrents/Current_Base.H"
 
 #define COMPILE__Getter_Function
-#define OBJECT_TYPE HADRONS::Current_Base
-#define PARAMETER_TYPE HADRONS::ME_Parameters
+#define OBJECT_TYPE METOOLS::Current_Base
+#define PARAMETER_TYPE METOOLS::ME_Parameters
 #include "ATOOLS/Org/Getter_Function.C"
 #include "ATOOLS/Org/Run_Parameter.H"
 
 using namespace std;
 using namespace ATOOLS;
 using namespace METOOLS;
-using namespace HADRONS;
+using namespace METOOLS;
 
 Current_Base::Current_Base(const ATOOLS::Flavour_Vector& flavs,
                            const std::vector<int>& decayindices,
@@ -38,8 +38,8 @@ Current_Base::~Current_Base()
   if (p_masses!=NULL) delete[] p_masses; p_masses=NULL;
 }
 
-namespace HADRONS {
-  std::ostream& operator<<(std::ostream& s, const HADRONS::Current_Base& cb)
+namespace METOOLS {
+  std::ostream& operator<<(std::ostream& s, const METOOLS::Current_Base& cb)
   {
     s<<cb.Name()<<" current with "<<cb.size()<<" spin combinations:"<<endl;
     for(size_t i=0; i<cb.size(); i++) {

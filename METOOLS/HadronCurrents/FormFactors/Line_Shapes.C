@@ -1,8 +1,8 @@
-#include "METOOLS/HadronCurrents/Line_Shapes.H"
-#include "METOOLS/HadronCurrents/F0_Decays.H"
-#include "METOOLS/HadronCurrents/Rho_Decays.H"
-#include "METOOLS/HadronCurrents/Omega_Decays.H"
-#include "METOOLS/HadronCurrents/A1_Decays.H"
+#include "METOOLS/HadronCurrents/FormFactors/Line_Shapes.H"
+#include "METOOLS/HadronCurrents/FormFactors/F0_Decays.H"
+#include "METOOLS/HadronCurrents/FormFactors/Rho_Decays.H"
+#include "METOOLS/HadronCurrents/FormFactors/Omega_Decays.H"
+#include "METOOLS/HadronCurrents/FormFactors/A1_Decays.H"
 #include "ATOOLS/Org/Message.H"
 
 

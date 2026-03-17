@@ -35,7 +35,7 @@ namespace METOOLS {
       Propagator_Base(width,type) {}
     const Complex operator()(const double & s);
     const Complex Normalised(const double & s);
-    const double Normalised2(const double & s);
+    const double  Normalised2(const double & s);
   };
 
   class Summed_Propagator : public Propagator_Base {
@@ -49,7 +49,22 @@ namespace METOOLS {
     void  Add(Propagator_Base * prop,const Complex & weight=1.);
     const Complex operator()(const double & s);
     const Complex Normalised(const double & s);
-    const double Normalised2(const double & s);
+    const double  Normalised2(const double & s);
+    inline std::map<Propagator_Base *, Complex> & GetAll() { return m_props; }
+  };
+
+  class Multiplied_Propagator : public Propagator_Base {
+  private:
+    std::map<Propagator_Base *, Complex> m_props;
+    Complex m_norm;
+  public:
+    Multiplied_Propagator(Propagator_Base * prop=NULL);
+    ~Multiplied_Propagator();
+    
+    void  Add(Propagator_Base * prop,const Complex & weight=1.);
+    const Complex operator()(const double & s);
+    const Complex Normalised(const double & s);
+    const double  Normalised2(const double & s);
     inline std::map<Propagator_Base *, Complex> & GetAll() { return m_props; }
   };
 }

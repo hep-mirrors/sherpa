@@ -95,7 +95,7 @@ Complex Eta_PPV::Omnes_Formfactor(const double s,const double runwidth) {
 
 DEFINE_ME_GETTER(HADRONS::Eta_PPV,"Eta_PPV")
 
-void ATOOLS::Getter<HADRONS::HD_ME_Base,HADRONS::ME_Parameters,HADRONS::Eta_PPV>::
+void ATOOLS::Getter<HADRONS::HD_ME_Base,METOOLS::ME_Parameters,HADRONS::Eta_PPV>::
 PrintInfo(std::ostream &st,const size_t width) const {
   st<<"Example: $\\eta \\rightarrow \\pi\\pi\\gamma$ \n\n"
     <<"Order: 0 = $\\eta$, 1, 2 = $\\pi$, 3 = $\\gamma$ \n\n"
@@ -223,7 +223,7 @@ Complex Eta_PVV::E(const Vec4D * p) {
 
 DEFINE_ME_GETTER(HADRONS::Eta_PVV,"Eta_PVV")
 
-void ATOOLS::Getter<HADRONS::HD_ME_Base,HADRONS::ME_Parameters,HADRONS::Eta_PVV>::
+void ATOOLS::Getter<HADRONS::HD_ME_Base,METOOLS::ME_Parameters,HADRONS::Eta_PVV>::
 PrintInfo(std::ostream &st,const size_t width) const {
   st<<"Example: $\\eta \\rightarrow \\pi\\pi\\gamma$ \n\n"
     <<"Order: 0 = $\\eta$, 1, 2 = $\\pi$, 3 = $\\gamma$ \n\n"
@@ -247,7 +247,7 @@ void Eta_PPP::Calculate(const Vec4D_Vector& p, bool m_anti)
 
 DEFINE_ME_GETTER(HADRONS::Eta_PPP,"Eta_PPP")
 
-void ATOOLS::Getter<HADRONS::HD_ME_Base,HADRONS::ME_Parameters,HADRONS::Eta_PPP>::
+void ATOOLS::Getter<HADRONS::HD_ME_Base,METOOLS::ME_Parameters,HADRONS::Eta_PPP>::
 PrintInfo(std::ostream &st,const size_t width) const {
   st<<"Example: $\\eta \\rightarrow \\pi\\pi\\pi$ \n\n"
     <<"Order: 0 = $\\eta$, 1, 2, 3 = $\\pi^{+,-,0}$\n\n"

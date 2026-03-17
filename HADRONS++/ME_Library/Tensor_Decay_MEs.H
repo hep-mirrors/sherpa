@@ -9,7 +9,7 @@ namespace HADRONS {
     T_PP(ATOOLS::Flavour * flavs,int n,int* indices,std::string name) :
       HD_ME_Base(flavs,n,indices,name) {};
     void Calculate(const ATOOLS::Vec4D_Vector& momenta, bool anti=false);
-    void SetModelParameters(GeneralModel);
+    void SetModelParameters(METOOLS::GeneralModel);
   };
 
   class T_VP : public HD_ME_Base {
@@ -17,7 +17,7 @@ namespace HADRONS {
     T_VP(ATOOLS::Flavour * flavs,int n,int* indices,std::string name) :
       HD_ME_Base(flavs,n,indices,name) {};
     void Calculate(const ATOOLS::Vec4D_Vector& momenta, bool anti=false);
-    void SetModelParameters(GeneralModel);
+    void SetModelParameters(METOOLS::GeneralModel);
   };
 
   class T_VV : public HD_ME_Base {
@@ -25,7 +25,7 @@ namespace HADRONS {
     T_VV(ATOOLS::Flavour * flavs,int n,int* indices,std::string name) :
       HD_ME_Base(flavs,n,indices,name) {};
     void Calculate(const ATOOLS::Vec4D_Vector& momenta, bool anti=false);
-    void SetModelParameters(GeneralModel);
+    void SetModelParameters(METOOLS::GeneralModel);
   };
 
   /*!

@@ -4,7 +4,7 @@
 #include <string>
 #include <vector>
 #include "ATOOLS/Phys/Flavour.H"
-#include "HADRONS++/Main/Tools.H"
+#include "METOOLS/HadronCurrents/Tools.H"
 #include "PHASIC++/Decays/Decay_Map.H"
 
 namespace HADRONS {
@@ -26,7 +26,7 @@ namespace HADRONS {
      * A model that is filled from HadronConstants.dat and used as starting
      * point for all decay channel specific models.
      */
-    GeneralModel m_startmd;
+    METOOLS::GeneralModel m_startmd;
 
     std::multimap<std::string, Hadron_Decay_Table*> m_fixed_tables;
     std::vector<Hadron_Decay_Table*> m_fixed_next_tables;
@@ -58,7 +58,7 @@ namespace HADRONS {
      * 
      * @return The global hadron decay parameter model.
      */
-    inline GeneralModel& StartModel() { return m_startmd; }
+    inline METOOLS::GeneralModel& StartModel() { return m_startmd; }
     /**
      * Creates a Latex booklet containing all decay tables and information
      * about available matrix elements and currents, in hadrons.tex

@@ -3,8 +3,8 @@
 
 #include <string>
 #include <utility>
-#include "HADRONS++/Main/Tools.H"
 #include "PHASIC++/Decays/Decay_Channel.H"
+#include "METOOLS/HadronCurrents/Tools.H"
 #include "ATOOLS/Math/Vector.H"
 #include "ATOOLS/Org/Scoped_Settings.H"
 
@@ -38,7 +38,7 @@ namespace HADRONS {
     /// simulate CP rate asymmetries in this decay channel
     Complex                 m_cp_asymmetry_lambda;
     /// global hadron decay parameters
-    GeneralModel            m_startmd;
+    METOOLS::GeneralModel   m_startmd;
     /// mapping of alias flavours to physical flavours
     ATOOLS::Flavour_Vector  m_physicalflavours;
 
@@ -81,7 +81,7 @@ namespace HADRONS {
      * @param startmd Global hadron decay parameters.
      * @param s the channel settings block from HADRON_DECAYS: { \<decayer\>: {channel: {...}}}
      */
-    void   Initialise(ATOOLS::Scoped_Settings s, GeneralModel startmd);
+    void   Initialise(ATOOLS::Scoped_Settings s, METOOLS::GeneralModel startmd);
 
     /** 
      * Tries to set the color flow for the outparticles of the blob given.

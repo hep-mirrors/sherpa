@@ -2,10 +2,10 @@
 #include "HADRONS++/ME_Library/HD_ME_Base.H"
 #include "HADRONS++/ME_Library/Generic.H"
 #include "HADRONS++/ME_Library/Current_ME.H"
-#include "HADRONS++/Current_Library/Current_Base.H"
 #include "HADRONS++/PS_Library/HD_PS_Base.H"
 #include "PHASIC++/Decays/Decay_Table.H"
 #include "PHASIC++/Channels/Multi_Channel.H"
+#include "METOOLS/HadronCurrents/Current_Base.H"
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Math/Vector.H"
 #include "ATOOLS/Org/Shell_Tools.H"
@@ -28,7 +28,7 @@ Hadron_Decay_Channel::~Hadron_Decay_Channel()
 {
 }
 
-void Hadron_Decay_Channel::Initialise(Scoped_Settings s, GeneralModel startmd)
+void Hadron_Decay_Channel::Initialise(Scoped_Settings s, METOOLS::GeneralModel startmd)
 {
   m_physicalflavours=m_flavours;
   for (size_t i=0; i<m_flavours.size(); ++i) {

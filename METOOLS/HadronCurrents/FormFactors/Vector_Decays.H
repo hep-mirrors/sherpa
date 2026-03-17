@@ -1,8 +1,8 @@
 #ifndef METOOLS_HadronCurrents_Vector_Decays_H
 #define METOOLS_HadronCurrents_Vector_Decays_H
 
-#include "METOOLS/HadronCurrents/Resonance_Base.H"
-#include "METOOLS/HadronCurrents/Propagator.H"
+#include "METOOLS/HadronCurrents/FormFactors/Resonance_Base.H"
+#include "METOOLS/HadronCurrents/FormFactors/Propagator.H"
 
 namespace METOOLS {
   ////////////////////////////////////////////////////////////////////

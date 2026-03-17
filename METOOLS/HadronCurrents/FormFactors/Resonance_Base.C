@@ -1,4 +1,4 @@
-#include "METOOLS/HadronCurrents/Resonance_Base.H"
+#include "METOOLS/HadronCurrents/FormFactors/Resonance_Base.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/MyStrStream.H"
 

@@ -1,8 +1,10 @@
 #include "HADRONS++/ME_Library/Current_ME.H"
-#include "HADRONS++/Current_Library/Current_Base.H"
+#include "METOOLS/HadronCurrents/Current_Base.H"
+#include "METOOLS/HadronCurrents/Tools.H"
 
 using namespace HADRONS;
 using namespace ATOOLS;
+using namespace METOOLS;
 using namespace std;
 
 Current_ME::Current_ME(const ATOOLS::Flavour_Vector& flavs,
@@ -24,12 +26,12 @@ void Current_ME::SetModelParameters(ATOOLS::Scoped_Settings& s)
     THROW(fatal_error, "Current selection does not look sane for "+Name());
 }
 
-Current_Base* Current_ME::SelectCurrent(ATOOLS::Scoped_Settings s)
+METOOLS::Current_Base* Current_ME::SelectCurrent(ATOOLS::Scoped_Settings s)
 {
   std::string current_string = s["Type"].SetDefault("Unknown").Get<string>();
   auto indices = s["Indices"].SetDefault({-1}).GetVector<int>();
   ME_Parameters fi(m_flavs, indices);
-  Current_Base* current=Current_Getter_Function::GetObject(current_string,fi);
+  Current_Base* current = Current_Getter_Function::GetObject(current_string,fi);
   if(current==NULL) {
     THROW(fatal_error, "Current '"+current_string+"' not found.");
   }
@@ -75,7 +77,7 @@ void Current_ME::Calculate(const Vec4D_Vector& p, bool anti)
 
 DEFINE_ME_GETTER(HADRONS::Current_ME,"Current_ME")
 
-void ATOOLS::Getter<HADRONS::HD_ME_Base,HADRONS::ME_Parameters,HADRONS::Current_ME>::
+void ATOOLS::Getter<HADRONS::HD_ME_Base,METOOLS::ME_Parameters,HADRONS::Current_ME>::
 PrintInfo(std::ostream &st,const size_t width) const {
   st<<"Current_ME"<<endl;
 }

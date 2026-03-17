@@ -1,4 +1,3 @@
-#include "HADRONS++/Main/Tools.H"
 #include "HADRONS++/Main/Hadron_Decay_Map.H"
 #include "HADRONS++/Main/Hadron_Decay_Table.H"
 #include "HADRONS++/Main/Hadron_Decay_Channel.H"
@@ -8,7 +7,7 @@
 #include "ATOOLS/Org/MyStrStream.H"
 #include "HADRONS++/ME_Library/HD_ME_Base.H"
 #include "HADRONS++/ME_Library/Current_ME.H"
-#include "HADRONS++/Current_Library/Current_Base.H"
+#include "METOOLS/HadronCurrents/Current_Base.H"
 #include "ATOOLS/Org/Getter_Function.H"
 #include "HADRONS++/Main/Mixing_Handler.H"
 #include "ATOOLS/Org/My_MPI.H"
@@ -16,6 +15,7 @@
 #include "ATOOLS/Org/Scoped_Settings.H"
 
 using namespace HADRONS;
+using namespace METOOLS;
 using namespace ATOOLS;
 using namespace PHASIC;
 using namespace std;
@@ -211,7 +211,7 @@ void Hadron_Decay_Map::CreateBooklet()
   Getter_Function<HD_ME_Base,ME_Parameters>::PrintGetterInfo(
     f,30,indent, separator, lineend, replacefrom, replaceto);
   f<<"\\subsection{Weak Currents}"<<endl;
-  Getter_Function<Current_Base,ME_Parameters>::PrintGetterInfo(
+  Getter_Function<METOOLS::Current_Base,ME_Parameters>::PrintGetterInfo(
     f,30,indent, separator, lineend, replacefrom, replaceto);
 
   // text 

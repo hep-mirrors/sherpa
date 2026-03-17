@@ -13,6 +13,7 @@
 #include "HADRONS++/Main/Mixing_Handler.H"
 #include "METOOLS/SpinCorrelations/Spin_Density.H"
 #include "METOOLS/SpinCorrelations/Decay_Matrix.H"
+#include "METOOLS/HadronCurrents/FormFactors/Line_Shapes.H"
 #include <algorithm>
 
 using namespace SHERPA;
@@ -42,6 +43,8 @@ Hadron_Decay_Handler::Hadron_Decay_Handler() :
   m_mass_smearing = s["Mass_Smearing"].SetDefault(1).Get<int>();
   m_spincorr = rpa->gen.SoftSC();
   m_cluster = false;
+  METOOLS::LineShapes = new Line_Shapes;
+  METOOLS::LineShapes->Init();
   Hadron_Decay_Map * dmap = new Hadron_Decay_Map(this);
   dmap->Read(s);
   dmap->ReadFixedTables();

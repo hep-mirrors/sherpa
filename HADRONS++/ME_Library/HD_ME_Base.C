@@ -3,11 +3,12 @@
 
 #define COMPILE__Getter_Function
 #define OBJECT_TYPE HADRONS::HD_ME_Base
-#define PARAMETER_TYPE HADRONS::ME_Parameters
+#define PARAMETER_TYPE METOOLS::ME_Parameters
 #include "ATOOLS/Org/Getter_Function.C"
 
 using namespace HADRONS;
 using namespace ATOOLS;
+using namespace METOOLS;
 using namespace std;
 
 HD_ME_Base::HD_ME_Base(const ATOOLS::Flavour_Vector& flavs,

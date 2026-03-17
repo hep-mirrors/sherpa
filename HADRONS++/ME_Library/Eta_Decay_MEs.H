@@ -16,7 +16,7 @@ namespace HADRONS {
             const std::string& name):
       HD_ME_Base(flavs,decayindices,name) {};
     void Calculate(const ATOOLS::Vec4D_Vector& momenta, bool anti=false);
-    void SetModelParameters(GeneralModel);
+    void SetModelParameters(METOOLS::GeneralModel);
   };
 
   class Eta_PPV : public HD_ME_Base {
@@ -33,7 +33,7 @@ namespace HADRONS {
       HD_ME_Base(flavs,decayindices,name),
       m_npol(3), m_ff(0), m_VDM_mass(0.), m_VDM_width(0.), m_fP(0.) {};
     void Calculate(const ATOOLS::Vec4D_Vector& momenta, bool anti=false);
-    void SetModelParameters(GeneralModel);
+    void SetModelParameters(METOOLS::GeneralModel);
   };
 
   class Eta_PPP : public HD_ME_Base {
@@ -43,7 +43,7 @@ namespace HADRONS {
             const std::string& name):
       HD_ME_Base(flavs,decayindices,name) {};
     void Calculate(const ATOOLS::Vec4D_Vector& momenta, bool anti=false);
-    void SetModelParameters(GeneralModel);
+    void SetModelParameters(METOOLS::GeneralModel);
   };
 
   /*!

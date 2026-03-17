@@ -1,6 +1,6 @@
-#include "METOOLS/HadronCurrents/Omega_Decays.H"
-#include "METOOLS/HadronCurrents/Vector_Decays.H"
-#include "METOOLS/HadronCurrents/Line_Shapes.H"
+#include "METOOLS/HadronCurrents/FormFactors/Omega_Decays.H"
+#include "METOOLS/HadronCurrents/FormFactors/Vector_Decays.H"
+#include "METOOLS/HadronCurrents/FormFactors/Line_Shapes.H"
 #include "ATOOLS/Phys/Flavour.H"
 
 

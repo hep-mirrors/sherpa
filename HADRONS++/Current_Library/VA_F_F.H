@@ -1,21 +1,21 @@
 #ifndef HADRONS_Current_Library_VA_F_F_H
 #define HADRONS_Current_Library_VA_F_F_H
 
-#include "HADRONS++/Current_Library/Current_Base.H"
+#include "METOOLS/HadronCurrents/Current_Base.H"
 
 
 namespace HADRONS {
-  class VA_F_F : public Current_Base {
+  class VA_F_F : public METOOLS::Current_Base {
     class FF_Base {
       public:
-        FF_Base( struct GeneralModel _md ) {}
+      FF_Base( struct METOOLS::GeneralModel _md ) {}
         virtual ~FF_Base();
         virtual double ff( double q2 ) = 0;
     };
 
     class Simple_FF : public FF_Base { /* dummy */
       public:
-      Simple_FF( struct GeneralModel _md );
+      Simple_FF( struct METOOLS::GeneralModel _md );
       double ff( double q2 ) { return 1.0; }
     };
 
@@ -31,7 +31,7 @@ namespace HADRONS {
     ~VA_F_F() {
       if (p_ff!=NULL) delete p_ff;
     }
-    void SetModelParameters( struct GeneralModel _md );
+    void SetModelParameters( struct METOOLS::GeneralModel _md );
     void Calc(const ATOOLS::Vec4D_Vector& moms, bool m_anti);
   };
 }

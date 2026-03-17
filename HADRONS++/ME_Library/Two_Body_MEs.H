@@ -14,7 +14,7 @@ namespace HADRONS {
                          const std::string& name):
       HD_ME_Base(flavs,decayindices,name) {};
     void Calculate(const ATOOLS::Vec4D_Vector& momenta, bool anti=false);
-    void SetModelParameters( GeneralModel _md );
+    void SetModelParameters(METOOLS::GeneralModel _md );
     bool SetColorFlow(std::vector<ATOOLS::Particle*> outparts,int n_q,int n_g,
                       bool m_anti);
   };

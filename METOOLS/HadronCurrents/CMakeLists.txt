@@ -1,21 +1,9 @@
-set(HadronCurrents_SOURCES Line_Shapes.C
-                           Resonance_Base.C
-                           Propagator.C
-                           Vector_Decays.C
-                           Scalar_Decays.C
-                           F0_Decays.C
-                           Rho_Decays.C
-                           Omega_Decays.C
-                           A1_Decays.C)
-set(HadronCurrents_HEADERS Line_Shapes.H
-			   Resonance_Base.H
-                           Propagator.H
-                           Vector_Decays.H
-                           Scalar_Decays.H
-                           F0_Decays.H
-                           Rho_Decays.H
-                           Omega_Decays.H
-                           A1_Decays.H )
+set(HadronCurrents_SOURCES Current_Base.C
+			   VA_0_PiPi.C
+			   Tools.C)
+set(HadronCurrents_HEADERS Current_Base.H
+			   VA_0_PiPi.H
+			   Tools.H )
 
 
 sherpa_create_git_info(HadronCurrents)

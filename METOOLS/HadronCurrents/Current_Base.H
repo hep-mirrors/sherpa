@@ -1,5 +1,5 @@
-#ifndef HADRONS_Current_Library_Current_Base_H
-#define HADRONS_Current_Library_Current_Base_H
+#ifndef METOOLS_Current_Library_Current_Base_H
+#define METOOLS_Current_Library_Current_Base_H
 
 #include <iostream>
 #include <string>
@@ -8,16 +8,18 @@
 #include "ATOOLS/Math/Vector.H"
 #include "ATOOLS/Phys/Flavour.H"
 #include "ATOOLS/Org/Getter_Function.H"
-#include "HADRONS++/Main/Tools.H"
 #include "METOOLS/Main/Spin_Structure.H"
+#include "METOOLS/HadronCurrents/Tools.H"
+#include "METOOLS/HadronCurrents/FormFactors/FormFactor_Base.H"
+
 
 #define DEFINE_CURRENT_GETTER(CLASS,TAG)				\
-  DECLARE_GETTER(CLASS,TAG,HADRONS::Current_Base,HADRONS::ME_Parameters);			\
-  Current_Base *ATOOLS::Getter<HADRONS::Current_Base,HADRONS::ME_Parameters,CLASS>::	\
-  operator()(const ME_Parameters &parameters) const			\
+  DECLARE_GETTER(CLASS,TAG,METOOLS::Current_Base,METOOLS::ME_Parameters);		\
+  METOOLS::Current_Base *ATOOLS::Getter<METOOLS::Current_Base,METOOLS::ME_Parameters,CLASS>:: \
+  operator()(const ME_Parameters &parameters) const		\
   { return new CLASS(parameters.flavs, parameters.indices, TAG); }
 
-namespace HADRONS {
+namespace METOOLS {
 
   /** 
    * Represents a vector current in a decay process.
@@ -26,7 +28,7 @@ namespace HADRONS {
    * Each class derived from this has to implement the Current_Base::Calc
    * method for the actual calculation of the current.
    */
-  class Current_Base : public METOOLS::Spin_Structure<ATOOLS::Vec4C> {
+  class Current_Base : public Spin_Structure<ATOOLS::Vec4C> {
   protected:
     /// Reference to all flavours involved in the decay.
     /// This usually contains more flavours then involved in the current itself
@@ -85,6 +87,7 @@ namespace HADRONS {
     inline void        SetName(std::string name) { m_name = name; }
     inline int         GetN() const              { return p_i.size(); }
     inline const std::vector<int>& DecayIndices() const { return p_i; }
+    inline const ATOOLS::Flavour_Vector& Flavs()  const { return m_flavs; }
     //@}
 
     /** 

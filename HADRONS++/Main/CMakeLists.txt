@@ -1,14 +1,12 @@
 set(Main_SOURCES Hadron_Decay_Map.C
                  Hadron_Decay_Table.C
                  Hadron_Decay_Channel.C
-                 Mixing_Handler.C
-                 Tools.C)
+                 Mixing_Handler.C)
 
 set(Main_HEADERS Hadron_Decay_Map.H
                  Hadron_Decay_Table.H
                  Hadron_Decay_Channel.H
-                 Mixing_Handler.H
-                 Tools.H)
+                 Mixing_Handler.H)
 
 sherpa_create_git_info(Main)
  

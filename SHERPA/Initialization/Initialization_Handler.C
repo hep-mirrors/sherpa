@@ -49,6 +49,8 @@ using namespace REMNANTS;
 using namespace ATOOLS;
 using namespace std;
 
+#include "METOOLS/HadronCurrents/FormFactors/Line_Shapes.H"
+
 typedef void (*PDF_Init_Function)();
 typedef void (*PDF_Exit_Function)();
 

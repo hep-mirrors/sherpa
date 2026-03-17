@@ -4,7 +4,6 @@
 #include "HADRONS++/ME_Library/HD_ME_Base.H"
 #include "ATOOLS/Phys/Flavour.H"
 #include "ATOOLS/Math/Vector.H"
-#include "HADRONS++/Main/Tools.H"
 #include "ATOOLS/Math/MyComplex.H"
 
 namespace HADRONS {
@@ -30,7 +29,7 @@ namespace HADRONS {
                          const std::string& name):
       HD_ME_Base(flavs,decayindices,name) {};
     void Calculate(const ATOOLS::Vec4D_Vector& momenta, bool anti=false);
-    void   SetModelParameters( GeneralModel _md );
+    void   SetModelParameters(METOOLS::GeneralModel _md );
     Complex C9sehgal(double sHat);
     Complex sehgalld(double sHat);
     Complex g(double shat);
