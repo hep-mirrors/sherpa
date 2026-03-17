@@ -1,3 +1,4 @@
+
 cmake_minimum_required(VERSION 3.12.0 FATAL_ERROR)
 ###########################Package@#####################################
 project(SHERPA-MC LANGUAGES C  CXX)
@@ -42,7 +43,6 @@ option(SHERPA_ENABLE_BLACKHAT                "Enables building with BlackHat." O
 option(SHERPA_ENABLE_DIHIGGS                 "Enables building of DIHIGGS." OFF)
 option(SHERPA_ENABLE_DOXYGEN                 "Enables the 'docs' target for building HTML documentation" OFF)
 option(SHERPA_ENABLE_EWSUD                   "Enables building of EWSUD." OFF)
-option(SHERPA_ENABLE_EXAMPLES                "Enables installation of EXAMPLES." ON)
 option(SHERPA_ENABLE_GOSAM                   "Enables building with GoSam." OFF)
 option(SHERPA_ENABLE_GZIP                    "Enables building with GZIP." OFF)
 option(SHERPA_ENABLE_HEPMC3                  "Enables building of HepMC3 interface." OFF)
@@ -107,7 +107,7 @@ foreach (en IN LISTS alldirenables)
 endforeach()
 ###########################Options handeling############################
 set( allenables ANALYSIS BINRELOC BLACKHAT CATCH2 CLANG_TIDY DIHIGGS DOXYGEN
- EWSUD EXAMPLES GOSAM GZIP HEPMC3 HEPMC3_ROOT
+ EWSUD GOSAM GZIP HEPMC3 HEPMC3_ROOT
  INTERNAL_PDFS INSTALL_LIBZIP INSTALL_LHAPDF LHAPDF
  MADLOOP MANUAL MCFM MPI OPENLOOPS PYTHIA8 PYTHON RECOLA RIVET ROOT THREADING TESTING UFO VERSIONING)
 foreach (en IN LISTS allenables)
@@ -560,7 +560,7 @@ set( IDIRS  AHADIC++ AMEGIC++ AMISIC++ ATOOLS BEAM COMIX CSSHOWER++ DIM DIRE EXT
 METOOLS MCATNLO MODEL PHASIC++ PHOTONS++  PDF RECONNECTIONS REMNANTS SHRiMPS SHERPA YFS)
 
 if (SHERPA_ENABLE_MANUAL)
-  add_subdirectory(Manual)
+  add_subdirectory(doc)
 endif()
 
 if (SHERPA_ENABLE_PYTHON)
@@ -850,10 +850,10 @@ if (SHERPA_ENABLE_DOXYGEN)
   set(DOXYGEN_EXTRACT_PRIVATE YES)
   # NO if you want undocumented members to have empty documentation
   set(DOXYGEN_HIDE_UNDOC_MEMBERS NO)
-  set(DOXYGEN_EXAMPLE_PATH Examples)
+  set(DOXYGEN_EXAMPLE_PATH doc/examples)
   set(DOXYGEN_EXAMPLE_PATTERNS *.cpp)
   set(DOXYGEN_EXAMPLE_RECURSIVE YES)
-  set(DOXYGEN_CITE_BIB_FILES Manual/source/manual/references.bib)
+  set(DOXYGEN_CITE_BIB_FILES doc/references.bib)
   set(DOXYGEN_CLASS_GRAPH YES)
   set(DOXYGEN_HAVE_DOT NO)
   set(DOXYGEN_WARN_IF_INCOMPLETE_DOC NO)
@@ -957,7 +957,7 @@ install(FILES ${CMAKE_CURRENT_BINARY_DIR}/AMEGIC++/Main/makelibs    DESTINATION 
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/SHERPA/Run/Sherpa-config.in ${CMAKE_CURRENT_BINARY_DIR}/SHERPA/Run/Sherpa${VERSIONING}-config @ONLY)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/EXTAMP/Example/madgraph/CMakeLists.txt.in ${CMAKE_CURRENT_BINARY_DIR}/EXTAMP/Example/madgraph/CMakeLists.txt @ONLY)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/EXTAMP/Example/subtraction/CMakeLists.txt.in ${CMAKE_CURRENT_BINARY_DIR}/EXTAMP/Example/subtraction/CMakeLists.txt @ONLY)
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/Examples/V_plus_Jets/LHC_WJets/CMakeLists.txt.in ${CMAKE_CURRENT_BINARY_DIR}/Examples/V_plus_Jets/LHC_WJets/CMakeLists.txt @ONLY)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/doc/examples/V_plus_Jets/LHC_WJets/CMakeLists.txt.in ${CMAKE_CURRENT_BINARY_DIR}/doc/examples/V_plus_Jets/LHC_WJets/CMakeLists.txt @ONLY)
 
 if (SHERPA_ENABLE_UFO)
 SET(SHERPA_CMAKE_CONFIG_DIR ${CMAKE_INSTALL_PREFIX}/share/SHERPA-MC/)
@@ -1075,10 +1075,6 @@ if (SHERPA_ENABLE_TESTING)
   if (SHERPA_ENABLE_EWSUD)
     add_subdirectory(AddOns/EWSud/Tests)
   endif()
-endif()
-
-if (SHERPA_ENABLE_EXAMPLES)
-  add_subdirectory(Examples)
 endif()
 
 include(ConfigLogger)
