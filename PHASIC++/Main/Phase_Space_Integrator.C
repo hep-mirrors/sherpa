@@ -24,10 +24,11 @@ Phase_Space_Integrator::Phase_Space_Integrator(Phase_Space_Handler *_psh):
   m_n(0), m_nstep(0), m_ncstep(0), m_mn(0), m_mnstep(0), m_mncstep(0),
   m_ncontrib(0), m_maxopt(0), m_stopopt(1000), m_nlo(0), m_fin_opt(true),
   m_starttime(0.), m_lotime(0.), m_addtime(0.), m_lrtime(0.),
-  m_maxerror(0.), m_maxabserror(0.), m_lastrss(0), p_psh(_psh)
+  m_maxerror(0.), m_maxabserror(0.), m_lastrss(0), p_psh(_psh), m_opt_psi(false)
 {
   RegisterDefaults();
   Scoped_Settings s{ Settings::GetMainSettings()["PSI"] };
+  m_opt_psi = s["OPTIMISED_PSI_SETTINGS_FOR_EVGEN"].SetDefault(false).Get<bool>();
   // total number of points
   m_nrawmax = s["NRAWMAX"].Get<long unsigned int>();
   // number of optimisation steps
@@ -126,21 +127,25 @@ double Phase_Space_Integrator::Calculate(double _maxerror, double _maxabserror,
             <<rpa->gen.Timer().StrFTime("%H:%M:%S")
             <<". Lean back and enjoy ... ."<<endl;
 
+  int numberofchannels = 1;
   msg_Tracking()<<"Integrators : "<<p_psh->BeamIntegrator()<<" / "
                 <<p_psh->ISRIntegrator()<<" / "<<p_psh->FSRIntegrator()<<endl;
 
    if ((p_psh->BeamIntegrator())) {
      (p_psh->BeamIntegrator())->Reset();
+     numberofchannels = p_psh->BeamIntegrator()->NChannels();
      msg_Tracking()<<"   Found "<<p_psh->BeamIntegrator()->NChannels()
                    <<" Beam Integrators."<<endl;
    }
    if (p_psh->ISRIntegrator()) {
      (p_psh->ISRIntegrator())->Reset();
+     numberofchannels += p_psh->ISRIntegrator()->NChannels();
      msg_Tracking()<<"   Found "<<p_psh->ISRIntegrator()->NChannels()
                    <<" ISR Integrators."<<endl;
    }
 
   p_psh->FSRIntegrator()->Reset();
+  numberofchannels += p_psh->FSRIntegrator()->NChannels();
   msg_Tracking()<<"   Found "<<p_psh->FSRIntegrator()->NChannels()
                 <<" FSR integrators."<<endl;
 
@@ -161,6 +166,8 @@ double Phase_Space_Integrator::Calculate(double _maxerror, double _maxabserror,
 
   m_lrtime = ATOOLS::rpa->gen.Timer().RealTime();
   m_iter = Min(m_itmin,m_itmax);
+  if (m_opt_psi)
+    m_iter = Min(m_itmax,Max(m_itmin,Max(p_psh->Process()->ItMin(),(long unsigned int)400*numberofchannels)));
   if (p_psh->Stats().size()) {
     m_iter=p_psh->Stats().back()[4];
     if (p_psh->Stats().size()>1)

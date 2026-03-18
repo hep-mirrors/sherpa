@@ -16,7 +16,7 @@ namespace PHASIC {
     long unsigned int m_mn, m_mnstep, m_mncstep;
     long unsigned int m_ncontrib, m_maxopt, m_stopopt, m_nlo;
 
-    bool m_fin_opt;
+    bool m_fin_opt, m_opt_psi;
 
     double m_starttime, m_lotime, m_addtime, m_lrtime;
     double m_maxerror, m_maxabserror, m_npower;
