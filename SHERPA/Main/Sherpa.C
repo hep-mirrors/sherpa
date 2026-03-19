@@ -778,33 +778,33 @@ bool Sherpa::SummarizeRun()
     
     //make nice final table IV (for chosen emax)
     if (timing_statistics>3) {
-      std::cout << "┌──────────────────────────────┬──────────────┬─────────────────────────────────────────────────────────┐" << std::endl;
-      std::cout << "│    sampling contribution     │              │                                                         │" << std::endl;
-      std::cout << "│ xsec*h  efficiency  stat.dil │ time |xsec*h|│ subprocess                                              │" << std::endl;
-      std::cout << "├──────────────────────────────┼──────────────┼─────────────────────────────────────────────────────────┤" << std::endl;
+      std::cout << "┌────────────────────────────────┬────────────────┬─────────────────────────────────────────────────────────┐" << std::endl;
+      std::cout << "│     sampling contribution      │                │                                                         │" << std::endl;
+      std::cout << "│ xsec*enh  efficiency  stat.dil │ time |xsec*enh|│ subprocess                                              │" << std::endl;
+      std::cout << "├────────────────────────────────┼────────────────┼─────────────────────────────────────────────────────────┤" << std::endl;
       const auto default_precision{std::cout.precision()};
       std::cout << std::setprecision(3);
       for (auto const& [key, val] : time_map) {
         if (key.rfind("sum_PS_", 0) != 0) continue;
         std::string sub_name = key.substr(7);
-        std::cout<<"│ "<< std::left<<std::setw(9) << xsec_map[sub_name]<<"";
+        std::cout<<"│  "<< std::left<<std::setw(9) << xsec_map[sub_name]<<" ";
         std::cout<<" "<< std::left<<std::setw(9) << chosen_efficiency_map[sub_name]<<"";
         std::cout<<" "<< std::left<<std::setw(8) << chosen_alpha_map[sub_name]<<" ";
         double this_sepsum = time_map["sum_overhead_after_"+sub_name]+time_map["sum_overhead_after_kept_"+sub_name]+time_map["sum_total_"+sub_name];
         std::cout <<"│ " <<std::right<<std::setw(2) << round(this_sepsum/(total["overhead_after"]+total["total"])*100)<<"%  ";
-        std::cout <<" " <<std::right<<std::setw(4) << round(dabs(xsec_map[sub_name])/plain_xsec_sum*1000.)/10.<<"%  ";
+        std::cout <<"  " <<std::right<<std::setw(4) << round(dabs(xsec_map[sub_name])/plain_xsec_sum*1000.)/10.<<"%   ";
         std::cout <<"│ " <<std::left<<std::setw(55)<< sub_name << " │" << std::endl;
       }
       std::cout << std::setprecision(default_precision);
-      std::cout << "└──────────────────────────────┴──────────────┴─────────────────────────────────────────────────────────┘" << std::endl << std::endl;
+      std::cout << "└────────────────────────────────┴────────────────┴─────────────────────────────────────────────────────────┘" << std::endl << std::endl;
     }
 
     //make nice final table III (for chosen emax)
     if (timing_statistics>2) {
-      std::cout << "┌─────────────────────────┬──────────────┬─────────────────────────────────────────────────────────┐" << std::endl;
-      std::cout << "│    time contribution    │              │                                                         │" << std::endl;
-      std::cout << "│ PS   ME   ov.h.  shower │ time |xsec*h|│ subprocess                                              │" << std::endl;
-      std::cout << "├─────────────────────────┼──────────────┼─────────────────────────────────────────────────────────┤" << std::endl;
+      std::cout << "┌─────────────────────────┬────────────────┬─────────────────────────────────────────────────────────┐" << std::endl;
+      std::cout << "│    time contribution    │                │                                                         │" << std::endl;
+      std::cout << "│ PS   ME   ov.h.  shower │ time |xsec*enh|│ subprocess                                              │" << std::endl;
+      std::cout << "├─────────────────────────┼────────────────┼─────────────────────────────────────────────────────────┤" << std::endl;
       for (auto const& [key, val] : time_map) {
         if (key.rfind("sum_PS_", 0) != 0) continue;
         std::string sub_name = key.substr(7);
@@ -823,10 +823,10 @@ bool Sherpa::SummarizeRun()
         }
         double this_sepsum = time_map["sum_overhead_after_"+sub_name]+time_map["sum_overhead_after_kept_"+sub_name]+time_map["sum_total_"+sub_name];
         std::cout <<"│ " <<std::right<<std::setw(2) << round(this_sepsum/(total["overhead_after"]+total["total"])*100)<<"%  ";
-        std::cout <<" " <<std::right<<std::setw(4) << round(dabs(xsec_map[sub_name])/plain_xsec_sum*1000.)/10.<<"%  ";
+        std::cout <<"  " <<std::right<<std::setw(4) << round(dabs(xsec_map[sub_name])/plain_xsec_sum*1000.)/10.<<"%   ";
         std::cout <<"│ " <<std::left<<std::setw(55)<< sub_name << " │" << std::endl;
       }
-      std::cout << "└─────────────────────────┴──────────────┴─────────────────────────────────────────────────────────┘" << std::endl;
+      std::cout << "└─────────────────────────┴────────────────┴─────────────────────────────────────────────────────────┘" << std::endl;
     }
 
     //make nice final table II
