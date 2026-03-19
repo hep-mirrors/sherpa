@@ -49,6 +49,25 @@ namespace METOOLS {
 
   ////////////////////////////////////////////////////////////////////
   //
+  // Vector -> Vector + Pseudoscalar
+  //
+  ////////////////////////////////////////////////////////////////////
+  class V_VP: public Partial_Width_Base {
+    double m_lambda2;
+    const double ME2(const double & s) const;
+    const double PS_2(const double & s) const;
+
+    const double Calculate(const double & s);
+  public:
+    V_VP(const ATOOLS::Flavour & inflav,
+	 const std::vector<ATOOLS::Flavour> & outflavs,
+	 const double & BR);
+    
+    void Init(const std::vector<Propagator_Base *> & props,
+	      const ATOOLS::axis & Qrange) {};
+  };
+  ////////////////////////////////////////////////////////////////////
+  //
   // Vector -> Off-shell (Pseudo-)Scalar + Pseudoscalar 
   //
   // Important:

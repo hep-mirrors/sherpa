@@ -7,6 +7,7 @@ set(FormFactors_SOURCES Line_Shapes.C
                         Rho_Decays.C
                         Omega_Decays.C
                         A1_Decays.C
+                        Kstar_Decays.C
                         FormFactor_Base.C
 			FF_0_PP.C
 		      )
@@ -19,6 +20,7 @@ set(FormFactors_HEADERS Line_Shapes.H
                         Rho_Decays.H
                         Omega_Decays.H
                         A1_Decays.H
+                        Kstar_Decays.H
                         FormFactor_Base.H
 			FF_0_PP.H
 		      )

@@ -12,9 +12,14 @@ using namespace METOOLS;
 
 FormFactor_Base::FormFactor_Base(const FF_Parameters & params) :
   m_ffmodel(params.m_ffmodel),
-  m_flavs(params.m_flavs),
-  m_masses(params.m_masses), m_masses2(params.m_masses2), m_pi(params.m_pi),
   m_name(params.m_name),
   p_model(params.p_model)
-{ }
+{
+  for (size_t i=0;i<params.m_flavs.size();i++) {
+    m_flavs.push_back(params.m_flavs[i]);
+    m_masses.push_back(params.m_masses[i]);
+    m_masses2.push_back(params.m_masses2[i]);
+    m_pi.push_back(params.m_pi[i]);
+  }
+}
 

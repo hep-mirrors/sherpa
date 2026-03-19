@@ -68,6 +68,35 @@ const double V_PP::PS_2(const double & s) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
+//
+// Vector -> Vector + Pseudoscalar
+//
+////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
+
+V_VP::V_VP(const Flavour & inflav,const vector<Flavour> & outflavs,
+	   const double & BR) :
+  Partial_Width_Base(inflav,outflavs,BR)
+{
+  FixPrefactor();
+}
+
+const double V_VP::Calculate(const double & s) {
+  m_lambda2 = ( sqr(s-m_decmasses2[0]-m_decmasses2[1])-
+		4.*m_decmasses2[0]*m_decmasses2[1] )/s;
+  return Flux(s) * ME2(s) * PS_2(s);
+}
+
+const double V_VP::ME2(const double & s)  const {
+  return m_prefactor/3. * m_lambda2 * s;
+}
+
+const double V_VP::PS_2(const double & s) const {
+  return sqrt(m_lambda2)/(8.*M_PI);
+}
+
+////////////////////////////////////////////////////////////////////
 //
 // Vector -> Off-shell (Pseudo-)Scalar + Pseudoscalar 
 //

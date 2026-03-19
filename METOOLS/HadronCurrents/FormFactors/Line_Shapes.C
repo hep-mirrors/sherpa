@@ -3,6 +3,7 @@
 #include "METOOLS/HadronCurrents/FormFactors/Rho_Decays.H"
 #include "METOOLS/HadronCurrents/FormFactors/Omega_Decays.H"
 #include "METOOLS/HadronCurrents/FormFactors/A1_Decays.H"
+#include "METOOLS/HadronCurrents/FormFactors/Kstar_Decays.H"
 #include "ATOOLS/Org/Message.H"
 
 
@@ -25,18 +26,20 @@ Line_Shapes::Line_Shapes() {}
 
 void Line_Shapes::Init() {
   msg_Out()<<"=================================================\n";
-  Add(Flavour(kf_f_0_600),       new F_0_500_Lineshape());
-  Add(Flavour(kf_rho_770),       new Rho_770_0_Lineshape());
-  Add(Flavour(kf_rho_770_plus),  new Rho_770_plus_Lineshape());
-  Add(Flavour(kf_omega_782),     new Omega_782_Lineshape());
-  Add(Flavour(kf_rho_1450),      new Rho_1450_0_Lineshape());
-  Add(Flavour(kf_rho_1450_plus), new Rho_1450_plus_Lineshape());
-  Add(Flavour(kf_rho_1700),      new Rho_1700_0_Lineshape());
-  Add(Flavour(kf_rho_1700_plus), new Rho_1700_plus_Lineshape());
-  Add(Flavour(kf_omega_1420),    new Omega_1420_Lineshape());
-  Add(Flavour(kf_omega_1600),    new Omega_1600_Lineshape());
-  Add(Flavour(kf_a_1_1260_plus), new A1_1260_plus_Lineshape());
-  Add(Flavour(kf_a_1_1260),      new A1_1260_0_Lineshape());
+  Add(Flavour(kf_f_0_600),          new F_0_500_Lineshape());
+  Add(Flavour(kf_rho_770),          new Rho_770_0_Lineshape());
+  Add(Flavour(kf_rho_770_plus),     new Rho_770_plus_Lineshape());
+  Add(Flavour(kf_omega_782),        new Omega_782_Lineshape());
+  Add(Flavour(kf_rho_1450),         new Rho_1450_0_Lineshape());
+  Add(Flavour(kf_rho_1450_plus),    new Rho_1450_plus_Lineshape());
+  Add(Flavour(kf_rho_1700),         new Rho_1700_0_Lineshape());
+  Add(Flavour(kf_rho_1700_plus),    new Rho_1700_plus_Lineshape());
+  Add(Flavour(kf_omega_1420),       new Omega_1420_Lineshape());
+  Add(Flavour(kf_omega_1600),       new Omega_1600_Lineshape());
+  Add(Flavour(kf_a_1_1260_plus),    new A1_1260_plus_Lineshape());
+  Add(Flavour(kf_a_1_1260),         new A1_1260_0_Lineshape());
+  Add(Flavour(kf_K_star_892_plus),  new Kstar_892_plus_Lineshape());
+  Add(Flavour(kf_K_star_1410_plus), new Kstar_1410_plus_Lineshape());
   msg_Out()<<"Initialised "<<m_lineshapes.size()<<" lineshapes.\n"
 	   <<"=================================================\n";
 }

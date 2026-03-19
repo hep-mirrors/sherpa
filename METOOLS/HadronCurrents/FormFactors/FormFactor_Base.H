@@ -1,16 +1,17 @@
 #ifndef METOOLS_Current_Library_FormFactor_Base_H
 #define METOOLS_Current_Library_FormFactor_Base_H
 
-#include <iostream>
-#include <iomanip>
-#include <string>
-#include <utility>
+#include "METOOLS/HadronCurrents/FormFactors/Propagator.H"
+#include "METOOLS/HadronCurrents/FormFactors/Line_Shapes.H"
 #include "ATOOLS/Math/Vector.H"
 #include "ATOOLS/Phys/Flavour.H"
 #include "ATOOLS/Org/Getter_Function.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/Exception.H"
-#include "METOOLS/HadronCurrents/FormFactors/Propagator.H"
+#include <iostream>
+#include <iomanip>
+#include <string>
+#include <utility>
 
 namespace METOOLS {
   enum class ff_model {
@@ -49,12 +50,12 @@ namespace METOOLS {
   
   class FormFactor_Base {
   protected:
-    ff_model                        m_ffmodel;
-    const ATOOLS::Flavour_Vector &  m_flavs;
-    std::vector<double>             m_masses, m_masses2;
-    std::vector<int>                m_pi;
-    std::string                     m_name;
-    GeneralModel                  * p_model;
+    ff_model               m_ffmodel;
+    ATOOLS::Flavour_Vector m_flavs;
+    std::vector<double>    m_masses, m_masses2;
+    std::vector<int>       m_pi;
+    std::string            m_name;
+    GeneralModel         * p_model;
   public:
     FormFactor_Base(const FF_Parameters & params);
     inline virtual ~FormFactor_Base() {};
@@ -64,10 +65,8 @@ namespace METOOLS {
   };
 }
 
-#define DEFINE_FF_GETTER(CLASS,TAG)				\
+#define DECLARE_FF_GETTER(CLASS,TAG)				\
   DECLARE_GETTER(CLASS,TAG,METOOLS::FormFactor_Base,METOOLS::FF_Parameters); \
-  METOOLS::FormFactor_Base * ATOOLS::Getter<METOOLS::FormFactor_Base,METOOLS::FF_Parameters,CLASS>:: \
-  operator()(const FF_Parameters &parameters)     const { return new CLASS(parameters); }\
   void ATOOLS::Getter<METOOLS::FormFactor_Base,METOOLS::FF_Parameters,CLASS>:: \
   PrintInfo(std::ostream &str,const size_t width) const { str<<"FF::"<<TAG; }
 
