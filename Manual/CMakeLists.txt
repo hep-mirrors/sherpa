@@ -36,6 +36,15 @@ add_custom_command(
        VERBATIM)
 
 add_custom_command(
+       OUTPUT  ${CMAKE_CURRENT_BINARY_DIR}/sherpamanual_singlehtml
+       DEPENDS ${MANUALDEPS}
+       COMMAND ${SPHINXBUILD} -M singlehtml  ${CMAKE_CURRENT_SOURCE_DIR}/source . ${sphinx_options}
+       COMMAND rm -rf sherpamanual_singlehtml
+       COMMAND mv singlehtml sherpamanual_singlehtml
+       WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
+       VERBATIM)
+
+add_custom_command(
        OUTPUT  ${CMAKE_CURRENT_BINARY_DIR}/sherpamanual.pdf
        DEPENDS ${MANUALDEPS}
        COMMAND ${SPHINXBUILD} -M latexpdf  ${CMAKE_CURRENT_SOURCE_DIR}/source  . ${sphinx_options}
