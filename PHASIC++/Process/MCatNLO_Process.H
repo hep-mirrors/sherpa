@@ -278,6 +278,7 @@ namespace PHASIC {
      * This method return p_ampl
      */
     ATOOLS::Cluster_Amplitude *GetAmplitude();
+    const ATOOLS::Cluster_Amplitude *Amplitude() const { return p_ampl; }
 
     /*!
      * @param maxerror double Error target

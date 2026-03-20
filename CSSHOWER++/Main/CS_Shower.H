@@ -105,6 +105,10 @@ namespace CSSHOWER {
       p_shower->SetRemnants(remnants);
     }
 
+    inline void EnableFusing(bool status=true) {
+      p_shower->EnableFusing(status);
+    }
+
   };// end of class CS_Shower
 
 }// end of namespace CSSHOWER
