@@ -114,7 +114,6 @@ VBF_Scale_Setter::VBF_Scale_Setter
 (const Scale_Setter_Arguments &args,const int mode):
   Scale_Setter_Base(args), m_tagset(this)
 {
-  static std::string s_core;
   static int s_cmode(-1), s_csmode, s_nmaxall, s_nmaxnloall, s_kfac;
   if (s_cmode<0) {
     Scoped_Settings s(Settings::GetMainSettings()["MEPS"]);
@@ -123,7 +122,6 @@ VBF_Scale_Setter::VBF_Scale_Setter
     s_cmode=s["CLUSTER_MODE"].GetScalarWithOtherDefault<int>(32|64|256);
     s_nlocpl=s["NLO_COUPLING_MODE"].GetScalarWithOtherDefault<int>(2);
     s_csmode=s["MEPS_COLORSET_MODE"].GetScalarWithOtherDefault<int>(2);
-    s_core=s["CORE_SCALE"].GetScalarWithOtherDefault<std::string>("Default");
     s_nfgsplit=Settings::GetMainSettings()["DIPOLES"]["NF_GSPLIT"].Get<int>();
     s_kfac = Settings::GetMainSettings()["SHOWER"]["KFACTOR_SCHEME"].Get<int>();
   }

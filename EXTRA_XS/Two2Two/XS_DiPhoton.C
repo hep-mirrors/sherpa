@@ -87,6 +87,7 @@ DECLARE_TREEME2_GETTER(EXTRAXS::XS_PP_ffbar,"XS_PP_ffbar")
 Tree_ME2_Base *ATOOLS::Getter<PHASIC::Tree_ME2_Base,PHASIC::External_ME_Args,EXTRAXS::XS_PP_ffbar>::
 operator()(const External_ME_Args &args) const
 {
+  if (!args.m_source.empty() && args.m_source != "Internal") return NULL;
   if (dynamic_cast<UFO::UFO_Model*>(MODEL::s_model)) return NULL;
 
   const Flavour_Vector fl=args.Flavours();
@@ -142,6 +143,7 @@ DECLARE_TREEME2_GETTER(EXTRAXS::XS_PP_SSbar,"XS_PP_SSbar")
 Tree_ME2_Base *ATOOLS::Getter<PHASIC::Tree_ME2_Base,PHASIC::External_ME_Args,EXTRAXS::XS_PP_SSbar>::
 operator()(const External_ME_Args &args) const
 {
+  if (!args.m_source.empty() && args.m_source != "Internal") return NULL;
   if (dynamic_cast<UFO::UFO_Model*>(MODEL::s_model)) return NULL;
 
   const Flavour_Vector fl=args.Flavours();
