@@ -82,7 +82,7 @@ void Process_Group::SetScale(const Scale_Setter_Arguments &args)
 {
   for (size_t i(0);i<m_procs.size();++i) m_procs[i]->SetScale(args);
 }
-  
+
 void Process_Group::SetKFactor(const KFactor_Setter_Arguments &args)
 {
   for (size_t i(0);i<m_procs.size();++i) m_procs[i]->SetKFactor(args);
@@ -98,7 +98,7 @@ bool Process_Group::IsGroup() const
   return true;
 }
 
-void Process_Group::Add(Process_Base *const proc,const int mode) 
+void Process_Group::Add(Process_Base *const proc,const int mode)
 {
   if (proc==NULL) return;
   std::string name(proc->Name()), add(proc->Info().m_addname);
@@ -119,13 +119,13 @@ void Process_Group::Add(Process_Base *const proc,const int mode)
       (m_nin!=proc->NIn() || m_nout!=proc->NOut())) {
     msg_Error()<<METHOD<<"(): Cannot add process '"
 	       <<proc->Name()<<"' to group '"<<m_name<<"'.\n"
-	       <<"  Inconsistent number of external legs."<<std::endl; 
+	       <<"  Inconsistent number of external legs."<<std::endl;
     return;
-  }  
+  }
   m_procs.push_back(proc);
 }
 
-bool Process_Group::Remove(Process_Base *const proc) 
+bool Process_Group::Remove(Process_Base *const proc)
 {
   for (std::vector<Process_Base*>::iterator xsit=m_procs.begin();
        xsit!=m_procs.end();++xsit) {
@@ -137,7 +137,7 @@ bool Process_Group::Remove(Process_Base *const proc)
   return false;
 }
 
-bool Process_Group::Delete(Process_Base *const proc) 
+bool Process_Group::Delete(Process_Base *const proc)
 {
   if (Remove(proc)) {
     delete proc;
@@ -146,7 +146,7 @@ bool Process_Group::Delete(Process_Base *const proc)
   return false;
 }
 
-void Process_Group::Clear() 
+void Process_Group::Clear()
 {
   while (m_procs.size()>0) {
     delete m_procs.back();
@@ -156,7 +156,7 @@ void Process_Group::Clear()
 
 Process_Base *Process_Group::GetProcess(const std::string &name)
 {
-  std::map<std::string,Process_Base*>::const_iterator 
+  std::map<std::string,Process_Base*>::const_iterator
     pit(m_procmap.find(name));
   if (pit!=m_procmap.end()) return pit->second;
   if (name==m_name) return this;
@@ -230,6 +230,15 @@ bool Process_Group::CheckFlavours
 (const Subprocess_Info &ii,const Subprocess_Info &fi,int mode) const
 {
   DEBUG_FUNC(m_name);
+  // for 2->1 processes with only the instanton in the final state,
+  // we do not need to check for charge, colour conservation etc.
+  // as the instanton absorbs these
+  if (fi.m_ps.size() == 1 && fi.m_ps[0].m_fl == Flavour(kf_instanton)) {
+    msg_Debugging() << METHOD << "(): instanton final state, bypassing "
+                    << "charge/colour conservation for '"
+                    << GenerateName(ii, fi) << "'\n";
+    return true;
+  }
   int charge(0), strong(0);
   size_t quarks(0), nin(ii.m_ps.size()), nout(fi.m_ps.size());
   for (size_t i(0);i<nin;++i) {
@@ -390,7 +399,7 @@ bool Process_Group::ConstructProcesses()
       }
       *map>>cfl;
     }
-    msg_Debugging()<<METHOD<<" in PHASIC (mapping ok), with "<<m_procs.size()<<".\n";  
+    msg_Debugging()<<METHOD<<" in PHASIC (mapping ok), with "<<m_procs.size()<<".\n";
     return m_procs.size();
   }
   msg_Debugging()<<"not found"<<std::endl;
@@ -404,24 +413,24 @@ bool Process_Group::ConstructProcesses()
   return res;
 }
 
-void Process_Group::SetGenerator(ME_Generator_Base *const gen) 
-{ 
+void Process_Group::SetGenerator(ME_Generator_Base *const gen)
+{
   Process_Base::SetGenerator(gen);
-  for (size_t i(0);i<m_procs.size();++i) 
+  for (size_t i(0);i<m_procs.size();++i)
     m_procs[i]->SetGenerator(gen);
 }
 
-void Process_Group::SetShower(PDF::Shower_Base *const ps) 
-{ 
+void Process_Group::SetShower(PDF::Shower_Base *const ps)
+{
   Process_Base::SetShower(ps);
-  for (size_t i(0);i<m_procs.size();++i) 
+  for (size_t i(0);i<m_procs.size();++i)
     m_procs[i]->SetShower(ps);
 }
 
-void Process_Group::SetNLOMC(PDF::NLOMC_Base *const mc) 
-{ 
+void Process_Group::SetNLOMC(PDF::NLOMC_Base *const mc)
+{
   Process_Base::SetNLOMC(mc);
-  for (size_t i(0);i<m_procs.size();++i) 
+  for (size_t i(0);i<m_procs.size();++i)
     m_procs[i]->SetNLOMC(mc);
 }
 
@@ -460,7 +469,7 @@ bool Process_Group::Trigger(const Vec4D_Vector &p)
     if (m_procs[i]->Trigger(p)) trigger=true;
   return trigger;
 }
- 
+
 void Process_Group::FillOnshellConditions()
 {
   Process_Base::FillOnshellConditions();
@@ -471,7 +480,7 @@ void Process_Group::FillOnshellConditions()
 int Process_Group::PerformTests()
 {
   int res(1);
-  for (size_t i=0;i<m_procs.size();i++) 
+  for (size_t i=0;i<m_procs.size();i++)
     if (m_procs[i]->PerformTests()!=1) res=0;
   return res;
 }
