@@ -167,7 +167,7 @@ void PDF_Base::ShowSyntax(const size_t i)
 
 bool PDF_Base::Contains(const ATOOLS::Flavour &flav) const
 {
-  if (m_force_4f && (abs(flav.Kfcode())==5 || abs(flav.Kfcode())==6)) return false;
+  if (m_force_4f && (flav.Kfcode()==kf_b || flav.Kfcode()==kf_t)) return false;
 
   if (m_partons.find(flav) != m_partons.end()) return true;
   for (size_t i(0); i < flav.Size(); ++i)
