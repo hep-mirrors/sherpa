@@ -77,13 +77,13 @@ void Rambo::GenerateWeight(Vec4D * p,Cut_Data * cuts)
   m_weight   *= exp((2.*m_nout-4.)*log(ET)+Z_N)/pow(2.*M_PI,m_nout*3.-4.);
 }
 
-ATOOLS::Vec4D_Vector Rambo::GeneratePoint(const double& E)
+Vec4D_Vector Rambo::GeneratePoint(const double& E)
 {
-  ATOOLS::Vec4D_Vector p; p.resize(m_nin+m_nout);
-  if (E<p_ms[0]+p_ms[1]) THROW(fatal_error, "sqrt(s) smaller than particle masses");
-  double x=1.0/2.0+(p_ms[0]*p_ms[0]-p_ms[1]*p_ms[1])/(2.0*E*E);
-  p[0]=ATOOLS::Vec4D(x*E,0.0,0.0,sqrt(ATOOLS::sqr(x*E)-p_ms[0]*p_ms[0]));
-  p[1]=ATOOLS::Vec4D((1.0-x)*E,ATOOLS::Vec3D(-p[0]));
+  Vec4D_Vector p; p.resize(m_nin+m_nout);
+  if (E<std::sqrt(p_ms[0])+std::sqrt(p_ms[1])) THROW(fatal_error, "sqrt(s) smaller than particle masses");
+  double x=1.0/2.0+(p_ms[0]-p_ms[1])/(2.0*E*E);
+  p[0]=Vec4D(x*E,0.0,0.0,sqrt(sqr(x*E)-p_ms[0]));
+  p[1]=Vec4D((1.0-x)*E,Vec3D(-p[0]));
   GeneratePoint(&p[0]);
   return p;
 }
