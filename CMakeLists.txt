@@ -827,6 +827,9 @@ if (SHERPA_ENABLE_DOXYGEN)
     ATOOLS/Math/Tensor_Build.H
     ATOOLS/Math/Tensor_Contractions.H
     ATOOLS/Math/Tensor_Contractions_Epsilon.H
+    # third-party sources
+    ATOOLS/Phys/fjcore.cc
+    ATOOLS/Phys/fjcore.hh
   )
   set(DOXYGEN_MACRO_EXPANSION YES)
   set(DOXYGEN_EXPAND_ONLY_PREDEF YES)
