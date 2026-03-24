@@ -92,20 +92,18 @@ Return_Value::code Reconnection_Handler::operator()(Blob_List *const blobs,
   case 1:
     // added colour reconnections, but produce a reconnection blob.
     AddReconnectionBlob(blobs);
+    break;
   case 0:
     // didn't find any blob that needed reconnections
-    break;
+    // break;
+    p_reconnector->Reset();
+    p_reconnector->ResetVariationWeights(m_n_variations);
+    return Return_Value::Success;
   }
 
   auto variation_weights = p_reconnector->GetVariationWeights();
   size_t n_reconnections = p_reconnector->GetReconnectionCount();
 
-  msg_Out() << METHOD << ": " << n_reconnections << " WEIHGTS: ";
-  for (size_t i = 0; i < m_n_variations; ++i) {
-    msg_Out() << variation_weights[i] << " ";
-  }
-  msg_Out() << "\n";
-  
   p_reconnector->Reset();
   
   if (m_weight_cutoff > 0.) {
