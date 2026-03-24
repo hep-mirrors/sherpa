@@ -34,7 +34,7 @@ namespace RECONNECTIONS {
     virtual int    operator()(ATOOLS::Blob_List *const blobs) = 0;
     virtual double Distance(ATOOLS::Particle * trip,ATOOLS::Particle * anti) = 0;
     virtual int    GetVariationSize() const { return 1; }
-    virtual double GetWeightCutoff() const { return -1.; }
+    virtual double GetMaxReweightFactor() const { return -1.; }
     virtual bool   GetWeightOutput() const { return false; }
     virtual size_t GetReconnectionCount() const { return 0; }
     virtual double GetInitialLength() const { return 0.; }

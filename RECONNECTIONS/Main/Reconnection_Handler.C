@@ -39,7 +39,7 @@ void Reconnection_Handler::Initialize() {
   if (m_on) p_reconnector->Initialize();
 
   m_n_variations = p_reconnector->GetVariationSize();
-  m_weight_cutoff = p_reconnector->GetWeightCutoff();
+  m_max_reweight_factor = p_reconnector->GetMaxReweightFactor();
   m_cutoff_count.resize(m_n_variations, 0);
   m_sum_weights.resize(m_n_variations, 0.0);
   m_sum_weights_squared.resize(m_n_variations, 0.0);
@@ -111,10 +111,10 @@ Return_Value::code Reconnection_Handler::operator()(Blob_List *const blobs,
 
   p_reconnector->Reset();
   
-  if (m_weight_cutoff > 0.) {
+  if (m_max_reweight_factor > 0.) {
     for (size_t i = 0; i < m_n_variations; ++i) {
-      if (variation_weights[i] > m_weight_cutoff) {
-        variation_weights[i] = m_weight_cutoff;
+      if (variation_weights[i] > m_max_reweight_factor) {
+        variation_weights[i] = m_max_reweight_factor;
         m_cutoff_count[i]++;
       }
     }

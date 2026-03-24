@@ -241,7 +241,7 @@ void Amisic::InitParameterVariations() {
   m_pint.SetVariations(m_n_variations, m_sigma_nd_variations);
   m_overestimator.SetVariations(m_n_variations);
 
-  m_weight_cutoff = (*mipars)("weight_cutoff");
+  m_max_reweight_factor = (*mipars)("max_reweight_factor");
   m_cutoff_count.resize(m_n_variations, 0);
 
   ResetVariationWeights();
@@ -692,8 +692,8 @@ void Amisic::ApplyVariationWeights(ATOOLS::Blob * blob) {
     double w_total = w_b * w_sudakov;
     double w_total_no_cutoff = w_total;
     
-    if (m_weight_cutoff > 0. && w_total > m_weight_cutoff) {
-      w_total = m_weight_cutoff;
+    if (m_max_reweight_factor > 0. && w_total > m_max_reweight_factor) {
+      w_total = m_max_reweight_factor;
       m_cutoff_count[ivar]++;
     }    
     m_variation_weights[ivar] *= w_total;

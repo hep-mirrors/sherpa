@@ -14,7 +14,7 @@ namespace RECONNECTIONS {
     Reconnection_Base * p_reconnector;
     size_t m_n_variations;
     size_t m_n_mpi_variations;
-    double m_weight_cutoff;
+    double m_max_reweight_factor;
     std::vector<size_t> m_cutoff_count;
     
     std::vector<double> m_sum_weights;

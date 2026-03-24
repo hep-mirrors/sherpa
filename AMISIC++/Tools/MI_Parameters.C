@@ -114,8 +114,8 @@ MI_Parameters::MI_Parameters() :
     = s["Lambda_nr"].SetDefault(0.15).Get<double>();
   m_parameters[string("delta_nr")]
     = s["delta_nr"].SetDefault(0.75).Get<double>();
-  m_parameters[string("weight_cutoff")]
-    = s["WEIGHT_CUTOFF"].SetDefault(-1.).Get<double>();
+  m_parameters[string("max_reweight_factor")]
+    = s["MAX_REWEIGHT_FACTOR"].SetDefault(-1.).Get<double>();
 
   m_flags[string("nPT_bins")]
     = s["nPT_bins"].SetDefault(200).Get<size_t>();
