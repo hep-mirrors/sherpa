@@ -9,9 +9,9 @@ To use the on-the-fly variation of a model parameter, add this to your configura
    MODEL_VARIATIONS:
       parameter_name1: [<value1>, <value2>, ...]
       parameter_name2:
-         From: <value>
-         To: <value>
-         Step: <value>
+         Min: <value>
+         Max: <value>
+         [Step/Number]: <value>
 
 The values to be varied over for a parameter can be specified by a list or in a range statement as shown above.
 Multiple parameters for variation can be added, which will be combined for variation according to the setting :OPTION:`MODEL_VARIATIONS_COMBINE`:
