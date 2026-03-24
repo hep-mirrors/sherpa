@@ -200,37 +200,61 @@ void Reconnection_Handler::ApplyVariationWeights(Blob_List *const blobs) {
 }
 
 void Reconnection_Handler::PrintVariationStatistics() {
-  if (m_n_variations > 1 && m_total_events > 0) {
-    msg_Info() << "\n" 
-               << "   " << std::string(77, '-') << "\n"
-               << "   | CR Reweighting Statistics: Total events: " 
-               << std::setw(15) << m_total_events 
-               << std::string(18,' ') << "|\n";
-    
-    msg_Info() << "   " << std::string(77, '-') << "\n"
-               << "   | " 
-               << std::setw(8) << "v#" 
-               << " | " << std::setw(15) << "ESS"
-               << " | " << std::setw(10) << "ESS ratio"
-               << " | " << std::setw(10) << "Cutoffs"
-               << " | " << std::setw(18) << "Cutoffs ratio"
-               << std::string(1,' ') << "|\n";
+  if (m_n_variations <= 1 || m_total_events == 0) return;
 
-    msg_Info() << "   " << std::string(77, '-') << "\n";
-    for (size_t ivar = 0; ivar < m_n_variations; ++ivar) {
-      double sum_w = m_sum_weights[ivar];
-      double sum_w2 = m_sum_weights_squared[ivar];
-      double ess = (sum_w2 > 0) ? (sum_w * sum_w) / sum_w2 : 0.0;
-      double ess_ratio = (m_total_events > 0) ? ess / m_total_events : 0.0;
-      double cutoff_ratio = (m_total_events > 0) ? static_cast<double>(m_cutoff_count[ivar]) / m_total_events : 0.0;
-      
-      msg_Info() << "   | " << std::setw(8) << ivar
-                 << " | " << std::setw(15) << std::fixed << std::setprecision(1) << ess
-                 << " | " << std::setw(10) << std::fixed << std::setprecision(6) << ess_ratio
-                 << " | " << std::setw(10) << m_cutoff_count[ivar]
-                 << " | " << std::setw(10) << std::fixed << std::setprecision(6) << cutoff_ratio
-                 << std::string(9,' ') << "|\n";
-    }
-    msg_Info() << "   " << std::string(77, '-') << "\n";
+  const std::string title = "CR Reweighting Statistics (events: " +
+                            ToString<size_t>(m_total_events) + ") ";
+
+  const int variation_col_size = std::max<int>(
+      static_cast<int>(std::string("Variation").size()),
+      static_cast<int>(("v" + ToString<size_t>(m_n_variations - 1)).size()));
+  const int col_size = 15;
+
+  int table_size = variation_col_size + col_size + col_size + 4;
+  if (m_max_reweight_factor > 0.0) {
+    table_size += col_size + col_size;
   }
+  table_size = std::max(table_size, static_cast<int>(title.size()) + 4);
+
+  msg_Out() << Frame_Header{table_size};
+  MyStrStream line;
+  line << om::bold << std::left << title << om::reset;
+  msg_Out() << Frame_Line{line.str(), table_size};
+
+  msg_Out() << Frame_Separator{table_size};
+  line.str("");
+  line << std::left << std::setw(variation_col_size) << "Variation"
+       << std::right << std::setw(col_size) << "ESS"
+       << std::right << std::setw(col_size) << "ESS ratio";
+  if (m_max_reweight_factor > 0.0) {
+    line << std::right << std::setw(col_size) << "Cutoffs"
+         << std::right << std::setw(col_size) << "Cutoff ratio";
+  }
+  msg_Out() << Frame_Line{line.str(), table_size};
+  msg_Out() << Frame_Separator{table_size};
+
+  for (size_t ivar = 0; ivar < m_n_variations; ++ivar) {
+    const double sum_w = m_sum_weights[ivar];
+    const double sum_w2 = m_sum_weights_squared[ivar];
+    const double ess = (sum_w2 > 0.) ? (sum_w * sum_w) / sum_w2 : 0.;
+    const double ess_ratio = (m_total_events > 0) ? ess / m_total_events : 0.;
+    const double cutoff_ratio =
+        (m_total_events > 0) ? static_cast<double>(m_cutoff_count[ivar]) / m_total_events : 0.;
+
+    line.str("");
+    line << om::bold << std::left << std::setw(variation_col_size)
+         << ("v" + ToString<size_t>(ivar)) << om::reset
+         << std::right << om::brown << std::setw(col_size)
+         << std::fixed << std::setprecision(1) << ess
+         << std::setw(col_size)
+         << std::fixed << std::setprecision(6) << ess_ratio << om::reset;
+    if (m_max_reweight_factor > 0.0) {
+      line << om::red << std::setw(col_size)
+           << std::fixed << std::setprecision(1) << m_cutoff_count[ivar]
+           << std::setw(col_size)
+           << std::fixed << std::setprecision(6) << cutoff_ratio << om::reset;
+    }
+    msg_Out() << Frame_Line{line.str(), table_size};
+  }
+  msg_Out() << Frame_Footer{table_size};
 }

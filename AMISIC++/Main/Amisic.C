@@ -2,6 +2,8 @@
 #include "MODEL/Main/Model_Base.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Exception.H"
+#include "ATOOLS/Org/Message.H"
+#include "ATOOLS/Org/MyStrStream.H"
 #include <algorithm>
 #include <cmath>
 #include <fstream> // output
@@ -578,6 +580,31 @@ void Amisic::AnalysePerturbative(const bool & last,Blob * blob) {
   }
 }
 
+void Amisic::GenerateBSamples() {
+  const size_t n_samples = (*mipars)["nB_samples"];
+
+  for (size_t i=0; i<n_samples; ++i) {
+    m_singlecollision.SelectNewB();
+    double b = m_singlecollision.B();
+
+    m_mo.SetMatterFormVariationIndex(0);
+    const double K_nom = m_pint.K(m_S);
+    const double overlap_nom = m_mo.EvaluateAt(b, K_nom);
+
+    m_b_samples_file << b;
+    for (size_t ivar=0; ivar<m_n_variations; ++ivar) {
+      m_mo.SetMatterFormVariationIndex(ivar);
+      const double K_var = m_pint.KVariation(m_S, ivar);
+      const double overlap_var = m_mo.EvaluateAt(b, K_var);
+      double weight = overlap_var / overlap_nom;
+      if (!std::isfinite(weight) || weight<=0.) weight = 1.;
+      m_b_samples_file << "  " << weight;
+    }
+    m_b_samples_file << "\n";
+  }
+  m_mo.SetMatterFormVariationIndex(0);
+}
+
 void Amisic::ResetVariationWeights() {
   ///////////////////////////////////////////////////////////////////////////
   // Reset variation weights to 1.0 for a new event.
@@ -734,62 +761,61 @@ void Amisic::ApplyVariationWeights(ATOOLS::Blob * blob) {
 }
 
 void Amisic::PrintVariationStatistics() {
-  if (m_n_variations > 1 && m_total_events > 0) {
-    msg_Info() << "\n" 
-               << "   " << std::string(77, '-') << "\n"
-               << "   | MPI Reweighting Statistics: Total events: " 
-               << std::setw(15) << m_total_events 
-               << std::string(17,' ') << "|\n";
-    
-    msg_Info() << "   " << std::string(77, '-') << "\n"
-               << "   | " 
-               << std::setw(8) << "v#" 
-               << " | " << std::setw(15) << "ESS"
-               << " | " << std::setw(10) << "ESS ratio"
-               << " | " << std::setw(10) << "Cutoffs"
-               << " | " << std::setw(18) << "Cutoffs ratio"
-               << std::string(1,' ') << "|\n";
+  if (m_n_variations <= 1 || m_total_events == 0) return;
 
-    msg_Info() << "   " << std::string(77, '-') << "\n";
-    for (size_t ivar = 0; ivar < m_n_variations; ++ivar) {
-      double sum_w = m_sum_weights[ivar];
-      double sum_w2 = m_sum_weights_squared[ivar];
-      double ess = (sum_w2 > 0) ? (sum_w * sum_w) / sum_w2 : 0.0;
-      double ess_ratio = (m_total_events > 0) ? ess / m_total_events : 0.0;
-      double cutoff_ratio = (m_total_events > 0) ? static_cast<double>(m_cutoff_count[ivar]) / m_total_events : 0.0;
-      
-      msg_Info() << "   | " << std::setw(8) << ivar
-                 << " | " << std::setw(15) << std::fixed << std::setprecision(1) << ess
-                 << " | " << std::setw(10) << std::fixed << std::setprecision(6) << ess_ratio
-                 << " | " << std::setw(10) << m_cutoff_count[ivar]
-                 << " | " << std::setw(10) << std::fixed << std::setprecision(6) << cutoff_ratio
-                 << std::string(9,' ') << "|\n";
-    }
-    msg_Info() << "   " << std::string(77, '-') << "\n";
+  const std::string title = "MPI Reweighting Statistics (events: " +
+                            ToString<size_t>(m_total_events) + ")";
+
+  const int variation_col_size = std::max<int>(
+      static_cast<int>(std::string("Variation").size()),
+      static_cast<int>(("v" + ToString<size_t>(m_n_variations - 1)).size()));
+  const int col_size = 15;
+
+  int table_size = variation_col_size + col_size + col_size + 4;
+  if (m_max_reweight_factor > 0.0) {
+    table_size += col_size + col_size;
   }
-}
+  table_size = std::max(table_size, static_cast<int>(title.size()) + 4);
 
-void Amisic::GenerateBSamples() {
-  const size_t n_samples = (*mipars)["nB_samples"];
+  msg_Out() << Frame_Header{table_size};
+  MyStrStream line;
+  line << om::bold << std::left << title << om::reset;
+  msg_Out() << Frame_Line{line.str(), table_size};
 
-  for (size_t i=0; i<n_samples; ++i) {
-    m_singlecollision.SelectNewB();
-    double b = m_singlecollision.B();
-
-    m_mo.SetMatterFormVariationIndex(0);
-    const double K_nom = m_pint.K(m_S);
-    const double overlap_nom = m_mo.EvaluateAt(b, K_nom);
-
-    m_b_samples_file << b;
-    for (size_t ivar=0; ivar<m_n_variations; ++ivar) {
-      m_mo.SetMatterFormVariationIndex(ivar);
-      const double K_var = m_pint.KVariation(m_S, ivar);
-      const double overlap_var = m_mo.EvaluateAt(b, K_var);
-      double weight = overlap_var / overlap_nom;
-      if (!std::isfinite(weight) || weight<=0.) weight = 1.;
-      m_b_samples_file << "  " << weight;
-    }
-    m_b_samples_file << "\n";
+  msg_Out() << Frame_Separator{table_size};
+  line.str("");
+  line << std::left << std::setw(variation_col_size) << "Variation"
+       << std::right << std::setw(col_size) << "ESS"
+       << std::right << std::setw(col_size) << "ESS ratio";
+  if (m_max_reweight_factor > 0.0) {
+    line << std::right << std::setw(col_size) << "Cutoffs"
+         << std::right << std::setw(col_size) << "Cutoff ratio";
   }
-  m_mo.SetMatterFormVariationIndex(0);
+  msg_Out() << Frame_Line{line.str(), table_size};
+  msg_Out() << Frame_Separator{table_size};
+
+  for (size_t ivar = 0; ivar < m_n_variations; ++ivar) {
+    const double sum_w = m_sum_weights[ivar];
+    const double sum_w2 = m_sum_weights_squared[ivar];
+    const double ess = (sum_w2 > 0.) ? (sum_w * sum_w) / sum_w2 : 0.;
+    const double ess_ratio = (m_total_events > 0) ? ess / m_total_events : 0.;
+    const double cutoff_ratio =
+        (m_total_events > 0) ? static_cast<double>(m_cutoff_count[ivar]) / m_total_events : 0.;
+
+    line.str("");
+    line << om::bold << std::left << std::setw(variation_col_size)
+         << ("v" + ToString<size_t>(ivar)) << om::reset
+         << std::right << om::brown << std::setw(col_size)
+         << std::fixed << std::setprecision(1) << ess
+         << std::setw(col_size)
+         << std::fixed << std::setprecision(6) << ess_ratio << om::reset;
+    if (m_max_reweight_factor > 0.0) {
+      line << om::red << std::setw(col_size)
+           << std::fixed << std::setprecision(1) << m_cutoff_count[ivar]
+           << std::setw(col_size)
+           << std::fixed << std::setprecision(6) << cutoff_ratio << om::reset;
+    }
+    msg_Out() << Frame_Line{line.str(), table_size};
+  }
+  msg_Out() << Frame_Footer{table_size};
 }
