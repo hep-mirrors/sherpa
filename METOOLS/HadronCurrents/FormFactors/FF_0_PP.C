@@ -17,7 +17,8 @@ Complex FF_0_PP_Base::operator()(const ATOOLS::Vec4D_Vector& moms) {
   double Q2 = (moms[m_pi[0]]+moms[m_pi[1]]).Abs2();
   switch (m_ffmodel) {
   case ff_model::none:    return Complex(1.,0.);
-  case ff_model::KS:      return m_norm * (*p_props)(Q2);
+  case ff_model::KS:      return ( p_props!=NULL ?
+				   m_norm * (*p_props)(Q2) : Complex(0.,0.) );
   case ff_model::RChiPT:  return m_norm * FF_RChiPT(Q2);
   case ff_model::unknown:
   default:
@@ -249,7 +250,7 @@ operator()(const METOOLS::FF_Parameters &params) const
 {
   msg_Out()<<METHOD<<":\n";
   size_t Nmesons = 0;
-  for (size_t i=0;i<params.m_flavs.size();i++) {
+  for (size_t i=0;i<params.m_pi.size();i++) {
     if (params.m_flavs[params.m_pi[i]].IsMeson()) Nmesons++;
   }
   if (Nmesons!=2) return NULL;

@@ -10,6 +10,7 @@ set(FormFactors_SOURCES Line_Shapes.C
                         Kstar_Decays.C
                         FormFactor_Base.C
 			FF_0_PP.C
+			FF_0_PPP.C
 		      )
 set(FormFactors_HEADERS Line_Shapes.H
                         Resonance_Base.H
@@ -23,6 +24,7 @@ set(FormFactors_HEADERS Line_Shapes.H
                         Kstar_Decays.H
                         FormFactor_Base.H
 			FF_0_PP.H
+			FF_0_PPP.H
 		      )
 
 

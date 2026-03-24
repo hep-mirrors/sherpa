@@ -29,22 +29,6 @@ using namespace std;
 // 
 ///////////////////////////////////////////////////////////////////////////
 
-///////////////////////////////////////////////////////////////////////////
-//
-//   * K pi: Phys.Lett.B 640 (2006) 176
-//     (https://doi.org/10.1016/j.physletb.2006.06.058)
-//           - not implemented (but maybe worth it, especially because
-//             of the treatment of eta and eta'?):
-//             (https://arxiv.org/pdf/1201.1794)
-// - KS, 1: (Kuehn-Santamaria model):
-//   * pi eta (KS inspired): Phys.Rev.D 82 (2010) 057301
-//     (https://doi.org/10.1103/PhysRevD.82.057301)
-//   * pi eta' (KS inspired): Phys.Rev.D 84 (2011) 017302
-//     (https://doi.org/10.1103/PhysRevD.84.017302)
-// - none, 0: no form factor
-//
-///////////////////////////////////////////////////////////////////////////
-
 VA_0_PiPi::VA_0_PiPi(const ATOOLS::Flavour_Vector& flavs,
 		     const std::vector<int>& indices,
 		     const std::string& name) :
@@ -62,12 +46,11 @@ VA_0_PiPi::~VA_0_PiPi() {
 
 void VA_0_PiPi::Calc(const ATOOLS::Vec4D_Vector& moms, bool m_anti)
 {
-  Vec4D  q  = moms[p_i[1]]+moms[p_i[0]];
+  Vec4D   q = moms[p_i[1]]+moms[p_i[0]];
   double Q2 = q.Abs2();
+  Vec4D   v = (moms[p_i[1]]-moms[p_i[0]]) - m_deltaM2/Q2*q;
   Complex V = (*p_fplus)(moms), S = (*p_fzero)(moms);
-  Insert(m_norm *
-	 ( V * ((moms[p_i[1]]-moms[p_i[0]]) - m_deltaM2/Q2*q)  +
-	   S * q ),   0);
+  Insert(m_norm * ( V * v + S * q ), 0);
 }
 
 void VA_0_PiPi::SetModelParameters(struct GeneralModel model) {

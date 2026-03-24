@@ -21,7 +21,7 @@ Current_Base::Current_Base(const ATOOLS::Flavour_Vector& flavs,
   p_i.resize(decayindices.size());
   p_masses = new double[decayindices.size()];
   for(int i=0; i<decayindices.size(); ++i) {
-    p_i[i] = decayindices[i];
+    p_i[i]      = decayindices[i];
     p_masses[i] = m_flavs[p_i[i]].HadMass();
   }
   msg_Tracking()<<"  Initialized "<<m_name<<" current with "

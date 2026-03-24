@@ -95,7 +95,7 @@ const double Summed_Propagator::Normalised2(const double & s) {
 
 Multiplied_Propagator::Multiplied_Propagator(Propagator_Base * prop) :
   Propagator_Base(NULL),
-  m_norm(Complex(0.,0.)) {
+  m_norm(Complex(1.,0.)) {
   if (prop!=NULL) m_props[prop] = m_norm;
 }
 
@@ -114,7 +114,7 @@ void Multiplied_Propagator::Add(Propagator_Base * prop,const Complex & weight) {
 }
 
 const Complex Multiplied_Propagator::operator()(const double & s) {
-  Complex result(0.,0.);
+  Complex result(1.,0.);
   for (map<Propagator_Base *,Complex>::iterator pit=m_props.begin();
        pit!=m_props.end();pit++) {
     result *= pit->second*(*pit->first)(s);
