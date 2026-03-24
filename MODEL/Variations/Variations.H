@@ -56,7 +56,7 @@ namespace MODEL{
                 void CheckParameters();                                 // go over the parameters and remove those who dont have dependents @param None @return None
                 void StoreNominal();                                    // store the m_nominal parameter values for reset @param None @return None
                 void ReadVariations();                                  // read the parameters from settings @param None @return None
-                void ReadSingleParamVariation(std::string parameter);   // read a single variation (one parameter, mulitple values) and put it in a map @param parameter string with name of the parameter @return None
+                void ReadSingleParamVariation();                        // read a single variation (one parameter, mulitple values) and put it in a map @param None @return None
                 void ReadCorrelations();                                // read correlations as lists of parameter names @param None @return None
                 void CombineParameters();                               // combine parameters depending on the settings and correlations @param None @return None
                 void CheckVariationNumber();                            // checks the size of the variations @param None @return None

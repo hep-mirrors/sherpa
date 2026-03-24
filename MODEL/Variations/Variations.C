@@ -1,6 +1,6 @@
 #include "MODEL/Variations/Variations.H"
 
-#define MAX_VARIATION_NUMBER 1000
+#define MAX_VARIATION_NUMBER 10000
 
 namespace MODEL {
     namespace VARIATIONS {
@@ -79,12 +79,14 @@ namespace MODEL {
             }
         }
 
-        void Variations::ReadSingleParamVariation(std::string parameter){
+        void Variations::ReadSingleParamVariation(){
+            std::string parameter = variable_names.back();
             ATOOLS::Scoped_Settings ss = s["MODEL_VARIATIONS"][parameter].SetDefault(-1.);
             std::vector<double_t> values = std::vector<double_t>();
             if (ss.IsMap()){
                 DEBUG_INFO("was map");
-                if (!(ss["Min"].SetDefault(-1.).IsScalar() && ss["Max"].SetDefault(-1.).IsScalar() && ss["Step"].SetDefault(-1.).IsScalar())) {
+                if (!(ss["Min"].SetDefault(0.).IsScalar() && ss["Max"].SetDefault(1.).IsScalar() 
+                    && (ss["Step"].SetDefault(1.).IsScalar() || ss["Number"].SetDefault(0).IsScalar()))) {
                     msg_Out() << "\x1b[31m\tVariations of " << parameter << ": range not formatted properly. Ignoring it...\x1b[0m" << std::endl;
                     variable_names.pop_back();
                     return;
@@ -92,11 +94,14 @@ namespace MODEL {
                 double from = ss["Min"].GetScalar<double_t>();
                 double to = ss["Max"].GetScalar<double_t>();
                 double step = ss["Step"].GetScalar<double_t>();
-                if (!(from > 0 && to > 0 && step > 0 && from < to)) {
+                int number = 0;
+                if (ss["Number"].IsScalar()) number = ss["Number"].SetDefault(0).GetScalar<int>();
+                if (!(from < to) || number < 0 || step <= 0) {
                     msg_Out() << "\x1b[31m\tRange for " << parameter << " is not specified correctly. Ignoring it...\x1b[0m" << std::endl;
                     variable_names.pop_back();
                     return;
                 }
+                if (number > 0) step = (to - from)/(number-1);
                 double val = from;
                 // this is supposed to fixed FP errors
                 while (val - to <= step/2) {
@@ -112,7 +117,7 @@ namespace MODEL {
                 DEBUG_INFO("was scalar");
                 values.push_back(ss.GetScalar<double_t>());
             }
-            if (values.empty() || values.back() < 0) {
+            if (values.empty()) {
                 msg_Out() << "\x1b[31m\tVariations of " << parameter << " not formatted properly. Ignoring it...\x1b[0m" << std::endl;
                 variable_names.pop_back();
                 return;
@@ -163,7 +168,7 @@ namespace MODEL {
             for (const std::string& parameter : s["MODEL_VARIATIONS"].GetKeys()) {
                 DEBUG_INFO("Reading variations of " + parameter);
                 variable_names.push_back(parameter);
-                ReadSingleParamVariation(parameter);
+                ReadSingleParamVariation();
             }
         }
 
