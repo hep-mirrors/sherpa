@@ -56,9 +56,9 @@ void Reconnection_Handler::Initialize() {
   }
   
   if (m_cr_weight_file.is_open()) {
-    m_cr_weight_file << "# n_cr";
+    m_cr_weight_file << "# n_cr length_change";
     for (size_t i=0; i<m_n_variations; i++) {
-      m_cr_weight_file << " w_cr_v" << i;
+      m_cr_weight_file << " w_v" << i;
     }
     m_cr_weight_file << "\n";
     m_cr_weight_file << std::scientific << std::setprecision(10);
@@ -103,6 +103,11 @@ Return_Value::code Reconnection_Handler::operator()(Blob_List *const blobs,
 
   auto variation_weights = p_reconnector->GetVariationWeights();
   size_t n_reconnections = p_reconnector->GetReconnectionCount();
+  double initial_length  = p_reconnector->GetInitialLength();
+  double final_length    = p_reconnector->GetFinalLength();
+  
+  double relative_length_change = 0.;
+  if (initial_length > 0.) relative_length_change = (initial_length - final_length) / initial_length;
 
   p_reconnector->Reset();
   
@@ -145,12 +150,11 @@ Return_Value::code Reconnection_Handler::operator()(Blob_List *const blobs,
   
   // output
   if (m_cr_weight_file.is_open()) {
-    m_cr_weight_file << n_reconnections;
+    m_cr_weight_file << n_reconnections << " " << relative_length_change;
     for (size_t i = 0; i < m_n_variations; ++i) {
       m_cr_weight_file << " " << variation_weights[i];
     }
     m_cr_weight_file << "\n";
-  // output
   }
   if (m_total_weight_file.is_open()) {
     for (size_t i = 0; i < n_max; ++i) {
@@ -159,6 +163,7 @@ Return_Value::code Reconnection_Handler::operator()(Blob_List *const blobs,
     }
     m_total_weight_file << "\n";
   }
+  // output
   
   m_total_events++;
   for (size_t i = 0; i < m_n_variations; ++i) {

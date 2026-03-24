@@ -78,14 +78,18 @@ namespace AMISIC {
     double m_weight_cutoff;
     std::vector<size_t> m_cutoff_count;
 
-    size_t m_mpi_scatter_count;      // output
-    std::ofstream m_b_weight_file;   // output
-    std::ofstream m_mpi_weight_file; // output
+    // output
+    size_t m_mpi_scatter_count;
+    double m_first_pT;
+    std::ofstream m_mpi_weight_file;
+    std::ofstream m_b_samples_file;
     std::vector<double> m_sum_weights;
     std::vector<double> m_sum_weights_squared;
     size_t m_total_events;
+    size_t m_b_sample_size;
+    // output
     
-    void UpdateDynamicCutoffs();
+    void GenerateBSamples();
 
     void InitParametersAndType(PDF::ISR_Handler *const isr,
 			       REMNANTS::Remnant_Handler * remnant_handler);

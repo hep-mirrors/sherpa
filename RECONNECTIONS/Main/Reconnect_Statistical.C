@@ -11,7 +11,9 @@ Reconnect_Statistical::Reconnect_Statistical() :
   Reconnection_Base(),
   m_Pmode(0), m_Q02(1.), m_etaQ(0.16), m_reshuffle(1./9.), m_kappa(1.),
   m_n_variations(1),
-  m_n_reconnection_count(0) // output
+  m_n_reconnection_count(0), // output
+  m_initial_length(0.),      // output
+  m_final_length(0.)         // output
 {}
 
 
@@ -55,6 +57,8 @@ void Reconnect_Statistical::Reset() {
   m_collist.clear();
   Reconnection_Base::Reset();
   m_n_reconnection_count = 0; // output
+  m_initial_length = 0.;      // output
+  m_final_length = 0.;        // output
 }
 
 void Reconnect_Statistical::FixPMode(const string & pm) {
@@ -76,8 +80,10 @@ int Reconnect_Statistical::operator()(Blob_List *const blobs) {
   size_t N = m_collist.size();
   unsigned int col[2];
 
+  m_initial_length = TotalLength(); // output
   if (!PerformTableReconnections(N)) return 0;
   UpdateColours();
+  m_final_length = TotalLength(); // output
 
   m_collist.clear();
   return 1;

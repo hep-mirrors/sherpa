@@ -37,6 +37,8 @@ namespace RECONNECTIONS {
     virtual double GetWeightCutoff() const { return -1.; }
     virtual bool   GetWeightOutput() const { return false; }
     virtual size_t GetReconnectionCount() const { return 0; }
+    virtual double GetInitialLength() const { return 0.; }
+    virtual double GetFinalLength() const { return 0.; }
 
     ATOOLS::Part_List              * GetParticles()               { return &m_particles; }
     ATOOLS::ParticleSet            * GetParts(const size_t & pos) { return &m_parts[pos]; }

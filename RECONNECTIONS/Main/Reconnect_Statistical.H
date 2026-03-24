@@ -20,6 +20,8 @@ namespace RECONNECTIONS {
     size_t m_n_variations;
 
     size_t m_n_reconnection_count;
+    double m_initial_length;
+    double m_final_length;
     
     double MomDistance(ATOOLS::Particle * trip,ATOOLS::Particle * anti);
     double PosDistance(ATOOLS::Particle * trip,ATOOLS::Particle * anti);
@@ -36,6 +38,8 @@ namespace RECONNECTIONS {
     bool   GetWeightOutput() const { return m_weight_output; }
     int    GetVariationSize() const { return m_n_variations; }
     size_t GetReconnectionCount() const { return m_n_reconnection_count; }
+    double GetInitialLength() const { return m_initial_length; }
+    double GetFinalLength() const { return m_final_length; }
   };
 }
 #endif
