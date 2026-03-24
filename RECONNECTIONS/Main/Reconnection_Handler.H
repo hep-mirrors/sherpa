@@ -32,6 +32,7 @@ namespace RECONNECTIONS {
     
     ATOOLS::Return_Value::code operator()(ATOOLS::Blob_List *const blobs,
 					  ATOOLS::Particle_List *const=NULL);
+    void ApplyVariationWeights(ATOOLS::Blob_List *const blobs);
 
     void Initialize();
     void Reset();

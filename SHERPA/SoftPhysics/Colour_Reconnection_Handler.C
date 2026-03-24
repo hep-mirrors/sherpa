@@ -22,7 +22,11 @@ Colour_Reconnection_Handler::~Colour_Reconnection_Handler() {
 Return_Value::code
 Colour_Reconnection_Handler::operator()(Blob_List *const blobs) {
   if (!m_on) return Return_Value::Nothing;
-  return (*p_reconnections)(blobs);
+  Return_Value::code result = (*p_reconnections)(blobs);
+  if (result==Return_Value::Success) {
+    p_reconnections->ApplyVariationWeights(blobs);
+  }
+  return result;
 }
 
 void Colour_Reconnection_Handler::CleanUp(const size_t & mode) {

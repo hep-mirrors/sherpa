@@ -74,6 +74,7 @@ void Reconnection_Handler::Initialize() {
 
 void Reconnection_Handler::Reset() {
   if (m_on) p_reconnector->Reset();
+  p_reconnector->ResetVariationWeights(m_n_variations);
 }
 
 Return_Value::code Reconnection_Handler::operator()(Blob_List *const blobs,
@@ -85,8 +86,7 @@ Return_Value::code Reconnection_Handler::operator()(Blob_List *const blobs,
     if (m_nfails<5)
       msg_Error()<<"Error in "<<METHOD<<": reconnections didn't work out.\n"
 		 <<"   Ask for new event and hope for the best.\n";
-    p_reconnector->Reset();
-    p_reconnector->ResetVariationWeights(m_n_variations);
+    Reset();
     m_nfails++;
     return Return_Value::New_Event;
   case 1:
@@ -95,86 +95,12 @@ Return_Value::code Reconnection_Handler::operator()(Blob_List *const blobs,
     break;
   case 0:
     // didn't find any blob that needed reconnections
-    // break;
     p_reconnector->Reset();
     p_reconnector->ResetVariationWeights(m_n_variations);
-    return Return_Value::Success;
+    return Return_Value::Nothing;
   }
 
-  auto variation_weights = p_reconnector->GetVariationWeights();
-  size_t n_reconnections = p_reconnector->GetReconnectionCount();
-  double initial_length  = p_reconnector->GetInitialLength();
-  double final_length    = p_reconnector->GetFinalLength();
-  
-  double relative_length_change = 0.;
-  if (initial_length > 0.) relative_length_change = (initial_length - final_length) / initial_length;
-
-  p_reconnector->Reset();
-  
-  if (m_max_reweight_factor > 0.) {
-    for (size_t i = 0; i < m_n_variations; ++i) {
-      if (variation_weights[i] > m_max_reweight_factor) {
-        variation_weights[i] = m_max_reweight_factor;
-        m_cutoff_count[i]++;
-      }
-    }
-  }
-  
-  Blob *blob(blobs->FindFirst(btp::Signal_Process));
-  if (blob == NULL)
-    blob = blobs->FindFirst(btp::Hard_Collision);
-  auto &wgt_map = (*blob)["WeightsMap"]->Get<Weights_Map>();
-
-  auto it = wgt_map.find("MPI+RECONNECTIONS");
-  
-  size_t n_mpi_variations;
-  if (m_n_mpi_variations == SIZE_MAX) {
-    const bool has_mpi = (it != wgt_map.end());
-    n_mpi_variations = has_mpi ? (it->second.Size() - 1) : 0;
-    m_n_mpi_variations = n_mpi_variations;
-  } else {
-    n_mpi_variations = m_n_mpi_variations;
-  }
-
-  const size_t n_max = std::max(n_mpi_variations, m_n_variations);
-  auto& wgt_category = wgt_map["MPI+RECONNECTIONS"];
-  
-  std::vector<double> combined_weights(n_max);
-  for (size_t i = 0; i < n_max; ++i) {
-    const std::string name = "v" + std::to_string(i);
-    const double w_mpi = (i < n_mpi_variations) ? wgt_category[name] : 1.;
-    const double w_rec = (i < m_n_variations) ? variation_weights[i] : 1.;
-    combined_weights[i] = w_mpi * w_rec;
-    wgt_category[name] = combined_weights[i];
-  }
-  
-  // output
-  if (m_cr_weight_file.is_open()) {
-    m_cr_weight_file << n_reconnections << " " << relative_length_change;
-    for (size_t i = 0; i < m_n_variations; ++i) {
-      m_cr_weight_file << " " << variation_weights[i];
-    }
-    m_cr_weight_file << "\n";
-  }
-  if (m_total_weight_file.is_open()) {
-    for (size_t i = 0; i < n_max; ++i) {
-      if (i > 0) m_total_weight_file << " ";
-      m_total_weight_file << combined_weights[i];
-    }
-    m_total_weight_file << "\n";
-  }
-  // output
-  
-  m_total_events++;
-  for (size_t i = 0; i < m_n_variations; ++i) {
-    double w = variation_weights[i];
-    m_sum_weights[i] += w;
-    m_sum_weights_squared[i] += w * w;
-  }
-
-  p_reconnector->ResetVariationWeights(m_n_variations);
-
-  return Return_Value::Success; 
+  return Return_Value::Success;
 }
 
 void Reconnection_Handler::AddReconnectionBlob(Blob_List *const blobs) {
@@ -191,6 +117,86 @@ void Reconnection_Handler::AddReconnectionBlob(Blob_List *const blobs) {
     particles->pop_front();
   }
   blobs->push_back(blob);
+}
+
+void Reconnection_Handler::ApplyVariationWeights(Blob_List *const blobs) {
+  if (!m_on) return;
+
+  auto variation_weights = p_reconnector->GetVariationWeights();
+  const size_t n_reconnections = p_reconnector->GetReconnectionCount();
+
+  double relative_length_change = 0.;
+  const double initial_length   = p_reconnector->GetInitialLength();
+  const double final_length     = p_reconnector->GetFinalLength();
+  if (initial_length > 0.) {
+    relative_length_change = (initial_length - final_length) / initial_length;
+  }
+
+  if (m_max_reweight_factor > 0.) {
+    for (size_t i = 0; i < m_n_variations; ++i) {
+      if (variation_weights[i] > m_max_reweight_factor) {
+        variation_weights[i] = m_max_reweight_factor;
+        m_cutoff_count[i]++;
+      }
+    }
+  }
+
+  Blob *blob(blobs->FindFirst(btp::Signal_Process));
+  if (blob == NULL) blob = blobs->FindFirst(btp::Hard_Collision);
+  if (blob == NULL) {
+    Reset();
+    return;
+  }
+
+  auto &wgt_map = (*blob)["WeightsMap"]->Get<Weights_Map>();
+  auto it = wgt_map.find("MPI+RECONNECTIONS");
+
+  size_t n_mpi_variations;
+  if (m_n_mpi_variations == SIZE_MAX) {
+    const bool has_mpi = (it != wgt_map.end());
+    n_mpi_variations = has_mpi ? (it->second.Size() - 1) : 0;
+    m_n_mpi_variations = n_mpi_variations;
+  } else {
+    n_mpi_variations = m_n_mpi_variations;
+  }
+
+  const size_t n_max = std::max(n_mpi_variations, m_n_variations);
+  auto& wgt_category = wgt_map["MPI+RECONNECTIONS"];
+
+  std::vector<double> combined_weights(n_max);
+  for (size_t i = 0; i < n_max; ++i) {
+    const std::string name = "v" + std::to_string(i);
+    const double w_mpi = (i < n_mpi_variations) ? wgt_category[name] : 1.;
+    const double w_cr  = (i < m_n_variations) ? variation_weights[i] : 1.;
+    combined_weights[i] = w_mpi * w_cr;
+    wgt_category[name] = combined_weights[i];
+  }
+
+  // output
+  if (m_cr_weight_file.is_open()) {
+    m_cr_weight_file << n_reconnections << " " << relative_length_change;
+    for (size_t i = 0; i < m_n_variations; ++i) {
+      m_cr_weight_file << " " << variation_weights[i];
+    }
+    m_cr_weight_file << "\n";
+  }
+  if (m_total_weight_file.is_open()) {
+    for (size_t i = 0; i < n_max; ++i) {
+      if (i > 0) m_total_weight_file << " ";
+      m_total_weight_file << combined_weights[i];
+    }
+    m_total_weight_file << "\n";
+  }
+  // output
+
+  m_total_events++;
+  for (size_t i = 0; i < m_n_variations; ++i) {
+    const double w = variation_weights[i];
+    m_sum_weights[i] += w;
+    m_sum_weights_squared[i] += w * w;
+  }
+
+  Reset();
 }
 
 void Reconnection_Handler::PrintVariationStatistics() {
