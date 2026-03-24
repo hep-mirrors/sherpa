@@ -252,19 +252,20 @@ void Amisic::InitParameterVariations() {
 
   // output
   const bool print_files = ((*mipars)["weight_output"]) > 0;
-  if (!print_files) return;
-  std::string total_filename = "mpi_weights.dat";
-  m_mpi_weight_file.open(total_filename);
-  if (m_mpi_weight_file.is_open()) {
-    m_mpi_weight_file << "# b_value n_mpi first_pT";
-    for (size_t ivar=0; ivar<m_n_variations; ivar++) {
-      m_mpi_weight_file << " w_b_value_v" << ivar;
+  if (print_files) {
+    std::string total_filename = "mpi_weights.dat";
+    m_mpi_weight_file.open(total_filename);
+    if (m_mpi_weight_file.is_open()) {
+      m_mpi_weight_file << "# b_value n_mpi first_pT";
+      for (size_t ivar=0; ivar<m_n_variations; ivar++) {
+        m_mpi_weight_file << " w_b_value_v" << ivar;
+      }
+      for (size_t ivar=0; ivar<m_n_variations; ivar++) {
+        m_mpi_weight_file << " w_v" << ivar;
+      }
+      m_mpi_weight_file << "\n";
+      m_mpi_weight_file << std::scientific << std::setprecision(10);
     }
-    for (size_t ivar=0; ivar<m_n_variations; ivar++) {
-      m_mpi_weight_file << " w_v" << ivar;
-    }
-    m_mpi_weight_file << "\n";
-    m_mpi_weight_file << std::scientific << std::setprecision(10);
   }
   const bool print_b_samples = ((*mipars)["nB_samples"]) > 0;
   if (print_b_samples) {
