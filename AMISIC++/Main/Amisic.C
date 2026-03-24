@@ -403,9 +403,10 @@ bool Amisic::GenerateScatter(const size_t & type,Blob * blob) {
     default: THROW(fatal_error,"Unknown type: "+to_string(type));
     }
     if (outcome) {
-      // if (type==3 && blob->Type()!=btp::Signal_Process) {
-      //   ++m_mpi_scatter_count; // output
-      // }
+      if (type==3 && blob->Type()!=btp::Signal_Process) {
+        if (m_mpi_scatter_count == 0) m_first_pT = sqrt(m_singlecollision.PT2());
+        ++m_mpi_scatter_count;
+      }
       AddInformationToBlob(blob);
       m_Nscatters++;
       if (m_singlecollision.Done()) {
@@ -650,10 +651,6 @@ void Amisic::AcceptRejectReweighting(const bool accepted, const double prob_nom)
       if (std::isfinite(ratio) && ratio >= 0.) {
         m_sudakov_weights[ivar] *= ratio;
       }
-      // output
-      if (m_mpi_scatter_count == 0) m_first_pT = sqrt(m_singlecollision.PT2());
-      ++m_mpi_scatter_count;
-      // output
     } else {
       // Rejected: weight *= (1 - p_var) / (1 - p_nom)
       const double ratio = (1. - prob_var) / (1. - prob_nom);
