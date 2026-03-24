@@ -3,6 +3,7 @@
 #include "RECONNECTIONS/Main/Reconnect_Statistical.H"
 #include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Org/Message.H"
+#include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/Scoped_Settings.H"
 
 using namespace RECONNECTIONS;
