@@ -94,23 +94,55 @@ double Matter_Overlap::MaxValue(const double & b) {
 
 double Matter_Overlap::SelectB() const {
   ///////////////////////////////////////////////////////////////////////////
-  // Algorithm:
-  // 1. select a radius R according to matter content:
-  // 2. Select b according to d^2b O(b) = d b^2 exp(-b^2/R^2).
-  // Result is given in fm.
+  // Select an impact parameter b in fm from the matter overlap distribution.
+  //
+  // Step 1 — Choose an effective Gaussian radius for this event:
+  //
+  //   Dynamic case: use the kinematics-dependent radius sqrt(m_dynradius2).
+  //
+  //   Double-Gaussian case: the overlap of two double-Gaussian form factors
+  //   decomposes into four Gaussian components (indexed 0..3), each with a
+  //   combined radius m_radius[i] and a fractional weight m_fraction[i]
+  //   (the four weights sum to 1).  We pick one component with probability
+  //   proportional to its weight via inverse-CDF sampling: subtract weights
+  //   from a uniform random variable until it crosses zero.
+  //   If no component is selected due to floating-point rounding, the first
+  //   component (i = 0) is used as a fallback.
+  //
+  //   Single-Gaussian case: only one component exists, so m_radius[0] is
+  //   used directly (no random selection needed).
+  //
+  // Step 2 — Sample b from the 2D Gaussian with the chosen radius R:
+  //
+  //   d^2b O(b) ~ b db exp(-b^2/R^2)
+  //
+  //   Setting x = b^2/R^2 gives an exponential distribution in x, which is
+  //   sampled by inversion: x = -log(ran), so b = R*sqrt(-log(ran)).
   ///////////////////////////////////////////////////////////////////////////
-  double effradius = m_kradius * m_radius[0], b=0.;
-  if (m_dynamic) effradius = m_kradius * sqrt(m_dynradius2);
-  else if (m_form[0]==matter_form::double_gaussian ||
-	   m_form[1]==matter_form::double_gaussian) {
-    double rand = ran->Get();
-    for (int i=3;i>=0;i--) {
-      rand -= m_fraction[i];
-      if (rand<=1.e-6) { effradius = m_kradius * m_radius[i]; break; }
+
+  // Step 1
+  double effradius = m_kradius * m_radius[0];
+
+  if (m_dynamic) {
+    effradius = m_kradius * sqrt(m_dynradius2);
+  }
+  else if (m_form[0] == matter_form::double_gaussian ||
+           m_form[1] == matter_form::double_gaussian) {
+    double remaining = ran->Get();
+    for (int i = 3; i >= 0; i--) {
+      remaining -= m_fraction[i];
+      if (remaining <= 0.) {
+        effradius = m_kradius * m_radius[i];
+        break;
+      }
     }
   }
-  do { b = sqrt(-log(Max(1.e-12,ran->Get())))*effradius;
-  } while(b>=m_bmax);
+
+  // Step 2
+  double b;
+  do {
+    b = sqrt(-log(Max(1.e-12, ran->Get()))) * effradius;
+  } while (b >= m_bmax);
   return b;
 }
 
@@ -133,31 +165,30 @@ bool Matter_Overlap::
   ///////////////////////////////////////////////////////////////////////////
   // converting the impact parameter B from the internal unit fm to millimeters
   B *= 1.e-12;
-  double b0, b1, cosphi1, sinphi1;
-  size_t trials = 0;
+  double       b0, b1, cosphi1, sinphi1;
+  size_t       trials     = 0;
   const size_t max_trials = 10000;
 
-  // Sample b0 and b1 from Q^2-dependent form factors
-  // Enforce triangle inequality: B < b0 + b1
+  // Sample b0 and b1 from Q^2-dependent form factors and reject if any of the
+  // three triangle inequalities is violated: B < b0+b1, b0 < B+b1, b1 < B+b0.
   do {
     b0 = p_ffs[0]->B(x0, Q20);
     b1 = p_ffs[1]->B(x1, Q21);
-  } while (B > b0 + b1 && (++trials) < max_trials);
+  } while ((B >= b0 + b1 || b0 >= B + b1 || b1 >= B + b0) &&
+           (++trials) < max_trials);
 
   if (trials >= max_trials) return false;
 
   cosphi1 = (sqr(B) + sqr(b1) - sqr(b0)) / (2. * B * b1);
-  cosphi1 = std::max(-1., std::min(1., cosphi1)); // catch rounding errors
+  cosphi1 = std::max(-1., std::min(1., cosphi1));
 
   sinphi1 = (ran->Get() > 0.5 ? -1. : 1.) * sqrt(1. - sqr(cosphi1));
 
   // Position relative to beam 1 at (-B/2, 0)
-  pos = Vec4D(0., -B/2. + b1*cosphi1, b1*sinphi1, 0.);
+  pos = Vec4D(0., -B / 2. + b1 * cosphi1, b1 * sinphi1, 0.);
 
   return true;
 }
-
-
 
 void Matter_Overlap::Initialize(Remnant_Handler * const rh,
 				PDF::ISR_Handler * const isr) {
