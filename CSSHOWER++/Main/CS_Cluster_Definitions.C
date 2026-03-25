@@ -93,6 +93,8 @@ CS_Parameters CS_Cluster_Definitions::KT2
   cs.m_kt2=-1.0;
   cs.m_wk=0.0;
   cs.m_col=col;
+  Splitting_Function_Base *cdip(GetSF(i,j,k,mo,cs));
+  if (cdip==NULL || !cdip->On()) return cs;
   if ((i->Id()&3)==0) {
     if ((j->Id()&3)==0) {
       if ((k->Id()&3)==0) {
@@ -140,7 +142,7 @@ CS_Parameters CS_Cluster_Definitions::KT2
     }
   }
   cs.m_col=col;
-  KernelWeight(i,j,k,mo,cs,kmode);
+  KernelWeight(cdip,i,j,k,mo,cs,kmode);
   return cs;
 }
 
@@ -169,11 +171,11 @@ Flavour CS_Cluster_Definitions::ProperFlav(const Flavour &fl,const int anti) con
 }
 
 void CS_Cluster_Definitions::KernelWeight
-(const ATOOLS::Cluster_Leg *i,const ATOOLS::Cluster_Leg *j,
+(Splitting_Function_Base *cdip,
+ const ATOOLS::Cluster_Leg *i,const ATOOLS::Cluster_Leg *j,
  const ATOOLS::Cluster_Leg *k,const ATOOLS::Flavour &mo,
  CS_Parameters &cs,const int kmode) const
 {
-  Splitting_Function_Base *cdip(GetSF(i,j,k,mo,cs));
   if (cdip==NULL || !cdip->On()) {
     cs.m_wk=0.0;
     return;
