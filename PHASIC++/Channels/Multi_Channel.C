@@ -15,7 +15,7 @@ using namespace std;
 Multi_Channel::Multi_Channel(string _name) :
   name(StringReplace(_name, " ", "")),
   s1(NULL), m_readin(false), m_weight(1.0),
-  n_points(0), n_contrib(0),
+  n_points(0), n_contrib(0), s1xmin(1.e32),
   mn_points(0), mn_contrib(0),
   m_lastdice(-1),
   m_otype(0)
