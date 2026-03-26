@@ -126,12 +126,6 @@ bool Kinematics_Generator::TransverseKinematics(const Poincare * labboost) {
     THROW(fatal_error,
           "no meaningful kinematics strategy " + std::to_string(int(m_kintype)) + "\n");
   }
-  if (labboost) {
-    msg_Out()<<METHOD<<" with "
-	     <<(*p_remnants[0]->GetBlob())<<"\n"
-	     <<(*p_remnants[1]->GetBlob())<<"\n"
-	     <<(*p_softblob)<<"\n";
-  }
   return true;
 }
 
