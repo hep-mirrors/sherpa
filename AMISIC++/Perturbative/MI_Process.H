@@ -87,7 +87,7 @@ namespace AMISIC {
     }
     inline bool SetColours() const { return p_me2->SetColours(m_flavs); }
     inline const std::string& Name()       const { return m_name; }
-    inline double             operator()() const { return (*p_me2)(); }
+    inline       double       operator()() const { return (*p_me2)(); }
     inline const double &     LastXS()     const { return m_lastxs; }
   };
 }

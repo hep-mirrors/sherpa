@@ -85,7 +85,7 @@ MI_Process::MI_Process(const vector<Flavour>& flavs) :
     m_masses2[i] = 0.;
     if (i < 2) m_sumInMasses  += m_masses[i];
     else {
-      m_sumOutMasses += m_masses[i];
+      m_sumOutMasses   += Max(m_masses[i], m_flavs[i].Mass(true));
       if (m_masses[i]>0.) m_massive = true;
     }
   }
@@ -130,7 +130,7 @@ AllowedRemnants(array<shared_ptr<REMNANTS::Remnant_Base>, 2> remnants) const
   // Make sure there is enough energy left in the remnants
   ///////////////////////////////////////////////////////////////////////////
   return ( remnants[0]->TestExtract(m_flavs[0], m_momenta[0]) &&
-          remnants[1]->TestExtract(m_flavs[1], m_momenta[1]));
+           remnants[1]->TestExtract(m_flavs[1], m_momenta[1]));
 }
 
 void MI_Process::MasslessISKinematics(MI_Integrator* integrator)
