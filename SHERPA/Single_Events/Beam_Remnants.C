@@ -42,28 +42,20 @@ Return_Value::code Beam_Remnants::Treat(Blob_List* bloblist)
 Return_Value::code Beam_Remnants::StandardTreatment(Blob_List*  bloblist,
                                                     const bool& onlyBunch)
 {
-  msg_Out()<<METHOD<<": before filling:\n"
-  	   <<(*bloblist)<<"\n";
   Return_Value::code rv =
     p_beamremnanthandler->FillBeamAndBunchBlobs(bloblist, onlyBunch);
-  msg_Out()<<METHOD<<": before boosting:\n"
-  	   <<(*bloblist)<<"\n";
   Poincare * labboost = p_beamremnanthandler->GetRemnants()->GetLabBoost();
   if (labboost!=nullptr) {
-    msg_Out()<<METHOD<<" boosts back the perturbative blobs.\n";
     set<Particle *> * treateds = new set<Particle *>;
     bloblist->Boost(labboost,treateds);
     delete treateds;
   } 
-  msg_Out()<<METHOD<<": after boosting:\n"
-  	   <<(*bloblist)<<"\n";
   if (m_ana) Analyse(bloblist);
   return rv;
 }
 
 Return_Value::code Beam_Remnants::DealWithShowerFromBeams(Blob_List* bloblist)
 {
-  msg_Out()<<METHOD<<"\n";
   Return_Value::code rv = p_beamremnanthandler->FillBunchBlobsFromShower(bloblist);
   if (m_ana) Analyse(bloblist);
   return rv;
@@ -71,7 +63,6 @@ Return_Value::code Beam_Remnants::DealWithShowerFromBeams(Blob_List* bloblist)
 
 Return_Value::code Beam_Remnants::DealWithRescattering(Blob_List* bloblist)
 {
-  msg_Out()<<METHOD<<"\n";
   Blob * shower = bloblist->FindLast(btp::Shower);
   if (shower) {
     if (p_beamremnanthandler->NeedsToDealWithRescattering()) {
