@@ -130,7 +130,7 @@ AllowedRemnants(array<shared_ptr<REMNANTS::Remnant_Base>, 2> remnants) const
   // Make sure there is enough energy left in the remnants
   ///////////////////////////////////////////////////////////////////////////
   return ( remnants[0]->TestExtract(m_flavs[0], m_momenta[0]) &&
-           remnants[1]->TestExtract(m_flavs[1], m_momenta[1]));
+          remnants[1]->TestExtract(m_flavs[1], m_momenta[1]));
 }
 
 void MI_Process::MasslessISKinematics(MI_Integrator* integrator)

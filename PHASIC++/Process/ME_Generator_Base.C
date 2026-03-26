@@ -304,7 +304,6 @@ int ME_Generator_Base::ShiftMasses(Cluster_Amplitude *const ampl)
 
 int ME_Generator_Base::ShiftMassesDefault(Cluster_Amplitude *const ampl, Vec4D cms)
 {
-  msg_Out()<<"********************** "<<METHOD<<" **********************\n";
   DEBUG_FUNC(m_name);
   msg_Debugging()<<"Before shift: "<<*ampl<<"\n";
   bool must_shift = false;
@@ -326,10 +325,7 @@ int ME_Generator_Base::ShiftMassesDefault(Cluster_Amplitude *const ampl, Vec4D c
     double xi(etot.WDBSolve(cms[0],0.0,1.0));
     if (!IsEqual(etot(xi),cms[0],rpa->gen.Accu())) {
       if (m_massmode==0) xi=etot.WDBSolve(cms[0],1.0,2.0);
-      if (!IsEqual(etot(xi),cms[0],rpa->gen.Accu())) {
-	msg_Out()<<"********************** boink(1).\n";
-	return -1;
-      }
+      if (!IsEqual(etot(xi),cms[0],rpa->gen.Accu())) return -1;
     }
     for (size_t i(0);i<ampl->NIn();++i) {
       Vec4D p(xi*ampl->Leg(i)->Mom());
@@ -341,11 +337,7 @@ int ME_Generator_Base::ShiftMassesDefault(Cluster_Amplitude *const ampl, Vec4D c
   double xi(etot.WDBSolve(cms[0],0.0,1.0));
   if (!IsEqual(etot(xi),cms[0],rpa->gen.Accu())) {
     if (m_massmode==0) xi=etot.WDBSolve(cms[0],1.0,2.0);
-    if (!IsEqual(etot(xi),cms[0],rpa->gen.Accu())) {
-      msg_Out()<<"********************** boink(2): "
-	       <<etot(xi)<<" vs. "<<cms[0]<<"\n";
-      return -1;
-    }
+    if (!IsEqual(etot(xi),cms[0],rpa->gen.Accu())) return -1;
   }
   for (size_t i(ampl->NIn());i<ampl->Legs().size();++i) {
     Vec4D p(xi*ampl->Leg(i)->Mom());
@@ -356,10 +348,7 @@ int ME_Generator_Base::ShiftMassesDefault(Cluster_Amplitude *const ampl, Vec4D c
     double Ebunch = rpa->gen.PBunch(ampl->Leg(i)->Mom()[3] < 0.0 ? 0 : 1)[0];
     double Ei = -ampl->Leg(i)->Mom()[0];
     // need to check equality with some margin, for lepton beams without a pdf
-    if (Ebunch < Ei && !IsEqual(Ei,Ebunch)) {
-      msg_Out()<<"********************** boink(3).\n";
-      return -1;
-    }
+    if (Ebunch < Ei && !IsEqual(Ei,Ebunch)) return -1;
   }
   msg_Debugging()<<"After shift: "<<*ampl<<"\n";
   return 1;
