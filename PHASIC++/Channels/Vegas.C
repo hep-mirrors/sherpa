@@ -81,6 +81,7 @@ Vegas::Vegas(int dim, int ndx, const std::string &name) {
     for (int i = 0; i < m_dim; i++) {
       p_xi[i][0] = 1.0;
       p_opt[i] = 1;
+      p_chi[i] = std::numeric_limits<double>::max();
       p_bestchi[i] = .0;
       for (int j = 0; j < m_nd; j++) {
         p_d[i][j] = 0.;
