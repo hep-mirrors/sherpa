@@ -112,9 +112,6 @@ void Remnant_Handler::InitializeRemnants(PDF::ISR_Handler* isr,
   // each other, their beam, the Colour_Generator, and hand them also to
   // the ISR_Handler.
   // TODO: this latter part may become obsolete - I will have to check this.
-  msg_Out()<<METHOD<<" for beams: "
-	   <<beam->GetBeam(0)->Beam()<<" ("<<beam->GetBeam(0)->Type()<<") & "
-	   <<beam->GetBeam(1)->Beam()<<" ("<<beam->GetBeam(1)->Type()<<")\n";
   for (size_t i = 0; i < 2; ++i) {
     p_remnants[i]->SetBeam(beam->GetBeam(i));
     p_remnants[i]->Reset();
@@ -124,9 +121,6 @@ void Remnant_Handler::InitializeRemnants(PDF::ISR_Handler* isr,
       (beam->GetBeam(1)->Type()==BEAM::beamspectrum::monochromatic ||
        beam->GetBeam(1)->Type()==BEAM::beamspectrum::Fixed_Target)) {
     if (!beam->IsSymmetric()) {
-      msg_Out()<<METHOD<<": Momenta = "
-	       <<p_remnants[0]->InMomentum()<<" & "
-	       <<p_remnants[1]->InMomentum()<<"\n";
       p_cmsboost = new Poincare(p_remnants[0]->InMomentum()+
 				p_remnants[1]->InMomentum());
       p_labboost = new Poincare(p_remnants[0]->InMomentum()+
@@ -139,11 +133,6 @@ void Remnant_Handler::InitializeRemnants(PDF::ISR_Handler* isr,
 }
 
 void Remnant_Handler::InitializeCMSBoost() {
-  msg_Out()<<METHOD<<"("<<m_neednewCMS<<"): "
-	   <<p_remnants[0]->InMomentum()<<" + "
-	   <<p_remnants[1]->InMomentum()<<" vs. "
-	   <<p_remnants[0]->GetBeam()->InMomentum()<<" + "
-	   <<p_remnants[1]->GetBeam()->InMomentum()<<"\n";
   if (m_neednewCMS) {
     if (p_cmsboost) { delete p_cmsboost; p_cmsboost = nullptr; }
     if (p_labboost) { delete p_labboost; p_labboost = nullptr; }
@@ -159,8 +148,6 @@ void Remnant_Handler::BoostRemnantMomenta(const ATOOLS::Poincare * boost) {
   for (size_t i=0;i<2;i++) {
     Vec4D mom = p_remnants[i]->InMomentum();
     p_remnants[i]->SetInMomentum((*boost)*mom);
-    msg_Out()<<METHOD<<" boosts "<<mom<<" --> "<<p_remnants[i]->InMomentum()<<"\n";
-    if (p_remnants[i]->GetBlob()) msg_Out()<<(*p_remnants[i]->GetBlob())<<"\n";
   }
 }
 
@@ -266,15 +253,12 @@ Return_Value::code Remnant_Handler::MakeBeamBlobs(Blob_List* const bloblist,
   // Check for colour connected parton-pairs including beam partons and
   // add soft gluons in between them if their invariant mass is too large.
   // This still needs debugging - therefore it is commented out.
-  msg_Out()<<METHOD<<" going for the beam blobs.\n";
   Return_Value::code rv = Return_Value::Success;
   if (!m_kinematics.FillBlobs(bloblist,p_labboost)) {
-    msg_Out()<<" --> failing with the kinematics.\n";
     rv = Return_Value::New_Event;
   }
   else {
     if (!CheckBeamBreakup() || !m_decorrelator(p_softblob)) {
-      msg_Out()<<" --> failing with the checks.\n";
       rv = Return_Value::New_Event;
     }
   }
