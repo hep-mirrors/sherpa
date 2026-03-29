@@ -8,7 +8,6 @@
 #include "ATOOLS/Org/MyStrStream.H"
 #include <limits>
 
-// TOOD check this file for correct implementations on this branch
 namespace ATOOLS {
   /*!
     \file
@@ -19,12 +18,9 @@ namespace ATOOLS {
 
     double LnGamma(const double& x) const
     {
-      static const double coeff[6] = {76.18009172947146,
-                                      -86.50532032941677,
-                                      24.01409824083091,
-                                      -1.231739572450155,
-                                      0.1208650973866179e-2,
-                                      -0.5395239384953e-5};
+      static const double coeff[6] = {
+          76.18009172947146,  -86.50532032941677,    24.01409824083091,
+          -1.231739572450155, 0.1208650973866179e-2, -0.5395239384953e-5};
       double y(x), tmp(x + 5.5);
       tmp -= (x + 0.5) * log(tmp);
       double arg(1.000000000190015);
@@ -298,10 +294,7 @@ namespace ATOOLS {
     }
 
 
-    double I0(const double& arg) const
-    {
-      return In(0, arg);
-    }
+    double I0(const double& arg) const { return In(0, arg); }
 
     double Kn(const int order, const double& x) const
     {
@@ -501,18 +494,12 @@ namespace ATOOLS {
       // Reference values obtained from WolframAlpha or trusted high-precision
       // sources.
       const std::vector<std::pair<double, double>> test_cases_K1 = {
-          {0.01, 99.97389411829624},
-          {0.1, 9.853844780870606},
-          {0.5, 1.656441120003301},
-          {1.0, 0.6019072301972347},
-          {1.5, 0.27738780045684386},
-          {2.0, 0.13986588181652243},
-          {2.1, 0.12274641153350789},
-          {5.0, 0.004044613445452164},
-          {10.0, 0.00001864877345382558},
-          {20.0, 5.883057969557039e-10},
-          {50.0, 3.4441022267175555e-23},
-          {100.0, 4.67985373563691e-45}};
+          {0.01, 99.97389411829624},      {0.1, 9.853844780870606},
+          {0.5, 1.656441120003301},       {1.0, 0.6019072301972347},
+          {1.5, 0.27738780045684386},     {2.0, 0.13986588181652243},
+          {2.1, 0.12274641153350789},     {5.0, 0.004044613445452164},
+          {10.0, 0.00001864877345382558}, {20.0, 5.883057969557039e-10},
+          {50.0, 3.4441022267175555e-23}, {100.0, 4.67985373563691e-45}};
 
       bool all_tests_passed_K1 = true;
       for (const auto& test : test_cases_K1) {
@@ -557,14 +544,8 @@ namespace ATOOLS {
   class ExpInt: public ATOOLS::Function_Base {
   public:
 
-    double GetValue(double T) override
-    {
-      return -exp(-T) / T;
-    }
-    double operator()(double T) override
-    {
-      return GetValue(T);
-    }
+    double GetValue(double T) override { return -exp(-T) / T; }
+    double operator()(double T) override { return GetValue(T); }
     double GetExpInt(double X)
     {
       if (X > 0.) exit(1);
