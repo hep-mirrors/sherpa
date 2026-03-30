@@ -49,7 +49,7 @@ Return_Value::code Beam_Remnants::StandardTreatment(Blob_List*  bloblist,
     set<Particle *> * treateds = new set<Particle *>;
     bloblist->Boost(labboost,treateds);
     delete treateds;
-  } 
+  }
   if (m_ana) Analyse(bloblist);
   return rv;
 }

@@ -23,7 +23,7 @@ public:
   ~Collider_Kinematics() = default;
 
   inline double Sprime() override { return m_sprimekey[3]; }
-  inline double Y()      override { return m_ykey[2]; }
+  inline double Y() override { return m_ykey[2]; }
   void AssignKeys(ATOOLS::Integration_Info *const info) override;
   void SetLimits() override;
   bool operator()(ATOOLS::Vec4D_Vector& moms) override;

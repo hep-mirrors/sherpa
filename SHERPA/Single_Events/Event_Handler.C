@@ -250,6 +250,7 @@ int Event_Handler::IterateEventPhases(eventtype::code & mode) {
     if (rv!=Return_Value::Nothing) {
       msg_Tracking()<<METHOD<<"(): run '"<<(*pit)->Name()<<"' -> "
                     <<rv<<std::endl;
+      msg_Debugging()<<" -> "<<rv<<" ("<<m_blobs.size()<<" blobs)"<<std::endl;
     }
     switch (rv) {
     case Return_Value::Success :

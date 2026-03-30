@@ -116,10 +116,8 @@ void Remnant_Handler::InitializeRemnants(PDF::ISR_Handler* isr,
     p_remnants[i]->SetBeam(beam->GetBeam(i));
     p_remnants[i]->Reset();
   }
-  if ((beam->GetBeam(0)->Type()==BEAM::beamspectrum::monochromatic ||
-       beam->GetBeam(0)->Type()==BEAM::beamspectrum::Fixed_Target) &&
-      (beam->GetBeam(1)->Type()==BEAM::beamspectrum::monochromatic ||
-       beam->GetBeam(1)->Type()==BEAM::beamspectrum::Fixed_Target)) {
+  if (beam->GetBeam(0)->Type()==BEAM::beamspectrum::monochromatic &&
+      beam->GetBeam(1)->Type()==BEAM::beamspectrum::monochromatic) {
     if (!beam->IsSymmetric()) {
       p_cmsboost = new Poincare(p_remnants[0]->InMomentum()+
 				p_remnants[1]->InMomentum());
@@ -261,10 +259,6 @@ Return_Value::code Remnant_Handler::MakeBeamBlobs(Blob_List* const bloblist,
   else if (!CheckBeamBreakup() || !m_decorrelator(p_softblob)) {
     msg_Error() << METHOD << " failed. Will return new event\n";
     rv = Return_Value::New_Event;
-  else {
-    if (!CheckBeamBreakup() || !m_decorrelator(p_softblob)) {
-      rv = Return_Value::New_Event;
-    }
   }
   Reset();
   return rv;
@@ -299,8 +293,8 @@ void Remnant_Handler::InitBeamAndSoftBlobs(Blob_List* const bloblist,
                 bloblist->begin() +
                 FindInsertPositionForRescatter(bloblist, isrescatter);
         bloblist->insert(pos, p_softblob);
-      }
-      else bloblist->push_front(p_softblob);
+      } else
+        bloblist->push_front(p_softblob);
     }
   }
   // Look for shower blobs that need beams and unset the flag
@@ -318,10 +312,8 @@ void Remnant_Handler::InitBeamAndSoftBlobs(Blob_List* const bloblist,
               bloblist->begin() +
               FindInsertPositionForRescatter(bloblist, isrescatter);
       bloblist->insert(pos, p_remnants[beam]->MakeBlob());
-    }
-    else {
+    } else
       bloblist->push_front(p_remnants[beam]->MakeBlob());
-    }
   }
 }
 

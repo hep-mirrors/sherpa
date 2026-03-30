@@ -151,9 +151,10 @@ bool Phase_Space_Point::DefineBeamKinematics() {
       return false;
   }
   m_sprime = p_beamhandler->Sprime();
-  m_y      = (p_beamhandler->GetBeam(0)->InMomentum() +
-	      p_beamhandler->GetBeam(1)->InMomentum()).Y();
-  m_y     += p_beamhandler->Y();
+  m_y = (p_beamhandler->GetBeam(0)->InMomentum() +
+         p_beamhandler->GetBeam(1)->InMomentum())
+            .Y();
+  m_y += p_beamhandler->Y();
   return true;
 }
 
@@ -184,14 +185,14 @@ bool Phase_Space_Point::DefineISRKinematics(Process_Integrator *const process) {
       p_isrchannels->GeneratePoint();
     }
     m_sprime = m_osmass ? m_isrspkey[4] : m_isrspkey[3];
-    m_y     += m_isrykey[2];
+    m_y += m_isrykey[2];
     m_ISsymmetryfactor = p_isrhandler->GenerateSwap(
                              p_pshandler->Active()->Process()->Flavours()[0],
                              p_pshandler->Active()->Process()->Flavours()[1])
                              ? 2.0
                              : 1.0;
   }
-  if (p_yfshandler->HasISR()) {
+  if(p_yfshandler->HasISR()){
     p_isrchannels->GeneratePoint();
     p_yfshandler->SetLimits(m_smin);
     DefineFSRKinematics();
@@ -209,10 +210,11 @@ bool Phase_Space_Point::DefineISRKinematics(Process_Integrator *const process) {
     DefineFSRKinematics();
     p_yfshandler->SetBornMomenta(p_moms);
     return(p_yfshandler->CalculateFSR(p_moms));
+
   }
   return p_isrhandler->MakeISR(m_sprime, m_isrykey[2], p_moms,
                                process->Process()->Selected()->Flavours());
-} 
+}
 
 bool Phase_Space_Point::DefineFSRKinematics() {
   p_fsrchannels->GeneratePoint(p_moms.data(), p_pshandler->Cuts());
