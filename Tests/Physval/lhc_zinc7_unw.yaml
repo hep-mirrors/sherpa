@@ -1,4 +1,5 @@
 # general settings
+EVENT_GENERATION_MODE: Weighted #just for testing new Results.zip in physval with weighted evgen
 EVENTS: 10k
 EVENT_DISPLAY_INTERVAL: 100
 BATCH_MODE: 7
