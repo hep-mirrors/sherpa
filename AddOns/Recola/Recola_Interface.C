@@ -2,6 +2,7 @@
 #include "MODEL/Main/Model_Base.H"
 #include "MODEL/Main/Running_AlphaS.H"
 #include "MODEL/Main/Running_AlphaQED.H"
+#include "MODEL/Main/Single_Vertex.H"
 #include "PHASIC++/Main/Phase_Space_Handler.H"
 #include "PHASIC++/Process/Process_Base.H"
 #include "PHASIC++/Process/External_ME_Args.H"
@@ -165,6 +166,7 @@ void Recola::Recola_Interface::RegisterDefaults() const
   s["RECOLA_MASS_REG"].SetDefault(false);
   s["RECOLA_USE_DECAY"].SetDefault(false);
   s["RECOLA_DISABLE_EW_ee_VERTEX"].SetDefault(false);
+  s["RECOLA_SET_B_YUKAWA"].SetDefault(false);
   // find RECOLA installation prefix with several overwrite options
   char *var=NULL;
   s_recolaprefix = rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Recola";
@@ -365,10 +367,30 @@ int Recola::Recola_Interface::RegisterProcess(const External_ME_Args& args,
   // NOTE dont edit here 
   // disable ee coupling to Z, goldstone, and photon
   if (s["RECOLA_DISABLE_EW_ee_VERTEX"].Get<bool>()) { 
+    msg_Info()<<"Switching off Zee, Aee, p0ee couplings"<<std::endl;
     switchoff_coupling3_rcl("Z","e-","e+");
     switchoff_coupling3_rcl("A","e-","e+");
     switchoff_coupling3_rcl("p0","e-","e+");
   }
+  #ifdef RECOLA_SET_B_YUKAWA
+  if (s["RECOLA_SET_B_YUKAWA"].Get<bool>()) {
+    const std::vector<Single_Vertex> &vvec(s_model->Vertices());
+    Complex yb(0.);
+    for (size_t i(0);i<vvec.size();++i) {
+      if (vvec[i].NLegs()==3 &&
+          vvec[i].in[0].Kfcode()==kf_h0 &&
+          vvec[i].in[1].Kfcode()==kf_b  &&
+          vvec[i].in[2]==vvec[i].in[1].Bar() &&
+          vvec[i].cpl.size()==1) {
+        yb=vvec[i].cpl[0].Value();
+        break;
+      }
+    }
+    msg_Info()<<"Setting Recola hbb Yukawa coupling to "<<yb<<std::endl;
+    set_coupling3_rcl(yb,"H","b","b~");
+    set_coupling3_rcl(yb,"p0","b","b~");
+  }
+  #endif
   return procIndex;
 }
     
