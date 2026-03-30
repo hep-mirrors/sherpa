@@ -254,7 +254,6 @@ Return_Value::code Remnant_Handler::MakeBeamBlobs(Blob_List* const bloblist,
   // add soft gluons in between them if their invariant mass is too large.
   // This still needs debugging - therefore it is commented out.
   Return_Value::code rv = Return_Value::Success;
-<<<<<<< HEAD
   if (!m_kinematics.FillBlobs(bloblist)) {
     msg_Debugging() << METHOD << ": Filling of beam blobs failed.\n";
     rv = Return_Value::New_Event;
@@ -262,15 +261,10 @@ Return_Value::code Remnant_Handler::MakeBeamBlobs(Blob_List* const bloblist,
   else if (!CheckBeamBreakup() || !m_decorrelator(p_softblob)) {
     msg_Error() << METHOD << " failed. Will return new event\n";
     rv = Return_Value::New_Event;
-=======
-  if (!m_kinematics.FillBlobs(bloblist,p_labboost)) {
-    rv = Return_Value::New_Event;
-  }
   else {
     if (!CheckBeamBreakup() || !m_decorrelator(p_softblob)) {
       rv = Return_Value::New_Event;
     }
->>>>>>> 0a69aa008 (merge conflicts with master killed, outputs still in)
   }
   Reset();
   return rv;
