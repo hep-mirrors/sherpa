@@ -168,14 +168,11 @@ MI_Process * MI_GG_Processes::SelectProcess() {
   for (mit=m_processes.begin();mit!=m_processes.end();mit++) tot += (**mit)();
   tot *= ran->Get();
   mit = m_processes.begin();
-  while (tot>0.) {
+  for(; mit != m_processes.end(); mit++) {
     tot -= (**mit)();
-    mit++;
-    if (mit==m_processes.end()) {
-      mit--;
-      break;
-    }
+    if(tot<=0.) break;
   }
+  if(mit == m_processes.end()) mit = m_processes.begin();
   return (*mit);
 }
 
