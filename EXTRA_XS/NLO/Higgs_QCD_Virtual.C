@@ -28,7 +28,7 @@ namespace EXTRAXS {
         m_fac = CF;
         m_pij = 1.5;
         /// @todo finite part
-        THROW(not_implemented, "qq -> h virtual not implemented.");
+        THROW(not_implemented, "qq -> h virtual not implemented.");  // not needed since mass of quarks in loop is 0 AND if we naively integrate over the momenta, the sign flips on the quarks cause it to vanish.
       }
       else if (flavs[1].IsGluon()) {
         m_fac = CA;
@@ -57,9 +57,9 @@ namespace EXTRAXS {
       double nlf = double(lq.Size()) / 2.0; 
       m_b0 = (11.0 / 3.0 * CA - 4.0 / 3.0 * TR * nlf) / 4.0 / M_PI;
       
-        m_fac = CA;
-        m_pij = 2.0 * M_PI * m_b0 / CA;
-        m_finiteconst = sqr(M_PI) + (con ? 0.0 : 11.0 / 3.0);
+      m_fac = CA;
+      m_pij = 2.0 * M_PI * m_b0 / CA;
+      m_finiteconst = sqr(M_PI) + (con ? 0.0 : 11.0 / 3.0);
       
       // else
       //   THROW(fatal_error, "Internal Error.");

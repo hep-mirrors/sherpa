@@ -2,6 +2,7 @@
 #include "MODEL/Main/Model_Base.H"
 #include "MODEL/Main/Running_AlphaS.H"
 #include "MODEL/Main/Running_AlphaQED.H"
+#include "MODEL/Main/Single_Vertex.H"
 #include "PHASIC++/Main/Phase_Space_Handler.H"
 #include "PHASIC++/Process/Process_Base.H"
 #include "PHASIC++/Process/External_ME_Args.H"
@@ -18,6 +19,8 @@ using namespace PHASIC;
 using namespace MODEL;
 using namespace ATOOLS;
 using namespace std;
+
+// #define RECOLA_SET_YUKAWAS
 
 std::string    Recola::Recola_Interface::s_recolaprefix = std::string("");
 bool           Recola::Recola_Interface::s_ignore_model = false;
@@ -165,6 +168,7 @@ void Recola::Recola_Interface::RegisterDefaults() const
   s["RECOLA_MASS_REG"].SetDefault(false);
   s["RECOLA_USE_DECAY"].SetDefault(false);
   s["RECOLA_DISABLE_EW_ee_VERTEX"].SetDefault(false);
+  s["RECOLA_SET_B_YUKAWA"].SetDefault(false);
   // find RECOLA installation prefix with several overwrite options
   char *var=NULL;
   s_recolaprefix = rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Recola";
@@ -365,10 +369,49 @@ int Recola::Recola_Interface::RegisterProcess(const External_ME_Args& args,
   // NOTE dont edit here 
   // disable ee coupling to Z, goldstone, and photon
   if (s["RECOLA_DISABLE_EW_ee_VERTEX"].Get<bool>()) { 
+    msg_Info()<<"Switching off Zee, Aee, p0ee couplings"<<std::endl;
     switchoff_coupling3_rcl("Z","e-","e+");
     switchoff_coupling3_rcl("A","e-","e+");
     switchoff_coupling3_rcl("p0","e-","e+");
   }
+  #ifdef RECOLA_SET_YUKAWAS
+  if (s["RECOLA_SET_B_YUKAWA"].Get<bool>()) {
+    const std::vector<Single_Vertex> &vvec(s_model->Vertices());
+    Complex yb(0.);
+    for (size_t i(0);i<vvec.size();++i) {
+      if (vvec[i].NLegs()==3 &&
+          vvec[i].in[0].Kfcode()==kf_h0 &&
+          vvec[i].in[1].Kfcode()==kf_b  &&
+          vvec[i].in[2]==vvec[i].in[1].Bar() &&
+          vvec[i].cpl.size()==1) {
+        yb=vvec[i].cpl[0].Value();
+        break;
+      }
+    }
+    // Recola has factor of i already hardcoded for Yukawa(-like) vertices
+    yc *= -Complex(0.,1.); 
+    msg_Info()<<"Setting Recola hbb Yukawa coupling to "<<yb<<std::endl;
+    set_coupling3_rcl(yb,"H","b","b~");
+  }
+  if (s["RECOLA_SET_C_YUKAWA"].Get<bool>()) {
+    const std::vector<Single_Vertex> &vvec(s_model->Vertices());
+    Complex yc(0.);
+    for (size_t i(0);i<vvec.size();++i) {
+      if (vvec[i].NLegs()==3 &&
+          vvec[i].in[0].Kfcode()==kf_h0 &&
+          vvec[i].in[1].Kfcode()==kf_c  &&
+          vvec[i].in[2]==vvec[i].in[1].Bar() &&
+          vvec[i].cpl.size()==1) {
+        yc=vvec[i].cpl[0].Value();
+        break;
+      }
+    }
+    // Recola has factor of i already hardcoded for Yukawa(-like) vertices
+    yc *= -Complex(0.,1.); 
+    msg_Info()<<"Setting Recola hcc Yukawa coupling to "<<yc<<std::endl;
+    set_coupling3_rcl(yc,"H","c","c~");
+  }
+  #endif
   return procIndex;
 }
     
@@ -425,10 +468,50 @@ size_t Recola::Recola_Interface::RegisterProcess(const Process_Info& pi,
   // disable ee coupling to Z, goldstone, and photon
   msg_Info()<<METHOD<<'\n';
   if (s["RECOLA_DISABLE_EW_ee_VERTEX"].Get<bool>()) {
+    msg_Info()<<"Switching off Zee, Aee, p0ee couplings"<<std::endl;
     switchoff_coupling3_rcl("Z","e-","e+");
     switchoff_coupling3_rcl("A","e-","e+");
     switchoff_coupling3_rcl("p0","e-","e+");
   }
+
+  #ifdef RECOLA_SET_YUKAWAS
+  if (s["RECOLA_SET_B_YUKAWA"].Get<bool>()) {
+    const std::vector<Single_Vertex> &vvec(s_model->Vertices());
+    Complex yb(0.);
+    for (size_t i(0);i<vvec.size();++i) {
+      if (vvec[i].NLegs()==3 &&
+          vvec[i].in[0].Kfcode()==kf_h0 &&
+          vvec[i].in[1].Kfcode()==kf_b  &&
+          vvec[i].in[2]==vvec[i].in[1].Bar() &&
+          vvec[i].cpl.size()==1) {
+        yb=vvec[i].cpl[0].Value();
+        break;
+      }
+    }
+    // Recola has factor of i already hardcoded for Yukawa(-like) vertices
+    yb *= -Complex(0.,1.); 
+    msg_Info()<<"Setting Recola hbb Yukawa coupling to "<<yb<<std::endl;
+    set_coupling3_rcl(yb,"H","b","b~");
+  }
+  if (s["RECOLA_SET_C_YUKAWA"].Get<bool>()) {
+    const std::vector<Single_Vertex> &vvec(s_model->Vertices());
+    Complex yc(0.);
+    for (size_t i(0);i<vvec.size();++i) {
+      if (vvec[i].NLegs()==3 &&
+          vvec[i].in[0].Kfcode()==kf_h0 &&
+          vvec[i].in[1].Kfcode()==kf_c  &&
+          vvec[i].in[2]==vvec[i].in[1].Bar() &&
+          vvec[i].cpl.size()==1) {
+        yc=vvec[i].cpl[0].Value();
+        break;
+      }
+    }
+    // Recola has factor of i already hardcoded for Yukawa(-like) vertices
+    yc *= -Complex(0.,1.); 
+    msg_Info()<<"Setting Recola hcc Yukawa coupling to "<<yc<<std::endl;
+    set_coupling3_rcl(yc,"H","c","c~");
+  }
+  #endif
 
   // find out whether we need multiple orders or not
   s_asscontribs[procIndex]=pi.m_fi.m_asscontribs;

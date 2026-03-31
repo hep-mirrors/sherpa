@@ -40,9 +40,14 @@ bool Single_Process::Initialize()
   if (m_nin!=2) return false;
 
   // can't do resonant processes, with one exception: ee -> Y(4S) -> B Bbar
+  // and l + N -> l' + Δ -> l' + N' + π's
   if (m_pinfo.m_fi.m_ps.size()!=m_pinfo.m_fi.NExternal()) {
-    if (m_pinfo.m_fi.m_ps[0].m_fl.Kfcode()!=kf_Upsilon_4S) {
-      DEBUG_INFO("found decay process, which Internal can't handle.");
+    if (m_pinfo.m_fi.m_ps[0].m_fl.Kfcode()==kf_Upsilon_4S) {
+    }
+    else if (m_pinfo.m_fi.m_ps[0].m_fl.IsRaritaSchwinger()) {
+    }
+    else {
+      DEBUG_INFO("Resonant processes are not supported by the Internal ME2s, sorry.");
       return false;
     }
   }
