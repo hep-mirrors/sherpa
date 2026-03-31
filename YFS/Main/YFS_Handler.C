@@ -16,21 +16,21 @@ using namespace METOOLS;
 
 YFS_Handler::YFS_Handler()
 {
-  p_dipoles = new Define_Dipoles();
-  p_coulomb = new Coulomb();
-  p_fsr = new FSR();
-  p_debug = new Debug();
-  p_yfsFormFact = new YFS::YFS_Form_Factor();
-  m_setparticles = false;
-  p_isr = new YFS::ISR();
-  p_nlo = new YFS::NLO_Base();
-  m_formfactor = 1;
-  m_isrinital = true;
-  p_splitter = new PHOTONS::Photon_Splitter(m_photon_split);
-  m_rmode = 0;
-  m_real = 1;
-  m_negskip = 0;
   if(Mode()!=YFS::yfsmode::off){
+    p_dipoles = new Define_Dipoles();
+    p_coulomb = new Coulomb();
+    p_fsr = new FSR();
+    p_debug = new Debug();
+    p_yfsFormFact = new YFS::YFS_Form_Factor();
+    m_setparticles = false;
+    p_isr = new YFS::ISR();
+    p_nlo = new YFS::NLO_Base();
+    m_formfactor = 1;
+    m_isrinital = true;
+    p_splitter = new PHOTONS::Photon_Splitter(m_photon_split);
+    m_rmode = 0;
+    m_real = 1;
+    m_negskip = 0;
     rpa->gen.AddCitation(1,"The automation of YFS ISR is published in  \\cite{Krauss:2022ajk}.Which is based on \\cite{Jadach:1988gb}");
   }
 }
