@@ -84,8 +84,8 @@ Particle_Info::~Particle_Info()
 
 void Particle_Info::Clear()
 { 
-  for (size_t i(0);i<m_content.size();++i) 
-    delete m_content[i]; 
+  // for (size_t i(0);i<m_content.size();++i) 
+  //   delete m_content[i]; 
   m_content.clear();
 }
 

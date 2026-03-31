@@ -269,6 +269,7 @@ namespace ATOOLS {
     inline bool IsNeutrino()      const { return IsLepton()&&IsUptype(); }
 
     inline bool IsQuark() const { return Kfcode()<10; }
+    inline bool IsChPion() const { return (Kfcode()==211||Kfcode()==-211); }
     inline bool IsGluon() const
     { return Kfcode()==kf_gluon||Kfcode()==kf_shgluon; }
     inline bool IsJet() const   { return Kfcode()==kf_jet; }
