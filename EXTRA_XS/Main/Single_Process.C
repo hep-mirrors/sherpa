@@ -54,7 +54,7 @@ bool Single_Process::Initialize()
       MODEL::s_model->Name()!="ScalarQED") {
     DEBUG_INFO("Requested BSM, Internal can't cope, it's too dumb...");
     return false;
-          EXTRA_XS/Main/Single_Process.C  }
+  }
 
   m_nlotype=m_pinfo.m_fi.NLOType();
   if (m_nlotype==nlo_type::loop) {
