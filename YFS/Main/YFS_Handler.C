@@ -37,19 +37,21 @@ YFS_Handler::YFS_Handler()
 
 YFS_Handler::~YFS_Handler()
 {
-  if (p_isr) delete p_isr;
-  if (p_fsr) delete p_fsr;
-  if (p_coulomb) delete p_coulomb;
-  if (p_debug)   delete p_debug;
-  if (p_yfsFormFact) delete p_yfsFormFact;
-  if (p_dipoles) delete p_dipoles;
-  if (p_nlo) delete p_nlo;
-  if (p_splitter) delete p_splitter;
-  for (auto &p: m_particles){
-    if(p) delete p;
-  }
-  if(m_negskip!=0){
-    msg_Out()<<"Total Events Skipped: "<<m_negskip<<std::endl;
+  if(Mode()!=YFS::yfsmode::off){
+    if (p_isr) delete p_isr;
+    if (p_fsr) delete p_fsr;
+    if (p_coulomb) delete p_coulomb;
+    if (p_debug)   delete p_debug;
+    if (p_yfsFormFact) delete p_yfsFormFact;
+    if (p_dipoles) delete p_dipoles;
+    if (p_nlo) delete p_nlo;
+    if (p_splitter) delete p_splitter;
+    for (auto &p: m_particles){
+      if(p) delete p;
+    }
+    if(m_negskip!=0){
+      msg_Out()<<"Total Events Skipped: "<<m_negskip<<std::endl;
+    }
   }
 }
 
