@@ -20,6 +20,8 @@ using namespace MODEL;
 using namespace ATOOLS;
 using namespace std;
 
+// #define RECOLA_SET_YUKAWAS
+
 std::string    Recola::Recola_Interface::s_recolaprefix = std::string("");
 bool           Recola::Recola_Interface::s_ignore_model = false;
 bool           Recola::Recola_Interface::s_exit_on_error= true;
@@ -372,7 +374,7 @@ int Recola::Recola_Interface::RegisterProcess(const External_ME_Args& args,
     switchoff_coupling3_rcl("A","e-","e+");
     switchoff_coupling3_rcl("p0","e-","e+");
   }
-  #ifdef RECOLA_SET_B_YUKAWA
+  #ifdef RECOLA_SET_YUKAWAS
   if (s["RECOLA_SET_B_YUKAWA"].Get<bool>()) {
     const std::vector<Single_Vertex> &vvec(s_model->Vertices());
     Complex yb(0.);
@@ -386,9 +388,28 @@ int Recola::Recola_Interface::RegisterProcess(const External_ME_Args& args,
         break;
       }
     }
+    // Recola has factor of i already hardcoded for Yukawa(-like) vertices
+    yc *= -Complex(0.,1.); 
     msg_Info()<<"Setting Recola hbb Yukawa coupling to "<<yb<<std::endl;
     set_coupling3_rcl(yb,"H","b","b~");
-    set_coupling3_rcl(yb,"p0","b","b~");
+  }
+  if (s["RECOLA_SET_C_YUKAWA"].Get<bool>()) {
+    const std::vector<Single_Vertex> &vvec(s_model->Vertices());
+    Complex yc(0.);
+    for (size_t i(0);i<vvec.size();++i) {
+      if (vvec[i].NLegs()==3 &&
+          vvec[i].in[0].Kfcode()==kf_h0 &&
+          vvec[i].in[1].Kfcode()==kf_c  &&
+          vvec[i].in[2]==vvec[i].in[1].Bar() &&
+          vvec[i].cpl.size()==1) {
+        yc=vvec[i].cpl[0].Value();
+        break;
+      }
+    }
+    // Recola has factor of i already hardcoded for Yukawa(-like) vertices
+    yc *= -Complex(0.,1.); 
+    msg_Info()<<"Setting Recola hcc Yukawa coupling to "<<yc<<std::endl;
+    set_coupling3_rcl(yc,"H","c","c~");
   }
   #endif
   return procIndex;
@@ -453,7 +474,7 @@ size_t Recola::Recola_Interface::RegisterProcess(const Process_Info& pi,
     switchoff_coupling3_rcl("p0","e-","e+");
   }
 
-  #ifdef RECOLA_SET_B_YUKAWA
+  #ifdef RECOLA_SET_YUKAWAS
   if (s["RECOLA_SET_B_YUKAWA"].Get<bool>()) {
     const std::vector<Single_Vertex> &vvec(s_model->Vertices());
     Complex yb(0.);
@@ -471,7 +492,24 @@ size_t Recola::Recola_Interface::RegisterProcess(const Process_Info& pi,
     yb *= -Complex(0.,1.); 
     msg_Info()<<"Setting Recola hbb Yukawa coupling to "<<yb<<std::endl;
     set_coupling3_rcl(yb,"H","b","b~");
-    // set_coupling3_rcl(yb,"p0","b","b~");
+  }
+  if (s["RECOLA_SET_C_YUKAWA"].Get<bool>()) {
+    const std::vector<Single_Vertex> &vvec(s_model->Vertices());
+    Complex yc(0.);
+    for (size_t i(0);i<vvec.size();++i) {
+      if (vvec[i].NLegs()==3 &&
+          vvec[i].in[0].Kfcode()==kf_h0 &&
+          vvec[i].in[1].Kfcode()==kf_c  &&
+          vvec[i].in[2]==vvec[i].in[1].Bar() &&
+          vvec[i].cpl.size()==1) {
+        yc=vvec[i].cpl[0].Value();
+        break;
+      }
+    }
+    // Recola has factor of i already hardcoded for Yukawa(-like) vertices
+    yc *= -Complex(0.,1.); 
+    msg_Info()<<"Setting Recola hcc Yukawa coupling to "<<yc<<std::endl;
+    set_coupling3_rcl(yc,"H","c","c~");
   }
   #endif
 
