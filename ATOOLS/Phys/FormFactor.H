@@ -59,7 +59,6 @@ public:
   Complex m_I;
   finalstate::code m_form_mode;
 };
-extern FormFactor *pionform;
 inline std::string to_string(finalstate::code fs) {
   std::ostringstream os;
   os << fs; // uses your operator<<

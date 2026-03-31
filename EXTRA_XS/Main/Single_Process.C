@@ -54,10 +54,9 @@ bool Single_Process::Initialize()
       MODEL::s_model->Name()!="ScalarQED") {
     DEBUG_INFO("Requested BSM, Internal can't cope, it's too dumb...");
     return false;
-  }
+          EXTRA_XS/Main/Single_Process.C  }
 
   m_nlotype=m_pinfo.m_fi.NLOType();
-  // PRINT_VAR((m_nlotype==nlo_type::real));
   if (m_nlotype==nlo_type::loop) {
     DEBUG_INFO("searching loop process");
     p_virtual_me2=PHASIC::Virtual_ME2_Base::GetME2(m_pinfo);
