@@ -16,6 +16,9 @@ namespace SHERPA {
     ATOOLS::Return_Value::code operator()(ATOOLS::Blob_List *const);
     void CleanUp(const size_t & mode=0);
     void Output();
+
+    inline const std::string Name() const { return std::string("Native"); }
+    inline const bool        On()   const { return m_on; }
   };
 }
 
