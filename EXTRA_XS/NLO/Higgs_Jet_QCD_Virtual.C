@@ -101,8 +101,8 @@ namespace EXTRAXS {
     HGQQ_QCD_Virtual(const Process_Info &pi, const Flavour_Vector &flavs,
                      bool flip, bool con) : Virtual_ME2_Base(pi, flavs), m_flip(flip), m_con(con), m_b0(0.), m_nlf(0.)
     {
-      msg_Tracking() << "HGQQ_QCD_Virtual(): Using h->gqq virtual matrix element." << "\n";
-      msg_Debugging() << "flavs[0] = " << flavs[0] << ", flavs[1] = " << flavs[1] << ", flavs[2] = " << flavs[2] << ", flavs[3] = " << flavs[3] << ", flavs[4] = " << flavs[4] << "\n";
+      msg_Out() << "HGQQ_QCD_Virtual(): Using h->gqq virtual matrix element." << "\n";
+      msg_Out() << "flavs[0] = " << flavs[0] << ", flavs[1] = " << flavs[1] << ", flavs[2] = " << flavs[2] << ", flavs[3] = " << flavs[3] << ", flavs[4] = " << flavs[4] << "\n";
 
       Flavour lq(kf_quark);
       double nlf(0.);
@@ -131,8 +131,9 @@ namespace EXTRAXS {
     HGGG_QCD_Virtual(const Process_Info &pi, const Flavour_Vector &flavs,
                      bool flip, bool con) : Virtual_ME2_Base(pi, flavs), m_flip(flip), m_con(con), m_b0(0.), m_nlf(0.)
     {
-      msg_Tracking() << "HGGG_QCD_Virtual(): Using h->ggg virtual matrix element." << "\n";
-      msg_Debugging() << "flavs[0] = " << flavs[0] << ", flavs[1] = " << flavs[1] << ", flavs[2] = " << flavs[2] << ", flavs[3] = " << flavs[3] << ", flavs[4] = " << flavs[4] << "\n";
+      msg_Out() << "HGGG_QCD_Virtual(): Using h->ggg virtual matrix element." << "\n";
+      msg_Out() << "flavs[0] = " << flavs[0] << ", flavs[1] = " << flavs[1] << ", flavs[2] = " << flavs[2] << ", flavs[3] = " << flavs[3] << ", flavs[4] = " << flavs[4] << "\n";
+      
       Flavour lq(kf_quark);
       double nlf(0.);
       for (size_t i(0); i < lq.Size(); ++i)
@@ -278,7 +279,7 @@ void HGQQ_QCD_Virtual::Calc(const Vec4D_Vector &momenta) // ee->h->gqq virtual c
   //   throw ATOOLS::Exception("Invalid kinematics");
   // }
 
-  msg_Tracking() << "HGQQ_QCD_Virtual::Calc(): Calculating h->gqq virtual matrix element for: " << "\n";
+  msg_Tracking() << METHOD << " ==============================================" << "\n";
   Vec4D p0 = -momenta[3];                // "incoming" quark
   Vec4D p1 = -momenta[4];                // "incoming" antiquark
   Vec4D p2 = -(momenta[0]+momenta[1]);   // "outgoing" higgs
@@ -288,7 +289,7 @@ void HGQQ_QCD_Virtual::Calc(const Vec4D_Vector &momenta) // ee->h->gqq virtual c
   double t((p1 - p3).Abs2());
   double u((p0 - p3).Abs2());
   double mh2(s + t + u);
-  msg_Tracking() << "HGQQ_QCD_Virtual::Calc(): Calculated kinematic invariants: s=" << s << ", t=" << t << ", u=" << u << ", mh2=" << mh2 << "\n";
+  msg_Tracking() << METHOD << ": Calculated kinematic invariants: s=" << s << ", t=" << t << ", u=" << u << ", mh2=" << mh2 << "\n";
 
   // if (s != ((p2+p3).Abs2()))
   // {
@@ -353,7 +354,7 @@ void HGQQ_QCD_Virtual::Calc(const Vec4D_Vector &momenta) // ee->h->gqq virtual c
 
   // qq<->hg kinematics
   double logqq(-NC * CF / s * (sqr(t) + sqr(u)));
-  msg_Tracking() << "HGQQ_QCD_Virtual::Calc(): Calculated leading order term: logqq = " << logqq << "\n";
+  msg_Tracking() << METHOD << ": Calculated leading order term: logqq = " << logqq << "\n";
   // 1/epsIR
   m_res.IR()=-2./3.*m_nlf
              +NC*(13./6.+lns-2.*lnm+lnu)
@@ -362,46 +363,65 @@ void HGQQ_QCD_Virtual::Calc(const Vec4D_Vector &momenta) // ee->h->gqq virtual c
   // 1/epsIR2
   m_res.IR2()=-2.*NC+1./NC; // = (-2.*N^2 +1)/N = -CA -CF 
   // finite
-  m_res.Finite()=m_nlf*(-10./9.-2./3.*lnm+2./3.*lnt)
+  double finiteterm =m_nlf*(-10./9.-2./3.*lnm+2./3.*lnt)
   +NC*(40./9.+Li2u+2.*Li2t+Li2s
              +lns*lnm-lns*lnt-13./6.*(lnt-lnm)
              +lnm*lnu-sqr(lnm)-lnt*lnu-0.5*sqr(lnu)
              +2.*lnt*ln2t+lnu*ln2u)
   +1./NC*(4.-Li2u-Li2s+lns*lnu+0.5*sqr(lnt)-0.5*sqr(lns)
               -lnm*lnt+0.5*sqr(lnm)-lnu*ln2u-1.5*(lnt-lnm))
+              +0.25*(NC*sqr(NC)-1./NC)*(u+s)/logqq
+              +(m_con?0.:11.);
 
+  int whichterm = 0;
+  if (whichterm == 1) {
+    finiteterm += - 4./3.*sqr(M_PI)/NC ;
+  }
+  else if (whichterm == 2) {
+    finiteterm += +4./3.*sqr(M_PI)*NC ;
+  }
   // - 4./3.*sqr(M_PI)/NC // QQHG
   // +4./3.*sqr(M_PI)*NC  // QGHQ
 
-  +0.25*(NC*sqr(NC)-1./NC)*(u+s)/logqq
-  +(m_con?0.:11.);
-  
-  msg_Tracking() << "HGQQ_QCD_Virtual::Calc(): Calculated virtual correction: IR2=" << m_res.IR2() << ", IR=" << m_res.IR() << ", Finite=" << m_res.Finite() << "\n";
+  m_res.Finite() = finiteterm;
+  msg_Tracking()
+      << METHOD << ": weird terms... QQHG -> - 4./3.*sqr(M_PI)/NC =" << -4. / 3. * sqr(M_PI) / NC << "\n"
+      << "                           QGHQ -> + 4./3.*sqr(M_PI)*NC = " << +4. / 3. * sqr(M_PI) * NC << "\n";
+  msg_Tracking() << METHOD << ": Calculated virtual correction: IR2=" << m_res.IR2() << ", IR=" << m_res.IR() << ", Finite=" << m_res.Finite() << "\n";
   // throw ATOOLS::Exception("Break here for debugging");
   // THROW(fatal_error,"new error!!");
 }
 
 void HGGG_QCD_Virtual::Calc(const Vec4D_Vector &momenta)
 { // ee->h->ggg virtual calc
+  msg_Tracking() << METHOD << " ==============================================" << "\n";
+
   Vec4D ph = momenta[0] + momenta[1]; // higgs momentum
   Vec4D pgtilde = -momenta[2];        // flipped gluon momentum so that 2-2 kinematics are h(g~)->gg instead of h->ggg
   double s((ph + pgtilde).Abs2());
   double t((ph - momenta[3]).Abs2());
   double u((ph - momenta[4]).Abs2());
 
+  msg_Tracking() << METHOD << ": Calculated kinematic invariants: s=" << s << ", t=" << t << ", u=" << u << "\n";
+
   double mh2(s + t + u);
   double lnm(log(m_mur2 / mh2));
   double lns(log(Abs(s) / mh2)), lnt(log(Abs(t) / mh2)), lnu(log(Abs(u) / mh2));
   double ln2t(log((mh2 - t) / mh2)), ln2u(log((mh2 - u) / mh2));
   double Li2s(DiLog((s - mh2) / s)), Li2t(DiLog(t / mh2)), Li2u(DiLog(u / mh2));
+
   // gg<->hg kinematics
-  double logg((sqr(mh2 * mh2) + sqr(s * s) + sqr(t * t) + sqr(u * u)) / (s * t * u));
+  double loggg((sqr(mh2 * mh2) + sqr(s * s) + sqr(t * t) + sqr(u * u)) / (s * t * u));
+  msg_Tracking() << METHOD << ": Calculated leading order term: loggg = " << loggg << "\n";
+
   // 1/epsIR
   m_res.IR() = NC * (lns + lnt + lnu - 3. * lnm) - 3. * m_b0;
   // 1/epsIR2
   m_res.IR2() = -3. * NC;
   // finite -> slight difference to MCFM
-  m_res.Finite() = NC * (2. * (Li2t + Li2u + Li2s) + lnm * (lns + lnt + lnu) - lns * lnt - lns * lnu - lnt * lnu + 0.5 * (sqr(lns) - sqr(lnt) - sqr(lnu)) - 1.5 * sqr(lnm) + 2. * (lnu * ln2u + lnt * ln2t) + 4. / 3. * sqr(M_PI)) + (NC - m_nlf) / 3. * mh2 * (1. + mh2 / s + mh2 / t + mh2 / u) / logg + (m_con ? 0. : 11.);
+  m_res.Finite() = NC * (2. * (Li2t + Li2u + Li2s) + lnm * (lns + lnt + lnu) - lns * lnt - lns * lnu - lnt * lnu + 0.5 * (sqr(lns) - sqr(lnt) - sqr(lnu)) - 1.5 * sqr(lnm) + 2. * (lnu * ln2u + lnt * ln2t) + 4. / 3. * sqr(M_PI)) + (NC - m_nlf) / 3. * mh2 * (1. + mh2 / s + mh2 / t + mh2 / u) / loggg + (m_con ? 0. : 11.);
+  
+  msg_Tracking() << METHOD << ": Calculated virtual correction: IR2=" << m_res.IR2() << ", IR=" << m_res.IR() << ", Finite=" << m_res.Finite() << "\n";
 }
 
 DECLARE_VIRTUALME2_GETTER(EXTRAXS::GGHG_QCD_Virtual,"Higgs_Jet_QCD_Virtual")
