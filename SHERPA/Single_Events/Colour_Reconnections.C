@@ -24,11 +24,12 @@ Return_Value::code Colour_Reconnections::Treat(ATOOLS::Blob_List* bloblist)
 	       <<"   Continue and hope for the best."<<endl;
     return Return_Value::Error;
   }
-  switch (int(m_singlets(bloblist))) {
-  case int(Return_Value::Success) : break;
+  int res = m_singlets(bloblist);
+  switch (int(res)) {
+  case int(Return_Value::Success)   : break;
   case int(Return_Value::New_Event) : return Return_Value::New_Event;
-  case int(Return_Value::Nothing) : return Return_Value::Nothing;
-  case int(Return_Value::Error)   : return Return_Value::Error;
+  case int(Return_Value::Nothing)   : return Return_Value::Nothing;
+  case int(Return_Value::Error)     : return Return_Value::Error;
   default :
     msg_Error()<<"ERROR in "<<METHOD<<":"<<std::endl
 	       <<"   ExtractSinglets yields unknown return value."<<std::endl

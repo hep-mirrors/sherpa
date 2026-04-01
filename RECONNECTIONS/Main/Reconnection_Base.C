@@ -6,7 +6,7 @@ using namespace ATOOLS;
 using namespace std;
 
 Reconnection_Base::Reconnection_Base() :
-  m_analysis(true)
+  m_typespec(string("")), m_analysis(false)
 { }
 
 Reconnection_Base::~Reconnection_Base() {
@@ -48,15 +48,12 @@ bool Reconnection_Base::HarvestParticles(Blob_List * blobs) {
     blob = (*bit);
     if (!blob->Has(blob_status::needs_reconnections)) continue;
     m_found = true;
-    blob->SetTypeSpec("Colour Reconnections");
+    blob->SetType(btp::Colour_Reconnection);
+    blob->SetTypeSpec(m_typespec);
     for (int i=0;i<blob->NInP();i++) HarvestParticleInfo(blob->InParticle(i));
     blob->UnsetStatus(blob_status::needs_reconnections |
 		      blob_status::needs_hadronization);
   }
-  //msg_Out()<<METHOD<<" harvested "
-  //	   <<m_cols[0].size()<<" colours and "
-  //	   <<m_cols[1].size()<<" anti-colours.\n"
-  //	   <<(*blob)<<"\n";
   return (BalanceColours());
 }
 

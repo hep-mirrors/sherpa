@@ -44,8 +44,9 @@ Return_Value::code Reconnection_Handler::operator()(Blob_List *const blobs,
     m_nfails++;
     return Return_Value::New_Event;
   case 1:
-    // added colour reconnections, but produce a reconnection blob.
+    // added colour reconnections, produce a fragmentation blob.
     AddReconnectionBlob(blobs);
+    break;
   case 0:
     // didn't find any blob that needed reconnections
     break;

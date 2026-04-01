@@ -31,13 +31,13 @@ Return_Value::code Singlet_Sorter::operator()(Blob_List * bloblist) {
   // Logic:
   // 1. Harvest particles in HarvestParticles
   //    fill particles into lists, one for each hadron or tau decay (to keep track of
-  //    decay vertices) and one for everything else.  These lists are the accumulated in
-  //    plists, with the default list = plists[0] for all coloured particles not
+  //    decay vertices) and one for everything else.  These lists are accumulated in
+  //    plists, with the default list = m_partlists.begin() for all coloured particles not
   //    coming from hadron/tau decays.
-  // 2. For the hadrons there is a separate list, hadrons.  Its particles will be filled
+  // 2. For the hadrons there is a separate list, m_hadrons.  Its particles will be filled
   //    into a separate blob, in DealWithHadrons.
   //    TODO: I have to check for partonic hadron decays if I get the connections right.
-  // 3. The plists will be decomposed into singlets and filled into one blob
+  // 3. The m_partlists will be decomposed into singlets and filled into one blob
   m_calls++;
   ResetPartLists();
   if (!HarvestParticles(bloblist)) { m_fails++; return Return_Value::New_Event; }
@@ -69,8 +69,7 @@ Return_Value::code Singlet_Sorter::operator()(Blob_List * bloblist) {
 bool Singlet_Sorter::HarvestParticles(Blob_List * bloblist) {
   for (Blob_List::iterator blit=bloblist->begin();
        blit!=bloblist->end();++blit) {
-    if ((*blit)->Has(blob_status::needs_reconnections) ||
-	(*blit)->Has(blob_status::needs_hadronization)) {
+    if ((*blit)->Has(blob_status::needs_reconnections)) {
       Blob* upstream_blob=(*blit)->UpstreamBlob();
       if (upstream_blob && upstream_blob->Type()==btp::Hadron_Decay) {
 	p_partlist = new Part_List;
@@ -81,8 +80,7 @@ bool Singlet_Sorter::HarvestParticles(Blob_List * bloblist) {
 	p_partlist = m_partlists.front();
       }
       if (!FillParticleLists(*blit)) return false;
-      (*blit)->UnsetStatus(blob_status::needs_reconnections |
-			   blob_status::needs_hadronization);
+      (*blit)->UnsetStatus(blob_status::needs_reconnections);
     }
   }
   if (m_partlists.size()==1 && m_partlists.front()->empty()) m_partlists.pop_front();
@@ -188,13 +186,7 @@ Blob * Singlet_Sorter::MakeBlob() {
   if (p_partlist->empty()) return NULL;
   Blob * blob = new Blob();
   blob->SetId();
-  blob->SetType(btp::Fragmentation);
-  blob->SetStatus(blob_status::needs_hadronization);
-  Particle * part = p_partlist->front();
-  Blob     * prod = part->ProductionBlob(), * up(prod?prod->UpstreamBlob():NULL);
-  if (!up || (up && up->Type()!=btp::Hadron_Decay)) {
-    blob->AddStatus(blob_status::needs_reconnections);
-  }
+  blob->SetStatus(blob_status::needs_reconnections);
   bool massthem = false;
   while (!p_partlist->empty()) {
     Particle * part = p_partlist->front();

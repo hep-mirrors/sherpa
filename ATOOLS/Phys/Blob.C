@@ -20,9 +20,8 @@ std::ostream& ATOOLS::operator<<(std::ostream& ostr, const btp::code btpc) {
   case btp::QED_Radiation:              return ostr<<"QED Radiation              ";
   case btp::Beam:                       return ostr<<"Beam                       ";
   case btp::Bunch:                      return ostr<<"Bunch                      ";
+  case btp::Colour_Reconnection:        return ostr<<"Colour Reconnection        ";
   case btp::Fragmentation:              return ostr<<"Fragmentation              ";
-  case btp::Cluster_Formation:          return ostr<<"Cluster Formation          ";
-  case btp::Cluster_Decay:              return ostr<<"Cluster Decay              ";
   case btp::Hadron_Decay:               return ostr<<"Hadron Decay               ";
   case btp::Hadron_Mixing:              return ostr<<"Hadron Mixing              ";
   case btp::Hadron_To_Parton:           return ostr<<"Hadron-To-Partons          ";

@@ -7,9 +7,11 @@
 namespace SHERPA {
   class Colour_Reconnection_Handler {
   private:
-    bool                                  m_on;
     RECONNECTIONS::Reconnection_Handler * p_reconnections;
+    bool           m_on;
     ATOOLS::Blob * p_blob;
+
+    void UpdateStatus(ATOOLS::Blob_List *const);
   public :
     Colour_Reconnection_Handler();
     ~Colour_Reconnection_Handler();

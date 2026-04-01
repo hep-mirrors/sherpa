@@ -21,8 +21,20 @@ Colour_Reconnection_Handler::~Colour_Reconnection_Handler() {
 
 Return_Value::code
 Colour_Reconnection_Handler::operator()(Blob_List *const blobs) {
-  if (!m_on) return Return_Value::Nothing;
+  if (!m_on) {
+    UpdateStatus(blobs);
+    return Return_Value::Nothing;
+  }
   return (*p_reconnections)(blobs);
+}
+
+void Colour_Reconnection_Handler::UpdateStatus(Blob_List *const blobs) {
+  for (Blob_List::iterator blit=blobs->begin();blit!=blobs->end();++blit) {
+    if ((*blit)->Has(blob_status::needs_reconnections)) {
+      (*blit)->UnsetStatus(blob_status::needs_reconnections);
+      (*blit)->SetStatus(blob_status::needs_hadronization);
+    }
+  }
 }
 
 void Colour_Reconnection_Handler::CleanUp(const size_t & mode) {
