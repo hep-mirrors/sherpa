@@ -56,7 +56,9 @@ Return_Value::code Reconnection_Handler::operator()(Blob_List *const blobs,
 }
 
 void Reconnection_Handler::AddReconnectionBlob(Blob_List *const blobs) {
-  Blob * blob = new Blob();
+  Blob * blob  = new Blob();
+  Vec4D pos    = Vec4D(0.,0.,0.,0.);
+  size_t npart = 0;
   blob->AddStatus(blob_status::needs_hadronization);
   blob->SetType(btp::Fragmentation);
   blob->SetId();
@@ -67,7 +69,10 @@ void Reconnection_Handler::AddReconnectionBlob(Blob_List *const blobs) {
     part->SetDecayBlob(NULL);
     blob->AddToInParticles(part);
     particles->pop_front();
+    pos += part->XProd();
+    npart++;
   }
+  blob->SetPosition(pos/double(npart));
   blobs->push_back(blob);
 }
 

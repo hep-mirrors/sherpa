@@ -47,10 +47,11 @@ bool Reconnection_Base::HarvestParticles(Blob_List * blobs) {
   for (Blob_List::iterator bit=blobs->begin();bit!=blobs->end();bit++) {
     blob = (*bit);
     if (!blob->Has(blob_status::needs_reconnections)) continue;
-    m_found = true;
+    m_found   = true;
     blob->SetType(btp::Colour_Reconnection);
     blob->SetTypeSpec(m_typespec);
-    for (int i=0;i<blob->NInP();i++) HarvestParticleInfo(blob->InParticle(i));
+    for (int i=0;i<blob->NInP();i++)
+      HarvestParticleInfo(blob->InParticle(i));
     blob->UnsetStatus(blob_status::needs_reconnections |
 		      blob_status::needs_hadronization);
   }

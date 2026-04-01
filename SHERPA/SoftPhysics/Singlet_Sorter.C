@@ -187,7 +187,7 @@ Blob * Singlet_Sorter::MakeBlob() {
   Blob * blob = new Blob();
   blob->SetId();
   blob->SetStatus(blob_status::needs_reconnections);
-  bool massthem = false;
+  bool   massthem = false;
   while (!p_partlist->empty()) {
     Particle * part = p_partlist->front();
     if (!massthem &&
@@ -199,6 +199,17 @@ Blob * Singlet_Sorter::MakeBlob() {
     blob->AddToInParticles(part);
     p_partlist->pop_front();
   }
+  // This fixes the average position of the blob without overwriting the
+  // positions of the incoming (and later outgoing) partons.
+  Vec4D  pos      = Vec4D(0.,0.,0.,0.);
+  size_t npart    = 0;
+  for (size_t i=0;i<blob->NInP();i++) {
+    Particle * part = blob->InParticle(i); 
+    pos  += part->XProd();
+    part->SetPosition(part->XProd());
+    npart++;
+  }
+  blob->SetPosition(pos/double(npart));
   if (massthem) {
     Particle_Vector parts;
     vector<double>  masses;
