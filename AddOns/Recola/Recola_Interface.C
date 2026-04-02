@@ -169,6 +169,7 @@ void Recola::Recola_Interface::RegisterDefaults() const
   s["RECOLA_USE_DECAY"].SetDefault(false);
   s["RECOLA_DISABLE_EW_ee_VERTEX"].SetDefault(false);
   s["RECOLA_SET_B_YUKAWA"].SetDefault(false);
+  s["RECOLA_SET_C_YUKAWA"].SetDefault(false);
   // find RECOLA installation prefix with several overwrite options
   char *var=NULL;
   s_recolaprefix = rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Recola";
@@ -389,7 +390,7 @@ int Recola::Recola_Interface::RegisterProcess(const External_ME_Args& args,
       }
     }
     // Recola has factor of i already hardcoded for Yukawa(-like) vertices
-    yc *= -Complex(0.,1.); 
+    yb *= -Complex(0.,1.); 
     msg_Info()<<"Setting Recola hbb Yukawa coupling to "<<yb<<std::endl;
     set_coupling3_rcl(yb,"H","b","b~");
   }
