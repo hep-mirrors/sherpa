@@ -1,3 +1,4 @@
+#include "ATOOLS/Phys/Flavour.H"
 #include "ATOOLS/Phys/NLO_Types.H"
 #include "PHASIC++/Process/Process_Info.H"
 #include "PHASIC++/Process/YFS_Process.H"
@@ -66,8 +67,14 @@ void YFS_Process::Init(const Process_Info &pi,
                        PDF::ISR_Handler *const isr,
                        YFS::YFS_Handler *const yfs, const int mode)
 {
+  for (size_t beam=0;beam<2;++beam) {
+      yfs->SetInFlav(pi.ExtractFlavours()[beam]);
+      // yfs->SetBeam(p_beamspectra);
+  }
   m_gens.InitializeProcess(pi, true);
   p_yfs = yfs;
+  PRINT_VAR(pi.ExtractFlavours());
+  p_yfs->resetparticles();
   p_yfs->SetFlavours(pi.ExtractFlavours());
   Process_Info ypi(pi), vpi(pi);
   if (pi.m_fi.m_nlocpl[0] != 0) THROW(not_implemented, "YFS cannot do NLO QCD.");
@@ -175,7 +182,9 @@ bool YFS_Process::CalculateTotalXSec(const std::string &resultpath,
   p_int = p_bornproc->Integrator();
   p_int->Reset();
   auto psh = p_int->PSHandler();
-  p_yfs->SetFlavours(psh->Flavs());
+  p_yfs->resetparticles();
+  PRINT_VAR(Flavours());
+  p_yfs->SetFlavours(Flavours());
   psh->InitCuts();
   psh->CreateIntegrators();
   p_int->SetResultPath(resultpath);
@@ -252,7 +261,8 @@ Weight_Info *YFS_Process::OneEvent(const int wmode,ATOOLS::Variations_Mode varmo
 {
   auto psh = p_int->PSHandler();
   psh->InitCuts();
-  p_yfs->SetFlavours(psh->Flavs());
+  p_yfs->resetparticles();
+  p_yfs->SetFlavours(Flavours());
   p_selected = p_bornproc;
   Weight_Info *winfo(NULL);
   winfo = p_int->PSHandler()->OneEvent(this, varmode, mode);

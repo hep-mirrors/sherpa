@@ -7,9 +7,9 @@
 #include "YFS/Main/Coulomb.H"
 #include "YFS/Tools/Debug.H"
 #include "YFS/NLO/NLO_Base.H"
-#include "BEAM/Main/Beam_Base.H"
+// #include "BEAM/Main/Beam_Base.H"
 #include "BEAM/Main/Beam_Spectra_Handler.H"
-#include "MODEL/Main/Model_Base.H"
+// #include "MODEL/Main/Model_Base.H"
 #include "YFS/Main/Define_Dipoles.H"
 #include "YFS/CEEX/Ceex_Base.H"
 #include "YFS/NLO/NLO_Base.H"
@@ -17,8 +17,8 @@
 #include "PHOTONS++/PhotonSplitter/Photon_Splitter.H"
 
 
-#include <iostream>
-#include <fstream>
+// #include <iostream>
+// #include <fstream>
 namespace ATOOLS { class Blob_Data_Base; }
 namespace YFS    {class Real_ff;         }
 namespace YFS    {class Coulomb;         }
@@ -108,6 +108,7 @@ namespace YFS {
         inline Flavour GetInFlav(int i) {return m_inflav[i];}
         inline void SetNLOType(ATOOLS::nlo_type::code nlo_type) {m_nlotype = nlo_type;}
         inline NLO_Base *NLO() {return p_nlo; }
+        inline void resetparticles() {m_setparticles=false;}
 
         void SetBeam(BEAM::Beam_Spectra_Handler *beam);
         inline void SetSprime(double sp) { m_sp = sp; }
