@@ -1,0 +1,95 @@
+BEAM_ENERGIES: 1.02/2
+
+EVENT_GENERATION_MODE: Weighted
+ANALYSIS: Rivet
+BEAMS:
+- 11
+- -11
+BEAM_REMNANTS: false
+FRAGMENTATION: None
+ME_GENERATORS: 
+  - Comix
+
+PARTICLE_DATA:
+  11:
+    Massive: 1
+    Mass: 0.00051099895
+  13:
+    Massive: 1
+    Mass: 0.105658375
+  15:
+    Massive: true
+  -211:
+    Massive: 1
+    Mass: 0.13957039
+  25:
+    Active: 0
+PDF_LIBRARY: None
+SCALES: VAR{Abs2(p[0]+p[1])}
+MODEL: scalar_qed_model
+
+
+MPI_SEED_MODE: 1
+SHOWER_GENERATOR: None
+EW_SCHEME: 1
+
+
+PROCESSES:
+- 11 -11 -> 211 -211 22:
+    Order:
+      QED: 3
+      QCD: 0
+    Print_Graphs: graphs_PiPiA
+UFO_PARAM_CARD: param_scalar_qed_model.dat
+YFS:
+  MODE: Off
+
+SCALES: VAR{Mass(p[0]+p[1])}
+
+
+# Form_Factor:
+  # Mode: Pion
+
+
+
+SELECTORS:
+  - [Polar_Angle, 211,  50, 130, 0]
+  - [Polar_Angle, -211, 50, 130, 0]
+  - [Mass, 211, -211, sqrt(0.1), sqrt(0.85)]
+  
+  - [E, 22, 0.02, E_CMS]
+  - [Polar_Angle, 22, 50, 130, 0]
+  
+  - VariableSelector:
+      Variable: Calc( abs(Comp(p[0],3)) > 0.09 || PPerp(p[0]) > 0.16)
+      Flavs: [-211, 211]
+      Ranges: [1, 1]
+  - VariableSelector:
+      Variable: Calc( abs(Comp(p[1],3)) > 0.09 || PPerp(p[1]) > 0.16)
+      Flavs: [-211, 211]
+      Ranges: [1, 1]
+  # - VariableSelector:
+  #     Variable: Calc(Theta(-p[0]-p[1])< 0.262 || Theta(-p[0]-p[1]) > 2.87 )
+  #     Flavs: [-211, 211]
+  #     Ranges: [1, 1]
+RIVET:
+ USE_HEPMC_SHORT: 1
+ ANALYSES:
+  - MC_XS
+  - kloela
+  - kloela:CutPhoton=0
+  - kloela:CutTheta=0
+  - kloela:CutPzPt=0
+  - kloela:CutMxx=0
+  - kloela:NoCuts=1
+  - kloela:MaxPhoton=1
+  - kloela:MaxPhoton=2
+  - kloela:MinEK=20
+  - kloela:MinEK=200
+  - kloela:MinEK=0
+  - kloela:DR=0.4
+  - kloela:DR=0
+  - kloela:PhotonMult=1
+  - kloela:PhotonMult=2
+  - kloela:PhotonMult=3
+  - kloela:PhotonMult=4
