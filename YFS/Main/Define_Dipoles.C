@@ -35,7 +35,7 @@ void Define_Dipoles::MakeDipolesII(ATOOLS::Flavour_Vector const &fl, ATOOLS::Vec
              <<" mom.size() =  "<<mom.size()<<std::endl
              <<" fl.size() =  "<<fl.size()<<std::endl
              <<" born.size() =  "<<born.size()<<std::endl;
-    THROW(fatal_error, "Incorrect dipole size in YFS for dipoletype");
+    THROW(fatal_error, "Incorrect dipole size in YFS for initial-initial dipole");
   }
   ATOOLS::Flavour_Vector dipoleFlav;
   ATOOLS::Vec4D_Vector dipoleMom;
@@ -59,7 +59,7 @@ void Define_Dipoles::MakeDipolesIF(ATOOLS::Flavour_Vector const &fl, ATOOLS::Vec
              <<" mom.size() =  "<<mom.size()<<std::endl
              <<" fl.size() =  "<<fl.size()<<std::endl
              <<" born.size() =  "<<born.size()<<std::endl;
-    THROW(fatal_error, "Incorrect dipole size in YFS for dipoletype");
+    THROW(fatal_error, "Incorrect dipole size in YFS for initial-final dipole");
   }
   if (!HasFSR() ) return;
   ATOOLS::Flavour_Vector dipoleFlav;
@@ -76,7 +76,7 @@ void Define_Dipoles::MakeDipolesFF(ATOOLS::Flavour_Vector const &fl, ATOOLS::Vec
              <<" mom.size() =  "<<mom.size()<<std::endl
              <<" fl.size() =  "<<fl.size()<<std::endl
              <<" born.size() =  "<<born.size()<<std::endl;
-    THROW(fatal_error, "Incorrect dipole size in YFS for dipoletype");
+    THROW(fatal_error, "Incorrect dipole size in YFS for final-final dipole");
   }
   ATOOLS::Flavour_Vector dipoleFlav;
   ATOOLS::Vec4D_Vector dipoleMom;

@@ -1,11 +1,7 @@
 #include "ATOOLS/Org/Message.H"
-#include "ATOOLS/Org/Return_Value.H"
 #include "YFS/Main/YFS_Handler.H"
-
 #include "BEAM/Main/Beam_Base.H"
-#include "ATOOLS/Math/Random.H"
 #include "YFS/Main/ISR.H"
-#include "ATOOLS/Org/Scoped_Settings.H"
 
 using namespace std;
 using namespace ATOOLS;
@@ -70,7 +66,7 @@ void YFS_Handler::SetBeam(BEAM::Beam_Spectra_Handler *beam)
   m_beam1 = p_beams->GetBeam(0)->OutMomentum();
   m_beam2 = p_beams->GetBeam(1)->OutMomentum();
   if(m_beam1 != -m_beam2) m_asymbeams = true;
-    else m_asymbeams = false;
+  else m_asymbeams = false;
 }
 
 void YFS_Handler::SetLimits(const double &smin) {
@@ -88,6 +84,7 @@ void YFS_Handler::SetFlavours(const ATOOLS::Flavour_Vector &flavs) {
   if(m_setparticles) return;
   m_flavs.clear();
   m_mass.clear();
+  m_particles.clear();
   bool qed(false);
   for(size_t i = 0; i < flavs.size(); ++i) {
     m_flavs.push_back(flavs[i]);
