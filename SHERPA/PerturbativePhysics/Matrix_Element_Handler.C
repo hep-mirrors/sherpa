@@ -348,7 +348,7 @@ std::vector<Process_Base*> Matrix_Element_Handler::InitializeSingleProcess
       // else Process_Base *proc(m_gens.InitializeProcess(pi, true));
       if(!pi.m_fi.IsGroup()) {
         YFS_Process *proc = new YFS_Process(m_gens,pmap);
-        proc->Init(pi,p_beam,p_isr, p_yfs,1);
+        proc->Init(pi,p_beam,p_isr,new YFS::YFS_Handler(),1);
         m_procs.push_back(proc);
         procs.push_back(proc);
       }
