@@ -24,9 +24,6 @@ CTestTestfile.cmake
 .libs
 EXTAMP/Example/madgraph/CMakeLists.txt
 EXTAMP/Example/subtraction/CMakeLists.txt
-Examples/Userhook/CMakeLists.txt
-Examples/V_plus_Bs/LHC_Wbb/CMakeLists.txt
-Examples/V_plus_Jets/LHC_WJets/CMakeLists.txt
 Git_Info.C
 Git_Info.C.tmp.bak
 /ATOOLS/Math/Sobol/21201.gz
@@ -60,9 +57,10 @@ MODEL/UFO/src/opt_einsum/*.py
 MODEL/UFO/src/opt_einsum/backends
 MODEL/UFO/src/ufo_interface/parser.py
 test.py
-Examples/VBF_Interference/BH_Interface/BlackHat.py
-Examples/VBF_Interference/BH_Interface/Comix.py
-Examples/VBF_Interference/Tests/Comix.py
+doc/examples/VBF_Interference/BH_Interface/BlackHat.py
+doc/examples/VBF_Interference/BH_Interface/Comix.py
+doc/examples/VBF_Interference/Tests/Comix.py
+doc/examples/V_plus_Jets/LHC_WJets/CMakeLists.txt
 
 # test run output
 /Testing/
