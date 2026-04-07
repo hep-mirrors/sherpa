@@ -5,7 +5,7 @@ Makefile
 CMakeCache.txt
 build/
 outputs/
-/.*
+.*/
 compile_commands.json
 config.log
 CTestTestfile.cmake

@@ -1,0 +1,3 @@
+---
+# Vendored yaml-cpp sources — do not lint.
+Checks: '-*'

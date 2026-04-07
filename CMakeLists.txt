@@ -253,7 +253,7 @@ if (SHERPA_ENABLE_FORTRAN)
 endif()
 ########################################################################
 if (SHERPA_ENABLE_CLANG_TIDY)
-  set(CMAKE_CXX_CLANG_TIDY "clang-tidy;--checks=*,-readability-identifier-length,-modernize-use-trailing-return-type,-cppcoreguidelines-avoid-non-const-global-variables,-llvmlibc-callee-namespace,-bugprone-easily-swappable-parameters,-cppcoreguidelines-pro-bounds-pointer-arithmetic,-readability-implicit-bool-conversion,-hicpp-braces-around-statements,-readability-braces-around-statements,-cert-err34-c,-modernize-return-braced-init-list")
+  set(CMAKE_CXX_CLANG_TIDY "clang-tidy")
 endif()
 ########################################################################
 
