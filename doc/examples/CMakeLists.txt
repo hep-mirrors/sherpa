@@ -147,7 +147,8 @@ set (INSTALL_PATHS
      VV_plus_Jets/LHC_WZ_polarization_at_nLO_PS/Sherpa.yaml
      VV_plus_Jets/LHC_WqqZnunuJets/Sherpa.yaml
      VV_plus_Jets/LHC_ssWW_polarization/Sherpa.yaml
-     V_plus_Bs/LHC_Fusing/Sherpa.yaml
+     V_plus_Bs/LHC_Fusing/Direct.yaml
+     V_plus_Bs/LHC_Fusing/Fragmentation.yaml
      V_plus_Bs/LHC_Zbb/Sherpa.yaml
      V_plus_Jets/LHC_WJets/My_JetCriterion.C
      V_plus_Jets/LHC_WJets/Sherpa.yaml
