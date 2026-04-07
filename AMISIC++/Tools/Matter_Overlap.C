@@ -11,6 +11,7 @@ using namespace REMNANTS;
 using namespace ATOOLS;
 
 
+
 /////////////////////////////////////////////////////////////////////////////
 // All equations in this file refer to either
 // Sjostrand-van der Zijl, PRD 36 (1987) 2019, denoted as (SZ, ...), or
@@ -42,7 +43,8 @@ Matter_Overlap::Matter_Overlap() :
   // distributions of the hadron form factors ~pi^{-3/2} times the pi^2 from
   // the time-integrated overlap when they collide.
   ///////////////////////////////////////////////////////////////////////////
-  m_norm(1./M_PI), m_invGeV2fm(rpa->hBar()*rpa->c()*1.e12)
+//check here, mm or fm 
+  m_norm(1./M_PI), m_invGeV2fm(rpa->hBar()*rpa->c())
 {
   ///////////////////////////////////////////////////////////////////////////
   // This is a default initialization of default values.  Apart from the

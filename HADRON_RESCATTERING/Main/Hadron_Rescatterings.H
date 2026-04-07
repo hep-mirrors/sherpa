@@ -5,6 +5,7 @@
 #include "HADRON_RESCATTERING/XSecs/MesonMeson.H"
 #include "HADRON_RESCATTERING/XSecs/BaryonMeson.H"
 #include "HADRON_RESCATTERING/XSecs/HR_Parameters.H"
+#include "HADRON_RESCATTERING/XSecs/ScatteringBase.H"
 
 #include "ATOOLS/Phys/Blob_List.H"
 
@@ -15,9 +16,9 @@ namespace HADRON_RESCATTERING {
     long unsigned int   m_nfails;
 
     double              m_mm2mb;
-    BaryonBaryon *      p_BB;
-    MesonMeson *        p_MM;
-    BaryonMeson *       p_BM;
+    ScatteringBase* m_mm;
+    ScatteringBase* m_bm;
+    ScatteringBase* m_bb;
 
  public:
     Hadron_Rescatterings(const bool & on);
@@ -26,7 +27,7 @@ namespace HADRON_RESCATTERING {
     ATOOLS::Blob * operator()(ATOOLS::Particle * A,
 			      ATOOLS::Particle * B,
 			      const double & dist2);
-
+    double calcSigmaGeneral(const ATOOLS::Flavour & A, const ATOOLS::Flavour & B, const double & s);
     void Initialize();
     void Reset();
   };

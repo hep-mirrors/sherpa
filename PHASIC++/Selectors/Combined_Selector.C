@@ -26,6 +26,7 @@ Combined_Selector::~Combined_Selector()
 
 bool Combined_Selector::Initialize(const Selector_Key &key)
 {
+  std::string name_details = " (";
   for (auto s : key.GetSelectors()) {
     std::string name;
     if (s.IsList()) {
@@ -39,6 +40,9 @@ bool Combined_Selector::Initialize(const Selector_Key &key)
       }
       name = keys[0];
     }
+    if (name_details!=" (") name_details += ", ";
+    name_details+=name;
+
     Selector_Key subkey;
     subkey.m_settings = s;
     subkey.p_proc = p_proc;
@@ -51,6 +55,9 @@ bool Combined_Selector::Initialize(const Selector_Key &key)
       THROW(fatal_error, "Did not find selector \"" + name + "\".");
     }
   }
+    name_details += ")";
+    m_name +=name_details;
+
   return true;
 }
 
@@ -62,12 +69,13 @@ bool Combined_Selector::Trigger(const Vec4D_Vector &p,
                      Selector_List(p_proc->Flavours(),p,m_nin));
   return Trigger(sl);
 }
-
+#include "ATOOLS/Org/Stacktrace.H"
 bool Combined_Selector::Trigger(Selector_List& sl)
 {
   DEBUG_FUNC("");
   // BEWARE: Selector_List will be modified
   m_res=1;
+  // DO_STACK_TRACE;
   if (!m_on) return m_res;
   for (size_t i=0; i<m_sels.size(); ++i) {
     msg_Debugging()<<m_sels[i]->Name()<<std::endl;

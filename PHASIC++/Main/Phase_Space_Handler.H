@@ -137,7 +137,6 @@ namespace PHASIC {
     void   WriteOut(const std::string &path);
     bool   ReadIn(const std::string &path,const size_t exclude=0);
     bool   YFSEvent();
-
     inline void MPISync() {
       m_pspoint.MPISync();
       p_process->MPISync();

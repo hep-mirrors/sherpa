@@ -48,7 +48,7 @@ Selector_Base::Selector_Base(const std::string &name,Process_Base *const proc):
   m_n(m_nin+m_nout), m_pass(1), p_sub(NULL),
   p_fl(p_proc?(Flavour*)&p_proc->Flavours().front():NULL),
   m_smin(0.), m_smax(sqr(rpa->gen.Ecms())),
-  m_results{Weights_Map{1.0}}
+  m_results{Weights_Map{1.0}}, m_trigger_calls_called(0),m_trigger_calls_passed(0)
 {
   if (p_proc && p_proc->Info().Has(nlo_type::real|nlo_type::rsub))
     m_isnlo=true;
@@ -63,6 +63,21 @@ bool Selector_Base::Trigger(const Vec4D_Vector &p,const Flavour *fl, size_t n)
 {
   THROW(fatal_error,"Virtual function not reimplemented.");
   return false;
+}
+
+#include "ATOOLS/Org/Stacktrace.H"
+
+
+bool Selector_Base::Triggerwpper(const Vec4D_Vector &p,const Flavour *fl, size_t n)
+{
+  m_trigger_calls_called++;
+  bool res = Trigger(p,fl,n);
+  if (res) m_trigger_calls_passed++;
+  else if (m_trigger_calls_passed==0 and m_trigger_calls_called==1000000)
+    msg_Error() << "Warning: The Trigger '" << m_name << "' was called 1000000 times and was never true. Maybe the phase space is too tight." << std::endl;
+  return res;
+
+  
 }
 
 void Selector_Base::AddOnshellCondition(std::string,double)

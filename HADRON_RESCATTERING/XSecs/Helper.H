@@ -1,11 +1,14 @@
 #ifndef HADRON_RESCATTERING_HELPER_H
 #define HADRON_RESCATTERING_HELPER_H
 
-#include "HADRON_RESCATTERING/XSecs/NPion.H"
+
+#include "ATOOLS/Math/Vec4.H"
 #include "ATOOLS/Org/Message.H"
+#include "ATOOLS/Math/Vector.H"
 #include <iostream>
 #include <math.h>
 #include <vector>
+
 
     ////////https://arxiv.org/pdf/2005.05658
     ////////Equation 24,25,26,27 are here. They are used to calculate equation 23.
@@ -35,5 +38,27 @@ double totalWidth(double m, double RES_M0, double GAMMA0,
 // Breit-Wigner mass distribution A(m) per Eq. (27) (kept for completeness)
 double A_of_m(double m, double ResonanceMass);
 
+
+class RotationAndBoost {
+public:
+    RotationAndBoost();
+    
+    // Build the transformation matrix
+    // void toSameVFrame(const ATOOLS::Vec4D& p1, const ATOOLS::Vec4D& p2);
+    void toCenterOfMomentumFrame(const ATOOLS::Vec4D& p1, const ATOOLS::Vec4D& p2);
+    
+    // Apply to any 4-vector
+    // ATOOLS::Vec4D apply(const ATOOLS::Vec4D &p) const;
+    ATOOLS::Vec4D Transform(const ATOOLS::Vec4D &p) const;
+    
+    // Reset to identity
+    void reset();
+
+private:
+    double M[4][4];
+    
+    void Boost(double betaX, double betaY, double betaZ);
+    void Rot(double theta, double phi);
+};
 
 #endif

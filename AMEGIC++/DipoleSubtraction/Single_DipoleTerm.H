@@ -89,7 +89,7 @@ namespace AMEGIC {
 				      std::vector<Process_Base *> &,
 				      std::vector<Process_Base *> &);
     bool                SetUpIntegrator();
-    bool                Trigger(const ATOOLS::Vec4D_Vector &p);
+    bool                Triggerwpper(const ATOOLS::Vec4D_Vector &p);
     String_Handler    * GetStringHandler()             { return p_partner->GetLOProcess()->GetStringHandler();}
     Amplitude_Handler * GetAmplitudeHandler()          { return p_partner->GetLOProcess()->GetAmplitudeHandler();}
     Helicity *          GetHelicity()                  { return p_partner->GetLOProcess()->GetHelicity(); }    

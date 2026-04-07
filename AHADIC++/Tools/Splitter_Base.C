@@ -159,13 +159,13 @@ void Splitter_Base::DetermineMinimalMasses() {
     m_mdec2[i] = sqr(m_mdec[i]);
   }
 }
-
+//check here, mm or fm 
 bool Splitter_Base::MakeKinematics() {
   MakeTransverseMomentum();
   if (MakeLongitudinalMomenta() && CheckKinematics()) {
     for (size_t i=0;i<3;i++) {
       if (p_part[i])
-	m_distance[i] = (p_part[i]->Momentum()[0]/m_Q2*rpa->hBarc()*
+	m_distance[i] = (p_part[i]->Momentum()[0]/m_Q2*rpa->hBarc() *
 			 p_part[i]->Velocity());
       else
 	m_distance[i] = Vec4D();

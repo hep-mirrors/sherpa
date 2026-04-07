@@ -6,7 +6,7 @@
 using namespace REMNANTS;
 using namespace ATOOLS;
 
-
+//check here, mm or fm 
 Form_Factor::Form_Factor(const Flavour & flav) :
   m_flav(flav), m_form(matter_form::single_gaussian),
   m_GeV_fm(rpa->hBar()*rpa->c()*1.e12), 

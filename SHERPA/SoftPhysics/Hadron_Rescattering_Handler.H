@@ -2,7 +2,9 @@
 #define SHERPA_SoftPhysics_Hadron_Rescattering_Handler_H
 
 #include "HADRON_RESCATTERING/Main/Hadron_Rescatterings.H"
-
+#include "ATOOLS/Math/Poincare.H"
+#include "ATOOLS/Math/Vector.H"
+#include "HADRON_RESCATTERING/XSecs/Helper.H"
 namespace SHERPA {
   struct Collision {
   public:
@@ -25,7 +27,13 @@ namespace SHERPA {
 
     void Schedule(ATOOLS::Particle * part1,
 		  ATOOLS::Particle * part2);
+
   public :
+    RotationAndBoost m_frame;
+    // double M[4][4];
+    // void toSameVFrame(ATOOLS::Vec4D &p1, ATOOLS::Vec4D &p2);
+    // void rot(double theta, double phi);#include "HADRON_RESCATTERING/Xsecs/Helper.H"
+
     Hadron_Rescattering_Handler();
     ~Hadron_Rescattering_Handler();
 
@@ -35,6 +43,8 @@ namespace SHERPA {
 
     void Output();
 
+    
+    ATOOLS::Blob * Rescatter();
     inline const std::string & Name() const { return m_name; }
   };
 }

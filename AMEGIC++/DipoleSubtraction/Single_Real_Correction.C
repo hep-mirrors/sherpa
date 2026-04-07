@@ -516,7 +516,7 @@ double Single_Real_Correction::operator()(const ATOOLS::Vec4D_Vector &_mom,const
   bool realtrg(true);
 
   if (!m_no_tree) {
-    realtrg=p_tree_process->Trigger(_mom);
+    realtrg=p_tree_process->Triggerwpper(_mom);
     if (res && realtrg) {
       p_tree_process->ScaleSetter()->CalculateScale(_mom,m_cmode);
       m_realevt.m_mu2[stp::fac]=p_tree_process->ScaleSetter()->Scale(stp::fac);
@@ -572,7 +572,7 @@ void Single_Real_Correction::FillAmplitudes(vector<METOOLS::Spin_Amplitudes>& am
   p_tree_process->FillAmplitudes(amps, cols);
 }
 
-bool Single_Real_Correction::Trigger(const ATOOLS::Vec4D_Vector &p)
+bool Single_Real_Correction::Triggerwpper(const ATOOLS::Vec4D_Vector &p)
 {
   return true;
 }

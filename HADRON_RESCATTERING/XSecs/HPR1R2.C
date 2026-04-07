@@ -64,7 +64,7 @@ void HPR1R2::InitParams() {
   m_params[hpr1r2::pKBarZero]   = { 0.272, 16.36, 4.29, 3.408, 15.98, 13.};
   m_params[hpr1r2::nKMinus]     = { 0.272, 16.31, 3.70, 1.826, 12.63, 13.}; // 
   m_params[hpr1r2::nKBarZero]   = { 0.272, 16.31, 3.70, 1.826, 15.98, 13.};
-
+  //add pPizero, nPizero. not included at the moment!!!!
 
   
 }

@@ -2,7 +2,7 @@
 #define ATOOLS_Math_Poincare_H
 
 #include "ATOOLS/Math/Vector.H"
-
+#include <cmath>
 namespace ATOOLS {
 
   class Poincare {
@@ -12,11 +12,13 @@ namespace ATOOLS {
     Vec4D  m_l, m_t;
     double m_rsq, m_omct, m_st;
 
-  public:
+    // sequence of transforms
 
+
+  public:
     Poincare(const Vec4D &v=Vec4D(1.,0.,0.,0.),const double &rsq=-1.);
     Poincare(const Vec4D &v1,const Vec4D &v2,int mode=0);
- 
+
     void Boost(Vec4D &v) const;
     void BoostBack(Vec4D &v) const;
     void BoostBack(Vec4C &v) const;

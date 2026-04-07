@@ -13,7 +13,8 @@ Hadron_Rescattering::Hadron_Rescattering(Hadron_Rescattering_Handler * reschandl
 
 Hadron_Rescattering::~Hadron_Rescattering() {}
 
-ATOOLS::Return_Value::code Hadron_Rescattering::Treat(Blob_List* blobs) {
+ATOOLS::Return_Value::code Hadron_Rescattering::Treat(Blob_List* blobs) 
+{
   msg_Out()<<METHOD<<" ==============================================\n";
   if (blobs->empty()) {
     msg_Error()<<METHOD<<"("<<blobs<<"):\n"
@@ -22,13 +23,26 @@ ATOOLS::Return_Value::code Hadron_Rescattering::Treat(Blob_List* blobs) {
     return Return_Value::Error;
   }
   if (!m_on) return Return_Value::Nothing;
-  for (size_t blit(0);blit<blobs->size();++blit) {
+
+  for (size_t blit(0);blit<blobs->size();++blit) 
+  {
     Blob* blob=(*blobs)[blit];
-    if (p_reschandler && blob->Has(blob_status::needs_hadronRescatter)) {
+
+    if (p_reschandler && blob->Has(blob_status::needs_hadronRescatter)) 
+    {
       p_reschandler->HarvestParticles(blob);
+
+      msg_Out()<< blob->NInP() << " particles harvested for hadron rescattering."<<std::endl;
+
+      Blob* rblob = nullptr;
+      while ((rblob = p_reschandler->Rescatter()) != nullptr) 
+      {
+        blobs->push_back(rblob);
+        msg_Out() << METHOD << ": rescattering blob added.\n";
+      }
       if ((*p_reschandler)()) {
-	msg_Out()<<METHOD<<" yields kaboom.\n";
-	exit(1);
+	      msg_Out()<<METHOD<<" yields kaboom.\n";
+	      exit(1);
       }
     }
   }

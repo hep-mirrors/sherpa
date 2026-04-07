@@ -90,7 +90,8 @@ Phase_Space_Handler::Differential(Process_Integrator *const process,
     if (p.Nan()) return 0.0;
   }
   // phase space trigger, calculate and construct weights
-  if (process->Process()->Trigger(p_lab)) {
+if (process->Process()->Triggerwpper(p_lab)) {
+    msg_Out()<<"In phase space handler"<<std::endl;
     if (!p_active->Process()->Selector()->Pass()) return 0.0;
     m_psweight = CalculatePS();
     m_wgtmap   = CalculateME(varmode);
@@ -177,7 +178,9 @@ Weight_Info *Phase_Space_Handler::OneEvent(Process_Base *const proc,
   if(p_yfshandler) p_yfshandler->SetRunMode(1);
   auto wgtmap = Differential(cur, varmode, (psmode::code)mode);
   if (wgtmap.IsZero() || IsBad(wgtmap.Nominal()))
+  {
     return NULL;
+  }
   cur->SetMomenta(p_lab);
   int fl1(0), fl2(0);
   double x1(0.0), x2(0.0), xf1(0.0), xf2(0.0), mu12(0.0), mu22(0.0), dxs(0.0);
@@ -293,7 +296,7 @@ void Phase_Space_Handler::CheckSinglePoint()
   } else
     return ;
   Process_Base *proc(p_active->Process());
-  proc->Trigger(p_lab);
+  proc->Triggerwpper(p_lab);
   CalculateME(Variations_Mode::nominal_only);
   msg->SetPrecision(16);
   msg_Out()<<"// "<<proc->Name()<<"\n";

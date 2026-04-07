@@ -13,12 +13,14 @@ namespace HADRON_RESCATTERING {
       ppbar     = 3,
       pPiMinus  = 4,
       pPiPlus   = 5,
-      nPiMinus  = 6,
-      nPiPlus   = 7,
-      pKMinus   = 8,
-      pKBarZero = 9,
-      nKMinus   = 10,
-      nKBarZero = 11
+      pPiZero   = 6,
+      nPiMinus  = 7,
+      nPiZero   = 8,
+      nPiPlus   = 9,
+      pKMinus   = 10,
+      pKBarZero = 11,
+      nKMinus   = 12,
+      nKBarZero = 13
     };
   };
     

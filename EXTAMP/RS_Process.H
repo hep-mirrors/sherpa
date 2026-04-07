@@ -44,7 +44,7 @@ namespace EXTAMP {
        this to generically return true because real emission term and
        subtraction terms have to be triggered separately. This is done
        in RS::Process::Partonic. */
-    bool Trigger(const ATOOLS::Vec4D_Vector &p) { return true; }
+    bool Triggerwpper(const ATOOLS::Vec4D_Vector &p) { return true; }
 
     /* Overloaded from PHASIC::Process_Base such that dipole dummy
        processes are initialized as well */

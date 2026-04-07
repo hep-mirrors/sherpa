@@ -35,8 +35,8 @@ Poincare::Poincare(const Vec4D &v1,const Vec4D &v2,int mode):
 
 void Poincare::Boost(Vec4D &v) const
 {
-  double lv(m_l[1]*v[1]+m_l[2]*v[2]+m_l[3]*v[3]);
-  double v0((m_l[0]*v[0]-lv)/m_rsq);
+  double lv(m_l[1]*v[1]+m_l[2]*v[2]+m_l[3]*v[3]); 
+  double v0((m_l[0]*v[0]-lv)/m_rsq); // 
   double c1((v[0]+v0)/(m_rsq+m_l[0]));
   v=Vec4D(v0,Vec3D(v)-c1*Vec3D(m_l));
 }
