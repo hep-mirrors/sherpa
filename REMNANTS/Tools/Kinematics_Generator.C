@@ -14,7 +14,8 @@ Kinematics_Generator::Kinematics_Generator() :
 
 Kinematics_Generator::~Kinematics_Generator() {
   if (m_warns>0 || m_errors>0) {
-    msg_Info() << "Remnant Kinematics: " << m_errors << " errors (no kinematics found) and\n"<<"                    "
+    msg_Info() << "Remnant Kinematics: " << m_errors
+	       << " errors (no kinematics found) and\n"<<"                    "
                <<  m_warns
                << " warnings (scale kt down by factor of 10).\n";
   }
@@ -64,18 +65,20 @@ Blob *Kinematics_Generator::MakeSoftBlob() {
   return p_softblob;
 }
 
-bool Kinematics_Generator::FillBlobs(Blob_List *blobs) {
+bool Kinematics_Generator::
+FillBlobs(Blob_List *blobs,const Poincare * labboost) {
   // Collinear kinematics only - the remnants will only fill extracted particles
   // and possible remnant particles without any need of kinematic reshuffling
   if ((m_kintype == kin_type::intact || m_kintype == kin_type::coll)) {
-    return CollinearKinematics(blobs);
+    return CollinearKinematics(blobs,labboost);
   }
   // Full kinematics including transverse degrees of freedom - as a consequence
   // this is more involved.
   return TransverseKinematics();
 }
 
-bool Kinematics_Generator::CollinearKinematics(Blob_List *blobs) {
+bool Kinematics_Generator::
+CollinearKinematics(Blob_List *blobs,const Poincare * labboost) {
   // First a trivial check whether particles entering the shower are the beam particles
   // (for example in elastic/diffractive scattering or some such).  In gthis case
   // we just fill them into the beam blobs.
@@ -99,7 +102,9 @@ bool Kinematics_Generator::CollinearKinematics(Blob_List *blobs) {
     // By far and large here we have a fixed spectator, if necessary, and assign
     // the four-momentum difference between incoming beam particle and outgoing
     // shower initiator to it.
-    if (trivial!=3 && !p_remnants[beam]->FillBlob(p_rhandler->GetColourGen())) return false;
+    if (trivial!=3 &&
+	!p_remnants[beam]->FillBlob(p_rhandler->GetColourGen())) return false;
+    if (labboost) p_remnants[beam]->GetBlob()->Boost(*labboost);
     m_inmom[beam] = p_remnants[beam]->InMomentum();
   }
   return true;
@@ -125,7 +130,8 @@ bool Kinematics_Generator::TransverseKinematicsDIS(const size_t &beam) {
   // copies of the spectators). if beam blobs cannot be filled return false and
   // trigger retrial Fill the beam remnant blob with the original particles and
   // put them also into the ktmaps.
-  if (!p_remnants[beam]->FillBlob(p_rhandler->GetColourGen(), &m_ktmap[beam], false)) return false;
+  if (!p_remnants[beam]->FillBlob(p_rhandler->GetColourGen(),
+				  &m_ktmap[beam], false)) return false;
   for (size_t i = 0; i < 2; i++)
     m_inmom[i] = p_remnants[i]->InMomentum();
   // Initialise particle-momentum maps to track the transverse momenta
@@ -234,12 +240,13 @@ bool Kinematics_Generator::TransverseKinematicsHH() {
     if (scale < 1.e-3) {
       if (m_errors < 5) {
         msg_Error() << "Warning: "  << METHOD<<" unable to create the breakup kinematics";
-      msg_Debugging()<<" for "
-                    << p_remnants[0]->GetExtracted()[0] << " and "
-                    << p_remnants[1]->GetExtracted()[0] << " and the corresponding remnants are "
-                    << p_remnants[0]->GetSpectators()[0] << " and "
-		     << p_remnants[1]->GetSpectators()[0];
-      msg_Error()<<".\n";
+	msg_Debugging()<<" for "
+		       << p_remnants[0]->GetExtracted()[0] << " and "
+		       << p_remnants[1]->GetExtracted()[0]
+		       << " and the corresponding remnants are "
+		       << p_remnants[0]->GetSpectators()[0] << " and "
+		       << p_remnants[1]->GetSpectators()[0];
+	msg_Error()<<".\n";
       }
       m_errors++;
       return false;

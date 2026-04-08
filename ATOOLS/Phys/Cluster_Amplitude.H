@@ -9,6 +9,7 @@
 #include <vector>
 
 namespace ATOOLS {
+  class Poincare;
 
   typedef std::map<int,int> CI_Map;
 
@@ -79,6 +80,8 @@ namespace ATOOLS {
 
     void DeletePrev();
     void DeleteNext();
+
+    void Boost(const ATOOLS::Poincare& boost);
 
     void IdSort();
 

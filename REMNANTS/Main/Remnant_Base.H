@@ -60,10 +60,12 @@ namespace REMNANTS {
     virtual bool TestExtract(const ATOOLS::Flavour& flav, const ATOOLS::Vec4D& mom) = 0;
 
     virtual ATOOLS::Blob* MakeBlob();
-    virtual bool FillBlob(Colour_Generator* colours, ATOOLS::ParticleMomMap* ktmap = nullptr,
+    virtual bool FillBlob(Colour_Generator* colours,
+			  ATOOLS::ParticleMomMap* ktmap = nullptr,
                           const bool& copy = true) = 0;
     virtual void MakeSpectator(ATOOLS::Particle* parton, Colour_Generator* colours) {}
     virtual ATOOLS::Vec4D IncomingMomentum();
+    virtual void SetInMomentum(const ATOOLS::Vec4D & mom);
     virtual void Output();
 
     virtual void Reset(const bool & resc=false,const bool & DIS=false);
