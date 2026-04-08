@@ -22,7 +22,7 @@ The online Version is available under: https://sherpa-team.gitlab.io/sherpa/inde
 
 ## Building the Docs
  - run `cmake` with `-DSHERPA_ENABLE_MANUAL=ON`
- - run `make` in the Manual directory to build all targets
+ - run `make` in the doc/ directory to build all targets
 
 ## Caveats
 If you see something like:

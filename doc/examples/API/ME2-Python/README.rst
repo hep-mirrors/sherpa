@@ -30,10 +30,10 @@ Computing matrix elements for individual phase space points using the C++ Interf
 
 Matrix elements values for user defined phase space points can also be
 quarried using a small C++ executable provided in
-``Examples/API/ME2``.  It can be compiled using the provided
-``Makefile``. The test program is then run typing (note: the
+``<prefix>/share/Examples/API/ME2-CPP``.  It can be compiled using the provided
+``CMakeLists.txt``. The test program is then run typing (note: the
 ``LD_LIBRARY_PATH`` must be set to include
-``<Sherpa-installation>/lib/SHERPA-MC``)
+``<prefix>/lib/SHERPA-MC``)
 
 .. code-block:: shell-session
 
