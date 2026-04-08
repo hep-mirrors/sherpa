@@ -10,7 +10,6 @@
 
 namespace ATOOLS {
   class Poincare;
-  
   typedef std::map<int,int> CI_Map;
 
   class ClusterAmplitude_PVector: 
@@ -81,8 +80,13 @@ namespace ATOOLS {
     void DeletePrev();
     void DeleteNext();
 
+<<<<<<< HEAD
     void Boost(const ATOOLS::Poincare * boost);
     
+=======
+    void Boost(const ATOOLS::Poincare& boost);
+
+>>>>>>> 70cc90cc9 (Implement boost to CMS to increase phase space for remnants)
     void IdSort();
 
     size_t NQCD() const;

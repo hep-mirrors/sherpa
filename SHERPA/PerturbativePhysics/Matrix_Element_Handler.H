@@ -77,6 +77,7 @@ namespace SHERPA {
     YFS::YFS_Handler           *p_yfs;
     REMNANTS::Remnant_Handler  *p_remnants;
     MODEL::Model_Base          *p_model;
+    Poincare                   *p_cmsboost;
 
     ATOOLS::Poincare           *p_cmsboost;
     std::string m_respath;

@@ -105,7 +105,7 @@ CollinearKinematics(Blob_List *blobs,const Poincare * labboost) {
     // shower initiator to it.
     if (trivial!=3 &&
 	!p_remnants[beam]->FillBlob(p_rhandler->GetColourGen())) return false;
-    if (labboost) p_remnants[beam]->GetBlob()->Boost(labboost);
+    if (labboost) p_remnants[beam]->GetBlob()->Boost(*labboost);
     m_inmom[beam] = p_remnants[beam]->InMomentum();
   }
   return true;

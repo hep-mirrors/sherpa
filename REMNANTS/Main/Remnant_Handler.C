@@ -20,7 +20,6 @@ Remnant_Handler::Remnant_Handler(PDF::ISR_Handler* isr, YFS::YFS_Handler *yfs,
 				 const std::array<size_t, 2>& tags) :
   m_id(isr->Id()), m_tags(tags), p_softblob(nullptr),
   p_cmsboost(nullptr), p_labboost(nullptr),
-  m_invGeV2fm(rpa->hBar()*rpa->c()*1.e12),
   m_check(true), m_output(false), m_neednewCMS(true), m_fails(0) {
   rempars = new Remnants_Parameters();
   rempars->Init();
@@ -105,7 +104,7 @@ Remnant_Handler::~Remnant_Handler()
 }
 
 void Remnant_Handler::InitializeRemnants(PDF::ISR_Handler* isr,
-                                         YFS::YFS_Handler *yfs,
+                                         YFS::YFS_Handler* yfs,
                                          BEAM::Beam_Spectra_Handler* beam)
 {
   // Finish the initialisation of the Remnant_Bases: make sure they know

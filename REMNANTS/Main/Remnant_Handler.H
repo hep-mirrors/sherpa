@@ -41,8 +41,6 @@ namespace REMNANTS {
     ATOOLS::Poincare *           p_cmsboost, * p_labboost;
 
     std::set<ATOOLS::Blob *> m_treatedshowerblobs;
-
-    double   m_invGeV2fm;
     bool     m_check, m_output, m_neednewCMS;
     long int m_fails;
 
@@ -71,7 +69,7 @@ namespace REMNANTS {
     bool Extract(ATOOLS::Particle * part,const unsigned int beam);
     bool ConnectColours(ATOOLS::Blob *const showerblob);
     void Reset();
-    void BoostRemnantMomenta(const ATOOLS::Poincare * boost);
+    void BoostRemnantMomenta(const ATOOLS::Poincare& boost);
 
     ATOOLS::Return_Value::code MakeBeamBlobs(ATOOLS::Blob_List* const blobs,
                                              const bool& isrescatter = false);

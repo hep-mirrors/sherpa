@@ -127,8 +127,13 @@ Blob *Remnant_Base::MakeBlob() {
 
 Vec4D Remnant_Base::IncomingMomentum() { return p_beam->OutMomentum(m_tag); }
 
+<<<<<<< HEAD
 void Remnant_Base::SetInMomentum(const Vec4D & mom) {
   p_beam->SetOutMomentum(mom,m_tag);
+=======
+void Remnant_Base::SetInMomentum(const Vec4D& mom) {
+  p_beam->SetOutMomentum(mom, m_tag);
+>>>>>>> 70cc90cc9 (Implement boost to CMS to increase phase space for remnants)
 }
 
 void Remnant_Base::Reset(const bool & resc,const bool &DIS) {

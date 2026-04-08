@@ -183,7 +183,7 @@ Perturbative_Interface::DefineInitialConditions(ATOOLS::Blob* blob,
   m_lkfweightsmap.Clear();
   Poincare * cmsboost = p_remnants->GetCMSBoost();
   if (cmsboost!=nullptr) {
-    p_ampl->Boost(cmsboost);
+    p_ampl->Boost(*cmsboost);
   }
   if (p_me->Process()->Info().m_ckkw&1) {
     if ((m_bbarmode&mets_bbar_mode::enabled) && p_me->HasNLO() &&

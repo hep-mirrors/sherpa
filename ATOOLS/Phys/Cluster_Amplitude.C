@@ -45,7 +45,7 @@ Cluster_Amplitude * ClusterAmplitude_PVector::OneAmpl()
 ClusterAmplitude_PVector Cluster_Amplitude::s_ampls;
 
 Cluster_Amplitude::Cluster_Amplitude(Cluster_Amplitude *const prev):
-  p_prev(prev), p_next(NULL), 
+  p_prev(prev), p_next(NULL),
   m_oew(0), m_oqcd(0), m_nin(0), m_new(0), m_ncl(0),
   m_kin(0), m_nlo(0), m_flag(0),
   m_mur2(0.0), m_muf2(0.0), m_muq2(0.0), m_mu2(0.0),
@@ -84,12 +84,12 @@ Cluster_Amplitude *Cluster_Amplitude::New
   return ca;
 }
 
-void Cluster_Amplitude::Boost(const Poincare * boost) {
+void Cluster_Amplitude::Boost(const Poincare& boost)
+{
   if (p_next) p_next->Boost(boost);
-  for (size_t i(0);i<m_legs.size();++i)
-    m_legs[i]->SetMom((*boost)*m_legs[i]->Mom());
+  for (size_t i(0); i < m_legs.size(); ++i)
+    m_legs[i]->SetMom(boost * m_legs[i]->Mom());
 }
-
 
 void Cluster_Amplitude::Delete()
 {
@@ -168,7 +168,7 @@ void Cluster_Amplitude::CombineLegs
 (Cluster_Leg *const i,Cluster_Leg *const j,
  const Flavour &fl,const ColorID &col)
 {
-  if (i->Amplitude()!=this || j->Amplitude()!=this) 
+  if (i->Amplitude()!=this || j->Amplitude()!=this)
     THROW(fatal_error,"Leg not owned by current amplitude");
   for (ClusterLeg_Vector::iterator clit(m_legs.begin());
        clit!=m_legs.end();++clit) {
@@ -202,7 +202,7 @@ Cluster_Amplitude *Cluster_Amplitude::InitPrev()
   return p_prev;
 }
 
-void Cluster_Amplitude::SetNext(Cluster_Amplitude *const next) 
+void Cluster_Amplitude::SetNext(Cluster_Amplitude *const next)
 {
   if (p_next!=NULL) p_next->Delete();
   if (next->p_prev) next->p_prev->p_next=NULL;
@@ -232,7 +232,7 @@ void Cluster_Amplitude::DeleteNext()
 
 class Order_LegId {
 public:
-  int operator()(const Cluster_Leg *a,const Cluster_Leg *b) 
+  int operator()(const Cluster_Leg *a,const Cluster_Leg *b)
   { return a->Id()<b->Id(); }
 };// end of class Order_LegId
 
@@ -322,9 +322,9 @@ bool Cluster_Amplitude::CheckColors
     }
     else if (lj->Flav().StrongCharge()==8) {
       if (lk->Flav().StrongCharge()==0) return false;
-      if (ci.m_i==cj.m_j && 
+      if (ci.m_i==cj.m_j &&
 	  (cj.m_i==ck.m_j || ck.Singlet())) return true;
-      if ((ci.m_i==ck.m_j || ck.Singlet()) && 
+      if ((ci.m_i==ck.m_j || ck.Singlet()) &&
 	  cj.Singlet()) return true;
       if (li->Flav().Kfcode()==25 && mo.IsGluon() &&
 	  (cj.m_i==ck.m_j || cj.m_j==ck.m_i)) return true;
@@ -342,9 +342,9 @@ bool Cluster_Amplitude::CheckColors
     }
     else if (lj->Flav().StrongCharge()==8) {
       if (lk->Flav().StrongCharge()==0) return false;
-      if (ci.m_j==cj.m_i && 
+      if (ci.m_j==cj.m_i &&
 	  (cj.m_j==ck.m_i || ck.Singlet())) return true;
-      if ((ci.m_j==ck.m_i || ck.Singlet()) && 
+      if ((ci.m_j==ck.m_i || ck.Singlet()) &&
 	  cj.Singlet()) return true;
     }
     else {
@@ -355,11 +355,11 @@ bool Cluster_Amplitude::CheckColors
   else if (li->Flav().StrongCharge()==8) {
     if (lk->Flav().StrongCharge()==0) return false;
     if (lj->Flav().StrongCharge()==8) {
-      if (ci.m_i==cj.m_j && 
+      if (ci.m_i==cj.m_j &&
 	  (ci.m_j==ck.m_i || cj.m_i==ck.m_j ||
-	   (ci.m_j==cj.m_i && lk->Flav().StrongCharge()!=8))) 
+	   (ci.m_j==cj.m_i && lk->Flav().StrongCharge()!=8)))
 	return true;
-      if (ci.m_j==cj.m_i && 
+      if (ci.m_j==cj.m_i &&
 	  (ci.m_i==ck.m_j || cj.m_j==ck.m_i ||
 	   (ci.m_i==cj.m_j && lk->Flav().StrongCharge()!=8)))
 	return true;
@@ -424,11 +424,11 @@ ColorID Cluster_Amplitude::CombineColors
   }
   else if (li->Flav().StrongCharge()==8) {
     if (lj->Flav().StrongCharge()==8) {
-      if (ci.m_i==cj.m_j && 
+      if (ci.m_i==cj.m_j &&
 	  (ci.m_j==ck.m_i || cj.m_i==ck.m_j ||
-	   (ci.m_j==cj.m_i && lk->Flav().StrongCharge()!=8))) 
+	   (ci.m_j==cj.m_i && lk->Flav().StrongCharge()!=8)))
 	return ColorID(cj.m_i,ci.m_j);
-      if (ci.m_j==cj.m_i && 
+      if (ci.m_j==cj.m_i &&
 	  (ci.m_i==ck.m_j || cj.m_j==ck.m_i ||
 	   (ci.m_i==cj.m_j && lk->Flav().StrongCharge()!=8)))
 	return ColorID(ci.m_i,cj.m_j);
@@ -616,14 +616,14 @@ namespace ATOOLS {
     if (ampl.Decays().size()) {
       std::string ds;
       for (DecayInfo_Vector::const_iterator cit(ampl.Decays().begin());
-	   cit!=ampl.Decays().end();++cit) 
+	   cit!=ampl.Decays().end();++cit)
         ds+=ToString(**cit)+" ";
       ostr<<"  decs = { "<<ds<<"}\n";
     }
     if (ampl.ColorMap().size()) {
       std::string cs;
       for (CI_Map::const_iterator cit(ampl.ColorMap().begin());
-	   cit!=ampl.ColorMap().end();++cit) 
+	   cit!=ampl.ColorMap().end();++cit)
 	cs+=ToString(cit->first)+"->"+ToString(cit->second)+" ";
       ostr<<"  cols = { "<<cs<<"}\n";
     }

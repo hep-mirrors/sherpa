@@ -17,7 +17,7 @@ using namespace BEAM;
 Beam_Spectra_Handler::Beam_Spectra_Handler()
     : p_kinematics(nullptr), p_weight(nullptr), m_beammode(beammode::collider),
       m_collidermode(collidermode::monochromatic), m_mode(0),
-      m_on(false), m_symmetric(false),  
+      m_on(false), m_symmetric(false),
       m_polarisation(0) {
   msg_Info() << "Initializing beam spectra ...\n";
   for (size_t i = 0; i < 2; i++)

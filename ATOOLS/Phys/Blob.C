@@ -477,20 +477,20 @@ bool Blob::CheckColour(const bool & transient) {
   return (trips.empty() && antis.empty());
 }
 
-void Blob::Boost(const Poincare * boost,std::set<Particle *> * treateds) {
-  for (int i=0;i<NInP();i++)  {
-    Particle * part = InParticle(i);
-    if (treateds && treateds->find(part)!=treateds->end()) continue;
+void Blob::Boost(const Poincare& boost, std::set<Particle*>* treateds) {
+  for (int i = 0; i < NInP(); i++) {
+    Particle* part = InParticle(i);
+    if (treateds && treateds->find(part) != treateds->end()) continue;
     part->Boost(boost);
     if (treateds) treateds->insert(part);
   }
-  for (int i=0;i<NOutP();i++) {
-    Particle * part = OutParticle(i);
-    if (treateds && treateds->find(part)!=treateds->end()) continue;
+  for (int i = 0; i < NOutP(); i++) {
+    Particle* part = OutParticle(i);
+    if (treateds && treateds->find(part) != treateds->end()) continue;
     part->Boost(boost);
     if (treateds) treateds->insert(part);
   }
-  m_position = (*boost)*m_position;
+  m_position = boost * m_position;
 }
 
 void Blob::BoostInCMS() {
