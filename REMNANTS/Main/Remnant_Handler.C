@@ -19,7 +19,8 @@ Remnant_Handler::Remnant_Handler(PDF::ISR_Handler* isr, YFS::YFS_Handler *yfs,
                                  BEAM::Beam_Spectra_Handler* beam_handler,
 				 const std::array<size_t, 2>& tags) :
   m_id(isr->Id()), m_tags(tags), p_softblob(nullptr),
-  m_check(true), m_output(false), m_fails(0) {
+  p_cmsboost(nullptr), p_labboost(nullptr),
+  m_check(true), m_output(false), m_neednewCMS(true), m_fails(0) {
   rempars = new Remnants_Parameters();
   rempars->Init();
   p_remnants = {nullptr, nullptr};
@@ -59,8 +60,9 @@ Remnant_Handler(std::array<std::shared_ptr<Remnant_Base>, 2> remnants,
 		PDF::ISR_Handler* isr,YFS::YFS_Handler *yfs,
 		BEAM::Beam_Spectra_Handler* beam_handler,
 		const std::array<size_t, 2>& tags) :
-  m_id(isr->Id()), p_remnants(remnants), m_tags(tags), p_softblob(nullptr),
-  m_check(true), m_output(false), m_fails(0)
+  m_id(isr->Id()), p_remnants(remnants), m_tags(tags),
+  p_softblob(nullptr),  p_cmsboost(nullptr), p_labboost(nullptr),
+  m_check(true), m_output(false), m_neednewCMS(true), m_fails(0)
 {
   // this constructor is to create remnants, where one of the remnants
   // has already been created; needed for the beam rescatterings
@@ -94,13 +96,15 @@ Remnant_Handler(std::array<std::shared_ptr<Remnant_Base>, 2> remnants,
 
 Remnant_Handler::~Remnant_Handler()
 {
+  if (p_cmsboost) delete p_cmsboost;
+  if (p_labboost) delete p_labboost;
   if (m_fails > 0)
     msg_Out() << "Remnant handling yields " << m_fails
               << " fails in creating good beam  breakups.\n";
 }
 
 void Remnant_Handler::InitializeRemnants(PDF::ISR_Handler* isr,
-                                         YFS::YFS_Handler *yfs,
+                                         YFS::YFS_Handler* yfs,
                                          BEAM::Beam_Spectra_Handler* beam)
 {
   // Finish the initialisation of the Remnant_Bases: make sure they know
@@ -111,7 +115,39 @@ void Remnant_Handler::InitializeRemnants(PDF::ISR_Handler* isr,
     p_remnants[i]->SetBeam(beam->GetBeam(i));
     p_remnants[i]->Reset();
   }
+  if (beam->GetBeam(0)->Type() == BEAM::beamspectrum::monochromatic &&
+      beam->GetBeam(1)->Type() == BEAM::beamspectrum::monochromatic) {
+    if (!beam->IsSymmetric()) {
+      Vec4D total_mom = p_remnants[0]->InMomentum() + p_remnants[1]->InMomentum();
+      p_cmsboost = new Poincare(total_mom);
+      p_labboost = new Poincare(total_mom);
+      p_labboost->Invert();
+    }
+    m_neednewCMS = false;
+  }
   isr->SetRemnants(p_remnants);
+}
+
+void Remnant_Handler::InitializeCMSBoost()
+{
+  if (!m_neednewCMS) return;
+
+  delete p_cmsboost;
+  p_cmsboost = nullptr;
+  delete p_labboost;
+  p_labboost = nullptr;
+
+  Vec4D total_mom = p_remnants[0]->InMomentum() + p_remnants[1]->InMomentum();
+  p_cmsboost = new Poincare(total_mom);
+  p_labboost = new Poincare(total_mom);
+  p_labboost->Invert();
+}
+
+void Remnant_Handler::BoostRemnantMomenta(const ATOOLS::Poincare& boost) {
+  for (size_t i=0;i<2;i++) {
+    Vec4D mom = p_remnants[i]->InMomentum();
+    p_remnants[i]->SetInMomentum(boost * mom);
+  }
 }
 
 void Remnant_Handler::DefineRemnantStrategy() {
@@ -351,7 +387,11 @@ bool Remnant_Handler::Extract(ATOOLS::Particle * part,const unsigned int beam)
 
 void Remnant_Handler::Reset() {
   const bool DIS = m_type == strat::DIS1 || m_type == strat::DIS2;
-  for (size_t beam = 0; beam < 2; ++beam) p_remnants[beam]->Reset(false, DIS);
+  for (size_t beam = 0; beam < 2; ++beam) {
+    p_remnants[beam]->Reset(false, DIS);
+    // Resets the outgoing momentum of the beam base to its original value
+    p_remnants[beam]->SetInMomentum(p_remnants[beam]->GetBeam()->InMomentum());
+  }
   m_treatedshowerblobs.clear();
   m_kinematics.Reset();
   m_colours.Reset();

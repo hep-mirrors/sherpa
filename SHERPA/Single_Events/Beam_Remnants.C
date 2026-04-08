@@ -44,6 +44,11 @@ Return_Value::code Beam_Remnants::StandardTreatment(Blob_List*  bloblist,
 {
   Return_Value::code rv =
     p_beamremnanthandler->FillBeamAndBunchBlobs(bloblist, onlyBunch);
+  Poincare * labboost = p_beamremnanthandler->GetRemnants()->GetLabBoost();
+  if (labboost!=nullptr) {
+    std::set<Particle*> treateds;
+    bloblist->Boost(*labboost, &treateds);
+  }
   if (m_ana) Analyse(bloblist);
   return rv;
 }

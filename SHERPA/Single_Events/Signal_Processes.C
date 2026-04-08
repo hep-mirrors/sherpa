@@ -249,6 +249,11 @@ bool Signal_Processes::FillBlob(Blob_List *const bloblist,Blob *const blob)
                 (ToString(proc->Info().m_fi.m_nlotype)));
   blob->AddData("NLOOrder",new Blob_Data<std::vector<double> >
                 (proc->Info().m_fi.m_nlocpl));
+  Poincare * cmsboost = p_mehandler->Remnants()->GetCMSBoost();
+  if (cmsboost!=nullptr) {
+    blob->Boost(*cmsboost);
+    p_mehandler->Remnants()->BoostRemnantMomenta(*cmsboost);
+  }
 
   ME_Weight_Info* wgtinfo=proc->GetMEwgtinfo();
   if (wgtinfo) {
