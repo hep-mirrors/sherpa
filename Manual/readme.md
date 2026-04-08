@@ -31,7 +31,7 @@ See also `requirements.txt` for pinned versions of the python packages.
 
 ## Building the Docs
  - run `cmake` with `-DSHERPA_ENABLE_MANUAL=ON`
- - run `make` in the Manual directory to build all targets
+ - run `make` in the doc/ directory to build all targets
 
 ## Caveats
 If you see something like:
