@@ -459,7 +459,7 @@ Fedora41-make-ccache-GNU-feature:
     BUILDDOCS: 1
   extends: .any-cmake-ccache
   rules:
-    - if: $CI_COMMIT_BRANCH && $CI_COMMIT_BRANCH != $CI_DEFAULT_BRANCH && $CI_MERGE_REQUEST_DRAFT == 'false'
+    - if: $CI_COMMIT_BRANCH && $CI_COMMIT_BRANCH != $CI_DEFAULT_BRANCH && $CI_MERGE_REQUEST_DRAFT == false
     - when: never
   needs:
     - job: build_image_Fedora41
@@ -473,7 +473,7 @@ Fedora42-make-ccache-GNU:
     BUILDDOCS: 1
   extends: .any-cmake-ccache-main
   rules:
-    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH && $CI_MERGE_REQUEST_DRAFT == 'false'
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH && $CI_MERGE_REQUEST_DRAFT == false
     - when: never
   needs:
     - job: build_image_Fedora42
@@ -487,7 +487,7 @@ Fedora42-make-ccache-GNU-feature:
     BUILDDOCS: 1
   extends: .any-cmake-ccache
   rules:
-    - if: $CI_COMMIT_BRANCH && $CI_COMMIT_BRANCH != $CI_DEFAULT_BRANCH && $CI_MERGE_REQUEST_DRAFT == 'false'
+    - if: $CI_COMMIT_BRANCH && $CI_COMMIT_BRANCH != $CI_DEFAULT_BRANCH && $CI_MERGE_REQUEST_DRAFT == false
     - when: never
   needs:
     - job: build_image_Fedora42
@@ -501,7 +501,7 @@ Fedora42-make-ccache-LLVM:
     BUILDDOCS: 1
   extends: .any-cmake-ccache-main
   rules:
-    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH && $CI_MERGE_REQUEST_DRAFT == 'false'
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH && $CI_MERGE_REQUEST_DRAFT == false
     - when: never
   needs:
     - job: build_image_Fedora42
@@ -515,7 +515,7 @@ Fedora42-make-ccache-LLVM-feature:
     BUILDDOCS: 1
   extends: .any-cmake-ccache
   rules:
-    - if: $CI_COMMIT_BRANCH && $CI_COMMIT_BRANCH != $CI_DEFAULT_BRANCH && $CI_MERGE_REQUEST_DRAFT == 'false'
+    - if: $CI_COMMIT_BRANCH && $CI_COMMIT_BRANCH != $CI_DEFAULT_BRANCH && $CI_MERGE_REQUEST_DRAFT == false
     - when: never
   needs:
     - job: build_image_Fedora42
@@ -528,7 +528,7 @@ CentOS9-make-ccache-GNU:
     EXTRACMAKEFLAGS: $COMMON_EXTRA_CMAKE_FLAGS
   extends: .any-cmake-ccache-main
   rules:
-    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH && $CI_MERGE_REQUEST_DRAFT == 'false'
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH && $CI_MERGE_REQUEST_DRAFT == false
     - when: never
   needs:
     - job: build_image_CentOS9
@@ -541,7 +541,7 @@ CentOS9-make-ccache-GNU-feature:
     EXTRACMAKEFLAGS: $COMMON_EXTRA_CMAKE_FLAGS
   extends: .any-cmake-ccache
   rules:
-    - if: $CI_COMMIT_BRANCH && $CI_COMMIT_BRANCH != $CI_DEFAULT_BRANCH && $CI_MERGE_REQUEST_DRAFT == 'false'
+    - if: $CI_COMMIT_BRANCH && $CI_COMMIT_BRANCH != $CI_DEFAULT_BRANCH && $CI_MERGE_REQUEST_DRAFT == false
     - when: never
   needs:
     - job: build_image_CentOS9
@@ -555,7 +555,7 @@ Archlinux0-make-ccache-GNU:
     BUILDDOCS: 1
   extends: .any-cmake-ccache-main
   rules:
-    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH && $CI_MERGE_REQUEST_DRAFT == 'false'
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH && $CI_MERGE_REQUEST_DRAFT == false
     - when: never
   needs:
     - job: build_image_Archlinux0
@@ -569,7 +569,7 @@ Archlinux0-make-ccache-GNU-feature:
     BUILDDOCS: 1
   extends: .any-cmake-ccache
   rules:
-    - if: $CI_COMMIT_BRANCH && $CI_COMMIT_BRANCH != $CI_DEFAULT_BRANCH && $CI_MERGE_REQUEST_DRAFT == 'false'
+    - if: $CI_COMMIT_BRANCH && $CI_COMMIT_BRANCH != $CI_DEFAULT_BRANCH && $CI_MERGE_REQUEST_DRAFT == false
     - when: never
   needs:
     - job: build_image_Archlinux0
