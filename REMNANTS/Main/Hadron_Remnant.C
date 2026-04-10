@@ -29,7 +29,7 @@ void Hadron_Remnant::ConstructConstituentFlavours() {
   }
   else if ((hadint>10)&&(hadint<100)) {
     m_constituents.push_back(Flavour((kf_code)(hadint)/10));
-    m_constituents.push_back(Flavour((kf_code)(hadint-(hadint/10)*10)));
+    m_constituents.push_back(Flavour((kf_code)(hadint-(hadint/10)*10)).Bar());
   }
   else THROW(critical_error,"Cannot determine constituents.");
   if (m_beamflav.IsAnti()) {
@@ -247,6 +247,10 @@ bool Hadron_Remnant::MakeRemnants(Colour_Generator* colours)
 }
 
 Flavour Hadron_Remnant::RemnantFlavour(const Flavour & flav) {
+  if (m_beamflav.IsMeson()) {
+    if (*m_constituents.begin() == flav) return *(++m_constituents.begin());
+    else return *m_constituents.begin();
+  }
   // Counter taken to make sure only two flavours are used
   // to construct diquark - either qq'_0 or qq_1.
   bool taken = false;
