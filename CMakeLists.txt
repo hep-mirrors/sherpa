@@ -424,7 +424,7 @@ if (SHERPA_ENABLE_LHAPDF)
     include(FetchContent)
     set(LHAPDFDESTDIR ${PROJECT_BINARY_DIR}/EXTERNALINSTALL/lhapdf)
     ExternalProject_Add(downloadedlhapdf
-      URL https://lhapdf.hepforge.org/downloads/?f=LHAPDF-6.5.3.tar.gz
+      URL https://lhapdf.hepforge.org/downloads/?f=LHAPDF-6.5.5.tar.gz
       UPDATE_COMMAND ""
       #LHAPDF is  bugged
       #One should not have doxygen in the path!
