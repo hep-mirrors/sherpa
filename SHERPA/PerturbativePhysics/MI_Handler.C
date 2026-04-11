@@ -105,9 +105,7 @@ bool MI_Handler::GenerateHardProcess(const typeID & type,Blob * blob)
 {
   if ( (m_gen==genID::amisic  && p_amisic->GenerateScatter(size_t(type),blob)) ||
        (m_gen==genID::shrimps && p_shrimps->GenerateEvent(blob)) ) {
-    if (m_gen==genID::amisic) {
-      if (p_amisic->IsSoft()) m_stop = true;
-    }
+    if (m_gen==genID::amisic && p_amisic->IsSoft()) m_stop = true;
     m_firstrescatter = false;
     return true;
   }

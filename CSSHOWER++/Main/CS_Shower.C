@@ -160,9 +160,18 @@ bool CS_Shower::ExtractPartons(Blob_List *const blist) {
   psblob->SetStatus(blob_status::needs_beams |
 		    blob_status::needs_reconnections);
   
-  for (All_Singlets::const_iterator 
-	 sit(m_allsinglets.begin());sit!=m_allsinglets.end();++sit) {
-    (*sit)->ExtractPartons(psblob,p_ms);
+
+  for (All_Singlets::const_iterator
+         sit(m_allsinglets.begin());sit!=m_allsinglets.end();++sit){
+      (*sit)->ExtractPartons(psblob,p_ms);
+  }
+
+  if (p_shower->FusingEnabled()) {
+    ClusterAmplitude_PVector all_amplitudes;
+    for (auto &sit: m_allsinglets) all_amplitudes.push_back(sit->GetAmplitude());
+    Cluster_Amplitude * cl_all = all_amplitudes.OneAmpl(); //->CopyAll();
+    psblob->AddData("AllAmplitudes",new Blob_Data<std::shared_ptr<Cluster_Amplitude> >(std::shared_ptr<Cluster_Amplitude>(cl_all)));
+    all_amplitudes.clear();
   }
   return true;
 }
@@ -171,7 +180,7 @@ void CS_Shower::CleanUp()
 {
   m_nem=0;
   for (All_Singlets::const_iterator 
-	 sit(m_allsinglets.begin());sit!=m_allsinglets.end();++sit) {
+         sit(m_allsinglets.begin());sit!=m_allsinglets.end();++sit) {
     if (*sit) delete *sit;
   }
   m_allsinglets.clear();

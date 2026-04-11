@@ -19,7 +19,6 @@ Remnant_Handler::Remnant_Handler(PDF::ISR_Handler* isr, YFS::YFS_Handler *yfs,
                                  BEAM::Beam_Spectra_Handler* beam_handler,
 				 const std::array<size_t, 2>& tags) :
   m_id(isr->Id()), m_tags(tags), p_softblob(nullptr),
-  m_invGeV2fm(rpa->hBar()*rpa->c()*1.e12),
   m_check(true), m_output(false), m_fails(0) {
   rempars = new Remnants_Parameters();
   rempars->Init();

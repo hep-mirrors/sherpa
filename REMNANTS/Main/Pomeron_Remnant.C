@@ -133,11 +133,7 @@ void Pomeron_Remnant::MakeRemnants(Colour_Generator* colours)
     for (int i = 1; i < 3; ++i) {
       part->SetFlow(i, m_extracted.front()->GetFlow(3-i));
     }
-    /////////////////////////////////////////////////////////////////////////
-    // Form_Factor has radii etc. in fm, event record needs it in mm,
-    // therefore we have to divide by 10^12.
-    /////////////////////////////////////////////////////////////////////////    
-    part->SetPosition(m_position+(*p_ff)()/1.e12);
+    part->SetPosition(m_position+(*p_ff)());
     m_spectators.push_front(part);
   } else {
     part = p_recoiler = MakeParticle(m_extracted.front()->Flav().Bar());
@@ -147,12 +143,8 @@ void Pomeron_Remnant::MakeRemnants(Colour_Generator* colours)
       int c = part->GetFlow(i) != 0 ? part->GetFlow(i) : m_extracted.front()->GetFlow(i);
       g->SetFlow(3-i, c);
     }
-    /////////////////////////////////////////////////////////////////////////
-    // Form_Factor has radii etc. in fm, event record needs it in mm,
-    // therefore we have to divide by 10^12.
-    /////////////////////////////////////////////////////////////////////////    
-    part->SetPosition(m_position+(*p_ff)()/1.e12);
-    g->SetPosition(m_position+(*p_ff)()/1.e12);
+    part->SetPosition(m_position+(*p_ff)());
+    g->SetPosition(m_position+(*p_ff)());
     m_spectators.push_front(part);
     m_spectators.push_front(g);
   }

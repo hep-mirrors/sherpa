@@ -17,8 +17,8 @@ namespace REMNANTS {
     void SetDefaults(const ATOOLS::Flavour & flav);
     void Initialise();
   public:
-    Form_Factor(const ATOOLS::Flavour & flav);
-    ~Form_Factor() {};
+    explicit Form_Factor(const ATOOLS::Flavour & flav);
+    ~Form_Factor() = default;
 
     ATOOLS::Vec4D operator()(const double & x=-1., const double & Q2=-1.);
     double        B(const double & x=-1., const double & Q2=-1.);

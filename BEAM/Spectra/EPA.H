@@ -2,49 +2,44 @@
 #define BEAM_Main_EPA_H
 
 #include "BEAM/Main/Beam_Base.H"
-#include "ATOOLS/Math/Function_Base.H"
+#include "BEAM/Spectra/EPA_FF.H"
+
+namespace ATOOLS {
+  class Settings;
+}
 
 namespace BEAM {
-
   class EPA final : public Beam_Base {
   private:
 
-    class CosInt final : public ATOOLS::Function_Base {
-    public:
-      double GetValue(double T) override { return -cos(T)/T; }
-      double operator()(double T) override { return GetValue(T); }
-      double GetCosInt(double X);
-    };
+    EPA_ff_type m_fftype;
+    EPA_FF_Base* p_ff;
+    double m_pref;
+    double m_pt2max;
 
-    double m_mass, m_charge, m_gamma, m_minR, m_maxR;
-    double m_q2Max, m_q2Min, m_pt_min, m_aqed, m_theta_max;
-    double m_xmin, m_xmax;
+    bool m_output, m_outputAll;
 
-    bool m_lo_epa;
-
+    void Initialise();
     void RegisterDefaults() const;
 
-    double phi(double x, double qq) const;
-
-    void selfTest(const std::string& filename);
-
-    int m_formfactor;
+    static void Tests();
 
   public:
 
-    EPA(const ATOOLS::Flavour beam,const double energy,const double pol,
-	const int dir);
-
+    EPA(const ATOOLS::Flavour& beam, double energy, double pol, int dir);
     ~EPA() override = default;
+    Beam_Base* Copy() override { return new EPA(*this); }
 
-    Beam_Base *Copy() override;
-    bool CalculateWeight(double, double) override;
+    bool CalculateWeight(double x, double q2) override;
     void FixPosition() override;
-    void SetOutMomentum(const ATOOLS::Vec4D &out, const size_t & i=0) override;
-    inline double Xmax() const override { return m_xmax; }
-    inline double Xmin() const override { return m_xmin; }
+    void SetOutMomentum(const ATOOLS::Vec4D& out) override;
+
+    double Xmax() const override { return p_ff->Xmax(); }
+    double Xmin() const override { return p_ff->Xmin(); }
+
+    double ImpactParameter() const override { return p_ff->ImpactParameter(); }
   };// end of class EPA
 
-}// end of namespace BEAM
+} // end of namespace BEAM
 
 #endif

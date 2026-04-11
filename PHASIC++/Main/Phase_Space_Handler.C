@@ -27,7 +27,6 @@ using namespace PHASIC;
 using namespace ATOOLS;
 using namespace BEAM;
 using namespace PDF;
-using namespace std;
 
 Integration_Info *PHASIC::Phase_Space_Handler::p_info=NULL;
 
@@ -96,7 +95,6 @@ Phase_Space_Handler::Differential(Process_Integrator *const process,
   }
   // phase space trigger, calculate and construct weights
   if (process->Process()->Trigger(p_lab)) {
-    //if (!p_active->Process()->Selector()->Pass()) return 0.0;
     if (p_point) {
       if (process->Process()->EventReader()->Compute()==1) {
         std::vector<double> scales{p_point->MuF2(),p_point->MuR2(),p_point->MuQ2()};

@@ -22,7 +22,6 @@ RUN  dnf -y  install   \
      && dnf -y update lhapdf \
      && dnf -y  install  \
       sphinx python3-sphinx python3-sphinxcontrib-bibtex \
-      python3-sphinx-multiversion \
       'tex(atbegshi.sty)' 'tex(babel.sty)' 'tex(bigintcalc.sty)' 'tex(bitset.sty)' 'tex(etexcmds.sty)' 'tex(gettitlestring.sty)'   \
       'tex(iftex.sty)' 'tex(ifvtex.sty)' 'tex(infwarerr.sty)' 'tex(intcalc.sty)' 'tex(kvdefinekeys.sty)' 'tex(kvsetkeys.sty)'  \
       'tex(ltxcmds.sty)' 'tex(pdfescape.sty)' 'tex(pdftexcmds.sty)' 'tex(uniquecounter.sty)' 'tex(amsfonts.sty)' 'tex(amssymb.sty)'   \

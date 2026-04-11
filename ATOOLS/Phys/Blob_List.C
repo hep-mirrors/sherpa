@@ -212,9 +212,6 @@ bool Blob_List::FourMomentumConservation() const
   static double accu(std::sqrt(rpa->gen.Accu()));
   bool test=IsEqual(inisum,finsum,accu);
   if (!test) {
-    //msg_Error()<<METHOD<<"(): ("<<this<<") Four Momentum is not conserved.\n"
-    //         <<"   p_{in} = "<<inisum<<" vs. p_{out} = "<<finsum<<",\n"
-    //         <<"   diff = "<<finsum-inisum<<"."<<std::endl;
     static int allow(-1);
     if (allow<0) {
       Settings& s = Settings::GetMainSettings();
@@ -224,13 +221,13 @@ bool Blob_List::FourMomentumConservation() const
     if (!allow) Abort();
     for (Blob_List::const_iterator bit=begin();bit!=end();++bit) {
       Vec4D sum((*bit)->CheckMomentumConservation());
-      if (sum!=Vec4D()) {
+      if (!IsEqual(sum,Vec4D(),accu)) {      
 	btp::code btype = (*bit)->Type();
 	if (s_momfails.find(btype)==s_momfails.end()) s_momfails[btype] = 1;
 	else s_momfails[btype] = s_momfails[btype]+1;
 	if (s_momfails[btype] <= 5) {
 	  msg_Error()<<METHOD<<" throws four momentum error for "<<(*bit)->Type()<<": "<<sum
-		     <<" ("<<s_momfails[btype]<<") in\n"<<**bit<<std::endl;
+		     <<" ("<<s_momfails[btype]<<")"<<std::endl;
 	}
       }
     }

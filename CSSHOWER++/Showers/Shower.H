@@ -28,7 +28,8 @@ namespace CSSHOWER {
     REMNANTS::Remnant_Handler * p_remnants;
     Parton           * m_last[4];
     int                m_kscheme, m_maxpart, m_recdec, m_scvmode;
-     
+    bool               m_fusing;
+
     ATOOLS::Cluster_Leg *p_old[2];
 
     std::map<std::string,double,ATOOLS::String_Sort> m_efac;
@@ -58,6 +59,9 @@ namespace CSSHOWER {
 		       const ATOOLS::Flavour &flb,const ATOOLS::Flavour &flc,
 		       double &jcv,int mode);
 
+    ATOOLS::Cluster_Amplitude *  SingletToAmplitude(const Singlet * sing, ATOOLS::Cluster_Amplitude * ampl);
+    void   PartonToAmplitude(const Parton *  parton, ATOOLS::Cluster_Amplitude *);
+    void   CheckAmplitude(const ATOOLS::Cluster_Amplitude *ampl);
   public:
     Shower(PDF::ISR_Handler *,const int qcd,const int qed, int type);
     ~Shower();
@@ -88,6 +92,10 @@ namespace CSSHOWER {
 
     inline void SetRemnants(REMNANTS::Remnant_Handler * remnants) {
       p_remnants = remnants;
+    }
+    inline bool FusingEnabled() const { return m_fusing; }
+    inline void EnableFusing(bool status=true) {
+      m_fusing = status;
     }
   };
 }

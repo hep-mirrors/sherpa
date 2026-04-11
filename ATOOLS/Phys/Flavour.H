@@ -27,7 +27,7 @@ namespace ATOOLS {
     double  m_mass, m_hmass, m_radius, m_yuk, m_width, m_dg, m_dm, m_qoverp2;
     int     m_icharge, m_strong, m_resummed, m_priority;
     int     m_spin, m_stable, m_masssign, m_dummy, m_majorana, m_formfactor;
-    bool    m_on, m_massive, m_hadron, m_isgroup;
+    bool    m_on, m_massive, m_hadron, m_isgroup, m_narrow;
 
     std::string m_idname, m_antiname, m_texname, m_antitexname;
 
@@ -41,7 +41,7 @@ namespace ATOOLS {
       m_dg(0.0), m_dm(0.0), m_qoverp2(1.0), m_icharge(0),
       m_strong(0), m_resummed(0), m_priority(0), m_spin(0), m_stable(1),
       m_masssign(0), m_dummy(1), m_majorana(0), m_formfactor(0), m_on(0),
-      m_massive(0), m_hadron(0), m_isgroup(0) {}
+      m_massive(0), m_hadron(0), m_isgroup(0), m_narrow(0) {}
     Particle_Info(const Particle_Info &info);
     Particle_Info(const kf_code &kfc,const double &mass,const double &radius,const double &width,
       const int icharge,const int strong,
@@ -107,7 +107,6 @@ namespace ATOOLS {
     bool IsDiQuark() const;
     bool IsBaryon() const;
     bool IsMeson() const;
-    bool IsNucleon() const;
     bool IsB_Hadron() const;
     bool IsC_Hadron() const;
 
@@ -187,9 +186,13 @@ namespace ATOOLS {
 
     inline int FormFactor() const {return p_info->m_formfactor; }
 
+    inline bool IsNucleon() const
+    { return p_info->m_kfc == kf_p_plus || p_info->m_kfc == kf_n; }
+
     inline bool IsIon() const { return p_info->m_kfc>1000000000; }
 
-    inline int GetAtomicNumber() const { return (p_info->m_kfc/10)%1000; }
+    inline unsigned int GetAtomicNumber() const { return (p_info->m_kfc/10000)%1000; }
+    inline unsigned int GetMassNumber() const   { return (p_info->m_kfc/10)%1000; }
 
     inline void SetOn(const bool on) const { p_info->m_on=on; }
 
@@ -200,6 +203,8 @@ namespace ATOOLS {
 
     inline int  Stable() const   { return p_info->m_stable;   }
     bool IsStable() const;
+
+    inline bool IsNarrow() const { return p_info->m_narrow; }
 
     inline void SetMassOn(const bool on) const
     { p_info->m_massive=on; }
@@ -244,8 +249,8 @@ namespace ATOOLS {
     inline void SetWidth(const double &width) const
     { p_info->m_width=width; }
 
-    inline double Width() const
-    { return p_info->m_width; }
+    inline double Width(bool true_width=false) const
+    {  return (!true_width&&IsNarrow())?0.:p_info->m_width; }
 
     inline bool IsHadron() const { return p_info->m_hadron; }
 
@@ -281,8 +286,15 @@ namespace ATOOLS {
     { if (!IsKK()) return 0;
       return (Kfcode()-1000000*(Kfcode()/1000000))/100000; }
 
+    inline bool CanHavePDF() const {
+      return IsHadron() || IsIon() || IsPhoton();
+    }
+
     inline bool IsDummy() const
     { return p_info->m_dummy; }
+
+    inline bool IsNone() const
+    { return Kfcode()==kf_none; }
 
     inline bool operator<(const Flavour &f) const
     {

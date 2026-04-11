@@ -130,7 +130,7 @@ Matrix_Element_Handler::Matrix_Element_Handler(MODEL::Model_Base *model):
     const size_t incr{ s["EVENT_SEED_INCREMENT"].Get<size_t>() };
     ran->SetSeedStorageIncrement(incr);
   }
-  m_pilotrunenabled = ran->CanRestoreStatus() && (m_eventmode != 0);
+  m_pilotrunenabled = ran->CanRestoreMultipleStatus() && (m_eventmode != 0);
   msg_Debugging()<<"Pilot run mode: "<<m_pilotrunenabled<<"\n";
 }
 
@@ -256,7 +256,7 @@ Matrix_Element_Handler::GenerateOneTrialEvent()
     // in pilot run mode, calculate nominal only, and prepare to restore
     // the rng to re-run with variations after unweighting
     varmode = Variations_Mode::nominal_only;
-    ran->SaveStatus();
+    ran->SaveStatus(1);
   }
 
   // try to generate an event for the selected process
@@ -292,7 +292,7 @@ Matrix_Element_Handler::GenerateOneTrialEvent()
     if (hasvars && m_pilotrunenabled) {
       // re-run with same rng state and include the calculation of variations
       // this time
-      ran->RestoreStatus();
+      ran->RestoreStatus(1);
       proc->ResetEvent();
       info=proc->OneEvent(m_eventmode, Variations_Mode::all);
       assert(info);
@@ -439,7 +439,7 @@ std::vector<Process_Base*> Matrix_Element_Handler::InitializeSingleProcess
 	procs.push_back(m_gens.InitializeProcess(rpi,true));
 	if (procs.back()==NULL) {
 	  msg_Error()<<"No such process:\n"<<rpi<<std::endl;
-	  THROW(critical_error,"Failed to intialize process");
+	  THROW(critical_error,"Failed to initialize process");
 	}
       }
       if (pi.m_fi.NLOType()&nlo_type::real ||
@@ -483,7 +483,7 @@ std::vector<Process_Base*> Matrix_Element_Handler::InitializeSingleProcess
         procs.push_back(m_gens.InitializeProcess(rpi,true));
 	if (procs.back()==NULL) {
 	  msg_Error()<<"No such process:\n"<<rpi<<std::endl;
-	  THROW(critical_error,"Failed to intialize process");
+	  THROW(critical_error,"Failed to initialize process");
 	}
       }
       if (pmap==NULL) {

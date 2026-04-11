@@ -533,7 +533,6 @@ void Single_Process::AddISR(ATOOLS::Cluster_Sequence_Info &csi,
 void Single_Process::AddBeam(ATOOLS::Cluster_Sequence_Info& csi,
                              const double& Q2)
 {
-  DEBUG_FUNC(Name());
   if (p_int->Beam() && p_int->Beam()->On()) {
     p_int->Beam()->CalculateWeight(Q2);
     msg_Debugging()<<"Types = ("<<p_int->Beam()->GetBeam(0)->Type()<<", "
@@ -653,7 +652,6 @@ Weights_Map Single_Process::Differential(const Vec4D_Vector& p,
     }
 
   } else {
-    const auto triggers = Selector()->CombinedResults();
 
     for (int i {0}; i < GetSubevtList()->size(); ++i) {
       auto sub = (*GetSubevtList())[i];
@@ -695,14 +693,6 @@ Weights_Map Single_Process::Differential(const Vec4D_Vector& p,
 
         // update subevent information
         sub->m_result = sub->m_me * csi.m_pdfwgt * csi.m_flux;
-        assert(!triggers.empty());
-        const auto& jet_trigger_weights =
-            (triggers.size() == 1) ? triggers[0] : triggers[i];
-        if (varmode == Variations_Mode::all) {
-          sub->m_results *= jet_trigger_weights;
-        } else {
-          sub->m_results *= jet_trigger_weights.Nominal();
-        }
         sub->m_results = sub->m_result;
         sub->m_mewgt *= m_lastflux;
         sub->m_xf1 = p_int->ISR()->XF1();
