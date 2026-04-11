@@ -70,6 +70,9 @@ Sherpa::~Sherpa()
     if (p_inithandler->GetVariations()) {
       p_inithandler->GetVariations()->PrintStatistics(msg->Out());
     }
+    if (p_inithandler->GetMatrixElementHandler()) {
+      p_inithandler->GetMatrixElementHandler()->PrintStatistics(msg->Out());
+    }
     Blob_List::PrintMomFailStatistics(msg->Out());
     msg->PrintRates();
     PHASIC::Decay_Channel::PrintMaxKinFailStatistics(msg->Out());

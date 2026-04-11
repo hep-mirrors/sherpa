@@ -632,6 +632,18 @@ int Matrix_Element_Handler::InitializeProcesses(
   return res;
 }
 
+void Matrix_Element_Handler::PrintStatistics(std::ostream& o)
+{
+  MyStrStream i;
+  for (auto& proc : AllProcesses()) {
+    proc->PrintStatistics(i);
+  }
+  std::string i_string{i.str()};
+  if (i_string.empty()) return;
+  o << "Hard processes statistics:\n";
+  o << i_string;
+}
+
 int Matrix_Element_Handler::InitializeTheReweighting(Variations_Mode mode)
 {
   for (auto* proc : m_procs)

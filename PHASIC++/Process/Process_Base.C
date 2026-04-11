@@ -780,6 +780,14 @@ int Process_Base::NaiveMapping(Process_Base *proc) const
   return 1;
 }
 
+void Process_Base::PrintStatistics(std::ostream& o)
+{
+  if (p_read) {
+    o << "  " << ShellName() << " event files:\n";
+    p_read->PrintStatistics(o);
+  }
+}
+
 std::string Process_Base::ShellName(std::string name) const
 {
   if (name.length()==0) name=m_name;

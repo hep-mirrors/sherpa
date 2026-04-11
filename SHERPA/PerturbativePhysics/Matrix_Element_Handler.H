@@ -170,8 +170,9 @@ namespace SHERPA {
                             PDF::ISR_Handler*,
                             YFS::YFS_Handler*);
 
-    int InitializeTheReweighting(ATOOLS::Variations_Mode mode);
+    void PrintStatistics(std::ostream&);
 
+    int InitializeTheReweighting(ATOOLS::Variations_Mode);
 
     bool CalculateTotalXSecs();
     bool GenerateOneEvent();

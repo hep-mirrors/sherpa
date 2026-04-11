@@ -128,6 +128,8 @@ namespace PHASIC {
 
     int NaiveMapping(Process_Base *proc) const;
 
+    void PrintStatistics(std::ostream &);
+
     std::string ShellName(std::string name="") const;
 
     Color_Matrix ColorMatrix(const ATOOLS::Flavour_Vector &fls) const;

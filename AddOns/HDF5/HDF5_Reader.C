@@ -223,7 +223,8 @@ namespace LHEH5 {
 
     LHEFile *p_file;
     MPI_Info m_info;
-    size_t   m_ievt, m_ifile, m_trials, m_nstart, m_ncache;
+    size_t m_ievt, m_ifile, m_trials, m_ilaststart, m_inextstart, m_ntotal,
+        m_ncache;
 
     Vec4D_Vector m_ctmoms;
 
@@ -294,7 +295,7 @@ namespace LHEH5 {
 
     HDF5_Reader(const Event_Reader_Key &key):
       Event_Reader(key), m_ievt(0), m_ifile(0), m_trials(0),
-      m_nstart(0), m_ncache(0)
+      m_ilaststart(0), m_inextstart(0), m_ntotal(0), m_ncache(0)
     {
       Settings& s {Settings::GetMainSettings()};
       m_ncache = s["HDF5_CACHE_SIZE"].SetDefault(10000).Get<int>();
@@ -328,10 +329,32 @@ namespace LHEH5 {
       delete p_sub;
     }
 
+    void PrintStatistics(std::ostream& o)
+    {
+      for (int i{0}; i < m_files.size(); ++i) {
+        o << "    " << m_files[i] << ": ";
+        if (i < m_ifile)
+          o << "all events read";
+        else if (i == m_ifile)
+          if (m_ilaststart + m_ievt == m_ntotal / mpi->MySize())
+            o << "all events read";
+          else
+            o << m_ilaststart + m_ievt << " of " << m_ntotal / mpi->MySize()
+              << " events read ("
+              << (m_ilaststart + m_ievt) * 1000 / (m_ntotal / mpi->MySize()) /
+                     10.0
+              << " %)";
+        else
+          o << "not yet opened";
+        if (mpi->MySize() > 1) o << " on rank 0";
+        o << '\n';
+      }
+    }
+
     void MPISync()
     {
       delete p_file;
-      if (m_nstart==0) ++m_ifile;
+      if (m_inextstart == 0) ++m_ifile;
       p_file = OpenFile(m_files[m_ifile]);
     }
 
@@ -354,22 +377,22 @@ namespace LHEH5 {
       if (e->Version()[0]==2 &&
 	  e->Version()[1]==0 &&
 	  e->Version()[2]==0) m_unitwgt*=rpa->Picobarn();
-      long int nevts(file.getDataSet("events").getSpace().
-		     getDimensions().front());
+      m_ntotal = file.getDataSet("events").getSpace().getDimensions().front();
       msg_Info() << "Reading events from file: '" << m_files[m_ifile]
-                 << "' (total per rank: " << nevts / mpi->MySize();
-      if (m_nstart > 0)
-        msg_Info() << ", read: " << m_nstart;
+                 << "' (total per rank: " << m_ntotal / mpi->MySize();
+      if (m_inextstart > 0)
+        msg_Info() << ", read: " << m_inextstart;
       msg_Info() << ").\n";
 #if defined(USING__MPI) && defined(H5_HAVE_PARALLEL)
-      mpi->Bcast(&nevts,1,MPI_LONG_INT);
+      mpi->Bcast(&m_ntotal,1,MPI_LONG_INT);
 #endif
-      size_t iStart(rank*nevts/size);
-      size_t iStop((rank+1)*nevts/size-1);
-      if (rank==size-1) iStop=nevts-1;
-      size_t nread(std::min(m_ncache,iStop-iStart-m_nstart+1));
-      e->ReadEvents(file,iStart+m_nstart,nread);
-      if (iStart+(m_nstart+=nread)>iStop) m_nstart=0;
+      size_t iStart(rank*m_ntotal/size);
+      size_t iStop((rank+1)*m_ntotal/size-1);
+      if (rank==size-1) iStop=m_ntotal-1;
+      size_t nread(std::min(m_ncache,iStop-iStart-m_inextstart+1));
+      e->ReadEvents(file,iStart+m_inextstart,nread);
+      m_ilaststart = m_inextstart;
+      if (iStart+(m_inextstart+=nread)>iStop) m_inextstart=0;
       return e;
     }
 
@@ -389,12 +412,17 @@ namespace LHEH5 {
 	--m_ievt;
       }
       if (m_ievt>=p_file->NEvents()) {
-	if ((m_ifile+1>=m_files.size() && m_nstart == 0) || Communicate()<0) {
-	  msg_Info()<<METHOD<<"(): No more events in "<<m_files<<".\n";
-	  rpa->gen.SetNumberOfEvents(rpa->gen.NumberOfGeneratedEvents());
-	  return NULL;
-	}
-	m_ievt=0;
+        if ((m_ifile + 1 >= m_files.size() && m_inextstart == 0) ||
+            Communicate() < 0) {
+          msg_Info() << om::brown << om::bold << "WARNING" << om::reset
+                     << ": There are no more events in the input file '"
+                     << m_files[m_ifile]
+                     << "' and there are no more input files for this jet "
+                        "multiplicity. Will stop event generation ...\n";
+          rpa->gen.SetNumberOfEvents(rpa->gen.NumberOfGeneratedEvents());
+          return NULL;
+        }
+        m_ievt = 0;
       }
       if (p_ampl==NULL) {
 	if (!FillAmplitude())

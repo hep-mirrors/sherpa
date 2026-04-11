@@ -36,6 +36,8 @@ namespace PHASIC {
       m_files(key.m_files), m_compute(1), p_ampl(NULL), p_sub(NULL) {}
     virtual ~Event_Reader() = default;
 
+    virtual void PrintStatistics(std::ostream&) {};
+
     virtual ATOOLS::Cluster_Amplitude *ReadEvent() = 0;
     virtual void StepBackward() = 0;
 
