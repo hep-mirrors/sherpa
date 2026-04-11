@@ -763,3 +763,43 @@ each sub-sample (e.g. 2-jet vs. 3-jet).
    If Sherpa cannot achieve an integration error target due to the use
    of enhance functions, it might be appropriate to locally redefine this
    error target, see :ref:`Integration_Error`.
+
+.. _Parton-level event files:
+
+Parton-level event files
+========================
+
+Instead of generating parton-level events internally,
+Sherpa can instead read them from event files.
+These can come from a separate parton-level Sherpa run,
+using ``EVENT_OUTPUT: "HDF5[events]"`` (see :ref:`HDF5`),
+or from an external parton-level event generator,
+such as Pepper :cite:`Bothmann:2023gew`.
+Using pre-generated parton-level event files
+can speed up event generation significantly,
+because the parton-level part of the pipeline is typically
+the most expensive one, in particular when generating unweighted events,
+and/or at high jet multiplicities :cite:`Bothmann:2022thx`.
+
+.. contents::
+   :local:
+
+.. _Event_Files:
+
+Event_Files
+-----------
+
+Specification of the type and the path
+to a single or to several parton-level event files
+with the syntax ``<Type>[path_1,path_2,...]``.
+The only supported type so far is ``HDF5``.
+Here is an example for reading in parton-level events
+for the first jet multiplicity
+in Drell-Yan production
+from two input files:
+
+.. code-block:: yaml
+
+   - 93 93 -> 11 -11 93{1}:
+       2->3:
+         Event_Files: HDF5[events.j1.1.hdf5,events.j1.2.hdf5]
