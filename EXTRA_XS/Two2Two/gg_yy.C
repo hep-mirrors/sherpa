@@ -104,7 +104,8 @@ DECLARE_TREEME2_GETTER(EXTRAXS::gg_yy,"gg_yy")
 Tree_ME2_Base *ATOOLS::Getter<PHASIC::Tree_ME2_Base,PHASIC::External_ME_Args,EXTRAXS::gg_yy>::
 operator()(const External_ME_Args &args) const
 {
-  if (!args.m_source.empty() && args.m_source != "Internal") return NULL;
+  if (!args.m_source.empty() && !(args.m_source == "Internal" ||
+                                  args.m_source == "gg_yy")) return NULL;
   if (dynamic_cast<UFO::UFO_Model*>(MODEL::s_model)) return NULL;
   if(args.m_orders[0]!=2 || args.m_orders[1]!=2) return NULL;
   const Flavour_Vector fl = args.Flavours();
