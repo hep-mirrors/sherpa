@@ -141,23 +141,61 @@ HADRON_DECAYS:
     ######################################################
     # Two pseudoscalars
     ######################################################
-      -211,111,16:
-        BR: [1., 0.] # [0.255, 0.255]
+#      -211,111,16:
+#        BR: [0., 0.] # [0.255, 0.255]
+#        ME:
+#          - Current_ME:
+#              J1:
+#                Type: VA_F_F
+#                Indices: [3, 0]
+#                v: 1.
+#                a: -1.
+#              J2:
+#                Type: VA_0_PiPi
+#                Indices: [2, 1]
+#                RUNNING_WIDTH: 2
+#                FORM_FACTOR: 1
+#        PhaseSpace:
+#          - Dalitz_rho(770)+_12:
+#              Weight: 1.0
+#        IntResults: [5.372e-13, 2.151e-15, 5.134e-12]
+
+      310,-211,16: # KS:310 pi-:-211 nu_tau:16
+        BR: [0.666, 0.] # [0.255, 0.255]
         ME:
           - Current_ME:
               J1:
                 Type: VA_F_F
-                Indices: [3, 0]
+                Indices: [3, 0] # neutrino is 3, tau is 0
                 v: 1.
                 a: -1.
               J2:
                 Type: VA_0_PiPi
-                Indices: [2, 1]
+                Indices: [2, 1] # pi is 2, K is 1
                 RUNNING_WIDTH: 2
-                FORM_FACTOR: 1
+                FORM_FACTOR: 2 # 1 is KS 2 is RChiPT
         PhaseSpace:
-          - Dalitz_rho(770)+_12:
+          - Dalitz_K*(892)+_12:
               Weight: 1.0
-        IntResults: [5.372e-13, 2.151e-15, 5.134e-12]
+        IntResults: [5.372e-13, 2.151e-15, 5.134e-12] # decay width, uncertainty, maximum decay width
+        Status: 2
 
-
+      -321,111,16: # K-:-321 pi0:111 nu_tau:16
+        BR: [0.333, 0.]
+        ME:
+          - Current_ME:
+              J1:
+                Type: VA_F_F
+                Indices: [3, 0] # neutrino is 3, tau is 0
+                v: 1.
+                a: -1.
+              J2:
+                Type: VA_0_PiPi
+                Indices: [2, 1] # pi0 is 2, K- is 1
+                RUNNING_WIDTH: 2
+                FORM_FACTOR: 2 # 1 is KS 2 is RChiPT
+        PhaseSpace:
+          - Dalitz_K*(892)+_12:
+              Weight: 1.0
+        IntResults: [5.372e-13, 2.151e-15, 5.134e-12] # placeholder, needs recalculation
+        Status: 2
