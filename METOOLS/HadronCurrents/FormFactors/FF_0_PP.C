@@ -1,5 +1,6 @@
 #include "METOOLS/HadronCurrents/FormFactors/FF_0_PP.H"
 #include "METOOLS/HadronCurrents/Tools.H"
+#include "ATOOLS/Org/Message.H"
 
 using namespace METOOLS;
 using namespace ATOOLS;
@@ -10,15 +11,28 @@ void FF_0_PP_Base::FixMode() {
   if (m_flavs[m_pi[0]].Kfcode()==kf_pi &&
       m_flavs[m_pi[1]].Kfcode()==kf_pi_plus)     m_mode = FF_0_PP_mode::pipi_plus;
   else if (m_flavs[m_pi[0]].Kfcode()==kf_K &&
-	   m_flavs[m_pi[1]].Kfcode()==kf_K_plus) m_mode = FF_0_PP_mode::KK_plus;
+	    m_flavs[m_pi[1]].Kfcode()==kf_K_plus) m_mode = FF_0_PP_mode::KK_plus;
+  else if (m_flavs[m_pi[0]].Kfcode()==kf_pi_plus &&
+	    (m_flavs[m_pi[1]].Kfcode()==kf_K   ||
+	     m_flavs[m_pi[1]].Kfcode()==kf_K_S ||
+	     m_flavs[m_pi[1]].Kfcode()==kf_K_L))     m_mode = FF_0_PP_mode::Kpi_plus;
+  else if (m_flavs[m_pi[0]].Kfcode()==kf_pi &&
+	    m_flavs[m_pi[1]].Kfcode()==kf_K_plus)    m_mode = FF_0_PP_mode::Kpi_plus;
+//  msg_Out() << "FF_0_PP_Base::FixMode selected mode = " << int(m_mode) << std::endl;
 }
 
 Complex FF_0_PP_Base::operator()(const ATOOLS::Vec4D_Vector& moms) {
   double Q2 = (moms[m_pi[0]]+moms[m_pi[1]]).Abs2();
   switch (m_ffmodel) {
   case ff_model::none:    return Complex(1.,0.);
-  case ff_model::KS:      return ( p_props!=NULL ?
-				   m_norm * (*p_props)(Q2) : Complex(0.,0.) );
+//  case ff_model::KS:      return m_norm * (*p_props)(Q2);
+  case ff_model::KS:
+    if (!p_props) {
+//      msg_Out() << "FF_0_PP_Base::operator(): p_props is null, returning 0"
+//                << std::endl;
+      return Complex(0.,0.);
+    }
+  return m_norm * (*p_props)(Q2);
   case ff_model::RChiPT:  return m_norm * FF_RChiPT(Q2);
   case ff_model::unknown:
   default:
@@ -63,7 +77,7 @@ Complex FF_0_PP_Base::FF_RChiPT(const double & Q2) {
 //////////////////////////////////////////////////////////////////////////////////
 
 class Fplus_0_PiZeroPiPlus : public FF_0_PP_Base {
-  double  m_fpi, m_mpi2, m_mK2;
+  double  m_fpi, m_fK, m_mpi2, m_mK2, m_meta2;
   double  m_mV, m_mV2, m_mVp, m_mVp2, m_mVpp, m_mVpp2, m_GVp, m_GVpp;
   Complex m_gamma, m_delta;
   
@@ -74,6 +88,11 @@ class Fplus_0_PiZeroPiPlus : public FF_0_PP_Base {
   double  Gamma_V(const double & s);
   double  Gamma_Vp(const double & s);
   double  Gamma_Vpp(const double & s);
+  Complex Jbar_PQ(const double & mP2, const double & mQ2, const double & s);
+  double  Jbar_prime0(const double & mP2, const double & mQ2);
+  Complex H_tilde(const double & s, const double & mP2, const double & mQ2, const double & mu2);
+  double Gamma_Kstar(const double & s);
+  double Gamma_Kstarp(const double & s);
 public :
   Fplus_0_PiZeroPiPlus(const FF_Parameters & params);
 };
@@ -81,12 +100,27 @@ public :
 Fplus_0_PiZeroPiPlus::Fplus_0_PiZeroPiPlus(const FF_Parameters & params)  :
   FF_0_PP_Base(params),
   m_fpi((*params.p_model)("fpi",0.1307)/sqrt(2.)),
+  m_fK((*params.p_model)("fK",  0.1562)/sqrt(2.)),
   m_mpi2(sqr(Flavour(kf_pi_plus).HadMass())),
-  m_mK2(sqr(Flavour(kf_K_plus).HadMass()))
+  m_mK2(sqr(Flavour(kf_K_plus).HadMass())),
+  m_meta2(sqr(Flavour(kf_eta).HadMass()))
 {
   FixParameters(params);
   Construct();
 }
+
+//Fplus_0_PiZeroPiPlus::Fplus_0_PiZeroPiPlus(const FF_Parameters & params)  :
+//  FF_0_PP_Base(params),
+//  m_fpi((*params.p_model)("fpi",0.1307)/sqrt(2.)),
+//  m_mpi2(sqr(Flavour(kf_pi_plus).HadMass())),
+//  m_mK2(sqr(Flavour(kf_K_plus).HadMass()))
+//{
+//  msg_Out() << "Fplus ctor: start" << std::endl;
+//  FixParameters(params);
+//  msg_Out() << "Fplus ctor: after FixParameters" << std::endl;
+//  Construct();
+//  msg_Out() << "Fplus ctor: after Construct" << std::endl;
+//}
 
 void Fplus_0_PiZeroPiPlus::FixParameters(const FF_Parameters & params)  {
   if (m_mode==FF_0_PP_mode::pipi_plus) {
@@ -126,6 +160,12 @@ void Fplus_0_PiZeroPiPlus::FixParameters(const FF_Parameters & params)  {
     if (m_ffmodel==ff_model::KS) {
       m_gamma = Complex(-0.135,0.000);
     }
+    else if (m_ffmodel==ff_model::RChiPT) {
+      m_mV    = Flavour(kf_K_star_892_plus).HadMass();  m_mV2   = sqr(m_mV);
+      m_mVp   = Flavour(kf_K_star_1410_plus).HadMass(); m_mVp2  = sqr(m_mVp);
+      m_GVp   = Flavour(kf_K_star_1410_plus).Width();
+      m_gamma = Complex((*params.p_model)("gamma_Kpi", 0.0), 0.0);
+    }
   }
 }
 
@@ -156,27 +196,61 @@ void Fplus_0_PiZeroPiPlus::Construct() {
   }
 }
 
+//void Fplus_0_PiZeroPiPlus::Construct() {
+////  msg_Out() << "Construct(): m_ffmodel=" << int(m_ffmodel)
+////            << " m_mode=" << int(m_mode) << std::endl;
+//
+//  if (m_ffmodel == ff_model::KS &&
+//      m_mode == FF_0_PP_mode::Kpi_plus) {
+//
+////    msg_Out() << "A" << std::endl;
+//
+//    auto ls892 = LineShapes->Get(Flavour(kf_K_star_892_plus));
+////    msg_Out() << "B ls892=" << ls892 << std::endl;
+//
+//    Propagator_Base * Kstar892 = new BreitWigner(ls892);
+////    msg_Out() << "C Kstar892=" << Kstar892 << std::endl;
+//
+//    p_props = new Summed_Propagator();
+////    msg_Out() << "D p_props=" << p_props << std::endl;
+//
+//    p_props->Add(Kstar892, Complex(1.,0.));
+////    msg_Out() << "E added 892" << std::endl;
+//  }
+//}
+
 Complex Fplus_0_PiZeroPiPlus::FF_RChiPT(const double & s) {
-  Complex V   = ( (m_mV2 - s*(m_gamma+m_delta))                       *
-		  Complex(m_mV2-s, m_mV*Gamma_V(s))/
-		  (sqr(m_mV2-s)+sqr(m_mV*Gamma_V(s)))             *
-		  exp(-s/(96*sqr(M_PI*m_fpi)) *
-		      (A(m_mpi2,s,m_mV2)+1./2.*A(m_mK2,s,m_mV2)).real()) );
-  Complex Vp  = ( s*m_gamma                                             *
-		  Complex(m_mVp2-s, m_mVp*Gamma_Vp(s))/
-		  (sqr(m_mVp2-s)+sqr(m_mVp*Gamma_Vp(s)))           *
-		  exp(-s*Gamma_Vp(m_mVp2)/
-		      (M_PI*pow(m_mVp*
-				sqrt(1.-4.*m_mpi2/m_mVp2),3./2.)) *
-		      A(m_mpi2,s,m_mV2).real())                           );
-  Complex Vpp = ( s*m_delta                                             *
-		  Complex(m_mVpp2-s, m_mVpp*Gamma_Vpp(s))/
-		  (sqr(m_mVpp2-s)+sqr(m_mVpp*Gamma_Vpp(s)))        *
-		  exp(-s*Gamma_Vpp(m_mVpp2)/
-		      (M_PI*pow(m_mVpp*
-				sqrt(1.-4.*m_mpi2/m_mVpp2),3./2.)) *
-		      A(m_mpi2,s,m_mV2).real())                          );
-  return V + Vp + Vpp;
+  //msg_Out() << "FF_RChiPT entered with s = " << s << std::endl;
+  if (m_mode == FF_0_PP_mode::pipi_plus || m_mode == FF_0_PP_mode::KK_plus) {
+    Complex V   = ( (m_mV2 - s*(m_gamma+m_delta)) *
+                    Complex(m_mV2-s, m_mV*Gamma_V(s)) /
+                    (sqr(m_mV2-s)+sqr(m_mV*Gamma_V(s))) *
+                    exp(-s/(96*sqr(M_PI*m_fpi)) *
+                        (A(m_mpi2,s,m_mV2)+1./2.*A(m_mK2,s,m_mV2)).real()) );
+    Complex Vp  = ( s*m_gamma *
+                    Complex(m_mVp2-s, m_mVp*Gamma_Vp(s)) /
+                    (sqr(m_mVp2-s)+sqr(m_mVp*Gamma_Vp(s))) *
+                    exp(-s*Gamma_Vp(m_mVp2) /
+                        (M_PI*pow(m_mVp*sqrt(1.-4.*m_mpi2/m_mVp2),3./2.)) *
+                        A(m_mpi2,s,m_mV2).real()) );
+    Complex Vpp = ( s*m_delta *
+                    Complex(m_mVpp2-s, m_mVpp*Gamma_Vpp(s)) /
+                    (sqr(m_mVpp2-s)+sqr(m_mVpp*Gamma_Vpp(s))) *
+                    exp(-s*Gamma_Vpp(m_mVpp2) /
+                        (M_PI*pow(m_mVpp*sqrt(1.-4.*m_mpi2/m_mVpp2),3./2.)) *
+                        A(m_mpi2,s,m_mV2).real()) );
+    return V + Vp + Vpp;
+  }
+  if (m_mode == FF_0_PP_mode::Kpi_plus) {
+    Complex V  = (m_mV2  + s*m_gamma) /
+                 Complex(m_mV2  - s, -m_mV  * Gamma_Kstar(s));
+    Complex Vp = (s*m_gamma) /
+                 Complex(m_mVp2 - s, -m_mVp * Gamma_Kstarp(s));
+    Complex exp_factor = exp(1.5 * (H_tilde(s, m_mK2, m_mpi2, m_mV2) +
+                                H_tilde(s, m_mK2, m_meta2, m_mV2)).real());
+    return (V - Vp) * exp_factor;
+  }
+  return Complex(0.0,0.0);
 }
 
 Complex Fplus_0_PiZeroPiPlus::
@@ -188,7 +262,7 @@ A(const double & m2,const double & s,const double & mu2) {
 double Fplus_0_PiZeroPiPlus::Gamma_V(const double & s) {
   if (s<4.*m_mpi2) return 0.;
   double pref = m_mV*s/(96.*M_PI*sqr(m_fpi));
-  double arg  = (pow(1.-4.*m_mpi2/s,3./2.) + 
+  double arg  = (pow(1.-4.*m_mpi2/s,3./2.) +
 		 ((s>4.*m_mK2) ? 1./2. * pow(1.-4.*m_mK2/s,3./2.) : 0.));
   return pref*arg;
 }
@@ -204,6 +278,102 @@ double Fplus_0_PiZeroPiPlus::Gamma_Vpp(const double & s) {
   return (m_GVpp * s/m_mVpp2 *
 	  pow((s-4.*m_mpi2)/(m_mVpp2-4.*m_mpi2),3./2.));
 }
+namespace {
+  inline double Lambda(const double x, const double y, const double z) {
+    return x*x + y*y + z*z - 2.0*(x*y + x*z + y*z);
+  }
+
+  inline double MomentumPQ(const double s, const double mP2, const double mQ2) {
+    if (s <= 0.0) return 0.0;
+    const double lam = Lambda(s, mP2, mQ2);
+    if (lam <= 0.0) return 0.0;
+    return sqrt(lam) / (2.0 * sqrt(s));
+  }
+}
+
+double Fplus_0_PiZeroPiPlus::Gamma_Kstar(const double & s) {
+  const double sth = sqr(sqrt(m_mK2) + sqrt(m_mpi2));
+  if (s <= sth) return 0.0;
+
+  const double p_s   = MomentumPQ(s,     m_mK2, m_mpi2);
+  const double p_mV2 = MomentumPQ(m_mV2, m_mK2, m_mpi2);
+  if (p_mV2 <= 0.0) return 0.0;
+
+  const double G0 = Flavour(kf_K_star_892_plus).Width();
+
+  return G0 * (m_mV2 / s) * pow(p_s / p_mV2, 3);
+}
+
+double Fplus_0_PiZeroPiPlus::Gamma_Kstarp(const double & s) {
+  const double sth = sqr(sqrt(m_mK2) + sqrt(m_mpi2));
+  if (s <= sth) return 0.0;
+
+  const double p_s    = MomentumPQ(s,      m_mK2, m_mpi2);
+  const double p_mVp2 = MomentumPQ(m_mVp2, m_mK2, m_mpi2);
+  if (p_mVp2 <= 0.0) return 0.0;
+
+  return m_GVp * (m_mVp2 / s) * pow(p_s / p_mVp2, 3);
+}
+
+Complex Fplus_0_PiZeroPiPlus::Jbar_PQ(const double & mP2,
+                                      const double & mQ2,
+                                      const double & s)
+{
+  const double Delta = mP2 - mQ2;
+  if (std::abs(Delta) < 1e-10) return Complex(0., 0.);
+  const Complex nu = std::sqrt(
+    Complex((s - sqr(std::sqrt(mP2) + std::sqrt(mQ2))) *
+            (s - sqr(std::sqrt(mP2) - std::sqrt(mQ2))), 0.0)
+            );
+
+  const Complex logterm =
+    std::log((s + nu + Delta)*(s + nu - Delta) / ((s - nu + Delta)*(s - nu - Delta)));
+
+  return (1.0 / (32.0 * sqr(M_PI))) *
+          ( 2.0
+           + (Delta / s - (mP2 + mQ2) / Delta) * log(mQ2 / mP2)
+           - (nu / s) * logterm );
+}
+
+double Fplus_0_PiZeroPiPlus::Jbar_prime0(const double & mP2, const double & mQ2)
+{
+  // GL (A.10): Jbar'(0) for unequal masses
+  const double Delta  = mP2 - mQ2;
+  const double Sigma  = mP2 + mQ2;
+  if (std::abs(Delta) < 1e-10) {
+    // equal mass limit from GL (A.11): Jbar'(0) = 1/(96*pi^2*M^2)
+    return 1./(96.*sqr(M_PI)*mP2);
+  }
+  return (1./(32.*sqr(M_PI))) *
+         (Sigma/sqr(Delta) + 2.*mP2*mQ2/pow(Delta,3.) * log(mQ2/mP2));
+}
+
+Complex Fplus_0_PiZeroPiPlus::H_tilde(const double & s,
+                                      const double & mP2,
+                                      const double & mQ2,
+                                      const double & mu2)
+{
+  const double Delta   = mP2 - mQ2;
+  const double Sigma   = mP2 + mQ2;
+  const Complex Jbar   = Jbar_PQ(mP2, mQ2, s);
+  const Complex Jdbar  = Jbar - s*Jbar_prime0(mP2, mQ2);  // GL (8.10)
+
+  // scale k at mu = M_Kstar, GL (8.9)
+  const double k   = (std::abs(Delta) < 1e-10) ?
+      (1./(32.*sqr(M_PI))) * (log(mP2/mu2) + 1.) :
+      (1./(32.*sqr(M_PI))) * (mP2*log(mP2/mu2) - mQ2*log(mQ2/mu2)) / Delta;
+
+  // sM^r - L using GL (8.9)
+  const Complex sMr_minus_L =
+      ((s - 2.*Sigma)/12.) * Jbar
+      + (sqr(Delta)/(3.*s)) * Jdbar
+      - (sqr(Delta)/(4.*s)) * Jbar
+      - s*k/6.
+      + s/(288.*sqr(M_PI));
+
+  return sMr_minus_L / (m_fK * m_fpi);
+}
+
 
 //////////////////////////////////////////////////////////////////////////////////
 //
@@ -224,17 +394,29 @@ class Fzero_0_PiZeroPiPlus : public FF_0_PP_Base {
   
   void    FixParameters(const FF_Parameters & params);
   void    Construct();
-  Complex FF_RChiPT(const double & Q2) { return complex(0.,0.); }
+  Complex FF_RChiPT(const double & Q2) { return Complex(0.,0.); }
 public :
-  Fzero_0_PiZeroPiPlus(const FF_Parameters & params)  :
-    FF_0_PP_Base(params),
-    m_fpi((*params.p_model)("fpi",0.1307)/sqrt(2.)),
-    m_mpi2(sqr(Flavour(kf_pi_plus).HadMass())),
-    m_mK2(sqr(Flavour(kf_K_plus).HadMass()))
- {
-    FixParameters(params);
-    Construct();
-  }
+//    Fzero_0_PiZeroPiPlus(const FF_Parameters & params)  :
+//      FF_0_PP_Base(params),
+//      m_fpi((*params.p_model)("fpi",0.1307)/sqrt(2.)),
+//      m_mpi2(sqr(Flavour(kf_pi_plus).HadMass())),
+//      m_mK2(sqr(Flavour(kf_K_plus).HadMass()))
+//    {
+//      msg_Out() << "Fzero ctor: start" << std::endl;
+//      FixParameters(params);
+//      msg_Out() << "Fzero ctor: after FixParameters" << std::endl;
+//      Construct();
+//      msg_Out() << "Fzero ctor: after Construct" << std::endl;
+//    }
+      Fzero_0_PiZeroPiPlus(const FF_Parameters & params)  :
+        FF_0_PP_Base(params),
+        m_fpi((*params.p_model)("fpi",0.1307)/sqrt(2.)),
+        m_mpi2(sqr(Flavour(kf_pi_plus).HadMass())),
+        m_mK2(sqr(Flavour(kf_K_plus).HadMass()))
+     {
+        FixParameters(params);
+        Construct();
+      }
 };
 
 void Fzero_0_PiZeroPiPlus::FixParameters(const FF_Parameters & params)  {}
@@ -250,7 +432,7 @@ operator()(const METOOLS::FF_Parameters &params) const
 {
   msg_Out()<<METHOD<<":\n";
   size_t Nmesons = 0;
-  for (size_t i=0;i<params.m_pi.size();i++) {
+  for (size_t i=0;i<params.m_flavs.size();i++) {
     if (params.m_flavs[params.m_pi[i]].IsMeson()) Nmesons++;
   }
   if (Nmesons!=2) return NULL;
@@ -284,8 +466,16 @@ operator()(const METOOLS::FF_Parameters &params) const
        params.m_flavs[params.m_pi[1]].Kfcode()==kf_pi)         ||
       (params.m_flavs[params.m_pi[0]].Kfcode()==kf_pi &&
        params.m_flavs[params.m_pi[1]].Kfcode()==kf_K_plus)) {
-    if (params.m_name=="F+_0_PP") return new Fplus_0_PiZeroPiPlus(params);
-    if (params.m_name=="F0_0_PP") return new Fzero_0_PiZeroPiPlus(params);
+      if (params.m_name=="F+_0_PP") {
+//        msg_Out() << "Getter: about to build Fplus" << std::endl;
+        return new Fplus_0_PiZeroPiPlus(params);
+      }
+      if (params.m_name=="F0_0_PP") {
+//        msg_Out() << "Getter: about to build Fzero" << std::endl;
+        return new Fzero_0_PiZeroPiPlus(params);
+      }
+    //if (params.m_name=="F+_0_PP") return new Fplus_0_PiZeroPiPlus(params);
+    //if (params.m_name=="F0_0_PP") return new Fzero_0_PiZeroPiPlus(params);
   }
   return NULL;
 }

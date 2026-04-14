@@ -139,10 +139,10 @@ Kstar_1410_plus_Lineshape::Kstar_1410_plus_Lineshape() :
   ///////////////////////////////////////////////////////////////////////////////////
   Flavour Kstar_0(kf_K_star_892), Kstar_plus(kf_K_star_892_plus);
   outflavs = { Kstar_plus, pi_0 };
-  Partial_Width_Base * K_star2Kstarpi = new V_PP(m_inflav,outflavs,0.467);
+  Partial_Width_Base * K_star2Kstarpi = new V_VP(m_inflav,outflavs,0.467);
   m_channels.insert(K_star2Kstarpi);
   outflavs = { Kstar_0, pi_plus };
-  Partial_Width_Base * K_star2piKstar = new V_PP(m_inflav,outflavs,0.467);
+  Partial_Width_Base * K_star2piKstar = new V_VP(m_inflav,outflavs,0.467);
   m_channels.insert(K_star2piKstar);
 }
 
