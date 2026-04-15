@@ -49,6 +49,8 @@ Real::Real(const PHASIC::Process_Info& pi)  {
           filename+=f.IDName();
       }
       filename+="_";
+      filename+=gen;
+      filename+="_";
       if(FileExists(filename+"real.txt")) Remove(filename+"-real.txt");
       if(FileExists(filename+"ps-points.yaml")) Remove(filename+"-ps-points.yaml");
       if(FileExists(filename+"real.yaml")) Remove(filename+"real.yaml");
