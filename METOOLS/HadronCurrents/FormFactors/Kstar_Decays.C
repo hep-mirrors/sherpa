@@ -1,5 +1,6 @@
 #include "METOOLS/HadronCurrents/FormFactors/Kstar_Decays.H"
 #include "METOOLS/HadronCurrents/FormFactors/Vector_Decays.H"
+#include "METOOLS/HadronCurrents/FormFactors/Scalar_Decays.H"
 #include "METOOLS/HadronCurrents/FormFactors/Line_Shapes.H"
 
 
@@ -27,8 +28,8 @@ Kstar_892_0_Lineshape::Kstar_892_0_Lineshape() :
   // Channel: K gamma, BR = 0.246%
   ///////////////////////////////////////////////////////////////////////////////////
   outflavs = { Flavour(kf_K), Flavour(kf_photon) };
-  Partial_Width_Base * K_star2pigamma = new V_PGamma(m_inflav,outflavs,0.00246);
-  m_channels.insert(K_star2pigamma);
+  Partial_Width_Base * K_star2Kgamma = new V_PGamma(m_inflav,outflavs,0.00246);
+  m_channels.insert(K_star2Kgamma);
 }
 
 Kstar_892_plus_Lineshape::Kstar_892_plus_Lineshape() :
@@ -48,11 +49,11 @@ Kstar_892_plus_Lineshape::Kstar_892_plus_Lineshape() :
   Partial_Width_Base * K_star2piK = new V_PP(m_inflav,outflavs,0.49951);
   m_channels.insert(K_star2piK);
   ///////////////////////////////////////////////////////////////////////////////////
-  // Channel: pi gamma, BR = 0.05%
+  // Channel: K gamma, BR = 0.05%
   ///////////////////////////////////////////////////////////////////////////////////
   outflavs = { Flavour(kf_K_plus), Flavour(kf_photon) };
-  Partial_Width_Base * K_star2pigamma = new V_PGamma(m_inflav,outflavs,0.00098);
-  m_channels.insert(K_star2pigamma); 
+  Partial_Width_Base * K_star2Kgamma = new V_PGamma(m_inflav,outflavs,0.00098);
+  m_channels.insert(K_star2Kgamma);
 }
 
 
@@ -68,7 +69,7 @@ Kstar_892_plus_Lineshape::Kstar_892_plus_Lineshape() :
 // -   K pi                6.6
 // -   K rho             < 7%
 // -   K phi               seen
-// For the moment I will assume K^* pi is (100-6.6)% and ignore K rho and K phi 
+// For the moment I will assume K^* pi is (100-6.6)% and ignore K rho and K phi
 ///////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////
 Kstar_1410_0_Lineshape::Kstar_1410_0_Lineshape() :
@@ -94,13 +95,8 @@ Kstar_1410_0_Lineshape::Kstar_1410_0_Lineshape() :
   m_channels.insert(K_star2piK);
   ///////////////////////////////////////////////////////////////////////////////////
   // Channel: K^*(892) pi, BR = 93.4%
-  // Note: we ignore interferences of pions from the omega with the "prompt" ones
-  //       and use the simple Breit-Wigner fixed-width line shape of the omega.
-  ///////////////////////////////////////////////////////////////////////////////////
-  ///////////////////////////////////////////////////////////////////////////////////
-  // Channel: K^*(892) pi, BR = 93.4%
-  // Note: we ignore interferences of pions from the omega with the "prompt" ones
-  //       and use the simple Breit-Wigner fixed-width line shape of the omega.
+  // Note: we ignore interferences of pions from the K^*(892) with the "prompt" ones
+  //       and use the simple Breit-Wigner fixed-width line shape of the K^*(892).
   ///////////////////////////////////////////////////////////////////////////////////
   Flavour Kstar_0(kf_K_star_892), Kstar_plus(kf_K_star_892_plus);
   outflavs = { Kstar_plus, pi_minus };
@@ -134,8 +130,8 @@ Kstar_1410_plus_Lineshape::Kstar_1410_plus_Lineshape() :
   m_channels.insert(K_star2piK);
   ///////////////////////////////////////////////////////////////////////////////////
   // Channel: K^*(892) pi, BR = 93.4%
-  // Note: we ignore interferences of pions from the omega with the "prompt" ones
-  //       and use the simple Breit-Wigner fixed-width line shape of the omega.
+  // Note: we ignore interferences of pions from the K^*(892) with the "prompt" ones
+  //       and use the simple Breit-Wigner fixed-width line shape of the K^*(892).
   ///////////////////////////////////////////////////////////////////////////////////
   Flavour Kstar_0(kf_K_star_892), Kstar_plus(kf_K_star_892_plus);
   outflavs = { Kstar_plus, pi_0 };
@@ -144,5 +140,60 @@ Kstar_1410_plus_Lineshape::Kstar_1410_plus_Lineshape() :
   outflavs = { Kstar_0, pi_plus };
   Partial_Width_Base * K_star2piKstar = new V_VP(m_inflav,outflavs,0.467);
   m_channels.insert(K_star2piKstar);
+}
+
+
+///////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////
+//
+// Below for the K*_0(1430)'s (scalar kaon resonances)
+//
+///////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////
+// Overall approximate BR's (from PDG, all in %):
+// -   K pi  : ~93  (split equally between charged and neutral isospin partners)
+// -   K eta : ~7
+// -  K eta' : seen
+// For the moment I will ignore K eta' and assume K eta is 100% of the non-K pi decays
+///////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////
+Kstar0_1430_0_Lineshape::Kstar0_1430_0_Lineshape() :
+  Total_Width_Base(Flavour(kf_K_0_star_1430)) {
+  vector<Flavour> outflavs;
+  ///////////////////////////////////////////////////////////////////////////////////
+  // Channel: K pi, BR = 93%
+  ///////////////////////////////////////////////////////////////////////////////////
+  outflavs = { Flavour(kf_K_plus), Flavour(kf_pi_plus).Bar() };
+  Partial_Width_Base * Kstar0_14302Kpi = new S_PP(m_inflav,outflavs,0.465);
+  m_channels.insert(Kstar0_14302Kpi);
+  outflavs = { Flavour(kf_K), Flavour(kf_pi) };
+  Partial_Width_Base * Kstar0_14302piK = new S_PP(m_inflav,outflavs,0.465);
+  m_channels.insert(Kstar0_14302piK);
+  ///////////////////////////////////////////////////////////////////////////////////
+  // Channel: K eta, BR = 7%
+  ///////////////////////////////////////////////////////////////////////////////////
+  outflavs = { Flavour(kf_K), Flavour(kf_eta) };
+  Partial_Width_Base * Kstar0_14302Keta = new S_PP(m_inflav,outflavs,0.070);
+  m_channels.insert(Kstar0_14302Keta);
+}
+
+Kstar0_1430_plus_Lineshape::Kstar0_1430_plus_Lineshape() :
+  Total_Width_Base(Flavour(kf_K_0_star_1430_plus)) {
+  vector<Flavour> outflavs;
+  ///////////////////////////////////////////////////////////////////////////////////
+  // Channel: K pi, BR = 93%
+  ///////////////////////////////////////////////////////////////////////////////////
+  outflavs = { Flavour(kf_K_plus), Flavour(kf_pi) };
+  Partial_Width_Base * Kstar0_1430_plus2Kpi = new S_PP(m_inflav,outflavs,0.465);
+  m_channels.insert(Kstar0_1430_plus2Kpi);
+  outflavs = { Flavour(kf_K), Flavour(kf_pi_plus) };
+  Partial_Width_Base * Kstar0_1430_plus2piK = new S_PP(m_inflav,outflavs,0.465);
+  m_channels.insert(Kstar0_1430_plus2piK);
+  ///////////////////////////////////////////////////////////////////////////////////
+  // Channel: K eta, BR = 7%
+  ///////////////////////////////////////////////////////////////////////////////////
+  outflavs = { Flavour(kf_K_plus), Flavour(kf_eta) };
+  Partial_Width_Base * Kstar0_1430_plus2Keta = new S_PP(m_inflav,outflavs,0.070);
+  m_channels.insert(Kstar0_1430_plus2Keta);
 }
 

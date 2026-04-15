@@ -16,12 +16,9 @@ namespace METOOLS {
     KK_0            = 102,
     etapi_0         = 103,
     etaprimepi_0    = 104,
-    Kpi_0           = 111,
-    Keta_0          = 112,
-    Ketaprime_0     = 113,
     unknown         = 999
   };
-  
+
   class FF_0_PP_Base : public FormFactor_Base {
   protected:
     FF_0_PP_mode        m_mode;

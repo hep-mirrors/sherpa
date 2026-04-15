@@ -25,14 +25,8 @@ Complex FF_0_PP_Base::operator()(const ATOOLS::Vec4D_Vector& moms) {
   double Q2 = (moms[m_pi[0]]+moms[m_pi[1]]).Abs2();
   switch (m_ffmodel) {
   case ff_model::none:    return Complex(1.,0.);
-//  case ff_model::KS:      return m_norm * (*p_props)(Q2);
-  case ff_model::KS:
-    if (!p_props) {
-//      msg_Out() << "FF_0_PP_Base::operator(): p_props is null, returning 0"
-//                << std::endl;
-      return Complex(0.,0.);
-    }
-  return m_norm * (*p_props)(Q2);
+  case ff_model::KS:      return ( p_props!=NULL ?
+				   m_norm * (*p_props)(Q2) : Complex(0.,0.) );
   case ff_model::RChiPT:  return m_norm * FF_RChiPT(Q2);
   case ff_model::unknown:
   default:
@@ -381,47 +375,97 @@ Complex Fplus_0_PiZeroPiPlus::H_tilde(const double & s,
 //   * pi pi & K K vanish due to identical masses
 // - Kuehn-Santamaria
 //   * K pi: Z.Phys.C 72 (1996) 619 (scalar form factor)
-//     (https://doi.org/10.1007/s002880050284)
+//     (https://doi.org/10.1007/s002880050284), equation references below refer to this paper
 //
 // Todo: implement all scalar form factors here!
 //
 //////////////////////////////////////////////////////////////////////////////////
 
 class Fzero_0_PiZeroPiPlus : public FF_0_PP_Base {
-  double  m_fpi, m_mpi2, m_mK2;
-  double  m_mV, m_mV2, m_mVp, m_mVp2, m_mVpp, m_mVpp2, m_GVp, m_GVpp;
-  Complex m_gamma, m_delta;
-  
+  double  m_mpi2, m_mK2;
+  double  m_mV2, m_mVp2, m_mS2;
+  Complex m_beta, m_cS;
+  Propagator_Base * p_BW_V;    // K*(892)    -- vector off-shell contribution
+  Propagator_Base * p_BW_Vp;   // K*(1410)   -- vector off-shell contribution
+  Propagator_Base * p_BW_S;    // K*_0(1430) -- direct scalar contribution
+
   void    FixParameters(const FF_Parameters & params);
   void    Construct();
   Complex FF_RChiPT(const double & Q2) { return Complex(0.,0.); }
+  Complex operator()(const ATOOLS::Vec4D_Vector& moms);
 public :
-//    Fzero_0_PiZeroPiPlus(const FF_Parameters & params)  :
-//      FF_0_PP_Base(params),
-//      m_fpi((*params.p_model)("fpi",0.1307)/sqrt(2.)),
-//      m_mpi2(sqr(Flavour(kf_pi_plus).HadMass())),
-//      m_mK2(sqr(Flavour(kf_K_plus).HadMass()))
-//    {
-//      msg_Out() << "Fzero ctor: start" << std::endl;
-//      FixParameters(params);
-//      msg_Out() << "Fzero ctor: after FixParameters" << std::endl;
-//      Construct();
-//      msg_Out() << "Fzero ctor: after Construct" << std::endl;
-//    }
-      Fzero_0_PiZeroPiPlus(const FF_Parameters & params)  :
-        FF_0_PP_Base(params),
-        m_fpi((*params.p_model)("fpi",0.1307)/sqrt(2.)),
-        m_mpi2(sqr(Flavour(kf_pi_plus).HadMass())),
-        m_mK2(sqr(Flavour(kf_K_plus).HadMass()))
-     {
-        FixParameters(params);
-        Construct();
-      }
+  Fzero_0_PiZeroPiPlus(const FF_Parameters & params) :
+    FF_0_PP_Base(params),
+    m_mpi2(sqr(Flavour(kf_pi_plus).HadMass())),
+    m_mK2(sqr(Flavour(kf_K_plus).HadMass())),
+    p_BW_V(NULL), p_BW_Vp(NULL), p_BW_S(NULL)
+  {
+    FixParameters(params);
+    Construct();
+  }
+  ~Fzero_0_PiZeroPiPlus() {
+    if (p_BW_V)  delete p_BW_V;
+    if (p_BW_Vp) delete p_BW_Vp;
+    if (p_BW_S)  delete p_BW_S;
+  }
 };
 
-void Fzero_0_PiZeroPiPlus::FixParameters(const FF_Parameters & params)  {}
+void Fzero_0_PiZeroPiPlus::FixParameters(const FF_Parameters & params) {
+  if (m_mode==FF_0_PP_mode::Kpi_plus) {
+    m_norm  = (*params.p_model)("Vus", Tools::Vus)/sqrt(2.);
+    if (m_ffmodel==ff_model::KS) {
+      m_mV2   = sqr(Flavour(kf_K_star_892_plus).HadMass());
+      m_mVp2  = sqr(Flavour(kf_K_star_1410_plus).HadMass());
+      m_mS2   = sqr(Flavour(kf_K_0_star_1430_plus).HadMass());
+      // beta_{K*}: relative K*(1410) contribution (same as in the vector FF)
+      m_beta  = Complex((*params.p_model)("beta_Kpi", -0.135), 0.);
+      // c_S: scalar resonance strength, fixed by matching to ChPT (eq. 27)
+      m_cS    = Complex((*params.p_model)("cS_Kpi",    1.7  ), 0.);
+    }
+  }
+}
 
-void Fzero_0_PiZeroPiPlus::Construct()  {}
+void Fzero_0_PiZeroPiPlus::Construct() {
+  if (m_ffmodel==ff_model::KS) {
+    if (m_mode==FF_0_PP_mode::Kpi_plus) {
+      p_BW_V  = new BreitWigner(LineShapes->Get(Flavour(kf_K_star_892_plus)));
+      p_BW_Vp = new BreitWigner(LineShapes->Get(Flavour(kf_K_star_1410_plus)));
+      p_BW_S  = new BreitWigner(LineShapes->Get(Flavour(kf_K_0_star_1430_plus)));
+    }
+  }
+}
+
+Complex Fzero_0_PiZeroPiPlus::operator()(const Vec4D_Vector& moms) {
+  // Implements the scalar Kpi form factor from Finkemeier & Mirkes,
+  // Z.Phys.C 72 (1996) 619, eq. (18).
+  if (m_ffmodel != ff_model::KS || m_mode != FF_0_PP_mode::Kpi_plus)
+    return Complex(0., 0.);
+  double Q2 = (moms[m_pi[0]]+moms[m_pi[1]]).Abs2();
+  if (Q2 <= 0.) return Complex(0., 0.);
+
+  double  deltam2 = m_mK2 - m_mpi2;
+  Complex beta    = m_beta;   // beta_{K*} = -0.135
+  Complex cS      = m_cS;     // c_S = 1.7
+
+  // Vector resonance off-shell scalar projection (eq. 18, lines 1-2):
+  // (1/Q^2) * 1/(1+beta) * [ (mV^2-Q^2)/mV^2 * BW_V + beta*(mVp^2-Q^2)/mVp^2 * BW_Vp ]
+  Complex BW_V     = (*p_BW_V)(Q2);
+  Complex BW_Vp    = (*p_BW_Vp)(Q2);
+  Complex vec_part = ( (m_mV2  - Q2)/m_mV2  * BW_V  +
+		       beta * (m_mVp2 - Q2)/m_mVp2 * BW_Vp )
+		     / (Q2 * (1. + beta));
+
+  // Direct scalar resonance contribution (eq. 18, last line):
+  // c_S / m_{K*_0}^2 * BW_{K*_0}
+  Complex BW_S        = (*p_BW_S)(Q2);
+  Complex scalar_part = cS / m_mS2 * BW_S;
+
+  Complex result = m_norm * deltam2 * (vec_part + scalar_part);
+  //msg_Out() << "DEBUG Fzero_0_PiZeroPiPlus: Q2=" << Q2
+  //	    << "  vec=" << vec_part << "  scalar=" << scalar_part
+  //	    << "  F0=" << result << "\n";
+  return result;
+}
 
 
 DECLARE_FF_GETTER(FF_0_PP_Base,"FF_0_PP")
@@ -432,7 +476,7 @@ operator()(const METOOLS::FF_Parameters &params) const
 {
   msg_Out()<<METHOD<<":\n";
   size_t Nmesons = 0;
-  for (size_t i=0;i<params.m_flavs.size();i++) {
+  for (size_t i=0;i<params.m_pi.size();i++) {
     if (params.m_flavs[params.m_pi[i]].IsMeson()) Nmesons++;
   }
   if (Nmesons!=2) return NULL;
@@ -479,10 +523,6 @@ operator()(const METOOLS::FF_Parameters &params) const
   }
   return NULL;
 }
-
-
-
-
 
 
 /*

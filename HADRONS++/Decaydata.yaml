@@ -173,7 +173,7 @@ HADRON_DECAYS:
                 Type: VA_0_PiPi
                 Indices: [2, 1] # pi is 2, K is 1
                 RUNNING_WIDTH: 2
-                FORM_FACTOR: 2 # 1 is KS 2 is RChiPT
+                FORM_FACTOR: 1 # 1 is KS 2 is RChiPT
         PhaseSpace:
           - Dalitz_K*(892)+_12:
               Weight: 1.0
@@ -193,7 +193,7 @@ HADRON_DECAYS:
                 Type: VA_0_PiPi
                 Indices: [2, 1] # pi0 is 2, K- is 1
                 RUNNING_WIDTH: 2
-                FORM_FACTOR: 2 # 1 is KS 2 is RChiPT
+                FORM_FACTOR: 1 # 1 is KS 2 is RChiPT
         PhaseSpace:
           - Dalitz_K*(892)+_12:
               Weight: 1.0
