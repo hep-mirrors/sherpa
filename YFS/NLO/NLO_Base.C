@@ -717,10 +717,10 @@ double NLO_Base::CalculateRealReal(Vec4D k1, Vec4D k2, int fsr1, int fsr2) {
   Vec4D_Vector pp = p;
   Vec4D kk1 = k1;
   Vec4D kk2 = k2;
-  // p_nlodipoles->MakeDipolesII(m_flavs,m_plab,m_plab);
-  // p_nlodipoles->MakeDipolesIF(m_flavs,m_plab,m_plab);
-  // p_nlodipoles->MakeDipoles(m_flavs,m_plab,m_plab);
-  p_nlodipoles->CreateAllDipoles(m_flavs, m_plab, m_plab);
+  p_nlodipoles->MakeDipolesII(m_flavs,m_plab,m_plab);
+  p_nlodipoles->MakeDipolesIF(m_flavs,m_plab,m_plab);
+  p_nlodipoles->MakeDipoles(m_flavs,m_plab,m_plab);
+  // p_nlodipoles->CreateAllDipoles(m_flavs, m_plab, m_plab);
   if (fsr1 && !fsr2) {
     if (!HasFSR())
       msg_Error() << "Wrong dipole type in " << METHOD << endl;
@@ -1275,7 +1275,7 @@ void NLO_Base::CheckRealSub(Vec4D k, int mode) {
   for (double i = 1; i < 20; i += 0.1) {
     k = k / i;
     real = CalculateReal(k, mode);
-    if (k.E() <= 1e-16 || real == 0)
+    if (k.E() <= 1e-16)
       break;
     out_finite << k.E() << "," << fabs(real) / m_born << std::endl;
     out_real << k.E() << "," << (m_real)*p_nlodipoles->CalculateFlux(k)
