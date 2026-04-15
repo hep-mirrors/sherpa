@@ -808,7 +808,7 @@ double NLO_Base::CalculateRealReal(Vec4D k1, Vec4D k2, int fsr1, int fsr2) {
   double subloc2 = p_nlodipoles->CalculateRealSub(k2);
   double flux;
   if (m_flux_mode == 1)
-    flux = p_nlodipoles->CalculateFlux(k1) * p_nlodipoles->CalculateFlux(k2);
+    flux = p_nlodipoles->CalculateFlux(k1+k2);// * p_nlodipoles->CalculateFlux(k2);
   // if(m_flux_mode==1) flux = p_nlodipoles->CalculateFlux(k1,k2);
   else
     flux = p_dipoles->CalculateFlux(k1) * p_dipoles->CalculateFlux(k2);
