@@ -80,6 +80,12 @@ void PolWeights_Map::LabelAndSeparate(const METOOLS::Amplitude2_Tensor* amps, co
   std::vector<Amplitude2_Tensor*> next_amps;
   if (amps->IsP_Next()){
     next_amps = amps->Next();
+    if (amps->CurrentParticle().Flav().IntSpin()==0) {
+      std::string new_mode = (mode=="start")?"start":"pol";
+      LabelAndSeparate(next_amps[0], new_mode, prefix, nonzero_weight,
+                       spin_label);
+      return;
+    }
     int m_nhel = std::sqrt(next_amps.size());
     if (m_nhel>3) THROW(not_implemented, "Particles with spin bigger than 1 are not implemented for polarized cross "
                                          "sections yet")
@@ -90,8 +96,17 @@ void PolWeights_Map::LabelAndSeparate(const METOOLS::Amplitude2_Tensor* amps, co
     // TODO: LABELING OF TRANSVERSE POLARIZED MATRIXELEMENTS IS SWITCHED HERE TO GET THE RIGHT LABELING IN THE EVENT
     //       OUTPUT UNTIL SWITCHED ORDERING ISSUE IN MATRIXELEMENT GENERATORS IS FIXED,
     //       POSSIBLE TESTS: DECAY ANGLE OF + -  AND - - POLARIZED VECTOR BOSONS IN VECTOR BOSON PRODUCTION PROCESSES
-    spin_strings.push_back("-");
-    spin_strings.push_back("+");
+    if (amps->CurrentParticle().Flav().IntSpin()==2){
+      spin_strings.push_back("-");
+      spin_strings.push_back("+");
+    }
+    else if (amps->CurrentParticle().Flav().IntSpin()==1) {
+      spin_strings.push_back("+");
+      spin_strings.push_back("-");
+    }
+    else if (amps->CurrentParticle().Flav().IntSpin()>2) THROW(not_implemented, "Polarization weights labeling for "
+                                                                                "particles with spin greater 1 not "
+                                                                                "implemented yet.")
     if (m_nhel == 3) spin_strings.push_back("0");
 
     // recursive generation of the spin label as well as separation between on- and off-diagonal entries

@@ -252,10 +252,9 @@ PolWeights_Map* Polarized_CrossSections_Handler::Calculation(ATOOLS::Blob* signa
     std::vector<std::vector<std::vector<Complex>>> coeff_vec;
     std::vector<std::vector<std::vector<Complex>>> conj_coeff_vec;
     do {
-      if (tmp_amps->SpinDegreesofFreedom() != 3) {
+      if (tmp_amps->SpinDegreesofFreedom() != 3 && tmp_amps->SpinDegreesofFreedom() != 1)
         THROW(fatal_error, "basis transformation for polarization definition is currently only implemented for "
                            "massive vector bosons")
-      }
 
       // Determination of necessary particle information
       ATOOLS::Vec4D mom(tmp_amps->CurrentParticle().Momentum());
@@ -324,7 +323,13 @@ PolWeights_Map* Polarized_CrossSections_Handler::Calculation(ATOOLS::Blob* signa
       // CALCULATION OF POLARIZATION OBJECTS IN THE NEW POLARIZATION BASIS
       std::vector<std::vector<Complex>> coeff_in;
       std::vector<std::vector<Complex>> coeff_out;
-      if (spin==1){
+      if (spin==0){
+        coeff_vec.push_back(std::vector<std::vector<Complex>>(1, std::vector<Complex>(1,1)));
+        conj_coeff_vec.push_back(std::vector<std::vector<Complex>>(1, std::vector<Complex>(1,1)));
+        coeff_in.push_back(std::vector<Complex>(1,1));
+        coeff_out.push_back(std::vector<Complex>(1,1));
+      }
+      else if (spin==1){
         // calculate polarization vectors with new reference momentum
         METOOLS::Polarization_Vector new_polarization(mom, new_ref_mom);
         // transformation back to laboratory system where matrix elements are calculated
