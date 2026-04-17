@@ -242,6 +242,7 @@ PolWeights_Map* Polarized_CrossSections_Handler::Calculation(ATOOLS::Blob* signa
   METOOLS::Amplitude2_Tensor* pol_amps = new METOOLS::Amplitude2_Tensor(*prod_amps);
   std::vector<METOOLS::Decay_Matrix> trafo_decay_matrices = std::vector<METOOLS::Decay_Matrix>();
   ATOOLS::Vec4D new_ref_mom(m_new_refmom);
+  bool require_trafo = false;
 
   if (!(m_spinbasis=="ComixDefault" && refsystem == "Lab")) {
     // Determination of transformation coefficients and transformation of decay matrices
@@ -252,9 +253,11 @@ PolWeights_Map* Polarized_CrossSections_Handler::Calculation(ATOOLS::Blob* signa
     std::vector<std::vector<std::vector<Complex>>> coeff_vec;
     std::vector<std::vector<std::vector<Complex>>> conj_coeff_vec;
     do {
-      if (tmp_amps->SpinDegreesofFreedom() != 3 && tmp_amps->SpinDegreesofFreedom() != 1)
+      if (tmp_amps->SpinDegreesofFreedom() != 3 && tmp_amps->SpinDegreesofFreedom() != 1
+      && !(tmp_amps->CurrentParticle().Flav().IsFermion() && refsystem == "Lab"))
         THROW(fatal_error, "basis transformation for polarization definition is currently only implemented for "
                            "massive vector bosons")
+      if (tmp_amps->SpinDegreesofFreedom()==3) require_trafo = true;
 
       // Determination of necessary particle information
       ATOOLS::Vec4D mom(tmp_amps->CurrentParticle().Momentum());
@@ -329,6 +332,12 @@ PolWeights_Map* Polarized_CrossSections_Handler::Calculation(ATOOLS::Blob* signa
         coeff_in.push_back(std::vector<Complex>(1,1));
         coeff_out.push_back(std::vector<Complex>(1,1));
       }
+      else if (spin==0.5){
+        coeff_vec.push_back(std::vector<std::vector<Complex>>(2, std::vector<Complex>(2,1)));
+        conj_coeff_vec.push_back(std::vector<std::vector<Complex>>(2, std::vector<Complex>(2,1)));
+        coeff_in.push_back(std::vector<Complex>(2,1));
+        coeff_out.push_back(std::vector<Complex>(2,1));
+      }
       else if (spin==1){
         // calculate polarization vectors with new reference momentum
         METOOLS::Polarization_Vector new_polarization(mom, new_ref_mom);
@@ -366,8 +375,10 @@ PolWeights_Map* Polarized_CrossSections_Handler::Calculation(ATOOLS::Blob* signa
       for (const auto & current_decay_matrix : decay_matrices){
         if (current_decay_matrix.Particle()->Number() == tmp_amps->CurrentParticle().Number()){
           METOOLS::Decay_Matrix decay_matrix(current_decay_matrix);
-          if (anti) decay_matrix.PolBasisTrafo(coeff_out, coeff_in);
-          else decay_matrix.PolBasisTrafo(coeff_in, coeff_out);
+          if (spin==1) {
+            if (anti) decay_matrix.PolBasisTrafo(coeff_out, coeff_in);
+            else decay_matrix.PolBasisTrafo(coeff_in, coeff_out);
+          }
           trafo_decay_matrices.push_back(decay_matrix);
           break;
         }
@@ -376,7 +387,7 @@ PolWeights_Map* Polarized_CrossSections_Handler::Calculation(ATOOLS::Blob* signa
     }
     while (tmp_amps->IsP_Next());
     // Transformation of production tensor
-    pol_amps->PolBasisTrafo(coeff_vec, conj_coeff_vec, 0);
+    if (require_trafo) pol_amps->PolBasisTrafo(coeff_vec, conj_coeff_vec, 0);
   }
   else trafo_decay_matrices = std::vector<METOOLS::Decay_Matrix>(decay_matrices);
   if (trafo_decay_matrices.size()!=decay_matrices.size()){
