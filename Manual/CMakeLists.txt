@@ -72,6 +72,7 @@ ADD_CUSTOM_TARGET(all-files
 ${CMAKE_CURRENT_BINARY_DIR}/options.index
 ${CMAKE_CURRENT_BINARY_DIR}/Sherpa.1 
 ${CMAKE_CURRENT_BINARY_DIR}/sherpamanual_html
+${CMAKE_CURRENT_BINARY_DIR}/sherpamanual_singlehtml
 ${CMAKE_CURRENT_BINARY_DIR}/sherpamanual.pdf
 ${CMAKE_CURRENT_BINARY_DIR}/sherpamanual.info 
 )
