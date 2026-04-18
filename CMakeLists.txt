@@ -47,6 +47,7 @@ option(SHERPA_ENABLE_BLACKHAT                "Enables building with BlackHat." O
 option(SHERPA_ENABLE_DIHIGGS                 "Enables building of DIHIGGS." OFF)
 option(SHERPA_ENABLE_DOXYGEN                 "Enables the 'docs' target for building HTML documentation" OFF)
 option(SHERPA_ENABLE_EWSUD                   "Enables building of EWSUD." OFF)
+option(SHERPA_ENABLE_THREW                   "Enables building of THRew." OFF)
 option(SHERPA_ENABLE_GOSAM                   "Enables building with GoSam." OFF)
 option(SHERPA_ENABLE_GZIP                    "Enables building with GZIP." OFF)
 option(SHERPA_ENABLE_HDF5                    "Enables building with HDF5." OFF)
@@ -112,7 +113,7 @@ foreach (en IN LISTS alldirenables)
 endforeach()
 ###########################Options handeling############################
 set( allenables ANALYSIS BINRELOC BLACKHAT CATCH2 CLANG_TIDY DIHIGGS DOXYGEN
- EWSUD GOSAM GZIP HDF5 HEPMC3 HEPMC3_ROOT
+ EWSUD THREW GOSAM GZIP HDF5 HEPMC3 HEPMC3_ROOT
  INTERNAL_PDFS INSTALL_LIBZIP INSTALL_LHAPDF LHAPDF
  MADLOOP MANUAL MCFM MPI OPENLOOPS PYTHIA8 PYTHON RECOLA RIVET ROOT THREADING TESTING UFO VERSIONING)
 foreach (en IN LISTS allenables)
@@ -591,6 +592,13 @@ if (SHERPA_ENABLE_EWSUD)
                              PATTERN "*/Tests" EXCLUDE
                              )
 endif()
+if (SHERPA_ENABLE_THREW)
+  install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/AddOns/THRew
+              DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/SHERPA-MC${VERSIONING}/AddOns/ COMPONENT devel
+              FILES_MATCHING PATTERN "*.h" PATTERN "*.H"
+                             PATTERN "*\.c" EXCLUDE
+                             )
+endif()
 if (SHERPA_ENABLE_PYTHON OR SHERPA_ENABLE_DIHIGGS OR SHERPA_ENABLE_UFO OR (SHERPA_ENABLE_RIVET AND SHERPA_ENABLE_TESTING) )
   if (NOT  SHERPA-MC_PYTHON_VERSION)
     find_package (Python 3 COMPONENTS  Development Interpreter)
@@ -746,6 +754,9 @@ add_subdirectory(AddOns/Fusing)
 add_subdirectory(AddOns/Higgs)
 if (SHERPA_ENABLE_EWSUD)
   add_subdirectory(AddOns/EWSud)
+endif()
+if (SHERPA_ENABLE_THREW)
+  add_subdirectory(AddOns/THRew)
 endif()
 if (SHERPA_ENABLE_PYTHIA8)
   find_package(Pythia8 8.220 REQUIRED)
@@ -962,6 +973,8 @@ $<IF:$<BOOL:${SHERPA_ENABLE_MCFM}>,#define USING__MCFM \"1\",/* #undef USING__MC
 $<IF:$<BOOL:${SHERPA_ENABLE_MCFM}>,#define MCFM_PATH \"${MCFM_PATH}\",/* #undef MCFM_PATH */>\n\n\
 /* using EWSud */\n\
 $<IF:$<BOOL:${SHERPA_ENABLE_EWSUD}>,#define USING__EWSud \"1\",/* #undef USING__EWSud */>\n\n\
+/* using THRew */\n\
+$<IF:$<BOOL:${SHERPA_ENABLE_THREW}>,#define USING__THRew \"1\",/* #undef USING__THRew */>\n\n\
 #endif")
 file(GENERATE OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/ATOOLS/Org/CXXFLAGS_PACKAGES.H CONTENT "${CXXFLAGS_PACKAGES_H_CONTENT}")
 ########################################################################
