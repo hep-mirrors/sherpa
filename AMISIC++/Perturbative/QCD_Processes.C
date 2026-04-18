@@ -22,7 +22,7 @@ void gg_gg::Calc(const double & s,const double & t,const double & u) {
   m_Ms = 9./4. * (1. + s*s/(t*u) - s*t/(u*u) - u*s/(t*t));
   m_Mt = 9./4. * (1. + u*u/(s*t) - u*s/(t*t) - t*u/(s*s));
   m_Mu = 9./4. * (1. + t*t/(u*s) - s*t/(u*u) - t*u/(s*s));
-  m_lastxs = (m_Mt+m_Mu+m_Ms)/2.;
+  m_lastxs = m_Mt+m_Mu+m_Ms;
 }
 
 bool gg_gg::SetColours(const ATOOLS::Flavour_Vector & flavs) {
