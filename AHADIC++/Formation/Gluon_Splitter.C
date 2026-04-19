@@ -29,8 +29,13 @@ bool Gluon_Splitter::MakeLongitudinalMomenta() {
 	   4.*(m_Q2*m_kt2 + m_minQ2[0]*m_popped_mass2));
   if (m_arg<0.) return false;
   CalculateLimits();
-  do { m_z[1] = select_z(m_zmin[1],m_zmax[1],0); } while (!CalculateXY());
-  return true;
+  for (int it{0}; it<10000; ++it) {
+    m_z[1] = select_z(m_zmin[1],m_zmax[1],0);
+    if (m_z[1] < 0.) return false;
+    if (CalculateXY()) return true;
+  }
+  msg_Error() << METHOD << ": CalculateXY failed after 10000 iterations\n";
+  return false;
 }
 
 void Gluon_Splitter::CalculateLimits() {
@@ -113,43 +118,16 @@ WeightFunction(const double & z,const double & zmin,const double & zmax,
 void Gluon_Splitter::z_rejected(const double wgt, const double & z,
 				const double & zmin,const double & zmax,
 				const unsigned int & cnt) {
-  return;
-  // Since the Gluon-fragmentation function is integrable
-  // we don't need multiply up accept/reject probabilities
-
-
-  // sanity checks, should probably be done somewhere else
-  if(variation_weights.size() != m_alpha.size()) {
-    // should in principle always be the case
-    variation_weights.resize(m_alpha.size());
-  }
-
-  const double wgt_old = FragmentationFunction(z,zmin,zmax,m_alpha[0]);
-  for (int i{0}; i<m_alpha.size(); i++) {
-    const auto a = m_alpha[i];
-    const auto wgt_new = FragmentationFunction(z,zmin,zmax,a);
-    variation_weights[i] *= (1.-wgt_new) / (1.-wgt_old);
-  }
-  return;
+  // Gluon fragmentation function is integrable — no accept/reject correction needed.
 }
 
 void Gluon_Splitter::z_accepted(const double wgt, const double & z,
 				const double & zmin,const double & zmax,
 				const unsigned int & cnt) {
-  // sanity checks, should probably be done somewhere else
-  if(variation_weights.size() != m_alpha.size()) {
-    // should in principle always be the case
-    variation_weights.resize(m_alpha.size());
-  }
-
   const double wgt_old = FragmentationFunctionProb(z,zmin,zmax,m_alpha[0]);
-  //const double wgt_old = FragmentationFunction(z,zmin,zmax,m_alpha[0]);
   for (int i{0}; i<m_alpha.size(); i++) {
-    const auto a = m_alpha[i];
-    const auto wgt_new = FragmentationFunctionProb(z,zmin,zmax,a);
-    tmp_variation_weights[i] *= wgt_new / wgt_old;
+    tmp_variation_weights[i] *= FragmentationFunctionProb(z,zmin,zmax,m_alpha[i]) / wgt_old;
   }
-  return;
 }
 
 bool Gluon_Splitter::CheckKinematics() {
@@ -265,19 +243,14 @@ Cluster * Gluon_Splitter::MakeCluster() {
 		  p_part[0]->Flavour()==Flavour(kf_b) ||
 		  p_part[0]->Flavour()==Flavour(kf_b).Bar());
     m_lastC    = (!m_lastB &&
-		  (newp12->Flavour()==Flavour(kf_b) ||
-		   newp12->Flavour()==Flavour(kf_b).Bar() ||
-		   p_part[0]->Flavour()==Flavour(kf_b) ||
-		   p_part[0]->Flavour()==Flavour(kf_b).Bar()));
+		  (newp12->Flavour()==Flavour(kf_c) ||
+		   newp12->Flavour()==Flavour(kf_c).Bar() ||
+		   p_part[0]->Flavour()==Flavour(kf_c) ||
+		   p_part[0]->Flavour()==Flavour(kf_c).Bar()));
     double y = cluster->Momentum().Y();
     m_histograms[std::string("Yasym_frag_2")]->Insert(dabs(y),(y>0.?1.:-1.));
   }
-  cluster->m_nsplit = 0;
-  //std::cout << "DEBUG: CLUSTER_MASS: " << cluster->m_nsplit << " "
-  //<< cluster->Momentum().Abs2() << std::endl;
   cluster->m_nsplit = 1;
-
-  // cluster->m_nsplit = 0;
   return cluster;
 }
 

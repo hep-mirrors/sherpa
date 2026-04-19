@@ -146,8 +146,8 @@ void Cluster_Splitter::CalculateLimits() {
 }
 
 bool Cluster_Splitter::MakeLongitudinalMomentaZ() {
-  msg_Out() << "Got to a non-ported place" << std::endl;
-  msg_Out() << "bool Cluster_Splitter::MakeLongitudinalMomentaZ()\n";
+  msg_Error() << "Got to a non-ported place: "
+              << "bool Cluster_Splitter::MakeLongitudinalMomentaZ()\n";
   size_t maxcounts=1000;
   while ((maxcounts--)>0) {
     if (MakeLongitudinalMomentaZSimple()) {
@@ -169,7 +169,11 @@ bool Cluster_Splitter::MakeLongitudinalMomentaZSimple() {
   bool mustrecalc = false;
 
 #if AHADIC_CLUSTER_SPLITTER_MODE == 0
-  for (size_t i=0;i<2;i++) m_z[i]  = select_z(m_zmin[i],m_zmax[i],i);
+  
+  for (size_t i=0;i<2;i++) {
+    m_z[i] = select_z(m_zmin[i],m_zmax[i],i);
+    if (m_z[i] < 0.) return false;
+  }
   for (size_t i=0;i<2;i++) {
     m_R2[i] = m_z[i]*(1.-m_z[1-i])*m_Q2-m_kt2;
     if (m_R2[i]<m_mdec2[i]+m_kt2) {
@@ -187,38 +191,6 @@ bool Cluster_Splitter::MakeLongitudinalMomentaZSimple() {
   const int p0 = m_type[0];
   const int p1 = m_type[1];
   int i1{0}, i2{1};
-
-  if(false) {
-    if(p0 == p1) {
-      if(ran->Get() < 0.5) {
-	i1 = 0;
-	i2 = 1;
-      } else {
-	i1 = 1;
-	i2 = 0;
-      }
-    } else if (p0 == 1) {
-      i1 = 0;
-      i2 = 1;
-    } else if (p1 == 1) {
-      i1 = 1;
-      i2 = 0;
-    } else if (p0 == 3) {
-      i1 = 0;
-      i2 = 1;
-    } else if (p1 == 3) {
-      i1 = 1;
-      i2 = 0;
-    } else {
-      if(ran->Get() < 0.5) {
-	i1 = 0;
-	i2 = 1;
-      } else {
-	i1 = 1;
-	i2 = 0;
-      }
-    }
-  }
 
   const double a0 = (m_mdec2[0]+2*m_kt2) / m_Q2;
   const double a1 = (m_mdec2[1]+2*m_kt2) / m_Q2;
@@ -238,25 +210,14 @@ bool Cluster_Splitter::MakeLongitudinalMomentaZSimple() {
   double lower = -p/2 - sqrt(p*p/4 - q);
   double upper = -p/2 + sqrt(p*p/4 - q);
   if(lower > upper)
-    std::cout << "Needs fixing" << std::endl;
-
+    msg_Error() << "Inconsistent z bounds: lower > upper in MakeLongitudinalMomentaZSimple\n";
 #if AHADIC_CLUSTER_SPLITTER_MODE == 1
-  m_z[i1]  = select_z(std::max(m_zmin[i1],lower),
-			 std::min(m_zmax[i1],upper),
-			 i1);
-  //std::cout << "DEBUG: ARGS: "
-  //<< 0 << " "
-  //	    << m_type[i1] << " "
-  //	    << m_z[i1] << " "
-  //	    << m_nsplit << " "
-  //	    << m_zmin[i1] << " "
-  //	    << m_zmax[i1] << " "
-  //	    << lower << " " << upper << " "
-  //	    << std::endl;
+  m_z[i1] = select_z(std::max(m_zmin[i1],lower), std::min(m_zmax[i1],upper), i1);
 #endif
 #if AHADIC_CLUSTER_SPLITTER_MODE == 2
-  m_z[i1]  = select_z(0.,1.,i1);
+  m_z[i1] = select_z(0.,1.,i1);
 #endif
+  if (m_z[i1] < 0.) return false;
 
   if(i1 == 0) {
     lower = a1/(1-m_z[i1]);
@@ -267,21 +228,12 @@ bool Cluster_Splitter::MakeLongitudinalMomentaZSimple() {
   }
 
 #if AHADIC_CLUSTER_SPLITTER_MODE == 1
-  m_z[i2]  = select_z(std::max(m_zmin[i2],lower),
-			std::min(m_zmax[i2],upper),
-			i2);
-  //std::cout << "DEBUG: ARGS: "
-  //<< 1 << " "
-  //	    << m_type[i2] << " "
-  //	    << m_z[i2] << " "
-  //	    << m_nsplit << " "
-  //	    << m_zmin[i2] << " " << m_zmax[i2] << " "
-  //	    << lower << " " << upper << " "
-  //	    << std::endl;
+  m_z[i2] = select_z(std::max(m_zmin[i2],lower), std::min(m_zmax[i2],upper), i2);
 #endif
 #if AHADIC_CLUSTER_SPLITTER_MODE == 2
-  m_z[i2]  = select_z(0.,1.,i2);
+  m_z[i2] = select_z(0.,1.,i2);
 #endif
+  if (m_z[i2] < 0.) return false;
 
   return true;
 }
@@ -313,7 +265,7 @@ double Cluster_Splitter::FragmentationFunctionProb(double z, double zmin, double
   auto f = [](double _z, double arg, double zmax) -> double {
     return (1-_z) * exp(-arg/_z);
   };
-  std::cout << "This is not working at the moment!" << std::endl;
+  msg_Error() << "FragmentationFunctionProb not implemented (antiderivative requires Ei)\n";
   auto F = [](double _z, double arg) -> double {
     // 1/2 (-e^(-g/x) x (-2 - g + x) + g (2 + g) Ei(-g/x))
     //return 0.5*(-exp(-arg/_z)*_z*(-2-arg+_z) + arg*(2+arg)*std::expint(-arg/_z));
@@ -330,73 +282,58 @@ double Cluster_Splitter::FragmentationFunctionProb(double z, double zmin, double
 double Cluster_Splitter::FragmentationFunction(double z, double zmin, double zmax,
 					       int cnt, int i_var) {
   const auto type {m_type[cnt]};
-  const double alpha = m_alpha[type][i_var];
-  const double beta  = m_beta [type][i_var];
-  const double gamma = m_gamma[type][i_var];
-  const double kt02  = m_kt02[i_var];
+  return FragmentationFunction(z, zmin, zmax,
+			       m_alpha[type][i_var], m_beta[type][i_var],
+			       m_gamma[type][i_var], m_kt02[i_var]);
+}
 
+double Cluster_Splitter::FragmentationFunction(double z, double zmin, double zmax,
+					       double alpha, double beta,
+					       double gamma, double kt02) {
 #if AHADIC_FRAGMENTATION_FUNCTION == 0
-  double arg, norm {1.}, value {1.};
-  // if (alpha>=0.)
-  //   norm *= pow(zmax,m_alpha_max[type]);
-  // else
-  //   norm *= pow(zmin,m_alpha_max[type]);
-  if (alpha>=0.)
-    norm *= pow(zmax,alpha);
-  else
-    norm *= pow(zmin,alpha);
-
-  // if (beta>=0.)
-  //   norm *= pow(1.-zmin,m_beta_max[type]);
-  // else
-  //   norm *= pow(1.-zmax,m_beta_max[type]);
-  if (beta>=0.)
-    norm *= pow(1.-zmin,beta);
-  else
-    norm *= pow(1.-zmax,beta);
-
-  double wt = pow(z,alpha) * pow(1.-z,beta);
-  value = wt/norm;
-
-  if (m_mode==2) {
-    const auto gamma_min {gamma};
-    arg    = dabs(gamma)>5.e-3 ? (m_kt2+m_masses*m_masses)/kt02 : 0.;
-    value *= exp(-arg*((zmax*gamma-z*gamma_min)/(z*zmax)));
-
-    // irrelevant
-    norm  *= exp(-arg*gamma_min/zmax);
-    wt    *= exp(-arg*gamma_min/z);
+  if (m_mode == 2) {
+    const double c = dabs(gamma) > 5.e-3
+      ? gamma * (m_kt2 + m_masses*m_masses) / kt02
+      : 0.;
+    auto g = [&](double _z) {
+      return pow(_z, alpha) * pow(1.-_z, beta) * exp(-c / _z);
+    };
+    double norm = std::max(g(zmin), g(zmax));
+    // interior critical point from d/dz[log g] = alpha/z - beta/(1-z) + c/z^2 = 0
+    // => (alpha+beta)*z^2 - (alpha-c)*z - c = 0
+    const double A = alpha + beta;
+    if (std::abs(A) > 1e-10) {
+      const double disc = sqr(alpha - c) + 4. * A * c;
+      if (disc >= 0.) {
+        for (const double sign : {1., -1.}) {
+          const double z_crit = ((alpha - c) + sign * sqrt(disc)) / (2. * A);
+          if (z_crit > zmin && z_crit < zmax)
+            norm = std::max(norm, g(z_crit));
+        }
+      }
+    }
+    return g(z) / norm;
   }
 
-  if (wt>norm) {
-    std::cout << "z = " << z << std::endl;
-    std::cout << "Something is wrong in the Cluster Fragmentation function"
-	      << std::endl;
-    exit(1);
-  }
-  //value /= 10.;
-  return value;
-# endif
-
-#if AHADIC_FRAGMENTATION_FUNCTION == 1
-  auto f = [](double _z, double arg, double zmax) -> double {
-    return (1-_z) * exp(-arg*((zmax-_z)/(_z*zmax)));
+  // f(z) = z^alpha * (1-z)^beta
+  // interior mode from d/dz[log f] = alpha/z - beta/(1-z) = 0 => z* = alpha/(alpha+beta)
+  auto f = [&](double _z) {
+    return pow(_z, alpha) * pow(1.-_z, beta);
   };
-
-  double arg    = gamma*(m_kt2+m_masses*m_masses)/kt02;
-  //double arg    = gamma*(m_kt2)/kt02*10;
-  //double arg    = gamma;
-  // compute max
-  double norm {1-zmin};
-  return f(z, arg,zmax) / norm;
+  double norm = std::max(f(zmin), f(zmax));
+  if (std::abs(alpha + beta) > 1e-10) {
+    const double z_mode = alpha / (alpha + beta);
+    if (z_mode > zmin && z_mode < zmax)
+      norm = std::max(norm, f(z_mode));
+  }
+  return f(z) / norm;
 #endif
 }
 
 double Cluster_Splitter::
 WeightFunction(const double & z,const double & zmin,const double & zmax,
 	       const unsigned int & cnt) {
-  const auto value = FragmentationFunction(z,zmin,zmax,cnt,0);
-  return value;
+  return FragmentationFunction(z, zmin, zmax, cnt, 0);
 }
 
 void Cluster_Splitter::z_rejected(const double wgt, const double & z,
@@ -407,12 +344,9 @@ void Cluster_Splitter::z_rejected(const double wgt, const double & z,
 #endif
   const auto type = m_type[cnt];
   for (int i{0}; i<m_alpha[0].size(); i++) {
-    const auto a    = m_alpha[type][i];
-    const auto b    = m_beta [type][i];
-    const auto c    = m_gamma[type][i];
-    const auto kt   = m_kt02[i];
     const auto wgt_new = FragmentationFunction(z,zmin,zmax,cnt,i);
-    tmp_variation_weights[i] *= (1.-wgt_new) / (1.-wgt);
+    if(m_nsplit < 4)
+      tmp_variation_weights[i] *= (1.-wgt_new) / (1.-wgt);
   }
 }
 
@@ -426,25 +360,13 @@ void Cluster_Splitter::z_accepted(const double wgt, const double & z,
   const double wgt_old = wgt;
 #endif
   for (int i{0}; i<m_alpha[0].size(); i++) {
-    const auto a    = m_alpha[type][i];
-    const auto b    = m_beta [type][i];
-    const auto c    = m_gamma[type][i];
-    const auto kt   = m_kt02[i];
 #if AHADIC_FRAGMENTATION_FUNCTION == 1
-    const auto wgt_new = FragmentationFunctionProb(z,zmin,zmax,c,kt);
+    const auto wgt_new = FragmentationFunctionProb(z,zmin,zmax,m_gamma[type][i],m_kt02[i]);
 #else
     const auto wgt_new = FragmentationFunction(z,zmin,zmax,cnt,i);
 #endif
-    // TODO: find out why this becomes non from time to time
     const auto frac = wgt_new / wgt_old;
-    //std::cout << "DEBUG: WSLS: " << type << " "
-    //<< m_nsplit << " "
-    //	      << i << " "
-    //	      << wgt_new << " "
-    //	      << wgt_old << " "
-    //	      << frac << std::endl;
-
-    if(!std::isnan(frac))
+    if(!std::isnan(frac) && m_nsplit < 4)
       tmp_variation_weights[i] *= frac;
   }
 }
@@ -461,8 +383,8 @@ bool Cluster_Splitter::RecalculateZs() {
 }
 
 bool Cluster_Splitter::MakeLongitudinalMomentaMassSimple() {
-  msg_Out() << "Got to a non-ported place" << std::endl;
-  msg_Out() << "Cluster_Splitter::MakeLongitudinalMomentaMassSimple()" << std::endl;
+  msg_Error() << "Got to a non-ported place: "
+              << "Cluster_Splitter::MakeLongitudinalMomentaMassSimple()\n";
   bool success;
   long int trials = 1000;
   do {
@@ -478,8 +400,8 @@ bool Cluster_Splitter::MakeLongitudinalMomentaMassSimple() {
 }
 
 bool Cluster_Splitter::MakeLongitudinalMomentaMass() {
-  msg_Out() << "Got to a non-ported place" << std::endl;
-  msg_Out() << "bool Cluster_Splitter::MakeLongitudinalMomentaMass()" << std::endl;
+  msg_Error() << "Got to a non-ported place: "
+              << "bool Cluster_Splitter::MakeLongitudinalMomentaMass()\n";
   size_t maxcounts=1000;
   while ((maxcounts--)>0) {
     if (MakeLongitudinalMomentaMassSimple()) {
@@ -495,13 +417,13 @@ bool Cluster_Splitter::MakeLongitudinalMomentaMass() {
 }
 
 double Cluster_Splitter::DeltaM(const size_t & cl) {
-  msg_Out() << "Got to a non-ported place" << std::endl;
-  msg_Out() << "Cluster_Splitter::DeltaM\n";
+  msg_Error() << "Got to a non-ported place: Cluster_Splitter::DeltaM\n";
   double deltaM, deltaMmax = m_Q-sqrt(m_m2min[0])-sqrt(m_m2min[1]);
   double mean =  m_mean[cl], sigma = 1./(m_type[cl] * sqrt(m_kt02[0]));
   double arg  =  1.-exp(-sigma * deltaMmax);
   size_t trials = 1000;
   do {
+
     // Weibull distribution
     //deltaM = sqrt(offset+pow(-log(ran->Get()),1./m_a[cl])*lambda);
     // Normal distribution
@@ -523,21 +445,6 @@ bool Cluster_Splitter::FillParticlesInLists() {
     else if (shuffle)  UpdateAndFillCluster(i);
     else p_cluster_list->push_back(p_out[i]);
   }
-  /*
-  if (shuffle>0)
-    msg_Out()<<METHOD<<" shuffled momenta:\n"
-	     <<m_cms<<" -> "<<(m_newmom[0]+m_newmom[1])<<"\n = "<<m_newmom[0]<<" + "<<m_newmom[1]<<"\n";
-  else {
-    msg_Out()<<METHOD<<" didn't shuffle momenta:\n"
-	     <<m_cms<<"("<<sqrt(m_cms.Abs2())<<") -> \n"<<(*p_out[0])<<(*p_out[1]);
-    double mass1_0 = sqrt(((*p_out[0])[0]->Momentum()+(*p_out[0])[1]->Momentum()).Abs2());
-    double mass2_0 = sqrt(((*p_out[1])[0]->Momentum()+(*p_out[1])[1]->Momentum()).Abs2());
-    double mass1_1 = sqrt(((*p_out[0])[0]->Momentum()+(*p_out[1])[0]->Momentum()).Abs2());
-    double mass2_1 = sqrt(((*p_out[0])[1]->Momentum()+(*p_out[1])[1]->Momentum()).Abs2());
-    msg_Out()<<"--> mass shuffle "<<mass1_0<<" + "<<mass2_0<<" --> "
-	     <<mass1_1<<" + "<<mass2_1<<"\n\n";
-  }
-  */
   return true;
 }
 
@@ -576,14 +483,12 @@ void Cluster_Splitter::FillHadronAndDeleteCluster(size_t i) {
 void Cluster_Splitter::UpdateAndFillCluster(size_t i) {
   Poincare BoostIn(m_mom[i]);
   Poincare BoostOut(m_newmom[i]);
-  //Vec4D check(0.,0.,0.,0.);
   for (size_t j=0;j<2;j++) {
     Vec4D partmom = (*p_out[i])[j]->Momentum();
     BoostIn.Boost(partmom);
     BoostOut.BoostBack(partmom);
     m_rotat.RotateBack(partmom);
     m_boost.BoostBack(partmom);
-    //check += partmom;
     (*p_out[i])[j]->SetMomentum(partmom);
   }
   m_rotat.RotateBack(m_newmom[i]);

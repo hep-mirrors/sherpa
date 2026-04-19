@@ -48,11 +48,8 @@ Return_Value::code Ahadic::Hadronize(Blob_List * blobs)
 
   const int n_vars = hadpars->NumberOfVariations();
 
-  // Always make sure, all weights are unset
-  // m_singletchecker.reset_variationweights();
-  if(sum_weights.size() != n_vars) {
-    sum_weights.resize(n_vars,0);
-  }
+  if(sum_raw_weights.size() != n_vars)
+    sum_raw_weights.resize(n_vars,0);
   m_softclusters.reset_variationweights(n_vars);
   m_clusterdecayer.reset_variationweights(n_vars);
   m_gluondecayer.reset_variationweights(n_vars);
@@ -104,16 +101,7 @@ Return_Value::code Ahadic::Hadronize(Blob_List * blobs)
   const auto wgts_gluons   = m_gluondecayer.get_variationweights();
   const auto wgts_soft     = m_softclusters.get_variationweights();
   const auto wgts_flavs    = m_flavourselector.get_variationweights();
-  // const auto wgts_singlets = m_singletchecker.get_variationweights();
   const auto wgts_kt       = m_ktselector.get_variationweights();
-
-  // get signal blob
-  DEBUG_VAR("DEBUG_AHADIC_WEIGHTS\n");
-  DEBUG_VAR(wgts_cluster);
-  DEBUG_VAR(wgts_gluons);
-  DEBUG_VAR(wgts_kt);
-  DEBUG_VAR(wgts_soft);
-  DEBUG_VAR(wgts_flavs);
 
   Blob *blob(blobs->FindFirst(btp::Signal_Process));
   if (blob == NULL)
@@ -121,30 +109,21 @@ Return_Value::code Ahadic::Hadronize(Blob_List * blobs)
   auto & wgtmap = (*blob)["WeightsMap"]->Get<Weights_Map>();
   const bool found {wgtmap.find("AHADIC") == wgtmap.end() ? false : true};
 
-  //std::cout << "DEBUG: TOTAL_WEIGHT (";
-	    // << wgts_cluster << std::endl;
-
   if(wgts_cluster.size() == wgts_gluons.size() &&
      wgts_soft.size() == wgts_flavs.size()
      && wgts_cluster.size() == wgts_kt.size()) {
-    DEBUG_VAR(wgts_cluster.size());
     if(!found)
       n_hads += 1;
     for(int i{0}; i<wgts_cluster.size(); i++) {
-      DEBUG_VAR(i);
       double wgt = 1;
       wgt*=wgts_cluster[i];
       wgt*=wgts_gluons[i];
       wgt*=wgts_flavs[i];
       wgt*=wgts_kt[i];
       wgt*=wgts_soft[i];
-      //std::cout <<wgt;
-      //if(i<wgts_cluster.size()-1)
-      //std::cout <<",";
-      if(i==0 && wgt != 1.0)
-	std::cout << "THIS SHOULD NOT HAPPEN " << wgt << std::endl;
+
       if(std::isnan(wgt)) {
-	std::cout << "THIS SHOULD NOT HAPPEN " << wgt << std::endl;
+	msg_Error() << METHOD << ": NaN variation weight, resetting to 1\n";
 	wgt = 1.0;
       }
       if(found) {
@@ -154,42 +133,18 @@ Return_Value::code Ahadic::Hadronize(Blob_List * blobs)
 	continue;
       } else {
 	const std::string base_name {"v"+std::to_string(i)};
-	const auto clipped_wgt {std::min(wgt,pow(10,3))};
 	const std::string name = base_name + "." + std::to_string(4);
-	sum_weights[i] += clipped_wgt;
-	if(n_hads > 100)
-	  wgtmap["AHADIC"][name] = clipped_wgt / (sum_weights[i] / n_hads);
-	else
-	  wgtmap["AHADIC"][name] = clipped_wgt;
-	// for(int e{3}; e<4; ++e) {
-	//   const std::string name = base_name + "." + std::to_string(e);
-	//   if(e < 4) {
-	//     // const auto clipped_wgt {std::max(std::min(wgt,pow(10,e)),pow(10,-e))};
-	//     const auto clipped_wgt {std::min(wgt,pow(10,e))};
-	//     DEBUG_VAR(clipped_wgt);
-	//     wgtmap["AHADIC"][name] = clipped_wgt;
-	//   } else {
-	//     const auto clipped_wgt {wgt};
-	//     DEBUG_VAR(clipped_wgt);
-	//     wgtmap["AHADIC"][name] = clipped_wgt;
-	//   }
-	// }
+	sum_raw_weights[i] += wgt;
+	const double running_mean = (n_hads > 100)
+	  ? sum_raw_weights[i] / n_hads
+	  : 1.0;
+	wgtmap["AHADIC"][name] = std::min(wgt, 100.0 * running_mean);
       }
     }
-    DEBUG_VAR(wgtmap);
   } else {
     msg_Out()<<"Could not use AHADIC variations.\n";
     msg_Out()<<"Cluster and Gluon have differing number of variations\n";
   }
-  //std::cout <<")" << std::endl;
-  // Can probably be removed since already reset at the beginning
-  // m_softclusters.reset_variationweights();
-  // m_singletchecker.reset_variationweights();
-  m_clusterdecayer.reset_variationweights(n_vars);
-  m_gluondecayer.reset_variationweights(n_vars);
-  m_flavourselector.reset_variationweights(n_vars);
-  m_ktselector.reset_variationweights(n_vars);
-  m_softclusters.reset_variationweights(n_vars);
 
   return Return_Value::Success;
 }

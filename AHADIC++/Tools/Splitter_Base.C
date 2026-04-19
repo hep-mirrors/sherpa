@@ -55,7 +55,7 @@ operator()(Proto_Particle * part1,Proto_Particle * part2,
     // perform cluster splitting
     PopFlavours();
     DetermineMinimalMasses();
-    MakeTransverseMomentum();
+    if(!MakeTransverseMomentum()) continue;
     if(!MakeLongitudinalMomenta())
       continue;
     if(!CheckKinematics())
@@ -134,7 +134,7 @@ bool Splitter_Base::MakeSplitting() {
     n_tries++;
     PopFlavours();
     DetermineMinimalMasses();
-    MakeTransverseMomentum();
+    if(!MakeTransverseMomentum()) continue;
     if(!MakeLongitudinalMomenta())
       continue;
     if(!CheckKinematics())
@@ -201,49 +201,46 @@ void Splitter_Base::DetermineMinimalMasses() {
   }
 }
 
-void Splitter_Base::MakeTransverseMomentum() {
+bool Splitter_Base::MakeTransverseMomentum() {
   m_kt2max = Min(p_part[0]->KT2_Max(),p_part[1]->KT2_Max());
   double ktmax  = Min(m_ktmax,
 		      (m_ktorder?
 		       Min(sqrt(m_kt2max),(m_Emax-2.*m_popped_mass)/2.):
 		       (m_Emax-2.*m_popped_mass)/2.));
-  // have to make this a parameter for the beam breakup?
-  //if (p_part[0]->IsBeam() || p_part[1]->IsBeam()) ktmax = Min(5.0,m_ktmax);
   if (ktmax<0.) {
     msg_Error()<<METHOD<<" yields error ktmax = "<<ktmax
 	       <<" from "<<m_Emax<<", "<<m_popped_mass<<" vs. "
 	       <<" min = "<<m_minmass<<".\n";
-    abort();
+    return false;
   }
-  bool islead = p_part[0]->IsLeading() || p_part[1]->IsLeading();
-  m_kt    = (*p_ktselector)(ktmax);
+  m_kt = (*p_ktselector)(ktmax);
+  if (m_kt < 0.) return false;
   m_kt2   = m_kt*m_kt;
   const double phi   = 2.*M_PI*ran->Get();
   m_ktvec = m_kt * Vec4D(0.,cos(phi),sin(phi),0.);
+  return true;
 }
 
 double Splitter_Base::select_z(const double zmin, const double zmax,
 			       const unsigned int cnt) {
+  static const int max_iterations = 100000;
   double z, z_range {zmax-zmin};
-  int it {0};
-  do {
+  for (int it{0}; it<max_iterations; ++it) {
     z = zmin+ran->Get()*z_range;
     auto sel_wgt = WeightFunction(z,zmin,zmax,cnt);
     if(ran->Get() < sel_wgt) {
       z_accepted(sel_wgt, z,zmin,zmax,cnt);
-      break;
+      return z;
     }
-    ++it;
-    if(it % 10000 == 0)
-      std::cout << "Z selection requires many iterations: " << it << " already." << std::endl;
     z_rejected(sel_wgt, z,zmin,zmax,cnt);
-  } while (true);
-  return z;
+  }
+  msg_Error() << METHOD << ": z selection failed after " << max_iterations
+              << " iterations in [" << zmin << ", " << zmax << "]\n";
+  return -1.;
 }
 
 void Splitter_Base::reset_var_weights() {};
 void Splitter_Base::accept_splitting() {};
 bool Splitter_Base::MakeKinematics() {
-  MakeTransverseMomentum();
-  return (MakeLongitudinalMomenta() && CheckKinematics());
+  return MakeTransverseMomentum() && MakeLongitudinalMomenta() && CheckKinematics();
 }

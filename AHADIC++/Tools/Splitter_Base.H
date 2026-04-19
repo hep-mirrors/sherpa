@@ -55,7 +55,7 @@ namespace AHADIC {
     virtual void PopFlavours();
     virtual void DetermineMinimalMasses();
     virtual bool MakeKinematics();
-    virtual void MakeTransverseMomentum();
+    virtual bool MakeTransverseMomentum();
     virtual bool MakeLongitudinalMomenta() = 0;
     virtual bool FillParticlesInLists()    = 0;
     virtual bool CheckKinematics()         = 0;

@@ -6,9 +6,7 @@
 using namespace AHADIC;
 using namespace ATOOLS;
 
-KT_Selector::KT_Selector() {
-  std::cout << "Init KT_Selector" << std::endl;
-}
+KT_Selector::KT_Selector() {}
 
 KT_Selector::~KT_Selector() {}
 
@@ -21,21 +19,20 @@ void KT_Selector::Init() {
 }
 
 double KT_Selector::Select_kt(const double ktmax) {
-  double kt, kt_range {ktmax};
-  int it {0};
-  do {
-    kt = ran->Get()*kt_range;
+  static const int max_iterations = 100000;
+  double kt_range {ktmax};
+  for (int it{0}; it<max_iterations; ++it) {
+    double kt = ran->Get()*kt_range;
     auto sel_wgt = Gaussian(kt, m_sigma[0]) / 100;
     if(ran->Get() < sel_wgt) {
       kt_accepted(kt);
-      break;
+      return kt;
     }
-    ++it;
-    if(it % 10000 == 0)
-      std::cout << "Z selection requires many iterations: " << it << " already." << std::endl;
     kt_rejected(kt);
-  } while (true);
-  return kt;
+  }
+  msg_Error() << METHOD << ": kt selection failed after " << max_iterations
+              << " iterations (ktmax=" << ktmax << ")\n";
+  return -1.;
 }
 
 void KT_Selector::kt_accepted(double kt) {

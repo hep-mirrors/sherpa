@@ -45,6 +45,9 @@ namespace AHADIC {
     bool   CheckKinematics();
     Cluster * MakeCluster(size_t i);
     double FragmentationFunction(double z, double zmin, double zmax,
+				 double alpha, double beta,
+				 double gamma, double kt02);
+    double FragmentationFunction(double z, double zmin, double zmax,
 				 int cnt, int i_var);
 
   public:
@@ -59,27 +62,8 @@ namespace AHADIC {
 			  const unsigned int & cnt);
     void   SetOutput(const bool & out) { m_output = out; }
     void   accept_splitting() {
-
-      if(m_nsplit <= 100) {
-	for(int i{0}; i<variation_weights.size(); ++i) {
-	  variation_weights[i] *= tmp_variation_weights[i];
-	}
-      }
-
-      //std::cout << "DEBUG: PROB: " << m_type[0] << " "
-      //<< m_nsplit << " "
-      //		<< m_z[0] << " "
-      //	<< tmp_variation_weights << " "
-      //	<< variation_weights
-	//	<< std::endl;
-
-      //std::cout << "DEBUG: PROB: " << m_type[1] << " "
-      //	<< m_nsplit << " "
-      //	<< m_z[1] << " "
-      //	<< tmp_variation_weights << " "
-      //	<< variation_weights
-      //	<< std::endl;
-
+      for(int i{0}; i<variation_weights.size(); ++i)
+	variation_weights[i] *= tmp_variation_weights[i];
       reset_var_weights();
     }
 

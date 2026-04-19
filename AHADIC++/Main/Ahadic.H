@@ -47,7 +47,7 @@ namespace AHADIC {
     bool SanityCheck(ATOOLS::Blob * blob,double norm2);
     void CleanUp(ATOOLS::Blob * blob);
 
-    std::vector<double> sum_weights;
+    std::vector<double> sum_raw_weights;
     int n_hads {0};
   public:
     Ahadic(std::string shower);
