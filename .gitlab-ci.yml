@@ -53,7 +53,7 @@ manual:
     paths:
       - public
   pages:
-    path_prefix: "$CI_COMMIT_REF_SLUG"
+    path_prefix: "$CI_COMMIT_REF_NAME"
     expire_in: never
   rules:
     - if: '$CI_COMMIT_BRANCH == "master"'
