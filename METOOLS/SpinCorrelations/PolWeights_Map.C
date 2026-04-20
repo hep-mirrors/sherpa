@@ -238,10 +238,8 @@ std::set<std::string> PolWeights_Map::TransverseKeys(std::set<std::string> keys,
       else new_string += ".t";
       // if not the last particle is currently considered the string of the particles with higher level
       // will be added to the new spin label
-      if (level+1 < label_parts.size()) new_string += "_";
-      for (size_t j(level+1); j<label_parts.size(); ++j){
-        new_string += label_parts[j];
-      }
+      for (size_t j(level+1); j<label_parts.size(); ++j)
+        new_string += "_" + label_parts[j];
     }
       // add weights where the current particle is unpolarized or in a definite polarization state (longitudinally
       // polarized massive VB or different particle species) since particles at higher levels can be transverse
@@ -304,15 +302,9 @@ std::vector<std::string> PolWeights_Map::ExpandLabels(const std::vector<std::str
       }
       // if not the last particle is currently considered the current_string of the particles with higher levels
       // will be added to the expanded transverse_labels
-      if (level + 1 < label_parts.size()) {
-        for (size_t k(0); k < number_contributing_weights; ++k) {
-          expanded_labels[k] += "_";
-        }
-      }
       for (size_t j(level + 1); j < label_parts.size(); ++j) {
-        for (size_t k(0); k < number_contributing_weights; ++k) {
-          expanded_labels[k] += label_parts[j];
-        }
+        for (size_t k(0); k < number_contributing_weights; ++k)
+          expanded_labels[k] += "_" + label_parts[j];
       }
       for (const auto & expanded_string : expanded_labels){
         tmp_keys.push_back(expanded_string);
