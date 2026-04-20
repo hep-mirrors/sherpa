@@ -505,26 +505,23 @@ void PolWeights_Map::AddCustomWeights(const METOOLS::Amplitude2_Tensor* amps,
     // under one weight setting in YAML-file)
     for (size_t j(0); j<weights_to_add.size(); ++j){
       auto it = find(weights_to_add[j]);
-      if (it != end()){
-        if (weights_to_add.size()>1){
-          new_weight += it->second;
-        }
-      }
+      if (it != end()) new_weight += it->second;
       else{
         // Allows to also add and print out interference weights
         auto it2 = p_all_weights->find(weights_to_add[j]);
-        if (it2 != end()) new_weight += it2->second;
+        if (it2 != p_all_weights->end()) new_weight += it2->second;
           // if one spin label can not be found in PolWeightMap and no particle numbers are used instead
           // the whole custom weight is ignored
         else{
           std::cout << weights_to_add[j] << ", which should be added to a new custom weight, does not exist in "
                                             "PolWeightsMap, ignore the whole custom weight"
                     << std::endl;
+          next_weight = true;
           break;
         }
       }
     }
-    emplace(w.first, new_weight);
+    if (!next_weight) emplace(w.first, new_weight);
   }
 }
 
