@@ -70,7 +70,7 @@ void Over_Estimator::FixMaximum(MI_Processes * procs,axis * sbins) {
   for (size_t sbin=0;sbin<sbins->m_nbins;sbin++) {
     m_s      = sbins->x(sbin);
     m_pt02   = mipars->CalculatePT02(m_s);
-    m_ptmin2 = mipars->CalculatePTmin2(m_s);
+    m_ptmin2 = mipars->CalculatePT02(m_s);
     double ratioN  = pow(m_s/m_ptmin2,1./double(m_npt2bins));
     double maxpref = 0.;
     for (size_t i=0;i<m_npt2bins;i++) {
