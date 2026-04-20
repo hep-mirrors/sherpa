@@ -13,6 +13,20 @@ PARTICLE_DATA:
   15:
     Massive: 1
 
+AMISIC:
+  PT_Min(ref): 2.74 
+  SIGMA_ND_NORM: 0.55 
+
+REMNANTS:
+  2212:
+    MATTER_FORM: Double_Gaussian
+    MATTER_RADIUS_1: 0.90 
+    MATTER_RADIUS_2: 1.0
+    MATTER_FRACTION_1: 0.42 
+
+COLOUR_RECONNECTIONS:
+ MODE: Off
+
 ## OTF variations
 SCALE_VARIATIONS:
   - [0.25, 0.25]
