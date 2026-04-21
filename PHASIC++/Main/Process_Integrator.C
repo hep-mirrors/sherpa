@@ -129,7 +129,7 @@ std::vector<double> Process_Integrator::TotalEffiAndEffEvPerEv(bool unweighted) 
   std::vector<double> totaleffiandeffevperev(2,-1.0);
   if (p_proc->IsGroup()) {
     //weight effevperev with selection weight
-    double sum_swelw=0.0;
+    double sum_selw=0.0;
     double sum_effi=0.0;
     double sum_effevperev=0.0;
     double sum_xsec=0.0;
@@ -145,17 +145,17 @@ std::vector<double> Process_Integrator::TotalEffiAndEffEvPerEv(bool unweighted) 
 
       sum_xsec += proci_xsec;
       sum_xsec_abs += dabs(proci_xsec);
-      sum_swelw += proci_selw;
+      sum_selw += proci_selw;
       sum_effi+=proci_effi*proci_selw;
       //interested in average effevperev after unweighting: multiply with efficiency
       sum_effevperev+=proci_effevperev*proci_selw*proci_effi;//=sum_xsec_abs
       //this is from whisto, but want to be more correct by not relying on bin width approximation
-      //sum_swelw += (*p_proc)[i]->Integrator()->SelectionWeight(wmode);
+      //sum_selw += (*p_proc)[i]->Integrator()->SelectionWeight(wmode);
       //sum_effi+=(*p_proc)[i]->Integrator()->Efficiency()*(*p_proc)[i]->Integrator()->SelectionWeight(wmode);
       //sum_effevperev+=(*p_proc)[i]->Integrator()->EffEvPerEv()*(*p_proc)[i]->Integrator()->SelectionWeight(wmode);
     }
-    if (sum_swelw!=0) {
-      totaleffiandeffevperev[0] = sum_effi/sum_swelw;
+    if (sum_selw!=0) {
+      totaleffiandeffevperev[0] = sum_effi/sum_selw;
       totaleffiandeffevperev[1] = sum_effevperev/sum_effi*pow(sum_xsec/sum_xsec_abs,2);
     }
     return totaleffiandeffevperev;
