@@ -2,6 +2,7 @@
 #include "AHADIC++/Tools/Hadronisation_Parameters.H"
 #include "ATOOLS/Math/Poincare.H"
 #include "ATOOLS/Math/Random.H"
+#include "ATOOLS/Phys/LDME.H"
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/Message.H"
 
@@ -12,7 +13,7 @@ using namespace std;
 OctetMeson_Decayer::OctetMeson_Decayer(list<Singlet *> *singlets,
                                        std::list<Proto_Particle *> *hadrons) :
   p_singlets(singlets), p_hadrons(hadrons),
-  m_offset(Flavour(kf_1S0_c_8_eta_c).Kfcode() -
+  m_offset(Flavour(kf_1S0_c).Kfcode() -
 	  Flavour(kf_eta_c_1S).Kfcode()),
   m_kappa(2.), m_minE(0.1) {}
 
@@ -42,6 +43,9 @@ bool OctetMeson_Decayer::FindOctet(Singlet *singlet,
   for (pit1 = singlet->begin(); pit1 != singlet->end(); pit1++) {
     if ((*pit1)->Flavour().IsOctetMeson()) {
       p_part1 = (*pit1);
+      kf_code octet_kfc = p_part1->Flavour().Kfcode();
+      newkfc = GetChannel(octet_kfc);
+      if(newkfc == octet_kfc) break;
       return true;
     }
   }
@@ -98,6 +102,7 @@ bool OctetMeson_Decayer::FixKinematics() {
   double Q2 = mom.Abs2(), E = sqrt(Q2) / 2.;
   double m1 = p_part1->Flavour().HadMass(), m12 = sqr(m1);
   double m2 = p_part2->Flavour().HadMass(), m22 = sqr(m2);
+  double singlet_mass = Flavour(newkfc).HadMass();
   if (Q2 < m12 + m22)
     return false;
   double beta1 = 1. / (2. * Q2) *
@@ -114,11 +119,14 @@ bool OctetMeson_Decayer::FixKinematics() {
       pow(pow(zmax, 1. - m_kappa) +
 	  (1. - ran->Get()) * pow(zmin, 1. - m_kappa),
           1. / (1. - m_kappa));
-  //if (z<0.) {
-  //msg_Out()<<"Awkward z = "<<z<<" in ["<<zmin<<", "<<zmax<<"] from\n"
-  //	     <<"E1 = "<<mom1[0]<<" - m1 = "<<m1<<" and\n"
-  //	     <<"m12 = "<<m12<<" Q2 = "<<Q2<<" - m22 = "<<m22<<"\n";
-  //}
+  double gmom = (m12-sqr(singlet_mass))/m12; //alternative for z
+  z = gmom; // -"-
+  // double zfra = sqr(singlet_mass)/m12;
+  if (z<0.) {
+  msg_Out()<<"Awkward z = "<<z<<" in ["<<zmin<<", "<<zmax<<"] from\n"
+  	     <<"E1 = "<<mom1[0]<<" - m1 = "<<m1<<" and\n"
+  	     <<"m12 = "<<m12<<" Q2 = "<<Q2<<" - m22 = "<<m22<<"\n";
+  }
   // p11: (1-z) a2  p+ + (1-b2) p- --> m1^2/Q^2 = (1-b2) (1-z) a2  ==> a2 =
   // m1^2/Q^2 1/[(1-b2)(1-z)] p12:    z  a2  p+             --> mg^2 = 0 p2:  (1
   // -a2) p+ +    b2  p1 --> m2^2/Q^2 = (1-a2) b2        ==> b2 = m2^2/Q^2
@@ -127,7 +135,11 @@ bool OctetMeson_Decayer::FixKinematics() {
   // have to check: (Q^2-m1^2/(1-z)-m2^2)^2 + 4m1^2 m2^2/(1-z) >
   // replace with Q^2-m2^2 > m1^2/(1-z) ==> 1-z > m1^2/(Q^2-m2^2) ==> z < zmax =
   // 1-m1^2/(Q^2-m2^2)
-  m12 = m12 / (1. - z);
+  // m12 = sqr(sqrt(m12)-0.2);
+  // m12 *= zfra/(1. - z); //m12 / (1. - z);
+  
+  // m12 = m12 / (1. - z);
+  
   double beta2 = 1. / (2. * Q2) *
                  (Q2 - m12 + m22 + sqrt(sqr(Q2 - m12 - m22) + 4. * m12 * m22));
   double alpha2 = m12 / Q2 / (1. - beta2);
@@ -138,18 +150,16 @@ bool OctetMeson_Decayer::FixKinematics() {
     ontoZ.RotateBack(m_mom[i]);
     intoCMS.BoostBack(m_mom[i]);
   }
-  //msg_Out()<<"Selected z = "<<z<<" in ["<<zmin<<", "<<zmax<<"]  --> "
-  //	   <<alpha2<<" & "<<beta2<<"\n"
-  //	   <<p_part1->Momentum()<<" + "<<p_part2->Momentum()<<"\n"
-  //	   <<m_mom[0]<<" + " <<m_mom[1]<<" + " <<m_mom[2]<<"\n"
-  //	   <<"Check: "<<mom<<" vs. "<<(m_mom[0]+m_mom[1]+m_mom[2])<<"\n";
+  // msg_Out()<<"Selected z = "<<z<<" in ["<<zmin<<", "<<zmax<<"]  --> "
+  // 	   <<alpha2<<" & "<<beta2<<"\n"
+  // 	   <<p_part1->Momentum()<<" + "<<p_part2->Momentum()<<"\n"
+  // 	   <<m_mom[0]<<" + " <<m_mom[1]<<" + " <<m_mom[2]<<"\n"
+  // 	   <<"Check: "<<mom<<" vs. "<<(m_mom[0]+m_mom[1]+m_mom[2])<<"\n";
   return (z>0.);
 }
 void OctetMeson_Decayer::UpdateColouredObjectsAndAddHadron() {
 
-  int octetkfc = p_part1->Flavour().Kfcode();
-  int newkfc = octetkfc % 1000000;
-
+  kf_code octetkfc = p_part1->Flavour().Kfcode();
   Proto_Particle *meson = new Proto_Particle(Flavour(newkfc), m_mom[0]);
   p_hadrons->push_back(meson);
   p_part1->SetFlavour(Flavour(kf_gluon));

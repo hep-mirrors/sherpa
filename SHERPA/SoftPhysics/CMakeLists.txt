@@ -5,8 +5,7 @@ set(SoftPhysics_SOURCES Hadron_Init.C
                         Hadron_Decay_Handler.C
                         Soft_Photon_Handler.C
                         Singlet_Sorter.C
-                        Resonance_Finder.C
-                        LDME.C)
+                        Resonance_Finder.C)
 
 set(SoftPhysics_HEADERS Hadron_Init.H
                         Beam_Remnant_Handler.H
@@ -15,8 +14,7 @@ set(SoftPhysics_HEADERS Hadron_Init.H
                         Hadron_Decay_Handler.H
                         Soft_Photon_Handler.H
                         Singlet_Sorter.H
-                        Resonance_Finder.H
-                        LDME.H)
+                        Resonance_Finder.H)
 
 sherpa_create_git_info(SoftPhysics ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR})
  

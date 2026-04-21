@@ -10,7 +10,7 @@ namespace AHADIC {
     std::list<Singlet *>        * p_singlets;
     std::list<Proto_Particle *> * p_hadrons;
     int    m_offset;
-    double m_kappa, m_minE;
+    double m_kappa, m_minE, newkfc;
     
     Proto_Particle * p_part1, * p_part2;
     ATOOLS::Vec4D    m_mom[3];
@@ -23,6 +23,7 @@ namespace AHADIC {
     OctetMeson_Decayer(std::list<Singlet *> * singlets,
 		       std::list<Proto_Particle *> * hadrons);
     ~OctetMeson_Decayer() {}
+    kf_code Choose_Decay_Channel(kf_code octet);
 
     void Init() {};
     bool operator()();
