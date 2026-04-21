@@ -140,7 +140,7 @@ std::vector<double> Process_Integrator::TotalEffiAndEffEvPerEv(bool unweighted) 
       double proci_effevperev = proci_totaleffiandeffevperev[1];
       if (proci_effevperev==-1.0) continue;
       double proci_effi = proci_totaleffiandeffevperev[0];
-      double proci_xsec = (*p_proc)[i]->Integrator()->GetSSumEnh()/m_sn;
+      double proci_xsec = (*p_proc)[i]->Integrator()->GetSSumEnh()/m_sncut;
       double proci_selw = dabs(proci_xsec)/proci_effevperev/proci_effi;
 
       sum_xsec += proci_xsec;
