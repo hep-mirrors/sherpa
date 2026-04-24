@@ -336,14 +336,11 @@ namespace LHEH5 {
         if (i < m_ifile)
           o << "all events read";
         else if (i == m_ifile)
-          if (m_ilaststart + m_ievt == m_ntotal / mpi->MySize())
-            o << "all events read";
-          else
-            o << m_ilaststart + m_ievt << " of " << m_ntotal / mpi->MySize()
-              << " events read ("
-              << (m_ilaststart + m_ievt) * 1000 / (m_ntotal / mpi->MySize()) /
-                     10.0
-              << " %)";
+	  o << m_ilaststart + m_ievt << " of " << m_ntotal / mpi->MySize()
+	    << " events read ("
+	    << (m_ilaststart + m_ievt) * 1000 / (m_ntotal / mpi->MySize()) /
+		   10.0
+	    << " %)";
         else
           o << "not yet opened";
         if (mpi->MySize() > 1) o << " on rank 0";
