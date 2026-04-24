@@ -1,8 +1,6 @@
-set(THRew_SOURCES KFactor.C
-                  Variation_Generator.C)
+set(THRew_SOURCES KFactor.C)
 
-set(THRew_HEADERS KFactor.H
-                  Variation_Generator.H)
+set(THRew_HEADERS KFactor.H)
 
 sherpa_create_git_info(THRew ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR})
 
