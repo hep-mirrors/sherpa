@@ -63,7 +63,7 @@ namespace AMISIC {
     }
     inline double F_DD(const std::array<double, 2> & M2,
 			     const std::array<double, 2> & Mres2) const {
-      double averMass = sqrt(M2[0])+sqrt(M2[1])/2., Mass2 = 4.*averMass*averMass;
+      double averMass = (sqrt(M2[0])+sqrt(M2[1]))/2., Mass2 = 4.*averMass*averMass;
       return ( (1.-Mass2/m_s) *
 	       (m_masses[0]*m_masses[1]*m_s)/(m_masses[0]*m_masses[1]*m_s+M2[0]*M2[1]) *
 	       (1.+m_cres*Mres2[0]/(Mres2[0]+M2[0])) *
