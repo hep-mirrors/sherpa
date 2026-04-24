@@ -197,7 +197,7 @@ double ThreeDim_Table::operator()(const double & x,const double & y,const double
   if (m_x.m_nbins==1 && m_y.m_nbins==1) {
     if (m_z.m_nbins==1) return m_values[0][0][0];
     if (z<m_z.m_xmin || z>=m_z.m_xmax) return 0.;
-    size_t zbin = m_z.bin(y);
+    size_t zbin = m_z.bin(z);
     if (zbin>=m_z.m_nbins) return 0.;
     double z1 = m_z.x(zbin), z2 = m_z.x(zbin+1);
     return ( m_values[0][0][zbin]   * (z2-z) +
