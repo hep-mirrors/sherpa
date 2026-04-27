@@ -235,6 +235,8 @@
 #define      kf_a_0_980                   9000111
 #define      kf_a_0_980_plus              9000211
 #define      kf_f_0_980                   9010221
+#define      kf_K_0_star_700              9000311
+#define      kf_K_0_star_700_plus         9000321
 #define      kf_K_0_star_1430             10311
 #define      kf_K_0_star_1430_plus        10321
 #define      kf_f_0_1370                  10221

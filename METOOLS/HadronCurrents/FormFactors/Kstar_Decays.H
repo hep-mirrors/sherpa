@@ -24,6 +24,16 @@ namespace METOOLS {
     Kstar_1410_plus_Lineshape();
   };
 
+  class Kstar0_700_0_Lineshape : public Total_Width_Base {
+  public:
+    Kstar0_700_0_Lineshape();
+  };
+
+  class Kstar0_700_plus_Lineshape : public Total_Width_Base {
+  public:
+    Kstar0_700_plus_Lineshape();
+  };
+
   class Kstar0_1430_0_Lineshape : public Total_Width_Base {
   public:
     Kstar0_1430_0_Lineshape();

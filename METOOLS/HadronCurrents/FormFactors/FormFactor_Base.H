@@ -15,10 +15,12 @@
 
 namespace METOOLS {
   enum class ff_model {
-    none      = 0,
-    KS        = 1,
-    RChiPT    = 2,
-    unknown   = 999
+    none       = 0,
+    KS         = 1,
+    RChiPT     = 2,
+    Dispersive = 3,
+    KS_Belle   = 4,
+    unknown    = 999
   };
 
   class GeneralModel;

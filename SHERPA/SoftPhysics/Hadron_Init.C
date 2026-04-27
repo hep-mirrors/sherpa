@@ -104,6 +104,8 @@ void Hadron_Init::Init() {
   InitHadron(kf_a_0_1450,          false,1.474,0.65,0.265,0,0,false,1,0, "a(0)(1450)","a_{0}(1450)");
   InitHadron(kf_a_0_1450_plus,     false,1.474,0.65,0.265,3,0,true,1,0,  "a(0)(1450)+","a_{0}^{+}(1450)");
   InitHadron(kf_f_0_1370,          false,1.4,0.65,0.5,0,0,false,1,0,     "f(0)(1370)","f_{0}(1370)");
+  InitHadron(kf_K_0_star_700,      false,0.700,0.65,0.500,0,0,true,1,0,  "K(0)*(700)","K_{0}*(700)");
+  InitHadron(kf_K_0_star_700_plus, false,0.700,0.65,0.500,3,0,true,1,0,  "K(0)*(700)+","K_{0}*^{+}(700)");
   InitHadron(kf_K_0_star_1430,     false,1.429,0.65,0.287,0,0,true,1,0,  "K(0)*(1430)","K_{0}*(1430)");
   InitHadron(kf_K_0_star_1430_plus,false,1.429,0.65,0.287,3,0,true,1,0,  "K(0)*(1430)+","K_{0}*^{+}(1430)");
   InitHadron(kf_f_0_1710,          false,1.7,0.65,0.5,0,0,false,1,0,     "f(0)(1710)","f_{0}(1710)");

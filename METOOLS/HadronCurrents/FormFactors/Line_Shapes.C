@@ -40,6 +40,8 @@ void Line_Shapes::Init() {
   Add(Flavour(kf_a_1_1260),          new A1_1260_0_Lineshape());
   Add(Flavour(kf_K_star_892_plus),   new Kstar_892_plus_Lineshape());
   Add(Flavour(kf_K_star_1410_plus),  new Kstar_1410_plus_Lineshape());
+  Add(Flavour(kf_K_0_star_700),      new Kstar0_700_0_Lineshape());
+  Add(Flavour(kf_K_0_star_700_plus), new Kstar0_700_plus_Lineshape());
   Add(Flavour(kf_K_0_star_1430),     new Kstar0_1430_0_Lineshape());
   Add(Flavour(kf_K_0_star_1430_plus),new Kstar0_1430_plus_Lineshape());
   msg_Out()<<"Initialised "<<m_lineshapes.size()<<" lineshapes.\n"

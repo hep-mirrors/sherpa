@@ -122,10 +122,10 @@ Kstar_1410_plus_Lineshape::Kstar_1410_plus_Lineshape() :
   ///////////////////////////////////////////////////////////////////////////////////
   // Channel: K pi, BR = 6.6%
   ///////////////////////////////////////////////////////////////////////////////////
-  outflavs = { K_plus, pi_minus };
+  outflavs = { K_plus, pi_0 };
   Partial_Width_Base * K_star2Kpi = new V_PP(m_inflav,outflavs,0.033);
   m_channels.insert(K_star2Kpi);
-  outflavs = { K_0, pi_0 };
+  outflavs = { K_0, pi_plus };
   Partial_Width_Base * K_star2piK = new V_PP(m_inflav,outflavs,0.033);
   m_channels.insert(K_star2piK);
   ///////////////////////////////////////////////////////////////////////////////////
@@ -140,6 +140,39 @@ Kstar_1410_plus_Lineshape::Kstar_1410_plus_Lineshape() :
   outflavs = { Kstar_0, pi_plus };
   Partial_Width_Base * K_star2piKstar = new V_VP(m_inflav,outflavs,0.467);
   m_channels.insert(K_star2piKstar);
+}
+
+
+///////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////
+//
+// Below for the kappa K*_0(700)'s
+//
+///////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////
+// Overall approximate BR's: ~100% K pi
+///////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////
+Kstar0_700_0_Lineshape::Kstar0_700_0_Lineshape() :
+  Total_Width_Base(Flavour(kf_K_0_star_700)) {
+  vector<Flavour> outflavs;
+  outflavs = { Flavour(kf_K_plus), Flavour(kf_pi_plus).Bar() };
+  Partial_Width_Base * kappa2Kpi = new S_PP(m_inflav,outflavs,0.5);
+  m_channels.insert(kappa2Kpi);
+  outflavs = { Flavour(kf_K), Flavour(kf_pi) };
+  Partial_Width_Base * kappa2piK = new S_PP(m_inflav,outflavs,0.5);
+  m_channels.insert(kappa2piK);
+}
+
+Kstar0_700_plus_Lineshape::Kstar0_700_plus_Lineshape() :
+  Total_Width_Base(Flavour(kf_K_0_star_700_plus)) {
+  vector<Flavour> outflavs;
+  outflavs = { Flavour(kf_K_plus), Flavour(kf_pi) };
+  Partial_Width_Base * kappa2Kpi = new S_PP(m_inflav,outflavs,0.5);
+  m_channels.insert(kappa2Kpi);
+  outflavs = { Flavour(kf_K), Flavour(kf_pi_plus) };
+  Partial_Width_Base * kappa2piK = new S_PP(m_inflav,outflavs,0.5);
+  m_channels.insert(kappa2piK);
 }
 
 

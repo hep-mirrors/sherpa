@@ -8,26 +8,38 @@ using namespace std;
 
 
 void FF_0_PP_Base::FixMode() {
-  if (m_flavs[m_pi[0]].Kfcode()==kf_pi &&
-      m_flavs[m_pi[1]].Kfcode()==kf_pi_plus)     m_mode = FF_0_PP_mode::pipi_plus;
-  else if (m_flavs[m_pi[0]].Kfcode()==kf_K &&
-	    m_flavs[m_pi[1]].Kfcode()==kf_K_plus) m_mode = FF_0_PP_mode::KK_plus;
-  else if (m_flavs[m_pi[0]].Kfcode()==kf_pi_plus &&
-	    (m_flavs[m_pi[1]].Kfcode()==kf_K   ||
-	     m_flavs[m_pi[1]].Kfcode()==kf_K_S ||
-	     m_flavs[m_pi[1]].Kfcode()==kf_K_L))     m_mode = FF_0_PP_mode::Kpi_plus;
-  else if (m_flavs[m_pi[0]].Kfcode()==kf_pi &&
-	    m_flavs[m_pi[1]].Kfcode()==kf_K_plus)    m_mode = FF_0_PP_mode::Kpi_plus;
-//  msg_Out() << "FF_0_PP_Base::FixMode selected mode = " << int(m_mode) << std::endl;
+  m_mode = FF_0_PP_mode::unknown;
+
+  const auto kf0 = m_flavs[m_pi[0]].Kfcode();
+  const auto kf1 = m_flavs[m_pi[1]].Kfcode();
+
+  if (kf0 == kf_pi && kf1 == kf_pi_plus) {
+    m_mode = FF_0_PP_mode::pipi_plus;
+  }
+  else if ((kf0 == kf_K || kf0 == kf_K_S || kf0 == kf_K_L) &&
+    kf1 == kf_K_plus) {
+    m_mode = FF_0_PP_mode::KK_plus;
+  }
+  else if (
+      (kf0 == kf_pi_plus && (kf1 == kf_K || kf1 == kf_K_S || kf1 == kf_K_L)) ||
+      ((kf0 == kf_K || kf0 == kf_K_S || kf0 == kf_K_L) && kf1 == kf_pi_plus) ||
+      (kf0 == kf_pi && kf1 == kf_K_plus) ||
+      (kf0 == kf_K_plus && kf1 == kf_pi)
+  ) {
+    m_mode = FF_0_PP_mode::Kpi_plus;
+  }
 }
 
 Complex FF_0_PP_Base::operator()(const ATOOLS::Vec4D_Vector& moms) {
   double Q2 = (moms[m_pi[0]]+moms[m_pi[1]]).Abs2();
   switch (m_ffmodel) {
-  case ff_model::none:    return Complex(1.,0.);
-  case ff_model::KS:      return ( p_props!=NULL ?
-				   m_norm * (*p_props)(Q2) : Complex(0.,0.) );
-  case ff_model::RChiPT:  return m_norm * FF_RChiPT(Q2);
+  case ff_model::none:          return Complex(1.,0.);
+  case ff_model::KS:         return ( p_props!=NULL ?
+					  m_norm * (*p_props)(Q2) : Complex(0.,0.) );
+  case ff_model::RChiPT:    return m_norm * FF_RChiPT(Q2);
+  case ff_model::Dispersive: return Complex(0.,0.);
+  case ff_model::KS_Belle:  return (p_props!=NULL ?
+				    m_norm * (*p_props)(Q2) : Complex(0.,0.) );
   case ff_model::unknown:
   default:
     break;
@@ -74,7 +86,9 @@ class Fplus_0_PiZeroPiPlus : public FF_0_PP_Base {
   double  m_fpi, m_fK, m_mpi2, m_mK2, m_meta2;
   double  m_mV, m_mV2, m_mVp, m_mVp2, m_mVpp, m_mVpp2, m_GVp, m_GVpp;
   Complex m_gamma, m_delta;
-  
+  // KS_Belle parameters (VFF for Kpi only)
+  Complex m_beta_Belle;
+
   void    FixParameters(const FF_Parameters & params);
   void    Construct();
   Complex FF_RChiPT(const double & s);
@@ -102,19 +116,6 @@ Fplus_0_PiZeroPiPlus::Fplus_0_PiZeroPiPlus(const FF_Parameters & params)  :
   FixParameters(params);
   Construct();
 }
-
-//Fplus_0_PiZeroPiPlus::Fplus_0_PiZeroPiPlus(const FF_Parameters & params)  :
-//  FF_0_PP_Base(params),
-//  m_fpi((*params.p_model)("fpi",0.1307)/sqrt(2.)),
-//  m_mpi2(sqr(Flavour(kf_pi_plus).HadMass())),
-//  m_mK2(sqr(Flavour(kf_K_plus).HadMass()))
-//{
-//  msg_Out() << "Fplus ctor: start" << std::endl;
-//  FixParameters(params);
-//  msg_Out() << "Fplus ctor: after FixParameters" << std::endl;
-//  Construct();
-//  msg_Out() << "Fplus ctor: after Construct" << std::endl;
-//}
 
 void Fplus_0_PiZeroPiPlus::FixParameters(const FF_Parameters & params)  {
   if (m_mode==FF_0_PP_mode::pipi_plus) {
@@ -145,20 +146,26 @@ void Fplus_0_PiZeroPiPlus::FixParameters(const FF_Parameters & params)  {
       m_mV    = Flavour(kf_rho_770_plus).HadMass();  m_mV2   = sqr(m_mV);
       m_mVp   = 1.467; m_mVp2  = sqr(m_mVp);  m_GVp  = 0.415;
       m_mVpp  = 1.754; m_mVpp2 = sqr(m_mVpp); m_GVpp = 0.412;
-      m_gamma = Complex( 0.09*cos(-1.88),-0.15*sin(-1.88));
+      m_gamma = Complex(-0.09*cos(-1.88), -0.09*sin(-1.88));
       m_delta = Complex( 0.00*cos( 0.00), 0.00*sin( 0.00));
     }
   }
   else if (m_mode==FF_0_PP_mode::Kpi_plus) {
     m_norm    = (*params.p_model)("Vus", Tools::Vus)/sqrt(2.);
     if (m_ffmodel==ff_model::KS) {
-      m_gamma = Complex(-0.135,0.000);
+      m_gamma = Complex(-0.135,0.000); // value taken from FM paper
     }
     else if (m_ffmodel==ff_model::RChiPT) {
       m_mV    = Flavour(kf_K_star_892_plus).HadMass();  m_mV2   = sqr(m_mV);
       m_mVp   = Flavour(kf_K_star_1410_plus).HadMass(); m_mVp2  = sqr(m_mVp);
       m_GVp   = Flavour(kf_K_star_1410_plus).Width();
-      m_gamma = Complex((*params.p_model)("gamma_Kpi", 0.0), 0.0);
+      m_gamma = Complex((*params.p_model)("gamma_Kpi", -0.043), 0.0); // value taken from Jamin et al. (arxiv: 0803.1786)
+    }
+    else if (m_ffmodel==ff_model::KS_Belle) {
+      // Belle 2007 (arXiv:0706.2231) VFF for K pi: [BW_892 + beta*BW_1410] / (1+beta)
+      double betaAbs = (*params.p_model)("betaBelleAbs_Kpi", 0.075);
+      double betaArg = (*params.p_model)("betaBelleArg_Kpi", 1.44);
+      m_beta_Belle   = Complex(betaAbs*cos(betaArg), betaAbs*sin(betaArg));
     }
   }
 }
@@ -188,33 +195,21 @@ void Fplus_0_PiZeroPiPlus::Construct() {
       p_props->Add(Kstar1410, m_gamma);
     }
   }
+  else if (m_ffmodel==ff_model::KS_Belle) {
+    if (m_mode==FF_0_PP_mode::Kpi_plus) {
+      Propagator_Base * Kstar892  =
+	new BreitWigner(LineShapes->Get(Flavour(kf_K_star_892_plus)));
+      Propagator_Base * Kstar1410 =
+	new BreitWigner(LineShapes->Get(Flavour(kf_K_star_1410_plus)));
+      p_props = new Summed_Propagator();
+      p_props->Add(Kstar892,  Complex(1., 0.));
+      p_props->Add(Kstar1410, m_beta_Belle);
+    }
+  }
 }
 
-//void Fplus_0_PiZeroPiPlus::Construct() {
-////  msg_Out() << "Construct(): m_ffmodel=" << int(m_ffmodel)
-////            << " m_mode=" << int(m_mode) << std::endl;
-//
-//  if (m_ffmodel == ff_model::KS &&
-//      m_mode == FF_0_PP_mode::Kpi_plus) {
-//
-////    msg_Out() << "A" << std::endl;
-//
-//    auto ls892 = LineShapes->Get(Flavour(kf_K_star_892_plus));
-////    msg_Out() << "B ls892=" << ls892 << std::endl;
-//
-//    Propagator_Base * Kstar892 = new BreitWigner(ls892);
-////    msg_Out() << "C Kstar892=" << Kstar892 << std::endl;
-//
-//    p_props = new Summed_Propagator();
-////    msg_Out() << "D p_props=" << p_props << std::endl;
-//
-//    p_props->Add(Kstar892, Complex(1.,0.));
-////    msg_Out() << "E added 892" << std::endl;
-//  }
-//}
 
 Complex Fplus_0_PiZeroPiPlus::FF_RChiPT(const double & s) {
-  //msg_Out() << "FF_RChiPT entered with s = " << s << std::endl;
   if (m_mode == FF_0_PP_mode::pipi_plus || m_mode == FF_0_PP_mode::KK_plus) {
     Complex V   = ( (m_mV2 - s*(m_gamma+m_delta)) *
                     Complex(m_mV2-s, m_mV*Gamma_V(s)) /
@@ -383,30 +378,36 @@ Complex Fplus_0_PiZeroPiPlus::H_tilde(const double & s,
 
 class Fzero_0_PiZeroPiPlus : public FF_0_PP_Base {
   double  m_mpi2, m_mK2;
+  // KS model parameters
   double  m_mV2, m_mVp2, m_mS2;
   Complex m_beta, m_cS;
-  Propagator_Base * p_BW_V;    // K*(892)    -- vector off-shell contribution
-  Propagator_Base * p_BW_Vp;   // K*(1410)   -- vector off-shell contribution
-  Propagator_Base * p_BW_S;    // K*_0(1430) -- direct scalar contribution
+  Propagator_Base * p_BW_V;      // K*(892)    -- vector off-shell contribution
+  Propagator_Base * p_BW_Vp;     // K*(1410)   -- vector off-shell contribution
+  Propagator_Base * p_BW_S;      // K*_0(1430) -- direct scalar contribution
+  Propagator_Base * p_BW_kappa;  // K*_0(700)  -- kappa direct scalar contribution
+  // KS_Belle scalar FF parameters
+  double  m_mkappa2_Belle;
+  double  m_kappa_Belle;
+  Complex m_gamma_Belle;
 
   void    FixParameters(const FF_Parameters & params);
   void    Construct();
-  Complex FF_RChiPT(const double & Q2) { return Complex(0.,0.); }
   Complex operator()(const ATOOLS::Vec4D_Vector& moms);
 public :
   Fzero_0_PiZeroPiPlus(const FF_Parameters & params) :
     FF_0_PP_Base(params),
     m_mpi2(sqr(Flavour(kf_pi_plus).HadMass())),
     m_mK2(sqr(Flavour(kf_K_plus).HadMass())),
-    p_BW_V(NULL), p_BW_Vp(NULL), p_BW_S(NULL)
+    p_BW_V(NULL), p_BW_Vp(NULL), p_BW_S(NULL), p_BW_kappa(NULL)
   {
     FixParameters(params);
     Construct();
   }
   ~Fzero_0_PiZeroPiPlus() {
-    if (p_BW_V)  delete p_BW_V;
-    if (p_BW_Vp) delete p_BW_Vp;
-    if (p_BW_S)  delete p_BW_S;
+    if (p_BW_V)     delete p_BW_V;
+    if (p_BW_Vp)    delete p_BW_Vp;
+    if (p_BW_S)     delete p_BW_S;
+    if (p_BW_kappa) delete p_BW_kappa;
   }
 };
 
@@ -418,30 +419,50 @@ void Fzero_0_PiZeroPiPlus::FixParameters(const FF_Parameters & params) {
       m_mVp2  = sqr(Flavour(kf_K_star_1410_plus).HadMass());
       m_mS2   = sqr(Flavour(kf_K_0_star_1430_plus).HadMass());
       // beta_{K*}: relative K*(1410) contribution (same as in the vector FF)
-      m_beta  = Complex((*params.p_model)("beta_Kpi", -0.135), 0.);
-      // c_S: scalar resonance strength, fixed by matching to ChPT (eq. 27)
-      m_cS    = Complex((*params.p_model)("cS_Kpi",    1.7  ), 0.);
+      m_beta  = Complex((*params.p_model)("beta_Kpi", -0.135), 0.); // value from (FM 1996)
+       // c_S: scalar resonance strength, fixed by matching to ChPT (eq. 27)
+      m_cS     = Complex((*params.p_model)("cS_Kpi",     1.7 ), 0.); // value from (FM 1996)
+    }
+    else if (m_ffmodel==ff_model::KS_Belle) {
+      // Belle 2007 (arXiv:0706.2231) SFF for K pi
+      m_mS2         = sqr(Flavour(kf_K_0_star_1430_plus).HadMass());
+      m_mkappa2_Belle = sqr(Flavour(kf_K_0_star_700_plus).HadMass());
+      m_kappa_Belle   = (*params.p_model)("kappaBelle_Kpi",    1.57);
+      double gammaAbs = (*params.p_model)("gammaBelleAbs_Kpi", 0.0);
+      double gammaArg = (*params.p_model)("gammaBelleArg_Kpi", 0.0);
+      m_gamma_Belle   = Complex(gammaAbs*cos(gammaArg), gammaAbs*sin(gammaArg));
     }
   }
 }
 
 void Fzero_0_PiZeroPiPlus::Construct() {
-  if (m_ffmodel==ff_model::KS) {
-    if (m_mode==FF_0_PP_mode::Kpi_plus) {
-      p_BW_V  = new BreitWigner(LineShapes->Get(Flavour(kf_K_star_892_plus)));
-      p_BW_Vp = new BreitWigner(LineShapes->Get(Flavour(kf_K_star_1410_plus)));
-      p_BW_S  = new BreitWigner(LineShapes->Get(Flavour(kf_K_0_star_1430_plus)));
+  if (m_mode==FF_0_PP_mode::Kpi_plus) {
+    if (m_ffmodel==ff_model::KS) {
+      p_BW_V     = new BreitWigner(LineShapes->Get(Flavour(kf_K_star_892_plus)));
+      p_BW_Vp    = new BreitWigner(LineShapes->Get(Flavour(kf_K_star_1410_plus)));
+      p_BW_S     = new BreitWigner(LineShapes->Get(Flavour(kf_K_0_star_1430_plus)));
+    }
+    else if (m_ffmodel==ff_model::KS_Belle) {
+      p_BW_S     = new BreitWigner(LineShapes->Get(Flavour(kf_K_0_star_1430_plus)));
+      p_BW_kappa = new BreitWigner(LineShapes->Get(Flavour(kf_K_0_star_700_plus)));
     }
   }
 }
 
 Complex Fzero_0_PiZeroPiPlus::operator()(const Vec4D_Vector& moms) {
-  // Implements the scalar Kpi form factor from Finkemeier & Mirkes,
-  // Z.Phys.C 72 (1996) 619, eq. (18).
-  if (m_ffmodel != ff_model::KS || m_mode != FF_0_PP_mode::Kpi_plus)
-    return Complex(0., 0.);
+  if (m_mode != FF_0_PP_mode::Kpi_plus) return Complex(0., 0.);
   double Q2 = (moms[m_pi[0]]+moms[m_pi[1]]).Abs2();
   if (Q2 <= 0.) return Complex(0., 0.);
+
+  if (m_ffmodel == ff_model::KS_Belle) {
+    // Belle 2007 (arXiv:0706.2231) SFF: kappa*(Q2/m_kappa^2)*BW_kappa + gamma*(Q2/m_S^2)*BW_S
+    const double deltam2 = m_mK2 - m_mpi2;
+    Complex FS = m_kappa_Belle * (Q2/m_mkappa2_Belle) * (*p_BW_kappa)(Q2)
+               + m_gamma_Belle * (Q2/m_mS2)           * (*p_BW_S)(Q2);
+    return m_norm * deltam2 * FS;
+  }
+
+  if (m_ffmodel != ff_model::KS) return Complex(0., 0.);
 
   double  deltam2 = m_mK2 - m_mpi2;
   Complex beta    = m_beta;   // beta_{K*} = -0.135
@@ -461,9 +482,6 @@ Complex Fzero_0_PiZeroPiPlus::operator()(const Vec4D_Vector& moms) {
   Complex scalar_part = cS / m_mS2 * BW_S;
 
   Complex result = m_norm * deltam2 * (vec_part + scalar_part);
-  //msg_Out() << "DEBUG Fzero_0_PiZeroPiPlus: Q2=" << Q2
-  //	    << "  vec=" << vec_part << "  scalar=" << scalar_part
-  //	    << "  F0=" << result << "\n";
   return result;
 }
 
@@ -511,15 +529,11 @@ operator()(const METOOLS::FF_Parameters &params) const
       (params.m_flavs[params.m_pi[0]].Kfcode()==kf_pi &&
        params.m_flavs[params.m_pi[1]].Kfcode()==kf_K_plus)) {
       if (params.m_name=="F+_0_PP") {
-//        msg_Out() << "Getter: about to build Fplus" << std::endl;
         return new Fplus_0_PiZeroPiPlus(params);
       }
       if (params.m_name=="F0_0_PP") {
-//        msg_Out() << "Getter: about to build Fzero" << std::endl;
         return new Fzero_0_PiZeroPiPlus(params);
       }
-    //if (params.m_name=="F+_0_PP") return new Fplus_0_PiZeroPiPlus(params);
-    //if (params.m_name=="F0_0_PP") return new Fzero_0_PiZeroPiPlus(params);
   }
   return NULL;
 }
