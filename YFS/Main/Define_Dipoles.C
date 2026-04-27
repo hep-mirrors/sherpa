@@ -1000,6 +1000,10 @@ double mass_d = (D.GetBornMomenta(0) + D.GetBornMomenta(1)).Mass();
   double mdist;
   for (auto it = m_proc_restab_map.begin(); it != m_proc_restab_map.end(); ++it) {
     for (auto *v : it->second) {
+      // if(D.IsDecayAllowed()){
+      //   D.SetResonance(true);
+      //   continue;
+      // }
       if(D.m_QiQj==1 || !D.IsDecayAllowed()){
         D.SetResonance(false);
         continue;
@@ -1013,6 +1017,8 @@ double mass_d = (D.GetBornMomenta(0) + D.GetBornMomenta(1)).Mass();
     }
     D.SetResonance(false);
   }
+  if(D.IsDecayAllowed())  D.SetResonance(true);
+  else  D.SetResonance(false);
 }
 
 bool Define_Dipoles::CheckResonant(YFS::Dipole &D) {
