@@ -35,12 +35,12 @@ namespace MODEL {
         }
         
         void Variations::ReadCorrelations(){
-            if (!s["MODEL_VARIATIONS_CORRELATE"].SetDefault("None").IsList()) {
-                if (s["MODEL_VARIATIONS_CORRELATE"].Get<std::string>() != "None")
+            if (!vs["Correlate"].SetDefault("None").IsList()) {
+                if (vs["Correlate"].Get<std::string>() != "None")
                     msg_Out() << "\x1b[31m\tParameter correlations not formatted properly (reason: not a list). Ignoring them...\x1b[0m" << std::endl;
                 return;
             }
-            for (ATOOLS::Scoped_Settings& ss : s["MODEL_VARIATIONS_CORRELATE"].GetItems()){
+            for (ATOOLS::Scoped_Settings& ss : vs["Correlate"].GetItems()){
                 if (!ss.IsList()) {
                     msg_Out() << "\x1b[31m\tParameter correlations not formatted properly (reason: elements have to be lists). Ignoring them...\x1b[0m" << std::endl;
                     return;
@@ -81,7 +81,7 @@ namespace MODEL {
 
         void Variations::ReadSingleParamVariation(){
             std::string parameter = variable_names.back();
-            ATOOLS::Scoped_Settings ss = s["MODEL_VARIATIONS"][parameter].SetDefault(-1.);
+            ATOOLS::Scoped_Settings ss = vs[parameter].SetDefault(-1.);
             std::vector<double_t> values = std::vector<double_t>();
             if (ss.IsMap()){
                 DEBUG_INFO("was map");
@@ -165,7 +165,8 @@ namespace MODEL {
         }
 
         void Variations::ReadVariations() {
-            for (const std::string& parameter : s["MODEL_VARIATIONS"].GetKeys()) {
+            for (const std::string& parameter : vs.GetKeys()) {
+                if (parameter == "CombinationScheme" && parameter == "Correlate") continue;
                 DEBUG_INFO("Reading variations of " + parameter);
                 variable_names.push_back(parameter);
                 ReadSingleParamVariation();
@@ -236,7 +237,7 @@ namespace MODEL {
             // now we are ready to combine the things on the indivduals list
             // first get mode, 0 for no combining, 1 for combining all (default), 2 for one each combination (ignores all correlations and values)
             int mode = 1;
-            if (s["MODEL_VARIATIONS_COMBINE"].SetDefault(1.).IsScalar()) mode = s["MODEL_VARIATIONS_COMBINE"].SetDefault(1.).Get<int>();
+            if (vs["CombinationScheme"].SetDefault(1.).IsScalar()) mode = vs["CombinationScheme"].SetDefault(1.).Get<int>();
             // maybe more modes in the future
             switch (mode) {
                 case 0: 
