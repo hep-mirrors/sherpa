@@ -456,6 +456,7 @@ void Define_Dipoles::Dipole_IF(ATOOLS::Flavour_Vector const &fl, ATOOLS::Vec4D_V
 
 double Define_Dipoles::CalculateRealSub(const Vec4D &k) {
   double sub(0);
+  // if(FixedOrder()!=fixed_order::full) return sub;
   Vec4D eik{0.,0.,0.,0.};
   for (auto &D : m_dipolesII) {
     for(size_t i = 0; i < D.GetBornMomenta().size(); ++i)
@@ -618,6 +619,9 @@ double Define_Dipoles::TFormFactor(){
     for(auto &D: m_dipolesIF){
       form += D.ChargeNorm()*p_yfsFormFact->R1(D);
     }
+  }
+  if(FixedOrder()==fixed_order::nlo){
+    return 1.+form;
   }
   return exp(form); 
 }
