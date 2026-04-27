@@ -44,7 +44,7 @@ namespace MODEL{
                 std::map<std::string,double> * p_constants = nullptr;                               // all model constants
 
                 /* Settings */
-                ATOOLS::Settings& s = ATOOLS::Settings::GetMainSettings();                          // main settings
+                ATOOLS::Scoped_Settings vs = ATOOLS::Settings::GetMainSettings()["MODEL_VARIATIONS"]; // settings
 
                 /* calculation buffers */
                 std::vector<std::string> variable_names;                                            // names of all parameters
