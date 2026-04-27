@@ -39,7 +39,7 @@ Virtual::~Virtual()
 }
 
 
-double Virtual::Calc(const ATOOLS::Vec4D_Vector momenta, double born){
+double Virtual::Calc(const ATOOLS::Vec4D_Vector momenta, const double born){
   return Calc_V(momenta,born,sqr(rpa->gen.Ecms()));
 }
 
@@ -75,5 +75,5 @@ double Virtual::Calc_V(const ATOOLS::Vec4D_Vector& p,
       default:
         THROW(not_implemented, "Loop ME mode not implemented: "+ATOOLS::ToString(p_loop_me->Mode()));
       }
-    return V-run_corr*m_factor;
+    return V;
   }
