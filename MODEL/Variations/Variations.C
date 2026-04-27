@@ -166,7 +166,7 @@ namespace MODEL {
 
         void Variations::ReadVariations() {
             for (const std::string& parameter : vs.GetKeys()) {
-                if (parameter == "CombinationScheme" && parameter == "Correlate") continue;
+                if (parameter == std::string("CombinationScheme") || parameter == std::string("Correlate")) continue;
                 DEBUG_INFO("Reading variations of " + parameter);
                 variable_names.push_back(parameter);
                 ReadSingleParamVariation();
@@ -237,7 +237,7 @@ namespace MODEL {
             // now we are ready to combine the things on the indivduals list
             // first get mode, 0 for no combining, 1 for combining all (default), 2 for one each combination (ignores all correlations and values)
             int mode = 1;
-            if (vs["CombinationScheme"].SetDefault(1.).IsScalar()) mode = vs["CombinationScheme"].SetDefault(1.).Get<int>();
+            if (vs["CombinationScheme"].SetDefault(1.).IsScalar()) mode = vs["CombinationScheme"].Get<int>();
             // maybe more modes in the future
             switch (mode) {
                 case 0: 
