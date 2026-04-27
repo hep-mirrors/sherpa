@@ -1254,7 +1254,7 @@ void Single_Process::InitializeTheReweighting(ATOOLS::Variations_Mode mode)
       }
     }
   }
-  // TODO put this into the stuff above, but how???
+  // at some point this could be included in the "variations"
   if (s["MODEL_VARIATIONS"].IsMap()){
     Hard_Process_Variation_Generator_Base *vargen = ATOOLS::Getter_Function<Hard_Process_Variation_Generator_Base, Args>
               ::GetObject("MODEL_PARAMETERS", Hard_Process_Variation_Generator_Arguments{this});

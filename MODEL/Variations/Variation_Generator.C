@@ -90,10 +90,10 @@ Base* ATOOLS::Getter<Base, Args, MODEL::VARIATIONS::Variation_Generator>::operat
 }
 
 /*
-Print Information on this, TODO
+Print Information on this
 */
 void ATOOLS::Getter<Base, Args, MODEL::VARIATIONS::Variation_Generator>::PrintInfo(std::ostream& str, const size_t width) const
 { 
-str << "Info for Model Param Variations TODO \n";
+str << "Model Param Variations, cf. MSc thesis Florens Foerster. \n";
 }
 
