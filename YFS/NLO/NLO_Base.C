@@ -1,5 +1,6 @@
 #include "ATOOLS/Math/MathTools.H"
 #include "ATOOLS/Math/Random.H"
+#include "ATOOLS/Math/Vector.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Phys/Flavour.H"
 #include "MODEL/Main/Running_AlphaQED.H"
@@ -39,6 +40,8 @@ NLO_Base::NLO_Base() {
   m_rrtool = 0;
   m_vvtool = 0;
   m_zeroRV = 0;
+  m_zeroRR = 0;
+  m_nonZeroRR = 0;
   m_zeroV = 0;
   if (m_isr_debug || m_fsr_debug) {
     m_histograms2d["IFI_EIKONAL"] = new Histogram_2D(0, -1., 1., 20, 0, 5., 20);
@@ -121,6 +124,8 @@ NLO_Base::~NLO_Base() {
     delete p_vv;
   msg_Out()<<"Total zero V: "<<m_zeroV<<std::endl;
   msg_Out()<<"Total zero RV: "<<m_zeroRV<<std::endl;
+  msg_Out()<<"Total zero RR: "<<m_zeroRR<<std::endl;
+  msg_Out()<<"Total non-zero RR: "<<m_nonZeroRR<<std::endl;
   msg_Out()<<"Total events : "<<m_evts<<std::endl;
 }
 
@@ -169,21 +174,13 @@ void NLO_Base::Init(Flavour_Vector &flavs, Vec4D_Vector &plab,
 
 double NLO_Base::CalculateNLO() {
   m_failcut = false;
-  double result{0.0}, virt, real, rv, rr;
+  double result{0.0};
   // PRINT_VAR(m_looptool);
-  if (!m_real_only)
-    result += CalculateVirtual();
-  virt = result;
-  if (!m_virtual_only)
-    result += CalculateReal();
-  real = result - virt;
+  result += CalculateReal();
+  result += CalculateVirtual();
   result += CalculateRealReal();
-  rr = result - real - virt - rv;
   result += CalculateRealVirtual();
   result += CalculateVV();
-  rv = result - real - virt;
-  if (m_failcut)
-    return 0;
   return result;
 }
 
@@ -226,10 +223,8 @@ double NLO_Base::CalculateVirtual() {
     m_zeroV++;
     return 0;
   }
-  if (p_virt->p_loop_me->Mode() == 1) {
+  if (p_virt->p_loop_me->Mode() == 1)
     m_oneloop /= m_rescale_alpha;
-    // PRINT_VAR(m_rescale_alpha);
-  }
   if (IsBad(m_oneloop) || IsBad(sub)) {
     msg_Error() << "YFS Virtual is NaN" << std::endl
                 << "Virtual:  " << virt << std::endl
@@ -264,32 +259,10 @@ double NLO_Base::CalculateVirtual() {
       m_histograms1d["OneLoopEpsYFS"]->Insert(log10(fabs(yfspole)));
       m_histograms1d["OneLoopEpsLP"]->Insert(log10(fabs(p1)));
       m_histograms1d["relativediff"]->Insert(log10(fabs(reldiff)));
-      // msg_Out()<<"PhaseSpace point: "<<std::endl;
-      // for(auto &p: m_plab) {
-      // 	msg_Out()<<"p["<<i<<"] = "<<p<<std::endl;
-      // 	i++;
-      // }
       msg_Debugging() << std::setprecision(32)
                       << "One-Loop Provider V eps^{-1}  = " << p1 << std::endl
                       << "Sherpa V eps^{-1}  = " << yfspole << std::endl;
     }
-    // Check Rescaling
-    // Vec4D_Vector pscale = m_plab;
-    // double virtscale;
-    // for (double scale = 1; scale < 100; scale+=5)
-    // {
-    // 	std::vector<double> masses;
-    // 	for (int i = 0; i < m_plab.size(); ++i)
-    // 	{
-    // 		masses.push_back(m_plab[i].Mass() *scale);
-    // 	}
-    // 	RescaleMasses(pscale, masses);
-    // 	PRINT_VAR(masses);
-    // 	PRINT_VAR(pscale);
-    // 	PRINT_VAR(m_plab);
-    // 	virtscale = p_virt->Calc(pscale, m_born);
-    // 	msg_Out()<<"Virtual/ScaledVirtual = "<<virt/virtscale<<std::endl;
-    // }
   }
   return m_oneloop;
 }
@@ -696,6 +669,7 @@ double NLO_Base::CalculateRealReal() {
       int isFSR_i = (i >= nISR) ? 1 : 0;
       int isFSR_j = (j >= nISR) ? 1 : 0;
       rr += CalculateRealReal(k, kk, isFSR_i, isFSR_j);
+      m_nonZeroRR++;
       if (m_check_rr_sub) {
         // k*=2;
         // kk*=2;
