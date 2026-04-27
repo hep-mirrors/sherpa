@@ -1,20 +1,10 @@
 #include "YFS/Main/ISR.H"
-#include "ATOOLS/Org/MyStrStream.H"
-#include "MODEL/Main/Running_AlphaQED.H"
-#include "ATOOLS/Org/Scoped_Settings.H"
 
-#include "ATOOLS/Math/Poincare.H"
-#include "ATOOLS/Phys/Particle.H"
 #include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Math/Vector.H"
 #include "ATOOLS/Org/Message.H"
-#include "ATOOLS/Org/Run_Parameter.H"
-#include "ATOOLS/Phys/Particle.H"
-#include "MODEL/Main/Running_AlphaQED.H"
-#include "MODEL/Main/Model_Base.H"
 
 #include <iostream>
-#include <fstream>
 
 
 #include <algorithm>
