@@ -1,0 +1,3 @@
+ SHERPA_RUN_PATH = /home/ekremdemiray/code_software/sherpa/Examples/RemnantTests/SimpleLEP
+ SHERPA_CPP_PATH = /home/ekremdemiray/code_software/sherpa/Examples/RemnantTests/SimpleLEP
+ SHERPA_LIB_PATH = /home/ekremdemiray/code_software/sherpa/Examples/RemnantTests/SimpleLEP/Process/Amegic/lib

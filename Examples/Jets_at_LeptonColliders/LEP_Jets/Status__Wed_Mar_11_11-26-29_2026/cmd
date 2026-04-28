@@ -1,0 +1,3 @@
+ SHERPA_RUN_PATH = /home/ekremdemiray/code_software/sherpa/Examples/Jets_at_LeptonColliders/LEP_Jets
+ SHERPA_CPP_PATH = /home/ekremdemiray/code_software/sherpa/Examples/Jets_at_LeptonColliders/LEP_Jets
+ SHERPA_LIB_PATH = /home/ekremdemiray/code_software/sherpa/Examples/Jets_at_LeptonColliders/LEP_Jets/Process/Amegic/lib

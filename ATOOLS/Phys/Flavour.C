@@ -363,29 +363,19 @@ bool Flavour::IsDiQuark() const
   return false;
 }
 
-// bool Flavour::IsBaryon() const 
-// {
-//   if (Kfcode() % 10000 < 1000) return false;
-//   return !IsDiQuark();
-// }
-
-// bool Flavour::IsMeson() const 
-// {
-//   if (Kfcode() % 1000 < 100) return false;
-//   if ( Kfcode() % 10000 >= 1000) return false; // to exlude baryons. 
-//   return !IsDiQuark();
-// }
 bool Flavour::IsBaryon() const 
 {
-  uint kf = Kfcode();
-  return (kf >= 1000 && kf < 10000) && !IsDiQuark();
+  if (Kfcode() % 10000 < 1000) return false;
+  return !IsDiQuark();
 }
 
 bool Flavour::IsMeson() const 
 {
-  uint kf = Kfcode();
-  return (kf >= 100 && kf < 1000) && !IsDiQuark();
+  if (Kfcode() % 1000 < 100) return false;
+  if ( Kfcode() % 10000 >= 1000) return false; // to exlude baryons. 
+  return !IsDiQuark();
 }
+
 
 bool Flavour::IsNucleon() const
 {

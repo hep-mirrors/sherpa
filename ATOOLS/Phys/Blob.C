@@ -48,18 +48,18 @@ namespace ATOOLS {
     }
     ostr<<bl.NInP()<<" -> "<<bl.NOutP()<<" @ "<<bl.Position()
         <<", "<<bl.TypeSpec()<<std::endl;
-    ostr<<"Incoming particles :"<<std::endl;
+    // ostr<<"Incoming particles :"<<std::endl;
     for (Particle_Vector::const_iterator part = bl.m_inparticles.begin();
 	 part != bl.m_inparticles.end(); ++part) {
       ostr<<**part<<std::endl;
     }
-    ostr<<"Outgoing particles :"<<std::endl;
+    // ostr<<"Outgoing particles :"<<std::endl;
     for (Particle_Vector::const_iterator part = bl.m_outparticles.begin();
 	 part != bl.m_outparticles.end(); ++part) {
       ostr<<**part<<std::endl;
     }
     if (bl.m_datacontainer.size()>0) {
-      ostr<<"Data_Container:"<<std::endl;
+      // ostr<<"Data_Container:"<<std::endl;
       for (String_BlobDataBase_Map::const_iterator it=bl.m_datacontainer.begin();
 	   it!=bl.m_datacontainer.end(); ++it) {
 	ostr<<"   * "<<it->first<<" ("<<*(it->second)<<")"<<std::endl;

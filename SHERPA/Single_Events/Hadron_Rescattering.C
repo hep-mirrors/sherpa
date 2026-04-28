@@ -23,11 +23,9 @@ ATOOLS::Return_Value::code Hadron_Rescattering::Treat(Blob_List* blobs)
     return Return_Value::Error;
   }
   if (!m_on) return Return_Value::Nothing;
-
   for (size_t blit(0);blit<blobs->size();++blit) 
   {
     Blob* blob=(*blobs)[blit];
-
     if (p_reschandler && blob->Has(blob_status::needs_hadronRescatter)) 
     {
       p_reschandler->HarvestParticles(blob);
@@ -40,9 +38,17 @@ ATOOLS::Return_Value::code Hadron_Rescattering::Treat(Blob_List* blobs)
         blobs->push_back(rblob);
         msg_Out() << METHOD << ": rescattering blob added.\n";
       }
+
+      // process coalescence candidates
+      while ((rblob = p_reschandler->RescatterCoalescence()) != nullptr) 
+      {
+        blobs->push_back(rblob);
+        msg_Out() << METHOD << ": deuteron coalescence blob added.\n";
+      }
       if ((*p_reschandler)()) {
 	      msg_Out()<<METHOD<<" yields kaboom.\n";
-	      exit(1);
+	    //  exit(1);
+      return Return_Value::Success;
       }
     }
   }

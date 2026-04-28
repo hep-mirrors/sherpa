@@ -16,11 +16,12 @@ BaryonMeson::BaryonMeson()  : ScatteringBase()
     if (m_test) 
     {
         msg_Out() << "Baryon Meson ctor called."<< std::endl;
-        BaryonMeson::buildChannelMap();  // vectors already filled by ScatteringBase ctor
         BaryonMeson::Tests(); 
         exit(1); 
     }
+    BaryonMeson::buildChannelMap();  // vectors already filled by ScatteringBase ctor
 }
+
 void BaryonMeson::buildChannelMap()
 {
     // { baryon kfcode, meson kfcode, meson isAnti } -> ChannelConfig
@@ -65,21 +66,12 @@ double BaryonMeson::XStot(const Flavour& A, const Flavour& B, const double& s)
 {
     if (!((A.IsMeson() && B.IsBaryon()) || (A.IsBaryon() && B.IsMeson())))
         return 0.;
-
     Flavour baryon ;// = A.IsBaryon() ? A : B;
     Flavour meson  ;//= B.IsMeson()  ? B : A;
-    if (A.IsBaryon()) 
-    {
-        baryon = A;
-        meson  = B;
-    } 
-    else 
-    {
-        baryon = B;
-        meson  = A;
-    }
-    
-    msg_Out()<<"baryon: "<< baryon.Kfcode() << ", meson: "<< meson.Kfcode() << std::endl;
+
+    if (A.IsBaryon()) {baryon = A; meson  = B;}
+    else              {baryon = B; meson  = A;}
+
     ChannelKey key { baryon.Kfcode(), meson.Kfcode(), meson.IsAnti() };
 
     std::map<ChannelKey, ChannelConfig>::iterator it = m_channels.find(key);
@@ -132,7 +124,6 @@ double BaryonMeson::calculateResonanceSigma(double sqrt_s, const ResonanceParams
          * spinFactor
          * M_PI / (pcm * pcm)
          * (res.branchingRatio[0] * Gamma_tot * Gamma_tot) / denom;
-    msg_Out()<<"sigma: "<<sigma<<std::endl;
     return sigma;
 }
 
@@ -187,8 +178,6 @@ double BaryonMeson::NKaonScatteringXSec(double sqrt_s, const ResonanceParams& re
 void BaryonMeson::Tests() {
 
   msg_Out() << "BaryonMeson::Test  called" << std::endl;
-//Must Fix the test function for different interactions. 
-
   size_t bins = 10000;
   double pmin = 0. , pmax = 30., pinc = (pmax-pmin)/double(bins);
   map<string,Histogram *>  histos;

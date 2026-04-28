@@ -5,6 +5,7 @@
 #include "ATOOLS/Math/Poincare.H"
 #include "ATOOLS/Math/Vector.H"
 #include "HADRON_RESCATTERING/XSecs/Helper.H"
+#include "HADRON_RESCATTERING/Main/Deuteron_Production.H"
 namespace SHERPA {
   struct Collision {
   public:
@@ -18,12 +19,15 @@ namespace SHERPA {
   class Hadron_Rescattering_Handler {
   private:
     HADRON_RESCATTERING::Hadron_Rescatterings  m_rescattering;
+    HADRON_RESCATTERING::Deuteron_Coalescence* p_coalescence; 
+
     std::string m_name;
     bool        m_on;
 
     std::set<ATOOLS::Blob * >     m_treatedblobs;
     std::set<ATOOLS::Particle * > m_particles;
     std::map<double,Collision * > m_collisions;
+    std::map<double,Collision * > m_coal_candidates;
 
     void Schedule(ATOOLS::Particle * part1,
 		  ATOOLS::Particle * part2);
@@ -45,6 +49,8 @@ namespace SHERPA {
 
     
     ATOOLS::Blob * Rescatter();
+
+    ATOOLS::Blob* RescatterCoalescence();
     inline const std::string & Name() const { return m_name; }
   };
 }

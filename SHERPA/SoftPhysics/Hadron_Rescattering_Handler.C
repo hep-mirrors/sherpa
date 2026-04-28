@@ -16,6 +16,12 @@ Hadron_Rescattering_Handler::Hadron_Rescattering_Handler() :
             << (m_on ? "ON" : "OFF") << "\n"
             << "======================================================\n";
   if (!m_on) return;
+  p_coalescence = new Deuteron_Coalescence(
+    3,//0.7,                           // b_coal in fm
+    0.197326/(3),                          // p_coal in GeV using uncertainty principle : p = hba/(2r)
+    CoalescenceModel::Exponential   // or HardDisk, choose as you wish. 
+  );
+  
   m_rescattering.Initialize();
   msg_Out() << "Hadron_Rescatterings module initialized!" << std::endl;
   m_particles.clear();
@@ -43,6 +49,7 @@ void Hadron_Rescattering_Handler::HarvestParticles(Blob * blob) {
     }
     m_particles.insert(part1);
   }
+
 }
 
 
@@ -50,6 +57,11 @@ void Hadron_Rescattering_Handler::
 Schedule(Particle * part1,Particle * part2) {
 
     //boost to z begin
+if (!part1 || !part2) {
+    msg_Out() << "Null particle pointer!" << std::endl;
+    return;
+  }
+  
   Vec4D pA = part1->Momentum(), pB = part2->Momentum();
   Vec4D xA = part1->Position(), xB = part2->Position();
   
@@ -57,16 +69,13 @@ Schedule(Particle * part1,Particle * part2) {
   // << " xBbeforeBost=" << xB[1] << " " << xB[2] << " " << xB[3] << std::endl;
 
   m_frame.toCenterOfMomentumFrame(pA, pB);
-  pA = m_frame.Transform(pA);
-  pB = m_frame.Transform(pB);
-  xA = m_frame.Transform(xA);
-  xB = m_frame.Transform(xB);
+  pA = m_frame.Transform(pA);  pB = m_frame.Transform(pB);
+  xA = m_frame.Transform(xA);  xB = m_frame.Transform(xB);
 
     // msg_Out() << "xA=" << xA[1] << " " << xA[2] << " " << xA[3] 
   // << " xB=" << xB[1] << " " << xB[2] << " " << xB[3] << "\n";
 
-  Vec4D dx = xA-xB;
-  double b = sqrt(dx[1]*dx[1] + dx[2]*dx[2]);
+  Vec4D dx = xA-xB;  double b = sqrt(dx[1]*dx[1] + dx[2]*dx[2]);
   
     // Offset particles to position when the last particle is created.
   double tCreation = std::max(xA[0], xB[0]);
@@ -88,19 +97,26 @@ Schedule(Particle * part1,Particle * part2) {
   double D2 = (d12 + t*dv).Sqr(); //mm^2
   Flavour fl1 = part1->Flav(),            fl2 = part2->Flav();
 
-  if (t>t1 && t>t2 &&
+  bool isPair = ((fl1.Kfcode()==2212 && fl2.Kfcode()==2112) ||
+                (fl1.Kfcode()==2112 && fl2.Kfcode()==2212));
+  if (isPair && ( t>t1 && t>t2)) 
+  {
+      m_coal_candidates[t] = new Collision(t, D2, part1, part2);
+  }
+//disregard the collision if D2 > 10 fm squared. 
+  if ( t>t1 && t>t2 &&
        (fl1.IsStable()  || (!fl1.IsStable() && t1+rpa->hBar()/fl1.Width()>t)) &&
        (fl2.IsStable() || (!fl2.IsStable() && t2+rpa->hBar()/fl2.Width()>t))) 
   {
-    msg_Out()<<"D2 value is the closest approach distance squared: "<< D2 << std::endl;
-    msg_Out()<<"b is the closest distance: "<< std::pow(b,2)<<std::endl;
+    // msg_Out()<<"D2 value is the closest approach distance squared: "<< D2 << std::endl;
+    // msg_Out()<<"b is the closest distance: "<< std::pow(b,2)<<std::endl;
 
-    msg_Out()<<METHOD<<"["
-           <<std::setw(10)<<part1->Flav()<<": "<<part1->Position()<<",\n"
-            <<std::string(39,' ')
-            <<std::setw(10)<<part2->Flav()<<": "<<part2->Position()<<"]:\n"
-            <<"   - collision time t = "<<t
-    	      <<", distance^2 = "<<D2 << std::endl;
+    // msg_Out()<<METHOD<<"["
+    //        <<std::setw(10)<<part1->Flav()<<": "<<part1->Position()<<",\n"
+    //         <<std::string(39,' ')
+    //         <<std::setw(10)<<part2->Flav()<<": "<<part2->Position()<<"]:\n"
+    //         <<"   - collision time t = "<<t
+    // 	      <<", distance^2 = "<<D2 << std::endl;
     m_collisions[t] = new Collision(t,D2,part1,part2);
   }
 }
@@ -119,6 +135,11 @@ bool Hadron_Rescattering_Handler::operator()() {
 
 void Hadron_Rescattering_Handler::CleanUp(const size_t & mode) {
   m_treatedblobs.clear();
+  m_particles.clear();
+  m_collisions.clear();
+
+  for (auto &c : m_coal_candidates) delete c.second;
+  m_coal_candidates.clear();
 }
 
 void Hadron_Rescattering_Handler::Output() {
@@ -144,9 +165,32 @@ Blob* Hadron_Rescattering_Handler::Rescatter() {
         msg_Out() << "Handler: collision processed, "
                   << m_collisions.size() << " remaining\n";
         if (blob) return blob;
+        delete collision;
     }
     return nullptr;
 }
 
+Blob* Hadron_Rescattering_Handler::RescatterCoalescence() {
+    while (!m_coal_candidates.empty()) {
+      // msg_Out() << "START call: "
+      //     << m_coal_candidates.size() << " candidates"<<std::endl;
+        Collision* c = m_coal_candidates.begin()->second;
+        m_coal_candidates.erase(m_coal_candidates.begin());
+
+        if (c->p_A->Status() != part_status::active) { delete c; continue; }
+        if (c->p_B->Status() != part_status::active) { delete c; continue; }
+
+        double b2_fm2 = c->m_dist2 * 1e24;   // mm^2 → fm^2
+        Blob* blob = (*p_coalescence)(c->p_A, c->p_B, b2_fm2);
+        msg_Out() << "Handler: RescatterCoalescence processed, for particles  "<< c->p_A->Flav() << " and " << c->p_B->Flav()
+                   << ", "
+                  << m_coal_candidates.size() << " remaining"<<std::endl;
+
+        delete c;
+
+        if (blob) return blob;
+    }
+    return nullptr;
+}
 
 
