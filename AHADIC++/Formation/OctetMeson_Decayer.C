@@ -108,10 +108,10 @@ bool OctetMeson_Decayer::FixKinematics() {
   double beta1 = 1. / (2. * Q2) *
                  (Q2 - m12 + m22 + sqrt(sqr(Q2 - m12 - m22) + 4. * m12 * m22));
   double alpha1 = m12 / Q2 / (1. - beta1);
-  Poincare intoCMS = Poincare(mom);
-  intoCMS.Boost(mom1);
-  Poincare ontoZ = Poincare(mom1, E * s_AxisP);
-  ontoZ.Rotate(mom1);
+  // Poincare intoCMS = Poincare(mom);
+  // intoCMS.Boost(mom1);
+  // Poincare ontoZ = Poincare(mom1,(0,0,1));
+  // ontoZ.Rotate(mom1);
   double zmin = m_minE / (mom1[0] - m1), zmax = 1 - m12 / (Q2 - m22);
   if (zmax < zmin)
     zmin = zmax * m_minE / E;
@@ -139,17 +139,30 @@ bool OctetMeson_Decayer::FixKinematics() {
   // m12 *= zfra/(1. - z); //m12 / (1. - z);
   
   // m12 = m12 / (1. - z);
-  
   double beta2 = 1. / (2. * Q2) *
                  (Q2 - m12 + m22 + sqrt(sqr(Q2 - m12 - m22) + 4. * m12 * m22));
   double alpha2 = m12 / Q2 / (1. - beta2);
-  m_mom[0] = (1. - z) * alpha2 * E * s_AxisP + (1. - beta2) * E * s_AxisM;
-  m_mom[1] = z * alpha2 * E * s_AxisP;
-  m_mom[2] = (1. - alpha2) * E * s_AxisP + beta2 * E * s_AxisM;
-  for (size_t i = 0; i < 3; i++) {
-    ontoZ.RotateBack(m_mom[i]);
-    intoCMS.BoostBack(m_mom[i]);
-  }
+  // Vec4D p = sqrt(mom1.PSpat2());
+  // msg_Out()<<" WHAT is p: "<<p<<'\n';
+  // double rg = ran->GetGaussian();
+  // msg_Out()<<"Random gaussian: "<< rg <<'\n';
+  m_mom[0][0] = sqrt(sqr(singlet_mass)+sqr(mom1[1]*(1.-z))+sqr((1.-z)*mom1[2])+sqr(mom1[3]*(1.-z)));
+  m_mom[0][1] = mom1[1]*(1.-z);
+  m_mom[0][2] = mom1[2]*(1.-z);
+  m_mom[0][3] = mom1[3]*(1.-z);
+  // m_mom[0][3] = p*(1-z);
+  m_mom[1] = mom1-m_mom[0];
+  // m_mom[1][3] = -(p*z);
+  // m_mom[0][0] += m12-sqr(singlet_mass);
+  // m_mom[2] = (1. - alpha2) * E * s_AxisP + beta2 * E * s_AxisM;
+  // for (size_t i = 0; i < 3; i++) {
+    // ontoZ.RotateBack(m_mom[i]);
+    // intoCMS.BoostBack(m_mom[i]);
+  // }
+  // msg_Out()<<"Parralel mom1: "<<m_mom[0][1]/m_mom[1][1]<<'\n'
+  //          <<"Parralel mom2: "<<m_mom[0][2]/m_mom[1][2]<<'\n' 
+  //          <<"Parralel mom3: "<<m_mom[0][3]/m_mom[1][3]<<'\n';
+  m_mom[2] = p_part2->Momentum();
   // msg_Out()<<"Selected z = "<<z<<" in ["<<zmin<<", "<<zmax<<"]  --> "
   // 	   <<alpha2<<" & "<<beta2<<"\n"
   // 	   <<p_part1->Momentum()<<" + "<<p_part2->Momentum()<<"\n"

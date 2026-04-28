@@ -6,9 +6,9 @@
 #include "MODEL/Main/Single_Vertex.H"
 #include "MODEL/Main/Model_Base.H"
 #include "ATOOLS/Math/Random.H"
+#include "ATOOLS/Phys/LDME.H"
 #include "ATOOLS/Org/My_Limits.H"
 #include "ATOOLS/Org/My_MPI.H"
-#include "SHERPA/SoftPhysics/LDME.H"
 
 using namespace CSSHOWER;
 using namespace MODEL;
@@ -217,7 +217,7 @@ void Sudakov::AddQuarkoniaSplittingFunctions(Model_Base *md, const int kfmode) {
   
   // This is c -> c J/Psi(1S)8
   list<kf_code> octetmesonsV = {
-    kf_3S1_c_8_J_psi_1S, kf_3S1_c_8_psi_2S, kf_3S1_c_8_chi_c1_1P, kf_3S1_c_8_chi_c2_1P, kf_3P1_c_8_J_psi_1S, kf_3P1_c_8_psi_2S}; //, kf_chi_b2_3P_oct};
+    kf_3S1_c, kf_3P1_c}; //, kf_chi_b2_3P_oct};
   for (list<kf_code>::iterator kfit = octetmesonsV.begin();
        kfit != octetmesonsV.end(); kfit++) 
   {
@@ -238,7 +238,7 @@ void Sudakov::AddQuarkoniaSplittingFunctions(Model_Base *md, const int kfmode) {
       Add(new Splitting_Function_Base(
           SF_Key(&v, 0, cstp::FF, kfmode, m_qcdmode, m_ewmode, 1, m_pdfmin)));
   }
-  list<kf_code> octetmesonsS = {kf_1S0_c_8_J_psi_1S, kf_1S0_c_8_psi_2S, kf_3P0_c_8_J_psi_1S, kf_3P0_c_8_psi_2S}; //, kf_chi_b2_3P_oct};
+  list<kf_code> octetmesonsS = {kf_1S0_c, kf_3P0_c}; //, kf_chi_b2_3P_oct};
   for (list<kf_code>::iterator kfit = octetmesonsS.begin();
        kfit != octetmesonsS.end(); kfit++) 
   {
@@ -283,7 +283,7 @@ void Sudakov::AddOctetMesonSplittingFunctions(Model_Base *md,
   Kabbala g3("g_3", sqrt(4. * M_PI * md->ScalarConstant("alpha_S")));
   Kabbala cpl0 = g3 * Kabbala("i", Complex(0., 1.));
   list<kf_code> octetmesons = {
-      kf_1S0_c_8_eta_c,  kf_1S0_c_8_J_psi_1S, kf_1S0_c_8_psi_2S}; //, kf_chi_b2_3P_oct};
+      kf_1S0_c}; //, kf_chi_b2_3P_oct};
   for (list<kf_code>::iterator kfit = octetmesons.begin();
        kfit != octetmesons.end(); kfit++) {
     Flavour flav(*kfit);
@@ -314,26 +314,15 @@ void Sudakov::AddGluonThresholds(Model_Base *md) {
   Running_AlphaS as = md->ScalarConstant("alpha_S");
   double mc = ATOOLS::Flavour(kf_c).Mass(true);
   double mb = ATOOLS::Flavour(kf_b).Mass(true);
-  list<kf_code> c_octetvectors = {kf_3S1_c_8_J_psi_1S, kf_3S1_c_8_psi_2S, kf_3S1_c_8_chi_c0_1P, kf_3S1_c_8_chi_c1_1P, kf_3S1_c_8_chi_c2_1P
-  };
+  list<kf_code> c_octetvectors = {kf_3S1_c};
   ST_Set *stset;
   m_stmap[Flavour(kf_gluon)] = stset = new ST_Set;
-  LoadLDME();
-  map<kf_code, double> cLDME = {
-      // ldmes from FO tune. ------- old -> numerical LDME [GeV^3] from ph/9507398, PhysRevD.50.3176
-      {kf_3S1_c_8_J_psi_1S,  GetLDME(kf_3S1_c_8_J_psi_1S)},// 1.5E-02 / sqr(M_PI)},
-      {kf_3S1_c_8_psi_2S,    GetLDME(kf_3S1_c_8_psi_2S)},//4.3E-03 / sqr(M_PI)},
-      {kf_3S1_c_8_chi_c0_1P, GetLDME(kf_3S1_c_8_chi_c0_1P)},//2./3/M_PI * 1 * 3E-03},
-      {kf_3S1_c_8_chi_c1_1P, GetLDME(kf_3S1_c_8_chi_c1_1P)},//2./3/M_PI * 3 * 3E-03},
-      {kf_3S1_c_8_chi_c2_1P, GetLDME(kf_3S1_c_8_chi_c2_1P)}};//100*2./3/M_PI * 5 * 3E-03}};
   double arg;
-  for (list<kf_code>::iterator octit = c_octetvectors.begin();
-       octit != c_octetvectors.end(); octit++) {
-    arg = 0.5 * (M_PI * as(sqr(2*mc)) / (24 * pow(mc, 3))) *
-          cLDME[*octit] * (1. - (11./6. * v8_2))*tr_efac; // SDME for g -> ccb (3S_1)_8
-    stset->insert(
-        One2One_Transition_Base(Flavour(kf_gluon), Flavour(*octit), arg, 1));
-  }
+  arg = 0.5 * (M_PI * as(sqr(2*mc)) / (24 * pow(2.*mc, 3))) *
+        GetTotalLDME(kf_3S1_c) * (1. - (11./6. * v8_2))*tr_efac; // SDME for g -> ccb (3S_1)_8
+  stset->insert(
+      One2One_Transition_Base(Flavour(kf_gluon), Flavour(kf_3S1_c), arg, 1));
+  
   // stset->insert(One2One_Transition_Base(
   //     Flavour(kf_gluon), Flavour(kf_J_psi_1S),
   //       0.5 * 10E5 * 8.28E-04 * pow(as(sqr(2*mc))/mc,3)*ldme_J_psi_1S, 1));
