@@ -9,6 +9,7 @@
 #include "BEAM/Spectra/Monochromatic.H"
 #include "BEAM/Spectra/Pomeron.H"
 #include "BEAM/Spectra/Reggeon.H"
+#include "BEAM/Ions/Ion_Base.H"
 
 using namespace ATOOLS;
 using namespace BEAM;
@@ -124,6 +125,10 @@ Beam_Base* Beam_Parameters::InitializeMonochromatic(int num)
           beam_particle.Mass());
   double beam_polarization =
       m_settings["BEAM_POLARIZATIONS"].GetTwoVector<double>()[num];
+  if (beam_particle.IsIon())
+    return new Ion_Base(beamspectrum::monochromatic,
+			beam_particle, beam_energy, beam_polarization,
+			1 - 2 * num);
   return new Monochromatic(beam_particle, beam_energy, beam_polarization,
                            1 - 2 * num);
 }

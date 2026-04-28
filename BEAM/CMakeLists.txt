@@ -1,2 +1,3 @@
 add_subdirectory(Main)
 add_subdirectory(Spectra)
+add_subdirectory(Ions)

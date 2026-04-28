@@ -709,7 +709,7 @@ String Zfunctions
 ExtAmp ExtraXSNLO ExtraXSSpecial ExtraXS2_2 ExtraXS1_2 ExtraXS1_3 ExtraXS
 METoolsExplicit METoolsCurrents METoolsVertices METoolsColors METoolsSpinCorrelations METoolsLoops METoolsMain ModelUFO ModelMain
 PDF
-BeamMain BeamSpectra
+BeamMain BeamSpectra BeamIons
 ToolsPhys ToolsMath ToolsYaml ToolsOrg
 )
 install(TARGETS SHERPAAll EXPORT SHERPATargets)

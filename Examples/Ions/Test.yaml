@@ -1,0 +1,46 @@
+EVENT_GENERATION_MODE: W
+
+# collider setup
+# deuterium = 1000010020
+# carbon12  = 1000060120
+# calcium40 = 1000200400
+
+BEAMS:         [ 11, 1000200400 ] 
+BEAM_ENERGIES: [ 20., 0. ]
+BEAM_SPECTRA:  [ Monochromatic, Monochromatic ]
+PDF_LIBRARY:   None
+PDF_SET:       None
+
+IONS:
+  R_Form:          1     # 0 = hcs,     1 = Gauss	
+  P_Form:          1     # 0 = K_Fermi, 1 = Potential
+  Rho_0:           0.17
+  R_min^2(Pauli):  2.25
+  K_Fermi:         0.05
+  Sigma_Psi:       1.03
+  V^(loc)_2:      -0.1
+  V^(loc)_3:       0.0
+  R^(loc)_max:    -1.
+  nu^(loc):        2.
+  V^(Yuk):         0.0066
+  a^(Yuk):         0.8
+  R^(Yuk)_max:    -1.
+  delta_t:         0.1
+  N_steps:         25000
+
+EW_SCHEME: alpha0
+
+SCALES: METS{Abs2(p[2]+p[3])}
+
+PROCESSES:
+  - 22 22 -> 13 -13:
+      Order: {QCD: 0, EW: 2}
+
+SELECTORS:
+  - [PT, 90, 3, E_CMS]
+  - [Eta, 90, -3.0, 3.0]
+
+ANALYSIS: Rivet
+RIVET:
+  --ignore-beams: 1
+  --analyses: ATLAS_2021_I1832628
