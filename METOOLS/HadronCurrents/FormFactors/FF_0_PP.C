@@ -84,7 +84,7 @@ Complex FF_0_PP_Base::FF_RChiPT(const double & Q2) {
 
 class Fplus_0_PiZeroPiPlus : public FF_0_PP_Base {
   double  m_fpi, m_fK, m_mpi2, m_mK2, m_meta2;
-  double  m_mV, m_mV2, m_mVp, m_mVp2, m_mVpp, m_mVpp2, m_GVp, m_GVpp;
+  double  m_mV, m_mV2, m_mVp, m_mVp2, m_mVpp, m_mVpp2, m_GV, m_GVp, m_GVpp;
   Complex m_gamma, m_delta;
   // KS_Belle parameters (VFF for Kpi only)
   Complex m_beta_Belle;
@@ -156,9 +156,10 @@ void Fplus_0_PiZeroPiPlus::FixParameters(const FF_Parameters & params)  {
       m_gamma = Complex(-0.135,0.000); // value taken from FM paper
     }
     else if (m_ffmodel==ff_model::RChiPT) {
-      m_mV    = Flavour(kf_K_star_892_plus).HadMass();  m_mV2   = sqr(m_mV);
-      m_mVp   = Flavour(kf_K_star_1410_plus).HadMass(); m_mVp2  = sqr(m_mVp);
-      m_GVp   = Flavour(kf_K_star_1410_plus).Width();
+      m_mV    = (*params.p_model)("mV_Kpi",  0.8953); m_mV2  = sqr(m_mV); // hard coded values taken Jamin et al. (arxiv: 0803.1786) Table 3
+      m_GV    = (*params.p_model)("GV_Kpi",  0.0475);
+      m_mVp   = 1.307;                                 m_mVp2 = sqr(m_mVp);
+      m_GVp   = 0.206;
       m_gamma = Complex((*params.p_model)("gamma_Kpi", -0.043), 0.0); // value taken from Jamin et al. (arxiv: 0803.1786)
     }
     else if (m_ffmodel==ff_model::KS_Belle) {
@@ -230,7 +231,7 @@ Complex Fplus_0_PiZeroPiPlus::FF_RChiPT(const double & s) {
                         A(m_mpi2,s,m_mV2).real()) );
     return V + Vp + Vpp;
   }
-  if (m_mode == FF_0_PP_mode::Kpi_plus) {
+  if (m_mode == FF_0_PP_mode::Kpi_plus) { // essential eq.5 of 0803.1786
     Complex V  = (m_mV2  + s*m_gamma) /
                  Complex(m_mV2  - s, -m_mV  * Gamma_Kstar(s));
     Complex Vp = (s*m_gamma) /
@@ -278,6 +279,23 @@ namespace {
     if (lam <= 0.0) return 0.0;
     return sqrt(lam) / (2.0 * sqrt(s));
   }
+
+  // One-loop function J̄_PQ(s): GL (1985) appendix A / Jamin et al. (hep-ph/0110193) eq. A.1.
+  // Δ = M²_P - M²_Q, Σ = M²_P + M²_Q, λ² = [s-(MP+MQ)²][s-(MP-MQ)²].
+  inline Complex JbarPQ(const double mP2, const double mQ2, const double s) {
+    const double Delta = mP2 - mQ2;
+    if (std::abs(Delta) < 1e-10) return Complex(0., 0.);
+    const Complex nu = std::sqrt(
+      Complex((s - sqr(std::sqrt(mP2) + std::sqrt(mQ2))) *
+              (s - sqr(std::sqrt(mP2) - std::sqrt(mQ2))), 0.0));
+    const Complex logterm =
+      std::log((s + nu + Delta)*(s + nu - Delta) /
+               ((s - nu + Delta)*(s - nu - Delta)));
+    return (1.0 / (32.0 * sqr(M_PI))) *
+           ( 2.0
+            + (Delta / s - (mP2 + mQ2) / Delta) * log(mQ2 / mP2)
+            - (nu / s) * logterm );
+  }
 }
 
 double Fplus_0_PiZeroPiPlus::Gamma_Kstar(const double & s) {
@@ -288,7 +306,7 @@ double Fplus_0_PiZeroPiPlus::Gamma_Kstar(const double & s) {
   const double p_mV2 = MomentumPQ(m_mV2, m_mK2, m_mpi2);
   if (p_mV2 <= 0.0) return 0.0;
 
-  const double G0 = Flavour(kf_K_star_892_plus).Width();
+  const double G0 = m_GV;
 
   return G0 * (m_mV2 / s) * pow(p_s / p_mV2, 3);
 }
@@ -308,20 +326,7 @@ Complex Fplus_0_PiZeroPiPlus::Jbar_PQ(const double & mP2,
                                       const double & mQ2,
                                       const double & s)
 {
-  const double Delta = mP2 - mQ2;
-  if (std::abs(Delta) < 1e-10) return Complex(0., 0.);
-  const Complex nu = std::sqrt(
-    Complex((s - sqr(std::sqrt(mP2) + std::sqrt(mQ2))) *
-            (s - sqr(std::sqrt(mP2) - std::sqrt(mQ2))), 0.0)
-            );
-
-  const Complex logterm =
-    std::log((s + nu + Delta)*(s + nu - Delta) / ((s - nu + Delta)*(s - nu - Delta)));
-
-  return (1.0 / (32.0 * sqr(M_PI))) *
-          ( 2.0
-           + (Delta / s - (mP2 + mQ2) / Delta) * log(mQ2 / mP2)
-           - (nu / s) * logterm );
+  return JbarPQ(mP2, mQ2, s);
 }
 
 double Fplus_0_PiZeroPiPlus::Jbar_prime0(const double & mP2, const double & mQ2)
@@ -377,7 +382,7 @@ Complex Fplus_0_PiZeroPiPlus::H_tilde(const double & s,
 //////////////////////////////////////////////////////////////////////////////////
 
 class Fzero_0_PiZeroPiPlus : public FF_0_PP_Base {
-  double  m_mpi2, m_mK2;
+  double  m_mpi2, m_mK2, m_DelKpi, m_SigKpi;
   // KS model parameters
   double  m_mV2, m_mVp2, m_mS2;
   Complex m_beta, m_cS;
@@ -389,15 +394,21 @@ class Fzero_0_PiZeroPiPlus : public FF_0_PP_Base {
   double  m_mkappa2_Belle;
   double  m_kappa_Belle;
   Complex m_gamma_Belle;
+  // RChiPT parameters (Jamin, Oller, Pich, hep-ph/0110193, eq. 2.7)
+  double  m_fpi, m_meta82, m_L5r, m_mu2;
 
   void    FixParameters(const FF_Parameters & params);
   void    Construct();
+  Complex Jbar_PQ(const double& mP2, const double& mQ2, const double& s);
   Complex operator()(const ATOOLS::Vec4D_Vector& moms);
 public :
   Fzero_0_PiZeroPiPlus(const FF_Parameters & params) :
     FF_0_PP_Base(params),
     m_mpi2(sqr(Flavour(kf_pi_plus).HadMass())),
     m_mK2(sqr(Flavour(kf_K_plus).HadMass())),
+    m_DelKpi(m_mK2 - m_mpi2),
+    m_SigKpi(m_mK2 + m_mpi2),
+    m_fpi(0.), m_meta82(0.), m_L5r(0.), m_mu2(0.),
     p_BW_V(NULL), p_BW_Vp(NULL), p_BW_S(NULL), p_BW_kappa(NULL)
   {
     FixParameters(params);
@@ -432,6 +443,17 @@ void Fzero_0_PiZeroPiPlus::FixParameters(const FF_Parameters & params) {
       double gammaArg = (*params.p_model)("gammaBelleArg_Kpi", 0.0);
       m_gamma_Belle   = Complex(gammaAbs*cos(gammaArg), gammaAbs*sin(gammaArg));
     }
+    else if (m_ffmodel==ff_model::RChiPT) {
+      // NLO SU(3) ChPT scalar Kpi FF: Jamin, Oller, Pich (hep-ph/0110193), eq. 2.7
+      // f = fpi/sqrt(2) in the normalisation where fpi ~ 92.4 MeV
+      m_fpi   = (*params.p_model)("fpi", 0.1307) / sqrt(2.);
+      // M^2_eta8 from Gell-Mann-Okubo: (4 M^2_K - M^2_pi) / 3
+      m_meta82 = (3.*m_mK2 + m_DelKpi) / 3.;
+      // L5^r renormalized at scale mu (default: mu = M_rho, L5^r ~ 0.91e-3)
+      m_L5r   = (*params.p_model)("L5r_SFF",  0.91e-3);
+      double mu = (*params.p_model)("mu_SFF",  Flavour(kf_rho_770_plus).HadMass());
+      m_mu2   = sqr(mu);
+    }
   }
 }
 
@@ -449,22 +471,46 @@ void Fzero_0_PiZeroPiPlus::Construct() {
   }
 }
 
+Complex Fzero_0_PiZeroPiPlus::Jbar_PQ(const double& mP2, const double& mQ2, const double& s)
+{
+  return JbarPQ(mP2, mQ2, s);
+}
+
 Complex Fzero_0_PiZeroPiPlus::operator()(const Vec4D_Vector& moms) {
   if (m_mode != FF_0_PP_mode::Kpi_plus) return Complex(0., 0.);
   double Q2 = (moms[m_pi[0]]+moms[m_pi[1]]).Abs2();
   if (Q2 <= 0.) return Complex(0., 0.);
-
   if (m_ffmodel == ff_model::KS_Belle) {
     // Belle 2007 (arXiv:0706.2231) SFF: kappa*(Q2/m_kappa^2)*BW_kappa + gamma*(Q2/m_S^2)*BW_S
-    const double deltam2 = m_mK2 - m_mpi2;
     Complex FS = m_kappa_Belle * (Q2/m_mkappa2_Belle) * (*p_BW_kappa)(Q2)
                + m_gamma_Belle * (Q2/m_mS2)           * (*p_BW_S)(Q2);
-    return m_norm * deltam2 * FS;
+    return m_norm * m_DelKpi * FS;
+  }
+
+  if (m_ffmodel == ff_model::RChiPT) {
+    // NLO SU(3) ChPT scalar Kpi FF: Jamin, Oller, Pich (hep-ph/0110193), eq. 2.7.
+    // Returns m_norm * (DeltaKpi / Q2) * f_Kpi(Q2), where f_Kpi(0) = 1 at LO,
+    // matching the (DeltaKpi/Q2) convention used by the KS scalar FF.
+    const double f2     = sqr(m_fpi);
+    // mu_P = M^2_P / (32 pi^2 f^2) * ln(M^2_P / mu^2), eq. 2.9
+    auto muP = [&](double mP2) -> double {
+      return mP2 / (32. * sqr(M_PI) * f2) * log(mP2 / m_mu2);
+    };
+    const double mupi   = muP(m_mpi2);
+    const double muK    = muP(m_mK2);
+    const double mueta8 = muP(m_meta82);
+    const Complex JKpi  = Jbar_PQ(m_mK2, m_mpi2,  Q2);
+    const Complex JKeta = Jbar_PQ(m_mK2, m_meta82, Q2);
+    const Complex fKpi  = 1.
+      + (4.*m_L5r / f2) * Q2
+      + (1./(8.*f2))  * (5.*Q2 - 2.*m_SigKpi - 3.*sqr(m_DelKpi)/Q2) * JKpi
+      + (1./(24.*f2)) * (3.*Q2 - 2.*m_SigKpi -    sqr(m_DelKpi)/Q2) * JKeta
+      + (Q2 / (4.*m_DelKpi)) * (5.*mupi - 2.*muK - 3.*mueta8);
+    return m_norm * (m_DelKpi / Q2) * fKpi;
   }
 
   if (m_ffmodel != ff_model::KS) return Complex(0., 0.);
 
-  double  deltam2 = m_mK2 - m_mpi2;
   Complex beta    = m_beta;   // beta_{K*} = -0.135
   Complex cS      = m_cS;     // c_S = 1.7
 
@@ -481,7 +527,7 @@ Complex Fzero_0_PiZeroPiPlus::operator()(const Vec4D_Vector& moms) {
   Complex BW_S        = (*p_BW_S)(Q2);
   Complex scalar_part = cS / m_mS2 * BW_S;
 
-  Complex result = m_norm * deltam2 * (vec_part + scalar_part);
+  Complex result = m_norm * m_DelKpi * (vec_part + scalar_part);
   return result;
 }
 
