@@ -4,7 +4,7 @@ namespace CSSHOWER {
 
 class LF_FFV_Quarkonia_FF : public SF_Lorentz {
 public:
-  LF_FFV_Quarkonia_FF(const SF_Key &key);
+  inline LF_FFV_Quarkonia_FF(const SF_Key &key) : SF_Lorentz(key) {};
 
   double operator()(const double, const double, const double, const double,
                     const double);
@@ -20,7 +20,7 @@ protected:
   double m_Jmax;
 
 public:
-  LF_FFV_Quarkonia_FI(const SF_Key &key);
+  inline LF_FFV_Quarkonia_FI(const SF_Key &key) : SF_Lorentz(key) {};
 
   double operator()(const double, const double, const double, const double,
                     const double);
@@ -35,7 +35,7 @@ protected:
   double m_Jmax;
 
 public:
-  LF_FFV_Quarkonia_IF(const SF_Key &key);
+  inline LF_FFV_Quarkonia_IF(const SF_Key &key) : SF_Lorentz(key) {};
 
   double operator()(const double, const double, const double, const double,
                     const double);
@@ -50,7 +50,7 @@ protected:
   double m_Jmax;
 
 public:
-  LF_FFV_Quarkonia_II(const SF_Key &key);
+  inline LF_FFV_Quarkonia_II(const SF_Key &key) : SF_Lorentz(key) {};
 
   double operator()(const double, const double, const double, const double,
                     const double);
@@ -61,7 +61,7 @@ public:
 
 class LF_FVF_Quarkonia_FF : public SF_Lorentz {
 public:
-  LF_FVF_Quarkonia_FF(const SF_Key &key);
+  inline LF_FVF_Quarkonia_FF(const SF_Key &key) : SF_Lorentz(key) {};
 
   double operator()(const double, const double, const double, const double,
                     const double);
@@ -76,42 +76,11 @@ public:
 #include "ATOOLS/Org/Settings.H"
 #include "ATOOLS/Org/Scoped_Settings.H"
 #include <unordered_map>
-#include "SHERPA/SoftPhysics/LDME.H"
+#include "ATOOLS/Phys/LDME.H"
 
 using namespace CSSHOWER;
 using namespace ATOOLS;
 
-
-
-LF_FFV_Quarkonia_FF::LF_FFV_Quarkonia_FF(const SF_Key &key)
-  : SF_Lorentz(key)
-{
-  LoadLDME();
-}
-
-LF_FFV_Quarkonia_FI::LF_FFV_Quarkonia_FI(const SF_Key &key)
-  : SF_Lorentz(key)
-{
-  LoadLDME();
-}
-
-LF_FFV_Quarkonia_IF::LF_FFV_Quarkonia_IF(const SF_Key &key)
-  : SF_Lorentz(key)
-{
-  LoadLDME();
-}
-
-LF_FFV_Quarkonia_II::LF_FFV_Quarkonia_II(const SF_Key &key)
-  : SF_Lorentz(key)
-{
-  LoadLDME();
-}
-
-LF_FVF_Quarkonia_FF::LF_FVF_Quarkonia_FF(const SF_Key &key)
-  : SF_Lorentz(key)
-{
-  LoadLDME();
-}
 
 double LF_FFV_Quarkonia_FF::operator()(const double zz, const double y,
                                        const double eta, const double scale,
@@ -138,7 +107,7 @@ double LF_FFV_Quarkonia_FF::operator()(const double zz, const double y,
       + 4*z*(1-z)/(2-z)*sij*(sij-mij2) - 4*(8-7*z-5*z*z)/(2-z)*mi2*(sij-mij2) + 
       12*z*z*(1-z)/sqr(2-z)*sqr(sij-mij2)
     );
-    const double LDME = p_cf->Coupling(newscale,0)/(2*M_PI) * GetLDME(m_flavs[2].Kfcode());//pow(0.82,2); // GeV^3 //(m_flavs[2].IsOctetMeson() ? (1.5E-02) : pow(0.82, 3));
+    const double LDME = p_cf->Coupling(newscale,0)/(2*M_PI) * GetTotalLDME(m_flavs[2].Kfcode());
     const double Jprop = 1./ (1 + (mui2 + muj2 - muij2)/y/(1-mui2-muj2-muk2) );
     return 16. / 27 / sqrt(mij2) * p_cf->Coupling(scale, 0) * LDME * value / (sij - mij2) * JFF(y, mui2, muj2, muk2, muij2);
   }
@@ -148,7 +117,7 @@ double LF_FFV_Quarkonia_FF::OverIntegrated(const double zmin, const double zmax,
                                            const double scale,
                                            const double xbj) {
   const double mij = p_ms->Mass(m_flavs[0]); // mass of heavy quark
-  const double preF = ( 16. / 27 / mij * p_cf->MaxCoupling(0) )  * p_cf->Coupling(sqr(3*mij),0)/(2*M_PI) * GetLDME(m_flavs[2].Kfcode());//pow(0.82,2);
+  const double preF = ( 16. / 27 / mij * p_cf->MaxCoupling(0) )  * p_cf->Coupling(sqr(3*mij),0)/(2*M_PI) * GetTotalLDME(m_flavs[2].Kfcode());//pow(0.82,2);
   m_zmin = zmin; 
   m_zmax = zmax;
   return  preF * 236. / 100. / (8*sqr(mij));
@@ -156,7 +125,7 @@ double LF_FFV_Quarkonia_FF::OverIntegrated(const double zmin, const double zmax,
 
 double LF_FFV_Quarkonia_FF::OverEstimated(const double z, const double y) {
   const double mij = p_ms->Mass(m_flavs[0]);
-  const double preF = ( 16. / 27 / mij * p_cf->MaxCoupling(0) )  * p_cf->Coupling(sqr(3*mij),0)/(2*M_PI) * GetLDME(m_flavs[2].Kfcode());//pow(0.82,2);
+  const double preF = ( 16. / 27 / mij * p_cf->MaxCoupling(0) )  * p_cf->Coupling(sqr(3*mij),0)/(2*M_PI) * GetTotalLDME(m_flavs[2].Kfcode());//pow(0.82,2);
   return preF * 236. / 100. / (8*sqr(mij));
 }
 
@@ -190,8 +159,7 @@ double LF_FFV_Quarkonia_FI::operator()(const double zz, const double y,
          4 * (z * (1 - z)) / (2 - z) * (1 - mui2) -
          4 * (8 - 7 * z - 5 * z * z) / (2 - z) * muij2 * (1 - muij2) +
          12 * (z * z * (1 - z)) / sqr(2 - z) * sqr(1 - muij2));
-    const double LDME = 1. / sqrt(mi2) / sqr(sij) *
-                        (m_flavs[2].IsOctetMeson() ? (1.5E-02) : pow(0.82, 3));
+    const double LDME = GetTotalLDME(m_flavs[2]);
     return 16. / 27 * LDME * sqr(p_cf->Coupling(newscale, 0)) * value /
            sqr(sij) * JFI(y, eta, scale);
   }
@@ -203,13 +171,13 @@ double LF_FFV_Quarkonia_FI::OverIntegrated(const double zmin, const double zmax,
   m_zmin = zmin;
   m_zmax = zmax;
   m_Jmax = 5.;
-  return 16. / 27 * pow(0.82, 3) / Flavour(kf_c).Mass() *
+  return 16. / 27 * GetTotalLDME(m_flavs[2]) / Flavour(kf_c).Mass() *
          sqr(p_cf->MaxCoupling(0)) * (0.5) * log((1. - zmin) / (1. - zmax)) *
          m_Jmax;
 }
 
 double LF_FFV_Quarkonia_FI::OverEstimated(const double z, const double y) {
-  return 16. / 27 * pow(0.82, 3) / Flavour(kf_c).Mass() *
+  return 16. / 27 * GetTotalLDME(m_flavs[2]) / Flavour(kf_c).Mass() *
          sqr(p_cf->MaxCoupling(0)) * (0.5) / (1. - z) * m_Jmax;
 }
 
@@ -250,8 +218,7 @@ double LF_FFV_Quarkonia_IF::operator()(const double zz, const double y,
          4 * (z * (1 - z)) / (2 - z) * (1 - mua2) -
          4 * (8 - 7 * z - 5 * z * z) / (2 - z) * muaj2 * (1 - muaj2) +
          12 * (z * z * (1 - z)) / sqr(2 - z) * sqr(1 - muaj2));
-    const double LDME = 1. / sqrt(ma2) / sqr(taj) *
-                        (m_flavs[2].IsOctetMeson() ? (1.5E-02) : pow(0.82, 3));
+    const double LDME = GetTotalLDME(m_flavs[2]);
     return 16. / 27 * LDME * sqr(p_cf->Coupling(newscale, 0)) * value /
            sqr(taj) * JFI(y, eta, scale);
   }
@@ -263,13 +230,13 @@ double LF_FFV_Quarkonia_IF::OverIntegrated(const double zmin, const double zmax,
   m_zmin = zmin;
   m_zmax = zmax;
   m_Jmax = m_flavs[0].Kfcode() < 3 ? 5. : 1.;
-  return 16. / 27 * pow(0.82, 3) / Flavour(kf_c).Mass() *
+  return 16. / 27 * GetTotalLDME(m_flavs[2]) / Flavour(kf_c).Mass() *
          (2.0 * p_cf->MaxCoupling(0) * 2. + 0.5 * p_cf->MaxCoupling(1)) *
          log((1. - zmin) / (1. - zmax)) * m_Jmax;
 }
 
 double LF_FFV_Quarkonia_IF::OverEstimated(const double z, const double y) {
-  return 16. / 27 * pow(0.82, 3) / Flavour(kf_c).Mass() *
+  return 16. / 27 * GetTotalLDME(m_flavs[2]) / Flavour(kf_c).Mass() *
          (2.0 * p_cf->MaxCoupling(0) * 2. + 0.5 * p_cf->MaxCoupling(1)) /
          (1. - z) * m_Jmax;
 }
@@ -307,9 +274,7 @@ double LF_FFV_Quarkonia_II::operator()(const double zz, const double y,
          4 * (z * (1 - z)) / (2 - z) * (1 - mua2) -
          4 * (8 - 7 * z - 5 * z * z) / (2 - z) * muaj2 * (1 - muaj2) +
          12 * (z * z * (1 - z)) / sqr(2 - z) * sqr(1 - muaj2));
-    const double LDME =
-        (m_flavs[2].IsOctetMeson() ? 1.5E-02 / M_PI_2
-                                   : 9. / 2 * M_PI * pow(0.82, 3));
+    const double LDME = GetTotalLDME(m_flavs[2]);
     return value * JII(z, y, eta, scale);
     return 16. / 27 / 9 * sqr(p_cf->Coupling(newscale, 0)) / sqrt(ma2) * LDME *
            value / sqr(taj) * JII(z, y, eta, scale);
@@ -324,7 +289,7 @@ double LF_FFV_Quarkonia_II::OverIntegrated(const double zmin, const double zmax,
   m_Jmax = m_flavs[0].Kfcode() < 3 ? 5. : 1.;
   return (4.0 * p_cf->MaxCoupling(0) + 0.5 * p_cf->MaxCoupling(1)) *
          log((1. - zmin) / (1. - zmax)) * m_Jmax;
-  return 16. / 27 * pow(0.82, 3) / Flavour(kf_c).Mass() *
+  return 16. / 27 * GetTotalLDME(m_flavs[2]) / Flavour(kf_c).Mass() *
          sqr(p_cf->MaxCoupling(0)) * (0.5) * log((1. - zmin) / (1. - zmax)) *
          m_Jmax;
 }
@@ -332,7 +297,7 @@ double LF_FFV_Quarkonia_II::OverIntegrated(const double zmin, const double zmax,
 double LF_FFV_Quarkonia_II::OverEstimated(const double z, const double y) {
   return (4.0 * p_cf->MaxCoupling(0) + 0.5 * p_cf->MaxCoupling(1)) / (1. - z) *
          m_Jmax;
-  return 16. / 27 * pow(0.82, 3) / Flavour(kf_c).Mass() *
+  return 16. / 27 * GetTotalLDME(m_flavs[2]) / Flavour(kf_c).Mass() *
          sqr(p_cf->MaxCoupling(0)) * (0.5) / (1. - z) * m_Jmax;
 }
 

@@ -251,19 +251,11 @@ operator()(const SFC_Filler_Key &key) const
   key.p_gets->push_back(new CF_QCD_Getter("{"+Flavour(kf_c).IDName()+"}"+"{"+Flavour(kf_c).IDName()+"}"+"{"+Flavour(kf_J_psi_1S).IDName()+"}"));
   key.p_gets->push_back(new CF_QCD_Getter("{"+Flavour(kf_c).Bar().IDName()+"}"+"{"+Flavour(kf_c).Bar().IDName()+"}"+"{"+Flavour(kf_J_psi_1S).IDName()+"}"));
  
-  key.p_gets->push_back(new CF_QCD_Getter("{"+Flavour(kf_c).IDName()+"}"+"{"+Flavour(kf_c).IDName()+"}"+"{"+Flavour(kf_1S0_c_8_J_psi_1S).IDName()+"}"));
-  key.p_gets->push_back(new CF_QCD_Getter("{"+Flavour(kf_c).Bar().IDName()+"}"+"{"+Flavour(kf_c).Bar().IDName()+"}"+"{"+Flavour(kf_1S0_c_8_J_psi_1S).IDName()+"}"));
-  key.p_gets->push_back(new CF_QCD_Getter("{"+Flavour(kf_c).IDName()+"}"+"{"+Flavour(kf_c).IDName()+"}"+"{"+Flavour(kf_1S0_c_8_psi_2S).IDName()+"}"));
-  key.p_gets->push_back(new CF_QCD_Getter("{"+Flavour(kf_c).Bar().IDName()+"}"+"{"+Flavour(kf_c).Bar().IDName()+"}"+"{"+Flavour(kf_1S0_c_8_psi_2S).IDName()+"}"));
+  key.p_gets->push_back(new CF_QCD_Getter("{"+Flavour(kf_c).IDName()+"}"+"{"+Flavour(kf_c).IDName()+"}"+"{"+Flavour(kf_1S0_c).IDName()+"}"));
+  key.p_gets->push_back(new CF_QCD_Getter("{"+Flavour(kf_c).Bar().IDName()+"}"+"{"+Flavour(kf_c).Bar().IDName()+"}"+"{"+Flavour(kf_1S0_c).IDName()+"}"));
   
-  key.p_gets->push_back(new CF_QCD_Getter("{"+Flavour(kf_c).IDName()+"}"+"{"+Flavour(kf_c).IDName()+"}"+"{"+Flavour(kf_3S1_c_8_J_psi_1S).IDName()+"}"));
-  key.p_gets->push_back(new CF_QCD_Getter("{"+Flavour(kf_c).Bar().IDName()+"}"+"{"+Flavour(kf_c).Bar().IDName()+"}"+"{"+Flavour(kf_3S1_c_8_J_psi_1S).IDName()+"}"));
-  key.p_gets->push_back(new CF_QCD_Getter("{"+Flavour(kf_c).IDName()+"}"+"{"+Flavour(kf_c).IDName()+"}"+"{"+Flavour(kf_3S1_c_8_psi_2S).IDName()+"}"));
-  key.p_gets->push_back(new CF_QCD_Getter("{"+Flavour(kf_c).Bar().IDName()+"}"+"{"+Flavour(kf_c).Bar().IDName()+"}"+"{"+Flavour(kf_3S1_c_8_psi_2S).IDName()+"}"));
-  key.p_gets->push_back(new CF_QCD_Getter("{"+Flavour(kf_c).IDName()+"}"+"{"+Flavour(kf_c).IDName()+"}"+"{"+Flavour(kf_3S1_c_8_chi_c1_1P).IDName()+"}"));
-  key.p_gets->push_back(new CF_QCD_Getter("{"+Flavour(kf_c).Bar().IDName()+"}"+"{"+Flavour(kf_c).Bar().IDName()+"}"+"{"+Flavour(kf_3S1_c_8_chi_c1_1P).IDName()+"}"));
-  key.p_gets->push_back(new CF_QCD_Getter("{"+Flavour(kf_c).IDName()+"}"+"{"+Flavour(kf_c).IDName()+"}"+"{"+Flavour(kf_3S1_c_8_chi_c2_1P).IDName()+"}"));
-  key.p_gets->push_back(new CF_QCD_Getter("{"+Flavour(kf_c).Bar().IDName()+"}"+"{"+Flavour(kf_c).Bar().IDName()+"}"+"{"+Flavour(kf_3S1_c_8_chi_c2_1P).IDName()+"}"));
+  key.p_gets->push_back(new CF_QCD_Getter("{"+Flavour(kf_c).IDName()+"}"+"{"+Flavour(kf_c).IDName()+"}"+"{"+Flavour(kf_3S1_c).IDName()+"}"));
+  key.p_gets->push_back(new CF_QCD_Getter("{"+Flavour(kf_c).Bar().IDName()+"}"+"{"+Flavour(kf_c).Bar().IDName()+"}"+"{"+Flavour(kf_3S1_c).IDName()+"}"));
   
   key.p_gets->push_back(new CF_QCD_Getter("{"+Flavour(kf_gluon).IDName()+"}"+"{"+Flavour(kf_eta_c_1S).IDName()+"}"+"{"+Flavour(kf_gluon).IDName()+"}"));
   return NULL;
