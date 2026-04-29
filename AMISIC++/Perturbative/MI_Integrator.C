@@ -90,8 +90,8 @@ operator()(const double & s,Matter_Overlap * mo,const double & b) {
       uncert = sqrt(sum2 - sqr(xsec))/double(sumtrials);
     }
     if (sumtrials >= max_trials) {
-      msg_Error()<<"   | "<<METHOD<<": xs integration did not converge after "<<std::setw(17)<<max_trials<<"  |\n"
-                 <<"   |    trials. Target accuracy: uncert/xs_pert = "<<(100.*5.e-4)<<"%."<<std::string(31,' ')<<"|\n";
+      msg_Error()<<"   | "<<METHOD<<": xs integration did not converge after "<<std::setw(10)<<max_trials<<" trials. |\n"
+                 <<"   |    Target accuracy: uncert/xs_pert = "<<(100.*5.e-4)<<"%."<<std::string(39,' ')<<"|\n";
       break;
     }
   } while (xsec==0 || (uncert/xsec>5.e-4));
