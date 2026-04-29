@@ -52,7 +52,7 @@ namespace PHASIC {
 
     long unsigned int m_n, m_itmin, m_itmax;
 
-    double m_max, m_totalxs, m_totalsum, m_totalsumsqr, m_totalerr;
+    double m_max, m_weightmax, m_totalxs, m_totalsum, m_totalsumsqr, m_totalerr;
     double m_ssum, m_ssumsqr, m_smax, m_ssigma2, m_wmin;
     double m_mssum, m_mssumsqr, m_msn;
 
@@ -98,16 +98,22 @@ namespace PHASIC {
     void SetMax(const double max);
     void SetTotal(const int mode=1);
 
-    //ResetMax: sets m_smax and m_max. Additionally, it fills value-tuple m_(s)max, m_n, m_ssum into m_vsmax, m_vsn, m_vsum, which are written out into the xsec file
-    //flag: 0-2: append current values m_(s)max, m_n, m_ssum into m_vsmax, m_vsn, m_vsum
-    //flag=0: sets m_max=m_vsmax.back(); empties m_vsmax, m_vsn, m_vsum and only stores current values,
-    //                  with m_vsmax.back = m_max if first tuple, else m_vsmax.back = max(m_vsmax.back, m_smax)
+    //ResetMax: maintains the value-tuples (m_smax, m_n, m_ssum) in m_vsmax, m_vsn,
+    //m_vsum, which are written out into the xsec file, and recomputes m_weightmax
+    //from them. It never touches m_max, which is only set by SetMax().
+    //For a group, only m_weightmax=0 is set and flag is passed on to the subprocesses.
+    //flag=0: drops the oldest tuple if more than one is stored (pushing m_weightmax,
+    //        m_n, m_ssum if none is stored), then updates the last one to
+    //        m_vsmax.back()=max(m_vsmax.back(),m_smax), m_vsn.back()=m_n,
+    //        m_vsum.back()=m_ssum; afterwards m_weightmax=max(m_vsmax)
     //  --> called between "full optimization" and "integration"
-    //flag=1: sets m_max=0; m_vsmax.back=m_smax
+    //flag=1: appends the tuple (m_smax,m_n,m_ssum) and sets m_weightmax=0, i.e.
+    //        restarts the m_weightmax determination
     //  --> called between "full optimization" and "integration", between above and this is only psh->EndOptimize()
-    //flag=2: sets m_max=max(m_vsmax) and m_smax=0; m_vsmax.back=m_smax; only store last 4 value-tuples
+    //flag=2: appends the tuple (m_smax,m_n,m_ssum), keeping at most the last 4, and
+    //        sets m_smax=0 and m_weightmax=max(m_vsmax)
     //  --> called after each optimization cycle, but before aboves calls
-    //flag=3: sets m_max=0; empties m_vsmax, m_vsn, m_vsum
+    //flag=3: sets m_weightmax=0; empties m_vsmax, m_vsn, m_vsum
     //  --> never called
     void ResetMax(const int flag);
     void OptimizeSubResult(const double &s2);
@@ -166,6 +172,7 @@ namespace PHASIC {
 
     inline double TotalXS() const    { return m_totalxs;  }
     inline double TotalError() const { return m_totalerr; }
+    inline double WeightMax() const  { return m_weightmax;}
     inline double Max() const        { return m_max;      }
 
     inline double ISRThreshold() const      { return m_threshold;   }
