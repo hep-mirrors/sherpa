@@ -256,9 +256,9 @@ double MI_Processes::TotalCrossSection(const double & s,const bool & output) {
 	      <<"   | "<<METHOD<<": xs_pert = "
 	      <<std::setprecision(4)<<std::setw(10)
 	      <<(m_xshard*rpa->Picobarn()/1.e9)<<" mb "
-	      <<"+- "<<std::setprecision(3)<<std::setw(5)
+	      <<"+- "<<std::setprecision(3)<<std::setw(8)
 	      <<(100.*m_integrator.Uncertainty()/m_xshard)
-	      <<"%."<<std::string(14,' ')<<"|\n";
+	      <<"%."<<std::string(12,' ')<<"|\n";
   }
   return m_xshard;
 }
@@ -278,9 +278,9 @@ double MI_Processes::TotalCrossSection(const double & s,const bool & output,
     msg_Info()<<"   | "<<std::string(26,' ')<<"v"<<std::setw(4)<<ivar<<": xs_pert = "
               <<std::setprecision(4)<<std::setw(10)
               <<(xshard_var*rpa->Picobarn()/1.e9)<<" mb "
-              <<"+- "<<std::setprecision(3)<<std::setw(5)
+              <<"+- "<<std::setprecision(3)<<std::setw(8)
               <<(100.*m_integrator.Uncertainty()/xshard_var)
-              <<"%."<<std::string(14,' ')<<"|\n";
+              <<"%."<<std::string(12,' ')<<"|\n";
   }
   // Restore nominal PT2min after calculation
   m_integrator.SetPT2min(m_ptmin2);
