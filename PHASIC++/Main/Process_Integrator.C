@@ -29,7 +29,7 @@ Process_Integrator::Process_Integrator(Process_Base *const proc):
   p_beamhandler(NULL), p_isrhandler(NULL),
   m_nin(0), m_nout(0), m_smode(0), m_swmode(0),
   m_threshold(0.), m_enhancefac(1.0), m_maxeps(0.0), m_rsfac(1.0),
-  m_n(0), m_itmin(0), m_itmax(1000000), m_max(0.), m_totalxs(0.), 
+  m_n(0), m_itmin(0), m_itmax(1000000), m_max(0.), m_weightmax(0.), m_totalxs(0.), 
   m_totalsum (0.), m_totalsumsqr(0.), m_totalerr(0.), m_ssum(0.), 
   m_ssumsqr(0.), m_smax(0.), m_ssigma2(0.), m_wmin(0.),
   m_mssum(0.), m_mssumsqr(0.), m_msn(0.), m_sn(0), m_son(1),
@@ -210,7 +210,7 @@ bool Process_Integrator::ReadInXSecs(const std::string &path)
   My_In_File from(path+"/"+fname);
   if (!from.Open()) return false;
   from->precision(16);
-  *from>>name>>m_totalxs>>m_max>>m_totalerr>>m_totalsum>>m_totalsumsqr
+  *from>>name>>m_totalxs>>m_weightmax>>m_totalerr>>m_totalsum>>m_totalsumsqr
       >>m_n>>m_ssum>>m_ssumsqr>>m_smax>>m_ssigma2>>m_sn>>m_wmin
       >>m_son>>dummy>>dummy>>vn;
   if (name!=fname) THROW(fatal_error,"Corrupted results file");
@@ -228,14 +228,31 @@ bool Process_Integrator::ReadInXSecs(const std::string &path)
 		<<m_totalxs*rpa->Picobarn()<<" pb"
 		<<" +- ( "<<m_totalerr*rpa->Picobarn()<<" pb = "
 		<<m_totalerr/m_totalxs*100.<<" % ) max: "
-		<<m_max*rpa->Picobarn()<<std::endl;
+		<<m_weightmax*rpa->Picobarn()<<std::endl;
   if (!p_proc->ReadIn(path)) return false;
   if (p_colint!=NULL) p_colint->ReadIn(path+"/"+fname+"_Color");
   bool res(true);
-  if (p_proc->IsGroup())
+  if (p_proc->IsGroup()) {
     for (size_t i(0);i<p_proc->Size();++i)
       if (!(*p_proc)[i]->Integrator()->ReadInXSecs(path)) res=false;
-  SetMax(m_max);
+    
+    //consistency check of m_totalxs
+    double sum(0.0);
+    for (size_t i(0);i<p_proc->Size();++i) {
+      sum+=(*p_proc)[i]->Integrator()->TotalXS();
+    }
+    if (m_totalxs!=0.) {
+      if (!ATOOLS::IsEqual(sum,m_totalxs,1e-11)) {
+	msg_Error().precision(12);
+	msg_Error()<<METHOD<<"(): Summation does not agree for '"
+		   <<p_proc->ResultsName()<<".\n  sum = "<<sum
+		   <<" vs. total = "<<m_totalxs<<" ("
+		   <<((sum-m_totalxs)/m_totalxs)<<")"<<std::endl;
+	msg_Error().precision(6);
+      }
+      m_totalxs=sum;
+    }
+  }
   return res;
 }
 
@@ -257,7 +274,7 @@ void Process_Integrator::WriteOutXSecs(const std::string &path)
   My_Out_File outfile(path+"/"+fname);
   if (outfile.Open()) m_writeout=1;
   outfile->precision(16);
-  *outfile<<fname<<"  "<<m_totalxs<<"  "<<m_max<<"  "
+  *outfile<<fname<<"  "<<m_totalxs<<"  "<<m_weightmax<<"  "
 	 <<m_totalerr<<" "<<m_totalsum<<" "<<m_totalsumsqr<<" "
 	 <<m_n<<" "<<m_ssum<<" "<<m_ssumsqr<<" "<<m_smax<<" "
 	 <<m_ssigma2<<" "<<m_sn<<" "<<m_wmin<<" "<<m_son<<" "
@@ -281,13 +298,13 @@ void Process_Integrator::WriteOutHistogram(std::string dir)
 }
 
 void Process_Integrator::SetTotal(const int mode)  
-{ 
+{
   if (p_proc->IsGroup()) {
-    m_max=0.0;
+    m_weightmax=0.0;
     msg_Indent();
     for (size_t i(0);i<p_proc->Size();++i) {
       (*p_proc)[i]->Integrator()->SetTotal(msg_LevelIsTracking());
-      m_max+=(*p_proc)[i]->Integrator()->Max();
+      m_weightmax+=(*p_proc)[i]->Integrator()->WeightMax();
     }
   }
   double totalxs=TotalResult();
@@ -301,21 +318,21 @@ void Process_Integrator::SetTotal(const int mode)
                 <<m_totalxs<<" GeV"<<om::reset<<" +- ( "<<om::red
                 <<m_totalerr<<" GeV = "<<dabs(m_totalerr/m_totalxs)*100.
                 <<" %"<<om::reset<<" ) "<<om::bold<<" exp. eff: "
-                <<om::red<<(100.*dabs(m_totalxs/m_max))<<" %"<<om::reset<<std::endl;
+                <<om::red<<(100.*dabs(m_totalxs/m_weightmax))<<" %"<<om::reset<<std::endl;
     }
     else {
       msg_Info()<<om::bold<<p_proc->ResultsName()<<om::reset<<" : "<<om::blue<<om::bold
                 <<m_totalxs*rpa->Picobarn()<<" pb"<<om::reset<<" +- ( "<<om::red
                 <<m_totalerr*rpa->Picobarn()<<" pb = "<<dabs(m_totalerr/m_totalxs)*100.
                 <<" %"<<om::reset<<" ) "<<om::bold<<" exp. eff: "
-                <<om::red<<(100.*dabs(m_totalxs/m_max))<<" %"<<om::reset<<std::endl;
+                <<om::red<<(100.*dabs(m_totalxs/m_weightmax))<<" %"<<om::reset<<std::endl;
     }
   }
 }
 
 double Process_Integrator::GetMaxEps(double epsilon)
 {
-  if (!p_whisto) return m_max;
+  if (!p_whisto) return m_weightmax;
   if (epsilon<=-1.) {
     int nsamples(-epsilon), npoints(p_whisto->Fills());
     npoints*=-(epsilon-int(epsilon));
@@ -349,10 +366,10 @@ double Process_Integrator::GetMaxEps(double epsilon)
     cnt+= p_whisto->Value(i);
     double twmax = exp(log(10.)*(p_whisto->Xmin()+(i-1)*p_whisto->BinSize()));
     if (cutxs-cnt*twmax>pxs) {
-      return Min(exp(log(10.)*(p_whisto->Xmin()+i*p_whisto->BinSize())),dabs(m_max));
+      return Min(exp(log(10.)*(p_whisto->Xmin()+i*p_whisto->BinSize())),dabs(m_weightmax));
     }
   }
-  return m_max;
+  return m_weightmax;
 }
 
 void Process_Integrator::SetUpEnhance(const int omode) 
@@ -361,12 +378,12 @@ void Process_Integrator::SetUpEnhance(const int omode)
     double max(GetMaxEps(m_maxeps));
     if (omode || msg->LevelIsTracking())
       msg_Info()<<"  reduce max for "<<p_proc->ResultsName()<<" to "
-		<<max/Max()<<" ( eps = "<<m_maxeps<<" -> exp. eff "
+		<<max/m_weightmax<<" ( eps = "<<m_maxeps<<" -> exp. eff "
                 <<dabs(m_totalxs/max)<<" ) "<<std::endl;
     SetMax(max);
   }
   if (p_proc->IsGroup()) {
-    double oldmax(m_max);
+    //this is the only place where m_max is calculated for groups
     m_max=0.0;
     for (size_t i(0);i<p_proc->Size();++i) {
       (*p_proc)[i]->Integrator()->SetUpEnhance(msg_LevelIsTracking());
@@ -375,10 +392,9 @@ void Process_Integrator::SetUpEnhance(const int omode)
     if (omode || p_proc->Parent()==p_proc)
       if (p_whisto)
     msg_Info()<<"  reduce max for "<<p_proc->ResultsName()<<" to "
-	      <<m_max/oldmax<<" ( eps = "<<m_maxeps<<" -> exp. eff "
+	      <<m_max/m_weightmax<<" ( eps = "<<m_maxeps<<" -> exp. eff "
 	      <<dabs(m_totalxs/m_max)<<" ) "<<std::endl;
   }
-
 }
 
 void Process_Integrator::SetEnhanceFactor(const double &efac)
@@ -419,7 +435,7 @@ void Process_Integrator::AddPoint(const double value)
 #endif
   double max=dabs(value)/dabs(p_proc->Last())*
     ATOOLS::Max(p_proc->LastPlus(),-p_proc->LastMinus());
-  if (max>m_max)  m_max  = max;
+  if (max>m_weightmax)  m_weightmax  = max;
   if (max>m_smax) m_smax = max;
   if (p_whisto) {
     if(value!=0.) p_whisto->Insert(max);
@@ -440,32 +456,15 @@ void Process_Integrator::AddPoint(const double value)
 
 void Process_Integrator::SetMax(const double max) 
 {
+  //sets m_max for unweighting
   m_max=max;
-  if (!p_proc->IsGroup()) return;
-  double sum(0.0);
-  m_max=0.0;
-  for (size_t i(0);i<p_proc->Size();++i) {
-    sum+=(*p_proc)[i]->Integrator()->TotalXS();
-    m_max+=(*p_proc)[i]->Integrator()->Max();
-  }
-  if (m_totalxs!=0.) {
-    if (!ATOOLS::IsEqual(sum,m_totalxs,1e-11)) {
-      msg_Error().precision(12);
-      msg_Error()<<METHOD<<"(): Summation does not agree for '"
-		 <<p_proc->ResultsName()<<".\n  sum = "<<sum
-		 <<" vs. total = "<<m_totalxs<<" ("
-		 <<((sum-m_totalxs)/m_totalxs)<<")"<<std::endl;
-      msg_Error().precision(6);
-    }
-    m_totalxs=sum;
-  }
 } 
 
 void Process_Integrator::Reset(const int mode)
 {
   m_n=0;
   m_totalxs=m_totalsum=m_totalsumsqr=m_totalerr=0.0;
-  m_smax=m_max=m_wmin=m_ssigma2=m_ssumsqr=m_ssum=0.0;
+  m_smax=m_weightmax=m_max=m_wmin=m_ssigma2=m_ssumsqr=m_ssum=0.0;
   m_sn=0;
   m_son=1;
   m_vsmax.clear(); 
@@ -479,7 +478,7 @@ void Process_Integrator::Reset(const int mode)
 void Process_Integrator::ResetMax(const int flag)
 {
   if (p_proc->IsGroup()) {
-    m_max=0.0;
+    m_weightmax=0.0;
     for (size_t i(0);i<p_proc->Size();++i)
       (*p_proc)[i]->Integrator()->ResetMax(flag);
     return;
@@ -488,7 +487,7 @@ void Process_Integrator::ResetMax(const int flag)
     m_vsmax.clear();
     m_vsn.clear();
     m_vsum.clear();
-    m_max=0.0;
+    m_weightmax=0.0;
     return;
   }
   if (flag==0) {
@@ -498,7 +497,7 @@ void Process_Integrator::ResetMax(const int flag)
       m_vsum.erase(m_vsum.begin());
     }
     if (m_vsmax.empty()) {
-      m_vsmax.push_back(m_max);
+      m_vsmax.push_back(m_weightmax);
       m_vsn.push_back(m_n);
       m_vsum.push_back(m_ssum);
     }
@@ -517,10 +516,10 @@ void Process_Integrator::ResetMax(const int flag)
     m_vsum.push_back(m_ssum);
     if (flag==2) m_smax = 0.;
   }
-  m_max=0.0;
-  if (flag==1) return; //restart m_max determination after "full optimisation"
+  m_weightmax=0.0;
+  if (flag==1) return; //restart m_weightmax determination after "full optimisation"
   for (size_t i=0;i<m_vsmax.size();i++) {
-    m_max=ATOOLS::Max(m_max,m_vsmax[i]);
+    m_weightmax=ATOOLS::Max(m_weightmax,m_vsmax[i]);
   }
 } 
 
@@ -544,7 +543,7 @@ void Process_Integrator::MPICollect
   sv[3*i+0]=m_msn;
   sv[3*i+1]=m_mssum;
   sv[3*i+2]=m_mssumsqr;
-  mv[2*i+0]=m_max;
+  mv[2*i+0]=m_weightmax;
   mv[2*i+1]=m_smax;
   ++i;
   if (p_proc->IsGroup())
@@ -558,7 +557,7 @@ void Process_Integrator::MPIReturn
   m_msn=sv[3*i+0];
   m_mssum=sv[3*i+1];
   m_mssumsqr=sv[3*i+2];
-  m_max=mv[2*i+0];
+  m_weightmax=mv[2*i+0];
   m_smax=mv[2*i+1];
   ++i;
   if (p_proc->IsGroup())
