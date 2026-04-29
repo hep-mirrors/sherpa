@@ -52,7 +52,7 @@ namespace PHASIC {
 
     long unsigned int m_n, m_itmin, m_itmax;
 
-    double m_max, m_totalxs, m_totalsum, m_totalsumsqr, m_totalerr;
+    double m_max, m_weightmax, m_totalxs, m_totalsum, m_totalsumsqr, m_totalerr;
     double m_ssum, m_ssumsqr, m_smax, m_ssigma2, m_wmin;
     double m_mssum, m_mssumsqr, m_msn;
 
@@ -166,6 +166,7 @@ namespace PHASIC {
 
     inline double TotalXS() const    { return m_totalxs;  }
     inline double TotalError() const { return m_totalerr; }
+    inline double WeightMax() const  { return m_weightmax;}
     inline double Max() const        { return m_max;      }
 
     inline double ISRThreshold() const      { return m_threshold;   }
