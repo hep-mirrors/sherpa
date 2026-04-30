@@ -14,19 +14,11 @@
 using namespace ATOOLS;
 using namespace BEAM;
 
-<<<<<<< HEAD
-Beam_Spectra_Handler::Beam_Spectra_Handler()
-    : p_kinematics(nullptr), p_weight(nullptr), m_beammode(beammode::collider),
-      m_collidermode(collidermode::monochromatic), m_mode(0),
-      m_on(false), m_symmetric(false),
-      m_polarisation(0) {
-=======
 Beam_Spectra_Handler::Beam_Spectra_Handler() :
   p_kinematics(nullptr), p_weight(nullptr), m_beammode(beammode::collider),
   m_collidermode(collidermode::monochromatic), m_mode(0),
   m_on(false), m_symmetric(false),  
   m_polarisation(0) {
->>>>>>> 7c1f8b276214f293997496cb74490a0fa47926c3
   msg_Info() << "Initializing beam spectra ...\n";
   for (size_t i = 0; i < 2; i++)
     p_BeamBase[i] = nullptr;
