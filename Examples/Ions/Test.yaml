@@ -12,20 +12,30 @@ PDF_LIBRARY:   None
 PDF_SET:       None
 
 IONS:
-  R_Form:          1     # 0 = hcs,     1 = Gauss	
+  R_Form:          0     # 0 = hcs,     1 = Gauss  (Gauss has heavy tails → nucleons escape)
   P_Form:          1     # 0 = K_Fermi, 1 = Potential
   Rho_0:           0.17
   R_min^2(Pauli):  2.25
   K_Fermi:         0.05
-  Sigma_Psi:       1.03
-  V^(loc)_2:      -0.1
-  V^(loc)_3:       0.0
+  # Gaussian width: sigma^2 = L = 1.08 fm^2  (Aichelin 1991, AppPotentials.tex eq.35)
+  Sigma_Psi:       1.0392
+  # Hard EOS (K=380 MeV): alpha=-124 MeV, beta=70.5 MeV, gamma=2
+  # V^(loc)_2 [GeV*fm^3] = alpha/rho0/1000 = -124/(0.17*1000)
+  V^(loc)_2:      -0.7294
+  # nu = gamma = 2
+  nu^(loc):        2.0
+  # V^(loc)_3 [GeV*fm^6]: energy-matched so that U3(rho0) = beta = 70.5 MeV
+  # V3 = beta/1000 / (0.5*rho0^2) * (nu+1)^(3/2) * (2*pi*sigma^2)^(3*nu/2)
+  V^(loc)_3:       7922.
   R^(loc)_max:    -1.
-  nu^(loc):        2.
-  V^(Yuk):         0.0066
-  a^(Yuk):         0.8
+  # Yukawa: t3 = -6.66 MeV (attractive!), aY = 1.5 fm (Aichelin 1991 Table 1, eq.5.15)
+  # Previous values (+0.0066, 0.8 fm) had wrong sign and wrong range.
+  V^(Yuk):        -0.00666
+  a^(Yuk):         1.5
   R^(Yuk)_max:    -1.
   delta_t:         0.1
+  # Evolver 0=Newton-Euler, 1=RK4 (rewritten to standard form)
+  Evolver:         1
   N_steps:         25000
 
 EW_SCHEME: alpha0

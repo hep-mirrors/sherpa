@@ -83,8 +83,13 @@ void Ion_Propagation::UpdateDistances(size_t level) {
 }
 
 const double Ion_Propagation::Pmax(size_t i) const {
-  return sqrt(2.*(*p_constituents)[i]->m_flav.Mass()*dabs(m_potentials.U(i))); 
-  return ATOOLS::rpa->hBar_c()*(3.*M_PI*M_PI*m_tilderho[i]);
+  // Fermi momentum at local interaction density (per-spin convention).
+  // ρ̃ already self-subtracted in UpdateDensities (j=i excluded).
+  // p_F = ℏc · (3π² · ρ̃ / 2)^(1/3)  → matches Python's pF formula.
+  const double tilderho = m_potentials.RhoTilde(i);
+  if (tilderho<=0.) return 0.;
+  return ATOOLS::rpa->hBar_c() *
+         pow(3.*M_PI*M_PI*tilderho/2., 1./3.);
 }
 
 
@@ -103,22 +108,51 @@ void Ion_Propagation::Evolve(int Nsteps,double dt) {
 }
 
 void Ion_Propagation::RungeKuttaStep(const double & dt) {
-  double inct=0.;
-  for (size_t l=1;l<5;l++) {
-    if (l==1 || l==2) inct = dt/2.;
-    if (l==3 || l==4) inct = dt;
-    for (size_t i=0;i<m_A;i++) {
-      m_mom[l][i] = m_mom[0][i]-m_potentials.Nabla(l-1,i)*inct;
-      Vec3D dr    = m_mom[l][i]/(*p_constituents)[i]->m_flav.HadMass();
-      m_pos[l][i] = m_pos[0][i]+dr*inct;
-    }
-    UpdateDistances(l);
+  // Standard RK4 for dr/dt = p/m, dp/dt = -∇U(r).
+  // kr[0..3] = velocity slopes, kp[0..3] = force slopes at each stage.
+  std::vector<Vec3D> kr0(m_A),kr1(m_A),kr2(m_A),kr3(m_A);
+  std::vector<Vec3D> kp0(m_A),kp1(m_A),kp2(m_A),kp3(m_A);
+  // Stage 1: slopes at initial state (level-0 distances already set)
+  for (size_t i=0;i<m_A;i++) {
+    kr0[i] = m_mom[0][i]/(*p_constituents)[i]->m_flav.HadMass();
+    kp0[i] = -m_potentials.Nabla(0,i);
   }
+  // Stage 2: half-step advance with stage-1 slopes
+  for (size_t i=0;i<m_A;i++) {
+    m_pos[1][i] = m_pos[0][i]+kr0[i]*(dt/2.);
+    m_mom[1][i] = m_mom[0][i]+kp0[i]*(dt/2.);
+  }
+  UpdateDistances(1);
+  for (size_t i=0;i<m_A;i++) {
+    kr1[i] = m_mom[1][i]/(*p_constituents)[i]->m_flav.HadMass();
+    kp1[i] = -m_potentials.Nabla(1,i);
+  }
+  // Stage 3: half-step advance with stage-2 slopes
+  for (size_t i=0;i<m_A;i++) {
+    m_pos[2][i] = m_pos[0][i]+kr1[i]*(dt/2.);
+    m_mom[2][i] = m_mom[0][i]+kp1[i]*(dt/2.);
+  }
+  UpdateDistances(2);
+  for (size_t i=0;i<m_A;i++) {
+    kr2[i] = m_mom[2][i]/(*p_constituents)[i]->m_flav.HadMass();
+    kp2[i] = -m_potentials.Nabla(2,i);
+  }
+  // Stage 4: full-step advance with stage-3 slopes
+  for (size_t i=0;i<m_A;i++) {
+    m_pos[3][i] = m_pos[0][i]+kr2[i]*dt;
+    m_mom[3][i] = m_mom[0][i]+kp2[i]*dt;
+  }
+  UpdateDistances(3);
+  for (size_t i=0;i<m_A;i++) {
+    kr3[i] = m_mom[3][i]/(*p_constituents)[i]->m_flav.HadMass();
+    kp3[i] = -m_potentials.Nabla(3,i);
+  }
+  // Combine: r_new = r0 + dt/6*(k1+2k2+2k3+k4), same for p
   for (size_t i=0;i<m_A;i++) {
     (*p_constituents)[i]->m_r =
-      Vec4D(0.,1./6.*(m_pos[1][i]+2.*m_pos[2][i]+2.*m_pos[3][i]+m_pos[4][i])); 
+      Vec4D(0.,m_pos[0][i]+dt/6.*(kr0[i]+2.*kr1[i]+2.*kr2[i]+kr3[i]));
     (*p_constituents)[i]->m_p =
-      Vec4D(0.,1./6.*(m_mom[1][i]+2.*m_mom[2][i]+2.*m_mom[3][i]+m_pos[4][i])); 
+      Vec4D(0.,m_mom[0][i]+dt/6.*(kp0[i]+2.*kp1[i]+2.*kp2[i]+kp3[i]));
   }
 }
 
@@ -132,25 +166,50 @@ void Ion_Propagation::NewtonEulerStep(const double & dt) {
 }
 
 void Ion_Propagation::CalculateRadii(int step) {
-  double RA2 = 0., RZ2 = 0., rr;
-  Vec4D R    = Vec4D(0.,0.,0.,0.);
+  // Mass-weighted CM
+  Vec4D Rcm  = Vec4D(0.,0.,0.,0.);
+  double Mtot = 0.;
   for (size_t i=0;i<m_A;i++) {
-    Vec4D r = (*p_constituents)[i]->m_r;
-    R      += r*(*p_constituents)[i]->m_flav.Mass();
-    RA2    += rr = Vec3D(r).Sqr();
-    if ((*p_constituents)[i]->m_flav.Kfcode()==kf_p_plus)
-      RZ2  += rr;
+    double mi = (*p_constituents)[i]->m_flav.Mass();
+    Rcm  += (*p_constituents)[i]->m_r * mi;
+    Mtot += mi;
   }
+  Rcm = Rcm / Mtot;
+  // CM-subtracted RMS radii
+  double RA2 = 0., RZ2 = 0., rr;
+  for (size_t i=0;i<m_A;i++) {
+    Vec3D dr = Vec3D((*p_constituents)[i]->m_r - Rcm);
+    RA2     += rr = dr.Sqr();
+    if ((*p_constituents)[i]->m_flav.Kfcode()==kf_p_plus)
+      RZ2   += rr;
+  }
+  // Energy diagnostics: U2, U3, UY, T, with proper double/triple-counting for total E.
+  double T=0., U2=0., U3=0., UY=0.;
+  for (size_t i=0;i<m_A;i++) {
+    U2 += m_potentials.LocalPotential2(i);
+    U3 += m_potentials.LocalPotential3(i);
+    UY += m_potentials.YukawaPotential(i);
+    double M = (*p_constituents)[i]->m_flav.HadMass();
+    T  += Vec3D((*p_constituents)[i]->m_p).Sqr()/(2.*M);
+  }
+  double E = T + 0.5*U2 + (U3/3.) + 0.5*UY;
   if (step!=-1 && m_analyse) {
-    m_histos["R"]->Insert(step,sqrt(-R.Abs2()));
+    m_histos["R"]->Insert(step,sqrt(-Rcm.Abs2()));
     m_histos["R_A"]->Insert(step,sqrt(RA2/double(m_A)));
     m_histos["R_Z"]->Insert(step,sqrt(RZ2/double(m_Z)));
     m_histos["R_A_norm"]->Insert(step,sqrt(RA2/double(m_A))/m_R);
     m_histos["R_Z_norm"]->Insert(step,sqrt(RZ2/double(m_Z))/m_R);
   }
-  msg_Out()<<"Check[t = "<<(step*m_deltat)<<"]: R = "<<R<<" (nom: "<<m_R<<"), "
+  msg_Out()<<"Check[t = "<<(step*m_deltat)<<"]: Rcm = "<<Rcm<<" (nom: "<<m_R<<"), "
 	   <<"r_A/R = "<<(sqrt(RA2/double(m_A))/m_R)<<", "
 	   <<"r_Z/R = "<<(sqrt(RZ2/double(m_Z))/m_R)<<".\n";
+  msg_Out()<<"E[t = "<<(step*m_deltat)<<"]: "
+	   <<"T = "<<T<<", "
+	   <<"U2 = "<<(0.5*U2)<<", "
+	   <<"U3 = "<<(U3/3.)<<", "
+	   <<"UY = "<<(0.5*UY)<<", "
+	   <<"E = "<<E<<" GeV; "
+	   <<"<U>/A = "<<((U2+U3+UY)/double(m_A))<<"\n";
   if (sqrt(RA2/double(m_A))/m_R>2.) {
     for (size_t i=0;i<m_A;i++) {
       msg_Out()<<"- "

@@ -64,7 +64,9 @@ void Ion_Base::MakeInitialPositions(bool withBlocking) {
     r2 += Vec3D(m_constituents[i]->m_r).Sqr();
   }
   double meanR2 = r2/double(m_A);
-  double scale  = m_R/sqrt(meanR2);
+  // Scale so that r_rms = sqrt(3/5)*m_R, matching a uniformly-filled sphere
+  // of outer radius m_R (not the incorrect r_A = m_R that the naive formula gives).
+  double scale  = sqrt(3./5.) * m_R / sqrt(meanR2);
   for (size_t i=0;i<m_A;i++)
     m_constituents[i]->m_r *= scale;
   CheckRadius();
@@ -149,7 +151,7 @@ void Ion_Base::MakeInitialMomenta(bool withBlocking) {
     do {
       double p      = (m_Pform==0 ?
 		       pow(ran->Get(),1./3.)*m_kFermi :
-		       ran->Get()*p_prop->Pmax(i));
+		       pow(ran->Get(),1./3.)*p_prop->Pmax(i));
       double ctheta = 1.-2.*ran->Get(), stheta = sqrt(1.-ctheta*ctheta);
       double phi    = 2.*M_PI*ran->Get();
       mom           = p*Vec4D(0.,stheta*cos(phi),stheta*sin(phi),ctheta);

@@ -14,8 +14,8 @@ Ion_Potentials::Ion_Potentials(size_t A) : m_A(A) {
   m_rho0     = ionpars->Get("Rho_0");
   m_sigma    = ionpars->Get("Sigma_Psi");
   m_sigma2   = sqr(m_sigma);
-  m_norm     = pow(4.*m_sigma2,-3./2.);
-  m_rhonorm  = pow(2.*m_sigma2,-3./2.);  
+  m_norm     = pow(4.*M_PI*m_sigma2,-3./2.);
+  m_rhonorm  = pow(2.*M_PI*m_sigma2,-3./2.);
   m_V2loc    = ionpars->Get("V^(loc)_2");
   m_V3loc    = ionpars->Get("V^(loc)_3");
   m_maxRloc  = ionpars->Get("R^(loc)_max");
@@ -45,8 +45,8 @@ void Ion_Potentials::UpdateDensities() {
     double tilderho = 0., rho = 0.;
     for (size_t j=0;j<m_A;j++) {
       if (j==i) continue;
-      tilderho += exp(   (*p_deltar2norm)[0][i][j]);
-      rho      += exp(2.*(*p_deltar2norm)[0][i][j]);
+      tilderho += exp(-   (*p_deltar2norm)[0][i][j]);
+      rho      += exp(-2.*(*p_deltar2norm)[0][i][j]);
     }
     m_tilderho[i] = m_norm*tilderho;
     m_rho[i]      = m_rhonorm*rho;
@@ -116,7 +116,7 @@ Ion_Potentials::NablaLocalPotential3(const size_t & level,const size_t & i) {
 	if (i==j || i==k || j==k ||
 	    (*p_deltar)[0][i][j]>m_maxRloc || (*p_deltar)[0][i][k]>m_maxRloc) continue;
 	nabla -= ( m_U3pref *
-		   ((*p_deltarvec)[level][i][j]+(*p_deltarvec)[level][i][k])/(3.*m_sigma2) *
+		   ((*p_deltarvec)[level][i][j]+(*p_deltarvec)[level][i][k])/(2.*m_sigma2) *
 		   m_norm * exp(-(*p_deltar2norm)[level][i][j]) *
 		   m_norm * exp(-(*p_deltar2norm)[level][i][k]) );
       }
@@ -134,8 +134,8 @@ const double Ion_Potentials::YukawaPotential(const size_t & i) {
       if (rij_by_aY>m_maxRYuk/m_aYuk) continue;
       double arg1      = m_sigma/m_aYuk-(*p_deltar)[0][i][j]/(2.*m_sigma);
       double arg2      = m_sigma/m_aYuk+(*p_deltar)[0][i][j]/(2.*m_sigma);
-      U += ( m_VYukpref/rij_by_aY *
-	     exp(-rij_by_aY) * (1.-erf(arg1)) - exp(+rij_by_aY) * (1.-erf(arg2)) );
+      U += ( 2.*m_VYukpref/rij_by_aY *
+	     ( exp(-rij_by_aY) * (1.-erf(arg1)) - exp(+rij_by_aY) * (1.-erf(arg2)) ) );
     }
   }
   return U;
@@ -143,21 +143,37 @@ const double Ion_Potentials::YukawaPotential(const size_t & i) {
 
 ATOOLS::Vec3D
 Ion_Potentials::NablaYukawa(const size_t & level,const size_t & i) {
+  // Port of Python form:
+  //   prefac = V*exp(σ²/aY²)*2*aY
+  //   A1,2   = exp(∓r/aY)*(1-erf(arg1,2))
+  //   G1,2   = exp(-arg1,2²)/(σ*√π)
+  //   dA1/dr = exp(-r/aY)*(-(1-erf(arg1))/aY + G1)
+  //   dA2/dr = exp(+r/aY)*(+(1-erf(arg2))/aY - G2)
+  //   dU/dr  = prefac*((dA1/dr - dA2/dr)*r - (A1 - A2))/r²
+  //   ∇U     = (r_i-r_j)/r * dU/dr
   Vec3D nabla(0.,0.,0.);
-  if (dabs(m_UYukpref)>1.e-10) {
+  if (dabs(m_VYukpref)>1.e-10) {
+    const double prefac = 2.*m_VYukpref*m_aYuk;
+    const double sqrtpi = sqrt(M_PI);
     for (size_t j=0;j<m_A;j++) {
       if (i==j) continue;
-      double rij_by_aY = (*p_deltar)[level][i][j]/m_aYuk;
-      if (rij_by_aY>m_maxRYuk/m_aYuk) continue;
-      double exppref   = 1./(M_PI*m_sigma*rij_by_aY);
-      double erfpref1  = 1.+1./rij_by_aY;
-      double erfpref2  = 1.-1./rij_by_aY;
-      double arg1      = m_sigma/m_aYuk-(*p_deltar)[level][i][j]/(2.*m_sigma);
-      double arg2      = m_sigma/m_aYuk+(*p_deltar)[level][i][j]/(2.*m_sigma);
-      nabla += ( m_UYukpref * 
-		 ((*p_deltarvec)[level][i][j]/(*p_deltar)[level][i][j]) * 
-		 (exp(-rij_by_aY)*( exppref*exp(-sqr(arg1))-erfpref1*(1.-erf(arg1))) -
-		  exp(+rij_by_aY)*( exppref*exp(-sqr(arg2))+erfpref2*(1.-erf(arg2))) ) );
+      const double rij = (*p_deltar)[level][i][j];
+      if (rij>m_maxRYuk) continue;
+      const double rij_by_aY = rij/m_aYuk;
+      const double arg1   = m_sigma/m_aYuk - rij/(2.*m_sigma);
+      const double arg2   = m_sigma/m_aYuk + rij/(2.*m_sigma);
+      const double e1     = exp(-rij_by_aY);
+      const double e2     = exp(+rij_by_aY);
+      const double erfc1  = 1.-erf(arg1);
+      const double erfc2  = 1.-erf(arg2);
+      const double G1     = exp(-sqr(arg1))/(m_sigma*sqrtpi);
+      const double G2     = exp(-sqr(arg2))/(m_sigma*sqrtpi);
+      const double A1     = e1*erfc1;
+      const double A2     = e2*erfc2;
+      const double dA1dr  = e1*(-erfc1/m_aYuk + G1);
+      const double dA2dr  = e2*(+erfc2/m_aYuk - G2);
+      const double dUdr   = prefac*((dA1dr - dA2dr)*rij - (A1 - A2))/(rij*rij);
+      nabla += ((*p_deltarvec)[level][i][j]/rij) * dUdr;
     }
   }
   return nabla;
