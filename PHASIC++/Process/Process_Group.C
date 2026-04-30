@@ -17,6 +17,14 @@
 using namespace PHASIC;
 using namespace ATOOLS;
 
+Process_Group::Process_Group() :
+  m_ignore_construct(0)
+{
+  m_ignore_construct =
+    Settings::GetMainSettings()["IGNORE_VANISHING_PROCESSES"]
+      .SetDefault(0).Get<int>();
+}
+
 Process_Group::~Process_Group()
 {
   Clear();
@@ -385,8 +393,15 @@ bool Process_Group::ConstructProcesses()
       int construct(ConstructProcess(cpi));
       msg_Debugging()<<" ... "<<cpi<<"\n";
       if (m_blocks.empty()) {
-	if (cnt!=m_nin+m_nout || cfl || !construct)
-	  THROW(fatal_error,"Corrupted map file '"+mapfile+"'");
+	if (cnt!=m_nin+m_nout || cfl || !construct) {
+	  if (!construct && m_ignore_construct) {
+            msg_Tracking()<<METHOD<<"(): Process "<<GenerateName(cpi.m_ii,cpi.m_fi)
+                          <<" is zero. Continue."<<std::endl;
+	  }
+          else {
+	    THROW(fatal_error,"Corrupted map file '"+mapfile+"'");
+	  }
+	}
       }
       *map>>cfl;
     }

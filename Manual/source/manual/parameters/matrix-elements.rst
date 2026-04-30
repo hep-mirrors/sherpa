@@ -769,3 +769,19 @@ The following parameters can be customised:
 
 :option:`LIST`
   If set to 1 all generated dipoles will be listed for all generated processes.
+
+
+.. _IGNORE_VANISHING_PROCESSES:
+
+IGNORE_VANISHING_PROCESSES
+==========================
+
+.. index:: IGNORE_VANISHING_PROCESSES
+
+This parameter instructs Sherpa to disregard formal warnings when a subprocess
+of a process group (processes specified using containers) possesses valid 
+amplitudes, but it's contribution to the cross section is zero as the interference 
+between every pair of amplitudes vanishes, usually due to the properties of 
+the colour matrix. This usually happens for subleading contributions encountered
+in NLO EW calculations where amplitudes of two different orders are interfered.
+
