@@ -8,7 +8,9 @@ using namespace ATOOLS;
 using namespace std;
 
 Reconnect_By_Singlet::Reconnect_By_Singlet() :
-  Reconnection_Base(), m_weights(Reconnection_Weights(this)) {}
+  Reconnection_Base(), m_weights(Reconnection_Weights(this)) {
+  m_typespec = string("By-Singlet");
+}
 
 Reconnect_By_Singlet::~Reconnect_By_Singlet() {}
 
@@ -159,7 +161,6 @@ bool Reconnect_By_Singlet::ReshuffleSinglet(Part_List * singlet) {
 	(*pit[4])->SetFlow(2,(*pit[0])->GetFlow(1));
 	(*pit[1])->SetFlow(2,(*pit[4])->GetFlow(1));
 	(*pit[5])->SetFlow(2,(*pit[3])->GetFlow(1));
-	//msg_Out()<<"Shuffle "<<(**pit[4])<<"\n";
 	singlet->insert(pit[1],*pit[4]);
 	singlet->erase(pit[4]);
 	return true;
@@ -177,7 +178,6 @@ bool Reconnect_By_Singlet::ReshuffleSinglet(Part_List * singlet) {
 	(*pit[2])->SetFlow(2,(*pit[0])->GetFlow(1));
 	(*pit[1])->SetFlow(2,(*pit[4])->GetFlow(1));
 	(*pit[5])->SetFlow(2,(*pit[1])->GetFlow(1));
-	//msg_Out()<<"Shuffle "<<(**pit[1])<<"\n";
 	singlet->insert(pit[5],*pit[1]);
 	singlet->erase(pit[1]);
 	return true;
@@ -212,16 +212,11 @@ void Reconnect_By_Singlet::ReconnectSinglets() {
       while (pit12!=(*sit1)->end() && !hit) {
 	pit21=(*sit2)->begin(); pit22=pit21; pit22++;
 	while (pit22!=(*sit2)->end() && !hit) {
-	  //msg_Out()<<METHOD<<" tests to shuffle particles: "
-	  //	   <<(*pit11)->Number()<<" & "<<(*pit12)->Number()<<" vs "
-	  //	   <<(*pit21)->Number()<<" & "<<(*pit22)->Number()<<"\n";
 	  dist12 = m_weights((*pit11),(*pit22));
 	  dist21 = m_weights((*pit21),(*pit12));
 	  dist22 = m_weights((*pit21),(*pit22));
 	  double rand = ran->Get();
 	  if ((dist11*dist22)>(dist21*dist12)*rand) {
-	    //msg_Out()<<"   ("<<dist11<<" * "<<dist22<<" = "<<(dist11*dist22)<<") "
-	    //	     <<"vs. ("<<dist21<<" * "<<dist12<<" = "<<(dist12*dist21)<<" * "<<rand<<").\n";
 	    hit = true;
 	    SpliceSinglets((*sit1),(*sit2),pit12,pit22);
 	    AftermathOfSlicing((*pit11),(*pit12),(*pit21),(*pit22));
@@ -243,10 +238,6 @@ void Reconnect_By_Singlet::SpliceSinglets(Part_List * sing1,Part_List * sing2,
   help.splice(help.begin(),*sing1,pit1,sing1->end());
   sing1->splice(sing1->end(),*sing2,pit2,sing2->end());
   for (Part_Iterator pit=help.begin();pit!=help.end();pit++) sing2->push_back(*pit);
-  // msg_Out()<<"--------- Singlet 2 with "<<sing2->size()<<" particles.\n";
-  // for (Part_Iterator pit=sing2->begin();pit!=sing2->end();pit++) {
-  //   msg_Out()<<"  "<<(*pit)->Number()<<" ["<<(*pit)->GetFlow(1)<<", "<<(*pit)->GetFlow(2)<<"]\n";
-  // }
 }
 
 void Reconnect_By_Singlet::AftermathOfSlicing(Particle * part11,Particle * part12,
