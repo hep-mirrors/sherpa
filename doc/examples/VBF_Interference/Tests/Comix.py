@@ -1,0 +1,99 @@
+#!/usr/bin/env python
+from mpi4py import MPI
+import sys, os, shutil, tempfile
+sys.path.append('')
+import Sherpa
+
+class process:
+
+    def __init__(self,fl):
+        self.fl=fl
+
+    def differential(self,pargs):
+        card=tempfile.NamedTemporaryFile(mode='w',dir=".",prefix='Sherpa_',suffix='.yaml')
+        card.write("ME_GENERATORS: Comix\n\
+BEAMS: 93\n\
+BEAM_ENERGIES: 4000\n\
+SCALES: \"VAR{sqr(91.188)}\"\n\
+COUPLINGS: None\n\
+MODEL: HEFT\n\
+EVENTS: 0\n\
+INIT_ONLY: 2\n\
+OUTPUT: 0\n\
+WRITE_REFERENCES_FILE: false\n\
+EW_SCHEME: 0\n\
+WIDTH_SCHEME: Fixed\n\
+1/ALPHAQED(0): 132.507\n\
+SIN2THETAW: 0.22224648578577769\n\
+VEV: 246.21845810181637\n\
+PARTICLE_DATA: {\n\
+  25: {Mass: 125.0,               Width: 4.07e-3},\n\
+   6: {Mass: 173.0,               Width: 1.4915},\n\
+  24: {Mass:  80.419002445756163, Width: 2.0476},\n\
+  23: {Mass:  91.188000000000002, Width: 2.441404},\n\
+  }\n\
+PROCESSES:\n\
+- "+str(self.fl[0])+" "+str(self.fl[1])+" -> "+' '.join(str(n) for n in self.fl[2:])+": \n\
+    "+'\n    '.join(n for n in pargs)+"\n\
+\n")
+        card.flush()
+
+        sys.argv.append(os.path.basename(card.name))
+
+        if os.path.exists("Process"): shutil.rmtree('Process')
+        if os.path.exists("graphs"): shutil.rmtree('graphs')
+
+        Generator=Sherpa.Sherpa(len(sys.argv),sys.argv)
+        try:
+            Generator.InitializeTheRun()
+            Process=Sherpa.MEProcess(Generator)
+
+            for n in self.fl[0:2]: Process.AddInFlav(n);
+            for n in self.fl[2:]: Process.AddOutFlav(n);
+            Process.Initialize();
+
+            Process.SetMomentum(0,77.269668120939,0,0,77.269668120939);
+            Process.SetMomentum(1,236.164977070296,0,0,-236.164977070296);
+            Process.SetMomentum(2,66.2157842501182,-55.6529762737472,-22.4858021400283,27.9582727980725);
+            Process.SetMomentum(3,88.9539423070054,64.3957926730905,-14.808289655514,-59.5541794959917);
+            Process.SetMomentum(4,36.3173422828411,3.96044569427437,-26.7147436670196,-24.2814062854105);
+            Process.SetMomentum(5,121.94757635127,-12.7032620936176,64.0088354625618,-103.017995966027);
+
+            res=Process.CSMatrixElement()
+            sys.stdout.write('.')
+            sys.stdout.flush()
+            return res
+
+        except Sherpa.Exception as exc:
+            print(exc)
+            exit(1)
+
+print('Running tests ', end=' ')
+sys.stdout.flush()
+
+wc=process(fl=[1,4,22,22,3,2])
+ws=[
+['VBF signal',['Order: {QCD: 0, EW: 5, HEFT: 1}'],5.69355160255e-16],
+['VBF interference with EW background',['Order: {QCD: 0, EW: 4.5, HEFT: 0.5}'],-1.84364916599e-13],
+['EW background',['Order: {QCD: 0, EW: 4, HEFT: 0}'],3.32061696831e-11]
+]
+for i in ws: i.append(wc.differential(pargs=i[1]))
+
+zc=process(fl=[2,3,22,22,3,2])
+zs=[
+['VBF signal',['Order: {QCD: 0, EW: 5, HEFT: 1}','Min_N_TChannels: 2'],1.00087658611e-16],
+['VBF interference with EW+QCD background',['Min_Order: {QCD: 0, EW: 3.5, HEFT: 0.5}','Max_Order: {QCD: 1, EW: 4.5, HEFT: 0.5}'],-6.81002803133e-14],
+['gF+2j signal',['Order: {QCD: 4, EW: 2, HEFT: 2}'],4.59007712280e-17],
+['gF+2j interference with EW+QCD background',['Min_Order: {QCD: 2, EW: 2, HEFT: 1}','Max_Order: {QCD: 3, EW: 3, HEFT: 1}'],7.22685546204e-13],
+['EW+QCD background',['Max_Order: {QCD: 4, EW: 4, HEFT: 0}'],9.46007403087e-09]
+]
+for i in zs: i.append(zc.differential(pargs=i[1]))
+
+print(' done\n')
+print(wc.fl)
+for i in ws:
+    print('\033[1m{0}\033[0m: {1} vs. {2}, rel. dev. \033[31m{3}\033[0m'.format(i[0],i[3],i[2],i[3]/i[2]-1))
+print()
+print(zc.fl)
+for i in zs:
+    print('\033[1m{0}\033[0m: {1} vs. {2}, rel. dev. \033[31m{3}\033[0m'.format(i[0],i[3],i[2],i[3]/i[2]-1))

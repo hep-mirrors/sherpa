@@ -84,6 +84,8 @@ set(Org_HEADERS CXXFLAGS_PACKAGES.H
 sherpa_create_git_info(Org ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR})
  
 add_library(ToolsOrg SHARED ${Org_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
+# libzippp.cpp is vendored third-party code; exclude it from clang-tidy.
+set_source_files_properties(libzippp.cpp PROPERTIES CXX_CLANG_TIDY "")
 sherpa_handle_shared_library(ToolsOrg ToolsOrg)
 add_dependencies(ToolsOrg Org_Git_Info)
 

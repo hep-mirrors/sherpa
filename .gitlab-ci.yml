@@ -1,5 +1,6 @@
 # Original author: Valentin Boettcher <hiro@protagon.space> (Gitlab: vale9811)
 # Rewritten by: Andrii Verbytskyi andrii.verbytskyi@mpp.mpg.de
+# Rewritten by: Frank Siegert frank.siegert@tu-dresden.de
 
 stages:
   - check_if_dockerfile_updated
@@ -38,24 +39,42 @@ trigger_pages:
     - "curl -X POST -F token=$PAGES_TRIGGER_TOKEN -F ref=master https://gitlab.com/api/v4/projects/8892644/trigger/pipeline"
   needs: []
 
-# build manual for this branch/tag and deploy into its own path_prefix using the
-# gitlab pages "parallel deployment" feature
-manual:
+# base snippet to build manual into its own path_prefix using the gitlab pages "parallel deployment" feature
+.manual-base:
   stage: deploy
   image: $CI_REGISTRY_IMAGE:Fedora_42
   script:
     - cmake -S . -B build  -DSHERPA_ENABLE_MANUAL=ON -DLibZip_DIR=/usr -DSHERPA_ENABLE_INSTALL_LHAPDF:BOOL=ON
-    - cd build/Manual; make; cd ../..;
+    - cd build/doc; make; cd ../..;
     - mkdir public;
-    - mv build/Manual/sherpamanual_html/* public/;
-    - mv build/Manual/sherpamanual_singlehtml/index.html public/index_single.html
-    - mv build/Manual/sherpamanual.pdf public/
+    - mv build/doc/sherpamanual_html/* public/;
+    - mv build/doc/sherpamanual_singlehtml/index.html public/index_single.html
+    - mv build/doc/sherpamanual.pdf public/
   artifacts:
     paths:
       - public
   pages:
-    path_prefix: "$CI_COMMIT_REF_SLUG"
-    expire_in: 1 month
+    path_prefix: "$CI_COMMIT_REF_NAME"
+
+# build manual for normal commits
+manual-dev:
+  extends: .manual-base
+  pages:
+    expire_in: 2 months
+  rules:
+    - if: (!$CI_COMMIT_TAG) && ($CI_COMMIT_BRANCH != $CI_DEFAULT_BRANCH) && ($CI_PIPELINE_SOURCE != "merge_request_event")
+      when: manual
+  allow_failure: true
+
+# build manual for release tags or master
+manual-release:
+  extends: .manual-base
+  pages:
+    expire_in: never
+  rules:
+    - if: $CI_COMMIT_TAG || ($CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH)
+      when: always
+    - when: never
 
 # build manual index page for all versions
 # also get older versions manuals from eos if available and add them
@@ -70,19 +89,17 @@ manual-index:
     - cd ..
     - git checkout master
     - git pull
-    - bash Manual/make-index.sh > public/index.html;
+    - bash doc/make-index.sh > public/index.html;
 
   artifacts:
     paths:
       - public
   pages: true
   rules:
-    - if: '$CI_COMMIT_BRANCH == "master"'
-      when: always
-    - if: '$CI_COMMIT_TAG'
+    - if: $CI_COMMIT_TAG || ($CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH)
       when: always
     - when: never
-  needs: [ "manual" ]
+  needs: [ "manual-release" ]
 
 ##########################################################################
 ##########################################################################
@@ -547,7 +564,7 @@ Archlinux0-make-ccache-GNU:
     OS: Archlinux
     FREL: 0
     TOOLSET: GNU
-    EXTRACMAKEFLAGS: $COMMON_EXTRA_CMAKE_FLAGS $CATCH2_CMAKE_FLAGS $DOXYGEN_CMAKE_FLAGS
+    EXTRACMAKEFLAGS: $COMMON_EXTRA_CMAKE_FLAGS $CATCH2_CMAKE_FLAGS $DOXYGEN_CMAKE_FLAGS -DSHERPA_ENABLE_INSTALL_LHAPDF=ON
     BUILDDOCS: 1
   extends: .any-cmake-ccache-main
   rules:
@@ -561,7 +578,7 @@ Archlinux0-make-ccache-GNU-feature:
     OS: Archlinux
     FREL: 0
     TOOLSET: GNU
-    EXTRACMAKEFLAGS: $COMMON_EXTRA_CMAKE_FLAGS $CATCH2_CMAKE_FLAGS $DOXYGEN_CMAKE_FLAGS
+    EXTRACMAKEFLAGS: $COMMON_EXTRA_CMAKE_FLAGS $CATCH2_CMAKE_FLAGS $DOXYGEN_CMAKE_FLAGS -DSHERPA_ENABLE_INSTALL_LHAPDF=ON
     BUILDDOCS: 1
   extends: .any-cmake-ccache
   rules:

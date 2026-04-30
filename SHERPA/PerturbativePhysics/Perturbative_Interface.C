@@ -8,7 +8,6 @@
 #include "SHERPA/SoftPhysics/Soft_Collision_Handler.H"
 #include "PDF/Main/Shower_Base.H"
 #include "ATOOLS/Phys/Cluster_Amplitude.H"
-#include "ATOOLS/Phys/Variations.H"
 #include "PHASIC++/Main/Process_Integrator.H"
 #include "PHASIC++/Process/Single_Process.H"
 #include "PHASIC++/Process/ME_Generator_Base.H"
@@ -184,7 +183,7 @@ Perturbative_Interface::DefineInitialConditions(ATOOLS::Blob* blob,
   m_lkfweightsmap.Clear();
   Poincare * cmsboost = p_remnants->GetCMSBoost();
   if (cmsboost!=nullptr) {
-    p_ampl->Boost(cmsboost);
+    p_ampl->Boost(*cmsboost);
   }
   if (p_me->Process()->Info().m_ckkw&1) {
     if ((m_bbarmode&mets_bbar_mode::enabled) && p_me->HasNLO() &&

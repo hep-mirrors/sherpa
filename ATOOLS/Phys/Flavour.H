@@ -107,7 +107,6 @@ namespace ATOOLS {
     bool IsDiQuark() const;
     bool IsBaryon() const;
     bool IsMeson() const;
-    bool IsNucleon() const;
     bool IsB_Hadron() const;
     bool IsC_Hadron() const;
 
@@ -187,9 +186,13 @@ namespace ATOOLS {
 
     inline int FormFactor() const {return p_info->m_formfactor; }
 
+    inline bool IsNucleon() const
+    { return p_info->m_kfc == kf_p_plus || p_info->m_kfc == kf_n; }
+
     inline bool IsIon() const { return p_info->m_kfc>1000000000; }
 
-    inline int GetAtomicNumber() const { return (p_info->m_kfc/10)%1000; }
+    inline unsigned int GetAtomicNumber() const { return (p_info->m_kfc/10000)%1000; }
+    inline unsigned int GetMassNumber() const   { return (p_info->m_kfc/10)%1000; }
 
     inline void SetOn(const bool on) const { p_info->m_on=on; }
 
@@ -282,6 +285,10 @@ namespace ATOOLS {
     inline int KKGeneration() const
     { if (!IsKK()) return 0;
       return (Kfcode()-1000000*(Kfcode()/1000000))/100000; }
+
+    inline bool CanHavePDF() const {
+      return IsHadron() || IsIon() || IsPhoton();
+    }
 
     inline bool IsDummy() const
     { return p_info->m_dummy; }

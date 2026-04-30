@@ -142,7 +142,7 @@ namespace ATOOLS {
     void     RemoveOwnedParticles(const bool = true);
     void     DeleteOwnedParticles();
 
-    void     Boost(const Poincare * boost,std::set<Particle *> * treateds=NULL);
+    void     Boost(const Poincare& boost, std::set<Particle*>* treateds = nullptr);
     void     BoostInCMS();
     void     BoostInLab();
 
@@ -170,15 +170,15 @@ namespace ATOOLS {
     void        SetType(btp::code _type)          { m_type     = _type; }
     void        SetTypeSpec(std::string _type)    { m_typespec = _type; }
     void        SetBeam(int _beam)                { m_beam     = _beam; }
-    Blob_Data_Base * operator[](const std::string name) 
+    Blob_Data_Base * operator[](const std::string name)
     {
       String_BlobDataBase_Map::const_iterator cit=m_datacontainer.find(name);
       if (cit==m_datacontainer.end()) return 0;
       return cit->second;
-    } 
+    }
     const String_BlobDataBase_Map & GetData() const {return m_datacontainer;}
 
-    void     AddData(const std::string name, Blob_Data_Base * data); 
+    void     AddData(const std::string name, Blob_Data_Base * data);
     void     ClearAllData();
 
     int      Id()                        const { return m_id; }
@@ -186,7 +186,7 @@ namespace ATOOLS {
     int      Beam()                      const { return m_beam; }
     int      NInP()                      const { return m_inparticles.size(); }
     int      NOutP()                     const { return m_outparticles.size(); }
- 
+
     Vec4D CheckMomentumConservation() const;
     double CheckChargeConservation() const;
     std::string ShortProcessName();
@@ -212,47 +212,47 @@ namespace ATOOLS {
 
 
   template <class Type>
-  std::ostream & Blob_Data<Type>::operator>>(std::ostream & s) const 
+  std::ostream & Blob_Data<Type>::operator>>(std::ostream & s) const
   {
     s<<m_data;
     return s;
   }
 
   template <class Type>
-  Type &Blob_Data_Base::Get() 
+  Type &Blob_Data_Base::Get()
   {
     return ((Blob_Data<Type>*)this)->Get();
   }
 
   template <class Type>
-  void Blob_Data_Base::Set(const Type &data) 
+  void Blob_Data_Base::Set(const Type &data)
   {
     return ((Blob_Data<Type>*)this)->Set(data);
   }
 
   /*!
-    \file 
+    \file
     \brief  contains the class Blob
   */
-  
+
   /*!
-    \class Blob 
+    \class Blob
     \brief This class contains a point where a given number of incomming and outgoing Particle interact
-    
+
     A typical Blob is the hard process at a center of a collision. Another Blob
     might be the transition between a hard particles and soft particles, i.e. the particle
     shower.
   */
-  
+
   /*!
-    \var int Blob::m_id 
+    \var int Blob::m_id
     \brief contains an unique number for each Blob in an event.
   */
-  
+
   /*!
     \var   char Blob::m_type;
     \brief Classifies the type of blob.
-    
+
     Info about the blob type:
     H = primary hard interaction - i.e. signal
     h = secondary hard interaction, for instance underlying event vertex
@@ -262,33 +262,33 @@ namespace ATOOLS {
     I = initial state shower for H
     i = hadron to particle transition
   */
-  
+
   /*!
     \fn void Blob::BoostInLab()
     \brief boost blob back in lab system
-    
+
     \warning this is not jet implemented!
   */
-  
+
   /*!
     \fn Blob* Blob::UpstreamBlob()
     \brief Return unique upstream blob, if it exists
-    
+
     Will return the production blob of all inparticles, if it is equal among them.
     Otherwise it will return NULL.
   */
-  
+
   /*!
     \fn Blob* Blob::DownstreamBlob()
     \brief Return unique downstream blob, if it exists
-    
+
     Will return the decay blob of all outparticles, if it is equal among them.
     Otherwise it will return NULL.
   */
 }
 
 #endif
-  
+
 
 
 

@@ -14,11 +14,11 @@
 using namespace ATOOLS;
 using namespace BEAM;
 
-Beam_Spectra_Handler::Beam_Spectra_Handler()
-    : p_kinematics(nullptr), p_weight(nullptr), m_beammode(beammode::collider),
-      m_collidermode(collidermode::monochromatic), m_mode(0),
-      m_on(false), m_symmetric(false),  
-      m_polarisation(0) {
+Beam_Spectra_Handler::Beam_Spectra_Handler() :
+  p_kinematics(nullptr), p_weight(nullptr), m_beammode(beammode::collider),
+  m_collidermode(collidermode::monochromatic), m_mode(0),
+  m_on(false), m_symmetric(false),  
+  m_polarisation(0) {
   msg_Info() << "Initializing beam spectra ...\n";
   for (size_t i = 0; i < 2; i++)
     p_BeamBase[i] = nullptr;
@@ -136,16 +136,18 @@ void Beam_Spectra_Handler::FixPositions() {
 }
 
 // TODO: Improve this handling for rescattering etc.
-bool Beam_Spectra_Handler::CheckConsistency(const ATOOLS::Flavour *_beams,
-                                            const ATOOLS::Flavour *_bunches) {
+bool Beam_Spectra_Handler::CheckConsistency(const ATOOLS::Flavour* _beams,
+                                            const ATOOLS::Flavour* _bunches)
+{
   for (int i = 0; i < 2; i++) {
-    if (_beams[i]   != GetBeam(i)->Beam() ||
-  _bunches[i] != GetBeam(i)->Bunch() ) return false;
+    if (_beams[i] != GetBeam(i)->Beam() || _bunches[i] != GetBeam(i)->Bunch())
+      return false;
   }
   return true;
 }
 
-bool Beam_Spectra_Handler::CheckConsistency(const ATOOLS::Flavour *_bunches) {
+bool Beam_Spectra_Handler::CheckConsistency(const ATOOLS::Flavour* _bunches)
+{
   for (int i = 0; i < 2; i++) {
     if (_bunches[i] != GetBeam(i)->Bunch()) return false;
   }

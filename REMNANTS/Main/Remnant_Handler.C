@@ -20,7 +20,6 @@ Remnant_Handler::Remnant_Handler(PDF::ISR_Handler* isr, YFS::YFS_Handler *yfs,
 				 const std::array<size_t, 2>& tags) :
   m_id(isr->Id()), m_tags(tags), p_softblob(nullptr),
   p_cmsboost(nullptr), p_labboost(nullptr),
-  m_invGeV2fm(rpa->hBar()*rpa->c()*1.e12),
   m_check(true), m_output(false), m_neednewCMS(true), m_fails(0) {
   rempars = new Remnants_Parameters();
   rempars->Init();
@@ -105,7 +104,7 @@ Remnant_Handler::~Remnant_Handler()
 }
 
 void Remnant_Handler::InitializeRemnants(PDF::ISR_Handler* isr,
-                                         YFS::YFS_Handler *yfs,
+                                         YFS::YFS_Handler* yfs,
                                          BEAM::Beam_Spectra_Handler* beam)
 {
   // Finish the initialisation of the Remnant_Bases: make sure they know
@@ -116,15 +115,12 @@ void Remnant_Handler::InitializeRemnants(PDF::ISR_Handler* isr,
     p_remnants[i]->SetBeam(beam->GetBeam(i));
     p_remnants[i]->Reset();
   }
-  if ((beam->GetBeam(0)->Type()==BEAM::beamspectrum::monochromatic ||
-       beam->GetBeam(0)->Type()==BEAM::beamspectrum::Fixed_Target) &&
-      (beam->GetBeam(1)->Type()==BEAM::beamspectrum::monochromatic ||
-       beam->GetBeam(1)->Type()==BEAM::beamspectrum::Fixed_Target)) {
+  if (beam->GetBeam(0)->Type() == BEAM::beamspectrum::monochromatic &&
+      beam->GetBeam(1)->Type() == BEAM::beamspectrum::monochromatic) {
     if (!beam->IsSymmetric()) {
-      p_cmsboost = new Poincare(p_remnants[0]->InMomentum()+
-				p_remnants[1]->InMomentum());
-      p_labboost = new Poincare(p_remnants[0]->InMomentum()+
-				p_remnants[1]->InMomentum());
+      Vec4D total_mom = p_remnants[0]->InMomentum() + p_remnants[1]->InMomentum();
+      p_cmsboost = new Poincare(total_mom);
+      p_labboost = new Poincare(total_mom);
       p_labboost->Invert();
     }
     m_neednewCMS = false;
@@ -132,22 +128,23 @@ void Remnant_Handler::InitializeRemnants(PDF::ISR_Handler* isr,
   isr->SetRemnants(p_remnants);
 }
 
-void Remnant_Handler::InitializeCMSBoost() {
-  if (m_neednewCMS) {
-    if (p_cmsboost) { delete p_cmsboost; p_cmsboost = nullptr; }
-    if (p_labboost) { delete p_labboost; p_labboost = nullptr; }
-    p_cmsboost = new Poincare(p_remnants[0]->InMomentum()+
-			      p_remnants[1]->InMomentum());
-    p_labboost = new Poincare(p_remnants[0]->InMomentum()+
-			      p_remnants[1]->InMomentum());
-    p_labboost->Invert();
-  }
+void Remnant_Handler::InitializeCMSBoost()
+{
+  if (!m_neednewCMS) return;
+
+  delete p_cmsboost; p_cmsboost = nullptr;
+  delete p_labboost; p_labboost = nullptr;
+
+  Vec4D total_mom = p_remnants[0]->InMomentum() + p_remnants[1]->InMomentum();
+  p_cmsboost = new Poincare(total_mom);
+  p_labboost = new Poincare(total_mom);
+  p_labboost->Invert();
 }
 
-void Remnant_Handler::BoostRemnantMomenta(const ATOOLS::Poincare * boost) {
+void Remnant_Handler::BoostRemnantMomenta(const ATOOLS::Poincare& boost) {
   for (size_t i=0;i<2;i++) {
     Vec4D mom = p_remnants[i]->InMomentum();
-    p_remnants[i]->SetInMomentum((*boost)*mom);
+    p_remnants[i]->SetInMomentum(boost * mom);
   }
 }
 

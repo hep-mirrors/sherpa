@@ -10,7 +10,6 @@
 
 namespace ATOOLS {
   class Poincare;
-  
   typedef std::map<int,int> CI_Map;
 
   class ClusterAmplitude_PVector: 
@@ -80,9 +79,7 @@ namespace ATOOLS {
 
     void DeletePrev();
     void DeleteNext();
-
-    void Boost(const ATOOLS::Poincare * boost);
-    
+    void Boost(const ATOOLS::Poincare& boost);
     void IdSort();
 
     size_t NQCD() const;

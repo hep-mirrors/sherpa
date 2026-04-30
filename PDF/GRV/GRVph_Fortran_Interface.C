@@ -33,7 +33,7 @@ PDF_Base *GRVph_Fortran_Interface::GetCopy() {
 void GRVph_Fortran_Interface::CalculateSpec(const double &_x,
                                             const double &_Q2) {
   float x = _x / m_rescale, Q2 = _Q2;
-  float pdf[m_nf + 1];
+  float pdf[6];
 
   if (m_set == std::string("GRVLO"))
     grvglo_(x, Q2, pdf[0], pdf[1], pdf[2], pdf[3], pdf[4], pdf[5]);

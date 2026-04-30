@@ -251,10 +251,10 @@ bool Signal_Processes::FillBlob(Blob_List *const bloblist,Blob *const blob)
                 (proc->Info().m_fi.m_nlocpl));
   Poincare * cmsboost = p_mehandler->Remnants()->GetCMSBoost();
   if (cmsboost!=nullptr) {
-    blob->Boost(cmsboost);
-    p_mehandler->Remnants()->BoostRemnantMomenta(cmsboost);
+    blob->Boost(*cmsboost);
+    p_mehandler->Remnants()->BoostRemnantMomenta(*cmsboost);
   }
-  
+
   ME_Weight_Info* wgtinfo=proc->GetMEwgtinfo();
   if (wgtinfo) {
     blob->AddData("MEWeightInfo",new Blob_Data<ME_Weight_Info*>(wgtinfo));

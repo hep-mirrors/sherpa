@@ -505,7 +505,6 @@ void Single_Process::AddISR(ATOOLS::Cluster_Sequence_Info &csi,
 void Single_Process::AddBeam(ATOOLS::Cluster_Sequence_Info& csi,
                              const double& Q2)
 {
-  DEBUG_FUNC(Name());
   if (p_int->Beam() && p_int->Beam()->On()) {
     p_int->Beam()->CalculateWeight(Q2);
     msg_Debugging()<<"Types = ("<<p_int->Beam()->GetBeam(0)->Type()<<", "

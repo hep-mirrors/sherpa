@@ -138,7 +138,7 @@ ATOOLS::Return_Value::code Beam_Remnant_Handler::FillSimpleBunchBlobs(
   m_beam = 0;
   Poincare * cmsboost = p_remnants->GetCMSBoost();
   m_boosted = (cmsboost!=nullptr);
-  for (size_t beam=0;beam<2;beam++) { 
+  for (size_t beam=0;beam<2;beam++) {
     m_bunchmoms[beam] = (m_boosted ?
 			 (*cmsboost)*p_beam->GetBeam(beam)->InMomentum() :
 			 p_beam->GetBeam(beam)->InMomentum() );

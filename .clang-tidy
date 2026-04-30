@@ -1,0 +1,21 @@
+---
+Checks: >-
+    -*,
+    bugprone-assert-side-effect,
+    bugprone-copy-constructor-init,
+    bugprone-incorrect-roundings,
+    bugprone-infinite-loop,
+    bugprone-integer-division,
+    bugprone-misplaced-widening-cast,
+    bugprone-suspicious-semicolon,
+    bugprone-use-after-move,
+    clang-analyzer-core.*,
+    clang-analyzer-cplusplus.*,
+    performance-move-const-arg,
+    performance-unnecessary-copy-initialization,
+    performance-unnecessary-value-param,
+
+# Only report on Sherpa's own headers; ignore system/third-party headers.
+HeaderFilterRegex: '(ATOOLS|AMISIC|SHERPA|COMIX|AMEGIC|PHASIC|CSSHOWER|DIRE|AHADIC|HADRONS|PHOTONS|MCATNLO|METOOLS|MODEL|PDF|BEAM|REMNANTS|RECONNECTIONS|YFS|EXTAMP|ALARIC|DIM|EXTRA_XS|SHRiMPS|AddOns)/.*'
+
+WarningsAsErrors: ''

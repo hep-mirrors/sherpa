@@ -100,6 +100,9 @@ bool Beam_Channels::DefineColliderChannels() {
                      m_beamtype[1] == beamspectrum::Pomeron ||
                      m_beamtype[1] == beamspectrum::Reggeon;
   if (beam0_is_on || beam1_is_on) {
+    // register additional rans for the impact parameter in EPA
+    if (m_beamtype[0] == beamspectrum::EPA) AddERan("b_0");
+    if (m_beamtype[1] == beamspectrum::EPA) AddERan("b_1");
     double exponent = (int(beam0_is_on) +
                        int(beam1_is_on)) * 0.5;
     m_beamparams.push_back(Channel_Info(channel_type::simple, exponent));

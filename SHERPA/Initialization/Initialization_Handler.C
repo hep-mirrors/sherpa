@@ -777,10 +777,19 @@ bool Initialization_Handler::InitializeThePDFs()
     if (pid == 3) {
       msg_Info() << "  Beam re-scattering: ";
     }
-    msg_Info() << (it.second->PDF(0) ? it.second->PDF(0)->Set() : "None")
-               << " + "
-               << (it.second->PDF(1) ? it.second->PDF(1)->Set() : "None")
-               << "\n";
+    for (int i{0}; i < 2; ++i) {
+      if (i > 0)
+        msg_Info() << " + ";
+      if (it.second->PDF(i)) {
+        msg_Info() << it.second->PDF(i)->Set();
+        if (it.second->PDF(i)->Member() > 0)
+          msg_Info() << "/" << it.second->PDF(i)->Member();
+      }
+      else {
+        msg_Info() << "None";
+      }
+    }
+    msg_Info() << '\n';
   }
   return true;
 }
@@ -1296,8 +1305,6 @@ bool Initialization_Handler::InitializeTheReweighting(Variations_Mode mode)
   }
   p_variations = new Variations(mode);
   s_variations = p_variations;
-  if (mode != Variations_Mode::nominal_only && p_variations->HasVariations())
-    Variations::CheckConsistencyWithBeamSpectra(p_beamspectra);
   if (p_mehandler)
     p_mehandler->InitializeTheReweighting(mode);
   if (mode != Variations_Mode::nominal_only)
