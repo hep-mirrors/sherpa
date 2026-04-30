@@ -211,7 +211,11 @@ bool Matrix_Element_Handler::GenerateOneEvent()
     if (!GenerateOneTrialEvent())
       continue;
     m_evtinfo.m_ntrial=n;
+    msg_Out()<<METHOD<<" with ["<<p_beam<<"|"<<p_remnants<<"]\n";
     if (p_beam && !p_beam->IsSymmetric()) {
+      msg_Out()<<METHOD<<"(symmetric = "<<p_beam->IsSymmetric()<<"), "
+	       <<"Momenta = "<<p_beam->GetBeam(0)->OutMomentum(0)<<" & "
+	       <<p_beam->GetBeam(1)->OutMomentum(0)<<"\n";
       if (p_remnants) p_remnants->InitializeCMSBoost();
     }
     return true;

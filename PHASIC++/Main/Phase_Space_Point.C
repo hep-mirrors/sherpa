@@ -153,6 +153,7 @@ bool Phase_Space_Point::DefineBeamKinematics() {
   m_sprime = p_beamhandler->Sprime();
   m_y      = (p_beamhandler->GetBeam(0)->InMomentum() +
 	      p_beamhandler->GetBeam(1)->InMomentum()).Y();
+  msg_Out()<<METHOD<<": E' = "<<sqrt(m_sprime)<<", y = "<<m_y<<" + "<<p_beamhandler->Y()<<"\n"; 
   m_y     += p_beamhandler->Y();
   return true;
 }
@@ -210,6 +211,7 @@ bool Phase_Space_Point::DefineISRKinematics(Process_Integrator *const process) {
     p_yfshandler->SetBornMomenta(p_moms);
     return(p_yfshandler->CalculateFSR(p_moms));
   }
+  msg_Out()<<METHOD<<":  E' = "<<sqrt(m_sprime)<<", y = "<<m_isrykey[2]<<" -> "<<m_y<<"\n";
   return p_isrhandler->MakeISR(m_sprime, m_isrykey[2], p_moms,
                                process->Process()->Selected()->Flavours());
 } 
