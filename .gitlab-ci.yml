@@ -45,11 +45,11 @@ trigger_pages:
   image: $CI_REGISTRY_IMAGE:Fedora_42
   script:
     - cmake -S . -B build  -DSHERPA_ENABLE_MANUAL=ON -DLibZip_DIR=/usr -DSHERPA_ENABLE_INSTALL_LHAPDF:BOOL=ON
-    - cd build/Manual; make; cd ../..;
+    - cd build/doc; make; cd ../..;
     - mkdir public;
-    - mv build/Manual/sherpamanual_html/* public/;
-    - mv build/Manual/sherpamanual_singlehtml/index.html public/index_single.html
-    - mv build/Manual/sherpamanual.pdf public/
+    - mv build/doc/sherpamanual_html/* public/;
+    - mv build/doc/sherpamanual_singlehtml/index.html public/index_single.html
+    - mv build/doc/sherpamanual.pdf public/
   artifacts:
     paths:
       - public
@@ -89,7 +89,7 @@ manual-index:
     - cd ..
     - git checkout master
     - git pull
-    - bash Manual/make-index.sh > public/index.html;
+    - bash doc/make-index.sh > public/index.html;
 
   artifacts:
     paths:

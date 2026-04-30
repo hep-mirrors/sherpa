@@ -15,10 +15,12 @@ Beam_Base::Beam_Base(beamspectrum _type, const ATOOLS::Flavour& _beam,
   m_energy(m_type==beamspectrum::Fixed_Target ? m_beam.Mass() : _energy),
   m_polarisation(_polarisation),
   m_x(1.), m_Q2(0.), m_weight(1.), m_on(false),
-  m_R(_beam.Radius() / ATOOLS::rpa->hBar_c()) {
+  m_R(_beam.Radius() / ATOOLS::rpa->hBar_c())
+{
   if (_energy == 0.) { // Fixed Target mode
     m_lab = ATOOLS::Vec4D(m_beam.Mass(true), 0., 0., 0.);
-  } else {
+  }
+  else {
     double disc = mode ? 1.0 : 1.0 - ATOOLS::sqr(m_beam.Mass() / m_energy);
     if (disc < 0.) {
       msg_Error() << "Error in Beam_Base :" << m_type << std::endl

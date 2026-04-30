@@ -15,7 +15,6 @@ CTestTestfile.cmake
 /AMEGIC++/Main/makelibs
 /ATOOLS/Org/CXXFLAGS.H
 /ATOOLS/Org/CXXFLAGS_PACKAGES.H
-/Manual/Sherpa.html
 *.l[ao]
 *.o
 *.so
@@ -50,8 +49,6 @@ doc/_extensions/__pycache__/
 NNPDF31_nnlo_as_0118_mc/
 SHERPA/Run/Sherpa-config
 install_manifest.txt
-Manual/sherpa-completion
-Manual/sherpamanual.fls
 MODEL/UFO/bin/Sherpa-generate-model
 MODEL/UFO/src/opt_einsum/*.py
 MODEL/UFO/src/opt_einsum/backends

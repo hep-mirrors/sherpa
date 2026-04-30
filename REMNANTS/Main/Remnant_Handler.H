@@ -37,7 +37,7 @@ namespace REMNANTS {
     Kinematics_Generator         m_kinematics;
     Colour_Generator             m_colours;
     Beam_Decorrelator            m_decorrelator;
-    ATOOLS::Blob *               p_softblob;
+    Blob *                       p_softblob;
     ATOOLS::Poincare *           p_cmsboost, * p_labboost;
 
     std::set<ATOOLS::Blob *> m_treatedshowerblobs;

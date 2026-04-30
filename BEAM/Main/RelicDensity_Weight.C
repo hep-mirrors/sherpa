@@ -18,7 +18,7 @@ RelicDensity_Weight::RelicDensity_Weight(Kinematics_Base * kinematics) :
     m_w[i]        = m_relativistic? 1./m_m2[i] : 1./(8.*m_m[i]+15.*m_temperature);
   }
   m_norm = (m_w[0]*m_w[1]);
-  
+
   if (m_relativistic) {
     m_norm /= (8.*m_temperature*m_BesselK2[0]*m_BesselK2[1]);
   }

@@ -81,7 +81,7 @@ FillBlobs(Blob_List *blobs,const Poincare * labboost) {
 bool Kinematics_Generator::
 CollinearKinematics(Blob_List *blobs,const Poincare * labboost) {
   // First a trivial check whether particles entering the shower are the beam particles
-  // (for example in elastic/diffractive scattering or some such).  In gthis case
+  // (for example in elastic/diffractive scattering or some such).  In this case
   // we just fill them into the beam blobs.
   size_t trivial=0;
   if (m_kintype==kin_type::intact &&
@@ -111,6 +111,15 @@ CollinearKinematics(Blob_List *blobs,const Poincare * labboost) {
   return true;
 }
 
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// We need to check if the transverse kinematics below also needs the boosting of
+// the blobs - my suspicion is, yes .... and I have the feeling I've done it before.
+//
+////////////////////////////////////////////////////////////////////////////////////////
+
+
+
 bool Kinematics_Generator::TransverseKinematics(const Poincare * labboost) {
   switch (m_kintype) {
   case kin_type::DIS1:
@@ -133,7 +142,8 @@ bool Kinematics_Generator::TransverseKinematicsDIS(const size_t &beam) {
   // Remnants fill the beam blobs with spectators and copies of the shower
   // initiators (they will become outging particles of the soft blob, as well as
   // copies of the spectators). if beam blobs cannot be filled return false and
-  // trigger retrial Fill the beam remnant blob with the original particles and
+  // trigger retrial.
+  // Fill the beam remnant blob with the original particles and
   // put them also into the ktmaps.
   if (!p_remnants[beam]->FillBlob(p_rhandler->GetColourGen(),
 				  &m_ktmap[beam], false)) return false;
