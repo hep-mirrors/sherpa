@@ -25,7 +25,7 @@ MI_Parameters::MI_Parameters() :
   m_parameters[string("pt_0(IR)")]
     = s["PT_0(IR)"].SetDefault(0.5).Get<double>();
   m_parameters_vector[string("pt_min(ref)")]
-    = s["PT_Min(ref)"].SetDefault({2.583}).GetVector<double>();
+    = s["PT_Min(ref)"].SetDefault({2.5}).GetVector<double>();
   m_parameters[string("pt_min(ref)")]
     = m_parameters_vector[string("pt_min(ref)")][0];
   m_parameters[string("pt_min(IR)")]
@@ -78,12 +78,12 @@ MI_Parameters::MI_Parameters() :
   m_scaleRscheme = s["MU_R_SCHEME"].SetDefault("PT").Get<scale_scheme>();
   m_scaleFscheme = s["MU_F_SCHEME"].SetDefault("PT").Get<scale_scheme>();
   m_parameters[string("RenScale_Factor")]
-    = s["MU_R_FACTOR"].SetDefault(1.0).Get<double>();
+    = s["MU_R_FACTOR"].SetDefault(0.5).Get<double>();
   m_parameters[string("FacScale_Factor")]
     = s["MU_F_FACTOR"].SetDefault(1.0).Get<double>();
   m_parameters[string("E_min")] = s["E_Min"].SetDefault(0.25).Get<double>();
   m_parameters_vector[string("SigmaND_Norm")]
-    = s["SIGMA_ND_NORM"].SetDefault({0.619}).GetVector<double>();
+    = s["SIGMA_ND_NORM"].SetDefault({1.0}).GetVector<double>();
   m_parameters[string("SigmaND_Norm")]
     = m_parameters_vector[string("SigmaND_Norm")][0];
   m_parameters[string("PomeronIntercept")]
