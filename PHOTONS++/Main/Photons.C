@@ -29,6 +29,7 @@ std::istream &PHOTONS::operator>>(std::istream &str,yfsmode::code &ym)
   str>>tag;
   ym=yfsmode::full;
   if      (tag.find("None")!=std::string::npos) ym=yfsmode::off;
+  else if (tag.find("0")!=std::string::npos)    ym=yfsmode::off;
   else if (tag.find("Soft")!=std::string::npos) ym=yfsmode::soft;
   else if (tag.find("1")!=std::string::npos)    ym=yfsmode::soft;
   else if (tag.find("Full")!=std::string::npos) ym=yfsmode::full;
