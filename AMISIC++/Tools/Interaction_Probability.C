@@ -207,7 +207,7 @@ void Interaction_Probability::OutputTables() {
       double b = p_mo->Bmax()*double(j)/40.;
       msg_Info()<<"   | "<<std::string(15,' ')<<" | "
 		<<std::setprecision(3)<<std::setw(6)
-		<<(b*rpa->hBar()*rpa->c()*1.e12)<<" | "
+		<<(b*rpa->hBarc()*1.e12)<<" | "
 		<<std::setprecision(6)<<std::setw(14)
 		<<((*p_diffxsec)(s,b)/xsratio)<<" | "
 		<<std::string(12,' ')<<" | "
@@ -226,7 +226,7 @@ void Interaction_Probability::OutputTables() {
 }
 
 void Interaction_Probability::InitAnalysis() {
-  double bmax = 20.*rpa->hBar()*rpa->c()*1.e12;
+  double bmax = 20.*rpa->hBarc()*1.e12;
   m_histos[std::string("b_times_P_in")] = new Histogram(0, 0., bmax, 200);
 }
 

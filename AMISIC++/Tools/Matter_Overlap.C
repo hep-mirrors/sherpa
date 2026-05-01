@@ -42,7 +42,7 @@ Matter_Overlap::Matter_Overlap() :
   // distributions of the hadron form factors ~pi^{-3/2} times the pi^2 from
   // the time-integrated overlap when they collide.
   ///////////////////////////////////////////////////////////////////////////
-  m_norm(1./M_PI), m_invGeV2fm(rpa->hBar()*rpa->c()*1.e12)
+  m_norm(1./M_PI), m_invGeV2fm(rpa->hBarc())
 {
   ///////////////////////////////////////////////////////////////////////////
   // This is a default initialization of default values.  Apart from the

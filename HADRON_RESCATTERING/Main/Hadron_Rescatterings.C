@@ -11,7 +11,7 @@ Hadron_Rescatterings::Hadron_Rescatterings(const bool & on) :
 }
 
 void Hadron_Rescatterings::Initialize() {
-  p_BM = new BaryonMeson();
+  // p_BM = new BaryonMeson();
   // p_MM = new MesonMeson();
   // p_BB = new BaryonBaryon();
 }

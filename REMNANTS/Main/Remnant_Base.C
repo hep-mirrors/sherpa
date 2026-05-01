@@ -54,6 +54,7 @@ Particle* Remnant_Base::MakeParticle(const Flavour& flav)
   part->SetNumber();
   part->SetBeam(m_beam);
   part->SetPosition(m_position + (*p_ff)());
+  msg_Out()<<METHOD<<": "<<m_position<<", "<<(*p_ff)()<<"\n";
   return part;
 }
 

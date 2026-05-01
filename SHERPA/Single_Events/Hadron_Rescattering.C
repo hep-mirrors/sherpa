@@ -7,14 +7,13 @@ using namespace SHERPA;
 using namespace ATOOLS;
 
 Hadron_Rescattering::Hadron_Rescattering(Hadron_Rescattering_Handler * reschandler) :
-  m_on(true),
+  m_on(false),
   p_reschandler(reschandler)
 {}
 
 Hadron_Rescattering::~Hadron_Rescattering() {}
 
 ATOOLS::Return_Value::code Hadron_Rescattering::Treat(Blob_List* blobs) {
-  msg_Out()<<METHOD<<" ==============================================\n";
   if (blobs->empty()) {
     msg_Error()<<METHOD<<"("<<blobs<<"):\n"
 	       <<"   Blob list contains "<<blobs->size()<<" entries.\n"
@@ -22,6 +21,7 @@ ATOOLS::Return_Value::code Hadron_Rescattering::Treat(Blob_List* blobs) {
     return Return_Value::Error;
   }
   if (!m_on) return Return_Value::Nothing;
+  msg_Out()<<METHOD<<" ==============================================\n";
   for (size_t blit(0);blit<blobs->size();++blit) {
     Blob* blob=(*blobs)[blit];
     if (p_reschandler && blob->Has(blob_status::needs_hadronRescatter)) {
