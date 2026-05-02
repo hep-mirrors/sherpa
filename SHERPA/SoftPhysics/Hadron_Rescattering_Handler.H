@@ -33,10 +33,6 @@ namespace SHERPA {
 		  ATOOLS::Particle * part2);
 
   public :
-    RotationAndBoost m_frame;
-    // double M[4][4];
-    // void toSameVFrame(ATOOLS::Vec4D &p1, ATOOLS::Vec4D &p2);
-    // void rot(double theta, double phi);#include "HADRON_RESCATTERING/Xsecs/Helper.H"
 
     Hadron_Rescattering_Handler();
     ~Hadron_Rescattering_Handler();

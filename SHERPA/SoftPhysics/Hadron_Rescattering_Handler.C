@@ -17,9 +17,9 @@ Hadron_Rescattering_Handler::Hadron_Rescattering_Handler() :
             << "======================================================\n";
   if (!m_on) return;
   p_coalescence = new Deuteron_Coalescence(
-    3,//0.7,                           // b_coal in fm
-    0.197326/(3),                          // p_coal in GeV using uncertainty principle : p = hba/(2r)
-    CoalescenceModel::Exponential   // or HardDisk, choose as you wish. 
+    2,//0.7,                           // b_coal in fm
+    0.197326/(2),                          // p_coal in GeV using uncertainty principle : p = hba/(2r)
+    CoalescenceModel::CrossSectionModel   // or HardDisk, choose as you wish. 
   );
   
   m_rescattering.Initialize();
@@ -52,7 +52,6 @@ void Hadron_Rescattering_Handler::HarvestParticles(Blob * blob) {
 
 }
 
-
 void Hadron_Rescattering_Handler::
 Schedule(Particle * part1,Particle * part2) {
 
@@ -64,19 +63,13 @@ if (!part1 || !part2) {
   
   Vec4D pA = part1->Momentum(), pB = part2->Momentum();
   Vec4D xA = part1->Position(), xB = part2->Position();
+  Vec4D P = pA + pB; 
   
-  // msg_Out() << "xAbeforeBost= " << xA[1] << " " << xA[2] << " " << xA[3] 
-  // << " xBbeforeBost=" << xB[1] << " " << xB[2] << " " << xB[3] << std::endl;
+  Poincare boost(P);
+  boost.Boost(pA); boost.Boost(pB);
+  boost.Boost(xA); boost.Boost(xB);
+  Vec4D dx = xA-xB;    double b = sqrt(dx[1]*dx[1] + dx[2]*dx[2]);
 
-  m_frame.toCenterOfMomentumFrame(pA, pB);
-  pA = m_frame.Transform(pA);  pB = m_frame.Transform(pB);
-  xA = m_frame.Transform(xA);  xB = m_frame.Transform(xB);
-
-    // msg_Out() << "xA=" << xA[1] << " " << xA[2] << " " << xA[3] 
-  // << " xB=" << xB[1] << " " << xB[2] << " " << xB[3] << "\n";
-
-  Vec4D dx = xA-xB;  double b = sqrt(dx[1]*dx[1] + dx[2]*dx[2]);
-  
     // Offset particles to position when the last particle is created.
   double tCreation = std::max(xA[0], xB[0]);
   double zA = xA[3] + (tCreation - xA[0]) * pA[3] / pA[0];

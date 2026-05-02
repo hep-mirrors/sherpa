@@ -5,16 +5,23 @@
 #include "HADRON_RESCATTERING/XSecs/HPR1R2.H"
 #include "HADRON_RESCATTERING/XSecs/ScatteringBase.H"
 #include "ATOOLS/Phys/Flavour.H"
+#include "ATOOLS/Phys/Particle.H"
+
 
 namespace HADRON_RESCATTERING {
   class BaryonBaryon : public ScatteringBase {
+
+    double mProton = 0.938272;
+    double mNeutron = 0.939565;
+    double mDeuteron = 1.875613;
+    double mPion = 0.139570;
+    
     NNfits  m_NN;
     HPR1R2  m_hpr1r2;
     double  m_s, m_mA, m_mA2, m_mB, m_mB2;
     
     double xstot(long int & A, long int & B, const double & plab);
     double xsel(long int & A, long int & B, const double & plab);
-
     
     bool m_test;
     void Tests();
@@ -26,6 +33,19 @@ namespace HADRON_RESCATTERING {
 		 const double & s)override;
     double XSel(const ATOOLS::Flavour & A,const ATOOLS::Flavour & B,
 		const double & s);
+
+    double pnToDGamma(ATOOLS::Particle * A , ATOOLS::Particle * B);
+    double NNToDPi(ATOOLS::Particle * A , ATOOLS::Particle * B);
+    
+    double nnToDPiMinus(ATOOLS::Particle * A , ATOOLS::Particle * B);
+    double pnToDPiZero(ATOOLS::Particle * A , ATOOLS::Particle * B);
+    double ppToDPiPlus(ATOOLS::Particle * A , ATOOLS::Particle * B);
+
+    double ppToPiPlusPiZero(ATOOLS::Particle * A , ATOOLS::Particle * B);
+    double pnToPiZeroPiZero(ATOOLS::Particle * A , ATOOLS::Particle * B);
+
+    double pnToPiPlusPiMinus(ATOOLS::Particle * A , ATOOLS::Particle * B);
+    double nnToPiMinusPiZero(ATOOLS::Particle * A , ATOOLS::Particle * B);
   };
 }
 

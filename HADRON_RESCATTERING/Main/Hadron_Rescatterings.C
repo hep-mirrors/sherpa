@@ -44,7 +44,6 @@ Blob * Hadron_Rescatterings::operator()(Particle * A,Particle * B,
   double dist2_fm2 = dist2 * 1e24;          // mm^2 → fm^2
   double r = ATOOLS::ran->Get();
   double Prob = std::exp(-dist2_fm2/C);
-  msg_Out() << "sigma/pi = " << xstot / M_PI << std::endl;
   msg_Out() << "dist2(mm^2)=" << dist2 
           << " dist2(fm^2)=" << dist2_fm2
           << " dist(fm)="   << sqrt(dist2_fm2)
