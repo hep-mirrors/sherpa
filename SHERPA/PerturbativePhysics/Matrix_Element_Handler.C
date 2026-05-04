@@ -284,6 +284,7 @@ bool Matrix_Element_Handler::GenerateOneTrialEvent()
       ran->RestoreStatus();
       info=proc->OneEvent(m_eventmode, Variations_Mode::all);
       assert(info);
+      if (info || m_evtinfo.m_weightsmap.BaseWeight()>Accu()) {
       if (!IsEqual(m_evtinfo.m_weightsmap.Nominal(), info->m_weightsmap.Nominal(), 1e-6)) {
         msg_Error()
           <<"ERROR: The results of the pilot run and the re-run are not"
@@ -295,6 +296,7 @@ bool Matrix_Element_Handler::GenerateOneTrialEvent()
       }
       m_evtinfo=*info;
       delete info;
+      }
       // also consume random number used to set the discriminator for
       // unweighting above, such that it is not re-used in the future
       ran->Get();
