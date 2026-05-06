@@ -80,6 +80,7 @@ double Singlet::JetVeto(Sudakov *const sud) const
     ampl->CreateLeg(-(*iit)->Momentum(),(*iit)->GetFlavour().Bar(),
 		    ColorID((*iit)->GetFlow(1),(*iit)->GetFlow(2)),
 		    1<<ampl->Legs().size());
+    ampl->Legs().back()->SetBeam((*iit)->Beam());
   }
   ampl->SetNIn(ampl->Legs().size());
   for (const_iterator iit(begin());iit!=end();++iit) {

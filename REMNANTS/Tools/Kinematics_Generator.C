@@ -214,7 +214,7 @@ bool Kinematics_Generator::TransverseKinematicsHH() {
   InitKTMaps();
   // Distribute transverse momenta - this will involve mostly minor reshuffling
   // of longitudinal momenta in the remnant break-up.  The check is to make sure
-  // this does not violate momentum conservation, as a by-product is already
+  // this does not violate momentum conservation, as a by-product it already
   // produces the momenta used in the boosting of the connected blobs.  If we
   // produce too large transverse momenta we start by scaling them down by
   // factors of 10 after 100 mistrials.  If we have to scale them down by a
@@ -383,7 +383,7 @@ bool Kinematics_Generator::CheckHH() {
   bool success = true;
   Part_Iterator plit[2];
   for (size_t beam = 0; beam < 2; beam++) {
-    plit[beam] = p_extracted[beam]->begin();
+    plit[beam]       = p_extracted[beam]->begin();
     m_checkmom[beam] = m_inmom[beam];
   }
   Particle *part[2];

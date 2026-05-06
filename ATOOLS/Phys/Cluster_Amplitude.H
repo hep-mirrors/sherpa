@@ -68,7 +68,8 @@ namespace ATOOLS {
 
     void CreateLeg(const Vec4D &p,const Flavour &fl,
 		   const ColorID &col=ColorID(),
-		   const size_t &id=std::string::npos);
+		   const size_t &id=std::string::npos,
+		   const int &beam=-1);
     void CombineLegs(Cluster_Leg *const i,Cluster_Leg *const j,
 		     const Flavour &fl,
 		     const ColorID &col=ColorID());

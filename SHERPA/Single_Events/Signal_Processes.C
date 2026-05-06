@@ -87,7 +87,7 @@ bool Signal_Processes::FillBlob(Blob_List *const bloblist,Blob *const blob)
           // If documentation mode is enabled, add disconnected blob of original
           // configuration, e.g. for parton-level stitching samples a posteriori
           Process_Base* bproc = mcatnloproc->BVIProc()->Selected();
-          Blob* docblob = bloblist->AddBlob(btp::Unspecified);
+          Blob* docblob       = bloblist->AddBlob(btp::Unspecified);
           for (unsigned int i=0;i<bproc->NIn();i++) {
             Particle* particle = new Particle(0,bproc->Flavours()[i],
                                               bproc->Integrator()->Momenta()[i]);
@@ -132,15 +132,21 @@ bool Signal_Processes::FillBlob(Blob_List *const bloblist,Blob *const blob)
     // Pass born momenta to in if using YFS
     if(p_yfshandler->Mode()!=YFS::yfsmode::off){
       particle = new Particle(0,proc->Flavours()[i],
-  			    p_yfshandler->BornMomenta()[i]);
+			      p_yfshandler->BornMomenta()[i]);
     }
     else{
       particle = new Particle(0,proc->Flavours()[i],
-              proc->Integrator()->Momenta()[i]);
+			      proc->Integrator()->Momenta()[i]);
     }
     particle->SetNumber(0);
     particle->SetStatus(part_status::decayed);
     particle->SetInfo('G');
+    for (size_t j=0;j<2;j++) {
+      if (particle->Momentum()[3]*p_remnants[j]->InMomentum()[3]>0.) {
+	particle->SetBeam(j);
+	break;
+      }
+    }
     blob->AddToInParticles(particle);
     if (ampl) {
       particle->SetFlow(1,ampl->Leg(i)->Col().m_j);

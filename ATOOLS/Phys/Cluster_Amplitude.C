@@ -109,9 +109,9 @@ void Cluster_Amplitude::Delete()
 
 void Cluster_Amplitude::CreateLeg
 (const Vec4D &p,const Flavour &fl,
- const ColorID &col,const size_t &id)
+ const ColorID &col,const size_t &id,const int & beam)
 {
-  m_legs.push_back(Cluster_Leg::New(this,p,fl,col));
+  m_legs.push_back(Cluster_Leg::New(this,p,fl,col,beam));
   if (id!=std::string::npos) m_legs.back()->SetId(id);
   else m_legs.back()->SetId(1<<(m_legs.size()-1));
 }
@@ -173,7 +173,8 @@ void Cluster_Amplitude::CombineLegs
   for (ClusterLeg_Vector::iterator clit(m_legs.begin());
        clit!=m_legs.end();++clit) {
     if (*clit==i || *clit==j) {
-      *clit = Cluster_Leg::New(this,i->Mom()+j->Mom(),fl,col);
+      *clit = Cluster_Leg::New(this,i->Mom()+j->Mom(),fl,col,
+			       Max(i->Beam(),j->Beam()));
       (*clit)->SetId( (i->Id() | j->Id()) );
       i->Delete();
       j->Delete();

@@ -254,7 +254,8 @@ Return_Value::code Remnant_Handler::MakeBeamBlobs(Blob_List* const bloblist,
   // This still needs debugging - therefore it is commented out.
   Return_Value::code rv = Return_Value::Success;
   if (!m_kinematics.FillBlobs(bloblist)) {
-    msg_Debugging() << METHOD << ": Filling of beam blobs failed.\n";
+    msg_Out() << METHOD << ": Filling of beam blobs failed.\n"
+	      <<(*bloblist);
     rv = Return_Value::New_Event;
   }
   else if (!CheckBeamBreakup() || !m_decorrelator(p_softblob)) {

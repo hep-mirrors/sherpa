@@ -37,7 +37,7 @@ Cluster_Leg *Cluster_Leg::New
 
 Cluster_Leg *Cluster_Leg::New
 (Cluster_Amplitude *const ampl,const Vec4D &p,
- const Flavour &fl,const ColorID &c)
+ const Flavour &fl,const ColorID &c,const int & beam)
 {
 #ifndef USING__Threading
   if (s_legs.empty())
@@ -56,6 +56,7 @@ Cluster_Leg *Cluster_Leg::New
   cl->m_c=c;
   cl->m_kt2[0]=cl->m_kt2[1]=-1.0;
   cl->m_fromdec=false;
+  cl->m_beam=beam;
   return cl;
 }
 

@@ -218,7 +218,7 @@ bool Cluster_Algorithm::Cluster(ATOOLS::Blob *const blob)
     col=col.Conj();
     Flavour flav(copy->Flav().Bar());
     Vec4D mom(-copy->Momentum());
-    p_ampl->CreateLeg(mom,flav,col,id);
+    p_ampl->CreateLeg(mom,flav,col,id,copy->Beam());
     Cluster_Leg * leg(p_ampl->Legs().back());
     leg->SetNMax(blob->NOutP());
   }

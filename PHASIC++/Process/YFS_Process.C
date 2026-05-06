@@ -174,6 +174,9 @@ Cluster_Amplitude *YFS_Process::CreateAmplitude(const NLO_subevt *sub) const
     ampl->CreateLeg(i < m_nin ? -sub->p_mom[i] : sub->p_mom[i],
                     i < m_nin ? sub->p_fl[i].Bar() : sub->p_fl[i],
                     ColorID(ci[i], cj[i]), sub->p_id[i]);
+    if (p_realproc->NIn()==2 && i<p_realproc->NIn())
+      ampl->Legs().back()->SetBeam(p_realproc->Caller()->Get<Single_Process>()->
+				   Integrator()->ISR()->Swap() ? 1-i : i);
     if (!sub->IsReal() && sub->p_id[i] & (1 << sub->m_i)) {
       if ((sub->p_id[i] & (1 << sub->m_j)) == 0)
         THROW(fatal_error, "Internal error");

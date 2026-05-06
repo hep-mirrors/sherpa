@@ -783,10 +783,11 @@ void Shower::PartonToAmplitude(const Parton *parton, Cluster_Amplitude * ampl){
   // TODO: treat colors correctly. not needed so far
   ATOOLS::Cluster_Leg * leg = ampl->Legs().back();
   leg->SetFromDec(parton->FromDec());
+  leg->SetBeam(parton->Beam());
   if (parton->GetType()==pst::IS) leg->SetMom(-leg->Mom());
-  if(ampl->KT2()==0){
-      ampl->SetKT2(parton->KtStart());
-    }
+  if(ampl->KT2()==0) {
+    ampl->SetKT2(parton->KtStart());
+  }
 }
 
 void Shower::CheckAmplitude(const ATOOLS::Cluster_Amplitude *ampl){

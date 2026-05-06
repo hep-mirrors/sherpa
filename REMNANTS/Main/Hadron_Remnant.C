@@ -85,7 +85,9 @@ bool Hadron_Remnant::FillBlob(Colour_Generator* colours, ParticleMomMap* ktmap, 
   SquashFlavourSinglets();
   SquashColourSinglets();
   if (!MakeLongitudinalMomenta(ktmap, copy)) {
-    msg_Debugging() << METHOD << ": Cannot put all particles on mass-shell, returning false.\n";
+    msg_Debugging() << METHOD
+		    << ": Cannot put all particles on mass-shell, "
+		    <<"returning false.\n";
     return false;
   }
   bool colourconserved = p_beamblob->CheckColour(true);

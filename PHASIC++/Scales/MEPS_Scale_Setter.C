@@ -383,8 +383,12 @@ double MEPS_Scale_Setter::Calculate
       ampl->SetOrderQCD(p_proc->Caller()->MaxOrder(0));
       for (size_t i(1);i<p_proc->Caller()->MaxOrders().size();++i)
 	ampl->SetOrderEW(ampl->OrderEW()+p_proc->Caller()->MaxOrder(i));
-      for (size_t i(0);i<m_p.size();++i)
+      for (size_t i(0);i<m_p.size();++i) {
 	ampl->CreateLeg(m_p[i],i<p_proc->NIn()?fl[i].Bar():fl[i]);
+	if (p_proc->NIn()==2 && i<p_proc->NIn())
+	  ampl->Legs().back()->SetBeam(p_proc->Caller()->Get<Single_Process>()->
+				       Integrator()->ISR()->Swap() ? 1-i : i);
+      }
       ampl->SetProc(p_proc->Caller()->Get<Single_Process>());
       SetCoreScale(ampl);
       m_ampls.push_back(ampl);
@@ -406,6 +410,9 @@ double MEPS_Scale_Setter::Calculate
       ampl->Leg(i)->SetNMax(nmax);
       ampl->Leg(i)->SetKT2(0,0.);
       ampl->Leg(i)->SetKT2(1,0.);
+      if (p_proc->NIn()==2 && i<p_proc->NIn())
+	ampl->Legs().back()->SetBeam(p_proc->Caller()->Get<Single_Process>()->
+				     Integrator()->ISR()->Swap() ? 1-i : i);
     }
   }
   else {
@@ -416,6 +423,9 @@ double MEPS_Scale_Setter::Calculate
       ampl->Leg(i)->SetNMax(nmax);
       ampl->Leg(i)->SetKT2(0,0.);
       ampl->Leg(i)->SetKT2(1,0.);
+      if (p_proc->NIn()==2 && i<p_proc->NIn())
+	ampl->Legs().back()->SetBeam(p_proc->Caller()->Get<Single_Process>()->
+				     Integrator()->ISR()->Swap() ? 1-i : i);
     }
   }
   ClusterAmplitude_Vector ampls;

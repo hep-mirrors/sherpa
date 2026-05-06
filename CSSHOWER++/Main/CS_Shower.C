@@ -159,13 +159,12 @@ bool CS_Shower::ExtractPartons(Blob_List *const blist) {
   
   psblob->SetStatus(blob_status::needs_beams |
 		    blob_status::needs_reconnections);
-  
 
   for (All_Singlets::const_iterator
          sit(m_allsinglets.begin());sit!=m_allsinglets.end();++sit){
       (*sit)->ExtractPartons(psblob,p_ms);
   }
-
+  
   if (p_shower->FusingEnabled()) {
     ClusterAmplitude_PVector all_amplitudes;
     for (auto &sit: m_allsinglets) all_amplitudes.push_back(sit->GetAmplitude());
@@ -491,7 +490,10 @@ Singlet *CS_Shower::TranslateAmplitude
     pmap[cl]=parton;
     lmap[parton]=cl;
     parton->SetKin(p_shower->KinScheme());
-    if (is) parton->SetBeam(cl->Mom()[3]<0.0?0:1);
+    if (is) {
+      //parton->SetBeam(cl->Mom()[3]<0.0?0:1);
+      parton->SetBeam(cl->Beam());
+    }
     KT2X_Map::const_iterator xit(kt2xmap.find(cl->Id()));
     parton->SetStart(m_respectq2?ampl->MuQ2():xit->second.second);
     // This is where I modifed stuff - will need to formalise this much much better.
