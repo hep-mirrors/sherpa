@@ -269,7 +269,8 @@ int Shower::MakeKinematics
     }
   }
   Parton *pi(new Parton((stype&1)?fla:flb,
-                        split->ForcedSplitting()?split->Momentum():split->LT()*split->Momentum(),
+                        split->ForcedSplitting()?split->Momentum():
+			split->LT()*split->Momentum(),
                         split->GetType()));
   if (stype&1) pi->SetBeam(split->Beam());
   if (stat==1) {

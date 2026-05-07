@@ -226,9 +226,6 @@ int Event_Handler::IterateEventPhases(eventtype::code & mode) {
   Phase_Iterator pit=p_phases->begin();
   int retry = 0;
   bool hardps = true, filter = p_filter!=NULL;
-  msg_Out()<<"==========================================================\n"
-	   <<"==========================================================\n"
-	   <<"==========================================================\n";
   do {
     if ((*pit)->Type()==eph::Analysis || (*pit)->Type()==eph::Userhook) {
       ++pit;

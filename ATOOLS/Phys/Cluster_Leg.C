@@ -41,8 +41,8 @@ Cluster_Leg *Cluster_Leg::New
 {
 #ifndef USING__Threading
   if (s_legs.empty())
+    return new Cluster_Leg(ampl,p,fl,c,beam);
 #endif
-    return new Cluster_Leg(ampl,p,fl,c);
   Cluster_Leg *cl(s_legs.back());
   s_legs.pop_back();
   cl->p_ampl=ampl;
@@ -80,6 +80,7 @@ namespace ATOOLS {
   {
     ostr<<std::right<<std::setw(12)<<ToString(ID(leg.Id()))
 	<<std::setw(12)<<leg.Flav()
+	<<" ["<<std::setw(2)<<leg.Beam()<<"]"
 	<<" "<<std::left<<leg.Mom()
 	<<(leg.Mom().Abs2()<0.0?" -":" ")
 	<<sqrt(dabs(leg.Mom().Abs2()))<<" "<<leg.Col();
