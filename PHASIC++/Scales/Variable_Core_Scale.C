@@ -1,6 +1,7 @@
 #include "PHASIC++/Scales/Core_Scale_Setter.H"
 
 #include "PHASIC++/Process/Process_Base.H"
+#include "PHASIC++/Main/Process_Integrator.H"
 #include "ATOOLS/Math/Algebra_Interpreter.H"
 #include "MODEL/Main/Running_AlphaS.H"
 #include "ATOOLS/Org/MyStrStream.H"
@@ -46,8 +47,12 @@ Variable_Core_Scale::Variable_Core_Scale
 {
   size_t n(args.p_proc->NIn()+args.p_proc->NOut());
   p_ampl=Cluster_Amplitude::New();
-  for (size_t i(0);i<n;++i)
+  for (size_t i(0);i<n;++i) {
     p_ampl->CreateLeg(Vec4D(),Flavour(kf_jet),ColorID());
+    if (p_proc->NIn()==2 && i<p_proc->NIn())
+      p_ampl->Legs().back()->SetBeam(p_proc->Integrator()->ISR()->Swap() ?
+				     1-i : i);
+  }
   std::string tag(args.m_scale);
   while (true) {
     size_t pos(tag.find('{'));
