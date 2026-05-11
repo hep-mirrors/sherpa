@@ -69,3 +69,18 @@ sherpa_handle_shared_library(SherpaHDF5Output SherpaHDF5Output)
 target_link_libraries(SherpaHDF5Output PRIVATE
   $<BUILD_INTERFACE:HighFive::HighFive> HDF5::HDF5)
 add_dependencies(SherpaHDF5Output HDF5_Git_Info)
+
+# Pepper reader. Reads parton-level events from in-memory HDF5
+# databases that are filled by the Pepper library.
+if (SHERPA_ENABLE_PEPPER)
+  set(PEPPER_READER_SOURCES Pepper_Reader.C)
+  add_library(SherpaPepperReader SHARED ${PEPPER_READER_SOURCES}
+    ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C)
+  sherpa_handle_shared_library(SherpaPepperReader SherpaPepperReader)
+  # HighFive is header-only (build-interface only, same rationale as
+  # for SherpaHDF5Reader); Pepper is linked publicly because its API
+  # is part of the reader's translation unit.
+  target_link_libraries(SherpaPepperReader PRIVATE
+    $<BUILD_INTERFACE:HighFive::HighFive> HDF5::HDF5 Pepper::pepperlib)
+  add_dependencies(SherpaPepperReader HDF5_Git_Info)
+endif()
