@@ -426,7 +426,7 @@ bool Sherpa::SummarizeRun()
     double timing_statistics_large_weight_fraction=s["TIMING_STATISTICS_LARGE_WEIGHT_FRACTION"].SetDefault(0.001).Get<double>();
     double timing_statistics_det_sim=s["TIMING_STATISTICS_DET_SIM_IN_S"].SetDefault(0.0).Get<double>();
     int timing_statistics=s["TIMING_STATISTICS"].SetDefault(0).Get<int>();
-    int m_min_tot_unc=s["TIMING_STATISTICS_MIN_UNC"].SetDefault(0).Get<int>();//per event - todo: is similar to "SELECTION_WEIGHT_MODE" - its 0 corresponds to my 1; its 1 corresponds to my 0, only if effevperev=const across processes - let the default change for partially unweighted and use same flag?
+    int swmode=s["SELECTION_WEIGHT_MODE"].SetDefault(0).Get<int>();
     int m_min_tot_unc_per_day=s["TIMING_STATISTICS_MIN_UNC_PER_DAY"].SetDefault(0).Get<int>();//per day
     m_min_tot_unc_per_day=0; //todo: needs further debugging and timing provided via timing.zip during event generation
     //calculate chosen effevperev (needs sudakov_efficiency)
@@ -440,7 +440,8 @@ bool Sherpa::SummarizeRun()
     for (auto const& [key, val] : chosen_alpha_map) {
       std::string sub_name = key;
       double curr_xsec = dabs(xsec_map[sub_name])/chosen_efficiency_map[sub_name]/chosen_alpha_map[sub_name];
-      if (m_min_tot_unc || generation_mode==0) curr_xsec = dabs(xsec_map[sub_name])/chosen_efficiency_map[sub_name]/pow(chosen_alpha_map[sub_name],0.5);
+      if (!swmode) curr_xsec = dabs(xsec_map[sub_name])/chosen_efficiency_map[sub_name]/pow(chosen_alpha_map[sub_name],0.5);
+      if (swmode && generation_mode==0) curr_xsec = dabs(xsec_map[sub_name])/chosen_efficiency_map[sub_name];
       double tges  = (time_map["sum_total_"+sub_name])/number_map["n_total_"+sub_name]; //in s
       if (number_map["n_total_"+sub_name]==0) {
 	tges = 0; //critical, because underestimate - need to make sure that enough events generated...unc estimate hard, because 0 is 0
@@ -456,7 +457,8 @@ bool Sherpa::SummarizeRun()
       sum_p_eff_sign += xsec_map[sub_name]*sudakov_efficiency[sub_name];
     }
     double chosen_effevperev = sum_p_eff/sum_p_unw*pow(sum_p_eff_sign/sum_p_eff,2);
-    if (m_min_tot_unc || m_min_tot_unc_per_day || generation_mode==0) chosen_effevperev = pow(sum_p_eff/sum_p_unw,2)*pow(sum_p_eff_sign/sum_p_eff,2);
+    if (!swmode || m_min_tot_unc_per_day || generation_mode==0) chosen_effevperev = pow(sum_p_eff/sum_p_unw,2)*pow(sum_p_eff_sign/sum_p_eff,2);
+    //todo: above formular also correct for: swmode && generation_mode==0?
     msg_Info()<<"with "<< chosen_effevperev << " Neff/evt           "<<std::endl;
     p_eventhandler->Finish();
 
@@ -566,7 +568,7 @@ bool Sherpa::SummarizeRun()
 	if (wmax_manual_map[sub_name][i]==-2) continue; //this means that whisto is empty
 	//std::cout << sub_name << std::endl;
 	double curr_xsec = dabs(xsec_map[sub_name])/efficiency_manual_map[sub_name][i]/alpha_manual_map[sub_name][i]; //need to weight with sampling probability in manual approach. Why not sudakov? - bacause happens afterwards - but still more events needed for optimal eff events? no
-	if (m_min_tot_unc) curr_xsec = dabs(xsec_map[sub_name])/efficiency_manual_map[sub_name][i]/pow(alpha_manual_map[sub_name][i],0.5);
+	if (!swmode) curr_xsec = dabs(xsec_map[sub_name])/efficiency_manual_map[sub_name][i]/pow(alpha_manual_map[sub_name][i],0.5);
 	if (i==0) plain_xsec_sum += dabs(xsec_map[sub_name]);//todo: this seems to be not called for max_epsilon=0.0
 	if (alpha_manual_map[sub_name][i]==-1) {
 	  msg_Info() << "WARNING: for " << sub_name << " there is no alpha value for i=" << i << " corresponding to eps=" << exp(log(10)*epsilon_values[i]) << std::endl;
@@ -602,7 +604,7 @@ bool Sherpa::SummarizeRun()
 	sum_t_ov_after += (overhead_after+sudakov_efficiency[sub_name]*timing_statistics_det_sim)*efficiency_manual_map[sub_name][i]*curr_xsec;
       }
       mean_manual_alpha[i] = sum_p_eff/sum_p_unw*pow(sum_p_eff_sign/sum_p_eff,2);
-      if (m_min_tot_unc || m_min_tot_unc_per_day) mean_manual_alpha[i] = pow(sum_p_eff/sum_p_unw,2)*pow(sum_p_eff_sign/sum_p_eff,2);
+      if (!swmode || m_min_tot_unc_per_day) mean_manual_alpha[i] = pow(sum_p_eff/sum_p_unw,2)*pow(sum_p_eff_sign/sum_p_eff,2);
       mean_manual_events[i] = 60*60*24/(sum_t_trial/sum_p_unw);
       mean_manual_eff_events[i] = mean_manual_events[i]*mean_manual_alpha[i];
       mean_manual_events_up[i] = 60*60*24/(sum_t_trial/(sum_p_unw_up_corr+pow(sum_p_unw_up,0.5)));
@@ -675,7 +677,7 @@ bool Sherpa::SummarizeRun()
 	if (wmax_manual_map[sub_name][i]==-2) continue; //this means that whisto is empty
 	//msg_Info() << sub_name << std::endl;
 	double curr_xsec = dabs(xsec_map[sub_name])/efficiency_manual_map[sub_name][i]/alpha_manual_map[sub_name][i]; //need to weight with sampling probability in manual approach. Why not sudakov? - bacause happens afterwards - but still more events needed for optimal eff events? no
-	if (m_min_tot_unc) curr_xsec = dabs(xsec_map[sub_name])/efficiency_manual_map[sub_name][i]/pow(alpha_manual_map[sub_name][i],0.5);
+	if (!swmode) curr_xsec = dabs(xsec_map[sub_name])/efficiency_manual_map[sub_name][i]/pow(alpha_manual_map[sub_name][i],0.5);
 	if (alpha_manual_fraction_map[sub_name][i]==-1) {
 	  msg_Info() << "WARNING: for " << sub_name << " there is no alpha value for i=" << i << " corresponding to eps=" << exp(log(10)*epsilon_values[i]) << std::endl;
 	}
@@ -732,7 +734,7 @@ bool Sherpa::SummarizeRun()
 	for(int i=0; i < epsilon_values.size(); i++){	
 	  //msg_Info() << "   " << i << std::endl;
 	  double curr_xsec = dabs(xsec_map[sub_name])/efficiency_manual_fscan_map[sub_name][fi][i]/alpha_manual_fscan_map[sub_name][fi][i];
-	  if (m_min_tot_unc) curr_xsec = dabs(xsec_map[sub_name])/efficiency_manual_fscan_map[sub_name][fi][i]/pow(alpha_manual_fscan_map[sub_name][fi][i],0.5);
+	  if (!swmode) curr_xsec = dabs(xsec_map[sub_name])/efficiency_manual_fscan_map[sub_name][fi][i]/pow(alpha_manual_fscan_map[sub_name][fi][i],0.5);
 	  if (alpha_manual_fscan_map[sub_name][fi][i]==-1) {
 	    msg_Info() << "WARNING: for " << sub_name << " there is no alpha value for i=" << i << " corresponding to fraction=" << exp(log(10)*fraction_values[i]) << std::endl;
 	  }
@@ -763,7 +765,7 @@ bool Sherpa::SummarizeRun()
 	sum_p_eff_sign += opt_p_eff_sign;
       }
       mean_manual_alpha_fscan[fi] = sum_p_eff/sum_p_unw*pow(sum_p_eff_sign/sum_p_eff,2);
-      if (m_min_tot_unc || m_min_tot_unc_per_day) mean_manual_alpha_fscan[fi] = pow(sum_p_eff/sum_p_unw,2)*pow(sum_p_eff_sign/sum_p_eff,2);
+      if (!swmode || m_min_tot_unc_per_day) mean_manual_alpha_fscan[fi] = pow(sum_p_eff/sum_p_unw,2)*pow(sum_p_eff_sign/sum_p_eff,2);
       mean_manual_events_fscan[fi] = 60*60*24/(sum_t_trial/sum_p_unw);
       mean_manual_eff_events_fscan[fi] = mean_manual_events_fscan[fi]*mean_manual_alpha_fscan[fi];
     }

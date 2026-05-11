@@ -57,7 +57,6 @@ bool Process_Integrator::Initialize
   p_yfshandler=yfshandler;
   m_timing_statistics_large_weight_fraction=s["TIMING_STATISTICS_LARGE_WEIGHT_FRACTION"].SetDefault(0.001).Get<double>();
   m_timing_statistics=s["TIMING_STATISTICS"].SetDefault(0).Get<int>();
-  m_timing_statistics_min_unc=s["TIMING_STATISTICS_MIN_UNC"].SetDefault(0).Get<int>();
   m_timing_statistics_min_unc_per_day=s["TIMING_STATISTICS_MIN_UNC_PER_DAY"].SetDefault(0).Get<int>();
   if (m_timing_statistics) {
     m_ovwth = s["OVERWEIGHT_THRESHOLD"].SetDefault(1e12).Get<double>();
@@ -87,15 +86,16 @@ double Process_Integrator::SelectionWeight(const int mode) const
 	return m_external_selectionweight;
       }
       //needs m_ssumenh from Sherpa 3.1 - otherweise m_meanenhfunc ("mean enhancement function") set to 1
-      if (m_timing_statistics_min_unc_extra) 
+      if (m_swmode)
 	return dabs(TotalResult()*m_meanenhfunc*m_enhancefac/m_effi/m_effevperev);
       return dabs(TotalResult()*m_meanenhfunc*m_enhancefac/m_effi/sqrt(m_effevperev));
     }
     if (m_n+m_sn==0.0) return -1.0;
     if (m_totalxs==0.0) return 0.0;
     //m_swmode: SELECTION_WEIGHT_MODE default: 0
-    //for default: optimal variance reduction a la Kleiss multi-channel (equivalent for partially: TIMING_STATISTICS_MIN_UNC)
-    //it assumes that all processes need the same computational time (solved for partially: TIMING_STATISTICS_MIN_UNC_PER_DAY)
+    //for default: optimal variance reduction a la Kleiss multi-channel - equivalent to default for partially
+    //  it assumes that all processes need the same computational time (solved for partially: TIMING_STATISTICS_MIN_UNC_PER_DAY)
+    //for 1: sampling according to xsec (for partially: same number of eff events per sxec)
     double selweight = m_swmode==0 ?
       sqrt((m_n+m_sn-1) * sqr(TotalVar()) + sqr(TotalResult())) :
       dabs(m_totalxs);
@@ -154,7 +154,7 @@ std::vector<double> Process_Integrator::TotalEffiAndEffEvPerEv(bool unweighted) 
       double proci_effi = proci_totaleffiandeffevperev[0];
       double proci_xsec = (*p_proc)[i]->Integrator()->GetSSumEnh()/m_sn;
       double proci_selw = dabs(proci_xsec)/sqrt(proci_effevperev)/proci_effi;
-      if (m_timing_statistics_min_unc_extra) 
+      if (m_swmode)
 	proci_selw = dabs(proci_xsec)/proci_effevperev/proci_effi;
       sum_xsec += proci_xsec;
       sum_xsec_abs += dabs(proci_xsec);
@@ -165,7 +165,7 @@ std::vector<double> Process_Integrator::TotalEffiAndEffEvPerEv(bool unweighted) 
     if (sum_selw!=0) {
       totaleffiandeffevperev[0] = sum_effi/sum_selw;
       totaleffiandeffevperev[1] = pow(sum_xsec_abs/sum_effi,2)*pow(sum_xsec/sum_xsec_abs,2);
-      if (m_timing_statistics_min_unc_extra)
+      if (m_swmode)
 	totaleffiandeffevperev[1] = sum_xsec_abs/sum_effi*pow(sum_xsec/sum_xsec_abs,2);
     }
     return totaleffiandeffevperev;
