@@ -764,10 +764,15 @@ void Process_Integrator::SetUpEnhance(const int omode)
       m_effi+=(*p_proc)[i]->Integrator()->Efficiency()*(*p_proc)[i]->Integrator()->SelectionWeight(wmode);
       //interested in average effevperev after unweighting: multiply with efficiency
       double effevperev = sqrt((*p_proc)[i]->Integrator()->EffEvPerEv())*(*p_proc)[i]->Integrator()->Efficiency()*(*p_proc)[i]->Integrator()->SelectionWeight(wmode);
+      if (m_swmode) effevperev = effevperev*sqrt((*p_proc)[i]->Integrator()->EffEvPerEv());
       m_effevperev+=effevperev;
       effevperev_signed+=effevperev*(*p_proc)[i]->Integrator()->TotalResult()/dabs((*p_proc)[i]->Integrator()->TotalResult());
     }
-    m_effevperev = pow(m_effevperev/m_effi,2)*pow(effevperev_signed/m_effevperev,2);
+    if (m_swmode) {
+      m_effevperev = m_effevperev/m_effi*pow(effevperev_signed/m_effevperev,2);
+    } else {
+      m_effevperev = pow(m_effevperev/m_effi,2)*pow(effevperev_signed/m_effevperev,2);
+    }
     m_effi = m_effi/SelectionWeight(wmode);
     if (omode || p_proc->Parent()==p_proc)
       if (p_whisto_pos)
