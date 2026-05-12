@@ -11,7 +11,6 @@ sherpa_create_git_info(UFO ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DI
 add_library(ModelUFO SHARED ${UFO_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
 sherpa_handle_shared_library(ModelUFO ModelUFO)
 add_dependencies(ModelUFO UFO_Git_Info)
-target_link_libraries(ModelUFO PRIVATE ToolsMath)
 
 if (SHERPA_ENABLE_UFO)
 
