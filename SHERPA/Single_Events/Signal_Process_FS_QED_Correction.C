@@ -148,7 +148,7 @@ Return_Value::code Signal_Process_FS_QED_Correction::Treat(Blob_List* bloblist)
     for (Particle_Vector::iterator it=mfslep.begin();it!=mfslep.end();++it) {
       onshellblob->AddToOutParticles(*it);
     }
-    onshellblob->SetStatus(blob_status::needs_reconnections);
+    onshellblob->SetStatus(blob_status::needs_reconnections | blob_status::needs_hadronization);
     return Return_Value::Success;
   }
   // put them on-shell (spoils consistency of pertubative calculation,
@@ -231,7 +231,7 @@ Return_Value::code Signal_Process_FS_QED_Correction::Treat(Blob_List* bloblist)
       }
     }
   }
-  QEDblob->SetStatus(blob_status::needs_reconnections);
+  QEDblob->SetStatus(blob_status::needs_reconnections | blob_status::needs_hadronization);
   // clean up
   for (size_t i=0;i<blobs.size();++i) {
     delete blobs[i];

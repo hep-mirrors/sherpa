@@ -44,9 +44,8 @@ Return_Value::code Reconnection_Handler::operator()(Blob_List *const blobs,
     m_nfails++;
     return Return_Value::New_Event;
   case 1:
-    // added colour reconnections, produce a fragmentation blob.
+    // added colour reconnections, but produce a reconnection blob.
     AddReconnectionBlob(blobs);
-    break;
   case 0:
     // didn't find any blob that needed reconnections
     break;
@@ -56,9 +55,7 @@ Return_Value::code Reconnection_Handler::operator()(Blob_List *const blobs,
 }
 
 void Reconnection_Handler::AddReconnectionBlob(Blob_List *const blobs) {
-  Blob * blob  = new Blob();
-  Vec4D pos    = Vec4D(0.,0.,0.,0.);
-  size_t npart = 0;
+  Blob * blob = new Blob();
   blob->AddStatus(blob_status::needs_hadronization);
   blob->SetType(btp::Fragmentation);
   blob->SetId();
@@ -69,10 +66,7 @@ void Reconnection_Handler::AddReconnectionBlob(Blob_List *const blobs) {
     part->SetDecayBlob(NULL);
     blob->AddToInParticles(part);
     particles->pop_front();
-    pos += part->XProd();
-    npart++;
   }
-  blob->SetPosition(pos/double(npart));
   blobs->push_back(blob);
 }
 

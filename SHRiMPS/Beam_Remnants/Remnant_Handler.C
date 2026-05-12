@@ -56,6 +56,6 @@ void Remnant_Handler::InitialiseCollision(Blob_List * blobs) {
   }
   softblob->SetTypeSpec("Four_Momentum_Compensation");
   softblob->UnsetStatus(blob_status::needs_minBias);
-  softblob->SetStatus(blob_status::needs_reconnections);
+  softblob->SetStatus(blob_status::needs_hadronization);
   for (int beam=0;beam<2;beam++) m_hadrons[beam]->SetSoftBlob(softblob);
 }

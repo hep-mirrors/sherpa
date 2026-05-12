@@ -63,11 +63,12 @@ public:
 
   Return_Value::code Hadronize(Blob_List * blobs)
   {
-    Blob * blob=NULL;
     Pythia8::Event& event      = m_pythia.event;
     for (Blob_List::iterator blit=blobs->begin();blit!=blobs->end();++blit) {
-      if ((*blit)->Has(blob_status::needs_hadronization)) {
-	blob = (*blit);
+      if ((*blit)->Has(blob_status::needs_hadronization) &&
+	  (*blit)->Type()==btp::Fragmentation) {
+	Blob * blob = (*blit);
+	blob->SetTypeSpec("Pythia8");
 	Sherpa2Pythia(blob, event);
 	///Hadronization step
 	if (!m_pythia.next()) {
@@ -94,7 +95,6 @@ public:
         }
       }
     }
-    if (blob==NULL) return Return_Value::Nothing;
     if (m_shrink) Shrink(blobs);
     return Return_Value::Success;
   }
@@ -168,9 +168,6 @@ private:
     if (!m_pythiadecays){
       blob->SetStatus(blob_status::needs_hadrondecays);
     }
-    blob->UnsetStatus(blob_status::needs_hadronization);
-    blob->SetType(btp::Fragmentation);
-    blob->SetTypeSpec("Pythia8");
     return true;
   }
 

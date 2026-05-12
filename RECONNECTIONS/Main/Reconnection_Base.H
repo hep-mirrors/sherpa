@@ -10,11 +10,10 @@ namespace RECONNECTIONS {
   
   class Reconnection_Base {
   protected:
+    ATOOLS::ParticleSet                        m_parts[2];
     std::map<unsigned int, ATOOLS::Particle *> m_cols[2];
-    ATOOLS::ParticleSet m_parts[2];
-    ATOOLS::Part_List   m_particles;
-    bool                m_found;
-    std::string         m_typespec;
+    ATOOLS::Part_List                          m_particles;
+    bool                                       m_found;
     
     bool                                        m_analysis;
     std::map<std::string, ATOOLS::Histogram * > m_histomap;

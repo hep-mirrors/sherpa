@@ -221,7 +221,7 @@ Blob * Collinear_Emission_Generator::MakeBlob() {
   blob->AddData("Renormalization_Scale",new Blob_Data<double>(1.));
   blob->SetType(btp::Shower);
   blob->SetTypeSpec("ShrimpsCollinearEmissions");
-  blob->SetStatus(blob_status::needs_reconnections | blob_status::needs_beams);
+  blob->SetStatus(blob_status::needs_hadronization | blob_status::needs_beams);
   for (size_t i = 0; i < m_beamparts.size(); ++i) {
     Particle * part(new Particle(-1,m_beamparts[i]->Flav(),m_beamparts[i]->Momentum(),
 				 m_beamparts[i]->Info()));

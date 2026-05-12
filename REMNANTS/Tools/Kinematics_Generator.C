@@ -59,7 +59,8 @@ Blob *Kinematics_Generator::MakeSoftBlob() {
   // reshuffling due to construction of transverse momenta
   p_softblob = new Blob();
   p_softblob->SetType(btp::Soft_Collision);
-  p_softblob->SetStatus(blob_status::needs_reconnections);
+  p_softblob->SetStatus(blob_status::needs_reconnections |
+                        blob_status::needs_hadronization);
   p_softblob->SetId();
   return p_softblob;
 }

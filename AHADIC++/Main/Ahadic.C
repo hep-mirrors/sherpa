@@ -41,18 +41,22 @@ Return_Value::code Ahadic::Hadronize(Blob_List * blobs)
 {
   static std::string mname(METHOD);
   Return_Value::IncCall(mname);
-  Return_Value::code result = Return_Value::Nothing;
   for (Blob_List::iterator blit=blobs->begin();blit!=blobs->end();) {
-    if ((*blit)->Has(blob_status::needs_hadronization)) {
+    if ((*blit)->Has(blob_status::needs_hadronization) &&
+	(*blit)->Type()==btp::Fragmentation) {
       Blob * blob = (*blit);
-      result = Hadronize(blob);
+      const auto result = Hadronize(blob);
       switch (result) {
-      case Return_Value::Success:     break;
-      case Return_Value::Retry_Event:
+      case Return_Value::Success :
+	break;
+      case Return_Value::Retry_Event :
       case Return_Value::New_Event:
 	blobs->ColorConservation();
 	msg_Tracking()<<"ERROR in "<<METHOD<<" :\n"
-		      <<"   Hadronization did not work out,";
+		      <<"   Hadronization for blob "
+	  //	      <<"("<<blobs<<"; "
+	  //	      <<blob->NInP()<<" -> "<<blob->NOutP()<<") "*/
+		      <<"did not work out,";
         if (result==Return_Value::New_Event)
           msg_Tracking()<<" due to momentum problems,";
         msg_Tracking()<<"\n   will trigger "<<result<<":\n"
@@ -75,7 +79,7 @@ Return_Value::code Ahadic::Hadronize(Blob_List * blobs)
     blit++;
   }
   if (m_shrink) Shrink(blobs);
-  return result;
+  return Return_Value::Success;
 }
 
 Return_Value::code Ahadic::Hadronize(Blob * blob, int retry) {
@@ -93,7 +97,6 @@ Return_Value::code Ahadic::Hadronize(Blob * blob, int retry) {
   blob->SetStatus(blob_status::needs_hadrondecays);
   blob->SetType(btp::Fragmentation);
   blob->SetTypeSpec("AHADIC-1.0");
-  blob->SetId();
   FillOutgoingParticles(blob);
   if (dabs(blob->CheckMomentumConservation()[0])>1.e-3) {
     msg_Error()<<"\n"<<METHOD<<" violates four-momentum conservation by "
