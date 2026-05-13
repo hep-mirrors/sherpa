@@ -274,6 +274,7 @@ namespace LHEH5 {
   private:
 
     std::shared_ptr<Pepper_Interface> p_pepper;
+    std::unique_ptr<Pepper::Process> p_process;
 
     std::unique_ptr<File> m_current_file, m_next_file;
     std::unique_ptr<LHEFile> p_current, p_next;
@@ -297,7 +298,7 @@ namespace LHEH5 {
     size_t FillNextBuffer()
     {
       m_next_file = CreateInMemoryFile("pepper_buffer_next");
-      const size_t n_filled = Pepper::fill_lheh5_buffer(*m_next_file, m_ncache);
+      const size_t n_filled = p_process->fill_lheh5_buffer(*m_next_file, m_ncache);
       if (n_filled == 0) {
         m_next_file.reset();
         p_next.reset();
@@ -401,6 +402,12 @@ namespace LHEH5 {
 
       p_sub = new NLO_subevt();
       s_objects.push_back(this);
+
+      if (m_files.empty())
+        THROW(invalid_input,
+              "Pepper_Reader requires a process specification "
+              "(e.g. \"p p -> j j\") as the first entry in EVENT_INPUT.");
+      p_process = std::make_unique<Pepper::Process>(m_files.front());
 
       // Prime the pipeline: fill the first buffer, promote it to
       // current, then fill the look-ahead buffer for the next swap.
