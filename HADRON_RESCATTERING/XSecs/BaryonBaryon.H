@@ -3,10 +3,11 @@
 
 #include "HADRON_RESCATTERING/XSecs/NNfits.H"
 #include "HADRON_RESCATTERING/XSecs/HPR1R2.H"
+#include "HADRON_RESCATTERING/XSecs/ScatteringBase.H"
 #include "ATOOLS/Phys/Flavour.H"
 
 namespace HADRON_RESCATTERING {
-  class BaryonBaryon {
+  class BaryonBaryon : public ScatteringBase {
     NNfits  m_NN;
     HPR1R2  m_hpr1r2;
     double  m_s, m_mA, m_mA2, m_mB, m_mB2;
@@ -22,7 +23,7 @@ namespace HADRON_RESCATTERING {
     ~BaryonBaryon();
 
     double XStot(const ATOOLS::Flavour & A,const ATOOLS::Flavour & B,
-		 const double & s);
+		 const double & s)override;
     double XSel(const ATOOLS::Flavour & A,const ATOOLS::Flavour & B,
 		const double & s);
   };

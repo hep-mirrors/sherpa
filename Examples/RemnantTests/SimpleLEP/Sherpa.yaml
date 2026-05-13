@@ -4,7 +4,7 @@ BEAM_ENERGIES: 45.6
 PDF_LIBRARY: None
 
 # general setting
-EVENTS: 50k
+EVENTS: 1
 
 # model parameters
 ALPHAS(MZ): 0.1188

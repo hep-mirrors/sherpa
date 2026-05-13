@@ -1,8 +1,10 @@
 set(HadronRescatteringMain_SOURCES
-  Hadron_Rescatterings.C)
+  Hadron_Rescatterings.C
+  Deuteron_Production.C)
 
 set(HadronRescatteringMain_HEADERS
-  Hadron_Rescatterings.H)
+  Hadron_Rescatterings.H
+  Deuteron_Production.H)
 
 sherpa_create_git_info(HadronRescatteringMain ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR})
  

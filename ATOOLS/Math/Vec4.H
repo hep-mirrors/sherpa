@@ -6,6 +6,8 @@
 namespace ATOOLS {
   template<typename Scalar> class Vec4;
   template<typename Scalar> class Vec3;
+  template<typename T> class Vec4;
+
 
   template<typename Scalar>
   class Vec4 {

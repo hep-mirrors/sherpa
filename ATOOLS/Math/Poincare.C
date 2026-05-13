@@ -35,8 +35,8 @@ Poincare::Poincare(const Vec4D &v1,const Vec4D &v2,int mode):
 
 void Poincare::Boost(Vec4D &v) const
 {
-  double lv(m_l[1]*v[1]+m_l[2]*v[2]+m_l[3]*v[3]);
-  double v0((m_l[0]*v[0]-lv)/m_rsq);
+  double lv(m_l[1]*v[1]+m_l[2]*v[2]+m_l[3]*v[3]); 
+  double v0((m_l[0]*v[0]-lv)/m_rsq); // 
   double c1((v[0]+v0)/(m_rsq+m_l[0]));
   v=Vec4D(v0,Vec3D(v)-c1*Vec3D(m_l));
 }
@@ -109,4 +109,11 @@ void Poincare_Sequence::Invert()
     cit->Invert();
     *pit=*cit;
   }
+}
+
+IntoOrientedCoM::IntoOrientedCoM(const ATOOLS::Vec4D& p1, const ATOOLS::Vec4D& p2) {
+  push_back(Poincare(p1+p2));
+  Vec4D p1_cms = back()*p1;
+  double pz1_2 = Vec3D(p1_cms).Sqr(), E1 = sqrt(dabs(p1_cms.Abs2()-pz1_2));
+  push_back(Poincare(p1_cms,Vec4D(E1,0.,0.,sqrt(pz1_2))));
 }

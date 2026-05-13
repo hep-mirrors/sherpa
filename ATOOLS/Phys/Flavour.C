@@ -372,8 +372,10 @@ bool Flavour::IsBaryon() const
 bool Flavour::IsMeson() const 
 {
   if (Kfcode() % 1000 < 100) return false;
+  if ( Kfcode() % 10000 >= 1000) return false; // to exlude baryons. 
   return !IsDiQuark();
 }
+
 
 bool Flavour::IsNucleon() const
 {

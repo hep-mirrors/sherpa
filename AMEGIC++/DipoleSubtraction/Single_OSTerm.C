@@ -394,8 +394,7 @@ double Single_OSTerm::operator()(const ATOOLS::Vec4D * mom,const ATOOLS::Poincar
   SetLOMomenta(mom,cms);
 
   bool trg(false);
-  trg= p_os_process->Trigger(p_OS_labmom) || !p_os_process->Selector()->On();
-  p_int->SetMomenta(p_OS_labmom);
+  trg= p_os_process->Triggerwpper(p_OS_labmom) || !p_os_process->Selector()->On();  p_int->SetMomenta(p_OS_labmom);
   p_os_process->Integrator()->SetMomenta(p_OS_labmom);
 
   m_subevt.m_me = m_subevt.m_mewgt = m_subevt.m_result = 0.;

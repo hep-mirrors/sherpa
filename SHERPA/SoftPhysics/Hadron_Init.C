@@ -46,6 +46,12 @@ void Hadron_Init::Init() {
     InitHadron(kf_bc_1,6.67397,0.,0,1,-3,2,0,0,1,1,  "bc_1","bc_1b","bc_1b","bc_1b");
     InitHadron(kf_bb_1,10.07354,0.,0,-2,-3,2,0,0,1,1,"bb_1","bb_1b","bb_1b","bb_1b");
   }
+
+  // deuterium is not in the KF table, so we add it here.
+  constexpr double A = 0.93149410372;
+  InitHadron(kf_deuterium,   true, 2.014*A, 2.1 ,0.,  3,0,false,true,1,"deuterium", "H$_2$");
+  
+
   // ##################################################################################################
   // MESON MULTIPLETS:
   //   - will uniformly assume a radius of 0.65 fm

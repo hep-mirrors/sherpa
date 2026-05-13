@@ -6,9 +6,13 @@ using namespace HADRON_RESCATTERING;
 using namespace ATOOLS;
 using namespace std;
 
-BaryonBaryon::BaryonBaryon() :
-  m_test(true) {
-   if (m_test) { Tests();} //exit(1); }
+BaryonBaryon::BaryonBaryon() : ScatteringBase()
+ {
+  m_test = false;
+  if (m_test) 
+  { 
+    Tests();
+  } 
 }
 
 BaryonBaryon::~BaryonBaryon() {msg_Out() << "BaryonBaryon::Destructor called" << std::endl;}
@@ -16,8 +20,6 @@ BaryonBaryon::~BaryonBaryon() {msg_Out() << "BaryonBaryon::Destructor called" <<
 double BaryonBaryon::
 XStot(const ATOOLS::Flavour & A,const ATOOLS::Flavour & B,
       const double & s) {
-
-  //msg_Out() << "BaryonBaryon::XStot Constructor called" << std::endl;
   //Scoped_Settings s{Settings::GetMainSettings()["FormFactors"]};
   //m_bb_xstot = s["BBScattering"].SetDefault(scatmodel::off).Get<scatmodel::code>();
   if (!(A.IsBaryon() && B.IsBaryon())) return 0.;

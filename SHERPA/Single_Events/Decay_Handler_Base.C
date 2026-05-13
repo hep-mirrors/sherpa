@@ -232,6 +232,7 @@ void Decay_Handler_Base::TreatInitialBlob(ATOOLS::Blob* blob,
                                           METOOLS::Amplitude2_Tensor* amps,
                                           const Particle_Vector& origparts)
 {
+  //msg_Out()<<METHOD<<": "<<blob->Type()<<", amps = "<<amps<<", "<<origparts.size()<<" particles.\n";
   DEBUG_FUNC("");
   DEBUG_VAR(*blob);
   m_decaychainend=false;
@@ -256,6 +257,7 @@ void Decay_Handler_Base::TreatInitialBlob(ATOOLS::Blob* blob,
 
   std::shuffle(shuffled.begin(), shuffled.end(), *ran);
   // initial blobs still contain on-shell particles, stretch them off-shell
+  //msg_Out()<<METHOD<<" with "<<daughters.size()<<" daughters.\n";
   for (size_t i=0; i<daughters.size(); ++i) {
     if (!Decays(daughters[shuffled[i]]->Flav()) ||
         daughters[shuffled[i]]->DecayBlob()) {
@@ -271,11 +273,13 @@ void Decay_Handler_Base::TreatInitialBlob(ATOOLS::Blob* blob,
     throw Return_Value::Retry_Event;
   }
   for (size_t i(0); i<blob->NOutP(); ++i)
-    if (blob->OutParticle(i)->DecayBlob())
+    if (blob->OutParticle(i)->DecayBlob() &&
+	blob->OutParticle(i)->DecayBlob()->NInP()==1)
       blob->OutParticle(i)->DecayBlob()
           ->AddData("p_actual",
                     new Blob_Data<Vec4D>(blob->OutParticle(i)->Momentum()));
   DEBUG_VAR(*blob);
+  //msg_Out()<<(*blob)<<"\n";
 
   for (size_t ii(0); ii<daughters.size(); ++ii) {
     size_t i=shuffled[ii];
@@ -330,7 +334,10 @@ void Decay_Handler_Base::TreatInitialBlob(ATOOLS::Blob* blob,
       }
     }
     else {
-      if (Decays(daughters[i]->Flav())) {
+      if (daughters[i]->DecayBlob() &&
+	  daughters[i]->DecayBlob()->NInP()==1 &&
+	  Decays(daughters[i]->Flav())) {
+	//msg_Out()<<METHOD<<" more dwaddle.\n";
         FillDecayTree(daughters[i]->DecayBlob(), NULL);
       }
     }
@@ -353,6 +360,7 @@ Decay_Matrix* Decay_Handler_Base::FillDecayTree(Blob * blob, Spin_Density* s0)
   else {
     msg_Error()<<METHOD<<" could not find p_onshell tag in ("<<blob->Type()<<", "
 	       <<blob->NInP()<<" -> "<<blob->NOutP()<<"), retrying event.\n";
+    //msg_Out()<<*blob<<endl;
     msg_Tracking()<<*blob<<endl;
     throw Return_Value::Retry_Event;
   }

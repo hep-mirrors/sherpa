@@ -453,11 +453,11 @@ void Process_Group::SetUseBIWeight(bool on)
     m_procs[i]->SetUseBIWeight(on);
 }
 
-bool Process_Group::Trigger(const Vec4D_Vector &p)
+bool Process_Group::Triggerwpper(const Vec4D_Vector &p)
 {
   bool trigger=false;
   for (size_t i(0);i<Size();++i)
-    if (m_procs[i]->Trigger(p)) trigger=true;
+    if (m_procs[i]->Triggerwpper(p)) trigger=true;
   return trigger;
 }
  

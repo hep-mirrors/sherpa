@@ -1,30 +1,28 @@
 #ifndef SHERPA_SoftPhysics_Hadron_Rescattering_Handler_H
 #define SHERPA_SoftPhysics_Hadron_Rescattering_Handler_H
 
+#include "ATOOLS/Phys/Hadron_Collision.H"
 #include "HADRON_RESCATTERING/Main/Hadron_Rescatterings.H"
+#include "HADRON_RESCATTERING/Main/Deuteron_Production.H"
 
 namespace SHERPA {
-  struct Collision {
-  public:
-    double m_time, m_dist2;
-    ATOOLS::Particle * p_A, * p_B;
-    Collision(const double & time,const double & dist2,
-	      ATOOLS::Particle * A,ATOOLS::Particle * B) :
-      m_time(time), m_dist2(dist2), p_A(A), p_B(B) {}
-  };
-  
   class Hadron_Rescattering_Handler {
   private:
-    HADRON_RESCATTERING::Hadron_Rescatterings  m_rescattering;
+    HADRON_RESCATTERING::Hadron_Rescatterings m_rescattering;
+    HADRON_RESCATTERING::Deuteron_Coalescence m_deuterons;
+
     std::string m_name;
     bool        m_on;
 
+    ATOOLS::Blob * p_blob;
+    
     std::set<ATOOLS::Blob * >     m_treatedblobs;
     std::set<ATOOLS::Particle * > m_particles;
-    std::map<double,Collision * > m_collisions;
+    std::map<double,ATOOLS::Hadron_Collision * > m_candidates;
 
     void Schedule(ATOOLS::Particle * part1,
 		  ATOOLS::Particle * part2);
+    void EliminateOptions(ATOOLS::Hadron_Collision * candidate);
   public :
     Hadron_Rescattering_Handler();
     ~Hadron_Rescattering_Handler();
@@ -36,6 +34,10 @@ namespace SHERPA {
     void Output();
 
     inline const std::string & Name() const { return m_name; }
+    inline ATOOLS::Blob   * GetBlob() const { return p_blob; }
+    
+    ATOOLS::Blob * Rescatter();
+    ATOOLS::Blob * RescatterCoalescence();
   };
 }
 

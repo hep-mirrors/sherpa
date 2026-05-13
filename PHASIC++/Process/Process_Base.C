@@ -162,11 +162,11 @@ Weights_Map Process_Base::Differential(const Cluster_Amplitude &ampl,
   for (size_t i(ampl.NIn());i<p.size();++i) p[i]=ampl.Leg(i)->Mom();
   if (mode&64) {
     if (mode&1) return {1.0};
-    return {static_cast<double>(Trigger(p))};
+    return {static_cast<double>(Triggerwpper(p))};
   }
   bool selon(Selector()->On());
   if (mode&1) SetSelectorOn(false);
-  if (!Trigger(p)) {
+  if (!Triggerwpper(p)) {
     if (Selector()->On()!=selon) SetSelectorOn(selon);
     return 0.0;
   }
@@ -551,10 +551,11 @@ void Process_Base::SetCaller(Process_Base *const proc)
   p_caller=proc;
 }
 
-bool Process_Base::Trigger(const Vec4D_Vector &p)
+bool Process_Base::Triggerwpper(const Vec4D_Vector &p)
 {
+  msg_Out()<<"DebugOutput";
   if (IsMapped() && LookUp()) return Selector()->Result();
-  return Selector()->Trigger(p);
+  return Selector()->Triggerwpper(p);
 }
 
 NLO_subevtlist *Process_Base::GetSubevtList()

@@ -48,13 +48,13 @@ rtp::code Remnant_Base::FixType(ATOOLS::Flavour & flav) {
   return rtp::none;
 }
 
+//check here, mm or fm 
 Particle* Remnant_Base::MakeParticle(const Flavour& flav)
 {
   Particle* part = new Particle(-1, flav, Vec4D(0., 0., 0., 0.), 'B');
   part->SetNumber();
   part->SetBeam(m_beam);
   part->SetPosition(m_position + (*p_ff)());
-  msg_Out()<<METHOD<<": "<<m_position<<", "<<(*p_ff)()<<"\n";
   return part;
 }
 

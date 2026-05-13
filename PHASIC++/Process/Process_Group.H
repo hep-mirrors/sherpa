@@ -73,7 +73,7 @@ namespace PHASIC {
     void SetShower(PDF::Shower_Base *const ps) override;
     void SetNLOMC(PDF::NLOMC_Base *const mc) override;
     void SetSelector(const Selector_Key &key) override;
-    bool Trigger(const ATOOLS::Vec4D_Vector &p) override;
+    bool Triggerwpper(const ATOOLS::Vec4D_Vector &p) override;
 
     void FillOnshellConditions() override;
 

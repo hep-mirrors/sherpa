@@ -63,7 +63,9 @@ Return_Value::code Hadron_Decays::Treat(Blob_List* bloblist)
             p_dechandler->TreatInitialBlob(blob, NULL, Particle_Vector());
           }
         }
-        else p_dechandler->TreatInitialBlob(blob, NULL, Particle_Vector());
+        else {
+	  p_dechandler->TreatInitialBlob(blob, NULL, Particle_Vector());
+	}
       } catch (Return_Value::code ret) {
         msg_Tracking()<<METHOD<<" Something went wrong for event: "<<*bloblist
 		      <<endl<<" Will retry event."<<endl;

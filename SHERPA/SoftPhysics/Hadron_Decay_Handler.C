@@ -64,6 +64,7 @@ void Hadron_Decay_Handler::TreatInitialBlob(ATOOLS::Blob* blob,
 {
   if (blob->Has(blob_status::needs_showers)) return;
   if (RejectExclusiveChannelsFromFragmentation(blob)) return;
+  msg_Out()<<METHOD<<": "<<blob->Type()<<"("<<blob->TypeSpec()<<")\n";
   Decay_Handler_Base::TreatInitialBlob(blob, amps, origparts);
 }
 

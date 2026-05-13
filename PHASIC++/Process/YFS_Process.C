@@ -225,7 +225,7 @@ void YFS_Process::OneRealEvent(){
     if(!checkK) return;
     bornmom.push_back(k);
     p_realproc->Integrator()->SetMomenta(bornmom);
-    p_realproc->Selector()->Trigger(bornmom);
+    p_realproc->Selector()->Triggerwpper(bornmom);
     ATOOLS::Weights_Map  wgtmap = p_realproc->Integrator()->Process()->Differential(bornmom, Variations_Mode::all);
   }
 }

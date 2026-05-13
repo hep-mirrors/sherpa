@@ -707,7 +707,7 @@ bool COMIX::Single_Process::Tests()
   return res;
 }
 
-bool COMIX::Single_Process::Trigger(const ATOOLS::Vec4D_Vector &p)
+bool COMIX::Single_Process::Triggerwpper(const ATOOLS::Vec4D_Vector &p)
 {
   DEBUG_FUNC(m_pinfo.m_fi.NLOType());
   if (m_zero) return false;
@@ -721,7 +721,9 @@ bool COMIX::Single_Process::Trigger(const ATOOLS::Vec4D_Vector &p)
     return false;
   }
   (p_map!=NULL?p_map->p_bg:p_bg)->SetMomenta(p);
-  return Selector()->Trigger(p);
+  return Selector()->Triggerwpper(p);
+  // return Selector()->Trigger(p);
+
 }
 
 void COMIX::Single_Process::InitPSGenerator(const size_t &ismode)

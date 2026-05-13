@@ -197,9 +197,9 @@ bool Sherpa::InitializeTheEventHandler()
 				  //nucleonReconnectionHandler(),
 				  //p_inithandler->GetFragmentation()));
     
-    p_eventhandler->AddEventPhase(new Hadron_Decays(p_inithandler->GetHDHandler()));
     p_eventhandler->AddEventPhase(new Hadron_Rescattering(p_inithandler->
 							  GetHadronRescatteringHandler()));
+    p_eventhandler->AddEventPhase(new Hadron_Decays(p_inithandler->GetHDHandler()));
   }
   p_eventhandler->AddEventPhase(new Userhook_Phase(this));
   if (!anas->empty()) p_eventhandler->AddEventPhase(new Analysis_Phase(anas));

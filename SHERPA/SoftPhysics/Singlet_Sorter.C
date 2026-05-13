@@ -124,12 +124,12 @@ void Singlet_Sorter::ReconstructPartonPositions(Blob * blob) {
 			Max(1.,part->Momentum()[0]/mass) *         // boost factor
 			Vec4D(1.,velocity) );                      // velocity 4-vector
     part->SetPosition(blob->Position()+distance);
-    msg_Out()<<"- "<<std::setw(4)<<part->Flav()
-    	     <<" ["<<std::setw(8)<<part->Momentum()[0]<<", "
-	     <<std::setw(8)<<part->Flav().HadMass()<<", "
-    	     <<"v = "<<std::setw(8)<<sqrt(velocity.Sqr())<<", "
-    	     <<"boost = "<<std::setw(8)<<Max(1.,part->Momentum()[0]/mass)<<"]: "
-    	     <<blob->Position()<<" + "<<distance<<"\n";
+    //msg_Out()<<"- "<<std::setw(4)<<part->Flav()
+    //	     <<" ["<<std::setw(8)<<part->Momentum()[0]<<", "
+    //	     <<std::setw(8)<<part->Flav().HadMass()<<", "
+    //	     <<"v = "<<std::setw(8)<<sqrt(velocity.Sqr())<<", "
+    //	     <<"boost = "<<std::setw(8)<<Max(1.,part->Momentum()[0]/mass)<<"]: "
+    //	     <<blob->Position()<<" + "<<distance<<"\n";
   }
 }
 

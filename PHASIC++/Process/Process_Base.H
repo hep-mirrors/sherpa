@@ -75,7 +75,6 @@ namespace PHASIC {
 
     size_t      m_nin, m_nout, m_mcmode, m_cmode;
     std::string m_name, m_resname;
-
     std::vector<double> m_maxcpl, m_mincpl;
 
     ATOOLS::Flavour_Vector m_flavs;
@@ -111,7 +110,6 @@ namespace PHASIC {
     Process_Base *Parent();
     Process_Base *Selected();
     size_t SelectedIndex();
-
     bool SetSelected(Process_Base *const proc);
     size_t SynchronizeSelectedIndex(Process_Base &);
 
@@ -207,7 +205,7 @@ namespace PHASIC {
     virtual void InitCuts(Cut_Data *const cuts);
     virtual void BuildCuts(Cut_Data *const cuts);
 
-    virtual bool Trigger(const ATOOLS::Vec4D_Vector &p);
+    virtual bool Triggerwpper(const ATOOLS::Vec4D_Vector &p);
 
     virtual ATOOLS::NLO_subevtlist *GetSubevtList();
     virtual ATOOLS::NLO_subevtlist *GetRSSubevtList();

@@ -1,11 +1,14 @@
 #ifndef HADRON_RESCATTERING_HELPER_H
 #define HADRON_RESCATTERING_HELPER_H
 
-#include "HADRON_RESCATTERING/XSecs/NPion.H"
+
+#include "ATOOLS/Math/Vec4.H"
 #include "ATOOLS/Org/Message.H"
+#include "ATOOLS/Math/Vector.H"
 #include <iostream>
 #include <math.h>
 #include <vector>
+
 
     ////////https://arxiv.org/pdf/2005.05658
     ////////Equation 24,25,26,27 are here. They are used to calculate equation 23.
@@ -34,6 +37,7 @@ double totalWidth(double m, double RES_M0, double GAMMA0,
                   const std::vector<int> LVector);
 // Breit-Wigner mass distribution A(m) per Eq. (27) (kept for completeness)
 double A_of_m(double m, double ResonanceMass);
+
 
 
 #endif

@@ -28,7 +28,7 @@ namespace AMISIC {
     double                m_muR_fac, m_muF_fac, m_muR2, m_muF2, m_pdfnorm;
     double                m_pt0, m_pt02, m_ptmin, m_ptmin2, m_ptmax2, m_Emin;
     std::array<double, 2> m_xmin, m_xmax, m_Q2min, m_resx;
-    double                m_ecms, m_S, m_S_lab, m_lastxs, m_triggerxs, m_fm2GeV2;
+    double                m_ecms, m_S, m_S_lab, m_lastxs, m_triggerxs;
     double                m_xshard;
     bool                  m_printit;
     
