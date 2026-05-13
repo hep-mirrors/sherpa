@@ -12,9 +12,6 @@
 
     ////////https://arxiv.org/pdf/2005.05658
     ////////Equation 24,25,26,27 are here. They are used to calculate equation 23.
-    ////////
-    ////////
-    ////////
 
 // Breit-Wigner mass distribution A(m), not used for narrow dist.
 double A(double m, double m0, double Gamma) ;
@@ -37,7 +34,5 @@ double totalWidth(double m, double RES_M0, double GAMMA0,
                   const std::vector<int> LVector);
 // Breit-Wigner mass distribution A(m) per Eq. (27) (kept for completeness)
 double A_of_m(double m, double ResonanceMass);
-
-
 
 #endif
