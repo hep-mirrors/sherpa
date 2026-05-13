@@ -6,7 +6,7 @@ BEAMS: 2212
 BEAM_ENERGIES: 3500
 
 # me generator settings
-ME_SIGNAL_GENERATOR:
+ME_GENERATORS:
   - Comix
   - Amegic
   - OpenLoops
@@ -21,8 +21,9 @@ GF: 1.166397e-5
 METS_BBAR_MODE: 5
 
 # speed and neg weight fraction improvements
-PP_RS_SCALE: VAR{sqr(sqrt(H_T2)-PPerp(p[2])-PPerp(p[3])+MPerp(p[2]+p[3]))/4};
-NLO_CSS_PSMODE: 1
+
+MC@NLO:
+  PSMODE: 1
 
 PROCESSES:
   - 93 93 -> 13 -14 93{4}:
@@ -30,7 +31,8 @@ PROCESSES:
       CKKW: 20
       2->2-4:
         Enhance_Observable: VAR{log10(max(sqrt(H_T2)-PPerp(p[2])-PPerp(p[3]),MPerp(p[2]+p[3])))}|1|3.3 {3,4,5,6,7}
-        NLO_QCD_Mode: MC@NLO
+        NLO_Mode: MC@NLO
+        NLO_Order: {QCD: 1, EW: 0}
         ME_Generator: Amegic
         RS_ME_Generator: Comix
         Loop_Generator: OpenLoops
@@ -45,7 +47,8 @@ PROCESSES:
       CKKW: 20
       2->2-4:
         Enhance_Observable: VAR{log10(max(sqrt(H_T2)-PPerp(p[2])-PPerp(p[3]),MPerp(p[2]+p[3])))}|1|3.3 {3,4,5,6,7}
-        NLO_QCD_Mode: MC@NLO
+        NLO_Mode: MC@NLO
+        NLO_Order: {QCD: 1, EW: 0}
         ME_Generator: Amegic
         RS_ME_Generator: Comix
         Loop_Generator: OpenLoops
