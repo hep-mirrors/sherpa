@@ -3,6 +3,7 @@
 #include <mpi.h>
 #include <iostream>
 #include <memory>
+#include <mutex>
 #include <stdexcept>
 #include <string>
 #include <vector>
@@ -228,6 +229,42 @@ using namespace ATOOLS;
 
 namespace LHEH5 {
 
+  // Owns the once-per-process Pepper library bring-up and teardown.
+  // A static weak_ptr deduplicates instances across Pepper_Reader
+  // siblings (one per jet multiplicity); finalize fires when the
+  // last reader holding a shared_ptr is destroyed, i.e. during
+  // Sherpa's normal shutdown rather than at static-destructor time.
+  class Pepper_Interface {
+  public:
+    Pepper_Interface()
+    {
+      // We do not currently plumb Sherpa's argc/argv through to
+      // Pepper; a dummy pair is sufficient since MPI/Kokkos init
+      // do not need them once Pepper's MPI bring-up is disabled.
+      static int s_argc = 0;
+      static char *s_argv[] = {nullptr};
+      Pepper::Initialization_settings settings(s_argc, s_argv);
+      settings.disable_mpi_initialization();
+      Pepper::initialize(settings);
+    }
+
+    ~Pepper_Interface() { Pepper::finalize(); }
+
+    Pepper_Interface(const Pepper_Interface &) = delete;
+    Pepper_Interface &operator=(const Pepper_Interface &) = delete;
+
+    static std::shared_ptr<Pepper_Interface> Acquire()
+    {
+      static std::mutex s_mutex;
+      static std::weak_ptr<Pepper_Interface> s_instance;
+      std::lock_guard<std::mutex> lock(s_mutex);
+      if (auto existing = s_instance.lock()) return existing;
+      auto fresh = std::make_shared<Pepper_Interface>();
+      s_instance = fresh;
+      return fresh;
+    }
+  };
+
   // Reads parton-level events from HDF5 databases that live entirely
   // in RAM and are filled by the Pepper library. A double-buffered
   // current/next pair lets consumption and refill overlap: events are
@@ -235,6 +272,8 @@ namespace LHEH5 {
   // ready to take over once "current" is depleted.
   class Pepper_Reader: public Event_Reader, public MPI_Object {
   private:
+
+    std::shared_ptr<Pepper_Interface> p_pepper;
 
     std::unique_ptr<File> m_current_file, m_next_file;
     std::unique_ptr<LHEFile> p_current, p_next;
@@ -353,7 +392,8 @@ namespace LHEH5 {
   public:
 
     Pepper_Reader(const Event_Reader_Key &key):
-      Event_Reader(key), m_ievt(0), m_iblock(0), m_trials(0),
+      Event_Reader(key), p_pepper(Pepper_Interface::Acquire()),
+      m_ievt(0), m_iblock(0), m_trials(0),
       m_ncurrent(0), m_ncache(0), m_finished(false)
     {
       Settings& s {Settings::GetMainSettings()};
