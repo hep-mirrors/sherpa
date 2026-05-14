@@ -217,10 +217,11 @@ namespace LHEH5 {
 #include "PHASIC++/Main/Event_Reader.H"
 #include "ATOOLS/Phys/NLO_Subevt.H"
 #include "ATOOLS/Math/MathTools.H"
-#include "ATOOLS/Org/Data_Reader.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/My_MPI.H"
 #include "ATOOLS/Org/Message.H"
+#include "ATOOLS/Org/Settings.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
 
 #include <pepper/pepper.h>
 
@@ -228,6 +229,42 @@ using namespace PHASIC;
 using namespace ATOOLS;
 
 namespace LHEH5 {
+
+  // Parameters of a Sherpa "Mass" selector entry,
+  // i.e. `[Mass, kf1, kf2, min, max]`.
+  struct Mass_Selector_Params {
+    int kf1;
+    int kf2;
+    double min;
+    double max;
+  };
+
+  // Scan the SELECTORS list in the Sherpa main settings and return the
+  // parameters of every entry shaped like `[Mass, kf1, kf2, min, max]`.
+  // Other selector kinds are ignored here; Pepper only consumes a subset.
+  std::vector<Mass_Selector_Params> ReadMassSelectorParams()
+  {
+    std::vector<Mass_Selector_Params> result;
+    auto items = Settings::GetMainSettings()["SELECTORS"].GetItems();
+    for (auto& item : items) {
+      if (!item.IsList()) continue;
+      const auto parameters
+          = item.SetDefault<std::string>({}).GetVector<std::string>();
+      if (parameters.size() != 5) continue;
+      if (parameters[0] != "Mass") continue;
+      Mass_Selector_Params p;
+      p.kf1 = item.Interprete<int>(parameters[1]);
+      p.kf2 = item.Interprete<int>(parameters[2]);
+      p.min = item.Interprete<double>(parameters[3]);
+      p.max = item.Interprete<double>(parameters[4]);
+      // Pepper only implements lepton pair mass cuts.
+      if (!Flavour{p.kf1}.IsLepton() || !Flavour{p.kf2}.IsLepton()) {
+        continue;
+      }
+      result.push_back(p);
+    }
+    return result;
+  }
 
   // Owns the once-per-process Pepper library bring-up and teardown.
   // A static weak_ptr deduplicates instances across Pepper_Reader
@@ -245,6 +282,26 @@ namespace LHEH5 {
       static char *s_argv[] = {nullptr};
       Pepper::Initialization_settings settings(s_argc, s_argv);
       settings.disable_mpi_initialization();
+
+      // Translate Sherpa "Mass" selectors into Pepper's lepton-pair
+      // invariant-mass cut. Pepper exposes a single (m2_min, m2_max)
+      // pair, so when multiple Mass selectors are present we narrow to
+      // their intersection.
+      const auto mass_selectors = ReadMassSelectorParams();
+      double m2_min = 0.0;
+      double m2_max = std::numeric_limits<double>::infinity();
+      for (const auto& p : mass_selectors) {
+        m2_min = std::max(m2_min, p.min * p.min);
+        m2_max = std::min(m2_max, p.max * p.max);
+        msg_Debugging() << "Pepper_Interface: Mass selector "
+                        << "[kf1=" << p.kf1 << ",kf2=" << p.kf2
+                        << ",min=" << p.min << ",max=" << p.max << "]\n";
+      }
+      if (!mass_selectors.empty()) {
+        settings.set_ll_m2_min(m2_min);
+        settings.set_ll_m2_max(m2_max);
+      }
+
       Pepper::initialize(settings);
     }
 
