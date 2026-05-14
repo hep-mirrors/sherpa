@@ -5,6 +5,7 @@
 #include "METOOLS/Explicit/Current.H"
 #include "METOOLS/Explicit/Form_Factor.H"
 #include "METOOLS/Explicit/Color_Calculator.H"
+#include "METOOLS/Explicit/Form_Factor.H"
 #include "METOOLS/Explicit/Lorentz_Calculator.H"
 
 namespace METOOLS {

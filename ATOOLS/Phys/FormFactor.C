@@ -13,7 +13,8 @@ std::ofstream out;
 FormFactor::FormFactor() {
   m_initialize = false;
   Scoped_Settings s{Settings::GetMainSettings()["Form_Factor"]};
-  m_form_mode = s["Mode"].SetDefault(finalstate::off).Get<finalstate::code>();
+  m_form_mode = s["Mode"].SetDefault(ff::off).Get<ff::mode>();
+  m_form_type = s["Type"].SetDefault(ff::vertex).Get<ff::type>();
 
   m_omega_mass = s["omega_mass"].SetDefault(0.78248).Get<double>();
   m_omega_g = s["omega_width"].SetDefault(0.00855).Get<double>();
@@ -57,15 +58,15 @@ FormFactor::FormFactor() {
 
   m_I = Complex(0, 1);
   switch (m_form_mode) {
-  case finalstate::pion:
+  case ff::pion:
     m_flv = Flavour(kf_pi_plus);
     RegisterDefaultsPion();
     break;
-  case finalstate::kplus:
+  case ff::kplus:
     m_flv = Flavour(kf_K_plus);
     RegisterDefaultsKaon();
     break;
-  case finalstate::off:
+  case ff::off:
     break;
   default:
     THROW(fatal_error, "Unknown final state");
@@ -216,13 +217,66 @@ Complex FormFactor::KPlus(const double &q2) {
   return Form;
 }
 
-double FormFactor::Eval(const double &q2) {
-  if (m_form_mode == finalstate::off)
-    return 1;
+double FormFactor::Eval(const double &q2){
+  if(IsZero(q2)) return 1.;
+  Calculate(q2);
+  return (m_form * conj(m_form)).real();
+}
+
+void FormFactor::Calculate(const double &q2) {
+  if (m_form_mode == ff::off || IsZero(q2)){
+    m_form = 1.0;
+    return;
+  }
   // https://gitlab.com/strong2020/monte-carlo-results/-/tree/root/pion-formfactor?ref_type=heads
   // for kplus see hep-ph/0409080 eq 64
   if (!m_initialize) {
-    m_rhoi = Particle_Info(kf_rho_770, m_rho_mass, 0.0, m_rho_g, 3, 0, 0, 0, 0,
+    Init();
+  }
+  Complex Form;
+  if (m_debug) {
+    std::string filename =
+        std::string("FormFactor_") + to_string(m_form_mode) + ".dat";
+    if (ATOOLS::FileExists(filename))
+      ATOOLS::Remove(filename);
+    out.open(filename, std::ios_base::app);
+    msg_Out() << "Debugging Form-Factor...." << std::endl;
+    for (double scale = m_xmin; scale <= m_xmax; scale += 0.01) {
+      switch (m_form_mode) {
+      case ff::pion:
+        Form = Pion(scale * scale);
+        break;
+      case ff::kplus:
+        Form = KPlus(scale * scale);
+        break;
+      case ff::off:
+        break;
+      default:
+        THROW(fatal_error, "Unknown final state");
+      }
+      out << scale << ", " << (Form * conj(Form)).real() << std::endl;
+    }
+    out.close();
+    exit(0);
+  }
+  switch (m_form_mode) {
+  case ff::pion:
+    m_form = Pion(q2);
+    break;
+  case ff::kplus:
+    m_form = KPlus(q2);
+    break;
+  case ff::kls:
+    m_form = KPlus(q2);
+  case ff::off:
+    break;
+  default:
+    THROW(fatal_error, "Unknown final state");
+  }
+}
+
+void ATOOLS::FormFactor::Init(){
+   m_rhoi = Particle_Info(kf_rho_770, m_rho_mass, 0.0, m_rho_g, 3, 0, 0, 0, 0,
                            0, 1, "rho", "rho", "rho", "rho");
 
     m_rhopi = Particle_Info(kf_rho_1450, m_rhop_mass, 0.0, m_rhop_g, 3, 0, 0, 0,
@@ -260,77 +314,56 @@ double FormFactor::Eval(const double &q2) {
     m_phi = Flavour(m_phii);
     m_phip = Flavour(m_phipi);
     m_initialize = true;
-  }
-  Complex Form;
-  if (m_debug) {
-    std::string filename =
-        std::string("FormFactor_") + to_string(m_form_mode) + ".dat";
-    if (ATOOLS::FileExists(filename))
-      ATOOLS::Remove(filename);
-    out.open(filename, std::ios_base::app);
-    msg_Out() << "Debugging Form-Factor...." << std::endl;
-    for (double scale = m_xmin; scale <= m_xmax; scale += 0.01) {
-      switch (m_form_mode) {
-      case finalstate::pion:
-        Form = Pion(scale * scale);
-        break;
-      case finalstate::kplus:
-        Form = KPlus(scale * scale);
-        break;
-      case finalstate::off:
-        break;
-      default:
-        THROW(fatal_error, "Unknown final state");
-      }
-      out << scale << ", " << (Form * conj(Form)).real() << std::endl;
-    }
-    out.close();
-    exit(0);
-  }
-  switch (m_form_mode) {
-  case finalstate::pion:
-    Form = Pion(q2);
-    break;
-  case finalstate::kplus:
-    Form = KPlus(q2);
-    break;
-  case finalstate::kls:
-    Form = KPlus(q2);
-  case finalstate::off:
-    break;
-  default:
-    THROW(fatal_error, "Unknown final state");
-  }
-  // PRINT_VAR( (Form*conj(Form)).real());
-  return (Form * conj(Form)).real();
 }
 
 std::ostream &ATOOLS::operator<<(std::ostream &str,
-                                 const finalstate::code &fs) {
-  if (fs == finalstate::pion)
+                                 const ff::mode &fs) {
+  if (fs == ff::pion)
     return str << "Pi+Pi-";
-  else if (fs == finalstate::kplus)
+  else if (fs == ff::kplus)
     return str << "K+K-";
-  else if (fs == finalstate::off)
+  else if (fs == ff::off)
     return str << "Off";
   return str << "unknown";
 }
 
-std::istream &ATOOLS::operator>>(std::istream &str, finalstate::code &mode) {
+std::istream &ATOOLS::operator>>(std::istream &str, ff::mode &mode) {
   std::string tag;
   str >> tag;
   // mode=wgt::off;
   if (tag.find("Pion") != std::string::npos)
-    mode = finalstate::pion;
+    mode = ff::pion;
   else if (tag.find("Kplus") != std::string::npos)
-    mode = finalstate::kplus;
+    mode = ff::kplus;
   else if (tag.find("KLS") != std::string::npos)
-    mode = finalstate::kls;
+    mode = ff::kls;
   else if (tag.find("Off") != std::string::npos)
-    mode = finalstate::off;
+    mode = ff::off;
   else if (tag.find("None") != std::string::npos)
-    mode = finalstate::off;
+    mode = ff::off;
   else
     THROW(fatal_error, "Unknown Form_Factor: Mode ");
+  return str;
+}
+
+std::ostream &ATOOLS::operator<<(std::ostream &str,
+                                 const ff::type &ty) {
+  if (ty == ff::vertex)
+    return str << "Vertex";
+  else if (ty == ff::factored)
+    return str << "Factored";
+  return str << "unknown";
+}
+
+std::istream &ATOOLS::operator>>(std::istream &str, ff::type &type) {
+  std::string tag;
+  str >> tag;
+  // mode=wgt::off;
+  if (tag.find("Vertex") != std::string::npos)
+    type = ff::vertex;
+  else if (tag.find("Factored") != std::string::npos)
+    type = ff::factored;
+  else
+    THROW(fatal_error, "Unknown Form_Factor: Type : " + tag);
   return str;
 }

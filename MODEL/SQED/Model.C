@@ -522,6 +522,7 @@ void SQED::InitQEDVertices() {
   Flavour ks(kf_K_S);
   Flavour kp(kf_K_plus);
   Flavour rho(kf_rho_770_plus);
+  Flavour lam(kf_Lambda);
 
   addPhotonScalarVertex(pi, pi.Bar(), cpl);
   addPhotonScalarVertex(kl, ks, 0.5*cpl);
@@ -535,8 +536,19 @@ void SQED::InitQEDVertices() {
   m_v.back().AddParticle(pi.Bar());
   m_v.back().Color.push_back(Color_Function(cf::None));
   m_v.back().Lorentz.push_back("VVSS");
+  // m_v.back().FormFactor.push_back("FF_Pion");
   m_v.back().cpl.push_back(2*cpl*g1);
   m_v.back().order[1] = 2;
+
+  m_v.push_back(Single_Vertex());
+  m_v.back().AddParticle(lam.Bar());
+  m_v.back().AddParticle(lam);
+  m_v.back().AddParticle(Flavour(kf_photon));
+  m_v.back().Color.push_back(Color_Function(cf::None));
+  m_v.back().Lorentz.push_back("FFV");
+  m_v.back().cpl.push_back(cpl);
+  m_v.back().order[1] = 1;
+
 }
 
 void SQED::InitQCDVertices() {
@@ -845,6 +857,7 @@ void SQED::addPhotonScalarVertex(const Flavour &a, const Flavour &b,const Kabbal
   m_v.back().AddParticle(b);
   m_v.back().Color.push_back(Color_Function(cf::None));
   m_v.back().Lorentz.push_back("SSV");
+  // m_v.back().FormFactor.push_back("FF_Pion");
   m_v.back().cpl.push_back(cpl*Q);
   m_v.back().order[1] = 1;
 };
