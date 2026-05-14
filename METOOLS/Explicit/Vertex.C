@@ -91,6 +91,17 @@ Vertex::Vertex(const Vertex_Key &key):
 	    ckey.p_mv->FormFactor[ckey.m_n]+"'");
     }
   }
+  std::string ffkey("1");
+  if (ckey.p_mv->FormFactor.size()>=ckey.m_n){
+      ffkey=ckey.p_mv->FormFactor[ckey.m_n-1];
+    m_ff.push_back(FF_Getter::GetObject(ffkey,ckey));
+    if (m_ff.back()==NULL) {
+      msg_Out()<<*ckey.p_mv<<std::endl;
+      THROW(fatal_error,"Form factor not implemented '"+
+      ckey.p_mv->FormFactor[ckey.m_n]+"'");
+    }
+  }
+  else m_ff.push_back(NULL);
 }
 
 Vertex::~Vertex()
@@ -141,6 +152,7 @@ void Vertex::Evaluate()
 		if (j==NULL) continue;
 		j->Multiply(p_v->Coupling(k)*
 			    m_cc[k]->Coupling()*m_ff[k]->FF());
+		// j->Multiply(p_v->Coupling(k)*m_cc[k]->Coupling()*(m_ff[k]!=NULL?m_ff[k]->FF():1.));
 		j->SetH(H(hid));
 		m_cc[k]->AddJ(j);
 		SetZero(false);
@@ -172,8 +184,14 @@ void Vertex::Evaluate()
 	if (m_cc[k]->Evaluate(m_cjj)) {
 	  CObject *j(m_lc[k]->Evaluate(m_cjj));
 	  if (j==NULL) continue;
+<<<<<<< HEAD
 	  j->Multiply(p_v->Coupling(k)*
 		      m_cc[k]->Coupling()*m_ff[k]->FF());
+||||||| parent of 2eff5fc7a (Changes for pion form-factor. It is now directly)
+	  j->Multiply(p_v->Coupling(k)*m_cc[k]->Coupling());
+=======
+	  j->Multiply(p_v->Coupling(k)*m_cc[k]->Coupling()*(m_ff[k]!=NULL?m_ff[k]->FF():1.));
+>>>>>>> 2eff5fc7a (Changes for pion form-factor. It is now directly)
 	  j->SetH(H(hid));
 	  m_cc[k]->AddJ(j);
 	  SetZero(false);

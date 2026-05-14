@@ -1,4 +1,4 @@
-set(SQED_SOURCES  Model.C)
+set(SQED_SOURCES  Model.C Form_Factor.C)
 
 set(SQED_HEADERS Model.H)
 
