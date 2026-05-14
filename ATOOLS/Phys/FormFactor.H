@@ -6,12 +6,15 @@
 
 namespace ATOOLS {
 
-struct finalstate {
-  enum code { off = 0, pion = 1, kplus = 2, kls = 3 };
+struct ff {
+  enum mode { off = 0, pion = 1, kplus = 2, kls = 3 };
+  enum type { factored = 0, vertex = 1 };
 };
 
-std::istream &operator>>(std::istream &str, finalstate::code &sm);
-std::ostream &operator<<(std::ostream &str, const finalstate::code &sm);
+std::istream &operator>>(std::istream &str, ff::mode &sm);
+std::ostream &operator<<(std::ostream &str, const ff::mode &sm);
+std::istream &operator>>(std::istream &str, ff::type &sm);
+std::ostream &operator<<(std::ostream &str, const ff::type &sm);
 
 class FormFactor {
 public:
@@ -22,21 +25,25 @@ public:
   void RegisterDefaultsKaon();
   // void Initalize();
   double Eval(const double &q2);
+  void Calculate(const double &q2);
 
   Complex ppi(const double &q2);
   Complex d(const double &m);
   Complex h(const double &q2);
   Complex dh(const double &q2);
+  inline Complex Form() { return m_form; }
 
   Complex f(const double &q2, const double &m, const double &g);
   Complex gamma(const double &q2, const double &m, const double &g);
 
-  inline bool On() { return m_form_mode; }
+  inline bool On() { return m_form_mode != ff::off; }
+  inline ff::type Type() { return m_form_type ; }
 
   Complex b(const double &q2, const Flavour &fl);
   Complex BW_GS(const double &q2, const Flavour &fl);
   Complex Pion(const double &q2);
   Complex KPlus(const double &q2);
+  void Init();
   double m_crho, m_crhop, m_crhopp, m_crhoppp;
   double m_comega, m_comegap, m_comegapp;
   double m_cphi, m_cphip, m_cphipp;
@@ -56,12 +63,19 @@ public:
   Particle_Info m_omegai, m_omegapi, m_omegappi;
   Particle_Info m_phii, m_phipi;
 
-  Complex m_I;
-  finalstate::code m_form_mode;
+  Complex m_I, m_form;
+  ff::mode m_form_mode;
+  ff::type m_form_type;
 };
-inline std::string to_string(finalstate::code fs) {
+extern FormFactor *pionform;
+inline std::string to_string(ff::mode fs) {
   std::ostringstream os;
-  os << fs; // uses your operator<<
+  os << fs;
+  return os.str();
+}
+inline std::string to_string(ff::type fs) {
+  std::ostringstream os;
+  os << fs;
   return os.str();
 }
 

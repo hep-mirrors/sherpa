@@ -1,3 +1,4 @@
+#include "ATOOLS/Math/Vector.H"
 #include "PHASIC++/Scales/Scale_Setter_Base.H"
 
 #include "PHASIC++/Process/Process_Base.H"
@@ -174,10 +175,11 @@ double Scale_Setter_Base::hHT() const
 
 double Scale_Setter_Base::PionForm() const
 {
-  if(m_nin!=2){
-    msg_Error()<<"PionForm is for e+e- -> pi+pi- only"<<std::endl;
-  }
-  return (m_p[0]+m_p[1]).Abs2();
+  Vec4D pisum(0.0,0.0,0.0,0.0);
+  for (size_t i(m_nin);i<m_p.size();++i) 
+    if(p_proc->Flavours()[i].IsChPion())
+      pisum+=m_p[i]; 
+  return pisum.Abs2();
 }
 
 double Scale_Setter_Base::CalculateScale

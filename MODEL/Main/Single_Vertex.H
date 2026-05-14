@@ -1,6 +1,7 @@
 #ifndef MODEL__Main__Single_Vertex_H
 #define MODEL__Main__Single_Vertex_H
 
+#include "ATOOLS/Phys/FormFactor.H"
 #include "MODEL/Main/Color_Function.H"
 #include "ATOOLS/Math/MyComplex.H"
 #include "ATOOLS/Math/Kabbala.H"
@@ -14,7 +15,7 @@ namespace MODEL {
     std::vector<ATOOLS::Flavour> in;
     std::vector<ATOOLS::Kabbala> cpl;
     std::vector<Color_Function> Color;
-    std::vector<std::string> Lorentz;
+    std::vector<std::string> Lorentz, FormFactor;
     std::vector<size_t> id;
     std::vector<int> order;
 

@@ -21,7 +21,7 @@ namespace METOOLS {
 
     virtual ~Form_Factor();
 
-    virtual double FF(double) const = 0;
+    virtual Complex FF() const = 0;
 
     inline const std::string &ID() const { return m_id; }    
 

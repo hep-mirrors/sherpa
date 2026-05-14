@@ -4,6 +4,7 @@
 #include "METOOLS/Explicit/Vertex_Key.H"
 #include "METOOLS/Explicit/Current.H"
 #include "METOOLS/Explicit/Color_Calculator.H"
+#include "METOOLS/Explicit/Form_Factor.H"
 #include "METOOLS/Explicit/Lorentz_Calculator.H"
 
 namespace METOOLS {
@@ -27,6 +28,7 @@ namespace METOOLS {
 
     LC_Vector m_lc;
     CC_Vector m_cc;
+    FF_Vector m_ff;
 
     CObject_Vector m_cjj;
 

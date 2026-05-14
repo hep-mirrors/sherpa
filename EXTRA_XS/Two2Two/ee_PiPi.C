@@ -24,17 +24,17 @@ namespace EXTRAXS {
 
   public:
 
-    ee_PiPi(const External_ME_Args& args,const finalstate::code &fs);
+    ee_PiPi(const External_ME_Args& args,const ff::mode &fs);
 
     double operator()(const ATOOLS::Vec4D_Vector& mom);
     double Coulomb();
     double m_alpha, m_alphas, m_s;
     Flavour m_flv;
     std::unique_ptr<FormFactor> p_formfactor;
-    finalstate::code m_fs;
+    ff::mode m_fs;
   };
 
-  ee_PiPi::ee_PiPi(const External_ME_Args& args, const finalstate::code &fs)
+  ee_PiPi::ee_PiPi(const External_ME_Args& args, const ff::mode &fs)
     : ME2_Base(args), m_fs(fs)
   {
     m_oew=0;
@@ -42,16 +42,16 @@ namespace EXTRAXS {
     m_alpha = MODEL::s_model->ScalarConstant("alpha_QED");
     m_alphas = MODEL::s_model->ScalarConstant("strong_cpl");
     switch(m_fs){
-      case finalstate::pion:
+      case ff::pion:
         m_flv =  Flavour(kf_pi_plus);
         break;
-      case finalstate::kplus:
+      case ff::kplus:
         m_flv = Flavour(kf_K_plus);
         break;
-      case finalstate::kls:
+      case ff::kls:
         m_flv = Flavour(kf_K_L);
         break;
-      case finalstate::off:
+      case ff::off:
         m_flv = Flavour(args.m_outflavs[0]);
       default:
         THROW(fatal_error, "Unknown Final state");
@@ -82,15 +82,15 @@ namespace EXTRAXS {
     double massFS = m_flv.Mass();
     double amp = -t*(m_s+t) - m1*m1*(2*massFS*massFS-m_s-2*t) -sqr(m1*m1) - sqr(massFS*massFS) + 2*massFS*massFS*t;
     switch(m_fs){
-      case finalstate::pion:
+      case ff::pion:
         amp *= 1;
         break;
-      case finalstate::kplus:
+      case ff::kplus:
         amp *= 2.*Coulomb();
         break;
-      case finalstate::kls:
+      case ff::kls:
         amp *= 1;
-      case finalstate::off:
+      case ff::off:
         break;
     }
      // = -t*(s+t) - m1*m1*(2*massFS*massFS-s-2*t) -sqr(m1*m1) - sqr(massFS*massFS) + 2*massFS*massFS*t;
@@ -108,16 +108,16 @@ operator()(const External_ME_Args &args) const
       (fl[2].Kfcode()==kf_pi_plus || fl[2].Kfcode()==-kf_pi_plus) && fl[3]==fl[2].Bar())
   {
 
-    return new ee_PiPi(args, finalstate::pion);
+    return new ee_PiPi(args, ff::pion);
   }
   else if (fl[0]==Flavour(kf_e) && fl[1]==fl[0].Bar() &&
       (fl[2].Kfcode()==kf_K_plus || fl[2].Kfcode()==-kf_K_plus) && fl[3]==fl[2].Bar()){
-      return new ee_PiPi(args, finalstate::kplus);
+      return new ee_PiPi(args, ff::kplus);
   }
   else if (fl[0]==Flavour(kf_e) && fl[1]==fl[0].Bar() &&
       (fl[2].Kfcode()==kf_K_L || fl[2].Kfcode()==kf_K_S) || 
       (fl[2].Kfcode()==kf_K_S || fl[2].Kfcode()==kf_K_L)){
-      return new ee_PiPi(args, finalstate::kls);
+      return new ee_PiPi(args, ff::kls);
   }
   return NULL;
 }
