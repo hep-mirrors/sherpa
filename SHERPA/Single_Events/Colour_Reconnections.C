@@ -19,7 +19,7 @@ Colour_Reconnections::~Colour_Reconnections() {}
 
 Return_Value::code Colour_Reconnections::Treat(ATOOLS::Blob_List* bloblist)
 {
-  if (!m_on) return Return_Value::Nothing;
+  if (!m_on && !p_reconnectionhandler->On()) return Return_Value::Nothing;
   if (bloblist->empty()) {
     msg_Error()<<"Colour_Reconnections::Treat("<<bloblist<<"): "<<endl
 	       <<"   Blob list contains "<<bloblist->size()<<" entries."<<endl

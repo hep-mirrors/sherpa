@@ -30,6 +30,13 @@ if (SHERPA_ENABLE_INTEGRATION_TESTS)
              )
   SET_TESTS_PROPERTIES( Main${test}part1 PROPERTIES ENVIRONMENT "${STANDARDENVIRONMENT}")
 
+  set(test test-LO_Z-FragmentationOff)
+  file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${test})
+  add_test( NAME Main${test}part1 COMMAND Sherpa  "FRAGMENTATION: Off"  ${PROJECT_SOURCE_DIR}/Tests/End2End/CI/LO_Z/Sherpa.yaml
+                                  WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${test}
+               )
+  SET_TESTS_PROPERTIES( Main${test}part1 PROPERTIES ENVIRONMENT "${STANDARDENVIRONMENT}")
+
   if (SHERPA_ENABLE_PYTHIA8)
     set(test test-LO_Z-Pythia8)
     file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${test})
