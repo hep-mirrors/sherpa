@@ -12,12 +12,14 @@ Colour_Reconnections(Colour_Reconnection_Handler * reconnections) :
   m_name = ( string("Colour_Reconnections: ") +
 	     p_reconnectionhandler->Name() );
   m_type = eph::Hadronization;
+  m_on = Settings::GetMainSettings()["FRAGMENTATION"].Get<bool>();
 }
 
 Colour_Reconnections::~Colour_Reconnections() {}
 
 Return_Value::code Colour_Reconnections::Treat(ATOOLS::Blob_List* bloblist)
 {
+  if (!m_on) return Return_Value::Nothing;
   if (bloblist->empty()) {
     msg_Error()<<"Colour_Reconnections::Treat("<<bloblist<<"): "<<endl
 	       <<"   Blob list contains "<<bloblist->size()<<" entries."<<endl
