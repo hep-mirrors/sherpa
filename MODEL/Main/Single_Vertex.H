@@ -1,6 +1,7 @@
 #ifndef MODEL__Main__Single_Vertex_H
 #define MODEL__Main__Single_Vertex_H
 
+#include "ATOOLS/Phys/FormFactor.H"
 #include "MODEL/Main/Color_Function.H"
 #include "ATOOLS/Math/MyComplex.H"
 #include "ATOOLS/Math/Kabbala.H"

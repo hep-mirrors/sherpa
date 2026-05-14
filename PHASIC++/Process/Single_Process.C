@@ -1,3 +1,4 @@
+#include "ATOOLS/Phys/FormFactor.H"
 #include "PHASIC++/Process/Single_Process.H"
 
 #include "PHASIC++/Process/ME_Generator_Base.H"
@@ -771,15 +772,15 @@ Weights_Map Single_Process::Differential(const Vec4D_Vector& p,
   // will be populated with it)
   p_int->ISR()->SetMuF2(facscale, 0);
   p_int->ISR()->SetMuF2(facscale, 1);
-  if(p_pionformfactor->On()){
+  if(p_pionformfactor->On() && p_pionformfactor->Type()==ff::factored){
     m_last *= p_pionformfactor->Eval(p_scale->PionForm());
   }
   return m_last;
 }
 
 Weights_Map Single_Process::YFSDifferential(const Vec4D_Vector &p,  ATOOLS::Variations_Mode varmode){
-  Partonic(p, varmode);
-  if(p_pionformfactor->On()){
+  Partonic(p);
+  if(p_pionformfactor->On() && p_pionformfactor->Type()==ff::factored){
     m_lastxs *= p_pionformfactor->Eval(p_scale->PionForm());
   }
   return m_lastxs;
