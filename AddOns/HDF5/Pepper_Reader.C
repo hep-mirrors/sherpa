@@ -1,6 +1,7 @@
 #include "ATOOLS/Org/CXXFLAGS.H"
 
 #include <mpi.h>
+#include <atomic>
 #include <iostream>
 #include <memory>
 #include <mutex>
@@ -349,12 +350,24 @@ namespace LHEH5 {
           tag, File::Truncate | File::Create | File::ReadWrite, fapl);
     }
 
+    // HDF5 keys files by their string name in a global registry, even
+    // for the in-memory core driver. Two simultaneously-live files with
+    // the same name would collide both within one reader (current and
+    // next buffers overlap during Advance) and across sibling readers
+    // (one per jet multiplicity). A process-wide atomic counter gives
+    // every buffer a unique name.
+    std::string NextBufferName()
+    {
+      static std::atomic<std::uint64_t> s_counter {0};
+      return "pepper_buffer_" + std::to_string(s_counter.fetch_add(1));
+    }
+
     // Ask Pepper to populate the next in-memory database with up to
     // m_ncache events. Returning 0 signals Pepper exhaustion; the
     // reader stops once the current buffer is drained.
     size_t FillNextBuffer()
     {
-      m_next_file = CreateInMemoryFile("pepper_buffer_next");
+      m_next_file = CreateInMemoryFile(NextBufferName());
       const size_t n_filled = p_process->fill_lheh5_buffer(*m_next_file, m_ncache);
       if (n_filled == 0) {
         m_next_file.reset();
