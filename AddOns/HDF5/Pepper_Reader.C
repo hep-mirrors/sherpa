@@ -229,6 +229,8 @@ namespace LHEH5 {
 #include "ATOOLS/Org/Settings.H"
 #include "ATOOLS/Org/Scoped_Settings.H"
 #include "PDF/Main/PDF_Base.H"
+#include "MODEL/Main/Model_Base.H"
+#include "MODEL/Main/Running_AlphaQED.H"
 
 #include <pepper/pepper.h>
 
@@ -331,6 +333,79 @@ namespace LHEH5 {
     std::thread m_thread;
   };
 
+  // Translate Sherpa's EW input scheme into the equivalent Pepper
+  // configuration and forward the relevant numeric parameters. Sherpa
+  // exposes many schemes; Pepper only implements `Gmu` and
+  // `alphamZsW`, and `UserDefined`, so other choices are rejected here rather
+  // than silently mismatching the rest of the run.
+  void SyncEWScheme(Pepper::Initialization_settings& settings)
+  {
+    const auto sherpa_scheme = ToType<MODEL::ew_scheme::code>(
+        rpa->gen.Variable("EW_SCHEME"));
+    Settings& sherpa_settings {Settings::GetMainSettings()};
+    const Complex csin2thetaW {
+        MODEL::s_model->ComplexConstant("csin2_thetaW")};
+    const double alpha_em {MODEL::aqed->Default()};
+    switch (sherpa_scheme) {
+      case MODEL::ew_scheme::UserDefined: {
+        // All EW parameters given explicitly by the user on the Sherpa
+        // side. Pepper's `none` scheme also consumes alpha_em and
+        // sin^2(theta_W) verbatim from settings, with no further
+        // derivation, so the two are equivalent as long as we propagate
+        // both values (handled unconditionally below).
+        settings.set_ew_scheme("none");
+        break;
+      }
+      case MODEL::ew_scheme::Gmu: {
+        settings.set_ew_scheme("gmu");
+        // Pepper's "gmu" always derives sin^2(theta_W) from the complex
+        // W/Z masses, so it is equivalent to Sherpa's CMS width scheme.
+        // The Gmu_cms_alpha_qed_convention only selects the alpha_QED
+        // formula:
+        //   - "abs"     matches GMU_CMS_AQED_CONVENTION=0,
+        //   - "sherpa2" matches GMU_CMS_AQED_CONVENTION=4 (real-mass
+        //     formula sqrt(2) GF / pi * MW^2 * (1 - (MW/MZ)^2)).
+        // WIDTH_SCHEME=Fixed cannot be mapped exactly: Sherpa keeps
+        // sin^2(theta_W) real there, while Pepper unconditionally uses
+        // the complex-mass relation, so the propagated EW parameters
+        // would silently disagree.
+        const std::string width_scheme {
+            sherpa_settings["WIDTH_SCHEME"].Get<std::string>()};
+        if (width_scheme != "CMS") {
+          THROW(not_implemented,
+                "Pepper's Gmu scheme requires WIDTH_SCHEME=CMS; got "
+                + width_scheme + ".");
+        }
+        const size_t conv {
+            sherpa_settings["GMU_CMS_AQED_CONVENTION"].Get<size_t>()};
+        switch (conv) {
+          case 0:
+            settings.set_gmu_cms_alpha_qed_convention("abs");
+            break;
+          case 4:
+            settings.set_gmu_cms_alpha_qed_convention("sherpa2");
+            break;
+          default:
+            THROW(not_implemented,
+                  "Pepper supports GMU_CMS_AQED_CONVENTION=0 (abs) and 4 "
+                  "(sherpa2); got " + ToString(conv) + ".");
+        }
+        settings.set_GF(sherpa_settings["GF"].Get<double>());
+        break;
+      }
+      case MODEL::ew_scheme::alphamZsW: {
+        settings.set_ew_scheme("alpha_mz_sinthetaw");
+        break;
+      }
+      default:
+        THROW(not_implemented,
+              "Pepper supports only EW_SCHEME=UserDefined (0), Gmu (3), "
+              "or alphamZsW (4); got " + ToString(sherpa_scheme) + ".");
+    }
+    settings.set_alpha_em(alpha_em);
+    settings.set_sin2_theta_w(csin2thetaW.real());
+  }
+
   // Owns the once-per-process Pepper library bring-up and teardown.
   // A static weak_ptr deduplicates instances across Pepper_Reader
   // siblings (one per jet multiplicity); finalize fires when the
@@ -360,6 +435,11 @@ namespace LHEH5 {
       // in all configurations Pepper supports.
       if (auto* pdf = rpa->gen.PDF(0))
         settings.set_pdf(pdf->Set(), pdf->Member());
+
+      // Mirror Sherpa's EW input scheme and the corresponding numeric
+      // parameters. Pepper only implements `Gmu`, `alphamZsW`, and
+      // `UserDefined`, so any other Sherpa scheme is a hard error.
+      SyncEWScheme(settings);
 
       // Translate Sherpa "Mass" selectors into Pepper's lepton-pair
       // invariant-mass cut. Pepper exposes a single (m2_min, m2_max)
