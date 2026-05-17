@@ -284,6 +284,13 @@ namespace LHEH5 {
       Pepper::Initialization_settings settings(s_argc, s_argv);
       settings.disable_mpi_initialization();
 
+      // Keep Pepper's beam energy in lockstep with Sherpa's so the two
+      // sides do not silently disagree on √s. Sherpa's Run_Parameter is
+      // populated during framework initialisation, which precedes
+      // Matrix_Element_Handler::InitializeProcesses (where readers are
+      // constructed), so rpa->gen.Ecms() is available here.
+      settings.set_e_cms(rpa->gen.Ecms());
+
       // Translate Sherpa "Mass" selectors into Pepper's lepton-pair
       // invariant-mass cut. Pepper exposes a single (m2_min, m2_max)
       // pair, so when multiple Mass selectors are present we narrow to
