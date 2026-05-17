@@ -2,6 +2,7 @@
 
 #include <mpi.h>
 #include <atomic>
+#include <future>
 #include <iostream>
 #include <memory>
 #include <mutex>
@@ -348,6 +349,16 @@ namespace LHEH5 {
     bool m_finished;
     bool m_warmed_up;
 
+    // When true, refilling the next buffer runs on a worker thread so
+    // Sherpa can consume events from the current buffer while Pepper
+    // populates the next one (especially helpful with a GPU back-end).
+    // Invariant: while m_pending_fill is valid, the main thread must not
+    // touch m_next_file or p_next; only one worker is ever in flight, so
+    // Pepper is never re-entered concurrently.
+    bool m_async_fill;
+    std::future<size_t> m_pending_fill;
+    size_t m_last_fill_result {0};
+
     Vec4D_Vector m_ctmoms;
 
     std::unique_ptr<File> CreateInMemoryFile(const std::string &tag)
@@ -372,8 +383,10 @@ namespace LHEH5 {
 
     // Ask Pepper to populate the next in-memory database with up to
     // m_ncache events. Returning 0 signals Pepper exhaustion; the
-    // reader stops once the current buffer is drained.
-    size_t FillNextBuffer()
+    // reader stops once the current buffer is drained. This routine
+    // is the unit of work scheduled by LaunchFill() and may run on a
+    // worker thread when PEPPER_ASYNC_FILL is enabled.
+    size_t PerformFill()
     {
       m_next_file = CreateInMemoryFile(NextBufferName());
       const size_t n_filled = p_process->fill_lheh5_buffer(*m_next_file, m_ncache);
@@ -388,8 +401,36 @@ namespace LHEH5 {
       return n_filled;
     }
 
+    // Kick off a fill of the next buffer. With async fill enabled, the
+    // work runs on a worker thread and the result becomes visible via
+    // WaitForFill(); otherwise it runs inline and m_last_fill_result is
+    // updated directly. Precondition: no fill is currently in flight.
+    void LaunchFill()
+    {
+      if (m_async_fill) {
+        m_pending_fill = std::async(std::launch::async,
+                                    [this]() { return PerformFill(); });
+      } else {
+        m_last_fill_result = PerformFill();
+      }
+    }
+
+    // Block until the most recently launched fill has completed and
+    // return the number of events written. Safe to call when no fill
+    // is in flight: it then just returns the cached previous result.
+    size_t WaitForFill()
+    {
+      if (m_pending_fill.valid())
+        m_last_fill_result = m_pending_fill.get();
+      return m_last_fill_result;
+    }
+
     void Advance()
     {
+      // Make sure the next buffer is completely filled before swapping;
+      // this is the invariant that keeps consumers from racing the
+      // producer thread.
+      const size_t filled = WaitForFill();
       m_current_file = std::move(m_next_file);
       p_current = std::move(p_next);
       m_ievt = 0;
@@ -402,7 +443,8 @@ namespace LHEH5 {
             p_current->Version()[1]==0 &&
             p_current->Version()[2]==0) m_unitwgt*=rpa->Picobarn();
       }
-      if (FillNextBuffer() == 0) m_finished = true;
+      if (filled == 0) m_finished = true;
+      else LaunchFill();
     }
 
     bool FillAmplitude()
@@ -477,6 +519,7 @@ namespace LHEH5 {
     {
       Settings& s {Settings::GetMainSettings()};
       m_ncache = s["PEPPER_CACHE_SIZE"].SetDefault(10000).Get<int>();
+      m_async_fill = s["PEPPER_ASYNC_FILL"].SetDefault(false).Get<bool>();
 
       p_sub = new NLO_subevt();
       s_objects.push_back(this);
@@ -504,6 +547,10 @@ namespace LHEH5 {
 
     ~Pepper_Reader()
     {
+      // Drain any in-flight worker before our members go out of scope,
+      // since the worker captures `this` and touches p_process / the
+      // next-buffer state.
+      if (m_pending_fill.valid()) m_pending_fill.wait();
       if (p_ampl) p_ampl->Delete();
       delete p_sub;
     }
@@ -518,11 +565,16 @@ namespace LHEH5 {
     {
       if (m_warmed_up) return;
       m_warmed_up = true;
-      if (FillNextBuffer() == 0) {
-        m_finished = true;
-      } else {
-        Advance();
-      }
+      // First fill is always the warm-up; do it synchronously so the
+      // optimisation phase completes before Sherpa proceeds. Advance()
+      // will then promote it to the current buffer and kick off the
+      // first overlapped refill (async, if enabled).
+      const bool saved_async = m_async_fill;
+      m_async_fill = false;
+      LaunchFill();
+      m_async_fill = saved_async;
+      if (m_last_fill_result == 0) m_finished = true;
+      else Advance();
     }
 
     void PrintStatistics(std::ostream& o)
@@ -538,10 +590,19 @@ namespace LHEH5 {
     // Pepper feeds events independently on every rank, so there is
     // no shared file pointer to synchronize. The barrier is the right
     // moment to retry a refill if a previous attempt came up empty.
+    // We must not race an in-flight async fill, so first drain any
+    // pending future before inspecting p_next.
     void MPISync()
     {
+      WaitForFill();
       if (m_finished && !p_next) {
-        if (FillNextBuffer() > 0) m_finished = false;
+        // Retry inline (synchronously): we are at a barrier, so there
+        // is no consumption to overlap with.
+        const bool saved_async = m_async_fill;
+        m_async_fill = false;
+        LaunchFill();
+        m_async_fill = saved_async;
+        if (m_last_fill_result > 0) m_finished = false;
       }
     }
 
@@ -561,6 +622,9 @@ namespace LHEH5 {
 	--m_ievt;
       }
       if (m_ievt >= m_ncurrent) {
+        // p_next is owned by the worker thread until the fill completes;
+        // drain before inspecting it from the consumer side.
+        WaitForFill();
         if (!p_next || p_next->NEvents() == 0) {
           if (Communicate() < 0 || (!p_next && m_finished)) {
             msg_Info() << om::brown << om::bold << "WARNING" << om::reset
