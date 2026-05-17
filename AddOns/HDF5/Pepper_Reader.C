@@ -228,6 +228,7 @@ namespace LHEH5 {
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/Settings.H"
 #include "ATOOLS/Org/Scoped_Settings.H"
+#include "PDF/Main/PDF_Base.H"
 
 #include <pepper/pepper.h>
 
@@ -353,6 +354,12 @@ namespace LHEH5 {
       // Matrix_Element_Handler::InitializeProcesses (where readers are
       // constructed), so rpa->gen.Ecms() is available here.
       settings.set_e_cms(rpa->gen.Ecms());
+
+      // Pin Pepper's LHAPDF choice to whatever Sherpa initialised for
+      // the hard process (beam 0); the second beam uses the same set
+      // in all configurations Pepper supports.
+      if (auto* pdf = rpa->gen.PDF(0))
+        settings.set_pdf(pdf->Set(), pdf->Member());
 
       // Translate Sherpa "Mass" selectors into Pepper's lepton-pair
       // invariant-mass cut. Pepper exposes a single (m2_min, m2_max)
