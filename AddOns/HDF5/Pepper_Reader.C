@@ -2,12 +2,16 @@
 
 #include <mpi.h>
 #include <atomic>
+#include <condition_variable>
+#include <deque>
+#include <functional>
 #include <future>
 #include <iostream>
 #include <memory>
 #include <mutex>
 #include <stdexcept>
 #include <string>
+#include <thread>
 #include <vector>
 #include <unistd.h>
 
@@ -268,6 +272,64 @@ namespace LHEH5 {
     return result;
   }
 
+  // Serial FIFO worker shared across all Pepper_Reader instances.
+  // Pepper drives a single backend (CPU or GPU); running fills from
+  // sibling readers concurrently would multiply GPU memory pressure
+  // and re-enter Pepper, which is not safe. A single worker thread
+  // processes submitted jobs one at a time, so each reader sees its
+  // own future complete, but only one fill is ever in flight.
+  class Fill_Worker {
+  public:
+    Fill_Worker() : m_thread([this] { Run(); }) {}
+    ~Fill_Worker()
+    {
+      {
+        std::lock_guard<std::mutex> lock(m_mutex);
+        m_stop = true;
+      }
+      m_cv.notify_all();
+      m_thread.join();
+    }
+
+    Fill_Worker(const Fill_Worker&) = delete;
+    Fill_Worker& operator=(const Fill_Worker&) = delete;
+
+    std::future<size_t> Submit(std::function<size_t()> job)
+    {
+      auto task = std::make_shared<std::packaged_task<size_t()>>(
+          std::move(job));
+      auto fut = task->get_future();
+      {
+        std::lock_guard<std::mutex> lock(m_mutex);
+        m_queue.push_back([task]() { (*task)(); });
+      }
+      m_cv.notify_one();
+      return fut;
+    }
+
+  private:
+    void Run()
+    {
+      while (true) {
+        std::function<void()> job;
+        {
+          std::unique_lock<std::mutex> lock(m_mutex);
+          m_cv.wait(lock, [this] { return m_stop || !m_queue.empty(); });
+          if (m_stop && m_queue.empty()) return;
+          job = std::move(m_queue.front());
+          m_queue.pop_front();
+        }
+        job();
+      }
+    }
+
+    std::mutex m_mutex;
+    std::condition_variable m_cv;
+    std::deque<std::function<void()>> m_queue;
+    bool m_stop {false};
+    std::thread m_thread;
+  };
+
   // Owns the once-per-process Pepper library bring-up and teardown.
   // A static weak_ptr deduplicates instances across Pepper_Reader
   // siblings (one per jet multiplicity); finalize fires when the
@@ -314,10 +376,14 @@ namespace LHEH5 {
       Pepper::initialize(settings);
     }
 
-    ~Pepper_Interface() { Pepper::finalize(); }
+    // The worker is destroyed (and joined) before Pepper::finalize()
+    // runs, so no in-flight fill outlives Pepper itself.
+    ~Pepper_Interface() { m_fill_worker.reset(); Pepper::finalize(); }
 
     Pepper_Interface(const Pepper_Interface &) = delete;
     Pepper_Interface &operator=(const Pepper_Interface &) = delete;
+
+    Fill_Worker &fill_worker() { return *m_fill_worker; }
 
     static std::shared_ptr<Pepper_Interface> Acquire()
     {
@@ -329,6 +395,10 @@ namespace LHEH5 {
       s_instance = fresh;
       return fresh;
     }
+
+  private:
+    std::unique_ptr<Fill_Worker> m_fill_worker {
+      std::make_unique<Fill_Worker>()};
   };
 
   // Reads parton-level events from HDF5 databases that live entirely
@@ -402,14 +472,17 @@ namespace LHEH5 {
     }
 
     // Kick off a fill of the next buffer. With async fill enabled, the
-    // work runs on a worker thread and the result becomes visible via
-    // WaitForFill(); otherwise it runs inline and m_last_fill_result is
-    // updated directly. Precondition: no fill is currently in flight.
+    // work is submitted to the shared Fill_Worker — a single FIFO thread
+    // serving every Pepper_Reader instance — so that sibling readers do
+    // not stack concurrent Pepper invocations onto the (often GPU)
+    // backend. The result becomes visible via WaitForFill(); otherwise
+    // it runs inline and m_last_fill_result is updated directly.
+    // Precondition: no fill is currently in flight for this reader.
     void LaunchFill()
     {
       if (m_async_fill) {
-        m_pending_fill = std::async(std::launch::async,
-                                    [this]() { return PerformFill(); });
+        m_pending_fill = p_pepper->fill_worker().Submit(
+            [this]() { return PerformFill(); });
       } else {
         m_last_fill_result = PerformFill();
       }
