@@ -221,6 +221,7 @@ bool Process_Group::CalculateTotalXSec(const std::string &resultpath,
   p_int->SetTotal(0);
   exh->AddTerminatorObject(p_int);
   if (p_read) {
+    p_read->WarmUp();
     p_int->SetMax(p_read->UnitWeight()/rpa->Picobarn());
     return true;
   }
