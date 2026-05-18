@@ -406,6 +406,22 @@ namespace LHEH5 {
     settings.set_sin2_theta_w(csin2thetaW.real());
   }
 
+  // Push the heavy-particle pole masses and decay widths that Pepper
+  // consumes (top, EW gauge bosons, Higgs, b, c, tau) from Sherpa's
+  // particle data table into Pepper's initialization settings, so that
+  // the two sides agree on the parameter point without the user having
+  // to mirror every value in the Pepper run card. File-based Pepper
+  // settings still win.
+  void SyncParticleProperties(Pepper::Initialization_settings& settings)
+  {
+    static constexpr int kfs[] = {kf_t, kf_Z, kf_Wplus};
+    for (const int kf : kfs) {
+      const ATOOLS::Flavour fl{static_cast<long int>(kf)};
+      settings.set_particle_mass(kf, fl.Mass());
+      settings.set_particle_width(kf, fl.Width());
+    }
+  }
+
   // Owns the once-per-process Pepper library bring-up and teardown.
   // A static weak_ptr deduplicates instances across Pepper_Reader
   // siblings (one per jet multiplicity); finalize fires when the
@@ -440,6 +456,10 @@ namespace LHEH5 {
       // parameters. Pepper only implements `Gmu`, `alphamZsW`, and
       // `UserDefined`, so any other Sherpa scheme is a hard error.
       SyncEWScheme(settings);
+
+      // Forward Sherpa's heavy-particle masses and widths so Pepper
+      // evaluates matrix elements at the same parameter point.
+      SyncParticleProperties(settings);
 
       // Translate Sherpa "Mass" selectors into Pepper's lepton-pair
       // invariant-mass cut. Pepper exposes a single (m2_min, m2_max)
