@@ -65,6 +65,8 @@ namespace PHASIC {
 			    const bool create) override;
     void SetLookUp(const bool lookup) override;
 
+    void FinalizeEventReader() override;
+
     bool IsGroup() const override;
     
     bool ConstructProcesses();

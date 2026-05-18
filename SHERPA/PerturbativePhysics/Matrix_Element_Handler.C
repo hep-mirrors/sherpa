@@ -158,6 +158,12 @@ void Matrix_Element_Handler::InitNLOMC()
 }
 
 
+void Matrix_Element_Handler::FinalizeEventReaders()
+{
+  for (size_t i(0);i<m_procs.size();++i)
+    if (m_procs[i]) m_procs[i]->FinalizeEventReader();
+}
+
 bool Matrix_Element_Handler::CalculateTotalXSecs()
 {
   Settings& s = Settings::GetMainSettings();

@@ -790,6 +790,19 @@ bool MCatNLO_Process::CalculateTotalXSec(const std::string &resultpath,
   return res;
 }
 
+void MCatNLO_Process::FinalizeEventReader()
+{
+  // Sub-processes only ever hold borrowed copies of our p_read (see
+  // OneEvent / CalculateTotalXSec); clear them before the base class
+  // deletes the reader we own.
+  if (p_bviproc) p_bviproc->FinalizeEventReader();
+  if (p_rsproc) p_rsproc->FinalizeEventReader();
+  if (p_bproc) p_bproc->FinalizeEventReader();
+  if (p_rproc) p_rproc->FinalizeEventReader();
+  if (p_ddproc) p_ddproc->FinalizeEventReader();
+  Process_Base::FinalizeEventReader();
+}
+
 void MCatNLO_Process::SetLookUp(const bool lookup)
 {
   m_lookup=lookup;

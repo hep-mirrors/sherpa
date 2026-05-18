@@ -15,6 +15,7 @@
 #include "SHERPA/Single_Events/Hadronization.H"
 #include "SHERPA/Single_Events/Hadron_Decays.H"
 #include "SHERPA/PerturbativePhysics/Hard_Decay_Handler.H"
+#include "SHERPA/PerturbativePhysics/Matrix_Element_Handler.H"
 #include "SHERPA/Tools/HepMC3_Interface.H"
 #include "PHASIC++/Decays/Decay_Channel.H"
 #include "ATOOLS/Math/Random.H"
@@ -77,6 +78,12 @@ Sherpa::~Sherpa()
     msg->PrintRates();
     PHASIC::Decay_Channel::PrintMaxKinFailStatistics(msg->Out());
   }
+  // Drain event readers before tearing anything else down so that
+  // readers backed by libraries with atexit-registered finalisation
+  // (e.g. MPI, Kokkos) release their resources while those
+  // libraries are still alive.
+  if (p_inithandler && p_inithandler->GetMatrixElementHandler())
+    p_inithandler->GetMatrixElementHandler()->FinalizeEventReaders();
   if (p_eventhandler) { delete p_eventhandler; p_eventhandler = nullptr; }
   if (p_inithandler)  { delete p_inithandler;  p_inithandler  = nullptr; }
 #ifdef USING__HEPMC3

@@ -126,6 +126,16 @@ bool Process_Group::IsGroup() const
   return true;
 }
 
+void Process_Group::FinalizeEventReader()
+{
+  // Children may still hold borrowed copies of our p_read from the
+  // last event (see OneEvent). Clear those first, then let the base
+  // class delete the reader we own.
+  for (size_t i(0); i < m_procs.size(); ++i)
+    m_procs[i]->FinalizeEventReader();
+  Process_Base::FinalizeEventReader();
+}
+
 void Process_Group::Add(Process_Base *const proc,const int mode)
 {
   if (proc==NULL) return;

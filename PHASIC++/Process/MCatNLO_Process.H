@@ -214,6 +214,9 @@ namespace PHASIC {
      */
     bool CalculateTotalXSec(const std::string &resultpath,
                             const bool create=false) override;
+
+    void FinalizeEventReader() override;
+
     /*!
      * @param lookup bool Whether results can be looked up
      *

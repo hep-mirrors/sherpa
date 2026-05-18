@@ -46,6 +46,13 @@ namespace PHASIC {
     // processes (e.g. MC@NLO) only trigger the underlying warm-up once.
     virtual void WarmUp() {}
 
+    // Optional teardown hook. Sherpa calls this during shutdown before so
+    // readers that own background workers or library resources (e.g. Pepper)
+    // can drain in-flight work and release them while their backing libraries
+    // (e.g. MPI, Kokkos) are still alive. Must be idempotent: composite
+    // processes (e.g. MC@NLO) may forward the call from several places.
+    virtual void Finalize() {}
+
     virtual ATOOLS::Cluster_Amplitude *ReadEvent() = 0;
     virtual void StepBackward() = 0;
 
