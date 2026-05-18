@@ -42,7 +42,7 @@ Process_Base::Process_Base():
   m_mcmode(0), m_cmode(0),
   m_lookup(false), m_use_biweight(true),
   m_hasinternalscale(false), m_internalscale(sqr(rpa->gen.Ecms())),
-  p_apmap(NULL), p_read(NULL)
+  p_apmap(NULL), p_read(NULL), m_owns_reader(false)
 {
   if (s_usefmm<0)
     s_usefmm =
@@ -51,10 +51,22 @@ Process_Base::Process_Base():
 
 Process_Base::~Process_Base()
 {
+  FinalizeEventReader();
   if (p_kfactor) delete p_kfactor;
   if (p_scale) delete p_scale;
   delete p_selector;
   delete p_int;
+}
+
+void Process_Base::FinalizeEventReader()
+{
+  if (p_read==NULL) return;
+  if (m_owns_reader) {
+    p_read->Finalize();
+    delete p_read;
+    m_owns_reader=false;
+  }
+  p_read=NULL;
 }
 
 Process_Base *Process_Base::Selected()
@@ -343,6 +355,7 @@ bool Process_Base::SetupEventReader(const std::string &fnames)
   p_read = Getter_Function<Event_Reader,Event_Reader_Key>::GetObject(type,key);
   if (p_read==NULL && s_loader->LoadLibrary("Sherpa"+type+"Reader"))
     p_read = Getter_Function<Event_Reader,Event_Reader_Key>::GetObject(type,key);
+  if (p_read!=NULL) m_owns_reader=true;
   return p_read!=NULL;
 }
 
