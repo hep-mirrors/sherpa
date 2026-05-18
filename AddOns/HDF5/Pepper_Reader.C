@@ -505,6 +505,7 @@ namespace LHEH5 {
     size_t m_ievt, m_iblock, m_trials, m_ncurrent, m_ncache;
     bool m_finished;
     bool m_warmed_up;
+    bool m_finalized {false};
 
     // When true, refilling the next buffer runs on a worker thread so
     // Sherpa can consume events from the current buffer while Pepper
@@ -707,12 +708,33 @@ namespace LHEH5 {
 
     ~Pepper_Reader()
     {
-      // Drain any in-flight worker before our members go out of scope,
-      // since the worker captures `this` and touches p_process / the
-      // next-buffer state.
-      if (m_pending_fill.valid()) m_pending_fill.wait();
+      // Drain any in-flight worker before our members go out of scope, since
+      // the worker captures `this` and touches p_process / the next-buffer
+      // state. Normally Sherpa has already done this via Finalize(); this is a
+      // fallback for potential shutdown paths that bypass it.
+      Finalize();
       if (p_ampl) p_ampl->Delete();
       delete p_sub;
+    }
+
+    // Drain the async fill worker and release every Pepper-backed
+    // resource while Pepper / Kokkos / MPI are still alive. Called from
+    // Sherpa's shutdown path before any of those libraries finalise,
+    // and also as a fallback from the destructor. Idempotent.
+    void Finalize() override
+    {
+      if (m_finalized) return;
+      m_finalized = true;
+      if (m_pending_fill.valid()) m_pending_fill.wait();
+      p_current.reset();
+      p_next.reset();
+      m_current_file.reset();
+      m_next_file.reset();
+      p_process.reset();
+      // Releasing the last shared_ptr triggers ~Pepper_Interface, which
+      // joins the fill worker and calls Pepper::finalize(); we want that
+      // to happen here, not from an atexit handler after Kokkos is gone.
+      p_pepper.reset();
     }
 
     // Drive Pepper's integration-grid optimisation and unit-weight
