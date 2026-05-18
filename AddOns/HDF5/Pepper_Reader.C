@@ -503,6 +503,11 @@ namespace LHEH5 {
     std::unique_ptr<LHEFile> p_current, p_next;
 
     size_t m_ievt, m_iblock, m_trials, m_ncurrent, m_ncache;
+    // Running total of events consumed in buffers that have already
+    // been rotated out by Advance(). Combined with m_ievt this gives
+    // the lifetime number of events served by the reader, which is
+    // what PrintStatistics reports at end-of-run.
+    size_t m_total_consumed {0};
     bool m_finished;
     bool m_warmed_up;
     bool m_finalized {false};
@@ -592,6 +597,9 @@ namespace LHEH5 {
       // this is the invariant that keeps consumers from racing the
       // producer thread.
       const size_t filled = WaitForFill();
+      // Accumulate consumption of the buffer we are about to discard
+      // (zero on the very first Advance from WarmUp).
+      m_total_consumed += m_ievt;
       m_current_file = std::move(m_next_file);
       p_current = std::move(p_next);
       m_ievt = 0;
@@ -761,10 +769,13 @@ namespace LHEH5 {
 
     void PrintStatistics(std::ostream& o) override
     {
-      o << "    Pepper in-memory buffer #" << m_iblock << ": " << m_ievt
-        << " of " << m_ncurrent << " events read";
+      const size_t total_consumed = m_total_consumed + m_ievt;
+      o << "    Pepper: " << total_consumed << " events read"
+        << " (current in-memory buffer #" << m_iblock << ": " << m_ievt
+        << " of " << m_ncurrent;
       if (m_ncurrent > 0)
-        o << " (" << m_ievt * 1000 / m_ncurrent / 10.0 << " %)";
+        o << ", " << m_ievt * 1000 / m_ncurrent / 10.0 << " %";
+      o << ")";
       if (mpi->MySize() > 1) o << " on rank 0";
       o << '\n';
     }
