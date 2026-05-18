@@ -85,6 +85,9 @@ void YFS_Handler::SetFlavours(const ATOOLS::Flavour_Vector &flavs) {
   m_flavs.clear();
   m_mass.clear();
   m_particles.clear();
+  for(auto particle : m_particles) {
+    delete particle;
+  }
   bool qed(false);
   for(size_t i = 0; i < flavs.size(); ++i) {
     m_flavs.push_back(flavs[i]);
@@ -112,7 +115,7 @@ void YFS_Handler::SetBornMomenta(const ATOOLS::Vec4D_Vector &p) {
   }
   if (m_formWW) MakeWWVecs(m_bornMomenta);
   if(m_bornMomenta[0] != -m_bornMomenta[1]) m_asymbeams = true;
-    else m_asymbeams = false;
+  else m_asymbeams = false;
   // AddFormFactor();
 }
 
@@ -216,9 +219,6 @@ bool YFS_Handler::CalculateISR() {
   if (m_isrinital) p_isr->SetIncoming(p_dipoles->GetDipoleII());
   m_isrinital = false;
   p_isr->NPhotons();
-  if(FixedOrder()==fixed_order::nlo && p_isr->GetN()>1){
-    return false;
-  }
   p_isr->GeneratePhotonMomentum();
   p_isr->Weight();
   m_g=p_dipoles->GetDipoleII()->m_gamma;
