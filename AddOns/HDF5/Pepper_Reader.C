@@ -759,7 +759,7 @@ namespace LHEH5 {
       else Advance();
     }
 
-    void PrintStatistics(std::ostream& o)
+    void PrintStatistics(std::ostream& o) override
     {
       o << "    Pepper in-memory buffer #" << m_iblock << ": " << m_ievt
         << " of " << m_ncurrent << " events read";
@@ -774,7 +774,7 @@ namespace LHEH5 {
     // moment to retry a refill if a previous attempt came up empty.
     // We must not race an in-flight async fill, so first drain any
     // pending future before inspecting p_next.
-    void MPISync()
+    void MPISync() override
     {
       WaitForFill();
       if (m_finished && !p_next) {
@@ -788,7 +788,7 @@ namespace LHEH5 {
       }
     }
 
-    void StepBackward()
+    void StepBackward() override
     {
       --m_ievt;
       if (!FillAmplitude())
@@ -796,7 +796,7 @@ namespace LHEH5 {
       m_trials = 1;
     }
 
-    Cluster_Amplitude *ReadEvent()
+    Cluster_Amplitude *ReadEvent() override
     {
       DEBUG_FUNC("i="<<m_ievt<<"("<<m_ncurrent<<"),trial="<<m_trials);
       if (m_trials==0 && p_ampl!=NULL) {
