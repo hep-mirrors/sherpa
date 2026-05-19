@@ -61,7 +61,8 @@ namespace PHASIC {
     // follow-up to arXiv:2506.06203: w_sel^2 ~ sigma^2/(alpha*<p>^2). Since
     // |<w>|/sqrt(alpha_sign) = <|w|>, the sign dilution cancels and the numerator is
     // stored in the sign-cancellation-safe form <|w|>_cut/sqrt(alpha_absolute).
-    // For full unweighting w_sel = w_max.
+    // For full unweighting w_sel = w_max. This is SELECTION_WEIGHT_MODE 0; for the
+    // other modes SelectionWeight() rescales it, see SelectionAlphaPower().
     double m_selweight_xs = 0.;
     double m_timing_statistics_large_weight_fraction, m_external_selectionweight, m_ovwth;
     int m_timing_statistics;
@@ -96,6 +97,21 @@ namespace PHASIC {
     double TotalResult() const;
     double TotalVar() const;
     std::vector<double> TotalEffiAndEffEvPerEv(bool unweighted) const;
+
+    // SELECTION_WEIGHT_MODE sets the power p of the Kish statistical dilution alpha
+    // in the process selection weight, w_sel ~ |sigma|/alpha^p, for weighted as well
+    // as (partially) unweighted events:
+    //   0 (default): p=1/2, minimal uncertainty of the total cross section per
+    //                generated event (for weighted events the Kleiss multi-channel
+    //                optimum sqrt(<w^2>) = |<w>|/sqrt(alpha)),
+    //   1:           p=0, number of events proportional to |sigma|,
+    //   2:           p=1, equal number of effective events per |sigma|.
+    static double SelectionAlphaExponent(const size_t swmode);
+    // alpha^p, with sqrt() for mode 0 so that the default is unchanged.
+    static double SelectionAlphaPower(const double alpha, const size_t swmode);
+    // alpha^(2p-1), for the Kish dilution of a mixture of subprocesses.
+    // = (alpha^p)^2/alpha: allocation squared times the Kish 1/alpha.
+    static double SelectionKishPower(const double alpha, const size_t swmode);
 
   public:
 

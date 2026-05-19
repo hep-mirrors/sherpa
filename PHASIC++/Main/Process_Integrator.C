@@ -62,6 +62,8 @@ bool Process_Integrator::Initialize
     m_ovwth = s["OVERWEIGHT_THRESHOLD"].SetDefault(1e12).Get<double>();
   }
   m_swmode=s["SELECTION_WEIGHT_MODE"].SetDefault(0).Get<int>();
+  if (m_swmode>2)
+    THROW(fatal_error,"SELECTION_WEIGHT_MODE must be 0, 1 or 2.");
   static bool minit(false);
   if (!minit) {
     // weight histo bin number
@@ -77,10 +79,38 @@ Process_Integrator::~Process_Integrator()
   if (p_whisto_neg!=NULL) delete p_whisto_neg;
 }
 
+double Process_Integrator::SelectionAlphaExponent(const size_t swmode)
+{
+  return swmode==0 ? 0.5 : (swmode==1 ? 0. : 1.);
+}
+
+// The powers of alpha for the exponents of SelectionAlphaExponent(), written out
+// without pow(): exact, and for mode 0 identical to sqrt().
+double Process_Integrator::SelectionAlphaPower(const double alpha, const size_t swmode)
+{
+  switch (swmode) {
+  case 0: return sqrt(alpha);
+  case 1: return 1.;
+  case 2: return alpha;
+  }
+  THROW(fatal_error,"SELECTION_WEIGHT_MODE must be 0, 1 or 2.");
+}
+
+double Process_Integrator::SelectionKishPower(const double alpha, const size_t swmode)
+{
+  switch (swmode) {
+  case 0: return 1.;
+  case 1: return 1./alpha;
+  case 2: return alpha;
+  }
+  THROW(fatal_error,"SELECTION_WEIGHT_MODE must be 0, 1 or 2.");
+}
+
 double Process_Integrator::SelectionWeight(const int mode) const
 {
   if (p_proc->EventReader()) return m_max*m_enhancefac;
   if (!p_proc->IsGroup()) {
+    //mode: weighted=0, unweighted=1, partially=2
     if (mode!=0) {
       if (m_external_selectionweight != -1) {
 	return m_external_selectionweight;
@@ -99,7 +129,16 @@ double Process_Integrator::SelectionWeight(const int mode) const
 	      +p_proc->Name()+"'; SetUpEnhance may not have been called.");
       }
       if (m_effi == 0. || m_selweight_xs == 0.) return 0.;
-      return m_selweight_xs * m_enhancefac / m_effi;
+      double selweight = m_selweight_xs / m_effi;
+      // SELECTION_WEIGHT_MODE 1 and 2: rescale to |<w>_cut|/alpha^p, using
+      // m_selweight_xs*sqrt(m_effevperev) = |<w>_cut|. For mode 2 this diverges when
+      // positive and negative weights cancel; alpha=0 (exact cancellation) is
+      // excluded from the selection.
+      if (m_swmode!=0) {
+        if (m_effevperev <= 0.) return 0.;
+        selweight *= sqrt(m_effevperev)/SelectionAlphaPower(m_effevperev,m_swmode);
+      }
+      return selweight * m_enhancefac;
     }
     // Return -1 for completely unsampled processes (no integration data yet).
     // Via dabs(-1)=1 in Process_Group::OneEvent this gives them a uniform
@@ -108,9 +147,21 @@ double Process_Integrator::SelectionWeight(const int mode) const
     if (m_n+m_sn==0.0) return -1.0;
     // Process has been sampled but has zero cross section: exclude from selection.
     if (m_totalxs==0.0) return 0.0;
-    double selweight = m_swmode==0 ?
-      sqrt((m_n+m_sn-1) * sqr(TotalVar()) + sqr(TotalResult())) :
-      dabs(m_totalxs);
+    // SELECTION_WEIGHT_MODE, see SelectionAlphaExponent(): with the second moment
+    // W2 = (N-1)*Var + sigma^2 ~ <w^2> and the Kish dilution alpha = sigma^2/W2 of
+    // the weighted sample, w_sel = |sigma|/alpha^p is
+    //   0: sqrt(W2), optimal variance reduction a la Kleiss multi-channel,
+    //   1: |sigma|, sampling according to the cross section,
+    //   2: W2/|sigma|, equal number of effective events per cross section.
+    // All modes assume the same computational time per event for all processes.
+    const double W2 = (m_n+m_sn-1) * sqr(TotalVar()) + sqr(TotalResult());
+    double selweight;
+    if (m_swmode==0) selweight = sqrt(W2);
+    else if (m_swmode==1) selweight = dabs(m_totalxs);
+    else {
+      if (TotalResult()==0.0) return 0.0;
+      selweight = W2/dabs(TotalResult());
+    }
     return selweight*m_enhancefac;
   }
   double sw(0.0);
@@ -165,6 +216,7 @@ std::vector<double> Process_Integrator::TotalEffiAndEffEvPerEv(bool unweighted) 
     double sum_effi=0.0;
     double sum_xsec=0.0;
     double sum_xsec_abs=0.0;
+    double sum_kish=0.0;
     for (size_t i(0);i<p_proc->Size();++i) {
       //need to sum up weighted with wsel
       std::vector<double> proci_totaleffiandeffevperev = (*p_proc)[i]->Integrator()->TotalEffiAndEffEvPerEv(unweighted);
@@ -185,26 +237,32 @@ std::vector<double> Process_Integrator::TotalEffiAndEffEvPerEv(bool unweighted) 
       double proci_xsec = (*p_proc)[i]->Integrator()->GetSSumEnh()/m_sn;
       // Weight of the subprocess in the averages below: the number of trial points
       // that pass the cuts, i.e. its selection weight times its cut efficiency,
-      //   w_sel,i * eps_cut,i = |<w>_all,i| / (eff_i * sqrt(alpha_i)),
-      // which is why <w> is normalised to all trial points (m_sn) here and not to
-      // the cut-passing ones. Accepted events per subprocess are then
-      // eff_i * w_i ~ |sigma_i|/sqrt(alpha_i), so that sum_effi below is the total
+      //   w_sel,i * eps_cut,i = |<w>_all,i| / (eff_i * alpha_i^p),
+      // with p set by SELECTION_WEIGHT_MODE (see SelectionAlphaExponent()), which is
+      // why <w> is normalised to all trial points (m_sn) here and not to the
+      // cut-passing ones. Accepted events per subprocess are then
+      // N_i = eff_i * w_i ~ |sigma_i|/alpha_i^p, so that sum_effi below is the total
       // number of accepted events and totaleffiandeffevperev[] come out as
-      // (accepted)/(cut-passing) and (sum sigma)^2/(sum |sigma|/sqrt(alpha))^2,
-      // the latter with the same normalisation of <w> as sum_xsec.
-      double proci_selw = dabs(proci_xsec)/sqrt(proci_effevperev)/proci_effi;
-
+      // (accepted)/(cut-passing) and the Kish dilution of the combined sample,
+      //   (sum sigma)^2 / (sum N_i * sum sigma_i^2/(alpha_i*N_i)),
+      // with sigma_i^2/(alpha_i*N_i) = N_i*alpha_i^(2p-1), the latter with the same
+      // normalisation of <w> as sum_xsec. For p=1/2 this is
+      // (sum sigma)^2/(sum |sigma|/sqrt(alpha))^2.
+      double proci_selw = dabs(proci_xsec)/SelectionAlphaPower(proci_effevperev,m_swmode)/proci_effi;
+      double proci_nacc = proci_effi*proci_selw;
       sum_xsec += proci_xsec;
       sum_xsec_abs += dabs(proci_xsec);
       sum_selw += proci_selw;
-      sum_effi+=proci_effi*proci_selw;
-      //this is from whisto, but want to be more correct by not relying on bin width approximation
-      //sum_selw += (*p_proc)[i]->Integrator()->SelectionWeight(wmode);
-      //sum_effi+=(*p_proc)[i]->Integrator()->Efficiency()*(*p_proc)[i]->Integrator()->SelectionWeight(wmode);
+      sum_effi += proci_nacc;
+      sum_kish += proci_nacc*SelectionKishPower(proci_effevperev,m_swmode);
+      //could also take information from whisto, but want to be more correct by not relying on bin width approximation
     }
     if (sum_selw!=0) {
       totaleffiandeffevperev[0] = sum_effi/sum_selw;
-      totaleffiandeffevperev[1] = pow(sum_xsec_abs/sum_effi,2)*pow(sum_xsec/sum_xsec_abs,2);
+      if (m_swmode==0)
+        totaleffiandeffevperev[1] = pow(sum_xsec_abs/sum_effi,2)*pow(sum_xsec/sum_xsec_abs,2);
+      else
+        totaleffiandeffevperev[1] = sum_effi*sum_kish!=0. ? sqr(sum_xsec)/(sum_effi*sum_kish) : 0.;
     }
     return totaleffiandeffevperev;
   }
@@ -878,6 +936,7 @@ void Process_Integrator::SetUpEnhance(const int omode)
     m_effi=0.0;
     m_effevperev=0.0;
     double effevperev_signed=0.0;
+    double effevperev_kish=0.0;
     // Efficiency() and EffEvPerEv() describe the unweighting alone and are therefore
     // defined per point that passed the cuts. The averages below must be weighted
     // with the same population, i.e. with the number of cut-passing trial points of
@@ -900,10 +959,19 @@ void Process_Integrator::SetUpEnhance(const int omode)
       // After SetUpEnhance, EffEvPerEv is always >= 0: zero-XS processes give 0,
       // processes with data give pow(ssumenh/ssumenhabs,2) > 0. A value of -1 is the
       // uninitialized sentinel and means SetUpEnhance was not called on this child.
+      // With N_i = Efficiency()*selw the accepted events of the child, its selection
+      // weight gives |sigma_i| ~ N_i*alpha_i^p (see SelectionAlphaExponent()), and the
+      // Kish dilution of the group is
+      //   (sum sigma)^2 / (sum N_i * sum sigma_i^2/(alpha_i*N_i)),
+      // with sigma_i^2/(alpha_i*N_i) = N_i*alpha_i^(2p-1). For p=1/2 the last sum is
+      // m_effi and this reduces to (sum sign_i*sqrt(alpha_i)*N_i / sum N_i)^2.
       if (child_effevperev >= 0.) {
-        double effevperev = sqrt(child_effevperev)*(*p_proc)[i]->Integrator()->Efficiency()*selw;
+        double nacc = (*p_proc)[i]->Integrator()->Efficiency()*selw;
+        double effevperev = SelectionAlphaPower(child_effevperev,m_swmode)*nacc;
         m_effevperev+=effevperev;
         effevperev_signed+=effevperev*((*p_proc)[i]->Integrator()->TotalResult() >= 0. ? 1. : -1.);
+        if (nacc!=0.)
+          effevperev_kish+=nacc*SelectionKishPower(child_effevperev,m_swmode);
       } else {
         THROW(critical_error, METHOD+"(): EffEvPerEv="+ToString(child_effevperev)
                    +" (uninitialized) for '"+(*p_proc)[i]->Name()
@@ -912,8 +980,10 @@ void Process_Integrator::SetUpEnhance(const int omode)
     }
     // If every child subprocess has zero efficiency or zero weight, the group as a
     // whole has no effective contribution and m_effevperev is meaningless and set to 0 for 0 selection weight.
-    if (m_effi != 0. && m_effevperev != 0.)
-      m_effevperev = pow(m_effevperev/m_effi,2)*pow(effevperev_signed/m_effevperev,2);
+    if (m_effi != 0. && m_effevperev != 0. && effevperev_kish != 0.)
+      m_effevperev = m_swmode==0 ?
+        pow(m_effevperev/m_effi,2)*pow(effevperev_signed/m_effevperev,2) :
+        sqr(effevperev_signed)/(m_effi*effevperev_kish);
     else
       m_effevperev = 0.;
     // sum_selw is the sum of the children's cut-passing point counts, accumulated

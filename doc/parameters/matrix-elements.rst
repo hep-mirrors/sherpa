@@ -95,6 +95,43 @@ For :option:`Unweighted` and :option:`PartiallyUnweighted` events the user may
 set :option:`OVERWEIGHT_THRESHOLD: <maxweight>` to cap the maximal over-weight
 ``w/max`` taken into account.
 
+.. _SELECTION_WEIGHT_MODE:
+
+SELECTION_WEIGHT_MODE
+=====================
+
+.. index:: SELECTION_WEIGHT_MODE
+
+This parameter specifies how often each subprocess is selected during event
+generation, i.e. how the events are distributed over the subprocesses.  All
+options have the form ``|sigma|/alpha^p``, where ``sigma`` is the (enhanced)
+cross section of the subprocess and ``alpha = (sum w)^2/(N sum w^2)`` its
+statistical dilution (the number of effective events per event, see
+arXiv:2506.06203).  For :option:`Unweighted` and :option:`PartiallyUnweighted`
+events the selection weight is additionally divided by the unweighting and cut
+efficiencies, so that the numbers below refer to generated events.  The
+possible options are:
+
+:option:`0`
+  (default, ``p=1/2``) Minimises the statistical uncertainty of the total cross
+  section per generated event. For weighted events this is the multi-channel
+  optimum ``sqrt(<w^2>)``.
+
+:option:`1`
+  (``p=0``) The number of events of a subprocess is proportional to its cross
+  section, independent of the weight distribution.
+
+:option:`2`
+  (``p=1``) The number of effective events of a subprocess is proportional to
+  its cross section, i.e. every subprocess gets the same relative
+  statistical precision.  Subprocesses whose positive and negative weights
+  largely cancel get a very large selection weight and can dominate the event
+  sample; a subprocess whose weights cancel exactly is not selected.
+
+All options assume the same computational time per event for all
+subprocesses, see :ref:`Timing_statistics` for an estimate of the time
+spent in the individual subprocesses.
+
 
 .. _COLOR_SCHEME:
 
