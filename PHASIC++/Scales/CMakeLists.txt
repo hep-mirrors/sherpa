@@ -19,9 +19,9 @@ set(Scales_SOURCES Cluster_Definitions.C
                    SingleTop_Core_Scale.C
                    QQSinglet_Core_Scale.C
                    HTPrime_Core_Scale.C
-		           Photons_Core_Scale.C
                    MINLO_Scale_Setter.C
                    MINLO_KFactor_Setter.C
+                   CCFM_KFactor_Setter.C
                    EWVirtKFactor_Setter.C
                    Variable_KFactor_Setter.C
                    No_KFactor_Setter.C)
@@ -31,6 +31,7 @@ set(Scales_HEADERS Cluster_Definitions.H
                    Core_Scale_Setter.H
                    KFactor_Setter_Base.H
                    MINLO_Scale_Setter.H
+                   MEPS_Scale_Setter.H
                    Color_Setter.H
                    Tag_Setter.H)
 

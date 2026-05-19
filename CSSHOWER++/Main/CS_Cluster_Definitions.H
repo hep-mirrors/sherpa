@@ -39,7 +39,8 @@ namespace CSSHOWER {
 				   const ATOOLS::Cluster_Leg *j,
 				   const ATOOLS::Cluster_Leg *k,
 				   const ATOOLS::Flavour &mo,CS_Parameters &cs) const;
-    void KernelWeight(const ATOOLS::Cluster_Leg *i,
+    void KernelWeight(Splitting_Function_Base *cdip,
+		      const ATOOLS::Cluster_Leg *i,
 		      const ATOOLS::Cluster_Leg *j,
 		      const ATOOLS::Cluster_Leg *k,
 		      const ATOOLS::Flavour &mo,CS_Parameters &cs,
