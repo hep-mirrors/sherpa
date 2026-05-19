@@ -12,7 +12,8 @@ set(SpinCorrelations_HEADERS Amplitude2_Tensor.H
                              PolWeights_Map.H
                              Polarized_CrossSections_Handler.H)
 
-sherpa_create_git_info(SpinCorrelations)
+sherpa_create_git_info(SpinCorrelations ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR})
  
 add_library(METoolsSpinCorrelations SHARED ${SpinCorrelations_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
 sherpa_handle_shared_library(METoolsSpinCorrelations METoolsSpinCorrelations)
+add_dependencies(METoolsSpinCorrelations SpinCorrelations_Git_Info)

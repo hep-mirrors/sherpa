@@ -91,15 +91,8 @@ Weight_Info *Single_Process::OneEvent(const int wmode,
                                       const int mode) {
   p_selected = this;
   auto psh = p_int->PSHandler();
-  if (p_int->ISR()) {
-    if (m_nin == 2) {
-      if (m_flavs[0].Mass() != p_int->ISR()->Flav(0).Mass() ||
-          m_flavs[1].Mass() != p_int->ISR()->Flav(1).Mass()) {
-        p_int->ISR()->SetPartonMasses(m_flavs);
-      }
-    }
-  }
-  psh->InitCuts();
+  if (p_int->ISR())
+    p_int->ISR()->SetSprimeMin(psh->Cuts()->Smin());
   return p_int->PSHandler()->OneEvent(this,varmode,mode);
 }
 
@@ -279,7 +272,7 @@ void Single_Process::AddISR(ATOOLS::Cluster_Sequence_Info &csi,
     double yfsW = p_int->YFS()->GetWeight();
     if(IsBad(yfsW)){
       msg_Error()<<"YFS Weight is "<<yfsW<<std::endl;
-    } 
+    }
     csi.AddWeight(yfsW);
   }
   if (p_int->ISR()) {
@@ -512,7 +505,6 @@ void Single_Process::AddISR(ATOOLS::Cluster_Sequence_Info &csi,
 void Single_Process::AddBeam(ATOOLS::Cluster_Sequence_Info& csi,
                              const double& Q2)
 {
-  DEBUG_FUNC(Name());
   if (p_int->Beam() && p_int->Beam()->On()) {
     p_int->Beam()->CalculateWeight(Q2);
     msg_Debugging()<<"Types = ("<<p_int->Beam()->GetBeam(0)->Type()<<", "
@@ -619,7 +611,6 @@ Weights_Map Single_Process::Differential(const Vec4D_Vector& p,
     }
 
   } else {
-    const auto triggers = Selector()->CombinedResults();
 
     for (int i {0}; i < GetSubevtList()->size(); ++i) {
       auto sub = (*GetSubevtList())[i];
@@ -661,14 +652,6 @@ Weights_Map Single_Process::Differential(const Vec4D_Vector& p,
 
         // update subevent information
         sub->m_result = sub->m_me * csi.m_pdfwgt * csi.m_flux;
-        assert(!triggers.empty());
-        const auto& jet_trigger_weights =
-            (triggers.size() == 1) ? triggers[0] : triggers[i];
-        if (varmode == Variations_Mode::all) {
-          sub->m_results *= jet_trigger_weights;
-        } else {
-          sub->m_results *= jet_trigger_weights.Nominal();
-        }
         sub->m_results = sub->m_result;
         sub->m_mewgt *= m_lastflux;
         sub->m_xf1 = p_int->ISR()->XF1();
@@ -1197,6 +1180,8 @@ bool Single_Process::CalculateTotalXSec(const std::string &resultpath,
   }
   psh->CreateIntegrators();
   psh->InitCuts();
+  if (p_int->ISR())
+    p_int->ISR()->SetSprimeMin(psh->Cuts()->Smin());
   p_int->SetResultPath(resultpath);
   p_int->ReadResults();
   exh->AddTerminatorObject(p_int);
@@ -1238,6 +1223,12 @@ void Single_Process::SetKFactor(const KFactor_Setter_Arguments &args)
 {
   if (IsMapped()) return;
   KFactor_Setter_Arguments cargs(args);
+  const std::string &rkfac(p_scale->RequiredKFactor());
+  if (rkfac!="None") {
+    if (rkfac!=cargs.m_kfac)
+      msg_Info()<<METHOD<<"(): Redefine KFactor to '"<<rkfac<<"'\n";
+    cargs.m_kfac=rkfac;
+  }
   cargs.p_proc=this;
   m_pinfo.m_kfactor=cargs.m_kfac;
   p_kfactor = KFactor_Setter_Base::KFactor_Getter_Function::

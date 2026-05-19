@@ -414,8 +414,6 @@ class Csplit_merge{
    * closest initial jet.
    * \param it_j1  iterator of the first jet in 'candidates'
    * \param it_j2  iterator of the second jet in 'candidates'
-   * \param j1     first jet (Cjet instance)
-   * \param j2     second jet (Cjet instance)
    * \return true on success, false on error
    */
   bool split(cjet_iterator &it_j1, cjet_iterator &it_j2);

@@ -54,7 +54,6 @@ Jet_Finder::~Jet_Finder()
 
 bool Jet_Finder::Trigger(Selector_List &sl)
 {
-  m_pass=true;
   m_results = {Weights_Map{}};
   p_ampl->SetProc(p_proc);
   for (int i(0); i<p_ampl->Legs().size();++i)
@@ -76,13 +75,11 @@ bool Jet_Finder::Trigger(Selector_List &sl)
     const double fac{
         i != 0 ? s_variations->Qcut_Parameters(i - 1).m_scale_factor : 1.0};
     const bool pass = jcv > sqr(m_qcut * fac);
-    if (i == 0)
-      m_pass = pass;
     if (pass)
       triggered = true;
     m_results[0]["QCUT"][i] = pass;
   }
-  msg_Debugging()<<"} -> "<<m_pass<<"\n";
+  msg_Debugging()<<"} -> "<<triggered<<"\n";
   return 1-m_sel_log->Hit(!triggered);
 }
 

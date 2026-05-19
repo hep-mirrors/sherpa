@@ -1,6 +1,6 @@
 #include "SHRiMPS/Eikonals/Form_Factors.H"
 #include "SHRiMPS/Tools/MinBias_Parameters.H"
-#include "SHRiMPS/Tools/Special_Functions.H"
+#include "ATOOLS/Math/Special_Functions.H"
 #include "ATOOLS/Math/Gauss_Integrator.H"
 #include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Math/Histogram.H"
@@ -11,7 +11,7 @@
 using namespace SHRIMPS;
 using namespace ATOOLS;
 
-Special_Functions SHRIMPS::SF;
+Special_Functions ATOOLS::SF;
 
 double Form_Factor::Norm_Argument::operator()(double q) { 
   return 2.*M_PI*q*(*p_ff)(q); 

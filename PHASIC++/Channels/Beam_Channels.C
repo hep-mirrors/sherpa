@@ -60,15 +60,6 @@ bool Beam_Channels::MakeChannels() {
                     << "   Will not initialize integration over spectra.\n";
       }
       break;
-    case beammode::Fixed_Target:
-      if(!DefineColliderChannels()) {
-        msg_Error() << "Error in " << METHOD << " for collider set-up:\n"
-                    << "   Don't know how to deal with combination of beamspectra: "
-                    << m_beamtype[0] << " + " << m_beamtype[1] << ".\n"
-                    << "   Will not initialize integration over spectra.\n";
-      }
-      // CheckForStructuresFromME();
-      break;
     case beammode::unknown:
     default:
       msg_Error() << "Error in " << METHOD << ":\n"
@@ -83,9 +74,6 @@ bool Beam_Channels::DefineColliderChannels() {
   // default collider setup - no spectra
   if (m_beamtype[0] == beamspectrum::monochromatic &&
       m_beamtype[1] == beamspectrum::monochromatic)
-    return true;
-  if (m_beamtype[0] == beamspectrum::Fixed_Target &&
-      m_beamtype[1] == beamspectrum::Fixed_Target)
     return true;
   // one or two laser backscattering spectra with monochromatic beams
   if ((m_beamtype[0] == beamspectrum::monochromatic &&
@@ -112,6 +100,9 @@ bool Beam_Channels::DefineColliderChannels() {
                      m_beamtype[1] == beamspectrum::Pomeron ||
                      m_beamtype[1] == beamspectrum::Reggeon;
   if (beam0_is_on || beam1_is_on) {
+    // register additional rans for the impact parameter in EPA
+    if (m_beamtype[0] == beamspectrum::EPA) AddERan("b_0");
+    if (m_beamtype[1] == beamspectrum::EPA) AddERan("b_1");
     double exponent = (int(beam0_is_on) +
                        int(beam1_is_on)) * 0.5;
     m_beamparams.push_back(Channel_Info(channel_type::simple, exponent));

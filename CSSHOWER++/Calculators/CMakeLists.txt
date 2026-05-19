@@ -1,4 +1,4 @@
-set(Calculators_SOURCES CF_QCD.C
+set(CSSCalculators_SOURCES CF_QCD.C
                         CF_QED.C
                         CF_EW_FFV.C
                         CF_Triangle.C
@@ -8,7 +8,8 @@ set(Calculators_SOURCES CF_QCD.C
                         LF_VVV.C
                         LF_Triangle.C)
 
-sherpa_create_git_info(Calculators)
+sherpa_create_git_info(CSSCalculators ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR})
  
-add_library(CSCalculators SHARED ${Calculators_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
+add_library(CSCalculators SHARED ${CSSCalculators_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
 sherpa_handle_shared_library(CSCalculators CSCalculators)
+add_dependencies(CSCalculators CSSCalculators_Git_Info)

@@ -9,7 +9,9 @@ using namespace std;
 
 Reconnect_Statistical::Reconnect_Statistical() :
   Reconnection_Base(),
-  m_Pmode(0), m_Q02(1.), m_etaQ(0.16), m_reshuffle(1./9.), m_kappa(1.) {}
+  m_Pmode(0), m_Q02(1.), m_etaQ(0.16), m_reshuffle(1./9.), m_kappa(1.) {
+  m_typespec = string("Statistical");
+}
 
 
 Reconnect_Statistical::~Reconnect_Statistical() {

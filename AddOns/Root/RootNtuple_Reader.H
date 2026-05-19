@@ -12,7 +12,7 @@
 #include <vector>
 #include <string.h>
 
-namespace ATOOLS { class QCD_Variation_Params; }
+namespace ATOOLS { struct QCD_Variation_Params; }
 
 namespace PDF { class ISR_Handler; }
 

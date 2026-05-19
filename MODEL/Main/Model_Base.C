@@ -298,44 +298,6 @@ void Model_Base::ShowSyntax(const size_t i)
   msg_Out()<<"\n}"<<std::endl;
 }
 
-void Model_Base::ReadParticleData()
-{
-  auto pdata = Settings::GetMainSettings()["PARTICLE_DATA"];
-  for (const auto& ptclname : pdata.GetKeys()) {
-    kf_code kf = ToType<kf_code>(ptclname);
-    const auto it = s_kftable.find(kf);
-    if (it != s_kftable.end()) {
-      for (const auto& propertyname : pdata[ptclname].GetKeys()) {
-        auto s = pdata[ptclname][propertyname];
-        if (propertyname == "Mass") {
-          const auto mass = s.SetDefault(it->second->m_mass).Get<double>();
-          it->second->m_mass = mass;
-          it->second->m_hmass = mass;
-        } else if (propertyname == "Width") {
-          it->second->m_width = s.SetDefault(it->second->m_width).Get<double>();
-        } else if (propertyname == "Active") {
-          it->second->m_on = s.SetDefault(it->second->m_on).Get<bool>();
-        } else if (propertyname == "Stable") {
-          it->second->m_stable = s.SetDefault(it->second->m_stable).Get<int>();
-        } else if (propertyname == "Massive") {
-          it->second->m_massive = s.SetDefault(it->second->m_massive).Get<bool>();
-        } else if (propertyname == "IntCharge") {
-          it->second->m_icharge = s.SetDefault(it->second->m_icharge).Get<int>();
-        } else if (propertyname == "StrongCharge") {
-          it->second->m_strong = s.SetDefault(it->second->m_strong).Get<int>();
-        } else if (propertyname == "Yukawa") {
-          it->second->m_yuk = s.SetDefault(it->second->m_yuk).Get<double>();
-        } else if (propertyname == "Priority") {
-          it->second->m_priority = s.SetDefault(it->second->m_priority).Get<int>();
-        } else {
-          THROW(fatal_error,
-                "Unknown PARTICLE_DATA property '" + propertyname + "'");
-        }
-      }
-    }
-  }
-}
-
 void Model_Base::AddStandardContainers()
 {
   if (s_kftable.find(kf_jet) != s_kftable.end()) {
@@ -343,18 +305,12 @@ void Model_Base::AddStandardContainers()
   }
   // kf,mass,width,icharge,strong,spin,majo,on,stable,massive,
   //   idname,antiidname,texname,antitexname,dummy,group
-  s_kftable[kf_jet] = new
-    Particle_Info(kf_jet,0.,0.,0.,0,1, 2,1,1,1,0,"j","j","j","j",1,1);
-  s_kftable[kf_ewjet] = new
-    Particle_Info(kf_ewjet,0.,0.,0.,0,1, 2,1,1,1,0,"ewj","ewj","ewj","ewj",1,1);
-  s_kftable[kf_quark] = new
-    Particle_Info(kf_quark,0.,0.,0.,0,1,1,0,1,1,0,"Q","Q","Q","Q",1,1);
-  s_kftable[kf_lepton] = new
-    Particle_Info(kf_lepton,0.,0.,0.,-3,0,1,0,1,1,0,"l","l","\\ell","\\ell",1,1);
-  s_kftable[kf_neutrino] = new
-    Particle_Info(kf_neutrino,0.,0.,0.,0,0,1,0,1,1,0,"v","v","\\nu","\\nu",1,1);
-  s_kftable[kf_fermion] = new
-    Particle_Info(kf_fermion,0.,0.,0.,0,0,1,0,1,1,0,"f","f","f","f",1,1);
+  AddParticle(kf_jet,0.,0.,0.,0,1, 2,1,1,1,0,"j","j","j","j",1,1);
+  AddParticle(kf_ewjet,0.,0.,0.,0,1, 2,1,1,1,0,"ewj","ewj","ewj","ewj",1,1);
+  AddParticle(kf_quark,0.,0.,0.,0,1,1,0,1,1,0,"Q","Q","Q","Q",1,1);
+  AddParticle(kf_lepton,0.,0.,0.,-3,0,1,0,1,1,0,"l","l","\\ell","\\ell",1,1);
+  AddParticle(kf_neutrino,0.,0.,0.,0,0,1,0,1,1,0,"v","v","\\nu","\\nu",1,1);
+  AddParticle(kf_fermion,0.,0.,0.,0,0,1,0,1,1,0,"f","f","f","f",1,1);
   s_kftable[kf_lepton]->m_priority=2;
   s_kftable[kf_neutrino]->m_priority=1;
   s_kftable[kf_jet]->Clear();

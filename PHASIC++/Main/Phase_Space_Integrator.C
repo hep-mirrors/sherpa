@@ -15,7 +15,6 @@
 
 using namespace PHASIC;
 using namespace ATOOLS;
-using namespace std;
 
 long unsigned int Phase_Space_Integrator::m_nrawmax(std::numeric_limits<long unsigned int>::max());
 
@@ -63,7 +62,7 @@ Phase_Space_Integrator::Phase_Space_Integrator(Phase_Space_Handler *_psh):
 #endif
   m_nexpected = m_itmin;
   for (size_t i(1);i<m_nopt;++i) m_nexpected+=m_itmin*pow(2.,i*m_npower);
-  m_nexpected+=m_maxopt*m_itmin*pow(2.,m_nopt*m_npower);
+  m_nexpected+=m_maxopt*m_itmin*pow(2.,(m_nopt-1)*m_npower);
   msg_Info()<<"Integration parameters: n_{min} = "<<m_itmin
             <<", n_{max} = "<<m_itmax
 	    <<", N_{opt} = "<<m_nopt<<", N_{max} = "<<m_maxopt;
@@ -236,6 +235,11 @@ bool Phase_Space_Integrator::AddPoint(const double value)
       m_iter*=pow(2.,m_npower);
     }
     else if (p_psh->Stats().size()==m_nopt-1) {
+      p_psh->Optimize();
+      //reset partial result to separate: before and after optimisation
+      p_psh->Process()->OptimizeResult();
+      //restart calculation of cut efficiency
+      optimized = true;
       p_psh->Process()->ResetMax(0);
       p_psh->EndOptimize();
       p_psh->Process()->ResetMax(1);

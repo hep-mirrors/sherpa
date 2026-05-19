@@ -109,7 +109,27 @@ void Sudakov::InitSplittingFunctions(MODEL::Model_Base *md,const int kfmode)
       msg_Debugging()<<"}\n";
     }
   }
+  AddDiQuarkSplittingFunctions(md,kfmode);
   msg_Debugging()<<"}\n";
+}
+
+void Sudakov::AddDiQuarkSplittingFunctions(MODEL::Model_Base *md,const int kfmode) {
+  Kabbala g3("g_3",sqrt(4.*M_PI*md->ScalarConstant("alpha_S")));
+  Kabbala cpl0=g3*Kabbala("i",Complex(0.,1.));
+  list<kf_code> diquarks = { kf_ud_0, kf_dd_1, kf_ud_1, kf_uu_1 };
+    for (list<kf_code>::iterator kfit=diquarks.begin();kfit!=diquarks.end();kfit++) {
+    Flavour flav(*kfit);
+    Single_Vertex v;
+    v.AddParticle(flav.Bar());
+    v.AddParticle(flav);
+    v.AddParticle(Flavour(kf_gluon));
+    v.Color.push_back(Color_Function(cf::T,3,2,1));
+    v.Lorentz.push_back("SSV");
+    v.cpl.push_back(cpl0);
+    v.order[0]=1;
+    Add(new Splitting_Function_Base(SF_Key(&v,0,cstp::FF,kfmode,m_qcdmode,m_ewmode, 1,m_pdfmin)));
+    Add(new Splitting_Function_Base(SF_Key(&v,0,cstp::FF,kfmode,m_qcdmode,m_ewmode,-1,m_pdfmin)));
+  }
 }
 
 void Sudakov::SetCoupling(MODEL::Model_Base *md,
@@ -233,7 +253,6 @@ bool Sudakov::Generate(Parton* split, double kt2win)
        split->GetLeft()==NULL) ||
       ((cc==8 || (split->GetType()==pst::FS?cc:-cc)==-3) &&
        split->GetRight()==NULL)) {
-    msg_Out()<<METHOD<<":\n"<<(*split)<<".\n";
     THROW(fatal_error,"Invalid color flow.");
   }
   m_cfl  = split->GetFlavour();
@@ -446,7 +465,7 @@ int Sudakov::Generate(Parton *split,Parton *spect,
 				  (*m_splitter)->GetFlavourB(),
 				  (*m_splitter)->GetFlavourC());
       x = split->Xbj();
-      if (y<0.0 || y>1.0 || z<x) continue;
+      if (t<m_k0sqi || y<0.0 || y>1.0 || z<x) continue;
     }
       break;
     case (cstp::II) : {
@@ -458,7 +477,7 @@ int Sudakov::Generate(Parton *split,Parton *spect,
 				  (*m_splitter)->GetFlavourB(),
 				  (*m_splitter)->GetFlavourC());
       x   = split->Xbj();
-      if (y<0.0 || y>1.0-z || z<x) continue;
+      if (t<m_k0sqi || y<0.0 || y>1.0-z || z<x) continue;
     }
       break;
     default:

@@ -103,10 +103,16 @@ void Shower::Init(MODEL::Model_Base *const model,
 		       <<v->in[1]<<" "<<v->in[2]<<" {\n";
       {
 	msg_Indent();
-	for (int type(0);type<4;++type)
+	for (int type(0);type<4;++type) {
+	  if (!Flavour(kf_jet).Includes(v->in[2]) &&
+	      !Flavour(kf_jet).Includes(v->in[(type&1)?0:1])) {
+	    msg_IODebugging()<<"Veto mode "<<type<<"\n";
+	    continue;
+	  }
 	  if (types&(1<<type))
 	    for (int mode(0);mode<2;++mode)
 	      AddKernel(new Kernel(this,Kernel_Key(v,mode,type)));
+	}
       }
       msg_IODebugging()<<"}\n";
     }
@@ -283,7 +289,8 @@ Splitting Shower::GeneratePoint
       if (sum==0.0) return Splitting();
       win=Splitting(&p,NULL,ct);
     }
-    win.m_t*=exp(log(ran->Get())*Max(2.0*M_PI/sum,1.0e-3));
+    win.m_t*=exp(log(ran->Get())*2.0*M_PI/sum);
+    if (2.0*M_PI/sum==0.0) win.m_t=0.0;
     if (win.m_t<m_tmin[p.Beam()?1:0]) return win;
     double disc(sum*ran->Get()), csum(0.0);
     for (size_t j(0);j<splits.size();++j)

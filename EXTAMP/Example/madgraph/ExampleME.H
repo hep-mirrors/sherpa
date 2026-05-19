@@ -4,7 +4,7 @@
 #include "CPPProcess.h"
 
 namespace PHASIC {
-  class Process_Info;
+  struct Process_Info;
 }
 
 

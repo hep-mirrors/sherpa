@@ -46,7 +46,7 @@ namespace PHASIC {
 
     std::vector<double> m_scale, m_escale, m_fac;
 
-    std::string m_coupling;
+    std::string m_coupling, m_reqkfac;
 
     size_t m_nin, m_nout;
     size_t m_l1, m_l2;
@@ -100,6 +100,8 @@ namespace PHASIC {
 
     inline size_t NIn() const  { return m_nin;  }
     inline size_t NOut() const { return m_nout; }
+
+    inline const std::string &RequiredKFactor() const { return m_reqkfac; }
 
   };// end of class Scale_Setter_Base
 

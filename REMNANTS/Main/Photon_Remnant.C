@@ -33,8 +33,8 @@ bool Photon_Remnant::FillBlob(Colour_Generator* colours, ParticleMomMap* ktmap, 
                   << m_extracted << ", \n and spectators = " << m_spectators
                   << "\n";
   FindRecoiler();
-  // Possibly adjust final pending colours with extra gluons - in prinicple one may have
-  // to check that they are not singlets ....
+  // Possibly adjust final pending colours with extra gluons -
+  // in prinicple one may have to check that they are not singlets ....
   CompensateColours(colours);
   // Assume all remnant bases already produced a beam blob = p_beamblob
   if (!MakeLongitudinalMomenta(ktmap, copy)) {
@@ -109,7 +109,8 @@ bool Photon_Remnant::MakeLongitudinalMomenta(ParticleMomMap *ktmap,
       p_beamblob->AddToOutParticles(pmit);
     (*ktmap)[pmit] = Vec4D();
   }
-  msg_Debugging() << METHOD << ": Longitudinal momentum left for remnants = " << availMom
+  msg_Debugging() << METHOD << ": "
+		  <<"Longitudinal momentum left for remnants = " << availMom
                   << "\n";
   /* The momentum that remains needs to be distributed over the remnants.
    * Each parton should have an energy greater than its (hadron) mass, additionally energy must be conserved.
@@ -133,7 +134,8 @@ bool Photon_Remnant::MakeLongitudinalMomenta(ParticleMomMap *ktmap,
     if (part == m_spectators.back()) {
       part->SetMomentum(availMom);
     } else {
-      part->SetMomentum(SelectZ(part->Flav(), availMom[0], remnant_masses)*availMom);
+      part->SetMomentum(SelectZ(part->Flav(), availMom[0], remnant_masses) *
+			availMom);
       availMom -= part->Momentum();
       remnant_masses -= Max(part->Flav().HadMass(), m_LambdaQCD);
     }
@@ -159,7 +161,8 @@ double Photon_Remnant::SelectZ(const Flavour &flav, double restmom,
   double zmax = zmin + (restmom - remnant_masses) / restmom;
   // Taken from Hadron_Remnant, adapted the exponents for photon PDFs
   if (zmax < zmin) {
-    msg_Debugging() << METHOD << ": Error, zmin, zmax = " << zmin <<", "<<zmax << "\n";
+    msg_Debugging() << METHOD << ": Error, zmin, zmax = "
+		    << zmin <<", "<<zmax << "\n";
     return 0;
   }
   double z;

@@ -8,8 +8,12 @@ using namespace SHERPA;
 using namespace ATOOLS;
 using namespace std;
 
-Singlet_Sorter::Singlet_Sorter() {}
+Singlet_Sorter::Singlet_Sorter() : m_calls(0), m_fails(0) {}
 Singlet_Sorter::~Singlet_Sorter() {
+  if (m_fails>0) {
+    msg_Out()<<METHOD<<" with "<<m_fails<<" fails in "<<m_calls<<" calls "
+	     <<"= "<<((100.*m_fails)/double(m_calls))<<"%.\n";
+  }
   ResetPartLists();
 }
 
@@ -18,7 +22,7 @@ void Singlet_Sorter::ResetPartLists() {
     m_partlists.back()->clear();
     delete m_partlists.back();
     m_partlists.pop_back();
-  }  
+  }
   m_partlists.clear();
   m_hadrons.clear();
 }
@@ -27,15 +31,16 @@ Return_Value::code Singlet_Sorter::operator()(Blob_List * bloblist) {
   // Logic:
   // 1. Harvest particles in HarvestParticles
   //    fill particles into lists, one for each hadron or tau decay (to keep track of
-  //    decay vertices) and one for everything else.  These lists are the accumulated in
-  //    plists, with the default list = plists[0] for all coloured particles not
+  //    decay vertices) and one for everything else.  These lists are accumulated in
+  //    plists, with the default list = m_partlists.begin() for all coloured particles not
   //    coming from hadron/tau decays.
-  // 2. For the hadrons there is a separate list, hadrons.  Its particles will be filled
+  // 2. For the hadrons there is a separate list, m_hadrons.  Its particles will be filled
   //    into a separate blob, in DealWithHadrons.
   //    TODO: I have to check for partonic hadron decays if I get the connections right.
-  // 3. The plists will be decomposed into singlets and filled into one blob
+  // 3. The m_partlists will be decomposed into singlets and filled into one blob
+  m_calls++;
   ResetPartLists();
-  if (!HarvestParticles(bloblist)) return Return_Value::New_Event;
+  if (!HarvestParticles(bloblist)) { m_fails++; return Return_Value::New_Event; }
   if (m_partlists.size()==0 || (*m_partlists.begin())->empty()) return Return_Value::Nothing;
   while (!m_partlists.empty()) {
     p_partlist = m_partlists.front();
@@ -44,8 +49,12 @@ Return_Value::code Singlet_Sorter::operator()(Blob_List * bloblist) {
       if (DecomposeIntoSinglets()) blob = MakeBlob();
       if (blob) bloblist->push_back(blob);
       else {
-	msg_Error()<<"Error in "<<METHOD<<" failed to decompose particle list into singlet.\n"
-		   <<"   Reset list, return Error and hope for the best.\n";
+	if (m_fails<5) {
+	  msg_Error()<<"Error in "<<METHOD<<" failed to decompose particle list into singlet.\n"
+		     <<(*p_partlist)
+		     <<"   Reset list, return Error and hope for the best.\n";
+	}
+	m_fails++;
 	ResetPartLists();
 	return Return_Value::New_Event; //Error;
       }
@@ -60,8 +69,7 @@ Return_Value::code Singlet_Sorter::operator()(Blob_List * bloblist) {
 bool Singlet_Sorter::HarvestParticles(Blob_List * bloblist) {
   for (Blob_List::iterator blit=bloblist->begin();
        blit!=bloblist->end();++blit) {
-    if ((*blit)->Has(blob_status::needs_reconnections) ||
-	(*blit)->Has(blob_status::needs_hadronization)) {
+    if ((*blit)->Has(blob_status::needs_reconnections)) {
       Blob* upstream_blob=(*blit)->UpstreamBlob();
       if (upstream_blob && upstream_blob->Type()==btp::Hadron_Decay) {
 	p_partlist = new Part_List;
@@ -72,8 +80,7 @@ bool Singlet_Sorter::HarvestParticles(Blob_List * bloblist) {
 	p_partlist = m_partlists.front();
       }
       if (!FillParticleLists(*blit)) return false;
-      (*blit)->UnsetStatus(blob_status::needs_reconnections |
-			   blob_status::needs_hadronization);
+      (*blit)->UnsetStatus(blob_status::needs_reconnections);
     }
   }
   if (m_partlists.size()==1 && m_partlists.front()->empty()) m_partlists.pop_front();
@@ -83,14 +90,17 @@ bool Singlet_Sorter::HarvestParticles(Blob_List * bloblist) {
 
 bool Singlet_Sorter::FillParticleLists(Blob * blob) {
   for (int i=0;i<blob->NOutP();i++) {
-    Particle * part = blob->OutParticle(i); 
-    if (part->Status()==part_status::active && 
+    Particle * part = blob->OutParticle(i);
+    if (part->Status()==part_status::active &&
 	part->Info()!='G' && part->Info()!='I') {
       if (part->GetFlow(1)!=0 || part->GetFlow(2)!=0) {
 	if (part->GetFlow(1)==part->GetFlow(2)) {
-	  msg_Error()<<"Error in "<<METHOD<<": blob with funny colour assignements:\n"
-		     <<"   "<<(*part)<<"\n"
-		     <<"   Will demand new event and hope for the best.\n";
+	  if (m_fails<5) {
+	    msg_Error()<<"Error in "<<METHOD<<": blob with funny colour assignements:\n"
+		       <<"   "<<(*part)<<"\n"
+		       <<"   Will demand new event and hope for the best.\n";
+	  }
+	  m_fails++;
 	  return false;
 	}
 	p_partlist->push_back(part);
@@ -126,9 +136,12 @@ bool Singlet_Sorter::DecomposeIntoSinglets() {
   while (!p_partlist->empty()) {
     if (!NextSinglet(sorted,true) &&
 	!NextSinglet(sorted,false)) {
-      msg_Error()<<"Error in "<<METHOD<<" particles left in list.\n";
-      for (Part_List::iterator pit=p_partlist->begin();pit!=p_partlist->end();pit++)
-	msg_Error()<<"  "<<(**pit)<<"\n";
+      if (m_fails<5) {
+	msg_Error()<<"Error in "<<METHOD<<" particles left in list.\n";
+	for (Part_List::iterator pit=p_partlist->begin();pit!=p_partlist->end();pit++)
+	  msg_Error()<<"  "<<(**pit)<<"\n";
+      }
+      m_fails++;
       return false;
     }
   }
@@ -173,14 +186,8 @@ Blob * Singlet_Sorter::MakeBlob() {
   if (p_partlist->empty()) return NULL;
   Blob * blob = new Blob();
   blob->SetId();
-  blob->SetType(btp::Fragmentation);
-  blob->SetStatus(blob_status::needs_hadronization);
-  Particle * part = p_partlist->front();
-  Blob     * prod = part->ProductionBlob(), * up(prod?prod->UpstreamBlob():NULL);
-  if (!up || (up && up->Type()!=btp::Hadron_Decay)) {
-    blob->AddStatus(blob_status::needs_reconnections);
-  }
-  bool massthem = false;
+  blob->SetStatus(blob_status::needs_reconnections);
+  bool   massthem = false;
   while (!p_partlist->empty()) {
     Particle * part = p_partlist->front();
     if (!massthem &&
@@ -192,6 +199,17 @@ Blob * Singlet_Sorter::MakeBlob() {
     blob->AddToInParticles(part);
     p_partlist->pop_front();
   }
+  // This fixes the average position of the blob without overwriting the
+  // positions of the incoming (and later outgoing) partons.
+  Vec4D  pos      = Vec4D(0.,0.,0.,0.);
+  size_t npart    = 0;
+  for (size_t i=0;i<blob->NInP();i++) {
+    Particle * part = blob->InParticle(i); 
+    pos  += part->XProd();
+    part->SetPosition(part->XProd());
+    npart++;
+  }
+  blob->SetPosition(pos/double(npart));
   if (massthem) {
     Particle_Vector parts;
     vector<double>  masses;
@@ -199,7 +217,9 @@ Blob * Singlet_Sorter::MakeBlob() {
       parts.push_back(blob->InParticle(i));
       masses.push_back(parts.back()->Flav().HadMass());
     }
-    if (!m_stretcher.StretchMomenta(parts,masses)) { delete blob; blob = NULL; }
+    if (!m_stretcher.StretchMomenta(parts,masses)) {
+      delete blob; blob = NULL;
+    }
   }
   return blob;
 }

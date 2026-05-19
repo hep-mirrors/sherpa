@@ -22,7 +22,8 @@ set(EWSud_HEADERS Variation_Generator.H
                   Calculator.H
                   Clustered_Calculator.H)
 
-sherpa_create_git_info(EWSud)
+sherpa_create_git_info(EWSud ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR})
  
 add_library(SherpaEWSud SHARED ${EWSud_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
 sherpa_handle_shared_library(SherpaEWSud SherpaEWSud)
+add_dependencies(SherpaEWSud EWSud_Git_Info)

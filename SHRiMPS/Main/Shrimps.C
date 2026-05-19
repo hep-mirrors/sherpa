@@ -155,9 +155,13 @@ void Shrimps::Analyse(ATOOLS::Blob * blob,std::string tag) {
 }
 
 
-ATOOLS::Blob * Shrimps::GenerateEvent() {
+bool Shrimps::GenerateEvent(ATOOLS::Blob * blob) {
+  /*
+    will have to fix this later.
   msg_Out()<<"  * "<<METHOD<<".\n";
   return p_generator->GenerateEvent();
+  */
+  return true;
 }
 
 ATOOLS::Cluster_Amplitude * Shrimps::ClusterConfiguration(ATOOLS::Blob *const blob) {

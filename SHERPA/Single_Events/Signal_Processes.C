@@ -32,9 +32,9 @@ Signal_Processes::Signal_Processes(Matrix_Element_Handler* mehandler)
   p_yfshandler = mehandler->GetYFS();
   if (p_remnants[0]==NULL || p_remnants[1]==NULL)
     THROW(critical_error,"No beam remnant handler found.");
-  Scoped_Settings metssettings{
-    Settings::GetMainSettings()["METS"] };
-  m_cmode=metssettings["CLUSTER_MODE"].Get<int>();
+  Scoped_Settings mepssettings{
+    Settings::GetMainSettings()["MEPS"] };
+  m_cmode=mepssettings["CLUSTER_MODE"].Get<int>();
   Scoped_Settings spsettings{ Settings::GetMainSettings()["SP"] };
   m_setcolors = spsettings["SET_COLORS"].SetDefault(false).Get<bool>();
   m_adddocumentation = spsettings["ADD_DOC"].SetDefault(false).Get<bool>();

@@ -26,7 +26,7 @@ set(Zfunctions_HEADERS Basic_Func.H
                        Mom.H
                        MHVCalculator.H)
 
-sherpa_create_git_info(Zfunctions)
+sherpa_create_git_info(Zfunctions ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR})
  
 add_library(Zfunctions SHARED ${Zfunctions_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
 sherpa_handle_shared_library(Zfunctions Zfunctions)

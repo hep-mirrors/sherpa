@@ -22,10 +22,11 @@ namespace REMNANTS {
   };
 
   enum class matter_form {
-    none            = 0,
-    single_gaussian = 1,
-    double_gaussian = 2,
-    unknown         = 99
+    none                 = 0,
+    single_gaussian      = 1,
+    double_gaussian      = 2,
+    x_dependent_gaussian = 11,
+    unknown              = 99
   };
 
   std::ostream& operator<<(std::ostream& os, const primkT_form & form);

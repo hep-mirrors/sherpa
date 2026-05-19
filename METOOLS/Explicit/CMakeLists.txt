@@ -23,7 +23,11 @@ set(Explicit_HEADERS C_Object.H
                      Form_Factor.H
                      Vertex.H)
 
-sherpa_create_git_info(Explicit)
+sherpa_create_git_info(Explicit ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR})
  
 add_library(METoolsExplicit SHARED ${Explicit_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
 sherpa_handle_shared_library(METoolsExplicit METoolsExplicit)
+add_dependencies(METoolsExplicit Explicit_Git_Info)
+if (SHERPA_ENABLE_THREADING)
+  target_link_libraries(METoolsExplicit PRIVATE Threads::Threads)
+endif()

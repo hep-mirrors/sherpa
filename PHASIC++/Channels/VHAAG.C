@@ -695,7 +695,7 @@ void VHAAG::GeneratePoint(ATOOLS::Vec4D *p,Cut_Data *cuts,double *ran)
 {
   CalculateS0(cuts);
   double *vran = p_vegas->GeneratePoint(ran);
-  for(int i=0;i<m_rannum;i++) p_rans[i]=vran[i];
+  for(size_t i=0;i<m_rannum;i++) p_rans[i]=vran[i];
 
   if (m_nout==2) {
     SingleSplitF0(p[0],p[1],p[2],p[3],ran);  

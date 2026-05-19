@@ -32,12 +32,13 @@ namespace PDF {
 
     bool On() const   { return m_on;   }
 
-    inline isrtype::code   Type()          const { return m_type;  }
-    inline ATOOLS::Flavour Flavour()       const { return m_bunch; }
-    inline double Exponent() const               { return m_exponent; }
-    inline double XMax() const                   { return m_xmax;     } 
-    inline void SetPDF(PDF_Base *pdf)            { p_pdf = pdf;  }
-    inline PDF_Base * PDF() const                { return p_pdf; }
+    inline isrtype::code   Type()    const { return m_type;  }
+    inline ATOOLS::Flavour Flavour() const { return m_bunch; }
+    inline double Exponent()         const { return m_exponent; }
+    inline double XMax()             const { return m_xmax;     } 
+    inline double XMin()             const { return (p_pdf!=NULL ? p_pdf->XMin() : 0.); }
+    inline PDF_Base * PDF()          const { return p_pdf; }
+    inline void SetPDF(PDF_Base *pdf)      { p_pdf = pdf;  }
     inline virtual void SetRescaleFactor(const double & rescale) {
       p_pdf->SetRescaleFactor(rescale);
     }

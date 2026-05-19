@@ -15,8 +15,9 @@ set(OpenLoops_HEADERS OpenLoops_Virtual.H
                       GGH_Process_Manager.H
                       GGH_KFactor_Setter.H)
 
-sherpa_create_git_info(OpenLoops)
+sherpa_create_git_info(OpenLoops ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR})
  
 add_library(SherpaOpenLoops SHARED ${OpenLoops_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
 sherpa_handle_shared_library(SherpaOpenLoops SherpaOpenLoops)
 target_link_libraries(SherpaOpenLoops PRIVATE OpenLoops::OpenLoops )
+add_dependencies(SherpaOpenLoops OpenLoops_Git_Info)

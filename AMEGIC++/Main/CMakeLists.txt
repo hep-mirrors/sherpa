@@ -1,4 +1,4 @@
-set(Main_SOURCES ColorSC.C
+set(AmegicMain_SOURCES ColorSC.C
                  Helicity.C
                  Topology.C
                  Polarisation.C
@@ -14,7 +14,7 @@ set(Main_SOURCES ColorSC.C
                  Process_Group.C
                  Amegic.C)
 
-set(Main_HEADERS Tools.H
+set(AmegicMain_HEADERS Tools.H
                  ColorSC.H
                  Helicity.H
                  Topology.H
@@ -30,7 +30,8 @@ set(Main_HEADERS Tools.H
                  Single_Process_Combined.H
                  Process_Group.H)
 
-sherpa_create_git_info(Main)
+sherpa_create_git_info(AmegicMain ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR})
  
-add_library(Amegic SHARED ${Main_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
+add_library(Amegic SHARED ${AmegicMain_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
 sherpa_handle_shared_library(Amegic Amegic)
+add_dependencies(Amegic AmegicMain_Git_Info)

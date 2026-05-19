@@ -8,7 +8,6 @@
 #include "SHERPA/SoftPhysics/Soft_Collision_Handler.H"
 #include "PDF/Main/Shower_Base.H"
 #include "ATOOLS/Phys/Cluster_Amplitude.H"
-#include "ATOOLS/Phys/Variations.H"
 #include "PHASIC++/Main/Process_Integrator.H"
 #include "PHASIC++/Process/Single_Process.H"
 #include "PHASIC++/Process/ME_Generator_Base.H"
@@ -57,12 +56,12 @@ Perturbative_Interface::Perturbative_Interface(Matrix_Element_Handler *const meh
   m_bbarmode(mets_bbar_mode::none),
   m_fails_Moms(0), m_fails_Ampls(0), m_fails_Masses(0)
 {
-  Settings& s = Settings::GetMainSettings();
+  Settings& s  = Settings::GetMainSettings();
   m_bbarmode = s["METS_BBAR_MODE"].SetDefault(mets_bbar_mode::enabled|
                                               mets_bbar_mode::exclcluster)
                                   .Get<mets_bbar_mode::code>();
   m_globalkfac = s["GLOBAL_KFAC"].SetDefault(0.0).Get<double>();
-  m_maxkfac = s["MENLOPS_MAX_KFAC"].SetDefault(10.0).Get<double>();
+  m_maxkfac    = s["MENLOPS_MAX_KFAC"].SetDefault(10.0).Get<double>();
 }
 
 Perturbative_Interface::Perturbative_Interface
@@ -80,7 +79,7 @@ Perturbative_Interface::Perturbative_Interface
   p_me(NULL), p_mi(NULL), p_hd(NULL), p_sc(sch), p_shower(psh),
   p_ampl(NULL), m_fails_Moms(0), m_fails_Ampls(0), m_fails_Masses(0) {}
 
-Perturbative_Interface::~Perturbative_Interface() 
+Perturbative_Interface::~Perturbative_Interface()
 {
   if (p_ampl) {
     Cluster_Amplitude *campl(p_ampl);
@@ -94,9 +93,9 @@ Perturbative_Interface::~Perturbative_Interface()
     else if (p_hd) msg_Out()<<"Hard Decays";
     else if (p_sc) msg_Out()<<"Soft Collisions";
     msg_Out()<<"):";
-    if (m_fails_Moms>0)   { msg_Out()<<"\n  "<<"momentum failures: "<<m_fails_Moms; }
-    if (m_fails_Ampls>0)  { msg_Out()<<"\n  "<<"amplitude failures: "<<m_fails_Ampls; }
-    if (m_fails_Masses>0) { msg_Out()<<"\n  "<<"mass failures: "<<m_fails_Masses; }
+    if (m_fails_Moms>0)   { msg_Out()<<"\n  "<<"frame ill-defined: "<<m_fails_Moms; }
+    if (m_fails_Ampls>0)  { msg_Out()<<"\n  "<<"clustering failed: "<<m_fails_Ampls; }
+    if (m_fails_Masses>0) { msg_Out()<<"\n  "<<"massify failed: "<<m_fails_Masses; }
     msg_Out()<<"\n";
   }
 }
@@ -224,6 +223,35 @@ Perturbative_Interface::DefineInitialConditions(ATOOLS::Blob* blob,
   return Return_Value::Success;
 }
 
+Return_Value::code
+Perturbative_Interface::DefineTrivialInitialConditions(ATOOLS::Blob* blob)
+{
+  if (blob==NULL) {
+    msg_Error()<<METHOD<<"(): Signal process not found."<<std::endl;
+    return Return_Value::Error;
+  }
+  if (blob->NInP()==2 && blob->NOutP()==2) {
+    if (!blob->InParticle(0)->Flav().Strong() &&
+	!blob->InParticle(1)->Flav().Strong() &&
+	blob->OutParticle(0)->Flav().Strong() &&
+	blob->OutParticle(1)->Flav().Strong()) {
+      if (blob->OutParticle(0)->Flav().IsQuark() &&
+	  !blob->OutParticle(0)->Flav().IsAnti()) {
+	blob->OutParticle(0)->SetFlow(1,-1);
+	blob->OutParticle(1)->SetFlow(2,blob->OutParticle(0)->GetFlow(1));
+      }
+      else if (blob->OutParticle(0)->Flav().IsGluon()) {
+	for (size_t i=0;i<2;i++) {
+	  blob->OutParticle(0)->SetFlow(i+1,-1);
+	  blob->OutParticle(1)->SetFlow(2-i,blob->OutParticle(0)->GetFlow(i+1));
+	}
+      }
+    }
+  }
+  return Return_Value::Nothing;
+}
+
+
 bool Perturbative_Interface::LocalKFactor(ATOOLS::Cluster_Amplitude* ampl)
 {
   if (m_globalkfac) {
@@ -305,8 +333,8 @@ int Perturbative_Interface::PerformShowers()
 }
 
 int Perturbative_Interface::PerformDecayShowers()
-{ 
-  return p_shower->GetShower()->PerformDecayShowers(); 
+{
+  return p_shower->GetShower()->PerformDecayShowers();
 }
 
 void Perturbative_Interface::CleanUp()

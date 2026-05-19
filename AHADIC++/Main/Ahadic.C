@@ -41,22 +41,18 @@ Return_Value::code Ahadic::Hadronize(Blob_List * blobs)
 {
   static std::string mname(METHOD);
   Return_Value::IncCall(mname);
+  Return_Value::code result = Return_Value::Nothing;
   for (Blob_List::iterator blit=blobs->begin();blit!=blobs->end();) {
-    if ((*blit)->Has(blob_status::needs_hadronization) &&
-	(*blit)->Type()==btp::Fragmentation) {
+    if ((*blit)->Has(blob_status::needs_hadronization)) {
       Blob * blob = (*blit);
-      const auto result = Hadronize(blob);
+      result = Hadronize(blob);
       switch (result) {
-      case Return_Value::Success :
-	break;
-      case Return_Value::Retry_Event :
+      case Return_Value::Success:     break;
+      case Return_Value::Retry_Event:
       case Return_Value::New_Event:
 	blobs->ColorConservation();
 	msg_Tracking()<<"ERROR in "<<METHOD<<" :\n"
-		      <<"   Hadronization for blob "
-	  //	      <<"("<<blobs<<"; "
-	  //	      <<blob->NInP()<<" -> "<<blob->NOutP()<<") "*/
-		      <<"did not work out,";
+		      <<"   Hadronization did not work out,";
         if (result==Return_Value::New_Event)
           msg_Tracking()<<" due to momentum problems,";
         msg_Tracking()<<"\n   will trigger "<<result<<":\n"
@@ -79,7 +75,7 @@ Return_Value::code Ahadic::Hadronize(Blob_List * blobs)
     blit++;
   }
   if (m_shrink) Shrink(blobs);
-  return Return_Value::Success;
+  return result;
 }
 
 Return_Value::code Ahadic::Hadronize(Blob * blob, int retry) {
@@ -97,11 +93,18 @@ Return_Value::code Ahadic::Hadronize(Blob * blob, int retry) {
   blob->SetStatus(blob_status::needs_hadrondecays);
   blob->SetType(btp::Fragmentation);
   blob->SetTypeSpec("AHADIC-1.0");
+  blob->SetId();
   FillOutgoingParticles(blob);
   if (dabs(blob->CheckMomentumConservation()[0])>1.e-3) {
     msg_Error()<<"\n"<<METHOD<<" violates four-momentum conservation by "
 	       <<blob->CheckMomentumConservation()
 	       <<" ("<<blob->CheckMomentumConservation().Abs2()<<")\n";
+    Reset(blob);
+    return Return_Value::Retry_Event;
+  }
+  if (!CheckKfcodes(blob)) {
+    msg_Error()<<"\n"<<METHOD<<" produces kf_none particle. Will retry.\n";
+    msg_Debugging()<<*blob<<"\n";
     Reset(blob);
     return Return_Value::Retry_Event;
   }
@@ -196,6 +199,13 @@ bool Ahadic::SanityCheck(Blob * blob,double norm2) {
     //	       <<checkmom<<" ("<<sqrt(Max(0.,checkmom.Abs2()))<<")\n"
     //	       <<(*blob)<<"\n";
     return false;
+  }
+  return true;
+}
+
+bool Ahadic::CheckKfcodes(Blob * blob) {
+  for(Particle* p: blob->GetOutParticles()) {
+    if(p->Flav().IsNone()) return false;
   }
   return true;
 }

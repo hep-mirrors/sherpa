@@ -29,6 +29,7 @@ std::istream &PHOTONS::operator>>(std::istream &str,yfsmode::code &ym)
   str>>tag;
   ym=yfsmode::full;
   if      (tag.find("None")!=std::string::npos) ym=yfsmode::off;
+  else if (tag.find("0")!=std::string::npos)    ym=yfsmode::off;
   else if (tag.find("Soft")!=std::string::npos) ym=yfsmode::soft;
   else if (tag.find("1")!=std::string::npos)    ym=yfsmode::soft;
   else if (tag.find("Full")!=std::string::npos) ym=yfsmode::full;
@@ -43,6 +44,7 @@ double PHOTONS::Photons::s_ircutoff      = 1E-3;
 double PHOTONS::Photons::s_uvcutoff      = std::numeric_limits<double>::max();
 int    PHOTONS::Photons::s_ircutoffframe = 0;
 double PHOTONS::Photons::s_accu          = 1E-6;
+int    PHOTONS::Photons::s_expandtoorder = std::numeric_limits<int>::max();
 int    PHOTONS::Photons::s_nmax          = std::numeric_limits<int>::max();
 int    PHOTONS::Photons::s_nmin          = 0;
 double PHOTONS::Photons::s_drcut         = 1000.;
@@ -97,7 +99,7 @@ Photons::Photons() :
   rpa->gen.AddCitation(1,
                        "Photons is published under \\cite{Schonherr:2008av}.");
   s_mode     = s["MODE"].Get<yfsmode::code>();
-  s_useme    = (bool)s["USE_ME"].Get<int>();
+  s_useme    = s["USE_ME"].UseNoneReplacements().Get<bool>();
   s_ircutoff = s["IR_CUTOFF"].Get<double>();
   s_uvcutoff = s["UV_CUTOFF"].Get<double>();
   s_alpha_input   = s["1/ALPHAQED"].Get<double>();
@@ -113,7 +115,9 @@ Photons::Photons() :
               <<"IR cut-off for soft photon radiation unkown ...\n"
               <<"setting it to 'Multipole_CMS' ...\n";
   }
+  s_expandtoorder = s["EXPAND_TO_ORDER"].Get<int>();
   s_nmax          = s["MAXEM"].Get<int>();
+  s_nmax = Min(s_nmax,s_expandtoorder);
   s_nmin          = s["MINEM"].Get<int>();
   s_drcut         = s["DRCUT"].Get<double>();
   s_strict        = s["STRICTNESS"].Get<int>();
@@ -124,6 +128,7 @@ Photons::Photons() :
   s_firecscheme   = s["FI_RECOIL_SCHEME"].Get<int>();
   s_accu          = sqrt(rpa->gen.Accu());
   m_splitphotons  = s["PHOTON_SPLITTER_MODE"].Get<int>();
+  if (s_expandtoorder<2) m_splitphotons=0;
 
   m_photonsplitter = Photon_Splitter(m_splitphotons);
 
@@ -136,6 +141,7 @@ Photons::Photons() :
                  <<"  Mode: "<<s_mode;
   if ((int)s_mode>0) {
     msg_Debugging()<<" ,  MEs: "<<((int)s_mode>1?s_useme:0)
+                   <<" ,  expand to order: "<<s_expandtoorder
                    <<" ,  nmax: "<<s_nmax
                    <<" ,  nmin: "<<s_nmin
                    <<" ,  strict: "<<s_strict
@@ -196,6 +202,7 @@ void Photons::RegisterDefaults()
   s["1/ALPHAQED"].SetDefault(0.);
   s["USE_RUNNING_PARAMETERS"].SetDefault(0);
   s["IR_CUTOFF_FRAME"].SetDefault("Multipole_CMS");
+  s["EXPAND_TO_ORDER"].SetDefault(std::numeric_limits<int>::max());
   s["MAXEM"].SetDefault(std::numeric_limits<int>::max());
   s["MINEM"].SetDefault(0);
   s["DRCUT"].SetDefault(std::numeric_limits<double>::max());

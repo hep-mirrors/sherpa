@@ -1853,7 +1853,7 @@ void Amplitude::FillMEWeights(ME_Weight_Info &wgtinfo) const
 {
   if (wgtinfo.m_wren.size()<2) return;
   for (size_t i=0;i<2;i++) wgtinfo.m_wren[i]=m_cmur[i];
-  wgtinfo.m_VI=m_res-m_born;
+  if (p_dinfo->Mode()&2) wgtinfo.m_VI=m_res-m_born;
 }
 
 void Amplitude::SetNLOMC(PDF::NLOMC_Base *const mc)

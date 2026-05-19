@@ -54,6 +54,7 @@ PDF_Base::PDF_Base() :
   RegisterDefaults();
   Settings& s = Settings::GetMainSettings();
   m_lhef_number = s["LHEF_PDF_NUMBER"].Get<int>();
+  m_force_4f = s["PDF_FORCE_4F"].Get<int>();
 }
 
 PDF_Base::~PDF_Base() = default;
@@ -62,7 +63,7 @@ void PDF_Base::RegisterDefaults()
 {
   Settings& s = Settings::GetMainSettings();
   s["LHEF_PDF_NUMBER"].SetDefault(-1);
-  s["INCLUDE_PHOTON_IN_PHOTON_PDF"].SetDefault(false);
+  s["PDF_FORCE_4F"].SetDefault(0);
 
   Scoped_Settings lhapdfsettings{ s["LHAPDF"] };
   lhapdfsettings["NUMBER_OF_FLAVOURS"].SetDefault(5);
@@ -161,4 +162,15 @@ void PDF_Base::ShowSyntax(const size_t i)
 	   <<"   // Default can be used as a placeholder to let Sherpa choose\n\n";
   PDF_Getter_Function::PrintGetterInfo(msg->Out(),25);
   msg_Out()<<"\n}"<<std::endl;
+}
+
+
+bool PDF_Base::Contains(const ATOOLS::Flavour &flav) const
+{
+  if (m_force_4f && (flav.Kfcode()==kf_b || flav.Kfcode()==kf_t)) return false;
+
+  if (m_partons.find(flav) != m_partons.end()) return true;
+  for (size_t i(0); i < flav.Size(); ++i)
+    if (m_partons.find(flav[i]) == m_partons.end()) return false;
+  return true;
 }

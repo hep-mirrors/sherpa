@@ -5,7 +5,7 @@ set(Analyses_SOURCES Analysis_Base.C
 
 set(Analyses_HEADERS Analysis_Base.H)
 
-sherpa_create_git_info(Analyses)
+sherpa_create_git_info(Analyses ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR})
  
 add_library(SherpaAnalyses SHARED ${Analyses_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
 sherpa_handle_shared_library(SherpaAnalyses SherpaAnalyses)

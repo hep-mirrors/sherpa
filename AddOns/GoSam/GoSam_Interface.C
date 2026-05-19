@@ -99,7 +99,8 @@ void GoSam_Interface::RegisterDefaults() const
 
   // find GS installation prefix with several overwrite options
   s_gosamprefix = rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/GoSam";
-  if (stat(s_gosamprefix.c_str(), nullptr) != 0)
+  struct stat file_info;
+  if (stat(s_gosamprefix.c_str(), &file_info) != 0)
     s_gosamprefix = GOSAM_PREFIX;
   s["GOSAM_PREFIX"].SetDefault(s_gosamprefix);
   s_gosamprefix = s["GOSAM_PREFIX"].Get<std::string>();

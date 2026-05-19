@@ -13,7 +13,7 @@ namespace PHASIC {
   class Single_Channel {
   protected:
     size_t   m_nin, m_nout;
-    double * p_ms;
+    std::vector<double> p_ms;
     size_t   m_rannum;
     double * p_rans;
     double   m_res1, m_res2, m_mres1, m_mres2;
@@ -49,7 +49,7 @@ namespace PHASIC {
     virtual inline const size_t &      Nin() const       { return m_nin; }
     virtual inline const size_t &      Nout() const      { return m_nout; }
     virtual inline const size_t &      Dimension() const { return m_rannum; }
-    virtual inline const size_t        NChannels() const { return 1; } 
+    virtual inline const size_t        NChannels() const { return 1; }
     virtual inline const std::string & Name() const      { return m_name; }
     virtual inline const double &      Res1() const      { return m_res1; }
     virtual inline const double &      Res2() const      { return m_res2; }
@@ -60,8 +60,8 @@ namespace PHASIC {
     virtual inline const double &      AlphaSave() const { return m_alpha_save; }
     virtual inline const int           OType() const     { return 0; }
     const std::string ChID() const;
-    
-    
+
+
     virtual inline void SetRes1(double _r)          { m_res1       = _r; }
     virtual inline void SetRes2(double _r)          { m_res2       = _r; }
     inline void AddMPIVars(const double &r1,const double &r2) { m_mres1+=r1; m_mres2+=r2; }
@@ -70,19 +70,19 @@ namespace PHASIC {
     virtual inline void SetWeight(double _weight)   { m_weight     = _weight; }
     virtual inline void SetAlpha(double _alpha)     { m_alpha      = _alpha; }
     virtual inline void SetAlphaSave(double _alpha) { m_alpha_save = _alpha; }
-    
+
     virtual inline void Optimize()              {}
     virtual inline void EndOptimize()           {}
     virtual inline void WriteOut(std::string)   {}
     virtual inline void ReadIn(std::string)     {}
     virtual inline bool OptimizationFinished()  { return false; }
-        
+
     virtual void ISRInfo(int & type,double & mass,double & width) {
       type = 0; mass = width = 0.0;
     }
     virtual void ISRInfo(std::vector<int> &ts,
 			 std::vector<double> &ms,std::vector<double> &ws) const {}
-    virtual int  ChNumber(); 
+    virtual int  ChNumber();
     virtual void SetChNumber(int);
 
 
@@ -104,18 +104,18 @@ namespace PHASIC {
   /*!
     Some basic ingredients for all channels :
     numbers of legs, their flavours and masses squared (not needed for isr)
-    and the name of the channel. This name might be given explicitly 
-    (for instance for ISR_Channels) or it may be constructed from amplitudes 
+    and the name of the channel. This name might be given explicitly
+    (for instance for ISR_Channels) or it may be constructed from amplitudes
     in the Phase_Space/Channel_Generator.
   */
   /*!
-    Stuff for the immediate integration 
+    Stuff for the immediate integration
   */
   /*!
     Specifics for isr and beamchannels
   */
   /*!
-    Explicit constructor. 
+    Explicit constructor.
     It initializes outgoing masses and the vector of random numbers :
     For them the following construction is applied :
     - two rans for the first pair of outgoing particles (orientation)

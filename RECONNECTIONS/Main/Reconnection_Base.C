@@ -6,7 +6,7 @@ using namespace ATOOLS;
 using namespace std;
 
 Reconnection_Base::Reconnection_Base() :
-  m_analysis(true)
+  m_typespec(string("")), m_analysis(false)
 { }
 
 Reconnection_Base::~Reconnection_Base() {
@@ -24,7 +24,7 @@ Reconnection_Base::~Reconnection_Base() {
 }
 
 void Reconnection_Base::Initialize() {
-  SetParameters(); 
+  SetParameters();
   if (m_analysis) {
     m_histomap[string("Reconn_MassBefore")] = new Histogram(0,0.0,100.0,200);
     m_histomap[string("Reconn_MassAfter")]  = new Histogram(0,0.0,100.0,200);
@@ -47,16 +47,14 @@ bool Reconnection_Base::HarvestParticles(Blob_List * blobs) {
   for (Blob_List::iterator bit=blobs->begin();bit!=blobs->end();bit++) {
     blob = (*bit);
     if (!blob->Has(blob_status::needs_reconnections)) continue;
-    m_found = true;
-    blob->SetTypeSpec("Colour Reconnections");
-    for (int i=0;i<blob->NInP();i++) HarvestParticleInfo(blob->InParticle(i));
+    m_found   = true;
+    blob->SetType(btp::Colour_Reconnection);
+    blob->SetTypeSpec(m_typespec);
+    for (int i=0;i<blob->NInP();i++)
+      HarvestParticleInfo(blob->InParticle(i));
     blob->UnsetStatus(blob_status::needs_reconnections |
 		      blob_status::needs_hadronization);
   }
-  //msg_Out()<<METHOD<<" harvested "
-  //	   <<m_cols[0].size()<<" colours and "
-  //	   <<m_cols[1].size()<<" anti-colours.\n"
-  //	   <<(*blob)<<"\n";
   return (BalanceColours());
 }
 
@@ -64,8 +62,9 @@ bool Reconnection_Base::BalanceColours() {
   if (m_cols[0].size()!=m_cols[1].size()) return false;
   list<unsigned int> replacers[2];
   for (size_t i=0;i<2;i++) {
-    for (map<unsigned int, Particle * >::iterator cit=m_cols[i].begin();cit!=m_cols[i].end();cit++) {
-      if (m_cols[1-i].find(cit->first)==m_cols[1-i].end()) 
+    for (map<unsigned int, Particle * >::iterator cit=m_cols[i].begin();
+	 cit!=m_cols[i].end();cit++) {
+      if (m_cols[1-i].find(cit->first)==m_cols[1-i].end())
 	replacers[i].push_back(cit->first);
     }
   }
@@ -82,8 +81,9 @@ bool Reconnection_Base::BalanceColours() {
     for (size_t i=0;i<2;i++) replacers[i].pop_front();
   }
   for (size_t i=0;i<2;i++) {
-    for (map<unsigned int, Particle * >::iterator cit=m_cols[i].begin();cit!=m_cols[i].end();cit++) {
-      if (m_cols[1-i].find(cit->first)==m_cols[1-i].end()) 
+    for (map<unsigned int, Particle * >::iterator cit=m_cols[i].begin();
+	 cit!=m_cols[i].end();cit++) {
+      if (m_cols[1-i].find(cit->first)==m_cols[1-i].end())
 	replacers[i].push_back(cit->first);
     }
   }
@@ -114,8 +114,6 @@ void Reconnection_Base::HarvestParticleInfo(ATOOLS::Particle * part) {
   // form its outgoing particles.
   copy->SetDecayBlob(part->DecayBlob());
   copy->SetProductionBlob(NULL);
-  //msg_Out()<<"* |"<<copy<<"| ("<<copy->Number()<<"): "<<copy->Momentum()<<" @ "<<copy->XProd()
-  //	   <<" ["<<copy->ProductionBlob()<<"]\n";
 }
 
 

@@ -54,9 +54,13 @@ install(FILES ${CMAKE_CURRENT_BINARY_DIR}/Sherpa.py DESTINATION ${SHERPA_Python_
 set(MEProcess_SOURCES MEProcess.C)
 set(MEProcess_HEADERS MEProcess.H)
 
-sherpa_create_git_info(MEProcess)
+sherpa_create_git_info(MEProcess ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR})
 
 add_library(MEProcess SHARED ${MEProcess_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C)
 sherpa_handle_shared_library(MEProcess MEProcess)
 
-target_link_libraries(_Sherpa PRIVATE SHERPA::All MEProcess)
+set(_Sherpa_DEPENDENCIES SHERPA::All MEProcess)
+if (SHERPA_ENABLE_MPI)
+  set(_Sherpa_DEPENDENCIES ${_Sherpa_DEPENDENCIES} MPI::MPI_CXX)
+endif ()
+target_link_libraries(_Sherpa PRIVATE ${_Sherpa_DEPENDENCIES})

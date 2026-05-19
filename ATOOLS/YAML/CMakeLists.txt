@@ -85,7 +85,7 @@ set(YAML_HEADERS collectionstack.h
                  yaml-cpp/node/detail/node_ref.h
                  yaml-cpp/node/detail/node.h)
 
-sherpa_create_git_info(YAML)
+sherpa_create_git_info(YAML ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR})
  
  
 set(YAML_yaml-cpp_HEADERS anchor.h
@@ -133,3 +133,4 @@ set(YAML_yaml-cpp_node_detail_HEADERS impl.h
  
 add_library(ToolsYaml SHARED ${YAML_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
 sherpa_handle_shared_library(ToolsYaml ToolsYaml)
+add_dependencies(ToolsYaml YAML_Git_Info)

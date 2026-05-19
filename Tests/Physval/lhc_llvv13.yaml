@@ -1,0 +1,115 @@
+EVENTS: 1k
+BATCH_MODE: 7
+EVENT_GENERATION_MODE: W
+
+BEAMS: 2212
+BEAM_ENERGIES: 6500
+
+# me generator settings
+ME_GENERATORS: [Comix, Amegic, OpenLoops]
+MEPS: { CLUSTER_MODE: 16 }
+
+# define parton container without b-quarks to
+# remove processes with top contributions
+PARTICLE_CONTAINERS:
+  901: {Name: lightflavs, Flavs: [1, -1, 2, -2, 3, -3, 4, -4, 21]}
+MC@NLO:
+  DISALLOW_FLAVOUR: 5
+
+PROCESSES:
+- 901 901 -> 11 -12 -11 12 901{1}:
+    Order: {QCD: 0, EW: 4}
+    CKKW: 20
+    2->4:
+      NLO_Mode: MC@NLO
+      NLO_Order: {QCD: 1, EW: 0}
+      ME_Generator: Amegic
+      RS_ME_Generator: Comix
+      Loop_Generator: OpenLoops
+- 901 901 -> 11 -12 -13 14 901{1}:
+    Order: {QCD: 0, EW: 4}
+    CKKW: 20
+    2->4:
+      NLO_Mode: MC@NLO
+      NLO_Order: {QCD: 1, EW: 0}
+      ME_Generator: Amegic
+      RS_ME_Generator: Comix
+      Loop_Generator: OpenLoops
+- 901 901 -> 11 -12 -15 16 901{1}:
+    Order: {QCD: 0, EW: 4}
+    CKKW: 20
+    2->4:
+      NLO_Mode: MC@NLO
+      NLO_Order: {QCD: 1, EW: 0}
+      ME_Generator: Amegic
+      RS_ME_Generator: Comix
+      Loop_Generator: OpenLoops
+- 901 901 -> 13 -14 -11 12 901{1}:
+    Order: {QCD: 0, EW: 4}
+    CKKW: 20
+    2->4:
+      NLO_Mode: MC@NLO
+      NLO_Order: {QCD: 1, EW: 0}
+      ME_Generator: Amegic
+      RS_ME_Generator: Comix
+      Loop_Generator: OpenLoops
+- 901 901 -> 13 -14 -13 14 901{1}:
+    Order: {QCD: 0, EW: 4}
+    CKKW: 20
+    2->4:
+      NLO_Mode: MC@NLO
+      NLO_Order: {QCD: 1, EW: 0}
+      ME_Generator: Amegic
+      RS_ME_Generator: Comix
+      Loop_Generator: OpenLoops
+- 901 901 -> 13 -14 -15 16 901{1}:
+    Order: {QCD: 0, EW: 4}
+    CKKW: 20
+    2->4:
+      NLO_Mode: MC@NLO
+      NLO_Order: {QCD: 1, EW: 0}
+      ME_Generator: Amegic
+      RS_ME_Generator: Comix
+      Loop_Generator: OpenLoops
+- 901 901 -> 15 -16 -11 12 901{1}:
+    Order: {QCD: 0, EW: 4}
+    CKKW: 20
+    2->4:
+      NLO_Mode: MC@NLO
+      NLO_Order: {QCD: 1, EW: 0}
+      ME_Generator: Amegic
+      RS_ME_Generator: Comix
+      Loop_Generator: OpenLoops
+- 901 901 -> 15 -16 -13 14 901{1}:
+    Order: {QCD: 0, EW: 4}
+    CKKW: 20
+    2->4:
+      NLO_Mode: MC@NLO
+      NLO_Order: {QCD: 1, EW: 0}
+      ME_Generator: Amegic
+      RS_ME_Generator: Comix
+      Loop_Generator: OpenLoops
+- 901 901 -> 15 -16 -15 16 901{1}:
+    Order: {QCD: 0, EW: 4}
+    CKKW: 20
+    2->4:
+      NLO_Mode: MC@NLO
+      NLO_Order: {QCD: 1, EW: 0}
+      ME_Generator: Amegic
+      RS_ME_Generator: Comix
+      Loop_Generator: OpenLoops
+
+SELECTORS:
+- VariableSelector:
+    Variable: PT
+    Flavs: 90
+    Ranges: [[5.0, E_CMS], [5.0, E_CMS]]
+    Ordering: [PT_UP]
+- [Mass, 11, -11, 4.0, E_CMS]
+- [Mass, 13, -13, 4.0, E_CMS]
+- [Mass, 15, -15, 4.0, E_CMS]
+
+ANALYSIS: Rivet
+RIVET:
+  --analyses:
+    - ATLAS_2021_I1852328
