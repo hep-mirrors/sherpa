@@ -553,7 +553,7 @@ bool Sherpa::SummarizeRun()
 	//std::cout << sub_name << std::endl;
 	//need to weight with sampling probability. Why not sudakov? - bacause happens afterwards - but still more events needed for optimal eff events? no
 	double curr_xsec = dabs(xsec_map[sub_name])/efficiency_manual_map[sub_name][i]/sqrt(alpha_manual_map[sub_name][i]);
-	if (i==0) plain_xsec_sum += dabs(xsec_map[sub_name]);
+	if (i==0) plain_xsec_sum += dabs(xsec_map[sub_name]);//todo: this seems to be not called for max_epsilon=0.0
 	if (alpha_manual_map[sub_name][i]==-1) {
 	  msg_Info() << "WARNING: for " << sub_name << " there is no alpha value for i=" << i << " corresponding to eps=" << exp(log(10)*epsilon_values[i]) << std::endl;
 	}
@@ -621,7 +621,9 @@ bool Sherpa::SummarizeRun()
       if (number_map["n_gen_"+sub_name]==0) {
 	overhead_after = 0;
       }
-      sum_t_trial += (tges+(overhead_after+sudakov_efficiency[sub_name]*timing_statistics_det_sim))*selw;
+      overhead_after = max(overhead_after, tges);//if no gen, then at least time without full systematics
+      //there is no pilot run -> no tges needed
+      sum_t_trial += (overhead_after+sudakov_efficiency[sub_name]*timing_statistics_det_sim)*selw;
       sum_p_unw += sudakov_efficiency[sub_name]*selw;
 
       sum_xsec += xsec_map[sub_name]*sudakov_efficiency[sub_name];
@@ -672,7 +674,8 @@ bool Sherpa::SummarizeRun()
         sum_p_unw += efficiency_manual_map[sub_name][i]*sudakov_efficiency[sub_name]*curr_xsec;
         sum_p_eff_sign += xsec_map[sub_name]*sudakov_efficiency[sub_name];
 	//sum_complex += pow(xsec_map[sub_name]*sudakov_efficiency[sub_name],2)/(alpha_manual_fraction_map[sub_name][i]*dabs(xsec_map[sub_name])/alpha_manual_map[sub_name][i]*sudakov_efficiency[sub_name]);
-	sum_complex += dabs(xsec_map[sub_name])*sudakov_efficiency[sub_name]/(alpha_manual_fraction_map[sub_name][i]/alpha_manual_map[sub_name][i]);
+	sum_complex += pow(xsec_map[sub_name],2)*sudakov_efficiency[sub_name]/(alpha_manual_fraction_map[sub_name][i]*efficiency_manual_map[sub_name][i]*curr_xsec);
+	//sum_complex += dabs(xsec_map[sub_name])*sudakov_efficiency[sub_name]/(alpha_manual_fraction_map[sub_name][i]/alpha_manual_map[sub_name][i]);
       }
       mean_manual_fraction_alpha[i] = pow(sum_p_eff_sign,2)/(sum_p_unw*sum_complex);
       mean_manual_fraction_events[i] = 60*60*24/(sum_t_trial/sum_p_unw);
