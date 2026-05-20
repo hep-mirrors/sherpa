@@ -436,6 +436,13 @@ namespace LHEH5 {
   // found.
   std::string MapSherpaScalesToPepperSpec(const std::string& sherpa_scales)
   {
+    // Sherpa's bare-named core scale setters. "Default" replicates
+    // Sherpa's Default_Core_Scale on the Pepper side, currently only
+    // implemented for hh collisions.
+    static const std::regex default_pattern{R"(^\s*Default\s*$)"};
+    if (std::regex_match(sherpa_scales, default_pattern))
+      return "Sherpa_default_hh";
+
     // Accept either VAR{X} or VAR{X}{X}: Pepper carries a single μ²,
     // so a one-arg form is unambiguous, and a two-arg form is only
     // synced when μ_F and μ_R agree (otherwise we'd silently collapse
@@ -524,10 +531,10 @@ namespace LHEH5 {
     if (effective != sherpa_scales)
       msg_Info() << " (core scale \"" << effective << "\")";
     msg_Info() << " onto one of Pepper's hard-coded scale setters "
-                  "(m_Z^2, m_W^2, m_t^2, H_Tp^2, H_Tp^2/2, H_T^2/2, "
-                  "H_TM^2/2). This does NOT affect physics, since "
-                  "Sherpa reweights each event to its own scale, but "
-                  "Pepper's unweighting efficiency may be reduced. "
+                  "(m_Z^2, m_W^2, m_t^2, H_Tp^2, H_Tp^2/2, H_T^2/2, H_TM^2/2, "
+		  "Sherpa_default_hh). This does NOT affect physics, "
+                  "since Sherpa reweights each event to its own scale, "
+                  "but Pepper's unweighting efficiency may be reduced. "
                   "Please contact the Pepper authors if you need a "
                   "closer match for your setup.\n";
   }
