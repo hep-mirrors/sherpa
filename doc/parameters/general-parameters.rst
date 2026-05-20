@@ -533,6 +533,8 @@ The following formats are currently available:
   not suited to communicate enough information for meaningful parton
   showering on top of multiparton final states.
 
+.. _HDF5:
+
 :option:`HDF5`
   Generates output in LHEH5 format :cite:`Bothmann:2023ozs`,
   which is based on HDF5.
