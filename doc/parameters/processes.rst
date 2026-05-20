@@ -766,20 +766,40 @@ each sub-sample (e.g. 2-jet vs. 3-jet).
 
 .. _Parton-level event files:
 
-Parton-level event files
-========================
+Parton-level events from external sources
+=========================================
 
 Instead of generating parton-level events internally,
-Sherpa can instead read them from event files.
-These can come from a separate parton-level Sherpa run,
-using ``EVENT_OUTPUT: "HDF5[events]"`` (see :ref:`HDF5`),
-or from an external parton-level event generator,
-such as Pepper :cite:`Bothmann:2023gew`.
-Using pre-generated parton-level event files
-can speed up event generation significantly,
+Sherpa can also obtain them from an external source.
+This source can be a set of pre-generated event files,
+produced for example
+by the parton-level event generator Pepper :cite:`Bothmann:2023gew`,
+or even by a separate parton-level Sherpa run
+using ``EVENT_OUTPUT: "HDF5[events]"`` (see :ref:`HDF5`).
+Alternatively, the source can be an in-memory stream supplied at run time
+transparently by an external parton-level event generator library;
+the only option currently for this is Pepper,
+for this use case interfaced as an external library.
+Either route can speed up event generation significantly,
 because the parton-level part of the pipeline is typically
-the most expensive one, in particular when generating unweighted events,
+the most expensive one, in particular when generating unweighted events
 and/or at high jet multiplicities :cite:`Bothmann:2022thx`.
+
+The two corresponding settings,
+:ref:`Event_Files` and :ref:`Event_Source`,
+are aliases that select the same underlying reader machinery
+and accept the same ``<Type>[<args>]`` syntax.
+The split exists only for documentation clarity:
+use ``Event_Files`` when the parton-level events live in files on disk,
+and ``Event_Source`` when they are produced on-the-fly
+by an external library hooked into the current run.
+
+.. note::
+
+   ``PRINT_MPI_XS: true`` cannot currently be used
+   when using parton-level events from external sources.
+   Use ``PRINT_MPI_XS: false`` in MPI configurations
+   when using :ref:`Event_Files` or :ref:`Event_Source`.
 
 .. contents::
    :local:
@@ -803,3 +823,107 @@ from two input files:
    - 93 93 -> 11 -11 93{1}:
        2->3:
          Event_Files: HDF5[events.j1.1.hdf5,events.j1.2.hdf5]
+
+.. _Event_Source:
+
+Event_Source
+------------
+
+Use ``Event_Source`` to draw parton-level events
+from an external generator hooked into the current run
+rather than from files on disk.
+The only supported source so far is ``Pepper`` :cite:`Bothmann:2023gew`,
+which Sherpa drives through an in-memory pipeline:
+Pepper fills a buffer of unweighted parton-level events,
+Sherpa consumes them, and the next buffer is refilled in the background
+while events are being read.
+This in particular allows to offload the bottleneck of parton-level
+event generation to accelerators such as GPU via Pepper,
+which can be compiled for various such back-ends.
+Sherpa must be configured against an installation of Pepper
+that exposes the public C++ interface
+(``-DSHERPA_ENABLE_HDF5=ON`` and a Pepper build discoverable via ``CMAKE_PREFIX_PATH``).
+
+The general syntax is
+
+.. code-block:: yaml
+
+   Event_Source: Pepper[<process_spec>]
+
+where ``<process_spec>`` is a string that Pepper's process parser
+recognises (see Pepper's documentation for details).
+In most cases, however,
+the process is already fully determined
+by the surrounding Sherpa process declaration,
+so the explicit specification can be omitted:
+
+.. code-block:: yaml
+
+   Event_Source: Pepper
+
+When the bare form is used,
+Sherpa derives the Pepper process specification
+from the flavours of the current process
+and forwards it to Pepper automatically.
+Two cases are distinguished:
+
+- If both initial-state flavours
+  are Sherpa's "jet" container (``93``, i.e. proton beams),
+  Sherpa emits one of Pepper's compound process names
+  (``ppjj``, ``ppee``, ``ppev``, ``ppvv``, ``pptt``, ...),
+  with one trailing ``j`` appended for each outgoing jet (``93``).
+  For example, ``93 93 -> 11 -11 93 93`` becomes ``ppeejj``.
+  Compound names map to Pepper's bundled process-data files
+  that already sum over the contributing partonic channels.
+
+- Otherwise, Sherpa emits a partonic-channel specification
+  such as ``u ub -> Z g``,
+  built directly from the signed PDG codes of ``m_flavs``.
+
+If the derived final state cannot be mapped onto one of Pepper's
+supported compound names (e.g. a muon pair instead of an electron pair),
+Sherpa aborts with a descriptive error
+and asks the user to fall back to the explicit ``Pepper[<process_spec>]``
+form, or to switch to a partonic-channel process declaration.
+
+For a Drell-Yan + 1 jet sample backed by Pepper,
+the run card simply reads:
+
+.. code-block:: yaml
+
+   - 93 93 -> 11 -11 93{1}:
+       2->3:
+         Event_Source: Pepper
+
+Sherpa keeps the two sides in sync automatically:
+the beam energy, the PDF set and member,
+the EW input scheme and its parameters,
+the heavy-particle pole masses and widths,
+and the lepton-pair invariant-mass cuts implied by
+:option:`SELECTOR` ``Mass`` entries
+are all forwarded to Pepper at startup.
+Sherpa's ``SCALES`` choice is also best-effort aligned
+with Pepper's hard-coded :math:`\mu^2` setters
+(see Pepper's ``main.mu2``);
+mismatches do not change physics
+(Sherpa reweights every event to its own scale),
+but reduce the overall unweighting efficiency.
+
+The following additional top-level settings tune the Pepper backend
+shared by all processes that use `Event_Source: Pepper`:
+
+:option:`PEPPER_CACHE_SIZE`
+   Number of events kept in each in-memory buffer.
+   Pepper fills one buffer of this size at a time,
+   so larger values amortise the per-batch overhead
+   at the cost of higher memory use.
+   Default: ``10000``.
+
+:option:`PEPPER_ASYNC_FILL`
+   If ``true``, the next buffer is filled on a worker thread
+   while Sherpa consumes events from the current buffer.
+   This can hide Pepper's fill latency,
+   in particular when Pepper runs on a GPU.
+   At most one fill is ever in flight per reader,
+   so Pepper itself is never re-entered concurrently.
+   Default: ``false``.
