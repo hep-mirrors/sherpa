@@ -426,33 +426,57 @@ namespace LHEH5 {
 
   // Try to map Sherpa's SCALES string onto one of Pepper's hard-coded
   // μ² scale setters. Pepper only ships a handful (m_Z^2, m_W^2,
-  // m_t^2, and several H_T variants), so an exact match is only
-  // possible for the simplest Sherpa choices — typically
-  // VAR{sqr(<mass>)}{sqr(<mass>)} with <mass> close to M_Z, M_W or
-  // M_t. The dynamic H_T-style scales differ in normalization between
-  // Sherpa (factors of /4) and Pepper (/2), so we don't try to map
-  // them — that's an instance of the warning case below. Returns the
-  // Pepper spec string on success, or an empty string when no clean
-  // match was found.
+  // m_t^2, H_Tp^2, H_Tp^2/2, H_T^2/2, H_TM^2/2), so we recognise the
+  // two simplest Sherpa forms: VAR{sqr(<mass>)}{sqr(<mass>)} for the
+  // fixed-mass cases, and VAR{H_X[/2]}{H_X[/2]} for the H_T-style
+  // ones where the divisor matches Pepper's hard-coded /2. Sherpa's
+  // H_T scales can be normalised with other factors (e.g. /4); those
+  // fall through to the warning case below. Returns the Pepper spec
+  // string on success, or an empty string when no clean match was
+  // found.
   std::string MapSherpaScalesToPepperSpec(const std::string& sherpa_scales)
   {
-    static const std::regex var_sqr_pattern{
-      R"(^\s*VAR\s*\{\s*sqr\(\s*([0-9.eE+-]+)\s*\)\s*\}\s*)"
-      R"(\{\s*sqr\(\s*([0-9.eE+-]+)\s*\)\s*\})"};
-    std::smatch m;
-    if (!std::regex_search(sherpa_scales, m, var_sqr_pattern)) return {};
-    const double muF = std::stod(m[1].str());
-    const double muR = std::stod(m[2].str());
-    // muF and muR must agree before we treat this as a single
-    // "fixed mass squared" choice; otherwise we'd silently collapse a
+    // Both arguments of VAR{...}{...} must agree before we treat this
+    // as a single μ² choice; otherwise we'd silently collapse a
     // genuine factorisation/renormalisation split.
-    if (std::abs(muF - muR) > 1e-6 * std::max(muF, muR)) return {};
-    auto close = [&](double mass) {
-      return std::abs(muR - mass) < 1e-2 * mass;
-    };
-    if (close(ATOOLS::Flavour(kf_Z).Mass()))     return "m_Z^2";
-    if (close(ATOOLS::Flavour(kf_Wplus).Mass())) return "m_W^2";
-    if (close(ATOOLS::Flavour(kf_t).Mass()))     return "m_t^2";
+    static const std::regex var_pattern{
+      R"(^\s*VAR\s*\{\s*([^{}]*?)\s*\}\s*\{\s*([^{}]*?)\s*\})"};
+    std::smatch m;
+    if (!std::regex_search(sherpa_scales, m, var_pattern)) return {};
+    const std::string arg{m[1].str()};
+    if (arg != m[2].str()) return {};
+
+    // Fixed mass squared: sqr(N). Compare against the Sherpa pole
+    // masses for the bosons/top that Pepper hard-codes.
+    static const std::regex sqr_pattern{
+      R"(^sqr\(\s*([0-9.eE+-]+)\s*\)$)"};
+    std::smatch sm;
+    if (std::regex_match(arg, sm, sqr_pattern)) {
+      const double mu2 = std::stod(sm[1].str());
+      auto close = [&](double mass) {
+        return std::abs(mu2 - mass) < 1e-2 * mass;
+      };
+      if (close(ATOOLS::Flavour(kf_Z).Mass()))     return "m_Z^2";
+      if (close(ATOOLS::Flavour(kf_Wplus).Mass())) return "m_W^2";
+      if (close(ATOOLS::Flavour(kf_t).Mass()))     return "m_t^2";
+      return {};
+    }
+
+    // Dynamic H_T-like scales: VAR{H_X[/2]}. Pepper offers H_Tp^2,
+    // H_Tp^2/2, H_T^2/2 and H_TM^2/2 — no half-less variants of H_T
+    // or H_TM.
+    static const std::regex ht_pattern{
+      R"(^(H_Tp2|H_T2|H_TM2)\s*(/\s*2)?$)"};
+    std::smatch hm;
+    if (std::regex_match(arg, hm, ht_pattern)) {
+      const std::string var{hm[1].str()};
+      const bool halved{hm[2].matched};
+      if (var == "H_Tp2") return halved ? "H_Tp^2/2" : "H_Tp^2";
+      if (var == "H_T2"  && halved) return "H_T^2/2";
+      if (var == "H_TM2" && halved) return "H_TM^2/2";
+      return {};
+    }
+
     return {};
   }
 
