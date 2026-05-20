@@ -15,7 +15,7 @@ sigma3(ATOOLS::TCMatrix<Scalar>(2, SComplex(0.0)))  {
 
 template<class Scalar>
 ATOOLS::TCMatrix<Scalar> METOOLS::PauliVector<Scalar>::operator[](int i) const {
-  if (i>3) THROW(fatal_error, "There are only four Pauli matrices!");
+  if (i>3) THROW(fatal_error, "There are only four Pauli matrices!")
   if (i==0) return sigma0;
   if (i==1) return sigma1;
   if (i==2) return sigma2;
