@@ -1326,5 +1326,20 @@ Cluster_Amplitude *Single_Process::Cluster
       msg_Debugging()<<*ampl<<"\n";
     return ampls.front()->CopyAll();
   }
-  return nullptr;
+    msg_Debugging() << "setting dummy ampl" << std::endl;
+      Cluster_Amplitude *ampl(Cluster_Amplitude::New());
+      ampl->SetNIn(m_nin);
+      ampl->SetOrderQCD(MaxOrder(0));
+	  ampl->SetOrderEW(MaxOrder(1));
+      for (size_t i(0);i<m_nin;++i)
+	    ampl->CreateLeg(-p_int->Momenta()[i],m_flavs[i].Bar(),ColorID(0,0));
+     for(size_t i(m_nin);i<m_nin+m_nout;++i)
+	    ampl->CreateLeg(p_int->Momenta()[i],m_flavs[i],ColorID(0,0));
+     ampl->SetProc(this);
+     ampl->SetMS(p_gen);
+     ampl->SetMuF2(100*100);
+     ampl->SetMuR2(100*100);
+     ampl->SetMuQ2(100*100);
+    msg_Debugging() << *ampl << std::endl;
+     return ampl;
 }

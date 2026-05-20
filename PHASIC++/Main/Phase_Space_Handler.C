@@ -95,7 +95,6 @@ Phase_Space_Handler::Differential(Process_Integrator *const process,
   }
   // phase space trigger, calculate and construct weights
   if (process->Process()->Trigger(p_lab)) {
-    if (!p_active->Process()->Selector()->Pass()) return 0.0;
     if (p_point) {
       if (process->Process()->EventReader()->Compute()==1) {
 	// SHERPA::Variation_Weights *variationweights(process->Process()->VariationWeights());

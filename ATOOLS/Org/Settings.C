@@ -146,6 +146,18 @@ Settings::Settings(int argc, char* argv[])
 Settings::Settings(std::istream &s)
 {
   m_yamlreaders.emplace_back(std::make_unique<Yaml_Reader>(s));
+
+  // Ensure that the Decaydata.yaml is loaded
+  const auto files = GetConfigFiles();
+  if (files.empty()) {
+    msg_Out() << Strings::NoConfigFilesWarning;
+  } else {
+    for (auto it = files.rbegin(); it != files.rend(); ++it) {
+      const std::string path {is_absolute(*it) ? "" : GetPath()};
+      m_yamlreaders.emplace_back(new Yaml_Reader {path, *it});
+    }
+  }
+
   Settings_Keys tagkeys{ Setting_Key{"TAGS"} };
   for (auto it = m_yamlreaders.rbegin(); it != m_yamlreaders.rend(); ++it) {
     const auto tags = (*it)->GetKeys(tagkeys);

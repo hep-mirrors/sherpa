@@ -175,7 +175,7 @@ Perturbative_Interface::DefineInitialConditions(ATOOLS::Blob* blob,
     m_fails_Ampls++;
     return Return_Value::New_Event;
   }
-  if (p_ampl->Leg(0)->Mom()[3]*p_ampl->Leg(1)->Mom()[3]>0.0) {
+  if (p_ampl->Leg(0)->Mom()[3]*p_ampl->Leg(1)->Mom()[3]>0.0 && (p_ampl->Leg(0)->Flav().StrongCharge() || p_ampl->Leg(1)->Flav().StrongCharge())) {
     m_fails_Moms++;
     return Return_Value::New_Event;
   }

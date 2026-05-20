@@ -625,7 +625,7 @@ bool Initialization_Handler::InitializeTheFramework(int nr)
     okay = okay && InitializeTheHardDecays();
     okay = okay && InitializeTheMatrixElements();
     okay = okay && InitializeTheBeamRemnants();
-
+    okay = okay && InitializeTheFragmentation();
     okay = okay && InitializeTheHadronDecays();
     okay = okay && InitializeTheSoftPhotons();
     okay = okay && InitializeTheReweighting(Variations_Mode::nominal_only);

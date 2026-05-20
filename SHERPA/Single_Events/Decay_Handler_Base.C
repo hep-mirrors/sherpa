@@ -271,7 +271,7 @@ void Decay_Handler_Base::TreatInitialBlob(ATOOLS::Blob* blob,
     throw Return_Value::Retry_Event;
   }
   for (size_t i(0); i<blob->NOutP(); ++i)
-    if (blob->OutParticle(i)->DecayBlob())
+    if (blob->OutParticle(i)->DecayBlob() && blob->OutParticle(i)->DecayBlob()->Type()!=btp::Signal_Process)
       blob->OutParticle(i)->DecayBlob()
           ->AddData("p_actual",
                     new Blob_Data<Vec4D>(blob->OutParticle(i)->Momentum()));
