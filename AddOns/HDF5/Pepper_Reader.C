@@ -945,7 +945,7 @@ namespace LHEH5 {
       s_objects.push_back(this);
 
       // The user may either pass an explicit Pepper process spec via
-      // `Event_Files: Pepper[<spec>]`, or write a bare `Event_Files:
+      // `Event_Source: Pepper[<spec>]`, or write a bare `Event_Source:
       // Pepper` and let us derive it from the surrounding Sherpa process
       // (forwarded as KF codes in `m_flavours` by Process_Base).
       const std::string spec {m_files.empty()

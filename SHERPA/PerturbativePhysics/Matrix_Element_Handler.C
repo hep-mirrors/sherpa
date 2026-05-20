@@ -867,7 +867,8 @@ void Matrix_Element_Handler::ReadFinalStateMultiSpecificProcessSettings(
     else if (subkey == "Helicity_Scheme")    ExtractMPvalues(value, range, nf, args.pbi.m_vhls);
     else if (subkey == "Print_Graphs")       ExtractMPvalues(value, range, nf, args.pbi.m_vgpath);
     else if (subkey == "Name_Suffix")        ExtractMPvalues(value, range, nf, args.pbi.m_vaddname);
-    else if (subkey == "Event_Files")        ExtractMPvalues(value, range, nf, args.pbi.m_vfiles);
+    else if (subkey == "Event_Files" || subkey == "Event_Source")
+      ExtractMPvalues(value, range, nf, args.pbi.m_vfiles);
     else if (subkey == "Special")            ExtractMPvalues(value, range, nf, args.pbi.m_vspecial);
     else if (subkey == "Enable_MHV")         ExtractMPvalues(value, range, nf, args.pbi.m_vamegicmhv);
     else if (subkey == "Min_N_TChannels")    ExtractMPvalues(value, range, nf, args.pbi.m_vntchan);
@@ -882,7 +883,8 @@ void Matrix_Element_Handler::ReadFinalStateMultiSpecificProcessSettings(
     else if (subkey == "NLO_Part")           ExtractMPvalues(value, range, nf, args.pbi.m_vnlopart);
     else if (subkey == "NLO_Order")          ExtractMPvalues(value, range, nf, args.pbi.m_vnlocpl);
     else if (subkey == "Subdivide_Virtual")  ExtractMPvalues(value, range, nf, args.pbi.m_vnlosubv);
-    else if (subkey == "Associated_Contributions") ExtractMPvalues(value, range, nf, args.pbi.m_vasscontribs);
+    else if (subkey == "Associated_Contributions")
+      ExtractMPvalues(value, range, nf, args.pbi.m_vasscontribs);
     else if (subkey == "ME_Generator")       ExtractMPvalues(value, range, nf, args.pbi.m_vmegen);
     else if (subkey == "RS_ME_Generator")    ExtractMPvalues(value, range, nf, args.pbi.m_vrsmegen);
     else if (subkey == "Loop_Generator")     ExtractMPvalues(value, range, nf, args.pbi.m_vloopgen);
