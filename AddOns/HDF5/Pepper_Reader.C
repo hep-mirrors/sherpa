@@ -436,15 +436,16 @@ namespace LHEH5 {
   // found.
   std::string MapSherpaScalesToPepperSpec(const std::string& sherpa_scales)
   {
-    // Both arguments of VAR{...}{...} must agree before we treat this
-    // as a single μ² choice; otherwise we'd silently collapse a
-    // genuine factorisation/renormalisation split.
+    // Accept either VAR{X} or VAR{X}{X}: Pepper carries a single μ²,
+    // so a one-arg form is unambiguous, and a two-arg form is only
+    // synced when μ_F and μ_R agree (otherwise we'd silently collapse
+    // a genuine factorisation/renormalisation split).
     static const std::regex var_pattern{
-      R"(^\s*VAR\s*\{\s*([^{}]*?)\s*\}\s*\{\s*([^{}]*?)\s*\})"};
+      R"(^\s*VAR\s*\{\s*([^{}]*?)\s*\}(?:\s*\{\s*([^{}]*?)\s*\})?)"};
     std::smatch m;
     if (!std::regex_search(sherpa_scales, m, var_pattern)) return {};
     const std::string arg{m[1].str()};
-    if (arg != m[2].str()) return {};
+    if (m[2].matched && arg != m[2].str()) return {};
 
     // Fixed mass squared: sqr(N). Compare against the Sherpa pole
     // masses for the bosons/top that Pepper hard-codes.
@@ -480,6 +481,23 @@ namespace LHEH5 {
     return {};
   }
 
+  // Resolve the SCALES string that actually drives the (unclustered)
+  // hard process. With SCALES: METS, the shower decides emission
+  // scales but the core process — which is all Pepper sees — uses
+  // CORE_SCALE instead. Honour an inline `METS[C:VAR{...}]` override
+  // first, then fall back to the global MEPS.CORE_SCALE setting.
+  std::string ResolveSherpaCoreScale(const std::string& sherpa_scales)
+  {
+    static const std::regex mets_prefix{R"(^\s*METS\b)"};
+    if (!std::regex_search(sherpa_scales, mets_prefix)) return sherpa_scales;
+    static const std::regex inline_c{
+      R"(\[[^\]]*\bC\s*:\s*([^\s,\]]+))"};
+    std::smatch m;
+    if (std::regex_search(sherpa_scales, m, inline_c)) return m[1].str();
+    return ATOOLS::Settings::GetMainSettings()["MEPS"]["CORE_SCALE"]
+      .GetScalarWithOtherDefault<std::string>("Default");
+  }
+
   // Align Pepper's μ² scale setter with Sherpa's SCALES setting when
   // we can recognise it; otherwise warn. Pepper's scale choice does
   // not change physics, since Sherpa reweights each event to its own
@@ -489,18 +507,23 @@ namespace LHEH5 {
   {
     const std::string sherpa_scales{
       ATOOLS::Settings::GetMainSettings()["SCALES"].Get<std::string>()};
-    const std::string pepper_spec{
-      MapSherpaScalesToPepperSpec(sherpa_scales)};
+    const std::string effective{ResolveSherpaCoreScale(sherpa_scales)};
+    const std::string pepper_spec{MapSherpaScalesToPepperSpec(effective)};
     if (!pepper_spec.empty()) {
       settings.set_scale_setter(pepper_spec);
       msg_Info() << "Pepper_Interface: scale setter synced to '"
                  << pepper_spec << "' (from SCALES=\""
-                 << sherpa_scales << "\").\n";
+                 << sherpa_scales << "\"";
+      if (effective != sherpa_scales)
+        msg_Info() << ", core scale \"" << effective << "\"";
+      msg_Info() << ").\n";
       return;
     }
     msg_Info() << om::brown << om::bold << "WARNING" << om::reset
-               << ": Could not map Sherpa SCALES=\"" << sherpa_scales
-               << "\" onto one of Pepper's hard-coded scale setters "
+               << ": Could not map Sherpa SCALES=\"" << sherpa_scales << "\"";
+    if (effective != sherpa_scales)
+      msg_Info() << " (core scale \"" << effective << "\")";
+    msg_Info() << " onto one of Pepper's hard-coded scale setters "
                   "(m_Z^2, m_W^2, m_t^2, H_Tp^2, H_Tp^2/2, H_T^2/2, "
                   "H_TM^2/2). This does NOT affect physics, since "
                   "Sherpa reweights each event to its own scale, but "
