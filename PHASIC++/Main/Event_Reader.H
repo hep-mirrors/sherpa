@@ -12,6 +12,11 @@ namespace PHASIC {
 
   struct Event_Reader_Key {
     std::vector<std::string> m_files;
+    // Process metadata propagated from Process_Base so readers can derive
+    // backend-specific identifiers (e.g. Pepper's process spec) when the
+    // user does not pass them explicitly via `Event_Files: <type>[<args>]`.
+    std::vector<long int> m_flavours;
+    std::size_t m_nin {0};
   };// end of struct Event_Reader_Key
 
   class Event_Reader {
@@ -21,19 +26,22 @@ namespace PHASIC {
     ATOOLS::NLO_subevt        *p_sub;
 
     std::vector<std::string> m_files;
+    std::vector<long int> m_flavours;
+    std::size_t m_nin;
 
     double m_totalxs, m_unitwgt;
     int    m_compute;
-    
+
   public:
-    
+
     typedef ATOOLS::Getter_Function
     <Event_Reader,Event_Reader_Key> Getter_Function;
-    
+
   public:
 
     inline Event_Reader(const Event_Reader_Key &key):
-      m_files(key.m_files), m_compute(1), p_ampl(NULL), p_sub(NULL) {}
+      m_files(key.m_files), m_flavours(key.m_flavours), m_nin(key.m_nin),
+      m_compute(1), p_ampl(NULL), p_sub(NULL) {}
     virtual ~Event_Reader() = default;
 
     virtual void PrintStatistics(std::ostream&) {};

@@ -1,6 +1,7 @@
 #include "ATOOLS/Org/CXXFLAGS.H"
 
 #include <mpi.h>
+#include <algorithm>
 #include <atomic>
 #include <cmath>
 #include <condition_variable>
@@ -539,6 +540,114 @@ namespace LHEH5 {
                   "closer match for your setup.\n";
   }
 
+  // Map a signed Sherpa/PDG KF code onto the particle-name string that
+  // Pepper's process-spec parser expects (see Pepper's
+  // `string_from_particle`). Sherpa's Flavour::IDName disagrees with
+  // Pepper on a handful of names (e.g. "G" vs "g", "W+" vs "W"), so we
+  // do the conversion off the numeric code instead.
+  std::string KfcodeToPepperName(long int kf)
+  {
+    const long int akf = std::abs(kf);
+    if (akf == kf_gluon) return "g";
+    if (akf == kf_Z)     return "Z";
+    if (akf == kf_Wplus) return (kf > 0) ? "W" : "W-";
+    std::string base;
+    bool has_charge = false; // charged leptons get explicit +/- in Pepper
+    switch (akf) {
+      case kf_d:     base = "d";    break;
+      case kf_u:     base = "u";    break;
+      case kf_s:     base = "s";    break;
+      case kf_c:     base = "c";    break;
+      case kf_b:     base = "b";    break;
+      case kf_t:     base = "t";    break;
+      case kf_e:     base = "e";    has_charge = true; break;
+      case kf_mu:    base = "mu";   has_charge = true; break;
+      case kf_tau:   base = "tau";  has_charge = true; break;
+      // Pepper's `particle_from_string` accepts the two-character
+      // "v<flavour>" forms but errors on the longer "vmu"/"vtau" forms
+      // that `string_from_particle` happens to emit, so we use the
+      // round-tripping forms here.
+      case kf_nue:   base = "ve";   break;
+      case kf_numu:  base = "vm";   break;
+      case kf_nutau: base = "vt";   break;
+      default:
+        THROW(not_implemented,
+              "Cannot translate KF code " + ToString(kf)
+              + " to a Pepper particle name.");
+    }
+    if (kf >= 0) {
+      if (has_charge) base += "-";
+      return base;
+    }
+    return has_charge ? base + "+" : base + "b";
+  }
+
+  // Build the Pepper process-spec string from the signed KF codes that
+  // Process_Base forwards via Event_Reader_Key.
+  //
+  // Two cases:
+  //  - Sherpa's "jet" container (kf=93) on both initial-state lines is
+  //    Pepper's "pp" beam: we emit a compound name like "ppee", "ppev",
+  //    "pptt", "ppjj", ..., which Pepper resolves to a process-data file
+  //    that already sums over the partonic channels. Outgoing kf=93s are
+  //    counted and turn into trailing 'j' characters.
+  //  - Otherwise we fall back to a partonic-channel spec like
+  //    "u ub -> Z g" assembled via `KfcodeToPepperName`.
+  std::string BuildPepperProcessSpec(const std::vector<long int>& flavours,
+                                     std::size_t nin)
+  {
+    if (flavours.size() < nin + 1 || nin == 0)
+      THROW(invalid_input,
+            "Pepper_Reader: cannot build a process spec from "
+            + ToString(flavours.size()) + " flavours with "
+            + ToString(nin) + " incoming.");
+
+    if (nin == 2 && flavours[0] == kf_jet && flavours[1] == kf_jet) {
+      std::size_t n_out_jets = 0;
+      std::vector<long int> rest;
+      for (std::size_t i = nin; i < flavours.size(); ++i) {
+        if (flavours[i] == kf_jet) ++n_out_jets;
+        else rest.push_back(flavours[i]);
+      }
+      std::sort(rest.begin(), rest.end());
+      std::string token;
+      if (rest.empty()) {
+        token = "";
+      } else if (rest == std::vector<long int>{-11, 11}) {
+        token = "ee";
+      } else if (rest == std::vector<long int>{-12, 12}) {
+        token = "vv";
+      } else if (rest == std::vector<long int>{-12, 11}
+                 || rest == std::vector<long int>{-11, 12}) {
+        token = "ev";
+      } else if (rest == std::vector<long int>{-6, 6}) {
+        token = "tt";
+      } else {
+        std::string outgoing;
+        for (auto kf : rest) {
+          if (!outgoing.empty()) outgoing += ' ';
+          outgoing += ToString(kf);
+        }
+        THROW(not_implemented,
+              "Cannot map Sherpa final-state flavours {" + outgoing
+              + "} (alongside kf_jet=93 incoming) onto a Pepper compound "
+              "process name. Supported compound finals are: (empty), "
+              "e+ e-, ve veb, e ve, t tb.");
+      }
+      std::string spec {"pp" + token};
+      spec.append(n_out_jets, 'j');
+      return spec;
+    }
+
+    std::string spec;
+    for (std::size_t i = 0; i < flavours.size(); ++i) {
+      if (i > 0) spec += ' ';
+      if (i == nin) spec += "-> ";
+      spec += KfcodeToPepperName(flavours[i]);
+    }
+    return spec;
+  }
+
   // Owns the once-per-process Pepper library bring-up and teardown.
   // A static weak_ptr deduplicates instances across Pepper_Reader
   // siblings (one per jet multiplicity); finalize fires when the
@@ -835,11 +944,14 @@ namespace LHEH5 {
       p_sub = new NLO_subevt();
       s_objects.push_back(this);
 
-      if (m_files.empty())
-        THROW(invalid_input,
-              "Pepper_Reader requires a process specification "
-              "(e.g. \"p p -> j j\") as the first entry in EVENT_INPUT.");
-      p_process = std::make_unique<Pepper::Process>(m_files.front());
+      // The user may either pass an explicit Pepper process spec via
+      // `Event_Files: Pepper[<spec>]`, or write a bare `Event_Files:
+      // Pepper` and let us derive it from the surrounding Sherpa process
+      // (forwarded as KF codes in `m_flavours` by Process_Base).
+      const std::string spec {m_files.empty()
+                                  ? BuildPepperProcessSpec(m_flavours, m_nin)
+                                  : m_files.front()};
+      p_process = std::make_unique<Pepper::Process>(spec);
 
       // The pipeline is primed lazily in WarmUp(), so that Pepper's
       // integration-grid optimisation and weight-maximum determination
