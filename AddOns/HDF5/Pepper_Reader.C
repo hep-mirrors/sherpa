@@ -2,6 +2,7 @@
 
 #include <mpi.h>
 #include <atomic>
+#include <cmath>
 #include <condition_variable>
 #include <deque>
 #include <functional>
@@ -9,6 +10,7 @@
 #include <iostream>
 #include <memory>
 #include <mutex>
+#include <regex>
 #include <stdexcept>
 #include <string>
 #include <thread>
@@ -422,6 +424,67 @@ namespace LHEH5 {
     }
   }
 
+  // Try to map Sherpa's SCALES string onto one of Pepper's hard-coded
+  // μ² scale setters. Pepper only ships a handful (m_Z^2, m_W^2,
+  // m_t^2, and several H_T variants), so an exact match is only
+  // possible for the simplest Sherpa choices — typically
+  // VAR{sqr(<mass>)}{sqr(<mass>)} with <mass> close to M_Z, M_W or
+  // M_t. The dynamic H_T-style scales differ in normalization between
+  // Sherpa (factors of /4) and Pepper (/2), so we don't try to map
+  // them — that's an instance of the warning case below. Returns the
+  // Pepper spec string on success, or an empty string when no clean
+  // match was found.
+  std::string MapSherpaScalesToPepperSpec(const std::string& sherpa_scales)
+  {
+    static const std::regex var_sqr_pattern{
+      R"(^\s*VAR\s*\{\s*sqr\(\s*([0-9.eE+-]+)\s*\)\s*\}\s*)"
+      R"(\{\s*sqr\(\s*([0-9.eE+-]+)\s*\)\s*\})"};
+    std::smatch m;
+    if (!std::regex_search(sherpa_scales, m, var_sqr_pattern)) return {};
+    const double muF = std::stod(m[1].str());
+    const double muR = std::stod(m[2].str());
+    // muF and muR must agree before we treat this as a single
+    // "fixed mass squared" choice; otherwise we'd silently collapse a
+    // genuine factorisation/renormalisation split.
+    if (std::abs(muF - muR) > 1e-6 * std::max(muF, muR)) return {};
+    auto close = [&](double mass) {
+      return std::abs(muR - mass) < 1e-2 * mass;
+    };
+    if (close(ATOOLS::Flavour(kf_Z).Mass()))     return "m_Z^2";
+    if (close(ATOOLS::Flavour(kf_Wplus).Mass())) return "m_W^2";
+    if (close(ATOOLS::Flavour(kf_t).Mass()))     return "m_t^2";
+    return {};
+  }
+
+  // Align Pepper's μ² scale setter with Sherpa's SCALES setting when
+  // we can recognise it; otherwise warn. Pepper's scale choice does
+  // not change physics, since Sherpa reweights each event to its own
+  // scale on the fly, but a large mismatch reduces Pepper's
+  // unweighting efficiency.
+  void SyncScaleSetter(Pepper::Initialization_settings& settings)
+  {
+    const std::string sherpa_scales{
+      ATOOLS::Settings::GetMainSettings()["SCALES"].Get<std::string>()};
+    const std::string pepper_spec{
+      MapSherpaScalesToPepperSpec(sherpa_scales)};
+    if (!pepper_spec.empty()) {
+      settings.set_scale_setter(pepper_spec);
+      msg_Info() << "Pepper_Interface: scale setter synced to '"
+                 << pepper_spec << "' (from SCALES=\""
+                 << sherpa_scales << "\").\n";
+      return;
+    }
+    msg_Info() << om::brown << om::bold << "WARNING" << om::reset
+               << ": Could not map Sherpa SCALES=\"" << sherpa_scales
+               << "\" onto one of Pepper's hard-coded scale setters "
+                  "(m_Z^2, m_W^2, m_t^2, H_Tp^2, H_Tp^2/2, H_T^2/2, "
+                  "H_TM^2/2). This does NOT affect physics, since "
+                  "Sherpa reweights each event to its own scale, but "
+                  "Pepper's unweighting efficiency may be reduced. "
+                  "Please contact the Pepper authors if you need a "
+                  "closer match for your setup.\n";
+  }
+
   // Owns the once-per-process Pepper library bring-up and teardown.
   // A static weak_ptr deduplicates instances across Pepper_Reader
   // siblings (one per jet multiplicity); finalize fires when the
@@ -460,6 +523,11 @@ namespace LHEH5 {
       // Forward Sherpa's heavy-particle masses and widths so Pepper
       // evaluates matrix elements at the same parameter point.
       SyncParticleProperties(settings);
+
+      // Best-effort alignment of Pepper's μ² scale setter with
+      // Sherpa's SCALES choice; mismatches are warned about, not
+      // fatal, because they only affect Pepper unweighting efficiency.
+      SyncScaleSetter(settings);
 
       // Translate Sherpa "Mass" selectors into Pepper's lepton-pair
       // invariant-mass cut. Pepper exposes a single (m2_min, m2_max)
