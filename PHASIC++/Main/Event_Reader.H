@@ -14,7 +14,8 @@ namespace PHASIC {
     std::vector<std::string> m_files;
     // Process metadata propagated from Process_Base so readers can derive
     // backend-specific identifiers (e.g. Pepper's process spec) when the
-    // user does not pass them explicitly via `Event_Files: <type>[<args>]`.
+    // user does not pass them explicitly via `Event_Files: <type>[<args>]`,
+    // or, equivalently, `Event_Source: <type>[<args>]`.
     std::vector<long int> m_flavours;
     std::size_t m_nin {0};
   };// end of struct Event_Reader_Key
