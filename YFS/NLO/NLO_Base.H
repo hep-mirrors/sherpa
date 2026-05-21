@@ -50,8 +50,9 @@ public:
   PHASIC::Cut_Data *p_cuts;
 
   double m_evts, m_recola_evts, m_ranTheta, m_ranPhi, m_real,m_ravg, m_rv, m_rvsub, m_eikeex, m_subloc;
-  int m_is_isr, m_zeroV, m_zeroRV, m_zeroRR, m_nonZeroRR;
+  int m_is_isr, m_zeroV, m_zeroRV, m_zeroRR, m_nonZeroRR, m_nonZeroRV;
   bool m_failcut;
+
 
   void Init(Flavour_Vector &flav, Vec4D_Vector &plab, Vec4D_Vector &born);
   void InitializeVirtual(const PHASIC::Process_Info& pi);
