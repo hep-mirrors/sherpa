@@ -10,6 +10,6 @@ So one will have to bump the versions of Fedora about every 6 months.
 
 To do it:
 1) Replace "fedoraX" in the .gitlab-ci.yaml with "fedoraY", Y=X+1. And create a MR.
-2) To trigger the image building, the commit should contain "FedoraDockerFileY" string.
+2) To trigger the image building, the commit should contain "FedoraDockerfileY" string.
    Alternatively one can wait till the next weekly build.
 3) One can optionally delete the older images from the registry.
