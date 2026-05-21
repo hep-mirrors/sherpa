@@ -11,6 +11,7 @@
 #include <iostream>
 #include <memory>
 #include <mutex>
+#include <optional>
 #include <regex>
 #include <stdexcept>
 #include <string>
@@ -540,6 +541,128 @@ namespace LHEH5 {
                   "closer match for your setup.\n";
   }
 
+  // Find a CKKW merging-scale value somewhere in the PROCESSES tree.
+  // CKKW is a per-process setting in Sherpa, but every merged process in
+  // the same sample must share the same merging scale, so the first
+  // non-empty value we encounter is representative. Returns nullopt if
+  // no process has CKKW set, i.e. merging is off.
+  std::optional<double> ReadCkkwMergingScale()
+  {
+    Settings& s {Settings::GetMainSettings()};
+    for (auto& proc : s["PROCESSES"].GetItems()) {
+      if (!proc.IsMap()) continue;
+      const auto keys = proc.GetKeys();
+      if (keys.size() != 1) continue;
+      auto procsettings = proc[keys[0]];
+      const std::string ckkw {procsettings["CKKW"]
+                                  .SetDefault<std::string>("")
+                                  .Get<std::string>()};
+      if (ckkw.empty()) continue;
+      try {
+        return std::stod(ckkw);
+      } catch (const std::exception&) {
+        THROW(invalid_input,
+              "Pepper_Reader: only a numeric CKKW value can be propagated "
+              "to Pepper, got \"" + ckkw + "\".");
+      }
+    }
+    return std::nullopt;
+  }
+
+  struct FastjetKtParams { double R; double y; };
+
+  // Parse a JET_CRITERION string of the form FASTJET[A:kt,R:<R>,y:<y>].
+  // Returns nullopt if the string is not a FASTJET criterion (e.g. the
+  // default shower-driven one); throws if it is FASTJET but uses an
+  // algorithm or arguments we cannot propagate to Pepper. Pepper hard-
+  // codes kt clustering in (η,φ) space, so anything other than A:kt
+  // would silently disagree with the host-side jet definition.
+  std::optional<FastjetKtParams>
+  ParseFastjetKtJetCriterion(const std::string& crit)
+  {
+    static const std::regex fastjet_pattern{
+      R"(^\s*FASTJET\s*\[\s*([^\]]*?)\s*\]\s*$)"};
+    std::smatch m;
+    if (!std::regex_match(crit, m, fastjet_pattern)) return std::nullopt;
+
+    auto strip = [](std::string& s) {
+      const auto first = s.find_first_not_of(" \t");
+      if (first == std::string::npos) { s.clear(); return; }
+      s.erase(0, first);
+      s.erase(s.find_last_not_of(" \t") + 1);
+    };
+
+    bool has_kt {false};
+    std::optional<double> R, y;
+    std::stringstream ss {m[1].str()};
+    std::string token;
+    while (std::getline(ss, token, ',')) {
+      strip(token);
+      if (token.empty()) continue;
+      const auto colon = token.find(':');
+      if (colon == std::string::npos)
+        THROW(invalid_input,
+              "Pepper_Reader: cannot parse JET_CRITERION token \""
+              + token + "\".");
+      std::string key {token.substr(0, colon)};
+      std::string val {token.substr(colon + 1)};
+      strip(key); strip(val);
+      if (key == "A") {
+        if (val != "kt")
+          THROW(not_implemented,
+                "Pepper_Reader: JET_CRITERION algorithm \"" + val
+                + "\" is not supported; only A:kt can be propagated to "
+                "Pepper.");
+        has_kt = true;
+      }
+      else if (key == "R") {
+        R = std::stod(val);
+      }
+      else if (key == "y" || key == "Y") {
+        y = std::stod(val);
+      }
+      else {
+        THROW(not_implemented,
+              "Pepper_Reader: unsupported JET_CRITERION argument \""
+              + key + "\"; only A, R, and y can be propagated to Pepper.");
+      }
+    }
+    if (!has_kt || !R || !y)
+      THROW(invalid_input,
+            "Pepper_Reader: JET_CRITERION must specify A:kt, R:<R>, and "
+            "y:<y> to be propagated to Pepper.");
+    return FastjetKtParams{*R, *y};
+  }
+
+  // When multi-jet merging is on (any PROCESSES entry has CKKW set),
+  // align Pepper's jet cut with Sherpa's so both sides use the same
+  // jet definition. Pepper only implements kt clustering in (η,φ), so
+  // we require JET_CRITERION: FASTJET[A:kt,R:<R>,y:<y>] and refuse to
+  // proceed otherwise — the default JET_CRITERION (the shower
+  // generator) has no Pepper-side counterpart and would silently
+  // disagree.
+  void SyncJetCuts(Pepper::Initialization_settings& settings)
+  {
+    const auto ckkw = ReadCkkwMergingScale();
+    if (!ckkw) return;
+    Settings& sherpa_settings {Settings::GetMainSettings()};
+    const std::string crit {
+        sherpa_settings["JET_CRITERION"].Get<std::string>()};
+    const auto kt = ParseFastjetKtJetCriterion(crit);
+    if (!kt)
+      THROW(not_implemented,
+            "Pepper_Reader: multi-jet merging is on (CKKW=" + ToString(*ckkw)
+            + "), but JET_CRITERION=\"" + crit + "\" cannot be propagated "
+            "to Pepper. Set JET_CRITERION: FASTJET[A:kt,R:<R>,y:<y>] in "
+            "the run card so the Sherpa and Pepper jet definitions agree.");
+    settings.set_pt_min(*ckkw);
+    settings.set_dR_min(kt->R);
+    settings.set_y_max(kt->y);
+    msg_Info() << "Pepper_Interface: jet cuts synced for CKKW merging "
+               << "(pT_min=" << *ckkw << ", dR_min=" << kt->R
+               << ", y_max=" << kt->y << ").\n";
+  }
+
   // Map a signed Sherpa/PDG KF code onto the particle-name string that
   // Pepper's process-spec parser expects (see Pepper's
   // `string_from_particle`). Sherpa's Flavour::IDName disagrees with
@@ -691,6 +814,11 @@ namespace LHEH5 {
       // Sherpa's SCALES choice; mismatches are warned about, not
       // fatal, because they only affect Pepper unweighting efficiency.
       SyncScaleSetter(settings);
+
+      // When CKKW multi-jet merging is active, the merging scale and
+      // the FastJet kt criterion define the Sherpa jet definition;
+      // forward them so Pepper's jet cuts agree.
+      SyncJetCuts(settings);
 
       // Translate Sherpa "Mass" selectors into Pepper's lepton-pair
       // invariant-mass cut. Pepper exposes a single (m2_min, m2_max)
