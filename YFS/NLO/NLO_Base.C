@@ -43,6 +43,7 @@ NLO_Base::NLO_Base() {
   m_zeroRR = 0;
   m_nonZeroRR = 0;
   m_zeroV = 0;
+  m_nonZeroRV=0;
   if (m_isr_debug || m_fsr_debug) {
     m_histograms2d["IFI_EIKONAL"] = new Histogram_2D(0, -1., 1., 20, 0, 5., 20);
     m_histograms2d["REAL_SUB"] =
@@ -126,6 +127,7 @@ NLO_Base::~NLO_Base() {
   msg_Out()<<"Total zero RV: "<<m_zeroRV<<std::endl;
   msg_Out()<<"Total zero RR: "<<m_zeroRR<<std::endl;
   msg_Out()<<"Total non-zero RR: "<<m_nonZeroRR<<std::endl;
+  msg_Out()<<"Total non-zero RV: "<<m_nonZeroRV<<std::endl;
   msg_Out()<<"Total events : "<<m_evts<<std::endl;
 }
 
@@ -408,7 +410,7 @@ double NLO_Base::CalculateReal(Vec4D k, int fsrcount) {
     return 0;
   }
   // if(fsrcount==0 || fsrcount==3) flux=1;
-  m_recola_evts += 1;
+  // m_recola_evts += 1;
   if (m_submode == submode::local)
     tot = (r * flux - subloc * m_born / m_rescale_alpha) / subloc;
   else if (m_submode == submode::global)
@@ -620,6 +622,7 @@ double NLO_Base::CalculateRealVirtual(Vec4D k, int fsrcount) {
     }
   }
   if (IsZero(tot)) m_zeroRV++;
+  else m_nonZeroRV++;
   return tot;
 }
 
@@ -643,7 +646,6 @@ double NLO_Base::CalculateRealReal() {
       int isFSR_i = (i >= nISR) ? 1 : 0;
       int isFSR_j = (j >= nISR) ? 1 : 0;
       rr += CalculateRealReal(k, kk, isFSR_i, isFSR_j);
-      m_nonZeroRR++;
       if (m_check_rr_sub) {
         // k*=2;
         // kk*=2;
@@ -660,6 +662,7 @@ double NLO_Base::CalculateRealReal() {
 }
 
 double NLO_Base::CalculateRealReal(Vec4D k1, Vec4D k2, int fsr1, int fsr2) {
+  // if(k1.E()<0.01 && k2.E() < 0.01 ) return 0;
   const double norm = 2 * pow(2 * M_PI, 6);
   Vec4D_Vector p(m_plab), pi(m_bornMomenta), pf(m_bornMomenta), plab(m_plab);
   Vec4D_Vector pp = p;
@@ -773,6 +776,7 @@ double NLO_Base::CalculateRealReal(Vec4D k1, Vec4D k2, int fsr1, int fsr2) {
   double r = p_realreal->Calc_R(p) / norm;
   if (p_realreal->FailCut()) {
     m_failcut = true;
+    m_zeroRR++;
     return 0;
   }
   if (IsBad(r) || IsBad(flux)) {
@@ -790,6 +794,7 @@ double NLO_Base::CalculateRealReal(Vec4D k1, Vec4D k2, int fsr1, int fsr2) {
     msg_Error() << "NNLO RR is NaN" << std::endl;
   }
   m_plab = plab;
+  if(!IsZero(tot)) m_nonZeroRR++;
   return tot;
 }
 
