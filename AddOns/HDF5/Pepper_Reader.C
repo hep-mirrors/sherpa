@@ -1009,14 +1009,17 @@ namespace LHEH5 {
     {
       if (m_warmed_up) return;
       m_warmed_up = true;
-      // First fill is always the warm-up; do it synchronously so the
-      // optimisation phase completes before Sherpa proceeds. Advance()
-      // will then promote it to the current buffer and kick off the
-      // first overlapped refill (async, if enabled).
-      const bool saved_async = m_async_fill;
-      m_async_fill = false;
+      // First fill is always the warm-up; we block until it completes so the
+      // optimisation phase finishes before Sherpa proceeds. With async fill
+      // enabled we must still route the job through the shared Fill_Worker
+      // FIFO — HDF5 is not thread-safe by default, and running this fill on
+      // the main thread can race with a sibling reader's worker-side fill
+      // already in flight (from a prior reader's Advance()). Submit and
+      // immediately wait so we serialize via the FIFO while preserving the
+      // synchronous semantics. Advance() then promotes the buffer and kicks
+      // off the first overlapped refill (async, if enabled).
       LaunchFill();
-      m_async_fill = saved_async;
+      WaitForFill();
       if (m_last_fill_result == 0) m_finished = true;
       else Advance();
     }
@@ -1043,12 +1046,12 @@ namespace LHEH5 {
     {
       WaitForFill();
       if (m_finished && !p_next) {
-        // Retry inline (synchronously): we are at a barrier, so there
-        // is no consumption to overlap with.
-        const bool saved_async = m_async_fill;
-        m_async_fill = false;
+        // Retry at the barrier: block until the fill completes. With async
+        // fill enabled we still route through the worker (see WarmUp's
+        // comment) — running this on the main thread can race with a sibling
+        // reader's worker-side fill, and HDF5 is not thread-safe.
         LaunchFill();
-        m_async_fill = saved_async;
+        WaitForFill();
         if (m_last_fill_result > 0) m_finished = false;
       }
     }
