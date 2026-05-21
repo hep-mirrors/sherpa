@@ -64,7 +64,7 @@ double RealVirtual::Calc_V(const ATOOLS::Vec4D_Vector &p, const double B,
     run_corr = 4. * dalpha * B;
   }
   p_loop_me->Calc(p, 1);
-  const double gammaborn = p_loop_me->ME_Born() / 2. / M_PI;
+  const double gammaborn = p_loop_me->ME_Born() / m_sym;
   // m_factor *= p_loop_me->ME_Born();
   switch (p_loop_me->Mode()) {
   case 0:
