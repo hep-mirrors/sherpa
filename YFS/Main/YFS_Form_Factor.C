@@ -944,8 +944,8 @@ DivArrD YFS_Form_Factor::BVirtTEps(YFS::Dipole &d, double kmax){
 double YFS_Form_Factor::R1(YFS::Dipole &d){
   Vec4D p1,p2;
   if(d.Type()==dipoletype::initial){
-    p1 = d.GetNewMomenta(0);
-    p2 = d.GetNewMomenta(1);
+    p1 = d.GetBornMomenta(0);
+    p2 = d.GetBornMomenta(1);
   }
   else if(d.Type()==dipoletype::final){
     p1 = d.GetBornMomenta(0);
