@@ -183,6 +183,10 @@ double NLO_Base::CalculateNLO() {
   result += CalculateRealReal();
   result += CalculateRealVirtual();
   result += CalculateVV();
+  if(result>1e10){
+    msg_Error()<<"Perturbative corrections to large!"<<std::endl;
+    return 0;
+  }
   return result;
 }
 
@@ -473,8 +477,8 @@ double NLO_Base::CalculateRealVirtual() {
         continue;
       CheckRealVirtualSub(k);
     }
-    if(CheckPhotonForReal(k)) realvirtual += CalculateRealVirtual(k, 0);
-    else m_zeroRV++;
+    realvirtual += CalculateRealVirtual(k, 0);
+    // else m_zeroRV++;
   }
   for (auto k : m_FSRPhotons) {
     if (m_check_rv) {
@@ -789,7 +793,7 @@ double NLO_Base::CalculateRealReal(Vec4D k1, Vec4D k2, int fsr1, int fsr2) {
   m_recola_evts += 1;
   double fullsub =
       (-subloc2 * real1 - subloc1 * real2 - subloc1 * subloc2 * m_born);
-  tot = (r * flux + fullsub / m_rescale_alpha) / sub1 / sub2;
+  tot = (r * flux *flux + fullsub / m_rescale_alpha) / sub1 / sub2;
   if (IsBad(tot)) {
     msg_Error() << "NNLO RR is NaN" << std::endl;
   }
