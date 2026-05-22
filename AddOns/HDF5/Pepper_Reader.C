@@ -788,6 +788,11 @@ namespace LHEH5 {
       Pepper::Initialization_settings settings(s_argc, s_argv);
       settings.disable_mpi_initialization();
 
+      // Pepper's public API defaults to summing over colors and helicities.
+      // This is the least surprising default, but here we want to optimize
+      // performance, and therefore pick helicity sampling.
+      settings.set_helicity_treatment(Pepper::Helicity_treatment::sampled);
+
       // Keep Pepper's beam energy in lockstep with Sherpa's so the two
       // sides do not silently disagree on √s. Sherpa's Run_Parameter is
       // populated during framework initialisation, which precedes
