@@ -878,7 +878,12 @@ namespace LHEH5 {
     std::shared_ptr<Pepper_Interface> p_pepper;
     std::unique_ptr<Pepper::Process> p_process;
 
-    std::unique_ptr<File> m_current_file, m_next_file;
+    // The HDF5 file is intentionally NOT held as a member. HDF5's VOL
+    // wrapper context is thread-local, so an in-memory file opened on
+    // the worker thread (inside PerformFill) cannot be safely closed on
+    // the main thread. LHEFile::ReadHeader/ReadEvents copy everything
+    // into RAM vectors, so the file can be closed inside PerformFill on
+    // the same thread that opened it.
     std::unique_ptr<LHEFile> p_current, p_next;
 
     size_t m_ievt, m_iblock, m_trials, m_ncurrent, m_ncache;
@@ -895,8 +900,8 @@ namespace LHEH5 {
     // Sherpa can consume events from the current buffer while Pepper
     // populates the next one (especially helpful with a GPU back-end).
     // Invariant: while m_pending_fill is valid, the main thread must not
-    // touch m_next_file or p_next; only one worker is ever in flight, so
-    // Pepper is never re-entered concurrently.
+    // touch p_next; only one worker is ever in flight, so Pepper is
+    // never re-entered concurrently.
     bool m_async_fill;
     std::future<size_t> m_pending_fill;
     size_t m_last_fill_result {0};
@@ -928,18 +933,22 @@ namespace LHEH5 {
     // reader stops once the current buffer is drained. This routine
     // is the unit of work scheduled by LaunchFill() and may run on a
     // worker thread when PEPPER_ASYNC_FILL is enabled.
+    //
+    // The HighFive::File is a local: HDF5's VOL wrapper context is
+    // thread-local, so the file MUST be closed on the same thread that
+    // opened it. LHEFile::ReadHeader/ReadEvents copy everything into
+    // RAM vectors, so the file is no longer needed once those return.
     size_t PerformFill()
     {
-      m_next_file = CreateInMemoryFile(NextBufferName());
-      const size_t n_filled = p_process->fill_lheh5_buffer(*m_next_file, m_ncache);
+      auto next_file = CreateInMemoryFile(NextBufferName());
+      const size_t n_filled = p_process->fill_lheh5_buffer(*next_file, m_ncache);
       if (n_filled == 0) {
-        m_next_file.reset();
         p_next.reset();
         return 0;
       }
       p_next = std::make_unique<LHEFile>();
-      p_next->ReadHeader(*m_next_file);
-      p_next->ReadEvents(*m_next_file, 0, n_filled);
+      p_next->ReadHeader(*next_file);
+      p_next->ReadEvents(*next_file, 0, n_filled);
       return n_filled;
     }
 
@@ -979,7 +988,6 @@ namespace LHEH5 {
       // Accumulate consumption of the buffer we are about to discard
       // (zero on the very first Advance from WarmUp).
       m_total_consumed += m_ievt;
-      m_current_file = std::move(m_next_file);
       p_current = std::move(p_next);
       m_ievt = 0;
       m_ncurrent = p_current ? p_current->NEvents() : 0;
@@ -1118,8 +1126,6 @@ namespace LHEH5 {
       if (m_pending_fill.valid()) m_pending_fill.wait();
       p_current.reset();
       p_next.reset();
-      m_current_file.reset();
-      m_next_file.reset();
       p_process.reset();
       // Releasing the last shared_ptr triggers ~Pepper_Interface, which
       // joins the fill worker and calls Pepper::finalize(); we want that
