@@ -15,7 +15,7 @@
 #include "HepMC3/WriterRootTree.h"
 #include "HepMC3/WriterRoot.h"
 #endif
-#if USING__GZIP &&  HEPMC3_USE_COMPRESSION
+#if defined(USING__GZIP) && HEPMC3_USE_COMPRESSION
 #include "HepMC3/ReaderGZ.h"
 #include "HepMC3/WriterGZ.h"
 #endif
@@ -25,33 +25,33 @@ using namespace ATOOLS;
 using namespace std;
 
 template <class T>
-std::shared_ptr<HepMC3::Writer> get_output_file(std::ofstream& m_outstream, const char* use_compression, const int precision,  std::string m_basename,  std::string & m_ext) {
-#if USING__GZIP && HEPMC3_USE_COMPRESSION
+std::shared_ptr<HepMC3::Writer> get_output_file(std::ofstream& m_outstream, const std::string &use_compression, const int precision,  std::string m_basename,  std::string & m_ext) {
+#if defined(USING__GZIP) && HEPMC3_USE_COMPRESSION
 #if HEPMC3_Z_SUPPORT
-    if (std::string(use_compression) == "GZ" )   {
-        ext += ".gz";
+    if (use_compression == "GZ" )   {
+        m_ext += ".gz";
         m_outstream.open((m_basename + m_ext).c_str());
-        if (!m_outstream.good())THROW(fatal_error, "Could not open event file " + m_basename + m_ext+".");
+        if (!m_outstream.good()) THROW(fatal_error, "Could not open event file " + m_basename + m_ext+".");
         auto X = std::make_shared< HepMC3::WriterGZ<T,HepMC3::Compression::z> >(m_outstream);
         X->writer()->set_precision(precision);
         return X;
     }
 #endif
 #if HEPMC3_LZMA_SUPPORT
-    if (std::string(use_compression) == "LZMA" ) {
-        ext += ".lz";
+    if (use_compression == "LZMA" ) {
+        m_ext += ".lz";
         m_outstream.open((m_basename + m_ext).c_str());
-        if (!m_outstream.good())THROW(fatal_error, "Could not open event file " + m_basename + m_ext+".");
+        if (!m_outstream.good()) THROW(fatal_error, "Could not open event file " + m_basename + m_ext+".");
         auto X = std::make_shared< HepMC3::WriterGZ<T,HepMC3::Compression::lzma> >(m_outstream);
         X->writer()->set_precision(precision);
         return X;
     }
 #endif
 #if HEPMC3_BZ2_SUPPORT
-    if (std::string(use_compression) == "BZ2" )  {
-        ext += ".bz2";
+    if (use_compression == "BZ2" )  {
+        m_ext += ".bz2";
         m_outstream.open((m_basename + m_ext).c_str());
-        if (!m_outstream.good())THROW(fatal_error, "Could not open event file " + m_basename + m_ext+".");
+        if (!m_outstream.good()) THROW(fatal_error, "Could not open event file " + m_basename + m_ext+".");
         auto X = std::make_shared< HepMC3::WriterGZ<T,HepMC3::Compression::bz2> >(m_outstream);
         X->writer()->set_precision(precision);
         return X;
@@ -59,7 +59,7 @@ std::shared_ptr<HepMC3::Writer> get_output_file(std::ofstream& m_outstream, cons
 #endif
 #endif
     m_outstream.open((m_basename + m_ext).c_str());
-    if (!m_outstream.good())THROW(fatal_error, "Could not open event file " + m_basename + m_ext+".");
+    if (!m_outstream.good()) THROW(fatal_error, "Could not open event file " + m_basename + m_ext+".");
     auto X = std::make_shared<T>(m_outstream);
     X->set_precision(precision);
     return X;
