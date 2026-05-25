@@ -3,6 +3,7 @@
 #include <mpi.h>
 #include <algorithm>
 #include <atomic>
+#include <chrono>
 #include <cmath>
 #include <condition_variable>
 #include <deque>
@@ -882,6 +883,9 @@ namespace LHEH5 {
 
     std::shared_ptr<Pepper_Interface> p_pepper;
     std::unique_ptr<Pepper::Process> p_process;
+    // Pepper process specification used to construct p_process; kept around
+    // so we can refer to it in user-facing messages (e.g. during warm-up).
+    std::string m_process_spec;
 
     // The HDF5 file is intentionally NOT held as a member. HDF5's VOL
     // wrapper context is thread-local, so an in-memory file opened on
@@ -1089,10 +1093,10 @@ namespace LHEH5 {
       // `Event_Source: Pepper[<spec>]`, or write a bare `Event_Source:
       // Pepper` and let us derive it from the surrounding Sherpa process
       // (forwarded as KF codes in `m_flavours` by Process_Base).
-      const std::string spec {m_files.empty()
-                                  ? BuildPepperProcessSpec(m_flavours, m_nin)
-                                  : m_files.front()};
-      p_process = std::make_unique<Pepper::Process>(spec);
+      m_process_spec = m_files.empty()
+                           ? BuildPepperProcessSpec(m_flavours, m_nin)
+                           : m_files.front();
+      p_process = std::make_unique<Pepper::Process>(m_process_spec);
 
       // The pipeline is primed lazily in WarmUp(), so that Pepper's
       // integration-grid optimisation and weight-maximum determination
@@ -1168,10 +1172,36 @@ namespace LHEH5 {
       // immediately wait so we serialize via the FIFO while preserving the
       // synchronous semantics. Advance() then promotes the buffer and kicks
       // off the first overlapped refill (async, if enabled).
+      // We time this initial synchronous fill explicitly as it is not part of
+      // Sherpa's event-generation time accounting. Reporting it lets users
+      // add it back when comparing total run times across backends. We also
+      // announce the start, because the warm-up can take a long time at high
+      // multiplicities and silent waits leave users guessing.
+      msg_Info() << "Pepper_Interface: running initial synchronous fill for"
+                    " process \"" << m_process_spec << "\""
+                    " (Pepper optimisation + first unweighted events); this"
+                    " may take a while at high multiplicities ...\n";
+      const auto t_start = std::chrono::steady_clock::now();
+      auto report_timing = [this, t_start]() {
+	const auto t_end = std::chrono::steady_clock::now();
+	const double t_warmup_s = std::chrono::duration<double>(
+				      t_end - t_start).count();
+	msg_Info() << "Pepper_Interface: initial synchronous fill for"
+		      " process \"" << m_process_spec << "\" took "
+		   << t_warmup_s << " s.\n";
+      };
       LaunchFill();
       WaitForFill();
-      if (m_last_fill_result == 0) m_finished = true;
-      else Advance();
+      if (m_async_fill) {
+	report_timing();
+      }
+      if (m_last_fill_result == 0)
+        m_finished = true;
+      else
+        Advance();
+      if (!m_async_fill) {
+	report_timing();
+      }
     }
 
     void PrintStatistics(std::ostream& o) override
