@@ -1148,6 +1148,17 @@ namespace LHEH5 {
     {
       if (m_warmed_up) return;
       m_warmed_up = true;
+      // Pepper's `main.init_only` finishes process setup (incl. writing
+      // the resolved runcard) and refuses to generate events. There is
+      // no useful continuation on the Sherpa side, so exit cleanly with
+      // a message pointing the user at the inspectable artifact.
+      if (p_process->init_only()) {
+        THROW(normal_exit,
+              "Pepper's main.init_only is set: process setup is complete"
+              " and the resolved runcard has been written to Pepper's"
+              " per-process cache directory. Stopping before event"
+              " generation.");
+      }
       // First fill is always the warm-up; we block until it completes so the
       // optimisation phase finishes before Sherpa proceeds. With async fill
       // enabled we must still route the job through the shared Fill_Worker
