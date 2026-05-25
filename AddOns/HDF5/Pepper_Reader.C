@@ -1089,13 +1089,33 @@ namespace LHEH5 {
       p_sub = new NLO_subevt();
       s_objects.push_back(this);
 
-      // The user may either pass an explicit Pepper process spec via
-      // `Event_Source: Pepper[<spec>]`, or write a bare `Event_Source:
-      // Pepper` and let us derive it from the surrounding Sherpa process
-      // (forwarded as KF codes in `m_flavours` by Process_Base).
-      m_process_spec = m_files.empty()
-                           ? BuildPepperProcessSpec(m_flavours, m_nin)
-                           : m_files.front();
+      // The process specification is always derived from the surrounding
+      // Sherpa process (forwarded as KF codes in `m_flavours` by
+      // Process_Base). The bracketed argument of `Event_Source:
+      // Pepper[<cache_size>]`, if present, overrides PEPPER_CACHE_SIZE
+      // for this reader only — useful in CKKW-merged setups where the
+      // optimal cache size is smaller for larger jet multiplicities,
+      // (otherwise, the single helper thread will be blocked unnecessarily
+      // long by large-multiplicity fills).
+      m_process_spec = BuildPepperProcessSpec(m_flavours, m_nin);
+      if (!m_files.empty()) {
+        const std::string& arg {m_files.front()};
+        try {
+          size_t consumed {0};
+          const long long parsed {std::stoll(arg, &consumed)};
+          if (consumed != arg.size() || parsed <= 0)
+            throw std::invalid_argument {"not a positive integer"};
+          m_ncache = static_cast<size_t>(parsed);
+        }
+        catch (const std::exception& e) {
+          THROW(invalid_input,
+                "Event_Source: Pepper[" + arg + "] is not a valid cache size."
+                " Expected a positive integer (events per buffer).");
+        }
+        msg_Info() << "Pepper_Interface: cache size for process \""
+                   << m_process_spec << "\" set to " << m_ncache
+                   << " events (overriding PEPPER_CACHE_SIZE).\n";
+      }
       p_process = std::make_unique<Pepper::Process>(m_process_spec);
 
       // The pipeline is primed lazily in WarmUp(), so that Pepper's
