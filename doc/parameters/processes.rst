@@ -848,20 +848,8 @@ The general syntax is
 
 .. code-block:: yaml
 
-   Event_Source: Pepper[<process_spec>]
-
-where ``<process_spec>`` is a string that Pepper's process parser
-recognises (see Pepper's documentation for details).
-In most cases, however,
-the process is already fully determined
-by the surrounding Sherpa process declaration,
-so the explicit specification can be omitted:
-
-.. code-block:: yaml
-
    Event_Source: Pepper
 
-When the bare form is used,
 Sherpa derives the Pepper process specification
 from the flavours of the current process
 and forwards it to Pepper automatically.
@@ -877,14 +865,28 @@ Two cases are distinguished:
   that already sum over the contributing partonic channels.
 
 - Otherwise, Sherpa emits a partonic-channel specification
-  such as ``u ub -> Z g``,
+  such as ``u ub -> e- e+ g``,
   built directly from the signed PDG codes of ``m_flavs``.
 
 If the derived final state cannot be mapped onto one of Pepper's
-supported compound names (e.g. a muon pair instead of an electron pair),
-Sherpa aborts with a descriptive error
-and asks the user to fall back to the explicit ``Pepper[<process_spec>]``
-form, or to switch to a partonic-channel process declaration.
+supported compound names,
+Sherpa aborts with a descriptive error.
+Contact the Pepper authors if you are interested
+in running not-yet supported processes through Pepper.
+
+The bracketed form ``Event_Source: Pepper[<cache_size>]`` is reserved
+for overriding the in-memory buffer size for this process only:
+``<cache_size>`` must be a positive integer giving the number of events
+kept per buffer, and takes precedence over the top-level
+:option:`PEPPER_CACHE_SIZE` (see below) for this process.
+This is particularly useful in multi-jet merging setups, where the
+optimal cache size is smaller for larger jet multiplicities.
+(Otherwise, long-running fills can block the FIFO fill queue
+unnecessarily long, reducing overall throughput.
+Fill times are reported at the beginning of the event generation;
+a rule of thumb for setting ``<cache_size>``,
+or the global :option:`PEPPER_CACHE_SIZE`,
+is to keep those fill times at a few seconds each).
 
 For a Drell-Yan + 1 jet sample backed by Pepper,
 the run card simply reads:
@@ -917,6 +919,9 @@ shared by all processes that use `Event_Source: Pepper`:
    Pepper fills one buffer of this size at a time,
    so larger values amortise the per-batch overhead
    at the cost of higher memory use.
+   This is a global default; it can be overridden per process
+   (e.g. per multiplicity in a multi-jet merging setup) by passing
+   the desired cache size as ``Event_Source: Pepper[<cache_size>]``.
    Default: ``10000``.
 
 :option:`PEPPER_ASYNC_FILL`
