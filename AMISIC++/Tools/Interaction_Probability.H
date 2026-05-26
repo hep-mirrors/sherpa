@@ -11,6 +11,8 @@ namespace ATOOLS {
 }
 
 namespace AMISIC {
+  static const double s_GeV2fm2 = sqr(rpa->hBar()*rpa->c()*1.e12);
+
   class Interaction_Probability {
     Matter_Overlap * p_mo;
     MI_Processes   * p_procs;
@@ -55,7 +57,7 @@ namespace AMISIC {
     // Probability for at least one interaction, Eq. (SZ, 24)
     //////////////////////////////////////////////////////////////////////////
     inline double operator()(const double & s,const double & b) {
-      return 1.-exp(-(*p_diffxsec)(s,b));
+      return 1.-exp(-(*p_diffxsec)(s,b)*s_GeV2fm2);
     }
     //////////////////////////////////////////////////////////////////////////
     // The s-dependent radius multiplier
@@ -102,7 +104,8 @@ namespace AMISIC {
       p_lookup(lookup), m_pref(pref), m_s(0.) {}
     ~PInt_Dyn_Integrand() {};
     double operator()(double b) {
-      return 2.*M_PI*b*(1. - exp(-m_pref*(*p_lookup)(m_s,b)));
+      return 2.*M_PI*b
+           * (1. - exp(-m_pref*(*p_lookup)(m_s,b)*s_GeV2fm2))/s_GeV2fm2;
     }
     inline void SetS(const double & s) { m_s = s; }
   };
@@ -125,7 +128,8 @@ namespace AMISIC {
       p_lookup(lookup), m_pref(pref), m_s(0.) {}
     ~PInt_Norm_Integrand() {};
     double operator()(double b) {
-      return 2.*M_PI*b*m_pref*(*p_lookup)(m_s,b)*(1. - exp(-m_pref*(*p_lookup)(m_s,b)));
+      return 2.*M_PI*b*m_pref*(*p_lookup)(m_s,b)
+           * (1. - exp(-m_pref*(*p_lookup)(m_s,b)*s_GeV2fm2));
     }
     inline void SetS(const double & s) { m_s = s; }
   };
