@@ -209,7 +209,7 @@ void Interaction_Probability::OutputTables() {
 		<<std::setprecision(3)<<std::setw(6)
 		<<b<<" | "
 		<<std::setprecision(6)<<std::setw(14)
-		<<((*p_diffxsec)(s,b)/xsratio)<<" | "
+		<<((*p_diffxsec)(s,b)/xsratio*s_GeV2fm2)<<" | "
 		<<std::string(12,' ')<<" | "
 		<<std::setprecision(6)<<std::setw(14)
 		<<(b*(*this)(s,b))<<" |\n";
