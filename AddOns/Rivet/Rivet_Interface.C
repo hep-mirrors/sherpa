@@ -40,6 +40,7 @@ namespace SHERPARIVET {
     size_t m_nevt, m_histointerval;
     bool   m_finished;
     bool   m_splitjetconts, m_splitSH, m_splitpm, m_splitcoreprocs, m_usehepmcshort;
+    bool   m_splitQQ;
     bool   m_outputmeonlyvariations;
 #ifdef HAVE_HDF5
     bool   m_useH5;
@@ -155,6 +156,7 @@ Rivet_Interface::Rivet_Interface(const std::string &outpath,
   m_outpath(outpath), m_tag(tag),
   m_nevt(0), m_finished(false),
   m_splitjetconts(false), m_splitSH(false), m_splitpm(false),
+  m_splitQQ(false),
   m_splitcoreprocs(false), m_ignoreblobs(ignoreblobs)
 {
   // create output path if necessary
@@ -305,6 +307,7 @@ bool Rivet_Interface::Init()
     m_splitSH = s["SPLITSH"].SetDefault(0).Get<int>();
     m_splitpm = s["SPLITPM"].SetDefault(0).Get<int>();
     m_splitcoreprocs = s["SPLITCOREPROCS"].SetDefault(0).Get<int>();
+    m_splitQQ = s["SPLITQQ"].SetDefault(0).Get<int>();
 #if !defined(USING__RIVET4)
     if ((m_splitjetconts || m_splitSH || m_splitpm || m_splitcoreprocs)
       && s_variations->HasVariations()) {
@@ -441,6 +444,57 @@ bool Rivet_Interface::Run(ATOOLS::Blob_List *const bl)
     }
     if (m_splitpm) {
       GetRivet(event.weights()[0]<0?"M":"P",0)->analyze(event);
+    }
+    Blob *shower(bl->FindFirst(btp::Shower));
+    if (!shower && sp) shower=sp;
+    if (m_splitQQ && shower) {
+      Particle_Vector particles(shower->GetOutParticles());
+      msg_Debugging()<<METHOD<<" Out particles: \n";
+      for (ATOOLS::Particle *particle : particles) msg_Debugging()<<*particle<<'\n';
+    
+      std::map<double,std::pair<size_t,size_t>> cc_map, bb_map;
+      size_t ncc(0),nbb(0);
+      std::vector<size_t> usedc,usedb;
+      // find all cc and bb pairs in FS
+      for (size_t i(0);i<particles.size();++i) 
+        for (size_t j(i+1);j<particles.size();++j) {
+          if (particles[i]->Flav().Kfcode()==kf_c && 
+              particles[i]->Flav()==particles[j]->Flav().Bar()) {
+                double mcc((particles[i]->Momentum()+particles[j]->Momentum()).Mass());
+                cc_map[mcc]=std::pair<size_t,size_t>(i,j);
+              }
+          else if (particles[i]->Flav().Kfcode()==kf_b && 
+              particles[i]->Flav()==particles[j]->Flav().Bar()) {
+                double mbb((particles[i]->Momentum()+particles[j]->Momentum()).Mass());
+                bb_map[mbb]=std::pair<size_t,size_t>(i,j);
+              }
+      }
+
+      // count pairs produced above mass threshold (even if treated as massless)
+      for (std::map<double,std::pair<size_t,size_t>>::const_iterator cit(cc_map.begin());
+           cit!=cc_map.end();++cit) {
+            if (std::find(usedc.begin(),usedc.end(),cit->second.first)==usedc.end() &&
+                std::find(usedc.begin(),usedc.end(),cit->second.second)==usedc.end()) {
+                  usedc.push_back(cit->second.first);
+                  usedc.push_back(cit->second.second);
+                  msg_Debugging()<<"Pair mass: "<<cit->first<<", threshold: "<<2.*Flavour(kf_c).Mass(1)<<'\n';
+                  if (cit->first > 2.*Flavour(kf_c).Mass(1)) ++ncc;
+                }
+           }
+      for (std::map<double,std::pair<size_t,size_t>>::const_iterator bit(bb_map.begin());
+           bit!=bb_map.end();++bit) {
+            if (std::find(usedb.begin(),usedb.end(),bit->second.first)==usedb.end() &&
+                std::find(usedb.begin(),usedb.end(),bit->second.second)==usedb.end()) {
+                  usedb.push_back(bit->second.first);
+                  usedb.push_back(bit->second.second);
+                  msg_Debugging()<<"Pair mass: "<<bit->first<<", threshold: "<<2.*Flavour(kf_b).Mass(1)<<'\n';
+                  if (bit->first > 2.*Flavour(kf_b).Mass(1)) ++nbb;
+                }
+           }
+
+      // create one yoda file for each number of c/b pairs
+      std::string name="c"+ToString(ncc)+"b"+ToString(nbb);
+      GetRivet(name,0)->analyze(event);
     }
   }
 
