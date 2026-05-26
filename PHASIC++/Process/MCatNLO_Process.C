@@ -259,6 +259,9 @@ Cluster_Amplitude *MCatNLO_Process::CreateAmplitude(const NLO_subevt *sub) const
     ampl->CreateLeg(i<m_nin?-sub->p_mom[i]:sub->p_mom[i],
 		    i<m_nin?sub->p_fl[i].Bar():sub->p_fl[i],
 		    ColorID(ci[i],cj[i]),sub->p_id[i]);
+    if (p_rsproc->NIn()==2 && i<p_rsproc->NIn())
+      ampl->Legs().back()->SetBeam(p_rsproc->Caller()->Get<Single_Process>()->
+    				     Integrator()->ISR()->Swap() ? 1-i : i);
     if (!sub->IsReal() && sub->p_id[i]&(1<<sub->m_i)) {
       if ((sub->p_id[i]&(1<<sub->m_j))==0)
 	THROW(fatal_error,"Internal error");
@@ -714,8 +717,12 @@ bool MCatNLO_Process::CalculateTotalXSec(const std::string &resultpath,
 {
   Vec4D_Vector p(p_rsproc->NIn()+p_rsproc->NOut());
   Cluster_Amplitude *ampl(Cluster_Amplitude::New());
-  for (int i(0);i<p.size();++i)
+  for (int i(0);i<p.size();++i) {
     ampl->CreateLeg(Vec4D(),Flavour(kf_jet));
+    if (p_rsproc->NIn()==2 && i<p_rsproc->NIn())
+      ampl->Legs().back()->SetBeam(p_rsproc->Caller()->Get<Single_Process>()->
+    				     Integrator()->ISR()->Swap() ? 1-i : i);
+  }
   auto psh = p_ddproc->Integrator()->PSHandler();
   do {
     psh->TestPoint(&p.front(),&p_ddproc->Info(),p_ddproc->Generator());

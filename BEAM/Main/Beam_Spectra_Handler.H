@@ -15,7 +15,7 @@ namespace BEAM {
     Beam_Parameters    m_parameters;
     beammode           m_beammode;
     collidermode       m_collidermode;
-    bool               m_on;
+    bool               m_on, m_symmetric;
     int                m_mode,m_polarisation;
     std::string        m_name,m_type;
 
@@ -28,6 +28,7 @@ namespace BEAM {
 
     void FixPositions();
     inline bool                       On()           const { return m_on; }
+    inline bool                       IsSymmetric()  const { return m_symmetric; }
     inline const beammode           & BeamMode()     const { return m_beammode; }
     inline const collidermode       & ColliderMode() const { return m_collidermode; }
     inline Beam_Base                * GetBeam(size_t i)    { return p_BeamBase[i]; }

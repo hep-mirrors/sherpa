@@ -30,7 +30,13 @@ void Collider_Kinematics::InitSystem() {
 
   m_on = (m_mode != collidermode::monochromatic);
   m_x[0] = m_x[1] = 0.;
-  m_LabBoost = Poincare(p_beams[0]->InMomentum() + p_beams[1]->InMomentum());
+  if (m_mode==collidermode::monochromatic) {
+    for (size_t i = 0; i < 2; ++i) {
+      p_beams[i]->SetOutMomentum(p_beams[i]->InMomentum());
+      rpa->gen.SetPBunch(i, p_beams[i]->InMomentum());
+    }
+  }
+  m_LabBoost = Poincare(p_beams[0]->InMomentum()  + p_beams[1]->InMomentum());
   m_CMSBoost = Poincare(p_beams[0]->OutMomentum() + p_beams[1]->OutMomentum());
 }
 

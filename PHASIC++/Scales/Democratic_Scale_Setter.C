@@ -104,6 +104,9 @@ Calculate(const std::vector<ATOOLS::Vec4D> &momenta,const size_t &mode)
   ampl->SetNIn(p_proc->NIn());
   for (size_t i=0;i<m_p.size();++i) {
     ampl->CreateLeg(m_p[i],m_f[i],ColorID((*cols)[i][0],(*cols)[i][1]));
+    if (p_proc->NIn()==2 && i<p_proc->NIn())
+      ampl->Legs().back()->SetBeam(p_proc->Caller()->Get<Single_Process>()->
+				   Integrator()->ISR()->Swap() ? 1-i : i);
   }  
   double kt2max = (p_proc->HasInternalScale()?
 		   sqr(p_proc->InternalScale()):
