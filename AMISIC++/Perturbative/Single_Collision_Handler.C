@@ -108,7 +108,7 @@ bool Single_Collision_Handler::FirstMPI(Blob * signal) {
     } while (!p_overlap->SelectPositionForScatter(m_b,x1,m_pt2,x2,m_pt2,m_deltapos));
     m_pt2 = m_lastpt2 = m_S/4.;
   } while (SelectPT2()==0 && m_pt2>pt2veto);
-  m_lastpt2 = m_pt2;
+  m_lastpt2 = pt2veto;
   if (m_pt2<=m_pt2min) m_done = true;
   return true;
 }
