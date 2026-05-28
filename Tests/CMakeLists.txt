@@ -22,6 +22,28 @@ SET_TESTS_PROPERTIES( Main${test}part3 PROPERTIES ENVIRONMENT "${STANDARDENVIRON
 set_tests_properties( Main${test}part2 PROPERTIES DEPENDS Main${test}part1)
 set_tests_properties( Main${test}part3 PROPERTIES DEPENDS Main${test}part2)
 
+
+set(test test-MCatNLO_Z)
+file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${test})
+add_test( NAME Main${test}part1 COMMAND Sherpa ${PROJECT_SOURCE_DIR}/Tests/End2End/CI/MCatNLO_Z/Sherpa.yaml
+                              WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${test}
+           )
+add_test( NAME Main${test}part2 COMMAND ${makelibsscript}
+                              WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${test}
+           )
+
+add_test( NAME Main${test}part3 COMMAND Sherpa  ${PROJECT_SOURCE_DIR}/Tests/End2End/CI/MCatNLO_Z/Sherpa.yaml
+                              WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${test}
+           )
+
+SET_TESTS_PROPERTIES( Main${test}part1 PROPERTIES ENVIRONMENT "${STANDARDENVIRONMENT}")
+SET_TESTS_PROPERTIES( Main${test}part2 PROPERTIES ENVIRONMENT "${STANDARDENVIRONMENT}")
+SET_TESTS_PROPERTIES( Main${test}part3 PROPERTIES ENVIRONMENT "${STANDARDENVIRONMENT}")
+
+set_tests_properties( Main${test}part2 PROPERTIES DEPENDS Main${test}part1)
+set_tests_properties( Main${test}part3 PROPERTIES DEPENDS Main${test}part2)
+
+
 set(test test-LO_Z)
 file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${test})
 add_test( NAME Main${test}part1 COMMAND Sherpa ${PROJECT_SOURCE_DIR}/Examples/CI/LO_Z/Sherpa.yaml 
