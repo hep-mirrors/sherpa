@@ -96,6 +96,27 @@ HADRON_DECAYS:
         IntResults: [6.798e-05, 2.463e-09, 1.836e-05]
 
 
+    310:
+      111,111:
+        BR: [0.3069, 0.0005]
+        Origin: PDG
+        IntResults: [0.01679, 0, 0.01671]
+
+      211,-211:
+        BR: [0.692, 0.0005]
+        Origin: PDG
+        IntResults: [0.03309, 0, 0.03294]
+
+    311:
+      '130':
+        BR: [0.5, 0.5]
+        IntResults: [1.0, 1.0, 1.0]
+
+      '310':
+        BR: [0.5, 0.5]
+        IntResults: [1.0, 1.0, 1.0]
+
+
     15:
     ######################################################
     # Leptonic decays
@@ -145,6 +166,7 @@ HADRON_DECAYS:
       -211,16: # pi- nu_tau
         BR: [1.0, 0.0]
         Status: 2
+        IntResults: [0.0551299, 0, 0.195932]
 
     ######################################################
     # Two pseudoscalars
@@ -239,3 +261,161 @@ HADRON_DECAYS:
       #           Type: VA_0_PPP
       #           Indices: [3, 2, 1]
       #           FORM_FACTOR: 1 # 1 is Kuhn-Santamaria, 2 is RChiPT
+
+      ######################################################
+      # Three pseudoscalars with kaons: Finkemeier-Mirkes
+      # hep-ph/9503474, Tables I-III, beta_K* = -0.135.
+      # The J2 indices map Sherpa's sorted final-state order onto the
+      # paper order q1 q2 q3 = a b c.
+      ######################################################
+
+      -321,-211,321,16: # K- pi- K+ nu_tau
+        BR: [0.0020, 0.0007]
+        Origin: FM95 Table III
+        ME:
+          - Current_ME:
+              J1:
+                Type: VA_F_F
+                Indices: [4, 0]
+                v: 1.
+                a: -1.
+              J2:
+                Type: VA_0_PPP
+                Indices: [2, 3, 1]
+                FORM_FACTOR: 1
+        Status: 2
+        IntResults: [5.2274e-15, 5.22654e-18, 5.33476e-13]
+
+      # 311,-211,-311,16: # K0 pi- K0bar nu_tau, flavour-basis diagnostic
+      #   BR: [0.0020, 0.0]
+      #   Origin: FM95 Table III
+      #   ME:
+      #     - Current_ME:
+      #         J1:
+      #           Type: VA_F_F
+      #           Indices: [4, 0]
+      #           v: 1.
+      #           a: -1.
+      #         J2:
+      #           Type: VA_0_PPP
+      #           Indices: [1, 3, 2]
+      #           FORM_FACTOR: 1
+
+      310,-211,310,16: # KS pi- KS nu_tau
+        BR: [0.00048, 0.00006]
+        Origin: FM95 Table III
+        ME:
+          - Current_ME:
+              J1:
+                Type: VA_F_F
+                Indices: [4, 0]
+                v: 1.
+                a: -1.
+              J2:
+                Type: VA_0_PPP
+                Indices: [1, 3, 2]
+                FORM_FACTOR: 1
+        Status: 2
+        IntResults: [1.18715e-15, 1.18706e-18, 9.53431e-14]
+
+      130,-211,130,16: # KL pi- KL nu_tau
+        BR: [0.00048, 0.00006]
+        Origin: FM95 Eq. 53
+        ME:
+          - Current_ME:
+              J1:
+                Type: VA_F_F
+                Indices: [4, 0]
+                v: 1.
+                a: -1.
+              J2:
+                Type: VA_0_PPP
+                Indices: [2, 1, 3]
+                FORM_FACTOR: 1
+        Status: 2
+        IntResults: [1.1892e-15, 1.18913e-18, 9.35772e-14]
+
+      310,-211,130,16: # KS pi- KL nu_tau
+        BR: [0.0010, 0.0]
+        Origin: FM95 Table III
+        ME:
+          - Current_ME:
+              J1:
+                Type: VA_F_F
+                Indices: [4, 0]
+                v: 1.
+                a: -1.
+              J2:
+                Type: VA_0_PPP
+                Indices: [1, 2, 3]
+                FORM_FACTOR: 1
+        Status: 2
+        IntResults: [2.44757e-15, 2.44688e-18, 1.99652e-13]
+
+      -321,111,311,16: # K- pi0 K0 nu_tau
+        BR: [0.0016, 0.0004]
+        Origin: FM95 Table III
+        ME:
+          - Current_ME:
+              J1:
+                Type: VA_F_F
+                Indices: [4, 0]
+                v: 1.
+                a: -1.
+              J2:
+                Type: VA_0_PPP
+                Indices: [1, 3, 2]
+                FORM_FACTOR: 1
+        Status: 2
+        IntResults: [4.12229e-15, 4.12188e-18, 2.82704e-13]
+
+      111,111,-321,16: # pi0 pi0 K- nu_tau
+        BR: [0.0014, 0.0003]
+        Origin: FM95 Table III
+        ME:
+          - Current_ME:
+              J1:
+                Type: VA_F_F
+                Indices: [4, 0]
+                v: 1.
+                a: -1.
+              J2:
+                Type: VA_0_PPP
+                Indices: [2, 3, 1]
+                FORM_FACTOR: 1
+        Status: 2
+        IntResults: [3.53066e-15, 3.53038e-18, 6.8269e-13]
+
+      -321,-211,211,16: # K- pi- pi+ nu_tau
+        BR: [0.0077, 0.0009]
+        Origin: FM95 Table III
+        ME:
+          - Current_ME:
+              J1:
+                Type: VA_F_F
+                Indices: [4, 0]
+                v: 1.
+                a: -1.
+              J2:
+                Type: VA_0_PPP
+                Indices: [1, 3, 2]
+                FORM_FACTOR: 1
+        Status: 2
+        IntResults: [1.85327e-14, 1.85299e-17, 2.5812e-12]
+
+      -211,-311,111,16: # pi- K0bar pi0 nu_tau
+        BR: [0.0096, 0.0007]
+        Origin: FM95 Table III
+        ME:
+          - Current_ME:
+              J1:
+                Type: VA_F_F
+                Indices: [4, 0]
+                v: 1.
+                a: -1.
+              J2:
+                Type: VA_0_PPP
+                Indices: [2, 1, 3]
+                FORM_FACTOR: 1
+        Status: 2
+        IntResults: [2.27167e-14, 2.27146e-17, 2.70066e-12]

@@ -69,8 +69,9 @@ void VA_0_PiPiPi::Calc(const ATOOLS::Vec4D_Vector& moms, bool m_anti)
 
 void VA_0_PiPiPi::SetModelParameters(struct GeneralModel model) {
   msg_Out()<<METHOD<<"\n";
-  FF_Parameters params(ff_model(model[string("FORM_FACTOR")]),
-		       m_flavs,p_i,"",&model);
+  m_model = model;
+  FF_Parameters params(ff_model(m_model[string("FORM_FACTOR")]),
+		       m_flavs,p_i,"",&m_model);
   params.m_name = "F1_0_PPP";
   p_f1 = FF_Getter::GetObject("FF_0_PPP",params);
   params.m_name = "F2_0_PPP";

@@ -19,7 +19,8 @@ FormFactor_Base::FormFactor_Base(const FF_Parameters & params) :
     m_flavs.push_back(params.m_flavs[i]);
     m_masses.push_back(params.m_masses[i]);
     m_masses2.push_back(params.m_masses2[i]);
+  }
+  for (size_t i=0;i<params.m_pi.size();i++) {
     m_pi.push_back(params.m_pi[i]);
   }
 }
-

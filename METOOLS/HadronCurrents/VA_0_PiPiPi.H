@@ -11,6 +11,7 @@ namespace METOOLS {
   private:
     double  m_norm;
 
+    GeneralModel m_model;
     FormFactor_Base * p_f1, * p_f2, * p_f3, * p_fS;
   public:
     VA_0_PiPiPi(const ATOOLS::Flavour_Vector& flavs,
