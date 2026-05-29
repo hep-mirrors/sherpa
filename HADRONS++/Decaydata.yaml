@@ -139,6 +139,14 @@ HADRON_DECAYS:
         IntResults: [3.948e-13, 1.865e-15, 3.784e-12]
 
     ######################################################
+    # Active test channel only
+    ######################################################
+
+      -211,16: # pi- nu_tau
+        BR: [1.0, 0.0]
+        Status: 2
+
+    ######################################################
     # Two pseudoscalars
     ######################################################
 #      -211,111,16:
@@ -160,42 +168,74 @@ HADRON_DECAYS:
 #              Weight: 1.0
 #        IntResults: [5.372e-13, 2.151e-15, 5.134e-12]
 
-      310,-211,16: # KS:310 pi-:-211 nu_tau:16
-        BR: [0.666, 0.] # [0.255, 0.255]
-        ME:
-          - Current_ME:
-              J1:
-                Type: VA_F_F
-                Indices: [3, 0] # neutrino is 3, tau is 0
-                v: 1.
-                a: -1.
-              J2:
-                Type: VA_0_PiPi
-                Indices: [2, 1] # pi is 2, K is 1
-                RUNNING_WIDTH: 2
-                FORM_FACTOR: 2 # 1 is KS, 2 is RChiPT, 3 is Dispersive, 4 is KS_Belle
-        PhaseSpace:
-          - Dalitz_K*(892)+_12:
-              Weight: 1.0
-        IntResults: [5.372e-13, 2.151e-15, 5.134e-12] # decay width, uncertainty, maximum decay width
-        Status: 2
+      # 310,-211,16: # KS:310 pi-:-211 nu_tau:16
+      #   BR: [0.666, 0.] # [0.255, 0.255]
+      #   ME:
+      #     - Current_ME:
+      #         J1:
+      #           Type: VA_F_F
+      #           Indices: [3, 0] # neutrino is 3, tau is 0
+      #           v: 1.
+      #           a: -1.
+      #         J2:
+      #           Type: VA_0_PiPi
+      #           Indices: [2, 1] # pi is 2, K is 1
+      #           RUNNING_WIDTH: 2
+      #           FORM_FACTOR: 2 # 1 is KS, 2 is RChiPT, 3 is Dispersive, 4 is KS_Belle
+      #   PhaseSpace:
+      #     - Dalitz_K*(892)+_12:
+      #         Weight: 1.0
+      #   IntResults: [5.372e-13, 2.151e-15, 5.134e-12] # decay width, uncertainty, maximum decay width
+      #   Status: 2
 
-      -321,111,16: # K-:-321 pi0:111 nu_tau:16
-        BR: [0.333, 0.]
-        ME:
-          - Current_ME:
-              J1:
-                Type: VA_F_F
-                Indices: [3, 0] # neutrino is 3, tau is 0
-                v: 1.
-                a: -1.
-              J2:
-                Type: VA_0_PiPi
-                Indices: [2, 1] # pi0 is 2, K- is 1
-                RUNNING_WIDTH: 2
-                FORM_FACTOR: 2 # 1 is KS 2 is RChiPT, 3 is Dispersive, 4 is KS_Belle
-        PhaseSpace:
-          - Dalitz_K*(892)+_12:
-              Weight: 1.0
-        IntResults: [5.372e-13, 2.151e-15, 5.134e-12] # placeholder, needs recalculation
-        Status: 2
+      # -321,111,16: # K-:-321 pi0:111 nu_tau:16
+      #   BR: [0.333, 0.]
+      #   ME:
+      #     - Current_ME:
+      #         J1:
+      #           Type: VA_F_F
+      #           Indices: [3, 0] # neutrino is 3, tau is 0
+      #           v: 1.
+      #           a: -1.
+      #         J2:
+      #           Type: VA_0_PiPi
+      #           Indices: [2, 1] # pi0 is 2, K- is 1
+      #           RUNNING_WIDTH: 2
+      #           FORM_FACTOR: 2 # 1 is KS 2 is RChiPT, 3 is Dispersive, 4 is KS_Belle
+      #   PhaseSpace:
+      #     - Dalitz_K*(892)+_12:
+      #         Weight: 1.0
+      #   IntResults: [5.372e-13, 2.151e-15, 5.134e-12] # placeholder, needs recalculation
+      #   Status: 2
+
+        ######################################################
+    # Three pseudoscalars
+    ######################################################
+
+      # 211,-211,-211,16: # pi+ pi- pi- nu_tau
+      #   BR: [0.0931, 0.0003]
+      #   ME:
+      #     - Current_ME:
+      #         J1:
+      #           Type: VA_F_F
+      #           Indices: [4, 0] # neutrino is 4, tau is 0
+      #           v: 1.
+      #           a: -1.
+      #         J2:
+      #           Type: VA_0_PPP
+      #           Indices: [3, 1, 2]
+      #           FORM_FACTOR: 1 # 1 is Kuhn-Santamaria, 2 is RChiPT
+
+      # -211,111,111,16: # pi- pi0 pi0 nu_tau
+      #   BR: [0.0926, 0.0012]
+      #   ME:
+      #     - Current_ME:
+      #         J1:
+      #           Type: VA_F_F
+      #           Indices: [4, 0] # neutrino is 4, tau is 0
+      #           v: 1.
+      #           a: -1.
+      #         J2:
+      #           Type: VA_0_PPP
+      #           Indices: [3, 2, 1]
+      #           FORM_FACTOR: 1 # 1 is Kuhn-Santamaria, 2 is RChiPT

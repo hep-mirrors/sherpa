@@ -121,6 +121,41 @@ A1_1260_0_Lineshape::A1_1260_0_Lineshape() :
   // todo: add 3% K*(892)K etc.
 }
 
+KS_A1_1260_plus_Width::KS_A1_1260_plus_Width() :
+  Total_Width_Base(Flavour(kf_a_1_1260_plus)) {
+  Flavour pi_plus(kf_pi_plus), pi_minus(pi_plus.Bar()), pi_0(kf_pi);
+  vector<Flavour>           outflavs;
+  vector<Propagator_Base *> props;
+  double m_min;
+  axis   Q_axis(0,0,1);
+  ///////////////////////////////////////////////////////////////////////////////////
+  // Pure rho(770) only — no rho(1450) admixture, no f0 channels.
+  // This matches the KS analytical parametrization for Gamma_a1(s).
+  ///////////////////////////////////////////////////////////////////////////////////
+  // pi+ pi0 pi0 sub-channel
+  Summed_Propagator * rhoA = new Summed_Propagator();
+  rhoA->Add(new BreitWigner(LineShapes->Get(Flavour(kf_rho_770_plus)),
+                             resonance_type::running), Complex(1.,0.));
+  outflavs = { pi_0, pi_plus, pi_0 };
+  props    = { rhoA, rhoA };
+  m_min    = pi_plus.Mass(true) + 2.*pi_0.Mass(true);
+  Q_axis   = axis(500, m_min, m_min+3.);
+  Partial_Width_Base * chan1 = new V_PPP(m_inflav, outflavs, 0.5);
+  chan1->Init(props, Q_axis);
+  m_channels.insert(chan1);
+  // pi+ pi- pi+ sub-channel
+  Summed_Propagator * rhoB = new Summed_Propagator();
+  rhoB->Add(new BreitWigner(LineShapes->Get(Flavour(kf_rho_770_plus)),
+                             resonance_type::running), Complex(1.,0.));
+  outflavs = { pi_plus, pi_minus, pi_plus };
+  props    = { rhoB, rhoB };
+  m_min    = 2.*pi_plus.Mass(true) + pi_minus.Mass(true);
+  Q_axis   = axis(500, m_min, m_min+3.);
+  Partial_Width_Base * chan2 = new V_PPP(m_inflav, outflavs, 0.5);
+  chan2->Init(props, Q_axis);
+  m_channels.insert(chan2);
+}
+
 A1_1260_plus_Lineshape::A1_1260_plus_Lineshape() :
   Total_Width_Base(Flavour(kf_a_1_1260_plus)) {
   ///////////////////////////////////////////////////////////////////////////////////

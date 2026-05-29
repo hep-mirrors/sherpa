@@ -58,10 +58,10 @@ void VA_0_PiPiPi::Calc(const ATOOLS::Vec4D_Vector& moms, bool m_anti)
   double Qq21 = q*dq21/s123, Qq31 = q*dq31/s123;
   Vec4D  v1   = dq21-Qq21*q,   v2 = dq31-Qq31*q;
   Vec4C  v4   = Vec4C(cross(p1,p2,p3));
-  msg_Out()<<"\n"<<"*** "<<METHOD<<": "
-    	   <<m_flavs[p_i[0]]<<" + "<<m_flavs[p_i[1]]<<" + "<<m_flavs[p_i[2]]<<": "
-	   <<"Qq21 = "<<Qq21<<", Qq31 = "<<Qq31<<" from s = "<<s123<<"\n"
-	   <<p1<<"("<<p1.Abs2()<<") + "<<p2<<"("<<p2.Abs2()<<") + "<<p3<<"("<<p3.Abs2()<<")\n";
+  // msg_Out()<<"\n"<<"*** "<<METHOD<<": "
+  //   	   <<m_flavs[p_i[0]]<<" + "<<m_flavs[p_i[1]]<<" + "<<m_flavs[p_i[2]]<<": "
+	//    <<"Qq21 = "<<Qq21<<", Qq31 = "<<Qq31<<" from s = "<<s123<<"\n"
+	//    <<p1<<"("<<p1.Abs2()<<") + "<<p2<<"("<<p2.Abs2()<<") + "<<p3<<"("<<p3.Abs2()<<")\n";
   Complex F1  = (*p_f1)(moms), F2 = (*p_f2)(moms);
   Complex F3  = (*p_f3)(moms), FS = (*p_fS)(moms);
   Insert( m_norm * (F1*v1 + F2*v2 + F3*q + FS*v4), 0);
