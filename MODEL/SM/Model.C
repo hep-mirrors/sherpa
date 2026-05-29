@@ -1,4 +1,5 @@
 #include "MODEL/SM/Model.H"
+#include "MODEL/SM/LowEnergy_Model.H"
 #include "ATOOLS/Phys/KF_Table.H"
 #include "ATOOLS/Org/Scoped_Settings.H"
 #include "MODEL/Main/Running_AlphaQED.H"
@@ -432,6 +433,11 @@ void Standard_Model::InitVertices()
   InitQEDVertices();
   InitQCDVertices();
   InitEWVertices();
+  LowEnergy_Model LE;
+  LE.ModelInit();
+  LE.InitVertices();
+  AddLowEnergyConstants(&LE);
+  AddLowEnergyVertices(&LE);
 }
 
 void Standard_Model::InitQEDVertices()
@@ -741,4 +747,21 @@ void Standard_Model::InitEWVertices()
     m_v.back().cpl.push_back(-I*M*M*three/(vev*vev));
     m_v.back().order[1]=2;
   }
+}
+
+void Standard_Model::AddLowEnergyConstants(Model_Base * LE) {
+  msg_Out()<<METHOD<<": LE = |"<<LE<<"|\n";
+  ScalarConstantsMap LEconstants = LE->ScalarConstants();
+  for (ScalarConstantsMap::iterator scit=LEconstants.begin();
+       scit!=LEconstants.end();scit++) {
+    (*p_constants)[scit->first] = scit->second;
+  }
+}
+
+void Standard_Model::AddLowEnergyVertices(Model_Base * LE) {
+  msg_Out()<<METHOD<<": LE = |"<<LE<<"|\n";
+  const std::vector<Single_Vertex> & LEvertices = LE->Vertices();
+  for (std::vector<Single_Vertex>::const_iterator vit=LEvertices.begin();
+       vit!=LEvertices.end();vit++)
+    m_v.push_back(Single_Vertex(*vit));
 }

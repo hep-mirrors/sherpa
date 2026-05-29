@@ -19,7 +19,8 @@ namespace MODEL {
     void InitQEDVertices();
     void InitQCDVertices();
     void InitEWVertices();
-
+    void AddLowEnergyConstants(Model_Base * LE);
+    void AddLowEnergyVertices(Model_Base * LE);
   public :
 
     Standard_Model();
