@@ -10,7 +10,6 @@
 
 namespace ATOOLS {
   class Blob;
-  class Poincare;
 
   struct part_status {
     enum code {
@@ -68,7 +67,6 @@ namespace ATOOLS {
     int               Number() const;
     int               Beam() const;
     Particle        * OriginalPart() const;
-    void              Boost(const Poincare& boost);
     void   SetMomentum(const Vec4D &);
     void   SetPosition(const Vec4D &);
     void   SetFinalMass(const double=-1,const double=-1);

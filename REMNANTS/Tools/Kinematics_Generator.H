@@ -40,8 +40,7 @@ namespace REMNANTS {
     unsigned long int m_warns, m_errors;
 
     void SetKinType();
-    bool CollinearKinematics(ATOOLS::Blob_List *blobs,
-			     const ATOOLS::Poincare * labboost=NULL);
+    bool CollinearKinematics(ATOOLS::Blob_List *blobs);
     bool TransverseKinematics();
     bool TransverseKinematicsHH();
     bool TransverseKinematicsDIS(const size_t & beam);
@@ -70,8 +69,7 @@ namespace REMNANTS {
 
     void           Initialize(Remnant_Handler* rhandler);
     ATOOLS::Blob * MakeSoftBlob();
-    bool           FillBlobs(ATOOLS::Blob_List *const bloblist,
-			     const ATOOLS::Poincare * labboost=NULL);
+    bool           FillBlobs(ATOOLS::Blob_List *const bloblist);
 
     inline void SetKinType(const kin_type & type) {
       m_kintype = type;

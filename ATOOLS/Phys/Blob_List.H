@@ -78,8 +78,6 @@ namespace ATOOLS {
 				   const int mode=0) const;
     Particle_List ExtractLooseParticles(const int mode=0) const;
 
-    void Boost(const Poincare& boost, std::set<Particle*>* treateds = nullptr);
-
     bool MergeSubsequentType(btp::code,btp::code,long int &,long int &);
     void MergeSubsequentTypeRecursively(btp::code,btp::code,
 					long int &,long int &);

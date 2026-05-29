@@ -66,9 +66,9 @@ namespace BEAM {
     virtual double ImpactParameter() const { return ATOOLS::ran->Get() * m_R; }
 
     virtual void SetInMomentum(const ATOOLS::Vec4D& in) { m_lab = in; }
-    virtual void SetOutMomentum(const ATOOLS::Vec4D& out, const size_t& i = 0)
+    virtual void SetOutMomentum(const ATOOLS::Vec4D& out)
     {
-      m_vecouts[i] = out;
+      m_vecouts[0] = out;
     }
 
     void SetX(const double& x) { m_x = x; }

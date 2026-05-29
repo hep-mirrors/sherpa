@@ -956,16 +956,11 @@ InitISRHandler(const PDF::isr::id & pid,Settings& settings) {
     PDF_Arguments args = PDF_Arguments(flav,beam,set,version,order,scheme);
     if (pid != PDF::isr::bunch_rescatter) {
       PDF_Base* pdfbase = PDF_Base::PDF_Getter_Function::GetObject(set, args);
-      if (m_bunch_particles[beam].IsHadron() && pdfbase == nullptr) {
-	string pdflibnames = string("");
-	for (std::set<std::string>::iterator pdflib=m_pdflibs.begin();
-	     pdflib!=m_pdflibs.end();++pdflib) pdflibnames += (*pdflib)+" ";
+      if (m_bunch_particles[beam].IsHadron() && pdfbase == nullptr)
         THROW(critical_error,
               "PDF '" + set + "' does not exist in any of the loaded" +
-	      " libraries [" + pdflibnames + "] for " +
-	      ToString(m_bunch_particles[beam]) +
-	      " bunch.");
-      }
+                      " libraries for " + ToString(m_bunch_particles[beam]) +
+                      " bunch.");
       if (pid == PDF::isr::hard_process) rpa->gen.SetPDF(beam, pdfbase);
       if (pdfbase == nullptr) {
         isrbases[beam] = new Intact(flav);

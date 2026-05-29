@@ -211,9 +211,6 @@ bool Matrix_Element_Handler::GenerateOneEvent()
     if (!GenerateOneTrialEvent())
       continue;
     m_evtinfo.m_ntrial=n;
-    if (p_beam && !p_beam->IsSymmetric()) {
-      if (p_remnants) p_remnants->InitializeCMSBoost();
-    }
     return true;
   }
   return false;
