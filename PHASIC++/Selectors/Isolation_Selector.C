@@ -230,19 +230,16 @@ bool Isolation_Selector::Trigger(Selector_List &sl)
   bool trigger(cnt>=m_nmin && cnt<=m_nmax);
   if (!trigger) {
     msg_Debugging()<<"Point discarded by isolation selector"<<std::endl;
-    m_sel_log->Hit(true);
-    return false;
+    return m_sel_log->CountingIdentity(false);
   }
   for (size_t k=0;k<m_sels.size();++k) {
     if (!m_sels[k]->Trigger(sl)) {
       msg_Debugging()<<"Point discarded by subselector"<<std::endl;
-      m_sel_log->Hit(true);
-      return false;
+      return m_sel_log->CountingIdentity(false);
     }
   }
   msg_Debugging()<<"Point passed"<<std::endl;
-  m_sel_log->Hit(false);
-  return true;
+  return m_sel_log->CountingIdentity(true);
 }
 
 void Isolation_Selector::BuildCuts(Cut_Data * cuts)

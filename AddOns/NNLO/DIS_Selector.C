@@ -32,12 +32,6 @@ using namespace ATOOLS;
 DIS_Selector::DIS_Selector(const Selector_Key &key):
   Selector_Base("DISNNLO_Selector",key.p_proc)
 {
-  m_nin=key.p_proc->NIn();
-  m_nout=key.p_proc->NOut();
-  m_n=m_nin+m_nout;
-  m_smin=0.0;
-  m_smax=sqr(rpa->gen.Ecms());
-  m_sel_log = new Selector_Log(m_name);
   Scoped_Settings s{ key.m_settings };
   const auto parameters = s.SetDefault<std::string>({}).GetVector<std::string>();
   assert(parameters[0] == "DISNNLO");
@@ -53,10 +47,10 @@ bool DIS_Selector::Trigger(ATOOLS::Selector_List &sl)
     p.push_back(sl[i].Momentum());
   double kt2(KT2(p,1));
   msg_Debugging()<<"kT = "<<sqrt(kt2)<<"\n";
-  if (kt2==-1.0) return 1-m_sel_log->Hit(1-false);
+  if (kt2==-1.0) return m_sel_log->CountingIdentity(false);
   int trig=(m_type==0 && kt2<sqr(m_qtmin)) ||
     (m_type==1 && kt2>sqr(m_qtmin));
-  return 1-m_sel_log->Hit(1-trig);
+  return m_sel_log->CountingIdentity(trig);
 }
 
 double DIS_Selector::KT2(Vec4D_Vector &moms,const int beam)

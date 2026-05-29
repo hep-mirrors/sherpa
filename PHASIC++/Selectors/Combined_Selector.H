@@ -22,14 +22,14 @@ namespace PHASIC {
     bool Initialize(const Selector_Key &key);
 
     bool Trigger(const ATOOLS::Vec4D_Vector &p,
-                 const ATOOLS::Flavour *fl=NULL, size_t n=0);
+                 const ATOOLS::Flavour *fl=NULL, size_t n=0) override;
     bool RSTrigger(ATOOLS::NLO_subevtlist *const subs);
-    bool Trigger(ATOOLS::Selector_List &sl);
+    bool Trigger(ATOOLS::Selector_List &sl) override;
 
-    void BuildCuts(Cut_Data *);
+    void BuildCuts(Cut_Data *) override;
     void AddOnshellCondition(size_t,double);
 
-    void Output();
+    void Output() override;
 
     Selector_Base *GetSelector(const std::string &name) const;
     void ListSelectors() const;
