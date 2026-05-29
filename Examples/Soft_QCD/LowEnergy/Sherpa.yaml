@@ -1,0 +1,19 @@
+# collider setup
+BEAMS: [11, -11]
+BEAM_ENERGIES: 1.
+PDF_LIBRARY: None
+
+ME_GENERATORS: Comix
+# general setting
+EVENTS: 50k
+
+# model parameters
+ALPHAS(MZ): 0.1188
+ORDER_ALPHAS: 2
+SHOWER:
+  FS_PT2MIN: 1.00
+
+PROCESSES:
+- 11 -11 -> 2112 -2112:
+    Order: {QCD: 0, EW: 2}
+
