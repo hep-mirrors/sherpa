@@ -109,7 +109,7 @@ bool Fastjet_Finder::Trigger(Selector_List &sl)
     int n(0);
     for (size_t i(0);i<input.size();++i)
       if (cs.exclusive_dmerge_max(i)>sqr(m_ptmin)) ++n;
-    return (1-m_sel_log->Hit(1-(n>=m_nj)));
+    return m_sel_log->CountingIdentity(n>=m_nj);
   }
 
   int n(0), nb(0), nb2(0);
@@ -139,7 +139,7 @@ bool Fastjet_Finder::Trigger(Selector_List &sl)
     msg_Debugging()<<"Point passed"<<std::endl;
   }
 
-  return (1-m_sel_log->Hit(1-trigger));
+  return m_sel_log->CountingIdentity(trigger);
 }
 
 

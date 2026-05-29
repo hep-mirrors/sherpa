@@ -89,7 +89,7 @@ bool Jet_Finder::Trigger(Selector_List &sl)
     m_results[0]["QCUT"][i] = pass;
   }
   msg_Debugging()<<"} -> "<<triggered<<"\n";
-  return 1-m_sel_log->Hit(!triggered);
+  return m_sel_log->CountingIdentity(triggered);
 }
 
 void Jet_Finder::BuildCuts(Cut_Data *cuts)

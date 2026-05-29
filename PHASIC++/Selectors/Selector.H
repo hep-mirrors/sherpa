@@ -24,25 +24,21 @@ namespace PHASIC {
   private:
 
     std::string m_name;
+    Process_Base *p_proc;
     long int    m_rejected, m_passed;
 
   public :
 
-    inline Selector_Log(const std::string &name): 
-      m_name(name), m_rejected(0), m_passed(0) {}
+    inline Selector_Log(const std::string &name, Process_Base *const proc): 
+      m_name(name), p_proc(proc), m_rejected(0), m_passed(0) {}
 
+    int CountingIdentity(bool event_passed);
     void Output();
 
     inline long int Rejections() const { return m_rejected; }
     inline long int Passed() const     { return m_passed;   }
 
     inline void ChangeName(std::string newname) { m_name=newname; }
-
-    inline int  Hit(bool hit) 
-    { 
-      if (hit) { ++m_rejected; return 1; } 
-      else { ++m_passed; return 0;}
-    }
 
   };// end of class Selector_Log
 
