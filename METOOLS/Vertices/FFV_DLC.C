@@ -93,10 +93,8 @@ FFV_DCalculator<SType>::FFV_DCalculator(const Vertex_Key &key):
     m_mij2=sqr(m_mij=p_v->Kin()->JIJT()->Flav().Mass());
   }
   bool nuc(p_v->Info() && p_v->Info()->Mode()&2);
-  double fch(p_v->Info()&&p_v->SType()==1?
-	     dabs(key.p_c->Flav().Charge()):1.0);
-  m_cpll=SComplex((nuc?fch:p_v->V()->cpl.front().Value())*p_cc->Coupling());
-  m_cplr=SComplex((nuc?fch:p_v->V()->cpl.front().Value())*p_cc->Coupling());
+  m_cpll=SComplex((nuc?1.0:p_v->V()->cpl.front().Value())*p_cc->Coupling());
+  m_cplr=SComplex((nuc?1.0:p_v->V()->cpl.front().Value())*p_cc->Coupling());
   m_cl=m_cpll!=SComplex(0.0,0.0);
   m_cr=m_cplr!=SComplex(0.0,0.0);
 }
@@ -127,13 +125,8 @@ void FFV_DCalculator<SType>::ConstructFFSDipole()
   if (p_v->Kin()->Type()==0) {
     double zi(p_v->Kin()->Z()), zj(1.0-zi), rv(1.0);
     Vec4D pi(p_v->Kin()->PI()), pj(p_v->Kin()->PJ());
-    double pij2((pi+pj).Abs2()), mt2(0.0);
-    double zim(zi), zjm(zj), zti(zi), ztj(zj);
-    if (p_v->Info()->SubType()==subscheme::Dire) {
-      zti=1.0-(1.0-zti)*(1.0-p_v->Kin()->Y());
-      ztj=1.0-(1.0-ztj)*(1.0-p_v->Kin()->Y());
-    }
-    p_v->Kin()->SetA(0.5*(zti*(1.0-zti)+ztj*(1.0-ztj)));
+    double pij2((pi+pj).Abs2()), mt2(0.0), zim(zi), zjm(zj);
+    p_v->Kin()->SetA(zim*zjm);
     if (p_v->Kin()->Massive()) {
       double y(p_v->Kin()->Y()), Q2(p_v->Kin()->Q2());
       double s(Q2-m_mi2-m_mj2-m_mk2);
@@ -144,11 +137,11 @@ void FFV_DCalculator<SType>::ConstructFFSDipole()
       mt2=2.0*p_v->Info()->Kappa()*(zp*zm-m_mi2/pij2);
       zim-=0.5*(1.0-rv);
       zjm-=0.5*(1.0-rv);
-      p_v->Kin()->SetA(p_v->Kin()->A()-zp*zm);
+      p_v->Kin()->SetA(zim*zjm-zp*zm);
     }
     q=zim*pi-zjm*pj;
     A=1.0-mt2;
-    B=4.0*p_v->Kin()->A();
+    B=-4.0*q.Abs2()/pij2;
     t=rv*pij2;
     p_v->Kin()->SetA(A-2.0*p_v->Kin()->A());
   }
@@ -174,13 +167,12 @@ void FFV_DCalculator<SType>::ConstructFFSDipole()
     Vec4D pi(p_v->Kin()->PJ()), pk(p_v->Kin()->PK());
     q=pi/ui-pk/(1.0-ui);
     A=x;
-    double tc((1.0-x)/x);
-    B=2.0*tc*ui*(1.0-ui)*q.Abs2()/(pi*pk);
+    B=2.0*(1.0-x)/x*ui*(1.0-ui)*q.Abs2()/(pi*pk);
     t=-2.0*(pi*p_v->Kin()->PI())*x;
-    p_v->Kin()->SetA(tc);
+    p_v->Kin()->SetA((1.0-x)/x);
     if (p_v->Kin()->Massive()) {
       double Q2(2.0*(p_v->Kin()->JKT()->P()*p_v->JC()->P()));
-      p_v->Kin()->SetA(tc-pk.Abs2()/Q2*ui/(1.0-ui));
+      p_v->Kin()->SetA((1.0-x)/x-pk.Abs2()/Q2*ui/(1.0-ui));
     }
     p_v->Kin()->SetA(A+2.0*p_v->Kin()->A());
   }
@@ -188,10 +180,8 @@ void FFV_DCalculator<SType>::ConstructFFSDipole()
     double x(p_v->Kin()->Z()), vi(p_v->Kin()->Y());
     Vec4D pi(p_v->Kin()->PJ()), pk(-p_v->Kin()->PK());
     double z(x), tc((1.0-x)/x);
-    if (p_v->Info()->SubType()==subscheme::Dire ||
-        p_v->Info()->SubType()==subscheme::CSS) z=x+vi;
-    if (p_v->Info()->SubType()==subscheme::Dire ||
-        p_v->Info()->SubType()==subscheme::CSS) tc+=1.0/(x+vi)-1.0/x;
+    if (p_v->Info()->SubType()==2) z=x+vi;
+    if (p_v->Info()->SubType()==2) tc+=1.0/(x+vi)-1.0/x;
     A=z;
     B=-4.0*tc;
     q=pi-vi*pk;
@@ -297,11 +287,6 @@ void FFV_DCalculator<SType>::ConstructFVSDipole()
   double A(0.0), t(0.0);
   if (p_v->Kin()->Type()==0) {
     double zi(p_v->Kin()->Z()), y(p_v->Kin()->Y());
-    double zti(zi), ztj(1.0-zi);
-    if (p_v->Info()->SubType()==subscheme::Dire) {
-      zti=1.0-(1.0-zti)*(1.0-y);
-      ztj=1.0-(1.0-ztj)*(1.0-y);
-    }
     double pipj(p_v->Kin()->PI()*p_v->Kin()->PJ());
     double rv(1.0), mt2(0.0);
     if (p_v->Kin()->Massive()) {
@@ -311,8 +296,8 @@ void FFV_DCalculator<SType>::ConstructFVSDipole()
 	     (sqr(Q2-pij2-m_mk2)-4.0*pij2*m_mk2));
       mt2=m_mij2/pipj;
     }
-    if (iisf) A=2.0/(1.0-zi*(1.0-y))-rv*(1.0+zti+mt2);
-    else A=2.0/(1.0-(1.0-zi)*(1.0-y))-rv*(1.0+ztj+mt2);
+    if (iisf) A=2.0/(1.0-zi*(1.0-y))-rv*(1.0+zi+mt2);
+    else A=2.0/(1.0-(1.0-zi)*(1.0-y))-rv*(2.0-zi+mt2);
     t=2.0*pipj;
     p_v->Kin()->SetA(A);
   }
@@ -322,9 +307,10 @@ void FFV_DCalculator<SType>::ConstructFVSDipole()
     double mt2(m_mij?m_mij2/pipj:0.0);
     if (iisf) A=2.0/(1.0-zi+y)-(1.0+zi+mt2);
     else A=2.0/(1.0-(1.0-zi)+y)-(2.0-zi+mt2);
-    if (p_v->Info()->SubType()==subscheme::CSS) {
-      if (iisf) A=2.0*zi/(1.0-zi+y)+(1.0-zi)-mt2;
-      else A=2.0*(1.0-zi)/(1.0-(1.0-zi)+y)+zi-mt2;
+    if (p_v->Info()->SubType()==2 &&
+	!p_v->Kin()->Massive()) {
+      if (iisf) A=2.0*zi/(1.0-zi+y)+(1.0-zi);
+      else A=2.0*(1.0-zi)/(1.0-(1.0-zi)+y)+zi;
     }
     t=2.0*pipj*(1.0-y);
     p_v->Kin()->SetA(A);
@@ -333,7 +319,8 @@ void FFV_DCalculator<SType>::ConstructFVSDipole()
     double x(p_v->Kin()->Z()), ui(p_v->Kin()->Y());
     if (iisf) A=2.0/(1.0-x+ui)-(1.0+x);
     else A=1.0-2.0*x*(1.0-x);
-    if (p_v->Info()->SubType()==subscheme::CSS) {
+    if (p_v->Info()->SubType()==2 &&
+	!p_v->Kin()->Massive()) {
       if (iisf) A=2.0*x/(1.0-x+ui)+(1.0-x);
     }
     t=-2.0*(p_v->Kin()->PI()*p_v->Kin()->PJ())*x;
@@ -341,11 +328,10 @@ void FFV_DCalculator<SType>::ConstructFVSDipole()
   }
   else {
     double x(p_v->Kin()->Z()), z(x);
-    if (p_v->Info()->SubType()==subscheme::Dire ||
-        p_v->Info()->SubType()==subscheme::CSS) z=x+p_v->Kin()->Y();
-    if (iisf) A=2.0/(1.0-x)-(1.0+z);
-    else A=1.0-2.0*z*(1.0-z);
-    if (p_v->Info()->SubType()==subscheme::CSS) {
+    if (p_v->Info()->SubType()==2) z=x+p_v->Kin()->Y();
+    if (iisf) A=2.0/(1.0-x)-(1.0+x);
+    else A=1.0-2.0*x*(1.0-x);
+    if (p_v->Info()->SubType()==2) {
       if (iisf) A=2.0*z/(1.0-x)+(1.0-z);
       else A=1.0-2.0*z*(1.0-z);
     }

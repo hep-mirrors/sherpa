@@ -1,6 +1,10 @@
-set(SM_SOURCES  Model.C)
+set(SM_SOURCES Model.C
+               LowEnergy_Model.C 
+               Baryon_FormFactors.C 
+               Meson_FormFactors.C )
 
-set(SM_HEADERS Model.H)
+set(SM_HEADERS Model.H
+               LowEnergy_Model.H )
 
 sherpa_create_git_info(SM ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR})
  

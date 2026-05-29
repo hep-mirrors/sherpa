@@ -1,7 +1,6 @@
 #include "METOOLS/Explicit/Vertex.H"
 
 #include "MODEL/Main/Single_Vertex.H"
-#include "MODEL/Main/Model_Base.H"
 #include "METOOLS/Explicit/Dipole_Kinematics.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/Exception.H"
@@ -44,8 +43,7 @@ std::map<std::string,Int_Vector> Vertex::s_h;
 Vertex::Vertex(const Vertex_Key &key): 
   p_v(key.p_mv), p_c(NULL),
   p_info(key.p_dinfo), p_kin(NULL), p_h(NULL),
-  m_sign(false), m_fperm(0), m_stype(key.m_stype),
-  m_icplfac(1.0)
+  m_sign(false), m_fperm(0), m_icplfac(1.0)
 {
   if (key.p_mv==NULL) return;
   if (p_info)
@@ -56,8 +54,7 @@ Vertex::Vertex(const Vertex_Key &key):
   for (ckey.m_n=0;ckey.m_n<key.p_mv->Lorentz.size();++ckey.m_n) {
     std::string ctag(ToString(ckey.p_mv->Color[ckey.m_n].PID()));
     if (key.p_dinfo) {
-      if (key.m_stype==2) ctag="S-D";
-      else if (abs(ckey.p_c->Flav().StrongCharge())==3) ctag="S-T";
+      if (abs(ckey.p_c->Flav().StrongCharge())==3) ctag="S-T";
       else if (key.p_c->Flav().StrongCharge()==8) ctag="S-F";
       else {
 	for (size_t i(0);i<m_lc.size();++i) {
@@ -76,14 +73,22 @@ Vertex::Vertex(const Vertex_Key &key):
 	    ctag+"'");
     }
     ckey.p_cc=m_cc.back();
-    std::string lname=ckey.m_p;
-    if(key.p_dinfo)
-      lname+="X"+MODEL::s_model->MappedLorentzName(ckey.p_mv->Lorentz[ckey.m_n]);
-    else lname+=ckey.p_mv->Lorentz[ckey.m_n];
-    m_lc.push_back(LC_Getter::GetObject(lname,ckey));
+    std::string skey(key.p_dinfo?"X":"");
+    m_lc.push_back(LC_Getter::GetObject
+		   (ckey.m_p+skey+ckey.p_mv->Lorentz[ckey.m_n],ckey));
     if (m_lc.back()==NULL) {
       msg_Out()<<*ckey.p_mv<<std::endl;
-      THROW(fatal_error,"Lorentz calculator not implemented '"+lname+"'");
+      THROW(fatal_error,"Lorentz calculator not implemented '"+
+	    ckey.m_p+ckey.p_mv->Lorentz[ckey.m_n]+"'");
+    }
+    std::string ffkey("Point");
+    if (ckey.p_mv->FormFactor.size()>ckey.m_n)
+      ffkey=ckey.p_mv->FormFactor[ckey.m_n];
+    m_ff.push_back(FF_Getter::GetObject(ffkey,ckey));
+    if (m_ff.back()==NULL) {
+      msg_Out()<<*ckey.p_mv<<std::endl;
+      THROW(fatal_error,"Form factor not implemented '"+
+	    ckey.p_mv->FormFactor[ckey.m_n]+"'");
     }
   }
 }
@@ -134,7 +139,8 @@ void Vertex::Evaluate()
 	      if (m_cc[k]->Evaluate(m_cjj)) {
 		CObject *j(m_lc[k]->Evaluate(m_cjj));
 		if (j==NULL) continue;
-		j->Multiply(p_v->Coupling(k)*m_cc[k]->Coupling());
+		j->Multiply(p_v->Coupling(k)*
+			    m_cc[k]->Coupling()*m_ff[k]->FF());
 		j->SetH(H(hid));
 		m_cc[k]->AddJ(j);
 		SetZero(false);
@@ -166,7 +172,8 @@ void Vertex::Evaluate()
 	if (m_cc[k]->Evaluate(m_cjj)) {
 	  CObject *j(m_lc[k]->Evaluate(m_cjj));
 	  if (j==NULL) continue;
-	  j->Multiply(p_v->Coupling(k)*m_cc[k]->Coupling());
+	  j->Multiply(p_v->Coupling(k)*
+		      m_cc[k]->Coupling()*m_ff[k]->FF());
 	  j->SetH(H(hid));
 	  m_cc[k]->AddJ(j);
 	  SetZero(false);
@@ -292,17 +299,14 @@ bool Vertex::Map(const Vertex &v)
 		 <<" "<<v.VId()<<" "<<v.CVLabel()<<"\n";
 #endif
   if(m_cc.size()!=v.m_cc.size()) return false;
-  for (size_t i{ 0 }; i < m_cc.size(); ++i) {
-    const Color_Calculator* cc{ m_cc[i] };
-    const Color_Calculator* other_cc{ v.m_cc[i] };
-    if (typeid(*cc) != typeid(*other_cc))
-      return false;
-    const Lorentz_Calculator* lc{ m_lc[i] };
-    const Lorentz_Calculator* other_lc{ v.m_lc[i] };
-    if (typeid(*lc) != typeid(*other_lc))
-      return false;
-    if (p_v->cpl[i].Value() != v.p_v->cpl[i].Value())
-      return false;
+  for (size_t i(0);i<m_cc.size();++i) {
+    Color_Calculator* cc  = m_cc[i];
+    Color_Calculator* vcc = v.m_cc[i];
+    if (typeid(*cc)!=typeid(*vcc)) return false;
+    Lorentz_Calculator* lc  = m_lc[i];
+    Lorentz_Calculator* vlc = v.m_lc[i];
+    if (typeid(*lc)!=typeid(*vlc)) return false;
+    if (p_v->cpl[i].Value()!=v.p_v->cpl[i].Value()) return false;
   }
   return VId()==v.VId();
 }
@@ -330,7 +334,13 @@ std::string Vertex::CVLabel() const
 std::string Vertex::VLabel() const
 {
   std::string label;
-  if (s_vlmode&1) label+="\\scriptstyle\\blue F="+ToString(m_fperm);
+  if (s_vlmode&32) {
+    label+=std::string(label.length()>0?"\\\\":"")+VOrder();
+  }
+  if (s_vlmode&1) {
+    label+=std::string(label.length()>0?"\\\\":"")+
+           "\\scriptstyle\\blue F="+ToString(m_fperm);
+  }
   if (s_vlmode&2) {
     if (m_cc.empty() || m_lc.empty()) THROW(fatal_error,"Invalid call");
     std::string id(GetName(*m_cc.front())+"_"+GetName(*m_lc.front(),1));
@@ -361,6 +371,7 @@ std::string Vertex::VLabel() const
 void Vertex::CollectGraphs(Graph_Node *graph) const
 {
   graph->push_back("    \\fmfv{"+VLabel()+"}{"+VId()+"}");
+  graph->push_back("    %% "+VOrder());
   graph->push_back("    %% "+VId());
   for (size_t i(0);i<m_j.size();++i) m_j[i]->CollectGraphs(graph);
 }
@@ -373,6 +384,18 @@ const std::vector<int> &Vertex::Order() const
 int Vertex::Order(const size_t &id) const
 {
   return p_v->order[id];
+}
+
+std::string Vertex::VOrder() const
+{
+  std::string label("");
+  label+=std::string("\\mathcal{O}(g_s^{")+ToString(Order(0))
+         +std::string("}\\;e^{")+ToString(Order(1))+std::string("}");
+  for (size_t i(2);i<Order().size();++i)
+    label+=std::string("\\;g_\\text{BSM")+ToString(i-1)
+           +std::string("}^{")+ToString(Order(i))+std::string("}");
+  label+=std::string(")");
+  return label;
 }
 
 std::ostream &METOOLS::operator<<(std::ostream &str,const Vertex &v)
@@ -388,9 +411,14 @@ std::ostream &METOOLS::operator<<(std::ostream &str,const Vertex &v)
     if (v.Color().size() && v.Lorentz().size()) {
       str<<"'"<<GetName(*v.Color().front())
 	 <<"*"<<GetName(*v.Lorentz().front());
-      for (size_t i(1);i<v.Color().size();++i)
+      if (v.FormFactor().size())
+	str<<"*"<<GetName(*v.FormFactor().front());
+      for (size_t i(1);i<v.Color().size();++i) {
 	str<<"+"<<GetName(*v.Color()[i])
 	   <<"*"<<GetName(*v.Lorentz()[i]);
+	if (v.FormFactor().size()>i)
+	  str<<"*"<<GetName(*v.FormFactor()[i]);
+      }
       str<<"'";
     }
     if (v.V()) str<<v.Order();

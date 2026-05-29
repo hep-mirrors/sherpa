@@ -129,9 +129,7 @@ void ATOOLS::AddParticle(kf_code kfc, double mass, double radius, double width,
                          const std::string &antitexname,
                          bool dummy, bool group)
 {
-  if (s_kftable.find(kfc) != s_kftable.end()) {
-    THROW(fatal_error, "Particle already added.");
-  }
+  if (s_kftable.find(kfc) != s_kftable.end()) return;
   s_kftable[kfc] = new Particle_Info(
       kfc, mass, radius, width, icharge, strong, spin, majorana, on, stable,
       massive, idname, antiname, texname, antitexname, dummy, group);
@@ -209,7 +207,7 @@ void ATOOLS::AddParticle(kf_code kfc, double mass, double radius, double width,
                          const std::string &texname)
 {
   if (s_kftable.find(kfc) != s_kftable.end()) {
-    THROW(fatal_error, "Particle already added.");
+    return;
   }
   auto pdata = Settings::GetMainSettings()["PARTICLE_DATA"];
   const std::string key {ToString(kfc)};
@@ -243,7 +241,7 @@ void ATOOLS::AddParticle(kf_code kfc, double mass, double radius, double width,
                          const std::string &texname)
 {
   if (s_kftable.find(kfc) != s_kftable.end()) {
-    THROW(fatal_error, "Particle already added.");
+    return;
   }
   auto pdata = Settings::GetMainSettings()["PARTICLE_DATA"];
   const std::string key {ToString(kfc)};
