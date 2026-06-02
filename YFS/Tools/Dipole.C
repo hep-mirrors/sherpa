@@ -263,8 +263,6 @@ bool Dipole::BoostNLO() {
       poin.BoostBack(m_newmomenta[i]);
     }
     m_sp = (m_newmomenta[0]+m_newmomenta[1]).Abs2();
-    PRINT_VAR(m_newmomenta[0]+m_newmomenta[1]+m_photonSum);
-    PRINT_VAR(m_bornmomenta[0]+m_bornmomenta[1]);
     m_eikmomentum=m_newmomenta;
   }
   else if (Type() == dipoletype::final) {
@@ -291,7 +289,7 @@ bool Dipole::BoostNLO() {
     // Poincare boost(m_newmomenta[0]+m_newmomenta[1]);
     // boost.Boost(m_photonSum);
     double x = 1./(1-m_photonSum.E());
-    double y = 1./(1. + m_photonSum.E()/m_photonscale);
+    double y = 1./(1. + m_photonSum.E()/m_photonscale + 0.25*m_photonSum*m_photonSum/m_photonscale/m_photonscale);
     double sprim =(Q).Abs2()*y;
     Vec4D preboostk = m_photonSum;
     // if(IsBad(sprim)) return  false;
