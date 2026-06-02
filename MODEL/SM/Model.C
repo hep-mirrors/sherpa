@@ -750,7 +750,6 @@ void Standard_Model::InitEWVertices()
 }
 
 void Standard_Model::AddLowEnergyConstants(Model_Base * LE) {
-  msg_Out()<<METHOD<<": LE = |"<<LE<<"|\n";
   ScalarConstantsMap LEconstants = LE->ScalarConstants();
   for (ScalarConstantsMap::iterator scit=LEconstants.begin();
        scit!=LEconstants.end();scit++) {
@@ -759,7 +758,6 @@ void Standard_Model::AddLowEnergyConstants(Model_Base * LE) {
 }
 
 void Standard_Model::AddLowEnergyVertices(Model_Base * LE) {
-  msg_Out()<<METHOD<<": LE = |"<<LE<<"|\n";
   const std::vector<Single_Vertex> & LEvertices = LE->Vertices();
   for (std::vector<Single_Vertex>::const_iterator vit=LEvertices.begin();
        vit!=LEvertices.end();vit++)
