@@ -857,7 +857,7 @@ void SQED::addPhotonScalarVertex(const Flavour &a, const Flavour &b,const Kabbal
   m_v.back().AddParticle(b);
   m_v.back().Color.push_back(Color_Function(cf::None));
   m_v.back().Lorentz.push_back("SSV");
-  // m_v.back().FormFactor.push_back("FF_Pion");
+  m_v.back().FormFactor.push_back("FF_Pion");
   m_v.back().cpl.push_back(cpl*Q);
   m_v.back().order[1] = 1;
 };
