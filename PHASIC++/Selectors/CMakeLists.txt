@@ -16,6 +16,7 @@ set(Selectors_SOURCES Cut_Data.C
                       Fastjet_Selector_Base.C
                       Fastjet_Finder.C
                       Fastjet_Selector.C
+                      BhaBha_Selector.C
                       Fastjet_Veto.C)
 
 set(Selectors_HEADERS Cut_Data.H
