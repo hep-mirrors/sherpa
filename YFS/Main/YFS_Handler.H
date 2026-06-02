@@ -86,6 +86,7 @@ namespace YFS {
         void GenerateWeight();
         void CreatMomentumMap();
         void MakeCEEX();
+        void InitNLO();
         Vec4D_Vector GetPhotons();
         inline double GetWeight() const      { return m_yfsweight;  }
         inline ATOOLS::Vec4D GetPhotonSum() const      { return m_photonSumISR;  }

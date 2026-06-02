@@ -453,18 +453,28 @@ void YFS_Handler::CalculateBeta() {
   if (m_useceex) MakeCEEX();
 }
 
-
-
-double YFS_Handler::CalculateNLO(){
-  // CheckMomentumConservation();
+void YFS_Handler::InitNLO(){
   p_nlo->Init(m_flavs,m_reallab,m_bornMomenta);
   p_nlo->p_dipoles = p_dipoles;
   p_nlo->m_eikmom = m_plab;
   p_nlo->SetBorn(m_born);
   p_nlo->SetFSR(p_fsr);
   p_nlo->m_ISRPhotons = m_ISRPhotons;
-  p_nlo->m_FSRPhotons = m_FSRPhotons;
-  return p_nlo->CalculateNLO();
+  p_nlo->m_FSRPhotons = m_fsrphotonsforME;
+}
+
+double YFS_Handler::CalculateNLO(){
+  // CheckMomentumConservation();
+  InitNLO();
+  double res;
+  res = p_nlo->CalculateReal();
+  InitNLO();
+  res += p_nlo->CalculateVirtual();
+  InitNLO();
+  res += p_nlo->CalculateRealVirtual();
+  InitNLO();
+  res += p_nlo->CalculateRealReal();
+  return res;
 }
 
 
