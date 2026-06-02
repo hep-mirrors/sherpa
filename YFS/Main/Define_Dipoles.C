@@ -469,7 +469,7 @@ double Define_Dipoles::CalculateRealSub(const Vec4D &k) {
      if(!D.IsResonance()) continue;
     for(size_t i = 0; i < D.GetBornMomenta().size(); ++i)
     {
-      Vec4D p = D.GetBornMomenta(i);
+      Vec4D p = D.GetMomenta(i);
       eik += -D.m_Q[i]*p/(p*k);
     }
   }
@@ -847,7 +847,7 @@ double Define_Dipoles::CalculateFlux(const Vec4D &k){
   Vec4D Q,QX;
   if(m_noflux==1) return 1;
   if(HasISR()&&HasFSR()){
-    fluxtype = dipoletype::final;
+    fluxtype = dipoletype::initial;
   }
   else if(!HasFSR()){
     fluxtype = dipoletype::initial;
@@ -862,8 +862,8 @@ double Define_Dipoles::CalculateFlux(const Vec4D &k){
     for (auto &D : m_dipolesII) {
       QX = D.GetNewMomenta(0)+D.GetNewMomenta(1);
       Q =  D.GetMomenta(0)+D.GetMomenta(1);
-      sq = (Q).Abs2(); 
-      sx = (Q-k).Abs2();
+      sq = (QX).Abs2(); 
+      sx = (QX-k).Abs2();
       flux = (sx/sq);
       return flux;
     }
