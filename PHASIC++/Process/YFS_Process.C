@@ -183,7 +183,6 @@ bool YFS_Process::CalculateTotalXSec(const std::string &resultpath,
   p_int->Reset();
   auto psh = p_int->PSHandler();
   p_yfs->resetparticles();
-  PRINT_VAR(Flavours());
   p_yfs->SetFlavours(Flavours());
   psh->InitCuts();
   psh->CreateIntegrators();
