@@ -1,0 +1,73 @@
+#ifndef MODEL_DarkQCD_Model_H
+#define MODEL_DarkQCD_Model_H
+
+#include "MODEL/SM/Model.H"
+#include "MODEL/Main/Running_AlphaS.H"
+
+#define kf_Zp 32
+#define kf_Dv 4900001
+#define kf_gv 4900021
+#define kf_qv 4900101
+#define kf_jv 4900093
+#define kf_jjv 4900092
+
+namespace MODEL {
+
+  class One_Running_AlphaDark : public One_Running_AlphaS {
+  private:
+    double m_Nc;
+    void SetNC(double NC) {
+      m_Nc = NC;
+      m_TR = 1./2.;
+      m_CF = m_TR*(m_Nc*m_Nc-1.)/(m_Nc);
+      m_CA = 2*m_TR*m_Nc;
+    }
+  public:
+
+    One_Running_AlphaDark(const double as_MZ = 0.0,const double m2_MZ = 0.0,
+                          const int order = 0, const int thmode = 1) :
+      One_Running_AlphaS(NULL,as_MZ,m2_MZ,order,thmode)
+    {
+      auto s = ATOOLS::Settings::GetMainSettings()["DARK_SECTOR"];
+      SetNC(s["NC"].SetDefault(3).Get<double>());
+      /// TODO: Set thresholds.
+    }
+    
+  };
+
+  class Running_AlphaDark : public Running_AlphaS {
+  public:
+    Running_AlphaDark(const double as_MZ,const double m2_MZ,
+                      const int order, const int thmode,
+                      const PDF::ISR_Handler_Map& isr) : Running_AlphaS(as_MZ,m2_MZ,
+                                                                        order,thmode, isr) {
+      m_type = "Running_Coupling";
+      m_name = "Alpha_Dark";
+      m_alphas.clear();
+      for (PDF::ISR_Handler_Map::const_iterator it=isr.begin(); it!=isr.end(); ++it) {
+        m_alphas.insert(std::make_pair(it->first, new One_Running_AlphaDark(as_MZ, m2_MZ, order, thmode)));
+      }
+      SetActiveAs(PDF::isr::hard_process); 
+    }
+    
+  };
+
+  
+  class DarkQCD: public Standard_Model {
+
+  private:
+    void ParticleZprimeInit();
+    void InitZprimeVertices();
+    void InitDarkQCDVertices();
+    bool m_dec_dark_g4;
+  public:
+    DarkQCD();
+
+    bool ModelInit();
+    void InitVertices();
+    
+  };
+
+}
+
+#endif
