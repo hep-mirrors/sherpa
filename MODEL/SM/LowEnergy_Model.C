@@ -2,6 +2,7 @@
 #include "MODEL/Main/Running_AlphaQED.H"
 #include "MODEL/Main/Single_Vertex.H"
 #include "METOOLS/Explicit/Form_Factor.H"
+#include "METOOLS/FormFactors/Line_Shapes.H"
 #include "ATOOLS/Phys/KF_Table.H"
 #include "ATOOLS/Org/Scoped_Settings.H"
 #include "ATOOLS/Org/Message.H"
@@ -47,6 +48,8 @@ bool LowEnergy_Model::ModelInit()
   m_alpha     = 1./s["1/ALPHAQED(0)"].Get<double>();
   m_sinthetaW = sqrt(s["SIN2THETAW"].Get<double>());
   msg_Out()<<METHOD<<": 1/alpha = "<<(1./m_alpha)<<"\n";
+  METOOLS::LineShapes = new METOOLS::Line_Shapes();
+  METOOLS::LineShapes->Init();
   return true;
 }
 
@@ -88,6 +91,11 @@ void LowEnergy_Model::ParticleInit() {
   m_PseudoScalars.push_back(kf_K_S);
   m_PseudoScalars.push_back(kf_K_plus);
   m_PseudoScalars.push_back(kf_eta_prime_958);
+
+  AddParticle(kf_f_0_600,      0.600,    0.65, 0.600,      0,   0,     false,     true,false, "f(0)(600)","f_{0}(600)");
+  AddParticle(kf_rho_770,      0.77,     0.65, 0.1507,     0,   2,     false,     true,false, "rho(770)","rho(770)");
+  AddParticle(kf_rho_770_plus, 0.77,     0.65, 0.1507,     3,   2,     true,      true,false, "rho(770)+","rho^{+}(770)");
+  AddParticle(kf_omega_782,    0.78194,  0.65, 0.00841,    0,   2,     false,     true,false, "omega(782)","omega(782)");
 }
 
 void LowEnergy_Model::InitQEDConstants() {
@@ -171,9 +179,9 @@ void LowEnergy_Model::InitQEDVertices() {
     Kabbala Q("Q_{"+flav.TexName()+"}",flav.Charge());
     msg_Out()<<METHOD<<" for "<<flav<<": "<<flav.IntSpin()<<"\n";
     m_v.push_back(Single_Vertex());
-    m_v.back().AddParticle(flav.Bar());
-    m_v.back().AddParticle(flav);
     m_v.back().AddParticle(Flavour(kf_photon));
+    m_v.back().AddParticle(flav);
+    m_v.back().AddParticle(flav.Bar());
     m_v.back().Color.push_back(Color_Function(cf::None));
     m_v.back().Lorentz.push_back("SSV");
     m_v.back().FormFactor.push_back("VMD");
