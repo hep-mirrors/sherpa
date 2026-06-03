@@ -2,6 +2,7 @@
 #include "METOOLS/FormFactors/Resonance_Base.H"
 #include "ATOOLS/Math/MyComplex.H"
 #include "ATOOLS/Org/Message.H"
+#include "ATOOLS/Org/Exception.H"
 
 using namespace METOOLS;
 using namespace ATOOLS;
@@ -30,9 +31,74 @@ const double BreitWigner::Normalised2(const double & s) {
 }
 
 const Complex BreitWigner::Normalised(const double & s) {
-  return m_M2/Complex(m_M2-s,-sqrt(s)*(*p_width)(s));
+  return m_M2/Complex(m_M2-s,-m_M*(*p_width)(s));
 }
 
+///////////////////////////////////////////////////////////////////////////
+//
+// Weighted Breit Wigner
+//
+///////////////////////////////////////////////////////////////////////////
+
+const Complex WeightedBreitWigner::operator()(const double & s) {
+  return s/Complex(m_M2-s,-sqrt(s)*(*p_width)(s));
+}
+
+const Complex WeightedBreitWigner::Normalised(const double & s) {
+  THROW(fatal_error,"Normalised not implemented for Weighted BW form.");
+}
+
+const double  WeightedBreitWigner::Normalised2(const double & s) {
+  THROW(fatal_error,"Normalised2 not implemented for Weighted BW form.");
+}
+
+///////////////////////////////////////////////////////////////////////////
+//
+// Gounaris Sakurai
+//
+///////////////////////////////////////////////////////////////////////////
+
+GounarisSakurai::GounarisSakurai(Total_Width_Base * width,
+				 const resonance_type & type) :
+  Propagator_Base(width,type) {
+  msg_Out()<<METHOD<<" width = ["<<p_width<<"]\n";
+  m_Gamma = p_width->Flav().Width();
+  m_mpi   = Flavour(kf_pi_plus).Mass();
+  m_mpi2  = sqr(m_mpi);
+  m_ppi2  = (m_M2-4.*m_mpi2)/4.;
+  m_ppi   = sqrt(m_ppi2);
+  m_d     = ( 3./M_PI * m_mpi2/m_ppi2 * log((m_M+2.*m_ppi)/(2.*m_mpi)) +
+	      m_M/(2.*M_PI*m_ppi) - m_M*m_mpi2/(M_PI*pow(m_ppi,3)) );
+  m_hM2   = h(m_M2);
+  m_dhM2  = dh(m_M2);
+}
+
+const double GounarisSakurai::h(const double & q2) const {
+  double q = sqrt(q2);
+  return 2./M_PI * m_ppi/q * log((q+2.*m_ppi)/(2.*m_mpi));
+}
+const double GounarisSakurai::dh(const double & q2) const {
+  double ppi2 = q2/4.-m_mpi2;
+  return h(q2)/8. * (1./ppi2-4./q2) + 1./(2.*M_PI*q2);
+}
+const double GounarisSakurai::f(const double & q2) const {
+  return ( m_Gamma*m_M2/pow(m_ppi,3.) *
+	   ( (q2/4.-m_mpi2)*(h(q2)-m_hM2) +
+	     m_ppi2*(m_M2-q2)*dh(q2) ) );
+}
+
+const Complex GounarisSakurai::operator()(const double & s) {
+  return ( (m_M2+m_d*m_M*m_Gamma)/
+	   Complex(m_M2-s+f(s), -m_M*(*p_width)(s)) );
+}
+
+const Complex GounarisSakurai::Normalised(const double & s) {
+  THROW(fatal_error,"Normalised not implemented for Gounaris-Sakurai form.");
+}
+
+const double  GounarisSakurai::Normalised2(const double & s) {
+  THROW(fatal_error,"Normalised2 not implemented for Gounaris-Sakurai form.");
+}
 
 ///////////////////////////////////////////////////////////////////////////
 //

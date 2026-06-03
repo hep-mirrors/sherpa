@@ -96,6 +96,10 @@ void LowEnergy_Model::ParticleInit() {
   AddParticle(kf_rho_770,      0.77,     0.65, 0.1507,     0,   2,     false,     true,false, "rho(770)","rho(770)");
   AddParticle(kf_rho_770_plus, 0.77,     0.65, 0.1507,     3,   2,     true,      true,false, "rho(770)+","rho^{+}(770)");
   AddParticle(kf_omega_782,    0.78194,  0.65, 0.00841,    0,   2,     false,     true,false, "omega(782)","omega(782)");
+  AddParticle(kf_rho_1450,     1.465,    0.65, 0.31,       0,   2,     false,     true,false, "rho(1450)","rho(1450)");
+  AddParticle(100213,          1.465,    0.65, 0.31,       3,   2,     true,      true,false, "rho(1450)+","rho^{+}(1450)");
+  AddParticle(kf_rho_1700,     1.7,      0.65, 0.24,       0,   2,     false,     true,false, "rho(1700)","rho(1700)");
+  AddParticle(30213,           1.7,      0.65, 0.24,       3,   2,     true,      true,false, "rho(1700)+","rho^{+}(1700)");
 }
 
 void LowEnergy_Model::InitQEDConstants() {
