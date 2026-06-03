@@ -138,8 +138,9 @@ Beam_Base* Beam_Parameters::InitializeMonochromatic(int num)
 Beam_Base * Beam_Parameters::InitializeLeptonic(int num)
 {
   Flavour beam_particle     = GetFlavour("BEAMS",num);
-  double beam_energy        = Max((*this)("BEAM_ENERGIES",num), beam_particle.Mass());
-  double beam_polarization  = (*this)("BEAM_POLARIZATIONS",num);
+  double beam_energy        = Max(m_settings["BEAM_ENERGIES"].GetTwoVector<double>()[num],
+          beam_particle.Mass());
+  double beam_polarization  = m_settings["BEAM_POLARIZATIONS"].GetTwoVector<double>()[num];
   return new Lepton_Beam(beam_particle,beam_energy,beam_polarization,1-2*num);
 }
 
