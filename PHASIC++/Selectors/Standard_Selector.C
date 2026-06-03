@@ -776,7 +776,7 @@ bool BhaBha_Angle_Selector::Trigger(Selector_List &sl)
       if(m_labframe) p_proc->Integrator()->Beam()->BoostBackLab(mom);
       double ang = mom.Theta((mom[3]>0?Vec4D::ZVEC:-Vec4D::ZVEC));
       if(!m_use_radians) ang *= 180./M_PI;
-      if (m_sel_log->Hit( ((ang<m_angmin) || (ang>m_angmax)) )) return false;
+      if (m_sel_log->CountingIdentity( ((ang<m_angmin) || (ang>m_angmax)) )) return false;
     }
   }
   return true;
