@@ -184,14 +184,8 @@ void Vertex::Evaluate()
 	if (m_cc[k]->Evaluate(m_cjj)) {
 	  CObject *j(m_lc[k]->Evaluate(m_cjj));
 	  if (j==NULL) continue;
-<<<<<<< HEAD
 	  j->Multiply(p_v->Coupling(k)*
 		      m_cc[k]->Coupling()*m_ff[k]->FF());
-||||||| parent of 2eff5fc7a (Changes for pion form-factor. It is now directly)
-	  j->Multiply(p_v->Coupling(k)*m_cc[k]->Coupling());
-=======
-	  j->Multiply(p_v->Coupling(k)*m_cc[k]->Coupling()*(m_ff[k]!=NULL?m_ff[k]->FF():1.));
->>>>>>> 2eff5fc7a (Changes for pion form-factor. It is now directly)
 	  j->SetH(H(hid));
 	  m_cc[k]->AddJ(j);
 	  SetZero(false);
