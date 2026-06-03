@@ -27,6 +27,7 @@ namespace METOOLS {
     int          m_pos;
     void FixMode(const Vertex_Key &key);
     void Construct();
+    void ConstructPionFormFactor();
   public:
     FFVMD(const Vertex_Key &key);
     Complex FF();
@@ -72,10 +73,7 @@ void FFVMD::FixMode(const Vertex_Key &key) {
 void FFVMD::Construct() {
   switch (int(m_mode)) {
   case int(FF_0_PP_mode::pipi_0):
-    m_props.Add(new METOOLS::BreitWigner(METOOLS::LineShapes->Get(Flavour(kf_rho_770))),
-		Complex(1.,0.));
-    m_props.Add(new METOOLS::BreitWigner(METOOLS::LineShapes->Get(Flavour(kf_omega_782))),
-		Complex(0.0,0.1));
+    ConstructPionFormFactor();
     break;
   case int(FF_0_PP_mode::unknown):
   default:
@@ -84,12 +82,30 @@ void FFVMD::Construct() {
   }
 }
 
+void FFVMD::ConstructPionFormFactor() {
+  METOOLS::Summed_Propagator * rhofac = new METOOLS::Summed_Propagator();
+  rhofac->Add(new METOOLS::Unity(),Complex(1.,0.));
+  rhofac->Add(new METOOLS::WeightedBreitWigner(LineShapes->Get(Flavour(kf_omega_782))),
+	      0.00158*Complex(cos(0.075),sin(0.075)) );
+  // I will need to make a phi(1020) line shape or, better, produce a simplistic
+  // lineshape with a fixed width (which boils down to make a fixed-width propagator).
+  METOOLS::Multiplied_Propagator * rho = new METOOLS::Multiplied_Propagator();
+  rho->Add(new METOOLS::GounarisSakurai(LineShapes->Get(Flavour(kf_rho_770))));
+  rho->Add(rhofac);
+  m_props = METOOLS::Summed_Propagator();
+  m_props.Add(rho);
+  m_props.Add(new METOOLS::GounarisSakurai(LineShapes->Get(Flavour(kf_rho_1450))),
+	      0.14104*Complex(cos(3.7797),sin(3.7797)) );
+  m_props.Add(new METOOLS::GounarisSakurai(LineShapes->Get(Flavour(kf_rho_1700))),
+	      0.0614*Complex(cos(1.429),sin(1.429)) );
+}
+
 Complex FFVMD::FF() {
   Current *j = m_pos<0?p_v->JC():p_v->J(m_pos);
   // there was a minus sign before in Q2.
   double Q2  = j->P().Abs2();
   /*
-  for (map<Propagator_Base *,Complex>::iterator pit=m_props.GetAll().begin();
+    for (map<Propagator_Base *,Complex>::iterator pit=m_props.GetAll().begin();
        pit!=m_props.GetAll().end();pit++) {
     msg_Out()<<METHOD<<"("<<Q2<<"): "<<pit->second<<" * "
 	     <<(*pit->first)(Q2)<<".\n";

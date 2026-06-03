@@ -28,11 +28,46 @@ namespace METOOLS {
     virtual const double Normalised2(const double & s) = 0;
   };
 
+  class Unity : public Propagator_Base {
+  public:
+    Unity(Total_Width_Base * width=NULL,
+	  const resonance_type & type=resonance_type::running) :
+      Propagator_Base(width,type) {}
+    const Complex operator()(const double & s)  { return Complex(1.,0.); }
+    const Complex Normalised(const double & s)  { return Complex(1.,0.); }
+    const double  Normalised2(const double & s) { return 1.; }
+  };
+  
   class BreitWigner : public Propagator_Base {
   public:
     BreitWigner(Total_Width_Base * width,
 		const resonance_type & type=resonance_type::running) :
       Propagator_Base(width,type) {}
+    const Complex operator()(const double & s);
+    const Complex Normalised(const double & s);
+    const double  Normalised2(const double & s);
+  };
+
+  class WeightedBreitWigner : public Propagator_Base {
+  public:
+    WeightedBreitWigner(Total_Width_Base * width,
+			const resonance_type & type=resonance_type::running) :
+      Propagator_Base(width,type) {}
+    const Complex operator()(const double & s);
+    const Complex Normalised(const double & s);
+    const double  Normalised2(const double & s);
+  };
+
+  class GounarisSakurai : public Propagator_Base {
+  private:
+    double m_Gamma, m_mpi, m_mpi2, m_ppi, m_ppi2;
+    double m_d, m_hM2, m_dhM2;
+    const double h(const double & q2) const;
+    const double dh(const double & q2) const;
+    const double f(const double & q2) const;
+  public:
+    GounarisSakurai(Total_Width_Base * width,
+		    const resonance_type & type=resonance_type::running);
     const Complex operator()(const double & s);
     const Complex Normalised(const double & s);
     const double  Normalised2(const double & s);
