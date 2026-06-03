@@ -165,7 +165,12 @@ double MINLO_Scale_Setter::Calculate(const Vec4D_Vector &momenta,const size_t &m
   DEBUG_FUNC(p_proc->Name()<<" from "<<p_proc->Caller()->Name()<<", R="<<m_rproc<<", V="<<m_vproc);
   Cluster_Amplitude *ampl(p_ampl = Cluster_Amplitude::New());
   ampl->SetNIn(p_proc->NIn());
-  for (size_t i(0);i<m_p.size();++i) ampl->CreateLeg(m_p[i],m_f[i]);
+  for (size_t i(0);i<m_p.size();++i) {
+    ampl->CreateLeg(m_p[i],m_f[i]);
+    if (p_proc->NIn()==2 && i<p_proc->NIn())
+      ampl->Legs().back()->SetBeam(p_proc->Caller()->Get<Single_Process>()->
+				   Integrator()->ISR()->Swap() ? 1-i : i);
+  }
   Single_Process *proc(p_proc->Get<Single_Process>());
   std::vector<std::set<MCS_Params> > alltrials(ampl->Legs().size()-(m_nin+m_noutmin-1));
   std::vector<std::vector<std::pair<size_t,double> > >

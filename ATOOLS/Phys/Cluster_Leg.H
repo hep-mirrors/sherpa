@@ -41,8 +41,9 @@ namespace ATOOLS {
     Vec4D   m_p;
     Flavour m_fl;
     ColorID m_c;
-    bool m_fromdec;
-
+    bool    m_fromdec;
+    int     m_beam;
+    
     double  m_kt2[2];
 
     static ClusterLeg_PVector s_legs;
@@ -54,9 +55,10 @@ namespace ATOOLS {
     { *this=ref; p_ampl=ampl; }
     inline Cluster_Leg(Cluster_Amplitude *const ampl,
 		       const Vec4D &p,const Flavour &fl,
-		       const ColorID &c=ColorID()):
+		       const ColorID &c=ColorID(),
+		       const int &beam=-1):
       p_ampl(ampl), m_id(0), m_st(0), m_n(0), m_d(0), m_k(0),
-      m_p(p), m_fl(fl), m_c(c), m_fromdec(false)
+      m_p(p), m_fl(fl), m_c(c), m_fromdec(false), m_beam(beam)
     { m_kt2[0]=m_kt2[1]=-1.0; }
 
     inline ~Cluster_Leg() {}
@@ -65,7 +67,8 @@ namespace ATOOLS {
 			    const Cluster_Leg &ref);
     static Cluster_Leg *New(Cluster_Amplitude *const ampl,
 			    const Vec4D &p,const Flavour &fl,
-			    const ColorID &c=ColorID());
+			    const ColorID &c=ColorID(),
+			    const int &beam=-1);
     void Delete();
 
     // inline functions
@@ -94,7 +97,9 @@ namespace ATOOLS {
     inline double KT2(const int i) const { return m_kt2[i]; }
 
     inline void SetFromDec(const bool &val){m_fromdec=val;}
+    inline void SetBeam(const bool &beam){m_beam=beam;}
     inline bool FromDec() const {return m_fromdec;}
+    inline int  Beam() const   { return m_beam; }
 
 
   };// end of class Cluster_Leg

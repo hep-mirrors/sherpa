@@ -191,6 +191,7 @@ int MI_Processes::FillHardScatterBlob(Blob *&  blob,const double & pt2veto) {
   array<int,2> inflavs;
   for (size_t i=0;i<2;i++) {
     Particle * part = proc->GetParticle(i);
+    part->SetBeam(i);
     blob->AddToInParticles(part);
     inflavs[i] = (part->Flav().IsAnti() ? -1 : 1) * part->Flav().Kfcode();
   }
@@ -227,6 +228,7 @@ double MI_Processes::MakeTriggerBlob(ATOOLS::Blob *& blob) {
   array<int,2> inflavs;
   for (size_t i=0;i<2;i++) {
     Particle * part = proc->GetParticle(i);
+    part->SetBeam(i);
     blob->AddToInParticles(part);
     inflavs[i] = (part->Flav().IsAnti() ? -1 : 1) * part->Flav().Kfcode();
   }

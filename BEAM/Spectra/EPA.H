@@ -32,7 +32,7 @@ namespace BEAM {
 
     bool CalculateWeight(double x, double q2) override;
     void FixPosition() override;
-    void SetOutMomentum(const ATOOLS::Vec4D& out) override;
+    void SetOutMomentum(const ATOOLS::Vec4D& out, const size_t& i = 0) override;
 
     double Xmax() const override { return p_ff->Xmax(); }
     double Xmin() const override { return p_ff->Xmin(); }
