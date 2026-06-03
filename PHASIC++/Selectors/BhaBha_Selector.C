@@ -85,7 +85,7 @@ bool Angle_Selector::Trigger(Selector_List &sl) {
       //   if(m_labframe) p_proc->Integrator()->Beam()->BoostBackLab(mom);
       const double ang = mom.Theta(beamMom);
       //   if(!m_use_radians) ang *= 180./M_PI;
-      if (m_sel_log->Hit(((ang < m_angmin) || (ang > m_angmax))))
+      if (m_sel_log->CountingIdentity(((ang < m_angmin) || (ang > m_angmax))))
         return false;
     }
   }
