@@ -25,7 +25,7 @@ public:
         p_pionformfactor(std::unique_ptr<FormFactor>(new FormFactor())) {
     p_pionformfactor->Init();
   }
-  Complex FF() const override {
+  Complex FF() override {
     if (p_pionformfactor->Type() == ATOOLS::ff::factored)
       return 1.;
     Current *j(m_mode < 0 ? p_v->JC() : p_v->J(m_mode));
