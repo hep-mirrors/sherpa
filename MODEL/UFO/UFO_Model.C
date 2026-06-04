@@ -40,8 +40,16 @@ namespace UFO{
   // at ME level by setting 'massive' to zero in SetMassiveFlags.
   void UFO_Model::SetSMMass(const kf_code &kf,const double &m)
   {
-    if (ATOOLS::s_kftable.find(kf)==ATOOLS::s_kftable.end())
-      THROW(fatal_error,"SM particle not in model");
+    if (ATOOLS::s_kftable.find(kf)==ATOOLS::s_kftable.end()) {
+      // THROW(fatal_error,"SM particle not in model");
+      msg_Info() << "WARNING: SM particle " << kf << " is not in the model" << std::endl; 
+      msg_Info() << "Creating dummy particle with mass " << m << std::endl;
+      bool is_massive = m > 3;
+      int charge = (kf == 21 || kf == 0) ? 0 : kf < 6 ? kf % 2 == 0 ? 2 : -1 : -1;
+      int strong = kf == 0 ? 8 : kf < 6 ? 3 : 0;
+      ATOOLS::s_kftable[kf] = new ATOOLS::Particle_Info(kf,m,.0,.0,charge,strong,1,0,1,1,is_massive,"d","db", "d", "\\bar{d}");
+      return;
+    }
     if (ATOOLS::s_kftable[kf]->m_mass) return;
     ATOOLS::s_kftable[kf]->m_mass=m;
     ATOOLS::s_kftable[kf]->m_hmass=m;
@@ -65,7 +73,7 @@ namespace UFO{
   void UFO_Model::SetMassiveFlags(){
     for (ATOOLS::KF_Table::iterator it=ATOOLS::s_kftable.begin(); it!=ATOOLS::s_kftable.end(); ++it)
       if (it->second->m_mass==0.0)
-	it->second->m_massive=0;
+	    it->second->m_massive=0;
   }
 
   // Set the stable flag consistent with UFO input.
@@ -80,6 +88,31 @@ namespace UFO{
     for( int hadron : s["UFO_HADRONS"].GetVector<int>()) {
       auto it=ATOOLS::s_kftable.find(std::abs(hadron));
       if (it!=ATOOLS::s_kftable.end()) it->second->m_hadron=1;
+    }
+  }
+
+  // Ensure that the user specified settings take precedence over others if set
+  void UFO_Model::RunCardOverrides() {
+    auto pdata = ATOOLS::Settings::GetMainSettings()["PARTICLE_DATA"];
+    for (ATOOLS::KF_Table::const_iterator it(ATOOLS::s_kftable.begin()); it!=ATOOLS::s_kftable.end(); ++it) {
+      const kf_code kfc = it->first;
+      const std::string key {ATOOLS::ToString(kfc)};
+      it->second->m_mass = it->second->m_hmass =
+          pdata[key]["Mass"].GetScalarWithOtherDefault(it->second->m_mass);
+      it->second->m_width =
+          pdata[key]["Width"].GetScalarWithOtherDefault(it->second->m_width);
+      it->second->m_on =
+          pdata[key]["Active"].GetScalarWithOtherDefault(it->second->m_on);
+      it->second->m_stable =
+          pdata[key]["Stable"].GetScalarWithOtherDefault(it->second->m_stable);
+        it->second->m_narrow =
+          pdata[key]["Narrow"].SetDefault(0).Get<int>();
+      it->second->m_massive =
+          pdata[key]["Massive"].GetScalarWithOtherDefault(it->second->m_massive);
+      it->second->m_icharge =
+          pdata[key]["IntCharge"].GetScalarWithOtherDefault(it->second->m_icharge);
+      it->second->m_strong =
+          pdata[key]["StrongCharge"].GetScalarWithOtherDefault(it->second->m_strong);
     }
   }
 

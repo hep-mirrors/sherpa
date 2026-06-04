@@ -37,6 +37,7 @@ namespace UFO{
 
     virtual void ParamInit()    {}
     virtual void ParticleInit() {}
+    void RunCardOverrides();
 
     virtual void FillLorentzMap() = 0;
     virtual std::string MappedLorentzName(const std::string& label) const;

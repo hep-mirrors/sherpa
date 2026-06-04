@@ -21,6 +21,7 @@ namespace MODEL{
       SetMassiveFlags();
       SetStableFlags();
       SetSMMasses();
+      RunCardOverrides();
       // Massive and Stable flags
       // are set consistently with
       // UFO above.
