@@ -340,6 +340,7 @@ bool Jet_Evolution::AftermathOfSuccessfulShower(Blob *blob, Blob_List *bloblist,
      bloblist->FindLast(btp::Shower));
   if (showerblob==NULL || blob->Type()== btp::Hadron_Decay) return true;
   showerblob->AddStatus(blob_status::needs_reconnections);
+  showerblob->AddStatus(blob_status::needs_hadrondecays);
   return p_remnants->ExtractShowerInitiators(showerblob);
 }
 
