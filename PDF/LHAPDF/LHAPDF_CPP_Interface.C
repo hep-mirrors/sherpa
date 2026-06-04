@@ -21,6 +21,7 @@ namespace PDF {
     double        m_x,m_Q2;
     std::vector<int> m_disallowedflavour;
     unsigned int m_A;
+    bool m_iso_swap;
   public:
     LHAPDF_CPP_Interface(const ATOOLS::Flavour,std::string,int);
     ~LHAPDF_CPP_Interface();
@@ -54,6 +55,7 @@ LHAPDF_CPP_Interface::LHAPDF_CPP_Interface(const ATOOLS::Flavour _bunch,
   m_type="LHA["+m_set+"]";
 
   Scoped_Settings s{ Settings::GetMainSettings()["LHAPDF"] };
+  m_iso_swap = s["ISOSPIN_SWAP"].SetDefault(0).GetScalar<bool>();
 
   m_bunch = _bunch;
   if (m_bunch.IsIon()) m_A = m_bunch.GetMassNumber();
@@ -247,9 +249,24 @@ double LHAPDF_CPP_Interface::GetXPDF(const kf_code& kf, bool anti) {
       break;
     }
   }
+
   if (!m_calculated[kfc]) {
-    m_xfx[kfc]=p_pdf->xfxQ2(kfc,m_x,m_Q2);
-    m_calculated[kfc]=true;
+      if (m_iso_swap) {
+        if (kfc == 1) {
+          m_xfx[kfc]=p_pdf->xfxQ2(2,m_x,m_Q2);}
+        else if (kfc == 2) {
+          m_xfx[kfc]=p_pdf->xfxQ2(1,m_x,m_Q2);}
+        else if (kfc == -1) {
+          m_xfx[kfc]=p_pdf->xfxQ2(-2,m_x,m_Q2);}
+        else if(kfc == -2) {
+          m_xfx[kfc]=p_pdf->xfxQ2(-1,m_x,m_Q2);}
+        else {
+          m_xfx[kfc]=p_pdf->xfxQ2(kfc,m_x,m_Q2);}
+        }
+      else {
+          m_xfx[kfc]=p_pdf->xfxQ2(kfc,m_x,m_Q2);
+      }
+      m_calculated[kfc]=true;
   }
   return m_rescale*m_xfx[kfc]*m_A;
 }
