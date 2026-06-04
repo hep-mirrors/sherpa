@@ -33,7 +33,8 @@ RealVirtual::RealVirtual(const PHASIC::Process_Info &pi) {
   m_sym *= ATOOLS::Flavour::ISSymmetryFactor(args.m_inflavs);
   double cplfac(1.0);
   cplfac *= pow(p_loop_me->AlphaQED(), rr_pi.m_mincpl[1]);
-  m_factor = p_loop_me->AlphaQED() / 2. / M_PI;
+  m_factor = p_loop_me->AlphaQED() / 2. / M_PI / m_sym;
+  // p_loop_me->SwitchMode(1);
 }
 
 RealVirtual::~RealVirtual() {
@@ -63,8 +64,9 @@ double RealVirtual::Calc_V(const ATOOLS::Vec4D_Vector &p, const double B,
     const double dalpha = ((*aqed)(scale)-aqed->AqedThomson());
     run_corr = 4. * dalpha * B;
   }
-  p_loop_me->Calc(p, 1);
-  const double gammaborn = p_loop_me->ME_Born() / 2. / M_PI / m_sym;
+  p_loop_me->Calc(p, B);
+  // const double gammaborn = p_loop_me->ME_Born() * p_loop_me->AlphaQED() * B / m_sym;// * p_loop_me->AlphaQED() / 2. / M_PI;
+  const double gammaborn = p_loop_me->ME_Born();// * p_loop_me->AlphaQED() / 2. / M_PI;// / m_sym;
   // m_factor *= p_loop_me->ME_Born();
   switch (p_loop_me->Mode()) {
   case 0:

@@ -352,7 +352,7 @@ double NLO_Base::CalculateReal(Vec4D k, int fsrcount) {
         p[p_nlodipoles->m_flav_label[f]] = Dip->GetNewMomenta(i);
         i++;
       }
-      k = Dip->m_dipolePhotons[0];
+      // k = Dip->m_dipolePhotons[0];
     }
   } else {
     MapMomenta(p, k);
@@ -381,7 +381,7 @@ double NLO_Base::CalculateReal(Vec4D k, int fsrcount) {
   double tot, rcoll;
   double subloc = p_nlodipoles->CalculateRealSub(k);
   double subb;
-  m_real = r;
+  m_real = r * norm;
   if (fsrcount == 0 || fsrcount == 3)
     subb = p_dipoles->CalculateRealSubEEX(kk);
   else
@@ -500,8 +500,10 @@ double NLO_Base::CalculateRealVirtual(Vec4D k, int fsrcount) {
   double flux(1);
   Vec4D kk = k;
   p_nlodipoles->MakeDipoles(m_flavs, m_plab, m_plab);
+  p_nlodipoles->MakeDipolesFF(m_flavs, m_plab, m_plab);
+  p_nlodipoles->MakeDipolesIF(m_flavs, m_plab, m_plab);
   // p_nlodipoles->CreateAllDipoles(m_flavs,m_plab,m_plab);
-  dipoletype::code fluxtype = p_nlodipoles->WhichResonant(k);
+  // dipoletype::code fluxtype = p_nlodipoles->WhichResonant(k);
   // if(fluxtype==dipoletype::final){
   if (fsrcount) {
     if (!HasFSR())
@@ -520,7 +522,7 @@ double NLO_Base::CalculateRealVirtual(Vec4D k, int fsrcount) {
         p[p_nlodipoles->m_flav_label[f]] = Dip->GetNewMomenta(i);
         i++;
       }
-      k = Dip->m_dipolePhotons[0];
+      // k = Dip->m_dipolePhotons[0];
     }
   } else {
     MapMomenta(p, k);
@@ -530,7 +532,6 @@ double NLO_Base::CalculateRealVirtual(Vec4D k, int fsrcount) {
   if (fsrcount)
     MapInitial(p);
   CheckMasses(p, 1);
-  // CheckMasses(p, 1);
   Vec4D_Vector pp = p;
   pp.pop_back();
   Flavour_Vector fl = m_flavs;
@@ -553,10 +554,10 @@ double NLO_Base::CalculateRealVirtual(Vec4D k, int fsrcount) {
   // const double aB = subloc* p_virt->Calc(m_plab,
   // m_born);;//m_oneloop;//CalculateVirtual();//*p_realvirt->m_factor;
   // PRINT_VAR(0.278318/m_rescale_alpha);
-  p_nlodipoles->MakeDipolesII(fl, pp, m_plab);
-  p_nlodipoles->MakeDipoles(fl, pp, m_plab);
-  // p_nlodipoles->CreateAllDipoles(fl,pp,m_plab);
-  p_nlodipoles->MakeDipolesIF(fl, pp, m_plab);
+  // p_nlodipoles->MakeDipolesII(fl, pp, m_plab);
+  // p_nlodipoles->MakeDipoles(fl, pp, m_plab);
+  // // p_nlodipoles->CreateAllDipoles(fl,pp,m_plab);
+  // p_nlodipoles->MakeDipolesIF(fl, pp, m_plab);
 
   // p.push_back(k);
   // m_plab = pp;
@@ -647,9 +648,9 @@ double NLO_Base::CalculateRealReal() {
     for (int j = i + 1; j < photons.size(); ++j) {
       Vec4D k = photons[i];
       Vec4D kk = photons[j];
-      int isFSR_i = (i >= nISR) ? 1 : 0;
-      int isFSR_j = (j >= nISR) ? 1 : 0;
-      rr += CalculateRealReal(k, kk, isFSR_i, isFSR_j);
+      const int isFSR_i = (i >= nISR) ? 1 : 0;
+      const int isFSR_j = (j >= nISR) ? 1 : 0;
+      rr += CalculateRealReal(k, kk, 0, 0);
       if (m_check_rr_sub) {
         // k*=2;
         // kk*=2;
@@ -667,20 +668,16 @@ double NLO_Base::CalculateRealReal() {
 
 double NLO_Base::CalculateRealReal(Vec4D k1, Vec4D k2, int fsr1, int fsr2) {
   // if(k1.E()<0.01 && k2.E() < 0.01 ) return 0;
+  // if(fsr1!=fsr2){
+  //   m_zeroRR++;
+  //   return 0;
+  // }
   const double norm = 2 * pow(2 * M_PI, 6);
   Vec4D_Vector p(m_plab), pi(m_bornMomenta), pf(m_bornMomenta), plab(m_plab);
   Vec4D_Vector pp = p;
   Vec4D kk1 = k1;
   Vec4D kk2 = k2;
-  const double real1 = CalculateReal(kk1, 3 + fsr1);
-  const double real2 = CalculateReal(kk2, 3 + fsr2);
-  const double sub1 = (fsr1 != 1 ? p_dipoles->CalculateRealSubEEX(kk1)
-                           : p_dipoles->CalculateRealSubEEX(kk1));
-  const double sub2 = (fsr2 != 1 ? p_dipoles->CalculateRealSubEEX(kk2)
-                           : p_dipoles->CalculateRealSubEEX(kk2));
-  p_nlodipoles->MakeDipolesII(m_flavs,m_plab,m_plab);
-  p_nlodipoles->MakeDipolesIF(m_flavs,m_plab,m_plab);
-  p_nlodipoles->MakeDipoles(m_flavs,m_plab,m_plab);
+
   // p_nlodipoles->CreateAllDipoles(m_flavs, m_plab, m_plab);
   if (fsr1 && !fsr2) {
     if (!HasFSR())
@@ -700,7 +697,7 @@ double NLO_Base::CalculateRealReal(Vec4D k1, Vec4D k2, int fsr1, int fsr2) {
         p[p_nlodipoles->m_flav_label[f]] = Dip->GetNewMomenta(i);
         i++;
       }
-      k1 = Dip->m_dipolePhotons[0];
+      // k1 = Dip->m_dipolePhotons[0];
     }
   }
   if (!fsr1 && fsr2) {
@@ -720,7 +717,7 @@ double NLO_Base::CalculateRealReal(Vec4D k1, Vec4D k2, int fsr1, int fsr2) {
         p[p_nlodipoles->m_flav_label[f]] = Dip->GetNewMomenta(i);
         i++;
       }
-      k2 = Dip->m_dipolePhotons[0];
+      // k2 = Dip->m_dipolePhotons[0];
     }
   }
   if (fsr1 && fsr2) {
@@ -729,7 +726,7 @@ double NLO_Base::CalculateRealReal(Vec4D k1, Vec4D k2, int fsr1, int fsr2) {
     Dipole_Vector *diplo = p_dipoles->GetDipoleFF();
     for (Dipole_Vector::iterator Dip = p_nlodipoles->GetDipoleFF()->begin();
          Dip != p_nlodipoles->GetDipoleFF()->end(); ++Dip) {
-      double scalek = p_fsr->ScalePhoton(k1 + k2);
+      double scalek = p_fsr->ScalePhoton(k1+k2);
       // scalek += p_fsr->ScalePhoton(k2);
       Dip->ClearPhotons();
       Dip->SetPhotonScale(scalek);
@@ -744,8 +741,8 @@ double NLO_Base::CalculateRealReal(Vec4D k1, Vec4D k2, int fsr1, int fsr2) {
         p[p_nlodipoles->m_flav_label[f]] = Dip->GetNewMomenta(i);
         i++;
       }
-      k1 = Dip->m_dipolePhotons[0];
-      k2 = Dip->m_dipolePhotons[1];
+      // k1 = Dip->m_dipolePhotons[0];
+      // k2 = Dip->m_dipolePhotons[1];
     }
   }
 
@@ -755,11 +752,11 @@ double NLO_Base::CalculateRealReal(Vec4D k1, Vec4D k2, int fsr1, int fsr2) {
   p.push_back(k2);
   if (fsr1 || fsr2)
     MapInitial(p);
-  CheckMasses(p, 2);
+  // CheckMasses(p, 2);
   Vec4D_Vector _p = p;
   _p.pop_back();
   _p.pop_back();
-  m_plab = pp;
+  // m_plab = pp;
   p_nlodipoles->MakeDipolesII(m_flavs, _p, m_plab);
   p_nlodipoles->MakeDipoles(m_flavs, _p, m_plab);
   p_nlodipoles->MakeDipolesIF(m_flavs, _p, m_plab);
@@ -768,7 +765,7 @@ double NLO_Base::CalculateRealReal(Vec4D k1, Vec4D k2, int fsr1, int fsr2) {
   const double subloc2 = p_nlodipoles->CalculateRealSub(k2);
   double flux;
   if (m_flux_mode == 1)
-    flux = p_nlodipoles->CalculateFlux(k1+k2);// * p_nlodipoles->CalculateFlux(k2);
+    flux = p_nlodipoles->CalculateFlux(k1) * p_nlodipoles->CalculateFlux(k2);
   // if(m_flux_mode==1) flux = p_nlodipoles->CalculateFlux(k1,k2);
   else
     flux = p_dipoles->CalculateFlux(k1) * p_dipoles->CalculateFlux(k2);
@@ -790,14 +787,28 @@ double NLO_Base::CalculateRealReal(Vec4D k1, Vec4D k2, int fsr1, int fsr2) {
     m_zeroRR++;
     return 0;
   }
+  const double real1 = CalculateReal(kk1, 3 + fsr1);
+  const double real2 = CalculateReal(kk2, 3 + fsr2);
+  p_nlodipoles->MakeDipolesII(m_flavs,m_plab,m_plab);
+  p_nlodipoles->MakeDipolesIF(m_flavs,m_plab,m_plab);
+  p_nlodipoles->MakeDipoles(m_flavs,m_plab,m_plab);
+  const double sub1 = (fsr1 != 1 ? p_dipoles->CalculateRealSubEEX(kk1)
+                           : p_dipoles->CalculateRealSubEEX(kk1));
+  const double sub2 = (fsr2 != 1 ? p_dipoles->CalculateRealSubEEX(kk2)
+                           : p_dipoles->CalculateRealSubEEX(kk2));
   m_recola_evts += 1;
   double fullsub =
       (-subloc2 * real1 - subloc1 * real2 - subloc1 * subloc2 * m_born);
-  tot = (r * flux *flux + fullsub / m_rescale_alpha) / sub1 / sub2;
+  tot = (r * flux + fullsub / m_rescale_alpha) / sub1 / sub2;
   if (IsBad(tot)) {
     msg_Error() << "NNLO RR is NaN" << std::endl;
   }
   m_plab = plab;
+  // const double real = CalculateReal(k1,fsr1)+ CalculateReal(k2,fsr2);
+  // if(fabs(tot/real) > 10 ) {
+  //   m_zeroRR++;
+  //   return 0;
+  // }
   if(!IsZero(tot)) m_nonZeroRR++;
   return tot;
 }
