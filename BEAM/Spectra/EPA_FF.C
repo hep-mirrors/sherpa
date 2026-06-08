@@ -55,13 +55,12 @@ EPA_FF_Base::EPA_FF_Base(const ATOOLS::Flavour& beam, const int dir)
   m_bmin = s["bMin"].GetTwoVector<double>()[b];
   m_b_pl_threshold = s["bThreshold"].GetTwoVector<double>()[b] * m_R;
   m_bmax = s["bMax"].GetTwoVector<double>()[b];
-
-  // Pre-calculate the normalisation of the  distribution \in [bmin, bmax]
-  m_norm_distribution =
-      0.5 * std::log((ATOOLS::sqr(m_bmax) + 1.) / (ATOOLS::sqr(m_bmin) + 1.));
+  m_chi_cut = s["chiMax"].GetTwoVector<double>()[b];
 
   if (m_bmin <= 0. || m_bmin > m_bmax)
     THROW(invalid_input, "Unphysical input for EPA impact parameter. ");
+  if (m_chi_cut <= 0.)
+    THROW(invalid_input, "Unphysical input for EPA chiMax (must be > 0). ");
   if (m_xmin <= 0. || m_xmin > m_xmax || m_xmax > 1.)
     THROW(invalid_input, "Unphysical input for EPA x-limits. ");
   if (m_q2min > m_q2max)
