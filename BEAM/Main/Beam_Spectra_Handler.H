@@ -69,6 +69,7 @@ namespace BEAM {
     inline double Weight() const {
       return (*p_weight)();
     }
+    inline void SetRejectionERan(double eran) const { p_weight->SetERan(eran); }
 
     // possible deprecated methods
     int    Polarisation() const { return m_polarisation; }

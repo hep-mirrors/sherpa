@@ -68,10 +68,12 @@ namespace PHASIC {
 
     void SetBeamERan()
     {
-      if (p_beamhandler->GetBeam(0)->Type() == BEAM::beamspectrum::EPA)
+      if (p_beamchannels->HasERan("b_0"))
         p_beamhandler->GetBeam(0)->SetERan(p_beamchannels->ERan("b_0"));
-      if (p_beamhandler->GetBeam(1)->Type() == BEAM::beamspectrum::EPA)
+      if (p_beamchannels->HasERan("b_1"))
         p_beamhandler->GetBeam(1)->SetERan(p_beamchannels->ERan("b_1"));
+      if (p_beamchannels->HasERan("b_phi"))
+        p_beamhandler->SetRejectionERan(p_beamchannels->ERan("b_phi"));
     }
   public:
     Phase_Space_Point(Phase_Space_Handler * psh);
