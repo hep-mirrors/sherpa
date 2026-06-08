@@ -107,10 +107,6 @@ namespace BEAM {
   }
 
   class EPA_FF_Base {
-  private:
-
-    double m_norm_distribution;
-
   protected:
 
     ATOOLS::Flavour m_beam;
@@ -120,22 +116,18 @@ namespace BEAM {
     double m_xmin, m_xmax;
     double m_bmin,
         m_bmax; //< bmin, bmax only relative to radius
+    double m_chi_cut; //< upper cut on chi = x*m*b
     double m_Zsquared, m_b,
         m_b_pl_threshold; //< b, b_pl_threshold are absolute distances
     std::unique_ptr<ATOOLS::TwoDim_Table> p_N_xb;
 
     size_t m_nxbins, m_nbbins;
 
-    double SampleImpactParameter(const double& ran)
+    // Importance-sample the impact parameter for this form factor's beam
+    // parameters; see SampleB for the 1/x support cap. Stores b in m_b.
+    double SampleImpactParameter(const double& x, const double& ran)
     {
-      // Sampling from b_abs/(b_abs^2 + R^2) with b_abs = b * R
-      m_b = sqrt((ATOOLS::sqr(m_bmin) + 1.) *
-                     std::exp(2. * ran * m_norm_distribution) -
-                 1.);
-      double weight = m_norm_distribution * (ATOOLS::sqr(m_b) + 1.) / m_b * m_R;
-      // multiply radius to convert b to physical distance
-      m_b *= m_R;
-      return weight;
+      return SampleB(x, ran, m_bmin, m_bmax, m_chi_cut, m_mass, m_R, m_b);
     }
     virtual void FillTables();
 
@@ -143,15 +135,33 @@ namespace BEAM {
 
     EPA_FF_Base(const ATOOLS::Flavour& beam, int dir);
     virtual ~EPA_FF_Base() = default;
+
+    // Pure importance-sampling of the (dimensionless) impact parameter for a
+    // given x. The upper limit is constrained by the physical b_max and the
+    // chi_max set by the user. The latter should be preferred as it does cut
+    // including the correct scaling with x.
+    static double SampleB(double x, double ran, double bmin, double bmax,
+                          double chi_cut, double mass, double R, double& b_phys)
+    {
+      const double bmaxx =
+          ATOOLS::Max(bmin, ATOOLS::Min(bmax, chi_cut / (x * mass * R)));
+      const double norm =
+          0.5 * std::log((ATOOLS::sqr(bmaxx) + 1.) / (ATOOLS::sqr(bmin) + 1.));
+      // Sampling from b_abs/(b_abs^2 + R^2) with b_abs = b * R
+      double b =
+          std::sqrt((ATOOLS::sqr(bmin) + 1.) * std::exp(2. * ran * norm) - 1.);
+      double weight = norm * (ATOOLS::sqr(b) + 1.) / b * R;
+      b_phys = b * R; // convert to physical distance
+      return weight;
+    }
+
     virtual double N(const double& x, const double& ran)
     {
-      double wt = SampleImpactParameter(ran);
+      double wt = SampleImpactParameter(x, ran);
       DEBUG_FUNC("x = " << x << ", ran = " << ran << ", b = " << m_b);
       if (m_b < m_b_pl_threshold) return (*p_N_xb)(x, m_b) * wt;
       // use point-like approximation for large impact parameters
       double chi = x * m_mass * m_b;
-      // do not compute the large-b large-x region, suppression by O(1e-45)
-      if (chi > 100) return 0.;
       return 2 * m_Zsquared * m_b * x * m_mass2 *
              (ATOOLS::sqr(ATOOLS::SF.Kn(1, chi)) +
               2. * m_mass / ATOOLS::rpa->gen.Ecms() *
