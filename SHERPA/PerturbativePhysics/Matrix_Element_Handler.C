@@ -61,8 +61,6 @@ void Matrix_Element_Handler::RegisterDefaults()
   s["NLO_SUBTRACTION_MODE"].SetDefault("QCD");
   s["NLO_IMODE"].SetDefault("IKP");
   s["NLO_MUR_COEFFICIENT_FROM_VIRTUAL"].SetDefault(true);
-
-  s["PSI"]["ASYNC"].SetDefault(false);
 }
 
 void Matrix_Element_Handler::RegisterMainProcessDefaults(

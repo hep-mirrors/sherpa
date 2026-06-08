@@ -736,9 +736,7 @@ bool MCatNLO_Process::CalculateTotalXSec(const std::string &resultpath,
   if (psh->AbsError()==0.0)
     psh->SetAbsError(psh->Error()*rpa->Picobarn()*
 		     dabs(p_bviproc->Integrator()->TotalResult()));
-#ifndef USING__Threading
   if (!p_rsproc->CalculateTotalXSec(resultpath,create)) res=false;
-#endif
   for (size_t i(0);i<p_bviproc->Size();++i)
     (*p_bproc)[i]->Integrator()->SetMax
       ((*p_bviproc)[i]->Integrator()->Max());
