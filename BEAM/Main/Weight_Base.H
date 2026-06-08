@@ -23,6 +23,8 @@ public:
   virtual double operator()() {
     return m_weight;
   }
+  // Set an integration random number (eran) used by the weight
+  virtual void SetERan(double) {}
 };
 } // namespace BEAM
 #endif

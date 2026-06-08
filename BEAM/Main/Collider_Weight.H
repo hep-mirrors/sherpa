@@ -13,6 +13,8 @@ namespace BEAM {
 
     int m_rejection;
     Beam_Rejection_Base* p_rejector;
+    // random number for azimuth between the two impact parameters
+    double m_eran;
 
   public:
 
@@ -22,7 +24,8 @@ namespace BEAM {
     void AssignKeys(ATOOLS::Integration_Info* const info) override;
     bool Calculate(const double& scale) override;
     double operator()() override;
-    bool Reject();
+    void SetERan(double eran) override { m_eran = eran; }
+    double OverlapWeight();
   };
 } // namespace BEAM
 #endif

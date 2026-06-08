@@ -1,12 +1,12 @@
 #include "BEAM/Main/Collider_Weight.H"
 
-#include "ATOOLS/Math/Random.H"
+#include "ATOOLS/Org/Exception.H"
 
 using namespace BEAM;
 
 Collider_Weight::Collider_Weight(Kinematics_Base* kinematics)
     : Weight_Base(kinematics), m_mode(collidermode::unknown),
-      p_rejector(nullptr)
+      p_rejector(nullptr), m_eran(0.)
 {
   if (p_beams[0]->Type() == beamspectrum::monochromatic &&
       p_beams[1]->Type() == beamspectrum::monochromatic)
@@ -27,28 +27,37 @@ Collider_Weight::Collider_Weight(Kinematics_Base* kinematics)
                     .SetDefault(0)
                     .Get<int>();
   if (m_rejection == 0) return;
+
+  // The rejection needs an impact parameter for each beam. Impact-parameter
+  // integration variables are registered (in Beam_Channels) only for beams
+  // carrying an EPA spectrum, so require at least one such beam
+  if (p_beams[0]->Type() != beamspectrum::EPA &&
+      p_beams[1]->Type() != beamspectrum::EPA)
+    THROW(fatal_error,
+          "BEAM_OVERLAP_REJECTION requires at least one EPA/Pomeron/Reggeon "
+          "beam to define an impact parameter.");
+
+  const ATOOLS::Flavour& b0 = p_beams[0]->Beam();
+  const ATOOLS::Flavour& b1 = p_beams[1]->Beam();
   if (m_rejection == 1)
-    p_rejector = new Radius_Rejection(p_beams[0]->Beam(), p_beams[1]->Beam());
-  else if (m_rejection > 1 && p_beams[0]->Beam().Kfcode() == kf_p_plus &&
-           p_beams[1]->Beam().Kfcode() == kf_p_plus)
+    p_rejector = new Radius_Rejection(b0, b1);
+  else if (b0.Kfcode() == kf_p_plus && b1.Kfcode() == kf_p_plus)
     p_rejector = new Proton_Proton_Rejection(
-        p_beams[0]->Beam(), p_beams[1]->Beam(),
-        (p_beams[0]->InMomentum() + p_beams[1]->InMomentum()).Abs2());
-  else if (m_rejection > 1 && (p_beams[0]->Beam().Kfcode() == kf_p_plus &&
-                               p_beams[1]->Beam().IsIon()) ||
-           (p_beams[0]->Beam().IsIon() &&
-            p_beams[1]->Beam().Kfcode() == kf_p_plus))
-    p_rejector =
-        new Proton_Nucleon_Rejection(p_beams[0]->Beam(), p_beams[1]->Beam());
-  else if (m_rejection > 1 && p_beams[0]->Beam().IsIon() &&
-           p_beams[1]->Beam().IsIon())
-    p_rejector =
-        new Nucleon_Nucleon_Rejection(p_beams[0]->Beam(), p_beams[1]->Beam());
-  else
-    msg_Error() << METHOD << ATOOLS::om::red
-                << ": Could not find appropriate beam radius rejection model, "
-                   "will not do any rejection.\n"
-                << ATOOLS::om::reset;
+        b0, b1, (p_beams[0]->InMomentum() + p_beams[1]->InMomentum()).Abs2());
+  else if ((b0.Kfcode() == kf_p_plus && b1.IsIon()) ||
+           (b0.IsIon() && b1.Kfcode() == kf_p_plus)) {
+    // fail fast at setup rather than aborting at the first weight evaluation
+    THROW(not_implemented,
+          "Proton-nucleon beam overlap rejection is not implemented.");
+  } else if (b0.IsIon() && b1.IsIon()) {
+    THROW(not_implemented,
+          "Nucleon-nucleon beam overlap rejection is not implemented.");
+  }
+
+  if (p_rejector == nullptr)
+    THROW(fatal_error,
+          "BEAM_OVERLAP_REJECTION requested but no rejection model matches the "
+          "beam combination.");
 }
 
 Collider_Weight::~Collider_Weight() = default;
@@ -73,18 +82,16 @@ bool Collider_Weight::Calculate(const double& scale)
 
 double Collider_Weight::operator()()
 {
-  if (m_rejection > 0 && Reject()) return 0.;
-  m_weight = p_beams[0]->Weight() * p_beams[1]->Weight();
+  double overlap_weight(1.);
+  if (m_rejection > 0) overlap_weight *= OverlapWeight();
+  m_weight = p_beams[0]->Weight() * p_beams[1]->Weight() * overlap_weight;
   return m_weight;
 }
 
-bool Collider_Weight::Reject()
+double Collider_Weight::OverlapWeight()
 {
   double b1(p_beams[0]->ImpactParameter()), b2(p_beams[1]->ImpactParameter());
-  double b = std::sqrt(b1 * b1 + b2 * b2 -
-                       2 * b1 * b2 * std::cos(2 * M_PI * ATOOLS::ran->Get()));
-  bool rejected = (*p_rejector)(b);
-  if (rejected)
-    msg_Debugging() << METHOD << ": Event rejected for b = " << b << "\n";
-  return rejected;
+  double b =
+      std::sqrt(b1 * b1 + b2 * b2 - 2 * b1 * b2 * std::cos(2 * M_PI * m_eran));
+  return (*p_rejector)(b);
 }

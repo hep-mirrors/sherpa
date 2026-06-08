@@ -33,7 +33,10 @@ namespace BEAM {
         : Beam_Rejection_Base(flav1, flav2)
     {
     }
-    double operator()(double b) final { return b < (m_radius1 + m_radius2); }
+    double operator()(double b) final
+    {
+      return b < (m_radius1 + m_radius2) ? 0. : 1.;
+    }
   };
 
   class Proton_Proton_Rejection: public Beam_Rejection_Base {
@@ -53,8 +56,7 @@ namespace BEAM {
       // Taken from fit in Section 3 in arxiv:2207.03012; given in GeV^-2
       constexpr double A(9.81), B(0.211), C(0.0185);
       double b0 = A + B * std::log(m_sNN) + C * ATOOLS::sqr(std::log(m_sNN));
-      return ATOOLS::ran->Get() >
-             ATOOLS::sqr(1. - std::exp(-1. * ATOOLS::sqr(b) / 2 / b0));
+      return ATOOLS::sqr(1. - std::exp(-1. * ATOOLS::sqr(b) / 2 / b0));
     }
   };
 
