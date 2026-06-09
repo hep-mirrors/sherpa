@@ -483,10 +483,8 @@ bool Rivet_Interface::Finish()
     mynames.resize(len);
     allnames.resize(len*mpi->Size()+1);
     mpi->Allgather(&mynames[0],len,MPI_CHAR,&allnames[0],len,MPI_CHAR);
-    char *catname = new char[len+1];
     for (size_t i(0);i<mpi->Size();++i) {
-      snprintf(catname, sizeof(catname),"%s",&allnames[len*i]);
-      std::string curname(catname);
+      std::string curname(&allnames[len*i], len-1);
       for (size_t epos(curname.find('|'));
            epos<curname.length();epos=curname.find('|')) {
         std::string cur(curname.substr(0,epos)), proc, jets;
@@ -514,7 +512,6 @@ bool Rivet_Interface::Finish()
         GetRivet(proc,ToType<int>(jets),&m_lastevent);
       }
     }
-    delete [] catname;
 
     // merge Rivet::AnalysisHandlers before finalising
     for (auto& it : m_rivet) {
