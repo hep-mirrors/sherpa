@@ -1,6 +1,7 @@
 #include "ATOOLS/Math/MathTools.H"
 #include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Math/Vector.H"
+#include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Phys/Flavour.H"
 #include "MODEL/Main/Running_AlphaQED.H"
@@ -153,6 +154,14 @@ void NLO_Base::InitializeRealVirtual(const PHASIC::Process_Info &pi) {
 }
 
 void NLO_Base::InitializeRealReal(const PHASIC::Process_Info &pi) {
+  if (!m_realtool) {
+  msg_Error() << "No real corrections matrix element provider found.\n"
+              << "    Double-real (RR) subtraction terms for NNLO cannot be\n"
+              << "    constructed without them. Check that the real correction\n"
+              << "    process has been set up and linked correctly before\n"
+              << "    initialising the NNLO subtraction.\n";
+  THROW(fatal_error, "Missing real corrections provider for NNLO RR subtraction");
+}
   p_realreal = new YFS::RealReal(pi);
   m_rrtool = true;
 }
@@ -307,7 +316,7 @@ double NLO_Base::CalculateReal() {
       CheckRealSub(k, 1);
     }
     // if (k.E() > m_hardmin) {
-    real += CalculateReal(k, 1);
+    real += CalculateReal(k, 0);
     fsrcount++;
     // }
   }
@@ -323,74 +332,81 @@ double NLO_Base::CalculateReal() {
   // }
   return real;
 }
-
 double NLO_Base::CalculateReal(Vec4D k, int fsrcount) {
-  // if(fsrcount!=1) return 0;
   double norm = 2. * pow(2 * M_PI, 3);
   Vec4D_Vector p(m_plab), pi(m_bornMomenta), pf(m_bornMomenta);
   dipoletype::code fluxtype;
   Vec4D kk = k;
   m_evts += 1;
-  // p_nlodipoles->CreateAllDipoles(m_flavs,m_plab,m_plab);
+
+  msg_Debugging() << METHOD << " fsrcount=" << fsrcount
+                  << " k=" << k << " E=" << k.E() << " pt=" << k.PPerp() << "\n";
+
   p_nlodipoles->MakeDipoles(m_flavs, m_plab, m_plab);
   p_nlodipoles->MakeDipolesIF(m_flavs, m_plab, m_plab);
   p_nlodipoles->MakeDipolesFF(m_flavs, m_plab, m_plab);
   fluxtype = p_nlodipoles->WhichResonant(k);
-  // if(fluxtype==dipoletype::final || fsrcount==4){
+
   if (fsrcount == 1 || fsrcount == 4) {
+    msg_Debugging() << METHOD << " FSR branch, fluxtype=" << fluxtype << "\n";
     if (!HasFSR() && m_borngamma.size() == 0)
-      msg_Error() << "Wrong dipole type in " << METHOD << endl;
+      msg_Error() << "Wrong dipole type in " << METHOD << "\n";
     for (Dipole_Vector::iterator Dip = p_nlodipoles->GetDipoleFF()->begin();
          Dip != p_nlodipoles->GetDipoleFF()->end(); ++Dip) {
       double scalek = p_fsr->ScalePhoton(k);
       Dip->SetPhotonScale(scalek);
       Dip->AddPhotonToDipole(k);
-      if (!Dip->BoostNLO())
+      if (!Dip->BoostNLO()) {
+        msg_Debugging() << METHOD << " BoostNLO failed, returning 0\n";
         return 0;
+      }
       int i(0);
       for (auto f : Dip->m_flavs) {
-        p[p_nlodipoles->m_flav_label[f]] = Dip->GetNewMomenta(i);
-        i++;
+        p[p_nlodipoles->m_flav_label[f]] = Dip->GetNewMomenta(i++);
       }
-      // k = Dip->m_dipolePhotons[0];
     }
   } else {
+    msg_Debugging() << METHOD << " ISR branch, fluxtype=" << fluxtype << "\n";
     MapMomenta(p, k);
   }
+
   p.push_back(k);
-  // if(fluxtype==dipoletype::final || fsrcount==4) MapInitial(p);
   if (fsrcount == 1 || fsrcount == 4)
     MapInitial(p);
   CheckMasses(p, 1);
+
   Vec4D_Vector pp = p;
   pp.pop_back();
   p_nlodipoles->MakeDipolesII(m_flavs, pp, m_plab);
   p_nlodipoles->MakeDipolesIF(m_flavs, pp, m_plab);
   p_nlodipoles->MakeDipoles(m_flavs, pp, m_plab);
+
   double r = p_real->Calc_R(p) / norm;
-  if (p_real->FailCut())
-    m_failcut = true;
+  m_real = r * norm;
+  if (p_real->FailCut()) m_failcut = true;
+
   double flux;
   if (m_flux_mode == 1)
     flux = p_nlodipoles->CalculateFlux(k);
   else if (m_flux_mode == 2)
-    flux = 0.5 *
-           (p_nlodipoles->CalculateFlux(kk) + p_nlodipoles->CalculateFlux(k));
+    flux = 0.5 * (p_nlodipoles->CalculateFlux(kk) + p_nlodipoles->CalculateFlux(k));
   else
     flux = p_dipoles->CalculateFlux(kk);
-  double tot, rcoll;
+
   double subloc = p_nlodipoles->CalculateRealSub(k);
-  double subb;
-  m_real = r * norm;
-  if (fsrcount == 0 || fsrcount == 3)
-    subb = p_dipoles->CalculateRealSubEEX(kk);
-  else
-    subb = p_dipoles->CalculateRealSubEEX(kk);
-  // if(IsZero(subb)) return 0;
+  double subb   = p_dipoles->CalculateRealSubEEX(kk);
   m_eikeex = subb;
   m_subloc = subloc;
+
+  msg_Debugging() << METHOD << " r=" << r << " flux=" << flux
+                  << " (mode=" << m_flux_mode << ")"
+                  << " subloc=" << subloc << " subb=" << subb
+                  << " born=" << m_born << " alpha=" << m_rescale_alpha << "\n";
+
   if (!CheckMomentumConservation(p)) {
-    msg_Error() << "Momentum Conservation fails in " << METHOD << std::endl;
+    msg_Debugging() << METHOD << " momentum conservation failed"
+                    << " k.E=" << k.E() << " dip_mass=" << (p[2]+p[3]).Mass() << "\n";
+    msg_Error() << "Momentum Conservation fails in " << METHOD << "\n";
     if (m_isr_debug || m_fsr_debug) {
       m_histograms1d["k_E"]->Insert(k.E());
       m_histograms1d["k_pt"]->Insert(k.PPerp());
@@ -398,23 +414,29 @@ double NLO_Base::CalculateReal(Vec4D k, int fsrcount) {
     }
     return 0;
   }
+
   if ((p[2] + p[3]).Mass() < massmin)
     massmin = (p[2] + p[3]).Mass();
+
   if (m_isr_debug || m_fsr_debug) {
     m_histograms1d["k_E_pass"]->Insert(k.E());
     m_histograms1d["k_pt_pass"]->Insert(k.PPerp());
     m_histograms1d["dip_mass_pass"]->Insert((p[2] + p[3]).Mass());
   }
-  if (IsZero(r))
-    return 0;
-  if (IsBad(r) || IsBad(flux)) {
-    msg_Error() << "Bad point for YFS Real" << std::endl
-                << "Real ME is : " << r << std::endl
-                << "Flux is : " << flux << std::endl;
+
+  if (IsZero(r)) {
+    msg_Debugging() << METHOD << " r=0, returning 0\n";
     return 0;
   }
-  // if(fsrcount==0 || fsrcount==3) flux=1;
-  // m_recola_evts += 1;
+  if (IsBad(r) || IsBad(flux)) {
+    msg_Debugging() << METHOD << " bad point: r=" << r << " flux=" << flux << "\n";
+    msg_Error() << "Bad point for YFS Real\n"
+                << "  Real ME : " << r << "\n"
+                << "  Flux    : " << flux << "\n";
+    return 0;
+  }
+
+  double tot, rcoll;
   if (m_submode == submode::local)
     tot = (r * flux - subloc * m_born / m_rescale_alpha) / subloc;
   else if (m_submode == submode::global)
@@ -422,8 +444,13 @@ double NLO_Base::CalculateReal(Vec4D k, int fsrcount) {
   else if (m_submode == submode::off)
     tot = (r * flux) / subb;
   else
-    msg_Error() << METHOD << " Unknown YFS Subtraction Mode " << m_submode
-                << std::endl;
+    msg_Error() << METHOD << " unknown YFS subtraction mode " << m_submode << "\n";
+
+  msg_Debugging() << METHOD << " submode=" << m_submode
+                  << " r*flux=" << r*flux
+                  << " sub=" << subloc * m_born / m_rescale_alpha
+                  << " tot=" << tot << "\n";
+
   if (m_isr_debug || m_fsr_debug) {
     double diff = ((r / subloc - m_born) - (rcoll / subb - m_born)) /
                   ((r / subloc - m_born) + (rcoll / subb - m_born));
@@ -432,38 +459,53 @@ double NLO_Base::CalculateReal(Vec4D k, int fsrcount) {
       m_histograms2d["Real_Flux"]->Insert(
           flux, sqrt(p_dipoles->GetDipoleII()->Sprime()));
   }
-  if (m_no_subtraction)
+
+  if (m_no_subtraction) {
+    msg_Debugging() << METHOD << " no_subtraction: returning r/subloc=" << r/subloc << "\n";
     return r / subloc;
-  if (IsBad(tot)) {
-    msg_Error() << "NLO real is NaN" << std::endl
-                << "R = " << r << std::endl
-                << "Local  S = " << subloc * m_born << std::endl
-                << "GLobal S = " << subb << std::endl;
   }
+
+  if (IsBad(tot)) {
+    msg_Debugging() << METHOD << " tot is NaN/Inf"
+                    << " r*flux=" << r*flux
+                    << " subloc*born=" << subloc*m_born
+                    << " subb=" << subb << "\n";
+    msg_Error() << "NLO real is NaN\n"
+                << "  R        : " << r << "\n"
+                << "  Local  S : " << subloc * m_born << "\n"
+                << "  Global S : " << subb << "\n";
+  }
+
   if (m_isr_debug || m_fsr_debug) {
     m_histograms2d["IFI_EIKONAL"]->Insert(k.Y(), k.PPerp(),
                                           p_nlodipoles->CalculateRealSubIF(k));
-    m_histograms2d["REAL_SUB"]->Insert((p[0] + p[1]).Mass(), k.E(),
-                                       tot / m_born);
+    m_histograms2d["REAL_SUB"]->Insert((p[0] + p[1]).Mass(), k.E(), tot / m_born);
     m_histograms2d["REAL"]->Insert(k.E(), k.Theta(), r);
     m_histograms2d["REAL_SUB"]->Insert(k.E(), k.Theta(), tot);
   }
+
   sumw += tot;
   rcount += 1;
   double avg = sumw / rcount;
-  if (rcount == 1000) {
+  if (rcount == 1000)
     m_ravg = avg;
-  }
   if (rcount > 1000) {
     double diff = fabs(1. - m_ravg / avg) * 100;
     if (diff > 10) {
-      msg_Debugging() << "Large jump in Real weight for " << k << std::endl;
+      msg_Debugging() << METHOD << " large weight jump: " << diff << "%"
+                      << " prev=" << m_ravg << " curr=" << avg
+                      << " n=" << rcount << "\n";
       m_ravg = avg;
-      // return 0;
     }
   }
-  if (fsrcount >= 3)
-    return r * flux - subloc * m_born / m_rescale_alpha;
+
+  if (fsrcount >= 3) {
+    double raw = r * flux - subloc * m_born / m_rescale_alpha;
+    msg_Debugging() << METHOD << " fsrcount>=3: returning raw=" << raw << "\n";
+    return raw;
+  }
+
+  msg_Debugging() << METHOD << " returning tot=" << tot << "\n";
   return tot;
 }
 
@@ -486,7 +528,7 @@ double NLO_Base::CalculateRealVirtual() {
         continue;
       CheckRealVirtualSub(k);
     }
-    realvirtual += CalculateRealVirtual(k, 1);
+    realvirtual += CalculateRealVirtual(k, 0);
   }
   return realvirtual;
 }
@@ -654,9 +696,9 @@ double NLO_Base::CalculateRealReal() {
       if (m_check_rr_sub) {
         // k*=2;
         // kk*=2;
-        if (k.E() < 0.3 * sqrt(m_s))
+        if (k.E() < 0.2 * sqrt(m_s))
           continue;
-        if (kk.E() < 0.1 * sqrt(m_s))
+        if (kk.E() < 0.2 * sqrt(m_s))
           continue;
         if (!m_failcut)
           CheckRealRealSub(k, kk, isFSR_i, isFSR_j);
@@ -667,21 +709,19 @@ double NLO_Base::CalculateRealReal() {
 }
 
 double NLO_Base::CalculateRealReal(Vec4D k1, Vec4D k2, int fsr1, int fsr2) {
-  // if(k1.E()<0.01 && k2.E() < 0.01 ) return 0;
-  // if(fsr1!=fsr2){
-  //   m_zeroRR++;
-  //   return 0;
-  // }
   const double norm = 2 * pow(2 * M_PI, 6);
-  Vec4D_Vector p(m_plab), pi(m_bornMomenta), pf(m_bornMomenta), plab(m_plab);
+  Vec4D_Vector p(m_plab);
   Vec4D_Vector pp = p;
-  Vec4D kk1 = k1;
-  Vec4D kk2 = k2;
+  Vec4D kk1 = k1, kk2 = k2;
 
-  // p_nlodipoles->CreateAllDipoles(m_flavs, m_plab, m_plab);
+  msg_Debugging() << METHOD << " fsr1=" << fsr1 << " fsr2=" << fsr2
+                  << " k1=" << k1 << " E1=" << k1.E() << " pt1=" << k1.PPerp()
+                  << " k2=" << k2 << " E2=" << k2.E() << " pt2=" << k2.PPerp() << "\n";
+
   if (fsr1 && !fsr2) {
+    msg_Debugging() << METHOD << " FSR branch: k1 only\n";
     if (!HasFSR())
-      msg_Error() << "Wrong dipole type in " << METHOD << endl;
+      msg_Error() << "Wrong dipole type in " << METHOD << "\n";
     for (Dipole_Vector::iterator Dip = p_nlodipoles->GetDipoleFF()->begin();
          Dip != p_nlodipoles->GetDipoleFF()->end(); ++Dip) {
       Dip->ClearPhotons();
@@ -689,127 +729,139 @@ double NLO_Base::CalculateRealReal(Vec4D k1, Vec4D k2, int fsr1, int fsr2) {
       Dip->SetPhotonScale(scalek);
       Dip->AddPhotonToDipole(k1);
       if (!Dip->BoostNLO()) {
-        msg_Error() << "NLO boost failed" << endl;
+        msg_Debugging() << METHOD << " BoostNLO failed (fsr1), returning 0\n";
+        msg_Error() << "NLO boost failed\n";
         return 0;
       }
       int i(0);
-      for (auto f : Dip->m_flavs) {
-        p[p_nlodipoles->m_flav_label[f]] = Dip->GetNewMomenta(i);
-        i++;
-      }
-      // k1 = Dip->m_dipolePhotons[0];
+      for (auto f : Dip->m_flavs)
+        p[p_nlodipoles->m_flav_label[f]] = Dip->GetNewMomenta(i++);
     }
   }
+
   if (!fsr1 && fsr2) {
+    msg_Debugging() << METHOD << " FSR branch: k2 only\n";
     if (!HasFSR())
-      msg_Error() << "Wrong dipole type in " << METHOD << endl;
+      msg_Error() << "Wrong dipole type in " << METHOD << "\n";
     for (Dipole_Vector::iterator Dip = p_nlodipoles->GetDipoleFF()->begin();
          Dip != p_nlodipoles->GetDipoleFF()->end(); ++Dip) {
       double scalek = p_fsr->ScalePhoton(k2);
       Dip->SetPhotonScale(scalek);
       Dip->AddPhotonToDipole(k2);
       if (!Dip->BoostNLO()) {
-        msg_Error() << "NLO boost failed" << endl;
+        msg_Debugging() << METHOD << " BoostNLO failed (fsr2), returning 0\n";
+        msg_Error() << "NLO boost failed\n";
         return 0;
       }
       int i(0);
-      for (auto f : Dip->m_flavs) {
-        p[p_nlodipoles->m_flav_label[f]] = Dip->GetNewMomenta(i);
-        i++;
-      }
-      // k2 = Dip->m_dipolePhotons[0];
-    }
-  }
-  if (fsr1 && fsr2) {
-    if (!HasFSR())
-      msg_Error() << "Wrong dipole type in " << METHOD << endl;
-    Dipole_Vector *diplo = p_dipoles->GetDipoleFF();
-    for (Dipole_Vector::iterator Dip = p_nlodipoles->GetDipoleFF()->begin();
-         Dip != p_nlodipoles->GetDipoleFF()->end(); ++Dip) {
-      double scalek = p_fsr->ScalePhoton(k1+k2);
-      // scalek += p_fsr->ScalePhoton(k2);
-      Dip->ClearPhotons();
-      Dip->SetPhotonScale(scalek);
-      Dip->AddPhotonToDipole(k1);
-      Dip->AddPhotonToDipole(k2);
-      if (!Dip->BoostNLO()) {
-        msg_Error() << "NLO boost failed" << endl;
-        return 0;
-      }
-      int i(0);
-      for (auto f : Dip->m_flavs) {
-        p[p_nlodipoles->m_flav_label[f]] = Dip->GetNewMomenta(i);
-        i++;
-      }
-      // k1 = Dip->m_dipolePhotons[0];
-      // k2 = Dip->m_dipolePhotons[1];
+      for (auto f : Dip->m_flavs)
+        p[p_nlodipoles->m_flav_label[f]] = Dip->GetNewMomenta(i++);
     }
   }
 
-  if (!fsr1 && !fsr2)
+  if (fsr1 && fsr2) {
+    msg_Debugging() << METHOD << " FSR branch: k1+k2\n";
+    if (!HasFSR())
+      msg_Error() << "Wrong dipole type in " << METHOD << "\n";
+    for (Dipole_Vector::iterator Dip = p_nlodipoles->GetDipoleFF()->begin();
+         Dip != p_nlodipoles->GetDipoleFF()->end(); ++Dip) {
+      Dip->ClearPhotons();
+      double scale = p_fsr->ScalePhoton(k1) + p_fsr->ScalePhoton(k2);
+      Dip->SetPhotonScale(scale);
+      Dip->AddPhotonToDipole(k1);
+      Dip->AddPhotonToDipole(k2);
+      if (!Dip->BoostNLO()) {
+        msg_Debugging() << METHOD << " BoostNLO failed (fsr1+fsr2), returning 0\n";
+        msg_Error() << "NLO boost failed\n";
+        return 0;
+      }
+      int i(0);
+      for (auto f : Dip->m_flavs)
+        p[p_nlodipoles->m_flav_label[f]] = Dip->GetNewMomenta(i++);
+    }
+  }
+
+  if (!fsr1 && !fsr2) {
+    msg_Debugging() << METHOD << " ISR branch: mapping momenta\n";
     MapMomenta(p, k1, k2);
+  }
+
   p.push_back(k1);
   p.push_back(k2);
   if (fsr1 || fsr2)
     MapInitial(p);
-  // CheckMasses(p, 2);
+
   Vec4D_Vector _p = p;
   _p.pop_back();
   _p.pop_back();
-  // m_plab = pp;
   p_nlodipoles->MakeDipolesII(m_flavs, _p, m_plab);
   p_nlodipoles->MakeDipoles(m_flavs, _p, m_plab);
   p_nlodipoles->MakeDipolesIF(m_flavs, _p, m_plab);
 
   const double subloc1 = p_nlodipoles->CalculateRealSub(k1);
   const double subloc2 = p_nlodipoles->CalculateRealSub(k2);
+
   double flux;
   if (m_flux_mode == 1)
-    flux = p_nlodipoles->CalculateFlux(k1) * p_nlodipoles->CalculateFlux(k2);
-  // if(m_flux_mode==1) flux = p_nlodipoles->CalculateFlux(k1,k2);
+    flux = p_nlodipoles->CalculateFlux(k1 + k2);
   else
     flux = p_dipoles->CalculateFlux(k1) * p_dipoles->CalculateFlux(k2);
-  double tot, rcoll;
+
+  msg_Debugging() << METHOD << " subloc1=" << subloc1 << " subloc2=" << subloc2
+                  << " flux=" << flux << " (mode=" << m_flux_mode << ")\n";
+
   if (!CheckMomentumConservation(p)) {
+    msg_Debugging() << METHOD << " momentum conservation failed, returning 0\n";
+    m_zeroRR++;
     return 0;
   }
-  // return 0;
+
   double r = p_realreal->Calc_R(p) / norm;
   if (p_realreal->FailCut()) {
+    msg_Debugging() << METHOD << " FailCut triggered, returning 0\n";
     m_failcut = true;
     m_zeroRR++;
     return 0;
   }
   if (IsBad(r) || IsBad(flux)) {
-    msg_Debugging() << "Bad point for YFS Real" << std::endl
-                << "Real ME is : " << r << std::endl
-                << "Flux is : " << flux << std::endl;
+    msg_Debugging() << METHOD << " bad point: r=" << r << " flux=" << flux << "\n";
     m_zeroRR++;
     return 0;
   }
+
+  p_nlodipoles->MakeDipolesII(m_flavs, m_plab, m_plab);
+  p_nlodipoles->MakeDipolesIF(m_flavs, m_plab, m_plab);
+  p_nlodipoles->MakeDipoles(m_flavs, m_plab, m_plab);
+
+  const double sub1  = p_dipoles->CalculateRealSubEEX(kk1);
+  const double sub2  = p_dipoles->CalculateRealSubEEX(kk2);
   const double real1 = CalculateReal(kk1, 3 + fsr1);
   const double real2 = CalculateReal(kk2, 3 + fsr2);
-  p_nlodipoles->MakeDipolesII(m_flavs,m_plab,m_plab);
-  p_nlodipoles->MakeDipolesIF(m_flavs,m_plab,m_plab);
-  p_nlodipoles->MakeDipoles(m_flavs,m_plab,m_plab);
-  const double sub1 = (fsr1 != 1 ? p_dipoles->CalculateRealSubEEX(kk1)
-                           : p_dipoles->CalculateRealSubEEX(kk1));
-  const double sub2 = (fsr2 != 1 ? p_dipoles->CalculateRealSubEEX(kk2)
-                           : p_dipoles->CalculateRealSubEEX(kk2));
   m_recola_evts += 1;
-  double fullsub =
-      (-subloc2 * real1 - subloc1 * real2 - subloc1 * subloc2 * m_born);
-  tot = (r * flux + fullsub / m_rescale_alpha) / sub1 / sub2;
-  if (IsBad(tot)) {
-    msg_Error() << "NNLO RR is NaN" << std::endl;
+
+  msg_Debugging() << METHOD << " r=" << r
+                  << " sub1=" << sub1 << " sub2=" << sub2
+                  << " real1=" << real1 << " real2=" << real2
+                  << " born=" << m_born << "\n";
+
+  if (IsZero(real1) || IsZero(real2)) {
+    msg_Debugging() << METHOD << " real1 or real2 is zero, returning 0\n";
+    m_zeroRR++;
+    return 0;
   }
-  m_plab = plab;
-  // const double real = CalculateReal(k1,fsr1)+ CalculateReal(k2,fsr2);
-  // if(fabs(tot/real) > 10 ) {
-  //   m_zeroRR++;
-  //   return 0;
-  // }
-  if(!IsZero(tot)) m_nonZeroRR++;
+
+  const double fullsub = -subloc2 * real1 - subloc1 * real2 - subloc1 * subloc2 * m_born;
+  const double tot     = (r * flux + fullsub / m_rescale_alpha) / sub1 / sub2;
+
+  msg_Debugging() << METHOD << " fullsub=" << fullsub
+                  << " r*flux=" << r * flux
+                  << " tot=" << tot << "\n";
+
+  if (IsBad(tot))
+    msg_Error() << METHOD << " NNLO RR is NaN: r=" << r << " flux=" << flux
+                << " fullsub=" << fullsub << " sub1=" << sub1 << " sub2=" << sub2 << "\n";
+
+  if (!IsZero(tot)) m_nonZeroRR++;
   return tot;
 }
 
@@ -1087,22 +1139,22 @@ void NLO_Base::CheckMasses(Vec4D_Vector &p, int realmode) {
   for (int i = 0; i < p.size(); ++i) {
     masses.push_back(flavs[i].Mass());
     if (!IsEqual(p[i].Mass(), flavs[i].Mass()) && flavs[i].Mass() != 0) {
-      msg_Debugging() << "Wrong particle masses in YFS Mapping" << std::endl
-                      << "Flavour = " << flavs[i]
-                      << ", with mass = " << flavs[i].Mass() << std::endl
-                      << "Four momentum = " << p[i]
-                      << ", with mass = " << p[i].Mass() << std::endl;
+      // msg_Debugging() << "Wrong particle masses in YFS Mapping" << std::endl
+      //                 << "Flavour = " << flavs[i]
+      //                 << ", with mass = " << flavs[i].Mass() << std::endl
+      //                 << "Four momentum = " << p[i]
+      //                 << ", with mass = " << p[i].Mass() << std::endl;
       allonshell = false;
     }
   }
   if (!allonshell) {
     m_stretcher.StretchMomenta(p, masses);
-    for (int i = 0; i < p.size(); ++i) {
-      msg_Debugging() << "Flavour = " << flavs[i]
-                      << ", with mass = " << flavs[i].Mass() << std::endl
-                      << "Four momentum = " << p[i]
-                      << ", with new mass = " << p[i].Mass() << std::endl;
-    }
+    // for (int i = 0; i < p.size(); ++i) {
+      // msg_Debugging() << "Flavour = " << flavs[i]
+      //                 << ", with mass = " << flavs[i].Mass() << std::endl
+      //                 << "Four momentum = " << p[i]
+      //                 << ", with new mass = " << p[i].Mass() << std::endl;
+    // }
   }
 }
 
