@@ -788,6 +788,8 @@ bool MCatNLO_Process::CalculateTotalXSec(const std::string &resultpath,
   if (!p_rsproc->CalculateTotalXSec(resultpath,create)) res=false;
   p_rsproc->SetEventReader(NULL);
   if (p_read) p_int->SetMax(p_read->UnitWeight()/rpa->Picobarn());
+  for (size_t i(0);i<p_rsproc->Size();++i)
+    (*p_rsproc)[i]->Integrator()->SetUpEnhance(msg_LevelIsTracking());
   for (size_t i(0);i<p_bviproc->Size();++i){
     (*p_bviproc)[i]->Integrator()->SetUpEnhance(msg_LevelIsTracking());
     (*p_bproc)[i]->Integrator()->SetMax
