@@ -49,6 +49,10 @@ namespace PHASIC {
     hls::scheme m_helicityscheme;
 
     double m_threshold, m_enhancefac, m_maxeps, m_rsfac, m_meanenhfunc=-1, m_effi = -1, m_effevperev=-1;
+    // Selection weight numerator: |TotalResult()*m_meanenhfunc/sqrt(m_effevperev)| = m_ssumenhabs/m_sn,
+    // pre-computed to avoid 0/0 for processes where positive and negative weights cancel.
+    // To use TotalResult()/m_effevperev instead (future), multiply by an extra 1/sqrt(m_effevperev).
+    double m_selweight_xs = 0.;
     double m_external_selectionweight;
 
     long unsigned int m_n, m_itmin, m_itmax;
@@ -71,6 +75,9 @@ namespace PHASIC {
     std::shared_ptr<Helicity_Integrator> p_helint;
 
     double Sigma2() const;
+    // Sets m_effi, m_effevperev, and m_selweight_xs for the case of full unweighting
+    // against w_max.
+    void SetFullUnweightingStats(const double w_max);
 
   public:
 
@@ -221,6 +228,7 @@ namespace PHASIC {
 
     inline std::string ResultPath() const { return m_resultpath; }
 
+    // Caller takes ownership of the returned histogram and must delete it.
     inline ATOOLS::Histogram *WeightHisto() const { ATOOLS::Histogram *p_whisto = new ATOOLS::Histogram(p_whisto_pos); *p_whisto += *p_whisto_neg; return p_whisto; }
     inline ATOOLS::Histogram *WeightHistoPos() const { return p_whisto_pos; }
     inline ATOOLS::Histogram *WeightHistoNeg() const { return p_whisto_neg; }
