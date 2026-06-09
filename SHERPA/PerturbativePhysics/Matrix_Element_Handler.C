@@ -203,6 +203,19 @@ bool Matrix_Element_Handler::GenerateOneEvent()
   psum.resize(m_procs.size());
   for (size_t i(0);i<m_procs.size();++i)
     psum[i]=m_sum+=m_procs[i]->Integrator()->SelectionWeight(m_eventmode);
+  // The selection weight for unweighted events is derived from the final
+  // integration step. If no process has a non-zero one, GenerateOneTrialEvent()
+  // selects m_procs[0] irrespective of its weight and the weight factor 1/sw
+  // turns into 0/0. This is checked here, only when an event is requested, so
+  // that integration-only runs and runs without any cross section still finish.
+  if (!(m_sum>0.0))
+    THROW(fatal_error,"Sum of selection weights is "+ToString(m_sum)+
+          ". No process can be selected, i.e. all processes have zero cross"
+          " section or the integration provided no information for the process"
+          " selection. The latter is the case for PSI:MAXOPT=0, where the"
+          " weight maximum is reset at the end of the optimisation and no point"
+          " is sampled afterwards. Increase PSI:MAXOPT or PSI:ITMIN and"
+          " re-integrate.");
 
   // generate trial events until we accept one
   for (size_t n(1);true;++n) {
