@@ -48,14 +48,28 @@ namespace PHASIC {
     cls::scheme m_colorscheme;
     hls::scheme m_helicityscheme;
 
-    double m_threshold, m_enhancefac, m_maxeps, m_rsfac, m_meanenhfunc=-1, m_effi = -1, m_effevperev=-1;
+    double m_threshold, m_enhancefac, m_maxeps, m_rsfac, m_effi = -1, m_effevperev=-1;
+    // Numerator of the selection weight for unweighted events,
+    //   m_selweight_xs = |<w>_cut| / sqrt(alpha) = |sigma*<h>| / (eff_cut*sqrt(alpha)),
+    // with <w>_cut the mean (enhanced, signed) weight of the points that passed the
+    // cuts and alpha = alpha_sign*alpha_absolute the Kish statistical dilution of the
+    // (partially) unweighted sample (m_effevperev). The selection weight is
+    //   w_sel = m_selweight_xs / m_effi = |sigma*<h>| / (eff_unw * eff_cut * sqrt(alpha)),
+    // with m_effi the unweighting efficiency <p> of the same points. This is the
+    // allocation that minimises the uncertainty of the total cross section per
+    // generated (i.e. showered and detector-simulated) event, Proof D of the
+    // follow-up to arXiv:2506.06203: w_sel^2 ~ sigma^2/(alpha*<p>^2). Since
+    // |<w>|/sqrt(alpha_sign) = <|w|>, the sign dilution cancels and the numerator is
+    // stored in the sign-cancellation-safe form <|w|>_cut/sqrt(alpha_absolute).
+    // For full unweighting w_sel = w_max.
+    double m_selweight_xs = 0.;
     double m_external_selectionweight;
 
     long unsigned int m_n, m_itmin, m_itmax;
 
     double m_max, m_weightmax, m_totalxs, m_totalsum, m_totalsumsqr, m_totalerr;
     double m_ssum, m_ssumenh, m_ssumenhabs, m_ssumenhsqr, m_ssumsqr, m_smax, m_ssigma2, m_wmin;
-    double m_mssum, m_mssumabs, m_mssumenh, m_mssumenhabs, m_mssumenhsqr, m_mssumsqr, m_msn, m_msncut;
+    double m_mssum, m_mssumenh, m_mssumenhabs, m_mssumenhsqr, m_mssumsqr, m_msn, m_msncut;
 
     std::vector<double> m_vsmax, m_vsum;
     std::vector<long unsigned int> m_vsn;
@@ -71,6 +85,9 @@ namespace PHASIC {
     std::shared_ptr<Helicity_Integrator> p_helint;
 
     double Sigma2() const;
+    // Sets m_effi, m_effevperev, and m_selweight_xs for the case of full unweighting
+    // against w_max.
+    void SetFullUnweightingStats(const double w_max);
 
   public:
 
@@ -171,6 +188,11 @@ namespace PHASIC {
     inline double   GetSSumEnh() const     { return m_ssumenh;    }
     inline double   GetSSumEnhAbs() const  { return m_ssumenhabs;    }
     inline double   GetSNCut() const       { return m_sncut;    }
+    // Fraction of the trial points of the current step that passed the cuts.
+    // Falls back to 1 when no point was generated yet, in which case the
+    // accumulated weight sums are zero anyway.
+    inline double   CutEfficiency() const
+    { return m_sn ? double(m_sncut)/double(m_sn) : 1.; }
     inline double   Sum() const     { return m_totalsum;    }
     inline double   SumSqr() const  { return m_totalsumsqr; }
     inline long int Points() const  { return m_n+m_sn;      }
