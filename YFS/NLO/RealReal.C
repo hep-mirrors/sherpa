@@ -24,7 +24,6 @@ RealReal::RealReal(const PHASIC::Process_Info& pi)  {
   m_check = s["Compare_RR"].SetDefault(0).Get<bool>();
   m_writemom = s["Write_RR_Momenta"].SetDefault(0).Get<bool>();
   m_nmom = s["N_RR_Momenta"].SetDefault(100).Get<int>();/* Load RealReal ME */
-  PHASIC::Process_Info real_pi(pi);
   if(m_check && gen=="") THROW(fatal_error, "Need two generators to compare.");
   if(gen!=""){
     PHASIC::External_ME_Args args(pi.m_ii.GetExternal(),
@@ -33,7 +32,7 @@ RealReal::RealReal(const PHASIC::Process_Info& pi)  {
                                gen);
      p_real_me =  PHASIC::Tree_ME2_Base::GetME2(args);
      if (!p_real_me)  {
-      msg_Error()<<real_pi;
+      msg_Error()<<pi;
       THROW(not_implemented, "Couldn't find Real-Real ME for this process.");
     }
      MODEL::s_model->GetCouplings(m_cpls);
