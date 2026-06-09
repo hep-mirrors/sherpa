@@ -7,10 +7,10 @@ set(Two2Two_SOURCES XS_Drell_Yan.C
                     gg_yy.C
                     emu_emu.C
                     DMDM_mumu.C
-                    # LN_LN.C
-                    pe_pe.C
-                    pe_nv.C
-                    pv_pv.C
+                    LN_LN.C
+                    # pe_pe.C
+                    # pe_nv.C
+                    # pv_pv.C
                     )
 
 sherpa_create_git_info(Two2Two ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR})
