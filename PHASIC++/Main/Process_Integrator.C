@@ -33,9 +33,9 @@ Process_Integrator::Process_Integrator(Process_Base *const proc):
   m_n(0), m_itmin(0), m_itmax(1000000), m_max(0.), m_weightmax(0.), m_totalxs(0.),
   m_totalsum (0.), m_totalsumsqr(0.), m_totalerr(0.), m_ssum(0.), m_ssumenh(0.),
   m_ssumenhabs(0.), m_ssumsqr(0.), m_ssumenhsqr(0.), m_smax(0.), m_ssigma2(0.), m_wmin(0.),
-  m_mssum(0.), m_mssumabs(0.), m_mssumsqr(0.), m_mssumenh(0.), m_mssumenhabs(0.), m_mssumenhsqr(0.),
+  m_mssum(0.), m_mssumsqr(0.), m_mssumenh(0.), m_mssumenhabs(0.), m_mssumenhsqr(0.),
   m_msn(0.), m_msncut(0.), m_sn(0), m_sncut(0), m_son(1),
-  m_external_selectionweight(-1),
+  m_external_selectionweight(-1), // -1 is the sentinel meaning "not set"
   m_writeout(false),
   p_whisto_pos(NULL),
   p_whisto_neg(NULL)
@@ -80,10 +80,28 @@ double Process_Integrator::SelectionWeight(const int mode) const
       if (m_external_selectionweight != -1) {
 	return m_external_selectionweight;
       }
-      //needs m_ssumenh from Sherpa 3.1 - otherweise m_meanenhfunc ("mean enhancement function") set to 1
-      return dabs(TotalResult()*m_meanenhfunc*m_enhancefac/m_effi/sqrt(m_effevperev));
+      // Selection weight for unweighted events (see Process_Integrator.H):
+      //   w_sel = |<w>_cut| / (<p> * sqrt(alpha)) = |sigma*<h>| / (eff_unw * eff_cut * sqrt(alpha)),
+      // the allocation that minimises the total cross-section uncertainty per
+      // generated event (Proof D). For full unweighting this is w_max, so the final
+      // event weight is the same for all subprocesses; with maximum reduction it is
+      // corrected by the statistical dilution of the subprocess.
+      // m_selweight_xs == 0 when no point passed the cuts or all weights vanish.
+      // Processes whose positive and negative weights cancel stay finite, because
+      // the sign dilution cancels in |<w>|/sqrt(alpha).
+      if (m_effi < 0.) {
+        THROW(critical_error, METHOD+"(): m_effi="+ToString(m_effi)+" (uninitialized sentinel) for '"
+	      +p_proc->Name()+"'; SetUpEnhance may not have been called.");
+      }
+      if (m_effi == 0. || m_selweight_xs == 0.) return 0.;
+      return m_selweight_xs * m_enhancefac / m_effi;
     }
+    // Return -1 for completely unsampled processes (no integration data yet).
+    // Via dabs(-1)=1 in Process_Group::OneEvent this gives them a uniform
+    // placeholder weight so they still get sampled during optimisation.
+    // Returning 0 instead would permanently exclude them from selection.
     if (m_n+m_sn==0.0) return -1.0;
+    // Process has been sampled but has zero cross section: exclude from selection.
     if (m_totalxs==0.0) return 0.0;
     double selweight = m_swmode==0 ?
       sqrt((m_n+m_sn-1) * sqr(TotalVar()) + sqr(TotalResult())) :
@@ -92,6 +110,8 @@ double Process_Integrator::SelectionWeight(const int mode) const
   }
   double sw(0.0);
   for (size_t i(0);i<p_proc->Size();++i) {
+    // dabs() is intentional: for mode==0 an unsampled child returns -1 as a placeholder
+    // (see comment above), and dabs(-1)=1 gives it a uniform weight in the group sum.
     sw+=dabs((*p_proc)[i]->Integrator()->SelectionWeight(mode));
   }
   return sw;
@@ -119,9 +139,14 @@ double Process_Integrator::TotalSigma2() const
 
 double Process_Integrator::TotalResult() const
 { 
-  if (m_smode==0) return m_n+m_sn?(m_totalsum+m_ssum)/(m_n+m_sn):0.0;
-  if (m_ssigma2==0.0) return m_sn?m_ssum/m_sn:0.0; 
-  if (m_sn<2) return m_ssigma2?m_totalsum/m_ssigma2:0.0; 
+  // Simple averaging mode: mean over all events accumulated so far across all cycles and the current step.
+  if (m_smode==0) return m_n+m_sn?(m_totalsum+m_ssum)/(m_n+m_sn):0.0; // 0 if no events sampled yet
+  // Variance-weighted mode, but no historical data yet (first cycle): use current step only.
+  if (m_ssigma2==0.0) return m_sn?m_ssum/m_sn:0.0; // 0 if current step is also empty
+  // Current step has fewer than 2 events, so Sigma2 is undefined: fall back to history-only estimate.
+  if (m_sn<2) return m_ssigma2?m_totalsum/m_ssigma2:0.0; // 0 if there is no history either
+  // General case: precision-weighted combination of historical result (weight m_ssigma2)
+  // and current step's result (weight s2=Sigma2). Both weights zero means no data at all.
   double s2(Sigma2());
   return m_ssigma2+s2?(m_totalsum+s2*m_ssum/m_sn)/(m_ssigma2+s2):0.0;
 }
@@ -139,9 +164,29 @@ std::vector<double> Process_Integrator::TotalEffiAndEffEvPerEv(bool unweighted) 
       //need to sum up weighted with wsel
       std::vector<double> proci_totaleffiandeffevperev = (*p_proc)[i]->Integrator()->TotalEffiAndEffEvPerEv(unweighted);
       double proci_effevperev = proci_totaleffiandeffevperev[1];
-      if (proci_effevperev==-1.0) continue;
+      // -1 means that the subprocess has not received a non-zero weight in the
+      // current step (all points cut or vanishing matrix element), so it cannot
+      // contribute to the average. This is expected early in a run and for
+      // subprocesses that do not contribute in the selected phase space.
+      if (proci_effevperev==-1.0) {
+        msg_Debugging()<<METHOD<<"(): no non-zero weight yet for "
+                       <<(*p_proc)[i]->Name()<<", skipped.\n";
+        continue;
+      }
       double proci_effi = proci_totaleffiandeffevperev[0];
+      // A subprocess with zero efficiency or zero effective events per event contributes
+      // nothing to the selection-weight-weighted average and its proci_selw is undefined.
+      if (proci_effevperev == 0. || proci_effi == 0.) continue;
       double proci_xsec = (*p_proc)[i]->Integrator()->GetSSumEnh()/m_sn;
+      // Weight of the subprocess in the averages below: the number of trial points
+      // that pass the cuts, i.e. its selection weight times its cut efficiency,
+      //   w_sel,i * eps_cut,i = |<w>_all,i| / (eff_i * sqrt(alpha_i)),
+      // which is why <w> is normalised to all trial points (m_sn) here and not to
+      // the cut-passing ones. Accepted events per subprocess are then
+      // eff_i * w_i ~ |sigma_i|/sqrt(alpha_i), so that sum_effi below is the total
+      // number of accepted events and totaleffiandeffevperev[] come out as
+      // (accepted)/(cut-passing) and (sum sigma)^2/(sum |sigma|/sqrt(alpha))^2,
+      // the latter with the same normalisation of <w> as sum_xsec.
       double proci_selw = dabs(proci_xsec)/sqrt(proci_effevperev)/proci_effi;
 
       sum_xsec += proci_xsec;
@@ -194,6 +239,7 @@ void Process_Integrator::OptimizeSubResult(const double &s2)
 {
   //called after each optimisation cycle
   m_n+=m_sn;
+  //only m_totalsum and m_totalsumsqr are needed accumulated over all optimsation cycles to get the final cross section result and error estimate.
   if (m_smode==0) {
     m_totalsum+=m_ssum;
     m_totalsumsqr+=m_ssumsqr;
@@ -429,11 +475,31 @@ void Process_Integrator::SetTotal(const int mode)
   }
 }
 
+void Process_Integrator::SetFullUnweightingStats(const double w_max)
+{
+  // m_effi is the unweighting efficiency for events which already passed cuts.
+  // w_max==0 with m_sncut>0 is physically impossible (non-zero-weight events imply
+  // m_weightmax>0), so it signals a broken upstream max-weight calculation.
+  if (w_max == 0. && m_sncut > 0) {
+    THROW(critical_error, METHOD+"(): w_max=0 but m_sncut="+ToString(m_sncut)+" for '"
+	  +p_proc->Name()+"'; upstream max-weight may be wrong.");
+  }
+  m_effi         = (m_sncut > 0 && w_max != 0.) ? m_ssumenhabs/m_sncut/w_max : 0.;
+  m_effevperev   = m_ssumenhabs != 0. ? pow(m_ssumenh/m_ssumenhabs,2) : 0.;
+  // |<w>_cut|/sqrt(alpha) = <|w|>_cut (alpha_absolute = 1 for full unweighting),
+  // so that m_selweight_xs/m_effi = w_max.
+  m_selweight_xs = m_sncut > 0 ? m_ssumenhabs/m_sncut : 0.;
+}
+
 double Process_Integrator::GetMaxEps(double epsilon)
 {
-  if (!p_whisto_pos) return m_weightmax;
+  if (!p_whisto_pos) {
+    // No histogram: fall back to full unweighting against m_weightmax.
+    SetFullUnweightingStats(m_weightmax);
+    return m_weightmax;
+  }
   //construct whisto having all pos and neg weights
-  ATOOLS::Histogram *p_whisto = new Histogram(p_whisto_pos);
+  std::unique_ptr<Histogram> p_whisto(new Histogram(p_whisto_pos));
   *p_whisto += *p_whisto_neg;
   if (epsilon<=-1.) {
     int nsamples(-epsilon), npoints(p_whisto->Fills());
@@ -454,7 +520,10 @@ double Process_Integrator::GetMaxEps(double epsilon)
 #ifdef USING__MPI
     mpi->Allreduce(&maxs[maxs.size()/2],1,MPI_DOUBLE,MPI_MAX);
 #endif
-    return maxs[maxs.size()/2];
+    // Stat-based max estimate; fall back to full unweighting against it.
+    double fin_w_max = maxs[maxs.size()/2];
+    SetFullUnweightingStats(fin_w_max);
+    return fin_w_max;
   }
 
   //save last, first filled bin and more for next loop
@@ -516,6 +585,14 @@ double Process_Integrator::GetMaxEps(double epsilon)
                     <<")."<<std::endl;
   }
 
+  if (whisto_abs_sum==0) {
+    //fallback for empty WD histogram: fall back to full unweighting against m_weightmax.
+    int wmode = ToType<int>(rpa->gen.Variable("EVENT_GENERATION_MODE"));
+    if (wmode!=0) msg_Error()<<"Warning: The weight histogram for "<< p_proc->ResultsName() << " is empty. Partial unweighting is not possible."<<std::endl;
+    SetFullUnweightingStats(m_weightmax);
+    return m_weightmax;
+  }
+
   //cutxs: sum of |w| which are cut atm
   double cutxs_abs = 0.;
   //cutxs: sum of w which are cut atm
@@ -526,14 +603,6 @@ double Process_Integrator::GetMaxEps(double epsilon)
   double cnt = 0.;
 
   double pxs = whisto_abs_sum*(1-epsilon);
-  //fallback for empty WD histogram
-  if (whisto_abs_sum==0) {
-    int wmode = ToType<int>(rpa->gen.Variable("EVENT_GENERATION_MODE"));
-    if (wmode!=0) msg_Error()<<"Warning: The weight histogram for "<< p_proc->ResultsName() << " is empty. Partial unweighting is not possible."<<std::endl;
-    m_effi = m_ssumenhabs/m_sncut/m_weightmax;
-    m_effevperev = pow(m_ssumenh/m_ssumenhabs,2);
-    return m_weightmax;
-  }
   for (int i=first_filled_bin-1;i<last_filled_bin+1;i++) {
     //bin middle times count is added
     double w = exp(log(10.)*(p_whisto->Xmin()+(i-0.5)*p_whisto->BinSize()));
@@ -551,18 +620,31 @@ double Process_Integrator::GetMaxEps(double epsilon)
     }
     if (cutxs_abs>=pxs) {
       double fin_w_max = Min(exp(log(10.)*(p_whisto->Xmin()+i*p_whisto->BinSize())),dabs(m_weightmax));
+      // Acceptance probability of the points that passed the cuts: points above
+      // fin_w_max are always kept (as overweights), the others with |w|/fin_w_max.
       double mean_efficiency = (whisto_fills-cnt+cutxs_abs/fin_w_max)/whisto_fills;
-      //according to equation (39) in arXiv:2506.06203v2
-      double effevperev = pow(whisto_sum/fin_w_max,2)/(((cutxs_abs+(whisto_sum2-cutxs2)/fin_w_max)/fin_w_max)*mean_efficiency*whisto_fills);
-      //without enhancement function: whisto_sum/p_whisto->Fills() = dabs(TotalResult())
-      //with enhancement function:    whisto_sum/p_whisto->Fills() = dabs(TotalResult())*m_meanenhfunc
-      //defined such that: dabs(TotalResult())*m_meanenhfunc = mean_w*cut_effi = whisto_sum/whisto_fills * (whisto_fills/p_whisto->Fills())
-      //m_meanenhfunc = whisto_sum/p_whisto->Fills()/dabs(TotalResult());
       m_effi = mean_efficiency;
-      m_effevperev = effevperev;
+      // Kish statistical dilution of the accepted sample, eq. (39) of arXiv:2506.06203:
+      //   alpha = (sum_i p_i*wt_i)^2 / (sum_j p_j*wt_j^2 * sum_k p_k)
+      //         = alpha_sign * alpha_absolute,
+      //   alpha_sign = (sum w / sum |w|)^2,  alpha_absolute = (sum p|wt|)^2/(sum p wt^2 sum p),
+      // with acceptance probability p and overweight wt (p*wt = w/fin_w_max).
+      // In units of fin_w_max^2 the denominator is
+      // (sum_{|w|<max} |w|*max + sum_{|w|>max} w^2) * N_accepted and the numerator
+      // is the signed weight sum, so that sign cancellations dilute as well.
+      double alpha_denom = (cutxs_abs * fin_w_max + (whisto_sum2 - cutxs2))
+                           * mean_efficiency * (double)whisto_fills;
+      m_effevperev = alpha_denom > 0. ? pow(whisto_sum, 2) / alpha_denom : 0.;
+      // Selection weight numerator |<w>_cut|/sqrt(alpha) = sqrt(alpha_denom)/N_cut,
+      // written in this form so that it stays finite when positive and negative
+      // weights cancel. With m_effi the selection weight is
+      // sqrt(alpha_denom)/N_accepted = fin_w_max * sqrt(<wt^2>_acc).
+      m_selweight_xs = whisto_fills > 0 ? sqrt(alpha_denom) / whisto_fills : 0.;
       return fin_w_max;
     }
   }
+  // Loop ran to completion: all weights fit under m_weightmax, full unweighting.
+  SetFullUnweightingStats(m_weightmax);
   return m_weightmax;
 }
 
@@ -575,19 +657,49 @@ void Process_Integrator::SetUpEnhance(const int omode)
     m_effi=0.0;
     m_effevperev=0.0;
     double effevperev_signed=0.0;
+    // Efficiency() and EffEvPerEv() describe the unweighting alone and are therefore
+    // defined per point that passed the cuts. The averages below must be weighted
+    // with the same population, i.e. with the number of cut-passing trial points of
+    // the subprocess: it is selected w_sel times, of which a fraction eps_cut passes
+    // the cuts and of those a fraction Efficiency() is accepted. m_effi then sums the
+    // accepted events and sum_selw the cut-passing points. dabs() as in
+    // SelectionWeight(), where an unsampled child returns -1 as a placeholder.
+    double sum_selw=0.0;
     int wmode = ToType<int>(rpa->gen.Variable("EVENT_GENERATION_MODE"));
     for (size_t i(0);i<p_proc->Size();++i) {
       (*p_proc)[i]->Integrator()->SetUpEnhance(msg_LevelIsTracking());
       m_max+=(*p_proc)[i]->Integrator()->Max();
+      double selw=dabs((*p_proc)[i]->Integrator()->SelectionWeight(wmode))
+                 *(*p_proc)[i]->Integrator()->CutEfficiency();
+      sum_selw+=selw;
       //need to sum up weighted with wsel: m_effi
-      m_effi+=(*p_proc)[i]->Integrator()->Efficiency()*(*p_proc)[i]->Integrator()->SelectionWeight(wmode);
+      m_effi+=(*p_proc)[i]->Integrator()->Efficiency()*selw;
       //interested in average effevperev after unweighting: multiply with efficiency
-      double effevperev = sqrt((*p_proc)[i]->Integrator()->EffEvPerEv())*(*p_proc)[i]->Integrator()->Efficiency()*(*p_proc)[i]->Integrator()->SelectionWeight(wmode);
-      m_effevperev+=effevperev;
-      effevperev_signed+=effevperev*(*p_proc)[i]->Integrator()->TotalResult()/dabs((*p_proc)[i]->Integrator()->TotalResult());
+      double child_effevperev = (*p_proc)[i]->Integrator()->EffEvPerEv();
+      // After SetUpEnhance, EffEvPerEv is always >= 0: zero-XS processes give 0,
+      // processes with data give pow(ssumenh/ssumenhabs,2) > 0. A value of -1 is the
+      // uninitialized sentinel and means SetUpEnhance was not called on this child.
+      if (child_effevperev >= 0.) {
+        double effevperev = sqrt(child_effevperev)*(*p_proc)[i]->Integrator()->Efficiency()*selw;
+        m_effevperev+=effevperev;
+        effevperev_signed+=effevperev*((*p_proc)[i]->Integrator()->TotalResult() >= 0. ? 1. : -1.);
+      } else {
+        THROW(critical_error, METHOD+"(): EffEvPerEv="+ToString(child_effevperev)
+                   +" (uninitialized) for '"+(*p_proc)[i]->Name()
+	      +"'; SetUpEnhance may not have been called.");
+      }
     }
-    m_effevperev = pow(m_effevperev/m_effi,2)*pow(effevperev_signed/m_effevperev,2);
-    m_effi = m_effi/SelectionWeight(wmode);
+    // If every child subprocess has zero efficiency or zero weight, the group as a
+    // whole has no effective contribution and m_effevperev is meaningless and set to 0 for 0 selection weight.
+    if (m_effi != 0. && m_effevperev != 0.)
+      m_effevperev = pow(m_effevperev/m_effi,2)*pow(effevperev_signed/m_effevperev,2);
+    else
+      m_effevperev = 0.;
+    // sum_selw is the sum of the children's cut-passing point counts, accumulated
+    // above with the same weight as m_effi, so that m_effi becomes the unweighting
+    // efficiency of the group (eps_baseline of arXiv:2506.06203). It is zero only
+    // when every child has zero cross section, in which case m_effi is also 0.
+    m_effi = sum_selw != 0. ? m_effi/sum_selw : 0.;
     if (omode || p_proc->Parent()==p_proc)
       if (p_whisto_pos)
     msg_Info()<<"  reduce max for "<<p_proc->ResultsName()<<" to "
@@ -596,8 +708,6 @@ void Process_Integrator::SetUpEnhance(const int omode)
 	      << m_effevperev << " ) "<<std::endl;
     return;
   }
-  //to get the cross section, the sum of weights need to divided by number of events before cuts: m_sn
-  m_meanenhfunc = TotalResult()?m_ssumenh/m_sn/dabs(TotalResult()):1;
   if (m_maxeps!=0.0) {
     double max(GetMaxEps(m_maxeps));
     if (omode || msg->LevelIsTracking()) {
@@ -609,9 +719,7 @@ void Process_Integrator::SetUpEnhance(const int omode)
   } else {
     //should rely on m_weightmax here -> to be compatible with partially unweighting the m_effi etc needs to be set
     SetMax(m_weightmax);
-    //the unweighting efficiency m_effi is defined for events passing cuts: m_sncut
-    m_effi = m_ssumenhabs/m_sncut/m_max;
-    m_effevperev = pow(m_ssumenh/m_ssumenhabs,2);//alpha_sign
+    SetFullUnweightingStats(m_max);
   }
 }
 
@@ -649,7 +757,6 @@ void Process_Integrator::AddPoint(const double value)
   m_mssumenhabs += dabs(value);
   m_mssumenhsqr += sqr(value);
   m_mssum    += value/enhance;
-  m_mssumabs += dabs(value/enhance);
   m_mssumsqr += sqr(value/enhance);
 #else
   m_sn++;
@@ -767,16 +874,15 @@ void Process_Integrator::SetPSHandler(const double &maxerr,const std::string eob
 void Process_Integrator::MPICollect
 (std::vector<double> &sv,std::vector<double> &mv,size_t &i)
 {
-  sv.resize(8*(i+1));
+  sv.resize(7*(i+1));
   mv.resize(2*(i+1));
-  sv[8*i+0]=m_msn;
-  sv[8*i+1]=m_msncut;
-  sv[8*i+2]=m_mssum;
-  sv[8*i+3]=m_mssumabs;
-  sv[8*i+4]=m_mssumenh;
-  sv[8*i+5]=m_mssumenhabs;
-  sv[8*i+6]=m_mssumenhsqr;
-  sv[8*i+7]=m_mssumsqr;
+  sv[7*i+0]=m_msn;
+  sv[7*i+1]=m_msncut;
+  sv[7*i+2]=m_mssum;
+  sv[7*i+3]=m_mssumenh;
+  sv[7*i+4]=m_mssumenhabs;
+  sv[7*i+5]=m_mssumenhsqr;
+  sv[7*i+6]=m_mssumsqr;
   mv[2*i+0]=m_weightmax;
   mv[2*i+1]=m_smax;
   ++i;
@@ -788,14 +894,13 @@ void Process_Integrator::MPICollect
 void Process_Integrator::MPIReturn
 (std::vector<double> &sv,std::vector<double> &mv,size_t &i)
 {
-  m_msn=sv[8*i+0];
-  m_msncut=sv[8*i+1];
-  m_mssum=sv[8*i+2];
-  m_mssumabs=sv[8*i+3];
-  m_mssumenh=sv[8*i+4];
-  m_mssumenhabs=sv[8*i+5];
-  m_mssumenhsqr=sv[8*i+6];
-  m_mssumsqr=sv[8*i+7];
+  m_msn=sv[7*i+0];
+  m_msncut=sv[7*i+1];
+  m_mssum=sv[7*i+2];
+  m_mssumenh=sv[7*i+3];
+  m_mssumenhabs=sv[7*i+4];
+  m_mssumenhsqr=sv[7*i+5];
+  m_mssumsqr=sv[7*i+6];
   m_weightmax=mv[2*i+0];
   m_smax=mv[2*i+1];
   ++i;
@@ -826,7 +931,7 @@ void Process_Integrator::MPISync(const int mode)
   m_ssumenhsqr+=m_mssumenhsqr;
   m_ssum+=m_mssum;
   m_ssumsqr+=m_mssumsqr;
-  m_msn=m_msncut=m_mssumenh=m_mssumenhabs=m_mssumenhsqr=m_mssum=m_mssumabs=m_mssumsqr=0.0;
+  m_msn=m_msncut=m_mssumenh=m_mssumenhabs=m_mssumenhsqr=m_mssum=m_mssumsqr=0.0;
 #endif
   if (p_colint!=NULL) p_colint->MPISync();
   p_proc->MPISync(mode);

@@ -170,6 +170,23 @@ bool Matrix_Element_Handler::CalculateTotalXSecs()
     m_procs[i]->Integrator()->SetUpEnhance();
   }
   if (storeresults) My_In_File::CloseDB(m_respath+"/");
+  // The selection weight for unweighted events is derived from the final
+  // integration step. If no process has a non-zero one, GenerateOneTrialEvent()
+  // selects m_procs[0] irrespective of its weight and the weight factor 1/sw
+  // turns into 0/0. The selection weights no longer change once the integration
+  // is done, so this is checked once here instead of for every event.
+  if (okay) {
+    double sum(0.0);
+    for (size_t i(0);i<m_procs.size();++i)
+      sum+=m_procs[i]->Integrator()->SelectionWeight(m_eventmode);
+    if (!(sum>0.0))
+      THROW(fatal_error,"Sum of selection weights is "+ToString(sum)+
+            ". No process can be selected, i.e. the integration provided no"
+            " information for the process selection. This is the case for"
+            " PSI:MAXOPT=0, where the weight maximum is reset at the end of"
+            " the optimisation and no point is sampled afterwards. Increase"
+            " PSI:MAXOPT or PSI:ITMIN and re-integrate.");
+  }
   return okay;
 }
 
