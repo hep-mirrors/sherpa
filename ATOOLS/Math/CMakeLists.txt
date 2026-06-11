@@ -12,6 +12,7 @@ set(Math_SOURCES MathTools.C
         Matrix.C
         Gauss_Integrator.C
         Bessel_Integrator.C
+        Filon_Integrator.C
         Scaling.C
         Axis.C
         Lookup_Tables.C
@@ -41,10 +42,12 @@ set(Math_HEADERS MathTools.H
         Matrix.H
         Gauss_Integrator.H
         Bessel_Integrator.H
+        Filon_Integrator.H
         Variable.H
         Scaling.H
         Axis.H
         Lookup_Tables.H
+        Table_Cache.H
         Histogram.H
         Histogram_2D.H
         Permutation.H

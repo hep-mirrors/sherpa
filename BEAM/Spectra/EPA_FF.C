@@ -1,16 +1,22 @@
 #include "BEAM/Spectra/EPA_FF.H"
 
 #include "ATOOLS/Math/Bessel_Integrator.H"
-#include "ATOOLS/Math/Gauss_Integrator.H"
+#include "ATOOLS/Math/Filon_Integrator.H"
 #include "ATOOLS/Math/MathTools.H"
+#include "ATOOLS/Math/Table_Cache.H"
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Scoped_Settings.H"
 #include "ATOOLS/Org/Settings.H"
+#include "ATOOLS/Org/Shell_Tools.H"
 
 #include <cmath>
+#include <fstream>
+#include <functional>
+#include <sstream>
 #include <string>
+#include <vector>
 using namespace BEAM;
 using namespace ATOOLS;
 
@@ -65,6 +71,98 @@ EPA_FF_Base::EPA_FF_Base(const ATOOLS::Flavour& beam, const int dir)
     THROW(invalid_input, "Unphysical input for EPA x-limits. ");
   if (m_q2min > m_q2max)
     THROW(invalid_input, "Unphysical input for EPA Q2-limits. ");
+
+  // Resolve the table cache directory (<RESULT_DIRECTORY>/EPA). A relative
+  // RESULT_DIRECTORY is taken w.r.t. the config path, exactly as
+  // Matrix_Element_Handler does, so the cache lands in the same tree as the
+  // rest of the results rather than in the current working directory.
+  //
+  // Caching is only possible when result files are written at all: if the user
+  // disabled GENERATE_RESULT_DIRECTORY, or RESULT_DIRECTORY resolves to empty
+  // (forming "/EPA" would target the filesystem root), leave m_cachedir empty,
+  // which EnsureCacheDir/LoadOrBuild already treat as "caching disabled" (no
+  // read, no write). GENERATE_RESULT_DIRECTORY is read with its own default so
+  // this does not depend on Matrix_Element_Handler having registered it yet.
+  m_cache = s["CacheTables"].SetDefault(true).Get<bool>();
+  Settings& mainsettings = Settings::GetMainSettings();
+  const bool storeresults =
+      mainsettings["GENERATE_RESULT_DIRECTORY"].Get<bool>();
+  std::string res =
+      ShortenPathName(mainsettings["RESULT_DIRECTORY"].Get<std::string>());
+  if (storeresults && !res.empty()) {
+    if (res[0] != '/' && mainsettings.GetPath() != "")
+      res = mainsettings.GetPath() + "/" + res;
+    m_cachedir = res + "/EPA";
+  }
+  // else: m_cachedir stays empty -> caching disabled for this beam
+}
+
+std::string EPA_FF_Base::BaseCacheId(const std::string& tag) const
+{
+  std::ostringstream s;
+  s.precision(17);
+  s << "v" << s_cache_version << "|" << tag << "|A" << m_A << "|Z2"
+    << m_Zsquared << "|m" << m_mass << "|R" << m_R << "|x[" << m_nxbins << ","
+    << m_xmin << "," << m_xmax << "]|b[" << m_nbbins << "," << m_bmin << ","
+    << m_b_pl_threshold << "," << m_bmax << "]";
+  return s.str();
+}
+
+std::string EPA_FF_Base::CacheFileName(const std::string& tag,
+                                       const std::string& key) const
+{
+  return m_beam.IDName() + "_" + tag + "_" +
+         std::to_string(std::hash<std::string>{}(key)) + ".tab";
+}
+
+void EPA_FF_Base::EnsureCacheDir()
+{
+  // MakeDir is MPI-collective (it broadcasts the result per path component), so
+  // this MUST be reached by all ranks. Every rank constructs the same form
+  // factor with the same settings, so m_cache is identical across ranks and the
+  // collective MakeDir is entered (or skipped) consistently. On failure we flip
+  // m_cache off on every rank, keeping the later hit/miss logic in lock-step.
+  if (!m_cache || m_cachedir.empty()) return;
+  if (!MakeDir(m_cachedir, true)) {
+    msg_Error() << METHOD << "(): cannot create EPA cache directory '"
+                << m_cachedir << "'; continuing without table caching.\n";
+    m_cache = false;
+  }
+}
+
+template <class Table>
+void EPA_FF_Base::LoadOrBuild(const std::string& tag, const std::string& key,
+                             std::unique_ptr<Table>& target,
+                             const std::function<void()>& fill)
+{
+  EnsureCacheDir(); // collective; may disable caching on all ranks
+  const bool docache = m_cache && !m_cachedir.empty();
+  const std::string path = m_cachedir + "/" + CacheFileName(tag, key);
+  // Table_Cache::Load is collective (rank 0 reads and broadcasts the content),
+  // so every rank sees the same content and reaches the same hit/miss decision
+  // -- no shared filesystem and no manual rank coordination needed.
+  if (docache) {
+    auto t = Table_Cache::Load<Table>(path, key);
+    if (t) {
+      target = std::move(t);
+      return;
+    }
+  }
+  // Miss: every rank runs fill() (which populates target) exactly as the
+  // pre-cache code did; Table_Cache::Save writes the cache on rank 0 only, so
+  // the next run is a load.
+  fill();
+  if (docache) Table_Cache::Save(path, key, *target);
+}
+
+void EPA_FF_Base::BuildNxbTable()
+{
+  // PrepareFill() builds any prerequisite (e.g. the Woods-Saxon form-factor
+  // table) before FillTables() fills the N(x,b) grid.
+  LoadOrBuild<TwoDim_Table>("nxb", CacheId(), p_N_xb, [this] {
+    PrepareFill();
+    FillTables();
+  });
 }
 
 void EPA_FF_Base::FillTables()
@@ -286,7 +384,15 @@ EPA_Gauss::EPA_Gauss(const ATOOLS::Flavour& beam, const int dir)
   const auto& s = Settings::GetMainSettings()["EPA"];
   size_t b = dir > 0 ? 0 : 1;
   m_Q02 = s["Q02"].GetTwoVector<double>()[b];
-  EPA_FF_Base::FillTables();
+  BuildNxbTable();
+}
+
+std::string EPA_Gauss::CacheId() const
+{
+  std::ostringstream s;
+  s.precision(17);
+  s << "|Q02" << m_Q02;
+  return BaseCacheId("Gauss") + s.str();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -298,8 +404,10 @@ EPA_Gauss::EPA_Gauss(const ATOOLS::Flavour& beam, const int dir)
 EPA_HCS::EPA_HCS(const ATOOLS::Flavour& beam, const int dir)
     : EPA_FF_Base(beam, dir)
 {
-  EPA_FF_Base::FillTables();
+  BuildNxbTable();
 }
+
+std::string EPA_HCS::CacheId() const { return BaseCacheId("HCS"); }
 
 ////////////////////////////////////////////////////////////////////////////////
 // Dipole form factors and related functions in different approximations, all
@@ -313,7 +421,15 @@ EPA_Dipole::EPA_Dipole(const ATOOLS::Flavour& beam, const int dir)
   size_t b = dir > 0 ? 0 : 1;
   m_Q02 = s["Q02"].GetTwoVector<double>()[b];
 
-  EPA_FF_Base::FillTables();
+  BuildNxbTable();
+}
+
+std::string EPA_Dipole::CacheId() const
+{
+  std::ostringstream s;
+  s.precision(17);
+  s << "|Q02" << m_Q02;
+  return BaseCacheId("Dipole") + s.str();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -324,7 +440,12 @@ EPA_Dipole::EPA_Dipole(const ATOOLS::Flavour& beam, const int dir)
 EPA_DipoleApprox::EPA_DipoleApprox(const ATOOLS::Flavour& beam, const int dir)
     : EPA_FF_Base(beam, dir)
 {
-  EPA_FF_Base::FillTables();
+  BuildNxbTable();
+}
+
+std::string EPA_DipoleApprox::CacheId() const
+{
+  return BaseCacheId("DipoleApprox");
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -337,80 +458,94 @@ EPA_DipoleApprox::EPA_DipoleApprox(const ATOOLS::Flavour& beam, const int dir)
 // - Radius in 1/GeV, therefore "nucelar skin" m_d also in 1/GeV
 ////////////////////////////////////////////////////////////////////////////////
 
-double EPA_WoodSaxon::IntegrateWithAdaptiveRange(
-    const std::function<double(double)>& integrand, double initial_rmax,
-    double tolerance)
-{
-  Lambda_Functor functor(&integrand);
-  Gauss_Integrator gauss(&functor);
-
-  double rmin = 0., rmax = initial_rmax;
-  double total_result = gauss.Integrate(rmin, rmax, tolerance);
-  double segment_increment = 0.;
-  int n(0);
-
-  // Adaptively extend the integration range until the tail contributes
-  // negligibly.
-  do {
-    rmin = rmax;
-    rmax *= 2.;
-    segment_increment = gauss.Integrate(rmin, rmax, tolerance);
-    total_result += segment_increment;
-    ++n;
-  } while (n < 3 && //< safe-guard to maximally integrate to 8*R
-           std::abs(segment_increment) > tolerance * std::abs(total_result));
-
-  return total_result;
-}
-
 EPA_WoodSaxon::EPA_WoodSaxon(const ATOOLS::Flavour& beam, const int dir)
     : EPA_FF_Base(beam, dir), m_d(0.55 / rpa->hBar_c()),
-      m_R_WS(6.49 / rpa->hBar_c()), m_rho0(0.)
+      m_R_WS(6.49 / rpa->hBar_c()), m_rnodes(1024), m_rmaxfactor(16.)
 {
   const auto& s = Settings::GetMainSettings()["EPA"];
   size_t b = dir > 0 ? 0 : 1;
   m_R_WS = s["WoodsSaxon_R"].GetTwoVector<double>()[b] / rpa->hBar_c();
   m_d = s["WoodsSaxon_d"].GetTwoVector<double>()[b] / rpa->hBar_c();
+  // Validate before the int->size_t assignment: a negative rNodes would wrap to
+  // a huge size_t and make InitFFTable attempt a runaway allocation.
+  const int rnodes = s["WoodsSaxon_rNodes"].GetTwoVector<int>()[b];
+  if (rnodes < 2)
+    THROW(invalid_input, "EPA WoodsSaxon_rNodes must be >= 2.");
+  m_rnodes = static_cast<size_t>(rnodes);
+  m_rmaxfactor = s["WoodsSaxon_rMaxFactor"].GetTwoVector<double>()[b];
+  if (m_rmaxfactor <= 0.)
+    THROW(invalid_input, "EPA WoodsSaxon_rMaxFactor must be > 0.");
   if (!m_beam.IsIon())
     THROW(fatal_error, "Wrong form factor for " + m_beam.IDName());
 
-  m_rho0 = CalculateDensity();
-  InitFFTable();
-  EPA_FF_Base::FillTables();
+  // Try the N(x,b) cache first: on a hit the (expensive) form-factor table and
+  // the density are never needed at run time and are skipped entirely. On a
+  // miss PrepareFill() builds the form-factor table. The debug CSV output
+  // (OutputSpectra/All) reaches FF(), which lazily builds p_FF_Q if an N(x,b)
+  // hit skipped it, so no extra build is needed here.
+  BuildNxbTable();
 }
 
-double EPA_WoodSaxon::CalculateDensity()
+std::string EPA_WoodSaxon::WSParamString() const
 {
-  auto rho_integrand_lambda = [this](double r) {
-    return r * r / (1. + std::exp((r - m_R_WS) / m_d));
-  };
+  std::ostringstream s;
+  s.precision(17);
+  s << "|RWS" << m_R_WS << "|d" << m_d << "|q[" << m_q_n << "," << m_q_min << ","
+    << m_q_max << "]|rN" << m_rnodes << "|rMax" << m_rmaxfactor;
+  return s.str();
+}
 
-  double res = IntegrateWithAdaptiveRange(rho_integrand_lambda, m_R_WS, 1.e-4);
+std::string EPA_WoodSaxon::CacheId() const
+{
+  return BaseCacheId("WoodSaxon") + WSParamString();
+}
 
-  return 1.0 / res;
+void EPA_WoodSaxon::BuildFFQTable()
+{
+  if (p_FF_Q) return; // already built
+  const std::string key =
+      "v" + std::to_string(s_cache_version) + "|WSFF" + WSParamString();
+  LoadOrBuild<OneDim_Table>("wsff", key, p_FF_Q, [this] { InitFFTable(); });
 }
 
 void EPA_WoodSaxon::InitFFTable()
 {
-  msg_Out() << METHOD << ": Filling table for Woods-Saxon form factor with "
-            << m_q_n << " bins.\n";
+  // Filon sine transform of the Woods-Saxon density:
+  //   F(q)  = rho0/q * \int_0^rmax sin(q r) r rho(r) dr,
+  //   rho(r) = 1/(1+exp((r-R_WS)/d)),  rho0 = 1 / \int_0^rmax r^2 rho dr,
+  // so that F(0) = 1 by construction. The shared r-grid only has to resolve
+  // rho(r); the oscillation is integrated analytically, so F(q) is accurate
+  // over the whole q-range (unlike a plain quadrature, which would need the
+  // grid to resolve sin(q r) itself).
+  const double rmax = m_R_WS + m_rmaxfactor * m_d;
+  size_t intervals = m_rnodes < 2 ? 2 : m_rnodes;
+  if (intervals % 2) ++intervals; // Filon-Simpson needs an even interval count
+  const size_t nnodes = intervals + 1;
+  const double h = rmax / double(intervals);
+
+  msg_Out() << METHOD << ": building Woods-Saxon form factor (" << m_q_n
+            << " q-bins, " << intervals << " r-intervals to r = " << rmax
+            << " 1/GeV).\n";
+
+  std::vector<double> g(nnodes); // g(r) = r * rho(r)
+  double norm = 0.;              // \int r^2 rho dr via composite Simpson
+  for (size_t j = 0; j < nnodes; ++j) {
+    const double r = double(j) * h;
+    const double rho = 1. / (1. + std::exp((r - m_R_WS) / m_d));
+    g[j] = r * rho;
+    const double w = (j == 0 || j == nnodes - 1) ? 1. : (j % 2 ? 4. : 2.);
+    norm += w * (r * r * rho);
+  }
+  norm *= h / 3.;
+  const double rho0 = 1. / norm;
+
+  Filon_Integrator filon(std::move(g), 0., rmax);
   p_FF_Q = std::make_unique<OneDim_Table>(
       axis(m_q_n, m_q_min, m_q_max, axis_mode::linear));
-
-  for (size_t i = 0; i < m_q_n; i++) {
+  for (size_t i = 0; i <= static_cast<size_t>(m_q_n); ++i) {
     const double q = p_FF_Q->GetAxis().x(i);
-
-    // Define the form factor integrand as a lambda inside the loop.
-    auto ff_integrand = [this, q](double r) {
-      if (q * r < 1.e-6) { // Numerically stable limit for q*r -> 0
-        return r * r / (1. + std::exp((r - m_R_WS) / m_d));
-      }
-      return std::sin(q * r) / q * r / (1. + std::exp((r - m_R_WS) / m_d));
-    };
-
-    double form_factor =
-        m_rho0 * IntegrateWithAdaptiveRange(ff_integrand, m_R_WS, 1.e-3);
-    p_FF_Q->Fill(i, form_factor);
+    const double ff = (q == 0.) ? 1. : rho0 * filon.SineTransform(q) / q;
+    p_FF_Q->Fill(i, ff);
   }
 }
 
@@ -429,7 +564,15 @@ EPA_WoodSaxonApprox::EPA_WoodSaxonApprox(const ATOOLS::Flavour& beam,
   m_R_WS = s["WoodsSaxon_R"].GetTwoVector<double>()[b] / rpa->hBar_c();
   m_a = s["WoodsSaxonApprox_a"].GetTwoVector<double>()[b] / rpa->hBar_c();
 
-  EPA_FF_Base::FillTables();
+  BuildNxbTable();
+}
+
+std::string EPA_WoodSaxonApprox::CacheId() const
+{
+  std::ostringstream s;
+  s.precision(17);
+  s << "|RWS" << m_R_WS << "|a" << m_a;
+  return BaseCacheId("WoodSaxonApprox") + s.str();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

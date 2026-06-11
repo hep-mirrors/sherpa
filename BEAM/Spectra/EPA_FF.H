@@ -8,6 +8,7 @@
 #include "ATOOLS/Phys/Flavour.H"
 #include <ATOOLS/Org/Run_Parameter.H>
 #include <cmath>
+#include <functional>
 
 namespace ATOOLS {
   class Settings;
@@ -130,6 +131,45 @@ namespace BEAM {
       return SampleB(x, ran, m_bmin, m_bmax, m_chi_cut, m_mass, m_R, m_b);
     }
     virtual void FillTables();
+
+    // ---- table caching (implemented in EPA_FF.C) -------------------------
+    // The on-disk format and the MPI-safe load/save go through the generic
+    // ATOOLS::Table_Cache facility; the logic below only builds the cache key
+    // and decides where the file lives.
+
+    // Content version baked into every cache key (see BaseCacheId). Bump
+    // whenever the table-construction logic changes in a way no other key
+    // parameter captures, to invalidate previously written caches.
+    static constexpr int s_cache_version = 1;
+    bool m_cache{true};     //< caching enabled (EPA:CacheTables) for this beam
+    std::string m_cachedir; //< <RESULT_DIRECTORY>/EPA, empty => no caching
+
+    // Common part of the cache key (version + axes + beam scalars). Concrete
+    // form factors prepend a type tag and append their own parameters so that
+    // any change to a relevant input invalidates the cache exactly.
+    std::string BaseCacheId(const std::string& tag) const;
+    virtual std::string CacheId() const { return BaseCacheId("base"); }
+    std::string CacheFileName(const std::string& tag,
+                              const std::string& key) const;
+
+    // Create the cache directory; MUST be called collectively on all MPI ranks
+    // (MakeDir broadcasts), so it lives outside the rank-0-only write. Disables
+    // caching (consistently across ranks) if the directory is not writable.
+    void EnsureCacheDir();
+
+    // Load-or-(fill + save) a cached table via ATOOLS::Table_Cache. On a hit
+    // every rank loads it (rank 0 reads and broadcasts the bytes); on a miss
+    // every rank runs fill() (which populates target) and rank 0 writes the
+    // result for the next run. Shared by the N(x,b) and form-factor tables.
+    template <class Table>
+    void LoadOrBuild(const std::string& tag, const std::string& key,
+                     std::unique_ptr<Table>& target,
+                     const std::function<void()>& fill);
+
+    // Build p_N_xb: PrepareFill() builds any prerequisite (e.g. the Woods-Saxon
+    // form-factor table) before FillTables() fills the N(x,b) grid.
+    void BuildNxbTable();
+    virtual void PrepareFill() {}
 
   public:
 
@@ -280,6 +320,7 @@ namespace BEAM {
   private:
 
     double m_Q02;
+    std::string CacheId() const override;
 
   public:
 
@@ -288,6 +329,10 @@ namespace BEAM {
   };
 
   class EPA_HCS final: public EPA_FF_Base {
+  private:
+
+    std::string CacheId() const override;
+
   public:
 
     EPA_HCS(const ATOOLS::Flavour& beam, int dir);
@@ -302,6 +347,7 @@ namespace BEAM {
   private:
 
     double m_Q02;
+    std::string CacheId() const override;
 
   public:
 
@@ -313,6 +359,10 @@ namespace BEAM {
   };
 
   class EPA_DipoleApprox final: public EPA_FF_Base {
+  private:
+
+    std::string CacheId() const override;
+
   public:
 
     explicit EPA_DipoleApprox(const ATOOLS::Flavour& beam, int dir);
@@ -322,16 +372,20 @@ namespace BEAM {
   class EPA_WoodSaxon final: public EPA_FF_Base {
   private:
 
-    double m_d, m_R_WS, m_rho0;
+    double m_d, m_R_WS;
+    size_t m_rnodes;     //< number of r-grid intervals for the Filon transform
+    double m_rmaxfactor; //< r_max = R_WS + m_rmaxfactor * d
     std::unique_ptr<ATOOLS::OneDim_Table> p_FF_Q;
     static constexpr double m_q_min = 0., m_q_max = 1.e2;
     static constexpr int m_q_n = 1e5;
 
-    static double
-    IntegrateWithAdaptiveRange(const std::function<double(double)>& integrand,
-                               double initial_rmax, double tolerance);
-    double CalculateDensity();
-    void InitFFTable();
+    void InitFFTable();   //< Filon sine transform of the Woods-Saxon density
+    void BuildFFQTable(); //< load-or-(InitFFTable + save) for p_FF_Q
+    // RWS / d / q-axis / r-grid part of the cache key (shared by the FF-table
+    // key and the N(x,b) key, since N(x,b) depends on the form factor).
+    std::string WSParamString() const;
+    std::string CacheId() const override;
+    void PrepareFill() override { BuildFFQTable(); }
 
   public:
 
@@ -340,6 +394,13 @@ namespace BEAM {
     {
       const double Q = sqrt(Q2);
       if (Q > m_q_max) return 0.;
+      // p_FF_Q is prebuilt on an N(x,b) cache miss (PrepareFill ->
+      // BuildFFQTable). It is null only after an N(x,b) cache hit (which skips
+      // the form-factor table) or when FF() is first reached via the debug CSV
+      // output; build it on demand so any caller gets the correct value instead
+      // of dereferencing a null table. InitFFTable() is pure local computation
+      // (no MPI/cache collectives), so building it from a single rank is safe.
+      if (!p_FF_Q) InitFFTable();
       return (*p_FF_Q)(Q);
     }
   };
@@ -348,6 +409,7 @@ namespace BEAM {
   private:
 
     double m_R_WS, m_a;
+    std::string CacheId() const override;
 
   public:
 
