@@ -347,6 +347,7 @@ void HT_Selector::SetRange(Flavour flav,double min,double max)
   m_flav=flav;
   m_ptmin=min;
   m_ptmax=max;
+  WarnIfNLOColored(flav);
 
   for (size_t i=m_nin;i<m_n;i++) {
     if (m_flav.Includes(p_fl[i])) {
@@ -442,6 +443,7 @@ void PT_Selector::SetRange(Flavour flav,double min,double max)
   m_flav=flav;
   m_ptmin=min;
   m_ptmax=max;
+  WarnIfNLOColored(flav);
 
   for (size_t i=m_nin;i<m_n;i++) {
     if (m_flav.Includes(p_fl[i])) {
@@ -539,6 +541,7 @@ void ET_Selector::SetRange(Flavour flav,double min,double max)
   m_flav=flav;
   m_etmin=min;
   m_etmax=max;
+  WarnIfNLOColored(flav);
 
   for (size_t i=m_nin;i<m_n;i++) {
     if (m_flav.Includes(p_fl[i])) {
@@ -618,6 +621,7 @@ void E_Selector::SetRange(Flavour flav,double min,double max)
   m_flav=flav;
   m_emin=min;
   m_emax=max;
+  WarnIfNLOColored(flav);
 
   for (size_t i=m_nin;i<m_n;i++) {
     if (m_flav.Includes(p_fl[i])) {
@@ -696,6 +700,7 @@ void Polar_Angle_Selector::SetRange(Flavour flav,double min,double max)
   m_flav=flav;
   m_angmin=min;
   m_angmax=max;
+  WarnIfNLOColored(flav);
 
   for (size_t i=m_nin;i<m_n;i++) {
     if (m_flav.Includes(p_fl[i])) {
@@ -776,6 +781,7 @@ void Rapidity_Selector::SetRange(Flavour flav,double min,double max)
   m_flav=flav;
   m_ymin=min;
   m_ymax=max;
+  WarnIfNLOColored(flav);
 
   for (size_t i=m_nin;i<m_n;i++) {
     if (m_flav.Includes(p_fl[i])) {
@@ -855,6 +861,7 @@ void PseudoRapidity_Selector::SetRange(Flavour flav,double min,double max)
   m_flav=flav;
   m_etamin=min;
   m_etamax=max;
+  WarnIfNLOColored(flav);
 
   for (size_t i=m_nin;i<m_n;i++) {
     if (m_flav.Includes(p_fl[i])) {
@@ -952,6 +959,7 @@ void IMass_Selector::SetRange(Flavour flav1,Flavour flav2,double min,double max)
 {
   m_flav1=flav1;
   m_flav2=flav2;
+  WarnIfNLOColored(flav1,flav2);
   m_massmin=Max(min,m_flav1.SelMass()+m_flav2.SelMass());
   m_massmax=Min(max,1.00000001*rpa->gen.Ecms()); //(rpa->gen.PBeam(0)[0]+rpa->gen.PBeam(1)[0]));
 
@@ -1046,6 +1054,7 @@ void IQ2_Selector::SetRange(Flavour flav1,Flavour flav2,double min,double max)
 {
   m_flav1=flav1;
   m_flav2=flav2;
+  WarnIfNLOColored(flav1,flav2);
   m_q2min=min;
   m_q2max=max;
   m_on=true;
@@ -1121,6 +1130,7 @@ void PT2_Selector::SetRange(Flavour flav1,Flavour flav2,double min,double max)
 {
   m_flav1=flav1;
   m_flav2=flav2;
+  WarnIfNLOColored(flav1,flav2);
   m_ptmin=min;
   m_ptmax=max;
 
@@ -1214,6 +1224,7 @@ void Apoll_Selector::SetRange(Flavour flav1,Flavour flav2,double min,double max)
 {
   m_flav1=flav1;
   m_flav2=flav2;
+  WarnIfNLOColored(flav1,flav2);
   m_apmin=min;
   m_apmax=max;
 
@@ -1300,6 +1311,7 @@ void MT2_Selector::SetRange(Flavour flav1,Flavour flav2,double min,double max)
 {
   m_flav1=flav1;
   m_flav2=flav2;
+  WarnIfNLOColored(flav1,flav2);
   m_mtmin=min;
   m_mtmax=max;
 
@@ -1386,6 +1398,7 @@ void MT2_v2_Selector::SetRange(Flavour flav1,Flavour flav2,double min,double max
 {
   m_flav1=flav1;
   m_flav2=flav2;
+  WarnIfNLOColored(flav1,flav2);
   m_mtmin=min;
   m_mtmax=max;
 
@@ -1472,6 +1485,7 @@ void DeltaY_Selector::SetRange(Flavour fl1,Flavour fl2,double min,double max)
 {
   m_flav1=fl1;
   m_flav2=fl2;
+  WarnIfNLOColored(fl1,fl2);
   m_dymin=min;
   m_dymax=max;
 
@@ -1556,6 +1570,7 @@ void DeltaEta_Selector::SetRange(Flavour fl1,Flavour fl2,double min,double max)
 {
   m_flav1=fl1;
   m_flav2=fl2;
+  WarnIfNLOColored(fl1,fl2);
   m_detamin=min;
   m_detamax=max;
 
@@ -1640,6 +1655,7 @@ void DeltaPhi_Selector::SetRange(Flavour fl1,Flavour fl2,double min,double max)
 {
   m_flav1=fl1;
   m_flav2=fl2;
+  WarnIfNLOColored(fl1,fl2);
   m_dphimin=min;
   m_dphimax=max;
 
@@ -1724,6 +1740,7 @@ void DeltaR_Selector::SetRange(Flavour fl1,Flavour fl2,double min,double max)
 {
   m_flav1=fl1;
   m_flav2=fl2;
+  WarnIfNLOColored(fl1,fl2);
   m_dRmin=min;
   m_dRmax=max;
 
@@ -1808,6 +1825,7 @@ void DeltaRy_Selector::SetRange(Flavour fl1,Flavour fl2,double min,double max)
 {
   m_flav1=fl1;
   m_flav2=fl2;
+  WarnIfNLOColored(fl1,fl2);
   m_dRymin=min;
   m_dRymax=max;
 
@@ -1900,6 +1918,7 @@ void PhiStar_Selector::SetRange(Flavour fl1,Flavour fl2,double min,double max)
 {
   m_flav1=fl1;
   m_flav2=fl2;
+  WarnIfNLOColored(fl1,fl2);
   m_phistarmin=min;
   m_phistarmax=max;
 
@@ -1989,6 +2008,7 @@ void Multiplicity_Selector::SetRange(Flavour fl,size_t min,size_t max)
 //  }
   // always on
   m_on=true;
+  WarnIfNLOColored(fl);
 }
 
 DECLARE_GETTER(Multiplicity_Selector,"N",Selector_Base,Selector_Key);
@@ -2361,6 +2381,7 @@ void T_Selector::SetRange(Flavour f1, Flavour f2, double min,double max)
   m_tmax=max;
   m_flav1 = f1;
   m_flav2 = f2;
+  WarnIfNLOColored(f1,f2);
   m_on=true;
 }
 

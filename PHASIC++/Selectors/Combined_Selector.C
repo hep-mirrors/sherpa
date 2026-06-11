@@ -142,6 +142,12 @@ void Combined_Selector::ListSelectors() const
     msg_Info()<<m_sels[i]->Name()<<std::endl;
 }
 
+void Combined_Selector::EmitNLOWarningsFor(const ATOOLS::Flavour_Vector &bornFinals) const
+{
+  for (Selector_Base *sel : m_sels)
+    sel->EmitNLOWarningsFor(bornFinals);
+}
+
 std::vector<Weights_Map> Combined_Selector::CombinedResults() const
 {
   std::vector<Weights_Map> res = {Weights_Map{}};

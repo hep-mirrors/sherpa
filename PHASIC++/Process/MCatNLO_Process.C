@@ -882,6 +882,25 @@ void MCatNLO_Process::SetSelector(const Selector_Key &key)
   p_rsproc->SetSelector(key);
   p_rproc->SetSelector(key);
   p_bproc->SetSelector(key);
+  // Collect all BVI final-state flavors across every BVI subprocess, then
+  // emit NLO IR-cancellation warnings for RS selectors whose suspect colored
+  // flavors are absent from every BVI final state.  This is a necessary but
+  // not sufficient condition: if the RS has more copies of a flavor than the
+  // BVI (e.g. Born = gg->ccbarg, RS = gg->ccbargg), a cut on that flavor can
+  // still break the IR cancellation even though the flavor appears in the BVI.
+  // We do not warn in that case because other kinematic cuts may cure it, but
+  // users should be aware that the check is heuristic.
+  Flavour_Vector bviFinals;
+  for (size_t i = 0; i < p_bviproc->Size(); ++i) {
+    Process_Base *bvi = (*p_bviproc)[i];
+    const Flavour_Vector &fls = bvi->Flavours();
+    for (size_t j = bvi->NIn(); j < fls.size(); ++j)
+      bviFinals.push_back(fls[j]);
+  }
+  for (size_t i = 0; i < p_rsproc->Size(); ++i) {
+    Combined_Selector *sel = (*p_rsproc)[i]->Selector();
+    if (sel) sel->EmitNLOWarningsFor(bviFinals);
+  }
 }
 
 void MCatNLO_Process::SetShower(PDF::Shower_Base *const ps)

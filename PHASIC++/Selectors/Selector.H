@@ -62,6 +62,7 @@ namespace PHASIC {
     Selector_Log *m_sel_log;
     Process_Base *p_proc;
     std::vector<Selector_Base*> m_sels;
+    mutable ATOOLS::Flavour_Set m_nloSuspects;
 
     size_t m_nin, m_nout, m_n;
 
@@ -90,6 +91,23 @@ namespace PHASIC {
     virtual void Output();
 
     void ReadInSubSelectors(const Selector_Key &key);
+
+    // Records a potential NLO IR-cancellation hazard for later checking.
+    // Call from SetRange for every selector that operates on a single
+    // identified particle species.  The actual warning is deferred to
+    // EmitNLOWarningsFor(), which is called by MCatNLO_Process::SetSelector
+    // once the BVI (Born) final-state flavors are known.  We warn when the
+    // flavor is absent from all BVI final states (clear asymmetry), but this
+    // is a heuristic: a cut can still be IR-unsafe when the RS has more copies
+    // of the flavor than the BVI (different final-state multiplicity).
+    void WarnIfNLOColored(const ATOOLS::Flavour &fl) const;
+    void WarnIfNLOColored(const ATOOLS::Flavour &fl1,
+                          const ATOOLS::Flavour &fl2) const;
+
+    // Emit warnings for suspect colored flavors that are absent from bornFinals.
+    // Called by MCatNLO_Process::SetSelector after both BVI and RS selectors
+    // have been initialized.
+    virtual void EmitNLOWarningsFor(const ATOOLS::Flavour_Vector &bornFinals) const;
 
     // inline functions
     inline void SetProcess(Process_Base *const proc)

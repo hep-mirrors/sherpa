@@ -34,6 +34,8 @@ namespace PHASIC {
     Selector_Base *GetSelector(const std::string &name) const;
     void ListSelectors() const;
 
+    void EmitNLOWarningsFor(const ATOOLS::Flavour_Vector &bornFinals) const override;
+
     inline void SetOn(const int on) { m_on=on; }
 
     inline int On() const { return m_on; }
