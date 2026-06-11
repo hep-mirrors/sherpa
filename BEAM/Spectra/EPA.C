@@ -150,7 +150,14 @@ void EPA::RegisterDefaults() const
   s["WoodsSaxon_R"].SetDefault(1.118 *
                                std::pow(m_beam.GetMassNumber(), 1. / 3.));
   s["WoodsSaxon_d"].SetDefault(0.54);
+  // r-grid for the Filon form-factor transform: r_max = R_WS + rMaxFactor*d,
+  // with rNodes integration intervals (only needs to resolve the density).
+  s["WoodsSaxon_rNodes"].SetDefault(1024);
+  s["WoodsSaxon_rMaxFactor"].SetDefault(16.);
   s["WoodsSaxonApprox_a"].SetDefault(0.7);
+  // Cache the (expensive) form-factor and N(x,b) tables under
+  // <RESULT_DIRECTORY>/EPA and reload them on subsequent runs.
+  s["CacheTables"].SetDefault(true);
   s["AlphaQED"].SetDefault(1. / 137.03599976);
   s["ThetaMax"].SetDefault(0.3);
   s["OutputSpectra"].SetDefault(false);

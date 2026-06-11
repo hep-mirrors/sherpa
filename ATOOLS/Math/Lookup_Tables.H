@@ -3,6 +3,7 @@
 
 #include <cstddef>
 #include <fstream>
+#include <iosfwd>
 #include <memory> // For std::unique_ptr
 #include <vector>
 
@@ -43,6 +44,10 @@ namespace ATOOLS {
                                              double& integral) const;
     void OutputToCSV(std::ofstream& outfile) const;
 
+    // Text (de)serialisation of axis + values, for caching (see Lookup_Tables.C).
+    void Write(std::ostream& os) const;
+    static std::unique_ptr<OneDim_Table> Read(std::istream& is);
+
     inline double Value(size_t xbin) const { return m_values[xbin]; }
     inline size_t NBins() const { return m_x.m_nbins; }
     inline const axis& GetAxis() const { return m_x; }
@@ -72,6 +77,10 @@ namespace ATOOLS {
     // nbins linearly-spaced v values spanning the global value range.
     std::unique_ptr<TwoDim_Table> Invert(size_t axislabel, size_t nbins) const;
     void OutputToCSV(std::ofstream& outfile) const;
+
+    // Text (de)serialisation of axes + values, for caching (see Lookup_Tables.C).
+    void Write(std::ostream& os) const;
+    static std::unique_ptr<TwoDim_Table> Read(std::istream& is);
 
     double Value(size_t xbin, size_t ybin) const
     {

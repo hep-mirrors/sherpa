@@ -6,8 +6,6 @@
 #include "ATOOLS/Phys/Flavour.H"
 #include "BEAM/Main/Beam_Parameters.H"
 
-#include <cmath>
-
 namespace BEAM {
 
   class Beam_Base {
@@ -65,9 +63,8 @@ namespace BEAM {
 
     void SetERan(double eran) { m_eran = eran; }
 
-    // Default impact parameter: sampled uniformly over
-    // the transverse area
-    virtual double ImpactParameter() const { return m_R * std::sqrt(m_eran); }
+    // Default impact parameter: sampled uniformly over radius
+    virtual double ImpactParameter() const { return m_R * m_eran; }
 
     virtual void SetInMomentum(const ATOOLS::Vec4D& in) { m_lab = in; }
     virtual void SetOutMomentum(const ATOOLS::Vec4D& out)
