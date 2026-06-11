@@ -541,7 +541,6 @@ void Process_Base::FillAmplitudes(std::vector<METOOLS::Spin_Amplitudes>& amp,
 
 void Process_Base::SetSelector(const Selector_Key &key)
 {
-  if (IsMapped()) return;
   if (p_selector==NULL) p_selector = new Combined_Selector(this);
   p_selector->Initialize(key);
 }
@@ -553,7 +552,6 @@ void Process_Base::SetCaller(Process_Base *const proc)
 
 bool Process_Base::Trigger(const Vec4D_Vector &p)
 {
-  if (IsMapped() && LookUp()) return Selector()->Result();
   return Selector()->Trigger(p);
 }
 
@@ -574,7 +572,6 @@ void Process_Base::InitCuts(Cut_Data *const cuts)
 
 void Process_Base::BuildCuts(Cut_Data *const cuts)
 {
-  if (IsMapped() && LookUp()) return;
   Selector()->BuildCuts(cuts);
 }
 
