@@ -26,7 +26,7 @@ Collider_Weight::Collider_Weight(Kinematics_Base* kinematics)
   m_rejection = ATOOLS::Settings::GetMainSettings()["BEAM_OVERLAP_REJECTION"]
                     .SetDefault(0)
                     .Get<int>();
-  if (m_rejection == 0) return;
+  if (m_rejection <= 0) return;
 
   // The rejection needs an impact parameter for each beam. Impact-parameter
   // integration variables are registered (in Beam_Channels) only for beams

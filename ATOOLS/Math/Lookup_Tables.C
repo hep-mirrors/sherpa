@@ -7,6 +7,54 @@
 
 using namespace ATOOLS;
 
+namespace {
+  // Text helpers for table (de)serialisation. A text format is portable across
+  // builds/endianness and round-trips through ATOOLS::My_File, which is how
+  // Sherpa shares result files across MPI ranks (rank 0 reads the file and
+  // broadcasts its content). Doubles are written with 17 significant digits
+  // (std::numeric_limits<double>::max_digits10), which round-trips an IEEE
+  // double exactly, so a reloaded table reproduces a freshly computed one.
+
+  // Sanity cap on the bin count read from a (regenerable) cache file, so a
+  // corrupt count cannot trigger a runaway allocation; any real table is far
+  // smaller, and a violation is treated as a corrupt file (i.e. recompute).
+  constexpr size_t s_max_bins = 100000000; // 1e8
+
+  // The per-axis cap above still permits products like nx*ny ~ 1e16 for a 2D
+  // table, so bound the total element count too (checked without overflowing
+  // size_t). Caps the allocation at ~0.8 GB; any real table is far smaller.
+  constexpr size_t s_max_elements = 100000000; // 1e8 doubles
+
+  void WriteAxis(std::ostream& os, const axis& a)
+  {
+    os << a.m_nbins << ' ' << a.m_xmin << ' ' << a.m_xmax << ' '
+       << static_cast<int>(a.m_mode) << '\n';
+  }
+  axis ReadAxis(std::istream& is)
+  {
+    size_t nbins = 0;
+    double xmin = 0., xmax = 0.;
+    int mode = 0;
+    is >> nbins >> xmin >> xmax >> mode;
+    if (!is || nbins < 1 || nbins > s_max_bins ||
+        (mode != axis_mode::linear && mode != axis_mode::log))
+      THROW(fatal_error, "Corrupt axis while reading cache.");
+    return axis(nbins, xmin, xmax, static_cast<axis_mode::code>(mode));
+  }
+  void WriteValues(std::ostream& os, const std::vector<double>& v)
+  {
+    for (double x : v)
+      os << x << '\n';
+  }
+  // Fills an already-sized vector (its length is fixed by the axes), so no
+  // length is read from the file.
+  void ReadValues(std::istream& is, std::vector<double>& v)
+  {
+    for (double& x : v)
+      is >> x;
+  }
+} // namespace
+
 axis::axis(size_t nbins, double xmin, double xmax, axis_mode::code mode)
     : m_nbins(nbins), m_xmin(xmin), m_xmax(xmax), m_mode(mode), m_xstep(0.0)
 {
@@ -143,6 +191,23 @@ void OneDim_Table::OutputToCSV(std::ofstream& outfile) const
   }
 }
 
+void OneDim_Table::Write(std::ostream& os) const
+{
+  os.precision(17);
+  WriteAxis(os, m_x);
+  WriteValues(os, m_values);
+}
+
+std::unique_ptr<OneDim_Table> OneDim_Table::Read(std::istream& is)
+{
+  const axis x = ReadAxis(is);
+  auto table = std::make_unique<OneDim_Table>(x);
+  ReadValues(is, table->m_values);
+  if (!is)
+    THROW(fatal_error, "Corrupt OneDim_Table while reading cache.");
+  return table;
+}
+
 //////////////////////////////////////////////////////////////////////////////
 // Two-dimensional look-up table
 //////////////////////////////////////////////////////////////////////////////
@@ -248,6 +313,30 @@ void TwoDim_Table::OutputToCSV(std::ofstream& outfile) const
   for (size_t i = 0; i <= m_x.m_nbins; ++i)
     for (size_t j = 0; j <= m_y.m_nbins; ++j)
       outfile << m_x.x(i) << "," << m_y.x(j) << "," << Value(i, j) << std::endl;
+}
+
+void TwoDim_Table::Write(std::ostream& os) const
+{
+  os.precision(17);
+  WriteAxis(os, m_x);
+  WriteAxis(os, m_y);
+  WriteValues(os, m_values);
+}
+
+std::unique_ptr<TwoDim_Table> TwoDim_Table::Read(std::istream& is)
+{
+  const axis x = ReadAxis(is);
+  const axis y = ReadAxis(is);
+  // ReadAxis guarantees nbins >= 1, so ny >= 2 and the division is safe; this
+  // bounds the product nx*ny without overflowing size_t.
+  const size_t nx = x.m_nbins + 1, ny = y.m_nbins + 1;
+  if (nx > s_max_elements / ny)
+    THROW(fatal_error, "Corrupt TwoDim_Table size while reading cache.");
+  auto table = std::make_unique<TwoDim_Table>(x, y);
+  ReadValues(is, table->m_values);
+  if (!is)
+    THROW(fatal_error, "Corrupt TwoDim_Table while reading cache.");
+  return table;
 }
 
 //////////////////////////////////////////////////////////////////////////////
