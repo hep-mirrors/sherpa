@@ -71,8 +71,9 @@ The corresponding  syntax is
 :option:`<min value>` and :option:`<max value>` are floating point
 numbers, which can also be given in a form that is understood by the
 internal algebra interpreter, see :ref:`Interpreter`.  The selectors
-act on *all* possible particles with the given flavour. Their
-respective keywords are
+act on *all* possible final-state particles with the given flavour
+(except for :option:`PZIN`, which acts on initial-state particles).
+Their respective keywords are
 
 :option:`PT`
   transverse momentum cut
@@ -119,8 +120,10 @@ based on two particle kinematics.  The corresponding is
 :option:`<min value>` and :option:`<max value>` are floating point
 numbers, which can also be given in a form that is understood by the
 internal algebra interpreter, see :ref:`Interpreter`.  The selectors
-act on *all* possible particles with the given flavour. Their
-respective keywords are
+act on *all* possible pairs of final-state particles with the given flavours
+(except for :option:`Q2` and :option:`INEL`, which each pair an
+initial-state with a final-state particle).
+Their respective keywords are
 
 :option:`Mass`
   invariant mass
