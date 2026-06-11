@@ -124,6 +124,52 @@ const std::vector<ATOOLS::Weights_Map>& Selector_Base::Results() const
   return m_results;
 }
 
+void Selector_Base::WarnIfNLOColored(const ATOOLS::Flavour &fl1,
+                                     const ATOOLS::Flavour &fl2) const
+{
+  WarnIfNLOColored(fl1);
+  WarnIfNLOColored(fl2);
+}
+
+void Selector_Base::WarnIfNLOColored(const ATOOLS::Flavour &fl) const
+{
+  if (!m_isnlo || !fl.Strong()) return;
+  // Only flag if the flavor actually appears in the RS final state —
+  // if it doesn't, this selector is trivially inactive for this subprocess.
+  bool inFinal = false;
+  for (size_t i = m_nin; i < m_n; ++i)
+    if (fl.Includes(p_fl[i])) { inFinal = true; break; }
+  if (!inFinal) return;
+  // For quarks that also appear in the RS initial state: an initial-state
+  // selector (e.g. PZIN) can remove the entire channel including its BVI
+  // contribution, making the combination IR-safe.
+  if (fl.IsQuark()) {
+    for (size_t i = 0; i < m_nin; ++i)
+      if (fl.Includes(p_fl[i])) return;
+  }
+  // Defer the actual warning until BVI final-state flavors are known.
+  // EmitNLOWarningsFor() will warn only if the flavor is absent from the
+  // BVI final state — meaning the cut fires asymmetrically between H and S
+  // events, breaking the MC@NLO IR cancellation.
+  m_nloSuspects.insert(fl);
+}
+
+void Selector_Base::EmitNLOWarningsFor(const ATOOLS::Flavour_Vector &bornFinals) const
+{
+  for (const ATOOLS::Flavour &fl : m_nloSuspects) {
+    bool inBorn = false;
+    for (const ATOOLS::Flavour &bf : bornFinals)
+      if (fl.Includes(bf)) { inBorn = true; break; }
+    if (!inBorn)
+      msg_Error() << "WARNING: " << m_name << " applied to NLO real-emission "
+                  << "process selects on colored particle " << fl << ".\n"
+                  << "  This breaks the NLO IR cancellation between S and H events "
+                  << "and gives ill-defined results.\n"
+                  << "  Use a jet-algorithm selector (e.g. FastjetFinder) instead."
+                  << std::endl;
+  }
+}
+
 void Selector_Base::ShowSyntax(const int mode)
 {
   if (!msg_LevelIsInfo() || mode==0) return;
