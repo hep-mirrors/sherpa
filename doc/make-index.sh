@@ -2,7 +2,7 @@
 
 # this is supposed to run within the CI's "manual-index" job to build the index.html
 
-releases=$(git ls-remote --tags | cut -d '^' -f 1 | cut -d "/" -f 3- | cut -c 2- | sort -r | uniq); 
+releases=$(git ls-remote --tags | cut -d '^' -f 1 | cut -d "/" -f 3- | sort -r | uniq); 
 
 cat <<EOF
 <!DOCTYPE html>

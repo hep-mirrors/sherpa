@@ -226,7 +226,7 @@ void Soft_Diffractive_Event_Generator::FillBlob() {
   for (size_t beam=0;beam<2;beam++) {
     if (m_contMassRange[beam]) {
       msg_Out()<<"  - "<<METHOD<<"(beam = "<<beam<<") selected continuous mass range.\n";
-      p_blob->AddStatus(blob_status::needs_hadronization);
+      p_blob->AddStatus(blob_status::needs_reconnections);
       for (size_t j=0;j<2;j++) {
 	part = new Particle(-1,m_out[2*beam+j],m_pout[2*beam+j]);
 	part->SetNumber();

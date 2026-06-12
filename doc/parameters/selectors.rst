@@ -199,6 +199,59 @@ internal algebra interpreter, see :ref:`Interpreter`.
 Particle dressers
 =================
 
+Particle dressers modify the momenta of final state particles by
+recombining them with nearby radiation (e.g. photons around charged
+leptons).  This allows to apply cuts on dressed particles that more
+closely resemble experimentally reconstructed objects. The dressed
+particles are then passed to subselectors for further cuts.
+
+:option:`DressedParticleSelector`
+  Dresses particles by recombining them with nearby photons or other
+  radiation. The syntax is
+
+  .. code-block:: yaml
+
+     SELECTORS:
+     - DressedParticleSelector:
+         DressingAlgorithm: [<algorithm>, <dR>]
+         FlavourDependentRadius:  # optional
+         - [<kf1>, <dR1>]
+         - [<kf2>, <dR2>]
+         Subselectors:
+         - <selector 1>
+         - <selector 2>
+         ...
+
+  The ``DressingAlgorithm`` parameter takes two values: the algorithm
+  name and the angular separation parameter ``<dR>``. Valid algorithms
+  are ``Cone`` (simple cone dressing), ``kt`` (k_T-type recombination),
+  ``antikt`` (anti-k_T recombination), and ``CA`` (Cambridge/Aachen).
+  The optional ``FlavourDependentRadius`` parameter allows to specify
+  different cone sizes for specific particle flavours. Each entry
+  consists of a flavour code ``<kf>`` and the corresponding cone radius
+  ``<dR>``.
+
+  The ``Subselectors`` list defines the cuts to be applied to the
+  dressed particles. Any selector can be used as a
+  subselector.
+
+  For example: dress all charged particles with nearby photons using a
+  default cone size of ``dR = 0.1``, while for electrons and muons use
+  flavour-specific cone sizes (0.1 and 0.2, respectively) before cuts:
+
+  .. code-block:: yaml
+
+     SELECTORS:
+     - DressedParticleSelector:
+         DressingAlgorithm: [Cone, 0.1]
+         FlavourDependentRadius:
+         - [11, 0.1]   # electrons with dR=0.1
+         - [13, 0.2]   # muons with dR=0.2
+         Subselectors:
+         - [PT, 11, 20, E_CMS]
+         - [PT, 13, 20, E_CMS]
+         - [Mass, 11, -11, 50, E_CMS]
+
 .. _Jet selectors:
 
 Jet selectors

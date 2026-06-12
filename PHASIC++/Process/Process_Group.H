@@ -8,6 +8,7 @@ namespace PHASIC {
 
   class Process_Group: public Process_Base {
   protected:
+    int m_ignore_construct;
 
     std::vector<Process_Base*>          m_procs;
     std::map<std::string,Process_Base*> m_procmap;
@@ -24,7 +25,7 @@ namespace PHASIC {
     bool ConstructProcess(Process_Info &pi);
 
   public:
-
+    Process_Group();
     ~Process_Group();
 
     size_t Size() const override;

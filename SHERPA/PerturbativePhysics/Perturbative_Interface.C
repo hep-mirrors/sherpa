@@ -94,9 +94,9 @@ Perturbative_Interface::~Perturbative_Interface()
     else if (p_hd) msg_Out()<<"Hard Decays";
     else if (p_sc) msg_Out()<<"Soft Collisions";
     msg_Out()<<"):";
-    if (m_fails_Moms>0)   { msg_Out()<<"\n  "<<"momentum failures: "<<m_fails_Moms; }
-    if (m_fails_Ampls>0)  { msg_Out()<<"\n  "<<"amplitude failures: "<<m_fails_Ampls; }
-    if (m_fails_Masses>0) { msg_Out()<<"\n  "<<"mass failures: "<<m_fails_Masses; }
+    if (m_fails_Moms>0)   { msg_Out()<<"\n  "<<"frame ill-defined: "<<m_fails_Moms; }
+    if (m_fails_Ampls>0)  { msg_Out()<<"\n  "<<"clustering failed: "<<m_fails_Ampls; }
+    if (m_fails_Masses>0) { msg_Out()<<"\n  "<<"massify failed: "<<m_fails_Masses; }
     msg_Out()<<"\n";
   }
 }
