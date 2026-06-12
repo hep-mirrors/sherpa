@@ -7,6 +7,7 @@
 #include "ATOOLS/Org/CXXFLAGS.H"
 #include "ATOOLS/Org/Return_Value.H"
 #include "ATOOLS/Org/Terminator_Objects.H"
+#include <map>
 #include <vector>
 
 namespace SHERPA {
@@ -17,6 +18,10 @@ namespace SHERPA {
     std::list<ATOOLS::Part_List * > m_partlists;
     ATOOLS:: Momenta_Stretcher      m_stretcher;
     long unsigned int               m_calls, m_fails;
+    // Maps copy particles (in frag blob) to their originals (in soft blob OUT),
+    // so that after StretchMomenta the original's DecayBlob can be wired to the
+    // frag blob without having the original itself modified by StretchMomenta.
+    std::map<ATOOLS::Particle*, ATOOLS::Particle*> m_originals;
 
     bool HarvestParticles(ATOOLS::Blob_List *);
     bool FillParticleLists(ATOOLS::Blob * blob);

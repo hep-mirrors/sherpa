@@ -25,6 +25,7 @@ void Singlet_Sorter::ResetPartLists() {
   }
   m_partlists.clear();
   m_hadrons.clear();
+  m_originals.clear();
 }
 
 Return_Value::code Singlet_Sorter::operator()(Blob_List * bloblist) {
@@ -103,7 +104,20 @@ bool Singlet_Sorter::FillParticleLists(Blob * blob) {
 	  m_fails++;
 	  return false;
 	}
-	p_partlist->push_back(part);
+	// Particles that are already OUT-particles of the soft blob must not be
+	// modified in-place by StretchMomenta: that would corrupt the soft blob's
+	// momentum balance.  Use a copy as the frag-blob entry instead, and record
+	// the original so MakeBlob can wire its DecayBlob afterward.
+	if (part->ProductionBlob() &&
+	    part->ProductionBlob()->Type() == btp::Soft_Collision) {
+	  Particle * copy = new Particle(*part);
+	  copy->SetNumber();
+	  copy->SetProductionBlob(part->ProductionBlob());
+	  m_originals[copy] = part;
+	  p_partlist->push_back(copy);
+	} else {
+	  p_partlist->push_back(part);
+	}
 	part->SetStatus(part_status::fragmented);
       }
       else if (part->Flav().Kfcode()==kf_tau || part->Flav().IsHadron())
@@ -204,10 +218,16 @@ Blob * Singlet_Sorter::MakeBlob() {
   Vec4D  pos      = Vec4D(0.,0.,0.,0.);
   size_t npart    = 0;
   for (size_t i=0;i<blob->NInP();i++) {
-    Particle * part = blob->InParticle(i); 
+    Particle * part = blob->InParticle(i);
     pos  += part->XProd();
     part->SetPosition(part->XProd());
     npart++;
+    // If this is a copy standing in for a soft-blob OUT particle, wire the
+    // original's DecayBlob to this frag blob so TFM can traverse the graph
+    // (soft blob → original → frag blob → hadrons) without going through the
+    // copy, which would be double-counted as an initial-state particle.
+    auto it = m_originals.find(part);
+    if (it != m_originals.end()) it->second->SetDecayBlob(blob);
   }
   blob->SetPosition(pos/double(npart));
   if (massthem) {
@@ -218,6 +238,12 @@ Blob * Singlet_Sorter::MakeBlob() {
       masses.push_back(parts.back()->Flav().HadMass());
     }
     if (!m_stretcher.StretchMomenta(parts,masses)) {
+      // Clear DecayBlob on originals before the blob is destroyed so Reset()
+      // doesn't follow a dangling pointer when cleaning up the spectators.
+      for (size_t i=0;i<blob->NInP();i++) {
+        auto it=m_originals.find(blob->InParticle(i));
+        if (it!=m_originals.end()) it->second->SetDecayBlob(nullptr);
+      }
       delete blob; blob = NULL;
     }
   }
