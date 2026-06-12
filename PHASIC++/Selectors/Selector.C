@@ -140,29 +140,26 @@ void Selector_Base::WarnIfNLOColored(const ATOOLS::Flavour &fl) const
   for (size_t i = m_nin; i < m_n; ++i)
     if (fl.Includes(p_fl[i])) { inFinal = true; break; }
   if (!inFinal) return;
-  // For quarks that also appear in the RS initial state: an initial-state
-  // selector (e.g. PZIN) can remove the entire channel including its BVI
-  // contribution, making the combination IR-safe.
-  if (fl.IsQuark()) {
-    for (size_t i = 0; i < m_nin; ++i)
-      if (fl.Includes(p_fl[i])) return;
-  }
   // Defer the actual warning until BVI final-state flavors are known.
-  // EmitNLOWarningsFor() will warn only if the flavor is absent from the
-  // BVI final state — meaning the cut fires asymmetrically between H and S
-  // events, breaking the MC@NLO IR cancellation.
+  // EmitNLOWarningsFor() warns when the RS has strictly more copies of this
+  // flavor than the BVI, which is the condition for an asymmetric cut that
+  // breaks MC@NLO IR cancellation.
   m_nloSuspects.insert(fl);
 }
 
 void Selector_Base::EmitNLOWarningsFor(const ATOOLS::Flavour_Vector &bornFinals) const
 {
   for (const ATOOLS::Flavour &fl : m_nloSuspects) {
-    bool inBorn = false;
+    size_t rsCount = 0;
+    for (size_t i = m_nin; i < m_n; ++i)
+      if (fl.Includes(p_fl[i])) rsCount++;
+    size_t bviCount = 0;
     for (const ATOOLS::Flavour &bf : bornFinals)
-      if (fl.Includes(bf)) { inBorn = true; break; }
-    if (!inBorn)
+      if (fl.Includes(bf)) bviCount++;
+    if (bviCount < rsCount)
       msg_Error() << "WARNING: " << m_name << " applied to NLO real-emission "
-                  << "process selects on colored particle " << fl << ".\n"
+                  << "process selects on colored particle " << fl
+                  << " (" << rsCount << " in RS, " << bviCount << " in BVI).\n"
                   << "  This breaks the NLO IR cancellation between S and H events "
                   << "and gives ill-defined results.\n"
                   << "  Use a jet-algorithm selector (e.g. FastjetFinder) instead."
