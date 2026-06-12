@@ -1451,7 +1451,7 @@ bool DeltaY_Selector::Trigger(Selector_List &sl)
   if (!m_on) return true;
   for (size_t i=m_nin;i<sl.size();i++) {
     for (size_t j=i+1;j<sl.size();j++) {
-      if (sl[i].Momentum()==Vec4D(0.,0.,0.,0.)) continue;
+      if (sl[i].Momentum()==Vec4D(0.,0.,0.,0.) || sl[j].Momentum()==Vec4D(0.,0.,0.,0.)) continue;
       if ( (m_flav1.Includes(sl[i].Flavour()) &&
             m_flav2.Includes(sl[j].Flavour())) ||
            (m_flav1.Includes(sl[j].Flavour()) &&
@@ -1535,7 +1535,7 @@ bool DeltaEta_Selector::Trigger(Selector_List &sl)
   if (!m_on) return true;
   for (size_t i=m_nin;i<sl.size();i++) {
     for (size_t j=i+1;j<sl.size();j++) {
-      if (sl[i].Momentum()==Vec4D(0.,0.,0.,0.)) continue;
+      if (sl[i].Momentum()==Vec4D(0.,0.,0.,0.) || sl[j].Momentum()==Vec4D(0.,0.,0.,0.)) continue;
       if ( (m_flav1.Includes(sl[i].Flavour()) &&
             m_flav2.Includes(sl[j].Flavour())) ||
            (m_flav1.Includes(sl[j].Flavour()) &&
@@ -1619,7 +1619,7 @@ bool DeltaPhi_Selector::Trigger(Selector_List &sl)
   if (!m_on) return true;
   for (size_t i=m_nin;i<sl.size();i++) {
     for (size_t j=i+1;j<sl.size();j++) {
-      if (sl[i].Momentum()==Vec4D(0.,0.,0.,0.)) continue;
+      if (sl[i].Momentum()==Vec4D(0.,0.,0.,0.) || sl[j].Momentum()==Vec4D(0.,0.,0.,0.)) continue;
       if ( (m_flav1.Includes(sl[i].Flavour()) &&
             m_flav2.Includes(sl[j].Flavour())) ||
            (m_flav1.Includes(sl[j].Flavour()) &&
@@ -1787,7 +1787,7 @@ bool DeltaRy_Selector::Trigger(Selector_List &sl)
   if (!m_on) return true;
   for (size_t i=m_nin;i<sl.size();i++) {
     for (size_t j=i+1;j<sl.size();j++) {
-      if (sl[i].Momentum()==Vec4D(0.,0.,0.,0.)) continue;
+      if (sl[i].Momentum()==Vec4D(0.,0.,0.,0.) || sl[j].Momentum()==Vec4D(0.,0.,0.,0.)) continue;
       if ( (m_flav1.Includes(sl[i].Flavour()) &&
             m_flav2.Includes(sl[j].Flavour())) ||
            (m_flav1.Includes(sl[j].Flavour()) &&
@@ -1871,7 +1871,7 @@ bool PhiStar_Selector::Trigger(Selector_List &sl)
   if (!m_on) return true;
   for (size_t i=m_nin;i<sl.size();i++) {
     for (size_t j=i+1;j<sl.size();j++) {
-      if (sl[i].Momentum()==Vec4D(0.,0.,0.,0.)) continue;
+      if (sl[i].Momentum()==Vec4D(0.,0.,0.,0.) || sl[j].Momentum()==Vec4D(0.,0.,0.,0.)) continue;
       if ( (m_flav1.Includes(sl[i].Flavour()) &&
             m_flav2.Includes(sl[j].Flavour())) ||
            (m_flav1.Includes(sl[j].Flavour()) &&
@@ -2283,6 +2283,7 @@ double Isolation_Cut::DPhi12(const Vec4D & p1,const Vec4D & p2)
 {
   double pt1=sqrt(p1[1]*p1[1]+p1[2]*p1[2]);
   double pt2=sqrt(p2[1]*p2[1]+p2[2]*p2[2]);
+  if (pt1==0. || pt2==0.) return 0.;
   return acos((p1[1]*p2[1]+p1[2]*p2[2])/(pt1*pt2));
 }
 
