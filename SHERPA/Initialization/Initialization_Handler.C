@@ -108,6 +108,7 @@ void Initialization_Handler::RegisterDefaults()
   s["MI_HANDLER"].UseNoneReplacements().SetDefault("Amisic");
   s["EVT_FILE_PATH"].SetDefault(".");
   s["ANALYSIS_OUTPUT"].SetDefault("Analysis/");
+  s["GENERATE_RESULT_DIRECTORY"].SetDefault(true);
   s["RESULT_DIRECTORY"].SetDefault("Results");
   s["CHECK_LIBLOCK"].SetDefault(0);
   s["OUTPUT_PRECISION"].SetDefault(12);
@@ -380,7 +381,7 @@ void Initialization_Handler::CheckVersion()
     while (req_pos < versioninfo[0].length()) {
       size_t req_next = versioninfo[0].find(".", req_pos);
       size_t cur_next = currentversion.find(".", cur_pos);
-      
+
       std::string req_component = (req_next == std::string::npos) ?
                                   versioninfo[0].substr(req_pos) :
                                   versioninfo[0].substr(req_pos, req_next - req_pos);

@@ -48,7 +48,6 @@ void Matrix_Element_Handler::RegisterDefaults()
   s["EVENT_SEED_FILE"].SetDefault(
                               "ran.stat." + rpa->gen.Variable("RNG_SEED"));
   s["EVENT_SEED_INCREMENT"].SetDefault(1);
-  s["GENERATE_RESULT_DIRECTORY"].SetDefault(true);
 
   s["COLOR_SCHEME"]
     .SetDefault(0)
