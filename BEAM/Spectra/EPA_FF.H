@@ -135,14 +135,20 @@ namespace BEAM {
     // ---- table caching (implemented in EPA_FF.C) -------------------------
     // The on-disk format and the MPI-safe load/save go through the generic
     // ATOOLS::Table_Cache facility; the logic below only builds the cache key
-    // and decides where the file lives.
+    // and decides where the file lives. The tables are stored *inside* the
+    // result archive <RESULT_DIRECTORY>.zip (as entries EPA/<file>.tab), written
+    // via the My_File zip-DB just like the matrix-element results -- this is why
+    // BuildNxbTable opens that DB around the cache I/O. Caching is therefore
+    // gated on GENERATE_RESULT_DIRECTORY exactly as the ME results are.
 
     // Content version baked into every cache key (see BaseCacheId). Bump
     // whenever the table-construction logic changes in a way no other key
     // parameter captures, to invalidate previously written caches.
-    static constexpr int s_cache_version = 1;
-    bool m_cache{true};     //< caching enabled (EPA:CacheTables) for this beam
-    std::string m_cachedir; //< <RESULT_DIRECTORY>/EPA, empty => no caching
+    // v2: fixed the EPA_HCS form factor argument (q*R instead of Q^2).
+    static constexpr int s_cache_version = 2;
+    bool m_cache{true};    //< caching enabled (EPA:CacheTables) for this beam
+    std::string m_respath; //< resolved RESULT_DIRECTORY root; cache lives inside
+                           //< <m_respath>.zip; empty => caching disabled
 
     // Common part of the cache key (version + axes + beam scalars). Concrete
     // form factors prepend a type tag and append their own parameters so that
@@ -152,10 +158,11 @@ namespace BEAM {
     std::string CacheFileName(const std::string& tag,
                               const std::string& key) const;
 
-    // Create the cache directory; MUST be called collectively on all MPI ranks
-    // (MakeDir broadcasts), so it lives outside the rank-0-only write. Disables
-    // caching (consistently across ranks) if the directory is not writable.
-    void EnsureCacheDir();
+    // True iff table caching is active for this beam: enabled via
+    // EPA:CacheTables AND a result archive is being written. An empty m_respath
+    // means GENERATE_RESULT_DIRECTORY is off or RESULT_DIRECTORY is empty, i.e.
+    // there is no <RESULT_DIRECTORY>.zip to cache into.
+    bool CachingActive() const { return m_cache && !m_respath.empty(); }
 
     // Load-or-(fill + save) a cached table via ATOOLS::Table_Cache. On a hit
     // every rank loads it (rank 0 reads and broadcasts the bytes); on a miss
@@ -166,8 +173,10 @@ namespace BEAM {
                      std::unique_ptr<Table>& target,
                      const std::function<void()>& fill);
 
-    // Build p_N_xb: PrepareFill() builds any prerequisite (e.g. the Woods-Saxon
-    // form-factor table) before FillTables() fills the N(x,b) grid.
+    // Build p_N_xb: opens the result zip-DB (so this and any prerequisite
+    // form-factor table land inside <RESULT_DIRECTORY>.zip), then PrepareFill()
+    // builds that prerequisite (e.g. the Woods-Saxon form-factor table) before
+    // FillTables() fills the N(x,b) grid.
     void BuildNxbTable();
     virtual void PrepareFill() {}
 
