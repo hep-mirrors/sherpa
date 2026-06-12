@@ -205,7 +205,7 @@ Blob * Singlet_Sorter::MakeBlob() {
   while (!p_partlist->empty()) {
     Particle * part = p_partlist->front();
     if (!massthem &&
-	((part->Flav().IsGluon() && dabs(part->Momentum().Abs2()>1.e-5)) ||
+	((part->Flav().IsGluon() && dabs(part->Momentum().Abs2())>1.e-5) ||
 	 (!part->Flav().IsGluon() &&
 	  !IsEqual(part->Momentum().Abs2(),sqr(part->Flav().HadMass()),1.e-5)))) {
       massthem = true;
