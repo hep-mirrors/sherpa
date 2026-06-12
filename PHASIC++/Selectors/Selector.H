@@ -94,7 +94,7 @@ namespace PHASIC {
     // inline functions
     inline void SetProcess(Process_Base *const proc)
     { p_proc=proc; }
-    inline const PHASIC::Process_Base *const Process(Process_Base *const proc) const
+    inline const PHASIC::Process_Base *const Process() const
     { return p_proc; }
 
     inline std::string Name() const { return m_name; }
