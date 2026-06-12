@@ -165,7 +165,7 @@ std::vector<Weights_Map> Combined_Selector::CombinedResults() const
       }
     } else {
       assert(res.size() == other.size());
-      for (int i {0}; i < res.size(); ++i) {
+      for (size_t i {0}; i < res.size(); ++i) {
         res[i] *= other[i];
       }
     }
