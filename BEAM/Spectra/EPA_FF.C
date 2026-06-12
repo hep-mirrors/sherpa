@@ -6,6 +6,7 @@
 #include "ATOOLS/Math/Table_Cache.H"
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/Message.H"
+#include "ATOOLS/Org/My_File.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Scoped_Settings.H"
 #include "ATOOLS/Org/Settings.H"
@@ -19,6 +20,33 @@
 #include <vector>
 using namespace BEAM;
 using namespace ATOOLS;
+
+namespace {
+  // RAII wrapper that opens the Sherpa result directory as a My_File zip-DB for
+  // the duration of the EPA cache I/O. While the DB is open, the cache tables
+  // are stored inside <root>.zip -- My_Out_File::Close prefix-matches the write
+  // path (root + "/EPA/<file>.tab") against the registered DB and routes it into
+  // the archive -- alongside the matrix-element results, instead of as loose
+  // files. OpenDB/CloseDB are MPI-collective (they broadcast), so this guard
+  // must be constructed and destroyed on every rank in lock-step; every rank
+  // builds the same spectra with the same settings, so that holds. CloseDB (in
+  // the destructor) flushes the archive back to disk.
+  struct ResultDB_Guard {
+    std::string m_db;
+    bool m_active;
+    ResultDB_Guard(std::string db, bool active)
+        : m_db(std::move(db)), m_active(active)
+    {
+      if (m_active) My_In_File::OpenDB(m_db);
+    }
+    ~ResultDB_Guard()
+    {
+      if (m_active) My_In_File::CloseDB(m_db);
+    }
+    ResultDB_Guard(const ResultDB_Guard&) = delete;
+    ResultDB_Guard& operator=(const ResultDB_Guard&) = delete;
+  };
+} // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
 //
@@ -72,17 +100,18 @@ EPA_FF_Base::EPA_FF_Base(const ATOOLS::Flavour& beam, const int dir)
   if (m_q2min > m_q2max)
     THROW(invalid_input, "Unphysical input for EPA Q2-limits. ");
 
-  // Resolve the table cache directory (<RESULT_DIRECTORY>/EPA). A relative
+  // Resolve the RESULT_DIRECTORY root (e.g. <config>/Results). A relative
   // RESULT_DIRECTORY is taken w.r.t. the config path, exactly as
-  // Matrix_Element_Handler does, so the cache lands in the same tree as the
-  // rest of the results rather than in the current working directory.
+  // Matrix_Element_Handler does, so m_respath matches the path the ME handler
+  // opens as a zip-DB and the EPA cache lands inside the very same
+  // <RESULT_DIRECTORY>.zip (BuildNxbTable opens that DB around the cache I/O).
   //
   // Caching is only possible when result files are written at all: if the user
-  // disabled GENERATE_RESULT_DIRECTORY, or RESULT_DIRECTORY resolves to empty
-  // (forming "/EPA" would target the filesystem root), leave m_cachedir empty,
-  // which EnsureCacheDir/LoadOrBuild already treat as "caching disabled" (no
-  // read, no write). GENERATE_RESULT_DIRECTORY is read with its own default so
-  // this does not depend on Matrix_Element_Handler having registered it yet.
+  // disabled GENERATE_RESULT_DIRECTORY, or RESULT_DIRECTORY resolves to empty,
+  // leave m_respath empty, which LoadOrBuild/BuildNxbTable treat as "caching
+  // disabled" (no DB opened, no read, no write). GENERATE_RESULT_DIRECTORY is
+  // read with its own default so this does not depend on Matrix_Element_Handler
+  // having registered it yet.
   m_cache = s["CacheTables"].SetDefault(true).Get<bool>();
   Settings& mainsettings = Settings::GetMainSettings();
   const bool storeresults =
@@ -92,9 +121,9 @@ EPA_FF_Base::EPA_FF_Base(const ATOOLS::Flavour& beam, const int dir)
   if (storeresults && !res.empty()) {
     if (res[0] != '/' && mainsettings.GetPath() != "")
       res = mainsettings.GetPath() + "/" + res;
-    m_cachedir = res + "/EPA";
+    m_respath = res;
   }
-  // else: m_cachedir stays empty -> caching disabled for this beam
+  // else: m_respath stays empty -> caching disabled for this beam
 }
 
 std::string EPA_FF_Base::BaseCacheId(const std::string& tag) const
@@ -115,29 +144,17 @@ std::string EPA_FF_Base::CacheFileName(const std::string& tag,
          std::to_string(std::hash<std::string>{}(key)) + ".tab";
 }
 
-void EPA_FF_Base::EnsureCacheDir()
-{
-  // MakeDir is MPI-collective (it broadcasts the result per path component), so
-  // this MUST be reached by all ranks. Every rank constructs the same form
-  // factor with the same settings, so m_cache is identical across ranks and the
-  // collective MakeDir is entered (or skipped) consistently. On failure we flip
-  // m_cache off on every rank, keeping the later hit/miss logic in lock-step.
-  if (!m_cache || m_cachedir.empty()) return;
-  if (!MakeDir(m_cachedir, true)) {
-    msg_Error() << METHOD << "(): cannot create EPA cache directory '"
-                << m_cachedir << "'; continuing without table caching.\n";
-    m_cache = false;
-  }
-}
-
 template <class Table>
 void EPA_FF_Base::LoadOrBuild(const std::string& tag, const std::string& key,
                              std::unique_ptr<Table>& target,
                              const std::function<void()>& fill)
 {
-  EnsureCacheDir(); // collective; may disable caching on all ranks
-  const bool docache = m_cache && !m_cachedir.empty();
-  const std::string path = m_cachedir + "/" + CacheFileName(tag, key);
+  const bool docache = CachingActive();
+  // The tables live as entries EPA/<file>.tab inside <m_respath>.zip; the caller
+  // (BuildNxbTable) keeps that zip-DB open for the duration, so Table_Cache's
+  // My_In_File/My_Out_File resolve against it (see ResultDB_Guard) rather than
+  // touching loose files.
+  const std::string path = m_respath + "/EPA/" + CacheFileName(tag, key);
   // Table_Cache::Load is collective (rank 0 reads and broadcasts the content),
   // so every rank sees the same content and reaches the same hit/miss decision
   // -- no shared filesystem and no manual rank coordination needed.
@@ -157,6 +174,14 @@ void EPA_FF_Base::LoadOrBuild(const std::string& tag, const std::string& key,
 
 void EPA_FF_Base::BuildNxbTable()
 {
+  // Open the Sherpa result directory as a zip-DB for the whole build, so both
+  // this N(x,b) table and any prerequisite (the Woods-Saxon form-factor table,
+  // built by PrepareFill) are stored inside <RESULT_DIRECTORY>.zip rather than
+  // as loose files. This is the single place the DB is opened: BuildFFQTable
+  // runs inside PrepareFill below, so one scope covers both tables with no
+  // nested OpenDB. On a cache hit the open DB also makes the entries readable.
+  const bool docache = CachingActive();
+  ResultDB_Guard db(m_respath + "/", docache);
   // PrepareFill() builds any prerequisite (e.g. the Woods-Saxon form-factor
   // table) before FillTables() fills the N(x,b) grid.
   LoadOrBuild<TwoDim_Table>("nxb", CacheId(), p_N_xb, [this] {
@@ -396,9 +421,11 @@ std::string EPA_Gauss::CacheId() const
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// Proton form factor as defined in Budnev et al., Phys. Rep. C15 (1974) 181,
-// c.f. eq. D.4 and Table 8, but here with the
-// approximation Q2 -> 0 in the form factor
+// Form factor of a homogeneously charged sphere (HCS) of radius R, i.e. the
+// Fourier transform of a uniform charge density:
+//   F(qR) = 3 (sin(qR) - qR cos(qR)) / (qR)^3,
+// with q = sqrt(Q^2) and R = m_R (the beam radius in 1/GeV), so the argument
+// qR is dimensionless and F(0) = 1.
 ////////////////////////////////////////////////////////////////////////////////
 
 EPA_HCS::EPA_HCS(const ATOOLS::Flavour& beam, const int dir)
