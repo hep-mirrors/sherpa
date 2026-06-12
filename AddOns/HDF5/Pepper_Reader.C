@@ -399,7 +399,7 @@ namespace LHEH5 {
         break;
       }
       case MODEL::ew_scheme::alphamZsW: {
-        settings.set_ew_scheme("alpha_mz_sinthetaw");
+        settings.set_ew_scheme("alphamZsW");
         break;
       }
       default:
