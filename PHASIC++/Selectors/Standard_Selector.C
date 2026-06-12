@@ -238,12 +238,14 @@ namespace PHASIC {
   // inclusive selectors
   // -----------------------------
   class Multiplicity_Selector : public Selector_Base {
-    size_t  m_nmin, m_nmax;
+    // double rather than size_t: avoids silent truncation of the parsed input value if e.g. 2.5.
+    // Exact for all realistic integer multiplicities (IEEE 754 represents integers exactly up to 2^53).
+    double m_nmin, m_nmax;
     ATOOLS::Flavour m_flav;
   public:
     Multiplicity_Selector(Process_Base *const);
     ~Multiplicity_Selector();
-    void     SetRange(ATOOLS::Flavour,size_t,size_t);
+    void     SetRange(ATOOLS::Flavour,double,double);
     bool     Trigger(ATOOLS::Selector_List &);
     void     BuildCuts(Cut_Data *);
   };
@@ -1995,7 +1997,7 @@ void Multiplicity_Selector::BuildCuts(Cut_Data * cuts)
 {
 }
 
-void Multiplicity_Selector::SetRange(Flavour fl,size_t min,size_t max)
+void Multiplicity_Selector::SetRange(Flavour fl,double min,double max)
 {
   m_flav=fl;
   m_nmin=min;
