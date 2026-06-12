@@ -134,16 +134,13 @@ void Selector_Base::WarnIfNLOColored(const ATOOLS::Flavour &fl1,
 void Selector_Base::WarnIfNLOColored(const ATOOLS::Flavour &fl) const
 {
   if (!m_isnlo || !fl.Strong()) return;
-  // Only flag if the flavor actually appears in the RS final state —
-  // if it doesn't, this selector is trivially inactive for this subprocess.
+  // initial-state selector may veto channel consistently; can't verify here
+  for (size_t i = 0; i < m_nin; ++i)
+    if (fl.Includes(p_fl[i])) return;
   bool inFinal = false;
   for (size_t i = m_nin; i < m_n; ++i)
     if (fl.Includes(p_fl[i])) { inFinal = true; break; }
   if (!inFinal) return;
-  // Defer the actual warning until BVI final-state flavors are known.
-  // EmitNLOWarningsFor() warns when the RS has strictly more copies of this
-  // flavor than the BVI, which is the condition for an asymmetric cut that
-  // breaks MC@NLO IR cancellation.
   m_nloSuspects.insert(fl);
 }
 
