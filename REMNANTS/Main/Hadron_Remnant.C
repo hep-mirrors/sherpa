@@ -374,7 +374,19 @@ bool Hadron_Remnant::TestExtract(const Flavour &flav,const Vec4D &mom) {
     return false;
   }
   // Still enough energy?  And in range?
-  if (m_residualE-mom[0]<m_minE) return false;
+  double afterE = m_residualE - mom[0];
+  if (afterE < m_minE) return false;
+  // m_minE covers the valence/diquark system; additionally the already-
+  // accumulated sea-spectator masses (one antiquark per extracted sea quark)
+  // must also fit.  If valence has been extracted (m_valence==true) and we are
+  // extracting another quark, a further antiquark spectator will be created by
+  // MakeSpectator, so add its minimum mass to the check.
+  double seaMasses = 0.;
+  for (Particle const* sp : m_spectators)
+    seaMasses += Max(sp->Flav().HadMass(), m_LambdaQCD);
+  if (m_valence && flav.IsQuark())
+    seaMasses += Max(flav.Bar().HadMass(), m_LambdaQCD);
+  if (afterE < m_minE + seaMasses) return false;
   double x = mom[0]/m_residualE;
   if (x<p_pdf->XMin() || x>p_pdf->XMax()) {
     msg_Tracking() << METHOD << ": out of limits, x = " << x << " = "
