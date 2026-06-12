@@ -433,7 +433,7 @@ double COMIX::Single_Process::Partonic(const Vec4D_Vector &p,
   }
   if (m_zero || !Selector()->Result()) return m_lastxs;
   for (size_t i(0);i<m_nin+m_nout;++i) m_p[i]=p[i];
-  if (p_map!=NULL && m_lookup && p_map->m_lookup) {
+  if (p_map!=NULL && m_lookup && p_map->m_lookup && p_map->Selector()->Result()) {
     m_dxs=p_map->m_dxs;
     m_w=p_map->m_w;
     if (m_pinfo.m_fi.NLOType()&nlo_type::rsub) {
@@ -711,8 +711,6 @@ bool COMIX::Single_Process::Trigger(const ATOOLS::Vec4D_Vector &p)
 {
   DEBUG_FUNC(m_pinfo.m_fi.NLOType());
   if (m_zero) return false;
-  if (p_map!=NULL && m_lookup && p_map->m_lookup)
-    return Selector()->Result();
   if (m_pinfo.m_fi.NLOType()&nlo_type::rsub) {
     Amplitude *bg(p_map!=NULL?p_map->p_bg:p_bg);
     Selector()->SetResult(1);
