@@ -9,6 +9,10 @@ namespace PDF {
   private:
     double m_x, m_Q2;
 
+    static constexpr int NUM_FLAVORS = 13;
+    std::array<double, NUM_FLAVORS> m_xpdf;
+    std::array<bool, NUM_FLAVORS> m_flavor_calculated;
+
   public:
     H1_Fortran_Interface(const std::string& _set);
     PDF_Base* GetCopy();
@@ -20,8 +24,9 @@ namespace PDF {
 
   /*!
     \class H1_Fortran_Interface
-    \brief An interface to the H1 DPDF fit of parton distributions in the
-    pomeron.
+    \brief Interface to H1 DPDF fit of parton distributions in the pomeron
+
+    Reference: Eur.Phys.J.C 48 (2006) 715-748
   */
 }
 

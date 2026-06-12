@@ -362,9 +362,11 @@ void Amisic::CreateAmplitudeLegs(Cluster_Amplitude * ampl,Blob * blob) {
     size_t     id(1<<ampl->Legs().size());
     Particle * part(blob->GetParticle(i));
     ColorID    col(part->GetFlow(1),part->GetFlow(2));
-    if (i<blob->NInP()) ampl->CreateLeg(-part->Momentum(),part->Flav().Bar(),
-					col.Conj(),id);
-    else ampl->CreateLeg(part->Momentum(),part->Flav(),col,id);
+    if (i<blob->NInP()) {
+      ampl->CreateLeg(-part->Momentum(),part->Flav().Bar(),col.Conj(),id,part->Beam());
+    }
+    else
+      ampl->CreateLeg(part->Momentum(),part->Flav(),col,id);
     ampl->Legs().back()->SetStat(0);
   }
 }

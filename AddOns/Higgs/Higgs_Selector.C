@@ -102,7 +102,7 @@ bool Higgs_Selector::Trigger(Vec4D &py1,Vec4D &py2,Vec4D &pj)
     if (py1.DR(pj)<m_dr) trigger=false;
     if (py2.DR(pj)<m_dr) trigger=false;
   }
-  return (1-m_sel_log->Hit(1-trigger));
+  return m_sel_log->CountingIdentity(trigger);
 }
 
 

@@ -77,13 +77,11 @@ bool DressedParticleSelector::Trigger(Selector_List &sl)
   for (size_t k=0;k<m_sels.size();++k) {
     if (!m_sels[k]->Trigger(sl)) {
       msg_Debugging()<<"Point discarded"<<std::endl;
-      m_sel_log->Hit(true);
-      return false;
+      return m_sel_log->CountingIdentity(false);
     }
   }
   msg_Debugging()<<"Point passed"<<std::endl;
-  m_sel_log->Hit(false);
-  return true;
+  return m_sel_log->CountingIdentity(true);
 }
 
 void DressedParticleSelector::BuildCuts(Cut_Data * cuts)

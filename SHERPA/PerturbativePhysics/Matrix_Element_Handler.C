@@ -62,8 +62,6 @@ void Matrix_Element_Handler::RegisterDefaults()
   s["NLO_IMODE"].SetDefault("IKP");
   s["NLO_MUR_COEFFICIENT_FROM_VIRTUAL"].SetDefault(true);
 
-  s["PSI"]["ASYNC"].SetDefault(false);
-
   s["EVENT_FILES_ENABLED"].SetDefault(true);
 }
 
@@ -215,6 +213,9 @@ bool Matrix_Element_Handler::GenerateOneEvent()
     switch (GenerateOneTrialEvent()) {
       case trial_event_generation_result::non_zero:
         m_evtinfo.m_ntrial=n;
+        if (p_beam && !p_beam->IsSymmetric()) {
+          if (p_remnants) p_remnants->InitializeCMSBoost();
+        }
         return true;
       case trial_event_generation_result::zero:
         continue;

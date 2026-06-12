@@ -153,7 +153,7 @@ bool Fastjet_Selector::Trigger(Selector_List &sl)
   bool trigger((int)(m_p.size()-nj)>=m_nj);
   if (trigger) trigger=(int)m_calc.Calculate()->Get<double>();
 
-  return (1-m_sel_log->Hit(1-trigger));
+  return m_sel_log->CountingIdentity(trigger);
 }
 
 

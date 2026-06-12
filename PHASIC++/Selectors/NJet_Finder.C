@@ -130,18 +130,18 @@ bool NJet_Finder::Trigger(Selector_List &sl)
     size_t np(0);
     for (size_t i(0);i<m_kt2.size();++i) {
       if (i>0 && m_kt2[i]<m_kt2[i-1])
-	return 1-m_sel_log->Hit(1);
+	return m_sel_log->CountingIdentity(false);
       if (m_kt2[i]>m_pt2min) ++np;
     }
-    return 1-m_sel_log->Hit(np<-m_njet);
+    return m_sel_log->CountingIdentity(np>=-m_njet);
   }
 
-  if (n<m_njet) return 0;
+  if (n<m_njet) return m_sel_log->CountingIdentity(false);
 
   bool trigger(true);
   if (m_jetpt.size()<size_t(m_njet)) trigger=false;
 
-  return (1-m_sel_log->Hit(1-trigger));
+  return m_sel_log->CountingIdentity(trigger);
 }
 
 void NJet_Finder::ConstructJets(Vec4D * p, int n)

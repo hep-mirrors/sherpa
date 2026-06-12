@@ -260,6 +260,9 @@ Cluster_Amplitude *MCatNLO_Process::CreateAmplitude(const NLO_subevt *sub) const
     ampl->CreateLeg(i<m_nin?-sub->p_mom[i]:sub->p_mom[i],
 		    i<m_nin?sub->p_fl[i].Bar():sub->p_fl[i],
 		    ColorID(ci[i],cj[i]),sub->p_id[i]);
+    if (p_rsproc->NIn()==2 && i<p_rsproc->NIn())
+      ampl->Legs().back()->SetBeam(p_rsproc->Caller()->Get<Single_Process>()->
+    				     Integrator()->ISR()->Swap() ? 1-i : i);
     if (!sub->IsReal() && sub->p_id[i]&(1<<sub->m_i)) {
       if ((sub->p_id[i]&(1<<sub->m_j))==0)
 	THROW(fatal_error,"Internal error");
@@ -561,8 +564,9 @@ Weights_Map MCatNLO_Process::OneSEvent(const int wmode)
     p_ampl=NULL;
     Process_Base *rproc(NULL);
     Flavour_Vector afl(ampl->Legs().size());
-    for (size_t i(0);i<afl.size();++i)
+    for (size_t i(0);i<afl.size();++i) {
       afl[i]=i<m_nin?ampl->Leg(i)->Flav().Bar():ampl->Leg(i)->Flav();
+    }
     for (size_t i(0);i<p_rproc->Size();++i)
       if (afl==(*p_rproc)[i]->Flavours()) {
 	rproc=(*p_rproc)[i];
@@ -581,6 +585,9 @@ Weights_Map MCatNLO_Process::OneSEvent(const int wmode)
     Cluster_Leg *lij(NULL);
     for (size_t i(0);i<next->Legs().size();++i) {
       next->Leg(i)->SetStat(1);
+      if (rproc->NIn()==2 && i<rproc->NIn()) {
+	ampl->Leg(i)->SetBeam(rproc->Integrator()->ISR()->Swap() ? 1-i : i);
+      }
       if (next->Leg(i)->K()) {
 	lij=next->Leg(i);
       }
@@ -762,8 +769,9 @@ bool MCatNLO_Process::CalculateTotalXSec(const std::string &resultpath,
 {
   Vec4D_Vector p(p_rsproc->NIn()+p_rsproc->NOut());
   Cluster_Amplitude *ampl(Cluster_Amplitude::New());
-  for (int i(0);i<p.size();++i)
+  for (int i(0);i<p.size();++i) {
     ampl->CreateLeg(Vec4D(),Flavour(kf_jet));
+  }
   auto psh = p_ddproc->Integrator()->PSHandler();
   do {
     psh->TestPoint(&p.front(),&p_ddproc->Info(),p_ddproc->Generator());
@@ -779,11 +787,12 @@ bool MCatNLO_Process::CalculateTotalXSec(const std::string &resultpath,
     psh->SetAbsError(psh->Error()*rpa->Picobarn()*
 		     dabs(p_bviproc->Integrator()->TotalResult()));
   p_rsproc->SetEventReader(p_read);
-#ifndef USING__Threading
   if (!p_rsproc->CalculateTotalXSec(resultpath,create)) res=false;
-#endif
   p_rsproc->SetEventReader(NULL);
   if (p_read) p_int->SetMax(p_read->UnitWeight()/rpa->Picobarn());
+  for (size_t i(0);i<p_bviproc->Size();++i)
+    (*p_bproc)[i]->Integrator()->SetMax
+      ((*p_bviproc)[i]->Integrator()->Max());
   return res;
 }
 

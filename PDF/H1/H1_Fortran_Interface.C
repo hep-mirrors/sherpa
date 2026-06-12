@@ -25,10 +25,7 @@ H1_Fortran_Interface::H1_Fortran_Interface(const std::string& _set)
 
   m_set   = _set;
   m_bunch = Flavour(kf_pomeron);
-  // just call it once with dummy variables to initialize the lookup tables and
-  // be able to call them faster, c.f. the comment in qcd_2006.f
-  double xpdf[13];
-  double f2[2], fl[2], c2[2], cl[2];
+
   if (_set == std::string("FitA")) {
     m_member = 1;
   } else if (_set == std::string("FitB")) {
@@ -38,8 +35,19 @@ H1_Fortran_Interface::H1_Fortran_Interface(const std::string& _set)
                  "to the FitB parametrizations.\n";
     m_member = 2;
   }
+
+  // Initialize Fortran lookup tables with dummy call
+  // This loads grid data into COMMON block (c.f. comment in qcd_2006.f)
+  double xpdf[NUM_FLAVORS];
+  double f2[2], fl[2], c2[2], cl[2];
   double x = 0.5, q2 = 10.;
   qcd_2006_(x, q2, m_member, xpdf, f2, fl, c2, cl);
+
+  // Initialize per-flavor cache
+  for (int i = 0; i < NUM_FLAVORS; ++i) {
+    m_xpdf[i] = 0.0;
+    m_flavor_calculated[i] = false;
+  }
 
   for (int i = 1; i < m_nf + 1; i++) {
     m_partons.insert(Flavour((kf_code) (i)));
@@ -63,6 +71,11 @@ void H1_Fortran_Interface::CalculateSpec(const double& _x, const double& _Q2)
 {
   m_x  = _x / m_rescale;
   m_Q2 = _Q2;
+
+  // Invalidate cache for new kinematic point
+  for (int i = 0; i < NUM_FLAVORS; ++i) {
+    m_flavor_calculated[i] = false;
+  }
 }
 
 double H1_Fortran_Interface::GetXPDF(const ATOOLS::Flavour& flavour)
@@ -72,13 +85,25 @@ double H1_Fortran_Interface::GetXPDF(const ATOOLS::Flavour& flavour)
 
 double H1_Fortran_Interface::GetXPDF(const kf_code& kf, bool anti)
 {
-  double xpdf[13];
-  double f2[2], fl[2], c2[2], cl[2];
-  int    iset = 0;
-  qcd_2006_(m_x, m_Q2, iset, xpdf, f2, fl, c2, cl);
   int index = static_cast<int>(kf) % 7 + 6;
-  double result = xpdf[index] * m_rescale;
-  return result;
+
+  // Check for cache
+  if (!m_flavor_calculated[index]) {
+    // Using iset=0 tells qcd_2006 to reuse initialized lookup tables
+    double xpdf[NUM_FLAVORS];
+    double f2[2], fl[2], c2[2], cl[2];
+    int iset = 0;
+
+    qcd_2006_(m_x, m_Q2, iset, xpdf, f2, fl, c2, cl);
+
+    // Fill cache
+    for (int i = 0; i < NUM_FLAVORS; ++i) {
+      m_xpdf[i] = xpdf[i];
+      m_flavor_calculated[i] = true;
+    }
+  }
+
+  return m_xpdf[index] * m_rescale;
 }
 
 DECLARE_PDF_GETTER(H1_Getter);

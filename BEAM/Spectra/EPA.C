@@ -49,7 +49,7 @@ void EPA::FixPosition()
   m_position = p_ff->ImpactParameter() * Vec4D(0., cos(phi), sin(phi), 0.);
 }
 
-void EPA::SetOutMomentum(const ATOOLS::Vec4D& out)
+void EPA::SetOutMomentum(const ATOOLS::Vec4D& out, const size_t& i)
 {
   m_vecouts[0] = out;
   m_vecouts[1] = m_lab - out;
