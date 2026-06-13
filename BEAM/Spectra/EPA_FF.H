@@ -345,9 +345,20 @@ namespace BEAM {
   public:
 
     EPA_HCS(const ATOOLS::Flavour& beam, int dir);
-    double FF(const double& QR) override
+    double FF(const double& Q2) override
     {
-      return 3 *
+      // Homogeneously-charged-sphere form factor, a function of the
+      // dimensionless product q*R. The interface passes Q^2 (GeV^2), so the
+      // argument is q*R = sqrt(Q^2) * m_R, with m_R the beam radius in 1/GeV.
+      const double QR = std::sqrt(Q2) * m_R;
+      // For small q*R the two terms are each ~1/(q*R)^2 and cancel
+      // catastrophically, so below a safe threshold use the Taylor series
+      // F = 1 - (qR)^2/10 + (qR)^4/280 (F(0) = 1).
+      if (QR < 1.e-2) {
+        const double QR2 = QR * QR;
+        return 1. - QR2 / 10. + QR2 * QR2 / 280.;
+      }
+      return 3. *
              (std::sin(QR) / std::pow(QR, 3) - std::cos(QR) / ATOOLS::sqr(QR));
     }
   };
