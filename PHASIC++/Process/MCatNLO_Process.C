@@ -90,6 +90,7 @@ void MCatNLO_Process::Init(const Process_Info &pi,
 
   // init B proc
   Process_Info spi(pi);
+  ++spi.m_fi.m_nmax;
   spi.m_fi.SetNLOType(cpi.m_fi.NLOType());
   Process_Info bpi(spi);
   if (bpi.m_megenerator=="") bpi.m_megenerator=defbmegen;
@@ -139,8 +140,7 @@ void MCatNLO_Process::Init(const Process_Info &pi,
   m_psmode   = s["PSMODE"].Get<int>();
   m_hpsmode  = s["HPSMODE"].Get<int>();
   if (m_hpsmode == -1) {
-    if (pi.m_fi.m_nmax==pi.m_fi.m_ps.size()) m_hpsmode=4;
-    else if (m_pinfo.m_ckkw&1) m_hpsmode=0;
+    if (m_pinfo.m_ckkw&1) m_hpsmode=0;
     else m_hpsmode=4;
   }
   m_kfacmode = s["KFACTOR_MODE"].Get<int>();
