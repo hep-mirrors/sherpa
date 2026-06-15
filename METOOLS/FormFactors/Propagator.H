@@ -65,6 +65,7 @@ namespace METOOLS {
     const double h(const double & q2) const;
     const double dh(const double & q2) const;
     const double f(const double & q2) const;
+    const double ppi(const double & q2) const;
   public:
     GounarisSakurai(Total_Width_Base * width,
 		    const resonance_type & type=resonance_type::running);
