@@ -33,7 +33,7 @@ Rho_770_0_Lineshape::Rho_770_0_Lineshape() :
   ///////////////////////////////////////////////////////////////////////////////////
   outflavs = { Flavour(kf_eta), Flavour(kf_photon) };
   Partial_Width_Base * rho2etagamma = new V_PGamma(m_inflav,outflavs,0.0003);
-  m_channels.insert(rho2pigamma);
+  m_channels.insert(rho2etagamma);
 }
 
 Rho_770_plus_Lineshape::Rho_770_plus_Lineshape() :
