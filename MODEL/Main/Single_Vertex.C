@@ -77,7 +77,8 @@ namespace MODEL{
       if (sv.FormFactor.size() &&sv.FormFactor[0]!="") s<<"*"<<sv.FormFactor[0];
       for (size_t i(1);i<sv.cpl.size();++i) {
 	s<<"}{"<<sv.Coupling(i)<<"*"<<sv.Color[i].FullString()<<"*"<<sv.Lorentz[i];
-	if (sv.FormFactor[i]!="") s<<"*"<<sv.FormFactor[i];
+	if (i < sv.FormFactor.size() && !sv.FormFactor[i].empty())
+    s << "*" << sv.FormFactor[i];
       }
       s<<"}}";
     }
