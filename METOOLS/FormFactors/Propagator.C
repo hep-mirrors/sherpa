@@ -131,6 +131,7 @@ void Summed_Propagator::Add(Propagator_Base * prop,const Complex & weight) {
 }
 
 const Complex Summed_Propagator::operator()(const double & s) {
+  if (m_props.size()==0) return 1.0;
   Complex result(0.,0.);
   for (map<Propagator_Base *,Complex>::iterator pit=m_props.begin();
        pit!=m_props.end();pit++) {
