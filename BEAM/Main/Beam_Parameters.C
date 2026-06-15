@@ -110,8 +110,8 @@ Beam_Base* Beam_Parameters::InitSpectrum(const size_t& num)
     return InitializeReggeon(num);
   case beamspectrum::DM:
     return InitializeDM_beam(num);
-  case beamspectrum::Fixed_Target :
-    return InitializeFixed_Target(num);
+  // case beamspectrum::Fixed_Target :
+  //   return InitializeFixed_Target(num);
   case beamspectrum::Leptonic :
     return InitializeLeptonic(num);
   default :
