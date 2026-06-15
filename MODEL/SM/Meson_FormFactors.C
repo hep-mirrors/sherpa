@@ -54,10 +54,15 @@ FFVMD::FFVMD(const Vertex_Key &key):
   // Also: extract the flavours in the vertex to look up parameters
   // in the model look-up table.
   std::set<kf_code> kfs;
+  msg_Out()<<METHOD<<"("<<key.m_j.size()<<"): "<<key.m_j[0]->Flav()<<", "
+	   <<key.m_j[1]->Flav()<<"\n";
+  msg_Out()<<key.p_mv->in[0]<<", "<<key.p_mv->in[1]<<", "<<key.p_mv->in[2]<<"\n";
   for (size_t i(0);i<key.m_j.size();++i) {
     if (!key.m_j[i]->Flav().IsHadron()) m_pos=i;
-    kfs.insert(key.m_j[i]->Flav().Kfcode());
+    else kfs.insert(key.m_j[i]->Flav().Kfcode());
   }
+  msg_Out()<<METHOD<<"("<<key.m_j.size()<<"): "<<key.m_j[0]->Flav()<<", "
+	   <<key.m_j[1]->Flav()<<"\n"; //<<", "<<key.m_j[2]->Flav()
   FixMode(key);
   Construct();
   msg_Out()<<METHOD<<":\n";
@@ -77,7 +82,8 @@ void FFVMD::Construct() {
     break;
   case int(FF_0_PP_mode::unknown):
   default:
-    THROW(fatal_error,"Cannot construct form factor for unknown FF_0_PP mode.");
+    msg_Out()<<METHOD<<" yields no form factor.\n";
+    // THROW(fatal_error,"Cannot construct form factor for unknown FF_0_PP mode.");
     break;
   }
 }
@@ -120,7 +126,7 @@ Complex FFVMD::FF() {
 DECLARE_GETTER(FFVMD,"VMD",Form_Factor,Vertex_Key);
 Form_Factor *Getter<Form_Factor,Vertex_Key,FFVMD>::
 operator()(const Vertex_Key &args) const {
-  msg_Out()<<METHOD<<"\n";
+  msg_Out()<<METHOD<<"(size = "<<args.m_j.size()<<")\n";
   return new FFVMD(args);
 }
 
