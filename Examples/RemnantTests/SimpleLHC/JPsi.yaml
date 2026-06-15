@@ -2,53 +2,102 @@
 
 # set up beams for LHC run 1
 BEAMS:            2212
-BEAM_ENERGIES:    3500
+BEAM_ENERGIES:    6500
 # MI_HANDLER:       None
 SHOWER_GENERATOR: CSS
-# FRAGMENTATION:    Ahadic
-RECONNECTION: 0
+# FRAGMENTATION:    None
+# ME_GENERATORS:       None
+# SOFT_COLLISIONS:     Amisic
+# RECONNECTION: None
 
 # matrix-element calculation
 ME_GENERATORS:
   - Internal
+  - Comix
 
-# PARTICLE_DATA:
-#   4:
-#     Massive: 1
-#   5: 
-#     Massive: 1
+QUARKONIA:
+    # 443:        0.81*5000/0.22/0.22*9/2/3.14/0.22
+    1S0_441:    0.
+    3S1_441:    0.
+    1S0_443:    53.49E-03
+    1S0_100443: 48.806E-03
+    3S1_100443: 4.943E-03
+    3S1_443:    6.414E-03
+    3S1_10441:  13.591E-03
+    3S1_20443:  3.*13.591E-03
+    3S1_445:    3.*13.591E-03
+    # 3P0_443:    5E-03
+    # 3P1_443:    5E-03
+    # 3P2_443:    5E-03
+    Enhance:  100.0
+    # v8_2: 0.0 
+
+# SHOWER:
+    # ENABLE_QUARKONIA: 0
+    # MAXEM: 0
+
+AMISIC:
+  EVENT_TYPE:     Perturbative
+  PT_0:           0.5
+  PT_Min:         1.0
+  SIGMA_ND_NORM:  1.0
+  MU_R_FACTOR:    1.0
+  MU_F_FACTOR:    1.0
+  TRIGGER:        [443, 9900443]
+  #N_MaxScatters:  100
 
 ALPHAS(MZ): 0.1188
 ORDER_ALPHAS: 1
 ALPHAS: {USE_PDF: 0}
-SCALES: METS{H_T2}{H_T2}     
+SCALES: METS{H_T2/4} 
+
+HADRON_DECAYS:
+    Channels:
+        443:
+            13, -13:
+                BR: [0.98823, 0.00034]
+                Origin: PDG2023
+
+# AMISIC:
+    # PT_Min(ref): 5
+    # Eta: 1.5
+
 
 # pp -> Z[ee]+jets
 PROCESSES:
-- 93 93 -> 443 93:
-    Order: {QCD: 3, EW: 0}
-- 93 93 -> 100443 93:
-    Order: {QCD: 3, EW: 0}
-- 93 93 -> 10441 93:
-    Order: {QCD: 3, EW: 0}
-- 93 93 -> 20443 93:
-    Order: {QCD: 3, EW: 0}
-- 93 93 -> 445 93:
-    Order: {QCD: 3, EW: 0}
-- 93 93 -> 990000443 93:
-    Order: {QCD: 3, EW: 0}
-- 93 93 -> 990100443 93:
-    Order: {QCD: 3, EW: 0}
-- 93 93 -> 991000443 93:
-    Order: {QCD: 3, EW: 0}
-- 93 93 -> 991100443 93:
-    Order: {QCD: 3, EW: 0}
-- 93 93 -> 991010441 93:
-    Order: {QCD: 3, EW: 0}
-- 93 93 -> 991020443 93:
-    Order: {QCD: 3, EW: 0}
-- 93 93 -> 991000445 93:
-    Order: {QCD: 3, EW: 0}
+- 93 93 -> 93 93:
+    Order: {QCD: 2, EW: 0}
+    Enhance_Function: VAR{PPerp2(p[3])/500}
+# - 93 93 -> 9900443 93:
+#     Order: {QCD: 3, EW: 0}
+#     Enhance_Function: VAR{PPerp2(p[3])/500}
+# - 93 93 -> 20443 93:
+#     Order: {QCD: 3, EW: 0}
+#     Enhance_Function: VAR{PPerp2(p[3])/100}
+# - 93 93 -> 445 93:
+#     Order: {QCD: 3, EW: 0}
+#     Enhance_Function: VAR{PPerp2(p[3])/100}
+# - 93 93 -> 9900443 93:
+#     Order: {QCD: 3, EW: 0}
+#     Enhance_Function: VAR{PPerp2(p[3])/100}
+# - 93 93 -> 9900441 93:
+#     Order: {QCD: 3, EW: 0}
+#     Enhance_Function: VAR{PPerp2(p[3])/600}
+# - 21 21 -> 991000443 21:
+#     Order: {QCD: 3, EW: 0}
+#     Enhance_Function: VAR{PPerp2(p[3])/400}
+# - 21 21 -> 991100443 21:
+#     Order: {QCD: 3, EW: 0}
+#     Enhance_Function: VAR{PPerp2(p[3])/400}
+# - 93 93 -> 991010441 93:
+#     Order: {QCD: 3, EW: 0}
+#     Enhance_Function: VAR{PPerp2(p[3])/400}
+# - 93 93 -> 991020443 21:
+#     Order: {QCD: 3, EW: 0}
+#     Enhance_Function: VAR{PPerp2(p[3])/400}
+# - 93 93 -> 991000445 21:
+#     Order: {QCD: 3, EW: 0}
+#     Enhance_Function: VAR{PPerp2(p[3])/400}
 # - 93 93 -> 992000443 93:
 #     Order: {QCD: 3, EW: 0}
 # - 93 93 -> 992100443 93:
@@ -62,36 +111,52 @@ PROCESSES:
 # - 93 93 -> 994100443 93:
 #     Order: {QCD: 3, EW: 0}
 
-# SHOWER:
-# - MAXEM: 0
 
 
 SELECTORS:
-- [PT, 93, 3, E_CMS]
+- [PT, 93, 20, E_CMS]
+- [Eta, 93, 3.5, 4]
+- VariableSelector:
+    Variable: PT
+    Flavs: [443,9900443]
+    Ranges:
+    - [20, E_CMS]
+- VariableSelector:
+    Variable: Eta
+    Flavs: [443,9900443]
+    Ranges:
+    - [3.5,4]
 
 
-REMNANTS:
-  2212:
-    KT_FORM:   Gauss_Limited     # Gauss, Gauss_Limited None
-    KT_RECOIL: Democratic        # Beam_vs_Shower, Democratic 
-    REFERENCE_ENERGY:         7000.0; 
-    ENERGY_SCALING_EXPO:      0.16; 
-    SHOWER_INITIATOR_MEAN:    1.0; 
-    SHOWER_INITIATOR_SIGMA:   1.0; 
-    SHOWER_INITIATOR_Q2:      0.77; 
-    SHOWER_INITIATOR_KTMAX:   5.0; 
-    SHOWER_INITIATOR_KTEXPO:  5.0; 
-    BEAM_SPECTATOR_MEAN:      0.250; 
-    BEAM_SPECTATOR_SIGMA:     0.250;
-    BEAM_SPECTATOR_Q2:        0.77; 
-    BEAM_SPECTATOR_KTMAX:     1.0;
-    BEAM_SPECTATOR_KTEXPO:    5.0;
-    MATTER_FORM: Double_Gaussian # Single or Double
-    RADIUS_1:   0.75
-    RADIUS_2:   1.5
-    FRACTION_1: 0.7
+# REMNANTS:
+#   2212:
+#     KT_FORM:   Gauss_Limited     # Gauss, Gauss_Limited None
+#     KT_RECOIL: Democratic        # Beam_vs_Shower, Democratic 
+#     REFERENCE_ENERGY:         7000.0; 
+#     ENERGY_SCALING_EXPO:      0.16; 
+#     SHOWER_INITIATOR_MEAN:    1.0; 
+#     SHOWER_INITIATOR_SIGMA:   1.0; 
+#     SHOWER_INITIATOR_Q2:      0.77; 
+#     SHOWER_INITIATOR_KTMAX:   5.0; 
+#     SHOWER_INITIATOR_KTEXPO:  5.0; 
+#     BEAM_SPECTATOR_MEAN:      0.250; 
+#     BEAM_SPECTATOR_SIGMA:     0.250;
+#     BEAM_SPECTATOR_Q2:        0.77; 
+#     BEAM_SPECTATOR_KTMAX:     1.0;
+#     BEAM_SPECTATOR_KTEXPO:    5.0;
+#     MATTER_FORM: Double_Gaussian # Single or Double
+#     RADIUS_1:   0.75
+#     RADIUS_2:   1.5
+#     FRACTION_1: 0.7
 
 ANALYSIS: Rivet
 RIVET:
    --analyses: 
      - ATLAS_2011_I896268
+    #  - ATLAS_2014_I1292798
+    #  - CMS_2012_I944755
+     - CMS_2018_I1633431
+    #  - LHCB_2013_I1244315
+    #  - LHCB_2011_I891233
+    #  - LHCb_JPsiJet
+     - LHCb_JPsiJet2    

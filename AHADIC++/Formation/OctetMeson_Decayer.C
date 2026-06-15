@@ -41,11 +41,12 @@ bool OctetMeson_Decayer::operator()() {
 bool OctetMeson_Decayer::FindOctet(Singlet *singlet,
                                    list<Proto_Particle *>::iterator &pit1) {
   for (pit1 = singlet->begin(); pit1 != singlet->end(); pit1++) {
+    // msg_Out()<<"kf_code: "<<(*pit1)-> <<'\n';
     if ((*pit1)->Flavour().IsOctetMeson()) {
       p_part1 = (*pit1);
       kf_code octet_kfc = p_part1->Flavour().Kfcode();
       newkfc = GetChannel(octet_kfc);
-      if(newkfc == octet_kfc) break;
+      if(newkfc == octet_kfc) break; //decay did not happen
       return true;
     }
   }
@@ -142,7 +143,6 @@ bool OctetMeson_Decayer::FixKinematics() {
   double beta2 = 1. / (2. * Q2) *
                  (Q2 - m12 + m22 + sqrt(sqr(Q2 - m12 - m22) + 4. * m12 * m22));
   double alpha2 = m12 / Q2 / (1. - beta2);
-  // Vec4D p = sqrt(mom1.PSpat2());
   // msg_Out()<<" WHAT is p: "<<p<<'\n';
   // double rg = ran->GetGaussian();
   // msg_Out()<<"Random gaussian: "<< rg <<'\n';

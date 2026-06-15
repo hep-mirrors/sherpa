@@ -1,6 +1,7 @@
 #include "AMISIC++/Perturbative/QCD_Processes.H"
 #include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Org/Exception.H"
+#include "ATOOLS/Phys/LDME.H"
 
 using namespace AMISIC;
 using namespace ATOOLS;
@@ -516,3 +517,147 @@ operator()(const ATOOLS::Flavour_Vector& flavs) const
   return NULL;
 }
 
+/////////////////////////////////////////////////////////////////////////////
+//      QUARKONIA
+/////////////////////////////////////////////////////////////////////////////
+
+DECLARE_XSBASE_GETTER(XS_gg_g3S1_oct,"XS_gg_g3S1_oct")
+XS_Base * ATOOLS::Getter<AMISIC::XS_Base,ATOOLS::Flavour_Vector,XS_gg_g3S1_oct>::
+operator()(const ATOOLS::Flavour_Vector& flavs) const
+{
+  
+  // const Flavour_Vector fl = args.Flavours();
+  if (flavs.size()!=4) return NULL;
+  if ( flavs[0].IsGluon() && flavs[1].IsGluon() && flavs[2].IsGluon()  &&
+  flavs[3].IsOctetMeson() ) {
+    kf_code kfc = flavs[3].Kfcode();
+    if (kfc==kf_3S1_c) 
+    {
+      std::cout<<"FLAVOURS: "<<flavs[0].Kfcode()<<" "<<flavs[1].Kfcode()<<" "<<flavs[2].Kfcode()<<" "<<flavs[3].Kfcode()<<"\n";
+      if(!IsZero(GetTotalLDME(kfc))) return new XS_gg_g3S1_oct();
+    }
+  }
+  if ( flavs[0].IsGluon() && flavs[1].IsGluon() && flavs[3].IsGluon()  &&
+  flavs[2].IsOctetMeson() ) {
+    kf_code kfc = flavs[2].Kfcode();
+    if (kfc==kf_3S1_c) 
+    {
+      std::cout<<"FLAVOURS: "<<flavs[0].Kfcode()<<" "<<flavs[1].Kfcode()<<" "<<flavs[2].Kfcode()<<" "<<flavs[3].Kfcode()<<"\n";
+      if(!IsZero(GetTotalLDME(kfc))) return new XS_gg_g3S1_oct();
+    }
+  }
+  
+  return NULL;
+}
+
+XS_gg_g3S1_oct::XS_gg_g3S1_oct(): XS_Base(){
+  m_name = string("gg->g3S1_oct");
+}
+
+void XS_gg_g3S1_oct::Calc(const double & s,const double & t,const double & u) 
+{
+  m_mass2 = sqr(2.*1.4);
+  m_mass = sqrt(m_mass2);
+  LDME = 0.005;
+  double sM2 = sqr(s-m_mass2);
+  double tM2 = sqr(t-m_mass2);
+  double uM2 = sqr(u-m_mass2);
+
+  m_pref = pow(4.*M_PI,3)*0.22;
+  double heq0 = 2.*s*m_mass2*(sqr(t)+sqr(u))*t*u;
+  double heq1 = sqr(s)*(sqr(sM2)+pow(t,4)+pow(u,4)+2.*sqr(m_mass2)*sqr(t*u/s));
+  double nom = 27.*(s*t+t*u+u*s)-19.*sqr(m_mass2);
+  double dnom = sM2*sM2*tM2*uM2;
+  // std::cout <<"MATRIX ELEMENT SQUARED NEGATIVE: "<<test<<'\n';
+  m_lastxs =  -1./(144.*pow(m_mass,3))*(heq0+heq1)*m_pref*nom/dnom*LDME;
+    // std::cout<<"OCTET: "<<m_lastxs<<'\n';
+  // THROW(fatal_error, "Found the Jpsi");
+  // std::cout<<"Calc for J/psi\n";
+}
+
+bool XS_gg_g3S1_oct::SetColours(const ATOOLS::Flavour_Vector & flavs) 
+{
+  for (size_t i = 0; i<4;i++){
+    if (flavs[i].IsOctetMeson()) m_S = i;
+  }
+  size_t bit = ran->Get()<0.5 ? 0 : 1;
+  size_t cross = ran->Get()<0.5 ? 0 : 1;
+  if (cross==0) {
+    m_colours[0][bit] = m_colours[m_S][bit] = Flow::Counter();
+    m_colours[0][1-bit] = m_colours[1][bit] = Flow::Counter();
+    m_colours[1][1-bit] = m_colours[5-m_S][1-bit] = Flow::Counter();
+    m_colours[m_S][1-bit] = m_colours[5-m_S][bit] = Flow::Counter();
+  }
+  if (cross==1) {
+    m_colours[0][bit] = m_colours[m_S][bit] = Flow::Counter();
+    m_colours[0][1-bit] = m_colours[5-m_S][1-bit] = Flow::Counter();
+    m_colours[1][bit] = m_colours[5-m_S][bit] = Flow::Counter();
+    m_colours[1][1-bit] = m_colours[m_S][1-bit] = Flow::Counter();
+  }
+  return true;
+}
+
+/////////////////////////////////////////////////////////////
+DECLARE_XSBASE_GETTER(XS_gg_g3S1,"XS_gg_g3S1")
+XS_Base * ATOOLS::Getter<AMISIC::XS_Base,ATOOLS::Flavour_Vector,XS_gg_g3S1>::
+operator()(const ATOOLS::Flavour_Vector& flavs) const
+{
+  const Flavour_Vector fl = flavs;
+  if ( fl[0].IsGluon() && fl[1].IsGluon() && fl[2].IsGluon()  &&
+  fl[3].IsMeson() ) {
+    kf_code kfc = fl[3].Kfcode();
+    if (kfc==kf_J_psi_1S || kfc == kf_psi_2S || kfc==kf_Upsilon_1S || kfc == kf_Upsilon_2S || kfc == kf_Upsilon_3S){
+      
+      if(!IsZero(GetLDME(kfc))) return new XS_gg_g3S1(flavs);
+      WarnZeroLDME(kfc);
+    }    
+  }
+  if ( fl[0].IsGluon() && fl[1].IsGluon() && fl[3].IsGluon()  &&
+  fl[2].IsMeson() ) {
+    kf_code kfc = fl[2].Kfcode();
+    if (kfc==kf_J_psi_1S || kfc == kf_psi_2S || kfc==kf_Upsilon_1S || kfc == kf_Upsilon_2S || kfc == kf_Upsilon_3S){
+      
+      if(!IsZero(GetLDME(kfc))) return new XS_gg_g3S1(flavs);
+      WarnZeroLDME(kfc);
+    }      
+  }
+return NULL;
+}
+
+
+XS_gg_g3S1::XS_gg_g3S1(const ATOOLS::Flavour_Vector& flavs): XS_Base()
+{
+  m_name = string("gg->g3S1");
+  const ATOOLS::Flavour_Vector& fl = flavs;
+  for (short int i=0;i<4;i++) {
+    if (i>1 && fl[i].IsMeson()) m_S = i;
+    m_colours[i][0] = m_colours[i][1] = 0;
+  }
+  const kf_code kfc = fl[m_S].Kfcode();
+  m_mass = ATOOLS::Flavour((kfc / 100) % 10).Mass(true) +
+  ATOOLS::Flavour((kfc / 10) % 10).Mass(true);
+  m_mass2 = sqr(m_mass);  m_mass2 = sqr(m_mass);
+  
+  double LDME = GetLDME(fl[m_S].Kfcode());
+  m_R02 = LDME *2.*M_PI/(3.*3.);
+  m_pref   = 1./2.*sqr(4.*M_PI)*m_R02/m_mass;
+}
+
+void XS_gg_g3S1::Calc(const double & s,const double & t,const double & u) 
+{
+  double M2 = m_mass2;
+  double sM2 = sqr(s-M2);
+  double tM2 = sqr(t-M2);
+  double uM2 = sqr(u-M2);
+  double all = sqr(s)/(uM2*tM2)+sqr(t)/(uM2*sM2)+sqr(u)/(sM2*tM2);
+  m_lastxs = m_pref*all;
+}
+
+bool XS_gg_g3S1::SetColours(const ATOOLS::Flavour_Vector& flavs) 
+{
+  size_t bit = ran->Get()<0.5 ? 0 : 1;
+  m_colours[0][bit] = m_colours[1][1-bit]     = Flow::Counter();
+  m_colours[0][1-bit] = m_colours[5-m_S][1-bit] = Flow::Counter();
+  m_colours[1][bit] = m_colours[5-m_S][bit]   = Flow::Counter();
+  return true;
+}

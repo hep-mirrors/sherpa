@@ -120,6 +120,7 @@ bool MI_Processes::InitializeAllProcesses() {
   // - qqbar->Z, qqbar'->W
   // - gq->Zq, gq->Wq', etc.
   ///////////////////////////////////////////////////////////////////////////
+  // m_groups.push_back(new MI_QUARKONIA_Process());
   if (m_triggers.size()>0) FilterTriggerProcesses();
   SetPDFs();
   SetAlphaS();

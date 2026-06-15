@@ -95,8 +95,8 @@ bool Singlet_Checker::operator()() {
       // if fusing does not work we will re-try the event
       else if (!FusePartonsInLowMassSinglet()) {
 	m_errors++;
-	//msg_Out()<<METHOD<<" throws error - fusing didn't work out.\n"
-	//	 <<(*p_singlet)<<"\n";
+	msg_Out()<<METHOD<<" throws error - fusing didn't work out.\n"
+		 <<(*p_singlet)<<"\n";
 	return false;
       }
     }
@@ -123,9 +123,9 @@ bool Singlet_Checker::CheckSinglet() {
        plit!=p_singlet->end();plit++) {
     if ((*plit)->Momentum()[0]<0. ||
 	(*plit)->Momentum().RelAbs2()<-rpa->gen.SqrtAccu()) {
-      //msg_Out()<<"Error in "<<METHOD<<":\n"
-      //       <<"   negative energy or mass^2 particle in singlet:\n"
-      //       <<(*p_singlet)<<"n";
+      msg_Error()<<"Error in "<<METHOD<<":\n"
+            <<"   negative energy or mass^2 particle in singlet:\n"
+            <<(*p_singlet)<<"n";
       m_errors++;
     }
   }
@@ -147,7 +147,7 @@ bool Singlet_Checker::CheckSinglet() {
     p_part1 = (*plit1);
     p_part2 = (*plit2);
     if (!CheckMass(p_part1,p_part2)) {
-      //msg_Out()<<METHOD<<": check mass(2) for "
+      // msg_Out()<<METHOD<<": check mass(2) for "
       //       <<p_part1->Flavour()<<" ("<<p_part1->Momentum()[0]<<") "
       //       <<p_part2->Flavour()<<" ("<<p_part2->Momentum()[0]<<")\n";
       return false;
@@ -161,7 +161,7 @@ bool Singlet_Checker::CheckSinglet() {
     p_part1 = (*plit1);
     p_part2 = p_singlet->front();
     if (!CheckMass(p_part1,p_part2)) {
-      //msg_Out()<<METHOD<<": check mass(2) for "
+      // msg_Out()<<METHOD<<": check mass(2) for "
       //       <<p_part1->Flavour()<<" ("<<p_part1->Momentum()[0]<<") "
       //       <<p_part2->Flavour()<<" ("<<p_part2->Momentum()[0]<<")\n";
       return false;
@@ -180,6 +180,7 @@ bool Singlet_Checker::FusePartonsInLowMassSinglet() {
     return true;
   }
   if (p_part1->Flavour().IsOctetMeson()) {
+    msg_Out()<<"OCTET MESON LEFT IN SINGLET CHECKER\n";
     msg_Tracking()<<METHOD<<" arrives here:\n"<<(*p_singlet)<<"\n"
 	     <<"and particles are \n"
 	     <<(*p_part1)<<"\n"<<(*p_part2)<<"\n";
@@ -195,6 +196,7 @@ bool Singlet_Checker::FusePartonsInLowMassSinglet() {
     return true;
   }
   else if (p_part2->Flavour().IsOctetMeson()) {
+    msg_Out()<<"OCTET MESON LEFT IN SINGLET CHECKER\n";
     msg_Tracking()<<METHOD<<" arrives here:\n"<<(*p_singlet)<<"\n"
 	     <<"and particles are \n"
 	     <<(*p_part1)<<"\n"<<(*p_part2)<<"\n";

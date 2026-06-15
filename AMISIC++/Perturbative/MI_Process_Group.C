@@ -139,9 +139,10 @@ MI_Process * MI_Process_Group::SelectProcess() {
 
 MI_GG_Processes::MI_GG_Processes() :
   MI_Process_Group("MPI_gg_processes"), m_Nqq(0) {
-  XS_Base * gg2gg(new gg_gg()), * gg2qqbar(new gg_qqbar());
+  XS_Base * gg2gg(new gg_gg()), * gg2qqbar(new gg_qqbar()), *gg2g3S1_oct(new XS_gg_g3S1_oct());
   m_me2s.push_back(gg2gg);
   m_me2s.push_back(gg2qqbar);
+  m_me2s.push_back(gg2g3S1_oct);
 
   vector<Flavour> flavs;
   Flavour gluon(kf_gluon);
@@ -156,6 +157,14 @@ MI_GG_Processes::MI_GG_Processes() :
     m_processes.back()->SetME2(gg2qqbar);
     m_Nqq++;
   }
+  flavs[2] = Flavour(9900443); flavs[3] = Flavour(kf_gluon);
+  XS_Base * gg2g3S1 = new XS_gg_g3S1(flavs);
+  m_me2s.push_back(gg2g3S1);
+  m_processes.push_back(new MI_Process(flavs));
+  m_processes.back()->SetME2(gg2g3S1_oct);
+  flavs[2] = Flavour(443); flavs[3] = Flavour(kf_gluon);
+  m_processes.push_back(new MI_Process(flavs));
+  m_processes.back()->SetME2(gg2g3S1);
 }
 
 double MI_GG_Processes::Coupling() const {
@@ -178,7 +187,9 @@ MI_Process * MI_GG_Processes::SelectProcess() {
   }
   return (*mit);
 }
-
+///////////////////////////////////////////////////////////////////////////////
+// QUARKONIA
+///////////////////////////////////////////////////////////////////////////////
 
 
 ///////////////////////////////////////////////////////////////////////////////
