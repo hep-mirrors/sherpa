@@ -61,7 +61,6 @@ HADRON_DECAYS:
         21, 1:
           BR: [0.000247894, 0.000103851]
 
-
     c:
       Width: 4.1397e-14
       Channels:
@@ -82,7 +81,6 @@ HADRON_DECAYS:
         1, -13, 14:
           BR: [0.006, 0]
 
-
   Channels:
     111:
       22,22:
@@ -94,7 +92,6 @@ HADRON_DECAYS:
         BR: [0.01174, 0.00035]
         Origin: PDG
         IntResults: [6.798e-05, 2.463e-09, 1.836e-05]
-
 
     310:
       111,111:
@@ -108,19 +105,18 @@ HADRON_DECAYS:
         IntResults: [0.03309, 0, 0.03294]
 
     311:
-      '130':
+      "130":
         BR: [0.5, 0.5]
         IntResults: [1.0, 1.0, 1.0]
 
-      '310':
+      "310":
         BR: [0.5, 0.5]
         IntResults: [1.0, 1.0, 1.0]
-
 
     15:
-    ######################################################
-    # Leptonic decays
-    ######################################################
+      ######################################################
+      # Leptonic decays
+      ######################################################
       16,-12,11:
         BR: [0., 0.] # [0.1785, 0.1785]
         ME:
@@ -159,36 +155,36 @@ HADRON_DECAYS:
               Weight: 1.0
         IntResults: [3.948e-13, 1.865e-15, 3.784e-12]
 
-    ######################################################
-    # Active test channel only
-    ######################################################
+      ######################################################
+      # Active test channel only
+      ######################################################
 
       -211,16: # pi- nu_tau
         BR: [1.0, 0.0]
         Status: 2
         IntResults: [0.0551299, 0, 0.195932]
 
-    ######################################################
-    # Two pseudoscalars
-    ######################################################
-#      -211,111,16:
-#        BR: [0., 0.] # [0.255, 0.255]
-#        ME:
-#          - Current_ME:
-#              J1:
-#                Type: VA_F_F
-#                Indices: [3, 0]
-#                v: 1.
-#                a: -1.
-#              J2:
-#                Type: VA_0_PiPi
-#                Indices: [2, 1]
-#                RUNNING_WIDTH: 2
-#                FORM_FACTOR: 1
-#        PhaseSpace:
-#          - Dalitz_rho(770)+_12:
-#              Weight: 1.0
-#        IntResults: [5.372e-13, 2.151e-15, 5.134e-12]
+      ######################################################
+      # Two pseudoscalars
+      ######################################################
+      #      -211,111,16:
+      #        BR: [0., 0.] # [0.255, 0.255]
+      #        ME:
+      #          - Current_ME:
+      #              J1:
+      #                Type: VA_F_F
+      #                Indices: [3, 0]
+      #                v: 1.
+      #                a: -1.
+      #              J2:
+      #                Type: VA_0_PiPi
+      #                Indices: [2, 1]
+      #                RUNNING_WIDTH: 2
+      #                FORM_FACTOR: 1
+      #        PhaseSpace:
+      #          - Dalitz_rho(770)+_12:
+      #              Weight: 1.0
+      #        IntResults: [5.372e-13, 2.151e-15, 5.134e-12]
 
       # 310,-211,16: # KS:310 pi-:-211 nu_tau:16
       #   BR: [0.666, 0.] # [0.255, 0.255]
@@ -230,11 +226,11 @@ HADRON_DECAYS:
       #   IntResults: [5.372e-13, 2.151e-15, 5.134e-12] # placeholder, needs recalculation
       #   Status: 2
 
-        ######################################################
-    # Three pseudoscalars
-    ######################################################
+      ######################################################
+      # Three pseudoscalars
+      ######################################################
 
-      # 211,-211,-211,16: # pi+ pi- pi- nu_tau
+      # 211,-211,-211,16: # pi- pi- pi+ nu_tau
       #   BR: [0.0931, 0.0003]
       #   ME:
       #     - Current_ME:
@@ -245,10 +241,16 @@ HADRON_DECAYS:
       #           a: -1.
       #         J2:
       #           Type: VA_0_PPP
-      #           Indices: [3, 1, 2]
-      #           FORM_FACTOR: 1 # 1 is Kuhn-Santamaria, 2 is RChiPT
+      #           Indices: [2, 3, 1]
+      #           FORM_FACTOR: 2 # 1 is Kuhn-Santamaria, 2 is RChiPT
+      #           # func (34): http://dx.doi.org/10.1016/j.physletb.2010.01.059
+      #           RChiPT_FV: 0.180
+      #           RChiPT_FA: 0.149
+      #           RChiPT_beta_rhop: -0.25
+      #   Status: 2
+      #   IntResults: [4.44859e-13, 4.44832e-16, 6.86687e-11]
 
-      # -211,111,111,16: # pi- pi0 pi0 nu_tau
+      # -211,111,111,16: # pi0 pi0 pi- nu_tau
       #   BR: [0.0926, 0.0012]
       #   ME:
       #     - Current_ME:
@@ -259,8 +261,14 @@ HADRON_DECAYS:
       #           a: -1.
       #         J2:
       #           Type: VA_0_PPP
-      #           Indices: [3, 2, 1]
-      #           FORM_FACTOR: 1 # 1 is Kuhn-Santamaria, 2 is RChiPT
+      #           Indices: [2, 3, 1]
+      #           FORM_FACTOR: 2 # 1 is Kuhn-Santamaria, 2 is RChiPT
+      #           # func (34): http://dx.doi.org/10.1016/j.physletb.2010.01.059
+      #           RChiPT_FV: 0.180
+      #           RChiPT_FA: 0.149
+      #           RChiPT_beta_rhop: -0.25
+      #   Status: 2
+      #   IntResults: [4.57661e-13, 4.57606e-16, 6.89804e-11]
 
       ######################################################
       # Three pseudoscalars with kaons: Finkemeier-Mirkes
@@ -282,24 +290,24 @@ HADRON_DECAYS:
               J2:
                 Type: VA_0_PPP
                 Indices: [2, 3, 1]
-                FORM_FACTOR: 1
+                FORM_FACTOR: 2
         Status: 2
         IntResults: [5.2274e-15, 5.22654e-18, 5.33476e-13]
 
-      # 311,-211,-311,16: # K0 pi- K0bar nu_tau, flavour-basis diagnostic
-      #   BR: [0.0020, 0.0]
-      #   Origin: FM95 Table III
-      #   ME:
-      #     - Current_ME:
-      #         J1:
-      #           Type: VA_F_F
-      #           Indices: [4, 0]
-      #           v: 1.
-      #           a: -1.
-      #         J2:
-      #           Type: VA_0_PPP
-      #           Indices: [1, 3, 2]
-      #           FORM_FACTOR: 1
+      311,-211,-311,16: # K0 pi- K0bar nu_tau, flavour-basis diagnostic
+        BR: [0.0020, 0.0]
+        Origin: FM95 Table III
+        ME:
+          - Current_ME:
+              J1:
+                Type: VA_F_F
+                Indices: [4, 0]
+                v: 1.
+                a: -1.
+              J2:
+                Type: VA_0_PPP
+                Indices: [1, 3, 2]
+                FORM_FACTOR: 2
 
       310,-211,310,16: # KS pi- KS nu_tau
         BR: [0.00048, 0.00006]
@@ -314,7 +322,7 @@ HADRON_DECAYS:
               J2:
                 Type: VA_0_PPP
                 Indices: [1, 3, 2]
-                FORM_FACTOR: 1
+                FORM_FACTOR: 2
         Status: 2
         IntResults: [1.18715e-15, 1.18706e-18, 9.53431e-14]
 
@@ -331,7 +339,7 @@ HADRON_DECAYS:
               J2:
                 Type: VA_0_PPP
                 Indices: [2, 1, 3]
-                FORM_FACTOR: 1
+                FORM_FACTOR: 2
         Status: 2
         IntResults: [1.1892e-15, 1.18913e-18, 9.35772e-14]
 
@@ -348,7 +356,7 @@ HADRON_DECAYS:
               J2:
                 Type: VA_0_PPP
                 Indices: [1, 2, 3]
-                FORM_FACTOR: 1
+                FORM_FACTOR: 2
         Status: 2
         IntResults: [2.44757e-15, 2.44688e-18, 1.99652e-13]
 
@@ -365,57 +373,57 @@ HADRON_DECAYS:
               J2:
                 Type: VA_0_PPP
                 Indices: [1, 3, 2]
-                FORM_FACTOR: 1
+                FORM_FACTOR: 2
         Status: 2
         IntResults: [4.12229e-15, 4.12188e-18, 2.82704e-13]
 
-      111,111,-321,16: # pi0 pi0 K- nu_tau
-        BR: [0.0014, 0.0003]
-        Origin: FM95 Table III
-        ME:
-          - Current_ME:
-              J1:
-                Type: VA_F_F
-                Indices: [4, 0]
-                v: 1.
-                a: -1.
-              J2:
-                Type: VA_0_PPP
-                Indices: [2, 3, 1]
-                FORM_FACTOR: 1
-        Status: 2
-        IntResults: [3.53066e-15, 3.53038e-18, 6.8269e-13]
+      # 111,111,-321,16: # pi0 pi0 K- nu_tau
+      #   BR: [0.0014, 0.0003]
+      #   Origin: FM95 Table III
+      #   ME:
+      #     - Current_ME:
+      #         J1:
+      #           Type: VA_F_F
+      #           Indices: [4, 0]
+      #           v: 1.
+      #           a: -1.
+      #         J2:
+      #           Type: VA_0_PPP
+      #           Indices: [2, 3, 1]
+      #           FORM_FACTOR: 1
+      #   Status: 2
+      #   IntResults: [3.53066e-15, 3.53038e-18, 6.8269e-13]
 
-      -321,-211,211,16: # K- pi- pi+ nu_tau
-        BR: [0.0077, 0.0009]
-        Origin: FM95 Table III
-        ME:
-          - Current_ME:
-              J1:
-                Type: VA_F_F
-                Indices: [4, 0]
-                v: 1.
-                a: -1.
-              J2:
-                Type: VA_0_PPP
-                Indices: [1, 3, 2]
-                FORM_FACTOR: 1
-        Status: 2
-        IntResults: [1.85327e-14, 1.85299e-17, 2.5812e-12]
+      # -321,-211,211,16: # K- pi- pi+ nu_tau
+      #   BR: [0.0077, 0.0009]
+      #   Origin: FM95 Table III
+      #   ME:
+      #     - Current_ME:
+      #         J1:
+      #           Type: VA_F_F
+      #           Indices: [4, 0]
+      #           v: 1.
+      #           a: -1.
+      #         J2:
+      #           Type: VA_0_PPP
+      #           Indices: [1, 3, 2]
+      #           FORM_FACTOR: 1
+      #   Status: 2
+      #   IntResults: [1.85327e-14, 1.85299e-17, 2.5812e-12]
 
-      -211,-311,111,16: # pi- K0bar pi0 nu_tau
-        BR: [0.0096, 0.0007]
-        Origin: FM95 Table III
-        ME:
-          - Current_ME:
-              J1:
-                Type: VA_F_F
-                Indices: [4, 0]
-                v: 1.
-                a: -1.
-              J2:
-                Type: VA_0_PPP
-                Indices: [2, 1, 3]
-                FORM_FACTOR: 1
-        Status: 2
-        IntResults: [2.27167e-14, 2.27146e-17, 2.70066e-12]
+      # -211,-311,111,16: # pi- K0bar pi0 nu_tau
+      #   BR: [0.0096, 0.0007]
+      #   Origin: FM95 Table III
+      #   ME:
+      #     - Current_ME:
+      #         J1:
+      #           Type: VA_F_F
+      #           Indices: [4, 0]
+      #           v: 1.
+      #           a: -1.
+      #         J2:
+      #           Type: VA_0_PPP
+      #           Indices: [2, 1, 3]
+      #           FORM_FACTOR: 1
+      #   Status: 2
+      #   IntResults: [2.27167e-14, 2.27146e-17, 2.70066e-12]

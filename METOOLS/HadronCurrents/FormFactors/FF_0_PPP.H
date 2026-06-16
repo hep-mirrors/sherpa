@@ -34,7 +34,6 @@ namespace METOOLS {
       FormFactor_Base(params),
       m_mode(FF_0_PPP_mode::unknown),
       m_norm(Complex(0.,0.)) {
-      m_ffmodel = ff_model::KS;
       FixMode();
     }
     ~FF_0_PPP_Base() {}

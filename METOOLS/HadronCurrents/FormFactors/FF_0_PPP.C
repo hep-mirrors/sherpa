@@ -79,8 +79,8 @@ Complex FF_0_PPP_Base::operator()(const ATOOLS::Vec4D_Vector& moms) {
   case ff_model::KS:
     return m_norm * FF_KS(s123,s12,s13,s23);
 
-    // case ff_model::RChiPT:
-    //   return m_norm * FF_RChiPT(s123,s12,s13,s23);
+  case ff_model::RChiPT:
+    return m_norm * FF_RChiPT(s123,s12,s13,s23);
 
   case ff_model::unknown:
   default:
@@ -131,6 +131,10 @@ class F1_0_PiPlusPiZeroPiZero : public FF_0_PPP_Base {
 protected:
   bool    m_isF2;
   double  m_fpi;
+  double  m_mpi2, m_FV, m_GV, m_FA;
+  double  m_l0, m_lp, m_lpp;
+  double  m_mrho, m_Grho, m_mrhop, m_Grhop, m_ma1;
+  double  m_beta_rhop, m_r3pi;
   Complex m_alpha, m_gamma, m_delta;
 
   Total_Width_Base  * p_a1_ks_width;
@@ -142,13 +146,12 @@ protected:
                 const double & s13,const double & s23);
   Complex FF_RChiPT(const double & s123,const double & s12,
                     const double & s13,const double & s23);
-
-  /*
-    Complex A(const double & m2,const double & s,const double & mu2);
-    double  Gamma_V(const double & s);
-    double  Gamma_Vp(const double & s);
-    double  Gamma_Vpp(const double & s);
-  */
+  double  GammaRho(const double & s,const double & mass,
+                   const double & width) const;
+  double  GammaA1(const double & s) const;
+  Complex RhoPropagator(const double & s) const;
+  Complex F1RChiPT(const double & q2,const double & s1,
+                   const double & s2) const;
 
 public:
   F1_0_PiPlusPiZeroPiZero(const FF_Parameters & params);
@@ -161,7 +164,8 @@ F1_0_PiPlusPiZeroPiZero::F1_0_PiPlusPiZeroPiZero(const FF_Parameters & params) :
   p_a1s(NULL),
   p_rhos(NULL),
   m_isF2(false),
-  m_fpi((*params.p_model)("fpi",0.1307)/sqrt(2.))
+  m_fpi((*params.p_model)("fpi",0.1307)/sqrt(2.)),
+  m_mpi2(sqr((2.*Flavour(kf_pi_plus).HadMass()+Flavour(kf_pi).HadMass())/3.))
 {
   if (params.m_name=="F2_0_PPP") m_isF2 = true;
   FixParameters(params);
@@ -177,18 +181,44 @@ F1_0_PiPlusPiZeroPiZero::~F1_0_PiPlusPiZeroPiZero() {
 void F1_0_PiPlusPiZeroPiZero::FixParameters(const FF_Parameters & params) {
   if (m_mode==FF_0_PPP_mode::piP_pi0_pi0 ||
       m_mode==FF_0_PPP_mode::piM_piP_piP) {
-    m_norm = Complex(0., -((2.*sqrt(2)*(*params.p_model)("Vud", Tools::Vud)) /
-			   (3.*m_fpi)));
+    if (m_ffmodel==ff_model::RChiPT) {
+      m_norm = (*params.p_model)("Vud", Tools::Vud)/m_fpi;
+    }
+    else {
+      m_norm = Complex(0., -((2.*sqrt(2)*(*params.p_model)("Vud", Tools::Vud)) /
+			     (3.*m_fpi)));
+    }
 
     if (m_ffmodel==ff_model::KS) {
       m_gamma = Complex(-0.14500,0.0000);
       m_delta = Complex( 0.00000,0.0000);
       m_alpha = Complex( 0.00185,0.0000);
     }
+    else if (m_ffmodel==ff_model::RChiPT) {
+      m_FV = (*params.p_model)("RChiPT_FV", sqrt(2.)*m_fpi);
+      m_GV = (*params.p_model)("RChiPT_GV", sqr(m_fpi)/m_FV);
+      m_FA = (*params.p_model)("RChiPT_FA", m_fpi);
+      m_lp = (*params.p_model)("RChiPT_lambdap",
+                               sqr(m_fpi)/(2.*sqrt(2.)*m_FA*m_GV));
+      m_lpp = (*params.p_model)("RChiPT_lambdapp",
+                                -(1.-2.*sqr(m_GV)/sqr(m_fpi))*m_lp);
+      m_l0 = (*params.p_model)("RChiPT_lambda0", 0.25*(m_lp+m_lpp));
+
+      m_mrho = (*params.p_model)("RChiPT_m_rho", 0.77554);
+      m_Grho = (*params.p_model)("RChiPT_Gamma_rho", 0.1491);
+      m_mrhop = (*params.p_model)("RChiPT_m_rhop", 1.465);
+      m_Grhop = (*params.p_model)("RChiPT_Gamma_rhop", 0.4);
+      m_ma1 = (*params.p_model)("RChiPT_m_a1", 1.12);
+      m_beta_rhop = (*params.p_model)("RChiPT_beta_rhop", -0.145);
+      m_r3pi = (m_mode==FF_0_PPP_mode::piM_piP_piP) ? 1. : -1.;
+    }
   }
 }
 
 void F1_0_PiPlusPiZeroPiZero::Construct() {
+  if (m_ffmodel==ff_model::RChiPT) {
+    p_a1_ks_width = new KS_A1_1260_plus_Width();
+  }
   if (m_ffmodel==ff_model::KS) {
     p_a1_ks_width = new KS_A1_1260_plus_Width();
     if (m_mode==FF_0_PPP_mode::piP_pi0_pi0) {
@@ -237,6 +267,42 @@ void F1_0_PiPlusPiZeroPiZero::Construct() {
   }
 }
 
+double F1_0_PiPlusPiZeroPiZero::
+GammaRho(const double & s,const double & mass,const double & width) const {
+  return Tools::OffShellMassWidth(s,sqr(mass),width,m_mpi2);
+}
+
+double F1_0_PiPlusPiZeroPiZero::GammaA1(const double & s) const {
+  if (p_a1_ks_width==NULL || s<=0.) return m_ma1*Flavour(kf_a_1_1260_plus).Width();
+  return sqrt(s)*(*p_a1_ks_width)(s);
+}
+
+Complex F1_0_PiPlusPiZeroPiZero::RhoPropagator(const double & s) const {
+  Complex rho = 1./Complex(s-sqr(m_mrho),-GammaRho(s,m_mrho,m_Grho));
+  Complex rhop = 1./Complex(s-sqr(m_mrhop),-GammaRho(s,m_mrhop,m_Grhop));
+  return (rho+m_beta_rhop*rhop)/(1.+m_beta_rhop);
+}
+
+Complex F1_0_PiPlusPiZeroPiZero::
+F1RChiPT(const double & q2,const double & s1,const double & s2) const {
+  const double s3(q2-s1-s2+3.*m_mpi2);
+  const Complex rho1(RhoPropagator(s1)), rho2(RhoPropagator(s2));
+  const double gvfv(2.*m_GV/m_FV-1.);
+
+  const Complex fchi = -2.*sqrt(2.)/3.;
+  const Complex fR = sqrt(2.)*m_FV*m_GV/(3.*sqr(m_fpi)) *
+    (3.*s1*rho1 - gvfv*((2.*q2-2.*s1-s3)*rho1 + (s3-s1)*rho2));
+
+  const Complex h1 = -m_l0*m_mpi2/q2 + m_lp*s1/q2 + m_lpp;
+  const Complex h2 = -m_l0*m_mpi2/q2 + m_lp*s2/q2 + m_lpp;
+  const Complex fa = q2/Complex(q2-sqr(m_ma1),-GammaA1(q2));
+  const Complex fRR = 4.*m_FA*m_GV/(3.*sqr(m_fpi)) * fa *
+    (-(m_lp+m_lpp)*3.*s1*rho1 +
+     h1*(2.*q2+s1-s3)*rho1 + h2*(s3-s1)*rho2);
+
+  return m_r3pi*(fchi+fR+fRR);
+}
+
 Complex F1_0_PiPlusPiZeroPiZero::
 FF_KS(const double & s123,const double & s12,const double & s13,
       const double & s23) {
@@ -252,7 +318,12 @@ FF_KS(const double & s123,const double & s12,const double & s13,
 Complex F1_0_PiPlusPiZeroPiZero::
 FF_RChiPT(const double & s123,const double & s12,const double & s13,
           const double & s23) {
-  return Complex(0.,0.);
+  const double s1(s23), s2(s13);
+  const Complex F1 = F1RChiPT(s123,s1,s2);
+  const Complex F2 = F1RChiPT(s123,s2,s1);
+  // Sherpa's basis vectors: $v_1 = (p_2 - p_1)_T$ and $v_2 = (p_3 - p_1)_T$.
+  // Paper's basis vectors: $u_1 = (p_2 - p_3)_T$ and $u_2 = (p_3 - p_1)_T$.
+  return m_isF2 ? -F1-F2 : F1;
 }
 
 
@@ -493,10 +564,18 @@ FF_KS(const double & s123,const double & s12,const double & s13,
 
 class F3_0_PiPlusPiZeroPiZero : public FF_0_PPP_Base {
   double  m_fpi;
+  double  m_mpi2, m_FV, m_GV;
+  double  m_mrho, m_Grho, m_mrhop, m_Grhop;
+  double  m_beta_rhop, m_r3pi, m_kappa;
   Complex m_gamma, m_delta;
 
   void    FixParameters(const FF_Parameters & params);
   void    Construct();
+  double  GammaRho(const double & s,const double & mass,
+                   const double & width) const;
+  Complex RhoPropagator(const double & s) const;
+  Complex Alpha2(const double & q2,const double & s1,
+                 const double & s2) const;
 
   Complex FF_KS(const double & s123,const double & s12,
                 const double & s13,const double & s23) {
@@ -504,23 +583,66 @@ class F3_0_PiPlusPiZeroPiZero : public FF_0_PPP_Base {
   }
 
   Complex FF_RChiPT(const double & s123,const double & s12,
-                    const double & s13,const double & s23) {
-    return Complex(0.,0.);
-  }
+                    const double & s13,const double & s23);
 
 public:
   F3_0_PiPlusPiZeroPiZero(const FF_Parameters & params) :
     FF_0_PPP_Base(params),
-    m_fpi((*params.p_model)("fpi",0.1307)/sqrt(2.))
+    m_fpi((*params.p_model)("fpi",0.1307)/sqrt(2.)),
+    m_mpi2(sqr((2.*Flavour(kf_pi_plus).HadMass()+Flavour(kf_pi).HadMass())/3.))
   {
     FixParameters(params);
     Construct();
   }
 };
 
-void F3_0_PiPlusPiZeroPiZero::FixParameters(const FF_Parameters & params) {}
+void F3_0_PiPlusPiZeroPiZero::FixParameters(const FF_Parameters & params) {
+  if (m_ffmodel==ff_model::RChiPT &&
+      (m_mode==FF_0_PPP_mode::piP_pi0_pi0 ||
+       m_mode==FF_0_PPP_mode::piM_piP_piP)) {
+    m_norm = (*params.p_model)("Vud", Tools::Vud)/m_fpi;
+    m_FV = (*params.p_model)("RChiPT_FV", sqrt(2.)*m_fpi);
+    m_GV = (*params.p_model)("RChiPT_GV", sqr(m_fpi)/m_FV);
+    m_mrho = (*params.p_model)("RChiPT_m_rho", 0.77554);
+    m_Grho = (*params.p_model)("RChiPT_Gamma_rho", 0.1491);
+    m_mrhop = (*params.p_model)("RChiPT_m_rhop", 1.465);
+    m_Grhop = (*params.p_model)("RChiPT_Gamma_rhop", 0.4);
+    m_beta_rhop = (*params.p_model)("RChiPT_beta_rhop", -0.145);
+    m_r3pi = (m_mode==FF_0_PPP_mode::piM_piP_piP) ? 1. : -1.;
+    m_kappa = (m_mode==FF_0_PPP_mode::piM_piP_piP) ? 1. : 0.5;
+  }
+}
 
 void F3_0_PiPlusPiZeroPiZero::Construct() {}
+
+double F3_0_PiPlusPiZeroPiZero::
+GammaRho(const double & s,const double & mass,const double & width) const {
+  return Tools::OffShellMassWidth(s,sqr(mass),width,m_mpi2);
+}
+
+Complex F3_0_PiPlusPiZeroPiZero::RhoPropagator(const double & s) const {
+  Complex rho = 1./Complex(s-sqr(m_mrho),-GammaRho(s,m_mrho,m_Grho));
+  Complex rhop = 1./Complex(s-sqr(m_mrhop),-GammaRho(s,m_mrhop,m_Grhop));
+  return (rho+m_beta_rhop*rhop)/(1.+m_beta_rhop);
+}
+
+Complex F3_0_PiPlusPiZeroPiZero::
+Alpha2(const double & q2,const double & s1,const double & s2) const {
+  const double s3(q2-s1-s2+3.*m_mpi2);
+  return 3.*m_GV/m_FV * s1/q2 * m_mpi2/(q2-m_mpi2) * (s3-s2) * RhoPropagator(s1);
+}
+
+Complex F3_0_PiPlusPiZeroPiZero::
+FF_RChiPT(const double & s123,const double & s12,const double & s13,
+          const double & s23) {
+  const double s1(s23), s2(s13);
+  const double s3(s12);
+  const Complex f4chi = 2.*sqrt(2.)/3. * m_mpi2 *
+    (3.*(s3-m_mpi2)-s123*(1.+2.*m_kappa*m_r3pi)) / (2.*s123*(s123-m_mpi2));
+  const Complex f4R = -sqrt(2.)*m_FV*m_GV/(3.*sqr(m_fpi)) *
+    (Alpha2(s123,s2,s1)+Alpha2(s123,s1,s2));
+  return m_r3pi*(f4chi+f4R);
+}
 
 
 //////////////////////////////////////////////////////////////////////////////////
@@ -755,6 +877,510 @@ FF_KS(const double & s123,const double & s12,const double & s13,
 }
 
 
+//////////////////////////////////////////////////////////////////////////////////
+//
+// RChiPT KKpi form factors (arXiv:1203.3955)
+//
+//////////////////////////////////////////////////////////////////////////////////
+
+class F1_0_RChiPT_KKpi : public FF_0_PPP_Base {
+protected:
+  bool    m_isF2;
+  double  m_fpi;
+  double  m_mpi, m_mK, m_meta;
+  double  m_mpi2, m_mK2;
+  double  m_FV, m_GV, m_FA;
+  double  m_lp, m_lpp, m_l0;
+  double  m_mrho, m_Grho, m_mrhop, m_Grhop, m_ma1;
+  double  m_mKstar, m_GKstar;
+  double  m_beta_rhop;
+
+  Total_Width_Base * p_a1_ks_width;
+
+  void    FixParameters(const FF_Parameters & params);
+  void    Construct();
+  Complex FF_KS(const double & s123,const double & s12,
+                const double & s13,const double & s23);
+  Complex FF_RChiPT(const double & s123,const double & s12,
+                    const double & s13,const double & s23);
+  Complex EvaluateF1F2(const double & s123,const double & s1,
+                       const double & s2,const double & s3,bool get_F2);
+  double  GammaRho(const double & s,const double & mass,
+                   const double & width) const;
+  double  GammaKstar(const double & s) const;
+  double  GammaA1(const double & s) const;
+  Complex RhoPropagator(const double & s) const;
+  Complex KstarPropagator(const double & s) const;
+  Complex A1Propagator(const double & s) const;
+
+  double  KLambda(double a,double b,double c) const;
+  Complex H_func(const Complex & x,const Complex & y) const;
+
+  Complex A_R(const double & q2,const double & x,const double & y,
+              const double & m12,const double & m22,const double & m32) const;
+  Complex B_R(const double & x,const double & y,const double & m12,
+              const double & m22) const;
+  Complex A_RR(const double & q2,const double & x,const double & y,
+               const double & m12,const double & m22,const double & m32) const;
+  Complex B_RR(const double & q2,const double & x,const double & y,const double & z,
+               const double & m12,const double & m22,const double & m32) const;
+
+public:
+  F1_0_RChiPT_KKpi(const FF_Parameters & params);
+  ~F1_0_RChiPT_KKpi();
+};
+
+F1_0_RChiPT_KKpi::F1_0_RChiPT_KKpi(const FF_Parameters & params) :
+  FF_0_PPP_Base(params),
+  p_a1_ks_width(NULL),
+  m_isF2(false),
+  m_fpi((*params.p_model)("fpi",0.1307)/sqrt(2.)),
+  m_mpi((Flavour(kf_pi_plus).HadMass()+Flavour(kf_pi).HadMass())/2.),
+  m_mK((Flavour(kf_K_plus).HadMass()+Flavour(kf_K).HadMass())/2.),
+  m_meta(Flavour(kf_eta).HadMass()),
+  m_mpi2(sqr(m_mpi)),
+  m_mK2(sqr(m_mK))
+{
+  if (params.m_name=="F2_0_PPP") m_isF2 = true;
+  FixParameters(params);
+  Construct();
+}
+
+F1_0_RChiPT_KKpi::~F1_0_RChiPT_KKpi() {
+  if (p_a1_ks_width) { delete p_a1_ks_width; p_a1_ks_width = NULL; }
+}
+
+void F1_0_RChiPT_KKpi::FixParameters(const FF_Parameters & params) {
+  m_FV = (*params.p_model)("RChiPT_FV", sqrt(2.)*m_fpi);
+  m_GV = (*params.p_model)("RChiPT_GV", sqr(m_fpi)/m_FV);
+  m_FA = (*params.p_model)("RChiPT_FA", m_fpi);
+  m_lp = (*params.p_model)("RChiPT_lambdap",
+                           sqr(m_fpi)/(2.*sqrt(2.)*m_FA*m_GV));
+  m_lpp = (*params.p_model)("RChiPT_lambdapp",
+                            -(1.-2.*sqr(m_GV)/sqr(m_fpi))*m_lp);
+  m_l0 = (*params.p_model)("RChiPT_lambda0", 0.25*(m_lp+m_lpp));
+
+  m_mrho = (*params.p_model)("RChiPT_m_rho", 0.77554);
+  m_Grho = (*params.p_model)("RChiPT_Gamma_rho", 0.1491);
+  m_mrhop = (*params.p_model)("RChiPT_m_rhop", 1.465);
+  m_Grhop = (*params.p_model)("RChiPT_Gamma_rhop", 0.4);
+  m_ma1 = (*params.p_model)("RChiPT_m_a1", 1.12);
+  m_beta_rhop = (*params.p_model)("RChiPT_beta_rhop", -0.145);
+  m_mKstar = (*params.p_model)("RChiPT_m_Kstar", 0.892);
+  m_GKstar = (*params.p_model)("RChiPT_Gamma_Kstar", 0.050);
+
+  m_norm = (*params.p_model)("Vud", Tools::Vud)/m_fpi;
+}
+
+void F1_0_RChiPT_KKpi::Construct() {
+  p_a1_ks_width = new KS_A1_1260_plus_Width();
+}
+
+double F1_0_RChiPT_KKpi::KLambda(double a,double b,double c) const {
+  return sqr(a-b-c) - 4.*b*c;
+}
+
+Complex F1_0_RChiPT_KKpi::H_func(const Complex & x,const Complex & y) const {
+  return -m_l0*y + m_lp*x + m_lpp;
+}
+
+double F1_0_RChiPT_KKpi::
+GammaRho(const double & s,const double & mass,const double & width) const {
+  return Tools::OffShellMassWidth(s,sqr(mass),width,m_mpi2);
+}
+
+double F1_0_RChiPT_KKpi::GammaKstar(const double & s) const {
+  if (s<=sqr(m_mK+m_mpi)) return 0.;
+  double lam_Kpi = KLambda(s, m_mK2, m_mpi2);
+  double sum = pow(lam_Kpi, 1.5);
+  if (s>sqr(m_mK+m_meta)) {
+    double lam_Keta = KLambda(s, m_mK2, sqr(m_meta));
+    sum += pow(lam_Keta, 1.5);
+  }
+  sum /= (s*s);
+
+  double lam_Kpi_peak = KLambda(sqr(m_mKstar), m_mK2, m_mpi2);
+  double sum_peak = pow(lam_Kpi_peak, 1.5);
+  if (sqr(m_mKstar)>sqr(m_mK+m_meta)) {
+    double lam_Keta_peak = KLambda(sqr(m_mKstar), m_mK2, sqr(m_meta));
+    sum_peak += pow(lam_Keta_peak, 1.5);
+  }
+  sum_peak /= pow(m_mKstar, 4);
+
+  return m_GKstar * sum / sum_peak;
+}
+
+double F1_0_RChiPT_KKpi::GammaA1(const double & s) const {
+  if (p_a1_ks_width==NULL || s<=0.) return m_ma1*Flavour(kf_a_1_1260_plus).Width();
+  return sqrt(s)*(*p_a1_ks_width)(s);
+}
+
+Complex F1_0_RChiPT_KKpi::RhoPropagator(const double & s) const {
+  return -1./Complex(s-sqr(m_mrho),-m_mrho*GammaRho(s,m_mrho,m_Grho));
+}
+
+Complex F1_0_RChiPT_KKpi::KstarPropagator(const double & s) const {
+  return -1./Complex(s-sqr(m_mKstar),-m_mKstar*GammaKstar(s));
+}
+
+Complex F1_0_RChiPT_KKpi::A1Propagator(const double & s) const {
+  return -1./Complex(s-sqr(m_ma1),-GammaA1(s));
+}
+
+Complex F1_0_RChiPT_KKpi::
+A_R(const double & q2,const double & x,const double & y,
+    const double & m12,const double & m22,const double & m32) const {
+  return 3.*x + m12 - m32 + (1.-2.*m_GV/m_FV)*(2.*q2-2.*x-y+m32-m22);
+}
+
+Complex F1_0_RChiPT_KKpi::
+B_R(const double & x,const double & y,const double & m12,
+    const double & m22) const {
+  return 2.*(m22-m12) + (1.-2.*m_GV/m_FV)*(y-x+m12-m22);
+}
+
+Complex F1_0_RChiPT_KKpi::
+A_RR(const double & q2,const double & x,const double & y,
+     const double & m12,const double & m22,const double & m32) const {
+  return (m_lp+m_lpp)*(-3.*x+m32-m12) + (2.*q2+x-y+m12-m22)*H_func(x/q2,m22/q2);
+}
+
+Complex F1_0_RChiPT_KKpi::
+B_RR(const double & q2,const double & x,const double & y,const double & z,
+     const double & m12,const double & m22,const double & m32) const {
+  return 2.*(m_lp+m_lpp)*(m12-m22) + (y-x+m22-m12)*H_func(z/q2,m32/q2);
+}
+
+Complex F1_0_RChiPT_KKpi::
+FF_KS(const double & s123,const double & s12,const double & s13,
+      const double & s23) {
+  return Complex(0.,0.);
+}
+
+Complex F1_0_RChiPT_KKpi::
+EvaluateF1F2(const double & s123,const double & s1,const double & s2,
+             const double & s3,bool get_F2) {
+  const Complex f1_chi = -sqrt(2.)/3.;
+  const Complex rho_denom = -RhoPropagator(s2);
+  const Complex kstar_denom = -KstarPropagator(s1);
+  const Complex f1_R = -sqrt(2.)/6.*m_FV*m_GV/sqr(m_fpi) *
+    (B_R(s1,s3,m_mK2,m_mK2)*rho_denom +
+     A_R(s123,s1,s3,m_mK2,m_mK2,m_mpi2)*kstar_denom);
+
+  const Complex a1_denom = -A1Propagator(s123);
+  const Complex f1_RR = 2./3.*m_FA*m_GV/sqr(m_fpi)*s123*a1_denom *
+    (B_RR(s123,s1,s3,s2,m_mK2,m_mK2,m_mpi2)*rho_denom +
+     A_RR(s123,s1,s3,m_mK2,m_mK2,m_mpi2)*kstar_denom);
+
+  const Complex F1_paper = f1_chi + f1_R + f1_RR;
+
+  const Complex f2_chi = f1_chi;
+  const Complex f2_R = -sqrt(2.)/6.*m_FV*m_GV/sqr(m_fpi) *
+    (A_R(s123,s2,s3,m_mK2,m_mpi2,m_mK2)*rho_denom +
+     B_R(s2,s3,m_mK2,m_mpi2)*kstar_denom);
+  const Complex f2_RR = 2./3.*m_FA*m_GV/sqr(m_fpi)*s123*a1_denom *
+    (A_RR(s123,s2,s3,m_mK2,m_mpi2,m_mK2)*rho_denom +
+     B_RR(s123,s2,s3,s1,m_mK2,m_mpi2,m_mK2)*kstar_denom);
+
+  const Complex F2_paper = f2_chi + f2_R + f2_RR;
+
+  if (get_F2) return -F1_paper-F2_paper;
+  return F1_paper;
+}
+
+Complex F1_0_RChiPT_KKpi::
+FF_RChiPT(const double & s123,const double & s12,const double & s13,
+          const double & s23) {
+  if (m_mode==FF_0_PPP_mode::K_pi_K || m_mode==FF_0_PPP_mode::K0_pi_K0b) {
+    const double s1(s23), s2(s13), s3(s12);
+    return EvaluateF1F2(s123,s1,s2,s3,m_isF2);
+  }
+  else if (m_mode==FF_0_PPP_mode::KS_pi_KS) {
+    const double s1(s23), s2(s13), s3(s12);
+    Complex f1_orig = EvaluateF1F2(s123,s1,s2,s3,false);
+    Complex f2_orig = EvaluateF1F2(s123,s1,s2,s3,true);
+    Complex f1_swap = EvaluateF1F2(s123,s3,s2,s1,false);
+    Complex f2_swap = EvaluateF1F2(s123,s3,s2,s1,true);
+    if (m_isF2) return 0.5*(f2_orig-f2_swap);
+    return 0.5*(f1_orig+f1_swap+f2_swap);
+  }
+  else if (m_mode==FF_0_PPP_mode::KS_pi_KL) {
+    const double s1(s23), s2(s13), s3(s12);
+    Complex f1_orig = EvaluateF1F2(s123,s1,s2,s3,false);
+    Complex f2_orig = EvaluateF1F2(s123,s1,s2,s3,true);
+    Complex f1_swap = EvaluateF1F2(s123,s3,s2,s1,false);
+    Complex f2_swap = EvaluateF1F2(s123,s3,s2,s1,true);
+    if (m_isF2) return 0.5*(f2_orig+f2_swap);
+    return 0.5*(f1_orig-f1_swap-f2_swap);
+  }
+  else if (m_mode==FF_0_PPP_mode::KL_pi_KL) {
+    const double s1(s23), s2(s13), s3(s12);
+    Complex f1_orig = EvaluateF1F2(s123,s1,s2,s3,false);
+    Complex f2_orig = EvaluateF1F2(s123,s1,s2,s3,true);
+    Complex f1_swap = EvaluateF1F2(s123,s3,s2,s1,false);
+    Complex f2_swap = EvaluateF1F2(s123,s3,s2,s1,true);
+    if (m_isF2) return -0.5*(f2_orig+f2_swap);
+    return -0.5*(f1_orig-f1_swap-f2_swap);
+  }
+  else if (m_mode==FF_0_PPP_mode::K_pi0_K0) {
+    const double s1(s23), s2(s13), s3(s12);
+
+    const Complex f2_chi = -1.;
+    const Complex rho_denom = -RhoPropagator(s2);
+    const Complex kstar3_denom = -KstarPropagator(s3);
+    const Complex kstar1_denom = -KstarPropagator(s1);
+
+    const Complex f2_R = -1./6.*m_FV*m_GV/sqr(m_fpi) *
+      (B_R(s2,s1,m_mK2,m_mpi2)*kstar3_denom +
+       2.*A_R(s123,s2,s1,m_mK2,m_mpi2,m_mK2)*rho_denom +
+       A_R(s123,s1,s2,m_mpi2,m_mK2,m_mK2)*kstar1_denom);
+
+    const Complex a1_denom = -A1Propagator(s123);
+    const Complex f2_RR = sqrt(2.)/3.*m_FA*m_GV/sqr(m_fpi)*s123*a1_denom *
+      (B_RR(s123,s2,s1,s3,m_mK2,m_mpi2,m_mK2)*kstar3_denom +
+       2.*A_RR(s123,s2,s1,m_mK2,m_mpi2,m_mK2)*rho_denom +
+       A_RR(s123,s1,s2,m_mpi2,m_mK2,m_mK2)*kstar1_denom);
+
+    const Complex F2_paper = f2_chi + f2_R + f2_RR;
+
+    const Complex f3_chi = 0.;
+    const Complex f3_R = -1./6.*m_FV*m_GV/sqr(m_fpi) *
+      (A_R(s123,s3,s1,m_mK2,m_mK2,m_mpi2)*kstar3_denom +
+       2.*B_R(s3,s1,m_mK2,m_mK2)*rho_denom -
+       A_R(s123,s1,s3,m_mK2,m_mK2,m_mpi2)*kstar1_denom);
+    const Complex f3_RR = sqrt(2.)/3.*m_FA*m_GV/sqr(m_fpi)*s123*a1_denom *
+      (A_RR(s123,s3,s1,m_mK2,m_mK2,m_mpi2)*kstar3_denom +
+       2.*B_RR(s123,s3,s1,s2,m_mK2,m_mK2,m_mpi2)*rho_denom -
+       A_RR(s123,s1,s3,m_mK2,m_mK2,m_mpi2)*kstar1_denom);
+
+    const Complex F3_paper = f3_chi + f3_R + f3_RR;
+
+    if (m_isF2) return F2_paper;
+    return F3_paper;
+  }
+  return Complex(0.,0.);
+}
+
+class FS_0_RChiPT_KKpi : public FF_0_PPP_Base {
+protected:
+  double  m_fpi;
+  double  m_mpi, m_mK, m_meta;
+  double  m_mpi2, m_mK2;
+  double  m_FV, m_GV;
+  double  m_mrho, m_Grho;
+  double  m_mKstar, m_GKstar;
+  double  m_momega, m_Gomega, m_mphi, m_Gphi;
+
+  double  m_c125, m_c1256, m_c1235, m_c4, m_g4, m_g5, m_g2, m_g13, m_d3, m_d123;
+  double  m_sin_thetaV, m_cos_thetaV;
+
+  void    FixParameters(const FF_Parameters & params);
+  void    Construct();
+  Complex FF_KS(const double & s123,const double & s12,
+                const double & s13,const double & s23);
+  Complex FF_RChiPT(const double & s123,const double & s12,
+                    const double & s13,const double & s23);
+  Complex EvaluateFS(const double & s123,const double & s1,
+                     const double & s2,const double & s3);
+  double  GammaRho(const double & s,const double & mass,
+                   const double & width) const;
+  double  GammaKstar(const double & s) const;
+  Complex RhoPropagator(const double & s) const;
+  Complex KstarPropagator(const double & s) const;
+
+  double  KLambda(double a,double b,double c) const;
+
+  Complex C_R(const double & q2,const double & x,const double & m12,
+              const double & m22,const double & m32) const;
+  Complex C_RR(const double & q2,const double & x,const double & m2) const;
+  Complex D_R(const double & q2,const double & x,const double & y) const;
+
+public:
+  FS_0_RChiPT_KKpi(const FF_Parameters & params);
+  ~FS_0_RChiPT_KKpi();
+};
+
+FS_0_RChiPT_KKpi::FS_0_RChiPT_KKpi(const FF_Parameters & params) :
+  FF_0_PPP_Base(params),
+  m_fpi((*params.p_model)("fpi",0.1307)/sqrt(2.)),
+  m_mpi((Flavour(kf_pi_plus).HadMass()+Flavour(kf_pi).HadMass())/2.),
+  m_mK((Flavour(kf_K_plus).HadMass()+Flavour(kf_K).HadMass())/2.),
+  m_meta(Flavour(kf_eta).HadMass()),
+  m_mpi2(sqr(m_mpi)),
+  m_mK2(sqr(m_mK))
+{
+  FixParameters(params);
+  Construct();
+}
+
+FS_0_RChiPT_KKpi::~FS_0_RChiPT_KKpi() {}
+
+void FS_0_RChiPT_KKpi::FixParameters(const FF_Parameters & params) {
+  m_FV = (*params.p_model)("RChiPT_FV", sqrt(2.)*m_fpi);
+  m_GV = (*params.p_model)("RChiPT_GV", sqr(m_fpi)/m_FV);
+
+  m_mrho = (*params.p_model)("RChiPT_m_rho", 0.77554);
+  m_Grho = (*params.p_model)("RChiPT_Gamma_rho", 0.1491);
+  m_mKstar = (*params.p_model)("RChiPT_m_Kstar", 0.892);
+  m_GKstar = (*params.p_model)("RChiPT_Gamma_Kstar", 0.050);
+
+  m_momega = 0.78266;
+  m_Gomega = 0.00849;
+  m_mphi = 1.01946;
+  m_Gphi = 0.00425;
+
+  double theta_V = atan(1./sqrt(2.));
+  m_sin_thetaV = sin(theta_V);
+  m_cos_thetaV = cos(theta_V);
+
+  m_c125 = 0.0;
+  m_c4 = -0.07;
+  m_g4 = -0.72;
+  m_g5 = 0.84;
+  m_d123 = 0.05;
+
+  double root2 = sqrt(2.);
+  m_g2 = m_mrho/(192.*sqr(M_PI)*root2*m_FV);
+  m_g13 = -2.*m_mrho/(192.*sqr(M_PI)*root2*m_FV);
+  m_c1256 = -3.*m_FV*m_mrho/(96.*sqr(M_PI)*root2*sqr(m_fpi));
+  m_d3 = -sqr(m_mrho)/(64.*sqr(M_PI)*sqr(m_fpi));
+  m_c1235 = 0.0;
+
+  m_norm = (*params.p_model)("Vud", Tools::Vud)/m_fpi;
+}
+
+void FS_0_RChiPT_KKpi::Construct() {}
+
+double FS_0_RChiPT_KKpi::KLambda(double a,double b,double c) const {
+  return sqr(a-b-c) - 4.*b*c;
+}
+
+double FS_0_RChiPT_KKpi::
+GammaRho(const double & s,const double & mass,const double & width) const {
+  return Tools::OffShellMassWidth(s,sqr(mass),width,m_mpi2);
+}
+
+double FS_0_RChiPT_KKpi::GammaKstar(const double & s) const {
+  if (s<=sqr(m_mK+m_mpi)) return 0.;
+  double lam_Kpi = KLambda(s, m_mK2, m_mpi2);
+  double sum = pow(lam_Kpi, 1.5);
+  if (s>sqr(m_mK+m_meta)) {
+    double lam_Keta = KLambda(s, m_mK2, sqr(m_meta));
+    sum += pow(lam_Keta, 1.5);
+  }
+  sum /= (s*s);
+
+  double lam_Kpi_peak = KLambda(sqr(m_mKstar), m_mK2, m_mpi2);
+  double sum_peak = pow(lam_Kpi_peak, 1.5);
+  if (sqr(m_mKstar)>sqr(m_mK+m_meta)) {
+    double lam_Keta_peak = KLambda(sqr(m_mKstar), m_mK2, sqr(m_meta));
+    sum_peak += pow(lam_Keta_peak, 1.5);
+  }
+  sum_peak /= pow(m_mKstar, 4);
+
+  return m_GKstar * sum / sum_peak;
+}
+
+Complex FS_0_RChiPT_KKpi::RhoPropagator(const double & s) const {
+  return -1./Complex(s-sqr(m_mrho),-m_mrho*GammaRho(s,m_mrho,m_Grho));
+}
+
+Complex FS_0_RChiPT_KKpi::KstarPropagator(const double & s) const {
+  return -1./Complex(s-sqr(m_mKstar),-m_mKstar*GammaKstar(s));
+}
+
+Complex FS_0_RChiPT_KKpi::
+C_R(const double & q2,const double & x,const double & m12,
+    const double & m22,const double & m32) const {
+  return m_c125*q2 - m_c1256*x + m_c1235*m32 + 8.*m_c4*(m12-m22);
+}
+
+Complex FS_0_RChiPT_KKpi::C_RR(const double & q2,const double & x,
+                               const double & m2) const {
+  return m_d3*(q2+x) + m_d123*m2;
+}
+
+Complex FS_0_RChiPT_KKpi::
+D_R(const double & q2,const double & x,const double & y) const {
+  return (m_g13+2.*m_g2)*(x+y) - 2.*m_g2*(q2+m_mK2) - m_g13*(3.*m_mK2+m_mpi2) +
+    2.*m_g4*(m_mK2+m_mpi2) + 2.*m_g5*m_mK2;
+}
+
+Complex FS_0_RChiPT_KKpi::
+FF_KS(const double & s123,const double & s12,const double & s13,
+      const double & s23) {
+  return Complex(0.,0.);
+}
+
+Complex FS_0_RChiPT_KKpi::
+EvaluateFS(const double & s123,const double & s1,const double & s2,
+           const double & s3) {
+  const Complex omega_denom = 1./Complex(sqr(m_momega)-s2,-m_momega*m_Gomega);
+  const Complex phi_denom = 1./Complex(sqr(m_mphi)-s2,-m_mphi*m_Gphi);
+
+  const Complex omega_phi_mix = sqr(m_sin_thetaV) *
+    (1. + sqrt(2.)/m_sin_thetaV*m_cos_thetaV)*omega_denom +
+    sqr(m_cos_thetaV)*(1. - sqrt(2.)/m_cos_thetaV*m_sin_thetaV)*phi_denom;
+
+  const Complex f5_chi = sqrt(2.);
+  const Complex kstar_denom = -KstarPropagator(s1);
+  const Complex rho_denom = -RhoPropagator(s123);
+
+  const Complex f5_R = 16.*sqr(M_PI)*m_GV/m_mrho *
+    (C_R(s123,s2,m_mK2,m_mK2,m_mpi2)*omega_phi_mix +
+     C_R(s123,s1,m_mK2,m_mpi2,m_mK2)*kstar_denom -
+     2.*m_FV/m_GV*D_R(s123,s2,s1)*rho_denom);
+
+  const Complex f5_RR = -16.*sqrt(2.)*sqr(M_PI)*m_FV*m_GV*rho_denom *
+    (C_RR(s123,s1,m_mK2)*kstar_denom + C_RR(s123,s2,m_mpi2)*omega_phi_mix);
+
+  const Complex F5_paper = f5_chi + f5_R + f5_RR;
+
+  return Complex(0.,-1./(4.*sqr(M_PI)*sqr(m_fpi))) * F5_paper;
+}
+
+Complex FS_0_RChiPT_KKpi::
+FF_RChiPT(const double & s123,const double & s12,const double & s13,
+          const double & s23) {
+  const double s1(s23), s2(s13), s3(s12);
+  if (m_mode==FF_0_PPP_mode::K_pi_K || m_mode==FF_0_PPP_mode::K0_pi_K0b) {
+    return EvaluateFS(s123,s1,s2,s3);
+  }
+  else if (m_mode==FF_0_PPP_mode::KS_pi_KS) {
+    Complex fs_orig = EvaluateFS(s123,s1,s2,s3);
+    Complex fs_swap = EvaluateFS(s123,s3,s2,s1);
+    return 0.5*(fs_orig-fs_swap);
+  }
+  else if (m_mode==FF_0_PPP_mode::KS_pi_KL) {
+    Complex fs_orig = EvaluateFS(s123,s1,s2,s3);
+    Complex fs_swap = EvaluateFS(s123,s3,s2,s1);
+    return 0.5*(fs_orig+fs_swap);
+  }
+  else if (m_mode==FF_0_PPP_mode::KL_pi_KL) {
+    Complex fs_orig = EvaluateFS(s123,s1,s2,s3);
+    Complex fs_swap = EvaluateFS(s123,s3,s2,s1);
+    return -0.5*(fs_orig+fs_swap);
+  }
+  else if (m_mode==FF_0_PPP_mode::K_pi0_K0) {
+    const Complex f5_chi = 0.;
+    const Complex kstar3_denom = -KstarPropagator(s3);
+    const Complex kstar1_denom = -KstarPropagator(s1);
+
+    const Complex f5_R = 8.*sqrt(2.)*sqr(M_PI)*m_GV/m_mrho *
+      (C_R(s123,s3,m_mK2,m_mpi2,m_mK2)*kstar3_denom -
+       C_R(s123,s1,m_mK2,m_mpi2,m_mK2)*kstar1_denom);
+
+    const Complex f5_RR = 16.*sqr(M_PI)*m_FV*m_GV/(s123-sqr(m_mrho)) *
+      (-C_RR(s123,s3,m_mK2)*kstar3_denom + C_RR(s123,s1,m_mK2)*kstar1_denom);
+
+    const Complex F5_paper = f5_chi + f5_R + f5_RR;
+
+    return Complex(0.,1./(4.*sqr(M_PI)*sqr(m_fpi))) * F5_paper;
+  }
+  return Complex(0.,0.);
+}
+
+
 DECLARE_FF_GETTER(FF_0_PPP_Base,"FF_0_PPP")
 
 FormFactor_Base * ATOOLS::Getter<FormFactor_Base,FF_Parameters,
@@ -778,10 +1404,21 @@ operator()(const METOOLS::FF_Parameters &params) const
     if (params.m_name=="FS_0_PPP") return new FS_0_PiPlusPiZeroPiZero(params);
   }
   else if (mode!=FF_0_PPP_mode::unknown) {
-    if (params.m_name=="F1_0_PPP") return new F1_0_FM95(params);
-    if (params.m_name=="F2_0_PPP") return new F1_0_FM95(params);
-    if (params.m_name=="F3_0_PPP") return new F3_0_PiPlusPiZeroPiZero(params);
-    if (params.m_name=="FS_0_PPP") return new FS_0_FM95(params);
+    if (params.m_ffmodel==ff_model::RChiPT &&
+        (mode==FF_0_PPP_mode::K_pi_K || mode==FF_0_PPP_mode::K0_pi_K0b ||
+         mode==FF_0_PPP_mode::K_pi0_K0 || mode==FF_0_PPP_mode::KS_pi_KS ||
+         mode==FF_0_PPP_mode::KS_pi_KL || mode==FF_0_PPP_mode::KL_pi_KL)) {
+      if (params.m_name=="F1_0_PPP") return new F1_0_RChiPT_KKpi(params);
+      if (params.m_name=="F2_0_PPP") return new F1_0_RChiPT_KKpi(params);
+      if (params.m_name=="F3_0_PPP") return new F3_0_PiPlusPiZeroPiZero(params);
+      if (params.m_name=="FS_0_PPP") return new FS_0_RChiPT_KKpi(params);
+    }
+    else {
+      if (params.m_name=="F1_0_PPP") return new F1_0_FM95(params);
+      if (params.m_name=="F2_0_PPP") return new F1_0_FM95(params);
+      if (params.m_name=="F3_0_PPP") return new F3_0_PiPlusPiZeroPiZero(params);
+      if (params.m_name=="FS_0_PPP") return new FS_0_FM95(params);
+    }
   }
 
   return NULL;
