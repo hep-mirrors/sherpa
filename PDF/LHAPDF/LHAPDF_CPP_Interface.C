@@ -57,6 +57,11 @@ LHAPDF_CPP_Interface::LHAPDF_CPP_Interface(const ATOOLS::Flavour _bunch,
 
   m_bunch = _bunch;
   if (m_bunch.IsIon()) m_A = m_bunch.GetMassNumber();
+  else {
+    // initialise parton mapping, dependent on bunch flavour
+    PDF_Id_Maps partonmapper; 
+    m_kfmap = partonmapper.GetIdMap(m_bunch.Kfcode()); 
+  }
   static std::set<std::string> s_init;
   if (s_init.find(m_set)==s_init.end()) {
     m_member=abs(m_smember);
@@ -126,7 +131,7 @@ LHAPDF_CPP_Interface::LHAPDF_CPP_Interface(const ATOOLS::Flavour _bunch,
                 <<" ";
     msg_Info()<<std::endl;
   }
-
+  // FillHisto(m_bunch);
   rpa->gen.AddCitation(1,"LHAPDF6 is published under \\cite{Buckley:2014ana}.");
 }
 
@@ -237,7 +242,7 @@ double LHAPDF_CPP_Interface::GetXPDF(const kf_code& kf, bool anti) {
                        <<"returning zero."<<std::endl;
     return 0.;
   }
-  int kfc = (m_bunch.IsAnti()?-1:1)*(anti?-kf:kf);
+  int kfc = (m_bunch.IsAnti()?-1:1)*(anti?-m_kfmap[kf]:m_kfmap[kf]);
   if (kf==kf_gluon || kf==kf_photon)
     kfc = kf;
   for (size_t i(0);i<m_disallowedflavour.size();++i) {

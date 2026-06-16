@@ -52,6 +52,8 @@ MI_Parameters::MI_Parameters() :
   m_parameters[string("E_min")] = s["E_Min"].SetDefault(0.25).Get<double>();
   m_parameters[string("SigmaND_Norm")]
     = s["SIGMA_ND_NORM"].SetDefault(0.619).Get<double>();
+  m_parameters[string("AQM_Strange")]
+    = s["AQM_STRANGE_FACTOR"].SetDefault(0.0).Get<double>();
   m_parameters[string("PomeronIntercept")]
     = s["PomeronIntercept"].SetDefault(0.0808).Get<double>();
   m_parameters[string("PomeronSlope")]
