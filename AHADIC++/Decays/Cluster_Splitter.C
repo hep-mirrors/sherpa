@@ -8,30 +8,66 @@ using namespace AHADIC;
 using namespace ATOOLS;
 using namespace std;
 
+
+// mode 0: old mode
+// mode 1: new mode, equivalent functionality to mode 0
+// mode 2: new mode, not using z boundaries computed before (most likely broken)
+#define AHADIC_CLUSTER_SPLITTER_MODE 1
+
+// mode 0: usual fragmentation function
+// mode 1: simplified fragmentation function, that can be integrated
+// mode 2: ...
+#define AHADIC_FRAGMENTATION_FUNCTION 0
+
 Cluster_Splitter::Cluster_Splitter(list<Cluster *> * cluster_list,
-				   Soft_Cluster_Handler * softclusters) :
-  Splitter_Base(cluster_list,softclusters),
+				   Soft_Cluster_Handler * softclusters,
+				   Flavour_Selector     * flavourselector,
+				   KT_Selector          * ktselector) :
+  Splitter_Base(cluster_list,softclusters,flavourselector,ktselector),
   m_output(false)
 {
 }
 
-void Cluster_Splitter::Init(const bool & isgluon) {
-  Splitter_Base::Init(false);
+void Cluster_Splitter::Init() {
+  Splitter_Base::Init();
   m_defmode  = hadpars->Switch("ClusterSplittingForm");
   m_beammode = hadpars->Switch("RemnantSplittingForm");
-  m_alpha[0] = hadpars->Get("alphaL");
-  m_beta[0]  = hadpars->Get("betaL");
-  m_gamma[0] = hadpars->Get("gammaL");
-  m_alpha[1] = hadpars->Get("alphaH");
-  m_beta[1]  = hadpars->Get("betaH");
-  m_gamma[1] = hadpars->Get("gammaH");
-  m_alpha[2] = hadpars->Get("alphaD");
-  m_beta[2]  = hadpars->Get("betaD");
-  m_gamma[2] = hadpars->Get("gammaD");
-  m_alpha[3] = hadpars->Get("alphaB");
-  m_beta[3]  = hadpars->Get("betaB");
-  m_gamma[3] = hadpars->Get("gammaB");
-  m_kt02     = sqr(hadpars->Get("kT_0"));
+  m_reweight_max_nsplit = hadpars->Switch("ReweightMaxNSplit");
+
+  m_alpha[0] = hadpars->GetVec("alphaL");
+  m_beta[0]  = hadpars->GetVec("betaL");
+  m_gamma[0] = hadpars->GetVec("gammaL");
+
+  m_alpha[1] = hadpars->GetVec("alphaH");
+  m_beta[1]  = hadpars->GetVec("betaH");
+  m_gamma[1] = hadpars->GetVec("gammaH");
+
+  m_alpha[2] = hadpars->GetVec("alphaD");
+  m_beta[2]  = hadpars->GetVec("betaD");
+  m_gamma[2] = hadpars->GetVec("gammaD");
+
+  m_alpha[3] = hadpars->GetVec("alphaB");
+  m_beta[3]  = hadpars->GetVec("betaB");
+  m_gamma[3] = hadpars->GetVec("gammaB");
+
+  const std::vector<double> _kt0s = hadpars->GetVec("kT_0");
+  for (auto _kt0 : _kt0s)
+    m_kt02.push_back(sqr(_kt0));
+
+  // for the reweighting we need to find the min/max values of each
+  // of the parameters
+  for(int i{0}; i<4; ++i) {
+    m_alpha_max[i] = *std::max_element(m_alpha[i].begin(), m_alpha[i].end());
+    m_alpha_min[i] = *std::min_element(m_alpha[i].begin(), m_alpha[i].end());
+
+    m_beta_max[i] = *std::max_element(m_beta[i].begin(), m_beta[i].end());
+    m_beta_min[i] = *std::min_element(m_beta[i].begin(), m_beta[i].end());
+
+    m_gamma_max[i] = *std::max_element(m_gamma[i].begin(), m_gamma[i].end());
+    m_gamma_min[i] = *std::min_element(m_gamma[i].begin(), m_gamma[i].end());
+  }
+
+
   m_analyse  = false; //hadpars->Switch("Analysis");
   if (m_analyse) {
     m_histograms[string("kt")]      = new Histogram(0,0.,5.,100);
@@ -68,7 +104,6 @@ void Cluster_Splitter::FixCoefficients() {
   // this is where the magic happens.
   m_mode = m_defmode;
   double sum_mass = 0, massfac;
-  double threshold = p_softclusters->DecayThreshold(p_part[0]->Flavour(),p_part[1]->Flavour());
   for (size_t i=0;i<2;i++) {
     Proto_Particle * part = p_part[i];
     Flavour flav = part->Flavour();
@@ -85,9 +120,7 @@ void Cluster_Splitter::FixCoefficients() {
       flcnt  = 3;
       m_mode = m_beammode;
     }
-    m_a[i] = m_alpha[flcnt]; // * m_Q/threshold
-    m_b[i] = m_beta[flcnt]  * threshold/m_Q;
-    m_c[i] = m_gamma[flcnt];
+    m_type[i] = flcnt;
     sum_mass += massfac * p_constituents->Mass(flav);
   }
   m_masses = Max(1.,sum_mass);
@@ -101,27 +134,30 @@ void Cluster_Splitter::CalculateLimits() {
   // - hadrons:
   //   m_minQ[0,1] is lightest single or double transition (double for di-di pairs)
   //   m_mdec is lightest decay transition
-  for (size_t i=0;i<2;i++) m_m2min[i] = Min(m_minQ2[i],m_mdec2[i]);
-  double lambda  = sqrt(sqr(m_Q2-m_m2min[0]-m_m2min[1])-
-			4.*(m_m2min[0]+m_kt2)*(m_m2min[1]+m_kt2));
+  for (size_t i=0;i<2;i++)
+    m_m2min[i] = Min(m_minQ2[i],m_mdec2[i]);
+  const double lambda = sqrt(sqr(m_Q2-m_m2min[0]-m_m2min[1])-
+		       4.*(m_m2min[0]+m_kt2)*(m_m2min[1]+m_kt2));
   for (size_t i=0;i<2;i++) {
-    double centre = m_Q2-m_m2min[1-i]+m_m2min[i];
-    m_zmin[i]  = (centre-lambda)/(2.*m_Q2);
-    m_zmax[i]  = (centre+lambda)/(2.*m_Q2);
-    m_mean[i]  = sqrt(m_kt02);
-    m_sigma[i] = sqrt(m_kt02);
+    const double centre = m_Q2-m_m2min[1-i]+m_m2min[i];
+    m_zmin[i] = (centre-lambda)/(2.*m_Q2);
+    m_zmax[i] = (centre+lambda)/(2.*m_Q2);
+    m_mean[i]  = sqrt(m_kt02[0]);
+    m_sigma[i] = sqrt(m_kt02[0]);
   }
 }
 
 bool Cluster_Splitter::MakeLongitudinalMomentaZ() {
+  msg_Error() << "Got to a non-ported place: "
+              << "bool Cluster_Splitter::MakeLongitudinalMomentaZ()\n";
   size_t maxcounts=1000;
   while ((maxcounts--)>0) {
     if (MakeLongitudinalMomentaZSimple()) {
       double weight=1.;
       for (size_t i=0;i<2;i++) {
-	if (m_gamma[i]>1.e-4) {
+	if (m_gamma[i][0]>1.e-4) {
 	  double DeltaM2 = m_R2[i]-m_minQ2[i];
-	  weight *= DeltaM2>0.?exp(-m_gamma[i]*DeltaM2/m_sigma[i]):0.;
+	  weight *= DeltaM2>0.?exp(-m_gamma[i][0]*DeltaM2/m_sigma[i]):0.;
 	}
       }
       if (weight>=ran->Get()) return true;
@@ -131,44 +167,215 @@ bool Cluster_Splitter::MakeLongitudinalMomentaZ() {
 }
 
 bool Cluster_Splitter::MakeLongitudinalMomentaZSimple() {
+  // todo: remove old cluster mode, and m_R2
   bool mustrecalc = false;
-  for (size_t i=0;i<2;i++) m_z[i]  = m_zselector(m_zmin[i],m_zmax[i],i);
-  for (size_t i=0;i<2;i++) m_R2[i] = m_z[i]*(1.-m_z[1-i])*m_Q2-m_kt2;
-  return (m_R2[0]>=m_mdec2[0]+m_kt2) && (m_R2[1]>=m_mdec2[1]+m_kt2);
+
+#if AHADIC_CLUSTER_SPLITTER_MODE == 0
+  
+  for (size_t i=0;i<2;i++) {
+    m_z[i] = select_z(m_zmin[i],m_zmax[i],i);
+    if (m_z[i] < 0.) return false;
+  }
+  for (size_t i=0;i<2;i++) {
+    m_R2[i] = m_z[i]*(1.-m_z[1-i])*m_Q2-m_kt2;
+    if (m_R2[i]<m_mdec2[i]+m_kt2) {
+      m_R2[i] = m_mdec2[i]+m_kt2;
+      mustrecalc = true;
+    }
+  }
+  bool ok = (m_R2[0]>m_mdec2[0]+m_kt2) && (m_R2[1]>m_mdec2[1]+m_kt2);
+  return (ok && (mustrecalc?RecalculateZs():true));
+#endif
+
+  // order : lead > beam > rest
+  //     -> 1 > 3 > rest
+  //     -> stored in m_a[i] = flcnt;
+  const int p0 = m_type[0];
+  const int p1 = m_type[1];
+  int i1{0}, i2{1};
+
+  const double a0 = (m_mdec2[0]+2*m_kt2) / m_Q2;
+  const double a1 = (m_mdec2[1]+2*m_kt2) / m_Q2;
+
+  double p,q;
+  if (i1 == 0) {
+    p = (a1-a0-1);
+    q = a0;
+  } else if (i1 == 1) {
+    p = (a0-a1-1);
+    q = a1;
+  }
+  double _sqrt {p*p/4 - q};
+  if(_sqrt < 0)
+    return false;
+
+  double lower = -p/2 - sqrt(p*p/4 - q);
+  double upper = -p/2 + sqrt(p*p/4 - q);
+  if(lower > upper)
+    msg_Error() << "Inconsistent z bounds: lower > upper in MakeLongitudinalMomentaZSimple\n";
+#if AHADIC_CLUSTER_SPLITTER_MODE == 1
+  m_z[i1] = select_z(std::max(m_zmin[i1],lower), std::min(m_zmax[i1],upper), i1);
+#endif
+#if AHADIC_CLUSTER_SPLITTER_MODE == 2
+  m_z[i1] = select_z(0.,1.,i1);
+#endif
+  if (m_z[i1] < 0.) return false;
+
+  if(i1 == 0) {
+    lower = a1/(1-m_z[i1]);
+    upper = 1-a0/m_z[i1];
+  } else {
+    lower = a0/(1-m_z[i1]);
+    upper = 1-a1/m_z[i1];
+  }
+
+#if AHADIC_CLUSTER_SPLITTER_MODE == 1
+  m_z[i2] = select_z(std::max(m_zmin[i2],lower), std::min(m_zmax[i2],upper), i2);
+#endif
+#if AHADIC_CLUSTER_SPLITTER_MODE == 2
+  m_z[i2] = select_z(0.,1.,i2);
+#endif
+  if (m_z[i2] < 0.) return false;
+
+  return true;
+}
+
+bool Cluster_Splitter::CheckKinematics() {
+  for (size_t i=0;i<2;i++) {
+    if(m_z[i] < m_zmin[i] || m_zmax[i] < m_z[i])
+      return false;
+    m_R2[i] = m_z[i]*(1.-m_z[1-i])*m_Q2-m_kt2;
+    if (m_R2[i]<m_mdec2[i]+m_kt2)
+      return false;
+  }
+  return true;
+}
+
+double Cluster_Splitter::FragmentationFunctionProb(double z, double zmin, double zmax,
+						   double gamma, double kt02) {
+  if(zmax - zmin < 0.05) {
+    // std::cout << "Rejected: " << zmin << " " << zmax << " " << zmax - zmin
+    // 	      << " " << m_accepted << " " << m_rejected
+    // 	      << std::endl;
+    m_rejected++;
+    return 1;
+  } else {
+    m_accepted++;
+  }
+  // We just need to reweight the Fragmentation-Function witht the corresponding
+  // integral
+  auto f = [](double _z, double arg, double zmax) -> double {
+    return (1-_z) * exp(-arg/_z);
+  };
+  msg_Error() << "FragmentationFunctionProb not implemented (antiderivative requires Ei)\n";
+  auto F = [](double _z, double arg) -> double {
+    // 1/2 (-e^(-g/x) x (-2 - g + x) + g (2 + g) Ei(-g/x))
+    //return 0.5*(-exp(-arg/_z)*_z*(-2-arg+_z) + arg*(2+arg)*std::expint(-arg/_z));
+    return 0.;
+  };
+  double arg    = gamma*(m_kt2+m_masses*m_masses)/kt02;
+
+  //double arg    = gamma*(m_kt2)/kt02*10;
+  //double arg    = gamma;
+  const auto integral = (F(zmax,arg) - F(zmin,arg));
+  return f(z,arg,zmax) / integral;
+}
+
+double Cluster_Splitter::FragmentationFunction(double z, double zmin, double zmax,
+					       int cnt, int i_var) {
+  const auto type {m_type[cnt]};
+  return FragmentationFunction(z, zmin, zmax,
+			       m_alpha[type][i_var], m_beta[type][i_var],
+			       m_gamma[type][i_var], m_kt02[i_var]);
+}
+
+double Cluster_Splitter::FragmentationFunction(double z, double zmin, double zmax,
+					       double alpha, double beta,
+					       double gamma, double kt02) {
+#if AHADIC_FRAGMENTATION_FUNCTION == 0
+  if (m_mode == 2) {
+    const double c = dabs(gamma) > 5.e-3
+      ? gamma * (m_kt2 + m_masses*m_masses) / kt02
+      : 0.;
+    auto g = [&](double _z) {
+      return pow(_z, alpha) * pow(1.-_z, beta) * exp(-c / _z);
+    };
+    double norm = std::max(g(zmin), g(zmax));
+    const double A = alpha + beta;
+    if (std::abs(A) > 1e-10) {
+      const double disc = sqr(alpha - c) + 4. * A * c;
+      if (disc >= 0.) {
+        for (const double sign : {1., -1.}) {
+          const double z_crit = ((alpha - c) + sign * sqrt(disc)) / (2. * A);
+          if (z_crit > zmin && z_crit < zmax)
+            norm = std::max(norm, g(z_crit));
+        }
+      }
+    } else if (std::abs(alpha - c) > 1e-10) {
+      const double z_crit = c / (c - alpha);
+      if (z_crit > zmin && z_crit < zmax)
+        norm = std::max(norm, g(z_crit));
+    }
+    return std::min(1.0, g(z) / norm);
+  }
+
+  // f(z) = z^alpha * (1-z)^beta
+  // interior mode from d/dz[log f] = alpha/z - beta/(1-z) = 0 => z* = alpha/(alpha+beta)
+  auto f = [&](double _z) {
+    return pow(_z, alpha) * pow(1.-_z, beta);
+  };
+  double norm = std::max(f(zmin), f(zmax));
+  if (std::abs(alpha + beta) > 1e-10) {
+    const double z_mode = alpha / (alpha + beta);
+    if (z_mode > zmin && z_mode < zmax)
+      norm = std::max(norm, f(z_mode));
+  }
+  return std::min(1.0, f(z) / norm);
+#endif
 }
 
 double Cluster_Splitter::
 WeightFunction(const double & z,const double & zmin,const double & zmax,
 	       const unsigned int & cnt) {
-  // identical, just have to check the m_a, m_b, m_c
-  double norm = 1., arg;
-  double value = 1.;
-  if (m_a[cnt]>=0.) norm *= pow(zmax,m_a[cnt]);
-               else norm *= pow(zmin,m_a[cnt]);
-  if (m_b[cnt]>=0.) norm *= pow(1.-zmin,m_b[cnt]);
-               else norm *= pow(1.-zmax,m_b[cnt]);
-  double wt = pow(z,m_a[cnt]) * pow(1.-z,m_b[cnt]);
-
-  value = wt/norm;
-
-  if (m_mode==2) {
-    arg   = dabs(m_c[cnt])>1.e-2 ? m_c[cnt]*(m_kt2+m_masses*m_masses)/m_kt02 : 0.;
-    value *= exp(-arg*((zmax-z)/(z*zmax)));
-    norm *= exp(-arg/zmax);
-    wt   *= exp(-arg/z);
-  }
-
-  if (wt>norm) {
-    msg_Error()<<"Error in "<<METHOD<<": wt(z) = "<<wt<<"("<<z<<") "
-	       <<"for wtmax = "<<norm<<" "
-	       <<"[a, b, c = "<<m_a[cnt]<<", "<<m_b[cnt]<<", "<<m_c[cnt]<<"] from \n"
-	       <<"a part = "<<pow(z,m_a[cnt])<<"/"<<pow(zmax,m_a[cnt])<<", "
-	       <<"b part = "<<pow(1.-z,m_b[cnt])<<"/"<<pow(1.-zmin,m_b[cnt])<<", "
-	       <<"c part = "<<exp(-arg/z)<<"/"<<exp(-arg/zmax)<<".\n";
-    THROW(fatal_error,"wt is larger than assumed wtmax - this should never happen.");
-  }
-  return value;
+  return FragmentationFunction(z, zmin, zmax, cnt, 0);
 }
+
+void Cluster_Splitter::z_rejected(const double wgt, const double & z,
+				  const double & zmin,const double & zmax,
+				  const unsigned int & cnt) {
+#if AHADIC_FRAGMENTATION_FUNCTION == 1
+  return;
+#endif
+  if(m_reweight_max_nsplit >= 0 && m_nsplit >= m_reweight_max_nsplit) return;
+  const auto type = m_type[cnt];
+  for (int i{0}; i<m_alpha[0].size(); i++) {
+    const auto wgt_new = FragmentationFunction(z,zmin,zmax,cnt,i);
+    tmp_variation_weights[i] *= (1.-wgt_new) / (1.-wgt);
+  }
+}
+
+void Cluster_Splitter::z_accepted(const double wgt, const double & z,
+				  const double & zmin,const double & zmax,
+				  const unsigned int & cnt) {
+  const auto type = m_type[cnt];
+#if AHADIC_FRAGMENTATION_FUNCTION == 1
+  const double wgt_old = FragmentationFunctionProb(z,zmin,zmax,m_gamma[type][0],m_kt02[0]);
+#else
+  const double wgt_old = wgt;
+#endif
+  if(m_reweight_max_nsplit >= 0 && m_nsplit >= m_reweight_max_nsplit) return;
+  for (int i{0}; i<m_alpha[0].size(); i++) {
+#if AHADIC_FRAGMENTATION_FUNCTION == 1
+    const auto wgt_new = FragmentationFunctionProb(z,zmin,zmax,m_gamma[type][i],m_kt02[i]);
+#else
+    const auto wgt_new = FragmentationFunction(z,zmin,zmax,cnt,i);
+#endif
+    const auto frac = wgt_new / wgt_old;
+    if(!std::isnan(frac))
+      tmp_variation_weights[i] *= frac;
+  }
+}
+
 
 bool Cluster_Splitter::RecalculateZs() {
   double e12  = (m_R2[0]+m_kt2)/m_Q2, e21 = (m_R2[1]+m_kt2)/m_Q2;
@@ -181,6 +388,8 @@ bool Cluster_Splitter::RecalculateZs() {
 }
 
 bool Cluster_Splitter::MakeLongitudinalMomentaMassSimple() {
+  msg_Error() << "Got to a non-ported place: "
+              << "Cluster_Splitter::MakeLongitudinalMomentaMassSimple()\n";
   bool success;
   long int trials = 1000;
   do {
@@ -196,13 +405,15 @@ bool Cluster_Splitter::MakeLongitudinalMomentaMassSimple() {
 }
 
 bool Cluster_Splitter::MakeLongitudinalMomentaMass() {
+  msg_Error() << "Got to a non-ported place: "
+              << "bool Cluster_Splitter::MakeLongitudinalMomentaMass()\n";
   size_t maxcounts=1000;
   while ((maxcounts--)>0) {
     if (MakeLongitudinalMomentaMassSimple()) {
       double weight=1.;
       for (size_t i=0;i<2;i++) {
-	if (m_alpha[i]>1.e-4) weight *= pow(m_z[i],m_alpha[i]);
-	if (m_beta[i]>1.e-4)  weight *= pow(1.-m_z[i],m_beta[i]);
+	if (m_alpha[i][0]>1.e-4) weight *= pow(m_z[i],m_alpha[i][0]);
+	if (m_beta[i][0]>1.e-4)  weight *= pow(1.-m_z[i],m_beta[i][0]);
       }
       if (weight>=ran->Get()) return true;
     }
@@ -211,11 +422,13 @@ bool Cluster_Splitter::MakeLongitudinalMomentaMass() {
 }
 
 double Cluster_Splitter::DeltaM(const size_t & cl) {
+  msg_Error() << "Got to a non-ported place: Cluster_Splitter::DeltaM\n";
   double deltaM, deltaMmax = m_Q-sqrt(m_m2min[0])-sqrt(m_m2min[1]);
-  double mean =  m_mean[cl], sigma = 1./(m_c[cl] * sqrt(m_kt02));
+  double mean =  m_mean[cl], sigma = 1./(m_type[cl] * sqrt(m_kt02[0]));
   double arg  =  1.-exp(-sigma * deltaMmax);
   size_t trials = 1000;
   do {
+
     // Weibull distribution
     //deltaM = sqrt(offset+pow(-log(ran->Get()),1./m_a[cl])*lambda);
     // Normal distribution
@@ -275,14 +488,12 @@ void Cluster_Splitter::FillHadronAndDeleteCluster(size_t i) {
 void Cluster_Splitter::UpdateAndFillCluster(size_t i) {
   Poincare BoostIn(m_mom[i]);
   Poincare BoostOut(m_newmom[i]);
-  //Vec4D check(0.,0.,0.,0.);
   for (size_t j=0;j<2;j++) {
     Vec4D partmom = (*p_out[i])[j]->Momentum();
     BoostIn.Boost(partmom);
     BoostOut.BoostBack(partmom);
     m_rotat.RotateBack(partmom);
     m_boost.BoostBack(partmom);
-    //check += partmom;
     (*p_out[i])[j]->SetMomentum(partmom);
   }
   m_rotat.RotateBack(m_newmom[i]);
@@ -326,6 +537,7 @@ Cluster * Cluster_Splitter::MakeCluster(size_t i) {
   Cluster * cluster;
   if (i==0) cluster = new Cluster(p_part[0],newp);
   if (i==1) cluster = new Cluster(newp,p_part[1]);
+  cluster->m_nsplit = m_nsplit + 1;
   newp->SetGeneration(p_part[i]->Generation()+1);
   p_part[i]->SetGeneration(p_part[i]->Generation()+1);
   if (m_analyse) {

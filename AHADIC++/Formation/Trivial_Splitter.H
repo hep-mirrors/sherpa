@@ -4,7 +4,6 @@
 #include "AHADIC++/Tools/Singlet_Tools.H"
 #include "AHADIC++/Tools/Flavour_Selector.H"
 #include "AHADIC++/Tools/KT_Selector.H"
-#include "AHADIC++/Tools/Z_Selector.H"
 #include "AHADIC++/Tools/Constituents.H"
 #include "AHADIC++/Tools/Proto_Particle.H"
 #include "ATOOLS/Math/Poincare.H"
@@ -14,10 +13,9 @@ namespace AHADIC {
   class Trivial_Splitter {
   private:
     Constituents         * p_constituents;
-    Flavour_Selector       m_flavourselector;
-    KT_Selector            m_ktselector;
-    Z_Selector             m_zselector;
-    
+    Flavour_Selector     * p_flavourselector;
+    KT_Selector          * p_ktselector;
+
     double m_kt2max, m_minmass;
 
     std::list<Proto_Particle *> * p_singlet;
@@ -30,7 +28,7 @@ namespace AHADIC {
     double          m_popped_mass, m_popped_mass2;
     double          m_ktmax, m_kt, m_kt2, m_phi, m_beta, m_z;
     ATOOLS::Vec4D   m_ktvec, m_q1mom, m_q2mom, m_glumom;
-    
+
 
     bool InitKinematics(bool rescue=false);
     void SelectFlavour();
@@ -43,14 +41,14 @@ namespace AHADIC {
     bool Rescue();
     void ConstructRescueMomenta();
  public:
-    Trivial_Splitter();
-    ~Trivial_Splitter() {}  
+    Trivial_Splitter(Flavour_Selector * flavourselector,
+		     KT_Selector      * ktselector);
+    ~Trivial_Splitter() {}
     void Init();
-    
+
     bool operator()(Singlet * singlet);
     bool operator()(Proto_Particle * part1, Proto_Particle * part2);
 
-    double WeightFunction(const double & z) { return 1.; }
     inline const double & MinMass() const { return m_minmass; }
   };
 }

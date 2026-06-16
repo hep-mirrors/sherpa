@@ -11,26 +11,31 @@ Gluon_Splitter::~Gluon_Splitter() {
 }
 
 
-void Gluon_Splitter::Init(const bool & isgluon) {
-  Splitter_Base::Init(true);
+void Gluon_Splitter::Init() {
+  Splitter_Base::Init();
   // Gluon Decay Form: 1 = default
   // 0: z ~ z^alpha * (1-z)^alpha
   // 1: z ~ z^alpha + (1-z)^alpha
   m_mode  = hadpars->Switch("GluonDecayForm");
-  m_alpha = hadpars->Get("alphaG");
+  m_alpha = hadpars->GetVec("alphaG");
   m_analyse = true;
   if (m_analyse) {
     m_histograms[std::string("Yasym_frag_2")] = new Histogram(0,0.,8.,32);
   }
 }
-  
+
 bool Gluon_Splitter::MakeLongitudinalMomenta() {
   m_arg = (sqr(m_Q2-m_minQ2[0]-m_popped_mass2)-
 	   4.*(m_Q2*m_kt2 + m_minQ2[0]*m_popped_mass2));
   if (m_arg<0.) return false;
   CalculateLimits();
-  do { m_z[1] = m_zselector(m_zmin[1],m_zmax[1]); } while (!CalculateXY());
-  return true;
+  for (int it{0}; it<10000; ++it) {
+    m_z[1] = select_z(m_zmin[1],m_zmax[1],0);
+    if (m_z[1] < 0.) return false;
+    if (CalculateXY()) return true;
+  }
+  msg_Error() << METHOD << ": CalculateXY failed after 10000 iterations\n";
+  return false;
 }
 
 void Gluon_Splitter::CalculateLimits() {
@@ -66,22 +71,64 @@ bool Gluon_Splitter::CalculateXY() {
   return (!(m_x>1.) && !(m_x<0.) && !(m_y>1.) && !(m_y<0.));
 }
 
+double Gluon_Splitter::FragmentationFunctionProb(double z, double zmin, double zmax,
+						 double alpha) {
+  if(m_mode != 0)
+    msg_Error()<<"Reweighting of Gluon frag. not implemented for this mode\n";
+
+  // We just need to reweight the Fragmentation-Function witht the corresponding
+  // integral
+  auto f = [](double _z, double alpha) -> double {
+    return pow(_z,alpha) + pow(1.-_z,alpha);
+  };
+  auto F = [](double _z, double alpha) -> double {
+    return 1./(alpha+1) * (pow(_z,alpha+1) - pow(1.-_z,alpha+1));
+  };
+  const double integral = (F(zmax,alpha) - F(zmin,alpha));
+  return f(z,alpha) / integral;
+}
+
+double Gluon_Splitter::FragmentationFunction(double z, double zmin, double zmax,
+					     double alpha) {
+  if(m_mode == 1) {
+    const double norm = pow(0.5,2*alpha);
+    return pow(z*(1.-z),alpha)/norm;
+  }
+
+  // in the symmetric case, the max is either at 0.5 or at one edge
+  auto f = [](double _z, double alpha) {
+    return pow(_z,alpha) + pow(1.-_z,alpha);
+  };
+  const double fmax = std::max(std::max(f(zmin,alpha), f(zmax,alpha)), f(0.5,alpha));
+  const double ret = (pow(z,alpha)+pow(1.-z,alpha))/fmax;
+  if(ret > 1.0)
+    msg_Error()<<
+      "Error in Gluon Fragmentation function, should always be < 1.0\n";
+  return ret;
+}
+
 double Gluon_Splitter::
 WeightFunction(const double & z,const double & zmin,const double & zmax,
 	       const unsigned int & cnt) {
-  double norm = 1.;
-  switch (m_mode) {
-  case 1:
-    norm = pow(0.5,2*m_alpha);
-    return pow(z*(1.-z),m_alpha)/norm;
-  case 0:
-  default:
-    break;
-  }
-  if (m_alpha<=0.) norm = pow(zmin,m_alpha) + pow(1.-zmax,m_alpha);
-  return (pow(z,m_alpha)+pow(1.-z,m_alpha))/norm;
+  const double alpha = m_alpha[0];
+  const auto value = FragmentationFunction(z,zmin,zmax,alpha);
+  return value;
 }
 
+void Gluon_Splitter::z_rejected(const double wgt, const double & z,
+				const double & zmin,const double & zmax,
+				const unsigned int & cnt) {
+  // Gluon fragmentation function is integrable — no accept/reject correction needed.
+}
+
+void Gluon_Splitter::z_accepted(const double wgt, const double & z,
+				const double & zmin,const double & zmax,
+				const unsigned int & cnt) {
+  const double wgt_old = FragmentationFunctionProb(z,zmin,zmax,m_alpha[0]);
+  for (int i{0}; i<m_alpha.size(); i++) {
+    tmp_variation_weights[i] *= FragmentationFunctionProb(z,zmin,zmax,m_alpha[i]) / wgt_old;
+  }
+}
 
 bool Gluon_Splitter::CheckKinematics() {
   // check if:
@@ -140,7 +187,7 @@ bool Gluon_Splitter::FillParticlesInLists() {
 }
 
 void Gluon_Splitter::ReplaceClusterWithHadron(const Flavour & fl,Vec4D & mom) {
-  double M2 = m_Q2, mt12 = sqr(fl.Mass())+m_kt2, mt22 = m_m2[1]+m_kt2; 
+  double M2 = m_Q2, mt12 = sqr(fl.Mass())+m_kt2, mt22 = m_m2[1]+m_kt2;
   double alpha1 = ((M2+mt12-mt22)+sqrt(sqr(M2+mt12-mt22)-4.*M2*mt12))/(2.*M2);
   double beta1  = mt12/(M2*alpha1);
   mom = m_E*(alpha1*s_AxisP + beta1*s_AxisM)+m_ktvec;
@@ -196,13 +243,14 @@ Cluster * Gluon_Splitter::MakeCluster() {
 		  p_part[0]->Flavour()==Flavour(kf_b) ||
 		  p_part[0]->Flavour()==Flavour(kf_b).Bar());
     m_lastC    = (!m_lastB &&
-		  (newp12->Flavour()==Flavour(kf_b) ||
-		   newp12->Flavour()==Flavour(kf_b).Bar() ||
-		   p_part[0]->Flavour()==Flavour(kf_b) ||
-		   p_part[0]->Flavour()==Flavour(kf_b).Bar()));
+		  (newp12->Flavour()==Flavour(kf_c) ||
+		   newp12->Flavour()==Flavour(kf_c).Bar() ||
+		   p_part[0]->Flavour()==Flavour(kf_c) ||
+		   p_part[0]->Flavour()==Flavour(kf_c).Bar()));
     double y = cluster->Momentum().Y();
     m_histograms[std::string("Yasym_frag_2")]->Insert(dabs(y),(y>0.?1.:-1.));
   }
+  cluster->m_nsplit = 1;
   return cluster;
 }
 

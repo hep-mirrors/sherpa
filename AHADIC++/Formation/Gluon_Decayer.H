@@ -11,17 +11,17 @@
 namespace AHADIC {
   class Gluon_Decayer : public Singlet_Tools {
   private:
-    std::list<Cluster *> * p_cluster_list; 
+    std::list<Cluster *> * p_cluster_list;
     Soft_Cluster_Handler * p_softclusters;
     Gluon_Splitter   m_splitter;
     Trivial_Splitter m_breaker;
-    
+
     Proto_Particle * p_part1, * p_part2;
     bool m_analyse;
     int  m_Nclusters;
     std::map<std::string, ATOOLS::Histogram *> m_histos;
-    
-    
+
+
     bool             SplitGluonRing();
     Proto_Particle * FirstGluon();
     bool Trivial(Proto_Particle * part1,Proto_Particle * part2,
@@ -30,15 +30,26 @@ namespace AHADIC {
 	      Proto_Particle * part3=NULL);
     bool LastStep();
     void AnalyseClusters();
+    std::vector<double> variation_weights;
+
   public:
     Gluon_Decayer(std::list<Cluster *> * cluster_list,
-		  Soft_Cluster_Handler * softclusters);
+		  Soft_Cluster_Handler * softclusters,
+		  Flavour_Selector     * flavourselector,
+		  KT_Selector          * ktselector);
     ~Gluon_Decayer();
     void Init();
-    void Reset();    
+    void Reset();
     void ResetN() { m_Nclusters = 0; }
     void FillNs(const int & Nhad);
-    
+    std::vector<double>& get_variationweights() {
+      return m_splitter.get_variationweights();
+    };
+
+    void reset_variationweights(int nvars) {
+      m_splitter.reset_variationweights(nvars);
+    };
+
     bool operator()(Singlet * singlet);
   };
 }

@@ -8,16 +8,17 @@ using namespace AHADIC;
 using namespace ATOOLS;
 using namespace std;
 
-Soft_Cluster_Handler::Soft_Cluster_Handler(list<Proto_Particle *> * hadrons) :
-  p_hadrons(hadrons), m_ktfac(1.)
+Soft_Cluster_Handler::Soft_Cluster_Handler(list<Proto_Particle *> * hadrons,
+					   KT_Selector* ktselector) :
+  p_hadrons {hadrons}, p_ktselector {ktselector}, m_ktfac{1.}
 { }
 
-Soft_Cluster_Handler::~Soft_Cluster_Handler() 
+Soft_Cluster_Handler::~Soft_Cluster_Handler()
 { }
 
 void Soft_Cluster_Handler::Init() {
   p_constituents       = hadpars->GetConstituents();
-  p_singletransitions  = hadpars->GetSingleTransitions(); 
+  p_singletransitions  = hadpars->GetSingleTransitions();
   p_doubletransitions  = hadpars->GetDoubleTransitions();
   m_trans_threshold    = hadpars->Get("transition_threshold");
   m_dec_threshold      = hadpars->Get("decay_threshold");
@@ -30,7 +31,6 @@ void Soft_Cluster_Handler::Init() {
   m_ktorder            = (hadpars->Switch("KT_Ordering")>0);
   m_direct_transition  = (hadpars->Switch("direct_transition")>0);
   m_zeta               = hadpars->Get("prompt_decay_exponent");
-  m_ktselector.Init(false);
 }
 
 void Soft_Cluster_Handler::Reset() {
@@ -76,16 +76,16 @@ double Soft_Cluster_Handler::TransitionThreshold(const ATOOLS::Flavour & fl1,
 						 const ATOOLS::Flavour & fl2) {
   m_flavs.first  = fl1;
   m_flavs.second = fl2;
-  return (p_singletransitions->GetLightestMass(m_flavs) * m_trans_threshold       + 
-	  p_singletransitions->GetHeaviestMass(m_flavs) * (1.-m_trans_threshold)); 
+  return (p_singletransitions->GetLightestMass(m_flavs) * m_trans_threshold       +
+	  p_singletransitions->GetHeaviestMass(m_flavs) * (1.-m_trans_threshold));
 }
 
 double Soft_Cluster_Handler::DecayThreshold(const ATOOLS::Flavour & fl1,
 					    const ATOOLS::Flavour & fl2) {
   m_flavs.first  = fl1;
   m_flavs.second = fl2;
-  return (p_doubletransitions->GetLightestMass(m_flavs) * m_dec_threshold       + 
-	  p_doubletransitions->GetHeaviestMass(m_flavs) * (1.-m_dec_threshold)); 
+  return (p_doubletransitions->GetLightestMass(m_flavs) * m_dec_threshold       +
+	  p_doubletransitions->GetHeaviestMass(m_flavs) * (1.-m_dec_threshold));
 }
 
 int Soft_Cluster_Handler::Treat(Cluster * cluster,bool force)
@@ -152,6 +152,7 @@ bool Soft_Cluster_Handler::Rescue(Cluster * cluster) {
   double  newmass = newhad.Mass();
   double  wratio  = 1., test;
   Vec4D   mom, totmom;
+  bool found {false};
   for (list<Proto_Particle *>::iterator pit=p_hadrons->begin();
        pit!=p_hadrons->end();pit++) {
     mom = (*pit)->Momentum()+cluster->Momentum();
@@ -160,9 +161,15 @@ bool Soft_Cluster_Handler::Rescue(Cluster * cluster) {
       winner = (*pit);
       wratio = test;
       totmom = mom;
+      found = true;
     }
   }
-  double totmass2 = totmom.Abs2(), totmass = sqrt(totmass2), wmass2 = sqr(winner->Flavour().Mass());
+  // TODO: How have I introduced this?
+  if(!found) return false;
+  double totmass2 = totmom.Abs2();
+  double totmass = sqrt(totmass2);
+  double wmass2 = sqr(winner->Flavour().Mass());
+
   Vec4D  wvec     = winner->Momentum();
   Poincare boost  = Poincare(totmom);
   boost.Boost(wvec);
@@ -235,7 +242,7 @@ bool Soft_Cluster_Handler::FixKinematics() {
   Vec4D mom1((*p_cluster)[0]->Momentum()), mom2((*p_cluster)[1]->Momentum());
   Poincare boost = Poincare(mom1+mom2);
   boost.Boost(mom1);
-  Poincare rotat = Poincare(mom1,s_AxisP); 
+  Poincare rotat = Poincare(mom1,s_AxisP);
 
   double M2(m_mass*m_mass);
   double m12(sqr(m_hads[0].Mass())),m22(sqr(m_hads[1].Mass()));
@@ -259,17 +266,9 @@ bool Soft_Cluster_Handler::FixKinematics() {
 			      Min(p1,sqrt(Min((*p_cluster)[0]->KT2_Max(),
 					      (*p_cluster)[1]->KT2_Max()))):p1));
   double pt, pl;
-  //bool   lead  = (*p_cluster)[0]->IsLeading() || (*p_cluster)[1]->IsLeading();
-  //if (true || lead) {
-  pt = m_ktselector(ktmax,1.);
+  //std::cout << "Soft_Cluster_Handler\n";
+  pt = (*p_ktselector)(ktmax);
   pl = sqrt(p1*p1-pt*pt);
-  //}
-  //else {
-  //double cost = 1.-2.*ran->Get();
-  //double sint = (ran->Get()>0.5?-1:1.)*sqrt(1.-cost*cost);
-  //pt = p1*sint;
-  //pl = p1*cost;
-  // }
   double phi   = 2.*M_PI*ran->Get();
   m_moms[0]    = Vec4D(       E1, pt*cos(phi), pt*sin(phi), pl);
   m_moms[1]    = Vec4D(m_mass-E1,-pt*cos(phi),-pt*sin(phi),-pl);
@@ -332,31 +331,52 @@ double Soft_Cluster_Handler::DecayWeight() {
   if (m_hads[0].Mass()+m_hads[1].Mass()>m_mass) return Annihilation();
 
   // everything is fine - get on with your life and just decay.
-  map<Flavour_Pair,double> weights;
-  double totweight(0.), weight;
+  map<Flavour_Pair,std::vector<double> > weights;
+  std::vector<double> totweight;//, weight;
   for (Double_Transition_List::reverse_iterator dit=decays->rbegin();
        dit!=decays->rend();dit++) {
-    double m2(dit->first.first.Mass()), m3(dit->first.second.Mass());
+    const double m2(dit->first.first.Mass()), m3(dit->first.second.Mass());
     if (m2+m3>m_mass) break;
     // wave-function overlap * phase-space (units of 1 in total)
     bool heavy = (dit->first.first.IsB_Hadron() || dit->first.first.IsC_Hadron() ||
 		  dit->first.second.IsB_Hadron() || dit->first.second.IsC_Hadron());
-    weight     = dit->second * PhaseSpace(m2,m3,heavy);
-    totweight += weights[dit->first] = weight;
+    const double psfac = PhaseSpace(m2,m3,heavy);
+
+    std::vector<double> _wgts (dit->second.size());
+    totweight.resize(dit->second.size(),0);
+
+    for(int i{0}; i<dit->second.size(); ++i) {
+      double wt = dit->second[i] * psfac;
+      _wgts[i] = wt;
+      totweight[i] += wt;
+    }
+    weights[dit->first] = _wgts;
   }
 
-  double disc = totweight * ran->Get();
-  map<Flavour_Pair,double>::iterator wit=weights.begin();
+  double disc = totweight[0] * ran->Get();
+  map<Flavour_Pair,std::vector<double>>::iterator wit=weights.begin();
   do {
-    disc -= wit->second;
+    disc -= wit->second[0];
     if (disc<=1.e-12) break;
     wit++;
   } while (wit!=weights.end());
+
+  if (wit!=weights.end() && totweight[0] != 0.) {
+    const double p_sel = wit->second[0] / totweight[0];
+    for(int i{0}; i<wit->second.size(); ++i) {
+      // TODO: figure out why this is zero from time to time
+      double fact = (wit->second[i] / totweight[i]) / p_sel;
+      if(!std::isnan(fact))
+	variation_weights[i] *= fact;
+    }
+  }
+
   if (wit!=weights.end()) {
     m_hads[0] = wit->first.first;
     m_hads[1] = wit->first.second;
   }
-  return totweight;
+
+  return totweight[0];
 }
 
 double Soft_Cluster_Handler::Annihilation() {

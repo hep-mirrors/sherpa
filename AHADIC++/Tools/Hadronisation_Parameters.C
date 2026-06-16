@@ -72,6 +72,11 @@ void Hadronisation_Parameters::ReadParameters()
   ReadMesonWeights();
   ReadSplittingParameters();
   ReadClusterToMesonPSParameters();
+
+  // TODO: check correct inputs!
+  // each of the vectors should either be of size on, in which case, we pad it
+  // or of the same size, whatever that is
+  CheckAndPad();
 }
 
 const double Hadronisation_Parameters::Get(string keyword) const
@@ -82,6 +87,18 @@ const double Hadronisation_Parameters::Get(string keyword) const
 		<<"in "<<m_parametermap.size()<<".\n"
 		<<"   Keyword not found. Return 0 and hope for the best.\n";
   return 0.;
+}
+
+const std::vector<double>
+Hadronisation_Parameters::GetVec(std::string keyword) const {
+  map<string,std::vector<double>>::const_iterator piter
+    = m_parametermap_vecs.find(keyword);
+  if (piter!=m_parametermap_vecs.end()) return piter->second;
+  msg_Tracking()<<"Error in Hadronisation_Parameters::Get("<<keyword<<") "
+		<<"in "<<m_parametermap_vecs.size()<<".\n"
+		<<"   Keyword not found. Return 0 and hope for the best.\n";
+  // TODO: How to do this safely?
+  return {0.};
 }
 
 const int Hadronisation_Parameters::Switch(string keyword) const
@@ -106,40 +123,52 @@ void Hadronisation_Parameters::ReadSplittingParameters()
     s["CLUSTER_SPLITTING_MODE"].SetDefault(2).Get<int>();
   m_switchmap["RemnantSplittingForm"] =
     s["REMNANT_CLUSTER_MODE"].SetDefault(2).Get<int>();
+
+  m_switchmap["ReweightMaxNSplit"] =
+    s["REWEIGHT_MAX_NSPLIT"].SetDefault(4).Get<int>();
+  m_parametermap[string("reweight_clip_factor")] =
+    s["REWEIGHT_CLIP_FACTOR"].SetDefault(100.0).Get<double>();
+
   // generic parameter for non-perturbative transverse momentum
-  m_parametermap[string("kT_0")]   =
-    s["KT_0"].SetDefault(1.21).Get<double>();
+  m_parametermap_vecs[string("kT_0")] =
+    s["KT_0"].SetDefault<double>({1.00}).GetVector<double>();
+
   // gluon fragmentation
-  m_parametermap[string("alphaG")] =
-    s["ALPHA_G"].SetDefault(0.97).Get<double>();
+  m_parametermap_vecs[string("alphaG")] =
+    s["ALPHA_G"].SetDefault({0.67}).GetVector<double>();
+
   // light quark fragmentation
-  m_parametermap[string("alphaL")] =
-    s["ALPHA_L"].SetDefault(3.9).Get<double>();
-  m_parametermap[string("betaL")]  =
-    s["BETA_L"].SetDefault(0.18).Get<double>();
-  m_parametermap[string("gammaL")] =
-    s["GAMMA_L"].SetDefault(0.48).Get<double>();
+  m_parametermap_vecs[string("alphaL")] =
+    s["ALPHA_L"].SetDefault({2.5}).GetVector<double>();
+  m_parametermap_vecs[string("betaL")]  =
+    s["BETA_L"].SetDefault({0.13}).GetVector<double>();
+  m_parametermap_vecs[string("gammaL")] =
+    s["GAMMA_L"].SetDefault({0.27}).GetVector<double>();
+
   // di-quark fragmentation
-  m_parametermap[string("alphaD")] =
-    s["ALPHA_D"].SetDefault(3.4).Get<double>();
-  m_parametermap[string("betaD")]  =
-    s["BETA_D"].SetDefault(0.72).Get<double>();
-  m_parametermap[string("gammaD")] =
-    s["GAMMA_D"].SetDefault(0.77).Get<double>();
+  m_parametermap_vecs[string("alphaD")] =
+    s["ALPHA_D"].SetDefault({3.26}).GetVector<double>();
+  m_parametermap_vecs[string("betaD")]  =
+    s["BETA_D"].SetDefault({0.11}).GetVector<double>();
+  m_parametermap_vecs[string("gammaD")] =
+    s["GAMMA_D"].SetDefault({0.39}).GetVector<double>();
+
   // beam particle fragmentation
-  m_parametermap[string("alphaB")] =
-    s["ALPHA_B"].SetDefault(14.2).Get<double>();
-  m_parametermap[string("betaB")]  =
-    s["BETA_B"].SetDefault(1.6).Get<double>();
-  m_parametermap[string("gammaB")] =
-    s["GAMMA_B"].SetDefault(8.1).Get<double>();
+  m_parametermap_vecs[string("alphaB")] =
+    s["ALPHA_B"].SetDefault({2.50}).GetVector<double>();
+  m_parametermap_vecs[string("betaB")]  =
+    s["BETA_B"].SetDefault({0.25}).GetVector<double>();
+  m_parametermap_vecs[string("gammaB")] =
+    s["GAMMA_B"].SetDefault({0.50}).GetVector<double>();
+
   // heavy quark fragmentation function
-  m_parametermap[string("alphaH")] =
-    s["ALPHA_H"].SetDefault(-0.6).Get<double>();
-  m_parametermap[string("betaH")]  =
-    s["BETA_H"].SetDefault(1.8).Get<double>();
-  m_parametermap[string("gammaH")] =
-    s["GAMMA_H"].SetDefault(0.024).Get<double>();
+  m_parametermap_vecs[string("alphaH")] =
+    s["ALPHA_H"].SetDefault({1.26}).GetVector<double>();
+  m_parametermap_vecs[string("betaH")]  =
+    s["BETA_H"].SetDefault({0.98}).GetVector<double>();
+  m_parametermap_vecs[string("gammaH")] =
+    s["GAMMA_H"].SetDefault({0.05}).GetVector<double>();
+
   // These guys make a lot of difference - especially the transition ones, once we switch them on.
   m_switchmap["direct_transition"] =
     s["DIRECT_TRANSITIONS"].SetDefault(1).Get<int>();
@@ -158,6 +187,52 @@ void Hadronisation_Parameters::ReadSplittingParameters()
   Settings & sets = Settings::GetMainSettings();
   m_parametermap[string("kT_max")] =
     s["PT_MAX"].SetDefault(0.68).Get<double>();
+}
+
+void Hadronisation_Parameters::CheckAndPad() {
+  std::vector<std::string> relevant_entries =
+    {
+      "kT_0",
+      "alphaG",
+      "alphaL","betaL","gammaL",
+      "alphaD","betaD","gammaD",
+      "alphaB","betaB","gammaB",
+      "alphaH","betaH","gammaH",
+      "Strange_fraction","Baryon_fraction",
+      "P_qs_by_P_qq","P_ss_by_P_qq","P_di_1_by_P_di_0"
+    };
+
+  size_t max_size = 1;
+  for(const auto key : relevant_entries) {
+    const int s = m_parametermap_vecs.find(key)->second.size();
+    // TODO: some more sanity checks?
+    // - have all the entries been found?
+    // - are they all or reasonable size?
+    if(s == 1) continue;
+    if(max_size != 1) {
+      // there has been another vector before
+      if(s != max_size)
+	throw std::invalid_argument( "PROBLEM" );
+    } else {
+      // first vector occuring
+      max_size = s;
+    }
+  }
+
+  // second pass pad the single entry vectors
+  for(const auto key : relevant_entries) {
+    auto& v = m_parametermap_vecs.find(key)->second;
+    v.resize(max_size,v[0]);
+  }
+
+  // modify the parameter maps
+  // this can only be done *after* all of the padding etc has been taken place
+  for (int i{0}; i<m_parametermap_vecs[string("Strange_fraction")].size(); ++i) {
+    const double strange = m_parametermap_vecs[string("Strange_fraction")][i];
+    m_parametermap_vecs[string("P_qs_by_P_qq")][i] *= strange;
+    m_parametermap_vecs[string("P_ss_by_P_qq")][i] *= sqr(strange);
+  }
+  m_nvariations = max_size;
 }
 
 void Hadronisation_Parameters::ReadClusterToMesonPSParameters()
@@ -232,16 +307,17 @@ void Hadronisation_Parameters::ReadPoppingParameters()
 {
   auto s = Settings::GetMainSettings()["AHADIC"];
   double strange;
-  m_parametermap[string("Strange_fraction")] = strange =
-    s["STRANGE_FRACTION"].SetDefault(0.46).Get<double>();
-  m_parametermap[string("Baryon_fraction")]        =
-    s["BARYON_FRACTION"].SetDefault(0.17).Get<double>();
-  m_parametermap[string("P_qs_by_P_qq")]           =
-    (s["P_QS_by_P_QQ_norm"].SetDefault(0.56).Get<double>())*strange;
-  m_parametermap[string("P_ss_by_P_qq")]           =
-    (s["P_SS_by_P_QQ_norm"].SetDefault(0.056).Get<double>())*sqr(strange);
-  m_parametermap[string("P_di_1_by_P_di_0")]       =
-    s["P_QQ1_by_P_QQ0"].SetDefault(0.60).Get<double>();
+  m_parametermap_vecs[string("Strange_fraction")] =
+    s["STRANGE_FRACTION"].SetDefault({0.46}).GetVector<double>();
+  m_parametermap_vecs[string("Baryon_fraction")]        =
+    s["BARYON_FRACTION"].SetDefault({0.15}).GetVector<double>();
+  m_parametermap_vecs[string("P_qs_by_P_qq")]           =
+    (s["P_QS_by_P_QQ_norm"].SetDefault({0.71}).GetVector<double>());
+  m_parametermap_vecs[string("P_ss_by_P_qq")]           =
+    (s["P_SS_by_P_QQ_norm"].SetDefault({0.01}).GetVector<double>());
+  m_parametermap_vecs[string("P_di_1_by_P_di_0")]       =
+    s["P_QQ1_by_P_QQ0"].SetDefault({m_shower ? 0.94 : 0.57}).GetVector<double>();
+  // Multiply by strange etc, afther the padding has been done
 }
 
 

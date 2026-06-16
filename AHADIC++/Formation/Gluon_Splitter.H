@@ -8,11 +8,12 @@ namespace AHADIC {
   class Gluon_Splitter : public Splitter_Base {
   private:
     int    m_mode;
-    double m_alpha, m_arg, m_x, m_y, m_lastmass;
+    std::vector<double> m_alpha;
+    double m_arg, m_x, m_y, m_lastmass;
     bool   m_lastB, m_lastC;
-    
+
     long int  m_kin_fails{ 0 };
-    
+
     bool      MakeLongitudinalMomenta();
     void      CalculateLimits();
     bool      CalculateXY();
@@ -24,19 +25,52 @@ namespace AHADIC {
     Cluster * MakeCluster();
     void      ReplaceClusterWithHadron(const ATOOLS::Flavour & fl,ATOOLS::Vec4D & mom);
     void      UpdateSpectator(const ATOOLS::Vec4D & clumom);
+    std::vector<double> variation_weights;
+    std::vector<double> tmp_variation_weights;
+
   public:
     Gluon_Splitter(std::list<Cluster *> * cluster_list,
-		   Soft_Cluster_Handler * softclusters) :
-      Splitter_Base(cluster_list,softclusters) {}
+		   Soft_Cluster_Handler * softclusters,
+		   Flavour_Selector     * flavourselector,
+		   KT_Selector          * ktselector) :
+      Splitter_Base(cluster_list,softclusters,flavourselector,ktselector) {}
     ~Gluon_Splitter();
 
-    void   Init(const bool & isgluon=true);
+    void   Init();
+    double FragmentationFunction(double z, double zmin, double zmax, double a);
+    double FragmentationFunctionProb(double z, double zmin, double zmax, double a);
     double WeightFunction(const double & z,
 			  const double & zmin=0.,const double & zmax=1.,
 			  const unsigned int & cnt=0);
     inline void GetLast(double & lastmass, bool & isB, bool & isC) {
       lastmass = m_lastmass; isB = m_lastB; isC = m_lastC;
     }
+    void   accept_splitting() {
+      for(int i{0}; i<variation_weights.size(); ++i)
+	variation_weights[i] *= tmp_variation_weights[i];
+    }
+
+    void reset_var_weights() {
+      std::fill(tmp_variation_weights.begin(), tmp_variation_weights.end(), 1);
+    }
+
+    std::vector<double>& get_variationweights() {
+      return variation_weights;
+    };
+
+    void reset_variationweights(int nvars) {
+      tmp_variation_weights.resize(nvars);
+      variation_weights.resize(nvars);
+      // reset weights and Splitter_base weight
+      std::fill(variation_weights.begin(), variation_weights.end(), 1);
+    };
+
+    void z_rejected(const double, const double&, const double&, const double&,
+		    const unsigned int&) override;
+
+    void z_accepted(const double, const double&, const double&, const double&,
+		    const unsigned int& ) override;
+
   };
 }
 

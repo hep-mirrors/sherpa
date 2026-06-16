@@ -19,9 +19,9 @@
 namespace AHADIC {
   class Ahadic : public ATOOLS::Fragmentation_Base {
   private:
-    std::list<Singlet *>        m_singlet_list; 
-    std::list<Cluster *>        m_cluster_list; 
-    std::list<Proto_Particle *> m_hadron_list; 
+    std::list<Singlet *>        m_singlet_list;
+    std::list<Cluster *>        m_cluster_list;
+    std::list<Proto_Particle *> m_hadron_list;
 
     Soft_Cluster_Handler   m_softclusters;
     Beam_Particles_Shifter m_beamparticles;
@@ -29,8 +29,10 @@ namespace AHADIC {
     Singlet_Checker        m_singletchecker;
     Gluon_Decayer          m_gluondecayer;
     Cluster_Decayer        m_clusterdecayer;
+    Flavour_Selector       m_flavourselector;
+    KT_Selector            m_ktselector;
 
-    ATOOLS::Vec4D m_totmom; 
+    ATOOLS::Vec4D m_totmom;
 
     bool ExtractSinglets(ATOOLS::Blob * blob);
     bool ShiftBeamParticles();
@@ -44,6 +46,10 @@ namespace AHADIC {
 
     bool SanityCheck(ATOOLS::Blob * blob,double norm2);
     void CleanUp(ATOOLS::Blob * blob);
+
+    std::vector<double> sum_raw_weights;
+    int n_hads {0};
+    double m_clip_factor {100.0};
   public:
     Ahadic(std::string shower);
     ~Ahadic();

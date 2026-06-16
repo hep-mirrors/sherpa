@@ -8,9 +8,13 @@ using namespace ATOOLS;
 using namespace std;
 
 Splitter_Base::Splitter_Base(list<Cluster *> * cluster_list,
-			     Soft_Cluster_Handler * softclusters) :
+			     Soft_Cluster_Handler * softclusters,
+			     Flavour_Selector     * flavourselector,
+			     KT_Selector          * ktselector) :
   p_cluster_list(cluster_list), p_softclusters(softclusters),
-  m_ktorder(false), m_ktfac(1.),
+  p_flavourselector(flavourselector),
+  p_ktselector(ktselector),
+  m_ktorder(false),
   m_attempts(100),
   m_analyse(false)
 { }
@@ -28,27 +32,44 @@ Splitter_Base::~Splitter_Base() {
   m_histograms.clear();
 }
 
-void Splitter_Base::Init(const bool & isgluon) {
+void Splitter_Base::Init() {
   p_singletransitions = hadpars->GetSingleTransitions();
   p_doubletransitions = hadpars->GetDoubleTransitions();
   p_constituents      = hadpars->GetConstituents();
-  m_flavourselector.InitWeights();
+
   m_ktorder  = (hadpars->Switch("KT_Ordering")>0);
   m_ktmax    = hadpars->Get("kT_max");
-  m_ktselector.Init(isgluon);
-  m_zselector.Init(this);
-  m_minmass  = m_flavourselector.MinimalMass();
+  m_minmass  = p_flavourselector->MinimalMass();
 }
 
 bool Splitter_Base::
 operator()(Proto_Particle * part1,Proto_Particle * part2,
 	   Proto_Particle * part3) {
-  if (!InitSplitting(part1,part2,part3)) {
+  if (!InitSplitting(part1,part2,part3))
     return false;
+
+  p_flavourselector->reset_var_weights();
+
+  for(size_t attempts(0); attempts<m_attempts; ++attempts) {
+    reset_var_weights();
+
+    // perform cluster splitting
+    PopFlavours();
+    DetermineMinimalMasses();
+    if(!MakeTransverseMomentum()) continue;
+    if(!MakeLongitudinalMomenta())
+      continue;
+    if(!CheckKinematics())
+      continue;
+    if(!FillParticlesInLists())
+      continue;
+
+    // if everything was successful, accept weights and go on
+    accept_splitting();
+    p_flavourselector->accept_splitting();
+    return true;
   }
-  size_t attempts(m_attempts);
-  do { attempts--; } while(attempts>0 && !MakeSplitting());
-  return (attempts>0);
+  return false;
 }
 
 bool Splitter_Base::
@@ -103,20 +124,41 @@ void Splitter_Base::ConstructPoincare() {
   Vec4D mom1(p_part[0]->Momentum());
   m_boost = Poincare(m_Qvec);
   m_boost.Boost(mom1);
-  m_rotat = Poincare(mom1,m_E*s_AxisP); 
+  m_rotat = Poincare(mom1,m_E*s_AxisP);
 }
 
 bool Splitter_Base::MakeSplitting() {
-  PopFlavours();
-  DetermineMinimalMasses();
-  return (MakeKinematics() && FillParticlesInLists());
+  // insert do while loop
+  int n_tries {0};
+  bool succ {false};
+  do {
+    n_tries++;
+    PopFlavours();
+    DetermineMinimalMasses();
+    if(!MakeTransverseMomentum()) continue;
+    if(!MakeLongitudinalMomenta())
+      continue;
+    if(!CheckKinematics())
+      continue;
+    if(!FillParticlesInLists())
+      continue;
+    succ = true;
+    break;
+    // // once one of them returns false, the others should execute
+    // if(!MakeLongitudinalMomenta())
+    //   return false;
+  } while ( (n_tries < 200) );
+  // if(!CheckKinematics())
+  //   return false;
+  // if(!FillParticlesInLists())
+  //   return false;
+  return succ;
 }
 
 void Splitter_Base::PopFlavours() {
   // Here we should set vetodi = false -- but no heavy baryons (yet)
-  Flavour flav    = m_flavourselector(m_Emax/2.,false);
-  // m_barrd = true  if part1 = AntiQuark or DiQuark
-  // m_barrd = false if part1 = Quark or AntiDiQuark
+
+  Flavour flav    = (*p_flavourselector)(m_Emax,false);
   m_newflav[0]    = m_barrd?flav:flav.Bar();
   m_newflav[1]    = m_newflav[0].Bar();
   m_popped_mass   = p_constituents->Mass(flav);
@@ -160,30 +202,46 @@ void Splitter_Base::DetermineMinimalMasses() {
   }
 }
 
-bool Splitter_Base::MakeKinematics() {
-  MakeTransverseMomentum();
-  return (MakeLongitudinalMomenta() && CheckKinematics());
-}
-
-void Splitter_Base::MakeTransverseMomentum() {
-  m_ktfac  = Max(1.,m_Q2/(4.*m_minQ[0]*m_minQ[1]));
+bool Splitter_Base::MakeTransverseMomentum() {
   m_kt2max = Min(p_part[0]->KT2_Max(),p_part[1]->KT2_Max());
   double ktmax  = Min(m_ktmax,
 		      (m_ktorder?
 		       Min(sqrt(m_kt2max),(m_Emax-2.*m_popped_mass)/2.):
 		       (m_Emax-2.*m_popped_mass)/2.));
-  // have to make this a parameter for the beam breakup?
-  //if (p_part[0]->IsBeam() || p_part[1]->IsBeam()) ktmax = Min(5.0,m_ktmax);
   if (ktmax<0.) {
     msg_Error()<<METHOD<<" yields error ktmax = "<<ktmax
 	       <<" from "<<m_Emax<<", "<<m_popped_mass<<" vs. "
 	       <<" min = "<<m_minmass<<".\n";
-    abort();
+    return false;
   }
-  m_ktfac = 1.;
-  bool islead = p_part[0]->IsLeading() || p_part[1]->IsLeading();
-  m_kt    = m_ktselector(ktmax,m_ktfac);
+  m_kt = (*p_ktselector)(ktmax);
+  if (m_kt < 0.) return false;
   m_kt2   = m_kt*m_kt;
-  m_phi   = 2.*M_PI*ran->Get();
-  m_ktvec = m_kt * Vec4D(0.,cos(m_phi),sin(m_phi),0.);
+  const double phi   = 2.*M_PI*ran->Get();
+  m_ktvec = m_kt * Vec4D(0.,cos(phi),sin(phi),0.);
+  return true;
+}
+
+double Splitter_Base::select_z(const double zmin, const double zmax,
+			       const unsigned int cnt) {
+  static const int max_iterations = 100000;
+  double z, z_range {zmax-zmin};
+  for (int it{0}; it<max_iterations; ++it) {
+    z = zmin+ran->Get()*z_range;
+    auto sel_wgt = WeightFunction(z,zmin,zmax,cnt);
+    if(ran->Get() < sel_wgt) {
+      z_accepted(sel_wgt, z,zmin,zmax,cnt);
+      return z;
+    }
+    z_rejected(sel_wgt, z,zmin,zmax,cnt);
+  }
+  msg_Error() << METHOD << ": z selection failed after " << max_iterations
+              << " iterations in [" << zmin << ", " << zmax << "]\n";
+  return -1.;
+}
+
+void Splitter_Base::reset_var_weights() {};
+void Splitter_Base::accept_splitting() {};
+bool Splitter_Base::MakeKinematics() {
+  return MakeTransverseMomentum() && MakeLongitudinalMomenta() && CheckKinematics();
 }
