@@ -9,16 +9,17 @@ using namespace ATOOLS;
 using namespace std;
 
 Cluster_Decayer::Cluster_Decayer(list<Cluster *> * cluster_list,
-			     Soft_Cluster_Handler * softclusters) :
+				 Soft_Cluster_Handler * softclusters,
+				 Flavour_Selector     * flavourselector,
+				 KT_Selector          * ktselector) :
   p_cluster_list(cluster_list), p_softclusters(softclusters),
-  m_splitter(Cluster_Splitter(cluster_list,softclusters))
+  m_splitter(Cluster_Splitter(cluster_list,softclusters,flavourselector,ktselector))
 {}
 
 Cluster_Decayer::~Cluster_Decayer() {}
 
 void Cluster_Decayer::Init() {
   m_splitter.Init();
-  //Test(10.,Flavour(kf_c),true);
 }
 
 void Cluster_Decayer::Reset() {}
@@ -36,10 +37,14 @@ bool Cluster_Decayer::operator()(bool breakit) {
 
 bool Cluster_Decayer::Treat(Cluster * cluster) {
   bool mustdecay = p_softclusters->MustPromptDecay(cluster);
-  if (!mustdecay && m_splitter((*cluster)[0],(*cluster)[1])) {
-    delete cluster;
-    return true;
+  if (!mustdecay) {
+    m_splitter.m_nsplit = cluster->m_nsplit;
+    if(m_splitter((*cluster)[0],(*cluster)[1])) {
+      delete cluster;
+      return true;
+    }
   }
+
   switch (p_softclusters->Treat(cluster,true)) {
   case -1:
     // cluster cannot decay into anything - return false (triggers new event)

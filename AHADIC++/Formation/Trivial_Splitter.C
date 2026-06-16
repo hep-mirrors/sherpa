@@ -7,16 +7,17 @@ using namespace AHADIC;
 using namespace ATOOLS;
 using namespace std;
 
-Trivial_Splitter::Trivial_Splitter() {}
+Trivial_Splitter::Trivial_Splitter(Flavour_Selector * flavourselector,
+				   KT_Selector      * ktselector) :
+  p_flavourselector(flavourselector),
+  p_ktselector(ktselector)
+{}
 
 void Trivial_Splitter::Init() {
   p_constituents = hadpars->GetConstituents();
   // minmass is the mass of the lightest constituent (usually u/d quark)
-  m_kt2max       = sqr(hadpars->Get("kT_max")); 
+  m_kt2max       = sqr(hadpars->Get("kT_max"));
   m_minmass      = p_constituents->MinMass();
-  m_flavourselector.InitWeights();
-  m_ktselector.Init(false);
-  m_zselector.Init();
 }
 
 bool Trivial_Splitter::operator()(Proto_Particle * part1,
@@ -27,7 +28,7 @@ bool Trivial_Splitter::operator()(Proto_Particle * part1,
   SelectFlavour();
   FixTransverseMomentum(true);
   ConstructRescueMomenta();
-  
+
   p_part1->SetFlavour(m_newflav.Bar());
   p_part1->SetMomentum(m_q1mom);
   p_part2->SetFlavour(m_newflav);
@@ -64,7 +65,7 @@ bool Trivial_Splitter::InitKinematics(bool rescue) {
   Vec4D mom1  = p_part1->Momentum(), mom2 = p_part2->Momentum();
   m_boost     = Poincare(mom1+mom2);
   m_boost.Boost(mom1);
-  m_rotat     = Poincare(mom1,m_E*s_AxisP); 
+  m_rotat     = Poincare(mom1,m_E*s_AxisP);
   if (rescue) return (m_E>m_minmass);
   if (m_E<4.*m_minmass) return false;
   double R2   = 3.*sqr(m_minmass);
@@ -72,21 +73,23 @@ bool Trivial_Splitter::InitKinematics(bool rescue) {
   double arg2 = sqr(1.-R2/m_Q2)-4.*sqr(m_minmass)/m_Q2;
   double zmin = Max(1.+R2/m_Q2-sqrt(arg2), 1.-sqrt(arg1))/2.;
   double zmax = Min(1.-R2/m_Q2+sqrt(arg2), 1.+sqrt(arg1))/2.;
-  
+
   if (m_E<m_minmass || zmin>zmax || zmax<0.) return false;
   return true;
 }
 
 void Trivial_Splitter::SelectFlavour() {
-  m_newflav      = m_flavourselector(m_E,true);
+  m_newflav      = (*p_flavourselector)(m_E,true);
+  p_flavourselector->accept_splitting();
   m_popped_mass  = p_constituents->Mass(m_newflav);
   m_popped_mass2 = sqr(m_popped_mass);
 }
 
 void Trivial_Splitter::FixTransverseMomentum(bool rescue) {
   // for no transverse momentum replace m_ktmax = 0.
+  //std::cout << "Trivial_Splitter\n";
   m_ktmax = rescue? 0.: m_E-m_popped_mass-m_minmass/2.;
-  m_kt    = m_ktmax>0.? m_ktselector(m_ktmax) : 0.;
+  m_kt    = m_ktmax>0.? (*p_ktselector)(m_ktmax) : 0.;
   m_kt2   = m_kt*m_kt;
   m_phi   = 2.*M_PI*ran->Get();
   m_ktvec = m_kt * Vec4D(0.,cos(m_phi),sin(m_phi),0.);
@@ -103,9 +106,9 @@ bool Trivial_Splitter::FixBetaAndZ() {
 	       <<m_popped_mass<<" + "<<m_kt<<"\n";
     return false;
   }
-  double zmin = Max(1+R2/m_Q2-sqrt(arg2), 1.-sqrt(arg1))/2.;
-  double zmax = Min(1-R2/m_Q2+sqrt(arg2), 1.+sqrt(arg1))/2.;
-  m_z    = m_zselector(zmin,zmax);
+  const double zmin = Max(1+R2/m_Q2-sqrt(arg2), 1.-sqrt(arg1))/2.;
+  const double zmax = Min(1-R2/m_Q2+sqrt(arg2), 1.+sqrt(arg1))/2.;
+  m_z    = zmin+ran->Get()*(zmax-zmin);;
   m_beta = 1.-mt2/(m_Q2*m_z*(1.-m_z));
   return true;
 }
@@ -116,7 +119,7 @@ bool Trivial_Splitter::ConstructMomenta() {
   m_q2mom  = m_E*((1.-m_z)*s_AxisP + mt2_tilde/(1.-m_z)*s_AxisM)+m_ktvec;
   m_glumom = m_E*m_beta*s_AxisM;
   return true;
-}  
+}
 
 bool Trivial_Splitter::FixTrialKinematics() {
   FixTransverseMomentum();
@@ -129,7 +132,7 @@ bool Trivial_Splitter::FixTrialKinematics() {
   m_boost.BoostBack(m_glumom);
   return true;
 }
-  
+
 bool Trivial_Splitter::CheckKinematics() {
   // check if (last quark--gluon) pairing is heavy enough.
   return (sqrt((m_spectmom+m_q2mom).Abs()) > m_popped_mass + 2.*m_minmass);
@@ -142,7 +145,7 @@ bool Trivial_Splitter::Rescue() {
   SelectFlavour();
   FixTransverseMomentum(true);
   ConstructRescueMomenta();
-  
+
   p_part1->SetFlavour(m_newflav.Bar());
   p_part1->SetMomentum(m_q1mom);
   p_part2->SetFlavour(m_newflav);

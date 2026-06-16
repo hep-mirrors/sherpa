@@ -25,7 +25,7 @@ Cluster::Cluster(Proto_Particle * part1,Proto_Particle * part2) :
   m_parts.second = barit?part1:part2;
   s_clusters.insert(this);
 }
-    
+
 Cluster::~Cluster() {
   if (s_clusters.find(this)==s_clusters.end()) {
     msg_Error()<<"Did not find cluster ["<<this<<"]\n";
@@ -63,7 +63,7 @@ namespace AHADIC {
 
 std::ostream & operator<<(std::ostream & s, const Cluster_List & cl) {
   Vec4D totmom(0.,0.,0.,0.);
-  for (Cluster_Const_Iterator cit=cl.begin(); cit!=cl.end(); ++cit) 
+  for (Cluster_Const_Iterator cit=cl.begin(); cit!=cl.end(); ++cit)
     totmom += (*cit)->Momentum();
   s<<"Cluster List with "<<cl.size()<<" elements, mom = "<<totmom<<":\n";
   for (Cluster_Const_Iterator cit=cl.begin(); cit!=cl.end(); ++cit) {

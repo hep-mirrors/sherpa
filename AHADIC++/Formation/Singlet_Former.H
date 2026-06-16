@@ -11,7 +11,7 @@ namespace AHADIC {
     std::list<Singlet *>        * p_singlets;
     std::list<ATOOLS::Particle *> m_colparts;
     double m_kt2max;
-    
+
     void ExtractOutgoingCols(ATOOLS::Blob * blob);
     Singlet          * MakeAnother();
     ATOOLS::Particle * FindStart();

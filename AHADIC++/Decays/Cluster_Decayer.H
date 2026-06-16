@@ -9,20 +9,28 @@
 namespace AHADIC {
   class Cluster_Decayer {
   private:
-    std::list<Cluster *> * p_cluster_list; 
+    std::list<Cluster *> * p_cluster_list;
     Soft_Cluster_Handler * p_softclusters;
-    Cluster_Splitter m_splitter;
+    Cluster_Splitter       m_splitter;
 
     bool Treat(Cluster * cluster);
     void Test(const double & Q, const ATOOLS::Flavour & flav,
 	      bool clustermasses);
   public:
     Cluster_Decayer(std::list<Cluster *> * cluster_list,
-		    Soft_Cluster_Handler * softclusters);
+		    Soft_Cluster_Handler * softclusters,
+		    Flavour_Selector     * flavourselector,
+		    KT_Selector          * ktselector);
     ~Cluster_Decayer();
     void Init();
     void Reset();
-    
+    std::vector<double>& get_variationweights() {
+      return m_splitter.get_variationweights();
+    };
+    void reset_variationweights(int nvars) {
+      m_splitter.reset_variationweights(nvars);
+    };
+
     bool operator()(bool breakit=false);
   };
 }

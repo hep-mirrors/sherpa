@@ -10,10 +10,13 @@ using namespace ATOOLS;
 using namespace std;
 
 Gluon_Decayer::Gluon_Decayer(list<Cluster *> * cluster_list,
-			     Soft_Cluster_Handler * softclusters) :
+			     Soft_Cluster_Handler * softclusters,
+			     Flavour_Selector     * flavourselector,
+			     KT_Selector          * ktselector) :
   Singlet_Tools(),
   p_cluster_list(cluster_list), p_softclusters(softclusters),
-  m_splitter(Gluon_Splitter(cluster_list,softclusters)),
+  m_splitter(Gluon_Splitter(cluster_list,softclusters,flavourselector,ktselector)),
+  m_breaker(Trivial_Splitter(flavourselector,ktselector)),
   m_analyse(true)
 {
   if (m_analyse) {
@@ -149,6 +152,10 @@ int Gluon_Decayer::Step(Proto_Particle * part1,Proto_Particle * part2,
   assert(part2 != nullptr);
   Vec4D momsave1(part1->Momentum()), momsave2(part2->Momentum());
   if (CheckMass(part1,part2) && m_splitter(part1,part2,part3)) {
+    double mass = 0;
+    bool isB = false, isC = false;
+    m_splitter.GetLast(mass,isB,isC);
+    //std::cout << "DEBUG: GLUONMASS: " << mass << std::endl;
     if (m_analyse) {
       m_Nclusters++;
       double mass = 0;
@@ -218,6 +225,11 @@ bool Gluon_Decayer::Trivial(Proto_Particle * part1,Proto_Particle * part2,
     double y = cluster->Momentum().Y();
     m_histos[string("Y_asym_1")]->Insert(dabs(y),(y>0.?1.:-1.));
   }
+  cluster->m_nsplit = 0;
+  //std::cout << "DEBUG: CLUSTER_MASS: " << cluster->m_nsplit << " "
+  //<< cluster->Momentum().Abs2() << std::endl;
+  cluster->m_nsplit = 1;
+
   p_singlet->pop_front();
   p_singlet->pop_back();
   switch (p_softclusters->Treat(cluster,force)) {
