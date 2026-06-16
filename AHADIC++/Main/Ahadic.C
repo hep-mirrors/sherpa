@@ -26,6 +26,8 @@ Ahadic::Ahadic(string shower) :
   hadpars = new Hadronisation_Parameters();
   hadpars->Init(shower);
 
+  m_clip_factor = hadpars->Get("reweight_clip_factor");
+
   m_flavourselector.Init();
   m_sformer.Init();
   m_beamparticles.Init();
@@ -135,10 +137,14 @@ Return_Value::code Ahadic::Hadronize(Blob_List * blobs)
 	const std::string base_name {"v"+std::to_string(i)};
 	const std::string name = base_name + "." + std::to_string(4);
 	sum_raw_weights[i] += wgt;
-	const double running_mean = (n_hads > 100)
-	  ? sum_raw_weights[i] / n_hads
-	  : 1.0;
-	wgtmap["AHADIC"][name] = std::min(wgt, 100.0 * running_mean);
+	if (m_clip_factor > 0.) {
+	  const double running_mean = (n_hads > 100)
+	    ? sum_raw_weights[i] / n_hads
+	    : 1.0;
+	  wgtmap["AHADIC"][name] = std::min(wgt, m_clip_factor * running_mean);
+	} else {
+	  wgtmap["AHADIC"][name] = wgt;
+	}
       }
     }
   } else {

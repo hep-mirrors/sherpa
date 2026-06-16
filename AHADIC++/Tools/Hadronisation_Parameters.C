@@ -123,6 +123,11 @@ void Hadronisation_Parameters::ReadSplittingParameters()
   m_switchmap["RemnantSplittingForm"] =
     s["REMNANT_CLUSTER_MODE"].SetDefault(2).Get<int>();
 
+  m_switchmap["ReweightMaxNSplit"] =
+    s["REWEIGHT_MAX_NSPLIT"].SetDefault(4).Get<int>();
+  m_parametermap[string("reweight_clip_factor")] =
+    s["REWEIGHT_CLIP_FACTOR"].SetDefault(100.0).Get<double>();
+
   // generic parameter for non-perturbative transverse momentum
   m_parametermap_vecs[string("kT_0")] =
     s["KT_0"].SetDefault<double>({1.00}).GetVector<double>();
@@ -222,8 +227,7 @@ void Hadronisation_Parameters::CheckAndPad() {
   // modify the parameter maps
   // this can only be done *after* all of the padding etc has been taken place
   for (int i{0}; i<m_parametermap_vecs[string("Strange_fraction")].size(); ++i) {
-    double strange = m_parametermap_vecs[string("Strange_fraction")][i];
-    strange = 0.2;
+    const double strange = m_parametermap_vecs[string("Strange_fraction")][i];
     m_parametermap_vecs[string("P_qs_by_P_qq")][i] *= strange;
     m_parametermap_vecs[string("P_ss_by_P_qq")][i] *= sqr(strange);
   }

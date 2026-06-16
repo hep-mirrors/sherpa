@@ -31,6 +31,7 @@ void Cluster_Splitter::Init() {
   Splitter_Base::Init();
   m_defmode  = hadpars->Switch("ClusterSplittingForm");
   m_beammode = hadpars->Switch("RemnantSplittingForm");
+  m_reweight_max_nsplit = hadpars->Switch("ReweightMaxNSplit");
 
   m_alpha[0] = hadpars->GetVec("alphaL");
   m_beta[0]  = hadpars->GetVec("betaL");
@@ -299,8 +300,6 @@ double Cluster_Splitter::FragmentationFunction(double z, double zmin, double zma
       return pow(_z, alpha) * pow(1.-_z, beta) * exp(-c / _z);
     };
     double norm = std::max(g(zmin), g(zmax));
-    // interior critical point from d/dz[log g] = alpha/z - beta/(1-z) + c/z^2 = 0
-    // => (alpha+beta)*z^2 - (alpha-c)*z - c = 0
     const double A = alpha + beta;
     if (std::abs(A) > 1e-10) {
       const double disc = sqr(alpha - c) + 4. * A * c;
@@ -311,8 +310,12 @@ double Cluster_Splitter::FragmentationFunction(double z, double zmin, double zma
             norm = std::max(norm, g(z_crit));
         }
       }
+    } else if (std::abs(alpha - c) > 1e-10) {
+      const double z_crit = c / (c - alpha);
+      if (z_crit > zmin && z_crit < zmax)
+        norm = std::max(norm, g(z_crit));
     }
-    return g(z) / norm;
+    return std::min(1.0, g(z) / norm);
   }
 
   // f(z) = z^alpha * (1-z)^beta
@@ -326,7 +329,7 @@ double Cluster_Splitter::FragmentationFunction(double z, double zmin, double zma
     if (z_mode > zmin && z_mode < zmax)
       norm = std::max(norm, f(z_mode));
   }
-  return f(z) / norm;
+  return std::min(1.0, f(z) / norm);
 #endif
 }
 
@@ -342,11 +345,11 @@ void Cluster_Splitter::z_rejected(const double wgt, const double & z,
 #if AHADIC_FRAGMENTATION_FUNCTION == 1
   return;
 #endif
+  if(m_reweight_max_nsplit >= 0 && m_nsplit >= m_reweight_max_nsplit) return;
   const auto type = m_type[cnt];
   for (int i{0}; i<m_alpha[0].size(); i++) {
     const auto wgt_new = FragmentationFunction(z,zmin,zmax,cnt,i);
-    if(m_nsplit < 4)
-      tmp_variation_weights[i] *= (1.-wgt_new) / (1.-wgt);
+    tmp_variation_weights[i] *= (1.-wgt_new) / (1.-wgt);
   }
 }
 
@@ -359,6 +362,7 @@ void Cluster_Splitter::z_accepted(const double wgt, const double & z,
 #else
   const double wgt_old = wgt;
 #endif
+  if(m_reweight_max_nsplit >= 0 && m_nsplit >= m_reweight_max_nsplit) return;
   for (int i{0}; i<m_alpha[0].size(); i++) {
 #if AHADIC_FRAGMENTATION_FUNCTION == 1
     const auto wgt_new = FragmentationFunctionProb(z,zmin,zmax,m_gamma[type][i],m_kt02[i]);
@@ -366,7 +370,7 @@ void Cluster_Splitter::z_accepted(const double wgt, const double & z,
     const auto wgt_new = FragmentationFunction(z,zmin,zmax,cnt,i);
 #endif
     const auto frac = wgt_new / wgt_old;
-    if(!std::isnan(frac) && m_nsplit < 4)
+    if(!std::isnan(frac))
       tmp_variation_weights[i] *= frac;
   }
 }

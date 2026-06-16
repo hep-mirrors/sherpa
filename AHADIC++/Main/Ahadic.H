@@ -49,6 +49,7 @@ namespace AHADIC {
 
     std::vector<double> sum_raw_weights;
     int n_hads {0};
+    double m_clip_factor {100.0};
   public:
     Ahadic(std::string shower);
     ~Ahadic();

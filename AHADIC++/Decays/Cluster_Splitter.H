@@ -15,6 +15,7 @@ namespace AHADIC {
     double m_alpha_min[4], m_beta_min[4], m_gamma_min[4];
 
     int m_type[2];
+    int m_reweight_max_nsplit;
     std::vector<double> m_kt02;
     double m_R2[2], m_mean[2], m_sigma[2], m_m2min[2], m_masses;
 
