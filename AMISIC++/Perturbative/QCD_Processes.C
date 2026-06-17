@@ -641,18 +641,17 @@ XS_gg_g3S1::XS_gg_g3S1(const ATOOLS::Flavour_Vector& flavs): XS_Base()
   ATOOLS::Flavour((kfc / 10) % 10).Mass(true);
   m_mass2 = sqr(m_mass);
   
-  double LDME = GetLDME(fl[m_S].Kfcode());
-  m_R02 = LDME *2.*M_PI/(3.*3.);
-  m_pref   = 1./2.*sqr(4.*M_PI)*m_R02/m_mass;
+  m_R02 =  GetLDME(fl[m_S].Kfcode())*2.*M_PI/(3.*3.);
 }
 
 void XS_gg_g3S1::Calc(const double & s,const double & t,const double & u) 
 {
-  double M2 = m_mass2;
+  double M2 = s+t+u;
   double sM2 = sqr(s-M2);
   double tM2 = sqr(t-M2);
   double uM2 = sqr(u-M2);
   double all = sqr(s)/(uM2*tM2)+sqr(t)/(uM2*sM2)+sqr(u)/(sM2*tM2);
+  m_pref   = (5./9.)*sqr(4.*M_PI)*sqrt(M2)*m_R02;
   m_lastxs = m_pref*all;
 }
 
