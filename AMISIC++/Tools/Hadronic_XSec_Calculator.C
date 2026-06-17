@@ -102,13 +102,17 @@ void Hadronic_XSec_Calculator::FixType() {
   else if (m_flavs[0].IsBaryon()) {
     if      (m_flavs[1].IsPhoton()) m_type = xsec_type::baryon_photon;
     else if (m_flavs[1].IsMeson())  m_type = xsec_type::baryon_meson;
-    else if (m_flavs[1].IsBaryon()) m_type = xsec_type::baryon_baryon;
+    else if (m_flavs[1].IsBaryon()) {
+      m_type = xsec_type::baryon_baryon;
+      // accounting for different Regge contribution for p-pbar scattering.
+      if (m_flavs[0].IsNucleon() && m_flavs[1].IsNucleon() &&
+	  (m_flavs[0].IsAnti()!=m_flavs[1].IsAnti()) )
+	m_Ypp = 98.39;
+    }
   }
   if (m_type==xsec_type::none)
     THROW(fatal_error,"Unknown type of hadronic cross section.");
 }
-
-//if (m_flavs[0].IsAnti() != m_flavs[1].IsAnti()) m_Ypp = 98.39;
 
 void Hadronic_XSec_Calculator::TestXSecs() {
   std::list<double> Es = { 23.5, 62.5, 546., 1800., 16000., 40000. };
