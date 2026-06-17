@@ -33,6 +33,8 @@ namespace {
     const long int KS   =  static_cast<long int>(kf_K_S);
     const long int KL   =  static_cast<long int>(kf_K_L);
 
+    // The pion currents use the identical particles in slots q1,q2 and the
+    // odd-charge pion in q3; the KS-to-METOOLS basis conversion relies on it.
     if (flavs[indices[0]].Kfcode()==kf_pi &&
         flavs[indices[1]].Kfcode()==kf_pi &&
         flavs[indices[2]].Kfcode()==kf_pi_plus) {
@@ -40,7 +42,9 @@ namespace {
     }
     if (flavs[indices[0]].Kfcode()==kf_pi_plus &&
         flavs[indices[1]].Kfcode()==kf_pi_plus &&
-        flavs[indices[2]].Kfcode()==kf_pi_plus) {
+        flavs[indices[2]].Kfcode()==kf_pi_plus &&
+        SignedKfcode(flavs[indices[0]])==SignedKfcode(flavs[indices[1]]) &&
+        SignedKfcode(flavs[indices[0]])==-SignedKfcode(flavs[indices[2]])) {
       return FF_0_PPP_mode::piM_piP_piP;
     }
 
@@ -114,15 +118,10 @@ FF_RChiPT(const double & s123,const double & s12,const double & s13,
 //////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////
 //
-// {pi pi pi}^+, {K pi pi}^+, {K K pi}^+  form factors.
-// Todos:
-//  - add more theory - i.e. Gounaris-Sakurai forms and variations of RChiPT
-//  - mirror parameters to run card/decay yaml files
-//
-// Form factors from:
-// - KS
-//     * pi pi pi from
-// - none, 0: no form factor
+// Three-pseudoscalar tau currents:
+// - pi pi pi channels use a Kuhn-Santamaria-style a1 -> rho pi current.
+// - strange PPP channels use the Finkemeier-Mirkes 1995 form factors.
+// The RChiPT hook exists in the base interface but is not implemented here.
 //
 //////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////
@@ -190,9 +189,12 @@ void F1_0_PiPlusPiZeroPiZero::FixParameters(const FF_Parameters & params) {
     }
 
     if (m_ffmodel==ff_model::KS) {
-      m_gamma = Complex(-0.14500,0.0000);
-      m_delta = Complex( 0.00000,0.0000);
-      m_alpha = Complex( 0.00185,0.0000);
+      m_gamma = Complex((*params.p_model)("KS3Pi_gamma_rho1450", -0.14500),
+                        (*params.p_model)("KS3Pi_gamma_rho1450_im", 0.0000));
+      m_delta = Complex((*params.p_model)("KS3Pi_delta_rho1700",   0.00000),
+                        (*params.p_model)("KS3Pi_delta_rho1700_im", 0.0000));
+      m_alpha = Complex((*params.p_model)("KS3Pi_alpha_rho_omega",  0.00185),
+                        (*params.p_model)("KS3Pi_alpha_rho_omega_im", 0.0000));
     }
     else if (m_ffmodel==ff_model::RChiPT) {
       m_FV = (*params.p_model)("RChiPT_FV", sqrt(2.)*m_fpi);
@@ -228,6 +230,8 @@ void F1_0_PiPlusPiZeroPiZero::Construct() {
         new BreitWigner(LineShapes->Get(Flavour(kf_rho_770_plus)));
       Propagator_Base * rho1450 =
         new BreitWigner(LineShapes->Get(Flavour(kf_rho_1450_plus)));
+      Propagator_Base * rho1700 =
+        new BreitWigner(LineShapes->Get(Flavour(kf_rho_1700_plus)));
 
       p_a1s = new Summed_Propagator();
       p_a1s->Add(a11260, Complex(1.,0.));
@@ -235,6 +239,7 @@ void F1_0_PiPlusPiZeroPiZero::Construct() {
       p_rhos = new Summed_Propagator();
       p_rhos->Add(rho770,  Complex(1.,0.));
       p_rhos->Add(rho1450, m_gamma);
+      p_rhos->Add(rho1700, m_delta);
     }
     else if (m_mode==FF_0_PPP_mode::piM_piP_piP) {
       Propagator_Base * a11260 =
@@ -246,7 +251,9 @@ void F1_0_PiPlusPiZeroPiZero::Construct() {
       Propagator_Base * omega782 =
         new BreitWigner(LineShapes->Get(Flavour(kf_omega_782)));
       Propagator_Base * rho1450 =
-        new BreitWigner(LineShapes->Get(Flavour(kf_rho_1450_plus)));
+        new BreitWigner(LineShapes->Get(Flavour(kf_rho_1450)));
+      Propagator_Base * rho1700 =
+        new BreitWigner(LineShapes->Get(Flavour(kf_rho_1700)));
 
       p_a1s = new Summed_Propagator();
       p_a1s->Add(a11260, Complex(1.,0.));
@@ -263,6 +270,7 @@ void F1_0_PiPlusPiZeroPiZero::Construct() {
       p_rhos = new Summed_Propagator();
       p_rhos->Add(rho,     Complex(1.,0.));
       p_rhos->Add(rho1450, m_gamma);
+      p_rhos->Add(rho1700, m_delta);
     }
   }
 }
@@ -308,11 +316,16 @@ FF_KS(const double & s123,const double & s12,const double & s13,
       const double & s23) {
   if (p_a1s==NULL || p_rhos==NULL) return Complex(0.,0.);
 
-  if (m_isF2) {
-    return m_norm * (*p_a1s)(s123) * (*p_rhos)(s12);
-  }
+  const Complex a1 = (*p_a1s)(s123);
+  // KS writes the axial current in the basis
+  // (p1-p3)_T F1_KS + (p2-p3)_T F2_KS.  VA_0_PiPiPi contracts
+  // form factors with (p2-p1)_T and (p3-p1)_T instead, giving
+  // F_current1 = F2_KS and F_current2 = -F1_KS - F2_KS.
+  const Complex F1_KS = a1 * (*p_rhos)(s13);
+  const Complex F2_KS = a1 * (*p_rhos)(s23);
 
-  return m_norm * (*p_a1s)(s123) * (*p_rhos)(s13);
+  if (m_isF2) return -F1_KS-F2_KS;
+  return F2_KS;
 }
 
 Complex F1_0_PiPlusPiZeroPiZero::
@@ -406,10 +419,10 @@ void F1_0_FM95::FixParameters(const FF_Parameters & params) {
   m_mKstarp = (*params.p_model)("FM95_m_Kstarp",     1.412);
   m_GKstarp = (*params.p_model)("FM95_Gamma_Kstarp", 0.227);
 
-  m_mK1_1400 = (*params.p_model)("FM95_m_K1_1400",     1.402);
-  m_GK1_1400 = (*params.p_model)("FM95_Gamma_K1_1400", 0.174);
-  m_mK1_1270 = (*params.p_model)("FM95_m_K1_1270",     1.270);
-  m_GK1_1270 = (*params.p_model)("FM95_Gamma_K1_1270", 0.090);
+  m_mK1_1400 = (*params.p_model)("FM95_m_K1_1400",     1.463);
+  m_GK1_1400 = (*params.p_model)("FM95_Gamma_K1_1400", 0.300);
+  m_mK1_1270 = (*params.p_model)("FM95_m_K1_1270",     1.254);
+  m_GK1_1270 = (*params.p_model)("FM95_Gamma_K1_1270", 0.260);
 }
 
 void F1_0_FM95::Construct() {

@@ -270,6 +270,38 @@ HADRON_DECAYS:
       #   Status: 2
       #   IntResults: [4.57661e-13, 4.57606e-16, 6.89804e-11]
 
+      # The 3pi form factor expects the identical pions in q1,q2 and the
+      # odd-charge pion in q3; this matches the METOOLS basis conversion.
+      211,-211,-211,16: # pi+ pi- pi- nu_tau
+        BR: [0.0931, 0.0003]
+        ME:
+          - Current_ME:
+              J1:
+                Type: VA_F_F
+                Indices: [4, 0] # neutrino is 4, tau is 0
+                v: 1.
+                a: -1.
+              J2:
+                Type: VA_0_PPP
+                Indices: [3, 2, 1]
+                FORM_FACTOR: 1 # Kuhn-Santamaria style
+        IntResults: [1.9068e-11, 1.90633e-14, 2.76462e-09]
+
+      -211,111,111,16: # pi- pi0 pi0 nu_tau
+        BR: [0.0926, 0.0012]
+        ME:
+          - Current_ME:
+              J1:
+                Type: VA_F_F
+                Indices: [4, 0] # neutrino is 4, tau is 0
+                v: 1.
+                a: -1.
+              J2:
+                Type: VA_0_PPP
+                Indices: [3, 2, 1]
+                FORM_FACTOR: 1 # Kuhn-Santamaria style
+        IntResults: [1.91133e-11, 1.91121e-14, 2.57699e-09]
+
       ######################################################
       # Three pseudoscalars with kaons: Finkemeier-Mirkes
       # hep-ph/9503474, Tables I-III, beta_K* = -0.135.
