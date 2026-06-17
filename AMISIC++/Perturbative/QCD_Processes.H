@@ -65,9 +65,8 @@ namespace AMISIC {
   private:
     size_t m_S;
     double m_alphaS, LDME, m_mass, m_mass2, m_pref;
-    kf_code kfc;
   public:
-    XS_gg_g3S1_oct();
+    XS_gg_g3S1_oct(const ATOOLS::Flavour_Vector & flavs);
     void Calc(const double & s,const double & t,const double & u);
     bool SetColours(const ATOOLS::Flavour_Vector& flavs);
 
@@ -77,7 +76,6 @@ namespace AMISIC {
   private:
     size_t m_S;
     double m_alphaS, m_R02, m_mass, m_mass2, m_pref;
-    kf_code kfc;
   public:
     XS_gg_g3S1(const ATOOLS::Flavour_Vector & flavs);
     void Calc(const double & s,const double & t,const double & u);

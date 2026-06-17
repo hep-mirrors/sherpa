@@ -104,6 +104,14 @@ namespace AMISIC {
     MI_QQ_GGamma_Processes();
     MI_Process * SelectProcess();
   };
+
+  class MI_Quarkonium_Processes: public MI_Process_Group {
+  private:
+    double Coupling() const;
+  public:
+    MI_Quarkonium_Processes();
+    MI_Process * SelectProcess();
+  };
 }
 
 #endif

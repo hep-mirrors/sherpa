@@ -139,10 +139,9 @@ MI_Process * MI_Process_Group::SelectProcess() {
 
 MI_GG_Processes::MI_GG_Processes() :
   MI_Process_Group("MPI_gg_processes"), m_Nqq(0) {
-  XS_Base * gg2gg(new gg_gg()), * gg2qqbar(new gg_qqbar()), *gg2g3S1_oct(new XS_gg_g3S1_oct());
+  XS_Base * gg2gg(new gg_gg()), * gg2qqbar(new gg_qqbar());
   m_me2s.push_back(gg2gg);
   m_me2s.push_back(gg2qqbar);
-  m_me2s.push_back(gg2g3S1_oct);
 
   vector<Flavour> flavs;
   Flavour gluon(kf_gluon);
@@ -157,14 +156,6 @@ MI_GG_Processes::MI_GG_Processes() :
     m_processes.back()->SetME2(gg2qqbar);
     m_Nqq++;
   }
-  flavs[2] = Flavour(9900443); flavs[3] = Flavour(kf_gluon);
-  XS_Base * gg2g3S1 = new XS_gg_g3S1(flavs);
-  m_me2s.push_back(gg2g3S1);
-  m_processes.push_back(new MI_Process(flavs));
-  m_processes.back()->SetME2(gg2g3S1_oct);
-  flavs[2] = Flavour(443); flavs[3] = Flavour(kf_gluon);
-  m_processes.push_back(new MI_Process(flavs));
-  m_processes.back()->SetME2(gg2g3S1);
 }
 
 double MI_GG_Processes::Coupling() const {
@@ -179,11 +170,10 @@ MI_Process * MI_GG_Processes::SelectProcess() {
   mit = m_processes.begin();
   while (tot>0.) {
     tot -= (**mit)();
-    mit++;
-    if (mit==m_processes.end()) {
-      mit--;
+    if (tot <= 0.) {
       break;
     }
+    mit++;
   }
   return (*mit);
 }
@@ -191,6 +181,44 @@ MI_Process * MI_GG_Processes::SelectProcess() {
 // QUARKONIA
 ///////////////////////////////////////////////////////////////////////////////
 
+MI_Quarkonium_Processes::MI_Quarkonium_Processes():
+  MI_Process_Group("MPI_quarkonium_Processes") {
+  vector<Flavour> flavs;
+  //GG->GQQbar
+  Flavour gluon(kf_gluon);
+  for (size_t i=0;i<4;i++) flavs.push_back(gluon);
+  flavs[2] = Flavour(443); flavs[3] = Flavour(kf_gluon);
+  XS_Base * gg2g3S1 = new XS_gg_g3S1(flavs);
+  m_me2s.push_back(gg2g3S1);
+  m_processes.push_back(new MI_Process(flavs));
+  m_processes.back()->SetME2(gg2g3S1);
+  flavs[2] = Flavour(9900443); flavs[3] = Flavour(kf_gluon);
+  XS_Base * gg2g3S1_oct = new XS_gg_g3S1_oct(flavs);
+  m_me2s.push_back(gg2g3S1_oct);
+  m_processes.push_back(new MI_Process(flavs));
+  m_processes.back()->SetME2(gg2g3S1_oct);
+}
+
+double MI_Quarkonium_Processes::Coupling() const {
+  return pow((*p_alphaS)(Max(m_pt02,m_scale)),3);
+}
+
+MI_Process * MI_Quarkonium_Processes::SelectProcess() {
+  double tot  = 0.;
+  list<MI_Process * >::iterator mit;
+  for (mit=m_processes.begin();mit!=m_processes.end();mit++) tot += (**mit)();
+  tot *= ran->Get();
+  mit = m_processes.begin();
+  while (tot>0.) {
+    tot -= (**mit)();
+    if (tot <= 0.) {
+      break;
+    }
+    mit++;
+  }
+  return (*mit);
+  // return m_processes.back();
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 // qqbar and qbarq initiated processes

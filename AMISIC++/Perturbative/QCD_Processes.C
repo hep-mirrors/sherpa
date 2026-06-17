@@ -534,7 +534,7 @@ operator()(const ATOOLS::Flavour_Vector& flavs) const
     if (kfc==kf_3S1_c) 
     {
       std::cout<<"FLAVOURS: "<<flavs[0].Kfcode()<<" "<<flavs[1].Kfcode()<<" "<<flavs[2].Kfcode()<<" "<<flavs[3].Kfcode()<<"\n";
-      if(!IsZero(GetTotalLDME(kfc))) return new XS_gg_g3S1_oct();
+      if(!IsZero(GetTotalLDME(kfc))) return new XS_gg_g3S1_oct(flavs);
     }
   }
   if ( flavs[0].IsGluon() && flavs[1].IsGluon() && flavs[3].IsGluon()  &&
@@ -543,36 +543,40 @@ operator()(const ATOOLS::Flavour_Vector& flavs) const
     if (kfc==kf_3S1_c) 
     {
       std::cout<<"FLAVOURS: "<<flavs[0].Kfcode()<<" "<<flavs[1].Kfcode()<<" "<<flavs[2].Kfcode()<<" "<<flavs[3].Kfcode()<<"\n";
-      if(!IsZero(GetTotalLDME(kfc))) return new XS_gg_g3S1_oct();
+      if(!IsZero(GetTotalLDME(kfc))) return new XS_gg_g3S1_oct(flavs);
     }
   }
   
   return NULL;
 }
 
-XS_gg_g3S1_oct::XS_gg_g3S1_oct(): XS_Base(){
+XS_gg_g3S1_oct::XS_gg_g3S1_oct(const ATOOLS::Flavour_Vector & flavs): XS_Base(){
   m_name = string("gg->g3S1_oct");
+  const ATOOLS::Flavour_Vector& fl = flavs;
+  for (short int i=0;i<4;i++) {
+    if (i>1 && fl[i].IsOctetMeson()) m_S = i;
+    m_colours[i][0] = m_colours[i][1] = 0;
+  }
+  const kf_code kfc = fl[m_S].Kfcode();
+  m_mass = ATOOLS::Flavour((kfc / 100) % 10).Mass(true) +
+  ATOOLS::Flavour((kfc / 10) % 10).Mass(true);
+  m_mass2 = sqr(m_mass);
+  double LDME = GetLDME(fl[m_S].Kfcode());
+  m_pref = pow(4.*M_PI,3)*LDME;
 }
 
 void XS_gg_g3S1_oct::Calc(const double & s,const double & t,const double & u) 
 {
-  m_mass2 = sqr(2.*1.4);
-  m_mass = sqrt(m_mass2);
-  LDME = 0.005;
   double sM2 = sqr(s-m_mass2);
   double tM2 = sqr(t-m_mass2);
   double uM2 = sqr(u-m_mass2);
 
-  m_pref = pow(4.*M_PI,3)*0.22;
+  m_pref = pow(4.*M_PI,3);
   double heq0 = 2.*s*m_mass2*(sqr(t)+sqr(u))*t*u;
   double heq1 = sqr(s)*(sqr(sM2)+pow(t,4)+pow(u,4)+2.*sqr(m_mass2)*sqr(t*u/s));
   double nom = 27.*(s*t+t*u+u*s)-19.*sqr(m_mass2);
   double dnom = sM2*sM2*tM2*uM2;
-  // std::cout <<"MATRIX ELEMENT SQUARED NEGATIVE: "<<test<<'\n';
-  m_lastxs =  -1./(144.*pow(m_mass,3))*(heq0+heq1)*m_pref*nom/dnom*LDME;
-    // std::cout<<"OCTET: "<<m_lastxs<<'\n';
-  // THROW(fatal_error, "Found the Jpsi");
-  // std::cout<<"Calc for J/psi\n";
+  m_lastxs =  -1./(144.*pow(m_mass,3))*(heq0+heq1)*m_pref*nom/dnom;
 }
 
 bool XS_gg_g3S1_oct::SetColours(const ATOOLS::Flavour_Vector & flavs) 
@@ -636,7 +640,7 @@ XS_gg_g3S1::XS_gg_g3S1(const ATOOLS::Flavour_Vector& flavs): XS_Base()
   const kf_code kfc = fl[m_S].Kfcode();
   m_mass = ATOOLS::Flavour((kfc / 100) % 10).Mass(true) +
   ATOOLS::Flavour((kfc / 10) % 10).Mass(true);
-  m_mass2 = sqr(m_mass);  m_mass2 = sqr(m_mass);
+  m_mass2 = sqr(m_mass);
   
   double LDME = GetLDME(fl[m_S].Kfcode());
   m_R02 = LDME *2.*M_PI/(3.*3.);

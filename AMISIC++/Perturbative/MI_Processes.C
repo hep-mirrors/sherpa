@@ -102,6 +102,7 @@ bool MI_Processes::InitializeAllProcesses() {
   m_groups.push_back(new MI_QQB_Processes());
   m_groups.push_back(new MI_QQ_Processes());
   m_groups.push_back(new MI_QG_Processes());
+  m_groups.push_back(new MI_Quarkonium_Processes());
   ///////////////////////////////////////////////////////////////////////////
   // The following processes should depend on switches.  At the moment we
   // just add them without further ado.
@@ -120,7 +121,6 @@ bool MI_Processes::InitializeAllProcesses() {
   // - qqbar->Z, qqbar'->W
   // - gq->Zq, gq->Wq', etc.
   ///////////////////////////////////////////////////////////////////////////
-  // m_groups.push_back(new MI_QUARKONIA_Process());
   if (m_triggers.size()>0) FilterTriggerProcesses();
   SetPDFs();
   SetAlphaS();
