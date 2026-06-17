@@ -561,7 +561,7 @@ XS_gg_g3S1_oct::XS_gg_g3S1_oct(const ATOOLS::Flavour_Vector & flavs): XS_Base(){
   m_mass = ATOOLS::Flavour((kfc / 100) % 10).Mass(true) +
   ATOOLS::Flavour((kfc / 10) % 10).Mass(true);
   m_mass2 = sqr(m_mass);
-  double LDME = GetLDME(fl[m_S].Kfcode());
+  LDME = GetTotalLDME(fl[m_S].Kfcode());
   m_pref = pow(4.*M_PI,3)*LDME;
 }
 
