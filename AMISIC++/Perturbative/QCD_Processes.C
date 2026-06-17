@@ -571,7 +571,6 @@ void XS_gg_g3S1_oct::Calc(const double & s,const double & t,const double & u)
   double tM2 = sqr(t-m_mass2);
   double uM2 = sqr(u-m_mass2);
 
-  m_pref = pow(4.*M_PI,3);
   double heq0 = 2.*s*m_mass2*(sqr(t)+sqr(u))*t*u;
   double heq1 = sqr(s)*(sqr(sM2)+pow(t,4)+pow(u,4)+2.*sqr(m_mass2)*sqr(t*u/s));
   double nom = 27.*(s*t+t*u+u*s)-19.*sqr(m_mass2);
