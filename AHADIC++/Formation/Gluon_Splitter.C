@@ -196,10 +196,10 @@ Cluster * Gluon_Splitter::MakeCluster() {
 		  p_part[0]->Flavour()==Flavour(kf_b) ||
 		  p_part[0]->Flavour()==Flavour(kf_b).Bar());
     m_lastC    = (!m_lastB &&
-		  (newp12->Flavour()==Flavour(kf_b) ||
-		   newp12->Flavour()==Flavour(kf_b).Bar() ||
-		   p_part[0]->Flavour()==Flavour(kf_b) ||
-		   p_part[0]->Flavour()==Flavour(kf_b).Bar()));
+		  (newp12->Flavour()==Flavour(kf_c) ||
+		   newp12->Flavour()==Flavour(kf_c).Bar() ||
+		   p_part[0]->Flavour()==Flavour(kf_c) ||
+		   p_part[0]->Flavour()==Flavour(kf_c).Bar()));
     double y = cluster->Momentum().Y();
     m_histograms[std::string("Yasym_frag_2")]->Insert(dabs(y),(y>0.?1.:-1.));
   }
