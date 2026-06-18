@@ -47,8 +47,12 @@ operator()(Proto_Particle * part1,Proto_Particle * part2,
     return false;
   }
   size_t attempts(m_attempts);
-  do { attempts--; } while(attempts>0 && !MakeSplitting());
-  return (attempts>0);
+  bool success(false);
+  while (attempts>0 && !success) {
+    success = MakeSplitting();
+    attempts--;
+  }
+  return success;
 }
 
 bool Splitter_Base::
