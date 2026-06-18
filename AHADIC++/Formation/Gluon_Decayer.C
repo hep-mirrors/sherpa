@@ -14,7 +14,7 @@ Gluon_Decayer::Gluon_Decayer(list<Cluster *> * cluster_list,
   Singlet_Tools(),
   p_cluster_list(cluster_list), p_softclusters(softclusters),
   m_splitter(Gluon_Splitter(cluster_list,softclusters)),
-  m_analyse(true)
+  m_analyse(false)
 {
   if (m_analyse) {
     m_histos[string("N_primaries")] = new Histogram(0,0.,100.,100);
