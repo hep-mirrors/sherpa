@@ -18,7 +18,7 @@ void Gluon_Splitter::Init(const bool & isgluon) {
   // 1: z ~ z^alpha * (1-z)^alpha
   m_mode  = hadpars->Switch("GluonDecayForm");
   m_alpha = hadpars->Get("alphaG");
-  m_analyse = true;
+  m_analyse = false;
   if (m_analyse) {
     m_histograms[std::string("Yasym_frag_2")] = new Histogram(0,0.,8.,32);
   }
