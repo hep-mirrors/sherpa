@@ -44,9 +44,14 @@ bool Trivial_Splitter::operator()(Singlet * singlet) {
   p_part2    = (*ppit2);
   m_spectmom = p_singlet->back()->Momentum();
   if (!InitKinematics(false)) return Rescue();
-  do {
+  bool success(false);
+  size_t attempts(1000);
+  while (attempts>0 && !success) {
     SelectFlavour();
-  } while (!FixTrialKinematics() || !CheckKinematics());
+    success = FixTrialKinematics() && CheckKinematics();
+    attempts--;
+  }
+  if (!success) return false;
 
   p_part1->SetFlavour(m_newflav);
   p_part1->SetMomentum(m_q1mom);
