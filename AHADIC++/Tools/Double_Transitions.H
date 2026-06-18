@@ -9,15 +9,13 @@ namespace AHADIC {
   public :
     bool operator() (const Flavour_Pair & flpair1,
 		     const Flavour_Pair & flpair2) const {
-      if ((flpair1.first==flpair2.first &&
-      	   flpair1.second==flpair2.second)) return false;
-      if (ATOOLS::IsEqual(flpair1.first.HadMass()+flpair1.second.HadMass(),
-			  flpair2.first.HadMass()+flpair2.second.HadMass())) {
-	if (flpair1.first.Kfcode()>flpair2.first.Kfcode()) return false;
-      }
-      if (flpair1.first.HadMass()+flpair1.second.HadMass()<
-	  flpair2.first.HadMass()+flpair2.second.HadMass()) return false;
-      return true;
+      if (flpair1.first==flpair2.first &&
+	  flpair1.second==flpair2.second) return false;
+      double m1 = flpair1.first.HadMass()+flpair1.second.HadMass();
+      double m2 = flpair2.first.HadMass()+flpair2.second.HadMass();
+      if (!ATOOLS::IsEqual(m1,m2)) return m1>m2;
+      if (!(flpair1.first==flpair2.first)) return flpair1.first<flpair2.first;
+      return flpair1.second<flpair2.second;
     }
   };
 
