@@ -59,6 +59,8 @@ bool Cluster_Decayer::Treat(Cluster * cluster) {
     break;
   }
   msg_Tracking()<<METHOD<<" throws error for:\n"<<(*cluster)<<"\n";
+  cluster->Clear();
+  delete cluster;
   return false;
 }
 
