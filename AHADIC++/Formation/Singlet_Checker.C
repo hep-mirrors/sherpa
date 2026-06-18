@@ -161,7 +161,7 @@ bool Singlet_Checker::CheckSinglet() {
 
 bool Singlet_Checker::FusePartonsInLowMassSinglet() {
   if (p_singlet->front()->Flavour().IsGluon() &&
-      sqrt(m_mass) > 2.*m_minQmass && m_splitter(p_part1,p_part2)) {
+      m_mass > 2.*m_minQmass && m_splitter(p_part1,p_part2)) {
     // gluon system is heavy enough to be replaced by two quarks, splits gluon
     // ring and necessitates reordering the singlet to have a quark as first
     // particle.
@@ -318,7 +318,9 @@ bool Singlet_Checker::TransitProblematicSinglets() {
     for (const auto& t : m_transitions) {
       msg_Debugging()<<"Singlet with "<<t.first->Momentum()<<" --> "
         <<t.second<<" ("<<t.second.Mass()<<")\n";
+      delete t.first;
     }
+    m_transitions.clear();
     delete[] moms;
     delete[] masses;
     return false;
@@ -335,6 +337,10 @@ bool Singlet_Checker::TransitProblematicSinglets() {
       delete t.first;
       ++i;
     }
+    m_transitions.clear();
+  }
+  else {
+    for (const auto& t : m_transitions) delete t.first;
     m_transitions.clear();
   }
   delete[] moms;
@@ -358,6 +364,10 @@ bool Singlet_Checker::TransitProblematicSingletWithRecoiler() {
     Proto_Particle * part = new Proto_Particle(hadron,moms[0],false,isbeam);
     p_hadrons->push_back(part);
     BoostRecoilerInNewSystem(moms[1]);
+    delete p_singlet;
+    m_transitions.clear();
+  }
+  else {
     delete p_singlet;
     m_transitions.clear();
   }
@@ -429,13 +439,13 @@ bool Singlet_Checker::TwoGluonSingletToHadrons() {
   if (m_mass > 2.*m_minQmass) {
     if (m_splitter(p_part1,p_part2)) {
       Cluster * cluster = new Cluster(p_part1,p_part2);
-      if ((!p_softclusters->Treat(cluster,true))==1) {
+      if (p_softclusters->Treat(cluster,true)!=1) {
 	msg_Tracking()<<"Error in "<<METHOD<<": transformed two gluons into\n"
 		      <<(*cluster)
 		      <<"but did not decay further.  Insert into cluster list.\n";
 	m_errors++;
       }
-      else delete cluster;
+      delete cluster;
       return true;
     }
   }
@@ -462,6 +472,7 @@ bool Singlet_Checker::TwoQuarkSingletToHadrons() {
     delete cluster;
     return true;
   }
+  delete cluster;
   return false;
 }
 
@@ -471,7 +482,7 @@ void Singlet_Checker::AddOrUpdateTransition(Singlet* singlet,
   auto result = std::find_if(m_transitions.begin(), m_transitions.end(),
     [&singlet] (Transition& t) { return t.first == singlet; } );
   if (result == m_transitions.end())
-    m_transitions.push_back({p_singlet, hadron});
+    m_transitions.push_back({singlet, hadron});
   else
     result->second = hadron;
 }
