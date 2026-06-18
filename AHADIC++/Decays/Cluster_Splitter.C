@@ -191,7 +191,7 @@ bool Cluster_Splitter::MakeLongitudinalMomentaMassSimple() {
     }
     success = m_R2[0]+m_R2[1]<m_Q2 && RecalculateZs();
   } while ((trials--)>0 && !success);
-  return trials>0;
+  return success;
 }
 
 bool Cluster_Splitter::MakeLongitudinalMomentaMass() {
@@ -223,7 +223,7 @@ double Cluster_Splitter::DeltaM(const size_t & cl) {
     //deltaM = exp(log(mean)+log(sigma)*ran->GetGaussian());
     // simple exponential
     deltaM = -1./sigma*log(1.-ran->Get()*arg);
-  } while ((deltaM>deltaMmax) && (trials--)>1000);
+  } while ((deltaM>deltaMmax) && (trials--)>0);
   return trials>0?deltaM:0.;
 }
 
