@@ -227,7 +227,7 @@ Wave_Function * Multiplet_Constructor::TrivialMesonWaveFunction() {
   Flavour_Pair  * pair         = new Flavour_Pair;
   pair->first   = even?fl2:fl1;
   pair->second  = even?fl1.Bar():fl2.Bar();
-  Wave_Function * wavefunction = new Wave_Function(m_info.flav.Bar());
+  Wave_Function * wavefunction = new Wave_Function(m_info.flav);
   wavefunction->AddToWaves(pair,1.);
   return wavefunction;
 }
