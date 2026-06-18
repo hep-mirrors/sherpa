@@ -283,6 +283,9 @@ bool Hadronisation_Parameters::AdjustMomenta(const int n,
 	msg_Error()<<"   "<<i<<"th mass = "<<masses[i]<<"\n";
       }
       msg_Error()<<"   Will possibly lead to retrying the event.\n";
+      if (boost) {
+	for (int i=0;i<n;i++) rest.BoostBack(moms[i]);
+      }
       return false;
     }
     if (prepare) success = success && stretcher.ZeroThem(0,n,moms,1.e-10);
