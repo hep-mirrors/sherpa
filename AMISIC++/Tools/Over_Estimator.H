@@ -13,6 +13,7 @@ namespace PDF {
 
 namespace AMISIC {
   class MI_Processes;
+  class Matter_Overlap;
 
   class Over_Estimator {
   private:
@@ -25,7 +26,7 @@ namespace AMISIC {
     MODEL::One_Running_AlphaS * p_alphaS;
     OneDim_Table              * p_prefs;
 
-    void   FixMaximum(MI_Processes * procs,axis * sbins);
+    void   FixMaximum(MI_Processes * procs,axis * sbins,Matter_Overlap * mo);
     double ApproxME(const double & pt2,const double & xt);
     double ExactME(const double & pt2,const double & xt);
 
@@ -35,7 +36,7 @@ namespace AMISIC {
     ~Over_Estimator();
 
     void   Initialize(PDF::ISR_Handler * isr,MI_Processes * procs,
-		      axis * sbins);
+		      axis * sbins,Matter_Overlap * mo);
     void   UpdateS(const double & s,const double & pt02,const double & ptmin2);
 
     double operator()(const double & pt2,const double & yvol);

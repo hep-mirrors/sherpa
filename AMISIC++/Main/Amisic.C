@@ -59,7 +59,7 @@ bool Amisic::Initialize(MODEL::Model_Base *const model,
     // - assuming that the product of the PDFs f(x_1)f(x_2) is largest for
     //   mid-rapidity where x_1 and x_2 are identical
     ///////////////////////////////////////////////////////////////////////////
-    m_overestimator.Initialize(isr,&m_processes,p_sbins);
+    m_overestimator.Initialize(isr,&m_processes,p_sbins,&m_mo);
     ///////////////////////////////////////////////////////////////////////////
     // Initializing the Single_Collision_Handler which creates the next
     // scatter: it needs the processes, overestimator, interaction probability
