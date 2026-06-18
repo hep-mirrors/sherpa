@@ -52,7 +52,8 @@ void Gluon_Decayer::Reset() {}
 
 bool Gluon_Decayer::operator()(Singlet * singlet) {
   p_singlet = singlet;
-  if (p_singlet->front()->Flavour().IsGluon() && !SplitGluonRing()) {
+  if ((p_singlet->front()->Flavour().IsGluon() ||
+       p_singlet->front()->Flavour().IsDarkGluon() ) && !SplitGluonRing()) {
     // protection for low-mass two-gluon systems.
     if (p_singlet->size()==2) {
       if (Trivial(p_singlet->front(),p_singlet->back())) return true;

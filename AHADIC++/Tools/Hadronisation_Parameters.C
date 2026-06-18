@@ -226,6 +226,12 @@ void Hadronisation_Parameters::ReadMesonWeights()
     s["BEAUTYSTRANGE_ENHANCEMENT"].SetDefault(1.40).Get<double>();
   m_parametermap[string("BeautyCharm_Enhancement")]    =
     s["BEAUTYCHARM_ENHANCEMENT"].SetDefault(1.00).Get<double>();
+  // Dark mesons
+    m_parametermap[string("Multiplet_Dark_Meson_R0L0S0")]   =
+    s["MULTI_WEIGHT_R0L0_DARK_PSEUDOSCALARS"].SetDefault(1.00).Get<double>();
+  m_parametermap[string("Multiplet_Dark_Meson_R0L0S1")]   =
+    s["MULTI_WEIGHT_R0L0_DARK_VECTORS"].SetDefault(1.00).Get<double>();
+
 }
 
 void Hadronisation_Parameters::ReadPoppingParameters()

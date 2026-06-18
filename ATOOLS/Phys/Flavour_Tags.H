@@ -404,6 +404,25 @@
 #define      kf_Sigma_1660_plus         203222
 #define      kf_Xi_1690_minus           203312
 #define      kf_Xi_1690                 203322
+// dark stuff: quarks and gluons
+#define      kf_dark_q1                   4900101
+#define      kf_dark_q2                   4900102
+#define      kf_dark_q3                   4900103
+#define      kf_dark_q4                   4900104
+#define      kf_dark_q5                   4900105
+#define      kf_dark_q6                   4900106
+#define      kf_dark_g                    4900021
+#define      kf_dark_j                    4900093
+#define      kf_dark_jj                   4900092
+// dark stuff: hadrons
+#define      kf_dark_pi11                 4900111
+#define      kf_dark_pi21                 4900211
+#define      kf_dark_eta22                4900221
+#define      kf_dark_rho11                4900113
+#define      kf_dark_rho21                4900213
+#define      kf_dark_omega22              4900223
+
+
 // #define      kf_Sigma_c_2455            204112
 // #define      kf_Lambda_c_plus           204122
 // #define      kf_Sigma_c_2455_plus       204212

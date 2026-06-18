@@ -114,9 +114,12 @@ bool Splitter_Base::MakeSplitting() {
 
 void Splitter_Base::PopFlavours() {
   // Here we should set vetodi = false -- but no heavy baryons (yet)
-  Flavour flav    = m_flavourselector(m_Emax/2.,false);
+  Flavour flav    = m_flavourselector(m_Emax/2.,false,
+				      m_flavs1.first.IsDark() &&
+				      m_flavs2.second.IsDark());
   // m_barrd = true  if part1 = AntiQuark or DiQuark
   // m_barrd = false if part1 = Quark or AntiDiQuark
+  msg_Out()<<METHOD<<"("<<m_flavs1.first<<"/"<<m_flavs2.second<<") --> "<<flav<<"\n";
   m_newflav[0]    = m_barrd?flav:flav.Bar();
   m_newflav[1]    = m_newflav[0].Bar();
   m_popped_mass   = p_constituents->Mass(flav);

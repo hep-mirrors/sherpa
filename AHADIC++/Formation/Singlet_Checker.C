@@ -145,22 +145,33 @@ bool Singlet_Checker::CheckSinglet() {
     // parameter (minmass2) --- same below for "gluon ring"
     p_part1 = (*plit1);
     p_part2 = (*plit2);
-    if (!CheckMass(p_part1,p_part2)) return false;
-    plit2++;
-    plit1++;
+    if (!CheckMass(p_part1,p_part2)) {
+      if (!p_singlet->Combine(p_part1,p_part2)) return false;
+      plit1 = p_singlet->begin(); plit2 = plit1; plit2++;
+      msg_Out()<<METHOD<<" fuses two particles, will check again from scratch.\n";
+    }
+    else {
+      plit2++;
+      plit1++;
+    }
   }
   // is gluon "ring" must also check for pair made of first and last particle
-  if (p_singlet->front()->Flavour().IsGluon() &&
-      p_singlet->back()->Flavour().IsGluon()) {
+  if ((p_singlet->front()->Flavour().IsGluon() ||
+       p_singlet->front()->Flavour().Kfcode()==kf_dark_g) &&
+      (p_singlet->back()->Flavour().IsGluon()  ||
+       p_singlet->back()->Flavour().Kfcode()==kf_dark_g)) {
     p_part1 = (*plit1);
     p_part2 = p_singlet->front();
-    if (!CheckMass(p_part1,p_part2)) return false;
+    if (!CheckMass(p_part1,p_part2)) {
+      if (!p_singlet->Combine(p_part1,p_part2)) return false;
+    }
   }
   return true;
 }
 
 bool Singlet_Checker::FusePartonsInLowMassSinglet() {
-  if (p_singlet->front()->Flavour().IsGluon() &&
+  if ((p_singlet->front()->Flavour().IsGluon() ||
+       p_singlet->front()->Flavour().Kfcode()==kf_dark_g) &&
       sqrt(m_mass) > 2.*m_minQmass && m_splitter(p_part1,p_part2)) {
     // gluon system is heavy enough to be replaced by two quarks, splits gluon
     // ring and necessitates reordering the singlet to have a quark as first
@@ -225,7 +236,8 @@ void Singlet_Checker::SortProblematicSinglets() {
     p_singlet = (**bit);
     Flavour flav1 = p_singlet->front()->Flavour();
     Flavour flav2 = p_singlet->back()->Flavour();
-    if (!flav1.IsGluon() && !flav2.IsGluon()) {
+    if (!flav1.IsGluon() && !flav2.IsGluon() &&
+	flav1.Kfcode()!=kf_dark_g && flav2.Kfcode()!=kf_dark_g) {
       Flavour had = p_softclusters->LowestTransition(flav1,flav2);
       if (had.Mass()>sqrt(p_singlet->Mass2())) {
 	AddOrUpdateTransition(p_singlet, had);

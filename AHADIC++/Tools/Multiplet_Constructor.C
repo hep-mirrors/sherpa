@@ -87,9 +87,16 @@ bool Multiplet_Constructor::ExtractInfo(const kf_code & kfc) {
   m_info.iso   = int(kf/9000000);
   if (m_info.iso>0) return false;
   kf        -= m_info.iso*9000000;
-  m_info.exr   = int(kf/100000);
-  kf        -= m_info.exr*100000;
-  m_info.exl   = int(kf/10000);
+  if (kf/100000==49) {
+    m_info.dark = 1;
+    kf -= 4900000;
+  }
+  else {
+    m_info.dark = 0;
+    m_info.exr  = int(kf/100000);
+    kf         -= m_info.exr*100000;
+  }
+  m_info.exl = int(kf/10000);
   kf        -= m_info.exl*10000;
   m_info.fl3   = int(kf/1000);
   kf        -= m_info.fl3*1000;
@@ -98,6 +105,11 @@ bool Multiplet_Constructor::ExtractInfo(const kf_code & kfc) {
   m_info.fl1   = int(kf/10);
   kf        -= m_info.fl1*10;
   m_info.spin2 = int(kf);
+  if (m_info.dark) {
+    m_info.fl3 += (m_info.fl3>0 ? 4900100 : 0);
+    m_info.fl2 += (m_info.fl2>0 ? 4900100 : 0);
+    m_info.fl1 += (m_info.fl1>0 ? 4900100 : 0);
+  }
   if (m_info.spin2<=0) return false;
   m_info.barrable  = m_info.flav.IsBaryon() || (m_info.fl2!=m_info.fl1);
   m_info.multiname = MultipletName();
@@ -107,7 +119,9 @@ bool Multiplet_Constructor::ExtractInfo(const kf_code & kfc) {
 
 std::string Multiplet_Constructor::MultipletName() {
   string name = string("");
-  if (m_info.exr!=0)   name += string("R=")+ToString(m_info.exr)+string("_");
+  if (m_info.dark!=0)  name += string("Dark_");
+  if (m_info.dark==0 &&
+      m_info.exr!=0)   name += string("R=")+ToString(m_info.exr)+string("_");
   if (m_info.exl!=0)   name += string("L=")+ToString(m_info.exl)+string("_");
   if (m_info.fl3==0) {
     if (m_info.spin2==1) name += "Scalars";
@@ -148,6 +162,10 @@ void Multiplet_Constructor::FillMultipletWeights() {
     m_info.multiwt = hadpars->Get("Multiplet_Baryon_R1_1L0S1/2");
   if (m_info.multiname==string("R=2_Octet"))
     m_info.multiwt = hadpars->Get("Multiplet_Baryon_R2L0S1/2");
+  if (m_info.multiname==string("Dark_Scalars"))
+    m_info.multiwt = hadpars->Get("Multiplet_Dark_Meson_R0L0S0");
+  if (m_info.multiname==string("Dark_Vectors"))
+    m_info.multiwt = hadpars->Get("Multiplet_Dark_Meson_R0L0S1");
   m_info.spinwt  = double(m_info.spin2);
   m_info.extrawt = 1.;
 }
@@ -211,6 +229,10 @@ bool Multiplet_Constructor::ConstructMesonWaveFunction()
     m_info.extrawt = costh*costh+sinth*sinth*m_singletsuppression;
     m_wavefunctions[m_info.flav] = OctetMesonWaveFunction();
   }
+  else if (m_info.fl1==m_info.fl2 && m_info.fl1==4900101) 
+    m_wavefunctions[m_info.flav] = DarkPi0WaveFunction(false);
+  else if (m_info.fl1==m_info.fl2 && m_info.fl1==4900102)
+    m_wavefunctions[m_info.flav] = DarkPi0WaveFunction(true);
   else if ((m_info.fl1==m_info.fl2 && m_info.fl1==3 && m_info.spin2==1) ||
 	   (m_info.fl1==m_info.fl2 && m_info.fl1==2 && m_info.spin2!=1)) {
     double theta   = MixingAngle(), costh = cos(theta), sinth = sin(theta);
@@ -229,6 +251,25 @@ Wave_Function * Multiplet_Constructor::TrivialMesonWaveFunction() {
   pair->second  = even?fl1.Bar():fl2.Bar();
   Wave_Function * wavefunction = new Wave_Function(m_info.flav.Bar());
   wavefunction->AddToWaves(pair,1.);
+  return wavefunction;
+}
+
+Wave_Function * Multiplet_Constructor::DarkPi0WaveFunction(const bool plus) {
+  // Wave function for neutral state with isospin = strangeness = 0
+  // Essentially pi^0, rho^0 ... .  Fixed by isospin.
+  Wave_Function * wavefunction = new Wave_Function(m_info.flav);
+  Flavour_Pair  * pair = new Flavour_Pair;
+  pair->first  = Flavour(kf_dark_q1);
+  pair->second = Flavour(kf_dark_q1).Bar();
+  if (!Flavour(kf_dark_q2).IsOn()) wavefunction->AddToWaves(pair,1.);
+  else {
+    wavefunction->AddToWaves(pair,(plus ? 1./sqrt(2.) : -1./sqrt(2.)));
+    pair = new Flavour_Pair;
+    pair->first  = Flavour(kf_dark_q2);
+    pair->second = Flavour(kf_dark_q2).Bar();
+    wavefunction->AddToWaves(pair,+1./sqrt(2.));
+  }
+  msg_Out()<<METHOD<<"("<<m_info.flav<<", plus = "<<plus<<"):\n"<<(*wavefunction)<<"\n";
   return wavefunction;
 }
 

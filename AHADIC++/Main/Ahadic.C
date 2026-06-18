@@ -82,6 +82,7 @@ Return_Value::code Ahadic::Hadronize(Blob_List * blobs)
 Return_Value::code Ahadic::Hadronize(Blob * blob, int retry) {
   Reset();
   m_totmom = blob->CheckMomentumConservation();
+  msg_Out()<<METHOD<<":\n"<<(*blob)<<"\n";
   if (!ExtractSinglets(blob) || !ShiftBeamParticles() || !CheckSinglets() ||
       !DecayGluons() ||!DecayClusters()) {
     //msg_Error()<<"ERROR in "<<METHOD<<": Will retry event!\n"
@@ -115,7 +116,7 @@ Return_Value::code Ahadic::Hadronize(Blob * blob, int retry) {
 bool Ahadic::ExtractSinglets(Blob * blob)
 {
   if (!m_sformer.Extract(blob)) {
-    //msg_Error()<<METHOD<<" could not extract singlet.\n";
+    msg_Error()<<METHOD<<" could not extract singlet.\n";
     return false;
   }
   return true;
@@ -142,6 +143,7 @@ bool Ahadic::CheckSinglets()
 bool Ahadic::DecayGluons() {
   m_gluondecayer.ResetN();
   while (!m_singlet_list.empty()) {
+    msg_Out()<<METHOD<<": "<<(*m_singlet_list.front())<<"\n";
     if (m_gluondecayer(m_singlet_list.front())) {
       m_singlet_list.pop_front();
     }
@@ -151,6 +153,11 @@ bool Ahadic::DecayGluons() {
     }
   }
   m_gluondecayer.FillNs(m_hadron_list.size());
+  msg_Out()<<METHOD<<":\n";
+  for (list<Proto_Particle *>::iterator hit=m_hadron_list.begin();
+       hit!=m_hadron_list.end();hit++) msg_Out()<<(**hit)<<"\n";
+  for (list<Cluster *>::iterator hit=m_cluster_list.begin();
+       hit!=m_cluster_list.end();hit++) msg_Out()<<(**hit)<<"\n";
   return true;
 }
 

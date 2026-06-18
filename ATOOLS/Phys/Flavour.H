@@ -274,7 +274,10 @@ namespace ATOOLS {
     inline bool IsQuark() const { return Kfcode()<10; }
     inline bool IsGluon() const
     { return Kfcode()==kf_gluon||Kfcode()==kf_shgluon; }
-    inline bool IsJet() const   { return Kfcode()==kf_jet; }
+    inline bool IsDarkQuark() const { return Kfcode()>=4900101 && Kfcode()<=4900106; }
+    inline bool IsDarkGluon() const { return Kfcode()==kf_dark_g; }
+    inline bool IsDark()      const { return IsDarkQuark() || IsDarkGluon(); }
+    inline bool IsJet()       const { return Kfcode()==kf_jet; }
 
     inline bool IsUptype() const   { return IsAnti()?IsoWeak()<0:IsoWeak()>0; }
     inline bool IsDowntype() const { return IsAnti()?IsoWeak()>0:IsoWeak()<0; }

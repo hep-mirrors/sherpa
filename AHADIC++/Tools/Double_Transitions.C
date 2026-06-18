@@ -65,6 +65,11 @@ void Double_Transitions::FillMap(Single_Transitions * singletransitions)
 	  hads.first  = hit1->first;
 	  hads.second = hit2->first;
 	  double wt   = weight*hit1->second*hit2->second;
+	  if (hads.first.Kfcode()==4900111 &&
+	      hads.second.Kfcode()==4900111)
+	    msg_Out()<<METHOD<<" for ["<<pair.first<<"/"<<pair.second<<"] --> "
+		     <<"["<<hads.first<<" & "<<hads.second<<"]: "
+		     <<"wt = "<<wt<<" vs "<<m_wtthres<<".\n";
 	  if (wt<m_wtthres) continue;
 	  (*m_transitions[pair])[hads] = wt;
 	}
@@ -94,7 +99,7 @@ void Double_Transitions::Print(const bool & full) {
 	   <<METHOD<<":\n";
   for (Double_Transition_Map::iterator dtmit=m_transitions.begin();
        dtmit!=m_transitions.end();dtmit++) {
-    if (dtmit->first.first.Kfcode()!=4 && dtmit->first.second.Kfcode()!=4) continue;
+    // if (dtmit->first.first.Kfcode()!=4 && dtmit->first.second.Kfcode()!=4) continue;
     if (full)
       msg_Out()<<"---------------------------------------------------------\n"
 	       <<"*** ["<<dtmit->first.first<<" "<<dtmit->first.second<<"]:\n";

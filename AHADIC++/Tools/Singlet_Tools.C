@@ -36,19 +36,22 @@ void Singlet::Reorder(Proto_Particle * first) {
 
 bool Singlet::Combine(Proto_Particle * part1,Proto_Particle * part2) {
   // quark-gluon pair not heavy enough, just add them.
-  if (!part1->Flavour().IsGluon() && part2->Flavour().IsGluon()) {
+  if ((!part1->Flavour().IsGluon() && part2->Flavour().IsGluon()) ||
+      (part1->Flavour().IsDarkQuark() && part2->Flavour().IsDarkGluon())) {
     part1->SetMomentum(part1->Momentum()+part2->Momentum());
     Erase(part2);
     return true;
   }
   // gluon-quark pair not heavy enough, just add them.
-  else if (part1->Flavour().IsGluon() && !part2->Flavour().IsGluon()) {
+  else if ((part1->Flavour().IsGluon() && !part2->Flavour().IsGluon())  ||
+	   (part1->Flavour().IsDarkGluon() && part2->Flavour().IsDarkQuark())) {
     part2->SetMomentum(part1->Momentum()+part2->Momentum());
     Erase(part1);
     return true;
   }
   // gluons only - add them and kill one
-  else if (part1->Flavour().IsGluon() && part2->Flavour().IsGluon()) {
+  else if ((part1->Flavour().IsGluon() && part2->Flavour().IsGluon()) ||
+	   (part1->Flavour().IsDarkGluon() && part2->Flavour().IsDarkGluon())) {
     part2->SetMomentum(part1->Momentum()+part2->Momentum());
     Erase(part1);
     return true;
@@ -60,15 +63,12 @@ bool Singlet::Combine(Proto_Particle * part1,Proto_Particle * part2) {
 
 void Singlet::StripSingletOfGluons() {
   list<Proto_Particle *>::iterator pit=begin();
-  //msg_Out()<<METHOD<<" adds momenta to particle with flavour = "<<(*pit)->Flavour()<<"\n";
   Vec4D mom = Vec4D(0.,0.,0.,0.);
   pit++;
   do {
-    //msg_Out()<<"   add mom = "<<(*pit)->Momentum()<<" from "<<(*pit)->Flavour()<<", ";
     mom += (*pit)->Momentum();
     delete (*pit);
     pit  = erase(pit);
-    //msg_Out()<<size()<<" particles left in singlet.\n";
   } while ((*pit)!=(*rbegin()) && size()>2);
   (*begin())->SetMomentum((*begin())->Momentum()+0.5*mom);
   (*rbegin())->SetMomentum((*rbegin())->Momentum()+0.5*mom);
@@ -118,9 +118,14 @@ void Singlet_Tools::Init() {
 }
 
 bool Singlet_Tools::CheckMass(Proto_Particle * part1,Proto_Particle * part2) {
-  double factor = ((part1->Flavour().IsGluon()?2.:1.)*
-		   (part2->Flavour().IsGluon()?2.:1.));
+  double factor = (((part1->Flavour().IsGluon() || part1->Flavour().Kfcode()==kf_dark_g)?2.:1.)*
+		   ((part2->Flavour().IsGluon() || part1->Flavour().Kfcode()==kf_dark_g)?2.:1.));
   m_mass = sqrt((part1->Momentum()+part2->Momentum()).Abs2());
+  msg_Out()<<METHOD<<"["<<part1->Flavour()<<" "
+	   <<"("<<part1->Momentum()[0]<<", "<<p_constituents->Mass(part1->Flavour())<<") & "
+	   <<part2->Flavour()<<" "
+	   <<"("<<part2->Momentum()[0]<<", "<<p_constituents->Mass(part2->Flavour())<<")]: "
+	   <<"mass = "<<m_mass<<"\n"; 
   return (m_mass > (p_constituents->Mass(part1->Flavour())+
 		    p_constituents->Mass(part2->Flavour())+
 		    factor*m_minQmass));

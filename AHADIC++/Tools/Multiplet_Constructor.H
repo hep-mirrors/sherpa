@@ -7,7 +7,7 @@
 namespace AHADIC {
   struct HadInfo {
     ATOOLS::Flavour flav;
-    int         iso,exr,exl,fl3,fl2,fl1,spin2;
+    int         iso,exr,exl,fl3,fl2,fl1,spin2,dark;
     bool        barrable;
     std::string multiname;
     double      multiwt,spinwt,extrawt;
@@ -35,6 +35,7 @@ namespace AHADIC {
     bool ConstructWaveFunction();
     bool ConstructMesonWaveFunction();
     Wave_Function * TrivialMesonWaveFunction();
+    Wave_Function * DarkPi0WaveFunction(const bool plus=false);
     Wave_Function * Pi0WaveFunction();
     Wave_Function * OctetMesonWaveFunction();
     Wave_Function * SingletMesonWaveFunction();

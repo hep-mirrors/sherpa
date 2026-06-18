@@ -31,6 +31,9 @@ namespace AHADIC {
   class Constituents {
     double m_minmass, m_maxmass;
     ATOOLS::Flavour m_lightest;
+
+    void FillQuarks();
+    void FillDiQuarks();
   public:
     FlavCCMap CCMap;
     Constituents(bool=true);

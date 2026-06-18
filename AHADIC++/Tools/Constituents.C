@@ -15,11 +15,10 @@ Constituents::Constituents(bool diquarks) :
   double qssup(hadpars->Get("P_qs_by_P_qq"));
   double sssup(hadpars->Get("P_ss_by_P_qq"));
   double sp1sup(hadpars->Get("P_di_1_by_P_di_0"));
-
+  
   total  = 2.*(2.*udfrac+sfrac);
   total += bfrac*ud0*(1.+2.*qssup+3.*sp1sup*(3.+2.*qssup+sssup));
   double norm = 1./total;
-
   Flavour flav(Flavour(kf_d));
   CCMap[flav] = new ConstituentCharacteristic(flav.HadMass(),1,2.*udfrac*norm);
   flav = Flavour(kf_u);
@@ -30,8 +29,7 @@ Constituents::Constituents(bool diquarks) :
   CCMap[flav] = new ConstituentCharacteristic(flav.HadMass(),1,0.);
   flav = Flavour(kf_b);
   CCMap[flav] = new ConstituentCharacteristic(flav.HadMass(),1,0.);
-
-
+  
   if (diquarks && bfrac>0.) {
     // Light Di-quarks, spin 0
     flav = Flavour(kf_ud_0);
@@ -43,7 +41,7 @@ Constituents::Constituents(bool diquarks) :
     flav = Flavour(kf_su_0);
     CCMap[flav] = new ConstituentCharacteristic(flav.HadMass(),0,
 						bfrac*qssup*norm);
-
+    
     // Light Di-quarks, spin 1
     flav = Flavour(kf_uu_1);
     CCMap[flav] = new ConstituentCharacteristic(flav.HadMass(),2,
@@ -75,6 +73,15 @@ Constituents::Constituents(bool diquarks) :
     if (cmit->second->Mass()+massoffset>m_maxmass) 
       m_maxmass = cmit->second->Mass()+massoffset;
   }
+
+  // adding dark constituents
+  flav = Flavour(kf_dark_q1);
+  CCMap[flav] = new ConstituentCharacteristic(flav.HadMass(),1,1./2.);
+  flav = Flavour(kf_dark_q2);
+  CCMap[flav] = new ConstituentCharacteristic(flav.HadMass(),1,1./2.);
+  flav = Flavour(kf_dark_g);
+  double mass_dark_g = 4.*Min(Flavour(kf_dark_q1).HadMass(),Flavour(kf_dark_q2).HadMass());
+  CCMap[flav] = new ConstituentCharacteristic(mass_dark_g,1,0.);
 }
 
 Constituents::~Constituents() {

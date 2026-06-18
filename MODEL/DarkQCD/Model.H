@@ -4,13 +4,6 @@
 #include "MODEL/SM/Model.H"
 #include "MODEL/Main/Running_AlphaS.H"
 
-#define kf_Zp 32
-#define kf_Dv 4900001
-#define kf_gv 4900021
-#define kf_qv 4900101
-#define kf_jv 4900093
-#define kf_jjv 4900092
-
 namespace MODEL {
 
   class One_Running_AlphaDark : public One_Running_AlphaS {
