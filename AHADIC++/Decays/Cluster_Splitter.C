@@ -75,7 +75,7 @@ void Cluster_Splitter::FixCoefficients() {
     massfac      = 1.;
     size_t flcnt = 0;
     if (p_part[i]->IsLeading() ||
-	(m_mode==0 && p_part[1-i]->IsLeading())) {
+	(m_defmode==0 && p_part[1-i]->IsLeading())) {
       flcnt   = 1;
       massfac = 2.;
     }
@@ -119,9 +119,9 @@ bool Cluster_Splitter::MakeLongitudinalMomentaZ() {
     if (MakeLongitudinalMomentaZSimple()) {
       double weight=1.;
       for (size_t i=0;i<2;i++) {
-	if (m_gamma[i]>1.e-4) {
+	if (m_c[i]>1.e-4) {
 	  double DeltaM2 = m_R2[i]-m_minQ2[i];
-	  weight *= DeltaM2>0.?exp(-m_gamma[i]*DeltaM2/m_sigma[i]):0.;
+	  weight *= DeltaM2>0.?exp(-m_c[i]*DeltaM2/m_sigma[i]):0.;
 	}
       }
       if (weight>=ran->Get()) return true;
@@ -200,8 +200,8 @@ bool Cluster_Splitter::MakeLongitudinalMomentaMass() {
     if (MakeLongitudinalMomentaMassSimple()) {
       double weight=1.;
       for (size_t i=0;i<2;i++) {
-	if (m_alpha[i]>1.e-4) weight *= pow(m_z[i],m_alpha[i]);
-	if (m_beta[i]>1.e-4)  weight *= pow(1.-m_z[i],m_beta[i]);
+	if (m_a[i]>1.e-4) weight *= pow(m_z[i],m_a[i]);
+	if (m_b[i]>1.e-4)  weight *= pow(1.-m_z[i],m_b[i]);
       }
       if (weight>=ran->Get()) return true;
     }
