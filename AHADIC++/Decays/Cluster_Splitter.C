@@ -213,7 +213,7 @@ double Cluster_Splitter::DeltaM(const size_t & cl) {
   double deltaM, deltaMmax = m_Q-sqrt(m_m2min[0])-sqrt(m_m2min[1]);
   double mean =  m_mean[cl], sigma = 1./(m_c[cl] * sqrt(m_kt02));
   double arg  =  1.-exp(-sigma * deltaMmax);
-  size_t trials = 1000;
+  long int trials = 1000;
   do {
     // Weibull distribution
     //deltaM = sqrt(offset+pow(-log(ran->Get()),1./m_a[cl])*lambda);
