@@ -80,7 +80,7 @@ FillBlobs(Blob_List *blobs,const Poincare * labboost) {
 bool Kinematics_Generator::
 CollinearKinematics(Blob_List *blobs,const Poincare * labboost) {
   // First a trivial check whether particles entering the shower are the beam particles
-  // (for example in elastic/diffractive scattering or some such).  In gthis case
+  // (for example in elastic/diffractive scattering or some such).  In this case
   // we just fill them into the beam blobs.
   size_t trivial=0;
   if (m_kintype==kin_type::intact &&
@@ -131,7 +131,10 @@ bool Kinematics_Generator::TransverseKinematicsDIS(const size_t &beam) {
   // trigger retrial Fill the beam remnant blob with the original particles and
   // put them also into the ktmaps.
   if (!p_remnants[beam]->FillBlob(p_rhandler->GetColourGen(),
-				  &m_ktmap[beam], false)) return false;
+				  &m_ktmap[beam], false)) {
+    msg_Out()<<METHOD<<" failed to fill blob.\n";
+    return false;
+  }
   for (size_t i = 0; i < 2; i++)
     m_inmom[i] = p_remnants[i]->InMomentum();
   // Initialise particle-momentum maps to track the transverse momenta
@@ -155,17 +158,19 @@ bool Kinematics_Generator::TransverseKinematicsDIS(const size_t &beam) {
       m_kperpGenerator.CreateBreakupKinematics(beam, &m_ktmap[beam], scale);
     }
     maxnum--;
-    if (maxnum == 0) {
+    if (maxnum==0) {
       maxnum = 100;
       scale *= 0.1;
     }
-    if (scale < 1.e-3)
+    if (scale < 1.e-4)
       scale = 0.;
   } while (!CheckDIS(beam) && scale > 0.);
   // Adjust the kinematics, with the momenta stored in the shufflemap of
   // particles and momenta
-  if ((scale < 1.e-4) || !AdjustFinalStateDIS(beam))
+  if ((scale < 1.e-5) || !AdjustFinalStateDIS(beam)) {
+    msg_Out()<<METHOD<<"(scale = "<<scale<<"): couldn't adjust final state.\n";
     return false;
+  }
   return true;
 }
 
@@ -356,8 +361,10 @@ bool Kinematics_Generator::CheckDIS(const size_t &beam) {
   Vec4D tot = (ExtractColourfulFS(beam, moms, masses, parts) +
                ExtractSpectators(beam, moms, masses, parts));
   // If there is no solution, do not even try
-  if (tot.Abs2() < sqr(m_mass_sum))
+  if (tot.Abs2() < sqr(m_mass_sum)) {
+    msg_Out()<<"total four momentum is smaller than the square of the summed mass.\n";
     return false;
+  }
   Poincare residualcms(tot);
   // After boosting into their c.m. frame, use the Momenta_Stretcher to rescale
   // particles onto their mass shells and to account for their transverse
@@ -367,6 +374,10 @@ bool Kinematics_Generator::CheckDIS(const size_t &beam) {
   }
   if (!m_stretcher.ZeroThem(0, moms) ||
       !m_stretcher.MassThem(0, moms, masses)) {
+    msg_Out()<<"sequence of zeroing and massing fails "
+	     <<"(tot = "<<sqrt(tot.Abs2())<<" vs. "<<m_mass_sum<<"):\n";
+    for (size_t i=0;i<moms.size();i++)
+      msg_Out()<<moms[i]<<" vs. "<<masses[i]<<"\n";
     return false;
   }
   // Then boost back into the lab system and store the momenta in the shuffled

@@ -52,7 +52,7 @@ NonPerturbative_XSecs(REMNANTS::Remnant_Handler * remnants,
   for (size_t i=0;i<2;i++) {
     m_masses[i] = m_inflav[i].HadMass(); m_masses2[i] = sqr(m_masses[i]);
   }
-  if (m_ana) { Tests(); exit(0); }
+  if (m_ana) { Tests(); THROW(normal_exit,"Done testing."); }
 }
 
 NonPerturbative_XSecs::~NonPerturbative_XSecs() {
@@ -508,7 +508,8 @@ bool NonPerturbative_XSecs::SplitDiffractiveState(const size_t & pos) {
     return true;
   }
   if (!SelectFlavoursOfDiffraction(pos,M2)) {
-    if (!SplitDiffractiveStateIntoHadrons(pos,M2)) exit(1);
+    if (!SplitDiffractiveStateIntoHadrons(pos,M2))
+      THROW(fatal_error,"Couldn't split diffractive state correctly.");
   }
   for (size_t i=0;i<2;i++) {
     m_outmasses[2*pos+i]  = m_outflav[2*pos+i].HadMass();
