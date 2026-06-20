@@ -54,6 +54,7 @@ void Single_Transitions::Normalise() {
     totwt = 0.;
     for (Single_Transition_List::iterator stlit=stmit->second->begin();
 	 stlit!=stmit->second->end();stlit++) totwt += stlit->second;
+    if (totwt<=0.) continue;
     for (Single_Transition_List::iterator stlit=stmit->second->begin();
 	 stlit!=stmit->second->end();stlit++) stlit->second/=totwt;
   }
