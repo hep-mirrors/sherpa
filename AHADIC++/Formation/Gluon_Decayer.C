@@ -55,7 +55,10 @@ bool Gluon_Decayer::operator()(Singlet * singlet) {
   if (p_singlet->front()->Flavour().IsGluon() && !SplitGluonRing()) {
     // protection for low-mass two-gluon systems.
     if (p_singlet->size()==2) {
-      if (Trivial(p_singlet->front(),p_singlet->back())) return true;
+      if (Trivial(p_singlet->front(),p_singlet->back())) {
+        delete p_singlet;
+        return true;
+      }
     }
     msg_Error()<<"Couldn't split the gluon ring.\n"<<(*singlet)<<"\n";
     return false;
