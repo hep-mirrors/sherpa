@@ -80,7 +80,6 @@ Return_Value::code Ahadic::Hadronize(Blob_List * blobs)
 
 Return_Value::code Ahadic::Hadronize(Blob * blob, int retry) {
   Reset();
-  m_totmom = blob->CheckMomentumConservation();
   if (!ExtractSinglets(blob) || !ShiftBeamParticles() || !CheckSinglets() ||
       !DecayGluons() ||!DecayClusters()) {
     //msg_Error()<<"ERROR in "<<METHOD<<": Will retry event!\n"
