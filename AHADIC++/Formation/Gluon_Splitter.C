@@ -54,7 +54,7 @@ bool Gluon_Splitter::CalculateXY() {
   double M2 = m_z[0]*(1.-m_z[1])*m_Q2;
   //This is a new addition w.r.t. original master
   double R2 = M2 - m_kt2;
-  if (R2 < m_mdec[0]) {
+  if (R2 < m_mdec2[0]) {
     M2     = m_mdec2[0];
     m_z[0] = M2/((1.-m_z[1])*m_Q2);
   }
