@@ -1,5 +1,5 @@
-#ifndef AHADIC_Decays_Gluon_Decayer_H
-#define AHADIC_Decays_Gluon_Decayer_H
+#ifndef AHADIC_Decays_Cluster_Decayer_H
+#define AHADIC_Decays_Cluster_Decayer_H
 
 #include "AHADIC++/Decays/Cluster_Splitter.H"
 #include "AHADIC++/Tools/Soft_Cluster_Handler.H"
