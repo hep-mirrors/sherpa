@@ -5,7 +5,6 @@
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/Settings.H"
 #include "ATOOLS/Phys/KF_Table.H"
-#include <stdio.h>
 
 using namespace AHADIC;
 using namespace ATOOLS;
@@ -148,7 +147,6 @@ void Multiplet_Constructor::FillMultipletWeights() {
     m_info.multiwt = hadpars->Get("Multiplet_Baryon_R1_1L0S1/2");
   if (m_info.multiname==string("R=2_Octet"))
     m_info.multiwt = hadpars->Get("Multiplet_Baryon_R2L0S1/2");
-  m_info.spinwt  = double(m_info.spin2);
   m_info.extrawt = 1.;
 }
 
