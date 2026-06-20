@@ -129,7 +129,7 @@ bool Gluon_Decayer::SplitGluonRing() {
 
 Proto_Particle * Gluon_Decayer::FirstGluon() {
   double minm2(1.e12), m2thres(sqr(2.*m_breaker.MinMass())), m2;
-  list<Proto_Particle *>::iterator ppiter1, ppiter2, winner(p_singlet->end());
+  list<Proto_Particle *>::iterator ppiter2, winner(p_singlet->end());
   for (list<Proto_Particle *>::iterator ppiter1=p_singlet->begin();
        ppiter1!=p_singlet->end();ppiter1++) {
     Proto_Particle * part1(*ppiter1);
@@ -248,5 +248,4 @@ void Gluon_Decayer::FillNs(const int & Nhad) {
   }
 }
 
-void Gluon_Decayer::AnalyseClusters() {}
 

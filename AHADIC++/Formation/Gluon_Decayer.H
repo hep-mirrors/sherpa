@@ -15,8 +15,7 @@ namespace AHADIC {
     Soft_Cluster_Handler * p_softclusters;
     Gluon_Splitter   m_splitter;
     Trivial_Splitter m_breaker;
-    
-    Proto_Particle * p_part1, * p_part2;
+
     bool m_analyse;
     int  m_Nclusters;
     std::map<std::string, ATOOLS::Histogram *> m_histos;
@@ -29,7 +28,6 @@ namespace AHADIC {
     int  Step(Proto_Particle * part1,Proto_Particle * part2,
 	      Proto_Particle * part3=NULL);
     bool LastStep();
-    void AnalyseClusters();
   public:
     Gluon_Decayer(std::list<Cluster *> * cluster_list,
 		  Soft_Cluster_Handler * softclusters);
