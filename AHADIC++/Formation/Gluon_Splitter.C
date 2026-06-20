@@ -40,10 +40,9 @@ bool Gluon_Splitter::MakeLongitudinalMomenta() {
 }
 
 void Gluon_Splitter::CalculateLimits() {
-  double mean1 = (m_Q2+m_minQ2[0]-m_popped_mass2)/(2.*m_Q2);
   double delta = sqrt(m_arg)/(2.*m_Q2);
-  m_zmin[0] = Max(0.0,mean1-delta);
-  m_zmax[0] = Min(1.0,mean1+delta);
+  // only the index-1 limits bound the sampling; m_z[0] is derived analytically
+  // in CalculateXY, so the index-0 limits are not computed.
   double mean2 = (m_Q2-m_minQ2[0]+m_popped_mass2)/(2.*m_Q2);
   m_zmin[1] = Max(0.0,mean2-delta/2.);
   m_zmax[1] = Min(1.0,mean2+delta);
