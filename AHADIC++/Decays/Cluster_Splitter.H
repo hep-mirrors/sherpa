@@ -13,11 +13,9 @@ namespace AHADIC {
     double m_R2[2], m_mean[2], m_sigma[2], m_m2min[2], m_masses;
 
     Cluster *       p_out[2];
-    ATOOLS::Vec4D   m_cms, m_mom[2], m_newmom[2];
+    ATOOLS::Vec4D   m_mom[2], m_newmom[2];
     ATOOLS::Flavour m_fl[2];
     double          m_mass2[2];
-
-    bool   m_output;
 
     bool   MakeLongitudinalMomenta();
     bool   MakeLongitudinalMomentaZ();
@@ -42,7 +40,6 @@ namespace AHADIC {
     double WeightFunction(const double & z,
 			  const double & zmin,const double & zmax,
 			  const unsigned int & cnt);
-    void   SetOutput(const bool & out) { m_output = out; }
   };
 }
 

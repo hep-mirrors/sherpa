@@ -10,8 +10,7 @@ using namespace std;
 
 Cluster_Splitter::Cluster_Splitter(list<Cluster *> * cluster_list,
 				   Soft_Cluster_Handler * softclusters) :
-  Splitter_Base(cluster_list,softclusters),
-  m_output(false)
+  Splitter_Base(cluster_list,softclusters)
 {
 }
 
@@ -211,7 +210,7 @@ bool Cluster_Splitter::MakeLongitudinalMomentaMass() {
 
 double Cluster_Splitter::DeltaM(const size_t & cl) {
   double deltaM, deltaMmax = m_Q-sqrt(m_m2min[0])-sqrt(m_m2min[1]);
-  double mean =  m_mean[cl], sigma = 1./(m_c[cl] * sqrt(m_kt02));
+  double sigma = 1./(m_c[cl] * sqrt(m_kt02));
   double arg  =  1.-exp(-sigma * deltaMmax);
   long int trials = 1000;
   do {
@@ -243,7 +242,7 @@ size_t Cluster_Splitter::MakeAndCheckClusters() {
   size_t  shuffle = 0;
   for (size_t i=0;i<2;i++) {
     p_out[i]     = MakeCluster(i);
-    m_cms       += m_mom[i] = p_out[i]->Momentum();
+    m_mom[i]     = p_out[i]->Momentum();
     m_mass2[i]   = m_mom[i].Abs2();
     if (p_softclusters->PromptTransit(p_out[i],m_fl[i])) shuffle += (i+1);
     else m_fl[i] = Flavour(kf_none);
