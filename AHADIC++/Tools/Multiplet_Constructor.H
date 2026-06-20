@@ -10,7 +10,7 @@ namespace AHADIC {
     int         iso,exr,exl,fl3,fl2,fl1,spin2;
     bool        barrable;
     std::string multiname;
-    double      multiwt,spinwt,extrawt;
+    double      multiwt,extrawt;
     
     friend std::ostream & operator<<(std::ostream & s,const HadInfo & info);
   };
@@ -51,7 +51,6 @@ namespace AHADIC {
     Wave_Function * DeltaPWaveFunction();
     Wave_Function * Delta0WaveFunction();
     Wave_Function * DecupletSigmaWaveFunction();
-    Wave_Function * DecupletLambdaWaveFunction();
     Wave_Function * HeavyDecupletWaveFunction();
   public:
     Multiplet_Constructor(bool test=false);
