@@ -11,7 +11,7 @@ namespace AHADIC {
   class Flavour_Selector {
   private:
     FlavDecayMap m_options;
-    double       m_mmin, m_mmin2, m_mmax, m_mmax2, m_sumwt;
+    double       m_mmin;
 
     double Norm(const double & mmax=-1.,const bool & vetodi=false); 
   public:
