@@ -125,7 +125,7 @@ bool Singlet_Checker::CheckSinglet() {
     if ((*plit)->Momentum()[0]<0. || (*plit)->Momentum().RelAbs2()<-rpa->gen.SqrtAccu()) {
       msg_Tracking()<<"Error in "<<METHOD<<":\n"
 		    <<"   negative energy or mass^2 particle in singlet:\n"
-		    <<(*p_singlet)<<"n";
+		    <<(*p_singlet)<<"\n";
       m_errors++;
     }
   }

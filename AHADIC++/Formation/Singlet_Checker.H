@@ -21,9 +21,7 @@ namespace AHADIC {
     Trivial_Splitter       m_splitter;
     
     Proto_Particle * p_part1, * p_part2;
-    double           m_minSmass2;
-    bool             m_isring;
-    
+
     ATOOLS::Vec4D    m_singletmom;
     double           m_targetmass;
     Singlet        * p_recoiler;
