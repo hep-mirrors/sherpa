@@ -50,7 +50,6 @@ namespace AHADIC {
     bool operator()(Singlet * singlet);
     bool operator()(Proto_Particle * part1, Proto_Particle * part2);
 
-    double WeightFunction(const double & z) { return 1.; }
     inline const double & MinMass() const { return m_minmass; }
   };
 }
