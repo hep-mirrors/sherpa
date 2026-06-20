@@ -61,7 +61,6 @@ InitSplitting(Proto_Particle * part1,Proto_Particle * part2,
 {
   p_part[0] = part1; p_part[1] = part2; p_part[2] = part3;
   FillMasses();
-  ConstructLightCone();
   ConstructPoincare();
   return (m_Emax>2.*m_minmass);
 }
@@ -83,23 +82,6 @@ void Splitter_Base::FillMasses() {
     m_mass[i] = (p_part[i]==0)?0.:p_constituents->Mass(p_part[i]->Flavour());
     m_m2[i]   = sqr(m_mass[i]);
     if (i!=2) m_Emax -= m_mass[i];
-  }
-}
-
-void Splitter_Base::ConstructLightCone(const double & kt2) {
-  m_lc[0] = m_lc[1] = 0.;
-  if (m_m2[0]>1.e-6 && m_m2[1]>1.e-6) {
-    double lambda = Lambda(m_Q2,m_m2[0],m_m2[1],kt2);
-    for (size_t i=0;i<2;i++)
-      m_lc[i] = (m_Q2+m_m2[i]-m_m2[1-i])/(2.*m_Q2)+lambda;
-  }
-  else {
-    for (size_t i=0;i<2;i++) {
-      if (m_m2[i]>1.e-6) {
-	m_lc[i]   = 1.;
-	m_lc[1-i] = 1.-m_m2[i]/m_Q2;
-      }
-    }
   }
 }
 
@@ -159,7 +141,6 @@ void Splitter_Base::DetermineMinimalMasses() {
   }
   for (size_t i=0;i<2;i++) {
     m_minQ2[i] = sqr(m_minQ[i]);
-    m_msum2[i] = sqr(m_msum[i]);
     m_mdec2[i] = sqr(m_mdec[i]);
   }
 }
@@ -170,7 +151,6 @@ bool Splitter_Base::MakeKinematics() {
 }
 
 void Splitter_Base::MakeTransverseMomentum() {
-  m_ktfac  = Max(1.,m_Q2/(4.*m_minQ[0]*m_minQ[1]));
   m_kt2max = Min(p_part[0]->KT2_Max(),p_part[1]->KT2_Max());
   double ktmax  = Min(m_ktmax,
 		      (m_ktorder?
@@ -185,7 +165,6 @@ void Splitter_Base::MakeTransverseMomentum() {
     abort();
   }
   m_ktfac = 1.;
-  bool islead = p_part[0]->IsLeading() || p_part[1]->IsLeading();
   m_kt    = m_ktselector(ktmax,m_ktfac);
   m_kt2   = m_kt*m_kt;
   m_phi   = 2.*M_PI*ran->Get();
