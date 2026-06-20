@@ -212,6 +212,8 @@ bool Singlet_Checker::DealWithProblematicSinglets() {
 		    <<"("<<p_singlets->size()<<" singlets).\n"
 		    <<transition.second<<" from "
 		    <<(*transition.first)<<"\n";
+      delete transition.first;
+      m_transitions.clear();
       return true;
     }
   }
