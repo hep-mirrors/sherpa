@@ -16,7 +16,9 @@ using namespace std;
 
 Hadronisation_Parameters* AHADIC::hadpars = NULL;
 
-Hadronisation_Parameters::Hadronisation_Parameters() : m_shower(0) {}
+Hadronisation_Parameters::Hadronisation_Parameters() :
+  m_shower(0), p_constituents(nullptr), p_stransitions(nullptr),
+  p_dtransitions(nullptr) {}
 
 Hadronisation_Parameters::~Hadronisation_Parameters() {
   if (p_constituents!=NULL) {

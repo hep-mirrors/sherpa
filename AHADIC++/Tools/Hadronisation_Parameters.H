@@ -23,7 +23,6 @@ namespace AHADIC {
   class Hadronisation_Parameters {
   private:
     int                  m_shower;
-    double               m_offset;
     Constituents       * p_constituents;
     Single_Transitions * p_stransitions;
     Double_Transitions * p_dtransitions;
@@ -57,7 +56,7 @@ namespace AHADIC {
 
   inline double Lambda(const double & ma2,const double & mb2,
 		       const double & mc2,const double & kt2=0.)  {
-    assert(ATOOLS::sqr(ma2-mb2-(mc2+kt2))>4.*mb2*(mc2*kt2));
+    assert(ATOOLS::sqr(ma2-mb2-(mc2+kt2))>4.*mb2*(mc2+kt2));
     return sqrt(ATOOLS::sqr(ma2-mb2-(mc2+kt2))-4.*mb2*(mc2+kt2))/(2.*ma2);
   };
 }
