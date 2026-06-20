@@ -90,7 +90,7 @@ const int Hadronisation_Parameters::Switch(string keyword) const
 {
   map<string,int>::const_iterator siter = m_switchmap.find(keyword);
   if (siter!=m_switchmap.end()) return siter->second;
-  msg_Tracking()<<"Error in Hadronisation_Parameters::Get("<<keyword<<") "
+  msg_Tracking()<<"Error in Hadronisation_Parameters::Switch("<<keyword<<") "
 		<<"in "<<m_switchmap.size()<<".\n"
 		<<"   Keyword not found. Return 0 and hope for the best.\n";
   return 0;
@@ -157,7 +157,6 @@ void Hadronisation_Parameters::ReadSplittingParameters()
     s["DI_PION_THRESHOLD"].SetDefault(0.300).Get<double>();
   m_parametermap[string("open_threshold")] =
     s["OPEN_THRESHOLD"].SetDefault(0.100).Get<double>();
-  Settings & sets = Settings::GetMainSettings();
   m_parametermap[string("kT_max")] =
     s["PT_MAX"].SetDefault(0.68).Get<double>();
 }

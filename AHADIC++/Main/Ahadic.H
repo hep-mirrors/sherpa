@@ -11,7 +11,6 @@
 #include "ATOOLS/Phys/Blob_List.H"
 #include "ATOOLS/Phys/Particle_List.H"
 #include "ATOOLS/Phys/Fragmentation_Base.H"
-#include "ATOOLS/Math/Histogram.H"
 #include "ATOOLS/Org/Return_Value.H"
 #include "ATOOLS/Org/CXXFLAGS.H"
 #include <list>
@@ -29,8 +28,6 @@ namespace AHADIC {
     Singlet_Checker        m_singletchecker;
     Gluon_Decayer          m_gluondecayer;
     Cluster_Decayer        m_clusterdecayer;
-
-    ATOOLS::Vec4D m_totmom; 
 
     bool ExtractSinglets(ATOOLS::Blob * blob);
     bool ShiftBeamParticles();
