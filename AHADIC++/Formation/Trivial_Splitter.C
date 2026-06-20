@@ -137,7 +137,7 @@ bool Trivial_Splitter::FixTrialKinematics() {
   
 bool Trivial_Splitter::CheckKinematics() {
   // check if (last quark--gluon) pairing is heavy enough.
-  return (sqrt((m_spectmom+m_q2mom).Abs()) > m_popped_mass + 2.*m_minmass);
+  return ((m_spectmom+m_q2mom).Abs() > m_popped_mass + 2.*m_minmass);
 }
 
 bool Trivial_Splitter::Rescue() {
