@@ -31,10 +31,9 @@ namespace BEAM {
 			 const double,const double,const int,const int,const int,const int);
     ~Laser_Backscattering();
 
-    Beam_Base     * Copy();
+    Beam_Base     * Copy() override;
     void            PrintSpectra(std::string,int=0);
-    bool            CalculateWeight(double,double);
-    double          Weight(ATOOLS::Flavour=ATOOLS::Flavour(kf_none));
+    bool            CalculateWeight(double,double) override;
     ATOOLS::Vec4D   OutMomentum(const size_t & i=0);
 
     double          Polarisation()       { return m_polar; }
@@ -42,10 +41,10 @@ namespace BEAM {
     void            SetPol(bool on)      { m_pol  = on; }
     int             Mode()               { return m_mode; }
     bool            Pol()                { return m_pol; }
-    double          Exponent()           { return 0.5; }
-    double          Xmax()               { return m_upper; }
-    double          Peak()               { return m_peak; }
-    bool            PolarisationOn() ;
+    double          Exponent() const override { return 0.5; }
+    double          Xmax() const override     { return m_upper; }
+    double          Peak() const override     { return m_peak; }
+    bool            PolarisationOn() const override;
   };
 
 
