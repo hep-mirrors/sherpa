@@ -15,8 +15,8 @@ namespace BEAM {
     RelicDensity_Weight(Kinematics_Base * kinematics);
     ~RelicDensity_Weight();
 
-    void AssignKeys(ATOOLS::Integration_Info *const info);
-    bool Calculate(const double & scale);
+    void AssignKeys(ATOOLS::Integration_Info *const info) override;
+    bool Calculate(const double & scale) override;
   };
 }
 
