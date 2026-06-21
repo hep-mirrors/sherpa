@@ -9,7 +9,7 @@ using namespace ATOOLS;
 using namespace std;
 
 Soft_Cluster_Handler::Soft_Cluster_Handler(list<Proto_Particle *> * hadrons) :
-  p_hadrons(hadrons), m_ktfac(1.)
+  p_hadrons(hadrons)
 { }
 
 Soft_Cluster_Handler::~Soft_Cluster_Handler() 
@@ -111,7 +111,6 @@ int Soft_Cluster_Handler::Treat(Cluster * cluster,bool force)
     }
   }
   // decay returns 1 or -1: -1 is for a failed cluster decay
-  m_forceddecay = force;
   return Decay();
 }
 
