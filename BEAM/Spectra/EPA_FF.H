@@ -64,7 +64,7 @@ namespace BEAM {
       return os << "Undefined";
     }
 
-    return os << "Unknown EPA form factor " << type << "\n";
+    return os << "Unknown EPA form factor (" << static_cast<int>(type) << ")\n";
   }
 
   inline std::istream& operator>>(std::istream& is, EPA_ff_type& type)
