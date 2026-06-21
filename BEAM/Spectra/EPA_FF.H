@@ -441,8 +441,18 @@ namespace BEAM {
       // Normalising the form factor/nuclear density can be performed
       // analytically and it yields \rho_0 = A / 4 / \pi * 3 / R^3
       const double qR = sqrt(Q2) * m_R_WS;
-      return 3. / std::pow(qR, 3) * (std::sin(qR) - qR * std::cos(qR)) /
-             (1. + ATOOLS::sqr(m_a) * Q2);
+      // The hard-sphere factor 3 (sin qR - qR cos qR)/(qR)^3 cancels
+      // catastrophically, and divides by zero at Q2=0, for small qR; use its
+      // Taylor series F = 1 - (qR)^2/10 + (qR)^4/280 below a safe threshold
+      // (as in EPA_HCS::FF).
+      double sphere;
+      if (qR < 1.e-2) {
+        const double qR2 = qR * qR;
+        sphere = 1. - qR2 / 10. + qR2 * qR2 / 280.;
+      } else {
+        sphere = 3. / std::pow(qR, 3) * (std::sin(qR) - qR * std::cos(qR));
+      }
+      return sphere / (1. + ATOOLS::sqr(m_a) * Q2);
     }
   };
 
