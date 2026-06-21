@@ -212,8 +212,11 @@ void EPA_FF_Base::FillTables()
   p_N_xb = std::make_unique<TwoDim_Table>(xaxis, baxis);
   N_xb_int* kernel = new N_xb_int(this);
   Bessel_Integrator bessel(kernel, 1);
-  for (size_t i = 0; i < xaxis.m_nbins; i++) {
-    for (size_t j = 0; j < baxis.m_nbins; j++) {
+  // Axes have m_nbins intervals, i.e. m_nbins+1 nodes (0..m_nbins); the table
+  // is allocated and interpolated accordingly, so the upper-boundary nodes must
+  // be filled too (otherwise the last x/b interval interpolates towards zero).
+  for (size_t i = 0; i <= xaxis.m_nbins; i++) {
+    for (size_t j = 0; j <= baxis.m_nbins; j++) {
       msg_Debugging() << METHOD << ": Filling table for x = " << xaxis.x(i)
                       << ", and b = " << baxis.x(j) << "\n";
       kernel->SetXB(xaxis.x(i), baxis.x(j));
@@ -629,8 +632,8 @@ void EPA_IonApprox::FillTables()
             << "from R = " << m_R << " 1/GeV = " << (m_R * rpa->hBar_c())
             << " fm.\n";
   p_N_xb = std::make_unique<TwoDim_Table>(xaxis, baxis);
-  for (size_t i = 0; i < xaxis.m_nbins; i++) {
-    for (size_t j = 0; j < baxis.m_nbins; j++) {
+  for (size_t i = 0; i <= xaxis.m_nbins; i++) {
+    for (size_t j = 0; j <= baxis.m_nbins; j++) {
       double chi = xaxis.x(i) * m_mass * baxis.x(j);
       double val = 2 * m_Zsquared * baxis.x(j) * xaxis.x(i) * m_mass2 *
                    ATOOLS::sqr(ATOOLS::SF.Kn(1, chi));

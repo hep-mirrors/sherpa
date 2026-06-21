@@ -145,7 +145,9 @@ namespace BEAM {
     // whenever the table-construction logic changes in a way no other key
     // parameter captures, to invalidate previously written caches.
     // v2: fixed the EPA_HCS form factor argument (q*R instead of Q^2).
-    static constexpr int s_cache_version = 2;
+    // v3: fixed the EPA_WoodSaxonApprox small-qR form factor and filled the
+    //     N(x,b) table boundary nodes (last x/b node was previously left zero).
+    static constexpr int s_cache_version = 3;
     bool m_cache{true};    //< caching enabled (EPA:CacheTables) for this beam
     std::string m_respath; //< resolved RESULT_DIRECTORY root; cache lives inside
                            //< <m_respath>.zip; empty => caching disabled
