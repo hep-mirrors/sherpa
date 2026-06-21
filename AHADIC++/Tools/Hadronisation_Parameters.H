@@ -31,7 +31,6 @@ namespace AHADIC {
     std::map<std::string,double> m_parametermap;
     
     void ReadParameters();
-    void ReadGeneralSwitches();
     void ReadPoppingParameters();
     void ReadMesonWeights();
     void ReadSplittingParameters();
