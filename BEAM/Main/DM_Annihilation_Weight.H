@@ -10,13 +10,13 @@ namespace BEAM {
     ATOOLS::Info_Key m_sprimekey, m_xkey, m_cosxikey;
     bool        m_relativistic;
     double      m_temperature, m_m[2], m_m2[2], m_w[2];
-    long double m_BesselK2[2], m_norm;
+    long double m_norm;
   public:
     DM_Annihilation_Weight(Kinematics_Base * kinematics);
     ~DM_Annihilation_Weight();
 
-    void AssignKeys(ATOOLS::Integration_Info *const info);
-    bool Calculate(const double & scale);
+    void AssignKeys(ATOOLS::Integration_Info *const info) override;
+    bool Calculate(const double & scale) override;
   };
 }
 
