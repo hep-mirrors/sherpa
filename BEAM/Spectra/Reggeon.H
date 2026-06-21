@@ -7,7 +7,7 @@ namespace BEAM {
 
   class Reggeon final : public Beam_Base {
   private:
-    double m_tMax, m_tMin, m_xMax, m_xMin, m_proton_mass;
+    double m_tMax, m_xMax, m_xMin, m_proton_mass;
     double m_A, m_B, m_alpha_intercept, m_alpha_slope, m_n;
 
   public:
