@@ -306,11 +306,11 @@ double Soft_Cluster_Handler::RadiationWeight(const bool & withPS) {
   }
   double disc = totweight * ran->Get();
   map<Flavour,double>::iterator wit=weights.begin();
-  do {
+  while (wit!=weights.end()) {
     disc -= wit->second;
     if (disc<=1.e-12) break;
     wit++;
-  } while (wit!=weights.end());
+  }
   if (wit!=weights.end()) m_hads[0] = wit->first;
   return totweight;
 }
@@ -348,11 +348,11 @@ double Soft_Cluster_Handler::DecayWeight() {
 
   double disc = totweight * ran->Get();
   map<Flavour_Pair,double>::iterator wit=weights.begin();
-  do {
+  while (wit!=weights.end()) {
     disc -= wit->second;
     if (disc<=1.e-12) break;
     wit++;
-  } while (wit!=weights.end());
+  }
   if (wit!=weights.end()) {
     m_hads[0] = wit->first.first;
     m_hads[1] = wit->first.second;
