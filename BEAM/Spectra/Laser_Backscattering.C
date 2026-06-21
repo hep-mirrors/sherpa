@@ -215,7 +215,7 @@ double Laser_Backscattering::TwoPhotons(double x,double pole,double poll,double 
   double g2    = 2.*m_xe/x - 2.*m_xe - 1;
   if (g2<0.) {
     if (m_pol) deg += value * m_total2 * Polarisation(x,2.*m_xe,pole,poll);
-    return value;
+    return m_total2 * value;
   }
 
   double damp   = exp(-m_rho2 * g2/8.) * pow(g2,m_delta);
