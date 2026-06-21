@@ -270,7 +270,7 @@ namespace BEAM {
     photon. It is given by
     \f[
     {\cal P}_C(x,z,\lambda_e,\lambda_L) = \frac{1}{\cal N}_P
-    \lambda_e \left[\frac{x}{1-x}\left(1+(1-x)\sqrt{\frac{2x}{z(1-x)}-1}\right)\right] -
+    \lambda_e \left[\frac{x}{1-x}\left(1+(1-x)\left(\frac{2x}{z(1-x)}-1\right)^2\right)\right] -
     \lambda_L \left[\left(1-x+\frac{1}{1-x}\right)\left(\frac{2x}{z(1-x)}-1\right)\right]\,,
     \f]
     where the norm is given by
