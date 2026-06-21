@@ -66,7 +66,6 @@ namespace BEAM {
                                                  const int,const int,bool &)
     */
     Beam_Base * InitializeLaserBackscattering(int);
-    Beam_Base * InitializeSpectrumReader(int);
     /*!
       Characteristic parameters for monochromatic beams are read in and the spectrum is
       instantiated through a call to
@@ -94,7 +93,7 @@ namespace BEAM {
     bool SpecifySpectra();
     Beam_Base * InitSpectrum(const size_t & num);
 
-    const ATOOLS::Flavour GetFlavour(const std::string & tag,const size_t & pos=-1);
+    const ATOOLS::Flavour GetFlavour(const std::string & tag,const size_t & pos);
     inline beammode GetMode() const { return m_beammode; }
     inline beamspectrum GetSpectrum(const size_t& pos) const
     {
