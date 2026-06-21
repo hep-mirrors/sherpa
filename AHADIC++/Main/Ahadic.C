@@ -22,8 +22,13 @@ Ahadic::Ahadic(string shower) :
 {
   rpa->gen.AddCitation(1, "Ahadic is described in \\cite{Chahal:2022rid}.");
   ReadMassParameters();
-  hadpars = new Hadronisation_Parameters();
-  hadpars->Init(shower);
+  // hadpars is a module-global singleton: construct + initialise it exactly
+  // once behind a guard (and delete/null it in ~Ahadic), so a second
+  // fragmentation handler does not leak the first one's tables.
+  if (!hadpars) {
+    hadpars = new Hadronisation_Parameters();
+    hadpars->Init(shower);
+  }
   m_sformer.Init();
   m_beamparticles.Init();
   m_softclusters.Init();
@@ -35,6 +40,7 @@ Ahadic::Ahadic(string shower) :
 Ahadic::~Ahadic()
 {
   Reset();
+  if (hadpars) { delete hadpars; hadpars = nullptr; }
 }
 
 Return_Value::code Ahadic::Hadronize(Blob_List * blobs)
