@@ -210,8 +210,8 @@ void EPA_FF_Base::FillTables()
             << "from R = " << m_R << " 1/GeV = " << (m_R * rpa->hBar_c())
             << " fm.\n";
   p_N_xb = std::make_unique<TwoDim_Table>(xaxis, baxis);
-  N_xb_int* kernel = new N_xb_int(this);
-  Bessel_Integrator bessel(kernel, 1);
+  N_xb_int kernel(this);
+  Bessel_Integrator bessel(&kernel, 1);
   // Axes have m_nbins intervals, i.e. m_nbins+1 nodes (0..m_nbins); the table
   // is allocated and interpolated accordingly, so the upper-boundary nodes must
   // be filled too (otherwise the last x/b interval interpolates towards zero).
@@ -219,13 +219,12 @@ void EPA_FF_Base::FillTables()
     for (size_t j = 0; j <= baxis.m_nbins; j++) {
       msg_Debugging() << METHOD << ": Filling table for x = " << xaxis.x(i)
                       << ", and b = " << baxis.x(j) << "\n";
-      kernel->SetXB(xaxis.x(i), baxis.x(j));
+      kernel.SetXB(xaxis.x(i), baxis.x(j));
       // Jacobian is d^2b = b db dphi and phi can be integrated out immediately
       double value = 2 * m_Zsquared * sqr(bessel()) / xaxis.x(i) * baxis.x(j);
       p_N_xb->Fill(i, j, value);
     }
   }
-  delete kernel;
 }
 
 void EPA_FF_Base::OutputToCSV(const std::string& type)
