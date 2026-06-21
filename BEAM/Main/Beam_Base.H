@@ -26,7 +26,7 @@ namespace BEAM {
   public:
     Beam_Base(beamspectrum type,const ATOOLS::Flavour& _beam,
 	      const double _energy,const double _polarisation,
-	      const int _dir, int mode = 0);
+	      const int _dir);
     virtual ~Beam_Base() = default;
 
     virtual Beam_Base* Copy() = 0;
