@@ -49,8 +49,11 @@ bool EPA::CalculateWeight(double x, double q2)
     msg_Debugging() << METHOD << ": negative flux at x = " << x << "\n";
     m_weight = 0.;
   }
-  if (IsNan(m_weight))
-    msg_Out() << "Boink! " << METHOD << "(x = " << x << ") yields NaN.\n";
+  if (IsNan(m_weight)) {
+    msg_Error() << METHOD << "(x = " << x
+                << ") yielded a NaN weight; setting it to zero.\n";
+    m_weight = 0.;
+  }
   return true;
 }
 
