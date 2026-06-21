@@ -32,7 +32,7 @@ void Singlet_Former::ExtractOutgoingCols(Blob * blob) {
   }
 }
 
-void Singlet_Former::FormSinglets() {
+bool Singlet_Former::FormSinglets() {
   // While there are particles in the active list, singlets must be
   // constructed.  This will be done recursively along the following lines:
   // - Take first particle of "active" list, make a new singlet list and
@@ -44,11 +44,12 @@ void Singlet_Former::FormSinglets() {
   // - The process stops when the ring is closed
   // I/we still have to think about possible errors and how to catch them ... . 
   while (!m_colparts.empty()) {
-    p_singlets->push_back(MakeAnother());
+    if (!MakeAnother()) return false;
   }
+  return true;
 }
 
-Singlet * Singlet_Former::MakeAnother() {
+bool Singlet_Former::MakeAnother() {
   Singlet * partlist = new Singlet();
   Particle * part    = FindStart();
   partlist->push_back(new Proto_Particle(*part));
@@ -58,6 +59,7 @@ Singlet * Singlet_Former::MakeAnother() {
   unsigned int col1 = part->GetFlow(1);
   unsigned int col2 = part->GetFlow(2);
   while (col2!=col1) {
+    bool found = false;
     for (list<Particle *>::iterator pliter=m_colparts.begin();
 	 pliter!=m_colparts.end();pliter++) {
       part = *pliter;
@@ -67,11 +69,24 @@ Singlet * Singlet_Former::MakeAnother() {
 	partlist->push_back(new Proto_Particle(*part));
 	if (part->Flav().IsQuark()) partlist->back()->SetLeading(true);
 	if (part->Beam()>-1)        partlist->back()->SetBeam(true);
+	found = true;
 	break;
       }
     }
+    if (!found) {
+      // No partner closes the colour line: a malformed/incomplete colour flow
+      // would otherwise spin this loop forever (the colour list stops shrinking
+      // once nothing matches).  Bail out so Extract fails and the event is
+      // retried; partlist's Proto_Particles are swept by Proto_Particle::Reset()
+      // on the ensuing Ahadic::Reset.
+      msg_Error()<<METHOD<<": could not close colour singlet "
+		 <<"(open colour line "<<col1<<").\n";
+      delete partlist;
+      return false;
+    }
   }
-  return partlist;
+  p_singlets->push_back(partlist);
+  return true;
 }
 
 Particle * Singlet_Former::FindStart() {
@@ -99,7 +114,5 @@ bool Singlet_Former::Extract(Blob * blob) {
   // originate from either shower or hadron decays.  
   assert(m_colparts.empty());
   ExtractOutgoingCols(blob);
-  FormSinglets();
-
-  return true;
+  return FormSinglets();
 }
