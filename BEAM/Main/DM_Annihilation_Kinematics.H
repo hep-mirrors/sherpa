@@ -9,14 +9,14 @@ namespace BEAM {
     ATOOLS::Info_Key m_sprimekey, m_xkey, m_cosxikey;
     double           m_cosxi;
 
-    void InitIntegration();
+    void InitIntegration() override;
   public:
     DM_Annihilation_Kinematics(std::array<Beam_Base*, 2> beams);
     ~DM_Annihilation_Kinematics() = default;
 
-    void AssignKeys(ATOOLS::Integration_Info *const info);
-    void SetLimits();
-    bool operator()(ATOOLS::Vec4D_Vector& p);
+    void AssignKeys(ATOOLS::Integration_Info *const info) override;
+    void SetLimits() override;
+    bool operator()(ATOOLS::Vec4D_Vector& p) override;
   };
 }
 #endif

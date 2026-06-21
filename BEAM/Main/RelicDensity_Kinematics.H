@@ -8,15 +8,15 @@ namespace BEAM {
   private:
     ATOOLS::Info_Key m_sprimekey;
 
-    void InitIntegration();
+    void InitIntegration() override;
   public:
     RelicDensity_Kinematics(std::array<Beam_Base*, 2> beams);
     ~RelicDensity_Kinematics() = default;
 
-    void AssignKeys(ATOOLS::Integration_Info *const info);
-    void SetLimits();
-    inline double Sprime() { return m_sprimekey[3]; }
-    bool operator()(ATOOLS::Vec4D_Vector& moms);
+    void AssignKeys(ATOOLS::Integration_Info *const info) override;
+    void SetLimits() override;
+    inline double Sprime() override { return m_sprimekey[3]; }
+    bool operator()(ATOOLS::Vec4D_Vector& moms) override;
   };
 }
 #endif
