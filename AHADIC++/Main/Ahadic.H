@@ -39,7 +39,6 @@ namespace AHADIC {
     ATOOLS::Return_Value::code Hadronize(ATOOLS::Blob * blob, int retry=0);
     void FillOutgoingParticles(ATOOLS::Blob * blob);
 
-    bool SanityCheck(ATOOLS::Blob * blob,double norm2);
     bool CheckKfcodes(ATOOLS::Blob * blob);
     void CleanUp(ATOOLS::Blob * blob);
   public:

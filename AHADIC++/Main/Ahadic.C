@@ -190,19 +190,6 @@ void Ahadic::Reset(Blob * blob) {
   Proto_Particle::Reset();
 }
 
-bool Ahadic::SanityCheck(Blob * blob,double norm2) {
-  Vec4D checkmom(blob->CheckMomentumConservation());
-  if (dabs(checkmom.Abs2())/norm2>1.e-12 ||
-      (norm2<0. && norm2>0.)) {
-    //msg_Error()<<"ERROR in "<<METHOD<<" :\n"
-    //	       <<"   Momentum violation in blob: "
-    //	       <<checkmom<<" ("<<sqrt(Max(0.,checkmom.Abs2()))<<")\n"
-    //	       <<(*blob)<<"\n";
-    return false;
-  }
-  return true;
-}
-
 bool Ahadic::CheckKfcodes(Blob * blob) {
   for(Particle* p: blob->GetOutParticles()) {
     if(p->Flav().IsNone()) return false;

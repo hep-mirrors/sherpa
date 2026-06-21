@@ -41,32 +41,17 @@ void Hadronisation_Parameters::Init(string shower)
   else if (shower=="CSS") m_shower = 1;
   ReadParameters();
 
-  bool test      = false;
   bool diquarks  = true;
   p_constituents = new Constituents(diquarks);
   Multiplet_Constructor multipletconstructor(false);
   Wave_Functions * wavefunctions = multipletconstructor.GetWaveFunctions();
   p_stransitions = new Single_Transitions(wavefunctions);
   p_dtransitions = new Double_Transitions(p_stransitions);
-
-  if (test) {
-    msg_Out()<<"Inputs to AHADIC:\n";
-    for (map<std::string,double>::iterator pit=m_parametermap.begin();
-	 pit!=m_parametermap.end();pit++)
-      msg_Out()<<"* "<<pit->first<<" = "<<pit->second<<"\n";
-    msg_Out()<<"Resulting wave functions, multiplets, and transitions:\n";
-    p_constituents->PrintConstituents();
-    multipletconstructor.PrintMultiplets();
-    p_stransitions->Print();
-    p_dtransitions->Print(true);
-    THROW(normal_exit,"tested wavefunctions etc.");
-  }
 }
 
 
 void Hadronisation_Parameters::ReadParameters()
 {
-  ReadGeneralSwitches();
   auto s = Settings::GetMainSettings()["AHADIC"];
   m_parametermap[string("minmass2")] =
     s["MIN_MASS2"].SetDefault(0.10).Get<double>();
@@ -243,14 +228,6 @@ void Hadronisation_Parameters::ReadPoppingParameters()
     (s["P_SS_by_P_QQ_norm"].SetDefault(0.056).Get<double>())*sqr(strange);
   m_parametermap[string("P_di_1_by_P_di_0")]       =
     s["P_QQ1_by_P_QQ0"].SetDefault(0.60).Get<double>();
-}
-
-
-void Hadronisation_Parameters::ReadGeneralSwitches()
-{
-  // General switches for operational modes
-  //auto s = Settings::GetMainSettings()["AHADIC"];
-  //m_switchmap["Analysis"] = 0;
 }
 
 
