@@ -60,7 +60,7 @@ Collider_Weight::Collider_Weight(Kinematics_Base* kinematics)
           "beam combination.");
 }
 
-Collider_Weight::~Collider_Weight() = default;
+Collider_Weight::~Collider_Weight() { delete p_rejector; }
 
 void Collider_Weight::AssignKeys(ATOOLS::Integration_Info* const info)
 {

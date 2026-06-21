@@ -21,7 +21,7 @@ namespace BEAM {
           m_radius2(flav2.Radius() / ATOOLS::rpa->hBar_c())
     {
     }
-    ~Beam_Rejection_Base() = default;
+    virtual ~Beam_Rejection_Base() = default;
 
     virtual double operator()(double b) = 0;
   };
