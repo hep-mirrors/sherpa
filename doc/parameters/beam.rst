@@ -104,7 +104,7 @@ can be set by ``E_LASER``. ``P_LASER`` sets their polarisations,
 defaulting to ``0.``.  Both settings can either be set to a single
 value, applying to both beams, or to a list of two values, one for
 each beam.  The ``LASER_MODE`` takes the values ``-1``, ``0``, and
-``1``, defaulting to ``0``.  ``LASER_ANGLES`` and
+``1``, defaulting to ``1``.  ``LASER_ANGLES`` and
 ``LASER_NONLINEARITY`` can be set to ``true`` or to ``false``
 (default).
 
@@ -465,10 +465,21 @@ EPA Parameters
   Proton magnetic moment for the ``Proton`` form factor. Defaults to ``2.79``.
 
 :option:`WoodsSaxon_R`
-  Woods-Saxon nuclear radius :math:`R` in fm. Defaults to ``6.49``.
+  Woods-Saxon nuclear radius :math:`R` in fm. Defaults to
+  :math:`1.118\,A^{1/3}` fm, with :math:`A` the nuclear mass number
+  (about ``6.6`` fm for lead).
 
 :option:`WoodsSaxon_d`
   Woods-Saxon skin depth :math:`d` in fm. Defaults to ``0.54``.
+
+:option:`WoodsSaxon_rNodes`
+  Number of radial integration intervals for the Filon sine transform of the
+  Woods-Saxon density when building the form-factor table. Must be at least 2.
+  Defaults to ``1024``.
+
+:option:`WoodsSaxon_rMaxFactor`
+  Sets the upper radius of that Filon integration to
+  :math:`r_\mathrm{max} = R + \mathrm{rMaxFactor}\cdot d`. Defaults to ``16``.
 
 :option:`WoodsSaxonApprox_a`
   Yukawa range :math:`a` in fm in the ``Approx_Woods-Saxon`` form factor. Defaults to ``0.7``.
