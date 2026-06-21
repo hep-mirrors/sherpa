@@ -15,12 +15,10 @@ namespace BEAM {
   
   class DM_beam : public Beam_Base {
   private:
-    double m_mass, m_temperature, m_BesselK2;
+    double m_mass, m_temperature;
     DM_type::code  m_formfactor;
     bool   m_relativistic, m_debugging; // Whether or not to multiply by v
-    // long double m_bessel_2; // result of K(2,m/T)
 
-    void RegisterDefaults();
     void selfTest(std::string filename);
   public:
     DM_beam(const ATOOLS::Flavour beam,const double & temp,
@@ -28,9 +26,9 @@ namespace BEAM {
 	    const int dir);
     ~DM_beam() {}
 
-    inline Beam_Base *Copy() { return new DM_beam(*this); }
+    inline Beam_Base *Copy() override { return new DM_beam(*this); }
 
-    bool CalculateWeight(double, double);
+    bool CalculateWeight(double, double) override;
     void SetTemperature(const double & temp) { m_temperature = temp; }
     
     inline const double & Temperature() { return m_temperature; }
