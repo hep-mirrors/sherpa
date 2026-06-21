@@ -83,7 +83,13 @@ WeightFunction(const double & z,const double & zmin,const double & zmax,
   default:
     break;
   }
+  // Accept/reject envelope: norm must be >= max of z^a+(1-z)^a over [zmin,zmax]
+  // so the returned weight stays in [0,1]. For a<0 the maxima are at the inner
+  // endpoints (zmin / 1-zmax); for a>0 they are at the outer endpoints
+  // (zmax / 1-zmin). The a>0 case was previously left at norm=1, which made the
+  // sampler accept unconditionally (weight>=1) and flattened the z spectrum.
   if (m_alpha<=0.) norm = pow(zmin,m_alpha) + pow(1.-zmax,m_alpha);
+  else             norm = pow(zmax,m_alpha) + pow(1.-zmin,m_alpha);
   return (pow(z,m_alpha)+pow(1.-z,m_alpha))/norm;
 }
 
