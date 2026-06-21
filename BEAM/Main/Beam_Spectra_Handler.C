@@ -35,7 +35,7 @@ Beam_Spectra_Handler::Beam_Spectra_Handler()
              << " (enabled = " << p_BeamBase[0]->On() << ", "
              << "momentum = " << p_BeamBase[0]->InMomentum() << ")" << std::endl
              << "  Beam 2: " << p_BeamBase[1]->Beam()
-             << " (enabled = " << p_BeamBase[0]->On() << ", "
+             << " (enabled = " << p_BeamBase[1]->On() << ", "
              << "momentum = " << p_BeamBase[1]->InMomentum() << ")" << std::endl;
 }
 
