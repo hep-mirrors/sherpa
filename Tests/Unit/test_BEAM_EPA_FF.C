@@ -3,6 +3,9 @@
 #include <catch2/catch_all.hpp>
 #include <algorithm>
 #include <cmath>
+#include <sstream>
+#include <string>
+#include <vector>
 
 using namespace BEAM;
 
@@ -85,5 +88,55 @@ TEST_CASE("EPA_FF_Base::SampleB caps the b-sampling at the 1/x flux support",
       INFO("x=" << x << " mean=" << mean << " expected=" << expected);
       CHECK_THAT(mean, Catch::Matchers::WithinRel(expected, 1e-3));
     }
+  }
+}
+
+TEST_CASE("EPA_ff_type round-trips through operator<< / operator>>",
+          "[BEAM::EPA_FF]")
+{
+  const std::vector<EPA_ff_type> all{
+      EPA_ff_type::point,        EPA_ff_type::pointApprox,
+      EPA_ff_type::proton,       EPA_ff_type::protonApprox,
+      EPA_ff_type::ionApproxInt, EPA_ff_type::Gauss,
+      EPA_ff_type::hcs,          EPA_ff_type::dipole,
+      EPA_ff_type::dipoleApprox, EPA_ff_type::WoodSaxon,
+      EPA_ff_type::WoodSaxonApprox, EPA_ff_type::ionApprox,
+      EPA_ff_type::Test,         EPA_ff_type::Undefined};
+
+  SECTION("every value survives a << then >> round-trip")
+  {
+    for (EPA_ff_type t : all) {
+      std::ostringstream oss;
+      oss << t;
+      // operator<< must emit a single whitespace-free token (ToString truncates
+      // at the first whitespace, so a space would break the settings round-trip)
+      INFO("token=\"" << oss.str() << "\"");
+      CHECK(oss.str().find(' ') == std::string::npos);
+      std::istringstream iss(oss.str());
+      EPA_ff_type back = EPA_ff_type::Test;
+      iss >> back;
+      CHECK(back == t);
+    }
+  }
+
+  SECTION("operator>> accepts numeric codes (the SetDefault(size_t(...)) path)")
+  {
+    EPA_ff_type t = EPA_ff_type::Undefined;
+    std::istringstream("0") >> t;
+    CHECK(t == EPA_ff_type::point);
+    std::istringstream("11") >> t;
+    CHECK(t == EPA_ff_type::hcs);
+    std::istringstream("14") >> t;
+    CHECK(t == EPA_ff_type::WoodSaxon);
+  }
+
+  SECTION("operator<< on an out-of-range value is bounded (no infinite recursion)")
+  {
+    // Pre-fix the fallback printed the value via "<< type", recursing forever.
+    std::ostringstream oss;
+    oss << static_cast<EPA_ff_type>(12345);
+    INFO("out=\"" << oss.str() << "\"");
+    CHECK(oss.str().find("12345") != std::string::npos);
+    CHECK(oss.str().find("Unknown") != std::string::npos);
   }
 }
