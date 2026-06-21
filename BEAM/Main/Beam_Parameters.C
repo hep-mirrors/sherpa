@@ -110,7 +110,7 @@ Beam_Base* Beam_Parameters::InitSpectrum(const size_t& num)
   default:
     break;
   }
-  msg_Error() << "Warning in Beam_Initialization::SpecifySpectra :\n"
+  msg_Error() << "Warning in Beam_Parameters::SpecifySpectra :\n"
               << "   No beam spectrum specified for beam " << num + 1
               << "\n   Will initialize monochromatic beam.\n";
   return InitializeMonochromatic(num);
@@ -133,7 +133,7 @@ Beam_Base* Beam_Parameters::InitializeLaserBackscattering(int num)
   Flavour beam_particle = GetFlavour("BEAMS", num);
   if ((beam_particle != Flavour(kf_e)) &&
       (beam_particle != Flavour(kf_e).Bar())) {
-    msg_Error() << "Error in Beam_Initialization::SpecifySpectra :\n"
+    msg_Error() << "Error in Beam_Parameters::SpecifySpectra :\n"
                 << "   Tried to initialize Laser_Backscattering for "
                 << beam_particle << ".\n";
     return nullptr;
@@ -156,7 +156,7 @@ Beam_Base* Beam_Parameters::InitializeSimpleCompton(int num)
   Flavour beam_particle = GetFlavour("BEAMS", num);
   if ((beam_particle != Flavour(kf_e)) &&
       (beam_particle != Flavour(kf_e).Bar())) {
-    msg_Error() << "Error in Beam_Initialization::SpecifySpectra :\n"
+    msg_Error() << "Error in Beam_Parameters::SpecifySpectra :\n"
                 << "   Tried to initialize Simple_Compton for " << beam_particle
                 << ".\n";
     return nullptr;
@@ -184,7 +184,7 @@ Beam_Base* Beam_Parameters::InitializePomeron(int num)
 {
   Flavour beam_particle = GetFlavour("BEAMS", num);
   if (beam_particle.Kfcode() != kf_p_plus) {
-    msg_Error() << "Error in Beam_Initialization::SpecifySpectra:\n"
+    msg_Error() << "Error in Beam_Parameters::SpecifySpectra:\n"
                 << "   Tried to initialize Pomeron for " << beam_particle
                 << ".\n"
                 << "   This option is not available.\n";
@@ -198,7 +198,7 @@ Beam_Base* Beam_Parameters::InitializeReggeon(int num)
 {
   Flavour beam_particle = GetFlavour("BEAMS", num);
   if (beam_particle.Kfcode() != kf_p_plus) {
-    msg_Error() << "Error in Beam_Initialization::SpecifySpectra:\n"
+    msg_Error() << "Error in Beam_Parameters::SpecifySpectra:\n"
                 << "   Tried to initialize Reggeon for " << beam_particle
                 << ".\n"
                 << "   This option is not available.\n";
