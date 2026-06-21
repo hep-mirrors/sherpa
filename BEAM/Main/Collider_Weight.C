@@ -34,7 +34,7 @@ Collider_Weight::Collider_Weight(Kinematics_Base* kinematics)
   if (p_beams[0]->Type() != beamspectrum::EPA &&
       p_beams[1]->Type() != beamspectrum::EPA)
     THROW(fatal_error,
-          "BEAM_OVERLAP_REJECTION requires at least one EPA/Pomeron/Reggeon "
+          "BEAM_OVERLAP_REJECTION requires at least one EPA "
           "beam to define an impact parameter.");
 
   const ATOOLS::Flavour& b0 = p_beams[0]->Beam();
