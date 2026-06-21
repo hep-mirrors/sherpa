@@ -393,14 +393,14 @@ void Beam_Parameters::InitializeFlav(kf_code flav)
       AddParticle(kf_gold197, 196.966552 * A, 6.9823, 0., 237, 0, true, 1,
                   "gold197", "Au$_{197}$");
     } else if (flav == kf_lead206) {
-      AddParticle(kf_lead206, 205.9744653 * A, 5.4902, 0., 82, 0, 1, 1, "Pb208",
-                  "Pb208");
+      AddParticle(kf_lead206, 205.9744653 * A, 5.4902, 0., 246, 0, 1, 1, "Pb206",
+                  "Pb206");
     } else if (flav == kf_lead207) {
-      AddParticle(kf_lead207, 206.9758969 * A, 5.4943, 0., 82, -1, 1, 1,
+      AddParticle(kf_lead207, 206.9758969 * A, 5.4943, 0., 246, 0, 1, 1,
                   "Pb207", "Pb207");
     } else if (flav == kf_lead208) {
-      AddParticle(kf_lead208, 207.9766521 * A, 5.5012, 0., 82, 0, 1, 1, "Pb206",
-                  "Pb206");
+      AddParticle(kf_lead208, 207.9766521 * A, 5.5012, 0., 246, 0, 1, 1, "Pb208",
+                  "Pb208");
     } else if (flav == kf_uranium238) {
       AddParticle(kf_uranium238, 238.0507900 * A, 7.4366, 0., 276, 0, true, 1,
                   "uranium238", "U$_{238}$");
