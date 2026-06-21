@@ -52,7 +52,7 @@ namespace BEAM {
     const std::vector<ATOOLS::Vec4D>& OutMomenta() const { return m_vecouts; }
     const double& Energy() const { return m_energy; }
     const double& Polarisation() const { return m_polarisation; }
-    bool PolarisationOn() const { return (m_polarisation != 0.); }
+    virtual bool PolarisationOn() const { return (m_polarisation != 0.); }
     double X() const { return m_x; }
     double Weight() const { return m_weight; }
 
