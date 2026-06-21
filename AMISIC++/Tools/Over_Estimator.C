@@ -1,4 +1,5 @@
 #include "AMISIC++/Tools/Over_Estimator.H"
+#include "AMISIC++/Tools/Matter_Overlap.H"
 #include "AMISIC++/Perturbative/MI_Processes.H"
 #include "PDF/Main/ISR_Handler.H"
 #include "ATOOLS/Math/Random.H"
@@ -29,7 +30,7 @@ Over_Estimator::Over_Estimator() :
 Over_Estimator::~Over_Estimator() { if (p_prefs) delete p_prefs; }
 
 void Over_Estimator::
-Initialize(PDF::ISR_Handler * isr,MI_Processes * procs,axis * sbins) {
+Initialize(PDF::ISR_Handler * isr,MI_Processes * procs,axis * sbins,Matter_Overlap * mo) {
   ///////////////////////////////////////////////////////////////////////////
   // Inheriting all relevant inputs from the MI_Processes which we aim to
   // over-estimate.  
@@ -45,7 +46,7 @@ Initialize(PDF::ISR_Handler * isr,MI_Processes * procs,axis * sbins) {
     m_xmin[i] = Max(1.e-6,p_pdf[i]->XMin());
     m_xmax[i] = Max(1.-1.e-6,p_pdf[i]->XMax());
   }
-  FixMaximum(procs,sbins);
+  FixMaximum(procs,sbins,mo);
   Output();
 }
 
@@ -59,13 +60,17 @@ void Over_Estimator::UpdateS(const double & s,const double & pt02,const double &
   m_ptmin2 = ptmin2;
 }
 
-void Over_Estimator::FixMaximum(MI_Processes * procs,axis * sbins) {
+void Over_Estimator::FixMaximum(MI_Processes * procs,axis * sbins,Matter_Overlap * mo) {
   ////////////////////////////////////////////////////////////////////////////
   // Looping over all relevant s values from the Sudakov tables in the 
   // MI_Processes to fill a look-up table of maxima.
-  // Note: This does not include any effect of the matter overlap
-  //       (its weight should be below unity)
+  // The matter overlap maximum O(b=0) is included so that the Sudakov trial
+  // rate matches the physics rate, keeping the acceptance weight O(b)/O_max
+  // close to unity and avoiding excessive (*p_processes)() evaluations.
+  // Without this factor the acceptance weight equals O(b) which is typically
+  // 0.1-0.25, causing a 4-10x excess of expensive cross-section evaluations.
   ////////////////////////////////////////////////////////////////////////////
+  const double omax = (mo ? (*mo)(0.) : 1.0);
   p_prefs    = new OneDim_Table(*sbins);
   for (size_t sbin=0;sbin<sbins->m_nbins;sbin++) {
     m_s      = sbins->x(sbin);
@@ -97,6 +102,7 @@ void Over_Estimator::FixMaximum(MI_Processes * procs,axis * sbins) {
       double test   = procs->PDFnorm()*Max(approx,exact)*yvol*sqr(pt2+m_pt02/4.);
       if (test > maxpref) { maxpref = test; }
     }
+    maxpref *= omax;
     p_prefs->Fill(sbin,maxpref);
     if (sbins->m_nbins==1) m_pref = maxpref;
   }
