@@ -171,7 +171,8 @@ bool Laser_Backscattering::CalculateWeight(double _x,double _scale)
       break;
     }
   }
-  m_polar  = m_polar/spec;
+  if (spec != 0.) m_polar /= spec;
+  else m_polar = 0.;
   m_weight = spec;
 
   return 1;
