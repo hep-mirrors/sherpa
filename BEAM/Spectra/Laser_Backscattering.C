@@ -293,7 +293,7 @@ double Laser_Backscattering::Polarisation(double x,double z,double pole,double p
 }
 
 
-bool Laser_Backscattering::PolarisationOn()
+bool Laser_Backscattering::PolarisationOn() const
 {
   if (m_polarisationL!=0. || m_polarisation!=0.) return 1;
   return 0;
