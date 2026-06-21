@@ -229,7 +229,7 @@ double Cluster_Splitter::DeltaM(const size_t & cl) {
 
 bool Cluster_Splitter::FillParticlesInLists() {
   size_t shuffle = MakeAndCheckClusters();
-  if (shuffle) MakeNewMomenta(shuffle);
+  if (shuffle && !MakeNewMomenta(shuffle)) return false;
   for (size_t i=0;i<2;i++) {
     if (shuffle&(i+1)) FillHadronAndDeleteCluster(i);
     else if (shuffle)  UpdateAndFillCluster(i);
@@ -250,17 +250,22 @@ size_t Cluster_Splitter::MakeAndCheckClusters() {
   return shuffle;
 }
 
-void Cluster_Splitter::MakeNewMomenta(size_t shuffle) {
+bool Cluster_Splitter::MakeNewMomenta(size_t shuffle) {
   double mt2[2], alpha[2], beta[2];
   for (size_t i=0;i<2;i++) {
     mt2[i]    = (shuffle&(i+1) ? sqr(m_fl[i].Mass()) : m_mass2[i] ) + m_kt2;
   }
-  alpha[0]    = ((m_Q2+mt2[0]-mt2[1])+sqrt(sqr(m_Q2+mt2[0]-mt2[1])-4.*m_Q2*mt2[0]))/(2.*m_Q2);
+  // Kallen positivity: the radicand is < 0 when sqrt(m_Q2) < mt[0]+mt[1].
+  // Bail out (caller retries the splitting) instead of producing NaN momenta.
+  double radicand = sqr(m_Q2+mt2[0]-mt2[1])-4.*m_Q2*mt2[0];
+  if (radicand<0.) return false;
+  alpha[0]    = ((m_Q2+mt2[0]-mt2[1])+sqrt(radicand))/(2.*m_Q2);
   beta[0]     = mt2[0]/(m_Q2*alpha[0]);
   alpha[1]    = 1.-alpha[0];
   beta[1]     = 1.-beta[0];
   m_newmom[0] = m_E*(alpha[0]*s_AxisP + beta[0]*s_AxisM)+m_ktvec;
   m_newmom[1] = Vec4D(m_Q,0.,0.,0.)-m_newmom[0];
+  return true;
 }
 
 void Cluster_Splitter::FillHadronAndDeleteCluster(size_t i) {

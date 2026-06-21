@@ -27,7 +27,7 @@ namespace AHADIC {
     void   CalculateLimits();
     bool   FillParticlesInLists();
     size_t MakeAndCheckClusters();
-    void   MakeNewMomenta(size_t shuffle);
+    bool   MakeNewMomenta(size_t shuffle);
     void   FillHadronAndDeleteCluster(size_t i);
     void   UpdateAndFillCluster(size_t i);
     bool   RecalculateZs();
