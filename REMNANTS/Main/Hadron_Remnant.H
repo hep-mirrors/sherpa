@@ -39,6 +39,7 @@ namespace REMNANTS {
                   const bool& copy = true) override;
     bool TestExtract(const ATOOLS::Flavour& flav, const ATOOLS::Vec4D& mom) override;
     void Reset(const bool& resc = false, const bool& DIS = false) override;
+    double MinRemnantMassAfter(const ATOOLS::Flavour& flav) const override;
 
     inline ATOOLS::Particle* GetRecoiler() override { return p_recoiler; }
     inline ATOOLS::Particle* GetSpectator() override { return p_spectator; }

@@ -397,6 +397,19 @@ bool Hadron_Remnant::TestExtract(const Flavour &flav,const Vec4D &mom) {
   return true;
 }
 
+double Hadron_Remnant::MinRemnantMassAfter(const Flavour& flav) const {
+  // Exact mirror of TestExtract's energy check: reserves m_minE for the
+  // valence+diquark system, the masses of all already-accumulated sea-quark
+  // spectators, and — when m_valence is already set and flav is a quark —
+  // the mass of the antiquark spectator that MakeSpectator will create.
+  double seaMasses = 0.;
+  for (Particle const* sp : m_spectators)
+    seaMasses += Max(sp->Flav().HadMass(), m_LambdaQCD);
+  if (m_valence && flav.IsQuark())
+    seaMasses += Max(flav.Bar().HadMass(), m_LambdaQCD);
+  return m_minE + seaMasses;
+}
+
 void Hadron_Remnant::Output() {
   msg_Out()<<METHOD<<"("<<m_beam<<", "<<m_beamflav<<").\n"
 	   <<"   Constituents are [ ";
