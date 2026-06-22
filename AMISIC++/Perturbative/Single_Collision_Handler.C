@@ -215,12 +215,31 @@ bool Single_Collision_Handler::NextScatter(Blob * blob) {
       ////////////////////////////////////////////////////////////////////////
       fill = p_processes->FillHardScatterBlob(blob,m_lastpt2);
       if (fill==1) {
+        double x1 = 0., x2 = 0.;
+        if ((*blob)["PDFInfo"]!=NULL) {
+          x1 = (*blob)["PDFInfo"]->Get<PDF_Info>().m_x1;
+          x2 = (*blob)["PDFInfo"]->Get<PDF_Info>().m_x2;
+        }
+        // Exact remnant viability check now that parton flavours are known.
+        // Mirrors TestExtract: for sea-quark extractions (m_valence already set),
+        // the future antiquark spectator mass is included.  If the combined
+        // two-beam remnant cannot be put on shell, terminate MPI without a retry
+        // (same statistical semantics as pt2 falling below pt2min).
+        {
+          Flavour flav0 = blob->NInP()>=1 ? blob->InParticle(0)->Flav() : Flavour();
+          Flavour flav1 = blob->NInP()>=2 ? blob->InParticle(1)->Flav() : Flavour();
+          double rem0 = p_remnants[0]->ResidualE() - x1 * InMomentum(0)[0];
+          double rem1 = p_remnants[1]->ResidualE() - x2 * InMomentum(1)[0];
+          double minMass = p_remnants[0]->MinRemnantMassAfter(flav0)
+                         + p_remnants[1]->MinRemnantMassAfter(flav1);
+          if (4. * rem0 * rem1 < minMass * minMass) {
+            blob->ClearAllData();
+            blob->DeleteOwnedParticles();
+            m_done = true;
+            return false;
+          }
+        }
         m_lastpt2 = m_pt2;
-	double x1 = 0., x2 = 0.;
-	if ((*blob)["PDFInfo"]!=NULL) {
-	  x1 = (*blob)["PDFInfo"]->Get<PDF_Info>().m_x1;
-	  x2 = (*blob)["PDFInfo"]->Get<PDF_Info>().m_x2;
-	}
 	m_deltapos = Vec4D(0.,0.,0.,0.);
 	p_overlap->SelectPositionForScatter(m_b,x1,m_pt2,x2,m_pt2,m_deltapos);
 	blob->SetType(btp::Hard_Collision);
