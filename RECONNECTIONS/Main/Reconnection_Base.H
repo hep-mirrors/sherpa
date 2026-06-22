@@ -7,7 +7,7 @@
 
 namespace RECONNECTIONS {
   typedef std::pair<unsigned int,unsigned int> colpair;
-  
+
   class Reconnection_Base {
   protected:
     std::map<unsigned int, ATOOLS::Particle *> m_cols[2];

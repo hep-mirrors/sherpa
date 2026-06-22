@@ -44,7 +44,9 @@ Return_Value::code Colour_Reconnections::Treat(ATOOLS::Blob_List* bloblist)
   return ret;
 }
 
-void Colour_Reconnections::CleanUp(const size_t & mode) {}
+void Colour_Reconnections::CleanUp(const size_t & mode) {
+  p_reconnectionhandler->CleanUp(mode);
+}
 
 void Colour_Reconnections::Finish(const std::string &) {}
 
