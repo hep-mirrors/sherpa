@@ -213,7 +213,11 @@ void CS_Cluster_Definitions::KernelWeight
 	       p_shower->GetSudakov()->FSPT2Min());
   if (m_kfmode && !(kmode&16))
   cs.m_mu2*=cdip->Coupling()->CplFac(cs.m_mu2);
-  cs.m_cpl=cdip->PureQCD()?0:-1;
+  // m_cpl encodes the coupling type for the scale setters (MEPS/VBF/E_Gamma):
+  // 0 = QCD, 1 = QED. The value 2 is reserved for gg->colour-singlet
+  // (double-alpha_s) vertices and must not be assigned to ordinary QCD
+  // splittings, or the merging order bookkeeping is corrupted.
+  cs.m_cpl=cdip->PureQCD()?0:1;
   if (!(kmode&2)) return;
   else {
   double eta=1.0;
