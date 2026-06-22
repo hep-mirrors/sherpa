@@ -84,10 +84,8 @@ double Process_Integrator::SelectionWeight(const int mode) const
       // processes where positive and negative weights cancel (zero total cross section
       // but non-zero absolute cross section, e.g. interference terms).
       if (m_effi < 0.) {
-        msg_Error()<<METHOD<<"(): m_effi="<<m_effi<<" (uninitialized sentinel) for '"
-                   <<p_proc->Name()<<"'; SetUpEnhance may not have been called."<<std::endl;
-        DO_STACK_TRACE;
-        return 0.;
+        THROW(critical_error, METHOD+"(): m_effi="+to_string(m_effi)+" (uninitialized sentinel) for '"
+	      +p_proc->Name()+"'; SetUpEnhance may not have been called.");
       }
       if (m_effi == 0. || m_selweight_xs == 0.) return 0.;
       return m_selweight_xs * m_enhancefac / m_effi;
@@ -463,9 +461,8 @@ void Process_Integrator::SetFullUnweightingStats(const double w_max)
   // w_max==0 with m_sncut>0 is physically impossible (non-zero-weight events imply
   // m_weightmax>0), so it signals a broken upstream max-weight calculation.
   if (w_max == 0. && m_sncut > 0) {
-    msg_Error()<<METHOD<<"(): w_max=0 but m_sncut="<<m_sncut<<" for '"
-               <<p_proc->Name()<<"'; upstream max-weight may be wrong."<<std::endl;
-    DO_STACK_TRACE;
+    THROW(critical_error, METHOD+"(): w_max=0 but m_sncut="+to_string(m_sncut)+" for '"
+	  +p_proc->Name()+"'; upstream max-weight may be wrong.");
   }
   m_effi         = (m_sncut > 0 && w_max != 0.) ? m_ssumenhabs/m_sncut/w_max : 0.;
   m_effevperev   = m_ssumenhabs != 0. ? pow(m_ssumenh/m_ssumenhabs,2) : 0.;
@@ -618,10 +615,9 @@ void Process_Integrator::SetUpEnhance(const int omode)
         m_effevperev+=effevperev;
         effevperev_signed+=effevperev*((*p_proc)[i]->Integrator()->TotalResult() >= 0. ? 1. : -1.);
       } else {
-        msg_Error()<<METHOD<<"(): EffEvPerEv="<<child_effevperev
-                   <<" (uninitialized) for '"<<(*p_proc)[i]->Name()
-                   <<"'; SetUpEnhance may not have been called."<<std::endl;
-        DO_STACK_TRACE;
+        THROW(critical_error, METHOD+"(): EffEvPerEv="+to_string(child_effevperev)
+                   +" (uninitialized) for '"+(*p_proc)[i]->Name()
+	      +"'; SetUpEnhance may not have been called.");
       }
     }
     // If every child subprocess has zero efficiency or zero weight, the group as a
