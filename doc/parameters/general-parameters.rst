@@ -79,10 +79,10 @@ the tune ``MPI-CRon`` is defined in the file ``MPI-CRon.yaml``.
 Possible values are:
 
 * ``MPI-CRoff``
-  MPI tune with colour reconnections disabled. This is the default tune.
+  MPI tune with colour reconnections disabled.
 
 * ``MPI-CRon``
-  Combined tune of MPI and colour reconnections.
+  Combined tune of MPI and colour reconnections. This is the default tune.
 
 Users can also define their own tune sets and load them by adding 
 their directory to the search paths via :ref:`TUNE_PATH`.
