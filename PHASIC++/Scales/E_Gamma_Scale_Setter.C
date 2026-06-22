@@ -1,6 +1,7 @@
 #include "PHASIC++/Scales/Scale_Setter_Base.H"
 
 #include "PHASIC++/Scales/Tag_Setter.H"
+#include "PHASIC++/Scales/Core_Scale_Setter.H"
 #include "PHASIC++/Scales/Color_Setter.H"
 #include "PHASIC++/Scales/Cluster_Definitions.H"
 #include "PHASIC++/Process/Process_Base.H"
@@ -24,10 +25,11 @@
 
 namespace PHASIC {
 
-  class VBF_Scale_Setter: public Scale_Setter_Base {
+  class E_Gamma_Scale_Setter: public Scale_Setter_Base {
   private:
 
     PDF::Cluster_Definitions_Base *p_clu, *p_qdc;
+    Core_Scale_Setter *p_core, *p_uoscale;
     Color_Setter *p_cs;
     ATOOLS::Mass_Selector *p_ms;
     Single_Process *p_sproc;
@@ -38,11 +40,11 @@ namespace PHASIC {
 
     std::shared_ptr<Color_Integrator> p_ci;
 
-    double m_rsf, m_fsf, m_qsf;
+    double m_rsf, m_fsf;
     int    m_cmode, m_nmin;
     int    m_rproc, m_sproc, m_rsproc, m_vproc, m_nproc;
 
-    static int s_nfgsplit, s_nlocpl;
+    static int s_nfgsplit, s_allowuo, s_nlocpl;
 
     int Select(const PDF::ClusterInfo_Vector &ccs,
 	       const Int_Vector &on,const int mode=0) const;
@@ -62,27 +64,29 @@ namespace PHASIC {
 
     bool ClusterStep(ATOOLS::Cluster_Amplitude *ampl,
 		     ATOOLS::ClusterAmplitude_Vector &ampls,
-		     const PDF::Cluster_Info &ci,const int ord);
+		     const PDF::Cluster_Info &ci,const int ord) const;
     void Cluster(ATOOLS::Cluster_Amplitude *ampl,
 		 ATOOLS::ClusterAmplitude_Vector &ampls,
-		 const int ord);
-    void SetCoreScale(ATOOLS::Cluster_Amplitude *const ampl);
+		 const int ord) const;
+    void SetCoreScale(ATOOLS::Cluster_Amplitude *const ampl) const;
+
+    double UnorderedScale(ATOOLS::Cluster_Amplitude *const ampl) const;
 
   public:
 
-    VBF_Scale_Setter(const Scale_Setter_Arguments &args,
+    E_Gamma_Scale_Setter(const Scale_Setter_Arguments &args,
 		      const int mode=1);
 
-    ~VBF_Scale_Setter();
+    ~E_Gamma_Scale_Setter();
 
-    bool Initialize();
+    bool Initialize() override;
 
-    double Calculate(const ATOOLS::Vec4D_Vector &p,const size_t &mode);
+    double Calculate(const ATOOLS::Vec4D_Vector &p,const size_t &mode) override;
 
     void SetScale(const std::string &mu2tag,
 		  ATOOLS::Algebra_Interpreter &mu2calc);
 
-  };// end of class VBF_Scale_Setter
+  };// end of class E_Gamma_Scale_Setter
 
 }// end of namespace PHASIC
 
@@ -90,43 +94,48 @@ using namespace PHASIC;
 using namespace PDF;
 using namespace ATOOLS;
 
-DECLARE_GETTER(VBF_Scale_Setter,"VBF",
+DECLARE_GETTER(E_Gamma_Scale_Setter,"E_Gamma",
 	       Scale_Setter_Base,Scale_Setter_Arguments);
 
 Scale_Setter_Base *ATOOLS::Getter
-<Scale_Setter_Base,Scale_Setter_Arguments,VBF_Scale_Setter>::
+<Scale_Setter_Base,Scale_Setter_Arguments,E_Gamma_Scale_Setter>::
 operator()(const Scale_Setter_Arguments &args) const
 {
-  return new VBF_Scale_Setter(args,1);
+  return new E_Gamma_Scale_Setter(args,1);
 }
 
 void ATOOLS::Getter<Scale_Setter_Base,Scale_Setter_Arguments,
-		    VBF_Scale_Setter>::
+		    E_Gamma_Scale_Setter>::
 PrintInfo(std::ostream &str,const size_t width) const
 {
-  str<<"meps scale scheme for VBF";
+  str<<"E_Gamma scale scheme";
 }
 
-int VBF_Scale_Setter::s_nfgsplit(-1);
-int VBF_Scale_Setter::s_nlocpl(-1);
+int E_Gamma_Scale_Setter::s_nfgsplit(-1);
+int E_Gamma_Scale_Setter::s_allowuo(0);
+int E_Gamma_Scale_Setter::s_nlocpl(-1);
 
-VBF_Scale_Setter::VBF_Scale_Setter
+E_Gamma_Scale_Setter::E_Gamma_Scale_Setter
 (const Scale_Setter_Arguments &args,const int mode):
   Scale_Setter_Base(args), m_tagset(this)
 {
+  static std::string s_core, s_uoscale;
   static int s_cmode(-1), s_csmode, s_nmaxall, s_nmaxnloall, s_kfac;
   if (s_cmode<0) {
     Scoped_Settings s(Settings::GetMainSettings()["MEPS"]);
     s_nmaxall=s["NMAX_ALLCONFIGS"].GetScalarWithOtherDefault<int>(-1);
     s_nmaxnloall=s["NLO_NMAX_ALLCONFIGS"].GetScalarWithOtherDefault<int>(-1);
-    s_cmode=s["CLUSTER_MODE"].GetScalarWithOtherDefault<int>(32|64|256);
+    s_cmode=s["CLUSTER_MODE"].GetScalarWithOtherDefault<int>(8|32|64|256|1024);
     s_nlocpl=s["NLO_COUPLING_MODE"].GetScalarWithOtherDefault<int>(2);
-    s_csmode=s["MEPS_COLORSET_MODE"].GetScalarWithOtherDefault<int>(2);
+    s_csmode=s["MEPS_COLORSET_MODE"].GetScalarWithOtherDefault<int>(0);
+    s_core=s["CORE_SCALE"].GetScalarWithOtherDefault<std::string>("Default");
+    s_allowuo=s["ALLOW_SCALE_UNORDERING"].GetScalarWithOtherDefault<int>(0);
+    s_uoscale=s["UNORDERED_SCALE"].GetScalarWithOtherDefault<std::string>("None");
     s_nfgsplit=Settings::GetMainSettings()["DIPOLES"]["NF_GSPLIT"].Get<int>();
     s_kfac = Settings::GetMainSettings()["SHOWER"]["KFACTOR_SCHEME"].Get<int>();
   }
   m_scale.resize(2*stp::size);
-  std::string tag(args.m_scale);
+  std::string tag(args.m_scale), core(s_core), uoscale(s_uoscale);
   m_nproc=!(p_proc->Info().m_fi.NLOType()==nlo_type::lo);
   m_nmin=p_proc->Info().m_fi.NMinExternal();
   size_t pos(tag.find('['));
@@ -138,6 +147,8 @@ VBF_Scale_Setter::VBF_Scale_Setter
     Data_Reader read(" ",",","#","=");
     read.AddIgnore(":");
     read.SetString(tag.substr(0,pos));
+    core=read.StringValue<std::string>("C",core);
+    uoscale=read.StringValue<std::string>("U",uoscale);
     m_nmin=read.StringValue<int>("M",m_nmin);
     tag=tag.substr(pos+1);
   }
@@ -164,10 +175,10 @@ VBF_Scale_Setter::VBF_Scale_Setter
     if (m_calcs.size()==1) m_tagset.SetCalculator(m_calcs.back());
     SetScale(ctag,*m_calcs.back());
   }
-  if (p_proc->Shower()==NULL){
+  if (p_proc->Shower()==NULL) {
     msg_Error()<<"\nPlease specify the renormalisation and factorisation scale e.g SCALES: VAR{H_T2}"<<endl
                <<"For detailed instructions on setting scales, please refer to the Sherpa manual."<<endl;
-    THROW(missing_input,"No shower generator found. Unable to use the VBF scale scheme.");
+    THROW(missing_input,"No shower generator found. Unable to use the E_Gamma scale scheme.");
   }
   p_clu=p_proc->Shower()->GetClusterDefinitions();
   p_ms=p_proc->Generator();
@@ -189,51 +200,76 @@ VBF_Scale_Setter::VBF_Scale_Setter
     256 - No ordering check if last qcd split
     512 - No ordering check if first RS split
     1024 - No differential for core
+    2048 - No tracking of scale sums
   */
+  p_core=Core_Scale_Getter::GetObject(core,Core_Scale_Arguments(p_proc,core));
+  if (p_core==NULL) THROW(fatal_error,"Invalid core scale '"+core+"'");
+  if (s_uoscale=="None") p_uoscale=NULL;
+  else {
+    p_uoscale=Core_Scale_Getter::GetObject(uoscale,Core_Scale_Arguments(p_proc,uoscale));
+    if (p_uoscale==NULL) THROW(fatal_error,"Invalid unordered scale '"+uoscale+"'");
+    msg_Debugging()<<METHOD<<"(): Custom scale for unordered configurations '"+uoscale+"'\n";
+  }
   m_rsf=ToType<double>(rpa->gen.Variable("RENORMALIZATION_SCALE_FACTOR"));
   if (m_rsf!=1.0)
     msg_Debugging()<<METHOD<<"(): Renormalization scale factor "<<sqrt(m_rsf)<<"\n";
   m_fsf=ToType<double>(rpa->gen.Variable("FACTORIZATION_SCALE_FACTOR"));
   if (m_fsf!=1.0)
     msg_Debugging()<<METHOD<<"(): Factorization scale factor "<<sqrt(m_fsf)<<"\n";
-  m_qsf=ToType<double>(rpa->gen.Variable("RESUMMATION_SCALE_FACTOR"));
-  if (m_qsf!=1.0)
-    msg_Debugging()<<METHOD<<"(): Resummation scale factor "<<sqrt(m_qsf)<<"\n";
   p_cs = new Color_Setter(s_csmode);
   p_qdc = new Cluster_Definitions(s_kfac,m_nproc,p_proc->Shower()->KTType());
 }
 
-VBF_Scale_Setter::~VBF_Scale_Setter()
+E_Gamma_Scale_Setter::~E_Gamma_Scale_Setter()
 {
   for (size_t i(0);i<m_calcs.size();++i) delete m_calcs[i];
   for (size_t i(0);i<m_ampls.size();++i) m_ampls[i]->Delete();
+  if (p_uoscale) delete p_uoscale;
+  delete p_core;
   delete p_cs;
   delete p_qdc;
 }
 
-bool VBF_Scale_Setter::Initialize()
+bool E_Gamma_Scale_Setter::Initialize()
 {
-  int sout(0);
-  for (size_t i(0);i<p_proc->NOut();++i)
-    sout+=p_proc->Flavours()[p_proc->NIn()+i].Strong();
-  if (sout!=2) return true;
+  // Initialize DIS-like process for 11 22 -> X
   Cluster_Amplitude *ampl(Cluster_Amplitude::New());
   ampl->SetProc(p_proc);
   ampl->SetNIn(2);
-  for (size_t i(0);i<2;++i) {
-    ampl->CreateLeg(Vec4D(),p_proc->Flavours()[i].Bar(),i);
-    ampl->Legs().back()->SetBeam(p_proc->Caller()->Get<Single_Process>()->
-				 Integrator()->ISR()->Swap() ? 1-i : i);
-  }
+  ampl->CreateLeg(Vec4D(),p_proc->Flavours()[0].Bar());
+  ampl->CreateLeg(Vec4D(),Flavour(kf_jet));
   for (size_t i(2);i<p_proc->NIn()+p_proc->NOut();++i)
     ampl->CreateLeg(Vec4D(),p_proc->Flavours()[i]);
-  bool init(p_cs->GetProcess(ampl)!=NULL);
+  bool init(p_cs->GetProcess(ampl) != nullptr);
   if (!init) init=p_cs->Initialize(ampl);
   ampl->Delete();
+  if (!init) return false;
+  // Initialize Compton-like process for 11 22 -> 11 22
+  Cluster_Amplitude *ampl2(Cluster_Amplitude::New());
+  ampl2->SetProc(p_proc);
+  ampl2->SetNIn(2);
+  ampl2->CreateLeg(Vec4D(),p_proc->Flavours()[0].Bar());
+  ampl2->CreateLeg(Vec4D(),Flavour(kf_photon));
+  ampl2->CreateLeg(Vec4D(),p_proc->Flavours()[2]);
+  ampl2->CreateLeg(Vec4D(),Flavour(kf_photon));
+  init = p_cs->GetProcess(ampl2) != nullptr;
+  if (!init) init=p_cs->Initialize(ampl2);
+  ampl2->Delete();
+  // Initialize DIS-like process for 11 93 -> 11 93
+  Cluster_Amplitude *ampl3(Cluster_Amplitude::New());
+  ampl3->SetProc(p_proc);
+  ampl3->SetNIn(2);
+  ampl3->CreateLeg(Vec4D(),p_proc->Flavours()[0].Bar());
+  ampl3->CreateLeg(Vec4D(),Flavour(kf_jet));
+  ampl3->CreateLeg(Vec4D(),p_proc->Flavours()[2]);
+  ampl3->CreateLeg(Vec4D(),Flavour(kf_jet));
+  init = p_cs->GetProcess(ampl3) != nullptr;
+  if (!init) init=p_cs->Initialize(ampl3);
+  ampl3->Delete();
   return init;
 }
 
-int VBF_Scale_Setter::Select
+int E_Gamma_Scale_Setter::Select
 (const ClusterInfo_Vector &ccs,const Int_Vector &on,const int mode) const
 {
   if (mode==1 || (m_cmode&4) || ((m_cmode&32) && m_nproc)) {
@@ -257,7 +293,7 @@ int VBF_Scale_Setter::Select
   return -1;
 }
 
-bool VBF_Scale_Setter::CheckOrdering
+bool E_Gamma_Scale_Setter::CheckOrdering
 (Cluster_Amplitude *const ampl,const int ord) const
 {
   if (ampl->Prev()==NULL) return true;
@@ -265,20 +301,21 @@ bool VBF_Scale_Setter::CheckOrdering
       ampl->Prev()->Prev()==NULL) return true;
   if (ampl->KT2()<ampl->Prev()->KT2()) {
     if ((m_cmode&256) &&
-	(ampl->OrderQCD()==0 ||
-	 (ampl->OrderQCD()>1 && ampl->Legs().size()==3))) {
+	(ampl->OrderQCD()==(m_vproc?1:0) ||
+	 (ampl->OrderQCD()>(m_vproc?2:1) && ampl->Legs().size()==3))) {
       msg_Debugging()<<"No ordering veto: "<<sqrt(ampl->KT2())
 		     <<" < "<<sqrt(ampl->Prev()->KT2())<<"\n";
       return true;
     }
     msg_Debugging()<<"Veto ordering: "<<sqrt(ampl->KT2())
 		   <<" < "<<sqrt(ampl->Prev()->KT2())<<"\n";
+    if (!ord) return true;
     return false;
   }
   return true;
 }
 
-bool VBF_Scale_Setter::CheckSplitting
+bool E_Gamma_Scale_Setter::CheckSplitting
 (const Cluster_Info &ci,const int ord) const
 {
   if (!CheckOrdering(ci.first.p_ampl,ord)) return false;
@@ -299,21 +336,21 @@ bool VBF_Scale_Setter::CheckSplitting
   return true;
 }
 
-bool VBF_Scale_Setter::CheckSubEvents(const Cluster_Config &cc) const
+bool E_Gamma_Scale_Setter::CheckSubEvents(const Cluster_Config &cc) const
 {
   NLO_subevtlist *subs(p_proc->Caller()->GetRSSubevtList());
   for (size_t i(0);i<subs->size()-1;++i) {
     NLO_subevt *sub((*subs)[i]);
     Flavour mofl(sub->p_fl[sub->m_ijt]);
     if (sub->m_ijt<p_proc->NIn()) mofl=mofl.Bar();
-      if (cc.m_k==sub->m_k && cc.m_mo==mofl &&
-	  ((cc.m_i==sub->m_i && cc.m_j==sub->m_j) ||
-	   (cc.m_i==sub->m_j && cc.m_j==sub->m_i))) return true;
+    if (cc.m_k==sub->m_k && cc.m_mo==mofl &&
+	((cc.m_i==sub->m_i && cc.m_j==sub->m_j) ||
+	 (cc.m_i==sub->m_j && cc.m_j==sub->m_i))) return true;
   }
   return false;
 }
 
-void VBF_Scale_Setter::Combine
+void E_Gamma_Scale_Setter::Combine
 (Cluster_Amplitude &ampl,const Cluster_Info &ci) const
 {
   int i(ci.first.m_i), j(ci.first.m_j);
@@ -324,8 +361,15 @@ void VBF_Scale_Setter::Combine
   li->SetFlav(ci.first.m_mo);
   li->SetMom(ci.second.m_pijt);
   li->SetStat(ci.second.m_stat);
+  if (!(m_cmode&2048)) {
+    li->SetKT2(0,sqr(sqrt(ci.second.m_kt2)+
+		     sqrt(li->KT2(0))+sqrt(lj->KT2(0))));
+    li->SetKT2(1,ci.second.m_kt2+li->KT2(1)+lj->KT2(1));
+  }
   lk->SetMom(ci.second.m_pkt);
-  ampl.Prev()->SetIdNew(ampl.Leg(ci.first.m_j)->Id());
+  ampl.Prev()->SetIdNew(ci.first.m_j>ci.first.m_i?
+			ampl.Leg(ci.first.m_j)->Id():
+			ampl.Leg(ci.first.m_i)->Id());
   for (size_t m(0);m<ampl.Legs().size();++m) {
     ampl.Leg(m)->SetK(0);
     ampl.Leg(m)->SetStat(ampl.Leg(m)->Stat()|1);
@@ -349,7 +393,7 @@ void VBF_Scale_Setter::Combine
   ampl.SetKin(ci.second.m_kin);
 }
 
-double VBF_Scale_Setter::Calculate
+double E_Gamma_Scale_Setter::Calculate
 (const Vec4D_Vector &momenta,const size_t &mode)
 {
   m_p=momenta;
@@ -365,6 +409,8 @@ double VBF_Scale_Setter::Calculate
   m_sproc=p_proc->Caller()->Info().Has(nlo_type::rsub);
   m_vproc=p_proc->Info().Has(nlo_type::vsub);
   m_rsproc=m_rproc||(m_sproc&&p_proc->Caller()->GetRSSubevtList());
+  msg_Debugging()<<"vproc = "<<m_vproc<<", sproc = "<<m_sproc
+		 <<", rproc = "<<m_rproc<<", rsproc = "<<m_rsproc<<"\n";
   const Flavour_Vector &fl=p_proc->Caller()->Flavours();
   if ((m_cmode&128) && m_sproc && !m_rproc &&
       p_proc->Caller()->GetRSSubevtList()) {
@@ -382,8 +428,8 @@ double VBF_Scale_Setter::Calculate
       for (size_t i(1);i<p_proc->Caller()->MaxOrders().size();++i)
 	ampl->SetOrderEW(ampl->OrderEW()+p_proc->Caller()->MaxOrder(i));
       for (size_t i(0);i<m_p.size();++i) {
-	ampl->CreateLeg(m_p[i],(i<p_proc->NIn()?fl[i].Bar():fl[i]));
-	if (i<p_proc->NIn())
+	ampl->CreateLeg(m_p[i],i<p_proc->NIn()?fl[i].Bar():fl[i]);
+	if (p_proc->NIn()==2 && i<p_proc->NIn())
 	  ampl->Legs().back()->SetBeam(p_proc->Caller()->Get<Single_Process>()->
 				       Integrator()->ISR()->Swap() ? 1-i : i);
       }
@@ -400,15 +446,17 @@ double VBF_Scale_Setter::Calculate
   for (size_t i(1);i<p_proc->Caller()->MaxOrders().size();++i)
     ampl->SetOrderEW(ampl->OrderEW()+p_proc->Caller()->MaxOrder(i));
   ampl->SetJF(p_proc->Selector()->GetSelector("Jetfinder"));
-  if (p_ci!=NULL) {
+  if (p_ci != nullptr) {
     Int_Vector ci(p_ci->I()), cj(p_ci->J());
     for (size_t i(0);i<m_p.size();++i) {
       ampl->CreateLeg(m_p[i],i<p_proc->NIn()?fl[i].Bar():fl[i],
 		      ColorID(ci[i],cj[i]));
-      if (i<p_proc->NIn())
-	ampl->Legs().back()->SetBeam(p_proc->Caller()->Get<Single_Process>()->
-				       Integrator()->ISR()->Swap() ? 1-i : i);
       ampl->Leg(i)->SetNMax(nmax);
+      ampl->Leg(i)->SetKT2(0,0.);
+      ampl->Leg(i)->SetKT2(1,0.);
+      if (p_proc->NIn()==2 && i<p_proc->NIn())
+	ampl->Leg(i)->SetBeam(p_proc->Caller()->Get<Single_Process>()->
+			      Integrator()->ISR()->Swap() ? 1-i : i);
     }
   }
   else {
@@ -417,7 +465,9 @@ double VBF_Scale_Setter::Calculate
       int cr(ampl->Leg(i)->Flav().StrongCharge());
       ampl->Leg(i)->SetCol(ColorID((cr==3||cr==8)?1:0,(cr==-3||cr==8)?1:0));
       ampl->Leg(i)->SetNMax(nmax);
-      if (i<p_proc->NIn())
+      ampl->Leg(i)->SetKT2(0,0.);
+      ampl->Leg(i)->SetKT2(1,0.);
+      if (p_proc->NIn()==2 && i<p_proc->NIn())
 	ampl->Leg(i)->SetBeam(p_proc->Caller()->Get<Single_Process>()->
 			      Integrator()->ISR()->Swap() ? 1-i : i);
     }
@@ -426,15 +476,18 @@ double VBF_Scale_Setter::Calculate
   p_sproc=p_proc->Caller()->Get<Single_Process>();
   ampl->SetLKF(1.0);
   int mm(p_proc->Caller()->Generator()->SetMassMode(m_nproc?0:1));
-  if (!m_nproc)
-    if (p_proc->Caller()->Generator()->ShiftMasses(ampl)<0) {
-       p_proc->Caller()->Generator()->SetMassMode( mm);
-       return sqrt(-1.0);
-    }
-  Cluster(ampl,ampls,1);
+  if (!m_nproc && p_proc->Caller()->Generator()->ShiftMasses(ampl)!=1) {
+    p_proc->Caller()->Generator()->SetMassMode(mm);
+    ampl->Delete();
+    return sqrt(-1);
+  }
+  Cluster(ampl,ampls,s_allowuo?0:1);
   p_proc->Caller()->Generator()->SetMassMode(mm);
   if (ampls.empty()) {
     SetCoreScale(ampl);
+    if (m_nproc) ampl->SetOrderQCD(ampl->OrderQCD()-1);
+    p_cs->SetColors(ampl);
+    if (m_nproc) ampl->SetOrderQCD(ampl->OrderQCD()+1);
     m_ampls.push_back(ampl);
     msg_Debugging()<<"Rescue: "<<*ampl<<"\n";
     return SetScales(m_ampls.back());
@@ -471,6 +524,14 @@ double VBF_Scale_Setter::Calculate
     if (usemax?i==imax:(sum+=dabs(ampls[i]->Last()->LKF()))>=disc) {
       m_ampls.push_back(ampls[i]);
       ampls[i]=NULL;
+      if (m_nproc) m_ampls.back()->SetOrderQCD
+		     (m_ampls.back()->OrderQCD()-1);
+      ClusterAmplitude_Vector ampls(m_ampls);
+      m_ampls.clear();
+      p_cs->SetColors(ampls.back()->Last());
+      m_ampls=ampls;
+      if (m_nproc) m_ampls.back()->SetOrderQCD
+		     (m_ampls.back()->OrderQCD()+1);
       msg_Debugging()<<"Selected configuration "<<i<<": {\n";
       msg_Indent();
       for (Cluster_Amplitude *campl(m_ampls.back());
@@ -491,7 +552,7 @@ double VBF_Scale_Setter::Calculate
   return SetScales(m_ampls.back());
 }
 
-bool VBF_Scale_Setter::CoreCandidate(Cluster_Amplitude *const ampl) const
+bool E_Gamma_Scale_Setter::CoreCandidate(Cluster_Amplitude *const ampl) const
 {
   return ampl->Legs().size()==ampl->NIn()+m_nmin ||
     (ampl->Legs().size()==ampl->NIn()+2 &&
@@ -499,8 +560,8 @@ bool VBF_Scale_Setter::CoreCandidate(Cluster_Amplitude *const ampl) const
      ampl->Leg(3)->Flav().Mass()==0.0);
 }
 
-void VBF_Scale_Setter::Cluster
-(Cluster_Amplitude *ampl,ClusterAmplitude_Vector &ampls,const int ord)
+void E_Gamma_Scale_Setter::Cluster
+(Cluster_Amplitude *ampl,ClusterAmplitude_Vector &ampls,const int ord) const
 {
   ampl->SetProc(p_proc);
   ampl->SetProcs(p_proc->AllProcs());
@@ -508,7 +569,7 @@ void VBF_Scale_Setter::Cluster
   size_t oldsize(ampls.size());
   bool frs(m_rproc && ampl->Prev()==NULL);
   bool strict(!((m_cmode&1) && !rpa->gen.NumberOfTrials()));
-  DEBUG_FUNC("Actual = "<<ampl<<", nmin = "<<m_nmin<<", strict = "<<strict);
+  DEBUG_FUNC("nmin = "<<m_nmin<<", strict = "<<strict);
   msg_Debugging()<<*ampl<<"\n";
   ClusterInfo_Vector ccs;
   if (!CoreCandidate(ampl)) {
@@ -535,6 +596,12 @@ void VBF_Scale_Setter::Cluster
 	      Cluster_Info ci(cc,strict?p_clu->Cluster(cc):
 			      (cc.PureQCD()?p_qdc->Cluster(cc):NULL));
 	      if (ci.second.m_kt2<0.0) continue;
+	      if ((li->Id()|lj->Id())&3)
+		if (-ci.second.m_pijt[3]>rpa->gen.PBeam(0)[3] ||
+		    -ci.second.m_pijt[3]<rpa->gen.PBeam(1)[3]) continue;
+	      if (lk->Id()&3)
+		if (-ci.second.m_pkt[3]>rpa->gen.PBeam(0)[3] ||
+		    -ci.second.m_pkt[3]<rpa->gen.PBeam(1)[3]) continue;
 	      ccs.push_back(ci);
 	      if (ci.second.p_ca==NULL) break;
 	    }
@@ -558,7 +625,7 @@ void VBF_Scale_Setter::Cluster
     int imax(Select(ccs,on,1));
     if (imax<0) return;
     ccs[imax].second.m_op=1.0;
-    ClusterStep(ampl,ampls,ccs[imax],0);
+    if (ClusterStep(ampl,ampls,ccs[imax],0)) return;
   }
   else if (m_cmode&2) {
     for (size_t i(0);i<ccs.size();++i)
@@ -576,9 +643,9 @@ void VBF_Scale_Setter::Cluster
   if (ampl->LKF()) ampls.push_back(ampl->First()->CopyAll());
 }
 
-bool VBF_Scale_Setter::ClusterStep
+bool E_Gamma_Scale_Setter::ClusterStep
 (Cluster_Amplitude *ampl,ClusterAmplitude_Vector &ampls,
- const Cluster_Info &ci,const int ord)
+ const Cluster_Info &ci,const int ord) const
 {
   ampl->SetKT2(ci.second.m_kt2);
   ampl->SetMu2(ci.second.m_mu2>0.0?ci.second.m_mu2:ci.second.m_kt2);
@@ -595,16 +662,28 @@ bool VBF_Scale_Setter::ClusterStep
   return ampls.size()>oldsize;
 }
 
-double VBF_Scale_Setter::Differential
+double E_Gamma_Scale_Setter::Differential
 (Cluster_Amplitude *const ampl,const int mode) const
 {
   if (m_cmode&1024) return 1.0;
+  // require a DIS-like lepton line (an incoming and an outgoing lepton),
+  // independent of the leg ordering, so resolved-channel histories are kept
+  bool haslepin(false), haslepout(false);
+  for (size_t i(0);i<ampl->NIn();++i)
+    if (ampl->Leg(i)->Flav().IsLepton()) haslepin=true;
+  for (size_t i(ampl->NIn());i<ampl->Legs().size();++i)
+    if (ampl->Leg(i)->Flav().IsLepton()) haslepout=true;
+  if (!haslepin || !haslepout) return 0.;
   if (ampl->Prev()==NULL) return 1.0;
   NLOTypeStringProcessMap_Map *procs
     (ampl->Procs<NLOTypeStringProcessMap_Map>());
   if (procs==NULL) return 1.0;
   nlo_type::code type=nlo_type::lo;
-  if (procs->find(type)==procs->end()) return 0.0;
+  if (procs->find(type)==procs->end()) {
+    if (m_rproc && ampl->Prev() &&
+	ampl->Prev()->Prev()==NULL) return 1.0;
+    return 0.0;
+  }
   Cluster_Amplitude *campl(ampl->Copy());
   campl->SetMuR2(sqr(rpa->gen.Ecms()));
   campl->SetMuF2(sqr(rpa->gen.Ecms()));
@@ -622,77 +701,42 @@ double VBF_Scale_Setter::Differential
   }
   int kfon(pit->second->KFactorSetter(true)->On());
   pit->second->KFactorSetter(true)->SetOn(false);
-  double meps = static_cast<double>(
-      pit->second->Differential(*campl,Variations_Mode::nominal_only,2|4|128|mode));
+  double meps = static_cast<double>(pit->second->Differential(
+      *campl, Variations_Mode::nominal_only, 2 | 4 | 128 | mode));
   pit->second->KFactorSetter(true)->SetOn(kfon);
   msg_Debugging()<<"ME = "<<meps<<"\n";
   campl->Delete();
   return meps;
 }
 
-void VBF_Scale_Setter::SetCoreScale(Cluster_Amplitude *const ampl)
+void E_Gamma_Scale_Setter::SetCoreScale(Cluster_Amplitude *const ampl) const
 {
-  if (m_nproc) ampl->SetOrderQCD(ampl->OrderQCD()-1);
-  ClusterAmplitude_Vector ampls(m_ampls);
-  m_ampls.clear();
-  p_cs->SetColors(ampl);
-  m_ampls=ampls;
-  if (m_nproc) ampl->SetOrderQCD(ampl->OrderQCD()+1);
-  msg_Debugging()<<"Setting PS scales by dipole {\n";
-  double sum(1.0), n(0.0);
-  for (size_t i(0);i<ampl->Legs().size();++i) {
-    Cluster_Leg *li(ampl->Leg(i));
-    if (li->Flav().StrongCharge()==3 ||
-	li->Flav().StrongCharge()==8)
-      li->SetKT2(0,sqr(rpa->gen.Ecms()));
-    if (li->Flav().StrongCharge()==-3 ||
-	li->Flav().StrongCharge()==8)
-      li->SetKT2(1,sqr(rpa->gen.Ecms()));
-  }
-  for (size_t i(0);i<ampl->Legs().size();++i) {
-    Cluster_Leg *li(ampl->Leg(i));
-    if (!li->Flav().Strong()) continue;
-    for (size_t j(i+1);j<ampl->Legs().size();++j) {
-      Cluster_Leg *lj(ampl->Leg(j));
-      if (!lj->Flav().Strong()) continue;
-      int mij(li->Col().m_i && li->Col().m_i==lj->Col().m_j);
-      int mji(li->Col().m_j && li->Col().m_j==lj->Col().m_i);
-      if (mij || mji) {
-	double sij(dabs((li->Mom()+lj->Mom()).Abs2()));
-	msg_Debugging()<<"  Q_{"<<i<<j<<"} = "<<sqrt(sij)
-		       <<" vs "<<sqrt(li->KT2(mij?0:1))
-		       <<", match = "<<mij<<" / "<<mji<<"\n";
-	if (mij) {
-	  li->SetKT2(0,Min(m_qsf*sij,li->KT2(0)));
-	  lj->SetKT2(1,Min(m_qsf*sij,lj->KT2(1)));
-	}
-	if (mji) {
-	  li->SetKT2(1,Min(m_qsf*sij,li->KT2(1)));
-	  lj->SetKT2(0,Min(m_qsf*sij,lj->KT2(0)));
-	}
-	sum=Max(sum,sij);
-	n=1.0;
-      }
-    }
-  }
-  double avg(pow(sum,1.0/n));
-  msg_Debugging()<<"} -> \\mu_Q = "<<sqrt(avg)<<"\n"<<*ampl<<"\n";
-  ampl->SetKT2(m_qsf*avg);
-  ampl->SetMu2(m_qsf*avg);
+  PDF::Cluster_Param kt2(p_core->Calculate(ampl));
+  ampl->SetKT2(kt2.m_kt2);
+  ampl->SetMu2(kt2.m_mu2);
   for (Cluster_Amplitude *campl(ampl);
-       campl;campl=campl->Prev()) campl->SetMuQ2(m_qsf*avg);
+       campl;campl=campl->Prev()) campl->SetMuQ2(kt2.m_op);
 }
 
-double VBF_Scale_Setter::SetScales(Cluster_Amplitude *ampl)
+double E_Gamma_Scale_Setter::UnorderedScale(Cluster_Amplitude *const ampl) const
+{
+  if (p_uoscale==NULL) return 0.;
+  ampl->SetProc(p_proc);
+  PDF::Cluster_Param kt2(p_uoscale->Calculate(ampl));
+  return kt2.m_kt2;
+}
+
+double E_Gamma_Scale_Setter::SetScales(Cluster_Amplitude *ampl)
 {
   double muf2(ampl->Last()->KT2()), mur2(m_rsf*ampl->Last()->Mu2());
   m_scale[stp::size+stp::res]=m_scale[stp::res]=ampl->MuQ2();
   if (ampl) {
     m_scale[stp::size+stp::res]=ampl->KT2();
+    double muuo2(UnorderedScale(ampl));
     std::vector<double> scale(p_proc->NOut()+1);
     msg_Debugging()<<"Setting scales {\n";
     mur2=1.0;
-    double as(1.0), mmur2(1.0), mas(1.0), oqcd(0.0);
+    double as(1.0), mmur2(1.0), mas(1.0), oqcd(0.0), mup2(1.0);
     for (size_t idx(2);ampl->Next();++idx,ampl=ampl->Next()) {
       scale[idx]=Max(ampl->Mu2(),m_rsf*MODEL::as->CutQ2());
       scale[idx]=Min(scale[idx],sqr(rpa->gen.Ecms()));
@@ -712,6 +756,7 @@ double VBF_Scale_Setter::SetScales(Cluster_Amplitude *ampl)
 	  }
       }
       if (skip) continue;
+      if (!s_allowuo) mup2=Max(mup2,scale[idx]);
       if (m_rproc && ampl->Prev()==NULL) {
 	m_scale[stp::size+stp::res]=ampl->Next()->KT2();
 	ampl->SetNLO(1);
@@ -719,6 +764,14 @@ double VBF_Scale_Setter::SetScales(Cluster_Amplitude *ampl)
       }
       double coqcd(ampl->OrderQCD()-ampl->Next()->OrderQCD());
       if (coqcd>0.0) {
+	if (idx>0 && scale[idx]<mup2) {
+	  msg_Debugging()<<"  unordered history, redefine k_{T,"
+			 <<idx<<"} = "<<sqrt(scale[idx])
+			 <<" -> k_{T,"<<idx<<"} = "
+			 <<sqrt(p_uoscale?muuo2:mup2)<<"\n";
+	  if (p_uoscale) scale[idx]=muuo2;
+	  else scale[idx]=mup2;
+	}
 	double cas(MODEL::as->BoundedAlphaS(m_rsf*scale[idx]));
 	msg_Debugging()<<"  \\mu_{"<<idx<<"} = "
 		       <<sqrt(m_rsf)<<" * "<<sqrt(scale[idx])
@@ -742,6 +795,13 @@ double VBF_Scale_Setter::SetScales(Cluster_Amplitude *ampl)
     mmur2=Max(mmur2,m_rsf*mu2);
     mas=Min(mas,cas);
     if (ampl->OrderQCD()-(m_vproc?1:0)) {
+      if (mu2<mup2) {
+	msg_Debugging()<<"  unordered history, redefine k_{T,0} = "
+		       <<sqrt(mu2)<<" -> k_{T,0} = "
+		       <<sqrt(p_uoscale?muuo2:mup2)<<"\n";
+	if (p_uoscale) mu2=muuo2;
+	else mu2=mup2;
+      }
       int coqcd(ampl->OrderQCD()-(m_vproc?1:0));
       msg_Debugging()<<"  \\mu_{0} = "<<sqrt(m_rsf)<<" * "<<sqrt(mu2)
 		     <<", as = "<<cas<<", O(QCD) = "<<coqcd<<"\n";
@@ -793,17 +853,25 @@ double VBF_Scale_Setter::SetScales(Cluster_Amplitude *ampl)
     ampl->SetMuF2(m_scale[stp::fac]);
     ampl->SetMuR2(m_scale[stp::ren]);
     ampl->SetMuQ2(m_scale[stp::res]);
+    for (size_t i(0);i<ampl->Legs().size();++i) {
+      ampl->Leg(i)->SetKT2(0,-1.);
+      ampl->Leg(i)->SetKT2(1,-1.);
+    }
     while (ampl->Prev()) {
       ampl=ampl->Prev();
       ampl->SetMuF2(m_scale[stp::fac]);
       ampl->SetMuR2(m_scale[stp::ren]);
       ampl->SetMuQ2(m_scale[stp::res]);
+      for (size_t i(0);i<ampl->Legs().size();++i) {
+	ampl->Leg(i)->SetKT2(0,-1.);
+	ampl->Leg(i)->SetKT2(1,-1.);
+      }
     }
   }
   return m_scale[stp::fac];
 }
 
-void VBF_Scale_Setter::SetScale
+void E_Gamma_Scale_Setter::SetScale
 (const std::string &mu2tag,Algebra_Interpreter &mu2calc)
 {
   if (mu2tag=="" || mu2tag=="0") THROW(fatal_error,"No scale specified");

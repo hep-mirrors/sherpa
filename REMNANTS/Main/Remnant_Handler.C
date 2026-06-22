@@ -147,6 +147,7 @@ void Remnant_Handler::BoostRemnantMomenta(const ATOOLS::Poincare& boost) {
   for (size_t i=0;i<2;i++) {
     Vec4D mom = p_remnants[i]->InMomentum();
     p_remnants[i]->SetInMomentum(boost * mom);
+    p_remnants[i]->SetResidualEnergy();
   }
 }
 
@@ -253,9 +254,8 @@ Return_Value::code Remnant_Handler::MakeBeamBlobs(Blob_List* const bloblist,
   // add soft gluons in between them if their invariant mass is too large.
   // This still needs debugging - therefore it is commented out.
   Return_Value::code rv = Return_Value::Success;
-  if (!m_kinematics.FillBlobs(bloblist)) {
-    msg_Out() << METHOD << ": Filling of beam blobs failed.\n"
-	      <<(*bloblist);
+  if (!m_kinematics.FillBlobs(bloblist, p_labboost)) {
+    msg_Debugging() << METHOD << ": Filling of beam blobs failed.\n";
     rv = Return_Value::New_Event;
   }
   else if (!CheckBeamBreakup() || !m_decorrelator(p_softblob)) {
@@ -389,9 +389,9 @@ bool Remnant_Handler::Extract(ATOOLS::Particle * part,const unsigned int beam)
 void Remnant_Handler::Reset() {
   const bool DIS = m_type == strat::DIS1 || m_type == strat::DIS2;
   for (size_t beam = 0; beam < 2; ++beam) {
-    p_remnants[beam]->Reset(false, DIS);
     // Resets the outgoing momentum of the beam base to its original value
     p_remnants[beam]->SetInMomentum(p_remnants[beam]->GetBeam()->InMomentum());
+    p_remnants[beam]->Reset(false, DIS);
   }
   m_treatedshowerblobs.clear();
   m_kinematics.Reset();

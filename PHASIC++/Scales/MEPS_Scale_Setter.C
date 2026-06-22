@@ -346,8 +346,8 @@ double MEPS_Scale_Setter::Calculate
       ampl->Leg(i)->SetKT2(0,0.);
       ampl->Leg(i)->SetKT2(1,0.);
       if (p_proc->NIn()==2 && i<p_proc->NIn())
-	ampl->Legs().back()->SetBeam(p_proc->Caller()->Get<Single_Process>()->
-				     Integrator()->ISR()->Swap() ? 1-i : i);
+	ampl->Leg(i)->SetBeam(p_proc->Caller()->Get<Single_Process>()->
+			      Integrator()->ISR()->Swap() ? 1-i : i);
     }
   }
   else {
@@ -359,8 +359,8 @@ double MEPS_Scale_Setter::Calculate
       ampl->Leg(i)->SetKT2(0,0.);
       ampl->Leg(i)->SetKT2(1,0.);
       if (p_proc->NIn()==2 && i<p_proc->NIn())
-	ampl->Legs().back()->SetBeam(p_proc->Caller()->Get<Single_Process>()->
-				     Integrator()->ISR()->Swap() ? 1-i : i);
+	ampl->Leg(i)->SetBeam(p_proc->Caller()->Get<Single_Process>()->
+			      Integrator()->ISR()->Swap() ? 1-i : i);
     }
   }
   ClusterAmplitude_Vector ampls;
