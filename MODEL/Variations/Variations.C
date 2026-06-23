@@ -101,13 +101,17 @@ namespace MODEL {
                     variable_names.pop_back();
                     return;
                 }
-                if (number > 0) step = (to - from)/(number-1);
-                double val = from;
-                // this is supposed to fixed FP errors
-                while (val - to <= step/2) {
-                    values.push_back(val);
-                    val += step;
+                if (number == 1) values.push_back(from);
+                else {
+                    if (number > 0) step = (to - from)/(number-1);
+                    double val = from;
+                    // this is supposed to fixed FP errors
+                    while (val - to <= step/2) {
+                        values.push_back(val);
+                        val += step;
+                    }
                 }
+                
             }
             else if (ss.IsList()) {
                 DEBUG_INFO("was list");
@@ -140,17 +144,18 @@ namespace MODEL {
         }
 
         void Variations::CheckParameters() {
-            for (auto var_it=variable_names.begin(); var_it != variable_names.end(); var_it++) {
+            for (auto var_it=variable_names.begin(); var_it != variable_names.end();) {
                 if (m_dependent_vertices[*var_it]->size() == 0){
                     msg_Out() << "\t\x1b[31m" << *var_it << " does not seem to have anything depending on it. Ignoring it...\x1b[0m" << std::endl;
                     variable_names.erase(var_it);
-                    var_it--;
+                    continue;
                 }
                 if (p_constants->find(*var_it) == p_constants->end()){
                     msg_Out() << "\t\x1b[31m" << *var_it << " is not found in the real model constants. Ignoring it...\x1b[0m" << std::endl;
                     variable_names.erase(var_it);
-                    var_it--;
+                    continue;
                 }
+                var_it++;
             }
         }
 
@@ -158,7 +163,11 @@ namespace MODEL {
             msg_Debugging() << "Store Nominal Paramter values... " << std::endl;
             std::vector<double_t> values = {};
             for (std::string name : variable_names){
-                if (p_constants->count(name) != 1) return;
+                if (p_constants->count(name) != 1) {
+                    msg_Out() << name << " not found in the model, disabling variations." << std::endl;
+                    m_okay = false;
+                    return;
+                }
                 values.push_back(p_constants->at(name));
             }
             m_nominal = VariationKey(variable_names, values);

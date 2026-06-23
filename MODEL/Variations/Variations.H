@@ -28,7 +28,7 @@ namespace MODEL{
                 inline bool IsOkay() const {return m_okay;}                                           // check this object @param None @return bool
                 inline std::vector<VariationKey> GetVariations() const {return m_variations_list;}    // get all variations @param None @return vector<VariationKey>
                 inline std::set<MODEL::Single_Vertex*>* Dependents(std::string var_name) const      // gets the dependents on a parameter @param var_name name of the parameter @return set<Single_Vertex*>
-                    {if (m_dependent_vertices.count(var_name) != 1) return new std::set<MODEL::Single_Vertex*>(); return m_dependent_vertices.at(var_name);} 
+                    {if (m_dependent_vertices.count(var_name) != 1) return nullptr; return m_dependent_vertices.at(var_name);} 
                         
 
             protected:

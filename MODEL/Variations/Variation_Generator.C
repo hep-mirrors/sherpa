@@ -15,6 +15,8 @@ namespace MODEL {
         void Variation_Generator::GenerateAndFillWeightsMap(ATOOLS::Weights_Map& wgtmap){
             // nominal cs to compare
             double nominal = p_proc->LastXS();
+            bool lookup = p_proc->LookUp();
+            p_proc->SetLookUp(false);
             for (VariationKey var : p_vars->GetVariations()){
                 if (nominal == 0.0) {
                     // save some time, fix ratio
@@ -32,6 +34,7 @@ namespace MODEL {
                 wgtmap["ParameterVariations"][var.Identifier()] = weight;
             }
             // reset for next nominal
+            p_proc->SetLookUp(lookup);
             ResetAllCouplings();
         }
 
@@ -53,6 +56,7 @@ namespace MODEL {
             msg_Debugging() << "Updating dependent Vertices..." << std::endl;
             for (std::string name : key.Names()){
                 std::set<MODEL::Single_Vertex*>* s_dependents = p_vars->Dependents(name);
+                if (s_dependents == nullptr) continue;
                 for (std::set<MODEL::Single_Vertex*>::iterator it_v = s_dependents->begin(); it_v != s_dependents->end(); it_v++){
                     MODEL::Single_Vertex* p_v = *it_v;
                     p_v->UpdateCouplings(MODEL::s_model->Constants());
@@ -86,6 +90,7 @@ Base* ATOOLS::Getter<Base, Args, MODEL::VARIATIONS::Variation_Generator>::operat
 {
     MODEL::VARIATIONS::Variation_Generator* var_gen = new MODEL::VARIATIONS::Variation_Generator(args);
     if (var_gen->IsOkay()) return var_gen;
+    delete var_gen;
     return nullptr;
 }
 
