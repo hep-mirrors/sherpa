@@ -6,11 +6,14 @@
 #include "ATOOLS/Phys/Color.H"
 #include "ATOOLS/Phys/Blob.H"
 #include "ATOOLS/Org/My_MPI.H"
+#include "ATOOLS/Math/Gauss_Integrator.H"
+#include "ATOOLS/Math/Function_Base.H"
 #include "PHASIC++/Channels/Multi_Channel.H"
 #include "METOOLS/Main/Spin_Structure.H"
 #include "METOOLS/SpinCorrelations/Amplitude2_Tensor.H"
 #include "METOOLS/SpinCorrelations/Spin_Density.H"
 #include <algorithm>
+#include <functional>
 
 using namespace PHASIC;
 using namespace ATOOLS;
@@ -236,6 +239,135 @@ double Decay_Channel::SymmetryFactor()
 
 void Decay_Channel::CalculateWidth(double acc, double ref, int iter)
 {
+  switch (NOut()) {
+    case 2:
+      //Debugging
+      CalculateWidth2Body();
+      PRINT_VAR(m_iwidth);
+      CalculateWidthMC(acc, ref, iter);
+      PRINT_VAR(m_iwidth);
+      break;
+    case 3:
+      //Debugging
+      CalculateWidth3Body(acc);
+      PRINT_VAR(m_iwidth);
+      PRINT_VAR(m_ideltawidth);
+      CalculateWidthMC(acc, ref, iter);
+      PRINT_VAR(m_iwidth);
+      PRINT_VAR(m_ideltawidth);
+      break;
+    default:
+      CalculateWidthMC(acc, ref, iter);
+  }
+}
+
+void Decay_Channel::CalculateWidth2Body()
+{
+  double value;
+  double a(sqr(p_ms->Mass(GetDecaying())));
+  double b(sqr(p_ms->Mass(GetDecayProduct(0))));
+  double c(sqr(p_ms->Mass(GetDecayProduct(1))));
+
+  double flux(Lambda(a, b, c) / (8*M_PI*a));
+  std::vector<Vec4D> momenta(1+NOut());
+  momenta[0] = Vec4D(p_ms->Mass(GetDecaying()),0.,0.,0.);
+
+  value = Differential(momenta, false, NULL) / Channels()->Weight();
+  m_iwidth = flux*value;
+  m_ideltawidth=0.0;
+}
+
+void Decay_Channel::Get3BodyDecayMomenta(ATOOLS::Vec4D_Vector& momenta, 
+                                         double M, double m1, double m2, 
+                                         double m3, double s12, double s23)
+{
+  double a = sqr(M), b = sqr(m1), c = sqr(m2), d = sqr(m3);
+  double s13 = a + b + c + d - s12 - s23;
+  double E1 = (a + b - s23) / (2*M);
+  double E2 = (a + c - s13) / (2*M);
+
+  double p1 = sqrt(sqr(E1) - b);
+  double p2 = sqrt(sqr(E2) - c);
+
+  // TODO: catch p1*p2=0
+  double cos12 = (b + c + 2*E1*E2 - s12) / (2*p1*p2);
+  cos12 = std::clamp(cos12, -1.0, 1.0);
+  double sin12 = sqrt(std::max(0.0,1-sqr(cos12)));
+
+  // Choice of p1 is arbitrary, as ME2 is averaged and summed
+  // over spin states, colours etc., so no geometrical dependence
+  momenta[1] = Vec4D(E1, 0., 0., p1);
+  momenta[2] = Vec4D(E2, p2*sin12, 0., p2*cos12);
+  momenta[3] = momenta[0] - momenta[1] - momenta[2];
+}
+
+void Decay_Channel::CalculateWidth3Body(double acc)
+{
+  // C.f. PDG Review "Kinematics"
+  int nInner = 8, nOuter = 8;
+  
+  double M = p_ms->Mass(GetDecaying());
+  double m1 = p_ms->Mass(GetDecayProduct(0));
+  double m2 = p_ms->Mass(GetDecayProduct(1));
+  double m3 = p_ms->Mass(GetDecayProduct(2));
+  std::vector<Vec4D> momenta(1+NOut());
+  momenta[0] = Vec4D(M,0.,0.,0.);
+
+  double x0 = sqr(m1 + m2);
+  double x1 = sqr(M - m3);
+
+  double flux = 1. / pow(2*M_PI,3.) / (32*pow(M,3.));
+
+  double temp;
+  
+  std::function<std::pair<double,double>(double)> innerBounds = 
+    [&](double s12) -> std::pair<double,double> {
+    double E2star = (s12 - sqr(m1) + sqr(m2)) / (2*sqrt(s12));
+    double E3star = (sqr(M) - s12 - sqr(m3)) / (2*sqrt(s12));
+    double lower = sqr(E2star+E3star) 
+                   - sqr(sqrt(sqr(E2star)-sqr(m2)) + sqrt(sqr(E3star)-sqr(m3)));
+    double upper = sqr(E2star+E3star) 
+                   - sqr(sqrt(sqr(E2star)-sqr(m2)) - sqrt(sqr(E3star)-sqr(m3)));
+    return {lower, upper};
+  };
+
+  // For error estimate
+  for (int i=0; i<2; i++) {
+    temp = m_iwidth;
+    nOuter += i;
+    nInner += i;
+
+    std::function<double(double)> inner_func;
+  
+    std::function<double(double)> outer_func = [&](double s12) {
+    inner_func = [&](double s23) {
+      Get3BodyDecayMomenta(momenta, M, m1, m2, m3, s12, s23);
+      return ME2(momenta, false, NULL);
+    };
+
+    Lambda_Functor inner(&inner_func);
+    Gauss_Integrator innerInt(&inner);
+
+    auto [y0, y1] = innerBounds(s12);
+    double eps = 1e-10;
+    y0 *= (1+eps);
+    y1 *= (1-eps);
+
+    return innerInt.Legendre(y0, y1, nInner);
+     };
+
+    Lambda_Functor outer(&outer_func);
+    Gauss_Integrator outerInt(&outer);
+
+    m_iwidth = outerInt.Legendre(x0, x1, nOuter);
+    m_iwidth *= flux;
+  }
+
+  m_ideltawidth = dabs(m_iwidth - temp);
+}
+
+void Decay_Channel::CalculateWidthMC(double acc, double ref, int iter)
+{
   p_channels->Reset();
   int maxopt    = p_channels->Number()*int(pow(2.,2*(int(NOut())-2)));
 
@@ -382,19 +514,22 @@ GenerateKinematics(ATOOLS::Vec4D_Vector& momenta, bool anti,
       Return_Value::IncRetryMethod(mname);
       break;
     }
+
     value = Differential(momenta,anti,sigma, parts);
+
     if(value/m_max>1.05 && m_max>1e-30) {
       if(value/m_max>1.3) {
         msg_Tracking()<<METHOD<<"("<<Name()<<") warning:"<<endl
 		      <<"  d\\Gamma(x)="<<value<<" > max(d\\Gamma)="<<m_max
                   <<std::endl;
-	if (s_kinmaxfails.find(Name())==s_kinmaxfails.end()) s_kinmaxfails[Name()] = value/m_max;
-	else if (s_kinmaxfails[Name()] < value/m_max) s_kinmaxfails[Name()] = value/m_max;
+	      if (s_kinmaxfails.find(Name())==s_kinmaxfails.end()) s_kinmaxfails[Name()] = value/m_max;
+	      else if (s_kinmaxfails[Name()] < value/m_max) s_kinmaxfails[Name()] = value/m_max;
       }
       //m_max=value; // should not change m_max during run (kills individual event reproducability)
       Return_Value::IncRetryMethod(mname);
       break;
     }
+    
     trials++;
   } while( ran->Get() > value/m_max );
 }
