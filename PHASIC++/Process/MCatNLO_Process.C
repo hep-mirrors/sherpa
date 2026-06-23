@@ -556,7 +556,7 @@ Weights_Map MCatNLO_Process::OneSEvent(const int wmode)
     p_nlomc->SetShower(p_shower);
     if (!m_fomode) {
       stat=p_nlomc->GeneratePoint(p_ampl);
-      mcwgt=p_nlomc->WeightsMap().Nominal();
+      mcwgt=p_nlomc->WeightsMap();
     }
   }
   Cluster_Amplitude *next(p_ampl), *ampl(p_ampl->Prev());
