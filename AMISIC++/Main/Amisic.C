@@ -26,7 +26,7 @@ bool Amisic::Initialize(MODEL::Model_Base *const model,
                         REMNANTS::Remnant_Handler * remnant_handler)
 {
   const int init_output =
-    Settings::GetMainSettings()["AMISIC"]["INIT_OUTPUT"].SetDefault(0).Get<int>();
+    Settings::GetMainSettings()["AMISIC"]["INIT_OUTPUT"].SetDefault(1).Get<int>();
   const int saved_output_level = msg->Level();
   if (!init_output) msg->SetLevel(saved_output_level & ~2);
   msg_Info()<<"   "<<std::string(77,'=')<<"\n"
@@ -286,6 +286,11 @@ bool Amisic::GenerateScatter(const size_t & type,Blob * blob) {
     default: THROW(fatal_error,"Unknown type: "+to_string(type));
     }
     if (outcome) {
+      // OUTPUT
+      if (m_evttype==evt_type::Perturbative && 
+        ((type==3 && blob->Type()!=btp::Signal_Process) || (type==1))) {
+        m_reweighting.AccumulateEventStatistics(m_singlecollision.PT2());
+      }
       AddInformationToBlob(blob);
       m_Nscatters++;
       if (m_singlecollision.Done()) {

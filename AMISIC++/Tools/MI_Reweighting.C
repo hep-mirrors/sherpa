@@ -11,6 +11,7 @@
 #include "ATOOLS/Org/Message.H"
 #include <algorithm>
 #include <cmath>
+#include "ATOOLS/Org/MyStrStream.H" // OUTPUT
 
 using namespace AMISIC;
 using namespace ATOOLS;
@@ -20,10 +21,26 @@ MI_Reweighting::MI_Reweighting() :
   p_mipars(nullptr), p_mo(nullptr), p_pint(nullptr), p_xsecs(nullptr),
   p_overestimator(nullptr), p_processes(nullptr), p_singlecollision(nullptr),
   m_n_variations(1),
-  m_max_reweight_factor(-1.)
+  m_max_reweight_factor(-1.),
+  
+  // OUTPUT
+  m_reweighting_output(false),
+  m_total_events(0),
+  m_mpi_scatter_count(0),
+  m_first_pT(0.),
+  m_b_sample_size(0)
 {}
 
-MI_Reweighting::~MI_Reweighting() {}
+MI_Reweighting::~MI_Reweighting() {
+  // OUTPUT
+  PrintVariationStatistics();
+  if (m_mpi_weight_file.is_open()) {
+    m_mpi_weight_file.close();
+  }
+  if (m_b_samples_file.is_open()) {
+    m_b_samples_file.close();
+  }
+}
 
 void MI_Reweighting::Initialize(const MI_Parameters      * mipars,
                                 Matter_Overlap           * mo,
@@ -84,6 +101,41 @@ void MI_Reweighting::Initialize(const MI_Parameters      * mipars,
 
   m_max_reweight_factor = (*p_mipars)("max_reweight_factor");
   ResetEvent();
+
+  // OUTPUT
+  ResetStats();
+  m_reweighting_output = ((*p_mipars)["reweighting_output"]) > 0;
+  m_cutoff_count.resize(m_n_variations, 0);
+  m_sum_weights.resize(m_n_variations, 0.0);
+  m_sum_weights_squared.resize(m_n_variations, 0.0);
+  m_total_events = 0;
+  if (m_reweighting_output) {
+    std::string total_filename = "mpi_weights.dat";
+    m_mpi_weight_file.open(total_filename);
+    if (m_mpi_weight_file.is_open()) {
+      m_mpi_weight_file << "# b_value n_mpi first_pT";
+      for (size_t ivar=1; ivar<m_n_variations; ++ivar) {
+        m_mpi_weight_file << " w_b_value_v" << ivar;
+      }
+      for (size_t ivar=1; ivar<m_n_variations; ++ivar) {
+        m_mpi_weight_file << " w_v" << ivar;
+      }
+      m_mpi_weight_file << "\n";
+      m_mpi_weight_file << std::scientific << std::setprecision(10);
+    }
+  }
+  if (((*p_mipars)["reweighting_nB_samples"]) > 0) {
+    std::string b_samples_filename = "b_samples.dat";
+    m_b_samples_file.open(b_samples_filename);
+    if (m_b_samples_file.is_open()) {
+      m_b_samples_file << "# b_value";
+      for (size_t ivar=1; ivar<m_n_variations; ++ivar) {
+        m_b_samples_file << " w_b_value_v" << ivar;
+      }
+      m_b_samples_file << "\n";
+      m_b_samples_file << std::scientific << std::setprecision(10);
+    }
+  }
 }
 
 void MI_Reweighting::ResetEvent() {
@@ -208,6 +260,7 @@ void MI_Reweighting::ApplyVariationWeights(ATOOLS::Blob * blob) {
     double w_total = m_b_weights[ivar] * m_sudakov_weights[ivar];
     if (m_max_reweight_factor > 0. && w_total > m_max_reweight_factor) {
       w_total = m_max_reweight_factor;
+      m_cutoff_count[ivar]++; // OUTPUT
     }
     m_variation_weights[ivar] = w_total;
   }
@@ -216,5 +269,137 @@ void MI_Reweighting::ApplyVariationWeights(ATOOLS::Blob * blob) {
     CombineSoftPhysicsVariations(wgtmap, m_variation_weights);
     blob->AddData("WeightsMap", new Blob_Data<Weights_Map>(wgtmap));
   }
+  WriteEventStatistics(); // OUTPUT
   ResetEvent();
+}
+
+///////////////////////////// OUTPUT AND STATISTICS /////////////////////////////
+
+void MI_Reweighting::GenerateBSamples(const double & S, bool IsMinBias) {
+  const size_t n_samples = (*p_mipars)["reweighting_nB_samples"];
+  if (p_mo->IsDynamic()) {
+    const double fixed_x1 = 0.01;
+    const double fixed_x2 = 0.01;
+    p_mo->FixDynamicRadius(fixed_x1, fixed_x2);
+  }
+  for (size_t i=0; i<n_samples; ++i) {
+    const double b = IsMinBias ? p_pint->SelectB(S) : p_mo->SelectB();
+    const double overlap_nom = (*p_mo)(b);
+    const double pint_nom    = (*p_pint)(S, b);
+    m_b_samples_file << b;
+    for (size_t ivar=1; ivar<m_n_variations; ++ivar) {
+      p_mo->SetMatterFormVariationIndex(ivar);
+      const double K_var = p_pint->K(S, ivar);
+      const double overlap_var = (*p_mo)(b, K_var);
+      double weight = 1.;
+      if (IsMinBias) {
+        if (pint_nom > 1e-12) {
+          const double pint_var = (*p_pint)(S, b, ivar);
+          weight = (pint_var / pint_nom)
+                 * m_sigma_nd_variations[0] / m_sigma_nd_variations[ivar];
+        }
+        if (!std::isfinite(weight) || weight < 0.) weight = 1.;
+      } else {
+        weight = overlap_var / overlap_nom;
+        if (!std::isfinite(weight) || weight <= 0.) weight = 1.;
+      }
+      m_b_samples_file << "  " << weight;
+    }
+    p_mo->SetMatterFormVariationIndex(0);
+    m_b_samples_file << "\n";
+  }
+}
+
+void MI_Reweighting::ResetStats() {
+  m_mpi_scatter_count = 0;
+  m_first_pT = 0.;
+}
+
+void MI_Reweighting::AccumulateEventStatistics(const double & pt2) {
+  if (m_mpi_scatter_count == 0) m_first_pT = sqrt(pt2);
+  ++m_mpi_scatter_count;
+}
+
+void MI_Reweighting::WriteEventStatistics() {
+  if (m_mpi_weight_file.is_open()) {
+    m_mpi_weight_file << p_singlecollision->B() << " " << m_mpi_scatter_count << " " << m_first_pT;
+    for (size_t ivar=1; ivar<m_n_variations; ++ivar) {
+      m_mpi_weight_file << " " << m_b_weights[ivar];
+    }
+    for (size_t ivar=1; ivar<m_n_variations; ++ivar) {
+      m_mpi_weight_file << " " << m_variation_weights[ivar];
+    }
+    m_mpi_weight_file << "\n";
+  }
+  for (size_t ivar=1; ivar<m_n_variations; ++ivar) {
+    const double w = m_variation_weights[ivar];
+    m_sum_weights[ivar] += w;
+    m_sum_weights_squared[ivar] += w * w;
+  }
+  m_total_events++;
+  ResetStats();
+}
+
+void MI_Reweighting::PrintVariationStatistics() {
+  if (m_n_variations <= 1 || m_total_events == 0) return;
+
+  const std::string title = "MPI Reweighting Statistics (events: " +
+                            ToString<size_t>(m_total_events) + ")";
+
+  const int variation_col_size = std::max<int>(
+      static_cast<int>(std::string("Variation").size()),
+      static_cast<int>(("v" + ToString<size_t>(m_n_variations - 1)).size()));
+  const int col_size = 15;
+
+  int table_size = variation_col_size + col_size + col_size + col_size + 4;
+  if (m_max_reweight_factor > 0.0) {
+    table_size += col_size + col_size;
+  }
+  table_size = std::max(table_size, static_cast<int>(title.size()) + 4);
+
+  msg_Out() << Frame_Header{table_size};
+  MyStrStream line;
+  line << om::bold << std::left << title << om::reset;
+  msg_Out() << Frame_Line{line.str(), table_size};
+
+  msg_Out() << Frame_Separator{table_size};
+  line.str("");
+  line << std::left << std::setw(variation_col_size) << "Variation"
+       << std::right << std::setw(col_size) << "Avg. weight"
+       << std::right << std::setw(col_size) << "ESS"
+       << std::right << std::setw(col_size) << "ESS ratio";
+  if (m_max_reweight_factor > 0.0) {
+    line << std::right << std::setw(col_size) << "Cutoffs"
+         << std::right << std::setw(col_size) << "Cutoff ratio";
+  }
+  msg_Out() << Frame_Line{line.str(), table_size};
+  msg_Out() << Frame_Separator{table_size};
+
+  for (size_t ivar=1; ivar<m_n_variations; ++ivar) {
+    const double sum_w = m_sum_weights[ivar];
+    const double sum_w2 = m_sum_weights_squared[ivar];
+    const double avg_weight = (m_total_events > 0) ? sum_w / m_total_events : 0.;
+    const double ess = (sum_w2 > 0.) ? (sum_w * sum_w) / sum_w2 : 0.;
+    const double ess_ratio = (m_total_events > 0) ? ess / m_total_events : 0.;
+    const double cutoff_ratio =
+        (m_total_events > 0) ? static_cast<double>(m_cutoff_count[ivar]) / m_total_events : 0.;
+
+    line.str("");
+    line << om::bold << std::left << std::setw(variation_col_size)
+         << ("v" + ToString<size_t>(ivar)) << om::reset
+         << std::right << om::brown << std::setw(col_size)
+         << std::fixed << std::setprecision(6) << avg_weight
+         << std::setw(col_size)
+         << std::fixed << std::setprecision(1) << ess
+         << std::setw(col_size)
+         << std::fixed << std::setprecision(6) << ess_ratio << om::reset;
+    if (m_max_reweight_factor > 0.0) {
+      line << om::red << std::setw(col_size)
+           << std::fixed << std::setprecision(1) << m_cutoff_count[ivar]
+           << std::setw(col_size)
+           << std::fixed << std::setprecision(6) << cutoff_ratio << om::reset;
+    }
+    msg_Out() << Frame_Line{line.str(), table_size};
+  }
+  msg_Out() << Frame_Footer{table_size};
 }

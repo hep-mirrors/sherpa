@@ -145,6 +145,7 @@ namespace AMISIC {
       m_singlecollision.Reset();
       m_isFirst = true;
       m_reweighting.ResetEvent();
+      m_reweighting.ResetStats(); // OUTPUT
     }
     inline void ApplyVariationWeights(ATOOLS::Blob * blob) {
       m_reweighting.ApplyVariationWeights(blob);

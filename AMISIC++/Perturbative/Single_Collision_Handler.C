@@ -97,6 +97,8 @@ bool Single_Collision_Handler::FirstMPI(Blob * signal) {
   //       just pick an impact parameter m_b and start without the veto
   //       condition.
   ///////////////////////////////////////////////////////////////////////////
+  if (p_reweighting && p_reweighting->ShouldGenerateBSamples()) // OUTPUT
+    p_reweighting->GenerateBSamples(m_S, false);
   double pt2veto = sqr((*signal)["MI_Scale"]->Get<double>());
   double x1      = (*signal)["PDFInfo"]->Get<PDF_Info>().m_x1;
   double x2      = (*signal)["PDFInfo"]->Get<PDF_Info>().m_x2;
@@ -140,6 +142,8 @@ bool Single_Collision_Handler::FirstMinBiasScatter(Blob * blob) {
   //    the Interaction_Probability class
   // 2. Produce a hard scatter, using the NextScatter method.
   ///////////////////////////////////////////////////////////////////////////
+  if (p_reweighting && p_reweighting->ShouldGenerateBSamples()) // OUTPUT
+    p_reweighting->GenerateBSamples(m_S, true);
   blob->ClearAllData();
   blob->DeleteOwnedParticles();
   bool success = false;

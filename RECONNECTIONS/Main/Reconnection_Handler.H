@@ -24,6 +24,8 @@ namespace RECONNECTIONS {
 
     void Initialize();
     void Reset();
+
+    void WriteEventStatistics(); // OUTPUT
   };
 }
 

@@ -124,6 +124,12 @@ MI_Parameters::MI_Parameters() :
   m_flags[string("nMaxScatters")]
     = s["N_MaxScatters"].SetDefault(10000).Get<size_t>();
 
+    // OUTPUT
+  m_flags[string("reweighting_output")]
+    = s["REWEIGHTING_OUTPUT"].SetDefault(0).Get<size_t>();
+  m_flags[string("reweighting_nB_samples")]
+    = s["REWEIGHTING_nB_samples"].SetDefault(0).Get<size_t>();
+
 
   size_t twopions = s["TwoPionInterference"].SetDefault(0).Get<size_t>();
   switch (twopions) {

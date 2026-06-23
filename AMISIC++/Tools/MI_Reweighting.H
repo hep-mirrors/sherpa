@@ -3,6 +3,7 @@
 
 #include "ATOOLS/Phys/Blob.H"
 #include <vector>
+#include <fstream> // OUTPUT
 
 namespace AMISIC {
   class MI_Parameters;
@@ -33,6 +34,20 @@ namespace AMISIC {
     std::vector<double> m_overlap_ratios;
     std::vector<double> m_sudakov_weights;
     double m_max_reweight_factor;
+
+    // OUTPUT
+    bool m_reweighting_output;
+    size_t m_total_events;
+    size_t m_mpi_scatter_count;
+    double m_first_pT;
+    size_t m_b_sample_size;
+    std::vector<double> m_sum_weights;
+    std::vector<double> m_sum_weights_squared;
+    std::vector<size_t> m_cutoff_count;
+    std::ofstream m_mpi_weight_file;
+    std::ofstream m_b_samples_file;
+    void WriteEventStatistics();
+    void PrintVariationStatistics();
   public:
     MI_Reweighting();
     ~MI_Reweighting();
@@ -51,6 +66,14 @@ namespace AMISIC {
                                     bool IsMinBias = false);
     void AcceptRejectReweighting(const bool accepted, const double prob_nom);
     void ApplyVariationWeights(ATOOLS::Blob * blob);
+
+    // OUTPUT
+    void ResetStats();
+    void AccumulateEventStatistics(const double & pt2);
+    void GenerateBSamples(const double & S, bool IsMinBias);
+    inline bool ShouldGenerateBSamples() const {
+      return m_b_samples_file.is_open() && m_total_events == 0;
+    }
   };
 }
 

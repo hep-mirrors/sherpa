@@ -38,6 +38,7 @@ void Colour_Reconnection_Handler::UpdateStatus(Blob_List *const blobs) {
 }
 
 void Colour_Reconnection_Handler::CleanUp(const size_t & mode) {
+  p_reconnections->WriteEventStatistics(); // OUTPUT
   p_reconnections->Reset();
 }
 

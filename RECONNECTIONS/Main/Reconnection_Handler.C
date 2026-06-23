@@ -31,9 +31,18 @@ void Reconnection_Handler::Initialize() {
   p_reconnector->Initialize();
 }
 
+// OUTPUT
+void Reconnection_Handler::WriteEventStatistics() {
+  if (!m_on) return;
+  ATOOLS::Blob_List * blobs = m_reweighting.GetBlobs();
+  if (blobs == NULL) return;
+  m_reweighting.WriteEventStatistics();
+}
+
 void Reconnection_Handler::Reset() {
   if (m_on) p_reconnector->Reset();
   m_reweighting.ResetEvent();
+  m_reweighting.ResetStats(); // OUTPUT
 }
 
 Return_Value::code Reconnection_Handler::operator()(Blob_List *const blobs,
@@ -52,6 +61,7 @@ Return_Value::code Reconnection_Handler::operator()(Blob_List *const blobs,
     // added colour reconnections, produce a fragmentation blob.
     AddReconnectionBlob(blobs);
     m_reweighting.ApplyVariationWeights(blobs);
+    m_reweighting.CacheBlobs(blobs); // OUTPUT
     p_reconnector->Reset();
     return Return_Value::Success;
   case 0:
