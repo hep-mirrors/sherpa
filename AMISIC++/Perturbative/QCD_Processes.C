@@ -637,8 +637,7 @@ XS_gg_g3S1::XS_gg_g3S1(const ATOOLS::Flavour_Vector& flavs): XS_Base()
     m_colours[i][0] = m_colours[i][1] = 0;
   }
   const kf_code kfc = fl[m_S].Kfcode();
-  m_mass = ATOOLS::Flavour((kfc / 100) % 10).Mass(true) +
-  ATOOLS::Flavour((kfc / 10) % 10).Mass(true);
+  m_mass = fl[m_S].Mass(true);
   m_mass2 = sqr(m_mass);
   
   m_R02 =  GetLDME(fl[m_S].Kfcode())*2.*M_PI/(3.*3.);
@@ -646,12 +645,12 @@ XS_gg_g3S1::XS_gg_g3S1(const ATOOLS::Flavour_Vector& flavs): XS_Base()
 
 void XS_gg_g3S1::Calc(const double & s,const double & t,const double & u) 
 {
-  double M2 = s+t+u;
+  double M2 = m_mass2; //s+t+u is zero, as MPI assumes massless scatters
   double sM2 = sqr(s-M2);
   double tM2 = sqr(t-M2);
   double uM2 = sqr(u-M2);
   double all = sqr(s)/(uM2*tM2)+sqr(t)/(uM2*sM2)+sqr(u)/(sM2*tM2);
-  m_pref   = (5./9.)*sqr(4.*M_PI)*sqrt(M2)*m_R02;
+  m_pref   = 1/(16.*M_PI)*(5./9.)*sqr(4.*M_PI)*sqrt(M2)*m_R02; //there is a 1/(16*M_PI) difference to EXTRA_XS because of the coupling treatment
   m_lastxs = m_pref*all;
 }
 
