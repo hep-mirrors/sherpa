@@ -1,10 +1,11 @@
- #include "PHASIC++/Process/Single_Process.H"
+#include "PHASIC++/Process/Single_Process.H"
 
 #include "PHASIC++/Process/ME_Generator_Base.H"
 #include "PHASIC++/Process/MCatNLO_Process.H"
 #include "PHASIC++/Main/Process_Integrator.H"
 #include "PHASIC++/Scales/KFactor_Setter_Base.H"
 #include "PHASIC++/Selectors/Combined_Selector.H"
+#include "PHASIC++/Main/Event_Reader.H"
 #include "PHASIC++/Main/Phase_Space_Handler.H"
 #include "PHASIC++/Channels/BBar_Multi_Channel.H"
 #include "PHASIC++/Channels/CS_Dipole.H"
@@ -34,6 +35,8 @@ Single_Process::Single_Process():
   m_lastxs(0.0), m_lastbxs(0.0), m_dsweight(1.0), m_lastflux(0.0),
   m_zero(false), m_dads(true), m_pdfcts(true), m_nfconvscheme(0)
 {
+  p_sub = NULL;
+
   Settings& s = Settings::GetMainSettings();
   m_pdfcts = s["MEPSNLO_PDFCT"].SetDefault(true).Get<bool>();
   m_dads = s["MCNLO_DADS"].SetDefault(true).Get<bool>();
@@ -89,10 +92,36 @@ Process_Base *Single_Process::operator[](const size_t &i)
 Weight_Info *Single_Process::OneEvent(const int wmode,
                                       ATOOLS::Variations_Mode varmode,
                                       const int mode) {
+  DEBUG_FUNC(m_name);
   p_selected = this;
   auto psh = p_int->PSHandler();
   if (p_int->ISR())
     p_int->ISR()->SetSprimeMin(psh->Cuts()->Smin());
+  if (p_read && p_parent == NULL) {
+    // We check for p_parent == NULL, because if this process is part
+    // of a process group, then we have already dealt with p_read.
+    if (p_int->ISR()) {
+      if (m_nin == 2) {
+        if (m_flavs[0].Mass() != p_int->ISR()->Flav(0).Mass() ||
+            m_flavs[1].Mass() != p_int->ISR()->Flav(1).Mass()) {
+          p_int->ISR()->SetPartonMasses(m_flavs);
+        }
+      }
+    }
+    psh->InitCuts();
+    Cluster_Amplitude *ampl(p_read->ReadEvent());
+    if (ampl==NULL) return NULL;
+    if (p_read->SubEvt()==NULL ||
+	p_read->SubEvt()->m_n==0) SortFlavours(ampl);
+    msg_Debugging()<<*ampl<<"\n";
+    p_int->PSHandler()->SetPoint(ampl);
+    SetEventReader(p_read);
+    Weight_Info *winfo(p_int->PSHandler()->OneEvent(this,varmode,mode));
+    p_int->PSHandler()->SetPoint(NULL);
+    SetEventReader(winfo?p_read:NULL);
+    ampl->Delete();
+    return winfo;
+  }
   return p_int->PSHandler()->OneEvent(this,varmode,mode);
 }
 
@@ -568,6 +597,7 @@ Weights_Map Single_Process::Differential(const Vec4D_Vector& p,
     // update results
     if (p_mc != nullptr && m_dsweight && m_pinfo.Has(nlo_type::vsub)) {
       // calculate DADS term for MC@NLO: one PS point, many dipoles
+      if (p_read) p_mc->SetPoint(p_read->SubEvt());
       m_mewgtinfo.m_type |= mewgttype::DADS;
 
       if (m_dads) {
@@ -577,10 +607,14 @@ Weights_Map Single_Process::Differential(const Vec4D_Vector& p,
 
         if (dps.p_dip != nullptr) {
 
+          p_sub=dps.p_dip->GetSubEvt();
+          p_sub->p_mom=(Vec4D*)&(*dps.p_p)[0];
+          p_sub->m_result=dps.m_weight;
+
           // calculate incoming parton longitudinal momentum fractions
           std::array<double, 2> x;
           for (size_t i {0}; i < 2; ++i) {
-            x[i] = Min(p_int->ISR()->CalcX(dps.m_p[i]), 1.0);
+            x[i] = Min(p_int->ISR()->CalcX((*dps.p_p)[i]), 1.0);
           }
 
           for (Process_Base* proc : dps.m_procs) {
@@ -590,7 +624,15 @@ Weights_Map Single_Process::Differential(const Vec4D_Vector& p,
             const bool lookup {proc->LookUp()};
             proc->SetLookUp(false);
 
-            auto wgtmap = proc->Differential(dps.m_p, varmode);
+            if (p_read)
+              proc->ScaleSetter(true)->SetFixedScale(
+                  ScaleSetter(true)->FixedScales());
+
+            auto wgtmap = proc->Differential(*dps.p_p, varmode);
+
+            if (p_read)
+              proc->ScaleSetter(true)->SetFixedScale(std::vector<double>());
+
             wgtmap *= dps.m_weight * m_dsweight;
             m_dadswgtmap += wgtmap;
 
@@ -1184,8 +1226,12 @@ bool Single_Process::CalculateTotalXSec(const std::string &resultpath,
   if (p_int->ISR())
     p_int->ISR()->SetSprimeMin(psh->Cuts()->Smin());
   p_int->SetResultPath(resultpath);
-  p_int->ReadResults();
+  if (p_read==NULL) p_int->ReadResults();
   exh->AddTerminatorObject(p_int);
+  if (p_read) {
+    p_int->SetMax(p_read->UnitWeight()/rpa->Picobarn());
+    return true;
+  }
   double var(p_int->TotalVar());
   msg_Info()<<METHOD<<"(): Calculate xs for '"
             <<m_name<<"' ("<<(p_gen?p_gen->Name():"")<<")"<<std::endl;

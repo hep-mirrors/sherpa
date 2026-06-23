@@ -228,7 +228,7 @@ double CS_Dipole::ConstructLN
   return gam;
 }
 
-std::ostream &PHASIC::operator<<(std::ostream &ostr,const CS_Dipole &dip) 
+std::ostream &PHASIC::operator<<(std::ostream &ostr,CS_Dipole &dip)
 {
   return ostr<<"("<<&dip<<")'"<<dip.Id()<<"': m_a = "<<dip.Alpha()
 	     <<" <- "<<*dip.GetSubEvt();

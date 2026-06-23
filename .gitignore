@@ -4,6 +4,7 @@ cmake_install.cmake
 Makefile
 CMakeCache.txt
 build/
+external/
 outputs/
 .*/
 compile_commands.json
