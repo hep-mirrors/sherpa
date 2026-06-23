@@ -415,6 +415,7 @@ Event output formats
 .. index:: HepMC3_GenEvent
 .. index:: HepMC3_Short
 .. index:: LHEF
+.. index:: HDF5
 .. index:: Root
 .. index:: FILE_SIZE
 .. index:: EVENT_FILE_PATH
@@ -531,6 +532,26 @@ The following formats are currently available:
   about the large-Nc colour flow is given as the LHEF output format is
   not suited to communicate enough information for meaningful parton
   showering on top of multiparton final states.
+
+:option:`HDF5`
+  Generates output in LHEH5 format :cite:`Bothmann:2023ozs`,
+  which is based on HDF5.
+  The content is similar to what is written out for LHEF output.
+  However, while LHEF stores data in plaintext format,
+  LHEH5 uses HDF5 databases instead.
+  When using MPI, the output will be reduced in memory before it is written out,
+  which significantly reduces file I/O,
+  leading to large speed-ups on HPC systems with Lustre filesystems.
+  As for the LHEF option,
+  this format outputs matrix element information only,
+  but with the added advantage
+  of providing also all information that is required
+  to correctly add parton showering on top of multiparton final states.
+  In particular, Sherpa can read these output files again
+  in a separate run, see :ref:`Event_Files`.
+
+  Requires ``-DHDF5_DIR=/path/to/hdf5``
+  (or ``-DSHERPA_ENABLE_HDF5``, if HDF5 is installed in a standard location).
 
 :option:`Root`
   Generates output in ROOT ntuple format **for NLO event generation

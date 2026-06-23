@@ -196,6 +196,7 @@ bool AMEGIC::Process_Group::FillIntegrator
 {
   for (size_t i(0);i<m_procs.size();++i)
     m_procs[i]->Get<AMEGIC::Process_Base>()->RequestVariables(psh);
+  My_In_File::OpenDB(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/");
   Multi_Channel *mc(psh->FSRIntegrator());
   if (mc==NULL) return true;
   My_In_File::OpenDB(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/");

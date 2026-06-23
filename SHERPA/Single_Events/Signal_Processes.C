@@ -63,7 +63,12 @@ Return_Value::code Signal_Processes::Treat(Blob_List * bloblist)
           FillBlob(bloblist,blob)) {
         return Return_Value::Success;
       }
-      else return Return_Value::New_Event;
+      else {
+	if (rpa->gen.NumberOfEvents()==
+	    rpa->gen.NumberOfGeneratedEvents())
+	  return Return_Value::Error;
+	return Return_Value::New_Event;
+      }
     }
   }
   return Return_Value::Nothing;
@@ -255,6 +260,9 @@ bool Signal_Processes::FillBlob(Blob_List *const bloblist,Blob *const blob)
                 (ToString(proc->Info().m_fi.m_nlotype)));
   blob->AddData("NLOOrder",new Blob_Data<std::vector<double> >
                 (proc->Info().m_fi.m_nlocpl));
+  blob->AddData("Process",new Blob_Data<PHASIC::Process_Base*>
+		(p_mehandler->Process()));
+
   Poincare * cmsboost = p_mehandler->Remnants()->GetCMSBoost();
   if (cmsboost!=nullptr) {
     blob->Boost(*cmsboost);

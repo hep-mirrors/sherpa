@@ -336,6 +336,9 @@ void KP_Terms::Calculate
             <<" ,  kpca[2]="<<m_kpca[2]<<" ,  kpca[3]="<<m_kpca[3]<<std::endl;
       }
     }
+    msg_Debugging()
+            <<"    kpca[0]="<<m_kpca[0]<<" ,  kpca[1]="<<m_kpca[1]
+            <<" ,  kpca[2]="<<m_kpca[2]<<" ,  kpca[3]="<<m_kpca[3]<<std::endl;
 
     if (m_itype&cs_itype::P) {
       // P terms
@@ -483,6 +486,9 @@ void KP_Terms::Calculate
             <<" ,  kpcb[2]="<<m_kpcb[2]<<" ,  kpcb[3]="<<m_kpcb[3]<<std::endl;
       }
     }
+    msg_Debugging()
+            <<"    kpcb[0]="<<m_kpcb[0]<<" ,  kpcb[1]="<<m_kpcb[1]
+            <<" ,  kpcb[2]="<<m_kpcb[2]<<" ,  kpcb[3]="<<m_kpcb[3]<<std::endl;
 
     if (m_itype&cs_itype::P) {
       // P terms

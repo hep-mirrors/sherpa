@@ -140,11 +140,15 @@ namespace ATOOLS {
     void DeIndent(size_t i=2);
     inline std::streambuf* BaseBuf() { return m_basebuf; }
     inline void SetBaseBuf(std::streambuf *buf) { m_basebuf=buf; }
+    inline void SetPassthrough(bool flag) { m_passthrough=flag; }
+    inline void SetUpdatedLines(size_t n) { m_updatedlines=n; }
 
   protected:
     std::streambuf* m_basebuf;
     size_t m_indent;
     bool at_start;
+    size_t m_updatedlines;
+    bool m_passthrough;
 
     int_type overflow(int_type ch);
     inline int sync() { return m_basebuf->pubsync(); }
@@ -172,7 +176,12 @@ namespace ATOOLS {
     int m_modifiable, m_mpimode;
     int m_limit {1};
 
+    std::string m_tasklabel;
+
   public:
+
+    void BeginTaskProgressUpdate(size_t num_progress_lines);
+    void EndTaskProgressUpdate();
 
     // constructor
     Message();

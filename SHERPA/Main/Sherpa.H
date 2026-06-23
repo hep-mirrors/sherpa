@@ -24,6 +24,7 @@ namespace SHERPA {
   private:
     long int      m_trials, m_debugstep, m_debuginterval, m_displayinterval;
     long int      m_evt_output, m_evt_output_start;
+    bool          m_printmpixs;
     double        m_evt_starttime;
     bool          m_showtrials;
     bool          m_filter;
