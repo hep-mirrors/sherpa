@@ -152,7 +152,7 @@ namespace ATOOLS {
   /*
   some conversion; only here because old models will need it
   */
-  inline double ToDouble(const Kabbala& k) {if (!ATOOLS::IsZero(k.Value().imag())) THROW(fatal_error, "Kabbala tried casting complex number to real"); k.Value().real();}
+  inline double ToDouble(const Kabbala& k) {if (!ATOOLS::IsZero(k.Value().imag())) THROW(fatal_error, "Kabbala tried casting complex number to real"); return k.Value().real();}
   inline std::string ToString(const Kabbala& k) {return k.String();}
 }
 
