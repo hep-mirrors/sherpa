@@ -1221,8 +1221,8 @@ bool Single_Process::CalculateTotalXSec(const std::string &resultpath,
   if(p_int->YFS()->Mode()!=YFS::yfsmode::off){
     p_int->YFS()->SetFlavours(m_flavs);
   }
-  psh->CreateIntegrators();
   psh->InitCuts();
+  psh->CreateIntegrators();
   if (p_int->ISR())
     p_int->ISR()->SetSprimeMin(psh->Cuts()->Smin());
   p_int->SetResultPath(resultpath);
