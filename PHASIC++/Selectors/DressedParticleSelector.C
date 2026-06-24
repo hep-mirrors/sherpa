@@ -41,6 +41,9 @@ DressedParticleSelector::DressedParticleSelector(const Selector_Key &key) :
   if (algoparams.size() != 2)
     THROW(fatal_error, "DressingAlgorithm requires [<algorithm>, <dR>]");
   const auto algo = algoparams[0];
+  if (algo!="Cone" && algo!="kt" && algo!="antikt" && algo!="CA")
+    THROW(fatal_error, "Unknown DressingAlgorithm '"+algo+
+          "', expected one of: Cone, kt, antikt, CA");
   const auto dR = ToType<double>(algoparams[1]);
   p_dresser = new Particle_Dresser(algo,dR);
   const auto flavradiusparams = s["FlavourDependentRadius"]

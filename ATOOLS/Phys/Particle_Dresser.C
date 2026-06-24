@@ -101,9 +101,10 @@ void Particle_Dresser::Dress(Selector_List &sl)
   m_dj.resize(m_photons.size(),0.);
   m_dij.resize(m_charges.size());
   for (size_t i(0);i<m_dij.size();++i) m_dij[i].resize(m_photons.size(),0.);
-  if (!m_charges.size() || !m_photons.size()) m_on=false;
-  if (!m_on) msg_Debugging()<<"switched off"<<std::endl;
-  if (!m_on) return;
+  if (!(m_charges.size() && m_photons.size())) {
+    msg_Debugging()<<"switched off"<<std::endl;
+    return;
+  }
   msg_Debugging()<<sl<<std::endl;
 
   // dress
