@@ -912,12 +912,20 @@ void Single_Process::ReweightRS(ClusterAmplitude_Vector& ampls)
         }
       });
 
-  // finally, add the subevent weights
+  // finally, add the subevent weights, gated on sub->m_trig.
+  //
+  // Why the gate is needed: only Jet_Finder writes a per-variation
+  // pass/fail factor into sub->m_results (the "QCUT" key). Every other
+  // selector signals pass/fail purely through Trigger()'s boolean return
+  // value and leaves Results() at the trivial identity either way. So
+  // without this gate, a subevent rejected by ANY selector -- not just
+  // Jet_Finder -- would have its full weight silently summed into every
+  // QCD/QCUT variation here.
   m_last.Clear();
   m_last = 0.0;
   for (int i {0}; i <= last_subevt_idx; ++i) {
     auto sub = (*GetSubevtList())[i];
-    m_last += sub->m_results;
+    if (sub->m_trig) m_last += sub->m_results;
   }
 }
 
