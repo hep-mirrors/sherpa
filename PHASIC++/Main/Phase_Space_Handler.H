@@ -13,8 +13,8 @@
 #include "ATOOLS/Phys/Weights.H"
 #include <list>
 
-namespace ATOOLS { 
-  class Blob_Data_Base; 
+namespace ATOOLS {
+  class Blob_Data_Base;
   class Poincare;
   class Mass_Selector;
   struct Weight_Info;
@@ -43,7 +43,7 @@ namespace PHASIC {
   class Process_Base;
 
   class Phase_Space_Handler {
-  private: 
+  private:
     BEAM::Beam_Spectra_Handler * p_beamhandler;
     PDF::ISR_Handler           * p_isrhandler;
     YFS::YFS_Handler           * p_yfshandler;
@@ -183,7 +183,7 @@ namespace PHASIC {
     inline void AddStats(const std::vector<double> &stats) {
       std::vector<double> nstats(1,m_stats.size()+1);
       nstats.insert(nstats.end(),stats.begin(),stats.end());
-      m_stats.push_back(nstats); 
+      m_stats.push_back(nstats);
     }
   };// end of class Phase_Space_Handler
 
@@ -195,9 +195,9 @@ namespace PHASIC {
   /*!
     \var ATOOLS::Integration_Info *Phase_Space_Handler::p_info
 
-    Phase_Space_Handler distributes information on the various 
+    Phase_Space_Handler distributes information on the various
     integration variables and weights through an instance of Integration_Info.
-    Each Single_Channel is able to gain access to the variables via the assignment 
+    Each Single_Channel is able to gain access to the variables via the assignment
     of an Info_Key during its initialization.
   */
 

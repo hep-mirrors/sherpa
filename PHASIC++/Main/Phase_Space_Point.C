@@ -100,12 +100,12 @@ void Phase_Space_Point::InitFixedIncomings() {
 }
 
 void Phase_Space_Point::InitCuts(Process_Integrator *const process) {
-  if (p_cuts != NULL)
-    delete p_cuts;
-  p_cuts = new Cut_Data();
-  process->Process()->InitCuts(p_cuts);
-  process->Process()->FillOnshellConditions();
-  process->Process()->BuildCuts(p_cuts);
+  if (p_cuts == NULL) {
+    p_cuts = new Cut_Data();
+    process->Process()->InitCuts(p_cuts);
+    process->Process()->FillOnshellConditions();
+    process->Process()->BuildCuts(p_cuts);
+  }
   if (process->NIn() > 1) {
     m_smin = ATOOLS::Max(sqr(process->ISRThreshold()), p_cuts->Smin());
     process->ISR()->SetFixedSprimeMin(m_smin);

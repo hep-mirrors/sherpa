@@ -91,8 +91,15 @@ Weight_Info *Single_Process::OneEvent(const int wmode,
                                       const int mode) {
   p_selected = this;
   auto psh = p_int->PSHandler();
-  if (p_int->ISR())
-    p_int->ISR()->SetSprimeMin(psh->Cuts()->Smin());
+  auto *isr = p_int->ISR();
+  if (isr) {
+    if (m_nin == 2 &&
+        (isr->Mass2(0) != sqr(m_flavs[0].Mass()) ||
+         isr->Mass2(1) != sqr(m_flavs[1].Mass()))) {
+          isr->SetPartonMasses(m_flavs);
+         }
+    psh->InitCuts();
+  }
   return p_int->PSHandler()->OneEvent(this,varmode,mode);
 }
 
@@ -1170,8 +1177,8 @@ bool Single_Process::CalculateTotalXSec(const std::string &resultpath,
   auto psh = p_int->PSHandler();
   if (p_int->ISR()) {
     if (m_nin==2) {
-      if (m_flavs[0].Mass()!=p_int->ISR()->Flav(0).Mass() ||
-          m_flavs[1].Mass()!=p_int->ISR()->Flav(1).Mass()) {
+      if (p_int->ISR()->Mass2(0) != sqr(m_flavs[0].Mass()) ||
+          p_int->ISR()->Mass2(1) != sqr(m_flavs[1].Mass())) {
         p_int->ISR()->SetPartonMasses(m_flavs);
       }
     }
@@ -1179,8 +1186,8 @@ bool Single_Process::CalculateTotalXSec(const std::string &resultpath,
   if(p_int->YFS()->Mode()!=YFS::yfsmode::off){
     p_int->YFS()->SetFlavours(m_flavs);
   }
-  psh->CreateIntegrators();
   psh->InitCuts();
+  psh->CreateIntegrators();
   if (p_int->ISR())
     p_int->ISR()->SetSprimeMin(psh->Cuts()->Smin());
   p_int->SetResultPath(resultpath);

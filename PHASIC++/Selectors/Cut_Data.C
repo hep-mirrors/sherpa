@@ -27,6 +27,7 @@ Cut_Data::Cut_Data() {
   etmin = 0;
   scut      = 0;
   ncut      = 0;
+  sijminfac = 0.;
 }
 
 Cut_Data::~Cut_Data() {
@@ -64,14 +65,12 @@ void Cut_Data::Init(int _nin,const Flavour_Vector &_fl) {
   }
   smin = sqr(smin);
 
-  Settings& s = Settings::GetMainSettings();
-  double sijminfac{ s["INT_MINSIJ_FACTOR"].SetDefault(0.).Get<double>() };
   for (int i=0;i<ncut;i++) {
     for (int j=i;j<ncut;j++) {
       scut[i][j] = scut[j][i] = scut_save[i][j] =
               (i<nin)^(j<nin)?0.0:sijminfac*sqr(rpa->gen.Ecms());
     }
-  }  
+  }
 }
 
 void Cut_Data::Complete()
@@ -82,7 +81,7 @@ void Cut_Data::Complete()
       scut[i][j] = scut[j][i] =
 	Max(scut[i][j],sqr(fl[i].SelMass()+fl[j].SelMass()));
     }
-  } 
+  }
 
   size_t str(0);
   for (int i=0;i<ncut;i++) {
@@ -93,7 +92,7 @@ void Cut_Data::Complete()
     if (i>=2) str|=(1<<i);
   }
   double local_smin = 0.;
-  double etmm = 0.; 
+  double etmm = 0.;
   double e1=0.,e2=0.;
   for (int i=2;i<ncut;i++) {
     if (etmin[i]>etmm) etmm = etmin[i];
@@ -181,7 +180,7 @@ double Cut_Data::Getscut(size_t str)
 
   std::vector<int> pl(pr.size(),0);
   for (int i(1);i<=pr.size()/2;++i) sc=Max(sc,Getscut(pl,pr,i,0,-1));
-  
+
   m_smin_map[str] = sc;
   return sc;
 }

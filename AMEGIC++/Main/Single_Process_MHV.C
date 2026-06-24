@@ -45,7 +45,7 @@ AMEGIC::Single_Process_MHV::~Single_Process_MHV()
   if (p_ampl)     {delete p_ampl; p_ampl=0;}
   if (p_psgen)    {delete p_psgen; p_psgen=0;}
   if (p_MHVamp&&m_ownamps)     {delete p_MHVamp; p_MHVamp=0;}
-#ifndef Basic_Sfuncs_In_MHV 
+#ifndef Basic_Sfuncs_In_MHV
   if (p_momlist)    {delete p_momlist; p_momlist=0;}
 #endif
 }
@@ -76,21 +76,21 @@ int AMEGIC::Single_Process_MHV::InitAmplitude(Amegic_Model * model,Topology* top
   PolarizationNorm();
 
   p_hel    = new Helicity(m_nin,m_nout,&m_flavs.front(),p_pl);
-  p_BS     = new Basic_Sfuncs(m_nin+m_nout,m_nin+m_nout,&m_flavs.front(),p_b);  
+  p_BS     = new Basic_Sfuncs(m_nin+m_nout,m_nin+m_nout,&m_flavs.front(),p_b);
   p_BS->Setk0(s_gauge);
 
-  //////////////////////////////////////////////// 
+  ////////////////////////////////////////////////
 #ifdef Basic_Sfuncs_In_MHV
-  p_momlist = p_BS; 
+  p_momlist = p_BS;
 #else
-  p_momlist = new MomentumList(m_nin,m_nout); 
-#endif 
+  p_momlist = new MomentumList(m_nin,m_nout);
+#endif
 
   Flavour* fl = &m_flavs.front();
   int *plist = new int[m_nin+m_nout];
   for (size_t i=0;i<m_nin;i++) plist[i] = fl[i];
   for (size_t i=m_nin;i<m_nin+m_nout;i++) plist[i]=-fl[i];
-  p_MHVamp = FullAmplitude_MHV_Handler(model->p_model,&m_cpls,m_nin+m_nout,plist,p_momlist,m_ownamps); 
+  p_MHVamp = FullAmplitude_MHV_Handler(model->p_model,&m_cpls,m_nin+m_nout,plist,p_momlist,m_ownamps);
 
   delete [] plist;
   //////////////////////////////////////////////
@@ -114,12 +114,12 @@ int AMEGIC::Single_Process_MHV::InitAmplitude(Amegic_Model * model,Topology* top
       if (p_hel->Compare(links[j]->GetHelicity(),m_nin+m_nout)) {
 	m_sfactor = sqr(m_sfactor);
 	msg_Tracking()<<"AMEGIC::Single_Process_MHV::InitAmplitude : Found compatible process for "<<Name()<<" : "<<links[j]->Name()<<endl;
-	  
+
 	p_mapproc = p_partner = (Single_Process_MHV*)links[j];
 	m_iresult = p_partner->Result()*m_sfactor;
 
 	InitFlavmap(p_partner);
-	
+
 	Minimize();
 	return 1;
       }
@@ -135,7 +135,7 @@ int AMEGIC::Single_Process_MHV::InitAmplitude(Amegic_Model * model,Topology* top
   case 1 :
     if (p_partner==this) links.push_back(this);
     msg_Info()<<"."<<std::flush;
-    
+
     if (m_gen_str<2) return 1;
     if (p_partner==this && Result()>0.) SetUpIntegrator();
     return 1;
@@ -152,13 +152,13 @@ int AMEGIC::Single_Process_MHV::InitAmplitude(Amegic_Model * model,Topology* top
 
 
 
-int AMEGIC::Single_Process_MHV::Tests() 
+int AMEGIC::Single_Process_MHV::Tests()
 {
   int number      = 1;
   int gauge_test  = 1;
 
   /* ---------------------------------------------------
-     
+
      The reference result for momenta moms
 
      --------------------------------------------------- */
@@ -170,39 +170,39 @@ int AMEGIC::Single_Process_MHV::Tests()
   if (gauge_test) {
 #ifdef Basic_Sfuncs_In_MHV
     p_BS->Setk0(0);
-    p_BS->CalcEtaMu(p_testmoms); 
+    p_BS->CalcEtaMu(p_testmoms);
 #else
     p_momlist->PutMomenta(p_testmoms);
-#endif    
- 
+#endif
+
     msg_Tracking()<<"AMEGIC::Single_Process_MHV::Tests for "<<m_name<<std::endl
 		  <<"   Prepare gauge test and init helicity amplitudes. This may take some time."
 	      <<std::endl;
-    for (size_t i=0;i<p_hel->MaxHel();i++) { 
+    for (size_t i=0;i<p_hel->MaxHel();i++) {
       if (p_hel->On(i)) {
-	helvalue = p_MHVamp->MSquare((*p_hel)[i],p_BS)*p_hel->PolarizationFactor(i); 
+	helvalue = p_MHVamp->MSquare((*p_hel)[i],p_BS)*p_hel->PolarizationFactor(i);
 	M2      +=  helvalue;
-      } 
+      }
     }
     M2     *= p_MHVamp->ParticlesNorm();
     m_iresult  = M2;
   }
   /* ---------------------------------------------------
-     
+
   First test : gauge test
-  
+
   --------------------------------------------------- */
 #ifdef Basic_Sfuncs_In_MHV
   p_BS->Setk0(s_gauge);
-  p_BS->CalcEtaMu(p_testmoms); 
+  p_BS->CalcEtaMu(p_testmoms);
 #else
   p_momlist->PutMomenta(p_testmoms);
-#endif  
+#endif
   number++;
 
   double M2g = 0.;
   double * M_doub = new double[p_hel->MaxHel()];
-  for (size_t i=0; i<p_hel->MaxHel(); ++i) { 
+  for (size_t i=0; i<p_hel->MaxHel(); ++i) {
     if (p_hel->On(i)) {
       M_doub[i]  = p_MHVamp->MSquare((*p_hel)[i],p_BS)*p_hel->PolarizationFactor(i);
       M2g       += M_doub[i];
@@ -237,15 +237,15 @@ int AMEGIC::Single_Process_MHV::Tests()
       }
     }
   }
-  
+
   delete[] M_doub;
   return 1;
 }
 
 /*------------------------------------------------------------------------------
-  
+
   Phase space initialization
-  
+
   ------------------------------------------------------------------------------*/
 
 bool AMEGIC::Single_Process_MHV::FillIntegrator
@@ -257,11 +257,12 @@ bool AMEGIC::Single_Process_MHV::FillIntegrator
   return Process_Base::FillIntegrator(psh);
 }
 
-bool AMEGIC::Single_Process_MHV::SetUpIntegrator() 
-{  
+bool AMEGIC::Single_Process_MHV::SetUpIntegrator()
+{
   if (m_nin==2) {
-    if ( (m_flavs[0].Mass() != p_int->ISR()->Flav(0).Mass()) ||
-	 (m_flavs[1].Mass() != p_int->ISR()->Flav(1).Mass()) ) p_int->ISR()->SetPartonMasses(m_flavs);
+    if (p_int->ISR()->Mass2(0) != sqr(m_flavs[0].Mass()) ||
+          p_int->ISR()->Mass2(1) != sqr(m_flavs[1].Mass()))
+      p_int->ISR()->SetPartonMasses(m_flavs);
     if (CreateChannelLibrary()) return 1;
   }
   if (m_nin==1) if (CreateChannelLibrary()) return 1;
@@ -273,15 +274,15 @@ bool AMEGIC::Single_Process_MHV::CreateChannelLibrary()
 {
   p_psgen     = new Phase_Space_Generator(m_nin, m_nout);
   bool newch  = 0;
-  if (m_nin>=1)  newch = p_psgen->Construct(p_channellibnames,m_ptypename,m_pslibname,&m_flavs.front(),this); 
+  if (m_nin>=1)  newch = p_psgen->Construct(p_channellibnames,m_ptypename,m_pslibname,&m_flavs.front(),this);
   if (newch>0) return 0;
   return 1;
 }
 
 /*------------------------------------------------------------------------------
-  
+
   Process management
-  
+
   ------------------------------------------------------------------------------*/
 void AMEGIC::Single_Process_MHV::Minimize()
 {
@@ -327,15 +328,15 @@ double AMEGIC::Single_Process_MHV::operator()(const ATOOLS::Vec4D* mom)
   double M2(0.);
 
 #ifdef Basic_Sfuncs_In_MHV
-  p_BS->CalcEtaMu((ATOOLS::Vec4D*)mom); 
+  p_BS->CalcEtaMu((ATOOLS::Vec4D*)mom);
 #else
   p_momlist->PutMomenta(mom);
-#endif  
+#endif
 
   double helvalue;
-  for (size_t i=0; i<p_hel->MaxHel(); ++i) { 
-      if (p_hel->On(i)) { 
-	  helvalue = p_MHVamp->MSquare((*p_hel)[i],p_BS) * p_hel->Multiplicity(i) * p_hel->PolarizationFactor(i);  
+  for (size_t i=0; i<p_hel->MaxHel(); ++i) {
+      if (p_hel->On(i)) {
+	  helvalue = p_MHVamp->MSquare((*p_hel)[i],p_BS) * p_hel->Multiplicity(i) * p_hel->PolarizationFactor(i);
 	  M2       += helvalue;
       }
   }
@@ -359,20 +360,20 @@ void AMEGIC::Single_Process_MHV::FillAmplitudes(vector<METOOLS::Spin_Amplitudes>
   else p_partner->FillAmplitudes(amps, cols, sfactor*sqrt(m_sfactor));
 }
 
-int AMEGIC::Single_Process_MHV::NumberOfDiagrams() { 
-  if (p_partner==this) return p_ampl->GetGraphNumber(); 
+int AMEGIC::Single_Process_MHV::NumberOfDiagrams() {
+  if (p_partner==this) return p_ampl->GetGraphNumber();
   return p_partner->NumberOfDiagrams();
 }
 
-Point * AMEGIC::Single_Process_MHV::Diagram(int i) { 
-  if (p_partner==this) return p_ampl->GetPointlist(i); 
+Point * AMEGIC::Single_Process_MHV::Diagram(int i) {
+  if (p_partner==this) return p_ampl->GetPointlist(i);
   return p_partner->Diagram(i);
-} 
+}
 
 
-void AMEGIC::Single_Process_MHV::AddChannels(std::list<std::string>* tlist) 
+void AMEGIC::Single_Process_MHV::AddChannels(std::list<std::string>* tlist)
 {
-  if (p_partner==this) {    
+  if (p_partner==this) {
     list<string>* clist = p_channellibnames;
     for (list<string>::iterator it=clist->begin();it!=clist->end();++it) {
       bool hit = 0;
@@ -453,7 +454,7 @@ bool AMEGIC::Single_Process_MHV::Combinable
 (const size_t &idi,const size_t &idj)
 {
   if (m_ccombs.empty()) FillCombinations();
-  Combination_Set::const_iterator 
+  Combination_Set::const_iterator
     cit(m_ccombs.find(std::pair<size_t,size_t>(idi,idj)));
   return cit!=m_ccombs.end();
 }

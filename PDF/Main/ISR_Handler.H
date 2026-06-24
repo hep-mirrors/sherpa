@@ -118,7 +118,8 @@ namespace PDF {
     inline int    On() const                    { return m_mode;    }
     inline double * SprimeRange()               { return m_splimits;    }
     inline double * YRange()                    { return m_ylimits;     }
-    inline double  Exponent(const int i) const  { return m_exponent[i]; }
+    inline double Exponent(const int i) const   { return m_exponent[i]; }
+    inline double Mass2(const size_t beam) const { return m_mass2[beam]; }
     inline double SprimeMin() const             { return m_splimits[0]; }
     inline double SprimeMax() const             { return m_splimits[1]; }
     inline double Pole() const                  { return m_splimits[2]; }
