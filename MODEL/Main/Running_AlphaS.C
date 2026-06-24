@@ -453,10 +453,28 @@ Running_AlphaS::Running_AlphaS(const double as_MZ,const double m2_MZ,
     if (p_overridingpdf != NULL) {
       m_alphas.insert(make_pair(it->first, new One_Running_AlphaS(p_overridingpdf, as_MZ, m2_MZ, order, thmode)));
     } else {
+      PDF::PDF_Base *pdf0(it->second->PDF(0)), *pdf1(it->second->PDF(1));
       PDF::PDF_Base *pdf(NULL);
-      if (it->second->PDF(0)) pdf=it->second->PDF(0);
-      if ((pdf==NULL||pdf->ASInfo().m_order<0) && it->second->PDF(1))
-        pdf=it->second->PDF(1);
+      if (pdf0) pdf=pdf0;
+      if ((pdf==NULL||pdf->ASInfo().m_order<0) && pdf1)
+        pdf=pdf1;
+      // warn if the two beams carry PDFs with inconsistent alpha_s. This
+      // happens e.g. in resolved photoproduction, where beam 0 is a
+      // resolved-photon PDF and beam 1 a proton PDF
+      if (pdf0 && pdf1 && pdf0->ASInfo().m_order>=0 && pdf1->ASInfo().m_order>=0
+          && (pdf0->ASInfo().m_order!=pdf1->ASInfo().m_order
+              || dabs(pdf0->ASInfo().m_asmz-pdf1->ASInfo().m_asmz)>1.e-6)) {
+        msg_Error()<<om::bold<<METHOD<<"(): "<<om::reset<<om::red
+          <<"The two beams use PDFs with inconsistent \\alpha_s:\n"
+          <<"  beam 0 ("<<pdf0->Set()<<"): \\alpha_s(M_Z)="<<pdf0->ASInfo().m_asmz
+          <<", order="<<pdf0->ASInfo().m_order<<"\n"
+          <<"  beam 1 ("<<pdf1->Set()<<"): \\alpha_s(M_Z)="<<pdf1->ASInfo().m_asmz
+          <<", order="<<pdf1->ASInfo().m_order<<"\n"
+          <<"  Using the values from beam "<<(pdf==pdf0?0:1)
+          <<" ("<<pdf->Set()<<"). Override with "
+          <<"ALPHAS: {USE_PDF: 5, PDF_SET: <set>} if required."
+          <<om::reset<<std::endl;
+      }
       m_alphas.insert(make_pair(it->first, new One_Running_AlphaS(pdf, as_MZ, m2_MZ, order, thmode)));
     }
   }
