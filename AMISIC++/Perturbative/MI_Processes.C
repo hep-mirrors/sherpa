@@ -75,7 +75,6 @@ bool MI_Processes::Initialize(MODEL::Model_Base* const          model,
   ///////////////////////////////////////////////////////////////////////////
   UpdateS(m_S);
   (*p_xsecs)(m_S);
-  msg_Info()<<"   "<<std::string(77,'-')<<"\n\n";
   ///////////////////////////////////////////////////////////////////////////
   // Mass scheme for the subsequent parton shower.
   ///////////////////////////////////////////////////////////////////////////
@@ -253,17 +252,43 @@ double MI_Processes::TotalCrossSection(const double & s,const bool & output) {
   // b-integration yields unity.
   ///////////////////////////////////////////////////////////////////////////
   m_integrator.SetPT2min(mipars->CalculatePTmin2(s));
+  if (output) { msg_Info()<<"   "<<std::string(85,'-')<<"\n"; }
   m_xshard      = m_integrator(s,nullptr,0.);
   if (output) {
-    msg_Info()<<"   "<<std::string(85,'-')<<"\n"
+    msg_Info()
 	      <<"   | "<<METHOD<<": xs_pert = "
 	      <<std::setprecision(4)<<std::setw(10)
 	      <<(m_xshard*rpa->Picobarn()/1.e9)<<" mb "
-	      <<"+- "<<std::setprecision(0)<<std::setw(3)
+	      <<"+- "<<std::setprecision(3)<<std::setw(8)
 	      <<(100.*m_integrator.Uncertainty()/m_xshard)
-	      <<"%."<<std::string(17,' ')<<"|\n";
+	      <<"%."<<std::string(12,' ')<<"|\n";
   }
   return m_xshard;
+}
+
+double MI_Processes::TotalCrossSection(const double & s,const bool & output,
+                                       size_t ivar) {
+  ///////////////////////////////////////////////////////////////////////////
+  // Calculate the hard cross section with a specific PT_Min and PT_0 variation.
+  ///////////////////////////////////////////////////////////////////////////
+  double ptmin2_var = mipars->CalculatePTmin2(s, ivar);
+  double pt02_var   = mipars->CalculatePT02(s, ivar);
+  m_integrator.SetPT2min(ptmin2_var);
+  for (list<MI_Process_Group *>::iterator mig = m_groups.begin();
+       mig!=m_groups.end();mig++)  (*mig)->SetPT02(pt02_var);
+  double xshard_var = m_integrator(s,nullptr,0.);
+  if (output) {
+    msg_Info()<<"   | "<<std::string(26,' ')<<"v"<<std::setw(4)<<ivar<<": xs_pert = "
+              <<std::setprecision(4)<<std::setw(10)
+              <<(xshard_var*rpa->Picobarn()/1.e9)<<" mb "
+              <<"+- "<<std::setprecision(3)<<std::setw(8)
+              <<(100.*m_integrator.Uncertainty()/xshard_var)
+              <<"%."<<std::string(12,' ')<<"|\n";
+  }
+  m_integrator.SetPT2min(m_ptmin2);
+  for (list<MI_Process_Group *>::iterator mig = m_groups.begin();
+       mig!=m_groups.end();mig++)  (*mig)->SetPT02(m_pt02);
+  return xshard_var;
 }
 
 void MI_Processes::

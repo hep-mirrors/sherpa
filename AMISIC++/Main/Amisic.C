@@ -33,6 +33,8 @@ bool Amisic::Initialize(MODEL::Model_Base *const model,
   ///////////////////////////////////////////////////////////////////////////
   m_xsecs.Initialize(isr->Flav(0),isr->Flav(1),model,m_evttype);
   if (m_evttype==evt_type::Perturbative) {
+    m_reweighting.Initialize(mipars,&m_mo,&m_pint,&m_xsecs,
+                           &m_overestimator,&m_processes,&m_singlecollision);
     ///////////////////////////////////////////////////////////////////////////
     // Initialize the parton-level processes - currently only 2->2 scatters.
     ///////////////////////////////////////////////////////////////////////////
@@ -59,13 +61,13 @@ bool Amisic::Initialize(MODEL::Model_Base *const model,
     // - assuming that the product of the PDFs f(x_1)f(x_2) is largest for
     //   mid-rapidity where x_1 and x_2 are identical
     ///////////////////////////////////////////////////////////////////////////
-    m_overestimator.Initialize(isr,&m_processes,p_sbins,&m_mo);
+    m_overestimator.Initialize(isr,&m_processes,p_sbins,&m_pint,&m_mo);
     ///////////////////////////////////////////////////////////////////////////
     // Initializing the Single_Collision_Handler which creates the next
     // scatter: it needs the processes, overestimator, interaction probability
     // and matter overlap
     ///////////////////////////////////////////////////////////////////////////
-    m_singlecollision.Init(&m_processes,&m_overestimator,&m_pint,&m_mo);
+    m_singlecollision.Init(&m_processes,&m_overestimator,&m_pint,&m_mo,&m_reweighting);
   }
   else {
     p_soft = new NonPerturbative_XSecs(remnant_handler,&m_xsecs);

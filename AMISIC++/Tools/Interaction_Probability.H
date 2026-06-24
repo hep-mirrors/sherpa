@@ -21,14 +21,22 @@ namespace AMISIC {
     TwoDim_Table   * p_diffxsec, * p_inverted;
     double           m_pdfnorm, m_xs_test, m_xs_hard, m_bmax, m_smin;
     bool             m_dynamic;
+    size_t m_n_variations;
+    std::vector<double> m_sigma_nd_variations;
+    std::vector<OneDim_Table*> p_k_variations;
+    std::vector<TwoDim_Table*> p_diffxsec_variations;
 
     void FixKandSmin();
+    void FixKandSmin(size_t ivar);
     void FillIntegrated();
     void InitializeTables();
-    void InitializeTable(const size_t & sbin,const bool & out=false);
+    void InitializeTable(const size_t & sbin, const bool & out=false);
+    void InitializeTable(const size_t & sbin, TwoDim_Table* diffxsec,
+                         axis* bbins, size_t ivar, const bool & out=false);
     bool CheckTables();
     void OutputTables();
-    
+    void OutputTables(size_t ivar);
+
     bool m_test, m_ana;
     std::map<std::string,ATOOLS::Histogram *> m_histos;
     void InitAnalysis();
@@ -59,10 +67,22 @@ namespace AMISIC {
     inline double operator()(const double & s,const double & b) {
       return 1.-exp(-(*p_diffxsec)(s,b)*s_GeV2fm2);
     }
+    inline double operator()(const double & s, const double & b,size_t ivar) {
+      if (ivar>=m_n_variations || p_diffxsec_variations[ivar]==nullptr)
+        return (*this)(s, b);
+      return 1.-exp(-(*p_diffxsec_variations[ivar])(s,b)*s_GeV2fm2);
+    }
     //////////////////////////////////////////////////////////////////////////
     // The s-dependent radius multiplier
     //////////////////////////////////////////////////////////////////////////
     inline double K(const double & s) const { return (*p_k)(s); }
+    inline double K(const double & s, size_t ivar) const {
+      return (*p_k_variations[ivar])(s);
+    }
+    inline void SetVariations(size_t n_variations, const std::vector<double>& sigma_nd_variations) {
+      m_n_variations = n_variations;
+      m_sigma_nd_variations = sigma_nd_variations;
+    }
   };
 
   //////////////////////////////////////////////////////////////////////////

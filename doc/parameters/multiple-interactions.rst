@@ -119,7 +119,7 @@ The usual rules for yaml structure apply, c.f. :ref:`Input structure`.
 
 :option:`nMC_points`
     Number of points to estimate the the cross-section during the integration. The error should behave as
-    :math:`\frac{1}{\sqrt{n_\text{MC}}}`. Defaults to ``1000``.
+    :math:`\frac{1}{\sqrt{n_\text{MC}}}`. Defaults to ``100000``.
 
 :option:`nS_bins`
     Number of points to sample in the center-of-mass energy :math:`\sqrt{s}`. This is only used if the energy is not

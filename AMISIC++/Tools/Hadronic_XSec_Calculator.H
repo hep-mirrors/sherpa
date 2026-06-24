@@ -49,6 +49,10 @@ namespace AMISIC {
     std::map<std::pair<ATOOLS::Flavour, ATOOLS::Flavour>, double> m_sigmaDD;
     double m_GeV2mb;
     OneDim_Table * p_xsratio, * p_xshard;
+    size_t m_n_variations;
+    std::vector<double> m_sigma_nd_variations;
+    std::vector<OneDim_Table*> p_xsratio_variations;
+    std::vector<OneDim_Table*> p_xshard_variations;
     size_t m_testmode;
 
     void   FixType();
@@ -62,6 +66,7 @@ namespace AMISIC {
     double IntDDXSec(const size_t hadtags[2], const double masses[2]) const;
     double CalculateDoubleDXSec() const;
     void OutputXSratios(axis * sbins);
+    void OutputXSratios(axis * sbins, size_t ivar);
   public:
     explicit Hadronic_XSec_Calculator();
     ~Hadronic_XSec_Calculator();
@@ -70,6 +75,7 @@ namespace AMISIC {
 		    MODEL::Model_Base * model,const evt_type::code & type);
     void operator()(double s);
     void CalculateXSratios(MI_Processes * processes,axis * sbins);
+    void CalculateXSratios(MI_Processes * processes,axis * sbins, size_t ivar);
     void Output() const;
 
     inline const double & Smin()   const { return m_smin; }
@@ -80,10 +86,20 @@ namespace AMISIC {
     //////////////////////////////////////////////////////////////////////////
     inline OneDim_Table * GetXSratio() { return p_xsratio; }
     inline double XSratio(const double & s=-1.) { return (*p_xsratio)(s); }
+    inline double XSratio(const double & s, size_t ivar) {
+      if (ivar>=m_n_variations || p_xsratio_variations[ivar]==nullptr) 
+        return XSratio(s);
+      return s<0 ? 0. : (*p_xsratio_variations[ivar])(s);
+    }
     //////////////////////////////////////////////////////////////////////////
     // Hard cross section
     //////////////////////////////////////////////////////////////////////////
     inline double XShard(const double & s=-1.)  { return (*p_xshard)(s); }
+    inline double XShard(const double & s, size_t ivar) {
+      if (ivar>=m_n_variations || p_xshard_variations[ivar]==nullptr) 
+        return XShard(s);
+      return s<0 ? 0. : (*p_xshard_variations[ivar])(s);
+    }
     //////////////////////////////////////////////////////////////////////////
     // Non-diffractive cross section, given in GeV^-2
     //////////////////////////////////////////////////////////////////////////
@@ -144,6 +160,10 @@ namespace AMISIC {
 	  m_hadroncomponents[m_flavs[beam]].end() &&
 	  s_indexmap.find(flav)!=s_indexmap.end()) return s_indexmap[flav];
       return 0;
+    }
+    inline void SetVariations(size_t n_variations, const std::vector<double>& sigma_nd_variations) {
+      m_n_variations = n_variations;
+      m_sigma_nd_variations = sigma_nd_variations;
     }
   };
 }

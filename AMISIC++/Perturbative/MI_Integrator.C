@@ -10,7 +10,7 @@ using namespace ATOOLS;
 
 MI_Integrator::MI_Integrator(MI_Processes * procs) :
   p_procs(procs), m_pt2min(1.), m_xsmax(-1.),
-  m_MCpoints(10000) { }
+  m_MCpoints(100000) { }
 
 void MI_Integrator::Initialize(PDF::ISR_Handler * isr) {
   ////////////////////////////////////////////////////////////////////////////
@@ -23,9 +23,9 @@ void MI_Integrator::Initialize(PDF::ISR_Handler * isr) {
     m_xmax[i] = Min(1.-1.e-6,isr->PDF(i)->XMax());
   }
   ////////////////////////////////////////////////////////////////////////////
-  // 10000 points will yield errors of about 1%.
+  // 100000 points will yield errors of about 0.5%.
   ////////////////////////////////////////////////////////////////////////////
-  m_MCpoints = ATOOLS::Min(size_t(100000),size_t((*mipars)["nMC_points"]));
+  m_MCpoints = size_t((*mipars)["nMC_points"]);
 }
 
 bool MI_Integrator::TrialEvent(const double & s,Matter_Overlap * mo) {
@@ -84,11 +84,8 @@ operator()(const double & s,Matter_Overlap * mo,const double & b) {
       sum  += xs * mowt;
       sum2 += sqr(xs * mowt);
     }
-    if (++sumtrials%(100*m_MCpoints)==0) {
-      xsec   = sum/double(sumtrials);
-      uncert = sqrt(sum2 - sqr(xsec))/double(sumtrials);
-    }
-  } while (xsec==0 || (uncert/xsec>5.e-2));
+    sumtrials++;
+  } while (sumtrials<=m_MCpoints);
   m_xsec   = sum/double(sumtrials);
   m_uncert = sqrt(sum2 - sqr(m_xsec))/double(sumtrials);
   msg_Debugging()<<"*** "<<METHOD<<"(E = "<<std::setprecision(6)<<sqrt(s)<<", "

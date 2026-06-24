@@ -49,6 +49,7 @@ namespace AMISIC {
                       PDF::ISR_Handler *const isr,
                       YFS::YFS_Handler *const yfs);
     double TotalCrossSection(const double & s,const bool & output=false);
+    double TotalCrossSection(const double & s,const bool & output,size_t ivar);
     void   UpdateS(const double & s);
     /////////////////////////////////////////////////////////////////////////
     // The sum over the PDF-weighted matrix elements, grouped by parton
@@ -78,6 +79,7 @@ namespace AMISIC {
     inline const double  & PDFnorm()  const { return m_pdfnorm; } 
     inline const double  & MuR2()     const { return m_muR2; }
     inline const double  & MuF2()     const { return m_muF2; }
+    inline const double  & MuRFac()   const { return m_muR_fac; }
     inline const size_t    TrigSize() const { return m_triggerprocs.size(); }
     inline const size_t    Size()     const { return m_groups.size(); }
     inline MI_Integrator * GetIntegrator() { return &m_integrator; }
@@ -96,6 +98,10 @@ namespace AMISIC {
     }
     inline void SetResidualX(const double & r1,const double & r2) {
       m_resx[0] = r1; m_resx[1] = r2;
+    }
+    inline void SetPT02(const double & pt02) {
+      m_pt02 = pt02;
+      for (auto mig : m_groups) mig->SetPT02(pt02);
     }
     inline int  PerformTests() { return 0; }
     inline bool NewLibraries() { return false; }

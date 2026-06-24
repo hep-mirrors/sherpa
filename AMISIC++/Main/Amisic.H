@@ -6,6 +6,7 @@
 #include "AMISIC++/Tools/Interaction_Probability.H"
 #include "AMISIC++/Tools/Hadronic_XSec_Calculator.H"
 #include "AMISIC++/Tools/MI_Parameters.H"
+#include "AMISIC++/Tools/MI_Reweighting.H"
 #include "BEAM/Main/Beam_Spectra_Handler.H"
 #include "PDF/Main/ISR_Handler.H"
 #include "YFS/Main/YFS_Handler.H"
@@ -66,6 +67,7 @@ namespace AMISIC {
     bool         m_isMinBias, m_isFirst, m_producedSoft;
     size_t       m_maxNscatters, m_Nscatters;
     double       m_f;
+    MI_Reweighting m_reweighting;
 
     std::set<ATOOLS::Blob *> m_updated;
 
@@ -142,6 +144,10 @@ namespace AMISIC {
     inline void CleanUp() {
       m_singlecollision.Reset();
       m_isFirst = true;
+      m_reweighting.ResetEvent();
+    }
+    inline void ApplyVariationWeights(ATOOLS::Blob * blob) {
+      m_reweighting.ApplyVariationWeights(blob);
     }
   };
 

@@ -6,6 +6,7 @@
 #include "PDF/Main/ISR_Handler.H"
 #include "ATOOLS/Math/Function_Base.H"
 #include "ATOOLS/Math/Vector.H"
+#include <array>
 
 
 namespace AMISIC {
@@ -22,6 +23,12 @@ namespace AMISIC {
     double m_radius[4], m_radius2[4], m_rnorm[4], m_fraction[4];
     double m_fixradius, m_dynradius2, m_maxradius;
     double m_xmin[2], m_xmax[2];
+    size_t m_matter_form_ivar;
+    std::vector<std::array<double,4>> m_r2_variations;
+    std::vector<std::array<double,4>> m_rnorm_variations;
+    std::vector<double> m_dynradius2_variations;
+    std::vector<double> m_fixradius_variations;
+    std::vector<double> m_maxradius_variations;
 
 
     void   InitializeFFParams(PDF::ISR_Handler * const isr);
@@ -29,6 +36,7 @@ namespace AMISIC {
     void   InitializeDynamicFFParams(PDF::ISR_Handler * const isr);
     double CalculateIntegral();
     void   Output(const double & check=0.);
+    void   Output(size_t ivar);
  public:
     Matter_Overlap();
     ~Matter_Overlap();
@@ -37,8 +45,10 @@ namespace AMISIC {
 		      PDF::ISR_Handler * const isr);
     void   FixDynamicRadius(const double & x1=-1.,  const double & x2=-1.,
 			    const double & Q21=-1., const double & Q22=-1.);
-    double operator()(double b);
+    double operator()(const double b);
+    double operator()(const double b, const double k);
     double MaxValue(const double & b);
+    double MaxValue(const double & b, const double k);
 
     double SelectB() const;
 
@@ -59,6 +69,15 @@ namespace AMISIC {
     inline const double & DynamicRadius2()  const { return m_dynradius2; }
     inline const double & FixRadius()       const { return m_fixradius; }
     inline const double & Radius2(size_t i) const { return m_radius2[i]; }
+    size_t MatterFormVariationSize() const;
+    inline void SetMatterFormVariationIndex(size_t i) {
+      const size_t max_idx = MatterFormVariationSize() ? MatterFormVariationSize() - 1 : size_t(0);
+      if (i > max_idx) m_matter_form_ivar = size_t(0);
+      else m_matter_form_ivar = i;
+    }
+    inline size_t MatterFormVariationIndex() const { return m_matter_form_ivar; }
+    double ComputeBmaxForVariation(size_t ivar);
+    double ComputeBminForVariation(size_t ivar);
     inline       axis   * GetBBins()        const { return p_bbins; }
   };
 
