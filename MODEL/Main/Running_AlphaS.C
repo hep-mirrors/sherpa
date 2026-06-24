@@ -535,7 +535,7 @@ void Running_AlphaS::RegisterDefaults() const
   s["PDF_SET_MEMBER"].SetDefault(member);
 }
 
-void Running_AlphaS::InitOverridingPDF(const std::string name, const int member)
+void Running_AlphaS::InitOverridingPDF(const std::string &name, const int member)
 {
   if (p_overridingpdf != NULL) {
     delete p_overridingpdf;
@@ -547,6 +547,11 @@ void Running_AlphaS::InitOverridingPDF(const std::string name, const int member)
   }
   PDF::PDF_Arguments args(Flavour(kf_p_plus), 0, name, member);
   PDF::PDF_Base * pdf = PDF_Base::PDF_Getter_Function::GetObject(name, args);
+  if (pdf == NULL) {
+    THROW(fatal_error, "Cannot initialise the alpha_s PDF set '" + name
+          + "' requested via ALPHAS: {PDF_SET: ...}. Check that the set name "
+            "is correct and the corresponding PDF library is available.");
+  }
   pdf->SetBounds();
   p_overridingpdf = pdf;
 }
