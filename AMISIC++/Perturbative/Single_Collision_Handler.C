@@ -1,4 +1,5 @@
 #include "AMISIC++/Perturbative/Single_Collision_Handler.H"
+#include "AMISIC++/Tools/MI_Reweighting.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Math/Random.H"
 
@@ -8,7 +9,7 @@ using namespace std;
 
 Single_Collision_Handler::Single_Collision_Handler() :
   m_evttype(evt_type::Perturbative),
-  p_processes(NULL), p_overestimator(NULL), p_soft(NULL),
+  p_processes(NULL), p_overestimator(NULL), p_soft(NULL), p_reweighting(NULL),
   m_pt2(0.), m_pt2min(0.),
   m_S((rpa->gen.PBeam(0)+rpa->gen.PBeam(1)).Abs2()), m_lastpt2(m_S),
   m_residualx1(1.), m_residualx2(1.), m_Ycms(0.),
@@ -22,7 +23,8 @@ Single_Collision_Handler::~Single_Collision_Handler() {
 
 void Single_Collision_Handler::
 Init(MI_Processes * processes,Over_Estimator * overestimator,
-     Interaction_Probability * pint, Matter_Overlap * overlap) {
+     Interaction_Probability * pint, Matter_Overlap * overlap,
+     MI_Reweighting * reweighting) {
   p_processes     = processes;
   p_integrator    = p_processes->GetIntegrator();
   p_xsecs         = p_processes->GetXSecs();
@@ -31,6 +33,7 @@ Init(MI_Processes * processes,Over_Estimator * overestimator,
   for (size_t i=0;i<2;i++) p_remnants[i] = p_processes->GetRemnant(i);
   p_pint          = pint;
   p_overlap       = overlap;
+  p_reweighting   = reweighting;
   ///////////////////////////////////////////////////////////////////////////
   // TODO: Will have to make pt2min initial-particle dependent
   //       (currently: photon vs proton, but treated the same)
@@ -103,9 +106,11 @@ bool Single_Collision_Handler::FirstMPI(Blob * signal) {
     // Form_Factor (and by extension Matter_Overlap) has radii etc. in fm,
     // event record needs it in mm, therefore we have to divide by 10^12.
     /////////////////////////////////////////////////////////////////////////    
+    if (p_reweighting) p_reweighting->ResetEvent();
     do {
       m_b   = p_overlap->SelectB();
     } while (!p_overlap->SelectPositionForScatter(m_b,x1,m_pt2,x2,m_pt2,m_deltapos));
+    if (p_reweighting) p_reweighting->ImpactParameterReweighting(m_S, m_b);
     m_pt2 = m_lastpt2 = m_S/4.;
   } while (SelectPT2()==0 && m_pt2>pt2veto);
   m_lastpt2 = pt2veto;
@@ -140,7 +145,9 @@ bool Single_Collision_Handler::FirstMinBiasScatter(Blob * blob) {
   bool success = false;
   int  trials  = 10;
   while (!success) {
+    if (p_reweighting) p_reweighting->ResetEvent();
     m_b    = p_pint->SelectB(m_S);
+    if (p_reweighting) p_reweighting->ImpactParameterReweighting(m_S, m_b, true);
     trials = 10;
     do {
       m_done  = false;
@@ -169,6 +176,7 @@ bool Single_Collision_Handler::FirstRescatter(Blob * blob) {
   // bits of relevant information.
   // Switching Sudakov evolution back on: m_done = false
   ///////////////////////////////////////////////////////////////////////////////
+  if (p_reweighting) p_reweighting->SetOverlapRatios(m_S, m_b);
   if (NextScatter(blob)) {
     blob->AddData("Trials",new Blob_Data<size_t>(1));
     blob->AddData("Weight_Norm",new Blob_Data<double>(p_xsecs->XSnd()));
@@ -285,9 +293,11 @@ int Single_Collision_Handler::SelectPT2() {
     p_overlap->FixDynamicRadius(p_integrator->X(0),p_integrator->X(1));
     double wt = ( p_processes->PDFnorm()*(*p_processes)()/
 		  (*p_overestimator)(m_pt2,p_integrator->Yvol()) *
-		  (*p_overlap)(m_b) );
+		  (*p_overlap)(m_b) * s_GeV2fm2);
     if (m_ana) AnalyseWeight(wt);
-    if (wt>=ran->Get()) break;
+    bool accepted = (wt >= ran->Get());
+    if (p_reweighting) p_reweighting->AcceptRejectReweighting(accepted, wt);
+    if (accepted) break;
   }
   return 0;
 }

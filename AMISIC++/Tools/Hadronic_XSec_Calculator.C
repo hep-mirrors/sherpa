@@ -31,7 +31,8 @@ Hadronic_XSec_Calculator::Hadronic_XSec_Calculator() :
   m_Ypp(-1.), m_c0(2.24), m_c1(2.1),
   m_GeV2mb(rpa->Picobarn()/1e9),
   p_xsratio(NULL), p_xshard(NULL),
-  m_testmode(0)
+  m_testmode(0),
+  m_n_variations(1)
 { }
 
 void Hadronic_XSec_Calculator::
@@ -82,6 +83,8 @@ Initialize(const Flavour & fl1,const Flavour & fl2,
 Hadronic_XSec_Calculator::~Hadronic_XSec_Calculator() {
   if (p_xsratio) delete p_xsratio;
   if (p_xshard)  delete p_xshard;
+  for (auto p : p_xsratio_variations) delete p;
+  for (auto p : p_xshard_variations) delete p;
 }
 
 void Hadronic_XSec_Calculator::FixType() {
@@ -194,7 +197,31 @@ CalculateXSratios(MI_Processes * processes,axis * sbins)
     p_xshard->Fill(sbin, xshard);
     p_xsratio->Fill(sbin, xshard/(XSndNorm() * XSnd()));
   }
+  if (m_n_variations > 1) {
+    p_xsratio_variations.resize(m_n_variations);
+    p_xshard_variations.resize(m_n_variations);
+    for (size_t ivar=1; ivar<m_n_variations; ++ivar) {
+      p_xsratio_variations[ivar] = new OneDim_Table(*sbins);
+      p_xshard_variations[ivar]  = new OneDim_Table(*sbins);
+    }
+    for (size_t ivar=1; ivar<m_n_variations; ++ivar)
+      CalculateXSratios(processes, sbins, ivar);
+  }
   OutputXSratios(sbins);
+}
+
+void Hadronic_XSec_Calculator::
+CalculateXSratios(MI_Processes * processes, axis * sbins, size_t ivar)
+{
+  for (size_t sbin=0; sbin<sbins->m_nbins; ++sbin) {
+    const double s          = sbins->x(sbin);
+    processes->UpdateS(s);
+    const double xshard_var = processes->TotalCrossSection(s, sbin==0, ivar);
+    (*this)(s);
+    p_xshard_variations[ivar]->Fill(sbin, xshard_var);
+    p_xsratio_variations[ivar]->Fill(
+      sbin, xshard_var/(m_sigma_nd_variations[ivar] * XSnd()));
+  }
 }
 
 void Hadronic_XSec_Calculator::OutputXSratios(axis * sbins) {
@@ -213,12 +240,12 @@ void Hadronic_XSec_Calculator::OutputXSratios(axis * sbins) {
     double s    = sbins->x(sbin), E = sqrt(s);
     (*this)(s);
     msg_Info()<<"   | "
-	      <<setprecision(6)<<setw(11)<<E<<" | "
-	      <<setprecision(6)<<setw(11)<<(m_xstot*fac)<<" | "
-	      <<setprecision(6)<<setw(11)<<(m_xsel*fac)<<" | "
-	      <<setprecision(6)<<setw(11)<<(m_xssdA*fac)<<" | "
-	      <<setprecision(6)<<setw(11)<<(m_xssdB*fac)<<" | "
-	      <<setprecision(6)<<setw(11)<<(m_xsdd*fac)<<" |\n";
+              <<setprecision(6)<<setw(11)<<E<<" | "
+              <<setprecision(6)<<setw(11)<<(m_xstot*fac)<<" | "
+              <<setprecision(6)<<setw(11)<<(m_xsel*fac)<<" | "
+              <<setprecision(6)<<setw(11)<<(m_xssdA*fac)<<" | "
+              <<setprecision(6)<<setw(11)<<(m_xssdB*fac)<<" | "
+              <<setprecision(6)<<setw(11)<<(m_xsdd*fac)<<" |\n";
   }
   msg_Info()<<"   "<<string(85,'-')<<"\n"
 	    <<"   | E_cms [GeV] | sigma_tot   | sigma_hd    | "
@@ -229,14 +256,45 @@ void Hadronic_XSec_Calculator::OutputXSratios(axis * sbins) {
     double xshard = (*p_xshard)(s), xsnd  = XSndNorm() * XSnd();
     double ratio  = (*p_xsratio)(s);
     msg_Info()<<"   | "
-	      <<setprecision(6)<<setw(11)<<E<<" | "
-	      <<setprecision(6)<<setw(11)<<(m_xstot*fac)<<" | "
-	      <<setprecision(6)<<setw(11)<<(xshard*fac*m_GeV2mb)<<" | "
-	      <<setprecision(6)<<setw(11)<<(XSnd()*fac*m_GeV2mb)<<" | "
-	      <<setprecision(6)<<setw(11)<<XSndNorm()<<" | "
-	      <<setprecision(6)<<setw(11)<<ratio<<" |\n";
+              <<setprecision(6)<<setw(11)<<E<<" | "
+              <<setprecision(6)<<setw(11)<<(m_xstot*fac)<<" | "
+              <<setprecision(6)<<setw(11)<<(xshard*fac*m_GeV2mb)<<" | "
+              <<setprecision(6)<<setw(11)<<(XSnd()*fac*m_GeV2mb)<<" | "
+              <<setprecision(6)<<setw(11)<<XSndNorm()<<" | "
+              <<setprecision(6)<<setw(11)<<ratio<<" |\n";
+  }
+  if (m_n_variations > 1) {
+    for (size_t ivar=1; ivar<m_n_variations; ++ivar) OutputXSratios(sbins, ivar);
   }
   msg_Info()<<"   "<<string(85,'-')<<"\n\n";
+}
+
+void Hadronic_XSec_Calculator::OutputXSratios(axis * sbins, size_t ivar) {
+  (*this)(sbins->x(0));
+  double fac = 1;
+  string units = string("mb");
+  if      (m_xstot<1.e-6) { fac = 1.e9; units = string("pb"); }
+  else if (m_xstot<1.e-3) { fac = 1.e6; units = string("nb"); }
+  else if (m_xstot<1.)    { fac = 1.e3; units = string("ub"); }
+  msg_Info()<<"   "<<string(85,'-')<<"\n"
+            <<"   | "<<string(35,' ')<<"v"<<std::setw(4)<<ivar
+            <<": hadronic cross sections (all in "<<units<<")"<<"     |\n"
+            <<"   "<<string(85,'-')<<"\n"
+            <<"   | E_cms [GeV] | sigma_tot   | sigma_hd    | "
+            <<"sigma_ND    | ND_norm     | ratio       |\n";
+  for (size_t sbin=0;sbin<sbins->m_nbins;sbin++) {
+    double s    = sbins->x(sbin), E = sqrt(s);
+    (*this)(s);
+    double xshard = (*p_xshard_variations[ivar])(s);
+    double ratio  = (*p_xsratio_variations[ivar])(s);
+    msg_Info()<<"   | "
+              <<setprecision(6)<<setw(11)<<E<<" | "
+              <<setprecision(6)<<setw(11)<<(m_xstot*fac)<<" | "
+              <<setprecision(6)<<setw(11)<<(xshard*fac*m_GeV2mb)<<" | "
+              <<setprecision(6)<<setw(11)<<(XSnd()*fac*m_GeV2mb)<<" | "
+              <<setprecision(6)<<setw(11)<<m_sigma_nd_variations[ivar]<<" | "
+              <<setprecision(6)<<setw(11)<<ratio<<" |\n";
+  }
 }
 
 double Hadronic_XSec_Calculator::TotalXSec(const size_t hadtags[2]) const {

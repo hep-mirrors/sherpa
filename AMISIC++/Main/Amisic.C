@@ -1,6 +1,7 @@
 #include "AMISIC++/Main/Amisic.H"
 #include "MODEL/Main/Model_Base.H"
 #include "ATOOLS/Org/Run_Parameter.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
 
 using namespace AMISIC;
 using namespace ATOOLS;
@@ -24,6 +25,10 @@ bool Amisic::Initialize(MODEL::Model_Base *const model,
 			YFS::YFS_Handler *const yfs,
                         REMNANTS::Remnant_Handler * remnant_handler)
 {
+  const int init_output =
+    Settings::GetMainSettings()["AMISIC"]["INIT_OUTPUT"].SetDefault(0).Get<int>();
+  const int saved_output_level = msg->Level();
+  if (!init_output) msg->SetLevel(saved_output_level & ~2);
   msg_Info()<<"   "<<std::string(77,'=')<<"\n"
 	    <<"   | "<<METHOD<<std::string(56,' ')<<"|\n";
   InitParametersAndType(isr,remnant_handler);
@@ -33,6 +38,8 @@ bool Amisic::Initialize(MODEL::Model_Base *const model,
   ///////////////////////////////////////////////////////////////////////////
   m_xsecs.Initialize(isr->Flav(0),isr->Flav(1),model,m_evttype);
   if (m_evttype==evt_type::Perturbative) {
+    m_reweighting.Initialize(mipars,&m_mo,&m_pint,&m_xsecs,
+                           &m_overestimator,&m_processes,&m_singlecollision);
     ///////////////////////////////////////////////////////////////////////////
     // Initialize the parton-level processes - currently only 2->2 scatters.
     ///////////////////////////////////////////////////////////////////////////
@@ -59,13 +66,13 @@ bool Amisic::Initialize(MODEL::Model_Base *const model,
     // - assuming that the product of the PDFs f(x_1)f(x_2) is largest for
     //   mid-rapidity where x_1 and x_2 are identical
     ///////////////////////////////////////////////////////////////////////////
-    m_overestimator.Initialize(isr,&m_processes,p_sbins,&m_mo);
+    m_overestimator.Initialize(isr,&m_processes,p_sbins,&m_pint,&m_mo);
     ///////////////////////////////////////////////////////////////////////////
     // Initializing the Single_Collision_Handler which creates the next
     // scatter: it needs the processes, overestimator, interaction probability
     // and matter overlap
     ///////////////////////////////////////////////////////////////////////////
-    m_singlecollision.Init(&m_processes,&m_overestimator,&m_pint,&m_mo);
+    m_singlecollision.Init(&m_processes,&m_overestimator,&m_pint,&m_mo,&m_reweighting);
   }
   else {
     p_soft = new NonPerturbative_XSecs(remnant_handler,&m_xsecs);
@@ -85,6 +92,7 @@ bool Amisic::Initialize(MODEL::Model_Base *const model,
   if (m_ana) InitAnalysis();
   m_isFirst   = true;
   m_isMinBias = false;
+  if (!init_output) msg->SetLevel(saved_output_level);
   return true;
 }
 

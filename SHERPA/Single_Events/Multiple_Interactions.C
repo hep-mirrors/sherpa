@@ -10,6 +10,7 @@
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/Scoped_Settings.H"
 #include "MODEL/Main/Running_AlphaS.H"
+#include "AMISIC++/Main/Amisic.H"
 
 using namespace SHERPA;
 using namespace ATOOLS;
@@ -236,7 +237,18 @@ Return_Value::code Multiple_Interactions::Treat(Blob_List *bloblist) {
   if (CheckForMinBias())                 return InitMinBias();
   if (CheckForRescatter())               return InitRescatter();
   if (CheckForMPIs() && !InitMPIs())     return Return_Value::Nothing;
-  if (!p_activeMI || p_activeMI->Done()) return Return_Value::Nothing;
+  if (!p_activeMI || p_activeMI->Done()) {
+    if (p_activeMI && p_activeMI->Done() &&
+        p_activeMI->Generator() == MI_Handler::genID::amisic) {
+      Blob * signal = p_bloblist->FindFirst(btp::Signal_Process);
+      if (!signal) signal = p_bloblist->FindFirst(btp::Hard_Collision);
+      if (signal && p_activeMI->Amisic()) {
+        p_activeMI->Amisic()->ApplyVariationWeights(signal);
+        p_activeMI = nullptr;
+      }
+    }
+    return Return_Value::Nothing;
+  }
   ////////////////////////////////////////////////////////////////////////////
   // Sanity checks on blob_list: four-momentum is conserved, no blob in there
   // that needs to parton shower, beams are viable.

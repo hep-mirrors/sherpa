@@ -16,7 +16,7 @@ namespace AMISIC {
   private:
     MI_Processes * p_procs;
     double         m_pt2min, m_xmin[2], m_xmax[2], m_Emin;
-    unsigned int   m_MCpoints;
+    double         m_target_acc;
     double         m_xt, m_ymax, m_yvol, m_y[2], m_x[2];
     double         m_pt2, m_shat, m_that, m_uhat, m_cost, m_b;
     double         m_xsec, m_uncert, m_xsmax;

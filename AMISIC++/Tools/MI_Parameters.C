@@ -18,40 +18,66 @@ MI_Parameters::MI_Parameters() :
   auto s = Settings::GetMainSettings()["AMISIC"];
   m_evttype =
     s["EVENT_TYPE"].SetDefault(evt_type::Perturbative).Get<evt_type::code>();
+  m_parameters_vector[string("pt_0(ref)")]
+    = s["PT_0(ref)"].SetDefault({2.05}).GetVector<double>();
   m_parameters[string("pt_0(ref)")]
-    = s["PT_0(ref)"].SetDefault(2.05).Get<double>();
+    = m_parameters_vector[string("pt_0(ref)")][0];
   m_parameters[string("pt_0(IR)")]
     = s["PT_0(IR)"].SetDefault(0.5).Get<double>();
+  m_parameters_vector[string("pt_min(ref)")]
+    = s["PT_Min(ref)"].SetDefault({1.10}).GetVector<double>();
   m_parameters[string("pt_min(ref)")]
-    = s["PT_Min(ref)"].SetDefault(2.583).Get<double>();
+    = m_parameters_vector[string("pt_min(ref)")][0];
   m_parameters[string("pt_min(IR)")]
     = s["PT_Min(IR)"].SetDefault(1.00).Get<double>();
   m_parameters[string("Ecms(ref)")]
     = s["E(ref)"].SetDefault(7000.).Get<double>();
+  m_parameters_vector[string("eta")]
+    = s["Eta"].SetDefault({0.026}).GetVector<double>();
   m_parameters[string("eta")]
-    = s["Eta"].SetDefault(0.08).Get<double>();
+    = m_parameters_vector[string("eta")][0];
   m_pt02ref   = sqr(m_parameters[string("pt_0(ref)")]);
   m_pt02IR    = sqr(m_parameters[string("pt_0(IR)")]);
-  m_ptmin2ref = sqr(m_parameters[string("pt_min(ref)")]);
+  for (size_t i=0; i<m_parameters_vector[string("pt_0(ref)")].size(); ++i)
+  { m_pt02ref_variations.push_back(sqr(m_parameters_vector[string("pt_0(ref)")][i])); }
+  for (size_t i=0; i<m_parameters_vector[string("pt_min(ref)")].size(); ++i)
+  { m_ptmin2ref_variations.push_back(sqr(m_parameters_vector[string("pt_min(ref)")][i])); }
+  m_pt02ref   = m_pt02ref_variations[0];
+  m_ptmin2ref = m_ptmin2ref_variations[0];
   m_ptmin2IR  = sqr(m_parameters[string("pt_min(IR)")]);
   m_Sref      = sqr(m_Eref = m_parameters[string("Ecms(ref)")]);
   m_Scms      = sqr(m_Ecms = rpa->gen.Ecms());
+  m_eta_variations = m_parameters_vector[string("eta")];
   m_eta       = m_parameters[string("eta")];
-  double pt_min = sqrt(CalculatePTmin2(m_Scms));
-  double pt_0 = sqrt(CalculatePT02(m_Scms));
+  std::vector<double> ptmin_variations;
+  for (size_t ivar=0; ivar<std::max({m_parameters_vector[string("pt_min(ref)")].size(),
+                               m_parameters_vector[string("eta")].size()}); ++ivar)
+  { ptmin_variations.push_back(sqrt(CalculatePTmin2(m_Scms, ivar))); }
+  double pt_min = ptmin_variations[0];
+  std::vector<double> pt0_variations;
+  for (size_t ivar=0; ivar<std::max({m_parameters_vector[string("pt_0(ref)")].size(),
+                               m_parameters_vector[string("eta")].size()}); ++ivar)
+  { pt0_variations.push_back(sqrt(CalculatePT02(m_Scms, ivar))); }
+  double pt_0 = pt0_variations[0];
+  m_parameters_vector[string("pt_min")]
+    = s["PT_Min"].SetDefault(ptmin_variations).GetVector<double>();
   m_parameters[string("pt_min")]
-    = s["PT_Min"].SetDefault(pt_min).Get<double>();
+    = m_parameters_vector[string("pt_min")][0];
+  m_parameters_vector[string("pt_0")]
+    = s["PT_0"].SetDefault(pt0_variations).GetVector<double>();
   m_parameters[string("pt_0")]
-    = s["PT_0"].SetDefault(pt_0).Get<double>();
+    = m_parameters_vector[string("pt_0")][0];
   m_scaleRscheme = s["MU_R_SCHEME"].SetDefault("PT").Get<scale_scheme>();
   m_scaleFscheme = s["MU_F_SCHEME"].SetDefault("PT").Get<scale_scheme>();
   m_parameters[string("RenScale_Factor")]
-    = s["MU_R_FACTOR"].SetDefault(1.0).Get<double>();
+    = s["MU_R_FACTOR"].SetDefault(0.5).Get<double>();
   m_parameters[string("FacScale_Factor")]
-    = s["MU_F_FACTOR"].SetDefault(1.0).Get<double>();
+    = s["MU_F_FACTOR"].SetDefault(0.5).Get<double>();
   m_parameters[string("E_min")] = s["E_Min"].SetDefault(0.25).Get<double>();
+  m_parameters_vector[string("SigmaND_Norm")]
+    = s["SIGMA_ND_NORM"].SetDefault({0.44}).GetVector<double>();
   m_parameters[string("SigmaND_Norm")]
-    = s["SIGMA_ND_NORM"].SetDefault(0.619).Get<double>();
+    = m_parameters_vector[string("SigmaND_Norm")][0];
   m_parameters[string("PomeronIntercept")]
     = s["PomeronIntercept"].SetDefault(0.0808).Get<double>();
   m_parameters[string("PomeronSlope")]
@@ -80,11 +106,15 @@ MI_Parameters::MI_Parameters() :
     = s["Lambda_nr"].SetDefault(0.15).Get<double>();
   m_parameters[string("delta_nr")]
     = s["delta_nr"].SetDefault(0.75).Get<double>();
+  m_parameters[string("xs_accuracy")]
+    = s["XS_accuracy"].SetDefault(0.01).Get<double>();
+  m_parameters[string("max_reweight_factor")]
+    = s["MAX_REWEIGHT_FACTOR"].SetDefault(-1.).Get<double>();
 
   m_flags[string("nPT_bins")]
     = s["nPT_bins"].SetDefault(200).Get<size_t>();
   m_flags[string("nMC_points")]
-    = s["nMC_points"].SetDefault(1000).Get<size_t>();
+    = s["nMC_points"].SetDefault(100000).Get<size_t>();
   m_flags[string("nS_bins")]
     = s["nS_bins"].SetDefault(40).Get<size_t>();
   m_flags[string("nB_bins")]
@@ -110,9 +140,23 @@ MI_Parameters::MI_Parameters() :
 double MI_Parameters::CalculatePT02(const double & s) const {
   return Max(m_pt02IR, m_pt02ref * pow((s<0 ? m_Scms : s)/m_Sref,2*m_eta));
 }
+double MI_Parameters::CalculatePT02(const double & s, size_t ivar) const {
+  double pt02ref = m_pt02ref;
+  double eta = m_eta;
+  if (ivar < m_pt02ref_variations.size()) pt02ref = m_pt02ref_variations[ivar];
+  if (ivar < m_eta_variations.size()) eta = m_eta_variations[ivar];
+  return Max(m_pt02IR, pt02ref * pow((s<0 ? m_Scms : s)/m_Sref,2*eta));
+}
 
 double MI_Parameters::CalculatePTmin2(const double & s) const {
   return Max(m_ptmin2IR, m_ptmin2ref * pow((s<0 ? m_Scms : s)/m_Sref,2*m_eta));
+}
+double MI_Parameters::CalculatePTmin2(const double & s, size_t ivar) const {
+  double ptmin2ref = m_ptmin2ref;
+  double eta = m_eta;
+  if (ivar < m_ptmin2ref_variations.size()) ptmin2ref = m_ptmin2ref_variations[ivar];
+  if (ivar < m_eta_variations.size()) eta = m_eta_variations[ivar];
+  return Max(m_ptmin2IR, ptmin2ref * pow((s<0 ? m_Scms : s)/m_Sref,2*eta));
 }
 
 
@@ -128,6 +172,13 @@ int MI_Parameters::operator[](const string& keyword) const
   map<string,int>::const_iterator piter = m_flags.find(keyword);
   if (piter!=m_flags.end()) return piter->second;
   THROW(fatal_error,"Keyword not found in MI_Parameters.");
+}
+
+std::vector<double> MI_Parameters::GetVariationVector(const std::string& keyword) const
+{
+  auto piter = m_parameters_vector.find(keyword);
+  if (piter != m_parameters_vector.end()) return piter->second;
+  THROW(fatal_error,"Keyword not found in MI_Parameters vector map.");
 }
 
 std::ostream& AMISIC::operator<<(std::ostream& s, const evt_type::code& f)

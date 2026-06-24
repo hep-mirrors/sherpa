@@ -42,7 +42,9 @@ Matter_Overlap::Matter_Overlap() :
   // distributions of the hadron form factors ~pi^{-3/2} times the pi^2 from
   // the time-integrated overlap when they collide.
   ///////////////////////////////////////////////////////////////////////////
-  m_norm(1./M_PI)
+  m_norm(1./M_PI),
+  ///////////////////////////////////////////////////////////////////////////
+  m_matter_form_ivar(0)
 {
   ///////////////////////////////////////////////////////////////////////////
   // This is a default initialization of default values.  Apart from the
@@ -62,23 +64,33 @@ Matter_Overlap::Matter_Overlap() :
 
 Matter_Overlap::~Matter_Overlap() { if (p_bbins) delete p_bbins; }
 
-double Matter_Overlap::operator()(double b) {
+double Matter_Overlap::operator()(const double b) {
   ///////////////////////////////////////////////////////////////////////////
   // Matter overlap in three forms available: Dynamic (i.e. kinematics
   // dependent single Gaussian), single_gaussian and double_gaussian
   ///////////////////////////////////////////////////////////////////////////
-  double b2 = b*b;
-  if (m_dynamic || (m_form[0]==matter_form::single_gaussian &&
-		    m_form[1]==matter_form::single_gaussian )) {
-    double effradius2 = ( sqr(m_kradius) *
-			  (m_dynamic ? m_dynradius2 : m_radius2[0]) );
+  return (*this)(b, m_kradius);
+}
+
+double Matter_Overlap::operator()(const double b, const double k) {
+  const double b2 = b*b;
+  const double k2 = sqr(k);
+  if (k2<=0.) return 0.;
+  if (m_dynamic) {
+    double effradius2 = k2 * m_dynradius2_variations[m_matter_form_ivar];
+    if (effradius2<=0.) return 0.;
     return m_norm/effradius2 * exp(-b2/effradius2);
   }
+  const std::array<double,4> & r2    = m_r2_variations[m_matter_form_ivar];
+  const std::array<double,4> & rnorm = m_rnorm_variations[m_matter_form_ivar];
   double result = 0.;
-  for (size_t i=0;i<4;i++)
-    result += ( (m_rnorm[i]<=0.) ? 0. :
-		m_rnorm[i] * exp(-b2/(sqr(m_kradius)* m_radius2[i])) );
-  return m_norm/sqr(m_kradius) * result;
+  for (size_t i=0;i<4;i++) {
+    if (rnorm[i]<=0.) continue;
+    double denom = k2 * r2[i];
+    if (denom<=0.) continue;
+    result += rnorm[i] * exp(-b2/denom);
+  }
+  return m_norm/k2 * result;
 }
 
 double Matter_Overlap::MaxValue(const double & b) {
@@ -87,9 +99,13 @@ double Matter_Overlap::MaxValue(const double & b) {
   // 1/[Pi*(R_{min,1}^2 + R_{min,2}^2)] * exp[-b^2/R_max^2]
   // with R_max^2 = R_{max,1}^2 + R_{max,2}^2.
   ///////////////////////////////////////////////////////////////////////////
-  if (!m_dynamic) return (*this)(b);
-  return ( m_norm/(sqr(m_kradius*m_fixradius))*
-	   exp(-sqr(b/(m_kradius*m_maxradius)) ));
+  return MaxValue(b, m_kradius);
+}
+
+double Matter_Overlap::MaxValue(const double & b, double k) {
+  if (!m_dynamic) return (*this)(b, k);
+  return ( m_norm/(sqr(k*m_fixradius_variations[m_matter_form_ivar]))*
+	   exp(-sqr(b/(k*m_maxradius_variations[m_matter_form_ivar])) ));
 }
 
 double Matter_Overlap::SelectB() const {
@@ -203,6 +219,12 @@ void Matter_Overlap::Initialize(Remnant_Handler * const rh,
   p_bbins = new axis(nbins, bmin, m_bmax, axis_mode::log);
 }
 
+size_t Matter_Overlap::MatterFormVariationSize() const {
+  size_t n0 = p_ffs[0] ? p_ffs[0]->MatterFormVariationSize() : size_t(1);
+  size_t n1 = p_ffs[1] ? p_ffs[1]->MatterFormVariationSize() : size_t(1);
+  return std::max(n0, n1);
+}
+
 void Matter_Overlap::InitializeFFParams(PDF::ISR_Handler * const isr) {
   ///////////////////////////////////////////////////////////////////////////
   //  Initialize form factor parameter with a suitable integrand for the
@@ -233,6 +255,9 @@ void Matter_Overlap::InitializeStaticFFParams() {
   // could be single- or double Gaussians, e.g. from Eq (SZ 19)
   ///////////////////////////////////////////////////////////////////////////
   m_dynamic = false;
+  const size_t n_matter_form_variations = MatterFormVariationSize();
+  m_r2_variations.assign(n_matter_form_variations, std::array<double,4>{0.,0.,0.,0.});
+  m_rnorm_variations.assign(n_matter_form_variations, std::array<double,4>{0.,0.,0.,0.});
   double fraction[2], radius[2][2];
   for (size_t i=0;i<2;i++) {
     fraction[i] = ( (m_form[i]==matter_form::single_gaussian) ?
@@ -257,6 +282,31 @@ void Matter_Overlap::InitializeStaticFFParams() {
   }
   m_dynradius2 = m_radius2[0];
   m_bstep = minR/100.;
+
+  for (size_t ivar=0; ivar<n_matter_form_variations; ++ivar) {
+    double frac[2];
+    double rad[2][2];
+    frac[0] = (p_ffs[0]->GetForm()==matter_form::double_gaussian) ?
+      p_ffs[0]->Fraction1At(ivar) : 1.0;
+    frac[1] = (p_ffs[1]->GetForm()==matter_form::double_gaussian) ?
+      p_ffs[1]->Fraction1At(ivar) : 1.0;
+    rad[0][0] = p_ffs[0]->Radius1At(ivar);
+    rad[0][1] = p_ffs[0]->Radius2At(ivar);
+    rad[1][0] = p_ffs[1]->Radius1At(ivar);
+    rad[1][1] = p_ffs[1]->Radius2At(ivar);
+
+    for (size_t i=0;i<2;i++) {
+      for (size_t j=0;j<2;j++) {
+        const size_t idx = 2*i+j;
+        const double frac_pair = ( (i==0 ? frac[0] : 1.-frac[0]) *
+                                   (j==0 ? frac[1] : 1.-frac[1]) );
+        const double r2 = sqr(rad[0][i]) + sqr(rad[1][j]);
+        const double rnorm = (rad[0][i]>0. && rad[1][j]>0.) ? frac_pair/r2 : 0.;
+        m_r2_variations[ivar][idx] = r2;
+        m_rnorm_variations[ivar][idx] = rnorm;
+      }
+    }
+  }
 }
 
 void Matter_Overlap::InitializeDynamicFFParams(PDF::ISR_Handler * const isr) {
@@ -277,6 +327,20 @@ void Matter_Overlap::InitializeDynamicFFParams(PDF::ISR_Handler * const isr) {
   }
   FixDynamicRadius(m_xmin[0],m_xmin[1]);
   m_maxradius = sqrt(m_dynradius2);
+
+  const size_t n_matter_form_variations = MatterFormVariationSize();
+  m_dynradius2_variations.assign(n_matter_form_variations, 0.);
+  m_fixradius_variations.assign(n_matter_form_variations, 0.);
+  m_maxradius_variations.assign(n_matter_form_variations, 0.);
+  if (n_matter_form_variations <= 1) return;
+  for (size_t ivar=0; ivar<n_matter_form_variations; ++ivar) {
+    const double R0_1 = p_ffs[0]->Radius1At(ivar);
+    const double R0_2 = p_ffs[1]->Radius1At(ivar);
+    m_fixradius_variations[ivar] = sqrt(sqr(R0_1) + sqr(R0_2));
+    const double Rmax_1 = p_ffs[0]->Radius(m_xmin[0], -1., ivar);
+    const double Rmax_2 = p_ffs[1]->Radius(m_xmin[1], -1., ivar);
+    m_maxradius_variations[ivar] = sqrt(sqr(Rmax_1) + sqr(Rmax_2));
+  }
 }
 
 void Matter_Overlap::FixDynamicRadius(const double & x1,  const double & x2,
@@ -288,7 +352,17 @@ void Matter_Overlap::FixDynamicRadius(const double & x1,  const double & x2,
   ///////////////////////////////////////////////////////////////////////////
   if (!m_dynamic) return;
   m_dynradius2 = (sqr(p_ffs[0]->Radius(Max(m_xmin[0],Min(m_xmax[0],x1)),Q21))+
-		  sqr(p_ffs[1]->Radius(Max(m_xmin[1],Min(m_xmax[1],x2)),Q22)) );
+                  sqr(p_ffs[1]->Radius(Max(m_xmin[1],Min(m_xmax[1],x2)),Q22)) );
+
+  const size_t n_matter_form_variations = m_dynradius2_variations.size();
+  if (n_matter_form_variations <= 1) return;
+  const double x1c = Max(m_xmin[0],Min(m_xmax[0],x1));
+  const double x2c = Max(m_xmin[1],Min(m_xmax[1],x2));
+  for (size_t ivar=0; ivar<n_matter_form_variations; ++ivar) {
+    m_dynradius2_variations[ivar] =
+      ( sqr(p_ffs[0]->Radius(x1c, Q21, ivar)) +
+        sqr(p_ffs[1]->Radius(x2c, Q22, ivar)) );
+  }
 }
 
 
@@ -317,6 +391,61 @@ double MO_Integrand::operator()(double b) {
   return 2.*M_PI*b*(*p_mo)(b);
 }
 
+double Matter_Overlap::ComputeBmaxForVariation(size_t ivar) {
+  ///////////////////////////////////////////////////////////////////////////
+  // Compute bmax for a specific matter form variation using the same
+  // algorithm as CalculateIntegral, but without modifying the permanent
+  // m_bmax member. Temporarily switches m_kradius, then restores it.
+  ///////////////////////////////////////////////////////////////////////////
+  const double saved_kradius = m_kradius;
+  SetMatterFormVariationIndex(ivar);
+  SetKRadius(1.0);
+  double bstep;
+  if (m_dynamic) {
+    FixDynamicRadius(m_xmin[0], m_xmin[1]);
+    bstep = Min(1., m_fixradius_variations[m_matter_form_ivar]) / 100.;
+  } else {
+    double minR = 1.e6;
+    for (size_t i = 0; i < 4; i++) {
+      if (m_rnorm_variations[m_matter_form_ivar][i] <= 0.) continue;
+      double r = sqrt(m_r2_variations[m_matter_form_ivar][i]);
+      if (r > 0. && r < minR) minR = r;
+    }
+    bstep = minR / 100.;
+  }
+  MO_Integrand moint(this);
+  Gauss_Integrator integrator(&moint);
+  double bmin = 0., previous, result = 0.;
+  do {
+    result += previous = integrator.Integrate(bmin, bmin+bstep, 1.e-8, 1);
+    bmin   += bstep;
+  } while (dabs(previous/result)>1.e-10);
+  double bmax_var = bmin + bstep;
+
+  SetMatterFormVariationIndex(0);
+  SetKRadius(saved_kradius);
+  return bmax_var;
+}
+
+double Matter_Overlap::ComputeBminForVariation(size_t ivar) {
+  ///////////////////////////////////////////////////////////////////////////
+  // Compute bmin for a specific matter form variation, analogous to how
+  // the nominal bmin = 0.00001 * m_radius[0] is computed in Initialize.
+  ///////////////////////////////////////////////////////////////////////////
+  SetMatterFormVariationIndex(ivar);
+  double bmin = 0.;
+  if (m_dynamic) {
+    const double R0_nom = p_ffs[0]->Radius1();
+    const double R0_var = p_ffs[0]->Radius1At(m_matter_form_ivar);
+    const double scale  = (R0_nom > 0.) ? R0_var / R0_nom : 1.;
+    bmin = 0.00001 * sqrt(m_radius2[0]) * scale;
+  } else {
+    bmin = 0.00001 * sqrt(m_r2_variations[m_matter_form_ivar][0]);
+  }
+  SetMatterFormVariationIndex(0);
+  return bmin;
+}
+
 void Matter_Overlap::Output(const double & check) {
   msg_Info()<<"   "<<std::string(77,'-')<<"\n"
 	    <<"   | Matter_Overlap:"<<std::string(59,' ')<<"|\n"
@@ -335,13 +464,60 @@ void Matter_Overlap::Output(const double & check) {
 		<<p_ffs[i]->Radius2()<<" fm"
 		<<std::string(6,' ')<<"|\n";
     }
+    else if (m_form[i]==matter_form::x_dependent_gaussian) {
+      msg_Info()<<", alpha = "<<std::setprecision(4)<<std::setw(6)
+                <<p_ffs[i]->SoftExponent()
+                <<std::string(21,' ')<<"|\n";
+    }
     else msg_Info()<<std::string(37,' ')<<"|\n";
   }
   if (m_dynamic)
     msg_Info()<<"   | Maximal x-dependent radius: "
-	      <<std::setprecision(4)<<std::setw(6)<<m_maxradius<<" fm. "
-	      <<std::string(20,' ')<<"|\n";
+	            <<std::setprecision(4)<<std::setw(6)<<m_maxradius<<" fm. "
+	            <<std::string(35,' ')<<"|\n";
+  for (size_t ivar=1; ivar<MatterFormVariationSize(); ++ivar) Output(ivar);
   msg_Info()<<"   "<<std::string(77,'-')<<"\n\n";
+}
+
+void Matter_Overlap::Output(size_t ivar) {
+  SetMatterFormVariationIndex(ivar);
+  MO_Integrand moint(this);
+  Gauss_Integrator integrator(&moint);
+  double bmin = 0., bstep = m_bstep, previous, result = 0.;
+  do {
+    result += previous = integrator.Integrate(bmin, bmin+bstep, 1.e-8, 1);
+    bmin   += bstep;
+  } while (dabs(previous/result)>1.e-10 && bmin<m_bmax);
+
+  msg_Info()<<"   "<<std::string(77,'-')<<"\n"
+            <<"   |          v"<<std::setw(4)<<ivar<<":"<<std::string(59,' ')<<"|\n"
+            <<"   | Integral up to b_max = "
+            <<std::setprecision(6)<<std::setw(8)<<(m_bmax)<<" fm yields "
+            <<std::setprecision(6)<<std::setw(8)<<result<<"."
+            <<std::string(23,' ')<<"|\n";
+  for (size_t i=0;i<2;i++) {
+    msg_Info()<<"   | "<<std::setw(20)<<m_form[i]<<", R_1 = "
+              <<std::setprecision(4)<<std::setw(6)
+              <<p_ffs[i]->Radius1At(ivar)<<" fm";
+    if (m_form[i]==matter_form::double_gaussian) {
+      msg_Info()<<", f_1 = "<<std::setprecision(4)<<std::setw(6)
+                <<p_ffs[i]->Fraction1At(ivar)<<", "
+                <<"R_2 = "<<std::setprecision(4)<<std::setw(6)
+                <<p_ffs[i]->Radius2At(ivar)<<" fm"
+                <<std::string(6,' ')<<"|\n";
+    }
+    else if (m_form[i]==matter_form::x_dependent_gaussian) {
+      msg_Info()<<", alpha = "<<std::setprecision(4)<<std::setw(6)
+                <<p_ffs[i]->SoftExponentAt(ivar)
+                <<std::string(21,' ')<<"|\n";
+    }
+    else msg_Info()<<std::string(37,' ')<<"|\n";
+  }
+  SetMatterFormVariationIndex(0);
+  if (m_dynamic)
+    msg_Info()<<"   | Maximal x-dependent radius: "
+	            <<std::setprecision(4)<<std::setw(6)<<m_maxradius_variations[ivar]<<" fm. "
+              <<std::string(35,' ')<<"|\n";
 }
 
 

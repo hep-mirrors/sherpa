@@ -12,6 +12,8 @@
 #include <string>
 
 namespace AMISIC {
+  class MI_Reweighting;
+
   class Single_Collision_Handler {
   private:
     evt_type::code m_evttype;
@@ -23,6 +25,7 @@ namespace AMISIC {
     Over_Estimator           * p_overestimator;
     Interaction_Probability  * p_pint;
     Matter_Overlap           * p_overlap;
+    MI_Reweighting           * p_reweighting;
     
     MI_Process   * p_proc;
     double         m_pt2, m_pt2min, m_b;
@@ -50,7 +53,8 @@ namespace AMISIC {
     ~Single_Collision_Handler();
     
     void   Init(MI_Processes * processes, Over_Estimator * overestimator,
-		Interaction_Probability * pint,Matter_Overlap * overlap);
+		Interaction_Probability * pint, Matter_Overlap * overlap,
+		MI_Reweighting * reweighting);
     void   Init(REMNANTS::Remnant_Handler * remnant_handler,
 		NonPerturbative_XSecs * soft);
     void   UpdateSandY(double s, double y);

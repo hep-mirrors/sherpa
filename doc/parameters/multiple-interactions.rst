@@ -42,7 +42,6 @@ AMISIC
 .. index:: Amisic:MU_F_FACTOR
 .. index:: Amisic:SIGMA_ND_NORM
 .. index:: Amisic:nPT_bins
-.. index:: Amisic:nMC_points
 .. index:: Amisic:nS_bins
 .. index:: Amisic:PomeronIntercept
 .. index:: Amisic:PomeronSlope
@@ -116,10 +115,6 @@ The usual rules for yaml structure apply, c.f. :ref:`Input structure`.
     .. math:: \int_{p_T^2}^{s/4} dp_T^2 \frac{d \sigma}{dp_T^2}
 
     Defaults to ``200``.
-
-:option:`nMC_points`
-    Number of points to estimate the the cross-section during the integration. The error should behave as
-    :math:`\frac{1}{\sqrt{n_\text{MC}}}`. Defaults to ``1000``.
 
 :option:`nS_bins`
     Number of points to sample in the center-of-mass energy :math:`\sqrt{s}`. This is only used if the energy is not
