@@ -96,32 +96,17 @@ Fill(const size_t & xbin,const size_t & ybin,const double & value) {
 }
 
 double TwoDim_Table::operator()(const double & x,const double & y) const {
-  size_t xbin = 0, ybin = 0;
-  double y1, y2, x1, x2;
   if (x<m_x.m_xmin || x>m_x.m_xmax || y<m_y.m_xmin || y>m_y.m_xmax) return 0.;
-  if (m_x.m_nbins==1 || IsEqual(x,m_x.m_xmin,1.e-3) || IsEqual(x,m_x.m_xmax,1.e-3)) {
-    xbin = (x==m_x.m_xmax) ? m_x.m_nbins-1 : 0;
-    if (m_y.m_nbins==1 || IsEqual(y,m_y.m_xmin,1.e-3) || IsEqual(y,m_y.m_xmax,1.e-3)) { 
-      ybin = IsEqual(y,m_y.m_xmax,1.e-3) ? m_y.m_nbins-1 : 0;
-      return m_values[xbin][ybin];
-    }
-    ybin = m_y.bin(y);
-    y1   = m_y.x(ybin);
-    y2   = m_y.x(ybin+1 );
+  const bool xflat = (m_x.m_nbins==1);
+  size_t xbin = xflat ? 0 : m_x.bin(x);
+  size_t ybin = m_y.bin(y);
+  if (!xflat && xbin > m_x.m_nbins-2) xbin = m_x.m_nbins-2;
+  if (ybin > m_y.m_nbins-2)           ybin = m_y.m_nbins-2;
+  const double y1 = m_y.x(ybin), y2 = m_y.x(ybin+1);
+  if (xflat)
     return ( m_values[0][ybin]   * (y2-y) +
 	     m_values[0][ybin+1] * (y-y1) ) / (y2-y1);
-  }
-  xbin = m_x.bin(x);
-  x1   = m_x.x(xbin);
-  x2   = m_x.x(xbin+1 );
-  if (m_y.m_nbins==1 || IsEqual(y,m_y.m_xmin,1.e-3) || IsEqual(y,m_y.m_xmax,1.e-3)) { 
-    ybin = IsEqual(y,m_y.m_xmax,1.e-3) ? m_y.m_nbins-1 : 0;
-    return ( m_values[xbin][ybin]   * (x2-x) +
-	     m_values[xbin+1][ybin] * (x-x1) ) / (x2-x1);
-  }
-  ybin = m_y.bin(y);
-  y1   = m_y.x(ybin);
-  y2   = m_y.x(ybin+1 );
+  const double x1 = m_x.x(xbin), x2 = m_x.x(xbin+1);
   return ( ((y2-y) * (m_values[xbin][ybin]     * (x2-x) +
 		      m_values[xbin+1][ybin]   * (x-x1)) +
 	    (y-y1) * (m_values[xbin][ybin+1]   * (x2-x) +
@@ -162,10 +147,10 @@ TwoDim_Table * TwoDim_Table::Invert(const size_t axislabel,const size_t nbins) {
 	}
       }
       double y1 = m_y.x(ybin), y2 = m_y.x(ybin+1), y = 0;
-      if (dir) 
-	y = y1+((val1-value)*y2+(value-val2)*y1)/(y1-y2);
-      else 
-	y = y1+((val2-value)*y1+(value-val1)*y2)/(y2-y1);
+      if (dir)
+	y = (y1*(value-val2) + y2*(val1-value)) / (val1-val2);
+      else
+	y = (y1*(val2-value) + y2*(value-val1)) / (val2-val1);
       table->Fill(i,j,y);
     }
   }
