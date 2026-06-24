@@ -23,6 +23,9 @@ Standard Model
 .. index:: GMU_CMS_AQED_CONVENTION
 .. index:: ORDER_ALPHAS
 .. index:: ALPHAS_USE_PDF
+.. index:: ALPHAS_PDF_SET
+.. index:: ALPHAS_PDF_SET_MEMBER
+.. index:: ALPHAS_FREEZE_VALUE
 .. index:: WIDTH_SCHEME
 .. index:: PARTICLE_DATA_Mass
 .. index:: PARTICLE_DATA_Massive
@@ -167,18 +170,90 @@ Wolfenstein parameterisation. Setting ``CKM: {Output: true}`` enables
 an output of the CKM matrix.
 
 The remaining parameter to fully specify the Standard Model is the
-strong coupling constant at the Z-pole, given through
-``ALPHAS(MZ)``. Its default value is :option:`0.118`. If the setup at
-hand involves hadron collisions and thus PDFs, the value of the strong
-coupling constant is automatically set consistent with the PDF fit and
-can not be changed by the user. Since Sherpa is compiled with LHAPDF
-support, it is also possible to use the alphaS evolution provided in
-LHAPDF by specifying ``ALPHAS: {USE_PDF: 1}``. The perturbative
-order of the running of the strong coupling can be set via
-``ORDER_ALPHAS``, where the default :option:`0` corresponds to
-one-loop running and :option:`1`, :option:`2`, :option:`3` to :option:`2,3,4`-loops,
-respectively. If the setup at hand involves PDFs, this parameter is
-set consistent with the information provided by the PDF set.
+strong coupling constant at the Z-pole, given through ``ALPHAS(MZ)``.
+Its default value is :option:`0.118`. The perturbative order of the
+running of the strong coupling can be set via ``ORDER_ALPHAS``, where
+the default :option:`0` corresponds to one-loop running and
+:option:`1`, :option:`2`, :option:`3` to :option:`2,3,4`-loops,
+respectively.
+
+If the setup at hand involves PDFs, both ``ALPHAS(MZ)`` and
+``ORDER_ALPHAS`` are by default taken from the PDF set, so that the
+strong coupling is kept consistent with the PDF fit. This behaviour,
+including the choice of which PDF supplies the value, is controlled by
+the ``ALPHAS`` settings described below.
+
+.. _ALPHAS settings:
+
+alphaS settings
+~~~~~~~~~~~~~~~
+
+The treatment of the strong coupling is configured through the
+``ALPHAS`` settings group:
+
+.. code-block:: yaml
+
+   ALPHAS:
+     USE_PDF: 1
+     PDF_SET: CT10nlo
+     PDF_SET_MEMBER: 0
+     FREEZE_VALUE: 1.0
+
+:option:`USE_PDF`
+  Bitmask selecting how the strong coupling is taken from a PDF. The
+  default is :option:`1` when Sherpa is built with LHAPDF support and
+  :option:`0` otherwise. A value of :option:`0` disables all of the
+  below: no ``alphaS`` information is taken from a PDF, and the
+  ``ALPHAS(MZ)`` and ``ORDER_ALPHAS`` values from the run card are
+  used as given (a warning is printed to flag this). For a non-zero
+  value, bits are combined by adding their values:
+
+  * bit ``1``: take ``alphaS(MZ)`` and the running order from the PDF
+    and evaluate ``alphaS(Q^2)`` with the PDF library's own evolution
+    (e.g. LHAPDF's ``alphasQ2``).
+  * bit ``2``: take the quark-mass thresholds from the PDF.
+  * bit ``4``: take ``alphaS`` from a dedicated PDF set named in
+    ``ALPHAS: {PDF_SET: ...}`` rather than from the beam PDF(s).
+
+  For example, ``USE_PDF: 5`` (``1 + 4``) sources ``alphaS`` from the
+  set given in ``ALPHAS: {PDF_SET: ...}`` and uses that set's own
+  evolution. Note that for any non-zero value without bit ``4``,
+  ``alphaS(MZ)`` and the running order are still read from the beam
+  PDF; bit ``1`` only additionally delegates the running of
+  ``alphaS(Q^2)`` to the PDF library instead of Sherpa's internal
+  evolution.
+
+:option:`PDF_SET`
+  Name of the PDF set used as the ``alphaS`` source when bit ``4`` of
+  ``USE_PDF`` is set. The default is :option:`CT10nlo`.
+
+:option:`PDF_SET_MEMBER`
+  Member of that set. The default is the value of ``PDF_SET_VERSION``
+  (itself defaulting to :option:`0`).
+
+:option:`FREEZE_VALUE`
+  Infrared cutoff value of the coupling: at the scale where the
+  perturbative running of ``alphaS(Q^2)`` would reach this value, the
+  perturbative formula is abandoned; below that scale ``alphaS`` is
+  instead interpolated linearly to zero at :math:`Q^2=0`, avoiding the
+  Landau pole. The default is :option:`1.0`, a deliberately large
+  value (well above typical fitted couplings at GeV-scales) chosen to
+  regulate the divergence rather than to model the true infrared
+  behaviour of ``alphaS``; it only matters for processes that probe
+  scales near the Landau pole.
+
+.. note::
+
+   When the two beams use different PDFs, as in resolved
+   photoproduction (:math:`\gamma p`), where one beam carries a
+   resolved-photon PDF and the other a proton PDF, the ``alphaS``
+   source defaults to the **first** beam's PDF, falling back to the
+   second beam only if the first provides no ``alphaS`` information.
+   The result therefore depends on the order in which the beams are
+   given and may use a value you did not intend (e.g. the photon set's
+   ``alphaS`` rather than the proton's). To fix ``alphaS`` to a
+   specific set independently of the beam ordering, set
+   ``ALPHAS: {USE_PDF: 5, PDF_SET: <set>}``.
 
 If unstable particles (e.g. W/Z bosons) appear as intermediate
 propagators in the process, Sherpa uses the complex mass scheme to
