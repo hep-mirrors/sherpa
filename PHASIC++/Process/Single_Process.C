@@ -93,6 +93,22 @@ Weight_Info *Single_Process::OneEvent(const int wmode,
   auto psh = p_int->PSHandler();
   if (p_int->ISR())
     p_int->ISR()->SetSprimeMin(psh->Cuts()->Smin());
+
+  // p_int->ISR() is shared by every process in this run (owned once by
+  // Matrix_Element_Handler, which picks a process at random per trial
+  // event), so its configured masses can be stale from whichever process
+  // ran last - not necessarily this one. Re-sync them, and re-run
+  // InitCuts() (which pushes the corrected Smin into ISR()/Beam()), only
+  // when that happened. Cheap no-op otherwise, since Cut_Data only
+  // depends on this process's own (fixed) flavours/masses.
+  bool need_initcuts(false);
+  if (p_int->ISR() && m_nin == 2) {
+    need_initcuts = m_flavs[0].Mass() != p_int->ISR()->Flav(0).Mass() ||
+      m_flavs[1].Mass() != p_int->ISR()->Flav(1).Mass();
+    if (need_initcuts) p_int->ISR()->SetPartonMasses(m_flavs);
+  }
+  if (need_initcuts) psh->InitCuts();
+
   return p_int->PSHandler()->OneEvent(this,varmode,mode);
 }
 
