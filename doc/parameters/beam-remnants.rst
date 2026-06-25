@@ -159,11 +159,13 @@ two sets of partons per beam, see below (``KT_RECOIL``).
 :option:`ENERGY_SCALING_EXPO (default: 0.08)`
   This parameter specifies the energy extrapolation exponent.
 
-:option:`MATTER_FORM (default: Single_Gaussian)`
-  ``Double_Gaussian`` can be used to model the overlap between
-  the colliding particles.  ``None`` switches this off.
+:option:`MATTER_FORM (default for nucleons: Double_Gaussian, for mesons/photons: Single_Gaussian)`
+  ``Single_Gaussian`` models the hadronic matter distribution with a single 
+  Gaussian, while ``Double_Gaussian`` uses a superposition of two Gaussians 
+  to model the overlap between the colliding particles.  ``None`` switches 
+  this off.
 
-:option:`MATTER_RADIUS_1 (default for nucleons: 0.86, for mesons/photons: 0.75)`
+:option:`MATTER_RADIUS_1 (default for nucleons: 0.85, for mesons/photons: 0.75)`
   The radius of the (inner) Gaussian in fm. If used with the
   double-Gaussian matter form, this value must be smaller than ``MATTER_RADIUS_2``.
 
@@ -173,7 +175,7 @@ two sets of partons per beam, see below (``KT_RECOIL``).
   :math:`f^2` is distributed by the inner Gaussian :math:`r_1`, another fraction
   :math:`(1-f)^2` is distributed by the outer Gaussian :math:`r_2`,
   and the remaining fraction :math:`2f(1-f)` is distributed by the combined radius
-  :math:`r_\text{tot} = \sqrt{\frac{r_1^2+r_2^2}{2}}`. Defaults to ``0.5``.
+  :math:`r_\text{tot} = \sqrt{\frac{r_1^2+r_2^2}{2}}`. Defaults for nucleons to ``0.65``.
 
 :option:`MATTER_RADIUS_2`
     Defaults to ``1.0``. It is only used for the case of a double-Gaussian
@@ -185,3 +187,29 @@ parton-level events are simulated, i.e. no beam remnants are
 generated. Accordingly, partons entering the hard scattering process
 do not acquire primordial transverse momentum.
 
+On-the-fly reweighting
+----------------------
+
+The parameters of the hadronic matter distribution, :option:`MATTER_RADIUS_1`, 
+:option:`MATTER_RADIUS_2` and :option:`MATTER_FRACTION_1`, enter the matter 
+overlap function that drives the multiple-parton interactions, cf. 
+:ref:`MPI Parameters`.
+
+Their effect can be reweighted on-the-fly, using the 
+same list syntax as for the MPI parameters (:ref:`Amisic`). For example,
+
+.. code-block:: yaml
+
+   REMNANTS:
+     2212:
+       MATTER_FORM:       Double_Gaussian
+       MATTER_RADIUS_1:   [0.85, 0.80, 0.90]
+       MATTER_FRACTION_1: [0.65, 0.60, 0.70]
+
+uses the nominal values ``0.85`` and ``0.65`` for event generation and 
+computes two additional weights corresponding to the listed variations.
+
+These variations are matched by list position and combined with the variations 
+of the MPI parameters (:ref:`Amisic`) and  of the colour-reconnection parameters 
+(:ref:`Colour_Reconnections`) (labelled as ``SoftPhysics.v1``, 
+``SoftPhysics.v2``, etc.).
