@@ -91,23 +91,15 @@ Weight_Info *Single_Process::OneEvent(const int wmode,
                                       const int mode) {
   p_selected = this;
   auto psh = p_int->PSHandler();
-  if (p_int->ISR())
-    p_int->ISR()->SetSprimeMin(psh->Cuts()->Smin());
-
-  // p_int->ISR() is shared by every process in this run (owned once by
-  // Matrix_Element_Handler, which picks a process at random per trial
-  // event), so its configured masses can be stale from whichever process
-  // ran last - not necessarily this one. Re-sync them, and re-run
-  // InitCuts() (which pushes the corrected Smin into ISR()/Beam()), only
-  // when that happened. Cheap no-op otherwise, since Cut_Data only
-  // depends on this process's own (fixed) flavours/masses.
-  bool need_initcuts(false);
-  if (p_int->ISR() && m_nin == 2) {
-    need_initcuts = m_flavs[0].Mass() != p_int->ISR()->Flav(0).Mass() ||
-      m_flavs[1].Mass() != p_int->ISR()->Flav(1).Mass();
-    if (need_initcuts) p_int->ISR()->SetPartonMasses(m_flavs);
+  auto *isr = p_int->ISR();
+  if (isr) {
+    if (m_nin == 2 &&
+        (isr->Mass2(0) != sqr(m_flavs[0].Mass()) ||
+         isr->Mass2(1) != sqr(m_flavs[1].Mass()))) {
+      isr->SetPartonMasses(m_flavs);
+    }
+    psh->InitCuts();
   }
-  if (need_initcuts) psh->InitCuts();
 
   return p_int->PSHandler()->OneEvent(this,varmode,mode);
 }
@@ -1186,8 +1178,8 @@ bool Single_Process::CalculateTotalXSec(const std::string &resultpath,
   auto psh = p_int->PSHandler();
   if (p_int->ISR()) {
     if (m_nin==2) {
-      if (m_flavs[0].Mass()!=p_int->ISR()->Flav(0).Mass() ||
-          m_flavs[1].Mass()!=p_int->ISR()->Flav(1).Mass()) {
+      if (p_int->ISR()->Mass2(0) != sqr(m_flavs[0].Mass()) ||
+          p_int->ISR()->Mass2(1) != sqr(m_flavs[1].Mass())) {
         p_int->ISR()->SetPartonMasses(m_flavs);
       }
     }
@@ -1195,8 +1187,8 @@ bool Single_Process::CalculateTotalXSec(const std::string &resultpath,
   if(p_int->YFS()->Mode()!=YFS::yfsmode::off){
     p_int->YFS()->SetFlavours(m_flavs);
   }
-  psh->CreateIntegrators();
   psh->InitCuts();
+  psh->CreateIntegrators();
   if (p_int->ISR())
     p_int->ISR()->SetSprimeMin(psh->Cuts()->Smin());
   p_int->SetResultPath(resultpath);

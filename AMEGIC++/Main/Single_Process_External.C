@@ -45,9 +45,9 @@ AMEGIC::Single_Process_External::~Single_Process_External()
 }
 
 /*------------------------------------------------------------------------------
-  
+
   Generic stuff for initialization of Single_Processes
-      
+
   ------------------------------------------------------------------------------*/
 
 
@@ -74,7 +74,7 @@ int AMEGIC::Single_Process_External::InitAmplitude(Amegic_Model * model,Topology
   m_maxcpl[0]=m_mincpl[0]=p_me2->OrderQCD();
   p_me2->FillCombinations(m_ccombs,m_cflavs);
   p_me2->SetNorm(m_Norm);
-  
+
   std::vector<Vec4D> tmoms(p_testmoms,&p_testmoms[m_nin+m_nout]);
   m_iresult=p_me2->Calc(tmoms);
   if (m_iresult==0. && !m_keep_zero_procs) return 0;
@@ -86,11 +86,11 @@ int AMEGIC::Single_Process_External::InitAmplitude(Amegic_Model * model,Topology
       for (size_t i(0);i<m_nin+m_nout;++i)
 	AddtoFlavmap(ToString(1<<i),p_partner->Flavours()[i]);
       break;
-    } 
+    }
   }
   if (p_partner==this) links.push_back(this);
   msg_Info()<<"."<<std::flush;
-  
+
   if (p_partner==this && Result()>0.) SetUpIntegrator();
   return 1;
 }
@@ -98,9 +98,9 @@ int AMEGIC::Single_Process_External::InitAmplitude(Amegic_Model * model,Topology
 
 
 /*------------------------------------------------------------------------------
-  
+
   Phase space initialization
-  
+
   ------------------------------------------------------------------------------*/
 
 bool AMEGIC::Single_Process_External::FillIntegrator(PHASIC::Phase_Space_Handler *const psh)
@@ -109,23 +109,24 @@ bool AMEGIC::Single_Process_External::FillIntegrator(PHASIC::Phase_Space_Handler
   return Process_Base::FillIntegrator(psh);
 }
 
-bool AMEGIC::Single_Process_External::SetUpIntegrator() 
-{  
+bool AMEGIC::Single_Process_External::SetUpIntegrator()
+{
   if (m_nin==2) {
-    if ( (m_flavs[0].Mass() != p_int->ISR()->Flav(0).Mass()) ||
-	 (m_flavs[1].Mass() != p_int->ISR()->Flav(1).Mass()) ) p_int->ISR()->SetPartonMasses(m_flavs);
+    if (p_int->ISR()->Mass2(0) != sqr(m_flavs[0].Mass()) ||
+          p_int->ISR()->Mass2(1) != sqr(m_flavs[1].Mass()))
+      p_int->ISR()->SetPartonMasses(m_flavs);
   }
   return 1;
 }
 
-void AMEGIC::Single_Process_External::AddChannels(std::list<std::string>* tlist) 
+void AMEGIC::Single_Process_External::AddChannels(std::list<std::string>* tlist)
 {
 }
 
 /*------------------------------------------------------------------------------
-  
+
   Process management
-  
+
   ------------------------------------------------------------------------------*/
 void AMEGIC::Single_Process_External::Minimize()
 {
@@ -178,7 +179,7 @@ double AMEGIC::Single_Process_External::operator()(const ATOOLS::Vec4D* mom)
 bool AMEGIC::Single_Process_External::Combinable
 (const size_t &idi,const size_t &idj)
 {
-  Combination_Set::const_iterator 
+  Combination_Set::const_iterator
     cit(m_ccombs.find(std::pair<size_t,size_t>(idi,idj)));
   return cit!=m_ccombs.end();
 }
