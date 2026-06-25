@@ -68,11 +68,11 @@ The usual rules for yaml structure apply, c.f. :ref:`Input structure`.
     The absolute minimum of the IR regulator, see formula below. Defaults to ``0.5``.
 
 :option:`PT_Min(ref)`
-    Value :math:`p_\text{T,min}^\text{(ref)}` for the calculation of the IR cutoff, see formula below. Defaults to ``2.25``.
+    Value :math:`p_\text{T,min}^\text{(ref)}` for the calculation of the IR cutoff, see formula below. Defaults to ``1.10``.
 
 :option:`Eta`
-    The pseudorapidity :math:`\eta` used to calculate the IR cutoff and regulator, :math:`p_\text{T,min}` and :math:`p_\text{T,0}`.
-    Defaults to ``0.16``.
+    The energy-scaling exponent :math:`\eta` used to calculate the IR cutoff and regulator, :math:`p_\text{T,min}` and :math:`p_\text{T,0}`.
+    Defaults to ``0.026``.
 
 :option:`E(ref)`
     Reference energy to normalise the actual cms energy for the calculation of the IR cutoff and regulator.
@@ -103,11 +103,11 @@ The usual rules for yaml structure apply, c.f. :ref:`Input structure`.
     Factor to scale the renormalisation scale :math:`\mu_R`, defaults to ``0.5``.
 
 :option:`MU_F_FACTOR`
-    Factor to scale the factorisation scale :math:`\mu_F`, defaults to ``1.0``.
+    Factor to scale the factorisation scale :math:`\mu_F`, defaults to ``0.5``.
 
 :option:`SIGMA_ND_NORM`
     Specifies the factor to scale the non-diffractive cross section calculated in the MPI initialisation.
-    Defaults to ``1.02``.
+    Defaults to ``0.44``.
 
 :option:`nPT_bins`
     Controls the number of bins for the numerical integration of
@@ -141,6 +141,67 @@ The single- and double-diffractive cross-sections in the Regge picture have two 
 
 :option:`TriplePomeronCoupling`
     The parameter :math:`g_{3\mathbb{P}}` at an input scale of 20 GeV, given in :math:`\text{mb}^{-0.5}`, with default ``0.318``.
+
+On-the-fly reweighting
+----------------------
+
+Sherpa can compute alternative event weights for variations of the MPI 
+model parameters on-the-fly, i.e. within a single event-generation run 
+that uses a nominal parameter set, without the need for dedicated runs at 
+each varied parameter point.
+
+Reweighting is enabled by specifying a list of values for a parameter 
+instead of a single value.  The first entry of the list is the nominal 
+value, which is used for the actual event generation; the remaining 
+entries define the variations for which additional weights are computed. 
+For example,
+
+.. code-block:: yaml
+
+   AMISIC:
+     SIGMA_ND_NORM: [0.5, 0.4, 0.6]
+
+uses ``0.5`` as the nominal value of :option:`SIGMA_ND_NORM` and computes 
+two additional weights corresponding to ``0.4`` and ``0.6``.
+
+The following MPI parameters support reweighting:
+
+* :option:`SIGMA_ND_NORM`, the normalisation of the non-diffractive cross 
+  section, which through the constraint on the integrated interaction 
+  probability induces a rescaling of the effective matter-distribution 
+  widths;
+* :option:`PT_0(ref)`, the IR regularisation scale;
+* :option:`PT_Min(ref)`, the IR cutoff scale (only upward variations are possible);
+* :option:`Eta`, the energy-scaling exponent, since varying it amounts to
+  varying :option:`PT_0` and :option:`PT_Min` (only upward variations are possible);
+* the matter-distribution parameters :option:`MATTER_RADIUS_1`,
+  :option:`MATTER_RADIUS_2` and :option:`MATTER_FRACTION_1`, which are set
+  in the :ref:`Remnants` block.
+
+When several parameters are varied simultaneously, the variations are 
+matched by their position in the respective lists, i.e. the first variation 
+entry of each parameter forms one variation set, the second entries form 
+the next set, and so on.  If the number of variation entries differs 
+between parameters, missing values are automatically filled with the 
+corresponding nominal value.  For example,
+
+.. code-block:: yaml
+
+   AMISIC:
+     SIGMA_ND_NORM: [0.5, 0.4, 0.6]
+     PT_Min(ref):   [1.1, 1.2]
+
+results in the two variation sets ``(0.5, 1.2)`` and ``(0.6, 1.1)``.
+
+The same list syntax is used for the matter-distribution parameters in the 
+:ref:`Remnants` block and for the colour-reconnection 
+parameters in the :ref:`Colour_Reconnections` block.  Variations of all 
+three parameter groups are matched by list position and combined into a 
+single set of alternative weights.
+
+The resulting variational event weights are labelled 
+``SoftPhysics.v1``, ``SoftPhysics.v2``, etc., where ``v1`` corresponds to 
+the first specified variation set.
 
 .. _MI ISR parameters:
 
