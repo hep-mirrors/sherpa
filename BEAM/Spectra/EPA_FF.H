@@ -147,7 +147,10 @@ namespace BEAM {
     // v2: fixed the EPA_HCS form factor argument (q*R instead of Q^2).
     // v3: fixed the EPA_WoodSaxonApprox small-qR form factor and filled the
     //     N(x,b) table boundary nodes (last x/b node was previously left zero).
-    static constexpr int s_cache_version = 3;
+    // v4: guarded the N(x,b) kernel against x -> 1, where Q^2 diverged and the
+    //     x = xMax boundary node (filled since v3) became NaN for sqrt-based
+    //     form factors; invalidates v3 caches that stored that NaN node.
+    static constexpr int s_cache_version = 4;
     bool m_cache{true};    //< caching enabled (EPA:CacheTables) for this beam
     std::string m_respath; //< resolved RESULT_DIRECTORY root; cache lives inside
                            //< <m_respath>.zip; empty => caching disabled
@@ -272,6 +275,9 @@ namespace BEAM {
       // - we assume that m_b is in units of 1/GeV, qT is in GeV, overall
       // results are in GeV.
       //////////////////////////////////////////////////////////////////////////
+      // At x -> 1 the photon carries the full beam energy and the flux
+      // vanishes; also avoids divergence of Q2
+      if (m_x >= 1.) return 0.;
       double qT = y / m_b, qT2 = ATOOLS::sqr(qT);
       double Q2 = (qT2 + m_x * m_x * p_ff->Mass2()) / (1. - m_x);
       // integration variable is qT, so dy/dqT = b, hence Jacobian 1/b needed

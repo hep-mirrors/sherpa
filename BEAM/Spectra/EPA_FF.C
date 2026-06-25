@@ -161,6 +161,7 @@ void EPA_FF_Base::LoadOrBuild(const std::string& tag, const std::string& key,
   if (docache) {
     auto t = Table_Cache::Load<Table>(path, key);
     if (t) {
+      msg_Out() << METHOD << ": Loading EPA flux from cache in " << path << "\n";
       target = std::move(t);
       return;
     }
