@@ -9,6 +9,7 @@
 #include "BEAM/Spectra/Monochromatic.H"
 #include "BEAM/Spectra/Pomeron.H"
 #include "BEAM/Spectra/Reggeon.H"
+#include "BEAM/Spectra/Interpolated.H"
 
 using namespace ATOOLS;
 using namespace BEAM;
@@ -63,7 +64,8 @@ std::ostream& BEAM::operator<<(std::ostream& ostr, const beamspectrum spect)
     return ostr << "Laser Backscattering";
   case beamspectrum::DM:
     return ostr << "Dark Matter";
-
+  case beamspectrum::neutrinos_from_protons:
+    return ostr << "Neutrino Beam";
   default:
     break;
   }
@@ -106,6 +108,8 @@ Beam_Base* Beam_Parameters::InitSpectrum(const size_t& num)
     return InitializeReggeon(num);
   case beamspectrum::DM:
     return InitializeDM_beam(num);
+  case beamspectrum::neutrinos_from_protons:
+    return InitializeNeutrinoFromProton(num);
 
   default:
     break;
@@ -211,13 +215,22 @@ Beam_Base* Beam_Parameters::InitializeReggeon(int num)
 Beam_Base* Beam_Parameters::InitializeDM_beam(int num)
 {
   Flavour beam_particle = GetFlavour("BEAMS", num);
-  double temperature = m_settings["DM_TEMPERATURE"].Get<double>();
+  double temperature    = m_settings["DM_TEMPERATURE"].Get<double>();
   DM_type::code formfactor = static_cast<DM_type::code>(
       m_settings["DM_ENERGY_DISTRIBUTION"].Get<int>());
   bool relativistic = m_settings["DM_RELATIVISTIC"].Get<bool>();
   return new DM_beam(beam_particle, temperature, formfactor, relativistic,
                      1 - 2 * num);
 }
+
+Beam_Base* Beam_Parameters::InitializeNeutrinoFromProton(int num)
+{
+  Flavour flav = GetFlavour("BEAMS", num);
+  double  E    = m_settings["BEAM_ENERGIES"].GetTwoVector<double>()[num];
+  msg_Out()<<METHOD<<" for "<<flav<<"\n";
+  return new Interpolated_Neutrinos(flav, E, 1 - 2 * num);
+}
+
 
 const Flavour Beam_Parameters::GetFlavour(const std::string& tag,
                                           const size_t& pos)
@@ -350,6 +363,8 @@ bool Beam_Parameters::SpecifySpectra()
       m_beamspec[num] = beamspectrum::Reggeon;
     else if (bs == "DM_beam")
       m_beamspec[num] = beamspectrum::DM;
+    else if (bs == "Neutrinos")
+      m_beamspec[num] = beamspectrum::neutrinos_from_protons;
     else
       m_beamspec[num] = beamspectrum::unknown;
   }

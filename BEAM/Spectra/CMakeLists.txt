@@ -1,5 +1,6 @@
 set(Spectra_SOURCES Monochromatic.C
                     Laser_Backscattering.C
+                    Interpolated.C
                     EPA.C
                     EPA_FF.C
                     Pomeron.C
@@ -8,6 +9,7 @@ set(Spectra_SOURCES Monochromatic.C
 
 set(Spectra_HEADERS Monochromatic.H
                     Laser_Backscattering.H
+                    Interpolated.H
                     EPA.H
                     EPA_FF.H
                     Pomeron.H
