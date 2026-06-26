@@ -16,10 +16,13 @@ namespace ANALYSIS {
 
 
   class JetMass_Broadening_Calculator : public Analysis_Object {
-    std::string m_inkey, m_listname;
+    std::string m_inkey, m_listname, m_filename;
     std::string m_outkey;
+    std::vector<std::ofstream*> m_files;
   public:
-    JetMass_Broadening_Calculator(const std::string & listname);
+    JetMass_Broadening_Calculator(const std::string & listname,
+				  const std::string & filename);
+    ~JetMass_Broadening_Calculator();
     void Evaluate(const ATOOLS::Blob_List & ,double weight, double ncount);
     Analysis_Object * GetCopy() const;    
   };

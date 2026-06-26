@@ -43,6 +43,44 @@ Primitive_Observable_Base *GetObservable(const Analysis_Key& key)
   DEFINE_GETTER_METHOD(CLASS,NAME)					\
   DEFINE_PRINT_METHOD(CLASS)
 
+template <class Class>
+Primitive_Observable_Base *GetObservableWithFile(const Analysis_Key& key)
+{
+  ATOOLS::Scoped_Settings s{ key.m_settings };
+  const auto min = s["Min"].SetDefault(0.0).Get<double>();
+  const auto max = s["Max"].SetDefault(1.0).Get<double>();
+  const auto bins = s["Bins"].SetDefault(100).Get<size_t>();
+  const auto scale = s["Scale"].SetDefault("Lin").Get<std::string>();
+  const auto list = s["List"].SetDefault(std::string(finalstate_list)).Get<std::string>();
+  const auto file = s["File"].SetDefault("").Get<std::string>();
+  std::vector<ATOOLS::Flavour> flavs;
+  flavs.reserve(2);
+  for (size_t i{ 0 }; i < 2; ++i) {
+    const auto flavkey = "Flav" + ATOOLS::ToString(i + 1);
+    if (!s[flavkey].IsSetExplicitly())
+      THROW(missing_input, "Missing parameter value " + flavkey + ".");
+    const auto kf = s[flavkey].SetDefault(0).GetScalar<int>();
+    flavs.push_back(ATOOLS::Flavour((kf_code)std::abs(kf)));
+    if (kf < 0)
+      flavs.back() = flavs.back().Bar();
+  }
+  return new Class(flavs[0],flavs[1],HistogramType(scale),min,max,bins,list,file);
+}
+
+#define DEFINE_GETTER_METHOD_WITHFILE(CLASS,NAME)				\
+  Primitive_Observable_Base *					\
+  ATOOLS::Getter<Primitive_Observable_Base,Analysis_Key,CLASS>::operator()(const Analysis_Key& key) const \
+  { return GetObservableWithFile<CLASS>(key); }
+
+#define DEFINE_PRINT_METHOD(NAME)					\
+  void ATOOLS::Getter<Primitive_Observable_Base,Analysis_Key,NAME>::PrintInfo(std::ostream &str,const size_t width) const \
+  { str<<"e.g. {Flav1: kf1, Flav2: kf2, Min: 0, Max: 1, Bins: 100, Scale: Lin, List: FinalState}"; }
+
+#define DEFINE_OBSERVABLE_GETTER_WITHFILE(CLASS,NAME,TAG)			\
+  DECLARE_GETTER(CLASS,TAG,Primitive_Observable_Base,Analysis_Key);	\
+  DEFINE_GETTER_METHOD_WITHFILE(CLASS,NAME)					\
+  DEFINE_PRINT_METHOD(CLASS)
+
 using namespace ATOOLS;
 using namespace std;
 
@@ -176,18 +214,41 @@ DEFINE_OBSERVABLE_GETTER(PhiStar,PhiStar_Getter,"PhiStar")
 
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-DEFINE_OBSERVABLE_GETTER(Two_Particle_PT,Two_Particle_PT_Getter,"PT2")
+DEFINE_OBSERVABLE_GETTER_WITHFILE(Two_Particle_PT,Two_Particle_PT_Getter,"PT2")
 
 Two_Particle_PT::Two_Particle_PT(const Flavour & flav1,const Flavour & flav2,
 				 int type,double xmin,double xmax,int nbins,
-				 const std::string & listname) :
-  Two_Particle_Observable_Base(flav1,flav2,type,xmin,xmax,nbins,listname,"PT") { }
+				 const std::string & listname,
+				 const std::string & file) :
+  Two_Particle_Observable_Base(flav1,flav2,type,xmin,xmax,nbins,listname,"PT")
+{
+  m_filename = file;
+  if (m_filename!="") {
+    std::string suffix=".csv";
+#ifdef USING__MPI
+    if (mpi->Size()) suffix="_"+ToString(mpi->Rank())+suffix;
+#endif
+    m_files.push_back(new std::ofstream((m_filename+"pT_weight"+suffix).c_str()));
+    m_files.push_back(new std::ofstream((m_filename+"pT_values"+suffix).c_str()));
+  }
+}
 
+Two_Particle_PT::~Two_Particle_PT()
+{
+  for (size_t i(0);i<m_files.size();++i) {
+    m_files[i]->close();
+    delete m_files[i];
+  }
+}
 
 void Two_Particle_PT::Evaluate(const Vec4D & mom1,const Vec4D & mom2,double weight, double ncount) 
 {
   double pt = sqrt(sqr(mom1[1]+mom2[1]) + sqr(mom1[2]+mom2[2]));
   p_histo->Insert(pt,weight,ncount); 
+  if (m_files.size()) {
+    *m_files[0]<<weight<<"\n";
+    *m_files[1]<<pt<<"\n";
+  }
 } 
 
 void Two_Particle_PT::EvaluateNLOcontrib(const Vec4D & mom1,const Vec4D & mom2,double weight, double ncount) 
@@ -198,7 +259,55 @@ void Two_Particle_PT::EvaluateNLOcontrib(const Vec4D & mom1,const Vec4D & mom2,d
 
 Primitive_Observable_Base * Two_Particle_PT::Copy() const 
 {
-  return new Two_Particle_PT(m_flav1,m_flav2,m_type,m_xmin,m_xmax,m_nbins,m_listname);
+  return new Two_Particle_PT(m_flav1,m_flav2,m_type,m_xmin,m_xmax,m_nbins,m_listname,"");
+}
+
+DEFINE_OBSERVABLE_GETTER_WITHFILE(Two_Particle_RT,Two_Particle_RT_Getter,"RT2")
+
+Two_Particle_RT::Two_Particle_RT(const Flavour & flav1,const Flavour & flav2,
+				 int type,double xmin,double xmax,int nbins,
+				 const std::string & listname,
+				 const std::string & file) :
+  Two_Particle_Observable_Base(flav1,flav2,type,xmin,xmax,nbins,listname,"RT")
+{
+  m_filename = file;
+  if (m_filename!="") {
+    std::string suffix=".csv";
+#ifdef USING__MPI
+    if (mpi->Size()) suffix="_"+ToString(mpi->Rank())+suffix;
+#endif
+    m_files.push_back(new std::ofstream((m_filename+"rT_weight"+suffix).c_str()));
+    m_files.push_back(new std::ofstream((m_filename+"rT_values"+suffix).c_str()));
+  }
+}
+
+Two_Particle_RT::~Two_Particle_RT()
+{
+  for (size_t i(0);i<m_files.size();++i) {
+    m_files[i]->close();
+    delete m_files[i];
+  }
+}
+
+void Two_Particle_RT::Evaluate(const Vec4D & mom1,const Vec4D & mom2,double weight, double ncount)
+{
+  double rt = sqrt((mom1+mom2).PPerp2()/(mom1+mom2).Abs2());
+  p_histo->Insert(rt,weight,ncount);
+  if (m_files.size()) {
+    *m_files[0]<<weight<<"\n";
+    *m_files[1]<<rt<<"\n";
+  }
+}
+
+void Two_Particle_RT::EvaluateNLOcontrib(const Vec4D & mom1,const Vec4D & mom2,double weight, double ncount)
+{
+  double rt = sqrt(sqr(mom1[1]+mom2[1]) + sqr(mom1[2]+mom2[2]));
+  p_histo->InsertMCB(rt,weight,ncount);
+}
+
+Primitive_Observable_Base * Two_Particle_RT::Copy() const
+{
+  return new Two_Particle_RT(m_flav1,m_flav2,m_type,m_xmin,m_xmax,m_nbins,m_listname,"");
 }
 
 DEFINE_OBSERVABLE_GETTER(Two_Particle_ETW,Two_Particle_ETW_Getter,"ET2W")
@@ -426,15 +535,32 @@ Primitive_Observable_Base * Two_Particle_Phi::Copy() const
 
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-DEFINE_OBSERVABLE_GETTER(Two_Particle_DPhi,Two_Particle_DPhi_Getter,"DPhi")
+DEFINE_OBSERVABLE_GETTER_WITHFILE(Two_Particle_DPhi,Two_Particle_DPhi_Getter,"DPhi")
 
 Two_Particle_DPhi::Two_Particle_DPhi(const Flavour & flav1,const Flavour & flav2,
-				     int type,double xmin,double xmax,int nbins,
-				     const std::string & listname) :
-    Two_Particle_Observable_Base(flav1,flav2,type,xmin,xmax,nbins,listname,"dphi") 
-{ 
+				 int type,double xmin,double xmax,int nbins,
+				 const std::string & listname,
+				 const std::string & file) :
+  Two_Particle_Observable_Base(flav1,flav2,type,xmin,xmax,nbins,listname,"DPhi")
+{
+  m_filename = file;
+  if (m_filename!="") {
+    std::string suffix=".csv";
+#ifdef USING__MPI
+    if (mpi->Size()) suffix="_"+ToString(mpi->Rank())+suffix;
+#endif
+    m_files.push_back(new std::ofstream((m_filename+"dphi_weight"+suffix).c_str()));
+    m_files.push_back(new std::ofstream((m_filename+"dphi_values"+suffix).c_str()));
+  }
 }
 
+Two_Particle_DPhi::~Two_Particle_DPhi()
+{
+  for (size_t i(0);i<m_files.size();++i) {
+    m_files[i]->close();
+    delete m_files[i];
+  }
+}
 
 void Two_Particle_DPhi::Evaluate(const Vec4D & mom1,const Vec4D & mom2,double weight, double ncount) 
 { 
@@ -442,6 +568,10 @@ void Two_Particle_DPhi::Evaluate(const Vec4D & mom1,const Vec4D & mom2,double we
     double pt2=sqrt(mom2[1]*mom2[1]+mom2[2]*mom2[2]);
     double dphi=acos(Min(1.0,Max(-1.0,(mom1[1]*mom2[1]+mom1[2]*mom2[2])/(pt1*pt2))));
     p_histo->Insert(dphi,weight,ncount); 
+    if (m_files.size()) {
+      *m_files[0]<<weight<<"\n";
+      *m_files[1]<<dphi<<"\n";
+    }
 } 
 
 void Two_Particle_DPhi::EvaluateNLOcontrib(const Vec4D & mom1,const Vec4D & mom2,double weight, double ncount) 
@@ -454,7 +584,7 @@ void Two_Particle_DPhi::EvaluateNLOcontrib(const Vec4D & mom1,const Vec4D & mom2
 
 Primitive_Observable_Base * Two_Particle_DPhi::Copy() const 
 {
-    return new Two_Particle_DPhi(m_flav1,m_flav2,m_type,m_xmin,m_xmax,m_nbins,m_listname);
+  return new Two_Particle_DPhi(m_flav1,m_flav2,m_type,m_xmin,m_xmax,m_nbins,m_listname,"");
 }
 
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

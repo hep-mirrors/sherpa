@@ -1,5 +1,6 @@
 #include "AddOns/Analysis/Observables/Jet_Mass_and_Broadening.H"
 #include "ATOOLS/Org/MyStrStream.H"
+#include "ATOOLS/Org/My_MPI.H"
 #include "AddOns/Analysis/Main/Primitive_Analysis.H"
 #include "AddOns/Analysis/Observables/Event_Shapes_EE.H"
 
@@ -23,13 +24,14 @@ Analysis_Object *ATOOLS::Getter<Analysis_Object,Analysis_Key,
 				JetMass_Broadening_Calculator>::operator()(const Analysis_Key& key) const
 {
   ATOOLS::Scoped_Settings s{ key.m_settings };
-  const auto listname = s.SetDefault(finalstate_list).Get<std::string>();
-  return new JetMass_Broadening_Calculator(listname);
+  const auto listname = s["InList"].SetDefault(finalstate_list).Get<std::string>();
+  const auto file = s["File"].SetDefault("").Get<std::string>();
+  return new JetMass_Broadening_Calculator(listname,file);
 }
 
 void ATOOLS::Getter<Analysis_Object,Analysis_Key,JetMass_Broadening_Calculator>::PrintInfo(std::ostream &str,const size_t width) const
 { 
-  str<<"<list> ... depends on EEShapes";
+  str<<"e.g. { InList: <list>, File: <file> } ... depends on EEShapes";
 }
 
 template <class Class>
@@ -61,11 +63,31 @@ Primitive_Observable_Base *GetObservable(const Analysis_Key& key)
   DEFINE_PRINT_METHOD(CLASS)
 
 
-JetMass_Broadening_Calculator::JetMass_Broadening_Calculator(const std::string & listname)
-  :  m_inkey("EvtShapeData"), m_outkey(listname+"_JetMass_Broadening") 
+JetMass_Broadening_Calculator::JetMass_Broadening_Calculator(const std::string & listname,
+							     const std::string & filename)
+  :  m_inkey("EvtShapeData"), m_outkey(listname+"_JetMass_Broadening"), m_filename(filename)
 {
   m_name = listname+"_JetMass_Broadening_Calculator";
   m_listname = listname;
+  if (m_filename!="") {
+    std::string suffix=".csv";
+#ifdef USING__MPI
+    if (mpi->Size()) suffix="_"+ToString(mpi->Rank())+suffix;
+#endif
+    m_files.push_back(new std::ofstream((m_filename+"mheavy"+suffix).c_str()));
+    m_files.push_back(new std::ofstream((m_filename+"mlight"+suffix).c_str()));
+    m_files.push_back(new std::ofstream((m_filename+"bwide"+suffix).c_str()));
+    m_files.push_back(new std::ofstream((m_filename+"bnarrow"+suffix).c_str()));
+    m_files.push_back(new std::ofstream((m_filename+"btotal"+suffix).c_str()));
+  }
+}
+
+JetMass_Broadening_Calculator::~JetMass_Broadening_Calculator()
+{
+  for (size_t i(0);i<m_files.size();++i) {
+    m_files[i]->close();
+    delete m_files[i];
+  }
 }
 
 void JetMass_Broadening_Calculator::Evaluate(const Blob_List & ,double weight, double ncount) {
@@ -125,14 +147,20 @@ void JetMass_Broadening_Calculator::Evaluate(const Blob_List & ,double weight, d
       bw=b1; bn=b2;
     }
   }
-  
+  if (m_files.size()) {
+    *m_files[0]<<mh<<","<<weight<<"\n";
+    *m_files[1]<<ml<<","<<weight<<"\n";
+    *m_files[2]<<bw<<","<<weight<<"\n";
+    *m_files[3]<<bn<<","<<weight<<"\n";
+    *m_files[4]<<bw+bn<<","<<weight<<"\n";
+  }
   p_ana->AddData(m_outkey,
 		 new Blob_Data<JetMass_Broadening_Data>(JetMass_Broadening_Data(mh,ml,bw,bn)));
 }
 
 Analysis_Object * JetMass_Broadening_Calculator::GetCopy() const
 {
-  return new JetMass_Broadening_Calculator(m_listname);
+  return new JetMass_Broadening_Calculator(m_listname,m_filename);
 }
 
 

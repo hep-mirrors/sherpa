@@ -410,6 +410,13 @@ else()
 endif()
 message(STATUS "SHERPA: LibZip_VERSION=${LibZip_VERSION} LibZip_LIBRARIES=${LibZip_LIBRARIES} LibZip_INCLUDE_DIR=${LibZip_INCLUDE_DIR}")
 
+if (SHERPA_ENABLE_JSON)
+  find_package(nlohmann_json REQUIRED TARGET Sherpa)
+  set(JSON_VERSION ${nlohmann_json_VERSION})
+  get_target_property(JSON_INCLUDE_DIR nlohmann_json::nlohmann_json INTERFACE_INCLUDE_DIRECTORIES)
+  message(STATUS "SHERPA: JSON_VERSION=${JSON_VERSION} JSON_INCLUDE_DIR=${JSON_INCLUDE_DIR}")
+endif()
+
 if (SHERPA_ENABLE_LHAPDF)
   if(NOT SHERPA_ENABLE_INSTALL_LHAPDF)
     find_package(LHAPDF 6.4.0)
@@ -557,6 +564,7 @@ endif()
 if (SHERPA_ENABLE_RIVET)
   add_subdirectory(AddOns/Rivet)
 endif()
+add_subdirectory(AddOns/MaxEnt)
 add_subdirectory(SHERPA)
 
 set( IDIRS  AHADIC++ AMEGIC++ AMISIC++ ATOOLS BEAM COMIX CSSHOWER++ DIM DIRE EXTAMP EXTRA_XS HADRONS++

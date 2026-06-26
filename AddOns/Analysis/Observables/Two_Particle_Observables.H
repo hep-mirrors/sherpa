@@ -39,7 +39,9 @@ namespace ANALYSIS {
     Primitive_Observable_Base * Copy() const;
   };
 
-  class Two_Particle_PT : public Two_Particle_Observable_Base {  
+  class Two_Particle_PT : public Two_Particle_Observable_Base {
+    std::string                       m_filename;
+    std::vector<std::ofstream*>       m_files;
     void Evaluate(const ATOOLS::Vec4D & mom1, const ATOOLS::Vec4D & mom2, 
 		  double weight, double ncount); 
     void EvaluateNLOcontrib(const ATOOLS::Vec4D & mom1, const ATOOLS::Vec4D & mom2, 
@@ -47,7 +49,38 @@ namespace ANALYSIS {
   public:
     Two_Particle_PT(const ATOOLS::Flavour & flav1, const ATOOLS::Flavour & flav2,
 		    int type, double xmin, double xmax, int nbins, 
-		    const std::string & listname);
+		    const std::string & listname,const std::string &file);
+    ~Two_Particle_PT();
+    Primitive_Observable_Base * Copy() const;
+  };
+
+  class Two_Particle_RT : public Two_Particle_Observable_Base {
+    std::string                       m_filename;
+    std::vector<std::ofstream*>       m_files;
+    void Evaluate(const ATOOLS::Vec4D & mom1, const ATOOLS::Vec4D & mom2,
+		  double weight, double ncount);
+    void EvaluateNLOcontrib(const ATOOLS::Vec4D & mom1, const ATOOLS::Vec4D & mom2,
+		  double weight, double ncount);
+  public:
+    Two_Particle_RT(const ATOOLS::Flavour & flav1, const ATOOLS::Flavour & flav2,
+		    int type, double xmin, double xmax, int nbins,
+		    const std::string & listname,const std::string &file);
+    ~Two_Particle_RT();
+    Primitive_Observable_Base * Copy() const;
+  };
+
+  class Two_Particle_DPhi : public Two_Particle_Observable_Base {
+    std::string                       m_filename;
+    std::vector<std::ofstream*>       m_files;
+    void Evaluate(const ATOOLS::Vec4D & mom1, const ATOOLS::Vec4D & mom2,
+		  double weight, double ncount);
+    void EvaluateNLOcontrib(const ATOOLS::Vec4D & mom1, const ATOOLS::Vec4D & mom2,
+		  double weight, double ncount);
+  public:
+    Two_Particle_DPhi(const ATOOLS::Flavour & flav1, const ATOOLS::Flavour & flav2,
+		    int type, double xmin, double xmax, int nbins,
+		    const std::string & listname,const std::string &file);
+    ~Two_Particle_DPhi();
     Primitive_Observable_Base * Copy() const;
   };
 
@@ -132,18 +165,6 @@ namespace ANALYSIS {
     Two_Particle_Phi(const ATOOLS::Flavour & flav1, const ATOOLS::Flavour & flav2,
 		     int type, double xmin, double xmax, int nbins, 
 		     const std::string & listname);
-    Primitive_Observable_Base * Copy() const;
-  };
-
-  class Two_Particle_DPhi : public Two_Particle_Observable_Base {  
-    void Evaluate(const ATOOLS::Vec4D & mom1, const ATOOLS::Vec4D & mom2, 
-		  double weight, double ncount); 
-    void EvaluateNLOcontrib(const ATOOLS::Vec4D & mom1, const ATOOLS::Vec4D & mom2, 
-		  double weight, double ncount); 
-  public:
-    Two_Particle_DPhi(const ATOOLS::Flavour & flav1, const ATOOLS::Flavour & flav2,
-		      int type, double xmin, double xmax, int nbins, 
-		      const std::string & listname);
     Primitive_Observable_Base * Copy() const;
   };
 

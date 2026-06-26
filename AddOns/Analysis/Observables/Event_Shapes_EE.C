@@ -4,6 +4,7 @@ using namespace ANALYSIS;
 
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/Run_Parameter.H"
+#include "ATOOLS/Org/My_MPI.H"
 #include <algorithm>
 #include <iomanip>
 
@@ -17,6 +18,7 @@ void ATOOLS::Getter<Analysis_Object,Analysis_Key,Event_Shapes_EE>::PrintInfo(std
      <<std::setw(width+7)<<" "<<"InList: <list>,\n"
      <<std::setw(width+7)<<" "<<"OutList: <list>,\n"
      <<std::setw(width+7)<<" "<<"Qual: <qualifier>\n"
+     <<std::setw(width+7)<<" "<<"File: <file>\n"
      <<std::setw(width+4)<<" "<<"}";
 }
 
@@ -27,6 +29,7 @@ Analysis_Object * ATOOLS::Getter<Analysis_Object,Analysis_Key,
   const auto inlist = s["InList"].SetDefault("FinalState").Get<std::string>();
   const auto outlist = s["OutList"].SetDefault("EEShapes").Get<std::string>();
   const auto rawqualifier = s["Qual"].SetDefault("").Get<std::string>();
+  const auto file = s["File"].SetDefault("").Get<std::string>();
   Particle_Qualifier_Base_SP qualifier;
   if (!rawqualifier.empty()) {
     if (ATOOLS::rpa->gen.Beam1().IsLepton() &&
@@ -37,7 +40,7 @@ Analysis_Object * ATOOLS::Getter<Analysis_Object,Analysis_Key,
   }
   if (!qualifier)
     qualifier = std::make_shared<ATOOLS::Is_Not_Lepton>();
-  return new Event_Shapes_EE(inlist,outlist,qualifier);
+  return new Event_Shapes_EE(inlist,outlist,qualifier,file);
 }
 
 #include "AddOns/Analysis/Main/Primitive_Analysis.H"
@@ -76,15 +79,36 @@ template class Blob_Data<Event_Shape_EE_Data>;
 
 Event_Shapes_EE::Event_Shapes_EE(const std::string & _inlistname,
 				 const std::string & _outlistname,
-				 std::shared_ptr<Particle_Qualifier_Base> _quali) :
+				 std::shared_ptr<Particle_Qualifier_Base> _quali,
+				 const std::string &file) :
   Final_Selector(_inlistname,_outlistname,-1,_quali),
   m_startaxes(4), m_maxidentaxes(2), m_accuracy(1.e-4),
-  m_key(std::string("EvtShapeData"))
+  m_key(std::string("EvtShapeData")), m_filename(file)
 { 
   m_isobs=false;
   m_name        = std::string("Event_Shapes_EE");
+  if (m_filename!="") {
+    std::string suffix=".csv";
+#ifdef USING__MPI
+    if (mpi->Size()) suffix="_"+ToString(mpi->Rank())+suffix;
+#endif
+    m_files.push_back(new std::ofstream((m_filename+"weight"+suffix).c_str()));
+    m_files.push_back(new std::ofstream((m_filename+"tau"+suffix).c_str()));
+    m_files.push_back(new std::ofstream((m_filename+"major"+suffix).c_str()));
+    m_files.push_back(new std::ofstream((m_filename+"minor"+suffix).c_str()));
+    m_files.push_back(new std::ofstream((m_filename+"oblateness"+suffix).c_str()));
+    m_files.push_back(new std::ofstream((m_filename+"cparameter"+suffix).c_str()));
+    m_files.push_back(new std::ofstream((m_filename+"dparameter"+suffix).c_str()));
+  }
 }
 
+Event_Shapes_EE::~Event_Shapes_EE()
+{
+  for (size_t i(0);i<m_files.size();++i) {
+    m_files[i]->close();
+    delete m_files[i];
+  }
+}
 
 void Event_Shapes_EE::Evaluate(const Blob_List & blobs,double value,double ncount)
 {
@@ -108,7 +132,7 @@ void Event_Shapes_EE::Select(const Particle_List & pl_in,double value,double nco
       m_vectors.push_back(mom); m_vectors_save.push_back(mom);
     }
   }
-  CalculateLinears();
+  CalculateLinears(value);
 
   p_ana->AddData(m_key,new Blob_Data<Event_Shape_EE_Data>(Event_Shape_EE_Data(m_thrust,m_major,m_minor,
 									      m_oblateness,
@@ -121,7 +145,7 @@ void Event_Shapes_EE::Select(const Particle_List & pl_in,double value,double nco
   p_ana->AddParticleList(m_outlistname,pl_out);
 }
 
-void Event_Shapes_EE::CalculateLinears()
+void Event_Shapes_EE::CalculateLinears(const double &weight)
 {
   m_thrust = m_major = m_minor = 0.;
   Vec3D maxthrustaxis, lastaxis, curraxis;
@@ -186,6 +210,14 @@ void Event_Shapes_EE::CalculateLinears()
       m_oblateness = m_major-m_minor;     
     }
   }
+  if (m_files.size()) {
+    *m_files[0]<<weight<<"\n";
+    *m_files[1]<<1.-m_thrust<<"\n";
+    *m_files[2]<<m_major<<"\n";
+    *m_files[3]<<m_minor<<"\n";
+    *m_files[4]<<m_cparameter<<"\n";
+    *m_files[5]<<m_dparameter<<"\n";
+  }
 }
 
 void Event_Shapes_EE::RotateMoms(vector<Vec3D> & p,const Vec3D & ref) {
@@ -233,5 +265,5 @@ unsigned int Event_Shapes_EE::ipow(int base,int exponent) {
 }
 
 Analysis_Object * Event_Shapes_EE::GetCopy() const {
-  return new Event_Shapes_EE(m_inlistname,m_outlistname,p_qualifier);
+  return new Event_Shapes_EE(m_inlistname,m_outlistname,p_qualifier,m_filename);
 }

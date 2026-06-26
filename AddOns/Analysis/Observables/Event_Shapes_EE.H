@@ -4,6 +4,7 @@
 #include "AddOns/Analysis/Triggers/Final_Selector.H"
 #include "ATOOLS/Math/Vector.H"
 #include "ATOOLS/Math/Matrix.H"
+#include <fstream>
 
 namespace ANALYSIS {
 
@@ -19,11 +20,12 @@ namespace ANALYSIS {
   private:
     unsigned int                      m_startaxes,m_maxidentaxes;
     double                            m_accuracy;
-    std::string                       m_key;
+    std::string                       m_key, m_filename;
     std::vector<ATOOLS::Vec3D>        m_vectors, m_vectors_save;
+    std::vector<std::ofstream*>       m_files;
 
     void          Select(const ATOOLS::Particle_List &,double=1.,double ncount=1);
-    void          CalculateLinears();
+    void          CalculateLinears(const double &value);
 
     void          RotateMoms(std::vector<ATOOLS::Vec3D> &,const ATOOLS::Vec3D &);
     ATOOLS::Vec3D NewAxis(const std::vector<ATOOLS::Vec3D> &,const ATOOLS::Vec3D &);
@@ -38,7 +40,9 @@ namespace ANALYSIS {
   public:
     Event_Shapes_EE(const std::string & inlistname,
 		    const std::string & outlistname,
-		    std::shared_ptr<ATOOLS::Particle_Qualifier_Base> const);
+		    std::shared_ptr<ATOOLS::Particle_Qualifier_Base> const,
+		    const std::string &file);
+    ~Event_Shapes_EE();
     void Evaluate(const ATOOLS::Blob_List &,double=1.,double ncount=1);
     void Evaluate(const ATOOLS::Particle_List &,double=1.,double ncount=1);
     Analysis_Object * GetCopy() const;

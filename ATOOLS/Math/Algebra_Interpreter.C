@@ -195,7 +195,18 @@ DEFINE_BINARY_TERM_OPERATOR(Binary_Shift_Left,"<<",<<,11)
 DEFINE_BINARY_TERM_OPERATOR(Binary_Shift_Right,">>",>>,11)
 DEFINE_BINARY_TERM_OPERATOR(Binary_Logical_And,"&&",&&,5)
 DEFINE_BINARY_TERM_OPERATOR(Binary_Logical_Or,"||",||,4)
-DEFINE_BINARY_TERM_OPERATOR(Bitwise_XOr,"^",^,7)
+
+#define DEFINE_BINARY_FUNCTION_OPERATOR(NAME,TAG,OP,PRIORITY)\
+  DEFINE_BINARY_OPERATOR(NAME,TAG,PRIORITY)\
+  Term *NAME::Evaluate(Algebra_Interpreter *const interpreter,\
+		       const std::vector<Term*> &args) const\
+  {\
+    Term *res = OP(*args[0],*args[1]);\
+    interpreter->AddTerm(res);\
+    return res;\
+  }
+
+DEFINE_BINARY_FUNCTION_OPERATOR(Python_Power,"^",TPow,15)
 
 #define DEFINE_BINARY_SORTABLE_TERM_OPERATOR(NAME,TAG,OP,PRIORITY)\
   DEFINE_BINARY_OPERATOR(NAME,TAG,PRIORITY)\
@@ -656,7 +667,7 @@ Algebra_Interpreter::Global_Functions::Global_Functions()
   AddOperator(new Binary_Logical_And());
   AddOperator(new Binary_Logical_Or());
   AddOperator(new Bitwise_And());
-  AddOperator(new Bitwise_XOr());
+  AddOperator(new Python_Power());
   AddOperator(new Bitwise_Or());
   AddOperator(new Unary_Minus());
   AddOperator(new Unary_Not());
