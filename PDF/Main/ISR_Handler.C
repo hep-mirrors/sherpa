@@ -117,18 +117,23 @@ void ISR_Handler::Init() {
 
 bool ISR_Handler::CheckConsistency(ATOOLS::Flavour *bunches,
                                    ATOOLS::Flavour *partons) {
+  msg_Out()<<METHOD<<"(1)\n";
   bool fit = true;
   for (int i = 0; i < 2; i++) {
     if (p_isrbase[i]->On()) {
       if (bunches[i] != PDF(i)->Bunch()) {
+	msg_Out()<<"Bunch mismatch for "<<i<<"\n";
         fit = false;
         break;
       }
       fit = PDF(i)->Contains(partons[i]);
+      if (!fit) msg_Out()<<"Parton not included in "<<i<<"\n";
       if (!fit) break;
-    } else {
+    }
+    else {
       bool found(false);
       if (p_isrbase[i]->Flavour().Includes(partons[i])) found = true;
+      if (!found) msg_Out()<<"Parton not included in "<<i<<"\n";
       if (!found) return false;
     }
   }
@@ -136,6 +141,7 @@ bool ISR_Handler::CheckConsistency(ATOOLS::Flavour *bunches,
 }
 
 bool ISR_Handler::CheckConsistency(ATOOLS::Flavour *partons) {
+  msg_Out()<<METHOD<<"(2)\n";
   bool fit = true;
   for (int i = 0; i < 2; i++) {
     if (partons[i].Kfcode() == 0)
@@ -146,6 +152,7 @@ bool ISR_Handler::CheckConsistency(ATOOLS::Flavour *partons) {
         for (size_t j(0); j < partons[i].Size(); ++j)
           fit |= PDF(i)->Contains(partons[i][j]);
       }
+      if (!fit) msg_Out()<<"Parton not included in "<<i<<"\n";
       if (fit == 0)
         break;
     } else {
@@ -153,6 +160,7 @@ bool ISR_Handler::CheckConsistency(ATOOLS::Flavour *partons) {
       if (p_isrbase[i]->Flavour().Includes(partons[i])) {
         found = true;
       }
+      if (!found) msg_Out()<<"Parton not included in "<<i<<"\n";
       if (!found)
         return false;
     }

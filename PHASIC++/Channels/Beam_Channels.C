@@ -67,10 +67,12 @@ bool Beam_Channels::MakeChannels() {
                   << "   Will not initialize integration over spectra.\n";
       return false;
   }
+  msg_Out()<<METHOD<<" goes plop!\n";
   return CreateChannels();
 }
 
 bool Beam_Channels::DefineColliderChannels() {
+  msg_Out()<<METHOD<<" goes plop!\n";
   // default collider setup - no spectra
   if (m_beamtype[0] == beamspectrum::monochromatic &&
       m_beamtype[1] == beamspectrum::monochromatic)
@@ -93,12 +95,14 @@ bool Beam_Channels::DefineColliderChannels() {
   }
   // one or two EPA/Pomeron spectra with monochromatic beams.
   // currently our EPA is completely collinear, with real photons.
-  bool beam0_is_on = m_beamtype[0] == beamspectrum::EPA ||
-                     m_beamtype[0] == beamspectrum::Pomeron ||
-                     m_beamtype[0] == beamspectrum::Reggeon;
-  bool beam1_is_on = m_beamtype[1] == beamspectrum::EPA ||
-                     m_beamtype[1] == beamspectrum::Pomeron ||
-                     m_beamtype[1] == beamspectrum::Reggeon;
+  bool beam0_is_on = ( m_beamtype[0] == beamspectrum::EPA ||
+		       m_beamtype[0] == beamspectrum::Pomeron ||
+		       m_beamtype[0] == beamspectrum::Reggeon ||
+		       m_beamtype[0] == beamspectrum::neutrinos_from_protons );
+  bool beam1_is_on = ( m_beamtype[1] == beamspectrum::EPA ||
+		       m_beamtype[1] == beamspectrum::Pomeron ||
+		       m_beamtype[1] == beamspectrum::Reggeon ||
+		       m_beamtype[1] == beamspectrum::neutrinos_from_protons );
   if (beam0_is_on || beam1_is_on) {
     // register additional rans for the impact parameter in EPA
     if (m_beamtype[0] == beamspectrum::EPA) AddERan("b_0");

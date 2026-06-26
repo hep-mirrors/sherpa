@@ -18,15 +18,16 @@ namespace BEAM {
   std::ostream& operator<<(std::ostream&,const beammode mode);
 
   enum class beamspectrum {
-    monochromatic        = 0,
-    Gaussian             = 1,
-    laser_backscattering = 2,
-    simple_Compton       = 3,
-    EPA                  = 4,
-    Pomeron              = 5,
-    Reggeon              = 6,
-    DM                   = 10,
-    unknown              = 99
+    monochromatic          = 0,
+    Gaussian               = 1,
+    laser_backscattering   = 2,
+    simple_Compton         = 3,
+    EPA                    = 4,
+    Pomeron                = 5,
+    Reggeon                = 6,
+    DM                     = 10,
+    neutrinos_from_protons = 20,
+    unknown                = 99
   };
   std::ostream& operator<<(std::ostream&,const beamspectrum spect);
 
@@ -75,8 +76,9 @@ namespace BEAM {
     Beam_Base * InitializeMonochromatic(int);
     Beam_Base * InitializeEPA(int);
     Beam_Base * InitializePomeron(int);
-    Beam_Base*  InitializeReggeon(int);
+    Beam_Base * InitializeReggeon(int);
     Beam_Base * InitializeDM_beam(int);
+    Beam_Base * InitializeNeutrinoFromProton(int);
   public:
     Beam_Parameters();
     ~Beam_Parameters();

@@ -836,13 +836,12 @@ void Initialization_Handler::LoadPDFLibraries(Settings& settings) {
       if (m_pdflibs.find(libname) == m_pdflibs.end()) m_pdflibs.insert(libname);
     } else if (!p_beamspectra->GetBeam(beam)->Bunch(0).IsLepton() &&
                !pdflibs.empty() &&
-               pdflibs[Min(beam, pdflibs.size() - 1)] != std::string("None"))
+               pdflibs[Min(beam, pdflibs.size() - 1)] != string("None"))
       m_pdflibs.insert(deflib);
     m_defsets[PDF::isr::hard_subprocess][beam] =
-            !pdflibs.empty() && pdflibs[Min(beam, pdflibs.size() - 1)] ==
-                                        std::string("None")
-                    ? "None"
-                    : defset;
+              (!pdflibs.empty() &&
+               pdflibs[Min(beam, pdflibs.size() - 1)]==string("None") ?
+	       "None" : defset);
     // fix PDFs and default sets for the beam rescattering here
     // EPA is the only configuration at the moment where we allow
     // additional scattering/interactions of the incoming beams.
@@ -960,6 +959,7 @@ InitISRHandler(const PDF::isr::id & pid,Settings& settings) {
 	string pdflibnames = string("");
 	for (std::set<std::string>::iterator pdflib=m_pdflibs.begin();
 	     pdflib!=m_pdflibs.end();++pdflib) pdflibnames += (*pdflib)+" ";
+	msg_Out()<<"Here? "<<beam<<": "<<m_bunch_particles[beam]<<"\n";
         THROW(critical_error,
               "PDF '" + set + "' does not exist in any of the loaded" +
 	      " libraries [" + pdflibnames + "] for " +

@@ -27,12 +27,9 @@ namespace ATOOLS {
 
   class OneDim_Table {
   private:
-
     axis m_x;
     std::vector<double> m_values;
-
   public:
-
     explicit OneDim_Table(const axis& xbins);
     void Fill(size_t xbin, double value);
     void Rescale(double factor);
@@ -48,6 +45,19 @@ namespace ATOOLS {
     inline const axis& GetAxis() const { return m_x; }
   };
 
+  class OneDim_Flexible_Table {
+  private:
+    size_t              m_nbins;
+    double              m_xmin, m_xmax, m_ymin, m_ymax;
+    std::vector<double> m_x, m_y;
+  public:
+    explicit OneDim_Flexible_Table(const std::string & path);
+    double operator()(double x) const;
+    inline const std::vector<double> * GetX() const { return &m_x; }
+    inline const std::vector<double> * GetY() const { return &m_y; }
+    inline const size_t               NBins() const { return m_nbins; }
+  };
+    
   class TwoDim_Table {
   private:
 

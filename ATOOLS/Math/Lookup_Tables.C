@@ -2,6 +2,7 @@
 #include "ATOOLS/Org/Exception.H"
 #include <algorithm> // For std::lower_bound, std::min
 #include <cmath>     // For std::fabs, std::sqrt, std::exp, etc.
+#include <filesystem>
 #include <fstream>
 #include <iostream>
 
@@ -142,6 +143,52 @@ void OneDim_Table::OutputToCSV(std::ofstream& outfile) const
     outfile << m_x.x(i) << "," << m_values[i] << std::endl;
   }
 }
+
+//////////////////////////////////////////////////////////////////////////////
+// One-dimensional look-up table with flexible x-axis, read in from file
+//////////////////////////////////////////////////////////////////////////////
+
+OneDim_Flexible_Table::
+OneDim_Flexible_Table(const std::string & path) : m_nbins(0) {
+  std::ifstream file(path);
+  if (!std::filesystem::exists(path))
+    THROW(fatal_error,"File ["+path+"] does not exist.");
+  std::string line;
+  double e, N;
+  while (std::getline(file,line)) {
+    size_t pos;
+    if ((pos=line.find(" "))!=std::string::npos) {
+      m_x.push_back(std::stod(line.substr(0,pos)));
+      m_y.push_back(std::stod(line.substr(pos,-1))); 
+    }
+    m_nbins++;
+  }
+  m_xmin = m_x[0];
+  m_xmax = m_x[m_nbins-1];
+  m_ymin = m_y[0];
+  m_ymax = m_y[m_nbins-1];
+  //msg_Out()<<METHOD<<" ingested file:\n"
+  //	   <<"   low:  "<<m_xmin<<" : "<<m_ymin<<"\n"
+  //	   <<"   high: "<<m_xmax<<" : "<<m_ymax<<".\n";
+}
+
+double OneDim_Flexible_Table::operator()(double x) const {
+  double diff;
+  if (x<m_xmin) {
+    diff = (m_y[1]-m_ymin)/(m_x[1]-m_xmin);
+    return m_ymin+diff*(x-m_xmin);
+  }
+  else if (x>m_xmax) {
+    diff = (m_y[m_nbins-1]-m_ymax)/(m_x[m_nbins-1]-m_xmax);
+    return m_ymax+diff*(x-m_xmax);
+  }
+  size_t bin;
+  for (bin=0;bin<m_nbins-1;bin++)
+    if (m_x[bin]<=x && m_x[bin+1]>=x) break;
+  double w = (x - m_x[bin])/(m_x[bin+1]-m_x[bin]);
+  return m_y[bin] * (1.0 - w) + m_y[bin + 1] * w;  
+}
+
 
 //////////////////////////////////////////////////////////////////////////////
 // Two-dimensional look-up table
