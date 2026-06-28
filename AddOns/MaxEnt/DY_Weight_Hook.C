@@ -21,7 +21,7 @@ class DY_Weight_Hook : public Userhook_Base, public Tag_Replacer {
 private:
 
   Sherpa* p_sherpa;
-  double m_rt, m_lnrt, m_dphi, m_lndphi, m_gating[2];
+  double m_rt, m_lnrt, m_dphi, m_lndphi, m_lss, m_gating[2];
   std::vector<ATOOLS::Algebra_Interpreter*> m_calcs;
 
 public:
@@ -42,9 +42,11 @@ public:
       auto tags = data["moments"];
       auto vals = data["lambda_physical"];
       auto gating = data["gating"]["window_GeV"];
+      m_lss=data["log_norm_shift"];
       msg_Debugging()<<"tags = "<<tags<<"\n";
       msg_Debugging()<<"vals = "<<vals<<"\n";
       msg_Debugging()<<"gating = "<<gating<<"\n";
+      msg_Debugging()<<"lss = "<<m_lss<<"\n";
       m_gating[0]=gating[0];
       m_gating[1]=gating[1];
       m_calcs.push_back(new Algebra_Interpreter());
@@ -56,7 +58,7 @@ public:
       m_calcs.back()->AddTag("lndphi","1.0");
       std::string expr, repl("×");
       for (size_t pos, j(0);j<vals.size();++j) {
-	std::string tag(tags[i]);
+	std::string tag(tags[j]);
 	while ((pos=tag.find(repl))!=std::string::npos)
 	  tag.replace(pos,repl.length(),"*");
 	expr+=(j&&vals[j]>0?"+":"")+ToString(vals[j])
@@ -131,8 +133,8 @@ public:
       ["WeightsMap"]->Get<Weights_Map>();
     for (size_t i(0);i<m_calcs.size();++i) {
       double w=m_calcs[i]->Calculate()->Get<double>();
-      msg_Debugging()<<i<<": ln(w) = "<<w<<"\n";
-      w=beta*exp(w)+(1.-beta);
+      msg_Debugging()<<i<<": ln(w) = "<<w<<", shift = "<<m_lss<<"\n";
+      w=beta*exp(w-m_lss)+(1.-beta);
       msg_Debugging()<<i<<": w = "<<w<<" (\\beta = "<<beta<<")\n";
       wmap*=w;
       *me_w_info*=w;
