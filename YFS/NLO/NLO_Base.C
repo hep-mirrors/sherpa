@@ -212,7 +212,7 @@ double NLO_Base::CalculateVirtual() {
   p_dipoles->p_yfsFormFact->p_virt = p_virt->p_loop_me;
   CheckMassReg();
   if (!HasISR())
-    virt = p_virt->Calc(m_bornMomenta, m_born);
+    virt = p_virt->Calc(m_plab, m_born);
   else
     virt = p_virt->Calc(m_plab, m_born);
   if (m_check_virt_born) {
@@ -288,7 +288,7 @@ double NLO_Base::CalculateReal() {
   if (!m_realtool)
     return 0;
   double real(0);
-  double collreal = p_dipoles->CalculateEEX() * m_born;
+  // double collreal = p_dipoles->CalculateEEX() * m_born;
   for (auto k : m_ISRPhotons) {
     if (m_check_real_sub && !HasFSR()) {
       if (k.E() < 0.2 * sqrt(m_s))
@@ -512,10 +512,19 @@ double NLO_Base::CalculateReal(Vec4D k, int fsrcount) {
 double NLO_Base::CalculateRealVirtual() {
   if (!m_realvirt)
     return 0;
+  if (m_rv_hard_photon==1) {
+    Vec4D k = MostEnergeticPhoton();
+    if (k.E() == 0.) return 0;
+    if (m_check_rv) {
+      if (k.E() < 0.2 * sqrt(m_s)) return 0;
+      CheckRealVirtualSub(k);
+    }
+    return CalculateRealVirtual(k, 0);
+  }
   double realvirtual(0);
   for (auto k : m_ISRPhotons) {
     if (m_check_rv) {
-      if (k.E() < 0.2 * sqrt(m_s) || m_ISRPhotons.size() != 1)
+      if (k.E() < 0.2 * sqrt(m_s))
         continue;
       CheckRealVirtualSub(k);
     }
@@ -534,11 +543,10 @@ double NLO_Base::CalculateRealVirtual() {
 }
 
 double NLO_Base::CalculateRealVirtual(Vec4D k, int fsrcount) {
-  if (!m_realvirt)
-    return 0;
+  if (!m_realvirt) return 0;
   Vec4D_Vector p(m_plab), pi(m_bornMomenta), pf(m_bornMomenta);
   double tot(0), sub(0);
-  double norm = 2. * pow(2 * M_PI, 3);
+  double norm = 4 * pow(2 * M_PI, 3);
   double flux(1);
   Vec4D kk = k;
   p_nlodipoles->MakeDipoles(m_flavs, m_plab, m_plab);
@@ -576,17 +584,18 @@ double NLO_Base::CalculateRealVirtual(Vec4D k, int fsrcount) {
   CheckMasses(p, 1);
   Vec4D_Vector pp = p;
   pp.pop_back();
-  Flavour_Vector fl = m_flavs;
-  p_nlodipoles->MakeDipolesII(fl, pp, m_plab);
-  p_nlodipoles->MakeDipoles(fl, pp, m_plab);
-  p_nlodipoles->MakeDipolesIF(fl, pp, m_plab);
+  p_nlodipoles->MakeDipolesII(m_flavs, pp, m_plab);
+  p_nlodipoles->MakeDipoles(m_flavs, pp, m_plab);
+  p_nlodipoles->MakeDipolesIF(m_flavs, pp, m_plab);
   p_nlodipoles->p_yfsFormFact->p_virt = p_realvirt->p_loop_me;
   double subloc = p_nlodipoles->CalculateRealVirtualSubEps(k);
   yfspole = p_nlodipoles->Get_E1();
   // PRINT_VAR(m_ISRPhotons.size());
-  const double aB =  p_nlodipoles->CalculateRealSub(k)*m_oneloop;
+  const double aB = p_nlodipoles->CalculateRealSub(k)*m_oneloop;
+  // const double aB = subloc*m_oneloop;
+  // const double aB = subloc*m_oneloop;
   // const double aB =
-  //     p_nlodipoles->CalculateRealSub(k) * m_oneloop; //-0.5*subloc*subloc;
+      // p_nlodipoles->CalculateRealSub(k) * m_oneloop; //-0.5*subloc*subloc;
   // PRINT_VAR()
   // // if(aB<0) {
   // 	PRINT_VAR(m_oneloop);
@@ -596,7 +605,7 @@ double NLO_Base::CalculateRealVirtual(Vec4D k, int fsrcount) {
   // const double aB = subloc* p_virt->Calc(m_plab,
   // m_born);;//m_oneloop;//CalculateVirtual();//*p_realvirt->m_factor;
   // PRINT_VAR(0.278318/m_rescale_alpha);
-  // p_nlodipoles->MakeDipolesII(fl, pp, m_plab);
+  // p_nlodipoles->MakeDipolesII(fl, pp, m_plab);`
   // p_nlodipoles->MakeDipoles(fl, pp, m_plab);
   // // p_nlodipoles->CreateAllDipoles(fl,pp,m_plab);
   // p_nlodipoles->MakeDipolesIF(fl, pp, m_plab);
@@ -628,8 +637,9 @@ double NLO_Base::CalculateRealVirtual(Vec4D k, int fsrcount) {
     msg_Error() << "Real-Virtual is " << r << std::endl;
     return 0;
   }
-  if (IsZero(r)) {
+  if (IsZero(r,1e-30)) {
     m_zeroRV++;
+    msg_Error() << "Real-Virtual is " << r << std::endl;
     return 0;
   }
   m_rvsub = aB / m_rescale_alpha;
@@ -643,7 +653,7 @@ double NLO_Base::CalculateRealVirtual(Vec4D k, int fsrcount) {
     double pr1 =
         p_realvirt->p_loop_me->ME_E1() * p_realvirt->m_factor * flux / norm;
     double pr2 = p_realvirt->p_loop_me->ME_E1() * p_realvirt->m_factor;
-    double yfspoleV = p_dipoles->Get_E1();
+    // p_nlodipoles->CalculateRealSub(k)*
     const double correctdigit =
         ::countMatchingDigits(pr2, -p_nlodipoles->Get_E1());
     m_histograms1d["RVSinglePoleCD"]->Insert(correctdigit);
@@ -1299,16 +1309,16 @@ void NLO_Base::CheckRealVirtualSub(Vec4D k) {
   // if(k.E() < 20) return;
   // k*=100;
   double real;
-  std::string filename = "RealVirtual_subtracted_";
-  std::string filename1 = "SubRV_term_";
-  std::string filename2 = "RV_ME_";
+  std::string filename = "RealVirtual_subtracted";
+  std::string filename1 = "SubRV_term";
+  std::string filename2 = "RV_ME";
   for (auto f : m_flavs) {
-    filename += f.IDName();
     filename += "_";
-    filename1 += f.IDName();
+    filename += f.IDName();
     filename1 += "_";
-    filename2 += f.IDName();
+    filename1 += f.IDName();
     filename2 += "_";
+    filename2 += f.IDName();
   }
   filename += ".txt";
   filename1 += ".txt";
@@ -1323,15 +1333,15 @@ void NLO_Base::CheckRealVirtualSub(Vec4D k) {
   out_sub.open(filename1, std::ios_base::app);
   out_real.open(filename2, std::ios_base::app);
   // if(k.E() < 0.8*sqrt(m_s)/2.) return;
-  for (double i = 1; i < 20; i += 0.001) {
+  for (double i = 1; i < 20; i += 0.01) {
     k = k / i;
+    if (k.E() <= m_isrcut*sqrt(m_s))
+      break;
     real = CalculateRealVirtual(k, 0);
     // PRINT_VAR(real);
-    if (k.E() <= m_isrcut)
-      break;
-    out_finite << k.E() << "," << fabs(real) / m_born << std::endl;
-    out_real << k.E() << "," << m_rv << std::endl;
-    out_sub << k.E() << "," << m_rvsub << std::endl;
+    out_finite << std::setprecision(16) << k.E() << "," << fabs(real) / m_born << std::endl;
+    out_real << std::setprecision(16) << k.E() << "," << m_rv << std::endl;
+    out_sub << std::setprecision(16) << k.E() << "," << m_rvsub << std::endl;
   }
   out_finite.close();
   out_sub.close();
@@ -1406,4 +1416,13 @@ void NLO_Base::CheckRealRealSub(Vec4D k1, Vec4D k2, int fsr1, int fsr2) {
   }
   out_sub.close();
   exit(0);
+}
+
+Vec4D NLO_Base::MostEnergeticPhoton() const {
+  Vec4D hardest;
+  for (const auto &k : m_ISRPhotons)
+    if (k.E() > hardest.E()) hardest = k;
+  for (const auto &k : m_FSRPhotons)
+    if (k.E() > hardest.E()) hardest = k;
+  return hardest;
 }

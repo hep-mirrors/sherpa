@@ -14,6 +14,7 @@
 #include "YFS/CEEX/Ceex_Base.H"
 #include "YFS/NLO/NLO_Base.H"
 #include "ATOOLS/Phys/Momenta_Stretcher.H"
+#include "ATOOLS/Phys/Weights.H"
 #include "PHOTONS++/PhotonSplitter/Photon_Splitter.H"
 
 
@@ -38,6 +39,8 @@ namespace YFS {
         double m_yfsweight, m_form, m_fsrW;
         bool   m_setparticles, m_asymbeams;
         double m_real, m_virt;
+        double m_nlo_real, m_nlo_virtual, m_nlo_rv, m_nlo_rr;
+        ATOOLS::Weights_Map m_nlo_weightsmap;
         double m_nbar, m_formfactor, m_betatWW, m_coulSub, m_ww_formfact;
         int m_negskip;
         YFS::Coulomb *p_coulomb;
@@ -89,6 +92,7 @@ namespace YFS {
         void InitNLO();
         Vec4D_Vector GetPhotons();
         inline double GetWeight() const      { return m_yfsweight;  }
+        inline const ATOOLS::Weights_Map& GetNLOWeightsMap() const { return m_nlo_weightsmap; }
         inline ATOOLS::Vec4D GetPhotonSum() const      { return m_photonSumISR;  }
         inline ATOOLS::Vec4D GetPhotonSumFSR() const      { return m_photonSumFSR;  }
         inline ATOOLS::Vec4D_Vector GetISRPhotons() const      { return m_ISRPhotons;  }
