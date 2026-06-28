@@ -18,7 +18,7 @@ namespace YFS{
     public:
         RealVirtual(const PHASIC::Process_Info& pi);
         ~RealVirtual();
-        double Calc(const ATOOLS::Vec4D_Vector momenta, double b);    
+        double Calc(const ATOOLS::Vec4D_Vector &momenta, double b);    
         PHASIC::Virtual_ME2_Base     *p_loop_me;
         double Calc_V(const ATOOLS::Vec4D_Vector& p,
                     const double B,

@@ -54,6 +54,7 @@ void YFS_Base::RegisterDefaults(){
   s["CHECK_POLES"].SetDefault(0);
   s["CHECK_REAL"].SetDefault(0);
   s["CHECK_RV"].SetDefault(0);
+  s["RV_Hard_Photon"].SetDefault(0);
   s["CHECK_REAL_REAL"].SetDefault(0);
   s["CHECK_VIRT_BORN"].SetDefault(0);
   s["VIRTUAL_ONLY"].SetDefault(0);
@@ -112,6 +113,7 @@ void YFS_Base::RegisterSettings(){
   m_check_poles = s["CHECK_POLES"].Get<int>();
   m_check_real = s["CHECK_REAL"].Get<int>();
   m_check_rv = s["CHECK_RV"].Get<int>();
+  m_rv_hard_photon = s["RV_Hard_Photon"].Get<int>();
   m_check_virt_born = s["CHECK_VIRT_BORN"].Get<int>();
   m_virtual_only = s["VIRTUAL_ONLY"].Get<bool>();
   m_real_only = s["REAL_ONLY"].Get<bool>();
