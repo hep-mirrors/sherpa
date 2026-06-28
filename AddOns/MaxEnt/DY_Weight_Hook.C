@@ -21,8 +21,10 @@ class DY_Weight_Hook : public Userhook_Base, public Tag_Replacer {
 private:
 
   Sherpa* p_sherpa;
-  double m_rt, m_lnrt, m_dphi, m_lndphi, m_lss, m_gating[2];
+  double m_rt, m_lnrt, m_dphi, m_lndphi, m_gating[2];
+  std::vector<double> m_lss;
   std::vector<ATOOLS::Algebra_Interpreter*> m_calcs;
+  std::vector<std::string> m_names;
 
 public:
 
@@ -33,22 +35,24 @@ public:
     DEBUG_FUNC("");
     Settings& s = Settings::GetMainSettings();
     std::string fname = s["DY_WEIGHT_FILE"].
-      SetDefault("lambda_export.json").Get<std::string>();
+      SetDefault("lambda_export_variations.json").Get<std::string>();
     msg_Debugging()<<"DY_Weight user hook reading from '"
 		   <<fname<<"'."<<std::endl;
-    for (size_t i(0);i<1;++i) {
-      std::ifstream f(fname);
-      json data = json::parse(f);
-      auto tags = data["moments"];
-      auto vals = data["lambda_physical"];
-      auto gating = data["gating"]["window_GeV"];
-      m_lss=data["log_norm_shift"];
-      msg_Debugging()<<"tags = "<<tags<<"\n";
-      msg_Debugging()<<"vals = "<<vals<<"\n";
-      msg_Debugging()<<"gating = "<<gating<<"\n";
-      msg_Debugging()<<"lss = "<<m_lss<<"\n";
-      m_gating[0]=gating[0];
-      m_gating[1]=gating[1];
+    std::ifstream f(fname);
+    json data=json::parse(f);
+    auto tags=data["moments"];
+    msg_Debugging()<<"tags = "<<tags<<"\n";
+    auto gating=data["gating"]["window_GeV"];
+    msg_Debugging()<<"gating = "<<gating<<"\n";
+    m_gating[0]=gating[0];
+    m_gating[1]=gating[1];
+    m_names=data["scheme_names"];
+    for (size_t i(0);i<m_names.size();++i) {
+      std::string var(m_names[i]);
+      auto vals = data["schemes"][var]["lambda_physical"];
+      m_lss.push_back(data["schemes"][var]["log_norm_shift"]);
+      msg_Debugging()<<"vals[\""<<var<<"\"] = "<<vals<<"\n";
+      msg_Debugging()<<"lss[\""<<var<<"\"] = "<<m_lss.back()<<"\n";
       m_calcs.push_back(new Algebra_Interpreter());
       m_calcs.back()->SetTagReplacer(this);
       m_calcs.back()->AddTag("const","1.0");
@@ -66,7 +70,7 @@ public:
       }
       msg_Debugging()<<"expr = "<<expr<<"\n";
       m_calcs.back()->Interprete(expr);
-      if (msg_LevelIsDebugging()) m_calcs.back()->PrintEquation();
+      if (msg_LevelIsIODebugging()) m_calcs.back()->PrintEquation();
     }
   }
 
@@ -124,21 +128,30 @@ public:
       }
     m_lnrt=log(m_rt=(l1+l2).PPerp()/(l1+l2).Mass());
     m_lndphi=log(m_dphi=l1.DPhi(l2));
-    double beta(Beta((l1+l2).PPerp()));
+    double beta(Beta((l1+l2).PPerp())), wnom;
     msg_Debugging()<<"q_T = "<<(l1+l2).PPerp()<<", r_T = "
 		   <<m_rt<<", \\Delta\\phi = "<<m_dphi<<"\n";
     auto me_w_info = (*blobs->FindFirst(btp::Signal_Process))
       ["MEWeightInfo"]->Get<ME_Weight_Info*>();
     Weights_Map &wmap = (*blobs->FindFirst(btp::Signal_Process))
       ["WeightsMap"]->Get<Weights_Map>();
-    for (size_t i(0);i<m_calcs.size();++i) {
-      double w=m_calcs[i]->Calculate()->Get<double>();
-      msg_Debugging()<<i<<": ln(w) = "<<w<<", shift = "<<m_lss<<"\n";
-      w=beta*exp(w-m_lss)+(1.-beta);
-      msg_Debugging()<<i<<": w = "<<w<<" (\\beta = "<<beta<<")\n";
-      wmap*=w;
-      *me_w_info*=w;
-    }
+    for (size_t i(0);i<m_calcs.size();++i)
+      if (m_names[i]=="central") {
+	wnom=m_calcs[i]->Calculate()->Get<double>();
+	msg_Debugging()<<"nominal: ln(w) = "<<wnom<<", shift = "<<m_lss[i]<<"\n";
+	wnom=beta*exp(wnom-m_lss[i])+(1.-beta);
+	msg_Debugging()<<"nominal: w = "<<wnom<<" (\\beta = "<<beta<<")\n";
+	wmap*=wnom;
+	*me_w_info*=wnom;
+      }
+    for (size_t i(0);i<m_calcs.size();++i)
+      if (m_names[i]!="central") {
+	double w=m_calcs[i]->Calculate()->Get<double>();
+	msg_Debugging()<<m_names[i]<<": ln(w) = "<<w<<", shift = "<<m_lss[i]<<"\n";
+	w=beta*exp(w-m_lss[i])+(1.-beta);
+	msg_Debugging()<<m_names[i]<<": w = "<<w<<" (\\beta = "<<beta<<")\n";
+	wmap["MaxEnt"][m_names[i]]=w/wnom;
+      }
     return Return_Value::Nothing;
   }
 
