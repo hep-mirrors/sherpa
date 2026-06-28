@@ -90,6 +90,9 @@ public:
   inline bool HasVirtual() {return m_looptool;}
   inline bool HasReal() {return m_realtool;}
   inline bool HasRR() {return m_rrtool;}
+  inline bool HasNLO()  {return m_realtool || m_looptool;}
+  inline bool HasNNLO() {return m_rrtool   || m_realvirt;}
+  Vec4D MostEnergeticPhoton() const;
 };
 
 

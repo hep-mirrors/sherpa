@@ -27,6 +27,10 @@ YFS_Handler::YFS_Handler()
     m_rmode = 0;
     m_real = 1;
     m_negskip = 0;
+    m_nlo_real = 0.0;
+    m_nlo_virtual = 0.0;
+    m_nlo_rv = 0.0;
+    m_nlo_rr = 0.0;
     rpa->gen.AddCitation(1,"The automation of YFS ISR is published in  \\cite{Krauss:2022ajk}.Which is based on \\cite{Jadach:1988gb}");
   }
 }
@@ -466,15 +470,14 @@ void YFS_Handler::InitNLO(){
 double YFS_Handler::CalculateNLO(){
   // CheckMomentumConservation();
   InitNLO();
-  double res;
-  res = p_nlo->CalculateReal();
+  m_nlo_real = p_nlo->CalculateReal();
   InitNLO();
-  res += p_nlo->CalculateVirtual();
+  m_nlo_virtual = p_nlo->CalculateVirtual();
   InitNLO();
-  res += p_nlo->CalculateRealVirtual();
+  m_nlo_rv = p_nlo->CalculateRealVirtual();
   InitNLO();
-  res += p_nlo->CalculateRealReal();
-  return res;
+  m_nlo_rr = p_nlo->CalculateRealReal();
+  return m_nlo_real + m_nlo_virtual + m_nlo_rv + m_nlo_rr;
 }
 
 
@@ -518,6 +521,48 @@ void YFS_Handler::GenerateWeight() {
     msg_Debugging()<<"Skipping negative Weight in YFS"<<std::endl;
     m_yfsweight=0;
     m_negskip++;
+  }
+
+  // Build named NLO sub-weights. base_weight=1 so the nominal is unchanged.
+  // YFSNLO  — Real + Virtual only (NLO denominator).
+  // YFSNNLO — Real + Virtual + RealVirtual + RealReal (full NNLO denominator).
+  m_nlo_weightsmap = Weights_Map{1.0};
+  if (m_nlotype != nlo_type::born && !IsZero(m_real) &&
+      (p_nlo->HasNLO() || p_nlo->HasNNLO())) {
+    auto make_ratio = [this](double term, double denom) -> double {
+      return m_no_born ? term / denom : (m_born + term) / denom;
+    };
+    auto ratio = [this](double term, double denom) -> double {
+      return term / denom;
+    };
+
+    Weights wyfsnlo{1.0};
+
+    // NLO: Real + Virtual
+    if (p_nlo->HasNLO()) {
+      const double nlo_sum   = (m_born+m_nlo_real + m_nlo_virtual)/m_born;
+      const double nlo_denom = m_no_born ? nlo_sum : (m_born + nlo_sum);
+      if (!IsZero(nlo_denom)) {
+        wyfsnlo["Real"]    = ratio((m_nlo_real)/m_born, m_real);
+        wyfsnlo["Virtual"] = ratio((m_nlo_virtual)/m_born, m_real);
+        wyfsnlo["NLO"]     = ratio(nlo_sum, m_real);
+        wyfsnlo["LO"]      = 1./m_real;
+      }
+    }
+
+    // NNLO: RealVirtual + RealReal
+    if (p_nlo->HasNNLO()) {
+      const double nnlo_total = m_no_born ? m_real * m_born
+                                          : (m_real - 1.0) * m_born;
+      const double nnlo_denom = m_no_born ? nnlo_total : (m_born + nnlo_total);
+      if (!IsZero(nnlo_denom)) {
+        wyfsnlo["RealVirtual"] = ratio((m_nlo_rv)/m_born, m_real);
+        wyfsnlo["RealReal"]    = ratio((m_nlo_rr)/m_born, m_real);
+        wyfsnlo["NNLO"]        = make_ratio(nnlo_total, nnlo_denom);
+      }
+    }
+
+    m_nlo_weightsmap["YFS"] = wyfsnlo;
   }
 }
 

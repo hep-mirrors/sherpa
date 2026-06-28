@@ -723,6 +723,8 @@ Weights_Map Single_Process::Differential(const Vec4D_Vector& p,
 
   // perform on-the-fly QCD reweighting of BVI or RS events
   m_last *= nominal;
+  if (p_int->YFS()->Mode() != YFS::yfsmode::off)
+    m_last *= p_int->YFS()->GetNLOWeightsMap();
   if (varmode != Variations_Mode::nominal_only && s_variations->Size() > 0) {
     if (m_mewgtinfo.m_oqcd == NonfactorizingCoupling::WithoutCustomVariationWeight) {
       THROW(not_implemented,
