@@ -338,7 +338,7 @@ namespace EXTAMP {
     m_eta1 = (p[1][3]<0.0?p[1].PMinus()/rpa->gen.PBunch(1).PMinus():
 	      p[1].PPlus()/rpa->gen.PBunch(0).PPlus());
 
-    /* Randomly select x0 \in [eta0,1]
+    /* Randomly select x0 \in [eta0,1] 
                        x1 \in [eta1,1] */
     if(m_flavs[0].Strong())
       {

@@ -15,9 +15,9 @@ KP_Terms::KP_Terms(Process_Base *const proc,const sbt::subtype st,
   m_subtype(subscheme::CS),
   p_proc(proc), p_nlomc(NULL), p_kernel(NULL),
   p_cpl(NULL), m_flavs(p_proc->Flavours()),
-  m_massive(true), m_cemode(false),
+  m_massive(true), m_cemode(false), m_photonsplittingonly(false),
   m_beam{0, 1}, m_cpldef(0.), m_NC(3.),
-  m_Vsubmode(1), m_facscheme(0),
+  m_Vsubmode(1), m_facscheme(facscheme::MSbar),
   m_sa(false), m_sb(false),
   m_typea(m_flavs[0].IntSpin()), m_typeb(m_flavs[1].IntSpin()),
   m_plist(partonlist)
@@ -50,20 +50,9 @@ KP_Terms::KP_Terms(Process_Base *const proc,const sbt::subtype st,
   m_negativepdf = kpsettings["ACCEPT_NEGATIVE_PDF"].Get<bool>();
   msg_Tracking()<<"Set KP-term accepts negative PDF "<<m_negativepdf<<" .\n";
 
-  m_facscheme = kpsettings["FACTORISATION_SCHEME"].Get<int>();
-  std::string fs("");
-  switch (m_facscheme) {
-  case 0:
-    fs="MSbar";
-    break;
-  case 1:
-    fs="DIS";
+  m_facscheme = FactorisationScheme();
+  if (m_facscheme==facscheme::DIS)
     THROW(not_implemented,"DIS factorisation scheme not implemented yet.");
-    break;
-  default:
-    THROW(fatal_error,"Unknown factorisation scheme.");
-    break;
-  }
   msg_Tracking()<<"Set KP-term factorisation scheme to "<<m_facscheme<<".\n";
 
   m_NC = s["N_COLOR"].Get<double>();
@@ -122,7 +111,6 @@ void KP_Terms::RegisterDefaults() const
   s["KCONTRIB"].SetDefault("BSGT");
   s["CHECK_ENERGY"].SetDefault(false);
   s["ACCEPT_NEGATIVE_PDF"].SetDefault(true);
-  s["FACTORISATION_SCHEME"].SetDefault(0);
 }
 
 void KP_Terms::SetColourFactors()
@@ -198,14 +186,28 @@ void KP_Terms::SetKappa(const double &kappa)
 }
 
 void KP_Terms::Calculate
-(const Vec4D_Vector &mom,const std::vector<std::vector<double > > &dsij,
- const double &x0,const double &x1,const double &eta0,const double &eta1)
+(const Vec4D_Vector &mom,const std::vector<std::vector<double > > &dsij_,
+ const double &x0_,const double &x1_,const double &eta0,const double &eta1)
 {
   DEBUG_FUNC(m_itype<<": type(a)="<<m_typea<<", beam(a)="<<m_sa
                     <<", type(b)="<<m_typeb<<", beam(b)="<<m_sb);
   // mom is flavour-ordered, the bunches are not
   m_beam[0] = mom[0][3] > 0. ? 0 : 1;
   m_beam[1] = mom[1][3] < 0. ? 1 : 0;
+  // pointlike mode: charge-correlated Born from the QCD Born dsij_[0][0]
+  if (m_photonsplittingonly) {
+    const double born(dsij_.size() && dsij_[0].size() ? dsij_[0][0] : 0.);
+    for (size_t i(0);i<m_Q2ij.size();++i)
+      for (size_t k(0);k<m_Q2ij.size();++k) m_dsijph[i][k]=born*m_Q2ij[i][k];
+  }
+  const std::vector<std::vector<double > > &dsij(m_photonsplittingonly?m_dsijph:dsij_);
+  // photon bunch: f_{gamma/gamma}(y)=delta(1-y) pins the a<-photon splitting
+  // to x=eta and removes the (1-eta) measure; Get() then uses fagx=1
+  const bool colla(m_photonsplittingonly && m_sa
+                   && rpa->gen.Bunch(m_beam[0]).IsPhoton());
+  const bool collb(m_photonsplittingonly && m_sb
+                   && rpa->gen.Bunch(m_beam[1]).IsPhoton());
+  const double x0(colla?eta0:x0_), x1(collb?eta1:x1_);
   msg_Debugging()<<"x0="<<x0<<", x1="<<x1
                  <<", eta0="<<eta0<<", eta1="<<eta1<<std::endl;
   // reset first, so that a rejected point does not leak the previous
@@ -218,7 +220,8 @@ void KP_Terms::Calculate
   msg_Debugging()<<"cpl="<<Coupling()<<std::endl;
   size_t pls=1;
   if (m_sa&&m_sb) pls++;
-  double muf2(p_proc->ScaleSetter()->Scale(stp::fac,1));
+  // ScaleSetter(1): a mapped process has no scale setter of its own
+  double muf2(p_proc->ScaleSetter(1)->Scale(stp::fac,1));
 
   msg_Debugging()<<"parton list: "<<m_plist<<std::endl;
 
@@ -228,7 +231,7 @@ void KP_Terms::Calculate
   // itype&P
   // P = as/2pi [ sum TaTk P(k)*log(muf2/xsak) + TaTb P*log(muf2/xsab) ]
   if (m_sa) {
-    double w(1.-eta0);
+    double w(colla?1.:1.-eta0);
     if (m_itype&cs_itype::K) {
       if (m_kcontrib&cs_kcontrib::Kb) {
         // Kbar terms
@@ -245,8 +248,8 @@ void KP_Terms::Calculate
                      +p_kernel->Kb3(m_typea+2,x0));
       }
       if (m_kcontrib&cs_kcontrib::KFS) {
-        // KFS terms (only if not MSbar)
-        if (m_facscheme>0) {
+        // KFS terms (only in the DIS scheme; MSbar and DISgamma skip them)
+        if (m_facscheme==facscheme::DIS) {
           msg_Debugging()<<"sa: KFS"<<std::endl;
           m_kpca[0]+=-w*p_kernel->KFS1(m_typea,x0)
                      +p_kernel->KFS2(m_typea)
@@ -379,7 +382,7 @@ void KP_Terms::Calculate
   }
 
   if (m_sb) {
-    double w(1.-eta1);
+    double w(collb?1.:1.-eta1);
     if (m_itype&cs_itype::K) {
       if (m_kcontrib&cs_kcontrib::Kb) {
         // Kbar terms
@@ -396,8 +399,8 @@ void KP_Terms::Calculate
                      +p_kernel->Kb3(m_typeb+2,x1));
       }
       if (m_kcontrib&cs_kcontrib::KFS) {
-        // KFS terms (only if not MSbar)
-        if (m_facscheme>0) {
+        // KFS terms (only in the DIS scheme; MSbar and DISgamma skip them)
+        if (m_facscheme==facscheme::DIS) {
           msg_Debugging()<<"sb: KFS"<<std::endl;
           m_kpcb[0]+=-w*p_kernel->KFS1(m_typeb,x1)
                      +p_kernel->KFS2(m_typeb)
@@ -529,6 +532,23 @@ void KP_Terms::Calculate
     }
   }
 
+  if (m_photonsplittingonly) {
+    // keep only the a<-photon coefficients kpc[2,3,6,7]; the diagonal q<-q
+    // ones are the O(alpha) q->q gamma correction, not part of the pointlike term
+    if (m_sa) m_kpca[0]=m_kpca[1]=m_kpca[4]=m_kpca[5]=0.;
+    if (m_sb) m_kpcb[0]=m_kpcb[1]=m_kpcb[4]=m_kpcb[5]=0.;
+  }
+
+  if (m_facscheme==facscheme::DISgamma && m_stype==sbt::qed) {
+    // DISgamma: the pointlike q<-photon term is part of the photon PDF, so drop
+    // kpc[2,3,6,7] for photon bunches only (a proton with a photon-inside PDF,
+    // e.g. LUXqed, keeps its q<-photon term as an ordinary MSbar contribution)
+    if (m_sa && rpa->gen.Bunch(m_beam[0]).IsPhoton())
+      m_kpca[2]=m_kpca[3]=m_kpca[6]=m_kpca[7]=0.;
+    if (m_sb && rpa->gen.Bunch(m_beam[1]).IsPhoton())
+      m_kpcb[2]=m_kpcb[3]=m_kpcb[6]=m_kpcb[7]=0.;
+  }
+
   if (m_sa) {
     for (int i=0;i<8;i++) m_kpca[i]*=cpl;
     for (size_t i=0;i<m_xpa.size();i++) m_xpa[i].kpc*=cpl;
@@ -625,6 +645,12 @@ double KP_Terms::Get(PDF::PDF_Base *pdfa, PDF::PDF_Base *pdfb,
       faq/=eta0;
     }
 
+    // pointlike collapse (see Calculate): fagx=1 replaces the photon-in-photon PDF
+    if (m_photonsplittingonly && rpa->gen.Bunch(m_beam[0]).IsPhoton()) {
+      fag=0.;
+      fagx=1.;
+    }
+
     for (size_t i=0;i<m_xpa.size();i++) if (m_xpa[i].xp>eta0) {
       pdfa->Calculate(eta0/m_xpa[i].xp,muf02*muf02fac);
       g2massq+=m_xpa[i].kpc*pdfa->GetXPDF(fl0)/eta0/fa;
@@ -682,6 +708,8 @@ double KP_Terms::Get(PDF::PDF_Base *pdfa, PDF::PDF_Base *pdfb,
         }
       fbq/=eta1;
     }
+
+    if (m_photonsplittingonly && rpa->gen.Bunch(m_beam[1]).IsPhoton()) { fbg=0.; fbgx=1.; }
 
     for (size_t i=0;i<m_xpb.size();i++) if (m_xpb[i].xp>eta1) {
       pdfb->Calculate(eta1/m_xpb[i].xp,muf12*muf12fac);
@@ -756,5 +784,54 @@ void KP_Terms::FillMEwgts(ATOOLS::ME_Weight_Info &wgtinfo)
       wgtinfo.m_wfac[i+offset+12]=wgtinfo.m_swap?m_kpca[i+4]:m_kpcb[i+4];
     }
   }
+}
+
+void KP_Terms::SetPhotonSplittingOnly(const bool on)
+{
+  m_photonsplittingonly=on;
+  m_Q2ij.clear();
+  m_dsijph.clear();
+  if (!on) return;
+  // charge correlations factorise, Q2ij = (crossing sign) Q_i Q_k, Q2ii = 1
+  const size_t n(m_plist.size()), nin(p_proc->NIn());
+  m_Q2ij.assign(n,std::vector<double>(n,0.));
+  m_dsijph.assign(n,std::vector<double>(n,0.));
+  for (size_t i(0);i<n;++i) {
+    m_Q2ij[i][i]=1.;
+    const double Qi(m_flavs[m_plist[i]].Charge());
+    for (size_t k(0);k<n;++k) {
+      const double Qk(m_flavs[m_plist[k]].Charge());
+      if (i==k || !Qi || !Qk) continue;
+      const bool ini(m_plist[i]<nin), ink(m_plist[k]<nin);
+      m_Q2ij[i][k]=(ini==ink?1.:-1.)*Qi*Qk;
+    }
+  }
+}
+
+KP_Terms *KP_Terms::PhotonSplitting(Process_Base *const proc,
+                                    const MODEL::Coupling_Map *cpls,
+                                    const cs_itype::type imode)
+{
+  if (!proc->HasResolvedPhotonBeam()) return NULL;
+  // in the DISgamma scheme the pointlike term is part of the photon PDF
+  if (FactorisationScheme()==facscheme::DISgamma) return NULL;
+  std::vector<size_t> plist;
+  const Flavour_Vector &flavs(proc->Flavours());
+  for (size_t i(0);i<flavs.size();++i)
+    if (flavs[i].Charge() || flavs[i].IsPhoton()) plist.push_back(i);
+  if (plist.size()<2) return NULL;
+  KP_Terms *kp(new KP_Terms(proc,sbt::qed,plist));
+  kp->SetIType(imode);
+  kp->SetCoupling(cpls);
+  kp->SetPhotonSplittingOnly(true);
+  msg_Tracking()<<"Enabled resolved-photon gamma->q qbar pointlike KP term for "
+                <<proc->Name()<<"."<<std::endl;
+  return kp;
+}
+
+facscheme::code PHASIC::FactorisationScheme()
+{
+  return Settings::GetMainSettings()["KP"]["FACTORISATION_SCHEME"]
+    .SetDefault(facscheme::MSbar).Get<facscheme::code>();
 }
 

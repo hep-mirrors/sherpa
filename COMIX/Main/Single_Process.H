@@ -24,7 +24,7 @@ namespace COMIX {
     Single_Process *p_map;
 
     PHASIC::Virtual_ME2_Base *p_loop;
-    PHASIC::KP_Terms         *p_kpterms;
+    PHASIC::KP_Terms         *p_kpterms, *p_kpterms_ph;
 
     ATOOLS::Vec4D_Vector m_p;
     ATOOLS::Flavour_Map  m_fmap;
@@ -50,7 +50,11 @@ namespace COMIX {
 
     void UpdateKPTerms(const int mode);
     double KPTerms(const int mode,PDF::PDF_Base *pdfa,
-		   PDF::PDF_Base *pdfb,double scalefac2=1.0);
+		   PDF::PDF_Base *pdfb,double scalefac2=1.0,
+		   double *kppointlike=NULL);
+
+    void BuildPhotonSplittingKP(MODEL::Coupling_Map *cpls,
+                                ATOOLS::cs_itype::type imode);
 
     void ComputeHardMatrix(const int mode);
 
