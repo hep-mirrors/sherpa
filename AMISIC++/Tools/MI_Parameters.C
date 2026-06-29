@@ -78,6 +78,8 @@ MI_Parameters::MI_Parameters() :
     = s["SIGMA_ND_NORM"].SetDefault({0.44}).GetVector<double>();
   m_parameters[string("SigmaND_Norm")]
     = m_parameters_vector[string("SigmaND_Norm")][0];
+  m_parameters[string("AQM_Strange")]
+    = s["AQM_STRANGE_FACTOR"].SetDefault(0.0).Get<double>();
   m_parameters[string("PomeronIntercept")]
     = s["PomeronIntercept"].SetDefault(0.0808).Get<double>();
   m_parameters[string("PomeronSlope")]

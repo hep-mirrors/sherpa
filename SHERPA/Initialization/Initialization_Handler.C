@@ -804,24 +804,10 @@ void Initialization_Handler::LoadPDFLibraries(Settings& settings) {
     // define bunch particle-dependent PDF libraries and sets here
     /////////////////////////////////////////////////////////
     std::string deflib("None"), defset;
-    if (p_beamspectra->GetBeam(beam)->Bunch(0).Kfcode()==kf_p_plus) {
-      deflib = PDF::pdfdefs->DefaultPDFLibrary(kf_p_plus);
-      defset = PDF::pdfdefs->DefaultPDFSet(kf_p_plus);
-    }
-    else if (p_beamspectra->GetBeam(beam)->Bunch(0).Kfcode()==kf_e ||
-	     p_beamspectra->GetBeam(beam)->Bunch(0).Kfcode()==kf_mu) {
-      deflib = PDF::pdfdefs->DefaultPDFLibrary(kf_e);
-      defset = PDF::pdfdefs->DefaultPDFSet(kf_e);
-    }
-    else if (p_beamspectra->GetBeam(beam)->Bunch(0).IsPhoton()) {
-      deflib = PDF::pdfdefs->DefaultPDFLibrary(kf_photon);
-      defset = PDF::pdfdefs->DefaultPDFSet(kf_photon);
-    } else if (p_beamspectra->GetBeam(beam)->Bunch(0).Kfcode() == kf_pomeron) {
-      deflib = PDF::pdfdefs->DefaultPDFLibrary(kf_pomeron);
-      defset = PDF::pdfdefs->DefaultPDFSet(kf_pomeron);
-    } else if (p_beamspectra->GetBeam(beam)->Bunch(0).Kfcode() == kf_reggeon) {
-      deflib = PDF::pdfdefs->DefaultPDFLibrary(kf_reggeon);
-      defset = PDF::pdfdefs->DefaultPDFSet(kf_reggeon);
+    kf_code kf = p_beamspectra->GetBeam(beam)->Bunch(0).Kfcode(); 
+    if (PDF::pdfdefs->HasDefaultsFor(kf)) {
+      deflib = PDF::pdfdefs->DefaultPDFLibrary(kf);
+      defset = PDF::pdfdefs->DefaultPDFSet(kf);
     }
     // fix PDFs and default sets for the hard_process here
     if (pdflibs.empty()) m_pdflibs.insert(deflib);

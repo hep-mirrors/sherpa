@@ -12,11 +12,15 @@ namespace MODEL{ class Model_Base; }
 
 namespace AMISIC {
   enum class xsec_type {
-    nucleon_nucleon = 0,
-    photon_nucleon  = 1,
-    nucleon_photon  = 2,
-    photon_photon   = 3,
-    hadron_hadron   = 10,
+    baryon_baryon   = 0,
+    meson_baryon    = 1,
+    baryon_meson    = 2,
+    meson_meson     = 3,
+    photon_baryon   = 10,
+    baryon_photon   = 11,
+    photon_meson    = 12,
+    meson_photon    = 13,
+    photon_photon   = 14,
     none            = 99
   };
 
@@ -31,7 +35,7 @@ namespace AMISIC {
     std::map<ATOOLS::Flavour, std::list<ATOOLS::Flavour> > m_hadroncomponents;
     static std::map<kf_code, size_t> s_indexmap;
     static std::map<kf_code, double> s_fVs;
-    double m_beta0[4];
+    double m_beta0[4], m_AQM[2];
 
     std::array<ATOOLS::Flavour,2> m_flavs;
     xsec_type      m_type;
@@ -41,7 +45,7 @@ namespace AMISIC {
     double m_mres, m_cres, m_s0, m_s1, m_Ypp, m_c0, m_c1;
     double m_prefElastic, m_prefSD, m_prefDD;
     double m_eps_pomeron, m_alphaP_pomeron, m_triple_pomeron, m_eta_reggeon;
-    double m_alphaQED;
+    double m_alphaQED, m_AQM_strange;
     double m_s, m_xstot, m_xsel, m_xssdA, m_xssdB, m_xsdd, m_xsnd, m_xsnd_norm;
     std::map<std::pair<ATOOLS::Flavour, ATOOLS::Flavour>, double> m_sigmaEl;
     std::map<std::pair<ATOOLS::Flavour, ATOOLS::Flavour>, double> m_sigmaSDA;
@@ -59,6 +63,7 @@ namespace AMISIC {
     void   FixTables();
     void   TestXSecs();
     void   CalculateXSecs();
+    double AQMFactor(const ATOOLS::Flavour & flav);
     double TotalXSec(const size_t hadtags[2]) const;
     double IntElXSec(const size_t hadtags[2], const double & xstot) const;
     double IntSDXSec(const size_t hadtags[2], const size_t & diff,

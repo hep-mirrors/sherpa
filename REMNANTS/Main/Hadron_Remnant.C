@@ -6,10 +6,13 @@
 using namespace REMNANTS;
 using namespace ATOOLS;
 
-Hadron_Remnant::Hadron_Remnant(PDF::PDF_Base * pdf,const unsigned int & beam,const unsigned int & tag):
+Hadron_Remnant::
+Hadron_Remnant(PDF::PDF_Base * pdf,const unsigned int & beam,
+	       const unsigned int & tag):
   Remnant_Base(pdf->Bunch(),beam,tag),
   p_pdf(pdf), p_partons(&(p_pdf->Partons())),
-  p_valence(nullptr), p_remnant(nullptr), p_recoiler(nullptr), p_spectator(nullptr),
+  p_valence(nullptr), p_remnant(nullptr),
+  p_recoiler(nullptr), p_spectator(nullptr),
   m_valence(false), m_alpha(0.), m_gamma(1.), m_beta(-1.5),
   m_invb(1./(m_beta+1)), m_LambdaQCD(0.25), m_minE(m_beamflav.IsBaryon()?2.:1.)
 {
@@ -31,7 +34,11 @@ void Hadron_Remnant::ConstructConstituentFlavours() {
     m_constituents.push_back(Flavour((kf_code)(hadint-(hadint/10)*10)).Bar());
   }
   else THROW(critical_error,"Cannot determine constituents.");
-  if (m_beamflav.IsAnti()) {
+  //     Bar constituent flavours if
+  if (// - beam is an antibaryon
+      (m_beamflav.IsBaryon() && m_beamflav.IsAnti()) ||
+      // - beam is a strange meson
+      (m_beamflav.IsMeson() && m_constituents.front().Kfcode()==3) ) {
     for(auto& flit : m_constituents) flit = flit.Bar();
   }
 }
@@ -79,8 +86,8 @@ bool Hadron_Remnant::FillBlob(Colour_Generator* colours, ParticleMomMap* ktmap, 
   // one may have to check that they are not singlets ....
   CompensateColours(colours);
   msg_Debugging() << METHOD << ": Filling blob with remnants, extracted = "
-                  << m_extracted << ", \n and spectators = " << m_spectators
-                  << "\n";
+		  << m_extracted << ", \n and spectators = " << m_spectators
+		  << "\n";
   // Assume all remnant bases already produced a beam blob = p_beamblob
   SquashFlavourSinglets();
   SquashColourSinglets();
@@ -234,7 +241,7 @@ bool Hadron_Remnant::MakeRemnants(Colour_Generator* colours)
     m_spectators.push_back(p_valence);
   }
   else {
-    valflav = p_valence->Flav();
+    valflav    = p_valence->Flav();
     index      = ((valflav.IsQuark() && !valflav.IsAnti()) ||
 		  (valflav.IsDiQuark() && valflav.IsAnti()))?0:1;
   }
@@ -251,15 +258,15 @@ Flavour Hadron_Remnant::RemnantFlavour(const Flavour & flav) {
   }
   // Counter taken to make sure only two flavours are used
   // to construct diquark - either qq'_0 or qq_1.
-  bool taken = false;
+  bool take_it = false;
   std::vector<int> kfs;
   for (const auto& flit : m_constituents) {
-    if (taken && flav==flit) continue;
+    if (flav==flit && !take_it) { take_it = true; continue; } 
     kfs.push_back(((flit.IsAnti() && !m_beamflav.IsAnti())?-1:1)*flit.Kfcode());
-    taken = true;
   }
+  if (kfs[0]<kfs[1]) std::swap(kfs[0],kfs[1]);
   int kfcode = 1 + (kfs.size()==2 && kfs[0]==kfs[1]?2:0);
-  for (size_t i=0;i<kfs.size();i++) kfcode += kfs[i]*pow(10,kfs.size()+1-i);
+  for (size_t i=0;i<2;i++) kfcode += kfs[i]*pow(10,kfs.size()+1-i);
   return m_beamflav.IsAnti()?Flavour(kfcode).Bar():Flavour(kfcode);
 }
 
