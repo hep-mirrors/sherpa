@@ -119,12 +119,11 @@ public:
 	       GetMatrixElementHandler()->
 	       Process()->Parent()->Name());
     Vec4D l1, l2;
-    Particle_List fs(blobs->ExtractLooseParticles(1));
-    for (Particle_List::const_iterator
-	   pit(fs.begin());pit!=fs.end();++pit)
-      if ((*pit)->Flav().IsLepton()) {
-	if (l1==Vec4D()) l1=(*pit)->Momentum();
-	else l2=(*pit)->Momentum();
+    Blob *psb(blobs->FindFirst(btp::Shower));
+    for (size_t i(0);i<psb->NOutP();++i)
+      if (psb->OutParticle(i)->Flav().IsLepton()) {
+	if (l1==Vec4D()) l1=psb->OutParticle(i)->Momentum();
+	else l2=psb->OutParticle(i)->Momentum();
       }
     m_lnrt=log(m_rt=(l1+l2).PPerp()/(l1+l2).Mass());
     m_lndphi=log(m_dphi=l1.DPhi(l2));
