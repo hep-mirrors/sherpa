@@ -178,6 +178,27 @@ std::istream &ATOOLS::operator>>(std::istream &str,subscheme::code &ss)
   return str;
 }
 
+std::ostream &ATOOLS::operator<<(std::ostream &ostr,const facscheme::code &fs)
+{
+  if      (fs==facscheme::MSbar)    return ostr<<"MSbar";
+  else if (fs==facscheme::DIS)      return ostr<<"DIS";
+  else if (fs==facscheme::DISgamma) return ostr<<"DISgamma";
+  return ostr<<"UNKNOWN";
+}
+
+std::istream &ATOOLS::operator>>(std::istream &str,facscheme::code &fs)
+{
+  std::string tag;
+  str>>tag;
+  // names first, then the legacy integer codes 0/1/2 (back-compat); note "DIS"
+  // is a substring of "DISgamma", so test the longer name before the shorter.
+  if      (tag=="MSbar"    || tag=="0") fs=facscheme::MSbar;
+  else if (tag=="DISgamma" || tag=="2") fs=facscheme::DISgamma;
+  else if (tag=="DIS"      || tag=="1") fs=facscheme::DIS;
+  else THROW(fatal_error,"Unknown factorisation scheme '"+tag+"'.");
+  return str;
+}
+
 std::ostream &ATOOLS::operator<<(std::ostream &ostr,const dpt::dipoletype &dt)
 {
   if      (dt==dpt::none) return ostr<<"NONE";

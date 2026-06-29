@@ -27,7 +27,7 @@ using namespace ATOOLS;
 COMIX::Single_Process::Single_Process():
   COMIX::Process_Base(this),
   p_bg(NULL), p_hc(NULL), p_map(NULL),
-  p_loop(NULL), p_kpterms(NULL),
+  p_loop(NULL), p_kpterms(NULL), p_kpterms_ph(NULL),
   m_user_stype(sbt::none), m_user_imode(cs_itype::none)
 {
   Settings& s = Settings::GetMainSettings();
@@ -40,6 +40,7 @@ COMIX::Single_Process::Single_Process():
 COMIX::Single_Process::~Single_Process()
 {
   if (p_kpterms) delete p_kpterms;
+  if (p_kpterms_ph) delete p_kpterms_ph;
   if (p_loop) delete p_loop;
   if (p_map) {
     for (size_t i(0);i<m_subs.size();++i) {
@@ -190,6 +191,7 @@ bool COMIX::Single_Process::Initialize
       p_kpterms = new KP_Terms(this, ATOOLS::sbt::qcd, pl);
       p_kpterms->SetIType(m_user_imode);
       p_kpterms->SetCoupling(&m_cpls);
+      BuildPhotonSplittingKP(&m_cpls,m_user_imode);
       m_mewgtinfo.m_type|=
   ((m_user_imode&cs_itype::I)?mewgttype::VI:mewgttype::none);
       m_mewgtinfo.m_type|=
@@ -288,12 +290,14 @@ bool COMIX::Single_Process::MapProcess()
 	m_mincpl=p_map->m_mincpl;
 	m_mewgtinfo.m_type=p_map->m_mewgtinfo.m_type;
 	if (p_map->p_kpterms) {
+	  if (p_kpterms) { delete p_kpterms; p_kpterms=NULL; }
 	  std::vector<size_t> pl;
 	  for (size_t j(0);j<m_nin+m_nout;++j)
 	    if (m_flavs[j].Strong()) pl.push_back(j);
 	  p_kpterms = new KP_Terms(p_map, ATOOLS::sbt::qcd, pl);
     p_kpterms->SetIType(p_map->m_user_imode);
 	  p_kpterms->SetCoupling(&p_map->m_cpls);
+	  BuildPhotonSplittingKP(&p_map->m_cpls,p_map->m_user_imode);
 	}
 	msg_Tracking()<<"Mapped '"<<m_name<<"' -> '"<<mapname<<"'.\n";
 	std::string mapfile(rpa->gen.Variable("SHERPA_CPP_PATH")
@@ -345,6 +349,7 @@ bool COMIX::Single_Process::MapProcess()
 	p_kpterms = new KP_Terms(p_map, ATOOLS::sbt::qcd, pl);
   p_kpterms->SetIType(p_map->m_user_imode);
 	p_kpterms->SetCoupling(&p_map->m_cpls);
+	BuildPhotonSplittingKP(&p_map->m_cpls,p_map->m_user_imode);
       }
       mapname=p_map->Name();
       msg_Tracking()<<"Mapped '"<<m_name<<"' -> '"
@@ -584,6 +589,30 @@ void COMIX::Single_Process::ComputeHardMatrix(const int mode)
     }
 }
 
+void COMIX::Single_Process::BuildPhotonSplittingKP
+(MODEL::Coupling_Map *cpls, cs_itype::type imode)
+{
+  if (p_kpterms_ph) { delete p_kpterms_ph; p_kpterms_ph=NULL; }
+  if (!HasResolvedPhotonBeam()) return;
+  // In the DISgamma scheme the pointlike term is absorbed into the photon PDF.
+  if (FactorisationScheme()==facscheme::DISgamma) return;
+  std::vector<size_t> plqed(ChargedAndPhotonPartons(m_flavs));
+  if (plqed.size()<2) return;
+  m_Q2ij.assign(plqed.size(),std::vector<double>(plqed.size(),0.));
+  PhotonSplittingChargeFactors(m_flavs,plqed,m_nin,m_Q2ij);
+  // O(alpha) gamma->q qbar pointlike term, evaluated through the existing
+  // sbt::qed q<-photon (type-3) kernel restricted to the photon splitting, built
+  // with this process's (local) flavours so the charge weighting is correct even
+  // for COMIX's charge-blind mapped processes.
+  p_kpterms_ph = new KP_Terms(this, ATOOLS::sbt::qed, plqed);
+  p_kpterms_ph->SetIType(imode);
+  p_kpterms_ph->SetCoupling(cpls);
+  p_kpterms_ph->SetPhotonSplittingOnly(true);
+  m_dsij_ph.assign(plqed.size(),std::vector<double>(plqed.size(),0.));
+  msg_Tracking()<<"Enabled resolved-photon gamma->q qbar pointlike KP term for "
+                <<m_name<<"."<<std::endl;
+}
+
 void COMIX::Single_Process::UpdateKPTerms(const int mode)
 {
   DEBUG_FUNC("");
@@ -608,11 +637,26 @@ void COMIX::Single_Process::UpdateKPTerms(const int mode)
   }
   p_kpterms->Calculate(p_int->Momenta(),sp->p_bg->DSij(),
 		       m_x[0],m_x[1],eta0,eta1,w);
+  if (p_kpterms_ph) {
+    // resolved-photon pointlike term: charge-correlated Born = uncorrelated QCD
+    // Born (DSij()[0][0]) times the charge factors (the alpha comes from the
+    // splitting, via Alpha_QED). Non-photon-PDF beams drop out in Get() through
+    // Contains(photon)==false.
+    const std::vector<std::vector<double> > &dsij(sp->p_bg->DSij());
+    const double born(dsij.size() && dsij[0].size() ? dsij[0][0] : 0.0);
+    for (size_t i(0);i<m_dsij_ph.size();++i)
+      for (size_t k(0);k<m_dsij_ph[i].size();++k)
+        m_dsij_ph[i][k]=born*m_Q2ij[i][k];
+    p_kpterms_ph->Calculate(p_int->Momenta(),m_dsij_ph,
+			    m_x[0],m_x[1],eta0,eta1,w);
+  }
 }
 
 double COMIX::Single_Process::KPTerms
-(const int mode, PDF::PDF_Base *pdfa, PDF::PDF_Base *pdfb, double sf)
+(const int mode, PDF::PDF_Base *pdfa, PDF::PDF_Base *pdfb, double sf,
+ double *kppointlike)
 {
+  if (kppointlike) *kppointlike=0.0;
   if (!(m_pinfo.m_fi.NLOType()&nlo_type::vsub)) return 0.0;
   const Vec4D &p0(p_int->Momenta()[0]), &p1(p_int->Momenta()[1]);
   double eta0(p0[3]>0.0?p0.PPlus()/rpa->gen.PBunch(0).PPlus():
@@ -620,8 +664,15 @@ double COMIX::Single_Process::KPTerms
   double eta1(p1[3]<0.0?p1.PMinus()/rpa->gen.PBunch(1).PMinus():
 	      p1.PPlus()/rpa->gen.PBunch(0).PPlus());
   double muf2(ScaleSetter(1)->Scale(stp::fac,1));
-  return m_w*p_kpterms->Get(pdfa,pdfb,m_x[0],m_x[1],eta0,eta1,
-			    muf2,muf2,sf,sf,m_flavs[0],m_flavs[1]);
+  double res(m_w*p_kpterms->Get(pdfa,pdfb,m_x[0],m_x[1],eta0,eta1,
+				muf2,muf2,sf,sf,m_flavs[0],m_flavs[1]));
+  if (p_kpterms_ph) {
+    double pl(m_w*p_kpterms_ph->Get(pdfa,pdfb,m_x[0],m_x[1],eta0,eta1,
+				    muf2,muf2,sf,sf,m_flavs[0],m_flavs[1]));
+    res+=pl;
+    if (kppointlike) *kppointlike=pl;
+  }
+  return res;
 }
 
 void COMIX::Single_Process::FillMEWeights(ME_Weight_Info &wgtinfo) const
@@ -631,6 +682,7 @@ void COMIX::Single_Process::FillMEWeights(ME_Weight_Info &wgtinfo) const
   wgtinfo.m_y2=m_x[1-wgtinfo.m_swap];
   (p_map?p_map:this)->p_bg->FillMEWeights(wgtinfo);
   if (p_kpterms) p_kpterms->FillMEwgts(wgtinfo);
+  if (p_kpterms_ph) p_kpterms_ph->FillMEwgts(wgtinfo);
 }
 
 int COMIX::Single_Process::PerformTests()
@@ -837,6 +889,7 @@ void COMIX::Single_Process::SetNLOMC(PDF::NLOMC_Base *const mc)
   PHASIC::Single_Process::SetNLOMC(mc);
   if (p_bg) p_bg->SetNLOMC(mc);
   if (p_kpterms) p_kpterms->SetNLOMC(mc);
+  if (p_kpterms_ph) p_kpterms_ph->SetNLOMC(mc);
 }
 
 size_t COMIX::Single_Process::SetMCMode(const size_t mcmode)
