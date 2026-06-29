@@ -31,10 +31,12 @@ namespace PHASIC {
     ATOOLS::Flavour_Vector m_flavs;
 
     bool   m_massive, m_cemode, m_negativepdf;
+    bool   m_photonsplittingonly;
     //! beam each incoming flavour slot was drawn from, set in Calculate()
     size_t m_beam[2];
     double m_kpca[8], m_kpcb[8], m_cpldef, m_NC;
-    int    m_Vsubmode, m_facscheme;
+    int    m_Vsubmode;
+    ATOOLS::facscheme::code m_facscheme;
     bool   m_sa,m_sb;
     int    m_typea, m_typeb;
 
@@ -42,9 +44,14 @@ namespace PHASIC {
 
     std::vector<xp_coeff> m_xpa, m_xpb;
 
+    //! pointlike mode: charge factors over m_plist and the per-event
+    //! charge-correlated Born built from the QCD Born
+    std::vector<std::vector<double> > m_Q2ij, m_dsijph;
+
     void RegisterDefaults() const;
     void SetColourFactors();
     void SetMassive();
+    void SetPhotonSplittingOnly(const bool on);
 
   public:
 
@@ -80,7 +87,19 @@ namespace PHASIC {
 
     inline void SetIType(ATOOLS::cs_itype::type itype) { m_itype=itype; }
 
+    //! Resolved-photon gamma->q qbar pointlike term for an NLO QCD process:
+    //! an sbt::qed KP_Terms over the charged partons and photons, restricted
+    //! to the a<-photon splitting. Returns NULL when not applicable (no photon
+    //! bunch with a PDF, DISgamma scheme, fewer than two charged partons).
+    //! Calculate() takes the QCD dsij; the charge correlations are internal.
+    static KP_Terms *PhotonSplitting(Process_Base *const proc,
+                                     const MODEL::Coupling_Map *cpls,
+                                     const ATOOLS::cs_itype::type imode);
+
   };// end of class KP_Terms
+
+  //! The KP:FACTORISATION_SCHEME setting, single source for key and default
+  ATOOLS::facscheme::code FactorisationScheme();
 
 };// end of namespace PHASIC
 

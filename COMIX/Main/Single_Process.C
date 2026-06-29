@@ -27,7 +27,7 @@ using namespace ATOOLS;
 COMIX::Single_Process::Single_Process():
   COMIX::Process_Base(this),
   p_bg(NULL), p_hc(NULL), p_map(NULL),
-  p_loop(NULL), p_kpterms(NULL),
+  p_loop(NULL), p_kpterms(NULL), p_kpterms_ph(NULL),
   m_user_stype(sbt::none), m_user_imode(cs_itype::none)
 {
   Settings& s = Settings::GetMainSettings();
@@ -40,6 +40,7 @@ COMIX::Single_Process::Single_Process():
 COMIX::Single_Process::~Single_Process()
 {
   if (p_kpterms) delete p_kpterms;
+  if (p_kpterms_ph) delete p_kpterms_ph;
   if (p_loop) delete p_loop;
   if (p_map) {
     for (size_t i(0);i<m_subs.size();++i) {
@@ -127,12 +128,13 @@ bool COMIX::Single_Process::Initialize
   // stype -> 0 QCD, 1 QED
   // smode -> 0 LO, 1 RS, 2 I, 4 B, 8 Polecheck, 16 V
   if (m_pinfo.m_fi.m_nlocpl.size()) {
-    if (m_user_stype&sbt::qcd ||
-	(m_pinfo.m_fi.m_nlocpl[0]==1. &&
-	 m_pinfo.m_fi.m_nlocpl[1]==0.)) stype|=1;
-    if (m_user_stype&sbt::qed ||
-	(m_pinfo.m_fi.m_nlocpl[0]==0. &&
-	 m_pinfo.m_fi.m_nlocpl[1]==1.)) stype|=2;
+    // subtraction type: what the process can radiate (m_mincpl includes the
+    // NLO order here), masked by what was requested, as in AMEGIC; COMIX's
+    // VI machinery handles a single type only
+    int btype(0);
+    if (m_pinfo.m_mincpl[0]>=1.) btype|=sbt::qcd;
+    if (m_pinfo.m_mincpl[1]>=1.) btype|=sbt::qed;
+    stype = btype & m_user_stype;
     msg_Debugging()<<"Subtraction type: "<<(sbt::subtype)(stype)<<"\n";
   }
   if (m_pinfo.m_fi.NLOType()&nlo_type::rsub) smode=1;
@@ -190,6 +192,7 @@ bool COMIX::Single_Process::Initialize
       p_kpterms = new KP_Terms(this, ATOOLS::sbt::qcd, pl);
       p_kpterms->SetIType(m_user_imode);
       p_kpterms->SetCoupling(&m_cpls);
+      BuildPhotonSplittingKP(&m_cpls,m_user_imode);
       m_mewgtinfo.m_type|=
   ((m_user_imode&cs_itype::I)?mewgttype::VI:mewgttype::none);
       m_mewgtinfo.m_type|=
@@ -288,12 +291,14 @@ bool COMIX::Single_Process::MapProcess()
 	m_mincpl=p_map->m_mincpl;
 	m_mewgtinfo.m_type=p_map->m_mewgtinfo.m_type;
 	if (p_map->p_kpterms) {
+	  if (p_kpterms) { delete p_kpterms; p_kpterms=NULL; }
 	  std::vector<size_t> pl;
 	  for (size_t j(0);j<m_nin+m_nout;++j)
 	    if (m_flavs[j].Strong()) pl.push_back(j);
 	  p_kpterms = new KP_Terms(p_map, ATOOLS::sbt::qcd, pl);
     p_kpterms->SetIType(p_map->m_user_imode);
 	  p_kpterms->SetCoupling(&p_map->m_cpls);
+	  BuildPhotonSplittingKP(&p_map->m_cpls,p_map->m_user_imode);
 	}
 	msg_Tracking()<<"Mapped '"<<m_name<<"' -> '"<<mapname<<"'.\n";
 	std::string mapfile(rpa->gen.Variable("SHERPA_CPP_PATH")
@@ -345,6 +350,7 @@ bool COMIX::Single_Process::MapProcess()
 	p_kpterms = new KP_Terms(p_map, ATOOLS::sbt::qcd, pl);
   p_kpterms->SetIType(p_map->m_user_imode);
 	p_kpterms->SetCoupling(&p_map->m_cpls);
+	BuildPhotonSplittingKP(&p_map->m_cpls,p_map->m_user_imode);
       }
       mapname=p_map->Name();
       msg_Tracking()<<"Mapped '"<<m_name<<"' -> '"
@@ -584,6 +590,14 @@ void COMIX::Single_Process::ComputeHardMatrix(const int mode)
     }
 }
 
+void COMIX::Single_Process::BuildPhotonSplittingKP
+(MODEL::Coupling_Map *cpls, cs_itype::type imode)
+{
+  // built on 'this' (not p_map) so the charges are those of this subprocess
+  if (p_kpterms_ph) delete p_kpterms_ph;
+  p_kpterms_ph=KP_Terms::PhotonSplitting(this,cpls,imode);
+}
+
 void COMIX::Single_Process::UpdateKPTerms(const int mode)
 {
   DEBUG_FUNC("");
@@ -603,11 +617,16 @@ void COMIX::Single_Process::UpdateKPTerms(const int mode)
     m_x[1]=map?p_map->m_x[1]:eta1+p_ismc->ERan("z_2")*(1.-eta1);
   p_kpterms->Calculate(p_int->Momenta(),sp->p_bg->DSij(),
 		       m_x[0],m_x[1],eta0,eta1);
+  if (p_kpterms_ph)
+    p_kpterms_ph->Calculate(p_int->Momenta(),sp->p_bg->DSij(),
+			    m_x[0],m_x[1],eta0,eta1);
 }
 
 double COMIX::Single_Process::KPTerms
-(const int mode, PDF::PDF_Base *pdfa, PDF::PDF_Base *pdfb, double sf)
+(const int mode, PDF::PDF_Base *pdfa, PDF::PDF_Base *pdfb, double sf,
+ double *kppointlike)
 {
+  if (kppointlike) *kppointlike=0.0;
   if (!(m_pinfo.m_fi.NLOType()&nlo_type::vsub)) return 0.0;
   const Vec4D &p0(p_int->Momenta()[0]), &p1(p_int->Momenta()[1]);
   // pdfa/pdfb are beam-ordered, KP_Terms is flavour-ordered
@@ -617,8 +636,15 @@ double COMIX::Single_Process::KPTerms
   double eta1(p1[3]<0.0?p1.PMinus()/rpa->gen.PBunch(1).PMinus():
 	      p1.PPlus()/rpa->gen.PBunch(0).PPlus());
   double muf2(ScaleSetter(1)->Scale(stp::fac,1));
-  return m_w*p_kpterms->Get(pdfa,pdfb,m_x[0],m_x[1],eta0,eta1,
-			    muf2,muf2,sf,sf,m_flavs[0],m_flavs[1]);
+  double res(m_w*p_kpterms->Get(pdfa,pdfb,m_x[0],m_x[1],eta0,eta1,
+				muf2,muf2,sf,sf,m_flavs[0],m_flavs[1]));
+  if (p_kpterms_ph) {
+    double pl(m_w*p_kpterms_ph->Get(pdfa,pdfb,m_x[0],m_x[1],eta0,eta1,
+				    muf2,muf2,sf,sf,m_flavs[0],m_flavs[1]));
+    res+=pl;
+    if (kppointlike) *kppointlike=pl;
+  }
+  return res;
 }
 
 void COMIX::Single_Process::FillMEWeights(ME_Weight_Info &wgtinfo) const
@@ -628,6 +654,7 @@ void COMIX::Single_Process::FillMEWeights(ME_Weight_Info &wgtinfo) const
   wgtinfo.m_y2=m_x[1-wgtinfo.m_swap];
   (p_map?p_map:this)->p_bg->FillMEWeights(wgtinfo);
   if (p_kpterms) p_kpterms->FillMEwgts(wgtinfo);
+  if (p_kpterms_ph) p_kpterms_ph->FillMEwgts(wgtinfo);
 }
 
 int COMIX::Single_Process::PerformTests()
@@ -834,6 +861,7 @@ void COMIX::Single_Process::SetNLOMC(PDF::NLOMC_Base *const mc)
   PHASIC::Single_Process::SetNLOMC(mc);
   if (p_bg) p_bg->SetNLOMC(mc);
   if (p_kpterms) p_kpterms->SetNLOMC(mc);
+  if (p_kpterms_ph) p_kpterms_ph->SetNLOMC(mc);
 }
 
 size_t COMIX::Single_Process::SetMCMode(const size_t mcmode)
