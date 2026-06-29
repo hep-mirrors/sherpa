@@ -20,7 +20,7 @@ using namespace ATOOLS;
 // mb, to make comparison with literature simpler.
 // We also use units of mb^{1/2} for the (constant) triple pomeron vertex.
 //
-// When invoking this class, we will have to make sure that nucleons, pions, etc. are
+// When invoking this class, we will have to make sure that baryons, pions, etc. are
 // initialised.
 //////////////////////////////////////////////////////////////////////////////////////
 Hadronic_XSec_Calculator::Hadronic_XSec_Calculator() :
@@ -29,11 +29,13 @@ Hadronic_XSec_Calculator::Hadronic_XSec_Calculator() :
   m_mass_pi(Flavour(kf_pi).Mass()),
   m_mres(2.), m_cres(2.), m_s1(sqr(20.)),
   m_Ypp(-1.), m_c0(2.24), m_c1(2.1),
-  m_GeV2mb(rpa->Picobarn()/1e9),
+  m_GeV2mb(rpa->Picobarn()/1.e9),
   p_xsratio(NULL), p_xshard(NULL),
   m_testmode(0),
   m_n_variations(1)
-{ }
+{
+  for (size_t i=0;i<2;i++) m_AQM[i] = 1.;
+}
 
 void Hadronic_XSec_Calculator::
 Initialize(const Flavour & fl1,const Flavour & fl2,
@@ -45,6 +47,7 @@ Initialize(const Flavour & fl1,const Flavour & fl2,
     m_masses[i] = m_flavs[i].HadMass(); m_masses2[i] = sqr(m_masses[i]);
     m_mmin     += ( (m_flavs[i].IsPhoton() ?
 		     Flavour(kf_rho_770).Mass() : m_masses[i]) + 2.*m_mass_pi );
+    m_AQM[i]    = AQMFactor(m_flavs[i]);
   }
   m_smin           = sqr(m_mmin);
   m_alphaQED       = (dynamic_cast<MODEL::Running_AlphaQED *>
@@ -60,7 +63,7 @@ Initialize(const Flavour & fl1,const Flavour & fl2,
   m_s1             = (*mipars)("Diffractive_s1");
   m_c0             = (*mipars)("ElasticSlope_c0");
   m_c1             = (*mipars)("ElasticSlope_c1");
-
+  m_AQM_strange    = (*mipars)("AQM_Strange");
   ////////////////////////////////////////////////////////////////////////////////////
   // Prefactors, converted to mb, 1/{mb^1/2 GeV^2}, 1/mb for elastic, SD, and DD
   // elastic:            1. / (16 pi)
@@ -70,13 +73,13 @@ Initialize(const Flavour & fl1,const Flavour & fl2,
   // pomeron-hadron couplings beta0 with s, from a safe E_cm = 20 GeV down to zero.
   ////////////////////////////////////////////////////////////////////////////////////
   for (size_t i=0;i<4;i++) m_beta0[i] = sqrt(s_X[i][i]);
-  m_prefElastic    = 1.e9/(rpa->Picobarn()*16.*M_PI);
+  m_prefElastic    = 1./(16.*M_PI)/m_GeV2mb;
   m_prefSD         = ( m_triple_pomeron * pow(m_s1,3.*m_eps_pomeron/2.)/(16.*M_PI) /
 		       m_GeV2mb );
   m_prefDD         = ( sqr(m_triple_pomeron) * pow(m_s1,m_eps_pomeron)/(16.*M_PI) /
 		       m_GeV2mb );
-  FixTables();
   FixType();
+  FixTables();
   if (m_testmode>0) TestXSecs();
 }
 
@@ -89,15 +92,26 @@ Hadronic_XSec_Calculator::~Hadronic_XSec_Calculator() {
 
 void Hadronic_XSec_Calculator::FixType() {
   m_type = xsec_type::none;
-  if      (m_flavs[0].IsPhoton()  && m_flavs[1].IsPhoton())
-    m_type = xsec_type::photon_photon;
-  else if (m_flavs[0].IsPhoton()  && m_flavs[1].IsNucleon())
-    m_type = xsec_type::photon_nucleon;
-  else if (m_flavs[0].IsNucleon() && m_flavs[1].IsPhoton())
-    m_type = xsec_type::nucleon_photon;
-  else if (m_flavs[0].IsNucleon() && m_flavs[1].IsNucleon()) {
-    m_type = xsec_type::nucleon_nucleon;
-    if (m_flavs[0].IsAnti() != m_flavs[1].IsAnti()) m_Ypp = 98.39;
+  if (m_flavs[0].IsPhoton()) {
+    if      (m_flavs[1].IsPhoton()) m_type = xsec_type::photon_photon;
+    else if (m_flavs[1].IsMeson())  m_type = xsec_type::photon_meson;
+    else if (m_flavs[1].IsBaryon()) m_type = xsec_type::photon_baryon;
+  }
+  else if (m_flavs[0].IsMeson()) {
+    if      (m_flavs[1].IsPhoton()) m_type = xsec_type::meson_photon;
+    else if (m_flavs[1].IsMeson())  m_type = xsec_type::meson_meson;
+    else if (m_flavs[1].IsBaryon()) m_type = xsec_type::meson_baryon;
+  }
+  else if (m_flavs[0].IsBaryon()) {
+    if      (m_flavs[1].IsPhoton()) m_type = xsec_type::baryon_photon;
+    else if (m_flavs[1].IsMeson())  m_type = xsec_type::baryon_meson;
+    else if (m_flavs[1].IsBaryon()) {
+      m_type = xsec_type::baryon_baryon;
+      // accounting for different Regge contribution for p-pbar scattering.
+      if (m_flavs[0].IsNucleon() && m_flavs[1].IsNucleon() &&
+	  (m_flavs[0].IsAnti()!=m_flavs[1].IsAnti()) )
+	m_Ypp = 98.39;
+    }
   }
   if (m_type==xsec_type::none)
     THROW(fatal_error,"Unknown type of hadronic cross section.");
@@ -105,25 +119,29 @@ void Hadronic_XSec_Calculator::FixType() {
 
 void Hadronic_XSec_Calculator::TestXSecs() {
   std::list<double> Es = { 23.5, 62.5, 546., 1800., 16000., 40000. };
+  switch (m_testmode) {
+  case 10:
+    break;
+  case 3:
+    m_flavs[0] = m_flavs[1] = Flavour(kf_photon);
+    m_type     = xsec_type::photon_photon;
+    break;
+  case 2:
+    m_flavs[0] = Flavour(kf_p_plus);
+    m_flavs[1] = Flavour(kf_photon);
+    m_type     = xsec_type::baryon_photon;
+    break;
+  case 1:
+    m_flavs[0] = m_flavs[1] = Flavour(kf_p_plus);
+    m_type     = xsec_type::baryon_baryon;
+    break;
+  default:
+    return;
+  }
   for (size_t i=0;i<2;i++) {
-    switch (m_testmode) {
-    case 3:
-      m_flavs[i] = Flavour(kf_photon);
-      m_type     = xsec_type::nucleon_photon;
-      break;
-    case 2:
-      m_flavs[i] = (i==0) ? Flavour(kf_p_plus) : Flavour(kf_photon);
-      m_type     = xsec_type::nucleon_photon;
-      break;
-    case 1:
-      m_flavs[i] = Flavour(kf_p_plus);
-      m_type     = xsec_type::nucleon_nucleon;
-      break;
-    default:
-      return;
-    }
     m_masses[i] = m_flavs[i].HadMass(); m_masses2[i] = sqr(m_masses[i]);
   }
+  msg_Out()<<METHOD<<"("<<m_testmode<<": "<<m_flavs[0]<<", "<<m_flavs[1]<<"):\n";
   for (auto E : Es) {
     (*this)(sqr(E));
     Output();
@@ -133,7 +151,7 @@ void Hadronic_XSec_Calculator::TestXSecs() {
 
 void Hadronic_XSec_Calculator::operator()(double s)
 {
-  m_s     = s;
+  m_s = s;
   ////////////////////////////////////////////////////////////////////////////////////
   // All cross sections in mb so far.
   ////////////////////////////////////////////////////////////////////////////////////
@@ -155,19 +173,39 @@ void Hadronic_XSec_Calculator::CalculateXSecs() {
   pair<Flavour, Flavour> flavs;
   for (list<Flavour>::const_iterator flit0=m_hadroncomponents[m_flavs[0]].begin();
        flit0!=m_hadroncomponents[m_flavs[0]].end();flit0++) {
-    flavs.first = (*flit0);
-    hadtags[0]  = s_indexmap[(*flit0)];
-    masses[0]   = (*flit0).Mass();
-    prefVA      = (s_fVs.find((*flit0))!=s_fVs.end() ?
-		   m_alphaQED / s_fVs[(*flit0)] : 1.);
+    flavs.first  = (*flit0);
+    masses[0]    = (*flit0).Mass();
+    if (s_fVs.find((*flit0))!=s_fVs.end()) {
+      prefVA     = m_alphaQED / s_fVs[(*flit0)];
+      hadtags[0] = s_indexmap[(*flit0)];
+    }
+    else {
+      if (s_indexmap.find((*flit0))!=s_indexmap.end())
+	hadtags[0] = s_indexmap[(*flit0)];
+      else {
+	if ((*flit0).IsBaryon())     hadtags[0] = s_indexmap[Flavour(kf_p_plus)];
+	else if ((*flit0).IsMeson()) hadtags[0] = s_indexmap[Flavour(kf_rho_770)];
+	prefVA = m_AQM[0];
+      }
+    }
     for (list<Flavour>::const_iterator flit1=m_hadroncomponents[m_flavs[1]].begin();
          flit1!=m_hadroncomponents[m_flavs[1]].end();flit1++) {
       flavs.second = (*flit1);
-      hadtags[1]   = s_indexmap[(*flit1)];
       masses[1]    = (*flit1).Mass();
       if (E<masses[0]+masses[1]) continue;
-      prefVB       = (s_fVs.find((*flit1))!=s_fVs.end() ?
-		      m_alphaQED / s_fVs[(*flit1)] : 1.);
+      if (s_fVs.find((*flit1))!=s_fVs.end()) {
+	prefVB     = m_alphaQED / s_fVs[(*flit1)];
+	hadtags[1] = s_indexmap[(*flit1)];
+      }
+      else {
+	if (s_indexmap.find((*flit1))!=s_indexmap.end())
+	  hadtags[1] = s_indexmap[(*flit1)];
+	else {
+	  if ((*flit1).IsBaryon())     hadtags[1] = s_indexmap[Flavour(kf_p_plus)];
+	  else if ((*flit1).IsMeson()) hadtags[1] = s_indexmap[Flavour(kf_rho_770)];
+	  prefVB = m_AQM[1];
+	}
+      }
       prefVV       = prefVA * prefVB;
       m_xstot     += prefVV * (xstot  = TotalXSec(hadtags));
       m_xsel      += m_sigmaEl[flavs]  = prefVV * IntElXSec(hadtags,xstot);
@@ -177,6 +215,27 @@ void Hadronic_XSec_Calculator::CalculateXSecs() {
     }
   }
   m_xsnd = m_xstot-m_xsel-m_xssdA-m_xssdB-m_xsdd;
+}
+
+double Hadronic_XSec_Calculator::AQMFactor(const ATOOLS::Flavour & flav) {
+  //////////////////////////////////////////////////////////////////////////////
+  // This is a simple manifestation of the relative flat factor for cross
+  // sections of hadrons containing strange quarks, cf. UrQMD model
+  // (nucl-th/9803035, Eq.(3.46)).
+  //////////////////////////////////////////////////////////////////////////////  
+  long int kfc = flav.Kfcode()/10;
+  kfc = kfc-1000*int(kfc/1000);
+  list<size_t> quarks;
+  quarks.push_back(kfc/100);
+  quarks.push_back((kfc-100*(kfc/100))/10);
+  quarks.push_back(kfc-10*(kfc/10));
+  size_t nstrange=0, nonstrange=0;
+  for (list<size_t>::iterator qit=quarks.begin();qit!=quarks.end();qit++) {
+    if ((*qit)==3)      nstrange++;
+    else if ((*qit)!=0) nonstrange++;
+  }
+  double AQM = 1.-m_AQM_strange*double(nstrange)/Max(1.,double(nonstrange)); 
+  return AQM;
 }
 
 void Hadronic_XSec_Calculator::
@@ -488,13 +547,22 @@ void Hadronic_XSec_Calculator::Output() const {
 
 void Hadronic_XSec_Calculator::FixTables() {
   m_hadroncomponents = {
-    { Flavour(kf_p_plus),       { Flavour(kf_p_plus) }                          },
-    { Flavour(kf_p_plus).Bar(), { Flavour(kf_p_plus).Bar() }                    },
-    { Flavour(kf_n),            { Flavour(kf_n) }                               },
-    { Flavour(kf_n).Bar(),      { Flavour(kf_n).Bar() }                         },
     { Flavour(kf_photon),       { Flavour(kf_rho_770), Flavour(kf_omega_782),
 				  Flavour(kf_phi_1020), Flavour(kf_J_psi_1S) }  }
   };
+  for (size_t i=0;i<2;i++) {
+    if (m_hadroncomponents.find(m_flavs[i])==m_hadroncomponents.end())
+      m_hadroncomponents[m_flavs[i]] = { m_flavs[i] };
+  }
+  /*
+  for (map<Flavour, list<Flavour> >::iterator hcit=m_hadroncomponents.begin();
+       hcit!=m_hadroncomponents.end();hcit++) {
+    msg_Debugging()<<hcit->first<<" : ";
+    for (list<Flavour>::iterator cit=hcit->second.begin();
+	 cit!=hcit->second.end();cit++) msg_Out()<<(*cit)<<" ";
+    msg_Debugging()<<"\n";
+  }
+  */
 }
 ///////////////////////////////////////////////////////////////////////////////////
 // Cross section parametrisation taken from Donnachie and Landshoff,
@@ -505,9 +573,9 @@ void Hadronic_XSec_Calculator::FixTables() {
 //////////////////////////////////////////////////////////////////////////////////////
 std::map<kf_code, size_t> Hadronic_XSec_Calculator::s_indexmap = {
   { kf_p_plus,    0 },
-  { -kf_p_plus,    0 },
+  { -kf_p_plus,   0 },
   { kf_n,         0 },
-  { -kf_n,         0 },
+  { -kf_n,        0 },
   { kf_rho_770,   1 },
   { kf_omega_782, 1 },
   { kf_phi_1020,  2 },
