@@ -901,8 +901,13 @@ void Single_Process::ReweightBVI(ClusterAmplitude_Vector& ampls)
                              m_mewgtinfo.m_wren[1] * 0.5 * ATOOLS::sqr(logR)) *
                             alphasfac};
 
-        // KP terms
-        const double KPnew {KPTerms(&varparams) * alphasfac};
+        // KP terms. The O(alpha) resolved-photon pointlike piece carries one
+        // fewer power of alpha_s than the QCD KP terms (its alpha_s dependence
+        // is the Born only), so it scales with bornalphasfac, not alphasfac.
+        double KPpointlike {0.0};
+        const double KPtot {KPTerms(&varparams, &KPpointlike)};
+        const double KPnew {(KPtot - KPpointlike) * alphasfac
+                            + KPpointlike * bornalphasfac};
 
         // Calculate K1
         double K1 {1.0};
@@ -1127,16 +1132,18 @@ ATOOLS::Cluster_Sequence_Info Single_Process::ClusterSequenceInfo(
   return csi;
 }
 
-double Single_Process::KPTerms(const ATOOLS::QCD_Variation_Params * varparams)
+double Single_Process::KPTerms(const ATOOLS::QCD_Variation_Params * varparams,
+                               double *kppointlike)
 {
-  double KP(KPTerms(0, varparams->p_pdf1,
-                       varparams->p_pdf2, varparams->m_muF2fac) * m_lastflux);
-
+  double KP(KPTerms(0, varparams->p_pdf1, varparams->p_pdf2,
+                    varparams->m_muF2fac, kppointlike) * m_lastflux);
+  if (kppointlike) *kppointlike *= m_lastflux;
   return KP;
 }
 
 double Single_Process::KPTerms
-(int mode, PDF::PDF_Base *pdfa, PDF::PDF_Base *pdfb, double scalefac2)
+(int mode, PDF::PDF_Base *pdfa, PDF::PDF_Base *pdfb, double scalefac2,
+ double *kppointlike)
 {
   THROW(fatal_error,"Virtual function not reimplemented.");
   return 0.;

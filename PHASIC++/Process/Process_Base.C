@@ -150,6 +150,16 @@ void Process_Base::SetFixedScale(const std::vector<double> &s)
 
 void Process_Base::SetSelectorOn(const bool on) { Selector()->SetOn(on); }
 
+bool Process_Base::HasResolvedPhotonBeam() const
+{
+  if (!(p_int && p_int->ISR())) return false;
+  for (size_t i(0);i<2;++i) {
+    PDF::PDF_Base *pdf(p_int->ISR()->PDF(i));
+    if (pdf && pdf->Bunch().IsPhoton()) return true;
+  }
+  return false;
+}
+
 void Process_Base::SetUseBIWeight(bool on) { m_use_biweight=on; }
 
 void Process_Base::ResetEvent()

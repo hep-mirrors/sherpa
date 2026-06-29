@@ -15,8 +15,9 @@ KP_Terms::KP_Terms(Process_Base *const proc,const sbt::subtype st,
   m_subtype(subscheme::CS),
   p_proc(proc), p_nlomc(NULL), p_kernel(NULL),
   p_cpl(NULL), m_flavs(p_proc->Flavours()),
-  m_massive(true), m_cemode(false), m_cpldef(0.), m_NC(3.),
-  m_Vsubmode(1), m_facscheme(0),
+  m_massive(true), m_cemode(false), m_photonsplittingonly(false),
+  m_cpldef(0.), m_NC(3.),
+  m_Vsubmode(1), m_facscheme(facscheme::MSbar),
   m_sa(false), m_sb(false),
   m_typea(m_flavs[0].IntSpin()), m_typeb(m_flavs[1].IntSpin()),
   m_plist(partonlist)
@@ -49,20 +50,9 @@ KP_Terms::KP_Terms(Process_Base *const proc,const sbt::subtype st,
   m_negativepdf = kpsettings["ACCEPT_NEGATIVE_PDF"].Get<bool>();
   msg_Tracking()<<"Set KP-term accepts negative PDF "<<m_negativepdf<<" .\n";
 
-  m_facscheme = kpsettings["FACTORISATION_SCHEME"].Get<int>();
-  std::string fs("");
-  switch (m_facscheme) {
-  case 0:
-    fs="MSbar";
-    break;
-  case 1:
-    fs="DIS";
+  m_facscheme = FactorisationScheme();
+  if (m_facscheme==facscheme::DIS)
     THROW(not_implemented,"DIS factorisation scheme not implemented yet.");
-    break;
-  default:
-    THROW(fatal_error,"Unknown factorisation scheme.");
-    break;
-  }
   msg_Tracking()<<"Set KP-term factorisation scheme to "<<m_facscheme<<".\n";
 
   m_NC = s["N_COLOR"].Get<double>();
@@ -121,7 +111,7 @@ void KP_Terms::RegisterDefaults() const
   s["KCONTRIB"].SetDefault("BSGT");
   s["CHECK_ENERGY"].SetDefault(false);
   s["ACCEPT_NEGATIVE_PDF"].SetDefault(true);
-  s["FACTORISATION_SCHEME"].SetDefault(0);
+  s["FACTORISATION_SCHEME"].SetDefault(facscheme::MSbar);
 }
 
 void KP_Terms::SetColourFactors()
@@ -240,8 +230,8 @@ void KP_Terms::Calculate
                      +p_kernel->Kb3(m_typea+2,x0));
       }
       if (m_kcontrib&cs_kcontrib::KFS) {
-        // KFS terms (only if not MSbar)
-        if (m_facscheme>0) {
+        // KFS terms (only in the DIS scheme; MSbar and DISgamma skip them)
+        if (m_facscheme==facscheme::DIS) {
           msg_Debugging()<<"sa: KFS"<<std::endl;
           m_kpca[0]+=-w*p_kernel->KFS1(m_typea,x0)
                      +p_kernel->KFS2(m_typea)
@@ -391,8 +381,8 @@ void KP_Terms::Calculate
                      +p_kernel->Kb3(m_typeb+2,x1));
       }
       if (m_kcontrib&cs_kcontrib::KFS) {
-        // KFS terms (only if not MSbar)
-        if (m_facscheme>0) {
+        // KFS terms (only in the DIS scheme; MSbar and DISgamma skip them)
+        if (m_facscheme==facscheme::DIS) {
           msg_Debugging()<<"sb: KFS"<<std::endl;
           m_kpcb[0]+=-w*p_kernel->KFS1(m_typeb,x1)
                      +p_kernel->KFS2(m_typeb)
@@ -522,6 +512,31 @@ void KP_Terms::Calculate
           <<"    kpcb[0]="<<m_kpcb[0]<<" ,  kpcb[1]="<<m_kpcb[1]
           <<" ,  kpcb[2]="<<m_kpcb[2]<<" ,  kpcb[3]="<<m_kpcb[3]<<std::endl;
     }
+  }
+
+  if (m_photonsplittingonly) {
+    // Keep only the off-diagonal a<-photon (gamma->q qbar) coefficients
+    // (kpc[2,3] and their muF-variation partners kpc[6,7], which multiply the
+    // photon PDF in Get()) and drop the diagonal q<-q coefficients kpc[0,1,4,5].
+    // The latter are the O(alpha) q->q gamma initial-state radiation terms, a
+    // genuine EW correction that is not part of the NLO QCD pointlike photon term.
+    if (m_sa) m_kpca[0]=m_kpca[1]=m_kpca[4]=m_kpca[5]=0.;
+    if (m_sb) m_kpcb[0]=m_kpcb[1]=m_kpcb[4]=m_kpcb[5]=0.;
+  }
+
+  if (m_facscheme==facscheme::DISgamma && m_stype==sbt::qed) {
+    // DISgamma scheme: for a genuine resolved-photon beam the pointlike (anomalous)
+    // q<-photon splitting is absorbed into the photon PDF, so it must NOT be
+    // subtracted here. Drop the a<-photon coefficients kpc[2,3] and their
+    // muF-variation partners kpc[6,7] ONLY for a photon bunch; a proton with a
+    // photon-inside PDF (e.g. LUXqed) keeps its q<-photon term (that splitting is a
+    // normal MSbar PDF term, not DISgamma-absorbed). The diagonal q<-q QED terms
+    // kpc[0,1,4,5] always stay. The bunch flavour (not pdf->Contains(photon), which
+    // is also true for LUXqed) is what distinguishes the two beam types.
+    if (m_sa && rpa->gen.Bunch(0).IsPhoton())
+      m_kpca[2]=m_kpca[3]=m_kpca[6]=m_kpca[7]=0.;
+    if (m_sb && rpa->gen.Bunch(1).IsPhoton())
+      m_kpcb[2]=m_kpcb[3]=m_kpcb[6]=m_kpcb[7]=0.;
   }
 
   double cplfac(wgt*cpl);
@@ -755,5 +770,43 @@ void KP_Terms::FillMEwgts(ATOOLS::ME_Weight_Info &wgtinfo)
       wgtinfo.m_wfac[i+offset+12]=wgtinfo.m_swap?m_kpca[i+4]:m_kpcb[i+4];
     }
   }
+}
+
+std::vector<size_t>
+PHASIC::ChargedAndPhotonPartons(const Flavour_Vector &flavs)
+{
+  std::vector<size_t> plist;
+  for (size_t i(0);i<flavs.size();++i)
+    if (flavs[i].Charge() || flavs[i].IsPhoton()) plist.push_back(i);
+  return plist;
+}
+
+void PHASIC::PhotonSplittingChargeFactors(const Flavour_Vector &flavs,
+                                          const std::vector<size_t> &plist,
+                                          const size_t nin,
+                                          std::vector<std::vector<double> > &Q2ij)
+{
+  // Charge correlations factorise: Q2ij[i][k] = (sign) Q_i Q_k, with the sign
+  // from initial/final-state crossing. The PFF photon-spectator handling of the
+  // full-EW charge factors is not needed here: the photon-PDF Born partons are
+  // quarks.
+  for (size_t i(0);i<plist.size();++i) {
+    Q2ij[i][i]=1.;
+    for (size_t k(0);k<plist.size();++k) {
+      if (i==k) continue;
+      const double Qi(flavs[plist[i]].Charge());
+      const double Qk(flavs[plist[k]].Charge());
+      if (Qi && Qk) {
+        const bool inii(plist[i]<nin), inik(plist[k]<nin);
+        Q2ij[i][k]=(inii==inik?1.:-1.)*Qi*Qk;
+      }
+    }
+  }
+}
+
+facscheme::code PHASIC::FactorisationScheme()
+{
+  return Settings::GetMainSettings()["KP"]["FACTORISATION_SCHEME"]
+    .SetDefault(facscheme::MSbar).Get<facscheme::code>();
 }
 

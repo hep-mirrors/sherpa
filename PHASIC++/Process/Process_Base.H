@@ -286,7 +286,10 @@ namespace PHASIC {
     inline void SetMEwgtinfo(const ATOOLS::ME_Weight_Info i) { m_mewgtinfo=i; }
 
     inline Process_Integrator *Integrator() const { return p_int; }
-    
+
+    // true if at least one beam is a resolved photon (photon bunch with a PDF)
+    bool HasResolvedPhotonBeam() const;
+
     inline virtual const bool   HasInternalScale() const { return m_hasinternalscale; }
     inline virtual const double InternalScale()    const { return m_internalscale; }
 
