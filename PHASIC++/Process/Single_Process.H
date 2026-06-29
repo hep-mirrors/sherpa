@@ -156,9 +156,14 @@ namespace PHASIC {
                         const double& mur2fac,
                         const ATOOLS::Cluster_Sequence_Info* const nominalcsi);
     //! Generate KP terms weight for variation parameters
-    double KPTerms(const ATOOLS::QCD_Variation_Params *);
+    // kppointlike, if given, returns the O(alpha) resolved-photon pointlike
+    // part of the KP terms separately (it scales with one fewer power of
+    // alpha_s than the QCD KP terms under renormalisation-scale variation)
+    double KPTerms(const ATOOLS::QCD_Variation_Params *,
+                   double *kppointlike=NULL);
     virtual double KPTerms(int mode, PDF::PDF_Base *pdfa,
-			   PDF::PDF_Base *pdfb, double scalefac2=0.);
+			   PDF::PDF_Base *pdfb, double scalefac2=0.,
+			   double *kppointlike=NULL);
     //! Calculate MuR for variation parameters
     double MuR2(const ATOOLS::QCD_Variation_Params&,
                 Single_Process::BornLikeReweightingInfo&) const;
