@@ -191,6 +191,17 @@ namespace ATOOLS {
   std::ostream &operator<<(std::ostream &ostr,const subscheme::code &ss);
   std::istream &operator>>(std::istream &str,subscheme::code &ss);
 
+  struct facscheme {
+    enum code {
+      MSbar    = 0,
+      DIS      = 1,
+      DISgamma = 2
+    };
+  };// end of struct facscheme
+
+  std::ostream &operator<<(std::ostream &ostr,const facscheme::code &fs);
+  std::istream &operator>>(std::istream &str,facscheme::code &fs);
+
   struct dpt {
     enum dipoletype {
       none = 0,
