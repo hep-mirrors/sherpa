@@ -218,7 +218,7 @@ int Channel_Generator_UniV::MakeChannel(int& echflag,int n,string& path,string& 
   chf<<"{"<<endl;
   //chf<<"std::cout<<\""<<name<<"\"<<std::endl;"<<endl;
   chf<<"  double *ran = p_vegas->GeneratePoint(_ran);"<<endl;
-  chf<<"  for(int i=0;i<m_rannum;i++) p_rans[i]=ran[i];"<<endl;
+  chf<<"  for(size_t i=0;i<m_rannum;i++) p_rans[i]=ran[i];"<<endl;
   Flavour * flav    = new Flavour[nout];  
 
   acount = 0;
@@ -674,13 +674,13 @@ void Channel_Generator_UniV::GenerateMassChain(int flag,Point* p,Point* clmp,int
   case 0:
     sf<<"  Vec4D  p"<<mummy<<";"<<endl;
     if (maxpole>0.) {
-      sf<<"  double s"<< mummy
+      sf<<"  SHERPA_MAYBE_UNUSED double s"<<mummy
 	<<" = CE.MassivePropMomenta(fl"<<mummy<<".Mass(),"<<"fl"<<mummy<<".Width(),"
 	<<"s"<<mummy<<"_min,s"<<mummy<<"_max,ran["<<rannum<<"]);"<<endl;
     }
     else {
       if (!dth) {
-	sf<<"  double s"<<mummy<<" = CE.MasslessPropMomenta("<<mlexp<<",s"<<mummy<<"_min,"
+	sf<<"  SHERPA_MAYBE_UNUSED double s"<<mummy<<" = CE.MasslessPropMomenta("<<mlexp<<",s"<<mummy<<"_min,"
 	  <<"s"<<mummy<<"_max,ran["<<rannum<<"]);"<<endl;
       } 
       else {
@@ -942,7 +942,7 @@ void  Channel_Generator_UniV::AddToVariables(int flag,const string& lhs,const st
     if (rhs!=string("")) {
       declarations[name]=rhs;
       
-      if (type == 0) sf<<"  double s";
+      if (type == 0) sf<<"  SHERPA_MAYBE_UNUSED double s";
       else           sf<<"  Vec4D  p";
       sf<<lhso<<" = "<<rhs<<";"<<endl;
     }

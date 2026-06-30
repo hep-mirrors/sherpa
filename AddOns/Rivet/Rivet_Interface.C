@@ -88,6 +88,7 @@ using namespace ATOOLS;
 using namespace Rivet;
 
 
+#ifdef USING__RIVET4
 namespace {
   // Helper method to extract the error and squared error of the AnalysisObject
   template<size_t DbnN, typename ... AxisT>
@@ -122,8 +123,6 @@ namespace {
                       const std::vector<double>& data,
                       const std::vector<double>& mean,
                       const std::vector<double>& stddev,
-                      std::vector<double>& filtered_data,
-                      std::vector<double>& scale,
                       const double numEntries,
                       size_t level, size_t mpi_size,
                       size_t& idx, size_t& nbin, bool& has_outlier) {
@@ -135,20 +134,19 @@ namespace {
     idx += 1; // skip first element (the length of the serialised histo)
     const size_t nBins = hist->numBins(true, true);
     for (size_t j = 0; j < nBins; ++j, ++nbin) {
-      double err = std::sqrt(data[idx+DbnN+1]/numEntries);
-      double rescale = mpi_size*std::sqrt(numEntries/(nBins*data[idx+binLen-1]));
-      if (std::abs(err - mean[nbin]) > level * rescale * stddev[nbin]) {
-        for (size_t k = 0; k < binLen; ++k) {
-          filtered_data[idx+k] = 0.0;  // exclude outlier
+      if (!has_outlier) { // don't bother checking the rest, once outlier has been found
+        double err = std::sqrt(data[idx+DbnN+1]/numEntries);
+        double rescale = mpi_size*std::sqrt(numEntries/(nBins*data[idx+binLen-1]));
+        if (std::abs(err - mean[nbin]) > level * rescale * stddev[nbin]) {
+          has_outlier = true;
         }
-        scale[idx+binLen-1] = 1; // rescale result to account for missing rank
-        has_outlier = true;
       }
       idx += binLen;
     }
     return true;
   }
 } // end of anonymous namespace
+#endif
 
 Rivet_Interface::Rivet_Interface(const std::string &outpath,
                                  const std::vector<btp::code> &ignoreblobs,
@@ -187,6 +185,7 @@ AnalysisHandler* Rivet_Interface::GetRivet(std::string proc,
   if (it==m_rivet.end()) {
     msg_Debugging()<<"create new "<<key.first<<" "<<key.second<<std::endl;
     m_rivet[key] = new AnalysisHandler();
+    Log::setLevel("Rivet", m_loglevel);
     m_rivet[key]->addAnalyses(m_analyses);
 #ifdef USING__RIVET4
     m_rivet[key]->setCheckBeams(!m_ignorebeams);
@@ -205,7 +204,6 @@ AnalysisHandler* Rivet_Interface::GetRivet(std::string proc,
     m_rivet[key]->setNLOSmearing(m_nlosmearing);
     if (dummyevent)
       m_rivet[key]->init(*dummyevent);
-    Log::setLevel("Rivet", m_loglevel);
   }
   return m_rivet[key];
 }
@@ -485,10 +483,8 @@ bool Rivet_Interface::Finish()
     mynames.resize(len);
     allnames.resize(len*mpi->Size()+1);
     mpi->Allgather(&mynames[0],len,MPI_CHAR,&allnames[0],len,MPI_CHAR);
-    char *catname = new char[len+1];
     for (size_t i(0);i<mpi->Size();++i) {
-      snprintf(catname, sizeof(catname),"%s",&allnames[len*i]);
-      std::string curname(catname);
+      std::string curname(&allnames[len*i], len-1);
       for (size_t epos(curname.find('|'));
            epos<curname.length();epos=curname.find('|')) {
         std::string cur(curname.substr(0,epos)), proc, jets;
@@ -516,7 +512,6 @@ bool Rivet_Interface::Finish()
         GetRivet(proc,ToType<int>(jets),&m_lastevent);
       }
     }
-    delete [] catname;
 
     // merge Rivet::AnalysisHandlers before finalising
     for (auto& it : m_rivet) {
@@ -529,9 +524,9 @@ bool Rivet_Interface::Finish()
         std::vector<double> data_sum; data_sum.reserve(datalen);
         std::vector<double> data_sum_sq; data_sum_sq.reserve(datalen);
         const size_t binLen = YODA::Dbn1D::DataSize::value;
-        const size_t beaminfo_len = 2/* assuming _beaminfo->numBins() is always 2 */;
-        const vector<YODA::AnalysisObjectPtr> raos = it.second->getRawAOs();
-        vector<double> numEntries(raos.size(), 0.0);
+        const size_t beaminfo_len = (m_ignorebeams?0:2)/* assuming _beaminfo->numBins() is always 2 */;
+        const std::vector<YODA::AnalysisObjectPtr> raos = it.second->getRawAOs();
+        std::vector<double> numEntries(raos.size(), 0.0);
         size_t idx = beaminfo_len+1;
         for (size_t i = 0; i < raos.size(); ++i) {
           // 1D histograms
@@ -569,27 +564,26 @@ bool Rivet_Interface::Finish()
 
         // Apply the outlier filtering: replace outliers with 0 before reduction
         for (const std::string& threshold : m_thresholds) {
-          std::vector<double> filtered_data(data), scale(data.size(),0.);
           const double level = std::stod(threshold);
           bool has_outlier = false;
           size_t idx = beaminfo_len+1, nbin = 0;
           for (size_t i = 0; i < raos.size(); ++i) {
             // 1D histograms
-            if ( applyFiltering<1, double>(raos[i], data, mean, stddev, filtered_data, scale, numEntries[i],
+            if ( applyFiltering<1, double>(raos[i], data, mean, stddev, numEntries[i],
                                            level, mpi->Size(), idx, nbin, has_outlier) )  continue;
-            if ( applyFiltering<1, int>(raos[i], data, mean, stddev, filtered_data, scale, numEntries[i],
+            if ( applyFiltering<1, int>(raos[i], data, mean, stddev, numEntries[i],
                                         level, mpi->Size(), idx, nbin, has_outlier) )  continue;
-            if ( applyFiltering<1, std::string>(raos[i], data, mean, stddev, filtered_data, scale, numEntries[i],
+            if ( applyFiltering<1, std::string>(raos[i], data, mean, stddev, numEntries[i],
                                                 level, mpi->Size(), idx, nbin, has_outlier) ) continue;
             // 1D profiles
-            if ( applyFiltering<2, double>(raos[i], data, mean, stddev, filtered_data, scale, numEntries[i],
+            if ( applyFiltering<2, double>(raos[i], data, mean, stddev, numEntries[i],
                                            level, mpi->Size(), idx, nbin, has_outlier) )  continue;
-            if ( applyFiltering<2, int>(raos[i], data, mean, stddev, filtered_data, scale, numEntries[i],
+            if ( applyFiltering<2, int>(raos[i], data, mean, stddev, numEntries[i],
                                         level, mpi->Size(), idx, nbin, has_outlier) )  continue;
-            if ( applyFiltering<2, std::string>(raos[i], data, mean, stddev, filtered_data, scale, numEntries[i],
+            if ( applyFiltering<2, std::string>(raos[i], data, mean, stddev, numEntries[i],
                                                 level, mpi->Size(), idx, nbin, has_outlier) ) continue;
             // 2D histograms
-            if ( applyFiltering<2, double, double>(raos[i], data, mean, stddev, filtered_data, scale, numEntries[i],
+            if ( applyFiltering<2, double, double>(raos[i], data, mean, stddev, numEntries[i],
                                                    level, mpi->Size(), idx, nbin, has_outlier) )  continue;
             // ... extend to other fill dimensions / axis combinations as needed
             idx += raos[i]->lengthContent(true)+1;
@@ -597,32 +591,13 @@ bool Rivet_Interface::Finish()
           if (nbin != mean.size() || idx != datalen) {
             THROW(fatal_error,"Decomposition of filtered Rivet::AnalysisHandler failed");
           }
-          // Perform MPI_Reduce to compute the filtered sum
-          mpi->Reduce(filtered_data.data(),datalen,MPI_DOUBLE,MPI_SUM);
-          mpi->Reduce(scale.data(),datalen,MPI_DOUBLE,MPI_SUM);
-          if (mpi->Rank()==0) {
-            // Lazily initialise a new AnalysisHandler
-            // and populate it with the filtered data
-            for (size_t i = 0; i < datalen; ++i) {
-              if (scale[i] && scale[i]<mpi->Size()) {
-                double sf(1.-scale[i]/double(mpi->Size()));
-                for (size_t k = 0; i < binLen; ++k) {
-                  filtered_data[i-k] /= sf;
-                }
-              }
-            }
-            const std::string newlabel = it.first.first+"thr="+threshold+".rmbin";
-            GetRivet(newlabel,it.first.second,&m_lastevent)->deserializeContent(filtered_data,(size_t)mpi->Size());
-          }
-          // Let's also write out the version that removes the entire rank,
-          // e.g. if the outlier also affected the total sum of weights
+          // If an outlier was found, write out the version that removes
+          // the entire rank to get a consistent total sum of weights
+          std::vector<double> filtered_data(data);
           int vetoed_ranks = 0;
           if (has_outlier) {
             std::fill(filtered_data.begin(), filtered_data.end(), 0.0);
             vetoed_ranks = 1;
-          }
-          else if (mpi->Rank()==0) { // undo MPI-reduction for the root rank
-            filtered_data = data;
           }
           // Re-perform MPI_Reduce to compute the filtered sum
           mpi->Reduce(filtered_data.data(),datalen,MPI_DOUBLE,MPI_SUM);

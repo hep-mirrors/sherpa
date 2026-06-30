@@ -15,7 +15,7 @@ using namespace std;
 Multi_Channel::Multi_Channel(string _name) :
   name(StringReplace(_name, " ", "")),
   s1(NULL), m_readin(false), m_weight(1.0),
-  n_points(0), n_contrib(0),
+  n_points(0), n_contrib(0), s1xmin(std::numeric_limits<double>::max()),
   mn_points(0), mn_contrib(0),
   m_lastdice(-1),
   m_otype(0)
@@ -77,7 +77,7 @@ void Multi_Channel::Reset()
   if (s1!=NULL) delete[] s1;
   s1 =  new double[channels.size()];
   if (!m_readin) {
-    s1xmin     = 1.e32;
+    s1xmin     = std::numeric_limits<double>::max();
     n_points   = 0;
     n_contrib  = 0;
     mn_points = mn_contrib = 0;

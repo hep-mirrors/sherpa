@@ -4,18 +4,24 @@
 #include "RECONNECTIONS/Main/Reconnection_Base.H"
 
 namespace RECONNECTIONS {
+  class Reconnection_Reweighting;
+
   class Reconnect_Statistical : public Reconnection_Base {
   private:
     std::vector<unsigned int> m_collist;
     int    m_Pmode;
-    double m_Q02, m_etaQ, m_R02, m_etaR, m_reshuffle, m_kappa, m_norm;
+    double m_Q02, m_R02, m_etaR, m_kappa, m_norm;
+    Reconnection_Reweighting * p_cr_reweighting;
 
     void   SetParameters();
     void   FixPMode(const std::string & pm);
+    bool   ImportanceSamplingReconnections(const size_t & N);
+    bool   RandomReconnections(const size_t & N);
     bool   SelectColourPair(const size_t & N,unsigned int & col1, unsigned int & col2);
+    double SwapDistance(const unsigned int col[2]);
     bool   AttemptSwap(const unsigned int col[2]);
     void   UpdateColours();
-    
+
     double MomDistance(ATOOLS::Particle * trip,ATOOLS::Particle * anti);
     double PosDistance(ATOOLS::Particle * trip,ATOOLS::Particle * anti);
     double ColDistance(ATOOLS::Particle * trip,ATOOLS::Particle * anti);
@@ -27,6 +33,8 @@ namespace RECONNECTIONS {
     int    operator()(ATOOLS::Blob_List *const blobs);
     void   Reset();
     double Distance(ATOOLS::Particle * trip,ATOOLS::Particle * anti);
+
+    void SetReweighting(Reconnection_Reweighting * r) { p_cr_reweighting = r; }
   };
 }
 #endif

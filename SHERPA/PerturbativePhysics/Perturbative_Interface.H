@@ -74,6 +74,7 @@ namespace SHERPA {
     ATOOLS::Weights_Map m_weightsmap, m_lkfweightsmap;
     double m_globalkfac, m_maxkfac;
     mets_bbar_mode::code m_bbarmode;
+    int m_nmaxkfac;
 
     long int m_fails_Moms, m_fails_Ampls, m_fails_Masses;
     bool LocalKFactor(ATOOLS::Cluster_Amplitude* ampl);
@@ -94,6 +95,7 @@ namespace SHERPA {
 
     ATOOLS::Return_Value::code DefineInitialConditions(ATOOLS::Blob*,
                                                        ATOOLS::Blob_List*);
+    ATOOLS::Return_Value::code DefineTrivialInitialConditions(ATOOLS::Blob*);
 
     bool FillBlobs();
 

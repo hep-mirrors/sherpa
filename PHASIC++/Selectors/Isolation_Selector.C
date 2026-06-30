@@ -80,14 +80,14 @@ Isolation_Selector::Isolation_Selector(const Selector_Key &key) :
   auto s = key.m_settings["Isolation_Selector"];
 
   auto kfc = s["Isolation_Particle"].SetDefault(kf_none).Get<long int>();
-  m_iflav = Flavour(abs(kfc), kfc<0);
+  m_iflav = Flavour(std::abs(kfc), kfc<0);
 
   auto kfcs = s["Rejection_Particles"]
     .SetDefault(std::vector<long int>())
     .GetVector<long int>();
   for (const auto rejkfc : kfcs)
     if (rejkfc != kf_none)
-      m_rejflav.push_back(Flavour(abs(rejkfc), rejkfc<0));
+      m_rejflav.push_back(Flavour(std::abs(rejkfc), rejkfc<0));
 
   m_outisokf = s["Output_ID"].SetDefault(kf_none).Get<kf_code>();
 
@@ -230,19 +230,16 @@ bool Isolation_Selector::Trigger(Selector_List &sl)
   bool trigger(cnt>=m_nmin && cnt<=m_nmax);
   if (!trigger) {
     msg_Debugging()<<"Point discarded by isolation selector"<<std::endl;
-    m_sel_log->Hit(true);
-    return false;
+    return m_sel_log->CountingIdentity(false);
   }
   for (size_t k=0;k<m_sels.size();++k) {
     if (!m_sels[k]->Trigger(sl)) {
       msg_Debugging()<<"Point discarded by subselector"<<std::endl;
-      m_sel_log->Hit(true);
-      return false;
+      return m_sel_log->CountingIdentity(false);
     }
   }
   msg_Debugging()<<"Point passed"<<std::endl;
-  m_sel_log->Hit(false);
-  return true;
+  return m_sel_log->CountingIdentity(true);
 }
 
 void Isolation_Selector::BuildCuts(Cut_Data * cuts)

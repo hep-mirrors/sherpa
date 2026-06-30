@@ -6,6 +6,7 @@
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "PDF/Main/ISR_Handler.H"
 #include "BEAM/Main/Beam_Spectra_Handler.H"
+#include "PHASIC++/Main/Event_Reader.H"
 #include "PHASIC++/Main/Process_Integrator.H"
 #include "PHASIC++/Main/Phase_Space_Handler.H"
 #include "PHASIC++/Channels/Multi_Channel.H"
@@ -386,7 +387,11 @@ int Single_Virtual_Correction::InitAmplitude(Amegic_Model * model,Topology* top,
     m_mewgtinfo.m_type|=mewgttype::KP;
   Minimize();
   if (p_partner==this && (Result()>0. || Result()<0.)) SetUpIntegrator();
-  if (p_partner==this) msg_Info()<<"."<<std::flush;
+  if (p_partner==this) {
+    msg->BeginTaskProgressUpdate(1);
+    msg_Out()<<'.'<<std::flush;
+    msg->EndTaskProgressUpdate();
+  }
 
   return 1;
 }
@@ -657,28 +662,40 @@ double Single_Virtual_Correction::Calc_V(const ATOOLS::Vec4D_Vector &mom,
   // virtual me2 is returning local nlo kfactor to born -> needs coupling
   if (p_loopme->Mode()==0) {
     res = m_lastb*cplfac*p_loopme->ME_Finite();
-    if (m_murcoeffvirt && p_loopme->ProvidesPoles()) {
+    if (m_murcoeffvirt) {
+      if (p_loopme->ProvidesPoles()) {
       if (m_sccmur) {
-        m_cmur[0]+=(p_loopme->ME_E1()+bornorderqcd*beta0qcd)*m_lastb*cplfac;
-        m_cmur[1]+=p_loopme->ME_E2()*m_lastb*cplfac;
+        p_partner->m_cmur[0]+=(p_loopme->ME_E1()+bornorderqcd*beta0qcd)*m_lastb*cplfac;
+        p_partner->m_cmur[1]+=p_loopme->ME_E2()*m_lastb*cplfac;
       }
       else {
-        m_cmur[0]+=m_lastb*cplfac*p_loopme->ScaleDependenceCoefficient(1);
-        m_cmur[1]+=m_lastb*cplfac*p_loopme->ScaleDependenceCoefficient(2);
+        p_partner->m_cmur[0]+=m_lastb*cplfac*p_loopme->ScaleDependenceCoefficient(1);
+        p_partner->m_cmur[1]+=m_lastb*cplfac*p_loopme->ScaleDependenceCoefficient(2);
+      }
+      }
+      else {
+	p_partner->m_cmur[0]+=-m_singlepole+bornorderqcd*beta0qcd*m_lastb*cplfac;
+	p_partner->m_cmur[1]+=-m_doublepole;
       }
     }
   }
   // virtual me2 is returning full Re(M_B M_V^*)
   else if (p_loopme->Mode()==1) {
     res = cplfac*p_loopme->ME_Finite();
-    if (m_murcoeffvirt && p_loopme->ProvidesPoles()) {
+    if (m_murcoeffvirt) {
+      if (p_loopme->ProvidesPoles()) {
       if (m_sccmur) {
-        m_cmur[0]+=(p_loopme->ME_E1()+bornorderqcd*beta0qcd)*cplfac;
-        m_cmur[1]+=p_loopme->ME_E2()*cplfac;
+        p_partner->m_cmur[0]+=(p_loopme->ME_E1()+bornorderqcd*beta0qcd*m_lastb)*cplfac;
+        p_partner->m_cmur[1]+=p_loopme->ME_E2()*cplfac;
       }
       else {
-        m_cmur[0]+=cplfac*p_loopme->ScaleDependenceCoefficient(1);
-        m_cmur[1]+=cplfac*p_loopme->ScaleDependenceCoefficient(2);
+        p_partner->m_cmur[0]+=cplfac*p_loopme->ScaleDependenceCoefficient(1);
+        p_partner->m_cmur[1]+=cplfac*p_loopme->ScaleDependenceCoefficient(2);
+      }
+      }
+      else {
+	p_partner->m_cmur[0]+=-m_singlepole+bornorderqcd*beta0qcd*m_lastb*cplfac;
+	p_partner->m_cmur[1]+=-m_doublepole;
       }
     }
   }
@@ -722,8 +739,8 @@ double Single_Virtual_Correction::Calc_I(const ATOOLS::Vec4D_Vector &mom)
                                p_kernel_qcd,p_kpterms_qcd,mom,m_dsijqcd);
   if (m_stype&sbt::qed) Calc_I(sbt::qed,p_LO_process->PartonListQED(),
                                p_kernel_ew,p_kpterms_ew,mom,m_dsijew);
-  m_cmur[0]=m_singlepole;
-  m_cmur[1]=m_doublepole;
+  p_partner->m_cmur[0]=m_singlepole;
+  p_partner->m_cmur[1]=m_doublepole;
   msg_Debugging()<<"I_fin = "<<m_Norm*m_finite<<std::endl;
   msg_Debugging()<<"I_e1  = "<<m_Norm*m_singlepole<<std::endl;
   msg_Debugging()<<"I_e2  = "<<m_Norm*m_doublepole<<std::endl;
@@ -826,16 +843,30 @@ void Single_Virtual_Correction::Calc_KP(const ATOOLS::Vec4D_Vector &mom)
   if (p_int->ISR()->PDF(0) && p_int->ISR()->PDF(0)->Contains(m_flavs[0])) {
     m_eta0=mom[0][3]>0.0?mom[0].PPlus()/rpa->gen.PBunch(0).PPlus():
       mom[0].PMinus()/rpa->gen.PBunch(1).PMinus();
-    if (m_z0>0.) m_x0 = m_z0;
-    else         m_x0 = m_eta0+p_fsmc->ERan("z_1")*(1.-m_eta0);
+    if (m_z0 > 0.) {
+      m_x0 = m_z0;
+    } else if (p_read) {
+      m_x0 = m_eta0 + p_read->SubEvt()->m_x1 * (1. - m_eta0);
+      msg_Debugging() << "read in x0 = " << m_x0 << " ("
+                      << p_read->SubEvt()->m_x1 << ") " << m_eta0 << "\n";
+    } else {
+      m_x0 = m_eta0 + p_fsmc->ERan("z_1") * (1. - m_eta0);
+    }
     weight*=(1.-m_eta0);
     msg_Debugging()<<"x0="<<m_x0<<std::endl;
   }
   if (p_int->ISR()->PDF(1) && p_int->ISR()->PDF(1)->Contains(m_flavs[1])) {
     m_eta1=mom[1][3]<0.0?mom[1].PMinus()/rpa->gen.PBunch(1).PMinus():
       mom[1].PPlus()/rpa->gen.PBunch(0).PPlus();
-    if (m_z1>0.) m_x1 = m_z1;
-    else         m_x1 = m_eta1+p_fsmc->ERan("z_2")*(1.-m_eta1);
+    if (m_z1 > 0.) {
+      m_x1 = m_z1;
+    } else if (p_read) {
+      m_x1 = m_eta1 + p_read->SubEvt()->m_x2 * (1. - m_eta1);
+      msg_Debugging() << "read in x1 = " << m_x1 << " ("
+                      << p_read->SubEvt()->m_x2 << ") " << m_eta1 << "\n";
+    } else {
+      m_x1 = m_eta1 + p_fsmc->ERan("z_2") * (1. - m_eta1);
+    }
     weight*=(1.-m_eta1);
     msg_Debugging()<<"x1="<<m_x1<<std::endl;
   }
@@ -997,7 +1028,7 @@ double Single_Virtual_Correction::operator()(const ATOOLS::Vec4D_Vector &mom,
   }
 
   double B(0.),V(0.),I(0.);
-  m_cmur[0]=m_cmur[1]=0.;
+  p_partner->m_cmur[0]=p_partner->m_cmur[1]=0.;
 
   Vec4D_Vector _mom(mom);
   Poincare cms;

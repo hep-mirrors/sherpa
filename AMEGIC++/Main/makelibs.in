@@ -113,8 +113,9 @@ amegic_handle_shared_library(${libname})
 set(CMAKE_INSTALL_PREFIX \${PROJECT_SOURCE_DIR}/../)
 install(TARGETS ${libname} DESTINATION \${CMAKE_INSTALL_PREFIX}/\${CMAKE_INSTALL_LIBDIR})
 " > CMakeLists.txt.new
-    fsrdir=$(find . -name fsrchannels*)
-    test -f $fsrdir/CMakeLists.txt && echo "add_subdirectory(${fsrdir})" >> CMakeLists.txt.new
+    for fsrdir in fsrchannels*; do
+	test -f $fsrdir/CMakeLists.txt && echo "add_subdirectory(${fsrdir})" >> CMakeLists.txt.new
+    done
     diff -q CMakeLists.txt CMakeLists.txt.new || mv CMakeLists.txt.new CMakeLists.txt
   fi
   if test -f CMakeLists.txt; then

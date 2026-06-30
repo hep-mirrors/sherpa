@@ -78,7 +78,6 @@ namespace ATOOLS {
   class Variations {
   public:
     static bool NeedsLHAPDF6Interface();
-    static void CheckConsistencyWithBeamSpectra(BEAM::Beam_Spectra_Handler *);
 
     Variations(Variations_Mode mode=Variations_Mode::all);
     ~Variations();
@@ -235,6 +234,9 @@ namespace ATOOLS {
     //! Set whether the pointers to the PDFs and the AlphaS should be deleted after usage
     const int m_deletepdfmask;
     const bool m_deletealphas;
+
+    friend std::ostream &operator<<(std::ostream &,
+                                    const QCD_Variation_Params &);
 
   private:
     //! (name -> counter value) map used to track warnings

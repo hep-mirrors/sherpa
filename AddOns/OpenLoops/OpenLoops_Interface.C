@@ -58,6 +58,7 @@ bool OpenLoops_Interface::s_exit_on_error = true;
 bool OpenLoops_Interface::s_ass_func = false;
 int  OpenLoops_Interface::s_ass_ew = 0;
 std::map<std::string, std::string> OpenLoops_Interface::s_evgen_params;
+photon_scheme OpenLoops_Interface::s_photon_scheme = photon_scheme::Default;
 
 // private static member definitions
 std::map<int,std::string> OpenLoops_Interface::s_procmap;
@@ -81,8 +82,7 @@ void OpenLoops_Interface::RegisterDefaults() const
   s["OL_VMODE"].SetDefault(0);
   s["OL_EXIT_ON_ERROR"].SetDefault(true);
   s["OL_IGNORE_MODEL"].SetDefault(false);
-  s["OL_IR_SCALE"].SetDefault(100);
-  s["OL_UV_SCALE"].SetDefault(100);
+  s["OL_PHOTON_SCHEME"].SetDefault(photon_scheme::Default);
 
   // find OL installation prefix with several overwrite options
   char *var=NULL;
@@ -131,6 +131,7 @@ bool OpenLoops_Interface::Initialize(MODEL::Model_Base* const model,
   }
   s_vmode = s["OL_VMODE"].Get<int>();
   msg_Tracking()<<METHOD<<"(): Set V-mode to "<<s_vmode<<endl;
+  s_photon_scheme = s["OL_PHOTON_SCHEME"].Get<photon_scheme>();
 
   // check for existance of separate access to associated contribs
   void *assfunc(s_loader->GetLibraryFunction("SherpaOpenLoops",
@@ -234,7 +235,8 @@ void OpenLoops_Interface::SetParametersSM(const MODEL::Model_Base* model)
                   kf_Wplus, kf_Z, kf_h0};
   vector<int> pdgids (tmparr, tmparr + sizeof(tmparr) / sizeof(tmparr[0]) );
   for (size_t i=0; i<pdgids.size(); ++i) {
-    const int& id(pdgids[i]); const Flavour& flav(id);
+    const int& id(pdgids[i]);
+    const Flavour& flav(id);
     if (flav.Mass()>0.0) SetParameter("mass("+ToString(id)+")", flav.Mass());
     if (flav.Width()>0.0) SetParameter("width("+ToString(id)+")", flav.Width());
     if (flav.IsFermion() && flav.Yuk()>0.0 &&
@@ -249,17 +251,33 @@ void OpenLoops_Interface::SetParametersSM(const MODEL::Model_Base* model)
     }
   }
   // Set CKM parameters
-  if (model->ComplexConstant("CKM_0_2")!=Complex(0.0,0.0) ||
-      model->ComplexConstant("CKM_2_0")!=Complex(0.0,0.0)) {
-    SetParameter("ckmorder", 3);
-  }
-  else if (model->ComplexConstant("CKM_1_2")!=Complex(0.0,0.0) ||
+  if (model->ComplexConstant("CKM_0_1")!=Complex(0.0,0.0) ||
+      model->ComplexConstant("CKM_1_0")!=Complex(0.0,0.0) ||
+      model->ComplexConstant("CKM_0_2")!=Complex(0.0,0.0) ||
+      model->ComplexConstant("CKM_2_0")!=Complex(0.0,0.0) ||
+      model->ComplexConstant("CKM_1_2")!=Complex(0.0,0.0) ||
       model->ComplexConstant("CKM_2_1")!=Complex(0.0,0.0)) {
-    SetParameter("ckmorder", 2);
-  }
-  else if (model->ComplexConstant("CKM_0_1")!=Complex(0.0,0.0) ||
-      model->ComplexConstant("CKM_1_0")!=Complex(0.0,0.0)) {
     SetParameter("ckmorder", 1);
+    // real parts
+    SetParameter("VCKMdu", model->ComplexConstant("CKM_0_0").real());
+    SetParameter("VCKMsu", model->ComplexConstant("CKM_1_0").real());
+    SetParameter("VCKMbu", model->ComplexConstant("CKM_2_0").real());
+    SetParameter("VCKMdc", model->ComplexConstant("CKM_0_1").real());
+    SetParameter("VCKMsc", model->ComplexConstant("CKM_1_1").real());
+    SetParameter("VCKMbc", model->ComplexConstant("CKM_2_1").real());
+    SetParameter("VCKMdt", model->ComplexConstant("CKM_0_2").real());
+    SetParameter("VCKMst", model->ComplexConstant("CKM_1_2").real());
+    SetParameter("VCKMbt", model->ComplexConstant("CKM_2_2").real());
+    // imaginary parts
+    SetParameter("VCKMIdu", model->ComplexConstant("CKM_0_0").imag());
+    SetParameter("VCKMIsu", model->ComplexConstant("CKM_1_0").imag());
+    SetParameter("VCKMIbu", model->ComplexConstant("CKM_2_0").imag());
+    SetParameter("VCKMIdc", model->ComplexConstant("CKM_0_1").imag());
+    SetParameter("VCKMIsc", model->ComplexConstant("CKM_1_1").imag());
+    SetParameter("VCKMIbc", model->ComplexConstant("CKM_2_1").imag());
+    SetParameter("VCKMIdt", model->ComplexConstant("CKM_0_2").imag());
+    SetParameter("VCKMIst", model->ComplexConstant("CKM_1_2").imag());
+    SetParameter("VCKMIbt", model->ComplexConstant("CKM_2_2").imag());
   }
   else {
     SetParameter("ckmorder", 0);
@@ -300,12 +318,24 @@ int OpenLoops_Interface::RegisterProcess(const Subprocess_Info& is,
   string shprocname(PHASIC::Process_Base::GenerateName(is,fs)),olprocname("");
   Flavour_Vector isflavs(is.GetExternal());
 
-  for (size_t i=0; i<isflavs.size(); ++i)
-    olprocname += ToString((long int)isflavs[i]) + " ";
+  for (size_t i=0; i<isflavs.size(); ++i) {
+    long int pdgid = (long int)isflavs[i];
+    if (pdgid == 22) {
+      if      (s_photon_scheme == photon_scheme::On_shell)  pdgid =  2002;
+      else if (s_photon_scheme == photon_scheme::Off_shell) pdgid = -2002;
+    }
+    olprocname += ToString(pdgid) + " ";
+  }
   olprocname += "-> ";
   Flavour_Vector fsflavs(fs.GetExternal());
-  for (size_t i=0; i<fsflavs.size(); ++i)
-    olprocname += ToString((long int)fsflavs[i]) + " ";
+  for (size_t i=0; i<fsflavs.size(); ++i) {
+    long int pdgid = (long int)fsflavs[i];
+    if (pdgid == 22) {
+      if      (s_photon_scheme == photon_scheme::On_shell)  pdgid =  2002;
+      else if (s_photon_scheme == photon_scheme::Off_shell) pdgid = -2002;
+    }
+    olprocname += ToString(pdgid) + " ";
+  }
   msg_Debugging()<<"looking for "<<shprocname<<" ("<<olprocname<<")\n";
 
   // exit if ass contribs requested but not present
@@ -562,7 +592,7 @@ operator()(const ME_Generator_Key &key) const
 
 void ATOOLS::Getter<ME_Generator_Base,ME_Generator_Key,OpenLoops_Interface>::
 PrintInfo(ostream &str,const size_t width) const
-{ 
-  str<<"Interface to the OpenLoops loop ME generator"; 
+{
+  str<<"Interface to the OpenLoops loop ME generator";
 }
 

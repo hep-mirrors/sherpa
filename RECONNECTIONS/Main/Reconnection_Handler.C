@@ -24,11 +24,16 @@ Reconnection_Handler::~Reconnection_Handler() {
 }
 
 void Reconnection_Handler::Initialize() {
-  if (m_on) p_reconnector->Initialize();
+  if (!m_on) return;
+  m_reweighting.Initialize();
+  if (auto * stat = dynamic_cast<Reconnect_Statistical*>(p_reconnector))
+    stat->SetReweighting(&m_reweighting);
+  p_reconnector->Initialize();
 }
 
 void Reconnection_Handler::Reset() {
   if (m_on) p_reconnector->Reset();
+  m_reweighting.ResetEvent();
 }
 
 Return_Value::code Reconnection_Handler::operator()(Blob_List *const blobs,
@@ -37,24 +42,31 @@ Return_Value::code Reconnection_Handler::operator()(Blob_List *const blobs,
   switch ((*p_reconnector)(blobs)) {
   case -1:
     // things went wrong, try new event and hope it works better
-    msg_Tracking()<<"Error in "<<METHOD<<": reconnections didn't work out.\n"
-		  <<"   Ask for new event and hope for the best.\n";
-    p_reconnector->Reset();
+    if (m_nfails<5)
+      msg_Error()<<"Error in "<<METHOD<<": reconnections didn't work out.\n"
+		 <<"   Ask for new event and hope for the best.\n";
     m_nfails++;
+    Reset();
     return Return_Value::New_Event;
   case 1:
-    // added colour reconnections, but produce a reconnection blob.
+    // added colour reconnections, produce a fragmentation blob.
     AddReconnectionBlob(blobs);
+    m_reweighting.ApplyVariationWeights(blobs);
+    p_reconnector->Reset();
+    return Return_Value::Success;
   case 0:
     // didn't find any blob that needed reconnections
-    break;
+    p_reconnector->Reset();
+    return Return_Value::Nothing;
   }
   p_reconnector->Reset();
-  return Return_Value::Success; 
+  return Return_Value::Nothing;
 }
 
 void Reconnection_Handler::AddReconnectionBlob(Blob_List *const blobs) {
-  Blob * blob = new Blob();
+  Blob * blob  = new Blob();
+  Vec4D pos    = Vec4D(0.,0.,0.,0.);
+  size_t npart = 0;
   blob->AddStatus(blob_status::needs_hadronization);
   blob->SetType(btp::Fragmentation);
   blob->SetId();
@@ -65,7 +77,9 @@ void Reconnection_Handler::AddReconnectionBlob(Blob_List *const blobs) {
     part->SetDecayBlob(NULL);
     blob->AddToInParticles(part);
     particles->pop_front();
+    pos += part->XProd();
+    npart++;
   }
+  blob->SetPosition(pos/double(npart));
   blobs->push_back(blob);
 }
-

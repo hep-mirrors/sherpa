@@ -37,12 +37,12 @@ Cluster_Leg *Cluster_Leg::New
 
 Cluster_Leg *Cluster_Leg::New
 (Cluster_Amplitude *const ampl,const Vec4D &p,
- const Flavour &fl,const ColorID &c)
+ const Flavour &fl,const ColorID &c,const int & beam)
 {
 #ifndef USING__Threading
   if (s_legs.empty())
 #endif
-    return new Cluster_Leg(ampl,p,fl,c);
+    return new Cluster_Leg(ampl,p,fl,c,beam);
   Cluster_Leg *cl(s_legs.back());
   s_legs.pop_back();
   cl->p_ampl=ampl;
@@ -56,6 +56,7 @@ Cluster_Leg *Cluster_Leg::New
   cl->m_c=c;
   cl->m_kt2[0]=cl->m_kt2[1]=-1.0;
   cl->m_fromdec=false;
+  cl->m_beam=beam;
   return cl;
 }
 
@@ -79,6 +80,7 @@ namespace ATOOLS {
   {
     ostr<<std::right<<std::setw(12)<<ToString(ID(leg.Id()))
 	<<std::setw(12)<<leg.Flav()
+	<<" ["<<std::setw(2)<<leg.Beam()<<"]"
 	<<" "<<std::left<<leg.Mom()
 	<<(leg.Mom().Abs2()<0.0?" -":" ")
 	<<sqrt(dabs(leg.Mom().Abs2()))<<" "<<leg.Col();

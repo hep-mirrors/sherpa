@@ -66,7 +66,7 @@ bool IINEL_Selector::Trigger(Selector_List &sl)
            (m_flav1.Includes(sl[j].Flavour()) &&
             m_flav2.Includes(sl[i].Flavour())) ) {
         double yij = 1.0-(sl[j].Momentum()[0]/sl[i].Momentum()[0])*(1.0+sl[i].Momentum().CosTheta(sl[j].Momentum()))/2.0;
-        if (m_sel_log->Hit( ((yij < m_ymin) || (yij > m_ymax)) )) return false;
+        if (!m_sel_log->CountingIdentity( ((yij >= m_ymin) && (yij <= m_ymax)) )) return false;
       }
     }
   }
@@ -131,7 +131,7 @@ bool IPZIN_Selector::Trigger(Selector_List &sl)
   for (int i=0;i<m_nin;i++) {
       if  (m_flav.Includes(sl[i].Flavour())) {
         double pz = std::abs(sl[i].Momentum()[3]);
-        if (m_sel_log->Hit( ((pz < m_pzmin) || (pz > m_pzmax)) )) return false;
+        if (!m_sel_log->CountingIdentity( ((pz >= m_pzmin) && (pz <= m_pzmax)) )) return false;
     }
   }
   return true;

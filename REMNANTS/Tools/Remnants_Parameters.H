@@ -4,6 +4,7 @@
 #include "ATOOLS/Phys/Flavour.H"
 #include <map>
 #include <string>
+#include <vector>
 
 namespace REMNANTS {
   enum class primkT_form {
@@ -22,10 +23,11 @@ namespace REMNANTS {
   };
 
   enum class matter_form {
-    none            = 0,
-    single_gaussian = 1,
-    double_gaussian = 2,
-    unknown         = 99
+    none                 = 0,
+    single_gaussian      = 1,
+    double_gaussian      = 2,
+    x_dependent_gaussian = 11,
+    unknown              = 99
   };
 
   std::ostream& operator<<(std::ostream& os, const primkT_form & form);
@@ -41,6 +43,7 @@ namespace REMNANTS {
     primkT_recoil kT_recoil;
     matter_form   m_form;
     std::map<std::string,double> params;
+    std::map<std::string,std::vector<double> > param_variations;
 
     remnant_parameters() :
       kT_form(primkT_form::undefined), kT_recoil(primkT_recoil::undefined),
@@ -62,6 +65,8 @@ namespace REMNANTS {
     ~Remnants_Parameters();
     void Init();
     double Get(const ATOOLS::Flavour & flav, std::string keyword);
+    const std::vector<double> &
+    GetVariationVector(const ATOOLS::Flavour & flav, std::string keyword) const;
     primkT_form   KT_Form(const ATOOLS::Flavour & flav);
     primkT_recoil KT_Recoil(const ATOOLS::Flavour & flav);
     matter_form   Matter_Form(const ATOOLS::Flavour & flav);

@@ -17,9 +17,10 @@ using namespace ATOOLS;
 
 Remnant_Handler::Remnant_Handler(PDF::ISR_Handler* isr, YFS::YFS_Handler *yfs,
                                  BEAM::Beam_Spectra_Handler* beam_handler,
-                                 const std::array<size_t, 2>& tags)
-    : m_id(isr->Id()), m_tags(tags), p_softblob(nullptr), m_check(true), m_output(false), m_fails(0)
-{
+				 const std::array<size_t, 2>& tags) :
+  m_id(isr->Id()), m_tags(tags), p_softblob(nullptr),
+  p_cmsboost(nullptr), p_labboost(nullptr),
+  m_check(true), m_output(false), m_neednewCMS(true), m_fails(0) {
   rempars = new Remnants_Parameters();
   rempars->Init();
   p_remnants = {nullptr, nullptr};
@@ -30,13 +31,13 @@ Remnant_Handler::Remnant_Handler(PDF::ISR_Handler* isr, YFS::YFS_Handler *yfs,
       if (flav.IsHadron() && flav.Kfcode() != kf_pomeron &&
           flav.Kfcode() != kf_reggeon)
         p_remnants[i] =
-                std::make_shared<Hadron_Remnant>(isr->PDF(i), i, m_tags[i]);
+	  std::make_shared<Hadron_Remnant>(isr->PDF(i), i, m_tags[i]);
       else if (flav.IsLepton())
         p_remnants[i] =
-                std::make_shared<Electron_Remnant>(isr->PDF(i), i, m_tags[i]);
+	  std::make_shared<Electron_Remnant>(isr->PDF(i), i, m_tags[i]);
       else if (flav.IsPhoton())
         p_remnants[i] =
-                std::make_shared<Photon_Remnant>(isr->PDF(i), i, m_tags[i]);
+	  std::make_shared<Photon_Remnant>(isr->PDF(i), i, m_tags[i]);
       else if (flav.Kfcode() == kf_pomeron)
         p_remnants[i] = std::make_shared<Pomeron_Remnant>(isr->PDF(i), i);
       else if (flav.Kfcode() == kf_reggeon)
@@ -54,19 +55,22 @@ Remnant_Handler::Remnant_Handler(PDF::ISR_Handler* isr, YFS::YFS_Handler *yfs,
   InitializeKinematicsAndColours();
 }
 
-Remnant_Handler::Remnant_Handler(
-        std::array<std::shared_ptr<Remnant_Base>, 2> remnants,
-        PDF::ISR_Handler* isr,YFS::YFS_Handler *yfs, BEAM::Beam_Spectra_Handler* beam_handler,
-        const std::array<size_t, 2>& tags)
-    : m_id(isr->Id()), p_remnants(remnants), m_tags(tags), p_softblob(nullptr), m_check(true),
-      m_output(false), m_fails(0)
+Remnant_Handler::
+Remnant_Handler(std::array<std::shared_ptr<Remnant_Base>, 2> remnants,
+		PDF::ISR_Handler* isr,YFS::YFS_Handler *yfs,
+		BEAM::Beam_Spectra_Handler* beam_handler,
+		const std::array<size_t, 2>& tags) :
+  m_id(isr->Id()), p_remnants(remnants), m_tags(tags),
+  p_softblob(nullptr),  p_cmsboost(nullptr), p_labboost(nullptr),
+  m_check(true), m_output(false), m_neednewCMS(true), m_fails(0)
 {
-  // this constructor is to create remnants, where one of the remnants has already been created;
-  // needed for the beam rescatterings
+  // this constructor is to create remnants, where one of the remnants
+  // has already been created; needed for the beam rescatterings
   int beam = 0;
   if (p_remnants[1] == nullptr) beam = 1;
   Flavour flav = isr->Flav(beam);
-  if (isr->PDF(beam) != nullptr && Settings::GetMainSettings()["BEAM_REMNANTS"].Get<bool>()) {
+  if (isr->PDF(beam)!=nullptr &&
+      Settings::GetMainSettings()["BEAM_REMNANTS"].Get<bool>()) {
     if (flav.IsHadron() && flav.Kfcode() != kf_pomeron)
       p_remnants[beam] = std::make_shared<Hadron_Remnant>(isr->PDF(beam), beam,
                                                           m_tags[beam]);
@@ -92,13 +96,15 @@ Remnant_Handler::Remnant_Handler(
 
 Remnant_Handler::~Remnant_Handler()
 {
+  if (p_cmsboost) delete p_cmsboost;
+  if (p_labboost) delete p_labboost;
   if (m_fails > 0)
     msg_Out() << "Remnant handling yields " << m_fails
               << " fails in creating good beam  breakups.\n";
 }
 
 void Remnant_Handler::InitializeRemnants(PDF::ISR_Handler* isr,
-                                         YFS::YFS_Handler *yfs,
+                                         YFS::YFS_Handler* yfs,
                                          BEAM::Beam_Spectra_Handler* beam)
 {
   // Finish the initialisation of the Remnant_Bases: make sure they know
@@ -109,7 +115,40 @@ void Remnant_Handler::InitializeRemnants(PDF::ISR_Handler* isr,
     p_remnants[i]->SetBeam(beam->GetBeam(i));
     p_remnants[i]->Reset();
   }
+  if (beam->GetBeam(0)->Type() == BEAM::beamspectrum::monochromatic &&
+      beam->GetBeam(1)->Type() == BEAM::beamspectrum::monochromatic) {
+    if (!beam->IsSymmetric()) {
+      Vec4D total_mom = p_remnants[0]->InMomentum() + p_remnants[1]->InMomentum();
+      p_cmsboost = new Poincare(total_mom);
+      p_labboost = new Poincare(total_mom);
+      p_labboost->Invert();
+    }
+    m_neednewCMS = false;
+  }
   isr->SetRemnants(p_remnants);
+}
+
+void Remnant_Handler::InitializeCMSBoost()
+{
+  if (!m_neednewCMS) return;
+
+  delete p_cmsboost;
+  p_cmsboost = nullptr;
+  delete p_labboost;
+  p_labboost = nullptr;
+
+  Vec4D total_mom = p_remnants[0]->InMomentum() + p_remnants[1]->InMomentum();
+  p_cmsboost = new Poincare(total_mom);
+  p_labboost = new Poincare(total_mom);
+  p_labboost->Invert();
+}
+
+void Remnant_Handler::BoostRemnantMomenta(const ATOOLS::Poincare& boost) {
+  for (size_t i=0;i<2;i++) {
+    Vec4D mom = p_remnants[i]->InMomentum();
+    p_remnants[i]->SetInMomentum(boost * mom);
+    p_remnants[i]->SetResidualEnergy();
+  }
 }
 
 void Remnant_Handler::DefineRemnantStrategy() {
@@ -186,13 +225,13 @@ bool Remnant_Handler::ExtractShowerInitiators(Blob *const showerblob) {
     Particle *part = showerblob->InParticle(i);
     if (part->ProductionBlob() != nullptr) continue;
     // Make sure extraction works out - mainly subject to energy conservation
-    if (!Extract(part, part->Beam()))      return false;
+    if (!Extract(part, part->Beam())) { m_fails++; return false; }
   }
   m_treatedshowerblobs.insert(showerblob);
   return true;
 }
 
-void Remnant_Handler::ConnectColours(ATOOLS::Blob *const showerblob) {
+bool Remnant_Handler::ConnectColours(ATOOLS::Blob *const showerblob) {
   // After each showering step, we try to compensate some of the colours.
   // In the absence of multiple parton interactions this will not involve
   // anything complicated with colours.  In each step, the shower initiators
@@ -202,12 +241,11 @@ void Remnant_Handler::ConnectColours(ATOOLS::Blob *const showerblob) {
   // of the shower initiators and, possibly, spectators will be added to a
   // stack which will in turn partially replace the new colours.  This is
   // handled in the Colour_Generator.
-  m_colours.ConnectColours(showerblob);
+  return m_colours.ConnectColours(showerblob);
 }
 
 Return_Value::code Remnant_Handler::MakeBeamBlobs(Blob_List* const bloblist,
-                                                  const bool& isrescatter)
-{
+						  const bool & isrescatter) {
   // Adding the blobs related to the breakup of incident beams: one for each
   // beam, plus, potentially a third one to balance transverse momenta.
   InitBeamAndSoftBlobs(bloblist,isrescatter);
@@ -216,10 +254,11 @@ Return_Value::code Remnant_Handler::MakeBeamBlobs(Blob_List* const bloblist,
   // add soft gluons in between them if their invariant mass is too large.
   // This still needs debugging - therefore it is commented out.
   Return_Value::code rv = Return_Value::Success;
-  if (!m_kinematics.FillBlobs(bloblist)) {
+  if (!m_kinematics.FillBlobs(bloblist, p_labboost)) {
     msg_Debugging() << METHOD << ": Filling of beam blobs failed.\n";
     rv = Return_Value::New_Event;
-  } else if (!CheckBeamBreakup() || !m_decorrelator(p_softblob)) {
+  }
+  else if (!CheckBeamBreakup() || !m_decorrelator(p_softblob)) {
     msg_Error() << METHOD << " failed. Will return new event\n";
     rv = Return_Value::New_Event;
   }
@@ -287,8 +326,10 @@ int Remnant_Handler::FindInsertPositionForRescatter(Blob_List* const bloblist,
   for (Blob_List::iterator pos = bloblist->begin(); pos != bloblist->end();
        ++pos)
     if ((*pos)->Type() == btp::Shower &&
-        std::any_of((*pos)->InParticles()->begin(), (*pos)->InParticles()->end(),
-                    [](Particle* part) { return part->ProductionBlob() == nullptr; }))
+        std::any_of((*pos)->InParticles()->begin(),
+		    (*pos)->InParticles()->end(),[](Particle* part) {
+		      return part->ProductionBlob() == nullptr; }
+		    ))
       return std::max(0, static_cast<int>(pos - bloblist->begin()) - 2);
   return bloblist->size() - 2;
 }
@@ -296,41 +337,50 @@ int Remnant_Handler::FindInsertPositionForRescatter(Blob_List* const bloblist,
 bool Remnant_Handler::CheckBeamBreakup()
 {
   // Final checks on beam breakup: four-momentum and colour conservation
-  if (m_type == strat::simple || !m_check)
-    return true;
+  if (m_type == strat::simple || !m_check) return true;
   bool ok = true;
   for (size_t beam = 0; beam < 2; beam++) {
     if (!p_remnants[beam]->GetBlob()->MomentumConserved() ||
         !p_remnants[beam]->GetBlob()->CheckColour()) {
       ok = false;
-      if (m_output)
+      if (m_output) {
         msg_Error() << "Error in " << METHOD << ": "
                     << "colour or four-momentum not conserved in beamblob:\n"
                     << (*p_remnants[beam]->GetBlob()) << "\n";
+        p_remnants[0]->Output();
+        p_remnants[1]->Output();
+      }
     }
   }
-  if (!p_softblob)
-    return ok;
+  if (!p_softblob) return ok;
   if (!p_softblob->MomentumConserved() || !p_softblob->CheckColour()) {
     ok = false;
-    if (m_output)
+    if (m_output) {
       msg_Error() << "Error in " << METHOD << ": "
                   << "colour or four-momentum not conserved in softblob:\n"
                   << (*p_softblob) << "\n";
+      p_remnants[0]->Output();
+      p_remnants[1]->Output();
+    }
   }
   return ok;
 }
 
-void Remnant_Handler::SetImpactParameter(const double & b) {
-  Vec4D  pos = b/2.*Vec4D(0.,1.,0.,0.);
+void Remnant_Handler::SetImpactParameter(const double & b,const Vec4D & direction) {
+  /////////////////////////////////////////////////////////////////////////////////
+  // b has to be given in mm.
+  /////////////////////////////////////////////////////////////////////////////////
+  Vec4D  pos = b/2. * direction;
   for (size_t i=0;i<2;i++) p_remnants[i]->SetPosition((i==0?1.:-1.) * pos);
 }
 
-bool Remnant_Handler::Extract(ATOOLS::Particle * part,const unsigned int beam) {
+bool Remnant_Handler::Extract(ATOOLS::Particle * part,const unsigned int beam)
+{
   // Extracting a particle from a remnant only works for positive energies.
   if (part->Momentum()[0] < 0.) {
-    msg_Error() << METHOD << " yields shower with negative incoming energies.\n"
-                << (*part->DecayBlob()) << "\n";
+    msg_Error()<<METHOD
+	       <<" yields shower with negative incoming energies.\n"
+	       << (*part->DecayBlob()) << "\n";
     return false;
   }
   return p_remnants[beam]->Extract(part, &m_colours);
@@ -338,7 +388,11 @@ bool Remnant_Handler::Extract(ATOOLS::Particle * part,const unsigned int beam) {
 
 void Remnant_Handler::Reset() {
   const bool DIS = m_type == strat::DIS1 || m_type == strat::DIS2;
-  for (size_t beam = 0; beam < 2; ++beam) p_remnants[beam]->Reset(false, DIS);
+  for (size_t beam = 0; beam < 2; ++beam) {
+    // Resets the outgoing momentum of the beam base to its original value
+    p_remnants[beam]->SetInMomentum(p_remnants[beam]->GetBeam()->InMomentum());
+    p_remnants[beam]->Reset(false, DIS);
+  }
   m_treatedshowerblobs.clear();
   m_kinematics.Reset();
   m_colours.Reset();

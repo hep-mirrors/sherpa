@@ -49,6 +49,34 @@ Beam_Remnant_Handler::FillRescatterBeamBlobs(Blob_List *const bloblist) {
 }
 
 Return_Value::code
+Beam_Remnant_Handler::FillBunchBlobsFromShower(Blob_List *bloblist) {
+  Return_Value::code fbc = Return_Value::Nothing;
+  Blob * shower = bloblist->FindFirst(btp::Shower);
+  if (shower && shower->Has(blob_status::needs_beams)) {
+    size_t bunches = 0;
+    for (size_t i=0;i<shower->NInP();i++) {
+      Particle * part = shower->InParticle(i);
+      std::shared_ptr<REMNANTS::Remnant_Base>
+	remnant = GetRemnants()->GetRemnant(part->Beam());
+      if (part->Info()=='I' && part->Beam()>-1) {
+	if (part->Flav()==remnant->InFlav() &&
+	    part->Momentum()==remnant->InMomentum()) {
+	  bloblist->push_front(FillBunchBlob(part->Beam(),part));
+	  bunches++;
+	}
+      }
+    }
+    if (bunches==2) {
+      shower->UnsetStatus(blob_status::needs_beams);
+      shower->UnsetStatus(blob_status::internal_flag);
+      fbc = Return_Value::Success;
+    }
+    else fbc = Return_Value::New_Event;
+  }
+  return fbc;
+}
+
+Return_Value::code
 Beam_Remnant_Handler::TreatNoFill(Blob_List *const bloblist)
 {
   bool set(false);
@@ -108,6 +136,13 @@ ATOOLS::Return_Value::code Beam_Remnant_Handler::FillSimpleBunchBlobs(
 {
   ATOOLS::Return_Value::code flag(Return_Value::Nothing);
   m_beam = 0;
+  Poincare * cmsboost = p_remnants->GetCMSBoost();
+  m_boosted = (cmsboost!=nullptr);
+  for (size_t beam=0;beam<2;beam++) {
+    m_bunchmoms[beam] = (m_boosted ?
+			 (*cmsboost)*p_beam->GetBeam(beam)->InMomentum() :
+			 p_beam->GetBeam(beam)->InMomentum() );
+  }
   for (auto* bit : *bloblist) {
     if (bit->Has(blob_status::needs_beams) &&
         (bit->Type() == btp::Beam || bit->Type() == btp::Shower)) {
@@ -115,10 +150,11 @@ ATOOLS::Return_Value::code Beam_Remnant_Handler::FillSimpleBunchBlobs(
       bloblist->push_front(FillBunchBlob(bit->Beam(), bit->InParticle(0)));
       if (m_beam>2) THROW(fatal_error,"Too many bunch blobs required");
       flag = Return_Value::Success;
-    } else if (bit->Has(blob_status::needs_beams) ||
-               bit->Type() == btp::Elastic_Collision ||
-               bit->Type() == btp::Soft_Diffractive_Collision ||
-               bit->Type() == btp::Quasi_Elastic_Collision) {
+    }
+    else if (bit->Has(blob_status::needs_beams) ||
+	     bit->Type() == btp::Elastic_Collision ||
+	     bit->Type() == btp::Soft_Diffractive_Collision ||
+	     bit->Type() == btp::Quasi_Elastic_Collision) {
       bit->UnsetStatus(blob_status::needs_beams);
       for (auto* part : *bit->InParticles())
         bloblist->push_front(FillBunchBlob(part->Beam(), part));
@@ -137,7 +173,7 @@ Blob * Beam_Remnant_Handler::FillBunchBlob(int beam,Particle * particle)
   blob->SetId();
   blob->AddToOutParticles(particle);
   if (particle->Flav()==p_beam->GetBeam(beam)->Beam() &&
-      IsEqual(particle->E(),p_beam->GetBeam(beam)->InMomentum()[0],1.e-6)) {
+      IsEqual(particle->E(),m_bunchmoms[beam][0],1.e-6)) {
     Particle *p = new Particle(*particle);
     p->SetNumber(0);
     blob->AddToInParticles(p);
@@ -145,14 +181,13 @@ Blob * Beam_Remnant_Handler::FillBunchBlob(int beam,Particle * particle)
   }
   else {
     Particle* p = new Particle(-1, p_beam->GetBeam(beam)->Beam(),
-                               p_beam->GetBeam(beam)->InMomentum());
+                               m_bunchmoms[beam]);
     p->SetNumber(0);
     p->SetStatus(part_status::decayed);
     p->SetFinalMass();
     blob->AddToInParticles(p);
     p = new Particle(-1, p_beam->GetBeam(beam)->Remnant(),
-                     (p_beam->GetBeam(beam)->InMomentum() -
-		      particle->Momentum()));
+                     m_bunchmoms[beam]-particle->Momentum());
     p->SetNumber(0);
     p->SetStatus(part_status::decayed);
     p->SetFinalMass();

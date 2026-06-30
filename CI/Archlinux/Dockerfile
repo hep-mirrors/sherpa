@@ -4,7 +4,9 @@ RUN  pacman -Syu --noconfirm \
                       doxygen texlive-bibtexextra \
                       pkgconf \
                       gcc gcc-fortran \
-                      libzip lhapdf \
+                      libzip \
                       catch2 lcov \
                       doxygen
-RUN lhapdf update && lhapdf install PDF4LHC21_40_pdfas
+
+# disable system installation of LHAPDF as it was removed from extra repository
+#RUN lhapdf update && lhapdf install PDF4LHC21_40_pdfas

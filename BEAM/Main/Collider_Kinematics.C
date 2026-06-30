@@ -32,10 +32,13 @@ void Collider_Kinematics::InitSystem() {
 
   m_on = (m_mode != collidermode::monochromatic);
   m_x[0] = m_x[1] = 0.;
-  if (p_beams[0]->Type() == beamspectrum::Fixed_Target){
-    m_on = false;
+  if (m_mode==collidermode::monochromatic) {
+    for (size_t i = 0; i < 2; ++i) {
+      p_beams[i]->SetOutMomentum(p_beams[i]->InMomentum());
+      rpa->gen.SetPBunch(i, p_beams[i]->InMomentum());
+    }
   }
-  m_LabBoost = Poincare(p_beams[0]->InMomentum() + p_beams[1]->InMomentum());
+  m_LabBoost = Poincare(p_beams[0]->InMomentum()  + p_beams[1]->InMomentum());
   m_CMSBoost = Poincare(p_beams[0]->OutMomentum() + p_beams[1]->OutMomentum());
 }
 
@@ -60,10 +63,10 @@ bool Collider_Kinematics::operator()(ATOOLS::Vec4D_Vector& moms) {
   }
   if (m_mode == collidermode::monochromatic)
     return true;
-  Vec4D pa = p_beams[0]->InMomentum();
-  Vec4D pb = p_beams[1]->InMomentum();
-  double gam = pa * pb + sqrt(sqr(pa * pb) - pa.Abs2() * pb.Abs2());
-  double bet = 1.0 / (1.0 - pa.Abs2() / gam * pb.Abs2() / gam);
+  const Vec4D& pa = p_beams[0]->InMomentum();
+  const Vec4D& pb = p_beams[1]->InMomentum();
+  const double gam = pa * pb + sqrt(sqr(pa * pb) - pa.Abs2() * pb.Abs2());
+  const double bet = 1.0 / (1.0 - pa.Abs2() / gam * pb.Abs2() / gam);
   m_p_plus = bet * (pa - pa.Abs2() / gam * pb);
   m_p_minus = bet * (pb - pb.Abs2() / gam * pa);
   const double tau = CalculateTau();

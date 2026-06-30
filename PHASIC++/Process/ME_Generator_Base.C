@@ -201,7 +201,7 @@ namespace PHASIC {
     std::vector<double> m_m2, m_p2;
   public:
     ShiftMasses_Energy(Mass_Selector *const ms,
-		    Cluster_Amplitude *const ampl,int mode)
+		       Cluster_Amplitude *const ampl,int mode)
     {
       const auto nin = ampl->NIn();
       auto offset = 0;
@@ -246,7 +246,7 @@ namespace PHASIC {
       m_pZplus = 0;
       m_pZminus = 0;
       for(int i {nin}; i<ampl->Legs().size(); i++) {
-        if(ampl->Leg(i)->Flav().Strong()) {
+        if(!ampl->Leg(i)->Flav().IsLepton()) {
           const Vec4D mom = ampl->Leg(i)->Mom();
           m_xy2.push_back(sqr(mom[1])+sqr(mom[2]));
           m_z.push_back(mom[3]);
@@ -288,14 +288,13 @@ int ME_Generator_Base::ShiftMasses(Cluster_Amplitude *const ampl)
   Vec4D cms;
   for (size_t i(0);i<ampl->Legs().size();++i) {
     if (i<ampl->NIn()) cms-=ampl->Leg(i)->Mom();
-    if (m_psmass.find(ampl->Leg(i)->Flav())!=
-	m_psmass.end()) run=true;
+    if (m_psmass.find(ampl->Leg(i)->Flav())!=m_psmass.end()) run=true;
   }
   if (!run) return 1;
   /// if so treat DIS as special case
   if(ampl->NIn() <= 1 ||
-     (!(ampl->Leg(0)->Flav().IsLepton() && ampl->Leg(1)->Flav().Strong()) &&
-      !(ampl->Leg(0)->Flav().Strong() && ampl->Leg(1)->Flav().IsLepton()) ) ) {
+     (!(ampl->Leg(0)->Flav().IsLepton() && !ampl->Leg(1)->Flav().IsLepton()) &&
+      !(!ampl->Leg(0)->Flav().IsLepton() && ampl->Leg(1)->Flav().IsLepton()) ) ) {
     return ShiftMassesDefault(ampl, cms);
   }
   else {
@@ -337,9 +336,10 @@ int ME_Generator_Base::ShiftMassesDefault(Cluster_Amplitude *const ampl, Vec4D c
     ampl->Leg(i)->SetMom(boost*p);
   }
   for (int i = 0; i < 2; i++) {
-    if (rpa->gen.PBunch(ampl->Leg(i)->Mom()[3] < 0.0 ? 0 : 1)[0] <
-        -ampl->Leg(i)->Mom()[0])
-      return -1;
+    double Ebunch = rpa->gen.PBunch(ampl->Leg(i)->Mom()[3] < 0.0 ? 0 : 1)[0];
+    double Ei = -ampl->Leg(i)->Mom()[0];
+    // need to check equality with some margin, for lepton beams without a pdf
+    if (Ebunch < Ei && !IsEqual(Ei,Ebunch)) return -1;
   }
   msg_Debugging()<<"After shift: "<<*ampl<<"\n";
   return 1;
@@ -361,7 +361,7 @@ int ME_Generator_Base::ShiftMassesDIS(Cluster_Amplitude *const ampl, Vec4D cms) 
   const Vec4D pLepIn = ampl->Leg(0)->Mom();
   std::vector<Vec4D> pLepOut;
   for (size_t i(ampl->NIn());i<ampl->Legs().size();++i) {
-    if(!ampl->Leg(i)->Flav().Strong()) pLepOut.push_back(ampl->Leg(i)->Mom());
+    if(ampl->Leg(i)->Flav().IsLepton()) pLepOut.push_back(ampl->Leg(i)->Mom());
   }
 
 
@@ -375,11 +375,11 @@ int ME_Generator_Base::ShiftMassesDIS(Cluster_Amplitude *const ampl, Vec4D cms) 
   /// aligned and push recoil to hadronic final state
   Vec4D pStrongOutBefore(0,0,0,0);
   for (size_t i(ampl->NIn());i<ampl->Legs().size();++i) {
-    if(ampl->Leg(i)->Flav().Strong()) pStrongOutBefore += ampl->Leg(i)->Mom();
+    if(!ampl->Leg(i)->Flav().IsLepton()) pStrongOutBefore += ampl->Leg(i)->Mom();
   }
   Vec4D pStrongInBefore;
   for(size_t i=0; i<ampl->NIn(); i++) {
-    if(ampl->Leg(i)->Flav().Strong()) pStrongInBefore = -ampl->Leg(i)->Mom();
+    if(!ampl->Leg(i)->Flav().IsLepton()) pStrongInBefore = -ampl->Leg(i)->Mom();
   }
   /// hadronic final state should have finite mass, otherwise we had a
   /// we should be in a 2->2 case with massless partons, and never arrive here
@@ -401,9 +401,9 @@ int ME_Generator_Base::ShiftMassesDIS(Cluster_Amplitude *const ampl, Vec4D cms) 
 
     for(size_t i=0; i<ampl->Legs().size(); i++) {
       if(i < ampl->NIn()) {
-        if(ampl->Leg(i)->Flav().Strong()) ampl->Leg(i)->SetMom(-newInMom);
+        if(!ampl->Leg(i)->Flav().IsLepton()) ampl->Leg(i)->SetMom(-newInMom);
       }
-      else if(ampl->Leg(i)->Flav().Strong()) {
+      else if(!ampl->Leg(i)->Flav().IsLepton()) {
         Vec4D p = ampl->Leg(i)->Mom();
         oldHCM.Boost(p);
         newHCM.BoostBack(p);
@@ -422,7 +422,7 @@ int ME_Generator_Base::ShiftMassesDIS(Cluster_Amplitude *const ampl, Vec4D cms) 
     double mass2out=-1;
     for(size_t i=0; i<ampl->Legs().size(); i++) {
       Vec4D p = ampl->Leg(i)->Mom();
-      if(ampl->Leg(i)->Flav().Strong()) {
+      if(!ampl->Leg(i)->Flav().IsLepton()) {
         if(i<ampl->NIn()) {
           mass2in = Mass2(ampl->Leg(i)->Flav());
           p[0]=-sqrt(mass2in+p.PSpat2());
@@ -444,7 +444,7 @@ int ME_Generator_Base::ShiftMassesDIS(Cluster_Amplitude *const ampl, Vec4D cms) 
     double Ein = 0;
     for(size_t i=0; i<ampl->NIn(); i++) {
       Vec4D p = ampl->Leg(i)->Mom();
-      if(ampl->Leg(i)->Flav().Strong()) {
+      if(!ampl->Leg(i)->Flav().IsLepton()) {
         p[0]=-sqrt(Mass2(ampl->Leg(i)->Flav())+p.PSpat2());
         Ein = -p[0];
       }
@@ -456,7 +456,7 @@ int ME_Generator_Base::ShiftMassesDIS(Cluster_Amplitude *const ampl, Vec4D cms) 
     // while preserving pZ
     double EoutMin = 0;
     for(size_t i=ampl->NIn(); i<ampl->Legs().size(); i++) {
-      if(ampl->Leg(i)->Flav().Strong()) {
+      if(!ampl->Leg(i)->Flav().IsLepton()) {
         EoutMin += sqrt(Mass2(ampl->Leg(i)->Flav()) +
                         sqr(etot.scaledZ(ampl->Leg(i)->Mom()[3],0)));
       }
@@ -477,7 +477,7 @@ int ME_Generator_Base::ShiftMassesDIS(Cluster_Amplitude *const ampl, Vec4D cms) 
     }
     for (size_t i(ampl->NIn());i<ampl->Legs().size();++i) {
       Vec4D p = ampl->Leg(i)->Mom();
-      if(ampl->Leg(i)->Flav().Strong()) {
+      if(!ampl->Leg(i)->Flav().IsLepton()) {
         p[1] *= xi;
         p[2] *= xi;
         p[3] = etot.scaledZ(p[3],xi);
@@ -499,11 +499,11 @@ int ME_Generator_Base::ShiftMassesDIS(Cluster_Amplitude *const ampl, Vec4D cms) 
   /// aligned and push recoil to hadronic final state
   Vec4D pStrongOut(0,0,0,0);
   for (size_t i(ampl->NIn());i<ampl->Legs().size();++i) {
-    if(ampl->Leg(i)->Flav().Strong()) pStrongOut += ampl->Leg(i)->Mom();
+    if(!ampl->Leg(i)->Flav().IsLepton()) pStrongOut += ampl->Leg(i)->Mom();
   }
   Vec4D pStrongIn;
   for(size_t i=0; i<ampl->NIn(); i++) {
-    if(ampl->Leg(i)->Flav().Strong()) pStrongIn = -ampl->Leg(i)->Mom();
+    if(!ampl->Leg(i)->Flav().IsLepton()) pStrongIn = -ampl->Leg(i)->Mom();
   }
   /// hadronic final state should have finite mass, otherwise
   /// we should be in a 2->2 case with massless partons, and never arrive here
@@ -524,11 +524,11 @@ int ME_Generator_Base::ShiftMassesDIS(Cluster_Amplitude *const ampl, Vec4D cms) 
     for(size_t i=0; i<ampl->Legs().size(); i++) {
       size_t idxout = 0;
       if(i < ampl->NIn()) {
-        if(ampl->Leg(i)->Flav().Strong()) ampl->Leg(i)->SetMom(-newInMom);
+        if(!ampl->Leg(i)->Flav().IsLepton()) ampl->Leg(i)->SetMom(-newInMom);
         else                              ampl->Leg(i)->SetMom(pLepIn);
       }
       else {
-        if(ampl->Leg(i)->Flav().Strong()) {
+        if(!ampl->Leg(i)->Flav().IsLepton()) {
           Vec4D p = ampl->Leg(i)->Mom();
           oldHCM.Boost(p);
           newHCM.BoostBack(p);
@@ -544,7 +544,7 @@ int ME_Generator_Base::ShiftMassesDIS(Cluster_Amplitude *const ampl, Vec4D cms) 
   else {
     size_t idxout = 0;
     for(size_t i=0; i<ampl->Legs().size(); i++) {
-      if(ampl->Leg(i)->Flav().Strong()) continue;
+      if(!ampl->Leg(i)->Flav().IsLepton()) continue;
       if(i < ampl->NIn()) ampl->Leg(i)->SetMom(pLepIn);
       else {
         ampl->Leg(i)->SetMom(pLepOut[idxout]);

@@ -14,7 +14,8 @@ namespace SHERPA {
     std::array<ATOOLS::Blob*, 2> p_beamblobs;
     Soft_Collision_Handler     * p_schandler;
 
-    bool m_bunchrescatter, m_fill, m_vmode;
+    std::array<Vec4D, 2> m_bunchmoms;
+    bool m_bunchrescatter, m_fill, m_vmode, m_boosted;
     int  m_beam;
     std::string m_name;
 
@@ -31,6 +32,7 @@ namespace SHERPA {
     ATOOLS::Return_Value::code FillBeamAndBunchBlobs(ATOOLS::Blob_List* const,
                                                      const bool& onlyBunch = false);
     ATOOLS::Return_Value::code FillRescatterBeamBlobs(ATOOLS::Blob_List* const bloblist);
+    ATOOLS::Return_Value::code FillBunchBlobsFromShower(ATOOLS::Blob_List *);
     void CleanUp(const size_t & mode=0);
 
     inline void AddBunchRescattering(REMNANTS::Remnant_Handler* const remnants,

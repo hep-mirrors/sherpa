@@ -34,6 +34,7 @@ Event_Handler::Event_Handler():
   m_checkweight = s["CHECK_WEIGHT"].SetDefault(0).Get<int>();
   m_decayer = s["DECAYER"].SetDefault(kf_none).Get<int>();
   m_lastrss=0;
+  s_objects.push_back(this);
 }
 
 Event_Handler::~Event_Handler()
@@ -149,7 +150,6 @@ void Event_Handler::ResetNonPerturbativePhases()
 
 bool Event_Handler::GenerateEvent(eventtype::code mode)
 {
-  // msg_Out()<<"=========================================================\n";
   DEBUG_FUNC(rpa->gen.NumberOfGeneratedEvents());
   ATOOLS::ran->SaveStatus();
   if (m_checkweight&4 && rpa->gen.NumberOfGeneratedEvents()==0)
@@ -298,6 +298,8 @@ int Event_Handler::IterateEventPhases(eventtype::code & mode) {
       Reset();
       return 2;
     case Return_Value::Error :
+      if (rpa->gen.NumberOfEvents()==
+	  rpa->gen.NumberOfGeneratedEvents()) return 0;
       Return_Value::IncCall((*pit)->Name());
       Return_Value::IncError((*pit)->Name());
       return 3;
@@ -368,7 +370,8 @@ bool Event_Handler::GenerateStandardPerturbativeEvent(eventtype::code &mode)
     }
   } while (run);
 
-  if (mode==eventtype::EventReader) {
+  if (mode==eventtype::EventReader ||
+      rpa->gen.NumberOfEvents()==rpa->gen.NumberOfGeneratedEvents()) {
     if (p_signal->NOutP()==0) return false;
   }
   else {
@@ -497,7 +500,7 @@ bool Event_Handler::GenerateHadronDecayEvent(eventtype::code & mode) {
 }
 
 void Event_Handler::Finish() {
-  MPISyncXSAndErrMaps();
+  while (Communicate(1)<0);
   msg_Info()<<"Summarizing the run may take some time ...\n";
   for (Phase_Iterator pit=p_phases->begin();pit!=p_phases->end();++pit) {
     (*pit)->Finish(std::string("Results"));
@@ -594,11 +597,6 @@ void Event_Handler::MPISync()
       mpi->Allreduce(&m_maxweight, 1, MPI_DOUBLE, MPI_MAX);
   }
 #endif
-}
-
-void Event_Handler::MPISyncXSAndErrMaps()
-{
-  MPISync();
   m_mwgtmapsum = m_wgtmapsum;
   m_mwgtmapsumsqr = m_wgtmapsumsqr;
 #ifdef USING__MPI
@@ -644,7 +642,7 @@ Uncertain<double> Event_Handler::TotalNominalXS()
 
 Uncertain<double> Event_Handler::TotalNominalXSMPI()
 {
-  MPISync();
+  while (Communicate(1)<0);
   if (m_mn == 0.0)
     return {0.0, 0.0};
 

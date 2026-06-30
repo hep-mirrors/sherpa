@@ -5,6 +5,8 @@
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/CXXFLAGS.H"
 #include "ATOOLS/Phys/Flow.H"
+#include "ATOOLS/Phys/Blob.H"
+#include "ATOOLS/Math/Poincare.H"
 
 using namespace ATOOLS;
 
@@ -21,10 +23,29 @@ ClusterAmplitude_PVector::~ClusterAmplitude_PVector()
   }
 }
 
+Cluster_Amplitude * ClusterAmplitude_PVector::OneAmpl()
+{
+  // links all amplitudes from this amplitude vector and return the linked, single amplitude
+  if (this->size()==0) return Cluster_Amplitude::New();
+  Cluster_Amplitude * tmp = this->at(0)->CopyAll();
+  for(int i=1; i< this->size(); i++){
+      if (this->at(i)){
+          Cluster_Amplitude * next_prev = this->at(i)->CopyAll();
+          while (next_prev->Prev()) next_prev = next_prev->Prev();
+          tmp->SetNext(next_prev);
+          while (tmp->Next()) tmp = tmp->Next();
+
+        }
+    }
+
+  while (tmp->Prev()) tmp = tmp->Prev();
+  return tmp;
+}
+
 ClusterAmplitude_PVector Cluster_Amplitude::s_ampls;
 
 Cluster_Amplitude::Cluster_Amplitude(Cluster_Amplitude *const prev):
-  p_prev(prev), p_next(NULL), 
+  p_prev(prev), p_next(NULL),
   m_oew(0), m_oqcd(0), m_nin(0), m_new(0), m_ncl(0),
   m_kin(0), m_nlo(0), m_flag(0),
   m_mur2(0.0), m_muf2(0.0), m_muq2(0.0), m_mu2(0.0),
@@ -63,6 +84,13 @@ Cluster_Amplitude *Cluster_Amplitude::New
   return ca;
 }
 
+void Cluster_Amplitude::Boost(const Poincare& boost)
+{
+  if (p_next) p_next->Boost(boost);
+  for (size_t i(0); i < m_legs.size(); ++i)
+    m_legs[i]->SetMom(boost * m_legs[i]->Mom());
+}
+
 void Cluster_Amplitude::Delete()
 {
   if (p_next) p_next->Delete();
@@ -81,9 +109,9 @@ void Cluster_Amplitude::Delete()
 
 void Cluster_Amplitude::CreateLeg
 (const Vec4D &p,const Flavour &fl,
- const ColorID &col,const size_t &id)
+ const ColorID &col,const size_t &id,const int & beam)
 {
-  m_legs.push_back(Cluster_Leg::New(this,p,fl,col));
+  m_legs.push_back(Cluster_Leg::New(this,p,fl,col,beam));
   if (id!=std::string::npos) m_legs.back()->SetId(id);
   else m_legs.back()->SetId(1<<(m_legs.size()-1));
 }
@@ -140,12 +168,13 @@ void Cluster_Amplitude::CombineLegs
 (Cluster_Leg *const i,Cluster_Leg *const j,
  const Flavour &fl,const ColorID &col)
 {
-  if (i->Amplitude()!=this || j->Amplitude()!=this) 
+  if (i->Amplitude()!=this || j->Amplitude()!=this)
     THROW(fatal_error,"Leg not owned by current amplitude");
   for (ClusterLeg_Vector::iterator clit(m_legs.begin());
        clit!=m_legs.end();++clit) {
     if (*clit==i || *clit==j) {
-      *clit = Cluster_Leg::New(this,i->Mom()+j->Mom(),fl,col);
+      *clit = Cluster_Leg::New(this,i->Mom()+j->Mom(),fl,col,
+			       Max(i->Beam(),j->Beam()));
       (*clit)->SetId( (i->Id() | j->Id()) );
       i->Delete();
       j->Delete();
@@ -174,7 +203,7 @@ Cluster_Amplitude *Cluster_Amplitude::InitPrev()
   return p_prev;
 }
 
-void Cluster_Amplitude::SetNext(Cluster_Amplitude *const next) 
+void Cluster_Amplitude::SetNext(Cluster_Amplitude *const next)
 {
   if (p_next!=NULL) p_next->Delete();
   if (next->p_prev) next->p_prev->p_next=NULL;
@@ -204,7 +233,7 @@ void Cluster_Amplitude::DeleteNext()
 
 class Order_LegId {
 public:
-  int operator()(const Cluster_Leg *a,const Cluster_Leg *b) 
+  int operator()(const Cluster_Leg *a,const Cluster_Leg *b)
   { return a->Id()<b->Id(); }
 };// end of class Order_LegId
 
@@ -294,9 +323,9 @@ bool Cluster_Amplitude::CheckColors
     }
     else if (lj->Flav().StrongCharge()==8) {
       if (lk->Flav().StrongCharge()==0) return false;
-      if (ci.m_i==cj.m_j && 
+      if (ci.m_i==cj.m_j &&
 	  (cj.m_i==ck.m_j || ck.Singlet())) return true;
-      if ((ci.m_i==ck.m_j || ck.Singlet()) && 
+      if ((ci.m_i==ck.m_j || ck.Singlet()) &&
 	  cj.Singlet()) return true;
       if (li->Flav().Kfcode()==25 && mo.IsGluon() &&
 	  (cj.m_i==ck.m_j || cj.m_j==ck.m_i)) return true;
@@ -314,9 +343,9 @@ bool Cluster_Amplitude::CheckColors
     }
     else if (lj->Flav().StrongCharge()==8) {
       if (lk->Flav().StrongCharge()==0) return false;
-      if (ci.m_j==cj.m_i && 
+      if (ci.m_j==cj.m_i &&
 	  (cj.m_j==ck.m_i || ck.Singlet())) return true;
-      if ((ci.m_j==ck.m_i || ck.Singlet()) && 
+      if ((ci.m_j==ck.m_i || ck.Singlet()) &&
 	  cj.Singlet()) return true;
     }
     else {
@@ -327,11 +356,11 @@ bool Cluster_Amplitude::CheckColors
   else if (li->Flav().StrongCharge()==8) {
     if (lk->Flav().StrongCharge()==0) return false;
     if (lj->Flav().StrongCharge()==8) {
-      if (ci.m_i==cj.m_j && 
+      if (ci.m_i==cj.m_j &&
 	  (ci.m_j==ck.m_i || cj.m_i==ck.m_j ||
-	   (ci.m_j==cj.m_i && lk->Flav().StrongCharge()!=8))) 
+	   (ci.m_j==cj.m_i && lk->Flav().StrongCharge()!=8)))
 	return true;
-      if (ci.m_j==cj.m_i && 
+      if (ci.m_j==cj.m_i &&
 	  (ci.m_i==ck.m_j || cj.m_j==ck.m_i ||
 	   (ci.m_i==cj.m_j && lk->Flav().StrongCharge()!=8)))
 	return true;
@@ -396,11 +425,11 @@ ColorID Cluster_Amplitude::CombineColors
   }
   else if (li->Flav().StrongCharge()==8) {
     if (lj->Flav().StrongCharge()==8) {
-      if (ci.m_i==cj.m_j && 
+      if (ci.m_i==cj.m_j &&
 	  (ci.m_j==ck.m_i || cj.m_i==ck.m_j ||
-	   (ci.m_j==cj.m_i && lk->Flav().StrongCharge()!=8))) 
+	   (ci.m_j==cj.m_i && lk->Flav().StrongCharge()!=8)))
 	return ColorID(cj.m_i,ci.m_j);
-      if (ci.m_j==cj.m_i && 
+      if (ci.m_j==cj.m_i &&
 	  (ci.m_i==ck.m_j || cj.m_j==ck.m_i ||
 	   (ci.m_i==cj.m_j && lk->Flav().StrongCharge()!=8)))
 	return ColorID(ci.m_i,cj.m_j);
@@ -588,14 +617,14 @@ namespace ATOOLS {
     if (ampl.Decays().size()) {
       std::string ds;
       for (DecayInfo_Vector::const_iterator cit(ampl.Decays().begin());
-	   cit!=ampl.Decays().end();++cit) 
+	   cit!=ampl.Decays().end();++cit)
         ds+=ToString(**cit)+" ";
       ostr<<"  decs = { "<<ds<<"}\n";
     }
     if (ampl.ColorMap().size()) {
       std::string cs;
       for (CI_Map::const_iterator cit(ampl.ColorMap().begin());
-	   cit!=ampl.ColorMap().end();++cit) 
+	   cit!=ampl.ColorMap().end();++cit)
 	cs+=ToString(cit->first)+"->"+ToString(cit->second)+" ";
       ostr<<"  cols = { "<<cs<<"}\n";
     }
@@ -604,4 +633,47 @@ namespace ATOOLS {
     return ostr<<"}";
   }
 
+  std::ostream &operator<<
+    (std::ostream &ostr,const Cluster_Amplitude * ampl)
+  {
+
+    ostr<<ampl->NIn()<<" -> "<<ampl->Legs().size()-ampl->NIn()<<" {\n";
+    ostr<<"  \\mu_r = "<<sqrt(ampl->MuR2())
+        <<", \\mu_f = "<<sqrt(ampl->MuF2())
+        <<", \\mu_q = "<<sqrt(ampl->MuQ2())
+        <<", \\mu = "<<sqrt(ampl->Mu2())<<"\n";
+    ostr<<"  k_T = "<<sqrt(ampl->KT2())<<", z = "<<ampl->Z()
+        <<", phi = "<<ampl->Phi()<<", kin = "<<ampl->Kin()
+        <<", K = "<<ampl->LKF()<<"\n";
+    ostr<<"  oew = "<<ampl->OrderEW()<<", oqcd = "<<ampl->OrderQCD()
+        <<", nlo = "<<ampl->NLO()<<", new = "<<ID(ampl->IdNew())
+        <<", ncl = "<<ampl->NewCol()<<", flag = "<<ampl->Flag()<<"\n";
+    if (ampl->Decays().size()) {
+      std::string ds;
+      for (DecayInfo_Vector::const_iterator cit(ampl->Decays().begin());
+           cit!=ampl->Decays().end();++cit)
+        ds+=ToString(**cit)+" ";
+      ostr<<"  decs = { "<<ds<<"}\n";
+    }
+    if (ampl->ColorMap().size()) {
+      std::string cs;
+      for (CI_Map::const_iterator cit(ampl->ColorMap().begin());
+           cit!=ampl->ColorMap().end();++cit)
+        cs+=ToString(cit->first)+"->"+ToString(cit->second)+" ";
+      ostr<<"  cols = { "<<cs<<"}\n";
+    }
+    for (size_t i(0);i<ampl->Legs().size();++i)
+      ostr<<"  "<<ampl->Legs()[i]<<"\n";
+    return ostr<<"}";
+  }
+
+
+}
+
+
+namespace ATOOLS {
+  template <> Blob_Data<std::shared_ptr<ATOOLS::Cluster_Amplitude> >::~Blob_Data() {}
+  template class Blob_Data<std::shared_ptr<ATOOLS::Cluster_Amplitude> >;
+  template std::shared_ptr<ATOOLS::Cluster_Amplitude>&
+  Blob_Data_Base::Get<std::shared_ptr<ATOOLS::Cluster_Amplitude> >();
 }

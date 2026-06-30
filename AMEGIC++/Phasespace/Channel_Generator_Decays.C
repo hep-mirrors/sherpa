@@ -100,7 +100,7 @@ int Channel_Generator_Decays::MakeChannel(int& echflag,int n,string& path,string
   chf<<"{"<<endl;
   //chf<<"std::cout<<\""<<name<<"\"<<std::endl;"<<endl;
   chf<<"  double *ran = p_vegas->GeneratePoint(_ran);"<<endl;
-  chf<<"  for(int i=0;i<m_rannum;i++) p_rans[i]=ran[i];"<<endl;
+  chf<<"  for(size_t i=0;i<m_rannum;i++) p_rans[i]=ran[i];"<<endl;
   Flavour * flav    = new Flavour[nout];  
   int       maxnumb = 0;
 
@@ -506,7 +506,7 @@ void  Channel_Generator_Decays::AddToVariables(int flag,const string& lhs,const 
     // daoes not exist
     declarations[name]=rhs;
 
-    if (type == 0) sf<<"  double s";
+    if (type == 0) sf<<"  SHERPA_MAYBE_UNUSED double s";
               else sf<<"  Vec4D  p";
     sf<<lhso<<" = "<<rhs<<";"<<endl;
   } 

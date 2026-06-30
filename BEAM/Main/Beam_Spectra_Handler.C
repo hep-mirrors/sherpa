@@ -15,12 +15,11 @@ using namespace ATOOLS;
 using namespace BEAM;
 using namespace std;
 
-Beam_Spectra_Handler::Beam_Spectra_Handler() :
-  p_kinematics(nullptr), p_weight(nullptr),
-  m_beammode(beammode::collider),
-  m_collidermode(collidermode::monochromatic), m_mode(0),
-  m_polarisation(0), m_on(false)
-{
+Beam_Spectra_Handler::Beam_Spectra_Handler()
+    : p_kinematics(nullptr), p_weight(nullptr), m_beammode(beammode::collider),
+      m_collidermode(collidermode::monochromatic), m_mode(0),
+      m_on(false), m_symmetric(false),
+      m_polarisation(0) {
   msg_Info() << "Initializing beam spectra ...\n";
   for (size_t i = 0; i < 2; i++)
     p_BeamBase[i] = nullptr;
@@ -83,11 +82,14 @@ bool Beam_Spectra_Handler::InitTheBeams() {
   default:
     break;
   }
+<<<<<<< HEAD
   //if(p_BeamBase[0]->Type()==beamspectrum::Fixed_Target ||
   // p_BeamBase[1]->Type()==beamspectrum::Fixed_Target) {
   //BoostFixedTarget();
   //return true;
   //}
+=======
+>>>>>>> origin/master
   rpa->gen.SetBeam1(p_BeamBase[0]->Beam());
   rpa->gen.SetBeam2(p_BeamBase[1]->Beam());
   rpa->gen.SetPBeam(0, p_BeamBase[0]->InMomentum());
@@ -95,6 +97,10 @@ bool Beam_Spectra_Handler::InitTheBeams() {
   rpa->gen.SetPBunch(0, p_BeamBase[0]->OutMomentum());
   rpa->gen.SetPBunch(1, p_BeamBase[1]->OutMomentum());
   double ecms = (p_BeamBase[0]->InMomentum()+p_BeamBase[1]->InMomentum()).Abs();
+  if (p_BeamBase[0]->Type()==beamspectrum::monochromatic &&
+      p_BeamBase[1]->Type()==beamspectrum::monochromatic &&
+      (Vec3D(p_BeamBase[0]->OutMomentum()+p_BeamBase[1]->OutMomentum())).Sqr()<1.e-12)
+    m_symmetric=true;
   rpa->gen.SetEcms(ecms);
   Settings::GetMainSettings().AddGlobalTag("E_CMS", ToString(ecms));
   return true;
@@ -117,10 +123,6 @@ bool Beam_Spectra_Handler::InitTheKinematics() {
     m_type       = std::string("DM Annihilation");
     p_kinematics = new DM_Annihilation_Kinematics(p_BeamBase);
     break;
-  case beammode::Fixed_Target:
-    m_type       = std::string("Collider Setup");
-    p_kinematics = new Collider_Kinematics(p_BeamBase);
-    break;
   case beammode::unknown:
     break;
   default:
@@ -140,9 +142,6 @@ bool Beam_Spectra_Handler::InitTheWeight() {
   case beammode::DM_annihilation:
     p_weight = new DM_Annihilation_Weight(p_kinematics);
     break;
-  case beammode::Fixed_Target:
-    p_weight = new Collider_Weight(p_kinematics);
-    break;
   case beammode::unknown:
     break;
   default:
@@ -156,21 +155,24 @@ void Beam_Spectra_Handler::FixPositions() {
 }
 
 // TODO: Improve this handling for rescattering etc.
-bool Beam_Spectra_Handler::CheckConsistency(const ATOOLS::Flavour *_beams,
-                                            const ATOOLS::Flavour *_bunches) {
+bool Beam_Spectra_Handler::CheckConsistency(const ATOOLS::Flavour* _beams,
+                                            const ATOOLS::Flavour* _bunches)
+{
   for (int i = 0; i < 2; i++) {
-    if (_beams[i]   != GetBeam(i)->Beam() ||
-  _bunches[i] != GetBeam(i)->Bunch() ) return false;
+    if (_beams[i] != GetBeam(i)->Beam() || _bunches[i] != GetBeam(i)->Bunch())
+      return false;
   }
   return true;
 }
 
-bool Beam_Spectra_Handler::CheckConsistency(const ATOOLS::Flavour *_bunches) {
+bool Beam_Spectra_Handler::CheckConsistency(const ATOOLS::Flavour* _bunches)
+{
   for (int i = 0; i < 2; i++) {
     if (_bunches[i] != GetBeam(i)->Bunch()) return false;
   }
   return true;
 }
+<<<<<<< HEAD
 
 // Need to fix this.
 void Beam_Spectra_Handler::BoostFixedTarget(){
@@ -222,3 +224,5 @@ double Beam_Spectra_Handler::SqLam(double x,double y,double z)
   // if (arg>0.) return sqrt(arg)/s;
   // return 0.;
 }
+=======
+>>>>>>> origin/master

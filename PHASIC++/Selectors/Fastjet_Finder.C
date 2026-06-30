@@ -18,6 +18,7 @@ namespace PHASIC {
 }
 
 #include "PHASIC++/Main/Process_Integrator.H"
+#include "ATOOLS/Org/My_MPI.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 
 using namespace PHASIC;
@@ -35,6 +36,8 @@ Fastjet_Finder::Fastjet_Finder(Process_Base* const proc, Scoped_Settings s,
   Fastjet_Selector_Base("FastjetFinder", proc, s),
   m_nb(nb), m_nb2(nb2)
 {
+  fjcore::ClusterSequence::set_fastjet_banner_stream(
+      mpi->Rank() ? nullptr : &ATOOLS::msg->Out());
   std::string default_frame =
           proc->Flavours()[0].IsLepton() && rpa->gen.Beam2().IsHadron()
                   ? "Breit"
@@ -109,7 +112,7 @@ bool Fastjet_Finder::Trigger(Selector_List &sl)
     int n(0);
     for (size_t i(0);i<input.size();++i)
       if (cs.exclusive_dmerge_max(i)>sqr(m_ptmin)) ++n;
-    return (1-m_sel_log->Hit(1-(n>=m_nj)));
+    return m_sel_log->CountingIdentity(n>=m_nj);
   }
 
   int n(0), nb(0), nb2(0);
@@ -139,7 +142,7 @@ bool Fastjet_Finder::Trigger(Selector_List &sl)
     msg_Debugging()<<"Point passed"<<std::endl;
   }
 
-  return (1-m_sel_log->Hit(1-trigger));
+  return m_sel_log->CountingIdentity(trigger);
 }
 
 

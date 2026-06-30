@@ -1,10 +1,5 @@
-#include "PHASIC++/Scales/Scale_Setter_Base.H"
+#include "PHASIC++/Scales/MEPS_Scale_Setter.H"
 
-#include "PHASIC++/Scales/Tag_Setter.H"
-#include "PHASIC++/Scales/Core_Scale_Setter.H"
-#include "PHASIC++/Scales/Color_Setter.H"
-#include "PHASIC++/Scales/Cluster_Definitions.H"
-#include "PHASIC++/Process/Process_Base.H"
 #include "PHASIC++/Process/Single_Process.H"
 #include "PHASIC++/Main/Process_Integrator.H"
 #include "PHASIC++/Main/Color_Integrator.H"
@@ -22,71 +17,6 @@
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/Scoped_Settings.H"
-
-namespace PHASIC {
-
-  class MEPS_Scale_Setter: public Scale_Setter_Base {
-  private:
-
-    PDF::Cluster_Definitions_Base *p_clu, *p_qdc;
-    Core_Scale_Setter *p_core, *p_uoscale;
-    Color_Setter *p_cs;
-    ATOOLS::Mass_Selector *p_ms;
-    Single_Process *p_sproc;
-
-    std::vector<ATOOLS::Algebra_Interpreter*> m_calcs;
-
-    Tag_Setter m_tagset;
-
-    std::shared_ptr<Color_Integrator> p_ci;
-
-    double m_rsf, m_fsf;
-    int    m_cmode, m_nmin;
-    int    m_rproc, m_sproc, m_rsproc, m_vproc, m_nproc;
-
-    static int s_nfgsplit, s_allowuo, s_nlocpl;
-
-    int Select(const PDF::ClusterInfo_Vector &ccs,
-	       const Int_Vector &on,const int mode=0) const;
-
-    bool CoreCandidate(ATOOLS::Cluster_Amplitude *const ampl) const;
-    bool CheckOrdering(ATOOLS::Cluster_Amplitude *const ampl,
-		       const int ord=1) const;
-    bool CheckSplitting(const PDF::Cluster_Info &cp,
-			const int ord) const;
-    bool CheckSubEvents(const PDF::Cluster_Config &cc) const;
-    void Combine(ATOOLS::Cluster_Amplitude &ampl,
-		 const PDF::Cluster_Info &ci) const;
-
-    double SetScales(ATOOLS::Cluster_Amplitude *ampl);
-    double Differential(ATOOLS::Cluster_Amplitude *const ampl,
-			const int mode=0) const;
-
-    bool ClusterStep(ATOOLS::Cluster_Amplitude *ampl,
-		     ATOOLS::ClusterAmplitude_Vector &ampls,
-		     const PDF::Cluster_Info &ci,const int ord) const;
-    void Cluster(ATOOLS::Cluster_Amplitude *ampl,
-		 ATOOLS::ClusterAmplitude_Vector &ampls,
-		 const int ord) const;
-    void SetCoreScale(ATOOLS::Cluster_Amplitude *const ampl) const;
-
-    double UnorderedScale(ATOOLS::Cluster_Amplitude *const ampl) const;
-
-  public:
-
-    MEPS_Scale_Setter(const Scale_Setter_Arguments &args,
-		      const int mode=1);
-
-    ~MEPS_Scale_Setter();
-
-    double Calculate(const ATOOLS::Vec4D_Vector &p,const size_t &mode);
-
-    void SetScale(const std::string &mu2tag,
-		  ATOOLS::Algebra_Interpreter &mu2calc);
-
-  };// end of class MEPS_Scale_Setter
-
-}// end of namespace PHASIC
 
 using namespace PHASIC;
 using namespace PDF;
@@ -123,15 +53,16 @@ MEPS_Scale_Setter::MEPS_Scale_Setter
     Scoped_Settings s(Settings::GetMainSettings()["MEPS"]);
     s_nmaxall=s["NMAX_ALLCONFIGS"].GetScalarWithOtherDefault<int>(-1);
     s_nmaxnloall=s["NLO_NMAX_ALLCONFIGS"].GetScalarWithOtherDefault<int>(-1);
-    s_cmode=s["CLUSTER_MODE"].GetScalarWithOtherDefault<int>(8|32|64|256);
+    s_cmode=s["CLUSTER_MODE"].GetScalarWithOtherDefault<int>(8|32|64);
     s_nlocpl=s["NLO_COUPLING_MODE"].GetScalarWithOtherDefault<int>(2);
     s_csmode=s["MEPS_COLORSET_MODE"].GetScalarWithOtherDefault<int>(0);
     s_core=s["CORE_SCALE"].GetScalarWithOtherDefault<std::string>("Default");
-    s_allowuo=s["ALLOW_SCALE_UNORDERING"].GetScalarWithOtherDefault<int>(0);
+    s_allowuo=s["ALLOW_SCALE_UNORDERING"].GetScalarWithOtherDefault<int>(1);
     s_uoscale=s["UNORDERED_SCALE"].GetScalarWithOtherDefault<std::string>("None");
     s_nfgsplit=Settings::GetMainSettings()["DIPOLES"]["NF_GSPLIT"].Get<int>();
     s_kfac = Settings::GetMainSettings()["SHOWER"]["KFACTOR_SCHEME"].Get<int>();
   }
+  if (s_allowuo) m_reqkfac="CCFM";
   m_scale.resize(2*stp::size);
   std::string tag(args.m_scale), core(s_core), uoscale(s_uoscale);
   m_nproc=!(p_proc->Info().m_fi.NLOType()==nlo_type::lo);
@@ -267,7 +198,9 @@ bool MEPS_Scale_Setter::CheckOrdering
       return true;
     }
     msg_Debugging()<<"Veto ordering: "<<sqrt(ampl->KT2())
-		   <<" < "<<sqrt(ampl->Prev()->KT2())<<"\n";
+		   <<" < "<<sqrt(ampl->Prev()->KT2())
+		   <<" ( ord = "<<ord<<" )\n";
+    if (!ord) return true;
     return false;
   }
   return true;
@@ -325,7 +258,9 @@ void MEPS_Scale_Setter::Combine
     li->SetKT2(1,ci.second.m_kt2+li->KT2(1)+lj->KT2(1));
   }
   lk->SetMom(ci.second.m_pkt);
-  ampl.Prev()->SetIdNew(ampl.Leg(ci.first.m_j)->Id());
+  ampl.Prev()->SetIdNew(ci.first.m_j>ci.first.m_i?
+			ampl.Leg(ci.first.m_j)->Id():
+			ampl.Leg(ci.first.m_i)->Id());
   for (size_t m(0);m<ampl.Legs().size();++m) {
     ampl.Leg(m)->SetK(0);
     ampl.Leg(m)->SetStat(ampl.Leg(m)->Stat()|1);
@@ -383,8 +318,12 @@ double MEPS_Scale_Setter::Calculate
       ampl->SetOrderQCD(p_proc->Caller()->MaxOrder(0));
       for (size_t i(1);i<p_proc->Caller()->MaxOrders().size();++i)
 	ampl->SetOrderEW(ampl->OrderEW()+p_proc->Caller()->MaxOrder(i));
-      for (size_t i(0);i<m_p.size();++i)
+      for (size_t i(0);i<m_p.size();++i) {
 	ampl->CreateLeg(m_p[i],i<p_proc->NIn()?fl[i].Bar():fl[i]);
+	if (p_proc->NIn()==2 && i<p_proc->NIn())
+	  ampl->Legs().back()->SetBeam(p_proc->Caller()->Get<Single_Process>()->
+				       Integrator()->ISR()->Swap() ? 1-i : i);
+      }
       ampl->SetProc(p_proc->Caller()->Get<Single_Process>());
       SetCoreScale(ampl);
       m_ampls.push_back(ampl);
@@ -406,6 +345,9 @@ double MEPS_Scale_Setter::Calculate
       ampl->Leg(i)->SetNMax(nmax);
       ampl->Leg(i)->SetKT2(0,0.);
       ampl->Leg(i)->SetKT2(1,0.);
+      if (p_proc->NIn()==2 && i<p_proc->NIn())
+	ampl->Leg(i)->SetBeam(p_proc->Caller()->Get<Single_Process>()->
+			      Integrator()->ISR()->Swap() ? 1-i : i);
     }
   }
   else {
@@ -416,6 +358,9 @@ double MEPS_Scale_Setter::Calculate
       ampl->Leg(i)->SetNMax(nmax);
       ampl->Leg(i)->SetKT2(0,0.);
       ampl->Leg(i)->SetKT2(1,0.);
+      if (p_proc->NIn()==2 && i<p_proc->NIn())
+	ampl->Leg(i)->SetBeam(p_proc->Caller()->Get<Single_Process>()->
+			      Integrator()->ISR()->Swap() ? 1-i : i);
     }
   }
   ClusterAmplitude_Vector ampls;
@@ -427,7 +372,7 @@ double MEPS_Scale_Setter::Calculate
     ampl->Delete();
     return sqrt(-1);
   }
-  Cluster(ampl,ampls,1);
+  Cluster(ampl,ampls,s_allowuo?0:1);
   p_proc->Caller()->Generator()->SetMassMode(mm);
   if (ampls.empty()) {
     SetCoreScale(ampl);
@@ -515,7 +460,7 @@ void MEPS_Scale_Setter::Cluster
   size_t oldsize(ampls.size());
   bool frs(m_rproc && ampl->Prev()==NULL);
   bool strict(!((m_cmode&1) && !rpa->gen.NumberOfTrials()));
-  DEBUG_FUNC("nmin = "<<m_nmin<<", strict = "<<strict);
+  DEBUG_FUNC("nmin = "<<m_nmin<<", strict = "<<strict<<", ord = "<<ord);
   msg_Debugging()<<*ampl<<"\n";
   ClusterInfo_Vector ccs;
   if (!CoreCandidate(ampl)) {
@@ -542,6 +487,12 @@ void MEPS_Scale_Setter::Cluster
 	      Cluster_Info ci(cc,strict?p_clu->Cluster(cc):
 			      (cc.PureQCD()?p_qdc->Cluster(cc):NULL));
 	      if (ci.second.m_kt2<0.0) continue;
+	      if ((li->Id()|lj->Id())&3)
+		if (-ci.second.m_pijt[3]>rpa->gen.PBeam(0)[3] ||
+		    -ci.second.m_pijt[3]<rpa->gen.PBeam(1)[3]) continue;
+	      if (lk->Id()&3)
+		if (-ci.second.m_pkt[3]>rpa->gen.PBeam(0)[3] ||
+		    -ci.second.m_pkt[3]<rpa->gen.PBeam(1)[3]) continue;
 	      ccs.push_back(ci);
 	      if (ci.second.p_ca==NULL) break;
 	    }

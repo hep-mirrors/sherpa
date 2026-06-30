@@ -125,15 +125,11 @@ bool ISR_Handler::CheckConsistency(ATOOLS::Flavour *bunches,
         break;
       }
       fit = PDF(i)->Contains(partons[i]);
-      if (fit == 0)
-        break;
+      if (!fit) break;
     } else {
       bool found(false);
-      if (p_isrbase[i]->Flavour().Includes(partons[i])) {
-        found = true;
-      }
-      if (!found)
-        return false;
+      if (p_isrbase[i]->Flavour().Includes(partons[i])) found = true;
+      if (!found) return false;
     }
   }
   return fit;

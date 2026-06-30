@@ -9,6 +9,7 @@
 #include <vector>
 
 namespace ATOOLS {
+  class Poincare;
 
   typedef std::map<int,int> CI_Map;
 
@@ -17,6 +18,9 @@ namespace ATOOLS {
   public:
 
     ClusterAmplitude_PVector();
+
+    Cluster_Amplitude * OneAmpl();
+
 
     ~ClusterAmplitude_PVector();
 
@@ -41,14 +45,15 @@ namespace ATOOLS {
     static ClusterAmplitude_PVector s_ampls;
 
     friend class ClusterAmplitude_PVector;
+    friend class std::shared_ptr<ATOOLS::Cluster_Amplitude>;
 
   protected:
 
     Cluster_Amplitude(Cluster_Amplitude *const prev=NULL);
 
-    ~Cluster_Amplitude();
 
   public:
+    ~Cluster_Amplitude();
 
     static Cluster_Amplitude* New(Cluster_Amplitude *const prev=NULL);
 
@@ -63,7 +68,8 @@ namespace ATOOLS {
 
     void CreateLeg(const Vec4D &p,const Flavour &fl,
 		   const ColorID &col=ColorID(),
-		   const size_t &id=std::string::npos);
+		   const size_t &id=std::string::npos,
+		   const int &beam=-1);
     void CombineLegs(Cluster_Leg *const i,Cluster_Leg *const j,
 		     const Flavour &fl,
 		     const ColorID &col=ColorID());
@@ -75,6 +81,8 @@ namespace ATOOLS {
 
     void DeletePrev();
     void DeleteNext();
+
+    void Boost(const ATOOLS::Poincare& boost);
 
     void IdSort();
 
@@ -219,6 +227,10 @@ namespace ATOOLS {
 
   std::ostream &operator<<
     (std::ostream &ostr,const Cluster_Amplitude &ampl);
+
+  std::ostream &operator<<
+    (std::ostream &ostr,const Cluster_Amplitude * ampl);
+
 
   typedef std::vector<Cluster_Amplitude*> ClusterAmplitude_Vector;
 

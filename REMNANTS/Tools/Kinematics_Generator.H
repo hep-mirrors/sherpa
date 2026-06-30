@@ -40,7 +40,8 @@ namespace REMNANTS {
     unsigned long int m_warns, m_errors;
 
     void SetKinType();
-    bool CollinearKinematics();
+    bool CollinearKinematics(ATOOLS::Blob_List *blobs,
+			     const ATOOLS::Poincare * labboost=NULL);
     bool TransverseKinematics();
     bool TransverseKinematicsHH();
     bool TransverseKinematicsDIS(const size_t & beam);
@@ -67,10 +68,17 @@ namespace REMNANTS {
     Kinematics_Generator();
     ~Kinematics_Generator();
 
-    void          Initialize(Remnant_Handler* rhandler);
+    void           Initialize(Remnant_Handler* rhandler);
     ATOOLS::Blob * MakeSoftBlob();
-    bool          FillBlobs(ATOOLS::Blob_List* bloblist);
+    bool           FillBlobs(ATOOLS::Blob_List *const bloblist,
+			     const ATOOLS::Poincare * labboost=NULL);
 
+    inline void SetKinType(const kin_type & type) {
+      m_kintype = type;
+      if (m_kintype==kin_type::intact) {
+	for (size_t beam=0;beam<2;beam++) p_remnants[beam]->SetType(rtp::intact);
+      }
+    }
     inline Primordial_KPerp * GetKPerp() { return &m_kperpGenerator; }
     void Reset();
   };

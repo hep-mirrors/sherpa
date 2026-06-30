@@ -62,7 +62,7 @@ void Matrix_Element_Handler::RegisterDefaults()
   s["NLO_IMODE"].SetDefault("IKP");
   s["NLO_MUR_COEFFICIENT_FROM_VIRTUAL"].SetDefault(true);
 
-  s["PSI"]["ASYNC"].SetDefault(false);
+  s["EVENT_FILES_ENABLED"].SetDefault(true);
 }
 
 void Matrix_Element_Handler::RegisterMainProcessDefaults(
@@ -104,6 +104,7 @@ Matrix_Element_Handler::Matrix_Element_Handler(MODEL::Model_Base *model):
   m_ewaddmode = s["MEH_EWADDMODE"].Get<int>();
   m_qcdaddmode = s["MEH_QCDADDMODE"].Get<int>();
   std::string seedfile{ s["EVENT_SEED_FILE"].Get<std::string>() };
+  m_eventfilesenabled = s["EVENT_FILES_ENABLED"].Get<bool>();
 #ifdef USING__GZIP
   seedfile+=".gz";
 #endif
@@ -129,7 +130,7 @@ Matrix_Element_Handler::Matrix_Element_Handler(MODEL::Model_Base *model):
     const size_t incr{ s["EVENT_SEED_INCREMENT"].Get<size_t>() };
     ran->SetSeedStorageIncrement(incr);
   }
-  m_pilotrunenabled = ran->CanRestoreStatus() && (m_eventmode != 0);
+  m_pilotrunenabled = ran->CanRestoreMultipleStatus() && (m_eventmode != 0);
   msg_Debugging()<<"Pilot run mode: "<<m_pilotrunenabled<<"\n";
 }
 
@@ -202,35 +203,50 @@ bool Matrix_Element_Handler::GenerateOneEvent()
 
   // calculate total selection weight sum
   m_sum=0.0;
+  psum.resize(m_procs.size());
   for (size_t i(0);i<m_procs.size();++i)
-    m_sum+=m_procs[i]->Integrator()->SelectionWeight(m_eventmode);
+    psum[i]=m_sum+=m_procs[i]->Integrator()->SelectionWeight(m_eventmode);
 
   // generate trial events until we accept one
   for (size_t n(1);true;++n) {
     rpa->gen.SetNumberOfTrials(rpa->gen.NumberOfTrials()+1);
     if (m_seedmode==3)
       ran->ResetToLastIncrementedSeed();
-    if (!GenerateOneTrialEvent())
-      continue;
-    m_evtinfo.m_ntrial=n;
-    return true;
+    switch (GenerateOneTrialEvent()) {
+      case trial_event_generation_result::non_zero:
+        m_evtinfo.m_ntrial=n;
+        if (p_beam && !p_beam->IsSymmetric()) {
+          if (p_remnants) p_remnants->InitializeCMSBoost();
+        }
+        return true;
+      case trial_event_generation_result::zero:
+        continue;
+      case trial_event_generation_result::abort:
+        return false;
+    }
   }
   return false;
 }
 
-bool Matrix_Element_Handler::GenerateOneTrialEvent()
+Matrix_Element_Handler::trial_event_generation_result
+Matrix_Element_Handler::GenerateOneTrialEvent()
 {
   // select process
-  double disc(m_sum*ran->Get()), csum(0.0);
+  double disc(m_sum*ran->Get());
   Process_Base *proc(NULL);
   for (size_t i(0);i<m_procs.size();++i) {
-    if ((csum+=m_procs[i]->Integrator()->
-          SelectionWeight(m_eventmode))>=disc) {
+    if (psum[i]>=disc) {
       proc=m_procs[i];
       break;
     }
   }
   if (proc==NULL) THROW(fatal_error,"No process selected");
+  if (proc->IsZeroEvent()) {
+    if (rpa->gen.NumberOfEvents()==
+        rpa->gen.NumberOfGeneratedEvents())
+      return trial_event_generation_result::abort;
+    return trial_event_generation_result::zero;
+  }
 
   // if variations are enabled and we do unweighting, we do a pilot run first
   // where no on-the-fly variations are calculated
@@ -243,18 +259,14 @@ bool Matrix_Element_Handler::GenerateOneTrialEvent()
     // in pilot run mode, calculate nominal only, and prepare to restore
     // the rng to re-run with variations after unweighting
     varmode = Variations_Mode::nominal_only;
-    ran->SaveStatus();
+    ran->SaveStatus(1);
   }
 
   // try to generate an event for the selected process
   ATOOLS::Weight_Info *info=proc->OneEvent(m_eventmode, varmode);
   p_proc=proc->Selected();
-  if (p_proc->Generator()==NULL)
-    THROW(fatal_error,"No generator for process '"+p_proc->Name()+"'");
-  if (p_proc->Generator()->MassMode()!=0)
-    THROW(fatal_error,"Invalid mass mode. Check your PS interface.");
   if (info==NULL)
-    return false;
+    return trial_event_generation_result::zero;
   m_evtinfo=*info;
   delete info;
 
@@ -263,11 +275,11 @@ bool Matrix_Element_Handler::GenerateOneTrialEvent()
   double enhance = p_proc->Integrator()->PSHandler()->EnhanceWeight();
   double wf(rpa->Picobarn()/sw/enhance);
   if (m_eventmode!=0) {
+    const auto abswgt = std::abs(m_evtinfo.m_weightsmap.Nominal());
     const auto maxwt  = p_proc->Integrator()->Max();
     const auto disc   = maxwt * ran->Get();
-    const auto abswgt = std::abs(m_evtinfo.m_weightsmap.Nominal());
     if (abswgt < disc) {
-      return false;
+      return trial_event_generation_result::zero;
     }
     if (abswgt > maxwt * m_ovwth) {
       Return_Value::IncWarning(METHOD);
@@ -283,10 +295,14 @@ bool Matrix_Element_Handler::GenerateOneTrialEvent()
     if (hasvars && m_pilotrunenabled) {
       // re-run with same rng state and include the calculation of variations
       // this time
-      ran->RestoreStatus();
+      ran->RestoreStatus(1);
+      proc->ResetEvent();
       info=proc->OneEvent(m_eventmode, Variations_Mode::all);
       assert(info);
-      if (!IsEqual(m_evtinfo.m_weightsmap.Nominal(), info->m_weightsmap.Nominal(), 1e-6)) {
+      if (!IsEqual(m_evtinfo.m_weightsmap.Nominal(),
+                   info->m_weightsmap.Nominal(), 1e-6) &&
+          !(IsNan(m_evtinfo.m_weightsmap.Nominal()) &&
+            IsNan(info->m_weightsmap.Nominal()))) {
         msg_Error()
           <<"ERROR: The results of the pilot run and the re-run are not"
           <<" the same:\n"
@@ -310,7 +326,7 @@ bool Matrix_Element_Handler::GenerateOneTrialEvent()
     p_proc->GetSubevtList()->MultMEwgt(wf);
   }
   if (p_proc->GetMEwgtinfo()) (*p_proc->GetMEwgtinfo())*=wf;
-  return true;
+  return trial_event_generation_result::non_zero;
 }
 
 std::vector<Process_Base*> Matrix_Element_Handler::InitializeProcess(
@@ -432,7 +448,7 @@ std::vector<Process_Base*> Matrix_Element_Handler::InitializeSingleProcess
 	procs.push_back(m_gens.InitializeProcess(rpi,true));
 	if (procs.back()==NULL) {
 	  msg_Error()<<"No such process:\n"<<rpi<<std::endl;
-	  THROW(critical_error,"Failed to intialize process");
+	  THROW(critical_error,"Failed to initialize process");
 	}
       }
       if (pi.m_fi.NLOType()&nlo_type::real ||
@@ -476,7 +492,7 @@ std::vector<Process_Base*> Matrix_Element_Handler::InitializeSingleProcess
         procs.push_back(m_gens.InitializeProcess(rpi,true));
 	if (procs.back()==NULL) {
 	  msg_Error()<<"No such process:\n"<<rpi<<std::endl;
-	  THROW(critical_error,"Failed to intialize process");
+	  THROW(critical_error,"Failed to initialize process");
 	}
       }
       if (pmap==NULL) {
@@ -598,9 +614,11 @@ int Matrix_Element_Handler::InitializeProcesses(
   double retime(ATOOLS::rpa->gen.Timer().RealTime());
   double etime(ATOOLS::rpa->gen.Timer().UserTime());
   size_t rss(GetCurrentRSS());
+  msg->BeginTaskProgressUpdate(1);
   msg_Info()<<" done ("<<rss/(1<<20)<<" MB, "
 	    <<FormatTime(size_t(retime-rbtime))<<"/"
-	    <<FormatTime(size_t(etime-btime))<<")"<<std::endl;
+	    <<FormatTime(size_t(etime-btime))<<")";
+  msg->EndTaskProgressUpdate();
   if (m_procs.empty() && m_gens.size()>0)
     THROW(normal_exit,"No hard process found");
   msg_Info()<<"Performing tests "<<std::flush;
@@ -610,9 +628,11 @@ int Matrix_Element_Handler::InitializeProcesses(
   retime=ATOOLS::rpa->gen.Timer().RealTime();
   etime=ATOOLS::rpa->gen.Timer().UserTime();
   rss=GetCurrentRSS();
+  msg->BeginTaskProgressUpdate(1);
   msg_Info()<<" done ("<<rss/(1<<20)<<" MB, "
 	    <<FormatTime(size_t(retime-rbtime))<<"/"
-	    <<FormatTime(size_t(etime-btime))<<")"<<std::endl;
+	    <<FormatTime(size_t(etime-btime))<<")";
+  msg->EndTaskProgressUpdate();
   msg_Debugging()<<METHOD<<"(): Processes {\n";
   msg_Debugging()<<"  m_procs:\n";
   for (size_t i(0);i<m_procs.size();++i)
@@ -647,6 +667,18 @@ int Matrix_Element_Handler::InitializeProcesses(
   return res;
 }
 
+void Matrix_Element_Handler::PrintStatistics(std::ostream& o)
+{
+  MyStrStream i;
+  for (auto& proc : AllProcesses()) {
+    proc->PrintStatistics(i);
+  }
+  std::string i_string{i.str()};
+  if (i_string.empty()) return;
+  o << "Hard processes statistics:\n";
+  o << i_string;
+}
+
 int Matrix_Element_Handler::InitializeTheReweighting(Variations_Mode mode)
 {
   for (auto* proc : m_procs)
@@ -660,7 +692,9 @@ void Matrix_Element_Handler::BuildProcesses()
   // init processes
   msg_Info()<<"Building processes ("<<m_gens.size()<<" ME generators, "
 	    <<s["PROCESSES"].GetItems().size()<<" process blocks) ...\n";
-  msg_Info()<<"Setting up processes "<<std::flush;
+  msg->BeginTaskProgressUpdate(1);
+  msg_Out()<<"Setting up processes"<<std::flush;
+  msg->EndTaskProgressUpdate();
   if (msg_LevelIsTracking()) msg_Info()<<"\n";
   if (!m_gens.empty() && s["PROCESSES"].GetItemsCount() == 0) {
     if (!msg_LevelIsTracking()) msg_Info()<<"\n";
@@ -865,6 +899,7 @@ void Matrix_Element_Handler::ReadFinalStateMultiSpecificProcessSettings(
     else if (subkey == "Helicity_Scheme")    ExtractMPvalues(value, range, nf, args.pbi.m_vhls);
     else if (subkey == "Print_Graphs")       ExtractMPvalues(value, range, nf, args.pbi.m_vgpath);
     else if (subkey == "Name_Suffix")        ExtractMPvalues(value, range, nf, args.pbi.m_vaddname);
+    else if (subkey == "Event_Files")        ExtractMPvalues(value, range, nf, args.pbi.m_vfiles);
     else if (subkey == "Special")            ExtractMPvalues(value, range, nf, args.pbi.m_vspecial);
     else if (subkey == "Enable_MHV")         ExtractMPvalues(value, range, nf, args.pbi.m_vamegicmhv);
     else if (subkey == "Min_N_TChannels")    ExtractMPvalues(value, range, nf, args.pbi.m_vntchan);
@@ -1133,6 +1168,9 @@ void Matrix_Element_Handler::BuildSingleProcessList(
 	  if (GetMPvalue(args.pbi.m_vefunc,nfs,pnid,ds)) efunc=ds;
 	  proc[i]->InitPSHandler(maxerr,eobs,efunc);
 	  proc[i]->SetShower(p_shower->GetShower());
+          if (m_eventfilesenabled &&
+              GetMPvalue(args.pbi.m_vfiles, nfs, pnid, ds))
+            proc[i]->SetupEventReader(ds);
 	}
 	if (loprocs==0) loprocs=procs.size();
       }

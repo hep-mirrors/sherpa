@@ -347,7 +347,7 @@ bool HT_Selector::Trigger(Selector_List &sl)
       ht += sl[i].Momentum().PPerp();
     }
   }
-  if (m_sel_log->Hit( ((ht<m_ptmin) || (ht>m_ptmax)) )) return false;
+  if (!m_sel_log->CountingIdentity( ((ht>=m_ptmin) && (ht<=m_ptmax)) )) return false;
   return true;
 }
 
@@ -426,7 +426,7 @@ bool PT_Selector::Trigger(Selector_List &sl)
   for (size_t i=m_nin;i<sl.size();i++) {
     if (m_flav.Includes(sl[i].Flavour())) {
       double pti = sl[i].Momentum().PPerp();
-      if (m_sel_log->Hit( ((pti<m_ptmin) || (pti>m_ptmax)) )) return false;
+      if (!m_sel_log->CountingIdentity( ((pti>=m_ptmin) && (pti<=m_ptmax)) )) return false;
     }
   }
   return true;
@@ -523,7 +523,7 @@ bool ET_Selector::Trigger(Selector_List &sl)
   for (size_t i=m_nin;i<sl.size();i++) {
     if (m_flav.Includes(sl[i].Flavour())) {
       double eti = sl[i].Momentum().MPerp();
-      if (m_sel_log->Hit( ((eti<m_etmin) || (eti>m_etmax)) )) return false;
+      if (!m_sel_log->CountingIdentity( ((eti>=m_etmin) && (eti<=m_etmax)) )) return false;
     }
   }
   return true;
@@ -616,7 +616,7 @@ bool E_Selector::Trigger(Selector_List &sl)
       Vec4D mom = sl[i].Momentum(); 
       if(m_labframe) p_proc->Integrator()->Beam()->BoostBackLab(mom);
       double E = mom.E();
-      if (m_sel_log->Hit( ((E<m_emin) || (E>m_emax)) )) return false;
+      if (!m_sel_log->CountingIdentity( ((E>=m_emin) && (E<=m_emax)) )) return false;
     }
   }
   return true;
@@ -694,7 +694,7 @@ bool Polar_Angle_Selector::Trigger(Selector_List &sl)
       if(m_labframe) p_proc->Integrator()->Beam()->BoostBackLab(mom);
       double ang = mom.Theta(Vec4D::ZVEC);
       if(!m_use_radians) ang *= 180./M_PI;
-      if (m_sel_log->Hit( ((ang<m_angmin) || (ang>m_angmax)) )) return false;
+      if (!m_sel_log->CountingIdentity( ((ang>=m_angmin) && (ang<=m_angmax)) )) return false;
     }
   }
   return true;
@@ -855,7 +855,7 @@ bool Rapidity_Selector::Trigger(Selector_List &sl)
     if (sl[i].Momentum()==Vec4D(0.,0.,0.,0.)) continue;
     if (m_flav.Includes(sl[i].Flavour())) {
       double yi = sl[i].Momentum().Y();
-      if (m_sel_log->Hit( ((yi<m_ymin) || (yi>m_ymax)) )) return false;
+      if (!m_sel_log->CountingIdentity( ((yi>=m_ymin) && (yi<=m_ymax)) )) return false;
     }
   }
   return true;
@@ -934,7 +934,7 @@ bool PseudoRapidity_Selector::Trigger(Selector_List &sl)
     if (sl[i].Momentum()==Vec4D(0.,0.,0.,0.)) continue;
     if (m_flav.Includes(sl[i].Flavour())) {
       double etai = sl[i].Momentum().Eta();
-      if (m_sel_log->Hit( ((etai<m_etamin) || (etai>m_etamax)) )) return false;
+      if (!m_sel_log->CountingIdentity( ((etai>=m_etamin) && (etai<=m_etamax)) )) return false;
     }
   }
   return true;
@@ -1019,8 +1019,8 @@ bool IMass_Selector::Trigger(Selector_List &sl)
 	// This comparison has a numerical safety net of Accu()
 	// due to an issue with points failing in e+e- with no ISR
 	// when the upper invariant mass limit is E_CMS
-        if (m_sel_log->Hit( ((massij-m_massmin<Accu()) ||
-                             (massij-m_massmax>Accu())) )) return false;
+        if (!m_sel_log->CountingIdentity( ((massij-m_massmin>=Accu()) &&
+                             (massij-m_massmax<=Accu())) )) return false;
       }
     }
   }
@@ -1116,8 +1116,8 @@ bool IQ2_Selector::Trigger(Selector_List &sl)
            (m_flav1.Includes(sl[j].Flavour()) &&
             m_flav2.Includes(sl[i].Flavour())) ) {
         double q2ij = -(sl[i].Momentum()-sl[j].Momentum()).Abs2();
-        if (m_sel_log->Hit( ((q2ij < m_q2min) ||
-                             (q2ij > m_q2max)) )) return false;
+        if (!m_sel_log->CountingIdentity( ((q2ij >= m_q2min) &&
+                             (q2ij <= m_q2max)) )) return false;
       }
     }
   }
@@ -1201,7 +1201,7 @@ bool PT2_Selector::Trigger(Selector_List &sl)
            (m_flav1.Includes(sl[j].Flavour()) &&
             m_flav2.Includes(sl[i].Flavour())) ) {
         double ptij = (sl[i].Momentum()+sl[j].Momentum()).PPerp();
-        if (m_sel_log->Hit( ((ptij<m_ptmin) || (ptij>m_ptmax)) )) return false;
+        if (!m_sel_log->CountingIdentity( ((ptij>=m_ptmin) && (ptij<=m_ptmax)) )) return false;
       }
     }
   }
@@ -1294,7 +1294,7 @@ bool Apoll_Selector::Trigger(Selector_List &sl)
         }
         double azdiff = mom1.Phi()-mom2.Phi();
         double apoll = fabs(fabs(azdiff)-M_PI);
-        if (m_sel_log->Hit( ((apoll<m_apmin) || (apoll>m_apmax)) )) return false;
+        if (!m_sel_log->CountingIdentity( ((apoll>=m_apmin) && (apoll<=m_apmax)) )) return false;
       }
     }
   }
@@ -1380,7 +1380,7 @@ bool MT2_Selector::Trigger(Selector_List &sl)
            (m_flav1.Includes(sl[j].Flavour()) &&
             m_flav2.Includes(sl[i].Flavour())) ) {
         double mtij = (sl[i].Momentum()+sl[j].Momentum()).MPerp();
-        if (m_sel_log->Hit( ((mtij<m_mtmin) || (mtij>m_mtmax)) )) return false;
+        if (!m_sel_log->CountingIdentity( ((mtij>=m_mtmin) && (mtij<=m_mtmax)) )) return false;
       }
     }
   }
@@ -1466,7 +1466,7 @@ bool MT2_v2_Selector::Trigger(Selector_List &sl)
             m_flav2.Includes(sl[i].Flavour())) ) {
         double mtij = sqrt(2.*sl[i].Momentum().PPerp()*sl[j].Momentum().PPerp()
                            *(1.-sl[i].Momentum().CosDPhi(sl[j].Momentum())));
-        if (m_sel_log->Hit( ((mtij<m_mtmin) || (mtij>m_mtmax)) )) return false;
+        if (!m_sel_log->CountingIdentity( ((mtij>=m_mtmin) && (mtij<=m_mtmax)) )) return false;
       }
     }
   }
@@ -1552,7 +1552,7 @@ bool DeltaY_Selector::Trigger(Selector_List &sl)
            (m_flav1.Includes(sl[j].Flavour()) &&
             m_flav2.Includes(sl[i].Flavour())) ) {
         double dyij = dabs(sl[i].Momentum().DY(sl[j].Momentum()));
-        if (m_sel_log->Hit( ((dyij<m_dymin) || (dyij>m_dymax)) )) return false;
+        if (!m_sel_log->CountingIdentity( ((dyij>=m_dymin) && (dyij<=m_dymax)) )) return false;
       }
     }
   }
@@ -1636,7 +1636,7 @@ bool DeltaEta_Selector::Trigger(Selector_List &sl)
            (m_flav1.Includes(sl[j].Flavour()) &&
             m_flav2.Includes(sl[i].Flavour())) ) {
         double detaij = dabs(sl[i].Momentum().DEta(sl[j].Momentum()));
-        if (m_sel_log->Hit( ((detaij<m_detamin) || (detaij>m_detamax)) )) return false;
+        if (!m_sel_log->CountingIdentity( ((detaij>=m_detamin) && (detaij<=m_detamax)) )) return false;
       }
     }
   }
@@ -1720,7 +1720,7 @@ bool DeltaPhi_Selector::Trigger(Selector_List &sl)
            (m_flav1.Includes(sl[j].Flavour()) &&
             m_flav2.Includes(sl[i].Flavour())) ) {
         double dphiij = dabs(sl[i].Momentum().DPhi(sl[j].Momentum()));
-        if (m_sel_log->Hit( ((dphiij<m_dphimin) || (dphiij>m_dphimax)) )) return false;
+        if (!m_sel_log->CountingIdentity( ((dphiij>=m_dphimin) && (dphiij<=m_dphimax)) )) return false;
       }
     }
   }
@@ -1804,7 +1804,7 @@ bool DeltaR_Selector::Trigger(Selector_List &sl)
            (m_flav1.Includes(sl[j].Flavour()) &&
             m_flav2.Includes(sl[i].Flavour())) ) {
         double dRij = sl[i].Momentum().DR(sl[j].Momentum());
-        if (m_sel_log->Hit( ((dRij<m_dRmin) || (dRij>m_dRmax)) )) return false;
+        if (!m_sel_log->CountingIdentity( ((dRij>=m_dRmin) && (dRij<=m_dRmax)) )) return false;
       }
     }
   }
@@ -1888,7 +1888,7 @@ bool DeltaRy_Selector::Trigger(Selector_List &sl)
            (m_flav1.Includes(sl[j].Flavour()) &&
             m_flav2.Includes(sl[i].Flavour())) ) {
         double dRyij = sl[i].Momentum().DRy(sl[j].Momentum());
-        if (m_sel_log->Hit( ((dRyij<m_dRymin) || (dRyij>m_dRymax)) )) return false;
+        if (!m_sel_log->CountingIdentity( ((dRyij>=m_dRymin) && (dRyij<=m_dRymax)) )) return false;
       }
     }
   }
@@ -1979,8 +1979,8 @@ bool PhiStar_Selector::Trigger(Selector_List &sl)
                                               .DPhi(sl[j].Momentum())))
                            *sqrt(1.-sqr(tanh(0.5*sl[i].Momentum()
                                                       .DEta(sl[j].Momentum()))));
-        if (m_sel_log->Hit( ((phistarij<m_phistarmin) ||
-                             (phistarij>m_phistarmax)) )) return false;
+        if (!m_sel_log->CountingIdentity( ((phistarij>=m_phistarmin) &&
+                             (phistarij<=m_phistarmax)) )) return false;
       }
     }
   }
@@ -2062,7 +2062,7 @@ bool Multiplicity_Selector::Trigger(Selector_List &sl)
       cnt++;
     }
   }
-  if (m_sel_log->Hit( ((cnt<m_nmin) || (cnt>m_nmax)) ))
+  if (!m_sel_log->CountingIdentity( ((cnt>=m_nmin) && (cnt<=m_nmax)) ))
     return false;
   return true;
 }
@@ -2142,7 +2142,7 @@ bool PTMIS_Selector::Trigger(Selector_List &sl)
     }
   }
   double ptmis(mismom.PPerp());
-  if (m_sel_log->Hit( ((ptmis<m_ptmismin) || (ptmis>m_ptmismax)) ))
+  if (!m_sel_log->CountingIdentity( ((ptmis>=m_ptmismin) && (ptmis<=m_ptmismax)) ))
     return false;
   return true;
 }
@@ -2222,7 +2222,7 @@ bool ETMIS_Selector::Trigger(Selector_List &sl)
     }
   }
   double etmis(mismom.MPerp());
-  if (m_sel_log->Hit( ((etmis<m_etmismin) || (etmis>m_etmismax)) ))
+  if (!m_sel_log->CountingIdentity( ((etmis>=m_etmismin) && (etmis<=m_etmismax)) ))
     return false;
   return true;
 }
@@ -2340,7 +2340,7 @@ bool Isolation_Cut::Trigger(Selector_List &sl)
       double etot=0.;
       for (size_t i=0;i<edrlist.size();i++) {
         etot+=edrlist[i].E;
-        if (m_sel_log->Hit(etot>Chi(egamma,edrlist[i].dr))) return false;
+        if (!m_sel_log->CountingIdentity(etot<=Chi(egamma,edrlist[i].dr))) return false;
       }
       edrlist.clear();
     }
@@ -2441,7 +2441,7 @@ bool T_Selector::Trigger(Selector_List &sl)
   if(m_flav1 != sl[2].Flavour() && m_flav1 != sl[3].Flavour()) return true; 
   if(m_flav2 != sl[2].Flavour() && m_flav2 != sl[3].Flavour()) return true; 
   double t = (sl[0].Momentum()-sl[2].Momentum()).Abs2();
-  if (m_sel_log->Hit( ((t<m_tmin) || (t>m_tmax)) ))
+  if (!m_sel_log->CountingIdentity( ((t>=m_tmin) && (t<=m_tmax)) ))
     return false;
   return true;
 }

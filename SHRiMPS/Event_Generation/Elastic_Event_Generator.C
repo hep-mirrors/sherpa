@@ -1,10 +1,11 @@
 #include "SHRiMPS/Event_Generation/Elastic_Event_Generator.H"
-#include "SHRiMPS/Tools/Special_Functions.H"
 #include "ATOOLS/Phys/Particle.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Message.H"
+#include "ATOOLS/Math/Special_Functions.H"
 #include "ATOOLS/Math/Random.H"
 
+using namespace ATOOLS;
 using namespace SHRIMPS;
 
 Elastic_Event_Generator::

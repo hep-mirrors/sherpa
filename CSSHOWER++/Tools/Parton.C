@@ -16,8 +16,8 @@ namespace CSSHOWER {
        <<", col="<<part.m_col<<" : "<<part.m_flav<<" : "<<part.m_mom
        <<" "<<sqrt(dabs(part.m_mom.Abs2()))<<" "<<sqrt(dabs(part.Mass2()))
        <<" ("<<part.GetFlow(1)<<","<<part.GetFlow(2)<<")"<<endl;
-    if (part.m_pst==pst::IS)      str<<"     (Initial state parton)";
-    else if (part.m_pst==pst::FS) str<<"     (Final state parton)  ";
+    if (part.m_pst==pst::IS)      str<<"     (Initial state parton, beam: "<<part.m_beam<<")";
+    else if (part.m_pst==pst::FS) str<<"     (Final state parton)            ";
     else                     str<<"                           ";
     str<<"  Colour partners ("
        <<(part.p_left?ATOOLS::ID(part.p_left->m_id):vector<int>())<<","
@@ -129,7 +129,6 @@ double Parton::Weight(const double &scale)
   double weight=1.0;
   for (size_t i(0);i<m_weights.size();++i)
     if (m_weights[i].first>scale) weight*=m_weights[i].second;
-    else break;
   return weight;
 }
 

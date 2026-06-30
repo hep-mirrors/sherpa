@@ -66,8 +66,8 @@ Pol_Info::Pol_Info() {
   m_pol2 = s["BEAM_2"].SetDefault(0.).Get<double>();
   // Also can be given as a percentage
   // assuming a minimum abs value of 1
-  if(abs(m_pol1) > 1 && abs(m_pol1) <= 100) m_pol1/=100;
-  if(abs(m_pol2) > 1 && abs(m_pol2) <= 100) m_pol2/=100;
+  if(std::abs(m_pol1) > 1 && std::abs(m_pol1) <= 100) m_pol1/=100;
+  if(std::abs(m_pol2) > 1 && std::abs(m_pol2) <= 100) m_pol2/=100;
 }
 Pol_Info::Pol_Info(const ATOOLS::Flavour& fl)
 {

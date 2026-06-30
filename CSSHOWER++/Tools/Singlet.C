@@ -56,6 +56,10 @@ std::ostream& CSSHOWER::operator<<(std::ostream & str,All_Singlets & all) {
 Singlet::~Singlet()
 {
   for (PLiter plit(begin());plit!=end();++plit) delete *plit;
+  if (p_ampl){
+    while(p_ampl->Prev()) p_ampl = p_ampl->Prev();
+    p_ampl->Delete();
+  }
 }
 
 Parton *Singlet::IdParton(const size_t &id) const
@@ -76,6 +80,7 @@ double Singlet::JetVeto(Sudakov *const sud) const
     ampl->CreateLeg(-(*iit)->Momentum(),(*iit)->GetFlavour().Bar(),
 		    ColorID((*iit)->GetFlow(1),(*iit)->GetFlow(2)),
 		    1<<ampl->Legs().size());
+    ampl->Legs().back()->SetBeam((*iit)->Beam());
   }
   ampl->SetNIn(ampl->Legs().size());
   for (const_iterator iit(begin());iit!=end();++iit) {
@@ -432,4 +437,20 @@ void Singlet::Reduce()
   }
   p_left=p_right=p_split=p_spec=NULL;
   m_kt2_next=0.0;
+}
+
+void Singlet::UpdateAmplitude( ATOOLS::Cluster_Amplitude *ampl){
+  if (p_ampl==NULL) {
+      p_ampl = ATOOLS::Cluster_Amplitude::New(ampl);
+      p_ampl = p_ampl->Prev();
+      p_ampl->DeleteNext();
+    }
+  else {
+      Cluster_Amplitude *tmp = ATOOLS::Cluster_Amplitude::New(ampl);
+      tmp = tmp->Prev();
+      p_ampl->SetNext(tmp);
+      p_ampl=p_ampl->Next();
+      p_ampl->DeleteNext();
+  }
+
 }

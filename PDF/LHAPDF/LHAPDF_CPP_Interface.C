@@ -2,6 +2,7 @@
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/CXXFLAGS_PACKAGES.H"
 #include "ATOOLS/Org/CXXFLAGS.H"
+#include "ATOOLS/Org/My_MPI.H"
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Scoped_Settings.H"
@@ -20,6 +21,7 @@ namespace PDF {
     std::map<int, bool>   m_calculated;
     double        m_x,m_Q2;
     std::vector<int> m_disallowedflavour;
+    unsigned int m_A;
   public:
     LHAPDF_CPP_Interface(const ATOOLS::Flavour,std::string,int);
     ~LHAPDF_CPP_Interface();
@@ -32,7 +34,7 @@ namespace PDF {
     double GetDefaultAlpha();
     double GetDefaultScale();
     int GetFlavourScheme();
-    
+
     void SetAlphaSInfo();
     void SetPDFMember();
 
@@ -46,7 +48,7 @@ using namespace ATOOLS;
 LHAPDF_CPP_Interface::LHAPDF_CPP_Interface(const ATOOLS::Flavour _bunch,
                                            const std::string _set,
                                            const int _member) :
-  p_pdf(NULL)
+  p_pdf(NULL), m_A(1)
 {
   m_set=_set;
   m_smember=_member;
@@ -55,9 +57,17 @@ LHAPDF_CPP_Interface::LHAPDF_CPP_Interface(const ATOOLS::Flavour _bunch,
   Scoped_Settings s{ Settings::GetMainSettings()["LHAPDF"] };
 
   m_bunch = _bunch;
+  if (m_bunch.IsIon()) m_A = m_bunch.GetMassNumber();
+  else {
+    // initialise parton mapping, dependent on bunch flavour
+    PDF_Id_Maps partonmapper; 
+    m_kfmap = partonmapper.GetIdMap(m_bunch.Kfcode()); 
+  }
   static std::set<std::string> s_init;
   if (s_init.find(m_set)==s_init.end()) {
     m_member=abs(m_smember);
+    if (mpi->MyRank() > 0)
+      LHAPDF::setVerbosity(0);
     int lhapdfverb(LHAPDF::verbosity());
     LHAPDF::setVerbosity(msg_LevelIsDebugging()?lhapdfverb:0);
     p_pdf = LHAPDF::mkPDF(m_set,m_smember);
@@ -124,7 +134,7 @@ LHAPDF_CPP_Interface::LHAPDF_CPP_Interface(const ATOOLS::Flavour _bunch,
                 <<" ";
     msg_Info()<<std::endl;
   }
-
+  // FillHisto(m_bunch);
   rpa->gen.AddCitation(1,"LHAPDF6 is published under \\cite{Buckley:2014ana}.");
 }
 
@@ -195,7 +205,7 @@ LHAPDF_CPP_Interface::~LHAPDF_CPP_Interface()
 }
 
 
-PDF_Base * LHAPDF_CPP_Interface::GetCopy() 
+PDF_Base * LHAPDF_CPP_Interface::GetCopy()
 {
   return new LHAPDF_CPP_Interface(m_bunch,m_set,m_smember);
 }
@@ -235,7 +245,7 @@ double LHAPDF_CPP_Interface::GetXPDF(const kf_code& kf, bool anti) {
                        <<"returning zero."<<std::endl;
     return 0.;
   }
-  int kfc = (m_bunch.IsAnti()?-1:1)*(anti?-kf:kf);
+  int kfc = (m_bunch.IsAnti()?-1:1)*(anti?-m_kfmap[kf]:m_kfmap[kf]);
   if (kf==kf_gluon || kf==kf_photon)
     kfc = kf;
   for (size_t i(0);i<m_disallowedflavour.size();++i) {
@@ -249,7 +259,7 @@ double LHAPDF_CPP_Interface::GetXPDF(const kf_code& kf, bool anti) {
     m_xfx[kfc]=p_pdf->xfxQ2(kfc,m_x,m_Q2);
     m_calculated[kfc]=true;
   }
-  return m_rescale*m_xfx[kfc];
+  return m_rescale*m_xfx[kfc]*m_A;
 }
 
 DECLARE_PDF_GETTER(LHAPDF_Getter);
@@ -257,7 +267,8 @@ DECLARE_PDF_GETTER(LHAPDF_Getter);
 PDF_Base *LHAPDF_Getter::operator()
   (const Parameter_Type &args) const
 {
-  if (!args.m_bunch.IsHadron() && !args.m_bunch.IsPhoton()) return NULL;
+  if (!args.m_bunch.CanHavePDF())
+    return NULL;
   return new LHAPDF_CPP_Interface(args.m_bunch,args.m_set,args.m_member);
 }
 

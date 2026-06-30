@@ -1,5 +1,5 @@
-#ifndef VALUE_PTR_H_62B23520_7C8E_11DE_8A39_0800200C9A66
-#define VALUE_PTR_H_62B23520_7C8E_11DE_8A39_0800200C9A66
+#ifndef ATOOLS_YAML_VALUE_PTR_H_62B23520_7C8E_11DE_8A39_0800200C9A66
+#define ATOOLS_YAML_VALUE_PTR_H_62B23520_7C8E_11DE_8A39_0800200C9A66
 
 #if defined(_MSC_VER) ||                                            \
     (defined(__GNUC__) && (__GNUC__ == 3 && __GNUC_MINOR__ >= 4) || \
@@ -26,4 +26,4 @@ using shared_memory = std::shared_ptr<memory>;
 }
 }
 
-#endif  // VALUE_PTR_H_62B23520_7C8E_11DE_8A39_0800200C9A66
+#endif  // ATOOLS_YAML_VALUE_PTR_H_62B23520_7C8E_11DE_8A39_0800200C9A66

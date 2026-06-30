@@ -148,8 +148,9 @@ Return_Value::code Signal_Process_FS_QED_Correction::Treat(Blob_List* bloblist)
   }
   if (!sigblob) return Return_Value::Nothing;
   // if already treated -> nothing to do
-  if (sigblob->TypeSpec()=="YFS-type_QED_Corrections_to_ME")
+  if (sigblob->TypeSpec()=="YFS-type_QED_Corrections_to_ME") {
     return Return_Value::Nothing;
+  }
   if (sigblob->TypeSpec()=="setting_leptons_on-shell")
     return Return_Value::Nothing;
   // extract FS leptons
@@ -157,7 +158,7 @@ Return_Value::code Signal_Process_FS_QED_Correction::Treat(Blob_List* bloblist)
   Particle_Vector fslep(sigblob->GetOutParticles());
   Particle_Vector mfslep;
   for (Particle_Vector::iterator it=fslep.begin();it!=fslep.end();) {
-    if ((*it)->Flav().Strong() || (*it)->Flav().IsDiQuark() || 
+    if ((*it)->Flav().Strong() || (*it)->Flav().IsDiQuark() ||
 	(*it)->DecayBlob()!=NULL) {
       fslep.erase(it);
     }
@@ -192,7 +193,7 @@ Return_Value::code Signal_Process_FS_QED_Correction::Treat(Blob_List* bloblist)
     for (Particle_Vector::iterator it=mfslep.begin();it!=mfslep.end();++it) {
       onshellblob->AddToOutParticles(*it);
     }
-    onshellblob->SetStatus(blob_status::needs_reconnections | blob_status::needs_hadronization);
+    onshellblob->SetStatus(blob_status::needs_reconnections);
     return Return_Value::Success;
   }
   // put them on-shell (spoils consistency of pertubative calculation,
@@ -232,30 +233,50 @@ Return_Value::code Signal_Process_FS_QED_Correction::Treat(Blob_List* bloblist)
   // build new QED radiation blob
   Blob * QEDblob = bloblist->AddBlob(btp::QED_Radiation);
   QEDblob->SetTypeSpec("YFS-type_QED_Corrections_to_ME");
-  for (Particle_Vector::iterator it=fslep.begin();it!=fslep.end();++it) {
+  if (blobs.size()==0 && !m_onme) {
+    while (!mfslep.empty()) {
+      Particle * inpart  = (*mfslep.begin())->OriginalPart();
+      inpart->SetStatus(part_status::decayed);
+      QEDblob->AddToInParticles(inpart);
+      Particle * outpart = new Particle(*inpart);
+      outpart->SetNumber();
+      outpart->SetStatus(part_status::active);
+      outpart->SetOriginalPart(inpart);
+      QEDblob->AddToOutParticles(outpart);
+      delete (*mfslep.begin());
+      mfslep.erase(mfslep.begin());
+    }
+  }
+  else {
+    // all as usual, only IS particles, as FS will be filled by QED radiation
     // set info back to hard process, otherwise
     // check for momentum conservation does not work
-    (*it)->SetInfo('H');
-    (*it)->SetStatus(part_status::decayed);
-    QEDblob->AddToInParticles(*it);
+    for (Particle_Vector::iterator it=fslep.begin();it!=fslep.end();++it) {
+      (*it)->SetInfo('H');
+      (*it)->SetStatus(part_status::decayed);
+      QEDblob->AddToInParticles(*it);
+    }
   }
   // if fixed-order NLO RS and on, copy QED radiation also to subevtlist
   if (m_onme) ModifySubEvtList(sigblob,fslep,blobs);
-  // first fill in all LO particles
-  for (Blob_Vector::iterator it=blobs.begin();it!=blobs.end();++it) {
-    while ((*it)->NOutP() && (*it)->OutParticle(0)->Info()!='S') {
-      Particle * part((*it)->RemoveOutParticle(0,true));
-      QEDblob->AddToOutParticles(part);
+  // blobs found - all proceeds as usual
+  if (blobs.size()>0) {
+    // first fill in all LO particles
+    for (Blob_Vector::iterator it=blobs.begin();it!=blobs.end();++it) {
+      while ((*it)->NOutP() && (*it)->OutParticle(0)->Info()!='S') {
+	Particle * part((*it)->RemoveOutParticle(0,true));
+	QEDblob->AddToOutParticles(part);
+      }
+    }
+    // then append all photons
+    for (Blob_Vector::iterator it=blobs.begin();it!=blobs.end();++it) {
+      while ((*it)->NOutP()) {
+	Particle * part((*it)->RemoveOutParticle(0,true));
+	QEDblob->AddToOutParticles(part);
+      }
     }
   }
-  // then append all photons
-  for (Blob_Vector::iterator it=blobs.begin();it!=blobs.end();++it) {
-    while ((*it)->NOutP()) {
-      Particle * part((*it)->RemoveOutParticle(0,true));
-      QEDblob->AddToOutParticles(part);
-    }
-  }
-  QEDblob->SetStatus(blob_status::needs_reconnections | blob_status::needs_hadronization);
+  QEDblob->SetStatus(blob_status::needs_reconnections);
   // clean up
   for (size_t i=0;i<blobs.size();++i) {
     delete blobs[i];

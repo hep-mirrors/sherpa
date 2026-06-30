@@ -39,7 +39,7 @@ bool QT_Selector::Trigger(Selector_List &sl)
   double qt=q.PPerp();
   m_cqtmin=m_qtmin>0.0?m_qtmin:-m_qtmin*(sl[0].Momentum()+sl[1].Momentum()-q).Mass();
   bool trig=(m_type==0 && qt<m_cqtmin) || (m_type==1 && qt>m_cqtmin);
-  return 1-m_sel_log->Hit(1-trig);
+  return m_sel_log->CountingIdentity(trig);
 }
 
 DECLARE_GETTER(QT_Selector,"NNLOqT",Selector_Base,Selector_Key);

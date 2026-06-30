@@ -265,7 +265,11 @@ InitializeProcess(const PHASIC::Process_Info &pi, bool add)
       return NULL;
     }
     if (!newxs->Get<Single_Process>()->MapProcess())
-      if (!msg_LevelIsTracking()) msg_Info()<<"."<<std::flush;
+      if (!msg_LevelIsTracking()) {
+	msg->BeginTaskProgressUpdate(1);
+	msg_Out()<<'.'<<std::flush;
+	msg->EndTaskProgressUpdate();
+      }
   }
   if (add) Add(newxs,1);
   else m_rsprocs.push_back(newxs);

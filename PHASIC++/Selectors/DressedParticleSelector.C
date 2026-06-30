@@ -39,19 +39,18 @@ DressedParticleSelector::DressedParticleSelector(const Selector_Key &key) :
     .SetDefault<std::string>({})
     .GetVector<std::string>();
   if (algoparams.size() != 2)
-    THROW(fatal_error, "DressingAlgorithm needs two values");
+    THROW(fatal_error, "DressingAlgorithm requires [<algorithm>, <dR>]");
   const auto algo = algoparams[0];
   const auto dR = ToType<double>(algoparams[1]);
   p_dresser = new Particle_Dresser(algo,dR);
-  if (!p_dresser) THROW(fatal_error, "Invalid dressing algorithm");
   const auto flavradiusparams = s["FlavourDependentRadius"]
     .SetDefault<std::string>({})
-    .GetVector<std::string>();
-  if (!flavradiusparams.empty()) {
-    if (flavradiusparams.size() != 2)
-      THROW(fatal_error, "FlavourDependentRadius needs two values");
-    const auto kf = ToType<kf_code>(flavradiusparams[0]);
-    const auto fDR = ToType<double>(flavradiusparams[1]);
+    .GetMatrix<std::string>();
+  for (const auto& flavradiusrow : flavradiusparams) {
+    if (flavradiusrow.size() != 2)
+      THROW(fatal_error, "Each FlavourDependentRadius entry needs two values");
+    const auto kf = ToType<kf_code>(flavradiusrow[0]);
+    const auto fDR = ToType<double>(flavradiusrow[1]);
     p_dresser->SetFlavourDependentCone(kf, fDR);
   }
   p_dresser->CompleteConeLists();
@@ -78,13 +77,11 @@ bool DressedParticleSelector::Trigger(Selector_List &sl)
   for (size_t k=0;k<m_sels.size();++k) {
     if (!m_sels[k]->Trigger(sl)) {
       msg_Debugging()<<"Point discarded"<<std::endl;
-      m_sel_log->Hit(true);
-      return false;
+      return m_sel_log->CountingIdentity(false);
     }
   }
   msg_Debugging()<<"Point passed"<<std::endl;
-  m_sel_log->Hit(false);
-  return true;
+  return m_sel_log->CountingIdentity(true);
 }
 
 void DressedParticleSelector::BuildCuts(Cut_Data * cuts)
@@ -108,8 +105,11 @@ PrintInfo(std::ostream &str,const size_t width) const
 {
   std::string w(width+4,' ');
   str<<"DressedParticleSelector:\n"
-     <<w<<"  DressingAlgorithm: [<Cone|Recombination>, <dR>, <exp>]  # exp is optional\n"
+     <<w<<"  DressingAlgorithm: [<algorithm>, <dR>]\n"
+     <<w<<"    # algorithm: Cone, kt, antikt, CA\n"
      <<w<<"  # optional settings:\n"
-     <<w<<"  FlavourDependentCone: [<kf>, <dR>]\n"
+     <<w<<"  FlavourDependentRadius:\n"
+     <<w<<"    - [<kf1>, <dR1>]\n"
+     <<w<<"    - [<kf2>, <dR2>]\n"
      <<w<<"  Subselectors: [ ... ]";
 }

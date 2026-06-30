@@ -76,7 +76,7 @@ Variable_Selector::Variable_Selector(Process_Base* const proc,
   p_variable = ATOOLS::Variable_Getter::GetObject(name,name);
   if (p_variable==NULL) THROW
     (fatal_error,"Variable '"+name+"' does not exist. Run 'Sherpa"+
-       std::string(" SHOW_VARIABLE_SYNTAX=1' to list variables."));
+       std::string(" SHOW_VARIABLE_SYNTAX: true' to list variables."));
   for (auto ordering: orderings) {
     m_orders.push_back(Order_Getter::GetObject(ordering,""));
     if (m_orders.back()==NULL) 
@@ -160,9 +160,9 @@ bool Variable_Selector::Trigger
 		   <<"="<<v<<" vs. {"<<m_bounds[u].first
 		   <<","<<m_bounds[u].second<<"}\n";
 #endif
-    bool res(v<m_bounds[u].first || v>m_bounds[u].second);
+    bool res(v>=m_bounds[u].first && v<=m_bounds[u].second);
     ++l; ++u;
-    return !m_sel_log->Hit(res);
+    return m_sel_log->CountingIdentity(res);
   }
   if (n==m_nfl[id][f]) return Trigger(sl,l,u,moms,f+1,0,0,id);
   moms.push_back(Vec4D());
@@ -236,7 +236,7 @@ operator()(const PHASIC::Selector_Key &key) const
   if (bounds.empty())
     THROW(critical_error,"Missing \"Ranges\" specification in variable selector");
   std::vector<std::pair<double,double> > cbounds;
-  for (const auto single_bounds : bounds) {
+  for (const auto& single_bounds : bounds) {
     if (single_bounds.size() != 2)
       THROW(critical_error,"Ranges need to have two entries.");
     cbounds.push_back(std::make_pair(single_bounds[0], single_bounds[1]));

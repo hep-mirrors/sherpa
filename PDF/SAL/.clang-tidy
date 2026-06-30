@@ -1,0 +1,3 @@
+---
+# Vendored SAL PDF library sources — do not lint.
+Checks: '-*'

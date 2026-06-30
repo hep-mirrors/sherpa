@@ -5,7 +5,6 @@
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Math/Variable.H"
 #include "AddOns/Analysis/Tools/Particle_Qualifier.H"
-#include "ATOOLS/Org/My_MPI.H"
 #include "ATOOLS/Org/Scoped_Settings.H"
 #include "ATOOLS/Phys/KF_Table.H"
 
@@ -31,8 +30,7 @@ Analysis_Handler::Analysis_Handler():
   m_weighted(0), m_write(false)
 {
   if(s_kftable.find(kf_bjet)==s_kftable.end()) // if not initialized yet
-  s_kftable[kf_bjet] = new
-    Particle_Info(kf_bjet,0.,0.,0.,0,1, 2,1,1,1,0,"bj","bj","bj","bj",1,1);
+    AddParticle(kf_bjet,0.,0.,0.,0,1, 2,1,1,1,0,"bj","bj","bj","bj",1,1);
 }
 
 Analysis_Handler::~Analysis_Handler()
@@ -192,9 +190,6 @@ void Analysis_Handler::CleanUp()
 bool Analysis_Handler::WriteOut()
 {
   if (!m_write) return true;
-#ifdef USING__MPI
-  if (mpi->Rank()==0)
-#endif
   if (OutputPath()[OutputPath().length()-1]=='/') {
     if (!MakeDir(OutputPath())) {
       msg_Error()<<"Analysis_Handler::Finish(..): "
@@ -212,9 +207,6 @@ bool Analysis_Handler::WriteOut()
 
 bool Analysis_Handler::Finish()
 {
-#ifdef USING__MPI
-  if (mpi->Rank()==0)
-#endif
   if (OutputPath()[OutputPath().length()-1]=='/') {
     if (!MakeDir(OutputPath())) {
       msg_Error()<<"Analysis_Handler::Finish(..): "

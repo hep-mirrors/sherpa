@@ -32,7 +32,9 @@ ATOOLS::Return_Value::code Minimum_Bias::Treat(ATOOLS::Blob_List* blobs)
   return ATOOLS::Return_Value::Nothing;
 }
 
-void Minimum_Bias::CleanUp(const size_t & mode) { if (m_on) p_schandler->CleanUp(); }
+void Minimum_Bias::CleanUp(const size_t & mode) {
+  if (m_on) p_schandler->CleanUp();
+}
 
 void Minimum_Bias::Finish(const std::string &) {}
 

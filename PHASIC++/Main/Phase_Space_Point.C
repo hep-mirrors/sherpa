@@ -9,8 +9,9 @@ using namespace ATOOLS;
 
 Phase_Space_Point::Phase_Space_Point(Phase_Space_Handler * psh)
     : p_pshandler(psh), p_beamhandler(NULL), p_isrhandler(NULL),
-      p_moms(p_pshandler->Momenta()), p_cuts(NULL), p_beamchannels(NULL), p_isrchannels(NULL),
-      p_fsrchannels(NULL), m_Ecms(ATOOLS::rpa->gen.Ecms()), m_smin(0.),
+      p_moms(p_pshandler->Momenta()), p_cuts(NULL), p_point(NULL),
+      p_beamchannels(NULL), p_isrchannels(NULL), p_fsrchannels(NULL),
+      m_Ecms(ATOOLS::rpa->gen.Ecms()), m_smin(0.),
       m_weight(0.), m_ISsymmetryfactor(1.) {}
 
 Phase_Space_Point::~Phase_Space_Point() {
@@ -85,13 +86,7 @@ void Phase_Space_Point::InitFixedIncomings() {
     if (p_beamhandler->On() || p_isrhandler->On() != 0)
       return;
     for (int i = 0; i < 2; ++i) {
-      if(p_beamhandler->BeamMode()==BEAM::beammode::Fixed_Target){
-        // Need out momentum for Fixed target
-        m_ISmoms[i] = p_beamhandler->GetBeam(i)->OutMomentum();
-      }
-      else{
-        m_ISmoms[i] = p_beamhandler->GetBeam(i)->InMomentum();
-      }
+      m_ISmoms[i] = p_beamhandler->GetBeam(i)->InMomentum();
     }
     m_sprime = m_fixedsprime = (m_ISmoms[0] + m_ISmoms[1]).Abs2();
     m_Eprime = sqrt(m_sprime);
@@ -155,6 +150,7 @@ bool Phase_Space_Point::DefineBeamKinematics() {
     p_beamchannels->GeneratePoint();
     if (!p_beamhandler->MakeBeams(p_moms))
       return false;
+    SetBeamERan();
   }
   m_sprime = p_beamhandler->Sprime();
   m_y = (p_beamhandler->GetBeam(0)->InMomentum() +
@@ -188,15 +184,24 @@ bool Phase_Space_Point::DefineISRKinematics(Process_Integrator *const process) {
       if (!p_isrhandler->CheckMasses())
         return false;
       m_isrspkey[4] = sqr(m_osmass);
-      p_isrchannels->GeneratePoint();
+      if (p_point) {
+        m_osmass ? m_isrspkey[4]
+                 : m_isrspkey[3] =
+                       (p_point->Leg(0)->Mom() + p_point->Leg(1)->Mom()).Abs2();
+        m_isrykey[2] = (-p_point->Leg(0)->Mom() - p_point->Leg(1)->Mom()).Y();
+      } else {
+        p_isrchannels->GeneratePoint();
+      }
     }
     m_sprime = m_osmass ? m_isrspkey[4] : m_isrspkey[3];
     m_y += m_isrykey[2];
-    m_ISsymmetryfactor = p_isrhandler->GenerateSwap(
-                             p_pshandler->Active()->Process()->Flavours()[0],
-                             p_pshandler->Active()->Process()->Flavours()[1])
-                             ? 2.0
-                             : 1.0;
+    if (!p_point) {
+      m_ISsymmetryfactor = p_isrhandler->GenerateSwap(
+                               p_pshandler->Active()->Process()->Flavours()[0],
+                               p_pshandler->Active()->Process()->Flavours()[1])
+                               ? 2.0
+                               : 1.0;
+    }
   }
   if(p_yfshandler->HasISR()){
     p_isrchannels->GeneratePoint();
@@ -223,8 +228,14 @@ bool Phase_Space_Point::DefineISRKinematics(Process_Integrator *const process) {
 }
 
 bool Phase_Space_Point::DefineFSRKinematics() {
-  p_fsrchannels->GeneratePoint(p_moms.data(), p_pshandler->Cuts());
-  // msg_Out() << "[PHASE_SPACE_POINT DEBUG] p_moms=(" << p_moms[0] << "," << p_moms[1] << "," << p_moms[2] << "," << p_moms[3] << ")" << std::endl;
+  if (p_point) {
+    for (size_t i(0); i < m_nin; ++i)
+      p_moms[i] = -p_point->Leg(i)->Mom();
+    for (size_t i(m_nin); i < m_nin + m_nout; ++i)
+      p_moms[i] = p_point->Leg(i)->Mom();
+  } else {
+    p_fsrchannels->GeneratePoint(p_moms.data(), p_pshandler->Cuts());
+  }
   return true;
 }
 

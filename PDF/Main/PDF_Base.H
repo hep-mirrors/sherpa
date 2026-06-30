@@ -9,12 +9,16 @@
 namespace PDF {
 
   struct PDF_Defaults {
+    std::set<kf_code> m_allowed_flavours;
     std::map<kf_code,std::string> m_deflib, m_defset;
 
     PDF_Defaults();
 
     inline std::string DefaultPDFLibrary(kf_code kf) { return m_deflib[kf]; }
     inline std::string DefaultPDFSet(kf_code kf)     { return m_defset[kf]; }
+    inline bool HasDefaultsFor(kf_code kf) {
+      return (m_allowed_flavours.find(kf)!=m_allowed_flavours.end());
+    }
   };
 
   extern PDF_Defaults * pdfdefs;
@@ -52,8 +56,27 @@ namespace PDF {
     std::vector<PDF_Flavour> m_flavs;
     inline PDF_AS_Info(): m_order(-1), m_nf(-1), m_asmz(0.0), m_mz2(0.0) {}
   };
-
   std::ostream &operator<<(std::ostream &ostr,const PDF_AS_Info &asi);
+
+  struct PDF_Id_List : public std::vector<size_t> {
+    inline PDF_Id_List(const size_t & N=26) {
+      this->resize(N,0);
+      for (size_t i=0;i<26;i++) (*this)[i] = i;
+    }
+  };
+
+  class PDF_Id_Maps {
+  private:
+    std::map<ATOOLS::Flavour, PDF_Id_List> m_maps;
+    void InitMaps();
+  public:
+    PDF_Id_Maps() { InitMaps(); }
+    inline PDF_Id_List GetIdMap(ATOOLS::Flavour flav) {
+      if (m_maps.find(flav)!=m_maps.end())       return m_maps[flav];
+      if (m_maps.find(flav.Bar())!=m_maps.end()) return m_maps[flav.Bar()];
+      return PDF_Id_List();
+    }
+  };
 
   class PDF_Base {
   public:
@@ -61,14 +84,13 @@ namespace PDF {
             PDF_Getter_Function;
 
   protected:
-
     std::vector<PDF_Base*> m_copies;
-
-    ATOOLS::Flavour_Set m_partons;
-    ATOOLS::Flavour     m_bunch;
+    ATOOLS::Flavour_Set    m_partons;
+    ATOOLS::Flavour        m_bunch;
+    PDF_Id_List            m_kfmap;
 
     std::string m_type, m_set;
-    int m_member, m_lhef_number, m_nf;
+    int m_member, m_lhef_number, m_nf, m_force_4f;
 
     double m_exponent, m_rescale;
     double m_xmin, m_xmax, m_q2min, m_q2max;
@@ -88,33 +110,29 @@ namespace PDF {
 
     void   Calculate(double x,double Q2);
     virtual double GetXPDF(const ATOOLS::Flavour& flavour) = 0;
-    virtual double GetXPDF(const kf_code& kf, bool anti) = 0;
+    virtual double GetXPDF(const kf_code& kf, bool anti)   = 0;
     virtual double AlphaSPDF(const double &q2);
-    inline  double GetXPDF(const int& id) { return GetXPDF(abs(id),id<0); }
+    inline  double GetXPDF(const int& id) { return GetXPDF(m_kfmap[abs(id)],id<0); }
 
     virtual PDF_Base *GetCopy() = 0;
-    virtual PDF_Base *GetBasicPDF();
+    virtual PDF_Base *GetBasicPDF() { return this; }
 
-    void SetBounds();
 
-    virtual void SetAlphaSInfo();
-    virtual void SetPDFMember();
-    virtual double GetDefaultAlpha();
-    virtual double GetDefaultScale();
-    virtual int GetFlavourScheme();
+    static void    ShowSyntax(size_t i);
+    virtual void   FillHisto(const ATOOLS::Flavour & flav);
 
-    static void ShowSyntax(size_t i);
+    virtual void   SetAlphaSInfo()    {}
+    virtual void   SetPDFMember()     {}
+    virtual double GetDefaultAlpha()  { return -1.; }
+    virtual double GetDefaultScale()  { return -1.; }
+    virtual int    GetFlavourScheme() { return 0; } 
+    virtual void   SetBounds()        { m_rq2min=m_q2min; m_rq2max=m_q2max; }
+    virtual void   SetPartonMap(const PDF_Id_List & kfmap) { m_kfmap = kfmap; }
 
-    inline const std::string& Type() const { return m_type; }
-    inline std::string Set() const                    { return m_set; }
-    inline ATOOLS::Flavour      Bunch() const   { return m_bunch;   }
+    inline const std::string&         Type()    const { return m_type; }
+    inline std::string                Set()     const { return m_set; }
+    inline ATOOLS::Flavour            Bunch()   const { return m_bunch;   }
     inline const ATOOLS::Flavour_Set &Partons() const { return m_partons; }
-    inline bool Contains(const ATOOLS::Flavour & flav) const {
-      if (m_partons.find(flav) != m_partons.end()) return true;
-      for (size_t i(0); i < flav.Size(); ++i)
-        if (m_partons.find(flav[i]) == m_partons.end()) return false;
-      return true;
-    }
     inline int Member() const         { return m_member; }
     inline int LHEFNumber() const     { return m_lhef_number; }
     inline PDF_Base *operator->()     { return GetBasicPDF(); }
@@ -128,6 +146,8 @@ namespace PDF {
     inline void ResetRescaleFactor()                 { m_rescale = 1.; }
     inline void SetRescaling(const bool & resc=true) { m_rescX   = resc; }
     inline double RescaleFactor() const              { return m_rescale; }
+
+    bool Contains(const ATOOLS::Flavour &a) const;
   };
 
   /*!

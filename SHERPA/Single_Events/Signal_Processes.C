@@ -32,9 +32,9 @@ Signal_Processes::Signal_Processes(Matrix_Element_Handler* mehandler)
   p_yfshandler = mehandler->GetYFS();
   if (p_remnants[0]==NULL || p_remnants[1]==NULL)
     THROW(critical_error,"No beam remnant handler found.");
-  Scoped_Settings metssettings{
-    Settings::GetMainSettings()["METS"] };
-  m_cmode=metssettings["CLUSTER_MODE"].Get<int>();
+  Scoped_Settings mepssettings{
+    Settings::GetMainSettings()["MEPS"] };
+  m_cmode=mepssettings["CLUSTER_MODE"].Get<int>();
   Scoped_Settings spsettings{ Settings::GetMainSettings()["SP"] };
   m_setcolors = spsettings["SET_COLORS"].SetDefault(false).Get<bool>();
   m_adddocumentation = spsettings["ADD_DOC"].SetDefault(false).Get<bool>();
@@ -63,7 +63,12 @@ Return_Value::code Signal_Processes::Treat(Blob_List * bloblist)
           FillBlob(bloblist,blob)) {
         return Return_Value::Success;
       }
-      else return Return_Value::New_Event;
+      else {
+	if (rpa->gen.NumberOfEvents()==
+	    rpa->gen.NumberOfGeneratedEvents())
+	  return Return_Value::Error;
+	return Return_Value::New_Event;
+      }
     }
   }
   return Return_Value::Nothing;
@@ -87,7 +92,7 @@ bool Signal_Processes::FillBlob(Blob_List *const bloblist,Blob *const blob)
           // If documentation mode is enabled, add disconnected blob of original
           // configuration, e.g. for parton-level stitching samples a posteriori
           Process_Base* bproc = mcatnloproc->BVIProc()->Selected();
-          Blob* docblob = bloblist->AddBlob(btp::Unspecified);
+          Blob* docblob       = bloblist->AddBlob(btp::Unspecified);
           for (unsigned int i=0;i<bproc->NIn();i++) {
             Particle* particle = new Particle(0,bproc->Flavours()[i],
                                               bproc->Integrator()->Momenta()[i]);
@@ -132,15 +137,21 @@ bool Signal_Processes::FillBlob(Blob_List *const bloblist,Blob *const blob)
     // Pass born momenta to in if using YFS
     if(p_yfshandler->Mode()!=YFS::yfsmode::off){
       particle = new Particle(0,proc->Flavours()[i],
-  			    p_yfshandler->FillBlob()?p_yfshandler->BornMomenta()[i]:p_yfshandler->GetMomenta()[i]);
+			      p_yfshandler->BornMomenta()[i]);
     }
     else{
       particle = new Particle(0,proc->Flavours()[i],
-              proc->Integrator()->Momenta()[i]);
+			      proc->Integrator()->Momenta()[i]);
     }
     particle->SetNumber(0);
     particle->SetStatus(part_status::decayed);
     particle->SetInfo('G');
+    for (size_t j=0;j<2;j++) {
+      if (particle->Momentum()[3]*p_remnants[j]->InMomentum()[3]>0.) {
+	particle->SetBeam(j);
+	break;
+      }
+    }
     blob->AddToInParticles(particle);
     if (ampl) {
       particle->SetFlow(1,ampl->Leg(i)->Col().m_j);
@@ -249,6 +260,14 @@ bool Signal_Processes::FillBlob(Blob_List *const bloblist,Blob *const blob)
                 (ToString(proc->Info().m_fi.m_nlotype)));
   blob->AddData("NLOOrder",new Blob_Data<std::vector<double> >
                 (proc->Info().m_fi.m_nlocpl));
+  blob->AddData("Process",new Blob_Data<PHASIC::Process_Base*>
+		(p_mehandler->Process()));
+
+  Poincare * cmsboost = p_mehandler->Remnants()->GetCMSBoost();
+  if (cmsboost!=nullptr) {
+    blob->Boost(*cmsboost);
+    p_mehandler->Remnants()->BoostRemnantMomenta(*cmsboost);
+  }
 
   ME_Weight_Info* wgtinfo=proc->GetMEwgtinfo();
   if (wgtinfo) {

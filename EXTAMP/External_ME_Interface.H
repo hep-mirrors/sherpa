@@ -10,7 +10,7 @@ namespace PHASIC {
 
 namespace EXTAMP {
 
-  class Dipole_Info;
+  struct Dipole_Info;
   class CS_Dipole;
 
   class External_ME_Interface: public PHASIC::ME_Generator_Base {

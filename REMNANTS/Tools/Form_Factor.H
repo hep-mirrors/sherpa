@@ -11,19 +11,33 @@ namespace REMNANTS {
   private:
     ATOOLS::Flavour   m_flav;
     matter_form       m_form;
-    double m_fraction1, m_radius1, m_radius2;
+    double m_fraction1, m_radius1, m_radius2, m_softexp;
+    size_t m_n_matter_form_variations;
+    std::vector<double> m_fraction_variations;
+    std::vector<double> m_radius1_variations;
+    std::vector<double> m_radius2_variations;
+    std::vector<double> m_softexp_variations;
 
     void SetDefaults(const ATOOLS::Flavour & flav);
     void Initialise();
   public:
-    Form_Factor(const ATOOLS::Flavour & flav);
-    ~Form_Factor() {};
+    explicit Form_Factor(const ATOOLS::Flavour & flav);
+    ~Form_Factor() = default;
 
-    ATOOLS::Vec4D operator()();
-    inline const matter_form & GetForm() const { return m_form; }
-    inline const double & Radius1()      const { return m_radius1; }
-    inline const double & Radius2()      const { return m_radius2; }
-    inline const double & Fraction1()    const { return m_fraction1; }
+    ATOOLS::Vec4D operator()(const double & x=-1., const double & Q2=-1.);
+    double        B(const double & x=-1., const double & Q2=-1.);
+    const double  Radius(const double & x=-1.,const double & Q2=-1.) const;
+    const double  Radius(const double & x, const double & Q2, size_t ivar) const;
+    inline const matter_form & GetForm()      const { return m_form; }
+    inline const double      & Radius1()      const { return m_radius1; }
+    inline const double      & Radius2()      const { return m_radius2; }
+    inline const double      & Fraction1()    const { return m_fraction1; }
+    inline const double      & SoftExponent() const { return m_softexp; }
+    inline size_t MatterFormVariationSize() const { return m_n_matter_form_variations; }
+    double Fraction1At(size_t i) const;
+    double Radius1At(size_t i) const;
+    double Radius2At(size_t i) const;
+    double SoftExponentAt(size_t i) const;
   };
 }
 

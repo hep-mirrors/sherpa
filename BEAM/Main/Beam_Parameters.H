@@ -13,8 +13,7 @@ namespace BEAM {
     unknown              = 0,
     relic_density        = 1,
     collider             = 2,
-    DM_annihilation      = 10,
-    Fixed_Target         = 12
+    DM_annihilation      = 10
   };
   std::ostream& operator<<(std::ostream&,const beammode mode);
 
@@ -27,8 +26,6 @@ namespace BEAM {
     Pomeron              = 5,
     Reggeon              = 6,
     DM                   = 10,
-    Fixed_Target         = 12,
-    Leptonic             = 14,
     unknown              = 99
   };
   std::ostream& operator<<(std::ostream&,const beamspectrum spect);
@@ -80,8 +77,11 @@ namespace BEAM {
     Beam_Base * InitializePomeron(int);
     Beam_Base*  InitializeReggeon(int);
     Beam_Base * InitializeDM_beam(int);
+<<<<<<< HEAD
     Beam_Base * InitializeFixed_Target(int);
     Beam_Base * InitializeLeptonic(int);
+=======
+>>>>>>> origin/master
   public:
     Beam_Parameters();
     ~Beam_Parameters();
@@ -100,13 +100,9 @@ namespace BEAM {
     Beam_Base * InitSpectrum(const size_t & num);
 
     const ATOOLS::Flavour GetFlavour(const std::string & tag,const size_t & pos=-1);
-    const std::string     String(const std::string & tag,const int & pos=-1) const;
-    const double          operator()(const std::string & tag,const int & pos=-1) const;
-    const int             Switch(const std::string & tag,const int & pos=-1) const;
-    const bool            On(const std::string & tag) const;
-
-    inline beammode     GetMode() const { return m_beammode; }
-    inline beamspectrum GetSpectrum(const size_t & pos) const {
+    inline beammode GetMode() const { return m_beammode; }
+    inline beamspectrum GetSpectrum(const size_t& pos) const
+    {
       if (pos==0 || pos==1) return m_beamspec[pos];
       return beamspectrum::unknown;
     }

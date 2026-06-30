@@ -30,7 +30,7 @@ namespace PDF {
 
 namespace PHASIC {
   class Single_Process;
-  class Selector_Key;
+  struct Selector_Key;
 }
 
 namespace YFS { class YFS_Handler; }
@@ -54,7 +54,7 @@ namespace SHERPA {
         m_vnlomode, m_vnlopart, m_vnlocpl,
 	m_vnlosubv, m_vasscontribs, m_vmegen, m_vrsmegen, m_vloopgen, m_rvloopgen, m_vint,
         m_vrsint, m_vgpath, m_vcpl, m_vmaxcpl, m_vmincpl, m_vacpl,
-	m_vmaxacpl, m_vminacpl, m_vaddname, m_vspecial;
+	m_vmaxacpl, m_vminacpl, m_vaddname, m_vfiles, m_vspecial;
       MPIV_Map m_vnmaxq, m_vnminq, m_vamegicmhv, m_vcls, m_vhls,
 	m_vntchan, m_vmtchan, m_vitmin, m_vitmax, m_vrsitmin, m_vrsitmax;
       ATOOLS::Scoped_Settings m_selectors;
@@ -77,10 +77,11 @@ namespace SHERPA {
     YFS::YFS_Handler           *p_yfs;
     REMNANTS::Remnant_Handler  *p_remnants;
     MODEL::Model_Base          *p_model;
+    Poincare                   *p_cmsboost;
 
     std::string m_respath;
     int         m_eventmode, m_seedmode, m_hasnlo;
-    bool        m_pilotrunenabled;
+    bool        m_pilotrunenabled, m_eventfilesenabled;
     int         m_nloadd, m_ewaddmode, m_qcdaddmode;
     bool        m_mustcheckISorder, m_mustcheckFSorder;
     size_t      m_default_sort;
@@ -93,6 +94,8 @@ namespace SHERPA {
     double m_sum, m_ovwth, m_weightfactor;
     size_t m_ranidx, m_fosettings;
     ATOOLS::nlo_mode::code m_nlomode;
+
+    mutable std::vector<double> psum;
 
 #ifdef USING__GZIP
     ATOOLS::igzstream *p_ranin;
@@ -157,7 +160,8 @@ namespace SHERPA {
 
     // event generation helper functions
     void SetRandomSeed();
-    bool GenerateOneTrialEvent();
+    enum class trial_event_generation_result { non_zero, zero, abort };
+    trial_event_generation_result GenerateOneTrialEvent();
 
   public :
 
@@ -169,8 +173,9 @@ namespace SHERPA {
                             PDF::ISR_Handler*,
                             YFS::YFS_Handler*);
 
-    int InitializeTheReweighting(ATOOLS::Variations_Mode mode);
+    void PrintStatistics(std::ostream&);
 
+    int InitializeTheReweighting(ATOOLS::Variations_Mode);
 
     bool CalculateTotalXSecs();
     bool GenerateOneEvent();

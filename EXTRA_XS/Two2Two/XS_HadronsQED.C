@@ -60,6 +60,7 @@ DECLARE_TREEME2_GETTER(EXTRAXS::yy_bobo,"yy_bobo")
 Tree_ME2_Base *ATOOLS::Getter<PHASIC::Tree_ME2_Base,PHASIC::External_ME_Args,EXTRAXS::yy_bobo>::
 operator()(const External_ME_Args &args) const
 {
+  if (!args.m_source.empty() && args.m_source != "Internal") return NULL;
   const Flavour_Vector fl = args.Flavours();
   if (fl.size()!=4) return NULL;
   if (dynamic_cast<UFO::UFO_Model*>(MODEL::s_model)) return NULL;
