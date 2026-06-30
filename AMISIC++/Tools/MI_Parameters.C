@@ -92,6 +92,9 @@ MI_Parameters::MI_Parameters() :
   m_flags[string("nMaxScatters")]
     = s["N_MaxScatters"].SetDefault(10000).Get<size_t>();
 
+  m_flags[string("QuarkoniaOn")] 
+    = s["QuarkoniaOn"].SetDefault(1).Get<size_t>();
+
 
   size_t twopions = s["TwoPionInterference"].SetDefault(0).Get<size_t>();
   switch (twopions) {

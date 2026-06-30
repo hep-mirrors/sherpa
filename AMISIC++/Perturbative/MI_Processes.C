@@ -102,7 +102,10 @@ bool MI_Processes::InitializeAllProcesses() {
   m_groups.push_back(new MI_QQB_Processes());
   m_groups.push_back(new MI_QQ_Processes());
   m_groups.push_back(new MI_QG_Processes());
-  m_groups.push_back(new MI_Quarkonium_Processes());
+  MI_Parameters flags;
+  if(flags["QuarkoniaOn"]!=0) {
+    std::cout<<"\33[031m"<<"Quarkonia turned on in MPI"<<"\033[0m"<<std::endl;
+    m_groups.push_back(new MI_Quarkonium_Processes());}
   ///////////////////////////////////////////////////////////////////////////
   // The following processes should depend on switches.  At the moment we
   // just add them without further ado.
