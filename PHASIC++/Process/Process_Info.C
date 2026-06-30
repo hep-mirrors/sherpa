@@ -17,8 +17,7 @@ std::ostream &PHASIC::operator<<(std::ostream &ostr,const Process_Info &info)
     ostr<<"  scale = '"<<info.m_scale<<"', kfactor = '"<<info.m_kfactor<<"'\n";
     ostr<<"  NLO Type = '"<<info.m_fi.m_nlotype<<"\n";
     ostr<<"  megenerator = '"<<info.m_megenerator
-  <<"',  loopgenerator = '"<<info.m_loopgenerator
-	<<"',  RealVirtualgenerator = '"<<info.m_rvgenerator<<"'\n";
+  <<"',  loopgenerator = '"<<info.m_loopgenerator<<"'\n";
     if (info.m_special!="") ostr<<"  special = "<<info.m_special<<"\n";
     ostr<<"  gpath = '"<<info.m_gpath
 	<<"', min t-channels = "<<info.m_ntchan

@@ -47,9 +47,9 @@ namespace PHASIC {
       m_itmin(1000), m_itmax(1000000), m_rsitmin(1000), m_rsitmax(1000000),
       m_amegicmhv(1), m_ntchan(0), m_mtchan(99), m_sort(3),
       m_nlomode(ATOOLS::nlo_mode::none),
-      m_scale("VAR"), m_kfactor("None"), m_loopgenerator("Internal"), m_rvgenerator("Internal"),
+      m_scale("VAR"), m_kfactor("None"), m_loopgenerator("Internal"),
       p_gens(NULL) {}
-
+      
     ATOOLS::Flavour_Vector ExtractFlavours() const;
     bool Has(ATOOLS::nlo_type::code nlotype) const;
 

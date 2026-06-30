@@ -77,11 +77,6 @@ namespace BEAM {
     Beam_Base * InitializePomeron(int);
     Beam_Base*  InitializeReggeon(int);
     Beam_Base * InitializeDM_beam(int);
-<<<<<<< HEAD
-    Beam_Base * InitializeFixed_Target(int);
-    Beam_Base * InitializeLeptonic(int);
-=======
->>>>>>> origin/master
   public:
     Beam_Parameters();
     ~Beam_Parameters();

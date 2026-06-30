@@ -1132,10 +1132,6 @@ void Matrix_Element_Handler::BuildSingleProcessList(
 	  m_gens.LoadGenerator(ds);
 	  cpi.m_loopgenerator=ds;
 	}
-  if (GetMPvalue(args.pbi.m_rvloopgen,nfs,pnid,ds)) {
-    m_gens.LoadGenerator(ds);
-    cpi.m_rvgenerator=ds;
-  }
 	if (GetMPvalue(args.pbi.m_vint,nfs,pnid,ds)) cpi.m_integrator=ds;
 	if (GetMPvalue(args.pbi.m_vrsint,nfs,pnid,ds)) cpi.m_rsintegrator=ds;
 	else cpi.m_rsintegrator=cpi.m_integrator;

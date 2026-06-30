@@ -4,10 +4,9 @@ ANALYSIS: Rivet
 OUTPUT: 4
 EVENTS: 10k
 
-BEAMS:  [11, -11]  # proton beam + electron beam (neutron avaiable too, just adjust beam energy)
-BEAM_ENERGIES: [1., 1.]  # proton at rest, 1 GeV electron
-BEAM_MODE: Fixed_Target
-BEAM_SPECTRA: [Monochromatic, Fixed_Target]  # proton=fixed target, electron=beam
+BEAMS:  [11, -11]  #  electron beam (neutron avaiable too, just adjust beam energy)
+BEAM_ENERGIES: [1., 1.]  # 1 GeV electron
+BEAM_SPECTRA: [Monochromatic, Monochromatic]  # electron=beam
 
 PARTICLE_DATA:
   11:  # electron

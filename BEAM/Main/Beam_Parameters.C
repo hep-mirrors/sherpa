@@ -351,13 +351,6 @@ bool Beam_Parameters::SpecifySpectra()
       m_beamspec[num] = beamspectrum::Reggeon;
     else if (bs == "DM_beam")
       m_beamspec[num] = beamspectrum::DM;
-<<<<<<< HEAD
-    else if (bs == "Fixed_Target")
-      m_beamspec[num] = beamspectrum::Fixed_Target;
-    else if (bs == "Leptonic")
-      m_beamspec[num] = beamspectrum::Leptonic;
-=======
->>>>>>> origin/master
     else
       m_beamspec[num] = beamspectrum::unknown;
   }

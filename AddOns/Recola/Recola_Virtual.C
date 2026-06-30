@@ -116,12 +116,12 @@ Virtual_ME2_Base *ATOOLS::Getter<PHASIC::Virtual_ME2_Base,PHASIC::Process_Info,R
 operator()(const PHASIC::Process_Info &pi) const
 {
   DEBUG_FUNC(pi);
-  if (pi.m_loopgenerator!="Recola" && pi.m_rvgenerator!="Recola") return NULL;
-  if (pi.m_rvgenerator=="Recola" &&   pi.m_fi.m_nlotype!=nlo_type::rvirt && pi.m_loopgenerator!="Recola") return NULL;
-  if(pi.m_loopgenerator=="Recola" && pi.m_fi.m_nlotype!=nlo_type::loop && pi.m_rvgenerator!="Recola") return NULL;
-  
+  if (pi.m_loopgenerator != "Recola") return NULL;
+
+  if (pi.m_fi.m_nlotype != nlo_type::loop) return NULL;
 
   int procIndex=Recola_Interface::RegisterProcess(pi, 11);
+  
   if (procIndex>0) {
     Flavour_Vector flavs = pi.ExtractFlavours();
     return new Recola_Virtual(pi, flavs, procIndex);
