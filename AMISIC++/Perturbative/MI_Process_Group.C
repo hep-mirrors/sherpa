@@ -193,33 +193,55 @@ MI_Quarkonium_Processes::MI_Quarkonium_Processes():
   m_processes.push_back(new MI_Process(flavs));
   m_processes.back()->SetME2(gg2g3S1);
 
+  //1S0 octet
+  flavs[0] = flavs[1] = Flavour(kf_gluon);
   flavs[2] = Flavour(9900441); flavs[3] = Flavour(kf_gluon);
   XS_Base * gg2g1S0_oct = new XS_gg_g1S0_oct(flavs);
-  XS_Base * qg2q1S0_oct = new XS_qg_q1S0_oct(flavs);
-  XS_Base * qqbar2g1S0_oct = new XS_qqbar_g1S0_oct(flavs);
   m_me2s.push_back(gg2g1S0_oct);
   m_processes.push_back(new MI_Process(flavs));
   m_processes.back()->SetME2(gg2g1S0_oct);
-   m_me2s.push_back(qg2q1S0_oct);
-  m_processes.push_back(new MI_Process(flavs));
-  m_processes.back()->SetME2(qg2q1S0_oct);
-  m_me2s.push_back(qqbar2g1S0_oct);
-  m_processes.push_back(new MI_Process(flavs));
-  m_processes.back()->SetME2(qqbar2g1S0_oct);
+  flavs[1] = Flavour(kf_gluon);
+  for (size_t i=1;i<6;i++) {
+    flavs[0] = Flavour(i); flavs[3] = flavs[0];
+    XS_Base * qg2q1S0_oct = new XS_qg_q1S0_oct(flavs);
+    m_me2s.push_back(qg2q1S0_oct);
+    m_processes.push_back(new MI_Process(flavs));
+    m_processes.back()->SetME2(qg2q1S0_oct);
+  }
+  flavs[3] = Flavour(kf_gluon);
+  for (size_t i=1;i<6;i++) {
+    flavs[0] = Flavour(i); flavs[1] = flavs[0].Bar();
+    XS_Base * qqbar2g1S0_oct = new XS_qqbar_g1S0_oct(flavs);
+    m_me2s.push_back(qqbar2g1S0_oct);
+    m_processes.push_back(new MI_Process(flavs));
+    m_processes.back()->SetME2(qqbar2g1S0_oct);
+  }
 
+  //3S1 octet
+  flavs[0] = flavs[1] = Flavour(kf_gluon);
   flavs[2] = Flavour(9900443); flavs[3] = Flavour(kf_gluon);
   XS_Base * gg2g3S1_oct = new XS_gg_g3S1_oct(flavs);
-  XS_Base * qg2q3S1_oct = new XS_qg_q3S1_oct(flavs);
-  XS_Base * qqbar2g3S1_oct = new XS_qqbar_g3S1_oct(flavs);
   m_me2s.push_back(gg2g3S1_oct);
   m_processes.push_back(new MI_Process(flavs));
   m_processes.back()->SetME2(gg2g3S1_oct);
-   m_me2s.push_back(qg2q3S1_oct);
-  m_processes.push_back(new MI_Process(flavs));
-  m_processes.back()->SetME2(qg2q3S1_oct);
-  m_me2s.push_back(qqbar2g3S1_oct);
-  m_processes.push_back(new MI_Process(flavs));
-  m_processes.back()->SetME2(qqbar2g3S1_oct);
+  flavs[1] = Flavour(kf_gluon);
+  for (size_t i=1;i<6;i++) {
+    flavs[0] = Flavour(i); flavs[3] = flavs[0];
+    XS_Base * qg2q3S1_oct = new XS_qg_q3S1_oct(flavs);
+    m_me2s.push_back(qg2q3S1_oct);
+    m_processes.push_back(new MI_Process(flavs));
+    m_processes.back()->SetME2(qg2q3S1_oct);
+  }
+  flavs[3] = Flavour(kf_gluon);
+  for (size_t i=1;i<6;i++) {
+    flavs[0] = Flavour(i); flavs[1] = flavs[0].Bar();
+    XS_Base * qqbar2g3S1_oct = new XS_qqbar_g3S1_oct(flavs);
+    m_me2s.push_back(qqbar2g3S1_oct);
+    m_processes.push_back(new MI_Process(flavs));
+    m_processes.back()->SetME2(qqbar2g3S1_oct);
+  }
+  
+
 }
 
 double MI_Quarkonium_Processes::Coupling() const {
