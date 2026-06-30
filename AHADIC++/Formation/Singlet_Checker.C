@@ -184,7 +184,7 @@ bool Singlet_Checker::FusePartonsInLowMassSinglet() {
     msg_Tracking()<<METHOD<<" arrives here:\n"<<(*p_singlet)<<"\n"
 	     <<"and particles are \n"
 	     <<(*p_part1)<<"\n"<<(*p_part2)<<"\n";
-    kf_code kfc = GetChannel(p_part1->Flavour().Kfcode());
+    kf_code kfc = GetQuarkoniumDecayChannel(p_part1->Flavour().Kfcode());
     // msg_Out() <<"-----CHOSEN kfc: "<< kfc<<'\n';
     // kf_code kfc = p_part1->Flavour().Kfcode()%1000000;
     Proto_Particle * part =
@@ -200,7 +200,7 @@ bool Singlet_Checker::FusePartonsInLowMassSinglet() {
     msg_Tracking()<<METHOD<<" arrives here:\n"<<(*p_singlet)<<"\n"
 	     <<"and particles are \n"
 	     <<(*p_part1)<<"\n"<<(*p_part2)<<"\n";
-    kf_code kfc = GetChannel(p_part2->Flavour().Kfcode());
+    kf_code kfc = GetQuarkoniumDecayChannel(p_part2->Flavour().Kfcode());
     // msg_Out() <<"-----CHOSEN kfc: "<< kfc<<'\n';
     // kf_code kfc = p_part2->Flavour().Kfcode()%1000000;
     Proto_Particle * part =

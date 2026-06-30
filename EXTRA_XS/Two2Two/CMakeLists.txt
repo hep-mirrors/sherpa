@@ -2,7 +2,8 @@ set(Two2Two_SOURCES XS_Drell_Yan.C
                     XS_DiPhoton.C
                     XS_QCD.C
                     XS_HadronsQED.C
-		    XS_Quarkonia.C
+		            XS_Quarkonia.C
+                    XS_Quarkonia.H
                     ee_Y4S_BB.C
                     gg_yy.C
                     DMDM_mumu.C)

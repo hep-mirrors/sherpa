@@ -45,7 +45,7 @@ bool OctetMeson_Decayer::FindOctet(Singlet *singlet,
     if ((*pit1)->Flavour().IsOctetMeson()) {
       p_part1 = (*pit1);
       kf_code octet_kfc = p_part1->Flavour().Kfcode();
-      newkfc = GetChannel(octet_kfc);
+      newkfc = GetQuarkoniumDecayChannel(octet_kfc);
       if(newkfc == octet_kfc) break; //decay did not happen
       return true;
     }

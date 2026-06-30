@@ -2,6 +2,7 @@
 #include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Phys/LDME.H"
+#include "EXTRA_XS/Two2Two/XS_Quarkonia.H"
 
 using namespace AMISIC;
 using namespace ATOOLS;
@@ -519,84 +520,501 @@ operator()(const ATOOLS::Flavour_Vector& flavs) const
 
 /////////////////////////////////////////////////////////////////////////////
 //      QUARKONIA
+//
+// singlet m_pref 4.*sqr(4.*M_PI)/sqr(4.*M_PI)*R_0^2
+// octet m_pref = pow(4.*M_PI,3)/sqr(4.*M_PI)*LDME. The division by 16 pi is because 
+// of a conversion factor later (assumed only for 2nd order processes) 
+// from alpha_s to g^2 so we account for it here.
+// Otherwise, same logic as in EXTRA_XS
 /////////////////////////////////////////////////////////////////////////////
+XS_gg_g3S1::XS_gg_g3S1(const ATOOLS::Flavour_Vector& flavs): XS_Base(), Q(flavs)
+{
+  m_name = string("gg->g3S1");
+}
+
+void XS_gg_g3S1::Calc(const double & s,const double & t,const double & u) 
+{
+  //there is a 1/(16*M_PI) difference to EXTRA_XS because of the coupling treatment
+  m_lastxs = Q.R02*4*Quarkonium::Calc::gg_g3S1(s,t,u,Q.mass2);
+}
+
+bool XS_gg_g3S1::SetColours(const ATOOLS::Flavour_Vector& flavs) 
+{
+  Quarkonium::ColourFlowSetter::gg_gSinglet(Q.index,m_colours);
+  return true;
+}
+
+
+// OCTETS
+// 1S0
+DECLARE_XSBASE_GETTER(XS_qg_q1S0_oct,"XS_qg_q1S0_oct")
+XS_Base * ATOOLS::Getter<AMISIC::XS_Base,ATOOLS::Flavour_Vector,XS_qg_q1S0_oct>::
+operator()(const ATOOLS::Flavour_Vector& flavs) const
+{
+  if (flavs.size()!=4) return NULL;
+  if(Quarkonium::IsCandidate::qg_qQuarkonium(flavs, {kf_1S0_c})) return new XS_qg_q1S0_oct(flavs);
+  return NULL;
+}
+
+XS_qg_q1S0_oct::XS_qg_q1S0_oct(const ATOOLS::Flavour_Vector & flavs): XS_Base(), Q(flavs)
+{
+  for (short int i=0;i<4;i++) {
+    if (i<2 && flavs[i].IsGluon()) m_g = i;
+    if (i<2 && flavs[i].IsQuark()) m_q = i;
+    m_colours[i][0] = m_colours[i][1] = 0;
+  }
+  m_a      = flavs[m_q].IsAnti() ? 1 : 0; 
+  m_alphaS = MODEL::s_model->ScalarConstant("alpha_S");
+  m_pref = 4.*M_PI*Q.ldme;
+}
+
+void XS_qg_q1S0_oct::Calc(const double & s,const double & t,const double & u) 
+{
+  double all = Quarkonium::Calc::qg_q1S0_oct(s,t,u,Q.mass2);
+  m_lastxs = m_pref*all;
+}
+
+bool XS_qg_q1S0_oct::SetColours(const ATOOLS::Flavour_Vector & flavs) 
+{
+  Quarkonium::ColourFlowSetter::qg_qOctet(m_a,m_g,Q.index, m_colours);
+  return true;
+}
+
+DECLARE_XSBASE_GETTER(XS_qqbar_g1S0_oct,"XS_qqbar_g1S0_oct")
+XS_Base * ATOOLS::Getter<AMISIC::XS_Base,ATOOLS::Flavour_Vector,XS_qqbar_g1S0_oct>::
+operator()(const ATOOLS::Flavour_Vector& flavs) const
+{
+  
+  if (flavs.size()!=4) return NULL;
+  if(Quarkonium::IsCandidate::qqbar_gQuarkonium(flavs, {kf_1S0_c})) return new XS_qqbar_g1S0_oct(flavs);
+  return NULL;
+}
+
+XS_qqbar_g1S0_oct::XS_qqbar_g1S0_oct(const ATOOLS::Flavour_Vector & flavs): XS_Base(), Q(flavs)
+{
+  for (short int i=0;i<4;i++) {
+    if (i<2 && flavs[i].IsAnti())  m_a = i;
+    m_colours[i][0] = m_colours[i][1] = 0;
+  }
+  m_alphaS = MODEL::s_model->ScalarConstant("alpha_S");
+  m_pref = 4.*M_PI*Q.ldme;
+}
+
+void XS_qqbar_g1S0_oct::Calc(const double & s,const double & t,const double & u) 
+{
+  double all = Quarkonium::Calc::qqbar_g1S0_oct(s,t,u,Q.mass2);
+  m_lastxs = m_pref*all;
+}
+
+bool XS_qqbar_g1S0_oct::SetColours(const ATOOLS::Flavour_Vector & flavs) 
+{
+  Quarkonium::ColourFlowSetter::qqbar_gOctet(Q.index,m_a,m_colours);
+  return true;
+}
+
+DECLARE_XSBASE_GETTER(XS_gg_g1S0_oct,"XS_gg_g1S0_oct")
+XS_Base * ATOOLS::Getter<AMISIC::XS_Base,ATOOLS::Flavour_Vector,XS_gg_g1S0_oct>::
+operator()(const ATOOLS::Flavour_Vector& flavs) const
+{
+  
+  if (flavs.size()!=4) return NULL;
+  if(Quarkonium::IsCandidate::gg_gQuarkonium(flavs, {kf_1S0_c})) return new XS_gg_g1S0_oct(flavs);
+  return NULL;
+}
+
+XS_gg_g1S0_oct::XS_gg_g1S0_oct(const ATOOLS::Flavour_Vector & flavs): XS_Base(), Q(flavs){
+  m_name = string("gg->g1S0_oct");
+  const ATOOLS::Flavour_Vector& fl = flavs;
+  m_pref = 4.*M_PI*Q.ldme;
+}
+
+void XS_gg_g1S0_oct::Calc(const double & s,const double & t,const double & u) 
+{
+  double all = Quarkonium::Calc::gg_g1S0_oct(s,t,u,Q.mass2);
+  m_lastxs =  all*m_pref;
+}
+
+bool XS_gg_g1S0_oct::SetColours(const ATOOLS::Flavour_Vector & flavs) 
+{
+  Quarkonium::ColourFlowSetter::gg_gOctet(Q.index,m_colours);
+  return true;
+}
+
+///// 3S1
+
+DECLARE_XSBASE_GETTER(XS_qg_q3S1_oct,"XS_qg_q3S1_oct")
+XS_Base * ATOOLS::Getter<AMISIC::XS_Base,ATOOLS::Flavour_Vector,XS_qg_q3S1_oct>::
+operator()(const ATOOLS::Flavour_Vector& flavs) const
+{
+  if (flavs.size()!=4) return NULL;
+  if(Quarkonium::IsCandidate::qg_qQuarkonium(flavs, {kf_3S1_c})) return new XS_qg_q3S1_oct(flavs);
+  return NULL;
+}
+
+XS_qg_q3S1_oct::XS_qg_q3S1_oct(const ATOOLS::Flavour_Vector & flavs): XS_Base(), Q(flavs)
+{
+  for (short int i=0;i<4;i++) {
+    if (i<2 && flavs[i].IsGluon()) m_g = i;
+    if (i<2 && flavs[i].IsQuark()) m_q = i;
+    m_colours[i][0] = m_colours[i][1] = 0;
+  }
+  m_a      = flavs[m_q].IsAnti() ? 1 : 0; 
+  m_alphaS = MODEL::s_model->ScalarConstant("alpha_S");
+  m_pref = 4.*M_PI*Q.ldme;
+}
+
+void XS_qg_q3S1_oct::Calc(const double & s,const double & t,const double & u) 
+{
+  double all = Quarkonium::Calc::qg_q3S1_oct(s,t,u,Q.mass2);
+  m_lastxs = m_pref*all;
+}
+
+bool XS_qg_q3S1_oct::SetColours(const ATOOLS::Flavour_Vector & flavs) 
+{
+  Quarkonium::ColourFlowSetter::qg_qOctet(m_a,m_g,Q.index, m_colours);
+  return true;
+}
+
+DECLARE_XSBASE_GETTER(XS_qqbar_g3S1_oct,"XS_qqbar_g3S1_oct")
+XS_Base * ATOOLS::Getter<AMISIC::XS_Base,ATOOLS::Flavour_Vector,XS_qqbar_g3S1_oct>::
+operator()(const ATOOLS::Flavour_Vector& flavs) const
+{
+  
+  if (flavs.size()!=4) return NULL;
+  if(Quarkonium::IsCandidate::qqbar_gQuarkonium(flavs, {kf_3S1_c})) return new XS_qqbar_g3S1_oct(flavs);
+  return NULL;
+}
+
+XS_qqbar_g3S1_oct::XS_qqbar_g3S1_oct(const ATOOLS::Flavour_Vector & flavs): XS_Base(), Q(flavs)
+{
+  for (short int i=0;i<4;i++) {
+    if (i<2 && flavs[i].IsAnti())  m_a = i;
+    m_colours[i][0] = m_colours[i][1] = 0;
+  }
+  m_alphaS = MODEL::s_model->ScalarConstant("alpha_S");
+  m_pref = 4.*M_PI*Q.ldme;
+}
+
+void XS_qqbar_g3S1_oct::Calc(const double & s,const double & t,const double & u) 
+{
+  double all = Quarkonium::Calc::qqbar_g3S1_oct(s,t,u,Q.mass2);
+  m_lastxs = m_pref*all;
+}
+
+bool XS_qqbar_g3S1_oct::SetColours(const ATOOLS::Flavour_Vector & flavs) 
+{
+  Quarkonium::ColourFlowSetter::qqbar_gOctet(Q.index,m_a,m_colours);
+  return true;
+}
 
 DECLARE_XSBASE_GETTER(XS_gg_g3S1_oct,"XS_gg_g3S1_oct")
 XS_Base * ATOOLS::Getter<AMISIC::XS_Base,ATOOLS::Flavour_Vector,XS_gg_g3S1_oct>::
 operator()(const ATOOLS::Flavour_Vector& flavs) const
 {
   
-  // const Flavour_Vector fl = args.Flavours();
   if (flavs.size()!=4) return NULL;
-  if ( flavs[0].IsGluon() && flavs[1].IsGluon() && flavs[2].IsGluon()  &&
-  flavs[3].IsOctetMeson() ) {
-    kf_code kfc = flavs[3].Kfcode();
-    if (kfc==kf_3S1_c) 
-    {
-      std::cout<<"FLAVOURS: "<<flavs[0].Kfcode()<<" "<<flavs[1].Kfcode()<<" "<<flavs[2].Kfcode()<<" "<<flavs[3].Kfcode()<<"\n";
-      if(!IsZero(GetTotalLDME(kfc))) return new XS_gg_g3S1_oct(flavs);
-    }
-  }
-  if ( flavs[0].IsGluon() && flavs[1].IsGluon() && flavs[3].IsGluon()  &&
-  flavs[2].IsOctetMeson() ) {
-    kf_code kfc = flavs[2].Kfcode();
-    if (kfc==kf_3S1_c) 
-    {
-      std::cout<<"FLAVOURS: "<<flavs[0].Kfcode()<<" "<<flavs[1].Kfcode()<<" "<<flavs[2].Kfcode()<<" "<<flavs[3].Kfcode()<<"\n";
-      if(!IsZero(GetTotalLDME(kfc))) return new XS_gg_g3S1_oct(flavs);
-    }
-  }
-  
+  if(Quarkonium::IsCandidate::gg_gQuarkonium(flavs, {kf_3S1_c})) return new XS_gg_g3S1_oct(flavs);
   return NULL;
 }
 
-XS_gg_g3S1_oct::XS_gg_g3S1_oct(const ATOOLS::Flavour_Vector & flavs): XS_Base(){
+XS_gg_g3S1_oct::XS_gg_g3S1_oct(const ATOOLS::Flavour_Vector & flavs): XS_Base(), Q(flavs){
   m_name = string("gg->g3S1_oct");
   const ATOOLS::Flavour_Vector& fl = flavs;
-  for (short int i=0;i<4;i++) {
-    if (i>1 && fl[i].IsOctetMeson()) m_S = i;
-    m_colours[i][0] = m_colours[i][1] = 0;
-  }
-  const kf_code kfc = fl[m_S].Kfcode();
-  m_mass = ATOOLS::Flavour((kfc / 100) % 10).Mass(true) +
-  ATOOLS::Flavour((kfc / 10) % 10).Mass(true);
-  m_mass2 = sqr(m_mass);
-  LDME = GetTotalLDME(fl[m_S].Kfcode());
-  m_pref = 1/(16.*sqr(M_PI))*pow(4.*M_PI,3)*LDME;
+  m_pref = 4.*M_PI*Q.ldme;
 }
 
 void XS_gg_g3S1_oct::Calc(const double & s,const double & t,const double & u) 
 {
-  double sM2 = sqr(s-m_mass2);
-  double tM2 = sqr(t-m_mass2);
-  double uM2 = sqr(u-m_mass2);
-
-  double heq0 = 2.*s*m_mass2*(sqr(t)+sqr(u))*t*u;
-  double heq1 = sqr(s)*(sqr(sM2)+pow(t,4)+pow(u,4)+2.*sqr(m_mass2)*sqr(t*u/s));
-  double nom = 27.*(s*t+t*u+u*s)-19.*sqr(m_mass2);
-  double dnom = sM2*sM2*tM2*uM2;
-  m_lastxs =  -1./(144.*pow(m_mass,3))*(heq0+heq1)*m_pref*nom/dnom;
+  double all = Quarkonium::Calc::gg_g3S1_oct(s,t,u,Q.mass2);
+  m_lastxs =  all*m_pref;
 }
 
 bool XS_gg_g3S1_oct::SetColours(const ATOOLS::Flavour_Vector & flavs) 
 {
-  for (size_t i = 0; i<4;i++){
-    if (flavs[i].IsOctetMeson()) m_S = i;
+  Quarkonium::ColourFlowSetter::gg_gOctet(Q.index,m_colours);
+  return true;
+}
+// 3P0
+
+DECLARE_XSBASE_GETTER(XS_qg_q3P0_oct,"XS_qg_q3P0_oct")
+XS_Base * ATOOLS::Getter<AMISIC::XS_Base,ATOOLS::Flavour_Vector,XS_qg_q3P0_oct>::
+operator()(const ATOOLS::Flavour_Vector& flavs) const
+{
+  if (flavs.size()!=4) return NULL;
+  if(Quarkonium::IsCandidate::qg_qQuarkonium(flavs, {kf_3P0_c})) return new XS_qg_q3P0_oct(flavs);
+  return NULL;
+}
+
+XS_qg_q3P0_oct::XS_qg_q3P0_oct(const ATOOLS::Flavour_Vector & flavs): XS_Base(), Q(flavs)
+{
+  for (short int i=0;i<4;i++) {
+    if (i<2 && flavs[i].IsGluon()) m_g = i;
+    if (i<2 && flavs[i].IsQuark()) m_q = i;
+    m_colours[i][0] = m_colours[i][1] = 0;
   }
-  size_t bit = ran->Get()<0.5 ? 0 : 1;
-  size_t cross = ran->Get()<0.5 ? 0 : 1;
-  if (cross==0) {
-    m_colours[0][bit] = m_colours[m_S][bit] = Flow::Counter();
-    m_colours[0][1-bit] = m_colours[1][bit] = Flow::Counter();
-    m_colours[1][1-bit] = m_colours[5-m_S][1-bit] = Flow::Counter();
-    m_colours[m_S][1-bit] = m_colours[5-m_S][bit] = Flow::Counter();
+  m_a      = flavs[m_q].IsAnti() ? 1 : 0; 
+  m_alphaS = MODEL::s_model->ScalarConstant("alpha_S");
+  m_pref = 4.*M_PI*Q.ldme;
+}
+
+void XS_qg_q3P0_oct::Calc(const double & s,const double & t,const double & u) 
+{
+  double all = Quarkonium::Calc::qg_q3P0_oct(s,t,u,Q.mass2);
+  m_lastxs = m_pref*all;
+}
+
+bool XS_qg_q3P0_oct::SetColours(const ATOOLS::Flavour_Vector & flavs) 
+{
+  Quarkonium::ColourFlowSetter::qg_qOctet(m_a,m_g,Q.index, m_colours);
+  return true;
+}
+
+DECLARE_XSBASE_GETTER(XS_qqbar_g3P0_oct,"XS_qqbar_g3P0_oct")
+XS_Base * ATOOLS::Getter<AMISIC::XS_Base,ATOOLS::Flavour_Vector,XS_qqbar_g3P0_oct>::
+operator()(const ATOOLS::Flavour_Vector& flavs) const
+{
+  
+  if (flavs.size()!=4) return NULL;
+  if(Quarkonium::IsCandidate::qqbar_gQuarkonium(flavs, {kf_3P0_c})) return new XS_qqbar_g3P0_oct(flavs);
+  return NULL;
+}
+
+XS_qqbar_g3P0_oct::XS_qqbar_g3P0_oct(const ATOOLS::Flavour_Vector & flavs): XS_Base(), Q(flavs)
+{
+  for (short int i=0;i<4;i++) {
+    if (i<2 && flavs[i].IsAnti())  m_a = i;
+    m_colours[i][0] = m_colours[i][1] = 0;
   }
-  if (cross==1) {
-    m_colours[0][bit] = m_colours[m_S][bit] = Flow::Counter();
-    m_colours[0][1-bit] = m_colours[5-m_S][1-bit] = Flow::Counter();
-    m_colours[1][bit] = m_colours[5-m_S][bit] = Flow::Counter();
-    m_colours[1][1-bit] = m_colours[m_S][1-bit] = Flow::Counter();
+  m_alphaS = MODEL::s_model->ScalarConstant("alpha_S");
+  m_pref = 4.*M_PI*Q.ldme;
+}
+
+void XS_qqbar_g3P0_oct::Calc(const double & s,const double & t,const double & u) 
+{
+  double all = Quarkonium::Calc::qqbar_g3P0_oct(s,t,u,Q.mass2);
+  m_lastxs = m_pref*all;
+}
+
+bool XS_qqbar_g3P0_oct::SetColours(const ATOOLS::Flavour_Vector & flavs) 
+{
+  Quarkonium::ColourFlowSetter::qqbar_gOctet(Q.index,m_a,m_colours);
+  return true;
+}
+
+DECLARE_XSBASE_GETTER(XS_gg_g3P0_oct,"XS_gg_g3P0_oct")
+XS_Base * ATOOLS::Getter<AMISIC::XS_Base,ATOOLS::Flavour_Vector,XS_gg_g3P0_oct>::
+operator()(const ATOOLS::Flavour_Vector& flavs) const
+{
+  
+  if (flavs.size()!=4) return NULL;
+  if(Quarkonium::IsCandidate::gg_gQuarkonium(flavs, {kf_3P0_c})) return new XS_gg_g3P0_oct(flavs);
+  return NULL;
+}
+
+XS_gg_g3P0_oct::XS_gg_g3P0_oct(const ATOOLS::Flavour_Vector & flavs): XS_Base(), Q(flavs){
+  m_name = string("gg->g3P0_oct");
+  const ATOOLS::Flavour_Vector& fl = flavs;
+  m_pref = 4.*M_PI*Q.ldme;
+}
+
+void XS_gg_g3P0_oct::Calc(const double & s,const double & t,const double & u) 
+{
+  double all = Quarkonium::Calc::gg_g3P0_oct(s,t,u,Q.mass2);
+  m_lastxs =  all*m_pref;
+}
+
+bool XS_gg_g3P0_oct::SetColours(const ATOOLS::Flavour_Vector & flavs) 
+{
+  Quarkonium::ColourFlowSetter::gg_gOctet(Q.index,m_colours);
+  return true;
+}
+// 3P1
+
+DECLARE_XSBASE_GETTER(XS_qg_q3P1_oct,"XS_qg_q3P1_oct")
+XS_Base * ATOOLS::Getter<AMISIC::XS_Base,ATOOLS::Flavour_Vector,XS_qg_q3P1_oct>::
+operator()(const ATOOLS::Flavour_Vector& flavs) const
+{
+  if (flavs.size()!=4) return NULL;
+  if(Quarkonium::IsCandidate::qg_qQuarkonium(flavs, {kf_3P1_c})) return new XS_qg_q3P1_oct(flavs);
+  return NULL;
+}
+
+XS_qg_q3P1_oct::XS_qg_q3P1_oct(const ATOOLS::Flavour_Vector & flavs): XS_Base(), Q(flavs)
+{
+  for (short int i=0;i<4;i++) {
+    if (i<2 && flavs[i].IsGluon()) m_g = i;
+    if (i<2 && flavs[i].IsQuark()) m_q = i;
+    m_colours[i][0] = m_colours[i][1] = 0;
   }
+  m_a      = flavs[m_q].IsAnti() ? 1 : 0; 
+  m_alphaS = MODEL::s_model->ScalarConstant("alpha_S");
+  m_pref = 4.*M_PI*Q.ldme;
+}
+
+void XS_qg_q3P1_oct::Calc(const double & s,const double & t,const double & u) 
+{
+  double all = Quarkonium::Calc::qg_q3P1_oct(s,t,u,Q.mass2);
+  m_lastxs = m_pref*all;
+}
+
+bool XS_qg_q3P1_oct::SetColours(const ATOOLS::Flavour_Vector & flavs) 
+{
+  Quarkonium::ColourFlowSetter::qg_qOctet(m_a,m_g,Q.index, m_colours);
+  return true;
+}
+
+DECLARE_XSBASE_GETTER(XS_qqbar_g3P1_oct,"XS_qqbar_g3P1_oct")
+XS_Base * ATOOLS::Getter<AMISIC::XS_Base,ATOOLS::Flavour_Vector,XS_qqbar_g3P1_oct>::
+operator()(const ATOOLS::Flavour_Vector& flavs) const
+{
+  
+  if (flavs.size()!=4) return NULL;
+  if(Quarkonium::IsCandidate::qqbar_gQuarkonium(flavs, {kf_3P1_c})) return new XS_qqbar_g3P1_oct(flavs);
+  return NULL;
+}
+
+XS_qqbar_g3P1_oct::XS_qqbar_g3P1_oct(const ATOOLS::Flavour_Vector & flavs): XS_Base(), Q(flavs)
+{
+  for (short int i=0;i<4;i++) {
+    if (i<2 && flavs[i].IsAnti())  m_a = i;
+    m_colours[i][0] = m_colours[i][1] = 0;
+  }
+  m_alphaS = MODEL::s_model->ScalarConstant("alpha_S");
+  m_pref = 4.*M_PI*Q.ldme;
+}
+
+void XS_qqbar_g3P1_oct::Calc(const double & s,const double & t,const double & u) 
+{
+  double all = Quarkonium::Calc::qqbar_g3P1_oct(s,t,u,Q.mass2);
+  m_lastxs = m_pref*all;
+}
+
+bool XS_qqbar_g3P1_oct::SetColours(const ATOOLS::Flavour_Vector & flavs) 
+{
+  Quarkonium::ColourFlowSetter::qqbar_gOctet(Q.index,m_a,m_colours);
+  return true;
+}
+
+DECLARE_XSBASE_GETTER(XS_gg_g3P1_oct,"XS_gg_g3P1_oct")
+XS_Base * ATOOLS::Getter<AMISIC::XS_Base,ATOOLS::Flavour_Vector,XS_gg_g3P1_oct>::
+operator()(const ATOOLS::Flavour_Vector& flavs) const
+{
+  
+  if (flavs.size()!=4) return NULL;
+  if(Quarkonium::IsCandidate::gg_gQuarkonium(flavs, {kf_3P1_c})) return new XS_gg_g3P1_oct(flavs);
+  return NULL;
+}
+
+XS_gg_g3P1_oct::XS_gg_g3P1_oct(const ATOOLS::Flavour_Vector & flavs): XS_Base(), Q(flavs){
+  m_name = string("gg->g3P1_oct");
+  const ATOOLS::Flavour_Vector& fl = flavs;
+  m_pref = 4.*M_PI*Q.ldme;
+}
+
+void XS_gg_g3P1_oct::Calc(const double & s,const double & t,const double & u) 
+{
+  double all = Quarkonium::Calc::gg_g3P1_oct(s,t,u,Q.mass2);
+  m_lastxs =  all*m_pref;
+}
+
+bool XS_gg_g3P1_oct::SetColours(const ATOOLS::Flavour_Vector & flavs) 
+{
+  Quarkonium::ColourFlowSetter::gg_gOctet(Q.index,m_colours);
+  return true;
+}
+
+// 3P2
+
+DECLARE_XSBASE_GETTER(XS_qg_q3P2_oct,"XS_qg_q3P2_oct")
+XS_Base * ATOOLS::Getter<AMISIC::XS_Base,ATOOLS::Flavour_Vector,XS_qg_q3P2_oct>::
+operator()(const ATOOLS::Flavour_Vector& flavs) const
+{
+  if (flavs.size()!=4) return NULL;
+  if(Quarkonium::IsCandidate::qg_qQuarkonium(flavs, {kf_3P2_c})) return new XS_qg_q3P2_oct(flavs);
+  return NULL;
+}
+
+XS_qg_q3P2_oct::XS_qg_q3P2_oct(const ATOOLS::Flavour_Vector & flavs): XS_Base(), Q(flavs)
+{
+  for (short int i=0;i<4;i++) {
+    if (i<2 && flavs[i].IsGluon()) m_g = i;
+    if (i<2 && flavs[i].IsQuark()) m_q = i;
+    m_colours[i][0] = m_colours[i][1] = 0;
+  }
+  m_a      = flavs[m_q].IsAnti() ? 1 : 0; 
+  m_alphaS = MODEL::s_model->ScalarConstant("alpha_S");
+  m_pref = 4.*M_PI*Q.ldme;
+}
+
+void XS_qg_q3P2_oct::Calc(const double & s,const double & t,const double & u) 
+{
+  double all = Quarkonium::Calc::qg_q3P2_oct(s,t,u,Q.mass2);
+  m_lastxs = m_pref*all;
+}
+
+bool XS_qg_q3P2_oct::SetColours(const ATOOLS::Flavour_Vector & flavs) 
+{
+  Quarkonium::ColourFlowSetter::qg_qOctet(m_a,m_g,Q.index, m_colours);
+  return true;
+}
+
+DECLARE_XSBASE_GETTER(XS_qqbar_g3P2_oct,"XS_qqbar_g3P2_oct")
+XS_Base * ATOOLS::Getter<AMISIC::XS_Base,ATOOLS::Flavour_Vector,XS_qqbar_g3P2_oct>::
+operator()(const ATOOLS::Flavour_Vector& flavs) const
+{
+  
+  if (flavs.size()!=4) return NULL;
+  if(Quarkonium::IsCandidate::qqbar_gQuarkonium(flavs, {kf_3P2_c})) return new XS_qqbar_g3P2_oct(flavs);
+  return NULL;
+}
+
+XS_qqbar_g3P2_oct::XS_qqbar_g3P2_oct(const ATOOLS::Flavour_Vector & flavs): XS_Base(), Q(flavs)
+{
+  for (short int i=0;i<4;i++) {
+    if (i<2 && flavs[i].IsAnti())  m_a = i;
+    m_colours[i][0] = m_colours[i][1] = 0;
+  }
+  m_alphaS = MODEL::s_model->ScalarConstant("alpha_S");
+  m_pref = 4.*M_PI*Q.ldme;
+}
+
+void XS_qqbar_g3P2_oct::Calc(const double & s,const double & t,const double & u) 
+{
+  double all = Quarkonium::Calc::qqbar_g3P2_oct(s,t,u,Q.mass2);
+  m_lastxs = m_pref*all;
+}
+
+bool XS_qqbar_g3P2_oct::SetColours(const ATOOLS::Flavour_Vector & flavs) 
+{
+  Quarkonium::ColourFlowSetter::qqbar_gOctet(Q.index,m_a,m_colours);
+  return true;
+}
+
+DECLARE_XSBASE_GETTER(XS_gg_g3P2_oct,"XS_gg_g3P2_oct")
+XS_Base * ATOOLS::Getter<AMISIC::XS_Base,ATOOLS::Flavour_Vector,XS_gg_g3P2_oct>::
+operator()(const ATOOLS::Flavour_Vector& flavs) const
+{
+  
+  if (flavs.size()!=4) return NULL;
+  if(Quarkonium::IsCandidate::gg_gQuarkonium(flavs, {kf_3P2_c})) return new XS_gg_g3P2_oct(flavs);
+  return NULL;
+}
+
+XS_gg_g3P2_oct::XS_gg_g3P2_oct(const ATOOLS::Flavour_Vector & flavs): XS_Base(), Q(flavs){
+  m_name = string("gg->g3P2_oct");
+  const ATOOLS::Flavour_Vector& fl = flavs;
+  m_pref = 4.*M_PI*Q.ldme;
+}
+
+void XS_gg_g3P2_oct::Calc(const double & s,const double & t,const double & u) 
+{
+  double all = Quarkonium::Calc::gg_g3P2_oct(s,t,u,Q.mass2);
+  m_lastxs =  all*m_pref;
+}
+
+bool XS_gg_g3P2_oct::SetColours(const ATOOLS::Flavour_Vector & flavs) 
+{
+  Quarkonium::ColourFlowSetter::gg_gOctet(Q.index,m_colours);
   return true;
 }
 
@@ -625,40 +1043,4 @@ operator()(const ATOOLS::Flavour_Vector& flavs) const
     }      
   }
 return NULL;
-}
-
-
-XS_gg_g3S1::XS_gg_g3S1(const ATOOLS::Flavour_Vector& flavs): XS_Base()
-{
-  m_name = string("gg->g3S1");
-  const ATOOLS::Flavour_Vector& fl = flavs;
-  for (short int i=0;i<4;i++) {
-    if (i>1 && fl[i].IsMeson()) m_S = i;
-    m_colours[i][0] = m_colours[i][1] = 0;
-  }
-  const kf_code kfc = fl[m_S].Kfcode();
-  m_mass = fl[m_S].Mass(true);
-  m_mass2 = sqr(m_mass);
-  
-  m_R02 =  GetLDME(fl[m_S].Kfcode())*2.*M_PI/(3.*3.);
-}
-
-void XS_gg_g3S1::Calc(const double & s,const double & t,const double & u) 
-{
-  double M2 = m_mass2; //s+t+u is zero, as MPI assumes massless scatters
-  double sM2 = sqr(s-M2);
-  double tM2 = sqr(t-M2);
-  double uM2 = sqr(u-M2);
-  double all = sqr(s)/(uM2*tM2)+sqr(t)/(uM2*sM2)+sqr(u)/(sM2*tM2);
-  m_pref   = 1/(16.*sqr(M_PI))*(5./9.)*sqr(4.*M_PI)*sqrt(M2)*m_R02; //there is a 1/(16*M_PI) difference to EXTRA_XS because of the coupling treatment
-  m_lastxs = m_pref*all;
-}
-
-bool XS_gg_g3S1::SetColours(const ATOOLS::Flavour_Vector& flavs) 
-{
-  size_t bit = ran->Get()<0.5 ? 0 : 1;
-  m_colours[0][bit] = m_colours[1][1-bit]     = Flow::Counter();
-  m_colours[0][1-bit] = m_colours[5-m_S][1-bit] = Flow::Counter();
-  m_colours[1][bit] = m_colours[5-m_S][bit]   = Flow::Counter();
-  return true;
 }
