@@ -318,7 +318,7 @@ void Sudakov::AddGluonThresholds(Model_Base *md) {
   ST_Set *stset;
   m_stmap[Flavour(kf_gluon)] = stset = new ST_Set;
   double arg;
-  arg = 0.5 * (M_PI * as(sqr(2*mc)) / (24 * pow(2.*mc, 3))) *
+  arg = 0.5 * (M_PI * as(sqr(2*mc)) / (24 * pow(mc, 3))) *
         GetLDME(kf_3S1_c) * (1. - (11./6. * v8_2))*tr_efac; // SDME for g -> ccb (3S_1)_8
   stset->insert(
       One2One_Transition_Base(Flavour(kf_gluon), Flavour(kf_3S1_c), arg, 1));
