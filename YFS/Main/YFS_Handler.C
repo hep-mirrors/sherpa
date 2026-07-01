@@ -447,6 +447,8 @@ void YFS_Handler::CalculateBeta() {
       if(!m_no_born) m_real = p_dipoles->CalculateEEX()+p_dipoles->CalculateEEXVirtual();
       else m_real = p_dipoles->CalculateEEX()/m_born+p_dipoles->CalculateEEXVirtual()/m_born;
     }
+    m_eex = m_real;
+    if(IsNan(m_eex)) m_eex=0;
     // if(m_real < 0) m_real = 0;
     // m_real /= m_born;
   }
@@ -540,24 +542,33 @@ void YFS_Handler::GenerateWeight() {
 
     // NLO: Real + Virtual
     if (p_nlo->HasNLO()) {
-      const double nlo_sum   = (m_born+m_nlo_real + m_nlo_virtual)/m_born;
+      const double nlo_sum   = (m_born + m_nlo_real + m_nlo_virtual)/m_born;
+      const double eex_sum   = (m_born + m_eex)/m_born;
+      const double real_sum  = (m_born + m_nlo_real)/m_born;
+      const double virt_sum  = (m_born + m_nlo_virtual)/m_born;
       const double nlo_denom = m_no_born ? nlo_sum : (m_born + nlo_sum);
       if (!IsZero(nlo_denom)) {
         wyfsnlo["Real"]    = ratio((m_nlo_real)/m_born, m_real);
         wyfsnlo["Virtual"] = ratio((m_nlo_virtual)/m_born, m_real);
-        wyfsnlo["NLO"]     = ratio(nlo_sum, m_real);
-        wyfsnlo["LO"]      = 1./m_real;
+        wyfsnlo["NLO"]    = ratio(nlo_sum, m_real);
+        wyfsnlo["BR"]     = ratio(real_sum, m_real);
+        wyfsnlo["BV"]     = ratio(virt_sum, m_real);
+        wyfsnlo["LO"]     = 1./m_real;
+        wyfsnlo["EEX"]    = ratio(m_eex, m_real);
       }
     }
 
     // NNLO: RealVirtual + RealReal
     if (p_nlo->HasNNLO()) {
-      const double nnlo_total = m_no_born ? m_real * m_born
-                                          : (m_real - 1.0) * m_born;
+      const double nnlo_total = (m_born + m_nlo_real + m_nlo_virtual + m_nlo_rv + m_nlo_rr)/m_born;
+      const double RR_total = (m_born + m_nlo_real + m_nlo_virtual + m_nlo_rr)/m_born;
+      const double RV_total = (m_born + m_nlo_real + m_nlo_virtual + m_nlo_rv)/m_born;
       const double nnlo_denom = m_no_born ? nnlo_total : (m_born + nnlo_total);
       if (!IsZero(nnlo_denom)) {
         wyfsnlo["RealVirtual"] = ratio((m_nlo_rv)/m_born, m_real);
         wyfsnlo["RealReal"]    = ratio((m_nlo_rr)/m_born, m_real);
+        wyfsnlo["NLO+RR"]    = ratio(RR_total, m_real);
+        wyfsnlo["NLO+RV"]    = ratio(RV_total, m_real);
         wyfsnlo["NNLO"]        = make_ratio(nnlo_total, nnlo_denom);
       }
     }
