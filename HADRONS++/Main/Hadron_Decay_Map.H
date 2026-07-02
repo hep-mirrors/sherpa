@@ -77,7 +77,7 @@ namespace HADRONS {
 
     //@{
     /// Getter/setter method.
-    inline const Mixing_Handler* MixingHandler() const {return p_mixinghandler;}
+    inline Mixing_Handler* MixingHandler() const {return p_mixinghandler;}
     inline void SetMixingHandler(Mixing_Handler* mix) { p_mixinghandler = mix; }
     //@}
   };

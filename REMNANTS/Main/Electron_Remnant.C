@@ -30,6 +30,9 @@ Remnant_Base(yfs->GetInFlav(beam),beam,tag),p_yfs(yfs)
 bool Electron_Remnant::FillBlob(Colour_Generator* colours, ParticleMomMap* ktmap, const bool& copy)
 {
   if (m_extracted.size() != 1) {
+    msg_Out()<<"Error in "<<METHOD<<".  Extracted "<<m_extracted.size()<<" particles:\n";
+    for (Part_List::iterator pit=m_extracted.begin();pit!=m_extracted.end();pit++)
+      msg_Out()<<(**pit)<<"\n";
     THROW(critical_error, "None or too many particles extracted from intact beam.");
   }
   Particle* particle = (*m_extracted.begin());
@@ -50,7 +53,8 @@ bool Electron_Remnant::TestExtract(const Flavour &flav,const Vec4D &mom) {
   if (flav != m_constituents.front() ||
       mom[0] > (1. + 1.e-6) * p_beam->OutMomentum()[0]) {
     msg_Error() << "Error in " << METHOD << ": parton " << mom << " vs. beam "
-                << p_beam->OutMomentum() << ", " << m_constituents.front() << " vs. " << flav << ".\n";
+                << p_beam->OutMomentum() << ", " << m_constituents.front()
+		<< " vs. " << flav << ".\n";
     return false;
   }
   return true;

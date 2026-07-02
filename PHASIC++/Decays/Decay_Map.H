@@ -62,6 +62,7 @@ namespace PHASIC {
      */
     void ResetCounters();
 
+    const ATOOLS::Mass_Selector * GetMassSelector() { return p_ms; }
     friend std::ostream &operator<<(std::ostream &os, const Decay_Map &dm);
   };
 }

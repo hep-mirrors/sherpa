@@ -6,7 +6,7 @@ using namespace AHADIC;
 using namespace ATOOLS;
 
 Constituents::Constituents(bool diquarks) :
-  m_minmass(100.),m_maxmass(0.)
+  m_minmass(100.), m_maxmass(0.),m_minDmass(0.)
 {
   // Light quarks and diquarks
   double total(0.),udfrac(1.), ud0(1.);
@@ -63,6 +63,18 @@ Constituents::Constituents(bool diquarks) :
 						3.*bfrac*sp1sup*sssup*norm);
   }
 
+  // adding dark constituents
+  flav = Flavour(kf_dark_q1);
+  if (flav.IsOn())
+    CCMap[flav] = new ConstituentCharacteristic(flav.HadMass(),1,1./2.);
+  flav = Flavour(kf_dark_q2);
+  if (flav.IsOn())
+    CCMap[flav] = new ConstituentCharacteristic(flav.HadMass(),1,1./2.);
+  flav = Flavour(kf_dark_g);
+  double mass_dark_g = 4.*Min(Flavour(kf_dark_q1).HadMass(),Flavour(kf_dark_q2).HadMass());
+  if (flav.IsOn())
+    CCMap[flav] = new ConstituentCharacteristic(mass_dark_g,1,0.);
+  
   double massoffset(hadpars->Get("minmass2"));
   for (FlavCCMap_Iterator cmit=CCMap.begin(); cmit!=CCMap.end();cmit++) {
     if (cmit->first==Flavour(kf_gluon)) continue;
@@ -73,15 +85,7 @@ Constituents::Constituents(bool diquarks) :
     if (cmit->second->Mass()+massoffset>m_maxmass) 
       m_maxmass = cmit->second->Mass()+massoffset;
   }
-
-  // adding dark constituents
-  flav = Flavour(kf_dark_q1);
-  CCMap[flav] = new ConstituentCharacteristic(flav.HadMass(),1,1./2.);
-  flav = Flavour(kf_dark_q2);
-  CCMap[flav] = new ConstituentCharacteristic(flav.HadMass(),1,1./2.);
-  flav = Flavour(kf_dark_g);
-  double mass_dark_g = 4.*Min(Flavour(kf_dark_q1).HadMass(),Flavour(kf_dark_q2).HadMass());
-  CCMap[flav] = new ConstituentCharacteristic(mass_dark_g,1,0.);
+  m_minDmass = mass_dark_g/4.;
 }
 
 Constituents::~Constituents() {
@@ -91,7 +95,7 @@ Constituents::~Constituents() {
   CCMap.clear();
 }
 
-double Constituents::MinMass() { return m_minmass; }
+double Constituents::MinMass(const bool dark) { return dark?m_minDmass:m_minmass; }
 double Constituents::MaxMass() { return m_maxmass; }
 
 double Constituents::Mass(const Flavour & flav) {

@@ -114,21 +114,23 @@ Singlet_Tools::Singlet_Tools() {}
 
 void Singlet_Tools::Init() {
   p_constituents = hadpars->GetConstituents();
-  m_minQmass     = p_constituents->MinMass();
+  m_minQmass     = p_constituents->MinMass(false);
+  m_minDmass     = p_constituents->MinMass(true);
 }
 
 bool Singlet_Tools::CheckMass(Proto_Particle * part1,Proto_Particle * part2) {
   double factor = (((part1->Flavour().IsGluon() || part1->Flavour().Kfcode()==kf_dark_g)?2.:1.)*
-		   ((part2->Flavour().IsGluon() || part1->Flavour().Kfcode()==kf_dark_g)?2.:1.));
+		   ((part2->Flavour().IsGluon() || part2->Flavour().Kfcode()==kf_dark_g)?2.:1.));
+  bool isdark   = part1->Flavour().IsDark() ||  part2->Flavour().IsDark(); 
   m_mass = sqrt((part1->Momentum()+part2->Momentum()).Abs2());
-  msg_Out()<<METHOD<<"["<<part1->Flavour()<<" "
-	   <<"("<<part1->Momentum()[0]<<", "<<p_constituents->Mass(part1->Flavour())<<") & "
-	   <<part2->Flavour()<<" "
-	   <<"("<<part2->Momentum()[0]<<", "<<p_constituents->Mass(part2->Flavour())<<")]: "
-	   <<"mass = "<<m_mass<<"\n"; 
+  //msg_Out()<<METHOD<<"["<<part1->Flavour()<<" "
+  //	   <<"("<<part1->Momentum()[0]<<", "<<p_constituents->Mass(part1->Flavour())<<") & "
+  //	   <<part2->Flavour()<<" "
+  //	   <<"("<<part2->Momentum()[0]<<", "<<p_constituents->Mass(part2->Flavour())<<")]: "
+  //	   <<"mass = "<<m_mass<<"\n"; 
   return (m_mass > (p_constituents->Mass(part1->Flavour())+
 		    p_constituents->Mass(part2->Flavour())+
-		    factor*m_minQmass));
+		    factor*(isdark?m_minDmass:m_minQmass)));
 }
 
 

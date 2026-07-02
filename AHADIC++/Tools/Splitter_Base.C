@@ -64,7 +64,8 @@ InitSplitting(Proto_Particle * part1,Proto_Particle * part2,
 
 void Splitter_Base::FillMasses() {
   m_barrd = ((p_part[0]->Flavour().IsQuark() && p_part[0]->Flavour().IsAnti()) ||
-	     (p_part[0]->Flavour().IsDiQuark() && !p_part[0]->Flavour().IsAnti()));
+	     (p_part[0]->Flavour().IsDiQuark() && !p_part[0]->Flavour().IsAnti()) ||
+	     (p_part[0]->Flavour().IsDarkQuark() && p_part[0]->Flavour().IsAnti()));
   m_flavs1.first  = m_barrd?p_part[0]->Flavour().Bar():p_part[0]->Flavour();
   m_flavs2.second = m_barrd?p_part[1]->Flavour().Bar():p_part[1]->Flavour();
   if (p_part[2]!=0) {
@@ -119,13 +120,14 @@ void Splitter_Base::PopFlavours() {
 				      m_flavs2.second.IsDark());
   // m_barrd = true  if part1 = AntiQuark or DiQuark
   // m_barrd = false if part1 = Quark or AntiDiQuark
-  msg_Out()<<METHOD<<"("<<m_flavs1.first<<"/"<<m_flavs2.second<<") --> "<<flav<<"\n";
   m_newflav[0]    = m_barrd?flav:flav.Bar();
   m_newflav[1]    = m_newflav[0].Bar();
   m_popped_mass   = p_constituents->Mass(flav);
   m_popped_mass2  = sqr(m_popped_mass);
   m_flavs1.second = m_barrd?m_newflav[0].Bar():m_newflav[0];
   m_flavs2.first  = m_barrd?m_newflav[1].Bar():m_newflav[1];
+  msg_Out()<<METHOD<<": "<<m_flavs1.first<<" & "<<m_flavs2.second<<"(bar = "<<m_barrd<<") "
+	   <<"--> "<<m_newflav[0]<<" & "<<m_newflav[1]<<"\n";
 }
 
 void Splitter_Base::DetermineMinimalMasses() {

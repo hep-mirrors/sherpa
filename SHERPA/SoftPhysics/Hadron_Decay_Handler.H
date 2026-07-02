@@ -16,9 +16,14 @@ namespace ATOOLS {
   class Blob_List;
 }
 
+namespace MODEL {
+  class Model_Base;
+}
+
 namespace HADRONS {
   class Mixing_Handler;
 }
+
 
 namespace SHERPA {
 
@@ -29,7 +34,7 @@ namespace SHERPA {
     long int bs_cs_semilep_rej, bs_ccss_rej, bs_ccds_rej, bs_cuds_rej;
 
   public :
-    Hadron_Decay_Handler();
+    Hadron_Decay_Handler(MODEL::Model_Base * model);
     ~Hadron_Decay_Handler();
 
     /*!

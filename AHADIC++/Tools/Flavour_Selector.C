@@ -19,7 +19,6 @@ Flavour_Selector::~Flavour_Selector() {
 ATOOLS::Flavour Flavour_Selector::
 operator()(const double & Emax,const bool & vetodi,const bool & darkonly) {
   double disc = Norm(Emax,vetodi,darkonly) * ran->Get();
-  msg_Out()<<METHOD<<": norm = "<<Norm(Emax,vetodi,darkonly)<<", disc = "<<disc<<"\n";
   for (FDIter fdit=m_options.begin();fdit!=m_options.end();fdit++) {
     if (vetodi   && fdit->first.IsDiQuark())    continue;
     if (darkonly && !fdit->first.IsDarkQuark()) continue;
@@ -40,9 +39,6 @@ Norm(const double & mmax,const bool & vetodi,const bool & darkonly)
   for (FDIter fdit=m_options.begin();fdit!=m_options.end();fdit++) {
     if (vetodi   && fdit->first.IsDiQuark())    continue;
     if (darkonly && !fdit->first.IsDarkQuark()) continue;
-    msg_Out()<<METHOD<<"("<<fdit->first<<", mmax = "<<mmax<<", "
-	     <<"mmin = "<<fdit->second->massmin<<"): "
-	     <<"wt = "<<fdit->second->popweight<<"\n";
     if (fdit->second->popweight>0. && fdit->second->massmin<mmax/2.) {
       wt = fdit->second->popweight; 
       sumwt += wt;
@@ -65,8 +61,6 @@ void Flavour_Selector::InitWeights() {
       decspec->popweight = constituents->TotWeight(fdit->first);
       decspec->massmin   = constituents->Mass(fdit->first);
       m_options[fdit->first] = decspec;
-      msg_Out()<<METHOD<<" add "<<fdit->first<<" to splitting options, "
-	       <<"wt = "<<decspec->popweight<<"\n";
     }
   }
   m_sumwt = Norm();

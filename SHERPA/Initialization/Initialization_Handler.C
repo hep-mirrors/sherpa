@@ -1243,7 +1243,7 @@ bool Initialization_Handler::InitializeTheHadronDecays()
   if (decmodel=="None") return true;
   else if (decmodel==std::string("HADRONS++")) {
     as->SetActiveAs(isr::hard_subprocess);
-    Hadron_Decay_Handler* hd=new Hadron_Decay_Handler();
+    Hadron_Decay_Handler* hd=new Hadron_Decay_Handler(p_model);
     as->SetActiveAs(isr::hard_process);
     p_hdhandler=hd;
   }

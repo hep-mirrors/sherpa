@@ -7,6 +7,7 @@
 #include "ATOOLS/Phys/KF_Table.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Scoped_Settings.H"
+#include "MODEL/Main/Model_Base.H"
 #include "HADRONS++/Main/Hadron_Decay_Map.H"
 #include "HADRONS++/Main/Hadron_Decay_Table.H"
 #include "HADRONS++/Main/Hadron_Decay_Channel.H"
@@ -22,7 +23,7 @@ using namespace std;
 using namespace HADRONS;
 using namespace METOOLS;
 
-Hadron_Decay_Handler::Hadron_Decay_Handler() :
+Hadron_Decay_Handler::Hadron_Decay_Handler(MODEL::Model_Base * model) :
   Decay_Handler_Base()
 {
   auto s = Settings::GetMainSettings()["HADRON_DECAYS"];
@@ -49,6 +50,8 @@ Hadron_Decay_Handler::Hadron_Decay_Handler() :
 
   p_mixinghandler = new Mixing_Handler(s["Mixing"]);
   dmap->SetMixingHandler(p_mixinghandler);
+
+  model->AddHadronDecays(p_decaymap);
 }
 
 Hadron_Decay_Handler::~Hadron_Decay_Handler()

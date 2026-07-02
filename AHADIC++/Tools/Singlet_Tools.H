@@ -27,7 +27,7 @@ namespace AHADIC {
     Constituents * p_constituents;
     Singlet      * p_singlet;
 
-    double m_minQmass, m_mass;
+    double m_minQmass, m_minDmass, m_mass;
   public:
     Singlet_Tools();
     ~Singlet_Tools() {}

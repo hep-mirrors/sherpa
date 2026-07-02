@@ -4,6 +4,16 @@
 #include "MODEL/SM/Model.H"
 #include "MODEL/Main/Running_AlphaS.H"
 
+namespace HADRONS {
+  class Hadron_Decay_Table;
+  class Mixing_Handler;
+  struct GeneralModel;
+};
+
+namespace ATOOLS {
+  class Mass_Selector;
+};
+
 namespace MODEL {
 
   class One_Running_AlphaDark : public One_Running_AlphaS {
@@ -47,15 +57,31 @@ namespace MODEL {
 
   
   class DarkQCD: public Standard_Model {
-
   private:
     void ParticleZprimeInit();
     void InitZprimeVertices();
     void InitDarkQCDVertices();
     bool m_dec_dark_g4;
+
+    double m_fPi, m_fEta, m_gRhoPiPi, m_gOmegaPiPi;
+
+    const ATOOLS::Mass_Selector   * p_ms;
+    HADRONS::Mixing_Handler * p_mix;
+    struct SortByMass {
+      bool operator()(const ATOOLS::Flavour & A,const ATOOLS::Flavour & B) const {
+	return A.Mass() > B.Mass();
+      };
+    };
+    std::set<ATOOLS::Flavour, SortByMass> m_hadrons;
+    HADRONS::Hadron_Decay_Table * DecaysForRhos(const ATOOLS::Flavour & flav);
+    HADRONS::Hadron_Decay_Table * DecaysForPis(const ATOOLS::Flavour & flav);
+
+    double GammaTwoBody(const double & Ampl2,const double & M2,
+			const double & m12,const double & m22);
   public:
     DarkQCD();
 
+    void AddHadronDecays(PHASIC::Decay_Map * dmap);
     bool ModelInit();
     void InitVertices();
     

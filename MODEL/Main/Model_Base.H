@@ -11,6 +11,10 @@
 #include "PDF/Main/ISR_Handler.H"
 #include <map>
 
+namespace PHASIC {
+  class Decay_Map;
+}
+
 namespace MODEL {
 
   class Single_Vertex;
@@ -125,6 +129,7 @@ namespace MODEL {
     void InitializeInteractionModel();
     void GetCouplings(Coupling_Map &cpls);
 
+    virtual void AddHadronDecays(PHASIC::Decay_Map * dmap) {};
     std::string Name() const { return m_name; } 
 
     inline tscmap *GetCouplings() { return &m_cplmap; }

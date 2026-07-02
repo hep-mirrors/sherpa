@@ -276,7 +276,8 @@ namespace ATOOLS {
     { return Kfcode()==kf_gluon||Kfcode()==kf_shgluon; }
     inline bool IsDarkQuark() const { return Kfcode()>=4900101 && Kfcode()<=4900106; }
     inline bool IsDarkGluon() const { return Kfcode()==kf_dark_g; }
-    inline bool IsDark()      const { return IsDarkQuark() || IsDarkGluon(); }
+    inline bool IsDark()      const { return (IsDarkQuark() || IsDarkGluon() ||
+					      (Kfcode()>4900110 && Kfcode()<4900554)); }
     inline bool IsJet()       const { return Kfcode()==kf_jet; }
 
     inline bool IsUptype() const   { return IsAnti()?IsoWeak()<0:IsoWeak()>0; }

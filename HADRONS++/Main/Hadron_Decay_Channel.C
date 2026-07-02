@@ -141,7 +141,12 @@ void Hadron_Decay_Channel::ProcessPartonic(Scoped_Settings& s)
       AddPSChannel(string("IsotropicSpectator_1"), s["PhaseSpace"]["IsotropicSpectator_1"]);
     }
   }
-  if (me=="") THROW(fatal_error, "ME not found for "+IDCode());
+  else if (m_flavours.size()==3 && m_flavours[0].IsDark()) {
+    msg_Out()<<"Plop.\n";
+    me="Generic";
+  }
+  if (me=="") THROW(fatal_error, "ME not found for "+IDCode()+", N = "+ToString(m_flavours.size())+
+		    ": "+m_flavours[0].IDName());
 
   AddDiagram(SelectME(me, s["ME"][me]));
 }

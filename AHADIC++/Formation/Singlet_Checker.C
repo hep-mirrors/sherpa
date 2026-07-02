@@ -148,7 +148,7 @@ bool Singlet_Checker::CheckSinglet() {
     if (!CheckMass(p_part1,p_part2)) {
       if (!p_singlet->Combine(p_part1,p_part2)) return false;
       plit1 = p_singlet->begin(); plit2 = plit1; plit2++;
-      msg_Out()<<METHOD<<" fuses two particles, will check again from scratch.\n";
+      //msg_Out()<<METHOD<<" fuses two particles, will check again from scratch.\n";
     }
     else {
       plit2++;
