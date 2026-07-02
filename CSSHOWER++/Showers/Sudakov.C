@@ -19,7 +19,7 @@ bool CSSHOWER::Sudakov::s_init=false;
 
 Sudakov::Sudakov(PDF::ISR_Handler *isr,const int qcd,const int qed) :
   m_qcdmode(qcd), m_ewmode(qed), m_enableQuarkonia(0), m_pdfmin(1.0e-4, 1.0e-2),
-  m_reweightscalecutoff {0.0}, m_keeprewinfo {false}
+  m_reweightscalecutoff {0.0}, m_keeprewinfo {false}, m_transition_int(0)
 {
   p_pdf = new PDF::PDF_Base*[2];
   for (int i=0;i<2; i++) p_pdf[i] = isr->PDF(i);
@@ -180,8 +180,10 @@ void Sudakov::AddQuarkoniaSplittingFunctions(Model_Base *md, const int kfmode) {
   Flavour Gluon_flav(kf_gluon);
   Single_Vertex v;
   // if (!flav.IsOn()) continue;
-  // This is c -> c J/psi(1S)
-  list<kf_code> singlets = {kf_J_psi_1S, kf_psi_2S, kf_chi_c1_1P}; //, kf_chi_b2_3P_oct};
+
+  // This is c -> c singlets
+  list<kf_code> singlets = {kf_J_psi_1S, kf_eta_c_1S, kf_chi_c0_1P, kf_chi_c2_1P}; //, kf_chi_b2_3P_oct};
+  list<string> splitypes = {"FF3S1_Quarkonia", "FF1S0_Quarkonia", "FF3P0_Quarkonia", "FF3P2_Quarkonia"};
   for (list<kf_code>::iterator kfit = singlets.begin();
        kfit != singlets.end(); kfit++) 
   {   
@@ -191,7 +193,8 @@ void Sudakov::AddQuarkoniaSplittingFunctions(Model_Base *md, const int kfmode) {
       v.AddParticle(Quark_flav);
       v.AddParticle(singletflav);
       v.Color.push_back(Color_Function(cf::D, 1, 2));
-      v.Lorentz.push_back("FFV_Quarkonia");
+      v.Lorentz.push_back(splitypes.front());
+      splitypes.pop_front();
       v.cpl.push_back(cpl0); // Check later
       v.order[0] = 1;
       Add(new Splitting_Function_Base(
@@ -200,6 +203,7 @@ void Sudakov::AddQuarkoniaSplittingFunctions(Model_Base *md, const int kfmode) {
       v.in[1] = v.in[1].Bar();
       Add(new Splitting_Function_Base(
           SF_Key(&v, 0, cstp::FF, kfmode, m_qcdmode, m_ewmode, 1, m_pdfmin)));
+  
   // Add(new Splitting_Function_Base(
   //   SF_Key(&v, 0, cstp::II, kfmode, m_qcdmode, m_ewmode, 1, m_pdfmin)));
       // v = Single_Vertex();
@@ -212,66 +216,48 @@ void Sudakov::AddQuarkoniaSplittingFunctions(Model_Base *md, const int kfmode) {
       // v.order[0] = 1;
       // Add(new Splitting_Function_Base(
       //     SF_Key(&v, 0, cstp::FF, kfmode, m_qcdmode, m_ewmode, 1, m_pdfmin)));
-  }
+      msg_IODebugging() << METHOD << ": added splitting functions for " << singletflav.IDName() << "\n";
+    }
   // Add(new Splitting_Function_Base(
   //   SF_Key(&v, 0, cstp::II, kfmode, m_qcdmode, m_ewmode, 1, m_pdfmin)));
   
   // This is c -> c J/Psi(1S)8
-  list<kf_code> octetmesonsV = {
-    kf_3S1_c, kf_3P1_c}; //, kf_chi_b2_3P_oct};
-  for (list<kf_code>::iterator kfit = octetmesonsV.begin();
-       kfit != octetmesonsV.end(); kfit++) 
-  {
-      Flavour octetflav(*kfit);
-      v = Single_Vertex();
-      v.AddParticle(Quark_flav.Bar());
-      v.AddParticle(Quark_flav);
-      v.AddParticle(octetflav);
-      // No clue of how to write T^a_{i,j} T^{a}_{k,l} in this form 
-      v.Color.push_back(Color_Function(cf::T,3,2,1));
-      v.Lorentz.push_back("FFV_Quarkonia");
-      v.cpl.push_back(cpl0); // Check later
-      v.order[0] = 1;
-      Add(new Splitting_Function_Base(
-          SF_Key(&v, 0, cstp::FF, kfmode, m_qcdmode, m_ewmode, 1, m_pdfmin)));
-      v.in[0] = v.in[0].Bar();
-      v.in[1] = v.in[1].Bar();
-      Add(new Splitting_Function_Base(
-          SF_Key(&v, 0, cstp::FF, kfmode, m_qcdmode, m_ewmode, 1, m_pdfmin)));
-  }
-  list<kf_code> octetmesonsS = {kf_1S0_c, kf_3P0_c}; //, kf_chi_b2_3P_oct};
-  for (list<kf_code>::iterator kfit = octetmesonsS.begin();
-       kfit != octetmesonsS.end(); kfit++) 
-  {
-      Flavour octetflav(*kfit);
-      v = Single_Vertex();
-      v.AddParticle(Quark_flav.Bar());
-      v.AddParticle(Quark_flav);
-      v.AddParticle(octetflav);
-      // No clue of how to write T^a_{i,j} T^{a}_{k,l} in this form 
-      v.Color.push_back(Color_Function(cf::T,3,2,1));
-      v.Lorentz.push_back("FFS_Quarkonia");
-      v.cpl.push_back(cpl0); // Check later
-      v.order[0] = 1;
-      Add(new Splitting_Function_Base(
-          SF_Key(&v, 0, cstp::FF, kfmode, m_qcdmode, m_ewmode, 1, m_pdfmin)));
-      v.in[0] = v.in[0].Bar();
-      v.in[1] = v.in[1].Bar();
-      Add(new Splitting_Function_Base(
-          SF_Key(&v, 0, cstp::FF, kfmode, m_qcdmode, m_ewmode, 1, m_pdfmin)));
-  } 
-  // This if g -> eta_c g
+  // list<kf_code> octetmesonsV = {kf_3S1_c_8_J_psi_1S}; //{kf_J_psi_1S, kf_3S1_c_8_J_psi_1S, kf_3S1_c_8_psi_2S, kf_3S1_c_8_chi_c1_1P, kf_3S1_c_8_chi_c2_1P, kf_3P1_c_8_J_psi_1S, kf_3P1_c_8_psi_2S}; //, kf_chi_b2_3P_oct};
+  // for (list<kf_code>::iterator kfit = octetmesonsV.begin();
+  //      kfit != octetmesonsV.end(); kfit++) 
+  // {
+  //     Flavour octetflav(*kfit);
+  //     v = Single_Vertex();
+  //     v.AddParticle(Quark_flav.Bar());
+  //     v.AddParticle(Quark_flav);
+  //     v.AddParticle(octetflav);
+  //     // No clue of how to write T^a_{i,j} T^{a}_{k,l} in this form 
+  //     v.Color.push_back(Color_Function(cf::T,3,2,1));
+  //     v.Lorentz.push_back("FFV_Quarkonia");
+  //     v.cpl.push_back(cpl0); // Check later
+  //     v.order[0] = 1;
+  //     Add(new Splitting_Function_Base(
+  //         SF_Key(&v, 0, cstp::FF, kfmode, m_qcdmode, m_ewmode, 1, m_pdfmin)));
+  //     v.in[0] = v.in[0].Bar();
+  //     v.in[1] = v.in[1].Bar();
+  //     // Add(new Splitting_Function_Base(
+  //     //     SF_Key(&v, 0, cstp::FF, kfmode, m_qcdmode, m_ewmode, 1, m_pdfmin)));
+  //     msg_Out() << METHOD << ": added splitting functions for " << octetflav.IDName() << "\n";
+  //       }
+
+  // This if g -> g 1S0 octect
   // still needs substantial debugging and tuning
-  v = Single_Vertex();
-  v.AddParticle(Gluon_flav);
-  v.AddParticle(Flavour(kf_eta_c_1S));
-  v.AddParticle(Gluon_flav);
-  v.Color.push_back(Color_Function(cf::G, 1, 3));
-  v.Lorentz.push_back("VSV_Quarkonia");
-  v.cpl.push_back(cpl0); // Check later
-  v.order[0] = 1;
-  Add(new Splitting_Function_Base(
-      SF_Key(&v, 0, cstp::FF, kfmode, m_qcdmode, m_ewmode, 1, m_pdfmin)));
+  // v = Single_Vertex();
+  // v.AddParticle(Gluon_flav);
+  // v.AddParticle(Flavour(kf_eta_c_1S));
+  // v.AddParticle(Gluon_flav);
+  // v.Color.push_back(Color_Function(cf::G, 1, 3));
+  // v.Lorentz.push_back("VSV_Quarkonia");
+  // v.cpl.push_back(cpl0); // Check later
+  // v.order[0] = 1;
+  // Add(new Splitting_Function_Base(
+  //     SF_Key(&v, 0, cstp::FF, kfmode, m_qcdmode, m_ewmode, 1, m_pdfmin)));
+
   msg_Out() << METHOD << ": by now " << m_splittings.size()
             << " splitting functions\n"
             << "============================================================\n";
@@ -504,6 +490,10 @@ bool Sudakov::Generate(Parton* split, double kt2win)
        split->GetLeft()==NULL) ||
       ((cc==8 || (split->GetType()==pst::FS?cc:-cc)==-3) &&
        split->GetRight()==NULL)) {
+    msg_Out()<<"Sudakov::Generate():\n"
+       <<"   Invalid color flow for "<<split->GetFlavour().IDName() << " cc: " << cc 
+       <<" and type = "<<split->GetType()
+       <<" ("<<split->GetLeft()<<", "<<split->GetRight()<<").\n";
     THROW(fatal_error,"Invalid color flow.");
   }
   m_cfl  = split->GetFlavour();
@@ -542,6 +532,10 @@ bool Sudakov::Generate(Parton* split, double kt2win)
   Parton *spect(NULL);
   Splitting_Function_Base *selected(NULL);
   for (size_t i(0);i<slist.size();++i) {
+    // if (i > 0) {
+    //   msg_IODebugging()<<" OVERRIDE: skipping all but the first spectator.\n";
+    //   break;
+    // }
     int success(Generate(split,slist[i],t0,kt2win,t,y,z,phi));
     if (success!=0) {
       msg_IODebugging()<<"shrink evolution window "<<t0<<" -> "<<t<<"\n";
@@ -570,7 +564,7 @@ bool Sudakov::Generate(Parton* split, double kt2win)
 int Sudakov::Generate(Parton *split,Parton *spect,
 		      double t0,double kt2win,double &t,double &y,double &z,double &phi)
 {
-  msg_IODebugging() << "Generating splitting for " << split->GetFlavour().IDName() << " at t = " << t0 << "\n";
+  msg_IODebugging() << "Generating splitting for " << split->GetFlavour().IDName() << " at t0 = " << t0 << "\n";
   ClearSpecs();
   ResetLastInt();
   p_split=split;
@@ -712,19 +706,17 @@ int Sudakov::Generate(Parton *split,Parton *spect,
         msg_IODebugging() << METHOD << ", checking transition for "
                           << transit->GetFlavourB().IDName() << ",  tr_th: " << tr_thr << "\n tr_Q2: "<< tr_Q2 << " t: "<< t << " Kt: " << split->KtStart() << " outmass2: " << transit->OutMass2() << "\n";
         if (!((tr_Q2 > tr_thr) && split->KtStart() > transit->OutMass2() && t < transit->OutMass2())) {
-          msg_IODebugging() << "Failed kinematic check for transition to " << transit->GetFlavourB().IDName() << "\n";
+          msg_IODebugging() << "transition to " << transit->GetFlavourB().IDName() << " is not possible\n"
+                            << "tr_Q2: " << tr_Q2 << " tr_thr: " << tr_thr << " split->KtStart(): " << split->KtStart() 
+                            << " transit->OutMass2(): " << transit->OutMass2() << "\n";
           continue;
         }
-        // tra_P += sur_P * (1. - exp(-tr_phw * transit->SudArg()));
-        // sur_P *= exp(-tr_phw * transit->SudArg());
-        // msg_IODebugging() << "Evaluating transition to " << transit->GetFlavourB().IDName()  << " P decay: " << 1 - exp(-tr_phw * transit->SudArg()) << "\n";
-        tra_P += sur_P * (1. - 0.8);
-        sur_P *= 0.8;
-        msg_IODebugging() << "Evaluating transition to " << transit->GetFlavourB().IDName()  << " P decay: " << 0.2 << "\n";
+        tra_P += sur_P * (1. - exp(-tr_phw * transit->SudArg()));
+        sur_P *= exp(-tr_phw * transit->SudArg());
+        msg_IODebugging() << "Evaluating transition to " << transit->GetFlavourB().IDName()  << " P decay: " << 1 - exp(-tr_phw * transit->SudArg()) << "\n";
         if (random > tra_P) {
           msg_IODebugging() << "Rejected transition to " << transit->GetFlavourB().IDName() << " with  " << random << " > " << tra_P << " sur_P: " << sur_P << "\n";
-        }
-        else {
+        } else {
           msg_IODebugging() << "Found " << split->GetFlavour()
                           << " (" << split->GetFlow(1) << ", " << split->GetFlow(2) << ") "
                           << "between t = " << split->KtStart() << " and t = " << t << "\n"
@@ -740,10 +732,12 @@ int Sudakov::Generate(Parton *split,Parton *spect,
           p_selected = (Splitting_Function_Base *)(&*transit);
           split->SetTransition(true); // make this a transition tag.
           m_weight = 1./tr_efac;
+          // tr_efac = 1.;
           return true;
         }
       }
     } // closes transition handling
+    // return false; //HACK Force exit 
 
     SelectOne();
     split->SetSpect(p_spect=p_selected->SelectSpec());
@@ -964,8 +958,12 @@ double Sudakov::OverIntegrated(const double zmin,const double zmax,
 	m_lastint += (*m_splitter)->OverIntegrated(zmin,zmax,scale,xbj);
 	if (m_lastint>0. && m_lastint <0.) cout<<(*this);
       }
-    }
+    }  
   }
+  msg_IODebugging()<<"   OverIntegrated : "<<m_lastint<<" for "
+     <<p_split->GetFlavour().IDName()
+     <<" with spectator "<<p_spect->GetFlavour().IDName()
+     <<" at scale "<<scale<<"\n";
   return m_lastint;
 }
 
@@ -983,10 +981,6 @@ bool Sudakov::Splitting(double Q2,double x,double t,double y,double z) {
   double wt = RejectionWeight(z,y,x,t,Q2);
   double efac=p_selected->EFac();
   double rn(ran->Get());
-  // msg_Out() << "Splitting " <<  p_selected->GetFlavourA().IDName() 
-  // << " -> " << p_selected->GetFlavourB().IDName() <<  "  " << p_selected->GetFlavourC().IDName() <<
-  // "\t ran : " << rn << "  wt: " << wt <<  "  op: " << operator()(z,y,x,t,Q2) 
-  // << "  overe: " << Overestimated(z,y) << std::endl;
   if (rn>wt) {
     if (efac!=1.0) {
       m_weight*=(1.0-wt/efac)/(1.0-wt);

@@ -430,7 +430,7 @@ bool Shower::EvolveSinglet(Singlet * act,const size_t &maxem,size_t &nem)
     } else if (split->Transition() && m_flavC == (ATOOLS::Flavour)(kf_none)) {
       // Handles transitions
       const double tr_weight {split->Weight()};
-      msg_Debugging() << "Transition " << m_flavA << " -> " << m_flavB << "  ("
+      msg_IODebugging() << "Transition " << m_flavA << " -> " << m_flavB << "  ("
                       << m_flavC << ") "
                       << " at kt = " << sqrt(split->KtTest()) << "( "
                       << sqrt(split->GetSing()->KtNext()) << " .. "
@@ -442,9 +442,9 @@ bool Shower::EvolveSinglet(Singlet * act,const size_t &maxem,size_t &nem)
                       << " to false.\n";
       m_weightsmap["Sudakov"] *= tr_weight;
       MakeTransition(split, m_flavA, m_flavB);
-      msg_Debugging() << "after transition\n" << *split << "\n" << *split->GetSpect() << "\n";
-      msg_Debugging() << "FS --> Exiting Transition handling in" << METHOD
+      msg_IODebugging() << "after transition\n" << *split << "\n" << *split->GetSpect() << "\n"
                       << " Shower weight: " << m_weightsmap["PS"] << endl;
+      ResetScales(kt2win);
       ++nem;
       if (p_actual->NME()+nem>m_maxpart || nem >= maxem) return true;
     } else {
@@ -455,7 +455,7 @@ bool Shower::EvolveSinglet(Singlet * act,const size_t &maxem,size_t &nem)
                       << ", y = " << split->YTest() << " for\n"
                       << *split << *split->GetSpect() << "\n";
       m_last[0] = m_last[1] = m_last[2] = m_last[3] = NULL;
-      if (kt2win < split->GetSing()->KtNext()) { // FS: Edge case
+      if (kt2win < split->GetSing()->KtNext()) {
         msg_Debugging() << "... Defer split ...\n\n";
         ResetScales(split->GetSing()->KtNext());
         if (p_actual->NLO() & 32) {
@@ -603,7 +603,11 @@ Parton *Shower::SelectSplitting(double & kt2win) {
   for (PLiter splitter = p_actual->begin();
        splitter!=p_actual->end();splitter++) {
     if (TrialEmission(kt2win,*splitter)) winner = *splitter;
+    msg_IODebugging() << METHOD << ": Trial emission for " << (*splitter)->GetFlavour().IDName() << ": "
+                    << (winner == *splitter ? "selected" : "rejected") << "\n";
   }
+  msg_IODebugging() << METHOD << ": Selected splitting: " << (winner ? winner->GetFlavour().IDName() : "none")
+          << " at kt = " << sqrt(kt2win) << "\n";
   return winner;
 }
 
@@ -615,21 +619,22 @@ bool Shower::TrialEmission(double & kt2win,Parton * split)
   while (true) {
     if (m_sudakov.Generate(split,kt2win)) {
       m_sudakov.GetSplittingParameters(kt2,z,y,phi);
+      m_flavA = m_sudakov.GetFlavourA();
+      m_flavB = m_sudakov.GetFlavourB();
+      m_flavC = m_sudakov.GetFlavourC();
       split->SetWeight(m_sudakov.Weight());
+      msg_IODebugging() << METHOD << ": trial at " << kt2 << " with old kt2win: " << kt2win << "\n";
+      if (split->Transition() && m_flavC == (ATOOLS::Flavour)(kf_none)) {
+          kt2win = sqr(m_flavB.Mass(1))*0.99999; // ensures that if the transition actually occurs, the next evolution window won´t trigger it again.
+          split->SetTest(kt2, z, y, phi);
+          split->SetCol(m_sudakov.GetCol());
+          return true;
+        }
       if (kt2 > kt2win) {
         kt2win = kt2;
-        m_flavA = m_sudakov.GetFlavourA();
-        m_flavB = m_sudakov.GetFlavourB();
-        m_flavC = m_sudakov.GetFlavourC();
-        if (split->Transition() && m_flavC == (ATOOLS::Flavour)(kf_none)) {
-          kt2win = kt2 * (1.01);
-          // split->SetFlavour(m_sudakov.Selected()->GetFlavourB());
-          split->SetTest(kt2, z, y, phi);
-        } else {
-          m_lastcpl = m_sudakov.Selected()->Coupling()->Last();
-          split->SetCol(m_sudakov.GetCol());
-          split->SetTest(kt2, z, y, phi);
-        }
+        m_lastcpl = m_sudakov.Selected()->Coupling()->Last();
+        split->SetCol(m_sudakov.GetCol());
+        split->SetTest(kt2, z, y, phi);
         return true;
       }
     }

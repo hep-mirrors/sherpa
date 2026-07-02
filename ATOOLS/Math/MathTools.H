@@ -32,6 +32,8 @@ namespace ATOOLS {
 
   template <typename Scalar>
   inline Scalar sqr(const Scalar &x)   { return x*x; }
+  template <typename Scalar>
+  inline Scalar cube(const Scalar &x)   { return x*x*x; }
   template <typename Scalar> inline std::complex<Scalar>
   csqr(const std::complex<Scalar> &x) { return x*x; }
 

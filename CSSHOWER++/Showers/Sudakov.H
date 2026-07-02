@@ -24,7 +24,7 @@ namespace CSSHOWER {
     double ldme_3S1_b_8_Upsilon_1S, ldme_3S1_b_8_Upsilon_2S, ldme_3S1_b_8_Upsilon_3S, ldme_3S1_b_8_chi_b0_1P,
     ldme_3S1_b_8_chi_b0_2P, ldme_3S1_b_8_chi_b1_1P, ldme_3S1_b_8_chi_b1_2P, ldme_3S1_b_8_chi_b2_1P, ldme_3S1_b_8_chi_b2_2P;
     double v8_2, tr_efac;
-    int m_qcdmode,m_ewmode, m_enableQuarkonia;
+    int m_qcdmode,m_ewmode, m_enableQuarkonia, m_transition_int;
     ATOOLS::Flavour m_cfl, m_flspec;
     Parton * p_split, * p_spect;
     SF_EEE_Map m_fffmap, m_ffimap, m_iffmap, m_ifimap, m_fifmap, m_fiimap;

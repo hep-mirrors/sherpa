@@ -143,11 +143,11 @@ struct STcmp {
   bool operator()(const One2One_Transition_Base &a,
                   const One2One_Transition_Base &b) const {
     // Primary ordering by outgoing mass
-    if (a.OutMass() < b.OutMass()) return true;
-    if (a.OutMass() > b.OutMass()) return false;
+    if (a.OutMass() > b.OutMass()) return true;
+    if (a.OutMass() < b.OutMass()) return false;
     // If masses are equal, use a deterministic tie-breaker 
-    if (a.SudArg() < b.SudArg()) return true;
-    if (a.SudArg() > b.SudArg()) return false;
+    if (a.SudArg() > b.SudArg()) return true;
+    if (a.SudArg() < b.SudArg()) return false;
     // Fallback: order by flavour content
     return a.GetFlavourB().Kfcode() < b.GetFlavourB().Kfcode();
   }

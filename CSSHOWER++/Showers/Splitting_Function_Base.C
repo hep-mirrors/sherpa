@@ -27,7 +27,8 @@ void Splitting_Function_Base::SetEFac(Shower *const shower)
   std::string id="S{"+ToString(p_lf->FlA())+"}{"
     +ToString(p_lf->FlB())+"}{"+ToString(p_lf->FlC())+"}";
   m_efac=shower->EFac(id);
-  if (m_efac!=1.0) msg_Info()<<"Enhance "<<id<<" with "<<m_efac<<"\n";
+  msg_Debugging()<<METHOD<<"Enhance "<<id<<" with "<<m_efac<<"\n";
+  if (m_efac!=1.0) msg_Info()<<METHOD<<"Enhance "<<id<<" with "<<m_efac<<"\n";
   if (m_efac==0.0) m_on=0;
 }
 
@@ -38,7 +39,6 @@ SF_Lorentz* Splitting_Function_Base::InitLorentzCalc(const MODEL::Single_Vertex&
   for(const auto& fl : vertex.in) 
     spins.push_back(fl.IntSpin());
   std::sort(spins.begin(),spins.end());
-
   SF_Lorentz* lf(NULL);
   if( (spins[0]==0 || vertex.in[0].IsDiQuark()) &&
       (spins[1]==0 || vertex.in[1].IsDiQuark()) &&
@@ -56,9 +56,23 @@ SF_Lorentz* Splitting_Function_Base::InitLorentzCalc(const MODEL::Single_Vertex&
     else lf = SFL_Getter::GetObject("HVV",sf_key);
   }
   else if(spins[0]==1 && spins[1]==1 && spins[2]==2) { 
-    if ( vertex.in[2].IsQuarkonia() || vertex.in[1].IsQuarkonia())
-      lf = SFL_Getter::GetObject("FFV_Quarkonia",sf_key);
+    if ( vertex.in[2].IsQuarkonia() || vertex.in[1].IsQuarkonia()) {
+      lf = SFL_Getter::GetObject("FF3S1_Quarkonia",sf_key);
+    }
     else lf = SFL_Getter::GetObject("FFV1",sf_key); 
+  }
+  else if (spins[0]==0 && spins[1]==1 && spins[2]==1) {
+    if ( vertex.in[1].Kfcode() == kf_eta_c_1S || vertex.in[2].Kfcode() == kf_eta_c_1S) {
+      lf = SFL_Getter::GetObject("FF1S0_Quarkonia",sf_key);
+    }
+    else if ( vertex.in[1].Kfcode() == kf_chi_c0_1P || vertex.in[2].Kfcode() == kf_chi_c0_1P) {
+      lf = SFL_Getter::GetObject("FF3P0_Quarkonia",sf_key);
+    }
+  }
+  else if ( spins[0]==1 && spins[1]==1 && spins[2]==4) {
+    if ( vertex.in[1].Kfcode() == kf_chi_c2_1P || vertex.in[2].Kfcode() == kf_chi_c2_1P) {
+      lf = SFL_Getter::GetObject("FF3P2_Quarkonia",sf_key);
+    }
   }
   return lf;
 }
@@ -73,14 +87,13 @@ Splitting_Function_Base::Splitting_Function_Base(const SF_Key &key):
   if (p_cf==NULL) {
     ckey.p_cf = p_cf = SFC_Getter::GetObject(ckey.ID(1),ckey);
     if (p_cf==NULL) {
-      if (ckey.p_v->in[0].IsDiQuark() &&
-	  ckey.p_v->in[1].IsDiQuark() &&
-	  ckey.p_v->in[2].IsGluon()) {
-	ckey.p_cf = p_cf = new CF_QCD(ckey);
-      }
+      if (ckey.p_v->in[0].IsDiQuark() && ckey.p_v->in[1].IsDiQuark() &&
+	        ckey.p_v->in[2].IsGluon()) {
+	          ckey.p_cf = p_cf = new CF_QCD(ckey);
+          }
       else {
-	m_on=-1;
-	return;
+	      m_on=-1;
+	      return;
       }
     }
   }
@@ -185,8 +198,7 @@ double Splitting_Function_Base::EFac() const
   return 1.0;
 }
 
-double Splitting_Function_Base::Overestimated(const double z,const double y)
-{
+double Splitting_Function_Base::Overestimated(const double z,const double y) {
   return p_lf->OverEstimated(z,y)/m_symf/m_polfac;
 }
 

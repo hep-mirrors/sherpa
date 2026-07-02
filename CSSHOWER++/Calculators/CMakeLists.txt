@@ -7,7 +7,10 @@ set(CSSCalculators_SOURCES CF_QCD.C
                         LF_FFV.C
                         LF_VVV.C
                         LF_Triangle.C
-                        LF_FFV_Quarkonia.C)
+                        LF_FF3S1_Quarkonia.C
+                        LF_FF1S0_Quarkonia.C
+                        LF_FF3P0_Quarkonia.C
+                        LF_FF3P2_Quarkonia.C)
 
 sherpa_create_git_info(CSSCalculators ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR})
  
