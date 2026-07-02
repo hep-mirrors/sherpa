@@ -27,7 +27,8 @@ namespace CSSHOWER {
     SF_Coupling *p_cf;
     cstp::code m_type;
     double m_lastint, m_lastacceptwgt, m_lastscale;
-    double m_symf, m_polfac, m_lpdf, m_efac, m_mth;
+    double m_symf, m_polfac, m_efac, m_mth;
+    mutable double m_lpdf;
     double m_facscalefactor;
     int m_on, m_qcd, m_scs;
     std::vector<Parton*> m_specs;
@@ -69,7 +70,7 @@ namespace CSSHOWER {
     double GetXPDF(const double &scale,const double &x,
 		   const ATOOLS::Flavour &a,const int beam,
 		   const int mode=0);
-    bool CheckPDF(const double &x,const ATOOLS::Flavour &a,const int beam);
+    bool CheckPDF(const double &x,const ATOOLS::Flavour &a,const int beam) const;
 
     Parton *SelectSpec();
     bool PureQCD() const;
@@ -133,14 +134,22 @@ public:
   const ATOOLS::Flavour &GetFlavourB() const { return m_flout; }
   const ATOOLS::Flavour &GetFlavourC() const { return m_flout2; }
   int GetCol() const { return m_col; }
+  double GetXPDF(const double &scale,const double &x,
+                 const ATOOLS::Flavour &a,const int beam,
+                 const int mode) const;
 };
 
 struct STcmp {
   bool operator()(const One2One_Transition_Base &a,
                   const One2One_Transition_Base &b) const {
-    if (a.OutMass() <= b.OutMass())
-      return true;
-    return false;
+    // Primary ordering by outgoing mass
+    if (a.OutMass() < b.OutMass()) return true;
+    if (a.OutMass() > b.OutMass()) return false;
+    // If masses are equal, use a deterministic tie-breaker 
+    if (a.SudArg() < b.SudArg()) return true;
+    if (a.SudArg() > b.SudArg()) return false;
+    // Fallback: order by flavour content
+    return a.GetFlavourB().Kfcode() < b.GetFlavourB().Kfcode();
   }
 };
 typedef std::set<One2One_Transition_Base, STcmp> ST_Set;

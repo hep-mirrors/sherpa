@@ -257,8 +257,11 @@ double Splitting_Function_Base::GetXPDF
 }
 
 bool Splitting_Function_Base::CheckPDF
-(const double &x,const ATOOLS::Flavour &a,const int beam)
+(const double &x,const ATOOLS::Flavour &a,const int beam) const
 {
+  if (p_pdf == nullptr) {
+    THROW(fatal_error, "PDF pointer is null for both beams");
+  }
   if (p_pdf[beam]==NULL) return true;
   return x<=p_pdf[beam]->XMax()*p_pdf[beam]->RescaleFactor();
 }
@@ -312,6 +315,24 @@ std::string SF_Key::ID(const int mode) const
   return "{"+ToString(p_v->in[0].Bar())+"}{"
     +ToString(p_v->in[1])+"}{"+ToString(p_v->in[2])+"}";
 }
+
+double One2One_Transition_Base::GetXPDF(const double &scale,const double &x,
+                const ATOOLS::Flavour &a,const int beam,
+                const int mode=0) const {
+                  // override of GetXPDF from Splitting_Function_Base, to avoid calls to un-initilised p_lf
+                  if (p_pdf[beam]==NULL) return 1.0;
+                  if (!p_pdf[beam]->Contains(a)) {
+                    if (a.Strong() || a.Mass()<10.0) return 0.0;
+                    return 1.0;
+                  }
+                  if (mode==1) return m_lpdf==-1.0?0.0:p_pdf[beam]->GetXPDF(a);
+                  double Q2 = scale*m_facscalefactor;
+                  if (Q2<p_pdf[beam]->Q2Min() || Q2>p_pdf[beam]->Q2Max() ||
+                      x < p_pdf[beam]->XMin() || x > p_pdf[beam]->XMax()*p_pdf[beam]->RescaleFactor())
+                    return m_lpdf=-1.0;
+                  p_pdf[beam]->Calculate(x,Q2);
+                  return m_lpdf=p_pdf[beam]->GetXPDF(a);
+                }
 
 namespace CSSHOWER {
 

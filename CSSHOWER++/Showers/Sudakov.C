@@ -336,12 +336,29 @@ void Sudakov::AddGluonThresholds(Model_Base *md) {
   list<kf_code> c_octetvectors = {kf_3S1_c};
   ST_Set *stset;
   m_stmap[Flavour(kf_gluon)] = stset = new ST_Set;
+  LoadLDME();
+  map<kf_code, double> cLDME = {
+      // ldmes from FO tune. ------- old -> numerical LDME [GeV^3] from ph/9507398, PhysRevD.50.3176
+      {kf_3S1_b_8_Upsilon_1S,  GetLDME(kf_3S1_b_8_Upsilon_1S)}
+    };  //,// 1.5E-02 / sqr(M_PI)},
+      // {kf_3S1_c_8_psi_2S,    GetLDME(kf_3S1_c_8_psi_2S)},//4.3E-03 / sqr(M_PI)},
+      // {kf_3S1_c_8_chi_c0_1P, GetLDME(kf_3S1_c_8_chi_c0_1P)},//2./3/M_PI * 1 * 3E-03},
+      // {kf_3S1_c_8_chi_c1_1P, GetLDME(kf_3S1_c_8_chi_c1_1P)},//2./3/M_PI * 3 * 3E-03},
+      // {kf_3S1_c_8_chi_c2_1P, GetLDME(kf_3S1_c_8_chi_c2_1P)}};//100*2./3/M_PI * 5 * 3E-03}};
   double arg;
   arg = 0.5 * (M_PI * as(sqr(2*mc)) / (24 * pow(mc, 3))) *
         GetLDME(kf_3S1_c) * (1. - (11./6. * v8_2))*tr_efac; // SDME for g -> ccb (3S_1)_8
   stset->insert(
       One2One_Transition_Base(Flavour(kf_gluon), Flavour(kf_3S1_c), arg, 1));
   
+  for (list<kf_code>::iterator octit = c_octetvectors.begin();
+       octit != c_octetvectors.end(); octit++) {
+    arg = 0.5 * (M_PI * as(sqr(2*mc)) / (24 * pow(mc, 3))) *
+          cLDME[*octit] * (1. - (11./6. * v8_2))*tr_efac; // SDME for g -> qqb (3S_1)_8
+    One2One_Transition_Base t(Flavour(kf_gluon), Flavour(*octit), arg, 1);
+    t.SetPDF(p_pdf);
+    stset->insert(t);
+  }
   // stset->insert(One2One_Transition_Base(
   //     Flavour(kf_gluon), Flavour(kf_J_psi_1S),
   //       0.5 * 10E5 * 8.28E-04 * pow(as(sqr(2*mc))/mc,3)*ldme_J_psi_1S, 1));
@@ -553,6 +570,7 @@ bool Sudakov::Generate(Parton* split, double kt2win)
 int Sudakov::Generate(Parton *split,Parton *spect,
 		      double t0,double kt2win,double &t,double &y,double &z,double &phi)
 {
+  msg_IODebugging() << "Generating splitting for " << split->GetFlavour().IDName() << " at t = " << t0 << "\n";
   ClearSpecs();
   ResetLastInt();
   p_split=split;
@@ -657,25 +675,57 @@ int Sudakov::Generate(Parton *split,Parton *spect,
       const double random = ran->Get();
       double tra_P = 0.;
       double sur_P = 1.;
-      double tr_Q2 = (p_split->Momentum() + p_spect->Momentum()).Abs2();
-      for (auto transit = transitions->begin(); transit != transitions->end();
-           transit++) {
+      double tr_Q2 = p_spect->GetType() == pst::FS ? (p_split->Momentum() + p_spect->Momentum()).Abs2() : -(p_split->Momentum() - p_spect->Momentum()).Abs2();
+      for (ST_Set::iterator transit = transitions->begin(); transit != transitions->end(); ++transit) {
         double tr_mass = transit->OutMass();
         double tr_spmass = sqrt(Max(0., p_spect->Momentum().Abs2()));
         double tr_thr = sqr(tr_mass + tr_spmass);
-        double tr_phw = 
-            sqrt(sqr(tr_Q2) + sqr(sqr(tr_mass)) + sqr(sqr(tr_spmass)) -
-                 2 * (tr_Q2 * sqr(tr_mass) + tr_Q2 * sqr(tr_spmass) +
-                      sqr(tr_mass * tr_spmass))) /
-            fabs(tr_Q2 - sqr(tr_spmass));
-        if (!((tr_Q2 > tr_thr) && split->KtStart() > transit->OutMass2() && t < transit->OutMass2())) continue;
-        tra_P += sur_P * (1. - exp(-tr_phw * transit->SudArg()));
-        sur_P *= exp(-tr_phw * transit->SudArg());
-        msg_Debugging() << METHOD << ", checking transition for "
-                        << transit->GetFlavourB().IDName() << ", " << random
-                        << " < " << tra_P << ",  trw: " << tr_phw << endl;
-        if (random < tra_P) {
-          msg_Debugging() << "Found " << split->GetFlavour()
+        double eta = p_spect->GetType() == pst::IS ? p_spect->Xbj() : 1.;
+        double tr_phw;
+        if (p_spect->GetType() == pst::FS) {
+          tr_phw = sqrt(sqr(tr_Q2) + sqr(sqr(tr_mass)) + sqr(sqr(tr_spmass)) -
+               2 * (tr_Q2 * sqr(tr_mass) + tr_Q2 * sqr(tr_spmass) + sqr(tr_mass * tr_spmass)))
+               / fabs(tr_Q2 - sqr(tr_spmass));
+        } else {
+          const ATOOLS::Flavour spec_fl = p_spect->GetFlavour();
+          if (spec_fl.Kfcode() == kf_none) {
+            THROW(fatal_error, "Error, spectator has no flavour.");
+          }
+
+          const int beamIdx = p_spect->Beam();
+          const double num = transit->GetXPDF(sqr(tr_mass),
+                                            eta * (1 - sqr(tr_mass) / tr_Q2),
+                                            spec_fl,
+                                            beamIdx,
+                                            0);
+          const double den = transit->GetXPDF(sqr(tr_mass),
+                                            eta,
+                                            spec_fl,
+                                            beamIdx,
+                                            0);
+          if (!std::isfinite(num) || !std::isfinite(den) || den == 0.0) {
+            msg_Error() << METHOD << ": bad GetXPDF num="<<num<<" den="<<den<<", skipping transition\n";
+            continue;
+          }
+          tr_phw = num / den;
+        }
+        msg_IODebugging() << METHOD << ", checking transition for "
+                          << transit->GetFlavourB().IDName() << ",  tr_th: " << tr_thr << "\n tr_Q2: "<< tr_Q2 << " t: "<< t << " Kt: " << split->KtStart() << " outmass2: " << transit->OutMass2() << "\n";
+        if (!((tr_Q2 > tr_thr) && split->KtStart() > transit->OutMass2() && t < transit->OutMass2())) {
+          msg_IODebugging() << "Failed kinematic check for transition to " << transit->GetFlavourB().IDName() << "\n";
+          continue;
+        }
+        // tra_P += sur_P * (1. - exp(-tr_phw * transit->SudArg()));
+        // sur_P *= exp(-tr_phw * transit->SudArg());
+        // msg_IODebugging() << "Evaluating transition to " << transit->GetFlavourB().IDName()  << " P decay: " << 1 - exp(-tr_phw * transit->SudArg()) << "\n";
+        tra_P += sur_P * (1. - 0.8);
+        sur_P *= 0.8;
+        msg_IODebugging() << "Evaluating transition to " << transit->GetFlavourB().IDName()  << " P decay: " << 0.2 << "\n";
+        if (random > tra_P) {
+          msg_IODebugging() << "Rejected transition to " << transit->GetFlavourB().IDName() << " with  " << random << " > " << tra_P << " sur_P: " << sur_P << "\n";
+        }
+        else {
+          msg_IODebugging() << "Found " << split->GetFlavour()
                           << " (" << split->GetFlow(1) << ", " << split->GetFlow(2) << ") "
                           << "between t = " << split->KtStart() << " and t = " << t << "\n"
                           << "spectator is: " << spect->GetFlavour() << "  " << spect->Momentum() << endl
@@ -721,8 +771,6 @@ int Sudakov::Generate(Parton *split,Parton *spect,
 				  (*m_splitter)->GetFlavourC());
       x = 0.;
       if (y<0.0 || y>1.0) continue;
-      if (((*m_splitter)->GetFlavourC().Kfcode() == kf_J_psi_1S) && (y*(Q2 - mi2 - mj2 - mk2) + mi2 + mj2 < mj2/(1-z) + mi2/z)) continue;
-      if (((*m_splitter)->GetFlavourB().Kfcode() == kf_J_psi_1S) && (y*(Q2 - mi2 - mj2 - mk2) + mi2 + mj2 < mj2/z + mi2/(1-z))) continue;
     }
       break;
     case (cstp::FI) : {

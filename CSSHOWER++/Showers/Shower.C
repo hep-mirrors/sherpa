@@ -338,6 +338,7 @@ void Shower::MakeTransition(Parton *split, const ATOOLS::Flavour &fla,
       //while keeping the correct spectator mass
     }
     else {
+      // this is an FI transition
       const Vec4D q = (pspect - pemitt);
       const Vec4D qLong = Vec4D(q[0],0.0,0.0,q[3]);
       const double Q2 = q.Abs2(); 
@@ -349,7 +350,7 @@ void Shower::MakeTransition(Parton *split, const ATOOLS::Flavour &fla,
     }
   }
   else {
-    msg_Error() << METHOD << "Something horrible happened.";
+    msg_Error() << METHOD << "Transitions from the initial state are not allowed.";
     exit(EXIT_FAILURE);
   }
   split->SetMomentum(pemitt);
@@ -444,6 +445,8 @@ bool Shower::EvolveSinglet(Singlet * act,const size_t &maxem,size_t &nem)
       msg_Debugging() << "after transition\n" << *split << "\n" << *split->GetSpect() << "\n";
       msg_Debugging() << "FS --> Exiting Transition handling in" << METHOD
                       << " Shower weight: " << m_weightsmap["PS"] << endl;
+      ++nem;
+      if (p_actual->NME()+nem>m_maxpart || nem >= maxem) return true;
     } else {
       msg_Debugging() << "Emission " << m_flavA << " -> " << m_flavB << " "
                       << m_flavC << " at kt = " << sqrt(split->KtTest()) << "( "

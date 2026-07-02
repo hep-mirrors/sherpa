@@ -98,6 +98,8 @@ void LoadLDME()
   onia["3P2_100443"].SetDefault(5.*ldme_3P0_100443);
 
   //BBBAR
+  //fictititious value
+  onia["3S1_553"].SetDefault(3.*3.*6.477/(2.*M_PI));
   
 
   //---------------------------------------------------
@@ -148,6 +150,25 @@ void LoadLDME()
   load(onia, kf_chi_b0_2P, "110551");
   load(onia, kf_chi_b1_2P, "120553");
   load(onia, kf_chi_b2_2P, "100555");
+
+  // --- Octets ---
+  load(onia, kf_1S0_c_8_eta_c,        "1S0_441");
+  load(onia, kf_1S0_c_8_J_psi_1S,     "1S0_443");
+  load(onia, kf_1S0_c_8_psi_2S,       "1S0_100443");
+  load(onia, kf_3S1_c_8_eta_c,        "3S1_441");
+  load(onia, kf_3S1_c_8_J_psi_1S,     "3S1_443");
+  load(onia, kf_3S1_c_8_psi_2S,       "3S1_100443");
+  load(onia, kf_3S1_c_8_chi_c0_1P,    "3S1_10441");
+  load(onia, kf_3S1_c_8_chi_c1_1P,    "3S1_20443");
+  load(onia, kf_3S1_c_8_chi_c2_1P,    "3S1_445");
+  load(onia, kf_3P0_c_8_J_psi_1S,     "3P0_443");
+  load(onia, kf_3P0_c_8_psi_2S,       "3P0_100443");
+  load(onia, kf_3P1_c_8_J_psi_1S,     "3P1_443");
+  load(onia, kf_3P1_c_8_psi_2S,       "3P1_100443");
+  load(onia, kf_3P2_c_8_J_psi_1S,     "3P2_443");
+  load(onia, kf_3P2_c_8_psi_2S,       "3P2_100443");
+
+  load(onia, kf_3S1_b_8_Upsilon_1S,   "3S1_553");
 
   loaded = true;
   msg_Debugging() <<" LDME for Quarkonia has been loaded.\n";
