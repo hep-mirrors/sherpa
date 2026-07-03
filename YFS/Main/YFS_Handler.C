@@ -21,6 +21,7 @@ YFS_Handler::YFS_Handler()
     m_setparticles = false;
     p_isr = new YFS::ISR();
     p_nlo = new YFS::NLO_Base();
+    p_fb  = m_fb_analysis ? new YFS::YFS_FB_Analysis({}, m_fb_kf) : nullptr;
     m_formfactor = 1;
     m_isrinital = true;
     p_splitter = new PHOTONS::Photon_Splitter(m_photon_split);
@@ -45,6 +46,7 @@ YFS_Handler::~YFS_Handler()
     if (p_yfsFormFact) delete p_yfsFormFact;
     if (p_dipoles) delete p_dipoles;
     if (p_nlo) delete p_nlo;
+    if (p_fb) delete p_fb;
     if (p_splitter) delete p_splitter;
     for (auto &p: m_particles){
       if(p) delete p;
@@ -572,6 +574,11 @@ void YFS_Handler::GenerateWeight() {
         wyfsnlo["NNLO"]        = make_ratio(nnlo_total, nnlo_denom);
       }
     }
+
+    // Emit forward/backward variants of each named contribution so they flow
+    // through the normal multiweight machinery (Single_Process multiplies in
+    // the universal ME x PDF x flux factors). Must run before the assignment.
+    if (p_fb) p_fb->SplitWeights(wyfsnlo, m_plab, m_flavs);
 
     m_nlo_weightsmap["YFS"] = wyfsnlo;
   }
