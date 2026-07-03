@@ -1,18 +1,18 @@
 #include "CSSHOWER++/Main/CS_Shower.H"
 
-#include "ATOOLS/Math/Random.H"
-#include "ATOOLS/Org/Exception.H"
-#include "ATOOLS/Org/MyStrStream.H"
-#include "ATOOLS/Org/My_Limits.H"
-#include "ATOOLS/Org/My_MPI.H"
-#include "ATOOLS/Org/Run_Parameter.H"
-#include "ATOOLS/Org/Scoped_Settings.H"
-#include "ATOOLS/Phys/Cluster_Amplitude.H"
-#include "ATOOLS/Phys/KF_Table.H"
 #include "CSSHOWER++/Showers/Splitting_Function_Base.H"
-#include "PDF/Main/Jet_Criterion.H"
 #include "PHASIC++/Process/Process_Base.H"
 #include "PHASIC++/Selectors/Jet_Finder.H"
+#include "PDF/Main/Jet_Criterion.H"
+#include "ATOOLS/Phys/Cluster_Amplitude.H"
+#include "ATOOLS/Org/Run_Parameter.H"
+#include "ATOOLS/Org/MyStrStream.H"
+#include "ATOOLS/Math/Random.H"
+#include "ATOOLS/Org/Exception.H"
+#include "ATOOLS/Org/My_Limits.H"
+#include "ATOOLS/Org/My_MPI.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
+#include "ATOOLS/Phys/KF_Table.H"
 
 #include <algorithm>
 #include <assert.h>
@@ -23,13 +23,15 @@ using namespace PDF;
 using namespace ATOOLS;
 
 CS_Shower::CS_Shower(PDF::ISR_Handler* const _isr,
-                     MODEL::Model_Base* const model, const int type)
-    : Shower_Base("CSS"), p_isr(_isr), p_shower(NULL), p_cluster(NULL)
+		     MODEL::Model_Base *const model,
+                     const int type) :
+  Shower_Base("CSS"), p_isr(_isr),
+  p_shower(NULL), p_cluster(NULL)
 {
   Settings& s = Settings::GetMainSettings();
   auto pss = Settings::GetMainSettings()["SHOWER"];
-  rpa->gen.AddCitation(1, "The Catani-Seymour subtraction based shower is "
-                          "published under \\cite{Schumann:2007mg}.");
+  rpa->gen.AddCitation
+    (1,"The Catani-Seymour subtraction based shower is published under \\cite{Schumann:2007mg}.");
 
   m_maxem = pss["MAXEM"].Get<size_t>();
 
@@ -277,9 +279,9 @@ void CS_Shower::GetKT2Min(Cluster_Amplitude* const ampl, KT2X_Map& kt2xmap)
   msg_Debugging() << "k_{T,min} / k_{T,max} = {\n";
   for (KT2X_Map::const_iterator kit(kt2xmap.begin()); kit != kt2xmap.end();
        ++kit)
-    msg_Debugging() << "  " << ID(kit->first) << " -> "
-                    << sqrt(kit->second.first) << " / "
-                    << sqrt(kit->second.second) << "\n";
+    msg_Debugging()<<"  "<<ID(kit->first)
+		  <<" -> "<<sqrt(kit->second.first)
+		  <<" / "<<sqrt(kit->second.second)<<"\n";
   msg_Debugging() << "}\n";
 }
 
@@ -363,43 +365,39 @@ bool CS_Shower::PrepareStandardShower(Cluster_Amplitude* const ampl)
       split->SetKin(campl->Kin());
       split->SetKScheme((almap[split]->Stat() & 4) ? 1 : 0);
       if (split->KScheme()) split->SetMass2(split->Momentum().Abs2());
-      CS_Parameters cp(p_cluster->KT2(
-          campl->Prev(), almap[l], almap[r], almap[s],
-          split->GetType() == pst::FS ? split->GetFlavour()
-                                      : split->GetFlavour().Bar(),
-          p_ms, split->Kin(), split->KScheme(), 1));
+      CS_Parameters cp(p_cluster->KT2
+		       (campl->Prev(),almap[l],almap[r],almap[s],
+			split->GetType()==pst::FS?split->GetFlavour():
+			split->GetFlavour().Bar(),p_ms,
+			split->Kin(),split->KScheme(),1));
       cp.m_lt.Invert();
       l->SetLT(cp.m_lt);
       l->SetTest(cp.m_kt2, cp.m_z, cp.m_y, cp.m_phi);
-      msg_Debugging() << "Set reco params: kt = " << sqrt(cp.m_kt2)
-                      << ", z = " << cp.m_z << ", y = " << cp.m_y
-                      << ", phi = " << cp.m_phi << ", mode = " << cp.m_mode
-                      << ", scheme = " << split->Kin()
+      msg_Debugging()<<"Set reco params: kt = "<<sqrt(cp.m_kt2)<<", z = "
+		     <<cp.m_z<<", y = "<<cp.m_y<<", phi = "<<cp.m_phi
+		     <<", mode = "<<cp.m_mode<<", scheme = "<<split->Kin()
                       << ", kmode = " << split->KScheme() << "\n";
       sing->SetAll(p_next);
       Vec4D oldl(l->Momentum()), oldr(r->Momentum()), olds(s->Momentum());
-      if ((m_recocheck & 1) &&
-          dynamic_cast<CS_Cluster_Definitions*>(
-              campl->CA<Cluster_Definitions_Base>()) != NULL) {
+      if ((m_recocheck&1) && dynamic_cast<CS_Cluster_Definitions*>
+	  (campl->CA<Cluster_Definitions_Base>())!=NULL) {
         std::cout.precision(12);
         double jcv(0.0);
         p_shower->ReconstructDaughters(sing, jcv, NULL, NULL);
         almap[l]->SetMom(almap[l]->Id() & 3 ? -l->Momentum() : l->Momentum());
         almap[r]->SetMom(almap[r]->Id() & 3 ? -r->Momentum() : r->Momentum());
         almap[s]->SetMom(almap[s]->Id() & 3 ? -s->Momentum() : s->Momentum());
-        CS_Parameters ncp(p_cluster->KT2(
-            campl->Prev(), almap[l], almap[r], almap[s],
-            split->GetType() == pst::FS ? split->GetFlavour()
-                                        : split->GetFlavour().Bar(),
-            p_ms, split->Kin(), split->KScheme(), 1));
-        msg_Debugging() << "New reco params: kt = " << sqrt(ncp.m_kt2)
-                        << ", z = " << ncp.m_z << ", y = " << ncp.m_y
-                        << ", phi = " << ncp.m_phi << ", kin = " << ncp.m_kin
-                        << "\n";
-        msg_Debugging() << "            vs.: kt = " << sqrt(cp.m_kt2)
-                        << ", z = " << cp.m_z << ", y = " << cp.m_y
-                        << ", phi = " << cp.m_phi << ", kin = " << cp.m_kin
-                        << "\n";
+      CS_Parameters ncp(p_cluster->KT2
+			(campl->Prev(),almap[l],almap[r],almap[s],
+			 split->GetType()==pst::FS?split->GetFlavour():
+			 split->GetFlavour().Bar(),p_ms,
+			 split->Kin(),split->KScheme(),1));
+      msg_Debugging()<<"New reco params: kt = "<<sqrt(ncp.m_kt2)<<", z = "
+		     <<ncp.m_z<<", y = "<<ncp.m_y<<", phi = "<<ncp.m_phi
+		     <<", kin = "<<ncp.m_kin<<"\n";
+      msg_Debugging()<<"            vs.: kt = "<<sqrt(cp.m_kt2)<<", z = "
+		     <<cp.m_z<<", y = "<<cp.m_y<<", phi = "<<cp.m_phi
+		     <<", kin = "<<cp.m_kin<<"\n";
         if (!IsEqual(ncp.m_kt2, cp.m_kt2, 1.0e-6) ||
             !IsEqual(ncp.m_z, cp.m_z, 1.0e-6) ||
             !IsEqual(ncp.m_y, cp.m_y, 1.0e-6) ||
@@ -407,17 +405,15 @@ bool CS_Shower::PrepareStandardShower(Cluster_Amplitude* const ampl)
             !IsEqual(oldl, l->Momentum(), 1.0e-6) ||
             !IsEqual(oldr, r->Momentum(), 1.0e-6) ||
             !IsEqual(olds, s->Momentum(), 1.0e-6)) {
-          msg_Error() << "\nFaulty reco params: kt = " << sqrt(ncp.m_kt2)
-                      << ", z = " << ncp.m_z << ", y = " << ncp.m_y
-                      << ", phi = " << ncp.m_phi << ", mode = " << ncp.m_mode
-                      << ", scheme = " << ncp.m_kin << "\n";
-          msg_Error() << "               vs.: kt = " << sqrt(cp.m_kt2)
-                      << ", z = " << cp.m_z << ", y = " << cp.m_y
-                      << ", phi = " << cp.m_phi << ", mode = " << cp.m_mode
-                      << ", scheme = " << cp.m_kin << "\n";
+	msg_Error()<<"\nFaulty reco params: kt = "<<sqrt(ncp.m_kt2)<<", z = "
+		   <<ncp.m_z<<", y = "<<ncp.m_y<<", phi = "<<ncp.m_phi
+		   <<", mode = "<<ncp.m_mode<<", scheme = "<<ncp.m_kin<<"\n";
+	msg_Error()<<"               vs.: kt = "<<sqrt(cp.m_kt2)<<", z = "
+		   <<cp.m_z<<", y = "<<cp.m_y<<", phi = "<<cp.m_phi
+		   <<", mode = "<<cp.m_mode<<", scheme = "<<cp.m_kin<<"\n";
           msg_Error() << "  " << oldl << " " << oldr << " " << olds << "\n";
-          msg_Error() << "  " << l->Momentum() << " " << r->Momentum() << " "
-                      << s->Momentum() << "\n";
+	msg_Error()<<"  "<<l->Momentum()<<" "<<r->Momentum()
+		   <<" "<<s->Momentum()<<"\n";
           if (m_recocheck & 2) Abort();
         }
         l->SetMomentum(oldl);
@@ -470,8 +466,8 @@ Singlet* CS_Shower::TranslateAmplitude(Cluster_Amplitude* const ampl,
                                        const KT2X_Map& kt2xmap)
 {
   PHASIC::Jet_Finder* jf(ampl->JF<PHASIC::Jet_Finder>());
-  double ktveto2(jf ? sqr(jf->Qcut())
-                    : sqrt(std::numeric_limits<double>::max()));
+  double ktveto2(jf?sqr(jf->Qcut()):
+		 sqrt(std::numeric_limits<double>::max()));
   Singlet* singlet(new Singlet());
   singlet->SetMS(p_ms);
   singlet->SetJF(jf);
@@ -515,8 +511,7 @@ Singlet* CS_Shower::TranslateAmplitude(Cluster_Amplitude* const ampl,
     }
     KT2X_Map::const_iterator xit(kt2xmap.find(cl->Id()));
     parton->SetStart(m_respectq2 ? ampl->MuQ2() : xit->second.second);
-    // This is where I modifed stuff - will need to formalise this much much
-    // better.
+    // This is where I modifed stuff - will need to formalise this much much better.
     // msg_Out()<<METHOD<<"(my stuff): "<<cl->KT2(0)<<"\n";
     // parton->SetStart(sqrt(cl->KT2(0)*cl->KT2(0)));
     if (m_respectq2)
@@ -711,8 +706,8 @@ double CS_Shower::JetVeto(ATOOLS::Cluster_Amplitude* const ampl, const int mode)
     size_t jmin(q2list.begin()->m_j);
     size_t kmin(q2list.begin()->m_k);
     q2list.erase(q2list.begin());
-    Cluster_Param cp = p_cluster->Cluster(
-        Cluster_Config(ampl, imin, jmin, kmin, mofl, ampl->MS(), NULL, 1));
+    Cluster_Param cp=p_cluster->Cluster
+      (Cluster_Config(ampl,imin,jmin,kmin,mofl,ampl->MS(),NULL,1));
     if (cp.m_pijt == Vec4D())
       cp = p_cluster->Cluster(
           Cluster_Config(ampl, jmin, imin, kmin, mofl, ampl->MS(), NULL, 1));
