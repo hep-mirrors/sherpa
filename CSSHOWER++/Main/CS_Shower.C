@@ -37,57 +37,48 @@ CS_Shower::CS_Shower(PDF::ISR_Handler* const _isr,
 
   SF_Lorentz::SetKappa(s["DIPOLES"]["KAPPA"].Get<double>());
 
-  m_kmode = pss["KMODE"].Get<int>();
-  m_recocheck = pss["RECO_CHECK"].Get<int>();
-  m_respectq2 = pss["RESPECT_Q2"].Get<bool>();
-  m_jetcrit = pss["JET_CRITERION"].Get<bool>();
+  m_kmode      = pss["KMODE"].Get<int>();
+  m_recocheck  = pss["RECO_CHECK"].Get<int>();
+  m_respectq2  = pss["RESPECT_Q2"].Get<bool>();
+  m_jetcrit    = pss["JET_CRITERION"].Get<bool>();
 
-  const int ckfmode{pss["CKFMODE"].Get<bool>()};
-  const int pdfcheck{pss["PDFCHECK"].Get<bool>()};
-  const int _qcd{pss["QCD_MODE"].Get<bool>()};
-  const bool _qed{pss["EW_MODE"].Get<bool>()};
+  const int ckfmode { pss["CKFMODE"].Get<bool>() };
+  const int pdfcheck{ pss["PDFCHECK"].Get<bool>() };
+  const int _qcd    { pss["QCD_MODE"].Get<bool>() };
+  const bool _qed    { pss["EW_MODE"].Get<bool>() };
   m_cluster_qed = pss["CLUSTER_QED"].SetDefault(false).Get<bool>() || _qed;
 
   if (_qed) {
     s_kftable[kf_photon]->SetResummed();
   }
 
-  p_shower = new Shower(_isr, _qcd, _qed, type);
+  p_shower = new Shower(_isr,_qcd,_qed,type);
   p_next = new All_Singlets();
-  p_cluster = new CS_Cluster_Definitions(p_shower, m_kmode, pdfcheck, ckfmode);
+  p_cluster = new CS_Cluster_Definitions(p_shower,m_kmode,pdfcheck,ckfmode);
 }
 
 CS_Shower::~CS_Shower()
 {
   CleanUp();
-  if (p_shower) {
-    delete p_shower;
-    p_shower = NULL;
-  }
-  if (p_cluster) {
-    delete p_cluster;
-    p_cluster = NULL;
-  }
+  if (p_shower)      { delete p_shower; p_shower = NULL; }
+  if (p_cluster)     { delete p_cluster; p_cluster = NULL; }
   delete p_next;
 }
 
-int CS_Shower::PerformShowers(const size_t& maxem, size_t& nem)
+int CS_Shower::PerformShowers(const size_t &maxem,size_t &nem)
 {
   if (!p_shower || !m_on) return 1;
   m_weightsmap.Clear();
-  Singlet* ls(NULL);
+  Singlet *ls(NULL);
   for (All_Singlets::const_iterator sit(m_allsinglets.begin());
-       sit != m_allsinglets.end(); ++sit) {
-    msg_Debugging() << "before shower step\n";
-    for (Singlet::const_iterator it((*sit)->begin()); it != (*sit)->end(); ++it)
+       sit!=m_allsinglets.end();++sit) {
+    msg_Debugging()<<"before shower step\n";
+    for (Singlet::const_iterator it((*sit)->begin());it!=(*sit)->end();++it)
       if ((*it)->GetPrev()) {
         if (((*it)->GetPrev()->Stat() & 2) &&
-            (*it)->GetPrev() == (*it)->GetPrev()->GetSing()->GetSplit())
-          continue;
-        if (m_respectq2)
-          (*it)->SetStart(Min((*it)->KtStart(), (*it)->GetPrev()->KtStart()));
-        else
-          (*it)->SetStart((*it)->GetPrev()->KtStart());
+	    (*it)->GetPrev()==(*it)->GetPrev()->GetSing()->GetSplit()) continue;
+	if (m_respectq2) (*it)->SetStart(Min((*it)->KtStart(),(*it)->GetPrev()->KtStart()));
+	else (*it)->SetStart((*it)->GetPrev()->KtStart());
       }
     std::map<int, int> colmap;
     if (ls && (ls->GetSplit()->Stat() & 2)) {
@@ -107,10 +98,8 @@ int CS_Shower::PerformShowers(const size_t& maxem, size_t& nem)
           colmap[nc] = d[j]->GetFlow(i);
           d[j]->SetFlow(i, nc);
           d[1 - j]->SetFlow(3 - i, nc);
-          if (i == 1)
-            d[j]->SetLeft(d[1 - j]);
-          else
-            d[j]->SetRight(d[1 - j]);
+	  if (i==1) d[j]->SetLeft(d[1-j]);
+	  else d[j]->SetRight(d[1-j]);
         }
       }
       for (Singlet::iterator it((*sit)->begin()); it != (*sit)->end(); ++it)
@@ -123,7 +112,8 @@ int CS_Shower::PerformShowers(const size_t& maxem, size_t& nem)
     m_allsinglets = *p_next;
     if (colmap.size()) {
       msg_Debugging() << "Decay. Reset color connections.\n";
-      for (Singlet::iterator it((*sit)->begin()); it != (*sit)->end(); ++it) {
+      for (Singlet::iterator
+	     it((*sit)->begin());it!=(*sit)->end();++it) {
         for (int i = 1; i <= 2; ++i)
           if (colmap.find((*it)->GetFlow(i)) != colmap.end()) {
             if (!(*it)->GetFlavour().Strong()) {
@@ -135,29 +125,30 @@ int CS_Shower::PerformShowers(const size_t& maxem, size_t& nem)
           }
       }
     }
-    msg_Debugging() << "after shower step with " << nem - pem << " of " << nem
-                    << " emission(s)\n";
+    msg_Debugging()<<"after shower step with "<<nem-pem
+		   <<" of "<<nem<<" emission(s)\n";
     msg_Debugging() << **sit << "\n";
     ls = *sit;
   }
   return 1;
 }
 
-int CS_Shower::PerformShowers() { return PerformShowers(m_maxem, m_nem); }
-
-int CS_Shower::PerformDecayShowers()
+int CS_Shower::PerformShowers()
 {
+  return PerformShowers(m_maxem,m_nem);
+}
+
+int CS_Shower::PerformDecayShowers() {
   if (!p_shower) return 1;
   size_t nem(0);
-  for (All_Singlets::const_iterator asit(m_allsinglets.begin());
-       asit != m_allsinglets.end(); ++asit) {
+  for (All_Singlets::const_iterator
+	 asit(m_allsinglets.begin());asit!=m_allsinglets.end();++asit) {
     if (!p_shower->EvolveShower(*asit, m_maxem, nem)) return 0;
   }
   return 1;
 }
 
-bool CS_Shower::ExtractPartons(Blob_List* const blist)
-{
+bool CS_Shower::ExtractPartons(Blob_List *const blist) {
 
   Blob* psblob(blist->FindLast(btp::Shower));
   if (psblob == NULL) THROW(fatal_error, "No Shower blob");
@@ -170,19 +161,16 @@ bool CS_Shower::ExtractPartons(Blob_List* const blist)
   psblob->SetStatus(blob_status::needs_beams |
                     blob_status::needs_reconnections);
 
-  for (All_Singlets::const_iterator sit(m_allsinglets.begin());
-       sit != m_allsinglets.end(); ++sit) {
+  for (All_Singlets::const_iterator
+	 sit(m_allsinglets.begin());sit!=m_allsinglets.end();++sit) {
     (*sit)->ExtractPartons(psblob, p_ms);
   }
 
   if (p_shower->FusingEnabled()) {
     ClusterAmplitude_PVector all_amplitudes;
-    for (auto& sit : m_allsinglets)
-      all_amplitudes.push_back(sit->GetAmplitude());
+    for (auto &sit: m_allsinglets) all_amplitudes.push_back(sit->GetAmplitude());
     Cluster_Amplitude* cl_all = all_amplitudes.OneAmpl(); //->CopyAll();
-    psblob->AddData("AllAmplitudes",
-                    new Blob_Data<std::shared_ptr<Cluster_Amplitude>>(
-                        std::shared_ptr<Cluster_Amplitude>(cl_all)));
+    psblob->AddData("AllAmplitudes",new Blob_Data<std::shared_ptr<Cluster_Amplitude> >(std::shared_ptr<Cluster_Amplitude>(cl_all)));
     all_amplitudes.clear();
   }
   return true;
@@ -191,8 +179,8 @@ bool CS_Shower::ExtractPartons(Blob_List* const blist)
 void CS_Shower::CleanUp()
 {
   m_nem = 0;
-  for (All_Singlets::const_iterator sit(m_allsinglets.begin());
-       sit != m_allsinglets.end(); ++sit) {
+  for (All_Singlets::const_iterator
+	 sit(m_allsinglets.begin());sit!=m_allsinglets.end();++sit) {
     if (*sit) delete *sit;
   }
   m_allsinglets.clear();
@@ -221,9 +209,11 @@ void CS_Shower::GetKT2Min(Cluster_Amplitude* const ampl, const size_t& id,
           kit->second.second = ckt2;
           aset.insert(kit->first);
         }
-    } else if (ampl->Prev() == NULL) {
+    }
+    else if (ampl->Prev()==NULL) {
       kt2xmap[cl->Id()].first = kt2xmap[cl->Id()].second = HardScale(ampl);
-    } else {
+    }
+    else {
       double ckt2max(HardScale(ampl));
       double ckt2min(std::numeric_limits<double>::max());
       for (KT2X_Map::iterator kit(kt2xmap.begin()); kit != kt2xmap.end(); ++kit)
@@ -246,8 +236,7 @@ void CS_Shower::GetKT2Min(Cluster_Amplitude* const ampl, KT2X_Map& kt2xmap)
 {
   std::set<size_t> aset;
   Cluster_Amplitude* campl(ampl);
-  while (campl->Next())
-    campl = campl->Next();
+  while (campl->Next()) campl=campl->Next();
   GetKT2Min(campl, (1 << ampl->Legs().size()) - 1, kt2xmap, aset);
   std::vector<size_t> cns;
   double ckt2min(std::numeric_limits<double>::max()), ckt2max(0.0);
@@ -270,15 +259,13 @@ void CS_Shower::GetKT2Min(Cluster_Amplitude* const ampl, KT2X_Map& kt2xmap)
   bool smin(rampl->Legs().size() - rampl->NIn() == campl->Leg(0)->NMax());
   for (KT2X_Map::iterator kit(kt2xmap.begin()); kit != kt2xmap.end(); ++kit)
     if (aset.find(kit->first) == aset.end()) {
-      if (smin)
-        kit->second.first = ckt2min;
-      else
-        kit->second.first = 0.0;
+      if (smin) kit->second.first=ckt2min;
+      else kit->second.first=0.0;
       kit->second.second = ckt2max;
     }
   msg_Debugging() << "k_{T,min} / k_{T,max} = {\n";
-  for (KT2X_Map::const_iterator kit(kt2xmap.begin()); kit != kt2xmap.end();
-       ++kit)
+  for (KT2X_Map::const_iterator
+  	 kit(kt2xmap.begin());kit!=kt2xmap.end();++kit)
     msg_Debugging()<<"  "<<ID(kit->first)
 		  <<" -> "<<sqrt(kit->second.first)
 		  <<" / "<<sqrt(kit->second.second)<<"\n";
@@ -329,23 +316,24 @@ bool CS_Shower::PrepareStandardShower(Cluster_Amplitude* const ampl)
         kmap[cl->Id()] = k;
         continue;
       }
-      for (std::map<size_t, Parton*>::iterator kit(kmap.begin());
-           kit != kmap.end();)
+      for (std::map<size_t,Parton*>::iterator
+	     kit(kmap.begin());kit!=kmap.end();)
         if ((kit->first & cl->Id()) != kit->first) {
           ++kit;
-        } else {
-          if (k->GetSing()->GetLeft() == NULL)
-            k->GetSing()->SetLeft(kit->second);
+	}
+	else {
+	  if (k->GetSing()->GetLeft()==NULL) k->GetSing()->SetLeft(kit->second);
           else if (k->GetSing()->GetRight() == NULL) {
             if (kit->second->GetType() == pst::IS &&
                 k->GetSing()->GetLeft()->GetType() == pst::FS) {
               k->GetSing()->SetRight(k->GetSing()->GetLeft());
               k->GetSing()->SetLeft(kit->second);
-            } else {
+	    }
+	    else {
               k->GetSing()->SetRight(kit->second);
             }
-          } else
-            THROW(fatal_error, "Invalid tree structure. LR exist.");
+	  }
+	  else THROW(fatal_error,"Invalid tree structure. LR exist.");
           kit->second->SetPrev(k);
           kmap.erase(kit);
           kit = kmap.begin();
@@ -355,8 +343,7 @@ bool CS_Shower::PrepareStandardShower(Cluster_Amplitude* const ampl)
     }
     if (sing->GetSpec()) {
       sing->SetSpec(sing->GetSpec()->GetNext());
-      if (split == NULL)
-        THROW(fatal_error, "Invalid tree structure. No Split.");
+      if (split==NULL) THROW(fatal_error,"Invalid tree structure. No Split.");
       sing->SetSplit(split);
       Parton *l(sing->GetLeft()), *r(sing->GetRight()), *s(sing->GetSpec());
       almap[l]->SetMom(almap[l]->Id() & 3 ? -l->Momentum() : l->Momentum());
@@ -432,19 +419,18 @@ bool CS_Shower::PrepareStandardShower(Cluster_Amplitude* const ampl)
     p_next->push_back(sing);
   }
   p_next->clear();
-  for (All_Singlets::reverse_iterator asit(allsinglets.rbegin());
-       asit != allsinglets.rend(); ++asit) {
+  for (All_Singlets::reverse_iterator
+	 asit(allsinglets.rbegin());asit!=allsinglets.rend();++asit) {
     m_allsinglets.push_back(*asit);
     p_next->push_back(*asit);
   }
   msg_Debugging() << "\nSinglet lists:\n\n";
   Cluster_Amplitude* campl(ampl);
-  while (campl->Next())
-    campl = campl->Next();
-  for (All_Singlets::const_iterator sit(m_allsinglets.begin());
-       sit != m_allsinglets.end(); ++sit) {
-    for (Singlet::const_iterator pit((*sit)->begin()); pit != (*sit)->end();
-         ++pit) {
+  while (campl->Next()) campl=campl->Next();
+  for (All_Singlets::const_iterator
+	 sit(m_allsinglets.begin());sit!=m_allsinglets.end();++sit) {
+      for (Singlet::const_iterator
+	     pit((*sit)->begin());pit!=(*sit)->end();++pit) {
       if ((*pit)->GetPrev()) {
         if ((*pit)->GetPrev()->GetNext() == *pit) {
           (*pit)->SetStart((*pit)->GetPrev()->KtStart());
@@ -460,9 +446,9 @@ bool CS_Shower::PrepareStandardShower(Cluster_Amplitude* const ampl)
   return true;
 }
 
-Singlet* CS_Shower::TranslateAmplitude(Cluster_Amplitude* const ampl,
-                                       std::map<Cluster_Leg*, Parton*>& pmap,
-                                       std::map<Parton*, Cluster_Leg*>& lmap,
+Singlet *CS_Shower::TranslateAmplitude
+(Cluster_Amplitude *const ampl,
+ std::map<Cluster_Leg*,Parton*> &pmap,std::map<Parton*,Cluster_Leg*> &lmap,
                                        const KT2X_Map& kt2xmap)
 {
   PHASIC::Jet_Finder* jf(ampl->JF<PHASIC::Jet_Finder>());
@@ -475,14 +461,14 @@ Singlet* CS_Shower::TranslateAmplitude(Cluster_Amplitude* const ampl,
   singlet->SetMuR2(ampl->MuR2());
   if (ampl->NLO() & 8) {
     if (ampl->Next() &&
-        (ampl->NIn() + ampl->Leg(2)->NMax() - 1 > ampl->Legs().size()))
-      ampl->SetNLO(ampl->NLO() & ~8);
+	(ampl->NIn()+ampl->Leg(2)->NMax()-1>
+	 ampl->Legs().size())) ampl->SetNLO(ampl->NLO()&~8);
   }
   singlet->SetNLO(ampl->NLO() & ~1);
   if (ampl->Proc<PHASIC::Process_Base>())
-    singlet->SetNME(
-        ampl->First()->Legs().size() - ampl->NIn() -
-        ampl->Proc<PHASIC::Process_Base>()->Info().m_fi.NMinExternal());
+    singlet->SetNME(ampl->First()->Legs().size()-ampl->NIn()-
+		    ampl->Proc<PHASIC::Process_Base>()->
+		    Info().m_fi.NMinExternal());
   if (ampl->Flag() & 2) singlet->SetNSkip(1);
   if (jf == NULL && (ampl->NLO() & 2)) singlet->SetNLO(4);
   singlet->SetLKF(ampl->LKF());
@@ -491,12 +477,12 @@ Singlet* CS_Shower::TranslateAmplitude(Cluster_Amplitude* const ampl,
     // FK: I've commented out the line below as it kills my diffractive events.
     // if (cl->Flav().IsHadron() && cl->Id()&((1<<ampl->NIn())-1)) continue;
     bool is(cl->Id() & ((1 << ampl->NIn()) - 1));
-    Particle p(1, is ? cl->Flav().Bar() : cl->Flav(),
-               is ? -cl->Mom() : cl->Mom());
+    Particle p(1,is?cl->Flav().Bar():cl->Flav(),is?-cl->Mom():cl->Mom());
     if (is) {
       p.SetFlow(2, cl->Col().m_i);
       p.SetFlow(1, cl->Col().m_j);
-    } else {
+    }
+    else {
       p.SetFlow(1, cl->Col().m_i);
       p.SetFlow(2, cl->Col().m_j);
     }
@@ -523,16 +509,15 @@ Singlet* CS_Shower::TranslateAmplitude(Cluster_Amplitude* const ampl,
     singlet->push_back(parton);
     parton->SetSing(singlet);
   }
-  for (Singlet::const_iterator sit(singlet->begin()); sit != singlet->end();
-       ++sit) {
+  for (Singlet::const_iterator sit(singlet->begin());
+       sit!=singlet->end();++sit) {
     int flow[2] = {(*sit)->GetFlow(1), (*sit)->GetFlow(2)};
     if (!(*sit)->GetFlavour().Strong()) continue;
     if ((flow[0] == 0 || (*sit)->GetLeft() != NULL) &&
-        (flow[1] == 0 || (*sit)->GetRight() != NULL))
-      continue;
+	(flow[1]==0 || (*sit)->GetRight()!=NULL)) continue;
     if (flow[0]) {
-      for (Singlet::const_iterator tit(singlet->begin()); tit != singlet->end();
-           ++tit)
+      for (Singlet::const_iterator tit(singlet->begin());
+	   tit!=singlet->end();++tit)
         if (tit != sit && (*tit)->GetFlow(2) == flow[0]) {
           (*sit)->SetLeft(*tit);
           (*tit)->SetRight(*sit);
@@ -540,8 +525,8 @@ Singlet* CS_Shower::TranslateAmplitude(Cluster_Amplitude* const ampl,
         }
     }
     if (flow[1]) {
-      for (Singlet::const_iterator tit(singlet->begin()); tit != singlet->end();
-           ++tit)
+      for (Singlet::const_iterator tit(singlet->begin());
+	   tit!=singlet->end();++tit)
         if (tit != sit && (*tit)->GetFlow(1) == flow[1]) {
           (*sit)->SetRight(*tit);
           (*tit)->SetLeft(*sit);
@@ -566,10 +551,11 @@ Singlet* CS_Shower::TranslateAmplitude(Cluster_Amplitude* const ampl,
 int CS_Shower::IsDecay(Cluster_Amplitude* const ampl,
                        Cluster_Leg* const cl) const
 {
-  for (Cluster_Amplitude* campl(ampl); campl; campl = campl->Next()) {
+  for (Cluster_Amplitude *campl(ampl);
+       campl;campl=campl->Next()) {
     for (size_t i(0); i < campl->Legs().size(); ++i) {
-      if (campl->Leg(i)->Id() & cl->Id() && campl->Leg(i)->Stat() & 2)
-        return true;
+      if (campl->Leg(i)->Id()&cl->Id() &&
+	  campl->Leg(i)->Stat()&2) return true;
     }
   }
   return false;
@@ -612,7 +598,8 @@ double CS_Shower::Qij2(const ATOOLS::Vec4D& pi, const ATOOLS::Vec4D& pj,
   return 2.0 * dabs(pi * pj) / (Cij + Cji);
 }
 
-double CS_Shower::JetVeto(ATOOLS::Cluster_Amplitude* const ampl, const int mode)
+double CS_Shower::JetVeto(ATOOLS::Cluster_Amplitude *const ampl,
+			  const int mode)
 {
   DEBUG_FUNC("mode = " << mode);
   msg_Debugging() << *ampl << "\n";
@@ -621,10 +608,10 @@ double CS_Shower::JetVeto(ATOOLS::Cluster_Amplitude* const ampl, const int mode)
   size_t noem(0), nospec(0);
   for (size_t i(0); i < ampl->Decays().size(); ++i) {
     noem |= ampl->Decays()[i]->m_id;
-    if (!ampl->Decays()[i]->m_fl.Strong()) nospec |= ampl->Decays()[i]->m_id;
+    if (!ampl->Decays()[i]->m_fl.Strong())
+      nospec|=ampl->Decays()[i]->m_id;
   }
-  msg_Debugging() << "noem = " << ID(noem) << ", nospec = " << ID(nospec)
-                  << "\n";
+  msg_Debugging()<<"noem = "<<ID(noem)<<", nospec = "<<ID(nospec)<<"\n";
   std::set<Q2_Value> q2list;
   for (size_t i(0); i < ampl->Legs().size(); ++i) {
     Cluster_Leg* li(ampl->Leg(i));
@@ -709,8 +696,7 @@ double CS_Shower::JetVeto(ATOOLS::Cluster_Amplitude* const ampl, const int mode)
     Cluster_Param cp=p_cluster->Cluster
       (Cluster_Config(ampl,imin,jmin,kmin,mofl,ampl->MS(),NULL,1));
     if (cp.m_pijt == Vec4D())
-      cp = p_cluster->Cluster(
-          Cluster_Config(ampl, jmin, imin, kmin, mofl, ampl->MS(), NULL, 1));
+      cp=p_cluster->Cluster(Cluster_Config(ampl,jmin,imin,kmin,mofl,ampl->MS(),NULL,1));
     if (cp.m_pijt == Vec4D()) continue;
     Cluster_Amplitude* bampl(Cluster_Amplitude::New());
     bampl->SetProc(ampl->Proc<void>());
@@ -720,10 +706,10 @@ double CS_Shower::JetVeto(ATOOLS::Cluster_Amplitude* const ampl, const int mode)
       if (i == jmin) continue;
       if (i == imin) {
         bampl->CreateLeg(cp.m_pijt, mofl, ampl->Leg(i)->Col());
-        bampl->Legs().back()->SetId(ampl->Leg(imin)->Id() |
-                                    ampl->Leg(jmin)->Id());
+	bampl->Legs().back()->SetId(ampl->Leg(imin)->Id()|ampl->Leg(jmin)->Id());
         bampl->Legs().back()->SetK(ampl->Leg(kmin)->Id());
-      } else {
+      }
+      else {
         bampl->CreateLeg(i == kmin ? cp.m_pkt : cp.m_lam * ampl->Leg(i)->Mom(),
                          ampl->Leg(i)->Flav(), ampl->Leg(i)->Col());
       }
@@ -734,23 +720,20 @@ double CS_Shower::JetVeto(ATOOLS::Cluster_Amplitude* const ampl, const int mode)
     if (res == std::numeric_limits<double>::max()) continue;
     return res;
   }
-  msg_Debugging() << METHOD << "(): Combine failed. Use R configuration."
-                  << std::endl;
+  msg_Debugging()<<METHOD<<"(): Combine failed. Use R configuration."<<std::endl;
   return JetVeto(ampl, 0);
 }
 
 DECLARE_GETTER(CSSHOWER::CS_Shower, "CSS", PDF::Shower_Base, PDF::Shower_Key);
 
-Shower_Base*
-ATOOLS::Getter<PDF::Shower_Base, PDF::Shower_Key,
-               CSSHOWER::CS_Shower>::operator()(const Shower_Key& key) const
+Shower_Base *ATOOLS::Getter<PDF::Shower_Base,PDF::Shower_Key,CSSHOWER::CS_Shower>::
+operator()(const Shower_Key &key) const
 {
   return new CS_Shower(key.p_isr, key.p_model, key.m_type);
 }
 
-void ATOOLS::Getter<PDF::Shower_Base, PDF::Shower_Key,
-                    CSSHOWER::CS_Shower>::PrintInfo(std::ostream& str,
-                                                    const size_t width) const
+void ATOOLS::Getter<PDF::Shower_Base,PDF::Shower_Key,CSSHOWER::CS_Shower>::
+PrintInfo(std::ostream &str,const size_t width) const
 {
   str << "The CSS shower";
 }
@@ -759,11 +742,8 @@ namespace CSSHOWER {
 
   class CSS_Jet_Criterion: public Jet_Criterion {
   private:
-
     CS_Shower* p_css;
-
   public:
-
     CSS_Jet_Criterion(Shower_Base* const css)
     {
       p_css = dynamic_cast<CS_Shower*>(css);
@@ -777,21 +757,16 @@ namespace CSSHOWER {
 
 } // end of namespace CSSHOWER
 
-DECLARE_GETTER(CSSHOWER::CSS_Jet_Criterion, "CSS", PDF::Jet_Criterion,
-               PDF::JetCriterion_Key);
+DECLARE_GETTER(CSSHOWER::CSS_Jet_Criterion,"CSS",PDF::Jet_Criterion,PDF::JetCriterion_Key);
 
-Jet_Criterion*
-ATOOLS::Getter<PDF::Jet_Criterion, PDF::JetCriterion_Key,
-               CSSHOWER::CSS_Jet_Criterion>::operator()(const JetCriterion_Key&
-                                                            args) const
+Jet_Criterion *ATOOLS::Getter<PDF::Jet_Criterion,PDF::JetCriterion_Key,CSSHOWER::CSS_Jet_Criterion>::
+operator()(const JetCriterion_Key &args) const
 {
   return new CSS_Jet_Criterion(args.p_shower);
 }
 
-void ATOOLS::Getter<PDF::Jet_Criterion, PDF::JetCriterion_Key,
-                    CSSHOWER::CSS_Jet_Criterion>::PrintInfo(std::ostream& str,
-                                                            const size_t width)
-    const
+void ATOOLS::Getter<PDF::Jet_Criterion,PDF::JetCriterion_Key,CSSHOWER::CSS_Jet_Criterion>::
+PrintInfo(std::ostream &str,const size_t width) const
 {
   str << "The CSS jet criterion";
 }
