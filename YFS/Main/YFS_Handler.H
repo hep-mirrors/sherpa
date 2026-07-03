@@ -2,6 +2,7 @@
 #define YFS_Main_YFS_Handler_H
 
 #include "YFS/Main/YFS_Base.H"
+#include "YFS/Main/YFS_FB_Analysis.H"
 #include "YFS/Main/ISR.H"
 #include "YFS/Main/FSR.H"
 #include "YFS/Main/Coulomb.H"
@@ -70,6 +71,7 @@ namespace YFS {
         Flavour_Vector m_outflav;
         
         YFS::NLO_Base *p_nlo;
+        YFS::YFS_FB_Analysis *p_fb;
         YFS::FSR *p_fsr;
         YFS::YFS_Form_Factor *p_yfsFormFact;
         YFS::Define_Dipoles *p_dipoles;

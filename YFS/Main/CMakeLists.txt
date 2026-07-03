@@ -4,6 +4,7 @@ set(YFSMain_SOURCES Coulomb.C
                  ISR.C
                  Semi.C
                  YFS_Base.C
+                 YFS_FB_Analysis.C
                  YFS_Form_Factor.C
                  YFS_Handler.C)
 
@@ -13,6 +14,7 @@ set(YFSMain_HEADERS Coulomb.H
                  ISR.H
                  Semi.H
                  YFS_Base.H
+                 YFS_FB_Analysis.H
                  YFS_Form_Factor.H
                  YFS_Handler.H)
 

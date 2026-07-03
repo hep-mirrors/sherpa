@@ -86,6 +86,8 @@ void YFS_Base::RegisterDefaults(){
   s["Fixed_Order"].SetDefault(fixed_order::full);
   s["SKIP_NEG_WEIGHTS"].SetDefault(false);
   s["MIN_PHOTON"].SetDefault<int>(-1);
+  s["FB_Analysis"].SetDefault(false);
+  s["FB_Analysis_KF"].SetDefault<int>(0);
 }
 
 void YFS_Base::RegisterSettings(){
@@ -145,6 +147,8 @@ void YFS_Base::RegisterSettings(){
   m_fixedOrder = s["Fixed_Order"].Get<fixed_order::code>();
   m_skipNegWeights = s["SKIP_NEG_WEIGHTS"].Get<bool>();
   m_mingammaN = s["MIN_PHOTON"].Get<int>();
+  m_fb_analysis = s["FB_Analysis"].Get<bool>();
+  m_fb_kf = s["FB_Analysis_KF"].Get<int>();
   m_CalForm = false;
   m_realtool = false;
   //update when beamstrahlung is added
