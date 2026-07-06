@@ -195,7 +195,6 @@ void MI_Processes::FillScatterBlob(Blob * blob,MI_Process * proc) {
   array<int,2> inflavs;
   for (size_t i=0;i<2;i++) {
     Particle * part = proc->GetParticle(i);
-    part->SetBeam(i);
     blob->AddToInParticles(part);
     inflavs[i] = (part->Flav().IsAnti() ? -1 : 1) * part->Flav().Kfcode();
   }

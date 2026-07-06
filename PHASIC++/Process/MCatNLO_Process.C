@@ -260,9 +260,6 @@ Cluster_Amplitude *MCatNLO_Process::CreateAmplitude(const NLO_subevt *sub) const
     ampl->CreateLeg(i<m_nin?-sub->p_mom[i]:sub->p_mom[i],
 		    i<m_nin?sub->p_fl[i].Bar():sub->p_fl[i],
 		    ColorID(ci[i],cj[i]),sub->p_id[i]);
-    if (p_rsproc->NIn()==2 && i<p_rsproc->NIn())
-      ampl->Legs().back()->SetBeam(p_rsproc->Caller()->Get<Single_Process>()->
-    				     Integrator()->ISR()->Swap() ? 1-i : i);
     if (!sub->IsReal() && sub->p_id[i]&(1<<sub->m_i)) {
       if ((sub->p_id[i]&(1<<sub->m_j))==0)
 	THROW(fatal_error,"Internal error");
@@ -585,9 +582,6 @@ Weights_Map MCatNLO_Process::OneSEvent(const int wmode)
     Cluster_Leg *lij(NULL);
     for (size_t i(0);i<next->Legs().size();++i) {
       next->Leg(i)->SetStat(1);
-      if (rproc->NIn()==2 && i<rproc->NIn()) {
-	ampl->Leg(i)->SetBeam(rproc->Integrator()->ISR()->Swap() ? 1-i : i);
-      }
       if (next->Leg(i)->K()) {
 	lij=next->Leg(i);
       }

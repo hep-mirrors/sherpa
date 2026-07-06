@@ -5,7 +5,6 @@
 #include "PHASIC++/Main/Process_Integrator.H"
 #include "PDF/Main/Shower_Base.H"
 #include "PDF/Main/Jet_Criterion.H"
-#include "PDF/Main/ISR_Handler.H"
 #include "ATOOLS/Phys/Variations.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Message.H"
@@ -29,12 +28,8 @@ Jet_Finder::Jet_Finder(Process_Base *const proc,const std::string &ycut):
   }
   p_ampl = Cluster_Amplitude::New();
   p_ampl->SetNIn(m_nin);
-  for (int i(0);i<m_nin+m_nout;++i) {
+  for (int i(0);i<m_nin+m_nout;++i)
     p_ampl->CreateLeg(Vec4D(),i<m_nin?p_fl[i].Bar():p_fl[i],ColorID());
-    if (proc->NIn()==2 && i<proc->NIn())
-      p_ampl->Legs().back()->SetBeam(proc->Integrator()->ISR()->Swap() ?
-				     1-i : i);
-  }
   p_ampl->SetJF(this);
   p_ampl->SetMS(proc->Generator());
   p_yccalc = new Algebra_Interpreter();
@@ -64,13 +59,9 @@ bool Jet_Finder::Trigger(Selector_List &sl)
   for (int i(0); i<p_ampl->Legs().size();++i)
     p_ampl->Leg(i)->Delete();
   p_ampl->Legs().clear();
-  for (int i(0);i<sl.size();++i) {
+  for (int i(0);i<sl.size();++i)
     p_ampl->CreateLeg((int)i<m_nin?-sl[i].Momentum():sl[i].Momentum(),
                       i<m_nin?sl[i].Flavour().Bar():sl[i].Flavour(),ColorID());
-    if (p_proc->NIn()==2 && i<p_proc->NIn())
-      p_ampl->Legs().back()->SetBeam(p_proc->Integrator()->ISR()->Swap() ?
-				     1-i : i);
-  }
   m_qcut=p_yccalc->Calculate()->Get<double>();
   if (!m_on) return true;
   msg_Debugging()<<METHOD<<"("<<this<<"): '"<<p_proc->Name()
