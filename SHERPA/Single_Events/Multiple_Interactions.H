@@ -33,7 +33,7 @@ namespace SHERPA {
     bool CheckForMinBias();
     bool CheckForMPIs();
     bool CheckForRescatter();
-    void FixMaxEnergies(const bool & updateResidualE=false);
+    void FixMaxEnergies();
     bool TestHardScatter(ATOOLS::Blob * blob);
     ATOOLS::Return_Value::code InitMinBias();
     bool                       InitMPIs();

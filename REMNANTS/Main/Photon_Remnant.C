@@ -62,7 +62,6 @@ void Photon_Remnant::Reset(const bool & resc,const bool &DIS) {
     m_spectators.pop_front();
   }
   m_spectators.clear();
-  m_residualE = p_beam->OutMomentum(m_tag)[0];
   m_valence   = false;
   p_recoiler  = nullptr;
 }
@@ -83,7 +82,7 @@ bool Photon_Remnant::TestExtract(const Flavour &flav, const Vec4D &mom) {
     return false;
   }
   // Still in range?
-  double x = mom[0] / m_residualE;
+  double x = mom[0] / Residual()[0];
   if (x < p_pdf->XMin() || x > p_pdf->XMax()) {
     msg_Tracking() << METHOD << ": out of limits, x = " << x << ".\n";
     return false;

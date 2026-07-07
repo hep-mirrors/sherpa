@@ -168,7 +168,7 @@ ATOOLS::Return_Value::code Multiple_Interactions::InitRescatter() {
   // of the PDFs in the MPIs, which depend on the hadron energies)
   ////////////////////////////////////////////////////////////////////////////
   p_activeMI = (*p_mihandlers)[PDF::isr::bunch_rescatter];
-  FixMaxEnergies(true);
+  FixMaxEnergies();
   SwitchPerturbativeInputsToMIs();
   ////////////////////////////////////////////////////////////////////////////
   // Generate a first hard scatter - if successful move particles from
@@ -190,7 +190,7 @@ ATOOLS::Return_Value::code Multiple_Interactions::InitRescatter() {
   return Return_Value::Nothing;
 }
 
-void Multiple_Interactions::FixMaxEnergies(const bool & updateResidualE) {
+void Multiple_Interactions::FixMaxEnergies() {
   ////////////////////////////////////////////////////////////////////////////
   // The emax has to be set here (instead of e.g. the CleanUp()) to ensure
   // that the correct energy is taken in case of EPA-approximated beams.
@@ -201,8 +201,6 @@ void Multiple_Interactions::FixMaxEnergies(const bool & updateResidualE) {
 	(p_activeMI->Remnants()->GetRemnant(i)->GetBeam()->InMomentum()-
 	 p_activeMI->Remnants()->GetRemnant(i)->GetBeam()->OutMomentum())[0] :
 	p_activeMI->Remnants()->GetRemnant(i)->GetBeam()->OutMomentum()[0]);
-    if (updateResidualE)
-      p_activeMI->Remnants()->GetRemnant(i)->SetResidualEnergy();
   }
   p_activeMI->SetMaxEnergies(m_emax[0],m_emax[1]);
 }

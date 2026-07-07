@@ -54,7 +54,7 @@ bool Hadron_Remnant::IsValence(Particle * part) {
   for (const auto& flit : m_constituents) {
     if (flav==flit) {
       Vec4D   mom  = part->Momentum();
-      double x = mom[0]/m_residualE;
+      double x = mom[0]/Residual()[0];
       p_pdf->Calculate(x,sqr(flav.Mass())+m_scale2);
       double val = p_pdf->GetXPDF(flav)-p_pdf->GetXPDF(flav.Bar());
       double tot = p_pdf->GetXPDF(flav);
@@ -371,7 +371,6 @@ void Hadron_Remnant::Reset(const bool & resc,const bool & DIS) {
   }
   // TODO: Have to check / fix this!!!!!
   m_spectators.clear();
-  m_residualE = p_beam->OutMomentum(m_tag)[0];
   m_valence   = false;
   p_valence   = p_remnant = p_recoiler = nullptr;
 }
@@ -384,11 +383,12 @@ bool Hadron_Remnant::TestExtract(const Flavour &flav,const Vec4D &mom) {
     return false;
   }
   // Still enough energy?  And in range?
-  if (m_residualE-mom[0]<m_minE) return false;
-  double x = mom[0]/m_residualE;
+  const double residualE = Residual()[0];
+  if (residualE-mom[0]<m_minE) return false;
+  double x = mom[0]/residualE;
   if (x<p_pdf->XMin() || x>p_pdf->XMax()) {
     msg_Tracking() << METHOD << ": out of limits, x = " << x << " = "
-	       <<mom[0]<<"/"<<m_residualE<<".\n";
+	       <<mom[0]<<"/"<<residualE<<".\n";
     return false;
   }
   msg_Debugging()<<flav<<" with mom = "<<mom<<" can be extracted.\n";

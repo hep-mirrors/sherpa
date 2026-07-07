@@ -58,7 +58,6 @@ void Reggeon_Remnant::Reset(const bool& resc, const bool& DIS)
     m_spectators.pop_front();
   }
   m_spectators.clear();
-  m_residualE = p_beam->OutMomentum(m_tag)[0];
   m_valence   = false;
   p_recoiler  = nullptr;
 }
@@ -79,7 +78,7 @@ bool Reggeon_Remnant::TestExtract(const Flavour& flav, const Vec4D& mom)
     return false;
   }
   // Still in range?
-  double x = mom[0] / m_residualE;
+  double x = mom[0] / Residual()[0];
   if (x < p_pdf->XMin() || x > p_pdf->XMax()) {
     msg_Error() << METHOD << ": out of limits, x = " << x << ".\n";
     return false;
@@ -121,10 +120,10 @@ void Reggeon_Remnant::MakeLongitudinalMomenta(ParticleMomMap* ktmap,
   for (Particle const* pit : m_spectators) {
     remnant_masses += Max(pit->Flav().HadMass(), m_LambdaQCD);
   }
-  if (remnant_masses > m_residualE)
+  if (remnant_masses > availMom[0])
     msg_Error() << METHOD
                 << ": Warning, HadMasses of remnants = " << remnant_masses
-                << " vs. residual energy = " << m_residualE << "\n";
+                << " vs. residual energy = " << availMom[0] << "\n";
   for (auto part : m_spectators) {
     if (availMom[0] < 0)
       msg_Error() << METHOD << ": Negative Energy in Remnants! \n";

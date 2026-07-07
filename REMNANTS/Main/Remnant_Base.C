@@ -28,7 +28,7 @@ std::ostream &REMNANTS::operator<<(std::ostream &ostr, const rtp::code code) {
 
 Remnant_Base::Remnant_Base(const ATOOLS::Flavour& flav, const size_t& beam, const size_t& tag)
     : m_beamflav(flav), m_type(FixType(m_beamflav)), m_beam(beam), m_tag(tag), p_beam(nullptr),
-      p_ff(nullptr), p_beamblob(nullptr), m_position(Vec4D(0., 0., 0., 0.)), m_residualE(0.),
+      p_ff(nullptr), p_beamblob(nullptr), m_position(Vec4D(0., 0., 0., 0.)),
       m_scale2(-1.)
 { }
 
@@ -76,11 +76,13 @@ bool Remnant_Base::Extract(ATOOLS::Particle* parton, Colour_Generator* colours)
   // and, if necessary, create a spectator to compensate flavour.
   if (TestExtract(parton->Flav(), parton->Momentum())) {
     if (std::find(m_extracted.begin(), m_extracted.end(), parton)==m_extracted.end()) {
-      m_extracted.push_back(parton);
-      // Spectators compensate for flavour, i.e. they are only created for quarks.
+      // Spectators compensate for flavour, i.e. they are only created for
+      // quarks.  This must happen before the parton is added to m_extracted:
+      // the valence-quark decision evaluates the parton x on the residual
+      // momentum before the extraction.
       MakeSpectator(parton, colours);
+      m_extracted.push_back(parton);
       for (size_t index = 0; index < 2; index++) colours->AddColour(m_beam, index, parton);
-      m_residualE -= parton->E();
     }
     return true;
   }
@@ -122,7 +124,13 @@ Blob *Remnant_Base::MakeBlob() {
   return p_beamblob;
 }
 
-Vec4D Remnant_Base::IncomingMomentum() { return p_beam->OutMomentum(m_tag); }
+Vec4D Remnant_Base::IncomingMomentum() const { return p_beam->OutMomentum(m_tag); }
+
+Vec4D Remnant_Base::Residual() const {
+  Vec4D residual = IncomingMomentum();
+  for (const Particle* part : m_extracted) residual -= part->Momentum();
+  return residual;
+}
 
 void Remnant_Base::Reset(const bool & resc,const bool &DIS) {
   m_extracted.clear();

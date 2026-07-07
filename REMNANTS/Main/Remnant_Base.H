@@ -44,7 +44,7 @@ namespace REMNANTS {
     ATOOLS::Vec4D      m_position;
     ATOOLS::Part_List  m_extracted, m_spectators;
 
-    double m_residualE, m_scale2;
+    double m_scale2;
 
     rtp::code                 FixType(ATOOLS::Flavour& flav);
     virtual ATOOLS::Particle* MakeParticle(const ATOOLS::Flavour& flav);
@@ -63,13 +63,15 @@ namespace REMNANTS {
     virtual bool FillBlob(Colour_Generator* colours, ATOOLS::ParticleMomMap* ktmap = nullptr,
                           const bool& copy = true) = 0;
     virtual void MakeSpectator(ATOOLS::Particle* parton, Colour_Generator* colours) {}
-    virtual ATOOLS::Vec4D IncomingMomentum();
+    virtual ATOOLS::Vec4D IncomingMomentum() const;
+    // Momentum still available for extraction, evaluated on demand from the
+    // current beam-out momentum minus all extracted partons.  Whole-beam
+    // extractions (early return in Extract) never enter m_extracted, so the
+    // residual stays at the full beam momentum in that case.
+    ATOOLS::Vec4D Residual() const;
     virtual void Output();
 
     virtual void Reset(const bool & resc=false,const bool & DIS=false);
-    virtual void SetResidualEnergy(const double & E=-1.) {
-      m_residualE = (E>=0.) ? E : p_beam->OutMomentum(m_tag)[0];
-    }
 
     inline rtp::code                  Type() const       { return m_type; }
     inline size_t                     Beam() const       { return m_beam; }
@@ -79,7 +81,6 @@ namespace REMNANTS {
     inline Form_Factor              * GetFF() const      { return p_ff; }
     inline ATOOLS::Blob             * GetBlob()          { return p_beamblob; }
     inline const ATOOLS::Vec4D      & InMomentum() const { return p_beam->OutMomentum(m_tag); }
-    inline const double             & ResidualE() const  { return m_residualE; }
     inline const ATOOLS::Flavour    & InFlav() const     { return m_beamflav; }
     inline ATOOLS::Part_List        * GetExtracted()     { return &m_extracted; }
     inline ATOOLS::Part_List        * GetSpectators()    { return &m_spectators; }

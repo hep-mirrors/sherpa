@@ -49,7 +49,6 @@ void Pomeron_Remnant::Reset(const bool& resc,const bool &DIS) {
     m_spectators.pop_front();
   }
   m_spectators.clear();
-  m_residualE = p_beam->OutMomentum(m_tag)[0];
   p_recoiler = nullptr;
 }
 
@@ -64,7 +63,7 @@ bool Pomeron_Remnant::TestExtract(const Flavour &flav, const Vec4D &mom) {
     msg_Error() << METHOD << ": flavour " << flav << " not found.\n";
     return false;
   }
-  double x = mom[0] / m_residualE;
+  double x = mom[0] / Residual()[0];
   // Still in range?
   if (x < p_pdf->XMin() || x > p_pdf->XMax()) {
     msg_Error() << METHOD << ": out of limits, x = " << x << ".\n";
@@ -98,7 +97,7 @@ bool Pomeron_Remnant::MakeLongitudinalMomenta(ParticleMomMap *ktmap,
   }
   if (remnant_masses > availMom[0]) {
     msg_Error() << METHOD << ": Warning, HadMasses of remnants = "
-                << remnant_masses << " vs. residual energy = " << m_residualE << "\n";
+                << remnant_masses << " vs. residual energy = " << availMom[0] << "\n";
     return false;
   }
   for (auto part : m_spectators) {
