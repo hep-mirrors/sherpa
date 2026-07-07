@@ -134,8 +134,11 @@ double Gauss_Integrator::Legendre(double x1, double x2,int n=8)
 	GauLeg(m_wlistact->x, m_wlistact->w, n);
       } ;
     }
-    // do the summation (the same for all gauss integrations);
-    for (int i=0;i<n;i++) {
+    // do the summation (the same for all gauss integrations); the cached
+    // module may have more nodes than requested (up to a factor of two) and
+    // must be used in full - its abscissas come in symmetric pairs, so a
+    // partial sum takes only the negative-x half of the quadrature
+    for (int i=0;i<m_wlistact->n;i++) {
       double x=xm+xl*m_wlistact->x[i];
       sum+=m_wlistact->w[i]*((*m_func)( x ));
     }
@@ -329,8 +332,9 @@ double Gauss_Integrator::Jacobi(double x1, double x2,int n=8,
     }
   }
 
-  // do the summation (the same for all gauss integrations);
-  for (int i=0;i<n;i++) {
+  // do the summation (the same for all gauss integrations); the cached
+  // module may have more nodes than requested and must be used in full
+  for (int i=0;i<m_wlistact->n;i++) {
     double x=xm+xl*m_wlistact->x[i];
     sum+=m_wlistact->w[i]*((*m_func)( x ));
   }

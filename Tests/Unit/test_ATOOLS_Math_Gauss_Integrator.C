@@ -401,3 +401,20 @@ TEST_CASE("Gauss_Integrator: Numerical stability checks",
     CHECK_THAT(result, Catch::Matchers::WithinRel(1e-8, 1e-5));
   }
 }
+
+TEST_CASE("Gauss_Integrator: Cached larger node set is used in full",
+          "[ATOOLS::Math::Gauss_Integrator][caching]")
+{
+  // Regression: requesting n nodes when a module with up to 2n nodes is
+  // cached reuses that module.  Its abscissas come in symmetric pairs, so
+  // summing only the first n of them takes the negative-x half of the
+  // quadrature and halves the integral of an even function.
+  PolynomialFunction func(10);
+  Gauss_Integrator integrator(&func);
+  double seeded32 = integrator.Legendre(-1.0, 1.0, 32);
+  double reused16 = integrator.Legendre(-1.0, 1.0, 16);
+  double expected = 2.0 / 11.0;
+
+  CHECK_THAT(seeded32, Catch::Matchers::WithinRel(expected, 1e-9));
+  CHECK_THAT(reused16, Catch::Matchers::WithinRel(expected, 1e-9));
+}
