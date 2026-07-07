@@ -192,25 +192,14 @@ void Ahadic_Reweighting::SoftClusterReweighting(
 
 void Ahadic_Reweighting::ApplyVariationWeights(ATOOLS::Blob * blob) {
   ///////////////////////////////////////////////////////////////////////////
-  // Compute and apply variation weights to the event.
+  // Compute and apply the variation weights of one hadronization call.
   // The total weight is:
   // w_total = w_cluster * w_gluon * w_flavour * w_kt * w_soft
   // capped at m_max_reweight_factor, and multiplied into the soft-physics
-  // variations of the event's Weights_Map.
+  // variations of the event's Weights_Map. Hadronization may run more than
+  // once per event; each call multiplies its weights into the same variations, 
+  // so the event weight is the product over all calls.
   ///////////////////////////////////////////////////////////////////////////
-  if (blob == NULL) {
-    ResetEvent();
-    return;
-  }
-  // For some events the hadronization is called twice; this happens mostly
-  // when the following hadron decays choose splittings that are not in the
-  // pre-integrated tables. Only the weights of the first call are applied.
-  if ((*blob)["AHADIC_Reweighting_Applied"] != NULL) {
-    ResetEvent();
-    return;
-  }
-  blob->AddData("AHADIC_Reweighting_Applied", new Blob_Data<int>(1));
-
   for (size_t ivar=1; ivar<m_n_variations; ++ivar) {
     double w_total = 1.;
     w_total *= m_cluster_weights[ivar];
@@ -227,8 +216,10 @@ void Ahadic_Reweighting::ApplyVariationWeights(ATOOLS::Blob * blob) {
     }
     m_variation_weights[ivar] = w_total;
   }
-  auto wgtmap = (*blob)["WeightsMap"]->Get<Weights_Map>();
-  CombineSoftPhysicsVariations(wgtmap, m_variation_weights);
-  blob->AddData("WeightsMap", new Blob_Data<Weights_Map>(wgtmap));
+  if (blob != NULL) {
+    auto wgtmap = (*blob)["WeightsMap"]->Get<Weights_Map>();
+    CombineSoftPhysicsVariations(wgtmap, m_variation_weights);
+    blob->AddData("WeightsMap", new Blob_Data<Weights_Map>(wgtmap));
+  }
   ResetEvent();
 }

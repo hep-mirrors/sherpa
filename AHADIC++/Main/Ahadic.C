@@ -62,6 +62,7 @@ Return_Value::code Ahadic::Hadronize(Blob_List * blobs)
       result = Hadronize(blob);
       switch (result) {
       case Return_Value::Success:
+        hadronized = true;
         break;
       case Return_Value::Retry_Event:
       case Return_Value::New_Event:
@@ -90,10 +91,12 @@ Return_Value::code Ahadic::Hadronize(Blob_List * blobs)
   }
   if (m_shrink) Shrink(blobs);
 
-  Blob *blob(blobs->FindFirst(btp::Signal_Process));
-  if (blob == NULL)
-    blob = blobs->FindFirst(btp::Hard_Collision);
-  m_reweighting.ApplyVariationWeights(blob);
+  if (hadronized) {
+    Blob *blob(blobs->FindFirst(btp::Signal_Process));
+    if (blob == NULL)
+      blob = blobs->FindFirst(btp::Hard_Collision);
+    m_reweighting.ApplyVariationWeights(blob);
+  }
 
   return result;
 }
