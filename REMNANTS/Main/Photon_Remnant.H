@@ -28,7 +28,8 @@ namespace REMNANTS {
   Photon_Remnant(PDF::PDF_Base *pdf, const size_t & beam, const size_t & tag=0);
 
   // member functions
-  bool TestExtract(const ATOOLS::Flavour &flav, const ATOOLS::Vec4D &mom) override;
+  bool TestExtract(const ATOOLS::Flavour &flav, const ATOOLS::Vec4D &mom,
+                   const double &spair) override;
   bool FillBlob(Colour_Generator* colours, ATOOLS::ParticleMomMap* ktmap,
                 const bool& copy) override;
 

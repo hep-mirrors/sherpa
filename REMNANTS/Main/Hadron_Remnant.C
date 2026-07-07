@@ -53,8 +53,9 @@ bool Hadron_Remnant::IsValence(Particle * part) {
   Flavour flav = part->Flav();
   for (const auto& flit : m_constituents) {
     if (flav==flit) {
-      Vec4D   mom  = part->Momentum();
-      double x = mom[0]/Residual()[0];
+      const double lcresidual = LightCone(Residual());
+      if (lcresidual<=0.) return false;
+      double x = LightCone(part->Momentum())/lcresidual;
       p_pdf->Calculate(x,sqr(flav.Mass())+m_scale2);
       double val = p_pdf->GetXPDF(flav)-p_pdf->GetXPDF(flav.Bar());
       double tot = p_pdf->GetXPDF(flav);
@@ -375,20 +376,33 @@ void Hadron_Remnant::Reset(const bool & resc,const bool & DIS) {
   p_valence   = p_remnant = p_recoiler = nullptr;
 }
 
-bool Hadron_Remnant::TestExtract(const Flavour &flav,const Vec4D &mom) {
+bool Hadron_Remnant::TestExtract(const Flavour &flav,const Vec4D &mom,
+                                 const double &spair) {
   DEBUG_FUNC("");
   // Is flavour element of flavours allowed by PDF?
   if (p_partons->find(flav)==p_partons->end()) {
     msg_Error()<<METHOD<<": flavour "<<flav<<" not found.\n";
     return false;
   }
-  // Still enough energy?  And in range?
-  const double residualE = Residual()[0];
-  if (residualE-mom[0]<m_minE) return false;
-  double x = mom[0]/residualE;
+  // All checks in light-cone components along the own beam direction: their
+  // ratios are invariant under longitudinal boosts, so the outcome does not
+  // depend on the frame the momenta are given in.
+  const double lcresidual = LightCone(Residual());
+  const double lcmom      = LightCone(mom);
+  if (lcresidual<=0. || lcmom<=0.) return false;
+  // Still enough energy?  The energy left after the extraction, evaluated in
+  // the c.m. frame of the two colliding (bunch) particles, must leave room
+  // for the remnant break-up: in the collinear massless limit the leftover
+  // energy in that frame is its light-cone fraction of the beam times
+  // sqrt(spair)/2.
+  const double Eequiv =
+    (lcresidual-lcmom)/LightCone(IncomingMomentum()) * sqrt(spair)/2.;
+  if (Eequiv<m_minE) return false;
+  // And in range?
+  double x = lcmom/lcresidual;
   if (x<p_pdf->XMin() || x>p_pdf->XMax()) {
     msg_Tracking() << METHOD << ": out of limits, x = " << x << " = "
-	       <<mom[0]<<"/"<<residualE<<".\n";
+	       <<lcmom<<"/"<<lcresidual<<".\n";
     return false;
   }
   msg_Debugging()<<flav<<" with mom = "<<mom<<" can be extracted.\n";

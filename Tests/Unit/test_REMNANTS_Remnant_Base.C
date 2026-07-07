@@ -37,7 +37,8 @@ namespace {
   class Test_Remnant : public Remnant_Base {
   public:
     using Remnant_Base::Remnant_Base;
-    bool TestExtract(const Flavour& flav, const Vec4D& mom) override {
+    bool TestExtract(const Flavour& flav, const Vec4D& mom,
+                     const double& spair) override {
       return true;
     }
     bool FillBlob(Colour_Generator* colours, ParticleMomMap* ktmap = nullptr,
@@ -73,14 +74,14 @@ TEST_CASE("Residual tracks extracted partons", "[REMNANTS::Remnant_Base]") {
   Particle part1(-1, Flavour(kf_d), Vec4D(1., 0., 0., 1.));
   Particle part2(-1, Flavour(kf_d).Bar(), Vec4D(0.5, 0., 0., 0.5));
 
-  CHECK(remnant.Extract(&part1, &colours));
+  CHECK(remnant.Extract(&part1, &colours, 100.));
   CHECK(remnant.Residual() == Vec4D(3., 0., 0., 3.));
 
-  CHECK(remnant.Extract(&part2, &colours));
+  CHECK(remnant.Extract(&part2, &colours, 100.));
   CHECK(remnant.Residual() == Vec4D(2.5, 0., 0., 2.5));
 
   // Re-extracting the same particle must not be double-counted.
-  CHECK(remnant.Extract(&part1, &colours));
+  CHECK(remnant.Extract(&part1, &colours, 100.));
   CHECK(remnant.Residual() == Vec4D(2.5, 0., 0., 2.5));
 }
 
@@ -97,7 +98,7 @@ TEST_CASE("Residual picks up a new beam-out momentum without Reset",
 
   Colour_Generator colours;
   Particle part(-1, Flavour(kf_d), Vec4D(1., 0., 0., 1.));
-  CHECK(remnant.Extract(&part, &colours));
+  CHECK(remnant.Extract(&part, &colours, 100.));
   CHECK(remnant.Residual() == Vec4D(3., 0., 0., 3.));
 
   beam.SetOutMomentum(Vec4D(6., 0., 0., 6.));

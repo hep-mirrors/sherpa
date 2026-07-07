@@ -21,7 +21,8 @@ namespace REMNANTS {
 
     bool FillBlob(Colour_Generator* colours, ATOOLS::ParticleMomMap* ktmap = nullptr,
                   const bool& copy = true) override;
-    bool TestExtract(const ATOOLS::Flavour& flav, const ATOOLS::Vec4D& mom) override;
+    bool TestExtract(const ATOOLS::Flavour& flav, const ATOOLS::Vec4D& mom,
+                     const double& spair) override;
   };
 }
 

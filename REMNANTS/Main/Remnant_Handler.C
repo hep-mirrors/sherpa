@@ -346,7 +346,7 @@ bool Remnant_Handler::Extract(ATOOLS::Particle * part,const unsigned int beam)
 	       << (*part->DecayBlob()) << "\n";
     return false;
   }
-  return p_remnants[beam]->Extract(part, &m_colours);
+  return p_remnants[beam]->Extract(part, &m_colours, SPair());
 }
 
 void Remnant_Handler::Reset() {

@@ -10,7 +10,8 @@ namespace REMNANTS {
     No_Remnant(const size_t & beam,const size_t & tag=0);
     bool FillBlob(Colour_Generator* colours, ATOOLS::ParticleMomMap* ktmap = NULL,
                   const bool& copy = true) override;
-    bool TestExtract(const ATOOLS::Flavour& flav, const ATOOLS::Vec4D& mom) override;
+    bool TestExtract(const ATOOLS::Flavour& flav, const ATOOLS::Vec4D& mom,
+                     const double& spair) override;
   };
 }
 

@@ -50,14 +50,27 @@ namespace REMNANTS {
     virtual ATOOLS::Particle* MakeParticle(const ATOOLS::Flavour& flav);
     virtual void              CompensateColours(Colour_Generator* colours);
 
+    // Light-cone component along the own beam direction: beam 0 points in
+    // the +z direction, beam 1 in the -z direction.  Ratios of these are
+    // invariant under longitudinal boosts.
+    double LightCone(const ATOOLS::Vec4D& mom) const {
+      return m_beam==0 ? mom.PPlus() : mom.PMinus();
+    }
+
   public:
     Remnant_Base(const ATOOLS::Flavour & flav,const size_t & beam,
 		 const size_t & tag=0);
     virtual ~Remnant_Base();
 
-    virtual bool Extract(ATOOLS::Particle* parton, Colour_Generator* colours);
-    virtual bool TestExtract(ATOOLS::Particle* parton);
-    virtual bool TestExtract(const ATOOLS::Flavour& flav, const ATOOLS::Vec4D& mom) = 0;
+    virtual bool Extract(ATOOLS::Particle* parton, Colour_Generator* colours,
+                         const double& spair);
+    virtual bool TestExtract(ATOOLS::Particle* parton, const double& spair);
+    // spair is the invariant mass squared of the two colliding (bunch)
+    // particles, (IncomingMomentum(0)+IncomingMomentum(1))^2, provided by the
+    // caller: a remnant can be shared between the hard-process and the
+    // bunch-rescattering handlers and then has a different partner in each.
+    virtual bool TestExtract(const ATOOLS::Flavour& flav, const ATOOLS::Vec4D& mom,
+                             const double& spair) = 0;
 
     virtual ATOOLS::Blob* MakeBlob();
     virtual bool FillBlob(Colour_Generator* colours, ATOOLS::ParticleMomMap* ktmap = nullptr,

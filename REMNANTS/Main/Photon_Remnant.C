@@ -75,14 +75,20 @@ void Photon_Remnant::Output() const {
   msg_Out() << "}.\n";
 }
 
-bool Photon_Remnant::TestExtract(const Flavour &flav, const Vec4D &mom) {
+bool Photon_Remnant::TestExtract(const Flavour &flav, const Vec4D &mom,
+                                 const double &spair) {
   // Is flavour element of flavours allowed by PDF?
   if (p_partons->find(flav) == p_partons->end()) {
     msg_Error() << METHOD << ": flavour " << flav << " not found.\n";
     return false;
   }
-  // Still in range?
-  double x = mom[0] / Residual()[0];
+  // Still in range?  The momentum fraction is defined in light-cone
+  // components along the own beam direction - invariant under longitudinal
+  // boosts, so the outcome does not depend on the frame.
+  const double lcresidual = LightCone(Residual());
+  const double lcmom      = LightCone(mom);
+  if (lcresidual<=0. || lcmom<=0.) return false;
+  double x = lcmom / lcresidual;
   if (x < p_pdf->XMin() || x > p_pdf->XMax()) {
     msg_Tracking() << METHOD << ": out of limits, x = " << x << ".\n";
     return false;

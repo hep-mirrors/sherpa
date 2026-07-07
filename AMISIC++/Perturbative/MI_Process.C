@@ -116,8 +116,10 @@ AllowedRemnants(array<shared_ptr<REMNANTS::Remnant_Base>, 2> remnants) const
   ///////////////////////////////////////////////////////////////////////////
   // Make sure there is enough energy left in the remnants
   ///////////////////////////////////////////////////////////////////////////
-  return ( remnants[0]->TestExtract(m_flavs[0], m_momenta[0]) &&
-          remnants[1]->TestExtract(m_flavs[1], m_momenta[1]));
+  const double spair = (remnants[0]->IncomingMomentum() +
+                        remnants[1]->IncomingMomentum()).Abs2();
+  return ( remnants[0]->TestExtract(m_flavs[0], m_momenta[0], spair) &&
+          remnants[1]->TestExtract(m_flavs[1], m_momenta[1], spair));
 }
 
 void MI_Process::MasslessISKinematics(MI_Integrator* integrator)

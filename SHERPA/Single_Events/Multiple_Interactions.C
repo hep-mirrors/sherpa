@@ -301,9 +301,10 @@ Return_Value::code Multiple_Interactions::Treat(Blob_List *bloblist) {
 }
 
 bool Multiple_Interactions::TestHardScatter(Blob * blob) {
+  const double spair = p_activeMI->Remnants()->SPair();
   for (size_t i=0;i<(size_t)blob->NInP();++i) {
     if (!p_activeMI->Remnants()->GetRemnant(i)->
-	TestExtract(blob->InParticle(i))) {
+	TestExtract(blob->InParticle(i), spair)) {
       return false;
     }
   }
@@ -352,7 +353,8 @@ bool Multiple_Interactions::ExtractISInfo(Blob * blob) {
     Particle *particle(blob->InParticle(i));
     if (particle->ProductionBlob()) continue;
     size_t beam = particle->Beam();
-    if (!p_activeMI->Remnants()->GetRemnant(beam)->TestExtract(particle)) {
+    if (!p_activeMI->Remnants()->GetRemnant(beam)->
+        TestExtract(particle, p_activeMI->Remnants()->SPair())) {
       if (!blob->IsConnectedTo(btp::Signal_Process)) {
         p_bloblist->DeleteConnected(blob);
         m_result = Return_Value::Retry_Phase;

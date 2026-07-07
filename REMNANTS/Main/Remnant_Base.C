@@ -65,7 +65,8 @@ void Remnant_Base::CompensateColours(Colour_Generator* colours)
   }
 }
 
-bool Remnant_Base::Extract(ATOOLS::Particle* parton, Colour_Generator* colours)
+bool Remnant_Base::Extract(ATOOLS::Particle* parton, Colour_Generator* colours,
+                           const double& spair)
 {
   // If the parton equals the beam we can extract it.
   // TODO: There may be knock-on effects for the line in EPA etc., which we
@@ -74,7 +75,7 @@ bool Remnant_Base::Extract(ATOOLS::Particle* parton, Colour_Generator* colours)
       IsEqual(parton->Momentum(), IncomingMomentum(), 1.e-8)) return true;
   // Extracting a parton from a remnant (usually stemming from a shower blob)
   // and, if necessary, create a spectator to compensate flavour.
-  if (TestExtract(parton->Flav(), parton->Momentum())) {
+  if (TestExtract(parton->Flav(), parton->Momentum(), spair)) {
     if (std::find(m_extracted.begin(), m_extracted.end(), parton)==m_extracted.end()) {
       // Spectators compensate for flavour, i.e. they are only created for
       // quarks.  This must happen before the parton is added to m_extracted:
@@ -94,7 +95,7 @@ bool Remnant_Base::Extract(ATOOLS::Particle* parton, Colour_Generator* colours)
   return false;
 }
 
-bool Remnant_Base::TestExtract(ATOOLS::Particle *parton) {
+bool Remnant_Base::TestExtract(ATOOLS::Particle *parton, const double& spair) {
   if (parton == nullptr) {
     msg_Error() << "Error in " << METHOD << "():\n"
                 << "   Called with NULL pointer.\n";
@@ -105,7 +106,7 @@ bool Remnant_Base::TestExtract(ATOOLS::Particle *parton) {
   // it will fail now if E_parton > 0.5 * beam energy - this must be checked.
   if (std::find(m_extracted.begin(), m_extracted.end(), parton) != m_extracted.end())
     return true;
-  return TestExtract(parton->Flav(), parton->Momentum());
+  return TestExtract(parton->Flav(), parton->Momentum(), spair);
 }
 
 Blob *Remnant_Base::MakeBlob() {

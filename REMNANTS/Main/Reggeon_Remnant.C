@@ -37,7 +37,10 @@ bool Reggeon_Remnant::FillBlob(Colour_Generator* colours, ParticleMomMap* ktmap,
   // may have to check that they are not singlets ....
   CompensateColours(colours);
   // Assume all remnant bases already produced a beam blob = p_beamblob
-  MakeLongitudinalMomenta(ktmap, copy);
+  if (!MakeLongitudinalMomenta(ktmap, copy)) {
+    msg_Debugging() << METHOD << ": Cannot put all particles on mass-shell, returning false.\n";
+    return false;
+  }
   if (!p_beamblob->CheckColour(true)) {
     msg_Error() << "   * Error in " << METHOD << " (illegal colour) for \n"
                 << (*p_beamblob) << "\n";
@@ -70,15 +73,21 @@ void Reggeon_Remnant::Output() const
   msg_Out() << "}.\n";
 }
 
-bool Reggeon_Remnant::TestExtract(const Flavour& flav, const Vec4D& mom)
+bool Reggeon_Remnant::TestExtract(const Flavour& flav, const Vec4D& mom,
+                                  const double& spair)
 {
   // Is flavour element of flavours allowed by PDF?
   if (p_partons->find(flav) == p_partons->end()) {
     msg_Error() << METHOD << ": flavour " << flav << " not found.\n";
     return false;
   }
-  // Still in range?
-  double x = mom[0] / Residual()[0];
+  // Still in range?  The momentum fraction is defined in light-cone
+  // components along the own beam direction - invariant under longitudinal
+  // boosts, so the outcome does not depend on the frame.
+  const double lcresidual = LightCone(Residual());
+  const double lcmom      = LightCone(mom);
+  if (lcresidual<=0. || lcmom<=0.) return false;
+  double x = lcmom / lcresidual;
   if (x < p_pdf->XMin() || x > p_pdf->XMax()) {
     msg_Error() << METHOD << ": out of limits, x = " << x << ".\n";
     return false;
@@ -86,7 +95,7 @@ bool Reggeon_Remnant::TestExtract(const Flavour& flav, const Vec4D& mom)
   return true;
 }
 
-void Reggeon_Remnant::MakeLongitudinalMomenta(ParticleMomMap* ktmap,
+bool Reggeon_Remnant::MakeLongitudinalMomenta(ParticleMomMap* ktmap,
                                               const bool&     copy)
 {
   // Calculate the total momentum that so far has been extracted through
@@ -120,10 +129,12 @@ void Reggeon_Remnant::MakeLongitudinalMomenta(ParticleMomMap* ktmap,
   for (Particle const* pit : m_spectators) {
     remnant_masses += Max(pit->Flav().HadMass(), m_LambdaQCD);
   }
-  if (remnant_masses > availMom[0])
-    msg_Error() << METHOD
-                << ": Warning, HadMasses of remnants = " << remnant_masses
-                << " vs. residual energy = " << availMom[0] << "\n";
+  if (remnant_masses > availMom[0]) {
+    msg_Debugging() << METHOD
+                    << ": Warning, HadMasses of remnants = " << remnant_masses
+                    << " vs. residual energy = " << availMom[0] << "\n";
+    return false;
+  }
   for (auto part : m_spectators) {
     if (availMom[0] < 0)
       msg_Error() << METHOD << ": Negative Energy in Remnants! \n";
@@ -146,6 +157,7 @@ void Reggeon_Remnant::MakeLongitudinalMomenta(ParticleMomMap* ktmap,
       p_beamblob->AddToOutParticles(part);
     (*ktmap)[part] = Vec4D();
   }
+  return true;
 }
 
 double Reggeon_Remnant::SelectZ(const Flavour& flav, double restmom,
