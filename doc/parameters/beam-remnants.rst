@@ -19,6 +19,36 @@ The following parameters are used to steer the beam remnant handling:
    :local:
 
 
+.. _Beam break-up frames:
+
+Reference frames of the beam break-up
+=====================================
+
+The kinematic checks that decide whether a parton can be extracted from
+a beam are formulated in light-cone momenta along the respective beam
+direction.  Ratios of light-cone momenta are invariant under
+longitudinal boosts, so the extraction decisions do not depend on the
+frame in which the event record is given.  The minimal energy that must
+remain in a hadron remnant after an extraction is evaluated in the
+centre-of-momentum frame of the two colliding (bunch) particles, for
+example the photon--proton system in photoproduction.
+
+For beams with a spectrum -- equivalent photons, pomerons or reggeons --
+the beam break-up itself is also constructed in the centre-of-momentum
+frame of the two colliding particles: for low-energy photons the lab
+frame leaves too little energy for the companion spectators and their
+intrinsic transverse momenta.  The frame is confined to the construction
+of the beam-remnant blobs, and the event record before and after the
+beam-remnant stage is always given in the lab frame.  For monochromatic
+beams -- including asymmetric setups such as proton--lead collisions and
+deep-inelastic scattering -- and for purely leptonic collisions the
+construction proceeds in the lab frame, unchanged.
+
+There is deliberately no switch for this behaviour: the construction
+frame is an internal choice that maximises the available phase space for
+the break-up, while the extraction checks are frame-invariant.
+
+
 .. _BEAM_REMNANTS:
 
 BEAM_REMNANTS
