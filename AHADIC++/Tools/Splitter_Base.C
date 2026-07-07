@@ -10,10 +10,12 @@ using namespace std;
 Splitter_Base::Splitter_Base(list<Cluster *> * cluster_list,
 			     Soft_Cluster_Handler * softclusters,
 			     Flavour_Selector     * flavourselector,
-			     KT_Selector          * ktselector) :
+			     KT_Selector          * ktselector,
+			     Ahadic_Reweighting   * reweighting) :
   p_cluster_list(cluster_list), p_softclusters(softclusters),
   p_flavourselector(flavourselector),
   p_ktselector(ktselector),
+  p_reweighting(reweighting),
   m_ktorder(false),
   m_attempts(100),
   m_analyse(false)
@@ -48,10 +50,10 @@ operator()(Proto_Particle * part1,Proto_Particle * part2,
   if (!InitSplitting(part1,part2,part3))
     return false;
 
-  p_flavourselector->reset_var_weights();
+  p_reweighting->ResetFlavourSelectionWeights();
 
   for(size_t attempts(0); attempts<m_attempts; ++attempts) {
-    reset_var_weights();
+    ResetSplittingWeights();
 
     // perform cluster splitting
     PopFlavours();
@@ -65,8 +67,8 @@ operator()(Proto_Particle * part1,Proto_Particle * part2,
       continue;
 
     // if everything was successful, accept weights and go on
-    accept_splitting();
-    p_flavourselector->accept_splitting();
+    AcceptSplittingWeights();
+    p_reweighting->AcceptFlavourSelectionWeights();
     return true;
   }
   return false;
@@ -222,26 +224,26 @@ bool Splitter_Base::MakeTransverseMomentum() {
   return true;
 }
 
-double Splitter_Base::select_z(const double zmin, const double zmax,
-			       const unsigned int cnt) {
+double Splitter_Base::SelectZ(const double zmin, const double zmax,
+			      const unsigned int cnt) {
   static const int max_iterations = 100000;
   double z, z_range {zmax-zmin};
   for (int it{0}; it<max_iterations; ++it) {
     z = zmin+ran->Get()*z_range;
     auto sel_wgt = WeightFunction(z,zmin,zmax,cnt);
     if(ran->Get() < sel_wgt) {
-      z_accepted(sel_wgt, z,zmin,zmax,cnt);
+      ZAccepted(sel_wgt, z,zmin,zmax,cnt);
       return z;
     }
-    z_rejected(sel_wgt, z,zmin,zmax,cnt);
+    ZRejected(sel_wgt, z,zmin,zmax,cnt);
   }
   msg_Error() << METHOD << ": z selection failed after " << max_iterations
               << " iterations in [" << zmin << ", " << zmax << "]\n";
   return -1.;
 }
 
-void Splitter_Base::reset_var_weights() {};
-void Splitter_Base::accept_splitting() {};
+void Splitter_Base::ResetSplittingWeights() {};
+void Splitter_Base::AcceptSplittingWeights() {};
 bool Splitter_Base::MakeKinematics() {
   return MakeTransverseMomentum() && MakeLongitudinalMomenta() && CheckKinematics();
 }

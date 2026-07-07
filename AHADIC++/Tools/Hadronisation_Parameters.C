@@ -33,19 +33,29 @@ Hadronisation_Parameters::~Hadronisation_Parameters() {
   }
 }
 
-void Hadronisation_Parameters::Init(string shower)
+void Hadronisation_Parameters::ReadParameters(string shower)
 {
   if (shower=="Dire")     m_shower = 0;
   else if (shower=="CSS") m_shower = 1;
-  ReadParameters();
+  ReadGeneralSwitches();
+  auto s = Settings::GetMainSettings()["AHADIC"];
+  m_parametermap[string("minmass2")] =
+    s["MIN_MASS2"].SetDefault(0.10).Get<double>();
+  ReadPoppingParameters();
+  ReadMesonWeights();
+  ReadSplittingParameters();
+  ReadClusterToMesonPSParameters();
+}
 
+void Hadronisation_Parameters::Init(Ahadic_Reweighting * reweighting)
+{
   bool test      = false;
   bool diquarks  = true;
-  p_constituents = new Constituents(diquarks);
+  p_constituents = new Constituents(diquarks, reweighting);
   Multiplet_Constructor multipletconstructor(false);
   Wave_Functions * wavefunctions = multipletconstructor.GetWaveFunctions();
   p_stransitions = new Single_Transitions(wavefunctions);
-  p_dtransitions = new Double_Transitions(p_stransitions);
+  p_dtransitions = new Double_Transitions(p_stransitions, reweighting);
 
   if (test) {
     msg_Out()<<"Inputs to AHADIC:\n";
@@ -62,23 +72,6 @@ void Hadronisation_Parameters::Init(string shower)
 }
 
 
-void Hadronisation_Parameters::ReadParameters()
-{
-  ReadGeneralSwitches();
-  auto s = Settings::GetMainSettings()["AHADIC"];
-  m_parametermap[string("minmass2")] =
-    s["MIN_MASS2"].SetDefault(0.10).Get<double>();
-  ReadPoppingParameters();
-  ReadMesonWeights();
-  ReadSplittingParameters();
-  ReadClusterToMesonPSParameters();
-
-  // TODO: check correct inputs!
-  // each of the vectors should either be of size on, in which case, we pad it
-  // or of the same size, whatever that is
-  CheckAndPad();
-}
-
 const double Hadronisation_Parameters::Get(string keyword) const
 {
   map<string,double>::const_iterator piter = m_parametermap.find(keyword);
@@ -89,16 +82,12 @@ const double Hadronisation_Parameters::Get(string keyword) const
   return 0.;
 }
 
-const std::vector<double>
-Hadronisation_Parameters::GetVec(std::string keyword) const {
-  map<string,std::vector<double>>::const_iterator piter
-    = m_parametermap_vecs.find(keyword);
-  if (piter!=m_parametermap_vecs.end()) return piter->second;
-  msg_Tracking()<<"Error in Hadronisation_Parameters::Get("<<keyword<<") "
-		<<"in "<<m_parametermap_vecs.size()<<".\n"
-		<<"   Keyword not found. Return 0 and hope for the best.\n";
-  // TODO: How to do this safely?
-  return {0.};
+std::vector<double>
+Hadronisation_Parameters::GetVariationVector(const std::string& keyword) const 
+{
+  auto piter = m_parametermap_vecs.find(keyword);
+  if (piter != m_parametermap_vecs.end()) return piter->second;
+  THROW(fatal_error,"Keyword not found in Hadronisation_Parameters vector map.");
 }
 
 const int Hadronisation_Parameters::Switch(string keyword) const
@@ -124,10 +113,10 @@ void Hadronisation_Parameters::ReadSplittingParameters()
   m_switchmap["RemnantSplittingForm"] =
     s["REMNANT_CLUSTER_MODE"].SetDefault(2).Get<int>();
 
-  m_switchmap["ReweightMaxNSplit"] =
-    s["REWEIGHT_MAX_NSPLIT"].SetDefault(4).Get<int>();
-  m_parametermap[string("reweight_clip_factor")] =
-    s["REWEIGHT_CLIP_FACTOR"].SetDefault(100.0).Get<double>();
+  m_switchmap["reweight_max_nsplit"] =
+    s["REWEIGHT_MAX_NSPLIT"].SetDefault(-1).Get<int>();
+  m_parametermap[string("max_reweight_factor")] =
+    s["MAX_REWEIGHT_FACTOR"].SetDefault(-1.).Get<double>();
 
   // generic parameter for non-perturbative transverse momentum
   m_parametermap_vecs[string("kT_0")] =
@@ -187,52 +176,6 @@ void Hadronisation_Parameters::ReadSplittingParameters()
   Settings & sets = Settings::GetMainSettings();
   m_parametermap[string("kT_max")] =
     s["PT_MAX"].SetDefault(0.68).Get<double>();
-}
-
-void Hadronisation_Parameters::CheckAndPad() {
-  std::vector<std::string> relevant_entries =
-    {
-      "kT_0",
-      "alphaG",
-      "alphaL","betaL","gammaL",
-      "alphaD","betaD","gammaD",
-      "alphaB","betaB","gammaB",
-      "alphaH","betaH","gammaH",
-      "Strange_fraction","Baryon_fraction",
-      "P_qs_by_P_qq","P_ss_by_P_qq","P_di_1_by_P_di_0"
-    };
-
-  size_t max_size = 1;
-  for(const auto key : relevant_entries) {
-    const int s = m_parametermap_vecs.find(key)->second.size();
-    // TODO: some more sanity checks?
-    // - have all the entries been found?
-    // - are they all or reasonable size?
-    if(s == 1) continue;
-    if(max_size != 1) {
-      // there has been another vector before
-      if(s != max_size)
-	throw std::invalid_argument( "PROBLEM" );
-    } else {
-      // first vector occuring
-      max_size = s;
-    }
-  }
-
-  // second pass pad the single entry vectors
-  for(const auto key : relevant_entries) {
-    auto& v = m_parametermap_vecs.find(key)->second;
-    v.resize(max_size,v[0]);
-  }
-
-  // modify the parameter maps
-  // this can only be done *after* all of the padding etc has been taken place
-  for (int i{0}; i<m_parametermap_vecs[string("Strange_fraction")].size(); ++i) {
-    const double strange = m_parametermap_vecs[string("Strange_fraction")][i];
-    m_parametermap_vecs[string("P_qs_by_P_qq")][i] *= strange;
-    m_parametermap_vecs[string("P_ss_by_P_qq")][i] *= sqr(strange);
-  }
-  m_nvariations = max_size;
 }
 
 void Hadronisation_Parameters::ReadClusterToMesonPSParameters()
@@ -306,7 +249,6 @@ void Hadronisation_Parameters::ReadMesonWeights()
 void Hadronisation_Parameters::ReadPoppingParameters()
 {
   auto s = Settings::GetMainSettings()["AHADIC"];
-  double strange;
   m_parametermap_vecs[string("Strange_fraction")] =
     s["STRANGE_FRACTION"].SetDefault({0.46}).GetVector<double>();
   m_parametermap_vecs[string("Baryon_fraction")]        =
@@ -317,7 +259,6 @@ void Hadronisation_Parameters::ReadPoppingParameters()
     (s["P_SS_by_P_QQ_norm"].SetDefault({0.01}).GetVector<double>());
   m_parametermap_vecs[string("P_di_1_by_P_di_0")]       =
     s["P_QQ1_by_P_QQ0"].SetDefault({m_shower ? 0.94 : 0.57}).GetVector<double>();
-  // Multiply by strange etc, afther the padding has been done
 }
 
 

@@ -1,4 +1,5 @@
 #include "AHADIC++/Tools/Soft_Cluster_Handler.H"
+#include "AHADIC++/Tools/Ahadic_Reweighting.H"
 #include "AHADIC++/Tools/Hadronisation_Parameters.H"
 #include "ATOOLS/Math/Poincare.H"
 #include "ATOOLS/Math/Random.H"
@@ -9,8 +10,10 @@ using namespace ATOOLS;
 using namespace std;
 
 Soft_Cluster_Handler::Soft_Cluster_Handler(list<Proto_Particle *> * hadrons,
-					   KT_Selector* ktselector) :
-  p_hadrons {hadrons}, p_ktselector {ktselector}, m_ktfac{1.}
+					   KT_Selector* ktselector,
+					   Ahadic_Reweighting* reweighting) :
+  p_hadrons {hadrons}, p_ktselector {ktselector},
+  p_reweighting {reweighting}, m_ktfac{1.}
 { }
 
 Soft_Cluster_Handler::~Soft_Cluster_Handler()
@@ -362,13 +365,7 @@ double Soft_Cluster_Handler::DecayWeight() {
   } while (wit!=weights.end());
 
   if (wit!=weights.end() && totweight[0] != 0.) {
-    const double p_sel = wit->second[0] / totweight[0];
-    for(int i{0}; i<wit->second.size(); ++i) {
-      // TODO: figure out why this is zero from time to time
-      double fact = (wit->second[i] / totweight[i]) / p_sel;
-      if(!std::isnan(fact))
-	variation_weights[i] *= fact;
-    }
+    p_reweighting->SoftClusterReweighting(wit->second, totweight);
   }
 
   if (wit!=weights.end()) {

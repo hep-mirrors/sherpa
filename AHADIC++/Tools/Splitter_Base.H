@@ -4,6 +4,7 @@
 #include "AHADIC++/Tools/Flavour_Selector.H"
 #include "AHADIC++/Tools/KT_Selector.H"
 #include "AHADIC++/Tools/Soft_Cluster_Handler.H"
+#include "AHADIC++/Tools/Ahadic_Reweighting.H"
 #include "ATOOLS/Math/Poincare.H"
 #include "ATOOLS/Math/Histogram.H"
 #include <map>
@@ -19,6 +20,7 @@ namespace AHADIC {
     Constituents         * p_constituents;
     Flavour_Selector     * p_flavourselector;
     KT_Selector          * p_ktselector;
+    Ahadic_Reweighting   * p_reweighting;
 
     bool   m_ktorder;
     size_t m_attempts;
@@ -49,8 +51,8 @@ namespace AHADIC {
     virtual void FillMasses();
     virtual void ConstructLightCone(const double & kt2=0.);
     virtual void ConstructPoincare();
-    virtual void accept_splitting();
-    virtual void reset_var_weights();
+    virtual void AcceptSplittingWeights();
+    virtual void ResetSplittingWeights();
     virtual bool MakeSplitting();
     virtual void PopFlavours();
     virtual void DetermineMinimalMasses();
@@ -64,7 +66,8 @@ namespace AHADIC {
     Splitter_Base(std::list<Cluster *> * cluster_list,
 		  Soft_Cluster_Handler * softclusters,
 		  Flavour_Selector     * flavourselector,
-		  KT_Selector          * ktselector
+		  KT_Selector          * ktselector,
+		  Ahadic_Reweighting   * reweighting
 		  );
     ~Splitter_Base();
     virtual void Init();
@@ -75,12 +78,12 @@ namespace AHADIC {
 				  const double & zmin,const double & zmax,
 				  const unsigned int & cnt)=0;
 
-    virtual double select_z(const double, const double, const unsigned int);
+    virtual double SelectZ(const double, const double, const unsigned int);
 
-    virtual void z_rejected(const double wgt, const double &, const double &,
-			    const double &, const unsigned int &) = 0;
-    virtual void z_accepted(const double wgt, const double &, const double &,
-			    const double &, const unsigned int &) = 0;
+    virtual void ZRejected(const double wgt, const double &, const double &,
+			   const double &, const unsigned int &) = 0;
+    virtual void ZAccepted(const double wgt, const double &, const double &,
+			   const double &, const unsigned int &) = 0;
 
   };
 

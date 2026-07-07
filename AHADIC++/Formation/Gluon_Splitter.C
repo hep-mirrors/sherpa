@@ -17,7 +17,7 @@ void Gluon_Splitter::Init() {
   // 0: z ~ z^alpha * (1-z)^alpha
   // 1: z ~ z^alpha + (1-z)^alpha
   m_mode  = hadpars->Switch("GluonDecayForm");
-  m_alpha = hadpars->GetVec("alphaG");
+  m_alpha = p_reweighting->GetVariationVector("alphaG");
   m_analyse = true;
   if (m_analyse) {
     m_histograms[std::string("Yasym_frag_2")] = new Histogram(0,0.,8.,32);
@@ -30,7 +30,7 @@ bool Gluon_Splitter::MakeLongitudinalMomenta() {
   if (m_arg<0.) return false;
   CalculateLimits();
   for (int it{0}; it<10000; ++it) {
-    m_z[1] = select_z(m_zmin[1],m_zmax[1],0);
+    m_z[1] = SelectZ(m_zmin[1],m_zmax[1],0);
     if (m_z[1] < 0.) return false;
     if (CalculateXY()) return true;
   }
@@ -115,19 +115,21 @@ WeightFunction(const double & z,const double & zmin,const double & zmax,
   return value;
 }
 
-void Gluon_Splitter::z_rejected(const double wgt, const double & z,
-				const double & zmin,const double & zmax,
-				const unsigned int & cnt) {
+void Gluon_Splitter::ZRejected(const double wgt, const double & z,
+			       const double & zmin,const double & zmax,
+			       const unsigned int & cnt) {
   // Gluon fragmentation function is integrable — no accept/reject correction needed.
 }
 
-void Gluon_Splitter::z_accepted(const double wgt, const double & z,
-				const double & zmin,const double & zmax,
-				const unsigned int & cnt) {
-  const double wgt_old = FragmentationFunctionProb(z,zmin,zmax,m_alpha[0]);
-  for (int i{0}; i<m_alpha.size(); i++) {
-    tmp_variation_weights[i] *= FragmentationFunctionProb(z,zmin,zmax,m_alpha[i]) / wgt_old;
+void Gluon_Splitter::ZAccepted(const double wgt, const double & z,
+			       const double & zmin,const double & zmax,
+			       const unsigned int & cnt) {
+  if (!p_reweighting->Active()) return;
+  std::vector<double> probs(m_alpha.size());
+  for (size_t i{0}; i<m_alpha.size(); i++) {
+    probs[i] = FragmentationFunctionProb(z,zmin,zmax,m_alpha[i]);
   }
+  p_reweighting->GluonSplittingReweighting(probs);
 }
 
 bool Gluon_Splitter::CheckKinematics() {

@@ -1,19 +1,21 @@
 #include "AHADIC++/Tools/Hadronisation_Parameters.H"
 #include "AHADIC++/Tools/Constituents.H"
+#include "AHADIC++/Tools/Ahadic_Reweighting.H"
 #include "ATOOLS/Org/Message.H"
 
 using namespace AHADIC;
 using namespace ATOOLS;
 
-Constituents::Constituents(bool diquarks, bool debug) :
+Constituents::Constituents(bool diquarks, Ahadic_Reweighting * reweighting,
+			   bool debug) :
   m_minmass(100.),m_maxmass(0.)
 {
   // Light quarks and diquarks
-  auto v_sfrac(hadpars->GetVec("Strange_fraction"));
-  auto v_bfrac(hadpars->GetVec("Baryon_fraction"));
-  auto v_qssup(hadpars->GetVec("P_qs_by_P_qq"));
-  auto v_sssup(hadpars->GetVec("P_ss_by_P_qq"));
-  auto v_sp1sup(hadpars->GetVec("P_di_1_by_P_di_0"));
+  auto v_sfrac(reweighting->GetVariationVector("Strange_fraction"));
+  auto v_bfrac(reweighting->GetVariationVector("Baryon_fraction"));
+  auto v_qssup(reweighting->GetVariationVector("P_qs_by_P_qq"));
+  auto v_sssup(reweighting->GetVariationVector("P_ss_by_P_qq"));
+  auto v_sp1sup(reweighting->GetVariationVector("P_di_1_by_P_di_0"));
 
   std::vector<Flavour> quarks = {
     Flavour(kf_d), Flavour(kf_u), Flavour(kf_s), Flavour(kf_c), Flavour(kf_b),

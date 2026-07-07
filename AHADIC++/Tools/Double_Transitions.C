@@ -9,21 +9,23 @@ using namespace AHADIC;
 using namespace ATOOLS;
 using namespace std;
 
-Double_Transitions::Double_Transitions(Single_Transitions * singles) :
+Double_Transitions::Double_Transitions(Single_Transitions * singles,
+				       Ahadic_Reweighting * reweighting) :
   m_wtthres(1.e-6),
   m_charm_strange_modifier(hadpars->Get("CharmStrange_Enhancement")),
   m_beauty_strange_modifier(hadpars->Get("BeautyStrange_Enhancement")),
   m_charm_baryon_modifier(hadpars->Get("CharmBaryon_Enhancement")),
   m_beauty_baryon_modifier(hadpars->Get("BeautyBaryon_Enhancement"))
 {
-  FillMap(singles);
+  FillMap(singles, reweighting);
   Normalise();
 }
 
-void Double_Transitions::FillMap(Single_Transitions * singletransitions)
+void Double_Transitions::FillMap(Single_Transitions * singletransitions,
+				 Ahadic_Reweighting * reweighting)
 {
   //Constituents * constituents     = hadpars->GetConstituents();
-  Constituents * constituents = new Constituents(true, false);
+  Constituents * constituents = new Constituents(true, reweighting);
   Single_Transition_Map * singles = singletransitions->GetMap();
   for (Single_Transition_Map::iterator stmit1=singles->begin();
        stmit1!=singles->end();stmit1++) {

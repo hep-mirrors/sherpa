@@ -20,9 +20,11 @@ namespace AHADIC {
     static long int s_AHAclusters;
   };
 
+  class Ahadic_Reweighting;
+
   class Hadronisation_Parameters {
   private:
-    int                  m_shower, m_nvariations;
+    int                  m_shower;
     double               m_offset;
     Constituents       * p_constituents;
     Single_Transitions * p_stransitions;
@@ -32,20 +34,19 @@ namespace AHADIC {
     std::map<std::string,double> m_parametermap;
     std::map<std::string,std::vector<double>> m_parametermap_vecs;
 
-    void ReadParameters();
     void ReadGeneralSwitches();
     void ReadPoppingParameters();
     void ReadMesonWeights();
     void ReadSplittingParameters();
     void ReadClusterToMesonPSParameters();
-    void CheckAndPad();
   public:
     Hadronisation_Parameters();
     ~Hadronisation_Parameters();
 
-    void Init(std::string);
+    void ReadParameters(std::string shower);
+    void Init(Ahadic_Reweighting * reweighting);
     const double Get(std::string keyword) const;
-    const std::vector<double> GetVec(std::string) const;
+    std::vector<double> GetVariationVector(const std::string& keyword) const;
     const int    Switch(std::string keyword) const;
 
     Constituents          * GetConstituents()       { return p_constituents; }
@@ -54,7 +55,6 @@ namespace AHADIC {
     Double_Transitions    * GetDoubleTransitions()  { return p_dtransitions; }
 
     bool AdjustMomenta(const int,ATOOLS::Vec4D *,const double *);
-    int NumberOfVariations() { return m_nvariations; }
   };
 
   extern Hadronisation_Parameters * hadpars;

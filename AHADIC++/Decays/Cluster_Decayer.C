@@ -11,9 +11,11 @@ using namespace std;
 Cluster_Decayer::Cluster_Decayer(list<Cluster *> * cluster_list,
 				 Soft_Cluster_Handler * softclusters,
 				 Flavour_Selector     * flavourselector,
-				 KT_Selector          * ktselector) :
+				 KT_Selector          * ktselector,
+				 Ahadic_Reweighting   * reweighting) :
   p_cluster_list(cluster_list), p_softclusters(softclusters),
-  m_splitter(Cluster_Splitter(cluster_list,softclusters,flavourselector,ktselector))
+  m_splitter(Cluster_Splitter(cluster_list,softclusters,flavourselector,
+			      ktselector,reweighting))
 {}
 
 Cluster_Decayer::~Cluster_Decayer() {}

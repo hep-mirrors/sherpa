@@ -1,4 +1,5 @@
 #include "AHADIC++/Formation/Trivial_Splitter.H"
+#include "AHADIC++/Tools/Ahadic_Reweighting.H"
 #include "AHADIC++/Tools/Hadronisation_Parameters.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Math/Random.H"
@@ -7,10 +8,12 @@ using namespace AHADIC;
 using namespace ATOOLS;
 using namespace std;
 
-Trivial_Splitter::Trivial_Splitter(Flavour_Selector * flavourselector,
-				   KT_Selector      * ktselector) :
+Trivial_Splitter::Trivial_Splitter(Flavour_Selector   * flavourselector,
+				   KT_Selector        * ktselector,
+				   Ahadic_Reweighting * reweighting) :
   p_flavourselector(flavourselector),
-  p_ktselector(ktselector)
+  p_ktselector(ktselector),
+  p_reweighting(reweighting)
 {}
 
 void Trivial_Splitter::Init() {
@@ -80,7 +83,7 @@ bool Trivial_Splitter::InitKinematics(bool rescue) {
 
 void Trivial_Splitter::SelectFlavour() {
   m_newflav      = (*p_flavourselector)(m_E,true);
-  p_flavourselector->accept_splitting();
+  p_reweighting->AcceptFlavourSelectionWeights();
   m_popped_mass  = p_constituents->Mass(m_newflav);
   m_popped_mass2 = sqr(m_popped_mass);
 }

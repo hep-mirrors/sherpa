@@ -25,15 +25,15 @@ namespace AHADIC {
     Cluster * MakeCluster();
     void      ReplaceClusterWithHadron(const ATOOLS::Flavour & fl,ATOOLS::Vec4D & mom);
     void      UpdateSpectator(const ATOOLS::Vec4D & clumom);
-    std::vector<double> variation_weights;
-    std::vector<double> tmp_variation_weights;
 
   public:
     Gluon_Splitter(std::list<Cluster *> * cluster_list,
 		   Soft_Cluster_Handler * softclusters,
 		   Flavour_Selector     * flavourselector,
-		   KT_Selector          * ktselector) :
-      Splitter_Base(cluster_list,softclusters,flavourselector,ktselector) {}
+		   KT_Selector          * ktselector,
+		   Ahadic_Reweighting   * reweighting) :
+      Splitter_Base(cluster_list,softclusters,flavourselector,ktselector,
+		    reweighting) {}
     ~Gluon_Splitter();
 
     void   Init();
@@ -45,31 +45,19 @@ namespace AHADIC {
     inline void GetLast(double & lastmass, bool & isB, bool & isC) {
       lastmass = m_lastmass; isB = m_lastB; isC = m_lastC;
     }
-    void   accept_splitting() {
-      for(int i{0}; i<variation_weights.size(); ++i)
-	variation_weights[i] *= tmp_variation_weights[i];
+    void AcceptSplittingWeights() override {
+      p_reweighting->AcceptGluonSplittingWeights();
     }
 
-    void reset_var_weights() {
-      std::fill(tmp_variation_weights.begin(), tmp_variation_weights.end(), 1);
+    void ResetSplittingWeights() override {
+      p_reweighting->ResetGluonSplittingWeights();
     }
 
-    std::vector<double>& get_variationweights() {
-      return variation_weights;
-    };
+    void ZRejected(const double, const double&, const double&, const double&,
+		   const unsigned int&) override;
 
-    void reset_variationweights(int nvars) {
-      tmp_variation_weights.resize(nvars);
-      variation_weights.resize(nvars);
-      // reset weights and Splitter_base weight
-      std::fill(variation_weights.begin(), variation_weights.end(), 1);
-    };
-
-    void z_rejected(const double, const double&, const double&, const double&,
-		    const unsigned int&) override;
-
-    void z_accepted(const double, const double&, const double&, const double&,
-		    const unsigned int& ) override;
+    void ZAccepted(const double, const double&, const double&, const double&,
+		   const unsigned int& ) override;
 
   };
 }

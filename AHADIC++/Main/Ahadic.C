@@ -13,21 +13,24 @@ using namespace std;
 
 
 Ahadic::Ahadic(string shower) :
-  m_ktselector(KT_Selector()),
-  m_softclusters(Soft_Cluster_Handler(&m_hadron_list,&m_ktselector)),
+  m_reweighting(),
+  m_ktselector(KT_Selector(&m_reweighting)),
+  m_softclusters(Soft_Cluster_Handler(&m_hadron_list,&m_ktselector,&m_reweighting)),
   m_beamparticles(Beam_Particles_Shifter(&m_singlet_list, &m_softclusters)),
   m_sformer(Singlet_Former(&m_singlet_list)),
-  m_flavourselector(),
-  m_singletchecker(Singlet_Checker(&m_singlet_list, &m_softclusters,&m_flavourselector,&m_ktselector)),
-  m_gluondecayer(Gluon_Decayer(&m_cluster_list, &m_softclusters,&m_flavourselector,&m_ktselector)),
-  m_clusterdecayer(Cluster_Decayer(&m_cluster_list, &m_softclusters, &m_flavourselector,&m_ktselector))
+  m_flavourselector(&m_reweighting),
+  m_singletchecker(Singlet_Checker(&m_singlet_list, &m_softclusters,&m_flavourselector,&m_ktselector,&m_reweighting)),
+  m_gluondecayer(Gluon_Decayer(&m_cluster_list, &m_softclusters,&m_flavourselector,&m_ktselector,&m_reweighting)),
+  m_clusterdecayer(Cluster_Decayer(&m_cluster_list, &m_softclusters, &m_flavourselector,&m_ktselector,&m_reweighting))
 {
   rpa->gen.AddCitation(1, "Ahadic is described in \\cite{Chahal:2022rid}.");
   ReadMassParameters();
   hadpars = new Hadronisation_Parameters();
-  hadpars->Init(shower);
+  hadpars->ReadParameters(shower);
 
-  m_clip_factor = hadpars->Get("reweight_clip_factor");
+  m_reweighting.Initialize();
+
+  hadpars->Init(&m_reweighting);
 
   m_flavourselector.Init();
   m_sformer.Init();
@@ -51,15 +54,7 @@ Return_Value::code Ahadic::Hadronize(Blob_List * blobs)
   Return_Value::IncCall(mname);
   Return_Value::code result = Return_Value::Nothing;
 
-  const int n_vars = hadpars->NumberOfVariations();
-
-  if(sum_raw_weights.size() != n_vars)
-    sum_raw_weights.resize(n_vars,0);
-  m_softclusters.reset_variationweights(n_vars);
-  m_clusterdecayer.reset_variationweights(n_vars);
-  m_gluondecayer.reset_variationweights(n_vars);
-  m_flavourselector.reset_variationweights(n_vars);
-  m_ktselector.reset_variationweights(n_vars);
+  m_reweighting.ResetEvent();
 
   for (Blob_List::iterator blit = blobs->begin(); blit != blobs->end();) {
     if ((*blit)->Has(blob_status::needs_hadronization)) {
@@ -95,60 +90,10 @@ Return_Value::code Ahadic::Hadronize(Blob_List * blobs)
   }
   if (m_shrink) Shrink(blobs);
 
-  //Ask for weight vector and add to blob
-  // TODO: are they copied here? Probably..
-  const auto wgts_cluster  = m_clusterdecayer.get_variationweights();
-  const auto wgts_gluons   = m_gluondecayer.get_variationweights();
-  const auto wgts_soft     = m_softclusters.get_variationweights();
-  const auto wgts_flavs    = m_flavourselector.get_variationweights();
-  const auto wgts_kt       = m_ktselector.get_variationweights();
-
   Blob *blob(blobs->FindFirst(btp::Signal_Process));
   if (blob == NULL)
     blob = blobs->FindFirst(btp::Hard_Collision);
-  auto & wgtmap = (*blob)["WeightsMap"]->Get<Weights_Map>();
-  const bool found {wgtmap.find("AHADIC") == wgtmap.end() ? false : true};
-
-  if(wgts_cluster.size() == wgts_gluons.size() &&
-     wgts_soft.size() == wgts_flavs.size()
-     && wgts_cluster.size() == wgts_kt.size()) {
-    if(!found)
-      n_hads += 1;
-    for(int i{0}; i<wgts_cluster.size(); i++) {
-      double wgt = 1;
-      wgt*=wgts_cluster[i];
-      wgt*=wgts_gluons[i];
-      wgt*=wgts_flavs[i];
-      wgt*=wgts_kt[i];
-      wgt*=wgts_soft[i];
-
-      if(std::isnan(wgt)) {
-	msg_Error() << METHOD << ": NaN variation weight, resetting to 1\n";
-	wgt = 1.0;
-      }
-      if(found) {
-	// for some events the hadronization is called twice, this happens
-	// mostly when the following hadron-decays choose splittings that
-	// are not in the pre-integrated tables
-	continue;
-      } else {
-	const std::string base_name {"v"+std::to_string(i)};
-	const std::string name = base_name + "." + std::to_string(4);
-	sum_raw_weights[i] += wgt;
-	if (m_clip_factor > 0.) {
-	  const double running_mean = (n_hads > 100)
-	    ? sum_raw_weights[i] / n_hads
-	    : 1.0;
-	  wgtmap["AHADIC"][name] = std::min(wgt, m_clip_factor * running_mean);
-	} else {
-	  wgtmap["AHADIC"][name] = wgt;
-	}
-      }
-    }
-  } else {
-    msg_Out()<<"Could not use AHADIC variations.\n";
-    msg_Out()<<"Cluster and Gluon have differing number of variations\n";
-  }
+  m_reweighting.ApplyVariationWeights(blob);
 
   return result;
 }

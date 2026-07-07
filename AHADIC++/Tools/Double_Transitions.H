@@ -28,6 +28,8 @@ namespace AHADIC {
   typedef std::map<Flavour_Pair,
 		   Double_Transition_List *>          Double_Transition_Map;
 
+  class Ahadic_Reweighting;
+
   class Double_Transitions {
   private:
     Double_Transition_Map m_transitions;
@@ -35,11 +37,13 @@ namespace AHADIC {
     double m_charm_strange_modifier, m_beauty_strange_modifier;
     double m_charm_baryon_modifier, m_beauty_baryon_modifier;
 
-    void FillMap(Single_Transitions * singles);
+    void FillMap(Single_Transitions * singles,
+		 Ahadic_Reweighting * reweighting);
     void Normalise();
     int n_variations {0};
   public:
-    Double_Transitions(Single_Transitions * singles);
+    Double_Transitions(Single_Transitions * singles,
+		       Ahadic_Reweighting * reweighting);
     ~Double_Transitions();
 
     Flavour_Pair             GetLightestTransition(const Flavour_Pair & flavs);

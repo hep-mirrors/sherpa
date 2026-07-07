@@ -1,4 +1,5 @@
 #include "AHADIC++/Tools/KT_Selector.H"
+#include "AHADIC++/Tools/Ahadic_Reweighting.H"
 #include "AHADIC++/Tools/Hadronisation_Parameters.H"
 #include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Org/Message.H"
@@ -6,76 +7,62 @@
 using namespace AHADIC;
 using namespace ATOOLS;
 
-KT_Selector::KT_Selector() {}
+KT_Selector::KT_Selector(Ahadic_Reweighting * reweighting) :
+  p_reweighting(reweighting) {}
 
 KT_Selector::~KT_Selector() {}
 
 void KT_Selector::Init() {
-  const auto _tmp = hadpars->GetVec("kT_0");
-  //m_sigma = hadpars->GetVec("kT_0");
-  for (auto kt : _tmp)
-    //m_sigma.push_back(1.0);
-    m_sigma.push_back(kt);
+  m_sigma = p_reweighting->GetVariationVector("kT_0");
 }
 
-double KT_Selector::Select_kt(const double ktmax) {
+double KT_Selector::SelectKT(const double ktmax) {
   static const int max_iterations = 100000;
   double kt_range {ktmax};
   for (int it{0}; it<max_iterations; ++it) {
     double kt = ran->Get()*kt_range;
     auto sel_wgt = Gaussian(kt, m_sigma[0]) / 100;
     if(ran->Get() < sel_wgt) {
-      kt_accepted(kt);
+      KTAccepted(kt);
       return kt;
     }
-    kt_rejected(kt);
+    KTRejected(kt);
   }
   msg_Error() << METHOD << ": kt selection failed after " << max_iterations
               << " iterations (ktmax=" << ktmax << ")\n";
   return -1.;
 }
 
-void KT_Selector::kt_accepted(double kt) {
-  const auto wgt_old = Gaussian(kt, m_sigma[0]);
-  for (int i{0}; i<m_sigma.size(); i++) {
-    const auto wgt_new {Gaussian(kt, m_sigma[i])};
-    tmp_variation_weights[i] *= wgt_new / wgt_old;
+void KT_Selector::KTAccepted(const double kt) {
+  if (!p_reweighting->Active()) return;
+  std::vector<double> probs(m_sigma.size());
+  for (size_t i{0}; i<m_sigma.size(); i++) {
+    probs[i] = Gaussian(kt, m_sigma[i]);
   }
+  p_reweighting->KTSelectionReweighting(true, probs);
 }
 
-void KT_Selector::kt_rejected(double kt) {
-  const auto wgt_old = Gaussian(kt, m_sigma[0]) / 100.;
-  for (int i{0}; i<m_sigma.size(); i++) {
-    const auto wgt_new {Gaussian(kt, m_sigma[i]) / 100};
-    tmp_variation_weights[i] *= (1. - wgt_new) / (1. - wgt_old);
+void KT_Selector::KTRejected(const double kt) {
+  if (!p_reweighting->Active()) return;
+  std::vector<double> probs(m_sigma.size());
+  for (size_t i{0}; i<m_sigma.size(); i++) {
+    probs[i] = Gaussian(kt, m_sigma[i]) / 100.;
   }
+  p_reweighting->KTSelectionReweighting(false, probs);
 }
 
 
 double KT_Selector::operator()(const double & ktmax) {
   double kttest(-1.);
-  // do {
-  //   kttest = dabs(m_sigma[0] * ran->GetGaussian());
-  // } while (kttest>ktmax);
-  std::fill(tmp_variation_weights.begin(), tmp_variation_weights.end(), 1);
-  variation_weights.resize(m_sigma.size());
-  tmp_variation_weights.resize(m_sigma.size());
-
-  kttest = Select_kt(ktmax);
-  // const double gaussian = Gaussian(kttest, m_sigma[0]);
-  // const double norm     = Erf(ktmax, m_sigma[0]);
-  // const double p0       = gaussian / norm;
-
-  // for(int i{0}; i<m_sigma.size(); ++i) {
-  //   double g = Gaussian(kttest, m_sigma[i]);
-  //   double n = Erf(ktmax, m_sigma[i]);
-  //   double p = g / n;
-  //   variation_weights[i] *= p / p0;
-  //   tmp_variation_weights[i] = p / p0;
-  // }
-  //std::cout << "DEBUG: KT: " << kttest << " " << tmp_variation_weights << std::endl;
+  p_reweighting->ResetKTSelectionWeights();
+  kttest = SelectKT(ktmax);
+  // The kt weights are never committed, so KT_0 variations remain incomplete.
+  // An exact alternative to the trial-by-trial reweighting above would be the
+  // erf-normalised density ratio of the truncated Gaussian:
+  //   p_i = Gaussian(kttest, m_sigma[i]) / Erf(ktmax, m_sigma[i]);
+  //   weight_i = p_i / p_0;
   // TODO needs fixing
-  // accepted();
+  // p_reweighting->AcceptKTSelectionWeights();
   return kttest;
 }
 

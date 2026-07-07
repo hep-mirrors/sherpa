@@ -6,36 +6,22 @@
 
 
 namespace AHADIC {
+  class Ahadic_Reweighting;
+
   class KT_Selector {
   private:
     std::vector<double> m_sigma;
-    std::vector<double> variation_weights;
-    std::vector<double> tmp_variation_weights;
+    Ahadic_Reweighting * p_reweighting;
     double WeightFunction(const double & kt);
-    double Select_kt(const double ktmax);
+    double SelectKT(const double ktmax);
     double Gaussian(const double, const double);
     double Erf(const double, const double);
+    void KTAccepted(const double kt);
+    void KTRejected(const double kt);
   public:
-    KT_Selector();
+    KT_Selector(Ahadic_Reweighting * reweighting);
     ~KT_Selector();
     void Init();
-    void reset_variationweights(int nvars) {
-      variation_weights.resize(nvars);
-      tmp_variation_weights.resize(nvars);
-      std::fill(variation_weights.begin(), variation_weights.end(), 1);
-      std::fill(tmp_variation_weights.begin(), tmp_variation_weights.end(), 1);
-    };
-
-    std::vector<double>& get_variationweights() {
-      return variation_weights;
-    };
-    void kt_accepted(double);
-    void kt_rejected(double);
-    void accepted() {
-      for(int i{0}; i<variation_weights.size(); ++i)
-	variation_weights[i] *= tmp_variation_weights[i];
-      std::fill(tmp_variation_weights.begin(), tmp_variation_weights.end(), 1);
-    }
 
     double operator()(const double & ktmax);
   };

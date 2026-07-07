@@ -15,12 +15,8 @@ namespace AHADIC {
     double m_alpha_min[4], m_beta_min[4], m_gamma_min[4];
 
     int m_type[2];
-    int m_reweight_max_nsplit;
     std::vector<double> m_kt02;
     double m_R2[2], m_mean[2], m_sigma[2], m_m2min[2], m_masses;
-
-    std::vector<double> variation_weights;
-    std::vector<double> tmp_variation_weights;
 
     Cluster *       p_out[2];
     ATOOLS::Vec4D   m_cms, m_mom[2], m_newmom[2];
@@ -56,44 +52,28 @@ namespace AHADIC {
     Cluster_Splitter(std::list<Cluster *> * cluster_list,
 		     Soft_Cluster_Handler * softclusters,
 		     Flavour_Selector     * flavourselector,
-		     KT_Selector          * ktselector);
+		     KT_Selector          * ktselector,
+		     Ahadic_Reweighting   * reweighting);
     void   Init();
     double WeightFunction(const double & z,
 			  const double & zmin,const double & zmax,
 			  const unsigned int & cnt);
     void   SetOutput(const bool & out) { m_output = out; }
-    void   accept_splitting() {
-      for(int i{0}; i<variation_weights.size(); ++i)
-	variation_weights[i] *= tmp_variation_weights[i];
-      reset_var_weights();
+    void AcceptSplittingWeights() override {
+      p_reweighting->AcceptClusterSplittingWeights();
     }
 
-    void reset_var_weights() {
-      std::fill(tmp_variation_weights.begin(), tmp_variation_weights.end(), 1);
+    void ResetSplittingWeights() override {
+      p_reweighting->ResetClusterSplittingWeights();
     }
 
-    std::vector<double>& get_variationweights() {
-      return variation_weights;
-    };
+    void ZRejected(const double wgt, const double & z,
+		   const double & zmin,const double & zmax,
+		   const unsigned int & cnt) override;
 
-    std::vector<double>& get_tmp_variationweights() {
-      return tmp_variation_weights;
-    };
-
-    void reset_variationweights(int nvars) {
-      variation_weights.resize(nvars);
-      tmp_variation_weights.resize(nvars);
-      std::fill(variation_weights.begin(), variation_weights.end(), 1);
-      std::fill(tmp_variation_weights.begin(), tmp_variation_weights.end(), 1);
-    };
-
-    void z_rejected(const double wgt, const double & z,
-		    const double & zmin,const double & zmax,
-		    const unsigned int & cnt) override;
-
-    void z_accepted(const double wgt, const double & z,
-		    const double & zmin,const double & zmax,
-		    const unsigned int & cnt) override;
+    void ZAccepted(const double wgt, const double & z,
+		   const double & zmin,const double & zmax,
+		   const unsigned int & cnt) override;
 
     double FragmentationFunctionProb(double, double, double, double, double);
   };

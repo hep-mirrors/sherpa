@@ -7,6 +7,8 @@
 #include "AHADIC++/Tools/Cluster.H"
 
 namespace AHADIC {
+  class Ahadic_Reweighting;
+
   class Soft_Cluster_Handler {
   private:
     std::list<Proto_Particle *> * p_hadrons;
@@ -14,10 +16,10 @@ namespace AHADIC {
     Single_Transitions          * p_singletransitions;
     Double_Transitions          * p_doubletransitions;
     KT_Selector                 * p_ktselector;
+    Ahadic_Reweighting          * p_reweighting;
     double m_dec_threshold,m_trans_threshold, m_chi, m_ktmax, m_ktfac, m_zeta;
     double m_piphoton_threshold, m_dipion_threshold, m_open_threshold;
 
-    std::vector<double> variation_weights;
     Cluster    * p_cluster;
     double       m_mass2, m_mass;
     Flavour_Pair m_flavs;
@@ -45,7 +47,8 @@ namespace AHADIC {
 				       const Flavour_Pair & two);
     bool   TreatSingletCluster();
  public:
-    Soft_Cluster_Handler(std::list<Proto_Particle *> * hadrons, KT_Selector*);
+    Soft_Cluster_Handler(std::list<Proto_Particle *> * hadrons, KT_Selector*,
+			 Ahadic_Reweighting *);
     ~Soft_Cluster_Handler();
 
     void Init();
@@ -71,15 +74,6 @@ namespace AHADIC {
     double MinDoubleMass(const ATOOLS::Flavour & fl1,
 			 const ATOOLS::Flavour & fl2);
     ATOOLS::Flavour GetDecHadron(const size_t & i) { return m_hads[i]; }
-
-    void reset_variationweights(int nvars) {
-      variation_weights.resize(nvars);
-      std::fill(variation_weights.begin(), variation_weights.end(), 1);
-    };
-
-    std::vector<double>& get_variationweights() {
-      return variation_weights;
-    };
 
     std::list<Proto_Particle *> * GetHadrons() const { return p_hadrons; }
   };

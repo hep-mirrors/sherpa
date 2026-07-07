@@ -6,6 +6,7 @@
 #include "AHADIC++/Formation/Singlet_Checker.H"
 #include "AHADIC++/Formation/Gluon_Decayer.H"
 #include "AHADIC++/Tools/Soft_Cluster_Handler.H"
+#include "AHADIC++/Tools/Ahadic_Reweighting.H"
 #include "AHADIC++/Decays/Cluster_Decayer.H"
 #include "AHADIC++/Tools/Cluster.H"
 #include "ATOOLS/Phys/Blob_List.H"
@@ -23,6 +24,7 @@ namespace AHADIC {
     std::list<Cluster *>        m_cluster_list;
     std::list<Proto_Particle *> m_hadron_list;
 
+    Ahadic_Reweighting     m_reweighting;
     Soft_Cluster_Handler   m_softclusters;
     Beam_Particles_Shifter m_beamparticles;
     Singlet_Former         m_sformer;
@@ -47,10 +49,6 @@ namespace AHADIC {
     bool SanityCheck(ATOOLS::Blob * blob,double norm2);
     bool CheckKfcodes(ATOOLS::Blob * blob);
     void CleanUp(ATOOLS::Blob * blob);
-
-    std::vector<double> sum_raw_weights;
-    int n_hads {0};
-    double m_clip_factor {100.0};
   public:
     Ahadic(std::string shower);
     ~Ahadic();

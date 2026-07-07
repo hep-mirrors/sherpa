@@ -1,4 +1,5 @@
 #include "AHADIC++/Tools/Flavour_Selector.H"
+#include "AHADIC++/Tools/Ahadic_Reweighting.H"
 #include "AHADIC++/Tools/Hadronisation_Parameters.H"
 #include "AHADIC++/Tools/Constituents.H"
 #include "ATOOLS/Math/Random.H"
@@ -8,7 +9,8 @@
 using namespace AHADIC;
 using namespace ATOOLS;
 
-Flavour_Selector::Flavour_Selector() {}
+Flavour_Selector::Flavour_Selector(Ahadic_Reweighting * reweighting) :
+  p_reweighting(reweighting) {}
 
 Flavour_Selector::~Flavour_Selector() {
   for (FDIter fdit=m_options.begin();fdit!=m_options.end();fdit++)
@@ -23,7 +25,7 @@ operator()(const double & Emax,const bool & vetodi) {
   // update norms
   Norm(Emax,vetodi);
 
-  double disc {norms[0] * ran->Get()};
+  double disc {m_norms[0] * ran->Get()};
   for (FDIter fdit=m_options.begin();fdit!=m_options.end();fdit++) {
     if (vetodi && fdit->first.IsDiQuark()) continue;
     if (fdit->second->popweights[0]>0. && fdit->second->massmin<Emax/2.)
@@ -35,30 +37,27 @@ operator()(const double & Emax,const bool & vetodi) {
     }
   }
 
-  // compute probabilities for different flavours here
-  // will include different norms and popweights
+  // reweight with the selection probabilities of the different flavours,
+  // including the different norms and popweights of the variations
   auto opt {m_options.find(ret)};
   if(opt == m_options.end())
     opt = m_options.find(ret.Bar());
   if(opt == m_options.end())
     THROW(fatal_error, "No flavour selected.");
-  if(norms[0] == 0) return ret;
-  const double p0 {opt->second->popweights[0] / norms[0]};
-  for(int i{0}; i<opt->second->popweights.size(); ++i) {
-    tmp_variation_weights[i] *= (opt->second->popweights[i] / norms[i]) / p0;
-  }
+  if(m_norms[0] == 0) return ret;
+  p_reweighting->FlavourSelectionReweighting(opt->second->popweights, m_norms);
 
   return ret;
 }
 
 void Flavour_Selector::Norm(const double & mmax,const bool & vetodi)
 {
-  std::fill(norms.begin(), norms.end(), 0);
+  std::fill(m_norms.begin(), m_norms.end(), 0);
   for (FDIter fdit=m_options.begin();fdit!=m_options.end();fdit++) {
     if (vetodi && fdit->first.IsDiQuark()) continue;
     if (fdit->second->popweights[0]>0. && fdit->second->massmin<mmax/2.) {
-      for(int i{0}; i<norms.size(); ++i)
-	norms[i] += fdit->second->popweights[i];
+      for(int i{0}; i<m_norms.size(); ++i)
+	m_norms[i] += fdit->second->popweights[i];
     }
   }
 }
@@ -69,8 +68,7 @@ void Flavour_Selector::Init() {
   m_mmax = constituents->MaxMass();
   m_mmin2 = ATOOLS::sqr(m_mmin);
   m_mmax2 = ATOOLS::sqr(m_mmax);
-  norms.resize(constituents->m_nvars);
-  variation_weights.resize(constituents->m_nvars);
+  m_norms.resize(constituents->m_nvars);
   DecaySpecs * decspec;
   for (FlavCCMap_Iterator fdit=constituents->CCMap.begin();
        fdit!=constituents->CCMap.end();fdit++) {

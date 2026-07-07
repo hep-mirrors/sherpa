@@ -22,8 +22,10 @@ using namespace std;
 Cluster_Splitter::Cluster_Splitter(list<Cluster *> * cluster_list,
 				   Soft_Cluster_Handler * softclusters,
 				   Flavour_Selector     * flavourselector,
-				   KT_Selector          * ktselector) :
-  Splitter_Base(cluster_list,softclusters,flavourselector,ktselector),
+				   KT_Selector          * ktselector,
+				   Ahadic_Reweighting   * reweighting) :
+  Splitter_Base(cluster_list,softclusters,flavourselector,ktselector,
+		reweighting),
   m_output(false)
 {
 }
@@ -32,25 +34,24 @@ void Cluster_Splitter::Init() {
   Splitter_Base::Init();
   m_defmode  = hadpars->Switch("ClusterSplittingForm");
   m_beammode = hadpars->Switch("RemnantSplittingForm");
-  m_reweight_max_nsplit = hadpars->Switch("ReweightMaxNSplit");
 
-  m_alpha[0] = hadpars->GetVec("alphaL");
-  m_beta[0]  = hadpars->GetVec("betaL");
-  m_gamma[0] = hadpars->GetVec("gammaL");
+  m_alpha[0] = p_reweighting->GetVariationVector("alphaL");
+  m_beta[0]  = p_reweighting->GetVariationVector("betaL");
+  m_gamma[0] = p_reweighting->GetVariationVector("gammaL");
 
-  m_alpha[1] = hadpars->GetVec("alphaH");
-  m_beta[1]  = hadpars->GetVec("betaH");
-  m_gamma[1] = hadpars->GetVec("gammaH");
+  m_alpha[1] = p_reweighting->GetVariationVector("alphaH");
+  m_beta[1]  = p_reweighting->GetVariationVector("betaH");
+  m_gamma[1] = p_reweighting->GetVariationVector("gammaH");
 
-  m_alpha[2] = hadpars->GetVec("alphaD");
-  m_beta[2]  = hadpars->GetVec("betaD");
-  m_gamma[2] = hadpars->GetVec("gammaD");
+  m_alpha[2] = p_reweighting->GetVariationVector("alphaD");
+  m_beta[2]  = p_reweighting->GetVariationVector("betaD");
+  m_gamma[2] = p_reweighting->GetVariationVector("gammaD");
 
-  m_alpha[3] = hadpars->GetVec("alphaB");
-  m_beta[3]  = hadpars->GetVec("betaB");
-  m_gamma[3] = hadpars->GetVec("gammaB");
+  m_alpha[3] = p_reweighting->GetVariationVector("alphaB");
+  m_beta[3]  = p_reweighting->GetVariationVector("betaB");
+  m_gamma[3] = p_reweighting->GetVariationVector("gammaB");
 
-  const std::vector<double> _kt0s = hadpars->GetVec("kT_0");
+  const std::vector<double> _kt0s = p_reweighting->GetVariationVector("kT_0");
   for (auto _kt0 : _kt0s)
     m_kt02.push_back(sqr(_kt0));
 
@@ -171,9 +172,9 @@ bool Cluster_Splitter::MakeLongitudinalMomentaZSimple() {
   bool mustrecalc = false;
 
 #if AHADIC_CLUSTER_SPLITTER_MODE == 0
-  
+
   for (size_t i=0;i<2;i++) {
-    m_z[i] = select_z(m_zmin[i],m_zmax[i],i);
+    m_z[i] = SelectZ(m_zmin[i],m_zmax[i],i);
     if (m_z[i] < 0.) return false;
   }
   for (size_t i=0;i<2;i++) {
@@ -214,10 +215,10 @@ bool Cluster_Splitter::MakeLongitudinalMomentaZSimple() {
   if(lower > upper)
     msg_Error() << "Inconsistent z bounds: lower > upper in MakeLongitudinalMomentaZSimple\n";
 #if AHADIC_CLUSTER_SPLITTER_MODE == 1
-  m_z[i1] = select_z(std::max(m_zmin[i1],lower), std::min(m_zmax[i1],upper), i1);
+  m_z[i1] = SelectZ(std::max(m_zmin[i1],lower), std::min(m_zmax[i1],upper), i1);
 #endif
 #if AHADIC_CLUSTER_SPLITTER_MODE == 2
-  m_z[i1] = select_z(0.,1.,i1);
+  m_z[i1] = SelectZ(0.,1.,i1);
 #endif
   if (m_z[i1] < 0.) return false;
 
@@ -230,10 +231,10 @@ bool Cluster_Splitter::MakeLongitudinalMomentaZSimple() {
   }
 
 #if AHADIC_CLUSTER_SPLITTER_MODE == 1
-  m_z[i2] = select_z(std::max(m_zmin[i2],lower), std::min(m_zmax[i2],upper), i2);
+  m_z[i2] = SelectZ(std::max(m_zmin[i2],lower), std::min(m_zmax[i2],upper), i2);
 #endif
 #if AHADIC_CLUSTER_SPLITTER_MODE == 2
-  m_z[i2] = select_z(0.,1.,i2);
+  m_z[i2] = SelectZ(0.,1.,i2);
 #endif
   if (m_z[i2] < 0.) return false;
 
@@ -340,40 +341,39 @@ WeightFunction(const double & z,const double & zmin,const double & zmax,
   return FragmentationFunction(z, zmin, zmax, cnt, 0);
 }
 
-void Cluster_Splitter::z_rejected(const double wgt, const double & z,
-				  const double & zmin,const double & zmax,
-				  const unsigned int & cnt) {
+void Cluster_Splitter::ZRejected(const double wgt, const double & z,
+				 const double & zmin,const double & zmax,
+				 const unsigned int & cnt) {
 #if AHADIC_FRAGMENTATION_FUNCTION == 1
   return;
 #endif
-  if(m_reweight_max_nsplit >= 0 && m_nsplit >= m_reweight_max_nsplit) return;
-  const auto type = m_type[cnt];
-  for (int i{0}; i<m_alpha[0].size(); i++) {
-    const auto wgt_new = FragmentationFunction(z,zmin,zmax,cnt,i);
-    tmp_variation_weights[i] *= (1.-wgt_new) / (1.-wgt);
+  if(!p_reweighting->DoClusterSplittingReweighting(m_nsplit)) return;
+  std::vector<double> probs(m_alpha[0].size());
+  probs[0] = wgt;
+  for (size_t i{1}; i<m_alpha[0].size(); i++) {
+    probs[i] = FragmentationFunction(z,zmin,zmax,cnt,i);
   }
+  p_reweighting->ClusterSplittingReweighting(false, probs);
 }
 
-void Cluster_Splitter::z_accepted(const double wgt, const double & z,
-				  const double & zmin,const double & zmax,
-				  const unsigned int & cnt) {
+void Cluster_Splitter::ZAccepted(const double wgt, const double & z,
+				 const double & zmin,const double & zmax,
+				 const unsigned int & cnt) {
+  if(!p_reweighting->DoClusterSplittingReweighting(m_nsplit)) return;
+  std::vector<double> probs(m_alpha[0].size());
+#if AHADIC_FRAGMENTATION_FUNCTION == 1
   const auto type = m_type[cnt];
-#if AHADIC_FRAGMENTATION_FUNCTION == 1
-  const double wgt_old = FragmentationFunctionProb(z,zmin,zmax,m_gamma[type][0],m_kt02[0]);
-#else
-  const double wgt_old = wgt;
-#endif
-  if(m_reweight_max_nsplit >= 0 && m_nsplit >= m_reweight_max_nsplit) return;
-  for (int i{0}; i<m_alpha[0].size(); i++) {
-#if AHADIC_FRAGMENTATION_FUNCTION == 1
-    const auto wgt_new = FragmentationFunctionProb(z,zmin,zmax,m_gamma[type][i],m_kt02[i]);
-#else
-    const auto wgt_new = FragmentationFunction(z,zmin,zmax,cnt,i);
-#endif
-    const auto frac = wgt_new / wgt_old;
-    if(!std::isnan(frac))
-      tmp_variation_weights[i] *= frac;
+  probs[0] = FragmentationFunctionProb(z,zmin,zmax,m_gamma[type][0],m_kt02[0]);
+  for (size_t i{1}; i<m_alpha[0].size(); i++) {
+    probs[i] = FragmentationFunctionProb(z,zmin,zmax,m_gamma[type][i],m_kt02[i]);
   }
+#else
+  probs[0] = wgt;
+  for (size_t i{1}; i<m_alpha[0].size(); i++) {
+    probs[i] = FragmentationFunction(z,zmin,zmax,cnt,i);
+  }
+#endif
+  p_reweighting->ClusterSplittingReweighting(true, probs);
 }
 
 

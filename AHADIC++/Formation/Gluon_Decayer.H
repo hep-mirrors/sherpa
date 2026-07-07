@@ -30,25 +30,18 @@ namespace AHADIC {
 	      Proto_Particle * part3=NULL);
     bool LastStep();
     void AnalyseClusters();
-    std::vector<double> variation_weights;
 
   public:
     Gluon_Decayer(std::list<Cluster *> * cluster_list,
 		  Soft_Cluster_Handler * softclusters,
 		  Flavour_Selector     * flavourselector,
-		  KT_Selector          * ktselector);
+		  KT_Selector          * ktselector,
+		  Ahadic_Reweighting   * reweighting);
     ~Gluon_Decayer();
     void Init();
     void Reset();
     void ResetN() { m_Nclusters = 0; }
     void FillNs(const int & Nhad);
-    std::vector<double>& get_variationweights() {
-      return m_splitter.get_variationweights();
-    };
-
-    void reset_variationweights(int nvars) {
-      m_splitter.reset_variationweights(nvars);
-    };
 
     bool operator()(Singlet * singlet);
   };
