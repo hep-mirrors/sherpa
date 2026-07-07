@@ -7,6 +7,7 @@
 #include "ATOOLS/Phys/Blob.H"
 #include <vector>
 
+namespace ATOOLS { class Poincare; }
 namespace BEAM { class Beam_Base; }
 
 namespace REMNANTS {
@@ -43,6 +44,11 @@ namespace REMNANTS {
     ATOOLS::Blob     * p_beamblob;
     ATOOLS::Vec4D      m_position;
     ATOOLS::Part_List  m_extracted, m_spectators;
+
+    // Frame of the remnant-breakup window, set only by the Frame_Guard
+    // bracketing Remnant_Handler::MakeBeamBlobs.  While set, the incoming
+    // momentum is read in this frame, consistent with the blob contents.
+    const ATOOLS::Poincare* p_window{nullptr};
 
     double m_scale2;
 
@@ -93,7 +99,7 @@ namespace REMNANTS {
     inline BEAM::Beam_Base          * GetBeam() const    { return p_beam; }
     inline Form_Factor              * GetFF() const      { return p_ff; }
     inline ATOOLS::Blob             * GetBlob()          { return p_beamblob; }
-    inline const ATOOLS::Vec4D      & InMomentum() const { return p_beam->OutMomentum(m_tag); }
+    inline ATOOLS::Vec4D              InMomentum() const { return IncomingMomentum(); }
     inline const ATOOLS::Flavour    & InFlav() const     { return m_beamflav; }
     inline ATOOLS::Part_List        * GetExtracted()     { return &m_extracted; }
     inline ATOOLS::Part_List        * GetSpectators()    { return &m_spectators; }
@@ -101,6 +107,9 @@ namespace REMNANTS {
     inline virtual ATOOLS::Particle * GetSpectator()     { return nullptr; }
     inline void SetType(const rtp::code & type)          { m_type = type; }
     inline void SetBeam(BEAM::Beam_Base * beam)          { p_beam = beam; }
+    inline void SetWindowFrame(const ATOOLS::Poincare * window) {
+      p_window = window;
+    }
     inline void SetScale2(const double & scale2)         { m_scale2 = scale2; }
     inline void SetPosition(const ATOOLS::Vec4D & pos)   { m_position = pos; }
   };

@@ -86,7 +86,7 @@ bool Pomeron_Remnant::MakeLongitudinalMomenta(ParticleMomMap *ktmap,
   // rest is taken by the quark.
   Vec4D availMom;
   auto part_extr = m_extracted.front();
-  availMom = p_beam->OutMomentum(m_tag) - part_extr->Momentum();
+  availMom = IncomingMomentum() - part_extr->Momentum();
   if (copy) {
     Particle *pcopy = new Particle(*part_extr);
     pcopy->SetNumber();

@@ -1,3 +1,4 @@
+#include "ATOOLS/Math/Poincare.H"
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Phys/Momentum_Shifter.H"
 #include "REMNANTS/Main/Remnant_Base.H"
@@ -125,7 +126,10 @@ Blob *Remnant_Base::MakeBlob() {
   return p_beamblob;
 }
 
-Vec4D Remnant_Base::IncomingMomentum() const { return p_beam->OutMomentum(m_tag); }
+Vec4D Remnant_Base::IncomingMomentum() const {
+  if (p_window) return (*p_window) * p_beam->OutMomentum(m_tag);
+  return p_beam->OutMomentum(m_tag);
+}
 
 Vec4D Remnant_Base::Residual() const {
   Vec4D residual = IncomingMomentum();

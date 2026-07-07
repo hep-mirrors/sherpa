@@ -102,7 +102,7 @@ bool Reggeon_Remnant::MakeLongitudinalMomenta(ParticleMomMap* ktmap,
   // the shower initiators and use it to determine the still available
   // momentum; the latter will be successively reduced until the
   // rest is taken by the quark.
-  Vec4D availMom = p_beam->OutMomentum(m_tag);
+  Vec4D availMom = IncomingMomentum();
   for (auto pmit : m_extracted) {
     availMom -= pmit->Momentum();
     if (copy) {

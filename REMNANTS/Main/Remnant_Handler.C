@@ -10,6 +10,7 @@
 #include "REMNANTS/Main/Pomeron_Remnant.H"
 #include "REMNANTS/Main/Reggeon_Remnant.H"
 #include "REMNANTS/Main/Remnant_Handler.H"
+#include "REMNANTS/Tools/Frame_Guard.H"
 #include "REMNANTS/Tools/Remnants_Parameters.H"
 
 using namespace REMNANTS;
@@ -212,6 +213,13 @@ Return_Value::code Remnant_Handler::MakeBeamBlobs(Blob_List* const bloblist,
   // Adding the blobs related to the breakup of incident beams: one for each
   // beam, plus, potentially a third one to balance transverse momenta.
   InitBeamAndSoftBlobs(bloblist,isrescatter);
+  // Construct the breakup in the c.m. frame of the two colliding (bunch)
+  // particles when at least one beam has a spectrum: for low-energy photons
+  // the lab frame leaves too little energy for spectators and intrinsic
+  // transverse momenta.  The guard boosts the blob list back on any exit.
+  Frame_Guard frameguard(bloblist, p_remnants,
+                         m_type == strat::DIS1 || m_type == strat::DIS2 ||
+                         m_type == strat::hh);
   // Fill in the transverse momenta through the Kinematics_Generator.
   // Check for colour connected parton-pairs including beam partons and
   // add soft gluons in between them if their invariant mass is too large.

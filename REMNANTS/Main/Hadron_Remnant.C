@@ -280,7 +280,7 @@ bool Hadron_Remnant::MakeLongitudinalMomenta(ParticleMomMap *ktmap,const bool & 
   // momentum; the latter will be successively reduced until the
   // rest is taken by the diquark.
   // TODO: Will have to adapt it to the case of mesons.
-  Vec4D availMom = p_beam->OutMomentum(m_tag);
+  Vec4D availMom = IncomingMomentum();
   for (auto pmit : m_extracted) {
     availMom -= pmit->Momentum();
     if (copy) {

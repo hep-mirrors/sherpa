@@ -3,6 +3,7 @@
 #include "REMNANTS/Main/Remnant_Base.H"
 #include "REMNANTS/Tools/Colour_Generator.H"
 #include "BEAM/Main/Beam_Base.H"
+#include "ATOOLS/Math/Poincare.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Settings.H"
@@ -106,4 +107,25 @@ TEST_CASE("Residual picks up a new beam-out momentum without Reset",
 
   remnant.Reset();
   CHECK(remnant.Residual() == Vec4D(6., 0., 0., 6.));
+}
+
+TEST_CASE("Window frame applies to the incoming momentum",
+          "[REMNANTS::Remnant_Base]") {
+  // Inside the remnant-breakup window the Frame_Guard boosts the blob list
+  // and hands the frame to the remnants; incoming momentum and residual must
+  // follow it, and revert to the lab once the window closes.
+  Boot();
+  Test_Beam beam(Flavour(kf_photon), 10.);
+  Test_Remnant remnant(Flavour(kf_photon), 0);
+  remnant.SetBeam(&beam);
+  remnant.Reset();
+  beam.SetOutMomentum(Vec4D(4., 0., 0., 4.));
+
+  Poincare window(Vec4D(10., 0., 0., -2.));
+  remnant.SetWindowFrame(&window);
+  CHECK(remnant.IncomingMomentum() == window * Vec4D(4., 0., 0., 4.));
+  CHECK(remnant.Residual() == window * Vec4D(4., 0., 0., 4.));
+
+  remnant.SetWindowFrame(nullptr);
+  CHECK(remnant.IncomingMomentum() == Vec4D(4., 0., 0., 4.));
 }
