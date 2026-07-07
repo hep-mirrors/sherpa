@@ -4,153 +4,156 @@
 #include "ATOOLS/Math/MyComplex.H"
 #include "ATOOLS/Math/MathTools.H" 
 #include "ATOOLS/Org/MyStrStream.H"
+#include <functional>
+#include <map>
+
+#define C_ZERO Complex(0., 0.)
 
 namespace ATOOLS {
+  /*
+  Class for storing (complex) constants which can be updated later on.
+
+  Each object can update based on external real constants, which need to be passed.
+  */
   class Kabbala {
-    std::string  shem;
-    Complex rishbon;
-  public:
-    Kabbala(const std::string str = std::string(""),const Complex C = Complex(0.,0.)) {
-      shem    = str;
-      rishbon = C;
-    } 
-    Kabbala(const Kabbala& k) {
-      shem    = k.String();
-      rishbon = k.Value();
-    }
-    Kabbala& operator=(const Kabbala& k) {
-      if (this!=&k) {
-	shem    = k.String();
-	rishbon = k.Value();
-      } 
-      return *this;
-    }
-    Kabbala& operator+=(const Kabbala& k);
-    Kabbala& operator-=(const Kabbala& k);
-    
-    Kabbala operator-();
-    Kabbala operator+();
+    public:
+      // types for the Lambda Functions for better readability
+      using Function_Argument = std::map<std::string, double_t>*;
+      using Func = std::function<Complex(Function_Argument)>;
+    private:
+      // members are a string, the current value and the lambda to update this value
+      std::string  shem;
+      Complex rishbon;
+      Func lambda = [](Function_Argument map) {return C_ZERO;}; //needs initial value to prevent bad function call
+    public:
+      //constructors
+      Kabbala();
+      Kabbala(const Complex& c);
+      Kabbala(const std::string& str, const Func& func, Function_Argument map);
+      Kabbala(const std::string& str ,const Complex& c);
+      Kabbala(const std::string& str, const Complex& c, const Func& func);
+      Kabbala(const Kabbala& k);
 
-    Kabbala& operator*=(const int& i);
-    Kabbala& operator*=(const Kabbala& k);
-    Kabbala& operator*=(const double& d);
-    Kabbala& operator*=(const Complex& c);
-    Kabbala& operator/=(const Kabbala& k);
-    
-    const Complex &Value() const {return rishbon;} 
-    const std::string &String() const {return shem;}
-   
-    void SetValue(Complex val) {rishbon = val;}
-    void SetString(std::string str) {shem    = str;} 
+      // Stuff for the lambda functions
+      Complex Update(Function_Argument map);
+      bool DependsOn(std::string param) const;
+      Func BasicLookUpFunction();
 
-    friend int IsZero(const Kabbala& a);
-    friend int IsEqual(const Kabbala& a,const Complex& b);
+      // Member access
+      inline const Complex& Value() const {return rishbon;} 
+      inline const std::string& String() const {return shem;}
+      inline const Func& Lambda() const {return lambda;}
+    
+      // Member setters
+      inline void SetValue(Complex val) {rishbon = val;}
+      inline void SetString(std::string str) {shem = str;} 
+      inline void SetLambda(Func func) {lambda = func;}
+
+      /*
+      a LOT of useful operators :)
+      */
+      Kabbala& operator=(const Kabbala& k);
+
+      Kabbala& operator+=(const Kabbala& k);
+      Kabbala& operator+=(const Complex& c);
+      Kabbala& operator+=(const int& i) {return *this += Complex(i);}
+      Kabbala& operator+=(const double& d) {return *this += Complex(d);}
+
+      Kabbala& operator-=(const Kabbala& k);
+      Kabbala& operator-=(const Complex& c);
+      Kabbala& operator-=(const int& i) {return *this -= Complex(i);}
+      Kabbala& operator-=(const double& d) {return *this -= Complex(d);}
+
+      Kabbala& operator*=(const Kabbala& k);
+      Kabbala& operator*=(const Complex& c);
+      Kabbala& operator*=(const int& i) {return *this *= Complex(i);}
+      Kabbala& operator*=(const double& d) {return *this *= Complex(d);}
+
+      Kabbala& operator/=(const Kabbala& k);
+      Kabbala& operator/=(const Complex& c);
+      Kabbala& operator/=(const int& i) {return *this /= Complex(i);}
+      Kabbala& operator/=(const double& d) {return *this /= Complex(d);}
+      
+      Kabbala operator+() {return Kabbala(shem,rishbon,lambda);}
+      Kabbala operator+(const Kabbala& k) const {Kabbala K(*this); K+=k; return K;}
+      Kabbala operator+(const Complex& c) const {Kabbala K(*this); K+=c; return K;}
+      Kabbala operator+(const int& i)     const {Kabbala K(*this); K+=i; return K;}
+      Kabbala operator+(const double& d)  const {Kabbala K(*this); K+=d; return K;}
+
+      Kabbala operator-();
+      Kabbala operator-(const Kabbala& k) const {Kabbala K(*this); K-=k; return K;}
+      Kabbala operator-(const Complex& c) const {Kabbala K(*this); K-=c; return K;}
+      Kabbala operator-(const int& i)     const {Kabbala K(*this); K-=i; return K;}
+      Kabbala operator-(const double& d)  const {Kabbala K(*this); K-=d; return K;}
+
+      Kabbala operator*(const Kabbala& k) const {Kabbala K(*this); K*=k; return K;}
+      Kabbala operator*(const Complex& c) const {Kabbala K(*this); K*=c; return K;}
+      Kabbala operator*(const int& i)     const {Kabbala K(*this); K*=i; return K;}
+      Kabbala operator*(const double& d)  const {Kabbala K(*this); K*=d; return K;}
+
+      Kabbala operator/(const Kabbala& k) const {Kabbala K(*this); K/=k; return K;}
+      Kabbala operator/(const Complex& c) const {Kabbala K(*this); K/=c; return K;}
+      Kabbala operator/(const int& i)     const {Kabbala K(*this); K/=i; return K;}
+      Kabbala operator/(const double& d)  const {Kabbala K(*this); K/=d; return K;}
   };
+    
+  // Easy Output
+  inline std::ostream &operator<<(std::ostream& s, const Kabbala& k){s << k.String() << " with current value: " << k.Value(); return s;} 
   
-  inline int IsZero(const Kabbala& a) {
-    return ATOOLS::IsZero(a.Value());
-  }
+  // this is deprecated, rather use operator ==
+  inline bool IsZero(const Kabbala& a) {return ATOOLS::IsZero(a.Value());}
+  inline int IsEqual(const Kabbala& a,const Complex& b) {return ATOOLS::IsEqual(a.Value(),b);}
 
-  inline int IsEqual(const Kabbala& a,const Complex& b) {
-    return ATOOLS::IsEqual(a.Value(),b);
-  }
+  /*
+  Some Calculations that are useful
+  */
+  Kabbala exp(const Kabbala& k1);
+  Kabbala sin(const Kabbala& k1);
+  Kabbala cos(const Kabbala& k1);
+  Kabbala tan(const Kabbala& k1);
+  Kabbala sqrt(const Kabbala& k1);
+  Kabbala pow(const Kabbala& k1, const Complex& c);
+  inline Kabbala sqr(const Kabbala& k1) {return pow(k1, Complex(2.));}
+  Kabbala complexconjugate(const Kabbala& k1);
+  Kabbala asin(const Kabbala& k1);
+  Kabbala acos(const Kabbala& k1);
+  Kabbala atan(const Kabbala& k1);
+  //Kabbala abs(const Kabbala& k1);
 
-  inline Kabbala operator+(const Kabbala& k1,const Kabbala& k2)
-  {
-    Kabbala k(k1);
-    k += k2;
-    return k;
-  }
+  /*
+  Some tools for comparison
+  */
+         bool operator==(const Kabbala& k1, const Kabbala& k2);
+  inline bool operator==(const Kabbala& k1, const Complex& c) {return k1.Value() == c;}
+  inline bool operator!=(const Kabbala& k1, const Kabbala& k2) {return !(k1==k2);}
+  inline bool operator!=(const Kabbala& k1, const Complex& c) {return k1.Value() != c;}
+         bool operator<(const Kabbala& k1, const Kabbala& k2);
+  inline bool operator<(const Kabbala& k1, const Complex& c) {return abs(k1.Value()) < abs(c);}
 
-  inline Kabbala operator-(const Kabbala& k1,const Kabbala& k2)
-  {
-    Kabbala k(k1);
-    k -= k2;
-    return k;
-  }
+  /*
+  if the operands are the other way around
+  */
+  inline Kabbala operator+(const Complex& c,  const Kabbala& k) {return k+c;}
+  inline Kabbala operator+(const int& i,      const Kabbala& k) {return k+i;}
+  inline Kabbala operator+(const double& d,   const Kabbala& k) {return k+d;}
 
-  inline Kabbala operator* (const Kabbala& k1, const Kabbala& k2) 
-  {
-    Kabbala k(k1);
-    k *= k2;
-    return k;
-  }
+  inline Kabbala operator-(const Complex& c,  const Kabbala& k) {return -(k-c);}
+  inline Kabbala operator-(const int& i,      const Kabbala& k) {return -(k-i);}
+  inline Kabbala operator-(const double& d,   const Kabbala& k) {return -(k-d);}
 
-  inline Kabbala operator* (const int& i1, const Kabbala& k2) 
-  {
-    Kabbala k(k2); 
-    k *= i1;
-    return k;
-  }
+  inline Kabbala operator*(const Complex& c,  const Kabbala& k) {return k*c;}
+  inline Kabbala operator*(const int& i,      const Kabbala& k) {return k*i;}
+  inline Kabbala operator*(const double& d,   const Kabbala& k) {return k*d;}
 
-  inline Kabbala operator* (const Kabbala& k1,const int& i2) 
-  {
-    return i2*k1;
-  }
+  Kabbala operator/(const Complex& c,  const Kabbala& k);
+  inline Kabbala operator/(const int& i,      const Kabbala& k) {return Complex(i)/k;}
+  inline Kabbala operator/(const double& d,   const Kabbala& k) {return Complex(d)/k;}
 
-  
-  inline Kabbala operator* (const double d1, const Kabbala& k2) 
-  {
-    Kabbala k(k2); 
-    k *= d1;
-    return k;
-  }
-  
-  inline Kabbala operator* (const Kabbala& k1,const double d2) 
-  {
-    return d2*k1;
-  }
-  
-    inline Kabbala operator* (const Complex c1, const Kabbala& k2) 
-  {
-    Kabbala k(k2); 
-    k *= c1;
-    return k;
-  }
-  
-  inline Kabbala operator* (const Kabbala& k1,const Complex c2) 
-  {
-    Kabbala k(k1); 
-    k *= c2;
-    return k;
-  }
-  
-  inline Kabbala operator/ (const Kabbala& k1, const Kabbala& k2) 
-  {
-    Kabbala k(k1);
-    k /= k2;
-    return k;
-  }
-
-  inline bool operator==(const Kabbala& k1,const Kabbala& k2) 
-  {
-    if (k1.Value()!=k2.Value())   return false;
-    if (k1.String()!=k2.String()) return false;
-    return true;
-  }
-
-  inline bool operator!=(const Kabbala& k1,const Kabbala& k2)
-  {
-    return !(k1==k2);
-  }
-
-  inline Kabbala exp(const Kabbala& k1)
-  {
-    Kabbala k(k1);
-
-    k.SetValue(std::exp(k.Value()));
-    k.SetString(std::string("exp(") + k.String() + std::string(")"));
-
-    return k;
-  }
-
-  inline Kabbala sin(const Kabbala& k1)
-  {
-    Kabbala k(k1);
-    return k;
-  }
+  /*
+  some conversion; only here because old models will need it
+  */
+  inline double ToDouble(const Kabbala& k) {if (!ATOOLS::IsZero(k.Value().imag())) THROW(fatal_error, "Kabbala tried casting complex number to real"); return k.Value().real();}
+  inline std::string ToString(const Kabbala& k) {return k.String();}
 }
 
 #endif
-
-

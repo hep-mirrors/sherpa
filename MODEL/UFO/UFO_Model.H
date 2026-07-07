@@ -3,6 +3,7 @@
 
 #include "MODEL/Main/Model_Base.H"
 #include "MODEL/UFO/UFO_Param_Reader.H"
+#include "ATOOLS/Math/Kabbala.H"
 
 namespace UFO{
 
@@ -24,16 +25,8 @@ namespace UFO{
   protected:
 
     StringMap m_lorentz_map;
-
+    std::map<std::string, ATOOLS::Kabbala> m_cpls;
     UFO::UFO_Param_Reader* p_dataread;
-
-    static Complex complexconjugate(const Complex& arg);
-    static Complex re(const Complex& arg);
-    static Complex im(const Complex& arg);
-    static Complex complex(double real, double imag);
-    static Complex sqrt(const double& arg);
-    static Complex sqrt(const Complex& arg);
-    static double  ToDouble(const Complex& arg);
 
     virtual void ParamInit()    {}
     virtual void ParticleInit() {}

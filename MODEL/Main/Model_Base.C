@@ -92,6 +92,7 @@ Model_Base::~Model_Base()
   }
   if (p_constants!=NULL)         delete p_constants;
   if (p_complexconstants!=NULL)  delete p_complexconstants;
+  if (p_variations)              delete p_variations;
 }
 
 void Model_Base::RegisterDefaults() const
@@ -126,6 +127,7 @@ void Model_Base::RegisterDefaults() const
     s["ALPHAQED_DEFAULT_SCALE"].SetDefault(sqr(Flavour(kf_Z).Mass()));
   else
     s["ALPHAQED_DEFAULT_SCALE"].SetDefault(0.0);
+  if (s["MODEL_VARIATIONS"].SetDefault("None").IsMap() && !implements_variations) msg_Out() << "\x1b[31mThe model does not implement variations, ignoring them...\x1b[0m" << std::endl;
 }
 
 void Model_Base::RotateVertices()

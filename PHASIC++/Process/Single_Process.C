@@ -1296,7 +1296,7 @@ void Single_Process::InitializeTheReweighting(ATOOLS::Variations_Mode mode)
     if (varitem.IsScalar()) {
       const auto name = varitem.Get<std::string>();
       if (name == "None") {
-        return;
+        break;
       } else {
         m_hard_process_variation_generators.push_back(
             Hard_Process_Variation_Generator_Getter_Function::
@@ -1306,6 +1306,12 @@ void Single_Process::InitializeTheReweighting(ATOOLS::Variations_Mode mode)
           THROW(fatal_error, "Variation generator \"" + name + "\" not found");
       }
     }
+  }
+  // at some point this could be included in the "variations"
+  if (s["MODEL_VARIATIONS"].IsMap()){
+    Hard_Process_Variation_Generator_Base *vargen = ATOOLS::Getter_Function<Hard_Process_Variation_Generator_Base, Args>
+              ::GetObject("MODEL_PARAMETERS", Hard_Process_Variation_Generator_Arguments{this});
+    if (vargen != nullptr) m_hard_process_variation_generators.push_back(vargen);
   }
 }
 
