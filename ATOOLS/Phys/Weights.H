@@ -383,6 +383,17 @@ namespace ATOOLS {
   /// Index 0 (nominal) ignored; 1..N multiplied into named entries.
   /// operator[] auto-creates missing slots at 1.0 for padding.
   constexpr const char* SoftPhysicsKey = "SoftPhysics";
+
+  /// Register a soft-physics module's variation count (m_n_variations, including
+  /// the nominal at index 0). Call once per module at initialisation.
+  void RegisterSoftPhysicsVariations(size_t n_variations);
+
+  /// Ensure the SoftPhysics entry exists with the registered number of variation
+  /// slots, all present at nominal 1.0.
+  void SeedSoftPhysicsVariations(Weights_Map& wgtmap);
+
+  /// Multiply the given per-variation weights into the SoftPhysics entry. Index
+  /// 0 (nominal) is ignored.
   void CombineSoftPhysicsVariations(
       Weights_Map& wgtmap, const std::vector<double>& variation_weights);
 
