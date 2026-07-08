@@ -341,6 +341,12 @@ int Event_Handler::IterateEventPhases(eventtype::code & mode) {
   }
   msg_Tracking()<<METHOD<<": User hooks ended normally.\n";
 
+  if (p_signal && (*p_signal)["WeightsMap"]) {
+    auto wgtmap = (*p_signal)["WeightsMap"]->Get<Weights_Map>();
+    SeedSoftPhysicsVariations(wgtmap);
+    p_signal->AddData("WeightsMap", new Blob_Data<Weights_Map>(wgtmap));
+  }
+
   return 0;
 }
 

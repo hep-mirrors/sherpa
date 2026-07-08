@@ -684,6 +684,23 @@ namespace ATOOLS {
   template class Blob_Data<Weights_Map>;
   template Weights_Map& Blob_Data_Base::Get<Weights_Map>();
 
+  // Number of SoftPhysics variations (including the nominal at index 0),
+  // taken as the maximum over all contributing soft-physics modules.
+  static size_t s_softphysics_n_variations = 1;
+
+  void RegisterSoftPhysicsVariations(size_t n_variations) {
+    s_softphysics_n_variations =
+        std::max(s_softphysics_n_variations, n_variations);
+  }
+
+  void SeedSoftPhysicsVariations(Weights_Map& wgtmap) {
+    if (s_softphysics_n_variations <= 1) return;
+    Weights& sw = wgtmap[SoftPhysicsKey];
+    for (size_t ivar=1; ivar<s_softphysics_n_variations; ++ivar) {
+      sw["v" + std::to_string(ivar)];
+    }
+  }
+
   void CombineSoftPhysicsVariations(
       Weights_Map& wgtmap, const std::vector<double>& variation_weights) {
     if (variation_weights.size() <= 1) return;

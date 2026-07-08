@@ -84,6 +84,9 @@ void MI_Reweighting::Initialize(const MI_Parameters      * mipars,
 
   m_max_reweight_factor = (*p_mipars)("max_reweight_factor");
   ResetEvent();
+
+  if (m_n_variations > 1)
+    RegisterSoftPhysicsVariations(m_n_variations);
 }
 
 void MI_Reweighting::ResetEvent() {
