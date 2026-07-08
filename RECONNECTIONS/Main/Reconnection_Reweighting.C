@@ -32,6 +32,9 @@ void Reconnection_Reweighting::Initialize() {
 
   m_max_reweight_factor = s["MAX_REWEIGHT_FACTOR"].SetDefault(-1.).Get<double>();
   ResetEvent();
+
+  if (m_n_variations > 1)
+    RegisterSoftPhysicsVariations(m_n_variations);
 }
 
 void Reconnection_Reweighting::ResetEvent() {
