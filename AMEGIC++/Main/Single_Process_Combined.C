@@ -48,9 +48,9 @@ AMEGIC::Single_Process_Combined::~Single_Process_Combined()
 }
 
 /*------------------------------------------------------------------------------
-  
+
   Generic stuff for initialization of Single_Process_Combinedes
-      
+
   ------------------------------------------------------------------------------*/
 
 void AMEGIC::Single_Process_Combined::PolarizationNorm() {
@@ -58,7 +58,7 @@ void AMEGIC::Single_Process_Combined::PolarizationNorm() {
 }
 
 
-void AMEGIC::Single_Process_Combined::WriteAlternativeName(string aname) 
+void AMEGIC::Single_Process_Combined::WriteAlternativeName(string aname)
 {
   if (aname==m_name) return;
   std::string altname = rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/"+m_ptypename+"/"+m_name+".alt";
@@ -76,7 +76,7 @@ bool AMEGIC::Single_Process_Combined::CheckAlternatives(vector<Process_Base *>& 
   std::string altname = rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/"+m_ptypename+"/"+procname+".alt";
   if (FileExists(altname)) {
     double factor;
-    string name,dummy; 
+    string name,dummy;
     My_In_File from(altname);
     from.Open();
     *from>>name>>factor;
@@ -145,9 +145,9 @@ int AMEGIC::Single_Process_Combined::InitAmplitude(Amegic_Model * model,Topology
   if (directload) {
     string hstr=rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/"+m_ptypename+"/"+m_libname;
     string hstr2=rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/"+m_ptypename+"/"+m_name+".map";
-    p_BS     = new Basic_Sfuncs(m_nin+m_nout,m_nin+m_nout,&m_flavs.front(),p_b,hstr,hstr2);  
+    p_BS     = new Basic_Sfuncs(m_nin+m_nout,m_nin+m_nout,&m_flavs.front(),p_b,hstr,hstr2);
   }
-  else p_BS     = new Basic_Sfuncs(m_nin+m_nout,m_nin+m_nout,&m_flavs.front(),p_b);  
+  else p_BS     = new Basic_Sfuncs(m_nin+m_nout,m_nin+m_nout,&m_flavs.front(),p_b);
   p_BS->Setk0(s_gauge);
   p_shand  = new String_Handler(m_gen_str,p_BS,model->p_model->GetCouplings());
   const bool cvp{
@@ -170,11 +170,11 @@ int AMEGIC::Single_Process_Combined::InitAmplitude(Amegic_Model * model,Topology
       if (p_hel->Compare(links[j]->GetHelicity(),m_nin+m_nout)) {
 	m_sfactor = sqr(m_sfactor);
 	msg_Tracking()<<"AMEGIC::Single_Process_Combined::InitAmplitude : Found compatible process for "<<Name()<<" : "<<links[j]->Name()<<endl;
-	  
+
 	if (!FoundMappingFile(m_libname,m_pslibname)) {
 	  string mlname = rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/"+m_ptypename+"/"+links[j]->Name();
 	  string mnname = rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/"+m_ptypename+"/"+Name();
-	  if (FileExists(mlname+string(".map"))) { 
+	  if (FileExists(mlname+string(".map"))) {
 	    if (m_sfactor==1.) My_In_File::CopyInDB(mlname+".map",mnname+".map");
 	    else {
 	      UpdateMappingFile(mlname,cplmap);
@@ -191,11 +191,11 @@ int AMEGIC::Single_Process_Combined::InitAmplitude(Amegic_Model * model,Topology
 	Minimize();
 	return 1;
       }
-    } 
+    }
   }
   if (directload) {
     p_ampl->CompleteLibAmplitudes(m_nin+m_nout,m_ptypename+string("/")+m_name,
-				  m_ptypename+string("/")+m_libname);    
+				  m_ptypename+string("/")+m_libname);
     if (!p_shand->SearchValues(m_gen_str,m_libname,p_BS)) return 0;
     if (!TestLib()) return 0;
     links.push_back(this);
@@ -213,7 +213,7 @@ int AMEGIC::Single_Process_Combined::InitAmplitude(Amegic_Model * model,Topology
 
   int result(Tests());
   switch (result) {
-    case 2 : 
+    case 2 :
     if (p_partner==this) links.push_back(this);
     Minimize();
     WriteAlternativeName(p_partner->Name());
@@ -225,8 +225,8 @@ int AMEGIC::Single_Process_Combined::InitAmplitude(Amegic_Model * model,Topology
     if (CheckLibraries()) return 1;
     for (size_t j=0;j<links.size();j++) if (Type()==links[j]->Type()) {
       if (links[j]->NewLibs()) {
-	if (CheckStrings((Single_Process_Combined*)links[j])) return 1;	
-      }      
+	if (CheckStrings((Single_Process_Combined*)links[j])) return 1;
+      }
     }
     if (p_partner!=this) links.push_back(this);
 
@@ -253,14 +253,14 @@ int AMEGIC::Single_Process_Combined::InitAmplitude(Amegic_Model * model,Topology
 
 
 
-int AMEGIC::Single_Process_Combined::Tests() 
+int AMEGIC::Single_Process_Combined::Tests()
 {
   int number      = 1;
   int gauge_test  = 1;
   int string_test = 1;
 
   /* ---------------------------------------------------
-     
+
      The reference result for momenta moms
 
      --------------------------------------------------- */
@@ -280,17 +280,17 @@ int AMEGIC::Single_Process_Combined::Tests()
   if (gauge_test) {
     m_pol.Set_Gauge_Vectors(m_nin+m_nout,p_testmoms,Vec4D(sqrt(3.),1.,1.,-1.));
     p_BS->Setk0(0);
-    p_BS->CalcEtaMu(p_testmoms);  
+    p_BS->CalcEtaMu(p_testmoms);
     p_BS->InitGaugeTest(.9);
 
     msg_Info()<<"AMEGIC::Single_Process_Combined::Tests for "<<m_name<<std::endl
 	      <<"   Prepare gauge test and init helicity amplitudes. This may take some time."
 	      <<std::endl;
-    for (size_t i=0;i<p_hel->MaxHel();i++) { 
+    for (size_t i=0;i<p_hel->MaxHel();i++) {
       if (p_hel->On(i)) {
-	helvalue = p_ampl->Differential(i,(*p_hel)[i])*p_hel->PolarizationFactor(i); 
+	helvalue = p_ampl->Differential(i,(*p_hel)[i])*p_hel->PolarizationFactor(i);
 	M2      +=  helvalue;
-      } 
+      }
     }
     M2     *= sqr(m_pol.Massless_Norm(m_nin+m_nout,&m_flavs.front(),p_BS));
     m_iresult  = M2;
@@ -300,15 +300,15 @@ int AMEGIC::Single_Process_Combined::Tests()
   p_ampl->SetStringOn();
   (p_shand->Get_Generator())->Reset(1);
   /* ---------------------------------------------------
-     
+
   First test : gauge test
-  
+
   --------------------------------------------------- */
   p_BS->Setk0(s_gauge);
   p_BS->CalcEtaMu(p_testmoms);
   number++;
 
-  if (!gauge_test) p_ampl->SetStringOff();  //second test without string production 
+  if (!gauge_test) p_ampl->SetStringOff();  //second test without string production
 
   double M2g = 0.;
   double * M_doub = new double[p_hel->MaxHel()];
@@ -316,9 +316,9 @@ int AMEGIC::Single_Process_Combined::Tests()
   /* Calculate the squared amplitude of the polarisation states. If a certain external
      polarisation combination is found not to contribute for the point in phase space
      tested, it is assumed that is doesnt contribute at all and is switched off.      */
-  for (size_t i=0;i<p_hel->MaxHel();i++) { 
+  for (size_t i=0;i<p_hel->MaxHel();i++) {
     if (p_hel->On(i)) {
-      M_doub[i]  = p_ampl->Differential(i,(*p_hel)[i])*p_hel->PolarizationFactor(i);  
+      M_doub[i]  = p_ampl->Differential(i,(*p_hel)[i])*p_hel->PolarizationFactor(i);
       M2g       += M_doub[i];
     }
   }
@@ -336,9 +336,9 @@ int AMEGIC::Single_Process_Combined::Tests()
 
   M2g    *= sqr(m_pol.Massless_Norm(m_nin+m_nout,&m_flavs.front(),p_BS));
   m_iresult  = M2g;
-  p_ampl->ClearCalcList();  
+  p_ampl->ClearCalcList();
   p_ampl->FillCoupling(p_shand);
-  p_ampl->KillZList();  
+  p_ampl->KillZList();
   p_BS->StartPrecalc();
 
   if (gauge_test) {
@@ -421,7 +421,7 @@ int AMEGIC::Single_Process_Combined::Tests()
   }
 
   /* ---------------------------------------------------
-     
+
      Second test : string test
 
      --------------------------------------------------- */
@@ -451,7 +451,7 @@ int AMEGIC::Single_Process_Combined::Tests()
     if (p_shand->Is_String()) {
       double  M2S = 0.;
       p_shand->Calculate();
-      
+
       for (size_t i=0;i<p_hel->MaxHel();i++) {
 	if (p_hel->On(i)) {
 	  M2S += p_ampl->Differential(i)*p_hel->PolarizationFactor(i)*p_hel->Multiplicity(i);
@@ -482,10 +482,10 @@ int AMEGIC::Single_Process_Combined::TestLib()
   p_BS->CalcEtaMu(p_testmoms);
   p_hel->InitializeSpinorTransformation(p_BS);
   p_shand->Calculate();
-  
+
   for (size_t i=0;i<p_hel->MaxHel();i++) {
     M2 += M_doub[i] = p_ampl->Differential(i)*p_hel->Multiplicity(i)*p_hel->PolarizationFactor(i);
-  } 
+  }
   for (size_t i=0;i<p_hel->MaxHel();i++) {
     if (M_doub[i]==0.) {
      p_hel->SwitchOff(i);
@@ -521,7 +521,7 @@ int AMEGIC::Single_Process_Combined::CheckLibraries() {
   msg_Info()<<"AMEGIC::Single_Process_Combined::CheckLibraries : Looking for a suitable library. This may take some time."<<std::endl;
   String_Handler * shand1;
   shand1      = new String_Handler(p_shand->Get_Generator());
-  
+
   m_libnumb  = 0;
   string proc = rpa->gen.Variable("SHERPA_CPP_PATH")+string("/Process/Amegic/")+m_ptypename+string("/V");
   string testname;
@@ -531,13 +531,13 @@ int AMEGIC::Single_Process_Combined::CheckLibraries() {
     testname  = CreateLibName()+string("_")+ToString(m_libnumb);
     if (shand1->SearchValues(m_gen_str,testname,p_BS)) {
       shand1->Calculate();
-      
+
       M2s = 0.;
       for (size_t i=0;i<p_hel->MaxHel();i++) {
 	helvalue = p_ampl->Differential(shand1,i) * p_hel->PolarizationFactor(i) *
 	  p_hel->Multiplicity(i);
 	M2s     += helvalue;
-	} 
+	}
       M2s *= sqr(m_pol.Massless_Norm(m_nin+m_nout,&m_flavs.front(),p_BS));
       if (ATOOLS::IsEqual(M2s,Result())) {
 	m_libname = testname;
@@ -548,7 +548,7 @@ int AMEGIC::Single_Process_Combined::CheckLibraries() {
 	Minimize();
 	return 1;
       }
-    } 
+    }
     else break;
     ++m_libnumb;
   }
@@ -586,8 +586,8 @@ int AMEGIC::Single_Process_Combined::CheckStrings(Single_Process_Combined* tproc
   }
   return 0;
 }
-  
-void AMEGIC::Single_Process_Combined::WriteLibrary() 
+
+void AMEGIC::Single_Process_Combined::WriteLibrary()
 {
   if (m_gen_str<2) return;
   string testname;
@@ -600,7 +600,7 @@ void AMEGIC::Single_Process_Combined::WriteLibrary()
   m_libname = testname;
   if (p_partner==this) m_pslibname = m_libname;
                   else m_pslibname = p_partner->PSLibName();
-  ATOOLS::MakeDir(newpath+m_ptypename+"/"+m_libname,true); 
+  ATOOLS::MakeDir(newpath+m_ptypename+"/"+m_libname,true);
   p_shand->Output(p_hel,m_ptypename+string("/")+m_libname);
   CreateMappingFile(this);
   p_BS->Output(newpath+m_ptypename+string("/")+m_libname);
@@ -636,7 +636,7 @@ void AMEGIC::Single_Process_Combined::CreateMappingFile(Single_Process_Combined*
   to.Close();
 }
 
-bool AMEGIC::Single_Process_Combined::FoundMappingFile(std::string & MEname, std::string & PSname) 
+bool AMEGIC::Single_Process_Combined::FoundMappingFile(std::string & MEname, std::string & PSname)
 {
   std::string buf;
   int pos;
@@ -660,7 +660,7 @@ bool AMEGIC::Single_Process_Combined::FoundMappingFile(std::string & MEname, std
   return 0;
 }
 
-void AMEGIC::Single_Process_Combined::UpdateMappingFile(std::string name, map<string,Complex> & cmap) 
+void AMEGIC::Single_Process_Combined::UpdateMappingFile(std::string name, map<string,Complex> & cmap)
 {
   std::string buf;
   int pos;
@@ -684,9 +684,9 @@ void AMEGIC::Single_Process_Combined::UpdateMappingFile(std::string name, map<st
 }
 
 /*------------------------------------------------------------------------------
-  
+
   Phase space initialization
-  
+
   ------------------------------------------------------------------------------*/
 
 bool AMEGIC::Single_Process_Combined::FillIntegrator
@@ -699,11 +699,12 @@ bool AMEGIC::Single_Process_Combined::FillIntegrator
   return Process_Base::FillIntegrator(psh);
 }
 
-bool AMEGIC::Single_Process_Combined::SetUpIntegrator() 
-{  
+bool AMEGIC::Single_Process_Combined::SetUpIntegrator()
+{
   if (m_nin==2) {
-    if ( (m_flavs[0].Mass() != p_int->ISR()->Flav(0).Mass()) ||
-	 (m_flavs[1].Mass() != p_int->ISR()->Flav(1).Mass()) ) p_int->ISR()->SetPartonMasses(m_flavs);
+    if (p_int->ISR()->Mass2(0) != sqr(m_flavs[0].Mass()) ||
+        p_int->ISR()->Mass2(1) != sqr(m_flavs[1].Mass()))
+      p_int->ISR()->SetPartonMasses(m_flavs);
     if (CreateChannelLibrary()) return 1;
   }
   if (m_nin==1) if (CreateChannelLibrary()) return 1;
@@ -714,15 +715,15 @@ bool AMEGIC::Single_Process_Combined::CreateChannelLibrary()
 {
   p_psgen     = new Phase_Space_Generator(m_nin, m_nout);
   bool newch  = 0;
-  if (m_nin>=1)  newch = p_psgen->Construct(p_channellibnames,m_ptypename,m_pslibname,&m_flavs.front(),this); 
+  if (m_nin>=1)  newch = p_psgen->Construct(p_channellibnames,m_ptypename,m_pslibname,&m_flavs.front(),this);
   if (newch>0) return 0;
   return 1;
 }
 
 /*------------------------------------------------------------------------------
-  
+
   Process management
-  
+
   ------------------------------------------------------------------------------*/
 void AMEGIC::Single_Process_Combined::Minimize()
 {
@@ -776,20 +777,20 @@ double AMEGIC::Single_Process_Combined::operator()(const ATOOLS::Vec4D* mom)
   return p_me2->Calc(moms);
 }
 
-int AMEGIC::Single_Process_Combined::NumberOfDiagrams() { 
-  if (p_partner==this) return p_ampl->GetGraphNumber(); 
+int AMEGIC::Single_Process_Combined::NumberOfDiagrams() {
+  if (p_partner==this) return p_ampl->GetGraphNumber();
   return p_partner->NumberOfDiagrams();
 }
 
-Point * AMEGIC::Single_Process_Combined::Diagram(int i) { 
-  if (p_partner==this) return p_ampl->GetPointlist(i); 
+Point * AMEGIC::Single_Process_Combined::Diagram(int i) {
+  if (p_partner==this) return p_ampl->GetPointlist(i);
   return p_partner->Diagram(i);
-} 
+}
 
 
-void AMEGIC::Single_Process_Combined::AddChannels(std::list<std::string>* tlist) 
+void AMEGIC::Single_Process_Combined::AddChannels(std::list<std::string>* tlist)
 {
-  if (p_partner==this) {    
+  if (p_partner==this) {
     list<string>* clist = p_channellibnames;
     for (list<string>::iterator it=clist->begin();it!=clist->end();++it) {
       bool hit = 0;
@@ -870,7 +871,7 @@ bool AMEGIC::Single_Process_Combined::Combinable
 (const size_t &idi,const size_t &idj)
 {
   if (m_ccombs.empty()) FillCombinations();
-  Combination_Set::const_iterator 
+  Combination_Set::const_iterator
     cit(m_ccombs.find(std::pair<size_t,size_t>(idi,idj)));
   return cit!=m_ccombs.end();
 }

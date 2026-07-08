@@ -212,9 +212,9 @@ bool Process_Group::CalculateTotalXSec(const std::string &resultpath,
   auto psh = p_int->PSHandler();
   if (p_int->ISR()) {
     if (m_nin==2) {
-      if (m_flavs[0].Mass()!=p_int->ISR()->Flav(0).Mass() ||
-	  m_flavs[1].Mass()!=p_int->ISR()->Flav(1).Mass()) {
-	p_int->ISR()->SetPartonMasses(m_flavs);
+      if (p_int->ISR()->Mass2(0) != sqr(m_flavs[0].Mass()) ||
+          p_int->ISR()->Mass2(1) != sqr(m_flavs[1].Mass())) {
+        p_int->ISR()->SetPartonMasses(m_flavs);
       }
     }
     psh->InitCuts();

@@ -11,6 +11,7 @@ namespace PHASIC {
     double ** scut_save;
     double *  energymin_save;
     std::map<size_t,double> m_smin_map;
+    double sijminfac;
     char GetIndexID(int id);
     double Getscut(std::vector<int>,std::vector<int>,int,int,int);
   public:
@@ -18,7 +19,7 @@ namespace PHASIC {
     double *  energymin;
     double *  etmin;
     int       nin, ncut;
-    double    smin, minsijfac;
+    double    smin;
 
     Cut_Data();
     ~Cut_Data();
@@ -29,7 +30,7 @@ namespace PHASIC {
     double GetscutAmegic(std::string);
     double Getscut(size_t);
     void Setscut(size_t,double);
-  };    
+  };
 
 
   std::ostream & operator<<(std::ostream &, Cut_Data &);

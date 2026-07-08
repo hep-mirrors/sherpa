@@ -99,7 +99,7 @@ bool AMEGIC::Process_Group::Initialize(PHASIC::Process_Base *const proc)
   AMEGIC::Process_Base* apb=proc->Get<AMEGIC::Process_Base>();
   apb->SetPrintGraphs(m_pinfo.m_gpath);
   apb->SetTestMoms(p_testmoms);
-  int res=apb->InitAmplitude(p_model,p_top,m_umprocs,m_errprocs); 
+  int res=apb->InitAmplitude(p_model,p_top,m_umprocs,m_errprocs);
   if (s_partcommit)
     My_In_File::CloseDB(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/",0);
   if (res) proc->SetParent((PHASIC::Process_Base*)this);
@@ -155,19 +155,18 @@ bool AMEGIC::Process_Group::SetUpIntegrator()
       if (!res) return false;
     }
   }
-  if (m_nin==2) {
-    if ( (m_flavs[0].Mass() != p_int->ISR()->Flav(0).Mass()) ||
-	 (m_flavs[1].Mass() != p_int->ISR()->Flav(1).Mass()) ) 
+  if (m_nin==2 &&
+      (p_int->ISR()->Mass2(0) != sqr(m_flavs[0].Mass()) ||
+       p_int->ISR()->Mass2(1) != sqr(m_flavs[1].Mass())))
       p_int->ISR()->SetPartonMasses(m_flavs);
-  }
-  for (size_t i=0;i<m_procs.size();i++) 
+  for (size_t i=0;i<m_procs.size();i++)
     m_procs[i]->Get<AMEGIC::Process_Base>()->AddChannels(p_channellibnames);
   return true;
 }
 
-void AMEGIC::Process_Group::SetPrintGraphs(std::string gpath) 
+void AMEGIC::Process_Group::SetPrintGraphs(std::string gpath)
 {
- for (size_t i=0;i<m_procs.size();i++) 
+ for (size_t i=0;i<m_procs.size();i++)
    m_procs[i]->Get<AMEGIC::Process_Base>()->SetPrintGraphs(gpath);
 }
 
@@ -222,37 +221,37 @@ void AMEGIC::Process_Group::EndOptimize()
   if (reset) p_int->Reset();
 }
 
-AMEGIC::Process_Base *AMEGIC::Process_Group::Partner() const  
-{ 
-  return 0; 
-}
-
-Amplitude_Handler *AMEGIC::Process_Group::GetAmplitudeHandler() 
-{
-  return 0;
-} 
-
-Helicity *AMEGIC::Process_Group::GetHelicity() 
+AMEGIC::Process_Base *AMEGIC::Process_Group::Partner() const
 {
   return 0;
 }
 
-bool AMEGIC::Process_Group::NewLibs() 
+Amplitude_Handler *AMEGIC::Process_Group::GetAmplitudeHandler()
 {
-  for (size_t i(0);i<m_procs.size();++i) 
+  return 0;
+}
+
+Helicity *AMEGIC::Process_Group::GetHelicity()
+{
+  return 0;
+}
+
+bool AMEGIC::Process_Group::NewLibs()
+{
+  for (size_t i(0);i<m_procs.size();++i)
     if (m_procs[i]->Get<AMEGIC::Amegic_Base>()->NewLibs()) return true;
   return false;
 }
 
-std::string AMEGIC::Process_Group::PSLibName() 
+std::string AMEGIC::Process_Group::PSLibName()
 {
   return "";
-}        
+}
 
 void AMEGIC::Process_Group::Minimize()
 {
   for (size_t i(0);i<m_procs.size();++i)
-    m_procs[i]->Get<AMEGIC::Amegic_Base>()->Minimize();  
+    m_procs[i]->Get<AMEGIC::Amegic_Base>()->Minimize();
 }
 
 void AMEGIC::Process_Group::PrintProcessSummary(int it)
@@ -264,7 +263,7 @@ void AMEGIC::Process_Group::PrintProcessSummary(int it)
   std::cout<<Name()<<std::endl;
 
   for (size_t i=0;i<m_procs.size();++i) m_procs[i]->Get<AMEGIC::Process_Base>()->PrintProcessSummary(it+1);
-} 
+}
 
 void AMEGIC::Process_Group::FillAlphaHistogram(ATOOLS::Histogram* histo,double weight)
 {

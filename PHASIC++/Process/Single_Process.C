@@ -95,24 +95,30 @@ Weight_Info *Single_Process::OneEvent(const int wmode,
   DEBUG_FUNC(m_name);
   p_selected = this;
   auto psh = p_int->PSHandler();
-  if (p_int->ISR())
-    p_int->ISR()->SetSprimeMin(psh->Cuts()->Smin());
+  auto *isr = p_int->ISR();
+  if (isr) {
+    if (m_nin == 2 &&
+        (isr->Mass2(0) != sqr(m_flavs[0].Mass()) ||
+         isr->Mass2(1) != sqr(m_flavs[1].Mass()))) {
+          isr->SetPartonMasses(m_flavs);
+         }
+    psh->InitCuts();
+  }
   if (p_read && p_parent == NULL) {
     // We check for p_parent == NULL, because if this process is part
     // of a process group, then we have already dealt with p_read.
-    if (p_int->ISR()) {
-      if (m_nin == 2) {
-        if (m_flavs[0].Mass() != p_int->ISR()->Flav(0).Mass() ||
-            m_flavs[1].Mass() != p_int->ISR()->Flav(1).Mass()) {
-          p_int->ISR()->SetPartonMasses(m_flavs);
-        }
-      }
+    if (isr) {
+      if (m_nin == 2 &&
+          (isr->Mass2(0) != sqr(m_flavs[0].Mass()) ||
+           isr->Mass2(1) != sqr(m_flavs[1].Mass()))) {
+        isr->SetPartonMasses(m_flavs);
+           }
     }
     psh->InitCuts();
     Cluster_Amplitude *ampl(p_read->ReadEvent());
     if (ampl==NULL) return NULL;
     if (p_read->SubEvt()==NULL ||
-	p_read->SubEvt()->m_n==0) SortFlavours(ampl);
+        p_read->SubEvt()->m_n==0) SortFlavours(ampl);
     msg_Debugging()<<*ampl<<"\n";
     p_int->PSHandler()->SetPoint(ampl);
     SetEventReader(p_read);
@@ -1212,8 +1218,8 @@ bool Single_Process::CalculateTotalXSec(const std::string &resultpath,
   auto psh = p_int->PSHandler();
   if (p_int->ISR()) {
     if (m_nin==2) {
-      if (m_flavs[0].Mass()!=p_int->ISR()->Flav(0).Mass() ||
-          m_flavs[1].Mass()!=p_int->ISR()->Flav(1).Mass()) {
+      if (p_int->ISR()->Mass2(0) != sqr(m_flavs[0].Mass()) ||
+          p_int->ISR()->Mass2(1) != sqr(m_flavs[1].Mass())) {
         p_int->ISR()->SetPartonMasses(m_flavs);
       }
     }
@@ -1221,8 +1227,8 @@ bool Single_Process::CalculateTotalXSec(const std::string &resultpath,
   if(p_int->YFS()->Mode()!=YFS::yfsmode::off){
     p_int->YFS()->SetFlavours(m_flavs);
   }
-  psh->CreateIntegrators();
   psh->InitCuts();
+  psh->CreateIntegrators();
   if (p_int->ISR())
     p_int->ISR()->SetSprimeMin(psh->Cuts()->Smin());
   p_int->SetResultPath(resultpath);
