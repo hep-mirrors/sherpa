@@ -38,6 +38,7 @@ if(fl[index].IsOctetMeson()) octet = true;
     R02 = ldme *2.*M_PI/(3.*3.);
     R12 = R02;
     mass = fl[index].Mass();
+    if(IsZero(mass)) mass = Flavour((kfc / 100) % 10).Mass(true) + Flavour((kfc / 10) % 10).Mass(true);
   }
   mass2 = sqr(mass);
 };

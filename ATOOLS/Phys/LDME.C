@@ -78,13 +78,13 @@ void LoadLDME()
   //OCTETS values from tune
   //CCBAR
   auto onia = Settings::GetMainSettings()["QUARKONIA"];
-  onia["1S0_441"].SetDefault(0.1E-03);
-  onia["1S0_443"].SetDefault(15.081E-03);
-  onia["1S0_100443"].SetDefault(21.395E-03);
-  onia["3S1_441"].SetDefault(0.1E-03);
-  onia["3S1_443"].SetDefault(3.430E-03);
-  onia["3S1_100443"].SetDefault(2.628E-03);
-  onia["3S1_10441"].SetDefault(2.704E-03);
+  onia["1S0_441"].SetDefault(0.); //still need tuning
+  onia["1S0_443"].SetDefault(53.49E-03);
+  onia["1S0_100443"].SetDefault(48.806E-03);
+  onia["3S1_441"].SetDefault(0.);
+  onia["3S1_443"].SetDefault(6.414E-03);
+  onia["3S1_100443"].SetDefault(4.943E-03);
+  onia["3S1_10441"].SetDefault(13.591E-03);
   double ldme_3S1_c_8_chi_c0_1P = onia["3S1_10441"].Get<double>();
   onia["3S1_20443"].SetDefault(3.*ldme_3S1_c_8_chi_c0_1P);
   onia["3S1_445"].SetDefault(5.*ldme_3S1_c_8_chi_c0_1P);
@@ -98,28 +98,29 @@ void LoadLDME()
   onia["3P2_100443"].SetDefault(5.*ldme_3P0_100443);
 
   //BBBAR
-
+  
 
   //---------------------------------------------------
   //SINGLETS   values from hep-ph/9503356
   //CCBAR
-  onia["441"].SetDefault(3.*3.*0.810/(2.*M_PI));
-  onia["443"].SetDefault(3.*3.*0.810/(2.*M_PI));
-  onia["100443"].SetDefault(3.*3.*0.529/(2.*M_PI));
-  onia["10441"].SetDefault(3.*3.*0.075/(2.*M_PI));
-  onia["20443"].SetDefault(3.*3.*3.*0.075/(2.*M_PI));
-  onia["445"].SetDefault(5.*3.*3.*0.075/(2.*M_PI));
+  double cf = 3.*3./(2.*M_PI); //we convert to LDMEs to keep it consistent
+  onia["441"].SetDefault(cf*0.810);
+  onia["443"].SetDefault(cf*0.810);
+  onia["100443"].SetDefault(cf*0.529);
+  onia["10441"].SetDefault(cf*0.075);
+  onia["20443"].SetDefault(3.*cf*0.075);
+  onia["445"].SetDefault(5.*cf*0.075);
   //BBBAR
-  onia["551"].SetDefault(3.*3.*6.477/(2.*M_PI));
-  onia["553"].SetDefault(3.*3.*6.477/(2.*M_PI));
-  onia["100553"].SetDefault(3.*3.*3.234/(2.*M_PI));
-  onia["200553"].SetDefault(3.*3.*3.*2.474/(2.*M_PI));
-  onia["10551"].SetDefault(3.*3.*1.417/(2.*M_PI));
-  onia["20553"].SetDefault(3.*3.*3.*1.417/(2.*M_PI));
-  onia["555"].SetDefault(5.*3.*3.*1.417/(2.*M_PI));
-  onia["110551"].SetDefault(3.*3.*1.654/(2.*M_PI));
-  onia["120553"].SetDefault(3.*3.*3.*1.654/(2.*M_PI));
-  onia["100555"].SetDefault(5.*3.*3.*1.654/(2.*M_PI));
+  onia["551"].SetDefault(cf*6.477);
+  onia["553"].SetDefault(cf*6.477);
+  onia["100553"].SetDefault(3.*cf*.234);
+  onia["200553"].SetDefault(3.*cf*2.474);
+  onia["10551"].SetDefault(cf*1.417);
+  onia["20553"].SetDefault(3.*cf*1.417);
+  onia["555"].SetDefault(5.*cf*1.417);
+  onia["110551"].SetDefault(cf*1.654);
+  onia["120553"].SetDefault(3.*cf*1.654);
+  onia["100555"].SetDefault(5.*cf*1.654);
 
   auto load = [&](auto& group, kf_code kfc, const char* key)
   {
