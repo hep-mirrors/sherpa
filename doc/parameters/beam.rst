@@ -595,7 +595,7 @@ The following modes are available:
 
   **Proton-proton collisions:**
     Uses the :math:`\sqrt{s}`-dependent parameterization from
-    :cite:`Bertulani:2021umy` (Section 3):
+    :cite:`Shao:2022cly` (Section 3):
 
     .. math::
 
