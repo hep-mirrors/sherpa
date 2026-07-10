@@ -84,6 +84,8 @@ namespace Recola {
                              std::vector<double> &asscontribs);
     static void EvaluateBorn(int id, const ATOOLS::Vec4D_Vector& momenta, double& bornres, int amptype);
 
+    static void SetAlphas(double alphas, double scale, int nflavour);
+
     static bool   ExitOnError()              { return s_exit_on_error; }
     static size_t GetFixedFlav()             { return s_fixed_flav; }
     static size_t GetDefaultFlav()           { return s_default_flav; }

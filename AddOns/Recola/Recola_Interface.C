@@ -8,16 +8,74 @@
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/Library_Loader.H"
+#include "ATOOLS/Org/My_MPI.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include <algorithm>
 #include <sys/stat.h>
 
 #include "Recola_Interface.H"
 
+// recola.h defines non-inline function bodies (in Recola 2.x), so it must only
+// ever be included in this single translation unit; all other files go through
+// the Recola_Interface wrappers.
+#ifdef USING__RECOLA2
+// Recola 2.x ships a plain C header without an extern "C" guard; without it the
+// declarations of the Fortran symbols get C++-mangled and resolve to null at
+// runtime instead of finding the library's C symbols.
+#include <cstring>
+extern "C" {
+#include "recola.h"
+}
+#else
+#include "recola.h"
+#endif
+
 using namespace PHASIC;
 using namespace MODEL;
 using namespace ATOOLS;
 using namespace std;
+
+#ifdef USING__RECOLA2
+namespace Recola {
+  // Recola 2.x renamed/changed the signatures of a few functions relative to
+  // Recola 1.x; these shims restore the Recola 1.x call signatures used below.
+  inline void set_alphas_rcl(double a, double s, int nf)
+  {
+    ::set_alphas_rcl(&a, &s, &nf);
+  }
+  inline void use_alpha0_scheme_rcl(double a)
+  {
+    ::use_alpha0_scheme_and_set_alpha_rcl(a);
+  }
+  inline void use_alphaz_scheme_rcl(double a)
+  {
+    ::use_alphaz_scheme_and_set_alpha_rcl(a);
+  }
+  inline void compute_process_rcl(int npr, double p[][4], const char* order,
+                                  double A2[2])
+  {
+    int momcheck;
+    ::compute_process_rcl(npr, p, order, A2, &momcheck);
+  }
+  inline void compute_process_rcl(int npr, double p[][4], const char* order,
+                                  double A2[2], bool& momenta_check)
+  {
+    int momcheck;
+    ::compute_process_rcl(npr, p, order, A2, &momcheck);
+    momenta_check = momcheck;
+  }
+  inline void get_squared_amplitude_rcl(int npr, int pow, const char* order,
+                                        double& A2)
+  {
+    ::get_squared_amplitude_r1_rcl(npr, pow, order, &A2);
+  }
+}
+#endif
+
+void Recola::Recola_Interface::SetAlphas(double alphas, double scale, int nflavour)
+{
+  set_alphas_rcl(alphas, scale, nflavour);
+}
 
 std::string    Recola::Recola_Interface::s_recolaprefix = std::string("");
 bool           Recola::Recola_Interface::s_ignore_model = false;
@@ -193,6 +251,11 @@ bool Recola::Recola_Interface::Initialize(MODEL::Model_Base *const model,
                       <<"different model without warning."
                       <<std::endl;
   }
+
+#ifdef USING__RECOLA2
+  // Recola prints its banner on every MPI rank; only keep it on rank 0.
+  if (mpi->Rank()!=0) set_print_recola_logo_rcl(0);
+#endif
 
   // VERBOSITY
   int recolaVerbosity=s["RECOLA_VERBOSITY"].Get<int>();
@@ -498,7 +561,6 @@ size_t Recola::Recola_Interface::RegisterProcess(const Process_Info& pi,
   
   // If ass contributions are needed just initialize with every power
   else {
-    std::cout<<"initialized with every power\n";
     msg_Debugging()<<"Initialise Tree and Loop with all gs-powers"<<std::endl;
   }
   msg_Debugging()<<"procIndex "<<procIndex<<" returned\n";
