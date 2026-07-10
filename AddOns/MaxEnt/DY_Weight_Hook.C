@@ -126,7 +126,7 @@ public:
 	else l2=psb->OutParticle(i)->Momentum();
       }
     m_lnrt=log(m_rt=(l1+l2).PPerp()/(l1+l2).Mass());
-    m_lndphi=log(m_dphi=l1.DPhi(l2));
+    m_lndphi=log(m_dphi=M_PI-l1.DPhi(l2));
     double beta(Beta((l1+l2).PPerp())), wnom;
     msg_Debugging()<<"q_T = "<<(l1+l2).PPerp()<<", r_T = "
 		   <<m_rt<<", \\Delta\\phi = "<<m_dphi<<"\n";
@@ -134,23 +134,13 @@ public:
       ["MEWeightInfo"]->Get<ME_Weight_Info*>();
     Weights_Map &wmap = (*blobs->FindFirst(btp::Signal_Process))
       ["WeightsMap"]->Get<Weights_Map>();
-    for (size_t i(0);i<m_calcs.size();++i)
-      if (m_names[i]=="central") {
-	wnom=m_calcs[i]->Calculate()->Get<double>();
-	msg_Debugging()<<"nominal: ln(w) = "<<wnom<<", shift = "<<m_lss[i]<<"\n";
-	wnom=beta*exp(wnom-m_lss[i])+(1.-beta);
-	msg_Debugging()<<"nominal: w = "<<wnom<<" (\\beta = "<<beta<<")\n";
-	wmap*=wnom;
-	*me_w_info*=wnom;
-      }
-    for (size_t i(0);i<m_calcs.size();++i)
-      if (m_names[i]!="central") {
-	double w=m_calcs[i]->Calculate()->Get<double>();
-	msg_Debugging()<<m_names[i]<<": ln(w) = "<<w<<", shift = "<<m_lss[i]<<"\n";
-	w=beta*exp(w-m_lss[i])+(1.-beta);
-	msg_Debugging()<<m_names[i]<<": w = "<<w<<" (\\beta = "<<beta<<")\n";
-	wmap["MaxEnt"][m_names[i]]=w/wnom;
-      }
+    for (size_t i(0);i<m_calcs.size();++i) {
+      double w=m_calcs[i]->Calculate()->Get<double>();
+      msg_Debugging()<<m_names[i]<<": ln(w) = "<<w<<", shift = "<<m_lss[i]<<"\n";
+      w=beta*exp(w-m_lss[i])+(1.-beta);
+      msg_Debugging()<<m_names[i]<<": w = "<<w<<" (\\beta = "<<beta<<")\n";
+      wmap["MaxEnt"][m_names[i]]=w;
+    }
     return Return_Value::Nothing;
   }
 
