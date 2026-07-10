@@ -6,8 +6,6 @@
 #include "METOOLS/Loops/Divergence_Array.H"
 #include "ATOOLS/Phys/NLO_Types.H"
 
-#include "recola.h"
-
 namespace PHASIC {
   struct External_ME_Args;
 }
@@ -79,6 +77,8 @@ namespace Recola {
     static void EvaluateLoop(int id, const ATOOLS::Vec4D_Vector& momenta, double& bornres, METOOLS::DivArrD& virt, 
                              std::vector<double> &asscontribs);
     static void EvaluateBorn(int id, const ATOOLS::Vec4D_Vector& momenta, double& bornres, int amptype);
+
+    static void SetAlphas(double alphas, double scale, int nflavour);
 
     static bool   ExitOnError()              { return s_exit_on_error; }
     static size_t GetFixedFlav()             { return s_fixed_flav; }
