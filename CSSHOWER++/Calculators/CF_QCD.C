@@ -258,6 +258,10 @@ operator()(const SFC_Filler_Key &key) const
   key.p_gets->push_back(new CF_QCD_Getter("{"+Flavour(kf_c).Bar().IDName()+"}"+"{"+Flavour(kf_c).Bar().IDName()+"}"+"{"+Flavour(kf_3S1_c).IDName()+"}"));
   
   key.p_gets->push_back(new CF_QCD_Getter("{"+Flavour(kf_gluon).IDName()+"}"+"{"+Flavour(kf_eta_c_1S).IDName()+"}"+"{"+Flavour(kf_gluon).IDName()+"}"));
+  
+  key.p_gets->push_back(new CF_QCD_Getter("{"+Flavour(kf_1S0_c).IDName()+"}"+"{"+Flavour(kf_1S0_c).IDName()+"}"+"{"+Flavour(kf_gluon).IDName()+"}"));
+  key.p_gets->push_back(new CF_QCD_Getter("{"+Flavour(kf_3S1_c).IDName()+"}"+"{"+Flavour(kf_3S1_c).IDName()+"}"+"{"+Flavour(kf_gluon).IDName()+"}"));
+ 
   return NULL;
 }
 

@@ -120,6 +120,7 @@ void Sudakov::InitSplittingFunctions(MODEL::Model_Base *md,const int kfmode)
 
 
   AddDiQuarkSplittingFunctions(md, kfmode);
+  AddOctetMesonSplittingFunctions(md, kfmode);
 
   PRINT_VAR(m_enableQuarkonia);
   switch (m_enableQuarkonia)
@@ -305,6 +306,24 @@ void Sudakov::AddOctetMesonSplittingFunctions(Model_Base *md,
     Add(new Splitting_Function_Base(
         SF_Key(&v, 0, cstp::FI, kfmode, m_qcdmode, m_ewmode, -1, m_pdfmin)));
   }
+  Flavour flav(kf_3S1_c);
+    // if (!flav.IsOn()) continue;
+    Single_Vertex v;
+    v.AddParticle(flav.Bar());
+    v.AddParticle(flav);
+    v.AddParticle(Flavour(kf_gluon));
+    v.Color.push_back(Color_Function(cf::F, 3, 2, 1));
+    v.Lorentz.push_back("VVV");
+    v.cpl.push_back(cpl0);
+    v.order[0] = 1;
+    Add(new Splitting_Function_Base(
+        SF_Key(&v, 0, cstp::FF, kfmode, m_qcdmode, m_ewmode, 1, m_pdfmin)));
+    Add(new Splitting_Function_Base(
+        SF_Key(&v, 0, cstp::FF, kfmode, m_qcdmode, m_ewmode, -1, m_pdfmin)));
+    Add(new Splitting_Function_Base(
+        SF_Key(&v, 0, cstp::FI, kfmode, m_qcdmode, m_ewmode, 1, m_pdfmin)));
+    Add(new Splitting_Function_Base(
+        SF_Key(&v, 0, cstp::FI, kfmode, m_qcdmode, m_ewmode, -1, m_pdfmin)));
   // msg_Out()<<METHOD<<": by now "<<m_splittings.size()<<" splitting
   // functions\n"
   //	   <<"============================================================\n";
