@@ -59,7 +59,7 @@ double Bessel_Integrator::operator()(double tolerance, bool output)
 
   // adapted the naming from eq. 1.12 and 1.13 in DOI:10.2307/2008589
   for (size_t p = 1; p < m_depth; p++) {
-    for (size_t s = 1; s < m_maxbins + 1; s++) {
+    for (size_t s = 1; s + p < m_maxbins + 1; s++) {
       if (m_iterator == 0) {
         xmin = m_zeroes[s];
         xmax = s + 1 + p > m_maxbins ? m_zeroes[s] + (p + 1) * M_PI
