@@ -42,12 +42,19 @@ void Soft_Cluster_Handler::Reset() {
 
 bool Soft_Cluster_Handler::MustPromptDecay(Cluster * cluster) {
   FillFlavours(cluster);
+  if (m_mass-m_flavs.first.HadMass()-m_flavs.second.HadMass()<
+      2.*1.001*p_constituents->MinMass(m_flavs.first.IsDark() &&
+				       m_flavs.second.IsDark())) {
+    return true;
+  }
   // will assume clusters have to decay, if they are lighter than heaviest
   // single (one-hadron) transition or lighter than heaviest decay into
   // two hadrons
   double m_thres1 = TransitionThreshold(m_flavs.first,m_flavs.second);
   double m_thres2 = DecayThreshold(m_flavs.first,m_flavs.second);
   if (m_zeta>0.) return (exp(-m_zeta*(m_mass/m_thres2-1.)) < ran->Get());
+  msg_Out()<<METHOD<<" for mass = "<<m_mass<<" vs. "
+	   <<m_flavs.first.HadMass()<<" + "<<m_flavs.second.HadMass()<<".\n";
   return (m_mass < m_thres1 || m_mass < m_thres2);
 }
 
