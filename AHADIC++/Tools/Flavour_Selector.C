@@ -20,12 +20,17 @@ ATOOLS::Flavour Flavour_Selector::
 operator()(const double & Emax,const bool & vetodi,const bool & darkonly) {
   double disc = Norm(Emax,vetodi,darkonly) * ran->Get();
   for (FDIter fdit=m_options.begin();fdit!=m_options.end();fdit++) {
-    if (vetodi   && fdit->first.IsDiQuark())    continue;
-    if (darkonly && !fdit->first.IsDarkQuark()) continue;
+    if (vetodi    && fdit->first.IsDiQuark())    continue;
+    if (darkonly  && !fdit->first.IsDarkQuark()) continue;
+    if (!darkonly && fdit->first.IsDarkQuark())  continue;
     if (fdit->second->popweight>0. && fdit->second->massmin<Emax/2.) 
       disc -= fdit->second->popweight;
     if (disc<=0.) {
       // have to bar flavours for diquarks
+      if (fdit->first.IsDarkQuark()) {
+	msg_Out()<<METHOD<<"(E = "<<Emax<<", di = "<<vetodi<<", dark = "<<darkonly<<"): "
+		 <<"selected "<<fdit->first<<".\n";
+      }
       return fdit->first.IsDiQuark()?fdit->first.Bar():fdit->first;
     }
   }
@@ -37,8 +42,9 @@ Norm(const double & mmax,const bool & vetodi,const bool & darkonly)
 {
   double sumwt(0.), wt;
   for (FDIter fdit=m_options.begin();fdit!=m_options.end();fdit++) {
-    if (vetodi   && fdit->first.IsDiQuark())    continue;
-    if (darkonly && !fdit->first.IsDarkQuark()) continue;
+    if (vetodi    && fdit->first.IsDiQuark())    continue;
+    if (darkonly  && !fdit->first.IsDarkQuark()) continue;
+    if (!darkonly && fdit->first.IsDarkQuark())  continue;
     if (fdit->second->popweight>0. && fdit->second->massmin<mmax/2.) {
       wt = fdit->second->popweight; 
       sumwt += wt;
