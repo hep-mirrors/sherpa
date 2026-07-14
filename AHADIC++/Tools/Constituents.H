@@ -27,15 +27,15 @@ namespace AHADIC {
   typedef std::map<ATOOLS::Flavour,ConstituentCharacteristic *> FlavCCMap;
   typedef FlavCCMap::iterator FlavCCMap_Iterator;
 
-  class Ahadic_Reweighting;
+  class Hadronisation_Reweighting;
 
   class Constituents {
     double m_minmass, m_maxmass;
     ATOOLS::Flavour m_lightest;
   public:
     FlavCCMap CCMap;
-    int    m_nvars;
-    Constituents(bool diquarks, Ahadic_Reweighting * reweighting,
+    size_t m_n_variations {0};
+    Constituents(bool diquarks, Hadronisation_Reweighting * reweighting,
 		 bool debug=false);
     ~Constituents();
 

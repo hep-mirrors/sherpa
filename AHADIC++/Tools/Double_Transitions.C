@@ -1,4 +1,5 @@
 #include "AHADIC++/Tools/Double_Transitions.H"
+#include "AHADIC++/Tools/Hadronisation_Reweighting.H"
 #include "AHADIC++/Tools/Hadronisation_Parameters.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/Exception.H"
@@ -10,19 +11,20 @@ using namespace ATOOLS;
 using namespace std;
 
 Double_Transitions::Double_Transitions(Single_Transitions * singles,
-				       Ahadic_Reweighting * reweighting) :
+				       Hadronisation_Reweighting * reweighting) :
   m_wtthres(1.e-6),
-  m_charm_strange_modifier(hadpars->Get("CharmStrange_Enhancement")),
-  m_beauty_strange_modifier(hadpars->Get("BeautyStrange_Enhancement")),
-  m_charm_baryon_modifier(hadpars->Get("CharmBaryon_Enhancement")),
-  m_beauty_baryon_modifier(hadpars->Get("BeautyBaryon_Enhancement"))
+  m_charm_strange_modifier(reweighting->GetVariationVector("CharmStrange_Enhancement")),
+  m_beauty_strange_modifier(reweighting->GetVariationVector("BeautyStrange_Enhancement")),
+  m_charm_baryon_modifier(reweighting->GetVariationVector("CharmBaryon_Enhancement")),
+  m_beauty_baryon_modifier(reweighting->GetVariationVector("BeautyBaryon_Enhancement"))
 {
+  m_n_variations = reweighting->NumberOfVariations();
   FillMap(singles, reweighting);
   Normalise();
 }
 
 void Double_Transitions::FillMap(Single_Transitions * singletransitions,
-				 Ahadic_Reweighting * reweighting)
+				 Hadronisation_Reweighting * reweighting)
 {
   //Constituents * constituents     = hadpars->GetConstituents();
   Constituents * constituents = new Constituents(true, reweighting);
@@ -39,10 +41,13 @@ void Double_Transitions::FillMap(Single_Transitions * singletransitions,
       pair.first         = pair1.first;
       pair.second        = pair2.second;
       std::vector<double> weights;
-      n_variations = (*constituents).Weights(popped.Bar()).size();
       for(const auto wgt : (*constituents).Weights(popped.Bar()))
 	weights.push_back(wgt);
-      double weight {1.};
+      std::vector<double> weight(m_n_variations, 1.);
+      auto scale = [this,&weight](const std::vector<double> & factors) {
+	for (size_t ivar=0; ivar<m_n_variations; ++ivar) weight[ivar] *= factors[ivar];
+      };
+      reweighting->CheckPoppingGuard(popped.Bar(), weights, m_wtthres);
       if (weights[0]<m_wtthres) continue;
       if (2.*constituents->Mass(popped)+0.1<
 	  constituents->Mass(pair.first)+constituents->Mass(pair.second)) {
@@ -51,19 +56,19 @@ void Double_Transitions::FillMap(Single_Transitions * singletransitions,
 	// std::cout << "resetting weight" << std::endl;
       }
       if (popped.IsDiQuark()) {
-	if (int(pair.first.Kfcode())==4)  weight *= m_charm_baryon_modifier;
-	if (int(pair.second.Kfcode())==4) weight *= m_charm_baryon_modifier;
-	if (int(pair.first.Kfcode())==5)  weight *= m_beauty_baryon_modifier;
-	if (int(pair.second.Kfcode())==5) weight *= m_beauty_baryon_modifier;
+	if (int(pair.first.Kfcode())==4)  scale(m_charm_baryon_modifier);
+	if (int(pair.second.Kfcode())==4) scale(m_charm_baryon_modifier);
+	if (int(pair.first.Kfcode())==5)  scale(m_beauty_baryon_modifier);
+	if (int(pair.second.Kfcode())==5) scale(m_beauty_baryon_modifier);
       }
       if (popped.Kfcode()==3 ||
 	  popped.Kfcode()==3101 || popped.Kfcode()==3103 ||
 	  popped.Kfcode()==3201 || popped.Kfcode()==3203 ||
 	  popped.Kfcode()==3303) {
-	if (int(pair.first.Kfcode())==4)  weight *= m_charm_strange_modifier;
-	if (int(pair.second.Kfcode())==4) weight *= m_charm_strange_modifier;
-	if (int(pair.first.Kfcode())==5)  weight *= m_beauty_strange_modifier;
-	if (int(pair.second.Kfcode())==5) weight *= m_beauty_strange_modifier;
+	if (int(pair.first.Kfcode())==4)  scale(m_charm_strange_modifier);
+	if (int(pair.second.Kfcode())==4) scale(m_charm_strange_modifier);
+	if (int(pair.first.Kfcode())==5)  scale(m_beauty_strange_modifier);
+	if (int(pair.second.Kfcode())==5) scale(m_beauty_strange_modifier);
       }
       if (m_transitions.find(pair)==m_transitions.end())
 	m_transitions[pair] = new Double_Transition_List;
@@ -75,10 +80,11 @@ void Double_Transitions::FillMap(Single_Transitions * singletransitions,
 	  Flavour_Pair hads;
 	  hads.first  = hit1->first;
 	  hads.second = hit2->first;
-	  double wt   = weight*hit1->second*hit2->second;
 	  std::vector<double> _weights;
-	  for(int i{0}; i<weights.size(); ++i)
-	    _weights.push_back(weights[i] * wt);
+	  for (size_t ivar=0; ivar<m_n_variations; ++ivar) {
+	    double wt = weight[ivar]*hit1->second[ivar]*hit2->second[ivar];
+	    _weights.push_back(weights[ivar] * wt);
+	  }
 	  //if (_weights[0]<m_wtthres) continue;
 	  (*m_transitions[pair])[hads] = _weights;
 	}
@@ -90,17 +96,17 @@ void Double_Transitions::FillMap(Single_Transitions * singletransitions,
 void Double_Transitions::Normalise() {
   for (Double_Transition_Map::iterator dtmit=m_transitions.begin();
        dtmit!=m_transitions.end();dtmit++) {
-    std::vector<double> totweights(n_variations,0);
+    std::vector<double> totweights(m_n_variations,0);
     //double totweight = 0.;
     for (Double_Transition_List::iterator dtlit=dtmit->second->begin();
 	 dtlit!=dtmit->second->end();dtlit++) {
-      for(int i{0}; i<n_variations; ++i)
-	totweights[i] += dtlit->second[i];
+      for (size_t ivar=0; ivar<m_n_variations; ++ivar)
+	totweights[ivar] += dtlit->second[ivar];
     }
     for (Double_Transition_List::iterator dtlit=dtmit->second->begin();
 	 dtlit!=dtmit->second->end();dtlit++){
-      for(int i{0}; i<n_variations; ++i)
-	dtlit->second[i] /= totweights[i];
+      for (size_t ivar=0; ivar<m_n_variations; ++ivar)
+	if (totweights[ivar] != 0.) dtlit->second[ivar] /= totweights[ivar];
     }
   }
 }

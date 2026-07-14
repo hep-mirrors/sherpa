@@ -1,5 +1,5 @@
-#ifndef AHADIC_Tools_Ahadic_Reweighting_H
-#define AHADIC_Tools_Ahadic_Reweighting_H
+#ifndef AHADIC_Tools_Hadronisation_Reweighting_H
+#define AHADIC_Tools_Hadronisation_Reweighting_H
 
 #include "ATOOLS/Phys/Blob.H"
 #include <vector>
@@ -8,7 +8,7 @@
 
 namespace AHADIC {
 
-  class Ahadic_Reweighting {
+  class Hadronisation_Reweighting {
   private:
     size_t m_n_variations;
     double m_max_reweight_factor;
@@ -18,26 +18,28 @@ namespace AHADIC {
     std::vector<double> m_variation_weights;
     // Per-channel event weights, accumulated over all splittings of an event:
     // flavour popping (Flavour_Selector), gluon splitting z (Gluon_Splitter),
-    // cluster splitting z (Cluster_Splitter), soft cluster decays
-    // (Soft_Cluster_Handler), and transverse momentum (KT_Selector).
+    // cluster splitting z (Cluster_Splitter), soft cluster decays and
+    // prompt-decay decisions (Soft_Cluster_Handler), and transverse
+    // momentum (KT_Selector).
     std::vector<double> m_flavour_weights;
     std::vector<double> m_gluon_weights;
     std::vector<double> m_cluster_weights;
     std::vector<double> m_soft_weights;
     std::vector<double> m_kt_weights;
+    std::vector<double> m_promptdecay_weights;
     // Per-splitting weights, committed into the event weights when a
     // splitting succeeds and discarded when an attempt fails.
     std::vector<double> m_tmp_flavour_weights;
     std::vector<double> m_tmp_gluon_weights;
     std::vector<double> m_tmp_cluster_weights;
-    std::vector<double> m_tmp_kt_weights;
 
+    void CheckVariationGuards();
     void AcceptTmpWeights(std::vector<double>& weights,
                        std::vector<double>& tmp_weights);
     void ResetTmpWeights(std::vector<double>& tmp_weights);
   public:
-    Ahadic_Reweighting();
-    ~Ahadic_Reweighting();
+    Hadronisation_Reweighting();
+    ~Hadronisation_Reweighting();
 
     void Initialize();
     void ResetEvent();
@@ -45,6 +47,16 @@ namespace AHADIC {
     inline bool   Active() const { return m_n_variations > 1; }
     inline size_t NumberOfVariations() const { return m_n_variations; }
     std::vector<double> GetVariationVector(const std::string& keyword) const;
+
+    void CheckTransitionGuard(const ATOOLS::Flavour& hadron,
+                              const std::vector<double>& weights,
+                              const double& threshold) const;
+    void CheckPoppingGuard(const ATOOLS::Flavour& popped,
+                           const std::vector<double>& weights,
+                           const double& threshold) const;
+    void CheckComponentGuard(const ATOOLS::Flavour& hadron,
+                             const std::vector<double>& amps,
+                             const double& threshold) const;
 
     // Flavour popping in the shared Flavour_Selector
     void FlavourSelectionReweighting(const std::vector<double>& popweights,
@@ -79,19 +91,17 @@ namespace AHADIC {
       ResetTmpWeights(m_tmp_cluster_weights);
     }
 
-    // Transverse momentum selection (accept/reject reweighting per kt trial)
-    void KTSelectionReweighting(const bool accepted,
-                                const std::vector<double>& probs);
-    inline void AcceptKTSelectionWeights() {
-      AcceptTmpWeights(m_kt_weights, m_tmp_kt_weights);
-    }
-    inline void ResetKTSelectionWeights() {
-      ResetTmpWeights(m_tmp_kt_weights);
-    }
+    // Transverse momentum selection (committed directly)
+    void KTSelectionReweighting(const std::vector<double>& probs);
 
     // Hadron pair selection in soft cluster decays (committed directly)
     void SoftClusterReweighting(const std::vector<double>& weights,
                                 const std::vector<double>& totweights);
+
+    // Bernoulli prompt-decay decision, only stochastic for zeta > 0
+    // (committed directly)
+    void PromptDecayReweighting(const bool decayed,
+                                const std::vector<double>& probs);
 
     void ApplyVariationWeights(ATOOLS::Blob * blob);
   };

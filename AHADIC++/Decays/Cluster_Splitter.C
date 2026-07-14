@@ -23,7 +23,7 @@ Cluster_Splitter::Cluster_Splitter(list<Cluster *> * cluster_list,
 				   Soft_Cluster_Handler * softclusters,
 				   Flavour_Selector     * flavourselector,
 				   KT_Selector          * ktselector,
-				   Ahadic_Reweighting   * reweighting) :
+				   Hadronisation_Reweighting   * reweighting) :
   Splitter_Base(cluster_list,softclusters,flavourselector,ktselector,
 		reweighting),
   m_output(false)
@@ -34,6 +34,12 @@ void Cluster_Splitter::Init() {
   Splitter_Base::Init();
   m_defmode  = hadpars->Switch("ClusterSplittingForm");
   m_beammode = hadpars->Switch("RemnantSplittingForm");
+  if (p_reweighting->Active() && (m_defmode != 2 || m_beammode != 2)) {
+    THROW(fatal_error, std::string("Reweighting of AHADIC only ported for cluster splitting mode 2.\n")
+                      + "Found CLUSTER_SPLITTING_MODE = " + std::to_string(m_defmode)
+                      + ", REMNANT_CLUSTER_MODE = " + std::to_string(m_beammode) + ".\n"
+                      + "Please adjust your settings.");
+  }
 
   m_alpha[0] = p_reweighting->GetVariationVector("alphaL");
   m_beta[0]  = p_reweighting->GetVariationVector("betaL");
@@ -348,10 +354,10 @@ void Cluster_Splitter::ZRejected(const double wgt, const double & z,
   return;
 #endif
   if(!p_reweighting->DoClusterSplittingReweighting(m_nsplit)) return;
-  std::vector<double> probs(m_alpha[0].size());
+  std::vector<double> probs(m_n_variations);
   probs[0] = wgt;
-  for (size_t i{1}; i<m_alpha[0].size(); i++) {
-    probs[i] = FragmentationFunction(z,zmin,zmax,cnt,i);
+  for (size_t ivar=1; ivar<m_n_variations; ++ivar) {
+    probs[ivar] = FragmentationFunction(z,zmin,zmax,cnt,ivar);
   }
   p_reweighting->ClusterSplittingReweighting(false, probs);
 }
@@ -360,17 +366,17 @@ void Cluster_Splitter::ZAccepted(const double wgt, const double & z,
 				 const double & zmin,const double & zmax,
 				 const unsigned int & cnt) {
   if(!p_reweighting->DoClusterSplittingReweighting(m_nsplit)) return;
-  std::vector<double> probs(m_alpha[0].size());
+  std::vector<double> probs(m_n_variations);
 #if AHADIC_FRAGMENTATION_FUNCTION == 1
   const auto type = m_type[cnt];
   probs[0] = FragmentationFunctionProb(z,zmin,zmax,m_gamma[type][0],m_kt02[0]);
-  for (size_t i{1}; i<m_alpha[0].size(); i++) {
-    probs[i] = FragmentationFunctionProb(z,zmin,zmax,m_gamma[type][i],m_kt02[i]);
+  for (size_t ivar=1; ivar<m_n_variations; ++ivar) {
+    probs[ivar] = FragmentationFunctionProb(z,zmin,zmax,m_gamma[type][ivar],m_kt02[ivar]);
   }
 #else
   probs[0] = wgt;
-  for (size_t i{1}; i<m_alpha[0].size(); i++) {
-    probs[i] = FragmentationFunction(z,zmin,zmax,cnt,i);
+  for (size_t ivar=1; ivar<m_n_variations; ++ivar) {
+    probs[ivar] = FragmentationFunction(z,zmin,zmax,cnt,ivar);
   }
 #endif
   p_reweighting->ClusterSplittingReweighting(true, probs);

@@ -11,7 +11,7 @@ Splitter_Base::Splitter_Base(list<Cluster *> * cluster_list,
 			     Soft_Cluster_Handler * softclusters,
 			     Flavour_Selector     * flavourselector,
 			     KT_Selector          * ktselector,
-			     Ahadic_Reweighting   * reweighting) :
+			     Hadronisation_Reweighting   * reweighting) :
   p_cluster_list(cluster_list), p_softclusters(softclusters),
   p_flavourselector(flavourselector),
   p_ktselector(ktselector),
@@ -38,6 +38,7 @@ void Splitter_Base::Init() {
   p_singletransitions = hadpars->GetSingleTransitions();
   p_doubletransitions = hadpars->GetDoubleTransitions();
   p_constituents      = hadpars->GetConstituents();
+  m_n_variations      = p_reweighting->NumberOfVariations();
 
   m_ktorder  = (hadpars->Switch("KT_Ordering")>0);
   m_ktmax    = hadpars->Get("kT_max");
@@ -216,7 +217,7 @@ bool Splitter_Base::MakeTransverseMomentum() {
 	       <<" min = "<<m_minmass<<".\n";
     return false;
   }
-  m_kt = (*p_ktselector)(ktmax);
+  m_kt = (*p_ktselector)(ktmax, true);
   if (m_kt < 0.) return false;
   m_kt2   = m_kt*m_kt;
   const double phi   = 2.*M_PI*ran->Get();

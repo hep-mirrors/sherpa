@@ -4,7 +4,7 @@
 #include "AHADIC++/Tools/Flavour_Selector.H"
 #include "AHADIC++/Tools/KT_Selector.H"
 #include "AHADIC++/Tools/Soft_Cluster_Handler.H"
-#include "AHADIC++/Tools/Ahadic_Reweighting.H"
+#include "AHADIC++/Tools/Hadronisation_Reweighting.H"
 #include "ATOOLS/Math/Poincare.H"
 #include "ATOOLS/Math/Histogram.H"
 #include <map>
@@ -20,7 +20,8 @@ namespace AHADIC {
     Constituents         * p_constituents;
     Flavour_Selector     * p_flavourselector;
     KT_Selector          * p_ktselector;
-    Ahadic_Reweighting   * p_reweighting;
+    Hadronisation_Reweighting   * p_reweighting;
+    size_t m_n_variations {0};
 
     bool   m_ktorder;
     size_t m_attempts;
@@ -67,7 +68,7 @@ namespace AHADIC {
 		  Soft_Cluster_Handler * softclusters,
 		  Flavour_Selector     * flavourselector,
 		  KT_Selector          * ktselector,
-		  Ahadic_Reweighting   * reweighting
+		  Hadronisation_Reweighting   * reweighting
 		  );
     ~Splitter_Base();
     virtual void Init();

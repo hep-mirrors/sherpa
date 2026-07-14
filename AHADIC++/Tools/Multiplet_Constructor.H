@@ -5,22 +5,29 @@
 
 
 namespace AHADIC {
+  class Hadronisation_Reweighting;
+
   struct HadInfo {
     ATOOLS::Flavour flav;
     int         iso,exr,exl,fl3,fl2,fl1,spin2;
     bool        barrable;
     std::string multiname;
-    double      multiwt,spinwt,extrawt;
-    
+    double      spinwt;
+    // per-variation multiplet and extra weights for the reweighting
+    std::vector<double> multiwt, extrawt;
+
     friend std::ostream & operator<<(std::ostream & s,const HadInfo & info);
   };
-    
-    
+
+
   class Multiplet_Constructor {
   private:
     bool    m_test;
-    double  m_singletsuppression;
-    double  m_etam, m_etapm, m_cse, m_bse, m_bce, m_hcbe, m_hbbe, m_sbm;
+    Hadronisation_Reweighting * p_reweighting;
+    size_t  m_n_variations {0};
+    std::vector<double> m_singletsuppression, m_etam, m_etapm;
+    std::vector<double> m_cse, m_bse, m_bce, m_hcbe, m_hbbe, m_sbm;
+    std::vector<double> m_mixing0, m_mixing1, m_mixing2;
     HadInfo m_info;
     
     std::map<std::string,std::set<ATOOLS::Flavour> > m_multiplets;
@@ -30,7 +37,9 @@ namespace AHADIC {
     bool        ExtractInfo(const kf_code & kfc);
     std::string MultipletName();
     void        FillMultipletWeights();
-    double      MixingAngle();
+    void        ScaleExtraWeights(const std::vector<double> & factors);
+    bool        ComponentActive(const std::vector<double> & amps);
+    std::vector<double> MixingAngles();
 
     bool ConstructWaveFunction();
     bool ConstructMesonWaveFunction();
@@ -54,7 +63,7 @@ namespace AHADIC {
     Wave_Function * DecupletLambdaWaveFunction();
     Wave_Function * HeavyDecupletWaveFunction();
   public:
-    Multiplet_Constructor(bool test=false);
+    Multiplet_Constructor(bool test, Hadronisation_Reweighting * reweighting);
     ~Multiplet_Constructor();
 
     Wave_Functions * GetWaveFunctions() { return &m_wavefunctions; }  

@@ -53,7 +53,7 @@ namespace AHADIC {
 		     Soft_Cluster_Handler * softclusters,
 		     Flavour_Selector     * flavourselector,
 		     KT_Selector          * ktselector,
-		     Ahadic_Reweighting   * reweighting);
+		     Hadronisation_Reweighting   * reweighting);
     void   Init();
     double WeightFunction(const double & z,
 			  const double & zmin,const double & zmax,

@@ -7,7 +7,7 @@
 #include "AHADIC++/Tools/Cluster.H"
 
 namespace AHADIC {
-  class Ahadic_Reweighting;
+  class Hadronisation_Reweighting;
 
   class Soft_Cluster_Handler {
   private:
@@ -16,9 +16,11 @@ namespace AHADIC {
     Single_Transitions          * p_singletransitions;
     Double_Transitions          * p_doubletransitions;
     KT_Selector                 * p_ktselector;
-    Ahadic_Reweighting          * p_reweighting;
-    double m_dec_threshold,m_trans_threshold, m_chi, m_ktmax, m_ktfac, m_zeta;
+    Hadronisation_Reweighting          * p_reweighting;
+    double m_dec_threshold,m_trans_threshold, m_ktmax, m_ktfac;
     double m_piphoton_threshold, m_dipion_threshold, m_open_threshold;
+    std::vector<double> m_chi, m_zeta;
+    size_t m_n_variations {0};
 
     Cluster    * p_cluster;
     double       m_mass2, m_mass;
@@ -32,7 +34,8 @@ namespace AHADIC {
     void   FillFlavours(Cluster * cluster);
     int    CheckOutsideRange();
     int    Decay();
-    double PhaseSpace(const double & m2,const double & m3,const bool heavyB);
+    std::vector<double> PhaseSpace(const double & m2,const double & m3,
+				   const bool heavyB);
     double DecayWeight();
     double RadiationWeight(const bool & withPS=true);
     double Annihilation();
@@ -48,7 +51,7 @@ namespace AHADIC {
     bool   TreatSingletCluster();
  public:
     Soft_Cluster_Handler(std::list<Proto_Particle *> * hadrons, KT_Selector*,
-			 Ahadic_Reweighting *);
+			 Hadronisation_Reweighting *);
     ~Soft_Cluster_Handler();
 
     void Init();

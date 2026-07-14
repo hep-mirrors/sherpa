@@ -51,7 +51,7 @@ namespace AHADIC {
 		    Soft_Cluster_Handler * softclusters,
 		    Flavour_Selector     * flavourselector,
 		    KT_Selector          * ktselector,
-		    Ahadic_Reweighting   * reweighting);
+		    Hadronisation_Reweighting   * reweighting);
     ~Singlet_Checker();
     void Init();
     void Reset();

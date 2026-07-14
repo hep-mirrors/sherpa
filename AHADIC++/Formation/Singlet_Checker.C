@@ -53,7 +53,7 @@ Singlet_Checker::Singlet_Checker(list<Singlet *> * singlets,
 				 Soft_Cluster_Handler * softclusters,
 				 Flavour_Selector     * flavourselector,
 				 KT_Selector          * ktselector,
-				 Ahadic_Reweighting   * reweighting) :
+				 Hadronisation_Reweighting   * reweighting) :
   Singlet_Tools(),
   p_singlets(singlets), p_softclusters(softclusters),
   p_hadrons(softclusters->GetHadrons()),

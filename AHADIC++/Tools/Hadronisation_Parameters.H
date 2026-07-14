@@ -20,7 +20,7 @@ namespace AHADIC {
     static long int s_AHAclusters;
   };
 
-  class Ahadic_Reweighting;
+  class Hadronisation_Reweighting;
 
   class Hadronisation_Parameters {
   private:
@@ -44,7 +44,7 @@ namespace AHADIC {
     ~Hadronisation_Parameters();
 
     void ReadParameters(std::string shower);
-    void Init(Ahadic_Reweighting * reweighting);
+    void Init(Hadronisation_Reweighting * reweighting);
     const double Get(std::string keyword) const;
     std::vector<double> GetVariationVector(const std::string& keyword) const;
     const int    Switch(std::string keyword) const;

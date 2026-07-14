@@ -10,14 +10,14 @@
 #include <list>
 
 namespace AHADIC {
-  class Ahadic_Reweighting;
+  class Hadronisation_Reweighting;
 
   class Trivial_Splitter {
   private:
     Constituents         * p_constituents;
     Flavour_Selector     * p_flavourselector;
     KT_Selector          * p_ktselector;
-    Ahadic_Reweighting   * p_reweighting;
+    Hadronisation_Reweighting   * p_reweighting;
 
     double m_kt2max, m_minmass;
 
@@ -46,7 +46,7 @@ namespace AHADIC {
  public:
     Trivial_Splitter(Flavour_Selector   * flavourselector,
 		     KT_Selector        * ktselector,
-		     Ahadic_Reweighting * reweighting);
+		     Hadronisation_Reweighting * reweighting);
     ~Trivial_Splitter() {}
     void Init();
 

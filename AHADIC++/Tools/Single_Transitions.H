@@ -15,7 +15,7 @@ namespace AHADIC {
     }
   };
   
-  typedef std::map<ATOOLS::Flavour,double,Flavour_Sorting_Mass>
+  typedef std::map<ATOOLS::Flavour,std::vector<double>,Flavour_Sorting_Mass>
   Single_Transition_List;
 
   typedef std::map<Flavour_Pair,Single_Transition_List *>
@@ -23,14 +23,19 @@ namespace AHADIC {
 
 
 
+  class Hadronisation_Reweighting;
+
   class Single_Transitions {
   private:
     Single_Transition_Map m_transitions;
+    size_t m_n_variations {0};
 
-    void FillMap(Wave_Functions * wavefunctions);
+    void FillMap(Wave_Functions * wavefunctions,
+                 Hadronisation_Reweighting * reweighting);
     void Normalise();
   public:
-    Single_Transitions(Wave_Functions * wavefunctions);
+    Single_Transitions(Wave_Functions * wavefunctions,
+		       Hadronisation_Reweighting * reweighting);
     ~Single_Transitions();
     ATOOLS::Flavour          GetLightestTransition(const Flavour_Pair &);
     ATOOLS::Flavour          GetHeaviestTransition(const Flavour_Pair &);

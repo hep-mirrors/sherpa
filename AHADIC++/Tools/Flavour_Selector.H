@@ -4,7 +4,7 @@
 #include "ATOOLS/Phys/Flavour.H"
 
 namespace AHADIC {
-  class Ahadic_Reweighting;
+  class Hadronisation_Reweighting;
 
   struct  DecaySpecs {
     double weight,massmin,popweight;
@@ -17,12 +17,13 @@ namespace AHADIC {
   private:
     FlavDecayMap m_options;
     double       m_mmin, m_mmin2, m_mmax, m_mmax2;
-    Ahadic_Reweighting * p_reweighting;
+    Hadronisation_Reweighting * p_reweighting;
+    size_t m_n_variations {0};
     std::vector<double> m_norms;
 
     void Norm(const double & mmax=-1.,const bool & vetodi=false);
   public:
-    Flavour_Selector(Ahadic_Reweighting * reweighting);
+    Flavour_Selector(Hadronisation_Reweighting * reweighting);
     ~Flavour_Selector();
 
     void   Init();

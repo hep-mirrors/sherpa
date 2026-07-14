@@ -6,24 +6,22 @@
 
 
 namespace AHADIC {
-  class Ahadic_Reweighting;
+  class Hadronisation_Reweighting;
 
   class KT_Selector {
   private:
-    std::vector<double> m_sigma;
-    Ahadic_Reweighting * p_reweighting;
-    double WeightFunction(const double & kt);
+    std::vector<double> m_sigma, m_ktmax;
+    size_t m_n_variations {0};
+    Hadronisation_Reweighting * p_reweighting;
     double SelectKT(const double ktmax);
     double Gaussian(const double, const double);
     double Erf(const double, const double);
-    void KTAccepted(const double kt);
-    void KTRejected(const double kt);
   public:
-    KT_Selector(Ahadic_Reweighting * reweighting);
+    KT_Selector(Hadronisation_Reweighting * reweighting);
     ~KT_Selector();
     void Init();
 
-    double operator()(const double & ktmax);
+    double operator()(const double & ktmax, const bool vary_ptmax);
   };
 }
 

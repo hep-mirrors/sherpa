@@ -1,4 +1,5 @@
 #include "AHADIC++/Tools/Single_Transitions.H"
+#include "AHADIC++/Tools/Hadronisation_Reweighting.H"
 #include "AHADIC++/Tools/Hadronisation_Parameters.H"
 #include "ATOOLS/Org/Message.H"
 
@@ -7,9 +8,11 @@ using namespace ATOOLS;
 using namespace std;
 
 
-Single_Transitions::Single_Transitions(Wave_Functions * wavefunctions)
+Single_Transitions::Single_Transitions(Wave_Functions * wavefunctions,
+					Hadronisation_Reweighting * reweighting)
 {
-  FillMap(wavefunctions);
+  m_n_variations = reweighting->NumberOfVariations();
+  FillMap(wavefunctions, reweighting);
   Normalise();
 }
 
@@ -22,7 +25,8 @@ Single_Transitions::~Single_Transitions()
   m_transitions.clear();
 }
 
-void Single_Transitions::FillMap(Wave_Functions * wavefunctions) {
+void Single_Transitions::FillMap(Wave_Functions * wavefunctions,
+				 Hadronisation_Reweighting * reweighting) {
   // Go through the wavefunctions of all hadrons, extract
   // their components (Flavour_Pairs) and make a list of
   // all transitions for a single pair, consisting of the
@@ -30,15 +34,24 @@ void Single_Transitions::FillMap(Wave_Functions * wavefunctions) {
   for (Wave_Functions::iterator wfit=wavefunctions->begin();
        wfit!=wavefunctions->end();wfit++) {
     Flavour hadron = wfit->first;
-    double  weight = (wfit->second->MultipletWeight() *
-		      wfit->second->SpinWeight() *
-		      wfit->second->ExtraWeight());
-    if (weight<1.e-6) continue;
+    const std::vector<double> & extrawts = wfit->second->ExtraWeights();
+    const std::vector<double> & mpletwts = wfit->second->MultipletWeights();
+    std::vector<double> weight(m_n_variations);
+    for (size_t ivar=0;ivar<m_n_variations;ivar++) {
+      weight[ivar] = (mpletwts[ivar] *
+		   wfit->second->SpinWeight() *
+		   extrawts[ivar]);
+    }
+    reweighting->CheckTransitionGuard(hadron, weight, 1.e-6);
+    if (weight[0]<1.e-6) continue;
     WaveComponents * singlewaves = wfit->second->GetWaves();
     for (WaveComponents::iterator cit=singlewaves->begin();
 	 cit!=singlewaves->end();cit++) {
       Flavour_Pair pair = (*cit->first);
-      double wt = weight * sqr(cit->second);
+      const std::vector<double> & amps = cit->second;
+      std::vector<double> wt(m_n_variations);
+      for (size_t ivar=0;ivar<m_n_variations;ivar++)
+	wt[ivar] = weight[ivar] * sqr(amps[amps.size()>1 ? ivar : 0]);
       if (m_transitions.find(pair)==m_transitions.end()) {
 	m_transitions[pair] = new Single_Transition_List;
       }
@@ -48,14 +61,17 @@ void Single_Transitions::FillMap(Wave_Functions * wavefunctions) {
 }
 
 void Single_Transitions::Normalise() {
-  double totwt;
   for (Single_Transition_Map::iterator stmit=m_transitions.begin();
        stmit!=m_transitions.end();stmit++) {
-    totwt = 0.;
+    std::vector<double> totwt(m_n_variations,0.);
     for (Single_Transition_List::iterator stlit=stmit->second->begin();
-	 stlit!=stmit->second->end();stlit++) totwt += stlit->second;
+	 stlit!=stmit->second->end();stlit++) {
+      for (size_t ivar=0;ivar<m_n_variations;ivar++) totwt[ivar] += stlit->second[ivar];
+    }
     for (Single_Transition_List::iterator stlit=stmit->second->begin();
-	 stlit!=stmit->second->end();stlit++) stlit->second/=totwt;
+	 stlit!=stmit->second->end();stlit++) {
+      for (size_t ivar=0;ivar<m_n_variations;ivar++) stlit->second[ivar] /= totwt[ivar];
+    }
   }
 }
 
@@ -108,10 +124,10 @@ void Single_Transitions::Print()
 	     <<" --------------------------\n";
     for (Single_Transition_List::iterator stlit=stmit->second->begin();
 	 stlit!=stmit->second->end();stlit++) {
-      msg_Out()<<"   "<<stlit->first<<" --> "<<stlit->second<<"\n";
-      totwt += stlit->second;
+      msg_Out()<<"   "<<stlit->first<<" --> "<<stlit->second[0]<<"\n";
+      totwt += stlit->second[0];
       if (checkit.find(stlit->first)==checkit.end()) checkit[stlit->first] = 0.;
-      checkit[stlit->first] += stlit->second;
+      checkit[stlit->first] += stlit->second[0];
     }
     msg_Out()<<"   Total weight = "<<totwt<<"\n\n";
   }

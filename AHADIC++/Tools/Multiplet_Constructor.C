@@ -1,4 +1,5 @@
 #include "AHADIC++/Tools/Multiplet_Constructor.H"
+#include "AHADIC++/Tools/Hadronisation_Reweighting.H"
 #include "AHADIC++/Tools/Hadronisation_Parameters.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/Exception.H"
@@ -26,17 +27,23 @@ namespace AHADIC {
 // with the transitions, set test=true.
 // Default is test=false.
 
-Multiplet_Constructor::Multiplet_Constructor(bool test) :
+Multiplet_Constructor::Multiplet_Constructor(bool test,
+                                             Hadronisation_Reweighting * reweighting) :
   m_test(test),
-  m_singletsuppression(hadpars->Get("Singlet_Suppression")),
-  m_etam(hadpars->Get("eta_modifier")),
-  m_etapm(hadpars->Get("eta_prime_modifier")),
-  m_cse(hadpars->Get("CharmStrange_Enhancement")),
-  m_bse(hadpars->Get("BeautyStrange_Enhancement")),
-  m_bce(hadpars->Get("BeautyCharm_Enhancement")),
-  m_hcbe(hadpars->Get("CharmBaryon_Enhancement")),
-  m_hbbe(hadpars->Get("BeautyBaryon_Enhancement")),
-  m_sbm(hadpars->Get("Singlet_Baryon_modifier"))
+  p_reweighting(reweighting),
+  m_n_variations(reweighting->NumberOfVariations()),
+  m_singletsuppression(reweighting->GetVariationVector("Singlet_Suppression")),
+  m_etam(reweighting->GetVariationVector("eta_modifier")),
+  m_etapm(reweighting->GetVariationVector("eta_prime_modifier")),
+  m_cse(reweighting->GetVariationVector("CharmStrange_Enhancement")),
+  m_bse(reweighting->GetVariationVector("BeautyStrange_Enhancement")),
+  m_bce(reweighting->GetVariationVector("BeautyCharm_Enhancement")),
+  m_hcbe(reweighting->GetVariationVector("CharmBaryon_Enhancement")),
+  m_hbbe(reweighting->GetVariationVector("BeautyBaryon_Enhancement")),
+  m_sbm(reweighting->GetVariationVector("Singlet_Baryon_modifier")),
+  m_mixing0(reweighting->GetVariationVector("Mixing_Angle_0+")),
+  m_mixing1(reweighting->GetVariationVector("Mixing_Angle_1-")),
+  m_mixing2(reweighting->GetVariationVector("Mixing_Angle_2+"))
 {
   CreateMultiplets();
 }
@@ -59,7 +66,7 @@ void Multiplet_Constructor::CreateMultiplets() {
   // - put the hadrons in multiplets.
   for(KFCode_ParticleInfo_Map::const_iterator kfit(s_kftable.begin());
       kfit!=s_kftable.end();++kfit) {
-    if (!ExtractInfo(kfit->first) || m_info.iso>0 || m_info.multiwt<1.e-6 ||
+    if (!ExtractInfo(kfit->first) || m_info.iso>0 || m_info.multiwt[0]<1.e-6 ||
 	(m_info.fl3>3 && (m_info.fl2>3 || m_info.fl1>3)) ||
 	!ConstructWaveFunction()) continue;
     m_multiplets[m_info.multiname].insert(m_info.flav);
@@ -125,31 +132,37 @@ std::string Multiplet_Constructor::MultipletName() {
 }
 
 void Multiplet_Constructor::FillMultipletWeights() {
-  m_info.multiwt = 0.;
+  m_info.multiwt.assign(m_n_variations, 0.);
   if (m_info.multiname==string("Scalars"))
-    m_info.multiwt = hadpars->Get("Multiplet_Meson_R0L0S0");
+    m_info.multiwt = p_reweighting->GetVariationVector("Multiplet_Meson_R0L0S0");
   if (m_info.multiname==string("Vectors"))
-    m_info.multiwt = hadpars->Get("Multiplet_Meson_R0L0S1");
+    m_info.multiwt = p_reweighting->GetVariationVector("Multiplet_Meson_R0L0S1");
   if (m_info.multiname==string("Tensors"))
-    m_info.multiwt = hadpars->Get("Multiplet_Meson_R0L0S2");
+    m_info.multiwt = p_reweighting->GetVariationVector("Multiplet_Meson_R0L0S2");
   if (m_info.multiname==string("L=1_Scalars"))
-    m_info.multiwt = hadpars->Get("Multiplet_Meson_R0L1S0");
+    m_info.multiwt = p_reweighting->GetVariationVector("Multiplet_Meson_R0L1S0");
   if (m_info.multiname==string("L=1_Vectors"))
-    m_info.multiwt = hadpars->Get("Multiplet_Meson_R0L1S1");
+    m_info.multiwt = p_reweighting->GetVariationVector("Multiplet_Meson_R0L1S1");
   if (m_info.multiname==string("L=2_Vectors"))
-    m_info.multiwt = hadpars->Get("Multiplet_Meson_R0L2S2");
+    m_info.multiwt = p_reweighting->GetVariationVector("Multiplet_Meson_R0L2S2");
   if (m_info.multiname==string("Octet"))
-    m_info.multiwt = hadpars->Get("Multiplet_Baryon_R0L0S1/2");
+    m_info.multiwt = p_reweighting->GetVariationVector("Multiplet_Baryon_R0L0S1/2");
   if (m_info.multiname==string("Decuplet"))
-    m_info.multiwt = hadpars->Get("Multiplet_Baryon_R0L0S3/2");
+    m_info.multiwt = p_reweighting->GetVariationVector("Multiplet_Baryon_R0L0S3/2");
   if (m_info.multiname==string("R=1_Octet"))
-    m_info.multiwt = hadpars->Get("Multiplet_Baryon_R1L0S1/2");
+    m_info.multiwt = p_reweighting->GetVariationVector("Multiplet_Baryon_R1L0S1/2");
   if (m_info.multiname==string("R=1_1_Octet"))
-    m_info.multiwt = hadpars->Get("Multiplet_Baryon_R1_1L0S1/2");
+    m_info.multiwt = p_reweighting->GetVariationVector("Multiplet_Baryon_R1_1L0S1/2");
   if (m_info.multiname==string("R=2_Octet"))
-    m_info.multiwt = hadpars->Get("Multiplet_Baryon_R2L0S1/2");
+    m_info.multiwt = p_reweighting->GetVariationVector("Multiplet_Baryon_R2L0S1/2");
   m_info.spinwt  = double(m_info.spin2);
-  m_info.extrawt = 1.;
+  m_info.extrawt.assign(m_n_variations, 1.);
+}
+
+void Multiplet_Constructor::ScaleExtraWeights(
+    const std::vector<double> & factors) {
+  for (size_t ivar=0; ivar<m_n_variations; ++ivar)
+    m_info.extrawt[ivar] *= factors[ivar];
 }
 
 bool Multiplet_Constructor::ConstructWaveFunction()
@@ -160,22 +173,19 @@ bool Multiplet_Constructor::ConstructWaveFunction()
   if (m_test && constructed) return true;
 
   switch (int(m_info.flav.Kfcode())) {
-  case 221:
-    m_info.extrawt *= m_etam;
-    break;
-  case 331:
-    m_info.extrawt *= m_etapm;
-    break;
+  case 221: ScaleExtraWeights(m_etam);  break;
+  case 331: ScaleExtraWeights(m_etapm); break;
   default: break;
   }
+  const std::vector<double> & extrawts = m_info.extrawt;
   if (constructed && m_wavefunctions.find(m_info.flav)!=m_wavefunctions.end()) {
-    m_wavefunctions[m_info.flav]->SetMultipletWeight(m_info.multiwt);
+    m_wavefunctions[m_info.flav]->SetMultipletWeights(m_info.multiwt);
     m_wavefunctions[m_info.flav]->SetSpin(m_info.spin2);
-    m_wavefunctions[m_info.flav]->SetExtraWeight(m_info.extrawt);
+    m_wavefunctions[m_info.flav]->SetExtraWeights(extrawts);
     if (m_info.fl3==0 && m_info.barrable) {
-      m_wavefunctions[m_info.flav.Bar()]->SetMultipletWeight(m_info.multiwt);
+      m_wavefunctions[m_info.flav.Bar()]->SetMultipletWeights(m_info.multiwt);
       m_wavefunctions[m_info.flav.Bar()]->SetSpin(m_info.spin2);
-      m_wavefunctions[m_info.flav.Bar()]->SetExtraWeight(m_info.extrawt);
+      m_wavefunctions[m_info.flav.Bar()]->SetExtraWeights(extrawts);
     }
     return true;
   }
@@ -188,11 +198,11 @@ bool Multiplet_Constructor::ConstructMesonWaveFunction()
   // no idea (yet) how to deal with them.
   if (m_info.iso>0) return false;
   if ((m_info.fl1==3||m_info.fl2==3) &&
-      (m_info.fl1==4||m_info.fl2==4)) m_info.extrawt *= m_cse;
+      (m_info.fl1==4||m_info.fl2==4)) ScaleExtraWeights(m_cse);
   if ((m_info.fl1==3||m_info.fl2==3) &&
-      (m_info.fl1==5||m_info.fl2==5)) m_info.extrawt *= m_bse;
+      (m_info.fl1==5||m_info.fl2==5)) ScaleExtraWeights(m_bse);
   if ((m_info.fl1==4||m_info.fl2==4) &&
-      (m_info.fl1==5||m_info.fl2==5)) m_info.extrawt *= m_bce;
+      (m_info.fl1==5||m_info.fl2==5)) ScaleExtraWeights(m_bce);
 
   if ((m_info.fl1!=m_info.fl2) ||
       (m_info.fl1==m_info.fl2 && (m_info.fl1==4 || m_info.fl1==5)) ||
@@ -207,14 +217,20 @@ bool Multiplet_Constructor::ConstructMesonWaveFunction()
     m_wavefunctions[m_info.flav] = Pi0WaveFunction();
   else if ((m_info.fl1==m_info.fl2 && m_info.fl1==2 && m_info.spin2==1) ||
 	   (m_info.fl1==m_info.fl2 && m_info.fl1==3 && m_info.spin2!=1)) {
-    double theta   = MixingAngle(), costh = cos(theta), sinth = sin(theta);
-    m_info.extrawt = costh*costh+sinth*sinth*m_singletsuppression;
+    const std::vector<double> thetas = MixingAngles();
+    for (size_t ivar=0; ivar<m_n_variations; ++ivar) {
+      const double costh = cos(thetas[ivar]), sinth = sin(thetas[ivar]);
+      m_info.extrawt[ivar] = costh*costh+sinth*sinth*m_singletsuppression[ivar];
+    }
     m_wavefunctions[m_info.flav] = OctetMesonWaveFunction();
   }
   else if ((m_info.fl1==m_info.fl2 && m_info.fl1==3 && m_info.spin2==1) ||
 	   (m_info.fl1==m_info.fl2 && m_info.fl1==2 && m_info.spin2!=1)) {
-    double theta   = MixingAngle(), costh = cos(theta), sinth = sin(theta);
-    m_info.extrawt = costh*costh*m_singletsuppression+sinth*sinth;
+    const std::vector<double> thetas = MixingAngles();
+    for (size_t ivar=0; ivar<m_n_variations; ++ivar) {
+      const double costh = cos(thetas[ivar]), sinth = sin(thetas[ivar]);
+      m_info.extrawt[ivar] = costh*costh*m_singletsuppression[ivar]+sinth*sinth;
+    }
     m_wavefunctions[m_info.flav] = SingletMesonWaveFunction();
   }
   return (m_wavefunctions.find(m_info.flav)!=m_wavefunctions.end());
@@ -251,11 +267,13 @@ Wave_Function * Multiplet_Constructor::OctetMesonWaveFunction() {
   // Trivially, for mixing angle = 0, this is the octet state, i.e.
   // 1/sqrt(6) [d dbar + u ubar - 2 s sbar]
   // Unfortunately for all but the pseudoscalars this is the heavier state
-  double theta  = MixingAngle(), sinth=sin(theta), costh=cos(theta);
-  double weight = costh/sqrt(6.)-sinth/sqrt(3.);
+  const std::vector<double> thetas = MixingAngles();
+  std::vector<double> weight(m_n_variations);
+  for (size_t ivar=0; ivar<m_n_variations; ++ivar)
+    weight[ivar] = cos(thetas[ivar])/sqrt(6.)-sin(thetas[ivar])/sqrt(3.);
   Wave_Function * wavefunction = new Wave_Function(m_info.flav);
   Flavour_Pair  * pair;
-  if (dabs(weight)>1.e-3) {
+  if (ComponentActive(weight)) {
     pair = new Flavour_Pair;
     pair->first  = Flavour(kf_d);
     pair->second = Flavour(kf_d).Bar();
@@ -265,8 +283,9 @@ Wave_Function * Multiplet_Constructor::OctetMesonWaveFunction() {
     pair->second = Flavour(kf_u).Bar();
     wavefunction->AddToWaves(pair,weight);
   }
-  weight         = -2.*costh/sqrt(6.)-sinth/sqrt(3.);
-  if (dabs(weight)>1.e-3) {
+  for (size_t ivar=0; ivar<m_n_variations; ++ivar)
+    weight[ivar] = -2.*cos(thetas[ivar])/sqrt(6.)-sin(thetas[ivar])/sqrt(3.);
+  if (ComponentActive(weight)) {
     pair = new Flavour_Pair;
     pair->first  = Flavour(kf_s);
     pair->second = Flavour(kf_s).Bar();
@@ -278,11 +297,13 @@ Wave_Function * Multiplet_Constructor::OctetMesonWaveFunction() {
 Wave_Function * Multiplet_Constructor::SingletMesonWaveFunction() {
   // Trivially, for mixing angle = 0, this is the singlet state, i.e.
   // 1/sqrt(3) [d dbar + u ubar + s sbar], up to a phase.
-  double theta  = MixingAngle(), sinth = sin(theta), costh = cos(theta);
-  double weight = sinth/sqrt(6.)+costh/sqrt(3.);
+  const std::vector<double> thetas = MixingAngles();
+  std::vector<double> weight(m_n_variations);
+  for (size_t ivar=0; ivar<m_n_variations; ++ivar)
+    weight[ivar] = sin(thetas[ivar])/sqrt(6.)+cos(thetas[ivar])/sqrt(3.);
   Wave_Function * wavefunction = new Wave_Function(m_info.flav);
   Flavour_Pair  * pair;
-  if (dabs(weight)>1.e-3) {
+  if (ComponentActive(weight)) {
     pair = new Flavour_Pair;
     pair->first  = Flavour(kf_d);
     pair->second = Flavour(kf_d).Bar();
@@ -292,8 +313,9 @@ Wave_Function * Multiplet_Constructor::SingletMesonWaveFunction() {
     pair->second = Flavour(kf_u).Bar();
     wavefunction->AddToWaves(pair,weight);
   }
-  weight  = -2.*sinth/sqrt(6.)+costh/sqrt(3.);
-  if (dabs(weight)>1.e-3) {
+  for (size_t ivar=0; ivar<m_n_variations; ++ivar)
+    weight[ivar] = -2.*sin(thetas[ivar])/sqrt(6.)+cos(thetas[ivar])/sqrt(3.);
+  if (ComponentActive(weight)) {
     pair = new Flavour_Pair;
     pair->first  = Flavour(kf_s);
     pair->second = Flavour(kf_s).Bar();
@@ -302,15 +324,21 @@ Wave_Function * Multiplet_Constructor::SingletMesonWaveFunction() {
   return wavefunction;
 }
 
-double Multiplet_Constructor::MixingAngle()
+std::vector<double> Multiplet_Constructor::MixingAngles()
 {
   switch (m_info.spin2) {
-  case 5 : return hadpars->Get("Mixing_Angle_2+");
-  case 3 : return hadpars->Get("Mixing_Angle_1-");
-  case 1 : return hadpars->Get("Mixing_Angle_0+");
+  case 5 : return m_mixing2;
+  case 3 : return m_mixing1;
+  case 1 : return m_mixing0;
   default: break;
   }
-  return 0.;
+  return std::vector<double>(m_n_variations, 0.);
+}
+
+bool Multiplet_Constructor::ComponentActive(const std::vector<double> & amps)
+{
+  p_reweighting->CheckComponentGuard(m_info.flav, amps, 1.e-3);
+  return dabs(amps[0])>1.e-3;
 }
 
 bool Multiplet_Constructor::ConstructBaryonWaveFunction()
@@ -324,14 +352,14 @@ bool Multiplet_Constructor::ConstructBaryonWaveFunction()
   // being a singlet, with no or little mising with the
   // "normal" Sigma and Lambda - quite often the heavies
   // are unknown
-  if (m_info.fl1==4 || m_info.fl2==4 || m_info.fl3==4) m_info.extrawt *= m_hcbe;
-  if (m_info.fl1==5 || m_info.fl2==5 || m_info.fl3==5) m_info.extrawt *= m_hbbe;
+  if (m_info.fl1==4 || m_info.fl2==4 || m_info.fl3==4) ScaleExtraWeights(m_hcbe);
+  if (m_info.fl1==5 || m_info.fl2==5 || m_info.fl3==5) ScaleExtraWeights(m_hbbe);
   if ((m_info.fl3==3||m_info.fl2==3) &&
-      (m_info.fl3==4||m_info.fl2==4)) m_info.extrawt *= m_cse;
+      (m_info.fl3==4||m_info.fl2==4)) ScaleExtraWeights(m_cse);
   if ((m_info.fl3==3||m_info.fl2==3) &&
-      (m_info.fl3==5||m_info.fl2==5)) m_info.extrawt *= m_bse;
+      (m_info.fl3==5||m_info.fl2==5)) ScaleExtraWeights(m_bse);
   if ((m_info.fl3==4||m_info.fl2==4) &&
-      (m_info.fl3==5||m_info.fl2==5)) m_info.extrawt *= m_bce;
+      (m_info.fl3==5||m_info.fl2==5)) ScaleExtraWeights(m_bce);
 
   if (m_info.spin2==2 || (m_info.spin2==4 && m_info.exr==1)) {
     if (m_info.fl3<4) {
@@ -629,13 +657,13 @@ void Multiplet_Constructor::PrintWaveFunctions(bool checkonly)
       for (WaveComponents::iterator wit=wavefunction->GetWaves()->begin();
 	   wit!=wavefunction->GetWaves()->end();wit++) {
 	if (checkit.find(wit->first->first)!=checkit.end())
-	  checkit[wit->first->first] += sqr(wit->second);
+	  checkit[wit->first->first] += sqr(wit->second[0]);
 	else
-	  checkit[wit->first->first] = sqr(wit->second);
+	  checkit[wit->first->first] = sqr(wit->second[0]);
 	if (checkit.find(wit->first->second)!=checkit.end())
-	  checkit[wit->first->second] += sqr(wit->second);
+	  checkit[wit->first->second] += sqr(wit->second[0]);
 	else
-	  checkit[wit->first->second] = sqr(wit->second);
+	  checkit[wit->first->second] = sqr(wit->second[0]);
       }
     }
     msg_Out()<<"-----------------------------------------------\n"
@@ -659,7 +687,7 @@ void Multiplet_Constructor::PrintMultiplets()
     ExtractInfo(test.Kfcode());
     msg_Out()<<"*** "<<multi->first<<"  "
 	     <<"["<<multi->second.size()<<" elements, "
-	     <<"weight = "<<m_info.multiwt<<"]:\n   ";
+	     <<"weight = "<<m_info.multiwt[0]<<"]:\n   ";
     for (set<Flavour>::iterator flit=multi->second.begin();
 	 flit!=multi->second.end();flit++)
       msg_Out()<<(*flit)<<" ";

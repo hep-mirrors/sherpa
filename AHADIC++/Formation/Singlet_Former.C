@@ -14,7 +14,7 @@ Singlet_Former::Singlet_Former(list<Singlet *> * singlets) :
 Singlet_Former::~Singlet_Former() {}
 
 void Singlet_Former::Init() {
-  m_kt2max = sqr(hadpars->Get("kT_max")); 
+  m_kt2max = sqr(hadpars->Get("kT_max"));
 }
 
 void Singlet_Former::ExtractOutgoingCols(Blob * blob) {

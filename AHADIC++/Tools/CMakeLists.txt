@@ -11,7 +11,7 @@ set(AhadicTools_SOURCES Proto_Particle.C
                   Splitter_Base.C
                   Flavour_Selector.C
                   KT_Selector.C
-                  Ahadic_Reweighting.C)
+                  Hadronisation_Reweighting.C)
 
 set(AhadicTools_HEADERS Proto_Particle.H
                   Cluster.H
@@ -27,7 +27,7 @@ set(AhadicTools_HEADERS Proto_Particle.H
                   Splitter_Base.H
                   Flavour_Selector.H
                   KT_Selector.H
-                  Ahadic_Reweighting.H)
+                  Hadronisation_Reweighting.H)
 
 sherpa_create_git_info(AhadicTools ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR})
 

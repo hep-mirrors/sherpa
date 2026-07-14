@@ -1,5 +1,5 @@
 #include "AHADIC++/Formation/Trivial_Splitter.H"
-#include "AHADIC++/Tools/Ahadic_Reweighting.H"
+#include "AHADIC++/Tools/Hadronisation_Reweighting.H"
 #include "AHADIC++/Tools/Hadronisation_Parameters.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Math/Random.H"
@@ -10,7 +10,7 @@ using namespace std;
 
 Trivial_Splitter::Trivial_Splitter(Flavour_Selector   * flavourselector,
 				   KT_Selector        * ktselector,
-				   Ahadic_Reweighting * reweighting) :
+				   Hadronisation_Reweighting * reweighting) :
   p_flavourselector(flavourselector),
   p_ktselector(ktselector),
   p_reweighting(reweighting)
@@ -90,9 +90,8 @@ void Trivial_Splitter::SelectFlavour() {
 
 void Trivial_Splitter::FixTransverseMomentum(bool rescue) {
   // for no transverse momentum replace m_ktmax = 0.
-  //std::cout << "Trivial_Splitter\n";
   m_ktmax = rescue? 0.: m_E-m_popped_mass-m_minmass/2.;
-  m_kt    = m_ktmax>0.? (*p_ktselector)(m_ktmax) : 0.;
+  m_kt    = m_ktmax>0.? (*p_ktselector)(m_ktmax, false) : 0.;
   m_kt2   = m_kt*m_kt;
   m_phi   = 2.*M_PI*ran->Get();
   m_ktvec = m_kt * Vec4D(0.,cos(m_phi),sin(m_phi),0.);

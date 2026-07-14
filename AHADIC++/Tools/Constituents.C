@@ -1,16 +1,17 @@
 #include "AHADIC++/Tools/Hadronisation_Parameters.H"
 #include "AHADIC++/Tools/Constituents.H"
-#include "AHADIC++/Tools/Ahadic_Reweighting.H"
+#include "AHADIC++/Tools/Hadronisation_Reweighting.H"
 #include "ATOOLS/Org/Message.H"
 
 using namespace AHADIC;
 using namespace ATOOLS;
 
-Constituents::Constituents(bool diquarks, Ahadic_Reweighting * reweighting,
+Constituents::Constituents(bool diquarks, Hadronisation_Reweighting * reweighting,
 			   bool debug) :
   m_minmass(100.),m_maxmass(0.)
 {
   // Light quarks and diquarks
+  m_n_variations = reweighting->NumberOfVariations();
   auto v_sfrac(reweighting->GetVariationVector("Strange_fraction"));
   auto v_bfrac(reweighting->GetVariationVector("Baryon_fraction"));
   auto v_qssup(reweighting->GetVariationVector("P_qs_by_P_qq"));
@@ -50,13 +51,12 @@ Constituents::Constituents(bool diquarks, Ahadic_Reweighting * reweighting,
   }
 
   double total(0.),udfrac(1.), ud0(1.), norm;
-  m_nvars = v_sfrac.size();
-  for(int i{0}; i<v_sfrac.size(); ++i) {
-    double sfrac  = v_sfrac[i];
-    double bfrac  = v_bfrac[i];
-    double qssup  = v_qssup[i];
-    double sssup  = v_sssup[i];
-    double sp1sup = v_sp1sup[i];
+  for (size_t ivar=0; ivar<m_n_variations; ++ivar) {
+    double sfrac  = v_sfrac[ivar];
+    double bfrac  = v_bfrac[ivar];
+    double qssup  = v_qssup[ivar];
+    double sssup  = v_sssup[ivar];
+    double sp1sup = v_sp1sup[ivar];
 
     // if(debug) {
     //   sfrac  = v_sfrac[0];
@@ -76,7 +76,7 @@ Constituents::Constituents(bool diquarks, Ahadic_Reweighting * reweighting,
     CCMap[Flavour(kf_c)]->m_weight.push_back(0.);
     CCMap[Flavour(kf_b)]->m_weight.push_back(0.);
 
-    if (diquarks && bfrac>0.) {
+    if (diquarks && v_bfrac[0]>0.) {
       // Light Di-quarks, spin 0
       CCMap[Flavour(kf_ud_0)]->m_weight.push_back(bfrac*ud0*norm);
       CCMap[Flavour(kf_sd_0)]->m_weight.push_back(bfrac*qssup*norm);

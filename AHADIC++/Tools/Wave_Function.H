@@ -4,11 +4,14 @@
 #include "ATOOLS/Phys/Flavour.H"
 #include <map>
 #include <string>
+#include <vector>
 
 
 namespace AHADIC {
   typedef std::pair<ATOOLS::Flavour,ATOOLS::Flavour> Flavour_Pair;
-  typedef std::map<Flavour_Pair *,double>            WaveComponents;
+  // component amplitudes are per-variation vectors for the reweighting of
+  // the mixing angles; angle-independent components hold a single entry
+  typedef std::map<Flavour_Pair *,std::vector<double> > WaveComponents;
 
   // This is more or less a container class:
   // For every hadron it contains the probabilities related to a decomposition
@@ -23,7 +26,8 @@ namespace AHADIC {
   private:
     ATOOLS::Flavour m_hadron;
     int             m_kfcode, m_spin2;
-    double          m_mpletwt, m_extrawt;
+    std::vector<double> m_mpletwts;
+    std::vector<double> m_extrawts;
     WaveComponents  m_waves;
     bool            m_barrable;
   public:
@@ -37,16 +41,17 @@ namespace AHADIC {
     const size_t     size() const              { return m_waves.size(); }
     
     void   AddToWaves(Flavour_Pair *,double);
+    void   AddToWaves(Flavour_Pair *,const std::vector<double> &);
     double WaveWeight(ATOOLS::Flavour,ATOOLS::Flavour);
 
-    void   SetMultipletWeight(const double & wt) { m_mpletwt = wt; }
-    void   SetExtraWeight(const double & wt)     { m_extrawt = wt; }
+    void   SetMultipletWeights(const std::vector<double> & wts) { m_mpletwts = wts; }
+    void   SetExtraWeights(const std::vector<double> & wts) { m_extrawts = wts; }
     void   SetFlavour(ATOOLS::Flavour & flav)    { m_hadron  = flav; }
     void   SetKfCode(const int & _kfcode)        { m_kfcode  = _kfcode; }
     void   SetSpin(const double & spin)          { m_spin2   = spin; }
 
-    const double & MultipletWeight() const     { return m_mpletwt; }
-    const double & ExtraWeight() const         { return m_extrawt; }
+    const std::vector<double> & MultipletWeights() const { return m_mpletwts; }
+    const std::vector<double> & ExtraWeights() const { return m_extrawts; }
     const int    & Spin() const                { return m_spin2; }
     const double   SpinWeight() const          { return double(m_spin2); }
     const int    & KfCode() const              { return m_kfcode; }

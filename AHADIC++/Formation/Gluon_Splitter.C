@@ -125,9 +125,9 @@ void Gluon_Splitter::ZAccepted(const double wgt, const double & z,
 			       const double & zmin,const double & zmax,
 			       const unsigned int & cnt) {
   if (!p_reweighting->Active()) return;
-  std::vector<double> probs(m_alpha.size());
-  for (size_t i{0}; i<m_alpha.size(); i++) {
-    probs[i] = FragmentationFunctionProb(z,zmin,zmax,m_alpha[i]);
+  std::vector<double> probs(m_n_variations);
+  for (size_t ivar=0; ivar<m_n_variations; ++ivar) {
+    probs[ivar] = FragmentationFunctionProb(z,zmin,zmax,m_alpha[ivar]);
   }
   p_reweighting->GluonSplittingReweighting(probs);
 }

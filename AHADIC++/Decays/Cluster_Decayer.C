@@ -12,7 +12,7 @@ Cluster_Decayer::Cluster_Decayer(list<Cluster *> * cluster_list,
 				 Soft_Cluster_Handler * softclusters,
 				 Flavour_Selector     * flavourselector,
 				 KT_Selector          * ktselector,
-				 Ahadic_Reweighting   * reweighting) :
+				 Hadronisation_Reweighting   * reweighting) :
   p_cluster_list(cluster_list), p_softclusters(softclusters),
   m_splitter(Cluster_Splitter(cluster_list,softclusters,flavourselector,
 			      ktselector,reweighting))
