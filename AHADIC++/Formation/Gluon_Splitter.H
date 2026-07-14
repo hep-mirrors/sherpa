@@ -53,6 +53,8 @@ namespace AHADIC {
       p_reweighting->ResetGluonSplittingWeights();
     }
 
+    int RecordSite() const override { return 0; } // OUTPUT
+
     void ZRejected(const double, const double&, const double&, const double&,
 		   const unsigned int&) override;
 

@@ -46,6 +46,7 @@ operator()(const double & Emax,const bool & vetodi) {
     THROW(fatal_error, "No flavour selected.");
   if(m_norms[0] == 0) return ret;
   p_reweighting->FlavourSelectionReweighting(opt->second->popweights, m_norms);
+  p_reweighting->RecordFlavourPop(ret, Emax); // OUTPUT
 
   return ret;
 }

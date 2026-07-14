@@ -283,6 +283,7 @@ bool Soft_Cluster_Handler::FixKinematics() {
   double pt, pl;
   //std::cout << "Soft_Cluster_Handler\n";
   pt = (*p_ktselector)(ktmax, true);
+  p_reweighting->RecordKT(2, pt, ktmax); // OUTPUT
   pl = sqrt(p1*p1-pt*pt);
   double phi   = 2.*M_PI*ran->Get();
   m_moms[0]    = Vec4D(       E1, pt*cos(phi), pt*sin(phi), pl);
@@ -345,6 +346,10 @@ double Soft_Cluster_Handler::RadiationWeight(const bool & withPS) {
 
   if (wit!=weights.end()) m_hads[0] = wit->first;
 
+  if (totweight[0] > 0.) {
+    p_reweighting->RecordTransition(m_mass, m_hads[0]); // OUTPUT
+  }
+
   return totweight[0];
 }
 
@@ -403,6 +408,10 @@ double Soft_Cluster_Handler::DecayWeight() {
   if (wit!=weights.end()) {
     m_hads[0] = wit->first.first;
     m_hads[1] = wit->first.second;
+  }
+
+  if (totweight[0] > 0.) {
+    p_reweighting->RecordSoftDecay(m_mass, m_hads[0], m_hads[1]); // OUTPUT
   }
 
   return totweight[0];

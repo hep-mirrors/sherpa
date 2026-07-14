@@ -54,6 +54,11 @@ namespace AHADIC {
     ~Ahadic();
 
     ATOOLS::Return_Value::code Hadronize(ATOOLS::Blob_List *);
+
+    // OUTPUT
+    void WriteEventStatistics() override {
+      m_reweighting.WriteEventStatistics();
+    }
   };
 }
 #endif

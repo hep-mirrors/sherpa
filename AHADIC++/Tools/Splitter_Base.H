@@ -63,6 +63,8 @@ namespace AHADIC {
     virtual bool FillParticlesInLists()    = 0;
     virtual bool CheckKinematics()         = 0;
 
+    virtual int RecordSite() const { return -1; } // OUTPUT
+
   public:
     Splitter_Base(std::list<Cluster *> * cluster_list,
 		  Soft_Cluster_Handler * softclusters,

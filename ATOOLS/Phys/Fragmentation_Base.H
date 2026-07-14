@@ -18,7 +18,9 @@ namespace ATOOLS {
     virtual ~Fragmentation_Base();
 
     virtual Return_Value::code Hadronize(ATOOLS::Blob_List *) = 0;
-    
+
+    virtual void WriteEventStatistics() {} // OUTPUT
+
     const std::string & Name() const { return m_name; }
     void SetName(const std::string& name) { m_name=name; }
   };

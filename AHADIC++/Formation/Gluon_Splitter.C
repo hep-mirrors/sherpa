@@ -32,7 +32,10 @@ bool Gluon_Splitter::MakeLongitudinalMomenta() {
   for (int it{0}; it<10000; ++it) {
     m_z[1] = SelectZ(m_zmin[1],m_zmax[1],0);
     if (m_z[1] < 0.) return false;
-    if (CalculateXY()) return true;
+    if (CalculateXY()) {
+      p_reweighting->RecordGluonZ(m_z[1]); // OUTPUT
+      return true;
+    }
   }
   msg_Error() << METHOD << ": CalculateXY failed after 10000 iterations\n";
   return false;
@@ -166,6 +169,10 @@ bool Gluon_Splitter::FillParticlesInLists() {
   Cluster * cluster = MakeCluster();
   if (cluster==NULL) return false;
   Vec4D  mom = cluster->Momentum();
+  p_reweighting->RecordPrimaryCluster(sqrt(dabs(mom.Abs2())),
+                                      (*cluster)[0]->Flavour(),
+                                      (*cluster)[1]->Flavour(),
+                                      false); // OUTPUT
   Flavour fl = Flavour(kf_none);
   if (p_softclusters->PromptTransit(cluster,fl)) {
     ReplaceClusterWithHadron(fl,mom);

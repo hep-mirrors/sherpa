@@ -244,6 +244,8 @@ bool Cluster_Splitter::MakeLongitudinalMomentaZSimple() {
 #endif
   if (m_z[i2] < 0.) return false;
 
+  p_reweighting->RecordClusterZ(m_nsplit, m_type[0], m_z[0],
+                                m_type[1], m_z[1], m_Q); // OUTPUT
   return true;
 }
 

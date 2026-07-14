@@ -16,6 +16,7 @@ Gluon_Decayer::Gluon_Decayer(list<Cluster *> * cluster_list,
 			     Hadronisation_Reweighting   * reweighting) :
   Singlet_Tools(),
   p_cluster_list(cluster_list), p_softclusters(softclusters),
+  p_reweighting(reweighting), // OUTPUT
   m_splitter(Gluon_Splitter(cluster_list,softclusters,flavourselector,
 			    ktselector,reweighting)),
   m_breaker(Trivial_Splitter(flavourselector,ktselector,reweighting)),
@@ -208,6 +209,9 @@ bool Gluon_Decayer::LastStep() {
 bool Gluon_Decayer::Trivial(Proto_Particle * part1,Proto_Particle * part2,
 			    const bool & force) {
   Cluster * cluster = new Cluster(part1,part2);
+  p_reweighting->RecordPrimaryCluster(sqrt(dabs(cluster->Momentum().Abs2())),
+                                      part1->Flavour(), part2->Flavour(),
+                                      true); // OUTPUT
   if (m_analyse) {
     m_Nclusters++;
     double mass = sqrt(dabs(cluster->Momentum().Abs2()));

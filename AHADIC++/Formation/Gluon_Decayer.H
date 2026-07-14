@@ -13,6 +13,7 @@ namespace AHADIC {
   private:
     std::list<Cluster *> * p_cluster_list;
     Soft_Cluster_Handler * p_softclusters;
+    Hadronisation_Reweighting   * p_reweighting; // OUTPUT
     Gluon_Splitter   m_splitter;
     Trivial_Splitter m_breaker;
 

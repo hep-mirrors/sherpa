@@ -219,6 +219,7 @@ bool Splitter_Base::MakeTransverseMomentum() {
   }
   m_kt = (*p_ktselector)(ktmax, true);
   if (m_kt < 0.) return false;
+  p_reweighting->RecordKT(RecordSite(), m_kt, ktmax); // OUTPUT
   m_kt2   = m_kt*m_kt;
   const double phi   = 2.*M_PI*ran->Get();
   m_ktvec = m_kt * Vec4D(0.,cos(phi),sin(phi),0.);

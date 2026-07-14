@@ -67,6 +67,8 @@ namespace AHADIC {
       p_reweighting->ResetClusterSplittingWeights();
     }
 
+    int RecordSite() const override { return 1; } // OUTPUT
+
     void ZRejected(const double wgt, const double & z,
 		   const double & zmin,const double & zmax,
 		   const unsigned int & cnt) override;
