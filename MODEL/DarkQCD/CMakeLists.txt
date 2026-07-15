@@ -1,5 +1,6 @@
 set(DarkQCD_SOURCES  Model.C
-                     Calculators/CF_DarkQCD.C)
+                     Calculators/CF_DarkQCD.C
+                     Scales/DarkQCD_Scale_Setter.C)
 
 set(DarkQCD_HEADERS Model.H)
 
