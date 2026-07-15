@@ -19,23 +19,16 @@ MI_Parameters::MI_Parameters() :
     s["EVENT_TYPE"].SetDefault(evt_type::Perturbative).Get<evt_type::code>();
   m_parameters_vector[string("pt_0(ref)")]
     = s["PT_0(ref)"].SetDefault({2.05}).GetVector<double>();
-  m_parameters[string("pt_0(ref)")]
-    = m_parameters_vector[string("pt_0(ref)")][0];
   m_parameters[string("pt_0(IR)")]
     = s["PT_0(IR)"].SetDefault(0.5).Get<double>();
   m_parameters_vector[string("pt_min(ref)")]
     = s["PT_Min(ref)"].SetDefault({1.10}).GetVector<double>();
-  m_parameters[string("pt_min(ref)")]
-    = m_parameters_vector[string("pt_min(ref)")][0];
   m_parameters[string("pt_min(IR)")]
     = s["PT_Min(IR)"].SetDefault(1.00).Get<double>();
   m_parameters[string("Ecms(ref)")]
     = s["E(ref)"].SetDefault(7000.).Get<double>();
   m_parameters_vector[string("eta")]
     = s["Eta"].SetDefault({0.026}).GetVector<double>();
-  m_parameters[string("eta")]
-    = m_parameters_vector[string("eta")][0];
-  m_pt02ref   = sqr(m_parameters[string("pt_0(ref)")]);
   m_pt02IR    = sqr(m_parameters[string("pt_0(IR)")]);
   for (size_t i=0; i<m_parameters_vector[string("pt_0(ref)")].size(); ++i)
   { m_pt02ref_variations.push_back(sqr(m_parameters_vector[string("pt_0(ref)")][i])); }
@@ -47,25 +40,19 @@ MI_Parameters::MI_Parameters() :
   m_Sref      = sqr(m_parameters[string("Ecms(ref)")]);
   m_Scms      = sqr(rpa->gen.Ecms());
   m_eta_variations = m_parameters_vector[string("eta")];
-  m_eta       = m_parameters[string("eta")];
+  m_eta       = m_eta_variations[0];
   std::vector<double> ptmin_variations;
   for (size_t ivar=0; ivar<std::max({m_parameters_vector[string("pt_min(ref)")].size(),
                                m_parameters_vector[string("eta")].size()}); ++ivar)
   { ptmin_variations.push_back(sqrt(CalculatePTmin2(m_Scms, ivar))); }
-  double pt_min = ptmin_variations[0];
   std::vector<double> pt0_variations;
   for (size_t ivar=0; ivar<std::max({m_parameters_vector[string("pt_0(ref)")].size(),
                                m_parameters_vector[string("eta")].size()}); ++ivar)
   { pt0_variations.push_back(sqrt(CalculatePT02(m_Scms, ivar))); }
-  double pt_0 = pt0_variations[0];
   m_parameters_vector[string("pt_min")]
     = s["PT_Min"].SetDefault(ptmin_variations).GetVector<double>();
-  m_parameters[string("pt_min")]
-    = m_parameters_vector[string("pt_min")][0];
   m_parameters_vector[string("pt_0")]
     = s["PT_0"].SetDefault(pt0_variations).GetVector<double>();
-  m_parameters[string("pt_0")]
-    = m_parameters_vector[string("pt_0")][0];
   m_scaleRscheme = s["MU_R_SCHEME"].SetDefault("PT").Get<scale_scheme>();
   m_scaleFscheme = s["MU_F_SCHEME"].SetDefault("PT").Get<scale_scheme>();
   m_parameters[string("RenScale_Factor")]
@@ -75,8 +62,6 @@ MI_Parameters::MI_Parameters() :
   m_parameters[string("E_min")] = s["E_Min"].SetDefault(0.25).Get<double>();
   m_parameters_vector[string("SigmaND_Norm")]
     = s["SIGMA_ND_NORM"].SetDefault({0.44}).GetVector<double>();
-  m_parameters[string("SigmaND_Norm")]
-    = m_parameters_vector[string("SigmaND_Norm")][0];
   m_parameters[string("AQM_Strange")]
     = s["AQM_STRANGE_FACTOR"].SetDefault(0.0).Get<double>();
   m_parameters[string("PomeronIntercept")]
@@ -111,6 +96,10 @@ MI_Parameters::MI_Parameters() :
     = s["XS_accuracy"].SetDefault(0.01).Get<double>();
   m_parameters[string("max_reweight_factor")]
     = s["MAX_REWEIGHT_FACTOR"].SetDefault(-1.).Get<double>();
+
+  for (const auto& kv : m_parameters_vector) {
+    if (!kv.second.empty()) m_parameters[kv.first] = kv.second[0];
+  }
 
   m_flags[string("nPT_bins")]
     = s["nPT_bins"].SetDefault(200).Get<size_t>();

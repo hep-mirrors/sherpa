@@ -49,6 +49,11 @@ namespace REMNANTS {
       kT_form(primkT_form::undefined), kT_recoil(primkT_recoil::undefined),
       m_form(matter_form::unknown) {}
     remnant_parameters(const remnant_parameters & parms);
+
+    void SetVaried(const std::string & key, const double & value) {
+      params[key]           = value;
+      param_variations[key] = {value};
+    }
   };
 
   class Remnants_Parameters {
