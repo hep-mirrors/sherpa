@@ -12,7 +12,7 @@ Photon_Remnant::
 Photon_Remnant(PDF::PDF_Base *pdf, const size_t & beam, const size_t & tag) :
   Remnant_Base(pdf->Bunch(), beam, tag),
   p_pdf(pdf), p_partons(&(pdf->Partons())),
-  m_LambdaQCD(0.25), m_beta_quark(-1.), m_beta_gluon(-1.2),
+  m_beta_quark(-1.), m_beta_gluon(-1.2),
   m_valence(false), p_spectator(nullptr),
   p_recoiler(nullptr) {
   p_ff = new Form_Factor(pdf->Bunch());
@@ -127,7 +127,7 @@ bool Photon_Remnant::MakeLongitudinalMomenta(ParticleMomMap *ktmap,
    */
   double remnant_masses = 0.;
   for (Particle  const * pit : m_spectators) {
-    remnant_masses += Max(pit->Flav().HadMass(), m_LambdaQCD);
+    remnant_masses += Max(pit->Flav().HadMass(), m_GluonMinEnergy);
   }
   if (remnant_masses > availMom[0]) {
     msg_Debugging() << METHOD
@@ -142,7 +142,7 @@ bool Photon_Remnant::MakeLongitudinalMomenta(ParticleMomMap *ktmap,
       part->SetMomentum(SelectZ(part->Flav(), availMom[0], remnant_masses) *
 			availMom);
       availMom -= part->Momentum();
-      remnant_masses -= Max(part->Flav().HadMass(), m_LambdaQCD);
+      remnant_masses -= Max(part->Flav().HadMass(), m_GluonMinEnergy);
     }
     msg_Debugging() << METHOD << ": set momentum for "<<part->Flav()<<" to "
                     << part->Momentum() << "\n";
@@ -162,7 +162,7 @@ double Photon_Remnant::SelectZ(const Flavour &flav, double restmom,
                                double remnant_masses) const {
   // Give a random number to distribute longitudinal momenta, but this number
   // must respect the mass constraints
-  double zmin = Max(flav.HadMass(), m_LambdaQCD) / restmom;
+  double zmin = Max(flav.HadMass(), m_GluonMinEnergy) / restmom;
   double zmax = zmin + (restmom - remnant_masses) / restmom;
   // Taken from Hadron_Remnant, adapted the exponents for photon PDFs
   if (zmax < zmin) {

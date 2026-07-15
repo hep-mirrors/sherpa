@@ -50,7 +50,7 @@ namespace REMNANTS {
     // momentum is read in this frame, consistent with the blob contents.
     const ATOOLS::Poincare* p_window{nullptr};
 
-    double m_scale2;
+    double m_scale2, m_GluonMinEnergy;
 
     rtp::code                 FixType(ATOOLS::Flavour& flav);
     virtual ATOOLS::Particle* MakeParticle(const ATOOLS::Flavour& flav);

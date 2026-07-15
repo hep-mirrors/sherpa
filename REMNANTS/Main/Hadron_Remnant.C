@@ -14,7 +14,7 @@ Hadron_Remnant(PDF::PDF_Base * pdf,const unsigned int & beam,
   p_valence(nullptr), p_remnant(nullptr),
   p_recoiler(nullptr), p_spectator(nullptr),
   m_valence(false), m_alpha(0.), m_gamma(1.), m_beta(-1.5),
-  m_invb(1./(m_beta+1)), m_LambdaQCD(0.25), m_minE(m_beamflav.IsBaryon()?2.:1.)
+  m_invb(1./(m_beta+1)), m_minE(m_beamflav.IsBaryon()?2.:1.)
 {
   p_ff     = new Form_Factor(m_beamflav);
   m_scale2 = Max(4.0,p_pdf->Q2Min());
@@ -265,7 +265,7 @@ Flavour Hadron_Remnant::RemnantFlavour(const Flavour & flav) {
   bool take_it = false;
   std::vector<int> kfs;
   for (const auto& flit : m_constituents) {
-    if (flav==flit && !take_it) { take_it = true; continue; } 
+    if (flav==flit && !take_it) { take_it = true; continue; }
     kfs.push_back(((flit.IsAnti() && !m_beamflav.IsAnti())?-1:1)*flit.Kfcode());
   }
   if (kfs[0]<kfs[1]) std::swap(kfs[0],kfs[1]);
@@ -296,7 +296,7 @@ bool Hadron_Remnant::MakeLongitudinalMomenta(ParticleMomMap *ktmap,const bool & 
 		  << "\n";
   double remnant_masses = 0.;
   for (Particle  const * pit : m_spectators) {
-    remnant_masses += Max(pit->Flav().HadMass(), m_LambdaQCD);
+    remnant_masses += Max(pit->Flav().HadMass(), m_GluonMinEnergy);
   }
   if (remnant_masses > availMom[0]) {
     msg_Debugging() << METHOD
@@ -309,7 +309,7 @@ bool Hadron_Remnant::MakeLongitudinalMomenta(ParticleMomMap *ktmap,const bool & 
     else {
       part->SetMomentum(SelectZ(part->Flav(),availMom[0], remnant_masses)*availMom);
       availMom -= part->Momentum();
-      remnant_masses -= Max(part->Flav().HadMass(), m_LambdaQCD);
+      remnant_masses -= Max(part->Flav().HadMass(), m_GluonMinEnergy);
     }
     msg_Debugging() << METHOD << ": set momentum for "<<part->Flav()<<" to "
               << part->Momentum() << "\n";
@@ -327,7 +327,7 @@ bool Hadron_Remnant::MakeLongitudinalMomenta(ParticleMomMap *ktmap,const bool & 
 
 double Hadron_Remnant::SelectZ(const ATOOLS::Flavour &flav, double restmom,
                                double remnant_masses) const {
-  double zmin = Max(flav.HadMass(), m_LambdaQCD) / restmom;
+  double zmin = Max(flav.HadMass(), m_GluonMinEnergy) / restmom;
   double zmax = zmin + (restmom - remnant_masses) / restmom;
   double z;
   if (zmax < zmin) {

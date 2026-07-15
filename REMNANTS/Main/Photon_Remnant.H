@@ -11,7 +11,7 @@ namespace REMNANTS {
     PDF::PDF_Base*             p_pdf;
     const ATOOLS::Flavour_Set* p_partons;
 
-    const double m_LambdaQCD, m_beta_quark, m_beta_gluon;
+    const double m_beta_quark, m_beta_gluon;
     bool         m_valence;
 
     ATOOLS::Particle *p_spectator, *p_recoiler;

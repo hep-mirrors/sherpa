@@ -11,7 +11,6 @@ namespace REMNANTS {
     PDF::PDF_Base*             p_pdf;
     const ATOOLS::Flavour_Set* p_partons;
     ATOOLS::Particle*          p_recoiler;
-    const double               m_LambdaQCD;
 
     void   MakeRemnants(Colour_Generator* colours);
     bool   MakeLongitudinalMomenta(ATOOLS::ParticleMomMap* ktmap, const bool& copy);

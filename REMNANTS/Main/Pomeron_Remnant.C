@@ -9,8 +9,8 @@ using namespace ATOOLS;
 
 Pomeron_Remnant::Pomeron_Remnant(PDF::PDF_Base *pdf, const size_t& beam, const size_t& tag)
     : Remnant_Base(Flavour(kf_pomeron), beam, tag), p_pdf(pdf),
-      p_partons(&(pdf->Partons())), p_recoiler(nullptr),
-      m_LambdaQCD(0.25) {
+      p_partons(&(pdf->Partons())), p_recoiler(nullptr)
+{
   p_ff = new Form_Factor(pdf->Bunch());
 }
 
@@ -99,7 +99,7 @@ bool Pomeron_Remnant::MakeLongitudinalMomenta(ParticleMomMap *ktmap,
                   << "\n";
   double remnant_masses = 0.;
   for (Particle  const * pit : m_spectators) {
-    remnant_masses += Max(pit->Flav().HadMass(), m_LambdaQCD);
+    remnant_masses += Max(pit->Flav().HadMass(), m_GluonMinEnergy);
   }
   if (remnant_masses > availMom[0]) {
     msg_Error() << METHOD << ": Warning, HadMasses of remnants = "
@@ -114,7 +114,7 @@ bool Pomeron_Remnant::MakeLongitudinalMomenta(ParticleMomMap *ktmap,
     } else {
       part->SetMomentum(SelectZ(part->Flav(), availMom[0], remnant_masses) * availMom);
       availMom -= part->Momentum();
-      remnant_masses -= Max(part->Flav().HadMass(), m_LambdaQCD);
+      remnant_masses -= Max(part->Flav().HadMass(), m_GluonMinEnergy);
     }
   msg_Debugging() << METHOD << ": set momentum for "<<part->Flav()<<" to "
                   << part->Momentum() << "\n";
@@ -158,7 +158,7 @@ double Pomeron_Remnant::SelectZ(const Flavour &flav, double restmom,
                                 double remnant_masses) const {
   // Give a random number to distribute longitudinal momenta, but this number
   // must respect the mass constraints
-  double zmin = Max(flav.HadMass(), m_LambdaQCD) / restmom;
+  double zmin = Max(flav.HadMass(), m_GluonMinEnergy) / restmom;
   double zmax = zmin + (restmom - remnant_masses) / restmom;
   // Taken from Hadron_Remnant, adapted the exponents for photon PDFs
   if (zmax < zmin) {
