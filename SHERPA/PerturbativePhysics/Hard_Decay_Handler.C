@@ -460,6 +460,11 @@ vector<Decay_Channel*> Hard_Decay_Handler::ResolveDecay(Decay_Channel* dc1)
       dc->Channels()->SetNout(dc->NOut());
       dc->Channels()->Add(new Rambo(1,dc->NOut(),&dc->Flavs().front(),this));
       if (flavs1[j].Width()>0.0) {
+        /* TODO: ausprobieren ob damit integration schlecher,
+        wenn nein -> samplen testen
+        */
+        if (dc->NOut() == 3) dc->Channels()->DropAllChannels(true);
+
         dc->Channels()->Add(new Decay_Dalitz(&dc->Flavs().front(),
                                              flavs1[j].Mass(), flavs1[j].Width(),
                                              nonprop, propi, propj, this));

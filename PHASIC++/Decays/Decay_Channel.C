@@ -251,10 +251,8 @@ void Decay_Channel::CalculateWidth(double acc, double ref, int iter)
       //Debugging
       CalculateWidth3Body(acc);
       PRINT_VAR(m_iwidth);
-      PRINT_VAR(m_ideltawidth);
       CalculateWidthMC(acc, ref, iter);
       PRINT_VAR(m_iwidth);
-      PRINT_VAR(m_ideltawidth);
       break;
     default:
       CalculateWidthMC(acc, ref, iter);
@@ -331,18 +329,18 @@ void Decay_Channel::CalculateWidth3Body(double acc)
     return {lower, upper};
   };
 
-  // For error estimate
-  for (int i=0; i<2; i++) {
+  for (int i=0; i<5; i++) {
     temp = m_iwidth;
-    nOuter += i;
-    nInner += i;
+    nOuter *= 2;
+    nInner *= 2;
 
     std::function<double(double)> inner_func;
   
     std::function<double(double)> outer_func = [&](double s12) {
     inner_func = [&](double s23) {
       Get3BodyDecayMomenta(momenta, M, m1, m2, m3, s12, s23);
-      return ME2(momenta, false, NULL);
+      double value = ME2(momenta, false, NULL);
+      return value;
     };
 
     Lambda_Functor inner(&inner_func);
@@ -361,6 +359,10 @@ void Decay_Channel::CalculateWidth3Body(double acc)
 
     m_iwidth = outerInt.Legendre(x0, x1, nOuter);
     m_iwidth *= flux;
+
+    if (dabs(1 - m_iwidth/temp) < acc && i>0) {
+      break;
+    }
   }
 
   m_ideltawidth = dabs(m_iwidth - temp);
