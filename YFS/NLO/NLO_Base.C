@@ -539,7 +539,7 @@ double NLO_Base::CalculateRealVirtual() {
     }
     realvirtual += CalculateRealVirtual(k, 0);
   }
-  return realvirtual;
+  return m_alpi*realvirtual;
 }
 
 double NLO_Base::CalculateRealVirtual(Vec4D k, int fsrcount) {
