@@ -104,7 +104,7 @@ namespace SHERPA {
 
     void CleanUp();
 
-    inline void SetRemnantHandler(REMNANTS::Remnant_Handler * remnants) { p_remnants = remnants; }
+    inline void SetRemnantHandler(REMNANTS::Remnant_Handler * rm) { p_remnants = rm; }
 
     inline ATOOLS::Weights_Map WeightsMap() const { return m_weightsmap; }
 

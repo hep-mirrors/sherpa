@@ -113,7 +113,9 @@ double CS_Cluster_Definitions::GetX(const Cluster_Leg* l,
     sf->Lorentz()->SetBeam(beam);
 
   Vec4D mom( (l->Mom()[0] < 0.0) ? -l->Mom() : l->Mom() );
-  return p_shower->ISR()->CalcX(mom);
+  double x = p_shower->ISR()->CalcX(mom,beam);
+  msg_Out()<<METHOD<<"(MCatNLO): x = "<<x<<"\n";
+  return x;
 }
 
 Flavour CS_Cluster_Definitions::ProperFlav(const Flavour &fl) const
@@ -180,6 +182,7 @@ void CS_Cluster_Definitions::KernelWeight
   cs.m_idk=k->Id();
   if (!(m_mode&1)) return;
   double scale=cs.m_kt2, eta=1.0;
+  msg_Out()<<METHOD<<" will ask for X.\n";
   if (cs.m_mode==1) eta=GetX(i,cdip)*cs.m_z;
   else if (cs.m_mode==2) eta=GetX(k,cdip)*(1.0-cs.m_y);
   else if (cs.m_mode==3) eta=GetX(i,cdip)*cs.m_z;

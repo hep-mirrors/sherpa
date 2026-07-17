@@ -6,9 +6,15 @@
 #include "ATOOLS/Org/Info_Key.H"
 #include "PDF/Main/ISR_Base.H"
 
-namespace ATOOLS   { class Blob_Data_Base; }
-namespace BEAM     { class Beam_Base;      }
-namespace REMNANTS { class Remnant_Base;   }
+namespace ATOOLS   { class Blob_Data_Base;  }
+namespace BEAM     {
+  class Beam_Spectra_Handler;
+  class Beam_Base;
+}
+namespace REMNANTS {
+  class Remnant_Handler;
+  class Remnant_Base;
+}
 
 namespace PDF {
   struct isr {
@@ -54,7 +60,7 @@ namespace PDF {
     double m_splimits[3],m_ylimits[2];
     double m_fixed_smin, m_fixed_smax;
 
-    ATOOLS::Poincare m_cmsboost;
+    ATOOLS::Poincare * p_cmsboost, * p_labboost;
 
     std::vector<double> m_info_lab, m_info_cms;
 
@@ -63,7 +69,7 @@ namespace PDF {
 
     double m_xf1, m_xf2;
 
-    bool m_freezePDFforLowQ;
+    bool m_freezePDFforLowQ, m_neednewCMS;
 
     void FixType();
 
@@ -90,16 +96,20 @@ namespace PDF {
     static double Flux(const ATOOLS::Vec4D& p1);
     static double Flux(const ATOOLS::Vec4D& p1, const ATOOLS::Vec4D& p2);
     double CalcX(ATOOLS::Vec4D p);
+    double CalcX(ATOOLS::Vec4D p,size_t beam);
 
     bool BoostInCMS(ATOOLS::Vec4D *p,size_t n);
     bool BoostInLab(ATOOLS::Vec4D *p,size_t n);
-    ATOOLS::Poincare* GetCMSBoost() { return &m_cmsboost; }
+    void InitializeCMSBoost(const bool override=false);
+    void BoostRemnantMomenta(const ATOOLS::Poincare& boost);
 
     void AssignKeys(ATOOLS::Integration_Info *info);
     void SetLimits(double beamy = 0.);
     void Reset();
     void Reset(size_t i) const;
 
+    void SetBeam(BEAM::Beam_Spectra_Handler * bh);
+    void SetRemnants(REMNANTS::Remnant_Handler * rh);
     std::array<std::shared_ptr<REMNANTS::Remnant_Base>, 2> GetRemnants() const
     {
       return p_remnants;
@@ -144,6 +154,8 @@ namespace PDF {
     inline void   SetXF1(double xf)             { m_xf1 = xf; }
     inline void   SetXF2(double xf)             { m_xf2 = xf; }
     inline int Swap() const                     { return m_swap; }
+    inline ATOOLS::Poincare* GetCMSBoost()      { return p_cmsboost; }
+    inline ATOOLS::Poincare* GetLabBoost()      { return p_labboost; }
 
     inline void SetPDF(PDF_Base *pdf) {
       SetPDF(pdf, 0); SetPDF(pdf, 1);
@@ -162,18 +174,10 @@ namespace PDF {
     inline ATOOLS::Flavour  Flav(const size_t beam) {
       return p_isrbase[beam]->Flavour();
     }
-    inline void SetRemnants(
-            std::array<std::shared_ptr<REMNANTS::Remnant_Base>, 2> remnants)
-    {
-      p_remnants = remnants;
-    }
     inline void SetRescaleFactor(const double & rescale,const size_t beam) {
       p_isrbase[beam]->SetRescaleFactor(rescale);
     }
     inline void ResetRescaleFactor(const size_t beam) { SetRescaleFactor(1.,beam); }
-    inline void SetBeam(BEAM::Beam_Base *const beambase,const size_t beam) {
-      if (beam<2) p_beam[beam]=beambase;
-    }
     inline BEAM::Beam_Base * GetBeam(const size_t beam) const {
       return beam<2?p_beam[beam]:nullptr;
     }

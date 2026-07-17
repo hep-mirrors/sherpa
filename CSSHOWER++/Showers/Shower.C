@@ -101,7 +101,9 @@ bool Shower::EvolveShower(Singlet * actual,const size_t &maxem,size_t &nem)
 
 double Shower::GetXBj(Parton *const p) const
 {
-  return p_isr->CalcX(p->Momentum());
+  ///////////////// FIX IT HERE:
+  // Question: will the beam counter still be swapped?
+  return p_isr->CalcX(p->Momentum(),p->Beam());
 }
 
 int Shower::SetXBj(Parton *const p) const
@@ -109,6 +111,7 @@ int Shower::SetXBj(Parton *const p) const
   double x(GetXBj(p));
   if (x>1.0) return -1;
   p->SetXbj(x);
+  msg_Out()<<METHOD<<" for p = "<<p->Momentum()<<" --> x = "<<x<<"\n";
   return 1;
 }
 
@@ -117,10 +120,13 @@ int Shower::RemnantTest(Parton *const p,const Poincare_Sequence *lt)
   Vec4D mom(p->Momentum());
   if (lt) mom=(*lt)*mom;
   if (mom[0]<0.0 || mom.Nan()) return -1;
-  double x(p_isr->CalcX(mom));
+  ///////////////// FIX IT HERE!
+  double x(p_isr->CalcX(mom,p->Beam()));
   if (x>1.0 && !IsEqual(x,1.0,1.0e-6)) return -1;
-  if (!m_sudakov.CheckPDF(mom[0]/rpa->gen.PBunch(p->Beam())[0],p->GetFlavour(),p->Beam())) return -1;
-  return p_remnants->GetRemnant(p->Beam())->TestExtract(p->GetFlavour(),mom)?1:-1;
+  ///////////////// FIX IT HERE!
+  //if (!m_sudakov.CheckPDF(mom[0]/rpa->gen.PBunch(p->Beam())[0],p->GetFlavour(),p->Beam())) return -1;
+  if (!m_sudakov.CheckPDF(x,p->GetFlavour(),p->Beam())) return -1;
+ return p_remnants->GetRemnant(p->Beam())->TestExtract(p->GetFlavour(),mom)?1:-1;
 }
 
 int Shower::ReconstructDaughters(Singlet *const split,double &jcv,

@@ -182,7 +182,7 @@ Perturbative_Interface::DefineInitialConditions(ATOOLS::Blob* blob,
   }
   m_weightsmap.Clear();
   m_lkfweightsmap.Clear();
-  Poincare * cmsboost = p_remnants->GetCMSBoost();
+  Poincare * cmsboost = p_me->GetISR()->GetCMSBoost();
   if (cmsboost!=nullptr) {
     p_ampl->Boost(*cmsboost);
   }

@@ -142,6 +142,7 @@ CS_Parameters CS_Cluster_Definitions::KT2
     }
   }
   cs.m_col=col;
+  msg_Out()<<METHOD<<" asks for kernel weight.\n";
   KernelWeight(cdip,i,j,k,mo,cs,kmode);
   return cs;
 }
@@ -157,7 +158,8 @@ double CS_Cluster_Definitions::GetX(const Cluster_Leg* l,
     sf->Lorentz()->SetBeam(beam);
 
   Vec4D mom( (l->Mom()[0] < 0.0) ? -l->Mom() : l->Mom() );
-  return p_shower->ISR()->CalcX(mom);
+  msg_Out()<<METHOD<<" for p = "<<mom<<", beam = "<<beam<<".\n"; 
+  return p_shower->ISR()->CalcX(mom,beam);
 }
 
 Flavour CS_Cluster_Definitions::ProperFlav(const Flavour &fl,const int anti) const
@@ -221,6 +223,7 @@ void CS_Cluster_Definitions::KernelWeight
   if (!(kmode&2)) return;
   else {
   double eta=1.0;
+  msg_Out()<<METHOD<<" will ask for X.\n";
   if (cs.m_mode==1) eta=GetX(i,cdip)*cs.m_z;
   else if (cs.m_mode==2) eta=GetX(k,cdip)*(1.0-cs.m_y);
   else if (cs.m_mode==3) eta=GetX(i,cdip)*cs.m_z;

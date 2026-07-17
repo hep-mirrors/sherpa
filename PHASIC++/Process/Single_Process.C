@@ -216,7 +216,7 @@ double Single_Process::CollinearCounterTerms
   }
 
   // determine counter-term
-  double ct(0.0), lt(log(t1/t2)), x(p_int->ISR()->CalcX(p));
+  double ct(0.0), lt(log(t1/t2)), x(p_int->ISR()->CalcX(p,i));
   msg_Debugging()<<asvalue<<"/(2\\pi) * log("<<sqrt(t1)<<"/"
 		 <<sqrt(t2)<<") = "<<asvalue/(2.0*M_PI)*lt<<"\n";
   Flavour jet(kf_jet);
@@ -286,13 +286,18 @@ ATOOLS::Cluster_Sequence_Info Single_Process::ClusterSequenceInfo(
 }
 
 void Single_Process::AddISR(ATOOLS::Cluster_Sequence_Info &csi,
-            const ATOOLS::ClusterAmplitude_Vector &ampls,
-            const double &Q2,
-            const double &muf2fac, const double &mur2fac,
-            const double &showermuf2fac,
-            MODEL::Running_AlphaS * as,
-            const ATOOLS::Cluster_Sequence_Info * const nominalcsi)
+			    const ATOOLS::ClusterAmplitude_Vector &ampls,
+			    const double &Q2,
+			    const double &muf2fac, const double &mur2fac,
+			    const double &showermuf2fac,
+			    MODEL::Running_AlphaS * as,
+			    const ATOOLS::Cluster_Sequence_Info * const nominalcsi)
 {
+  msg_Out()<<METHOD<<": "
+	   <<p_int->Beam()->GetBeam(0)->InMomentum()<<" "
+	   <<"-> "<<p_int->Beam()->GetBeam(0)->OutMomentum()<<"\n"
+	   <<"                        "<<p_int->Beam()->GetBeam(1)->InMomentum()<<" "
+	   <<"-> "<<p_int->Beam()->GetBeam(1)->OutMomentum()<<"\n";
   DEBUG_FUNC(Name());
   if(p_int->YFS()->Mode()!=YFS::yfsmode::off){
     //need to set born for YFS subtraction
@@ -312,10 +317,10 @@ void Single_Process::AddISR(ATOOLS::Cluster_Sequence_Info &csi,
                                           Q2, Q2,
                                           m_flavs[0], m_flavs[1]));
     msg_Debugging()<<"PDF(fla="<<m_flavs[0]
-                   <<", xa="<<p_int->ISR()->CalcX(p_int->Momenta()[0])
+                   <<", xa="<<p_int->ISR()->CalcX(p_int->Momenta()[0],0)
                    <<", Qa="<<sqrt(Q2)<<") * "
                    <<"PDF(flb="<<m_flavs[1]
-                   <<", xb="<<p_int->ISR()->CalcX(p_int->Momenta()[1])
+                   <<", xb="<<p_int->ISR()->CalcX(p_int->Momenta()[1],1)
                    <<", Qb="<<sqrt(Q2)<<") -> "<<pdfext<<std::endl;
     csi.AddWeight(pdfext);
 
@@ -326,8 +331,8 @@ void Single_Process::AddISR(ATOOLS::Cluster_Sequence_Info &csi,
 
       // add external splitting
       csi.AddSplitting(Q2,
-                       p_int->ISR()->CalcX(p_int->Momenta()[0]),
-                       p_int->ISR()->CalcX(p_int->Momenta()[1]),
+                       p_int->ISR()->CalcX(p_int->Momenta()[0],0),
+                       p_int->ISR()->CalcX(p_int->Momenta()[1],1),
                        m_flavs[0], m_flavs[1]);
       csi.AddPDFRatio(pdfext, 1.);
 
@@ -366,8 +371,8 @@ void Single_Process::AddISR(ATOOLS::Cluster_Sequence_Info &csi,
 	// ampl->KT2() has actual splitting scale
 	// ampl->MuF() is fac-scale as given in scale setter
 	csi.AddSplitting(ampl->KT2(),
-			 p_int->ISR()->CalcX(-ampl->Leg(0)->Mom()),
-			 p_int->ISR()->CalcX(-ampl->Leg(1)->Mom()),
+			 p_int->ISR()->CalcX(-ampl->Leg(0)->Mom(),0),
+			 p_int->ISR()->CalcX(-ampl->Leg(1)->Mom(),1),
 			 f1, f2);
 
         // skip equal scales
@@ -446,8 +451,8 @@ void Single_Process::AddISR(ATOOLS::Cluster_Sequence_Info &csi,
                                            currentQ2, currentQ2, f1, f2,
                                            0));
 
-        double x1=p_int->ISR()->CalcX(-ampl->Leg(0)->Mom());
-        double x2=p_int->ISR()->CalcX(-ampl->Leg(1)->Mom());
+        double x1=p_int->ISR()->CalcX(-ampl->Leg(0)->Mom(),0);
+        double x2=p_int->ISR()->CalcX(-ampl->Leg(1)->Mom(),1);
 
         // skip PDF ratio if high-x sanity condition not fullfilled
         auto validratio1 = (!IsZero(wn1) && !IsZero(wd1));
@@ -485,17 +490,17 @@ void Single_Process::AddISR(ATOOLS::Cluster_Sequence_Info &csi,
         }
 	msg_Debugging()<<"* [  "
 		       <<"PDF(fla="<<f1
-		       <<", xa="<<p_int->ISR()->CalcX(-ampl->Leg(0)->Mom())
+		       <<", xa="<<p_int->ISR()->CalcX(-ampl->Leg(0)->Mom(),0)
 		       <<", Qa="<<sqrt(currentQ2)<<") * "
 		       <<"PDF(flb="<<f2
-		       <<", xb="<<p_int->ISR()->CalcX(-ampl->Leg(1)->Mom())
+		       <<", xb="<<p_int->ISR()->CalcX(-ampl->Leg(1)->Mom(),1)
 		       <<", Qb="<<sqrt(currentQ2)<<") -> "<<wn1*wn2<<"\n"
 		       <<"   / "
 		       <<"PDF(fla="<<f1
-		       <<", xa="<<p_int->ISR()->CalcX(-ampl->Leg(0)->Mom())
+		       <<", xa="<<p_int->ISR()->CalcX(-ampl->Leg(0)->Mom(),0)
 		       <<", Qa="<<sqrt(lastQ2)<<") * "
 		       <<"PDF(flb="<<f2
-		       <<", xb="<<p_int->ISR()->CalcX(-ampl->Leg(1)->Mom())
+		       <<", xb="<<p_int->ISR()->CalcX(-ampl->Leg(1)->Mom(),1)
 		       <<", Qb="<<sqrt(lastQ2)<<") -> "<<wd1*wd2
 		       <<" ] = "<<wn1*wn2/wd1/wd2<<std::endl;
 
@@ -503,10 +508,12 @@ void Single_Process::AddISR(ATOOLS::Cluster_Sequence_Info &csi,
         if (m_pdfcts && m_pinfo.Has(nlo_type::born)) {
           for (int i(0); i < 2; ++i) {
             // skip PDF ratio if high-x sanity condition not fullfilled
-            if (i == 0 && (IsZero(wn1) || IsZero(wd1) || (dabs(wd1)<1.0e-4*log(1.0 - x1)/log(1.0 - 1.0e-2)) )) continue;
-            if (i == 1 && (IsZero(wn2) || IsZero(wd2) || (dabs(wd2)<1.0e-4*log(1.0 - x2)/log(1.0 - 1.0e-2)) )) continue;
+            if (i == 0 && (IsZero(wn1) || IsZero(wd1) ||
+			   (dabs(wd1)<1.0e-4*log(1.0 - x1)/log(1.0 - 1.0e-2)) )) continue;
+            if (i == 1 && (IsZero(wn2) || IsZero(wd2) ||
+			   (dabs(wd2)<1.0e-4*log(1.0 - x2)/log(1.0 - 1.0e-2)) )) continue;
             Vec4D p(-ampl->Leg(i)->Mom());
-            const double x(p_int->ISR()->CalcX(p));
+            const double x(p_int->ISR()->CalcX(p,i));
             double z(-1.0);
             if (nominalcsi) {
               const size_t currentsplittingindex = csi.m_txfl.size() - 1;
@@ -614,7 +621,7 @@ Weights_Map Single_Process::Differential(const Vec4D_Vector& p,
           // calculate incoming parton longitudinal momentum fractions
           std::array<double, 2> x;
           for (size_t i {0}; i < 2; ++i) {
-            x[i] = Min(p_int->ISR()->CalcX((*dps.p_p)[i]), 1.0);
+            x[i] = Min(p_int->ISR()->CalcX((*dps.p_p)[i],i), 1.0);
           }
 
           for (Process_Base* proc : dps.m_procs) {

@@ -7,9 +7,9 @@
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Scoped_Settings.H"
 #include "ATOOLS/Phys/Blob.H"
-#include "BEAM/Main/Beam_Base.H"
+#include "BEAM/Main/Beam_Spectra_Handler.H"
 #include "PDF/Main/ISR_Base.H"
-#include "REMNANTS/Main/Remnant_Base.H"
+#include "REMNANTS/Main/Remnant_Handler.H"
 
 using namespace ATOOLS;
 using namespace PDF;
@@ -45,9 +45,10 @@ std::ostream &PDF::operator<<(std::ostream &s, const PDF::isrmode::code mode) {
   return s;
 }
 
-ISR_Handler::ISR_Handler(std::array<ISR_Base *, 2> isrbase, const isr::id &id)
-    : p_isrbase(isrbase), m_id(id), m_rmode(0), m_swap(0), m_info_lab(8),
-      m_info_cms(8), m_freezePDFforLowQ(false)
+ISR_Handler::ISR_Handler(std::array<ISR_Base *, 2> isrbase, const isr::id &id) :
+  p_isrbase(isrbase), m_id(id), m_rmode(0), m_swap(0),
+  p_cmsboost(nullptr), p_labboost(nullptr),
+  m_info_lab(8), m_info_cms(8), m_freezePDFforLowQ(false), m_neednewCMS(true)
 {
   Settings &s = Settings::GetMainSettings();
   m_freezePDFforLowQ = s["FREEZE_PDF_FOR_LOW_Q"].SetDefault(false).Get<bool>();
@@ -71,6 +72,8 @@ ISR_Handler::~ISR_Handler() {
   for (size_t i=0;i<2;i++) {
     if (p_isrbase[i]!=NULL) { delete p_isrbase[i]; p_isrbase[i] = NULL; }
   }
+  if (p_cmsboost) delete p_cmsboost;
+  if (p_labboost) delete p_labboost;
 }
 
 void ISR_Handler::FixType() {
@@ -230,11 +233,12 @@ bool ISR_Handler::MakeISR(const double &sp, const double &y, Vec4D_Vector &p,
   if (m_swap) {
     std::swap<Vec4D>(p[0], p[1]);
   }
-  m_cmsboost = Poincare(p[0] + p[1]);
   if (m_x[0] >= 1.0)
     m_x[0] = 1.0 - 1.0e-12;
   if (m_x[1] >= 1.0)
     m_x[1] = 1.0 - 1.0e-12;
+  msg_Out()<<METHOD<<": "<<p_beam[0]->OutMomentum()<<" + "<<p_beam[1]->OutMomentum()<<"\n"
+	   <<"                      "<<p[0]<<" + "<<p[1]<<".\n";
   return true;
 }
 
@@ -345,8 +349,12 @@ double ISR_Handler::PDFWeight(const int mode, Vec4D p1, Vec4D p2, double Q12,
     std::swap<Vec4D>(p1, p2);
     std::swap<double>(Q12, Q22);
   }
-  x1 = CalcX(p1);
-  x2 = CalcX(p2);
+  x1 = CalcX(p1,0);
+  x2 = CalcX(p2,1);
+  msg_Out()<<METHOD<<"("<<m_swap<<"): "
+	   <<"p1 = "<<p1<<"/"<<p_beam[0]->OutMomentum().PPlus()<<" --> x1 = "<<x1<<"\n"
+	   <<"                           "
+	   <<"p2 = "<<p2<<"/"<<p_beam[1]->OutMomentum().PMinus()<<" --> x2 = "<<x2<<"\n";
   if (IsBad(x1) || IsBad(x2) || IsBad(Q12) || IsBad(Q22)) {
     msg_Error() << "Bad PDF input: x1=" << x1 << ", x2=" << x2
                 << ", Q12=" << Q12 << ", Q22=" << Q22 << std::endl;
@@ -436,6 +444,20 @@ double ISR_Handler::Flux(const Vec4D &p1, const Vec4D &p2) {
 
 double ISR_Handler::Flux(const Vec4D &p1) { return 0.5 / p1.Mass(); }
 
+double ISR_Handler::CalcX(ATOOLS::Vec4D p,size_t beam) {
+  size_t i = m_swap ? 1-beam : beam;
+  if (msg_LevelIsDebugging() && p[0] > p_beam[i]->OutMomentum()[0] + 1.e-10)
+    msg_Out()<<METHOD<<": Warning, parton energy is larger than beam ["<<i<<"] energy, "
+	       <<"p_parton = "<<p<<", p_beam = " << p_beam[i]->OutMomentum()<<".\n";
+  double x = Min(PDF(i) ? PDF(i)->XMax() : 1.,
+		 (i==0 ?
+		  p.PPlus() / p_beam[i]->OutMomentum().PPlus() :
+		  p.PMinus() / p_beam[i]->OutMomentum().PMinus()));
+  msg_Out()<<METHOD<<"(swap = "<<m_swap<<") --> "
+	   <<p<<" / "<<p_beam[i]->OutMomentum()<<" = "<<x<<".\n";
+  return x;
+}
+
 double ISR_Handler::CalcX(ATOOLS::Vec4D p) {
   if (p[3] > 0.) {
     if (msg_LevelIsDebugging() && p[0] > p_beam[0]->OutMomentum()[0] + 1.e-10)
@@ -456,24 +478,54 @@ double ISR_Handler::CalcX(ATOOLS::Vec4D p) {
   }
 }
 
+void ISR_Handler::SetRemnants(REMNANTS::Remnant_Handler * rh) {
+  p_remnants = rh->GetRemnants();
+  InitializeCMSBoost(true);
+}
+
+void ISR_Handler::SetBeam(BEAM::Beam_Spectra_Handler * bh) {
+  for (size_t i=0;i<2;i++) p_beam[i] = bh->GetBeam(i);
+  if (p_beam[0]->Type()==BEAM::beamspectrum::monochromatic &&
+      p_beam[1]->Type()==BEAM::beamspectrum::monochromatic &&
+      !bh->IsSymmetric()) m_neednewCMS = false;
+}
+
+  
+void ISR_Handler::InitializeCMSBoost(const bool override) {
+  if (!override && !m_neednewCMS) return;
+
+  delete p_cmsboost;
+  p_cmsboost = nullptr;
+  delete p_labboost;
+  p_labboost = nullptr;
+
+  Vec4D total_mom = p_remnants[0]->InMomentum() + p_remnants[1]->InMomentum();
+  p_cmsboost = new Poincare(total_mom);
+  p_labboost = new Poincare(total_mom);
+  p_labboost->Invert();
+
+  msg_Out()<<METHOD<<"(E = "<<sqrt(total_mom.Abs2())<<" from "<<total_mom<<"):\n"
+	   <<"                                     "
+	   <<p_remnants[0]->InMomentum()<<" vs. "
+	   <<p_remnants[0]->GetBeam()->OutMomentum()<<"\n"
+	   <<"                                     "
+	   <<p_remnants[1]->InMomentum()<<" vs. "
+	   <<p_remnants[1]->GetBeam()->OutMomentum()<<"\n";
+}
+
 bool ISR_Handler::BoostInCMS(Vec4D *p, const size_t n) {
-  for (size_t i = 0; i < n; ++i) {
-    m_cmsboost.Boost(p[i]);
-  }
+  for (size_t i = 0; i < n; ++i) p_cmsboost->Boost(p[i]);
   return true;
 }
 
 bool ISR_Handler::BoostInLab(Vec4D *p, const size_t n) {
-  for (size_t i = 0; i < n; ++i) {
-    m_cmsboost.BoostBack(p[i]);
-  }
+  for (size_t i = 0; i < n; ++i) p_labboost->Boost(p[i]);
   return true;
 }
 
 void ISR_Handler::Reset(const size_t i) const {}
 
 ATOOLS::Blob_Data_Base *ISR_Handler::Info(const int frame) const {
-  if (frame == 0)
-    return new ATOOLS::Blob_Data<std::vector<double>>(m_info_cms);
+  if (frame == 0) return new ATOOLS::Blob_Data<std::vector<double>>(m_info_cms);
   return new ATOOLS::Blob_Data<std::vector<double>>(m_info_lab);
 }

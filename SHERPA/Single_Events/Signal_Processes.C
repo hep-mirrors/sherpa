@@ -263,7 +263,7 @@ bool Signal_Processes::FillBlob(Blob_List *const bloblist,Blob *const blob)
   blob->AddData("Process",new Blob_Data<PHASIC::Process_Base*>
 		(p_mehandler->Process()));
 
-  Poincare * cmsboost = p_mehandler->Remnants()->GetCMSBoost();
+  Poincare * cmsboost = p_mehandler->GetISR()->GetCMSBoost();
   if (cmsboost!=nullptr) {
     blob->Boost(*cmsboost);
     p_mehandler->Remnants()->BoostRemnantMomenta(*cmsboost);

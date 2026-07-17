@@ -475,7 +475,7 @@ Singlet *CS_Shower::TranslateAmplitude
   for (size_t i(0);i<ampl->Legs().size();++i) {
     Cluster_Leg *cl(ampl->Leg(i));
     // FK: I've commented out the line below as it kills my diffractive events.
-    //if (cl->Flav().IsHadron() && cl->Id()&((1<<ampl->NIn())-1)) continue;
+    // if (cl->Flav().IsHadron() && cl->Id()&((1<<ampl->NIn())-1)) continue;
     bool is(cl->Id()&((1<<ampl->NIn())-1));
     Particle p(1,is?cl->Flav().Bar():cl->Flav(),is?-cl->Mom():cl->Mom());
     if (is) {
@@ -492,7 +492,8 @@ Singlet *CS_Shower::TranslateAmplitude
     lmap[parton]=cl;
     parton->SetKin(p_shower->KinScheme());
     if (is) {
-      //parton->SetBeam(cl->Mom()[3]<0.0?0:1);
+      // parton->SetBeam(cl->Mom()[3]<0.0?0:1);
+      // TODO: have to check, whether the cluster leg inherits the swap 
       parton->SetBeam(cl->Beam());
     }
     KT2X_Map::const_iterator xit(kt2xmap.find(cl->Id()));

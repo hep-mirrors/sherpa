@@ -51,7 +51,8 @@ bool Hadron_Remnant::IsValence(Particle * part) {
   for (const auto& flit : m_constituents) {
     if (flav==flit) {
       Vec4D   mom  = part->Momentum();
-      double x = mom[0]/m_residualE;
+      // FIX IT HERE!!!
+      double  x = mom[0]/m_residualE;
       p_pdf->Calculate(x,sqr(flav.Mass())+m_scale2);
       double val = p_pdf->GetXPDF(flav)-p_pdf->GetXPDF(flav.Bar());
       double tot = p_pdf->GetXPDF(flav);
@@ -381,6 +382,7 @@ bool Hadron_Remnant::TestExtract(const Flavour &flav,const Vec4D &mom) {
     return false;
   }
   // Still enough energy?  And in range?
+  // FIX IT HERE??? Maybe replace with +/- momenta?
   if (m_residualE-mom[0]<m_minE) return false;
   double x = mom[0]/m_residualE;
   if (x<p_pdf->XMin() || x>p_pdf->XMax()) {

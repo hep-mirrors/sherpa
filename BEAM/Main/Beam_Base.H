@@ -37,6 +37,7 @@ namespace BEAM {
     const beamspectrum& Type() const { return m_type; }
     const size_t& NBunches() const { return m_Nbunches; }
     const ATOOLS::Flavour& Beam() const { return m_beam; }
+    const int Direction() const { return m_dir; }
     const ATOOLS::Flavour& Bunch(const size_t& i = 0) const
     {
       return m_bunches[i];

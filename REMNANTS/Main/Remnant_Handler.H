@@ -30,22 +30,22 @@ namespace REMNANTS {
 
   class Remnant_Handler {
   private:
-    PDF::isr::id                 m_id;
+    PDF::isr::id          m_id;
+    PDF::ISR_Handler    * p_isr;
     std::array<std::shared_ptr<Remnant_Base>, 2> p_remnants;
-    std::array<size_t, 2>        m_tags;
-    strat::code                  m_type;
-    Kinematics_Generator         m_kinematics;
-    Colour_Generator             m_colours;
-    Beam_Decorrelator            m_decorrelator;
-    Blob *                       p_softblob;
-    Poincare *                   p_cmsboost, * p_labboost;
+    std::array<size_t, 2> m_tags;
+    strat::code           m_type;
+    Kinematics_Generator  m_kinematics;
+    Colour_Generator      m_colours;
+    Beam_Decorrelator     m_decorrelator;
+    Blob                * p_softblob;
 
     std::set<ATOOLS::Blob *> m_treatedshowerblobs;
 
-    bool     m_check, m_output, m_neednewCMS;
+    bool     m_check, m_output;
     long int m_fails;
 
-    void InitializeRemnants(PDF::ISR_Handler* isr,YFS::YFS_Handler *yfs,
+    void InitializeRemnants(YFS::YFS_Handler *yfs,
                             BEAM::Beam_Spectra_Handler* beam);
     void DefineRemnantStrategy();
     void InitializeKinematicsAndColours();
@@ -65,12 +65,11 @@ namespace REMNANTS {
                     const std::array<size_t, 2>& tags);
     ~Remnant_Handler();
 
-    void InitializeCMSBoost();
+    void BoostRemnantMomenta(const ATOOLS::Poincare& boost);
     bool ExtractShowerInitiators(ATOOLS::Blob *const showerblob);
     bool Extract(ATOOLS::Particle * part,const unsigned int beam);
     bool ConnectColours(ATOOLS::Blob *const showerblob);
     void Reset();
-    void BoostRemnantMomenta(const ATOOLS::Poincare& boost);
 
     ATOOLS::Return_Value::code MakeBeamBlobs(ATOOLS::Blob_List* const blobs,
                                              const bool& isrescatter = false);
@@ -106,8 +105,8 @@ namespace REMNANTS {
     }
     inline Primordial_KPerp* GetKPerp()     { return m_kinematics.GetKPerp(); }
     inline Colour_Generator* GetColourGen() { return &m_colours; }
-    inline Poincare* GetCMSBoost()          { return p_cmsboost; }
-    inline Poincare* GetLabBoost()          { return p_labboost; }
+    inline ATOOLS::Poincare* GetCMSBoost()  { return p_isr->GetCMSBoost(); }
+    inline ATOOLS::Poincare* GetLabBoost()  { return p_isr->GetLabBoost(); }
   };
 
   typedef std::map<PDF::isr::id, Remnant_Handler*> Remnant_Handler_Map;

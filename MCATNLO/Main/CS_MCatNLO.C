@@ -224,13 +224,15 @@ Singlet *CS_MCatNLO::TranslateAmplitude
     else parton->SetMEFlow(2,0);
     parton->SetKin(p_mcatnlo->KinScheme());
     if (is) {
-      parton->SetXbj(p_isr->CalcX(p.Momentum()));
-      if (Vec3D(p.Momentum())*Vec3D(rpa->gen.PBeam(0))>0.) {
-	parton->SetBeam(0);
-      }
-      else {
-	parton->SetBeam(1);
-      }
+      parton->SetXbj(p_isr->CalcX(p.Momentum(),cl->Beam()));
+      // FIXING this!
+      //if (Vec3D(p.Momentum())*Vec3D(rpa->gen.PBeam(0))>0.) {
+      //	parton->SetBeam(0);
+      //}
+      //else {
+      //	parton->SetBeam(1);
+      //}
+      parton->SetBeam(cl->Beam());
     }
     parton->SetStart(muQ2);
     double ktveto2(jf?sqr(jf->Qcut()):parton->KtStart());
