@@ -128,12 +128,16 @@ bool COMIX::Single_Process::Initialize
   // stype -> 0 QCD, 1 QED
   // smode -> 0 LO, 1 RS, 2 I, 4 B, 8 Polecheck, 16 V
   if (m_pinfo.m_fi.m_nlocpl.size()) {
-    if (m_user_stype&sbt::qcd ||
-	(m_pinfo.m_fi.m_nlocpl[0]==1. &&
-	 m_pinfo.m_fi.m_nlocpl[1]==0.)) stype|=1;
-    if (m_user_stype&sbt::qed ||
-	(m_pinfo.m_fi.m_nlocpl[0]==0. &&
-	 m_pinfo.m_fi.m_nlocpl[1]==1.)) stype|=2;
+    // subtraction type = what the Born can develop a singularity in, restricted to
+    // what the user requested (mirrors AMEGIC GetSubType() & m_user_stype). Keys off
+    // the Born coupling order, NOT m_nlocpl: m_nlocpl=(1,0) for BOTH resolved (pure-QCD
+    // Born, EW order 0) and direct (photon-leg Born, EW order 1), so it cannot tell
+    // them apart, and OR-ing m_user_stype forced stype=3 for the resolved case, which
+    // COMIX's single-type VI machinery (ConstructDSijMap) cannot handle.
+    int btype(0);
+    if (m_pinfo.m_mincpl[0]>=1.) btype|=sbt::qcd;
+    if (m_pinfo.m_mincpl[1]>=1.) btype|=sbt::qed;
+    stype = btype & m_user_stype;
     msg_Debugging()<<"Subtraction type: "<<(sbt::subtype)(stype)<<"\n";
   }
   if (m_pinfo.m_fi.NLOType()&nlo_type::rsub) smode=1;
