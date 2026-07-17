@@ -188,11 +188,22 @@ void KP_Terms::SetKappa(const double &kappa)
 
 void KP_Terms::Calculate
 (const Vec4D_Vector &mom,const std::vector<std::vector<double > > &dsij,
- const double &x0,const double &x1,const double &eta0,const double &eta1,
+ const double &x0_,const double &x1_,const double &eta0,const double &eta1,
  const double &wgt)
 {
   DEBUG_FUNC(m_itype<<": type(a)="<<m_typea<<", beam(a)="<<m_sa
                     <<", type(b)="<<m_typeb<<", beam(b)="<<m_sb);
+  // Resolved-photon pointlike collapse: for a genuine photon bunch the mother
+  // photon has f_{gamma/gamma}(y)=delta(1-y), so y=eta/x=1 pins the (regular)
+  // q<-photon splitting variable to x=eta and removes the (1-eta) sampling
+  // measure (w=1). Get() then supplies fagx=1 instead of the (vanishing) photon
+  // PDF. Only the off-diagonal a<-photon coeffs survive here (SetPhotonSplitting-
+  // Only zeroes the diagonal), so evaluating the whole beam block at x=eta is safe.
+  const bool colla(m_photonsplittingonly && m_sa
+                   && rpa->gen.Bunch(0).IsPhoton());
+  const bool collb(m_photonsplittingonly && m_sb
+                   && rpa->gen.Bunch(1).IsPhoton());
+  const double x0(colla?eta0:x0_), x1(collb?eta1:x1_);
   msg_Debugging()<<"x0="<<x0<<", x1="<<x1
                  <<", eta0="<<eta0<<", eta1="<<eta1<<std::endl;
   if (!m_sa && !m_sb) return;
@@ -201,7 +212,11 @@ void KP_Terms::Calculate
   msg_Debugging()<<"cpl="<<Coupling()<<std::endl;
   size_t pls=1;
   if (m_sa&&m_sb) pls++;
-  double muf2(p_proc->ScaleSetter()->Scale(stp::fac,1));
+  // map-aware: a mapped process has a NULL local scale setter, so delegate to
+  // the master's (ScaleSetter(1)). Matters for the COMIX pointlike p_kpterms_ph,
+  // which is built with the (mapped) subprocess 'this' to keep the per-subprocess
+  // photon-splitting charges correct; unmapped/AMEGIC callers are unaffected.
+  double muf2(p_proc->ScaleSetter(1)->Scale(stp::fac,1));
   for (int i=0;i<8;i++) m_kpca[i]=0.;
   for (int i=0;i<8;i++) m_kpcb[i]=0.;
 
@@ -213,7 +228,7 @@ void KP_Terms::Calculate
   // itype&P
   // P = as/2pi [ sum TaTk P(k)*log(muf2/xsak) + TaTb P*log(muf2/xsab) ]
   if (m_sa) {
-    double w(1.-eta0);
+    double w(colla?1.:1.-eta0);
     if (m_itype&cs_itype::K) {
       if (m_kcontrib&cs_kcontrib::Kb) {
         // Kbar terms
@@ -364,7 +379,7 @@ void KP_Terms::Calculate
   }
 
   if (m_sb) {
-    double w(1.-eta1);
+    double w(collb?1.:1.-eta1);
     if (m_itype&cs_itype::K) {
       if (m_kcontrib&cs_kcontrib::Kb) {
         // Kbar terms
@@ -639,6 +654,15 @@ double KP_Terms::Get(PDF::PDF_Base *pdfa, PDF::PDF_Base *pdfb,
       faq/=eta0;
     }
 
+    // pointlike collapse: for a genuine photon bunch the a<-photon splitting uses
+    // the delta-collapsed measure (see Calculate), so multiply the surviving
+    // kpca[3]/kpca[7] by fagx=1 instead of the vanishing photon-in-photon PDF.
+    // fag is irrelevant (kpca[2]/kpca[6]==0); fa keeps the real quark PDF divisor.
+    if (m_photonsplittingonly && rpa->gen.Bunch(0).IsPhoton()) {
+      fag=0.;
+      fagx=1.;
+    }
+
     for (size_t i=0;i<m_xpa.size();i++) if (m_xpa[i].xp>eta0) {
       pdfa->Calculate(eta0/m_xpa[i].xp,muf02*muf02fac);
       g2massq+=m_xpa[i].kpc*pdfa->GetXPDF(fl0)/eta0/fa;
@@ -696,6 +720,9 @@ double KP_Terms::Get(PDF::PDF_Base *pdfa, PDF::PDF_Base *pdfb,
         }
       fbq/=eta0;
     }
+
+    // pointlike collapse for beam b (see the beam-a comment above)
+    if (m_photonsplittingonly && rpa->gen.Bunch(1).IsPhoton()) { fbg=0.; fbgx=1.; }
 
     for (size_t i=0;i<m_xpb.size();i++) if (m_xpb[i].xp>eta1) {
       pdfb->Calculate(eta1/m_xpb[i].xp,muf12*muf12fac);
