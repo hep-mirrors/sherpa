@@ -559,16 +559,20 @@ double Define_Dipoles::CalculateVVSubEps() {
 }
 
 double Define_Dipoles::CalculateRealVirtualSubEps(const Vec4D &k) {
+  // Virtual YFS B-hat in dim-reg at the reduced (photon-removed) kinematics.
+  // Must use the same BVV function as CalculateVirtualSubEps: the RV finite
+  // remainder is defined by subtracting 2*alpha*B_fin off the one-loop real
+  // emission ME, with the identical finite convention as the Born virtual —
+  // otherwise beta_1^1 does not vanish in the soft limit.
   DivArrD sub(0);
   if(m_tchannel>=2) return CalculateVirtualSubTchannel();
-  // if(m_tchannel==2) return CalculateRealSub(k);
   for (auto &D : m_dipolesII) {
-    sub += D.ChargeNorm()*p_yfsFormFact->BVR_full_eps(D, sqrt(m_s) / 2., 0);
+    sub += D.ChargeNorm()*p_yfsFormFact->BVV_full_eps(D, sqrt(m_s) / 2., 3);
   }
   for (auto &D : m_dipolesFF) {
     if(D.IsFinite()) continue;
-    if(m_mode==yfsmode::fsr) sub += -D.m_QiQj*p_yfsFormFact->BVR_full_eps(D, sqrt(m_s) / 2., 0);
-    else sub += D.ChargeNorm()*p_yfsFormFact->BVR_full_eps(D, sqrt(m_s) / 2., 0);
+    if(m_mode==yfsmode::fsr) sub += -D.m_QiQj*p_yfsFormFact->BVV_full_eps(D, sqrt(m_s) / 2., 3);
+    else sub += D.ChargeNorm()*p_yfsFormFact->BVV_full_eps(D, sqrt(m_s) / 2., 3);
   }
 
   for (auto &D : m_dipolesIF){
@@ -576,7 +580,7 @@ double Define_Dipoles::CalculateRealVirtualSubEps(const Vec4D &k) {
     // Note Born momenta are redifined
     // for IFI terms.
     if(D.IsFinite()) continue;
-    sub += D.ChargeNorm()*p_yfsFormFact->BVR_full_eps(D, sqrt(m_s) / 2., 0);
+    sub += D.ChargeNorm()*p_yfsFormFact->BVV_full_eps(D, sqrt(m_s) / 2., 3);
   }
   m_virtSub=sub;
   return sub.Finite();

@@ -539,14 +539,14 @@ double NLO_Base::CalculateRealVirtual() {
     }
     realvirtual += CalculateRealVirtual(k, 0);
   }
-  return m_alpi*realvirtual;
+  return realvirtual;
 }
 
 double NLO_Base::CalculateRealVirtual(Vec4D k, int fsrcount) {
   if (!m_realvirt) return 0;
   Vec4D_Vector p(m_plab), pi(m_bornMomenta), pf(m_bornMomenta);
   double tot(0), sub(0);
-  double norm = 4 * pow(2 * M_PI, 3);
+  double norm = 2 * pow(2 * M_PI, 3);
   double flux(1);
   Vec4D kk = k;
   p_nlodipoles->MakeDipoles(m_flavs, m_plab, m_plab);
@@ -588,30 +588,14 @@ double NLO_Base::CalculateRealVirtual(Vec4D k, int fsrcount) {
   p_nlodipoles->MakeDipoles(m_flavs, pp, m_plab);
   p_nlodipoles->MakeDipolesIF(m_flavs, pp, m_plab);
   p_nlodipoles->p_yfsFormFact->p_virt = p_realvirt->p_loop_me;
+  // Finite part of the virtual YFS B-hat at the reduced kinematics.
+  // This multiplies the *tree-level real-emission ME* in the subtraction,
+  // in exact analogy to CalculateVirtual(): oneloop = V - B_fin*Born.
   double subloc = p_nlodipoles->CalculateRealVirtualSubEps(k);
   yfspole = p_nlodipoles->Get_E1();
-  // PRINT_VAR(m_ISRPhotons.size());
-  const double aB = p_nlodipoles->CalculateRealSub(k)*m_oneloop;
-  // const double aB = subloc*m_oneloop;
-  // const double aB = subloc*m_oneloop;
-  // const double aB =
-      // p_nlodipoles->CalculateRealSub(k) * m_oneloop; //-0.5*subloc*subloc;
-  // PRINT_VAR()
-  // // if(aB<0) {
-  // 	PRINT_VAR(m_oneloop);
-  // 	PRINT_VAR(m_oneloop/m_born/m_alpi);
-  // 	PRINT_VAR(m_born/m_oneloop);
-  // }
-  // const double aB = subloc* p_virt->Calc(m_plab,
-  // m_born);;//m_oneloop;//CalculateVirtual();//*p_realvirt->m_factor;
-  // PRINT_VAR(0.278318/m_rescale_alpha);
-  // p_nlodipoles->MakeDipolesII(fl, pp, m_plab);`
-  // p_nlodipoles->MakeDipoles(fl, pp, m_plab);
-  // // p_nlodipoles->CreateAllDipoles(fl,pp,m_plab);
-  // p_nlodipoles->MakeDipolesIF(fl, pp, m_plab);
-
-  // p.push_back(k);
-  // m_plab = pp;
+  // Eikonal factor S(k) at the reduced kinematics.
+  const double eikloc = p_nlodipoles->CalculateRealSub(k);
+  const double aB = eikloc * m_oneloop;
   if (m_flux_mode == 1)
     flux = p_nlodipoles->CalculateFlux(k);
   else if (m_flux_mode == 2)
@@ -642,11 +626,25 @@ double NLO_Base::CalculateRealVirtual(Vec4D k, int fsrcount) {
     msg_Error() << "Real-Virtual is " << r << std::endl;
     return 0;
   }
-  m_rvsub = aB / m_rescale_alpha;
+  // Tree-level real-emission ME at the same mapped kinematics; needed for
+  // the YFS virtual subtraction of the real-virtual, beta_1^1 =
+  // [RV - B_fin*R] - S(k)*[V - B_fin*Born].
+  double rtree(0.);
+  if (m_realtool)
+    rtree = p_real->Calc_R(p) / norm;
+  else
+    msg_Error() << METHOD << ": no real-emission ME available, "
+                << "RV YFS subtraction is incomplete.\n";
+  m_rvsub = (subloc * rtree * flux + aB) / m_rescale_alpha;
+  const double d1 = r * flux - (subloc * rtree * flux + aB) / m_rescale_alpha;
+  msg_Debugging() << METHOD << " r*flux=" << r * flux
+                  << " rtree*flux=" << rtree * flux
+                  << " B_fin=" << subloc << " S(k)=" << eikloc
+                  << " oneloop=" << m_oneloop << " d1=" << d1 << "\n";
   if (m_submode == submode::local)
-    tot = (r * flux - aB / m_rescale_alpha) / subloc;
+    tot = d1 / eikloc;
   else if (m_submode == submode::global)
-    tot = (r * flux - aB / m_rescale_alpha) / subb;
+    tot = d1 / subb;
   else if (m_submode == submode::off)
     tot = (r * flux) / subb;
   if (m_check_poles == 1 && r != 0) {
