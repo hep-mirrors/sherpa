@@ -97,6 +97,10 @@ namespace MCATNLO {
 
     inline double Weight() const { return m_weight; }
 
+    // The weight is only assigned inside Reject(); trials that veto before
+    // calling Reject() must not pick up the previous trial's factor.
+    inline void ResetWeight() { m_weight=1.0; }
+
     inline void SetOEF(const double &oef) { m_oef=oef; }
 
   };// end of class CS_Gamma

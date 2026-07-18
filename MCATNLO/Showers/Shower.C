@@ -88,6 +88,11 @@ int Shower::RemnantTest(Parton *const p)
 int Shower::UpdateDaughters(Parton *const split,Parton *const newpB,
 			    Parton *const newpC,double &jcv)
 {
+  // Trials vetoed by RemnantTest below never reach p_gamma->Reject(), yet the
+  // gamma weight is multiplied into the Sudakov weights for every trial; reset
+  // it so such trials contribute a factor of 1 instead of the previous trial's
+  // (possibly unbounded) accept/reject weight.
+  p_gamma->ResetWeight();
   newpB->SetStart(split->KtTest());
   newpC->SetStart(split->KtTest());
   newpB->SetKtMax(split->KtMax());
