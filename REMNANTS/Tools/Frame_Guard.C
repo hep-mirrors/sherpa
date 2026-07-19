@@ -12,13 +12,12 @@ Frame_Guard::Frame_Guard(Blob_List* bloblist,
   : p_bloblist(bloblist), p_remnants(remnants), m_active(false)
 {
   if (!kinematics) return;
-  if (p_remnants[0]->GetBeam()->Type() == BEAM::beamspectrum::monochromatic &&
-      p_remnants[1]->GetBeam()->Type() == BEAM::beamspectrum::monochromatic)
-    return;
   const Vec4D ptot =
     p_remnants[0]->IncomingMomentum() + p_remnants[1]->IncomingMomentum();
-  // Identity short-circuit, and no transverse pair momenta - the current
-  // spectra construct their out-momenta exactly longitudinally.
+  // Identity short-circuit, and no transverse pair momentum - beam
+  // constructions place their out-momenta exactly along the beam axis, so
+  // this only engages when the two beams' longitudinal energies actually
+  // differ (asymmetric monochromatic pairs, e.g. fixed-target, included).
   if (Vec3D(ptot).Sqr() < 1.e-24*sqr(ptot[0])) return;
   if (ptot.PPerp2() > 1.e-12*sqr(ptot[0])) return;
   m_cms = Poincare(ptot);
