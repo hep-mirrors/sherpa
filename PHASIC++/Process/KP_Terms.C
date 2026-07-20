@@ -718,7 +718,7 @@ double KP_Terms::Get(PDF::PDF_Base *pdfa, PDF::PDF_Base *pdfb,
           else                                fbq += sqr(quark[i].Charge())
                                                      *pdfb->GetXPDF(quark[i]);
         }
-      fbq/=eta0;
+      fbq/=eta1;
     }
 
     // pointlike collapse for beam b (see the beam-a comment above)
