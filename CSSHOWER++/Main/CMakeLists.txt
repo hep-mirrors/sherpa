@@ -6,6 +6,6 @@ set(CSSMain_HEADERS CS_Cluster_Definitions.H
 
 sherpa_create_git_info(CSSMain ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR})
  
-add_library(CSMain SHARED ${CSSMain_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
+add_library(CSMain ${SHERPA_SUBLIB_TYPE} ${CSSMain_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
 sherpa_handle_shared_library(CSMain CSMain)
 add_dependencies(CSMain CSSMain_Git_Info)

@@ -63,7 +63,7 @@ set(Math_HEADERS MathTools.H
 
 sherpa_create_git_info(Math ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR})
 
-add_library(ToolsMath SHARED ${Math_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C)
+add_library(ToolsMath ${SHERPA_SUBLIB_TYPE} ${Math_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C)
 sherpa_handle_shared_library(ToolsMath ToolsMath)
 add_dependencies(ToolsMath Math_Git_Info)
 if (SHERPA_ENABLE_THREADING)

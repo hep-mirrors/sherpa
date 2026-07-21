@@ -16,6 +16,6 @@ set(METoolsMain_HEADERS Polarization_Tools.H
 
 sherpa_create_git_info(METoolsMain ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR})
  
-add_library(METoolsMain SHARED ${METoolsMain_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
+add_library(METoolsMain ${SHERPA_SUBLIB_TYPE} ${METoolsMain_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
 sherpa_handle_shared_library(METoolsMain METoolsMain)
 add_dependencies(METoolsMain METoolsMain_Git_Info)
