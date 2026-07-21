@@ -130,7 +130,7 @@ int Shower::UpdateDaughters(Parton *const split,Parton *const newpB,
   split->SetFlow(2,sci[1]);
   split->SetMEFlow(1,scim[0]);
   split->SetMEFlow(2,scim[1]);
-  if (rd==0) {
+  if (rd==-1) {
     split->GetSpect()->SetMEFlow(1,scol[0]);
     split->GetSpect()->SetMEFlow(2,scol[1]);
   }
