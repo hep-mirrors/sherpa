@@ -41,6 +41,7 @@ namespace AMISIC {
     virtual MI_Process * SelectProcess();
 
     inline const std::string & Name() const{ return m_name; }
+    inline const std::list<MI_Process*>& Processes() const{ return m_processes;}
     inline const double & LastXS()   const { return m_lastxs; }
     virtual void Output() const;
 

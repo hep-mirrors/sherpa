@@ -61,6 +61,7 @@ namespace AMISIC {
     std::vector<int> m_triggerflavs;
     std::map<std::string,double> m_parameters;
     std::map<std::string,int>    m_flags;
+    std::map<std::string, double> m_efac;
 
     axis * p_sbins;
   public:
@@ -71,12 +72,14 @@ namespace AMISIC {
     int    operator[](const std::string& keyword) const;
     double CalculatePT02(const double & s=-1) const;
     double CalculatePTmin2(const double & s=-1) const;
+    double EFac(const std::string &sfk) const;
 
     const evt_type::code   & GetEvtType()          const { return m_evttype; }
     const scale_scheme     & GetScaleRScheme()     const { return m_scaleRscheme; }
     const scale_scheme     & GetScaleFScheme()     const { return m_scaleFscheme; }
     const two_pions::code  & GetTwoPionTreatment() const { return m_twopions; }
     const std::vector<int> & GetTriggerFlavs()     const { return m_triggerflavs; }
+    const std::map<std::string, double> & GetEFac()const { return m_efac;}
   };
 
   extern const MI_Parameters * mipars;

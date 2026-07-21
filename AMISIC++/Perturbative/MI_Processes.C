@@ -102,10 +102,7 @@ bool MI_Processes::InitializeAllProcesses() {
   m_groups.push_back(new MI_QQB_Processes());
   m_groups.push_back(new MI_QQ_Processes());
   m_groups.push_back(new MI_QG_Processes());
-  MI_Parameters flags;
-  if(flags["QuarkoniaOn"]!=0) {
-    std::cout<<"\33[031m"<<"Quarkonia turned on in MPI"<<"\033[0m"<<std::endl;
-    m_groups.push_back(new MI_Quarkonium_Processes());}
+
   ///////////////////////////////////////////////////////////////////////////
   // The following processes should depend on switches.  At the moment we
   // just add them without further ado.
@@ -120,6 +117,10 @@ bool MI_Processes::InitializeAllProcesses() {
   // We are missing the production of (heavy quarkonia) mesons MQQ in
   // - singlet production qqbar -> MQQ, gg -> MQQ, gq -> MQQ+q etc.
   // - octet production gg -> MQQ^(8)+g, qqbar->MQQ^(8)+g etc.
+  MI_Parameters flags;
+  if(flags["QuarkoniaOn"]!=0) {
+    std::cout<<"\33[031m"<<"Quarkonia turned on in MPI"<<"\033[0m"<<std::endl;
+    m_groups.push_back(new MI_Quarkonium_Processes());}
   // We could also add production of gauge bosons:
   // - qqbar->Z, qqbar'->W
   // - gq->Zq, gq->Wq', etc.
@@ -193,13 +194,21 @@ int MI_Processes::FillHardScatterBlob(Blob *&  blob,const double & pt2veto) {
       !proc->SetColours()) return 0;
   if (pt2veto>0. && m_integrator.PT2()>pt2veto) return -1;
   array<int,2> inflavs;
+  Weights_Map wmap;
+  MI_Parameters params;
   for (size_t i=0;i<2;i++) {
     Particle * part = proc->GetParticle(i);
     blob->AddToInParticles(part);
     inflavs[i] = (part->Flav().IsAnti() ? -1 : 1) * part->Flav().Kfcode();
   }
-  for (size_t i=2;i<4;i++) blob->AddToOutParticles(proc->GetParticle(i));
-  blob->AddData("WeightsMap",new Blob_Data<Weights_Map>({}));
+  for (size_t i=2;i<4;i++) {
+    auto p = proc->GetParticle(i);
+    blob->AddToOutParticles(p);
+  }
+  double enh = params.EFac(proc->Name());
+  if (IsZero(enh)) wmap["MPIEnhancement"] = 0.;
+  else wmap["MPIEnhancement"] = 1./enh;
+  blob->AddData("WeightsMap",new Blob_Data<Weights_Map>(wmap));
   blob->AddData("Renormalization_Scale",new Blob_Data<double>(m_muR2));
   blob->AddData("Factorization_Scale",new Blob_Data<double>(m_muF2));
   blob->AddData("Resummation_Scale",new Blob_Data<double>(Max(m_muR2,m_muF2)));
@@ -323,12 +332,38 @@ MI_Process * MI_Processes::SelectProcess() {
   // Sum over all cross sections of all groups and select one of the groups.
   // Then select one of the processes within the group.
   ///////////////////////////////////////////////////////////////////////////
-  double diff = m_lastxs * ran->Get();
+  double totalweighted_xs = 0;
+  MI_Parameters params;
+  bool enhanced = (params.GetEFac().size()==0)? 0 : 1;
+  for(auto group : m_groups){
+    if(enhanced){
+      for(auto process : group->Processes()){
+        totalweighted_xs += process->LastXS()*params.EFac(process->Name());
+        // msg_Out()<<"Enhanced "<<process->Name()<<" by a factor of "<<params.EFac(process->Name())<<'\n';
+      }
+    }
+    else{
+      totalweighted_xs += group->LastXS();
+    }
+  }
+  double diff = totalweighted_xs * ran->Get();
+  double gdiff;
   list<MI_Process_Group *>::iterator mig = m_groups.begin();
   while (mig!=m_groups.end()) {
-    diff -= (*mig)->LastXS();
-    if (diff<0.) break;
-    mig++;
+    if(enhanced){
+      gdiff = 0;
+      for(auto process : (*mig)->Processes()){
+        gdiff += process->LastXS()*params.EFac(process->Name());
+      }
+      diff -= gdiff;
+      if(diff<0.) break;
+      mig++;
+    }
+    else{
+      diff -= (*mig)->LastXS();
+      if (diff<0.) break;
+      mig++;
+    }
   }
   if (mig==m_groups.end()) mig--;
   return (*mig)->SelectProcess();

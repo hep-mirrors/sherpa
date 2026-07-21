@@ -1,6 +1,7 @@
 #include "AMISIC++/Perturbative/MI_Process_Group.H"
 #include "AMISIC++/Perturbative/QCD_Processes.H"
 #include "AMISIC++/Perturbative/QED_Processes.H"
+#include "AMISIC++/Tools/MI_Parameters.H"
 #include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Org/Exception.H"
 
@@ -249,19 +250,23 @@ double MI_Quarkonium_Processes::Coupling() const {
 }
 
 MI_Process * MI_Quarkonium_Processes::SelectProcess() {
-  double tot  = 0.;
-  list<MI_Process * >::iterator mit;
-  for (mit=m_processes.begin();mit!=m_processes.end();mit++) tot += (**mit)();
-  tot *= ran->Get();
-  mit = m_processes.begin();
-  while (tot>0.) {
-    tot -= (**mit)();
-    if (tot <= 0.) {
-      break;
-    }
-    mit++;
+  MI_Parameters params;
+  double tot = 0., Ehat = sqrt(m_shat);
+  for (list<MI_Process *>::iterator mipit=m_processes.begin();
+       mipit!=m_processes.end();mipit++) {
+    if (!(*mipit)->AllowedKinematics(Ehat)) continue;
+    tot += (Max(0., p_pdf[0]->GetXPDF((*mipit)->Flav(0))) *
+	    Max(0., p_pdf[1]->GetXPDF((*mipit)->Flav(1))) * (**mipit)()*params.EFac((*mipit)->Name()));
   }
-  return (*mit);
+  tot *= ran->Get();
+  for (list<MI_Process *>::iterator mipit=m_processes.begin();
+       mipit!=m_processes.end();mipit++) {
+    if (!(*mipit)->AllowedKinematics(Ehat)) continue;
+    tot -= (Max(0., p_pdf[0]->GetXPDF((*mipit)->Flav(0))) *
+	    Max(0., p_pdf[1]->GetXPDF((*mipit)->Flav(1))) * (**mipit)()*params.EFac((*mipit)->Name()));
+    if (tot<=0.) return (*mipit);
+  }
+  return m_processes.back();
 }
 
 ///////////////////////////////////////////////////////////////////////////////

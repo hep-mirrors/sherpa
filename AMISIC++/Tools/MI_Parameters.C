@@ -81,6 +81,17 @@ MI_Parameters::MI_Parameters() :
   m_parameters[string("delta_nr")]
     = s["delta_nr"].SetDefault(0.75).Get<double>();
 
+  std::vector<std::vector<std::string>> helpsvv{
+    s["Enhance"].SetDefault({{"", "1.0"}}).GetMatrix<std::string>()
+  };
+
+  m_efac.clear();
+
+  for (size_t i = 0; i < helpsvv.size(); ++i) {
+      if (helpsvv[i].size() == 2) {
+          m_efac[helpsvv[i][0]] = ToType<double>(helpsvv[i][1]);
+      }
+  }
   m_flags[string("nPT_bins")]
     = s["nPT_bins"].SetDefault(200).Get<size_t>();
   m_flags[string("nMC_points")]
@@ -124,6 +135,14 @@ double MI_Parameters::operator()(const string& keyword) const
   map<string,double>::const_iterator piter = m_parameters.find(keyword);
   if (piter!=m_parameters.end()) return piter->second;
   THROW(fatal_error,"Keyword not found in MI_Parameters.");
+}
+
+double MI_Parameters::EFac(const std::string &sfk) const
+{
+  for (std::map<std::string,double,ATOOLS::String_Sort>::const_reverse_iterator
+	 eit=m_efac.rbegin();eit!=m_efac.rend();++eit)
+    if (sfk.find(eit->first)!=std::string::npos) return eit->second;
+  return 1.0;
 }
 
 int MI_Parameters::operator[](const string& keyword) const
