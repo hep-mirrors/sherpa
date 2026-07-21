@@ -181,10 +181,14 @@ void CS_Cluster_Definitions::KernelWeight
     return;
   }
   if (m_pdfcheck && (cs.m_mode&1)) {
-    int beam=i->Id()&1?0:1;
-    if (p_shower->ISR()->PDF(beam) &&
+    // i->Id() is the ID, starting from 1, of the cluster leg 
+    // in the crossed cluster amplitude, 
+    // mo is the flavour of the splitter if FS,
+    // barred flavour if IS
+    int beam=i->Id()&1?1:0;
+      if (p_shower->ISR()->PDF(beam) &&
 	!p_shower->ISR()->PDF(beam)->Contains(mo)) {
-      msg_Debugging()<<"Not in PDF: "<<mo<<".\n";
+      msg_Debugging()<<"Not in PDF: "<<mo.Bar()<<".\n";
       cs.m_wk=0.0;
       cs.m_kmode=-1;
       return;
