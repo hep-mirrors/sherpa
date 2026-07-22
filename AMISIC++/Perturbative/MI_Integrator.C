@@ -1,7 +1,6 @@
 #include "AMISIC++/Perturbative/MI_Integrator.H"
 #include "AMISIC++/Perturbative/MI_Processes.H"
 #include "AMISIC++/Tools/Matter_Overlap.H"
-#include "AMISIC++/Tools/Lookup_Tables.H"
 #include "AMISIC++/Tools/MI_Parameters.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 
@@ -17,7 +16,6 @@ void MI_Integrator::Initialize(PDF::ISR_Handler * isr) {
   // Minimal pt2, maximal b, and minimal and maximal x from the PDFs
   ////////////////////////////////////////////////////////////////////////////
   m_pt2min    = p_procs->PT2Min();
-  m_Emin      = p_procs->EMin();
   for (size_t i=0;i<2;i++) {
     m_xmin[i] = Max(   1.e-6,isr->PDF(i)->XMin());
     m_xmax[i] = Min(1.-1.e-6,isr->PDF(i)->XMax());
@@ -62,13 +60,13 @@ operator()(const double & s,Matter_Overlap * mo,const double & b) {
   ////////////////////////////////////////////////////////////////////////////
   if (4.*m_pt2min>=(1.-1.e-6)*s) return 0.;
   double invpt2min = 1./m_pt2min, invpt2max = 4./s;
-  double pt2vol    = invpt2min-invpt2max; // s/4.-m_pt2min;  //
+  double pt2vol    = invpt2min-invpt2max;
   double sum  = 0., sum2 = 0., xs;
   double mowt = mo ? ( mo->IsDynamic() ? 0. : (*mo)(b)) : 1.;
   unsigned int sumtrials = 0;
   ////////////////////////////////////////////////////////////////////////////
-  // Keep integrating until the relative uncertainty reaches the target 
-  // accuracy. Minimum number of points avoids premature termination, and a 
+  // Keep integrating until the relative uncertainty reaches the target
+  // accuracy. Minimum number of points avoids premature termination, and a
   // hard cap acts as a safeguard against non-converging configurations.
   ////////////////////////////////////////////////////////////////////////////
   const unsigned int min_points  = 10000;
@@ -79,7 +77,7 @@ operator()(const double & s,Matter_Overlap * mo,const double & b) {
     ////////////////////////////////////////////////////////////////////////
     // Select pt^2 according to 1/pt^4 and calculate the Jacobean
     ////////////////////////////////////////////////////////////////////////
-    m_pt2  = 1./(invpt2min-ran->Get()*pt2vol); // m_pt2min + ran->Get()*pt2vol;
+    m_pt2  = 1./(invpt2min-ran->Get()*pt2vol);
     ////////////////////////////////////////////////////////////////////////
     // Fix the rest of the kinematics: rapidities, x's, Mandelstams.
     ////////////////////////////////////////////////////////////////////////

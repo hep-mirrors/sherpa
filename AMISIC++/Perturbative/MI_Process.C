@@ -1,6 +1,5 @@
 #include "AMISIC++/Perturbative/MI_Process.H"
 #include "AMISIC++/Perturbative/MI_Integrator.H"
-#include "AMISIC++/Tools/MI_Parameters.H"
 #include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/Run_Parameter.H"
@@ -32,18 +31,6 @@ XS_Base::XS_Base() :
   }
 }
 
-
-XS_Base::XS_Base(const vector<double> & masses) :
-  m_name(""), m_Ms(0.), m_Mt(0.), m_Mu(0.), m_lastxs(0.), m_masses(masses) {
-  m_masses2.resize(m_masses.size());
-  m_colours.resize(m_masses.size());
-  for (size_t i=0;i<m_masses.size();i++) {
-    m_colours[i].resize(2);
-    m_colours[i][0] = m_colours[i][1] = 0;
-    m_masses2[i]    = m_masses[i] = 0;
-  }
-}
-
 XS_Base::~XS_Base() = default;
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -62,7 +49,7 @@ MI_Process::MI_Process(const vector<Flavour>& flavs) :
   m_name(flavs[0].IDName() + " " + flavs[1].IDName() + " --> " +
 	 flavs[2].IDName() + " " + flavs[3].IDName()),
   m_stretcher(Momenta_Stretcher(string("AMISIC: ")+m_name)),p_me2(NULL),
-  m_Emin((*mipars)("E_min")),m_sumInMasses(0.), m_sumOutMasses(0.),
+  m_sumInMasses(0.), m_sumOutMasses(0.),
   m_masslessIS((flavs[0].Kfcode() < 4 || flavs[0].Kfcode() == 21) &&
 	       (flavs[1].Kfcode() < 4 || flavs[1].Kfcode() == 21)),
   m_massive(false)
@@ -70,7 +57,7 @@ MI_Process::MI_Process(const vector<Flavour>& flavs) :
   if (flavs.size()!=4) {
     msg_Error()<< "Error in "<<METHOD<<":\n"
               <<"   Tried to initialize MPI process with wrong number of "
-              <<"flavours = "<<m_flavs.size()<<" --> "<<m_name
+              <<"flavours = "<<flavs.size()<<" --> "<<m_name
               <<".\n";
     THROW(fatal_error,
           "Tried to initialize MPI process with wrong number of flavours.");

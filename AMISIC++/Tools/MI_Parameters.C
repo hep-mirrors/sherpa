@@ -1,5 +1,4 @@
 #include "AMISIC++/Tools/MI_Parameters.H"
-#include "AMISIC++/Tools/Lookup_Tables.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/Scoped_Settings.H"
@@ -12,7 +11,7 @@ using namespace std;
 const MI_Parameters * AMISIC::mipars = nullptr;
 
 MI_Parameters::MI_Parameters() :
-  m_pt02ref(0.), m_ptmin2ref(0.), m_Eref(0.), m_Sref(0.), m_Ecms(0.),
+  m_pt02ref(0.), m_ptmin2ref(0.), m_Sref(0.),
   m_Scms(0.), m_eta(0.)
 {
   auto s = Settings::GetMainSettings()["AMISIC"];
@@ -45,8 +44,8 @@ MI_Parameters::MI_Parameters() :
   m_pt02ref   = m_pt02ref_variations[0];
   m_ptmin2ref = m_ptmin2ref_variations[0];
   m_ptmin2IR  = sqr(m_parameters[string("pt_min(IR)")]);
-  m_Sref      = sqr(m_Eref = m_parameters[string("Ecms(ref)")]);
-  m_Scms      = sqr(m_Ecms = rpa->gen.Ecms());
+  m_Sref      = sqr(m_parameters[string("Ecms(ref)")]);
+  m_Scms      = sqr(rpa->gen.Ecms());
   m_eta_variations = m_parameters_vector[string("eta")];
   m_eta       = m_parameters[string("eta")];
   std::vector<double> ptmin_variations;
@@ -214,6 +213,10 @@ std::istream& AMISIC::operator>>(std::istream& s, evt_type::code& f)
     f = evt_type::code::DiffractiveAB;
   else if (tag == "QuasiElastic")
     f = evt_type::code::QuasiElastic;
+  else if (tag == "Non-Perturbative")
+    f = evt_type::code::NonPerturbative;
+  else if (tag == "MinimumBias")
+    f = evt_type::code::AllMinimumBias;
   else
     THROW(fatal_error, "Unknown overlap form \"" + tag + "\"");
   return s;
@@ -223,7 +226,7 @@ std::ostream& AMISIC::operator<<(std::ostream& os, const scale_scheme& sc)
 {
   switch (sc) {
     case scale_scheme::PT: return os << "PT";
-    case scale_scheme::PT_with_Raps: return os << "PT modified with rapidities";
+    case scale_scheme::PT_with_Raps: return os << "PT_with_Raps";
   }
   return os;
 }

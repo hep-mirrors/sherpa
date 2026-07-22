@@ -1,7 +1,6 @@
 #include "AMISIC++/Tools/Interaction_Probability.H"
 #include "ATOOLS/Math/Gauss_Integrator.H"
 #include "ATOOLS/Math/MathTools.H"
-#include "ATOOLS/Math/Histogram.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Message.H"
 
@@ -21,30 +20,23 @@ using namespace ATOOLS;
 
 Interaction_Probability::Interaction_Probability() :
   p_mo(NULL), p_procs(NULL), p_sbins(NULL), p_bbins(NULL),
-  p_k(NULL), p_norm(NULL), p_diffxsec(NULL), p_inverted(NULL), 
-  m_pdfnorm(1.), m_bmax(1.e6), m_smin(1.e99), m_xs_hard(0.), m_xs_test(0.),
-  m_dynamic(false), m_test(false), m_ana(false), m_n_variations(1) {}
+  p_k(NULL), p_diffxsec(NULL),
+  m_pdfnorm(1.), m_bmax(1.e6), m_smin(1.e99), m_n_variations(1) {}
 
 Interaction_Probability::~Interaction_Probability() {
-  if (m_ana) FinishAnalysis();
   if (p_k)        delete p_k;
-  if (p_norm)     delete p_norm;
   if (p_diffxsec) delete p_diffxsec;
-  if (p_inverted) delete p_inverted;
   for (auto p : p_k_variations) if (p) delete p;
   for (auto p : p_diffxsec_variations) if (p) delete p;
 }
 
 void Interaction_Probability::
 Initialize(Matter_Overlap * mo,MI_Processes * processes,axis * sbins) {
-  if (m_ana) InitAnalysis();
   p_mo         = mo;
   p_procs      = processes;
   m_pdfnorm    = p_procs->PDFnorm();
   p_sbins      = sbins;
   p_k          = new OneDim_Table(*p_sbins);
-  p_norm       = new OneDim_Table(*p_sbins);
-  m_dynamic    = mo->IsDynamic();
   m_bmax       = mo->Bmax();
   p_bbins      = mo->GetBBins();
   p_diffxsec   = new TwoDim_Table(*p_sbins,*p_bbins);
@@ -87,7 +79,7 @@ void Interaction_Probability::FixKandSmin() {
   PInt_Dyn_Integrand integrand(p_diffxsec);
   Gauss_Integrator   gauss(&integrand);
   const size_t max_k_iter = 1000;
-  for (size_t sbin=0;sbin<p_sbins->m_nbins;sbin++) {
+  for (size_t sbin=0;sbin<=(p_sbins->m_nbins > 1 ? p_sbins->m_nbins : 0);sbin++) {
     double s        = p_sbins->x(sbin), k=1., xs_test = 0.;
     if (s<=4.) continue;
     double xs_nd    = (m_pdfnorm * p_procs->GetXSecs()->XSndNorm() *
@@ -151,7 +143,7 @@ void Interaction_Probability::FixKandSmin(size_t ivar) {
   PInt_Dyn_Integrand integrand_var(temp_diffxsec);
   Gauss_Integrator   gauss_var(&integrand_var);
   const size_t max_k_iter = 1000;
-  for (size_t sbin=0; sbin<p_sbins->m_nbins; ++sbin) {
+  for (size_t sbin=0; sbin<=(p_sbins->m_nbins > 1 ? p_sbins->m_nbins : 0); ++sbin) {
     double s           = p_sbins->x(sbin), k_var = 1., xs_test_var = 0.;
     if (s<=4.) continue;
     double xs_nd_var   = (m_pdfnorm * m_sigma_nd_variations[ivar] *
@@ -199,11 +191,13 @@ void Interaction_Probability::FixKandSmin(size_t ivar) {
 
 void Interaction_Probability::FillIntegrated() {
   TwoDim_Table integrated(*p_sbins,*p_bbins);
-  for (size_t sbin=0;sbin<p_sbins->m_nbins;sbin++) {
+  // Fill the full node grid (0..m_nbins): Invert reads the top b-node as the
+  // CDF maximum, so leaving it at 0 collapses the inverted table to [0,0].
+  for (size_t sbin=0;sbin<=p_sbins->m_nbins;sbin++) {
     double s   = p_sbins->x(sbin);
     double b1  = 0.,            b2 = 0.;
     double xs1 = (*this)(s,b1), xs2 = 0., norm = 0., integ = 0.;
-    for (size_t bbin=1;bbin<p_bbins->m_nbins;bbin++) {
+    for (size_t bbin=1;bbin<=p_bbins->m_nbins;bbin++) {
       b2    = p_bbins->x(bbin);
       xs2   = (*this)(s,b2);
       norm += (b2-b1)*(b2*xs2+b1*xs1)/2.;
@@ -212,7 +206,7 @@ void Interaction_Probability::FillIntegrated() {
     }
     integrated.Fill(sbin,0,0.);
     b1 = 0.; xs1 = (*this)(s,b1), b2 = 0., xs2 = 0.;
-    for (size_t bbin=1;bbin<p_bbins->m_nbins;bbin++) {
+    for (size_t bbin=1;bbin<=p_bbins->m_nbins;bbin++) {
       b2     = p_bbins->x(bbin);
       xs2    = (*this)(s,b2);
       integ += (b2-b1)*(b2*xs2+b1*xs1)/2./norm;
@@ -224,10 +218,6 @@ void Interaction_Probability::FillIntegrated() {
   p_inverted = integrated.Invert(1,1000);
 }
 
-
-void Interaction_Probability::InitializeTables() {
-  for (size_t sbin=0;sbin<p_sbins->m_nbins;sbin++) InitializeTable(sbin);
-}
 
 void Interaction_Probability::
 InitializeTable(const size_t & sbin,const bool & out) {
@@ -246,14 +236,14 @@ InitializeTable(const size_t & sbin,const bool & out) {
     msg_Info()<<"   | "<<METHOD<<"(E = "
 	      <<std::setw(8)<<std::setprecision(6)<<sqrt(s)<<", "
 	      <<"dyn = "<<p_mo->IsDynamic()<<"):          |\n";
-  for (size_t bbin=0;bbin<p_bbins->m_nbins;bbin++) {
+  for (size_t bbin=0;bbin<=p_bbins->m_nbins;bbin++) {
     double b  = p_bbins->x(bbin);
     double xs = m_pdfnorm * ( p_mo->IsDynamic() ?
 			      (*integrator)(s,p_mo,b) :
-			      xsfix * (*p_mo)(b) );  
+			      xsfix * (*p_mo)(b) );
     p_diffxsec->Fill(sbin,bbin,xs);
     if (prev!=0. && xs/prev < 1.e-6) {
-      for (size_t i=bbin+1;i<p_bbins->m_nbins;i++)
+      for (size_t i=bbin+1;i<=p_bbins->m_nbins;i++)
 	p_diffxsec->Fill(sbin,i,0.);
       break;
     }
@@ -277,14 +267,14 @@ InitializeTable(const size_t & sbin,TwoDim_Table* diffxsec,
     msg_Info()<<"   | "<<METHOD<<"(E = "
 	      <<std::setw(8)<<std::setprecision(6)<<sqrt(s)<<", "
 	      <<"dyn = "<<p_mo->IsDynamic()<<"):          |\n";
-  for (size_t bbin=0;bbin<bbins->m_nbins;bbin++) {
+  for (size_t bbin=0;bbin<=bbins->m_nbins;bbin++) {
     double b  = bbins->x(bbin);
     double xs = m_pdfnorm * ( p_mo->IsDynamic() ?
                               (*integrator)(s,p_mo,b) :
                               xsfix * (*p_mo)(b) );
     diffxsec->Fill(sbin,bbin,xs);
     if (prev!=0. && xs/prev < 1.e-6) {
-      for (size_t i=bbin+1;i<bbins->m_nbins;i++)
+      for (size_t i=bbin+1;i<=bbins->m_nbins;i++)
         diffxsec->Fill(sbin,i,0.);
       break;
     }
@@ -297,25 +287,24 @@ InitializeTable(const size_t & sbin,TwoDim_Table* diffxsec,
   }
 }
 
-bool Interaction_Probability::CheckTables() {
+void Interaction_Probability::CheckTables() {
   XS_Integrand     integrand(p_diffxsec,0.);
   Gauss_Integrator gauss(&integrand);
-  for (size_t sbin=0;sbin<p_sbins->m_nbins;sbin++) {
+  double xs_test = 0., xs_hard = 0.;
+  for (size_t sbin=0;sbin<=(p_sbins->m_nbins > 1 ? p_sbins->m_nbins : 0);sbin++) {
     double s = p_sbins->x(sbin);
     if (s<=1. || p_procs->GetXSecs()->XSratio(s)<=1.) continue;
     integrand.SetS(s);
-    m_xs_test = gauss.Integrate(0.,p_bbins->m_xmax,1.e-6);
-    m_xs_hard = p_procs->GetXSecs()->XShard(s);
-    if (dabs(1.-m_xs_test/m_xs_hard)>10.e-2) {
+    xs_test = gauss.Integrate(0.,p_bbins->m_xmax,1.e-6);
+    xs_hard = p_procs->GetXSecs()->XShard(s);
+    if (dabs(1.-xs_test/xs_hard)>10.e-2) {
       msg_Error()<<"Warning in "<<METHOD<<"(s = "<<s<<"):\n"
 		             <<"   Cross sections differ by more than 10 % between "
-		             <<"hard xs = "<<m_xs_hard<<" [GeV^-2] "
-		             <<"and b-integrated cross section = "<<m_xs_test<<" [GeV^-2];\n"
+		             <<"hard xs = "<<xs_hard<<" [GeV^-2] "
+		             <<"and b-integrated cross section = "<<xs_test<<" [GeV^-2];\n"
 		             <<"   Will continue and hope for the best.\n";
-      return false;
     }
   }
-  return true;
 }
 
 void Interaction_Probability::OutputTables() {
@@ -346,14 +335,7 @@ void Interaction_Probability::OutputTables() {
                 <<(b*(*this)(s,b))<<" |\n";
     }
   }
-  msg_Info()<<"   "<<std::string(77,'-')<<"\n"
-            <<"   | hard cross section with and without overlap:"
-            <<std::string(30,' ')<<"|\n"
-            <<"   | xs_hard = "<<std::setprecision(4)<<std::setw(8)
-            <<(m_xs_hard*rpa->Picobarn()/1.e9)<<" mb "
-            <<"(without overlap) vs. "<<std::setprecision(4)<<std::setw(8)
-            <<(m_xs_test*rpa->Picobarn()/1.e9)<<" mb (with overlap).   |\n"
-            <<"   "<<std::string(77,'-')<<"\n\n";
+  msg_Info()<<"   "<<std::string(77,'-')<<"\n\n";
   if (m_n_variations > 1) {
     for (size_t ivar=1; ivar<m_n_variations; ++ivar) OutputTables(ivar);
   }
@@ -393,31 +375,4 @@ void Interaction_Probability::OutputTables(size_t ivar) {
     }
   }
   msg_Info()<<"   "<<std::string(77,'-')<<"\n\n";
-}
-
-void Interaction_Probability::InitAnalysis() {
-  double bmax = 20.;
-  m_histos[std::string("b_times_P_in")] = new Histogram(0, 0., bmax, 200);
-}
-
-void Interaction_Probability::Analyse() {
-  double s = sqr(rpa->gen.Ecms());
-  for (size_t i=0;i<100;i++) {
-    double b = 10./double(100)*(double(i)+0.5);
-    m_histos[std::string("b_times_P_in")]->Insert(b,b*(*this)(s,b));
-  }
-}
-
-void Interaction_Probability::FinishAnalysis() {
-  Histogram * histo;
-  std::string name;
-  for (std::map<std::string,Histogram *>::iterator
-	 hit=m_histos.begin();hit!=m_histos.end();hit++) {
-    histo = hit->second;
-    name  = std::string("MPI_Analysis/")+hit->first+std::string(".dat");
-    histo->Finalize();
-    histo->Output(name);
-    delete histo;
-  }
-  m_histos.clear();
 }

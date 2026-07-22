@@ -2,7 +2,7 @@
 #define AMISIC_Tools_Hadronic_XSec_Calculator_H
 
 #include "AMISIC++/Tools/MI_Parameters.H"
-#include "AMISIC++/Tools/Lookup_Tables.H"
+#include "ATOOLS/Math/Lookup_Tables.H"
 #include "ATOOLS/Phys/Flavour.H"
 #include <array>
 #include <list>
@@ -11,6 +11,9 @@
 namespace MODEL{ class Model_Base; }
 
 namespace AMISIC {
+  using ATOOLS::axis;
+  using ATOOLS::OneDim_Table;
+
   enum class xsec_type {
     baryon_baryon   = 0,
     meson_baryon    = 1,

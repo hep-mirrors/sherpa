@@ -12,8 +12,8 @@ Single_Collision_Handler::Single_Collision_Handler() :
   p_processes(NULL), p_overestimator(NULL), p_soft(NULL), p_reweighting(NULL),
   m_pt2(0.), m_pt2min(0.),
   m_S((rpa->gen.PBeam(0)+rpa->gen.PBeam(1)).Abs2()), m_lastpt2(m_S),
-  m_residualx1(1.), m_residualx2(1.), m_Ycms(0.),
-  m_done(false), 
+  m_residualx1(1.), m_residualx2(1.),
+  m_done(false),
   m_ana(false)
 {}
 
@@ -72,7 +72,10 @@ double Single_Collision_Handler::PrefabricateBlob(const int & mode) {
   double wt = 1., pt2;
   if (mode!=0) {
     Blob * blob = nullptr;
+    size_t trials(0);
     while (!blob) {
+      if (++trials>1000000)
+	THROW(critical_error,"Could not prefabricate a trigger blob.");
       if (p_integrator->TrialEvent(m_S,p_overlap)) {
 	wt  = p_processes->MakeTriggerBlob(blob);
       }
@@ -89,7 +92,7 @@ bool Single_Collision_Handler::FirstMPI(Blob * signal) {
   // 1. Extract the relevant kinematics variables, including in particular the
   //    hardest pt^2_veto scale, from the signal blob and adjust the effective
   //    dynamic radius in the matter overlap.
-  // 2. Produce trial impact parameters m_b and trial pt^2_trial of potential 
+  // 2. Produce trial impact parameters m_b and trial pt^2_trial of potential
   //    first MPI scatters, until a trial pt^2_trial<pt^2_veto for a viable
   //    scatter that is softer than the signal has been found.
   // TODO: in case the signal is independent of, i.e. different from, the 2->2
@@ -105,13 +108,13 @@ bool Single_Collision_Handler::FirstMPI(Blob * signal) {
     /////////////////////////////////////////////////////////////////////////
     // Form_Factor (and by extension Matter_Overlap) has radii etc. in fm,
     // event record needs it in mm, therefore we have to divide by 10^12.
-    /////////////////////////////////////////////////////////////////////////    
+    /////////////////////////////////////////////////////////////////////////
     if (p_reweighting) p_reweighting->ResetEvent();
+    m_pt2 = m_lastpt2 = m_S/4.;
     do {
       m_b   = p_overlap->SelectB();
     } while (!p_overlap->SelectPositionForScatter(m_b,x1,m_pt2,x2,m_pt2,m_deltapos));
     if (p_reweighting) p_reweighting->ImpactParameterReweighting(m_S, m_b);
-    m_pt2 = m_lastpt2 = m_S/4.;
   } while (SelectPT2()==0 && m_pt2>pt2veto);
   m_lastpt2 = pt2veto;
   if (m_pt2<=m_pt2min) m_done = true;
@@ -243,7 +246,7 @@ bool Single_Collision_Handler::NextScatter(Blob * blob) {
     case -1:
     default:
       ////////////////////////////////////////////////////////////////////////
-      // pt^2 is smaller than pt2min.  
+      // pt^2 is smaller than pt2min.
       // This means we will switch off "Sudakov evolution" at the end of the
       // method (m_done = true) - for the FirstMinBias method we will have to
       // switch it on again.
@@ -259,8 +262,8 @@ bool Single_Collision_Handler::NextScatter(Blob * blob) {
 
 void Single_Collision_Handler::DefinePossibleNext() {
   ///////////////////////////////////////////////////////////////////////////
-  // Checks the pt2-ordered list of prefabricated blobs and, if there are any 
-  // left, the next pt^2 and corresponding blob are extracted from the list. 
+  // Checks the pt2-ordered list of prefabricated blobs and, if there are any
+  // left, the next pt^2 and corresponding blob are extracted from the list.
   ///////////////////////////////////////////////////////////////////////////
   m_nextpt2  = -1.;
   m_nextblob = nullptr;
@@ -283,7 +286,7 @@ int Single_Collision_Handler::SelectPT2() {
   // - calculate the cross section summed over all parton-level processes
   // - accept or reject the kinematics with a hit-or-miss of true over
   //   overestimated differential cross section dsigma/dpt2,
-  //   if accepted 0 is returned. 
+  //   if accepted 0 is returned.
   ///////////////////////////////////////////////////////////////////////////
   while (true) {
     m_pt2 = p_overestimator->TrialPT2(m_pt2);
@@ -336,7 +339,6 @@ void Single_Collision_Handler::UpdateSandY(double s, double y) {
   // Setting the last pT^2 on s, as a default.
   ///////////////////////////////////////////////////////////////////////////
   m_lastpt2 = m_S = s;
-  m_Ycms = y;
   if (m_evttype==evt_type::Perturbative) {
     p_processes->UpdateS(m_S);
     p_overestimator->UpdateS(m_S,p_processes->PT02(),p_processes->PT2Min());
@@ -369,18 +371,3 @@ void Single_Collision_Handler::AnalyseWeight(const double & weight) {
   m_histos[string("weights_low")]->Insert(weight);
 }
 
-void Single_Collision_Handler::Analyse(const double & pt2,Blob * blob) {
-  m_histos[string("pt")]->Insert(sqrt(pt2));
-  Flavour flav1 = blob->OutParticle(0)->Flav();
-  Flavour flav2 = blob->OutParticle(1)->Flav();
-  int fl1 = size_t(flav1.Kfcode());
-  if (flav1.IsAnti()) fl1 = -fl1;
-  if (fl1==21) fl1=6;
-  if (fl1==22) fl1=-6;
-  int fl2 = size_t(flav2.Kfcode());
-  if (flav2.IsAnti()) fl2 = -fl2;
-  if (fl2==21) fl2=6;
-  if (fl2==22) fl2=-6;
-  m_histos[string("flavs")]->Insert(fl1);
-  m_histos[string("flavs")]->Insert(fl2);
-}

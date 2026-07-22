@@ -9,10 +9,6 @@ namespace ATOOLS {
 }
 
 namespace AMISIC {
-  class axis;
-}
-
-namespace AMISIC {
   struct evt_type {
     enum code {
       Perturbative    = 0,
@@ -55,7 +51,7 @@ namespace AMISIC {
   private:
     double m_pt02ref, m_pt02IR, m_ptmin2ref, m_ptmin2IR;
     std::vector<double> m_pt02ref_variations, m_ptmin2ref_variations, m_eta_variations;
-    double m_Eref, m_Sref, m_Ecms, m_Scms, m_eta;
+    double m_Sref, m_Scms, m_eta;
     evt_type::code   m_evttype;
     scale_scheme     m_scaleRscheme, m_scaleFscheme;
     two_pions::code  m_twopions;
@@ -63,8 +59,6 @@ namespace AMISIC {
     std::map<std::string,double> m_parameters;
     std::map<std::string,std::vector<double>> m_parameters_vector;
     std::map<std::string,int>    m_flags;
-
-    axis * p_sbins;
   public:
     MI_Parameters();
     ~MI_Parameters() = default;

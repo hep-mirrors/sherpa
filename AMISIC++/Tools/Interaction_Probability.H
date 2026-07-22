@@ -3,24 +3,27 @@
 
 #include "AMISIC++/Tools/Matter_Overlap.H"
 #include "AMISIC++/Perturbative/MI_Processes.H"
-#include "AMISIC++/Tools/Lookup_Tables.H"
-#include "ATOOLS/Math/Histogram.H"
+#include "ATOOLS/Math/Lookup_Tables.H"
 
 namespace ATOOLS {
   class Gauss_Integrator;
 }
 
 namespace AMISIC {
+  using ATOOLS::axis;
+  using ATOOLS::OneDim_Table;
+  using ATOOLS::TwoDim_Table;
+
   static const double s_GeV2fm2 = sqr(rpa->hBar()*rpa->c()*1.e12);
 
   class Interaction_Probability {
     Matter_Overlap * p_mo;
     MI_Processes   * p_procs;
     axis           * p_sbins, * p_bbins;
-    OneDim_Table   * p_k, * p_norm;
-    TwoDim_Table   * p_diffxsec, * p_inverted;
-    double           m_pdfnorm, m_xs_test, m_xs_hard, m_bmax, m_smin;
-    bool             m_dynamic;
+    OneDim_Table   * p_k;
+    TwoDim_Table   * p_diffxsec;
+    std::unique_ptr<TwoDim_Table> p_inverted;
+    double           m_pdfnorm, m_bmax, m_smin;
     size_t m_n_variations;
     std::vector<double> m_sigma_nd_variations;
     std::vector<OneDim_Table*> p_k_variations;
@@ -29,27 +32,20 @@ namespace AMISIC {
     void FixKandSmin();
     void FixKandSmin(size_t ivar);
     void FillIntegrated();
-    void InitializeTables();
     void InitializeTable(const size_t & sbin, const bool & out=false);
     void InitializeTable(const size_t & sbin, TwoDim_Table* diffxsec,
                          axis* bbins, size_t ivar, const bool & out=false);
-    bool CheckTables();
+    void CheckTables();
     void OutputTables();
     void OutputTables(size_t ivar);
-
-    bool m_test, m_ana;
-    std::map<std::string,ATOOLS::Histogram *> m_histos;
-    void InitAnalysis();
-    void Analyse();
-    void FinishAnalysis();
   public:
     Interaction_Probability();
     ~Interaction_Probability();
-    
+
     void   Initialize(Matter_Overlap * mo,MI_Processes * processes,
 		      axis * sbins);
     double SelectB(const double & s);
-    
+
     inline const double & Bmax() const { return m_bmax; }
     inline const double & Smin() const { return m_smin; }
     //////////////////////////////////////////////////////////////////////////
@@ -110,7 +106,7 @@ namespace AMISIC {
   // overlap and partonic cross section:
   // 2 pi b {1 - exp[-int dx_1 dx_2 dpt^2 O(b;x1,x2) dsigma^hat/dpt^2] }
   // where the product/convolution is obtained from a pre-produced
-  // look-up table in the case of dynamic overlaps or directly from 
+  // look-up table in the case of dynamic overlaps or directly from
   // the matter overlap and the partonic cross section for static
   // matter overlaps.
   // This is being used to fix the (potentially s-dependent) prefactors

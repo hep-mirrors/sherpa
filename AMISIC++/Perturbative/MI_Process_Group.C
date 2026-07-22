@@ -25,17 +25,14 @@ MI_Process_Group::~MI_Process_Group() {
     delete m_processes.back();
     m_processes.pop_back();
   }
-  m_me2s.unique();
   while (!m_me2s.empty()) {
     delete m_me2s.back();
     m_me2s.pop_back();
   }
-  m_processes.clear();
-  m_me2s.clear();
 }
 
 void MI_Process_Group::
-FilterTriggerProcesses(vector<int> triggers,list<MI_Process *> * triggerprocs) {
+FilterTriggerProcesses(const vector<int> & triggers,list<MI_Process *> * triggerprocs) {
   ///////////////////////////////////////////////////////////////////////////
   // Making a list of "trigger" processes, extracted from the available
   // inclusive 2->2 scatters, relevant for the biased min-bias.
@@ -138,7 +135,7 @@ MI_Process * MI_Process_Group::SelectProcess() {
 ///////////////////////////////////////////////////////////////////////////////
 
 MI_GG_Processes::MI_GG_Processes() :
-  MI_Process_Group("MPI_gg_processes"), m_Nqq(0) {
+  MI_Process_Group("MPI_gg_processes") {
   XS_Base * gg2gg(new gg_gg()), * gg2qqbar(new gg_qqbar());
   m_me2s.push_back(gg2gg);
   m_me2s.push_back(gg2qqbar);
@@ -154,7 +151,6 @@ MI_GG_Processes::MI_GG_Processes() :
     flavs[2] = Flavour(i); flavs[3] = flavs[2].Bar();
     m_processes.push_back(new MI_Process(flavs));
     m_processes.back()->SetME2(gg2qqbar);
-    m_Nqq++;
   }
 }
 

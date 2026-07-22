@@ -15,9 +15,7 @@ namespace AMISIC {
   class MI_Process_Group {
   protected:
     std::string        m_name;
-    scale_scheme       m_muR_scheme;
-    double             m_muR_fac, m_muF_fac;
-    double             m_lastxs, m_pt02, m_shat, m_that, m_uhat, m_scale, m_pref;
+    double             m_lastxs, m_pt02, m_shat{0.}, m_that{0.}, m_uhat{0.}, m_scale{0.}, m_pref;
 
     MODEL::One_Running_AlphaS * p_alphaS;
     MODEL::Running_AlphaQED * p_alpha;
@@ -33,7 +31,7 @@ namespace AMISIC {
     MI_Process_Group(const std::string & name);
     virtual ~MI_Process_Group();
 
-    virtual void FilterTriggerProcesses(std::vector<int> triggers,
+    virtual void FilterTriggerProcesses(const std::vector<int> & triggers,
 					std::list<MI_Process *> * triggerprocs);
     
     virtual double operator()(const double & shat,const double & that,
@@ -55,7 +53,6 @@ namespace AMISIC {
 
   class MI_GG_Processes: public MI_Process_Group {
   private:
-    size_t m_Nqq;
     double Coupling() const;
   public:
     MI_GG_Processes();

@@ -323,7 +323,7 @@ void Matter_Overlap::InitializeDynamicFFParams(PDF::ISR_Handler * const isr) {
   m_rnorm[0]   = 1./m_radius2[0];
   m_bstep      = Min(1.,m_radius[0])/100.;
   for (size_t i=0;i<2;i++) {
-    m_xmin[i] = isr->XMin(0); m_xmax[i] = isr->XMax(0);
+    m_xmin[i] = isr->XMin(i); m_xmax[i] = isr->XMax(i);
   }
   FixDynamicRadius(m_xmin[0],m_xmin[1]);
   m_maxradius = sqrt(m_dynradius2);

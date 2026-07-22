@@ -34,11 +34,14 @@ void Hadron_Remnant::ConstructConstituentFlavours() {
     m_constituents.push_back(Flavour((kf_code)(hadint-(hadint/10)*10)).Bar());
   }
   else THROW(critical_error,"Cannot determine constituents.");
-  //     Bar constituent flavours if
+  //     Bar the naively-extracted constituent flavours if
   if (// - beam is an antibaryon
       (m_beamflav.IsBaryon() && m_beamflav.IsAnti()) ||
-      // - beam is a strange meson
-      (m_beamflav.IsMeson() && m_constituents.front().Kfcode()==3) ) {
+      // - beam is a meson whose code sign needs conjugating: by the PDG
+      //   convention a down-type leading quark (odd kf: d,s,b) flips the
+      //   particle/antiparticle assignment, so bar iff that XORs with IsAnti
+      (m_beamflav.IsMeson() &&
+       ((m_constituents.front().Kfcode()%2==1) != m_beamflav.IsAnti())) ) {
     for(auto& flit : m_constituents) flit = flit.Bar();
   }
 }

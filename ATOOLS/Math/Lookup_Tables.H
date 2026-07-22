@@ -67,6 +67,10 @@ namespace ATOOLS {
     double Integral(size_t naxis, size_t bin) const;
     std::unique_ptr<OneDim_Table>
     Cumulative(double expo, size_t naxis, size_t bin, double& integral) const;
+    // Invert a table that is monotonic in its 2nd axis (a per-x CDF in y):
+    // returns a table I(x, v) = y such that (*this)(x, y) = v, sampled on
+    // nbins linearly-spaced v values spanning the global value range.
+    std::unique_ptr<TwoDim_Table> Invert(size_t axislabel, size_t nbins) const;
     void OutputToCSV(std::ofstream& outfile) const;
 
     double Value(size_t xbin, size_t ybin) const

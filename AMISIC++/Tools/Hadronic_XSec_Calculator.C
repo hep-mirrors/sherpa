@@ -34,6 +34,7 @@ Hadronic_XSec_Calculator::Hadronic_XSec_Calculator() :
   m_testmode(0),
   m_n_variations(1)
 {
+  m_AQM_strange = 0.;
   for (size_t i=0;i<2;i++) m_AQM[i] = 1.;
 }
 
@@ -43,6 +44,8 @@ Initialize(const Flavour & fl1,const Flavour & fl2,
 {
   m_flavs[0] = fl1; m_flavs[1] = fl2;
   m_evttype  = type;
+  // read before the loop below: AQMFactor() uses m_AQM_strange.
+  m_AQM_strange    = (*mipars)("AQM_Strange");
   for (size_t i=0;i<2;i++) {
     m_masses[i] = m_flavs[i].HadMass(); m_masses2[i] = sqr(m_masses[i]);
     m_mmin     += ( (m_flavs[i].IsPhoton() ?
@@ -63,7 +66,6 @@ Initialize(const Flavour & fl1,const Flavour & fl2,
   m_s1             = (*mipars)("Diffractive_s1");
   m_c0             = (*mipars)("ElasticSlope_c0");
   m_c1             = (*mipars)("ElasticSlope_c1");
-  m_AQM_strange    = (*mipars)("AQM_Strange");
   ////////////////////////////////////////////////////////////////////////////////////
   // Prefactors, converted to mb, 1/{mb^1/2 GeV^2}, 1/mb for elastic, SD, and DD
   // elastic:            1. / (16 pi)
@@ -92,6 +94,7 @@ Hadronic_XSec_Calculator::~Hadronic_XSec_Calculator() {
 
 void Hadronic_XSec_Calculator::FixType() {
   m_type = xsec_type::none;
+  m_Ypp  = -1.;
   if (m_flavs[0].IsPhoton()) {
     if      (m_flavs[1].IsPhoton()) m_type = xsec_type::photon_photon;
     else if (m_flavs[1].IsMeson())  m_type = xsec_type::photon_meson;
@@ -248,7 +251,7 @@ CalculateXSratios(MI_Processes * processes,axis * sbins)
   //////////////////////////////////////////////////////////////////////////////
   p_xsratio    = new OneDim_Table(*sbins);
   p_xshard     = new OneDim_Table(*sbins);
-  for (size_t sbin=0;sbin<sbins->m_nbins;sbin++) {
+  for (size_t sbin=0;sbin<=(sbins->m_nbins > 1 ? sbins->m_nbins : 0);sbin++) {
     double s      = sbins->x(sbin);
     processes->UpdateS(s);
     double xshard = processes->TotalCrossSection(s,sbin==0);
@@ -272,7 +275,7 @@ CalculateXSratios(MI_Processes * processes,axis * sbins)
 void Hadronic_XSec_Calculator::
 CalculateXSratios(MI_Processes * processes, axis * sbins, size_t ivar)
 {
-  for (size_t sbin=0; sbin<sbins->m_nbins; ++sbin) {
+  for (size_t sbin=0; sbin<=(sbins->m_nbins > 1 ? sbins->m_nbins : 0); ++sbin) {
     const double s          = sbins->x(sbin);
     processes->UpdateS(s);
     const double xshard_var = processes->TotalCrossSection(s, sbin==0, ivar);
@@ -295,7 +298,7 @@ void Hadronic_XSec_Calculator::OutputXSratios(axis * sbins) {
 	    <<"     |\n"
 	    <<"   | E_cms [GeV] | sigma_tot   | sigma_el    |"
 	    <<"sigma_SDA    | sigma_SDB   | sigma_DD    |\n";
-  for (size_t sbin=0;sbin<sbins->m_nbins;sbin++) {
+  for (size_t sbin=0;sbin<=(sbins->m_nbins > 1 ? sbins->m_nbins : 0);sbin++) {
     double s    = sbins->x(sbin), E = sqrt(s);
     (*this)(s);
     msg_Info()<<"   | "
@@ -309,7 +312,7 @@ void Hadronic_XSec_Calculator::OutputXSratios(axis * sbins) {
   msg_Info()<<"   "<<string(85,'-')<<"\n"
 	    <<"   | E_cms [GeV] | sigma_tot   | sigma_hd    | "
 	    <<"sigma_ND    | ND_norm     | ratio       |\n";
-  for (size_t sbin=0;sbin<sbins->m_nbins;sbin++) {
+  for (size_t sbin=0;sbin<=(sbins->m_nbins > 1 ? sbins->m_nbins : 0);sbin++) {
     double s    = sbins->x(sbin), E = sqrt(s);
     (*this)(s);
     double xshard = (*p_xshard)(s), xsnd  = XSndNorm() * XSnd();
@@ -341,7 +344,7 @@ void Hadronic_XSec_Calculator::OutputXSratios(axis * sbins, size_t ivar) {
             <<"   "<<string(85,'-')<<"\n"
             <<"   | E_cms [GeV] | sigma_tot   | sigma_hd    | "
             <<"sigma_ND    | ND_norm     | ratio       |\n";
-  for (size_t sbin=0;sbin<sbins->m_nbins;sbin++) {
+  for (size_t sbin=0;sbin<=(sbins->m_nbins > 1 ? sbins->m_nbins : 0);sbin++) {
     double s    = sbins->x(sbin), E = sqrt(s);
     (*this)(s);
     double xshard = (*p_xshard_variations[ivar])(s);

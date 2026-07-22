@@ -374,8 +374,8 @@ operator()(const ATOOLS::Flavour_Vector& flavs) const
 qqbar_qqbar::qqbar_qqbar() : XS_Base() { m_name = string("qqbar->qqbar"); }
 
 void qqbar_qqbar::Calc(const double & s,const double & t,const double & u) {
-  m_Ms     = 4./9. * (t*t+u*u)/(s*s) - 8./27. * u/s;
-  m_Mt     = 4./9. * (s*s+u*u)/(t*t) - 8./27. * u/t;
+  m_Ms     = 4./9. * (t*t+u*u)/(s*s) + 8./27. * u/s;
+  m_Mt     = 4./9. * (s*s+u*u)/(t*t) + 8./27. * u/t;
   m_Mu     = 0.;
   m_lastxs = m_Ms + m_Mt + m_Mu;
 }

@@ -8,17 +8,16 @@ namespace PDF {
 namespace AMISIC {
   class MI_Processes;
   class Matter_Overlap;
-  class axis;
 }
 
 namespace AMISIC {
   class MI_Integrator {
   private:
     MI_Processes * p_procs;
-    double         m_pt2min, m_xmin[2], m_xmax[2], m_Emin;
+    double         m_pt2min, m_xmin[2], m_xmax[2];
     double         m_target_acc;
-    double         m_xt, m_ymax, m_yvol, m_y[2], m_x[2];
-    double         m_pt2, m_shat, m_that, m_uhat, m_cost, m_b;
+    double         m_yvol, m_y[2], m_x[2];
+    double         m_pt2, m_shat, m_that, m_uhat, m_cost;
     double         m_xsec, m_uncert, m_xsmax;
   public:
     explicit MI_Integrator(MI_Processes * procs);
@@ -37,7 +36,6 @@ namespace AMISIC {
     inline const double & UHat() const { return m_uhat; }
     inline const double & Yvol() const { return m_yvol; }
     inline const double & PT2()  const { return m_pt2;  }
-    inline const double & B()    const { return m_b;    }
     inline const double & X(unsigned short int i) const { return m_x[i]; }
     inline const double & Y(unsigned short int i) const { return m_y[i]; }
   };

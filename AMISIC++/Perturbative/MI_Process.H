@@ -16,12 +16,11 @@ namespace AMISIC {
   class XS_Base {
   protected:
     std::string m_name;
-    double      m_Ms, m_Mt, m_Mu, m_lastxs, m_shat, m_that, m_uhat;
+    double      m_Ms, m_Mt, m_Mu, m_lastxs;
     std::vector<std::vector<int> > m_colours;
     std::vector<double>            m_masses, m_masses2;
   public:
     XS_Base();
-    explicit XS_Base(const std::vector<double> & masses);
     virtual ~XS_Base();
 
     virtual void Calc(const double & s,const double & t,const double & u)=0;
@@ -49,7 +48,7 @@ namespace AMISIC {
     std::vector<double>          m_masses, m_masses2;
     std::vector<ATOOLS::Vec4D>   m_momenta;
     XS_Base*                     p_me2;
-    double                       m_Emin, m_sumInMasses, m_sumOutMasses;
+    double                       m_sumInMasses, m_sumOutMasses;
     double                       m_lastxs;
     bool                         m_masslessIS, m_massive;
 

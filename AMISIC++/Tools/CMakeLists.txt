@@ -7,7 +7,6 @@ set(AmisicTools_SOURCES MI_Parameters.C
                   Matter_Overlap.C
                   Interaction_Probability.C
                   Over_Estimator.C
-                  Lookup_Tables.C
                   MI_Reweighting.C)
 
 set(AmisicTools_HEADERS MI_Parameters.H
@@ -19,7 +18,6 @@ set(AmisicTools_HEADERS MI_Parameters.H
                   Matter_Overlap.H
                   Interaction_Probability.H
                   Over_Estimator.H
-                  Lookup_Tables.H
                   MI_Reweighting.H)
 
 sherpa_create_git_info(AmisicTools ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR})

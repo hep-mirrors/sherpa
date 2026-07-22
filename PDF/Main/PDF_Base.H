@@ -61,7 +61,7 @@ namespace PDF {
   struct PDF_Id_List : public std::vector<size_t> {
     inline PDF_Id_List(const size_t & N=26) {
       this->resize(N,0);
-      for (size_t i=0;i<26;i++) (*this)[i] = i;
+      for (size_t i=0;i<N;i++) (*this)[i] = i;
     }
   };
 
@@ -112,7 +112,7 @@ namespace PDF {
     virtual double GetXPDF(const ATOOLS::Flavour& flavour) = 0;
     virtual double GetXPDF(const kf_code& kf, bool anti)   = 0;
     virtual double AlphaSPDF(const double &q2);
-    inline  double GetXPDF(const int& id) { return GetXPDF(m_kfmap[abs(id)],id<0); }
+    inline  double GetXPDF(const int& id) { return GetXPDF(abs(id),id<0); }
 
     virtual PDF_Base *GetCopy() = 0;
     virtual PDF_Base *GetBasicPDF() { return this; }

@@ -27,16 +27,13 @@ namespace AMISIC {
     Matter_Overlap           * p_overlap;
     MI_Reweighting           * p_reweighting;
     
-    MI_Process   * p_proc;
     double         m_pt2, m_pt2min, m_b;
     ATOOLS::Vec4D  m_deltapos;
-    double         m_S, m_lastpt2, m_nextpt2, m_residualx1, m_residualx2, m_Ycms;
-    double         m_xsec;
+    double         m_S, m_lastpt2, m_nextpt2, m_residualx1, m_residualx2;
     bool           m_done, m_needsTrigger;
     ATOOLS::Blob * m_nextblob;
     std::map<double, ATOOLS::Blob *> m_prefabs;
     
-    double MakeHardScatterBlob(ATOOLS::Blob * blob);
     void   DefinePossibleNext();
     int    SelectPT2();
     void   CopyPrefabricatedBlob(ATOOLS::Blob * blob);
@@ -46,8 +43,7 @@ namespace AMISIC {
     void InitAnalysis();
     void FinishAnalysis();
     void AnalyseWeight(const double & weight);
-    void Analyse(const double & pt2,ATOOLS::Blob * blob);
-    
+
   public:
     Single_Collision_Handler();
     ~Single_Collision_Handler();
@@ -100,7 +96,6 @@ namespace AMISIC {
     inline const double & PT2()       const { return m_pt2; }
     inline const bool   & Done()      const { return m_done; }
     inline const bool   & NeedsTrig() const { return m_needsTrigger; }
-    void Test(const double & Q2,const long int & n);
   };
 }
 

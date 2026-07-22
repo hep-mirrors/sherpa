@@ -1,7 +1,7 @@
 #ifndef AMISIC_Tools_Matter_Overlap_H
 #define AMISIC_Tools_Matter_Overlap_H
 
-#include "AMISIC++/Tools/Lookup_Tables.H"
+#include "ATOOLS/Math/Lookup_Tables.H"
 #include "REMNANTS/Main/Remnant_Handler.H"
 #include "PDF/Main/ISR_Handler.H"
 #include "ATOOLS/Math/Function_Base.H"
@@ -10,6 +10,8 @@
 
 
 namespace AMISIC {
+  using ATOOLS::axis;
+
   class MO_Integrand;
 
   class Matter_Overlap : public ATOOLS::Function_Base {
@@ -59,7 +61,6 @@ namespace AMISIC {
 
     inline void SetKRadius(const double & k)   { m_kradius = k; }
     inline void SetBmax(const double & bmax)   { m_bmax    = bmax; }
-    inline void SetBAxis(axis * bbins)         { p_bbins   = bbins; }
     inline const bool   & IsDynamic()       const { return m_dynamic; }
     inline const double & Norm()            const { return m_norm; }
     inline const double & Bmax()            const { return m_bmax; }

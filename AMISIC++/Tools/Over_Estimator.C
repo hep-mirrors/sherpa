@@ -5,7 +5,6 @@
 #include "AMISIC++/Tools/Matter_Overlap.H"
 #include "PDF/Main/ISR_Handler.H"
 #include "ATOOLS/Math/Random.H"
-#include "ATOOLS/Math/Histogram.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 
 using namespace AMISIC;
@@ -36,7 +35,7 @@ Initialize(PDF::ISR_Handler * isr,MI_Processes * procs,axis * sbins,
            Interaction_Probability * pint,Matter_Overlap * mo) {
   ///////////////////////////////////////////////////////////////////////////
   // Inheriting all relevant inputs from the MI_Processes which we aim to
-  // over-estimate.  
+  // over-estimate.
   ///////////////////////////////////////////////////////////////////////////
   m_s         = procs->S();
   m_pt02      = procs->PT02();
@@ -66,7 +65,7 @@ void Over_Estimator::UpdateS(const double & s,const double & pt02,const double &
 void Over_Estimator::FixMaximum(MI_Processes * procs,axis * sbins,
                                 Interaction_Probability * pint,Matter_Overlap * mo) {
   ////////////////////////////////////////////////////////////////////////////
-  // Looping over all relevant s values from the Sudakov tables in the 
+  // Looping over all relevant s values from the Sudakov tables in the
   // MI_Processes to fill a look-up table of maxima.
   // The matter overlap maximum O(b=0) is included so that the Sudakov trial
   // rate matches the physics rate, keeping the acceptance weight O(b)/O_max
@@ -76,7 +75,7 @@ void Over_Estimator::FixMaximum(MI_Processes * procs,axis * sbins,
   ////////////////////////////////////////////////////////////////////////////
   p_prefs    = new OneDim_Table(*sbins);
   const double pt02_save = procs->PT02();
-  for (size_t sbin=0;sbin<sbins->m_nbins;sbin++) {
+  for (size_t sbin=0;sbin<=(sbins->m_nbins > 1 ? sbins->m_nbins : 0);sbin++) {
     m_s      = sbins->x(sbin);
     m_pt02   = mipars->CalculatePT02(m_s);
     for (size_t ivar=1;ivar<m_n_variations;ivar++)
@@ -101,19 +100,20 @@ void Over_Estimator::FixMaximum(MI_Processes * procs,axis * sbins,
       double test   = procs->PDFnorm()*Max(approx,exact)*yvol*sqr(pt2+mipars->CalculatePT02(m_s)/4.);
       if (test > maxpref) { maxpref = test; }
     }
+    if (mo) mo->SetKRadius(pint->K(m_s));
     double omax = (mo ? (mo->IsDynamic() ? mo->MaxValue(0.0) : (*mo)(0.0)) : 1.0);
     if (m_n_variations > 1) {
-    for (size_t ivar=1; ivar<m_n_variations; ++ivar) {
-      mo->SetMatterFormVariationIndex(ivar);
-      const double K_var = pint->K(m_s, ivar);
-      const double omax_var = (mo ? 
-        (mo->IsDynamic() ? mo->MaxValue(0.0, K_var) : (*mo)(0.0, K_var)) : 1.0);
-      if (omax_var > omax) {
-        omax = omax_var;
+      for (size_t ivar=1; ivar<m_n_variations; ++ivar) {
+        mo->SetMatterFormVariationIndex(ivar);
+        const double K_var = pint->K(m_s, ivar);
+        const double omax_var = (mo ?
+          (mo->IsDynamic() ? mo->MaxValue(0.0, K_var) : (*mo)(0.0, K_var)) : 1.0);
+        if (omax_var > omax) {
+          omax = omax_var;
+        }
       }
+      mo->SetMatterFormVariationIndex(0);
     }
-    mo->SetMatterFormVariationIndex(0);
-  }
     maxpref *= omax*s_GeV2fm2;
     p_prefs->Fill(sbin,maxpref);
     if (sbins->m_nbins==1) m_pref = maxpref;
@@ -160,7 +160,6 @@ double Over_Estimator::operator()(const double & pt2,const double & yvol) {
   // not present in the true differential cross section calculated by the
   // MI_Processes.
   //////////////////////////////////////////////////////////////////////////
-  double myvol = sqr(log(m_s/(4.*pt2)*sqr(1.+sqrt(1.-4.*pt2/m_s))));
   return m_pref/(yvol * sqr(pt2+m_pt02/4.));
 }
 
@@ -187,21 +186,6 @@ void Over_Estimator::Output() {
 	      <<sqrt(p_prefs->GetAxis().x(i))<<" | "
 	      <<std::setprecision(8)<<std::setw(16)<<p_prefs->Value(i)
 	      <<std::string(37,' ')<<"|\n";
-  msg_Info()<<"   "<<std::string(77,'-')<<"\n\n";      
+  msg_Info()<<"   "<<std::string(77,'-')<<"\n\n";
 }
 
-void Over_Estimator::Test(const double & Q2,const long int & n) {
-  msg_Out()<<METHOD<<" for Q^2 = "<<Q2<<", s = "<<m_s<<".\n";
-  Histogram histo(0,0.0,Q2,100);
-  for (size_t i=0;i<n;i++) {
-    double pt2 = Q2;
-    size_t trial(0);
-    while (pt2>m_pt02) {
-      TrialPT2(pt2);
-      if (trial++==0) histo.Insert(pt2);
-    }
-  }
-  histo.Finalize();
-  histo.Output("Over_PT2");
-  msg_Out()<<METHOD<<": finished "<<n<<" dry runs.\n";
-}

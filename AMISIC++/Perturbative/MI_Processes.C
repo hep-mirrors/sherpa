@@ -61,8 +61,7 @@ bool MI_Processes::Initialize(MODEL::Model_Base* const          model,
   m_ptmin2      = sqr((*mipars)("pt_min"));
   m_ecms        = rpa->gen.Ecms();
   m_Emin        = (*mipars)("E_min");
-  m_S = m_S_lab = m_ecms*m_ecms;
-  m_ptmax2      = m_S/4.;
+  m_S           = m_ecms*m_ecms;
   ///////////////////////////////////////////////////////////////////////////
   // Now check if we have processes to trigger on.
   // Initialize all 2->2 scatters and the integrator ...
@@ -74,7 +73,6 @@ bool MI_Processes::Initialize(MODEL::Model_Base* const          model,
   // ... and integrate away.
   ///////////////////////////////////////////////////////////////////////////
   UpdateS(m_S);
-  (*p_xsecs)(m_S);
   ///////////////////////////////////////////////////////////////////////////
   // Mass scheme for the subsequent parton shower.
   ///////////////////////////////////////////////////////////////////////////
@@ -122,7 +120,6 @@ bool MI_Processes::InitializeAllProcesses() {
   if (m_triggers.size()>0) FilterTriggerProcesses();
   SetPDFs();
   SetAlphaS();
-  m_printit = true;
   return true;
 }
 
@@ -158,7 +155,6 @@ operator()(const double & shat,const double & that,const double & uhat,
   if (x1<=m_xmin[0]/m_resx[0] || x1>=m_xmax[0] ||
       x2<=m_xmin[1]/m_resx[1] || x2>=m_xmax[1]) return 0.;
   CalcScales(shat,that,uhat);
-  double pt2 = (that*uhat/shat);
   CalcPDFs(x1,x2);
   /////////////////////////////////////////////////////////////////////////
   // This is the sum over the matrix elements, grouped by parton content:
@@ -187,6 +183,15 @@ int MI_Processes::FillHardScatterBlob(Blob *&  blob,const double & pt2veto) {
       !proc->MakeKinematics(&m_integrator,p_remnants) ||
       !proc->SetColours()) return 0;
   if (pt2veto>0. && m_integrator.PT2()>pt2veto) return -1;
+  FillScatterBlob(blob,proc);
+  return 1;
+}
+
+void MI_Processes::FillScatterBlob(Blob * blob,MI_Process * proc) {
+  ///////////////////////////////////////////////////////////////////////////
+  // Common blob filling for hard-scatter and trigger blobs: incoming and
+  // outgoing particles, scales, type spec and PDF info.
+  ///////////////////////////////////////////////////////////////////////////
   array<int,2> inflavs;
   for (size_t i=0;i<2;i++) {
     Particle * part = proc->GetParticle(i);
@@ -204,7 +209,6 @@ int MI_Processes::FillHardScatterBlob(Blob *&  blob,const double & pt2veto) {
 		m_integrator.X(0),m_integrator.X(1),
 		m_muF2,m_muF2);
   blob->AddData("PDFInfo",new Blob_Data<PDF_Info>(info));
-  return 1;
 }
 
 double MI_Processes::MakeTriggerBlob(ATOOLS::Blob *& blob) {
@@ -223,23 +227,7 @@ double MI_Processes::MakeTriggerBlob(ATOOLS::Blob *& blob) {
   blob->SetType(btp::Hard_Collision);
   blob->SetStatus(blob_status::needs_showers);
   blob->SetId();
-  blob->SetTypeSpec("AMISIC++ 1.1");
-  array<int,2> inflavs;
-  for (size_t i=0;i<2;i++) {
-    Particle * part = proc->GetParticle(i);
-    part->SetBeam(i);
-    blob->AddToInParticles(part);
-    inflavs[i] = (part->Flav().IsAnti() ? -1 : 1) * part->Flav().Kfcode();
-  }
-  for (size_t i=2;i<4;i++) blob->AddToOutParticles(proc->GetParticle(i));
-  blob->AddData("WeightsMap",new Blob_Data<Weights_Map>({}));
-  blob->AddData("Renormalization_Scale",new Blob_Data<double>(m_muR2));
-  blob->AddData("Factorization_Scale",new Blob_Data<double>(m_muF2));
-  blob->AddData("Resummation_Scale",new Blob_Data<double>(Max(m_muR2,m_muF2)));
-  PDF_Info info(inflavs[0],inflavs[1],
-		m_integrator.X(0),m_integrator.X(1),
-		m_muF2,m_muF2);
-  blob->AddData("PDFInfo",new Blob_Data<PDF_Info>(info));
+  FillScatterBlob(blob,proc);
   double wt = m_triggerxs/(*this)();
   return wt;
 }

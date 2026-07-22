@@ -8,15 +8,15 @@ using namespace ATOOLS;
 using namespace std;
 
 Amisic::Amisic() :
-  m_processes(MI_Processes()), p_soft(nullptr),
-  m_sigmaND_norm(1.),
+  p_soft(nullptr),
   m_Nscatters(0), m_producedSoft(false), m_isMinBias(false),
   m_ana(false)
 {}
 
 Amisic::~Amisic() {
-  if (mipars) delete mipars;
+  if (mipars) { delete mipars; mipars = nullptr; }
   if (p_soft) delete p_soft;
+  if (p_sbins) delete p_sbins;
   if (m_ana) FinishAnalysis();
 }
 
@@ -98,7 +98,7 @@ bool Amisic::Initialize(MODEL::Model_Base *const model,
 
 void Amisic::InitParametersAndType(PDF::ISR_Handler *const isr,
 				   REMNANTS::Remnant_Handler * remnants) {
-  mipars = new MI_Parameters();
+  if (!mipars) mipars = new MI_Parameters();
   bool shown = false;
   ///////////////////////////////////////////////////////////////////////////
   // Must distinguish the hard and rescatter process.  For the latter, we
