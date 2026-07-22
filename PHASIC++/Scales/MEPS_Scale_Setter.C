@@ -487,12 +487,15 @@ void MEPS_Scale_Setter::Cluster
 	      Cluster_Info ci(cc,strict?p_clu->Cluster(cc):
 			      (cc.PureQCD()?p_qdc->Cluster(cc):NULL));
 	      if (ci.second.m_kt2<0.0) continue;
-	      if ((li->Id()|lj->Id())&3)
-		if (-ci.second.m_pijt[3]>rpa->gen.PBeam(0)[3] ||
-		    -ci.second.m_pijt[3]<rpa->gen.PBeam(1)[3]) continue;
+	      if ((li->Id()|lj->Id())&3) {
+	        if (-ci.second.m_pijt.PPlus()>rpa->gen.PBeam(0).PPlus() ||
+	            -ci.second.m_pijt.PMinus()>rpa->gen.PBeam(1).PMinus()) {
+                  continue;
+                }
+              }
 	      if (lk->Id()&3)
-		if (-ci.second.m_pkt[3]>rpa->gen.PBeam(0)[3] ||
-		    -ci.second.m_pkt[3]<rpa->gen.PBeam(1)[3]) continue;
+	        if (-ci.second.m_pkt.PPlus()>rpa->gen.PBeam(0).PPlus() ||
+	            -ci.second.m_pkt.PMinus()>rpa->gen.PBeam(1).PMinus()) continue;
 	      ccs.push_back(ci);
 	      if (ci.second.p_ca==NULL) break;
 	    }
