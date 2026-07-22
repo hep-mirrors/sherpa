@@ -49,6 +49,7 @@ NLO_Base::NLO_Base() {
   m_rv_hard1 = 0.;
   m_rr_hard2 = 0.;
   m_zero_real_amp = 0;
+  m_softRV = 0;
   if (m_isr_debug || m_fsr_debug) {
     m_histograms2d["IFI_EIKONAL"] = new Histogram_2D(0, -1., 1., 20, 0, 5., 20);
     m_histograms2d["REAL_SUB"] =
@@ -133,6 +134,7 @@ NLO_Base::~NLO_Base() {
   msg_Out()<<"Total zero RR: "<<m_zeroRR<<std::endl;
   msg_Out()<<"Total non-zero RR: "<<m_nonZeroRR<<std::endl;
   msg_Out()<<"Total non-zero RV: "<<m_nonZeroRV<<std::endl;
+  msg_Out()<<"Total soft RV skipped: "<<m_softRV<<std::endl;
   msg_Out()<<"Total zero real amplitudes: "<<m_zero_real_amp<<std::endl;
   msg_Out()<<"Total events : "<<m_evts<<std::endl;
 }
@@ -582,6 +584,21 @@ double NLO_Base::CalculateRealVirtual() {
 
 double NLO_Base::CalculateRealVirtual(Vec4D k, int fsrcount) {
   if (!m_realvirt) return 0;
+  // Soft-photon guard. The real-virtual beta_1^1,
+  //   [RV - B_fin*R] - S(k)*[V - B_fin*Born],
+  // is a subtracted quantity that vanishes in the soft limit, so a photon
+  // with E << sqrt(s) contributes negligibly. Numerically, however, the RV
+  // matrix element and its subtraction each diverge like S(k) ~ 1/k^2 and
+  // cancel to poor precision - the main source of RV instability. Skipping
+  // photons below RV_SOFT_CUT (E/sqrt(s)) removes that noise. Disabled when
+  // RV_SOFT_CUT <= 0.
+  if (m_rv_soft_cut > 0. && k.E() < m_rv_soft_cut * sqrt(m_s)) {
+    m_softRV++;
+    msg_Debugging() << METHOD << " skipping soft photon: E=" << k.E()
+                    << " < RV_SOFT_CUT*sqrt(s)=" << m_rv_soft_cut * sqrt(m_s)
+                    << "\n";
+    return 0;
+  }
 if(k.E() < m_hardmin) {
   m_zeroRV++;
   return 0;
