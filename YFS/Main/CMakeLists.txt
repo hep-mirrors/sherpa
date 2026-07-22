@@ -21,7 +21,7 @@ set(YFSMain_HEADERS Coulomb.H
 
 sherpa_create_git_info(YFSMain ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR})
  
-add_library(YFSMain SHARED ${YFSMain_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
+add_library(YFSMain ${SHERPA_SUBLIB_TYPE} ${YFSMain_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
 sherpa_handle_shared_library(YFSMain YFSMain)
 add_dependencies(YFSMain YFSMain_Git_Info)
 if (SHERPA_ENABLE_LOOPTOOLS) 

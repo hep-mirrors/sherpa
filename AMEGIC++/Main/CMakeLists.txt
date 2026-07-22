@@ -32,6 +32,6 @@ set(AmegicMain_HEADERS Tools.H
 
 sherpa_create_git_info(AmegicMain ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR})
  
-add_library(Amegic SHARED ${AmegicMain_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
+add_library(Amegic ${SHERPA_SUBLIB_TYPE} ${AmegicMain_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
 sherpa_handle_shared_library(Amegic Amegic)
 add_dependencies(Amegic AmegicMain_Git_Info)

@@ -14,6 +14,6 @@ set(SpinCorrelations_HEADERS Amplitude2_Tensor.H
 
 sherpa_create_git_info(SpinCorrelations ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR})
  
-add_library(METoolsSpinCorrelations SHARED ${SpinCorrelations_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
+add_library(METoolsSpinCorrelations ${SHERPA_SUBLIB_TYPE} ${SpinCorrelations_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
 sherpa_handle_shared_library(METoolsSpinCorrelations METoolsSpinCorrelations)
 add_dependencies(METoolsSpinCorrelations SpinCorrelations_Git_Info)

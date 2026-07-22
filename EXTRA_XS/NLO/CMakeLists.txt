@@ -17,7 +17,7 @@ endif()
 
 sherpa_create_git_info(ExtraXSNLO ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR})
  
-add_library(ExtraXSNLO SHARED ${ExtraXSNLO_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
+add_library(ExtraXSNLO ${SHERPA_SUBLIB_TYPE} ${ExtraXSNLO_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
 if (SHERPA_ENABLE_LOOPTOOLS) 
     list(APPEND NLO_SOURCES emu_emu_Virtual.C)
     target_include_directories(ExtraXSNLO  PRIVATE ${LOOPTOOLS_DIRS}/include)

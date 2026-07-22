@@ -6,6 +6,6 @@ set(CSSTools_HEADERS Parton.H
 
 sherpa_create_git_info(CSSTools ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR})
  
-add_library(CSTools SHARED ${CSSTools_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
+add_library(CSTools ${SHERPA_SUBLIB_TYPE} ${CSSTools_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
 sherpa_handle_shared_library(CSTools CSTools)
 add_dependencies(CSTools CSSTools_Git_Info)

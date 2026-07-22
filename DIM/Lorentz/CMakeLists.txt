@@ -9,6 +9,6 @@ set(DIMLorentz_SOURCES FFV_FF.C
 
 sherpa_create_git_info(DIMLorentz ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR})
  
-add_library(DIMLorentz SHARED ${DIMLorentz_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
+add_library(DIMLorentz ${SHERPA_SUBLIB_TYPE} ${DIMLorentz_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
 sherpa_handle_shared_library(DIMLorentz DIMLorentz)
 add_dependencies(DIMLorentz DIMLorentz_Git_Info)

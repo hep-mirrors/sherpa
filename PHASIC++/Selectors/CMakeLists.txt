@@ -28,6 +28,6 @@ set(Selectors_HEADERS Cut_Data.H
 
 sherpa_create_git_info(Selectors ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR})
  
-add_library(PhasicSelectors SHARED ${Selectors_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
+add_library(PhasicSelectors ${SHERPA_SUBLIB_TYPE} ${Selectors_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
 sherpa_handle_shared_library(PhasicSelectors PhasicSelectors)
 add_dependencies(PhasicSelectors Selectors_Git_Info)
