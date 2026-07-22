@@ -53,7 +53,11 @@ public:
   // Per-nominal-call contributions of the hardest photon(s), captured
   // inline while CalculateReal/CalculateRealVirtual/CalculateRealReal sum
   // over the full photon multiplicity - no separate recomputation needed.
+  // *_hard1 = contribution of the single hardest photon; *_hard2 = sum over
+  // the two hardest photons (m_rr_hard2 is the single pair formed by them).
+  // Used to report the matching truncated to 1 or 2 photons.
   double m_real_hard1, m_rv_hard1, m_rr_hard2;
+  double m_real_hard2, m_rv_hard2;
   int m_is_isr, m_zeroV, m_zeroRV, m_zeroRR, m_nonZeroRR, m_nonZeroRV;
   // Counts photons skipped at the RV entry because they were softer than
   // RV_SOFT_CUT (their subtracted RV contribution is negligible but
