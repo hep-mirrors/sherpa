@@ -24,7 +24,7 @@ set(AmisicTools_HEADERS MI_Parameters.H
 
 sherpa_create_git_info(AmisicTools ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR})
  
-add_library(AmisicTools SHARED ${AmisicTools_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
+add_library(AmisicTools ${SHERPA_SUBLIB_TYPE} ${AmisicTools_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
 
 sherpa_handle_shared_library(AmisicTools AmisicTools)
 add_dependencies(AmisicTools AmisicTools_Git_Info)

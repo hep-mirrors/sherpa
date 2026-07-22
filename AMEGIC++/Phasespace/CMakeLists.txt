@@ -20,6 +20,6 @@ set(AmegicPhasespace_HEADERS Phase_Space_Generator.H
 
 sherpa_create_git_info(AmegicPhasespace ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR})
  
-add_library(AmegicPSGen SHARED ${AmegicPhasespace_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
+add_library(AmegicPSGen ${SHERPA_SUBLIB_TYPE} ${AmegicPhasespace_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
 sherpa_handle_shared_library(AmegicPSGen AmegicPSGen)
 add_dependencies(AmegicPSGen AmegicPhasespace_Git_Info)

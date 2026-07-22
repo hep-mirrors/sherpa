@@ -25,7 +25,7 @@ set(Explicit_HEADERS C_Object.H
 
 sherpa_create_git_info(Explicit ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR})
  
-add_library(METoolsExplicit SHARED ${Explicit_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
+add_library(METoolsExplicit ${SHERPA_SUBLIB_TYPE} ${Explicit_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
 sherpa_handle_shared_library(METoolsExplicit METoolsExplicit)
 add_dependencies(METoolsExplicit Explicit_Git_Info)
 if (SHERPA_ENABLE_THREADING)

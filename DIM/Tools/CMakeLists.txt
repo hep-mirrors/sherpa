@@ -12,6 +12,6 @@ set(DIMTools_HEADERS Color.H
 
 sherpa_create_git_info(DIMTools ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR})
  
-add_library(DIMTools SHARED ${DIMTools_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
+add_library(DIMTools ${SHERPA_SUBLIB_TYPE} ${DIMTools_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
 sherpa_handle_shared_library(DIMTools DIMTools)
 add_dependencies(DIMTools DIMTools_Git_Info)

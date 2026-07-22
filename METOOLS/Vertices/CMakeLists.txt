@@ -13,6 +13,6 @@ set(Vertices_SOURCES FFV_DLC.C
 
 sherpa_create_git_info(Vertices ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR})
  
-add_library(METoolsVertices SHARED ${Vertices_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
+add_library(METoolsVertices ${SHERPA_SUBLIB_TYPE} ${Vertices_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
 sherpa_handle_shared_library(METoolsVertices METoolsVertices)
 add_dependencies(METoolsVertices Vertices_Git_Info)

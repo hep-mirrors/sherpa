@@ -9,6 +9,6 @@ set(ShrimpsTools_HEADERS Parameter_Structures.H
 
 sherpa_create_git_info(ShrimpsTools ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR})
 
-add_library(ShrimpsTools SHARED ${ShrimpsTools_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
+add_library(ShrimpsTools ${SHERPA_SUBLIB_TYPE} ${ShrimpsTools_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
 sherpa_handle_shared_library(ShrimpsTools ShrimpsTools)
 add_dependencies(ShrimpsTools ShrimpsTools_Git_Info)

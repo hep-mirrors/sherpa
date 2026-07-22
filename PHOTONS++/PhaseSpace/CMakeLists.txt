@@ -8,6 +8,6 @@ set(PhaseSpace_HEADERS Avarage_Photon_Number.H
 
 sherpa_create_git_info(PhaseSpace ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR})
  
-add_library(PhotonsPhaseSpace SHARED ${PhaseSpace_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
+add_library(PhotonsPhaseSpace ${SHERPA_SUBLIB_TYPE} ${PhaseSpace_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
 sherpa_handle_shared_library(PhotonsPhaseSpace PhotonsPhaseSpace)
 add_dependencies(PhotonsPhaseSpace PhaseSpace_Git_Info)
