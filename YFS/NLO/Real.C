@@ -29,7 +29,7 @@ Real::Real(const PHASIC::Process_Info& pi)  {
    m_nmom = s["N_Real_Momenta"].SetDefault(100).Get<int>();
    for(auto f: pi.ExtractFlavours()) m_flavs.push_back(f);
    if(m_check && gen=="") THROW(fatal_error, "Need two generators to compare.");
-   if(gen!="Comix"){
+   if(gen!="Comix" && gen != "Amegic"){
      PHASIC::External_ME_Args args(pi.m_ii.GetExternal(),
                                    pi.m_fi.GetExternal(),
                                    pi.m_maxcpl,
@@ -116,7 +116,11 @@ double Real::Calc_R(const ATOOLS::Vec4D_Vector& p)
       external_real = Calc_External(p);
     }
     p_ampl=CreateAmplitude(p);
-    int rmode = 130;
+    // rmode bits: 128=GeneratePoint(), 2=SetFixedScale(ampl scales), 1=disable
+    // the selector before Trigger() so it can't reject the point - the
+    // m_nlocuts check above already applies cuts explicitly, so Differential()
+    // doesn't need to (and shouldn't) re-run the selector itself.
+    int rmode = 128 + 2 + 1;
     Weights_Map iR = p_realproc->Differential(*p_ampl, Variations_Mode::nominal_only,rmode);
     if(iR.Nominal()==0) {
       if(p_ampl) p_ampl->Delete();

@@ -50,7 +50,16 @@ public:
   PHASIC::Cut_Data *p_cuts;
 
   double m_evts, m_recola_evts, m_ranTheta, m_ranPhi, m_real,m_ravg, m_rv, m_rvsub, m_eikeex, m_subloc;
+  // Per-nominal-call contributions of the hardest photon(s), captured
+  // inline while CalculateReal/CalculateRealVirtual/CalculateRealReal sum
+  // over the full photon multiplicity - no separate recomputation needed.
+  double m_real_hard1, m_rv_hard1, m_rr_hard2;
   int m_is_isr, m_zeroV, m_zeroRV, m_zeroRR, m_nonZeroRR, m_nonZeroRV;
+  // Counts CalculateReal(k,fsrcount) calls where the raw real-emission
+  // amplitude p_real->Calc_R(p) itself came back zero, before any cut or
+  // subtraction logic runs - covers both the standalone NLO real correction
+  // and the real1/real2 sub-calls embedded in CalculateRealReal.
+  int m_zero_real_amp;
   bool m_failcut;
 
 
@@ -93,6 +102,7 @@ public:
   inline bool HasNLO()  {return m_realtool || m_looptool;}
   inline bool HasNNLO() {return m_rrtool   || m_realvirt;}
   Vec4D MostEnergeticPhoton() const;
+  Vec4D FixedTestPhoton() const;
 };
 
 

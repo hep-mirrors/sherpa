@@ -19,7 +19,7 @@ using namespace ATOOLS;
 using namespace MODEL;
 using namespace METOOLS;
 
-double Lambda(double x, double y, double z)
+static double Lambda(double x, double y, double z)
     { return x*x+y*y+z*z-2.*(x*y+x*z+y*z); }
 
 
@@ -174,7 +174,8 @@ double YFS_Form_Factor::BVR_full(YFS::Dipole &d, double omega) {
     msg_Error()<<"Unknown Dipole type"<<std::endl;
   }
   R =  BVR_full(p1 * p2, p1.E(), p2.E(), p1.Mass(), p2.Mass(), omega, m_photonMass, 0);
-  V =  BVirtGeneral(d);
+  // R = BVR_full_eps(d, omega, 0).Finite();
+  // V =  BVirtGeneralEps(d,omega).Finite();
   double Vold =  BVV_full(p1, p2, m_photonMass, omega, 0);
   if(m_fullform>=2) return (R+V);
   return (R+Vold);
@@ -1222,8 +1223,8 @@ DivArrD YFS_Form_Factor::BVirtGeneralEps(YFS::Dipole &d, double Kmax){
   m_m2 = m2;
   const double a0 = A(p1*p2, m1, m2);
   const double a2 = A2(p1, p2);
-  const double irloop = p_virt->IRscale();
-  const double epsloop = p_virt->Eps_Scheme_Factor({p1,p2});
+  const double irloop = (p_virt?p_virt->IRscale():100);
+  const double epsloop = (p_virt?p_virt->Eps_Scheme_Factor({p1,p2}):4*M_PI);
   DivArrD massph(0,-1,0,0,0,0);
   // double form = log(m_photonMass*m_photonMass/m_m1/m_m2)*(p1*p2*a0-1);
   DivArrD form = (massph+log(4.*M_PI*sqr(irloop)/m1/m2/epsloop))*(p1*p2*a0-1.);

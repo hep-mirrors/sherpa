@@ -41,6 +41,7 @@ namespace YFS {
         bool   m_setparticles, m_asymbeams;
         double m_real, m_virt;
         double m_nlo_real, m_nlo_virtual, m_nlo_rv, m_nlo_rr;
+        double m_nlo_real_hardest, m_nlo_rv_hardest, m_nlo_rr_2hardest;
         ATOOLS::Weights_Map m_nlo_weightsmap;
         double m_nbar, m_formfactor, m_betatWW, m_coulSub, m_ww_formfact,m_eex;
         int m_negskip;
