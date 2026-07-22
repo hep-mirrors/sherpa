@@ -9,6 +9,9 @@
 #include "YFS/NLO/Virtual.H"
 #include "YFS/NLO/VirtualVirtual.H"
 #include <cmath>
+#include <algorithm>
+#include <utility>
+#include <vector>
 
 using namespace YFS;
 using namespace MODEL;
@@ -23,6 +26,19 @@ std::ofstream out_recola;
 std::ofstream out_sub, out_real, out_finite;
 
 // Lambda (Kaellen function) now lives once in YFS/Tools/Dipole.H.
+
+// Given (photon energy, per-photon matching contribution) pairs, return the
+// contribution of the single hardest photon (h1) and the sum over the two
+// hardest photons (h2). Used to report the matching truncated to 1 or 2
+// photons, independent of the order the photons were generated in.
+static void HardestSums(std::vector<std::pair<double, double>> c,
+                        double &h1, double &h2) {
+  std::sort(c.begin(), c.end(),
+            [](const std::pair<double, double> &a,
+               const std::pair<double, double> &b) { return a.first > b.first; });
+  h1 = c.empty() ? 0. : c[0].second;
+  h2 = h1 + (c.size() < 2 ? 0. : c[1].second);
+}
 
 NLO_Base::NLO_Base() {
   p_yfsFormFact = new YFS::YFS_Form_Factor();
@@ -46,6 +62,8 @@ NLO_Base::NLO_Base() {
   m_real_hard1 = 0.;
   m_rv_hard1 = 0.;
   m_rr_hard2 = 0.;
+  m_real_hard2 = 0.;
+  m_rv_hard2 = 0.;
   m_zero_real_amp = 0;
   m_softRV = 0;
   if (m_isr_debug || m_fsr_debug) {
@@ -294,11 +312,10 @@ double NLO_Base::CalculateReal() {
     return 0;
   double real(0);
   m_real_hard1 = 0.;
-  // Identify the hardest photon up front (cheap energy compare only, no ME
-  // evaluation) so its contribution can be captured inline below as the sum
-  // is computed, instead of a second, duplicate CalculateReal(k,0) call.
-  const Vec4D hardest = MostEnergeticPhoton();
-  bool hardestdone = (hardest.E() == 0.);
+  m_real_hard2 = 0.;
+  // Collect (photon energy, per-photon contribution) so the matching can be
+  // reported truncated to the 1 or 2 hardest photons (see HardestSums).
+  std::vector<std::pair<double, double>> contribs;
   // double collreal = p_dipoles->CalculateEEX() * m_born;
   for (auto k : m_ISRPhotons) {
     if (m_check_real_sub && !HasFSR()) {
@@ -320,7 +337,7 @@ double NLO_Base::CalculateReal() {
       contrib = CalculateReal(k, 0);
       real += contrib;
     }
-    if (!hardestdone && k == hardest) { m_real_hard1 = contrib; hardestdone = true; }
+    contribs.emplace_back(k.E(), contrib);
   }
   int fsrcount(0);
   for (auto k : m_FSRPhotons) {
@@ -333,9 +350,10 @@ double NLO_Base::CalculateReal() {
     double contrib = CalculateReal(k, 0);
     real += contrib;
     fsrcount++;
-    if (!hardestdone && k == hardest) { m_real_hard1 = contrib; hardestdone = true; }
+    contribs.emplace_back(k.E(), contrib);
     // }
   }
+  HardestSums(contribs, m_real_hard1, m_real_hard2);
   // for (auto k : m_borngamma) {
   // 	if(m_check_real_sub) {
   // 		if(k.E() < 0.2*sqrt(m_s)) continue;
@@ -530,6 +548,7 @@ double NLO_Base::CalculateRealVirtual() {
   if (!m_realvirt)
     return 0;
   m_rv_hard1 = 0.;
+  m_rv_hard2 = 0.;
   if (m_rv_hard_photon==2) {
     // Hard photons are rare in the YFS spectrum, so RV_Hard_Photon=1 means
     // waiting many events for MostEnergeticPhoton() to clear the 0.2*sqrt(s)
@@ -538,6 +557,7 @@ double NLO_Base::CalculateRealVirtual() {
     Vec4D k = FixedTestPhoton();
     if (m_check_rv) CheckRealVirtualSub(k);
     m_rv_hard1 = CalculateRealVirtual(k, 0);
+    m_rv_hard2 = m_rv_hard1;  // single photon: 2-photon sum == 1-photon
     return m_rv_hard1;
   }
   if (m_rv_hard_photon==1) {
@@ -548,14 +568,14 @@ double NLO_Base::CalculateRealVirtual() {
       CheckRealVirtualSub(k);
     }
     m_rv_hard1 = CalculateRealVirtual(k, 0);
+    m_rv_hard2 = m_rv_hard1;  // single photon: 2-photon sum == 1-photon
     return m_rv_hard1;
   }
   double realvirtual(0);
-  // Identify the hardest photon up front (cheap energy compare only) so its
-  // contribution can be captured inline below, without a second, duplicate
-  // CalculateRealVirtual(k,0) call.
-  const Vec4D hardest = MostEnergeticPhoton();
-  bool hardestdone = (hardest.E() == 0.);
+  m_rv_hard2 = 0.;
+  // Collect (photon energy, per-photon RV contribution) so the RV can be
+  // reported truncated to the 1 or 2 hardest photons (see HardestSums).
+  std::vector<std::pair<double, double>> contribs;
   for (auto k : m_ISRPhotons) {
     if (m_check_rv) {
       if (k.E() < 0.2 * sqrt(m_s))
@@ -564,7 +584,7 @@ double NLO_Base::CalculateRealVirtual() {
     }
     double contrib = CalculateRealVirtual(k, 0);
     realvirtual += contrib;
-    if (!hardestdone && k == hardest) { m_rv_hard1 = contrib; hardestdone = true; }
+    contribs.emplace_back(k.E(), contrib);
     // else m_zeroRV++;
   }
   for (auto k : m_FSRPhotons) {
@@ -575,8 +595,9 @@ double NLO_Base::CalculateRealVirtual() {
     }
     double contrib = CalculateRealVirtual(k, 0);
     realvirtual += contrib;
-    if (!hardestdone && k == hardest) { m_rv_hard1 = contrib; hardestdone = true; }
+    contribs.emplace_back(k.E(), contrib);
   }
+  HardestSums(contribs, m_rv_hard1, m_rv_hard2);
   return realvirtual;
 }
 

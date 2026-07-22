@@ -35,6 +35,8 @@ YFS_Handler::YFS_Handler()
     m_nlo_real_hardest = 0.0;
     m_nlo_rv_hardest = 0.0;
     m_nlo_rr_2hardest = 0.0;
+    m_nlo_real_2hardest = 0.0;
+    m_nlo_rv_2hardest = 0.0;
     rpa->gen.AddCitation(1,"The automation of YFS ISR is published in  \\cite{Krauss:2022ajk}.Which is based on \\cite{Jadach:1988gb}");
   }
 }
@@ -482,11 +484,13 @@ double YFS_Handler::CalculateNLO(){
   // nominal sums above (see NLO_Base::CalculateReal/CalculateRealVirtual/
   // CalculateRealReal) - no extra ME evaluation needed here.
   m_nlo_real_hardest = p_nlo->m_real_hard1;
+  m_nlo_real_2hardest = p_nlo->m_real_hard2;
   InitNLO();
   m_nlo_virtual = p_nlo->CalculateVirtual();
   InitNLO();
   m_nlo_rv = p_nlo->CalculateRealVirtual();
   m_nlo_rv_hardest = p_nlo->m_rv_hard1;
+  m_nlo_rv_2hardest = p_nlo->m_rv_hard2;
   InitNLO();
   m_nlo_rr = p_nlo->CalculateRealReal();
   m_nlo_rr_2hardest = p_nlo->m_rr_hard2;
@@ -578,18 +582,20 @@ void YFS_Handler::GenerateWeight() {
         wyfsnlo["BV"]     = ratio(virt_sum, m_real);
         wyfsnlo["LO"]     = 1./m_real;
         wyfsnlo["EEX"]    = ratio(m_eex, m_real);
-        // NLO restricted to the single hardest ISR/FSR photon (Real) plus
-        // the full Virtual, rather than Real summed over the full generated
-        // multiplicity - isolates how much of the NLO correction the
-        // leading photon alone carries.
-        const double nlo_hard_sum = (m_born + m_nlo_real_hardest + m_nlo_virtual)/m_born;
-        wyfsnlo["NLO_Hardest"] = ratio(nlo_hard_sum, m_real);
-        // Fixed-order comparison point: hardest-only NLO correction, with the
+        // Matching truncated to a fixed real-photon multiplicity, to see the
+        // result "as if" only the 1 or 2 hardest photons were used in the
+        // matching (full "NLO" above keeps all generated photons). Real is
+        // summed over the 1 / 2 hardest photons; Virtual is always full.
+        const double nlo_1g = (m_born + m_nlo_real_hardest  + m_nlo_virtual)/m_born;
+        const double nlo_2g = (m_born + m_nlo_real_2hardest + m_nlo_virtual)/m_born;
+        wyfsnlo["NLO_1g"] = ratio(nlo_1g, m_real);
+        wyfsnlo["NLO_2g"] = ratio(nlo_2g, m_real);
+        // Fixed-order comparison point: 1-photon NLO correction with the
         // resummed exp(form) form factor undone in favour of its 1+form
         // fixed-order truncation - matches a plain (non-YFS-resummed) NLO EW
         // calculation, which only ever has at most one real photon.
         if (have_fixed_order_ff)
-          wyfsnlo["NLO_FixedOrder"] = ratio(nlo_hard_sum, m_real) * ff_fixedorder_ratio;
+          wyfsnlo["NLO_FixedOrder"] = ratio(nlo_1g, m_real) * ff_fixedorder_ratio;
       }
     }
 
@@ -605,18 +611,23 @@ void YFS_Handler::GenerateWeight() {
         wyfsnlo["NLO+RR"]    = ratio(RR_total, m_real);
         wyfsnlo["NLO+RV"]    = ratio(RV_total, m_real);
         wyfsnlo["NNLO"]        = make_ratio(nnlo_total, nnlo_denom);
-        // NNLO analog of NLO_Hardest: Real/RealVirtual restricted to the
-        // single hardest photon, RealReal restricted to the two hardest.
-        const double nnlo_hard_total =
-            (m_born + m_nlo_real_hardest + m_nlo_virtual + m_nlo_rv_hardest +
-             m_nlo_rr_2hardest) /
-            m_born;
-        wyfsnlo["NNLO_Hardest"] = ratio(nnlo_hard_total, m_real);
-        // NNLO analog of NLO_FixedOrder: hardest-only Real/RealVirtual, two-
-        // hardest RealReal, with the form factor undone to its 1+form
-        // truncation - matches a plain fixed-order NNLO EW calculation.
+        // Matching truncated to a fixed real-photon multiplicity, the NNLO
+        // analogue of NLO_1g/NLO_2g. 1 photon: Real + RealVirtual on the
+        // single hardest, RealReal = 0 (a pair needs two photons). 2 photons:
+        // Real + RealVirtual summed over the two hardest, plus the RealReal
+        // pair formed by them. Virtual is always full.
+        const double nnlo_1g =
+            (m_born + m_nlo_real_hardest  + m_nlo_virtual + m_nlo_rv_hardest)/m_born;
+        const double nnlo_2g =
+            (m_born + m_nlo_real_2hardest + m_nlo_virtual + m_nlo_rv_2hardest +
+             m_nlo_rr_2hardest)/m_born;
+        wyfsnlo["NNLO_1g"] = ratio(nnlo_1g, m_real);
+        wyfsnlo["NNLO_2g"] = ratio(nnlo_2g, m_real);
+        // Fixed-order NNLO comparison: the 2-photon truncation (fixed-order
+        // NNLO EW allows up to two real photons) with the resummed form factor
+        // undone to its 1+form truncation.
         if (have_fixed_order_ff)
-          wyfsnlo["NNLO_FixedOrder"] = ratio(nnlo_hard_total, m_real) * ff_fixedorder_ratio;
+          wyfsnlo["NNLO_FixedOrder"] = ratio(nnlo_2g, m_real) * ff_fixedorder_ratio;
       }
     }
 
@@ -624,41 +635,6 @@ void YFS_Handler::GenerateWeight() {
     // through the normal multiweight machinery (Single_Process multiplies in
     // the universal ME x PDF x flux factors). Must run before the assignment.
     if (p_fb) p_fb->SplitWeights(wyfsnlo, m_plab, m_flavs);
-
-    // Track selected contributions resolved by photon multiplicity. This is a
-    // diagnostic for the real-virtual (RV) stability: for an event with N
-    // photons, "<name>_nphotN" carries that contribution's weight while every
-    // other multiplicity bin is 0, so summing a column gives the contribution's
-    // cross section restricted to N-photon events (and the last bin is an
-    // overflow ">=kMaxPhotonBin"). Done after the FB split so the FB splitter
-    // does not further explode these into forward/backward variants.
-    {
-      // Names worth resolving by multiplicity. RV first, since that is the one
-      // showing instability; the surrounding pieces give context. Only names
-      // actually present in wyfsnlo are binned.
-      static const std::vector<std::string> track = {
-          "RealVirtual", "RealReal", "Real", "Virtual", "NLO+RV", "NLO", "NNLO"};
-      const size_t kMaxPhotonBin = 15;  // bins 0..kMaxPhotonBin, last is overflow
-      const size_t nphot = m_ISRPhotons.size() + m_FSRPhotons.size();
-      const size_t bin   = std::min(nphot, kMaxPhotonBin);
-      // Snapshot the (name, value) of the tracked base entries before appending,
-      // since Weights::operator[] appends new entries as we go.
-      std::vector<std::pair<std::string, double>> base;
-      for (size_t i = 1; i < wyfsnlo.Size(); ++i) {
-        const std::string name = wyfsnlo.Name(i);
-        if (std::find(track.begin(), track.end(), name) != track.end())
-          base.emplace_back(name, wyfsnlo[i]);
-      }
-      for (const auto& c : base) {
-        for (size_t n = 0; n <= kMaxPhotonBin; ++n) {
-          const std::string tag =
-              c.first + "_nphot" +
-              (n == kMaxPhotonBin ? "ge" + std::to_string(kMaxPhotonBin)
-                                  : std::to_string(n));
-          wyfsnlo[tag] = (n == bin) ? c.second : 0.0;
-        }
-      }
-    }
 
     m_nlo_weightsmap["YFS"] = wyfsnlo;
   }
