@@ -7,10 +7,22 @@
 #include "METOOLS/Loops/Divergence_Array.H"
 #include "YFS/NLO/Virtual.H"
 #include <vector>
+#include <cmath>
 
 using namespace ATOOLS;
 
 namespace YFS{
+
+    // Kaellen (triangle) function lambda(x,y,z) = x^2+y^2+z^2-2(xy+xz+yz),
+    // returned as |lambda| so callers evaluating sqrt(Lambda(...)/s) stay real
+    // below threshold / against rounding. Single canonical definition: the
+    // per-file copies in Dipole.C, NLO_Base.C and YFS_Form_Factor.C used to
+    // disagree (two dropped the abs) and, with external linkage, collided
+    // across the YFS shared libraries - which copy won depended on load order
+    // (ELF symbol interposition), giving platform-dependent NaN.
+    inline double Lambda(double x, double y, double z) {
+      return std::abs(x * x + y * y + z * z - 2. * x * y - 2. * x * z - 2. * y * z);
+    }
 
     struct dipoletype {
     enum code {
