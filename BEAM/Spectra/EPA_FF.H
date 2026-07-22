@@ -124,6 +124,8 @@ namespace BEAM {
 
     size_t m_nxbins, m_nbbins;
 
+    inline static bool s_cite = true;
+
     // Importance-sample the impact parameter for this form factor's beam
     // parameters; see SampleB for the 1/x support cap. Stores b in m_b.
     double SampleImpactParameter(const double& x, const double& ran)
