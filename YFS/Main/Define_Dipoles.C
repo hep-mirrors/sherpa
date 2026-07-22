@@ -588,7 +588,7 @@ double Define_Dipoles::CalculateRealVirtualSubEps(const Vec4D &k) {
 
 
 
-double Define_Dipoles::FormFactor(){
+double Define_Dipoles::FormFactorSum(){
   double form = 0;
 
   for(auto &D: m_dipolesII){
@@ -604,10 +604,15 @@ double Define_Dipoles::FormFactor(){
       form += D.ChargeNorm()*p_yfsFormFact->BVR_full(D,sqrt(m_s)/2);
     }
   }
+  return form;
+}
+
+double Define_Dipoles::FormFactor(){
+  double form = FormFactorSum();
   if(FixedOrder()==fixed_order::nlo){
     return 1.+form;
   }
-  return exp(form); 
+  return exp(form);
 }
 
 

@@ -32,6 +32,9 @@ YFS_Handler::YFS_Handler()
     m_nlo_virtual = 0.0;
     m_nlo_rv = 0.0;
     m_nlo_rr = 0.0;
+    m_nlo_real_hardest = 0.0;
+    m_nlo_rv_hardest = 0.0;
+    m_nlo_rr_2hardest = 0.0;
     rpa->gen.AddCitation(1,"The automation of YFS ISR is published in  \\cite{Krauss:2022ajk}.Which is based on \\cite{Jadach:1988gb}");
   }
 }
@@ -475,12 +478,18 @@ double YFS_Handler::CalculateNLO(){
   // CheckMomentumConservation();
   InitNLO();
   m_nlo_real = p_nlo->CalculateReal();
+  // Hardest-photon-only contributions are captured as a side effect of the
+  // nominal sums above (see NLO_Base::CalculateReal/CalculateRealVirtual/
+  // CalculateRealReal) - no extra ME evaluation needed here.
+  m_nlo_real_hardest = p_nlo->m_real_hard1;
   InitNLO();
   m_nlo_virtual = p_nlo->CalculateVirtual();
   InitNLO();
   m_nlo_rv = p_nlo->CalculateRealVirtual();
+  m_nlo_rv_hardest = p_nlo->m_rv_hard1;
   InitNLO();
   m_nlo_rr = p_nlo->CalculateRealReal();
+  m_nlo_rr_2hardest = p_nlo->m_rr_hard2;
   return m_nlo_real + m_nlo_virtual + m_nlo_rv + m_nlo_rr;
 }
 
@@ -542,6 +551,18 @@ void YFS_Handler::GenerateWeight() {
 
     Weights wyfsnlo{1.0};
 
+    // Ratio that swaps the nominal, resummed form factor (exp(form), the
+    // all-orders Sudakov exponentiation) for its fixed-order (1+form)
+    // truncation - i.e. "undoes" the exponentiation. Only meaningful when
+    // m_formfactor was actually built from p_dipoles->FormFactor() (the
+    // m_fullform>=1, non-t-channel branch of AddFormFactor()); otherwise
+    // there's no well-defined "form" to compare against.
+    const bool have_fixed_order_ff =
+        m_fullform >= 1 && m_tchannel == 0 && !IsZero(m_formfactor);
+    const double ff_fixedorder_ratio =
+        have_fixed_order_ff ? (1. + p_dipoles->FormFactorSum()) / m_formfactor
+                             : 1.;
+
     // NLO: Real + Virtual
     if (p_nlo->HasNLO()) {
       const double nlo_sum   = (m_born + m_nlo_real + m_nlo_virtual)/m_born;
@@ -557,6 +578,18 @@ void YFS_Handler::GenerateWeight() {
         wyfsnlo["BV"]     = ratio(virt_sum, m_real);
         wyfsnlo["LO"]     = 1./m_real;
         wyfsnlo["EEX"]    = ratio(m_eex, m_real);
+        // NLO restricted to the single hardest ISR/FSR photon (Real) plus
+        // the full Virtual, rather than Real summed over the full generated
+        // multiplicity - isolates how much of the NLO correction the
+        // leading photon alone carries.
+        const double nlo_hard_sum = (m_born + m_nlo_real_hardest + m_nlo_virtual)/m_born;
+        wyfsnlo["NLO_Hardest"] = ratio(nlo_hard_sum, m_real);
+        // Fixed-order comparison point: hardest-only NLO correction, with the
+        // resummed exp(form) form factor undone in favour of its 1+form
+        // fixed-order truncation - matches a plain (non-YFS-resummed) NLO EW
+        // calculation, which only ever has at most one real photon.
+        if (have_fixed_order_ff)
+          wyfsnlo["NLO_FixedOrder"] = ratio(nlo_hard_sum, m_real) * ff_fixedorder_ratio;
       }
     }
 
@@ -572,6 +605,18 @@ void YFS_Handler::GenerateWeight() {
         wyfsnlo["NLO+RR"]    = ratio(RR_total, m_real);
         wyfsnlo["NLO+RV"]    = ratio(RV_total, m_real);
         wyfsnlo["NNLO"]        = make_ratio(nnlo_total, nnlo_denom);
+        // NNLO analog of NLO_Hardest: Real/RealVirtual restricted to the
+        // single hardest photon, RealReal restricted to the two hardest.
+        const double nnlo_hard_total =
+            (m_born + m_nlo_real_hardest + m_nlo_virtual + m_nlo_rv_hardest +
+             m_nlo_rr_2hardest) /
+            m_born;
+        wyfsnlo["NNLO_Hardest"] = ratio(nnlo_hard_total, m_real);
+        // NNLO analog of NLO_FixedOrder: hardest-only Real/RealVirtual, two-
+        // hardest RealReal, with the form factor undone to its 1+form
+        // truncation - matches a plain fixed-order NNLO EW calculation.
+        if (have_fixed_order_ff)
+          wyfsnlo["NNLO_FixedOrder"] = ratio(nnlo_hard_total, m_real) * ff_fixedorder_ratio;
       }
     }
 

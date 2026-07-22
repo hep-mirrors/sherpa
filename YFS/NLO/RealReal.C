@@ -20,12 +20,12 @@ RealReal::RealReal(const PHASIC::Process_Info& pi)  {
   p_real_me = NULL;
   p_rrproc = NULL;
   Scoped_Settings s{ Settings::GetMainSettings()["YFS"] };
-  std::string gen = s["RR_Generator"].SetDefault("").Get<std::string>();
+  std::string gen = s["RR_Generator"].SetDefault("Comix").Get<std::string>();
   m_check = s["Compare_RR"].SetDefault(0).Get<bool>();
   m_writemom = s["Write_RR_Momenta"].SetDefault(0).Get<bool>();
   m_nmom = s["N_RR_Momenta"].SetDefault(100).Get<int>();/* Load RealReal ME */
   if(m_check && gen=="") THROW(fatal_error, "Need two generators to compare.");
-  if(gen!=""){
+  if(gen!="Comix" && gen != "Amegic"){
     PHASIC::External_ME_Args args(pi.m_ii.GetExternal(),
                                pi.m_fi.GetExternal(),
                                pi.m_maxcpl,

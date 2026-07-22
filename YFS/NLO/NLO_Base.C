@@ -45,6 +45,10 @@ NLO_Base::NLO_Base() {
   m_nonZeroRR = 0;
   m_zeroV = 0;
   m_nonZeroRV=0;
+  m_real_hard1 = 0.;
+  m_rv_hard1 = 0.;
+  m_rr_hard2 = 0.;
+  m_zero_real_amp = 0;
   if (m_isr_debug || m_fsr_debug) {
     m_histograms2d["IFI_EIKONAL"] = new Histogram_2D(0, -1., 1., 20, 0, 5., 20);
     m_histograms2d["REAL_SUB"] =
@@ -129,6 +133,7 @@ NLO_Base::~NLO_Base() {
   msg_Out()<<"Total zero RR: "<<m_zeroRR<<std::endl;
   msg_Out()<<"Total non-zero RR: "<<m_nonZeroRR<<std::endl;
   msg_Out()<<"Total non-zero RV: "<<m_nonZeroRV<<std::endl;
+  msg_Out()<<"Total zero real amplitudes: "<<m_zero_real_amp<<std::endl;
   msg_Out()<<"Total events : "<<m_evts<<std::endl;
 }
 
@@ -288,6 +293,12 @@ double NLO_Base::CalculateReal() {
   if (!m_realtool)
     return 0;
   double real(0);
+  m_real_hard1 = 0.;
+  // Identify the hardest photon up front (cheap energy compare only, no ME
+  // evaluation) so its contribution can be captured inline below as the sum
+  // is computed, instead of a second, duplicate CalculateReal(k,0) call.
+  const Vec4D hardest = MostEnergeticPhoton();
+  bool hardestdone = (hardest.E() == 0.);
   // double collreal = p_dipoles->CalculateEEX() * m_born;
   for (auto k : m_ISRPhotons) {
     if (m_check_real_sub && !HasFSR()) {
@@ -295,29 +306,34 @@ double NLO_Base::CalculateReal() {
         continue;
       CheckRealSub(k, 0);
     }
+    double contrib;
     if (m_isr_debug || m_fsr_debug) {
-      double fullreal = CalculateReal(k);
-      real += fullreal;
+      contrib = CalculateReal(k);
+      real += contrib;
       double coll = p_dipoles->GetDipoleII()[0].Beta1(k);
       coll /= p_dipoles->GetDipoleII()[0].Eikonal(k);
-      if (fullreal != 0)
+      if (contrib != 0)
         m_histograms2d["REAL_COLL_RATIO"]->Insert(k.E(),
-                                                  coll * m_born / fullreal);
+                                                  coll * m_born / contrib);
     } else {
       // if (k.E() > m_hardmin)
-      real += CalculateReal(k, 0);
+      contrib = CalculateReal(k, 0);
+      real += contrib;
     }
+    if (!hardestdone && k == hardest) { m_real_hard1 = contrib; hardestdone = true; }
   }
   int fsrcount(0);
   for (auto k : m_FSRPhotons) {
     if (m_check_real_sub) {
       if (k.E() < 0.2 * sqrt(m_s))
         continue;
-      CheckRealSub(k, 1);
+      CheckRealSub(k, 0);
     }
     // if (k.E() > m_hardmin) {
-    real += CalculateReal(k, 0);
+    double contrib = CalculateReal(k, 0);
+    real += contrib;
     fsrcount++;
+    if (!hardestdone && k == hardest) { m_real_hard1 = contrib; hardestdone = true; }
     // }
   }
   // for (auto k : m_borngamma) {
@@ -382,7 +398,7 @@ double NLO_Base::CalculateReal(Vec4D k, int fsrcount) {
   p_nlodipoles->MakeDipoles(m_flavs, pp, m_plab);
 
   double r = p_real->Calc_R(p) / norm;
-  m_real = r * norm;
+  m_real = r;
   if (p_real->FailCut()) m_failcut = true;
 
   double flux;
@@ -426,6 +442,7 @@ double NLO_Base::CalculateReal(Vec4D k, int fsrcount) {
 
   if (IsZero(r)) {
     msg_Debugging() << METHOD << " r=0, returning 0\n";
+    m_zero_real_amp++;
     return 0;
   }
   if (IsBad(r) || IsBad(flux)) {
@@ -512,6 +529,17 @@ double NLO_Base::CalculateReal(Vec4D k, int fsrcount) {
 double NLO_Base::CalculateRealVirtual() {
   if (!m_realvirt)
     return 0;
+  m_rv_hard1 = 0.;
+  if (m_rv_hard_photon==2) {
+    // Hard photons are rare in the YFS spectrum, so RV_Hard_Photon=1 means
+    // waiting many events for MostEnergeticPhoton() to clear the 0.2*sqrt(s)
+    // CHECK_RV threshold. RV_Hard_Photon=2 exercises the RV formula/
+    // subtraction on the same fixed photon every event instead.
+    Vec4D k = FixedTestPhoton();
+    if (m_check_rv) CheckRealVirtualSub(k);
+    m_rv_hard1 = CalculateRealVirtual(k, 0);
+    return m_rv_hard1;
+  }
   if (m_rv_hard_photon==1) {
     Vec4D k = MostEnergeticPhoton();
     if (k.E() == 0.) return 0;
@@ -519,16 +547,24 @@ double NLO_Base::CalculateRealVirtual() {
       if (k.E() < 0.2 * sqrt(m_s)) return 0;
       CheckRealVirtualSub(k);
     }
-    return CalculateRealVirtual(k, 0);
+    m_rv_hard1 = CalculateRealVirtual(k, 0);
+    return m_rv_hard1;
   }
   double realvirtual(0);
+  // Identify the hardest photon up front (cheap energy compare only) so its
+  // contribution can be captured inline below, without a second, duplicate
+  // CalculateRealVirtual(k,0) call.
+  const Vec4D hardest = MostEnergeticPhoton();
+  bool hardestdone = (hardest.E() == 0.);
   for (auto k : m_ISRPhotons) {
     if (m_check_rv) {
       if (k.E() < 0.2 * sqrt(m_s))
         continue;
       CheckRealVirtualSub(k);
     }
-    realvirtual += CalculateRealVirtual(k, 0);
+    double contrib = CalculateRealVirtual(k, 0);
+    realvirtual += contrib;
+    if (!hardestdone && k == hardest) { m_rv_hard1 = contrib; hardestdone = true; }
     // else m_zeroRV++;
   }
   for (auto k : m_FSRPhotons) {
@@ -537,13 +573,19 @@ double NLO_Base::CalculateRealVirtual() {
         continue;
       CheckRealVirtualSub(k);
     }
-    realvirtual += CalculateRealVirtual(k, 0);
+    double contrib = CalculateRealVirtual(k, 0);
+    realvirtual += contrib;
+    if (!hardestdone && k == hardest) { m_rv_hard1 = contrib; hardestdone = true; }
   }
   return realvirtual;
 }
 
 double NLO_Base::CalculateRealVirtual(Vec4D k, int fsrcount) {
   if (!m_realvirt) return 0;
+if(k.E() < m_hardmin) {
+  m_zeroRV++;
+  return 0;
+}
   Vec4D_Vector p(m_plab), pi(m_bornMomenta), pf(m_bornMomenta);
   double tot(0), sub(0);
   double norm = 2 * pow(2 * M_PI, 3);
@@ -636,7 +678,7 @@ double NLO_Base::CalculateRealVirtual(Vec4D k, int fsrcount) {
     msg_Error() << METHOD << ": no real-emission ME available, "
                 << "RV YFS subtraction is incomplete.\n";
   m_rvsub = (subloc * rtree * flux + aB) / m_rescale_alpha;
-  const double d1 = r * flux - (subloc * rtree * flux + aB) / m_rescale_alpha;
+  const double d1 = r * flux - m_rvsub;
   msg_Debugging() << METHOD << " r*flux=" << r * flux
                   << " rtree*flux=" << rtree * flux
                   << " B_fin=" << subloc << " S(k)=" << eikloc
@@ -685,6 +727,7 @@ double NLO_Base::CalculateRealReal() {
   if (!m_rrtool)
     return 0;
   double rr(0);
+  m_rr_hard2 = 0.;
   Vec4D_Vector photons;
   for (auto k : m_ISRPhotons)
     photons.push_back(k);
@@ -694,13 +737,29 @@ double NLO_Base::CalculateRealReal() {
     return 0;
   size_t nISR = m_ISRPhotons.size();
   size_t nFSR = m_FSRPhotons.size();
+  // Identify the indices of the two hardest photons up front (energy
+  // compare only) so their pair contribution can be captured inline below,
+  // without a second, duplicate CalculateRealReal(k1,k2,...) call.
+  int i0 = -1, j0 = -1;
+  if (photons.size() >= 2) {
+    size_t a = 0, b = 1;
+    if (photons[1].E() > photons[0].E()) { a = 1; b = 0; }
+    for (size_t n = 2; n < photons.size(); ++n) {
+      if (photons[n].E() > photons[a].E()) { b = a; a = n; }
+      else if (photons[n].E() > photons[b].E()) { b = n; }
+    }
+    i0 = (int)Min(a, b);
+    j0 = (int)Max(a, b);
+  }
   for (int i = 0; i < photons.size(); ++i) {
     for (int j = i + 1; j < photons.size(); ++j) {
       Vec4D k = photons[i];
       Vec4D kk = photons[j];
       const int isFSR_i = (i >= nISR) ? 1 : 0;
       const int isFSR_j = (j >= nISR) ? 1 : 0;
-      rr += CalculateRealReal(k, kk, 0, 0);
+      double contrib = CalculateRealReal(k, kk, 0, 0);
+      rr += contrib;
+      if (i == i0 && j == j0) m_rr_hard2 = contrib;
       if (m_check_rr_sub) {
         // k*=2;
         // kk*=2;
@@ -1260,6 +1319,50 @@ void NLO_Base::CheckMassReg() {
   }
 }
 
+namespace {
+// Accumulates a soft-photon subtraction scan (energy vs |residual|/Born) and
+// prints a convergence summary - the residual must vanish as the photon(s)
+// soften; this is the pass/fail signal the raw per-point dump doesn't give
+// you without plotting it first.
+struct SubCheckAccumulator {
+  size_t n = 0;
+  double e_first = 0, e_last = 0, r_first = 0, r_last = 0, r_min = 0, r_max = 0;
+  void Add(double e, double r) {
+    if (n == 0) {
+      e_first = e;
+      r_first = r;
+      r_min = r_max = r;
+    }
+    e_last = e;
+    r_last = r;
+    r_min = ATOOLS::Min(r_min, r);
+    r_max = ATOOLS::Max(r_max, r);
+    ++n;
+  }
+  void Print(const std::string &label) const {
+    if (n == 0) {
+      msg_Info() << om::brown << label << ": no points evaluated." << om::reset << "\n";
+      return;
+    }
+    const bool converged = r_last < 1e-3 * ATOOLS::Max(r_first, 1e-300);
+    msg_Info() << om::bold << "=== " << label << " ===" << om::reset << "\n"
+               << "  points             : " << n << "\n"
+               << "  photon energy      : " << e_first << " -> " << e_last << "\n"
+               << "  |residual|/Born    : " << (converged ? om::green : om::red)
+               << r_first << " -> " << r_last << om::reset
+               << "  (range [" << r_min << ", " << r_max << "])\n";
+    if (r_first > 0. && !IsZero(r_last))
+      msg_Info() << "  suppression factor : " << (r_first / r_last) << "x\n";
+    msg_Info() << "  " << (converged ? om::green : om::red) << om::bold
+               << (converged
+                       ? "OK: residual -> 0 in the soft limit"
+                       : "WARNING: residual does not appear to vanish in the "
+                         "soft limit - check the subtraction!")
+               << om::reset << "\n";
+  }
+};
+}
+
 void NLO_Base::CheckRealSub(Vec4D k, int mode) {
   // if(k.E() < 20) return;
   // k*=100;
@@ -1287,6 +1390,7 @@ void NLO_Base::CheckRealSub(Vec4D k, int mode) {
   out_finite.open(filename, std::ios_base::app);
   out_sub.open(filename1, std::ios_base::app);
   out_real.open(filename2, std::ios_base::app);
+  SubCheckAccumulator acc;
   for (double i = 1; i < 20; i += 0.1) {
     k = k / i;
     real = CalculateReal(k, mode);
@@ -1296,7 +1400,9 @@ void NLO_Base::CheckRealSub(Vec4D k, int mode) {
     out_real << k.E() << "," << (m_real)*p_nlodipoles->CalculateFlux(k)
              << std::endl;
     out_sub << k.E() << "," << m_subloc * m_born / m_rescale_alpha << std::endl;
+    acc.Add(k.E(), fabs(real) / m_born);
   }
+  acc.Print("Real subtraction check (" + filename + ")");
   out_finite.close();
   out_real.close();
   out_sub.close();
@@ -1331,16 +1437,20 @@ void NLO_Base::CheckRealVirtualSub(Vec4D k) {
   out_sub.open(filename1, std::ios_base::app);
   out_real.open(filename2, std::ios_base::app);
   // if(k.E() < 0.8*sqrt(m_s)/2.) return;
+  SubCheckAccumulator acc;
   for (double i = 1; i < 20; i += 0.01) {
     k = k / i;
     if (k.E() <= m_isrcut*sqrt(m_s))
       break;
     real = CalculateRealVirtual(k, 0);
+    if( IsBad(real) || IsBad(m_rv) || IsBad(m_rvsub) ) continue;
     // PRINT_VAR(real);
     out_finite << std::setprecision(16) << k.E() << "," << fabs(real) / m_born << std::endl;
     out_real << std::setprecision(16) << k.E() << "," << m_rv << std::endl;
     out_sub << std::setprecision(16) << k.E() << "," << m_rvsub << std::endl;
+    acc.Add(k.E(), fabs(real) / m_born);
   }
+  acc.Print("Real-Virtual subtraction check (" + filename + ")");
   out_finite.close();
   out_sub.close();
   out_real.close();
@@ -1375,15 +1485,18 @@ void NLO_Base::CheckRealRealSub(Vec4D k1, Vec4D k2, int fsr1, int fsr2) {
     ATOOLS::Remove(filename3);
   out_sub.open(filename1, std::ios_base::app);
   // if(k.E() < 0.8*sqrt(m_s)/2.) return;
+  SubCheckAccumulator acc1, acc2, acc12;
   for (double i = 1; i < 20; i += 0.02) {
     k1 = k1 / i;
-    // if(k1.E()< m_isrcut*sqrt(m_s)) break;
+    if(k1.E()< m_isrcut*sqrt(m_s)) break;
     real = CalculateRealReal(k1, k2, fsr1, fsr2);
     out_sub << k1.E() << "," << fabs(real) / m_born << std::endl;
-    if (k1.E() <= 1e-16)
-      break;
+    acc1.Add(k1.E(), fabs(real) / m_born);
+    // if (k1.E() <= 1e-16)
+    //   break;
     // m_histograms2d["Real_me_sub"]->Insert(k.E(),fabs(real), 1);
   }
+  acc1.Print("RealReal subtraction check, k1 -> 0 (" + filename1 + ")");
   out_sub.close();
   out_sub.open(filename2, std::ios_base::app);
   k2 = _k2;
@@ -1391,13 +1504,14 @@ void NLO_Base::CheckRealRealSub(Vec4D k1, Vec4D k2, int fsr1, int fsr2) {
   for (double i = 1; i < 20; i += 0.02) {
     k2 = k2 / i;
     // if(k2.E() <= 1e-16 ) break;
+    if(k2.E()< m_isrcut*sqrt(m_s)) break;
     real = CalculateRealReal(k1, k2, fsr1, fsr2);
     out_sub << k2.E() << "," << fabs(real) / m_born << std::endl;
-    if (k2.E() < m_isrcut * sqrt(m_s))
-      break;
+    acc2.Add(k2.E(), fabs(real) / m_born);
     // if(IsZero(real)) break;
     // m_histograms2d["Real_me_sub"]->Insert(k.E(),fabs(real), 1);
   }
+  acc2.Print("RealReal subtraction check, k2 -> 0 (" + filename2 + ")");
   out_sub.close();
   out_sub.open(filename3, std::ios_base::app);
   k2 = _k2;
@@ -1405,13 +1519,16 @@ void NLO_Base::CheckRealRealSub(Vec4D k1, Vec4D k2, int fsr1, int fsr2) {
   for (double i = 1; i < 20; i += 0.02) {
     k2 = k2 / i;
     k1 = k1 / i;
+    if(k1.E()< m_isrcut*sqrt(m_s)) break;
     real = CalculateRealReal(k1, k2, fsr1, fsr2);
     out_sub << k1.E() << "," << fabs(real) / m_born << std::endl;
+    acc12.Add(k1.E(), fabs(real) / m_born);
     if (k1.E() <= 1e-16 || real == 0 && !m_failcut)
       break;
     // if(IsZero(real)) break;
     // m_histograms2d["Real_me_sub"]->Insert(k.E(),fabs(real), 1);
   }
+  acc12.Print("RealReal subtraction check, k1&k2 -> 0 (" + filename3 + ")");
   out_sub.close();
   exit(0);
 }
@@ -1424,3 +1541,23 @@ Vec4D NLO_Base::MostEnergeticPhoton() const {
     if (k.E() > hardest.E()) hardest = k;
   return hardest;
 }
+
+// Deterministic stand-in for MostEnergeticPhoton(), for CHECK_RV validation:
+// hard photons are rare in the YFS spectrum, so selecting on
+// MostEnergeticPhoton() means waiting many events for one hard enough to
+// exercise CalculateRealVirtual()/CheckRealVirtualSub(). This instead builds
+// a photon of fixed energy fraction (RV_TEST_PHOTON_X, of sqrt(s)/2) and
+// direction (RV_TEST_PHOTON_THETA/PHI) in the Born CMS, then rotates/boosts
+// it into the same frame as m_bornMomenta, matching the tail of MapMomenta.
+Vec4D NLO_Base::FixedTestPhoton() const {
+  double E = m_rv_test_x * sqrt(m_s) / 2.;
+  double st = sin(m_rv_test_theta), ct = cos(m_rv_test_theta);
+  Vec4D k(E, E * st * cos(m_rv_test_phi), E * st * sin(m_rv_test_phi),
+         E * ct);
+  Poincare pRot(m_bornMomenta[0], Vec4D(0., 0., 0., 1.));
+  Poincare boostLab(m_bornMomenta[0] + m_bornMomenta[1]);
+  pRot.Rotate(k);
+  boostLab.BoostBack(k);
+  return k;
+}
+

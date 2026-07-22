@@ -75,6 +75,7 @@ public:
   bool m_CalForm, m_fillblob, m_isr_debug, m_fsr_debug, m_coulomb, m_setparticles;
   double m_photonMass, m_oneloop, m_born, m_isrWeight, m_fsrWeight, m_rescale_alpha;
   double m_nbar, m_deltacut, m_betatWW, m_eps, m_fixed_weight, m_resonace_max;
+  double m_rv_test_x, m_rv_test_theta, m_rv_test_phi;
   
   int  m_order, m_betaorder, m_fullform, m_formWW, m_ifisub;
   int  m_check_mass_reg, m_check_poles, m_check_real, m_check_rr, m_check_rv, m_rv_hard_photon;

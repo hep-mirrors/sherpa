@@ -150,6 +150,7 @@ namespace YFS {
       double CalculateVirtualSubTchannel();
       double CalculateVirtualSubTchannelEps();
       double FormFactor();
+      double FormFactorSum();
       double TFormFactor();
       double EEXRealVirtual(const Vec4D &k);
       void generate_pairings(std::vector<std::vector<int>>& pairings, std::vector<int>& curr_pairing, std::vector<int>& available_nums);
