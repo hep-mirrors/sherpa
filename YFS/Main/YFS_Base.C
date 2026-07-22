@@ -58,6 +58,7 @@ void YFS_Base::RegisterDefaults(){
   s["RV_TEST_PHOTON_X"].SetDefault(0.3);
   s["RV_TEST_PHOTON_THETA"].SetDefault(M_PI / 2.);
   s["RV_TEST_PHOTON_PHI"].SetDefault(0.);
+  s["RV_SOFT_CUT"].SetDefault(0.);
   s["CHECK_REAL_REAL"].SetDefault(0);
   s["CHECK_VIRT_BORN"].SetDefault(0);
   s["VIRTUAL_ONLY"].SetDefault(0);
@@ -122,6 +123,8 @@ void YFS_Base::RegisterSettings(){
   m_rv_test_x = s["RV_TEST_PHOTON_X"].Get<double>();
   m_rv_test_theta = s["RV_TEST_PHOTON_THETA"].Get<double>();
   m_rv_test_phi = s["RV_TEST_PHOTON_PHI"].Get<double>();
+  // Dimensionless: photon energy fraction E/sqrt(s). <=0 disables the guard.
+  m_rv_soft_cut = s["RV_SOFT_CUT"].Get<double>();
   m_check_virt_born = s["CHECK_VIRT_BORN"].Get<int>();
   m_virtual_only = s["VIRTUAL_ONLY"].Get<bool>();
   m_real_only = s["REAL_ONLY"].Get<bool>();

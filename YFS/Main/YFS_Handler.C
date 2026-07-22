@@ -625,6 +625,41 @@ void YFS_Handler::GenerateWeight() {
     // the universal ME x PDF x flux factors). Must run before the assignment.
     if (p_fb) p_fb->SplitWeights(wyfsnlo, m_plab, m_flavs);
 
+    // Track selected contributions resolved by photon multiplicity. This is a
+    // diagnostic for the real-virtual (RV) stability: for an event with N
+    // photons, "<name>_nphotN" carries that contribution's weight while every
+    // other multiplicity bin is 0, so summing a column gives the contribution's
+    // cross section restricted to N-photon events (and the last bin is an
+    // overflow ">=kMaxPhotonBin"). Done after the FB split so the FB splitter
+    // does not further explode these into forward/backward variants.
+    {
+      // Names worth resolving by multiplicity. RV first, since that is the one
+      // showing instability; the surrounding pieces give context. Only names
+      // actually present in wyfsnlo are binned.
+      static const std::vector<std::string> track = {
+          "RealVirtual", "RealReal", "Real", "Virtual", "NLO+RV", "NLO", "NNLO"};
+      const size_t kMaxPhotonBin = 15;  // bins 0..kMaxPhotonBin, last is overflow
+      const size_t nphot = m_ISRPhotons.size() + m_FSRPhotons.size();
+      const size_t bin   = std::min(nphot, kMaxPhotonBin);
+      // Snapshot the (name, value) of the tracked base entries before appending,
+      // since Weights::operator[] appends new entries as we go.
+      std::vector<std::pair<std::string, double>> base;
+      for (size_t i = 1; i < wyfsnlo.Size(); ++i) {
+        const std::string name = wyfsnlo.Name(i);
+        if (std::find(track.begin(), track.end(), name) != track.end())
+          base.emplace_back(name, wyfsnlo[i]);
+      }
+      for (const auto& c : base) {
+        for (size_t n = 0; n <= kMaxPhotonBin; ++n) {
+          const std::string tag =
+              c.first + "_nphot" +
+              (n == kMaxPhotonBin ? "ge" + std::to_string(kMaxPhotonBin)
+                                  : std::to_string(n));
+          wyfsnlo[tag] = (n == bin) ? c.second : 0.0;
+        }
+      }
+    }
+
     m_nlo_weightsmap["YFS"] = wyfsnlo;
   }
 }

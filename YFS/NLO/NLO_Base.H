@@ -55,6 +55,10 @@ public:
   // over the full photon multiplicity - no separate recomputation needed.
   double m_real_hard1, m_rv_hard1, m_rr_hard2;
   int m_is_isr, m_zeroV, m_zeroRV, m_zeroRR, m_nonZeroRR, m_nonZeroRV;
+  // Counts photons skipped at the RV entry because they were softer than
+  // RV_SOFT_CUT (their subtracted RV contribution is negligible but
+  // numerically unstable).
+  int m_softRV;
   // Counts CalculateReal(k,fsrcount) calls where the raw real-emission
   // amplitude p_real->Calc_R(p) itself came back zero, before any cut or
   // subtraction logic runs - covers both the standalone NLO real correction
