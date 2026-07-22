@@ -100,6 +100,12 @@ EPA_FF_Base::EPA_FF_Base(const ATOOLS::Flavour& beam, const int dir)
   if (m_q2min > m_q2max)
     THROW(invalid_input, "Unphysical input for EPA Q2-limits. ");
 
+  if (s_cite) {
+    rpa->gen.AddCitation(1, "The EPA form factors are published in "
+                        "\\cite{Krauss:2026dnq}.");
+    s_cite = false;
+  }
+
   // Resolve the RESULT_DIRECTORY root (e.g. <config>/Results). A relative
   // RESULT_DIRECTORY is taken w.r.t. the config path, exactly as
   // Matrix_Element_Handler does, so m_respath matches the path the ME handler
