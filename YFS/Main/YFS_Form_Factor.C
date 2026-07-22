@@ -19,8 +19,8 @@ using namespace ATOOLS;
 using namespace MODEL;
 using namespace METOOLS;
 
-static double Lambda(double x, double y, double z)
-    { return x*x+y*y+z*z-2.*(x*y+x*z+y*z); }
+// Lambda (Kaellen function) now lives once in YFS/Tools/Dipole.H.
+// NB: this file's old copy dropped the abs(); the canonical one keeps it.
 
 
 

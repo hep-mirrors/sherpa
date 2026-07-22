@@ -22,9 +22,7 @@ double sumw = 0;
 std::ofstream out_recola;
 std::ofstream out_sub, out_real, out_finite;
 
-static double Lambda(double x, double y, double z) {
-  return abs(x * x + y * y + z * z - 2. * x * y - 2. * x * z - 2. * y * z);
-}
+// Lambda (Kaellen function) now lives once in YFS/Tools/Dipole.H.
 
 NLO_Base::NLO_Base() {
   p_yfsFormFact = new YFS::YFS_Form_Factor();

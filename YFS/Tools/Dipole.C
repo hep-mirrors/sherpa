@@ -22,10 +22,7 @@ double delf = 0;
 double deli = 0;
 int order = 0;
  
-static double Lambda(double x,double y,double z)
-{
-  return abs(x*x+y*y+z*z-2.*x*y-2.*x*z-2.*y*z);
-}
+// Lambda (Kaellen function) now lives once in YFS/Tools/Dipole.H.
 
 
 Dipole::Dipole(ATOOLS::Flavour_Vector const &fl, ATOOLS::Vec4D_Vector const &mom, 
