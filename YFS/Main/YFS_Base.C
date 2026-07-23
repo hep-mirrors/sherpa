@@ -59,6 +59,9 @@ void YFS_Base::RegisterDefaults(){
   s["RV_TEST_PHOTON_THETA"].SetDefault(M_PI / 2.);
   s["RV_TEST_PHOTON_PHI"].SetDefault(0.);
   s["RV_SOFT_CUT"].SetDefault(0.);
+  s["RV_CANCEL_EPS"].SetDefault(0.);
+  s["RV_CANCEL_HIST"].SetDefault(0);
+  s["RV_ME_MAX_RATIO"].SetDefault(0.);
   s["CHECK_REAL_REAL"].SetDefault(0);
   s["CHECK_VIRT_BORN"].SetDefault(0);
   s["VIRTUAL_ONLY"].SetDefault(0);
@@ -125,6 +128,13 @@ void YFS_Base::RegisterSettings(){
   m_rv_test_phi = s["RV_TEST_PHOTON_PHI"].Get<double>();
   // Dimensionless: photon energy fraction E/sqrt(s). <=0 disables the guard.
   m_rv_soft_cut = s["RV_SOFT_CUT"].Get<double>();
+  // Dimensionless relative-cancellation threshold for the RV beta_1^1. <=0
+  // disables. Recommended O(1e-10..1e-12); validate with RV_CANCEL_HIST.
+  m_rv_cancel_eps = s["RV_CANCEL_EPS"].Get<double>();
+  m_rv_cancel_hist = s["RV_CANCEL_HIST"].Get<int>();
+  // Skip RV photons whose loop ME exceeds max(|rvsub|,|aB|) by this factor
+  // (unstable one-loop provider). Recommended O(1e6); <=0 disables.
+  m_rv_me_max_ratio = s["RV_ME_MAX_RATIO"].Get<double>();
   m_check_virt_born = s["CHECK_VIRT_BORN"].Get<int>();
   m_virtual_only = s["VIRTUAL_ONLY"].Get<bool>();
   m_real_only = s["REAL_ONLY"].Get<bool>();

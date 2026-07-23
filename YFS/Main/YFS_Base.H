@@ -77,8 +77,28 @@ public:
   double m_nbar, m_deltacut, m_betatWW, m_eps, m_fixed_weight, m_resonace_max;
   double m_rv_test_x, m_rv_test_theta, m_rv_test_phi;
   double m_rv_soft_cut; // soft-photon energy fraction below which RV is skipped
-  
+  // Relative-cancellation threshold for the RV beta_1^1. The RV matrix element
+  // m_rv and its subtraction m_rvsub each diverge like S(k)~1/k^2 and cancel to
+  // form d1; when |d1| drops below m_rv_cancel_eps*max(|m_rv|,|m_rvsub|) the
+  // result is roundoff-dominated (and, being that small, physically
+  // negligible), so the photon is skipped. <=0 disables. This is the
+  // process-independent replacement for the flat RV_SOFT_CUT energy gate.
+  double m_rv_cancel_eps;
+  // Matrix-element stability guard for the RV. The one-loop provider is
+  // numerically unstable for soft, beam-collinear (ISR) photons, returning a
+  // real-virtual ME rv up to ~1e30x larger than the scale its own subtraction
+  // predicts (max(|rvsub|,|aB|)); the failures are confined to soft/collinear
+  // (verified: hard wide-angle photons are always stable), so skipping them
+  // loses negligible physics. Skip when |rv| > m_rv_me_max_ratio*subscale.
+  // Recommended O(1e6) - the healthy/unstable ratio gap spans 1e4..1e25.
+  // <=0 disables.
+  double m_rv_me_max_ratio;
+
   int  m_order, m_betaorder, m_fullform, m_formWW, m_ifisub;
+  // When set, fill the in-run RV plateau-scan histograms (RV contribution
+  // binned by log10 cancellation ratio and by photon energy fraction) so a
+  // single production run yields RV_total(cut) and the cut can be validated.
+  int  m_rv_cancel_hist;
   int  m_check_mass_reg, m_check_poles, m_check_real, m_check_rr, m_check_rv, m_rv_hard_photon;
   int m_rmode, m_qedmode, m_kkmcAngles, m_virt_sub,m_mingammaN;
   int m_no_born, m_check_real_sub, m_check_rr_sub, m_no_subtraction, m_tchannel, m_check_virt_born, m_noflux, m_massless_sub;

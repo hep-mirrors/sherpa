@@ -59,10 +59,27 @@ public:
   double m_real_hard1, m_rv_hard1, m_rr_hard2;
   double m_real_hard2, m_rv_hard2;
   int m_is_isr, m_zeroV, m_zeroRV, m_zeroRR, m_nonZeroRR, m_nonZeroRV;
-  // Counts photons skipped at the RV entry because they were softer than
-  // RV_SOFT_CUT (their subtracted RV contribution is negligible but
-  // numerically unstable).
+  // Counts photons whose RV beta_1^1 was skipped as numerically unreliable:
+  // either softer than the coarse RV_SOFT_CUT energy pre-filter, or (primary
+  // gate) failing the RV_CANCEL_EPS relative-cancellation test. Their
+  // contribution is negligible but roundoff-dominated.
   int m_softRV;
+  // Counts RV photons skipped by the matrix-element stability guard
+  // (RV_ME_MAX_RATIO): |rv| grossly exceeds the scale its subtraction predicts,
+  // i.e. the one-loop provider is unstable. Always active in production when
+  // RV_ME_MAX_RATIO > 0 (independent of the RV_CANCEL_HIST diagnostics).
+  int m_rvUnstable;
+  // RV blow-up mechanism diagnostics, filled only when RV_CANCEL_HIST is set.
+  // m_rvHiC: photons with cancellation C>=1 (subtraction not cancelling).
+  // m_rvBlowup: photons with grossly unphysical |tot| (> 1e3*|Born|).
+  // m_rvBlowupRtree0/HiC/Soft: of those, how many had a zero real-emission ME
+  // (rtree==0), C>=1, or were soft (E/sqrt(s)<0.01) - to test whether the
+  // blow-ups are exactly the rtree==0 soft photons.
+  // m_rvBlowupHardWide: of the blow-ups, how many were hard AND wide-angle
+  // (E/sqrt(s)>0.1, no charged leg within ~26deg). If this stays 0, the loop-ME
+  // instability is confined to soft/collinear photons and skipping them is safe.
+  int m_rvHiC, m_rvBlowup, m_rvBlowupRtree0, m_rvBlowupHiC, m_rvBlowupSoft,
+      m_rvBlowupHardWide;
   // Counts CalculateReal(k,fsrcount) calls where the raw real-emission
   // amplitude p_real->Calc_R(p) itself came back zero, before any cut or
   // subtraction logic runs - covers both the standalone NLO real correction
