@@ -381,7 +381,7 @@ int ME_Generator_Base::ShiftMassesDIS(Cluster_Amplitude *const ampl, Vec4D cms) 
   for(size_t i=0; i<ampl->NIn(); i++) {
     if(!ampl->Leg(i)->Flav().IsLepton()) pStrongInBefore = -ampl->Leg(i)->Mom();
   }
-  /// hadronic final state should have finite mass, otherwise we had a
+  /// hadronic final state should have finite mass, otherwise
   /// we should be in a 2->2 case with massless partons, and never arrive here
   if(!IsZero(pStrongInBefore[1]/pStrongInBefore[0],1e-6) || !IsZero(pStrongInBefore[2]/pStrongInBefore[0],1e-6)) {
     if(IsZero(pStrongOutBefore.Abs2())) msg_Error()<<METHOD<<": Additional shift needed"
@@ -420,25 +420,36 @@ int ME_Generator_Base::ShiftMassesDIS(Cluster_Amplitude *const ampl, Vec4D cms) 
     /// to the ones including masses
     double mass2in=-1;
     double mass2out=-1;
+    size_t idxQin=0, idxQout=0;
     for(size_t i=0; i<ampl->Legs().size(); i++) {
-      Vec4D p = ampl->Leg(i)->Mom();
       if(!ampl->Leg(i)->Flav().IsLepton()) {
-        if(i<ampl->NIn()) {
-          mass2in = Mass2(ampl->Leg(i)->Flav());
-          p[0]=-sqrt(mass2in+p.PSpat2());
-        }
-        else{
-          mass2out = Mass2(ampl->Leg(i)->Flav());
-          p[0]=sqrt(mass2out+p.PSpat2());
-        }
+        if(i<ampl->NIn()) { mass2in = Mass2(ampl->Leg(i)->Flav()); idxQin=i; }
+        else              { mass2out = Mass2(ampl->Leg(i)->Flav()); idxQout=i; }
       }
-      ampl->Leg(i)->SetMom(p);
     }
-    if(!IsEqual(mass2in,mass2out)) {
-      msg_Error()<<"Unequal masses in 2->2 DIS: "<<mass2in<<" vs. "<<mass2out<<".\n";
-      return -1;
+    if (IsEqual(mass2in,mass2out)) {
+      for(size_t i=0; i<ampl->Legs().size(); i++) {
+        Vec4D p = ampl->Leg(i)->Mom();
+        if(!ampl->Leg(i)->Flav().IsLepton()) {
+          if(i<ampl->NIn()) p[0]=-sqrt(mass2in+p.PSpat2());
+          else              p[0]=sqrt(mass2out+p.PSpat2());
+        }
+        ampl->Leg(i)->SetMom(p);
+      }
+      msg_Debugging()<<"After shift 2->2 shift in Breit frame: "<<*ampl<<"\n";
     }
-    msg_Debugging()<<"After shift 2->2 shift in Breit frame: "<<*ampl<<"\n";
+    else {
+      Vec4D qvec(0.,0.,0.,0.);
+      for (size_t i=0;i<ampl->Legs().size();++i)
+        if (ampl->Leg(i)->Flav().IsLepton()) qvec += ampl->Leg(i)->Mom();
+      qvec = -qvec;
+      const double qz = qvec[3];
+      const double pzin = (mass2in-mass2out-sqr(qz))/(2.*qz);
+      const double Ein  = sqrt(mass2in+sqr(pzin));
+      ampl->Leg(idxQin)->SetMom(Vec4D(-Ein,0.,0.,-pzin));
+      ampl->Leg(idxQout)->SetMom(Vec4D(Ein,0.,0.,pzin+qz));
+      msg_Debugging()<<"After shift 2->2 (unequal masses) in Breit frame: "<<*ampl<<"\n";
+    }
   }
   else {
     double Ein = 0;
@@ -506,8 +517,9 @@ int ME_Generator_Base::ShiftMassesDIS(Cluster_Amplitude *const ampl, Vec4D cms) 
     if(!ampl->Leg(i)->Flav().IsLepton()) pStrongIn = -ampl->Leg(i)->Mom();
   }
   /// hadronic final state should have finite mass, otherwise
-  /// we should be in a 2->2 case with massless partons, and never arrive here
-  if(!IsZero(pStrongIn.PPerp2()) && !IsZero(pStrongOut.Abs2())) {
+  /// we should be in a 2->2 case with massless partons, and never arrive here.
+  if(dabs(pStrongIn.PPerp2())>Accu()*sqr(pStrongIn[0]) &&
+     dabs(pStrongOut.Abs2())>Accu()*sqr(pStrongOut[0])) {
     /// might assume positive z for hadronic IS?
     const double m2 = pStrongIn.Abs2();
     const double inOutProd = pStrongIn*pStrongOut;
