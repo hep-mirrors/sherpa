@@ -3,6 +3,7 @@
 #include "ATOOLS/Math/Vector.H"
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/Message.H"
+#include "ATOOLS/Org/My_MPI.H"
 #include "ATOOLS/Phys/Flavour.H"
 #include "MODEL/Main/Running_AlphaQED.H"
 #include "YFS/NLO/NLO_Base.H"
@@ -12,6 +13,9 @@
 #include <algorithm>
 #include <utility>
 #include <vector>
+#include <fstream>
+#include <iomanip>
+#include <string>
 
 using namespace YFS;
 using namespace MODEL;
@@ -66,6 +70,13 @@ NLO_Base::NLO_Base() {
   m_rv_hard2 = 0.;
   m_zero_real_amp = 0;
   m_softRV = 0;
+  m_rvUnstable = 0;
+  m_rvHiC = 0;
+  m_rvBlowup = 0;
+  m_rvBlowupRtree0 = 0;
+  m_rvBlowupHiC = 0;
+  m_rvBlowupSoft = 0;
+  m_rvBlowupHardWide = 0;
   if (m_isr_debug || m_fsr_debug) {
     m_histograms2d["IFI_EIKONAL"] = new Histogram_2D(0, -1., 1., 20, 0, 5., 20);
     m_histograms2d["REAL_SUB"] =
@@ -106,10 +117,41 @@ NLO_Base::NLO_Base() {
     m_histograms2d["REAL"] =
         new Histogram_2D(0, 0, sqrt(m_s) / 2., 200, 0, 2 * M_PI, 20);
   }
+  if (m_rv_cancel_hist) {
+    if (!ATOOLS::DirectoryExists(m_debugDIR_NLO))
+      ATOOLS::MakeDir(m_debugDIR_NLO);
+    // Plateau-scan diagnostics for the RV soft/cancellation cut. Each RV photon
+    // that reaches the beta_1^1 (i.e. passes the coarse energy pre-filter) is
+    // filled here BEFORE the cancellation guard, weighted by its contribution
+    // tot. Summing the weight from the hard side down to a given bin gives
+    // RV_total(cut): a plateau followed by jitter marks where physics ends and
+    // roundoff begins - the safe placement for RV_CANCEL_EPS / RV_SOFT_CUT.
+    // *_w = weighted by tot (the integrand); *_n = unweighted counts per bin.
+    m_histograms1d["RV_tot_by_logC_w"] = new Histogram(0, -16., 0., 80);
+    m_histograms1d["RV_tot_by_logC_n"] = new Histogram(0, -16., 0., 80);
+    m_histograms1d["RV_tot_by_Efrac_w"] = new Histogram(0, 0., 0.5, 100);
+    m_histograms1d["RV_tot_by_Efrac_n"] = new Histogram(0, 0., 0.5, 100);
+    // Matrix-element stability ratio log10(|rv| / subtraction-scale) for every
+    // RV photon. ~0 when healthy (rv tracks its subtraction), large when the
+    // one-loop provider is unstable. "_all" is the full sample; "_hardwide" is
+    // restricted to energetic, well-separated photons (E/sqrt(s)>0.1, no charged
+    // leg within ~26deg). A tail at large log10 in "_hardwide" means the
+    // instability reaches hard wide-angle (cannot simply skip); if only "_all"
+    // has the tail, the failures are purely soft/collinear (safe to skip).
+    m_histograms1d["RV_MEstab_all"] = new Histogram(0, -2., 40., 84);
+    m_histograms1d["RV_MEstab_hardwide"] = new Histogram(0, -2., 40., 84);
+    // Same binning but weighted by the contribution tot, so cumulative-from-low
+    // gives RV_total(cut) as a function of the RV_ME_MAX_RATIO threshold: the
+    // physical RV is the plateau reached before the instability shoulder/spike
+    // starts inflating the integral. Answers "how much does the surviving
+    // ratio=1e2..1e4 shoulder inflate RV?" from a single run.
+    m_histograms1d["RV_tot_by_MEstab_w"] = new Histogram(0, -2., 40., 84);
+  }
 }
 
 NLO_Base::~NLO_Base() {
-  if (m_isr_debug || m_fsr_debug || m_check_real_sub || m_check_poles) {
+  if (m_isr_debug || m_fsr_debug || m_check_real_sub || m_check_poles ||
+      m_rv_cancel_hist) {
     Histogram_2D *histo2d;
     string name;
     for (map<string, Histogram_2D *>::iterator hit = m_histograms2d.begin();
@@ -150,7 +192,54 @@ NLO_Base::~NLO_Base() {
   msg_Out()<<"Total zero RR: "<<m_zeroRR<<std::endl;
   msg_Out()<<"Total non-zero RR: "<<m_nonZeroRR<<std::endl;
   msg_Out()<<"Total non-zero RV: "<<m_nonZeroRV<<std::endl;
+  // Job-wide totals for the production RV guards. These are plain ints printed
+  // only on rank 0, so Allreduce them (collective: every rank runs this
+  // destructor and reaches the call). Always on - independent of the
+  // RV_CANCEL_HIST diagnostics below.
+#ifdef USING__MPI
+  if (mpi->Size() > 1) {
+    int gbuf[2] = {m_softRV, m_rvUnstable};
+    mpi->Allreduce(gbuf, 2, MPI_INT, MPI_SUM);
+    m_softRV = gbuf[0];
+    m_rvUnstable = gbuf[1];
+  }
+#endif
   msg_Out()<<"Total soft RV skipped: "<<m_softRV<<std::endl;
+  msg_Out()<<"Total unstable-ME RV skipped (RV_ME_MAX_RATIO): "<<m_rvUnstable<<std::endl;
+  if (m_rv_cancel_hist) {
+    // Sum the per-rank diagnostic counters across all ranks. Unlike the
+    // histograms (Allreduced in MPISync), these are plain ints printed only on
+    // rank 0, so without this a blow-up landing on a non-zero rank would be
+    // invisible. Collective: every rank runs this destructor and m_rv_cancel_hist
+    // is read identically everywhere, so all ranks reach the Allreduce together.
+#ifdef USING__MPI
+    if (mpi->Size() > 1) {
+      int buf[6] = {m_rvHiC,      m_rvBlowup,    m_rvBlowupRtree0,
+                    m_rvBlowupHiC, m_rvBlowupSoft, m_rvBlowupHardWide};
+      mpi->Allreduce(buf, 6, MPI_INT, MPI_SUM);
+      m_rvHiC = buf[0];
+      m_rvBlowup = buf[1];
+      m_rvBlowupRtree0 = buf[2];
+      m_rvBlowupHiC = buf[3];
+      m_rvBlowupSoft = buf[4];
+      m_rvBlowupHardWide = buf[5];
+    }
+#endif
+    msg_Out()<<"RV photons with C>=1 (subtraction not cancelling): "<<m_rvHiC<<std::endl;
+    msg_Out()<<"RV blow-ups |tot|>1e3*|Born|: "<<m_rvBlowup
+             <<"  (of these: rtree==0: "<<m_rvBlowupRtree0
+             <<", C>=1: "<<m_rvBlowupHiC
+             <<", soft E/sqrt(s)<0.01: "<<m_rvBlowupSoft
+             <<", HARD WIDE-ANGLE: "<<m_rvBlowupHardWide<<")"<<std::endl;
+    if (m_rvBlowup>0)
+      msg_Out()<<"  -> hard wide-angle fraction of blow-ups: "
+               <<(100.*m_rvBlowupHardWide/m_rvBlowup)<<"%"
+               <<" (if >0, instability is NOT confined to soft/collinear)"<<std::endl;
+    if (m_rvBlowup>0)
+      msg_Out()<<"  -> rtree==0 fraction of blow-ups: "
+               <<(100.*m_rvBlowupRtree0/m_rvBlowup)<<"%"
+               <<" (mechanism confirmed if ~100%)"<<std::endl;
+  }
   msg_Out()<<"Total zero real amplitudes: "<<m_zero_real_amp<<std::endl;
   msg_Out()<<"Total events : "<<m_evts<<std::endl;
 }
@@ -603,14 +692,16 @@ double NLO_Base::CalculateRealVirtual() {
 
 double NLO_Base::CalculateRealVirtual(Vec4D k, int fsrcount) {
   if (!m_realvirt) return 0;
-  // Soft-photon guard. The real-virtual beta_1^1,
+  // Coarse soft-photon pre-filter. The real-virtual beta_1^1,
   //   [RV - B_fin*R] - S(k)*[V - B_fin*Born],
   // is a subtracted quantity that vanishes in the soft limit, so a photon
   // with E << sqrt(s) contributes negligibly. Numerically, however, the RV
   // matrix element and its subtraction each diverge like S(k) ~ 1/k^2 and
-  // cancel to poor precision - the main source of RV instability. Skipping
-  // photons below RV_SOFT_CUT (E/sqrt(s)) removes that noise. Disabled when
-  // RV_SOFT_CUT <= 0.
+  // cancel to poor precision - the main source of RV instability. This flat
+  // RV_SOFT_CUT (E/sqrt(s)) gate is a cheap pre-filter that skips obviously-
+  // soft photons before the expensive ME evaluation; the principled,
+  // process-independent gate is the RV_CANCEL_EPS cancellation-ratio test
+  // applied to d1 below. Disabled when RV_SOFT_CUT <= 0.
   if (m_rv_soft_cut > 0. && k.E() < m_rv_soft_cut * sqrt(m_s)) {
     m_softRV++;
     msg_Debugging() << METHOD << " skipping soft photon: E=" << k.E()
@@ -618,10 +709,6 @@ double NLO_Base::CalculateRealVirtual(Vec4D k, int fsrcount) {
                     << "\n";
     return 0;
   }
-if(k.E() < m_hardmin) {
-  m_zeroRV++;
-  return 0;
-}
   Vec4D_Vector p(m_plab), pi(m_bornMomenta), pf(m_bornMomenta);
   double tot(0), sub(0);
   double norm = 2 * pow(2 * M_PI, 3);
@@ -725,6 +812,110 @@ if(k.E() < m_hardmin) {
     tot = d1 / subb;
   else if (m_submode == submode::off)
     tot = (r * flux) / subb;
+  // Relative cancellation of the two diverging RV pieces. C -> 0 in the soft
+  // limit, simultaneously flagging roundoff dominance and physical
+  // negligibility (both scale with V - B_fin*Born times the residual flux).
+  const double rvmax = ATOOLS::Max(fabs(m_rv), fabs(m_rvsub));
+  const double C = (rvmax > 0.) ? fabs(d1) / rvmax : 0.;
+  if (m_rv_cancel_hist) {
+    // Fill BEFORE the guard so the histograms record the full spectrum and the
+    // cut can be validated post-run. Weight by the contribution tot (integrand)
+    // and, separately, by 1 to see the per-bin population.
+    if (C > 0.) {
+      const double logC = ATOOLS::Max(-16., log10(C));
+      m_histograms1d["RV_tot_by_logC_w"]->Insert(logC, tot);
+      m_histograms1d["RV_tot_by_logC_n"]->Insert(logC, 1.);
+    }
+    const double efrac = k.E() / sqrt(m_s);
+    m_histograms1d["RV_tot_by_Efrac_w"]->Insert(efrac, tot);
+    m_histograms1d["RV_tot_by_Efrac_n"]->Insert(efrac, 1.);
+    // Angular classification, to locate WHERE the loop-ME instability lives.
+    // costh_beam -> +-1 for beam(ISR)-collinear photons; maxcos_leg -> 1 for a
+    // photon collinear to any charged leg (ISR or FSR). "hard wide-angle" =
+    // energetic and well separated from every charged leg.
+    const double costh_beam = k.CosTheta();
+    double maxcos_leg = -1.;
+    for (size_t i = 0; i < m_flavs.size(); ++i) {
+      if (m_flavs[i].Charge() == 0.) continue;
+      maxcos_leg = ATOOLS::Max(maxcos_leg, k.CosTheta(m_plab[i]));
+    }
+    const bool hardwide = (efrac > 0.1) && (maxcos_leg < 0.9);
+    // Matrix-element stability ratio: |rv| vs the scale its own subtraction
+    // predicts (~1 healthy, huge when the loop provider is unstable). Split by
+    // region so the run itself answers whether hard wide-angle is ever affected.
+    const double subscale =
+        ATOOLS::Max(ATOOLS::Max(fabs(m_rvsub), fabs(aB)), 1e-300);
+    const double lr = log10(ATOOLS::Max(fabs(m_rv) / subscale, 1e-300));
+    m_histograms1d["RV_MEstab_all"]->Insert(lr, 1.);
+    m_histograms1d["RV_tot_by_MEstab_w"]->Insert(lr, tot);
+    if (hardwide) m_histograms1d["RV_MEstab_hardwide"]->Insert(lr, 1.);
+    // Mechanism check for the C>=1 blow-ups. Hypothesis: the grossly unphysical
+    // tot values are exactly the photons whose real-emission ME came back zero
+    // (Calc_R failed/cut), so rvsub loses its B_fin*rtree*flux piece and can no
+    // longer cancel the S(k)~1/k^2 divergence in rv -> d1 ~ rv -> tot blows up.
+    // If m_rvBlowupRtree0 ~ m_rvBlowup at end of run, the hypothesis holds.
+    if (C >= 1.) m_rvHiC++;
+    const double bscale = ATOOLS::Max(fabs(m_born), 1e-30);
+    if (fabs(tot) > 1.e3 * bscale) {
+      m_rvBlowup++;
+      if (rtree == 0.) m_rvBlowupRtree0++;
+      if (C >= 1.) m_rvBlowupHiC++;
+      if (efrac < 0.01) m_rvBlowupSoft++;
+      if (hardwide) m_rvBlowupHardWide++;
+      // Full term breakdown for each blow-up, to identify which piece is
+      // anomalous (numerator rv/rvsub mismatch vs a small subb/eikloc
+      // denominator). Written to a per-rank file because msg_Out is rank-0
+      // only and blow-ups land on all ranks. Blow-ups are rare (~tens/run),
+      // so open-append-close per event is fine.
+      int rank = 0;
+#ifdef USING__MPI
+      if (mpi->Size() > 1) rank = mpi->Rank();
+#endif
+      std::ofstream bf(std::string(m_debugDIR_NLO) + "/RV_blowups_rank" +
+                           std::to_string(rank) + ".txt",
+                       std::ios_base::app);
+      bf << std::setprecision(10)
+         << "E=" << k.E() << " Efrac=" << efrac
+         << " costh_beam=" << costh_beam << " maxcos_leg=" << maxcos_leg
+         << " pT=" << k.PPerp() << " hardwide=" << (hardwide ? 1 : 0)
+         << " tot=" << tot << " d1=" << d1 << " C=" << C
+         << " | rv(r*flux)=" << (r * flux) << " rvsub=" << m_rvsub
+         << " rtree*flux=" << (rtree * flux) << " subloc(Bfin)=" << subloc
+         << " aB(eik*oneloop)=" << aB << " eikloc(S_k)=" << eikloc
+         << " subb=" << subb << " flux=" << flux << " oneloop=" << m_oneloop
+         << " rescale=" << m_rescale_alpha << " submode=" << (int)m_submode
+         << "\n";
+    }
+  }
+  // Matrix-element stability guard. The one-loop provider is numerically
+  // unstable for soft, beam-collinear (ISR) photons, returning rv up to ~1e30x
+  // the scale its own subtraction predicts (max(|rvsub|,|aB|)); the healthy and
+  // unstable populations are cleanly separated (ratio gap 1e4..1e25) and the
+  // failures never reach hard wide-angle photons (verified), so skipping them
+  // discards only negligible soft/collinear physics. Placed after the
+  // diagnostic block so RV_CANCEL_HIST still records the full spectrum.
+  if (m_rv_me_max_ratio > 0.) {
+    const double subscale_g =
+        ATOOLS::Max(ATOOLS::Max(fabs(m_rvsub), fabs(aB)), 1e-300);
+    if (fabs(m_rv) > m_rv_me_max_ratio * subscale_g) {
+      m_rvUnstable++;
+      msg_Debugging() << METHOD << " skipping RV, unstable loop ME: |rv|="
+                      << fabs(m_rv) << " > " << m_rv_me_max_ratio
+                      << "*max(|rvsub|,|aB|)=" << (m_rv_me_max_ratio * subscale_g)
+                      << " (E=" << k.E() << ", d1=" << d1 << ")\n";
+      return 0;
+    }
+  }
+  // Cancellation-ratio guard: drop points dominated by roundoff. This is the
+  // process-independent gate; the coarse RV_SOFT_CUT energy pre-filter above
+  // only avoids the ME evaluation for obviously-soft photons.
+  if (m_rv_cancel_eps > 0. && fabs(d1) < m_rv_cancel_eps * rvmax) {
+    m_softRV++;
+    msg_Debugging() << METHOD << " skipping RV, cancellation C=" << C
+                    << " < RV_CANCEL_EPS=" << m_rv_cancel_eps
+                    << " (d1=" << d1 << ", max(|rv|,|rvsub|)=" << rvmax << ")\n";
+    return 0;
+  }
   if (m_check_poles == 1 && r != 0) {
     double pr1 =
         p_realvirt->p_loop_me->ME_E1() * p_realvirt->m_factor * flux / norm;
@@ -1363,6 +1554,17 @@ namespace {
 struct SubCheckAccumulator {
   size_t n = 0;
   double e_first = 0, e_last = 0, r_first = 0, r_last = 0, r_min = 0, r_max = 0;
+  // Optional RV cancellation tracking. For each candidate relative threshold,
+  // e_below[t] is the largest photon energy at which the cancellation ratio
+  // C = |d1|/max(|rv|,|rvsub|) has already fallen below thr[t]. Since C shrinks
+  // as the photon softens, a cut placed at e_below[t] removes exactly the
+  // region where fewer than ~-log10(thr[t]) digits survive - the safe home for
+  // RV_CANCEL_EPS (=thr[t]) or an equivalent RV_SOFT_CUT.
+  bool track_cancel = false;
+  static const int NTHR = 4;
+  double thr[NTHR] = {1e-8, 1e-10, 1e-12, 1e-14};
+  double e_below[NTHR] = {0, 0, 0, 0};
+  double c_first = 0, c_last = 0;
   void Add(double e, double r) {
     if (n == 0) {
       e_first = e;
@@ -1375,7 +1577,13 @@ struct SubCheckAccumulator {
     r_max = ATOOLS::Max(r_max, r);
     ++n;
   }
-  void Print(const std::string &label) const {
+  void AddCancel(double e, double C) {
+    if (!track_cancel) { c_first = C; track_cancel = true; }
+    c_last = C;
+    for (int t = 0; t < NTHR; ++t)
+      if (C < thr[t] && e > e_below[t]) e_below[t] = e;
+  }
+  void Print(const std::string &label, double roots = 0.) const {
     if (n == 0) {
       msg_Info() << om::brown << label << ": no points evaluated." << om::reset << "\n";
       return;
@@ -1395,6 +1603,20 @@ struct SubCheckAccumulator {
                        : "WARNING: residual does not appear to vanish in the "
                          "soft limit - check the subtraction!")
                << om::reset << "\n";
+    if (track_cancel) {
+      msg_Info() << "  cancellation C     : " << c_first << " -> " << c_last
+                 << "  (C = |d1|/max(|rv|,|rvsub|))\n"
+                 << "  suggested RV cut placement (keep ~-log10(eps) digits):\n";
+      for (int t = 0; t < NTHR; ++t) {
+        msg_Info() << "    RV_CANCEL_EPS=" << thr[t] << "  -> cut at E >= "
+                   << e_below[t];
+        if (roots > 0.)
+          msg_Info() << "  (RV_SOFT_CUT ~ " << e_below[t] / roots << ")";
+        if (e_below[t] == 0.)
+          msg_Info() << "  [C never fell below this in the scanned range]";
+        msg_Info() << "\n";
+      }
+    }
   }
 };
 }
@@ -1478,15 +1700,23 @@ void NLO_Base::CheckRealVirtualSub(Vec4D k) {
     k = k / i;
     if (k.E() <= m_isrcut*sqrt(m_s))
       break;
+    // Run this tuning scan with RV_CANCEL_EPS/RV_SOFT_CUT disabled so soft
+    // points are not skipped - CalculateRealVirtual still fills m_rv/m_rvsub
+    // before any guard, but a guard would zero the returned residual here.
     real = CalculateRealVirtual(k, 0);
     if( IsBad(real) || IsBad(m_rv) || IsBad(m_rvsub) ) continue;
+    // Relative cancellation of the two diverging RV pieces at this energy.
+    const double rvmax = ATOOLS::Max(fabs(m_rv), fabs(m_rvsub));
+    const double C = (rvmax > 0.) ? fabs(m_rv - m_rvsub) / rvmax : 0.;
     // PRINT_VAR(real);
-    out_finite << std::setprecision(16) << k.E() << "," << fabs(real) / m_born << std::endl;
+    out_finite << std::setprecision(16) << k.E() << "," << fabs(real) / m_born
+               << "," << C << std::endl;
     out_real << std::setprecision(16) << k.E() << "," << m_rv << std::endl;
     out_sub << std::setprecision(16) << k.E() << "," << m_rvsub << std::endl;
     acc.Add(k.E(), fabs(real) / m_born);
+    if (C > 0.) acc.AddCancel(k.E(), C);
   }
-  acc.Print("Real-Virtual subtraction check (" + filename + ")");
+  acc.Print("Real-Virtual subtraction check (" + filename + ")", sqrt(m_s));
   out_finite.close();
   out_sub.close();
   out_real.close();
