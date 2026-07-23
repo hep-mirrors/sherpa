@@ -1175,7 +1175,8 @@ bool Initialization_Handler::InitializeTheBeamRemnants()
   if (p_beamremnants)  delete p_beamremnants;
   p_beamremnants = new Beam_Remnant_Handler(p_beamspectra,
 					    m_remnanthandlers[isr::hard_process],
-					    m_schandlers[isr::hard_subprocess]);
+					    m_schandlers[isr::hard_subprocess],
+					    m_isrhandlers[isr::hard_process]);
   return 1;
 }
 

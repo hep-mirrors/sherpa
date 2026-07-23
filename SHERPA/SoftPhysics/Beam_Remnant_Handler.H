@@ -3,12 +3,14 @@
 
 #include "SHERPA/SoftPhysics/Soft_Collision_Handler.H"
 #include "REMNANTS/Main/Remnant_Handler.H"
+#include "PDF/Main/ISR_Handler.H"
 #include "SHRiMPS/Main/Shrimps.H"
 
 namespace SHERPA {
   class Beam_Remnant_Handler {
   private:
     REMNANTS::Remnant_Handler  * p_remnants, * p_bunchremnants;
+    PDF::ISR_Handler           * p_isr;
     SHRIMPS::Shrimps           * p_shrimps;
     BEAM::Beam_Spectra_Handler * p_beam;
     std::array<ATOOLS::Blob*, 2> p_beamblobs;
@@ -27,7 +29,8 @@ namespace SHERPA {
   public :
     Beam_Remnant_Handler(BEAM::Beam_Spectra_Handler* const beam,
                          REMNANTS::Remnant_Handler* const  remnants,
-                         Soft_Collision_Handler* const     softcollisions);
+                         Soft_Collision_Handler* const     softcollisions,
+                         PDF::ISR_Handler* const           isr = nullptr);
     ~Beam_Remnant_Handler();
     ATOOLS::Return_Value::code FillBeamAndBunchBlobs(ATOOLS::Blob_List* const,
                                                      const bool& onlyBunch = false);

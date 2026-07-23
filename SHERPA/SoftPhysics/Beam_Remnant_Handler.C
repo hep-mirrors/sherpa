@@ -10,8 +10,9 @@ using namespace ATOOLS;
 Beam_Remnant_Handler::Beam_Remnant_Handler(
         BEAM::Beam_Spectra_Handler* const beam,
         REMNANTS::Remnant_Handler* const  remnants,
-        Soft_Collision_Handler* const     softcollisions)
-    : p_remnants(remnants), p_bunchremnants(nullptr),
+        Soft_Collision_Handler* const     softcollisions,
+        PDF::ISR_Handler* const           isr)
+    : p_remnants(remnants), p_bunchremnants(nullptr), p_isr(isr),
       p_shrimps(softcollisions ? softcollisions->GetShrimps() : nullptr),
       p_beam(beam), m_bunchrescatter(false), m_fill(true), m_vmode(false)
 {
@@ -172,8 +173,10 @@ Blob * Beam_Remnant_Handler::FillBunchBlob(int beam,Particle * particle)
   blob->SetBeam(beam);
   blob->SetId();
   blob->AddToOutParticles(particle);
-  if (particle->Flav()==p_beam->GetBeam(beam)->Beam() &&
-      IsEqual(particle->E(),m_bunchmoms[beam][0],1.e-6)) {
+  bool haspdf = p_isr && p_isr->PDF(beam)!=nullptr;
+  bool match = particle->Flav()==p_beam->GetBeam(beam)->Beam() &&
+               (!haspdf || IsEqual(particle->E(),m_bunchmoms[beam][0],1.e-4));
+  if (match) {
     Particle *p = new Particle(*particle);
     p->SetNumber(0);
     blob->AddToInParticles(p);

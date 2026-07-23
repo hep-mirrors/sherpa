@@ -53,7 +53,7 @@ namespace REMNANTS {
     bool CheckHH();
     bool CheckScatter(ATOOLS::Particle * p[2]);
     bool CheckRemnants();
-    bool CheckDIS(const size_t & beam);
+    bool CheckDIS(const size_t & beam, bool & printedmasswarning);
     const ATOOLS::Vec4D ExtractColourfulFS(
             const size_t& beam, std::vector<ATOOLS::Vec4D>& moms,
             std::vector<double>& masses, std::vector<ATOOLS::Particle*>& parts);

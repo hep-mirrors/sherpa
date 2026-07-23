@@ -28,7 +28,10 @@ BreitBoost::BreitBoost(Cluster_Amplitude *const ampl) {
   }
   /// construct from momenta, with
   /// incoming hadron projected to zero mass
-  _init(lepin-lepout,{hadin.PSpat(),Vec3D(hadin)});
+  /// or massless z-axis for fixed target
+  const double hadsign = hadin[3]!=0.0 ? (hadin[3]<0.0?-1.:1.) : -1.0;
+  const Vec4D hadin0(hadin[0],0.,0.,hadsign*hadin[0]);
+  _init(lepin-lepout,hadin0);
 }
 
 

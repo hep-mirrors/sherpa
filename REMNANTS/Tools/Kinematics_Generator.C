@@ -150,6 +150,7 @@ bool Kinematics_Generator::TransverseKinematicsDIS(const size_t &beam) {
   // wrong.
   size_t maxnum = 100;
   double scale = 1.;
+  bool printedmasswarning = false;
   do {
     if (p_remnants[beam]->Type() == rtp::hadron ||
         p_remnants[beam]->Type() == rtp::photon ||
@@ -164,7 +165,7 @@ bool Kinematics_Generator::TransverseKinematicsDIS(const size_t &beam) {
     }
     if (scale < 1.e-4)
       scale = 0.;
-  } while (!CheckDIS(beam) && scale > 0.);
+  } while (!CheckDIS(beam, printedmasswarning) && scale > 0.);
   // Adjust the kinematics, with the momenta stored in the shufflemap of
   // particles and momenta
   if ((scale < 1.e-5) || !AdjustFinalStateDIS(beam)) {
@@ -354,7 +355,7 @@ const Vec4D Kinematics_Generator::ExtractSpectators(const size_t &beam,
   return tot;
 }
 
-bool Kinematics_Generator::CheckDIS(const size_t &beam) {
+bool Kinematics_Generator::CheckDIS(const size_t &beam, bool &printedmasswarning) {
   std::vector<Vec4D> moms;
   std::vector<Particle *> parts;
   std::vector<double> masses;
@@ -362,7 +363,10 @@ bool Kinematics_Generator::CheckDIS(const size_t &beam) {
                ExtractSpectators(beam, moms, masses, parts));
   // If there is no solution, do not even try
   if (tot.Abs2() < sqr(m_mass_sum)) {
-    msg_Out()<<"total four momentum is smaller than the square of the summed mass.\n";
+    if (!printedmasswarning) {
+      msg_Out()<<"total four momentum is smaller than the square of the summed mass.\n";
+      printedmasswarning = true;
+    }
     return false;
   }
   Poincare residualcms(tot);
