@@ -103,68 +103,52 @@ bool OctetMeson_Decayer::FixKinematics() {
   double Q2 = mom.Abs2(), E = sqrt(Q2) / 2.;
   double m1 = p_part1->Flavour().HadMass(), m12 = sqr(m1);
   double m2 = p_part2->Flavour().HadMass(), m22 = sqr(m2);
-  double singlet_mass = Flavour(newkfc).HadMass();
+  double sm = Flavour(newkfc).HadMass();
   if (Q2 < m12 + m22)
     return false;
-  double beta1 = 1. / (2. * Q2) *
-                 (Q2 - m12 + m22 + sqrt(sqr(Q2 - m12 - m22) + 4. * m12 * m22));
-  double alpha1 = m12 / Q2 / (1. - beta1);
-  // Poincare intoCMS = Poincare(mom);
-  // intoCMS.Boost(mom1);
-  // Poincare ontoZ = Poincare(mom1,(0,0,1));
-  // ontoZ.Rotate(mom1);
-  double zmin = m_minE / (mom1[0] - m1), zmax = 1 - m12 / (Q2 - m22);
-  if (zmax < zmin)
-    zmin = zmax * m_minE / E;
-  double z =
-      pow(pow(zmax, 1. - m_kappa) +
-	  (1. - ran->Get()) * pow(zmin, 1. - m_kappa),
-          1. / (1. - m_kappa));
-  double gmom = (m12-sqr(singlet_mass))/m12; //alternative for z
-  z = gmom; // -"-
-  // double zfra = sqr(singlet_mass)/m12;
+
+  ///////////////////////////////////////////////////////////////////
+  // 1, Boost to the CoM of the Emitter + Spectator
+  // 2, Rotate onto Z
+  // 3, Boost to the CoM frame of the emitter only
+  // 4, Calculate the momentum of G (M^2-m^2)/(2*m), and sample for cos(theta) and phi.
+  // 5, Boost back
+  ///////////////////////////////////////////////////////////////////
+  Poincare intoCMS = Poincare(mom);
+  intoCMS.Boost(mom1);
+  intoCMS.Boost(mom2);
+  Poincare ontoZ = Poincare(mom1, E * s_AxisP);
+  ontoZ.Rotate(mom1);
+  ontoZ.Rotate(mom2);
+  Poincare intoRESTFRAME = Poincare(mom1);
+  intoRESTFRAME.Boost(mom1);
+
+  double z = (m12 - sqr(sm))/(2.*m1);
   if (z<0.) {
-  msg_Out()<<"Awkward z = "<<z<<" in ["<<zmin<<", "<<zmax<<"] from\n"
+  msg_Out()
   	     <<"E1 = "<<mom1[0]<<" - m1 = "<<m1<<" and\n"
   	     <<"m12 = "<<m12<<" Q2 = "<<Q2<<" - m22 = "<<m22<<"\n";
   }
-  // p11: (1-z) a2  p+ + (1-b2) p- --> m1^2/Q^2 = (1-b2) (1-z) a2  ==> a2 =
-  // m1^2/Q^2 1/[(1-b2)(1-z)] p12:    z  a2  p+             --> mg^2 = 0 p2:  (1
-  // -a2) p+ +    b2  p1 --> m2^2/Q^2 = (1-a2) b2        ==> b2 = m2^2/Q^2
-  // 1/(1-a2)
-  // ==> 0 = a2^2 -a2(1-m1^2/Q^2/(1-z)-m2^2/Q^2 + m1^2/Q^2/(1-z)
-  // have to check: (Q^2-m1^2/(1-z)-m2^2)^2 + 4m1^2 m2^2/(1-z) >
-  // replace with Q^2-m2^2 > m1^2/(1-z) ==> 1-z > m1^2/(Q^2-m2^2) ==> z < zmax =
-  // 1-m1^2/(Q^2-m2^2)
-  // m12 = sqr(sqrt(m12)-0.2);
-  // m12 *= zfra/(1. - z); //m12 / (1. - z);
-  
-  // m12 = m12 / (1. - z);
-  double beta2 = 1. / (2. * Q2) *
-                 (Q2 - m12 + m22 + sqrt(sqr(Q2 - m12 - m22) + 4. * m12 * m22));
-  double alpha2 = m12 / Q2 / (1. - beta2);
-  // msg_Out()<<" WHAT is p: "<<p<<'\n';
-  // double rg = ran->GetGaussian();
-  // msg_Out()<<"Random gaussian: "<< rg <<'\n';
-  m_mom[0][0] = sqrt(sqr(singlet_mass)+sqr(mom1[1]*(1.-z))+sqr((1.-z)*mom1[2])+sqr(mom1[3]*(1.-z)));
-  m_mom[0][1] = mom1[1]*(1.-z);
-  m_mom[0][2] = mom1[2]*(1.-z);
-  m_mom[0][3] = mom1[3]*(1.-z);
-  // m_mom[0][3] = p*(1-z);
-  m_mom[1] = mom1-m_mom[0];
-  // m_mom[1][3] = -(p*z);
-  // m_mom[0][0] += m12-sqr(singlet_mass);
-  // m_mom[2] = (1. - alpha2) * E * s_AxisP + beta2 * E * s_AxisM;
-  // for (size_t i = 0; i < 3; i++) {
-    // ontoZ.RotateBack(m_mom[i]);
-    // intoCMS.BoostBack(m_mom[i]);
-  // }
-  // msg_Out()<<"Parralel mom1: "<<m_mom[0][1]/m_mom[1][1]<<'\n'
-  //          <<"Parralel mom2: "<<m_mom[0][2]/m_mom[1][2]<<'\n' 
-  //          <<"Parralel mom3: "<<m_mom[0][3]/m_mom[1][3]<<'\n';
-  m_mom[2] = p_part2->Momentum();
-  // msg_Out()<<"Selected z = "<<z<<" in ["<<zmin<<", "<<zmax<<"]  --> "
-  // 	   <<alpha2<<" & "<<beta2<<"\n"
+  double p = (m12 - sqr(sm))/(2.*m1);
+  double costh = 2.0*ran->Get() - 1.0;
+  double sinth = sqrt(1.0 - costh*costh);
+  double phi   = 2.0*M_PI*ran->Get();
+  Vec3D pg(p*sinth*cos(phi),p*sinth*sin(phi),p*costh);
+  m_mom[0][0] = sqrt(sqr(sm)+ p*p);
+  m_mom[1][0] = p;
+  for(size_t i = 1; i < 4; i++) {
+    m_mom[0][i] = -pg[i];
+    m_mom[1][i] =  pg[i];
+  }
+  m_mom[2] = mom2;
+  for (size_t i = 0; i < 2; i++) {
+    intoRESTFRAME.BoostBack(m_mom[i]);
+    ontoZ.RotateBack(m_mom[i]);
+    intoCMS.BoostBack(m_mom[i]);
+  }
+  ontoZ.RotateBack(m_mom[2]);
+  intoCMS.BoostBack(m_mom[2]);
+  // msg_Out()
   // 	   <<p_part1->Momentum()<<" + "<<p_part2->Momentum()<<"\n"
   // 	   <<m_mom[0]<<" + " <<m_mom[1]<<" + " <<m_mom[2]<<"\n"
   // 	   <<"Check: "<<mom<<" vs. "<<(m_mom[0]+m_mom[1]+m_mom[2])<<"\n";
