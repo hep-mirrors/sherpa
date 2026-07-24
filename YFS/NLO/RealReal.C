@@ -69,15 +69,31 @@ RealReal::RealReal(const PHASIC::Process_Info& pi)  {
   //   out_mom_rr<<"MOMENTA:"<<std::endl;
   //   real_out<<"ME:"<<std::endl;
   // }
-  // if(m_check){
-  //   if (!ATOOLS::DirectoryExists("./Real_Histogram")) ATOOLS::MakeDir("./Real_Histogram");
-  //   m_histograms1d["RRME_Dev"] = new Histogram(0,-1e-6, 1e-6, 100 );
-  //   m_histograms1d["RRME_DevWide"] = new Histogram(0,-1, 1, 100 );
-  // }
-} 
+  m_npoints = 0;
+  m_nbad = 0;
+  m_maxdev = 0.;
+}
 
 RealReal::~RealReal() {
-
+  if(m_check && m_npoints>0){
+    msg_Out()<<ATOOLS::om::bold<<ATOOLS::om::blue
+             <<"###############################################"<<std::endl
+             <<"RealReal ME comparison summary:"<<ATOOLS::om::reset<<std::endl
+             <<"  points checked    = "<<m_npoints<<std::endl
+             <<"  points mismatched = "<<m_nbad<<" ("
+             <<std::setprecision(3)<<100.*m_nbad/m_npoints<<"%)"<<std::endl
+             <<"  max |1-ratio|     = "<<std::setprecision(6)<<m_maxdev<<std::endl;
+    if(m_nbad>0)
+      msg_Out()<<ATOOLS::om::bold<<ATOOLS::om::red
+               <<"WARNING: "<<m_nbad<<" / "<<m_npoints
+               <<" points disagreed beyond tolerance!"<<ATOOLS::om::reset<<std::endl;
+    else
+      msg_Out()<<ATOOLS::om::bold<<ATOOLS::om::green
+               <<"All points agreed within tolerance."<<ATOOLS::om::reset<<std::endl;
+    msg_Out()<<ATOOLS::om::bold<<ATOOLS::om::blue
+             <<"###############################################"
+             <<ATOOLS::om::reset<<std::endl;
+  }
 }
 
 double RealReal::Calc_R(const ATOOLS::Vec4D_Vector& p){
@@ -92,24 +108,26 @@ double RealReal::Calc_R(const ATOOLS::Vec4D_Vector& p){
       external_real = Calc_External(p);
   }
   p_ampl=CreateAmplitude(p);
-  int rmode = 130;
+  const int rmode = 128 + 2 + 1;
   Weights_Map iR = p_rrproc->Differential(*p_ampl, Variations_Mode::nominal_only,rmode);
   if(p_ampl) p_ampl->Delete();
   if(m_check){
+    const double tol = 1e-4;
     double ratio = iR.Nominal()/external_real;
-    // if(!IsEqual(ratio,1.,1e-4)){
-    msg_Out()<<std::setprecision(15)<<"ratio = "<<ratio<<std::endl;
-    msg_Out()<<std::setprecision(15)<<"external_real = "<<external_real<<std::endl;
-       // m_histograms1d["RealME_Dev"]->Insert(1.-ratio);
-       // m_histograms1d["RealME_DevWide"]->Insert(1.-ratio);
-      // for (int i = 0; i < p.size(); ++i)
-      // {
-      //   msg_Out()<<"Flavour = "<<p_rrproc->Flavours()[i]<<std::endl
-      //            <<"Momentum = "<<p[i]<<std::endl
-      //            <<"P.PPerP() = "<<p[i].PPerp()<<std::endl
-      //            <<"###############################################"<<std::endl;
-      // }
-    // }
+    double dev = std::abs(1.-ratio);
+    m_npoints++;
+    if(dev > m_maxdev) m_maxdev = dev;
+    if(dev > tol){
+      m_nbad++;
+      msg_Out()<<ATOOLS::om::bold<<ATOOLS::om::red<<"WARNING: "<<ATOOLS::om::reset
+               <<ATOOLS::om::red<<"RealReal ME mismatch: ratio = "
+               <<std::setprecision(10)<<ratio<<", |1-ratio| = "<<dev
+               <<ATOOLS::om::reset<<std::endl;
+    }
+    else {
+      msg_Debugging()<<ATOOLS::om::green<<"RealReal ME OK: ratio = "
+                      <<std::setprecision(10)<<ratio<<ATOOLS::om::reset<<std::endl;
+    }
   }
   return iR.Nominal();
 }

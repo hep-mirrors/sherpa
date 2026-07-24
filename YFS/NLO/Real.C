@@ -16,7 +16,6 @@ using namespace MODEL;
 using namespace PHASIC;
 
 std::ofstream real_out, out_ps, out_mom;
-double maxpt = -1;
 
 Real::Real(const PHASIC::Process_Info& pi)  {
    /* Load Real ME */
@@ -79,26 +78,30 @@ Real::Real(const PHASIC::Process_Info& pi)  {
   //   out_mom<<"MOMENTA:"<<std::endl;
   //   real_out<<"ME:"<<std::endl;
   // }
-  if(m_check){
-    if (!ATOOLS::DirectoryExists("./Real_Histogram")) ATOOLS::MakeDir("./Real_Histogram");
-    m_histograms1d["RealME_Dev"] = new Histogram(0,-1e-6, 1e-6, 100 );
-    m_histograms1d["RealME_DevWide"] = new Histogram(0,-1, 1, 100 );
-  }
+  m_npoints = 0;
+  m_nbad = 0;
+  m_maxdev = 0.;
 }
 
 Real::~Real() {
-  if(m_check){
-    string name;
-    Histogram * histo1d;
-    for (map<string, Histogram *>::iterator hit = m_histograms1d.begin();
-            hit != m_histograms1d.end(); hit++) {
-      histo1d = hit->second;
-      name  = string("./Real_Histogram") +  "/" + hit->first + string(".dat");
-      histo1d->MPISync();
-      histo1d->Finalize();
-      histo1d->Output(name);
-      delete histo1d;
-    }
+  if(m_check && m_npoints>0){
+    msg_Out()<<ATOOLS::om::bold<<ATOOLS::om::blue
+             <<"###############################################"<<std::endl
+             <<"Real ME comparison summary:"<<ATOOLS::om::reset<<std::endl
+             <<"  points checked    = "<<m_npoints<<std::endl
+             <<"  points mismatched = "<<m_nbad<<" ("
+             <<std::setprecision(3)<<100.*m_nbad/m_npoints<<"%)"<<std::endl
+             <<"  max |1-ratio|     = "<<std::setprecision(6)<<m_maxdev<<std::endl;
+    if(m_nbad>0)
+      msg_Out()<<ATOOLS::om::bold<<ATOOLS::om::red
+               <<"WARNING: "<<m_nbad<<" / "<<m_npoints
+               <<" points disagreed beyond tolerance!"<<ATOOLS::om::reset<<std::endl;
+    else
+      msg_Out()<<ATOOLS::om::bold<<ATOOLS::om::green
+               <<"All points agreed within tolerance."<<ATOOLS::om::reset<<std::endl;
+    msg_Out()<<ATOOLS::om::bold<<ATOOLS::om::blue
+             <<"###############################################"
+             <<ATOOLS::om::reset<<std::endl;
   }
 }
 
@@ -120,7 +123,7 @@ double Real::Calc_R(const ATOOLS::Vec4D_Vector& p)
     // the selector before Trigger() so it can't reject the point - the
     // m_nlocuts check above already applies cuts explicitly, so Differential()
     // doesn't need to (and shouldn't) re-run the selector itself.
-    int rmode = 128 + 2 + 1;
+    int rmode =  2 + 1;
     Weights_Map iR = p_realproc->Differential(*p_ampl, Variations_Mode::nominal_only,rmode);
     if(iR.Nominal()==0) {
       if(p_ampl) p_ampl->Delete();
@@ -149,22 +152,30 @@ double Real::Calc_R(const ATOOLS::Vec4D_Vector& p)
     // double ratio = iR.Nominal()/(m_factor*R);
     if(p_ampl) p_ampl->Delete();
     if(m_check){
+      const double tol = 1e-6;
       double ratio = iR.Nominal()/external_real;
-      // if(!IsEqual(ratio,1.,1e-4)){
-        msg_Out()<<std::setprecision(15)<<"ratio = "<<ratio<<std::endl;
-        msg_Out()<<std::setprecision(15)<<"1-ratio = "<<1-ratio<<std::endl;
-        // msg_Out()<<std::setprecision(15)<<"external_real = "<<external_real<<std::endl;
-        if(p[4].PPerp() > maxpt) maxpt =  p[4].PPerp();
-         m_histograms1d["RealME_Dev"]->Insert(1.-ratio);
-         m_histograms1d["RealME_DevWide"]->Insert(1.-ratio);
-        // for (int i = 0; i < p.size(); ++i)
-        // {
-        //   msg_Out()<<"Flavour = "<<p_realproc->Flavours()[i]<<std::endl
-        //            <<"Momentum = "<<p[i]<<std::endl
-        //            <<"P.PPerP() = "<<p[i].PPerp()<<std::endl
-        //            <<"###############################################"<<std::endl;
-        // }
-      // }
+      double dev = std::abs(1.-ratio);
+      m_npoints++;
+      if(dev > m_maxdev) m_maxdev = dev;
+      if(dev > tol){
+        m_nbad++;
+        double softe(-1.), softpt(-1.);
+        for(size_t i(0);i<m_flavs.size() && i<p.size();++i){
+          if(m_flavs[i].IsPhoton() && (softe<0. || p[i][0]<softe)){
+            softe = p[i][0];
+            softpt = p[i].PPerp();
+          }
+        }
+        msg_Out()<<ATOOLS::om::bold<<ATOOLS::om::red<<"WARNING: "<<ATOOLS::om::reset
+                 <<ATOOLS::om::red<<"Real ME mismatch: ratio = "
+                 <<std::setprecision(10)<<ratio<<", |1-ratio| = "<<dev;
+        if(softe>=0.) msg_Out()<<", softest photon: E = "<<softe<<", pT = "<<softpt;
+        msg_Out()<<ATOOLS::om::reset<<std::endl;
+      }
+      else {
+        msg_Debugging()<<ATOOLS::om::green<<"Real ME OK: ratio = "
+                        <<std::setprecision(10)<<ratio<<ATOOLS::om::reset<<std::endl;
+      }
     }
     return iR.Nominal();
   }

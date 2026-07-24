@@ -43,6 +43,10 @@ public:
   bool m_check, m_writemom;
   int m_nmom, m_fill;
   Flavour_Vector m_flavs;
+
+  long int m_npoints, m_nbad;
+  double m_maxdev;
+
   PHASIC::Process_Base *p_realproc;
   ATOOLS::Cluster_Amplitude *p_ampl;
   histograms1d m_histograms1d;
