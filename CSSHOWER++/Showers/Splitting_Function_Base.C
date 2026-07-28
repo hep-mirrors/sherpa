@@ -45,24 +45,40 @@ SF_Lorentz* Splitting_Function_Base::InitLorentzCalc(const MODEL::Single_Vertex&
       spins[2]==2) {
     lf = SFL_Getter::GetObject("SSV",sf_key);
       }
+  else if ( spins[0]==2 && spins[1]==2 && spins[2]==2 && 
+            (vertex.in[1].Kfcode() == kf_chi_c1_1P || vertex.in[2].Kfcode() == kf_chi_c1_1P)) {
+    lf = SFL_Getter::GetObject("VV3P1_Quarkonia",sf_key);
+  }
   else if( spins[0]==2 && !vertex.in[0].IsDiQuark() &&
       spins[1]==2 && !vertex.in[1].IsDiQuark() &&
       spins[2]==2 && !vertex.in[2].IsDiQuark() ) {
     lf = SFL_Getter::GetObject("VVV",sf_key);
    }
+  else if (spins[0]==2 && spins[1]==2 && spins[2]==4) {
+    if (vertex.in[1].Kfcode() == kf_chi_c2_1P || vertex.in[2].Kfcode() == kf_chi_c2_1P)
+      lf = SFL_Getter::GetObject("VV3P2_Quarkonia",sf_key);
+  }
   else if(spins[0]==0 && spins[1]==2 && spins[2]==2)  {
-    if (vertex.in[1].IsQuarkonia() || vertex.in[2].IsQuarkonia())
-      lf = SFL_Getter::GetObject("VSV_Quarkonia",sf_key);
+    if (vertex.in[1].Kfcode() == kf_eta_c_1S || vertex.in[2].Kfcode() == kf_eta_c_1S)
+      lf = SFL_Getter::GetObject("VV1S0_Quarkonia",sf_key);
+    else if (vertex.in[1].Kfcode() == kf_chi_c0_1P || vertex.in[2].Kfcode() == kf_chi_c0_1P)
+      lf = SFL_Getter::GetObject("VV3P0_Quarkonia",sf_key);
     else lf = SFL_Getter::GetObject("HVV",sf_key);
   }
   else if(spins[0]==1 && spins[1]==1 && spins[2]==2) { 
-    if ( vertex.in[2].IsQuarkonia() || vertex.in[1].IsQuarkonia()) {
+    if ( vertex.in[2].Kfcode() == kf_J_psi_1S || vertex.in[1].Kfcode() == kf_J_psi_1S ||
+         vertex.in[2].Kfcode() == kf_3S1_c    || vertex.in[1].Kfcode() == kf_3S1_c ) {
       lf = SFL_Getter::GetObject("FF3S1_Quarkonia",sf_key);
+    }
+    else if ( vertex.in[2].Kfcode() == kf_chi_c1_1P || vertex.in[1].Kfcode() == kf_chi_c1_1P ||
+              vertex.in[2].Kfcode() == kf_h_c1 || vertex.in[1].Kfcode() == kf_h_c1) {
+      lf = SFL_Getter::GetObject("FF2Sp1P1_Quarkonia",sf_key);
     }
     else lf = SFL_Getter::GetObject("FFV1",sf_key); 
   }
   else if (spins[0]==0 && spins[1]==1 && spins[2]==1) {
-    if ( vertex.in[1].Kfcode() == kf_eta_c_1S || vertex.in[2].Kfcode() == kf_eta_c_1S) {
+    if ( vertex.in[1].Kfcode() == kf_eta_c_1S || vertex.in[2].Kfcode() == kf_eta_c_1S ||
+         vertex.in[1].Kfcode() == kf_1S0_c || vertex.in[2].Kfcode() == kf_1S0_c) {
       lf = SFL_Getter::GetObject("FF1S0_Quarkonia",sf_key);
     }
     else if ( vertex.in[1].Kfcode() == kf_chi_c0_1P || vertex.in[2].Kfcode() == kf_chi_c0_1P) {

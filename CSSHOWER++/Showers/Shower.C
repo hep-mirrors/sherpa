@@ -404,7 +404,12 @@ bool Shower::EvolveSinglet(Singlet * act,const size_t &maxem,size_t &nem)
         SetXBj(*it);
     kt2win = 0.;
     Parton *split = SelectSplitting(kt2win);
-
+    if ( split != NULL ) {
+      msg_IODebugging() << "Selected split: \n" << *split << "\n";
+    }
+    else {
+      msg_IODebugging() << "No split selected. kt2win = " << kt2win << "\n";
+    }
     if (split == NULL) { // Singlet evolution is terminated
       msg_Debugging() << "No emission\n";
       ResetScales(p_actual->KtNext());
@@ -619,19 +624,25 @@ bool Shower::TrialEmission(double & kt2win,Parton * split)
   while (true) {
     if (m_sudakov.Generate(split,kt2win)) {
       m_sudakov.GetSplittingParameters(kt2,z,y,phi);
-      m_flavA = m_sudakov.GetFlavourA();
-      m_flavB = m_sudakov.GetFlavourB();
-      m_flavC = m_sudakov.GetFlavourC();
       split->SetWeight(m_sudakov.Weight());
       msg_IODebugging() << METHOD << ": trial at " << kt2 << " with old kt2win: " << kt2win << "\n";
-      if (split->Transition() && m_flavC == (ATOOLS::Flavour)(kf_none)) {
+      msg_IODebugging() << METHOD << ": flavours: A = " << m_flavA.IDName()
+                      << ", B = " << m_flavB.IDName()
+                      << ", C = " << m_flavC.IDName() << "\n";
+      if (split->Transition() && m_sudakov.GetFlavourC() == (ATOOLS::Flavour)(kf_none)) {
           kt2win = sqr(m_flavB.Mass(1))*0.99999; // ensures that if the transition actually occurs, the next evolution window won´t trigger it again.
           split->SetTest(kt2, z, y, phi);
           split->SetCol(m_sudakov.GetCol());
+          m_flavA = m_sudakov.GetFlavourA();
+          m_flavB = m_sudakov.GetFlavourB();
+          m_flavC = m_sudakov.GetFlavourC();
           return true;
         }
       if (kt2 > kt2win) {
         kt2win = kt2;
+        m_flavA = m_sudakov.GetFlavourA();
+        m_flavB = m_sudakov.GetFlavourB();
+        m_flavC = m_sudakov.GetFlavourC();
         m_lastcpl = m_sudakov.Selected()->Coupling()->Last();
         split->SetCol(m_sudakov.GetCol());
         split->SetTest(kt2, z, y, phi);

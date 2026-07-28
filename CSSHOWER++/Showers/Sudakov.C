@@ -128,6 +128,7 @@ void Sudakov::InitSplittingFunctions(MODEL::Model_Base *md,const int kfmode)
   case 0:
     AddQuarkoniaSplittingFunctions(md, kfmode);
     AddGluonThresholds(md);
+    AddOctetMesonSplittingFunctions(md, kfmode);
     msg_Debugging() << METHOD << " Quarkonia initialised.\n";
     break; 
   case 1:
@@ -137,6 +138,16 @@ void Sudakov::InitSplittingFunctions(MODEL::Model_Base *md,const int kfmode)
   case 2:
     AddQuarkoniaSplittingFunctions(md, kfmode);
     msg_Debugging() << METHOD << " Quarkonia splitting functions initialised.\n";
+    break;
+  case 3:
+    AddGluonThresholds(md);
+    AddOctetMesonSplittingFunctions(md, kfmode);
+    msg_Debugging() << METHOD << " Gluon thresholds and Octet meson splitting functions initialised.\n";
+    break;
+  case 4:
+    AddQuarkoniaSplittingFunctions(md, kfmode);
+    AddOctetMesonSplittingFunctions(md, kfmode);
+    msg_Debugging() << METHOD << " Quarkonia and   Octet meson splitting functions initialised.\n";
     break;
   default:
   msg_Debugging() << METHOD << " Skip Quarkonia initialisation.\n"; 
@@ -182,8 +193,8 @@ void Sudakov::AddQuarkoniaSplittingFunctions(Model_Base *md, const int kfmode) {
   // if (!flav.IsOn()) continue;
 
   // This is c -> c singlets
-  list<kf_code> singlets = {kf_J_psi_1S, kf_eta_c_1S, kf_chi_c0_1P, kf_chi_c2_1P}; //, kf_chi_b2_3P_oct};
-  list<string> splitypes = {"FF3S1_Quarkonia", "FF1S0_Quarkonia", "FF3P0_Quarkonia", "FF3P2_Quarkonia"};
+  list<kf_code> singlets = {kf_J_psi_1S, kf_eta_c_1S, kf_h_c1, kf_chi_c0_1P, kf_chi_c1_1P, kf_chi_c2_1P}; //, kf_chi_b2_3P_oct};
+  list<string> splitypes = {"FF3S1_Quarkonia", "FF1S0_Quarkonia", "FF2Sp1P1_Quarkonia", "FF3P0_Quarkonia", "FF2Sp1P1_Quarkonia", "FF3P2_Quarkonia"};
   for (list<kf_code>::iterator kfit = singlets.begin();
        kfit != singlets.end(); kfit++) 
   {   
@@ -203,8 +214,7 @@ void Sudakov::AddQuarkoniaSplittingFunctions(Model_Base *md, const int kfmode) {
       v.in[1] = v.in[1].Bar();
       Add(new Splitting_Function_Base(
           SF_Key(&v, 0, cstp::FF, kfmode, m_qcdmode, m_ewmode, 1, m_pdfmin)));
-  
-  // Add(new Splitting_Function_Base(
+        // Add(new Splitting_Function_Base(
   //   SF_Key(&v, 0, cstp::II, kfmode, m_qcdmode, m_ewmode, 1, m_pdfmin)));
       // v = Single_Vertex();
       // v.AddParticle(Quark_flav);
@@ -218,45 +228,54 @@ void Sudakov::AddQuarkoniaSplittingFunctions(Model_Base *md, const int kfmode) {
       //     SF_Key(&v, 0, cstp::FF, kfmode, m_qcdmode, m_ewmode, 1, m_pdfmin)));
       msg_IODebugging() << METHOD << ": added splitting functions for " << singletflav.IDName() << "\n";
     }
+  // This is c -> c J/Psi(1S)8
+  list<kf_code> octetmesons = {kf_3S1_c, kf_1S0_c};
+  splitypes = {"FF3S1_Quarkonia", "FF1S0_Quarkonia"};
+  for (list<kf_code>::iterator kfit = octetmesons.begin();
+       kfit != octetmesons.end(); kfit++) 
+  {
+      Flavour octetflav(*kfit);
+      v = Single_Vertex();
+      v.AddParticle(Quark_flav.Bar());
+      v.AddParticle(Quark_flav);
+      v.AddParticle(octetflav);
+      // No clue of how to write T^a_{i,j} T^{a}_{k,l} in this form 
+      v.Color.push_back(Color_Function(cf::T,3,2,1));
+      v.Lorentz.push_back(splitypes.front());
+      splitypes.pop_front();
+      v.cpl.push_back(cpl0); // Check later
+      v.order[0] = 1;
+      Add(new Splitting_Function_Base(
+          SF_Key(&v, 0, cstp::FF, kfmode, m_qcdmode, m_ewmode, 1, m_pdfmin)));
+      v.in[0] = v.in[0].Bar();
+      v.in[1] = v.in[1].Bar();
+      // Add(new Splitting_Function_Base(
+      //     SF_Key(&v, 0, cstp::FF, kfmode, m_qcdmode, m_ewmode, 1, m_pdfmin)));
+      msg_Out() << METHOD << ": added splitting functions for " << octetflav.IDName() << "\n";
+        }
+
   // Add(new Splitting_Function_Base(
   //   SF_Key(&v, 0, cstp::II, kfmode, m_qcdmode, m_ewmode, 1, m_pdfmin)));
-  
-  // This is c -> c J/Psi(1S)8
-  // list<kf_code> octetmesonsV = {kf_3S1_c_8_J_psi_1S}; //{kf_J_psi_1S, kf_3S1_c_8_J_psi_1S, kf_3S1_c_8_psi_2S, kf_3S1_c_8_chi_c1_1P, kf_3S1_c_8_chi_c2_1P, kf_3P1_c_8_J_psi_1S, kf_3P1_c_8_psi_2S}; //, kf_chi_b2_3P_oct};
-  // for (list<kf_code>::iterator kfit = octetmesonsV.begin();
-  //      kfit != octetmesonsV.end(); kfit++) 
-  // {
-  //     Flavour octetflav(*kfit);
-  //     v = Single_Vertex();
-  //     v.AddParticle(Quark_flav.Bar());
-  //     v.AddParticle(Quark_flav);
-  //     v.AddParticle(octetflav);
-  //     // No clue of how to write T^a_{i,j} T^{a}_{k,l} in this form 
-  //     v.Color.push_back(Color_Function(cf::T,3,2,1));
-  //     v.Lorentz.push_back("FFV_Quarkonia");
-  //     v.cpl.push_back(cpl0); // Check later
-  //     v.order[0] = 1;
-  //     Add(new Splitting_Function_Base(
-  //         SF_Key(&v, 0, cstp::FF, kfmode, m_qcdmode, m_ewmode, 1, m_pdfmin)));
-  //     v.in[0] = v.in[0].Bar();
-  //     v.in[1] = v.in[1].Bar();
-  //     // Add(new Splitting_Function_Base(
-  //     //     SF_Key(&v, 0, cstp::FF, kfmode, m_qcdmode, m_ewmode, 1, m_pdfmin)));
-  //     msg_Out() << METHOD << ": added splitting functions for " << octetflav.IDName() << "\n";
-  //       }
 
   // This if g -> g 1S0 octect
-  // still needs substantial debugging and tuning
-  // v = Single_Vertex();
-  // v.AddParticle(Gluon_flav);
-  // v.AddParticle(Flavour(kf_eta_c_1S));
-  // v.AddParticle(Gluon_flav);
-  // v.Color.push_back(Color_Function(cf::G, 1, 3));
-  // v.Lorentz.push_back("VSV_Quarkonia");
-  // v.cpl.push_back(cpl0); // Check later
-  // v.order[0] = 1;
-  // Add(new Splitting_Function_Base(
-  //     SF_Key(&v, 0, cstp::FF, kfmode, m_qcdmode, m_ewmode, 1, m_pdfmin)));
+  singlets  = {kf_eta_c_1S, kf_chi_c0_1P, kf_chi_c1_1P, kf_chi_c2_1P};
+  splitypes = {"VV1S0_Quarkonia", "VV3P0_Quarkonia", "VV3P1_Quarkonia", "VV3P2_Quarkonia"};
+  for (list<kf_code>::iterator kfit = singlets.begin();
+       kfit != singlets.end(); kfit++) 
+  {
+    Flavour singletflav(*kfit);
+    v = Single_Vertex();
+    v.AddParticle(Gluon_flav);
+    v.AddParticle(Gluon_flav);
+    v.AddParticle(singletflav);
+    v.Color.push_back(Color_Function(cf::G, 1, 3));
+    v.Lorentz.push_back(splitypes.front());
+    splitypes.pop_front();
+    v.cpl.push_back(cpl0); // Check later
+    v.order[0] = 1;
+    Add(new Splitting_Function_Base(
+        SF_Key(&v, 0, cstp::FF, kfmode, m_qcdmode, m_ewmode, 1, m_pdfmin)));
+  }
 
   msg_Out() << METHOD << ": by now " << m_splittings.size()
             << " splitting functions\n"

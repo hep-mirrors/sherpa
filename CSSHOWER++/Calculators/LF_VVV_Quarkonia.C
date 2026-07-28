@@ -4,9 +4,9 @@
 
 namespace CSSHOWER {
 
-class LF_VSV_Quarkonia_FF : public SF_Lorentz {
+class LF_VV1S0_Quarkonia_FF : public SF_Lorentz {
 public:
-  inline LF_VSV_Quarkonia_FF(const SF_Key &key) : SF_Lorentz(key) {}
+  inline LF_VV1S0_Quarkonia_FF(const SF_Key &key) : SF_Lorentz(key) {}
 
   double operator()(const double, const double, const double, const double,
                     const double);
@@ -15,12 +15,12 @@ public:
   double Z();
 
 private:
-  inline double f0(double r, double y);
-  inline double f1(double r, double y);
-  inline double f2(double r, double y);
-  inline double g0(double r, double y);
-  inline double g1(double r, double y);
-  inline double g2(double r, double y);
+  // inline double f0(double r, double y);
+  // inline double f1(double r, double y);
+  // inline double f2(double r, double y);
+  // inline double g0(double r, double y);
+  // inline double g1(double r, double y);
+  // inline double g2(double r, double y);
 };
 } // namespace CSSHOWER
 
@@ -30,7 +30,7 @@ private:
 using namespace CSSHOWER;
 using namespace ATOOLS;
 
-double LF_VSV_Quarkonia_FF::operator()(
+double LF_VV1S0_Quarkonia_FF::operator()(
     const double z, const double w, const double eta, const double scale,
     const double Q2) { // w replaces the usual y variable in CS dipoles
   double muij2 = sqr(p_ms->Mass(m_flavs[0])) / Q2;
@@ -83,7 +83,7 @@ double LF_VSV_Quarkonia_FF::operator()(
   return 16. / 27 * sqr(p_cf->MaxCoupling(0)) * (0.5) / (1. - z) * 10;
 }
 
-double LF_VSV_Quarkonia_FF::OverIntegrated(const double zmin, const double zmax,
+double LF_VV1S0_Quarkonia_FF::OverIntegrated(const double zmin, const double zmax,
                                            const double scale,
                                            const double xbj) {
   m_zmin = zmin;
@@ -92,16 +92,16 @@ double LF_VSV_Quarkonia_FF::OverIntegrated(const double zmin, const double zmax,
          log((1. - zmin) / (1. - zmax));
 }
 
-double LF_VSV_Quarkonia_FF::OverEstimated(const double z, const double y) {
+double LF_VV1S0_Quarkonia_FF::OverEstimated(const double z, const double y) {
   return 100 * 16. / 27 * sqr(p_cf->MaxCoupling(0)) * (0.5) / (1. - z);
 }
 
-double LF_VSV_Quarkonia_FF::Z() {
+double LF_VV1S0_Quarkonia_FF::Z() {
   return 1. -
          (1. - m_zmin) * pow((1. - m_zmax) / (1. - m_zmin), ATOOLS::ran->Get());
 }
 
-inline double LF_VSV_Quarkonia_FF::f0(double r, double y) {
+inline double LF_VV1S0_Quarkonia_FF::f0(double r, double y) {
   const double r2 = r * r, r3 = r2 * r;
   const double y2 = y * y, y3 = y2 * y, y4 = y3 * y;
   const double y5 = y4 * y, y6 = y5 * y, y7 = y6 * y;
@@ -113,7 +113,7 @@ inline double LF_VSV_Quarkonia_FF::f0(double r, double y) {
 }
 
 // Equation (5)
-inline double LF_VSV_Quarkonia_FF::f1(double r, double y) {
+inline double LF_VV1S0_Quarkonia_FF::f1(double r, double y) {
   const double r2 = r * r, r3 = r2 * r;
   const double y2 = y * y, y3 = y2 * y, y4 = y3 * y;
   const double y5 = y4 * y, y6 = y5 * y;
@@ -123,7 +123,7 @@ inline double LF_VSV_Quarkonia_FF::f1(double r, double y) {
 }
 
 // Equation (6)
-inline double LF_VSV_Quarkonia_FF::f2(double r, double y) {
+inline double LF_VV1S0_Quarkonia_FF::f2(double r, double y) {
   const double r2 = r * r, r3 = r2 * r;
   const double y2 = y * y, y3 = y2 * y, y4 = y3 * y, y5 = y4 * y;
   return r * (1 + 5 * r + 19 * r2 + 7 * r3) - 48 * r2 * (1 + r) * y -
@@ -132,7 +132,7 @@ inline double LF_VSV_Quarkonia_FF::f2(double r, double y) {
 }
 
 // Equation (7)
-inline double LF_VSV_Quarkonia_FF::g0(double r, double y) {
+inline double LF_VV1S0_Quarkonia_FF::g0(double r, double y) {
   const double r2 = r * r, r3 = r2 * r;
   const double y2 = y * y, y3 = y2 * y, y4 = y3 * y, y5 = y4 * y, y6 = y5 * y;
   return r3 * (1 - r) * (3 + 24 * r + 13 * r2) -
@@ -144,7 +144,7 @@ inline double LF_VSV_Quarkonia_FF::g0(double r, double y) {
 }
 
 // Equation (8)
-inline double LF_VSV_Quarkonia_FF::g1(double r, double y) {
+inline double LF_VV1S0_Quarkonia_FF::g1(double r, double y) {
   const double r2 = r * r, r3 = r2 * r;
   const double y2 = y * y, y3 = y2 * y, y4 = y3 * y, y5 = y4 * y;
   return -2 * r2 * (1 + r) * (1 - r) * (1 + 7 * r) * y +
@@ -155,7 +155,7 @@ inline double LF_VSV_Quarkonia_FF::g1(double r, double y) {
 
 // Equation (9)
 
-inline double LF_VSV_Quarkonia_FF::g2(double r, double y) {
+inline double LF_VV1S0_Quarkonia_FF::g2(double r, double y) {
   const double r2 = r * r, r3 = r2 * r;
   const double y2 = y * y, y3 = y2 * y, y4 = y3 * y, y5 = y4 * y;
   return r2 * (1 + r) * (1 - r) * (1 + 7 * r) -
@@ -164,9 +164,9 @@ inline double LF_VSV_Quarkonia_FF::g2(double r, double y) {
          4 * r * (1 + 29 * r + 6 * r2) * y2 + 4 * (1 - 8 * r - 5 * r2) * y4;
 }
 
-DECLARE_GETTER(LF_VSV_Quarkonia_FF, "VSV_Quarkonia", SF_Lorentz, SF_Key);
+DECLARE_GETTER(LF_VV1S0_Quarkonia_FF, "VV1S0_Quarkonia", SF_Lorentz, SF_Key);
 
-SF_Lorentz *ATOOLS::Getter<SF_Lorentz, SF_Key, LF_VSV_Quarkonia_FF>::operator()(
+SF_Lorentz *ATOOLS::Getter<SF_Lorentz, SF_Key, LF_VV1S0_Quarkonia_FF>::operator()(
     const Parameter_Type &args) const {
   if (args.m_col < 0)
     return NULL;
@@ -176,7 +176,7 @@ SF_Lorentz *ATOOLS::Getter<SF_Lorentz, SF_Key, LF_VSV_Quarkonia_FF>::operator()(
        args.p_v->in[1].IntSpin() == 2 && args.p_v->in[2].IntSpin() == 0)) {
     switch (args.m_type) {
     case cstp::FF:
-      return new LF_VSV_Quarkonia_FF(args);
+      return new LF_VV1S0_Quarkonia_FF(args);
     // case cstp::FI: return new LF_FFV_FI(args);
     // case cstp::IF: return new LF_FFV_IF(args);
     // case cstp::II: return new LF_FFV_II(args);
@@ -190,7 +190,7 @@ SF_Lorentz *ATOOLS::Getter<SF_Lorentz, SF_Key, LF_VSV_Quarkonia_FF>::operator()(
        args.p_v->in[2].IntSpin() == 2 && args.p_v->in[1].IntSpin() == 1)) {
     switch (args.m_type) {
     case cstp::FF:
-      return new LF_VSV_Quarkonia_FF(args);
+      return new LF_VV1S0_Quarkonia_FF(args);
     // case cstp::FI: return new LF_FVF_FI(args);
     // case cstp::IF: return new LF_FVF_IF(args);
     // case cstp::II: return new LF_FVF_II(args);
@@ -213,7 +213,7 @@ SF_Lorentz *ATOOLS::Getter<SF_Lorentz, SF_Key, LF_VSV_Quarkonia_FF>::operator()(
   return NULL;
 }
 
-void ATOOLS::Getter<SF_Lorentz, SF_Key, LF_VSV_Quarkonia_FF>::PrintInfo(
+void ATOOLS::Getter<SF_Lorentz, SF_Key, LF_VV1S0_Quarkonia_FF>::PrintInfo(
     std::ostream &str, const size_t width) const {
-  str << "VSV lorentz functions";
+  str << "VV1S0 lorentz functions";
 }

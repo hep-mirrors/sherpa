@@ -1,4 +1,5 @@
 #include "CSSHOWER++/Showers/Splitting_Function_Base.H"
+#include "ATOOLS/Phys/LDME.H"
 
 namespace CSSHOWER {
 
@@ -76,7 +77,7 @@ double LF_FF3P0_Quarkonia_FF::operator()(const double z, const double y,
   const double mk  = ATOOLS::Flavour(m_flspec.Kfcode()).Mass(true);
   const double mij = ATOOLS::Flavour(m_flavs[0].Kfcode()).Mass(true);
   const double mui2 = sqr(mi) / Q2, muj2 = sqr(mj) / Q2, muk2 = sqr(mk) / Q2, muij2 = sqr(mij) / Q2;
-  const double M = mj;  //mi + mij;
+  const double M = mi + mij;
   const double ri = mi / M, rij = mij / M;
   const double sij = y * (Q2 - sqr(mi) - sqr(mj) - sqr(mk)) + (sqr(mi) + sqr(mj));
   double value = sqr(sqr(sqr(M)))/sqr(sqr(sij - sqr(rij*M)))*( 64* sqr(ri) * cube(rij) * sqr(sqr(1 - rij*(1-z))) );
@@ -89,7 +90,7 @@ double LF_FF3P0_Quarkonia_FF::operator()(const double z, const double y,
   value += sqr(M)/(sij - sqr(rij*M)) * z*sqr(1 - 4*ri - (1-z)*(1-4*ri)*(1-2*ri)-ri*rij*sqr(1-z)*(3-4*ri));
   value *= 1. / ( (1 - mui2 - muj2 - muk2) + 1./ y * ( mui2 + muj2 - muij2 ) );
   value *= 1. / (1 + sqr( 1 - z) * sqr(mi) / scale + sqr(z) * sqr(mj) / scale);
-  value *= 32./243*sqr(p_cf->Coupling(scale, 0)) * ri * cube(rij) / sqr(sqr(1-rij*(1-z))) * JFF(y, mui2, muj2, muk2, muij2);
+  value *= sqr(p_cf->Coupling(scale, 0)) * ri * cube(rij) / sqr(sqr(1-rij*(1-z))) * JFF(y, mui2, muj2, muk2, muij2);
   // BEWARE: this is missing a global constant factor in front (so does the overestimate)
   return value;
 }
@@ -103,7 +104,9 @@ double LF_FF3P0_Quarkonia_FF::OverIntegrated(const double zmin, const double zma
   const double ri = mi / (mi + mij);
   m_zmin = zmin; 
   m_zmax = zmax;
-  return sqr(p_cf->MaxCoupling(0)) * 32./243 * ri * cube(rij) / sqr(sqr(1-rij)) * (m_zmax - m_zmin); ;
+  const double prefactor = 4./27*GetLDME(m_flavs[2].Kfcode())/pow(mi,5);
+  return prefactor * 8./3 * sqr(p_cf->MaxCoupling(0)) * ri * cube(rij) / sqr(sqr(1-rij)) * (m_zmax - m_zmin); ;
+  // extra factor 2 is spurios but necessary
 }
 
 double LF_FF3P0_Quarkonia_FF::OverEstimated(const double z, const double y) {
@@ -111,7 +114,7 @@ double LF_FF3P0_Quarkonia_FF::OverEstimated(const double z, const double y) {
   const double mi = ATOOLS::Flavour(m_flavs[1].Kfcode()).Mass(true);
   const double rij = mij / (mi + mij);
   const double ri = mi / (mi + mij);
-  return sqr(p_cf->MaxCoupling(0)) * 32./243 * ri * cube(rij) / sqr(sqr(1-rij));
+  return sqr(p_cf->MaxCoupling(0)) * ri * cube(rij) / sqr(sqr(1-rij));
 }
 
 double LF_FF3P0_Quarkonia_FF::Z() {

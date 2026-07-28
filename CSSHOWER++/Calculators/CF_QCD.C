@@ -248,18 +248,26 @@ operator()(const SFC_Filler_Key &key) const
       key.p_gets->push_back(new CF_QCD_Getter(atag+btag+ctag));
     }
   }
-  // Add additional splittings for quarkonia production
-  key.p_gets->push_back(new CF_QCD_Getter("{"+Flavour(kf_c).IDName()+"}"+"{"+Flavour(kf_c).IDName()+"}"+"{"+Flavour(kf_J_psi_1S).IDName()+"}"));
-  key.p_gets->push_back(new CF_QCD_Getter("{"+Flavour(kf_c).Bar().IDName()+"}"+"{"+Flavour(kf_c).Bar().IDName()+"}"+"{"+Flavour(kf_J_psi_1S).IDName()+"}"));
+
+  // Add additional splittings for charmonia production
+  const Flavour charm_variants[] = {Flavour(kf_c), Flavour(kf_c).Bar()};
+  kf_code quarkonia_FF[] = {kf_J_psi_1S, kf_eta_c_1S, kf_h_c1, kf_chi_c0_1P,
+                                      kf_chi_c1_1P,kf_chi_c2_1P, kf_3S1_c, kf_1S0_c};
+  for (const Flavour &charm : charm_variants) {
+    const std::string charm_tag = "{" + charm.IDName() + "}";
+    for (const kf_code state : quarkonia_FF) {
+      const std::string meson_tag = "{" + Flavour(state).IDName() + "}";
+      key.p_gets->push_back(new CF_QCD_Getter(charm_tag + charm_tag + meson_tag));
+    }
+  }
+  const kf_code quarkonia_VV[] = {kf_eta_c_1S, kf_chi_c0_1P, kf_chi_c1_1P, kf_chi_c2_1P};
+  const std::string gluon_tag= "{" + Flavour(kf_gluon).IDName() + "}";
+  for (const kf_code state : quarkonia_VV) {
+    const std::string meson_tag = "{" + Flavour(state).IDName() + "}";
+    key.p_gets->push_back(new CF_QCD_Getter(gluon_tag + gluon_tag + meson_tag));
+    // key.p_gets->push_back(new CF_QCD_Getter(gluon_tag + meson_tag + gluon_tag));
+  } 
  
-  key.p_gets->push_back(new CF_QCD_Getter("{"+Flavour(kf_c).IDName()+"}"+"{"+Flavour(kf_c).IDName()+"}"+"{"+Flavour(kf_1S0_c).IDName()+"}"));
-  key.p_gets->push_back(new CF_QCD_Getter("{"+Flavour(kf_c).Bar().IDName()+"}"+"{"+Flavour(kf_c).Bar().IDName()+"}"+"{"+Flavour(kf_1S0_c).IDName()+"}"));
-  
-  key.p_gets->push_back(new CF_QCD_Getter("{"+Flavour(kf_c).IDName()+"}"+"{"+Flavour(kf_c).IDName()+"}"+"{"+Flavour(kf_3S1_c).IDName()+"}"));
-  key.p_gets->push_back(new CF_QCD_Getter("{"+Flavour(kf_c).Bar().IDName()+"}"+"{"+Flavour(kf_c).Bar().IDName()+"}"+"{"+Flavour(kf_3S1_c).IDName()+"}"));
-  
-  key.p_gets->push_back(new CF_QCD_Getter("{"+Flavour(kf_gluon).IDName()+"}"+"{"+Flavour(kf_eta_c_1S).IDName()+"}"+"{"+Flavour(kf_gluon).IDName()+"}"));
-  
   key.p_gets->push_back(new CF_QCD_Getter("{"+Flavour(kf_1S0_c).IDName()+"}"+"{"+Flavour(kf_1S0_c).IDName()+"}"+"{"+Flavour(kf_gluon).IDName()+"}"));
   key.p_gets->push_back(new CF_QCD_Getter("{"+Flavour(kf_3S1_c).IDName()+"}"+"{"+Flavour(kf_3S1_c).IDName()+"}"+"{"+Flavour(kf_gluon).IDName()+"}"));
  
