@@ -9,6 +9,7 @@ namespace AHADIC {
   private:
     int    m_mode;
     std::vector<double> m_alpha;
+    std::vector<double> m_zprobs;
     double m_arg, m_x, m_y, m_lastmass;
     bool   m_lastB, m_lastC;
 
@@ -54,9 +55,6 @@ namespace AHADIC {
     }
 
     int RecordSite() const override { return 0; } // OUTPUT
-
-    void ZRejected(const double, const double&, const double&, const double&,
-		   const unsigned int&) override;
 
     void ZAccepted(const double, const double&, const double&, const double&,
 		   const unsigned int& ) override;

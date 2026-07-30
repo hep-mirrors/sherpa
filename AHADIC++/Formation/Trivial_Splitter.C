@@ -28,7 +28,9 @@ bool Trivial_Splitter::operator()(Proto_Particle * part1,
   p_part1 = part1;
   p_part2 = part2;
   if (!InitKinematics(true)) return false;
+  p_reweighting->ResetFlavourSelectionWeights();
   SelectFlavour();
+  p_reweighting->AcceptFlavourSelectionWeights();
   FixTransverseMomentum(true);
   ConstructRescueMomenta();
 
@@ -48,9 +50,16 @@ bool Trivial_Splitter::operator()(Singlet * singlet) {
   p_part2    = (*ppit2);
   m_spectmom = p_singlet->back()->Momentum();
   if (!InitKinematics(false)) return Rescue();
+  p_reweighting->ResetFlavourSelectionWeights();
+  bool accepted = false;
   do {
+    p_reweighting->BeginSplittingAttempt();
     SelectFlavour();
-  } while (!FixTrialKinematics() || !CheckKinematics());
+    accepted = FixTrialKinematics() && CheckKinematics();
+    if (!accepted) p_reweighting->AbortSplittingAttempt();
+  } while (!accepted);
+  p_reweighting->CommitSplittingAttempt();
+  p_reweighting->AcceptFlavourSelectionWeights();
 
   p_part1->SetFlavour(m_newflav);
   p_part1->SetMomentum(m_q1mom);
@@ -83,7 +92,6 @@ bool Trivial_Splitter::InitKinematics(bool rescue) {
 
 void Trivial_Splitter::SelectFlavour() {
   m_newflav      = (*p_flavourselector)(m_E,true);
-  p_reweighting->AcceptFlavourSelectionWeights();
   m_popped_mass  = p_constituents->Mass(m_newflav);
   m_popped_mass2 = sqr(m_popped_mass);
 }
@@ -144,7 +152,9 @@ bool Trivial_Splitter::Rescue() {
   // in this case, the invariant mass of the two gluons is below
   // the minimal mass of the lightest quark pair
   if (m_E<m_minmass) return false;
+  p_reweighting->ResetFlavourSelectionWeights();
   SelectFlavour();
+  p_reweighting->AcceptFlavourSelectionWeights();
   FixTransverseMomentum(true);
   ConstructRescueMomenta();
 

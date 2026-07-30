@@ -11,19 +11,19 @@ namespace AHADIC {
     // we have four cluster types, L, H, D, B each is getting a std::vector of
     // alpha/beta/gamme values
     std::vector<double> m_alpha[4], m_beta[4], m_gamma[4];
-    double m_alpha_max[4], m_beta_max[4], m_gamma_max[4];
-    double m_alpha_min[4], m_beta_min[4], m_gamma_min[4];
 
     int m_type[2];
     std::vector<double> m_kt02;
     double m_R2[2], m_mean[2], m_sigma[2], m_m2min[2], m_masses;
 
+    typedef Hadronisation_Reweighting::Frag_Norm Frag_Norm;
+    Frag_Norm           m_fragnorm;
+    std::vector<double> m_cvals, m_logprobs, m_probs;
+
     Cluster *       p_out[2];
     ATOOLS::Vec4D   m_cms, m_mom[2], m_newmom[2];
     ATOOLS::Flavour m_fl[2];
     double          m_mass2[2];
-    int m_accepted {0}, m_rejected {0};
-    bool   m_output;
 
     bool   MakeLongitudinalMomenta();
     bool   MakeLongitudinalMomentaZ();
@@ -32,7 +32,7 @@ namespace AHADIC {
     bool   MakeLongitudinalMomentaMassSimple();
     double DeltaM(const size_t & cl);
     void   FixCoefficients();
-    void   CalculateLimits();
+    bool   CalculateLimits();
     bool   FillParticlesInLists();
     size_t MakeAndCheckClusters();
     void   MakeNewMomenta(size_t shuffle);
@@ -46,6 +46,12 @@ namespace AHADIC {
 				 double gamma, double kt02);
     double FragmentationFunction(double z, double zmin, double zmax,
 				 int cnt, int i_var);
+    double FragExponent(const double gamma, const double kt02,
+			const double scale) const;
+    bool   FillLogDensities(const double z, const double zmin,
+			    const double zmax, const unsigned int cnt);
+    void   FillProbs(const double wgt, const double z, const double zmin,
+		     const double zmax, const unsigned int cnt);
 
   public:
     int m_nsplit {0};
@@ -58,7 +64,6 @@ namespace AHADIC {
     double WeightFunction(const double & z,
 			  const double & zmin,const double & zmax,
 			  const unsigned int & cnt);
-    void   SetOutput(const bool & out) { m_output = out; }
     void AcceptSplittingWeights() override {
       p_reweighting->AcceptClusterSplittingWeights();
     }
@@ -76,8 +81,6 @@ namespace AHADIC {
     void ZAccepted(const double wgt, const double & z,
 		   const double & zmin,const double & zmax,
 		   const unsigned int & cnt) override;
-
-    double FragmentationFunctionProb(double, double, double, double, double);
   };
 }
 

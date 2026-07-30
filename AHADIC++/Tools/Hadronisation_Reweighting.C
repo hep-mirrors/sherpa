@@ -7,6 +7,7 @@
 #include "ATOOLS/Org/Scoped_Settings.H"
 #include <algorithm>
 #include <cmath>
+#include <limits>
 #include "ATOOLS/Org/MyStrStream.H" // OUTPUT
 #include "ATOOLS/Math/Histogram.H"  // OUTPUT
 #include "ATOOLS/Org/Shell_Tools.H" // OUTPUT
@@ -100,9 +101,18 @@ void Hadronisation_Reweighting::Initialize() {
   m_reweight_max_nsplit = hadpars->Switch("reweight_max_nsplit");
   ResetEvent();
 
+  auto s = Settings::GetMainSettings()["AHADIC"];
+  std::string frag = s["REWEIGHTING_FRAG"].SetDefault("CDF").Get<std::string>();
+  std::transform(frag.begin(), frag.end(), frag.begin(),
+                 [](unsigned char ch){ return std::toupper(ch); });
+  if      (frag == "CDF") m_frag_ar = false;
+  else if (frag == "AR")  m_frag_ar = true;
+  else THROW(fatal_error, "AHADIC:REWEIGHTING_FRAG must be CDF or AR, found '"
+                          + frag + "'.");
+  if (m_n_variations > 1 && !m_frag_ar) Frag_Norm::Verify(*this);
+
   // OUTPUT
   ResetStats();
-  auto s = Settings::GetMainSettings()["AHADIC"];
   const int reweighting_output = s["REWEIGHTING_OUTPUT"].SetDefault(0).Get<int>();
   m_output_mode        = reweighting_output;
   m_reweighting_output = reweighting_output > 0;
@@ -334,6 +344,10 @@ void Hadronisation_Reweighting::ResetEvent() {
   m_tmp_flavour_weights.assign(m_n_variations, 1.);
   m_tmp_gluon_weights.assign(m_n_variations, 1.);
   m_tmp_cluster_weights.assign(m_n_variations, 1.);
+  m_tmp_kt_weights.assign(m_n_variations, 1.);
+  m_tmp_soft_weights.assign(m_n_variations, 1.);
+  m_tmp_promptdecay_weights.assign(m_n_variations, 1.);
+  m_in_attempt = false;
   // OUTPUT
   m_tmp_flavour_records.clear();
   m_tmp_gluon_records.clear();
@@ -391,13 +405,38 @@ void Hadronisation_Reweighting::GluonSplittingReweighting(
 }
 
 void Hadronisation_Reweighting::ClusterSplittingReweighting(
+    const std::vector<double>& logprobs) {
+  ///////////////////////////////////////////////////////////////////////////
+  // Callback from Cluster_Splitter for each accepted z. The logprobs are the
+  // logs of the normalised fragmentation-function densities f(z)/int f, so
+  // that the accept/reject trials integrate out and the rejected z play no
+  // role; weight *= p_var / p_nom.
+  ///////////////////////////////////////////////////////////////////////////
+  if (m_n_variations <= 1) return;
+  for (size_t ivar=1; ivar<m_n_variations; ++ivar) {
+    const double ratio = std::exp(logprobs[ivar] - logprobs[0]);
+    if (std::isfinite(ratio)) {
+      m_tmp_cluster_weights[ivar] *= ratio;
+    }
+  }
+}
+
+void Hadronisation_Reweighting::ClusterSplittingReweightingAR(
     const bool accepted, const std::vector<double>& probs) {
   ///////////////////////////////////////////////////////////////////////////
+  // AHADIC:REWEIGHTING_FRAG: AR. The estimator used before the switch to
+  // normalised densities, kept for validation against it.
+  //
   // Callback from Cluster_Splitter for each accept/reject trial of the z
   // selection, with each variation normalised to its own tight maximum;
   // probs[0] is the nominal acceptance probability.
   // For accepted z: weight *= p_var / p_nom
   // For rejected z: weight *= (1 - p_var) / (1 - p_nom)
+  //
+  // This is the conditional-expectation counterpart of the estimator above:
+  // averaging it over the rejected trials gives exactly the ratio of the
+  // normalised densities, so both are unbiased and this one has the larger
+  // variance.
   ///////////////////////////////////////////////////////////////////////////
   if (m_n_variations <= 1) return;
   for (size_t ivar=1; ivar<m_n_variations; ++ivar) {
@@ -412,6 +451,41 @@ void Hadronisation_Reweighting::ClusterSplittingReweighting(
   }
 }
 
+void Hadronisation_Reweighting::BeginSplittingAttempt() {
+  ///////////////////////////////////////////////////////////////////////////
+  // Open a splitting attempt, see the declaration. Only one attempt can be
+  // open at a time: the soft cluster handler never re-enters a Splitter_Base,
+  // and the gluon and cluster decayers call their splitters at top level.
+  ///////////////////////////////////////////////////////////////////////////
+  if (m_n_variations <= 1) return;
+  ResetTmpWeights(m_tmp_kt_weights);
+  ResetTmpWeights(m_tmp_soft_weights);
+  ResetTmpWeights(m_tmp_promptdecay_weights);
+  m_in_attempt = true;
+}
+
+void Hadronisation_Reweighting::CommitSplittingAttempt() {
+  ///////////////////////////////////////////////////////////////////////////
+  // The attempt succeeded: commit what was drawn inside it.
+  ///////////////////////////////////////////////////////////////////////////
+  m_in_attempt = false;
+  if (m_n_variations <= 1) return;
+  AcceptTmpWeights(m_kt_weights, m_tmp_kt_weights);
+  AcceptTmpWeights(m_soft_weights, m_tmp_soft_weights);
+  AcceptTmpWeights(m_promptdecay_weights, m_tmp_promptdecay_weights);
+}
+
+void Hadronisation_Reweighting::AbortSplittingAttempt() {
+  ///////////////////////////////////////////////////////////////////////////
+  // The attempt failed: discard what was drawn inside it.
+  ///////////////////////////////////////////////////////////////////////////
+  m_in_attempt = false;
+  if (m_n_variations <= 1) return;
+  ResetTmpWeights(m_tmp_kt_weights);
+  ResetTmpWeights(m_tmp_soft_weights);
+  ResetTmpWeights(m_tmp_promptdecay_weights);
+}
+
 void Hadronisation_Reweighting::KTSelectionReweighting(
     const std::vector<double>& probs) {
   ///////////////////////////////////////////////////////////////////////////
@@ -419,12 +493,13 @@ void Hadronisation_Reweighting::KTSelectionReweighting(
   // normalised truncated-Gaussian densities of the realized kt, with a
   // variation's prob set to zero if kt lies above its tightened PT_MAX cut,
   // so that the accept/reject trials integrate out and rejected kt play no
-  // role; weight *= p_var / p_nom. Committed directly into the event
-  // weights, also when the enclosing splitting attempt fails later.
+  // role; weight *= p_var / p_nom.
   ///////////////////////////////////////////////////////////////////////////
   if (m_n_variations <= 1) return;
+  std::vector<double>& weights =
+    m_in_attempt ? m_tmp_kt_weights : m_kt_weights;
   for (size_t ivar=1; ivar<m_n_variations; ++ivar) {
-    m_kt_weights[ivar] *= probs[ivar] / probs[0];
+    weights[ivar] *= probs[ivar] / probs[0];
   }
 }
 
@@ -433,15 +508,16 @@ void Hadronisation_Reweighting::SoftClusterReweighting(
   ///////////////////////////////////////////////////////////////////////////
   // Callback from Soft_Cluster_Handler for the selected hadron (pair). The
   // selection probability is p = weight / totweight with the variant
-  // transition tables; weight *= p_var / p_nom. These weights are
-  // committed directly into the event weights.
+  // transition tables; weight *= p_var / p_nom.
   ///////////////////////////////////////////////////////////////////////////
   if (m_n_variations <= 1) return;
+  std::vector<double>& evtweights =
+    m_in_attempt ? m_tmp_soft_weights : m_soft_weights;
   const double prob_nom = weights[0] / totweights[0];
   for (size_t ivar=1; ivar<m_n_variations; ++ivar) {
     const double ratio = (weights[ivar] / totweights[ivar]) / prob_nom;
     if (std::isfinite(ratio)) {
-      m_soft_weights[ivar] *= ratio;
+      evtweights[ivar] *= ratio;
     }
   }
 }
@@ -454,11 +530,12 @@ void Hadronisation_Reweighting::PromptDecayReweighting(
   // (zeta > 0); probs are the per-variation decay probabilities.
   // For a decaying cluster:   weight *= p_var / p_nom
   // For a splitting cluster:  weight *= (1 - p_var) / (1 - p_nom)
-  // Committed directly into the event weights.
   ///////////////////////////////////////////////////////////////////////////
   if (m_n_variations <= 1) return;
+  std::vector<double>& weights =
+    m_in_attempt ? m_tmp_promptdecay_weights : m_promptdecay_weights;
   for (size_t ivar=1; ivar<m_n_variations; ++ivar) {
-    m_promptdecay_weights[ivar] *= decayed ?
+    weights[ivar] *= decayed ?
       probs[ivar] / probs[0] : (1. - probs[ivar]) / (1. - probs[0]);
   }
 }
@@ -937,4 +1014,289 @@ void Hadronisation_Reweighting::PrintVariationStatistics() {
     msg_Out() << Frame_Line{line.str(), table_size};
   }
   msg_Out() << Frame_Footer{table_size};
+}
+
+////////////////////////////////////////////////////////////////////////////
+//
+//  Hadronisation_Reweighting::Frag_Norm
+//
+//  Normalisation of the cluster-splitting fragmentation function, used only
+//  by the reweighting.  See the class documentation in the header.
+//
+////////////////////////////////////////////////////////////////////////////
+
+namespace {
+  // 8-point Gauss-Legendre, applied per panel.
+  const int    s_gln = 8;
+  const double s_glx[s_gln] =
+    {-9.60289856497536176e-01, -7.96666477413626728e-01,
+     -5.25532409916328991e-01, -1.83434642495649780e-01,
+      1.83434642495649780e-01,  5.25532409916328991e-01,
+      7.96666477413626728e-01,  9.60289856497536176e-01};
+  const double s_glw[s_gln] =
+    {1.01228536290376689e-01, 2.22381034453374343e-01,
+     3.13706645877887047e-01, 3.62683783378361768e-01,
+     3.62683783378361768e-01, 3.13706645877887047e-01,
+     2.22381034453374343e-01, 1.01228536290376689e-01};
+  // Base grid: geometric grading of z and of 1-z.
+  const double s_lograding     = 1.25;
+  const int    s_minhalfpanels = 4;
+  const int    s_maxhalfpanels = 12;
+}
+
+Hadronisation_Reweighting::Frag_Norm::Frag_Norm() :
+  m_nnodes(0), m_maxdphi(6.), m_grading(1.4), m_refrange(20.),
+  m_maxpanels(96)
+{}
+
+void Hadronisation_Reweighting::Frag_Norm::SetGrid(const double maxdphi,
+                                                   const double grading,
+                                                   const double refrange,
+                                                   const int panels) {
+  m_maxdphi   = maxdphi;
+  m_grading   = grading;
+  m_refrange  = refrange;
+  m_maxpanels = panels;
+}
+
+double Hadronisation_Reweighting::Frag_Norm::Exponent(const double gamma,
+                                                      const double kt02,
+                                                      const double scale) {
+  return dabs(gamma) > 5.e-3 ? gamma * scale / kt02 : 0.;
+}
+
+double Hadronisation_Reweighting::Frag_Norm::Peak(const double alpha,
+                                                  const double beta,
+                                                  const double c,
+                                                  const double zmin,
+                                                  const double zmax) {
+  // Stationary point of alpha ln z + beta ln(1-z) - c/z, i.e. the root of
+  // (alpha+beta) z^2 - (alpha-c) z - c = 0 inside the interval.
+  const double A = alpha + beta;
+  if (std::abs(A) > 1.e-10) {
+    const double disc = sqr(alpha-c) + 4.*A*c;
+    if (disc >= 0.) {
+      const double root = std::sqrt(disc);
+      for (const double sign : {1., -1.}) {
+        const double z = ((alpha-c) + sign*root)/(2.*A);
+        if (z > zmin && z < zmax) return z;
+      }
+    }
+  }
+  else if (std::abs(alpha-c) > 1.e-10) {
+    const double z = c/(c-alpha);
+    if (z > zmin && z < zmax) return z;
+  }
+  // No interior stationary point: the integrand is monotonic and peaks at the
+  // endpoint with the larger exponent.
+  const double flo = alpha*std::log(zmin) + beta*std::log1p(-zmin) - c/zmin;
+  const double fhi = alpha*std::log(zmax) + beta*std::log1p(-zmax) - c/zmax;
+  return fhi >= flo ? zmax : zmin;
+}
+
+void Hadronisation_Reweighting::Frag_Norm::SetRange(const double zmin,
+                                                    const double zmax,
+                                                    const double alpha,
+                                                    const double beta,
+                                                    const double cmin,
+                                                    const double cmax) {
+  m_edge.clear();
+
+  // --- base grid, geometric in z up to the centre and in 1-z beyond it
+  const double zc   = 0.5*(zmin+zmax);
+  const double span = Max(std::log(zc/zmin), std::log((1.-zc)/(1.-zmax)));
+  const int nhalf   = Max(s_minhalfpanels,
+                          Min(s_maxhalfpanels, int(span/s_lograding)+1));
+  m_edge.push_back(zmin);
+  for (int k=1; k<nhalf; ++k)
+    m_edge.push_back(zmin*std::pow(zc/zmin, double(k)/nhalf));
+  m_edge.push_back(zc);
+  for (int k=1; k<nhalf; ++k)
+    m_edge.push_back(1.-(1.-zmax)*
+                     std::pow((1.-zc)/(1.-zmax), double(nhalf-k)/nhalf));
+  m_edge.push_back(zmax);
+
+  // --- does the base grid already resolve exp(-cmax/z)?  The exponent
+  // changes by cmax*(1/a-1/b) across a panel [a,b].
+  bool refine = false;
+  for (size_t ip=0; ip+1<m_edge.size(); ++ip) {
+    if (cmax*(1./m_edge[ip] - 1./m_edge[ip+1]) > m_maxdphi) {
+      refine = true;
+      break;
+    }
+  }
+
+  // --- refinement, geometric in the distance from the peak in u = 1/z
+  if (refine) {
+    const double zpeak = Peak(alpha, beta, cmax, zmin, zmax);
+    const double upeak = 1./zpeak, ulo = 1./zmax, uhi = 1./zmin;
+    // Carried out to where even the least peaked variation has died away;
+    // cmin==0 means one variation has no exponential at all, and the extent
+    // is then limited by the interval and by the panel budget.
+    const double reach = cmin > 0. ? m_refrange/cmin :
+                         std::numeric_limits<double>::max();
+    int budget = m_maxpanels - int(m_edge.size()) + 1;
+    for (const double dir : {1., -1.}) {
+      double du = m_maxdphi/cmax;
+      while (budget > 0 && du <= reach) {
+        const double u = upeak + dir*du;
+        if (u <= ulo || u >= uhi) break;
+        m_edge.push_back(1./u);
+        --budget;
+        du *= m_grading;
+      }
+    }
+    std::sort(m_edge.begin(), m_edge.end());
+  }
+
+  // --- drop degenerate panels, which carry no weight but cost nodes
+  std::vector<double>::iterator last = m_edge.begin();
+  for (std::vector<double>::iterator it=m_edge.begin()+1;
+       it!=m_edge.end(); ++it) {
+    if (*it - *last > 1.e-14*Max(std::abs(*last), std::abs(*it))) {
+      ++last;
+      *last = *it;
+    }
+  }
+  m_edge.erase(last+1, m_edge.end());
+
+  BuildNodes();
+}
+
+void Hadronisation_Reweighting::Frag_Norm::BuildNodes() {
+  const size_t npanels = m_edge.size()-1;
+  const size_t n = npanels*s_gln;
+  if (m_w.size() < n) {
+    m_w.resize(n); m_logz.resize(n); m_log1mz.resize(n); m_invz.resize(n);
+    m_e.resize(n);
+  }
+  size_t i = 0;
+  for (size_t ip=0; ip<npanels; ++ip) {
+    const double a = m_edge[ip], b = m_edge[ip+1];
+    const double mid = 0.5*(a+b), half = 0.5*(b-a);
+    for (int k=0; k<s_gln; ++k, ++i) {
+      const double z = mid + half*s_glx[k];
+      m_w[i]      = half*s_glw[k];
+      m_logz[i]   = std::log(z);
+      m_log1mz[i] = std::log1p(-z);
+      m_invz[i]   = 1./z;
+    }
+  }
+  m_nnodes = i;
+}
+
+double Hadronisation_Reweighting::Frag_Norm::operator()(const double alpha,
+                                                        const double beta,
+                                                        const double c) const {
+  double emax = -std::numeric_limits<double>::max();
+  for (size_t i=0; i<m_nnodes; ++i) {
+    m_e[i] = alpha*m_logz[i] + beta*m_log1mz[i] - c*m_invz[i];
+    if (m_e[i] > emax) emax = m_e[i];
+  }
+  double sum = 0.;
+  for (size_t i=0; i<m_nnodes; ++i) sum += m_w[i]*std::exp(m_e[i]-emax);
+  return emax + std::log(sum);
+}
+
+void Hadronisation_Reweighting::Frag_Norm::Verify(
+    const Hadronisation_Reweighting& rw) {
+  ///////////////////////////////////////////////////////////////////////////
+  // Self-check of the reweighting quadrature, run once at initialisation for
+  // the variations that are actually configured.
+  //
+  // The weight of an accepted z is f_var(z)/N_var divided by f_nom(z)/N_nom.
+  // The f's are evaluated in closed form, so any error of the quadrature
+  // enters log(weight) as the constant N-error difference, identical for
+  // every z of that splitting and hence compounding over the splittings of an
+  // event. It does not cancel between variations with different c. A rule
+  // that silently stops resolving exp(-c/z) therefore does not degrade
+  // gracefully - it produces individual events with astronomically large
+  // weights. The sweep below covers the kinematic reach of the cluster
+  // splitting and compares the production rule against a much finer one.
+  //
+  // Silent unless something is found.
+  ///////////////////////////////////////////////////////////////////////////
+  static const double zmins[] =
+    {1.e-6,1.e-5,1.e-4,1.e-3,1.e-2,0.05,0.1,0.2,0.4};
+  static const double zmaxs[] = {0.2,0.3,0.5,0.7,0.9,0.99,0.999,0.9999};
+  // scale = kt2 + masses^2, with kt2 <= kT_max^2 and masses the (at least
+  // unit) sum of constituent masses of the splitting, generously covered.
+  static const double scales[] = {1.,4.,25.,100.,400.,1000.,2500.};
+  // Cluster types in the order Cluster_Splitter::Init() uses them.
+  static const char* names[] = {"L","H","D","B"};
+  static const double s_warn = 1.e-3, s_fail = 5.e-2;
+
+  const size_t nvar = rw.NumberOfVariations();
+  if (nvar <= 1) return;
+
+  std::vector<double> alpha[4], beta[4], gamma[4];
+  for (int t=0; t<4; ++t) {
+    alpha[t] = rw.GetVariationVector(std::string("alpha")+names[t]);
+    beta[t]  = rw.GetVariationVector(std::string("beta")+names[t]);
+    gamma[t] = rw.GetVariationVector(std::string("gamma")+names[t]);
+  }
+  const std::vector<double> kt0 = rw.GetVariationVector("kT_0");
+  std::vector<double> kt02(nvar);
+  for (size_t ivar=0; ivar<nvar; ++ivar) kt02[ivar] = sqr(kt0[ivar]);
+
+  Frag_Norm prod, ref;
+  ref.SetGrid(1.0,1.1,30.,2000);
+  double worst = 0.;
+  std::string worstcfg;
+  std::vector<double> cs(nvar);
+
+  for (int t=0; t<4; ++t) {
+    for (const double zmin : zmins) {
+      for (const double zmax : zmaxs) {
+        if (zmax<=3.*zmin) continue;
+        for (const double scale : scales) {
+          double cmin = std::numeric_limits<double>::max(), cmax = 0.;
+          size_t ipeak = 0;
+          for (size_t ivar=0; ivar<nvar; ++ivar) {
+            cs[ivar] = Exponent(gamma[t][ivar],kt02[ivar],scale);
+            const double ac = dabs(cs[ivar]);
+            if (ac<cmin) cmin = ac;
+            if (ac>cmax) { cmax = ac; ipeak = ivar; }
+          }
+          prod.SetRange(zmin,zmax,alpha[t][ipeak],beta[t][ipeak],cmin,cmax);
+          ref.SetRange(zmin,zmax,alpha[t][ipeak],beta[t][ipeak],cmin,cmax);
+          const double dnom = prod(alpha[t][0],beta[t][0],cs[0])
+                            - ref(alpha[t][0],beta[t][0],cs[0]);
+          for (size_t ivar=1; ivar<nvar; ++ivar) {
+            const double bias =
+              dnom - (prod(alpha[t][ivar],beta[t][ivar],cs[ivar])
+                      - ref(alpha[t][ivar],beta[t][ivar],cs[ivar]));
+            if (dabs(bias)>dabs(worst)) {
+              worst    = bias;
+              worstcfg = std::string("type ")+names[t]+
+                ", variation "+ToString(ivar)+
+                ", zmin="+ToString(zmin)+", zmax="+ToString(zmax)+
+                ", kt2+masses^2="+ToString(scale)+
+                ", c_nom="+ToString(cs[0])+", c_var="+ToString(cs[ivar]);
+            }
+          }
+        }
+      }
+    }
+  }
+
+  if (dabs(worst)>s_fail) {
+    THROW(fatal_error,
+          std::string("The AHADIC reweighting quadrature cannot resolve the "
+                      "requested variations.\n")
+          + "Largest spurious factor on a single cluster splitting: "
+          + ToString(std::exp(dabs(worst))) + " (d(log w) = "
+          + ToString(worst) + ")\n"
+          + "at " + worstcfg + ".\n"
+          + "This error compounds over the splittings of an event and would "
+            "produce individual events with very large weights.\n"
+          + "Please narrow the range of the fragmentation-function variations "
+            "(alpha/beta/gamma, KT_0).");
+  }
+  else if (dabs(worst)>s_warn) {
+    msg_Error()<<METHOD<<": the reweighting quadrature reaches d(log w) = "
+               <<worst<<" at "<<worstcfg<<".\n"
+               <<"   Weights remain usable but the variation range is close "
+               <<"to what the rule can resolve.\n";
+  }
 }

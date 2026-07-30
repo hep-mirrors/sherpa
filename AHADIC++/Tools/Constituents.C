@@ -76,7 +76,7 @@ Constituents::Constituents(bool diquarks, Hadronisation_Reweighting * reweightin
     CCMap[Flavour(kf_c)]->m_weight.push_back(0.);
     CCMap[Flavour(kf_b)]->m_weight.push_back(0.);
 
-    if (diquarks && v_bfrac[0]>0.) {
+    if (diquarks) {
       // Light Di-quarks, spin 0
       CCMap[Flavour(kf_ud_0)]->m_weight.push_back(bfrac*ud0*norm);
       CCMap[Flavour(kf_sd_0)]->m_weight.push_back(bfrac*qssup*norm);

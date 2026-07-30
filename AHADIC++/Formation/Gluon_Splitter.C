@@ -33,6 +33,8 @@ bool Gluon_Splitter::MakeLongitudinalMomenta() {
     m_z[1] = SelectZ(m_zmin[1],m_zmax[1],0);
     if (m_z[1] < 0.) return false;
     if (CalculateXY()) {
+      if (p_reweighting->Active())
+	p_reweighting->GluonSplittingReweighting(m_zprobs);
       p_reweighting->RecordGluonZ(m_z[1]); // OUTPUT
       return true;
     }
@@ -118,21 +120,14 @@ WeightFunction(const double & z,const double & zmin,const double & zmax,
   return value;
 }
 
-void Gluon_Splitter::ZRejected(const double wgt, const double & z,
-			       const double & zmin,const double & zmax,
-			       const unsigned int & cnt) {
-  // Gluon fragmentation function is integrable — no accept/reject correction needed.
-}
-
 void Gluon_Splitter::ZAccepted(const double wgt, const double & z,
 			       const double & zmin,const double & zmax,
 			       const unsigned int & cnt) {
   if (!p_reweighting->Active()) return;
-  std::vector<double> probs(m_n_variations);
+  m_zprobs.resize(m_n_variations);
   for (size_t ivar=0; ivar<m_n_variations; ++ivar) {
-    probs[ivar] = FragmentationFunctionProb(z,zmin,zmax,m_alpha[ivar]);
+    m_zprobs[ivar] = FragmentationFunctionProb(z,zmin,zmax,m_alpha[ivar]);
   }
-  p_reweighting->GluonSplittingReweighting(probs);
 }
 
 bool Gluon_Splitter::CheckKinematics() {

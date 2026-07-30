@@ -55,6 +55,7 @@ operator()(Proto_Particle * part1,Proto_Particle * part2,
 
   for(size_t attempts(0); attempts<m_attempts; ++attempts) {
     ResetSplittingWeights();
+    p_reweighting->BeginSplittingAttempt();
 
     // perform cluster splitting
     PopFlavours();
@@ -67,11 +68,12 @@ operator()(Proto_Particle * part1,Proto_Particle * part2,
     if(!FillParticlesInLists())
       continue;
 
-    // if everything was successful, accept weights and go on
+    p_reweighting->CommitSplittingAttempt();
     AcceptSplittingWeights();
     p_reweighting->AcceptFlavourSelectionWeights();
     return true;
   }
+  p_reweighting->AbortSplittingAttempt();
   return false;
 }
 

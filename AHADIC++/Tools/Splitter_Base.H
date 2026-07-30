@@ -84,7 +84,7 @@ namespace AHADIC {
     virtual double SelectZ(const double, const double, const unsigned int);
 
     virtual void ZRejected(const double wgt, const double &, const double &,
-			   const double &, const unsigned int &) = 0;
+			   const double &, const unsigned int &) {}
     virtual void ZAccepted(const double wgt, const double &, const double &,
 			   const double &, const unsigned int &) = 0;
 

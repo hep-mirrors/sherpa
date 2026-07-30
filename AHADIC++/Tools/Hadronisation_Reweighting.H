@@ -15,10 +15,116 @@ namespace ATOOLS { class Histogram; }
 namespace AHADIC {
 
   class Hadronisation_Reweighting {
+  public:
+
+    /*!
+      Logarithm of the normalisation of the cluster-splitting fragmentation
+      function,
+
+        N(alpha,beta,c) = int_zmin^zmax dz z^alpha (1-z)^beta exp(-c/z),
+
+      as needed by the on-the-fly reweighting.  Only the reweighting uses this;
+      the z sampling in Cluster_Splitter::FragmentationFunction never does, so
+      nothing in here can change the generated event sample or the random
+      number sequence.
+
+      The node set is built once per accepted z, by SetRange(), and is then
+      common to every variation.  That is deliberate: the reweighting needs
+      N_var/N_nom, and on a common node set the quadrature errors of the two
+      integrals largely cancel.  For the same reason the rule must not be
+      replaced by one whose nodes depend on alpha, beta or c.
+
+      Resolution.  The exponent alpha*ln z + beta*ln(1-z) - c/z is linear in
+      u = 1/z, and the exp(-c/z) factor confines the integrand to a window of
+      width ~1/c in u around its peak.  A grid graded only in z and in 1-z has
+      panel widths that do not depend on c at all, so beyond some c the peak
+      falls between two nodes and N is underestimated by an unbounded factor.
+      Because the numerator of the reweighting factor is evaluated exactly,
+      that error goes straight into the weight, and it does not cancel between
+      variations with different c.  The grid is therefore the union of
+
+        - a base grid graded geometrically in z below the centre of the
+          interval and in 1-z above it, which resolves z^alpha, (1-z)^beta and
+          any moderate c, and
+
+        - when the base grid is too coarse for the largest c in play, a
+          refinement graded geometrically in |u - u_peak| about the peak of
+          the most strongly peaked variation.  Its first step resolves the
+          largest c; the geometric growth then resolves each smaller c out at
+          the distance where that variation is still significant.
+
+      The refinement is skipped entirely when the base grid already resolves
+      the largest c, which is the common case, so ordinary splittings pay
+      nothing.
+    */
+    class Frag_Norm {
+    public:
+      Frag_Norm();
+
+      /*!
+        Prepare the node set for [zmin,zmax].  alpha and beta are those of the
+        most strongly peaked variation and cmin/cmax the smallest and largest
+        |c| over all variations; they only steer where nodes are placed, never
+        what is integrated.  Requires 0 < zmin < zmax < 1.
+      */
+      void SetRange(const double zmin, const double zmax,
+                    const double alpha, const double beta,
+                    const double cmin, const double cmax);
+
+      //! log N(alpha,beta,c) on the node set prepared by SetRange().
+      double operator()(const double alpha, const double beta,
+                        const double c) const;
+
+      size_t NNodes()  const { return m_nnodes; }
+      size_t NPanels() const { return m_edge.empty() ? 0 : m_edge.size()-1; }
+
+      //! Peak of z^alpha (1-z)^beta exp(-c/z) on [zmin,zmax].
+      static double Peak(const double alpha, const double beta, const double c,
+                         const double zmin, const double zmax);
+
+      /*!
+        The exponent c of the fragmentation function, shared with
+        Cluster_Splitter::FragExponent so that the self-check below and the
+        reweighting cannot drift apart.
+      */
+      static double Exponent(const double gamma, const double kt02,
+                             const double scale);
+
+      /*!
+        Startup self-check, run once from Initialize() for the variations that
+        are actually configured.  Sweeps the kinematic reach of the cluster
+        splitting and compares this rule against a deliberately much finer one.
+        Silent unless it finds a problem.
+      */
+      static void Verify(const Hadronisation_Reweighting& rw);
+
+      /*!
+        Grid controls.  The defaults are the ones used in production; Verify()
+        builds a second, deliberately finer instance and compares against it.
+        maxdphi  - exponent change tolerated across one panel
+        grading  - growth factor of the refinement steps
+        refrange - how far down from the peak, in units of the exponent, the
+                   refinement is carried
+        panels   - hard cap on the number of panels
+      */
+      void SetGrid(const double maxdphi, const double grading,
+                   const double refrange, const int panels);
+
+    private:
+      std::vector<double> m_w, m_logz, m_log1mz, m_invz, m_edge;
+      mutable std::vector<double> m_e;
+      size_t m_nnodes;
+      double m_maxdphi, m_grading, m_refrange;
+      int    m_maxpanels;
+
+      void BuildNodes();
+    };
+
   private:
     size_t m_n_variations;
     double m_max_reweight_factor;
     int    m_reweight_max_nsplit;
+    bool   m_frag_ar {false};
     std::map<std::string, std::vector<double>> m_variation_vectors;
 
     std::vector<double> m_variation_weights;
@@ -38,6 +144,12 @@ namespace AHADIC {
     std::vector<double> m_tmp_flavour_weights;
     std::vector<double> m_tmp_gluon_weights;
     std::vector<double> m_tmp_cluster_weights;
+    // The remaining three channels are committed directly while no splitting
+    // attempt is open, and buffered like the ones above while one is.
+    bool m_in_attempt {false};
+    std::vector<double> m_tmp_kt_weights;
+    std::vector<double> m_tmp_soft_weights;
+    std::vector<double> m_tmp_promptdecay_weights;
 
     void CheckVariationGuards();
     void AcceptTmpWeights(std::vector<double>& weights,
@@ -121,13 +233,15 @@ namespace AHADIC {
       DiscardTmpRecords(m_tmp_gluon_records); // OUTPUT
     }
 
-    // Cluster splitting z selection (accept/reject reweighting per z trial)
+    // Cluster splitting z selection (analytic density ratio, accepted z only)
     inline bool DoClusterSplittingReweighting(const int nsplit) const {
       return m_n_variations > 1 &&
              (m_reweight_max_nsplit < 0 || nsplit < m_reweight_max_nsplit);
     }
-    void ClusterSplittingReweighting(const bool accepted,
-                                     const std::vector<double>& probs);
+    inline bool ARFragReweighting() const { return m_frag_ar; }
+    void ClusterSplittingReweighting(const std::vector<double>& logprobs);
+    void ClusterSplittingReweightingAR(const bool accepted,
+                                       const std::vector<double>& probs);
     inline void AcceptClusterSplittingWeights() {
       AcceptTmpWeights(m_cluster_weights, m_tmp_cluster_weights);
       CommitTmpRecords(m_tmp_cluster_records); // OUTPUT
@@ -137,15 +251,22 @@ namespace AHADIC {
       DiscardTmpRecords(m_tmp_cluster_records); // OUTPUT
     }
 
-    // Transverse momentum selection (committed directly)
+    // A splitting attempt is a transaction: everything drawn inside it is
+    // discarded if the attempt fails, because only the successful attempt is
+    // realised in the event. Weights of the three channels below are committed
+    // immediately when no attempt is open, and buffered while one is.
+    void BeginSplittingAttempt();
+    void CommitSplittingAttempt();
+    void AbortSplittingAttempt();
+
+    // Transverse momentum selection
     void KTSelectionReweighting(const std::vector<double>& probs);
 
-    // Hadron pair selection in soft cluster decays (committed directly)
+    // Hadron pair selection in soft cluster decays
     void SoftClusterReweighting(const std::vector<double>& weights,
                                 const std::vector<double>& totweights);
 
     // Bernoulli prompt-decay decision, only stochastic for zeta > 0
-    // (committed directly)
     void PromptDecayReweighting(const bool decayed,
                                 const std::vector<double>& probs);
 

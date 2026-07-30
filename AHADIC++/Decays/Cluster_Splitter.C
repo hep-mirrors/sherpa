@@ -3,6 +3,9 @@
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Org/Exception.H"
+#include "ATOOLS/Org/MyStrStream.H"
+#include <limits>
+#include <string>
 
 using namespace AHADIC;
 using namespace ATOOLS;
@@ -14,19 +17,13 @@ using namespace std;
 // mode 2: new mode, not using z boundaries computed before (most likely broken)
 #define AHADIC_CLUSTER_SPLITTER_MODE 1
 
-// mode 0: usual fragmentation function
-// mode 1: simplified fragmentation function, that can be integrated
-// mode 2: ...
-#define AHADIC_FRAGMENTATION_FUNCTION 0
-
 Cluster_Splitter::Cluster_Splitter(list<Cluster *> * cluster_list,
 				   Soft_Cluster_Handler * softclusters,
 				   Flavour_Selector     * flavourselector,
 				   KT_Selector          * ktselector,
 				   Hadronisation_Reweighting   * reweighting) :
   Splitter_Base(cluster_list,softclusters,flavourselector,ktselector,
-		reweighting),
-  m_output(false)
+		reweighting)
 {
 }
 
@@ -58,22 +55,14 @@ void Cluster_Splitter::Init() {
   m_gamma[3] = p_reweighting->GetVariationVector("gammaB");
 
   const std::vector<double> _kt0s = p_reweighting->GetVariationVector("kT_0");
+  m_kt02.clear();
+  m_kt02.reserve(_kt0s.size());
   for (auto _kt0 : _kt0s)
     m_kt02.push_back(sqr(_kt0));
 
-  // for the reweighting we need to find the min/max values of each
-  // of the parameters
-  for(int i{0}; i<4; ++i) {
-    m_alpha_max[i] = *std::max_element(m_alpha[i].begin(), m_alpha[i].end());
-    m_alpha_min[i] = *std::min_element(m_alpha[i].begin(), m_alpha[i].end());
-
-    m_beta_max[i] = *std::max_element(m_beta[i].begin(), m_beta[i].end());
-    m_beta_min[i] = *std::min_element(m_beta[i].begin(), m_beta[i].end());
-
-    m_gamma_max[i] = *std::max_element(m_gamma[i].begin(), m_gamma[i].end());
-    m_gamma_min[i] = *std::min_element(m_gamma[i].begin(), m_gamma[i].end());
-  }
-
+  m_cvals.resize(m_n_variations);
+  m_logprobs.resize(m_n_variations);
+  m_probs.resize(m_n_variations);
 
   m_analyse  = false; //hadpars->Switch("Analysis");
   if (m_analyse) {
@@ -91,7 +80,7 @@ void Cluster_Splitter::Init() {
 }
 
 bool Cluster_Splitter::MakeLongitudinalMomenta() {
-  CalculateLimits();
+  if (!CalculateLimits()) return false;
   FixCoefficients();
   switch (m_mode) {
   case 3:
@@ -133,7 +122,7 @@ void Cluster_Splitter::FixCoefficients() {
   m_masses = Max(1.,sum_mass);
 }
 
-void Cluster_Splitter::CalculateLimits() {
+bool Cluster_Splitter::CalculateLimits() {
   // Masses from Splitter_Base:
   // - constitutents:
   //   m_mass[0,1] and m_m2[0,1] = sqr(m_mass[0,1]), m_popped_mass, m_popped_mass2
@@ -143,8 +132,10 @@ void Cluster_Splitter::CalculateLimits() {
   //   m_mdec is lightest decay transition
   for (size_t i=0;i<2;i++)
     m_m2min[i] = Min(m_minQ2[i],m_mdec2[i]);
-  const double lambda = sqrt(sqr(m_Q2-m_m2min[0]-m_m2min[1])-
-		       4.*(m_m2min[0]+m_kt2)*(m_m2min[1]+m_kt2));
+  const double arg = sqr(m_Q2-m_m2min[0]-m_m2min[1])-
+                     4.*(m_m2min[0]+m_kt2)*(m_m2min[1]+m_kt2);
+  if (arg<0.) return false;
+  const double lambda = sqrt(arg);
   for (size_t i=0;i<2;i++) {
     const double centre = m_Q2-m_m2min[1-i]+m_m2min[i];
     m_zmin[i] = (centre-lambda)/(2.*m_Q2);
@@ -152,6 +143,7 @@ void Cluster_Splitter::CalculateLimits() {
     m_mean[i]  = sqrt(m_kt02[0]);
     m_sigma[i] = sqrt(m_kt02[0]);
   }
+  return true;
 }
 
 bool Cluster_Splitter::MakeLongitudinalMomentaZ() {
@@ -260,34 +252,48 @@ bool Cluster_Splitter::CheckKinematics() {
   return true;
 }
 
-double Cluster_Splitter::FragmentationFunctionProb(double z, double zmin, double zmax,
-						   double gamma, double kt02) {
-  if(zmax - zmin < 0.05) {
-    // std::cout << "Rejected: " << zmin << " " << zmax << " " << zmax - zmin
-    // 	      << " " << m_accepted << " " << m_rejected
-    // 	      << std::endl;
-    m_rejected++;
-    return 1;
-  } else {
-    m_accepted++;
-  }
-  // We just need to reweight the Fragmentation-Function witht the corresponding
-  // integral
-  auto f = [](double _z, double arg, double zmax) -> double {
-    return (1-_z) * exp(-arg/_z);
-  };
-  msg_Error() << "FragmentationFunctionProb not implemented (antiderivative requires Ei)\n";
-  auto F = [](double _z, double arg) -> double {
-    // 1/2 (-e^(-g/x) x (-2 - g + x) + g (2 + g) Ei(-g/x))
-    //return 0.5*(-exp(-arg/_z)*_z*(-2-arg+_z) + arg*(2+arg)*std::expint(-arg/_z));
-    return 0.;
-  };
-  double arg    = gamma*(m_kt2+m_masses*m_masses)/kt02;
+double Cluster_Splitter::FragExponent(const double gamma, const double kt02,
+				      const double scale) const {
+  return Frag_Norm::Exponent(gamma,kt02,scale);
+}
 
-  //double arg    = gamma*(m_kt2)/kt02*10;
-  //double arg    = gamma;
-  const auto integral = (F(zmax,arg) - F(zmin,arg));
-  return f(z,arg,zmax) / integral;
+bool Cluster_Splitter::FillLogDensities(const double z, const double zmin,
+					const double zmax,
+					const unsigned int cnt) {
+  // The density of the z accepted by SelectZ() is f(z)/int f, irrespective of
+  // the flat proposal and of the rejected trials, see ZAccepted.  Fill the log
+  // of it for every variation.
+  if (!(zmin>0.) || !(zmax<1.) || !(z>zmin) || !(z<zmax)) return false;
+  const int t = m_type[cnt];
+  const double scale = m_kt2 + m_masses*m_masses;
+  // The exponents of all variations are needed before the nodes can be placed:
+  // the rule has to resolve exp(-c/z) for the most strongly peaked of them
+  // while staying common to all of them, see Frag_Norm.
+  double cmin = std::numeric_limits<double>::max(), cmax = 0.;
+  size_t ipeak = 0;
+  for (size_t ivar=0; ivar<m_n_variations; ++ivar) {
+    m_cvals[ivar] = FragExponent(m_gamma[t][ivar],m_kt02[ivar],scale);
+    const double ac = dabs(m_cvals[ivar]);
+    if (ac<cmin) cmin = ac;
+    if (ac>cmax) { cmax = ac; ipeak = ivar; }
+  }
+  m_fragnorm.SetRange(zmin,zmax,m_alpha[t][ipeak],m_beta[t][ipeak],cmin,cmax);
+  const double logz = std::log(z), log1mz = std::log1p(-z), invz = 1./z;
+  for (size_t ivar=0; ivar<m_n_variations; ++ivar) {
+    const double alpha = m_alpha[t][ivar], beta = m_beta[t][ivar];
+    const double c     = m_cvals[ivar];
+    m_logprobs[ivar] = (alpha*logz + beta*log1mz - c*invz)
+                     - m_fragnorm(alpha,beta,c);
+  }
+  return true;
+}
+
+void Cluster_Splitter::FillProbs(const double wgt, const double z,
+				 const double zmin, const double zmax,
+				 const unsigned int cnt) {
+  m_probs[0] = wgt;
+  for (size_t ivar=1; ivar<m_n_variations; ++ivar)
+    m_probs[ivar] = FragmentationFunction(z,zmin,zmax,cnt,ivar);
 }
 
 double Cluster_Splitter::FragmentationFunction(double z, double zmin, double zmax,
@@ -301,15 +307,23 @@ double Cluster_Splitter::FragmentationFunction(double z, double zmin, double zma
 double Cluster_Splitter::FragmentationFunction(double z, double zmin, double zmax,
 					       double alpha, double beta,
 					       double gamma, double kt02) {
-#if AHADIC_FRAGMENTATION_FUNCTION == 0
+  // This is the sampling path: it defines the accept/reject decisions of
+  // SelectZ and hence the random number sequence.  Do not rewrite the
+  // expressions below - not even into the mathematically equivalent
+  // exp(alpha*log(z)+...) of LogNorm() - or the nominal event sample changes.
+  // The one exception is the guarded branch at the end, which is only taken
+  // where the expressions below have no meaning at all; see there.
   if (m_mode == 2) {
     const double c = dabs(gamma) > 5.e-3
       ? gamma * (m_kt2 + m_masses*m_masses) / kt02
       : 0.;
-    auto g = [&](double _z) {
-      return pow(_z, alpha) * pow(1.-_z, beta) * exp(-c / _z);
-    };
-    double norm = std::max(g(zmin), g(zmax));
+    // The maximum of the fragmentation function on [zmin,zmax] is attained at
+    // one of the interval ends or at an interior stationary point of
+    // alpha ln z + beta ln(1-z) - c/z, i.e. a root of
+    // (alpha+beta) z^2 - (alpha-c) z - c = 0. Collect those candidates once so
+    // that both evaluations below use exactly the same set.
+    double probe[4] = { zmin, zmax, 0., 0. };
+    size_t nprobe = 2;
     const double A = alpha + beta;
     if (std::abs(A) > 1e-10) {
       const double disc = sqr(alpha - c) + 4. * A * c;
@@ -317,16 +331,57 @@ double Cluster_Splitter::FragmentationFunction(double z, double zmin, double zma
         for (const double sign : {1., -1.}) {
           const double z_crit = ((alpha - c) + sign * sqrt(disc)) / (2. * A);
           if (z_crit > zmin && z_crit < zmax)
-            norm = std::max(norm, g(z_crit));
+            probe[nprobe++] = z_crit;
         }
       }
     } else if (std::abs(alpha - c) > 1e-10) {
       const double z_crit = c / (c - alpha);
       if (z_crit > zmin && z_crit < zmax)
-        norm = std::max(norm, g(z_crit));
+        probe[nprobe++] = z_crit;
     }
-    return std::min(1.0, g(z) / norm);
+    auto g = [&](double _z) {
+      return pow(_z, alpha) * pow(1.-_z, beta) * exp(-c / _z);
+    };
+    double norm = std::max(g(probe[0]), g(probe[1]));
+    for (size_t i=2; i<nprobe; ++i) norm = std::max(norm, g(probe[i]));
+    // Take the direct route only while norm is a normal, finite, positive
+    // number, i.e. while g(z)/norm carries full precision. Everything else -
+    // zero, subnormal, infinite, NaN - goes through the log-space branch.
+    if (norm >= std::numeric_limits<double>::min() && std::isfinite(norm))
+      return std::min(1.0, g(z) / norm);
+
+    ///////////////////////////////////////////////////////////////////////////
+    // g is built as a product, so once c/z exceeds about 745 its exp(-c/z)
+    // factor underflows to zero at every probe point and norm becomes zero (or
+    // subnormal, which is just as useless). g(z)/norm is then 0/0 or inf, and
+    // because std::min(1.0,NaN) and std::min(1.0,inf) both return 1.0 every
+    // trial would be accepted: SelectZ would hand back a z drawn uniformly on
+    // [zmin,zmax] while the reweighting keeps using the true, sharply peaked
+    // density. That mismatch is not a small effect - a single such draw
+    // produced an event weight of 2e15 - and it also means the nominal z was
+    // not distributed according to the fragmentation function.
+    //
+    // The same degeneracy exists in the opposite direction: for gamma < 0 the
+    // factor becomes exp(+|c|/z) and overflows, giving norm = inf and again
+    // inf/inf = NaN. Both are covered by the guard above.
+    //
+    // Repeat the identical comparison with the difference taken in log space,
+    // where nothing can underflow. This branch is reached only when the
+    // expression above is meaningless, so the accept/reject decisions, and
+    // with them the random number sequence, are untouched wherever it was well
+    // defined. Measured incidence: 1 in 6.7e6 z draws.
+    ///////////////////////////////////////////////////////////////////////////
+    auto lg = [&](double _z) {
+      return alpha*std::log(_z) + beta*std::log1p(-_z) - c/_z;
+    };
+    double lognorm = std::max(lg(probe[0]), lg(probe[1]));
+    for (size_t i=2; i<nprobe; ++i) lognorm = std::max(lognorm, lg(probe[i]));
+    return std::min(1.0, std::exp(lg(z) - lognorm));
   }
+
+  // Note: the branch below has no exp(-c/z) factor, so f can only underflow
+  // for z below ~1e-123, which the kinematics cannot reach. It therefore needs
+  // no equivalent guard.
 
   // f(z) = z^alpha * (1-z)^beta
   // interior mode from d/dz[log f] = alpha/z - beta/(1-z) = 0 => z* = alpha/(alpha+beta)
@@ -340,7 +395,6 @@ double Cluster_Splitter::FragmentationFunction(double z, double zmin, double zma
       norm = std::max(norm, f(z_mode));
   }
   return std::min(1.0, f(z) / norm);
-#endif
 }
 
 double Cluster_Splitter::
@@ -349,39 +403,32 @@ WeightFunction(const double & z,const double & zmin,const double & zmax,
   return FragmentationFunction(z, zmin, zmax, cnt, 0);
 }
 
-void Cluster_Splitter::ZRejected(const double wgt, const double & z,
-				 const double & zmin,const double & zmax,
-				 const unsigned int & cnt) {
-#if AHADIC_FRAGMENTATION_FUNCTION == 1
-  return;
-#endif
-  if(!p_reweighting->DoClusterSplittingReweighting(m_nsplit)) return;
-  std::vector<double> probs(m_n_variations);
-  probs[0] = wgt;
-  for (size_t ivar=1; ivar<m_n_variations; ++ivar) {
-    probs[ivar] = FragmentationFunction(z,zmin,zmax,cnt,ivar);
-  }
-  p_reweighting->ClusterSplittingReweighting(false, probs);
-}
-
 void Cluster_Splitter::ZAccepted(const double wgt, const double & z,
 				 const double & zmin,const double & zmax,
 				 const unsigned int & cnt) {
+  // The value accepted by an accept/reject loop is distributed according to
+  // f(z)/int f, independent of the proposal and of the number of rejected
+  // trials.  Averaging the trial-by-trial weight of the whole accept/reject
+  // chain over the rejections gives exactly the ratio of these normalised
+  // densities, so using it directly is unbiased and has a strictly smaller
+  // variance.  This mirrors what KT_Selector and Gluon_Splitter do.
   if(!p_reweighting->DoClusterSplittingReweighting(m_nsplit)) return;
-  std::vector<double> probs(m_n_variations);
-#if AHADIC_FRAGMENTATION_FUNCTION == 1
-  const auto type = m_type[cnt];
-  probs[0] = FragmentationFunctionProb(z,zmin,zmax,m_gamma[type][0],m_kt02[0]);
-  for (size_t ivar=1; ivar<m_n_variations; ++ivar) {
-    probs[ivar] = FragmentationFunctionProb(z,zmin,zmax,m_gamma[type][ivar],m_kt02[ivar]);
+  if (p_reweighting->ARFragReweighting()) {
+    FillProbs(wgt,z,zmin,zmax,cnt);
+    p_reweighting->ClusterSplittingReweightingAR(true,m_probs);
+    return;
   }
-#else
-  probs[0] = wgt;
-  for (size_t ivar=1; ivar<m_n_variations; ++ivar) {
-    probs[ivar] = FragmentationFunction(z,zmin,zmax,cnt,ivar);
-  }
-#endif
-  p_reweighting->ClusterSplittingReweighting(true, probs);
+  if(!FillLogDensities(z,zmin,zmax,cnt)) return;
+  p_reweighting->ClusterSplittingReweighting(m_logprobs);
+}
+
+void Cluster_Splitter::ZRejected(const double wgt, const double & z,
+				 const double & zmin,const double & zmax,
+				 const unsigned int & cnt) {
+  if(!p_reweighting->ARFragReweighting()) return;
+  if(!p_reweighting->DoClusterSplittingReweighting(m_nsplit)) return;
+  FillProbs(wgt,z,zmin,zmax,cnt);
+  p_reweighting->ClusterSplittingReweightingAR(false,m_probs);
 }
 
 
