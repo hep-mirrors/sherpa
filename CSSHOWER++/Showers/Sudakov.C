@@ -206,29 +206,24 @@ void Sudakov::AddQuarkoniaSplittingFunctions(Model_Base *md, const int kfmode) {
       v.Color.push_back(Color_Function(cf::D, 1, 2));
       v.Lorentz.push_back(splitypes.front());
       splitypes.pop_front();
-      v.cpl.push_back(cpl0); // Check later
+      v.cpl.push_back(cpl0);
       v.order[0] = 1;
-      Add(new Splitting_Function_Base(
-          SF_Key(&v, 0, cstp::FF, kfmode, m_qcdmode, m_ewmode, 1, m_pdfmin)));
+      Add(new Splitting_Function_Base(SF_Key(&v, 0, cstp::FF, kfmode, m_qcdmode, m_ewmode,  1, m_pdfmin)));
+      Add(new Splitting_Function_Base(SF_Key(&v, 0, cstp::FF, kfmode, m_qcdmode, m_ewmode, -1, m_pdfmin)));
       v.in[0] = v.in[0].Bar();
       v.in[1] = v.in[1].Bar();
-      Add(new Splitting_Function_Base(
-          SF_Key(&v, 0, cstp::FF, kfmode, m_qcdmode, m_ewmode, 1, m_pdfmin)));
-        // Add(new Splitting_Function_Base(
-  //   SF_Key(&v, 0, cstp::II, kfmode, m_qcdmode, m_ewmode, 1, m_pdfmin)));
-      // v = Single_Vertex();
-      // v.AddParticle(Quark_flav);
-      // v.AddParticle(Quark_flav.Bar());
-      // v.AddParticle(singletflav);
-      // v.Color.push_back(Color_Function(cf::D, 1, 2));
-      // v.Lorentz.push_back("FFV_Quarkonia");
-      // v.cpl.push_back(cpl0); // Check later
-      // v.order[0] = 1;
-      // Add(new Splitting_Function_Base(
-      //     SF_Key(&v, 0, cstp::FF, kfmode, m_qcdmode, m_ewmode, 1, m_pdfmin)));
+      Add(new Splitting_Function_Base(SF_Key(&v, 0, cstp::FF, kfmode, m_qcdmode, m_ewmode, 1, m_pdfmin)));
+      Add(new Splitting_Function_Base(SF_Key(&v, 0, cstp::FF, kfmode, m_qcdmode, m_ewmode, -1, m_pdfmin)));
+
+      if (*kfit == kf_J_psi_1S) {
+        Add(new Splitting_Function_Base(SF_Key(&v, 0, cstp::II, kfmode, m_qcdmode, m_ewmode,  1, m_pdfmin)));
+        Add(new Splitting_Function_Base(SF_Key(&v, 0, cstp::II, kfmode, m_qcdmode, m_ewmode, -1, m_pdfmin)));
+        Add(new Splitting_Function_Base(SF_Key(&v, 0, cstp::IF, kfmode, m_qcdmode, m_ewmode,  1, m_pdfmin)));
+        Add(new Splitting_Function_Base(SF_Key(&v, 0, cstp::IF, kfmode, m_qcdmode, m_ewmode, -1, m_pdfmin)));
+      }
       msg_IODebugging() << METHOD << ": added splitting functions for " << singletflav.IDName() << "\n";
     }
-  // This is c -> c J/Psi(1S)8
+  // This is c -> c 3S1/1S0 octets
   list<kf_code> octetmesons = {kf_3S1_c, kf_1S0_c};
   splitypes = {"FF3S1_Quarkonia", "FF1S0_Quarkonia"};
   for (list<kf_code>::iterator kfit = octetmesons.begin();
@@ -245,19 +240,13 @@ void Sudakov::AddQuarkoniaSplittingFunctions(Model_Base *md, const int kfmode) {
       splitypes.pop_front();
       v.cpl.push_back(cpl0); // Check later
       v.order[0] = 1;
-      Add(new Splitting_Function_Base(
-          SF_Key(&v, 0, cstp::FF, kfmode, m_qcdmode, m_ewmode, 1, m_pdfmin)));
+      Add(new Splitting_Function_Base(SF_Key(&v, 0, cstp::FF, kfmode, m_qcdmode, m_ewmode, 1, m_pdfmin)));
       v.in[0] = v.in[0].Bar();
       v.in[1] = v.in[1].Bar();
-      // Add(new Splitting_Function_Base(
-      //     SF_Key(&v, 0, cstp::FF, kfmode, m_qcdmode, m_ewmode, 1, m_pdfmin)));
+      Add(new Splitting_Function_Base(SF_Key(&v, 0, cstp::FF, kfmode, m_qcdmode, m_ewmode, 1, m_pdfmin)));
       msg_Out() << METHOD << ": added splitting functions for " << octetflav.IDName() << "\n";
         }
-
-  // Add(new Splitting_Function_Base(
-  //   SF_Key(&v, 0, cstp::II, kfmode, m_qcdmode, m_ewmode, 1, m_pdfmin)));
-
-  // This if g -> g 1S0 octect
+  // This if g -> g Quarkonia
   singlets  = {kf_eta_c_1S, kf_chi_c0_1P, kf_chi_c1_1P, kf_chi_c2_1P};
   splitypes = {"VV1S0_Quarkonia", "VV3P0_Quarkonia", "VV3P1_Quarkonia", "VV3P2_Quarkonia"};
   for (list<kf_code>::iterator kfit = singlets.begin();
@@ -273,8 +262,10 @@ void Sudakov::AddQuarkoniaSplittingFunctions(Model_Base *md, const int kfmode) {
     splitypes.pop_front();
     v.cpl.push_back(cpl0); // Check later
     v.order[0] = 1;
-    Add(new Splitting_Function_Base(
-        SF_Key(&v, 0, cstp::FF, kfmode, m_qcdmode, m_ewmode, 1, m_pdfmin)));
+    Add(new Splitting_Function_Base(SF_Key(&v, 0, cstp::FF, kfmode, m_qcdmode, m_ewmode, 1, m_pdfmin)));
+    v.in[0] = v.in[0].Bar();
+    v.in[1] = v.in[1].Bar();
+    Add(new Splitting_Function_Base(SF_Key(&v, 0, cstp::FF, kfmode, m_qcdmode, m_ewmode, 1, m_pdfmin)));
   }
 
   msg_Out() << METHOD << ": by now " << m_splittings.size()
@@ -336,59 +327,22 @@ void Sudakov::AddOctetMesonSplittingFunctions(Model_Base *md,
 
 void Sudakov::AddGluonThresholds(Model_Base *md) {
   Running_AlphaS as = md->ScalarConstant("alpha_S");
-  double mc = ATOOLS::Flavour(kf_c).Mass(true);
-  double mb = ATOOLS::Flavour(kf_b).Mass(true);
-  list<kf_code> c_octetvectors = {kf_3S1_c};
+  list<kf_code> c_octetvectors = {kf_3S1_c, kf_1S0_c}; 
   ST_Set *stset;
   m_stmap[Flavour(kf_gluon)] = stset = new ST_Set;
-  LoadLDME();
-  map<kf_code, double> cLDME = {
-      // ldmes from FO tune. ------- old -> numerical LDME [GeV^3] from ph/9507398, PhysRevD.50.3176
-      {kf_3S1_b_8_Upsilon_1S,  GetLDME(kf_3S1_b_8_Upsilon_1S)}
-    };  //,// 1.5E-02 / sqr(M_PI)},
-      // {kf_3S1_c_8_psi_2S,    GetLDME(kf_3S1_c_8_psi_2S)},//4.3E-03 / sqr(M_PI)},
-      // {kf_3S1_c_8_chi_c0_1P, GetLDME(kf_3S1_c_8_chi_c0_1P)},//2./3/M_PI * 1 * 3E-03},
-      // {kf_3S1_c_8_chi_c1_1P, GetLDME(kf_3S1_c_8_chi_c1_1P)},//2./3/M_PI * 3 * 3E-03},
-      // {kf_3S1_c_8_chi_c2_1P, GetLDME(kf_3S1_c_8_chi_c2_1P)}};//100*2./3/M_PI * 5 * 3E-03}};
   double arg;
-  arg = 0.5 * (M_PI * as(sqr(2*mc)) / (24 * pow(mc, 3))) *
-        GetLDME(kf_3S1_c) * (1. - (11./6. * v8_2))*tr_efac; // SDME for g -> ccb (3S_1)_8
-  stset->insert(
-      One2One_Transition_Base(Flavour(kf_gluon), Flavour(kf_3S1_c), arg, 1));
   
   for (list<kf_code>::iterator octit = c_octetvectors.begin();
        octit != c_octetvectors.end(); octit++) {
-    arg = 0.5 * (M_PI * as(sqr(2*mc)) / (24 * pow(mc, 3))) *
-          cLDME[*octit] * (1. - (11./6. * v8_2))*tr_efac; // SDME for g -> qqb (3S_1)_8
+    double m = 0.0;
+    if (Flavour(*octit).IsB_Hadron()) m = ATOOLS::Flavour(kf_b).Mass(true);
+    else if (Flavour(*octit).IsC_Hadron()) m = ATOOLS::Flavour(kf_c).Mass(true);
+        arg = 0.5 * (M_PI * as(sqr(2 * m)) / (24 * pow(m, 3))) *
+          GetLDME(*octit) * (1. - (11. / 6. * v8_2)) * tr_efac;
     One2One_Transition_Base t(Flavour(kf_gluon), Flavour(*octit), arg, 1);
     t.SetPDF(p_pdf);
     stset->insert(t);
   }
-  // stset->insert(One2One_Transition_Base(
-  //     Flavour(kf_gluon), Flavour(kf_J_psi_1S),
-  //       0.5 * 10E5 * 8.28E-04 * pow(as(sqr(2*mc))/mc,3)*ldme_J_psi_1S, 1));
-
-
-  // list<kf_code> b_octetvectors = {kf_3S1_b_8_Upsilon_1S, kf_3S1_b_8_Upsilon_2S, kf_3S1_b_8_Upsilon_3S, kf_3S1_b_8_chi_b0_1P, kf_3S1_b_8_chi_b0_2P,
-  //   kf_3S1_b_8_chi_b1_1P, kf_3S1_b_8_chi_b1_2P, kf_3S1_b_8_chi_b2_1P, kf_3S1_b_8_chi_b2_2P};
-  // map<kf_code, double> bLDME = {
-  //     // ldmes from FO tune.
-  //     {kf_3S1_b_8_Upsilon_1S,  ldme_3S1_b_8_Upsilon_1S},
-  //     {kf_3S1_b_8_Upsilon_2S,  ldme_3S1_b_8_Upsilon_2S},
-  //     {kf_3S1_b_8_Upsilon_3S,  ldme_3S1_b_8_Upsilon_3S},
-  //     {kf_3S1_b_8_chi_b0_1P,   ldme_3S1_b_8_chi_b0_1P},
-  //     {kf_3S1_b_8_chi_b0_2P,   ldme_3S1_b_8_chi_b0_2P},
-  //     {kf_3S1_b_8_chi_b1_1P,   ldme_3S1_b_8_chi_b1_1P},
-  //     {kf_3S1_b_8_chi_b1_2P,   ldme_3S1_b_8_chi_b1_2P},
-  //     {kf_3S1_b_8_chi_b2_1P,   ldme_3S1_b_8_chi_b2_1P},
-  //     {kf_3S1_b_8_chi_b2_2P,   ldme_3S1_b_8_chi_b2_2P}};
-  // for (list<kf_code>::iterator octit = b_octetvectors.begin();
-  //      octit != b_octetvectors.end(); octit++) {
-  //   arg = 0.5 * (M_PI * as(sqr(2*mb)) / (24 * pow(mb, 3))) *
-  //         bLDME[*octit] * tr_efac; // SDME for g -> ccb (3S_1)_8
-  //   stset->insert(
-  //       One2One_Transition_Base(Flavour(kf_gluon), Flavour(*octit), arg, 1));
-  // }
 }
 
 void Sudakov::SetCoupling(Model_Base *md, const double &k0sqi,

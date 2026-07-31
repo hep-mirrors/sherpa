@@ -89,7 +89,7 @@ double LF_FF1S0_Quarkonia_FF::operator()(const double z, const double y,
   value *= 1. / ( (1 - mui2 - muj2 - muk2) + 1./ y * ( mui2 + muj2 - muij2 ) );
   value *= 1. / (1 + sqr( 1 - z) * sqr(mi) / scale + sqr(z) * sqr(mj) / scale);
   double prefactor = GetLDME(m_flavs[2].Kfcode());
-  prefactor *= m_flavs[2].StrongCharge() == 0 ?  4.0/27 /cube(mi) : 1.0/3/32/cube(mi);
+  prefactor *= m_flavs[2].StrongCharge() == 0 ?  4.0/27 /cube(mi) : 4.0/27/cube(mi) * 1.0/48;
   return prefactor * sqr(p_cf->Coupling(scale, 0)) * value * JFF(y, mui2, muj2, muk2, muij2); //
 
   // same mass case OLD
@@ -119,7 +119,7 @@ double LF_FF1S0_Quarkonia_FF::OverIntegrated(const double zmin, const double zma
   m_zmin = zmin; 
   m_zmax = zmax;
   double prefactor = GetLDME(m_flavs[2].Kfcode())*2;
-  prefactor *= m_flavs[2].StrongCharge() == 0 ?  4.0/27/cube(mi) : 1.0/3/32/cube(mi);
+  prefactor *= m_flavs[2].StrongCharge() == 0 ?  4.0/27/cube(mi) : 4.0/27/cube(mi) * 1.0/48;
   return prefactor * sqr(p_cf->MaxCoupling(0)) * ri * cube(rij) / sqr(sqr(1-rij)) * 0.1 * (zmax - zmin);
   return sqr(p_cf->MaxCoupling(0)) * 2.1 / (8 * sqr(mij)) * (zmax- zmin);
 }
@@ -133,7 +133,7 @@ double LF_FF1S0_Quarkonia_FF::OverEstimated(const double z, const double y) {
   const double rij = mij / (mi + mij);
   double mij2 = sqr(ATOOLS::Flavour(m_flavs[0].Kfcode()).Mass(true));
   double prefactor = GetLDME(m_flavs[2].Kfcode());
-  prefactor *= m_flavs[2].StrongCharge() == 0 ?  4.0/27/cube(mi) : 1.0/3/32/cube(mi);
+  prefactor *= m_flavs[2].StrongCharge() == 0 ?  4.0/27/cube(mi) : 4.0/27/cube(mi) * 1.0/48;
   return prefactor * sqr(p_cf->MaxCoupling(0)) * ri * cube(rij) / sqr(sqr(1-rij)) * 0.1 ;
   return prefactor * sqr(p_cf->MaxCoupling(0)) * 2.1 / (8 * mij2);
 }
