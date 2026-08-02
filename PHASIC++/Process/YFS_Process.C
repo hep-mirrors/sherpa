@@ -288,19 +288,6 @@ void YFS_Process::OneRealEvent(){
   // Cluster_Amplitude *rampl;
   // Cluster_Amplitude(rampl);
   Weight_Info *winfo(NULL);
-  Vec4D_Vector plab;
-  Vec4D_Vector pho = p_yfs->GetPhotons();
-  // Flavour *fl = p_realproc->Flavours();
-  for(auto k: pho){
-    Vec4D_Vector bornmom = p_yfs->BornMomenta();
-    p_yfs->NLO()->MapMomenta(bornmom,k);
-    bool checkK = p_yfs->NLO()->CheckPhotonForReal(k);
-    if(!checkK) return;
-    bornmom.push_back(k);
-    p_realproc->Integrator()->SetMomenta(bornmom);
-    p_realproc->Selector()->Trigger(bornmom);
-    ATOOLS::Weights_Map  wgtmap = p_realproc->Integrator()->Process()->Differential(bornmom, Variations_Mode::all);
-  }
 }
 
 

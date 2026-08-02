@@ -20,9 +20,14 @@ std::ofstream real_out, out_ps, out_mom;
 Real::Real(const PHASIC::Process_Info& pi)  {
    /* Load Real ME */
    p_real_me = NULL;
+   p_real_me2 = NULL;
    p_realproc = NULL;
    Scoped_Settings s{ Settings::GetMainSettings()["YFS"] };
    std::string gen = s["Real_Generator"].SetDefault("Comix").Get<std::string>();
+   // optional second EXTERNAL generator - if set, Compare_Real checks this
+   // against Real_Generator directly (bypassing p_realproc/Comix entirely)
+   // instead of comparing Real_Generator against the internal ME.
+   std::string gen2 = s["Real_Generator2"].SetDefault("").Get<std::string>();
    m_check = s["Compare_Real"].SetDefault(0).Get<bool>();
    m_writemom = s["Write_Real_Momenta"].SetDefault(0).Get<bool>();
    m_nmom = s["N_Real_Momenta"].SetDefault(100).Get<int>();
@@ -40,6 +45,16 @@ Real::Real(const PHASIC::Process_Info& pi)  {
      m_sym =  ATOOLS::Flavour::ISSymmetryFactor(args.m_inflavs);
      m_sym *= ATOOLS::Flavour::FSSymmetryFactor(args.m_outflavs);
      m_factor = 1./m_sym;
+    }
+    if(gen2!="" && gen2!="Comix" && gen2!="Amegic"){
+      if(!p_real_me) THROW(fatal_error, "Real_Generator2 requires an external Real_Generator too.");
+      PHASIC::External_ME_Args args2(pi.m_ii.GetExternal(),
+                                     pi.m_fi.GetExternal(),
+                                     pi.m_maxcpl,
+                                     gen2);
+      p_real_me2 = PHASIC::Tree_ME2_Base::GetME2(args2);
+      if (!p_real_me2) THROW(not_implemented, "Couldn't find real ME for this process (generator 2).");
+      p_real_me2->SetCouplings(m_cpls);
     }
     if(m_check_real){
       std::string filename=gen;
@@ -78,31 +93,11 @@ Real::Real(const PHASIC::Process_Info& pi)  {
   //   out_mom<<"MOMENTA:"<<std::endl;
   //   real_out<<"ME:"<<std::endl;
   // }
-  m_npoints = 0;
-  m_nbad = 0;
-  m_maxdev = 0.;
+  p_cmp = new ME_Compare(m_check, "Real_Histogram", "Real");
 }
 
 Real::~Real() {
-  if(m_check && m_npoints>0){
-    msg_Out()<<ATOOLS::om::bold<<ATOOLS::om::blue
-             <<"###############################################"<<std::endl
-             <<"Real ME comparison summary:"<<ATOOLS::om::reset<<std::endl
-             <<"  points checked    = "<<m_npoints<<std::endl
-             <<"  points mismatched = "<<m_nbad<<" ("
-             <<std::setprecision(3)<<100.*m_nbad/m_npoints<<"%)"<<std::endl
-             <<"  max |1-ratio|     = "<<std::setprecision(6)<<m_maxdev<<std::endl;
-    if(m_nbad>0)
-      msg_Out()<<ATOOLS::om::bold<<ATOOLS::om::red
-               <<"WARNING: "<<m_nbad<<" / "<<m_npoints
-               <<" points disagreed beyond tolerance!"<<ATOOLS::om::reset<<std::endl;
-    else
-      msg_Out()<<ATOOLS::om::bold<<ATOOLS::om::green
-               <<"All points agreed within tolerance."<<ATOOLS::om::reset<<std::endl;
-    msg_Out()<<ATOOLS::om::bold<<ATOOLS::om::blue
-             <<"###############################################"
-             <<ATOOLS::om::reset<<std::endl;
-  }
+  delete p_cmp;
 }
 
 double Real::Calc_R(const ATOOLS::Vec4D_Vector& p)
@@ -115,15 +110,22 @@ double Real::Calc_R(const ATOOLS::Vec4D_Vector& p)
       return 0;
     }
     if(p_real_me) {
-      if(!m_check) return Calc_External(p);
       external_real = Calc_External(p);
+      if(p_real_me2){
+        // compare two EXTERNAL generators directly, bypassing p_realproc/Comix
+        double external_real2 = p_real_me2->Calc(p)*m_factor;
+        if(m_check) p_cmp->CheckAgreement(p, external_real2, external_real,
+                                           m_flavs, p_realproc->NIn());
+        return external_real;
+      }
+      if(!m_check) return external_real;
     }
     p_ampl=CreateAmplitude(p);
     // rmode bits: 128=GeneratePoint(), 2=SetFixedScale(ampl scales), 1=disable
     // the selector before Trigger() so it can't reject the point - the
     // m_nlocuts check above already applies cuts explicitly, so Differential()
     // doesn't need to (and shouldn't) re-run the selector itself.
-    int rmode =  2 + 1;
+    int rmode = 128 +  2 + 1;
     Weights_Map iR = p_realproc->Differential(*p_ampl, Variations_Mode::nominal_only,rmode);
     if(iR.Nominal()==0) {
       if(p_ampl) p_ampl->Delete();
@@ -151,32 +153,8 @@ double Real::Calc_R(const ATOOLS::Vec4D_Vector& p)
     } 
     // double ratio = iR.Nominal()/(m_factor*R);
     if(p_ampl) p_ampl->Delete();
-    if(m_check){
-      const double tol = 1e-6;
-      double ratio = iR.Nominal()/external_real;
-      double dev = std::abs(1.-ratio);
-      m_npoints++;
-      if(dev > m_maxdev) m_maxdev = dev;
-      if(dev > tol){
-        m_nbad++;
-        double softe(-1.), softpt(-1.);
-        for(size_t i(0);i<m_flavs.size() && i<p.size();++i){
-          if(m_flavs[i].IsPhoton() && (softe<0. || p[i][0]<softe)){
-            softe = p[i][0];
-            softpt = p[i].PPerp();
-          }
-        }
-        msg_Out()<<ATOOLS::om::bold<<ATOOLS::om::red<<"WARNING: "<<ATOOLS::om::reset
-                 <<ATOOLS::om::red<<"Real ME mismatch: ratio = "
-                 <<std::setprecision(10)<<ratio<<", |1-ratio| = "<<dev;
-        if(softe>=0.) msg_Out()<<", softest photon: E = "<<softe<<", pT = "<<softpt;
-        msg_Out()<<ATOOLS::om::reset<<std::endl;
-      }
-      else {
-        msg_Debugging()<<ATOOLS::om::green<<"Real ME OK: ratio = "
-                        <<std::setprecision(10)<<ratio<<ATOOLS::om::reset<<std::endl;
-      }
-    }
+    if(m_check) p_cmp->CheckAgreement(p, iR.Nominal(), external_real,
+                                       m_flavs, p_realproc->NIn());
     return iR.Nominal();
   }
 

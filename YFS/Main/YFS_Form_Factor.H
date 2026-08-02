@@ -51,6 +51,12 @@ public:
     // DivArrD BVirtGeneralEps(YFS::Dipole &d, double kmax=0);
     double  BVirtGeneral(YFS::Dipole &d, double kmax=0);
     DivArrD BVirtGeneralEps(YFS::Dipole &d, double kmax=0);
+    // Virtual YFS B factor built from the dim-reg master integrals
+    // (METOOLS/Loops: Master_Bubble B0 + Master_Triangle C0) instead of the
+    // analytic A1/A2 dilog forms. Returns the DivArr (carrying the 1/eps_IR
+    // pole) so it cancels against the real BVR_full_eps in the FULL_FORM==3
+    // form-factor mode.
+    DivArrD BVirtMaster(YFS::Dipole &d, double kmax=0);
     // double C0(double p1, double p2, double p3);
     // double C0(double p1, double p2, double p3,double m1, double m2, double m3);
     // double B0(double s, double m1, double m2);

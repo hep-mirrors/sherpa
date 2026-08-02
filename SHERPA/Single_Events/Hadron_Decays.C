@@ -28,6 +28,7 @@ Return_Value::code Hadron_Decays::Treat(Blob_List* bloblist)
   bool didit(false);
   for (size_t blit(0);blit<bloblist->size();++blit) {
     Blob* blob=(*bloblist)[blit];
+    DEBUG_FUNC(*blob);
     if (p_dechandler && blob->Has(blob_status::needs_hadrondecays)) {
       didit = true;
       p_dechandler->SetBlobList(bloblist);

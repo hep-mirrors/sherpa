@@ -18,9 +18,14 @@ std::ofstream rr_out, out_ps_rr, out_mom_rr;
 
 RealReal::RealReal(const PHASIC::Process_Info& pi)  {
   p_real_me = NULL;
+  p_real_me2 = NULL;
   p_rrproc = NULL;
   Scoped_Settings s{ Settings::GetMainSettings()["YFS"] };
   std::string gen = s["RR_Generator"].SetDefault("Comix").Get<std::string>();
+  // optional second EXTERNAL generator - if set, Compare_RR checks this
+  // against RR_Generator directly (bypassing p_rrproc/Comix entirely)
+  // instead of comparing RR_Generator against the internal ME.
+  std::string gen2 = s["RR_Generator2"].SetDefault("").Get<std::string>();
   m_check = s["Compare_RR"].SetDefault(0).Get<bool>();
   m_writemom = s["Write_RR_Momenta"].SetDefault(0).Get<bool>();
   m_nmom = s["N_RR_Momenta"].SetDefault(100).Get<int>();/* Load RealReal ME */
@@ -42,6 +47,15 @@ RealReal::RealReal(const PHASIC::Process_Info& pi)  {
      m_sym  = ATOOLS::Flavour::FSSymmetryFactor(args.m_outflavs);
      m_sym *= ATOOLS::Flavour::ISSymmetryFactor(args.m_inflavs);
      m_factor =  1./m_sym;
+     if(gen2!="" && gen2!="Comix" && gen2!="Amegic"){
+       PHASIC::External_ME_Args args2(pi.m_ii.GetExternal(),
+                                      pi.m_fi.GetExternal(),
+                                      pi.m_maxcpl,
+                                      gen2);
+       p_real_me2 = PHASIC::Tree_ME2_Base::GetME2(args2);
+       if (!p_real_me2) THROW(not_implemented, "Couldn't find Real-Real ME for this process (generator 2).");
+       p_real_me2->SetCouplings(m_cpls);
+     }
      if(m_check_rr){
       if(FileExists("recola-real-real.txt")) Remove("recola-real-real.txt");
       if(FileExists("ps-points.yaml")) Remove("ps-points.yaml");
@@ -69,31 +83,11 @@ RealReal::RealReal(const PHASIC::Process_Info& pi)  {
   //   out_mom_rr<<"MOMENTA:"<<std::endl;
   //   real_out<<"ME:"<<std::endl;
   // }
-  m_npoints = 0;
-  m_nbad = 0;
-  m_maxdev = 0.;
+  p_cmp = new ME_Compare(m_check, "RR_Histogram", "RealReal");
 }
 
 RealReal::~RealReal() {
-  if(m_check && m_npoints>0){
-    msg_Out()<<ATOOLS::om::bold<<ATOOLS::om::blue
-             <<"###############################################"<<std::endl
-             <<"RealReal ME comparison summary:"<<ATOOLS::om::reset<<std::endl
-             <<"  points checked    = "<<m_npoints<<std::endl
-             <<"  points mismatched = "<<m_nbad<<" ("
-             <<std::setprecision(3)<<100.*m_nbad/m_npoints<<"%)"<<std::endl
-             <<"  max |1-ratio|     = "<<std::setprecision(6)<<m_maxdev<<std::endl;
-    if(m_nbad>0)
-      msg_Out()<<ATOOLS::om::bold<<ATOOLS::om::red
-               <<"WARNING: "<<m_nbad<<" / "<<m_npoints
-               <<" points disagreed beyond tolerance!"<<ATOOLS::om::reset<<std::endl;
-    else
-      msg_Out()<<ATOOLS::om::bold<<ATOOLS::om::green
-               <<"All points agreed within tolerance."<<ATOOLS::om::reset<<std::endl;
-    msg_Out()<<ATOOLS::om::bold<<ATOOLS::om::blue
-             <<"###############################################"
-             <<ATOOLS::om::reset<<std::endl;
-  }
+  delete p_cmp;
 }
 
 double RealReal::Calc_R(const ATOOLS::Vec4D_Vector& p){
@@ -104,31 +98,22 @@ double RealReal::Calc_R(const ATOOLS::Vec4D_Vector& p){
   }
   double external_real;
   if(p_real_me) {
-      if(!m_check) return Calc_External(p);
       external_real = Calc_External(p);
+      if(p_real_me2){
+        // compare two EXTERNAL generators directly, bypassing p_rrproc/Comix
+        double external_real2 = p_real_me2->Calc(p)*m_factor;
+        if(m_check) p_cmp->CheckAgreement(p, external_real2, external_real,
+                                           m_flavs, p_rrproc->NIn());
+        return external_real;
+      }
+      if(!m_check) return external_real;
   }
   p_ampl=CreateAmplitude(p);
   const int rmode = 128 + 2 + 1;
   Weights_Map iR = p_rrproc->Differential(*p_ampl, Variations_Mode::nominal_only,rmode);
   if(p_ampl) p_ampl->Delete();
-  if(m_check){
-    const double tol = 1e-4;
-    double ratio = iR.Nominal()/external_real;
-    double dev = std::abs(1.-ratio);
-    m_npoints++;
-    if(dev > m_maxdev) m_maxdev = dev;
-    if(dev > tol){
-      m_nbad++;
-      msg_Out()<<ATOOLS::om::bold<<ATOOLS::om::red<<"WARNING: "<<ATOOLS::om::reset
-               <<ATOOLS::om::red<<"RealReal ME mismatch: ratio = "
-               <<std::setprecision(10)<<ratio<<", |1-ratio| = "<<dev
-               <<ATOOLS::om::reset<<std::endl;
-    }
-    else {
-      msg_Debugging()<<ATOOLS::om::green<<"RealReal ME OK: ratio = "
-                      <<std::setprecision(10)<<ratio<<ATOOLS::om::reset<<std::endl;
-    }
-  }
+  if(m_check) p_cmp->CheckAgreement(p, iR.Nominal(), external_real,
+                                     m_flavs, p_rrproc->NIn());
   return iR.Nominal();
 }
 

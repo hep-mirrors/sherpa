@@ -208,7 +208,11 @@ bool Phase_Space_Point::DefineISRKinematics(Process_Integrator *const process) {
     p_yfshandler->SetLimits(m_smin);
     DefineFSRKinematics();
     p_yfshandler->SetBornMomenta(p_moms);
-    // p_yfshandler->SetFlavours(p_pshandler->Active()->Process()->Flavours());
+    // Keep the handler's flavours in step with p_moms: both belong to the
+    // active process, and with several processes in the run card the handler
+    // would otherwise still hold another process's flavours. Cheap now that
+    // SetFlavours only rebuilds when the flavours actually differ.
+    p_yfshandler->SetFlavours(p_pshandler->Active()->Process()->Flavours());
     m_sprime = m_osmass ? m_isrspkey[4] : m_isrspkey[3];
     p_yfshandler->SetMomenta(p_moms);
     p_yfshandler->SetSprime(m_sprime);
@@ -220,6 +224,7 @@ bool Phase_Space_Point::DefineISRKinematics(Process_Integrator *const process) {
   else if(p_yfshandler->Mode()==YFS::yfsmode::fsr){
     DefineFSRKinematics();
     p_yfshandler->SetBornMomenta(p_moms);
+    p_yfshandler->SetFlavours(p_pshandler->Active()->Process()->Flavours());
     return(p_yfshandler->CalculateFSR(p_moms));
 
   }

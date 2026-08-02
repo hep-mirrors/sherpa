@@ -3,6 +3,7 @@
 #include "ATOOLS/Math/MathTools.H"
 #include "ATOOLS/Math/Vector.H"
 #include "ATOOLS/Org/Message.H"
+#include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Scoped_Settings.H"
 #include "ATOOLS/Phys/Blob.H"
@@ -73,7 +74,8 @@ Signal_Process_FS_QED_Correction::Signal_Process_FS_QED_Correction(
   // require some tweaks - A.Price
   if(p_yfsisr->Mode()!=YFS::yfsmode::off) m_on=false;
   if (m_on && m_qed) m_name += p_sphotons->SoftQEDGenerator();
-  if(p_yfsisr->Mode()!=YFS::yfsmode::off) m_name += "ISR+FSR";
+  if(p_yfsisr->Mode()!=YFS::yfsmode::off)
+    m_name += ToString(p_yfsisr->Mode());
   else               m_name += "None";
 }
 

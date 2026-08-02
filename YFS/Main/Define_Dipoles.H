@@ -126,6 +126,10 @@ namespace YFS {
       bool CheckMasses();
       void IsResonant(YFS::Dipole &D);
       bool IsResonant();
+      // Flags the subset of m_dipolesFF that may radiate: a matching of the
+      // charged final state, so each leg enters FSR exactly once.
+      void SelectResonantDipoles();
+      double ResonanceWidthDistance(YFS::Dipole &D);
       bool CheckResonant(YFS::Dipole &D);
       bool CheckResonant();
       double ResonantDist(YFS::Dipole &D, const Vec4D &k);

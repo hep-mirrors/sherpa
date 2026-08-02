@@ -63,7 +63,7 @@ void YFS_Base::RegisterDefaults(){
   s["RV_CANCEL_HIST"].SetDefault(0);
   s["RV_ME_MAX_RATIO"].SetDefault(0.);
   s["CHECK_REAL_REAL"].SetDefault(0);
-  s["CHECK_VIRT_BORN"].SetDefault(0);
+  s["CHECK_VIRT_BORN"].SetDefault(1);
   s["VIRTUAL_ONLY"].SetDefault(0);
   s["REAL_ONLY"].SetDefault(0);
   s["USE_MODEL_ALPHA"].SetDefault(1);
@@ -154,8 +154,10 @@ void YFS_Base::RegisterSettings(){
   m_flux_mode=s["Flux_Mode"].Get<int>();
   m_ifisub = s["IFI_Sub"].Get<int>();
   m_massless_sub = s["Massless_Sub"].Get<int>();
-  m_check_real_sub = s["Check_Real_Sub"].Get<bool>();
-  m_check_rr_sub = s["Check_RR_Sub"].Get<bool>();
+  // 0 = off, 1 = one-shot energy-scan sub check (CheckReal[Real]Sub, exits),
+  // 2 = accumulating angle/energy scatter (RecordSubScatter, no exit)
+  m_check_real_sub = s["Check_Real_Sub"].Get<int>();
+  m_check_rr_sub = s["Check_RR_Sub"].Get<int>();
   m_photon_split = s["PHOTON_SPLITTER_MODE"].ResetDefault().SetDefault(0).Get<bool>();
   m_int_nlo = s["Integrate_NLO"].Get<bool>();
   m_eex_virt = s["Collinear_Virtual"].Get<int>();

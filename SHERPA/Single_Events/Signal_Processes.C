@@ -199,7 +199,7 @@ bool Signal_Processes::FillBlob(Blob_List *const bloblist,Blob *const blob)
     // Add the fsr corrected final states
       Particle_Vector out = blob->GetOutParticles();
       Particle_Vector yfsout = p_yfshandler->m_particles;
-      ATOOLS::ParticleMomMap yfsoutMap = p_yfshandler->m_outparticles;
+      ATOOLS::ParticleMomMap yfsoutMap = p_yfshandler->GetOutParticles();
       if(out.size()!=(yfsout.size()-2)){
         msg_Error()<<METHOD<<" Missmatch in outparitcles for YFS"<<std::endl
                             <<"Born Out size = "<< out.size()<<std::endl
@@ -256,6 +256,14 @@ bool Signal_Processes::FillBlob(Blob_List *const bloblist,Blob *const blob)
                 (proc->Info().m_fi.m_nlocpl));
   blob->AddData("Process",new Blob_Data<PHASIC::Process_Base*>
 		(p_mehandler->Process()));
+
+  Poincare * cmsboost = p_mehandler->Remnants()->GetCMSBoost();
+  // Undone once per event by Beam_Remnants::StandardTreatment via the inverse
+  // labboost; see the comment there.
+  if (cmsboost!=nullptr) {
+    blob->Boost(*cmsboost);
+    p_mehandler->Remnants()->BoostRemnantMomenta(*cmsboost);
+  }
 
   ME_Weight_Info* wgtinfo=proc->GetMEwgtinfo();
   if (wgtinfo) {

@@ -99,8 +99,18 @@ namespace YFS {
         inline const ATOOLS::Weights_Map& GetNLOWeightsMap() const { return m_nlo_weightsmap; }
         inline ATOOLS::Vec4D GetPhotonSum() const      { return m_photonSumISR;  }
         inline ATOOLS::Vec4D GetPhotonSumFSR() const      { return m_photonSumFSR;  }
-        inline ATOOLS::Vec4D_Vector GetISRPhotons() const      { return m_ISRPhotons;  }
-        inline ATOOLS::Vec4D_Vector GetFSRPhotons() const      { return m_FSRPhotons;  }
+        // The event momenta/photons are stored in the boosted incoming-pair
+        // rest frame (see SetBornMomenta). These getters feed the event blob,
+        // which must be in the original lab frame, so boost the returned copy
+        // back. Boosting the copy (not the member) leaves the internal COM
+        // state intact for the weight/ME machinery and is independent of when
+        // the blob is filled relative to the weight calculation.
+        inline ATOOLS::Vec4D_Vector GetISRPhotons() const {
+          Vec4D_Vector k(m_ISRPhotons); ToLab(k); return k;
+        }
+        inline ATOOLS::Vec4D_Vector GetFSRPhotons() const {
+          Vec4D_Vector k(m_FSRPhotons); ToLab(k); return k;
+        }
         inline ATOOLS::Flavour GetFlavour(const int i) const { return m_flavs[i];  }
         inline void SetBorn(double b) { m_born = b; }
         inline double GetBorn() { return m_born; }
@@ -109,9 +119,22 @@ namespace YFS {
 
         inline bool UsingLoopTool()   const {return m_looptool; }
         inline bool FillBlob()   const {return m_fillblob; }
-        inline Vec4D_Vector GetMomenta() { return m_plab; }
-        inline Vec4D GetMomenta(int i) { return m_plab[i]; }
-        inline Vec4D_Vector BornMomenta() { return m_bornMomenta; }
+        // Undo the incoming-pair-rest-frame boost that SetBornMomenta applied
+        // (m_cmsboost: lab->COM), returning the blob-facing momenta to the
+        // original lab frame. m_cmsboost is the identity when no boost was
+        // applied (already-at-rest incoming, or pure-FSR mode), so this is a
+        // safe no-op in those cases - a standard at-rest COM collider included.
+        inline void ToLab(Vec4D &q) const { m_cmsboost.BoostBack(q); }
+        inline void ToLab(Vec4D_Vector &v) const { for (auto &q : v) ToLab(q); }
+        inline Vec4D_Vector GetMomenta() { Vec4D_Vector p(m_plab); ToLab(p); return p; }
+        inline Vec4D GetMomenta(int i) { Vec4D q(m_plab[i]); ToLab(q); return q; }
+        inline Vec4D_Vector BornMomenta() { Vec4D_Vector p(m_bornMomenta); ToLab(p); return p; }
+        // out-particle map for FSR event blobs, boosted back to the lab frame
+        inline ATOOLS::ParticleMomMap GetOutParticles() const {
+          ATOOLS::ParticleMomMap m(m_outparticles);
+          for (auto &kv : m) m_cmsboost.BoostBack(kv.second);
+          return m;
+        }
 
         inline void SetInFlav(Flavour &fl) {m_inflav.push_back(fl);}
         inline Flavour GetInFlav(int i) {return m_inflav[i];}

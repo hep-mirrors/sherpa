@@ -1,4 +1,5 @@
 set(YFSNLO_SOURCES NLO_Base.C
+                 ME_Compare.C
                  Real.C
                  RealReal.C
                  RealVirtual.C
@@ -6,6 +7,7 @@ set(YFSNLO_SOURCES NLO_Base.C
                  VirtualVirtual.C)
 
 set(YFSNLO_HEADERS  NLO_Base.H
+                 ME_Compare.H
                  Real.H
                  RealReal.H
                  RealVirtual.H

@@ -11,6 +11,7 @@
 #include "YFS/Main/YFS_Form_Factor.H"
 #include "YFS/Main/Define_Dipoles.H"
 #include "ATOOLS/Math/Histogram_2D.H"
+#include <fstream>
 #include "ATOOLS/Math/Histogram.H"
 
 #include "PHASIC++/Process/Single_Process.H"
@@ -43,6 +44,7 @@ public:
   Vec4D_Vector m_plab, m_reallab, m_FSRPhotons, m_ISRPhotons, m_bornMomenta, m_eikmom, m_borngamma;
   Vec4D m_nvec, m_realsum, m_ksum;
   ATOOLS::Flavour_Vector m_flavs;
+  std::ofstream m_subscatter;  // accumulating sub-check angle/energy scatter
   histograms2d m_histograms2d;
   histograms1d m_histograms1d;
   ATOOLS::Momenta_Stretcher m_stretcher;
@@ -58,6 +60,11 @@ public:
   // Used to report the matching truncated to 1 or 2 photons.
   double m_real_hard1, m_rv_hard1, m_rr_hard2;
   double m_real_hard2, m_rv_hard2;
+  // Product of the two per-photon crude eikonal factors S~(k1)*S~(k2) by which
+  // the last CalculateRealReal(k1,k2) divided its result (line "tot = .../sub1/sub2").
+  // Recorded alongside the RR residual so the 1/S~ blow-up for hard wide-angle
+  // photons can be separated from the physical (eikonal-weighted) contribution.
+  double m_rr_eik;
   int m_is_isr, m_zeroV, m_zeroRV, m_zeroRR, m_nonZeroRR, m_nonZeroRV;
   // Counts photons whose RV beta_1^1 was skipped as numerically unreliable:
   // either softer than the coarse RV_SOFT_CUT energy pre-filter, or (primary
@@ -115,6 +122,12 @@ public:
   void CheckRealSub(Vec4D k, int mode);
   void CheckRealVirtualSub(Vec4D k);
   void CheckRealRealSub(Vec4D k1, Vec4D k2, int fsr1, int fsr2);
+  // Accumulating (non-exiting) sub-check scatter: for each real photon record
+  // its energy, pT, opening angle to the nearest charged particle, and the
+  // subtracted residual, so large residuals for energetic photons can be
+  // checked for collinear enhancement. Enabled by m_check_real_sub / m_check_rr_sub == 2.
+  void RecordSubScatter(const ATOOLS::Vec4D &k, double residual,
+                        const std::string &tag, double eik = 1.0);
   void RandomRotate(Vec4D &k);
   void RescaleMasses(Vec4D_Vector &p, std::vector<double> masses);
   inline void SetBorn(double b) { m_born = b;}

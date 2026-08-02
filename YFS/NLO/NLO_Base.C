@@ -187,6 +187,8 @@ NLO_Base::~NLO_Base() {
     delete p_virt;
   if (p_vv)
     delete p_vv;
+  if(p_realreal)
+    delete p_realreal;
   msg_Out()<<"Total zero V: "<<m_zeroV<<std::endl;
   msg_Out()<<"Total zero RV: "<<m_zeroRV<<std::endl;
   msg_Out()<<"Total zero RR: "<<m_zeroRR<<std::endl;
@@ -407,7 +409,7 @@ double NLO_Base::CalculateReal() {
   std::vector<std::pair<double, double>> contribs;
   // double collreal = p_dipoles->CalculateEEX() * m_born;
   for (auto k : m_ISRPhotons) {
-    if (m_check_real_sub && !HasFSR()) {
+    if (m_check_real_sub == 1 && !HasFSR()) {
       if (k.E() < 0.2 * sqrt(m_s))
         continue;
       CheckRealSub(k, 0);
@@ -426,11 +428,12 @@ double NLO_Base::CalculateReal() {
       contrib = CalculateReal(k, 0);
       real += contrib;
     }
+    if (m_check_real_sub == 2) RecordSubScatter(k, contrib, "realISR", m_eikeex);
     contribs.emplace_back(k.E(), contrib);
   }
   int fsrcount(0);
   for (auto k : m_FSRPhotons) {
-    if (m_check_real_sub) {
+    if (m_check_real_sub == 1) {
       if (k.E() < 0.2 * sqrt(m_s))
         continue;
       CheckRealSub(k, 0);
@@ -438,15 +441,20 @@ double NLO_Base::CalculateReal() {
     // if (k.E() > m_hardmin) {
     double contrib = CalculateReal(k, 0);
     real += contrib;
+    if (m_check_real_sub == 2) RecordSubScatter(k, contrib, "realFSR", m_eikeex);
     fsrcount++;
     contribs.emplace_back(k.E(), contrib);
     // }
   }
   HardestSums(contribs, m_real_hard1, m_real_hard2);
   // for (auto k : m_borngamma) {
-  // 	if(m_check_real_sub) {
-  // 		if(k.E() < 0.2*sqrt(m_s)) continue;
-  // 			CheckRealSub(k,1);
+  //   double contrib = CalculateReal(k, 0);
+  //   real += contrib;
+  //   fsrcount++;
+  //   contribs.emplace_back(k.E(), contrib);
+  // // 	if(m_check_real_sub) {
+  // // 		if(k.E() < 0.2*sqrt(m_s)) continue;
+  // // 			CheckRealSub(k,1);
   // 	}
   // 	if(k.E() > m_hardmin){
   // 		real+=CalculateReal(k, 1);
@@ -987,7 +995,13 @@ double NLO_Base::CalculateRealReal() {
       double contrib = CalculateRealReal(k, kk, 0, 0);
       rr += contrib;
       if (i == i0 && j == j0) m_rr_hard2 = contrib;
-      if (m_check_rr_sub) {
+      if (m_check_rr_sub == 2) {
+        // accumulating scatter: record each photon of the pair with the pair
+        // residual, so energetic collinear photons in large residuals show up
+        RecordSubScatter(k,  contrib, "rr", m_rr_eik);
+        RecordSubScatter(kk, contrib, "rr", m_rr_eik);
+      }
+      if (m_check_rr_sub == 1) {
         // k*=2;
         // kk*=2;
         if (k.E() < 0.2 * sqrt(m_s))
@@ -1003,7 +1017,8 @@ double NLO_Base::CalculateRealReal() {
 }
 
 double NLO_Base::CalculateRealReal(Vec4D k1, Vec4D k2, int fsr1, int fsr2) {
-  const double norm = 2 * pow(2 * M_PI, 6);
+  const double norm = 2. * pow(2 * M_PI, 6);// * (m_borngamma.size()==1?1:m_borngamma.size());
+  m_rr_eik = 0.;  // reset; set once the crude eikonals are computed below
   Vec4D_Vector p(m_plab);
   Vec4D_Vector pp = p;
   Vec4D kk1 = k1, kk2 = k2;
@@ -1127,10 +1142,21 @@ double NLO_Base::CalculateRealReal(Vec4D k1, Vec4D k2, int fsr1, int fsr2) {
   p_nlodipoles->MakeDipolesIF(m_flavs, m_plab, m_plab);
   p_nlodipoles->MakeDipoles(m_flavs, m_plab, m_plab);
 
+
   const double sub1  = p_dipoles->CalculateRealSubEEX(kk1);
   const double sub2  = p_dipoles->CalculateRealSubEEX(kk2);
-  const double real1 = CalculateReal(kk1, 3 + fsr1);
-  const double real2 = CalculateReal(kk2, 3 + fsr2);
+  // crude eikonal product this pair is divided by (see tot below); exposed so
+  // the accumulating scatter can separate the 1/S~ blow-up from the physical
+  // contribution (residual*m_rr_eik = r*flux + fullsub).
+  m_rr_eik = sub1 * sub2;
+  // Vec4D_Vector r1(m_plab),r2(m_plab);
+  // MapMomenta(r1, kk1);
+  // MapMomenta(r2, kk2);
+  // r1.push_back(kk1);
+  // r2.push_back(kk2);
+  const double norm1 =  2. * pow(2 * M_PI, 3);
+  const double real1 = CalculateReal(kk1, 3 + fsr1);//p_real->Calc_R(r1)/norm1-m_born*p_dipoles->CalculateRealSub(kk1);// CalculateReal(kk1, 3 + fsr1);
+  const double real2 = CalculateReal(kk2, 3 + fsr2);//p_real->Calc_R(r2)/norm1-m_born*p_dipoles->CalculateRealSub(kk2); //CalculateReal(kk2, 3 + fsr2);
   m_recola_evts += 1;
 
   msg_Debugging() << METHOD << " r=" << r
@@ -1313,6 +1339,11 @@ void NLO_Base::MapMomenta(Vec4D_Vector &p, Vec4D &k) {
   // p[1] = {zz, 0, 0, -z};
   double m1 = m_flavs[0].Mass();
   double m2 = m_flavs[1].Mass();
+  double lamRaw = sqq*sqq + sqr(m1*m1) + sqr(m2*m2)
+                  - 2.*sqq*m1*m1 - 2.*sqq*m2*m2 - 2.*m1*m1*m2*m2;
+  if (lamRaw < 0.)
+    msg_Error()<<METHOD<<"(): below-threshold Kaellen argument = "<<lamRaw
+               <<" (sqq = "<<sqq<<", threshold = "<<sqr(m1+m2)<<")"<<std::endl;
   double lamCM = 0.5 * sqrt(Lambda(sqq, m1 * m1, m2 * m2) / sqq);
   double E1 = lamCM * sqrt(1 + m1 * m1 / sqr(lamCM));
   double E2 = lamCM * sqrt(1 + m2 * m2 / sqr(lamCM));
@@ -1379,6 +1410,11 @@ void NLO_Base::MapMomenta(Vec4D_Vector &p, Vec4D &k1, Vec4D &k2) {
   // p[1] = {zz, 0, 0, -z};
   double m1 = m_flavs[0].Mass();
   double m2 = m_flavs[1].Mass();
+  double lamRaw = sqq*sqq + sqr(m1*m1) + sqr(m2*m2)
+                  - 2.*sqq*m1*m1 - 2.*sqq*m2*m2 - 2.*m1*m1*m2*m2;
+  if (lamRaw < 0.)
+    msg_Error()<<METHOD<<"(): below-threshold Kaellen argument = "<<lamRaw
+               <<" (sqq = "<<sqq<<", threshold = "<<sqr(m1+m2)<<")"<<std::endl;
   double lamCM = 0.5 * sqrt(Lambda(sqq, m1 * m1, m2 * m2) / sqq);
   double E1 = lamCM * sqrt(1 + m1 * m1 / sqr(lamCM));
   double E2 = lamCM * sqrt(1 + m2 * m2 / sqr(lamCM));
@@ -1621,6 +1657,41 @@ struct SubCheckAccumulator {
 };
 }
 
+void NLO_Base::RecordSubScatter(const Vec4D &k, double residual,
+                                const std::string &tag, double eik) {
+  if (!m_subscatter.is_open()) {
+    // per-rank filename: every MPI rank accumulates its own file (concatenate
+    // for plotting) so ranks do not clobber a shared file.
+    int rank = 0;
+#ifdef USING__MPI
+    if (mpi->Size() > 1) rank = mpi->Rank();
+#endif
+    std::string fn = "sub_angle_energy";
+    for (auto f : m_flavs) { fn += "_"; fn += f.IDName(); }
+    fn += "_rank" + std::to_string(rank) + ".txt";
+    if (ATOOLS::FileExists(fn)) ATOOLS::Remove(fn);
+    m_subscatter.open(fn.c_str(), std::ios_base::app);
+    m_subscatter << "# tag  E_gamma  pT_gamma  theta_charged[rad]  nearest_kf  "
+                 << "residual  eik(S~product)\n";
+  }
+  // angle of the photon k to the nearest charged particle
+  const Vec4D_Vector &mom =
+      (m_reallab.size() >= m_flavs.size() ? m_reallab : m_plab);
+  double th(-1.);
+  int ni(-1);
+  for (size_t j(0); j < m_flavs.size() && j < mom.size(); ++j) {
+    if (m_flavs[j].IntCharge() == 0) continue;
+    double t = k.Theta(mom[j]);
+    if (th < 0. || t < th) { th = t; ni = j; }
+  }
+  m_subscatter << std::setprecision(10) << tag << " " << k.E() << " "
+               << k.PPerp() << " " << th << " "
+               << (ni >= 0 ? (m_flavs[ni].IsAnti() ? -(long)m_flavs[ni].Kfcode()
+                                                   : (long)m_flavs[ni].Kfcode())
+                           : 0)
+               << " " << residual << " " << eik << "\n";
+}
+
 void NLO_Base::CheckRealSub(Vec4D k, int mode) {
   // if(k.E() < 20) return;
   // k*=100;
@@ -1736,9 +1807,9 @@ void NLO_Base::CheckRealRealSub(Vec4D k1, Vec4D k2, int fsr1, int fsr2) {
     filename1 += f.IDName();
     filename2 += f.IDName();
     filename3 += f.IDName();
-    filename1 += "_";
-    filename2 += "_";
-    filename3 += "_";
+    // filename1 += "_";
+    // filename2 += "_";
+    // filename3 += "_";
   }
   filename1 += ".txt";
   filename2 += ".txt";

@@ -7,6 +7,9 @@
 #include "ATOOLS/Org/Scoped_Settings.H"
 #include "MODEL/Main/Single_Vertex.H"
 #include "ATOOLS/Org/CXXFLAGS_PACKAGES.H"
+#include <algorithm>
+#include <limits>
+#include <set>
 #ifdef USING__LOOPTOOLS
   #include "clooptools.h"
 #endif
@@ -92,6 +95,13 @@ void Define_Dipoles::MakeDipolesFF(ATOOLS::Flavour_Vector const &fl, ATOOLS::Vec
 }
 
 void Define_Dipoles::MakeDipoles(ATOOLS::Flavour_Vector const &fl, ATOOLS::Vec4D_Vector const &mom, ATOOLS::Vec4D_Vector const &born ) {
+  if ((mom.size() != fl.size()) || (born.size() != fl.size())) {
+    msg_Out()<<"Dipole type is  =  "<<dipoletype::final<<std::endl
+             <<" mom.size() =  "<<mom.size()<<std::endl
+             <<" fl.size() =  "<<fl.size()<<std::endl
+             <<" born.size() =  "<<born.size()<<std::endl;
+    THROW(fatal_error, "Incorrect dipole size in YFS for final-final dipole");
+  }
   ATOOLS::Flavour_Vector dipoleFlav;
   ATOOLS::Vec4D_Vector dipoleMom;
   Dipole_Vector dipoles;
@@ -166,8 +176,6 @@ void Define_Dipoles::MakeDipoles(ATOOLS::Flavour_Vector const &fl, ATOOLS::Vec4D
   }
   else {
     Get4Mom(fl, mom);
-    Flavour_Vector ff;
-    Vec4D_Vector mm, bm;
     int N = 0; // number of leptons minus the inital state
     for(int i=2; i < fl.size(); i++){
       if (fl[i].Charge()!=0) N += 1;
@@ -194,42 +202,42 @@ void Define_Dipoles::MakeDipoles(ATOOLS::Flavour_Vector const &fl, ATOOLS::Vec4D
       m_dipolesFF.push_back(D);
       return;
     }
-    vector<vector<int>> pairings;
-    vector<int> curr_pairing, available_nums;
-    for(int i = 1; i <= N; i++) {
-      available_nums.push_back(i);
+    // N > 2 charged final-state particles: one dipole per unique pair, each
+    // built exactly once. The labels are positions in fl/mom, so neutral
+    // final-state particles cannot shift the mapping, and an odd N is treated
+    // like any other (the previous perfect-matching enumeration returned no
+    // pairings at all for odd N, and duplicated every pair three times for
+    // N = 6).
+    std::vector<int> charged_id;
+    for(int i = 2; i < fl.size(); i++) {
+      if (fl[i].Charge()!=0) charged_id.push_back(i);
     }
-    generate_pairings(pairings, curr_pairing, available_nums);
-    int k = 0;
-    int d1, d2;
-    for(size_t i = 0; i < pairings.size(); i++) {
-      for(size_t j = 0; j < pairings[i].size(); j++) {
-        if (k == 0) d1 = pairings[i][j] + 1;
-        else if (k == 1) d2 = pairings[i][j] + 1;
-        k += 1;
-        if (k == 2) {
-          Flavour f1 = fl[d1];
-          Flavour f2 = fl[d2];
-          if(f1.Charge()!=0 && f2.Charge()!=0){
-            ff.push_back(f1);
-            ff.push_back(f2);
-            mm.push_back(mom[d1]);
-            mm.push_back(mom[d2]);
-            bm.push_back(m_bornmomenta[d1]);
-            bm.push_back(m_bornmomenta[d2]);
-            Dipole D(ff, mm, bm, dipoletype::final,m_alpha);
-            Dipole_FF(ff, mm);
-            IsResonant(D);
-            D.SetFlavLab(d1,d2);
-            m_dipolesFF.push_back(D);
-            ff.clear();
-            mm.clear();
-            bm.clear();
-            k = 0;
-          }
-        }
+    for(size_t a = 0; a < charged_id.size(); a++) {
+      for(size_t b = a+1; b < charged_id.size(); b++) {
+        const int d1(charged_id[a]), d2(charged_id[b]);
+        Flavour_Vector ff{fl[d1], fl[d2]};
+        Vec4D_Vector mm{mom[d1], mom[d2]};
+        Vec4D_Vector bm{m_bornmomenta[d1], m_bornmomenta[d2]};
+        Dipole D(ff, mm, bm, dipoletype::final,m_alpha);
+        D.SetFlavLab(d1,d2);
+        m_dipolesFF.push_back(D);
+        msg_Debugging() << "Added " << ff << " to dipole (" << d1 << "," << d2 << ")" << std::endl;
       }
     }
+    // Every pair is needed for the virtual/form-factor sums, but a charged
+    // particle may enter photon generation and the real eikonal current only
+    // once. The radiating subset is flagged here.
+    SelectResonantDipoles();
+    // The charged/neutral out-particle lists describe the final state, not an
+    // individual pair, so fill them once. Dipole_FF clears them on entry, so
+    // the old per-dipole call left only the last pair behind.
+    Flavour_Vector fsflav;
+    Vec4D_Vector fsmom;
+    for(int i = 2; i < fl.size(); i++) {
+      fsflav.push_back(fl[i]);
+      fsmom.push_back(mom[i]);
+    }
+    Dipole_FF(fsflav, fsmom);
   }
 }
 
@@ -856,7 +864,7 @@ double Define_Dipoles::CalculateFlux(const Vec4D &k){
   Vec4D Q,QX;
   if(m_noflux==1) return 1;
   if(HasISR()&&HasFSR()){
-    fluxtype = dipoletype::initial;
+    fluxtype = dipoletype::final;
   }
   else if(!HasFSR()){
     fluxtype = dipoletype::initial;
@@ -1004,6 +1012,79 @@ double Define_Dipoles::Propagator(const double &s, int width){
   return ((Prop*conj(Prop)).real());
 }
 
+double Define_Dipoles::ResonanceWidthDistance(YFS::Dipole &D) {
+  // |m_ij - M| / Gamma, minimised over the resonances of the process. Returns a
+  // large sentinel if the process has no usable resonance, so that a pair stays
+  // selectable and the ordering simply falls back to the order of the pairs.
+  const double mass_d((D.GetBornMomenta(0) + D.GetBornMomenta(1)).Mass());
+  double mdist(std::numeric_limits<double>::max());
+  for (auto it = m_proc_restab_map.begin(); it != m_proc_restab_map.end(); ++it) {
+    for (auto *v : it->second) {
+      if (IsZero(v->in[0].Mass()) || IsZero(v->in[0].Width())) continue;
+      mdist = std::min(mdist, std::abs(mass_d - v->in[0].Mass()) / v->in[0].Width());
+    }
+  }
+  return mdist;
+}
+
+void Define_Dipoles::SelectResonantDipoles() {
+  // m_dipolesFF holds every unique pair of charged final-state particles, which
+  // is what the virtual and form-factor sums want. Photon generation
+  // (YFS_Handler::CalculateFSR) and the real eikonal current
+  // (CalculateRealSub) must instead see each charged particle exactly once,
+  // otherwise a leg radiates -- and is boosted -- more than once. So the
+  // radiating subset has to be a matching of the charged final state, and that
+  // is what IsResonance() flags.
+  //
+  // Selection is greedy over two passes. Same-flavour opposite-charge pairs are
+  // the physical dipoles and are matched first, most resonant first, so that
+  // with several candidates of one flavour the pairing closest to a resonance
+  // of the process wins. A second pass pairs whatever is left by opposite
+  // charge alone, so no charged leg is dropped when the flavours do not pair up.
+  for (auto &D : m_dipolesFF) D.SetResonance(false);
+  std::set<int> used;
+  for (int pass(0); pass < 2; ++pass) {
+    std::vector<std::pair<double, size_t> > cand;
+    for (size_t i(0); i < m_dipolesFF.size(); ++i) {
+      Dipole &D(m_dipolesFF[i]);
+      if (D.m_QiQj >= 0) continue;                      // opposite charges only
+      if (pass == 0 && !D.IsDecayAllowed()) continue;    // same flavour first
+      if (used.count(D.Left()) || used.count(D.Right())) continue;
+      cand.push_back(std::make_pair(ResonanceWidthDistance(D), i));
+    }
+    std::stable_sort(cand.begin(), cand.end());
+    for (size_t c(0); c < cand.size(); ++c) {
+      Dipole &D(m_dipolesFF[cand[c].second]);
+      if (used.count(D.Left()) || used.count(D.Right())) continue;
+      D.SetResonance(true);
+      used.insert(D.Left());
+      used.insert(D.Right());
+      msg_Debugging() << METHOD << "(): radiating dipole (" << D.Left() << ","
+                      << D.Right() << ") " << D.m_flavs[0] << D.m_flavs[1]
+                      << " pass=" << pass << " |m-M|/Gamma=" << cand[c].first
+                      << std::endl;
+    }
+  }
+  std::set<int> legs;
+  for (auto &D : m_dipolesFF) {
+    legs.insert(D.Left());
+    legs.insert(D.Right());
+  }
+  for (auto l : legs) {
+    if (used.count(l)) continue;
+    static bool warned(false);
+    if (!warned) {
+      msg_Error() << METHOD << "(): charged final-state particle at position "
+                  << l << " enters no radiating dipole, so the final-state "
+                  << "eikonal current does not conserve charge. This is "
+                  << "expected for an odd number of charged final-state "
+                  << "particles. Further warnings suppressed." << std::endl;
+      warned = true;
+    }
+    msg_Debugging() << METHOD << "(): unpaired charged leg at " << l << std::endl;
+  }
+}
+
 void Define_Dipoles::IsResonant(YFS::Dipole &D) {
 double mass_d = (D.GetBornMomenta(0) + D.GetBornMomenta(1)).Mass();
   double mdist;
@@ -1100,7 +1181,7 @@ double Define_Dipoles::ResonantDist(YFS::Dipole &D){
       if(mcheck < mdist) mdist = mcheck;
     }
   }
-  return mcheck;
+  return mdist;
 }
 
 dipoletype::code Define_Dipoles::WhichResonant(const Vec4D &k){

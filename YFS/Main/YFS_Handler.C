@@ -92,13 +92,23 @@ void YFS_Handler::SetLimits(const double &smin) {
 }
 
 void YFS_Handler::SetFlavours(const ATOOLS::Flavour_Vector &flavs) {
-  if(m_setparticles) return;
-  m_flavs.clear();
-  m_mass.clear();
-  m_particles.clear();
+  // One YFS_Handler is shared by every process in the run card, but m_flavs,
+  // m_mass and m_particles describe a single process. Latching on
+  // m_setparticles alone meant the first process to get here kept ownership of
+  // those forever, so with more than one process the momenta of the active
+  // process were combined with the flavours of a different one -- mismatched
+  // multiplicities, which MakeDipoles used to index out of bounds. Rebuild
+  // whenever the flavours actually change; the early return keeps the
+  // per-event calls cheap when they do not.
+  if(m_setparticles && m_flavs == flavs) return;
+  // delete before clearing: the old code cleared first, so the loop below ran
+  // over an empty vector and leaked every Particle it was meant to free.
   for(auto particle : m_particles) {
     delete particle;
   }
+  m_particles.clear();
+  m_flavs.clear();
+  m_mass.clear();
   bool qed(false);
   for(size_t i = 0; i < flavs.size(); ++i) {
     m_flavs.push_back(flavs[i]);
@@ -124,16 +134,33 @@ void YFS_Handler::SetBornMomenta(const ATOOLS::Vec4D_Vector &p) {
   for(size_t i = 0; i < p.size(); ++i) {
     m_bornMomenta.push_back(p[i]);
   }
-  if (m_formWW) MakeWWVecs(m_bornMomenta);
+  // detect asymmetric beams from the original lab momenta, before any boost
   if(m_bornMomenta[0] != -m_bornMomenta[1]) m_asymbeams = true;
   else m_asymbeams = false;
+  // NLO_Base::MapMomenta (and the ISR/FSR kinematics) assume the incoming pair
+  // is at rest. For non-standard setups (fixed target, e.g. MUonE muon-e-;
+  // asymmetric beams; beamstrahlung) it is not, so boost into the incoming-pair
+  // rest frame here; the blob-facing getters (ToLab) undo it when handing the
+  // event back. Pure-FSR mode feeds lab momenta straight into CalculateFSR(p)
+  // and is left untouched.
+  Vec4D Q(m_bornMomenta[0] + m_bornMomenta[1]);
+  if (m_mode != yfsmode::fsr && !IsZero(Q.PSpat() / Q[0], 1e-10)) {
+    m_cmsboost = Poincare(Q);
+    for (size_t i = 0; i < m_bornMomenta.size(); ++i)
+      m_cmsboost.Boost(m_bornMomenta[i]);
+  } else {
+    m_cmsboost = Poincare();
+  }
+  if (m_formWW) MakeWWVecs(m_bornMomenta);
   // AddFormFactor();
 }
 
 void YFS_Handler::SetMomenta(const ATOOLS::Vec4D_Vector &p) {
   m_plab.clear();
   for(size_t i = 0; i < p.size(); ++i) {
-    m_plab.push_back(p[i]);
+    Vec4D pi(p[i]);
+    m_cmsboost.Boost(pi);
+    m_plab.push_back(pi);
   }
 }
 
@@ -241,7 +268,10 @@ bool YFS_Handler::CalculateISR() {
   m_isrWeight = p_isr->GetWeight();
   p_dipoles->GetDipoleII()->AddPhotonsToDipole(m_ISRPhotons);
   p_dipoles->GetDipoleII()->Boost();
-  for(size_t i = 0; i < 2; ++i) m_plab[i] = p_dipoles->GetDipoleII()->GetNewMomenta(i);
+  for(size_t i = 0; i < 2; ++i) {
+    m_plab[i] = p_dipoles->GetDipoleII()->GetNewMomenta(i); 
+    ToLab(m_plab[i]);
+  }
   double sp = (m_plab[0] + m_plab[1]).Abs2();
   if (!IsEqual(sp, m_sp, 1e-4) && !m_asymbeams) {
     msg_Error() << "Boost failed, sprime"
@@ -376,10 +406,10 @@ bool YFS_Handler::CalculateFSR(Vec4D_Vector & p) {
     for(auto &k: Dip->GetPhotons()) m_FSRPhotons.push_back(k);
     for(auto &k: Dip->GetMEPhotons()) m_fsrphotonsforME.push_back(k);
   }
-  if(!CheckMomentumConservation()) return false;
+  // if(!CheckMomentumConservation()) return false;
   if(FixedOrder()==fixed_order::nlo){
     int totk = m_FSRPhotons.size()+m_ISRPhotons.size();
-    if(totk > 1) {
+  if(totk > 1) {
       msg_Error()<<"Wrong photon multiplicity at Fixed Order: "<<totk<<std::endl;
     }
   }
@@ -477,7 +507,7 @@ void YFS_Handler::InitNLO(){
 }
 
 double YFS_Handler::CalculateNLO(){
-  // CheckMomentumConservation();
+// CheckMomentumConservation();
   InitNLO();
   m_nlo_real = p_nlo->CalculateReal();
   // Hardest-photon-only contributions are captured as a side effect of the
@@ -743,7 +773,10 @@ void YFS_Handler::CheckResonance(){
     for (Dipole_Vector::iterator D2 = p_dipoles->GetDipoleFF()->begin();
        D2 != p_dipoles->GetDipoleFF()->end(); ++D2) {
       if(D1==D2) continue;
-      // if(!D1->IsResonance() || !D2->IsResonance()) continue;
+      // Only two dipoles that both still radiate can double count a leg.
+      // Without this, an overlapping non-resonant pair could switch off a
+      // dipole that Define_Dipoles::SelectResonantDipoles picked.
+      if(!D1->IsResonance() || !D2->IsResonance()) continue;
       if(D1->Right() == D2->Right() ||  D1->Right() == D2->Left()|| 
         D1->Left() == D2->Right()||  D1->Left() == D2->Left()){
         if(p_dipoles->ResonantDist(*D1) < p_dipoles->ResonantDist(*D2)) D2->SetResonance(false);

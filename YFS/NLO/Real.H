@@ -8,6 +8,7 @@
 #include "PHASIC++/Process/Process_Base.H"
 #include "PHASIC++/Scales/Scale_Setter_Base.H"
 #include "YFS/Main/YFS_Base.H"
+#include "YFS/NLO/ME_Compare.H"
 
 
 namespace PHASIC {
@@ -22,7 +23,6 @@ class CS_Dipole;
 class Dipole_Wrapper_Process;
 }
 namespace YFS {
-typedef std::map<std::string, ATOOLS::Histogram *> histograms1d;
 
 class Real : public YFS_Base {
 
@@ -34,6 +34,7 @@ public:
   // void InitME(MODEL::Model_Base *const model);
   double Calc(const ATOOLS::Vec4D_Vector momenta);
    PHASIC::Tree_ME2_Base     *p_real_me;
+   PHASIC::Tree_ME2_Base     *p_real_me2;
   double Calc_R(const ATOOLS::Vec4D_Vector& p);
   double Calc_External(const ATOOLS::Vec4D_Vector& p);
   MODEL::Coupling_Map m_cpls;
@@ -44,12 +45,10 @@ public:
   int m_nmom, m_fill;
   Flavour_Vector m_flavs;
 
-  long int m_npoints, m_nbad;
-  double m_maxdev;
+  ME_Compare *p_cmp;
 
   PHASIC::Process_Base *p_realproc;
   ATOOLS::Cluster_Amplitude *p_ampl;
-  histograms1d m_histograms1d;
   inline bool FailCut() {return m_failcut;}
   inline void SetProc(PHASIC::Process_Base *realproc) {p_realproc=realproc;}
    ATOOLS::Cluster_Amplitude *CreateAmplitude
