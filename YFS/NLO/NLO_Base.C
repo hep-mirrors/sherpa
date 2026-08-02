@@ -179,16 +179,9 @@ NLO_Base::~NLO_Base() {
     delete p_yfsFormFact;
   if (p_nlodipoles)
     delete p_nlodipoles;
-  if (p_realvirt)
-    delete p_realvirt;
-  if (p_real)
-    delete p_real;
-  if (p_virt)
-    delete p_virt;
-  if (p_vv)
-    delete p_vv;
-  if(p_realreal)
-    delete p_realreal;
+  // p_virt, p_real, p_realvirt, p_realreal and p_vv are NOT deleted here: they
+  // are owned by the YFS_Process they were built for (see SetProviders), since
+  // one NLO_Base is shared by every process in the run card.
   msg_Out()<<"Total zero V: "<<m_zeroV<<std::endl;
   msg_Out()<<"Total zero RV: "<<m_zeroRV<<std::endl;
   msg_Out()<<"Total zero RR: "<<m_zeroRR<<std::endl;
@@ -246,43 +239,22 @@ NLO_Base::~NLO_Base() {
   msg_Out()<<"Total events : "<<m_evts<<std::endl;
 }
 
-void NLO_Base::InitializeVirtual(const PHASIC::Process_Info &pi) {
-  if (!m_eex_virt && !m_looptool) {
-    p_virt = new YFS::Virtual(pi);
-    m_looptool = true;
-  }
-}
-
-void NLO_Base::InitializeReal(const PHASIC::Process_Info &pi) {
-  if (m_coll_real || m_realtool)
-    return;
-  p_real = new YFS::Real(pi);
-  m_realtool = true;
-}
-
-void NLO_Base::InitializeRealVirtual(const PHASIC::Process_Info &pi) {
-  // if(m_realvirt)
-  p_realvirt = new YFS::RealVirtual(pi);
-  m_realvirt = true;
-  // m_looptool = true;
-}
-
-void NLO_Base::InitializeRealReal(const PHASIC::Process_Info &pi) {
-  if (!m_realtool) {
-  msg_Error() << "No real corrections matrix element provider found.\n"
-              << "    Double-real (RR) subtraction terms for NNLO cannot be\n"
-              << "    constructed without them. Check that the real correction\n"
-              << "    process has been set up and linked correctly before\n"
-              << "    initialising the NNLO subtraction.\n";
-  THROW(fatal_error, "Missing real corrections provider for NNLO RR subtraction");
-}
-  p_realreal = new YFS::RealReal(pi);
-  m_rrtool = true;
-}
-
-void NLO_Base::InitializeVV(const PHASIC::Process_Info &pi) {
-  p_vv = new YFS::VirtualVirtual(pi);
-  m_vvtool = true;
+void NLO_Base::SetProviders(YFS::Virtual *virt, YFS::Real *real,
+                            YFS::RealVirtual *realvirt, YFS::RealReal *realreal,
+                            YFS::VirtualVirtual *vv) {
+  // Non-owning: the providers belong to the YFS_Process they were built for.
+  // The "has this correction" flags follow the pointers, so switching process
+  // switches the available corrections consistently.
+  p_virt     = virt;
+  p_real     = real;
+  p_realvirt = realvirt;
+  p_realreal = realreal;
+  p_vv       = vv;
+  m_looptool = (p_virt     != NULL);
+  m_realtool = (p_real     != NULL);
+  m_realvirt = (p_realvirt != NULL);
+  m_rrtool   = (p_realreal != NULL);
+  m_vvtool   = (p_vv       != NULL);
 }
 
 void NLO_Base::Init(Flavour_Vector &flavs, Vec4D_Vector &plab,

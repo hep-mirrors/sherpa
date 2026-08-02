@@ -39,7 +39,9 @@ using namespace std;
 YFS_Process::YFS_Process
 (ME_Generators& gens, NLOTypeStringProcessMap_Map *pmap):
   m_gens(gens), p_bornproc(NULL), p_realproc(NULL), p_realrealproc(NULL),
-  p_realvirtproc(NULL)
+  p_realvirtproc(NULL),
+  p_yfsvirt(NULL), p_yfsreal(NULL), p_yfsrealvirt(NULL), p_yfsrealreal(NULL),
+  p_yfsvv(NULL)
 {
   m_lastxs= 0.0;
   RegisterDefaults();
@@ -56,7 +58,16 @@ YFS_Process::~YFS_Process() {
   if (p_realvirtproc) delete p_realvirtproc;
   if (p_vv) delete p_vv;
   if (p_int) delete p_int;
-  if (p_yfs) delete p_yfs;
+  // ME providers for this process's YFS corrections; the shared NLO_Base only
+  // borrows them, so they are released here.
+  if (p_yfsvirt) delete p_yfsvirt;
+  if (p_yfsreal) delete p_yfsreal;
+  if (p_yfsrealvirt) delete p_yfsrealvirt;
+  if (p_yfsrealreal) delete p_yfsrealreal;
+  if (p_yfsvv) delete p_yfsvv;
+  // p_yfs is NOT deleted: every process is handed the one handler owned by
+  // Initialization_Handler, so deleting it here was a double free as soon as
+  // there was more than one process.
   if (p_apmap) delete p_apmap;
   // if (p_rampl) delete p_rampl;
   if (p_gen) delete p_gen;
@@ -97,9 +108,11 @@ void YFS_Process::Init(const Process_Info &pi,
     p_realproc->SetParent(this);
     // p_realproc->FillProcessMap(p_apmap);
     // p_realproc->SetLookUp(true);
-    p_yfs->NLO()->InitializeReal(rpi);
+    if (p_yfs->NLO()->NeedsRealProvider()) {
+      p_yfsreal = new YFS::Real(rpi);
+      p_yfsreal->SetProc(p_realproc);
+    }
     p_yfs->SetNLOType(nlo_type::real);
-    if(p_yfs->NLO()->HasReal()) p_yfs->NLO()->p_real->SetProc(p_realproc);
   }
   if (pi.Has(nlo_type::loop)) {
     vpi.m_fi.SetNLOType(nlo_type::loop);
@@ -109,9 +122,11 @@ void YFS_Process::Init(const Process_Info &pi,
     // p_virtproc->p_mapproc=NULL
     p_virtproc->SetParent(this);
     p_virtproc->SetLookUp(false);
-    p_yfs->NLO()->InitializeVirtual(vpi);
+    if (p_yfs->NLO()->NeedsVirtualProvider()) {
+      p_yfsvirt = new YFS::Virtual(vpi);
+      p_yfsvirt->SetProc(p_bornproc);
+    }
     p_yfs->SetNLOType(nlo_type::loop);
-    if(p_yfs->NLO()->HasVirtual()) p_yfs->NLO()->p_virt->SetProc(p_bornproc);
   }
   if (pi.Has(nlo_type::rvirt)) {
     Process_Info rvpi(pi);
@@ -122,11 +137,9 @@ void YFS_Process::Init(const Process_Info &pi,
     }
     rvpi.m_fi.m_ps.push_back(Subprocess_Info(kf_photon, "", ""));
     p_realvirtproc = InitProcess(rvpi, nlo_type::rvirt, false);
-    p_yfs->NLO()->InitializeRealVirtual(rvpi);
-    // p_yfs->NLO()->InitializeVirtual(vpi);
+    p_yfsrealvirt = new YFS::RealVirtual(rvpi);
+    p_yfsrealvirt->SetProc(p_realvirtproc);
     p_yfs->SetNLOType(nlo_type::loop);
-    p_yfs->NLO()->p_realvirt->SetProc(p_realvirtproc);
-
   }
   if (pi.Has(nlo_type::realreal)) {
     Process_Info rrpi(pi);
@@ -138,11 +151,18 @@ void YFS_Process::Init(const Process_Info &pi,
     rrpi.m_fi.m_ps.push_back(Subprocess_Info(kf_photon, "", ""));
     rrpi.m_fi.m_ps.push_back(Subprocess_Info(kf_photon, "", ""));
     p_realrealproc = InitProcess(rrpi, nlo_type::real, false);
-    p_yfs->NLO()->InitializeRealReal(rrpi);
+    if (!p_yfsreal) {
+      msg_Error() << "No real corrections matrix element provider found.\n"
+                  << "    Double-real (RR) subtraction terms for NNLO cannot be\n"
+                  << "    constructed without them. Check that the real correction\n"
+                  << "    process has been set up and linked correctly before\n"
+                  << "    initialising the NNLO subtraction.\n";
+      THROW(fatal_error, "Missing real corrections provider for NNLO RR subtraction");
+    }
+    p_yfsrealreal = new YFS::RealReal(rrpi);
     p_realrealproc->SetParent(this);
+    p_yfsrealreal->SetProc(p_realrealproc);
     p_yfs->SetNLOType(nlo_type::realreal);
-    p_yfs->NLO()->p_realreal->SetProc(p_realrealproc);
-    // p_yfs->InitializeVirtual(vpi);
   }
   if(pi.Has(nlo_type::vv)) {
     Process_Info vvpi(pi);
@@ -152,12 +172,27 @@ void YFS_Process::Init(const Process_Info &pi,
       vvpi.m_mincpl[i] += vvpi.m_fi.m_nlocpl[i]+vvpi.m_fi.m_nlocpl[i];
     }
     p_vv = InitProcess(vvpi, nlo_type::vv, false);
-    p_yfs->NLO()->InitializeVV(vvpi);
+    p_yfsvv = new YFS::VirtualVirtual(vvpi);
   }
   p_bornproc->SetLookUp(false);
   // p_bornproc->SetParent(p_bornproc);
   p_bornproc->SetSelected(this);
+  // The handler is shared with every other process, so hand it this process's
+  // providers now and again whenever this process becomes the selected one.
+  MakeActive();
   FindResonances();
+}
+
+void YFS_Process::MakeActive()
+{
+  // Everything the shared YFS_Handler holds that is process specific is
+  // (re)pointed here: the flavours/particles and the NLO ME providers. Keep
+  // these two in step -- a handler carrying one process's flavours and
+  // another's loop ME is how the multi-process breakage showed up.
+  p_yfs->resetparticles();
+  p_yfs->SetFlavours(Flavours());
+  p_yfs->NLO()->SetProviders(p_yfsvirt, p_yfsreal, p_yfsrealvirt,
+                             p_yfsrealreal, p_yfsvv);
 }
 
 
@@ -182,8 +217,7 @@ bool YFS_Process::CalculateTotalXSec(const std::string &resultpath,
   p_int = p_bornproc->Integrator();
   p_int->Reset();
   auto psh = p_int->PSHandler();
-  p_yfs->resetparticles();
-  p_yfs->SetFlavours(Flavours());
+  MakeActive();
   psh->InitCuts();
   psh->CreateIntegrators();
   p_int->SetResultPath(resultpath);
@@ -260,8 +294,7 @@ Weight_Info *YFS_Process::OneEvent(const int wmode,ATOOLS::Variations_Mode varmo
 {
   auto psh = p_int->PSHandler();
   psh->InitCuts();
-  p_yfs->resetparticles();
-  p_yfs->SetFlavours(Flavours());
+  MakeActive();
   p_selected = p_bornproc;
   Weight_Info *winfo(NULL);
   winfo = p_int->PSHandler()->OneEvent(this, varmode, mode);

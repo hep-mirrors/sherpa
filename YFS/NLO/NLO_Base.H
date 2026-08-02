@@ -96,11 +96,23 @@ public:
 
 
   void Init(Flavour_Vector &flav, Vec4D_Vector &plab, Vec4D_Vector &born);
-  void InitializeVirtual(const PHASIC::Process_Info& pi);
-  void InitializeReal(const PHASIC::Process_Info& pi);
-  void InitializeRealReal(const PHASIC::Process_Info& pi);
-  void InitializeRealVirtual(const PHASIC::Process_Info& pi);
-  void InitializeVV(const PHASIC::Process_Info& pi);
+  /*!
+   * Point this (process-agnostic) handler at the ME providers of the process
+   * that is currently selected. The providers are owned by the YFS_Process
+   * they were built for -- a single YFS_Handler, and hence a single NLO_Base,
+   * is shared by every process in the run card, so anything built from a
+   * Process_Info must not be stored here permanently. Call this whenever the
+   * active process changes, alongside YFS_Handler::SetFlavours.
+   * Null arguments are allowed and simply mean "this process has no such
+   * correction". Ownership is never taken.
+   */
+  void SetProviders(YFS::Virtual *virt, YFS::Real *real,
+                    YFS::RealVirtual *realvirt, YFS::RealReal *realreal,
+                    YFS::VirtualVirtual *vv);
+  /// whether a loop-ME provider should be built at all (EEX virtual replaces it)
+  inline bool NeedsVirtualProvider() const { return !m_eex_virt; }
+  /// whether a real-ME provider should be built at all (collinear approx replaces it)
+  inline bool NeedsRealProvider() const { return !m_coll_real; }
   double CalculateVirtual();
   double CalculateReal();
   double CalculateRealReal();
