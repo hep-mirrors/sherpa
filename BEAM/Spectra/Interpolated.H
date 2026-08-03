@@ -9,6 +9,8 @@ namespace BEAM {
   class Interpolated_Neutrinos : public Beam_Base {
   private:
     ATOOLS::OneDim_Flexible_Table * p_table;
+    double m_xmin, m_xmax;
+    double m_lumiscale;
     void Initialise();
   public:
     Interpolated_Neutrinos(const ATOOLS::Flavour & flav,
@@ -19,6 +21,8 @@ namespace BEAM {
     Beam_Base     * Copy();
     ATOOLS::Flavour Remnant();
     bool CalculateWeight(const double,const double);
+    double Xmin() const { return m_xmin; }
+    double Xmax() const { return m_xmax; }
   };
 }
 

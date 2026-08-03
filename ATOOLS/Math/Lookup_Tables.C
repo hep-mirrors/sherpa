@@ -5,6 +5,7 @@
 #include <filesystem>
 #include <fstream>
 #include <iostream>
+#include <sstream>
 
 using namespace ATOOLS;
 
@@ -223,15 +224,18 @@ OneDim_Flexible_Table(const std::string & path) : m_nbins(0) {
   if (!std::filesystem::exists(path))
     THROW(fatal_error,"File ["+path+"] does not exist.");
   std::string line;
-  double e, N;
   while (std::getline(file,line)) {
-    size_t pos;
-    if ((pos=line.find(" "))!=std::string::npos) {
-      m_x.push_back(std::stod(line.substr(0,pos)));
-      m_y.push_back(std::stod(line.substr(pos,-1))); 
-    }
+    size_t first = line.find_first_not_of(" \t\r\n");
+    if (first==std::string::npos || line[first]=='#') continue;
+    std::istringstream iss(line);
+    double x, y;
+    if (!(iss>>x>>y)) continue;
+    m_x.push_back(x);
+    m_y.push_back(y);
     m_nbins++;
   }
+  if (m_nbins==0)
+    THROW(fatal_error,"File ["+path+"] contains no valid (x,y) entries.");
   m_xmin = m_x[0];
   m_xmax = m_x[m_nbins-1];
   m_ymin = m_y[0];
