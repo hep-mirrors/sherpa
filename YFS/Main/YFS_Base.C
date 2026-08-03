@@ -59,6 +59,7 @@ void YFS_Base::RegisterDefaults(){
   s["RV_TEST_PHOTON_THETA"].SetDefault(M_PI / 2.);
   s["RV_TEST_PHOTON_PHI"].SetDefault(0.);
   s["RV_SOFT_CUT"].SetDefault(0.);
+  s["RR_SOFT_CUT"].SetDefault(0.);
   s["RV_CANCEL_EPS"].SetDefault(0.);
   s["RV_CANCEL_HIST"].SetDefault(0);
   s["RV_ME_MAX_RATIO"].SetDefault(0.);
@@ -128,6 +129,8 @@ void YFS_Base::RegisterSettings(){
   m_rv_test_phi = s["RV_TEST_PHOTON_PHI"].Get<double>();
   // Dimensionless: photon energy fraction E/sqrt(s). <=0 disables the guard.
   m_rv_soft_cut = s["RV_SOFT_CUT"].Get<double>();
+  // Same, applied to each photon of the double-real pair. <=0 disables.
+  m_rr_soft_cut = s["RR_SOFT_CUT"].Get<double>();
   // Dimensionless relative-cancellation threshold for the RV beta_1^1. <=0
   // disables. Recommended O(1e-10..1e-12); validate with RV_CANCEL_HIST.
   m_rv_cancel_eps = s["RV_CANCEL_EPS"].Get<double>();

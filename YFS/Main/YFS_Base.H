@@ -77,6 +77,12 @@ public:
   double m_nbar, m_deltacut, m_betatWW, m_eps, m_fixed_weight, m_resonace_max;
   double m_rv_test_x, m_rv_test_theta, m_rv_test_phi;
   double m_rv_soft_cut; // soft-photon energy fraction below which RV is skipped
+  // Same coarse soft-photon gate for the double-real beta_2^2, applied to each
+  // of the two photons: the RR residual vanishes when either photon goes soft,
+  // while the ME and its subtraction both diverge like S~(k1)*S~(k2), so the
+  // pair is roundoff-dominated long before it is physically relevant. Energy
+  // fraction E/sqrt(s); <=0 disables.
+  double m_rr_soft_cut;
   // Relative-cancellation threshold for the RV beta_1^1. The RV matrix element
   // m_rv and its subtraction m_rvsub each diverge like S(k)~1/k^2 and cancel to
   // form d1; when |d1| drops below m_rv_cancel_eps*max(|m_rv|,|m_rvsub|) the

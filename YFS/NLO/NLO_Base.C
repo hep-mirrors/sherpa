@@ -70,6 +70,7 @@ NLO_Base::NLO_Base() {
   m_rv_hard2 = 0.;
   m_zero_real_amp = 0;
   m_softRV = 0;
+  m_softRR = 0;
   m_rvUnstable = 0;
   m_rvHiC = 0;
   m_rvBlowup = 0;
@@ -193,14 +194,16 @@ NLO_Base::~NLO_Base() {
   // RV_CANCEL_HIST diagnostics below.
 #ifdef USING__MPI
   if (mpi->Size() > 1) {
-    int gbuf[2] = {m_softRV, m_rvUnstable};
-    mpi->Allreduce(gbuf, 2, MPI_INT, MPI_SUM);
+    int gbuf[3] = {m_softRV, m_rvUnstable, m_softRR};
+    mpi->Allreduce(gbuf, 3, MPI_INT, MPI_SUM);
     m_softRV = gbuf[0];
     m_rvUnstable = gbuf[1];
+    m_softRR = gbuf[2];
   }
 #endif
   msg_Out()<<"Total soft RV skipped: "<<m_softRV<<std::endl;
   msg_Out()<<"Total unstable-ME RV skipped (RV_ME_MAX_RATIO): "<<m_rvUnstable<<std::endl;
+  msg_Out()<<"Total soft RR pairs skipped: "<<m_softRR<<std::endl;
   if (m_rv_cancel_hist) {
     // Sum the per-rank diagnostic counters across all ranks. Unlike the
     // histograms (Allreduced in MPISync), these are plain ints printed only on
@@ -989,6 +992,24 @@ double NLO_Base::CalculateRealReal() {
 }
 
 double NLO_Base::CalculateRealReal(Vec4D k1, Vec4D k2, int fsr1, int fsr2) {
+  // Coarse soft-photon pre-filter, the double-real counterpart of the
+  // RV_SOFT_CUT gate in CalculateRealVirtual. The beta_2^2 residual vanishes
+  // when either photon goes soft, but the RR matrix element and its
+  // subtraction each diverge like S~(k1)*S~(k2) and the result is divided by
+  // that same product (see m_rr_eik), so a pair containing one soft photon is
+  // roundoff-dominated while contributing negligibly. Gate on the softer of
+  // the two, before any boosting or ME evaluation. Disabled when
+  // RR_SOFT_CUT <= 0.
+  if (m_rr_soft_cut > 0.) {
+    const double emin = Min(k1.E(), k2.E());
+    if (emin < m_rr_soft_cut * sqrt(m_s)) {
+      m_softRR++;
+      msg_Debugging() << METHOD << " skipping soft photon pair: min(E1,E2)="
+                      << emin << " < RR_SOFT_CUT*sqrt(s)="
+                      << m_rr_soft_cut * sqrt(m_s) << "\n";
+      return 0;
+    }
+  }
   const double norm = 2. * pow(2 * M_PI, 6);// * (m_borngamma.size()==1?1:m_borngamma.size());
   m_rr_eik = 0.;  // reset; set once the crude eikonals are computed below
   Vec4D_Vector p(m_plab);
@@ -1126,9 +1147,13 @@ double NLO_Base::CalculateRealReal(Vec4D k1, Vec4D k2, int fsr1, int fsr2) {
   // MapMomenta(r2, kk2);
   // r1.push_back(kk1);
   // r2.push_back(kk2);
-  const double norm1 =  2. * pow(2 * M_PI, 3);
+  // const double norm1 =  2. * pow(2 * M_PI, 3);
+  // const double fl1 = p_nlodipoles->CalculateFlux(kk1);
+  // const double fl2 = p_nlodipoles->CalculateFlux(kk2);
   const double real1 = CalculateReal(kk1, 3 + fsr1);//p_real->Calc_R(r1)/norm1-m_born*p_dipoles->CalculateRealSub(kk1);// CalculateReal(kk1, 3 + fsr1);
   const double real2 = CalculateReal(kk2, 3 + fsr2);//p_real->Calc_R(r2)/norm1-m_born*p_dipoles->CalculateRealSub(kk2); //CalculateReal(kk2, 3 + fsr2);
+  // const double real1 = fl1*p_real->Calc_R(r1)/norm1-m_born*p_nlodipoles->CalculateRealSub(k1);// CalculateReal(kk1, 3 + fsr1);
+  // const double real2 = fl2*p_real->Calc_R(r2)/norm1-m_born*p_nlodipoles->CalculateRealSub(k2); //CalculateReal(kk2, 3 + fsr2);
   m_recola_evts += 1;
 
   msg_Debugging() << METHOD << " r=" << r
@@ -1794,6 +1819,11 @@ void NLO_Base::CheckRealRealSub(Vec4D k1, Vec4D k2, int fsr1, int fsr2) {
     ATOOLS::Remove(filename3);
   out_sub.open(filename1, std::ios_base::app);
   // if(k.E() < 0.8*sqrt(m_s)/2.) return;
+  // Run these soft-limit scans with RR_SOFT_CUT disabled, as for
+  // RV_CANCEL_EPS/RV_SOFT_CUT in CheckRealVirtualSub: the whole point here is
+  // to walk the photons into the soft region, which is exactly what the guard
+  // skips. With it on, CalculateRealReal returns 0 for the soft points, and the
+  // third loop below (which breaks on real==0) would terminate immediately.
   SubCheckAccumulator acc1, acc2, acc12;
   for (double i = 1; i < 20; i += 0.02) {
     k1 = k1 / i;
