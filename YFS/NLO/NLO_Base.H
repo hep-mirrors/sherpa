@@ -71,6 +71,10 @@ public:
   // gate) failing the RV_CANCEL_EPS relative-cancellation test. Their
   // contribution is negligible but roundoff-dominated.
   int m_softRV;
+  // Counts double-real photon pairs skipped by the RR_SOFT_CUT energy
+  // pre-filter, i.e. where at least one of the two photons was too soft for
+  // the beta_2^2 residual to be computed reliably.
+  int m_softRR;
   // Counts RV photons skipped by the matrix-element stability guard
   // (RV_ME_MAX_RATIO): |rv| grossly exceeds the scale its subtraction predicts,
   // i.e. the one-loop provider is unstable. Always active in production when
