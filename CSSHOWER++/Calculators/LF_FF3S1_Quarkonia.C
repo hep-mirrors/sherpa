@@ -182,12 +182,14 @@ double LF_FF3S1_Quarkonia_FI::operator()(const double z, const double y,
                                        const double eta, const double scale,
                                        const double Q2) {
   // morally y is x ij,a
-  double mi  = ATOOLS::Flavour(m_flavs[1].Kfcode()).Mass(true); // works with the mapping c -> c J/psi
+  // works with the mapping c -> c J/psi
+  double mi  = ATOOLS::Flavour(m_flavs[1].Kfcode()).Mass(true); 
   double mj  = ATOOLS::Flavour(m_flavs[2].Kfcode()).Mass(true);
   double ma  = ATOOLS::Flavour(m_flspec.Kfcode()).Mass(true);
   double mij = ATOOLS::Flavour(m_flavs[0].Kfcode()).Mass(true);
   double mui2 = sqr(mi) / Q2, muj2 = sqr(mj) / Q2, muk2 = sqr(ma) / Q2, muij2 = sqr(mij) / Q2;
-  const double sij = (Q2*(1-y) + sqr(mij) )/y;
+  // const double sij = (Q2*(1-y) + sqr(mij) )/y;
+  const double sij = (sqr(mi) + sqr(mj))*(1-y) + (Q2 - sqr(ma)) * y;
   const double M = mi + mij;
   const double ri = mi / M;
   const double rij = mij / M;
@@ -244,12 +246,14 @@ double LF_FF3S1_Quarkonia_IF::operator()(const double z, const double y,
   const double ma  = sqr(ATOOLS::Flavour(m_flavs[0].Kfcode()).Mass(true));
   const double mi  = sqr(ATOOLS::Flavour(m_flavs[2].Kfcode()).Mass(true));
   const double mai = sqr(ATOOLS::Flavour(m_flavs[1].Kfcode()).Mass(true));
+  const double mk = sqr(ATOOLS::Flavour(m_flspec.Kfcode()).Mass(true));
   // const double pkpa =  Q2 / 2 / z * (1 - y);
   // const double pkpj =  0.5 * (1 - z) / z * (mj2 + mk2 + ma2 - Q2);
   // const double taj  =  y * Q2 + ma2 * (1 - y) + mj2 + y * (mj2 + mk2 + 2 * pkpj); // (pa - pj)^2
   // const double z    =  pkpj / pkpa; // this is the momentum fraction of J/psi w.r.t. parent quark
   // const double tai = sqr(ma) + sqr(mi) - y / z * (Q2 - sqr(mb) - sqr(ma) - sqr(mi));
-  const double tai = sqr(ma) + sqr(mi) - y / z * (Q2 - sqr(mi) - sqr(ma) - sqr(mai));
+  // const double tai = sqr(ma) + sqr(mi) - y / z * (Q2 - sqr(mi) - sqr(ma) - sqr(mai));
+  const double tai = (Q2 - sqr(mk))*(1-y) + (sqr(ma) + sqr(mi))*y;
   const double M = ATOOLS::Flavour(m_flavs[1].Kfcode()).Mass(true) + ATOOLS::Flavour(m_flavs[0].Kfcode()).Mass(true);
   const double ri = ATOOLS::Flavour(m_flavs[1].Kfcode()).Mass(true) / M;
   const double rij = ATOOLS::Flavour(m_flavs[0].Kfcode()).Mass(true) / M;
@@ -321,7 +325,8 @@ double LF_FF3S1_Quarkonia_II::operator()(const double z, const double y,
   double mai = p_ms->Mass(m_flavs[0]);
   // msg_Out() << METHOD << "  ma: " << ma << " mi: " << mi << " mb: " << mb << " mai: " << mai << "\n";
   double mua2 = sqr(ma) / Q2,  mub2 = sqr(mb) / Q2, muai2 = sqr(mai) / Q2;
-  const double tai = sqr(ma) + sqr(mi) - y / z * (Q2 - sqr(mb) - sqr(ma) - sqr(mi));
+  // const double tai = sqr(ma) + sqr(mi) - y / z * (Q2 - sqr(mb) - sqr(ma) - sqr(mi));
+  const double tai = (Q2 - sqr(mb))*(1-y) + (sqr(ma) + sqr(mi))*y;
   const double M = ATOOLS::Flavour(m_flavs[1].Kfcode()).Mass(true) + ATOOLS::Flavour(m_flavs[0].Kfcode()).Mass(true);
   const double ri = ATOOLS::Flavour(m_flavs[1].Kfcode()).Mass(true) / M;
   const double rij = ATOOLS::Flavour(m_flavs[0].Kfcode()).Mass(true) / M;
@@ -437,7 +442,8 @@ double LF_F3S1F_Quarkonia_FI::operator()(const double z, const double y,
   double ma  = ATOOLS::Flavour(m_flspec.Kfcode()).Mass(true);
   double mij = ATOOLS::Flavour(m_flavs[0].Kfcode()).Mass(true);
   double mui2 = sqr(mi) / Q2, muj2 = sqr(mj) / Q2, muk2 = sqr(ma) / Q2, muij2 = sqr(mij) / Q2;
-  const double sij = (Q2*(1-y) + sqr(mij) )/y;
+  // const double sij = (Q2*(1-y) + sqr(mij) )/y;
+  const double sij = (sqr(mi) + sqr(mj))*(1-y) + (Q2 - sqr(ma)) * y;
   const double M = mj + mij;
   const double ri = mj / M;
   const double rij = mij / M;

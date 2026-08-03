@@ -4,6 +4,8 @@
 namespace CSSHOWER {
 
 class LF_FF2Sp1P1_Quarkonia_FF : public SF_Lorentz {
+  protected:
+    double m_ctheta, m_stheta;
 public:
   inline LF_FF2Sp1P1_Quarkonia_FF(const SF_Key &key) : SF_Lorentz(key) {}
 
@@ -18,7 +20,7 @@ class LF_FF2Sp1P1_Quarkonia_FI : public SF_Lorentz {
 
 protected:
   double m_Jmax;
-
+  double m_ctheta, m_stheta;
 public:
   inline LF_FF2Sp1P1_Quarkonia_FI(const SF_Key &key) : SF_Lorentz(key) {}
 
@@ -33,7 +35,7 @@ class LF_FF2Sp1P1_Quarkonia_IF : public SF_Lorentz {
 
 protected:
   double m_Jmax;
-
+  double m_ctheta, m_stheta;
 public:
   inline LF_FF2Sp1P1_Quarkonia_IF(const SF_Key &key) : SF_Lorentz(key) {}
 
@@ -48,9 +50,38 @@ class LF_FF2Sp1P1_Quarkonia_II : public SF_Lorentz {
 
 protected:
   double m_Jmax;
+  double m_ctheta, m_stheta;
 
 public:
   inline LF_FF2Sp1P1_Quarkonia_II(const SF_Key &key) : SF_Lorentz(key) {}
+
+  double operator()(const double, const double, const double, const double,
+                    const double);
+  double OverIntegrated(const double, const double, const double, const double);
+  double OverEstimated(const double, const double);
+  double Z();
+};
+
+class LF_F2Sp1P1F_Quarkonia_FF : public SF_Lorentz {
+  protected:
+    double m_ctheta, m_stheta;
+public:
+  inline LF_F2Sp1P1F_Quarkonia_FF(const SF_Key &key) : SF_Lorentz(key) {}
+
+  double operator()(const double, const double, const double, const double,
+                    const double);
+  double OverIntegrated(const double, const double, const double, const double);
+  double OverEstimated(const double, const double);
+  double Z();
+};
+
+class LF_F2Sp1P1F_Quarkonia_FI : public SF_Lorentz {
+
+protected:
+  double m_Jmax;
+  double m_ctheta, m_stheta;
+public:
+  inline LF_F2Sp1P1F_Quarkonia_FI(const SF_Key &key) : SF_Lorentz(key) {}
 
   double operator()(const double, const double, const double, const double,
                     const double);
@@ -66,6 +97,7 @@ public:
 
 using namespace CSSHOWER;
 using namespace ATOOLS;
+
 
 double D_FF1P1(const double z, const double s, const double ri, const double rij, const double M) {
   const std::vector<double> fn = { 
@@ -141,24 +173,9 @@ double LF_FF2Sp1P1_Quarkonia_FF::operator()(const double z, const double y,
   const double M = mi + mij;
   const double ri = mi / M, rij = mij / M;
   const double sij = y * (Q2 - sqr(mi) - sqr(mj) - sqr(mk)) + (sqr(mi) + sqr(mj));
-  double ctheta = 1; 
-  double stheta = 0.;
-  switch (m_flavs[2].Kfcode()) {
-    case kf_h_c1:                                          
-    ctheta = 1; 
-    stheta = 0.;
-    break;
-    case kf_chi_c1_1P: 
-    ctheta = 0;
-    stheta = 1;
-    break;
-    default:
-    msg_Error() << "LF_FF2Sp1P1_Quarkonia_FF::operator(): unknown quarkonia flavour" << std::endl;
-    exit(EXIT_FAILURE);
-  }
-  double value = sqr(ctheta) * D_FF1P1(z, sij, ri, rij, M)
-   + sqr(stheta) * D_FF3P1(z, sij, ri, rij, M) 
-   + 2 * ctheta * stheta * (1-rij*(1-z)) * D_FFMixingP1(z, sij, ri, rij, M);
+  double value = 0.0;
+  value  = sqr(m_ctheta) * D_FF1P1(z, sij, ri, rij, M) + sqr(m_stheta) * D_FF3P1(z, sij, ri, rij, M); 
+  //+ 2 * m_ctheta * m_stheta * (1-rij*(1-z)) * D_FFMixingP1(z, sij, ri, rij, M); // missing factor in front of mixing (not relevant for heavy quarks)
   value *= 1. / ( (1 - mui2 - muj2 - muk2) + 1./ y * ( mui2 + muj2 - muij2 ) );
   value *= 1. / (1 + sqr( 1 - z) * sqr(mi) / scale + sqr(z) * sqr(mj) / scale);
   value *= sqr(p_cf->Coupling(scale, 0)) * ri * cube(rij) / sqr(sqr(1-rij*(1-z))) * JFF(y, mui2, muj2, muk2, muij2);
@@ -175,24 +192,18 @@ double LF_FF2Sp1P1_Quarkonia_FF::OverIntegrated(const double zmin, const double 
   const double ri = mi / (mi + mij);
   m_zmin = zmin; 
   m_zmax = zmax;
-  double prefactor = GetLDME(m_flavs[2].Kfcode());
-  switch (m_flavs[2].Kfcode()) {
-    case kf_h_c1:                                          
-    prefactor *= 1.0/18/pow(mi,5);
-    break;
-    case kf_h_b1:
-    prefactor *= 1.0/18/pow(mi,5);
-    break;
-    case kf_chi_c1_1P: 
-    prefactor *= 4.0/27/pow(mi,5);
-    break;
-    case kf_chi_b1_1P:
-    prefactor *= 4.0/27/pow(mi,5);
-    default:
-    msg_Error() << "LF_FF2Sp1P1_Quarkonia_FF::OverIntegrated(): unknown quarkonia flavour" << std::endl;
-    exit(EXIT_FAILURE);
-  }
-  return prefactor * sqr(p_cf->MaxCoupling(0))  * ri * cube(rij) / sqr(sqr(1-rij)) * (m_zmax - m_zmin); ;
+  const kf_code kfc = m_flavs[2].Kfcode();
+  if ( kfc % 2 == 1 && kfc / 10000 == 1 ) { // 1P1 state
+    m_ctheta = 1.0;
+    m_stheta = 0.0;
+  } else if ( kfc % 2 == 1 && kfc / 10000 == 2 ) { // 3P1 state
+    m_ctheta = 0.0;
+    m_stheta = 1.0;
+  } else {
+    throw std::runtime_error("LF_FF2Sp1P1_Quarkonia_FF::OverIntegrated: unrecognized kf_code for quarkonium state.");
+  } // this is a bit of a hack, but it works as long as mixing is not relevant
+  const double prefactor = GetLDME(m_flavs[2].Kfcode()) * 4.0/27/pow(mi,5);
+  return prefactor * sqr(p_cf->MaxCoupling(0))  * ri * cube(rij) / sqr(sqr(1-rij)) * (m_zmax - m_zmin);
 }
 
 double LF_FF2Sp1P1_Quarkonia_FF::OverEstimated(const double z, const double y) {
@@ -207,37 +218,27 @@ double LF_FF2Sp1P1_Quarkonia_FF::Z() {
   return m_zmin + (m_zmax - m_zmin) * ATOOLS::ran->Get();
 }
 
-double LF_FF2Sp1P1_Quarkonia_FI::operator()(const double zz, const double y,
+double LF_FF2Sp1P1_Quarkonia_FI::operator()(const double z, const double y,
                                        const double eta, const double scale,
                                        const double Q2) {
-  const double z = 1 - zz;
-  double mi2 =
-      sqr(p_ms->Mass(m_flavs[1])); // works with the mapping c -> J/Psi(1S) c
-  double mj2 = sqr(p_ms->Mass(m_flavs[2]));
-  double ma2 = sqr(p_ms->Mass(m_flspec));
-  double mij2 = p_ms->Mass2(m_flavs[0]);
-  const double sij = -y / (1 - y) * (Q2 - ma2) + (mi2 + mj2) / (1 - y);
-  double muij2 = mij2 / sij;
-  double mui2 = mi2 / sij, muj2 = mj2 / sij, mua2 = ma2 / sij;
-  const double newscale = sqrt(scale);
-  // the massless case
-  if (muij2 == 0. || mui2 == 0. || muj2 == 0.) {
-    msg_Error() << "Cannot make massless quarkonia emission" << std::endl;
-    exit(EXIT_FAILURE);
-  } else {
-    // the massive case
-    double value =
-        1. / sqr(sqr(1 - muij2)) *
-        ((1 - 2 * muij2 - 47 * sqr(muij2)) -
-         z * (1 - muij2) * (1 - sqr(sqrt(mui2) + sqrt(muj2))) +
-         4 * (z * (1 - z)) / (2 - z) * (1 - mui2) -
-         4 * (8 - 7 * z - 5 * z * z) / (2 - z) * muij2 * (1 - muij2) +
-         12 * (z * z * (1 - z)) / sqr(2 - z) * sqr(1 - muij2));
-    const double LDME = 1. / sqrt(mi2) / sqr(sij) *
-                        (m_flavs[2].IsOctetMeson() ? (1.5E-02) : pow(0.82, 3));
-    return 16. / 27 * LDME * sqr(p_cf->Coupling(newscale, 0)) * value /
-           sqr(sij) * JFI(y, eta, scale);
-  }
+  double mi  = ATOOLS::Flavour(m_flavs[1].Kfcode()).Mass(true); // works with the mapping c -> c J/psi
+  double mj  = ATOOLS::Flavour(m_flavs[2].Kfcode()).Mass(true);
+  double ma  = ATOOLS::Flavour(m_flspec.Kfcode()).Mass(true);
+  double mij = ATOOLS::Flavour(m_flavs[0].Kfcode()).Mass(true);
+  double mui2 = sqr(mi) / Q2, muj2 = sqr(mj) / Q2, muk2 = sqr(ma) / Q2, muij2 = sqr(mij) / Q2;
+  // const double sij = (Q2*(1-y) + sqr(mij) )/y;
+  const double sij =  y * (Q2 - sqr(mi) - sqr(mj) - sqr(ma)) + (sqr(mi) + sqr(mj));
+  const double M = mi + mij;
+  const double ri = mi / M;
+  const double rij = mij / M;
+  const double den = sij - sqr(rij * M);
+  double value = 0;
+  value  = sqr(m_ctheta) * D_FF1P1(z, sij, ri, rij, M) + sqr(m_stheta) * D_FF3P1(z, sij, ri, rij, M);
+  value *= 1. / ( (1 - mui2 - muj2 - muk2) + 1./ y * ( mui2 + muj2 - muij2 ) );
+  value *= 1. / (1 + sqr( 1 - z) * sqr(mi) / scale + sqr(z) * sqr(mj) / scale);
+  double prefactor = GetLDME(m_flavs[2].Kfcode());
+  prefactor *= 4.0 / 27 / pow(mi,5);
+  return prefactor * sqr(p_cf->Coupling(scale, 0)) * value * JFI(y, eta, scale);
 }
 
 double LF_FF2Sp1P1_Quarkonia_FI::OverIntegrated(const double zmin, const double zmax,
@@ -246,58 +247,61 @@ double LF_FF2Sp1P1_Quarkonia_FI::OverIntegrated(const double zmin, const double 
   m_zmin = zmin;
   m_zmax = zmax;
   m_Jmax = 5.;
-  return 16. / 27 * pow(0.82, 3) / Flavour(kf_c).Mass() *
-         sqr(p_cf->MaxCoupling(0)) * (0.5) * log((1. - zmin) / (1. - zmax)) *
-         m_Jmax;
+  const double mi = ATOOLS::Flavour(m_flavs[1].Kfcode()).Mass(true);
+  const double mij = ATOOLS::Flavour(m_flavs[0].Kfcode()).Mass(true);
+  const double rij = mij / (mi + mij);
+  const double ri = mi / (mi + mij);
+  const kf_code kfc = m_flavs[2].Kfcode();
+  if ( kfc % 2 == 1 && kfc / 10000 == 1 ) { // 1P1 state
+    m_ctheta = 1.0;
+    m_stheta = 0.0;
+  } else if ( kfc % 2 == 1 && kfc / 10000 == 2 ) { // 3P1 state
+    m_ctheta = 0.0;
+    m_stheta = 1.0;
+  } else {
+    throw std::runtime_error("LF_FF2Sp1P1_Quarkonia_FF::OverIntegrated: unrecognized kf_code for quarkonium state.");
+  } // this is a bit of a hack, but it works as long as mixing is not relevant
+  const double prefactor = GetLDME(m_flavs[2].Kfcode()) * 4.0/27/pow(mi,5);
+  return prefactor * sqr(p_cf->MaxCoupling(0))  * ri * cube(rij) / sqr(sqr(1-rij)) * (m_zmax - m_zmin) * m_Jmax;
+
 }
 
 double LF_FF2Sp1P1_Quarkonia_FI::OverEstimated(const double z, const double y) {
-  return 16. / 27 * pow(0.82, 3) / Flavour(kf_c).Mass() *
-         sqr(p_cf->MaxCoupling(0)) * (0.5) / (1. - z) * m_Jmax;
+  const double mi = ATOOLS::Flavour(m_flavs[1].Kfcode()).Mass(true);
+  const double mij = ATOOLS::Flavour(m_flavs[0].Kfcode()).Mass(true);
+  const double rij = mij / (mi + mij);
+  const double ri = mi / (mi + mij);
+  const double prefactor = GetLDME(m_flavs[2].Kfcode()) * 4.0/27/pow(mi,5);
+  return prefactor * sqr(p_cf->MaxCoupling(0))  * ri * cube(rij) / sqr(sqr(1-rij)) * m_Jmax;
 }
 
 double LF_FF2Sp1P1_Quarkonia_FI::Z() {
-  return 1. -
-         (1. - m_zmin) * pow((1. - m_zmax) / (1. - m_zmin), ATOOLS::ran->Get());
+  return m_zmin + (m_zmax - m_zmin) * ATOOLS::ran->Get();
 }
 
-double LF_FF2Sp1P1_Quarkonia_IF::operator()(const double zz, const double y,
+double LF_FF2Sp1P1_Quarkonia_IF::operator()(const double z, const double y,
                                        const double eta, const double scale,
                                        const double Q2) {
-  // c --> c J/psi
-  // (aj) - (k) --> a - j - k
-  // zz = x_{jk,a};  y = u
-  double ma2 = sqr(p_ms->Mass(m_flavs[1])); // quark
-  double mj2 = sqr(p_ms->Mass(m_flavs[2])); // meson
-  double mk2 = sqr(p_ms->Mass(m_flspec));
-  double maj2 = p_ms->Mass2(m_flavs[0]); // quark
-  const double pkpa = Q2 / 2 / zz * (1 - y);
-  const double pkpj = 0.5 * (1 - zz) / zz * (mj2 + mk2 + ma2 - Q2);
-  const double taj =
-      y * Q2 + ma2 * (1 - y) + mj2 + y * (mj2 + mk2 + 2 * pkpj); // (pa - pj)^2
-  const double z =
-      pkpj / pkpa; // this is the momentum fraction of J/psi w.r.t. parent quark
-  double muaj2 = maj2 / taj;
-  double mua2 = ma2 / taj, muj2 = mj2 / taj, muk2 = mk2 / taj;
-  const double newscale = sqrt(scale);
-  // the massless case
-  if (muaj2 == 0. || mua2 == 0. || muj2 == 0.) {
-    msg_Error() << "Cannot make massless quarkonia emission" << std::endl;
-    exit(EXIT_FAILURE);
-  } else {
-    // the massive case
-    double value =
-        1. / sqr(sqr(1 - muaj2)) *
-        ((1 - 2 * muaj2 - 47 * sqr(muaj2)) -
-         z * (1 - muaj2) * (1 - sqr(sqrt(fabs(mua2)) + sqrt(fabs(muj2)))) +
-         4 * (z * (1 - z)) / (2 - z) * (1 - mua2) -
-         4 * (8 - 7 * z - 5 * z * z) / (2 - z) * muaj2 * (1 - muaj2) +
-         12 * (z * z * (1 - z)) / sqr(2 - z) * sqr(1 - muaj2));
-    const double LDME = 1. / sqrt(ma2) / sqr(taj) *
-                        (m_flavs[2].IsOctetMeson() ? (1.5E-02) : pow(0.82, 3));
-    return 16. / 27 * LDME * sqr(p_cf->Coupling(newscale, 0)) * value /
-           sqr(taj) * JFI(y, eta, scale);
-  }
+  // c --> c (2S+1)P1 
+  // morally y is xij,a
+  double mai  = ATOOLS::Flavour(m_flavs[1].Kfcode()).Mass(true); // works with the mapping c -> c J/psi
+  double mi  = ATOOLS::Flavour(m_flavs[2].Kfcode()).Mass(true);
+  double mk  = ATOOLS::Flavour(m_flspec.Kfcode()).Mass(true);
+  double ma = ATOOLS::Flavour(m_flavs[0].Kfcode()).Mass(true);
+  double mui2 = sqr(mai) / Q2, muj2 = sqr(mi) / Q2, muk2 = sqr(mk) / Q2, muij2 = sqr(ma) / Q2;
+  // const double sij = (Q2*(1-y) + sqr(mij) )/y;
+  const double tai =  y * (Q2 - sqr(mai) - sqr(mi) - sqr(mk)) + (sqr(mai) + sqr(mi)); 
+  const double M = mai + ma;
+  const double ri = mai / M;
+  const double rij = ma / M;
+  const double den = tai - sqr(rij*M);
+  double value = 0;
+  value  = sqr(m_ctheta) * D_FF1P1(z, tai, ri, rij, M) + sqr(m_stheta) * D_FF3P1(z, tai, ri, rij, M);
+  // value *= 1. / ( (1 - mui2 - muj2 - muk2) + 1./ y * ( mui2 + muj2 - muij2 ) );
+  // value *= 1. / (1 + sqr( 1 - z) * sqr(mi) / scale + sqr(z) * sqr(mj) / scale);
+  double prefactor = GetLDME(m_flavs[2].Kfcode());
+  prefactor *=  4.0 / 27 / pow(mai,5);
+  return prefactor * sqr(p_cf->Coupling(scale, 0)) * value * JFI(y, eta, scale);
 }
 
 double LF_FF2Sp1P1_Quarkonia_IF::OverIntegrated(const double zmin, const double zmax,
@@ -306,57 +310,58 @@ double LF_FF2Sp1P1_Quarkonia_IF::OverIntegrated(const double zmin, const double 
   m_zmin = zmin;
   m_zmax = zmax;
   m_Jmax = m_flavs[0].Kfcode() < 3 ? 5. : 1.;
-  return 16. / 27 * pow(0.82, 3) / Flavour(kf_c).Mass() *
-         (2.0 * p_cf->MaxCoupling(0) * 2. + 0.5 * p_cf->MaxCoupling(1)) *
-         log((1. - zmin) / (1. - zmax)) * m_Jmax;
+  const double mai = ATOOLS::Flavour(m_flavs[1].Kfcode()).Mass(true);
+  const double ma = ATOOLS::Flavour(m_flavs[0].Kfcode()).Mass(true);
+  const double rij = ma / (mai + ma);
+  const double ri = mai / (mai + ma);
+  const kf_code kfc = m_flavs[2].Kfcode();
+  if ( kfc % 2 == 1 && kfc / 10000 == 1 ) { // 1P1 state
+    m_ctheta = 1.0;
+    m_stheta = 0.0;
+  } else if ( kfc % 2 == 1 && kfc / 10000 == 2 ) { // 3P1 state
+    m_ctheta = 0.0;
+    m_stheta = 1.0;
+  } else {
+    throw std::runtime_error("LF_FF2Sp1P1_Quarkonia_FF::OverIntegrated: unrecognized kf_code for quarkonium state.");
+  } // this is a bit of a hack, but it works as long as mixing is not relevant
+  const double prefactor = GetLDME(m_flavs[2].Kfcode()) * 4.0/27/pow(mai,5);
+  return prefactor * sqr(p_cf->MaxCoupling(0))  * ri * cube(rij) / sqr(sqr(1-rij)) * (m_zmax - m_zmin) * m_Jmax;
 }
 
 double LF_FF2Sp1P1_Quarkonia_IF::OverEstimated(const double z, const double y) {
-  return 16. / 27 * pow(0.82, 3) / Flavour(kf_c).Mass() *
-         (2.0 * p_cf->MaxCoupling(0) * 2. + 0.5 * p_cf->MaxCoupling(1)) /
-         (1. - z) * m_Jmax;
+  const double mai = ATOOLS::Flavour(m_flavs[1].Kfcode()).Mass(true);
+  const double ma = ATOOLS::Flavour(m_flavs[0].Kfcode()).Mass(true);
+  const double rij = ma / (mai + ma);
+  const double ri = mai / (mai + ma);
+  const double prefactor = GetLDME(m_flavs[2].Kfcode()) * 4.0/27/pow(mai,5);
+  return prefactor * sqr(p_cf->MaxCoupling(0))  * ri * cube(rij) / sqr(sqr(1-rij)) * m_Jmax;
 }
 
 double LF_FF2Sp1P1_Quarkonia_IF::Z() {
-  return 1. -
-         (1. - m_zmin) * pow((1. - m_zmax) / (1. - m_zmin), ATOOLS::ran->Get());
+  return m_zmin + (m_zmax - m_zmin) * ATOOLS::ran->Get();
 }
 
-double LF_FF2Sp1P1_Quarkonia_II::operator()(const double zz, const double y,
+double LF_FF2Sp1P1_Quarkonia_II::operator()(const double z, const double y,
                                        const double eta, const double scale,
                                        const double Q2) {
-  // works with the mapping [c aj] ->[c a] [J/psi j]
-  // zz is effectively xjab and y vtildej
-  double ma2 = sqr(p_ms->Mass(m_flavs[1]));
-  double mj2 = sqr(p_ms->Mass(m_flavs[2]));
-  double mb2 = sqr(p_ms->Mass(m_flspec));
-  double maj2 = p_ms->Mass2(m_flavs[0]);
-  const double sab = (Q2 - mj2) / zz - (1. - zz) / zz * (ma2 + mb2);
-  const double z = 1 - (zz + y) + (ma2 + mb2 + mj2)/(sab - ma2 - mb2); // this is mom. fraction of J/psi w.r.t. to progenitor c
-  const double taj =  ma2 + mj2 - 2 * y * (sab - ma2 - mb2); // this is (pa - pj)^2
-  double muaj2 = maj2 / taj;
-  double mua2 = ma2 / taj, muj2 = mj2 / taj, mub2 = mb2 / taj;
-  const double newscale = scale;
-  // the massless case
-  if (muaj2 == 0. || mua2 == 0. || muj2 == 0.) {
-    msg_Error() << "Cannot make massless quarkonia emission" << std::endl;
-    exit(EXIT_FAILURE);
-  } else {
-    // the massive case
-    double value =
-        1. / sqr(sqr(1 - muaj2)) *
-         ( (1 - 2 * muaj2 - 47 * sqr(muaj2)) -
-         z * (1 - muaj2) * (1 - sqr(sqrt(fabs(mua2)) + sqrt(fabs(muj2)))) +
-         4 * (z * (1 - z)) / (2 - z) * (1 - mua2) -
-         4 * (8 - 7 * z - 5 * z * z) / (2 - z) * muaj2 * (1 - muaj2) +
-         12 * (z * z * (1 - z)) / sqr(2 - z) * sqr(1 - muaj2));
-    const double LDME =
-        (m_flavs[2].IsOctetMeson() ? 1.5E-02 / M_PI_2
-                                   : 9. / 2 * M_PI * pow(0.82, 3));
-    return value * JII(z, y, eta, scale);
-    return 16. / 27 / 9 * sqr(p_cf->Coupling(newscale, 0)) / sqrt(ma2) * LDME *
-           value / sqr(taj) * JII(z, y, eta, scale);
-  }
+  double ma  = p_ms->Mass(m_flavs[1]); 
+  double mi  = p_ms->Mass(m_flavs[2]);
+  double mb  = p_ms->Mass(m_flspec);
+  double mai = p_ms->Mass(m_flavs[0]);
+  double mua2 = sqr(ma) / Q2,  mub2 = sqr(mb) / Q2, muai2 = sqr(mai) / Q2;
+  // const double tai = sqr(ma) + sqr(mi) - y / z * (Q2 - sqr(mb) - sqr(ma) - sqr(mi));
+  const double tai = y * (Q2 - sqr(ma) - sqr(mi) - sqr(mb)) + (sqr(ma) + sqr(mi));
+  const double M = ATOOLS::Flavour(m_flavs[1].Kfcode()).Mass(true) + ATOOLS::Flavour(m_flavs[0].Kfcode()).Mass(true);
+  const double ri = ATOOLS::Flavour(m_flavs[1].Kfcode()).Mass(true) / M;
+  const double rij = ATOOLS::Flavour(m_flavs[0].Kfcode()).Mass(true) / M;
+  const double den = tai - sqr(rij*M);
+  double value = 0;
+  value  = sqr(m_ctheta) * D_FF1P1(z, tai, ri, rij, M) + sqr(m_stheta) * D_FF3P1(z, tai, ri, rij, M);
+  // value *= 1. / ( (1 - mui2 - muj2 - muk2) + 1./ y * ( mui2 + muj2 - muij2 ) );
+  // value *= 1. / (1 + sqr( 1 - z) * sqr(mi) / scale + sqr(z) * sqr(mj) / scale);
+  double prefactor = GetLDME(m_flavs[2].Kfcode());
+  prefactor *= 4.0 / 27 / pow(ma,5);
+  return prefactor * sqr(p_cf->Coupling(scale, 0)) * value * JII(z, y, eta, scale);
 }
 
 double LF_FF2Sp1P1_Quarkonia_II::OverIntegrated(const double zmin, const double zmax,
@@ -365,23 +370,159 @@ double LF_FF2Sp1P1_Quarkonia_II::OverIntegrated(const double zmin, const double 
   m_zmin = zmin;
   m_zmax = zmax;
   m_Jmax = m_flavs[0].Kfcode() < 3 ? 5. : 1.;
-  return (4.0 * p_cf->MaxCoupling(0) + 0.5 * p_cf->MaxCoupling(1)) *
-         log((1. - zmin) / (1. - zmax)) * m_Jmax;
-  return 16. / 27 * pow(0.82, 3) / Flavour(kf_c).Mass() *
-         sqr(p_cf->MaxCoupling(0)) * (0.5) * log((1. - zmin) / (1. - zmax)) *
-         m_Jmax;
+  const double mai = ATOOLS::Flavour(m_flavs[1].Kfcode()).Mass(true);
+  const double ma = ATOOLS::Flavour(m_flavs[0].Kfcode()).Mass(true);
+  const double rij = ma / (mai + ma);
+  const double ri = mai / (mai + ma);
+  const kf_code kfc = m_flavs[2].Kfcode();
+  if ( kfc % 2 == 1 && kfc / 10000 == 1 ) { // 1P1 state
+    m_ctheta = 1.0;
+    m_stheta = 0.0;
+  } else if ( kfc % 2 == 1 && kfc / 10000 == 2 ) { // 3P1 state
+    m_ctheta = 0.0;
+    m_stheta = 1.0;
+  } else {
+    throw std::runtime_error("LF_FF2Sp1P1_Quarkonia_FF::OverIntegrated: unrecognized kf_code for quarkonium state.");
+  } // this is a bit of a hack, but it works as long as mixing is not relevant
+  const double prefactor = GetLDME(m_flavs[2].Kfcode()) * 4.0/27/pow(mai,5);
+  return prefactor * sqr(p_cf->MaxCoupling(0))  * ri * cube(rij) / sqr(sqr(1-rij)) * (m_zmax - m_zmin) * m_Jmax;
 }
 
 double LF_FF2Sp1P1_Quarkonia_II::OverEstimated(const double z, const double y) {
-  return (4.0 * p_cf->MaxCoupling(0) + 0.5 * p_cf->MaxCoupling(1)) / (1. - z) *
-         m_Jmax;
-  return 16. / 27 * pow(0.82, 3) / Flavour(kf_c).Mass() *
-         sqr(p_cf->MaxCoupling(0)) * (0.5) / (1. - z) * m_Jmax;
+  const double mai = ATOOLS::Flavour(m_flavs[1].Kfcode()).Mass(true);
+  const double ma = ATOOLS::Flavour(m_flavs[0].Kfcode()).Mass(true);
+  const double rij = ma / (mai + ma);
+  const double ri = mai / (mai + ma);
+  const double prefactor = GetLDME(m_flavs[2].Kfcode()) * 4.0/27/pow(mai,5);
+  return prefactor * sqr(p_cf->MaxCoupling(0))  * ri * cube(rij) / sqr(sqr(1-rij)) * m_Jmax;
 }
 
 double LF_FF2Sp1P1_Quarkonia_II::Z() {
-  return 1. -
-         (1. - m_zmin) * pow((1. - m_zmax) / (1. - m_zmin), ATOOLS::ran->Get());
+  return m_zmin + (m_zmax - m_zmin) * ATOOLS::ran->Get();
+}
+
+
+double LF_F2Sp1P1F_Quarkonia_FF::operator()(const double z, const double y,
+                                       const double eta, const double scale,
+                                       const double Q2) {
+  // again this is c -> eta_c c
+  double mi = ATOOLS::Flavour(m_flavs[1].Kfcode()).Mass(true); // works with the mapping c -> c J/psi
+  double mj = ATOOLS::Flavour(m_flavs[2].Kfcode()).Mass(true);
+  double mk = ATOOLS::Flavour(m_flspec.Kfcode()).Mass(true);
+  double mij = sqr(ATOOLS::Flavour(m_flavs[0].Kfcode()).Mass(true));
+  double mui2 = sqr(mi) / Q2, muj2 = sqr(mj) / Q2, muk2 = sqr(mk) / Q2, muij2 = sqr(mij) / Q2;
+  const double sij = y * (Q2 - sqr(mi) - sqr(mj) - sqr(mk)) + (sqr(mi) + sqr(mj));
+  const double M = mj + mij;
+  const double ri = mj / M;
+  const double rij = mij / M; 
+  const double den = den;
+  double value = 0;
+  value  = sqr(m_ctheta) * D_FF1P1(1-z, sij, ri, rij, M) + sqr(m_stheta) * D_FF3P1(1-z, sij, ri, rij, M);
+  value *= 1. / ( (1 - mui2 - muj2 - muk2) + 1./ y * ( mui2 + muj2 - muij2 ) );
+  value *= 1. / (1 + sqr(1-z) * sqr(mi) / scale + sqr(z) * sqr(mj) / scale);
+  double prefactor = GetLDME(m_flavs[1].Kfcode());
+  prefactor *= 4.0/27 / pow(mj,5);
+  return prefactor * sqr(p_cf->Coupling(scale, 0)) * value * JFF(y, mui2, muj2, muk2, muij2); //
+}
+
+double LF_F2Sp1P1F_Quarkonia_FF::OverIntegrated(const double zmin, const double zmax,
+                                           const double scale,
+                                           const double xbj) {
+  double mj = ATOOLS::Flavour(m_flavs[2].Kfcode()).Mass(true); // works with the mapping c -> c J/psi
+  double mij = ATOOLS::Flavour(m_flavs[0].Kfcode()).Mass(true);
+  const double ri = mj / (mj + mij);
+  const double rij = mij / (mj + mij);
+  m_zmin = zmin; 
+  m_zmax = zmax;
+const kf_code kfc = m_flavs[2].Kfcode();
+  if ( kfc % 2 == 1 && kfc / 10000 == 1 ) { // 1P1 state
+    m_ctheta = 1.0;
+    m_stheta = 0.0;
+  } else if ( kfc % 2 == 1 && kfc / 10000 == 2 ) { // 3P1 state
+    m_ctheta = 0.0;
+    m_stheta = 1.0;
+  } else {
+    throw std::runtime_error("LF_FF2Sp1P1_Quarkonia_FF::OverIntegrated: unrecognized kf_code for quarkonium state.");
+  } // this is a bit of a hack, but it works as long as mixing is not relevant
+  const double prefactor = GetLDME(m_flavs[2].Kfcode()) * 4.0/27/pow(mj,5);
+  return prefactor * sqr(p_cf->MaxCoupling(0))  * ri * cube(rij) / sqr(sqr(1-rij)) * (m_zmax - m_zmin);
+}
+
+double LF_F2Sp1P1F_Quarkonia_FF::OverEstimated(const double z, const double y) {
+  double mj = ATOOLS::Flavour(m_flavs[2].Kfcode()).Mass(true);
+  double mij = ATOOLS::Flavour(m_flavs[0].Kfcode()).Mass(true);
+  const double ri = mj / (mj + mij);
+  const double rij = mij / (mj + mij);
+  double prefactor = GetLDME(m_flavs[1].Kfcode());
+  const double prefactor = GetLDME(m_flavs[2].Kfcode()) * 4.0/27/pow(mj,5);
+  return prefactor * sqr(p_cf->MaxCoupling(0))  * ri * cube(rij) / sqr(sqr(1-rij));
+}
+
+double LF_F2Sp1P1F_Quarkonia_FF::Z() {
+  return m_zmin + (m_zmax - m_zmin) * ATOOLS::ran->Get();
+}
+
+double LF_F2Sp1P1F_Quarkonia_FI::operator()(const double z, const double y,
+                                       const double eta, const double scale,
+                                       const double Q2) {
+  // morally y is x ij,a
+  double mi  = ATOOLS::Flavour(m_flavs[1].Kfcode()).Mass(true); // works with the mapping c -> c J/psi
+  double mj  = ATOOLS::Flavour(m_flavs[2].Kfcode()).Mass(true);
+  double ma  = ATOOLS::Flavour(m_flspec.Kfcode()).Mass(true);
+  double mij = ATOOLS::Flavour(m_flavs[0].Kfcode()).Mass(true);
+  double mui2 = sqr(mi) / Q2, muj2 = sqr(mj) / Q2, muk2 = sqr(ma) / Q2, muij2 = sqr(mij) / Q2;
+  // const double sij = (Q2*(1-y) + sqr(mij) )/y;
+  const double sij =  y * (Q2 - sqr(mi) - sqr(mj) - sqr(ma)) + (sqr(mi) + sqr(mj));
+  const double M = mj + mij;
+  const double ri = mj / M;
+  const double rij = mij / M;
+  const double den = den;
+  double value = 0;
+  value  = sqr(m_ctheta) * D_FF1P1(1-z, sij, ri, rij, M) + sqr(m_stheta) * D_FF3P1(1-z, sij, ri, rij, M);
+  value *= 1. / ( (1 - mui2 - muj2 - muk2) + 1./ y * ( mui2 + muj2 - muij2 ) );
+  value *= 1. / (1 + sqr(1-z) * sqr(mi) / scale + sqr(z) * sqr(mj) / scale);
+  double prefactor = GetLDME(m_flavs[1].Kfcode());
+  prefactor *= 4.0 / 27 / pow(mj,5);
+  return prefactor * sqr(p_cf->Coupling(scale, 0)) * value * JFI(y, eta, scale);
+}
+
+double LF_F2Sp1P1F_Quarkonia_FI::OverIntegrated(const double zmin, const double zmax,
+                                           const double scale,
+                                           const double xbj) {
+  m_zmin = zmin;
+  m_zmax = zmax;
+  m_Jmax = 5.;
+  double mj = ATOOLS::Flavour(m_flavs[2].Kfcode()).Mass(true);
+  double mij = ATOOLS::Flavour(m_flavs[0].Kfcode()).Mass(true);
+  const double ri = mj / (mj + mij);
+  const double rij = mij / (mj + mij);
+  double prefactor = GetLDME(m_flavs[1].Kfcode())*2;
+  const kf_code kfc = m_flavs[2].Kfcode();
+  if ( kfc % 2 == 1 && kfc / 10000 == 1 ) { // 1P1 state
+    m_ctheta = 1.0;
+    m_stheta = 0.0;
+  } else if ( kfc % 2 == 1 && kfc / 10000 == 2 ) { // 3P1 state
+    m_ctheta = 0.0;
+    m_stheta = 1.0;
+  } else {
+    throw std::runtime_error("LF_FF2Sp1P1_Quarkonia_FF::OverIntegrated: unrecognized kf_code for quarkonium state.");
+  } // this is a bit of a hack, but it works as long as mixing is not relevant
+  const double prefactor = GetLDME(m_flavs[2].Kfcode()) * 4.0/27/pow(mij,5);
+  return prefactor * sqr(p_cf->MaxCoupling(0))  * ri * cube(rij) / sqr(sqr(1-rij)) * (m_zmax - m_zmin) * m_Jmax;
+}
+
+double LF_F2Sp1P1F_Quarkonia_FI::OverEstimated(const double z, const double y) {
+  double mj = ATOOLS::Flavour(m_flavs[2].Kfcode()).Mass(true);
+  double mij = ATOOLS::Flavour(m_flavs[0].Kfcode()).Mass(true);
+  const double ri = mj / (mj + mij);
+  const double rij = mij / (mj + mij);
+  double prefactor = GetLDME(m_flavs[1].Kfcode())*2;
+  const double prefactor = GetLDME(m_flavs[2].Kfcode()) * 4.0/27/pow(mij,5);  
+  return prefactor * sqr(p_cf->MaxCoupling(0))  * ri * cube(rij) / sqr(sqr(1-rij)) * m_Jmax;
+}
+
+double LF_F2Sp1P1F_Quarkonia_FI::Z() {
+  return m_zmin + (m_zmax - m_zmin) * ATOOLS::ran->Get();
 }
 
 
@@ -396,16 +537,12 @@ SF_Lorentz *ATOOLS::Getter<SF_Lorentz, SF_Key, LF_FF2Sp1P1_Quarkonia_FF>::operat
       (args.m_mode == 1 && args.p_v->in[0].IntSpin() == 1 &&
        args.p_v->in[1].IntSpin() == 2 && args.p_v->in[2].IntSpin() == 1)) {
     switch (args.m_type) {
-    case cstp::FF:
-      return new LF_FF2Sp1P1_Quarkonia_FF(args);
-    // case cstp::FI:
-    //   return new LF_FF2Sp1P1_Quarkonia_FI(args);
-    // case cstp::IF:
-    //   return new LF_FF2Sp1P1_Quarkonia_IF(args);
-    // case cstp::II: 
-    //   return new LF_FF2Sp1P1_Quarkonia_II(args);
-    // case cstp::none:
-    //   break;
+    case cstp::FF: return new LF_FF2Sp1P1_Quarkonia_FF(args);
+    case cstp::FI: return new LF_FF2Sp1P1_Quarkonia_FI(args);
+    case cstp::IF: return new LF_FF2Sp1P1_Quarkonia_IF(args);
+    case cstp::II: return new LF_FF2Sp1P1_Quarkonia_II(args);
+    case cstp::none:
+      break;
     }
   }
   if ((args.m_mode == 0 && args.p_v->in[0].IntSpin() == 1 &&
@@ -413,23 +550,10 @@ SF_Lorentz *ATOOLS::Getter<SF_Lorentz, SF_Key, LF_FF2Sp1P1_Quarkonia_FF>::operat
       (args.m_mode == 1 && args.p_v->in[0].IntSpin() == 1 &&
        args.p_v->in[2].IntSpin() == 2 && args.p_v->in[1].IntSpin() == 1)) {
     switch (args.m_type) {
-    case cstp::FF:
-      // return new LF_FVF_Quarkonia_FF(args);
-    // case cstp::FI: return new LF_FVF_FI(args);
-    // case cstp::IF: return new LF_FVF_IF(args);
-    // case cstp::II: return new LF_FVF_II(args);
-    case cstp::none:
-      break;
-    }
-  }
-  if (args.p_v->in[0].IntSpin() == 2 && args.p_v->in[1].IntSpin() == 1 &&
-      args.p_v->in[2].IntSpin() == 1) {
-    switch (args.m_type) {
-      return NULL;
-    // case cstp::FF: return new LF_VFF_Quarkonia_FF(args);
-    // case cstp::FI: return new LF_VFF_FI(args);
-    // case cstp::IF: return new LF_VFF_IF(args);
-    // case cstp::II: return new LF_VFF_II(args);
+    case cstp::FF: return new LF_F2Sp1P1F_Quarkonia_FF(args);
+    case cstp::FI: return new LF_F2Sp1P1F_Quarkonia_FI(args);
+    case cstp::IF: NULL;
+    case cstp::II: NULL;
     case cstp::none:
       break;
     }
