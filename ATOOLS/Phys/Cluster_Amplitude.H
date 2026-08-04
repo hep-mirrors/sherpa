@@ -9,7 +9,6 @@
 #include <vector>
 
 namespace ATOOLS {
-  class Poincare;
 
   typedef std::map<int,int> CI_Map;
 
@@ -68,8 +67,7 @@ namespace ATOOLS {
 
     void CreateLeg(const Vec4D &p,const Flavour &fl,
 		   const ColorID &col=ColorID(),
-		   const size_t &id=std::string::npos,
-		   const int &beam=-1);
+		   const size_t &id=std::string::npos);
     void CombineLegs(Cluster_Leg *const i,Cluster_Leg *const j,
 		     const Flavour &fl,
 		     const ColorID &col=ColorID());
@@ -81,8 +79,6 @@ namespace ATOOLS {
 
     void DeletePrev();
     void DeleteNext();
-
-    void Boost(const ATOOLS::Poincare& boost);
 
     void IdSort();
 

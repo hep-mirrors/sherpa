@@ -289,8 +289,8 @@ void Message::SetStandard()
 std::ostream &Message::Out()
 { 
 #ifdef USING__MPI
-  if (!m_mpimode && 
-      mpi->Rank()) return m_devnull;
+  if (!m_mpimode &&
+      mpi && mpi->Rank()) return m_devnull;
 #endif
   return m_output; 
 }
@@ -298,8 +298,8 @@ std::ostream &Message::Out()
 std::ostream &Message::Error()
 { 
 #ifdef USING__MPI
-  if (!m_mpimode && 
-      mpi->Rank()) return m_devnull;
+  if (!m_mpimode &&
+      mpi && mpi->Rank()) return m_devnull;
 #endif
   if (m_level >= 0) return m_output; 
   return m_devnull; 
@@ -308,8 +308,8 @@ std::ostream &Message::Error()
 std::ostream &Message::Events()
 { 
 #ifdef USING__MPI
-  if (!m_mpimode && 
-      mpi->Rank()) return m_devnull;
+  if (!m_mpimode &&
+      mpi && mpi->Rank()) return m_devnull;
 #endif
   if (m_level & 1) return m_output; 
   return m_devnull;  
@@ -318,8 +318,8 @@ std::ostream &Message::Events()
 std::ostream &Message::Info()
 { 
 #ifdef USING__MPI
-  if (!m_mpimode && 
-      mpi->Rank()) return m_devnull;
+  if (!m_mpimode &&
+      mpi && mpi->Rank()) return m_devnull;
 #endif
   if (m_level & 2) return m_output; 
   return m_devnull;  
@@ -328,8 +328,8 @@ std::ostream &Message::Info()
 std::ostream &Message::Tracking()
 { 
 #ifdef USING__MPI
-  if (!m_mpimode && 
-      mpi->Rank()) return m_devnull;
+  if (!m_mpimode &&
+      mpi && mpi->Rank()) return m_devnull;
 #endif
   if (m_level & 4) return m_output; 
   return m_devnull;  
@@ -338,8 +338,8 @@ std::ostream &Message::Tracking()
 std::ostream &Message::Debugging()
 { 
 #ifdef USING__MPI
-  if (!m_mpimode && 
-      mpi->Rank()) return m_devnull;
+  if (!m_mpimode &&
+      mpi && mpi->Rank()) return m_devnull;
 #endif
   if (m_level & 8) return m_output; 
   return m_devnull;  
@@ -348,8 +348,8 @@ std::ostream &Message::Debugging()
 std::ostream &Message::IODebugging()
 {
 #ifdef USING__MPI
-  if (!m_mpimode && 
-      mpi->Rank()) return m_devnull;
+  if (!m_mpimode &&
+      mpi && mpi->Rank()) return m_devnull;
 #endif
   if (m_level & 32) return m_output;
   return m_devnull;

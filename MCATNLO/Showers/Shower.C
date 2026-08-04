@@ -81,8 +81,10 @@ int Shower::RemnantTest(Parton *const p)
   if (p->Momentum()[0]<0.0 || p->Momentum().Nan()) return -1;
   double x(p_isr->CalcX(p->Momentum()));
   if (x>1.0 && !IsEqual(x,1.0,1.0e-6)) return -1;
+  const double spair = (p_isr->GetRemnant(0)->IncomingMomentum() +
+                        p_isr->GetRemnant(1)->IncomingMomentum()).Abs2();
   return p_isr->GetRemnant(p->Beam())->
-    TestExtract(p->GetFlavour(),p->Momentum())?1:-1;
+    TestExtract(p->GetFlavour(),p->Momentum(),spair)?1:-1;
 }
 
 int Shower::UpdateDaughters(Parton *const split,Parton *const newpB,

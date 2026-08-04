@@ -146,12 +146,6 @@ bool Signal_Processes::FillBlob(Blob_List *const bloblist,Blob *const blob)
     particle->SetNumber(0);
     particle->SetStatus(part_status::decayed);
     particle->SetInfo('G');
-    for (size_t j=0;j<2;j++) {
-      if (particle->Momentum()[3]*p_remnants[j]->InMomentum()[3]>0.) {
-	particle->SetBeam(j);
-	break;
-      }
-    }
     blob->AddToInParticles(particle);
     if (ampl) {
       particle->SetFlow(1,ampl->Leg(i)->Col().m_j);
@@ -262,12 +256,6 @@ bool Signal_Processes::FillBlob(Blob_List *const bloblist,Blob *const blob)
                 (proc->Info().m_fi.m_nlocpl));
   blob->AddData("Process",new Blob_Data<PHASIC::Process_Base*>
 		(p_mehandler->Process()));
-
-  Poincare * cmsboost = p_mehandler->Remnants()->GetCMSBoost();
-  if (cmsboost!=nullptr) {
-    blob->Boost(*cmsboost);
-    p_mehandler->Remnants()->BoostRemnantMomenta(*cmsboost);
-  }
 
   ME_Weight_Info* wgtinfo=proc->GetMEwgtinfo();
   if (wgtinfo) {

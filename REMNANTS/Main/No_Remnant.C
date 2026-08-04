@@ -22,7 +22,8 @@ bool No_Remnant::FillBlob(Colour_Generator* colours, ParticleMomMap* ktmap, cons
   return true;
 }
 
-bool No_Remnant::TestExtract(const Flavour &flav,const Vec4D &mom) {
+bool No_Remnant::TestExtract(const Flavour &flav,const Vec4D &mom,
+                             const double &spair) {
   if ((mom[0]-p_beam->OutMomentum(m_tag)[0])/p_beam->OutMomentum(m_tag)[0]>1.e-6)
     return false;
   return true;

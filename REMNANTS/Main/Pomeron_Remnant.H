@@ -11,7 +11,6 @@ namespace REMNANTS {
     PDF::PDF_Base*             p_pdf;
     const ATOOLS::Flavour_Set* p_partons;
     ATOOLS::Particle*          p_recoiler;
-    const double               m_LambdaQCD;
 
     void   MakeRemnants(Colour_Generator* colours);
     bool   MakeLongitudinalMomenta(ATOOLS::ParticleMomMap* ktmap, const bool& copy);
@@ -25,7 +24,8 @@ namespace REMNANTS {
   // member functions
   bool FillBlob(Colour_Generator* colours, ATOOLS::ParticleMomMap* ktmap,
                 const bool& copy) override;
-  bool TestExtract(const ATOOLS::Flavour &flav, const ATOOLS::Vec4D &mom) override;
+  bool TestExtract(const ATOOLS::Flavour &flav, const ATOOLS::Vec4D &mom,
+                   const double &spair) override;
   void Reset(const bool &resc=false,const bool &DIS=false) override;
 
   inline ATOOLS::Particle *GetRecoiler() override { return p_recoiler; }

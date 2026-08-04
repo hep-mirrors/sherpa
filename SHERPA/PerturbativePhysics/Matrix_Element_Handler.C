@@ -213,9 +213,6 @@ bool Matrix_Element_Handler::GenerateOneEvent()
     switch (GenerateOneTrialEvent()) {
       case trial_event_generation_result::non_zero:
         m_evtinfo.m_ntrial=n;
-        if (p_beam && !p_beam->IsSymmetric()) {
-          if (p_remnants) p_remnants->InitializeCMSBoost();
-        }
         return true;
       case trial_event_generation_result::zero:
         continue;

@@ -40,7 +40,6 @@ Ahadic::~Ahadic()
 Return_Value::code Ahadic::Hadronize(Blob_List * blobs)
 {
   static std::string mname(METHOD);
-  bool hadronized = false;
   Return_Value::IncCall(mname);
   Return_Value::code result = Return_Value::Nothing;
   for (Blob_List::iterator blit = blobs->begin(); blit != blobs->end();) {

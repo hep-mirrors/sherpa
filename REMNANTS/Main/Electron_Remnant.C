@@ -41,7 +41,8 @@ bool Electron_Remnant::FillBlob(Colour_Generator* colours, ParticleMomMap* ktmap
   return true;
 }
 
-bool Electron_Remnant::TestExtract(const Flavour &flav,const Vec4D &mom) {
+bool Electron_Remnant::TestExtract(const Flavour &flav,const Vec4D &mom,
+                                   const double &spair) {
   if (m_extracted.size()==1) {
     msg_Error() << "Error in " << METHOD << " already extracted\n"
                 << "   " << (**m_extracted.begin()) << "\n"

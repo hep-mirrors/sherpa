@@ -14,7 +14,7 @@ Hadron_Remnant(PDF::PDF_Base * pdf,const unsigned int & beam,
   p_valence(nullptr), p_remnant(nullptr),
   p_recoiler(nullptr), p_spectator(nullptr),
   m_valence(false), m_alpha(0.), m_gamma(1.), m_beta(-1.5),
-  m_invb(1./(m_beta+1)), m_LambdaQCD(0.25), m_minE(m_beamflav.IsBaryon()?2.:1.)
+  m_invb(1./(m_beta+1)), m_minE(m_beamflav.IsBaryon()?2.:1.)
 {
   p_ff     = new Form_Factor(m_beamflav);
   m_scale2 = Max(4.0,p_pdf->Q2Min());
@@ -53,8 +53,9 @@ bool Hadron_Remnant::IsValence(Particle * part) {
   Flavour flav = part->Flav();
   for (const auto& flit : m_constituents) {
     if (flav==flit) {
-      Vec4D   mom  = part->Momentum();
-      double x = mom[0]/m_residualE;
+      const double lcresidual = LightCone(Residual());
+      if (lcresidual<=0.) return false;
+      double x = LightCone(part->Momentum())/lcresidual;
       p_pdf->Calculate(x,sqr(flav.Mass())+m_scale2);
       double val = p_pdf->GetXPDF(flav)-p_pdf->GetXPDF(flav.Bar());
       double tot = p_pdf->GetXPDF(flav);
@@ -264,7 +265,7 @@ Flavour Hadron_Remnant::RemnantFlavour(const Flavour & flav) {
   bool take_it = false;
   std::vector<int> kfs;
   for (const auto& flit : m_constituents) {
-    if (flav==flit && !take_it) { take_it = true; continue; } 
+    if (flav==flit && !take_it) { take_it = true; continue; }
     kfs.push_back(((flit.IsAnti() && !m_beamflav.IsAnti())?-1:1)*flit.Kfcode());
   }
   if (kfs[0]<kfs[1]) std::swap(kfs[0],kfs[1]);
@@ -279,7 +280,7 @@ bool Hadron_Remnant::MakeLongitudinalMomenta(ParticleMomMap *ktmap,const bool & 
   // momentum; the latter will be successively reduced until the
   // rest is taken by the diquark.
   // TODO: Will have to adapt it to the case of mesons.
-  Vec4D availMom = p_beam->OutMomentum(m_tag);
+  Vec4D availMom = IncomingMomentum();
   for (auto pmit : m_extracted) {
     availMom -= pmit->Momentum();
     if (copy) {
@@ -295,7 +296,7 @@ bool Hadron_Remnant::MakeLongitudinalMomenta(ParticleMomMap *ktmap,const bool & 
 		  << "\n";
   double remnant_masses = 0.;
   for (Particle  const * pit : m_spectators) {
-    remnant_masses += Max(pit->Flav().HadMass(), m_LambdaQCD);
+    remnant_masses += Max(pit->Flav().HadMass(), m_GluonMinEnergy);
   }
   if (remnant_masses > availMom[0]) {
     msg_Debugging() << METHOD
@@ -308,7 +309,7 @@ bool Hadron_Remnant::MakeLongitudinalMomenta(ParticleMomMap *ktmap,const bool & 
     else {
       part->SetMomentum(SelectZ(part->Flav(),availMom[0], remnant_masses)*availMom);
       availMom -= part->Momentum();
-      remnant_masses -= Max(part->Flav().HadMass(), m_LambdaQCD);
+      remnant_masses -= Max(part->Flav().HadMass(), m_GluonMinEnergy);
     }
     msg_Debugging() << METHOD << ": set momentum for "<<part->Flav()<<" to "
               << part->Momentum() << "\n";
@@ -326,7 +327,7 @@ bool Hadron_Remnant::MakeLongitudinalMomenta(ParticleMomMap *ktmap,const bool & 
 
 double Hadron_Remnant::SelectZ(const ATOOLS::Flavour &flav, double restmom,
                                double remnant_masses) const {
-  double zmin = Max(flav.HadMass(), m_LambdaQCD) / restmom;
+  double zmin = Max(flav.HadMass(), m_GluonMinEnergy) / restmom;
   double zmax = zmin + (restmom - remnant_masses) / restmom;
   double z;
   if (zmax < zmin) {
@@ -371,24 +372,37 @@ void Hadron_Remnant::Reset(const bool & resc,const bool & DIS) {
   }
   // TODO: Have to check / fix this!!!!!
   m_spectators.clear();
-  m_residualE = p_beam->OutMomentum(m_tag)[0];
   m_valence   = false;
   p_valence   = p_remnant = p_recoiler = nullptr;
 }
 
-bool Hadron_Remnant::TestExtract(const Flavour &flav,const Vec4D &mom) {
+bool Hadron_Remnant::TestExtract(const Flavour &flav,const Vec4D &mom,
+                                 const double &spair) {
   DEBUG_FUNC("");
   // Is flavour element of flavours allowed by PDF?
   if (p_partons->find(flav)==p_partons->end()) {
     msg_Error()<<METHOD<<": flavour "<<flav<<" not found.\n";
     return false;
   }
-  // Still enough energy?  And in range?
-  if (m_residualE-mom[0]<m_minE) return false;
-  double x = mom[0]/m_residualE;
+  // All checks in light-cone components along the own beam direction: their
+  // ratios are invariant under longitudinal boosts, so the outcome does not
+  // depend on the frame the momenta are given in.
+  const double lcresidual = LightCone(Residual());
+  const double lcmom      = LightCone(mom);
+  if (lcresidual<=0. || lcmom<=0.) return false;
+  // Still enough energy?  The energy left after the extraction, evaluated in
+  // the c.m. frame of the two colliding (bunch) particles, must leave room
+  // for the remnant break-up: in the collinear massless limit the leftover
+  // energy in that frame is its light-cone fraction of the beam times
+  // sqrt(spair)/2.
+  const double Eequiv =
+    (lcresidual-lcmom)/LightCone(IncomingMomentum()) * sqrt(spair)/2.;
+  if (Eequiv<m_minE) return false;
+  // And in range?
+  double x = lcmom/lcresidual;
   if (x<p_pdf->XMin() || x>p_pdf->XMax()) {
     msg_Tracking() << METHOD << ": out of limits, x = " << x << " = "
-	       <<mom[0]<<"/"<<m_residualE<<".\n";
+	       <<lcmom<<"/"<<lcresidual<<".\n";
     return false;
   }
   msg_Debugging()<<flav<<" with mom = "<<mom<<" can be extracted.\n";

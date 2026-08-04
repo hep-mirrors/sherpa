@@ -120,7 +120,8 @@ int Shower::RemnantTest(Parton *const p,const Poincare_Sequence *lt)
   double x(p_isr->CalcX(mom));
   if (x>1.0 && !IsEqual(x,1.0,1.0e-6)) return -1;
   if (!m_sudakov.CheckPDF(mom[0]/rpa->gen.PBunch(p->Beam())[0],p->GetFlavour(),p->Beam())) return -1;
-  return p_remnants->GetRemnant(p->Beam())->TestExtract(p->GetFlavour(),mom)?1:-1;
+  return p_remnants->GetRemnant(p->Beam())->TestExtract(p->GetFlavour(),mom,
+                                                        p_remnants->SPair())?1:-1;
 }
 
 int Shower::ReconstructDaughters(Singlet *const split,double &jcv,
@@ -269,8 +270,7 @@ int Shower::MakeKinematics
     }
   }
   Parton *pi(new Parton((stype&1)?fla:flb,
-                        split->ForcedSplitting()?split->Momentum():
-			split->LT()*split->Momentum(),
+                        split->ForcedSplitting()?split->Momentum():split->LT()*split->Momentum(),
                         split->GetType()));
   if (stype&1) pi->SetBeam(split->Beam());
   if (stat==1) {
@@ -784,11 +784,10 @@ void Shower::PartonToAmplitude(const Parton *parton, Cluster_Amplitude * ampl){
   // TODO: treat colors correctly. not needed so far
   ATOOLS::Cluster_Leg * leg = ampl->Legs().back();
   leg->SetFromDec(parton->FromDec());
-  leg->SetBeam(parton->Beam());
   if (parton->GetType()==pst::IS) leg->SetMom(-leg->Mom());
-  if(ampl->KT2()==0) {
-    ampl->SetKT2(parton->KtStart());
-  }
+  if(ampl->KT2()==0){
+      ampl->SetKT2(parton->KtStart());
+    }
 }
 
 void Shower::CheckAmplitude(const ATOOLS::Cluster_Amplitude *ampl){

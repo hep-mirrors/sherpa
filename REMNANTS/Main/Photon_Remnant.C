@@ -12,7 +12,7 @@ Photon_Remnant::
 Photon_Remnant(PDF::PDF_Base *pdf, const size_t & beam, const size_t & tag) :
   Remnant_Base(pdf->Bunch(), beam, tag),
   p_pdf(pdf), p_partons(&(pdf->Partons())),
-  m_LambdaQCD(0.25), m_beta_quark(-1.), m_beta_gluon(-1.2),
+  m_beta_quark(-1.), m_beta_gluon(-1.2),
   m_valence(false), p_spectator(nullptr),
   p_recoiler(nullptr) {
   p_ff = new Form_Factor(pdf->Bunch());
@@ -62,7 +62,6 @@ void Photon_Remnant::Reset(const bool & resc,const bool &DIS) {
     m_spectators.pop_front();
   }
   m_spectators.clear();
-  m_residualE = p_beam->OutMomentum(m_tag)[0];
   m_valence   = false;
   p_recoiler  = nullptr;
 }
@@ -76,14 +75,20 @@ void Photon_Remnant::Output() const {
   msg_Out() << "}.\n";
 }
 
-bool Photon_Remnant::TestExtract(const Flavour &flav, const Vec4D &mom) {
+bool Photon_Remnant::TestExtract(const Flavour &flav, const Vec4D &mom,
+                                 const double &spair) {
   // Is flavour element of flavours allowed by PDF?
   if (p_partons->find(flav) == p_partons->end()) {
     msg_Error() << METHOD << ": flavour " << flav << " not found.\n";
     return false;
   }
-  // Still in range?
-  double x = mom[0] / m_residualE;
+  // Still in range?  The momentum fraction is defined in light-cone
+  // components along the own beam direction - invariant under longitudinal
+  // boosts, so the outcome does not depend on the frame.
+  const double lcresidual = LightCone(Residual());
+  const double lcmom      = LightCone(mom);
+  if (lcresidual<=0. || lcmom<=0.) return false;
+  double x = lcmom / lcresidual;
   if (x < p_pdf->XMin() || x > p_pdf->XMax()) {
     msg_Tracking() << METHOD << ": out of limits, x = " << x << ".\n";
     return false;
@@ -97,7 +102,7 @@ bool Photon_Remnant::MakeLongitudinalMomenta(ParticleMomMap *ktmap,
   // the shower initiators and use it to determine the still available
   // momentum; the latter will be successively reduced until the
   // rest is taken by the quark.
-  Vec4D availMom = p_beam->OutMomentum(m_tag);
+  Vec4D availMom = IncomingMomentum();
   for (auto pmit : m_extracted) {
     availMom -= pmit->Momentum();
     if (copy) {
@@ -122,7 +127,7 @@ bool Photon_Remnant::MakeLongitudinalMomenta(ParticleMomMap *ktmap,
    */
   double remnant_masses = 0.;
   for (Particle  const * pit : m_spectators) {
-    remnant_masses += Max(pit->Flav().HadMass(), m_LambdaQCD);
+    remnant_masses += Max(pit->Flav().HadMass(), m_GluonMinEnergy);
   }
   if (remnant_masses > availMom[0]) {
     msg_Debugging() << METHOD
@@ -137,7 +142,7 @@ bool Photon_Remnant::MakeLongitudinalMomenta(ParticleMomMap *ktmap,
       part->SetMomentum(SelectZ(part->Flav(), availMom[0], remnant_masses) *
 			availMom);
       availMom -= part->Momentum();
-      remnant_masses -= Max(part->Flav().HadMass(), m_LambdaQCD);
+      remnant_masses -= Max(part->Flav().HadMass(), m_GluonMinEnergy);
     }
     msg_Debugging() << METHOD << ": set momentum for "<<part->Flav()<<" to "
                     << part->Momentum() << "\n";
@@ -157,7 +162,7 @@ double Photon_Remnant::SelectZ(const Flavour &flav, double restmom,
                                double remnant_masses) const {
   // Give a random number to distribute longitudinal momenta, but this number
   // must respect the mass constraints
-  double zmin = Max(flav.HadMass(), m_LambdaQCD) / restmom;
+  double zmin = Max(flav.HadMass(), m_GluonMinEnergy) / restmom;
   double zmax = zmin + (restmom - remnant_masses) / restmom;
   // Taken from Hadron_Remnant, adapted the exponents for photon PDFs
   if (zmax < zmin) {

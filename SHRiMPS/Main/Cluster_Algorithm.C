@@ -76,8 +76,7 @@ void Cluster_Algorithm::CreateLegs(Blob * const blob)
     Particle * const part(blob->GetParticle(i));
     p_ampl->CreateLeg(-part->Momentum(),part->Flav().Bar(),
 		      ColorID(part->GetFlow(1),part->GetFlow(2)).Conj(),
-		      1<<p_ampl->Legs().size(),
-		      part->Beam());
+		      1<<p_ampl->Legs().size());
     InitLeg(p_ampl->Legs().back(),0.,nmaxx);
   }
   for (int i(2);i<blob->NOutP()+2;++i) {

@@ -103,7 +103,7 @@ operator()(const Scale_Setter_Arguments &args) const
 void ATOOLS::Getter<Scale_Setter_Base,Scale_Setter_Arguments,
 		    VBF_Scale_Setter>::
 PrintInfo(std::ostream &str,const size_t width) const
-{
+{ 
   str<<"meps scale scheme for VBF";
 }
 
@@ -133,7 +133,7 @@ VBF_Scale_Setter::VBF_Scale_Setter
   if (pos==4) {
     tag=tag.substr(pos+1);
     pos=tag.find(']');
-    if (pos==std::string::npos)
+    if (pos==std::string::npos) 
       THROW(fatal_error,"Invalid scale '"+args.m_scale+"'");
     Data_Reader read(" ",",","#","=");
     read.AddIgnore(":");
@@ -151,7 +151,7 @@ VBF_Scale_Setter::VBF_Scale_Setter
     }
     tag=tag.substr(pos+1);
     pos=tag.find('}');
-    if (pos==std::string::npos)
+    if (pos==std::string::npos) 
       THROW(fatal_error,"Invalid scale '"+args.m_scale+"'");
     std::string ctag(tag.substr(0,pos));
     tag=tag.substr(pos+1);
@@ -220,11 +220,8 @@ bool VBF_Scale_Setter::Initialize()
   Cluster_Amplitude *ampl(Cluster_Amplitude::New());
   ampl->SetProc(p_proc);
   ampl->SetNIn(2);
-  for (size_t i(0);i<2;++i) {
-    ampl->CreateLeg(Vec4D(),p_proc->Flavours()[i].Bar(),i);
-    ampl->Legs().back()->SetBeam(p_proc->Caller()->Get<Single_Process>()->
-				 Integrator()->ISR()->Swap() ? 1-i : i);
-  }
+  for (size_t i(0);i<2;++i)
+    ampl->CreateLeg(Vec4D(),p_proc->Flavours()[i].Bar());
   for (size_t i(2);i<p_proc->NIn()+p_proc->NOut();++i)
     ampl->CreateLeg(Vec4D(),p_proc->Flavours()[i]);
   bool init(p_cs->GetProcess(ampl)!=NULL);
@@ -350,7 +347,7 @@ void VBF_Scale_Setter::Combine
 }
 
 double VBF_Scale_Setter::Calculate
-(const Vec4D_Vector &momenta,const size_t &mode)
+(const Vec4D_Vector &momenta,const size_t &mode) 
 {
   m_p=momenta;
   if (m_nproc || (m_cmode&8)) p_ci=NULL;
@@ -381,15 +378,11 @@ double VBF_Scale_Setter::Calculate
       ampl->SetOrderQCD(p_proc->Caller()->MaxOrder(0));
       for (size_t i(1);i<p_proc->Caller()->MaxOrders().size();++i)
 	ampl->SetOrderEW(ampl->OrderEW()+p_proc->Caller()->MaxOrder(i));
-      for (size_t i(0);i<m_p.size();++i) {
-	ampl->CreateLeg(m_p[i],(i<p_proc->NIn()?fl[i].Bar():fl[i]));
-	if (i<p_proc->NIn())
-	  ampl->Legs().back()->SetBeam(p_proc->Caller()->Get<Single_Process>()->
-				       Integrator()->ISR()->Swap() ? 1-i : i);
-      }
+      for (size_t i(0);i<m_p.size();++i)
+	ampl->CreateLeg(m_p[i],i<p_proc->NIn()?fl[i].Bar():fl[i]);
       ampl->SetProc(p_proc->Caller()->Get<Single_Process>());
       SetCoreScale(ampl);
-      m_ampls.push_back(ampl);
+      m_ampls.push_back(ampl);      
     }
     return SetScales(m_ampls.back());
   }
@@ -405,9 +398,6 @@ double VBF_Scale_Setter::Calculate
     for (size_t i(0);i<m_p.size();++i) {
       ampl->CreateLeg(m_p[i],i<p_proc->NIn()?fl[i].Bar():fl[i],
 		      ColorID(ci[i],cj[i]));
-      if (i<p_proc->NIn())
-	ampl->Legs().back()->SetBeam(p_proc->Caller()->Get<Single_Process>()->
-				       Integrator()->ISR()->Swap() ? 1-i : i);
       ampl->Leg(i)->SetNMax(nmax);
     }
   }
@@ -417,9 +407,6 @@ double VBF_Scale_Setter::Calculate
       int cr(ampl->Leg(i)->Flav().StrongCharge());
       ampl->Leg(i)->SetCol(ColorID((cr==3||cr==8)?1:0,(cr==-3||cr==8)?1:0));
       ampl->Leg(i)->SetNMax(nmax);
-      if (i<p_proc->NIn())
-	ampl->Leg(i)->SetBeam(p_proc->Caller()->Get<Single_Process>()->
-			      Integrator()->ISR()->Swap() ? 1-i : i);
     }
   }
   ClusterAmplitude_Vector ampls;
@@ -805,7 +792,7 @@ double VBF_Scale_Setter::SetScales(Cluster_Amplitude *ampl)
 
 void VBF_Scale_Setter::SetScale
 (const std::string &mu2tag,Algebra_Interpreter &mu2calc)
-{
+{ 
   if (mu2tag=="" || mu2tag=="0") THROW(fatal_error,"No scale specified");
   msg_Debugging()<<METHOD<<"(): scale '"<<mu2tag
 		 <<"' in '"<<p_proc->Caller()->Name()<<"' {\n";

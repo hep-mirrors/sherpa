@@ -3,14 +3,16 @@ set(RemnantsTools_SOURCES Kinematics_Generator.C
                   Beam_Decorrelator.C
                   Remnants_Parameters.C
                   Primordial_KPerp.C
-                  Form_Factor.C)
+                  Form_Factor.C
+                  Frame_Guard.C)
 
 set(RemnantsTools_HEADERS Kinematics_Generator.H
                   Colour_Generator.H
                   Beam_Decorrelator.H
                   Remnants_Parameters.H
                   Primordial_KPerp.H
-                  Form_Factor.H)
+                  Form_Factor.H
+                  Frame_Guard.H)
 
 sherpa_create_git_info(RemnantsTools ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR})
 

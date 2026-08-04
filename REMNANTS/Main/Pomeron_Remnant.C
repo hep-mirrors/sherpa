@@ -9,8 +9,8 @@ using namespace ATOOLS;
 
 Pomeron_Remnant::Pomeron_Remnant(PDF::PDF_Base *pdf, const size_t& beam, const size_t& tag)
     : Remnant_Base(Flavour(kf_pomeron), beam, tag), p_pdf(pdf),
-      p_partons(&(pdf->Partons())), p_recoiler(nullptr),
-      m_LambdaQCD(0.25) {
+      p_partons(&(pdf->Partons())), p_recoiler(nullptr)
+{
   p_ff = new Form_Factor(pdf->Bunch());
 }
 
@@ -49,7 +49,6 @@ void Pomeron_Remnant::Reset(const bool& resc,const bool &DIS) {
     m_spectators.pop_front();
   }
   m_spectators.clear();
-  m_residualE = p_beam->OutMomentum(m_tag)[0];
   p_recoiler = nullptr;
 }
 
@@ -58,14 +57,20 @@ void Pomeron_Remnant::Output() const {
             << "   Partons are { "<< Flavour(kf_gluon) << " }.\n";
 }
 
-bool Pomeron_Remnant::TestExtract(const Flavour &flav, const Vec4D &mom) {
+bool Pomeron_Remnant::TestExtract(const Flavour &flav, const Vec4D &mom,
+                                  const double &spair) {
   // Is flavour element of flavours allowed by PDF?
   if (p_partons->find(flav) == p_partons->end()) {
     msg_Error() << METHOD << ": flavour " << flav << " not found.\n";
     return false;
   }
-  double x = mom[0] / m_residualE;
-  // Still in range?
+  // Still in range?  The momentum fraction is defined in light-cone
+  // components along the own beam direction - invariant under longitudinal
+  // boosts, so the outcome does not depend on the frame.
+  const double lcresidual = LightCone(Residual());
+  const double lcmom      = LightCone(mom);
+  if (lcresidual<=0. || lcmom<=0.) return false;
+  double x = lcmom / lcresidual;
   if (x < p_pdf->XMin() || x > p_pdf->XMax()) {
     msg_Error() << METHOD << ": out of limits, x = " << x << ".\n";
     return false;
@@ -81,7 +86,7 @@ bool Pomeron_Remnant::MakeLongitudinalMomenta(ParticleMomMap *ktmap,
   // rest is taken by the quark.
   Vec4D availMom;
   auto part_extr = m_extracted.front();
-  availMom = p_beam->OutMomentum(m_tag) - part_extr->Momentum();
+  availMom = IncomingMomentum() - part_extr->Momentum();
   if (copy) {
     Particle *pcopy = new Particle(*part_extr);
     pcopy->SetNumber();
@@ -94,11 +99,11 @@ bool Pomeron_Remnant::MakeLongitudinalMomenta(ParticleMomMap *ktmap,
                   << "\n";
   double remnant_masses = 0.;
   for (Particle  const * pit : m_spectators) {
-    remnant_masses += Max(pit->Flav().HadMass(), m_LambdaQCD);
+    remnant_masses += Max(pit->Flav().HadMass(), m_GluonMinEnergy);
   }
   if (remnant_masses > availMom[0]) {
     msg_Error() << METHOD << ": Warning, HadMasses of remnants = "
-                << remnant_masses << " vs. residual energy = " << m_residualE << "\n";
+                << remnant_masses << " vs. residual energy = " << availMom[0] << "\n";
     return false;
   }
   for (auto part : m_spectators) {
@@ -109,7 +114,7 @@ bool Pomeron_Remnant::MakeLongitudinalMomenta(ParticleMomMap *ktmap,
     } else {
       part->SetMomentum(SelectZ(part->Flav(), availMom[0], remnant_masses) * availMom);
       availMom -= part->Momentum();
-      remnant_masses -= Max(part->Flav().HadMass(), m_LambdaQCD);
+      remnant_masses -= Max(part->Flav().HadMass(), m_GluonMinEnergy);
     }
   msg_Debugging() << METHOD << ": set momentum for "<<part->Flav()<<" to "
                   << part->Momentum() << "\n";
@@ -153,7 +158,7 @@ double Pomeron_Remnant::SelectZ(const Flavour &flav, double restmom,
                                 double remnant_masses) const {
   // Give a random number to distribute longitudinal momenta, but this number
   // must respect the mass constraints
-  double zmin = Max(flav.HadMass(), m_LambdaQCD) / restmom;
+  double zmin = Max(flav.HadMass(), m_GluonMinEnergy) / restmom;
   double zmax = zmin + (restmom - remnant_masses) / restmom;
   // Taken from Hadron_Remnant, adapted the exponents for photon PDFs
   if (zmax < zmin) {

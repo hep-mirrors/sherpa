@@ -37,12 +37,11 @@ namespace REMNANTS {
     Kinematics_Generator         m_kinematics;
     Colour_Generator             m_colours;
     Beam_Decorrelator            m_decorrelator;
-    Blob *                       p_softblob;
-    Poincare *                   p_cmsboost, * p_labboost;
+    ATOOLS::Blob*                p_softblob;
 
     std::set<ATOOLS::Blob *> m_treatedshowerblobs;
 
-    bool     m_check, m_output, m_neednewCMS;
+    bool     m_check, m_output;
     long int m_fails;
 
     void InitializeRemnants(PDF::ISR_Handler* isr,YFS::YFS_Handler *yfs,
@@ -65,12 +64,10 @@ namespace REMNANTS {
                     const std::array<size_t, 2>& tags);
     ~Remnant_Handler();
 
-    void InitializeCMSBoost();
     bool ExtractShowerInitiators(ATOOLS::Blob *const showerblob);
     bool Extract(ATOOLS::Particle * part,const unsigned int beam);
     bool ConnectColours(ATOOLS::Blob *const showerblob);
     void Reset();
-    void BoostRemnantMomenta(const ATOOLS::Poincare& boost);
 
     ATOOLS::Return_Value::code MakeBeamBlobs(ATOOLS::Blob_List* const blobs,
                                              const bool& isrescatter = false);
@@ -92,6 +89,14 @@ namespace REMNANTS {
     inline PDF::isr::id Id() const { return m_id; }
     inline strat::code  Type() const { return m_type; }
 
+    // Invariant mass squared of the two colliding (bunch) particles, e.g.
+    // the gamma-p system for EPA photoproduction.  Evaluated on demand: the
+    // beam-out momenta change per event for spectra beams.
+    inline double SPair() const {
+      return (p_remnants[0]->IncomingMomentum() +
+              p_remnants[1]->IncomingMomentum()).Abs2();
+    }
+
     inline std::array<std::shared_ptr<Remnant_Base>, 2> GetRemnants() const
     {
       return p_remnants;
@@ -104,10 +109,8 @@ namespace REMNANTS {
     inline Form_Factor * GetFormFactor(const unsigned short int & beam) const {
       return (beam<2)?p_remnants[beam]->GetFF():nullptr;
     }
-    inline Primordial_KPerp* GetKPerp()     { return m_kinematics.GetKPerp(); }
+    inline Primordial_KPerp* GetKPerp() { return m_kinematics.GetKPerp(); }
     inline Colour_Generator* GetColourGen() { return &m_colours; }
-    inline Poincare* GetCMSBoost()          { return p_cmsboost; }
-    inline Poincare* GetLabBoost()          { return p_labboost; }
   };
 
   typedef std::map<PDF::isr::id, Remnant_Handler*> Remnant_Handler_Map;
