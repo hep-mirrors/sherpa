@@ -159,6 +159,8 @@ void LowEnergy_Model::InitVertices() {
 }
 
 void LowEnergy_Model::InitQEDVertices() {
+  Settings& s = Settings::GetMainSettings();
+  bool useff = s["Meson_FormFactor"].SetDefault(true).Get<bool>();
   Kabbala g1("g_1",sqrt(4.*M_PI*m_alpha));
   Kabbala cpl=g1*Kabbala("i",Complex(0.,1.));
   Flavour flav;
@@ -200,7 +202,7 @@ void LowEnergy_Model::InitQEDVertices() {
     m_v.back().AddParticle(flav.Bar());
     m_v.back().Color.push_back(Color_Function(cf::None));
     m_v.back().Lorentz.push_back("SSV");
-    m_v.back().FormFactor.push_back("VMD");
+    m_v.back().FormFactor.push_back(useff?"VMD":"Point");
     m_v.back().cpl.push_back(cpl);
     m_v.back().order[1]=1;
 
