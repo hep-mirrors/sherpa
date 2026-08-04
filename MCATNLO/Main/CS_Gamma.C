@@ -31,7 +31,7 @@ Weight_Key::Weight_Key(const size_t &ij,const size_t &k,
 CS_Gamma::CS_Gamma(CS_MCatNLO *const css,Shower *const shower,
 		   CS_Cluster_Definitions *const cluster):
   p_css(css), p_shower(shower), p_cluster(cluster),
-  m_on(0), m_strict_mapcheck(0), m_oef(9.0)
+  m_on(0), m_strict_mapcheck(0), m_weight(1.0), m_oef(9.0)
 {
 }
 
