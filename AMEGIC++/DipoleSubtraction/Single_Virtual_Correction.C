@@ -851,12 +851,16 @@ void Single_Virtual_Correction::Calc_KP(const ATOOLS::Vec4D_Vector &mom)
     weight*=(1.-m_eta1);
     msg_Debugging()<<"x1="<<m_x1<<std::endl;
   }
-  if (p_kpterms_qcd && p_LO_process->HasInitialStateQCDEmitter())
+  if (p_kpterms_qcd && p_LO_process->HasInitialStateQCDEmitter()) {
+    bool swapped = mom[0][3] < mom[1][3];
     p_kpterms_qcd->Calculate(p_int->Momenta(),m_dsijqcd,
-                             m_x0,m_x1,m_eta0,m_eta1,weight);
-  if (p_kpterms_ew  && p_LO_process->HasInitialStateQEDEmitter())
+                             m_x0,m_x1,m_eta0,m_eta1,weight,swapped);
+  }
+  if (p_kpterms_ew  && p_LO_process->HasInitialStateQEDEmitter()) {
+    bool swapped = mom[0][3] < mom[1][3];
     p_kpterms_ew->Calculate(p_int->Momenta(),m_dsijew,
-                            m_x0,m_x1,m_eta0,m_eta1,weight);
+                            m_x0,m_x1,m_eta0,m_eta1,weight,swapped);
+  }
 }
 
 double Single_Virtual_Correction::KPTerms
@@ -876,10 +880,12 @@ double Single_Virtual_Correction::KPTerms
   // determine KP terms
   double kpterm(0.);
   if (p_partner->m_bvimode & 2) {
-    kpterm = p_partner->Get_KPTerms(pdfa,
-                                    pdfb,
+    bool swapped = p_int->Momenta()[0][3] < p_int->Momenta()[1][3];
+    kpterm = p_partner->Get_KPTerms(swapped ? pdfb : pdfa,
+                                    swapped ? pdfa : pdfb,
                                     eta0, eta1,
-                                    m_flavs[0],m_flavs[1],
+                                    swapped ? m_flavs[1] : m_flavs[0],
+                                    swapped ? m_flavs[0] : m_flavs[1],
                                     scalefac2);
   }
   // return normalised result

@@ -199,7 +199,7 @@ void KP_Terms::SetKappa(const double &kappa)
 void KP_Terms::Calculate
 (const Vec4D_Vector &mom,const std::vector<std::vector<double > > &dsij,
  const double &x0,const double &x1,const double &eta0,const double &eta1,
- const double &wgt)
+ const double &wgt,const bool swapped)
 {
   DEBUG_FUNC(m_itype<<": type(a)="<<m_typea<<", beam(a)="<<m_sa
                     <<", type(b)="<<m_typeb<<", beam(b)="<<m_sb);
@@ -207,6 +207,7 @@ void KP_Terms::Calculate
                  <<", eta0="<<eta0<<", eta1="<<eta1<<std::endl;
   if (!m_sa && !m_sb) return;
   if ((m_sa && x0<eta0) || (m_sb && x1<eta1)) return;
+  if (swapped) std::swap(m_typea, m_typeb);
   double cpl(Coupling());
   msg_Debugging()<<"cpl="<<Coupling()<<std::endl;
   size_t pls=1;
@@ -531,6 +532,10 @@ void KP_Terms::Calculate
     for (size_t i=0;i<m_xpb.size();i++) m_xpb[i].kpc*=cplfac;
   }
 
+  if (swapped) {
+    std::swap(m_typea, m_typeb);
+  }
+
   msg_Debugging()<<"sa & sb: final"<<std::endl;
   msg_Debugging()
       <<"    kpca[0]="<<m_kpca[0]<<" ,  kpca[1]="<<m_kpca[1]
@@ -673,7 +678,7 @@ double KP_Terms::Get(PDF::PDF_Base *pdfa, PDF::PDF_Base *pdfb,
           else                                fbq += sqr(quark[i].Charge())
                                                      *pdfb->GetXPDF(quark[i]);
         }
-      fbq/=eta0;
+      fbq/=eta1;
     }
 
     for (size_t i=0;i<m_xpb.size();i++) if (m_xpb[i].xp>eta1) {

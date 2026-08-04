@@ -370,24 +370,26 @@ namespace EXTAMP {
     dsij[0][0] = p_corr_me->GetBorn2();
 
     /* Let KP_Terms class calculate */
-    p_kpterms->Calculate(p,dsij,m_x0,m_x1,m_eta0,m_eta1,w);
+    bool swapped = p_int->Momenta()[0][3] < p_int->Momenta()[1][3];
+    p_kpterms->Calculate(p,dsij,m_x0,m_x1,m_eta0,m_eta1,w,swapped);
 
     /* Set all relevant members of ME_Weight_Info */
-    bool swap = p_int->Momenta()[0][3]<p_int->Momenta()[1][3];
-    m_mewgtinfo.m_swap = swap;
-    m_mewgtinfo.m_y1   = swap?m_x1:m_x0;
-    m_mewgtinfo.m_y2   = swap?m_x0:m_x1;
+    m_mewgtinfo.m_swap = swapped;
+    m_mewgtinfo.m_y1   = swapped?m_x1:m_x0;
+    m_mewgtinfo.m_y2   = swapped?m_x0:m_x1;
     p_kpterms->FillMEwgts(m_mewgtinfo);
 
     /* Do not divide by symfac at this stage, this is done for all
        components simultaneously in Partonic */
     double muf2(ScaleSetter()->Scale(stp::fac,1));
-    return p_kpterms->Get(p_int->ISR()->PDF(0),p_int->ISR()->PDF(1),
+    return p_kpterms->Get(swapped ? p_int->ISR()->PDF(1) : p_int->ISR()->PDF(0),
+			  swapped ? p_int->ISR()->PDF(0) : p_int->ISR()->PDF(1),
 			  m_x0, m_x1,
 			  m_eta0, m_eta1,
 			  muf2, muf2,
 			  1.0,1.0,
-			  m_flavs[0], m_flavs[1]);
+			  swapped ? m_flavs[1] : m_flavs[0],
+			  swapped ? m_flavs[0] : m_flavs[1]);
   }
 
   
@@ -396,12 +398,15 @@ namespace EXTAMP {
     /* Used by PHASIC::Single_Process for reweighting, so have to
        include the normalization factor here */
     double muf2(ScaleSetter()->Scale(stp::fac,1));
-    return p_kpterms->Get(p_int->ISR()->PDF(0),p_int->ISR()->PDF(1),
+    bool swapped = p_int->Momenta()[0][3] < p_int->Momenta()[1][3];
+    return p_kpterms->Get(swapped ? p_int->ISR()->PDF(1) : p_int->ISR()->PDF(0),
+			  swapped ? p_int->ISR()->PDF(0) : p_int->ISR()->PDF(1),
 			  m_x0, m_x1,
 			  m_eta0, m_eta1,
 			  muf2, muf2,
 			  1.0,1.0,
-			  m_flavs[0], m_flavs[1])/NormFac();
+			  swapped ? m_flavs[1] : m_flavs[0],
+			  swapped ? m_flavs[0] : m_flavs[1])/NormFac();
   }
 
 

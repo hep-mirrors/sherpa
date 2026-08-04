@@ -607,8 +607,9 @@ void COMIX::Single_Process::UpdateKPTerms(const int mode)
     m_x[1]=map?p_map->m_x[1]:eta1+p_ismc->ERan("z_2")*(1.-eta1);
     w*=(1.0-eta1);
   }
+  bool swapped = p0[3] < p1[3];
   p_kpterms->Calculate(p_int->Momenta(),sp->p_bg->DSij(),
-		       m_x[0],m_x[1],eta0,eta1,w);
+		       m_x[0],m_x[1],eta0,eta1,w,swapped);
 }
 
 double COMIX::Single_Process::KPTerms
@@ -621,8 +622,13 @@ double COMIX::Single_Process::KPTerms
   double eta1(p1[3]<0.0?p1.PMinus()/rpa->gen.PBunch(1).PMinus():
 	      p1.PPlus()/rpa->gen.PBunch(0).PPlus());
   double muf2(ScaleSetter(1)->Scale(stp::fac,1));
-  return m_w*p_kpterms->Get(pdfa,pdfb,m_x[0],m_x[1],eta0,eta1,
-			    muf2,muf2,sf,sf,m_flavs[0],m_flavs[1]);
+  bool swapped = p0[3] < p1[3];
+  return m_w*p_kpterms->Get(swapped ? pdfb : pdfa,
+			    swapped ? pdfa : pdfb,
+			    m_x[0],m_x[1],eta0,eta1,
+			    muf2,muf2,sf,sf,
+			    swapped ? m_flavs[1] : m_flavs[0],
+			    swapped ? m_flavs[0] : m_flavs[1]);
 }
 
 void COMIX::Single_Process::FillMEWeights(ME_Weight_Info &wgtinfo) const

@@ -57,7 +57,8 @@ namespace PHASIC {
                    const std::vector<std::vector<double > > &dsij,
                    const double &x0,const double &x1,
                    const double &eta0,const double &eta1,
-                   const double &wgt);
+                   const double &wgt,
+                   const bool swapped=false);
 
     double Get(PDF::PDF_Base *pdfa, PDF::PDF_Base *pdfb,
                const double &x0,const double &x1,
