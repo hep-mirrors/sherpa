@@ -325,6 +325,13 @@ bool YFS_Handler::CalculateFSR(Vec4D_Vector & p) {
   m_fsrphotonsforME.clear();
   m_reallab = p;
   m_plab=p;
+  // Pure-FSR mode never goes through MakeYFS, so CreatMomentumMap() (the only
+  // place m_inparticles/m_outparticles get cleared) would otherwise never run
+  // for this path, letting stale entries from earlier trials survive under
+  // reused Particle* keys and leak into Signal_Processes::FillBlob via
+  // GetOutParticles(). Reset it here on every call so it always starts from
+  // the current born momenta.
+  CreatMomentumMap();
   if(FixedOrder()==fixed_order::nlo && m_ISRPhotons.size()!=0) {
     for(size_t i = 2; i < m_plab.size(); ++i) m_outparticles[m_particles[i]] = m_plab[i];
     return true;

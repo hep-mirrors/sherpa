@@ -42,7 +42,14 @@ FSR::FSR()
   s["FSR_NBAR"].SetDefault(0);
   s["MASSIVE_NBAR"].SetDefault(0);
   s["FSR_EIK"].SetDefault(0);
-  s["FSR_CRU"].SetDefault(0);
+  // Governs m_BtiXcru/m_BtiQcru in YFS_FORM(): cru(1) -> BVR_cru, matching
+  // KKMC's Piatek(), which always uses the crude/truncated Btildc for this
+  // ghost-momentum role (no equivalent flag on their side - it's never a
+  // choice). Defaulting to 0 (BVR_full, the exact Btilda) here was wrong -
+  // confirmed by an 8-9 sig-fig match of BtiXcru/BtiQcru/DelVol against
+  // KKMC's real KKbvir::Btildc for an identical kinematic point, via
+  // YFS/Tools/FSR_KKMC_CrossCheck.C (2026-08-04).
+  s["FSR_CRU"].SetDefault(1);
   s["FSR_NGAMMA"].SetDefault(-1);
   s["FSR_CUT"].SetDefault(1e-2*m_isrcut);
   m_Edelta = s["FSR_EMIN"].Get<double>();
@@ -196,7 +203,14 @@ void FSR::GenerateAngles() {
   }
   m_cos.push_back(m_c);
   m_sin.push_back(m_st);
-  m_fbarvec.push_back(1. / (del1 * del2) * (1. + m_beta1*m_beta2)/(m_beta1+m_beta2));
+  // Must match the density that actually generated costhg/sinthg above (the
+  // crude, am2/beta-based del1,del2 - algebraically del1==1-beta1*m_c and
+  // del2==1+beta2*m_c here since del2-del1==2*beta*costhg by construction).
+  // The extra /(m_beta1+m_beta2) instead of /2 multiplied every FSR photon's
+  // mass-weight by an extra factor of beta (KKMC's crude density is
+  // (1-am2/2) == (1+beta1*beta2)/2 for beta1==beta2), confirmed against
+  // KKarFin::AngBre()/YFSfin() via a fixed-kinematics cross-check harness.
+  m_fbarvec.push_back(1. / (del1 * del2) * (1. + m_beta1*m_beta2)/2.);
   if(abs(m_c)>1){
       msg_Error()<<"Photon angel out of bounds with cos(theta) = "<<m_c<<std::endl;
   }
