@@ -25,6 +25,9 @@ using namespace METOOLS;
 
 
 YFS_Form_Factor::YFS_Form_Factor() {
+  // p_virt is only assigned in NLO_Base; left uninitialised it holds garbage, so the
+  // (p_virt?...) guard in BVirtGeneralEps passed and IRscale() segfaulted.
+  p_virt = nullptr;
     rpa->gen.AddCitation(1,"YFS Form Factor as implemented in \\cite{Jadach:1999vf}");
 }
 
