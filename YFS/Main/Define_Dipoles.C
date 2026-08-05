@@ -602,11 +602,11 @@ double Define_Dipoles::FormFactorSum(){
   for(auto &D: m_dipolesII){
     form+= D.ChargeNorm()*p_yfsFormFact->BVR_full(D, sqrt(m_s)/2);
   }
-  if(!m_hidephotons){
+  // if(!m_hidephotons){
       for(auto &D: m_dipolesFF){
         form+= D.ChargeNorm()*p_yfsFormFact->BVR_full(D, sqrt(m_s)/2);
       }
-    }
+    // }
   if(m_ifisub==1){
     for(auto &D: m_dipolesIF){
       form += D.ChargeNorm()*p_yfsFormFact->BVR_full(D,sqrt(m_s)/2);

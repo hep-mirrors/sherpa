@@ -37,24 +37,15 @@ double MySqLam(double x,double y,double z)
 FSR::FSR()
 {
   Scoped_Settings s{ Settings::GetMainSettings()["YFS"] };
-  s["FSR_EMIN"].SetDefault(1e-2*m_isrcut);
   s["FSR_FCUT"].SetDefault(0);
   s["FSR_NBAR"].SetDefault(0);
   s["MASSIVE_NBAR"].SetDefault(0);
   s["FSR_EIK"].SetDefault(0);
-  // Governs m_BtiXcru/m_BtiQcru in YFS_FORM(): cru(1) -> BVR_cru, matching
-  // KKMC's Piatek(), which always uses the crude/truncated Btildc for this
-  // ghost-momentum role (no equivalent flag on their side - it's never a
-  // choice). Defaulting to 0 (BVR_full, the exact Btilda) here was wrong -
-  // confirmed by an 8-9 sig-fig match of BtiXcru/BtiQcru/DelVol against
-  // KKMC's real KKbvir::Btildc for an identical kinematic point, via
-  // YFS/Tools/FSR_KKMC_CrossCheck.C (2026-08-04).
   s["FSR_CRU"].SetDefault(1);
   s["FSR_NGAMMA"].SetDefault(-1);
   s["FSR_CUT"].SetDefault(1e-2*m_isrcut);
-  m_Edelta = s["FSR_EMIN"].Get<double>();
   m_fsrcut = s["FSR_CUT"].Get<double>();
-  // m_fsrcut /= sqrt(m_s);
+  m_fsrcut /= sqrt(m_s);
   m_fsrcutF = s["FSR_FCUT"].Get<double>();
   m_nbar = s["FSR_NBAR"].Get<double>();
   m_use_massive_nbar = s["MASSIVE_NBAR"].Get<bool>();
@@ -95,7 +86,7 @@ bool FSR::Initialize(YFS::Dipole &dipole) {
   m_dip_sp = (m_dipole[0]+m_dipole[1]).Abs2();
   if(IsBad(m_dip_sp)) return false;
   m_EQ = sqrt(m_dip_sp) / 2.;
-  m_Emin = 0.5 * sqrt(m_s) * m_isrcut;
+  m_Emin = 0.5 * m_s * m_isrcut;
   m_Kmax = sqrt(m_dip_sp) / 2.;
   m_hideW = 1.;
   if (m_dipole.size() != 2) {
@@ -291,7 +282,7 @@ bool FSR::MakeFSR() {
     m_sQ = m_sprim;
   }
   else {
-    if (m_photonSum.E() >= 1) {
+    if (m_photonSum.E() > 1) {
       RejectEvent();
       m_cut = 2;
       return false;
