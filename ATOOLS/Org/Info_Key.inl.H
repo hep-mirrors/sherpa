@@ -36,7 +36,7 @@ namespace ATOOLS {
   inline bool Info_Key::Assigned() const
   { return p_info!=NULL; }
 
-  inline double &Info_Key::operator[](const size_t i)
+  inline double &Info_Key::operator[](const size_t i) const
   { return p_info->Double(m_valuekey,i); }
 
   inline ATOOLS::Vec4D &Info_Key::operator()(const size_t i)
@@ -47,14 +47,14 @@ namespace ATOOLS {
 
   inline Info_Key &Info_Key::operator=(const Info_Key &key)
   {
-    for (size_t i=0;i<Doubles().size();++i) (*this)[i]=key.Double(i); 
-    for (size_t j=0;j<Vectors().size();++j) (*this)(j)=key.Vector(j); 
+    for (size_t i=0;i<Doubles().size();++i) (*this)[i]=key.Double(i);
+    for (size_t j=0;j<Vectors().size();++j) (*this)(j)=key.Vector(j);
     return *this;
   }
 
   inline bool Info_Key::operator==(const Info_Key &key)
   {
-    if (key.m_valuekey==m_valuekey && key.m_weightkey==m_weightkey) return true; 
+    if (key.m_valuekey==m_valuekey && key.m_weightkey==m_weightkey) return true;
     return false;
   }
 
