@@ -463,8 +463,14 @@ bool FSR::YFS_FORM(){
     } 
     else{
       m_BtiXcru = p_fsrFormFact->BVR_cru(m_r1 * m_r2, m_r1[0], m_r2[0], m_r1.Mass(), m_r2.Mass(), m_Emin);
-      // m_BtiQcru = p_fsrFormFact->BVR_cru(m_r1 * m_r2, Eqq, Eqq, m_r1.Mass(), m_r2.Mass(), m_EminQ);
-      m_BtiQcru = p_fsrFormFact->BVR_cru(m_r1 * m_r2, m_r1[0], m_r2[0], m_r1.Mass(), m_r2.Mass(), m_EminQ);
+      // Jadach always uses the symmetric EQQ=0.5*sqrt(svarQ) for
+      // BOTH particles' energy in the Q-scale crude evaluation, not the
+      // ghosts' own (recoil-asymmetric) energies - confirmed via
+      // YFS/Tools/FSR_KKMC_CrossCheck.C: using m_r1[0]/m_r2[0] here matched
+      // KKMC to only ~1.8e-6 at soft-photon kinematics, growing to ~6.3e-5 at
+      // harder/more asymmetric photon configurations, while Eqq,Eqq matches
+      // to 9 sig figs at both (2026-08-05).
+      m_BtiQcru = p_fsrFormFact->BVR_cru(m_r1 * m_r2, Eqq, Eqq, m_r1.Mass(), m_r2.Mass(), m_EminQ);
     }
   }
   else {
@@ -474,8 +480,8 @@ bool FSR::YFS_FORM(){
     }
     else{
       m_BtiXcru = p_fsrFormFact->BVR_full(m_r1 * m_r2, m_r1[0], m_r2[0], m_r1.Mass(), m_r2.Mass(), m_Emin, m_photonMass, 0);
-      // m_BtiQcru = p_fsrFormFact->BVR_full(m_r1 * m_r2, Eqq, Eqq, m_r1.Mass(), m_r2.Mass(), m_EminQ, m_photonMass, 0);
-      m_BtiQcru = p_fsrFormFact->BVR_full(m_r1 * m_r2, m_r1[0], m_r2[0], m_r1.Mass(), m_r2.Mass(), m_EminQ, m_photonMass, 0);
+      // Same EQQ,EQQ convention fix as the BVR_cru branch above - see its comment.
+      m_BtiQcru = p_fsrFormFact->BVR_full(m_r1 * m_r2, Eqq, Eqq, m_r1.Mass(), m_r2.Mass(), m_EminQ, m_photonMass, 0);
     }
   }
   m_volmc = m_gp*log(1./m_fsrcut);
