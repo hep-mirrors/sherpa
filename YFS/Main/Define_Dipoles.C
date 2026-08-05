@@ -608,9 +608,9 @@ double Define_Dipoles::FormFactorSum(){
       }
     // }
   if(m_ifisub==1){
-    for(auto &D: m_dipolesIF){
-      form += D.ChargeNorm()*p_yfsFormFact->BVR_full(D,sqrt(m_s)/2);
-    }
+    // for(auto &D: m_dipolesIF){
+    //   form += D.ChargeNorm()*p_yfsFormFact->BVR_full(D,sqrt(m_s)/2);
+    // }
   }
   return form;
 }
