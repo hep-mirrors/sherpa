@@ -33,7 +33,7 @@ namespace ATOOLS {
 
     Integration_Info *p_info;
     std::string       m_name, m_info;
-    
+
     size_t m_valuekey, m_weightkey;
 
     friend class Integration_Info;
@@ -75,7 +75,7 @@ namespace ATOOLS {
 
     inline bool Assigned() const;
 
-    inline double        &operator[](const size_t i);
+    inline double        &operator[](const size_t i) const;
     inline ATOOLS::Vec4D &operator()(const size_t i);
 
     inline void operator<<(const double weight);
@@ -93,11 +93,11 @@ namespace ATOOLS {
     \class Info_Key
     \brief Handles access to Integration_Info
 
-    This class provides access to Integration_Info which handles value and 
-    weight storage. Each Info_Key is assigned a reference point in Integration_Info 
+    This class provides access to Integration_Info which handles value and
+    weight storage. Each Info_Key is assigned a reference point in Integration_Info
     during Assign(<name>,<double_size>,<vector_size>,<info>).
     In the following the key calls Integration_Info to obtain and to set values
-    and weights and to test for the status of the corresponding variable (see 
+    and weights and to test for the status of the corresponding variable (see
     the example below).
     \code
        class Example_ISR_Channel: public Single_Channel {

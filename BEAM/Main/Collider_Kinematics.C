@@ -26,8 +26,6 @@ Collider_Kinematics::Collider_Kinematics(std::array<Beam_Base*, 2> beams)
 }
 
 void Collider_Kinematics::InitSystem() {
-  m_Ecms = sqrt(m_S);
-
   m_on = (m_mode != collidermode::monochromatic);
   m_x[0] = m_x[1] = 0.;
   if (m_mode==collidermode::monochromatic) {
@@ -50,13 +48,12 @@ void Collider_Kinematics::InitIntegration() {
 }
 
 bool Collider_Kinematics::operator()(ATOOLS::Vec4D_Vector& moms) {
-  m_sprime = m_sprimekey[3];
-  if (m_sprime < m_sprimekey[0] || m_sprime > m_sprimekey[1]) {
+  if (m_sprimekey[3] < m_sprimekey[0] || m_sprimekey[3] > m_sprimekey[1]) {
     msg_Error() << METHOD << "(..): " << om::red << "s' out of bounds.\n"
                 << om::reset
                 << "  s'_{min}, s'_{max 1,2} vs. s': " << m_sprimekey[0] << ", "
                 << m_sprimekey[1] << ", " << m_sprimekey[2] << " vs. "
-                << m_sprime << std::endl;
+                << m_sprimekey[3] << std::endl;
     return false;
   }
   if (m_mode == collidermode::monochromatic)
@@ -65,15 +62,15 @@ bool Collider_Kinematics::operator()(ATOOLS::Vec4D_Vector& moms) {
   const Vec4D& pb = p_beams[1]->InMomentum();
   const double gam = pa * pb + sqrt(sqr(pa * pb) - pa.Abs2() * pb.Abs2());
   const double bet = 1.0 / (1.0 - pa.Abs2() / gam * pb.Abs2() / gam);
-  m_p_plus = bet * (pa - pa.Abs2() / gam * pb);
-  m_p_minus = bet * (pb - pb.Abs2() / gam * pa);
+  Vec4D pPlus = bet * (pa - pa.Abs2() / gam * pb);
+  Vec4D pMinus = bet * (pb - pb.Abs2() / gam * pa);
   const double tau = CalculateTau();
   if (tau < 0.) return false;
   if (m_mode == collidermode::spectral_1) {
-    m_x[1] = m_xkey[5] = p_beams[1]->InMomentum().PMinus() / m_p_minus.PMinus();
+    m_x[1] = m_xkey[5] = p_beams[1]->InMomentum().PMinus() / pMinus.PMinus();
     m_x[0] = m_xkey[4] = tau / m_x[1];
   } else if (m_mode == collidermode::spectral_2) {
-    m_x[0] = m_xkey[4] = p_beams[0]->InMomentum().PPlus() / m_p_plus.PPlus();
+    m_x[0] = m_xkey[4] = p_beams[0]->InMomentum().PPlus() / pPlus.PPlus();
     m_x[1] = m_xkey[5] = tau / m_x[0];
   } else if (m_mode == collidermode::both_spectral) {
     double yt =
@@ -84,8 +81,8 @@ bool Collider_Kinematics::operator()(ATOOLS::Vec4D_Vector& moms) {
     return false;
   if (m_x[0] > 1. || m_x[1] > 1.)
     return false;
-  moms[0] = m_xkey[4] * m_p_plus + m_m2[0] / m_S / m_xkey[4] * m_p_minus;
-  moms[1] = m_xkey[5] * m_p_minus + m_m2[1] / m_S / m_xkey[5] * m_p_plus;
+  moms[0] = m_xkey[4] * pPlus + m_m2[0] / m_S / m_xkey[4] * pMinus;
+  moms[1] = m_xkey[5] * pMinus + m_m2[1] / m_S / m_xkey[5] * pPlus;
   for (size_t i = 0; i < 2; ++i) {
     p_beams[i]->SetOutMomentum(moms[i]);
     rpa->gen.SetPBunch(i, moms[i]);
@@ -95,7 +92,7 @@ bool Collider_Kinematics::operator()(ATOOLS::Vec4D_Vector& moms) {
 }
 
 double Collider_Kinematics::CalculateTau() const {
-  double tau = (m_sprime - m_m2[0] - m_m2[1]) / m_S / 2.;
+  double tau = (m_sprimekey[3] - m_m2[0] - m_m2[1]) / m_S / 2.;
   if (tau * tau < m_m2[0] * m_m2[1] / (m_S * m_S)) {
     msg_Error() << METHOD << "(): s' out of range." << std::endl;
     return -1.;
