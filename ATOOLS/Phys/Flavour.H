@@ -271,7 +271,7 @@ namespace ATOOLS {
     inline bool IsChargedLepton() const { return IsLepton()&&IsDowntype(); }
     inline bool IsNeutrino()      const { return IsLepton()&&IsUptype(); }
 
-    inline bool IsQuark() const { return Kfcode()<10; }
+    inline bool IsQuark() const { return 0<Kfcode()&&Kfcode()<10; }
     inline bool IsGluon() const
     { return Kfcode()==kf_gluon||Kfcode()==kf_shgluon; }
     inline bool IsJet() const   { return Kfcode()==kf_jet; }
