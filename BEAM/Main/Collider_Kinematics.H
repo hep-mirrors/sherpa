@@ -8,11 +8,8 @@ class Collider_Kinematics : public Kinematics_Base {
 private:
   collidermode m_mode;
 
-  ATOOLS::Vec4D m_p_plus, m_p_minus;
-  double m_Ecms;
   double m_ymin, m_ymax;
   ATOOLS::Info_Key m_sprimekey, m_ykey, m_xkey;
-  double m_sprime;
 
   void InitSystem();
   void InitIntegration() override;
