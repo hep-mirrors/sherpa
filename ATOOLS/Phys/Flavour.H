@@ -43,6 +43,7 @@ namespace ATOOLS {
       m_masssign(0), m_dummy(1), m_majorana(0), m_formfactor(0), m_on(0),
       m_massive(0), m_hadron(0), m_isgroup(0), m_narrow(0) {}
     Particle_Info(const Particle_Info &info);
+    Particle_Info &operator=(const Particle_Info &info);
     Particle_Info(const kf_code &kfc,const double &mass,const double &radius,const double &width,
       const int icharge,const int strong,
       const int spin,const int majorana,const bool on,

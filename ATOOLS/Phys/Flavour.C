@@ -28,6 +28,26 @@ Particle_Info::Particle_Info(const Particle_Info &info):
     m_content[i] = new Flavour(*info.m_content[i]);
 }
 
+Particle_Info &Particle_Info::operator=(const Particle_Info &info)
+{
+  if (this==&info) return *this;
+  m_kfc=info.m_kfc; m_mass=info.m_mass; m_hmass=info.m_hmass; m_radius=info.m_radius;
+  m_yuk=info.m_yuk; m_width=info.m_width;
+  m_dg=info.m_dg; m_dm=info.m_dm; m_qoverp2=info.m_qoverp2;
+  m_icharge=info.m_icharge;
+  m_strong=info.m_strong; m_resummed=info.m_resummed; m_priority=info.m_priority;
+  m_spin=info.m_spin; m_stable=info.m_stable;
+  m_masssign=info.m_masssign; m_dummy=info.m_dummy; m_majorana=info.m_majorana;
+  m_formfactor=info.m_formfactor; m_on=info.m_on; m_massive=info.m_massive; m_hadron=info.m_hadron;
+  m_isgroup=info.m_isgroup; m_narrow=info.m_narrow; m_idname=info.m_idname; m_antiname=info.m_antiname;
+  m_texname=info.m_texname; m_antitexname=info.m_antitexname;
+  Clear();
+  m_content.resize(info.m_content.size());
+  for (size_t i(0);i<info.m_content.size();++i)
+    m_content[i] = new Flavour(*info.m_content[i]);
+  return *this;
+}
+
 Particle_Info::Particle_Info
 (const kf_code &kfc, const double &mass, const double &radius, const double &width,
  const int icharge, const int strong,
