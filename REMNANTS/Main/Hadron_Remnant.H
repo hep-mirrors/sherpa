@@ -40,6 +40,7 @@ namespace REMNANTS {
     bool TestExtract(const ATOOLS::Flavour& flav, const ATOOLS::Vec4D& mom,
                      const double& spair) override;
     void Reset(const bool& resc = false, const bool& DIS = false) override;
+    void RefreshFlavour() override;
 
     inline ATOOLS::Particle* GetRecoiler() override { return p_recoiler; }
     inline ATOOLS::Particle* GetSpectator() override { return p_spectator; }

@@ -61,6 +61,10 @@ namespace BEAM {
     virtual double Xmax() const { return 1.; }
     virtual double Peak() const { return 1.; }
 
+    // True for beams whose nucleon species is redrawn every event.
+    virtual bool IsMultiSpecies() const { return false; }
+    virtual ATOOLS::Flavour DrawFlavour() const { return m_beam; }
+
     void SetERan(double eran) { m_eran = eran; }
 
     // Default impact parameter: sampled uniformly over radius
@@ -70,6 +74,12 @@ namespace BEAM {
     virtual void SetOutMomentum(const ATOOLS::Vec4D& out)
     {
       m_vecouts[0] = out;
+    }
+
+    // Sets which nucleon Bunch(i) reports, independent of Beam()/mass.
+    void SetBunch(const ATOOLS::Flavour& flav, const size_t& i = 0)
+    {
+      m_bunches[i] = flav;
     }
 
     void SetX(const double& x) { m_x = x; }

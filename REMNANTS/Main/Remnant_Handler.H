@@ -86,6 +86,9 @@ namespace REMNANTS {
     inline void SetScale2(const double & scale2) {
       for (size_t i=0;i<2;i++) p_remnants[i]->SetScale2(scale2);
     }
+    inline void RefreshFlavour(const size_t & beam) {
+      if (beam<2) p_remnants[beam]->RefreshFlavour();
+    }
     inline PDF::isr::id Id() const { return m_id; }
     inline strat::code  Type() const { return m_type; }
 

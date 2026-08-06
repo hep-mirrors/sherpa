@@ -10,6 +10,7 @@
 #include "BEAM/Spectra/Pomeron.H"
 #include "BEAM/Spectra/Reggeon.H"
 #include "BEAM/Spectra/Interpolated.H"
+#include "BEAM/Spectra/Target_Matter.H"
 
 using namespace ATOOLS;
 using namespace BEAM;
@@ -66,6 +67,8 @@ std::ostream& BEAM::operator<<(std::ostream& ostr, const beamspectrum spect)
     return ostr << "Dark Matter";
   case beamspectrum::neutrinos_from_protons:
     return ostr << "Neutrino Beam";
+  case beamspectrum::target_matter:
+    return ostr << "Target Matter";
   default:
     break;
   }
@@ -110,6 +113,8 @@ Beam_Base* Beam_Parameters::InitSpectrum(const size_t& num)
     return InitializeDM_beam(num);
   case beamspectrum::neutrinos_from_protons:
     return InitializeNeutrinoFromProton(num);
+  case beamspectrum::target_matter:
+    return InitializeTargetMatter(num);
 
   default:
     break;
@@ -229,6 +234,23 @@ Beam_Base* Beam_Parameters::InitializeNeutrinoFromProton(int num)
   double  E    = m_settings["BEAM_ENERGIES"].GetTwoVector<double>()[num];
   msg_Out()<<METHOD<<" for "<<flav<<"\n";
   return new Interpolated_Neutrinos(flav, E, 1 - 2 * num);
+}
+
+Beam_Base* Beam_Parameters::InitializeTargetMatter(int num)
+{
+  double Z = m_settings["TARGET_MATTER"]["Z"].SetDefault(-1.).Get<double>();
+  double A = m_settings["TARGET_MATTER"]["A"].SetDefault(-1.).Get<double>();
+  if (Z <= 0. || A <= 0. || Z > A)
+    THROW(fatal_error,
+          "TARGET_MATTER: require 0 < Z <= A (got Z=" + ToString(Z) +
+              ", A=" + ToString(A) + ").");
+  InitializeFlav(kf_p_plus);
+  InitializeFlav(kf_n);
+  double beam_energy =
+      m_settings["BEAM_ENERGIES"].GetTwoVector<double>()[num];
+  double beam_polarization =
+      m_settings["BEAM_POLARIZATIONS"].GetTwoVector<double>()[num];
+  return new Target_Matter(Z, A, beam_energy, beam_polarization, 1 - 2 * num);
 }
 
 
@@ -365,6 +387,8 @@ bool Beam_Parameters::SpecifySpectra()
       m_beamspec[num] = beamspectrum::DM;
     else if (bs == "Neutrinos")
       m_beamspec[num] = beamspectrum::neutrinos_from_protons;
+    else if (bs == "TargetMatter")
+      m_beamspec[num] = beamspectrum::target_matter;
     else
       m_beamspec[num] = beamspectrum::unknown;
   }

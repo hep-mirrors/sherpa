@@ -128,6 +128,7 @@ namespace PDF {
     virtual int    GetFlavourScheme() { return 0; } 
     virtual void   SetBounds()        { m_rq2min=m_q2min; m_rq2max=m_q2max; }
     virtual void   SetPartonMap(const PDF_Id_List & kfmap) { m_kfmap = kfmap; }
+    inline void    SetBunch(const ATOOLS::Flavour & bunch) { m_bunch = bunch; }
 
     inline const std::string&         Type()    const { return m_type; }
     inline std::string                Set()     const { return m_set; }

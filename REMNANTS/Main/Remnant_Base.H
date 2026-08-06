@@ -91,6 +91,8 @@ namespace REMNANTS {
     virtual void Output();
 
     virtual void Reset(const bool & resc=false,const bool & DIS=false);
+    // Re-derives flavour-dependent state after the beam species changes.
+    virtual void RefreshFlavour() {}
 
     inline rtp::code                  Type() const       { return m_type; }
     inline size_t                     Beam() const       { return m_beam; }

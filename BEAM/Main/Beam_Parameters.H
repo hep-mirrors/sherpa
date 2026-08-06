@@ -27,6 +27,7 @@ namespace BEAM {
     Reggeon                = 6,
     DM                     = 10,
     neutrinos_from_protons = 20,
+    target_matter          = 21,
     unknown                = 99
   };
   std::ostream& operator<<(std::ostream&,const beamspectrum spect);
@@ -78,6 +79,7 @@ namespace BEAM {
     Beam_Base * InitializeReggeon(int);
     Beam_Base * InitializeDM_beam(int);
     Beam_Base * InitializeNeutrinoFromProton(int);
+    Beam_Base * InitializeTargetMatter(int);
   public:
     Beam_Parameters();
     ~Beam_Parameters();
