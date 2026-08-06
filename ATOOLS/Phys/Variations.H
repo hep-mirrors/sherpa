@@ -123,7 +123,7 @@ namespace ATOOLS {
       PDFs_And_AlphaS();
       PDFs_And_AlphaS(double alphasmz);
       PDFs_And_AlphaS(std::string pdfname, int pdfmember, int beammask,
-                      int alphasbeam);
+                      int alphasbeam, bool keepnominalalphas);
       std::vector<PDF::PDF_Base *> m_pdfs;
       MODEL::Running_AlphaS *p_alphas;
       int m_shoulddeletepdfmask {0};
@@ -142,7 +142,8 @@ namespace ATOOLS {
     PDFs_And_AlphaS_List PDFsAndAlphaSList(const std::string& pdfstringparam) const;
     PDFs_And_AlphaS_List PDFsAndAlphaSList(std::string pdfstringparam,
                                            bool expandpdf, int beammask,
-                                           int alphasbeam) const;
+                                           int alphasbeam,
+                                           bool keepnominalalphas) const;
 
     bool m_enabled;
     Parameters_Vector m_parameters_vector;
