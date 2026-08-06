@@ -461,10 +461,13 @@ Variations::PDFsAndAlphaSList(const std::string &pdf) const
   PDFs_And_AlphaS_List pdfsandalphaslist;
   if (pdf != "None") {
     Settings& s = Settings::GetMainSettings();
-    if (s["ALPHAS"]["USE_PDF"].Get<int>() == 0) {
-      THROW(fatal_error,
-            "`ALPHAS: {USE_PDF: 0}` is incompatible with doing PDF/AlphaS "
-            "variations.");
+    // with `ALPHAS: {USE_PDF: 0}`, the user-defined AlphaS is kept fixed
+    // across all PDF variations instead of using each PDF's own AlphaS
+    const bool keepnominalalphas {s["ALPHAS"]["USE_PDF"].Get<int>() == 0};
+    if (keepnominalalphas) {
+      msg_Info() << METHOD
+                 << "(): `ALPHAS: {USE_PDF: 0}` is set; the nominal AlphaS "
+                    "will be used for all PDF variations.\n";
     }
     int alphasbeam {
       s["PDF_VARIATION_ALPHAS_BEAM"].SetDefault(0).Get<int>() - 1};
@@ -479,8 +482,8 @@ Variations::PDFsAndAlphaSList(const std::string &pdf) const
 
     // translate PDF string parameter into actual AlphaS and PDF objects
     ExpandableVariation var{pdf};
-    pdfsandalphaslist =
-        PDFsAndAlphaSList(var.var, var.expand, beammask, alphasbeam);
+    pdfsandalphaslist = PDFsAndAlphaSList(var.var, var.expand, beammask,
+                                          alphasbeam, keepnominalalphas);
   }
   return pdfsandalphaslist;
 }
@@ -489,7 +492,8 @@ Variations::PDFs_And_AlphaS_List Variations::PDFsAndAlphaSList(
     std::string pdfstringparam,
     bool expandpdf,
     int beammask,
-    int alphasbeam) const
+    int alphasbeam,
+    bool keepnominalalphas) const
 {
   // parse PDF member(s)
   PDFs_And_AlphaS_List pdfsandalphaslist;
@@ -532,8 +536,8 @@ Variations::PDFs_And_AlphaS_List Variations::PDFsAndAlphaSList(
     lastmember = member;
   }
   for (size_t j(firstmember); j <= lastmember; ++j) {
-    pdfsandalphaslist.items.push_back(
-        PDFs_And_AlphaS(pdfstringparam, j, beammask, alphasbeam));
+    pdfsandalphaslist.items.push_back(PDFs_And_AlphaS(
+        pdfstringparam, j, beammask, alphasbeam, keepnominalalphas));
   }
   return pdfsandalphaslist;
 }
@@ -572,7 +576,8 @@ Variations::PDFs_And_AlphaS::PDFs_And_AlphaS(double alphasmz)
 
 
 Variations::PDFs_And_AlphaS::PDFs_And_AlphaS(
-    std::string pdfname, int pdfmember, int beammask, int alphasbeam)
+    std::string pdfname, int pdfmember, int beammask, int alphasbeam,
+    bool keepnominalalphas)
 {
   // obtain PDFs
   for (int i(0); i < 2; ++i) {
@@ -590,7 +595,12 @@ Variations::PDFs_And_AlphaS::PDFs_And_AlphaS(
   }
   m_shoulddeletepdfmask = beammask;
 
-  // obtain AlphaS based on a loaded PDF or a new one (if none is found)
+  // obtain AlphaS based on a loaded PDF or a new one (if none is found);
+  // with `ALPHAS: {USE_PDF: 0}` the nominal AlphaS is used throughout
+  if (keepnominalalphas) {
+    p_alphas = MODEL::as;
+    return;
+  }
   PDF::PDF_Base *aspdf {m_pdfs[alphasbeam]};
   if (aspdf == NULL) {
     p_alphas = new MODEL::Running_AlphaS(pdfname, pdfmember);
