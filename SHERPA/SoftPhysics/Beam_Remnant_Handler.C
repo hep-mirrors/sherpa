@@ -174,7 +174,8 @@ Blob * Beam_Remnant_Handler::FillBunchBlob(int beam,Particle * particle)
   blob->SetId();
   blob->AddToOutParticles(particle);
   bool haspdf = p_isr && p_isr->PDF(beam)!=nullptr;
-  bool match = particle->Flav()==p_beam->GetBeam(beam)->Beam() &&
+  bool match = (p_beam->GetBeam(beam)->IsMultiSpecies() ||
+                particle->Flav()==p_beam->GetBeam(beam)->Beam()) &&
                (!haspdf || IsEqual(particle->E(),m_bunchmoms[beam][0],1.e-4));
   if (match) {
     Particle *p = new Particle(*particle);

@@ -69,6 +69,8 @@ namespace REMNANTS {
     virtual void Output();
 
     virtual void Reset(const bool & resc=false,const bool & DIS=false);
+    // Re-derives flavour-dependent state after the beam species changes.
+    virtual void RefreshFlavour() {}
     virtual void SetResidualEnergy(const double & E=-1.) {
       m_residualE = (E>=0.) ? E : p_beam->OutMomentum(m_tag)[0];
     }

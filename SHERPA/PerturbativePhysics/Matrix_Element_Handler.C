@@ -197,6 +197,22 @@ bool Matrix_Element_Handler::GenerateOneEvent()
   Return_Value::IncCall(METHOD);
   p_proc=NULL;
   if (m_seedmode!=3) SetRandomSeed();
+
+  // Redraw the target nucleon species and reinterpret the PDF in place.
+  for (size_t i=0;i<2;++i) {
+    BEAM::Beam_Base* beam = p_isr->GetBeam(i);
+    if (!beam->IsMultiSpecies()) continue;
+    ATOOLS::Flavour newflav = beam->DrawFlavour();
+    PDF::PDF_Base* pdf = p_isr->PDF(i);
+    if (pdf->Bunch().Kfcode()!=newflav.Kfcode()) {
+      PDF::PDF_Id_Maps mapper;
+      pdf->SetPartonMap(mapper.GetIdMap(newflav));
+      pdf->SetBunch(newflav);
+      beam->SetBunch(newflav);
+      if (p_remnants) p_remnants->RefreshFlavour(i);
+    }
+  }
+
   p_isr->SetPDFMember();
 
   // calculate total selection weight sum

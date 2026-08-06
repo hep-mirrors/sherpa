@@ -21,6 +21,14 @@ Hadron_Remnant(PDF::PDF_Base * pdf,const unsigned int & beam,
   ConstructConstituentFlavours();
 }
 
+void Hadron_Remnant::RefreshFlavour()
+{
+  // Re-derives valence content after a proton/neutron switch.
+  m_beamflav = p_pdf->Bunch();
+  m_constituents.clear();
+  ConstructConstituentFlavours();
+}
+
 void Hadron_Remnant::ConstructConstituentFlavours() {
   if (m_constituents.size()>0) return;
   int hadint=(m_beamflav.Kfcode()-(m_beamflav.Kfcode()/10000)*10000)/10;
