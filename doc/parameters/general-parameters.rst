@@ -645,7 +645,11 @@ must be given in their quadratic form, i.e. a "4.0" in the settings means that t
 For the ``PDF_VARIATIONS``, any set present in any of the PDF library
 interfaces loaded through ``PDF_LIBRARY`` can be used. If no PDF set is given
 it defaults to the nominal one. Specific PDF members can be specified by
-appending the PDF set name with ``/<member-id>``.
+appending the PDF set name with ``/<member-id>``. Normally, the strong
+coupling is varied along with the PDF set, using the AlphaS provided by the
+varied PDF. However, if ``ALPHAS: {USE_PDF: 0}`` is set, the user-defined
+nominal strong coupling is instead kept fixed across all PDF variations, i.e.
+only the PDF itself is varied.
 
 It can be painful to write every variation explicitly, e.g. for 7-point scale
 factor variations or if one wants variations for all members of a PDF set.
