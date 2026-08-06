@@ -130,9 +130,15 @@ void Collider_Kinematics::SetLimits() {
   if (m_mode == collidermode::spectral_2)
     m_sprimekey[0] = Max(m_sprimekey[0], m_sprimekey[2] * exp(-2.*m_ykey[1]));
   for (size_t i = 0; i < 2; i++) {
-    double p = i == 0 ? p_beams[0]->OutMomentum().PPlus()
-                      : p_beams[1]->OutMomentum().PMinus();
-    double e = p_beams[i]->OutMomentum()[0];
+    // Use the (fixed) incoming beam momentum as the reference for the bunch
+    // energy fractions, consistently with operator(), which builds the bunch
+    // momenta from the incoming momenta. Using the per-event outgoing bunch
+    // momentum here would make the integration limits depend on the previously
+    // generated event, which breaks the reproducibility of the pilot run and
+    // its re-run when on-the-fly variations are enabled.
+    double p = i == 0 ? p_beams[0]->InMomentum().PPlus()
+                      : p_beams[1]->InMomentum().PMinus();
+    double e = p_beams[i]->InMomentum()[0];
     m_xkey[i] =
         (IsZero(m_m[i], 1.e-13) ? -0.5 * std::numeric_limits<double>::max()
                                 : 2. * log(m_m[i] / p));
