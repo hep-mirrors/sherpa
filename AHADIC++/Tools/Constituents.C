@@ -11,7 +11,7 @@ Constituents::Constituents(bool diquarks, Hadronisation_Reweighting * reweightin
   m_minmass(100.),m_maxmass(0.)
 {
   // Light quarks and diquarks
-  m_n_variations = reweighting->NumberOfVariations();
+  m_n_soft_variations = reweighting->NumberOfSoftVariations();
   auto v_sfrac(reweighting->GetVariationVector("Strange_fraction"));
   auto v_bfrac(reweighting->GetVariationVector("Baryon_fraction"));
   auto v_qssup(reweighting->GetVariationVector("P_qs_by_P_qq"));
@@ -51,7 +51,7 @@ Constituents::Constituents(bool diquarks, Hadronisation_Reweighting * reweightin
   }
 
   double total(0.),udfrac(1.), ud0(1.), norm;
-  for (size_t ivar=0; ivar<m_n_variations; ++ivar) {
+  for (size_t ivar=0; ivar<m_n_soft_variations; ++ivar) {
     double sfrac  = v_sfrac[ivar];
     double bfrac  = v_bfrac[ivar];
     double qssup  = v_qssup[ivar];

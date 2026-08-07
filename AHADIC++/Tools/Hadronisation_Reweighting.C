@@ -19,6 +19,12 @@ using namespace std;
 
 Hadronisation_Reweighting::Hadronisation_Reweighting() :
   m_n_variations(1),
+  m_n_flavour_variations(1),
+  m_n_gluon_variations(1),
+  m_n_cluster_variations(1),
+  m_n_soft_variations(1),
+  m_n_kt_variations(1),
+  m_n_promptdecay_variations(1),
   m_max_reweight_factor(-1.),
   m_reweight_max_nsplit(-1),
 
@@ -81,17 +87,107 @@ void Hadronisation_Reweighting::Initialize() {
     "P_ss_by_P_qq",
     "P_di_1_by_P_di_0"
   };
-  m_n_variations = 1;
   for (const auto& key : variation_keys) {
     m_variation_vectors[key] = hadpars->GetVariationVector(key);
-    m_n_variations = std::max(m_n_variations, m_variation_vectors[key].size());
   }
-  for (const auto& key : variation_keys) {
+
+  m_n_flavour_variations = 1;
+  static const std::vector<std::string> flavour_variation_keys = {
+    "Strange_fraction", "Baryon_fraction", "P_qs_by_P_qq", "P_ss_by_P_qq", "P_di_1_by_P_di_0",
+  };
+  for (const auto& key : flavour_variation_keys) {
+    m_n_flavour_variations = std::max(m_n_flavour_variations, 
+                                      m_variation_vectors[key].size());
+  }
+
+  m_n_gluon_variations = 1;
+  static const std::vector<std::string> gluon_variation_keys = {
+    "alphaG"
+  };
+  for (const auto& key : gluon_variation_keys) {
+    m_n_gluon_variations = std::max(m_n_gluon_variations, m_variation_vectors[key].size());
+  }
+
+  m_n_cluster_variations = 1;
+  static const std::vector<std::string> cluster_variation_keys = {
+    "kT_0",
+    "alphaL", "betaL", "gammaL",
+    "alphaD", "betaD", "gammaD",
+    "alphaB", "betaB", "gammaB",
+    "alphaH", "betaH", "gammaH",
+  };
+  for (const auto& key : cluster_variation_keys) {
+    m_n_cluster_variations = std::max(m_n_cluster_variations, 
+                                      m_variation_vectors[key].size());
+  }
+
+  m_n_soft_variations = 1;
+  static const std::vector<std::string> soft_variation_keys = {
+    "mass_exponent", "Singlet_Suppression",
+    "Mixing_Angle_0+", "Mixing_Angle_1-", "Mixing_Angle_2+",
+    "Multiplet_Meson_R0L0S0", "Multiplet_Meson_R0L0S1", "Multiplet_Meson_R0L0S2",
+    "Multiplet_Meson_R0L1S0", "Multiplet_Meson_R0L1S1", "Multiplet_Meson_R0L2S2",
+    "Multiplet_Baryon_R0L0S1/2", "Multiplet_Baryon_R1L0S1/2", "Multiplet_Baryon_R2L0S1/2",
+    "Multiplet_Baryon_R1_1L0S1/2", "Multiplet_Baryon_R0L0S3/2",
+    "eta_modifier", "eta_prime_modifier", "Singlet_Baryon_modifier",
+    "CharmBaryon_Enhancement", "BeautyBaryon_Enhancement",
+    "CharmStrange_Enhancement", "BeautyStrange_Enhancement", "BeautyCharm_Enhancement",
+    "Strange_fraction", "Baryon_fraction", "P_qs_by_P_qq", "P_ss_by_P_qq", "P_di_1_by_P_di_0",
+  };
+  for (const auto& key : soft_variation_keys) {
+    m_n_soft_variations = std::max(m_n_soft_variations, m_variation_vectors[key].size());
+  }
+
+  m_n_kt_variations = 1;
+  static const std::vector<std::string> kt_variation_keys = {
+    "kT_0", "kT_max"
+  };
+  for (const auto& key : kt_variation_keys) {
+    m_n_kt_variations = std::max(m_n_kt_variations, m_variation_vectors[key].size());
+  }
+
+  m_n_promptdecay_variations = 1;
+  static const std::vector<std::string> promptdecay_variation_keys = {
+    "prompt_decay_exponent"
+  };
+  for (const auto& key : promptdecay_variation_keys) {
+    m_n_promptdecay_variations = std::max(m_n_promptdecay_variations, 
+                                          m_variation_vectors[key].size());
+  }
+
+  m_n_variations = std::max({m_n_flavour_variations, m_n_gluon_variations, 
+                             m_n_cluster_variations, m_n_soft_variations, 
+                             m_n_kt_variations, m_n_promptdecay_variations});
+
+  for (const auto& key : gluon_variation_keys) {
     auto& vec = m_variation_vectors[key];
-    vec.resize(m_n_variations, vec[0]);
+    vec.resize(m_n_gluon_variations, vec[0]);
   }
+  for (const auto& key : cluster_variation_keys) {
+    auto& vec = m_variation_vectors[key];
+    if (key == "kT_0") continue;
+    vec.resize(m_n_cluster_variations, vec[0]);
+  }
+  for (const auto& key : soft_variation_keys) {
+    auto& vec = m_variation_vectors[key];
+    vec.resize(m_n_soft_variations, vec[0]);
+  }
+  for (const auto& key : kt_variation_keys) {
+    auto& vec = m_variation_vectors[key];
+    if (key == "kT_0") {
+      vec.resize(std::max(m_n_cluster_variations, 
+                          m_n_kt_variations), vec[0]);
+      continue;
+    }
+    vec.resize(m_n_kt_variations, vec[0]);
+  }
+  for (const auto& key : promptdecay_variation_keys) {
+    auto& vec = m_variation_vectors[key];
+    vec.resize(m_n_promptdecay_variations, vec[0]);
+  }
+
   if (m_n_variations > 1) CheckVariationGuards();
-  for (size_t ivar=0; ivar<m_n_variations; ++ivar) {
+  for (size_t ivar=0; ivar<m_n_soft_variations; ++ivar) {
     const double strange = m_variation_vectors["Strange_fraction"][ivar];
     m_variation_vectors["P_qs_by_P_qq"][ivar] *= strange;
     m_variation_vectors["P_ss_by_P_qq"][ivar] *= sqr(strange);
@@ -109,7 +205,7 @@ void Hadronisation_Reweighting::Initialize() {
   else if (frag == "AR")  m_frag_ar = true;
   else THROW(fatal_error, "AHADIC:REWEIGHTING_FRAG must be CDF or AR, found '"
                           + frag + "'.");
-  if (m_n_variations > 1 && !m_frag_ar) Frag_Norm::Verify(*this);
+  if (m_n_cluster_variations > 1 && !m_frag_ar) Frag_Norm::Verify(*this);
 
   // OUTPUT
   ResetStats();
@@ -150,7 +246,7 @@ void Hadronisation_Reweighting::CheckVariationGuards() {
   // and Multiplet_Constructor::ComponentActive during table construction.
   ///////////////////////////////////////////////////////////////////////////
   const std::vector<double>& ktmax = m_variation_vectors["kT_max"];
-  for (size_t ivar=1; ivar<m_n_variations; ++ivar) {
+  for (size_t ivar=1; ivar<m_n_kt_variations; ++ivar) {
     if (ktmax[ivar] > ktmax[0]) {
       THROW(fatal_error, std::string("Reweighting of AHADIC only possible for downward variations of PT_MAX.\n")
                         + "Found PT_MAX variation " + std::to_string(ivar) + " = "
@@ -163,7 +259,7 @@ void Hadronisation_Reweighting::CheckVariationGuards() {
     if (kv.first.rfind("Multiplet_", 0) != 0) continue;
     const std::vector<double>& wts = kv.second;
     if (wts[0] < 1.e-6) {
-      for (size_t ivar=1; ivar<m_n_variations; ++ivar) {
+      for (size_t ivar=1; ivar<m_n_soft_variations; ++ivar) {
         if (wts[ivar] >= 1.e-6) {
           THROW(fatal_error, std::string("Reweighting of AHADIC not possible for multiplets switched off in the nominal run.\n")
                             + "Found " + kv.first + " variation " + std::to_string(ivar) + " = "
@@ -174,7 +270,7 @@ void Hadronisation_Reweighting::CheckVariationGuards() {
       }
     }
     else {
-      for (size_t ivar=1; ivar<m_n_variations; ++ivar) {
+      for (size_t ivar=1; ivar<m_n_soft_variations; ++ivar) {
         if (wts[ivar] < 1.e-6) {
           THROW(fatal_error, std::string("Reweighting of AHADIC not possible for multiplets switched off by a variation.\n")
                             + "Found " + kv.first + " variation " + std::to_string(ivar) + " = "
@@ -196,7 +292,7 @@ void Hadronisation_Reweighting::CheckVariationGuards() {
   };
   for (const auto& kv : popping_keys) {
     const std::vector<double>& vals = m_variation_vectors[kv.first];
-    for (size_t ivar=1; ivar<m_n_variations; ++ivar) {
+    for (size_t ivar=1; ivar<m_n_flavour_variations; ++ivar) {
       if (vals[0] <= 0. && vals[ivar] > 0.) {
         THROW(fatal_error, std::string("Reweighting of AHADIC not possible for flavour popping switched off in the nominal run.\n")
                           + "Found " + kv.second + " variation " + std::to_string(ivar) + " = "
@@ -207,7 +303,7 @@ void Hadronisation_Reweighting::CheckVariationGuards() {
     }
   }
   const std::vector<double>& zeta = m_variation_vectors["prompt_decay_exponent"];
-  for (size_t ivar=1; ivar<m_n_variations; ++ivar) {
+  for (size_t ivar=1; ivar<m_n_promptdecay_variations; ++ivar) {
     if ((zeta[0] > 0.) != (zeta[ivar] > 0.)) {
       THROW(fatal_error, std::string("Reweighting of AHADIC prompt-decay exponent only possible within the stochastic mode (zeta > 0).\n")
                         + "Found PROMPT_DECAY_EXPONENT variation " + std::to_string(ivar) + " = "
@@ -228,7 +324,7 @@ void Hadronisation_Reweighting::CheckTransitionGuard(
   // the transition and decay thresholds derived from the tables' mass extremes.
   ///////////////////////////////////////////////////////////////////////////
   if (weights[0] < threshold) {
-    for (size_t ivar=1; ivar<m_n_variations; ++ivar) {
+    for (size_t ivar=1; ivar<m_n_soft_variations; ++ivar) {
       if (weights[ivar] >= threshold) {
         THROW(fatal_error, std::string("Reweighting of AHADIC not possible for hadron transitions ")
                     + "absent from the nominal transition tables.\n"
@@ -239,7 +335,7 @@ void Hadronisation_Reweighting::CheckTransitionGuard(
     }
     return;
   }
-  for (size_t ivar=1; ivar<m_n_variations; ++ivar) {
+  for (size_t ivar=1; ivar<m_n_soft_variations; ++ivar) {
     if (weights[ivar] < threshold) {
       THROW(fatal_error, std::string("Reweighting of AHADIC not possible for hadron transitions ")
                   + "switched off by a variation.\n"
@@ -262,7 +358,7 @@ void Hadronisation_Reweighting::CheckPoppingGuard(
   // thresholds.
   ///////////////////////////////////////////////////////////////////////////
   if (weights[0] < threshold) {
-    for (size_t ivar=1; ivar<m_n_variations; ++ivar) {
+    for (size_t ivar=1; ivar<m_n_soft_variations; ++ivar) {
       if (weights[ivar] >= threshold) {
         THROW(fatal_error, std::string("Reweighting of AHADIC not possible for flavour popping ")
               + "absent from the nominal run.\n"
@@ -273,7 +369,7 @@ void Hadronisation_Reweighting::CheckPoppingGuard(
     }
     return;
   }
-  for (size_t ivar=1; ivar<m_n_variations; ++ivar) {
+  for (size_t ivar=1; ivar<m_n_soft_variations; ++ivar) {
     if (weights[ivar] < threshold) {
       THROW(fatal_error, std::string("Reweighting of AHADIC not possible for flavour popping ")
             + "switched off by a variation.\n"
@@ -296,7 +392,7 @@ void Hadronisation_Reweighting::CheckComponentGuard(
   // corresponding transition lists.
   ///////////////////////////////////////////////////////////////////////////
   if (dabs(amps[0]) > threshold) {
-    for (size_t ivar=1; ivar<m_n_variations; ++ivar) {
+    for (size_t ivar=1; ivar<m_n_soft_variations; ++ivar) {
       if (dabs(amps[ivar]) <= threshold) {
         THROW(fatal_error, std::string("Reweighting of AHADIC not possible for wave function components ")
                           + "switched off by a variation.\n"
@@ -307,7 +403,7 @@ void Hadronisation_Reweighting::CheckComponentGuard(
     }
     return;
   }
-  for (size_t ivar=1; ivar<m_n_variations; ++ivar) {
+  for (size_t ivar=1; ivar<m_n_soft_variations; ++ivar) {
     if (dabs(amps[ivar]) > threshold) {
       THROW(fatal_error, std::string("Reweighting of AHADIC not possible for wave function components ")
                         + "absent from the nominal run.\n"
@@ -335,18 +431,18 @@ void Hadronisation_Reweighting::ResetEvent() {
   // Reset all variation weights to 1.0 for a new event.
   ///////////////////////////////////////////////////////////////////////////
   m_variation_weights.assign(m_n_variations, 1.);
-  m_flavour_weights.assign(m_n_variations, 1.);
-  m_gluon_weights.assign(m_n_variations, 1.);
-  m_cluster_weights.assign(m_n_variations, 1.);
-  m_soft_weights.assign(m_n_variations, 1.);
-  m_kt_weights.assign(m_n_variations, 1.);
-  m_promptdecay_weights.assign(m_n_variations, 1.);
-  m_tmp_flavour_weights.assign(m_n_variations, 1.);
-  m_tmp_gluon_weights.assign(m_n_variations, 1.);
-  m_tmp_cluster_weights.assign(m_n_variations, 1.);
-  m_tmp_kt_weights.assign(m_n_variations, 1.);
-  m_tmp_soft_weights.assign(m_n_variations, 1.);
-  m_tmp_promptdecay_weights.assign(m_n_variations, 1.);
+  m_flavour_weights.assign(m_n_flavour_variations, 1.);
+  m_gluon_weights.assign(m_n_gluon_variations, 1.);
+  m_cluster_weights.assign(m_n_cluster_variations, 1.);
+  m_soft_weights.assign(m_n_soft_variations, 1.);
+  m_kt_weights.assign(m_n_kt_variations, 1.);
+  m_promptdecay_weights.assign(m_n_promptdecay_variations, 1.);
+  m_tmp_flavour_weights.assign(m_n_flavour_variations, 1.);
+  m_tmp_gluon_weights.assign(m_n_gluon_variations, 1.);
+  m_tmp_cluster_weights.assign(m_n_cluster_variations, 1.);
+  m_tmp_kt_weights.assign(m_n_kt_variations, 1.);
+  m_tmp_soft_weights.assign(m_n_soft_variations, 1.);
+  m_tmp_promptdecay_weights.assign(m_n_promptdecay_variations, 1.);
   m_in_attempt = false;
   // OUTPUT
   m_tmp_flavour_records.clear();
@@ -355,23 +451,24 @@ void Hadronisation_Reweighting::ResetEvent() {
   m_call_records.clear();
 }
 
-void Hadronisation_Reweighting::AcceptTmpWeights(std::vector<double>& weights,
-                                       std::vector<double>& tmp_weights) {
+void Hadronisation_Reweighting::AcceptTmpWeights(size_t n_variations, 
+                                  std::vector<double>& weights, std::vector<double>& tmp_weights) {
   ///////////////////////////////////////////////////////////////////////////
   // Commit the weights of a successful splitting into the event weights.
   ///////////////////////////////////////////////////////////////////////////
-  if (m_n_variations <= 1) return;
-  for (size_t ivar=1; ivar<m_n_variations; ++ivar) {
+  if (n_variations <= 1) return;
+  for (size_t ivar=1; ivar<n_variations; ++ivar) {
     weights[ivar] *= tmp_weights[ivar];
+    tmp_weights[ivar] = 1.;
   }
-  std::fill(tmp_weights.begin(), tmp_weights.end(), 1.);
 }
 
-void Hadronisation_Reweighting::ResetTmpWeights(std::vector<double>& tmp_weights) {
+void Hadronisation_Reweighting::ResetTmpWeights(size_t n_variations, 
+                                  std::vector<double>& tmp_weights) {
   ///////////////////////////////////////////////////////////////////////////
   // Discard the weights of a failed splitting attempt.
   ///////////////////////////////////////////////////////////////////////////
-  if (m_n_variations <= 1) return;
+  if (n_variations <= 1) return;
   std::fill(tmp_weights.begin(), tmp_weights.end(), 1.);
 }
 
@@ -383,9 +480,9 @@ void Hadronisation_Reweighting::FlavourSelectionReweighting(
   // depending on the event through the accessible flavours;
   // weight *= p_var / p_nom for the selected flavour.
   ///////////////////////////////////////////////////////////////////////////
-  if (m_n_variations <= 1) return;
+  if (m_n_flavour_variations <= 1) return;
   const double prob_nom = popweights[0] / norms[0];
-  for (size_t ivar=1; ivar<m_n_variations; ++ivar) {
+  for (size_t ivar=1; ivar<m_n_flavour_variations; ++ivar) {
     m_tmp_flavour_weights[ivar] *= (popweights[ivar] / norms[ivar]) / prob_nom;
   }
 }
@@ -398,8 +495,8 @@ void Hadronisation_Reweighting::GluonSplittingReweighting(
   // accept/reject trials integrate out and rejected z play no role;
   // weight *= p_var / p_nom.
   ///////////////////////////////////////////////////////////////////////////
-  if (m_n_variations <= 1) return;
-  for (size_t ivar=1; ivar<m_n_variations; ++ivar) {
+  if (m_n_gluon_variations <= 1) return;
+  for (size_t ivar=1; ivar<m_n_gluon_variations; ++ivar) {
     m_tmp_gluon_weights[ivar] *= probs[ivar] / probs[0];
   }
 }
@@ -412,8 +509,8 @@ void Hadronisation_Reweighting::ClusterSplittingReweighting(
   // that the accept/reject trials integrate out and the rejected z play no
   // role; weight *= p_var / p_nom.
   ///////////////////////////////////////////////////////////////////////////
-  if (m_n_variations <= 1) return;
-  for (size_t ivar=1; ivar<m_n_variations; ++ivar) {
+  if (m_n_cluster_variations <= 1) return;
+  for (size_t ivar=1; ivar<m_n_cluster_variations; ++ivar) {
     const double ratio = std::exp(logprobs[ivar] - logprobs[0]);
     if (std::isfinite(ratio)) {
       m_tmp_cluster_weights[ivar] *= ratio;
@@ -438,8 +535,8 @@ void Hadronisation_Reweighting::ClusterSplittingReweightingAR(
   // normalised densities, so both are unbiased and this one has the larger
   // variance.
   ///////////////////////////////////////////////////////////////////////////
-  if (m_n_variations <= 1) return;
-  for (size_t ivar=1; ivar<m_n_variations; ++ivar) {
+  if (m_n_cluster_variations <= 1) return;
+  for (size_t ivar=1; ivar<m_n_cluster_variations; ++ivar) {
     if (accepted) {
       const double ratio = probs[ivar] / probs[0];
       if (std::isfinite(ratio)) {
@@ -458,9 +555,9 @@ void Hadronisation_Reweighting::BeginSplittingAttempt() {
   // and the gluon and cluster decayers call their splitters at top level.
   ///////////////////////////////////////////////////////////////////////////
   if (m_n_variations <= 1) return;
-  ResetTmpWeights(m_tmp_kt_weights);
-  ResetTmpWeights(m_tmp_soft_weights);
-  ResetTmpWeights(m_tmp_promptdecay_weights);
+  ResetTmpWeights(m_n_kt_variations, m_tmp_kt_weights);
+  ResetTmpWeights(m_n_soft_variations, m_tmp_soft_weights);
+  ResetTmpWeights(m_n_promptdecay_variations, m_tmp_promptdecay_weights);
   m_in_attempt = true;
 }
 
@@ -470,9 +567,10 @@ void Hadronisation_Reweighting::CommitSplittingAttempt() {
   ///////////////////////////////////////////////////////////////////////////
   m_in_attempt = false;
   if (m_n_variations <= 1) return;
-  AcceptTmpWeights(m_kt_weights, m_tmp_kt_weights);
-  AcceptTmpWeights(m_soft_weights, m_tmp_soft_weights);
-  AcceptTmpWeights(m_promptdecay_weights, m_tmp_promptdecay_weights);
+  AcceptTmpWeights(m_n_kt_variations, m_kt_weights, m_tmp_kt_weights);
+  AcceptTmpWeights(m_n_soft_variations, m_soft_weights, m_tmp_soft_weights);
+  AcceptTmpWeights(m_n_promptdecay_variations, 
+                    m_promptdecay_weights, m_tmp_promptdecay_weights);
 }
 
 void Hadronisation_Reweighting::AbortSplittingAttempt() {
@@ -481,9 +579,9 @@ void Hadronisation_Reweighting::AbortSplittingAttempt() {
   ///////////////////////////////////////////////////////////////////////////
   m_in_attempt = false;
   if (m_n_variations <= 1) return;
-  ResetTmpWeights(m_tmp_kt_weights);
-  ResetTmpWeights(m_tmp_soft_weights);
-  ResetTmpWeights(m_tmp_promptdecay_weights);
+  ResetTmpWeights(m_n_kt_variations, m_tmp_kt_weights);
+  ResetTmpWeights(m_n_soft_variations, m_tmp_soft_weights);
+  ResetTmpWeights(m_n_promptdecay_variations, m_tmp_promptdecay_weights);
 }
 
 void Hadronisation_Reweighting::KTSelectionReweighting(
@@ -495,10 +593,10 @@ void Hadronisation_Reweighting::KTSelectionReweighting(
   // so that the accept/reject trials integrate out and rejected kt play no
   // role; weight *= p_var / p_nom.
   ///////////////////////////////////////////////////////////////////////////
-  if (m_n_variations <= 1) return;
+  if (m_n_kt_variations <= 1) return;
   std::vector<double>& weights =
     m_in_attempt ? m_tmp_kt_weights : m_kt_weights;
-  for (size_t ivar=1; ivar<m_n_variations; ++ivar) {
+  for (size_t ivar=1; ivar<m_n_kt_variations; ++ivar) {
     weights[ivar] *= probs[ivar] / probs[0];
   }
 }
@@ -510,11 +608,11 @@ void Hadronisation_Reweighting::SoftClusterReweighting(
   // selection probability is p = weight / totweight with the variant
   // transition tables; weight *= p_var / p_nom.
   ///////////////////////////////////////////////////////////////////////////
-  if (m_n_variations <= 1) return;
+  if (m_n_soft_variations <= 1) return;
   std::vector<double>& evtweights =
     m_in_attempt ? m_tmp_soft_weights : m_soft_weights;
   const double prob_nom = weights[0] / totweights[0];
-  for (size_t ivar=1; ivar<m_n_variations; ++ivar) {
+  for (size_t ivar=1; ivar<m_n_soft_variations; ++ivar) {
     const double ratio = (weights[ivar] / totweights[ivar]) / prob_nom;
     if (std::isfinite(ratio)) {
       evtweights[ivar] *= ratio;
@@ -531,10 +629,10 @@ void Hadronisation_Reweighting::PromptDecayReweighting(
   // For a decaying cluster:   weight *= p_var / p_nom
   // For a splitting cluster:  weight *= (1 - p_var) / (1 - p_nom)
   ///////////////////////////////////////////////////////////////////////////
-  if (m_n_variations <= 1) return;
+  if (m_n_promptdecay_variations <= 1) return;
   std::vector<double>& weights =
     m_in_attempt ? m_tmp_promptdecay_weights : m_promptdecay_weights;
-  for (size_t ivar=1; ivar<m_n_variations; ++ivar) {
+  for (size_t ivar=1; ivar<m_n_promptdecay_variations; ++ivar) {
     weights[ivar] *= decayed ?
       probs[ivar] / probs[0] : (1. - probs[ivar]) / (1. - probs[0]);
   }
@@ -552,12 +650,12 @@ void Hadronisation_Reweighting::ApplyVariationWeights(ATOOLS::Blob * blob) {
   ///////////////////////////////////////////////////////////////////////////
   for (size_t ivar=1; ivar<m_n_variations; ++ivar) {
     double w_total = 1.;
-    w_total *= m_cluster_weights[ivar];
-    w_total *= m_gluon_weights[ivar];
-    w_total *= m_flavour_weights[ivar];
-    w_total *= m_kt_weights[ivar];
-    w_total *= m_soft_weights[ivar];
-    w_total *= m_promptdecay_weights[ivar];
+    w_total *= ivar < m_n_cluster_variations ? m_cluster_weights[ivar] : 1.;
+    w_total *= ivar < m_n_gluon_variations ? m_gluon_weights[ivar] : 1.;
+    w_total *= ivar < m_n_flavour_variations ? m_flavour_weights[ivar] : 1.;
+    w_total *= ivar < m_n_kt_variations ? m_kt_weights[ivar] : 1.;
+    w_total *= ivar < m_n_soft_variations ? m_soft_weights[ivar] : 1.;
+    w_total *= ivar < m_n_promptdecay_variations ? m_promptdecay_weights[ivar] : 1.;
     if (!std::isfinite(w_total)) {
       msg_Error() << METHOD << ": non-finite variation weight, resetting to 1\n";
       w_total = 1.0;
@@ -598,12 +696,12 @@ void Hadronisation_Reweighting::AccumulateEventStatistics() {
   ///////////////////////////////////////////////////////////////////////////
   m_event_weights_applied = true;
   for (size_t ivar=1; ivar<m_n_variations; ++ivar) {
-    m_event_flavour_weights[ivar]     *= m_flavour_weights[ivar];
-    m_event_gluon_weights[ivar]       *= m_gluon_weights[ivar];
-    m_event_cluster_weights[ivar]     *= m_cluster_weights[ivar];
-    m_event_soft_weights[ivar]        *= m_soft_weights[ivar];
-    m_event_kt_weights[ivar]          *= m_kt_weights[ivar];
-    m_event_promptdecay_weights[ivar] *= m_promptdecay_weights[ivar];
+    m_event_flavour_weights[ivar]     *= ivar < m_n_flavour_variations ? m_flavour_weights[ivar] : 1.;
+    m_event_gluon_weights[ivar]       *= ivar < m_n_gluon_variations ? m_gluon_weights[ivar] : 1.;
+    m_event_cluster_weights[ivar]     *= ivar < m_n_cluster_variations ? m_cluster_weights[ivar] : 1.;
+    m_event_soft_weights[ivar]        *= ivar < m_n_soft_variations ? m_soft_weights[ivar] : 1.;
+    m_event_kt_weights[ivar]          *= ivar < m_n_kt_variations ? m_kt_weights[ivar] : 1.;
+    m_event_promptdecay_weights[ivar] *= ivar < m_n_promptdecay_variations ? m_promptdecay_weights[ivar] : 1.;
     m_event_variation_weights[ivar]   *= m_variation_weights[ivar];
   }
   m_event_records.insert(m_event_records.end(),
@@ -1199,7 +1297,7 @@ double Hadronisation_Reweighting::Frag_Norm::operator()(const double alpha,
 }
 
 void Hadronisation_Reweighting::Frag_Norm::Verify(
-    const Hadronisation_Reweighting& rw) {
+    const Hadronisation_Reweighting& reweighting) {
   ///////////////////////////////////////////////////////////////////////////
   // Self-check of the reweighting quadrature, run once at initialisation for
   // the variations that are actually configured.
@@ -1226,24 +1324,24 @@ void Hadronisation_Reweighting::Frag_Norm::Verify(
   static const char* names[] = {"L","H","D","B"};
   static const double s_warn = 1.e-3, s_fail = 5.e-2;
 
-  const size_t nvar = rw.NumberOfVariations();
-  if (nvar <= 1) return;
+  const size_t n_cluster_variations = reweighting.NumberOfClusterVariations();
+  if (n_cluster_variations <= 1) return;
 
   std::vector<double> alpha[4], beta[4], gamma[4];
   for (int t=0; t<4; ++t) {
-    alpha[t] = rw.GetVariationVector(std::string("alpha")+names[t]);
-    beta[t]  = rw.GetVariationVector(std::string("beta")+names[t]);
-    gamma[t] = rw.GetVariationVector(std::string("gamma")+names[t]);
+    alpha[t] = reweighting.GetVariationVector(std::string("alpha")+names[t]);
+    beta[t]  = reweighting.GetVariationVector(std::string("beta")+names[t]);
+    gamma[t] = reweighting.GetVariationVector(std::string("gamma")+names[t]);
   }
-  const std::vector<double> kt0 = rw.GetVariationVector("kT_0");
-  std::vector<double> kt02(nvar);
-  for (size_t ivar=0; ivar<nvar; ++ivar) kt02[ivar] = sqr(kt0[ivar]);
+  const std::vector<double> kt0 = reweighting.GetVariationVector("kT_0");
+  std::vector<double> kt02(n_cluster_variations);
+  for (size_t ivar=0; ivar<n_cluster_variations; ++ivar) kt02[ivar] = sqr(kt0[ivar]);
 
   Frag_Norm prod, ref;
   ref.SetGrid(1.0,1.1,30.,2000);
   double worst = 0.;
   std::string worstcfg;
-  std::vector<double> cs(nvar);
+  std::vector<double> cs(n_cluster_variations);
 
   for (int t=0; t<4; ++t) {
     for (const double zmin : zmins) {
@@ -1252,7 +1350,7 @@ void Hadronisation_Reweighting::Frag_Norm::Verify(
         for (const double scale : scales) {
           double cmin = std::numeric_limits<double>::max(), cmax = 0.;
           size_t ipeak = 0;
-          for (size_t ivar=0; ivar<nvar; ++ivar) {
+          for (size_t ivar=0; ivar<n_cluster_variations; ++ivar) {
             cs[ivar] = Exponent(gamma[t][ivar],kt02[ivar],scale);
             const double ac = dabs(cs[ivar]);
             if (ac<cmin) cmin = ac;
@@ -1262,7 +1360,7 @@ void Hadronisation_Reweighting::Frag_Norm::Verify(
           ref.SetRange(zmin,zmax,alpha[t][ipeak],beta[t][ipeak],cmin,cmax);
           const double dnom = prod(alpha[t][0],beta[t][0],cs[0])
                             - ref(alpha[t][0],beta[t][0],cs[0]);
-          for (size_t ivar=1; ivar<nvar; ++ivar) {
+          for (size_t ivar=1; ivar<n_cluster_variations; ++ivar) {
             const double bias =
               dnom - (prod(alpha[t][ivar],beta[t][ivar],cs[ivar])
                       - ref(alpha[t][ivar],beta[t][ivar],cs[ivar]));

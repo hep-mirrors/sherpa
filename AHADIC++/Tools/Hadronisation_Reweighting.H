@@ -96,7 +96,7 @@ namespace AHADIC {
         splitting and compares this rule against a deliberately much finer one.
         Silent unless it finds a problem.
       */
-      static void Verify(const Hadronisation_Reweighting& rw);
+      static void Verify(const Hadronisation_Reweighting& reweighting);
 
       /*!
         Grid controls.  The defaults are the ones used in production; Verify()
@@ -122,6 +122,12 @@ namespace AHADIC {
 
   private:
     size_t m_n_variations;
+    size_t m_n_flavour_variations;
+    size_t m_n_gluon_variations;
+    size_t m_n_cluster_variations;
+    size_t m_n_soft_variations;
+    size_t m_n_kt_variations;
+    size_t m_n_promptdecay_variations;
     double m_max_reweight_factor;
     int    m_reweight_max_nsplit;
     bool   m_frag_ar {false};
@@ -152,9 +158,9 @@ namespace AHADIC {
     std::vector<double> m_tmp_promptdecay_weights;
 
     void CheckVariationGuards();
-    void AcceptTmpWeights(std::vector<double>& weights,
-                       std::vector<double>& tmp_weights);
-    void ResetTmpWeights(std::vector<double>& tmp_weights);
+    void AcceptTmpWeights(size_t n_variations, std::vector<double>& weights,
+                          std::vector<double>& tmp_weights);
+    void ResetTmpWeights(size_t n_variations, std::vector<double>& tmp_weights);
 
     // OUTPUT
     int  m_output_mode;
@@ -198,6 +204,12 @@ namespace AHADIC {
 
     inline bool   Active() const { return m_n_variations > 1; }
     inline size_t NumberOfVariations() const { return m_n_variations; }
+    inline size_t NumberOfFlavourVariations() const { return m_n_flavour_variations; }
+    inline size_t NumberOfGluonVariations() const { return m_n_gluon_variations; }
+    inline size_t NumberOfClusterVariations() const { return m_n_cluster_variations; }
+    inline size_t NumberOfSoftVariations() const { return m_n_soft_variations; }
+    inline size_t NumberOfKTVariations() const { return m_n_kt_variations; }
+    inline size_t NumberOfPromptDecayVariations() const { return m_n_promptdecay_variations; }
     std::vector<double> GetVariationVector(const std::string& keyword) const;
 
     void CheckTransitionGuard(const ATOOLS::Flavour& hadron,
@@ -214,28 +226,28 @@ namespace AHADIC {
     void FlavourSelectionReweighting(const std::vector<double>& popweights,
                                      const std::vector<double>& norms);
     inline void AcceptFlavourSelectionWeights() {
-      AcceptTmpWeights(m_flavour_weights, m_tmp_flavour_weights);
+      AcceptTmpWeights(m_n_flavour_variations, m_flavour_weights, m_tmp_flavour_weights);
       CommitTmpRecords(m_tmp_flavour_records); // OUTPUT
     }
     inline void ResetFlavourSelectionWeights() {
-      ResetTmpWeights(m_tmp_flavour_weights);
+      ResetTmpWeights(m_n_flavour_variations, m_tmp_flavour_weights);
       DiscardTmpRecords(m_tmp_flavour_records); // OUTPUT
     }
 
     // Gluon splitting z selection (analytic density ratio, accepted z only)
     void GluonSplittingReweighting(const std::vector<double>& probs);
     inline void AcceptGluonSplittingWeights() {
-      AcceptTmpWeights(m_gluon_weights, m_tmp_gluon_weights);
+      AcceptTmpWeights(m_n_gluon_variations, m_gluon_weights, m_tmp_gluon_weights);
       CommitTmpRecords(m_tmp_gluon_records); // OUTPUT
     }
     inline void ResetGluonSplittingWeights() {
-      ResetTmpWeights(m_tmp_gluon_weights);
+      ResetTmpWeights(m_n_gluon_variations, m_tmp_gluon_weights);
       DiscardTmpRecords(m_tmp_gluon_records); // OUTPUT
     }
 
     // Cluster splitting z selection (analytic density ratio, accepted z only)
     inline bool DoClusterSplittingReweighting(const int nsplit) const {
-      return m_n_variations > 1 &&
+      return m_n_cluster_variations > 1 &&
              (m_reweight_max_nsplit < 0 || nsplit < m_reweight_max_nsplit);
     }
     inline bool ARFragReweighting() const { return m_frag_ar; }
@@ -243,11 +255,11 @@ namespace AHADIC {
     void ClusterSplittingReweightingAR(const bool accepted,
                                        const std::vector<double>& probs);
     inline void AcceptClusterSplittingWeights() {
-      AcceptTmpWeights(m_cluster_weights, m_tmp_cluster_weights);
+      AcceptTmpWeights(m_n_cluster_variations, m_cluster_weights, m_tmp_cluster_weights);
       CommitTmpRecords(m_tmp_cluster_records); // OUTPUT
     }
     inline void ResetClusterSplittingWeights() {
-      ResetTmpWeights(m_tmp_cluster_weights);
+      ResetTmpWeights(m_n_cluster_variations, m_tmp_cluster_weights);
       DiscardTmpRecords(m_tmp_cluster_records); // OUTPUT
     }
 

@@ -28,7 +28,7 @@ namespace AHADIC {
   class Single_Transitions {
   private:
     Single_Transition_Map m_transitions;
-    size_t m_n_variations {0};
+    size_t m_n_soft_variations {0};
 
     void FillMap(Wave_Functions * wavefunctions,
                  Hadronisation_Reweighting * reweighting);

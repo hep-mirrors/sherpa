@@ -38,7 +38,6 @@ void Splitter_Base::Init() {
   p_singletransitions = hadpars->GetSingleTransitions();
   p_doubletransitions = hadpars->GetDoubleTransitions();
   p_constituents      = hadpars->GetConstituents();
-  m_n_variations      = p_reweighting->NumberOfVariations();
 
   m_ktorder  = (hadpars->Switch("KT_Ordering")>0);
   m_ktmax    = hadpars->Get("kT_max");

@@ -17,6 +17,7 @@ void Gluon_Splitter::Init() {
   // 0: z ~ z^alpha * (1-z)^alpha
   // 1: z ~ z^alpha + (1-z)^alpha
   m_mode  = hadpars->Switch("GluonDecayForm");
+  m_n_gluon_variations = p_reweighting->NumberOfGluonVariations();
   m_alpha = p_reweighting->GetVariationVector("alphaG");
   m_analyse = true;
   if (m_analyse) {
@@ -33,8 +34,9 @@ bool Gluon_Splitter::MakeLongitudinalMomenta() {
     m_z[1] = SelectZ(m_zmin[1],m_zmax[1],0);
     if (m_z[1] < 0.) return false;
     if (CalculateXY()) {
-      if (p_reweighting->Active())
-	p_reweighting->GluonSplittingReweighting(m_zprobs);
+      if (p_reweighting->Active() && m_n_gluon_variations > 1) {
+        p_reweighting->GluonSplittingReweighting(m_zprobs);
+      }
       p_reweighting->RecordGluonZ(m_z[1]); // OUTPUT
       return true;
     }
@@ -123,9 +125,9 @@ WeightFunction(const double & z,const double & zmin,const double & zmax,
 void Gluon_Splitter::ZAccepted(const double wgt, const double & z,
 			       const double & zmin,const double & zmax,
 			       const unsigned int & cnt) {
-  if (!p_reweighting->Active()) return;
-  m_zprobs.resize(m_n_variations);
-  for (size_t ivar=0; ivar<m_n_variations; ++ivar) {
+  if (!p_reweighting->Active() || m_n_gluon_variations <= 1) return;
+  m_zprobs.resize(m_n_gluon_variations);
+  for (size_t ivar=0; ivar<m_n_gluon_variations; ++ivar) {
     m_zprobs[ivar] = FragmentationFunctionProb(z,zmin,zmax,m_alpha[ivar]);
   }
 }

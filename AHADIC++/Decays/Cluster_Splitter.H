@@ -15,6 +15,7 @@ namespace AHADIC {
     int m_type[2];
     std::vector<double> m_kt02;
     double m_R2[2], m_mean[2], m_sigma[2], m_m2min[2], m_masses;
+    size_t m_n_cluster_variations {0};
 
     typedef Hadronisation_Reweighting::Frag_Norm Frag_Norm;
     Frag_Norm           m_fragnorm;

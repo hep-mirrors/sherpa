@@ -12,6 +12,7 @@ namespace AHADIC {
     std::vector<double> m_zprobs;
     double m_arg, m_x, m_y, m_lastmass;
     bool   m_lastB, m_lastC;
+    size_t m_n_gluon_variations {0};
 
     long int  m_kin_fails{ 0 };
 

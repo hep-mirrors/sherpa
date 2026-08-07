@@ -31,7 +31,7 @@ Multiplet_Constructor::Multiplet_Constructor(bool test,
                                              Hadronisation_Reweighting * reweighting) :
   m_test(test),
   p_reweighting(reweighting),
-  m_n_variations(reweighting->NumberOfVariations()),
+  m_n_soft_variations(reweighting->NumberOfSoftVariations()),
   m_singletsuppression(reweighting->GetVariationVector("Singlet_Suppression")),
   m_etam(reweighting->GetVariationVector("eta_modifier")),
   m_etapm(reweighting->GetVariationVector("eta_prime_modifier")),
@@ -132,7 +132,7 @@ std::string Multiplet_Constructor::MultipletName() {
 }
 
 void Multiplet_Constructor::FillMultipletWeights() {
-  m_info.multiwt.assign(m_n_variations, 0.);
+  m_info.multiwt.assign(m_n_soft_variations, 0.);
   if (m_info.multiname==string("Scalars"))
     m_info.multiwt = p_reweighting->GetVariationVector("Multiplet_Meson_R0L0S0");
   if (m_info.multiname==string("Vectors"))
@@ -156,12 +156,12 @@ void Multiplet_Constructor::FillMultipletWeights() {
   if (m_info.multiname==string("R=2_Octet"))
     m_info.multiwt = p_reweighting->GetVariationVector("Multiplet_Baryon_R2L0S1/2");
   m_info.spinwt  = double(m_info.spin2);
-  m_info.extrawt.assign(m_n_variations, 1.);
+  m_info.extrawt.assign(m_n_soft_variations, 1.);
 }
 
 void Multiplet_Constructor::ScaleExtraWeights(
     const std::vector<double> & factors) {
-  for (size_t ivar=0; ivar<m_n_variations; ++ivar)
+  for (size_t ivar=0; ivar<m_n_soft_variations; ++ivar)
     m_info.extrawt[ivar] *= factors[ivar];
 }
 
@@ -218,7 +218,7 @@ bool Multiplet_Constructor::ConstructMesonWaveFunction()
   else if ((m_info.fl1==m_info.fl2 && m_info.fl1==2 && m_info.spin2==1) ||
 	   (m_info.fl1==m_info.fl2 && m_info.fl1==3 && m_info.spin2!=1)) {
     const std::vector<double> thetas = MixingAngles();
-    for (size_t ivar=0; ivar<m_n_variations; ++ivar) {
+    for (size_t ivar=0; ivar<m_n_soft_variations; ++ivar) {
       const double costh = cos(thetas[ivar]), sinth = sin(thetas[ivar]);
       m_info.extrawt[ivar] = costh*costh+sinth*sinth*m_singletsuppression[ivar];
     }
@@ -227,7 +227,7 @@ bool Multiplet_Constructor::ConstructMesonWaveFunction()
   else if ((m_info.fl1==m_info.fl2 && m_info.fl1==3 && m_info.spin2==1) ||
 	   (m_info.fl1==m_info.fl2 && m_info.fl1==2 && m_info.spin2!=1)) {
     const std::vector<double> thetas = MixingAngles();
-    for (size_t ivar=0; ivar<m_n_variations; ++ivar) {
+    for (size_t ivar=0; ivar<m_n_soft_variations; ++ivar) {
       const double costh = cos(thetas[ivar]), sinth = sin(thetas[ivar]);
       m_info.extrawt[ivar] = costh*costh*m_singletsuppression[ivar]+sinth*sinth;
     }
@@ -268,8 +268,8 @@ Wave_Function * Multiplet_Constructor::OctetMesonWaveFunction() {
   // 1/sqrt(6) [d dbar + u ubar - 2 s sbar]
   // Unfortunately for all but the pseudoscalars this is the heavier state
   const std::vector<double> thetas = MixingAngles();
-  std::vector<double> weight(m_n_variations);
-  for (size_t ivar=0; ivar<m_n_variations; ++ivar)
+  std::vector<double> weight(m_n_soft_variations);
+  for (size_t ivar=0; ivar<m_n_soft_variations; ++ivar)
     weight[ivar] = cos(thetas[ivar])/sqrt(6.)-sin(thetas[ivar])/sqrt(3.);
   Wave_Function * wavefunction = new Wave_Function(m_info.flav);
   Flavour_Pair  * pair;
@@ -283,7 +283,7 @@ Wave_Function * Multiplet_Constructor::OctetMesonWaveFunction() {
     pair->second = Flavour(kf_u).Bar();
     wavefunction->AddToWaves(pair,weight);
   }
-  for (size_t ivar=0; ivar<m_n_variations; ++ivar)
+  for (size_t ivar=0; ivar<m_n_soft_variations; ++ivar)
     weight[ivar] = -2.*cos(thetas[ivar])/sqrt(6.)-sin(thetas[ivar])/sqrt(3.);
   if (ComponentActive(weight)) {
     pair = new Flavour_Pair;
@@ -298,8 +298,8 @@ Wave_Function * Multiplet_Constructor::SingletMesonWaveFunction() {
   // Trivially, for mixing angle = 0, this is the singlet state, i.e.
   // 1/sqrt(3) [d dbar + u ubar + s sbar], up to a phase.
   const std::vector<double> thetas = MixingAngles();
-  std::vector<double> weight(m_n_variations);
-  for (size_t ivar=0; ivar<m_n_variations; ++ivar)
+  std::vector<double> weight(m_n_soft_variations);
+  for (size_t ivar=0; ivar<m_n_soft_variations; ++ivar)
     weight[ivar] = sin(thetas[ivar])/sqrt(6.)+cos(thetas[ivar])/sqrt(3.);
   Wave_Function * wavefunction = new Wave_Function(m_info.flav);
   Flavour_Pair  * pair;
@@ -313,7 +313,7 @@ Wave_Function * Multiplet_Constructor::SingletMesonWaveFunction() {
     pair->second = Flavour(kf_u).Bar();
     wavefunction->AddToWaves(pair,weight);
   }
-  for (size_t ivar=0; ivar<m_n_variations; ++ivar)
+  for (size_t ivar=0; ivar<m_n_soft_variations; ++ivar)
     weight[ivar] = -2.*sin(thetas[ivar])/sqrt(6.)+cos(thetas[ivar])/sqrt(3.);
   if (ComponentActive(weight)) {
     pair = new Flavour_Pair;
@@ -332,7 +332,7 @@ std::vector<double> Multiplet_Constructor::MixingAngles()
   case 1 : return m_mixing0;
   default: break;
   }
-  return std::vector<double>(m_n_variations, 0.);
+  return std::vector<double>(m_n_soft_variations, 0.);
 }
 
 bool Multiplet_Constructor::ComponentActive(const std::vector<double> & amps)

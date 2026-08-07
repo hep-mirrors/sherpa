@@ -20,7 +20,8 @@ namespace AHADIC {
     double m_dec_threshold,m_trans_threshold, m_ktmax, m_ktfac;
     double m_piphoton_threshold, m_dipion_threshold, m_open_threshold;
     std::vector<double> m_chi, m_zeta;
-    size_t m_n_variations {0};
+    size_t m_n_soft_variations {0};
+    size_t m_n_promptdecay_variations {0};
 
     Cluster    * p_cluster;
     double       m_mass2, m_mass;

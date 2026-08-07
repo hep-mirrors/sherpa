@@ -18,7 +18,7 @@ namespace AHADIC {
     FlavDecayMap m_options;
     double       m_mmin, m_mmin2, m_mmax, m_mmax2;
     Hadronisation_Reweighting * p_reweighting;
-    size_t m_n_variations {0};
+    size_t m_n_flavour_variations {0};
     std::vector<double> m_norms;
 
     void Norm(const double & mmax=-1.,const bool & vetodi=false);

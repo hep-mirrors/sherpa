@@ -34,7 +34,7 @@ namespace AHADIC {
     ATOOLS::Flavour m_lightest;
   public:
     FlavCCMap CCMap;
-    size_t m_n_variations {0};
+    size_t m_n_soft_variations {0};
     Constituents(bool diquarks, Hadronisation_Reweighting * reweighting,
 		 bool debug=false);
     ~Constituents();

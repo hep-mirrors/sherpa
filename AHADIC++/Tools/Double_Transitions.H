@@ -40,7 +40,7 @@ namespace AHADIC {
     void FillMap(Single_Transitions * singles,
 		 Hadronisation_Reweighting * reweighting);
     void Normalise();
-    size_t m_n_variations {0};
+    size_t m_n_soft_variations {0};
   public:
     Double_Transitions(Single_Transitions * singles,
 		       Hadronisation_Reweighting * reweighting);

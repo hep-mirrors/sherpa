@@ -21,7 +21,6 @@ namespace AHADIC {
     Flavour_Selector     * p_flavourselector;
     KT_Selector          * p_ktselector;
     Hadronisation_Reweighting   * p_reweighting;
-    size_t m_n_variations {0};
 
     bool   m_ktorder;
     size_t m_attempts;

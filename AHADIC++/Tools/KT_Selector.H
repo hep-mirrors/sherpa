@@ -11,7 +11,7 @@ namespace AHADIC {
   class KT_Selector {
   private:
     std::vector<double> m_sigma, m_ktmax;
-    size_t m_n_variations {0};
+    size_t m_n_kt_variations {0};
     Hadronisation_Reweighting * p_reweighting;
     double SelectKT(const double ktmax);
     double Gaussian(const double, const double);

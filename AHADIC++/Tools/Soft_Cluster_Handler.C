@@ -30,11 +30,12 @@ void Soft_Cluster_Handler::Init() {
   // m_open_threshold     = (2.*p_constituents->MinMass()+
 	// 		  hadpars->Get("open_threshold"));
   m_chi                = p_reweighting->GetVariationVector("mass_exponent");
-  m_n_variations       = p_reweighting->NumberOfVariations();
+  m_n_soft_variations  = p_reweighting->NumberOfSoftVariations();
   m_ktmax              = hadpars->Get("kT_max");
   m_ktorder            = (hadpars->Switch("KT_Ordering")>0);
   m_direct_transition  = (hadpars->Switch("direct_transition")>0);
   m_zeta               = p_reweighting->GetVariationVector("prompt_decay_exponent");
+  m_n_promptdecay_variations = p_reweighting->NumberOfPromptDecayVariations();
 }
 
 void Soft_Cluster_Handler::Reset() {
@@ -54,9 +55,9 @@ bool Soft_Cluster_Handler::MustPromptDecay(Cluster * cluster) {
   if (m_zeta[0]>0.) {
     // Bernoulli decision with p(decay) = 1 - exp(-zeta*(m/m_thres2-1))
     const bool mustdecay = exp(-m_zeta[0]*(m_mass/m_thres2-1.)) < ran->Get();
-    if (p_reweighting->Active()) {
-      std::vector<double> probs(m_n_variations);
-      for (size_t i=0; i<m_n_variations; ++i) {
+    if (p_reweighting->Active() && m_n_promptdecay_variations > 1) {
+      std::vector<double> probs(m_n_promptdecay_variations);
+      for (size_t i=0; i<m_n_promptdecay_variations; ++i) {
 	      probs[i] = Max(0., 1.-exp(-m_zeta[i]*(m_mass/m_thres2-1.)));
       }
       p_reweighting->PromptDecayReweighting(mustdecay, probs);
@@ -316,12 +317,12 @@ double Soft_Cluster_Handler::RadiationWeight(const bool & withPS) {
     if (m2>m_mass) break;
     // wave-function overlap * phase-space (units of 1 in total)
     const std::vector<double> psfacs =
-      (withPS ? PhaseSpace(m2,0.,false) : std::vector<double>(m_n_variations,1.));
+      (withPS ? PhaseSpace(m2,0.,false) : std::vector<double>(m_n_soft_variations,1.));
 
-    std::vector<double> _wgts(m_n_variations);
-    totweight.resize(m_n_variations,0.);
+    std::vector<double> _wgts(m_n_soft_variations);
+    totweight.resize(m_n_soft_variations,0.);
 
-    for (size_t ivar=0; ivar<m_n_variations; ++ivar) {
+    for (size_t ivar=0; ivar<m_n_soft_variations; ++ivar) {
       double wt = sit->second[ivar] * psfacs[ivar];
       _wgts[ivar] = wt;
       totweight[ivar] += wt;
@@ -382,10 +383,10 @@ double Soft_Cluster_Handler::DecayWeight() {
 		  dit->first.second.IsB_Hadron() || dit->first.second.IsC_Hadron());
     const std::vector<double> psfacs = PhaseSpace(m2,m3,heavy);
 
-    std::vector<double> _wgts (m_n_variations);
-    totweight.resize(m_n_variations,0);
+    std::vector<double> _wgts (m_n_soft_variations);
+    totweight.resize(m_n_soft_variations,0);
 
-    for (size_t ivar=0; ivar<m_n_variations; ++ivar) {
+    for (size_t ivar=0; ivar<m_n_soft_variations; ++ivar) {
       double wt = dit->second[ivar] * psfacs[ivar];
       _wgts[ivar] = wt;
       totweight[ivar] += wt;
@@ -507,10 +508,10 @@ DefineHadronsInAnnihilation(const Flavour_Pair & one,const Flavour_Pair & two) {
       Flavour_Pair flpair;
       flpair.first = oit->first; flpair.second = tit->first;
 
-      std::vector<double> _wgts(m_n_variations);
-      totweight.resize(m_n_variations,0.);
+      std::vector<double> _wgts(m_n_soft_variations);
+      totweight.resize(m_n_soft_variations,0.);
 
-      for (size_t ivar=0; ivar<m_n_variations; ++ivar) {
+      for (size_t ivar=0; ivar<m_n_soft_variations; ++ivar) {
         double wt = oit->second[ivar] * tit->second[ivar] * psfacs[ivar];
         _wgts[ivar] = wt;
         totweight[ivar] += wt;
@@ -542,13 +543,13 @@ DefineHadronsInAnnihilation(const Flavour_Pair & one,const Flavour_Pair & two) {
   
 std::vector<double> Soft_Cluster_Handler::
 PhaseSpace(const double & m2,const double & m3,const bool heavyB) {
-  if (heavyB) return std::vector<double>(m_n_variations,1.);
+  if (heavyB) return std::vector<double>(m_n_soft_variations,1.);
   double m22(m2*m2),m32(m3*m3);
   double ps  = sqrt(sqr(m_mass2-m22-m32)-4.*m22*m32)/(8.*M_PI*m_mass2);
   // extra weight to possible steer away from phase space only ... may give
   // preference to higher or lower mass pairs
-  std::vector<double> psfacs(m_n_variations);
-  for (size_t ivar=0; ivar<m_n_variations; ++ivar) {
+  std::vector<double> psfacs(m_n_soft_variations);
+  for (size_t ivar=0; ivar<m_n_soft_variations; ++ivar) {
     if (m_chi[ivar]<0.) { psfacs[ivar] = 1.; continue; }
     double mwt = m_chi[ivar]<1.e-3?1.:pow(m2/m_mass,m_chi[ivar]) + pow(m3/m_mass,m_chi[ivar]);
     psfacs[ivar]  = ps * mwt;

@@ -16,7 +16,7 @@ KT_Selector::~KT_Selector() {}
 void KT_Selector::Init() {
   m_sigma = p_reweighting->GetVariationVector("kT_0");
   m_ktmax = p_reweighting->GetVariationVector("kT_max");
-  m_n_variations = p_reweighting->NumberOfVariations();
+  m_n_kt_variations = p_reweighting->NumberOfKTVariations();
 }
 
 double KT_Selector::SelectKT(const double ktmax) {
@@ -28,10 +28,10 @@ double KT_Selector::SelectKT(const double ktmax) {
 
 double KT_Selector::operator()(const double & ktmax, const bool vary_ptmax) {
   const double kt = SelectKT(ktmax);
-  if (p_reweighting->Active()) {
-    std::vector<double> probs(m_n_variations);
+  if (p_reweighting->Active() && m_n_kt_variations > 1) {
+    std::vector<double> probs(m_n_kt_variations);
     probs[0] = Gaussian(kt, m_sigma[0]) / Erf(ktmax, m_sigma[0]);
-    for (size_t ivar=1; ivar<m_n_variations; ++ivar) {
+    for (size_t ivar=1; ivar<m_n_kt_variations; ++ivar) {
       const double L = vary_ptmax ? Min(m_ktmax[ivar], ktmax) : ktmax;
       probs[ivar] = kt > L ? 0. : Gaussian(kt, m_sigma[ivar]) / Erf(L, m_sigma[ivar]);
     }

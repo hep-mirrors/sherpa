@@ -11,7 +11,7 @@ using namespace std;
 Single_Transitions::Single_Transitions(Wave_Functions * wavefunctions,
 					Hadronisation_Reweighting * reweighting)
 {
-  m_n_variations = reweighting->NumberOfVariations();
+  m_n_soft_variations = reweighting->NumberOfSoftVariations();
   FillMap(wavefunctions, reweighting);
   Normalise();
 }
@@ -36,8 +36,8 @@ void Single_Transitions::FillMap(Wave_Functions * wavefunctions,
     Flavour hadron = wfit->first;
     const std::vector<double> & extrawts = wfit->second->ExtraWeights();
     const std::vector<double> & mpletwts = wfit->second->MultipletWeights();
-    std::vector<double> weight(m_n_variations);
-    for (size_t ivar=0;ivar<m_n_variations;ivar++) {
+    std::vector<double> weight(m_n_soft_variations);
+    for (size_t ivar=0;ivar<m_n_soft_variations;ivar++) {
       weight[ivar] = (mpletwts[ivar] *
 		   wfit->second->SpinWeight() *
 		   extrawts[ivar]);
@@ -49,8 +49,8 @@ void Single_Transitions::FillMap(Wave_Functions * wavefunctions,
 	 cit!=singlewaves->end();cit++) {
       Flavour_Pair pair = (*cit->first);
       const std::vector<double> & amps = cit->second;
-      std::vector<double> wt(m_n_variations);
-      for (size_t ivar=0;ivar<m_n_variations;ivar++)
+      std::vector<double> wt(m_n_soft_variations);
+      for (size_t ivar=0;ivar<m_n_soft_variations;ivar++)
 	wt[ivar] = weight[ivar] * sqr(amps[amps.size()>1 ? ivar : 0]);
       if (m_transitions.find(pair)==m_transitions.end()) {
 	m_transitions[pair] = new Single_Transition_List;
@@ -63,14 +63,14 @@ void Single_Transitions::FillMap(Wave_Functions * wavefunctions,
 void Single_Transitions::Normalise() {
   for (Single_Transition_Map::iterator stmit=m_transitions.begin();
        stmit!=m_transitions.end();stmit++) {
-    std::vector<double> totwt(m_n_variations,0.);
+    std::vector<double> totwt(m_n_soft_variations,0.);
     for (Single_Transition_List::iterator stlit=stmit->second->begin();
 	 stlit!=stmit->second->end();stlit++) {
-      for (size_t ivar=0;ivar<m_n_variations;ivar++) totwt[ivar] += stlit->second[ivar];
+      for (size_t ivar=0;ivar<m_n_soft_variations;ivar++) totwt[ivar] += stlit->second[ivar];
     }
     for (Single_Transition_List::iterator stlit=stmit->second->begin();
 	 stlit!=stmit->second->end();stlit++) {
-      for (size_t ivar=0;ivar<m_n_variations;ivar++) stlit->second[ivar] /= totwt[ivar];
+      for (size_t ivar=0;ivar<m_n_soft_variations;ivar++) stlit->second[ivar] /= totwt[ivar];
     }
   }
 }

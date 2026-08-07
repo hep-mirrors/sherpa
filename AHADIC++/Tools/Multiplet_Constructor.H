@@ -24,7 +24,7 @@ namespace AHADIC {
   private:
     bool    m_test;
     Hadronisation_Reweighting * p_reweighting;
-    size_t  m_n_variations {0};
+    size_t  m_n_soft_variations {0};
     std::vector<double> m_singletsuppression, m_etam, m_etapm;
     std::vector<double> m_cse, m_bse, m_bce, m_hcbe, m_hbbe, m_sbm;
     std::vector<double> m_mixing0, m_mixing1, m_mixing2;

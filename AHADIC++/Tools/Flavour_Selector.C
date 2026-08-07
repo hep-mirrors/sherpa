@@ -45,7 +45,9 @@ operator()(const double & Emax,const bool & vetodi) {
   if(opt == m_options.end())
     THROW(fatal_error, "No flavour selected.");
   if(m_norms[0] == 0) return ret;
-  p_reweighting->FlavourSelectionReweighting(opt->second->popweights, m_norms);
+  if (p_reweighting->Active() && m_n_flavour_variations > 1) {
+    p_reweighting->FlavourSelectionReweighting(opt->second->popweights, m_norms);
+  }
   p_reweighting->RecordFlavourPop(ret, Emax); // OUTPUT
 
   return ret;
@@ -57,8 +59,8 @@ void Flavour_Selector::Norm(const double & mmax,const bool & vetodi)
   for (FDIter fdit=m_options.begin();fdit!=m_options.end();fdit++) {
     if (vetodi && fdit->first.IsDiQuark()) continue;
     if (fdit->second->popweights[0]>0. && fdit->second->massmin<mmax/2.) {
-      for (size_t ivar=0; ivar<m_n_variations; ++ivar)
-	m_norms[ivar] += fdit->second->popweights[ivar];
+      for (size_t ivar=0; ivar<m_n_flavour_variations; ++ivar)
+	      m_norms[ivar] += fdit->second->popweights[ivar];
     }
   }
 }
@@ -69,8 +71,8 @@ void Flavour_Selector::Init() {
   m_mmax = constituents->MaxMass();
   m_mmin2 = ATOOLS::sqr(m_mmin);
   m_mmax2 = ATOOLS::sqr(m_mmax);
-  m_n_variations = p_reweighting->NumberOfVariations();
-  m_norms.resize(m_n_variations);
+  m_n_flavour_variations = p_reweighting->NumberOfFlavourVariations();
+  m_norms.resize(m_n_flavour_variations);
   DecaySpecs * decspec;
   for (FlavCCMap_Iterator fdit=constituents->CCMap.begin();
        fdit!=constituents->CCMap.end();fdit++) {

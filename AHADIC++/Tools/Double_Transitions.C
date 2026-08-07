@@ -18,7 +18,7 @@ Double_Transitions::Double_Transitions(Single_Transitions * singles,
   m_charm_baryon_modifier(reweighting->GetVariationVector("CharmBaryon_Enhancement")),
   m_beauty_baryon_modifier(reweighting->GetVariationVector("BeautyBaryon_Enhancement"))
 {
-  m_n_variations = reweighting->NumberOfVariations();
+  m_n_soft_variations = reweighting->NumberOfSoftVariations();
   FillMap(singles, reweighting);
   Normalise();
 }
@@ -43,9 +43,9 @@ void Double_Transitions::FillMap(Single_Transitions * singletransitions,
       std::vector<double> weights;
       for(const auto wgt : (*constituents).Weights(popped.Bar()))
 	weights.push_back(wgt);
-      std::vector<double> weight(m_n_variations, 1.);
+      std::vector<double> weight(m_n_soft_variations, 1.);
       auto scale = [this,&weight](const std::vector<double> & factors) {
-	for (size_t ivar=0; ivar<m_n_variations; ++ivar) weight[ivar] *= factors[ivar];
+	for (size_t ivar=0; ivar<m_n_soft_variations; ++ivar) weight[ivar] *= factors[ivar];
       };
       reweighting->CheckPoppingGuard(popped.Bar(), weights, m_wtthres);
       if (weights[0]<m_wtthres) continue;
@@ -81,7 +81,7 @@ void Double_Transitions::FillMap(Single_Transitions * singletransitions,
 	  hads.first  = hit1->first;
 	  hads.second = hit2->first;
 	  std::vector<double> _weights;
-	  for (size_t ivar=0; ivar<m_n_variations; ++ivar) {
+	  for (size_t ivar=0; ivar<m_n_soft_variations; ++ivar) {
 	    double wt = weight[ivar]*hit1->second[ivar]*hit2->second[ivar];
 	    _weights.push_back(weights[ivar] * wt);
 	  }
@@ -96,16 +96,16 @@ void Double_Transitions::FillMap(Single_Transitions * singletransitions,
 void Double_Transitions::Normalise() {
   for (Double_Transition_Map::iterator dtmit=m_transitions.begin();
        dtmit!=m_transitions.end();dtmit++) {
-    std::vector<double> totweights(m_n_variations,0);
+    std::vector<double> totweights(m_n_soft_variations,0);
     //double totweight = 0.;
     for (Double_Transition_List::iterator dtlit=dtmit->second->begin();
 	 dtlit!=dtmit->second->end();dtlit++) {
-      for (size_t ivar=0; ivar<m_n_variations; ++ivar)
+      for (size_t ivar=0; ivar<m_n_soft_variations; ++ivar)
 	totweights[ivar] += dtlit->second[ivar];
     }
     for (Double_Transition_List::iterator dtlit=dtmit->second->begin();
 	 dtlit!=dtmit->second->end();dtlit++){
-      for (size_t ivar=0; ivar<m_n_variations; ++ivar)
+      for (size_t ivar=0; ivar<m_n_soft_variations; ++ivar)
 	if (totweights[ivar] != 0.) dtlit->second[ivar] /= totweights[ivar];
     }
   }

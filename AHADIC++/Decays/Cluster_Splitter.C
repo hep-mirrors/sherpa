@@ -37,6 +37,7 @@ void Cluster_Splitter::Init() {
                       + ", REMNANT_CLUSTER_MODE = " + std::to_string(m_beammode) + ".\n"
                       + "Please adjust your settings.");
   }
+  m_n_cluster_variations = p_reweighting->NumberOfClusterVariations();
 
   m_alpha[0] = p_reweighting->GetVariationVector("alphaL");
   m_beta[0]  = p_reweighting->GetVariationVector("betaL");
@@ -60,9 +61,9 @@ void Cluster_Splitter::Init() {
   for (auto _kt0 : _kt0s)
     m_kt02.push_back(sqr(_kt0));
 
-  m_cvals.resize(m_n_variations);
-  m_logprobs.resize(m_n_variations);
-  m_probs.resize(m_n_variations);
+  m_cvals.resize(m_n_cluster_variations);
+  m_logprobs.resize(m_n_cluster_variations);
+  m_probs.resize(m_n_cluster_variations);
 
   m_analyse  = false; //hadpars->Switch("Analysis");
   if (m_analyse) {
@@ -271,7 +272,7 @@ bool Cluster_Splitter::FillLogDensities(const double z, const double zmin,
   // while staying common to all of them, see Frag_Norm.
   double cmin = std::numeric_limits<double>::max(), cmax = 0.;
   size_t ipeak = 0;
-  for (size_t ivar=0; ivar<m_n_variations; ++ivar) {
+  for (size_t ivar=0; ivar<m_n_cluster_variations; ++ivar) {
     m_cvals[ivar] = FragExponent(m_gamma[t][ivar],m_kt02[ivar],scale);
     const double ac = dabs(m_cvals[ivar]);
     if (ac<cmin) cmin = ac;
@@ -279,7 +280,7 @@ bool Cluster_Splitter::FillLogDensities(const double z, const double zmin,
   }
   m_fragnorm.SetRange(zmin,zmax,m_alpha[t][ipeak],m_beta[t][ipeak],cmin,cmax);
   const double logz = std::log(z), log1mz = std::log1p(-z), invz = 1./z;
-  for (size_t ivar=0; ivar<m_n_variations; ++ivar) {
+  for (size_t ivar=0; ivar<m_n_cluster_variations; ++ivar) {
     const double alpha = m_alpha[t][ivar], beta = m_beta[t][ivar];
     const double c     = m_cvals[ivar];
     m_logprobs[ivar] = (alpha*logz + beta*log1mz - c*invz)
@@ -292,7 +293,7 @@ void Cluster_Splitter::FillProbs(const double wgt, const double z,
 				 const double zmin, const double zmax,
 				 const unsigned int cnt) {
   m_probs[0] = wgt;
-  for (size_t ivar=1; ivar<m_n_variations; ++ivar)
+  for (size_t ivar=1; ivar<m_n_cluster_variations; ++ivar)
     m_probs[ivar] = FragmentationFunction(z,zmin,zmax,cnt,ivar);
 }
 
