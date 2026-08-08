@@ -200,12 +200,12 @@ double YFS_Form_Factor::BVR_full(YFS::Dipole &d, double omega) {
     p2 = d.GetBornMomenta(1);
   }
   else if(d.Type()==dipoletype::final){
-    p1 = d.GetBornMomenta(0);
-    p2 = d.GetBornMomenta(1);
+    p1 = d.GetMomenta(0);
+    p2 = d.GetMomenta(1);
   }
   else if(d.Type()==dipoletype::ifi){
     p1 = d.GetBornMomenta(0);
-    p2 = d.GetBornMomenta(1);
+    p2 = d.GetMomenta(1);
   }
   else{
     msg_Error()<<"Unknown Dipole type"<<std::endl;
@@ -571,15 +571,28 @@ DivArrD YFS_Form_Factor::BVV_full_eps(YFS::Dipole &d, double Kmax, int mode){
   // DivArrc {UV, IR, IR^2, finite, eps, eps^2, 0}
   Vec4D p1,p2;
   if(d.Type()==dipoletype::initial){
-    p1 = d.GetNewMomenta(0);
-    p2 = d.GetNewMomenta(1);
+    p1 = d.GetBornMomenta(0);
+    p2 = d.GetBornMomenta(1);
   }
   else if(d.Type()==dipoletype::final){
     p1 = d.GetBornMomenta(0);
     p2 = d.GetBornMomenta(1);
   }
   else if(d.Type()==dipoletype::ifi){
-    p1 = d.GetNewMomenta(0);
+    // Both legs from the SAME (Born) configuration, matching BVV_full() -- whose
+    // finite part this is the dim-reg counterpart of -- and BVR_full(), which
+    // builds the exponentiated Y that this subtraction has to cancel.
+    // Previously leg 0 was taken from GetNewMomenta() and leg 1 from
+    // GetBornMomenta(), i.e. from two different kinematic configurations:
+    // NLO_Base builds these dipoles as MakeDipolesIF(m_flavs, pp, m_plab) with
+    // mom=pp (mapped, post-emission) and born=m_plab (Born), and Dipole::Boost()
+    // has no ifi branch, so m_newmomenta stays at pp and the two genuinely
+    // differ once a photon is emitted. For an IF dipole p1*p2 is essentially the
+    // t (or u) Mandelstam, so mixing configurations shifts t and u
+    // asymmetrically -- a forward-backward-asymmetric error in the virtual
+    // subtraction, invisible at LO because CalculateVirtualSubEps() is only
+    // reached once NLO is switched on.
+    p1 = d.GetBornMomenta(0);
     p2 = d.GetBornMomenta(1);
   }
   else{
