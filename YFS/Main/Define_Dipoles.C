@@ -608,8 +608,42 @@ double Define_Dipoles::FormFactorSum(){
       }
     // }
   if(m_ifisub==1){
+    // KKMC's Yint, ported. KKceex.cxx builds the interference form factor as
+    //
+    //   Yint = TForFac(+a, p1,p3, Emin) * TForFac(+a, p2,p4, Emin)
+    //        * TForFac(-a, p1,p4, Emin) * TForFac(-a, p2,p3, Emin)
+    //
+    // with TForFac = exp(Btilda(...,Emin) + TBvirt(...)), and states plainly that
+    // "Yint depends on Emin and provides angular asymmetry". Two things follow,
+    // and both differ from what this line used to do.
+    //
+    // 1. COEFFICIENT +1, not -0.5. KKMC's +/- on alfpmix is the Qi*Qj*thi*thj
+    //    sign: + for the like-charge pairs (e-,mu-),(e+,mu+), - for the unlike
+    //    ones. ChargeNorm() = -QiQj*thetaij ALREADY carries exactly that (thetaij
+    //    is -1 for IF, +1 for II/FF), so an explicit -1 double-counts the theta
+    //    factor, and the 0.5 has no combinatorial basis -- the three dipole lists
+    //    hold each unordered pair exactly once. CalculateVirtualSub() already uses
+    //    +ChargeNorm for these same dipoles.
+    //
+    // 2. omega = Emin, not sqrt(s)/2. KKMC uses m_Emin = (CMSene/2)*vvmin, the
+    //    SOFT CUTOFF used for photon generation, so Yint is deliberately
+    //    cutoff-dependent and that dependence cancels against the generated
+    //    photons, whose weight carries the interference. Evaluated at sqrt(s)/2
+    //    it is instead a cutoff-independent stub ~10x too small: the measured
+    //    A_FB(mu+) in the soft bin was -0.0016 against KKMC's -0.0132.
+    //    m_isrcut is already the dimensionless v_min (YFS_Base divides IR_CUTOFF
+    //    by sqrt(s)), so this reproduces KKMC's Emin exactly.
+    //
+    // The new Emin dependence only cancels if the interference is present in the
+    // real weight. It is, for an NLO run: Real_Generator: OpenLoops gives the full
+    // 2->3 ME, and CalculateRealSub() squares the eikonal CURRENT, so its
+    // II+FF+IF cross terms subtract the same singularity. That mirrors KKMC, where
+    // the crude is ISR+FSR only and the interference lives in the CEEX amplitude.
+    // A LO-YFS run has no such compensation and will show a large spurious
+    // asymmetry -- expected, not a regression.
+    const double Emin = sqrt(m_s)/2.*m_isrcut;
     for(auto &D: m_dipolesIF){
-      form += -0.5*D.ChargeNorm()*p_yfsFormFact->BVR_full(D,sqrt(m_s)/2);
+      form += D.ChargeNorm()*p_yfsFormFact->BVR_full(D, Emin);
     }
   }
   return form;
