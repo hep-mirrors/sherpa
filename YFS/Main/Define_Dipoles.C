@@ -643,8 +643,13 @@ double Define_Dipoles::FormFactorSum(){
     // Measured effect at omega = sqrt(s)/2: A_FB(mu+) cut -0.00022 -> -0.00179,
     // sigma 190759.4 -> 190764.6 pb (+0.003%), i.e. it moves the asymmetry
     // towards KKMC and leaves the rate alone, as an exactly odd term must.
+    // IFForFac = Btilda + t-channel virtual, i.e. KKMC's TForFac. II and FF keep
+    // BVR_full above: they are s-channel-like, they are already validated (sigma
+    // agrees with KKMC to 0.24% with cuts), and switching them too is precisely
+    // what TChannel:2 does -- measured to degrade that agreement to 1.55%. The
+    // treatment should follow the DIPOLE TYPE, not a global runcard flag.
     for(auto &D: m_dipolesIF){
-      form += D.ChargeNorm()*p_yfsFormFact->BVR_full(D,sqrt(m_s)/2);
+      form += D.ChargeNorm()*p_yfsFormFact->IFForFac(D, sqrt(m_s)/2);
     }
   }
   return form;

@@ -992,6 +992,37 @@ DivArrD YFS_Form_Factor::BVirtTEps(YFS::Dipole &d, double kmax){
   return TBvirt;
 }
 
+double YFS_Form_Factor::IFForFac(YFS::Dipole &d, double omega){
+  // KKMC's TForFac, for one initial-final dipole. KKceex.cxx assembles the
+  // interference form factor as
+  //     Yint = prod over the four IF pairs of TForFac(+/-a, pi, pj, Emin)
+  //     TForFac = exp( Btilda(...,Emin) + TBvirt(...) )
+  // and the sign pattern (+ for like-charge pairs, - for unlike) is what
+  // Dipole::ChargeNorm() already supplies, so the caller multiplies by that and
+  // this returns the exponent for a single pair.
+  //
+  // The point of having this separate from the II/FF term is the VIRTUAL: an
+  // initial-final pair is t-channel-like, so it needs BVirtT (spacelike p1.p2),
+  // not the s-channel virtual. FormFactorSum() previously gave the IF dipoles
+  // Btilda with NO virtual at all, which is why no rescaling of that term could
+  // reproduce KKMC -- half the object was missing.
+  //
+  // Momentum order follows R1(): for dipoletype::ifi it takes GetBornMomenta(1)
+  // then (0). Kept identical here so the two agree bin by bin.
+  //
+  // NB BVirtT(Vec4D,Vec4D,double) ignores its kmax argument -- it is read only by
+  // an IsZero() default that is never used afterwards -- so the omega passed here
+  // affects the Btilda part alone. That is deliberate: it is the soft-real piece
+  // that carries the cutoff, exactly as in KKMC's Btilda(...,Emin).
+  ATOOLS::Vec4D p1 = d.GetBornMomenta(1);
+  ATOOLS::Vec4D p2 = d.GetBornMomenta(0);
+  double Breal = BVR_full(p1 * p2, p1.E(), p2.E(), p1.Mass(), p2.Mass(),
+                          omega, m_photonMass, 0);
+  double Bvirt = BVirtT(p1, p2, omega);
+  return Breal + Bvirt;
+}
+
+
 double YFS_Form_Factor::R1(YFS::Dipole &d){
   Vec4D p1,p2;
   if(d.Type()==dipoletype::initial){
