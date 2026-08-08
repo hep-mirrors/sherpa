@@ -608,42 +608,43 @@ double Define_Dipoles::FormFactorSum(){
       }
     // }
   if(m_ifisub==1){
-    // KKMC's Yint, ported. KKceex.cxx builds the interference form factor as
+    // REVERTED to the original. Porting KKMC's Yint here -- +ChargeNorm and
+    // omega = Emin = (sqrt(s)/2)*v_min -- was tried and measured WORSE, and the
+    // measurement is worth keeping:
     //
-    //   Yint = TForFac(+a, p1,p3, Emin) * TForFac(+a, p2,p4, Emin)
-    //        * TForFac(-a, p1,p4, Emin) * TForFac(-a, p2,p3, Emin)
+    //   omega            A_FB(mu+) cut    A_FB vs Eg        sigma
+    //   sqrt(s)/2        -0.0016          rises with Eg     190759 pb
+    //   Emin             -0.0614          FLAT in Eg        194338 pb  (+1.9%)
+    //   KKMC CEEX2       -0.0103          -0.013 -> +0.047  192042 pb
     //
-    // with TForFac = exp(Btilda(...,Emin) + TBvirt(...)), and states plainly that
-    // "Yint depends on Emin and provides angular asymmetry". Two things follow,
-    // and both differ from what this line used to do.
+    // At omega = Emin the asymmetry is flat in E_gamma and identical with and
+    // without cuts, i.e. a bare multiplicative exp(Y_IF) acting on every event
+    // irrespective of its photon content, with nothing cancelling it -- and it
+    // matches the UNCOMPENSATED value from IFI_Asymmetry_Test. The +1.9% shift in
+    // sigma is the even part Y^2/2 of an odd term that has grown far too large.
     //
-    // 1. COEFFICIENT +1, not -0.5. KKMC's +/- on alfpmix is the Qi*Qj*thi*thj
-    //    sign: + for the like-charge pairs (e-,mu-),(e+,mu+), - for the unlike
-    //    ones. ChargeNorm() = -QiQj*thetaij ALREADY carries exactly that (thetaij
-    //    is -1 for IF, +1 for II/FF), so an explicit -1 double-counts the theta
-    //    factor, and the 0.5 has no combinatorial basis -- the three dipole lists
-    //    hold each unordered pair exactly once. CalculateVirtualSub() already uses
-    //    +ChargeNorm for these same dipoles.
+    // The conclusion is that no omega is correct: swinging it moves A_FB by 40x
+    // (-0.0016 to -0.0614) around KKMC's -0.0103, and a quantity that depends
+    // that strongly on an unphysical scale needs that scale to CANCEL. In KKMC it
+    // does: Yint(Emin) is multiplied by the interference summed over the
+    // generated photons in the CEEX amplitude. Sherpa generates photons from the
+    // ISR+FSR eikonals only, and at NLO keeps just one (ISR::NPhotons does
+    // m_n = min(N,1) for fixed_order::nlo), so there is nothing to cancel it.
+    // The fix belongs on the emission side, not in this line.
     //
-    // 2. omega = Emin, not sqrt(s)/2. KKMC uses m_Emin = (CMSene/2)*vvmin, the
-    //    SOFT CUTOFF used for photon generation, so Yint is deliberately
-    //    cutoff-dependent and that dependence cancels against the generated
-    //    photons, whose weight carries the interference. Evaluated at sqrt(s)/2
-    //    it is instead a cutoff-independent stub ~10x too small: the measured
-    //    A_FB(mu+) in the soft bin was -0.0016 against KKMC's -0.0132.
-    //    m_isrcut is already the dimensionless v_min (YFS_Base divides IR_CUTOFF
-    //    by sqrt(s)), so this reproduces KKMC's Emin exactly.
-    //
-    // The new Emin dependence only cancels if the interference is present in the
-    // real weight. It is, for an NLO run: Real_Generator: OpenLoops gives the full
-    // 2->3 ME, and CalculateRealSub() squares the eikonal CURRENT, so its
-    // II+FF+IF cross terms subtract the same singularity. That mirrors KKMC, where
-    // the crude is ISR+FSR only and the interference lives in the CEEX amplitude.
-    // A LO-YFS run has no such compensation and will show a large spurious
-    // asymmetry -- expected, not a regression.
-    const double Emin = sqrt(m_s)/2.*m_isrcut;
+    // The COEFFICIENT is nevertheless corrected to +1 here, independently of the
+    // omega question. ChargeNorm() = -QiQj*thetaij already carries the
+    // initial-final relative sign (thetaij = -1 for IF, +1 for II/FF), so the
+    // explicit -1 double-counted it, and the 0.5 has no combinatorial basis --
+    // the three dipole lists hold each unordered pair exactly once and BVR_full
+    // is charge-blind. It also matches CalculateVirtualSub(), which uses
+    // +ChargeNorm on these same dipoles and carries the comment "change to + for
+    // IFI terms", and KKMC's own +/- pattern across its four TForFac calls.
+    // Measured effect at omega = sqrt(s)/2: A_FB(mu+) cut -0.00022 -> -0.00179,
+    // sigma 190759.4 -> 190764.6 pb (+0.003%), i.e. it moves the asymmetry
+    // towards KKMC and leaves the rate alone, as an exactly odd term must.
     for(auto &D: m_dipolesIF){
-      form += D.ChargeNorm()*p_yfsFormFact->BVR_full(D, Emin);
+      form += D.ChargeNorm()*p_yfsFormFact->BVR_full(D,sqrt(m_s)/2);
     }
   }
   return form;
