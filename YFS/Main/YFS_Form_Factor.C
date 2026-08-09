@@ -817,7 +817,17 @@ double YFS_Form_Factor::BVirtT(Vec4D p1, Vec4D p2,  double kmax){
        // (log(2*p1p2/(m1*m2))-1.0)*log(m_photonMass*m_photonMass/(m1*m2))
       +0.5*zeta*log(ta*zeta/(m1*m2))
       -0.5*log(ta/m1/m1)*log(ta/m2/m2)
-      +0.5*(zeta -1.0)*log(m1/m2)
+      // log(m/M), NOT log(m1/m2): this term is antisymmetric under exchanging
+      // the two legs, and KKMC's TBvirt (SRCee/KKbvir.cxx:296) documents its
+      // m1 as "assumed to be very small", i.e. the LIGHT leg first. IFForFac()
+      // calls this with GetBornMomenta(1) then (0) to match R1()'s ordering,
+      // which for an initial-final dipole puts the heavy (final-state) leg
+      // first - so log(m1/m2) came out with the wrong sign. Using min/max
+      // makes the term independent of the caller's ordering and reproduces
+      // KKMC. Verified against KKbvir::TBvirt on a fixed e+e- -> mu+mu- point
+      // (YFS/Tools/IFI_KKMC_CrossCheck.C vs Test/SherpaCompare/
+      // kkmc_ifi_crosscheck.cxx): the whole disagreement was 2x this term.
+      +0.5*(zeta -1.0)*log(m/M)
       -log(zeta)*(log(ta/(m1*m2)) +0.5*log(zeta))
       +DiLog(1./zeta) -1.0
        );
@@ -886,7 +896,8 @@ double YFS_Form_Factor::BVirtT(YFS::Dipole &d, double kmax){
       +0.5*zeta*log(ta*zeta/(m1*m2))
       -0.5*log(ta/m1/m1)*log(ta/m2/m2)
       +DiLog(1./zeta) -1.0
-      +0.5*(zeta -1.0)*log(m1/m2)
+      // log(m/M) rather than log(m1/m2) - see the note in the Vec4D overload.
+      +0.5*(zeta -1.0)*log(m/M)
       -log(zeta)*(log(ta/(m1*m2)) +0.5*log(zeta))
        );
   #ifdef USING__LOOPTOOLS

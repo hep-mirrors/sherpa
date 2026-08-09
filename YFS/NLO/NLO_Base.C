@@ -305,7 +305,10 @@ double NLO_Base::CalculateVirtual() {
   else
     virt = p_virt->Calc(m_plab, m_born);
   if (m_check_virt_born) {
-    if (!IsEqual(m_born, p_virt->p_loop_me->ME_Born(), 1e-6)) {
+    // the provider's Born is pointlike, m_born is dressed with the pion form
+    // factor, so compare against the dressed provider Born
+    if (!IsEqual(m_born, p_virt->p_loop_me->ME_Born()
+                         * ExternalFormFactor(m_plab, m_flavs), 1e-6)) {
       msg_Error() << METHOD
                   << "\n Warning! Loop provider's born is different! YFS "
                      "Subtraction likely fails\n"
@@ -406,20 +409,28 @@ double NLO_Base::CalculateReal() {
     if (m_check_real_sub == 2) RecordSubScatter(k, contrib, "realISR", m_eikeex);
     contribs.emplace_back(k.E(), contrib);
   }
-  int fsrcount(0);
   for (auto k : m_FSRPhotons) {
     if (m_check_real_sub == 1) {
       if (k.E() < 0.2 * sqrt(m_s))
         continue;
       CheckRealSub(k, 0);
     }
-    // if (k.E() > m_hardmin) {
-    double contrib = CalculateReal(k, 0);
+    // The second argument is the "this photon is FSR" flag that
+    // CalculateReal(k, fsrcount) branches on: 1 selects the FF-dipole
+    // BoostNLO() recoil (photon taken off the final-state pair) plus the
+    // MapInitial() beam rebuild, 0 selects the ISR mapping MapMomenta() (photon
+    // taken off the beams, beam energies reduced). It used to be hardcoded to 0
+    // here while a local fsrcount was incremented and then never used, so every
+    // FSR real photon was recoiled as if it came from the initial state and
+    // MapInitial() was never reached from anywhere. That is an O(alpha)-only
+    // error -- invisible at LO, and it distorts the lepton angular distribution
+    // once NLO_Part includes R. Semantics confirmed by CalculateRealReal(k1,k2,
+    // fsr1,fsr2), whose four-way fsr1/fsr2 branch only makes sense for a
+    // per-photon boolean.
+    double contrib = CalculateReal(k, 1);
     real += contrib;
     if (m_check_real_sub == 2) RecordSubScatter(k, contrib, "realFSR", m_eikeex);
-    fsrcount++;
     contribs.emplace_back(k.E(), contrib);
-    // }
   }
   HardestSums(contribs, m_real_hard1, m_real_hard2);
   // for (auto k : m_borngamma) {
@@ -1196,7 +1207,10 @@ double NLO_Base::CalculateVV() {
   else
     virt = p_vv->Calc(m_plab, m_born);
   if (m_check_virt_born) {
-    if (!IsEqual(m_born, p_virt->p_loop_me->ME_Born(), 1e-6)) {
+    // the provider's Born is pointlike, m_born is dressed with the pion form
+    // factor, so compare against the dressed provider Born
+    if (!IsEqual(m_born, p_virt->p_loop_me->ME_Born()
+                         * ExternalFormFactor(m_plab, m_flavs), 1e-6)) {
       msg_Error() << METHOD
                   << "\n Warning! Loop provider's born is different! YFS "
                      "Subtraction likely fails\n"
@@ -1331,7 +1345,18 @@ void NLO_Base::MapMomenta(Vec4D_Vector &p, Vec4D &k) {
   // double zz = sqrt(sqq) / 2.;
   // double z = zz * sqrt((sqq - sqr(m_flavs[0].Mass() - m_flavs[1].Mass())) *
   // (sqq - sqr(m_flavs[0].Mass() + m_flavs[1].Mass()))) / sqq;
-  double sign_z = (p[0][3] < 0 ? -1 : 1);
+  // Anchor the beam-0 z-orientation to the FIXED Born beam, not to p[0] after
+  // boostQ. boostQ is built from Q = p[2..]+k, and p[2..] are still the Born
+  // back-to-back pair here, so Q carries the photon's full transverse momentum:
+  // the boost is fully 3D and p[0][3] becomes a smooth function of the photon
+  // direction, flipping sign once the recoil against beam 0 is hard enough
+  // (p_z' = gamma*(p_z - beta*E)). That silently swapped beams 0/1 for those
+  // events, mirroring the real ME's forward-backward asymmetry and showing up
+  // as an excess AFB in cos(theta) of the outgoing leptons. Matches the
+  // convention Dipole::BoostNLO() uses for the subtraction terms
+  // (Dipole.C:245), which anchors to m_bornmomenta[0][3] with no boost
+  // involved -- so numerator and subtraction now agree on beam labelling.
+  double sign_z = (m_bornMomenta[0][3] < 0 ? -1 : 1);
   // p[0] = {zz, 0, 0, z};
   // p[1] = {zz, 0, 0, -z};
   double m1 = m_flavs[0].Mass();
@@ -1366,7 +1391,7 @@ void NLO_Base::MapMomenta(Vec4D_Vector &p, Vec4D &k1, Vec4D &k2) {
   double sq = Q.Abs2();
   Poincare boostQ(Q);
   Poincare pRot(m_bornMomenta[0], Vec4D(0., 0., 0., 1.));
-  for (int i = 0; i < p.size(); ++i) {
+  for (int i = 0; i < p.size(); ++i) {  
     pRot.RotateBack(p[i]);
     boostQ.Boost(p[i]);
   }
@@ -1402,7 +1427,18 @@ void NLO_Base::MapMomenta(Vec4D_Vector &p, Vec4D &k1, Vec4D &k2) {
   // double zz = sqrt(sqq) / 2.;
   // double z = zz * sqrt((sqq - sqr(m_flavs[0].Mass() - m_flavs[1].Mass())) *
   // (sqq - sqr(m_flavs[0].Mass() + m_flavs[1].Mass()))) / sqq;
-  double sign_z = (p[0][3] < 0 ? -1 : 1);
+  // Anchor the beam-0 z-orientation to the FIXED Born beam, not to p[0] after
+  // boostQ. boostQ is built from Q = p[2..]+k, and p[2..] are still the Born
+  // back-to-back pair here, so Q carries the photon's full transverse momentum:
+  // the boost is fully 3D and p[0][3] becomes a smooth function of the photon
+  // direction, flipping sign once the recoil against beam 0 is hard enough
+  // (p_z' = gamma*(p_z - beta*E)). That silently swapped beams 0/1 for those
+  // events, mirroring the real ME's forward-backward asymmetry and showing up
+  // as an excess AFB in cos(theta) of the outgoing leptons. Matches the
+  // convention Dipole::BoostNLO() uses for the subtraction terms
+  // (Dipole.C:245), which anchors to m_bornmomenta[0][3] with no boost
+  // involved -- so numerator and subtraction now agree on beam labelling.
+  double sign_z = (m_bornMomenta[0][3] < 0 ? -1 : 1);
   // p[0] = {zz, 0, 0, z};
   // p[1] = {zz, 0, 0, -z};
   double m1 = m_flavs[0].Mass();

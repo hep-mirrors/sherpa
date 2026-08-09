@@ -45,8 +45,6 @@ namespace YFS {
         double m_nlo_real_2hardest, m_nlo_rv_2hardest;
         ATOOLS::Weights_Map m_nlo_weightsmap;
         double m_nbar, m_formfactor, m_betatWW, m_coulSub, m_ww_formfact,m_eex;
-        // initial-final interference weight applied to the generated photons
-        double m_ifiweight;
         int m_negskip;
         YFS::Coulomb *p_coulomb;
         PHASIC::Process_Base *proc;
@@ -93,7 +91,6 @@ namespace YFS {
         void InitializeCEEX(const ATOOLS::Flavour_Vector &fl);
         void CalculateBeta();
         void GenerateWeight();
-        double InterferenceWeight();
         void CreatMomentumMap();
         void MakeCEEX();
         void InitNLO();

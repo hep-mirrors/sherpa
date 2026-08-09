@@ -117,7 +117,7 @@ public:
   // <=0 disables.
   double m_rv_me_max_ratio;
 
-  int  m_order, m_betaorder, m_fullform, m_formWW, m_ifisub, m_ifirealwgt;
+  int  m_order, m_betaorder, m_fullform, m_formWW, m_ifisub;
   // When set, fill the in-run RV plateau-scan histograms (RV contribution
   // binned by log10 cancellation ratio and by photon energy fraction) so a
   // single production run yields RV_total(cut) and the cut can be validated.

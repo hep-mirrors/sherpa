@@ -27,6 +27,7 @@ namespace YFS{
         PHASIC::Scale_Setter_Base *p_scale;
         PHASIC::Tree_ME2_Base* p_born_me;
         PHASIC::Process_Base *p_rvproc;
+        ATOOLS::Flavour_Vector m_flavs;
         double m_sym, m_factor;
         inline void SetProc(PHASIC::Process_Base *realproc) {p_rvproc=realproc;}
         inline bool FailCut() {return m_failcut;}

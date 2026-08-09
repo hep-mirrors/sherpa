@@ -29,6 +29,8 @@ RealVirtual::RealVirtual(const PHASIC::Process_Info &pi) {
   PHASIC::External_ME_Args args(rv_pi.m_ii.GetExternal(),
                                 rv_pi.m_fi.GetExternal(), rv_pi.m_maxcpl);
   p_loop_me->SetCouplings(m_cpls);
+  for (auto f: args.m_inflavs)  m_flavs.push_back(f);
+  for (auto f: args.m_outflavs) m_flavs.push_back(f);
   m_sym = ATOOLS::Flavour::FSSymmetryFactor(args.m_outflavs);
   m_sym *= ATOOLS::Flavour::ISSymmetryFactor(args.m_inflavs);
   Flavour_Vector bornfs;
@@ -70,7 +72,11 @@ double RealVirtual::Calc_V(const ATOOLS::Vec4D_Vector &p, const double B,
   const double gammaborn = p_loop_me->ME_Born();
   switch (p_loop_me->Mode()) {
   case 0:
-    V = m_factor * p_loop_me->ME_Finite() * gammaborn;
+    // gammaborn is the provider's own Born, i.e. pointlike - unlike
+    // Virtual::Calc_V, which inherits the dressing through Sherpa's B. Dress
+    // it here so RV matches the S~*V it is subtracted against.
+    V = m_factor * p_loop_me->ME_Finite() * gammaborn
+        * ExternalFormFactor(p,m_flavs);
     break;
 
   case 1:

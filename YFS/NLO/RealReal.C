@@ -101,7 +101,8 @@ double RealReal::Calc_R(const ATOOLS::Vec4D_Vector& p){
       external_real = Calc_External(p);
       if(p_real_me2){
         // compare two EXTERNAL generators directly, bypassing p_rrproc/Comix
-        double external_real2 = p_real_me2->Calc(p)*m_factor;
+        double external_real2 = p_real_me2->Calc(p)*m_factor
+                                *ExternalFormFactor(p,m_flavs);
         if(m_check) p_cmp->CheckAgreement(p, external_real2, external_real,
                                            m_flavs, p_rrproc->NIn());
         return external_real;
@@ -136,7 +137,7 @@ double RealReal::Calc_External(const ATOOLS::Vec4D_Vector& p)
       out_ps_rr<<"    ]"<<std::endl;
   }
     // double R = p_real_me->ME_Finite();
-    double R = p_real_me->Calc(p);
+    double R = p_real_me->Calc(p)*ExternalFormFactor(p,m_flavs);
     if(m_check_rr) rr_out<<std::setprecision(15)<<R*m_factor<<std::endl;
     return R*m_factor;
   }
