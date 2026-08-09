@@ -23,8 +23,19 @@ YFS_Base::YFS_Base()
   RegisterSettings();
 }
 
-YFS_Base::~YFS_Base() 
+YFS_Base::~YFS_Base()
 {
+}
+
+
+double YFS_Base::ExternalFormFactor(const Vec4D_Vector &p,
+                                    const Flavour_Vector &fl,
+                                    const size_t &nin)
+{
+  if (p_pionff==nullptr)
+    p_pionff = std::unique_ptr<ATOOLS::FormFactor>(new ATOOLS::FormFactor());
+  if (!p_pionff->On()) return 1.;
+  return p_pionff->Eval(p,fl,nin);
 }
 
 
@@ -82,6 +93,12 @@ void YFS_Base::RegisterDefaults(){
   s["No_Flux"].SetDefault(0);
   s["Flux_Mode"].SetDefault(1);
   s["IFI_Sub"].SetDefault(1);
+  // Supply the initial-final soft factor that photon generation misses, by
+  // reweighting each generated photon with the coherent/incoherent eikonal
+  // ratio (Define_Dipoles::InterferenceWeight). Without it the exp(Y_IF) from
+  // FormFactorSum() has nothing to cancel its omega dependence. Set to 0 to
+  // recover the previous behaviour for A/B comparisons.
+  s["IFI_Real_Weight"].SetDefault(1);
   s["Massless_Sub"].SetDefault(0);
   s["Check_Real_Sub"].SetDefault(0);
   s["Check_RR_Sub"].SetDefault(0);
@@ -156,6 +173,7 @@ void YFS_Base::RegisterSettings(){
   m_noflux = s["No_Flux"].Get<int>();
   m_flux_mode=s["Flux_Mode"].Get<int>();
   m_ifisub = s["IFI_Sub"].Get<int>();
+  m_ifirealwgt = s["IFI_Real_Weight"].Get<int>();
   m_massless_sub = s["Massless_Sub"].Get<int>();
   // 0 = off, 1 = one-shot energy-scan sub check (CheckReal[Real]Sub, exits),
   // 2 = accumulating angle/energy scatter (RecordSubScatter, no exit)

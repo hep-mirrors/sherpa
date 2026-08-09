@@ -415,12 +415,20 @@ bool YFS_Handler::CalculateFSR(Vec4D_Vector & p) {
   }
   // if(!CheckMomentumConservation()) return false;
   if(FixedOrder()==fixed_order::nlo){
+    // Fixed order requires exactly one real photon (from ISR xor FSR); see
+    // ISR::NPhotons/FSR::NPhotons multiplicity caps. totk>1 used to only be
+    // logged (msg_Error) and NOT rejected, while CalculateReal() sums over
+    // both m_ISRPhotons and m_FSRPhotons unconditionally - so a stray
+    // double-photon point silently double-counted the real correction
+    // instead of being dropped. Reject any point that violates the
+    // invariant, in either direction.
     int totk = m_FSRPhotons.size()+m_ISRPhotons.size();
-  if(totk > 1) {
-      msg_Error()<<"Wrong photon multiplicity at Fixed Order: "<<totk<<std::endl;
+    if(totk != 1) {
+      if(totk > 1)
+        msg_Error()<<"Wrong photon multiplicity at Fixed Order: "<<totk<<std::endl;
+      return false;
     }
   }
-  if(FixedOrder()==fixed_order::nlo && m_FSRPhotons.size()==0) return false;
   // if((m_ISRPhotons.size() +  m_FSRPhotons.size()) < m_mingammaN) {
   //   m_fsrWeight=0;
   //   return false;
@@ -535,6 +543,26 @@ double YFS_Handler::CalculateNLO(){
 }
 
 
+double YFS_Handler::InterferenceWeight() {
+  // Product over every generated photon of the coherent/incoherent eikonal
+  // ratio, i.e. the initial-final soft factor that the per-dipole photon
+  // generation never produces. See Define_Dipoles::InterferenceWeight().
+  //
+  // Only meaningful when both an initial and a final state radiator exist, the
+  // same condition KKMC applies to its Yint (KKceex.cxx:333 requires KeyInt,
+  // KeyISR and HasFSR together).
+  m_ifiweight = 1.;
+  if (!m_ifirealwgt || m_mode != yfsmode::isrfsr) return 1.;
+  for (const auto &k : m_ISRPhotons) m_ifiweight *= p_dipoles->InterferenceWeight(k);
+  for (const auto &k : m_FSRPhotons) m_ifiweight *= p_dipoles->InterferenceWeight(k);
+  if (IsBad(m_ifiweight)) {
+    msg_Error() << METHOD << ": IFI real weight is " << m_ifiweight
+                << ", falling back to 1.\n";
+    m_ifiweight = 1.;
+  }
+  return m_ifiweight;
+}
+
 void YFS_Handler::GenerateWeight() {
   AddFormFactor();
   if (m_mode == yfsmode::isrfsr) m_yfsweight = m_isrWeight * m_fsrWeight;
@@ -542,6 +570,7 @@ void YFS_Handler::GenerateWeight() {
   else m_yfsweight = m_isrWeight;
   if (m_coulomb) m_yfsweight *= p_coulomb->GetWeight();
   if (m_formWW) m_yfsweight *= m_ww_formfact; //*exp(m_coulSub);
+  m_yfsweight *= InterferenceWeight();
   CalculateBeta();
   m_yfsweight*=m_real;
   m_yfsweight *= m_formfactor*(1.-m_v);

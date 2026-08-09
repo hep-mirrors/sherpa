@@ -4,7 +4,9 @@
 #include "ATOOLS/Math/Vector.H"
 #include "ATOOLS/Math/MathTools.H"
 #include "ATOOLS/Phys/Flavour.H"
+#include "ATOOLS/Phys/FormFactor.H"
 #include "ATOOLS/Org/Run_Parameter.H"
+#include <memory>
 
 
 using namespace ATOOLS;
@@ -62,11 +64,26 @@ protected:
   double m_exponent, m_xmax;
   bool   m_on;
 
+  // Matrix elements from external providers (OpenLoops, Recola, ...) are
+  // pointlike sQED: they know nothing about the pion form factor, while the
+  // Born YFS subtracts against is dressed - by the Comix vertex in Vertex mode,
+  // by Single_Process in Factored mode. Subtracting a dressed S~*B from an
+  // undressed R leaves a residual (1-|F|^2)*S~*B that diverges as k->0 and
+  // drives beta_1 negative wherever |F|^2>1. So dress the external ME here,
+  // at the same Q^2 the Born is dressed at. Created on first use, since most
+  // YFS_Base instances never need it.
+  std::unique_ptr<ATOOLS::FormFactor> p_pionff;
+
 public:
   YFS_Base();
   virtual ~YFS_Base();
 
   bool On() const   { return m_on;   }
+
+  // |F((sum p_pi)^2)|^2, or 1 if no form factor is configured.
+  double ExternalFormFactor(const ATOOLS::Vec4D_Vector &p,
+                            const ATOOLS::Flavour_Vector &fl,
+                            const size_t &nin=2);
 
   double m_mass2[2];
   double m_s,m_irscale;
@@ -100,7 +117,7 @@ public:
   // <=0 disables.
   double m_rv_me_max_ratio;
 
-  int  m_order, m_betaorder, m_fullform, m_formWW, m_ifisub;
+  int  m_order, m_betaorder, m_fullform, m_formWW, m_ifisub, m_ifirealwgt;
   // When set, fill the in-run RV plateau-scan histograms (RV contribution
   // binned by log10 cancellation ratio and by photon energy fraction) so a
   // single production run yields RV_total(cut) and the cut can be validated.

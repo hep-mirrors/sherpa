@@ -138,6 +138,7 @@ namespace YFS {
       double CalculateRealSub(const Vec4D &k);
       double CalculateRealSubIF(const Vec4D &k);
       double CalculateRealSubEEX(const Vec4D &k);
+      double InterferenceWeight(const Vec4D &k);
       double CalculateVirtualSub();
       double CalculateVirtualSubEps();
       double CalculateVVSubEps();

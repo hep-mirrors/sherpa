@@ -485,6 +485,52 @@ double Define_Dipoles::CalculateRealSub(const Vec4D &k) {
   return sub/(m_N_born_Gamma!=0?m_N_born_Gamma:1.0);
 }
 
+double Define_Dipoles::InterferenceWeight(const Vec4D &k) {
+  // Ratio of the COHERENT soft factor -|J_ini + J_fin|^2, which contains the
+  // initial-final interference, to the INCOHERENT -|J_ini|^2 -|J_fin|^2 that
+  // the photon was actually generated from (ISR::NPhotons and FSR::NPhotons
+  // sample each dipole on its own, with no cross term).
+  //
+  // Why this is needed: YFS pairs each exponentiated form factor exp(Y_X) with
+  // the integral of its own soft factor S~_X over the generated photons.
+  // FormFactorSum() includes the initial-final Y_IF (IFI_Sub defaults to 1),
+  // but no photon is ever generated from S~_IF, so the integral that should
+  // cancel the omega dependence of Y_IF never appears - which is why A_FB
+  // swings by a factor 40 when omega is moved between sqrt(s)/2 and Emin.
+  // Multiplying the event weight by this ratio for every generated photon
+  // makes the effective photon distribution coherent, i.e. it supplies the
+  // missing integral, without touching the samplers or their Jacobians.
+  //
+  // KKMC gets the same term structurally instead: it sums coherently over the
+  // partitions of each photon into ISR/FSR (KKceex.cxx:389), with m_Sini and
+  // m_Sfin of opposite sign (KKceex.cxx:352), so |sProd|^2 carries the cross
+  // term that cancels its Yint(Emin) (KKceex.cxx:334).
+  //
+  // The sign convention (+Q for initial, -Q for final legs) is the one already
+  // used by CalculateRealSub(), which builds exactly the coherent numerator.
+  Vec4D Jii(0., 0., 0., 0.), Jff(0., 0., 0., 0.);
+  for (auto &D : m_dipolesII) {
+    for (size_t i(0); i < D.GetBornMomenta().size(); ++i) {
+      const Vec4D p(D.GetMomenta(i));
+      Jii += D.m_Q[i] * p / (p * k);
+    }
+  }
+  for (auto &D : m_dipolesFF) {
+    if (!D.IsResonance()) continue;
+    for (size_t i(0); i < D.GetBornMomenta().size(); ++i) {
+      const Vec4D p(D.GetMomenta(i));
+      Jff += -D.m_Q[i] * p / (p * k);
+    }
+  }
+  const double incoh(-Jii.Abs2() - Jff.Abs2());
+  const double coh(-(Jii + Jff).Abs2());
+  // Pure ISR or pure FSR: no interference to supply, and the ratio would be
+  // 1 anyway up to rounding.
+  if (m_dipolesII.empty() || m_dipolesFF.empty()) return 1.;
+  if (IsZero(incoh) || IsBad(incoh) || IsBad(coh)) return 1.;
+  return coh / incoh;
+}
+
 double Define_Dipoles::CalculateRealSubIF(const Vec4D &k) {
   double sub(0);
   for (auto &D : m_dipolesIF){
@@ -673,8 +719,15 @@ double Define_Dipoles::TFormFactor(){
       form += D.ChargeNorm()*p_yfsFormFact->R1(D);
   }
   if(m_ifisub==1){
+    // IF dipoles use IFForFac here too, NOT R1. An initial-final pair is
+    // t-channel-like by construction, so its form factor does not depend on the
+    // TChannel setting -- that flag is about how the II/FF (s-channel) dipoles
+    // are treated. Routing IF through R1 made the interference term change
+    // whenever TChannel changed, which is why the IF treatment appeared entangled
+    // with a switch that has nothing to do with it. Both FormFactorSum() and
+    // TFormFactor() now give the IF dipoles the same object.
     for(auto &D: m_dipolesIF){
-      form += D.ChargeNorm()*p_yfsFormFact->R1(D);
+      form += D.ChargeNorm()*p_yfsFormFact->IFForFac(D, sqrt(m_s)/2);
     }
   }
   if(FixedOrder()==fixed_order::nlo){
