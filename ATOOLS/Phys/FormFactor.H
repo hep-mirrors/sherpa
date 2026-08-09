@@ -2,6 +2,7 @@
 #define ATOOLS_Phys_FormFactor_H
 
 #include "ATOOLS/Math/MyComplex.H"
+#include "ATOOLS/Math/Vector.H"
 #include "ATOOLS/Phys/Flavour.H"
 
 namespace ATOOLS {
@@ -25,6 +26,11 @@ public:
   void RegisterDefaultsKaon();
   // void Initalize();
   double Eval(const double &q2);
+  // |F|^2 at the invariant mass of the final-state charged pions of p. Same
+  // Q^2 choice as Scale_Setter_Base::PionForm(), so that matrix elements
+  // dressed here and matrix elements dressed by the process itself agree.
+  double Eval(const Vec4D_Vector &p, const Flavour_Vector &fl,
+              const size_t &nin);
   void Calculate(const double &q2);
 
   Complex ppi(const double &q2);

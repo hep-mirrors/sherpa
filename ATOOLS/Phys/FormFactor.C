@@ -154,6 +154,12 @@ Complex FormFactor::BW_GS(const double &q2, const Flavour &fl) {
   const double wf = fl.Width(true);
   Complex I(0, 1.);
   Complex num = mf * mf + d(mf) * mf * wf;
+  // PRINT_VAR(mf);
+  // PRINT_VAR(wf);
+  // PRINT_VAR(d(mf));
+  // PRINT_VAR(num);
+  // PRINT_VAR(f(q2, mf, wf));
+  // PRINT_VAR(h(q2));
   Complex den = mf * mf - q2 + f(q2, mf, wf) - I * mf * gamma(q2, mf, wf);
   if (IsBad(num) || IsBad(den)) {
     msg_Error() << "NaN in " << METHOD << std::endl
@@ -187,9 +193,9 @@ Complex FormFactor::Pion(const double &q2) {
   Complex num1 =
       1. + (q2 / sqr(m_omega.Mass()) * m_comega * exp(m_I * m_pomega)) *
                b(q2, m_omega);
-  num1 += q2 / (sqr(m_phi.Mass())) * m_cphi * exp(m_I * m_pphi) * b(q2, m_phi);
+  // num1 += q2 / (sqr(m_phi.Mass())) * m_cphi * exp(m_I * m_pphi) * b(q2, m_phi);
   num1 *= BW_GS(q2, m_rho);
-  Complex den = 1. + m_crhop * exp(m_I * m_prhop) +
+    Complex den = 1. + m_crhop * exp(m_I * m_prhop) +
                 m_crhopp * exp(m_I * m_prhopp) +
                 m_crhoppp * exp(m_I * m_prhoppp);
 
@@ -221,6 +227,15 @@ double FormFactor::Eval(const double &q2){
   if(IsZero(q2)) return 1.;
   Calculate(q2);
   return (m_form * conj(m_form)).real();
+}
+
+double FormFactor::Eval(const Vec4D_Vector &p, const Flavour_Vector &fl,
+                        const size_t &nin) {
+  if (m_form_mode == ff::off) return 1.;
+  Vec4D pisum;
+  for (size_t i(nin); i < p.size() && i < fl.size(); ++i)
+    if (fl[i].IsChPion()) pisum += p[i];
+  return Eval(pisum.Abs2());
 }
 
 void FormFactor::Calculate(const double &q2) {
