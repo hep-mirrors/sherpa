@@ -459,9 +459,18 @@ double NLO_Base::CalculateReal(Vec4D k, int fsrcount) {
   msg_Debugging() << METHOD << " fsrcount=" << fsrcount
                   << " k=" << k << " E=" << k.E() << " pt=" << k.PPerp() << "\n";
 
-  p_nlodipoles->MakeDipoles(m_flavs, m_plab, m_plab);
+  // Order matters. MakeDipolesII and MakeDipolesFF both clear m_flav_label
+  // (Define_Dipoles.C:45), and only MakeDipoles repopulates it - so it has to
+  // come LAST, or the FSR recoil loop below indexes an empty map and
+  // std::map::operator[] silently returns 0 for every flavour, writing both
+  // recoiled final-state momenta into p[0] (a beam) and leaving the muons at
+  // their Born momenta. MakeDipolesFF must not be used here at all: it clears
+  // m_dipolesFF and then calls Dipole_FF(), which only sorts particles into
+  // charged/neutral lists and never constructs a Dipole, so the FF list came
+  // out empty and the recoil loop was a no-op.
+  p_nlodipoles->MakeDipolesII(m_flavs, m_plab, m_plab);
   p_nlodipoles->MakeDipolesIF(m_flavs, m_plab, m_plab);
-  p_nlodipoles->MakeDipolesFF(m_flavs, m_plab, m_plab);
+  p_nlodipoles->MakeDipoles(m_flavs, m_plab, m_plab);
   fluxtype = p_nlodipoles->WhichResonant(k);
 
   if (fsrcount == 1 || fsrcount == 4) {
@@ -708,9 +717,13 @@ double NLO_Base::CalculateRealVirtual(Vec4D k, int fsrcount) {
   double norm = 2 * pow(2 * M_PI, 3);
   double flux(1);
   Vec4D kk = k;
-  p_nlodipoles->MakeDipoles(m_flavs, m_plab, m_plab);
-  p_nlodipoles->MakeDipolesFF(m_flavs, m_plab, m_plab);
+  // Same ordering requirement as CalculateReal: MakeDipolesFF never builds a
+  // dipole (it only clears m_dipolesFF and sorts particles into charged/neutral
+  // lists), and both it and MakeDipolesII clear m_flav_label, which the FSR
+  // recoil loop below indexes. MakeDipoles must come last.
+  p_nlodipoles->MakeDipolesII(m_flavs, m_plab, m_plab);
   p_nlodipoles->MakeDipolesIF(m_flavs, m_plab, m_plab);
+  p_nlodipoles->MakeDipoles(m_flavs, m_plab, m_plab);
   // p_nlodipoles->CreateAllDipoles(m_flavs,m_plab,m_plab);
   // dipoletype::code fluxtype = p_nlodipoles->WhichResonant(k);
   // if(fluxtype==dipoletype::final){

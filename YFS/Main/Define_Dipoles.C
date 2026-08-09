@@ -649,7 +649,7 @@ double Define_Dipoles::FormFactorSum(){
     // what TChannel:2 does -- measured to degrade that agreement to 1.55%. The
     // treatment should follow the DIPOLE TYPE, not a global runcard flag.
     for(auto &D: m_dipolesIF){
-      form += D.ChargeNorm()*p_yfsFormFact->IFForFac(D, sqrt(m_s)/2);
+      form += -D.ChargeNorm()*p_yfsFormFact->IFForFac(D, sqrt(D.Sprime())/2);
     }
   }
   return form;
