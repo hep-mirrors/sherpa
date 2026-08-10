@@ -91,7 +91,7 @@ Return_Value::code Ahadic::Hadronize(Blob_List * blobs)
   }
   if (m_shrink) Shrink(blobs);
 
-  if (hadronized && m_reweighting.Active()) {
+  if (hadronized && (m_reweighting.Active() || m_reweighting.OutputActive())) {
     Blob *blob(blobs->FindFirst(btp::Signal_Process));
     if (blob == NULL)
       blob = blobs->FindFirst(btp::Hard_Collision);

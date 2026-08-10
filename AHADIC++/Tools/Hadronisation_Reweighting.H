@@ -203,6 +203,7 @@ namespace AHADIC {
     void ResetEvent();
 
     inline bool   Active() const { return m_n_variations > 1; }
+    inline bool   OutputActive() const { return m_reweighting_output > 0; }
     inline size_t NumberOfVariations() const { return m_n_variations; }
     inline size_t NumberOfFlavourVariations() const { return m_n_flavour_variations; }
     inline size_t NumberOfGluonVariations() const { return m_n_gluon_variations; }
