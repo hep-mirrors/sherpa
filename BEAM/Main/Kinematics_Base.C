@@ -13,6 +13,9 @@ Kinematics_Base::Kinematics_Base(std::array<Beam_Base *, 2> beams) :
   for (size_t i=0;i<2;i++) {
     p_beams[i] = beams[i];
     m_m[i] = p_beams[i]->Bunch().Mass();
+    if (p_beams[i]->Bunch().IsIon()) {
+      m_m[i] /= p_beams[i]->Bunch().GetMassNumber();
+    }
     m_m2[i] = sqr(m_m[i]);
     m_Plab += p_beams[i]->InMomentum();
   }
