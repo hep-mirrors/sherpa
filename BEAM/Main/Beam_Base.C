@@ -18,7 +18,12 @@ Beam_Base::Beam_Base(beamspectrum _type, const ATOOLS::Flavour& _beam,
   if (_energy == 0.) { // Fixed Target mode
     m_lab = ATOOLS::Vec4D(m_beam.Mass(true), 0., 0., 0.);
   } else {
-    double disc = 1.0 - ATOOLS::sqr(m_beam.Mass() / m_energy);
+    double mass = m_beam.Mass();
+    // For heavy ions we internally only ever treat the per-nucleon momentum;
+    // hence we scale down the mass from the nucleus mass to the nucleon mass.
+    if (m_beam.IsIon())
+      mass /= m_beam.GetMassNumber();
+    double disc = 1.0 - ATOOLS::sqr(mass / m_energy);
     if (disc < 0.) {
       msg_Error() << "Error in Beam_Base :" << m_type << std::endl
                   << "   Mismatch of energy and mass of beam particle : "

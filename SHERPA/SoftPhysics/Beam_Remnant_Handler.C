@@ -164,8 +164,11 @@ Blob * Beam_Remnant_Handler::FillBunchBlob(int beam,Particle * particle)
   blob->SetBeam(beam);
   blob->SetId();
   blob->AddToOutParticles(particle);
+  // Intact beam: monochromatic beam where the particle is the beam
+  // itself.  For spectral beams (On() == true) the particle is a
+  // bunch parton and we need to construct the beam + remnant below.
   if (particle->Flav()==p_beam->GetBeam(beam)->Beam() &&
-      IsEqual(particle->E(),p_beam->GetBeam(beam)->InMomentum()[0],1.e-6)) {
+      !p_beam->GetBeam(beam)->On()) {
     Particle *p = new Particle(*particle);
     p->SetNumber(0);
     blob->AddToInParticles(p);
@@ -173,14 +176,16 @@ Blob * Beam_Remnant_Handler::FillBunchBlob(int beam,Particle * particle)
   }
   else {
     Particle* p = new Particle(-1, p_beam->GetBeam(beam)->Beam(),
-                               p_beam->GetBeam(beam)->InMomentum());
+                               p_beam->GetBeam(beam)->InMomentumPerNucleus());
     p->SetNumber(0);
     p->SetStatus(part_status::decayed);
     p->SetFinalMass();
     blob->AddToInParticles(p);
-    p = new Particle(-1, p_beam->GetBeam(beam)->Remnant(),
-                     p_beam->GetBeam(beam)->InMomentum() -
-                             particle->Momentum());
+    // p->Momentum() is per-nucleus (from InMomentumPerNucleus above);
+    // particle->Momentum() is per-nucleon.  The subtraction gives the
+    // correct per-nucleus remnant: A*P_nucleon - x*P_nucleon = (A-x)*P_nucleon.
+    p = new Particle(-1, p_beam->GetBeam(beam)->Beam(),
+                     p->Momentum() - particle->Momentum());
     p->SetNumber(0);
     p->SetStatus(part_status::decayed);
     p->SetFinalMass();
