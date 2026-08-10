@@ -41,12 +41,24 @@ namespace BEAM {
     {
       return m_bunches[i];
     }
-    const ATOOLS::Flavour& Remnant() const { return m_beam; }
     const ATOOLS::Vec4D& OutMomentum(const size_t& i = 0) const
     {
       return m_vecouts[i];
     }
+    ATOOLS::Vec4D OutMomentumPerNucleus(const size_t& i = 0) const
+    {
+      if (Bunch(i).IsIon())
+        return m_vecouts[i] * static_cast<double>(Bunch(i).GetMassNumber());
+      return m_vecouts[i];
+    }
     const ATOOLS::Vec4D& InMomentum() const { return m_lab; }
+    // InMomentum() / OutMomentum() store per-nucleon momenta for ions.
+    // Convert to per-nucleus momentum when exposing to the event record.
+    ATOOLS::Vec4D InMomentumPerNucleus() const {
+      if (m_beam.IsIon())
+        return InMomentum() * static_cast<double>(m_beam.GetMassNumber());
+      return InMomentum();
+    }
     const ATOOLS::Vec4D& Position() const { return m_position; }
     const std::vector<ATOOLS::Flavour>& Bunches() const { return m_bunches; }
     const std::vector<ATOOLS::Vec4D>& OutMomenta() const { return m_vecouts; }

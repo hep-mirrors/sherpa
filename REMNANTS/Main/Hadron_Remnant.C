@@ -23,7 +23,11 @@ Hadron_Remnant(PDF::PDF_Base * pdf,const unsigned int & beam,
 
 void Hadron_Remnant::ConstructConstituentFlavours() {
   if (m_constituents.size()>0) return;
-  int hadint=(m_beamflav.Kfcode()-(m_beamflav.Kfcode()/10000)*10000)/10;
+  int hadint(0);
+  if (!m_beamflav.IsIon())
+    hadint=(m_beamflav.Kfcode()-(m_beamflav.Kfcode()/10000)*10000)/10;
+  else
+    hadint=221; // approximate the ion with a proton
   if ((hadint>100)&&(hadint<1000)) {
     m_constituents.push_back(Flavour((kf_code)(hadint)/100));
     m_constituents.push_back(Flavour((kf_code)((hadint-(hadint/100)*100)/10)));

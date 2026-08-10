@@ -117,12 +117,35 @@ Blob *Remnant_Base::MakeBlob() {
   p_beamblob->SetBeam(m_beam);
   p_beamblob->SetStatus(blob_status::needs_beams | blob_status::needs_softUE);
   p_beamblob->SetPosition(m_position);
-  Particle *part = new Particle(-1, p_beam->Bunch(m_tag), p_beam->OutMomentum(m_tag));
+  Particle *part = new Particle(-1, p_beam->Bunch(m_tag), p_beam->OutMomentumPerNucleus(m_tag));
   part->SetNumber(0);
   part->SetBeam(m_beam);
   part->SetStatus(part_status::decayed);
   part->SetFinalMass();
   p_beamblob->AddToInParticles(part);
+  // For ions the beam blob represents the nucleus breaking up into
+  // spectator nucleons.  One nucleon (assumed proton for now)
+  // participates in the hard interaction and is not included here;
+  // the remaining Z-1 protons and A-Z neutrons are added as outgoing
+  // spectators with the per-nucleon beam momentum.
+  if (p_beam->Bunch(m_tag).IsIon()) {
+    int Z = p_beam->Bunch(m_tag).GetAtomicNumber();
+    int A = p_beam->Bunch(m_tag).GetMassNumber();
+    for (int i(0); i < Z-1; ++i) {
+      Particle *nucleon = new Particle(-1, kf_p_plus, p_beam->OutMomentum(m_tag));
+      nucleon->SetNumber(0);
+      nucleon->SetBeam(m_beam);
+      nucleon->SetStatus(part_status::decayed);
+      p_beamblob->AddToOutParticles(nucleon);
+    }
+    for (int i(0); i < (A-Z); ++i) {
+      Particle *nucleon = new Particle(-1, kf_n, p_beam->OutMomentum(m_tag));
+      nucleon->SetNumber(0);
+      nucleon->SetBeam(m_beam);
+      nucleon->SetStatus(part_status::decayed);
+      p_beamblob->AddToOutParticles(nucleon);
+    }
+  }
   return p_beamblob;
 }
 
@@ -147,6 +170,7 @@ void Remnant_Base::Output() {
 	   <<METHOD<<"("<<m_beam<<"): extracted :\n";
   for (Part_List::iterator pit=m_extracted.begin();pit!=m_extracted.end();pit++)
     msg_Out()<<(**pit);
+  msg_Out() << "\n";
   msg_Out()<<METHOD<<"("<<m_beam<<"): spectators :\n";
   for (Part_List::iterator pit=m_spectators.begin();pit!=m_spectators.end();pit++)
     msg_Out()<<(**pit);
