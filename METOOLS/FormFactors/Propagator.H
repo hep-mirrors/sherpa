@@ -14,15 +14,26 @@ namespace METOOLS {
   };
 
   class Total_Width_Base;
-  
+
   class Propagator_Base {
   protected:
     Total_Width_Base * p_width;
     resonance_type     m_type;
-    double             m_M, m_M2;
+    double             m_M, m_M2, m_Gamma;
+
+    // Width entering the propagator denominator: the running width from the
+    // lineshape, or the fixed on-shell width if there is none to run with.
+    const double Width(const double & s) const;
   public:
+    // M and Gamma default to the particle table entry behind 'width'; pass
+    // them explicitly to override it.  Form factors need that override: their
+    // amplitudes and phases come out of a fit that determined the resonance
+    // parameters at the same time, so the two sets have to be used together
+    // and must not be mixed with the PDG values in the particle table.
     Propagator_Base(Total_Width_Base * width,
-		    const resonance_type & type=resonance_type::running);
+		    const resonance_type & type=resonance_type::running,
+		    const double & M=-1.,const double & Gamma=-1.);
+    virtual ~Propagator_Base() {}
     virtual const Complex operator()(const double & s) = 0;
     virtual const Complex Normalised(const double & s) = 0;
     virtual const double Normalised2(const double & s) = 0;
@@ -37,7 +48,7 @@ namespace METOOLS {
     const Complex Normalised(const double & s)  { return Complex(1.,0.); }
     const double  Normalised2(const double & s) { return 1.; }
   };
-  
+
   class BreitWigner : public Propagator_Base {
   public:
     BreitWigner(Total_Width_Base * width,
@@ -51,8 +62,9 @@ namespace METOOLS {
   class WeightedBreitWigner : public Propagator_Base {
   public:
     WeightedBreitWigner(Total_Width_Base * width,
-			const resonance_type & type=resonance_type::running) :
-      Propagator_Base(width,type) {}
+			const resonance_type & type=resonance_type::running,
+			const double & M=-1.,const double & Gamma=-1.) :
+      Propagator_Base(width,type,M,Gamma) {}
     const Complex operator()(const double & s);
     const Complex Normalised(const double & s);
     const double  Normalised2(const double & s);
@@ -60,15 +72,20 @@ namespace METOOLS {
 
   class GounarisSakurai : public Propagator_Base {
   private:
-    double m_Gamma, m_mpi, m_mpi2, m_ppi, m_ppi2;
-    double m_d, m_hM2, m_dhM2;
-    const double h(const double & q2) const;
-    const double dh(const double & q2) const;
-    const double f(const double & q2) const;
-    const double ppi(const double & q2) const;
+    double  m_mpi, m_mpi2;
+    Complex m_ppiM, m_d, m_hM2, m_dhM2;
+    // Everything below the 2 pi threshold is reached by analytic
+    // continuation, so these have to be complex.
+    const Complex ppi(const double & s) const;
+    const Complex h(const double & s) const;
+    const Complex dh(const double & s) const;
+    const Complex f(const double & s) const;
+    // The pi pi width the GS parametrisation is derived with.
+    const Complex GammaGS(const double & s) const;
   public:
     GounarisSakurai(Total_Width_Base * width,
-		    const resonance_type & type=resonance_type::running);
+		    const resonance_type & type=resonance_type::running,
+		    const double & M=-1.,const double & Gamma=-1.);
     const Complex operator()(const double & s);
     const Complex Normalised(const double & s);
     const double  Normalised2(const double & s);
@@ -78,10 +95,17 @@ namespace METOOLS {
   private:
     std::map<Propagator_Base *, Complex> m_props;
     Complex m_norm;
+    bool    m_normalise;
   public:
-    Summed_Propagator(Propagator_Base * prop=NULL);
+    // Sums are divided by the sum of their weights by default.  Pass
+    // normalise=false for sums that are already normalised by construction,
+    // e.g. a "1 + mixing" factor whose mixing term vanishes at s = 0.
+    Summed_Propagator(const bool & normalise=true);
     ~Summed_Propagator();
-    
+    // Takes ownership of what it is given, so copying it would double-delete.
+    Summed_Propagator(const Summed_Propagator &) = delete;
+    Summed_Propagator & operator=(const Summed_Propagator &) = delete;
+
     void  Add(Propagator_Base * prop,const Complex & weight=1.);
     const Complex operator()(const double & s);
     const Complex Normalised(const double & s);
@@ -96,7 +120,10 @@ namespace METOOLS {
   public:
     Multiplied_Propagator(Propagator_Base * prop=NULL);
     ~Multiplied_Propagator();
-    
+    // Takes ownership of what it is given, so copying it would double-delete.
+    Multiplied_Propagator(const Multiplied_Propagator &) = delete;
+    Multiplied_Propagator & operator=(const Multiplied_Propagator &) = delete;
+
     void  Add(Propagator_Base * prop,const Complex & weight=1.);
     const Complex operator()(const double & s);
     const Complex Normalised(const double & s);

@@ -9,9 +9,24 @@ using namespace ATOOLS;
 using namespace std;
 
 Propagator_Base::Propagator_Base(Total_Width_Base * width,
-				 const resonance_type & type) :
-  p_width(width), m_type(type), m_M(0.), m_M2(m_M*m_M) {
-  if (p_width!=NULL) { m_M = p_width->Flav().Mass(true); m_M2 = m_M*m_M; } 
+				 const resonance_type & type,
+				 const double & M,const double & Gamma) :
+  p_width(width), m_type(type), m_M(0.), m_M2(0.), m_Gamma(0.) {
+  if (p_width!=NULL) {
+    m_M     = p_width->Flav().Mass(true);
+    // Width(true): otherwise anything flagged as narrow silently comes back
+    // with a vanishing width, leaving an undamped pole in the propagator.
+    m_Gamma = p_width->Flav().Width(true);
+  }
+  // Explicitly given parameters win over the particle table.
+  if (M>0.)     m_M     = M;
+  if (Gamma>0.) m_Gamma = Gamma;
+  m_M2 = m_M*m_M;
+}
+
+const double Propagator_Base::Width(const double & s) const {
+  if (m_type==resonance_type::fixed || p_width==NULL) return m_Gamma;
+  return (*p_width)(s);
 }
 
 
@@ -41,7 +56,7 @@ const Complex BreitWigner::Normalised(const double & s) {
 ///////////////////////////////////////////////////////////////////////////
 
 const Complex WeightedBreitWigner::operator()(const double & s) {
-  return s/Complex(m_M2-s,-sqrt(s)*(*p_width)(s));
+  return s/Complex(m_M2-s,-m_M*Width(s));
 }
 
 const Complex WeightedBreitWigner::Normalised(const double & s) {
@@ -59,41 +74,55 @@ const double  WeightedBreitWigner::Normalised2(const double & s) {
 ///////////////////////////////////////////////////////////////////////////
 
 GounarisSakurai::GounarisSakurai(Total_Width_Base * width,
-				 const resonance_type & type) :
-  Propagator_Base(width,type) {
-  msg_Out()<<METHOD<<" width = ["<<p_width<<"]\n";
-  m_Gamma = p_width->Flav().Width();
+				 const resonance_type & type,
+				 const double & M,const double & Gamma) :
+  Propagator_Base(width,type,M,Gamma) {
+  // Line_Shapes::Get() hands back a NULL pointer for resonances it does not
+  // know about, so the parameters have to be supplied explicitly then.
+  if (m_M<=0. || m_Gamma<=0.)
+    THROW(fatal_error,"Gounaris-Sakurai propagator without mass or width - "
+	  "there is no lineshape for this resonance, pass them explicitly.");
   m_mpi   = Flavour(kf_pi_plus).Mass();
   m_mpi2  = sqr(m_mpi);
-  m_ppi2  = (m_M2-4.*m_mpi2)/4.;
-  m_ppi   = sqrt(m_ppi2);
-  m_d     = ( 3./M_PI * m_mpi2/m_ppi2 * log((m_M+2.*m_ppi)/(2.*m_mpi)) +
-        m_M/(2.*M_PI*m_ppi) - m_M*m_mpi2/(M_PI*pow(m_ppi,3)) );
+  m_ppiM  = ppi(m_M2);
+  m_d     = ( 3./M_PI * m_mpi2/(m_ppiM*m_ppiM) *
+	      log((m_M+2.*m_ppiM)/(2.*m_mpi)) +
+	      m_M/(2.*M_PI*m_ppiM) -
+	      m_M*m_mpi2/(M_PI*m_ppiM*m_ppiM*m_ppiM) );
   m_hM2   = h(m_M2);
   m_dhM2  = dh(m_M2);
 }
 
-const double GounarisSakurai::ppi(const double &q2) const {
-  return 0.5 * sqrt(q2 - 4 * m_mpi2);
+const Complex GounarisSakurai::ppi(const double & q2) const {
+  return 0.5 * sqrt(Complex(q2-4.*m_mpi2,0.));
 }
 
-const double GounarisSakurai::h(const double & q2) const {
-  double q = sqrt(q2);
-  return 2./M_PI * ppi(q2)/q * log((q+2.*ppi(q2))/(2.*m_mpi));
+const Complex GounarisSakurai::h(const double & q2) const {
+  Complex p = ppi(q2), q = sqrt(Complex(q2,0.));
+  return 2./M_PI * p/q * log((q+2.*p)/(2.*m_mpi));
 }
-const double GounarisSakurai::dh(const double & q2) const {
-  double ppi2 = q2/4.-m_mpi2;
-  return h(q2)/8. * (1./ppi2-4./q2) + 1./(2.*M_PI*q2);
+const Complex GounarisSakurai::dh(const double & q2) const {
+  Complex p = ppi(q2);
+  return h(q2)/8. * (1./(p*p)-4./q2) + 1./(2.*M_PI*q2);
 }
-const double GounarisSakurai::f(const double & q2) const {
-  return ( m_Gamma*m_M2/pow(m_ppi,3.) *
-	   ( (q2/4.-m_mpi2)*(h(q2)-m_hM2) +
-	     m_ppi2*(m_M2-q2)*dh(m_M2) ) );
+const Complex GounarisSakurai::f(const double & q2) const {
+  Complex p = ppi(q2);
+  return ( m_Gamma*m_M2/(m_ppiM*m_ppiM*m_ppiM) *
+	   ( p*p*(h(q2)-m_hM2) + m_ppiM*m_ppiM*(m_M2-q2)*m_dhM2 ) );
+}
+const Complex GounarisSakurai::GammaGS(const double & q2) const {
+  Complex r = ppi(q2)/m_ppiM;
+  return m_Gamma * m_M/sqrt(q2) * r*r*r;
 }
 
 const Complex GounarisSakurai::operator()(const double & s) {
+  // The d and f terms above are derived for a pure pi pi width, so the
+  // imaginary part has to use the same one - mixing in a multi-channel
+  // running width from a lineshape breaks the F(0) = 1 normalisation.
+  Complex width = (m_type==resonance_type::GS)?
+    GammaGS(s) : Complex(Width(s),0.);
   return ( (m_M2+m_d*m_M*m_Gamma)/
-	   Complex(m_M2-s+f(s), -m_M*(*p_width)(s)) );
+	   (Complex(m_M2-s,0.)+f(s)-Complex(0.,1.)*m_M*width) );
 }
 
 const Complex GounarisSakurai::Normalised(const double & s) {
@@ -110,11 +139,9 @@ const double  GounarisSakurai::Normalised2(const double & s) {
 //
 ///////////////////////////////////////////////////////////////////////////
 
-Summed_Propagator::Summed_Propagator(Propagator_Base * prop) :
+Summed_Propagator::Summed_Propagator(const bool & normalise) :
   Propagator_Base(NULL),
-  m_norm(Complex(0.,0.)) {
-  if (prop!=NULL) m_props[prop] = m_norm;
-}
+  m_norm(Complex(0.,0.)), m_normalise(normalise) {}
 
 Summed_Propagator::~Summed_Propagator() {
   while (!m_props.empty()) {
@@ -137,25 +164,20 @@ const Complex Summed_Propagator::operator()(const double & s) {
        pit!=m_props.end();pit++) {
     result += pit->second*(*pit->first)(s);
   }
-  return result/m_norm;
+  return m_normalise?result/m_norm:result;
 }
 
 const Complex Summed_Propagator::Normalised(const double & s) {
-  Complex ampl = (0.,0.);
+  Complex ampl(0.,0.);
   for (map<Propagator_Base *,Complex>::iterator pit=m_props.begin();
        pit!=m_props.end();pit++) {
     ampl += pit->second*pit->first->Normalised(s);
   }
-  return ampl/m_norm;
+  return m_normalise?ampl/m_norm:ampl;
 }
 
 const double Summed_Propagator::Normalised2(const double & s) {
-  Complex ampl = (0.,0.);
-  for (map<Propagator_Base *,Complex>::iterator pit=m_props.begin();
-       pit!=m_props.end();pit++) {
-    ampl += pit->second*pit->first->Normalised(s);
-  }
-  return norm(ampl/m_norm);
+  return norm(Normalised(s));
 }
 
 ///////////////////////////////////////////////////////////////////////////
@@ -194,7 +216,7 @@ const Complex Multiplied_Propagator::operator()(const double & s) {
 }
 
 const Complex Multiplied_Propagator::Normalised(const double & s) {
-  Complex ampl = (0.,0.);
+  Complex ampl(1.,0.);
   for (map<Propagator_Base *,Complex>::iterator pit=m_props.begin();
        pit!=m_props.end();pit++) {
     ampl *= pit->second*pit->first->Normalised(s);
@@ -203,10 +225,5 @@ const Complex Multiplied_Propagator::Normalised(const double & s) {
 }
 
 const double Multiplied_Propagator::Normalised2(const double & s) {
-  Complex ampl = (0.,0.);
-  for (map<Propagator_Base *,Complex>::iterator pit=m_props.begin();
-       pit!=m_props.end();pit++) {
-    ampl *= pit->second*pit->first->Normalised(s);
-  }
-  return norm(ampl/m_norm);
+  return norm(Normalised(s));
 }
