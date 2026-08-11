@@ -1,6 +1,5 @@
 #include "ATOOLS/Org/CXXFLAGS.H"
 
-#include <mpi.h>
 #include <algorithm>
 #include <atomic>
 #include <chrono>

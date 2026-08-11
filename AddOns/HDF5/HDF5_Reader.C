@@ -1,7 +1,5 @@
 #include "ATOOLS/Org/CXXFLAGS.H"
-#if defined(USING__MPI)
-#include <mpi.h>
-#endif
+
 #include <iostream>
 #include <string>
 #include <vector>
@@ -223,7 +221,7 @@ namespace LHEH5 {
   private:
 
     LHEFile *p_file;
-#if defined(USING__MPI)    
+#if defined(USING__MPI) && defined(H5_HAVE_PARALLEL)
     MPI_Info m_info;
 #endif
     size_t m_ievt, m_ifile, m_trials, m_ilaststart, m_inextstart, m_ntotal,
@@ -302,18 +300,17 @@ namespace LHEH5 {
     {
       Settings& s {Settings::GetMainSettings()};
       m_ncache = s["HDF5_CACHE_SIZE"].SetDefault(10000).Get<int>();
-#if defined(USING__MPI)
+
+#if defined(USING__MPI) && defined(H5_HAVE_PARALLEL)
       MPI_Info_create(&m_info);
-#endif
       for (const auto& key : s["HDF5_MPIIO_PARAMS"].GetKeys()) {
         const auto val {
             s["HDF5_MPIIO_PARAMS"][key].SetDefault("").Get<std::string>()};
 	msg_Info()<<METHOD<<"(): Add MPIIO parameters '"
 		  <<key<<"' -> '"<<val<<"'\n";
-#if defined(USING__MPI) 
-      MPI_Info_set(m_info,key.c_str(),val.c_str());
+	MPI_Info_set(m_info,key.c_str(),val.c_str());
+      }
 #endif
-    }
 
       p_file = OpenFile(m_files[m_ifile]);
       p_sub = new NLO_subevt();
