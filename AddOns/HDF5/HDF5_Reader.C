@@ -1,6 +1,5 @@
 #include "ATOOLS/Org/CXXFLAGS.H"
 
-#include <mpi.h>
 #include <iostream>
 #include <string>
 #include <vector>
@@ -222,7 +221,9 @@ namespace LHEH5 {
   private:
 
     LHEFile *p_file;
+#if defined(USING__MPI) && defined(H5_HAVE_PARALLEL)
     MPI_Info m_info;
+#endif
     size_t m_ievt, m_ifile, m_trials, m_ilaststart, m_inextstart, m_ntotal,
         m_ncache;
 
@@ -300,6 +301,7 @@ namespace LHEH5 {
       Settings& s {Settings::GetMainSettings()};
       m_ncache = s["HDF5_CACHE_SIZE"].SetDefault(10000).Get<int>();
 
+#if defined(USING__MPI) && defined(H5_HAVE_PARALLEL)
       MPI_Info_create(&m_info);
       for (const auto& key : s["HDF5_MPIIO_PARAMS"].GetKeys()) {
         const auto val {
@@ -308,6 +310,7 @@ namespace LHEH5 {
 		  <<key<<"' -> '"<<val<<"'\n";
 	MPI_Info_set(m_info,key.c_str(),val.c_str());
       }
+#endif
 
       p_file = OpenFile(m_files[m_ifile]);
       p_sub = new NLO_subevt();
