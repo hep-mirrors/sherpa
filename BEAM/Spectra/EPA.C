@@ -16,7 +16,7 @@ EPA::EPA(const Flavour& beam, const double energy, const double pol,
          const int dir)
     : Beam_Base(beamspectrum::EPA, beam, energy, pol, dir),
       m_fftype(EPA_ff_type::point), p_ff(nullptr), m_pref(0.), m_pt2max(-1.),
-      m_output(false), m_outputAll(false)
+      m_xmin(0.), m_xmax(1.), m_output(false), m_outputAll(false)
 {
   if (m_beam.Charge() == 0.)
     THROW(fatal_error,
@@ -44,6 +44,13 @@ Beam_Base* EPA::Copy()
 bool EPA::CalculateWeight(double x, double q2)
 {
   m_x = x;
+  m_weight = 0.;
+  // The spectrum has no support outside [m_xmin, m_xmax]. This is the single
+  // place where that is enforced: the tabulated N(x,b) does return zero off its
+  // grid, but the analytic fluxes -- and the large-b point-like branch of
+  // EPA_FF_Base::N(), which any form factor may end up in -- would happily
+  // extrapolate beyond it.
+  if (x < m_xmin || x > m_xmax) return true;
   m_weight = m_pref * p_ff->N(x, m_eran);
   if (m_weight < 0.) {
     msg_Debugging() << METHOD << ": negative flux at x = " << x << "\n";
@@ -126,8 +133,33 @@ void EPA::Initialise()
     THROW(not_implemented, "unknown EPA form factor. ");
   }
   p_ff->SetPT2Max(m_pt2max);
+  SetXRange();
 
   if (m_output) p_ff->OutputToCSV("beam" + ToString(b));
+}
+
+void EPA::SetXRange()
+{
+  // x is the light-cone fraction the photon takes from the beam, k^+ = x p^+
+  // (cf. Collider_Kinematics), leaving the scattered beam particle with
+  // (1-x) p^+. Being on-shell it cannot carry less plus-momentum than in its
+  // rest frame, p'^+ >= m, which caps
+  //     x <= 1 - m/p^+ = 1 - m/(E + p_z)  ->  1 - m/(2E)   for E >> m.
+  // The form factor only knows the configured [xMin, xMax] range, so the two
+  // are combined here, where the beam momentum is known. Mass(true) is used
+  // because m_lab is built from Mass(), which vanishes for a beam flagged
+  // massless -- the cap has to regulate x -> 1 in that case too. For ions this
+  // is the full ion mass, matching x being a fraction of the whole ion's p^+;
+  // note that EPA_FF_Base builds the flux from the per-nucleon mass
+  // Mass(true)/A instead, which is a different quantity.
+  const double pplus = m_dir > 0 ? m_lab.PPlus() : m_lab.PMinus();
+  m_xmin = p_ff->Xmin();
+  m_xmax = Min(p_ff->Xmax(), 1. - m_beam.Mass(true) / pplus);
+  if (m_xmin >= m_xmax)
+    THROW(fatal_error,
+          "No phase space for the EPA spectrum of " + m_beam.IDName() +
+              ": x in [" + ToString(m_xmin) + ", " + ToString(m_xmax) +
+              "].");
 }
 
 void EPA::RegisterDefaults() const
