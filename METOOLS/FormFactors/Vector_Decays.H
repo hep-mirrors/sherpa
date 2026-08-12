@@ -156,6 +156,7 @@ namespace METOOLS {
 		      const double & sij,const double & skj) const = 0;
   public:
     V_PPP_Arg_Base(const std::vector<ATOOLS::Flavour> & outflavs);
+    virtual ~V_PPP_Arg_Base() {}
     virtual void SetProps(const std::vector<Propagator_Base *> & props) = 0;
     virtual void FillTable(ATOOLS::OneDim_Table * table);
   };

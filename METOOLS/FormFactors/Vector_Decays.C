@@ -296,7 +296,8 @@ V_PPP::V_PPP(const Flavour & inflav,const vector<Flavour> & outflavs,
 { }
 
 V_PPP::~V_PPP() {
-  if (p_table) delete p_table;
+  if (p_table)    delete p_table;
+  if (p_argument) delete p_argument;
 }
 
 void V_PPP::Init(const vector<Propagator_Base *> & props,

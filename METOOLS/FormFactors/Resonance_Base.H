@@ -28,6 +28,9 @@ namespace METOOLS {
     Partial_Width_Base(const ATOOLS::Flavour & inflav,
 		       const std::vector<ATOOLS::Flavour> & outflavs,
 		       const double & BR);
+    // Total_Width_Base deletes its channels through this pointer, so without
+    // a virtual destructor the derived ones never free their lookup tables.
+    virtual ~Partial_Width_Base() {}
     virtual void   Init(const std::vector<Propagator_Base *> & props,
 			const ATOOLS::axis & m_Qrange) = 0;
     virtual const double operator()(const double & s);
@@ -45,7 +48,8 @@ namespace METOOLS {
     std::set<Partial_Width_Base *> m_channels;
   public:
     Total_Width_Base(const ATOOLS::Flavour & inflav);
-    ~Total_Width_Base();
+    // Line_Shapes deletes the lineshapes through this pointer.
+    virtual ~Total_Width_Base();
     
     const double operator()(const double & s);
     Partial_Width_Base * SelectChannel(const double & s=-1);
