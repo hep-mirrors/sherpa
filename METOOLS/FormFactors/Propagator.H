@@ -70,6 +70,20 @@ namespace METOOLS {
     const double  Normalised2(const double & s);
   };
 
+  // m^2/(m^2-s-i m Gamma).  BreitWigner always runs its width off the
+  // lineshape, which is not an option for a resonance that has none, so this
+  // is the plain fixed-width form taking its parameters directly.
+  class FixedBreitWigner : public Propagator_Base {
+  public:
+    FixedBreitWigner(Total_Width_Base * width=NULL,
+		     const double & M=-1.,const double & Gamma=-1.) :
+      Propagator_Base(width,resonance_type::fixed,M,Gamma) {}
+    const Complex operator()(const double & s)
+    { return m_M2/Complex(m_M2-s,-m_M*m_Gamma); }
+    const Complex Normalised(const double & s)  { return (*this)(s); }
+    const double  Normalised2(const double & s) { return norm((*this)(s)); }
+  };
+
   class GounarisSakurai : public Propagator_Base {
   private:
     double  m_mpi, m_mpi2;

@@ -47,6 +47,10 @@ bool LowEnergy_Model::ModelInit()
   Settings& s = Settings::GetMainSettings();
   m_alpha     = 1./s["1/ALPHAQED(0)"].Get<double>();
   m_sinthetaW = sqrt(s["SIN2THETAW"].Get<double>());
+  // Set THREE_PION_CONTACT: true to go back to the contact pi0 pi+ pi-
+  // vertex instead of the gamma -> rho pi chain.
+  m_threepion_contact =
+    s["THREE_PION_CONTACT"].SetDefault(false).Get<bool>();
   msg_Out()<<METHOD<<": 1/alpha = "<<(1./m_alpha)<<"\n";
   METOOLS::LineShapes = new METOOLS::Line_Shapes();
   METOOLS::LineShapes->Init();
@@ -190,6 +194,106 @@ void LowEnergy_Model::InitQEDVertices() {
     m_v.back().Lorentz.push_back("SSV");
     m_v.back().FormFactor.push_back("VMD");
     m_v.back().cpl.push_back(cpl);
+    m_v.back().order[1]=1;
+  }
+
+  //////////////////////////////////////////////////////////////////////
+  // Contact pi0 pi+ pi- vertex.  Superseded by the gamma -> rho pi chain
+  // below, which carries the correct anomalous structure - the two would
+  // double count, so only one of them may be active at a time.
+  //////////////////////////////////////////////////////////////////////
+  if (m_threepion_contact) {
+    m_v.push_back(Single_Vertex());
+    m_v.back().AddParticle(Flavour(kf_pi));
+    m_v.back().AddParticle(Flavour(kf_pi_plus));
+    m_v.back().AddParticle(Flavour(kf_pi_plus).Bar());
+    m_v.back().Color.push_back(Color_Function(cf::None));
+    m_v.back().Lorentz.push_back("SSS");
+    m_v.back().FormFactor.push_back("VMD");
+    m_v.back().cpl.push_back(cpl);
+    m_v.back().order[1]=2;
+  }
+  else {
+    InitThreePionVertices(cpl);
+  }
+}
+
+//////////////////////////////////////////////////////////////////////
+//
+// gamma* -> V -> rho pi -> pi pi pi.
+//
+// The anomalous gamma-rho-pi vertex carries the Wess-Zumino structure
+//   L = eps_{mu,nu,al,be} A^mu rho^nu p_A^al p_rho^be
+//////////////////////////////////////////////////////////////////////
+void LowEnergy_Model::InitThreePionVertices(const Kabbala & cpl) {
+  Scoped_Settings s{ Settings::GetMainSettings()["THREE_PION_FORM_FACTOR"] };
+  const Flavour photon(kf_photon);
+  const Flavour pi0(kf_pi), pip(kf_pi_plus), pim(Flavour(kf_pi_plus).Bar());
+  const Flavour rho0(kf_rho_770);
+  const Flavour rhop(kf_rho_770_plus), rhom(Flavour(kf_rho_770_plus).Bar());
+
+  ////////////////////////////////////////////////////////////////////
+  // rho -> pi pi, from the rho width itself.  With the standard isospin
+  // coupling L = g rho^mu.(pi x d_mu pi) the amplitude is g eps.(p1-p2),
+  // whose polarisation sum is g^2 (m_rho^2 - 4 m_pi^2) = 4 g^2 p^2; folding
+  // that into Gamma = p/(8 pi m^2) <|M|^2> and averaging over the three
+  // polarisations gives
+  //   Gamma_rho = g_rhopipi^2 p^3 / (6 pi m_rho^2),
+  //   p         = sqrt(m_rho^2/4 - m_pi^2),
+  // so the coupling is just the width read back.  The particle table here
+  // (m = 0.77, Gamma = 0.1507) gives 6.04; the PDG rho gives 5.94, which
+  // agrees to 0.1% with the KSRF relation m_rho/(sqrt(2) f_pi) = 5.93.
+  //
+  // SSV_LC evaluates cpl*(p1-p2)^mu, exactly the structure above, so the
+  // coupling goes in as-is - the same convention under which cpl = i e on
+  // the photon vertices reproduces scalar QED.
+  ////////////////////////////////////////////////////////////////////
+  const double mrho(rho0.Mass()), wrho(rho0.Width(true)), mpi(pip.Mass());
+  const double prho(sqrt(Max(0.25*sqr(mrho)-sqr(mpi),1.e-12)));
+  const double grpp_def(sqrt(6.*M_PI*sqr(mrho)*wrho/pow(prho,3)));
+  const double grpp(s["g_rhopipi"].SetDefault(grpp_def).Get<double>());
+
+ 
+  ////////////////////////////////////////////////////////////////////
+  // const double ee(sqrt(4.*M_PI*m_alpha));
+  // const double ggrp_vmd(ee*14.0/17.0);   // 0.25 /GeV, for reference
+  const double ggrp_def(0.773);
+  const double ggrp(s["g_gammarhopi"].SetDefault(ggrp_def).Get<double>());
+
+  msg_Out()<<METHOD<<": g_rhopipi = "<<grpp
+	   <<", g_gammarhopi = "<<ggrp<<" /GeV\n";
+  const Kabbala cpl_grp("g_{\\gamma\\rho\\pi}",
+			ggrp*Complex(0.,1.));
+  const Kabbala cpl_rpp("g_{\\rho\\pi\\pi}",
+			grpp*Complex(0.,1.));
+
+  // gamma rho pi, anomalous.  Charges have to add up to zero: all legs are
+  // read as incoming.
+  const Flavour rhos[3] = { rho0, rhop, rhom };
+  const Flavour pis [3] = { pi0 , pim , pip  };
+  for (size_t i(0);i<3;++i) {
+    m_v.push_back(Single_Vertex());
+    m_v.back().AddParticle(photon);
+    m_v.back().AddParticle(rhos[i]);
+    m_v.back().AddParticle(pis[i]);
+    m_v.back().Color.push_back(Color_Function(cf::None));
+    m_v.back().Lorentz.push_back("AVVP");
+    m_v.back().FormFactor.push_back("VMD");
+    m_v.back().cpl.push_back(cpl_grp);
+    m_v.back().order[1]=1;
+  }
+  // rho -> pi pi.  Vector first, as for the photon vertices above.
+  const Flavour rho2[3] = { rho0, rhop, rhom };
+  const Flavour pa  [3] = { pip , pim , pip  };
+  const Flavour pb  [3] = { pim , pi0 , pi0  };
+  for (size_t i(0);i<3;++i) {
+    m_v.push_back(Single_Vertex());
+    m_v.back().AddParticle(rho2[i]);
+    m_v.back().AddParticle(pa[i]);
+    m_v.back().AddParticle(pb[i]);
+    m_v.back().Color.push_back(Color_Function(cf::None));
+    m_v.back().Lorentz.push_back("SSV");
+    m_v.back().cpl.push_back(cpl_rpp);
     m_v.back().order[1]=1;
   }
 }

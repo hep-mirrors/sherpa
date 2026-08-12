@@ -9,12 +9,14 @@ namespace MODEL {
   private:
     std::list<ATOOLS::Flavour> m_Diracs, m_PseudoScalars;
     double m_alpha, m_sinthetaW;
-    
+    bool   m_threepion_contact;
+
     void ParticleInit();
 
     void InitQEDConstants();
-    
+
     void InitQEDVertices();
+    void InitThreePionVertices(const ATOOLS::Kabbala & cpl);
     void InitEWVertices();
   public :
     LowEnergy_Model();

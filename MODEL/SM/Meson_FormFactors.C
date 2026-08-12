@@ -19,6 +19,8 @@ namespace METOOLS {
     Kpi_plus        = 11,
     pipi_0          = 101,
     KK_0            = 102,
+    pipipi_0        = 201,
+    V_pi            = 301,
     unknown         = 999
   };
 
@@ -30,6 +32,8 @@ namespace METOOLS {
     void FixMode(const Vertex_Key &key);
     void Construct();
     void ConstructPionFormFactor();
+    void ConstructThreePionFormFactor();
+    void ConstructVectorPionFormFactor();
   public:
     FFVMD(const Vertex_Key &key);
     Complex FF();
@@ -66,20 +70,21 @@ namespace {
   // fit: retuning a mass or width in isolation will generally need the
   // amplitudes and phases refitted along with it.
   class GS_Parameters {
-    const std::string m_tag;
+    const std::string m_block, m_tag;
     const double m_m0, m_Gamma0, m_c0, m_phi0;  // fitted defaults, never change
     double       m_m,  m_Gamma,  m_c,  m_phi;   // values in use
   public:
-    GS_Parameters(const std::string & tag,const double & m,const double & Gamma,
+    GS_Parameters(const std::string & block,const std::string & tag,
+		  const double & m,const double & Gamma,
 		  const double & c,const double & phi) :
-      m_tag(tag), m_m0(m), m_Gamma0(Gamma), m_c0(c), m_phi0(phi),
+      m_block(block), m_tag(tag), m_m0(m), m_Gamma0(Gamma), m_c0(c), m_phi0(phi),
       m_m(m), m_Gamma(Gamma), m_c(c), m_phi(phi) {}
 
     // Always registers the fitted value as the default, so this stays
     // idempotent however often the form factor is constructed.
     void Read() {
       ATOOLS::Scoped_Settings s
-	{ ATOOLS::Settings::GetMainSettings()["PION_FORM_FACTOR"][m_tag] };
+	{ ATOOLS::Settings::GetMainSettings()[m_block][m_tag] };
       m_m     = s["Mass"     ].SetDefault(m_m0    ).Get<double>();
       m_Gamma = s["Width"    ].SetDefault(m_Gamma0).Get<double>();
       m_c     = s["Amplitude"].SetDefault(m_c0    ).Get<double>();
@@ -92,12 +97,25 @@ namespace {
     inline Complex Weight() const { return m_c*Complex(cos(m_phi),sin(m_phi)); }
   };
   //                            tag            m       Gamma       c        phi
-  GS_Parameters s_rho      { "rho(770)"  , 0.77456, 0.14832, 1.0    , 0.     };
-  GS_Parameters s_rho1450  { "rho(1450)" , 1.4859 , 0.37360, 0.14104, 3.7797 };
-  GS_Parameters s_rho1700  { "rho(1700)" , 1.8668 , 0.30334, 0.0614 , 1.429  };
-  GS_Parameters s_rho2150  { "rho(2150)" , 2.2645 , 0.11327, 0.0047 , 0.921  };
-  GS_Parameters s_omega782 { "omega(782)", 0.78248, 0.00855, 0.00158, 0.075  };
-  GS_Parameters s_phi1020  { "phi(1020)" , 1.01947, 0.00425, 0.00045, 2.888  };
+  GS_Parameters s_rho      { "PION_FORM_FACTOR", "rho(770)"  , 0.77456, 0.14832, 1.0    , 0.     };
+  GS_Parameters s_rho1450  { "PION_FORM_FACTOR", "rho(1450)" , 1.4859 , 0.37360, 0.14104, 3.7797 };
+  GS_Parameters s_rho1700  { "PION_FORM_FACTOR", "rho(1700)" , 1.8668 , 0.30334, 0.0614 , 1.429  };
+  GS_Parameters s_rho2150  { "PION_FORM_FACTOR", "rho(2150)" , 2.2645 , 0.11327, 0.0047 , 0.921  };
+  GS_Parameters s_omega782 { "PION_FORM_FACTOR", "omega(782)", 0.78248, 0.00855, 0.00158, 0.075  };
+  GS_Parameters s_phi1020  { "PION_FORM_FACTOR", "phi(1020)" , 1.01947, 0.00425, 0.00045, 2.888  };
+
+  /////////////////////////////////////////////////////////////////////
+  // Masses and widths are the PDG ones.  The phi amplitude is OZI
+  // suppressed and is tuned, not fitted: 0.042 with a relative phase of pi
+  // reproduces the measured ratio of the phi and omega peaks.  Together with
+  // g_gammarhopi in LowEnergy_Model.C this puts both peaks within 10% of
+  // BESIII_2019_I1773081.  It is a two-point tune and nothing more - see
+  // doc/examples/Soft_QCD/LowEnergy/NOTES-3pi.md.
+  /////////////////////////////////////////////////////////////////////
+  GS_Parameters s_v_omega782
+    { "THREE_PION_FORM_FACTOR", "omega(782)", 0.78266 , 0.00868 , 1.0, 0.   };
+  GS_Parameters s_v_phi1020
+    { "THREE_PION_FORM_FACTOR", "phi(1020)" , 1.019461, 0.004249, 0.042, M_PI };
 }
 
 /////////////////////////////////////////////////////////////////////
@@ -131,6 +149,25 @@ FFVMD::FFVMD(const Vertex_Key &key):
 }
 
 void FFVMD::FixMode(const Vertex_Key &key) {
+  // The three-pion vertex has to be identified from the vertex legs rather
+  // than from key.m_j: m_j only holds the incoming currents, so a three-point
+  // vertex appears there with two of its three legs, and which two depends on
+  // the recursion step.
+  std::multiset<kf_code> kfs;
+  for (size_t i(0);i<key.p_mv->in.size();++i)
+    if (key.p_mv->in[i].IsHadron()) kfs.insert(key.p_mv->in[i].Kfcode());
+  if (kfs==std::multiset<kf_code>{kf_pi,kf_pi_plus,kf_pi_plus}) {
+    m_mode = FF_0_PP_mode::pipipi_0;
+    return;
+  }
+  // gamma rho pi: the anomalous vertex of the three-pion chain.  This is the
+  // only vertex there that sees the photon virtuality, so it carries the
+  // whole s dependence.
+  if (kfs==std::multiset<kf_code>{kf_rho_770,kf_pi} ||
+      kfs==std::multiset<kf_code>{kf_rho_770_plus,kf_pi_plus}) {
+    m_mode = FF_0_PP_mode::V_pi;
+    return;
+  }
   if (key.m_j[0]->Flav()==Flavour(kf_pi_plus) &&
       key.m_j[1]->Flav()==Flavour(kf_pi_plus).Bar() )     m_mode = FF_0_PP_mode::pipi_0;
   else if (key.m_j[0]->Flav()==Flavour(kf_K_plus) &&
@@ -141,6 +178,12 @@ void FFVMD::Construct() {
   switch (int(m_mode)) {
   case int(FF_0_PP_mode::pipi_0):
     ConstructPionFormFactor();
+    break;
+  case int(FF_0_PP_mode::pipipi_0):
+    ConstructThreePionFormFactor();
+    break;
+  case int(FF_0_PP_mode::V_pi):
+    ConstructVectorPionFormFactor();
     break;
   case int(FF_0_PP_mode::KK_0):
     // Recognised, but not parametrised yet.  Falling through to a silent
@@ -188,6 +231,50 @@ void FFVMD::ConstructPionFormFactor() {
   m_props.Add(new METOOLS::GounarisSakurai(NULL,resonance_type::GS,
 					   s_rho2150.Mass(),s_rho2150.Width()),
 	      s_rho2150.Weight());
+}
+
+void FFVMD::ConstructThreePionFormFactor() {
+  msg_Debugging()<<METHOD<<": Gounaris-Sakurai parameters\n";
+  for (GS_Parameters * p : { &s_rho, &s_rho1450, &s_rho1700 }) p->Read();
+  //////////////////////////////////////////////////////////////////////
+  // FIRST STAB - the rho-family propagator sum in the two-pion
+  // sub-channel, i.e. the prop_ij(s_ij) factors of the rho-pi picture that
+  // METOOLS::V1minus_PPP_Arg::dg() already uses for omega -> 3 pi.  At this
+  // vertex the off-shell leg is the charged pion going to the photon, so its
+  // virtuality is the invariant mass squared of the other two pions, which
+  // is the argument a rho propagator wants.
+  //
+  // This is NOT the gamma* -> 3 pi form factor. the
+  // omega/phi peak right needs the SSS vertex replaced by a proper
+  // gamma-pi-pi-pi current (compare VVP_LC / TAUPI_LC), not a form factor.
+  //////////////////////////////////////////////////////////////////////
+  m_props.Add(new METOOLS::GounarisSakurai(LineShapes->Get(Flavour(kf_rho_770)),
+					   resonance_type::GS,
+					   s_rho.Mass(),s_rho.Width()),
+	      s_rho.Weight());
+  m_props.Add(new METOOLS::GounarisSakurai(LineShapes->Get(Flavour(kf_rho_1450)),
+					   resonance_type::GS,
+					   s_rho1450.Mass(),s_rho1450.Width()),
+	      s_rho1450.Weight());
+  m_props.Add(new METOOLS::GounarisSakurai(LineShapes->Get(Flavour(kf_rho_1700)),
+					   resonance_type::GS,
+					   s_rho1700.Mass(),s_rho1700.Width()),
+	      s_rho1700.Weight());
+}
+
+void FFVMD::ConstructVectorPionFormFactor() {
+  msg_Debugging()<<METHOD<<": three-pion isoscalar parameters\n";
+  for (GS_Parameters * p : { &s_v_omega782, &s_v_phi1020 }) p->Read();
+  // gamma -> omega/phi -> rho pi.  Fixed widths: neither resonance is narrow
+  // enough here for the shape of a running width to matter much, and there
+  // is no phi lineshape to run one off anyway.  Normalised to F(0) = 1 by
+  // Summed_Propagator, which divides by the sum of the weights.
+  m_props.Add(new METOOLS::FixedBreitWigner(NULL,s_v_omega782.Mass(),
+					    s_v_omega782.Width()),
+	      s_v_omega782.Weight());
+  m_props.Add(new METOOLS::FixedBreitWigner(NULL,s_v_phi1020.Mass(),
+					    s_v_phi1020.Width()),
+	      s_v_phi1020.Weight());
 }
 
 Complex FFVMD::FF() {
