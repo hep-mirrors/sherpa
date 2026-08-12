@@ -18,10 +18,12 @@ namespace BEAM {
     std::unique_ptr<EPA_FF_Base> p_ff;
     double m_pref;
     double m_pt2max;
+    double m_xmin, m_xmax;
 
     bool m_output, m_outputAll;
 
     void Initialise();
+    void SetXRange();
     void RegisterDefaults() const;
 
     static void Tests();
@@ -36,8 +38,8 @@ namespace BEAM {
     void FixPosition() override;
     void SetOutMomentum(const ATOOLS::Vec4D& out) override;
 
-    double Xmax() const override { return p_ff->Xmax(); }
-    double Xmin() const override { return p_ff->Xmin(); }
+    double Xmax() const override { return m_xmax; }
+    double Xmin() const override { return m_xmin; }
 
     double ImpactParameter() const override { return p_ff->ImpactParameter(); }
   };// end of class EPA
