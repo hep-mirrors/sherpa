@@ -1,6 +1,6 @@
 # collider setup
 BEAMS: [11, -11]
-BEAM_ENERGIES: 1.05/2
+BEAM_ENERGIES: 0.77/2
 PDF_LIBRARY: None
 ME_GENERATORS: Comix
 EVENTS: 50k
@@ -21,12 +21,12 @@ PROCESSES:
 - 11 -11 -> 211 -211 111:
     Order: {QCD: 0, EW: 3 }
 
-YFS:
-  MODE: ISR
+# YFS:
+#   MODE: ISR
 
 RIVET:
   IGNORE_BEAMS: 1
-  ANALYSIS: [MC_EE_PIPIPI0]
+  ANALYSIS: [MC_EE_PIPIPI0, BELLE_2024_I2775022]
 
 # PION_FORM_FACTOR:
 #   rho(770):   {Mass: 0.77456, Width: 0.14832, Amplitude: 1.0,     Phase: 0.0}
