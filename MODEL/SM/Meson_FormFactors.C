@@ -32,6 +32,7 @@ namespace METOOLS {
     void FixMode(const Vertex_Key &key);
     void Construct();
     void ConstructPionFormFactor();
+    void ConstructKaonFormFactor();
     void ConstructThreePionFormFactor();
     void ConstructVectorPionFormFactor();
   public:
@@ -116,6 +117,34 @@ namespace {
     { "THREE_PION_FORM_FACTOR", "omega(782)", 0.78266 , 0.00868 , 1.0, 0.   };
   GS_Parameters s_v_phi1020
     { "THREE_PION_FORM_FACTOR", "phi(1020)" , 1.019461, 0.004249, 0.042, M_PI };
+
+  /////////////////////////////////////////////////////////////////////
+  // Kaon form factor, hep-ph/0409080 eq. 64.  K+ = u sbar, so unlike the
+  // pion form factor the photon sees THREE separate, additive SU(3)
+  // channels with fixed relative weights 1/2 (isovector, rho family) and
+  // 1/6, 1/3 (isoscalar, omega and phi families) - not one isospin current
+  // with a small isospin-violating admixture, the way rho-omega/rho-phi
+  // mixing works for pi+ pi-.
+  //
+  // The coefficients in the reference are real, with no explicit phase
+  // factor; a negative one is encoded here as amplitude > 0 with
+  // phase = pi, so the existing GS_Parameters Weight() = c*exp(i*phi)
+  // machinery can be reused unchanged.
+  //
+  /////////////////////////////////////////////////////////////////////
+  //                             tag              m         Gamma      c      phi
+  GS_Parameters s_K_rho       { "KAON_FORM_FACTOR", "rho(770)"   , 0.77456 , 0.14832 , 1.195, 0.     };
+  GS_Parameters s_K_rho1450   { "KAON_FORM_FACTOR", "rho(1450)"  , 1.4859  , 0.37360 , 0.112, M_PI   };
+  GS_Parameters s_K_rho1700   { "KAON_FORM_FACTOR", "rho(1700)"  , 1.8668  , 0.30334 , 0.083, M_PI   };
+  // c_rho(2150) = 1 - c_rho - c_rho(1450) - c_rho(1700) = 0 for the
+  // defaults above: the sum rule that enforces F(0) = 1 leaves this term
+  // with no contribution by default, but it stays tunable.
+  GS_Parameters s_K_rho2150   { "KAON_FORM_FACTOR", "rho(2150)"  , 2.2645  , 0.11327 , 0.0  , 0.     };
+  GS_Parameters s_K_omega     { "KAON_FORM_FACTOR", "omega(782)" , 0.78248 , 0.00855 , 1.195, 0.     };
+  GS_Parameters s_K_omega1420 { "KAON_FORM_FACTOR", "omega(1420)", 1.410   , 0.290   , 0.112, M_PI   };
+  GS_Parameters s_K_omega1650 { "KAON_FORM_FACTOR", "omega(1650)", 1.67    , 0.315   , 0.083, M_PI   };
+  GS_Parameters s_K_phi       { "KAON_FORM_FACTOR", "phi(1020)"  , 1.01947 , 0.00425 , 1.018, 0.     };
+  GS_Parameters s_K_phi1680   { "KAON_FORM_FACTOR", "phi(1680)"  , 1.680   , 0.150   , 0.018, M_PI   };
 }
 
 /////////////////////////////////////////////////////////////////////
@@ -168,10 +197,8 @@ void FFVMD::FixMode(const Vertex_Key &key) {
     m_mode = FF_0_PP_mode::V_pi;
     return;
   }
-  if (key.m_j[0]->Flav()==Flavour(kf_pi_plus) &&
-      key.m_j[1]->Flav()==Flavour(kf_pi_plus).Bar() )     m_mode = FF_0_PP_mode::pipi_0;
-  else if (key.m_j[0]->Flav()==Flavour(kf_K_plus) &&
-	   key.m_j[1]->Flav()==Flavour(kf_K_plus).Bar() ) m_mode = FF_0_PP_mode::KK_0;
+  if      (kfs==std::multiset<kf_code>{kf_pi_plus,kf_pi_plus}) m_mode = FF_0_PP_mode::pipi_0;
+  else if (kfs==std::multiset<kf_code>{kf_K_plus ,kf_K_plus }) m_mode = FF_0_PP_mode::KK_0;
 }
 
 void FFVMD::Construct() {
@@ -186,9 +213,8 @@ void FFVMD::Construct() {
     ConstructVectorPionFormFactor();
     break;
   case int(FF_0_PP_mode::KK_0):
-    // Recognised, but not parametrised yet.  Falling through to a silent
-    // F = 1 here would look exactly like a working form factor.
-    THROW(not_implemented,"No VMD form factor for K+ K- yet.");
+    ConstructKaonFormFactor();
+    break;
   case int(FF_0_PP_mode::unknown):
   default:
     msg_Out()<<METHOD<<" yields no form factor.\n";
@@ -232,6 +258,65 @@ void FFVMD::ConstructPionFormFactor() {
 					   s_rho2150.Mass(),s_rho2150.Width()),
 	      s_rho2150.Weight());
 }
+
+
+void FFVMD::ConstructKaonFormFactor() {
+  msg_Debugging()<<METHOD<<": Gounaris-Sakurai parameters\n";
+  for (GS_Parameters * p : { &s_K_rho, &s_K_rho1450, &s_K_rho1700, &s_K_rho2150,
+			     &s_K_omega, &s_K_omega1420, &s_K_omega1650,
+			     &s_K_phi, &s_K_phi1680 }) p->Read();
+  //////////////////////////////////////////////////////////////////////
+  // Three independent, additive SU(3) channels (see the comment on the
+  // s_K_* parameters above) - not a single normalised isospin current, so
+  // this is built with normalise=false and added to m_props as a single
+  // term of weight 1.  m_props always renormalises by its own weight sum,
+  // but with only one term of weight 1 that division is a no-op; the
+  // F(0) = 1 normalisation here comes entirely from the sum rule
+  // c_rho(2150) = 1 - c_rho - c_rho(1450) - c_rho(1700) baked into the
+  // coefficients themselves.
+  //////////////////////////////////////////////////////////////////////
+  METOOLS::Summed_Propagator * kaon = new METOOLS::Summed_Propagator(false);
+  // rho family: the same resonances, and the same pi pi running width, as
+  // the pion channel - rho decays via pi pi regardless of which form
+  // factor is asking about it.
+  kaon->Add(new METOOLS::GounarisSakurai(LineShapes->Get(Flavour(kf_rho_770)),
+					 resonance_type::GS,
+					 s_K_rho.Mass(),s_K_rho.Width()),
+	    0.5*s_K_rho.Weight());
+  kaon->Add(new METOOLS::GounarisSakurai(LineShapes->Get(Flavour(kf_rho_1450)),
+					 resonance_type::GS,
+					 s_K_rho1450.Mass(),s_K_rho1450.Width()),
+	    0.5*s_K_rho1450.Weight());
+  kaon->Add(new METOOLS::GounarisSakurai(LineShapes->Get(Flavour(kf_rho_1700)),
+					 resonance_type::GS,
+					 s_K_rho1700.Mass(),s_K_rho1700.Width()),
+	    0.5*s_K_rho1700.Weight());
+  kaon->Add(new METOOLS::GounarisSakurai(NULL,resonance_type::GS,
+					 s_K_rho2150.Mass(),s_K_rho2150.Width()),
+	    0.5*s_K_rho2150.Weight());
+  // omega family: fixed widths.  None of these decay predominantly to two
+  // pseudoscalars, so a running width makes no more sense here than it
+  // does for omega in the pion channel.
+  kaon->Add(new METOOLS::FixedBreitWigner(NULL,s_K_omega.Mass(),s_K_omega.Width()),
+	    s_K_omega.Weight()/6.);
+  kaon->Add(new METOOLS::FixedBreitWigner(NULL,s_K_omega1420.Mass(),s_K_omega1420.Width()),
+	    s_K_omega1420.Weight()/6.);
+  kaon->Add(new METOOLS::FixedBreitWigner(NULL,s_K_omega1650.Mass(),s_K_omega1650.Width()),
+	    s_K_omega1650.Weight()/6.);
+  // phi family: also fixed width here.  phi(1020) sits only 33 MeV above
+  // the K+K- threshold itself, where a running width from the K Kbar loop
+  // (rather than the pi pi one GounarisSakurai assumes) would matter most -
+  // hep-ph/0409080 does include that.  Left as the obvious next
+  // refinement; the fixed-width approximation is the same simplification
+  // already made for phi in the pion channel.
+  kaon->Add(new METOOLS::FixedBreitWigner(NULL,s_K_phi.Mass(),s_K_phi.Width()),
+	    s_K_phi.Weight()/3.);
+  kaon->Add(new METOOLS::FixedBreitWigner(NULL,s_K_phi1680.Mass(),s_K_phi1680.Width()),
+	    s_K_phi1680.Weight()/3.);
+  m_props.Add(kaon,Complex(1.,0.));
+}
+
+
 
 void FFVMD::ConstructThreePionFormFactor() {
   msg_Debugging()<<METHOD<<": Gounaris-Sakurai parameters\n";
