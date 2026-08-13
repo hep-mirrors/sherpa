@@ -53,6 +53,7 @@ namespace AHADIC {
     virtual void ConstructPoincare();
     virtual void AcceptSplittingWeights();
     virtual void ResetSplittingWeights();
+    virtual void DiscardSplittingRecords(); // OUTPUT
     virtual bool MakeSplitting();
     virtual void PopFlavours();
     virtual void DetermineMinimalMasses();

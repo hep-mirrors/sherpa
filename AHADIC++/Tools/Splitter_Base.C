@@ -51,10 +51,11 @@ operator()(Proto_Particle * part1,Proto_Particle * part2,
     return false;
 
   p_reweighting->ResetFlavourSelectionWeights();
+  ResetSplittingWeights();
+  p_reweighting->BeginSplitting();
 
   for(size_t attempts(0); attempts<m_attempts; ++attempts) {
-    ResetSplittingWeights();
-    p_reweighting->BeginSplittingAttempt();
+    DiscardSplittingRecords();
 
     // perform cluster splitting
     PopFlavours();
@@ -67,12 +68,12 @@ operator()(Proto_Particle * part1,Proto_Particle * part2,
     if(!FillParticlesInLists())
       continue;
 
-    p_reweighting->CommitSplittingAttempt();
+    p_reweighting->CommitSplitting();
     AcceptSplittingWeights();
     p_reweighting->AcceptFlavourSelectionWeights();
     return true;
   }
-  p_reweighting->AbortSplittingAttempt();
+  p_reweighting->AbortSplitting();
   return false;
 }
 
@@ -247,6 +248,7 @@ double Splitter_Base::SelectZ(const double zmin, const double zmax,
 
 void Splitter_Base::ResetSplittingWeights() {};
 void Splitter_Base::AcceptSplittingWeights() {};
+void Splitter_Base::DiscardSplittingRecords() {};
 bool Splitter_Base::MakeKinematics() {
   return MakeTransverseMomentum() && MakeLongitudinalMomenta() && CheckKinematics();
 }

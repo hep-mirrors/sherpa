@@ -443,7 +443,7 @@ void Hadronisation_Reweighting::ResetEvent() {
   m_tmp_kt_weights.assign(m_n_kt_variations, 1.);
   m_tmp_soft_weights.assign(m_n_soft_variations, 1.);
   m_tmp_promptdecay_weights.assign(m_n_promptdecay_variations, 1.);
-  m_in_attempt = false;
+  m_in_splitting = false;
   // OUTPUT
   m_tmp_flavour_records.clear();
   m_tmp_gluon_records.clear();
@@ -490,10 +490,15 @@ void Hadronisation_Reweighting::FlavourSelectionReweighting(
 void Hadronisation_Reweighting::GluonSplittingReweighting(
     const std::vector<double>& probs) {
   ///////////////////////////////////////////////////////////////////////////
-  // Callback from Gluon_Splitter for each accepted z. The probs are the
+  // Callback from Gluon_Splitter for every z it draws. The probs are the
   // normalised fragmentation-function densities f(z)/int f, so that the
-  // accept/reject trials integrate out and rejected z play no role;
-  // weight *= p_var / p_nom.
+  // accept/reject trials of the z selection itself integrate out and its
+  // rejected z play no role; weight *= p_var / p_nom.
+  //
+  // The z that MakeLongitudinalMomenta discards because CalculateXY fails do
+  // play a role, though: that rejection sits outside the accept/reject loop,
+  // so it does not integrate out, and the ratio of every drawn z has to be
+  // multiplied in for the weight to stay unbiased. See Gluon_Splitter.
   ///////////////////////////////////////////////////////////////////////////
   if (m_n_gluon_variations <= 1) return;
   for (size_t ivar=1; ivar<m_n_gluon_variations; ++ivar) {
@@ -548,36 +553,38 @@ void Hadronisation_Reweighting::ClusterSplittingReweightingAR(
   }
 }
 
-void Hadronisation_Reweighting::BeginSplittingAttempt() {
+void Hadronisation_Reweighting::BeginSplitting() {
   ///////////////////////////////////////////////////////////////////////////
-  // Open a splitting attempt, see the declaration. Only one attempt can be
-  // open at a time: the soft cluster handler never re-enters a Splitter_Base,
-  // and the gluon and cluster decayers call their splitters at top level.
+  // Open a splitting, see the declaration. Only one can be open at a time:
+  // the soft cluster handler never re-enters a Splitter_Base, and the gluon
+  // and cluster decayers call their splitters at top level.
   ///////////////////////////////////////////////////////////////////////////
   if (m_n_variations <= 1) return;
   ResetTmpWeights(m_n_kt_variations, m_tmp_kt_weights);
   ResetTmpWeights(m_n_soft_variations, m_tmp_soft_weights);
   ResetTmpWeights(m_n_promptdecay_variations, m_tmp_promptdecay_weights);
-  m_in_attempt = true;
+  m_in_splitting = true;
 }
 
-void Hadronisation_Reweighting::CommitSplittingAttempt() {
+void Hadronisation_Reweighting::CommitSplitting() {
   ///////////////////////////////////////////////////////////////////////////
-  // The attempt succeeded: commit what was drawn inside it.
+  // The splitting succeeded: commit what was drawn over all of its attempts.
   ///////////////////////////////////////////////////////////////////////////
-  m_in_attempt = false;
+  m_in_splitting = false;
   if (m_n_variations <= 1) return;
   AcceptTmpWeights(m_n_kt_variations, m_kt_weights, m_tmp_kt_weights);
   AcceptTmpWeights(m_n_soft_variations, m_soft_weights, m_tmp_soft_weights);
-  AcceptTmpWeights(m_n_promptdecay_variations, 
+  AcceptTmpWeights(m_n_promptdecay_variations,
                     m_promptdecay_weights, m_tmp_promptdecay_weights);
 }
 
-void Hadronisation_Reweighting::AbortSplittingAttempt() {
+void Hadronisation_Reweighting::AbortSplitting() {
   ///////////////////////////////////////////////////////////////////////////
-  // The attempt failed: discard what was drawn inside it.
+  // No attempt succeeded, so the splitting does not happen at all: discard.
+  // The truncation of the attempt loop is the one part of the trial sequence
+  // that the density ratios cannot express, and stays an approximation.
   ///////////////////////////////////////////////////////////////////////////
-  m_in_attempt = false;
+  m_in_splitting = false;
   if (m_n_variations <= 1) return;
   ResetTmpWeights(m_n_kt_variations, m_tmp_kt_weights);
   ResetTmpWeights(m_n_soft_variations, m_tmp_soft_weights);
@@ -595,7 +602,7 @@ void Hadronisation_Reweighting::KTSelectionReweighting(
   ///////////////////////////////////////////////////////////////////////////
   if (m_n_kt_variations <= 1) return;
   std::vector<double>& weights =
-    m_in_attempt ? m_tmp_kt_weights : m_kt_weights;
+    m_in_splitting ? m_tmp_kt_weights : m_kt_weights;
   for (size_t ivar=1; ivar<m_n_kt_variations; ++ivar) {
     weights[ivar] *= probs[ivar] / probs[0];
   }
@@ -610,7 +617,7 @@ void Hadronisation_Reweighting::SoftClusterReweighting(
   ///////////////////////////////////////////////////////////////////////////
   if (m_n_soft_variations <= 1) return;
   std::vector<double>& evtweights =
-    m_in_attempt ? m_tmp_soft_weights : m_soft_weights;
+    m_in_splitting ? m_tmp_soft_weights : m_soft_weights;
   const double prob_nom = weights[0] / totweights[0];
   for (size_t ivar=1; ivar<m_n_soft_variations; ++ivar) {
     const double ratio = (weights[ivar] / totweights[ivar]) / prob_nom;
@@ -631,7 +638,7 @@ void Hadronisation_Reweighting::PromptDecayReweighting(
   ///////////////////////////////////////////////////////////////////////////
   if (m_n_promptdecay_variations <= 1) return;
   std::vector<double>& weights =
-    m_in_attempt ? m_tmp_promptdecay_weights : m_promptdecay_weights;
+    m_in_splitting ? m_tmp_promptdecay_weights : m_promptdecay_weights;
   for (size_t ivar=1; ivar<m_n_promptdecay_variations; ++ivar) {
     weights[ivar] *= decayed ?
       probs[ivar] / probs[0] : (1. - probs[ivar]) / (1. - probs[0]);

@@ -51,14 +51,13 @@ bool Trivial_Splitter::operator()(Singlet * singlet) {
   m_spectmom = p_singlet->back()->Momentum();
   if (!InitKinematics(false)) return Rescue();
   p_reweighting->ResetFlavourSelectionWeights();
+  p_reweighting->BeginSplitting();
   bool accepted = false;
   do {
-    p_reweighting->BeginSplittingAttempt();
     SelectFlavour();
     accepted = FixTrialKinematics() && CheckKinematics();
-    if (!accepted) p_reweighting->AbortSplittingAttempt();
   } while (!accepted);
-  p_reweighting->CommitSplittingAttempt();
+  p_reweighting->CommitSplitting();
   p_reweighting->AcceptFlavourSelectionWeights();
 
   p_part1->SetFlavour(m_newflav);

@@ -145,14 +145,14 @@ namespace AHADIC {
     std::vector<double> m_soft_weights;
     std::vector<double> m_kt_weights;
     std::vector<double> m_promptdecay_weights;
-    // Per-splitting weights, committed into the event weights when a
-    // splitting succeeds and discarded when an attempt fails.
+    // Per-splitting weights, accumulated over every attempt of a splitting
+    // and committed into the event weights when the splitting succeeds.
     std::vector<double> m_tmp_flavour_weights;
     std::vector<double> m_tmp_gluon_weights;
     std::vector<double> m_tmp_cluster_weights;
     // The remaining three channels are committed directly while no splitting
-    // attempt is open, and buffered like the ones above while one is.
-    bool m_in_attempt {false};
+    // is open, and buffered like the ones above while one is.
+    bool m_in_splitting {false};
     std::vector<double> m_tmp_kt_weights;
     std::vector<double> m_tmp_soft_weights;
     std::vector<double> m_tmp_promptdecay_weights;
@@ -235,7 +235,7 @@ namespace AHADIC {
       DiscardTmpRecords(m_tmp_flavour_records); // OUTPUT
     }
 
-    // Gluon splitting z selection (analytic density ratio, accepted z only)
+    // Gluon splitting z selection (analytic density ratio per drawn z)
     void GluonSplittingReweighting(const std::vector<double>& probs);
     inline void AcceptGluonSplittingWeights() {
       AcceptTmpWeights(m_n_gluon_variations, m_gluon_weights, m_tmp_gluon_weights);
@@ -243,10 +243,12 @@ namespace AHADIC {
     }
     inline void ResetGluonSplittingWeights() {
       ResetTmpWeights(m_n_gluon_variations, m_tmp_gluon_weights);
-      DiscardTmpRecords(m_tmp_gluon_records); // OUTPUT
+    }
+    inline void DiscardGluonSplittingRecords() { // OUTPUT
+      DiscardTmpRecords(m_tmp_gluon_records);
     }
 
-    // Cluster splitting z selection (analytic density ratio, accepted z only)
+    // Cluster splitting z selection (analytic density ratio per drawn z)
     inline bool DoClusterSplittingReweighting(const int nsplit) const {
       return m_n_cluster_variations > 1 &&
              (m_reweight_max_nsplit < 0 || nsplit < m_reweight_max_nsplit);
@@ -261,16 +263,14 @@ namespace AHADIC {
     }
     inline void ResetClusterSplittingWeights() {
       ResetTmpWeights(m_n_cluster_variations, m_tmp_cluster_weights);
-      DiscardTmpRecords(m_tmp_cluster_records); // OUTPUT
+    }
+    inline void DiscardClusterSplittingRecords() { // OUTPUT
+      DiscardTmpRecords(m_tmp_cluster_records);
     }
 
-    // A splitting attempt is a transaction: everything drawn inside it is
-    // discarded if the attempt fails, because only the successful attempt is
-    // realised in the event. Weights of the three channels below are committed
-    // immediately when no attempt is open, and buffered while one is.
-    void BeginSplittingAttempt();
-    void CommitSplittingAttempt();
-    void AbortSplittingAttempt();
+    void BeginSplitting();
+    void CommitSplitting();
+    void AbortSplitting();
 
     // Transverse momentum selection
     void KTSelectionReweighting(const std::vector<double>& probs);

@@ -34,9 +34,6 @@ bool Gluon_Splitter::MakeLongitudinalMomenta() {
     m_z[1] = SelectZ(m_zmin[1],m_zmax[1],0);
     if (m_z[1] < 0.) return false;
     if (CalculateXY()) {
-      if (p_reweighting->Active() && m_n_gluon_variations > 1) {
-        p_reweighting->GluonSplittingReweighting(m_zprobs);
-      }
       p_reweighting->RecordGluonZ(m_z[1]); // OUTPUT
       return true;
     }
@@ -130,6 +127,7 @@ void Gluon_Splitter::ZAccepted(const double wgt, const double & z,
   for (size_t ivar=0; ivar<m_n_gluon_variations; ++ivar) {
     m_zprobs[ivar] = FragmentationFunctionProb(z,zmin,zmax,m_alpha[ivar]);
   }
+  p_reweighting->GluonSplittingReweighting(m_zprobs);
 }
 
 bool Gluon_Splitter::CheckKinematics() {
