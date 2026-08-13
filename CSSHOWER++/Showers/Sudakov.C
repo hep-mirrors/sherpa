@@ -187,19 +187,22 @@ void Sudakov::AddQuarkoniaSplittingFunctions(Model_Base *md, const int kfmode) {
             << " splitting functions\n";
   Kabbala g3("g_3", sqrt(4. * M_PI * md->ScalarConstant("alpha_S")));
   Kabbala cpl0 = g3 * Kabbala("i", Complex(0., 1.));
-  Flavour Quark_flav(kf_c);
+  Flavour Quark_flav;
   Flavour Gluon_flav(kf_gluon);
   Single_Vertex v;
   // if (!flav.IsOn()) continue;
 
   // This is c -> c singlets
-  list<kf_code> singlets = {kf_J_psi_1S, kf_eta_c_1S, kf_h_c1, kf_chi_c0_1P, kf_chi_c1_1P, kf_chi_c2_1P}; //, kf_chi_b2_3P_oct};
+  list<kf_code> singlets = {kf_J_psi_1S, kf_eta_c_1S, kf_h_c1, kf_chi_c0_1P, kf_chi_c1_1P, kf_chi_c2_1P};
+                            // kf_Upsilon_1S, kf_eta_b, kf_h_b1, kf_chi_b0_1P, kf_chi_b1_1P, kf_chi_b2_1P}; 
   list<string> splitypes = {"FF3S1_Quarkonia", "FF1S0_Quarkonia", "FF2Sp1P1_Quarkonia", "FF3P0_Quarkonia", "FF2Sp1P1_Quarkonia", "FF3P2_Quarkonia"};
+                            // "FF3S1_Quarkonia", "FF1S0_Quarkonia", "FF2Sp1P1_Quarkonia", "FF3P0_Quarkonia", "FF2Sp1P1_Quarkonia", "FF3P2_Quarkonia"};  
   for (list<kf_code>::iterator kfit = singlets.begin();
        kfit != singlets.end(); kfit++) 
   {   
       Flavour singletflav(*kfit);
       v = Single_Vertex();
+      Quark_flav = Flavour((singletflav.Kfcode() / 10) % 10);
       v.AddParticle(Quark_flav.Bar());
       v.AddParticle(Quark_flav);
       v.AddParticle(singletflav);
@@ -210,45 +213,66 @@ void Sudakov::AddQuarkoniaSplittingFunctions(Model_Base *md, const int kfmode) {
       v.order[0] = 1;
       Add(new Splitting_Function_Base(SF_Key(&v, 0, cstp::FF, kfmode, m_qcdmode, m_ewmode,  1, m_pdfmin)));
       Add(new Splitting_Function_Base(SF_Key(&v, 0, cstp::FF, kfmode, m_qcdmode, m_ewmode, -1, m_pdfmin)));
+      Add(new Splitting_Function_Base(SF_Key(&v, 0, cstp::FI, kfmode, m_qcdmode, m_ewmode,  1, m_pdfmin)));
+      Add(new Splitting_Function_Base(SF_Key(&v, 0, cstp::FI, kfmode, m_qcdmode, m_ewmode, -1, m_pdfmin)));
+      Add(new Splitting_Function_Base(SF_Key(&v, 0, cstp::II, kfmode, m_qcdmode, m_ewmode,  1, m_pdfmin)));
+      Add(new Splitting_Function_Base(SF_Key(&v, 0, cstp::II, kfmode, m_qcdmode, m_ewmode, -1, m_pdfmin)));
+      Add(new Splitting_Function_Base(SF_Key(&v, 0, cstp::IF, kfmode, m_qcdmode, m_ewmode,  1, m_pdfmin)));
+      Add(new Splitting_Function_Base(SF_Key(&v, 0, cstp::IF, kfmode, m_qcdmode, m_ewmode, -1, m_pdfmin)));
       v.in[0] = v.in[0].Bar();
       v.in[1] = v.in[1].Bar();
-      Add(new Splitting_Function_Base(SF_Key(&v, 0, cstp::FF, kfmode, m_qcdmode, m_ewmode, 1, m_pdfmin)));
+      Add(new Splitting_Function_Base(SF_Key(&v, 0, cstp::FF, kfmode, m_qcdmode, m_ewmode,  1, m_pdfmin)));
       Add(new Splitting_Function_Base(SF_Key(&v, 0, cstp::FF, kfmode, m_qcdmode, m_ewmode, -1, m_pdfmin)));
-
-      if (*kfit == kf_J_psi_1S) {
-        Add(new Splitting_Function_Base(SF_Key(&v, 0, cstp::II, kfmode, m_qcdmode, m_ewmode,  1, m_pdfmin)));
-        Add(new Splitting_Function_Base(SF_Key(&v, 0, cstp::II, kfmode, m_qcdmode, m_ewmode, -1, m_pdfmin)));
-        Add(new Splitting_Function_Base(SF_Key(&v, 0, cstp::IF, kfmode, m_qcdmode, m_ewmode,  1, m_pdfmin)));
-        Add(new Splitting_Function_Base(SF_Key(&v, 0, cstp::IF, kfmode, m_qcdmode, m_ewmode, -1, m_pdfmin)));
-      }
+      Add(new Splitting_Function_Base(SF_Key(&v, 0, cstp::FI, kfmode, m_qcdmode, m_ewmode,  1, m_pdfmin)));
+      Add(new Splitting_Function_Base(SF_Key(&v, 0, cstp::FI, kfmode, m_qcdmode, m_ewmode, -1, m_pdfmin)));
+      Add(new Splitting_Function_Base(SF_Key(&v, 0, cstp::II, kfmode, m_qcdmode, m_ewmode,  1, m_pdfmin)));
+      Add(new Splitting_Function_Base(SF_Key(&v, 0, cstp::II, kfmode, m_qcdmode, m_ewmode, -1, m_pdfmin)));
+      Add(new Splitting_Function_Base(SF_Key(&v, 0, cstp::IF, kfmode, m_qcdmode, m_ewmode,  1, m_pdfmin)));
+      Add(new Splitting_Function_Base(SF_Key(&v, 0, cstp::IF, kfmode, m_qcdmode, m_ewmode, -1, m_pdfmin)));
       msg_IODebugging() << METHOD << ": added splitting functions for " << singletflav.IDName() << "\n";
     }
   // This is c -> c 3S1/1S0 octets
-  list<kf_code> octetmesons = {kf_3S1_c, kf_1S0_c};
-  splitypes = {"FF3S1_Quarkonia", "FF1S0_Quarkonia"};
+  list<kf_code> octetmesons = {kf_3S1_c, kf_1S0_c};//, kf_3S1_b, kf_1S0_b};
+  splitypes = {"FF3S1_Quarkonia", "FF1S0_Quarkonia"};//, "FF3S1_Quarkonia", "FF1S0_Quarkonia"};
   for (list<kf_code>::iterator kfit = octetmesons.begin();
        kfit != octetmesons.end(); kfit++) 
   {
       Flavour octetflav(*kfit);
       v = Single_Vertex();
+      Quark_flav = Flavour((octetflav.Kfcode() / 10) % 10);
       v.AddParticle(Quark_flav.Bar());
       v.AddParticle(Quark_flav);
       v.AddParticle(octetflav);
-      // No clue of how to write T^a_{i,j} T^{a}_{k,l} in this form 
       v.Color.push_back(Color_Function(cf::T,3,2,1));
       v.Lorentz.push_back(splitypes.front());
       splitypes.pop_front();
       v.cpl.push_back(cpl0); // Check later
       v.order[0] = 1;
       Add(new Splitting_Function_Base(SF_Key(&v, 0, cstp::FF, kfmode, m_qcdmode, m_ewmode, 1, m_pdfmin)));
+      Add(new Splitting_Function_Base(SF_Key(&v, 0, cstp::FF, kfmode, m_qcdmode, m_ewmode, -1, m_pdfmin)));
+      Add(new Splitting_Function_Base(SF_Key(&v, 0, cstp::FI, kfmode, m_qcdmode, m_ewmode,  1, m_pdfmin)));
+      Add(new Splitting_Function_Base(SF_Key(&v, 0, cstp::FI, kfmode, m_qcdmode, m_ewmode, -1, m_pdfmin)));
+      Add(new Splitting_Function_Base(SF_Key(&v, 0, cstp::II, kfmode, m_qcdmode, m_ewmode,  1, m_pdfmin)));
+      Add(new Splitting_Function_Base(SF_Key(&v, 0, cstp::II, kfmode, m_qcdmode, m_ewmode, -1, m_pdfmin)));
+      Add(new Splitting_Function_Base(SF_Key(&v, 0, cstp::IF, kfmode, m_qcdmode, m_ewmode,  1, m_pdfmin)));
+      Add(new Splitting_Function_Base(SF_Key(&v, 0, cstp::IF, kfmode, m_qcdmode, m_ewmode, -1, m_pdfmin)));
       v.in[0] = v.in[0].Bar();
       v.in[1] = v.in[1].Bar();
       Add(new Splitting_Function_Base(SF_Key(&v, 0, cstp::FF, kfmode, m_qcdmode, m_ewmode, 1, m_pdfmin)));
+      Add(new Splitting_Function_Base(SF_Key(&v, 0, cstp::FF, kfmode, m_qcdmode, m_ewmode, -1, m_pdfmin)));
+      Add(new Splitting_Function_Base(SF_Key(&v, 0, cstp::FI, kfmode, m_qcdmode, m_ewmode,  1, m_pdfmin)));
+      Add(new Splitting_Function_Base(SF_Key(&v, 0, cstp::FI, kfmode, m_qcdmode, m_ewmode, -1, m_pdfmin)));
+      Add(new Splitting_Function_Base(SF_Key(&v, 0, cstp::II, kfmode, m_qcdmode, m_ewmode,  1, m_pdfmin)));
+      Add(new Splitting_Function_Base(SF_Key(&v, 0, cstp::II, kfmode, m_qcdmode, m_ewmode, -1, m_pdfmin)));
+      Add(new Splitting_Function_Base(SF_Key(&v, 0, cstp::IF, kfmode, m_qcdmode, m_ewmode,  1, m_pdfmin)));
+      Add(new Splitting_Function_Base(SF_Key(&v, 0, cstp::IF, kfmode, m_qcdmode, m_ewmode, -1, m_pdfmin)));
       msg_Out() << METHOD << ": added splitting functions for " << octetflav.IDName() << "\n";
         }
   // This if g -> g Quarkonia
   singlets  = {kf_eta_c_1S, kf_chi_c0_1P, kf_chi_c1_1P, kf_chi_c2_1P};
+//               kf_eta_b, kf_chi_b0_1P, kf_chi_b1_1P, kf_chi_b2_1P};
   splitypes = {"VV1S0_Quarkonia", "VV3P0_Quarkonia", "VV3P1_Quarkonia", "VV3P2_Quarkonia"};
+              //  "VV1S0_Quarkonia", "VV3P0_Quarkonia", "VV3P1_Quarkonia", "VV3P2_Quarkonia"};
   for (list<kf_code>::iterator kfit = singlets.begin();
        kfit != singlets.end(); kfit++) 
   {
@@ -262,10 +286,14 @@ void Sudakov::AddQuarkoniaSplittingFunctions(Model_Base *md, const int kfmode) {
     splitypes.pop_front();
     v.cpl.push_back(cpl0); // Check later
     v.order[0] = 1;
-    Add(new Splitting_Function_Base(SF_Key(&v, 0, cstp::FF, kfmode, m_qcdmode, m_ewmode, 1, m_pdfmin)));
-    v.in[0] = v.in[0].Bar();
-    v.in[1] = v.in[1].Bar();
-    Add(new Splitting_Function_Base(SF_Key(&v, 0, cstp::FF, kfmode, m_qcdmode, m_ewmode, 1, m_pdfmin)));
+    Add(new Splitting_Function_Base(SF_Key(&v, 0, cstp::FF, kfmode, m_qcdmode, m_ewmode,  1, m_pdfmin)));
+    Add(new Splitting_Function_Base(SF_Key(&v, 0, cstp::FF, kfmode, m_qcdmode, m_ewmode, -1, m_pdfmin)));
+    Add(new Splitting_Function_Base(SF_Key(&v, 0, cstp::FI, kfmode, m_qcdmode, m_ewmode,  1, m_pdfmin)));
+    Add(new Splitting_Function_Base(SF_Key(&v, 0, cstp::FI, kfmode, m_qcdmode, m_ewmode, -1, m_pdfmin)));
+    Add(new Splitting_Function_Base(SF_Key(&v, 0, cstp::II, kfmode, m_qcdmode, m_ewmode,  1, m_pdfmin)));
+    Add(new Splitting_Function_Base(SF_Key(&v, 0, cstp::II, kfmode, m_qcdmode, m_ewmode, -1, m_pdfmin)));
+    Add(new Splitting_Function_Base(SF_Key(&v, 0, cstp::IF, kfmode, m_qcdmode, m_ewmode,  1, m_pdfmin)));
+    Add(new Splitting_Function_Base(SF_Key(&v, 0, cstp::IF, kfmode, m_qcdmode, m_ewmode, -1, m_pdfmin)));
   }
 
   msg_Out() << METHOD << ": by now " << m_splittings.size()

@@ -251,8 +251,7 @@ operator()(const SFC_Filler_Key &key) const
 
   // Add additional splittings for charmonia production
   const Flavour charm_variants[] = {Flavour(kf_c), Flavour(kf_c).Bar()};
-  kf_code quarkonia_FF[] = {kf_J_psi_1S, kf_eta_c_1S,kf_3S1_c, kf_1S0_c, 
-    kf_h_c1, kf_chi_c0_1P,kf_chi_c1_1P,kf_chi_c2_1P, kf_3S1_c, kf_1S0_c};
+  kf_code quarkonia_FF[] = {kf_J_psi_1S, kf_eta_c_1S, kf_h_c1, kf_chi_c0_1P,kf_chi_c1_1P,kf_chi_c2_1P, kf_3S1_c, kf_1S0_c};
   for (const Flavour &charm : charm_variants) {
     const std::string charm_tag = "{" + charm.IDName() + "}";
     for (const kf_code state : quarkonia_FF) {

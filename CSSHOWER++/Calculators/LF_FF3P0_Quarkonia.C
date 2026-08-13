@@ -158,8 +158,8 @@ double LF_FF3P0_Quarkonia_FI::operator()(const double z, const double y,
   double ma  = ATOOLS::Flavour(m_flspec.Kfcode()).Mass(true);
   double mij = ATOOLS::Flavour(m_flavs[0].Kfcode()).Mass(true);
   double mui2 = sqr(mi) / Q2, muj2 = sqr(mj) / Q2, muk2 = sqr(ma) / Q2, muij2 = sqr(mij) / Q2;
-  // const double sij = (Q2*(1-y) + sqr(mij) )/y;
-  const double sij = (sqr(mi) + sqr(mj))*(1-y) + (Q2 - sqr(ma)) * y;
+  const double yt = ((Q2 - sqr(ma) - sqr(mij)) / (Q2 - sqr(ma) - sqr(mi) - sqr(mj)) - (1.0-y)) / (1.0-y);
+  const double sij = (sqr(mi) + sqr(mj)) * (1.0 + yt) - yt * (Q2 - sqr(ma));
   const double M = mi + mij;
   const double ri = mi / M;
   const double rij = mij / M;
@@ -212,32 +212,33 @@ double LF_FF3P0_Quarkonia_IF::operator()(const double z, const double y,
                                        const double eta, const double scale,
                                        const double Q2) {
   // c --> c 3P0
-  double mai  = ATOOLS::Flavour(m_flavs[1].Kfcode()).Mass(true); // works with the mapping c -> c J/psi
+  double mi  = ATOOLS::Flavour(m_flavs[1].Kfcode()).Mass(true); // works with the mapping c -> c J/psi
   double mj  = ATOOLS::Flavour(m_flavs[2].Kfcode()).Mass(true);
   double mk  = ATOOLS::Flavour(m_flspec.Kfcode()).Mass(true);
   double ma = ATOOLS::Flavour(m_flavs[0].Kfcode()).Mass(true);
-  double mui2 = sqr(mai) / Q2, muj2 = sqr(mj) / Q2, muk2 = sqr(mk) / Q2, muij2 = sqr(ma) / Q2;
+  double muj2 = sqr(mj) / Q2, mui2 = sqr(mi) / Q2, muk2 = sqr(mk) / Q2, mua2 = sqr(ma) / Q2;
   // morally y is xij,a
   // const double sij = (Q2*(1-y) + sqr(mij) )/y;
-  const double tai = (Q2 - sqr(mk))*y + (sqr(mai) + sqr(mj))*(1-y);
-  const double M = mai + ma;
-  const double ri = mai / M;
+  const double zt = (1.0 - y) / (z - y);
+  const double saj = (sqr(ma) + sqr(mj)) * (1.0 - y / z) + (Q2 - sqr(mk)) * (y / z);
+  const double M = mi + ma;
+  const double ri = mi / M;
   const double rij = ma / M;
-  const double den = tai - sqr(rij*M);
+  const double den = saj - sqr(rij * M);
   double value = 0;
-  value  = sqr(sqr(sqr(M)))/sqr(sqr(den))*( 64* sqr(ri) * cube(rij) * sqr(sqr(1 - rij*(1-z))) );
-  value += sqr(cube(M))/cube(den) * ( 8*ri*rij*cube(1-rij*(1-z)) * ( 1 - 18*ri + 14*sqr(ri) -2*rij*(1-z)*(1-2*ri+7*sqr(ri)) + sqr(rij*(1-z))*(1+2*ri) ) );
-  value += sqr(sqr(M))/sqr(den) * ( -sqr(1-rij*(1-z)) * (
+  value  = sqr(sqr(sqr(M)))/sqr(sqr(den))*( 64* sqr(ri) * cube(rij) * sqr(sqr(1 - rij*(1-zt))) );
+  value += sqr(cube(M))/cube(den) * ( 8*ri*rij*cube(1-rij*(1-zt)) * ( 1 - 18*ri + 14*sqr(ri) -2*rij*(1-zt)*(1-2*ri+7*sqr(ri)) + sqr(rij*(1-zt))*(1+2*ri) ) );
+  value += sqr(sqr(M))/sqr(den) * ( -sqr(1-rij*(1-zt)) * (
         2*(1-4*ri)*(1+6*ri-4*sqr(ri))
-        - (1-z)*(5+14*ri-8*sqr(ri))+80*cube(ri)-64*sqr(sqr(ri))
-        + 2*rij*sqr(1-z)*(2+9*ri+18*sqr(ri)-28*cube(ri)-16*sqr(sqr(ri)))
-        - sqr(rij)*cube(1-z)*(1+6*ri+16*sqr(ri)-32*cube(ri))));
-  value += sqr(M)/(den) * z*sqr(1 - 4*ri - (1-z)*(1-4*ri)*(1-2*ri)-ri*rij*sqr(1-z)*(3-4*ri));                                    
+        - (1-zt)*(5+14*ri-8*sqr(ri))+80*cube(ri)-64*sqr(sqr(ri))
+        + 2*rij*sqr(1-zt)*(2+9*ri+18*sqr(ri)-28*cube(ri)-16*sqr(sqr(ri)))
+        - sqr(rij)*cube(1-zt)*(1+6*ri+16*sqr(ri)-32*cube(ri))));
+  value += sqr(M)/(den) * zt*sqr(1 - 4*ri - (1-zt)*(1-4*ri)*(1-2*ri)-ri*rij*sqr(1-zt)*(3-4*ri));
   // value *= 1. / ( (1 - mui2 - muj2 - muk2) + 1./ y * ( mui2 + muj2 - muij2 ) );
   // value *= 1. / (1 + sqr( 1 - z) * sqr(mi) / scale + sqr(z) * sqr(mj) / scale);
   double prefactor = GetLDME(m_flavs[2].Kfcode());
-  prefactor *=  4.0 / 27 / pow(mai,5);
-  return prefactor * sqr(p_cf->Coupling(scale, 0)) * value * JFI(y, eta, scale);
+  prefactor *=  4.0 / 27 / pow(rij * M,5);
+  return prefactor * sqr(p_cf->Coupling(scale, 0)) * value * JIF(z, y, eta, scale);
 }
 
 double LF_FF3P0_Quarkonia_IF::OverIntegrated(const double zmin, const double zmax,
@@ -276,21 +277,22 @@ double LF_FF3P0_Quarkonia_II::operator()(const double z, const double y,
   double mb  = p_ms->Mass(m_flspec);
   double mai = p_ms->Mass(m_flavs[1]);
   double mua2 = sqr(ma) / Q2,  mub2 = sqr(mb) / Q2, muai2 = sqr(mai) / Q2;
-  // const double tai = sqr(ma) + sqr(mi) - y / z * (Q2 - sqr(mb) - sqr(ma) - sqr(mi));
-  const double tai = (Q2 - sqr(mb))*y + (sqr(ma) + sqr(mi))*(1-y);
+  const double zt = 1.0 / (z + y);
+  const double sab = (Q2 - sqr(mi) - (1.0 - z) * (sqr(ma) + sqr(mb))) / z;
+  const double saj = sqr(ma) + sqr(mi) - y * (sab - sqr(ma) - sqr(mb));
   const double M = ATOOLS::Flavour(m_flavs[1].Kfcode()).Mass(true) + ATOOLS::Flavour(m_flavs[0].Kfcode()).Mass(true);
   const double ri = ATOOLS::Flavour(m_flavs[1].Kfcode()).Mass(true) / M;
   const double rij = ATOOLS::Flavour(m_flavs[0].Kfcode()).Mass(true) / M;
-  const double den = tai - sqr(rij*M);
+  const double den = saj - sqr(rij * M);
   double value = 0;
-  value  = sqr(sqr(sqr(M)))/sqr(sqr(den))*( 64* sqr(ri) * cube(rij) * sqr(sqr(1 - rij*(1-z))) );
-  value += sqr(cube(M))/cube(den) * ( 8*ri*rij*cube(1-rij*(1-z)) * ( 1 - 18*ri + 14*sqr(ri) -2*rij*(1-z)*(1-2*ri+7*sqr(ri)) + sqr(rij*(1-z))*(1+2*ri) ) );
-  value += sqr(sqr(M))/sqr(den) * ( -sqr(1-rij*(1-z)) * (
+  value  = sqr(sqr(sqr(M)))/sqr(sqr(den))*( 64* sqr(ri) * cube(rij) * sqr(sqr(1 - rij*(1-zt))) );
+  value += sqr(cube(M))/cube(den) * ( 8*ri*rij*cube(1-rij*(1-zt)) * ( 1 - 18*ri + 14*sqr(ri) -2*rij*(1-zt)*(1-2*ri+7*sqr(ri)) + sqr(rij*(1-zt))*(1+2*ri) ) );
+  value += sqr(sqr(M))/sqr(den) * ( -sqr(1-rij*(1-zt)) * (
         2*(1-4*ri)*(1+6*ri-4*sqr(ri))
-        - (1-z)*(5+14*ri-8*sqr(ri))+80*cube(ri)-64*sqr(sqr(ri))
-        + 2*rij*sqr(1-z)*(2+9*ri+18*sqr(ri)-28*cube(ri)-16*sqr(sqr(ri)))
-        - sqr(rij)*cube(1-z)*(1+6*ri+16*sqr(ri)-32*cube(ri))));
-  value += sqr(M)/(den) * z*sqr(1 - 4*ri - (1-z)*(1-4*ri)*(1-2*ri)-ri*rij*sqr(1-z)*(3-4*ri));
+        - (1-zt)*(5+14*ri-8*sqr(ri))+80*cube(ri)-64*sqr(sqr(ri))
+        + 2*rij*sqr(1-zt)*(2+9*ri+18*sqr(ri)-28*cube(ri)-16*sqr(sqr(ri)))
+        - sqr(rij)*cube(1-zt)*(1+6*ri+16*sqr(ri)-32*cube(ri))));
+  value += sqr(M)/(den) * zt*sqr(1 - 4*ri - (1-zt)*(1-4*ri)*(1-2*ri)-ri*rij*sqr(1-zt)*(3-4*ri));
   // value *= 1. / ( (1 - mui2 - muj2 - muk2) + 1./ y * ( mui2 + muj2 - muij2 ) );
   // value *= 1. / (1 + sqr( 1 - z) * sqr(mi) / scale + sqr(z) * sqr(mj) / scale);
   double prefactor = GetLDME(m_flavs[2].Kfcode());
@@ -310,7 +312,7 @@ double LF_FF3P0_Quarkonia_II::OverIntegrated(const double zmin, const double zma
   const double ra = ma / (mai + ma);
   const double prefactor = 4./27*GetLDME(m_flavs[2].Kfcode())/pow(mai,5);
   return prefactor * 8./3 * sqr(p_cf->MaxCoupling(0)) * rai * cube(ra) / sqr(sqr(1-ra)) * (m_zmax - m_zmin) * m_Jmax;
-  // extra factor 2 is spurios but necessary
+  // extra factor 2 is spurious but necessary
 }
 
 double LF_FF3P0_Quarkonia_II::OverEstimated(const double z, const double y) {
@@ -397,7 +399,7 @@ double LF_F3P0F_Quarkonia_FI::operator()(const double z, const double y,
   double ma  = ATOOLS::Flavour(m_flspec.Kfcode()).Mass(true);
   double mij = ATOOLS::Flavour(m_flavs[0].Kfcode()).Mass(true);
   double mui2 = sqr(mi) / Q2, muj2 = sqr(mj) / Q2, muk2 = sqr(ma) / Q2, muij2 = sqr(mij) / Q2;
-  const double sij = (Q2*(1-y) + sqr(mij) )/y;
+  const double sij = (Q2 + sqr(mi)) * y / (1 - y) + sqr(mi) + sqr(mj);
   const double M = mj + mij;
   const double rj = mj / M;
   const double rij = mij / M;

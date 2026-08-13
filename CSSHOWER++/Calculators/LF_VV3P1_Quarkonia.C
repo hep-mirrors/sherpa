@@ -139,8 +139,8 @@ double LF_VV3P1_Quarkonia_FI::operator()(
   const double mk  =  m_flspec.Mass();
   const double muj2 = sqr(m_flavs[2].Mass(true))/Q2;
   const double muk2 = sqr(m_flspec.Mass(true))/Q2;
-  // const double sij  = (Q2*(1-y))/y;
-  const double sij = y*(Q2-sqr(mk)) + (1-y)*(sqr(mj));
+  const double yt = ((Q2 - sqr(mk)) / (Q2 - sqr(mk) - sqr(mj)) - (1.0 - y)) / (1.0 - y);
+  const double sij = sqr(mj) * (1.0 + yt) - yt * (Q2 - sqr(mk));
   const double M = 2*Flavour((m_flavs[2].Kfcode() / 10) % 10).Mass(true);
   double value = 0;
   value = 6*sqr(sij);
@@ -175,15 +175,16 @@ double LF_VV3P1_Quarkonia_IF::operator()(const double z, const double y, const d
   const double mk  =  m_flspec.Mass(true);
   const double muj2 = sqr(m_flavs[2].Mass(true))/Q2;
   const double muk2 = sqr(m_flspec.Mass(true))/Q2;
-  const double tai  = y * (Q2 - sqr(mk)) + (1-y) * sqr(mj);//?
+  const double zt = (1.0 - y) / (z - y);
+  const double sai = sqr(mj) * (1.0 - y / z) + (Q2 - sqr(mk)) * (y / z);
   const double M = 2*Flavour((m_flavs[2].Kfcode() / 10) % 10).Mass(true);
   double value = 0;
-  value = 6*sqr(tai);
-  value *= ( sqr(tai - sqr(M)) - 2*z*((1-z)*tai - sqr(M))*(tai - 2*sqr(M)) );
-  value /= sqr(sqr(( tai - sqr(M))));
-  value *= sqr(M/2)/tai;
+  value = 6*sqr(sai);
+  value *= ( sqr(sai - sqr(M)) - 2*zt*((1-zt)*sai - sqr(M))*(sai - 2*sqr(M)) );
+  value /= sqr(sqr(( sai - sqr(M))));
+  value *= sqr(M/2)/sai;
   value *= 1. / ( (1 - muj2 - muk2) + 1./ y * ( muj2 ) );
-  value *= 1. / (1 + sqr(z) * sqr(mj) / scale);
+  value *= 1. / (1 + sqr(zt) * sqr(mj) / scale);
   return sqr(p_cf->Coupling(scale, 0)) * value * JIF(z, y, eta, scale);
 }
 
@@ -210,16 +211,17 @@ double LF_VV3P1_Quarkonia_II::operator()(const double z, const double y, const d
   const double mb  =  m_flspec.Mass(true);
   const double muj2 = sqr(m_flavs[2].Mass(true))/Q2;
   const double muk2 = sqr(m_flspec.Mass(true))/Q2;
-  // const double tai  = (Q2*(1-y))/y;//?
-  const double tai = y * (Q2 - sqr(mb)) + (1-y) * sqr(mj);
+  const double zt = 1.0 / (z + y);
+  const double sab = (Q2 - (1.0 - z) * sqr(mb)) / z;
+  const double saj = sqr(mj) - y * (sab - sqr(mb));
   const double M = 2*Flavour((m_flavs[2].Kfcode() / 10) % 10).Mass(true);
   double value = 0;
-  value = 6*sqr(tai);
-  value *= ( sqr(tai - sqr(M)) - 2*z*((1-z)*tai - sqr(M))*(tai - 2*sqr(M)) );
-  value /= sqr(sqr(( tai - sqr(M))));
-  value *= sqr(M/2)/tai;
+  value = 6*sqr(saj);
+  value *= ( sqr(saj - sqr(M)) - 2*zt*((1-zt)*saj - sqr(M))*(saj - 2*sqr(M)) );
+  value /= sqr(sqr(( saj - sqr(M))));
+  value *= sqr(M/2)/saj;
   value *= 1. / ( (1 - muj2 - muk2) + 1./ y * ( muj2 ) );
-  value *= 1. / (1 + sqr(z) * sqr(mj) / scale);
+  value *= 1. / (1 + sqr(zt) * sqr(mj) / scale);
   return sqr(p_cf->Coupling(scale, 0)) * value * JII(z, y, eta, scale);
 }
 
@@ -280,7 +282,7 @@ double LF_V3P1V_Quarkonia_FI::operator()(const double z, const double y, const d
   const double mk  =  m_flspec.Mass();
   const double mui2 = mi/Q2;
   const double muk2 = sqr(m_flspec.Mass(true))/Q2;
-  const double sij  = y * (Q2 - sqr(mk)) + (1-y)*(sqr(mi));
+  const double sij = (Q2 + sqr(mi)) * y / (1 - y) + sqr(mi);
   const double M = 2*Flavour((m_flavs[2].Kfcode() / 10) % 10).Mass(true);
   double value = 0;
   value = 6*sqr(sij);

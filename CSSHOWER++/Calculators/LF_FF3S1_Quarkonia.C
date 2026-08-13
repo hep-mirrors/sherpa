@@ -120,7 +120,7 @@ double LF_FF3S1_Quarkonia_FF::operator()(const double z, const double y,
   value *= 1. / ( (1 - mui2 - muj2 - muk2) + 1./ y * ( mui2 + muj2 - muij2 ) );
   value *= 1. / (1 + sqr( 1 - z) * sqr(mi) / scale + sqr(z) * sqr(mj) / scale);
   double prefactor = GetLDME(m_flavs[2].Kfcode());
-  prefactor *= m_flavs[2].StrongCharge() == 0 ? 4.0 / 27 / cube(mi) : 4.0 / 27 / cube(mi) * 1.0 / 48;
+  prefactor *= 4.0 / 27 / cube(mi) * (m_flavs[2].StrongCharge() == 0 ? 1. : 1.0 / 48);
   return prefactor * sqr(p_cf->Coupling(scale, 0)) * value * JFF(y, mui2, muj2, muk2, muij2);
   
   // same flavour case OLD
@@ -153,7 +153,7 @@ double LF_FF3S1_Quarkonia_FF::OverIntegrated(const double zmin, const double zma
   const double ri = mi / (mi + mij);
   const double rij = mij / (mi + mij);
   double prefactor = GetLDME(m_flavs[2].Kfcode());
-  prefactor *= m_flavs[2].StrongCharge() == 0 ? 4.0 / 27 / cube(mi) : 4.0 / 27 / cube(mi) * 1.0 / 48;
+  prefactor *= 4.0 / 27 / cube(mi) * (m_flavs[2].StrongCharge() == 0 ? 1. : 1.0 / 48);
   m_zmin = zmin;
   m_zmax = zmax;
   return prefactor * sqr(p_cf->MaxCoupling(0)) * ri * cube(rij) / sqr(sqr(1-rij)) * 0.4 * (zmax - zmin);
@@ -188,8 +188,8 @@ double LF_FF3S1_Quarkonia_FI::operator()(const double z, const double y,
   double ma  = ATOOLS::Flavour(m_flspec.Kfcode()).Mass(true);
   double mij = ATOOLS::Flavour(m_flavs[0].Kfcode()).Mass(true);
   double mui2 = sqr(mi) / Q2, muj2 = sqr(mj) / Q2, muk2 = sqr(ma) / Q2, muij2 = sqr(mij) / Q2;
-  // const double sij = (Q2*(1-y) + sqr(mij) )/y;
-  const double sij = (sqr(mi) + sqr(mj))*(1-y) + (Q2 - sqr(ma)) * y;
+  const double yt = ((Q2 - sqr(ma) - sqr(mij)) / (Q2 - sqr(ma) - sqr(mi) - sqr(mj)) - (1.0-y)) / (1.0-y);
+  const double sij = (sqr(mi) + sqr(mj)) * (1.0 + yt) - yt * (Q2 - sqr(ma));
   const double M = mi + mij;
   const double ri = mi / M;
   const double rij = mij / M;
@@ -243,33 +243,27 @@ double LF_FF3S1_Quarkonia_IF::operator()(const double z, const double y,
   // c --> c J/psi
   // (aj) (k) --> a  j  k
   // z = x_{jk,a};  y = u
-  const double ma  = sqr(ATOOLS::Flavour(m_flavs[0].Kfcode()).Mass(true));
-  const double mi  = sqr(ATOOLS::Flavour(m_flavs[2].Kfcode()).Mass(true));
-  const double mai = sqr(ATOOLS::Flavour(m_flavs[1].Kfcode()).Mass(true));
-  const double mk = sqr(ATOOLS::Flavour(m_flspec.Kfcode()).Mass(true));
-  // const double pkpa =  Q2 / 2 / z * (1 - y);
-  // const double pkpj =  0.5 * (1 - z) / z * (mj2 + mk2 + ma2 - Q2);
-  // const double taj  =  y * Q2 + ma2 * (1 - y) + mj2 + y * (mj2 + mk2 + 2 * pkpj); // (pa - pj)^2
-  // const double z    =  pkpj / pkpa; // this is the momentum fraction of J/psi w.r.t. parent quark
-  // const double tai = sqr(ma) + sqr(mi) - y / z * (Q2 - sqr(mb) - sqr(ma) - sqr(mi));
-  // const double tai = sqr(ma) + sqr(mi) - y / z * (Q2 - sqr(mi) - sqr(ma) - sqr(mai));
-  const double tai = (Q2 - sqr(mk))*(1-y) + (sqr(ma) + sqr(mi))*y;
-  const double M = ATOOLS::Flavour(m_flavs[1].Kfcode()).Mass(true) + ATOOLS::Flavour(m_flavs[0].Kfcode()).Mass(true);
-  const double ri = ATOOLS::Flavour(m_flavs[1].Kfcode()).Mass(true) / M;
-  const double rij = ATOOLS::Flavour(m_flavs[0].Kfcode()).Mass(true) / M;
-  const double den = tai - sqr(rij*M);
+  const double ma  = ATOOLS::Flavour(m_flavs[0].Kfcode()).Mass(true);
+  const double mj  = ATOOLS::Flavour(m_flavs[2].Kfcode()).Mass(true);
+  const double mai = ATOOLS::Flavour(m_flavs[1].Kfcode()).Mass(true);
+  const double mk = ATOOLS::Flavour(m_flspec.Kfcode()).Mass(true);
+  const double zt = (1.0 - y) / (z - y);
+  const double saj = (sqr(mai) + sqr(mj)) * (1.0 - y / z) + (Q2 - sqr(mk)) * (y / z);
+  const double M = mai + ma;
+  const double ri = mai / M;
+  const double rij = ma / M;
+  const double den = saj - sqr(rij * M);
   double value = 0;
-  value += sqr(cube(M))/cube(den) * ( -12*ri*rij*sqr(1-rij*(1-z)) );
-  value += sqr(sqr(M))/sqr(den) * ( -(1-rij*(1-z)))*( 2*(1+2*ri) - (1+12*ri-4*sqr(ri))*(1-z) - rij*(1+2*ri)*sqr(1-z) );
-  value += sqr(M)/den * z * ( 1 + 2*ri*(1-z) + ( 2 + sqr(ri) )*sqr(1-z) );
-  value *= ri*cube(rij)/sqr(1-rij*(1-z));
+  value += sqr(cube(M))/cube(den) * ( -12*ri*rij*sqr(1-rij*(1-zt)) );
+  value += sqr(sqr(M))/sqr(den) * ( -(1-rij*(1-zt)))*( 2*(1+2*ri) - (1+12*ri-4*sqr(ri))*(1-zt) - rij*(1+2*ri)*sqr(1-zt) );
+  value += sqr(M)/den * zt * ( 1 + 2*ri*(1-zt) + ( 2 + sqr(ri) )*sqr(1-zt) );
+  value *= ri*cube(rij)/sqr(1-rij*(1-zt));
   // msg_Out() << "LF_FF3S1_Quarkonia_FF::operator() z=" << z << " y=" << y << " ri=" << ri << " rij=" << rij << " M=" << M << " scale=" << scale << " Q2=" << Q2 << " value=" << value << std::endl; 
   // value *= 1. / ( (1 - mui2 - muj2 - muk2) + 1./ y * ( mui2 + muj2 - muij2 ) );
   // value *= 1. / (1 + sqr( 1 - z) * sqr(mi) / scale + sqr(z) * sqr(mj) / scale);
   double prefactor = GetLDME(m_flavs[2].Kfcode());
-  prefactor *= m_flavs[2].StrongCharge() == 0 ? 4.0 / 27 / cube(mi) : 4.0 / 27 / cube(mi) * 1.0 / 48;
-  // return prefactor * sqr(p_cf->Coupling(scale, 0)) * value * JII(z, y, eta, scale);
-  return sqr(p_cf->Coupling(scale, 0)) * value * JII(z, y, eta, scale);
+  prefactor *= 4.0 / 27 / cube(ri * M) * ( m_flavs[2].StrongCharge() == 0 ? 1. : 1.0 / 48);
+  return prefactor * sqr(p_cf->Coupling(scale, 0)) * value * JIF(z, y, eta, scale);
   // const double newscale = sqrt(scale);
   // double value =
   //       1. / sqr(sqr(1 - muaj2)) *
@@ -325,17 +319,18 @@ double LF_FF3S1_Quarkonia_II::operator()(const double z, const double y,
   double mai = p_ms->Mass(m_flavs[0]);
   // msg_Out() << METHOD << "  ma: " << ma << " mi: " << mi << " mb: " << mb << " mai: " << mai << "\n";
   double mua2 = sqr(ma) / Q2,  mub2 = sqr(mb) / Q2, muai2 = sqr(mai) / Q2;
-  // const double tai = sqr(ma) + sqr(mi) - y / z * (Q2 - sqr(mb) - sqr(ma) - sqr(mi));
-  const double tai = (Q2 - sqr(mb))*(1-y) + (sqr(ma) + sqr(mi))*y;
+  const double zt = 1.0 / (z + y);
+  const double sab = (Q2 - sqr(mi) - (1.0 - z) * (sqr(ma) + sqr(mb))) / z;
+  const double saj = sqr(ma) + sqr(mi) - y * (sab - sqr(ma) - sqr(mb));
   const double M = ATOOLS::Flavour(m_flavs[1].Kfcode()).Mass(true) + ATOOLS::Flavour(m_flavs[0].Kfcode()).Mass(true);
   const double ri = ATOOLS::Flavour(m_flavs[1].Kfcode()).Mass(true) / M;
   const double rij = ATOOLS::Flavour(m_flavs[0].Kfcode()).Mass(true) / M;
-  const double den = tai - sqr(rij*M);
+  const double den = saj - sqr(rij * M);
   double value = 0;
-  value += sqr(cube(M))/cube(den) * ( -12*ri*rij*sqr(1-rij*(1-z)) );
-  value += sqr(sqr(M))/sqr(den) * ( -(1-rij*(1-z)))*( 2*(1+2*ri) - (1+12*ri-4*sqr(ri))*(1-z) - rij*(1+2*ri)*sqr(1-z) );
-  value += sqr(M)/den * z * ( 1 + 2*ri*(1-z) + ( 2 + sqr(ri) )*sqr(1-z) );
-  value *= ri*cube(rij)/sqr(1-rij*(1-z));
+  value += sqr(cube(M))/cube(den) * ( -12*ri*rij*sqr(1-rij*(1-zt)) );
+  value += sqr(sqr(M))/sqr(den) * ( -(1-rij*(1-zt)))*( 2*(1+2*ri) - (1+12*ri-4*sqr(ri))*(1-zt) - rij*(1+2*ri)*sqr(1-zt) );
+  value += sqr(M)/den * zt * ( 1 + 2*ri*(1-zt) + ( 2 + sqr(ri) )*sqr(1-zt) );
+  value *= ri*cube(rij)/sqr(1-rij*(1-zt));
   // msg_Out() << "LF_FF3S1_Quarkonia_FF::operator() z=" << z << " y=" << y << " ri=" << ri << " rij=" << rij << " M=" << M << " scale=" << scale << " Q2=" << Q2 << " value=" << value << std::endl; 
   // value *= 1. / ( (1 - mui2 - muj2 - muk2) + 1./ y * ( mui2 + muj2 - muij2 ) );
   // value *= 1. / (1 + sqr( 1 - z) * sqr(mi) / scale + sqr(z) * sqr(mj) / scale);
@@ -442,8 +437,7 @@ double LF_F3S1F_Quarkonia_FI::operator()(const double z, const double y,
   double ma  = ATOOLS::Flavour(m_flspec.Kfcode()).Mass(true);
   double mij = ATOOLS::Flavour(m_flavs[0].Kfcode()).Mass(true);
   double mui2 = sqr(mi) / Q2, muj2 = sqr(mj) / Q2, muk2 = sqr(ma) / Q2, muij2 = sqr(mij) / Q2;
-  // const double sij = (Q2*(1-y) + sqr(mij) )/y;
-  const double sij = (sqr(mi) + sqr(mj))*(1-y) + (Q2 - sqr(ma)) * y;
+  const double sij = (Q2 + sqr(mi)) * y / (1 - y) + sqr(mi) + sqr(mj);
   const double M = mj + mij;
   const double ri = mj / M;
   const double rij = mij / M;
@@ -492,7 +486,7 @@ double LF_F3S1F_Quarkonia_FI::Z() {
 }
 
 
-DECLARE_GETTER(LF_FF3S1_Quarkonia_FF, "F3S1F_Quarkonia", SF_Lorentz, SF_Key);
+DECLARE_GETTER(LF_FF3S1_Quarkonia_FF, "FF3S1_Quarkonia", SF_Lorentz, SF_Key);
 
 SF_Lorentz *ATOOLS::Getter<SF_Lorentz, SF_Key, LF_FF3S1_Quarkonia_FF>::operator()(
     const Parameter_Type &args) const {
