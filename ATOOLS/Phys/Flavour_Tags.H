@@ -41,6 +41,9 @@
 #define      kf_DM_vector                 53
 #define      kf_DM_mediator_scalar        54
 #define      kf_DM_mediator_vector        55
+// ISR/FSR bosons
+#define      kf_ISR_photon                56
+#define      kf_FSR_photon                57
 // internal
 #define      kf_shgluon                   89
 #define      kf_lepton                    90

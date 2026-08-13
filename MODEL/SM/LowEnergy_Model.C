@@ -67,6 +67,8 @@ void LowEnergy_Model::ParticleInit() {
   AddParticle(kf_Lambda,      1.11568, 0.8783, 2.501e-15, 0,    1,     true,false, "Lambda","\\Lambda");
   AddParticle(kf_Xi_minus,    1.32132, 0.8783, 4.02e-15, -3,    1,     true,false, "Xi-","\\Xi^{-}");
   AddParticle(kf_Xi,          1.3149,  0.8783, 2.27e-15,  0,    1,     true,false, "Xi","\\Xi");
+  AddParticle(kf_ISR_photon,  0.0,     0.0,    0.0,       0,    2,     true, true, "ISRPhoton","\\gamma");
+  AddParticle(kf_FSR_photon,  0.0,     0.0,    0.0,       0,    2,     true, true, "FSRPhoton","\\gamma");
 
   m_Diracs.push_back(Flavour(kf_n));
   m_Diracs.push_back(Flavour(kf_p_plus));
@@ -195,6 +197,15 @@ void LowEnergy_Model::InitQEDVertices() {
     m_v.back().FormFactor.push_back("VMD");
     m_v.back().cpl.push_back(cpl);
     m_v.back().order[1]=1;
+    m_v.push_back(Single_Vertex());
+    m_v.back().AddParticle(Flavour(kf_FSR_photon));
+    m_v.back().AddParticle(flav);
+    m_v.back().AddParticle(flav.Bar());
+    m_v.back().Color.push_back(Color_Function(cf::None));
+    m_v.back().Lorentz.push_back("SSV");
+    m_v.back().FormFactor.push_back("VMD");
+    m_v.back().cpl.push_back(cpl);
+    m_v.back().order[1]=1;
   }
 
   //////////////////////////////////////////////////////////////////////
@@ -216,6 +227,15 @@ void LowEnergy_Model::InitQEDVertices() {
   else {
     InitThreePionVertices(cpl);
   }
+  // add the ISR photon vertex, which is a special case of the photon vertex
+  m_v.push_back(Single_Vertex());
+  m_v.back().AddParticle(Flavour(kf_e));
+  m_v.back().AddParticle(Flavour(kf_e).Bar());
+  m_v.back().AddParticle(Flavour(kf_ISR_photon));
+  m_v.back().Color.push_back(Color_Function(cf::None));
+  m_v.back().Lorentz.push_back("FFV");
+  m_v.back().cpl.push_back(cpl);
+  m_v.back().order[1]=1;
 }
 
 //////////////////////////////////////////////////////////////////////

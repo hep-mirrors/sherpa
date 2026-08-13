@@ -1,0 +1,43 @@
+# collider setup
+BEAMS: [11, -11]
+BEAM_ENERGIES: 0.99250/2
+PDF_LIBRARY: None
+ME_GENERATORS: Comix
+EVENTS: 50k
+EW_SCHEME: 1
+ANALYSIS: Rivet
+
+BEAM_REMNANTS: None
+FRAGMENTATION: None
+
+PARTICLE_DATA:
+  11:
+    Massive: 1
+  321:
+    Massive: 1
+  111:
+    Massive: 1
+PROCESSES:
+- 11 -11 -> 321 -321:
+    Order: {QCD: 0, EW: Any }
+    Print_Graphs: graphs/kpkm
+
+# YFS:
+#   MODE: ISR
+#   BETA: 0
+RIVET:
+  IGNORE_BEAMS: 1
+  ANALYSIS: [BABAR_2013_I1238807]
+
+
+SELECTORS:
+  - [E, 56, 0.001*E_CMS, E_CMS]
+  - [Polar_Angle, 56, 0.35, 2.79]
+
+# PION_FORM_FACTOR:
+#   rho(770):   {Mass: 0.77456, Width: 0.14832, Amplitude: 1.0,     Phase: 0.0}
+#   rho(1450):  {Mass: 1.4859,  Width: 0.37360, Amplitude: 0.14104, Phase: 3.7797}
+#   rho(1700):  {Mass: 1.8668,  Width: 0.30334, Amplitude: 0.0614,  Phase: 1.429}
+#   rho(2150):  {Mass: 2.2645,  Width: 0.11327, Amplitude: 0.0047,  Phase: 0.921}
+#   omega(782): {Mass: 0.78248, Width: 0.00855, Amplitude: 0.00158, Phase: 0.075}
+#   phi(1020):  {Mass: 1.01947, Width: 0.00425, Amplitude: 0.00045, Phase: 2.888}
