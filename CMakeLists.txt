@@ -296,7 +296,7 @@ macro(sherpa_create_git_info name sourcedir binarydir)
   set(${name}_GIT_INFO_FILE "${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C")
   set(${name}_ALL_FILES ${${name}_SOURCES} ${${name}_HEADERS})
   list(JOIN ${name}_ALL_FILES "," ${name}_ALL_FILES_STR)
-  if(NOT EXISTS ${name}_GIT_INFO_FILE)
+  if(NOT EXISTS ${${name}_GIT_INFO_FILE})
     execute_process(COMMAND ${CMAKE_COMMAND} -DPROJECT_SOURCE_DIR=${PROJECT_SOURCE_DIR} -DSOURCEDIR=${sourcedir} -DBINARYDIR=${binarydir} -DALL_FILES_ARG=${${name}_ALL_FILES_STR} -DWORKING_DIR=${CMAKE_CURRENT_SOURCE_DIR} -P ${CMAKE_SOURCE_DIR}/git.cmake)
   endif()
   add_custom_target(${name}_Git_Info ALL
