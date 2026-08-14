@@ -38,6 +38,9 @@ int main(int argc,char* argv[])
       for (size_t i=1;i<=rpa->gen.NumberOfEvents();) {
         if (Generator->GenerateOneEvent()) ++i;
       }
+#ifdef USING__MPI
+      if (mpi->Size() > 1) mpi->Barrier();
+#endif
       Generator->SummarizeRun();
     }
     delete Generator;

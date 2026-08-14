@@ -151,7 +151,7 @@ void Sherpa::RegisterDefaults()
   s["DEBUG_INTERVAL"].SetDefault(0);
   s["DEBUG_STEP"].SetDefault(-1);
   s["EVENT_DISPLAY_INTERVAL"].SetDefault(100);
-  s["PRINT_MPI_XS"].SetDefault(true);
+  s["PRINT_MPI_XS"].SetDefault(false);
   s["EVT_OUTPUT"].SetDefault(msg->Level());
   s["MSG_LIMIT"].SetDefault(20);
   msg->SetLimit(s["MSG_LIMIT"].Get<int>());
