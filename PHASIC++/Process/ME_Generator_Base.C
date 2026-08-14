@@ -291,15 +291,16 @@ int ME_Generator_Base::ShiftMasses(Cluster_Amplitude *const ampl)
     if (m_psmass.find(ampl->Leg(i)->Flav())!=m_psmass.end()) run=true;
   }
   if (!run) return 1;
-  /// if so treat DIS as special case
-  if(ampl->NIn() <= 1 ||
-     (!(ampl->Leg(0)->Flav().IsLepton() && !ampl->Leg(1)->Flav().IsLepton()) &&
-      !(!ampl->Leg(0)->Flav().IsLepton() && ampl->Leg(1)->Flav().IsLepton()) ) ) {
-    return ShiftMassesDefault(ampl, cms);
+  /// decays never need mass shifting
+  if (ampl->NIn() <= 1) return 1;
+  /// count how many incoming legs come from a PDF (have a non-intact remnant)
+  int n_pdf(0);
+  for (size_t i(0); i < ampl->NIn(); ++i) {
+    if (p_remnant->GetRemnant(i)->Type() != REMNANTS::rtp::intact) ++n_pdf;
   }
-  else {
-    return ShiftMassesDIS(ampl, cms);
-  }
+  if (n_pdf == 0) return 1;
+  if (n_pdf == 1) return ShiftMassesDIS(ampl, cms);
+  return ShiftMassesDefault(ampl, cms);
 }
 
 int ME_Generator_Base::ShiftMassesDefault(Cluster_Amplitude *const ampl, Vec4D cms)
@@ -336,9 +337,9 @@ int ME_Generator_Base::ShiftMassesDefault(Cluster_Amplitude *const ampl, Vec4D c
     ampl->Leg(i)->SetMom(boost*p);
   }
   for (int i = 0; i < 2; i++) {
+    if (p_remnant->GetRemnant(i)->Type() == REMNANTS::rtp::intact) continue;
     double Ebunch = rpa->gen.PBunch(ampl->Leg(i)->Mom()[3] < 0.0 ? 0 : 1)[0];
     double Ei = -ampl->Leg(i)->Mom()[0];
-    // need to check equality with some margin, for lepton beams without a pdf
     if (Ebunch < Ei && !IsEqual(Ei,Ebunch)) return -1;
   }
   msg_Debugging()<<"After shift: "<<*ampl<<"\n";
@@ -356,9 +357,15 @@ Vec4D MomSum(Cluster_Amplitude *const ampl) {
 int ME_Generator_Base::ShiftMassesDIS(Cluster_Amplitude *const ampl, Vec4D cms) {
   DEBUG_FUNC(m_name);
   msg_Debugging()<<"Before shift: "<<*ampl<<"\n";
-  /// currently assume leg 0 is the electron/QCD siglet
-  /// is this ever wrong?
-  const Vec4D pLepIn = ampl->Leg(0)->Mom();
+  /// identify the non-PDF and PDF incoming legs
+  int lep_leg(-1), had_leg(-1);
+  for (size_t i(0); i < ampl->NIn(); ++i) {
+    if (p_remnant->GetRemnant(i)->Type() == REMNANTS::rtp::intact) lep_leg = i;
+    else                                                           had_leg = i;
+  }
+  if (lep_leg < 0 || had_leg < 0)
+    THROW(fatal_error, "Cannot identify lepton/hadron legs in ShiftMassesDIS");
+  const Vec4D pLepIn = ampl->Leg(lep_leg)->Mom();
   std::vector<Vec4D> pLepOut;
   for (size_t i(ampl->NIn());i<ampl->Legs().size();++i) {
     if(ampl->Leg(i)->Flav().IsLepton()) pLepOut.push_back(ampl->Leg(i)->Mom());
@@ -414,79 +421,51 @@ int ME_Generator_Base::ShiftMassesDIS(Cluster_Amplitude *const ampl, Vec4D cms) 
   msg_Debugging()<<"In real breit frame: "<<*ampl<<"\n";
   msg_Debugging()<<"Momentum conservation: "<<MomSum(ampl)<<".\n";
 
-  if(ampl->Legs().size()==4) {
-    /// in 2->2 DIS the target masses of incoming and outgoing quarks
-    /// should be equal, so we should just be allowed to set both energies
-    /// to the ones including masses
-    double mass2in=-1;
-    double mass2out=-1;
-    for(size_t i=0; i<ampl->Legs().size(); i++) {
-      Vec4D p = ampl->Leg(i)->Mom();
-      if(!ampl->Leg(i)->Flav().IsLepton()) {
-        if(i<ampl->NIn()) {
-          mass2in = Mass2(ampl->Leg(i)->Flav());
-          p[0]=-sqrt(mass2in+p.PSpat2());
-        }
-        else{
-          mass2out = Mass2(ampl->Leg(i)->Flav());
-          p[0]=sqrt(mass2out+p.PSpat2());
-        }
-      }
-      ampl->Leg(i)->SetMom(p);
+  double Ein = 0;
+  for(size_t i=0; i<ampl->NIn(); i++) {
+    Vec4D p = ampl->Leg(i)->Mom();
+    if(!ampl->Leg(i)->Flav().IsLepton()) {
+      p[0]=-sqrt(Mass2(ampl->Leg(i)->Flav())+p.PSpat2());
+      Ein = -p[0];
     }
-    if(!IsEqual(mass2in,mass2out)) {
-      msg_Error()<<"Unequal masses in 2->2 DIS: "<<mass2in<<" vs. "<<mass2out<<".\n";
-      return -1;
-    }
-    msg_Debugging()<<"After shift 2->2 shift in Breit frame: "<<*ampl<<"\n";
+    ampl->Leg(i)->SetMom(p);
   }
-  else {
-    double Ein = 0;
-    for(size_t i=0; i<ampl->NIn(); i++) {
-      Vec4D p = ampl->Leg(i)->Mom();
-      if(!ampl->Leg(i)->Flav().IsLepton()) {
-        p[0]=-sqrt(Mass2(ampl->Leg(i)->Flav())+p.PSpat2());
-        Ein = -p[0];
-      }
-      ampl->Leg(i)->SetMom(p);
-    }
 
-    ShiftMasses_DIS etot(this,ampl);
-    // need at least the energy to produce all masses
-    // while preserving pZ
-    double EoutMin = 0;
-    for(size_t i=ampl->NIn(); i<ampl->Legs().size(); i++) {
-      if(!ampl->Leg(i)->Flav().IsLepton()) {
-        EoutMin += sqrt(Mass2(ampl->Leg(i)->Flav()) +
-                        sqr(etot.scaledZ(ampl->Leg(i)->Mom()[3],0)));
-      }
+  ShiftMasses_DIS etot(this,ampl);
+  // need at least the energy to produce all masses
+  // while preserving pZ
+  double EoutMin = 0;
+  for(size_t i=ampl->NIn(); i<ampl->Legs().size(); i++) {
+    if(!ampl->Leg(i)->Flav().IsLepton()) {
+      EoutMin += sqrt(Mass2(ampl->Leg(i)->Flav()) +
+                      sqr(etot.scaledZ(ampl->Leg(i)->Mom()[3],0)));
     }
-    if(!IsEqual(Ein,EoutMin) && Ein < EoutMin) {
-      msg_Debugging()<<"Not enough energy, Ein = "<<Ein
-                     <<" vs "<<EoutMin<<".\n";
+  }
+  if(!IsEqual(Ein,EoutMin) && Ein < EoutMin) {
+    msg_Debugging()<<"Not enough energy, Ein = "<<Ein
+                   <<" vs "<<EoutMin<<".\n";
+    return -1;
+  }
+  double xi(etot.WDBSolve(Ein,0.0,1.0));
+  if (!IsEqual(etot(xi),Ein,rpa->gen.Accu())) {
+    if (m_massmode==0) xi=etot.WDBSolve(Ein,1.0,2.0);
+    if (!IsEqual(etot(xi),Ein,rpa->gen.Accu())) {
+      msg_Error()<<"No solution found for mass shift "
+                 <<etot(xi)<<" vs. "<<Ein<<".\n";
       return -1;
     }
-    double xi(etot.WDBSolve(Ein,0.0,1.0));
-    if (!IsEqual(etot(xi),Ein,rpa->gen.Accu())) {
-      if (m_massmode==0) xi=etot.WDBSolve(Ein,1.0,2.0);
-      if (!IsEqual(etot(xi),Ein,rpa->gen.Accu())) {
-        msg_Error()<<"No solution found for mass shift "
-                   <<etot(xi)<<" vs. "<<Ein<<".\n";
-        return -1;
-      }
-    }
-    for (size_t i(ampl->NIn());i<ampl->Legs().size();++i) {
-      Vec4D p = ampl->Leg(i)->Mom();
-      if(!ampl->Leg(i)->Flav().IsLepton()) {
-        p[1] *= xi;
-        p[2] *= xi;
-        p[3] = etot.scaledZ(p[3],xi);
-        p[0] = sqrt(Mass2(ampl->Leg(i)->Flav())+p.PSpat2());
-      }
-      ampl->Leg(i)->SetMom(p);
-    }
-    msg_Debugging()<<"After shift (xi = "<<xi<<") in Breit frame: "<<*ampl<<"\n";
   }
+  for (size_t i(ampl->NIn());i<ampl->Legs().size();++i) {
+    Vec4D p = ampl->Leg(i)->Mom();
+    if(!ampl->Leg(i)->Flav().IsLepton()) {
+      p[1] *= xi;
+      p[2] *= xi;
+      p[3] = etot.scaledZ(p[3],xi);
+      p[0] = sqrt(Mass2(ampl->Leg(i)->Flav())+p.PSpat2());
+    }
+    ampl->Leg(i)->SetMom(p);
+  }
+  msg_Debugging()<<"After shift (xi = "<<xi<<") in Breit frame: "<<*ampl<<"\n";
   msg_Debugging()<<"Momentum conservation: "<<MomSum(ampl)<<".\n";
   msg_Debugging()<<"DIS variables: Q2 = "<<breit.Q2()<<" vs "<<BreitBoost(ampl).Q2()
                  <<" and x = "<<breit.x()<<" vs "<<BreitBoost(ampl).x()<<".\n";
@@ -552,6 +531,10 @@ int ME_Generator_Base::ShiftMassesDIS(Cluster_Amplitude *const ampl, Vec4D cms) 
       }
     }
   }
+  /// check that the PDF incoming leg does not exceed bunch energy
+  double Ebunch = rpa->gen.PBunch(ampl->Leg(had_leg)->Mom()[3] < 0.0 ? 0 : 1)[0];
+  double Ei = -ampl->Leg(had_leg)->Mom()[0];
+  if (Ebunch < Ei && !IsEqual(Ei,Ebunch)) return -1;
   msg_Debugging()<<"After full shift: "<<*ampl<<"\n";
   msg_Debugging()<<"Momentum conservation: "<<MomSum(ampl)<<".\n";
   if(!IsZero(MomSum(ampl).PSpat(),1e-6)) {
