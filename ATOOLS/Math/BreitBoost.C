@@ -1,4 +1,5 @@
 #include "ATOOLS/Math/BreitBoost.H"
+#include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Phys/Cluster_Amplitude.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 
@@ -15,20 +16,26 @@ BreitBoost::BreitBoost(const Vec4D& lepin, const Vec4D& lepout,
 }
 
 BreitBoost::BreitBoost(Cluster_Amplitude *const ampl) {
-  /// currently assume leg 0 is the electron/QCD siglet
-  /// is this ever wrong?
-  const Vec4D lepin = -ampl->Leg(0)->Mom();
-  const Vec4D hadin = rpa->gen.PBeam(1);
+  // identify lepton and hadron incoming legs
+  int lep_leg(-1), had_leg(-1);
+  for (size_t i(0); i < ampl->NIn(); ++i) {
+    if (ampl->Leg(i)->Flav().IsLepton()) lep_leg = i;
+    else                                 had_leg = i;
+  }
+  if (lep_leg < 0 || had_leg < 0)
+    THROW(fatal_error, "Cannot identify lepton/hadron legs in BreitBoost");
+  const Vec4D lepin = -ampl->Leg(lep_leg)->Mom();
+  const Vec4D hadin = rpa->gen.PBeam(had_leg);
 
   Vec4D lepout(0,0,0,0);
-  for (size_t i=ampl->NIn(); i<ampl->Legs().size(); i++) {
-    if (!ampl->Leg(i)->Flav().Strong()) {
+  for (size_t i(ampl->NIn()); i < ampl->Legs().size(); ++i) {
+    if (ampl->Leg(i)->Flav().IsLepton()) {
       lepout += ampl->Leg(i)->Mom();
     }
   }
   /// construct from momenta, with
   /// incoming hadron projected to zero mass
-  _init(lepin-lepout,{hadin.PSpat(),Vec3D(hadin)});
+  _init(lepin-lepout, {hadin.PSpat(), Vec3D(hadin)});
 }
 
 
