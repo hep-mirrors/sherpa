@@ -45,10 +45,7 @@ void My_MPI::PrintRank() {
 int My_MPI::Allmax(int i)
 {
   const int n_ranks {mpi->Size()};
-  std::vector<int> all_i;
-  if (mpi->Rank() == 0) {
-    all_i.resize(n_ranks, 0);
-  }
+  std::vector<int> all_i(n_ranks, 0);
   int max;
   mpi->Gather(&i, 1, MPI_INT, &(all_i[0]), 1, MPI_INT, 0);
   if (mpi->Rank() == 0) {
