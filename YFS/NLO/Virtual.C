@@ -50,7 +50,18 @@ double Virtual::Calc_V(const ATOOLS::Vec4D_Vector& p,
            const double B,
            const double mur)
   {
-    p_loop_me->SetRenScale(100);
+    // Renormalisation scale as specified by SCALES in the runcard, for an
+    // arbitrary (momentum-dependent) expression. The Born process's scale setter
+    // has already evaluated it for THIS event: Single_Process::Differential runs
+    // Partonic() - which calls ScaleSetter()->CalculateScale(p) - before the YFS
+    // weight is built, so the value is simply read here. Do NOT call
+    // CalculateScale again: it would overwrite the Born's cached scales while
+    // Differential is still using them, and the virtual multiplies that same
+    // Born so it must use the same mu. Already squared; SetRenScale takes mu^2.
+    // ScaleSetter(1) is the mapped-process setter, which is the one
+    // Single_Process actually evaluates.
+    p_loop_me->SetRenScale(p_vproc ? p_vproc->ScaleSetter(1)->Scale(ATOOLS::stp::ren)
+                                   : mur);
     m_failcut = false;
     if(m_nlocuts && !p_vproc->Trigger(p)) {
       m_failcut = true;
@@ -58,10 +69,10 @@ double Virtual::Calc_V(const ATOOLS::Vec4D_Vector& p,
     }
     double V(0.0), run_corr(0.0), scale(0.0);
     if(aqed->m_mode!=vpmode::off) {
-     if(m_tchannel==2) scale = -(p[0]-p[2]).Abs2();  
+     if(m_tchannel==2) scale = -(p[0]-p[2]).Abs2();
      else scale = (p[0]+p[1]).Abs2();
      double dalpha = ((*aqed)(scale) - aqed->AqedThomson());
-    //  run_corr = 4.*dalpha*B;
+     run_corr = 4.*dalpha*B;
     }
     p_loop_me->Calc(p,B);
     switch(p_loop_me->Mode())
@@ -75,5 +86,5 @@ double Virtual::Calc_V(const ATOOLS::Vec4D_Vector& p,
       default:
         THROW(not_implemented, "Loop ME mode not implemented: "+ATOOLS::ToString(p_loop_me->Mode()));
       }
-    return V;
+    return V-run_corr;
   }

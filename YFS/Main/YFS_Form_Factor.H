@@ -20,7 +20,6 @@ public:
     double BVR_full(YFS::Dipole &d, double omega);
     DivArrD BVR_full_eps(YFS::Dipole &d,  double Kmax, int mode);
     double BVR_full(ATOOLS::Vec4D p1, ATOOLS::Vec4D p2, double omega);
-    double BR_full(ATOOLS::Vec4D p1, ATOOLS::Vec4D p2, double omega);
     double BVR_cru(double p1p2, double E1, double E2,
                    double Mas1, double Mas2, double Kmax);
     double BVR_cru(ATOOLS::Vec4D p1, ATOOLS::Vec4D p2, double E2);
@@ -30,15 +29,15 @@ public:
     double A2(const ATOOLS::Vec4D &p1, const ATOOLS::Vec4D &p2);
     double A4(double p1p2, double En1, double En2,
               double mass1, double mass2);
-    double A4light(double p1p2, double En1, double En2,
-                   double mass1, double mass2);
     double A4_eq(double E, double mass);
     double YijEta(double eta, double y1, double y2, double y3, double y4);
     double Zij(double eta, double yi, double yj);
     double Chi(double eta, double yi, double yj, double yk, double yl);
     double BVV_full(const ATOOLS::Vec4D p1, const ATOOLS::Vec4D p2, double MasPhot, double Kmax, int mode);
     double BVV_full(YFS::Dipole &d, double MasPhot, double Kmax, int mode);
-    double Full(const ATOOLS::Vec4D p1, const ATOOLS::Vec4D p2, double MasPhot, double Kmax, int mode);
+    // shared body of the two BVV_full overloads; masses passed in explicitly
+    double BVV_full_impl(const ATOOLS::Vec4D &p1, const ATOOLS::Vec4D &p2,
+                         double Mas1, double Mas2, double MasPhot, int mode);
     DivArrD BVV_full_eps(YFS::Dipole &d, double Kmax, int mode);
     double BVV_WW(const ATOOLS::Vec4D_Vector born, const ATOOLS::Vec4D_Vector k, const ATOOLS::Vec4D p1, const ATOOLS::Vec4D p2, double MasPhot, double Kmax);
     double WW_t(double t, double m, double M, double k);
@@ -51,8 +50,6 @@ public:
     // its interference form factor Yint out of exactly exp(Btilda + TBvirt).
     double IFForFac(YFS::Dipole &d, double omega);
     double R1(YFS::Dipole &d);
-    double R2(const Vec4D &p1, const Vec4D &p2);
-    // DivArrD BVirtGeneralEps(YFS::Dipole &d, double kmax=0);
     double  BVirtGeneral(YFS::Dipole &d, double kmax=0);
     DivArrD BVirtGeneralEps(YFS::Dipole &d, double kmax=0);
     // Virtual YFS B factor built from the dim-reg master integrals
@@ -61,10 +58,6 @@ public:
     // pole) so it cancels against the real BVR_full_eps in the FULL_FORM==3
     // form-factor mode.
     DivArrD BVirtMaster(YFS::Dipole &d, double kmax=0);
-    // double C0(double p1, double p2, double p3);
-    // double C0(double p1, double p2, double p3,double m1, double m2, double m3);
-    // double B0(double s, double m1, double m2);
-    Complex tsub(const Vec4D &p1, const Vec4D &p2, int mode, double QiQj, double theta1, double theta2);
     void WW_u();
     double  m_ww_s, m_ww_u, m_ww_t;
     double m_kmax, m_t1, m_t2, m_u1, m_u2;

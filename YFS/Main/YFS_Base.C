@@ -66,6 +66,8 @@ void YFS_Base::RegisterDefaults(){
   s["CHECK_REAL"].SetDefault(0);
   s["CHECK_RV"].SetDefault(0);
   s["RV_Hard_Photon"].SetDefault(0);
+  s["CEEX_Compare"].SetDefault(0);
+  s["VV_Approx_Uncertainty"].SetDefault(1.0);
   s["RV_TEST_PHOTON_X"].SetDefault(0.3);
   s["RV_TEST_PHOTON_THETA"].SetDefault(M_PI / 2.);
   s["RV_TEST_PHOTON_PHI"].SetDefault(0.);
@@ -135,6 +137,10 @@ void YFS_Base::RegisterSettings(){
   m_check_real = s["CHECK_REAL"].Get<int>();
   m_check_rv = s["CHECK_RV"].Get<int>();
   m_rv_hard_photon = s["RV_Hard_Photon"].Get<int>();
+  m_ceex_compare = s["CEEX_Compare"].Get<int>();
+  // Parse once. 16 tags is comfortably above any YFS multiplicity (2 -> n + a
+  // few photons); unused ones cost nothing.
+  m_vv_approx_unc = s["VV_Approx_Uncertainty"].Get<double>();
   m_rv_test_x = s["RV_TEST_PHOTON_X"].Get<double>();
   m_rv_test_theta = s["RV_TEST_PHOTON_THETA"].Get<double>();
   m_rv_test_phi = s["RV_TEST_PHOTON_PHI"].Get<double>();

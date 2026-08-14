@@ -157,6 +157,13 @@ public:
   inline bool HasNNLO() {return m_rrtool   || m_realvirt;}
   Vec4D MostEnergeticPhoton() const;
   Vec4D FixedTestPhoton() const;
+  // One-shot dump of beta_0 and beta_1 on a single, fully specified phase-space
+  // point, for the number-for-number comparison against KKMC's CEEX. Enabled
+  // with YFS: CEEX_Compare: 1. See Test/SherpaCompare/kkmc_ceex_crosscheck.cxx
+  // in the KKMC repo for the other half; the momenta printed here are meant to
+  // be fed to it so both sides evaluate at exactly the same point.
+  void CEEXComparePoint();
+  bool m_ceex_done;
 };
 
 

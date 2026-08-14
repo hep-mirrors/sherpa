@@ -518,11 +518,14 @@ void YFS_Handler::InitNLO(){
   p_nlo->SetBorn(m_born);
   p_nlo->SetFSR(p_fsr);
   p_nlo->m_ISRPhotons = m_ISRPhotons;
-  p_nlo->m_FSRPhotons = m_fsrphotonsforME;
+  p_nlo->m_FSRPhotons = m_FSRPhotons;
 }
 
 double YFS_Handler::CalculateNLO(){
 // CheckMomentumConservation();
+  InitNLO();
+  // one-shot fixed-point dump for the KKMC CEEX comparison (YFS: CEEX_Compare)
+  p_nlo->CEEXComparePoint();
   InitNLO();
   m_nlo_real = p_nlo->CalculateReal();
   // Hardest-photon-only contributions are captured as a side effect of the
@@ -673,6 +676,60 @@ void YFS_Handler::GenerateWeight() {
         // undone to its 1+form truncation.
         if (have_fixed_order_ff)
           wyfsnlo["NNLO_FixedOrder"] = ratio(nnlo_2g, m_real) * ff_fixedorder_ratio;
+
+        // ---- approximate double-virtual (VV) ----
+        // The NNLO weights above are RV + RR only: there is no exact
+        // double-virtual provider, so at O(alpha^2) the VV is simply MISSING and
+        // "NNLO" is incomplete. Estimate it from the EEX virtual series, whose
+        // O(alpha^2) term is the 0.125*gamma^2 in Dipole::VirtualEEX. Taking the
+        // difference of the EEX virtual evaluated at order 2 and order 1 isolates
+        // exactly that term:
+        //     VV_EEX = prod(1 + 0.5g + 0.125g^2) - prod(1 + 0.5g)
+        // (products over the II and FF dipoles, so the cross terms between
+        // dipoles are kept). It is a leading-log/eikonal estimate of a term
+        // whose exact form is unknown here, NOT a calculation of it.
+        //
+        // Because it is an estimate, it is shipped with an explicit envelope
+        // rather than silently folded into the nominal: VV_up/VV_down scale it
+        // by 1 +/- VV_Approx_Uncertainty (default 1, i.e. the band runs from
+        // "twice the estimate" down to "no VV at all"). That is the honest
+        // statement of ignorance - the term is known to be of this size, but its
+        // coefficient is not - and it lets the VV uncertainty be propagated as a
+        // normal variation weight instead of quoted by hand.
+        //
+        // The nominal "NNLO" weight is deliberately left VV-free so it keeps
+        // meaning what it meant before; NNLO_VV is the one including the estimate.
+        if (!m_vvtool) {
+          const double vv = p_dipoles->CalculateEEXVirtual(2)
+                          - p_dipoles->CalculateEEXVirtual(1);
+          if (!IsBad(vv)) {
+            // Flat envelope: the band is (1 +/- d) times the estimate, with
+            // d = VV_Approx_Uncertainty. At the default d = 1 it runs from "the
+            // term is absent" to "twice the estimate", which is the conventional
+            // missing-higher-order convention and the most ignorance an envelope
+            // can honestly express - d > 1 would push the down variation to a
+            // NEGATIVE VV, i.e. assert the opposite sign rather than absence.
+            //
+            // A calibrated alternative was tried (scaling d by EEX's measured
+            // error on the O(alpha) virtual, where the exact result is known)
+            // and dropped: on this process that ratio came out ~2.3, i.e. EEX
+            // does not predict the exact virtual at all, so it carries no
+            // information about the order above and only degenerated to the flat
+            // band once capped.
+            //
+            // Keep the size of this band in perspective: VV_EEX is ~0.3% of the
+            // cross section while RR alone is ~5% and the NLO->NNLO shift ~7.8%,
+            // so this is NOT the dominant NNLO uncertainty.
+            const double d = m_vv_approx_unc;
+            wyfsnlo["VV_EEX"]       = ratio(vv, m_real);
+            wyfsnlo["NNLO_VV"]      = ratio(nnlo_total + vv,         m_real);
+            wyfsnlo["NNLO_VV_up"]   = ratio(nnlo_total + (1.+d)*vv,  m_real);
+            wyfsnlo["NNLO_VV_down"] = ratio(nnlo_total + (1.-d)*vv,  m_real);
+          } else {
+            msg_Error() << METHOD << ": EEX double-virtual estimate is "
+                        << vv << ", skipping the VV weights\n";
+          }
+        }
       }
     }
 

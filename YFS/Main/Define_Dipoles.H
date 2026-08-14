@@ -145,6 +145,7 @@ namespace YFS {
       double CalculateRealVirtualSub(const Vec4D & k);
       double CalculateEEX();
       double CalculateEEXVirtual();
+      double CalculateEEXVirtual(int betaorder);
       double CalculateEEX(const Vec4D & k1, const Vec4D & k2);
       double CalculateFlux(const Vec4D &k);
       double CalculateFlux(const Vec4D &k, dipoletype::code &fluxtype);

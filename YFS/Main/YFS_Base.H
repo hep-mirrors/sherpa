@@ -118,6 +118,22 @@ public:
   double m_rv_me_max_ratio;
 
   int  m_order, m_betaorder, m_fullform, m_formWW, m_ifisub;
+  // One-shot beta_0/beta_1 dump at a fixed phase-space point, for the
+  // number-for-number comparison against KKMC's CEEX. See
+  // NLO_Base::CEEXComparePoint().
+  int  m_ceex_compare;
+  // Scale at which Delta_alpha is evaluated for the vacuum-polarisation
+  // double-counting subtraction in Virtual/RealVirtual/VirtualVirtual.
+  // 0 = photon virtuality (s' or t) - the scale the loop ME itself uses for the
+  //     photon self-energy, and therefore the only choice that actually cancels
+  //     it. 1 = the runcard mu_R (SCALES), correct only if SCALES is set to that
+  //     same virtuality.
+  // Fractional envelope on the EEX estimate of the missing double-virtual
+  // (YFS_Handler::GenerateWeight): the band is (1 +/- this) * VV_EEX. Default 1
+  // = from "no VV at all" to "twice the estimate". Values > 1 make the down
+  // variation flip the sign of the term rather than remove it, which is a claim
+  // rather than an envelope.
+  double m_vv_approx_unc;
   // When set, fill the in-run RV plateau-scan histograms (RV contribution
   // binned by log10 cancellation ratio and by photon energy fraction) so a
   // single production run yields RV_total(cut) and the cut can be validated.

@@ -69,6 +69,7 @@ NLO_Base::NLO_Base() {
   m_real_hard2 = 0.;
   m_rv_hard2 = 0.;
   m_zero_real_amp = 0;
+  m_ceex_done = false;
   m_softRV = 0;
   m_softRR = 0;
   m_rvUnstable = 0;
@@ -1937,6 +1938,93 @@ Vec4D NLO_Base::MostEnergeticPhoton() const {
 // a photon of fixed energy fraction (RV_TEST_PHOTON_X, of sqrt(s)/2) and
 // direction (RV_TEST_PHOTON_THETA/PHI) in the Born CMS, then rotates/boosts
 // it into the same frame as m_bornMomenta, matching the tail of MapMomenta.
+// One-shot dump of beta_0 and beta_1 at a single, fully specified phase-space
+// point, for the number-for-number comparison against KKMC's CEEX
+// (Test/SherpaCompare/kkmc_ceex_crosscheck.cxx in the KKMC repo). Enabled with
+// YFS: CEEX_Compare: 1.
+//
+// Why a hook inside a running Sherpa rather than a standalone driver: unlike
+// YFS_Form_Factor and Dipole (pure functions of their arguments, hence the
+// FSR/IFI harnesses), beta_1 needs p_real and p_virt wired to real ME
+// providers, which means the whole process/model/generator stack. Reusing the
+// live wiring is far cheaper and cannot drift from what production does.
+//
+// The Born configuration is whatever the phase-space generator produced for
+// this event, so the momenta are PRINTED - feed them to the KKMC driver so both
+// sides evaluate at exactly the same point. Only the photon is deterministic
+// (FixedTestPhoton, from RV_TEST_PHOTON_X/THETA/PHI).
+void NLO_Base::CEEXComparePoint() {
+  if (!m_ceex_compare || m_ceex_done) return;
+  if (!m_realtool || !m_looptool) {
+    msg_Error() << METHOD << ": CEEX_Compare needs both a real and a loop "
+                << "provider (NLO_Part: BVR); got real=" << m_realtool
+                << " loop=" << m_looptool << "\n";
+    m_ceex_done = true;
+    return;
+  }
+  m_ceex_done = true;
+
+  Vec4D k = FixedTestPhoton();
+  msg_Out() << std::setprecision(15)
+            << "\n=== Sherpa YFS NLO point for the KKMC CEEX comparison ===\n";
+  for (size_t i(0); i < m_bornMomenta.size(); ++i)
+    msg_Out() << "  born[" << i << "] (" << m_flavs[i] << ") = "
+              << m_bornMomenta[i] << "\n";
+
+  // The REAL-EMISSION configuration is what has to be handed to KKMC, not the
+  // Born momenta plus a photon: CalculateReal maps the Born configuration onto
+  // one that accommodates k (MapMomenta reduces the beams for an ISR photon),
+  // and born+k does not conserve momentum. Reproduce that mapping here purely
+  // so the point can be printed; CalculateReal below redoes it internally.
+  Vec4D_Vector pmap(m_plab);
+  MapMomenta(pmap, k);
+  pmap.push_back(k);
+  msg_Out() << "  --- real-emission momenta actually used (feed THESE to KKMC) ---\n";
+  for (size_t i(0); i < pmap.size(); ++i)
+    msg_Out() << "  p[" << i << "] = " << pmap[i] << "\n";
+  Vec4D bal(pmap[0]+pmap[1]);
+  for (size_t i(2); i < pmap.size(); ++i) bal -= pmap[i];
+  msg_Out() << "  balance (in - out) = " << bal
+            << "   max|component| = "
+            << Max(Max(dabs(bal[0]),dabs(bal[1])),Max(dabs(bal[2]),dabs(bal[3])))
+            << "\n";
+  // Machine-readable copy so the KKMC driver can consume the point directly
+  // instead of it being transcribed by hand.
+  std::ofstream pt("ceex_point.dat");
+  pt << std::setprecision(17);
+  for (size_t i(0); i < pmap.size(); ++i)
+    pt << pmap[i][0] << " " << pmap[i][1] << " "
+       << pmap[i][2] << " " << pmap[i][3] << "\n";
+
+  // beta_0 is the Born; beta_1 the O(alpha) real + virtual on top of it. These
+  // are the same calls the nominal weight uses, so nothing here is a
+  // re-derivation of the physics.
+  const double b0    = m_born;
+  const double real  = CalculateReal(k, 0);
+  const double virt  = CalculateVirtual();
+  const double beta1 = real + virt;
+
+  msg_Out() << "  beta_0  (Born)                = " << b0    << "\n"
+            << "  real    (CalculateReal)       = " << real  << "\n"
+            << "  virtual (CalculateVirtual)    = " << virt  << "\n"
+            << "  beta_1  = real + virtual      = " << beta1 << "\n"
+            << "  beta_0 + beta_1               = " << b0+beta1 << "\n"
+            << "\n  KKMC counterpart (kkmc_ceex_crosscheck):\n"
+            << "    beta_0        <-> RhoExp0\n"
+            << "    beta_0+beta_1 <-> RhoExp1\n"
+            << "    beta_1        <-> RhoExp1 - RhoExp0\n"
+            << "    real  only    <-> the 'Born+real' row minus its RhoExp0\n"
+            << "    virt  only    <-> the 'Born+virtual' row minus its RhoExp0\n"
+            << "  NB both sides carry their own overall normalisation (Sherpa's\n"
+            << "  beta_0 is the Born ME, KKMC's RhoExp0 the CEEX distribution),\n"
+            << "  so compare the RATIOS beta_1/beta_0 vs (RhoExp1-RhoExp0)/RhoExp0,\n"
+            << "  not the absolute numbers.\n";
+  msg_Out() << "  beta_1/beta_0 = " << (IsZero(b0) ? 0. : beta1/b0) << "\n\n";
+  pt << "# beta0 real virtual\n"
+     << b0 << " " << real << " " << virt << "\n";
+  pt.close();
+}
+
 Vec4D NLO_Base::FixedTestPhoton() const {
   double E = m_rv_test_x * sqrt(m_s) / 2.;
   double st = sin(m_rv_test_theta), ct = cos(m_rv_test_theta);

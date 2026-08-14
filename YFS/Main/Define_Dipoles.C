@@ -841,12 +841,21 @@ double Define_Dipoles::CalculateEEX(){
 }
 
 double Define_Dipoles::CalculateEEXVirtual(){
+  return CalculateEEXVirtual(m_betaorder);
+}
+
+// Same, at an EXPLICIT order rather than the runcard's BETA. Differencing two
+// orders isolates one term of the EEX virtual series
+// (Dipole::VirtualEEX: 0.5*gamma at order 1, +0.125*gamma^2 at order 2), which
+// is how the approximate double-virtual is built in
+// YFS_Handler::GenerateWeight when no exact VV provider exists.
+double Define_Dipoles::CalculateEEXVirtual(int betaorder){
   double vint{1.}, vfin{1};
   for (auto &D: m_dipolesII){
-    vint*=1+D.VirtualEEX(m_betaorder);
+    vint*=1+D.VirtualEEX(betaorder);
   }
   for (auto &D: m_dipolesFF){
-    vfin*=1+D.VirtualEEX(m_betaorder);
+    vfin*=1+D.VirtualEEX(betaorder);
   }
   return vint*vfin;
 }
