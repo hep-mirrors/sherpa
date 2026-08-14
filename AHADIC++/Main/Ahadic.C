@@ -22,8 +22,13 @@ Ahadic::Ahadic(string shower) :
 {
   rpa->gen.AddCitation(1, "Ahadic is described in \\cite{Chahal:2022rid}.");
   ReadMassParameters();
-  hadpars = new Hadronisation_Parameters();
-  hadpars->Init(shower);
+  // hadpars is a module-global singleton: construct + initialise it exactly
+  // once behind a guard (and delete/null it in ~Ahadic), so a second
+  // fragmentation handler does not leak the first one's tables.
+  if (!hadpars) {
+    hadpars = new Hadronisation_Parameters();
+    hadpars->Init(shower);
+  }
   m_sformer.Init();
   m_beamparticles.Init();
   m_softclusters.Init();
@@ -35,6 +40,7 @@ Ahadic::Ahadic(string shower) :
 Ahadic::~Ahadic()
 {
   Reset();
+  if (hadpars) { delete hadpars; hadpars = nullptr; }
 }
 
 Return_Value::code Ahadic::Hadronize(Blob_List * blobs)
@@ -80,7 +86,6 @@ Return_Value::code Ahadic::Hadronize(Blob_List * blobs)
 
 Return_Value::code Ahadic::Hadronize(Blob * blob, int retry) {
   Reset();
-  m_totmom = blob->CheckMomentumConservation();
   if (!ExtractSinglets(blob) || !ShiftBeamParticles() || !CheckSinglets() ||
       !DecayGluons() ||!DecayClusters()) {
     //msg_Error()<<"ERROR in "<<METHOD<<": Will retry event!\n"
@@ -188,19 +193,6 @@ void Ahadic::Reset(Blob * blob) {
   if (blob) blob->DeleteOutParticles();
   Cluster::Reset();
   Proto_Particle::Reset();
-}
-
-bool Ahadic::SanityCheck(Blob * blob,double norm2) {
-  Vec4D checkmom(blob->CheckMomentumConservation());
-  if (dabs(checkmom.Abs2())/norm2>1.e-12 ||
-      (norm2<0. && norm2>0.)) {
-    //msg_Error()<<"ERROR in "<<METHOD<<" :\n"
-    //	       <<"   Momentum violation in blob: "
-    //	       <<checkmom<<" ("<<sqrt(Max(0.,checkmom.Abs2()))<<")\n"
-    //	       <<(*blob)<<"\n";
-    return false;
-  }
-  return true;
 }
 
 bool Ahadic::CheckKfcodes(Blob * blob) {

@@ -14,7 +14,7 @@ Gluon_Decayer::Gluon_Decayer(list<Cluster *> * cluster_list,
   Singlet_Tools(),
   p_cluster_list(cluster_list), p_softclusters(softclusters),
   m_splitter(Gluon_Splitter(cluster_list,softclusters)),
-  m_analyse(true)
+  m_analyse(false)
 {
   if (m_analyse) {
     m_histos[string("N_primaries")] = new Histogram(0,0.,100.,100);
@@ -55,7 +55,10 @@ bool Gluon_Decayer::operator()(Singlet * singlet) {
   if (p_singlet->front()->Flavour().IsGluon() && !SplitGluonRing()) {
     // protection for low-mass two-gluon systems.
     if (p_singlet->size()==2) {
-      if (Trivial(p_singlet->front(),p_singlet->back())) return true;
+      if (Trivial(p_singlet->front(),p_singlet->back())) {
+        delete p_singlet;
+        return true;
+      }
     }
     msg_Error()<<"Couldn't split the gluon ring.\n"<<(*singlet)<<"\n";
     return false;
@@ -126,7 +129,7 @@ bool Gluon_Decayer::SplitGluonRing() {
 
 Proto_Particle * Gluon_Decayer::FirstGluon() {
   double minm2(1.e12), m2thres(sqr(2.*m_breaker.MinMass())), m2;
-  list<Proto_Particle *>::iterator ppiter1, ppiter2, winner(p_singlet->end());
+  list<Proto_Particle *>::iterator ppiter2, winner(p_singlet->end());
   for (list<Proto_Particle *>::iterator ppiter1=p_singlet->begin();
        ppiter1!=p_singlet->end();ppiter1++) {
     Proto_Particle * part1(*ppiter1);
@@ -245,5 +248,4 @@ void Gluon_Decayer::FillNs(const int & Nhad) {
   }
 }
 
-void Gluon_Decayer::AnalyseClusters() {}
 

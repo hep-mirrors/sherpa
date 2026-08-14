@@ -9,7 +9,7 @@ using namespace ATOOLS;
 using namespace std;
 
 Soft_Cluster_Handler::Soft_Cluster_Handler(list<Proto_Particle *> * hadrons) :
-  p_hadrons(hadrons), m_ktfac(1.)
+  p_hadrons(hadrons)
 { }
 
 Soft_Cluster_Handler::~Soft_Cluster_Handler() 
@@ -111,7 +111,6 @@ int Soft_Cluster_Handler::Treat(Cluster * cluster,bool force)
     }
   }
   // decay returns 1 or -1: -1 is for a failed cluster decay
-  m_forceddecay = force;
   return Decay();
 }
 
@@ -162,6 +161,7 @@ bool Soft_Cluster_Handler::Rescue(Cluster * cluster) {
       totmom = mom;
     }
   }
+  if (winner==NULL) return false;
   double totmass2 = totmom.Abs2(), totmass = sqrt(totmass2), wmass2 = sqr(winner->Flavour().Mass());
   Vec4D  wvec     = winner->Momentum();
   Poincare boost  = Poincare(totmom);
@@ -305,11 +305,11 @@ double Soft_Cluster_Handler::RadiationWeight(const bool & withPS) {
   }
   double disc = totweight * ran->Get();
   map<Flavour,double>::iterator wit=weights.begin();
-  do {
+  while (wit!=weights.end()) {
     disc -= wit->second;
     if (disc<=1.e-12) break;
     wit++;
-  } while (wit!=weights.end());
+  }
   if (wit!=weights.end()) m_hads[0] = wit->first;
   return totweight;
 }
@@ -347,11 +347,11 @@ double Soft_Cluster_Handler::DecayWeight() {
 
   double disc = totweight * ran->Get();
   map<Flavour_Pair,double>::iterator wit=weights.begin();
-  do {
+  while (wit!=weights.end()) {
     disc -= wit->second;
     if (disc<=1.e-12) break;
     wit++;
-  } while (wit!=weights.end());
+  }
   if (wit!=weights.end()) {
     m_hads[0] = wit->first.first;
     m_hads[1] = wit->first.second;
@@ -397,7 +397,7 @@ AnnihilateFlavour(const Flavour & one1,const Flavour & one2,
   if (kf12==kf22) {
     residual.first = two1; residual.second = one1;
     Single_Transition_List * trans = (*p_singletransitions)[residual];
-    if (trans->rbegin()->first.Mass()<m_mass) {
+    if (trans && trans->rbegin()->first.Mass()<m_mass) {
       m_hads[1] = trans->rbegin()->first;
       return true;
     }
@@ -405,7 +405,7 @@ AnnihilateFlavour(const Flavour & one1,const Flavour & one2,
   if (kf12==kf21) {
     residual.first = two2; residual.second = one1;
     Single_Transition_List * trans = (*p_singletransitions)[residual];
-    if (trans->rbegin()->first.Mass()<m_mass) {
+    if (trans && trans->rbegin()->first.Mass()<m_mass) {
       m_hads[1] = trans->rbegin()->first;
       return true;
     }
@@ -413,7 +413,7 @@ AnnihilateFlavour(const Flavour & one1,const Flavour & one2,
   if (kf11==kf22) {
     residual.first = two1; residual.second = one2;
     Single_Transition_List * trans = (*p_singletransitions)[residual];
-    if (trans->rbegin()->first.Mass()<m_mass) {
+    if (trans && trans->rbegin()->first.Mass()<m_mass) {
       m_hads[1] = trans->rbegin()->first;
       return true;
     }
@@ -421,7 +421,7 @@ AnnihilateFlavour(const Flavour & one1,const Flavour & one2,
   if (kf11==kf21) {
     residual.first = two2; residual.second = one2;
     Single_Transition_List * trans = (*p_singletransitions)[residual];
-    if (trans->rbegin()->first.Mass()<m_mass) {
+    if (trans && trans->rbegin()->first.Mass()<m_mass) {
       m_hads[1] = trans->rbegin()->first;
       return true;
     }
@@ -433,6 +433,7 @@ double Soft_Cluster_Handler::
 DefineHadronsInAnnihilation(const Flavour_Pair & one,const Flavour_Pair & two) {
   Single_Transition_List * ones = (*p_singletransitions)[one];
   Single_Transition_List * twos = (*p_singletransitions)[two];
+  if (ones==NULL || twos==NULL) return 0.;
   map<Flavour_Pair,double> weights;
   double m2, m3, totweight(0.), weight;
   for (Single_Transition_List::reverse_iterator oit=ones->rbegin();
@@ -450,6 +451,7 @@ DefineHadronsInAnnihilation(const Flavour_Pair & one,const Flavour_Pair & two) {
       totweight += weights[flpair] = weight;
     }
   }
+  if (weights.empty()) return 0.;
   double disc = totweight*ran->Get()*0.9999999;
   map<Flavour_Pair,double>::iterator wit=weights.begin();
   while (disc>0. && wit!=weights.end()) {

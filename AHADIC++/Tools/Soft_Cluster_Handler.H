@@ -14,14 +14,14 @@ namespace AHADIC {
     Single_Transitions          * p_singletransitions;
     Double_Transitions          * p_doubletransitions;
     KT_Selector                   m_ktselector;
-    double m_dec_threshold,m_trans_threshold, m_chi, m_ktmax, m_ktfac, m_zeta;
+    double m_dec_threshold,m_trans_threshold, m_chi, m_ktmax, m_zeta;
     double m_piphoton_threshold, m_dipion_threshold, m_open_threshold;
 
     Cluster    * p_cluster;
     double       m_mass2, m_mass;
     Flavour_Pair m_flavs;
 
-    bool m_forceddecay, m_direct_transition, m_ktorder;
+    bool m_direct_transition, m_ktorder;
     
     ATOOLS::Vec4D   m_moms[2];
     ATOOLS::Flavour m_hads[2];

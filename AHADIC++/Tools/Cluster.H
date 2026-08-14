@@ -6,8 +6,6 @@
 #include <iostream>
 
 namespace AHADIC {
-  static ATOOLS::Vec4D s_axis = ATOOLS::Vec4D(1.,1.,0.,0.);
-  
   class Cluster {
   private:
     std::pair<Proto_Particle *,Proto_Particle *> m_parts;

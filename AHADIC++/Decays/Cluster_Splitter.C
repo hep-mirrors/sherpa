@@ -10,8 +10,7 @@ using namespace std;
 
 Cluster_Splitter::Cluster_Splitter(list<Cluster *> * cluster_list,
 				   Soft_Cluster_Handler * softclusters) :
-  Splitter_Base(cluster_list,softclusters),
-  m_output(false)
+  Splitter_Base(cluster_list,softclusters)
 {
 }
 
@@ -75,7 +74,7 @@ void Cluster_Splitter::FixCoefficients() {
     massfac      = 1.;
     size_t flcnt = 0;
     if (p_part[i]->IsLeading() ||
-	(m_mode==0 && p_part[1-i]->IsLeading())) {
+	(m_defmode==0 && p_part[1-i]->IsLeading())) {
       flcnt   = 1;
       massfac = 2.;
     }
@@ -119,9 +118,9 @@ bool Cluster_Splitter::MakeLongitudinalMomentaZ() {
     if (MakeLongitudinalMomentaZSimple()) {
       double weight=1.;
       for (size_t i=0;i<2;i++) {
-	if (m_gamma[i]>1.e-4) {
+	if (m_c[i]>1.e-4) {
 	  double DeltaM2 = m_R2[i]-m_minQ2[i];
-	  weight *= DeltaM2>0.?exp(-m_gamma[i]*DeltaM2/m_sigma[i]):0.;
+	  weight *= DeltaM2>0.?exp(-m_c[i]*DeltaM2/m_sigma[i]):0.;
 	}
       }
       if (weight>=ran->Get()) return true;
@@ -191,7 +190,7 @@ bool Cluster_Splitter::MakeLongitudinalMomentaMassSimple() {
     }
     success = m_R2[0]+m_R2[1]<m_Q2 && RecalculateZs();
   } while ((trials--)>0 && !success);
-  return trials>0;
+  return success;
 }
 
 bool Cluster_Splitter::MakeLongitudinalMomentaMass() {
@@ -200,8 +199,8 @@ bool Cluster_Splitter::MakeLongitudinalMomentaMass() {
     if (MakeLongitudinalMomentaMassSimple()) {
       double weight=1.;
       for (size_t i=0;i<2;i++) {
-	if (m_alpha[i]>1.e-4) weight *= pow(m_z[i],m_alpha[i]);
-	if (m_beta[i]>1.e-4)  weight *= pow(1.-m_z[i],m_beta[i]);
+	if (m_a[i]>1.e-4) weight *= pow(m_z[i],m_a[i]);
+	if (m_b[i]>1.e-4)  weight *= pow(1.-m_z[i],m_b[i]);
       }
       if (weight>=ran->Get()) return true;
     }
@@ -211,9 +210,9 @@ bool Cluster_Splitter::MakeLongitudinalMomentaMass() {
 
 double Cluster_Splitter::DeltaM(const size_t & cl) {
   double deltaM, deltaMmax = m_Q-sqrt(m_m2min[0])-sqrt(m_m2min[1]);
-  double mean =  m_mean[cl], sigma = 1./(m_c[cl] * sqrt(m_kt02));
+  double sigma = 1./(m_c[cl] * sqrt(m_kt02));
   double arg  =  1.-exp(-sigma * deltaMmax);
-  size_t trials = 1000;
+  long int trials = 1000;
   do {
     // Weibull distribution
     //deltaM = sqrt(offset+pow(-log(ran->Get()),1./m_a[cl])*lambda);
@@ -223,14 +222,14 @@ double Cluster_Splitter::DeltaM(const size_t & cl) {
     //deltaM = exp(log(mean)+log(sigma)*ran->GetGaussian());
     // simple exponential
     deltaM = -1./sigma*log(1.-ran->Get()*arg);
-  } while ((deltaM>deltaMmax) && (trials--)>1000);
+  } while ((deltaM>deltaMmax) && (trials--)>0);
   return trials>0?deltaM:0.;
 }
 
 
 bool Cluster_Splitter::FillParticlesInLists() {
   size_t shuffle = MakeAndCheckClusters();
-  if (shuffle) MakeNewMomenta(shuffle);
+  if (shuffle && !MakeNewMomenta(shuffle)) return false;
   for (size_t i=0;i<2;i++) {
     if (shuffle&(i+1)) FillHadronAndDeleteCluster(i);
     else if (shuffle)  UpdateAndFillCluster(i);
@@ -243,7 +242,7 @@ size_t Cluster_Splitter::MakeAndCheckClusters() {
   size_t  shuffle = 0;
   for (size_t i=0;i<2;i++) {
     p_out[i]     = MakeCluster(i);
-    m_cms       += m_mom[i] = p_out[i]->Momentum();
+    m_mom[i]     = p_out[i]->Momentum();
     m_mass2[i]   = m_mom[i].Abs2();
     if (p_softclusters->PromptTransit(p_out[i],m_fl[i])) shuffle += (i+1);
     else m_fl[i] = Flavour(kf_none);
@@ -251,17 +250,22 @@ size_t Cluster_Splitter::MakeAndCheckClusters() {
   return shuffle;
 }
 
-void Cluster_Splitter::MakeNewMomenta(size_t shuffle) {
+bool Cluster_Splitter::MakeNewMomenta(size_t shuffle) {
   double mt2[2], alpha[2], beta[2];
   for (size_t i=0;i<2;i++) {
     mt2[i]    = (shuffle&(i+1) ? sqr(m_fl[i].Mass()) : m_mass2[i] ) + m_kt2;
   }
-  alpha[0]    = ((m_Q2+mt2[0]-mt2[1])+sqrt(sqr(m_Q2+mt2[0]-mt2[1])-4.*m_Q2*mt2[0]))/(2.*m_Q2);
+  // Kallen positivity: the radicand is < 0 when sqrt(m_Q2) < mt[0]+mt[1].
+  // Bail out (caller retries the splitting) instead of producing NaN momenta.
+  double radicand = sqr(m_Q2+mt2[0]-mt2[1])-4.*m_Q2*mt2[0];
+  if (radicand<0.) return false;
+  alpha[0]    = ((m_Q2+mt2[0]-mt2[1])+sqrt(radicand))/(2.*m_Q2);
   beta[0]     = mt2[0]/(m_Q2*alpha[0]);
   alpha[1]    = 1.-alpha[0];
   beta[1]     = 1.-beta[0];
   m_newmom[0] = m_E*(alpha[0]*s_AxisP + beta[0]*s_AxisM)+m_ktvec;
   m_newmom[1] = Vec4D(m_Q,0.,0.,0.)-m_newmom[0];
+  return true;
 }
 
 void Cluster_Splitter::FillHadronAndDeleteCluster(size_t i) {

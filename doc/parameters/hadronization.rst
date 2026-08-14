@@ -115,7 +115,13 @@ Hadron multiplets
 .. index:: MULTI_WEIGHT_R2L0_N_1/2
 .. index:: MULTI_WEIGHT_R1_1L0_N_1/2
 .. index:: MULTI_WEIGHT_R0L0_DELTA_3/2
-.. index:: SINGLET_SUPPRESSION
+.. index:: SINGLET_MODIFIER
+.. index:: SINGLETBARYON_MODIFIER
+.. index:: CHARMBARYON_ENHANCEMENT
+.. index:: BEAUTYBARYON_ENHANCEMENT
+.. index:: CHARMSTRANGE_ENHANCEMENT
+.. index:: BEAUTYSTRANGE_ENHANCEMENT
+.. index:: BEAUTYCHARM_ENHANCEMENT
 .. index:: Mixing_0+
 .. index:: Mixing_1-
 .. index:: Mixing_2+
@@ -131,31 +137,51 @@ probabilities, organised by multiplet and given by the parameters
 
 * ``MULTI_WEIGHT_R0L0_PSEUDOSCALARS`` (default 1.0),
 
-* ``MULTI_WEIGHT_R0L0_VECTORS`` (default 1.0),
+* ``MULTI_WEIGHT_R0L0_VECTORS`` (default 2.5 for the CSS shower, 2.2 for Dire),
 
-* ``MULTI_WEIGHT_R0L0_TENSORS2`` (default 0.75),
+* ``MULTI_WEIGHT_R0L0_TENSORS2`` (default 1.5),
 
 * ``MULTI_WEIGHT_R0L1_SCALARS`` (default 0.0),
 
 * ``MULTI_WEIGHT_R0L1_AXIALVECTORS`` (default 0.0),
 
-* ``MULTI_WEIGHT_R0L2_VECTORS`` (default 0.0),
+* ``MULTI_WEIGHT_R0L2_VECTORS`` (default 0.5),
 
 * ``MULTI_WEIGHT_R0L0_N_1/2`` (default 1.0),
 
-* ``MULTI_WEIGHT_R1L0_N_1/2`` (default 0.0),
+* ``MULTI_WEIGHT_R1L0_N_1/2`` (default 0.1),
 
 * ``MULTI_WEIGHT_R2L0_N_1/2`` (default 0.0),
 
 * ``MULTI_WEIGHT_R1_1L0_N_1/2`` (default 0.0),
 
-* ``MULTI_WEIGHT_R0L0_DELTA_3/2`` (default 0.25),
+* ``MULTI_WEIGHT_R0L0_DELTA_3/2`` (default 0.15),
 
-In addition, there is a suppression factors applied to meson singlets,
+Note that ``MULTI_WEIGHT_R0L2_VECTORS`` only switches on the L=2 vector
+(spin 1) meson multiplet; the corresponding L=2 tensor (spin 2) mesons,
+e.g. :math:`K_2(1820)`, have no weight parameter of their own yet and are
+currently never produced by AHADIC++.
 
-* ``SINGLET_SUPPRESSION`` (default 1.0).
+In addition, there is a suppression factor applied to meson singlets,
 
-For the latter, Sherpa also allows to redefine the mixing angles
+* ``SINGLET_MODIFIER`` (default 2.0),
+
+and enhancement/suppression factors applied to specific baryon and
+heavy-flavour combinations,
+
+* ``SINGLETBARYON_MODIFIER`` (default 1.80),
+
+* ``CHARMBARYON_ENHANCEMENT`` (default 8.00),
+
+* ``BEAUTYBARYON_ENHANCEMENT`` (default 0.80),
+
+* ``CHARMSTRANGE_ENHANCEMENT`` (default 2.00),
+
+* ``BEAUTYSTRANGE_ENHANCEMENT`` (default 1.40), and
+
+* ``BEAUTYCHARM_ENHANCEMENT`` (default 1.00).
+
+For the singlet suppression, Sherpa also allows to redefine the mixing angles
 through parameters such as
 
 * ``Mixing_0+`` (default -14.1/180*M_PI),
@@ -164,26 +190,30 @@ through parameters such as
 
 * ``Mixing_2+`` (default 27.0/180*M_PI),
 
-* ``Mixing_3-`` (default 0.5411),
+* ``Mixing_3-`` (default 0.5411), and
 
-* ``Mixing_4+`` (default 0.6283),
+* ``Mixing_4+`` (default 0.6283).
 
-And finally, some modifiers are applied to individual hadrons:
+The latter two, ``Mixing_3-`` and ``Mixing_4+``, currently have no effect:
+AHADIC++ does not yet construct any meson multiplet with the corresponding
+J=3/J=4 quantum numbers they would apply to.
 
-* ``ETA_MODIFIER`` (default 0.12),
+And finally, some modifiers are applied to individual hadrons, with defaults
+depending on whether the CSS or the Dire parton shower is used:
 
-* ``ETA_PRIME_MODIFIER`` (default 1.0),
+* ``ETA_MODIFIER`` (default 2.2 for the CSS shower, 2.82 for Dire), and
+
+* ``ETA_PRIME_MODIFIER`` (default 4.5 for the CSS shower, 2.03 for Dire).
 
 Cluster transition to hadrons - flavour part
 --------------------------------------------
 
 .. index:: STRANGE_FRACTION
 .. index:: BARYON_FRACTION
-.. index:: CHARM_BARYON_MODIFIER
-.. index:: BEAUTY_BARYON_MODIFIER
-.. index:: P_{QS}/P_{QQ}
-.. index:: P_{SS}/P_{QQ}
-.. index:: P_{QQ_1}/P_{QQ_0}
+.. index:: P_QS_by_P_QQ_norm
+.. index:: P_SS_by_P_QQ_norm
+.. index:: P_QQ1_by_P_QQ0
+.. index:: DIRECT_TRANSITIONS
 
 The phase space effects due to these masses govern to a large extent
 the flavour content of the non-perturbative gluon splittings at the
@@ -191,20 +221,30 @@ end of the parton shower and in the decay of clusters.  They are
 further modified by relative probabilities with respect to the
 production of up/down flavours through the parameters
 
-* ``STRANGE_FRACTION`` (default 0.42),
+* ``STRANGE_FRACTION`` (default 0.46), the fraction of strange vs.
+  up/down quarks popped from the vacuum,
 
-* ``BARYON_FRACTION`` (default 1.0),
+* ``BARYON_FRACTION`` (default 0.17), the fraction of diquark-antidiquark
+  vs. quark-antiquark pairs popped from the vacuum,
 
-* ``CHARM_BARYON_MODIFIER`` (default 1.0),
+* ``P_QS_by_P_QQ_norm`` (default 0.56), entering the probability
+  :math:`P_{QS}/P_{QQ}` to pop a diquark containing one strange quark
+  relative to an all up/down diquark, given by this parameter multiplied
+  by ``STRANGE_FRACTION``,
 
-* ``BEAUTY_BARYON_MODIFIER`` (default 1.0),
+* ``P_SS_by_P_QQ_norm`` (default 0.056), entering the probability
+  :math:`P_{SS}/P_{QQ}` to pop a doubly-strange diquark relative to an all
+  up/down diquark, given by this parameter multiplied by the square of
+  ``STRANGE_FRACTION``, and
 
-* ``P_{QS/P_{QQ}}`` (default 0.2),
+* ``P_QQ1_by_P_QQ0`` (default 0.60), the relative probability of popping a
+  spin-1 vs. a spin-0 diquark.
 
-* ``P_{SS/P_{QQ}}`` (default 0.04), and
+Whether a cluster may transition directly onto its lightest same-flavour
+hadron at all (rather than always going through a two-cluster or
+two-hadron splitting) is controlled by
 
-* ``P_{QQ_1/P_{QQ_0}}`` (default 0.20).
-
+* ``DIRECT_TRANSITIONS`` (default 1, i.e. enabled).
 
 The transition of clusters to hadrons is governed by the following
 considerations:
@@ -222,19 +262,38 @@ considerations:
 
 * In addition, clusters may becomes sufficiently light such that they
   should decay directly into two hadrons instead of two clusters.
-  This decision is based on the heaviest hadrons accessible in a
-  decay, modulated by another offset parameter,
+  This decision compares the cluster mass to a threshold mass interpolated
+  between the lightest and heaviest two-hadron final state accessible to
+  its flavour content, with the interpolation fraction given by
 
-  * ``DECAY_THRESHOLD`` (default 500 MeV).
+  * ``DECAY_THRESHOLD`` (default 0.02, dimensionless: 0 picks the lightest
+    accessible two-hadron mass, 1 the heaviest).
 
 * If both options, transition and decay, are available, there is a
-  competition between
+  competition between them, decided analogously via an interpolation
+  between the lightest and heaviest single-hadron transition mass,
+
+  * ``TRANSITION_THRESHOLD`` (default 0.51, dimensionless, same
+    interpolation convention as ``DECAY_THRESHOLD``).
+
+* A small number of further mass thresholds steer rarely-relevant edge
+  cases in the radiative treatment of very light two-gluon clusters,
+  deciding between a two-photon, a pion-plus-photon, or a two-pion final
+  state:
+
+  * ``PI_PHOTON_THRESHOLD`` (default 0.150 GeV),
+
+  * ``DI_PION_THRESHOLD`` (default 0.300 GeV), and
+
+  * ``OPEN_THRESHOLD`` (default 0.100 GeV) -- currently has no effect in
+    the code.
 
 
 Cluster transition and decay weights
 ------------------------------------
 
-.. index:: MassExponent_C->HH
+.. index:: MASS_EXPONENT
+.. index:: PROMPT_DECAY_EXPONENT
 
 The probability for a cluster C to be transformed into a hadron H is given by
 a combination of weights, obtained from the overlap with the flavour part of
@@ -247,12 +306,21 @@ wave functions of all hadrons, their respective multiplet suppression weights,
 the flavour weight for the creation of the new flavour q and a kinematical
 factor are relevant.  Here, yet another tuning parameter enters,
 
-* ``MASS_EXPONENT`` (default 4.0)
+* ``MASS_EXPONENT`` (default 0.0),
 
-which partially compensates phase space effects favouring light hadrons,
+which partially compensates phase space effects favouring light hadrons. A
+related exponent enters the kinematic weight for a cluster's direct, prompt
+transition onto a single hadron (cf. ``DIRECT_TRANSITIONS`` above),
+
+* ``PROMPT_DECAY_EXPONENT`` (default -1.0).
 
 Cluster decays - kinematics
 ---------------------------
+
+.. index:: KT_0
+.. index:: PT_MAX
+.. index:: KT_ORDER
+.. index:: MIN_MASS2
 
 Cluster decays are generated by firstly emitting a non-perturbative
 "gluon" from one of the quarks, using a transverse momentum
@@ -265,14 +333,52 @@ function, if this quark has been produced in the perturbative phase of
 the event.  If, in contrast, the quark stems from a cluster decay, the
 energy of the gluon is selected according to a flat distribution.
 
-In clusters decaying to hadrons, the transverse momentum is chosen according
-to a distribution given by an infrared-continued strong coupling and a
-term inversely proportional to the infrared-modified transverse momentum,
+In clusters decaying to hadrons, the magnitude of the transverse momentum
+is drawn from a half-Gaussian (folded normal) distribution of width
 
-constrained to be below a maximal transverse momentum.
+* ``KT_0`` (default 1.21 GeV),
+
+resampled until it falls below an upper limit set by the energy available
+to the splitting and, by default, by
+
+* ``PT_MAX`` (default 0.68 GeV).
+
+Since ``PT_MAX`` is smaller than ``KT_0`` by default, it is usually this
+cutoff, rather than the width of the underlying Gaussian, that determines
+the bulk of the accepted transverse-momentum range. If transverse-momentum
+ordering of successive splittings is switched on via
+
+* ``KT_ORDER`` (default 0, i.e. off),
+
+each new transverse momentum is additionally required not to exceed the
+transverse momentum of the splitting that produced its parent parton.
+Finally,
+
+* ``MIN_MASS2`` (default 0.10 GeV²)
+
+enters as a small mass-squared offset in determining the lightest cluster
+that can still be processed as such, rather than transitioning directly
+onto a hadron.
 
 Splitting kinematics
 --------------------
+
+.. index:: GLUON_DECAY_MODE
+.. index:: ALPHA_G
+.. index:: CLUSTER_SPLITTING_MODE
+.. index:: REMNANT_CLUSTER_MODE
+.. index:: ALPHA_L
+.. index:: BETA_L
+.. index:: GAMMA_L
+.. index:: ALPHA_D
+.. index:: BETA_D
+.. index:: GAMMA_D
+.. index:: ALPHA_B
+.. index:: BETA_B
+.. index:: GAMMA_B
+.. index:: ALPHA_H
+.. index:: BETA_H
+.. index:: GAMMA_H
 
 In each splitting, the kinematics is given by the transverse momentum,
 the energy splitting parameter and the azimuthal angle.  The latter,
@@ -283,6 +389,52 @@ quark is a leading quark, i.e. produced in the perturbative phase), to
 the gluon-to-quark splitting function, or according to a flat
 distribution.  The transverse momentum is given by the same
 distribution as in the cluster decays to hadrons.
+
+For the non-perturbative splitting of a gluon at the end of the parton
+shower into a quark-antiquark or diquark-antidiquark pair, the energy
+splitting parameter is accepted with a weight following one of two forms,
+
+* ``GLUON_DECAY_MODE`` (default 0): :math:`z^\alpha+(1-z)^\alpha`, which
+  does not vanish at the kinematic endpoints :math:`z\to0,1` unless
+  :math:`\alpha` is large, or
+
+* mode 1: :math:`[z(1-z)]^\alpha`, which always vanishes at both endpoints
+  for :math:`\alpha>0`,
+
+using a single exponent ``ALPHA_G`` (default 0.97).
+
+For the splitting of a cluster into two new clusters, a richer,
+Beta-distribution-like weight :math:`z^\alpha(1-z)^\beta` is used, with the
+exponents chosen depending on the type of constituent at each end of the
+splitting -- a light quark, a "leading" parton produced in the perturbative
+phase, a diquark, or a beam-remnant particle:
+
+* ``ALPHA_L``/``BETA_L``/``GAMMA_L`` (defaults 3.9/0.18/0.48) for light
+  quarks (the default category),
+
+* ``ALPHA_H``/``BETA_H``/``GAMMA_H`` (defaults -0.6/1.8/0.024) for leading
+  partons,
+
+* ``ALPHA_D``/``BETA_D``/``GAMMA_D`` (defaults 3.4/0.72/0.77) for diquarks,
+  and
+
+* ``ALPHA_B``/``BETA_B``/``GAMMA_B`` (defaults 14.2/1.6/8.1) for
+  beam-remnant particles.
+
+In the default mode, an additional exponential term proportional to
+:math:`\gamma\,(k_T^2+m^2)/\texttt{KT\_0}^2` further suppresses
+configurations where the daughter cluster's transverse mass is large
+compared to ``KT_0``, in the same spirit as the transverse-mass suppression
+term in the Lund symmetric fragmentation function. Which of several
+different ways of sampling the cluster-splitting energy fractions is used
+is chosen by
+
+* ``CLUSTER_SPLITTING_MODE`` (default 2: a flat sample with no additional
+  weighting beyond the standard acceptance cuts), with a separate value
+  used whenever one of the two split constituents is a beam-remnant
+  particle,
+
+* ``REMNANT_CLUSTER_MODE`` (default 2).
 
 .. _Hadron decays:
 
