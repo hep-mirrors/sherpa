@@ -415,14 +415,8 @@ bool YFS_Handler::CalculateFSR(Vec4D_Vector & p) {
   }
   // if(!CheckMomentumConservation()) return false;
   if(FixedOrder()==fixed_order::nlo){
-    // Fixed order requires exactly one real photon (from ISR xor FSR); see
-    // ISR::NPhotons/FSR::NPhotons multiplicity caps. totk>1 used to only be
-    // logged (msg_Error) and NOT rejected, while CalculateReal() sums over
-    // both m_ISRPhotons and m_FSRPhotons unconditionally - so a stray
-    // double-photon point silently double-counted the real correction
-    // instead of being dropped. Reject any point that violates the
-    // invariant, in either direction.
-    int totk = m_FSRPhotons.size()+m_ISRPhotons.size();
+    int totk = m_ISRPhotons.size();
+    if(m_nlo_fsr_photons) totk += m_FSRPhotons.size();
     if(totk != 1) {
       if(totk > 1)
         msg_Error()<<"Wrong photon multiplicity at Fixed Order: "<<totk<<std::endl;
@@ -518,7 +512,8 @@ void YFS_Handler::InitNLO(){
   p_nlo->SetBorn(m_born);
   p_nlo->SetFSR(p_fsr);
   p_nlo->m_ISRPhotons = m_ISRPhotons;
-  p_nlo->m_FSRPhotons = m_FSRPhotons;
+  if (m_nlo_fsr_photons) p_nlo->m_FSRPhotons = m_FSRPhotons;
+  else                   p_nlo->m_FSRPhotons.clear();
 }
 
 double YFS_Handler::CalculateNLO(){

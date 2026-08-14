@@ -106,6 +106,7 @@ void YFS_Base::RegisterDefaults(){
   s["NLO_CUTS"].SetDefault(false);
   s["Fixed_Order"].SetDefault(fixed_order::full);
   s["SKIP_NEG_WEIGHTS"].SetDefault(false);
+  s["NLO_FSR_PHOTONS"].SetDefault(true);
   s["MIN_PHOTON"].SetDefault<int>(-1);
   s["FB_Analysis"].SetDefault(false);
   s["FB_Analysis_KF"].SetDefault<int>(0);
@@ -187,6 +188,7 @@ void YFS_Base::RegisterSettings(){
   m_nlocuts = s["NLO_CUTS"].Get<bool>();
   m_fixedOrder = s["Fixed_Order"].Get<fixed_order::code>();
   m_skipNegWeights = s["SKIP_NEG_WEIGHTS"].Get<bool>();
+  m_nlo_fsr_photons = s["NLO_FSR_PHOTONS"].Get<bool>();
   m_mingammaN = s["MIN_PHOTON"].Get<int>();
   m_fb_analysis = s["FB_Analysis"].Get<bool>();
   m_fb_kf = s["FB_Analysis_KF"].Get<int>();
