@@ -641,24 +641,16 @@ Uncertain<double> Event_Handler::TotalNominalXS()
 
 Uncertain<double> Event_Handler::TotalNominalXSMPI()
 {
-  while (Communicate(1)<0);
+  Communicate(0);
   if (m_mn == 0.0)
     return {0.0, 0.0};
 
-  double sum_nominal {m_wgtmapsum.Nominal()};
-#ifdef USING__MPI
-  if (mpi->Size() > 1)
-    mpi->Allreduce(&sum_nominal, 1, MPI_DOUBLE, MPI_SUM);
-#endif
+  const double sum_nominal {m_mwgtmapsum.Nominal()};
   const double xs {sum_nominal / m_mn};
   if (m_mn <= 1)
     return {xs, xs};
 
-  double sumsqr_nominal {m_wgtmapsumsqr.Nominal()};
-#ifdef USING__MPI
-  if (mpi->Size() > 1)
-    mpi->Allreduce(&sumsqr_nominal, 1, MPI_DOUBLE, MPI_SUM);
-#endif
+  const double sumsqr_nominal {m_mwgtmapsumsqr.Nominal()};
   if (ATOOLS::IsEqual(sumsqr_nominal * m_mn, sum_nominal * sum_nominal, 1.0e-6))
     return {xs, 0.0};
 

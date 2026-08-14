@@ -147,8 +147,11 @@ int MPI_Object::Communicate(const int mode)
   for (;idx<nobj;++idx)
     if (s_objects[idx]==this) break;
   if (idx==nobj) THROW(fatal_error,"Internal error");
-  ids[idx]=1;
-  ids[nobj+idx]=mode;
+  if (mode>=0) {
+    ids[idx]=1;
+    ids[nobj+idx]=mode;
+  }
+  // mode<0 : heartbeat only -- participate in Allreduce but don't flag
 #ifdef DEBUG__MPI_Sync
   std::cout<<"Rank "<<mpi->Rank()<<" targets "<<typeid(*this).name()
 	   <<", index = "<<idx<<" at "<<rpa->gen.NumberOfGeneratedEvents()<<" events "<<std::endl;
@@ -166,7 +169,8 @@ int MPI_Object::Communicate(const int mode)
       s_objects[i]->MPISync();
     }
   int nbreak(0);
-  for (size_t i(nobj);i<2*nobj;++i) nbreak+=ids[i];
+  for (size_t i(0);i<nobj;++i)
+    if (ids[i]) nbreak+=ids[nobj+i];
   if (nbreak) {
     for (size_t i(0);i<nobj;++i)
       if (ids[i] && !ids[nobj+i]) {

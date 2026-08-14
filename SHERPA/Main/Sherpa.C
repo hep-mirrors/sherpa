@@ -151,7 +151,7 @@ void Sherpa::RegisterDefaults()
   s["DEBUG_INTERVAL"].SetDefault(0);
   s["DEBUG_STEP"].SetDefault(-1);
   s["EVENT_DISPLAY_INTERVAL"].SetDefault(100);
-  s["PRINT_MPI_XS"].SetDefault(false);
+  s["PRINT_MPI_XS"].SetDefault(true);
   s["EVT_OUTPUT"].SetDefault(msg->Level());
   s["MSG_LIMIT"].SetDefault(20);
   msg->SetLimit(s["MSG_LIMIT"].Get<int>());
@@ -233,6 +233,10 @@ bool Sherpa::GenerateOneEvent(bool reset)
   }
 
   if (m_evt_starttime<0.0) m_evt_starttime=rpa->gen.Timer().RealTime();
+
+#ifdef USING__MPI
+  if (mpi->Size()>1) p_eventhandler->Communicate(-1);
+#endif
 
   if (reset) p_eventhandler->Reset();
   if (p_eventhandler->GenerateEvent(p_inithandler->Mode())) {
