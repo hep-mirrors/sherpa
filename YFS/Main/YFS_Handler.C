@@ -59,6 +59,15 @@ YFS_Handler::~YFS_Handler()
     if(m_negskip!=0){
       msg_Out()<<"Total Events Skipped: "<<m_negskip<<std::endl;
     }
+    // The emission-side IF reweight is only trustworthy while the clamp is
+    // rarely hit; a large count here means photons are being handed an
+    // interference factor the soft approximation cannot support, and the rate
+    // is being shaped by IFI_RClip rather than by the physics.
+    if(m_ifireal && p_dipoles && p_dipoles->IFIClipped()!=0){
+      msg_Out()<<"IFI real reweight: "<<p_dipoles->IFIClipped()
+               <<" photon factors clamped to ["<<p_dipoles->IFIRClip()
+               <<", "<<1./p_dipoles->IFIRClip()<<"]"<<std::endl;
+    }
   }
 }
 
@@ -566,18 +575,47 @@ void YFS_Handler::GenerateWeight() {
   if (m_coulomb) m_yfsweight *= p_coulomb->GetWeight();
   if (m_formWW) m_yfsweight *= m_ww_formfact; //*exp(m_coulSub);
   CalculateBeta();
-  m_yfsweight*=m_real;
-  m_yfsweight *= m_formfactor*(1.-m_v);
-  // Emission-side IFI (IFI_Real). AddFormFactor() has already lowered the IF
-  // form factor's cutoff to IFIOmega(); this supplies the interference above
-  // it, carried by the photons that were actually generated. Both ISR and FSR
-  // photons contribute - the IF eikonal is a cross term and does not care
-  // which dipole produced the photon.
+
+  // Emission-side IFI (IFI_Real), applied to the beta_0 term ONLY.
+  //
+  // AddFormFactor() has already lowered the IF form factor's cutoff to
+  // IFIOmega(); this supplies the interference above it, carried by the photons
+  // that were actually generated. Both ISR and FSR photons contribute - the IF
+  // eikonal is a cross term and does not care which dipole produced the photon.
+  //
+  // Why beta_0 only. The YFS master formula for the model radiation function is
+  //
+  //   sigma = sum_n 1/n! int prod S~_mod(k_i) [ beta_0 + sum_i beta_1(k_i)/S~_mod(k_i) + ... ] e^Y
+  //
+  // Sherpa generates prod S~_crude with S~_crude = S~_II + S~_FF, so the whole
+  // bracket carries a reweight W_IF = prod S~_mod/S~_crude. On the beta_1 term
+  // that reweight cancels against the 1/S~_mod, leaving beta_1/S~_crude - and
+  // beta_1/S~_crude is exactly what NLO_Base::CalculateReal already computes,
+  // since its tot = (r*flux - subloc*Born)/subb divides by subb =
+  // CalculateRealSubEEX, the dipole-diagonal crude. So beta_1 is already right
+  // and must not be touched; only beta_0 wants the factor.
+  //
+  // m_real is 1 + sum beta_1/(S~_crude*Born) + ..., i.e. beta_0 is its leading
+  // 1, so W_IF acts on beta_0 alone as m_real + (W_IF - 1).
+  //
+  // Getting this wrong is visible and was measured. Multiplying the whole
+  // weight by W_IF put the factor on beta_1 as well: cos(theta) came into
+  // agreement with KKMC at the half-percent level, but m_pipi, p+ and E_gamma
+  // were wrecked in the hard-radiation region (mxx ratio swinging 3.4 -> 0.37
+  // at low mass, GammaE down to 0.58 at large E_gamma) - beta_1 being precisely
+  // what dominates there. Dropping the factor at NLO instead fixed m_pipi and
+  // lost the angles again, which is what says beta_1 was never carrying the
+  // interference in the first place: the coherent subtraction in subloc removes
+  // S~_IF while the crude generation never put it in, so without this term the
+  // real interference is subtracted and never restored.
+  double wif = 1.;
   if (m_ifireal && m_mode == yfsmode::isrfsr) {
     Vec4D_Vector allphotons(m_ISRPhotons);
     allphotons.insert(allphotons.end(), m_FSRPhotons.begin(), m_FSRPhotons.end());
-    m_yfsweight *= p_dipoles->RealIFWeight(allphotons);
+    wif = p_dipoles->RealIFWeight(allphotons);
   }
+  m_yfsweight *= m_real + (wif - 1.);
+  m_yfsweight *= m_formfactor*(1.-m_v);
   if(m_isr_debug) {
     Vec4D ele;
     for (int i = 2; i < m_flavs.size(); ++i)

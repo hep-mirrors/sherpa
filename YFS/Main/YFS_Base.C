@@ -115,6 +115,10 @@ void YFS_Base::RegisterDefaults(){
   //
   // 0 therefore means "use FSR::Initialize()'s m_Emin", which is IR_CUTOFF/2.
   s["IFI_Omega"].SetDefault(0.);
+  // Per-photon IF reweight factors outside [IFI_RClip, 1/IFI_RClip] are
+  // dropped: |S_IF| << S_II + S_FF is what makes the eikonal reweighting
+  // valid, and a photon violating it belongs to the matrix element instead.
+  s["IFI_RClip"].SetDefault(0.2);
   s["Massless_Sub"].SetDefault(0);
   s["Check_Real_Sub"].SetDefault(0);
   s["Check_RR_Sub"].SetDefault(0);
@@ -200,6 +204,8 @@ void YFS_Base::RegisterSettings(){
   // translates the FSR bookkeeping onto. Kept as the same expression, not a
   // rederived one, so the two cannot drift apart.
   if (m_ifireal && m_ifiomega <= 0.) m_ifiomega = 0.5*sqrt(m_s)*m_isrcut;
+  m_ifi_rclip = s["IFI_RClip"].Get<double>();
+  m_ifi_clipped = 0;
   m_massless_sub = s["Massless_Sub"].Get<int>();
   // 0 = off, 1 = one-shot energy-scan sub check (CheckReal[Real]Sub, exits),
   // 2 = accumulating angle/energy scatter (RecordSubScatter, no exit)

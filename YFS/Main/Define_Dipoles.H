@@ -158,6 +158,9 @@ namespace YFS {
       double FormFactorSum();
       double IFIOmega() const;
       double RealIFWeight(const ATOOLS::Vec4D_Vector &photons);
+      // YFS_Base is inherited privately, so expose what the handler reports.
+      inline long   IFIClipped() const { return m_ifi_clipped; }
+      inline double IFIRClip()   const { return m_ifi_rclip; }
       double TFormFactor();
       double EEXRealVirtual(const Vec4D &k);
       void generate_pairings(std::vector<std::vector<int>>& pairings, std::vector<int>& curr_pairing, std::vector<int>& available_nums);

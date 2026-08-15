@@ -122,6 +122,10 @@ public:
   // and drop the IF form factor's cutoff to m_ifiomega. Both or neither.
   int    m_ifireal;
   double m_ifiomega;
+  // Per-photon IF reweight factors outside [m_ifi_rclip, 1/m_ifi_rclip] are
+  // dropped, and counted here so the rate is reportable rather than silent.
+  double m_ifi_rclip;
+  long   m_ifi_clipped;
   // One-shot beta_0/beta_1 dump at a fixed phase-space point, for the
   // number-for-number comparison against KKMC's CEEX. See
   // NLO_Base::CEEXComparePoint().

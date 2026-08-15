@@ -489,7 +489,7 @@ double Define_Dipoles::CalculateRealSubIF(const Vec4D &k) {
   double sub(0);
   for (auto &D : m_dipolesIF){
     if(m_massless_sub) sub += D.EikonalMassless(k, D.GetMomenta(0), D.GetMomenta(1));
-    else sub +=  D.Eikonal(k, D.GetMomenta(0), D.GetMomenta(1));
+    else sub +=  D.Eikonal(k, D.GetBornMomenta(0), D.GetBornMomenta(1));
   }
   return sub;
 }
@@ -693,18 +693,37 @@ double Define_Dipoles::RealIFWeight(const ATOOLS::Vec4D_Vector &photons) {
   // before believing a number: that is the observable statement that the
   // exponent and these photons are cancelling each other.
   if (!m_ifireal || m_dipolesIF.empty()) return 1.;
+  const double omega = IFIOmega();
   double w(1.);
   for (const auto &k : photons) {
     if (IsZero(k.E())) continue;
+    // Only photons ABOVE the cutoff. Everything below omega is already held by
+    // the IF form factor, so reweighting it here counts that region twice.
+    //
+    // ISR photons cannot trip this - their generation cutoff is
+    // (sqrt(s)/2)*m_isrcut = IR_CUTOFF/2, which is exactly IFIOmega()'s default
+    // - but FSR photons can: FSR_CUT defaults to 1e-2*IR_CUTOFF, so the FSR
+    // generation reaches about two decades lower. Integrating S_IF over that
+    // band is worth roughly dY_IF/dlog(omega) * log(100), a percent-level shift
+    // on the rate, and it is one-signed, so it does not average away.
+    if (k.E() <= omega) continue;
     const double crude = CalculateRealSubEEX(k);
     if (IsZero(crude) || IsBad(crude)) continue;
-    const double r = 1. + CalculateRealSubIF(k)/crude;
-    // S_IF is not sign-definite, so a single photon deep in a region where the
-    // interference dominates can drive the ratio negative. Clip rather than
-    // hand a negative weight to the event: the soft region where the YFS
-    // factorisation holds has |S_IF| << S_II + S_FF anyway, and a photon that
-    // violates that is outside the approximation this weight is built on.
-    if (r <= 0.) continue;
+    double r = 1. + CalculateRealSubIF(k)/crude;
+    // S_IF is not sign-definite, so a photon in a region where the
+    // interference dominates the diagonal can drive the ratio negative or very
+    // large. Both are outside the soft approximation this weight is built on -
+    // |S_IF| << S_II + S_FF is what makes the eikonal reweighting valid, and a
+    // photon violating it is one whose interference belongs to the matrix
+    // element, not here.
+    //
+    // CLAMP to the boundary, do not drop the factor. Dropping means using 1,
+    // which for r below the floor throws away a suppression and for r above the
+    // ceiling throws away an enhancement - and since the low side is the more
+    // common one, that is a net upward bias on the rate, not a neutral guard.
+    // Anything clamped is counted so the rate is reportable rather than silent.
+    if (r < m_ifi_rclip)      { r = m_ifi_rclip;    ++m_ifi_clipped; }
+    else if (r > 1./m_ifi_rclip) { r = 1./m_ifi_rclip; ++m_ifi_clipped; }
     w *= r;
   }
   if (IsBad(w)) return 1.;
