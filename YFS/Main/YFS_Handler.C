@@ -562,7 +562,7 @@ void YFS_Handler::InitNLO(){
   p_nlo->SetBorn(m_born);
   p_nlo->SetFSR(p_fsr);
   p_nlo->m_ISRPhotons = m_ISRPhotons;
-  if (m_nlo_fsr_photons) p_nlo->m_FSRPhotons = m_FSRPhotons;
+  if (m_nlo_fsr_photons) p_nlo->m_FSRPhotons = m_fsrphotonsforME;
   else                   p_nlo->m_FSRPhotons.clear();
 }
 

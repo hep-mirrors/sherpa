@@ -429,7 +429,7 @@ double NLO_Base::CalculateReal() {
     // once NLO_Part includes R. Semantics confirmed by CalculateRealReal(k1,k2,
     // fsr1,fsr2), whose four-way fsr1/fsr2 branch only makes sense for a
     // per-photon boolean.
-    double contrib = CalculateReal(k, 1);
+    double contrib = CalculateReal(k, 0);
     real += contrib;
     if (m_check_real_sub == 2) RecordSubScatter(k, contrib, "realFSR", m_eikeex);
     contribs.emplace_back(k.E(), contrib);
