@@ -600,7 +600,17 @@ double NLO_Base::CalculateReal(Vec4D k, int fsrcount) {
   // kk, so a ratio rebuilt outside this function is not the ratio that appears
   // in tot, and the residue it leaves is worst for hard photons - which is what
   // distorted m_mumu and E_gamma, and what clamping was papering over.
-  if (m_ifireal && m_submode == submode::global &&
+  // Photons ABOVE the cutoff only. Everything below IFIOmega() is already held
+  // by the IF form factor, so reweighting it here counts that region twice -
+  // and the overlap grows with omega, which shows up directly as a
+  // cutoff-dependent cross-section. Measured: sigma moved 77.2951 -> 77.7450
+  // (+0.58%, 4.3 sigma) between two IFI_Omega values before this guard existed.
+  //
+  // RealIFWeight has carried the same condition since the FSR-band
+  // double-counting was found; this is the NLO path, which never got it.
+  // Whatever omega is, the exponent owns below it and these photons own above.
+  const bool ifi_above = (kk.E() > p_dipoles->IFIOmega());
+  if (m_ifireal && ifi_above && m_submode == submode::global &&
       !IsZero(subb) && !IsBad(subloc) && !IsBad(subb)) {
     // S_IF / (S_II + S_FF), both from p_dipoles at kk and both at BORN momenta:
     // CalculateRealSubEEX reads GetBornMomenta, and the IF dipoles are built
@@ -643,6 +653,15 @@ double NLO_Base::CalculateReal(Vec4D k, int fsrcount) {
       // dragging sigma down and inflating the MC error together.
       m_ifi_prod *= ratio;
       ++m_ifi_n; m_ifi_sum += ratio; m_ifi_sum2 += ratio*ratio;
+      {
+        const int ib = std::min(4, (int)(10.*kk.E()/sqrt(m_s)));
+        if (ib >= 0) {
+          ++m_ifi_x_n[ib];
+          m_ifi_x_r[ib] += ratio;
+          const double ex = subloc/(m_rescale_alpha*subb);
+          m_ifi_x_e[ib] += IsBad(ex) ? ratio : ex;
+        }
+      }
       if (ratio < m_ifi_min) m_ifi_min = ratio;
       if (ratio > m_ifi_max) m_ifi_max = ratio;
     }

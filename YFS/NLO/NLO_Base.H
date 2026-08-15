@@ -33,6 +33,15 @@ public:
   double m_ifi_sum = 0., m_ifi_min = 1e300, m_ifi_max = -1e300, m_ifi_sum2 = 0.;
   // prod_i subloc(k_i)/subb(k_i) over one event's photons.
   double m_ifi_prod = 1.;
+  // Profiled in photon energy fraction x = E_gamma/sqrt(s), 5 bins of 0.1.
+  // m_ifi_x_r  : the reweight actually applied, 1 + S_IF/S_crude at BORN momenta
+  // m_ifi_x_e  : the "exact-cancellation" ratio subloc/subb, at MAPPED momenta
+  // Their difference per bin IS the residue left by using the consistent pair
+  // instead of the cancelling one, and it should grow with x if that is what
+  // distorts the E_gamma spectrum above the cut cliff.
+  long   m_ifi_x_n[5] = {0,0,0,0,0};
+  double m_ifi_x_r[5] = {0.,0.,0.,0.,0.};
+  double m_ifi_x_e[5] = {0.,0.,0.,0.,0.};
 
 
   NLO_Base();

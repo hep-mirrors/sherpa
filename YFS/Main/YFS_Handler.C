@@ -81,6 +81,16 @@ YFS_Handler::~YFS_Handler()
                <<" rms="<<(var>0.?sqrt(var):0.)
                <<" min="<<p_nlo->m_ifi_min
                <<" max="<<p_nlo->m_ifi_max<<std::endl;
+      msg_Out()<<"  profiled in x = E_gamma/sqrt(s):"<<std::endl;
+      for(int i=0;i<5;++i){
+        if(p_nlo->m_ifi_x_n[i]==0) continue;
+        const double rr = p_nlo->m_ifi_x_r[i]/p_nlo->m_ifi_x_n[i];
+        const double ee = p_nlo->m_ifi_x_e[i]/p_nlo->m_ifi_x_n[i];
+        msg_Out()<<"    x="<<0.1*i<<"-"<<0.1*(i+1)
+                 <<"  n="<<p_nlo->m_ifi_x_n[i]
+                 <<"  applied="<<rr<<"  exact="<<ee
+                 <<"  residue="<<(rr-ee)<<std::endl;
+      }
     }
   }
 }
