@@ -790,9 +790,21 @@ bool Dipole::IsDecayAllowed(){
 
 
 double Dipole::Eikonal(const Vec4D &k,const Vec4D &p1,const Vec4D &p2) {
-  double norm=1;
-  if(m_Qi == m_Qj) norm=-1;
-  return norm*m_QiQj*m_thetaij*m_alp / (4 * M_PI * M_PI) * (p1 / (p1 * k) - p2 / (p2 * k)).Abs2();
+  // No extra sign for like-charge pairs. The dipole decomposition of the YFS
+  // radiation function -alpha/(4pi^2) (sum_i theta_i Q_i p_i/(p_i.k))^2 gives
+  // every unordered pair the coefficient Q_iQ_j theta_i theta_j and nothing
+  // else - the mass terms then resum correctly by charge conservation. An
+  // extra -1 whenever m_Qi == m_Qj double-counts the charge sign.
+  //
+  // It only ever fired on IF dipoles: II is (e-,e+) and FF is (f,fbar), both
+  // opposite-charge, whereas an initial-final pair is like-charge half the
+  // time. The effect was to give all four IF pairs the same sign, turning the
+  // interference into a coherent sum: integrating CalculateRealSubIF() over
+  // photon phase space came out 8.1x the Btilda difference it has to match,
+  // instead of matching it to 4+ digits. See YFS/Tools/IFI_Budget.C.
+  //
+  // The Eikonal(k) overload below never had the flag, so the two disagreed.
+  return m_QiQj*m_thetaij*m_alp / (4 * M_PI * M_PI) * (p1 / (p1 * k) - p2 / (p2 * k)).Abs2();
 }
 
 double Dipole::EikonalMassless(const Vec4D &k,const Vec4D &p1, const Vec4D &p2) {

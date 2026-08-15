@@ -348,8 +348,25 @@ bool YFS_Handler::CalculateFSR(Vec4D_Vector & p) {
   // p_dipoles->CreateAllDipoles(m_flavs, m_plab, m_plab);
   CheckResonance();
   // p_dipoles->CreateAllDipoles(m_flavs, m_plab, m_plab);
-  if(m_mode==yfsmode::isrfsr)  p_dipoles->MakeDipolesIF(m_flavs, m_plab, m_plab);
-  // if(m_mode==yfsmode::isrfsr)  p_dipoles->MakeDipolesIF(m_flavs, m_plab, m_plab);
+  if(m_mode==yfsmode::isrfsr) {
+    // Initial legs are the BORN beams, not the ISR-reduced ones. The
+    // interference is between radiation off the incoming particles and off the
+    // outgoing ones, so the initial leg of an initial-final pair is the
+    // physical beam - which is also what KKMC's Yint uses (m_p1, m_p2 in
+    // KKceex.cxx:315, the same momenta its Yisr = SForFac(alfpini, m_p1, m_p2)
+    // uses). Final legs stay at m_plab, i.e. after the ISR recoil and before
+    // FSR emission, matching KKMC's m_p3, m_p4.
+    //
+    // Passing m_plab for both also mixed frames once the beams were asymmetric:
+    // CalculateISR() writes m_plab[0..1] back through ToLab() while
+    // m_plab[2..] stay in the incoming-pair rest frame. m_bornMomenta is in
+    // that rest frame throughout, so the pair is now built in one frame - which
+    // matters because Btilda depends on the leg energies, not just invariants.
+    Vec4D_Vector ifmom(m_plab);
+    ifmom[0] = m_bornMomenta[0];
+    ifmom[1] = m_bornMomenta[1];
+    p_dipoles->MakeDipolesIF(m_flavs, ifmom, ifmom);
+  }
   for (Dipole_Vector::iterator Dip = p_dipoles->GetDipoleFF()->begin();
        Dip != p_dipoles->GetDipoleFF()->end(); ++Dip) {
     if(!Dip->IsResonance()) continue;
@@ -551,6 +568,16 @@ void YFS_Handler::GenerateWeight() {
   CalculateBeta();
   m_yfsweight*=m_real;
   m_yfsweight *= m_formfactor*(1.-m_v);
+  // Emission-side IFI (IFI_Real). AddFormFactor() has already lowered the IF
+  // form factor's cutoff to IFIOmega(); this supplies the interference above
+  // it, carried by the photons that were actually generated. Both ISR and FSR
+  // photons contribute - the IF eikonal is a cross term and does not care
+  // which dipole produced the photon.
+  if (m_ifireal && m_mode == yfsmode::isrfsr) {
+    Vec4D_Vector allphotons(m_ISRPhotons);
+    allphotons.insert(allphotons.end(), m_FSRPhotons.begin(), m_FSRPhotons.end());
+    m_yfsweight *= p_dipoles->RealIFWeight(allphotons);
+  }
   if(m_isr_debug) {
     Vec4D ele;
     for (int i = 2; i < m_flavs.size(); ++i)

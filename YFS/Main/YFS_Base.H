@@ -118,6 +118,10 @@ public:
   double m_rv_me_max_ratio;
 
   int  m_order, m_betaorder, m_fullform, m_formWW, m_ifisub;
+  // Emission-side IFI: reweight generated photons by the IF radiation function
+  // and drop the IF form factor's cutoff to m_ifiomega. Both or neither.
+  int    m_ifireal;
+  double m_ifiomega;
   // One-shot beta_0/beta_1 dump at a fixed phase-space point, for the
   // number-for-number comparison against KKMC's CEEX. See
   // NLO_Base::CEEXComparePoint().

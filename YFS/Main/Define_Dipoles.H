@@ -156,6 +156,8 @@ namespace YFS {
       double CalculateVirtualSubTchannelEps();
       double FormFactor();
       double FormFactorSum();
+      double IFIOmega() const;
+      double RealIFWeight(const ATOOLS::Vec4D_Vector &photons);
       double TFormFactor();
       double EEXRealVirtual(const Vec4D &k);
       void generate_pairings(std::vector<std::vector<int>>& pairings, std::vector<int>& curr_pairing, std::vector<int>& available_nums);

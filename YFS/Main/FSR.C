@@ -86,7 +86,21 @@ bool FSR::Initialize(YFS::Dipole &dipole) {
   m_dip_sp = (m_dipole[0]+m_dipole[1]).Abs2();
   if(IsBad(m_dip_sp)) return false;
   m_EQ = sqrt(m_dip_sp) / 2.;
-  m_Emin = 0.5 * m_s * m_isrcut;
+  // KKMC: m_Emin = CMSene/2 * vvmin (KKarFin.cxx:56). m_isrcut is Sherpa's
+  // vvmin - a dimensionless energy fraction, IR_CUTOFF already divided by
+  // sqrt(s) in YFS_Base::RegisterSettings() - so the nominal-CMS soft cutoff is
+  // sqrt(s)/2 * m_isrcut, which is just IR_CUTOFF/2, i.e. the same photon
+  // energy the ISR generation cuts on. It was 0.5*m_s*m_isrcut, a factor
+  // sqrt(s) larger, so the two agreed only at sqrt(s) = 1 GeV.
+  //
+  // This is the single nominal scale the Piatek term m_DelYFS translates the
+  // Q-frame bookkeeping onto, and KKMC uses that same Emin for Yisr, Yfsr and
+  // Yint alike - so it also sets where Define_Dipoles::IFIOmega() has to sit.
+  // FSR_KKMC_CrossCheck.C prints both forms side by side; note the discrepancy
+  // shows with the dipole at rest just as much as with ISR on, so a KKMC
+  // comparison only catches it if the KKMC side derives Emin from vvmin itself
+  // rather than being handed Sherpa's value.
+  m_Emin = 0.5 * sqrt(m_s) * m_isrcut;
   m_Kmax = sqrt(m_dip_sp) / 2.;
   m_hideW = 1.;
   if (m_dipole.size() != 2) {
@@ -476,6 +490,14 @@ bool FSR::YFS_FORM(){
     }
   }
   m_volmc = m_gp*log(1./m_fsrcut);
+  // Reset before the branch. m_DelYFS and m_delvol are only assigned inside
+  // the m_hidephotons==1 arm, but m_YFS_IR below reads m_DelYFS
+  // unconditionally, so with HIDE_PHOTONS != 1 it used to pick up whatever the
+  // previous event left behind (or uninitialised memory on the first one).
+  // Zero is the right value there: it reproduces KKMC's KeyPia == 0 branch,
+  // which applies exp(YFS_IRfin) with no DelYFS at all (KKceex.cxx:294-298).
+  m_DelYFS = 0.;
+  m_delvol = 0.;
    if(m_hidephotons==1){
     if(m_tchannel){
       m_btilStar = p_fsrFormFact->BVirtT(m_dipole[0],m_dipole[1],m_Emin*m_Emin);

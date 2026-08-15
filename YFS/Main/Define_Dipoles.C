@@ -608,51 +608,107 @@ double Define_Dipoles::FormFactorSum(){
       }
     // }
   if(m_ifisub==1){
-    // REVERTED to the original. Porting KKMC's Yint here -- +ChargeNorm and
-    // omega = Emin = (sqrt(s)/2)*v_min -- was tried and measured WORSE, and the
-    // measurement is worth keeping:
+    // IFForFac = Btilda + t-channel virtual, i.e. KKMC's TForFac, and
+    // ChargeNorm() = -QiQj*thetaij reproduces KKMC's +/- pattern across its
+    // four TForFac calls (KKceex.cxx:315). +ChargeNorm is also what
+    // TFormFactor() and every CalculateVirtualSub*() use on these same
+    // dipoles, so at NLO the exponentiated IF form factor and the IF virtual
+    // subtracted from the one-loop ME now carry the same sign.
     //
-    //   omega            A_FB(mu+) cut    A_FB vs Eg        sigma
-    //   sqrt(s)/2        -0.0016          rises with Eg     190759 pb
-    //   Emin             -0.0614          FLAT in Eg        194338 pb  (+1.9%)
-    //   KKMC CEEX2       -0.0103          -0.013 -> +0.047  192042 pb
+    // omega is sqrt(s)/2 -- one cutoff shared by all four pairs, as in KKMC,
+    // and the same maximal choice the II term above makes. It was
+    // sqrt(D.Sprime())/2, which for an initial-final pair is
+    // (s/2)(1 -+ beta cos theta) and so is ANGLE-DEPENDENT: a soft cutoff odd
+    // in cos(theta) manufactures A_FB by construction. That, not the
+    // interference, was supplying essentially all of Sherpa's asymmetry.
+    // Measured standalone at 0.7 GeV, |cos| < 0.55 (YFS/Tools/IFI_Budget.C):
     //
-    // At omega = Emin the asymmetry is flat in E_gamma and identical with and
-    // without cuts, i.e. a bare multiplicative exp(Y_IF) acting on every event
-    // irrespective of its photon content, with nothing cancelling it -- and it
-    // matches the UNCOMPENSATED value from IFI_Asymmetry_Test. The +1.9% shift in
-    // sigma is the even part Y^2/2 of an odd term that has grown far too large.
+    //   assembly                              A_FB(mu+)
+    //   -ChargeNorm, omega = sqrt(Sprime)/2    -0.01614   <- was live here
+    //   +ChargeNorm, omega = sqrt(Sprime)/2    +0.01614
+    //   +ChargeNorm, omega = sqrt(s)/2         -0.00056   <- this line
+    //   KKMC CEEX2 / BabaYaga measured         -0.0103 / -0.0110
+    //   Sherpa measured, before this change    -0.01605
     //
-    // The conclusion is that no omega is correct: swinging it moves A_FB by 40x
-    // (-0.0016 to -0.0614) around KKMC's -0.0103, and a quantity that depends
-    // that strongly on an unphysical scale needs that scale to CANCEL. In KKMC it
-    // does: Yint(Emin) is multiplied by the interference summed over the
-    // generated photons in the CEEX amplitude. Sherpa generates photons from the
-    // ISR+FSR eikonals only, and at NLO keeps just one (ISR::NPhotons does
-    // m_n = min(N,1) for fixed_order::nlo), so there is nothing to cancel it.
-    // The fix belongs on the emission side, not in this line.
+    // The -0.01614 reproduces the measured -0.01605, i.e. the whole of the old
+    // asymmetry came from this one line, and it was a cutoff artifact whose
+    // sign had been flipped to make it land near KKMC.
     //
-    // The COEFFICIENT is nevertheless corrected to +1 here, independently of the
-    // omega question. ChargeNorm() = -QiQj*thetaij already carries the
-    // initial-final relative sign (thetaij = -1 for IF, +1 for II/FF), so the
-    // explicit -1 double-counted it, and the 0.5 has no combinatorial basis --
-    // the three dipole lists hold each unordered pair exactly once and BVR_full
-    // is charge-blind. It also matches CalculateVirtualSub(), which uses
-    // +ChargeNorm on these same dipoles and carries the comment "change to + for
-    // IFI terms", and KKMC's own +/- pattern across its four TForFac calls.
-    // Measured effect at omega = sqrt(s)/2: A_FB(mu+) cut -0.00022 -> -0.00179,
-    // sigma 190759.4 -> 190764.6 pb (+0.003%), i.e. it moves the asymmetry
-    // towards KKMC and leaves the rate alone, as an exactly odd term must.
-    // IFForFac = Btilda + t-channel virtual, i.e. KKMC's TForFac. II and FF keep
-    // BVR_full above: they are s-channel-like, they are already validated (sigma
-    // agrees with KKMC to 0.24% with cuts), and switching them too is precisely
-    // what TChannel:2 does -- measured to degrade that agreement to 1.55%. The
-    // treatment should follow the DIPOLE TYPE, not a global runcard flag.
+    // A_FB is exactly linear in log(omega) and crosses KKMC's -0.0103 at
+    // omega ~ 56 MeV, which is not a scale in the problem: no common cutoff is
+    // a prediction. The remaining gap to KKMC is the real interference, which
+    // KKMC gets from summing over photon partitions in the CEEX amplitude and
+    // which Sherpa can only get on the emission side -- see RealIFWeight() and
+    // the IFI_Real switch.
     for(auto &D: m_dipolesIF){
-      form += -D.ChargeNorm()*p_yfsFormFact->IFForFac(D, sqrt(D.Sprime())/2);
+      form += D.ChargeNorm()*p_yfsFormFact->IFForFac(D, IFIOmega());
     }
   }
   return form;
+}
+
+double Define_Dipoles::IFIOmega() const {
+  // Soft cutoff for the IF form factor. It must be ONE scale for all four
+  // pairs, and it must be the boundary above which the interference is carried
+  // by explicit photons instead.
+  //
+  // With IFI_Real off nothing carries it, so the only consistent choice is the
+  // kinematic maximum: the exponent then holds the whole soft integral and the
+  // result is cutoff-independent by construction, matching what the II term
+  // does with sqrt(s)/2.
+  //
+  // With IFI_Real on, RealIFWeight() supplies the region above the generation
+  // cutoff, so the exponent must stop there or the two double-count.
+  if (m_ifireal && m_ifiomega > 0.) return m_ifiomega;
+  return sqrt(m_s)/2.;
+}
+
+
+double Define_Dipoles::RealIFWeight(const ATOOLS::Vec4D_Vector &photons) {
+  // The interference the IF form factor no longer carries once IFIOmega() has
+  // been lowered to the generation cutoff. Photons are generated from the
+  // dipole-diagonal density S_II + S_FF; the YFS radiation function is
+  // S_II + S_FF + S_IF, so each generated photon is reweighted by
+  //
+  //     1 + S_IF(k) / (S_II(k) + S_FF(k))
+  //
+  // whose average over the crude exponentiates to the soft integral of S_IF
+  // above the cutoff -- exactly what came out of the exponent. Verified
+  // numerically in YFS/Tools/IFI_Budget.C: integrating S_IF over photon phase
+  // space between two cutoffs reproduces the Btilda difference to 4+ digits.
+  //
+  // CalculateRealSubIF() is S_IF and CalculateRealSubEEX() is S_II + S_FF;
+  // both go through Dipole::Eikonal(k,p1,p2), so they share one convention,
+  // and NLO_Base already uses CalculateRealSubEEX() as the crude eikonal
+  // (NLO_Base.C:524), so this is the same "crude" the generation defines.
+  //
+  // Numerator and denominator now share the initial legs: both the II dipole
+  // and the IF dipoles are built from the Born beams (YFS_Handler.C, in
+  // CalculateFSR), so the ratio is not spoiled by the ISR recoil.
+  //
+  // The ISR and FSR generation cutoffs differ, but FSR::YFS_FORM()'s Piatek
+  // term m_DelYFS puts the FSR bookkeeping back onto m_Emin, which is what
+  // IFIOmega() defaults to - the same single-Emin arrangement KKMC uses for
+  // Yisr, Yfsr and Yint. Still scan IFI_Omega and check the answer is flat
+  // before believing a number: that is the observable statement that the
+  // exponent and these photons are cancelling each other.
+  if (!m_ifireal || m_dipolesIF.empty()) return 1.;
+  double w(1.);
+  for (const auto &k : photons) {
+    if (IsZero(k.E())) continue;
+    const double crude = CalculateRealSubEEX(k);
+    if (IsZero(crude) || IsBad(crude)) continue;
+    const double r = 1. + CalculateRealSubIF(k)/crude;
+    // S_IF is not sign-definite, so a single photon deep in a region where the
+    // interference dominates can drive the ratio negative. Clip rather than
+    // hand a negative weight to the event: the soft region where the YFS
+    // factorisation holds has |S_IF| << S_II + S_FF anyway, and a photon that
+    // violates that is outside the approximation this weight is built on.
+    if (r <= 0.) continue;
+    w *= r;
+  }
+  if (IsBad(w)) return 1.;
+  return w;
 }
 
 double Define_Dipoles::FormFactor(){
@@ -681,13 +737,13 @@ double Define_Dipoles::TFormFactor(){
     // with a switch that has nothing to do with it. Both FormFactorSum() and
     // TFormFactor() now give the IF dipoles the same object.
     for(auto &D: m_dipolesIF){
-      form += D.ChargeNorm()*p_yfsFormFact->IFForFac(D, sqrt(m_s)/2);
+      form += D.ChargeNorm()*p_yfsFormFact->IFForFac(D, IFIOmega());
     }
   }
   if(FixedOrder()==fixed_order::nlo){
     return 1.+form;
   }
-  return exp(form); 
+  return exp(form);
 }
 
 double Define_Dipoles::CalculateVirtualSubTchannel(){

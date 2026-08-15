@@ -95,6 +95,26 @@ void YFS_Base::RegisterDefaults(){
   s["No_Flux"].SetDefault(0);
   s["Flux_Mode"].SetDefault(1);
   s["IFI_Sub"].SetDefault(1);
+  // Emission-side initial-final interference. Off by default: with it off the
+  // IF form factor holds the whole soft integral (omega = sqrt(s)/2) and is
+  // cutoff-independent, which is the safe inclusive approximation. With it on,
+  // Define_Dipoles::RealIFWeight() reweights every generated photon by the IF
+  // radiation function and the form factor's cutoff drops to IFI_Omega, so the
+  // two must be switched together - see Define_Dipoles::IFIOmega().
+  s["IFI_Real"].SetDefault(0);
+  // Soft cutoff shared by the IF form factor and the photon reweighting, in
+  // GeV. Only read when IFI_Real is on.
+  //
+  // ISR and FSR generate against different cutoffs (v > IR_CUTOFF/sqrt(s) in
+  // the CMS vs FSR_CUT in the dipole rest frame), but that is not a mismatch
+  // to work around: FSR::YFS_FORM() carries the Piatek translation
+  // m_DelYFS = Btilda(dipole, m_Emin) - Btilda(Q frame, m_EminQ) (FSR.C:488),
+  // exactly as KKMC does in KKarFin/KKceex.cxx:288-296, which moves the FSR
+  // bookkeeping onto the single scale m_Emin. KKMC then uses that one Emin for
+  // Yisr, Yfsr AND Yint alike, so the IF cutoff belongs on the same scale.
+  //
+  // 0 therefore means "use FSR::Initialize()'s m_Emin", which is IR_CUTOFF/2.
+  s["IFI_Omega"].SetDefault(0.);
   s["Massless_Sub"].SetDefault(0);
   s["Check_Real_Sub"].SetDefault(0);
   s["Check_RR_Sub"].SetDefault(0);
@@ -174,6 +194,12 @@ void YFS_Base::RegisterSettings(){
   m_noflux = s["No_Flux"].Get<int>();
   m_flux_mode=s["Flux_Mode"].Get<int>();
   m_ifisub = s["IFI_Sub"].Get<int>();
+  m_ifireal = s["IFI_Real"].Get<int>();
+  m_ifiomega = s["IFI_Omega"].Get<double>();
+  // Default to FSR::Initialize()'s m_Emin, the scale the Piatek term m_DelYFS
+  // translates the FSR bookkeeping onto. Kept as the same expression, not a
+  // rederived one, so the two cannot drift apart.
+  if (m_ifireal && m_ifiomega <= 0.) m_ifiomega = 0.5*sqrt(m_s)*m_isrcut;
   m_massless_sub = s["Massless_Sub"].Get<int>();
   // 0 = off, 1 = one-shot energy-scan sub check (CheckReal[Real]Sub, exits),
   // 2 = accumulating angle/energy scatter (RecordSubScatter, no exit)
