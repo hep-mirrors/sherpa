@@ -115,10 +115,10 @@ void YFS_Base::RegisterDefaults(){
   //
   // 0 therefore means "use FSR::Initialize()'s m_Emin", which is IR_CUTOFF/2.
   s["IFI_Omega"].SetDefault(0.);
-  // Per-photon IF reweight factors outside [IFI_RClip, 1/IFI_RClip] are
-  // dropped: |S_IF| << S_II + S_FF is what makes the eikonal reweighting
-  // valid, and a photon violating it belongs to the matrix element instead.
-  s["IFI_RClip"].SetDefault(0.2);
+  // Diagnostic clamp on the per-photon IF reweight, OFF by default (<= 0).
+  // RealIFWeight cancels against beta_1 exactly, so clamping is not a safety
+  // net - it injects a residue exactly where it fires. Only for bisecting.
+  s["IFI_RClip"].SetDefault(0.);
   s["Massless_Sub"].SetDefault(0);
   s["Check_Real_Sub"].SetDefault(0);
   s["Check_RR_Sub"].SetDefault(0);
@@ -203,6 +203,8 @@ void YFS_Base::RegisterSettings(){
   // Default to FSR::Initialize()'s m_Emin, the scale the Piatek term m_DelYFS
   // translates the FSR bookkeeping onto. Kept as the same expression, not a
   // rederived one, so the two cannot drift apart.
+  // Only defaulted when IFI_Real is on; an explicit IFI_Omega is honoured
+  // either way so the exponent and the restoration can be varied separately.
   if (m_ifireal && m_ifiomega <= 0.) m_ifiomega = 0.5*sqrt(m_s)*m_isrcut;
   m_ifi_rclip = s["IFI_RClip"].Get<double>();
   m_ifi_clipped = 0;

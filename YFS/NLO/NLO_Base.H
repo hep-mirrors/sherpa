@@ -27,6 +27,13 @@ typedef std::map<std::string, ATOOLS::Histogram *> histograms1d;
 
 class NLO_Base : YFS_Base {
 public:
+  // subloc/subb seen by the IFI_Real restoration, accumulated so the tail that
+  // drives the MC error is reportable instead of inferred from sigma.
+  long   m_ifi_n = 0;
+  double m_ifi_sum = 0., m_ifi_min = 1e300, m_ifi_max = -1e300, m_ifi_sum2 = 0.;
+  // prod_i subloc(k_i)/subb(k_i) over one event's photons.
+  double m_ifi_prod = 1.;
+
 
   NLO_Base();
   ~NLO_Base();

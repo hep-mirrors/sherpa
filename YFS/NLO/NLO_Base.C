@@ -383,6 +383,7 @@ double NLO_Base::CalculateReal() {
   double real(0);
   m_real_hard1 = 0.;
   m_real_hard2 = 0.;
+  m_ifi_prod = 1.;
   // Collect (photon energy, per-photon contribution) so the matching can be
   // reported truncated to the 1 or 2 hardest photons (see HardestSums).
   std::vector<std::pair<double, double>> contribs;
@@ -434,6 +435,10 @@ double NLO_Base::CalculateReal() {
     contribs.emplace_back(k.E(), contrib);
   }
   HardestSums(contribs, m_real_hard1, m_real_hard2);
+  // beta_0's IFI reweight, applied once for the whole event. Deliberately not
+  // in contribs: it is a beta_0 effect, so it must not enter the
+  // hardest-1/hardest-2 truncated matching sums, which are beta_1 only.
+  if (m_ifireal && !IsBad(m_ifi_prod)) real += m_born*(m_ifi_prod - 1.);
   // for (auto k : m_borngamma) {
   //   double contrib = CalculateReal(k, 0);
   //   real += contrib;
@@ -573,6 +578,76 @@ double NLO_Base::CalculateReal(Vec4D k, int fsrcount) {
     tot = (r * flux) / subb;
   else
     msg_Error() << METHOD << " unknown YFS subtraction mode " << m_submode << "\n";
+
+  // Emission-side IFI (IFI_Real), restored here rather than as a factor on the
+  // event weight. subloc is the COHERENT -alpha/(4pi^2) J^2, so it already
+  // contains the initial-final cross term, while the photon was generated from
+  // subb, the dipole-diagonal crude. The subtraction above therefore removes an
+  // interference the generation never supplied; this puts it back.
+  //
+  // The point of doing it here is that the cancellation becomes exact. The
+  // weight YFS_Handler builds is m_born*(1 + tot/m_born) = m_born + tot, so
+  // adding
+  //
+  //     X = m_born*( subloc/(m_rescale_alpha*subb) - 1 )
+  //
+  // gives m_born + tot + X = r*flux/subb identically - the exact real matrix
+  // element, at any photon energy, with no soft approximation and hence nothing
+  // to clamp.
+  //
+  // Doing it in YFS_Handler instead cannot achieve that: subloc comes from
+  // p_nlodipoles at the mapped momentum k while subb comes from p_dipoles at
+  // kk, so a ratio rebuilt outside this function is not the ratio that appears
+  // in tot, and the residue it leaves is worst for hard photons - which is what
+  // distorted m_mumu and E_gamma, and what clamping was papering over.
+  if (m_ifireal && m_submode == submode::global &&
+      !IsZero(subb) && !IsBad(subloc) && !IsBad(subb)) {
+    // S_IF / (S_II + S_FF), both from p_dipoles at kk and both at BORN momenta:
+    // CalculateRealSubEEX reads GetBornMomenta, and the IF dipoles are built
+    // with mom == born (MakeDipolesIF is handed the same vector twice), so
+    // GetMomenta == GetBornMomenta for them. Numerator and denominator are
+    // therefore the same function of the same legs, which is what makes the
+    // ratio the 1 + small a crude-to-model reweight has to be.
+    //
+    // Two wrong pairings were measured on the way here, and the teardown line
+    // reporting this ratio identified each in one run:
+    //
+    //   subloc/subb            mean 0.9978  rms 4.63   range 2.6e-06 .. 1588
+    //     subloc is p_nlodipoles at the RESCALED, remapped photon (ScalePhoton
+    //     then MapMomenta above) while subb is p_dipoles at the original kk -
+    //     two different functions at two different momenta. Tempting because it
+    //     cancels tot's subtraction algebraically; not worth a weight that
+    //     fluctuates over nine orders of magnitude.
+    //
+    //   CalculateRealSub(kk)/CalculateRealSubEEX(kk)
+    //                          mean 0.7969  rms 0.457  range 2.8e-04 .. 2.22
+    //     Same object and momentum, but CalculateRealSub reads GetMomenta while
+    //     CalculateRealSubEEX reads GetBornMomenta, and for the FF dipole those
+    //     differ once Dipole::Boost() has applied the FSR recoil. A flat 20%
+    //     suppression of beta_0, i.e. a 20% hole in sigma.
+    //
+    // If the mean here is not ~1 with a small rms, do not adjust anything else
+    // until it is: it is measuring a kinematic mismatch, not the interference.
+    const double cru_gen = p_dipoles->CalculateRealSubEEX(kk);
+    const double if_gen  = p_dipoles->CalculateRealSubIF(kk);
+    const double ratio = (IsZero(cru_gen) || IsBad(cru_gen) || IsBad(if_gen))
+                       ? 1. : 1. + if_gen/cru_gen;
+    if (!IsBad(ratio)) {
+      // Accumulated as a PRODUCT over the event's photons and applied once by
+      // the caller - beta_0 is reweighted by prod_i S~_mod(k_i)/S~_crude(k_i),
+      // not by a sum of per-photon corrections. CalculateReal() sums this
+      // function over every ISR and FSR photon, so adding m_born*(ratio-1) to
+      // tot here would give sum_i (r_i - 1) instead of prod_i r_i - 1. With
+      // <r> < 1, which is what the generated region gives, the sum
+      // over-subtracts, and it does so worse the more photons an event has -
+      // dragging sigma down and inflating the MC error together.
+      m_ifi_prod *= ratio;
+      ++m_ifi_n; m_ifi_sum += ratio; m_ifi_sum2 += ratio*ratio;
+      if (ratio < m_ifi_min) m_ifi_min = ratio;
+      if (ratio > m_ifi_max) m_ifi_max = ratio;
+    }
+    msg_Debugging() << METHOD << " IFI_Real ratio=" << ratio << "\n";
+  }
 
   msg_Debugging() << METHOD << " submode=" << m_submode
                   << " r*flux=" << r*flux

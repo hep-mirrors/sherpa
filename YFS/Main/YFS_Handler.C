@@ -68,6 +68,20 @@ YFS_Handler::~YFS_Handler()
                <<" photon factors clamped to ["<<p_dipoles->IFIRClip()
                <<", "<<1./p_dipoles->IFIRClip()<<"]"<<std::endl;
     }
+    // The restoration is m_born*(subloc/subb - 1), so the spread of subloc/subb
+    // is what sets both the shift and the MC error. A mean far from 1, or a
+    // min/max spanning orders of magnitude, says the two eikonals are not the
+    // matched pair the cancellation assumes - which is the thing to look at
+    // before adjusting anything else.
+    if(m_ifireal && p_nlo && p_nlo->m_ifi_n>0){
+      const double mean = p_nlo->m_ifi_sum/p_nlo->m_ifi_n;
+      const double var  = p_nlo->m_ifi_sum2/p_nlo->m_ifi_n - mean*mean;
+      msg_Out()<<"IFI real restoration: n="<<p_nlo->m_ifi_n
+               <<"  subloc/subb mean="<<mean
+               <<" rms="<<(var>0.?sqrt(var):0.)
+               <<" min="<<p_nlo->m_ifi_min
+               <<" max="<<p_nlo->m_ifi_max<<std::endl;
+    }
   }
 }
 
@@ -608,8 +622,14 @@ void YFS_Handler::GenerateWeight() {
   // interference in the first place: the coherent subtraction in subloc removes
   // S~_IF while the crude generation never put it in, so without this term the
   // real interference is subtracted and never restored.
+  // Only on the resummed path. With the NLO real active the restoration is done
+  // inside NLO_Base::CalculateReal, from the same subloc and subb that build
+  // tot, which is the only place the cancellation is exact - see the comment
+  // there. Rebuilding the ratio out here from p_dipoles at the lab photon is
+  // not the same quantity (subloc is p_nlodipoles at the mapped k), so it
+  // leaves a hard-photon residue that no clamp can fix.
   double wif = 1.;
-  if (m_ifireal && m_mode == yfsmode::isrfsr) {
+  if (m_ifireal && m_mode == yfsmode::isrfsr && m_nlotype == nlo_type::born) {
     Vec4D_Vector allphotons(m_ISRPhotons);
     allphotons.insert(allphotons.end(), m_FSRPhotons.begin(), m_FSRPhotons.end());
     wif = p_dipoles->RealIFWeight(allphotons);

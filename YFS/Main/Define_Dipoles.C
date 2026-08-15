@@ -489,7 +489,7 @@ double Define_Dipoles::CalculateRealSubIF(const Vec4D &k) {
   double sub(0);
   for (auto &D : m_dipolesIF){
     if(m_massless_sub) sub += D.EikonalMassless(k, D.GetMomenta(0), D.GetMomenta(1));
-    else sub +=  D.Eikonal(k, D.GetBornMomenta(0), D.GetBornMomenta(1));
+    else sub +=  D.Eikonal(k, D.GetMomenta(0), D.GetMomenta(1));
   }
   return sub;
 }
@@ -659,32 +659,54 @@ double Define_Dipoles::IFIOmega() const {
   //
   // With IFI_Real on, RealIFWeight() supplies the region above the generation
   // cutoff, so the exponent must stop there or the two double-count.
-  if (m_ifireal && m_ifiomega > 0.) return m_ifiomega;
+  // Honoured whenever set, independently of IFI_Real. The two used to be
+  // welded together, so every run changed the exponent AND the real
+  // restoration at once and no measurement could separate them. Now:
+  //
+  //   IFI_Real  IFI_Omega     what is being tested
+  //   0         unset         baseline: whole soft integral in the exponent
+  //   0         <small>       exponent lowered, nothing restoring it
+  //   1         sqrt(s)/2     restoration only, exponent left inclusive
+  //   1         unset         both (exponent at m_Emin + restoration)
+  //
+  // Only the last is a physics configuration; the middle two are for bisecting
+  // which half moves sigma.
+  if (m_ifiomega > 0.) return m_ifiomega;
   return sqrt(m_s)/2.;
 }
 
 
 double Define_Dipoles::RealIFWeight(const ATOOLS::Vec4D_Vector &photons) {
   // The interference the IF form factor no longer carries once IFIOmega() has
-  // been lowered to the generation cutoff. Photons are generated from the
-  // dipole-diagonal density S_II + S_FF; the YFS radiation function is
-  // S_II + S_FF + S_IF, so each generated photon is reweighted by
+  // been lowered to the generation cutoff, supplied per generated photon as the
+  // ratio of the COHERENT radiation function to the crude one it was generated
+  // from:
   //
-  //     1 + S_IF(k) / (S_II(k) + S_FF(k))
+  //     W_IF = prod_i  CalculateRealSub(k_i) / CalculateRealSubEEX(k_i)
   //
-  // whose average over the crude exponentiates to the soft integral of S_IF
-  // above the cutoff -- exactly what came out of the exponent. Verified
-  // numerically in YFS/Tools/IFI_Budget.C: integrating S_IF over photon phase
-  // space between two cutoffs reproduces the Btilda difference to 4+ digits.
+  // Written that way the cancellation against beta_1 is exact, not approximate.
+  // For one photon the weight Sherpa builds is
   //
-  // CalculateRealSubIF() is S_IF and CalculateRealSubEEX() is S_II + S_FF;
-  // both go through Dipole::Eikonal(k,p1,p2), so they share one convention,
-  // and NLO_Base already uses CalculateRealSubEEX() as the crude eikonal
-  // (NLO_Base.C:524), so this is the same "crude" the generation defines.
+  //     subb * [ W_IF*Born + tot ],   tot = (R*flux - subloc*Born)/subb
   //
-  // Numerator and denominator now share the initial legs: both the II dipole
-  // and the IF dipoles are built from the Born beams (YFS_Handler.C, in
-  // CalculateFSR), so the ratio is not spoiled by the ISR recoil.
+  // with subb = CalculateRealSubEEX the crude and subloc = CalculateRealSub the
+  // coherent -alpha/(4pi^2) J^2 (NLO_Base.C:524,568). Substituting
+  // W_IF = subloc/subb:
+  //
+  //     subb*(subloc/subb)*Born + R*flux - subloc*Born  =  R*flux
+  //
+  // identically - the exact real matrix element, for any photon, hard or soft.
+  // No soft approximation enters, which is why nothing here may be clamped: any
+  // r != subloc/subb leaves a residue (subloc - subb*r)*Born, largest precisely
+  // where a clamp would fire (hard, wide-angle photons, where |S_IF| rivals the
+  // diagonal). That residue is the m_mumu / E_gamma distortion.
+  //
+  // This is also why the ratio is taken as subloc/subb rather than the
+  // algebraically equal 1 + S_IF/S_crude. The three functions do NOT use
+  // matching conventions: CalculateRealSub takes GetMomenta and only resonant
+  // FF dipoles, CalculateRealSubEEX takes GetBornMomenta over all of them, and
+  // CalculateRealSubIF takes GetMomenta. So S_crude + S_IF = S_coh holds on
+  // paper but not in code, and only the explicit ratio cancels beta_1 exactly.
   //
   // The ISR and FSR generation cutoffs differ, but FSR::YFS_FORM()'s Piatek
   // term m_DelYFS puts the FSR bookkeeping back onto m_Emin, which is what
@@ -701,29 +723,23 @@ double Define_Dipoles::RealIFWeight(const ATOOLS::Vec4D_Vector &photons) {
     // the IF form factor, so reweighting it here counts that region twice.
     //
     // ISR photons cannot trip this - their generation cutoff is
-    // (sqrt(s)/2)*m_isrcut = IR_CUTOFF/2, which is exactly IFIOmega()'s default
-    // - but FSR photons can: FSR_CUT defaults to 1e-2*IR_CUTOFF, so the FSR
-    // generation reaches about two decades lower. Integrating S_IF over that
-    // band is worth roughly dY_IF/dlog(omega) * log(100), a percent-level shift
-    // on the rate, and it is one-signed, so it does not average away.
+    // (sqrt(s)/2)*m_isrcut = IR_CUTOFF/2, exactly IFIOmega()'s default - but
+    // FSR photons can: FSR_CUT defaults to 1e-2*IR_CUTOFF, so the FSR
+    // generation reaches about two decades lower.
     if (k.E() <= omega) continue;
     const double crude = CalculateRealSubEEX(k);
-    if (IsZero(crude) || IsBad(crude)) continue;
-    double r = 1. + CalculateRealSubIF(k)/crude;
-    // S_IF is not sign-definite, so a photon in a region where the
-    // interference dominates the diagonal can drive the ratio negative or very
-    // large. Both are outside the soft approximation this weight is built on -
-    // |S_IF| << S_II + S_FF is what makes the eikonal reweighting valid, and a
-    // photon violating it is one whose interference belongs to the matrix
-    // element, not here.
-    //
-    // CLAMP to the boundary, do not drop the factor. Dropping means using 1,
-    // which for r below the floor throws away a suppression and for r above the
-    // ceiling throws away an enhancement - and since the low side is the more
-    // common one, that is a net upward bias on the rate, not a neutral guard.
-    // Anything clamped is counted so the rate is reportable rather than silent.
-    if (r < m_ifi_rclip)      { r = m_ifi_rclip;    ++m_ifi_clipped; }
-    else if (r > 1./m_ifi_rclip) { r = 1./m_ifi_rclip; ++m_ifi_clipped; }
+    const double coh   = CalculateRealSub(k);
+    if (IsZero(crude) || IsBad(crude) || IsBad(coh)) continue;
+    double r = coh/crude;
+    // Off by default (IFI_RClip <= 0). The exact cancellation above says no
+    // clamp is justified: r is allowed to be negative or large, because the
+    // radiation function including interference genuinely is, and beta_1
+    // cancels it term by term. Kept only as a diagnostic - if a run needs it to
+    // stay stable, something upstream is wrong and the count below says so.
+    if (m_ifi_rclip > 0.) {
+      if (r < m_ifi_rclip)         { r = m_ifi_rclip;    ++m_ifi_clipped; }
+      else if (r > 1./m_ifi_rclip) { r = 1./m_ifi_rclip; ++m_ifi_clipped; }
+    }
     w *= r;
   }
   if (IsBad(w)) return 1.;
