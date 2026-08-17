@@ -365,7 +365,13 @@ std::string Vertex::VLabel() const
   for (size_t pos(label.find(','));
        pos!=std::string::npos;pos=label.find(',',pos+2))
     label.replace(pos,1,",,");
-  return "decor.size=0ex,label=$\\begin{array}{c}"+label+"\\end{array}$";
+  bool hasff(false);
+  for (size_t i(0);i<p_v->FormFactor.size();++i)
+    if (p_v->FormFactor[i]!="" && p_v->FormFactor[i]!="Point") hasff=true;
+  const std::string decor
+    (hasff?std::string("decor.shape=circle,decor.filled=shaded,decor.size=12thick"):
+     std::string("decor.size=1ex"));
+  return decor+",label=$\\begin{array}{c}"+label+"\\end{array}$";
 }
 
 void Vertex::CollectGraphs(Graph_Node *graph) const
