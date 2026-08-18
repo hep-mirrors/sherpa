@@ -663,7 +663,7 @@ namespace ATOOLS {
       ostr<<"  cols = { "<<cs<<"}\n";
     }
     for (size_t i(0);i<ampl->Legs().size();++i)
-      ostr<<"  "<<ampl->Legs()[i]<<"\n";
+      ostr<<"  "<<*ampl->Legs()[i]<<"\n";
     return ostr<<"}";
   }
 
