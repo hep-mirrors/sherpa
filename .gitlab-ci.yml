@@ -507,6 +507,31 @@ Fedora44-make-ccache-GNU-feature:
   needs:
     - job: build_image_Fedora44
 
+Fedora44-ninja-ccache-GNU:
+  variables:
+    OS: Fedora
+    FREL: 44
+    TOOLSET: GNU
+    EXTRACMAKEFLAGS: $COMMON_EXTRA_CMAKE_FLAGS $EXTENDED_EXTRA_CMAKE_FLAGS -GNinja
+  extends: .any-cmake-ccache-main
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+    - when: never
+  needs:
+    - job: build_image_Fedora44
+
+Fedora44-ninja-ccache-GNU-feature:
+  variables:
+    OS: Fedora
+    FREL: 44
+    TOOLSET: GNU
+    EXTRACMAKEFLAGS: $COMMON_EXTRA_CMAKE_FLAGS $EXTENDED_EXTRA_CMAKE_FLAGS -GNinja
+  extends: .any-cmake-ccache
+  rules:
+    - if: $CI_COMMIT_BRANCH && $CI_COMMIT_BRANCH != $CI_DEFAULT_BRANCH
+  needs:
+    - job: build_image_Fedora44
+
 Fedora44-make-ccache-LLVM:
   variables:
     OS: Fedora
