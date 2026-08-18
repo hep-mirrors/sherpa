@@ -433,11 +433,13 @@ void Standard_Model::InitVertices()
   InitQEDVertices();
   InitQCDVertices();
   InitEWVertices();
-  LowEnergy_Model LE;
-  LE.ModelInit();
-  LE.InitVertices();
-  AddLowEnergyConstants(&LE);
-  AddLowEnergyVertices(&LE);
+  if(rpa->gen.Ecms() < 20.){ // dont load this module for LHC/FCC runs
+    LowEnergy_Model LE;
+    LE.ModelInit();
+    LE.InitVertices();
+    AddLowEnergyConstants(&LE);
+    AddLowEnergyVertices(&LE);
+  }
 }
 
 void Standard_Model::InitQEDVertices()
