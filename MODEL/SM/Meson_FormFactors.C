@@ -39,6 +39,26 @@ namespace METOOLS {
     FFVMD(const Vertex_Key &key);
     Complex FF();
   };// end of class FFPoint
+
+  /////////////////////////////////////////////////////////////////////
+  // Transition form factor F(q1^2, q2^2) of the anomalous gamma gamma P
+  // vertex.  Everything else in this file is a single-virtuality form factor
+  // hanging off one photon leg; here BOTH legs are photons and both are off
+  // shell, so FFVMD's "the one leg that is not a hadron" rule cannot pick out
+  // the right virtuality and a separate implementation is needed.
+  /////////////////////////////////////////////////////////////////////
+  class FFTFF: public Form_Factor {
+  private:
+    METOOLS::Summed_Propagator m_prop;
+    // One rho/omega/phi mixture per pseudoscalar - pi0 and eta share a shape,
+    // eta' does not.  See the parameter block below.
+    // kf_code is a #define for 'long unsigned int', so it must not be
+    // namespace-qualified here.
+    void Construct(const kf_code & ps);
+  public:
+    FFTFF(const Vertex_Key &key);
+    Complex FF();
+  };// end of class FFTFF
 }// end of namespace METOOLS
 
 
@@ -60,32 +80,35 @@ using namespace std;
 //
 /////////////////////////////////////////////////////////////////////
 namespace {
-  // Any subset of these can be tuned from the run card, keeping the defaults
-  // for everything left out, e.g.
-  //
   //   PION_FORM_FACTOR:
   //     rho(770):   {Mass: 0.7755, Width: 0.1494}
   //     omega(782): {Amplitude: 0.00205, Phase: 0.287}
   //
-  // Phases are in radians.  Note that the defaults belong together as one
-  // fit: retuning a mass or width in isolation will generally need the
-  // amplitudes and phases refitted along with it.
   class GS_Parameters {
-    const std::string m_block, m_tag;
+    const std::string m_block, m_sub, m_tag;
     const double m_m0, m_Gamma0, m_c0, m_phi0;  // fitted defaults, never change
     double       m_m,  m_Gamma,  m_c,  m_phi;   // values in use
   public:
     GS_Parameters(const std::string & block,const std::string & tag,
 		  const double & m,const double & Gamma,
 		  const double & c,const double & phi) :
-      m_block(block), m_tag(tag), m_m0(m), m_Gamma0(Gamma), m_c0(c), m_phi0(phi),
+      m_block(block), m_sub(""), m_tag(tag),
+      m_m0(m), m_Gamma0(Gamma), m_c0(c), m_phi0(phi),
+      m_m(m), m_Gamma(Gamma), m_c(c), m_phi(phi) {}
+    GS_Parameters(const std::string & block,const std::string & sub,
+		  const std::string & tag,
+		  const double & m,const double & Gamma,
+		  const double & c,const double & phi) :
+      m_block(block), m_sub(sub), m_tag(tag),
+      m_m0(m), m_Gamma0(Gamma), m_c0(c), m_phi0(phi),
       m_m(m), m_Gamma(Gamma), m_c(c), m_phi(phi) {}
 
     // Always registers the fitted value as the default, so this stays
     // idempotent however often the form factor is constructed.
     void Read() {
+      ATOOLS::Settings & main(ATOOLS::Settings::GetMainSettings());
       ATOOLS::Scoped_Settings s
-	{ ATOOLS::Settings::GetMainSettings()[m_block][m_tag] };
+	{ m_sub.empty() ? main[m_block][m_tag] : main[m_block][m_sub][m_tag] };
       m_m     = s["Mass"     ].SetDefault(m_m0    ).Get<double>();
       m_Gamma = s["Width"    ].SetDefault(m_Gamma0).Get<double>();
       m_c     = s["Amplitude"].SetDefault(m_c0    ).Get<double>();
@@ -119,6 +142,17 @@ namespace {
     { "THREE_PION_FORM_FACTOR", "phi(1020)" , 1.019461, 0.004249, 0.042, M_PI };
 
   /////////////////////////////////////////////////////////////////////
+  // J/psi, added the same way as omega/phi above: gamma* mixes with any
+  // 1-- resonance via VMD, so a narrow FixedBreitWigner term at the J/psi
+  // mass gives a resonant peak in e+e- -> pi+ pi- pi0 at sqrt(s) = 3.0969
+  // GeV, exactly like the real e+e- -> J/psi -> hadrons peak.
+  //
+
+  /////////////////////////////////////////////////////////////////////
+  GS_Parameters s_v_jpsi
+    { "THREE_PION_FORM_FACTOR", "J/psi", 3.0969, 0.0000926, 0.001, 0. };
+
+  /////////////////////////////////////////////////////////////////////
   // Kaon form factor, hep-ph/0409080 eq. 64.  K+ = u sbar, so unlike the
   // pion form factor the photon sees THREE separate, additive SU(3)
   // channels with fixed relative weights 1/2 (isovector, rho family) and
@@ -145,6 +179,29 @@ namespace {
   GS_Parameters s_K_omega1650 { "KAON_FORM_FACTOR", "omega(1650)", 1.67    , 0.315   , 0.083, M_PI   };
   GS_Parameters s_K_phi       { "KAON_FORM_FACTOR", "phi(1020)"  , 1.01947 , 0.00425 , 1.018, 0.     };
   GS_Parameters s_K_phi1680   { "KAON_FORM_FACTOR", "phi(1680)"  , 1.680   , 0.150   , 0.018, M_PI   };
+
+  /////////////////////////////////////////////////////////////////////
+  // pi0 transition form factor, one photon leg at a time.  The pi0 is
+  // isovector, so VMD couples one photon through the rho family and the other
+  // through the isoscalar omega family:
+  //
+  //   F(q1^2,q2^2) = 1/2 [ P_rho(q1^2) P_omega(q2^2) + (q1 <-> q2) ].
+  //
+  // What is implemented instead is the symmetric factorised form
+  // F(q1^2) F(q2^2) with the same poles averaged into each leg.  
+  /////////////////////////////////////////////////////////////////////
+  //                          block                    meson   tag          m         Gamma     c     phi
+  GS_Parameters s_T_pi0_rho   { "TWO_PHOTON_FORM_FACTOR", "pi0" , "rho(770)"  , 0.77526 , 0.1474  , 1.0 , 0. };
+  GS_Parameters s_T_pi0_omega { "TWO_PHOTON_FORM_FACTOR", "pi0" , "omega(782)", 0.78266 , 0.00868 , 1.0 , 0. };
+  GS_Parameters s_T_pi0_phi   { "TWO_PHOTON_FORM_FACTOR", "pi0" , "phi(1020)" , 1.019461, 0.004249, 0.0 , 0. };
+
+  GS_Parameters s_T_eta_rho   { "TWO_PHOTON_FORM_FACTOR", "eta" , "rho(770)"  , 0.77526 , 0.1474  , 1.0 , 0. };
+  GS_Parameters s_T_eta_omega { "TWO_PHOTON_FORM_FACTOR", "eta" , "omega(782)", 0.78266 , 0.00868 , 1.0 , 0. };
+  GS_Parameters s_T_eta_phi   { "TWO_PHOTON_FORM_FACTOR", "eta" , "phi(1020)" , 1.019461, 0.004249, 0.0 , 0. };
+
+  GS_Parameters s_T_etap_rho  { "TWO_PHOTON_FORM_FACTOR", "eta'", "rho(770)"  , 0.77526 , 0.1474  , 1.0 , 0. };
+  GS_Parameters s_T_etap_omega{ "TWO_PHOTON_FORM_FACTOR", "eta'", "omega(782)", 0.78266 , 0.00868 , 1.0 , 0. };
+  GS_Parameters s_T_etap_phi  { "TWO_PHOTON_FORM_FACTOR", "eta'", "phi(1020)" , 1.019461, 0.004249, 1.49, 0. };
 }
 
 /////////////////////////////////////////////////////////////////////
@@ -349,10 +406,10 @@ void FFVMD::ConstructThreePionFormFactor() {
 
 void FFVMD::ConstructVectorPionFormFactor() {
   msg_Debugging()<<METHOD<<": three-pion isoscalar parameters\n";
-  for (GS_Parameters * p : { &s_v_omega782, &s_v_phi1020 }) p->Read();
-  // gamma -> omega/phi -> rho pi.  Fixed widths: neither resonance is narrow
-  // enough here for the shape of a running width to matter much, and there
-  // is no phi lineshape to run one off anyway.  Normalised to F(0) = 1 by
+  for (GS_Parameters * p : { &s_v_omega782, &s_v_phi1020, &s_v_jpsi }) p->Read();
+  // gamma -> omega/phi/J-psi -> rho pi.  Fixed widths: none of these
+  // resonances is narrow enough (or, for J/psi, has a lineshape at all) for
+  // a running width to matter/exist.  Normalised to F(0) = 1 by
   // Summed_Propagator, which divides by the sum of the weights.
   m_props.Add(new METOOLS::FixedBreitWigner(NULL,s_v_omega782.Mass(),
 					    s_v_omega782.Width()),
@@ -360,6 +417,9 @@ void FFVMD::ConstructVectorPionFormFactor() {
   m_props.Add(new METOOLS::FixedBreitWigner(NULL,s_v_phi1020.Mass(),
 					    s_v_phi1020.Width()),
 	      s_v_phi1020.Weight());
+  m_props.Add(new METOOLS::FixedBreitWigner(NULL,s_v_jpsi.Mass(),
+					    s_v_jpsi.Width()),
+	      s_v_jpsi.Weight());
 }
 
 Complex FFVMD::FF() {
@@ -369,6 +429,82 @@ Complex FFVMD::FF() {
   return m_props(Q2);
 }
 
+
+
+/////////////////////////////////////////////////////////////////////
+//
+// gamma* gamma* -> P transition form factor.
+//
+/////////////////////////////////////////////////////////////////////
+FFTFF::FFTFF(const Vertex_Key &key):
+  Form_Factor("TFF",key), m_prop() {
+  // Which pseudoscalar this vertex carries has to come from the vertex legs
+  // rather than from key.m_j: m_j only holds the incoming currents, so a
+  // three-point vertex appears there with two of its three legs, and which two
+  // depends on the recursion step - the same reason FFVMD::FixMode reads
+  // p_mv->in.  Here the photons are the non-hadrons, so the hadron leg is the
+  // meson.
+  kf_code ps(kf_none);
+  for (size_t i(0);i<key.p_mv->in.size();++i)
+    if (key.p_mv->in[i].IsHadron()) ps = key.p_mv->in[i].Kfcode();
+  Construct(ps);
+}
+
+void FFTFF::Construct(const kf_code & ps) {
+  msg_Debugging()<<METHOD<<": VMD poles for kf = "<<ps<<"\n";
+  GS_Parameters *rho(NULL), *omega(NULL), *phi(NULL);
+  switch (ps) {
+  case kf_pi:
+    rho = &s_T_pi0_rho;  omega = &s_T_pi0_omega;  phi = &s_T_pi0_phi;  break;
+  case kf_eta:
+    rho = &s_T_eta_rho;  omega = &s_T_eta_omega;  phi = &s_T_eta_phi;  break;
+  case kf_eta_prime_958:
+    rho = &s_T_etap_rho; omega = &s_T_etap_omega; phi = &s_T_etap_phi; break;
+  default:
+    // No parameter set for this meson.  Leaving m_prop empty is safe -
+    // Summed_Propagator returns 1 when it has no terms - so this degrades to
+    // a point-like anomaly rather than to zero or a NaN.
+    msg_Out()<<METHOD<<": no transition form factor for kf = "<<ps
+	     <<", falling back to F = 1.\n";
+    return;
+  }
+  for (GS_Parameters * p : { rho, omega, phi }) p->Read();
+  // Fixed widths throughout: the spacelike region does not see a width at all,
+  // and in the timelike one (e+ e- -> gamma pi0) the rho lineshape belongs to
+  // rho -> pi pi, which is not what this leg couples through.  Normalised to
+  // F(0) = 1 by Summed_Propagator, which divides by the sum of the weights -
+  // that is what fixes the P -> gamma gamma rate to the anomaly.
+  m_prop.Add(new METOOLS::FixedBreitWigner(NULL,rho->Mass(),rho->Width()),
+	     rho->Weight());
+  m_prop.Add(new METOOLS::FixedBreitWigner(NULL,omega->Mass(),omega->Width()),
+	     omega->Weight());
+  m_prop.Add(new METOOLS::FixedBreitWigner(NULL,phi->Mass(),phi->Width()),
+	     phi->Weight());
+}
+
+Complex FFTFF::FF() {
+  // Which leg the recursion is building varies, so the two photon
+  // virtualities have to be collected by flavour rather than by position: the
+  // incoming currents carry both of them when the pseudoscalar is the leg
+  // being built, and only one when a photon is.
+  double q2[2];
+  size_t n(0);
+  for (size_t i(0);i<p_v->J().size() && n<2;++i) {
+    Current * j(p_v->J(i));
+    if (!j->Flav().IsHadron()) q2[n++] = j->P().Abs2();
+  }
+  if (n<2) q2[n++] = p_v->JC()->P().Abs2();
+  if (n<2) return Complex(1.,0.);
+  return m_prop(q2[0])*m_prop(q2[1]);
+}
+
+DECLARE_GETTER(FFTFF,"TFF",Form_Factor,Vertex_Key);
+Form_Factor *Getter<Form_Factor,Vertex_Key,FFTFF>::
+operator()(const Vertex_Key &args) const { return new FFTFF(args); }
+
+void ATOOLS::Getter<Form_Factor,Vertex_Key,FFTFF>::
+PrintInfo(std::ostream &str,const size_t width) const
+{ str<<"gamma* gamma* -> P transition form factor"; }
 
 
 DECLARE_GETTER(FFVMD,"VMD",Form_Factor,Vertex_Key);

@@ -17,6 +17,7 @@ namespace MODEL {
 
     void InitQEDVertices();
     void InitThreePionVertices(const ATOOLS::Kabbala & cpl);
+    void InitTwoPhotonVertices();
     void InitEWVertices();
   public :
     LowEnergy_Model();

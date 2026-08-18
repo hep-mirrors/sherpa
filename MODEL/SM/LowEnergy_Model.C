@@ -227,6 +227,7 @@ void LowEnergy_Model::InitQEDVertices() {
   else {
     InitThreePionVertices(cpl);
   }
+  InitTwoPhotonVertices();
   // add the ISR photon vertex, which is a special case of the photon vertex
   m_v.push_back(Single_Vertex());
   m_v.back().AddParticle(Flavour(kf_e));
@@ -315,6 +316,90 @@ void LowEnergy_Model::InitThreePionVertices(const Kabbala & cpl) {
     m_v.back().Lorentz.push_back("SSV");
     m_v.back().cpl.push_back(cpl_rpp);
     m_v.back().order[1]=1;
+  }
+}
+
+
+//////////////////////////////////////////////////////////////////////
+//
+//
+//   L = (e^2/(32 pi^2 f_pi)) eps^{mu,nu,al,be} F_{mu,nu} F_{al,be} pi0,
+//
+//
+// The two photons are generally both off shell, so the form factor here has to
+// be F(q1^2, q2^2) - the single-virtuality VMD form factor used everywhere
+// else in this model will not do.  Hence the separate "TFF" implementation in
+// Meson_FormFactors.C.
+//
+// DOUBLE COUNTING against the three-pion chain.  Together with the SSV photon
+// vertex on the charged pions above, this vertex opens a second route to
+// pi+ pi- pi0: gamma* -> gamma* pi0, then gamma* -> pi+ pi- through the pion
+// form factor.  With the rho pole in both form factors that is the same
+// gamma* -> rho pi0 -> pi+ pi- pi0 transition InitThreePionVertices already
+// describes, so in that final state the two add coherently and double count -
+// the same relationship THREE_PION_CONTACT toggles.  Comix cannot be told to
+// use a vertex in one final state and not another, so the switch is global:
+// set TWO_PHOTON_FORM_FACTOR: Active: false to get the tuned three-pion
+// channel back unchanged.
+//////////////////////////////////////////////////////////////////////
+void LowEnergy_Model::InitTwoPhotonVertices() {
+  Scoped_Settings s{ Settings::GetMainSettings()["TWO_PHOTON_FORM_FACTOR"] };
+  if (!s["Active"].SetDefault(true).Get<bool>()) {
+    msg_Out()<<METHOD<<": switched off.\n";
+    return;
+  }
+  ////////////////////////////////////////////////////////////////////
+  // Only pi0, eta and eta' get this vertex.  gamma gamma is neutral, C even
+  // and carries no strangeness, so of the eight entries in m_PseudoScalars the
+  // charged ones (pi+, K+) are forbidden by charge conservation and the
+  // neutral kaons (K, K_L, K_S) by strangeness - K_S -> gamma gamma exists
+  // only as a weak decay, at a branching ratio of 2.6e-6, which is not what
+  // this vertex models.  So this must NOT be written as a loop over
+  // m_PseudoScalars filtered on IntCharge()==0, the way InitQEDVertices does
+  // it above: that would pick up all three kaons.
+  //
+  // Each coupling is fixed by the measured two-photon width, via
+  //   Gamma(P -> gamma gamma) = g_P^2 m_P^3 / (64 pi),   g_P = alpha/(pi f_P),
+  // so the f_P below are back-solved from the PDG widths (7.82 eV, 0.516 keV,
+  // 4.34 keV).  For eta and eta' this "f" is the effective constant defined by
+  // F_P(0) = 1/(4 pi^2 f_P) - CLEO's Eqn. 6 - not the physical decay constant,
+  // which involves eta-eta' mixing.  CLEO's own numbers, 97.5 and 74.4 MeV,
+  // came from the 1996 widths; anchoring to the current widths instead moves
+  // f_eta by 5%, so do not mix the two sources.
+  //
+  // NOTE the pi0 default below is 82.4 MeV, not the 91.9 MeV the PDG width
+  // implies - it is a tune, and it makes pi0 inconsistent with the eta and
+  // eta' entries, which are pure PDG.  Left as set; see NOTES-pi0gg.md.
+  ////////////////////////////////////////////////////////////////////
+  struct Anomalous_PS {
+    kf_code       kf;
+    const char *  tag;    // run-card sub-block, and the form factor's key
+    double        f;      // GeV
+    const char *  tex;
+  };
+  const Anomalous_PS pseudoscalars[3] = {
+    { kf_pi,            "pi0" , 0.09238, "\\pi^0"   },
+    { kf_eta,           "eta" , 0.0925, "\\eta"    },
+    { kf_eta_prime_958, "eta'", 0.0737, "\\eta'"   }
+  };
+  for (const Anomalous_PS & ps : pseudoscalars) {
+    Scoped_Settings ms{ s[ps.tag] };
+    const double f(ms["f"].SetDefault(ps.f).Get<double>());
+    const double g_def(m_alpha/(M_PI*f));
+    const double g(ms["g_gammagammaP"].SetDefault(g_def).Get<double>());
+    msg_Out()<<METHOD<<": "<<ps.tag<<": f = "<<f
+	     <<", g_gammagammaP = "<<g<<" /GeV\n";
+    const Kabbala cpl_ggp(std::string("g_{\\gamma\\gamma")+ps.tex+"}",
+			  g*Complex(0.,1.));
+    m_v.push_back(Single_Vertex());
+    m_v.back().AddParticle(Flavour(kf_photon));
+    m_v.back().AddParticle(Flavour(kf_photon));
+    m_v.back().AddParticle(Flavour(ps.kf));
+    m_v.back().Color.push_back(Color_Function(cf::None));
+    m_v.back().Lorentz.push_back("AVVP");
+    m_v.back().FormFactor.push_back("TFF");
+    m_v.back().cpl.push_back(cpl_ggp);
+    m_v.back().order[1]=2;
   }
 }
 
