@@ -24,7 +24,7 @@ private:
   double m_rt, m_lnrt, m_dphi, m_lndphi, m_gating[2];
   std::vector<double> m_lss;
   std::vector<ATOOLS::Algebra_Interpreter*> m_calcs;
-  std::vector<std::string> m_names;
+  std::vector<std::string> m_names, m_vtags;
 
 public:
 
@@ -71,6 +71,13 @@ public:
       msg_Debugging()<<"expr = "<<expr<<"\n";
       m_calcs.back()->Interprete(expr);
       if (msg_LevelIsIODebugging()) m_calcs.back()->PrintEquation();
+      m_vtags.push_back("Nominal");
+      if (m_names[i]=="0p5MuR") m_vtags.back()="MUR=0.5__MUF=1__";
+      if (m_names[i]=="0p5MuF") m_vtags.back()="MUR=1__MUF=0.5__";
+      if (m_names[i]=="0p5MuRF") m_vtags.back()="MUR=0.5__MUF=0.5__";
+      if (m_names[i]=="2MuR") m_vtags.back()="MUR=2__MUF=1__";
+      if (m_names[i]=="2MuF") m_vtags.back()="MUR=1__MUF=2__";
+      if (m_names[i]=="2MuRF") m_vtags.back()="MUR=2__MUF=2__";
     }
   }
 
@@ -127,7 +134,7 @@ public:
       }
     m_lnrt=log(m_rt=(l1+l2).PPerp()/(l1+l2).Mass());
     m_lndphi=log(m_dphi=M_PI-l1.DPhi(l2));
-    double beta(Beta((l1+l2).PPerp())), wnom;
+    double beta(Beta((l1+l2).PPerp()));
     msg_Debugging()<<"q_T = "<<(l1+l2).PPerp()<<", r_T = "
 		   <<m_rt<<", \\Delta\\phi = "<<m_dphi<<"\n";
     auto me_w_info = (*blobs->FindFirst(btp::Signal_Process))
@@ -137,9 +144,32 @@ public:
     for (size_t i(0);i<m_calcs.size();++i) {
       double w=m_calcs[i]->Calculate()->Get<double>();
       msg_Debugging()<<m_names[i]<<": ln(w) = "<<w<<", shift = "<<m_lss[i]<<"\n";
-      w=beta*exp(w-m_lss[i])+(1.-beta);
-      msg_Debugging()<<m_names[i]<<": w = "<<w<<" (\\beta = "<<beta<<")\n";
+      double svweight(1.0);
+      std::string svname("None");
+      if (m_vtags[i]!="") {
+	Weights_Map::const_iterator wit(wmap.find("Main"));
+	if (wit==wmap.end()) THROW(fatal_error,"Variation set 'All' not found");
+	for (size_t k(0);k<wit->second.Size();++k)
+	  if (wit->second.Name(k).find(m_vtags[i])==0) {
+	    svweight=wit->second[k];
+	    svname=wit->second.Name(k);
+	    break;
+	  }
+      }
+      w=beta*exp(w-m_lss[i])+(1.-beta)*svweight;
+      msg_Debugging()<<m_names[i]<<": w = "<<w<<" (\\beta = "<<beta
+		     <<") <-> "<<svweight<<" ("<<svname<<")\n";
       wmap["MaxEnt"][m_names[i]]=w;
+    }
+    Weights_Map::const_iterator wit(wmap.find("ASSOCIATED_CONTRIBUTIONS"));
+    if (wit!=wmap.end()) {
+      Weights_Map::const_iterator mit(wmap.find("MaxEnt"));
+      for (size_t l(0);l<wit->second.Size();++l)
+	if (wit->second.Name(l)=="EW") {
+	  for (size_t k(1);k<mit->second.Size();++k)
+	    wmap["MaxEnt_EW"][mit->second.Name(k)]=
+	      mit->second[k]*wit->second[l];
+	}
     }
     return Return_Value::Nothing;
   }
