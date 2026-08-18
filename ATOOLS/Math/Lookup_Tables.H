@@ -55,9 +55,11 @@ namespace ATOOLS {
     size_t              m_nbins;
     double              m_xmin, m_xmax, m_ymin, m_ymax;
     std::vector<double> m_x, m_y;
+    bool                m_loglog;
   public:
-    explicit OneDim_Flexible_Table(const std::string & path);
+    explicit OneDim_Flexible_Table(const std::string & path, bool loglog=false);
     double operator()(double x) const;
+    void NormalizeByBinWidth();
     inline const std::vector<double> * GetX() const { return &m_x; }
     inline const std::vector<double> * GetY() const { return &m_y; }
     inline const size_t               NBins() const { return m_nbins; }

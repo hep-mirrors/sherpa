@@ -28,7 +28,8 @@ void Interpolated_Neutrinos::Initialise() {
   std::ifstream f(fullpath.c_str());
   if (!f.good())
     THROW(fatal_error,"File ["+fullpath+"] does not exist.");
-  p_table = new OneDim_Flexible_Table(fullpath);
+  p_table = new OneDim_Flexible_Table(fullpath, true);
+  p_table->NormalizeByBinWidth();
 
   // Luminosity [fb^-1] the flux file was produced for.
   double bakedinlumi = s["FileLuminosity"].SetDefault(-1.).Get<double>();

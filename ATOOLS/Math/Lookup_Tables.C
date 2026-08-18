@@ -219,7 +219,7 @@ std::unique_ptr<OneDim_Table> OneDim_Table::Read(std::istream& is)
 //////////////////////////////////////////////////////////////////////////////
 
 OneDim_Flexible_Table::
-OneDim_Flexible_Table(const std::string & path) : m_nbins(0) {
+OneDim_Flexible_Table(const std::string & path, bool loglog) : m_nbins(0), m_loglog(loglog) {
   std::ifstream file(path);
   if (!std::filesystem::exists(path))
     THROW(fatal_error,"File ["+path+"] does not exist.");
@@ -245,6 +245,17 @@ OneDim_Flexible_Table(const std::string & path) : m_nbins(0) {
   //	   <<"   high: "<<m_xmax<<" : "<<m_ymax<<".\n";
 }
 
+void OneDim_Flexible_Table::NormalizeByBinWidth() {
+  if (m_nbins<2) return;
+  std::vector<double> edges(m_nbins+1);
+  for (size_t i=1;i<m_nbins;i++) edges[i] = std::sqrt(m_x[i-1]*m_x[i]);
+  edges[0]       = m_x[0]*m_x[0]/edges[1];
+  edges[m_nbins] = m_x[m_nbins-1]*m_x[m_nbins-1]/edges[m_nbins-1];
+  for (size_t i=0;i<m_nbins;i++) m_y[i] /= edges[i+1]-edges[i];
+  m_ymin = m_y[0];
+  m_ymax = m_y[m_nbins-1];
+}
+
 double OneDim_Flexible_Table::operator()(double x) const {
   double diff;
   if (x<m_xmin) {
@@ -258,8 +269,13 @@ double OneDim_Flexible_Table::operator()(double x) const {
   size_t bin;
   for (bin=0;bin<m_nbins-1;bin++)
     if (m_x[bin]<=x && m_x[bin+1]>=x) break;
+  if (m_loglog && m_x[bin]>0. && x>0. && m_y[bin]>0. && m_y[bin+1]>0.) {
+    double w = (std::log(x)-std::log(m_x[bin])) /
+               (std::log(m_x[bin+1])-std::log(m_x[bin]));
+    return std::exp(std::log(m_y[bin])*(1.0-w) + std::log(m_y[bin+1])*w);
+  }
   double w = (x - m_x[bin])/(m_x[bin+1]-m_x[bin]);
-  return m_y[bin] * (1.0 - w) + m_y[bin + 1] * w;  
+  return m_y[bin] * (1.0 - w) + m_y[bin + 1] * w;
 }
 
 
