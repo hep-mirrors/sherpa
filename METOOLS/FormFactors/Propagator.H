@@ -78,8 +78,11 @@ namespace METOOLS {
     FixedBreitWigner(Total_Width_Base * width=NULL,
 		     const double & M=-1.,const double & Gamma=-1.) :
       Propagator_Base(width,resonance_type::fixed,M,Gamma) {}
+    // A fixed width does not switch off below threshold, so evaluating this
+    // literally at s = 0 leaves 1/(1 - i Gamma/M) instead of 1 
     const Complex operator()(const double & s)
-    { return m_M2/Complex(m_M2-s,-m_M*m_Gamma); }
+    { if (std::abs(s)<1.e-12) return Complex(1.,0.);
+      return m_M2/Complex(m_M2-s,-m_M*m_Gamma); }
     const Complex Normalised(const double & s)  { return (*this)(s); }
     const double  Normalised2(const double & s) { return norm((*this)(s)); }
   };

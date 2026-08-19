@@ -549,3 +549,105 @@ Rho_1700_plus_Lineshape::Rho_1700_plus_Lineshape() :
   rho2pi1300pi->Init(props, Qaxis);
   m_channels.insert(rho2pi1300pi);
 }
+
+Rho_2150_plus_Lineshape::Rho_2150_plus_Lineshape() :
+  Total_Width_Base(Flavour(kf_rho_2150_plus)) {
+  ///////////////////////////////////////////////////////////////////////////////////
+  // Declaration of basic flavours and propagators to increase
+  // readability
+  ///////////////////////////////////////////////////////////////////////////////////
+  Flavour pi_0(kf_pi), pi_plus(kf_pi_plus), pi_minus(pi_plus.Bar());
+  vector<Flavour> outflavs;
+  vector<Propagator_Base *> props;
+  axis   Qaxis(100,0.,1.);
+  double m_min;
+  ///////////////////////////////////////////////////////////////////////////////////
+  // Channel: pi pi, BR = 3.7%
+  ///////////////////////////////////////////////////////////////////////////////////
+  outflavs = { pi_plus, pi_0 };
+  Partial_Width_Base * rho2pipi = new V_PP(m_inflav,outflavs,0.037);
+  m_channels.insert(rho2pipi);
+  ///////////////////////////////////////////////////////////////////////////////////
+  // Channel: K K, BR = 1.1%
+  ///////////////////////////////////////////////////////////////////////////////////
+  outflavs = { Flavour(kf_K_plus), Flavour(kf_K).Bar()};
+  Partial_Width_Base * rho2KK = new V_PP(m_inflav,outflavs,0.011);
+  m_channels.insert(rho2KK);
+  ///////////////////////////////////////////////////////////////////////////////////
+  // Channel: omega(782) pi, BR = 2.2%
+  // Note: we ignore interferences of pions from the omega with the "prompt" ones
+  //       and use the simple Breit-Wigner fixed-width line shape of the omega.
+  ///////////////////////////////////////////////////////////////////////////////////
+  Flavour omega(kf_omega_782);
+  Summed_Propagator * omegas = new Summed_Propagator();
+  omegas->Add(new BreitWigner(LineShapes->Get(omega),
+			      resonance_type::running),
+	      Complex(1.,0.));
+  props     = { omegas };
+  outflavs  = { pi_0, pi_plus, pi_minus, pi_plus };
+  m_min     = pi_0.HadMass()+3.*pi_plus.HadMass();
+  Qaxis     = axis(100,m_min,m_min+3.);
+  Partial_Width_Base * rho2omegapi = new V_VoffP(m_inflav,outflavs,0.022);
+  rho2omegapi->Init(props, Qaxis);
+  m_channels.insert(rho2omegapi);
+  ///////////////////////////////////////////////////////////////////////////////////
+  // Channel: a_1(1260) pi, BR = 18%,
+  //          which comes in two(?) combinations of 9% each:
+  //          * pi^0 a_1^+ (-> pi^+ pi^0 pi^0, pi^+ pi^+ pi^-)
+  //          * pi^+ a_1^0 (-> pi^+ pi^- pi^0)
+  //          Because they are nearly identical kinematically, we will not
+  //          distinguish them in any form and only use the first channel,
+  //          but giving it the full BR of all modes.
+  // Note: we ignore interferences of pions from the a_1 with the "prompt" ones
+  //       and use the simple Breit-Wigner fixed-width lineshape of the a_1.
+  ///////////////////////////////////////////////////////////////////////////////////
+  Total_Width_Base  * a11260_width = new Total_Width_Base(Flavour(kf_a_1_1260_plus));
+  Summed_Propagator * a1s = new Summed_Propagator();
+  a1s->Add(new BreitWigner(a11260_width,resonance_type::fixed),
+	   Complex(1.,0.));
+  props     = { a1s };
+  outflavs  = { pi_plus, pi_minus, pi_plus, pi_0 };
+  m_min     = 3.*pi_plus.HadMass()+pi_0.HadMass();
+  Qaxis     = axis(100,m_min,m_min+3.);
+  Partial_Width_Base * rho2a1pi = new V_AoffP(m_inflav,outflavs,0.18);
+  rho2a1pi->Init(props, Qaxis);
+  m_channels.insert(rho2a1pi);
+  ///////////////////////////////////////////////////////////////////////////////////
+  // Channel: h_1(1170) pi, BR = 19.1% 
+  // Note: we ignore interferences of pions from the h_1 with the "prompt" ones
+  //       and use the simple Breit-Wigner fixed-width lineshape of the h_1.
+  ///////////////////////////////////////////////////////////////////////////////////
+  Total_Width_Base  * h11170_width = new Total_Width_Base(Flavour(kf_h_1_1170));
+  Summed_Propagator * h1s = new Summed_Propagator();
+  h1s->Add(new BreitWigner(h11170_width, resonance_type::fixed),
+	   Complex(1.,0.));
+  props     = { h1s };
+  outflavs  = { pi_0, pi_plus, pi_minus, pi_plus };
+  m_min     = pi_0.HadMass()+3.*pi_plus.HadMass();
+  Qaxis     = axis(100,m_min,m_min+3.);
+  Partial_Width_Base * rho2h1pi = new V_AoffP(m_inflav,outflavs,0.191);
+  rho2h1pi->Init(props, Qaxis);
+  m_channels.insert(rho2h1pi);
+  ///////////////////////////////////////////////////////////////////////////////////
+  // Channel: pi(1300) pi, BR = 33.7% 
+  //          which comes in two(?) combinations of 16.85 each:
+  //          * pi^0 pi(1300)^+ (-> pi^+ pi^0 pi^0, pi^+ pi^+ pi^-)
+  //          * pi^+ pi(1300)^0 (-> pi^+ pi^- pi^0)
+  //          Because they are nearly identical kinematically, we will not
+  //          distinguish them in any form and only use the first channel,
+  //          but giving it the full BR of all modes.
+  // Note: we ignore interferences of pions from the pi(1300) with the "prompt" ones
+  //       and use the simple Breit-Wigner fixed-width lineshape of the pi(1300).
+  ///////////////////////////////////////////////////////////////////////////////////
+  Total_Width_Base  * pi1300_width = new Total_Width_Base(Flavour(kf_pi_1300));
+  Summed_Propagator * pi1300s = new Summed_Propagator();
+  pi1300s->Add(new BreitWigner(pi1300_width, resonance_type::fixed),
+	       Complex(1.,0.));
+  props    = { pi1300s };
+  outflavs = { pi_plus, pi_minus, pi_0, pi_0 };
+  m_min    = 2.*(pi_0.Mass(true)+pi_plus.Mass(true));
+  Qaxis    = axis(500,m_min,m_min+3.);
+  Partial_Width_Base * rho2pi1300pi = new V_PoffP(m_inflav,outflavs,0.337);
+  rho2pi1300pi->Init(props, Qaxis);
+  m_channels.insert(rho2pi1300pi);
+}

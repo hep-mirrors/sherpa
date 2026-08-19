@@ -34,6 +34,7 @@ void Line_Shapes::Init() {
   Add(Flavour(kf_rho_1450_plus),    new Rho_1450_plus_Lineshape());
   Add(Flavour(kf_rho_1700),         new Rho_1700_0_Lineshape());
   Add(Flavour(kf_rho_1700_plus),    new Rho_1700_plus_Lineshape());
+  // Add(Flavour(kf_rho_2150_plus),    new Rho_2150_plus_Lineshape());
   /*
   Add(Flavour(kf_omega_1420),       new Omega_1420_Lineshape());
   Add(Flavour(kf_omega_1600),       new Omega_1600_Lineshape());

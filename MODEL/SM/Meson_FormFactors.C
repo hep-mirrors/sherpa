@@ -6,11 +6,14 @@
 
 #include "MODEL/Main/Single_Vertex.H"
 
+#include "ATOOLS/Math/MathTools.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/Scoped_Settings.H"
 #include "ATOOLS/Org/Settings.H"
 #include <set>
+#include <sstream>
+#include <iomanip>
 
 namespace METOOLS {
   enum FF_0_PP_mode {
@@ -23,6 +26,25 @@ namespace METOOLS {
     V_pi            = 301,
     unknown         = 999
   };
+
+  inline std::ostream & operator<<(std::ostream & str,const FF_0_PP_mode & m) {
+    switch (m) {
+    case pipi_plus: return str<<"pipi_plus";
+    case KK_plus  : return str<<"KK_plus";
+    case Kpi_plus : return str<<"Kpi_plus";
+    case pipi_0   : return str<<"pipi_0 (gamma* -> pi+ pi-)";
+    case KK_0     : return str<<"KK_0 (gamma* -> K+ K-)";
+    case pipipi_0 : return str<<"pipipi_0 (gamma* -> pi+ pi- pi0)";
+    case V_pi     : return str<<"V_pi (anomalous gamma rho pi)";
+    case unknown  : return str<<"unknown";
+    }
+    return str<<"invalid("<<int(m)<<")";
+  }
+
+  inline bool IsChargeFormFactor(const FF_0_PP_mode & m) {
+    return (m==pipi_plus || m==KK_plus || m==Kpi_plus ||
+	    m==pipi_0    || m==KK_0);
+  }
 
   class FFVMD: public Form_Factor {
   private:
@@ -80,6 +102,9 @@ using namespace std;
 //
 /////////////////////////////////////////////////////////////////////
 namespace {
+  // Width of the form factor tables below, matching OutputParticles().
+  const int s_ffwidth = 80;
+
   //   PION_FORM_FACTOR:
   //     rho(770):   {Mass: 0.7755, Width: 0.1494}
   //     omega(782): {Amplitude: 0.00205, Phase: 0.287}
@@ -88,20 +113,21 @@ namespace {
     const std::string m_block, m_sub, m_tag;
     const double m_m0, m_Gamma0, m_c0, m_phi0;  // fitted defaults, never change
     double       m_m,  m_Gamma,  m_c,  m_phi;   // values in use
+    bool         m_shown;
   public:
     GS_Parameters(const std::string & block,const std::string & tag,
 		  const double & m,const double & Gamma,
 		  const double & c,const double & phi) :
       m_block(block), m_sub(""), m_tag(tag),
       m_m0(m), m_Gamma0(Gamma), m_c0(c), m_phi0(phi),
-      m_m(m), m_Gamma(Gamma), m_c(c), m_phi(phi) {}
+      m_m(m), m_Gamma(Gamma), m_c(c), m_phi(phi), m_shown(false) {}
     GS_Parameters(const std::string & block,const std::string & sub,
 		  const std::string & tag,
 		  const double & m,const double & Gamma,
 		  const double & c,const double & phi) :
       m_block(block), m_sub(sub), m_tag(tag),
       m_m0(m), m_Gamma0(Gamma), m_c0(c), m_phi0(phi),
-      m_m(m), m_Gamma(Gamma), m_c(c), m_phi(phi) {}
+      m_m(m), m_Gamma(Gamma), m_c(c), m_phi(phi), m_shown(false) {}
 
     // Always registers the fitted value as the default, so this stays
     // idempotent however often the form factor is constructed.
@@ -113,8 +139,12 @@ namespace {
       m_Gamma = s["Width"    ].SetDefault(m_Gamma0).Get<double>();
       m_c     = s["Amplitude"].SetDefault(m_c0    ).Get<double>();
       m_phi   = s["Phase"    ].SetDefault(m_phi0  ).Get<double>();
-      msg_Debugging()<<"  "<<m_tag<<": m = "<<m_m<<", Gamma = "<<m_Gamma
-		     <<", c = "<<m_c<<", phi = "<<m_phi<<"\n";
+      if (m_shown) return;
+      m_shown = true;
+      std::ostringstream line;
+      line<<std::setw(16)<<m_tag<<std::setw(14)<<m_m<<std::setw(14)<<m_Gamma
+	  <<std::setw(16)<<m_c<<std::setw(14)<<m_phi;
+      msg_Out()<<Frame_Line(line.str(),s_ffwidth);
     }
     inline const double & Mass()  const { return m_m;     }
     inline const double & Width() const { return m_Gamma; }
@@ -166,19 +196,20 @@ namespace {
   // machinery can be reused unchanged.
   //
   /////////////////////////////////////////////////////////////////////
+  /////////////////////////////////////////////////////////////////////
   //                             tag              m         Gamma      c      phi
-  GS_Parameters s_K_rho       { "KAON_FORM_FACTOR", "rho(770)"   , 0.77456 , 0.14832 , 1.195, 0.     };
+  GS_Parameters s_K_rho       { "KAON_FORM_FACTOR", "rho(770)"   , 0.77456 , 0.14832 , 1.138, 0.     };
   GS_Parameters s_K_rho1450   { "KAON_FORM_FACTOR", "rho(1450)"  , 1.4859  , 0.37360 , 0.112, M_PI   };
   GS_Parameters s_K_rho1700   { "KAON_FORM_FACTOR", "rho(1700)"  , 1.8668  , 0.30334 , 0.083, M_PI   };
   // c_rho(2150) = 1 - c_rho - c_rho(1450) - c_rho(1700) = 0 for the
   // defaults above: the sum rule that enforces F(0) = 1 leaves this term
   // with no contribution by default, but it stays tunable.
-  GS_Parameters s_K_rho2150   { "KAON_FORM_FACTOR", "rho(2150)"  , 2.2645  , 0.11327 , 0.0  , 0.     };
+  GS_Parameters s_K_rho2150   { "KAON_FORM_FACTOR", "rho(2150)"  , 2.2645  , 0.11327 , -4.22045e-3  , 0.     };
   GS_Parameters s_K_omega     { "KAON_FORM_FACTOR", "omega(782)" , 0.78248 , 0.00855 , 1.195, 0.     };
   GS_Parameters s_K_omega1420 { "KAON_FORM_FACTOR", "omega(1420)", 1.410   , 0.290   , 0.112, M_PI   };
   GS_Parameters s_K_omega1650 { "KAON_FORM_FACTOR", "omega(1650)", 1.67    , 0.315   , 0.083, M_PI   };
-  GS_Parameters s_K_phi       { "KAON_FORM_FACTOR", "phi(1020)"  , 1.01947 , 0.00425 , 1.018, 0.     };
-  GS_Parameters s_K_phi1680   { "KAON_FORM_FACTOR", "phi(1680)"  , 1.680   , 0.150   , 0.018, M_PI   };
+  GS_Parameters s_K_phi       { "KAON_FORM_FACTOR", "phi(1020)"  , 1.01947 , 0.00434 , 0.984, 0.     };
+  GS_Parameters s_K_phi1680   { "KAON_FORM_FACTOR", "phi(1680)"  , 1.680   , 0.150   , 0.00418, M_PI   };
 
   /////////////////////////////////////////////////////////////////////
   // pi0 transition form factor, one photon leg at a time.  The pi0 is
@@ -210,6 +241,49 @@ namespace {
 // vector-meson propagators.
 //
 /////////////////////////////////////////////////////////////////////
+namespace {
+  void FFTableHead(const std::string & title) {
+    msg_Out()<<Frame_Header(s_ffwidth)
+	     <<Frame_Line(title,s_ffwidth)
+	     <<Frame_Separator(s_ffwidth);
+    std::ostringstream line;
+    line<<std::setw(16)<<"Resonance"<<std::setw(14)<<"Mass [GeV]"
+	<<std::setw(14)<<"Width [GeV]"<<std::setw(16)<<"Amplitude"
+	<<std::setw(14)<<"Phase";
+    msg_Out()<<Frame_Line(line.str(),s_ffwidth)
+	     <<Frame_Separator(s_ffwidth);
+  }
+
+  void FFTableFoot(const std::string & label,const Complex & f0) {
+    std::ostringstream line;
+    line<<label<<" = "<<f0;
+    msg_Out()<<Frame_Separator(s_ffwidth)
+	     <<Frame_Line(line.str(),s_ffwidth)
+	     <<Frame_Footer(s_ffwidth);
+  }
+
+  void CheckFFNormalisation(const std::string & tag,const Complex & f0,
+			    const bool & requireunity=true) {
+    if (ATOOLS::IsNan(f0)) {
+      msg_Error()<<om::red<<"Warning in "<<tag<<": F(0) = "<<f0
+		 <<" is not a number."<<om::reset<<"\n";
+      return;
+    }
+    if (!requireunity) {
+      msg_Debugging()<<"  "<<tag<<": F(0) = "<<f0
+		     <<" (not a charge form factor, F(0) = 1 not required)\n";
+      return;
+    }
+    const double dev(std::abs(f0-Complex(1.,0.)));
+    if (dev>1.e-9)
+      msg_Error()<<om::red<<"Warning in "<<tag<<": F(0) = "<<f0
+		 <<", expected 1 (off by "<<dev<<").\n"
+		 <<"  Charge normalisation is violated, which breaks gauge\n"
+		 <<"  invariance in processes with a radiated photon."
+		 <<om::reset<<"\n";
+  }
+}
+
 FFVMD::FFVMD(const Vertex_Key &key):
   Form_Factor("VMD",key),
   m_props(), m_mode(FF_0_PP_mode::unknown),
@@ -220,18 +294,27 @@ FFVMD::FFVMD(const Vertex_Key &key):
   // Also: extract the flavours in the vertex to look up parameters
   // in the model look-up table.
   std::set<kf_code> kfs;
-  msg_Out()<<METHOD<<"("<<key.m_j.size()<<"): "<<key.m_j[0]->Flav()<<", "
-	   <<key.m_j[1]->Flav()<<"\n";
-  msg_Out()<<key.p_mv->in[0]<<", "<<key.p_mv->in[1]<<", "<<key.p_mv->in[2]<<"\n";
+  msg_Debugging()<<METHOD<<"("<<key.m_j.size()<<"): "<<key.m_j[0]->Flav()<<", "
+		 <<key.m_j[1]->Flav()<<"\n";
+  msg_Debugging()<<key.p_mv->in[0]<<", "<<key.p_mv->in[1]<<", "
+		 <<key.p_mv->in[2]<<"\n";
   for (size_t i(0);i<key.m_j.size();++i) {
     if (!key.m_j[i]->Flav().IsHadron()) m_pos=i;
     else kfs.insert(key.m_j[i]->Flav().Kfcode());
   }
-  msg_Out()<<METHOD<<"("<<key.m_j.size()<<"): "<<key.m_j[0]->Flav()<<", "
-	   <<key.m_j[1]->Flav()<<"\n"; //<<", "<<key.m_j[2]->Flav()
+  msg_Debugging()<<METHOD<<"("<<key.m_j.size()<<"): "<<key.m_j[0]->Flav()<<", "
+		 <<key.m_j[1]->Flav()<<"\n"; //<<", "<<key.m_j[2]->Flav()
   FixMode(key);
+  static std::set<int> reported;
+  const bool report(reported.insert(int(m_mode)).second);
+  std::ostringstream tag;
+  tag<<"VMD form factor, mode "<<m_mode;
+  if (report) FFTableHead(tag.str());
   Construct();
-  msg_Out()<<METHOD<<":\n";
+  const Complex f0(m_props(0.));
+  if (report) FFTableFoot("F(0)",f0);
+  CheckFFNormalisation(tag.str(),f0,IsChargeFormFactor(m_mode));
+  msg_Debugging()<<METHOD<<":\n";
 }
 
 void FFVMD::FixMode(const Vertex_Key &key) {
@@ -283,9 +366,6 @@ void FFVMD::ConstructPionFormFactor() {
   msg_Debugging()<<METHOD<<": Gounaris-Sakurai parameters\n";
   for (GS_Parameters * p : { &s_rho, &s_rho1450, &s_rho1700, &s_rho2150,
 			     &s_omega782, &s_phi1020 }) p->Read();
-  // rho-omega and rho-phi mixing.  Both mixing terms carry an explicit
-  // factor s/m^2 and therefore vanish at s = 0, so this sum is already
-  // normalised - dividing it by (1 + c_omega + c_phi) would spoil F(0) = 1.
   METOOLS::Summed_Propagator * rhofac = new METOOLS::Summed_Propagator(false);
   rhofac->Add(new METOOLS::Unity(),Complex(1.,0.));
   rhofac->Add(new METOOLS::WeightedBreitWigner(LineShapes->Get(Flavour(kf_omega_782)),
@@ -423,9 +503,19 @@ void FFVMD::ConstructVectorPionFormFactor() {
 }
 
 Complex FFVMD::FF() {
-  Current *j = m_pos<0?p_v->JC():p_v->J(m_pos);
-  // there was a minus sign before in Q2.
-  double Q2  = j->P().Abs2();
+  double Q2(0.);
+  bool found(false);
+  for (size_t i(0);i<p_v->J().size();++i) {
+    if (p_v->J(i)->Flav().IsHadron()) continue;
+    const double q2(p_v->J(i)->P().Abs2());
+    if (!found || std::abs(q2)>std::abs(Q2)) { Q2=q2; found=true; }
+  }
+  if (!p_v->JC()->Flav().IsHadron()) {
+    const double q2(p_v->JC()->P().Abs2());
+    if (!found || std::abs(q2)>std::abs(Q2)) { Q2=q2; found=true; }
+  }
+  // Purely hadronic vertices (rho -> pi pi) keep the outgoing leg as before.
+  if (!found) Q2 = p_v->JC()->P().Abs2();
   return m_props(Q2);
 }
 
@@ -447,7 +537,16 @@ FFTFF::FFTFF(const Vertex_Key &key):
   kf_code ps(kf_none);
   for (size_t i(0);i<key.p_mv->in.size();++i)
     if (key.p_mv->in[i].IsHadron()) ps = key.p_mv->in[i].Kfcode();
+  static std::set<kf_code> reported;
+  const bool report(reported.insert(ps).second);
+  std::ostringstream title;
+  title<<"Transition form factor, "<<Flavour(ps);
+  if (report) FFTableHead(title.str());
   Construct(ps);
+  // FF() multiplies the two photon legs, so the check is on m_prop(0)^2.
+  const Complex f0(m_prop(0.)*m_prop(0.));
+  if (report) FFTableFoot("F(0,0)",f0);
+  CheckFFNormalisation("FFTFF(kf = "+std::to_string(ps)+")",f0);
 }
 
 void FFTFF::Construct(const kf_code & ps) {
@@ -510,7 +609,7 @@ PrintInfo(std::ostream &str,const size_t width) const
 DECLARE_GETTER(FFVMD,"VMD",Form_Factor,Vertex_Key);
 Form_Factor *Getter<Form_Factor,Vertex_Key,FFVMD>::
 operator()(const Vertex_Key &args) const {
-  msg_Out()<<METHOD<<"(size = "<<args.m_j.size()<<")\n";
+  msg_Debugging()<<METHOD<<"(size = "<<args.m_j.size()<<")\n";
   return new FFVMD(args);
 }
 

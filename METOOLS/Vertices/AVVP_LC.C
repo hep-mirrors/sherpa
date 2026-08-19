@@ -94,10 +94,12 @@ namespace METOOLS {
       // Outgoing leg 1: the second vector.  Antisymmetry of the two vector
       // slots supplies the relative minus sign.
       if (p_v->V()->id.back()==1) {
-	const CVec4Type   &a(*jj[0]->Get<CVec4Type>());
-	const CScalarType &s(*jj[1]->Get<CScalarType>());
-	const Vec4D p1(p_v->J(0)->P());
-	const Vec4D p2(-p1-p_v->J(1)->P());
+	// id = [2,0,1] here (RotateVertices cycles the legs), so the inputs
+	// arrive as (pseudoscalar, first vector) - not ascending leg order.
+	const CScalarType &s(*jj[0]->Get<CScalarType>());
+	const CVec4Type   &a(*jj[1]->Get<CVec4Type>());
+	const Vec4D p1(p_v->J(1)->P());
+	const Vec4D p2(-p1-p_v->J(0)->P());
 	CVec4Type *j(CVec4Type::New(EpsVec(a,p1,p2)*(-s[0])));
 	j->SetS(a.S()|s.S());
 	return j;

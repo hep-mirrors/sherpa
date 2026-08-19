@@ -326,6 +326,14 @@
 #define      kf_f_0_1500                  9020221
 #define      kf_psi_4415                  9020443
 #define      kf_f_J_1710                  9030221
+// rho(2150) is OMITTED FROM SUMMARY TABLE in the PDG listings - it has no
+// official Monte Carlo number.  9040113/9040213 continues the neighbouring
+// "further states" 90X0YYY block (9030221, 9050225, ...) and follows this
+// file's own neutral/charged suffix convention (113/213, cf. rho_1700 just
+// above) rather than colliding with kf_rho_1700_plus, which the previous
+// kf_rho_2150_plus=30213 here did.
+#define      kf_rho_2150                  9040113
+#define      kf_rho_2150_plus             9040213
 #define      kf_f_2_2300                  9050225
 #define      kf_f_2_2340                  9060225
 #define      kf_n                         2112

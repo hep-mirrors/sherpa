@@ -106,6 +106,8 @@ void LowEnergy_Model::ParticleInit() {
   AddParticle(100213,          1.465,    0.65, 0.31,       3,   2,     true,      true,false, "rho(1450)+","rho^{+}(1450)");
   AddParticle(kf_rho_1700,     1.7,      0.65, 0.24,       0,   2,     false,     true,false, "rho(1700)","rho(1700)");
   AddParticle(30213,           1.7,      0.65, 0.24,       3,   2,     true,      true,false, "rho(1700)+","rho^{+}(1700)");
+  AddParticle(kf_rho_2150,      2.15,   0.65, 0.11327,    0,   2,     false,     true,false, "rho(2150)","rho(2150)");
+  AddParticle(kf_rho_2150_plus, 2.15,   0.65, 0.11327,    3,   2,     true,      true,false, "rho(2150)+","rho^{+}(2150)");
 }
 
 void LowEnergy_Model::InitQEDConstants() {
@@ -120,7 +122,7 @@ void LowEnergy_Model::InitQEDConstants() {
   // hyperons from the PDG.
   // We should compare with cross sections listed in
   // https://arxiv.org/html/2412.07543v1
-  (*p_constants)["Lambda2_3122_3122_22"]  =  1.04;
+  (*p_constants)["Lambda2_3122_3122_22"]  =  0.71;
   (*p_constants)["Q_3122_3122_22"]        =  0.;
   (*p_constants)["Mu_3122_3122_22"]       = -0.613;
   (*p_constants)["Lambda2_3222_3222_22"]  =  1.04;
@@ -197,6 +199,19 @@ void LowEnergy_Model::InitQEDVertices() {
     m_v.back().FormFactor.push_back("VMD");
     m_v.back().cpl.push_back(cpl);
     m_v.back().order[1]=1;
+
+    //Seagulls  
+    m_v.push_back(Single_Vertex());
+    m_v.back().AddParticle(Flavour(kf_photon));
+    m_v.back().AddParticle(Flavour(kf_photon));
+    m_v.back().AddParticle(flav.Bar());
+    m_v.back().AddParticle(flav);
+    m_v.back().Color.push_back(Color_Function(cf::None));
+    m_v.back().Lorentz.push_back("VVSS");
+    m_v.back().FormFactor.push_back("VMD");
+    m_v.back().cpl.push_back(2.0*cpl*g1);
+    m_v.back().order[1] = 2;
+    
     m_v.push_back(Single_Vertex());
     m_v.back().AddParticle(Flavour(kf_FSR_photon));
     m_v.back().AddParticle(flav);

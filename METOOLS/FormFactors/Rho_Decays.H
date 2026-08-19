@@ -33,6 +33,10 @@ namespace METOOLS {
   public:
     Rho_1700_plus_Lineshape();
   };
+    class Rho_2150_plus_Lineshape : public Total_Width_Base {
+  public:
+    Rho_2150_plus_Lineshape();
+  };
 }
 
 #endif

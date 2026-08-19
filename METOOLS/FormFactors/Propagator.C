@@ -116,6 +116,7 @@ const Complex GounarisSakurai::GammaGS(const double & q2) const {
 }
 
 const Complex GounarisSakurai::operator()(const double & s) {
+  if (std::abs(s)<1.e-12) return Complex(1.,0.);
   // The d and f terms above are derived for a pure pi pi width, so the
   // imaginary part has to use the same one - mixing in a multi-channel
   // running width from a lineshape breaks the F(0) = 1 normalisation.

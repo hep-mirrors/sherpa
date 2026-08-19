@@ -53,7 +53,7 @@ PrintInfo(std::ostream &str,const size_t width) const { str<<"0"; }
 DECLARE_GETTER(FFPoint,"Point",Form_Factor,Vertex_Key);
 Form_Factor *Getter<Form_Factor,Vertex_Key,FFPoint>::
 operator()(const Vertex_Key &args) const {
-  msg_Out()<<METHOD<<"\n";
+  msg_Debugging()<<METHOD<<"\n";
   return new FFPoint(args);
 }
 
