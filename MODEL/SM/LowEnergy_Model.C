@@ -88,7 +88,9 @@ void LowEnergy_Model::ParticleInit() {
   AddParticle(kf_K_S,          0.49767,  0.65, 7.373e-15,  0,   0,     false,     true,false, "K(S)","K_{S}");
   AddParticle(kf_K_plus,       0.493677, 0.65, 5.314e-17,  3,   0,     true,      true,true,  "K+","K^{+}");
   AddParticle(kf_eta_prime_958,0.95778,  0.65, 0.000203,   0,   0,     false,     true,false, "eta'(958)","eta'(958)");
-
+  AddParticle(kf_J_psi_1S,     3.0969,   0.0,  0.0000926,  0,   1,     false,     true,false, "J/psi","J/\\psi");
+  
+  
   m_PseudoScalars.push_back(kf_pi);
   m_PseudoScalars.push_back(kf_pi_plus);
   m_PseudoScalars.push_back(kf_eta);
@@ -108,6 +110,8 @@ void LowEnergy_Model::ParticleInit() {
   AddParticle(30213,           1.7,      0.65, 0.24,       3,   2,     true,      true,false, "rho(1700)+","rho^{+}(1700)");
   AddParticle(kf_rho_2150,      2.15,   0.65, 0.11327,    0,   2,     false,     true,false, "rho(2150)","rho(2150)");
   AddParticle(kf_rho_2150_plus, 2.15,   0.65, 0.11327,    3,   2,     true,      true,false, "rho(2150)+","rho^{+}(2150)");
+
+
 }
 
 void LowEnergy_Model::InitQEDConstants() {

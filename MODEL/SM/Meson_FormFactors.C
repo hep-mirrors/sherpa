@@ -5,6 +5,7 @@
 #include "METOOLS/FormFactors/Line_Shapes.H"
 
 #include "MODEL/Main/Single_Vertex.H"
+#include "MODEL/SM/FormFactorParameters.H"   // new parameter system
 
 #include "ATOOLS/Math/MathTools.H"
 #include "ATOOLS/Org/Message.H"
@@ -60,301 +61,79 @@ namespace METOOLS {
   public:
     FFVMD(const Vertex_Key &key);
     Complex FF();
-  };// end of class FFPoint
+  };
 
-  /////////////////////////////////////////////////////////////////////
-  // Transition form factor F(q1^2, q2^2) of the anomalous gamma gamma P
-  // vertex.  Everything else in this file is a single-virtuality form factor
-  // hanging off one photon leg; here BOTH legs are photons and both are off
-  // shell, so FFVMD's "the one leg that is not a hadron" rule cannot pick out
-  // the right virtuality and a separate implementation is needed.
-  /////////////////////////////////////////////////////////////////////
+  // Transition form factor (gamma* gamma* -> P)
   class FFTFF: public Form_Factor {
   private:
     METOOLS::Summed_Propagator m_prop;
-    // One rho/omega/phi mixture per pseudoscalar - pi0 and eta share a shape,
-    // eta' does not.  See the parameter block below.
-    // kf_code is a #define for 'long unsigned int', so it must not be
-    // namespace-qualified here.
     void Construct(const kf_code & ps);
   public:
     FFTFF(const Vertex_Key &key);
     Complex FF();
-  };// end of class FFTFF
-}// end of namespace METOOLS
-
+  };
+} // end namespace METOOLS
 
 using namespace METOOLS;
 using namespace ATOOLS;
 using namespace std;
 
-/////////////////////////////////////////////////////////////////////
-//
-// Gounaris-Sakurai parameters of the pion form factor.
-//
-// The amplitudes and phases below come out of a fit that determined
-// the masses and widths listed here at the same time, so the two sets
-// only make sense together.  In particular they must not be taken from
-// the particle table of the low-energy model (rho(770): m = 0.77,
-// Gamma = 0.1507, i.e. the PDG values): that shifts the rho peak by
-// about 5 MeV and undershoots the BESIII pi+ pi- cross section by up
-// to 10% above 0.75 GeV.
-//
-/////////////////////////////////////////////////////////////////////
-namespace {
-  // Width of the form factor tables below, matching OutputParticles().
-  const int s_ffwidth = 80;
-
-  //   PION_FORM_FACTOR:
-  //     rho(770):   {Mass: 0.7755, Width: 0.1494}
-  //     omega(782): {Amplitude: 0.00205, Phase: 0.287}
-  //
-  class GS_Parameters {
-    const std::string m_block, m_sub, m_tag;
-    const double m_m0, m_Gamma0, m_c0, m_phi0;  // fitted defaults, never change
-    double       m_m,  m_Gamma,  m_c,  m_phi;   // values in use
-    bool         m_shown;
-  public:
-    GS_Parameters(const std::string & block,const std::string & tag,
-		  const double & m,const double & Gamma,
-		  const double & c,const double & phi) :
-      m_block(block), m_sub(""), m_tag(tag),
-      m_m0(m), m_Gamma0(Gamma), m_c0(c), m_phi0(phi),
-      m_m(m), m_Gamma(Gamma), m_c(c), m_phi(phi), m_shown(false) {}
-    GS_Parameters(const std::string & block,const std::string & sub,
-		  const std::string & tag,
-		  const double & m,const double & Gamma,
-		  const double & c,const double & phi) :
-      m_block(block), m_sub(sub), m_tag(tag),
-      m_m0(m), m_Gamma0(Gamma), m_c0(c), m_phi0(phi),
-      m_m(m), m_Gamma(Gamma), m_c(c), m_phi(phi), m_shown(false) {}
-
-    // Always registers the fitted value as the default, so this stays
-    // idempotent however often the form factor is constructed.
-    void Read() {
-      ATOOLS::Settings & main(ATOOLS::Settings::GetMainSettings());
-      ATOOLS::Scoped_Settings s
-	{ m_sub.empty() ? main[m_block][m_tag] : main[m_block][m_sub][m_tag] };
-      m_m     = s["Mass"     ].SetDefault(m_m0    ).Get<double>();
-      m_Gamma = s["Width"    ].SetDefault(m_Gamma0).Get<double>();
-      m_c     = s["Amplitude"].SetDefault(m_c0    ).Get<double>();
-      m_phi   = s["Phase"    ].SetDefault(m_phi0  ).Get<double>();
-      if (m_shown) return;
-      m_shown = true;
-      std::ostringstream line;
-      line<<std::setw(16)<<m_tag<<std::setw(14)<<m_m<<std::setw(14)<<m_Gamma
-	  <<std::setw(16)<<m_c<<std::setw(14)<<m_phi;
-      msg_Out()<<Frame_Line(line.str(),s_ffwidth);
-    }
-    inline const double & Mass()  const { return m_m;     }
-    inline const double & Width() const { return m_Gamma; }
-    inline Complex Weight() const { return m_c*Complex(cos(m_phi),sin(m_phi)); }
-  };
-  //                            tag            m       Gamma       c        phi
-  GS_Parameters s_rho      { "PION_FORM_FACTOR", "rho(770)"  , 0.77456, 0.14832, 1.0    , 0.     };
-  GS_Parameters s_rho1450  { "PION_FORM_FACTOR", "rho(1450)" , 1.4859 , 0.37360, 0.14104, 3.7797 };
-  GS_Parameters s_rho1700  { "PION_FORM_FACTOR", "rho(1700)" , 1.8668 , 0.30334, 0.0614 , 1.429  };
-  GS_Parameters s_rho2150  { "PION_FORM_FACTOR", "rho(2150)" , 2.2645 , 0.11327, 0.0047 , 0.921  };
-  GS_Parameters s_omega782 { "PION_FORM_FACTOR", "omega(782)", 0.78248, 0.00855, 0.00158, 0.075  };
-  GS_Parameters s_phi1020  { "PION_FORM_FACTOR", "phi(1020)" , 1.01947, 0.00425, 0.00045, 2.888  };
-
-  /////////////////////////////////////////////////////////////////////
-  // Masses and widths are the PDG ones.  The phi amplitude is OZI
-  // suppressed and is tuned, not fitted: 0.042 with a relative phase of pi
-  // reproduces the measured ratio of the phi and omega peaks.  Together with
-  // g_gammarhopi in LowEnergy_Model.C this puts both peaks within 10% of
-  // BESIII_2019_I1773081.  It is a two-point tune and nothing more - see
-  // doc/examples/Soft_QCD/LowEnergy/NOTES-3pi.md.
-  /////////////////////////////////////////////////////////////////////
-  GS_Parameters s_v_omega782
-    { "THREE_PION_FORM_FACTOR", "omega(782)", 0.78266 , 0.00868 , 1.0, 0.   };
-  GS_Parameters s_v_phi1020
-    { "THREE_PION_FORM_FACTOR", "phi(1020)" , 1.019461, 0.004249, 0.042, M_PI };
-
-  /////////////////////////////////////////////////////////////////////
-  // J/psi, added the same way as omega/phi above: gamma* mixes with any
-  // 1-- resonance via VMD, so a narrow FixedBreitWigner term at the J/psi
-  // mass gives a resonant peak in e+e- -> pi+ pi- pi0 at sqrt(s) = 3.0969
-  // GeV, exactly like the real e+e- -> J/psi -> hadrons peak.
-  //
-
-  /////////////////////////////////////////////////////////////////////
-  GS_Parameters s_v_jpsi
-    { "THREE_PION_FORM_FACTOR", "J/psi", 3.0969, 0.0000926, 0.001, 0. };
-
-  /////////////////////////////////////////////////////////////////////
-  // Kaon form factor, hep-ph/0409080 eq. 64.  K+ = u sbar, so unlike the
-  // pion form factor the photon sees THREE separate, additive SU(3)
-  // channels with fixed relative weights 1/2 (isovector, rho family) and
-  // 1/6, 1/3 (isoscalar, omega and phi families) - not one isospin current
-  // with a small isospin-violating admixture, the way rho-omega/rho-phi
-  // mixing works for pi+ pi-.
-  //
-  // The coefficients in the reference are real, with no explicit phase
-  // factor; a negative one is encoded here as amplitude > 0 with
-  // phase = pi, so the existing GS_Parameters Weight() = c*exp(i*phi)
-  // machinery can be reused unchanged.
-  //
-  /////////////////////////////////////////////////////////////////////
-  /////////////////////////////////////////////////////////////////////
-  //                             tag              m         Gamma      c      phi
-  GS_Parameters s_K_rho       { "KAON_FORM_FACTOR", "rho(770)"   , 0.77456 , 0.14832 , 1.138, 0.     };
-  GS_Parameters s_K_rho1450   { "KAON_FORM_FACTOR", "rho(1450)"  , 1.4859  , 0.37360 , 0.112, M_PI   };
-  GS_Parameters s_K_rho1700   { "KAON_FORM_FACTOR", "rho(1700)"  , 1.8668  , 0.30334 , 0.083, M_PI   };
-  // c_rho(2150) = 1 - c_rho - c_rho(1450) - c_rho(1700) = 0 for the
-  // defaults above: the sum rule that enforces F(0) = 1 leaves this term
-  // with no contribution by default, but it stays tunable.
-  GS_Parameters s_K_rho2150   { "KAON_FORM_FACTOR", "rho(2150)"  , 2.2645  , 0.11327 , -4.22045e-3  , 0.     };
-  GS_Parameters s_K_omega     { "KAON_FORM_FACTOR", "omega(782)" , 0.78248 , 0.00855 , 1.195, 0.     };
-  GS_Parameters s_K_omega1420 { "KAON_FORM_FACTOR", "omega(1420)", 1.410   , 0.290   , 0.112, M_PI   };
-  GS_Parameters s_K_omega1650 { "KAON_FORM_FACTOR", "omega(1650)", 1.67    , 0.315   , 0.083, M_PI   };
-  GS_Parameters s_K_phi       { "KAON_FORM_FACTOR", "phi(1020)"  , 1.01947 , 0.00434 , 0.984, 0.     };
-  GS_Parameters s_K_phi1680   { "KAON_FORM_FACTOR", "phi(1680)"  , 1.680   , 0.150   , 0.00418, M_PI   };
-
-  /////////////////////////////////////////////////////////////////////
-  // pi0 transition form factor, one photon leg at a time.  The pi0 is
-  // isovector, so VMD couples one photon through the rho family and the other
-  // through the isoscalar omega family:
-  //
-  //   F(q1^2,q2^2) = 1/2 [ P_rho(q1^2) P_omega(q2^2) + (q1 <-> q2) ].
-  //
-  // What is implemented instead is the symmetric factorised form
-  // F(q1^2) F(q2^2) with the same poles averaged into each leg.  
-  /////////////////////////////////////////////////////////////////////
-  //                          block                    meson   tag          m         Gamma     c     phi
-  GS_Parameters s_T_pi0_rho   { "TWO_PHOTON_FORM_FACTOR", "pi0" , "rho(770)"  , 0.77526 , 0.1474  , 1.0 , 0. };
-  GS_Parameters s_T_pi0_omega { "TWO_PHOTON_FORM_FACTOR", "pi0" , "omega(782)", 0.78266 , 0.00868 , 1.0 , 0. };
-  GS_Parameters s_T_pi0_phi   { "TWO_PHOTON_FORM_FACTOR", "pi0" , "phi(1020)" , 1.019461, 0.004249, 0.0 , 0. };
-
-  GS_Parameters s_T_eta_rho   { "TWO_PHOTON_FORM_FACTOR", "eta" , "rho(770)"  , 0.77526 , 0.1474  , 1.0 , 0. };
-  GS_Parameters s_T_eta_omega { "TWO_PHOTON_FORM_FACTOR", "eta" , "omega(782)", 0.78266 , 0.00868 , 1.0 , 0. };
-  GS_Parameters s_T_eta_phi   { "TWO_PHOTON_FORM_FACTOR", "eta" , "phi(1020)" , 1.019461, 0.004249, 0.0 , 0. };
-
-  GS_Parameters s_T_etap_rho  { "TWO_PHOTON_FORM_FACTOR", "eta'", "rho(770)"  , 0.77526 , 0.1474  , 1.0 , 0. };
-  GS_Parameters s_T_etap_omega{ "TWO_PHOTON_FORM_FACTOR", "eta'", "omega(782)", 0.78266 , 0.00868 , 1.0 , 0. };
-  GS_Parameters s_T_etap_phi  { "TWO_PHOTON_FORM_FACTOR", "eta'", "phi(1020)" , 1.019461, 0.004249, 1.49, 0. };
-}
-
-/////////////////////////////////////////////////////////////////////
-//
-// VMD form factors, basically assuming some (interfering)
-// vector-meson propagators.
-//
-/////////////////////////////////////////////////////////////////////
-namespace {
-  void FFTableHead(const std::string & title) {
-    msg_Out()<<Frame_Header(s_ffwidth)
-	     <<Frame_Line(title,s_ffwidth)
-	     <<Frame_Separator(s_ffwidth);
-    std::ostringstream line;
-    line<<std::setw(16)<<"Resonance"<<std::setw(14)<<"Mass [GeV]"
-	<<std::setw(14)<<"Width [GeV]"<<std::setw(16)<<"Amplitude"
-	<<std::setw(14)<<"Phase";
-    msg_Out()<<Frame_Line(line.str(),s_ffwidth)
-	     <<Frame_Separator(s_ffwidth);
-  }
-
-  void FFTableFoot(const std::string & label,const Complex & f0) {
-    std::ostringstream line;
-    line<<label<<" = "<<f0;
-    msg_Out()<<Frame_Separator(s_ffwidth)
-	     <<Frame_Line(line.str(),s_ffwidth)
-	     <<Frame_Footer(s_ffwidth);
-  }
-
-  void CheckFFNormalisation(const std::string & tag,const Complex & f0,
-			    const bool & requireunity=true) {
-    if (ATOOLS::IsNan(f0)) {
-      msg_Error()<<om::red<<"Warning in "<<tag<<": F(0) = "<<f0
-		 <<" is not a number."<<om::reset<<"\n";
-      return;
-    }
-    if (!requireunity) {
-      msg_Debugging()<<"  "<<tag<<": F(0) = "<<f0
-		     <<" (not a charge form factor, F(0) = 1 not required)\n";
-      return;
-    }
-    const double dev(std::abs(f0-Complex(1.,0.)));
-    if (dev>1.e-9)
-      msg_Error()<<om::red<<"Warning in "<<tag<<": F(0) = "<<f0
-		 <<", expected 1 (off by "<<dev<<").\n"
-		 <<"  Charge normalisation is violated, which breaks gauge\n"
-		 <<"  invariance in processes with a radiated photon."
-		 <<om::reset<<"\n";
-  }
-}
+// ----------------------------------------------------------------------
+// FFVMD implementation
+// ----------------------------------------------------------------------
 
 FFVMD::FFVMD(const Vertex_Key &key):
   Form_Factor("VMD",key),
   m_props(), m_mode(FF_0_PP_mode::unknown),
   m_pos(-1) {
-  // Find the position of the (elementary) particle:
-  // Normally this would be the photon, but I'll assume it is anything
-  // that is not a hadron.
-  // Also: extract the flavours in the vertex to look up parameters
-  // in the model look-up table.
-  std::set<kf_code> kfs;
+  set<kf_code> kfs;
   msg_Debugging()<<METHOD<<"("<<key.m_j.size()<<"): "<<key.m_j[0]->Flav()<<", "
-		 <<key.m_j[1]->Flav()<<"\n";
+                 <<key.m_j[1]->Flav()<<"\n";
   msg_Debugging()<<key.p_mv->in[0]<<", "<<key.p_mv->in[1]<<", "
-		 <<key.p_mv->in[2]<<"\n";
-  for (size_t i(0);i<key.m_j.size();++i) {
+                 <<key.p_mv->in[2]<<"\n";
+  for (size_t i(0); i<key.m_j.size(); ++i) {
     if (!key.m_j[i]->Flav().IsHadron()) m_pos=i;
     else kfs.insert(key.m_j[i]->Flav().Kfcode());
   }
-  msg_Debugging()<<METHOD<<"("<<key.m_j.size()<<"): "<<key.m_j[0]->Flav()<<", "
-		 <<key.m_j[1]->Flav()<<"\n"; //<<", "<<key.m_j[2]->Flav()
   FixMode(key);
-  static std::set<int> reported;
+  static set<int> reported;
   const bool report(reported.insert(int(m_mode)).second);
-  std::ostringstream tag;
+  ostringstream tag;
   tag<<"VMD form factor, mode "<<m_mode;
-  if (report) FFTableHead(tag.str());
+  if (report) FFTableHead(tag.str());   // from FormFactorParameters
   Construct();
   const Complex f0(m_props(0.));
-  if (report) FFTableFoot("F(0)",f0);
-  CheckFFNormalisation(tag.str(),f0,IsChargeFormFactor(m_mode));
+  if (report) FFTableFoot("F(0)", f0);
+  CheckFFNormalisation(tag.str(), f0, IsChargeFormFactor(m_mode));
   msg_Debugging()<<METHOD<<":\n";
 }
 
 void FFVMD::FixMode(const Vertex_Key &key) {
-  // The three-pion vertex has to be identified from the vertex legs rather
-  // than from key.m_j: m_j only holds the incoming currents, so a three-point
-  // vertex appears there with two of its three legs, and which two depends on
-  // the recursion step.
-  std::multiset<kf_code> kfs;
-  for (size_t i(0);i<key.p_mv->in.size();++i)
+  multiset<kf_code> kfs;
+  for (size_t i(0); i<key.p_mv->in.size(); ++i)
     if (key.p_mv->in[i].IsHadron()) kfs.insert(key.p_mv->in[i].Kfcode());
-  if (kfs==std::multiset<kf_code>{kf_pi,kf_pi_plus,kf_pi_plus}) {
+
+  if (kfs == multiset<kf_code>{kf_pi, kf_pi_plus, kf_pi_plus}) {
     m_mode = FF_0_PP_mode::pipipi_0;
     return;
   }
-  // gamma rho pi: the anomalous vertex of the three-pion chain.  This is the
-  // only vertex there that sees the photon virtuality, so it carries the
-  // whole s dependence.
-  if (kfs==std::multiset<kf_code>{kf_rho_770,kf_pi} ||
-      kfs==std::multiset<kf_code>{kf_rho_770_plus,kf_pi_plus}) {
+  if (kfs == multiset<kf_code>{kf_rho_770, kf_pi} ||
+      kfs == multiset<kf_code>{kf_rho_770_plus, kf_pi_plus}) {
     m_mode = FF_0_PP_mode::V_pi;
     return;
   }
-  if      (kfs==std::multiset<kf_code>{kf_pi_plus,kf_pi_plus}) m_mode = FF_0_PP_mode::pipi_0;
-  else if (kfs==std::multiset<kf_code>{kf_K_plus ,kf_K_plus }) m_mode = FF_0_PP_mode::KK_0;
+  if (kfs == multiset<kf_code>{kf_pi_plus, kf_pi_plus})
+    m_mode = FF_0_PP_mode::pipi_0;
+  else if (kfs == multiset<kf_code>{kf_K_plus, kf_K_plus})
+    m_mode = FF_0_PP_mode::KK_0;
 }
 
 void FFVMD::Construct() {
   switch (int(m_mode)) {
-  case int(FF_0_PP_mode::pipi_0):
-    ConstructPionFormFactor();
-    break;
-  case int(FF_0_PP_mode::pipipi_0):
-    ConstructThreePionFormFactor();
-    break;
-  case int(FF_0_PP_mode::V_pi):
-    ConstructVectorPionFormFactor();
-    break;
-  case int(FF_0_PP_mode::KK_0):
-    ConstructKaonFormFactor();
-    break;
+  case int(FF_0_PP_mode::pipi_0):     ConstructPionFormFactor(); break;
+  case int(FF_0_PP_mode::pipipi_0):   ConstructThreePionFormFactor(); break;
+  case int(FF_0_PP_mode::V_pi):       ConstructVectorPionFormFactor(); break;
+  case int(FF_0_PP_mode::KK_0):       ConstructKaonFormFactor(); break;
   case int(FF_0_PP_mode::unknown):
   default:
     msg_Out()<<METHOD<<" yields no form factor.\n";
@@ -364,247 +143,253 @@ void FFVMD::Construct() {
 
 void FFVMD::ConstructPionFormFactor() {
   msg_Debugging()<<METHOD<<": Gounaris-Sakurai parameters\n";
-  for (GS_Parameters * p : { &s_rho, &s_rho1450, &s_rho1700, &s_rho2150,
-			     &s_omega782, &s_phi1020 }) p->Read();
-  METOOLS::Summed_Propagator * rhofac = new METOOLS::Summed_Propagator(false);
-  rhofac->Add(new METOOLS::Unity(),Complex(1.,0.));
-  rhofac->Add(new METOOLS::WeightedBreitWigner(LineShapes->Get(Flavour(kf_omega_782)),
-					       resonance_type::fixed,
-					       s_omega782.Mass(),s_omega782.Width()),
-	      s_omega782.Weight());
-  // No lineshape for the phi(1020) yet, so it runs off a fixed width.
-  rhofac->Add(new METOOLS::WeightedBreitWigner(NULL,resonance_type::fixed,
-					       s_phi1020.Mass(),s_phi1020.Width()),
-	      s_phi1020.Weight());
-  METOOLS::Multiplied_Propagator * rho = new METOOLS::Multiplied_Propagator();
-  rho->Add(new METOOLS::GounarisSakurai(LineShapes->Get(Flavour(kf_rho_770)),
-					resonance_type::GS,
-					s_rho.Mass(),s_rho.Width()));
-  rho->Add(rhofac);
-  m_props.Add(rho,s_rho.Weight());
-  m_props.Add(new METOOLS::GounarisSakurai(LineShapes->Get(Flavour(kf_rho_1450)),
-					   resonance_type::GS,
-					   s_rho1450.Mass(),s_rho1450.Width()),
-	      s_rho1450.Weight());
-  m_props.Add(new METOOLS::GounarisSakurai(LineShapes->Get(Flavour(kf_rho_1700)),
-					   resonance_type::GS,
-					   s_rho1700.Mass(),s_rho1700.Width()),
-	      s_rho1700.Weight());
-  // No lineshape for the rho(2150) either - the GS width is analytic anyway.
-  m_props.Add(new METOOLS::GounarisSakurai(NULL,resonance_type::GS,
-					   s_rho2150.Mass(),s_rho2150.Width()),
-	      s_rho2150.Weight());
-}
+  // Read all pion parameters from settings
+  PionFF::ReadAll();
 
+  // Build the omega/phi mixture (fixed widths)
+  METOOLS::Summed_Propagator * rhofac = new METOOLS::Summed_Propagator(false);
+  rhofac->Add(new METOOLS::Unity(), Complex(1.,0.));
+  rhofac->Add(new METOOLS::WeightedBreitWigner(
+                LineShapes->Get(Flavour(kf_omega_782)),
+                resonance_type::fixed,
+                PionFF::Omega782().Mass(),
+                PionFF::Omega782().Width()),
+              PionFF::Omega782().Weight());
+  rhofac->Add(new METOOLS::WeightedBreitWigner(
+                NULL,
+                resonance_type::fixed,
+                PionFF::Phi1020().Mass(),
+                PionFF::Phi1020().Width()),
+              PionFF::Phi1020().Weight());
+
+  // rho(770) with omega/phi interference
+  METOOLS::Multiplied_Propagator * rho = new METOOLS::Multiplied_Propagator();
+  rho->Add(new METOOLS::GounarisSakurai(
+             LineShapes->Get(Flavour(kf_rho_770)),
+             resonance_type::GS,
+             PionFF::Rho().Mass(),
+             PionFF::Rho().Width()));
+  rho->Add(rhofac);
+  m_props.Add(rho, PionFF::Rho().Weight());
+
+  // rho(1450), rho(1700), rho(2150) – GS
+  m_props.Add(new METOOLS::GounarisSakurai(
+                LineShapes->Get(Flavour(kf_rho_1450)),
+                resonance_type::GS,
+                PionFF::Rho1450().Mass(),
+                PionFF::Rho1450().Width()),
+              PionFF::Rho1450().Weight());
+  m_props.Add(new METOOLS::GounarisSakurai(
+                LineShapes->Get(Flavour(kf_rho_1700)),
+                resonance_type::GS,
+                PionFF::Rho1700().Mass(),
+                PionFF::Rho1700().Width()),
+              PionFF::Rho1700().Weight());
+  m_props.Add(new METOOLS::GounarisSakurai(
+                NULL,
+                resonance_type::GS,
+                PionFF::Rho2150().Mass(),
+                PionFF::Rho2150().Width()),
+              PionFF::Rho2150().Weight());
+}
 
 void FFVMD::ConstructKaonFormFactor() {
   msg_Debugging()<<METHOD<<": Gounaris-Sakurai parameters\n";
-  for (GS_Parameters * p : { &s_K_rho, &s_K_rho1450, &s_K_rho1700, &s_K_rho2150,
-			     &s_K_omega, &s_K_omega1420, &s_K_omega1650,
-			     &s_K_phi, &s_K_phi1680 }) p->Read();
-  //////////////////////////////////////////////////////////////////////
-  // Three independent, additive SU(3) channels (see the comment on the
-  // s_K_* parameters above) - not a single normalised isospin current, so
-  // this is built with normalise=false and added to m_props as a single
-  // term of weight 1.  m_props always renormalises by its own weight sum,
-  // but with only one term of weight 1 that division is a no-op; the
-  // F(0) = 1 normalisation here comes entirely from the sum rule
-  // c_rho(2150) = 1 - c_rho - c_rho(1450) - c_rho(1700) baked into the
-  // coefficients themselves.
-  //////////////////////////////////////////////////////////////////////
+  KaonFF::ReadAll();   // read all kaon parameters
+
+  // Three independent SU(3) channels – summed with correct weights
   METOOLS::Summed_Propagator * kaon = new METOOLS::Summed_Propagator(false);
-  // rho family: the same resonances, and the same pi pi running width, as
-  // the pion channel - rho decays via pi pi regardless of which form
-  // factor is asking about it.
-  kaon->Add(new METOOLS::GounarisSakurai(LineShapes->Get(Flavour(kf_rho_770)),
-					 resonance_type::GS,
-					 s_K_rho.Mass(),s_K_rho.Width()),
-	    0.5*s_K_rho.Weight());
-  kaon->Add(new METOOLS::GounarisSakurai(LineShapes->Get(Flavour(kf_rho_1450)),
-					 resonance_type::GS,
-					 s_K_rho1450.Mass(),s_K_rho1450.Width()),
-	    0.5*s_K_rho1450.Weight());
-  kaon->Add(new METOOLS::GounarisSakurai(LineShapes->Get(Flavour(kf_rho_1700)),
-					 resonance_type::GS,
-					 s_K_rho1700.Mass(),s_K_rho1700.Width()),
-	    0.5*s_K_rho1700.Weight());
-  kaon->Add(new METOOLS::GounarisSakurai(NULL,resonance_type::GS,
-					 s_K_rho2150.Mass(),s_K_rho2150.Width()),
-	    0.5*s_K_rho2150.Weight());
-  // omega family: fixed widths.  None of these decay predominantly to two
-  // pseudoscalars, so a running width makes no more sense here than it
-  // does for omega in the pion channel.
-  kaon->Add(new METOOLS::FixedBreitWigner(NULL,s_K_omega.Mass(),s_K_omega.Width()),
-	    s_K_omega.Weight()/6.);
-  kaon->Add(new METOOLS::FixedBreitWigner(NULL,s_K_omega1420.Mass(),s_K_omega1420.Width()),
-	    s_K_omega1420.Weight()/6.);
-  kaon->Add(new METOOLS::FixedBreitWigner(NULL,s_K_omega1650.Mass(),s_K_omega1650.Width()),
-	    s_K_omega1650.Weight()/6.);
-  // phi family: also fixed width here.  phi(1020) sits only 33 MeV above
-  // the K+K- threshold itself, where a running width from the K Kbar loop
-  // (rather than the pi pi one GounarisSakurai assumes) would matter most -
-  // hep-ph/0409080 does include that.  Left as the obvious next
-  // refinement; the fixed-width approximation is the same simplification
-  // already made for phi in the pion channel.
-  kaon->Add(new METOOLS::FixedBreitWigner(NULL,s_K_phi.Mass(),s_K_phi.Width()),
-	    s_K_phi.Weight()/3.);
-  kaon->Add(new METOOLS::FixedBreitWigner(NULL,s_K_phi1680.Mass(),s_K_phi1680.Width()),
-	    s_K_phi1680.Weight()/3.);
-  m_props.Add(kaon,Complex(1.,0.));
+
+  // rho family (isovector, weight 1/2)
+  kaon->Add(new METOOLS::GounarisSakurai(
+              LineShapes->Get(Flavour(kf_rho_770)),
+              resonance_type::GS,
+              KaonFF::Rho().Mass(),
+              KaonFF::Rho().Width()),
+            0.5 * KaonFF::Rho().Weight());
+  kaon->Add(new METOOLS::GounarisSakurai(
+              LineShapes->Get(Flavour(kf_rho_1450)),
+              resonance_type::GS,
+              KaonFF::Rho1450().Mass(),
+              KaonFF::Rho1450().Width()),
+            0.5 * KaonFF::Rho1450().Weight());
+  kaon->Add(new METOOLS::GounarisSakurai(
+              LineShapes->Get(Flavour(kf_rho_1700)),
+              resonance_type::GS,
+              KaonFF::Rho1700().Mass(),
+              KaonFF::Rho1700().Width()),
+            0.5 * KaonFF::Rho1700().Weight());
+  // rho(2150) commented out in original – keep as is
+
+  // omega family (isoscalar, weight 1/6) – fixed width
+  kaon->Add(new METOOLS::FixedBreitWigner(NULL,
+              KaonFF::Omega().Mass(),
+              KaonFF::Omega().Width()),
+            KaonFF::Omega().Weight() / 6.);
+  kaon->Add(new METOOLS::FixedBreitWigner(NULL,
+              KaonFF::Omega1420().Mass(),
+              KaonFF::Omega1420().Width()),
+            KaonFF::Omega1420().Weight() / 6.);
+  kaon->Add(new METOOLS::FixedBreitWigner(NULL,
+              KaonFF::Omega1650().Mass(),
+              KaonFF::Omega1650().Width()),
+            KaonFF::Omega1650().Weight() / 6.);
+
+  // phi family (isoscalar, weight 1/3) – fixed width
+  kaon->Add(new METOOLS::FixedBreitWigner(NULL,
+              KaonFF::Phi().Mass(),
+              KaonFF::Phi().Width()),
+            KaonFF::Phi().Weight() / 3.);
+  kaon->Add(new METOOLS::FixedBreitWigner(NULL,
+              KaonFF::Phi1680().Mass(),
+              KaonFF::Phi1680().Width()),
+            KaonFF::Phi1680().Weight() / 3.);
+
+  m_props.Add(kaon, Complex(1.,0.));
 }
-
-
 
 void FFVMD::ConstructThreePionFormFactor() {
   msg_Debugging()<<METHOD<<": Gounaris-Sakurai parameters\n";
-  for (GS_Parameters * p : { &s_rho, &s_rho1450, &s_rho1700 }) p->Read();
-  //////////////////////////////////////////////////////////////////////
-  // FIRST STAB - the rho-family propagator sum in the two-pion
-  // sub-channel, i.e. the prop_ij(s_ij) factors of the rho-pi picture that
-  // METOOLS::V1minus_PPP_Arg::dg() already uses for omega -> 3 pi.  At this
-  // vertex the off-shell leg is the charged pion going to the photon, so its
-  // virtuality is the invariant mass squared of the other two pions, which
-  // is the argument a rho propagator wants.
-  //
-  // This is NOT the gamma* -> 3 pi form factor. the
-  // omega/phi peak right needs the SSS vertex replaced by a proper
-  // gamma-pi-pi-pi current (compare VVP_LC / TAUPI_LC), not a form factor.
-  //////////////////////////////////////////////////////////////////////
-  m_props.Add(new METOOLS::GounarisSakurai(LineShapes->Get(Flavour(kf_rho_770)),
-					   resonance_type::GS,
-					   s_rho.Mass(),s_rho.Width()),
-	      s_rho.Weight());
-  m_props.Add(new METOOLS::GounarisSakurai(LineShapes->Get(Flavour(kf_rho_1450)),
-					   resonance_type::GS,
-					   s_rho1450.Mass(),s_rho1450.Width()),
-	      s_rho1450.Weight());
-  m_props.Add(new METOOLS::GounarisSakurai(LineShapes->Get(Flavour(kf_rho_1700)),
-					   resonance_type::GS,
-					   s_rho1700.Mass(),s_rho1700.Width()),
-	      s_rho1700.Weight());
+  PionFF::ReadAll();   // we reuse the pion rho parameters
+
+  // rho family for the two-pion sub-channel
+  m_props.Add(new METOOLS::GounarisSakurai(
+                LineShapes->Get(Flavour(kf_rho_770)),
+                resonance_type::GS,
+                PionFF::Rho().Mass(),
+                PionFF::Rho().Width()),
+              PionFF::Rho().Weight());
+  m_props.Add(new METOOLS::GounarisSakurai(
+                LineShapes->Get(Flavour(kf_rho_1450)),
+                resonance_type::GS,
+                PionFF::Rho1450().Mass(),
+                PionFF::Rho1450().Width()),
+              PionFF::Rho1450().Weight());
+  m_props.Add(new METOOLS::GounarisSakurai(
+                LineShapes->Get(Flavour(kf_rho_1700)),
+                resonance_type::GS,
+                PionFF::Rho1700().Mass(),
+                PionFF::Rho1700().Width()),
+              PionFF::Rho1700().Weight());
 }
 
 void FFVMD::ConstructVectorPionFormFactor() {
   msg_Debugging()<<METHOD<<": three-pion isoscalar parameters\n";
-  for (GS_Parameters * p : { &s_v_omega782, &s_v_phi1020, &s_v_jpsi }) p->Read();
-  // gamma -> omega/phi/J-psi -> rho pi.  Fixed widths: none of these
-  // resonances is narrow enough (or, for J/psi, has a lineshape at all) for
-  // a running width to matter/exist.  Normalised to F(0) = 1 by
-  // Summed_Propagator, which divides by the sum of the weights.
-  m_props.Add(new METOOLS::FixedBreitWigner(NULL,s_v_omega782.Mass(),
-					    s_v_omega782.Width()),
-	      s_v_omega782.Weight());
-  m_props.Add(new METOOLS::FixedBreitWigner(NULL,s_v_phi1020.Mass(),
-					    s_v_phi1020.Width()),
-	      s_v_phi1020.Weight());
-  m_props.Add(new METOOLS::FixedBreitWigner(NULL,s_v_jpsi.Mass(),
-					    s_v_jpsi.Width()),
-	      s_v_jpsi.Weight());
+  ThreePionFF::ReadAll();   // omega(782), phi(1020), J/psi
+
+  // gamma -> omega/phi/Jpsi -> rho pi – fixed width
+  m_props.Add(new METOOLS::FixedBreitWigner(NULL,
+              ThreePionFF::Omega782().Mass(),
+              ThreePionFF::Omega782().Width()),
+            ThreePionFF::Omega782().Weight());
+  m_props.Add(new METOOLS::FixedBreitWigner(NULL,
+              ThreePionFF::Phi1020().Mass(),
+              ThreePionFF::Phi1020().Width()),
+            ThreePionFF::Phi1020().Weight());
+  m_props.Add(new METOOLS::FixedBreitWigner(NULL,
+              ThreePionFF::Jpsi().Mass(),
+              ThreePionFF::Jpsi().Width()),
+            ThreePionFF::Jpsi().Weight());
 }
 
 Complex FFVMD::FF() {
   double Q2(0.);
   bool found(false);
-  for (size_t i(0);i<p_v->J().size();++i) {
+  for (size_t i=0; i<p_v->J().size(); ++i) {
     if (p_v->J(i)->Flav().IsHadron()) continue;
-    const double q2(p_v->J(i)->P().Abs2());
+    const double q2 = p_v->J(i)->P().Abs2();
     if (!found || std::abs(q2)>std::abs(Q2)) { Q2=q2; found=true; }
   }
   if (!p_v->JC()->Flav().IsHadron()) {
-    const double q2(p_v->JC()->P().Abs2());
+    const double q2 = p_v->JC()->P().Abs2();
     if (!found || std::abs(q2)>std::abs(Q2)) { Q2=q2; found=true; }
   }
-  // Purely hadronic vertices (rho -> pi pi) keep the outgoing leg as before.
   if (!found) Q2 = p_v->JC()->P().Abs2();
   return m_props(Q2);
 }
 
+// ----------------------------------------------------------------------
+// FFTFF implementation (transition form factor)
+// ----------------------------------------------------------------------
 
-
-/////////////////////////////////////////////////////////////////////
-//
-// gamma* gamma* -> P transition form factor.
-//
-/////////////////////////////////////////////////////////////////////
 FFTFF::FFTFF(const Vertex_Key &key):
   Form_Factor("TFF",key), m_prop() {
-  // Which pseudoscalar this vertex carries has to come from the vertex legs
-  // rather than from key.m_j: m_j only holds the incoming currents, so a
-  // three-point vertex appears there with two of its three legs, and which two
-  // depends on the recursion step - the same reason FFVMD::FixMode reads
-  // p_mv->in.  Here the photons are the non-hadrons, so the hadron leg is the
-  // meson.
-  kf_code ps(kf_none);
-  for (size_t i(0);i<key.p_mv->in.size();++i)
+  kf_code ps = kf_none;
+  for (size_t i=0; i<key.p_mv->in.size(); ++i)
     if (key.p_mv->in[i].IsHadron()) ps = key.p_mv->in[i].Kfcode();
-  static std::set<kf_code> reported;
-  const bool report(reported.insert(ps).second);
-  std::ostringstream title;
-  title<<"Transition form factor, "<<Flavour(ps);
+
+  static set<kf_code> reported;
+  const bool report = reported.insert(ps).second;
+  ostringstream title;
+  title << "Transition form factor, " << Flavour(ps);
   if (report) FFTableHead(title.str());
+
   Construct(ps);
-  // FF() multiplies the two photon legs, so the check is on m_prop(0)^2.
-  const Complex f0(m_prop(0.)*m_prop(0.));
-  if (report) FFTableFoot("F(0,0)",f0);
-  CheckFFNormalisation("FFTFF(kf = "+std::to_string(ps)+")",f0);
+  const Complex f0 = m_prop(0.) * m_prop(0.);
+  if (report) FFTableFoot("F(0,0)", f0);
+  CheckFFNormalisation("FFTFF(kf = " + std::to_string(ps) + ")", f0);
 }
 
 void FFTFF::Construct(const kf_code & ps) {
   msg_Debugging()<<METHOD<<": VMD poles for kf = "<<ps<<"\n";
-  GS_Parameters *rho(NULL), *omega(NULL), *phi(NULL);
+  // Read all two‑photon parameters (they are all in the same sector)
+  TwoPhotonFF::ReadAll();
+
+  // Select the appropriate parameter set for this pseudoscalar
+  ResonanceParameters *rho(nullptr), *omega(nullptr), *phi(nullptr);
   switch (ps) {
   case kf_pi:
-    rho = &s_T_pi0_rho;  omega = &s_T_pi0_omega;  phi = &s_T_pi0_phi;  break;
+    rho   = &TwoPhotonFF::Pi0Rho();
+    omega = &TwoPhotonFF::Pi0Omega();
+    phi   = &TwoPhotonFF::Pi0Phi();
+    break;
   case kf_eta:
-    rho = &s_T_eta_rho;  omega = &s_T_eta_omega;  phi = &s_T_eta_phi;  break;
+    rho   = &TwoPhotonFF::EtaRho();
+    omega = &TwoPhotonFF::EtaOmega();
+    phi   = &TwoPhotonFF::EtaPhi();
+    break;
   case kf_eta_prime_958:
-    rho = &s_T_etap_rho; omega = &s_T_etap_omega; phi = &s_T_etap_phi; break;
+    rho   = &TwoPhotonFF::EtapRho();
+    omega = &TwoPhotonFF::EtapOmega();
+    phi   = &TwoPhotonFF::EtapPhi();
+    break;
   default:
-    // No parameter set for this meson.  Leaving m_prop empty is safe -
-    // Summed_Propagator returns 1 when it has no terms - so this degrades to
-    // a point-like anomaly rather than to zero or a NaN.
     msg_Out()<<METHOD<<": no transition form factor for kf = "<<ps
-	     <<", falling back to F = 1.\n";
+             <<", falling back to F = 1.\n";
     return;
   }
-  for (GS_Parameters * p : { rho, omega, phi }) p->Read();
-  // Fixed widths throughout: the spacelike region does not see a width at all,
-  // and in the timelike one (e+ e- -> gamma pi0) the rho lineshape belongs to
-  // rho -> pi pi, which is not what this leg couples through.  Normalised to
-  // F(0) = 1 by Summed_Propagator, which divides by the sum of the weights -
-  // that is what fixes the P -> gamma gamma rate to the anomaly.
-  m_prop.Add(new METOOLS::FixedBreitWigner(NULL,rho->Mass(),rho->Width()),
-	     rho->Weight());
-  m_prop.Add(new METOOLS::FixedBreitWigner(NULL,omega->Mass(),omega->Width()),
-	     omega->Weight());
-  m_prop.Add(new METOOLS::FixedBreitWigner(NULL,phi->Mass(),phi->Width()),
-	     phi->Weight());
+
+  // All fixed‑width propagators – normalisation enforced by Summed_Propagator
+  m_prop.Add(new METOOLS::FixedBreitWigner(NULL, rho->Mass(), rho->Width()),
+             rho->Weight());
+  m_prop.Add(new METOOLS::FixedBreitWigner(NULL, omega->Mass(), omega->Width()),
+             omega->Weight());
+  m_prop.Add(new METOOLS::FixedBreitWigner(NULL, phi->Mass(), phi->Width()),
+             phi->Weight());
 }
 
 Complex FFTFF::FF() {
-  // Which leg the recursion is building varies, so the two photon
-  // virtualities have to be collected by flavour rather than by position: the
-  // incoming currents carry both of them when the pseudoscalar is the leg
-  // being built, and only one when a photon is.
   double q2[2];
-  size_t n(0);
-  for (size_t i(0);i<p_v->J().size() && n<2;++i) {
-    Current * j(p_v->J(i));
+  size_t n=0;
+  for (size_t i=0; i<p_v->J().size() && n<2; ++i) {
+    Current * j = p_v->J(i);
     if (!j->Flav().IsHadron()) q2[n++] = j->P().Abs2();
   }
   if (n<2) q2[n++] = p_v->JC()->P().Abs2();
   if (n<2) return Complex(1.,0.);
-  return m_prop(q2[0])*m_prop(q2[1]);
+  return m_prop(q2[0]) * m_prop(q2[1]);
 }
+
+// ----------------------------------------------------------------------
+// Getter declarations
+// ----------------------------------------------------------------------
 
 DECLARE_GETTER(FFTFF,"TFF",Form_Factor,Vertex_Key);
 Form_Factor *Getter<Form_Factor,Vertex_Key,FFTFF>::
 operator()(const Vertex_Key &args) const { return new FFTFF(args); }
-
 void ATOOLS::Getter<Form_Factor,Vertex_Key,FFTFF>::
 PrintInfo(std::ostream &str,const size_t width) const
 { str<<"gamma* gamma* -> P transition form factor"; }
-
 
 DECLARE_GETTER(FFVMD,"VMD",Form_Factor,Vertex_Key);
 Form_Factor *Getter<Form_Factor,Vertex_Key,FFVMD>::
@@ -612,7 +397,5 @@ operator()(const Vertex_Key &args) const {
   msg_Debugging()<<METHOD<<"(size = "<<args.m_j.size()<<")\n";
   return new FFVMD(args);
 }
-
 void ATOOLS::Getter<Form_Factor,Vertex_Key,FFVMD>::
 PrintInfo(std::ostream &str,const size_t width) const { str<<"VMD"; }
-
