@@ -299,7 +299,15 @@ int ME_Generator_Base::ShiftMasses(Cluster_Amplitude *const ampl)
     if (p_remnant->GetRemnant(i)->Type() != REMNANTS::rtp::intact) ++n_pdf;
   }
   if (n_pdf == 0) return 1;
-  if (n_pdf == 1) return ShiftMassesDIS(ampl, cms);
+  if (n_pdf == 1) {
+    /// find the non-PDF leg and check if it's a lepton;
+    /// real photon beams (from EPA etc.) are not DIS → Default
+    int lep_leg(-1);
+    for (size_t i(0); i < ampl->NIn(); ++i)
+      if (p_remnant->GetRemnant(i)->Type() == REMNANTS::rtp::intact) lep_leg = i;
+    if (ampl->Flav(lep_leg).IsLepton())
+      return ShiftMassesDIS(ampl, cms);
+  }
   return ShiftMassesDefault(ampl, cms);
 }
 
