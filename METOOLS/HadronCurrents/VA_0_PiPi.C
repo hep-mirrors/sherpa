@@ -54,8 +54,12 @@ void VA_0_PiPi::Calc(const ATOOLS::Vec4D_Vector& moms, bool m_anti)
 }
 
 void VA_0_PiPi::SetModelParameters(struct GeneralModel model) {
+  // I think we should add the parameters here, maybe from some
+  // generic parameter.yaml structure or so?  Will resolve during
+  // the MCnet school while chatting with Chris & Eno
+  map<string,double> pmap;
   FF_Parameters params(ff_model(model[string("FORM_FACTOR")]),
-		       m_flavs,p_i,"F+_0_PP",&model);
+		       m_flavs,p_i,pmap,"F+_0_PP",&model);
   p_fplus = FF_Getter::GetObject("FF_0_PP",params);
   params.m_name = "F0_0_PP";
   p_fzero = FF_Getter::GetObject("FF_0_PP",params);
@@ -71,9 +75,21 @@ PrintInfo(std::ostream &st,const size_t width) const {
     <<"Order: 0 = $\\pi^0$, 1 = $\\pi^\\pm$ \n\n"
     <<"Available form factors: \n "
     <<"  \\begin{itemize} \n"
-    <<"    \\item {\\tt FORM\\_FACTOR = 1 :} Kuehn-Santamaria \n"
-    <<"    \\item {\\tt FORM\\_FACTOR = 2 :} Resonance Chiral Theory \n"
+    <<"    \\item {\\tt FORM\\_FACTOR = 100 :} Kuehn-Santamaria \n"
+    <<"    \\item {\\tt FORM\\_FACTOR = 200 :} Resonance Chiral Theory \n"
+    <<"    \\item {\\tt FORM\\_FACTOR = 101 :} Gounaris-Sakurai "
+    <<"(pi pi/K K only - falls back to FORM_FACTOR=100 for Kpi/Keta) \n"
+    <<"    \\item {\\tt FORM\\_FACTOR = 102 :} CLEO/TAUOLA-type Kpi/Keta "
+    <<"tune (K*(892)+K*(1680); falls back to FORM_FACTOR=100 for "
+    <<"pi pi/K K/pi eta/pi eta', which have no such second tune) \n"
+    <<"    \\item {\\tt FORM\\_FACTOR = 202 :} combined dispersive/RChL "
+    <<"[NOT YET IMPLEMENTED, will throw] \n"
+    <<"    \\item {\\tt FORM\\_FACTOR = 201 :} RChL2012 (arXiv:1203.3955 "
+    <<"Sec.2.4, Eqs.21-27; K pi variant uses default FFKPIVEC=1 params) \n"
     <<"  \\end{itemize} \n"
-    <<"Reference: https://sherpa.hepforge.org/olddokuwiki/data/media/publications/theses/diplom\\__laubrich.pdf \n"
+    <<"References: \n"
+    <<"  https://sherpa.hepforge.org/olddokuwiki/data/media/publications/theses/diplom\\__laubrich.pdf \n"
+    <<"  https://arxiv.org/pdf/1509.09140 (Eq.(2.1)-(2.3), form factor overview) \n"
+    <<"  https://arxiv.org/pdf/1203.3955 (Sec.2.4, RChL2012 two-meson currents) \n"
     <<std::endl;
 }

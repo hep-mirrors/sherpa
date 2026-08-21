@@ -4,6 +4,8 @@
 #include "METOOLS/HadronCurrents/FormFactors/Omega_Decays.H"
 #include "METOOLS/HadronCurrents/FormFactors/A1_Decays.H"
 #include "METOOLS/HadronCurrents/FormFactors/Kstar_Decays.H"
+#include "METOOLS/HadronCurrents/FormFactors/K1_Decays.H"
+#include "METOOLS/HadronCurrents/FormFactors/A0_Decays.H"
 #include "ATOOLS/Org/Message.H"
 
 
@@ -40,6 +42,21 @@ void Line_Shapes::Init() {
   Add(Flavour(kf_a_1_1260),         new A1_1260_0_Lineshape());
   Add(Flavour(kf_K_star_892_plus),  new Kstar_892_plus_Lineshape());
   Add(Flavour(kf_K_star_1410_plus), new Kstar_1410_plus_Lineshape());
+  Add(Flavour(kf_K_0_star_1430),      new Kstar0_1430_0_Lineshape());
+  Add(Flavour(kf_K_0_star_1430_plus), new Kstar0_1430_plus_Lineshape());
+  Add(Flavour(kf_K_star_1680),        new Kstar_1680_0_Lineshape());
+  Add(Flavour(kf_K_star_1680_plus),   new Kstar_1680_plus_Lineshape());
+  Add(Flavour(kf_K_1_1270),      new K1_1270_0_Lineshape());
+  Add(Flavour(kf_K_1_1270_plus), new K1_1270_plus_Lineshape());
+  Add(Flavour(kf_K_1_1400),      new K1_1400_0_Lineshape());
+  Add(Flavour(kf_K_1_1400_plus), new K1_1400_plus_Lineshape());
+  Add(Flavour(kf_a_0_980),        new A0_980_0_Lineshape());
+  Add(Flavour(kf_a_0_980_plus),   new A0_980_plus_Lineshape());
+  Add(Flavour(kf_a_0_1450),       new A0_1450_0_Lineshape());
+  Add(Flavour(kf_a_0_1450_plus),  new A0_1450_plus_Lineshape());
+  // phi(1020): kf_phi_1020=333, confirmed against the real
+  // ATOOLS/Phys/Flavour_Tags.H.
+  Add(Flavour(kf_phi_1020),      new Phi_1020_Lineshape());
   msg_Out()<<"Initialised "<<m_lineshapes.size()<<" lineshapes.\n"
 	   <<"=================================================\n";
 }

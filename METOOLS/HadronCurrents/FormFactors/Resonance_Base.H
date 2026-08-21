@@ -33,6 +33,15 @@ namespace METOOLS {
     virtual const double operator()(const double & s);
     virtual const double Gamma() const { return m_partialwidth; }
     virtual const double BR()    const { return m_BR; }
+    // Public accessor for the fitted coupling-squared prefactor -
+    // needed when a second channel of the SAME resonance should share
+    // an identical coupling (rather than being independently BR-
+    // normalized), e.g. a0(980) -> eta' pi using the same coupling as
+    // a0(980) -> eta pi even though eta' pi is closed at the a0(980)
+    // pole mass (where FixPrefactor()'s BR-based normalization would
+    // divide by the exactly-zero bare width and produce NaN). See
+    // A0_Decays.C for the concrete usage.
+    virtual const double Prefactor() const { return m_prefactor; }
     virtual void SetPrefactor(const double & pref=1.) { m_prefactor = pref; }
     virtual void Output();
   };

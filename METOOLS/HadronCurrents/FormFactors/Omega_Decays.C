@@ -108,3 +108,27 @@ Omega_1600_Lineshape::Omega_1600_Lineshape() :
   // Idea: model it through omega(782) + rho(770)
   */
 }
+
+///////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////
+//
+// phi(1020): decays 50/50 into K+K- and K0 K0bar (Frank, private
+// communication). phi is its own antiparticle (kf 333, no separate
+// "plus" state), so a single lineshape class suffices.
+//
+// kf_phi_1020=333 confirmed against the real
+// ATOOLS/Phys/Flavour_Tags.H - the earlier guess was correct.
+//
+///////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////
+
+Phi_1020_Lineshape::Phi_1020_Lineshape() :
+  Total_Width_Base(Flavour(kf_phi_1020)) {
+  vector<Flavour> outflavs;
+  outflavs = { Flavour(kf_K_plus), Flavour(kf_K_plus).Bar() };
+  Partial_Width_Base * phi2KpKm = new V_PP(m_inflav,outflavs,0.5);
+  m_channels.insert(phi2KpKm);
+  outflavs = { Flavour(kf_K), Flavour(kf_K).Bar() };
+  Partial_Width_Base * phi2K0K0bar = new V_PP(m_inflav,outflavs,0.5);
+  m_channels.insert(phi2K0K0bar);
+}

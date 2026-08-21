@@ -1,0 +1,56 @@
+# collider setup - must be done, but it is irrelevant
+BEAMS:  [11, -11]
+BEAM_ENERGIES: [7., 4.]
+
+# general settings
+EVENT_TYPE: HadronDecay
+
+# specify hadron to be decayed
+DECAYER: 15
+
+ANALYSIS: Rivet
+RIVET:
+  --ignore-beams: 1
+  --analyses: [CLEO_1999_I508944,BELLE_2008_I786560,BELLE_2007_I753243,BABAR_2018_I1679886,ARGUS_1992_I335698,ARGUS_1994_I375417,CLEOIII_2005_I675005,CLEOII_1996_I415408,CLEOII_1996_I415409]
+ANALYSIS_OUTPUT: tau_2_PSPS_KS
+
+#  --analyses: [CLEO_1999_I508944,BELLE_2008_I786560]
+#ANALYSIS_OUTPUT: tau_2_pi-_pi_FF2
+#  --analyses: [BELLE_2007_I753243]
+#ANALYSIS_OUTPUT: tau_2_KS_pi-_FF1
+#  --analyses: [BABAR_2018_I1679886]
+#ANALYSIS_OUTPUT: tau_2_K-_RChiPT
+
+
+#  --analyses: [CLEOII_1996_I415409]
+#ANALYSIS_OUTPUT: tau_2_K-_eta
+
+#  --analyses: [BELLE_2006_I725750]
+#ANALYSIS_OUTPUT: tau_2_K-_phi
+
+
+#  --analyses: [BELLE_2010_I841618,BABAR_2007_S7266081]
+#ANALYSIS_OUTPUT: tau_2_hhh_FF1_2
+
+#--analyses: [BABAR_2012_I1125567]
+#ANALYSIS_OUTPUT: tau_2_pi-_KS_KS
+
+#  --analyses: [BELLE_2014_I1282136]
+#ANALYSIS_OUTPUT: tau_2_pi-_pi0__KS_KS  --- nothing implemented yet!
+
+#  --analyses: [BELLE_2010_I841618]
+#ANALYSIS_OUTPUT: tau_2_h-h-h+_KS
+
+
+HADRON_DECAYS:
+  Spin_Correlations: 1
+
+# initialise rest for Sherpa not to complain
+# model parameters
+SCALES: VAR{sqr(91.2)}
+
+PROCESSES:
+- 11 -11 -> 13 -13:
+    Order: {QCD: 0, EW: 2}
+
+

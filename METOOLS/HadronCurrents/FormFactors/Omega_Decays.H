@@ -16,6 +16,13 @@ namespace METOOLS {
   public:
     Omega_1600_Lineshape();
   };
+
+  // phi(1020), kf 333, decaying 50/50 into K+K- and K0 K0bar (Frank,
+  // private communication).
+  class Phi_1020_Lineshape : public Total_Width_Base {
+  public:
+    Phi_1020_Lineshape();
+  };
 }
 
 #endif

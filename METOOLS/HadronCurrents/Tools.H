@@ -7,6 +7,7 @@
 
 #include <map>
 #include <iostream>
+#include <cmath>
 #include "ATOOLS/Math/MyComplex.H"
 #include "ATOOLS/Phys/Flavour.H"
 #include "ATOOLS/Math/Vector.H"
@@ -33,6 +34,32 @@ namespace METOOLS {
       return fit!=end()?fit->second:def;
     }
   };
+
+  /**
+   * Shared helper for reading a magnitude/phase[rad] pair from a
+   * GeneralModel (i.e. from the same YAML key-value mechanism as
+   * FORM_FACTOR/RUNNING_WIDTH) and assembling it into a Complex
+   * mag*exp(i*phase). Used throughout FF_0_PP.C/FF_0_PPP.C for the
+   * various resonance-mixing weights (KS "gamma"/"delta", RChiPT
+   * complex mixings, etc.) so that EVERY such weight - not just the
+   * ones that historically needed a nonzero phase - is genuinely
+   * complex and overridable the same way, rather than some being
+   * silently real-only (which was the case for the original KS
+   * weights before this helper was introduced: only the magnitude was
+   * ever read, so supplying a phase override for them had no effect
+   * at all - a real, if quiet, limitation of the earlier interface).
+   * phaseDefault defaults to 0, so simply not specifying a phase key
+   * exactly reproduces plain real-weight behaviour.
+   */
+  inline Complex ReadComplexParam(const GeneralModel * p_model,
+				   const std::string & magKey,
+				   const double & magDefault,
+				   const std::string & phaseKey,
+				   const double & phaseDefault=0.) {
+    double mag   = (*p_model)(magKey,   magDefault);
+    double phase = (*p_model)(phaseKey, phaseDefault);
+    return Complex(mag*cos(phase), mag*sin(phase));
+  }
 
   /** 
    * Object containing all parameters needed to initialise a HD_ME_Base

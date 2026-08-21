@@ -140,9 +140,61 @@ HADRON_DECAYS:
 
     ######################################################
     # Two pseudoscalars
+    #
+    # FORM_FACTOR numbering (FormFactor_Base.H, ff_model enum):
+    #   100 = KS         (Kuehn-Santamaria-style running-width BW sums)
+    #   101 = GS         (Gounaris-Sakurai propagator variant of KS;
+    #                      pi pi/K K only - falls back to 100 for
+    #                      Kpi/Keta/Keta'/pi eta/pi eta')
+    #   102 = KS_CLEO    (CLEO/TAUOLA-type Kpi/Keta/Keta' tune,
+    #                      K*(892)+K*(1680); falls back to 100 for
+    #                      pi pi/K K/pi eta/pi eta')
+    #   200 = RChiPT     ("Level 1: bare RChiPT" for Kpi/Keta/Keta'
+    #                      (Jamin-Pich-Portoles); 3-resonance chiral-
+    #                      loop-unitarized form for pi pi/K K
+    #                      (Guerrero-Pich-style))
+    #   201 = RChL2012   (full Resonance Chiral Lagrangian currents,
+    #                      pi pi/K K/Kpi only)
+    #
+    # Channels implemented: pi pi (pipi_plus), K Kbar (KK_plus, via
+    # K_S/K_L), K pi (Kpi_plus, via K0/K_S/K_L and K^-pi^0), K eta
+    # (Keta_plus), K eta' (Ketaprime_plus), pi eta (etapi_plus), pi
+    # eta' (etaprimepi_plus, via EGSR16 second-class currents - KS
+    # model only, no RChiPT/RChL2012 implementation exists for these
+    # last two). K_S and K_L final states are recognised and carry an
+    # additional 1/sqrt(2) projection factor relative to the bare K0
+    # (m_isKSKL in FF_0_PP.C) - Gamma(K_S X)=Gamma(K_L X) is expected
+    # and is a good cross-check once both are run.
+    #
+    # Residual mixing-weight parameters ("gamma"/"delta" resonance
+    # mixing, i.e. the excited-resonance weight(s) on top of the
+    # leading pole) can be overridden directly in this file, the same
+    # way FORM_FACTOR/RUNNING_WIDTH already are - just add a matching
+    # key inside the same J2 block. Every one is read as a
+    # magnitude/phase[rad] pair and assembled into a genuine complex
+    # number (mag*exp(i*phase)); omitting the "*Phase_*" key defaults
+    # its phase to 0 (i.e. a plain real weight). Naming convention,
+    # uniform across every channel and model:
+    #   {gamma,delta}{Mag,Phase}_{channel}_{model}
+    # where channel in {pipi, KK, Kpi, Keta, Ketaprime} and model in
+    # {KS, GS, KSCLEO, RChiPT, RChL2012}. "gamma" is always the weight
+    # of the first excited resonance (rho(1450) or K*(1410)/K*(1680)),
+    # "delta" (where it exists) the second (rho(1700)) - Kpi/Keta/
+    # Keta' channels only ever have one excited resonance, so no
+    # "delta*" parameters exist for them. pi eta/pi eta' (KS only)
+    # deliberately reuse the pipi_plus KS names (gammaMag_pipi_KS etc,
+    # not their own) - EGSR16 states this is literally the SAME
+    # normalized rho tower as pipi, not just a similar one.
+    #
+    # The illustrative overrides below reproduce the code's own
+    # current defaults exactly (so adding them changes nothing
+    # numerically) - edit the values, or delete the lines you don't
+    # want to override.
     ######################################################
+
+    ##### pi pi #####
       -211,111,16:
-        BR: [1., 0.] # [0.255, 0.255]
+        BR: [0.25, 0.] # [0.255, 0.255]
         ME:
           - Current_ME:
               J1:
@@ -153,11 +205,356 @@ HADRON_DECAYS:
               J2:
                 Type: VA_0_PiPi
                 Indices: [2, 1]
-                RUNNING_WIDTH: 2
-                FORM_FACTOR: 1
+                RUNNING_WIDTH: 1
+                FORM_FACTOR: 200
+                # RChiPT pipi_plus (Guerrero-Pich-style, 3-resonance
+                # chiral-loop-unitarized form) - defaults as fitted.
+                # NOTE: this entry previously had FORM_FACTOR: 100
+                # (KS) while still carrying these RChiPT-only
+                # parameter names - since the KS branch reads
+                # gammaMag_pipi_KS/deltaMag_pipi_KS instead, those
+                # overrides were silently having no effect. Fixed back
+                # to 200 here so the FORM_FACTOR and the parameters
+                # actually match.
+                gammaMag_pipi_RChiPT: -0.15
+                gammaPhase_pipi_RChiPT: -0.36
+                deltaMag_pipi_RChiPT: 0.12
+                deltaPhase_pipi_RChiPT: -0.02
         PhaseSpace:
           - Dalitz_rho(770)+_12:
               Weight: 1.0
         IntResults: [5.372e-13, 2.151e-15, 5.134e-12]
 
+    ##### K pi (three physical final states: K^-pi^0, K0bar pi^- via
+    #####       K_S and K_L) #####
+      -321,111,16:
+        BR: [0.0, 0.] # [0.0045, 0.0045]
+        ME:
+          - Current_ME:
+              J1:
+                Type: VA_F_F
+                Indices: [3, 0]
+                v: 1.
+                a: -1.
+              J2:
+                Type: VA_0_PiPi
+                Indices: [2, 1]
+                RUNNING_WIDTH: 1
+                FORM_FACTOR: 100
+                # K^- pi^0: Kpi_plus, KS (FM95) tune:
+                gammaMag_Kpi_KS: -0.135
+                gammaPhase_Kpi_KS: 0.
+        IntResults: [1.13272e-14, 1.13236e-17, 7.01494e-13]
 
+      310,-211,16:
+        BR: [0.25, 0.] # [0.0042, 0.0042]
+        ME:
+          - Current_ME:
+              J1:
+                Type: VA_F_F
+                Indices: [3, 0]
+                v: 1.
+                a: -1.
+              J2:
+                Type: VA_0_PiPi
+                Indices: [2, 1]
+                RUNNING_WIDTH: 1
+                FORM_FACTOR: 200
+                # K_S pi^-: recognised as Kpi_plus (K_S/K_L handled).
+                # "Level 1: bare RChiPT" (Jamin-Pich-Portoles) two-
+                # resonance form - real gamma by default (phase 0),
+                # masses default to the particle database unless
+                # overridden here (see MKst_RChiPT/MKstp_RChiPT):
+                gammaMag_Kpi_RChiPT: -0.034
+                gammaPhase_Kpi_RChiPT: 0.
+        IntResults: [2.27495e-14, 2.27443e-17, 1.40627e-12]
+
+      -211,130,16:
+        BR: [0., 0.] # [0.0042, 0.0042]
+        ME:
+          - Current_ME:
+              J1:
+                Type: VA_F_F
+                Indices: [3, 0]
+                v: 1.
+                a: -1.
+              J2:
+                Type: VA_0_PiPi
+                Indices: [1, 2]
+                RUNNING_WIDTH: 1
+                FORM_FACTOR: 100
+                # pi^- K_L: Kpi_plus, KS (FM95) tune. Gamma(K_S pi^-)
+                # should equal Gamma(K_L pi^-) - compare against the
+                # 310,-211,16 entry above once both are run (that one
+                # uses RChiPT rather than KS, so an exact numerical
+                # match additionally requires setting FORM_FACTOR to
+                # the same value in both, or comparing rates computed
+                # under two independently-consistent models).
+                gammaMag_Kpi_KS: -0.135
+                gammaPhase_Kpi_KS: 0.
+        IntResults: [2.27265e-14, 2.27208e-17, 1.4063e-12]
+
+    ##### K Kbar (two physical final states: K^- K_S, K^- K_L) #####
+      -321,310,16:
+        BR: [0.25, 0.] # [0.0007, 0.0007]
+        ME:
+          - Current_ME:
+              J1:
+                Type: VA_F_F
+                Indices: [3, 0]
+                v: 1.
+                a: -1.
+              J2:
+                Type: VA_0_PiPi
+                Indices: [2, 1]
+                RUNNING_WIDTH: 1
+                FORM_FACTOR: 200
+                # K^- K_S: recognised as KK_plus (K_S/K_L now handled -
+                # see the m_isKSKL fix). RChiPT KK_plus mixing:
+                gammaMag_KK_RChiPT: -0.15
+                gammaPhase_KK_RChiPT: -1.88
+                deltaMag_KK_RChiPT: 0.
+                deltaPhase_KK_RChiPT: 0.
+        IntResults: [2.123e-15, 7.341e-18, 1.111e-14]
+
+      -321,130,16:
+        BR: [0.0, 0.]
+        ME:
+          - Current_ME:
+              J1:
+                Type: VA_F_F
+                Indices: [3, 0]
+                v: 1.
+                a: -1.
+              J2:
+                Type: VA_0_PiPi
+                Indices: [2, 1]
+                RUNNING_WIDTH: 1
+                FORM_FACTOR: 200
+                # K^- K_L: recognised as KK_plus (K_S/K_L handled).
+                # Deliberately given the SAME RChiPT model/parameters
+                # as the K^- K_S entry above (rather than e.g. KS) so
+                # the two can be directly compared as a Gamma(K_S X)=
+                # Gamma(K_L X) consistency check.
+                gammaMag_KK_RChiPT: -0.15
+                gammaPhase_KK_RChiPT: -1.88
+                deltaMag_KK_RChiPT: 0.
+                deltaPhase_KK_RChiPT: 0.
+
+    ##### K eta #####
+      -321,221,16:
+        BR: [0.0, 0.]
+        ME:
+          - Current_ME:
+              J1:
+                Type: VA_F_F
+                Indices: [3, 0]
+                v: 1.
+                a: -1.
+              J2:
+                Type: VA_0_PiPi
+                Indices: [2, 1]
+                RUNNING_WIDTH: 1
+                FORM_FACTOR: 100
+                # K^- eta: Keta_plus. No genuine original KS Keta
+                # model exists (see the cross-check note) - this is a
+                # KS-STYLE extension reusing the Kpi K*(892)+K*(1410)
+                # tower, with its own beta_K* and an eta-eta' mixing
+                # normalisation N_Keta (currently a placeholder = 1;
+                # FIXME - supply the mixing angle you want used, e.g.
+                # theta_P=-13.3+-0.5deg octet-singlet or
+                # phi_P=41.4+-0.5deg quark-flavour, from the note's
+                # Keta parameter table).
+                gammaMag_Keta_KS: -0.135
+                gammaPhase_Keta_KS: 0.
+                N_Keta: 1.
+
+    ##### K eta' #####
+      -321,331,16:
+        BR: [0.0, 0.]
+        ME:
+          - Current_ME:
+              J1:
+                Type: VA_F_F
+                Indices: [3, 0]
+                v: 1.
+                a: -1.
+              J2:
+                Type: VA_0_PiPi
+                Indices: [2, 1]
+                RUNNING_WIDTH: 1
+                FORM_FACTOR: 200
+                # K^- eta': Ketaprime_plus. "Level 1: bare RChiPT"
+                # (Jamin-Pich-Portoles): the note states the SAME
+                # K*(892)+K*(1410) two-resonance vector current governs
+                # Kpi, Keta AND Keta' (up to channel-specific
+                # thresholds in the running widths, which stay
+                # Kpi-dominated per the note - same p_GKst/p_GKstp as
+                # the Kpi/Keta entries above, not separately rebuilt).
+                # The "Combined 2014" fit quoted in the note is in fact
+                # a JOINT Kpi-Keta fit, so these defaults are identical
+                # to Kpi_plus's own RChiPT defaults - own parameter/
+                # normalisation names per channel in case a dedicated
+                # fit ever supersedes the joint one. This is the
+                # smallest/least-established of these branching
+                # fractions (PDG only quotes an upper limit, no
+                # established spectrum - see the note's summary table).
+                gammaMag_Ketaprime_RChiPT: -0.034
+                gammaPhase_Ketaprime_RChiPT: 0.
+                N_Ketaprime: 1.
+
+    ##### pi eta #####
+      -211,221,16:
+        BR: [0.0, 0.]
+        ME:
+          - Current_ME:
+              J1:
+                Type: VA_F_F
+                Indices: [3, 0]
+                v: 1.
+                a: -1.
+              J2:
+                Type: VA_0_PiPi
+                Indices: [2, 1]
+                RUNNING_WIDTH: 1
+                FORM_FACTOR: 100
+                # pi^- eta: etapi_plus. EGSR16 (arXiv:1601.03989)
+                # second-class current - normalized vector form factor
+                # is IDENTICAL to pipi_plus's (same rho tower, deliberately
+                # reusing its gammaMag_pipi_KS/deltaMag_pipi_KS names,
+                # not separate ones), times the isospin-breaking mixing
+                # eps_pieta below. Only ff_model::KS is implemented (no
+                # RChiPT/RChL2012 for this channel) - other FORM_FACTOR
+                # values fall back to this constant normalisation.
+                eps_pieta: 0.017
+
+    ##### pi eta' #####
+      -211,331,16:
+        BR: [0.0, 0.]
+        ME:
+          - Current_ME:
+              J1:
+                Type: VA_F_F
+                Indices: [3, 0]
+                v: 1.
+                a: -1.
+              J2:
+                Type: VA_0_PiPi
+                Indices: [2, 1]
+                RUNNING_WIDTH: 1
+                FORM_FACTOR: 100
+                # pi^- eta': etaprimepi_plus. Same EGSR16 second-class
+                # current as pi^- eta above, smaller mixing factor.
+                # Only ff_model::KS is implemented here either.
+                eps_pietaprime: 0.004
+
+    ######################################################
+    # Three pseudoscalars
+    #
+    # FIXME/IMPORTANT: the three channels below were still using
+    # FORM_FACTOR: 101, which meant "KS" under the OLD (pre-this-
+    # session) numbering - but 101 is now GS under the renumbered
+    # scheme, and FF_0_PPP_Base::operator() has NO case for GS at all
+    # (that model only exists for the two-meson rho/K* towers). Left
+    # as 101, these three channels would silently fall through to the
+    # flat constant fallback instead of the KS 3pi physics they were
+    # presumably meant to use - changed to 100 (the new KS number)
+    # below to restore the original intent. We have NOT yet applied
+    # the FF_0_PP.C-style refactor (merged Construct(), Flavour-based
+    # masses, unified gamma/delta nomenclature, family-fallback) to
+    # FF_0_PPP.C, so no other nomenclature changes apply here yet -
+    # that's the next piece of work.
+    ######################################################
+      -211,111,111,16:
+        BR: [0.0, 0.] # [0.0917, 0.0917]
+        ME:
+          - Current_ME:
+              J1:
+                Type: VA_F_F
+                Indices: [4, 0]
+                v: 1.
+                a: -1.
+              J2:
+                Type: VA_0_PPP
+                Indices: [3, 2, 1]
+                RUNNING_WIDTH: 1
+                FORM_FACTOR: 100
+        PhaseSpace:
+          - TwoResonances_a(1)(1260)+_2_rho(770)+_13:
+              Weight: 0.5
+          - TwoResonances_a(1)(1260)+_3_rho(770)+_12:
+              Weight: 0.5
+        IntResults: [9.21791e-14, 3.5194e-17, 4.36085e-12]
+
+      211,-211,-211,16:
+        BR: [0.0, 0.] # [0.0932, 0.0932]
+        ME:
+          - Current_ME:
+              J1:
+                Type: VA_F_F
+                Indices: [4, 0]
+                v: 1.
+                a: -1.
+              J2:
+                Type: VA_0_PPP
+                Indices: [1, 2, 3]
+                RUNNING_WIDTH: 1
+                FORM_FACTOR: 100
+        IntResults: [9.02993e-14, 9.02826e-17, 1.79599e-11]
+
+      321,-321,-211,16:
+        BR: [0.0, 0.] # [0.0932, 0.0932]
+        ME:
+          - Current_ME:
+              J1:
+                Type: VA_F_F
+                Indices: [4, 0]
+                v: 1.
+                a: -1.
+              J2:
+                Type: VA_0_PPP
+                Indices: [1, 2, 3]
+                RUNNING_WIDTH: 1
+                FORM_FACTOR: 100
+        IntResults: [9.02993e-14, 9.02826e-17, 1.79599e-11]
+
+    221:
+      22,22:
+        BR: [0.3931, 0.002]
+        Origin: PDG
+        IntResults: [0.0727, 0, 0.07958]
+
+      111,111,111:
+        BR: [0.3257, 0.0023]
+        Origin: PDG
+        IntResults: [8.113e-07, 2.738e-09, 1.288e-06]
+
+      111,22,22:
+        BR: [0.00027, 5e-05]
+        Origin: PDG
+        IntResults: [4.522e-05, 1.225e-07, 6.252e-05]
+
+      211,-211,111:
+        BR: [0.2274, 0.0028]
+        Origin: PDG
+        IntResults: [4.303e-06, 1.472e-08, 6.896e-06]
+
+      211,-211,22:
+        BR: [0.046, 0.0016]
+        Origin: PDG
+        IntResults: [2.364e-05, 9.868e-08, 4.776e-05]
+
+      211,-211,11,-11:
+        BR: [0.000268, 1.1e-05]
+        Origin: PDG
+        IntResults: [4.99562e-09, 4.9943e-12, 2.1593e-08]
+
+      22,11,-11:
+        BR: [0.007, 0.0008]
+        Origin: PDG
+        IntResults: [0.0002758, 7.738e-10, 0.0003019]
+
+      22,13,-13:
+        BR: [0.00031, 0.0004]
+        Origin: PDG
+        IntResults: [0.000147, 4.464e-07, 0.0002376]

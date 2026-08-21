@@ -1,5 +1,6 @@
 #include "METOOLS/HadronCurrents/FormFactors/Kstar_Decays.H"
 #include "METOOLS/HadronCurrents/FormFactors/Vector_Decays.H"
+#include "METOOLS/HadronCurrents/FormFactors/Scalar_Decays.H"
 #include "METOOLS/HadronCurrents/FormFactors/Line_Shapes.H"
 
 
@@ -144,5 +145,126 @@ Kstar_1410_plus_Lineshape::Kstar_1410_plus_Lineshape() :
   outflavs = { Kstar_0, pi_plus };
   Partial_Width_Base * K_star2piKstar = new V_PP(m_inflav,outflavs,0.467);
   m_channels.insert(K_star2piKstar);
+}
+
+///////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////
+//
+// K*_0(1430), scalar kaon resonance, kf 10311 (neutral)/10321 (charged).
+// Decays 100% into K pi (Frank, private communication), split by
+// isospin the same 50/50 way as K*(892)'s Kpi channel above. Uses the
+// scalar S_PP partial width (Scalar_Decays.H/.C), already exercised
+// for f_0(500) -> pi pi in F0_Decays.C.
+//
+///////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////
+
+Kstar0_1430_0_Lineshape::Kstar0_1430_0_Lineshape() :
+  Total_Width_Base(Flavour(kf_K_0_star_1430)) {
+  vector<Flavour> outflavs;
+  outflavs = { Flavour(kf_K_plus), Flavour(kf_pi_plus).Bar() };
+  Partial_Width_Base * Kst02Kpi = new S_PP(m_inflav,outflavs,0.5);
+  m_channels.insert(Kst02Kpi);
+  outflavs = { Flavour(kf_K), Flavour(kf_pi) };
+  Partial_Width_Base * Kst02piK = new S_PP(m_inflav,outflavs,0.5);
+  m_channels.insert(Kst02piK);
+}
+
+Kstar0_1430_plus_Lineshape::Kstar0_1430_plus_Lineshape() :
+  Total_Width_Base(Flavour(kf_K_0_star_1430_plus)) {
+  vector<Flavour> outflavs;
+  outflavs = { Flavour(kf_K), Flavour(kf_pi_plus) };
+  Partial_Width_Base * Kst02Kpi = new S_PP(m_inflav,outflavs,0.5);
+  m_channels.insert(Kst02Kpi);
+  outflavs = { Flavour(kf_K_plus), Flavour(kf_pi) };
+  Partial_Width_Base * Kst02piK = new S_PP(m_inflav,outflavs,0.5);
+  m_channels.insert(Kst02piK);
+}
+
+///////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////
+//
+// K*(1680), vector kaon resonance, kf 30313 (neutral)/30323 (charged).
+// Decays in equal 1/3 parts to K pi, K rho(770), K*(892) pi (Frank,
+// private communication). rho(770) and K*(892) are treated as
+// on-shell (V_VP - fixed daughter masses, no lineshape integration),
+// the same treatment used for K1(1270)/K1(1400) -> rho K / K* pi in
+// K1_Decays.C. Each of the three channels is further split 50/50 by
+// isospin, following the same pattern as K*(892)/K*(1410)/K*_0(1430)
+// above.
+//
+///////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////
+
+Kstar_1680_0_Lineshape::Kstar_1680_0_Lineshape() :
+  Total_Width_Base(Flavour(kf_K_star_1680)) {
+  Flavour pi_0(kf_pi), pi_plus(kf_pi_plus), pi_minus(pi_plus.Bar());
+  Flavour K_0(kf_K), K_plus(kf_K_plus);
+  Flavour rho_0(kf_rho_770), rho_plus(kf_rho_770_plus), rho_minus(rho_plus.Bar());
+  Flavour Kstar_0(kf_K_star_892), Kstar_plus(kf_K_star_892_plus);
+  vector<Flavour> outflavs;
+  ///////////////////////////////////////////////////////////////////////////////////
+  // Channel: K pi, BR = 1/3, split 50/50 by isospin
+  ///////////////////////////////////////////////////////////////////////////////////
+  outflavs = { K_plus, pi_minus };
+  Partial_Width_Base * Kst2Kpi = new V_PP(m_inflav,outflavs,1./6.);
+  m_channels.insert(Kst2Kpi);
+  outflavs = { K_0, pi_0 };
+  Partial_Width_Base * Kst2piK = new V_PP(m_inflav,outflavs,1./6.);
+  m_channels.insert(Kst2piK);
+  ///////////////////////////////////////////////////////////////////////////////////
+  // Channel: K rho(770), BR = 1/3, split 50/50 by isospin
+  ///////////////////////////////////////////////////////////////////////////////////
+  outflavs = { K_plus, rho_minus };
+  Partial_Width_Base * Kst2Krho = new V_VP(m_inflav,outflavs,1./6.);
+  m_channels.insert(Kst2Krho);
+  outflavs = { K_0, rho_0 };
+  Partial_Width_Base * Kst2piKrho = new V_VP(m_inflav,outflavs,1./6.);
+  m_channels.insert(Kst2piKrho);
+  ///////////////////////////////////////////////////////////////////////////////////
+  // Channel: K^*(892) pi, BR = 1/3, split 50/50 by isospin
+  ///////////////////////////////////////////////////////////////////////////////////
+  outflavs = { Kstar_plus, pi_minus };
+  Partial_Width_Base * Kst2Kstarpi = new V_VP(m_inflav,outflavs,1./6.);
+  m_channels.insert(Kst2Kstarpi);
+  outflavs = { Kstar_0, pi_0 };
+  Partial_Width_Base * Kst2piKstar = new V_VP(m_inflav,outflavs,1./6.);
+  m_channels.insert(Kst2piKstar);
+}
+
+Kstar_1680_plus_Lineshape::Kstar_1680_plus_Lineshape() :
+  Total_Width_Base(Flavour(kf_K_star_1680_plus)) {
+  Flavour pi_0(kf_pi), pi_plus(kf_pi_plus), pi_minus(pi_plus.Bar());
+  Flavour K_0(kf_K), K_plus(kf_K_plus);
+  Flavour rho_0(kf_rho_770), rho_plus(kf_rho_770_plus);
+  Flavour Kstar_0(kf_K_star_892), Kstar_plus(kf_K_star_892_plus);
+  vector<Flavour> outflavs;
+  ///////////////////////////////////////////////////////////////////////////////////
+  // Channel: K pi, BR = 1/3, split 50/50 by isospin
+  ///////////////////////////////////////////////////////////////////////////////////
+  outflavs = { K_0, pi_plus };
+  Partial_Width_Base * Kst2Kpi = new V_PP(m_inflav,outflavs,1./6.);
+  m_channels.insert(Kst2Kpi);
+  outflavs = { K_plus, pi_0 };
+  Partial_Width_Base * Kst2piK = new V_PP(m_inflav,outflavs,1./6.);
+  m_channels.insert(Kst2piK);
+  ///////////////////////////////////////////////////////////////////////////////////
+  // Channel: K rho(770), BR = 1/3, split 50/50 by isospin
+  ///////////////////////////////////////////////////////////////////////////////////
+  outflavs = { K_0, rho_plus };
+  Partial_Width_Base * Kst2Krho = new V_VP(m_inflav,outflavs,1./6.);
+  m_channels.insert(Kst2Krho);
+  outflavs = { K_plus, rho_0 };
+  Partial_Width_Base * Kst2piKrho = new V_VP(m_inflav,outflavs,1./6.);
+  m_channels.insert(Kst2piKrho);
+  ///////////////////////////////////////////////////////////////////////////////////
+  // Channel: K^*(892) pi, BR = 1/3, split 50/50 by isospin
+  ///////////////////////////////////////////////////////////////////////////////////
+  outflavs = { Kstar_0, pi_plus };
+  Partial_Width_Base * Kst2Kstarpi = new V_VP(m_inflav,outflavs,1./6.);
+  m_channels.insert(Kst2Kstarpi);
+  outflavs = { Kstar_plus, pi_0 };
+  Partial_Width_Base * Kst2piKstar = new V_VP(m_inflav,outflavs,1./6.);
+  m_channels.insert(Kst2piKstar);
 }
 

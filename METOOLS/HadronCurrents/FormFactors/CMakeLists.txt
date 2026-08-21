@@ -8,9 +8,13 @@ set(FormFactors_SOURCES Line_Shapes.C
                         Omega_Decays.C
                         A1_Decays.C
                         Kstar_Decays.C
+                        K1_Decays.C
+                        A0_Decays.C
                         FormFactor_Base.C
 			FF_0_PP.C
 			FF_0_PPP.C
+			FF_0_DD.C
+			RChL_Functions.C
 		      )
 set(FormFactors_HEADERS Line_Shapes.H
                         Resonance_Base.H
@@ -22,9 +26,13 @@ set(FormFactors_HEADERS Line_Shapes.H
                         Omega_Decays.H
                         A1_Decays.H
                         Kstar_Decays.H
+                        K1_Decays.H
+                        A0_Decays.H
                         FormFactor_Base.H
 			FF_0_PP.H
 			FF_0_PPP.H
+			FF_0_DD.H
+			RChL_Functions.H
 		      )
 
 

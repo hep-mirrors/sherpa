@@ -16,10 +16,62 @@
 namespace METOOLS {
   enum class ff_model {
     none      = 0,
-    KS        = 1,
-    RChiPT    = 2,
+    point     = 1,
+    dipole    = 2,
+    // --- 100s: Kuehn-Santamaria family (coherent running-width
+    //     Breit-Wigner sums) - consecutive numbering, one entry per
+    //     propagator/lineshape variant. ---
+    KS        = 100,
+    // Gounaris-Sakurai vector-meson propagator variant of KS, cf.
+    // arXiv:1509.09140 Eq.(2.2), used e.g. by Belle/ALEPH/CLEO. See
+    // Propagator.[C,H] (resonance_type::GS) for the actual math. This
+    // is a KS-family model (same resonance content/weights, different
+    // propagator functional form), hence grouped in the 100s rather
+    // than kept as an unrelated standalone number.
+    GS        = 101,
+    // Second, distinct "CLEO/TAUOLA-type" Kpi/Keta resonance content:
+    // K*(892)+w*K*(1680) (vs. KS=100's FM95 K*(892)+beta*K*(1410)) -
+    // previously toggled via a hidden "Kpi_CLEO_tune"/"Keta_CLEO_tune"
+    // model parameter under the SAME model number (100); now its own
+    // selectable family member, per request. Only affects Kpi_plus/
+    // Keta_plus for now - requesting this for pipi_plus/KK_plus (which
+    // have no such second tune implemented) falls back to KS=100 (see
+    // the family-fallback policy below).
+    KS_CLEO   = 102,
+    // --- 200s: Resonance Chiral Theory / chiral-resonance family
+    //     (tree-level exchange, full RChL currents, and dispersive
+    //     refinements built on RChL input) - consecutive numbering. ---
+    RChiPT    = 200,
+    // Full Resonance Chiral Lagrangian currents of arXiv:1203.3955
+    // (base two-/three-meson currents) with the sigma-meson extension
+    // of arXiv:1310.1053 for the 3pi channel. See RChL_Functions.[C,H]
+    // for the shared building blocks, and FF_0_PP.C / FF_0_PPP.C for
+    // the per-channel assembly. Select via FORM_FACTOR = 201.
+    RChL2012  = 201,
+    // Combined dispersive(low-s)/modified-RChL(high-s) parametrization
+    // of arXiv:1509.09140 Eq.(2.3)ff (Gomez Dumm & Roig). NOT YET
+    // IMPLEMENTED: the low-s branch needs a numerical dispersion
+    // integral over the pi pi P-wave phase shift, and the high-s
+    // branch needs the two-meson loop functions B22^pi, B22^K, neither
+    // of which exist in this code yet. Selecting this currently throws
+    // (see FF_0_PP_Base::operator()). Kept as an enum value so callers/
+    // config files can already reference it and get a clear error
+    // rather than silently falling through to ff_model::unknown.
+    combRChL  = 202,
     unknown   = 999
   };
+
+  // Family-fallback policy (request #2, see FF_0_PP_Base/FF_0_PPP_Base
+  // ::operator()): if the SPECIFICALLY requested model has no
+  // dedicated construction for a given channel, fall back to the
+  // "family base" model (KS=100 for any 100s model, RChiPT=200 for
+  // any 200s model) if THAT is implemented for the channel, and only
+  // fall back further to the constant (isospin/CKM-only) form factor
+  // if even the family base isn't available either. KS=100 and
+  // RChiPT=200 themselves have no further family fallback (they ARE
+  // the base).
+  inline bool IsKSFamily(const ff_model & m)     { return int(m)>=100 && int(m)<200; }
+  inline bool IsRChiPTFamily(const ff_model & m) { return int(m)>=200 && int(m)<300; }
 
   class GeneralModel;
   
@@ -28,15 +80,18 @@ namespace METOOLS {
     const ATOOLS::Flavour_Vector & m_flavs;
     std::vector<double>            m_masses, m_masses2;
     std::vector<int>               m_pi;
+    std::map<std::string,double>   m_parameterMap;
     std::string                    m_name;
     GeneralModel                 * p_model;
 
     FF_Parameters(const ff_model & ffmodel,
 		  const ATOOLS::Flavour_Vector & flavs,
 		  const std::vector<int> & decayindices,
+		  std::map<std::string,double> & parameterMap,
 		  const std::string & name,
 		  GeneralModel * model=NULL) :
-      m_ffmodel(ffmodel), m_flavs(flavs), m_pi(decayindices), m_name(name),
+      m_ffmodel(ffmodel), m_flavs(flavs), m_pi(decayindices),
+      m_parameterMap(parameterMap), m_name(name),
       p_model(model)
     {
       m_masses.resize(m_flavs.size());

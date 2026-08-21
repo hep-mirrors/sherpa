@@ -1,10 +1,16 @@
 set(HadronCurrents_SOURCES Current_Base.C
 			   VA_0_PiPi.C
 			   VA_0_PiPiPi.C
-			   Tools.C)
+			   VA_0_KKPi.C
+			   VA_0_KPiK.C
+			   VA_0_KPiPi.C
+			   Tools.C )
 set(HadronCurrents_HEADERS Current_Base.H
 			   VA_0_PiPi.H
 			   VA_0_PiPiPi.H
+			   VA_0_KKPi.H
+			   VA_0_KPiK.H
+			   VA_0_KPiPi.H
 			   Tools.H )
 
 
