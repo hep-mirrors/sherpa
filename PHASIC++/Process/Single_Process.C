@@ -32,7 +32,7 @@ using namespace MODEL;
 using namespace ATOOLS;
 
 Single_Process::Single_Process():
-  m_lastxs(0.0), m_lastbxs(0.0), m_dsweight(1.0), m_lastflux(0.0),
+  m_lastbxs(0.0), m_dsweight(1.0), m_lastflux(0.0),
   m_zero(false), m_dads(true), m_pdfcts(true), m_nfconvscheme(0)
 {
   p_sub = NULL;

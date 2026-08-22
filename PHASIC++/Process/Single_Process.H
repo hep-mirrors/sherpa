@@ -14,7 +14,7 @@ namespace PHASIC {
 
   protected:
 
-    double m_lastxs, m_lastbxs, m_dsweight, m_lastflux;
+    double m_lastbxs, m_dsweight, m_lastflux;
     ATOOLS::Weights_Map m_dadswgtmap;
     bool   m_zero, m_pdfcts, m_dads;
     size_t m_nfconvscheme;
