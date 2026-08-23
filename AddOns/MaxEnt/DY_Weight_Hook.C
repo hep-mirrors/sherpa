@@ -134,21 +134,27 @@ public:
       }
     m_lnrt=log(m_rt=(l1+l2).PPerp()/(l1+l2).Mass());
     m_lndphi=log(m_dphi=M_PI-l1.DPhi(l2));
-    double beta(Beta((l1+l2).PPerp()));
+    double beta(Beta((l1+l2).PPerp())), wnom(1.0);
     msg_Debugging()<<"q_T = "<<(l1+l2).PPerp()<<", r_T = "
 		   <<m_rt<<", \\Delta\\phi = "<<m_dphi<<"\n";
-    auto me_w_info = (*blobs->FindFirst(btp::Signal_Process))
-      ["MEWeightInfo"]->Get<ME_Weight_Info*>();
     Weights_Map &wmap = (*blobs->FindFirst(btp::Signal_Process))
       ["WeightsMap"]->Get<Weights_Map>();
+    Weights_Map::const_iterator wit(wmap.find("All"));
+    if (wit==wmap.end()) THROW(fatal_error,"Variation set 'All' not found");
+    for (size_t k(0);k<wit->second.Size();++k)
+      if (wit->second.Name(k).find("Nominal")==0) {
+	wnom=wit->second[k];
+	break;
+      }
+    msg_Debugging()<<"nominal weight: "<<wnom<<"\n";
+    wit=wmap.find("Main");
+    if (wit==wmap.end()) THROW(fatal_error,"Variation set 'Main' not found");
     for (size_t i(0);i<m_calcs.size();++i) {
       double w=m_calcs[i]->Calculate()->Get<double>();
       msg_Debugging()<<m_names[i]<<": ln(w) = "<<w<<", shift = "<<m_lss[i]<<"\n";
       double svweight(1.0);
       std::string svname("None");
       if (m_vtags[i]!="") {
-	Weights_Map::const_iterator wit(wmap.find("Main"));
-	if (wit==wmap.end()) THROW(fatal_error,"Variation set 'All' not found");
 	for (size_t k(0);k<wit->second.Size();++k)
 	  if (wit->second.Name(k).find(m_vtags[i])==0) {
 	    svweight=wit->second[k];
@@ -159,11 +165,11 @@ public:
       w=beta*exp(w-m_lss[i])+(1.-beta)*svweight;
       msg_Debugging()<<m_names[i]<<": w = "<<w<<" (\\beta = "<<beta
 		     <<") <-> "<<svweight<<" ("<<svname<<")\n";
-      wmap["MaxEnt"][m_names[i]]=w;
+      wmap["MaxEnt_QCD"][m_names[i]]=w;
     }
-    Weights_Map::const_iterator wit(wmap.find("ASSOCIATED_CONTRIBUTIONS"));
+    wit=wmap.find("ASSOCIATED_CONTRIBUTIONS");
     if (wit!=wmap.end()) {
-      Weights_Map::const_iterator mit(wmap.find("MaxEnt"));
+      Weights_Map::const_iterator mit(wmap.find("MaxEnt_QCD"));
       for (size_t l(0);l<wit->second.Size();++l)
 	if (wit->second.Name(l)=="EW") {
 	  for (size_t k(1);k<mit->second.Size();++k)
