@@ -38,6 +38,14 @@ namespace METOOLS {
     // have no such second tune implemented) falls back to KS=100 (see
     // the family-fallback policy below).
     KS_CLEO   = 102,
+    // KS_CLEO's Kpipi variant, plus an added f0(500)/sigma admixture
+    // in the T_rho^(1) (pipi sub-system) tower - neither FM95 nor the
+    // CLEO K1 alternative include any scalar contribution there
+    // originally; this is a NEW, requested addition (not from a
+    // specific literature source) reusing Sherpa's own registered
+    // f0(600) running width. See F1_0_KPiPi::Construct().
+    KS_f0     = 103,
+    CLEO_f0   = 104,
     // --- 200s: Resonance Chiral Theory / chiral-resonance family
     //     (tree-level exchange, full RChL currents, and dispersive
     //     refinements built on RChL input) - consecutive numbering. ---

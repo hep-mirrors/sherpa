@@ -1,4 +1,4 @@
-#include "METOOLS/HadronCurrents/VA_0_KPiK.H"
+#include "METOOLS/HadronCurrents/VA_0_EtaPiPi.H"
 #include "ATOOLS/Phys/Flavour.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Exception.H"
@@ -10,22 +10,18 @@ using namespace std;
 
 ///////////////////////////////////////////////////////////////////////////
 //
-// KpiK isospin family (Finkemeier-Mirkes hep-ph/9503474): K^-pi^-K^+,
-// K^0pi^-K0bar, K_Spi^-K_S, K_Spi^-K_L, K_Lpi^-K_L, K^-pi^0K^0.
-//
-// Momentum/index convention: 0=q1, 1=q2, 2=q3 in FM95's own per-channel
-// labeling (see FF_0_PPP_Base::FixMode() in FF_0_PPP.C for exactly
-// which physical particle is q1/q2/q3 for each of the six final
-// states). Calc() below is IDENTICAL in structure to the (corrected)
-// VA_0_PiPiPi::Calc() - v1=(p1-p3)_T, v2=(p2-p3)_T - since that is the
-// momentum convention the FF_0_PPP.C form factors (F1_0_KPiK, FS_0_KPiK)
-// assume; see the file-header comment there for the derivation.
+// eta pi^- pi^0 / eta' pi^- pi^0 - see VA_0_EtaPiPi.H for the design
+// note. Same Calc() structure as VA_0_KPiK/VA_0_KPiPi (kept generic
+// even though F1/F2/F3 are always 0 here, for consistency with the
+// other 3-meson Current classes and in case a dedicated RChiPT current
+// with nonzero F1/F2 is ever added - see the FIXME in FF_0_PPP.C's
+// FS_0_EtaPiPi::Construct()).
 //
 ///////////////////////////////////////////////////////////////////////////
 
-VA_0_KPiK::VA_0_KPiK(const ATOOLS::Flavour_Vector& flavs,
-		      const std::vector<int>& indices,
-		      const std::string& name) :
+VA_0_EtaPiPi::VA_0_EtaPiPi(const ATOOLS::Flavour_Vector& flavs,
+			   const std::vector<int>& indices,
+			   const std::string& name) :
   Current_Base(flavs, indices, name),
   m_norm(1.),
   p_f1(NULL), p_f2(NULL), p_f3(NULL), p_fS(NULL)
@@ -37,14 +33,14 @@ VA_0_KPiK::VA_0_KPiK(const ATOOLS::Flavour_Vector& flavs,
   }
 }
 
-VA_0_KPiK::~VA_0_KPiK() {
+VA_0_EtaPiPi::~VA_0_EtaPiPi() {
   if (p_f1) { delete p_f1; p_f1 = NULL; }
   if (p_f2) { delete p_f2; p_f2 = NULL; }
   if (p_f3) { delete p_f3; p_f3 = NULL; }
   if (p_fS) { delete p_fS; p_fS = NULL; }
 }
 
-void VA_0_KPiK::Calc(const ATOOLS::Vec4D_Vector& moms, bool m_anti)
+void VA_0_EtaPiPi::Calc(const ATOOLS::Vec4D_Vector& moms, bool m_anti)
 {
   Vec4D p1    = moms[p_i[0]],  p2 = moms[p_i[1]],  p3 = moms[p_i[2]];
   Vec4D q     = p1+p2+p3,    dq13 = p1-p3,       dq23 = p2-p3;
@@ -65,38 +61,41 @@ void VA_0_KPiK::Calc(const ATOOLS::Vec4D_Vector& moms, bool m_anti)
   Insert( m_norm * (F1*v1 + F2*v2 + F3*q + FS*v4), 0);
 }
 
-void VA_0_KPiK::SetModelParameters(struct GeneralModel model) {
+void VA_0_EtaPiPi::SetModelParameters(struct GeneralModel model) {
   map<string,double> pmap;
   FF_Parameters params(ff_model(model[string("FORM_FACTOR")]),
 		       m_flavs,p_i,pmap,"",&model);
-  params.m_name = "F1_0_KPiK";
+  params.m_name = "F1_0_EtaPiPi";
   p_f1 = FF_Getter::GetObject("FF_0_PPP",params);
-  params.m_name = "F2_0_KPiK";
+  params.m_name = "F2_0_EtaPiPi";
   p_f2 = FF_Getter::GetObject("FF_0_PPP",params);
-  params.m_name = "F3_0_KPiK";
+  params.m_name = "F3_0_EtaPiPi";
   p_f3 = FF_Getter::GetObject("FF_0_PPP",params);
-  params.m_name = "FS_0_KPiK";
+  params.m_name = "FS_0_EtaPiPi";
   p_fS = FF_Getter::GetObject("FF_0_PPP",params);
 }
 
-DEFINE_CURRENT_GETTER(METOOLS::VA_0_KPiK,"VA_0_KPiK")
+DEFINE_CURRENT_GETTER(METOOLS::VA_0_EtaPiPi,"VA_0_EtaPiPi")
 
 void ATOOLS::Getter<METOOLS::Current_Base,
-		    METOOLS::ME_Parameters,METOOLS::VA_0_KPiK>::
+		    METOOLS::ME_Parameters,METOOLS::VA_0_EtaPiPi>::
 PrintInfo(std::ostream &st,const size_t width) const {
-  st<<"Example: $ 0 \\rightarrow K \\pi K $ (KpiK isospin family) \n\n"
-    <<"Order: 0 = q1, 1 = q2, 2 = q3 in the per-channel convention of \n"
-    <<"Finkemeier & Mirkes, hep-ph/9503474 - see FF_0_PPP.C's FixMode() \n"
-    <<"comments for which physical particle is q1/q2/q3 in each of: \n"
-    <<"  K^- pi^- K^+,  K^0 pi^- K0bar,  K_S pi^- K_S, \n"
-    <<"  K_S pi^- K_L,  K_L pi^- K_L,  K^- pi^0 K^0 \n\n"
+  st<<"Example: $ 0 \\rightarrow \\eta \\pi \\pi $ (eta(') pi pi family) \n\n"
+    <<"Order: 0 = eta (or eta'), 1 = pi^-, 2 = pi^0 - this exact order \n"
+    <<"is required (not interchangeable): \n"
+    <<"  eta pi^- pi^0,   eta' pi^- pi^0 \n\n"
     <<"Available form factors: \n "
     <<"  \\begin{itemize} \n"
-    <<"    \\item {\\tt FORM\\_FACTOR = 100 :} Kuehn-Santamaria-style \n"
-    <<"      (Finkemeier-Mirkes hep-ph/9503474, Tabs.I/II) \n"
+    <<"    \\item {\\tt FORM\\_FACTOR = 100 :} old TAUOLA/VMD current \n"
+    <<"      (anomalous vector form factor only - G-parity forbids the \n"
+    <<"      axial/scalar pieces in the isospin limit) \n"
     <<"  \\end{itemize} \n"
-    <<"Status: needs K1(1270)/K1(1400)/phi(1020)/K*(1714) lineshapes - \n"
-    <<"see FF_0_PPP.C for details on what is missing. \n\n"
-    <<"Reference: https://arxiv.org/abs/hep-ph/9503474 \n"
+    <<"Status: overall WZW-anomaly/eta-eta' mixing normalisation \n"
+    <<"(N_etapipi/N_etaprimepipi) is a placeholder - see FS_0_EtaPiPi's \n"
+    <<"FIXME comment in FF_0_PPP.C. No dedicated RChiPT current \n"
+    <<"(Gomez Dumm & Roig) is implemented - falls back to the constant \n"
+    <<"form factor for FORM_FACTOR != 100. \n\n"
+    <<"Reference: tau_two_meson_currents_KS_RChiT.tex, Sec. \n"
+    <<"'eta pi pi and eta' pi pi' \n"
     <<std::endl;
 }

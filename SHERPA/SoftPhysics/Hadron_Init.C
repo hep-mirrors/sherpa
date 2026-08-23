@@ -120,8 +120,8 @@ void Hadron_Init::Init() {
   InitHadron(kf_b_1_1235,      false,1.2295,0.65,0.142,0,2,false,1,0, "b(1)(1235)","b_{1}(1235)");
   InitHadron(kf_b_1_1235_plus, false,1.2295,0.65,0.142,3,2,true,1,0,  "b(1)(1235)+","b_{1}^{+}(1235)");
   InitHadron(kf_h_1_1170,      false,1.17,0.65,0.36,0,2,false,1,0,    "h(1)(1170)","h_{1}(1170)");
-  InitHadron(kf_K_1_1270,      false,1.272,0.65,0.09,0,2,true,1,0,    "K(1)(1270)","K_{1}(1270)");
-  InitHadron(kf_K_1_1270_plus, false,1.272,0.65,0.09,3,2,true,1,0,    "K(1)(1270)+","K_{1}^{+}(1270)");
+  InitHadron(kf_K_1_1270,      false,1.272,0.65,0.20,0,2,true,1,0,    "K(1)(1270)","K_{1}(1270)");
+  InitHadron(kf_K_1_1270_plus, false,1.272,0.65,0.20,3,2,true,1,0,    "K(1)(1270)+","K_{1}^{+}(1270)");
   InitHadron(kf_h_1_1380,      false,1.386,0.65,0.091,0,2,false,1,0,  "h(1)(1380)","h_{1}(1380)");
   InitHadron(kf_D_1_2420_plus, false,2.4232,0.65,0.025,3,2,true,1,0,  "D(1)(2420)+","D_{1}^{+}(2420)");
   InitHadron(kf_D_1_2420,      false,2.4208,0.65,0.0317,0,2,true,1,0, "D(1)(2420)","D_{1}(2420)");
@@ -133,8 +133,10 @@ void Hadron_Init::Init() {
   InitHadron(kf_B_c1,          false,7.3,0.65,0.05,3,2,true,1,0,      "B(c1)(L)+","B_{c1}^{+}(L)");
   InitHadron(kf_h_b1,          false,9.875,0.65,0.01,0,2,false,1,0,   "h(b)(1P)","h_{b}(1P)");
   // Vectors         ##################################################################################
-  InitHadron(kf_a_1_1260,     false,1.23,0.65,0.400,0,2,false,1,0,     "a(1)(1260)","a_{1}(1260)");
-  InitHadron(kf_a_1_1260_plus,false,1.23,0.65,0.400,3,2,true,1,0,      "a(1)(1260)+","a_{1}^{+}(1260)");
+  // Note on the a1(1260)'s: their fit of their mass in the three-pion and similar channels in
+  //                         tau decays suggest a mass different from the PDG value at 1.1 GeV
+  InitHadron(kf_a_1_1260,     false,1.251,0.65,0.475,0,2,false,1,0,     "a(1)(1260)","a_{1}(1260)");
+  InitHadron(kf_a_1_1260_plus,false,1.251,0.65,0.475,3,2,true,1,0,      "a(1)(1260)+","a_{1}^{+}(1260)");
   InitHadron(kf_f_1_1285,     false,1.2819,0.65,0.024,0,2,false,1,0,   "f(1)(1285)","f_{1}(1285)");
   InitHadron(kf_K_1_1400,     false,1.402,0.65,0.174,0,2,true,1,0,     "K(1)(1400)","K_{1}(1400)");
   InitHadron(kf_K_1_1400_plus,false,1.402,0.65,0.174,3,2,true,1,0,     "K(1)(1400)+","K_{1}^{+}(1400)");
@@ -461,6 +463,8 @@ void Hadron_Init::Init() {
   InitHadron(5509,false,1000000.0,1.e6,1000,0,0,true,0,0,"jennifer","jennifer");
   InitHadron(6505,false,1000000.0,1.e6,1000,0,0,true,0,0,"hendrik","hendrik");
   InitHadron(6506,false,1000000.0,1.e6,1000,0,0,true,0,0,"jan","jan");
+  InitHadron(6507,false,1000000.0,1.e6,1000,0,0,true,0,0,"davide","davide");
+  InitHadron(6508,false,1000000.0,1.e6,1000,0,0,true,0,0,"holger","holger");
   // ##########################################################################
   // ##########################################################################
   // ##########################################################################

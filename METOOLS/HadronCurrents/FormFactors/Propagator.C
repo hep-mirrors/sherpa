@@ -246,6 +246,46 @@ const double Multiplied_Propagator::Normalised2(const double & s) {
 //
 ///////////////////////////////////////////////////////////////////////////
 
+///////////////////////////////////////////////////////////////////////////
+//
+// Diagnostic dump (request #1). Recurses into nested Summed_Propagator/
+// Multiplied_Propagator constituents (e.g. the "rho(770)+alpha*(rho x
+// omega)" combination used for pi- pi+ pi-'s rho-omega mixing term) -
+// a constituent that is ITSELF a composite propagator has no single
+// Flavour/mass of its own (Propagator_Base::Flav() falls back to
+// kf_none="no_particle" for it), so printing it as if it were a leaf
+// resonance is misleading (looks like a missing/unregistered particle
+// when the underlying physics is actually fine - confirmed by an
+// explicit review: the composite's own leaf constituents, once
+// recursed into, are properly registered). Handles three cases per
+// level: a Summed_Propagator, a Multiplied_Propagator, or a leaf
+// Propagator_Base with a real Flavour.
+//
+///////////////////////////////////////////////////////////////////////////
+
+static void DumpPropagatorEntry(Propagator_Base * p, const Complex & weight,
+				 const std::string & indent, bool haveWeight) {
+  Summed_Propagator     * sub_s = dynamic_cast<Summed_Propagator     *>(p);
+  Multiplied_Propagator  * sub_m = dynamic_cast<Multiplied_Propagator *>(p);
+  if (sub_s!=NULL || sub_m!=NULL) {
+    msg_Out()<<"###   "<<indent
+	     <<(sub_s!=NULL ? "[nested sum]" : "[nested product]");
+    if (haveWeight) msg_Out()<<", weight = "<<weight;
+    msg_Out()<<"\n";
+    map<Propagator_Base *,Complex> & sub =
+      (sub_s!=NULL ? sub_s->GetAll() : sub_m->GetAll());
+    for (map<Propagator_Base *,Complex>::iterator sit=sub.begin();
+	 sit!=sub.end();sit++) {
+      DumpPropagatorEntry(sit->first, sit->second, indent+"  ", true);
+    }
+    return;
+  }
+  msg_Out()<<"###   "<<indent<<p->Flav()<<":  M = "<<p->Mass()<<" GeV,  "
+	   <<"Gamma(M^2) = "<<p->OnShellWidth()<<" GeV";
+  if (haveWeight) msg_Out()<<",  weight = "<<weight;
+  msg_Out()<<"\n";
+}
+
 void METOOLS::DumpPropagatorStructure(const std::string & label,
 				       const int & ffmodel_id,
 				       Propagator_Base * props) {
@@ -256,17 +296,16 @@ void METOOLS::DumpPropagatorStructure(const std::string & label,
 	     <<"form factor>\n";
     return;
   }
-  Summed_Propagator * summed = dynamic_cast<Summed_Propagator *>(props);
-  if (summed!=NULL) {
-    for (map<Propagator_Base *,Complex>::iterator pit=summed->GetAll().begin();
-	 pit!=summed->GetAll().end();pit++) {
-      Propagator_Base * p = pit->first;
-      msg_Out()<<"###   "<<p->Flav()<<":  M = "<<p->Mass()<<" GeV,  "
-	       <<"Gamma(M^2) = "<<p->OnShellWidth()<<" GeV,  "
-	       <<"weight = "<<pit->second<<"\n";
+  Summed_Propagator      * summed = dynamic_cast<Summed_Propagator     *>(props);
+  Multiplied_Propagator   * mult  = dynamic_cast<Multiplied_Propagator *>(props);
+  if (summed!=NULL || mult!=NULL) {
+    map<Propagator_Base *,Complex> & top =
+      (summed!=NULL ? summed->GetAll() : mult->GetAll());
+    for (map<Propagator_Base *,Complex>::iterator pit=top.begin();
+	 pit!=top.end();pit++) {
+      DumpPropagatorEntry(pit->first, pit->second, "", true);
     }
     return;
   }
-  msg_Out()<<"###   "<<props->Flav()<<":  M = "<<props->Mass()<<" GeV,  "
-	   <<"Gamma(M^2) = "<<props->OnShellWidth()<<" GeV\n";
+  DumpPropagatorEntry(props, Complex(1.,0.), "", false);
 }

@@ -91,7 +91,8 @@ void Hadron_Decay_Channel::Initialise(Scoped_Settings s, METOOLS::GeneralModel s
     if(!AddPSChannel(name, sps))
       THROW(fatal_error, name+" is not a valid phase space channel.");
   }
-  if(Channels()->NChannels() == 0) AddPSChannel(string("Isotropic"), s["PhaseSpace"]["Isotropic"]);
+  if(Channels()->NChannels() == 0)
+    AddPSChannel(string("Isotropic"), s["PhaseSpace"]["Isotropic"]);
 
   DEBUG_INFO("processing IntResults block");
   auto results = s["IntResults"].SetDefault({-1.0}).GetItems();

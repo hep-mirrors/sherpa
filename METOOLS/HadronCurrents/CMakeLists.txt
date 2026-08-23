@@ -4,6 +4,9 @@ set(HadronCurrents_SOURCES Current_Base.C
 			   VA_0_KKPi.C
 			   VA_0_KPiK.C
 			   VA_0_KPiPi.C
+			   VA_0_EtaPiPi.C
+			   VA_0_KOmega3Pi.C
+			   VA_0_Novosibirsk4Pi.C
 			   Tools.C )
 set(HadronCurrents_HEADERS Current_Base.H
 			   VA_0_PiPi.H
@@ -11,6 +14,9 @@ set(HadronCurrents_HEADERS Current_Base.H
 			   VA_0_KKPi.H
 			   VA_0_KPiK.H
 			   VA_0_KPiPi.H
+			   VA_0_EtaPiPi.H
+			   VA_0_KOmega3Pi.H
+			   VA_0_Novosibirsk4Pi.H
 			   Tools.H )
 
 

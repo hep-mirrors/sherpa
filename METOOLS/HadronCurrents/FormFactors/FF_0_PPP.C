@@ -13,7 +13,8 @@ using namespace std;
 FF_0_PPP_Base::FF_0_PPP_Base(const FF_Parameters & params) :
   FormFactor_Base(params),
   m_mode(FF_0_PPP_mode::unknown),
-  m_norm(Complex(0.,0.)) {
+  m_norm(Complex(0.,0.)),
+  m_isKSKL(false) {
   FixMode();
 }
 
@@ -72,18 +73,47 @@ void FF_0_PPP_Base::FixMode() {
   else if (m_flavs[m_pi[0]].Kfcode()==kf_K_L &&
 	   m_flavs[m_pi[1]].Kfcode()==kf_pi_plus &&
 	   m_flavs[m_pi[2]].Kfcode()==kf_K_L)        m_mode = FF_0_PPP_mode::KL_piM_KL;
-  // K^-(q1) pi^0(q2) K^0(q3) - row 5.
+  // K^-(q1) pi^0(q2) K^0(q3) - row 5. K_S/K_L recognised (with the
+  // additional 1/sqrt(2) projection factor - same reasoning as
+  // FF_0_PP.C's Kpi_plus/KK_plus and this file's piM_K0bar_pi0): the
+  // K^-K_S/K^-K_L pi^0 channels flagged earlier as "not yet
+  // recognised, needs new isospin coefficients" were WRONG - they are
+  // just this EXISTING KM_pi0_K0 mode (FM95 Tab.I/II row 5) with its
+  // K0bar observed as K_S/K_L, not a genuinely different current.
   else if (m_flavs[m_pi[0]].Kfcode()==kf_K_plus &&
 	   m_flavs[m_pi[1]].Kfcode()==kf_pi &&
-	   m_flavs[m_pi[2]].Kfcode()==kf_K)          m_mode = FF_0_PPP_mode::KM_pi0_K0;
+	   (m_flavs[m_pi[2]].Kfcode()==kf_K ||
+	    m_flavs[m_pi[2]].Kfcode()==kf_K_S ||
+	    m_flavs[m_pi[2]].Kfcode()==kf_K_L)) {
+    m_mode   = FF_0_PPP_mode::KM_pi0_K0;
+    m_isKSKL = (m_flavs[m_pi[2]].Kfcode()==kf_K_S ||
+		m_flavs[m_pi[2]].Kfcode()==kf_K_L);
+  }
   // K^-(q1) pi^-(q2) pi^+(q3) - row 7.
   else if (m_flavs[m_pi[0]].Kfcode()==kf_K_plus &&
 	   m_flavs[m_pi[1]].Kfcode()==kf_pi_plus &&
 	   m_flavs[m_pi[2]].Kfcode()==kf_pi_plus)    m_mode = FF_0_PPP_mode::KM_piM_piP;
-  // pi^-(q1) K0bar(q2) pi^0(q3) - row 8.
+  // pi^-(q1) K0bar(q2) pi^0(q3) - row 8. K_S/K_L recognised (with the
+  // additional 1/sqrt(2) projection factor, see F1_0_KPiPi/FS_0_KPiPi
+  // Construct()), same fix as FF_0_PP.C's Kpi_plus/KK_plus.
   else if (m_flavs[m_pi[0]].Kfcode()==kf_pi_plus &&
-	   m_flavs[m_pi[1]].Kfcode()==kf_K &&
-	   m_flavs[m_pi[2]].Kfcode()==kf_pi)         m_mode = FF_0_PPP_mode::piM_K0bar_pi0;
+	   (m_flavs[m_pi[1]].Kfcode()==kf_K ||
+	    m_flavs[m_pi[1]].Kfcode()==kf_K_S ||
+	    m_flavs[m_pi[1]].Kfcode()==kf_K_L) &&
+	   m_flavs[m_pi[2]].Kfcode()==kf_pi) {
+    m_mode   = FF_0_PPP_mode::piM_K0bar_pi0;
+    m_isKSKL = (m_flavs[m_pi[1]].Kfcode()==kf_K_S ||
+		m_flavs[m_pi[1]].Kfcode()==kf_K_L);
+  }
+  // eta(q1) pi^-(q2) pi^0(q3) / eta'(q1) pi^-(q2) pi^0(q3) - see the
+  // enum comment in FF_0_PPP.H. Exact order required (q1=eta(prime)),
+  // not interchangeable.
+  else if (m_flavs[m_pi[0]].Kfcode()==kf_eta &&
+	   m_flavs[m_pi[1]].Kfcode()==kf_pi_plus &&
+	   m_flavs[m_pi[2]].Kfcode()==kf_pi)         m_mode = FF_0_PPP_mode::EtaPiPi_pi0;
+  else if (m_flavs[m_pi[0]].Kfcode()==kf_eta_prime_958 &&
+	   m_flavs[m_pi[1]].Kfcode()==kf_pi_plus &&
+	   m_flavs[m_pi[2]].Kfcode()==kf_pi)         m_mode = FF_0_PPP_mode::EtaprimePiPi_pi0;
   msg_Out()<<METHOD<<"("<<m_pi[0]<<"/"<<m_pi[1]<<"/"<<m_pi[2]<<") --> "<<int(m_mode)<<"\n";
 }
 
@@ -101,6 +131,18 @@ Complex FF_0_PPP_Base::operator()(const ATOOLS::Vec4D_Vector& moms) {
   switch (m_ffmodel) {
   case ff_model::none:    return m_norm;
   case ff_model::KS:      return m_norm * FF_KS(s123,s12,s13);
+  // KS_CLEO (102): CLEO-fitted alternative parametrizations - 3pi's
+  // "CLEO/default-TAUOLA" current and Kpipi's "CLEO K1 data-driven
+  // alternative" (see tau_two_meson_currents_KS_RChiT.tex). Routed
+  // through the SAME FF_KS() as plain KS - each derived class checks
+  // m_ffmodel internally to pick the KS vs KS_CLEO formula, exactly
+  // as FF_0_PP.C's Construct_XXX methods already do.
+  case ff_model::KS_CLEO: return m_norm * FF_KS(s123,s12,s13);
+  // KS_f0/CLEO_f0 (103/104): routed through the same FF_KS() entry
+  // point - only F1_0_KPiPi/FS_0_KPiPi currently check m_ffmodel for
+  // these two values internally (Kppipi + added f0(500) admixture).
+  case ff_model::KS_f0:   return m_norm * FF_KS(s123,s12,s13);
+  case ff_model::CLEO_f0: return m_norm * FF_KS(s123,s12,s13);
   case ff_model::RChiPT:  return m_norm * FF_RChiPT(s123,s12,s13);
   case ff_model::RChL2012: return m_norm * FF_RChL2012(s123,s12,s13);
   case ff_model::unknown:
@@ -171,7 +213,12 @@ protected:
   // 1310.1053 (pi- pi- pi+ channel), used for BOTH 3pi charge modes
   // per that paper's explicit recommendation (Sec. "Case of pi0pi0pi-
   // mode"): only alpha_sigma, gamma_sigma differ (scaled by 0.63 for
-  // the neutral mode), everything else stays as in Table I.
+  // the neutral mode), everything else stays as in Table I. These are
+  // genuine global-fit-specific numbers (not "the mass of a standard
+  // resonance"), so - unlike the KS-family weights below - they are
+  // NOT switched to Flavour(kf_xxx)-based defaults; only the KS-style
+  // rho'/rho''/omega mixing weights get that (and the unified
+  // gamma/delta/alpha nomenclature) treatment here.
   double  m_F_rchl, m_FV_rchl, m_FA_rchl, m_GV_rchl;
   double  m_Mrho_rchl, m_Mrhop_rchl, m_Grhop_rchl, m_betarhop, m_Ma1_rchl;
   double  m_Msigma, m_Gsigma0, m_Rsigma2;
@@ -189,18 +236,75 @@ protected:
   // lineshape, neither of which fits the existing Propagator_Base
   // hierarchy without a larger refactor - so it stays inline in
   // FF_RChL2012 below.
-  
-  void    FixParameters(const FF_Parameters & params);
-  void    Construct();
+
+  // --- CLEO / default-TAUOLA 3pi current (KS_CLEO=102) ---
+  // tau_two_meson_currents_KS_RChiT.tex Sec."CLEO / default-TAUOLA 3pi
+  // current". A genuinely different, data-driven parametrization from
+  // KS90/RChL2012 above - own resonance masses/widths (ALL different
+  // from the KS90 ones above, even for "the same" rho/a1), its own
+  // running-width convention (BW_L, Eq.(eq:CLEO-BW)), and 7 complex
+  // fitted amplitudes (beta1..beta7). Implemented as self-contained
+  // functions using the literal CLEO masses/widths as plain numbers -
+  // NOT tied to Sherpa's LineShapes/Total_Width_Base machinery, since
+  // reproducing this specific parametrization exactly requires its
+  // own closed-form running-width prescription (Eq.(eq:CLEO-running-
+  // width)), not Sherpa's generic decay-channel-based running widths.
+  //
+  // IMPORTANT CAVEAT (please verify): the note gives F1^CLEO, F2^CLEO,
+  // F3^CLEO as three SEPARATELY nonzero transverse axial form factors,
+  // but the general PPPcurrent basis states "only two transverse axial
+  // structures are independent" - F1,F2,F3 multiplying (p2-p3),
+  // (p3-p1),(p1-p2) with coefficients c1,c2,c3 are NOT all independent
+  // (those three vectors sum to zero identically). This implementation
+  // ASSUMES c1=c2=c3=1 (the natural reading when all three are given
+  // separately, since the note never restates c1,c2,c3 specifically
+  // for the CLEO variant - only for KS90/RChL2012, where c3=0) and
+  // reduces the three-term sum onto this class's existing two-term
+  // (F1,F2) architecture via
+  //   F1_eff = F1^CLEO - F3^CLEO,   F2_eff = F2^CLEO - F3^CLEO,
+  // using the identity (p1-p2)=-(p2-p3)-(p3-p1). If the real
+  // convention uses different c_i, this reduction needs revisiting -
+  // flagged rather than silently assumed correct.
+  double  m_MCLEOrho, m_GCLEOrho, m_MCLEOrhop, m_GCLEOrhop;
+  double  m_MCLEOsigma, m_GCLEOsigma, m_MCLEOf0, m_GCLEOf0, m_MCLEOf2, m_GCLEOf2;
+  double  m_MCLEOa1, m_GCLEOa1, m_MCLEOa1p, m_GCLEOa1p;
+  Complex m_betaCLEOa1p; // dormant a1' term, 0 in the nominal current
+  double  m_MCLEOKstar, m_mCLEOK, m_mCLEOpi;
+  Complex m_beta1,m_beta2,m_beta3,m_beta4,m_beta5,m_beta6,m_beta7;
+
+  static double  CLEO_P(const double & S,const double & m1,const double & m2);
+  static double  CLEO_GammaL(const double & S,const double & M,const double & Gamma,
+			     const double & m1,const double & m2,int L);
+  static Complex CLEO_BWL(const double & S,const double & M,const double & Gamma,
+			  const double & m1,const double & m2,int L);
+  double  CLEO_w1(const double & x) const;
+  double  CLEO_w2(const double & x) const;
+  double  CLEO_wK(const double & x) const;
+  double  CLEO_WGA(const double & Q2) const;
+  Complex CLEO_Aa1(const double & Q2) const;
+  // F1^CLEO(Q2;s1,s2,s3,m1_2,m2_2,m3_2) - F2^CLEO is obtained by
+  // calling this with (s2,s1,s3,m2_2,m1_2,m3_2), per the note's own
+  // "F2=F1(1<->2)" statement.
+  Complex CLEO_F1term(const double & Q2,const double & s1,const double & s2,
+		      const double & s3,const double & m1_2,const double & m2_2,
+		      const double & m3_2) const;
+  Complex CLEO_F3term(const double & Q2,const double & s1,const double & s2,
+		      const double & s3,const double & m1_2,const double & m2_2,
+		      const double & m3_2) const;
+  void    Construct_3Pi_CLEO(const FF_Parameters & params);
+
+  // Master dispatcher (called once from the constructor) + one
+  // self-contained method per channel - same rationale as
+  // Fplus_0_PiZeroPiPlus in FF_0_PP.C: sets m_norm/parameters AND
+  // builds propagators together, replacing the old split
+  // FixParameters()/Construct() pair.
+  void    Construct(const FF_Parameters & params);
+  void    Construct_3Pi(const FF_Parameters & params);   // piP_pi0_pi0, piM_piP_piP
+  void    Construct_Pi0Pi0K(const FF_Parameters & params); // pi0_pi0_KM
+
   Complex FF_KS(const double & s123,const double & s1,const double & s2);
   Complex FF_RChiPT(const double & s123,const double & s1,const double & s2);
   Complex FF_RChL2012(const double & s123,const double & s1,const double & s2);
-  /*
-    Complex A(const double & m2,const double & s,const double & mu2);
-    double  Gamma_V(const double & s);
-    double  Gamma_Vp(const double & s);
-    double  Gamma_Vpp(const double & s);
-  */
 public :
   F1_0_PiPlusPiZeroPiZero(const FF_Parameters & params);
   ~F1_0_PiPlusPiZeroPiZero();
@@ -214,8 +318,7 @@ F1_0_PiPlusPiZeroPiZero::F1_0_PiPlusPiZeroPiZero(const FF_Parameters & params)  
   m_fpi((*params.p_model)("fpi",0.1307)/sqrt(2.))
 {
   if (params.m_name=="F2_0_PPP") m_isF2 = true;
-  FixParameters(params);
-  Construct();
+  Construct(params);
 }
 
 F1_0_PiPlusPiZeroPiZero::~F1_0_PiPlusPiZeroPiZero() {
@@ -225,111 +328,91 @@ F1_0_PiPlusPiZeroPiZero::~F1_0_PiPlusPiZeroPiZero() {
   if (p_TKstar1_pi0K) { delete p_TKstar1_pi0K; p_TKstar1_pi0K = NULL; }
 }
 
-void F1_0_PiPlusPiZeroPiZero::FixParameters(const FF_Parameters & params)  {
-  if (m_mode==FF_0_PPP_mode::piP_pi0_pi0 ||
-      m_mode==FF_0_PPP_mode::piM_piP_piP) {
-    m_norm    = Complex(0., -((2.*sqrt(2)*(*params.p_model)("Vud", Tools::Vud)) /
-			      (3.*m_fpi) ));
-    if (m_ffmodel==ff_model::KS) {
-      m_gamma = Complex(-0.14500,0.0000);
-      m_delta = Complex( 0.00000,0.0000);
-      m_alpha = Complex( 0.00185,0.0000);
-    }
-    else if (m_ffmodel==ff_model::RChL2012) {
-      // m_norm above is the KS normalisation (i*2sqrt2*Vud/(3 fpi));
-      // RChL2012 uses its own normalisation N=cos(theta_C)/F, Eq.(3.1)
-      // of 1509.09140 / just below Eq.(1) of 1203.3955 - overwrite it.
-      m_norm       = (*params.p_model)("Vud",Tools::Vud) /
-                     (*params.p_model)("F_rchl3pi",0.091337);
-      m_F_rchl     = (*params.p_model)("F_rchl3pi",0.091337);
-      m_FV_rchl    = (*params.p_model)("FV_rchl3pi",0.168652);
-      m_FA_rchl    = (*params.p_model)("FA_rchl3pi",0.131425);
-      m_GV_rchl    = sqr(m_F_rchl)/m_FV_rchl; // GV=F^2/FV constraint
-      m_Mrho_rchl  = (*params.p_model)("Mrho_rchl3pi",0.771849);
-      m_Mrhop_rchl = (*params.p_model)("Mrhop_rchl3pi",1.350000);
-      m_Grhop_rchl = (*params.p_model)("Grhop_rchl3pi",0.448379);
-      m_betarhop   = (*params.p_model)("betarhop_rchl3pi",-0.318551);
-      m_Ma1_rchl   = (*params.p_model)("Ma1_rchl3pi",1.091865);
-      m_Msigma     = (*params.p_model)("Msigma_rchl3pi",0.487512);
-      m_Gsigma0    = (*params.p_model)("Gsigma_rchl3pi",0.700000);
-      m_Rsigma2    = sqr((*params.p_model)("Rsigma_rchl3pi",1.866913));
-      m_mpi2_iso   = sqr((Flavour(kf_pi).HadMass()*1.+
-			  2.*Flavour(kf_pi_plus).HadMass())/3.);
-      m_lambda_p   = RChL::Lambda_p(m_F_rchl,m_FA_rchl,m_GV_rchl);
-      m_lambda_pp  = RChL::Lambda_pp(m_FV_rchl,m_GV_rchl,m_lambda_p);
-      if (m_mode==FF_0_PPP_mode::piM_piP_piP) {
-	// Table I of 1310.1053: default (unscaled) sigma couplings.
-	m_alphasigma = (*params.p_model)("alphasigma_rchl3pi",-8.795938);
-	m_betasigma  = (*params.p_model)("betasigma_rchl3pi", 9.763701);
-	m_gammasigma = (*params.p_model)("gammasigma_rchl3pi",1.264263);
-	m_deltasigma = (*params.p_model)("deltasigma_rchl3pi",0.656762);
-      }
-      else {
-	// pi0 pi0 pi-: Eq.(16) of 1310.1053 - only alpha0_sigma,
-	// gamma0_sigma are used (single sigma term in s3, see FF_RChL2012),
-	// with the 0.63 scaling factor already folded into these defaults.
-	m_alphasigma = (*params.p_model)("alpha0sigma_rchl3pi",0.63*1.139486);
-	m_gammasigma = (*params.p_model)("gamma0sigma_rchl3pi",0.63*0.889769);
-	m_betasigma  = 0.; m_deltasigma = 0.;
-	m_Msigma     = 0.550; m_Gsigma0 = 0.700;
-	m_Rsigma2    = sqr(0.000013);
-      }
-    }
+void F1_0_PiPlusPiZeroPiZero::Construct(const FF_Parameters & params) {
+  switch (m_mode) {
+  case FF_0_PPP_mode::piP_pi0_pi0:
+  case FF_0_PPP_mode::piM_piP_piP: Construct_3Pi(params);      break;
+  case FF_0_PPP_mode::pi0_pi0_KM:  Construct_Pi0Pi0K(params);  break;
+  default: break;
   }
-  else if (m_mode==FF_0_PPP_mode::pi0_pi0_KM) {
-    // Finkemeier-Mirkes hep-ph/9503474 (FM95), Tab.I row 6:
-    // A^(abc) = sin(theta_c)/4, G1=T_K1a(Q^2)T_K*^(1)(s2),
-    // G2=T_K1a(Q^2)T_K*^(1)(s1). Eq.(23)/(24): F_i = (2sqrt2 A/3fpi) G_i,
-    // Cabibbo-SUPPRESSED (sin, not cos) since this is a |Delta S|=1
-    // (one-kaon) channel - use Vus, not Vud.
-    if (m_ffmodel==ff_model::KS) {
-      m_norm = Complex((2.*sqrt(2.)*(*params.p_model)("Vus",Tools::Vus)*
-			(*params.p_model)("sinThetaC_over_4_num",1.)/4.) /
-			(3.*m_fpi), 0.);
-      // xi: relative K1(1270) admixture in T_K1^(a), Eq.(32)-(33) of
-      // FM95: |xi|=0.33, sign preferred by data is xi=+0.33 (Sec.VII).
-      m_xiK1 = (*params.p_model)("xiK1",0.33);
-    }
-  }
+  // Diagnostic dump (mirrors FF_0_PP.C's request #1): print whichever
+  // propagator structures this instance actually built.
+  std::string label = std::string("F1_0_PiPlusPiZeroPiZero, mode=")+
+                       std::to_string(int(m_mode))+
+                       (m_isF2 ? " (F2)" : " (F1)");
+  DumpPropagatorStructure(label+" [a1/K1a]", int(m_ffmodel),
+			   p_a1s!=NULL ? p_a1s : p_TK1a);
+  DumpPropagatorStructure(label+" [rho/K*]", int(m_ffmodel),
+			   p_rhos!=NULL ? p_rhos : p_TKstar1_pi0K);
 }
 
-void F1_0_PiPlusPiZeroPiZero::Construct() {
-  if (m_ffmodel==ff_model::KS && m_mode==FF_0_PPP_mode::pi0_pi0_KM) {
-    // T_K1^(a) = [BW_K1(1400) + xi*BW_K1(1270)] / (1+xi), Eq.(32).
-    // K1(1270)/K1(1400) lineshapes now built and registered
-    // (K1_Decays.H/.C, kf 10313/10323 and 20313/20323, confirmed
-    // against the real ATOOLS/Phys/Flavour_Tags.H), using the
-    // proper running widths from their rho-K/K*-pi decay channels
-    // rather than FM95's own simple fixed-width prescription -
-    // a reasonable, arguably better-motivated substitution.
-    Total_Width_Base * wK11270 = LineShapes->Get(Flavour(kf_K_1_1270_plus));
-    Total_Width_Base * wK11400 = LineShapes->Get(Flavour(kf_K_1_1400_plus));
-    if (wK11270==NULL || wK11400==NULL) {
-      msg_Error()<<"Error in "<<METHOD<<": missing K1(1270)/K1(1400) "
-		 <<"lineshape(s) for pi0_pi0_KM (FM95) - T_K1^(a) will be "
-		 <<"treated as identically zero until these are added to "
-		 <<"Line_Shapes::Init(). See the FixParameters()/Construct() "
-		 <<"comments in FF_0_PPP.C for what is needed.\n";
+void F1_0_PiPlusPiZeroPiZero::Construct_3Pi(const FF_Parameters & params) {
+  m_norm = Complex(0., -((2.*sqrt(2)*(*params.p_model)("Vud", Tools::Vud)) /
+			  (3.*m_fpi) ));
+  if (m_ffmodel==ff_model::KS) {
+    // Unified nomenclature (see FF_0_PP.C): "gamma" = rho' weight,
+    // "delta" = rho'' weight (0 by default - the original KS 3pi model
+    // has no third resonance), "alpha" = rho-omega mixing weight
+    // (piM_piP_piP only, Construct() below skips it for piP_pi0_pi0).
+    m_gamma = ReadComplexParam(params.p_model,"gammaMag_3pi_KS",-0.145,"gammaPhase_3pi_KS");
+    m_delta = ReadComplexParam(params.p_model,"deltaMag_3pi_KS", 0.,   "deltaPhase_3pi_KS");
+    m_alpha = ReadComplexParam(params.p_model,"alphaMag_3pi_KS", 0.00185,"alphaPhase_3pi_KS");
+  }
+  else if (m_ffmodel==ff_model::KS_CLEO) {
+    // CLEO/default-TAUOLA 3pi current - see the class-level comment
+    // above for the F1/F2/F3 architecture caveat. m_norm above (the
+    // KS90 value, i*2sqrt2*Vud/(3 fpi)) is REUSED here rather than
+    // overridden: the note writes the CLEO F1/F2/F3 as instances of
+    // the SAME master PPPcurrent equation (which carries the overall
+    // N), and gives no separate explicit normalization for this
+    // variant - if the CLEO beta-fit was actually performed against a
+    // different absolute normalization convention, the lineshape
+    // SHAPE here is still correct but the absolute rate may not be;
+    // flagged rather than silently assumed exactly right.
+    Construct_3Pi_CLEO(params);
+  }
+  else if (m_ffmodel==ff_model::RChL2012) {
+    // m_norm above is the KS normalisation (i*2sqrt2*Vud/(3 fpi));
+    // RChL2012 uses its own normalisation N=cos(theta_C)/F, Eq.(3.1)
+    // of 1509.09140 / just below Eq.(1) of 1203.3955 - overwrite it.
+    m_norm       = (*params.p_model)("Vud",Tools::Vud) /
+                   (*params.p_model)("F_rchl3pi",0.091337);
+    m_F_rchl     = (*params.p_model)("F_rchl3pi",0.091337);
+    m_FV_rchl    = (*params.p_model)("FV_rchl3pi",0.168652);
+    m_FA_rchl    = (*params.p_model)("FA_rchl3pi",0.131425);
+    m_GV_rchl    = sqr(m_F_rchl)/m_FV_rchl; // GV=F^2/FV constraint
+    m_Mrho_rchl  = (*params.p_model)("Mrho_rchl3pi",0.771849);
+    m_Mrhop_rchl = (*params.p_model)("Mrhop_rchl3pi",1.350000);
+    m_Grhop_rchl = (*params.p_model)("Grhop_rchl3pi",0.448379);
+    m_betarhop   = (*params.p_model)("betarhop_rchl3pi",-0.318551);
+    m_Ma1_rchl   = (*params.p_model)("Ma1_rchl3pi",1.091865);
+    m_Msigma     = (*params.p_model)("Msigma_rchl3pi",0.487512);
+    m_Gsigma0    = (*params.p_model)("Gsigma_rchl3pi",0.700000);
+    m_Rsigma2    = sqr((*params.p_model)("Rsigma_rchl3pi",1.866913));
+    m_mpi2_iso   = sqr((Flavour(kf_pi).HadMass()*1.+
+			2.*Flavour(kf_pi_plus).HadMass())/3.);
+    m_lambda_p   = RChL::Lambda_p(m_F_rchl,m_FA_rchl,m_GV_rchl);
+    m_lambda_pp  = RChL::Lambda_pp(m_FV_rchl,m_GV_rchl,m_lambda_p);
+    if (m_mode==FF_0_PPP_mode::piM_piP_piP) {
+      // Table I of 1310.1053: default (unscaled) sigma couplings.
+      m_alphasigma = (*params.p_model)("alphasigma_rchl3pi",-8.795938);
+      m_betasigma  = (*params.p_model)("betasigma_rchl3pi", 9.763701);
+      m_gammasigma = (*params.p_model)("gammasigma_rchl3pi",1.264263);
+      m_deltasigma = (*params.p_model)("deltasigma_rchl3pi",0.656762);
     }
     else {
-      Propagator_Base * K11400 = new BreitWigner(wK11400);
-      Propagator_Base * K11270 = new BreitWigner(wK11270);
-      p_TK1a = new Summed_Propagator();
-      p_TK1a->Add(K11400, Complex(1.,0.));
-      p_TK1a->Add(K11270, Complex(m_xiK1,0.));
+      // pi0 pi0 pi-: Eq.(16) of 1310.1053 - only alpha0_sigma,
+      // gamma0_sigma are used (single sigma term in s3, see FF_RChL2012),
+      // with the 0.63 scaling factor already folded into these defaults.
+      m_alphasigma = (*params.p_model)("alpha0sigma_rchl3pi",0.63*1.139486);
+      m_gammasigma = (*params.p_model)("gamma0sigma_rchl3pi",0.63*0.889769);
+      m_betasigma  = 0.; m_deltasigma = 0.;
+      m_Msigma     = 0.550; m_Gsigma0 = 0.700;
+      m_Rsigma2    = sqr(0.000013);
     }
-    // T_K*^(1) = [BW_K*(892) + beta_K* BW_K*(1410)]/(1+beta_K*),
-    // Eq.(10), beta_K*=-0.135 (Sec.II). Both lineshapes already exist
-    // (used by FF_0_PP.C's Kpi_plus mode) - reused here directly.
-    Propagator_Base * Kstar892  =
-      new BreitWigner(LineShapes->Get(Flavour(kf_K_star_892_plus)));
-    Propagator_Base * Kstar1410 =
-      new BreitWigner(LineShapes->Get(Flavour(kf_K_star_1410_plus)));
-    p_TKstar1_pi0K = new Summed_Propagator();
-    p_TKstar1_pi0K->Add(Kstar892,  Complex(1., 0.));
-    p_TKstar1_pi0K->Add(Kstar1410, Complex(-0.135,0.));
   }
-  else if (m_ffmodel==ff_model::KS) {
+
+  if (m_ffmodel==ff_model::KS) {
     if (m_mode==FF_0_PPP_mode::piP_pi0_pi0) {
       Propagator_Base * a11260  =
 	new BreitWigner(LineShapes->Get(Flavour(kf_a_1_1260_plus)));
@@ -380,17 +463,11 @@ void F1_0_PiPlusPiZeroPiZero::Construct() {
     // own convention (used by the KS branch above) - that's why this
     // branch can't just reuse plain BreitWigner objects.
     //
-    // a1 is NOT built into p_a1s here (stays NULL for this model): its
-    // propagator needs a q^2 numerator and the Eq.(17)-of-1310.1053
-    // polynomial width fit, neither of which fit Propagator_Base's
-    // existing hierarchy - it stays inline in FF_RChL2012 below.
-    //
     // Charged/neutral rho choice matches the KS branch above: for
     // pi0 pi0 pi-, the rho in each pi0-pi- sub-system is CHARGED
     // (rho- -> pi0 pi-); for pi- pi- pi+, the rho in the pi-pi+
     // sub-system is NEUTRAL (rho0 -> pi+ pi-, hence also mixing with
-    // omega there in the KS branch). This was backwards in an earlier
-    // version of this branch - fixed here.
+    // omega there in the KS branch).
     Flavour rhoFlav = (m_mode==FF_0_PPP_mode::piP_pi0_pi0 ?
 		      Flavour(kf_rho_770_plus) : Flavour(kf_rho_770));
     Propagator_Base * rho  = new RChL_BW(LineShapes->Get(rhoFlav));
@@ -399,6 +476,222 @@ void F1_0_PiPlusPiZeroPiZero::Construct() {
     p_rhos->Add(rho,  Complex(1.,0.));
     p_rhos->Add(rhop, Complex(m_betarhop,0.));
   }
+}
+
+void F1_0_PiPlusPiZeroPiZero::Construct_Pi0Pi0K(const FF_Parameters & params) {
+  // Finkemeier-Mirkes hep-ph/9503474 (FM95), Tab.I row 6:
+  // A^(abc) = sin(theta_c)/4, G1=T_K1a(Q^2)T_K*^(1)(s2),
+  // G2=T_K1a(Q^2)T_K*^(1)(s1). Eq.(23)/(24): F_i = (2sqrt2 A/3fpi) G_i,
+  // Cabibbo-SUPPRESSED (sin, not cos) since this is a |Delta S|=1
+  // (one-kaon) channel - use Vus, not Vud.
+  if (m_ffmodel!=ff_model::KS) return;
+  m_norm = Complex((2.*sqrt(2.)*(*params.p_model)("Vus",Tools::Vus)*
+		    (*params.p_model)("sinThetaC_over_4_num",1.)/4.) /
+		    (3.*m_fpi), 0.);
+  // xi: relative K1(1270) admixture in T_K1^(a), Eq.(32)-(33) of
+  // FM95: |xi|=0.33, sign preferred by data is xi=+0.33 (Sec.VII).
+  m_xiK1 = (*params.p_model)("xiK1",0.33);
+
+  // T_K1^(a) = [BW_K1(1400) + xi*BW_K1(1270)] / (1+xi), Eq.(32).
+  // K1(1270)/K1(1400) lineshapes built and registered (K1_Decays.H/.C,
+  // kf 10313/10323 and 20313/20323, confirmed against the real
+  // ATOOLS/Phys/Flavour_Tags.H), using the proper running widths from
+  // their rho-K/K*-pi decay channels rather than FM95's own simple
+  // fixed-width prescription - a reasonable, arguably better-motivated
+  // substitution.
+  Total_Width_Base * wK11270 = LineShapes->Get(Flavour(kf_K_1_1270_plus));
+  Total_Width_Base * wK11400 = LineShapes->Get(Flavour(kf_K_1_1400_plus));
+  if (wK11270==NULL || wK11400==NULL) {
+    msg_Error()<<"Error in "<<METHOD<<": missing K1(1270)/K1(1400) "
+	       <<"lineshape(s) for pi0_pi0_KM (FM95) - T_K1^(a) will be "
+	       <<"treated as identically zero.\n";
+  }
+  else {
+    Propagator_Base * K11400 = new BreitWigner(wK11400);
+    Propagator_Base * K11270 = new BreitWigner(wK11270);
+    p_TK1a = new Summed_Propagator();
+    p_TK1a->Add(K11400, Complex(1.,0.));
+    p_TK1a->Add(K11270, Complex(m_xiK1,0.));
+  }
+  // T_K*^(1) = [BW_K*(892) + beta_K* BW_K*(1410)]/(1+beta_K*), Eq.(10).
+  double betaKst = (*params.p_model)("betaKstar_pi0pi0K_KS",-0.135);
+  Propagator_Base * Kstar892  =
+    new BreitWigner(LineShapes->Get(Flavour(kf_K_star_892_plus)));
+  Propagator_Base * Kstar1410 =
+    new BreitWigner(LineShapes->Get(Flavour(kf_K_star_1410_plus)));
+  p_TKstar1_pi0K = new Summed_Propagator();
+  p_TKstar1_pi0K->Add(Kstar892,  Complex(1., 0.));
+  p_TKstar1_pi0K->Add(Kstar1410, Complex(betaKst,0.));
+}
+
+///////////////////////////////////////////////////////////////////////////
+//
+// CLEO/default-TAUOLA 3pi current, tau_two_meson_currents_KS_RChiT.tex
+// Sec."CLEO/default-TAUOLA 3pi current". See the class-level comment
+// for the F1/F2/F3 architecture caveat this implementation relies on.
+//
+///////////////////////////////////////////////////////////////////////////
+
+void F1_0_PiPlusPiZeroPiZero::Construct_3Pi_CLEO(const FF_Parameters & params) {
+  // Nominal TAUOLA-CLEO masses/widths (Table "Complete coding inputs
+  // for the default TAUOLA-CLEO 3pi current"). All overridable, all
+  // DISTINCT from the KS90 rho/a1 numbers above (same physical
+  // resonances, genuinely different fitted values in this current).
+  m_MCLEOrho    = (*params.p_model)("MCLEOrho",   0.7743);
+  m_GCLEOrho    = (*params.p_model)("GCLEOrho",   0.1491);
+  m_MCLEOrhop   = (*params.p_model)("MCLEOrhop",  1.370);
+  m_GCLEOrhop   = (*params.p_model)("GCLEOrhop",  0.386);
+  m_MCLEOsigma  = (*params.p_model)("MCLEOsigma", 0.860);
+  m_GCLEOsigma  = (*params.p_model)("GCLEOsigma", 0.880);
+  m_MCLEOf0     = (*params.p_model)("MCLEOf0",    1.186);
+  m_GCLEOf0     = (*params.p_model)("GCLEOf0",    0.350);
+  m_MCLEOf2     = (*params.p_model)("MCLEOf2",    1.275);
+  m_GCLEOf2     = (*params.p_model)("GCLEOf2",    0.185);
+  m_MCLEOa1     = (*params.p_model)("MCLEOa1",    1.275);
+  m_GCLEOa1     = (*params.p_model)("GCLEOa1",    0.700);
+  // Dormant a1' term - beta=0 in the nominal current, so its own
+  // mass/width are irrelevant unless overridden together with beta.
+  m_betaCLEOa1p = ReadComplexParam(params.p_model,
+				   "betaMag_3pi_CLEOa1prime",0.,"betaPhase_3pi_CLEOa1prime");
+  m_MCLEOa1p    = (*params.p_model)("MCLEOa1prime", 1.275);
+  m_GCLEOa1p    = (*params.p_model)("GCLEOa1prime", 0.700);
+  m_MCLEOKstar  = (*params.p_model)("MCLEOKstar",   0.894);
+  m_mCLEOK      = (*params.p_model)("mCLEOK",       0.496);
+  // pi0/pi+- mass average as used in the note's own GEV inputs - using
+  // the physical per-index mass in the actual formula evaluation
+  // (m_masses2[...]) instead; this m_mCLEOpi is only used inside the
+  // K*K threshold/momentum piece of WGA, which needs a single generic
+  // pion mass scale, not per-index masses.
+  m_mCLEOpi     = 0.137;
+  // Complex fitted amplitudes, Eq.(eq:CLEO-betas) (nominal TAUOLA-CLEO
+  // values - the note also quotes a slightly different "CLEO
+  // published" mass/width set, not implemented here as a separate
+  // option; flag if you want that added too).
+  m_beta1 = Complex(1.,0.); // real, fixed
+  m_beta2 = ReadComplexParam(params.p_model,"beta2Mag_3pi_CLEO",0.12,"beta2Phase_3pi_CLEO",0.99*M_PI);
+  m_beta3 = ReadComplexParam(params.p_model,"beta3Mag_3pi_CLEO",0.37,"beta3Phase_3pi_CLEO",-0.15*M_PI);
+  m_beta4 = ReadComplexParam(params.p_model,"beta4Mag_3pi_CLEO",0.87,"beta4Phase_3pi_CLEO",0.53*M_PI);
+  m_beta5 = ReadComplexParam(params.p_model,"beta5Mag_3pi_CLEO",0.71,"beta5Phase_3pi_CLEO",0.56*M_PI);
+  m_beta6 = ReadComplexParam(params.p_model,"beta6Mag_3pi_CLEO",2.10,"beta6Phase_3pi_CLEO",0.23*M_PI);
+  m_beta7 = ReadComplexParam(params.p_model,"beta7Mag_3pi_CLEO",0.77,"beta7Phase_3pi_CLEO",-0.54*M_PI);
+  msg_Out()<<"### Propagator structure for \"F1_0_PiPlusPiZeroPiZero (CLEO), "
+	   <<"mode="<<int(m_mode)<<"\" (FORM_FACTOR = "<<int(m_ffmodel)<<"):\n"
+	   <<"###   rho(CLEO): M = "<<m_MCLEOrho<<" GeV, Gamma = "<<m_GCLEOrho<<" GeV\n"
+	   <<"###   rho'(CLEO): M = "<<m_MCLEOrhop<<" GeV, Gamma = "<<m_GCLEOrhop<<" GeV\n"
+	   <<"###   sigma: M = "<<m_MCLEOsigma<<" GeV, Gamma = "<<m_GCLEOsigma<<" GeV\n"
+	   <<"###   f0: M = "<<m_MCLEOf0<<" GeV, Gamma = "<<m_GCLEOf0<<" GeV\n"
+	   <<"###   f2: M = "<<m_MCLEOf2<<" GeV, Gamma = "<<m_GCLEOf2<<" GeV\n"
+	   <<"###   a1(CLEO): M = "<<m_MCLEOa1<<" GeV, Gamma = "<<m_GCLEOa1<<" GeV\n";
+}
+
+double F1_0_PiPlusPiZeroPiZero::
+CLEO_P(const double & S,const double & m1,const double & m2) {
+  double arg = (S-sqr(m1+m2))*(S-sqr(m1-m2));
+  return (arg>0. && S>0. ? sqrt(arg)/sqrt(S) : 0.);
+}
+
+double F1_0_PiPlusPiZeroPiZero::
+CLEO_GammaL(const double & S,const double & M,const double & Gamma,
+	    const double & m1,const double & m2,int L) {
+  double PS = CLEO_P(S,m1,m2), PM = CLEO_P(sqr(M),m1,m2);
+  if (PM<=0. || S<=0.) return 0.;
+  return Gamma*(M/sqrt(S))*pow(PS/PM, 2*L+1);
+}
+
+Complex F1_0_PiPlusPiZeroPiZero::
+CLEO_BWL(const double & S,const double & M,const double & Gamma,
+	 const double & m1,const double & m2,int L) {
+  double G = CLEO_GammaL(S,M,Gamma,m1,m2,L);
+  return sqr(M)/Complex(S-sqr(M), -M*G);
+}
+
+double F1_0_PiPlusPiZeroPiZero::CLEO_w1(const double & x) const {
+  if (x<0.1753) return 0.;
+  double dx = x-0.1753;
+  if (x<0.823) return 5.809*pow(dx,3)*(1.-3.0098*dx+4.5792*pow(dx,3));
+  return -13.914+27.679*x-13.393*sqr(x)+3.1924*pow(x,3)-0.10487*pow(x,4);
+}
+
+double F1_0_PiPlusPiZeroPiZero::CLEO_w2(const double & x) const {
+  if (x<0.1676) return 0.;
+  double dx = x-0.1676;
+  if (x<0.823) return 6.2845*pow(dx,3)*(1.-2.9595*dx+4.3355*pow(dx,3));
+  return -15.411+32.088*x-17.666*sqr(x)+4.9355*pow(x,3)-0.37498*pow(x,4);
+}
+
+double F1_0_PiPlusPiZeroPiZero::CLEO_wK(const double & x) const {
+  if (x<=sqr(m_MCLEOKstar+m_mCLEOK)) return 0.;
+  // p_{K*K}(x) = lambda^{1/2}(x,MK*^2,mK^2)/(2x), Eq.(eq:CLEO-pK).
+  double MKst2 = sqr(m_MCLEOKstar), mK2 = sqr(m_mCLEOK);
+  double lambda = sqr(x-MKst2-mK2)-4.*MKst2*mK2;
+  return (lambda>0. ? sqrt(lambda)/(2.*x) : 0.);
+}
+
+double F1_0_PiPlusPiZeroPiZero::CLEO_WGA(const double & Q2) const {
+  double C3pi = sqr(0.2384), CKst = sqr(4.7621)*C3pi;
+  return C3pi*(CLEO_w1(Q2)+CLEO_w2(Q2)) + CKst*CLEO_wK(Q2);
+}
+
+Complex F1_0_PiPlusPiZeroPiZero::CLEO_Aa1(const double & Q2) const {
+  // Eq.(eq:CLEO-Aa1). The 1.3281*0.806 normalization constant in the
+  // denominator is transcribed literally from the note - it is an
+  // internal TAUOLA normalization of WGA relative to the pole width,
+  // not independently re-derived here.
+  Complex D1 = Complex(Q2-sqr(m_MCLEOa1),
+		       -m_MCLEOa1*m_GCLEOa1/(1.3281*0.806)*CLEO_WGA(Q2));
+  Complex term1 = sqr(m_MCLEOa1)/D1;
+  Complex term2(0.,0.);
+  if (m_betaCLEOa1p!=Complex(0.,0.)) {
+    Complex D2 = Complex(Q2-sqr(m_MCLEOa1p),
+			 -m_MCLEOa1p*m_GCLEOa1p/(1.3281*0.806)*CLEO_WGA(Q2));
+    term2 = m_betaCLEOa1p*sqr(m_MCLEOa1p)/D2;
+  }
+  return term1+term2;
+}
+
+Complex F1_0_PiPlusPiZeroPiZero::
+CLEO_F1term(const double & Q2,const double & s1,const double & s2,
+	    const double & s3,const double & m1_2,const double & m2_2,
+	    const double & m3_2) const {
+  // Eq.(eq:CLEO-F1). FIX: the BW_L "daughter masses appropriate to the
+  // subchannel" (per the note's own BW_L(s;R) shorthand) are NOT the
+  // same pion mass for every term - s1=(p2+p3)^2 is formed by pions
+  // 2,3 (so its BW_L needs masses m2,m3), s2=(p1+p3)^2 by pions 1,3,
+  // s3=(p1+p2)^2 by pions 1,2. An earlier version used sqrt(m1_2)
+  // uniformly everywhere - harmless for pi-pi-pi+ (all three masses
+  // equal) but WRONG for pi0pi0pi- (m1=m2=mpi0 differs from m3=mpi+-),
+  // silently mixing up which daughter-mass pair enters each BW_L call.
+  double m1 = sqrt(m1_2), m2 = sqrt(m2_2), m3 = sqrt(m3_2);
+  Complex Aa1 = CLEO_Aa1(Q2);
+  Complex bracket =
+    m_beta1*CLEO_BWL(s1,m_MCLEOrho, m_GCLEOrho, m2,m3,1) +
+    m_beta2*CLEO_BWL(s1,m_MCLEOrhop,m_GCLEOrhop,m2,m3,1)
+    - m_beta3*((s3-m3_2)-(s1-m1_2))/3. * CLEO_BWL(s2,m_MCLEOrho, m_GCLEOrho, m1,m3,1)
+    - m_beta4*((s3-m3_2)-(s1-m1_2))/3. * CLEO_BWL(s2,m_MCLEOrhop,m_GCLEOrhop,m1,m3,1)
+    + m_beta5*(Q2+s3-m2_2)*(2.*m3_2+2.*m1_2-s3)/(18.*s3) *
+      CLEO_BWL(s3,m_MCLEOf2,m_GCLEOf2,m1,m2,2)
+    + (2./3.)*m_beta6*CLEO_BWL(s3,m_MCLEOsigma,m_GCLEOsigma,m1,m2,0)
+    + (2./3.)*m_beta7*CLEO_BWL(s3,m_MCLEOf0,m_GCLEOf0,m1,m2,0);
+  return Aa1*bracket;
+}
+
+Complex F1_0_PiPlusPiZeroPiZero::
+CLEO_F3term(const double & Q2,const double & s1,const double & s2,
+	    const double & s3,const double & m1_2,const double & m2_2,
+	    const double & m3_2) const {
+  // Eq.(eq:CLEO-F3) - CLEO's own "F3" (third transverse axial basis
+  // coefficient), NOT the anomalous vector form factor. See the
+  // class-level comment for how this combines with F1/F2 here. Same
+  // per-subchannel daughter-mass fix as CLEO_F1term above.
+  double m1 = sqrt(m1_2), m2 = sqrt(m2_2), m3 = sqrt(m3_2);
+  Complex Aa1 = CLEO_Aa1(Q2);
+  Complex bracket =
+    (m_beta3/3.)*((s2-m2_2)-(s3-m3_2))*CLEO_BWL(s1,m_MCLEOrho, m_GCLEOrho, m2,m3,1)
+    + (m_beta3/3.)*((s3-m3_2)-(s1-m1_2))*CLEO_BWL(s2,m_MCLEOrho, m_GCLEOrho, m1,m3,1)
+    + (m_beta4/3.)*((s2-m2_2)-(s3-m3_2))*CLEO_BWL(s1,m_MCLEOrhop,m_GCLEOrhop,m2,m3,1)
+    + (m_beta4/3.)*((s3-m3_2)-(s1-m1_2))*CLEO_BWL(s2,m_MCLEOrhop,m_GCLEOrhop,m1,m3,1)
+    - (m_beta5/2.)*((s1-m1_2)-(s2-m2_2))*CLEO_BWL(s3,m_MCLEOf2,m_GCLEOf2,m1,m2,2);
+  return Aa1*bracket;
 }
 
 Complex F1_0_PiPlusPiZeroPiZero::
@@ -413,6 +706,28 @@ FF_KS(const double & s123,const double & s12,const double & s13) {
   // rho propagator on the never-resonant like-sign pion pair instead
   // of the correct opposite-sign combination - confirmed wrong by
   // explicit numerical check against Eq.(3.3)-(3.5).
+  if (m_ffmodel==ff_model::KS_CLEO &&
+      (m_mode==FF_0_PPP_mode::piP_pi0_pi0 || m_mode==FF_0_PPP_mode::piM_piP_piP)) {
+    double m1_2 = m_masses2[m_pi[0]], m2_2 = m_masses2[m_pi[1]], m3_2 = m_masses2[m_pi[2]];
+    double paper_s2 = s13, paper_s3 = s12;
+    double paper_s1 = s123 - s12 - s13 + m1_2 + m2_2 + m3_2;
+    // R_3pi (+1 charged/-1 neutral per the note) is an overall sign
+    // common to every form factor of a given channel - physically
+    // immaterial for a standalone channel (cancels in every rate
+    // bilinear; the note itself says so explicitly for an analogous
+    // overall-sign choice) and omitted here, consistent with the
+    // existing KS90 branch above, which also does not apply it.
+    if (!m_isF2) {
+      Complex F1 = CLEO_F1term(s123, paper_s1, paper_s2, paper_s3, m1_2, m2_2, m3_2);
+      Complex F3 = CLEO_F3term(s123, paper_s1, paper_s2, paper_s3, m1_2, m2_2, m3_2);
+      return F1 - F3;
+    }
+    else {
+      Complex F2 = CLEO_F1term(s123, paper_s2, paper_s1, paper_s3, m2_2, m1_2, m3_2);
+      Complex F3 = CLEO_F3term(s123, paper_s1, paper_s2, paper_s3, m1_2, m2_2, m3_2);
+      return F2 - F3;
+    }
+  }
   if (m_mode==FF_0_PPP_mode::pi0_pi0_KM) {
     // FM95 Tab.I row 6: G1(Q^2,s2,s3)=T_K1a(Q^2)T_K*^(1)(s2),
     // G2(Q^2,s1,s3)=T_K1a(Q^2)T_K*^(1)(s1) - same s1-reconstruction
@@ -540,8 +855,7 @@ class F3_0_PiPlusPiZeroPiZero : public FF_0_PPP_Base {
   // propagator in an earlier version of this class; fixed here.
   Propagator_Base * p_rho_combo;
   
-  void    FixParameters(const FF_Parameters & params);
-  void    Construct();
+  void    Construct(const FF_Parameters & params);
   Complex FF_KS(const double & s123,const double & s1,const double & s2) {
     return Complex(0.,0.);
   }
@@ -555,15 +869,14 @@ public :
     m_fpi((*params.p_model)("fpi",0.1307)/sqrt(2.)),
     p_rho_combo(NULL)
   {
-    FixParameters(params);
-    Construct();
+    Construct(params);
   }
   ~F3_0_PiPlusPiZeroPiZero() {
     if (p_rho_combo) { delete p_rho_combo; p_rho_combo = NULL; }
   }
 };
 
-void F3_0_PiPlusPiZeroPiZero::FixParameters(const FF_Parameters & params)  {
+void F3_0_PiPlusPiZeroPiZero::Construct(const FF_Parameters & params) {
   if (m_ffmodel==ff_model::RChL2012 &&
       (m_mode==FF_0_PPP_mode::piP_pi0_pi0 ||
        m_mode==FF_0_PPP_mode::piM_piP_piP)) {
@@ -577,11 +890,6 @@ void F3_0_PiPlusPiZeroPiZero::FixParameters(const FF_Parameters & params)  {
     m_betarhop   = (*params.p_model)("betarhop_rchl3pi",-0.318551);
     m_mpi2_iso   = sqr((Flavour(kf_pi).HadMass()+
 			2.*Flavour(kf_pi_plus).HadMass())/3.);
-  }
-}
-
-void F3_0_PiPlusPiZeroPiZero::Construct() {
-  if (m_ffmodel==ff_model::RChL2012) {
     // Same charged/neutral rho fix as F1_0_PiPlusPiZeroPiZero::Construct()
     // above - see that comment for the physics reasoning.
     Flavour rhoFlav = (m_mode==FF_0_PPP_mode::piP_pi0_pi0 ?
@@ -593,6 +901,8 @@ void F3_0_PiPlusPiZeroPiZero::Construct() {
     combo->Add(rhop, Complex(m_betarhop,0.));
     p_rho_combo = combo;
   }
+  DumpPropagatorStructure(std::string("F3_0_PiPlusPiZeroPiZero, mode=")+
+			   std::to_string(int(m_mode)), int(m_ffmodel), p_rho_combo);
 }
 
 ///////////////////////////////////////////////////////////////////////////
@@ -655,8 +965,7 @@ class FS_0_PiPlusPiZeroPiZero : public FF_0_PPP_Base {
   // CLEO-tune's number, both attached to the same kf-code).
   Summed_Propagator * p_TKstar1_v, * p_TKstar2;
 
-  void    FixParameters(const FF_Parameters & params);
-  void    Construct();
+  void    Construct(const FF_Parameters & params);
   Complex FF_KS(const double & s123,const double & s1,const double & s2);
   Complex FF_RChiPT(const double & s123,const double & s1,const double & s2) {
     // piP_pi0_pi0/piM_piP_piP: vector current forced to vanish by
@@ -672,8 +981,7 @@ public :
     m_fpi((*params.p_model)("fpi",0.1307)/sqrt(2.)),
     p_TKstar1_v(NULL), p_TKstar2(NULL)
   {
-    FixParameters(params);
-    Construct();
+    Construct(params);
   }
   ~FS_0_PiPlusPiZeroPiZero() {
     if (p_TKstar1_v) { delete p_TKstar1_v; p_TKstar1_v = NULL; }
@@ -681,33 +989,29 @@ public :
   }
 };
 
-void FS_0_PiPlusPiZeroPiZero::FixParameters(const FF_Parameters & params)  {
+void FS_0_PiPlusPiZeroPiZero::Construct(const FF_Parameters & params)  {
   if (m_ffmodel==ff_model::KS && m_mode==FF_0_PPP_mode::pi0_pi0_KM) {
     // FM95 Tab.II row 6: A^(abc)=sin(theta_c), F3^(abc)=A/(2sqrt2 pi^2
     // fpi^3) G3, Eq.(25). Cabibbo-suppressed (Vus), |Delta S|=1.
     m_norm = Complex((*params.p_model)("Vus",Tools::Vus) /
 		      (2.*sqrt(2.)*sqr(M_PI)*pow(m_fpi,3)), 0.);
-  }
-}
 
-void FS_0_PiPlusPiZeroPiZero::Construct()  {
-  if (m_ffmodel==ff_model::KS && m_mode==FF_0_PPP_mode::pi0_pi0_KM) {
+    double betaKst = (*params.p_model)("betaKstar_pi0pi0K_KS",-0.135);
     Propagator_Base * Kstar892_1 =
       new BreitWigner(LineShapes->Get(Flavour(kf_K_star_892_plus)));
     Propagator_Base * Kstar1410_1 =
       new BreitWigner(LineShapes->Get(Flavour(kf_K_star_1410_plus)));
     p_TKstar1_v = new Summed_Propagator();
     p_TKstar1_v->Add(Kstar892_1,  Complex(1., 0.));
-    p_TKstar1_v->Add(Kstar1410_1, Complex(-0.135,0.));
+    p_TKstar1_v->Add(Kstar1410_1, Complex(betaKst,0.));
     // T_K*^(2), Eq.(42): K*(892) + lambda*K*(1410) + mu*K*(1714)/K*(1680).
-    // RESOLVED: K*(1680) lineshape now added (Kstar_Decays.H/.C, kf
-    // 30313/30323), registered in Line_Shapes::Init(). Its pole mass
-    // comes from whatever Sherpa's own particle table has for that
-    // kf-code, not necessarily either paper's quoted number (1.714 GeV
-    // per an earlier guess here vs 1.700 GeV per
-    // tau_two_meson_currents_KS_RChiT.tex's CLEO-tune usage) - the
-    // NULL-check below is now just a defensive fallback (in case the
-    // particle isn't registered in some build), not an expected path.
+    // K*(1680) lineshape registered (Kstar_Decays.H/.C, kf 30313/30323).
+    // Weights now overridable (unified nomenclature) rather than
+    // hardcoded literals.
+    Complex lambda = ReadComplexParam(params.p_model,
+				      "gammaMag_pi0pi0K_KS",-0.25,"gammaPhase_pi0pi0K_KS");
+    Complex mu     = ReadComplexParam(params.p_model,
+				      "deltaMag_pi0pi0K_KS",-0.038,"deltaPhase_pi0pi0K_KS");
     Total_Width_Base * wKstarpp = LineShapes->Get(Flavour(kf_K_star_1680_plus));
     p_TKstar2 = new Summed_Propagator();
     Propagator_Base * Kstar892_2 =
@@ -715,7 +1019,7 @@ void FS_0_PiPlusPiZeroPiZero::Construct()  {
     Propagator_Base * Kstar1410_2 =
       new BreitWigner(LineShapes->Get(Flavour(kf_K_star_1410_plus)));
     p_TKstar2->Add(Kstar892_2,  Complex(1.,0.));
-    p_TKstar2->Add(Kstar1410_2, Complex(-0.25,0.));
+    p_TKstar2->Add(Kstar1410_2, lambda);
     if (wKstarpp==NULL) {
       msg_Error()<<"Error in "<<METHOD<<": missing K*(1714)/K*'' lineshape "
 		 <<"for pi0_pi0_KM vector form factor (FM95 Eq.42) - "
@@ -724,9 +1028,13 @@ void FS_0_PiPlusPiZeroPiZero::Construct()  {
     }
     else {
       Propagator_Base * Kstarpp = new BreitWigner(wKstarpp);
-      p_TKstar2->Add(Kstarpp, Complex(-0.038,0.));
+      p_TKstar2->Add(Kstarpp, mu);
     }
   }
+  std::string label = std::string("FS_0_PiPlusPiZeroPiZero, mode=")+
+                       std::to_string(int(m_mode));
+  DumpPropagatorStructure(label+" [T_K*^(1)_v]", int(m_ffmodel), p_TKstar1_v);
+  DumpPropagatorStructure(label+" [T_K*^(2)]",   int(m_ffmodel), p_TKstar2);
 }
 
 Complex FS_0_PiPlusPiZeroPiZero::
@@ -766,8 +1074,7 @@ FF_KS(const double & s123,const double & s12,const double & s13) {
 //////////////////////////////////////////////////////////////////////////////////
 
 class F_0_KKPi_Stub : public FF_0_PPP_Base {
-  void    FixParameters(const FF_Parameters & params) {}
-  void    Construct() {}
+  void    Construct(const FF_Parameters & params) {}
   Complex FF_KS(const double & s123,const double & s1,const double & s2) {
     return Complex(0.,0.);
   }
@@ -802,8 +1109,7 @@ class F1_0_KKPi : public FF_0_PPP_Base {
   double  m_Mrho_rchl, m_MKst_rchl, m_Ma1_rchl, m_mK2, m_mpi2;
   Total_Width_Base * p_GRho, * p_GKst;
 
-  void    FixParameters(const FF_Parameters & params);
-  void    Construct();
+  void    Construct(const FF_Parameters & params);
   Complex FF_KS(const double & s123,const double & s1,const double & s2) {
     return Complex(0.,0.);
   }
@@ -816,12 +1122,11 @@ public:
     FF_0_PPP_Base(params), m_isF2(false), p_GRho(NULL), p_GKst(NULL)
   {
     if (params.m_name=="F2_0_KKPi") m_isF2 = true;
-    FixParameters(params);
-    Construct();
+    Construct(params);
   }
 };
 
-void F1_0_KKPi::FixParameters(const FF_Parameters & params) {
+void F1_0_KKPi::Construct(const FF_Parameters & params) {
   m_norm      = (*params.p_model)("Vud",Tools::Vud) /
                 (*params.p_model)("F_rchlKKpi",0.0924); // even # of kaons: cos(theta_C)/F
   m_F_rchl    = (*params.p_model)("F_rchlKKpi",0.0924);
@@ -833,11 +1138,20 @@ void F1_0_KKPi::FixParameters(const FF_Parameters & params) {
   m_Ma1_rchl  = (*params.p_model)("Ma1_rchlKKpi",1.12);
   m_mK2       = sqr(Flavour(kf_K_plus).HadMass());
   m_mpi2      = sqr(Flavour(kf_pi_plus).HadMass());
-}
-
-void F1_0_KKPi::Construct() {
   p_GRho = LineShapes->Get(Flavour(kf_rho_770_plus));
   p_GKst = LineShapes->Get(Flavour(kf_K_star_892_plus));
+  // This class uses bare Total_Width_Base pointers directly in its
+  // formula (not wrapped in a Summed_Propagator/Propagator_Base), so
+  // DumpPropagatorStructure (which expects the latter) doesn't apply -
+  // print the raw masses/on-shell widths directly instead.
+  msg_Out()<<"### Propagator structure for \"F1_0_KKPi, mode="<<int(m_mode)
+	   <<(m_isF2 ? " (F2)" : " (F1)")<<"\" (FORM_FACTOR = "<<int(m_ffmodel)<<"):\n";
+  if (p_GRho!=NULL) msg_Out()<<"###   rho(770): M = "<<m_Mrho_rchl<<" GeV,  "
+			     <<"Gamma(M^2) = "<<(*p_GRho)(sqr(m_Mrho_rchl))<<" GeV\n";
+  if (p_GKst!=NULL) msg_Out()<<"###   K*(892): M = "<<m_MKst_rchl<<" GeV,  "
+			     <<"Gamma(M^2) = "<<(*p_GKst)(sqr(m_MKst_rchl))<<" GeV\n";
+  msg_Out()<<"###   a1(1260) (inline, RChL::Gamma_a1_PionFit): M = "
+	   <<m_Ma1_rchl<<" GeV\n";
 }
 
 Complex F1_0_KKPi::FF_RChL2012(const double & s123,const double & s1_arg,
@@ -893,8 +1207,7 @@ class F5_0_KKPi : public FF_0_PPP_Base {
   double  m_c125, m_c1256, m_c1238, m_c4, m_d3, m_d123, m_g13, m_g2, m_g4, m_g5;
   Total_Width_Base * p_GRho, * p_GKst, * p_GOmega, * p_GPhi;
 
-  void    FixParameters(const FF_Parameters & params);
-  void    Construct();
+  void    Construct(const FF_Parameters & params);
   Complex FF_KS(const double & s123,const double & s1,const double & s2) {
     return Complex(0.,0.);
   }
@@ -906,12 +1219,11 @@ public:
   F5_0_KKPi(const FF_Parameters & params) :
     FF_0_PPP_Base(params), p_GRho(NULL), p_GKst(NULL), p_GOmega(NULL), p_GPhi(NULL)
   {
-    FixParameters(params);
-    Construct();
+    Construct(params);
   }
 };
 
-void F5_0_KKPi::FixParameters(const FF_Parameters & params) {
+void F5_0_KKPi::Construct(const FF_Parameters & params) {
   m_norm    = (*params.p_model)("Vud",Tools::Vud) /
               (*params.p_model)("F_rchlKKpi",0.0924);
   m_F_rchl  = (*params.p_model)("F_rchlKKpi",0.0924);
@@ -937,21 +1249,36 @@ void F5_0_KKPi::FixParameters(const FF_Parameters & params) {
 			      m_MV_rchl/(192.*sqr(M_PI)*sqrt(2.)*m_FV_rchl));
   m_g4    = (*params.p_model)("g4_rchlKKpi",-0.72);
   m_g5    = (*params.p_model)("g5_rchlKKpi",-0.6-2.*m_g4); // 2g4+g5=-0.6
-}
 
-void F5_0_KKPi::Construct() {
   p_GRho   = LineShapes->Get(Flavour(kf_rho_770_plus));
   p_GKst   = LineShapes->Get(Flavour(kf_K_star_892_plus));
   p_GOmega = LineShapes->Get(Flavour(kf_omega_782));
-  // No phi(1020) lineshape exists in Line_Shapes.C yet; at the default
-  // ideal mixing angle its contribution vanishes identically in Eq.(15)
-  // anyway (cos^2(thetaV)(1-sqrt(2)tan(thetaV))=0 at thetaV=35.26deg),
-  // so p_GPhi staying NULL is harmless UNLESS thetaV is changed away
-  // from ideal mixing via thetaV_rchlKKpi - in that case this term is
-  // silently dropped rather than contributing. Flagged here rather than
-  // silently wrong: add a phi(1020) Total_Width_Base if non-ideal
-  // mixing is ever needed.
-  p_GPhi   = NULL;
+  // phi(1020) lineshape now registered (Omega_Decays.H/.C,
+  // kf_phi_1020=333) - this comment previously said none existed;
+  // fixed to actually use it. At the default IDEAL mixing angle
+  // (thetaV=35.26deg) its contribution still vanishes identically in
+  // Eq.(15) (cos^2(thetaV)(1-sqrt(2)tan(thetaV))=0), so this only
+  // matters if thetaV_rchlKKpi is overridden away from ideal mixing -
+  // previously that case was silently missing the phi piece entirely;
+  // now it is included (see FF_RChL2012 below, omegaPhiTerm).
+  p_GPhi   = LineShapes->Get(Flavour(kf_phi_1020));
+  if (p_GPhi==NULL) {
+    msg_Error()<<"Error in "<<METHOD<<": phi(1020) lineshape unexpectedly "
+	       <<"unavailable for F5_0_KKPi - the phi piece of Eq.(15) will "
+	       <<"be dropped (harmless at the default ideal mixing angle, "
+	       <<"where it vanishes identically anyway, but not otherwise).\n";
+  }
+  msg_Out()<<"### Propagator structure for \"F5_0_KKPi, mode="<<int(m_mode)
+	   <<"\" (FORM_FACTOR = "<<int(m_ffmodel)<<"):\n";
+  if (p_GRho!=NULL)   msg_Out()<<"###   rho(770): M = "<<m_MV_rchl<<" GeV,  "
+			       <<"Gamma(M^2) = "<<(*p_GRho)(sqr(m_MV_rchl))<<" GeV\n";
+  if (p_GKst!=NULL)   msg_Out()<<"###   K*(892): M = "<<m_MKst_rchl<<" GeV,  "
+			       <<"Gamma(M^2) = "<<(*p_GKst)(sqr(m_MKst_rchl))<<" GeV\n";
+  if (p_GOmega!=NULL) msg_Out()<<"###   omega(782): Gamma(0.78194^2) = "
+			       <<(*p_GOmega)(sqr(0.78194))<<" GeV\n";
+  if (p_GPhi!=NULL)   msg_Out()<<"###   phi(1020): Gamma(1.020^2) = "
+			       <<(*p_GPhi)(sqr(1.020))<<" GeV,  mixing angle = "
+			       <<m_thetaV*180./M_PI<<" deg\n";
 }
 
 Complex F5_0_KKPi::FF_RChL2012(const double & s123,const double & s1_arg,
@@ -970,7 +1297,14 @@ Complex F5_0_KKPi::FF_RChL2012(const double & s123,const double & s1_arg,
 			       -Momega*(p_GOmega!=NULL?(*p_GOmega)(paper_s2):Gomega)));
   double  mixOmega = 1.+sqrt(2.)/tan(m_thetaV);
   double  mixPhi   = 1.-sqrt(2.)*tan(m_thetaV); // ->0 at ideal mixing
-  Complex omegaPhiTerm = sin2V*mixOmega*propOmega; // phi term dropped, see Construct()
+  // phi(1020) piece: previously always dropped (no lineshape existed).
+  // Now included whenever p_GPhi is available - vanishes identically
+  // at the default ideal mixing angle (mixPhi=0 there) regardless, so
+  // this only changes anything if thetaV_rchlKKpi is overridden.
+  double  Mphi=1.020, Gphi=0.00426;
+  Complex propPhi(1./Complex(sqr(Mphi)-paper_s2,
+			     -Mphi*(p_GPhi!=NULL?(*p_GPhi)(paper_s2):Gphi)));
+  Complex omegaPhiTerm = sin2V*mixOmega*propOmega + cos2V*mixPhi*propPhi;
 
   double CR_s2 = RChL::CR(q2,paper_s2,m_mK2,m_mK2,m_mpi2,
 			  m_c125,m_c1256,m_c1238,m_c4);
@@ -985,6 +1319,12 @@ Complex F5_0_KKPi::FF_RChL2012(const double & s123,const double & s1_arg,
 
   double CRR_s1 = RChL::CRR(q2,paper_s1,m_mK2,m_d3,m_d123);
   double CRR_s2 = RChL::CRR(q2,paper_s2,m_mpi2,m_d3,m_d123);
+  // NOTE: this second occurrence of the omega piece is left as the
+  // omega-only "sin2V*mixOmega*propOmega" combination, NOT the
+  // omegaPhiTerm used in FR5 above - unlike that one, there is no
+  // comment/derivation here confirming the same phi structure applies,
+  // so this is not extended by assumption. Flag if you know this
+  // should also include the phi piece.
   Complex FRR5 = -16.*sqrt(2.)*sqr(M_PI)*m_FV_rchl*m_GV_rchl * propRhoQ2 *
     ( CRR_s1*propKst + CRR_s2*sin2V*mixOmega*propOmega );
 
@@ -1041,8 +1381,7 @@ class F1_0_KPiK : public FF_0_PPP_Base {
   Propagator_Base   * p_BWA1;
   Summed_Propagator * p_Trho1, * p_TKstar1;
 
-  void    FixParameters(const FF_Parameters & params);
-  void    Construct();
+  void    Construct(const FF_Parameters & params);
   Complex FF_KS(const double & s123,const double & s12,const double & s13);
   Complex FF_RChiPT(const double & s123,const double & s1,const double & s2) {
     return Complex(1.,0.); // RChiPT not implemented for this channel - constant fallback
@@ -1053,8 +1392,7 @@ public:
     p_BWA1(NULL), p_Trho1(NULL), p_TKstar1(NULL)
   {
     if (params.m_name=="F2_0_KPiK") m_isF2 = true;
-    FixParameters(params);
-    Construct();
+    Construct(params);
   }
   ~F1_0_KPiK() {
     if (p_BWA1)    { delete p_BWA1;    p_BWA1    = NULL; }
@@ -1063,7 +1401,7 @@ public:
   }
 };
 
-void F1_0_KPiK::FixParameters(const FF_Parameters & params) {
+void F1_0_KPiK::Construct(const FF_Parameters & params) {
   if (m_ffmodel!=ff_model::KS) return;
   double fpi = (*params.p_model)("fpi",0.1307)/sqrt(2.);
   double Vud = (*params.p_model)("Vud",Tools::Vud);
@@ -1079,31 +1417,46 @@ void F1_0_KPiK::FixParameters(const FF_Parameters & params) {
   case FF_0_PPP_mode::KL_piM_KL:
     m_norm = Complex( pref*Vud/4., 0.); break;                 // Eq.(50): = -KSpiKS
   case FF_0_PPP_mode::KM_pi0_K0:
-    m_norm = Complex( pref*3.*Vud/(2.*sqrt(2.)), 0.); break;   // row 5
+    m_norm = Complex( pref*3.*Vud/(2.*sqrt(2.)), 0.);          // row 5
+    // K_S/K_L projection - same reasoning as FF_0_PP.C's Kpi_plus/
+    // KK_plus and this file's piM_K0bar_pi0 (m_isKSKL in FF_0_PPP.H).
+    if (m_isKSKL) m_norm /= sqrt(2.);
+    break;
   default: m_norm = Complex(0.,0.); break;
   }
-}
 
-void F1_0_KPiK::Construct() {
-  if (m_ffmodel!=ff_model::KS) return;
   p_BWA1 = new BreitWigner(LineShapes->Get(Flavour(kf_a_1_1260_plus)));
-  // T_rho^(1): only needed for the rows that actually reference it
-  // (1,2,4,5) - build unconditionally, it is cheap and harmless for
-  // rows 3/KL that don't use it.
+  // T_rho^(1)/T_K*^(1): reuse the SAME unified KS parameter names as
+  // the two-meson pipi_plus/Kpi_plus channels (FF_0_PP.C) - these are
+  // the identical physical rho(770)+beta_rho*rho(1450) and
+  // K*(892)+beta_K* K*(1410) mixes, just appearing again inside this
+  // 3-body current; tuning the 2-body fit now automatically keeps
+  // this 3-body current consistent with it, rather than needing two
+  // independently-maintained copies of the same numbers.
+  Complex gammaRho  = ReadComplexParam(params.p_model,
+				       "gammaMag_pipi_KS",-0.145,"gammaPhase_pipi_KS");
+  Complex gammaKst  = ReadComplexParam(params.p_model,
+				       "gammaMag_Kpi_KS",-0.135,"gammaPhase_Kpi_KS");
   Propagator_Base * rho770  =
     new BreitWigner(LineShapes->Get(Flavour(kf_rho_770)));
   Propagator_Base * rho1450 =
     new BreitWigner(LineShapes->Get(Flavour(kf_rho_1450_plus)));
   p_Trho1 = new Summed_Propagator();
   p_Trho1->Add(rho770,  Complex(1.,0.));
-  p_Trho1->Add(rho1450, Complex(-0.145,0.)); // beta_rho, Eq.(9)
+  p_Trho1->Add(rho1450, gammaRho); // beta_rho, Eq.(9)
   Propagator_Base * Kstar892  =
     new BreitWigner(LineShapes->Get(Flavour(kf_K_star_892_plus)));
   Propagator_Base * Kstar1410 =
     new BreitWigner(LineShapes->Get(Flavour(kf_K_star_1410_plus)));
   p_TKstar1 = new Summed_Propagator();
   p_TKstar1->Add(Kstar892,  Complex(1., 0.));
-  p_TKstar1->Add(Kstar1410, Complex(-0.135,0.)); // beta_K*, Eq.(10)
+  p_TKstar1->Add(Kstar1410, gammaKst); // beta_K*, Eq.(10)
+
+  std::string label = std::string("F1_0_KPiK, mode=")+std::to_string(int(m_mode))+
+                       (m_isF2 ? " (F2)" : " (F1)");
+  DumpPropagatorStructure(label+" [a1]",       int(m_ffmodel), p_BWA1);
+  DumpPropagatorStructure(label+" [T_rho^1]",  int(m_ffmodel), p_Trho1);
+  DumpPropagatorStructure(label+" [T_K*^1]",   int(m_ffmodel), p_TKstar1);
 }
 
 Complex F1_0_KPiK::
@@ -1148,8 +1501,7 @@ FF_KS(const double & s123,const double & s12,const double & s13) {
 class FS_0_KPiK : public FF_0_PPP_Base {
   Summed_Propagator * p_Trho2, * p_TKstar1, * p_Tomega;
 
-  void    FixParameters(const FF_Parameters & params);
-  void    Construct();
+  void    Construct(const FF_Parameters & params);
   Complex FF_KS(const double & s123,const double & s12,const double & s13);
   Complex FF_RChiPT(const double & s123,const double & s1,const double & s2) {
     return Complex(1.,0.); // RChiPT not implemented for this channel - constant fallback
@@ -1158,8 +1510,7 @@ public:
   FS_0_KPiK(const FF_Parameters & params) :
     FF_0_PPP_Base(params), p_Trho2(NULL), p_TKstar1(NULL), p_Tomega(NULL)
   {
-    FixParameters(params);
-    Construct();
+    Construct(params);
   }
   ~FS_0_KPiK() {
     if (p_Trho2)   { delete p_Trho2;   p_Trho2   = NULL; }
@@ -1168,7 +1519,7 @@ public:
   }
 };
 
-void FS_0_KPiK::FixParameters(const FF_Parameters & params) {
+void FS_0_KPiK::Construct(const FF_Parameters & params) {
   if (m_ffmodel!=ff_model::KS) return;
   double fpi = (*params.p_model)("fpi",0.1307)/sqrt(2.);
   double Vud = (*params.p_model)("Vud",Tools::Vud);
@@ -1179,13 +1530,13 @@ void FS_0_KPiK::FixParameters(const FF_Parameters & params) {
   case FF_0_PPP_mode::KS_piM_KS:    m_norm = Complex(-pref*Vud/2.,0.);     break;
   case FF_0_PPP_mode::KS_piM_KL:    m_norm = Complex( pref*Vud/2.,0.);     break;
   case FF_0_PPP_mode::KL_piM_KL:    m_norm = Complex( pref*Vud/2.,0.);     break; // Eq.(52): =-KSpiKS
-  case FF_0_PPP_mode::KM_pi0_K0:    m_norm = Complex(-pref*Vud/sqrt(2.),0.); break;
+  case FF_0_PPP_mode::KM_pi0_K0:
+    m_norm = Complex(-pref*Vud/sqrt(2.),0.);
+    if (m_isKSKL) m_norm /= sqrt(2.); // same K_S/K_L projection as F1_0_KPiK
+    break;
   default: m_norm = Complex(0.,0.); break;
   }
-}
 
-void FS_0_KPiK::Construct() {
-  if (m_ffmodel!=ff_model::KS) return;
   // T_rho^(2), Eq.(42): rho(770)+lambda rho(1500)+mu rho(1750). Reuses
   // kf_rho_1450_plus/kf_rho_1700_plus as the closest available
   // resonances - FLAG: FM95 wants DIFFERENT masses/widths for these
@@ -1198,30 +1549,45 @@ void FS_0_KPiK::Construct() {
   // for kf_rho_1450_plus/kf_rho_1700_plus everywhere, or provide new,
   // distinguishable kf-codes/parametrised Flavours for this specific
   // 3-body vector-current usage.
+  Complex lambda = ReadComplexParam(params.p_model,
+				    "gammaMag_KpiK_vector_KS",-0.25,"gammaPhase_KpiK_vector_KS");
+  Complex mu     = ReadComplexParam(params.p_model,
+				    "deltaMag_KpiK_vector_KS",-0.038,"deltaPhase_KpiK_vector_KS");
   Propagator_Base * rho770  = new BreitWigner(LineShapes->Get(Flavour(kf_rho_770_plus)));
   Propagator_Base * rho1500 = new BreitWigner(LineShapes->Get(Flavour(kf_rho_1450_plus)));
   p_Trho2 = new Summed_Propagator();
   p_Trho2->Add(rho770,  Complex(1.,0.));
-  p_Trho2->Add(rho1500, Complex(-0.25,0.)); // lambda
+  p_Trho2->Add(rho1500, lambda);
   Total_Width_Base * wRhopp = LineShapes->Get(Flavour(kf_rho_1700_plus));
-  if (wRhopp!=NULL) p_Trho2->Add(new BreitWigner(wRhopp), Complex(-0.038,0.)); // mu
+  if (wRhopp!=NULL) p_Trho2->Add(new BreitWigner(wRhopp), mu);
 
+  // T_K*^(1): same unified KS parameter name as the two-meson Kpi_plus
+  // channel (see F1_0_KPiK's Construct() comment above for rationale).
+  Complex gammaKst = ReadComplexParam(params.p_model,
+				      "gammaMag_Kpi_KS",-0.135,"gammaPhase_Kpi_KS");
   Propagator_Base * Kstar892  = new BreitWigner(LineShapes->Get(Flavour(kf_K_star_892_plus)));
   Propagator_Base * Kstar1410 = new BreitWigner(LineShapes->Get(Flavour(kf_K_star_1410_plus)));
   p_TKstar1 = new Summed_Propagator();
   p_TKstar1->Add(Kstar892,  Complex(1., 0.));
-  p_TKstar1->Add(Kstar1410, Complex(-0.135,0.));
+  p_TKstar1->Add(Kstar1410, gammaKst);
 
   // T_omega, Eq.(36): omega(782)+eps phi(1020). phi(1020) confirmed
   // and registered (Omega_Decays.H/.C, kf_phi_1020=333).
+  Complex eps = ReadComplexParam(params.p_model,
+				 "gammaMag_omegaphi_KS",0.05,"gammaPhase_omegaphi_KS");
   Propagator_Base * omega782 = new BreitWigner(LineShapes->Get(Flavour(kf_omega_782)));
   p_Tomega = new Summed_Propagator();
   p_Tomega->Add(omega782, Complex(1.,0.));
   Total_Width_Base * wPhi = LineShapes->Get(Flavour(kf_phi_1020));
-  if (wPhi!=NULL) p_Tomega->Add(new BreitWigner(wPhi), Complex(0.05,0.)); // eps
+  if (wPhi!=NULL) p_Tomega->Add(new BreitWigner(wPhi), eps);
   else msg_Error()<<"Error in "<<METHOD<<": phi(1020) lineshape "
 		  <<"unexpectedly unavailable for T_omega (FM95 Eq.36) - "
 		  <<"falling back to plain BW_omega(782), a ~5% approximation.\n";
+
+  std::string label = std::string("FS_0_KPiK, mode=")+std::to_string(int(m_mode));
+  DumpPropagatorStructure(label+" [T_rho^2]",  int(m_ffmodel), p_Trho2);
+  DumpPropagatorStructure(label+" [T_K*^1]",   int(m_ffmodel), p_TKstar1);
+  DumpPropagatorStructure(label+" [T_omega]",  int(m_ffmodel), p_Tomega);
 }
 
 Complex FS_0_KPiK::
@@ -1253,8 +1619,7 @@ FF_KS(const double & s123,const double & s12,const double & s13) {
 // F4 stub (always 0 - paper sets the scalar form factor to 0 for all
 // channels, Sec.III below Eq.19).
 class F3_0_KPiK_Stub : public FF_0_PPP_Base {
-  void    FixParameters(const FF_Parameters & params) {}
-  void    Construct() {}
+  void    Construct(const FF_Parameters & params) {}
   Complex FF_KS(const double & s123,const double & s1,const double & s2) {
     return Complex(0.,0.);
   }
@@ -1286,8 +1651,23 @@ class F1_0_KPiPi : public FF_0_PPP_Base {
   Summed_Propagator * p_TK1a, * p_Trho1, * p_TKstar1;
   Propagator_Base    * p_TK1b;
 
-  void    FixParameters(const FF_Parameters & params);
-  void    Construct();
+  // --- CLEO K1 data-driven alternative (KS_CLEO=102) ---
+  // tau_two_meson_currents_KS_RChiT.tex Sec."CLEO K1 data-driven
+  // alternative" - ONLY given there for the charged K^-pi^-pi^+ mode
+  // (KM_piM_piP); no analogous combination is given for piM_K0bar_pi0,
+  // so KS_CLEO falls back to the constant form factor for that mode.
+  // Uses the SAME s_Kpi=s13/s_pipi=reconstructed-s1 assignment as the
+  // FM95 KS branch (F1 uses the K*pi subchannel, F2 the Krho one), but
+  // with CLEO's OWN K1(1270)/K1(1400) masses/widths (genuinely
+  // broader than FM95's) and real weights A,B,C,D rather than FM95's
+  // xi-mixed T_K1^(a)/T_K1^(b). The K* propagator here is a BARE
+  // K*(892) (no K*(1410) admixture, unlike FM95's own T_K*^(1)) -
+  // reuses Sherpa's registered running width.
+  double  m_ACLEO, m_BCLEO, m_CCLEO, m_DCLEO;
+  double  m_MK1_1270_CLEO, m_GK1_1270_CLEO, m_MK1_1400_CLEO, m_GK1_1400_CLEO;
+  Propagator_Base * p_KstCLEO;
+
+  void    Construct(const FF_Parameters & params);
   Complex FF_KS(const double & s123,const double & s12,const double & s13);
   Complex FF_RChiPT(const double & s123,const double & s1,const double & s2) {
     return Complex(1.,0.); // RChiPT not implemented for this channel - constant fallback
@@ -1295,22 +1675,23 @@ class F1_0_KPiPi : public FF_0_PPP_Base {
 public:
   F1_0_KPiPi(const FF_Parameters & params) :
     FF_0_PPP_Base(params), m_isF2(false), m_xiK1(0.33),
-    p_TK1a(NULL), p_Trho1(NULL), p_TKstar1(NULL), p_TK1b(NULL)
+    p_TK1a(NULL), p_Trho1(NULL), p_TKstar1(NULL), p_TK1b(NULL),
+    p_KstCLEO(NULL)
   {
     if (params.m_name=="F2_0_KPiPi") m_isF2 = true;
-    FixParameters(params);
-    Construct();
+    Construct(params);
   }
   ~F1_0_KPiPi() {
     if (p_TK1a)    { delete p_TK1a;    p_TK1a    = NULL; }
     if (p_Trho1)   { delete p_Trho1;   p_Trho1   = NULL; }
     if (p_TKstar1) { delete p_TKstar1; p_TKstar1 = NULL; }
     if (p_TK1b)    { delete p_TK1b;    p_TK1b    = NULL; }
+    if (p_KstCLEO) { delete p_KstCLEO; p_KstCLEO = NULL; }
   }
 };
 
-void F1_0_KPiPi::FixParameters(const FF_Parameters & params) {
-  if (m_ffmodel!=ff_model::KS) return;
+void F1_0_KPiPi::Construct(const FF_Parameters & params) {
+  if (m_ffmodel==ff_model::KS || m_ffmodel==ff_model::KS_f0) {
   double fpi = (*params.p_model)("fpi",0.1307)/sqrt(2.);
   double Vus = (*params.p_model)("Vus",Tools::Vus);
   double pref = 2.*sqrt(2.)/(3.*fpi);
@@ -1319,20 +1700,20 @@ void F1_0_KPiPi::FixParameters(const FF_Parameters & params) {
   case FF_0_PPP_mode::KM_piM_piP:
     m_norm = Complex(-pref*Vus/2., 0.); break;                   // row 7
   case FF_0_PPP_mode::piM_K0bar_pi0:
-    m_norm = Complex( pref*3.*Vus/(2.*sqrt(2.)), 0.); break;     // row 8
+    m_norm = Complex( pref*3.*Vus/(2.*sqrt(2.)), 0.);
+    // K_S/K_L projection - see the m_isKSKL comment in FF_0_PPP.H and
+    // the identical reasoning in FF_0_PP.C's Construct_KK/Construct_Kpi.
+    if (m_isKSKL) m_norm /= sqrt(2.);
+    break;                                                       // row 8
   default: m_norm = Complex(0.,0.); break;
   }
-}
 
-void F1_0_KPiPi::Construct() {
-  if (m_ffmodel!=ff_model::KS) return;
   Total_Width_Base * wK11400 = LineShapes->Get(Flavour(kf_K_1_1400_plus));
   Total_Width_Base * wK11270 = LineShapes->Get(Flavour(kf_K_1_1270_plus));
   if (wK11400==NULL || wK11270==NULL) {
     msg_Error()<<"Error in "<<METHOD<<": missing K1(1270)/K1(1400) "
 	       <<"lineshape(s) - T_K1^(a) and T_K1^(b) will be treated as "
-	       <<"identically zero (see F1_0_PiPlusPiZeroPiZero's Construct() "
-	       <<"for what is needed to fix this).\n";
+	       <<"identically zero.\n";
   }
   else {
     p_TK1a = new Summed_Propagator();
@@ -1340,23 +1721,119 @@ void F1_0_KPiPi::Construct() {
     p_TK1a->Add(new BreitWigner(wK11270), Complex(m_xiK1,0.));
     p_TK1b = new BreitWigner(wK11270);
   }
+  // Same unified KS parameter names as pipi_plus/Kpi_plus (FF_0_PP.C)
+  // and F1_0_KPiK above - same physical rho(770)+rho(1450) and
+  // K*(892)+K*(1410) mixes reused yet again.
+  Complex gammaRho = ReadComplexParam(params.p_model,
+				      "gammaMag_pipi_KS",-0.145,"gammaPhase_pipi_KS");
+  Complex gammaKst = ReadComplexParam(params.p_model,
+				      "gammaMag_Kpi_KS",-0.135,"gammaPhase_Kpi_KS");
   Propagator_Base * rho770  = new BreitWigner(LineShapes->Get(Flavour(kf_rho_770)));
   Propagator_Base * rho1450 = new BreitWigner(LineShapes->Get(Flavour(kf_rho_1450_plus)));
   p_Trho1 = new Summed_Propagator();
   p_Trho1->Add(rho770,  Complex(1.,0.));
-  p_Trho1->Add(rho1450, Complex(-0.145,0.));
+  p_Trho1->Add(rho1450, gammaRho);
+  // KS_f0 (103): add an f0(500)/sigma admixture to the pipi tower -
+  // NOT present in FM95's original current, requested addition. No
+  // literature source for this specific weight - default chosen to
+  // be a modest, same-order-of-magnitude admixture to rho(1450)'s own
+  // weight, reusing Sherpa's own registered f0(600) running width
+  // (kf_f_0_600) per the established "reuse lineshape machinery"
+  // preference. Please retune deltaMag_pipi_f0 against data.
+  if (m_ffmodel==ff_model::KS_f0) {
+    Complex deltaF0 = ReadComplexParam(params.p_model,
+				       "deltaMag_pipi_f0",-0.2,"deltaPhase_pipi_f0");
+    p_Trho1->Add(new BreitWigner(LineShapes->Get(Flavour(kf_f_0_600))), deltaF0);
+  }
   Propagator_Base * Kstar892  = new BreitWigner(LineShapes->Get(Flavour(kf_K_star_892_plus)));
   Propagator_Base * Kstar1410 = new BreitWigner(LineShapes->Get(Flavour(kf_K_star_1410_plus)));
   p_TKstar1 = new Summed_Propagator();
   p_TKstar1->Add(Kstar892,  Complex(1., 0.));
-  p_TKstar1->Add(Kstar1410, Complex(-0.135,0.));
+  p_TKstar1->Add(Kstar1410, gammaKst);
+
+  std::string label = std::string("F1_0_KPiPi, mode=")+std::to_string(int(m_mode))+
+                       (m_isF2 ? " (F2)" : " (F1)");
+  DumpPropagatorStructure(label+" [T_K1^a]",  int(m_ffmodel), p_TK1a);
+  DumpPropagatorStructure(label+" [T_K1^b]",  int(m_ffmodel), p_TK1b);
+  DumpPropagatorStructure(label+" [T_rho^1]", int(m_ffmodel), p_Trho1);
+  DumpPropagatorStructure(label+" [T_K*^1]",  int(m_ffmodel), p_TKstar1);
+  }
+  else if ((m_ffmodel==ff_model::KS_CLEO || m_ffmodel==ff_model::CLEO_f0) &&
+	   m_mode==FF_0_PPP_mode::KM_piM_piP) {
+    double fpi = (*params.p_model)("fpi",0.1307)/sqrt(2.);
+    double Vus = (*params.p_model)("Vus",Tools::Vus);
+    // FIXME: the note gives the "-2N/(3Fpi)"/"-N/(sqrt3 Fpi)" prefactor
+    // STRUCTURE for F1/F2 respectively, but no explicit numeric value
+    // for the overall N (unlike FM95's own A^{K-pi-pi+}=-sin(thetaC)/2,
+    // which gives a concrete CKM coefficient). N_Kpipi_CLEO below is a
+    // placeholder (default 1) for whatever residual normalization
+    // convention N represents - please supply if known.
+    double NCLEO = (*params.p_model)("N_Kpipi_CLEO", 1.);
+    if (!m_isF2) m_norm = Complex(-2.*NCLEO*Vus/(3.*fpi), 0.);
+    else         m_norm = Complex(   -NCLEO*Vus/(sqrt(3.)*fpi), 0.);
+
+    m_CCLEO = (*params.p_model)("CCLEO_Kpipi", 0.20);
+    m_DCLEO = (*params.p_model)("DCLEO_Kpipi", 0.27);
+    m_ACLEO = (*params.p_model)("ACLEO_Kpipi", 0.94);
+    m_BCLEO = (*params.p_model)("BCLEO_Kpipi", 0.);
+    // CLEO-fitted K1(1270)/K1(1400) - genuinely broader than FM95's
+    // own values (0.090/0.174 GeV) - own masses/widths, not reused
+    // from K1_Decays.H's registered lineshapes (built for FM95's own,
+    // much narrower, fit). Running-width convention for these two is
+    // NOT specified in the note for this channel - a plain FIXED
+    // width is used here (most conservative reading), unlike the
+    // explicit BW_L prescription given for the 3pi CLEO current;
+    // flag if a running width is wanted instead.
+    m_MK1_1270_CLEO = (*params.p_model)("MK1_1270_CLEO", 1.254);
+    m_GK1_1270_CLEO = (*params.p_model)("GK1_1270_CLEO", 0.26);
+    m_MK1_1400_CLEO = (*params.p_model)("MK1_1400_CLEO", 1.463);
+    m_GK1_1400_CLEO = (*params.p_model)("GK1_1400_CLEO", 0.30);
+
+    Complex gammaRho = ReadComplexParam(params.p_model,
+					"gammaMag_pipi_KS",-0.145,"gammaPhase_pipi_KS");
+    Propagator_Base * rho770  = new BreitWigner(LineShapes->Get(Flavour(kf_rho_770)));
+    Propagator_Base * rho1450 = new BreitWigner(LineShapes->Get(Flavour(kf_rho_1450_plus)));
+    p_Trho1 = new Summed_Propagator();
+    p_Trho1->Add(rho770,  Complex(1.,0.));
+    p_Trho1->Add(rho1450, gammaRho);
+    // CLEO_f0 (104): same f0(500)/sigma addition as KS_f0 above -
+    // see that branch's comment for the caveat on this weight.
+    if (m_ffmodel==ff_model::CLEO_f0) {
+      Complex deltaF0 = ReadComplexParam(params.p_model,
+					 "deltaMag_pipi_f0",-0.2,"deltaPhase_pipi_f0");
+      p_Trho1->Add(new BreitWigner(LineShapes->Get(Flavour(kf_f_0_600))), deltaF0);
+    }
+    p_KstCLEO = new BreitWigner(LineShapes->Get(Flavour(kf_K_star_892_plus)));
+
+    std::string label = std::string("F1_0_KPiPi (CLEO), mode=")+std::to_string(int(m_mode))+
+                         (m_isF2 ? " (F2)" : " (F1)");
+    DumpPropagatorStructure(label+" [T_rho^1]", int(m_ffmodel), p_Trho1);
+    DumpPropagatorStructure(label+" [K*(892)]", int(m_ffmodel), p_KstCLEO);
+    msg_Out()<<"###   K1(1270) (CLEO): M = "<<m_MK1_1270_CLEO<<" GeV, Gamma = "
+	     <<m_GK1_1270_CLEO<<" GeV (fixed width)\n"
+	     <<"###   K1(1400) (CLEO): M = "<<m_MK1_1400_CLEO<<" GeV, Gamma = "
+	     <<m_GK1_1400_CLEO<<" GeV (fixed width)\n";
+  }
 }
 
 Complex F1_0_KPiPi::
 FF_KS(const double & s123,const double & s12,const double & s13) {
-  if (p_Trho1==NULL || p_TKstar1==NULL) return Complex(0.,0.);
   double s1 = s123 - s12 - s13 +
     m_masses2[m_pi[0]] + m_masses2[m_pi[1]] + m_masses2[m_pi[2]];
+  if ((m_ffmodel==ff_model::KS_CLEO || m_ffmodel==ff_model::CLEO_f0) &&
+      m_mode==FF_0_PPP_mode::KM_piM_piP) {
+    if (p_Trho1==NULL || p_KstCLEO==NULL) return Complex(0.,0.);
+    // s_Kpi=s13, s_pipi=s1 (reconstructed) - same assignment as the
+    // FM95 KS branch below (F1 uses the K*pi subchannel, F2 the Krho
+    // one). Fixed-width K1(1270)/K1(1400) BWs (see Construct()).
+    Complex BWK1_1270 = sqr(m_MK1_1270_CLEO) /
+      Complex(sqr(m_MK1_1270_CLEO)-s123,-m_MK1_1270_CLEO*m_GK1_1270_CLEO);
+    Complex BWK1_1400 = sqr(m_MK1_1400_CLEO) /
+      Complex(sqr(m_MK1_1400_CLEO)-s123,-m_MK1_1400_CLEO*m_GK1_1400_CLEO);
+    if (!m_isF2) return (m_CCLEO*BWK1_1270 + m_DCLEO*BWK1_1400) * (*p_KstCLEO)(s13);
+    return (m_ACLEO*BWK1_1270 + m_BCLEO*BWK1_1400) * (*p_Trho1)(s1);
+  }
+  if (p_Trho1==NULL || p_TKstar1==NULL) return Complex(0.,0.);
   Complex TK1a = (p_TK1a!=NULL ? (*p_TK1a)(s123) : Complex(0.,0.));
   Complex TK1b = (p_TK1b!=NULL ? (*p_TK1b)(s123) : Complex(0.,0.));
   switch (m_mode) {
@@ -1384,8 +1861,7 @@ FF_KS(const double & s123,const double & s12,const double & s13) {
 class FS_0_KPiPi : public FF_0_PPP_Base {
   Summed_Propagator * p_TKstar2, * p_Trho1, * p_TKstar1;
 
-  void    FixParameters(const FF_Parameters & params);
-  void    Construct();
+  void    Construct(const FF_Parameters & params);
   Complex FF_KS(const double & s123,const double & s12,const double & s13);
   Complex FF_RChiPT(const double & s123,const double & s1,const double & s2) {
     return Complex(1.,0.); // RChiPT not implemented for this channel - constant fallback
@@ -1394,8 +1870,7 @@ public:
   FS_0_KPiPi(const FF_Parameters & params) :
     FF_0_PPP_Base(params), p_TKstar2(NULL), p_Trho1(NULL), p_TKstar1(NULL)
   {
-    FixParameters(params);
-    Construct();
+    Construct(params);
   }
   ~FS_0_KPiPi() {
     if (p_TKstar2) { delete p_TKstar2; p_TKstar2 = NULL; }
@@ -1404,40 +1879,63 @@ public:
   }
 };
 
-void FS_0_KPiPi::FixParameters(const FF_Parameters & params) {
-  if (m_ffmodel!=ff_model::KS) return;
+void FS_0_KPiPi::Construct(const FF_Parameters & params) {
+  if (m_ffmodel!=ff_model::KS && m_ffmodel!=ff_model::KS_f0) return;
   double fpi  = (*params.p_model)("fpi",0.1307)/sqrt(2.);
   double Vus  = (*params.p_model)("Vus",Tools::Vus);
   double pref = 1./(2.*sqrt(2.)*sqr(M_PI)*pow(fpi,3));
   switch (m_mode) {
   case FF_0_PPP_mode::KM_piM_piP:    m_norm = Complex(pref*Vus,0.);          break;
-  case FF_0_PPP_mode::piM_K0bar_pi0: m_norm = Complex(pref*sqrt(2.)*Vus,0.); break;
+  case FF_0_PPP_mode::piM_K0bar_pi0:
+    m_norm = Complex(pref*sqrt(2.)*Vus,0.);
+    // K_S/K_L projection - see F1_0_KPiPi::Construct above.
+    if (m_isKSKL) m_norm /= sqrt(2.);
+    break;
   default: m_norm = Complex(0.,0.); break;
   }
-}
 
-void FS_0_KPiPi::Construct() {
-  if (m_ffmodel!=ff_model::KS) return;
+  Complex lambda = ReadComplexParam(params.p_model,
+				    "gammaMag_KpiK_vector_KS",-0.25,"gammaPhase_KpiK_vector_KS");
+  Complex mu     = ReadComplexParam(params.p_model,
+				    "deltaMag_KpiK_vector_KS",-0.038,"deltaPhase_KpiK_vector_KS");
   Propagator_Base * Kstar892  = new BreitWigner(LineShapes->Get(Flavour(kf_K_star_892_plus)));
   Propagator_Base * Kstar1410 = new BreitWigner(LineShapes->Get(Flavour(kf_K_star_1410_plus)));
   p_TKstar2 = new Summed_Propagator();
   p_TKstar2->Add(Kstar892,  Complex(1.,0.));
-  p_TKstar2->Add(Kstar1410, Complex(-0.25,0.));
+  p_TKstar2->Add(Kstar1410, lambda);
   Total_Width_Base * wKstarpp = LineShapes->Get(Flavour(kf_K_star_1680_plus));
-  if (wKstarpp!=NULL) p_TKstar2->Add(new BreitWigner(wKstarpp), Complex(-0.038,0.));
+  if (wKstarpp!=NULL) p_TKstar2->Add(new BreitWigner(wKstarpp), mu);
   else msg_Error()<<"Error in "<<METHOD<<": missing K*(1714)/K*'' lineshape "
 		  <<"(FM95 Eq.42) - dropping the mu-term, see the identical "
 		  <<"flag in FS_0_PiPlusPiZeroPiZero above.\n";
+
+  Complex gammaRho = ReadComplexParam(params.p_model,
+				      "gammaMag_pipi_KS",-0.145,"gammaPhase_pipi_KS");
   Propagator_Base * rho770  = new BreitWigner(LineShapes->Get(Flavour(kf_rho_770_plus)));
   Propagator_Base * rho1450 = new BreitWigner(LineShapes->Get(Flavour(kf_rho_1450_plus)));
   p_Trho1 = new Summed_Propagator();
   p_Trho1->Add(rho770,  Complex(1.,0.));
-  p_Trho1->Add(rho1450, Complex(-0.145,0.));
+  p_Trho1->Add(rho1450, gammaRho);
+  // KS_f0 (103): same f0(500)/sigma addition as F1_0_KPiPi - see that
+  // class's Construct() for the caveat on this weight.
+  if (m_ffmodel==ff_model::KS_f0) {
+    Complex deltaF0 = ReadComplexParam(params.p_model,
+				       "deltaMag_pipi_f0",-0.2,"deltaPhase_pipi_f0");
+    p_Trho1->Add(new BreitWigner(LineShapes->Get(Flavour(kf_f_0_600))), deltaF0);
+  }
+
+  Complex gammaKst = ReadComplexParam(params.p_model,
+				      "gammaMag_Kpi_KS",-0.135,"gammaPhase_Kpi_KS");
   Propagator_Base * Kstar892_1  = new BreitWigner(LineShapes->Get(Flavour(kf_K_star_892_plus)));
   Propagator_Base * Kstar1410_1 = new BreitWigner(LineShapes->Get(Flavour(kf_K_star_1410_plus)));
   p_TKstar1 = new Summed_Propagator();
   p_TKstar1->Add(Kstar892_1,  Complex(1., 0.));
-  p_TKstar1->Add(Kstar1410_1, Complex(-0.135,0.));
+  p_TKstar1->Add(Kstar1410_1, gammaKst);
+
+  std::string label = std::string("FS_0_KPiPi, mode=")+std::to_string(int(m_mode));
+  DumpPropagatorStructure(label+" [T_K*^2]",  int(m_ffmodel), p_TKstar2);
+  DumpPropagatorStructure(label+" [T_rho^1]", int(m_ffmodel), p_Trho1);
+  DumpPropagatorStructure(label+" [T_K*^1]",  int(m_ffmodel), p_TKstar1);
 }
 
 Complex FS_0_KPiPi::
@@ -1458,8 +1956,7 @@ FF_KS(const double & s123,const double & s12,const double & s13) {
 }
 
 class F3_0_KPiPi_Stub : public FF_0_PPP_Base {
-  void    FixParameters(const FF_Parameters & params) {}
-  void    Construct() {}
+  void    Construct(const FF_Parameters & params) {}
   Complex FF_KS(const double & s123,const double & s1,const double & s2) {
     return Complex(0.,0.);
   }
@@ -1469,6 +1966,128 @@ class F3_0_KPiPi_Stub : public FF_0_PPP_Base {
 public:
   F3_0_KPiPi_Stub(const FF_Parameters & params) : FF_0_PPP_Base(params) {}
 };
+
+//////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////
+//
+// eta pi^- pi^0 / eta' pi^- pi^0 (tau_two_meson_currents_KS_RChiT.tex,
+// Sec."eta pi pi and eta' pi pi"). G-parity kills the axial (F1,F2)
+// AND scalar (F4) form factors identically in the isospin limit - the
+// ONLY nonzero piece is the anomalous vector current F5(=FS here),
+// Eq.(eq:eta-pipi-old) (old TAUOLA/VMD current):
+//   F5 = N_WZW^eta(') * T_rho^(2)(Q^2) * T_rho^(1)(s1),
+//   s1 = (p2+p3)^2 = s_pipi (paper's own s1, reconstructed via
+//        momentum conservation, same convention as every other
+//        3-meson channel in this file).
+// T_rho^(1) (beta_rho=-0.145) and T_rho^(2) (lambda=-0.25, mu=-0.038)
+// reuse the SAME unified parameter names as the KpiK/KpiPi/3pi
+// channels above (gammaMag_pipi_KS, gammaMag_KpiK_vector_KS/
+// deltaMag_KpiK_vector_KS) - same physical rho towers appearing yet
+// again. A dedicated R$\chi$T current (Gomez Dumm & Roig, WZW+VJP+
+// VVP+VPPP operators) also exists in the note but needs several
+// further couplings (c_i-type odd-intrinsic-parity constants) not
+// given numerically there - NOT implemented; this class is the
+// simpler "old VMD/TAUOLA" current only.
+//
+//////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////
+
+// F1/F2 stub (axial vanishes by G-parity - genuine physics, not a gap).
+class F1_0_EtaPiPi_Stub : public FF_0_PPP_Base {
+  void    Construct(const FF_Parameters & params) {}
+  Complex FF_KS(const double & s123,const double & s1,const double & s2) {
+    return Complex(0.,0.);
+  }
+  Complex FF_RChiPT(const double & s123,const double & s1,const double & s2) {
+    return Complex(0.,0.);
+  }
+public:
+  F1_0_EtaPiPi_Stub(const FF_Parameters & params) : FF_0_PPP_Base(params) {}
+};
+
+// F4 stub (always 0, same convention as every other channel here).
+class F3_0_EtaPiPi_Stub : public FF_0_PPP_Base {
+  void    Construct(const FF_Parameters & params) {}
+  Complex FF_KS(const double & s123,const double & s1,const double & s2) {
+    return Complex(0.,0.);
+  }
+  Complex FF_RChiPT(const double & s123,const double & s1,const double & s2) {
+    return Complex(0.,0.);
+  }
+public:
+  F3_0_EtaPiPi_Stub(const FF_Parameters & params) : FF_0_PPP_Base(params) {}
+};
+
+class FS_0_EtaPiPi : public FF_0_PPP_Base {
+  Summed_Propagator * p_Trho1, * p_Trho2;
+
+  void    Construct(const FF_Parameters & params);
+  Complex FF_KS(const double & s123,const double & s12,const double & s13);
+  Complex FF_RChiPT(const double & s123,const double & s1,const double & s2) {
+    return Complex(1.,0.); // dedicated RChiPT current not implemented - constant fallback
+  }
+public:
+  FS_0_EtaPiPi(const FF_Parameters & params) :
+    FF_0_PPP_Base(params), p_Trho1(NULL), p_Trho2(NULL)
+  {
+    Construct(params);
+  }
+  ~FS_0_EtaPiPi() {
+    if (p_Trho1) { delete p_Trho1; p_Trho1 = NULL; }
+    if (p_Trho2) { delete p_Trho2; p_Trho2 = NULL; }
+  }
+};
+
+void FS_0_EtaPiPi::Construct(const FF_Parameters & params) {
+  if (m_ffmodel!=ff_model::KS) return;
+  bool isPrime = (m_mode==FF_0_PPP_mode::EtaprimePiPi_pi0);
+  double fpi = (*params.p_model)("fpi",0.1307)/sqrt(2.);
+  // FIXME: the note does not give a numeric value for the combined
+  // WZW-anomaly-normalization/eta-eta' mixing Clebsch N_WZW^eta(') -
+  // it only states that IF the master current's explicit 1/(4pi^2F^2)
+  // anomaly prefactor is used, only the channel mixing coefficient
+  // remains. Best-effort default below: a plausible 1/(4pi^2 fpi^2)
+  // anomaly-scale prefactor times a placeholder mixing coefficient
+  // (default 1, like N_Keta/N_Ketaprime elsewhere) - please supply the
+  // actual eta-eta' mixing convention/normalization you want used.
+  double Nmix = (*params.p_model)(isPrime ? "N_etaprimepipi" : "N_etapipi", 1.);
+  m_norm = Complex((*params.p_model)("Vud",Tools::Vud) * Nmix /
+		    (4.*sqr(M_PI)*sqr(fpi)), 0.);
+
+  Complex gammaRho = ReadComplexParam(params.p_model,
+				      "gammaMag_pipi_KS",-0.145,"gammaPhase_pipi_KS");
+  Propagator_Base * rho770_1  = new BreitWigner(LineShapes->Get(Flavour(kf_rho_770_plus)));
+  Propagator_Base * rho1450_1 = new BreitWigner(LineShapes->Get(Flavour(kf_rho_1450_plus)));
+  p_Trho1 = new Summed_Propagator();
+  p_Trho1->Add(rho770_1,  Complex(1.,0.));
+  p_Trho1->Add(rho1450_1, gammaRho);
+
+  Complex lambda = ReadComplexParam(params.p_model,
+				    "gammaMag_KpiK_vector_KS",-0.25,"gammaPhase_KpiK_vector_KS");
+  Complex mu     = ReadComplexParam(params.p_model,
+				    "deltaMag_KpiK_vector_KS",-0.038,"deltaPhase_KpiK_vector_KS");
+  Propagator_Base * rho770_2  = new BreitWigner(LineShapes->Get(Flavour(kf_rho_770_plus)));
+  Propagator_Base * rho1500   = new BreitWigner(LineShapes->Get(Flavour(kf_rho_1450_plus)));
+  p_Trho2 = new Summed_Propagator();
+  p_Trho2->Add(rho770_2, Complex(1.,0.));
+  p_Trho2->Add(rho1500,  lambda);
+  Total_Width_Base * wRhopp = LineShapes->Get(Flavour(kf_rho_1700_plus));
+  if (wRhopp!=NULL) p_Trho2->Add(new BreitWigner(wRhopp), mu);
+
+  std::string label = std::string("FS_0_EtaPiPi, mode=")+std::to_string(int(m_mode));
+  DumpPropagatorStructure(label+" [T_rho^1]", int(m_ffmodel), p_Trho1);
+  DumpPropagatorStructure(label+" [T_rho^2]", int(m_ffmodel), p_Trho2);
+}
+
+Complex FS_0_EtaPiPi::
+FF_KS(const double & s123,const double & s12,const double & s13) {
+  if (p_Trho1==NULL || p_Trho2==NULL) return Complex(0.,0.);
+  // Paper's s1=(p2+p3)^2=s_pipi is reconstructed via momentum
+  // conservation (same convention as every other 3-meson channel).
+  double s1 = s123 - s12 - s13 +
+    m_masses2[m_pi[0]] + m_masses2[m_pi[1]] + m_masses2[m_pi[2]];
+  return (*p_Trho2)(s123) * (*p_Trho1)(s1);
+}
 
 
 DECLARE_FF_GETTER(FF_0_PPP_Base,"FF_0_PPP")
@@ -1556,7 +2175,9 @@ operator()(const METOOLS::FF_Parameters &params) const
        params.m_flavs[params.m_pi[2]].Kfcode()==kf_K_L) ||
       (params.m_flavs[params.m_pi[0]].Kfcode()==kf_K_plus &&
        params.m_flavs[params.m_pi[1]].Kfcode()==kf_pi &&
-       params.m_flavs[params.m_pi[2]].Kfcode()==kf_K)) {
+       (params.m_flavs[params.m_pi[2]].Kfcode()==kf_K ||
+	params.m_flavs[params.m_pi[2]].Kfcode()==kf_K_S ||
+	params.m_flavs[params.m_pi[2]].Kfcode()==kf_K_L))) {
     if (params.m_name=="F1_0_KPiK") return new F1_0_KPiK(params);
     if (params.m_name=="F2_0_KPiK") return new F1_0_KPiK(params);
     if (params.m_name=="F3_0_KPiK") return new F3_0_KPiK_Stub(params);
@@ -1570,12 +2191,28 @@ operator()(const METOOLS::FF_Parameters &params) const
        params.m_flavs[params.m_pi[1]].Kfcode()==kf_pi_plus &&
        params.m_flavs[params.m_pi[2]].Kfcode()==kf_pi_plus) ||
       (params.m_flavs[params.m_pi[0]].Kfcode()==kf_pi_plus &&
-       params.m_flavs[params.m_pi[1]].Kfcode()==kf_K &&
+       (params.m_flavs[params.m_pi[1]].Kfcode()==kf_K ||
+	params.m_flavs[params.m_pi[1]].Kfcode()==kf_K_S ||
+	params.m_flavs[params.m_pi[1]].Kfcode()==kf_K_L) &&
        params.m_flavs[params.m_pi[2]].Kfcode()==kf_pi)) {
     if (params.m_name=="F1_0_KPiPi") return new F1_0_KPiPi(params);
     if (params.m_name=="F2_0_KPiPi") return new F1_0_KPiPi(params);
     if (params.m_name=="F3_0_KPiPi") return new F3_0_KPiPi_Stub(params);
     if (params.m_name=="FS_0_KPiPi") return new FS_0_KPiPi(params);
+  }
+  //////////////////////////////////////////////////////////////////
+  // eta pi^- pi^0 / eta' pi^- pi^0. Exact order required (eta(') is
+  // NOT interchangeable with either pion - see the FixMode()/enum
+  // comments). Wired to a new VA_0_EtaPiPi Current class.
+  //////////////////////////////////////////////////////////////////
+  if ((params.m_flavs[params.m_pi[0]].Kfcode()==kf_eta ||
+       params.m_flavs[params.m_pi[0]].Kfcode()==kf_eta_prime_958) &&
+      params.m_flavs[params.m_pi[1]].Kfcode()==kf_pi_plus &&
+      params.m_flavs[params.m_pi[2]].Kfcode()==kf_pi) {
+    if (params.m_name=="F1_0_EtaPiPi") return new F1_0_EtaPiPi_Stub(params);
+    if (params.m_name=="F2_0_EtaPiPi") return new F1_0_EtaPiPi_Stub(params);
+    if (params.m_name=="F3_0_EtaPiPi") return new F3_0_EtaPiPi_Stub(params);
+    if (params.m_name=="FS_0_EtaPiPi") return new FS_0_EtaPiPi(params);
   }
   return NULL;
 }

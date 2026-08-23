@@ -141,6 +141,17 @@ HADRON_DECAYS:
     ######################################################
     # Two pseudoscalars
     #
+    # BR scheme (this and the Three pseudoscalars section below): every
+    # 2PS channel here has BR: [0.0, 0.0] and every 3PS channel has
+    # BR: [1/15, 1/15] = [0.06666667, 0.06666667] (15 = the number of
+    # 3PS channels below), summing to 1 - NOT physical branching
+    # ratios, this is for equal-statistics generation/testing across
+    # all 3PS channels (including the ones flagged as producing
+    # genuinely zero rate, e.g. KKK - those still get an equal BR
+    # "slot", they just yield nothing when actually run). The two
+    # purely-leptonic channels (16,-12,11 / 16,-14,13) are untouched
+    # by this scheme (not pseudoscalar channels).
+    #
     # FORM_FACTOR numbering (FormFactor_Base.H, ff_model enum):
     #   100 = KS         (Kuehn-Santamaria-style running-width BW sums)
     #   101 = GS         (Gounaris-Sakurai propagator variant of KS;
@@ -194,7 +205,7 @@ HADRON_DECAYS:
 
     ##### pi pi #####
       -211,111,16:
-        BR: [0.25, 0.] # [0.255, 0.255]
+        BR: [0.0, 0.0] # [0.255, 0.255]
         ME:
           - Current_ME:
               J1:
@@ -228,7 +239,7 @@ HADRON_DECAYS:
     ##### K pi (three physical final states: K^-pi^0, K0bar pi^- via
     #####       K_S and K_L) #####
       -321,111,16:
-        BR: [0.0, 0.] # [0.0045, 0.0045]
+        BR: [0.0, 0.0] # [0.0045, 0.0045]
         ME:
           - Current_ME:
               J1:
@@ -247,7 +258,7 @@ HADRON_DECAYS:
         IntResults: [1.13272e-14, 1.13236e-17, 7.01494e-13]
 
       310,-211,16:
-        BR: [0.25, 0.] # [0.0042, 0.0042]
+        BR: [0.0, 0.0] # [0.0042, 0.0042]
         ME:
           - Current_ME:
               J1:
@@ -270,7 +281,7 @@ HADRON_DECAYS:
         IntResults: [2.27495e-14, 2.27443e-17, 1.40627e-12]
 
       -211,130,16:
-        BR: [0., 0.] # [0.0042, 0.0042]
+        BR: [0.0, 0.0] # [0.0042, 0.0042]
         ME:
           - Current_ME:
               J1:
@@ -296,7 +307,7 @@ HADRON_DECAYS:
 
     ##### K Kbar (two physical final states: K^- K_S, K^- K_L) #####
       -321,310,16:
-        BR: [0.25, 0.] # [0.0007, 0.0007]
+        BR: [0.0, 0.0] # [0.0007, 0.0007]
         ME:
           - Current_ME:
               J1:
@@ -318,7 +329,7 @@ HADRON_DECAYS:
         IntResults: [2.123e-15, 7.341e-18, 1.111e-14]
 
       -321,130,16:
-        BR: [0.0, 0.]
+        BR: [0.0, 0.0]
         ME:
           - Current_ME:
               J1:
@@ -343,7 +354,7 @@ HADRON_DECAYS:
 
     ##### K eta #####
       -321,221,16:
-        BR: [0.0, 0.]
+        BR: [0.0, 0.0]
         ME:
           - Current_ME:
               J1:
@@ -371,7 +382,7 @@ HADRON_DECAYS:
 
     ##### K eta' #####
       -321,331,16:
-        BR: [0.0, 0.]
+        BR: [0.0, 0.0]
         ME:
           - Current_ME:
               J1:
@@ -405,7 +416,7 @@ HADRON_DECAYS:
 
     ##### pi eta #####
       -211,221,16:
-        BR: [0.0, 0.]
+        BR: [0.0, 0.0]
         ME:
           - Current_ME:
               J1:
@@ -430,7 +441,7 @@ HADRON_DECAYS:
 
     ##### pi eta' #####
       -211,331,16:
-        BR: [0.0, 0.]
+        BR: [0.0, 0.0]
         ME:
           - Current_ME:
               J1:
@@ -459,14 +470,29 @@ HADRON_DECAYS:
     # as 101, these three channels would silently fall through to the
     # flat constant fallback instead of the KS 3pi physics they were
     # presumably meant to use - changed to 100 (the new KS number)
-    # below to restore the original intent. We have NOT yet applied
-    # the FF_0_PP.C-style refactor (merged Construct(), Flavour-based
-    # masses, unified gamma/delta nomenclature, family-fallback) to
-    # FF_0_PPP.C, so no other nomenclature changes apply here yet -
-    # that's the next piece of work.
+    # below to restore the original intent. FF_0_PPP.C has since had
+    # the FF_0_PP.C-style refactor applied (merged Construct(),
+    # diagnostic dumps, unified gamma/delta/alpha nomenclature reusing
+    # the two-meson parameter names where the SAME resonance tower
+    # appears again) plus the new CLEO 3pi/CLEO K1 Kpipi alternatives
+    # (FORM_FACTOR=102) - see the per-channel comments below.
+    #
+    # Indices convention: for an N-daughter channel "H1,H2,...,HN,16",
+    # momentum index 0 is always the tau itself, indices 1..N are the
+    # daughters in the SAME order as listed in the channel key, and
+    # index N+1 is always the neutrino (listed last). J2's own
+    # "Indices: [...]" array does NOT need to mirror that listing
+    # order - it just needs to route the right momentum index to
+    # whatever slot FF_0_PPP_Base::FixMode() expects at m_pi[0]/[1]/[2]
+    # for that channel's recognised mode (see FF_0_PPP.C's FixMode()
+    # for the exact per-mode requirement); several entries below have
+    # a permuted Indices array for exactly this reason, without needing
+    # to change the channel key's own listing order at all.
     ######################################################
+
+    ##### pi pi pi #####
       -211,111,111,16:
-        BR: [0.0, 0.] # [0.0917, 0.0917]
+        BR: [0.0, 0.0] # [0.0917, 0.0917]
         ME:
           - Current_ME:
               J1:
@@ -481,13 +507,18 @@ HADRON_DECAYS:
                 FORM_FACTOR: 100
         PhaseSpace:
           - TwoResonances_a(1)(1260)+_2_rho(770)+_13:
-              Weight: 0.5
+              Weight: 0.25
           - TwoResonances_a(1)(1260)+_3_rho(770)+_12:
-              Weight: 0.5
+              Weight: 0.25
+          - TwoResonances_a(1)(1260)+_2_rho(1450)+_13:
+              Weight: 0.25
+          - TwoResonances_a(1)(1260)+_3_rho(1450)+_12:
+              Weight: 0.25
+        AlwaysIntegrate: 1
         IntResults: [9.21791e-14, 3.5194e-17, 4.36085e-12]
 
       211,-211,-211,16:
-        BR: [0.0, 0.] # [0.0932, 0.0932]
+        BR: [0.0, 0.0] # [0.0932, 0.0932]
         ME:
           - Current_ME:
               J1:
@@ -497,13 +528,63 @@ HADRON_DECAYS:
                 a: -1.
               J2:
                 Type: VA_0_PPP
-                Indices: [1, 2, 3]
+                # FIX: pi^+(idx1) pi^-(idx2) pi^-(idx3) - KS90/FM95's
+                # own convention needs q1,q2 to be the TWO IDENTICAL
+                # bosons (both pi^-) and q3 the odd one out (pi^+),
+                # exactly like the pi0 pi0 pi^- entry above. This
+                # previously used Indices:[1,2,3] (direct order),
+                # putting the ODD pion (pi^+) at m_pi[0] instead of
+                # m_pi[2] - since F1/F2 use s13/reconstructed-s1 to
+                # evaluate the rho propagator on whichever pair is
+                # OPPOSITE-SIGN (resonant), swapping which pion is
+                # "odd" silently evaluates the rho propagator on the
+                # wrong (same-sign, never-resonant) pair instead -
+                # this is exactly why the rho(770) peak was missing
+                # from the pi- pi+ mass distribution. Fixed: pi^-(idx2)
+                # and pi^-(idx3) now go to m_pi[0]/m_pi[1], pi^+(idx1)
+                # to m_pi[2].
+                Indices: [2, 3, 1]
                 RUNNING_WIDTH: 1
                 FORM_FACTOR: 100
+        # FIX: this channel was missing the resonance-aware PhaseSpace
+        # block that its pi0 pi0 pi^- sibling above already has. The
+        # raw index layout is structurally identical here (odd particle
+        # pi^+ at raw index 1, the two identical pi^-'s at raw indices
+        # 2,3 - same pattern as pi^-(1)/pi^0(2)/pi^0(3) above), so the
+        # SAME two importance-sampling channels apply verbatim (they
+        # reference raw momentum indices, not particle species):
+        # spectator=2/rho from(1,3), and spectator=3/rho from(1,2),
+        # covering both Bose-symmetric pi^+pi^- pairings with equal
+        # weight. Without this, the default/naive phase-space sampling
+        # doesn't efficiently populate the narrow rho(770) region of
+        # the Dalitz plot - the underlying amplitude has a genuine,
+        # confirmed resonance there (see the per-event diagnostic
+        # trace), but a finite MC sample built without this importance
+        # sampling will under-populate that corner of phase space,
+        # making the peak look statistically weak/diluted rather than
+        # absent - likely the actual explanation for "the peak is
+        # barely visible" even though the physics itself is correct.
+        # Also adding the rho(1450) alternative alongside rho(770) for
+        # each chain, per the general "distribute evenly over each
+        # combination" principle - the amplitude genuinely has both
+        # (gammaMag_3pi_KS=-0.145 weight on rho(1450)), so both are
+        # worth importance-sampling. 2 chains x 2 inner resonances = 4
+        # combinations, each weight 0.25 (the tiny rho-omega mixing
+        # term, alphaMag_3pi_KS=0.00185, is left out - negligible).
+        PhaseSpace:
+          - TwoResonances_a(1)(1260)+_2_rho(770)+_13:
+              Weight: 0.25
+          - TwoResonances_a(1)(1260)+_3_rho(770)+_12:
+              Weight: 0.25
+          - TwoResonances_a(1)(1260)+_2_rho(1450)+_13:
+              Weight: 0.25
+          - TwoResonances_a(1)(1260)+_3_rho(1450)+_12:
+              Weight: 0.25
+        AlwaysIntegrate: 1
         IntResults: [9.02993e-14, 9.02826e-17, 1.79599e-11]
 
-      321,-321,-211,16:
-        BR: [0.0, 0.] # [0.0932, 0.0932]
+      -321,111,111,16:
+        BR: [0.0, 0.0] # [0.00058, 0.00058]
         ME:
           - Current_ME:
               J1:
@@ -513,10 +594,671 @@ HADRON_DECAYS:
                 a: -1.
               J2:
                 Type: VA_0_PPP
+                # pi0(idx2) pi0(idx3) K^-(idx1): FixMode's pi0_pi0_KM
+                # wants (pi0,pi0,K) at m_pi[0..2] - K^- listed FIRST in
+                # the channel key here, so the Indices array is
+                # permuted (not the key itself) to route it last.
+                Indices: [2, 3, 1]
+                RUNNING_WIDTH: 1
+                FORM_FACTOR: 100
+                # pi0_pi0_KM: only ff_model::KS is implemented (FM95
+                # Tab.I/II row 6, T_K1^(a)/T_K*^(1) - see
+                # F1_0_PiPlusPiZeroPiZero::Construct_Pi0Pi0K()).
+        # Now that TwoResonances is confirmed available, replacing the
+        # earlier Dalitz-only fallback with the proper two-resonance
+        # cascade: outer = K1(1400)[weight 1] + K1(1270)[weight
+        # xiK1=0.33] (T_K1^(a)), inner = K*(892)[weight 1] +
+        # K*(1410)[weight betaKstar_pi0pi0K_KS=-0.135] (T_K*^(1)), over
+        # the 2 chains (which pi^0 pairs with K^-). 2 outer x 2 inner x
+        # 2 chains = 8 combinations, each weight 0.125.
+        PhaseSpace:
+          - TwoResonances_K(1)(1400)+_2_K*(892)+_13:
+              Weight: 0.125
+          - TwoResonances_K(1)(1400)+_3_K*(892)+_12:
+              Weight: 0.125
+          - TwoResonances_K(1)(1400)+_2_K*(1410)+_13:
+              Weight: 0.125
+          - TwoResonances_K(1)(1400)+_3_K*(1410)+_12:
+              Weight: 0.125
+          - TwoResonances_K(1)(1270)+_2_K*(892)+_13:
+              Weight: 0.125
+          - TwoResonances_K(1)(1270)+_3_K*(892)+_12:
+              Weight: 0.125
+          - TwoResonances_K(1)(1270)+_2_K*(1410)+_13:
+              Weight: 0.125
+          - TwoResonances_K(1)(1270)+_3_K*(1410)+_12:
+              Weight: 0.125
+        AlwaysIntegrate: 1
+
+    ##### K pi pi #####
+      -321,211,-211,16:
+        BR: [0.0, 0.0] # [0.00342, 0.00342]
+        ME:
+          - Current_ME:
+              J1:
+                Type: VA_F_F
+                Indices: [4, 0]
+                v: 1.
+                a: -1.
+              J2:
+                Type: VA_0_KPiPi
+                # FIX: K^-(idx1) pi^+(idx2) pi^-(idx3) - FM95's own
+                # KM_piM_piP convention needs q1=K^-, q2=pi^- SPECIFICALLY,
+                # q3=pi^+ SPECIFICALLY (row 7: "K^-(q1) pi^-(q2)
+                # pi^+(q3)") - NOT interchangeable, since F1 evaluates
+                # the K* propagator on the (q1,q3)=(K,pi^+) pair
+                # specifically. This previously used Indices:[1,2,3]
+                # (direct order), putting pi^+ at m_pi[1] and pi^- at
+                # m_pi[2] - backwards relative to FM95's convention,
+                # which put the K* propagator on the wrong (same-sign-
+                # ish, non-resonant for this current's charge
+                # bookkeeping) pi combination instead of the correct
+                # K^-pi^+ pair - exactly why no K* peak showed up.
+                # Fixed: pi^-(idx3) now goes to m_pi[1], pi^+(idx2) to
+                # m_pi[2].
+                Indices: [1, 3, 2]
+                RUNNING_WIDTH: 1
+                FORM_FACTOR: 104
+                # K^- pi^+ pi^-: KM_piM_piP. Switched from CLEO (102)
+                # to CLEO_f0 (104) - the new CLEO-K1-plus-f0(500)/sigma
+                # variant added this session (deltaMag_pipi_f0 default
+                # -0.2, reusing Sherpa's own registered f0(600) running
+                # width) - see F1_0_KPiPi::Construct()'s CLEO_f0 branch.
+                # Base CLEO K1 parameters unchanged (A=0.94,B=0,
+                # C=0.20,D=0.27, CLEO K1(1270)/K1(1400) masses/widths);
+                # switch to FORM_FACTOR:103 for the plain-FM95+f0
+                # variant, or 100/102 to drop the f0 admixture again.
+        # This current has two structurally DIFFERENT chains (unlike
+        # the simple pi-pi-pi case): F1 uses [C*K1(1270)+D*K1(1400)]
+        # (both C,D nonzero) x bare K*(892) on the K-pi^+ pair (raw
+        # indices 1,3, spectator=2); F2 uses [A*K1(1270)] only (B=0 in
+        # the default CLEO fit, so K1(1400) does not contribute here)
+        # x [rho(770)+rho(1450)+f0(600)] on the pi^+pi^- pair (raw
+        # indices 2,3, spectator=1) - the f0(600) term is the NEW
+        # addition (deltaMag_pipi_f0), and this PhaseSpace block was
+        # NOT updated for it when that model was switched on, which is
+        # almost certainly why the width calculation slowed down/
+        # stopped converging well: the integrator had no importance
+        # sampling at all for the newly-added resonance. Splitting
+        # 50/50 between the two chains, then evenly within each (2 K*
+        # combinations, now 3 pi-pi combinations):
+        PhaseSpace:
+          - TwoResonances_K(1)(1270)+_2_K*(892)+_13:
+              Weight: 0.25
+          - TwoResonances_K(1)(1400)+_2_K*(892)+_13:
+              Weight: 0.25
+          - TwoResonances_K(1)(1270)+_1_rho(770)+_23:
+              Weight: 0.166667
+          - TwoResonances_K(1)(1270)+_1_rho(1450)+_23:
+              Weight: 0.166667
+          - TwoResonances_K(1)(1270)+_1_f(0)(600)+_23:
+              Weight: 0.166667
+        AlwaysIntegrate: 1
+
+      310,-211,111,16:
+        BR: [0.0, 0.0] # [0.00185, 0.00185]
+        ME:
+          - Current_ME:
+              J1:
+                Type: VA_F_F
+                Indices: [4, 0]
+                v: 1.
+                a: -1.
+              J2:
+                Type: VA_0_KPiPi
+                # pi^-(idx2) K_S(idx1) pi^0(idx3): FixMode's
+                # piM_K0bar_pi0 wants (pi^-,K,pi^0) - K_S listed FIRST
+                # in the channel key here, so the Indices array routes
+                # it to the middle slot instead. K_S recognised (this
+                # session's fix), carrying the extra 1/sqrt(2)
+                # projection factor (m_isKSKL).
+                Indices: [2, 1, 3]
+                RUNNING_WIDTH: 1
+                FORM_FACTOR: 103
+                # Switched from KS (100) to KS_f0 (103) - adds an
+                # f0(500)/sigma admixture to the pi-pi0 tower
+                # (deltaMag_pipi_f0 default -0.2) - see
+                # F1_0_KPiPi::Construct()'s KS_f0 branch.
+        # G1=(2/3)T_K1b*T_rho1(pi^- pi^0 pair) + (1/3)T_K1a*T_K*1(K_S
+        # pi^- pair); G2=(1/3)T_K1a*[T_K*1(K_S pi^0 pair)-T_K*1(K_S
+        # pi^- pair)]. T_K1b=K1(1270) alone; T_K1a=K1(1400)+K1(1270)
+        # mix (using K1(1400) as the representative/dominant proxy
+        # here rather than also splitting that mix out, to keep this
+        # to 3 regions x (2 or 3) inner resonances instead of a larger
+        # combinatorial blowup). The rho region's tower now also
+        # carries an f0(600) admixture (KS_f0=103, deltaMag_pipi_f0) -
+        # this PhaseSpace block was NOT updated for it when that model
+        # was switched on, almost certainly the cause of the slow/
+        # poorly-converging width calculation (no importance sampling
+        # at all for the new resonance). 3 regions, evenly split
+        # (1/3 each); rho region now 3-way split (f0(600) added), K*
+        # regions still 2-way each:
+        #   rho region:  pi^-(idx2)+pi^0(idx3), spectator=K_S(idx1)
+        #   K* region A: K_S(idx1)+pi^-(idx2), spectator=pi^0(idx3)
+        #   K* region B: K_S(idx1)+pi^0(idx3), spectator=pi^-(idx2)
+        PhaseSpace:
+          - TwoResonances_K(1)(1270)+_1_rho(770)+_23:
+              Weight: 0.111111
+          - TwoResonances_K(1)(1270)+_1_rho(1450)+_23:
+              Weight: 0.111111
+          - TwoResonances_K(1)(1270)+_1_f(0)(600)+_23:
+              Weight: 0.111111
+          - TwoResonances_K(1)(1400)+_3_K*(892)+_12:
+              Weight: 0.166667
+          - TwoResonances_K(1)(1400)+_3_K*(1410)+_12:
+              Weight: 0.166667
+          - TwoResonances_K(1)(1400)+_2_K*(892)+_13:
+              Weight: 0.166667
+          - TwoResonances_K(1)(1400)+_2_K*(1410)+_13:
+              Weight: 0.166667
+        AlwaysIntegrate: 1
+
+      -211,130,111,16:
+        BR: [0.0, 0.0] # [0.00185, 0.00185]
+        ME:
+          - Current_ME:
+              J1:
+                Type: VA_F_F
+                Indices: [4, 0]
+                v: 1.
+                a: -1.
+              J2:
+                Type: VA_0_KPiPi
+                # pi^-(idx1) K_L(idx2) pi^0(idx3): matches
+                # piM_K0bar_pi0's required order directly. K_L
+                # recognised, same 1/sqrt(2) projection as above.
+                Indices: [1, 2, 3]
+                RUNNING_WIDTH: 1
+                FORM_FACTOR: 103
+                # Switched from KS (100) to KS_f0 (103) - same
+                # f0(500)/sigma addition as the K_S entry above.
+        # Same 3-region structure as K_S pi^- pi^0 above, remapped for
+        # this channel's own raw index layout (same rebalancing for
+        # the newly-added f0(600) rho-region term - see the K_S entry
+        # above for the rationale):
+        #   rho region:  pi^-(idx1)+pi^0(idx3), spectator=K_L(idx2)
+        #   K* region A: pi^-(idx1)+K_L(idx2), spectator=pi^0(idx3)
+        #   K* region B: K_L(idx2)+pi^0(idx3), spectator=pi^-(idx1)
+        PhaseSpace:
+          - TwoResonances_K(1)(1270)+_2_rho(770)+_13:
+              Weight: 0.111111
+          - TwoResonances_K(1)(1270)+_2_rho(1450)+_13:
+              Weight: 0.111111
+          - TwoResonances_K(1)(1270)+_2_f(0)(600)+_13:
+              Weight: 0.111111
+          - TwoResonances_K(1)(1400)+_3_K*(892)+_12:
+              Weight: 0.166667
+          - TwoResonances_K(1)(1400)+_3_K*(1410)+_12:
+              Weight: 0.166667
+          - TwoResonances_K(1)(1400)+_1_K*(892)+_23:
+              Weight: 0.166667
+          - TwoResonances_K(1)(1400)+_1_K*(1410)+_23:
+              Weight: 0.166667
+        AlwaysIntegrate: 1
+
+    ##### K K pi (charged-charged only) #####
+      321,-321,-211,16:
+        BR: [0.0, 0.0] # [0.0932, 0.0932]
+        ME:
+          - Current_ME:
+              J1:
+                Type: VA_F_F
+                Indices: [4, 0]
+                v: 1.
+                a: -1.
+              J2:
+                # FIX: this previously used Type: VA_0_PPP with
+                # FORM_FACTOR: 100 - but VA_0_PPP's underlying class
+                # (F1_0_PiPlusPiZeroPiZero et al) never actually
+                # implements the KP_KM_piM mode (FixMode() recognises
+                # it, but no Construct_XXX/FF_KS/FF_RChiPT/FF_RChL2012
+                # branch handles it anywhere in that class) - the
+                # dedicated VA_0_KKPi Current class (F1_0_KKPi/
+                # F5_0_KKPi) is what actually implements this channel,
+                # and ONLY for ff_model::RChL2012 (201), not KS. Left
+                # as VA_0_PPP/100, this channel silently produced
+                # EXACTLY ZERO rate (m_norm never set for the
+                # unhandled mode) - fixed here.
+                Type: VA_0_KKPi
+                Indices: [1, 2, 3]
+                RUNNING_WIDTH: 1
+                FORM_FACTOR: 201
+        # RChL2012's a1 propagator uses a CUSTOM inline width function
+        # (RChL::Gamma_a1_PionFit, M=1.12 GeV by default), not the
+        # standard registered a1(1260) lineshape used elsewhere in this
+        # file (M~1.1-1.26 GeV depending on source) - using the name
+        # "a(1)(1260)+" below for importance sampling is a best-effort
+        # approximation (close enough in mass to be a useful sampling
+        # aid) rather than an exact match to what F1_0_KKPi actually
+        # evaluates internally. Two regions (propRho on the K+K- pair,
+        # propKst on the K+pi- pair), each paired with this same outer
+        # a1 proxy, spectator = the third particle in each case:
+        PhaseSpace:
+          - TwoResonances_a(1)(1260)+_3_rho(770)+_12:
+              Weight: 0.5
+          - TwoResonances_a(1)(1260)+_2_K*(892)+_13:
+              Weight: 0.5
+        AlwaysIntegrate: 1
+
+    ##### K Kbar pi0 (K^- pi^0 K0bar, FM95 Tab.I/II row 5 = KM_pi0_K0) #####
+    #
+    # CORRECTION from an earlier pass: K^-K_S pi^0 and K^-K_L pi^0 were
+    # previously flagged here as "not yet recognised, needs new isospin
+    # coefficients" and wired to the WRONG Current class (VA_0_KKPi,
+    # the charged-charged K+K-pi- current) - that was wrong. These are
+    # NOT a new isospin combination at all: they are simply the
+    # EXISTING KM_pi0_K0 mode (FM95 row 5, already implemented in
+    # F1_0_KPiK/FS_0_KPiK) with its K0bar observed as K_S/K_L rather
+    # than the bare flavour eigenstate - exactly the same situation as
+    # piM_K0bar_pi0 and the two-meson Kpi_plus/KK_plus channels.
+    # FixMode()'s KM_pi0_K0 branch now recognises K_S/K_L directly
+    # (with the same extra 1/sqrt(2) projection factor, m_isKSKL), so
+    # these are wired to VA_0_KPiK below, not VA_0_KKPi.
+    ######################################################
+
+      -321,310,111,16:
+        BR: [0.0, 0.0]
+        ME:
+          - Current_ME:
+              J1:
+                Type: VA_F_F
+                Indices: [4, 0]
+                v: 1.
+                a: -1.
+              J2:
+                Type: VA_0_KPiK
+                # K^-(idx1) K_S(idx2) pi^0(idx3): FixMode's KM_pi0_K0
+                # wants (K^-,pi^0,K0bar) at m_pi[0..2] - K_S/pi^0 are
+                # swapped relative to the channel key's own listing
+                # order, so the Indices array routes them accordingly.
+                Indices: [1, 3, 2]
+                RUNNING_WIDTH: 1
+                FORM_FACTOR: 100
+        # G1=BWA1*[2/3 T_rho1(K^- K_S pair)+1/3 T_K*1(K^- pi^0 pair)];
+        # G2=(1/3)BWA1*[T_K*1(K_S pi^0 pair)-T_K*1(K^- pi^0 pair)].
+        # Outer is plain a1(1260) throughout (no K1 mixing here, unlike
+        # the KPiPi piM_K0bar_pi0 channels). 3 regions x 2 inner
+        # resonances = 6 combinations:
+        #   rho region:  K^-(idx1)+K_S(idx2),  spectator=pi^0(idx3)
+        #   K* region A: K^-(idx1)+pi^0(idx3), spectator=K_S(idx2)
+        #   K* region B: pi^0(idx3)+K_S(idx2), spectator=K^-(idx1)
+        PhaseSpace:
+          - TwoResonances_a(1)(1260)+_3_rho(770)+_12:
+              Weight: 0.166667
+          - TwoResonances_a(1)(1260)+_3_rho(1450)+_12:
+              Weight: 0.166667
+          - TwoResonances_a(1)(1260)+_2_K*(892)+_13:
+              Weight: 0.166667
+          - TwoResonances_a(1)(1260)+_2_K*(1410)+_13:
+              Weight: 0.166667
+          - TwoResonances_a(1)(1260)+_1_K*(892)+_23:
+              Weight: 0.166667
+          - TwoResonances_a(1)(1260)+_1_K*(1410)+_23:
+              Weight: 0.166667
+        AlwaysIntegrate: 1
+
+      -321,130,111,16:
+        BR: [0.0, 0.0]
+        ME:
+          - Current_ME:
+              J1:
+                Type: VA_F_F
+                Indices: [4, 0]
+                v: 1.
+                a: -1.
+              J2:
+                # K^-(idx1) K_L(idx2) pi^0(idx3): same fix as K^- K_S
+                # pi^0 above, K_L instead of K_S.
+                Type: VA_0_KPiK
+                Indices: [1, 3, 2]
+                RUNNING_WIDTH: 1
+                FORM_FACTOR: 100
+        # Identical raw index layout to K^- K_S pi^0 above (just K_L
+        # instead of K_S) - same PhaseSpace block applies verbatim.
+        PhaseSpace:
+          - TwoResonances_a(1)(1260)+_3_rho(770)+_12:
+              Weight: 0.166667
+          - TwoResonances_a(1)(1260)+_3_rho(1450)+_12:
+              Weight: 0.166667
+          - TwoResonances_a(1)(1260)+_2_K*(892)+_13:
+              Weight: 0.166667
+          - TwoResonances_a(1)(1260)+_2_K*(1410)+_13:
+              Weight: 0.166667
+          - TwoResonances_a(1)(1260)+_1_K*(892)+_23:
+              Weight: 0.166667
+          - TwoResonances_a(1)(1260)+_1_K*(1410)+_23:
+              Weight: 0.166667
+        AlwaysIntegrate: 1
+
+      310,-211,130,16:
+        BR: [0.0, 0.0] # [0.00055, 0.00055]
+        ME:
+          - Current_ME:
+              J1:
+                Type: VA_F_F
+                Indices: [4, 0]
+                v: 1.
+                a: -1.
+              J2:
+                Type: VA_0_KPiK
+                # K_S(idx1) pi^-(idx2) K_L(idx3): matches KS_piM_KL
+                # directly (K_S/K_L recognised, either order accepted) -
+                # no permutation needed.
                 Indices: [1, 2, 3]
                 RUNNING_WIDTH: 1
                 FORM_FACTOR: 100
-        IntResults: [9.02993e-14, 9.02826e-17, 1.79599e-11]
+        # G1=BWA1*[2 T_rho1(K_S K_L pair)+T_K*1(K_S pi^- pair)];
+        # G2=BWA1*[T_K*1(pi^- K_L pair)-T_K*1(K_S pi^- pair)]. 3
+        # regions x 2 inner resonances = 6 combinations:
+        #   rho region:  K_S(idx1)+K_L(idx3),  spectator=pi^-(idx2)
+        #   K* region A: K_S(idx1)+pi^-(idx2), spectator=K_L(idx3)
+        #   K* region B: pi^-(idx2)+K_L(idx3), spectator=K_S(idx1)
+        PhaseSpace:
+          - TwoResonances_a(1)(1260)+_2_rho(770)+_13:
+              Weight: 0.166667
+          - TwoResonances_a(1)(1260)+_2_rho(1450)+_13:
+              Weight: 0.166667
+          - TwoResonances_a(1)(1260)+_3_K*(892)+_12:
+              Weight: 0.166667
+          - TwoResonances_a(1)(1260)+_3_K*(1410)+_12:
+              Weight: 0.166667
+          - TwoResonances_a(1)(1260)+_1_K*(892)+_23:
+              Weight: 0.166667
+          - TwoResonances_a(1)(1260)+_1_K*(1410)+_23:
+              Weight: 0.166667
+        AlwaysIntegrate: 1
+
+      310,310,-211,16:
+        BR: [0.0, 0.0] # [0.00024, 0.00024]
+        ME:
+          - Current_ME:
+              J1:
+                Type: VA_F_F
+                Indices: [4, 0]
+                v: 1.
+                a: -1.
+              J2:
+                Type: VA_0_KPiK
+                # K_S(idx1) K_S(idx2) pi^-(idx3): FixMode's KS_piM_KS
+                # wants (K_S,pi,K_S) at m_pi[0..2] - pion listed LAST
+                # in the channel key here, so the Indices array routes
+                # it to the middle slot instead.
+                Indices: [1, 3, 2]
+                RUNNING_WIDTH: 1
+                FORM_FACTOR: 100
+        # G1=BWA1*T_K*1(K_S(1) pi^- pair); G2=-BWA1*[T_K*1(pi^- K_S(2)
+        # pair)+T_K*1(K_S(1) pi^- pair)]. NO rho term for this mode -
+        # only 2 K* regions (both K_S's are identical, so these are
+        # physically equivalent, still listed both for even coverage):
+        #   K* region A: K_S(idx1)+pi^-(idx3), spectator=K_S(idx2)
+        #   K* region B: pi^-(idx3)+K_S(idx2), spectator=K_S(idx1)
+        PhaseSpace:
+          - TwoResonances_a(1)(1260)+_2_K*(892)+_13:
+              Weight: 0.25
+          - TwoResonances_a(1)(1260)+_2_K*(1410)+_13:
+              Weight: 0.25
+          - TwoResonances_a(1)(1260)+_1_K*(892)+_23:
+              Weight: 0.25
+          - TwoResonances_a(1)(1260)+_1_K*(1410)+_23:
+              Weight: 0.25
+        AlwaysIntegrate: 1
+
+      -211,130,130,16:
+        BR: [0.0, 0.0] # [0.00024, 0.00024]
+        ME:
+          - Current_ME:
+              J1:
+                Type: VA_F_F
+                Indices: [4, 0]
+                v: 1.
+                a: -1.
+              J2:
+                Type: VA_0_KPiK
+                # pi^-(idx1) K_L(idx2) K_L(idx3): FixMode's KL_piM_KL
+                # wants (K_L,pi,K_L) - pion listed FIRST here, so the
+                # Indices array is permuted accordingly.
+                Indices: [2, 1, 3]
+                RUNNING_WIDTH: 1
+                FORM_FACTOR: 100
+        # Same structure as K_S K_S pi^- above (Eq.52: KL_piM_KL =
+        # -KS_piM_KS), no rho term, 2 equivalent K* regions:
+        #   K* region A: K_L(idx2)+pi^-(idx1), spectator=K_L(idx3)
+        #   K* region B: pi^-(idx1)+K_L(idx3), spectator=K_L(idx2)
+        PhaseSpace:
+          - TwoResonances_a(1)(1260)+_3_K*(892)+_12:
+              Weight: 0.25
+          - TwoResonances_a(1)(1260)+_3_K*(1410)+_12:
+              Weight: 0.25
+          - TwoResonances_a(1)(1260)+_2_K*(892)+_13:
+              Weight: 0.25
+          - TwoResonances_a(1)(1260)+_2_K*(1410)+_13:
+              Weight: 0.25
+        AlwaysIntegrate: 1
+
+    ##### K K K (no dedicated current exists per the cross-check note -
+    #####        "do not imply a precision model"; genuinely zero rate
+    #####        until/unless a model is adopted) #####
+      321,-321,-321,16:
+        BR: [0.0, 0.0] # [3.7e-05, 3.7e-05]
+        ME:
+          - Current_ME:
+              J1:
+                Type: VA_F_F
+                Indices: [4, 0]
+                v: 1.
+                a: -1.
+              J2:
+                # K^+ K^- K^-: NOT recognised by any FixMode() branch
+                # (no 3-kaon mode exists at all) - this entry is a
+                # placeholder producing EXACTLY ZERO rate (this relies
+                # on the NULL-pointer-crash fix applied to VA_0_PPP's
+                # Calc(), same fix as the K^- K_S/K_L pi^0 entries
+                # above - the getter returns NULL for this flavour
+                # combination too, which used to segfault). The cross-
+                # check note is explicit that no implementation-ready
+                # KKK current exists in the literature surveyed there
+                # ("do not imply a precision model") - so this is not
+                # a gap to quietly fill, just a status marker.
+                Type: VA_0_PPP
+                Indices: [1, 2, 3]
+                RUNNING_WIDTH: 1
+                FORM_FACTOR: 100
+        # No resonance structure to importance-sample (no dedicated
+        # current at all) - just enable full integration.
+        AlwaysIntegrate: 1
+
+    ##### eta pi pi (NEW: FS_0_EtaPiPi, added this session) #####
+      221,-211,111,16:
+        BR: [0.0, 0.0] # [0.00174, 0.00174]
+        ME:
+          - Current_ME:
+              J1:
+                Type: VA_F_F
+                Indices: [4, 0]
+                v: 1.
+                a: -1.
+              J2:
+                Type: VA_0_EtaPiPi
+                # eta(idx1) pi^-(idx2) pi^0(idx3): matches
+                # EtaPiPi_pi0's required exact order directly.
+                Indices: [1, 2, 3]
+                RUNNING_WIDTH: 1
+                FORM_FACTOR: 100
+                # Old TAUOLA/VMD current (G-parity forbids axial/scalar
+                # pieces - anomalous vector F5 only). N_etapipi is a
+                # placeholder normalisation (default 1) for the
+                # WZW-anomaly/eta-eta' mixing convention - see
+                # FS_0_EtaPiPi::Construct()'s FIXME comment.
+                N_etapipi: 1.
+        # F5 = T_rho^(2)(Q^2) * T_rho^(1)(pi^- pi^0 pair) - unlike
+        # every other channel above, BOTH resonance layers here are
+        # genuinely charged rho(770)/rho(1450)/rho(1700) (the code
+        # builds both towers from kf_rho_770_plus, not the neutral
+        # rho - there is no "outer axial resonance" like a1/K1 in this
+        # current at all, T_rho^(2) itself plays that role directly in
+        # Q^2). Only one pairing exists (eta is distinct from both
+        # pions, no identical-particle ambiguity) - 3 outer x 2 inner
+        # = 6 combinations, spectator always eta(idx1):
+        PhaseSpace:
+          - TwoResonances_rho(770)+_1_rho(770)+_23:
+              Weight: 0.166667
+          - TwoResonances_rho(770)+_1_rho(1450)+_23:
+              Weight: 0.166667
+          - TwoResonances_rho(1450)+_1_rho(770)+_23:
+              Weight: 0.166667
+          - TwoResonances_rho(1450)+_1_rho(1450)+_23:
+              Weight: 0.166667
+          - TwoResonances_rho(1700)+_1_rho(770)+_23:
+              Weight: 0.166667
+          - TwoResonances_rho(1700)+_1_rho(1450)+_23:
+              Weight: 0.166667
+        AlwaysIntegrate: 1
+
+    ##### eta eta pi (Belle upper limit, no dedicated current per the
+    #####             cross-check note - same "status marker" caveat
+    #####             as KKK above) #####
+      221,221,-211,16:
+        BR: [0.0, 0.0] # [0.0001, 0.0001]
+        ME:
+          - Current_ME:
+              J1:
+                Type: VA_F_F
+                Indices: [4, 0]
+                v: 1.
+                a: -1.
+              J2:
+                # eta eta pi^-: NOT recognised by any FixMode() branch.
+                # Belle set an upper limit on this mode; the note is
+                # explicit that no mature KS/RChiPT current exists for
+                # it - status marker only, EXACTLY ZERO rate (relies on
+                # the same NULL-pointer-crash fix as the KKK entry
+                # above - this combination also gets NULL from the
+                # getter, previously a crash, now a clean zero).
+                Type: VA_0_EtaPiPi
+                Indices: [1, 2, 3]
+                RUNNING_WIDTH: 1
+                FORM_FACTOR: 100
+        AlwaysIntegrate: 1
+
+    # Four pseudoscalars
+    #
+    # K-omega -> K pi+ pi- pi0 (tau_two_meson_currents_KS_RChiT.tex,
+    # Sec."K omega -> K pi+pi-pi0: four-pseudoscalar channel") - NEW
+    # this session, VA_0_KOmega3Pi.C. A genuinely new current
+    # structure (quasi-two-body K-omega weak production feeding the
+    # anomalous omega->3pi vertex), not built on the FF_0_PPP scalar-
+    # form-factor pattern used by every 3-body channel above.
+    #
+    # IMPORTANT: this channel is IDENTICALLY ZERO as configured below.
+    # The h_R*t_{R omega K} strong-coupling products (5 complex
+    # parameters) all default to 0 in VA_0_KOmega3Pi::SetModelParameters -
+    # the source note is explicit that these must NOT be copied from
+    # the analogous (and already-uncertain) Krho values, so no
+    # nonzero default is supplied here either. To make this channel
+    # produce anything, add explicit overrides, e.g.:
+    #   hKtK_KOmegaMag: <value>      hKtK_KOmegaPhase: <value>
+    #   hA1tA1_KOmegaMag: <value>    hA1tA1_KOmegaPhase: <value>
+    #   hA2tA2_KOmegaMag: <value>    hA2tA2_KOmegaPhase: <value>
+    #   hV1tV1_KOmegaMag: <value>    hV1tV1_KOmegaPhase: <value>
+    #   hV2tV2_KOmegaMag: <value>    hV2tV2_KOmegaPhase: <value>
+    # (all as siblings of FORM_FACTOR below, same as every other
+    # override parameter in this file) once real Komega meson-
+    # dominance coupling values are available.
+    ######################################################
+      -321,211,-211,111,16:
+        BR: [0.33333333, 0.33333333]
+        ME:
+          - Current_ME:
+              J1:
+                Type: VA_F_F
+                Indices: [5, 0]
+                v: 1.
+                a: -1.
+              J2:
+                Type: VA_0_KOmega3Pi
+                # K^-(idx1) pi^+(idx2) pi^-(idx3) pi^0(idx4): exact
+                # order required by VA_0_KOmega3Pi's own convention -
+                # all four daughters are physically distinct, so no
+                # Bose-symmetrization ambiguity exists here (unlike
+                # every identical-boson case in the 3P section above).
+                Indices: [1, 2, 3, 4]
+                # No FORM_FACTOR/RUNNING_WIDTH here - VA_0_KOmega3Pi is
+                # self-contained (not built on FF_0_PPP.C's getter
+                # dispatch), so those keys are not read for this
+                # channel; masses/widths and the coupling FIXMEs above
+                # are read directly in SetModelParameters instead.
+        AlwaysIntegrate: 1
+
+    # Novosibirsk/CVC 4pi current (Bondar et al.,
+    # tau_two_meson_currents_KS_RChiT.tex Sec."4pi: implementation-
+    # ready Novosibirsk/CVC current") - NEW this session,
+    # VA_0_Novosibirsk4Pi.C. Covers both pure-4pi charge modes.
+    #
+    # IMPORTANT: reuses Sherpa's own registered running widths for
+    # rho(770)+, a1(1260)+, f0(600), omega(782) in place of Bondar's
+    # own analytic g_R(s) functions - most notably eliminating a1's
+    # self-referential 3-body phase-space g_a1(s) integral (which the
+    # source note says is normally only tractable by pre-tabulating).
+    # Pole masses are ALSO taken from Sherpa's own particle database
+    # rather than Bondar's specific fit values (e.g. Mrho=0.7761 GeV).
+    # This is a deliberate "reuse lineshape machinery everywhere
+    # possible" substitution, NOT numerically identical to the
+    # original paper - the three G(Q^2) form factors themselves ARE
+    # the genuine tabulated Bondar values (Novosibirsk4pi_GTables.H),
+    # since those have no lineshape equivalent to substitute.
+    #
+    # Also: the mixed-charge mode's a1pi and omegapi pieces are
+    # combined COHERENTLY here, unlike the published TAUOLA
+    # implementation (incoherent/rate-level) - see VA_0_Novosibirsk4Pi.H
+    # for the full note. No Bose-symmetrization ordering is required
+    # for either channel key below - any consistent index assignment
+    # works, since the explicit permutation sums in Calc() already
+    # cover the identical-particle ambiguity.
+    #
+    # f0(500)/sigma admixture (request: "add a set of new models...
+    # plus the f0"): UNLIKE the Kpipi channels below (which need an
+    # explicit FORM_FACTOR switch to 103/104), this current has NO
+    # separate model number - the f0 admixture in the rho tower
+    # (kappaF0_4piMag/Phase, default -0.2) is read directly in
+    # SetModelParameters() and is ON BY DEFAULT for both channels
+    # below with no YAML change needed. Set kappaF0_4piMag: 0 to
+    # recover the original (no-f0) Bondar-based current instead.
+    ######################################################
+      111,111,111,-211,16:
+        BR: [0.33333333, 0.33333333]
+        ME:
+          - Current_ME:
+              J1:
+                Type: VA_F_F
+                Indices: [5, 0]
+                v: 1.
+                a: -1.
+              J2:
+                Type: VA_0_Novosibirsk4Pi
+                # pi^0(idx1) pi^0(idx2) pi^0(idx3) pi^-(idx4): order
+                # does not matter (see class-level note) - direct
+                # order used here for simplicity.
+                Indices: [1, 2, 3, 4]
+                # No FORM_FACTOR/RUNNING_WIDTH - self-contained current,
+                # not built on FF_0_PPP.C's getter dispatch.
+        AlwaysIntegrate: 1
+
+      -211,-211,211,111,16:
+        BR: [0.33333333, 0.33333333]
+        ME:
+          - Current_ME:
+              J1:
+                Type: VA_F_F
+                Indices: [5, 0]
+                v: 1.
+                a: -1.
+              J2:
+                Type: VA_0_Novosibirsk4Pi
+                # pi^-(idx1) pi^-(idx2) pi^+(idx3) pi^0(idx4): order
+                # does not matter (see class-level note).
+                Indices: [1, 2, 3, 4]
+        AlwaysIntegrate: 1
+
 
     221:
       22,22:

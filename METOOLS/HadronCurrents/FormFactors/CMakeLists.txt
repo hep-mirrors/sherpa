@@ -10,11 +10,13 @@ set(FormFactors_SOURCES Line_Shapes.C
                         Kstar_Decays.C
                         K1_Decays.C
                         A0_Decays.C
+                        K_0_800_Decays.C
                         FormFactor_Base.C
 			FF_0_PP.C
 			FF_0_PPP.C
 			FF_0_DD.C
 			RChL_Functions.C
+			Novosibirsk4pi_GTables.C
 		      )
 set(FormFactors_HEADERS Line_Shapes.H
                         Resonance_Base.H
@@ -28,11 +30,13 @@ set(FormFactors_HEADERS Line_Shapes.H
                         Kstar_Decays.H
                         K1_Decays.H
                         A0_Decays.H
+                        K_0_800_Decays.H
                         FormFactor_Base.H
 			FF_0_PP.H
 			FF_0_PPP.H
 			FF_0_DD.H
 			RChL_Functions.H
+			Novosibirsk4pi_GTables.H
 		      )
 
 

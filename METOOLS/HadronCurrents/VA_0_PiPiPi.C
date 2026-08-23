@@ -72,15 +72,33 @@ void VA_0_PiPiPi::Calc(const ATOOLS::Vec4D_Vector& moms, bool m_anti)
   double Qq13 = q*dq13/s123, Qq23 = q*dq23/s123;
   Vec4D  v1   = dq13-Qq13*q,   v2 = dq23-Qq23*q;
   Vec4C  v4   = Vec4C(cross(p1,p2,p3));
-  msg_Out()<<"\n"<<"*** "<<METHOD<<"("<<p_f1<<"/"<<p_f2<<"/"<<p_f3<<"/"<<p_fS<<"): "
-  	   <<m_flavs[p_i[0]]<<" + "<<m_flavs[p_i[1]]<<" + "
-  	   <<m_flavs[p_i[2]]<<": "
-  	   <<"Qq13 = "<<Qq13<<", Qq23 = "<<Qq23<<" from s = "<<s123<<"\n"
-  	   <<p1<<"("<<p1.Abs2()<<") + "<<p2<<"("<<p2.Abs2()<<") + "
-  	   <<p3<<"("<<p3.Abs2()<<")\n";
-  Complex F1  = (*p_f1)(moms), F2 = (*p_f2)(moms);
-  Complex F3  = (*p_f3)(moms), FS = (*p_fS)(moms);
-  msg_Out()<<F1<<", "<<F2<<", "<<F3<<","<<FS<<"\n"; 
+  // per-event debug output (re-enabled on request for the 3pi
+  // rho-peak investigation) - prints Q^2 and both pair invariant
+  // masses (s1=(p2+p3)^2, s2=(p1+p3)^2, i.e. the paper's own genuine
+  // pion-pair combinations) alongside the actual F1,F2 amplitudes, so
+  // the s1/s2-dependence (or absence of it) can be read directly
+  // event-by-event rather than only from the once-per-object
+  // propagator-structure dump above.
+  // per-event debug output, commented out again (K1(1270) width
+  // investigation concluded - see conversation history) - uncomment
+  // to re-enable if needed for future debugging.
+  /*
+  msg_Out()<<"*** "<<METHOD<<": "<<m_flavs[p_i[0]]<<" + "<<m_flavs[p_i[1]]<<" + "
+	   <<m_flavs[p_i[2]]<<":  Q^2 = "<<s123<<" (Q = "<<sqrt(s123)<<" GeV),  "
+	   <<"s1=(p2+p3)^2 = "<<s1<<" (sqrt = "<<sqrt(s1)<<" GeV),  "
+	   <<"s2=(p1+p3)^2 = "<<s2<<" (sqrt = "<<sqrt(s2)<<" GeV)\n";
+  */
+  Complex F1  = (p_f1!=NULL ? (*p_f1)(moms) : Complex(0.,0.));
+  Complex F2  = (p_f2!=NULL ? (*p_f2)(moms) : Complex(0.,0.));
+  Complex F3  = (p_f3!=NULL ? (*p_f3)(moms) : Complex(0.,0.));
+  Complex FS  = (p_fS!=NULL ? (*p_fS)(moms) : Complex(0.,0.));
+  // NULL guards above: the FF_0_PPP getter dispatch returns NULL for
+  // any flavour combination it doesn't recognise - dereferencing an
+  // unconditional (*p_f1)(moms) etc. in that case is a NULL-pointer
+  // crash, not a graceful "falls back to zero" (confirmed by an
+  // actual crash log, VA_0_KKPi/K^- K_S pi^0 - same fix applied
+  // uniformly across every VA_0_XXX 3-meson Current class).
+  // msg_Out()<<"    F1 = "<<F1<<",  F2 = "<<F2<<",  F3 = "<<F3<<",  FS = "<<FS<<"\n";
   Insert( m_norm * (F1*v1 + F2*v2 + F3*q + FS*v4), 0);
 }
 

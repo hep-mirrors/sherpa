@@ -45,8 +45,35 @@ void VA_0_KPiPi::Calc(const ATOOLS::Vec4D_Vector& moms, bool m_anti)
   double Qq13 = q*dq13/s123, Qq23 = q*dq23/s123;
   Vec4D  v1   = dq13-Qq13*q,   v2 = dq23-Qq23*q;
   Vec4C  v4   = Vec4C(cross(p1,p2,p3));
-  Complex F1  = (*p_f1)(moms), F2 = (*p_f2)(moms);
-  Complex F3  = (*p_f3)(moms), FS = (*p_fS)(moms);
+  // per-event debug output (re-enabled - this class covers
+  // piM_K0bar_pi0, currently under investigation for an odd spike
+  // around Q~1.25 GeV, close to K1(1270)'s pole - see the class-level
+  // comment on which term uses K1(1270) alone vs the K1(1270)+
+  // K1(1400) mix). s13=(p1+p3)^2 and s23=(p2+p3)^2 here are direct
+  // (exact) computations from the actual event kinematics - useful to
+  // compare against whatever s12/s13/reconstructed-s1 FF_0_PPP.C
+  // computes internally for this same event.
+  double s13 = (p1+p3).Abs2(), s23 = (p2+p3).Abs2(), s12 = (p1+p2).Abs2();
+  /* per-event debug output, commented out again (K1(1270) width
+     investigation concluded - see conversation history) - uncomment
+     to re-enable if needed for future debugging.
+  msg_Out()<<"*** "<<METHOD<<": "<<m_flavs[p_i[0]]<<" + "<<m_flavs[p_i[1]]<<" + "
+	   <<m_flavs[p_i[2]]<<":  Q^2 = "<<s123<<" (Q = "<<sqrt(s123)<<" GeV),  "
+	   <<"s13 = "<<s13<<" (sqrt = "<<sqrt(s13)<<" GeV),  "
+	   <<"s23 = "<<s23<<" (sqrt = "<<sqrt(s23)<<" GeV),  "
+	   <<"s12 = "<<s12<<" (sqrt = "<<sqrt(s12)<<" GeV)\n";
+  */
+  Complex F1  = (p_f1!=NULL ? (*p_f1)(moms) : Complex(0.,0.));
+  Complex F2  = (p_f2!=NULL ? (*p_f2)(moms) : Complex(0.,0.));
+  Complex F3  = (p_f3!=NULL ? (*p_f3)(moms) : Complex(0.,0.));
+  Complex FS  = (p_fS!=NULL ? (*p_fS)(moms) : Complex(0.,0.));
+  // msg_Out()<<"    F1 = "<<F1<<",  F2 = "<<F2<<",  F3 = "<<F3<<",  FS = "<<FS<<"\n";
+  // NULL guards above: the FF_0_PPP getter dispatch returns NULL for
+  // any flavour combination it doesn't recognise - dereferencing an
+  // unconditional (*p_f1)(moms) etc. in that case is a NULL-pointer
+  // crash, not a graceful "falls back to zero" (confirmed by an
+  // actual crash log, VA_0_KKPi/K^- K_S pi^0 - same fix applied
+  // uniformly across every VA_0_XXX 3-meson Current class).
   Insert( m_norm * (F1*v1 + F2*v2 + F3*q + FS*v4), 0);
 }
 

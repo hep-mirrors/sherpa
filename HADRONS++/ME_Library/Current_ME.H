@@ -13,7 +13,8 @@ namespace HADRONS {
     METOOLS::Current_Base* p_c1, * p_c2;
     double m_factor;
     /** 
-     * Select a current from a string using the Getter_Function for HD_Current_Base.
+     * Select a current from a string using the Getter_Function
+     * for HD_Current_Base.
      * 
      * @param s Settings describing the mapping of external particle
      * indices in the decay blob to internal indices in the current.

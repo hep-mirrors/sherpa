@@ -6,6 +6,7 @@
 #include "METOOLS/HadronCurrents/FormFactors/Kstar_Decays.H"
 #include "METOOLS/HadronCurrents/FormFactors/K1_Decays.H"
 #include "METOOLS/HadronCurrents/FormFactors/A0_Decays.H"
+#include "METOOLS/HadronCurrents/FormFactors/K_0_800_Decays.H"
 #include "ATOOLS/Org/Message.H"
 
 
@@ -44,6 +45,8 @@ void Line_Shapes::Init() {
   Add(Flavour(kf_K_star_1410_plus), new Kstar_1410_plus_Lineshape());
   Add(Flavour(kf_K_0_star_1430),      new Kstar0_1430_0_Lineshape());
   Add(Flavour(kf_K_0_star_1430_plus), new Kstar0_1430_plus_Lineshape());
+  Add(Flavour(kf_K_0_800),            new K_0_800_0_Lineshape());
+  Add(Flavour(kf_K_0_800_plus),       new K_0_800_plus_Lineshape());
   Add(Flavour(kf_K_star_1680),        new Kstar_1680_0_Lineshape());
   Add(Flavour(kf_K_star_1680_plus),   new Kstar_1680_plus_Lineshape());
   Add(Flavour(kf_K_1_1270),      new K1_1270_0_Lineshape());

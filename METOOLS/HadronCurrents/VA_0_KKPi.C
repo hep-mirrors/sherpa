@@ -53,14 +53,35 @@ void VA_0_KKPi::Calc(const ATOOLS::Vec4D_Vector& moms, bool m_anti)
   double Qq21 = q*dq21/s123, Qq31 = q*dq31/s123;
   Vec4D  v1   = dq21-Qq21*q,   v2 = dq31-Qq31*q;
   Vec4C  v4   = Vec4C(cross(p1,p2,p3));
-  msg_Out()<<"\n"<<"*** "<<METHOD<<": "
-    	   <<m_flavs[p_i[0]]<<" + "<<m_flavs[p_i[1]]<<" + "
-	   <<m_flavs[p_i[2]]<<": "
-	   <<"Qq21 = "<<Qq21<<", Qq31 = "<<Qq31<<" from s = "<<s123<<"\n"
-	   <<p1<<"("<<p1.Abs2()<<") + "<<p2<<"("<<p2.Abs2()<<") + "
-	   <<p3<<"("<<p3.Abs2()<<")\n";
-  Complex F1  = (*p_f1)(moms), F2 = (*p_f2)(moms);
-  Complex F3  = (*p_f3)(moms), FS = (*p_fS)(moms);
+  // per-event debug output (re-enabled - this is the K+K-pi- RChL2012
+  // channel actively under investigation for the Q^2/K+K- peak-
+  // position question). sKK=(p1+p2)^2=(K+K-)^2 is printed explicitly
+  // since that is the specific sub-mass in question (propRho's own
+  // argument, per F1_0_KKPi::FF_RChL2012's paper_s2 mapping) - s1/s2
+  // above are this Current's own local (K-pi- same-sign)/(K+pi-)
+  // pairs, not the same quantity.
+  double sKK  = (p1+p2).Abs2();
+  /* per-event debug output, commented out again (K1(1270) width
+     investigation concluded - see conversation history) - uncomment
+     to re-enable if needed for future debugging.
+  msg_Out()<<"*** "<<METHOD<<": "<<m_flavs[p_i[0]]<<" + "<<m_flavs[p_i[1]]<<" + "
+	   <<m_flavs[p_i[2]]<<":  Q^2 = "<<s123<<" (Q = "<<sqrt(s123)<<" GeV),  "
+	   <<"s(K+K-) = "<<sKK<<" (sqrt = "<<sqrt(sKK)<<" GeV),  "
+	   <<"s(K+pi-) = "<<s2<<" (sqrt = "<<sqrt(s2)<<" GeV),  "
+	   <<"s(K-pi-) = "<<s1<<" (sqrt = "<<sqrt(s1)<<" GeV)\n";
+  */
+  Complex F1  = (p_f1!=NULL ? (*p_f1)(moms) : Complex(0.,0.));
+  Complex F2  = (p_f2!=NULL ? (*p_f2)(moms) : Complex(0.,0.));
+  Complex F3  = (p_f3!=NULL ? (*p_f3)(moms) : Complex(0.,0.));
+  Complex FS  = (p_fS!=NULL ? (*p_fS)(moms) : Complex(0.,0.));
+  // msg_Out()<<"    F1 = "<<F1<<",  F2 = "<<F2<<",  F3 = "<<F3<<",  FS = "<<FS<<"\n";
+  // NULL guards above: the FF_0_PPP getter dispatch returns NULL for
+  // any flavour combination it doesn't recognise (e.g. a KKpi isospin
+  // variant with no FixMode() branch yet) - dereferencing an
+  // unconditional (*p_f1)(moms) etc. in that case is a NULL-pointer
+  // crash, not the "falls back to zero" behaviour the rest of this
+  // codebase assumes. Confirmed by an actual crash log for exactly
+  // this reason (K^- K_S pi^0, an intentionally-unrecognised channel).
   Insert( m_norm * (F1*v1 + F2*v2 + F3*q + FS*v4), 0);
 }
 

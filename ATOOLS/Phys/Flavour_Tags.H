@@ -315,6 +315,8 @@
 #define      kf_a_0_1450                  10111
 #define      kf_a_0_1450_plus             10211
 #define      kf_f_0_600                   9000221
+#define      kf_K_0_800_plus              9000321
+#define      kf_K_0_800                   9000311
 #define      kf_psi_4040                  9000443
 #define      kf_Upsilon_10860             9000553
 #define      kf_f_0_1710                  10331

@@ -35,6 +35,17 @@ namespace METOOLS {
     KM_pi0_K0         = 10, // K^-(q1) pi^0(q2) K^0(q3)   [row 5]
     KM_piM_piP        = 11, // K^-(q1) pi^-(q2) pi^+(q3)  [row 7]
     piM_K0bar_pi0     = 12, // pi^-(q1) K0bar(q2) pi^0(q3)[row 8]
+    // eta(q1) pi^-(q2) pi^0(q3) / eta'(q1) pi^-(q2) pi^0(q3):
+    // tau_two_meson_currents_KS_RChiT.tex Sec."eta pi pi and eta' pi
+    // pi": G-parity kills the axial form factors identically in the
+    // isospin limit - only the anomalous vector (F5/FS) current
+    // survives (Eq.(eq:etapipi-current)). Same p1=q1,p2=q2,p3=q3
+    // convention as above (q1=eta(or eta'), q2=pi^-, q3=pi^0, per the
+    // note's own labeling) - NOT interchangeable (unlike the Keta/Kpi
+    // two-meson case) since eta(') is not Bose-symmetric with either
+    // pion, so FixMode requires this exact order.
+    EtaPiPi_pi0       = 13,
+    EtaprimePiPi_pi0  = 14,
     unknown           = 999
   };
   
@@ -42,6 +53,15 @@ namespace METOOLS {
   protected:
     FF_0_PPP_mode       m_mode;
     Complex             m_norm;
+    // True if the ACTUAL final-state kaon in piM_K0bar_pi0 is K_S or
+    // K_L rather than the bare (unobservable) K^0/K0bar flavour
+    // eigenstate - same reasoning as FF_0_PP.H's m_isKSKL (K_S/K_L are
+    // strangeness-eigenstate MIXTURES, picking up an ADDITIONAL
+    // 1/sqrt(2) amplitude factor on top of the isospin Clebsch already
+    // in m_norm for this channel). Not relevant for the KpiK family's
+    // KS_piM_KS/KS_piM_KL/KL_piM_KL modes, which already recognise
+    // K_S/K_L directly with their own dedicated normalisation (Eq.50).
+    bool                m_isKSKL;
 
     void    FixMode();
     virtual Complex FF_KS(const double & s123,const double & s1,const double & s2);
