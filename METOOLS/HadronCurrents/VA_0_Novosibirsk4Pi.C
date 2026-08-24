@@ -244,7 +244,12 @@ void VA_0_Novosibirsk4Pi::SetModelParameters(struct GeneralModel model) {
   // Not resonance widths - kept exactly as given in the source table,
   // overridable in case a different tune is ever wanted.
   m_Lambda = model("Lambda_a1_4pi", 1.2);
-  m_z = ReadComplexParam(&model,"z_sigmapi_4piMag",1.269,
+  // z = 1.269 + 0.591 i (note's Novosibirsk parameter table). ReadComplexParam
+  // wants a MAGNITUDE and a phase, so the magnitude is |z| = sqrt(1.269^2 +
+  // 0.591^2) = 1.39985, NOT the real part 1.269 - passing the real part as the
+  // magnitude (as this used to) gives z = 1.269*exp(i*0.4362) = 1.1504 +
+  // 0.5357 i, i.e. the right phase but |z| low by a factor 1.1031.
+  m_z = ReadComplexParam(&model,"z_sigmapi_4piMag",sqrt(sqr(1.269)+sqr(0.591)),
 			 "z_sigmapi_4piPhase",atan2(0.591,1.269));
   // f0(500)/sigma admixture in the rho tower used by t1/t3 - NEW
   // addition (request: "add a set of new models... plus the f0"),

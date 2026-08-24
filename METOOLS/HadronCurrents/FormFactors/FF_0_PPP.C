@@ -250,21 +250,24 @@ protected:
   // own closed-form running-width prescription (Eq.(eq:CLEO-running-
   // width)), not Sherpa's generic decay-channel-based running widths.
   //
-  // IMPORTANT CAVEAT (please verify): the note gives F1^CLEO, F2^CLEO,
-  // F3^CLEO as three SEPARATELY nonzero transverse axial form factors,
-  // but the general PPPcurrent basis states "only two transverse axial
-  // structures are independent" - F1,F2,F3 multiplying (p2-p3),
-  // (p3-p1),(p1-p2) with coefficients c1,c2,c3 are NOT all independent
-  // (those three vectors sum to zero identically). This implementation
-  // ASSUMES c1=c2=c3=1 (the natural reading when all three are given
-  // separately, since the note never restates c1,c2,c3 specifically
-  // for the CLEO variant - only for KS90/RChL2012, where c3=0) and
-  // reduces the three-term sum onto this class's existing two-term
-  // (F1,F2) architecture via
-  //   F1_eff = F1^CLEO - F3^CLEO,   F2_eff = F2^CLEO - F3^CLEO,
-  // using the identity (p1-p2)=-(p2-p3)-(p3-p1). If the real
-  // convention uses different c_i, this reduction needs revisiting -
-  // flagged rather than silently assumed correct.
+  // BASIS REDUCTION (previously flagged as a caveat, now resolved by
+  // the note): the note gives F1^CLEO, F2^CLEO, F3^CLEO as three
+  // analytic functions, but the general PPPcurrent basis states "only
+  // two transverse axial structures are independent" - F1,F2,F3
+  // multiplying (p2-p3),(p3-p1),(p1-p2) with coefficients c1,c2,c3 are
+  // NOT all independent (those three vectors sum to zero identically).
+  // The note's "Active transverse basis in the default TAUOLA-CLEO
+  // current" now states the active coefficients explicitly:
+  //   c1=+2sqrt2/3,  c2=-2sqrt2/3,  c3=0,  c4=c5=0,
+  // so the reduction is just F1_eff=F1^CLEO, F2_eff=F2^CLEO with NO F3
+  // term (Eq.(eq:CLEO-two-slot-map)); the generic fold
+  // F_i-(c3/c_i)F3 (Eq.(eq:CLEO-generic-fold)) vanishes. An earlier
+  // version of this class assumed c1=c2=c3=1 and subtracted F3 - the
+  // note's "Implementation warning" says explicitly that this is not
+  // the default TAUOLA-CLEO convention. See FF_KS below for the slot
+  // assignment that goes with it. CLEO_F3term is kept (correct as
+  // written, coefficient zero in this current, useful for comparing
+  // against a redundant three-vector basis).
   double  m_MCLEOrho, m_GCLEOrho, m_MCLEOrhop, m_GCLEOrhop;
   double  m_MCLEOsigma, m_GCLEOsigma, m_MCLEOf0, m_GCLEOf0, m_MCLEOf2, m_GCLEOf2;
   double  m_MCLEOa1, m_GCLEOa1, m_MCLEOa1p, m_GCLEOa1p;
@@ -717,15 +720,36 @@ FF_KS(const double & s123,const double & s12,const double & s13) {
     // bilinear; the note itself says so explicitly for an analogous
     // overall-sign choice) and omitted here, consistent with the
     // existing KS90 branch above, which also does not apply it.
+    // The earlier CAVEAT above is now RESOLVED by the note, in two ways.
+    //
+    // (1) No F3 folding. The note's "Active transverse basis in the
+    // default TAUOLA-CLEO current" gives the active coefficients
+    // explicitly as c1=+2sqrt2/3, c2=-2sqrt2/3, c3=0 (Eq.(eq:CLEO-
+    // active-coefficients)), so the two-slot map is simply
+    // F1_eff=F1^CLEO, F2_eff=F2^CLEO (Eq.(eq:CLEO-two-slot-map)). The
+    // generic reduction F_i - (c3/c_i)F3 (Eq.(eq:CLEO-generic-fold))
+    // has a vanishing fold term here. The note's "Implementation
+    // warning" states outright that c1=c2=c3=1 is NOT the default
+    // TAUOLA-CLEO convention, which is what the previous version
+    // assumed. CLEO_F3term is deliberately kept below: it is correct
+    // as written and is needed to compare against a redundant
+    // three-vector basis, it just has coefficient zero here.
+    //
+    // (2) Slot assignment. The note's F1^CLEO leads with BW(s1;rho),
+    // s1=(p2+p3)^2, and multiplies (p2-p3) - which is v2 in
+    // VA_0_PiPiPi::Calc, not v1. Since this class's F1 slot multiplies
+    // v1=T(p1-p3), that slot must carry the (1,3) subsystem, i.e. the
+    // note's F2=F1(1<->2). This is exactly the pairing the KS90 branch
+    // below already uses (F1 -> rhos(s13), F2 -> rhos(paper_s1)); the
+    // previous version had the two orderings the other way round, so
+    // the CLEO and KS branches of the same class disagreed and only KS
+    // matched the basis vectors. No extra sign is needed: c2=-c1 is
+    // already absorbed by building v1 as (p1-p3) rather than (p3-p1).
     if (!m_isF2) {
-      Complex F1 = CLEO_F1term(s123, paper_s1, paper_s2, paper_s3, m1_2, m2_2, m3_2);
-      Complex F3 = CLEO_F3term(s123, paper_s1, paper_s2, paper_s3, m1_2, m2_2, m3_2);
-      return F1 - F3;
+      return CLEO_F1term(s123, paper_s2, paper_s1, paper_s3, m2_2, m1_2, m3_2);
     }
     else {
-      Complex F2 = CLEO_F1term(s123, paper_s2, paper_s1, paper_s3, m2_2, m1_2, m3_2);
-      Complex F3 = CLEO_F3term(s123, paper_s1, paper_s2, paper_s3, m1_2, m2_2, m3_2);
-      return F2 - F3;
+      return CLEO_F1term(s123, paper_s1, paper_s2, paper_s3, m1_2, m2_2, m3_2);
     }
   }
   if (m_mode==FF_0_PPP_mode::pi0_pi0_KM) {
@@ -737,17 +761,30 @@ FF_KS(const double & s123,const double & s12,const double & s13) {
     if (m_isF2) {
       double s1 = s123 - s12 - s13 +
 	m_masses2[m_pi[0]] + m_masses2[m_pi[1]] + m_masses2[m_pi[2]];
-      return m_norm * TK1a * (*p_TKstar1_pi0K)(s1);
+      return TK1a * (*p_TKstar1_pi0K)(s1);
     }
-    return m_norm * TK1a * (*p_TKstar1_pi0K)(s13);
+    return TK1a * (*p_TKstar1_pi0K)(s13);
   }
   if (p_a1s==NULL || p_rhos==NULL) return Complex(0.,0.);
+  // NOTE: do NOT multiply by m_norm here. FF_0_PPP_Base::operator()
+  // already applies it ("case ff_model::KS: return m_norm*FF_KS(...)"),
+  // so every FF_XXX() override must return the DIMENSIONLESS shape only -
+  // as the base-class fallbacks state ("F=1 times whatever is already in
+  // m_norm") and as every other derived class in this file does.
+  // This function used to apply m_norm a second time, squaring it in the
+  // rate: for 3pi, |m_norm| = 2sqrt2*Vud/(3 fpi) = 9.93, so the partial
+  // width came out |m_norm|^2 = 98.7 times too large (measured 96.6/94.1
+  // times the PDG value for pi-pi0pi0 / pi-pi-pi+ before this fix).
+  // The pi0_pi0_KM branch above had the same double-application, with
+  // |m_norm| = 0.573 there, so that channel was instead a factor
+  // |m_norm|^2 = 0.328 too SMALL - its apparent agreement with the PDG
+  // rate was an artefact of this bug, not evidence the mode was right.
   if (m_isF2) {
     double s1 = s123 - s12 - s13 +
       m_masses2[m_pi[0]] + m_masses2[m_pi[1]] + m_masses2[m_pi[2]];
-    return m_norm * (*p_a1s)(s123) * (*p_rhos)(s1);
+    return (*p_a1s)(s123) * (*p_rhos)(s1);
   }
-  return m_norm * (*p_a1s)(s123) * (*p_rhos)(s13);
+  return (*p_a1s)(s123) * (*p_rhos)(s13);
 }
 
 Complex F1_0_PiPlusPiZeroPiZero::
@@ -1884,6 +1921,16 @@ void FS_0_KPiPi::Construct(const FF_Parameters & params) {
   double fpi  = (*params.p_model)("fpi",0.1307)/sqrt(2.);
   double Vus  = (*params.p_model)("Vus",Tools::Vus);
   double pref = 1./(2.*sqrt(2.)*sqr(M_PI)*pow(fpi,3));
+  // NOTE on the Clebsch: these are FM95 Tab.II (vector) values, which are
+  // deliberately NOT the Tab.I (axial) ones used by F1_0_KPiPi::Construct.
+  // Eq.(eq:FM-3P-master) writes a single A^(abc) for F1,F2,F3, but that is
+  // a simplification of the source: the note's own KKpi section gives
+  // A_KKpi = -cos(theta_C)/2 for the axial and A_{V,KKpi} = -cos(theta_C)
+  // for the vector, a factor 2 apart. So axial and anomalous Clebsches
+  // must be read from their respective tables, not derived from each
+  // other - do not ""unify"" them. (Checked 2026-08-24 while chasing the
+  // Kpipi rate excess; deriving these from the axial values made the
+  // agreement worse and contradicts the KKpi counter-example.)
   switch (m_mode) {
   case FF_0_PPP_mode::KM_piM_piP:    m_norm = Complex(pref*Vus,0.);          break;
   case FF_0_PPP_mode::piM_K0bar_pi0:
