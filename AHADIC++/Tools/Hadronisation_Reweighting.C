@@ -749,7 +749,10 @@ void Hadronisation_Reweighting::WriteEventStatistics() {
     m_hadronisation_weight_file << "E " << m_total_events << " " << n_primary << " "
                   << n_gluon << " " << n_fission << " " << n_soft << "\n";
   }
-  if (m_output_mode == 2) FillHistograms();
+  if (m_output_mode == 2) {
+    FillWeightHistogram();
+    FillHistograms();
+  }
   for (size_t ivar=1; ivar<m_n_variations; ++ivar) {
     const double w = m_event_variation_weights[ivar];
     m_sum_weights[ivar] += w;
@@ -759,6 +762,10 @@ void Hadronisation_Reweighting::WriteEventStatistics() {
 }
 
 namespace {
+  const double s_weight_min   = 1.e-8;
+  const double s_weight_max   = 1.e8;
+  const int    s_weight_nbins = 160;
+
   const long int s_flavour_codes[] = {
     3303, 3201, 3101, 3203, 3103, 2101, 2103, 2203, 1103, 3, 2, 1
   };
@@ -821,6 +828,19 @@ void Hadronisation_Reweighting::BookHistograms() {
   book("n_gluon_splittings",   -0.5, 100.5, 101);
   book("n_cluster_splittings", -0.5, 100.5, 101);
   book("n_soft_decays",        -0.5, 100.5, 101);
+
+  ///////////////////////////////////////////////////////////////////////////
+  // The distribution of the reweighting weight itself, one histogram per
+  // variation, on a log10 grid (type 11 = logarithmic + error) spanning 16
+  // decades at 10 bins per decade; anything outside lands in the under- or
+  // overflow bin. There is no nominal counterpart: the nominal weight is 1
+  // for every event by construction.
+  ///////////////////////////////////////////////////////////////////////////
+  std::vector<Histogram*> weights(m_n_variations, (Histogram*)NULL);
+  for (size_t ivar=1; ivar<m_n_variations; ++ivar)
+    weights[ivar] = new Histogram(11, s_weight_min, s_weight_max,
+                                  s_weight_nbins, "weight");
+  m_hist_reweighted["weight"] = weights;
 }
 
 void Hadronisation_Reweighting::FillObs(const std::string& key,
@@ -910,6 +930,27 @@ void Hadronisation_Reweighting::FillHistograms() {
   FillObs("n_gluon_splittings",   double(n_gluon));
   FillObs("n_cluster_splittings", double(n_fission));
   FillObs("n_soft_decays",        double(n_soft));
+}
+
+void Hadronisation_Reweighting::FillWeightHistogram() {
+  ///////////////////////////////////////////////////////////////////////////
+  // Fill the finalised per-event reweighting weight of each variation into
+  // its weight histogram, with unit fill weight, so that the bin contents
+  // are event counts. This is the same weight that enters the Weights_Map
+  // and the ESS statistics below.
+  ///////////////////////////////////////////////////////////////////////////
+  std::map<std::string, std::vector<Histogram*> >::iterator it =
+    m_hist_reweighted.find("weight");
+  if (it == m_hist_reweighted.end()) return;
+  std::vector<Histogram*>& vec = it->second;
+  for (size_t ivar=1; ivar<vec.size(); ++ivar) {
+    if (vec[ivar]==NULL) continue;
+    double w = m_event_variation_weights[ivar];
+    // a variation may give exactly zero, and log(0) would leave Insert() with
+    // a non-finite bin index; push such events into the underflow bin
+    if (!std::isfinite(w) || w <= 0.) w = 0.1*s_weight_min;
+    vec[ivar]->Insert(w, 1.0);
+  }
 }
 
 void Hadronisation_Reweighting::WriteHistograms() {

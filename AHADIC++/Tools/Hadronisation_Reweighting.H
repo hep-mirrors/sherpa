@@ -193,6 +193,7 @@ namespace AHADIC {
     std::map<std::string, std::vector<ATOOLS::Histogram*> > m_hist_reweighted;
     void BookHistograms();
     void FillHistograms();
+    void FillWeightHistogram();
     void WriteHistograms();
     void FillObs(const std::string& key, const double value);
   public:
