@@ -197,17 +197,19 @@ namespace PHASIC {
 
   class ShiftMasses_Energy: public Function_Base {
   private:
+
     std::vector<double>::size_type m_nentries;
     std::vector<double> m_m2, m_p2;
+
   public:
-    ShiftMasses_Energy(Mass_Selector *const ms,
-		       Cluster_Amplitude *const ampl,int mode,
-		       const bool no_leptons=false)
+
+    ShiftMasses_Energy(Mass_Selector* const ms, Cluster_Amplitude* const ampl,
+                       int mode, const bool no_leptons = false)
     {
       const auto nin = ampl->NIn();
       const auto offset = (mode < 0 ? 0 : nin);
       const auto end = (mode < 0 ? nin : ampl->Legs().size());
-      for (size_t i {offset}; i < end; ++i) {
+      for (size_t i{offset}; i < end; ++i) {
         if (no_leptons && ampl->Leg(i)->Flav().IsLepton()) continue;
         m_p2.push_back(ampl->Leg(i)->Mom().PSpat2());
         m_m2.push_back(ms->Mass2(ampl->Leg(i)->Flav()));
@@ -216,13 +218,13 @@ namespace PHASIC {
     }
     virtual double operator()(double x)
     {
-      const auto x2=x*x;
-      auto E=0.0;
-      for (size_t i {0}; i < m_nentries; ++i)
-	E+=sqrt(m_m2[i]+x2*m_p2[i]);
+      const auto x2 = x * x;
+      auto E = 0.0;
+      for (size_t i{0}; i < m_nentries; ++i)
+        E += sqrt(m_m2[i] + x2 * m_p2[i]);
       return E;
     }
-  };// end of class ShiftMasses_Energy
+  }; // end of class ShiftMasses_Energy
 
   class ShiftMasses_DIS: public Function_Base {
   private:
@@ -412,7 +414,8 @@ int ME_Generator_Base::ShiftMassesEPA(Cluster_Amplitude *const ampl, Vec4D cms) 
     oldHCM.Boost(p);
     ampl->Leg(i)->SetMom(p);
   }
-  /// minimal available rest-frame energy is the sum of masses
+  // minimal rest-frame energy is the sum of masses; root may lie on either
+  // side of 1 (unlike Default/DIS)
   ShiftMasses_Energy etot(this,ampl,1,true);
   const double M_new = sqrt(P_hadOutNew.Abs2());
   if (M_new < etot(0.0) && !IsEqual(etot(0.0),M_new,rpa->gen.Accu())) {
@@ -420,17 +423,14 @@ int ME_Generator_Base::ShiftMassesEPA(Cluster_Amplitude *const ampl, Vec4D cms) 
                    <<" vs sum of masses "<<etot(0.0)<<".\n";
     return -1;
   }
-  double xi(etot.WDBSolve(M_new,0.0,1.0));
+  // find the right bracket, should be [0., 1.] or [0., 2.] for most points
+  double xmax(1.0);
+  while (etot(xmax) < M_new && xmax < 8.0) xmax *= 2.0;
+  double xi(etot.WDBSolve(M_new,0.0,xmax));
   if (!IsEqual(etot(xi),M_new,rpa->gen.Accu())) {
-    if (m_massmode==0) xi=etot.WDBSolve(M_new,1.0,2.0);
-    if (!IsEqual(etot(xi),M_new,rpa->gen.Accu())) {
-      msg_Error()<<"No solution found for mass shift [EPA] "
-                 <<etot(xi)<<" vs. "<<M_new<<".\n"
-                 <<METHOD<<" dump: P_hadOut = "<<P_hadOut<<" M_old = "
-                 <<sqrt(P_hadOut.Abs2())<<", P_hadOutNew = "<<P_hadOutNew<<"\n"
-                 <<METHOD<<" dump: (rest-frame outgoing legs)\n"<<*ampl<<"\n";
-      return -1;
-    }
+    msg_Error()<<"No solution found for EPA mass shift "
+               <<etot(xi)<<" vs. "<<M_new<<".\n";
+    return -1;
   }
   for (size_t i(ampl->NIn());i<ampl->Legs().size();++i) {
     if(ampl->Leg(i)->Flav().IsLepton()) continue;
