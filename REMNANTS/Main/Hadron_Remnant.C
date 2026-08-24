@@ -409,14 +409,16 @@ bool Hadron_Remnant::TestExtract(const Flavour &flav,const Vec4D &mom,
   return true;
 }
 
-void Hadron_Remnant::Output() {
-  msg_Out()<<METHOD<<"("<<m_beam<<", "<<m_beamflav<<").\n"
-	   <<"   Constituents are [ ";
-  for (const auto& flit : m_constituents)  msg_Out()<<flit<<" ";
-  msg_Out()<<"]\n"
-	   <<"   Partons are { ";
+void Hadron_Remnant::Output()
+{
+  msg_Debugging() << METHOD << "(" << m_beam << ", " << m_beamflav << ").\n"
+                  << "   Constituents are [ ";
+  for (const auto& flit : m_constituents)
+    msg_Debugging() << flit << " ";
+  msg_Debugging() << "]\n"
+                  << "   Partons are { ";
   for (const auto& flit : *p_partons) {
-    msg_Out()<<" "<<flit;
+    msg_Debugging() << " " << flit;
   }
-  msg_Out()<<"}.\n";
+  msg_Debugging() << "}.\n";
 }
