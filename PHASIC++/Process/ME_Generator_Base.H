@@ -32,6 +32,7 @@ namespace PHASIC {
 
     int ShiftMassesDefault(ATOOLS::Cluster_Amplitude *const ampl, ATOOLS::Vec4D cms);
     int ShiftMassesDIS(ATOOLS::Cluster_Amplitude *const ampl, ATOOLS::Vec4D cms);
+    int ShiftMassesEPA(ATOOLS::Cluster_Amplitude *const ampl, ATOOLS::Vec4D cms);
 
   protected:
 
