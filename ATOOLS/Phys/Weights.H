@@ -343,14 +343,14 @@ namespace ATOOLS {
       const_iterator it {this->find(type, source)};
       if (it != this->end()) {
         const Weights& weights {it->second};
-        const double relfac {NominalIgnoringVariationType(type)};
+        const double relfac {Nominal()/weights.Nominal()};
         // do remaining combination and store resulting weights
         size_t num_vars = weights.Size() - 1;
         for (size_t i(0); i < num_vars; ++i) {
           const std::string varname {weights.Name(i + 1, source, name_type)};
           map[varname] = weights.Variation(i) * relfac;
-          msg_Debugging() << varname << ": " << weights.Variation(i) * relfac
-                          << '\n';
+          msg_Debugging() << varname << ": " << weights.Variation(i)<<" * "<<relfac
+			  <<" = "<< weights.Variation(i) * relfac << '\n';
         }
       }
     }
@@ -365,6 +365,9 @@ namespace ATOOLS {
         for (size_t i {1}; i < size; ++i) {
           map[kv.first + "." + kv.second.Name(i)] =
               Nominal() / kv.second.Nominal() * kv.second[i];
+          msg_Debugging() << kv.first + "." + kv.second.Name(i)
+			  << ": " << Nominal()<<" / "<<kv.second.Nominal()<<" * "<<kv.second[i]
+			  <<" = "<<Nominal() / kv.second.Nominal() * kv.second[i]<<'\n';
         }
       }
     }
