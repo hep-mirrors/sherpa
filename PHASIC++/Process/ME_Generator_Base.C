@@ -309,6 +309,8 @@ int ME_Generator_Base::ShiftMasses(Cluster_Amplitude *const ampl)
   if (!run) return 1;
   /// decays never need mass shifting
   if (ampl->NIn() <= 1) return 1;
+  /// without a remnant handler the legs cannot be classified
+  if (p_remnant==NULL) return ShiftMassesDefault(ampl, cms);
   /// classify the incoming legs by their remnants:
   /// no PDF leg → nothing to shift; two PDF legs → Default; one PDF leg →
   /// DIS if the intact leg is a lepton (virtual-photon exchange, Breit frame
@@ -355,7 +357,8 @@ int ME_Generator_Base::ShiftMassesDefault(Cluster_Amplitude *const ampl, Vec4D c
     ampl->Leg(i)->SetMom(boost*p);
   }
   for (int i = 0; i < 2; i++) {
-    if (p_remnant->GetRemnant(i)->Type() == REMNANTS::rtp::intact) continue;
+    if (p_remnant!=NULL &&
+        p_remnant->GetRemnant(i)->Type() == REMNANTS::rtp::intact) continue;
     double Ebunch = rpa->gen.PBunch(ampl->Leg(i)->Mom()[3] < 0.0 ? 0 : 1)[0];
     double Ei = -ampl->Leg(i)->Mom()[0];
     if (Ebunch < Ei && !IsEqual(Ei,Ebunch)) return -1;
