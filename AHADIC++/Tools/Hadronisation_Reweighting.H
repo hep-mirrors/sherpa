@@ -133,7 +133,11 @@ namespace AHADIC {
     bool   m_frag_ar {false};
     std::map<std::string, std::vector<double>> m_variation_vectors;
 
-    std::vector<double> m_variation_weights;
+    std::vector<double> m_call_variation_weights;
+    std::vector<double> m_call_variation_weights_raw;
+    std::vector<double> m_event_variation_weights;
+    std::vector<double> m_event_variation_weights_raw;
+    void ResetEvent();
     // Per-channel event weights, accumulated over all splittings of an event:
     // flavour popping (Flavour_Selector), gluon splitting z (Gluon_Splitter),
     // cluster splitting z (Cluster_Splitter), soft cluster decays and
@@ -167,7 +171,6 @@ namespace AHADIC {
     bool m_reweighting_output;
     bool m_event_weights_applied;
     size_t m_total_events;
-    std::vector<double> m_event_variation_weights;
     std::vector<double> m_event_flavour_weights;
     std::vector<double> m_event_gluon_weights;
     std::vector<double> m_event_cluster_weights;
@@ -175,8 +178,9 @@ namespace AHADIC {
     std::vector<double> m_event_kt_weights;
     std::vector<double> m_event_promptdecay_weights;
     std::vector<double> m_sum_weights;
+    std::vector<double> m_sum_weights_raw;
     std::vector<double> m_sum_weights_squared;
-    std::vector<size_t> m_cutoff_count;
+    std::vector<size_t> m_cutoff_events;
     void AccumulateEventStatistics();
     void PrintVariationStatistics();
     std::ofstream m_hadronisation_weight_file;
@@ -194,6 +198,7 @@ namespace AHADIC {
     void BookHistograms();
     void FillHistograms();
     void FillWeightHistogram();
+    void FillCallWeightHistogram();
     void WriteHistograms();
     void FillObs(const std::string& key, const double value);
   public:
@@ -201,7 +206,7 @@ namespace AHADIC {
     ~Hadronisation_Reweighting();
 
     void Initialize();
-    void ResetEvent();
+    void ResetCall();
 
     inline bool   Active() const { return m_n_variations > 1; }
     inline bool   OutputActive() const { return m_reweighting_output > 0; }
@@ -285,6 +290,7 @@ namespace AHADIC {
                                 const std::vector<double>& probs);
 
     void ApplyVariationWeights(ATOOLS::Blob * blob);
+    void FinishEvent();
 
     // OUTPUT
     void ResetStats();

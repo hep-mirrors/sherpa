@@ -195,6 +195,7 @@ void Hadronisation_Reweighting::Initialize() {
 
   m_max_reweight_factor = hadpars->Get("max_reweight_factor");
   m_reweight_max_nsplit = hadpars->Switch("reweight_max_nsplit");
+  ResetCall();
   ResetEvent();
 
   auto s = Settings::GetMainSettings()["AHADIC"];
@@ -212,9 +213,10 @@ void Hadronisation_Reweighting::Initialize() {
   const int reweighting_output = s["REWEIGHTING_OUTPUT"].SetDefault(0).Get<int>();
   m_output_mode        = reweighting_output;
   m_reweighting_output = reweighting_output > 0;
-  m_cutoff_count.resize(m_n_variations, 0);
   m_sum_weights.resize(m_n_variations, 0.0);
+  m_sum_weights_raw.resize(m_n_variations, 0.0);
   m_sum_weights_squared.resize(m_n_variations, 0.0);
+  m_cutoff_events.resize(m_n_variations, 0);
   m_total_events = 0;
   if (m_output_mode == 1) {
     m_hadronisation_weight_file.open("hadronisation_weights.dat");
@@ -426,11 +428,12 @@ Hadronisation_Reweighting::GetVariationVector(const std::string& keyword) const 
                      " not found in Hadronisation_Reweighting vector map.");
 }
 
-void Hadronisation_Reweighting::ResetEvent() {
+void Hadronisation_Reweighting::ResetCall() {
   ///////////////////////////////////////////////////////////////////////////
-  // Reset all variation weights to 1.0 for a new event.
+  // Reset all variation weights to 1.0 for a new hadronization call.
   ///////////////////////////////////////////////////////////////////////////
-  m_variation_weights.assign(m_n_variations, 1.);
+  m_call_variation_weights.assign(m_n_variations, 1.);
+  m_call_variation_weights_raw.assign(m_n_variations, 1.);
   m_flavour_weights.assign(m_n_flavour_variations, 1.);
   m_gluon_weights.assign(m_n_gluon_variations, 1.);
   m_cluster_weights.assign(m_n_cluster_variations, 1.);
@@ -449,6 +452,14 @@ void Hadronisation_Reweighting::ResetEvent() {
   m_tmp_gluon_records.clear();
   m_tmp_cluster_records.clear();
   m_call_records.clear();
+}
+
+void Hadronisation_Reweighting::ResetEvent() {
+  ///////////////////////////////////////////////////////////////////////////
+  // Reset the accumulated event weights to 1.0 for a new event.
+  ///////////////////////////////////////////////////////////////////////////
+  m_event_variation_weights.assign(m_n_variations, 1.);
+  m_event_variation_weights_raw.assign(m_n_variations, 1.);
 }
 
 void Hadronisation_Reweighting::AcceptTmpWeights(size_t n_variations, 
@@ -648,12 +659,15 @@ void Hadronisation_Reweighting::PromptDecayReweighting(
 void Hadronisation_Reweighting::ApplyVariationWeights(ATOOLS::Blob * blob) {
   ///////////////////////////////////////////////////////////////////////////
   // Compute and apply the variation weights of one hadronization call.
-  // The total weight is:
-  // w_total = w_cluster * w_gluon * w_flavour * w_kt * w_soft * w_prompt
-  // capped at m_max_reweight_factor, and multiplied into the soft-physics
-  // variations of the event's Weights_Map. Hadronization may run more than
-  // once per event; each call multiplies its weights into the same variations,
-  // so the event weight is the product over all calls.
+  // The call weight is:
+  // w_call = w_cluster * w_gluon * w_flavour * w_kt * w_soft * w_prompt
+  // and is multiplied into the soft-physics variations of the event's
+  // Weights_Map. Hadronization may run more than once per event, so the event
+  // weight is the product of the call weights.
+  //
+  // m_max_reweight_factor caps that product, not the individual call, so what
+  // a call contributes is the increment that leaves the accumulated weight at
+  // min(prod w_call, m_max_reweight_factor).
   ///////////////////////////////////////////////////////////////////////////
   for (size_t ivar=1; ivar<m_n_variations; ++ivar) {
     double w_total = 1.;
@@ -667,18 +681,51 @@ void Hadronisation_Reweighting::ApplyVariationWeights(ATOOLS::Blob * blob) {
       msg_Error() << METHOD << ": non-finite variation weight, resetting to 1\n";
       w_total = 1.0;
     }
-    if (m_max_reweight_factor > 0. && w_total > m_max_reweight_factor) {
-      w_total = m_max_reweight_factor;
-      m_cutoff_count[ivar]++; // OUTPUT
+    m_call_variation_weights_raw[ivar] = w_total;
+
+    const double raw_old    = m_event_variation_weights_raw[ivar];
+    const double capped_old = m_event_variation_weights[ivar];
+    const double raw_new    = raw_old * w_total;
+    const double capped_new =
+        (m_max_reweight_factor > 0. && raw_new > m_max_reweight_factor) ?
+        m_max_reweight_factor : raw_new;
+
+    double factor;
+    if (capped_new == raw_new && capped_old == raw_old) {
+      factor = w_total;
     }
-    m_variation_weights[ivar] = w_total;
+    else if (capped_old > 0.) {
+      factor = capped_new / capped_old;
+    }
+    else {
+      factor = 1.;
+    }
+    if (!std::isfinite(factor)) {
+      msg_Error() << METHOD << ": non-finite cutoff correction for variation v"
+                  << ivar << ", leaving the accumulated weight untouched\n";
+      factor = 1.;
+    }
+    m_call_variation_weights[ivar] = factor;
   }
   if (blob != NULL) {
     auto wgtmap = (*blob)["WeightsMap"]->Get<Weights_Map>();
-    CombineSoftPhysicsVariations(wgtmap, m_variation_weights);
+    CombineSoftPhysicsVariations(wgtmap, m_call_variation_weights);
     blob->AddData("WeightsMap", new Blob_Data<Weights_Map>(wgtmap));
+    for (size_t ivar=1; ivar<m_n_variations; ++ivar) {
+      m_event_variation_weights[ivar]     *= m_call_variation_weights[ivar];
+      m_event_variation_weights_raw[ivar] *= m_call_variation_weights_raw[ivar];
+    }
     AccumulateEventStatistics(); // OUTPUT
   }
+  ResetCall();
+}
+
+void Hadronisation_Reweighting::FinishEvent() {
+  ///////////////////////////////////////////////////////////////////////////
+  // End of event, from Ahadic::FinishEvent(). The statistics read the event
+  // weights, so they are flushed before the weights are cleared.
+  ///////////////////////////////////////////////////////////////////////////
+  WriteEventStatistics(); // OUTPUT
   ResetEvent();
 }
 
@@ -686,7 +733,6 @@ void Hadronisation_Reweighting::ApplyVariationWeights(ATOOLS::Blob * blob) {
 
 void Hadronisation_Reweighting::ResetStats() {
   m_event_weights_applied = false;
-  m_event_variation_weights.assign(m_n_variations, 1.);
   m_event_flavour_weights.assign(m_n_variations, 1.);
   m_event_gluon_weights.assign(m_n_variations, 1.);
   m_event_cluster_weights.assign(m_n_variations, 1.);
@@ -709,8 +755,8 @@ void Hadronisation_Reweighting::AccumulateEventStatistics() {
     m_event_soft_weights[ivar]        *= ivar < m_n_soft_variations ? m_soft_weights[ivar] : 1.;
     m_event_kt_weights[ivar]          *= ivar < m_n_kt_variations ? m_kt_weights[ivar] : 1.;
     m_event_promptdecay_weights[ivar] *= ivar < m_n_promptdecay_variations ? m_promptdecay_weights[ivar] : 1.;
-    m_event_variation_weights[ivar]   *= m_variation_weights[ivar];
   }
+  if (m_output_mode == 2) FillCallWeightHistogram();
   m_event_records.insert(m_event_records.end(),
                          m_call_records.begin(), m_call_records.end());
   m_call_records.clear();
@@ -757,14 +803,22 @@ void Hadronisation_Reweighting::WriteEventStatistics() {
     const double w = m_event_variation_weights[ivar];
     m_sum_weights[ivar] += w;
     m_sum_weights_squared[ivar] += w * w;
+    m_sum_weights_raw[ivar] += m_event_variation_weights_raw[ivar];
+    if (m_max_reweight_factor > 0. &&
+        m_event_variation_weights_raw[ivar] > m_max_reweight_factor)
+      m_cutoff_events[ivar]++;
   }
   ResetStats();
 }
 
 namespace {
-  const double s_weight_min   = 1.e-8;
-  const double s_weight_max   = 1.e8;
-  const int    s_weight_nbins = 160;
+  const double s_call_weight_min   = 1.e-8;
+  const double s_call_weight_max   = 1.e8;
+  const int    s_call_weight_nbins = 160;
+
+  const double s_event_weight_min   = 1.e-30;
+  const double s_event_weight_max   = 1.e30;
+  const int    s_event_weight_nbins = 600;
 
   const long int s_flavour_codes[] = {
     3303, 3201, 3101, 3203, 3103, 2101, 2103, 2203, 1103, 3, 2, 1
@@ -831,16 +885,24 @@ void Hadronisation_Reweighting::BookHistograms() {
 
   ///////////////////////////////////////////////////////////////////////////
   // The distribution of the reweighting weight itself, one histogram per
-  // variation, on a log10 grid (type 11 = logarithmic + error) spanning 16
-  // decades at 10 bins per decade; anything outside lands in the under- or
-  // overflow bin. There is no nominal counterpart: the nominal weight is 1
-  // for every event by construction.
+  // variation, on a log10 grid (type 11 = logarithmic + error); anything
+  // outside lands in the under- or overflow bin. There is no nominal
+  // counterpart: the nominal weight is 1 for every event by construction.
+  //
+  //   "weight"      - filled once per event with the finalised event weight
+  //   "call_weight" - filled once per hadronization call with that call's own,
+  //                   uncapped weight; the cutoff acts on the event
   ///////////////////////////////////////////////////////////////////////////
   std::vector<Histogram*> weights(m_n_variations, (Histogram*)NULL);
-  for (size_t ivar=1; ivar<m_n_variations; ++ivar)
-    weights[ivar] = new Histogram(11, s_weight_min, s_weight_max,
-                                  s_weight_nbins, "weight");
+  std::vector<Histogram*> call_weights(m_n_variations, (Histogram*)NULL);
+  for (size_t ivar=1; ivar<m_n_variations; ++ivar) {
+    weights[ivar] = new Histogram(11, s_event_weight_min, s_event_weight_max,
+                                  s_event_weight_nbins, "weight");
+    call_weights[ivar] = new Histogram(11, s_call_weight_min, s_call_weight_max,
+                                       s_call_weight_nbins, "call_weight");
+  }
   m_hist_reweighted["weight"] = weights;
+  m_hist_reweighted["call_weight"] = call_weights;
 }
 
 void Hadronisation_Reweighting::FillObs(const std::string& key,
@@ -948,7 +1010,27 @@ void Hadronisation_Reweighting::FillWeightHistogram() {
     double w = m_event_variation_weights[ivar];
     // a variation may give exactly zero, and log(0) would leave Insert() with
     // a non-finite bin index; push such events into the underflow bin
-    if (!std::isfinite(w) || w <= 0.) w = 0.1*s_weight_min;
+    if (!std::isfinite(w) || w <= 0.) w = 0.1*s_event_weight_min;
+    vec[ivar]->Insert(w, 1.0);
+  }
+}
+
+void Hadronisation_Reweighting::FillCallWeightHistogram() {
+  ///////////////////////////////////////////////////////////////////////////
+  // Fill the weight of one hadronization call into the call weight histogram,
+  // with unit fill weight, so that the bin contents are call counts. Called
+  // from AccumulateEventStatistics(), i.e. only for calls whose weights are
+  // actually committed to the event. The cutoff acts on the event, so this is
+  // the call's own, uncapped weight.
+  ///////////////////////////////////////////////////////////////////////////
+  std::map<std::string, std::vector<Histogram*> >::iterator it =
+    m_hist_reweighted.find("call_weight");
+  if (it == m_hist_reweighted.end()) return;
+  std::vector<Histogram*>& vec = it->second;
+  for (size_t ivar=1; ivar<vec.size(); ++ivar) {
+    if (vec[ivar]==NULL) continue;
+    double w = m_call_variation_weights_raw[ivar];
+    if (!std::isfinite(w) || w <= 0.) w = 0.1*s_call_weight_min;
     vec[ivar]->Insert(w, 1.0);
   }
 }
@@ -1108,10 +1190,11 @@ void Hadronisation_Reweighting::PrintVariationStatistics() {
       static_cast<int>(std::string("Variation").size()),
       static_cast<int>(("v" + ToString<size_t>(m_n_variations - 1)).size()));
   const int col_size = 15;
+  const int cutoff_col_size = 17;
 
-  int table_size = variation_col_size + col_size + col_size + col_size + 4;
+  int table_size = variation_col_size + col_size + col_size + 4;
   if (m_max_reweight_factor > 0.0) {
-    table_size += col_size + col_size;
+    table_size += cutoff_col_size + cutoff_col_size;
   }
   table_size = std::max(table_size, static_cast<int>(title.size()) + 4);
 
@@ -1124,11 +1207,10 @@ void Hadronisation_Reweighting::PrintVariationStatistics() {
   line.str("");
   line << std::left << std::setw(variation_col_size) << "Variation"
        << std::right << std::setw(col_size) << "Avg. weight"
-       << std::right << std::setw(col_size) << "ESS"
        << std::right << std::setw(col_size) << "ESS ratio";
   if (m_max_reweight_factor > 0.0) {
-    line << std::right << std::setw(col_size) << "Cutoffs"
-         << std::right << std::setw(col_size) << "Cutoff ratio";
+    line << std::right << std::setw(cutoff_col_size) << "Cutoff ratio"
+         << std::right << std::setw(cutoff_col_size) << "Weight removed";
   }
   msg_Out() << Frame_Line{line.str(), table_size};
   msg_Out() << Frame_Separator{table_size};
@@ -1139,8 +1221,18 @@ void Hadronisation_Reweighting::PrintVariationStatistics() {
     const double avg_weight = (m_total_events > 0) ? sum_w / m_total_events : 0.;
     const double ess = (sum_w2 > 0.) ? (sum_w * sum_w) / sum_w2 : 0.;
     const double ess_ratio = (m_total_events > 0) ? ess / m_total_events : 0.;
+    const double sum_w_raw = m_sum_weights_raw[ivar];
     const double cutoff_ratio =
-        (m_total_events > 0) ? static_cast<double>(m_cutoff_count[ivar]) / m_total_events : 0.;
+        (m_total_events > 0) ? static_cast<double>(m_cutoff_events[ivar]) / m_total_events : 0.;
+    double weight_removed = 0.;
+    if (!std::isfinite(sum_w_raw)) {
+      weight_removed = 1.;
+      msg_Error() << METHOD << ": pre-cutoff weight sum of variation v" << ivar
+                  << " is not finite, reporting the removed weight as 1.\n";
+    }
+    else if (sum_w_raw > 0.) {
+      weight_removed = (sum_w_raw - sum_w) / sum_w_raw;
+    }
 
     line.str("");
     line << om::bold << std::left << std::setw(variation_col_size)
@@ -1148,14 +1240,12 @@ void Hadronisation_Reweighting::PrintVariationStatistics() {
          << std::right << om::brown << std::setw(col_size)
          << std::fixed << std::setprecision(6) << avg_weight
          << std::setw(col_size)
-         << std::fixed << std::setprecision(1) << ess
-         << std::setw(col_size)
          << std::fixed << std::setprecision(6) << ess_ratio << om::reset;
     if (m_max_reweight_factor > 0.0) {
-      line << om::red << std::setw(col_size)
-           << std::fixed << std::setprecision(1) << m_cutoff_count[ivar]
-           << std::setw(col_size)
-           << std::fixed << std::setprecision(6) << cutoff_ratio << om::reset;
+      line << om::red << std::setw(cutoff_col_size)
+           << std::fixed << std::setprecision(6) << cutoff_ratio
+           << std::setw(cutoff_col_size)
+           << std::fixed << std::setprecision(6) << weight_removed << om::reset;
     }
     msg_Out() << Frame_Line{line.str(), table_size};
   }

@@ -19,7 +19,7 @@ namespace ATOOLS {
 
     virtual Return_Value::code Hadronize(ATOOLS::Blob_List *) = 0;
 
-    virtual void WriteEventStatistics() {} // OUTPUT
+    virtual void FinishEvent() {}
 
     const std::string & Name() const { return m_name; }
     void SetName(const std::string& name) { m_name=name; }

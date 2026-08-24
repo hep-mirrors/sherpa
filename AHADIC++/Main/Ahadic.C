@@ -54,7 +54,7 @@ Return_Value::code Ahadic::Hadronize(Blob_List * blobs)
   Return_Value::IncCall(mname);
   Return_Value::code result = Return_Value::Nothing;
 
-  m_reweighting.ResetEvent();
+  m_reweighting.ResetCall();
 
   for (Blob_List::iterator blit = blobs->begin(); blit != blobs->end();) {
     if ((*blit)->Has(blob_status::needs_hadronization)) {

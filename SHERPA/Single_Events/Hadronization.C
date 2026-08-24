@@ -29,7 +29,7 @@ Return_Value::code Hadronization::Treat(ATOOLS::Blob_List* bloblist)
 }
 
 void Hadronization::CleanUp(const size_t & mode) {
-  p_fragmentationhandler->WriteEventStatistics(); // OUTPUT
+  p_fragmentationhandler->FinishEvent();
 }
 
 void Hadronization::Finish(const std::string &) {}
