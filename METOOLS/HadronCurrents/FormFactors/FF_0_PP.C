@@ -352,9 +352,9 @@ void Fplus_0_PiZeroPiPlus::Construct_PiPi(const FF_Parameters & params) {
   // "KS" label. This is the family-base (KS=100) weight set, ALWAYS
   // computed (request #2's fallback target for GS=101).
   m_gamma_base = ReadComplexParam(params.p_model,
-				   "gammaMag_pipi_KS",-0.167,"gammaPhase_pipi_KS");
+				   "gammaMag_pipi2_100",-0.167,"gammaPhase_pipi2_100");
   m_delta_base = ReadComplexParam(params.p_model,
-				   "deltaMag_pipi_KS", 0.050,"deltaPhase_pipi_KS");
+				   "deltaMag_pipi2_100", 0.050,"deltaPhase_pipi2_100");
   p_props_fallback = BuildRhoTower(false, m_gamma_base, m_delta_base);
 
   if (m_ffmodel==ff_model::KS) {
@@ -384,20 +384,20 @@ void Fplus_0_PiZeroPiPlus::Construct_PiPi(const FF_Parameters & params) {
     // fitted values) - overridable via the parameters below if you
     // have the real fit numbers and want them back.
     m_mV    = Flavour(kf_rho_770_plus).HadMass();   m_mV2   = sqr(m_mV);
-    m_mVp   = (*params.p_model)("MVp_pipi_RChiPT",
+    m_mVp   = (*params.p_model)("MVp_pipi",
 				 Flavour(kf_rho_1450_plus).HadMass());
     m_mVp2  = sqr(m_mVp);
-    m_GVp   = (*params.p_model)("GVp_pipi_RChiPT",
+    m_GVp   = (*params.p_model)("GVp_pipi",
 				 Flavour(kf_rho_1450_plus).Width());
-    m_mVpp  = (*params.p_model)("MVpp_pipi_RChiPT",
+    m_mVpp  = (*params.p_model)("MVpp_pipi",
 				 Flavour(kf_rho_1700_plus).HadMass());
     m_mVpp2 = sqr(m_mVpp);
-    m_GVpp  = (*params.p_model)("GVpp_pipi_RChiPT",
+    m_GVpp  = (*params.p_model)("GVpp_pipi",
 				 Flavour(kf_rho_1700_plus).Width());
     m_gamma = ReadComplexParam(params.p_model,
-			       "gammaMag_pipi_RChiPT",-0.15,"gammaPhase_pipi_RChiPT",-0.36);
+			       "gammaMag_pipi2_200",-0.15,"gammaPhase_pipi2_200",-0.36);
     m_delta = ReadComplexParam(params.p_model,
-			       "deltaMag_pipi_RChiPT", 0.12,"deltaPhase_pipi_RChiPT",-0.02);
+			       "deltaMag_pipi2_200", 0.12,"deltaPhase_pipi2_200",-0.02);
   }
   else if (m_ffmodel==ff_model::RChL2012) {
     // Defaults from Table 4 of 1203.3955, channel 1 (pi- pi0); masses
@@ -436,9 +436,9 @@ void Fplus_0_PiZeroPiPlus::Construct_KK(const FF_Parameters & params) {
   // tau_two_meson_currents_KS_RChiT.tex Table "KSparams", row
   // "KK (CLEO/KS-type)" quotes IDENTICAL numbers to the pipi row.
   m_gamma_base = ReadComplexParam(params.p_model,
-				   "gammaMag_KK_KS",-0.167,"gammaPhase_KK_KS");
+				   "gammaMag_KK_100",-0.167,"gammaPhase_KK_100");
   m_delta_base = ReadComplexParam(params.p_model,
-				   "deltaMag_KK_KS", 0.050,"deltaPhase_KK_KS");
+				   "deltaMag_KK_100", 0.050,"deltaPhase_KK_100");
   p_props_fallback = BuildRhoTower(false, m_gamma_base, m_delta_base);
 
   if (m_ffmodel==ff_model::KS) {
@@ -456,26 +456,26 @@ void Fplus_0_PiZeroPiPlus::Construct_KK(const FF_Parameters & params) {
   }
   else if (m_ffmodel==ff_model::RChiPT) {
     m_mV    = Flavour(kf_rho_770_plus).HadMass();   m_mV2   = sqr(m_mV);
-    m_mVp   = (*params.p_model)("MVp_KK_RChiPT",
+    m_mVp   = (*params.p_model)("MVp_KK",
 				 Flavour(kf_rho_1450_plus).HadMass());
     m_mVp2  = sqr(m_mVp);
-    m_GVp   = (*params.p_model)("GVp_KK_RChiPT",
+    m_GVp   = (*params.p_model)("GVp_KK",
 				 Flavour(kf_rho_1450_plus).Width());
-    m_mVpp  = (*params.p_model)("MVpp_KK_RChiPT",
+    m_mVpp  = (*params.p_model)("MVpp_KK",
 				 Flavour(kf_rho_1700_plus).HadMass());
     m_mVpp2 = sqr(m_mVpp);
-    m_GVpp  = (*params.p_model)("GVpp_KK_RChiPT",
+    m_GVpp  = (*params.p_model)("GVpp_KK",
 				 Flavour(kf_rho_1700_plus).Width());
     // Best-guess fix for a magnitude/sign-inconsistent legacy value -
     // still NOT verified against the original fit source; please
     // confirm or override.
     m_gamma = ReadComplexParam(params.p_model,
-			       "gammaMag_KK_RChiPT",-0.15,"gammaPhase_KK_RChiPT",-1.88);
+			       "gammaMag_KK_200",-0.15,"gammaPhase_KK_200",-1.88);
     // delta (rho'' mixing) defaults to 0 here - the KK channel's
     // RChiPT fit apparently doesn't need a third resonance - but is
     // now overridable like everywhere else, rather than hardcoded.
     m_delta = ReadComplexParam(params.p_model,
-			       "deltaMag_KK_RChiPT",0.,"deltaPhase_KK_RChiPT",0.);
+			       "deltaMag_KK_200",0.,"deltaPhase_KK_200",0.);
   }
   else if (m_ffmodel==ff_model::RChL2012) {
     // Eq.(26): the "default" (FFKKVEC=0) two-kaon form factor has NO
@@ -510,14 +510,14 @@ void Fplus_0_PiZeroPiPlus::Construct_EtaPi(const FF_Parameters & params) {
 		(*params.p_model)("eps_pieta", 0.017) :
 		(*params.p_model)("eps_pietaprime", 0.004));
   m_norm = (*params.p_model)("Vud", Tools::Vud) * sqrt(2.) * eps;
-  // Deliberately reuses the pipi_plus KS names (gammaMag_pipi_KS etc.,
+  // Deliberately reuses the pipi_plus 2-body KS names (gammaMag_pipi2_100 etc.,
   // not new etapi-specific ones) - EGSR16 states this is literally the
   // SAME normalized rho tower as pipi, not just a similar one, so an
   // override entered for one applies to both by design.
   m_gamma_base = ReadComplexParam(params.p_model,
-				   "gammaMag_pipi_KS",-0.167,"gammaPhase_pipi_KS");
+				   "gammaMag_pipi2_100",-0.167,"gammaPhase_pipi2_100");
   m_delta_base = ReadComplexParam(params.p_model,
-				   "deltaMag_pipi_KS", 0.050,"deltaPhase_pipi_KS");
+				   "deltaMag_pipi2_100", 0.050,"deltaPhase_pipi2_100");
   p_props_fallback = BuildRhoTower(false, m_gamma_base, m_delta_base);
   if (m_ffmodel==ff_model::KS) {
     p_props = p_props_fallback;
@@ -535,7 +535,7 @@ void Fplus_0_PiZeroPiPlus::Construct_Kpi(const FF_Parameters & params) {
   // result itself and, per request #2, the fallback used whenever
   // GS(101) (no published Kpi variant) is requested for this channel.
   m_gamma_base = ReadComplexParam(params.p_model,
-				   "gammaMag_Kpi_KS",-0.135,"gammaPhase_Kpi_KS");
+				   "gammaMag_Kpi_100",-0.135,"gammaPhase_Kpi_100");
   p_props_fallback = BuildKstarTower(false, m_gamma_base);
 
   if (m_ffmodel==ff_model::KS) {
@@ -549,7 +549,7 @@ void Fplus_0_PiZeroPiPlus::Construct_Kpi(const FF_Parameters & params) {
     // kf-code (30313/30323) - see the identical caveat for the FM95
     // 3-body T_K*^(2) usage of the same resonance in FF_0_PPP.C.
     m_gamma   = ReadComplexParam(params.p_model,
-				 "gammaMag_Kpi_KSCLEO",-0.038,"gammaPhase_Kpi_KSCLEO");
+				 "gammaMag_Kpi_102",-0.038,"gammaPhase_Kpi_102");
     m_useCLEO = true;
     p_props   = BuildKstarTower(true, m_gamma);
   }
@@ -574,14 +574,14 @@ void Fplus_0_PiZeroPiPlus::Construct_Kpi(const FF_Parameters & params) {
     // a real number in JPP's own Eq. (no phase), but is now Complex-
     // capable like every other mixing weight in this file - the
     // default phase of 0 exactly reproduces the original real value.
-    m_MKst_RChiPT  = (*params.p_model)("MKst_RChiPT",
+    m_MKst_RChiPT  = (*params.p_model)("MKst",
 					Flavour(kf_K_star_892_plus).HadMass());
     m_MKst2_RChiPT = sqr(m_MKst_RChiPT);
-    m_MKstp_RChiPT = (*params.p_model)("MKstp_RChiPT",
+    m_MKstp_RChiPT = (*params.p_model)("MKstp",
 					Flavour(kf_K_star_1410_plus).HadMass());
     m_MKstp2_RChiPT= sqr(m_MKstp_RChiPT);
     m_gammaKpi_RChiPT = ReadComplexParam(params.p_model,
-					 "gammaMag_Kpi_RChiPT",-0.034,"gammaPhase_Kpi_RChiPT");
+					 "gammaMag_Kpi_200",-0.034,"gammaPhase_Kpi_200");
     p_GKst  = LineShapes->Get(Flavour(kf_K_star_892_plus));
     p_GKstp = LineShapes->Get(Flavour(kf_K_star_1410_plus));
   }
@@ -629,9 +629,9 @@ void Fplus_0_PiZeroPiPlus::Construct_Keta(const FF_Parameters & params) {
   // parameter names per channel (Keta vs Ketaprime) so an eventual
   // distinct fit for either doesn't collide with the other.
   m_gamma_base = ReadComplexParam(params.p_model,
-				   isPrime ? "gammaMag_Ketaprime_KS" : "gammaMag_Keta_KS",
+				   isPrime ? "gammaMag_Ketaprime_100" : "gammaMag_Keta_100",
 				   -0.135,
-				   isPrime ? "gammaPhase_Ketaprime_KS" : "gammaPhase_Keta_KS");
+				   isPrime ? "gammaPhase_Ketaprime_100" : "gammaPhase_Keta_100");
   p_props_fallback = BuildKstarTower(false, m_gamma_base);
 
   if (m_ffmodel==ff_model::KS) {
@@ -648,9 +648,9 @@ void Fplus_0_PiZeroPiPlus::Construct_Keta(const FF_Parameters & params) {
     // for Keta - flag if you'd rather this fell back to constant
     // instead for Ketaprime_plus specifically.
     m_gamma   = ReadComplexParam(params.p_model,
-				 isPrime ? "gammaMag_Ketaprime_KSCLEO" : "gammaMag_Keta_KSCLEO",
+				 isPrime ? "gammaMag_Ketaprime_102" : "gammaMag_Keta_102",
 				 -0.038,
-				 isPrime ? "gammaPhase_Ketaprime_KSCLEO" : "gammaPhase_Keta_KSCLEO");
+				 isPrime ? "gammaPhase_Ketaprime_102" : "gammaPhase_Keta_102");
     m_useCLEO = true;
     p_props   = BuildKstarTower(true, m_gamma);
   }
@@ -669,16 +669,16 @@ void Fplus_0_PiZeroPiPlus::Construct_Keta(const FF_Parameters & params) {
     // identical to Kpi_plus's own RChiPT defaults (own parameter
     // names per channel, in case a dedicated Keta-only or Keta'-only
     // fit ever supersedes the joint one).
-    m_MKst_RChiPT  = (*params.p_model)("MKst_RChiPT",
+    m_MKst_RChiPT  = (*params.p_model)("MKst",
 					Flavour(kf_K_star_892_plus).HadMass());
     m_MKst2_RChiPT = sqr(m_MKst_RChiPT);
-    m_MKstp_RChiPT = (*params.p_model)("MKstp_RChiPT",
+    m_MKstp_RChiPT = (*params.p_model)("MKstp",
 					Flavour(kf_K_star_1410_plus).HadMass());
     m_MKstp2_RChiPT= sqr(m_MKstp_RChiPT);
     m_gammaKpi_RChiPT = ReadComplexParam(params.p_model,
-					 isPrime ? "gammaMag_Ketaprime_RChiPT" : "gammaMag_Keta_RChiPT",
+					 isPrime ? "gammaMag_Ketaprime_200" : "gammaMag_Keta_200",
 					 -0.034,
-					 isPrime ? "gammaPhase_Ketaprime_RChiPT" : "gammaPhase_Keta_RChiPT");
+					 isPrime ? "gammaPhase_Ketaprime_200" : "gammaPhase_Keta_200");
     p_GKst  = LineShapes->Get(Flavour(kf_K_star_892_plus));
     p_GKstp = LineShapes->Get(Flavour(kf_K_star_1410_plus));
   }

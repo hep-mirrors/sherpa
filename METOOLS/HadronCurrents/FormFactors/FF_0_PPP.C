@@ -354,9 +354,9 @@ void F1_0_PiPlusPiZeroPiZero::Construct_3Pi(const FF_Parameters & params) {
     // "delta" = rho'' weight (0 by default - the original KS 3pi model
     // has no third resonance), "alpha" = rho-omega mixing weight
     // (piM_piP_piP only, Construct() below skips it for piP_pi0_pi0).
-    m_gamma = ReadComplexParam(params.p_model,"gammaMag_3pi_KS",-0.145,"gammaPhase_3pi_KS");
-    m_delta = ReadComplexParam(params.p_model,"deltaMag_3pi_KS", 0.,   "deltaPhase_3pi_KS");
-    m_alpha = ReadComplexParam(params.p_model,"alphaMag_3pi_KS", 0.00185,"alphaPhase_3pi_KS");
+    m_gamma = ReadComplexParam(params.p_model,"gammaMag_3pi",-0.145,"gammaPhase_3pi");
+    m_delta = ReadComplexParam(params.p_model,"deltaMag_3pi", 0.,   "deltaPhase_3pi");
+    m_alpha = ReadComplexParam(params.p_model,"alphaMag_3pi", 0.00185,"alphaPhase_3pi");
   }
   else if (m_ffmodel==ff_model::KS_CLEO) {
     // CLEO/default-TAUOLA 3pi current - see the class-level comment
@@ -514,7 +514,7 @@ void F1_0_PiPlusPiZeroPiZero::Construct_Pi0Pi0K(const FF_Parameters & params) {
     p_TK1a->Add(K11270, Complex(m_xiK1,0.));
   }
   // T_K*^(1) = [BW_K*(892) + beta_K* BW_K*(1410)]/(1+beta_K*), Eq.(10).
-  double betaKst = (*params.p_model)("betaKstar_pi0pi0K_KS",-0.135);
+  double betaKst = (*params.p_model)("betaKstar_pi0pi0K",-0.135);
   Propagator_Base * Kstar892  =
     new BreitWigner(LineShapes->Get(Flavour(kf_K_star_892_plus)));
   Propagator_Base * Kstar1410 =
@@ -996,7 +996,7 @@ void FS_0_PiPlusPiZeroPiZero::Construct(const FF_Parameters & params)  {
     m_norm = Complex((*params.p_model)("Vus",Tools::Vus) /
 		      (2.*sqrt(2.)*sqr(M_PI)*pow(m_fpi,3)), 0.);
 
-    double betaKst = (*params.p_model)("betaKstar_pi0pi0K_KS",-0.135);
+    double betaKst = (*params.p_model)("betaKstar_pi0pi0K",-0.135);
     Propagator_Base * Kstar892_1 =
       new BreitWigner(LineShapes->Get(Flavour(kf_K_star_892_plus)));
     Propagator_Base * Kstar1410_1 =
@@ -1009,9 +1009,9 @@ void FS_0_PiPlusPiZeroPiZero::Construct(const FF_Parameters & params)  {
     // Weights now overridable (unified nomenclature) rather than
     // hardcoded literals.
     Complex lambda = ReadComplexParam(params.p_model,
-				      "gammaMag_pi0pi0K_KS",-0.25,"gammaPhase_pi0pi0K_KS");
+				      "gammaMag_pi0pi0K",-0.25,"gammaPhase_pi0pi0K");
     Complex mu     = ReadComplexParam(params.p_model,
-				      "deltaMag_pi0pi0K_KS",-0.038,"deltaPhase_pi0pi0K_KS");
+				      "deltaMag_pi0pi0K",-0.038,"deltaPhase_pi0pi0K");
     Total_Width_Base * wKstarpp = LineShapes->Get(Flavour(kf_K_star_1680_plus));
     p_TKstar2 = new Summed_Propagator();
     Propagator_Base * Kstar892_2 =
@@ -1434,9 +1434,9 @@ void F1_0_KPiK::Construct(const FF_Parameters & params) {
   // this 3-body current consistent with it, rather than needing two
   // independently-maintained copies of the same numbers.
   Complex gammaRho  = ReadComplexParam(params.p_model,
-				       "gammaMag_pipi_KS",-0.145,"gammaPhase_pipi_KS");
+				       "gammaMag_pipi3",-0.145,"gammaPhase_pipi3");
   Complex gammaKst  = ReadComplexParam(params.p_model,
-				       "gammaMag_Kpi_KS",-0.135,"gammaPhase_Kpi_KS");
+				       "gammaMag_Kpi_100",-0.135,"gammaPhase_Kpi_100");
   Propagator_Base * rho770  =
     new BreitWigner(LineShapes->Get(Flavour(kf_rho_770)));
   Propagator_Base * rho1450 =
@@ -1550,9 +1550,9 @@ void FS_0_KPiK::Construct(const FF_Parameters & params) {
   // distinguishable kf-codes/parametrised Flavours for this specific
   // 3-body vector-current usage.
   Complex lambda = ReadComplexParam(params.p_model,
-				    "gammaMag_KpiK_vector_KS",-0.25,"gammaPhase_KpiK_vector_KS");
+				    "gammaMag_KpiK_vector",-0.25,"gammaPhase_KpiK_vector");
   Complex mu     = ReadComplexParam(params.p_model,
-				    "deltaMag_KpiK_vector_KS",-0.038,"deltaPhase_KpiK_vector_KS");
+				    "deltaMag_KpiK_vector",-0.038,"deltaPhase_KpiK_vector");
   Propagator_Base * rho770  = new BreitWigner(LineShapes->Get(Flavour(kf_rho_770_plus)));
   Propagator_Base * rho1500 = new BreitWigner(LineShapes->Get(Flavour(kf_rho_1450_plus)));
   p_Trho2 = new Summed_Propagator();
@@ -1564,7 +1564,7 @@ void FS_0_KPiK::Construct(const FF_Parameters & params) {
   // T_K*^(1): same unified KS parameter name as the two-meson Kpi_plus
   // channel (see F1_0_KPiK's Construct() comment above for rationale).
   Complex gammaKst = ReadComplexParam(params.p_model,
-				      "gammaMag_Kpi_KS",-0.135,"gammaPhase_Kpi_KS");
+				      "gammaMag_Kpi_100",-0.135,"gammaPhase_Kpi_100");
   Propagator_Base * Kstar892  = new BreitWigner(LineShapes->Get(Flavour(kf_K_star_892_plus)));
   Propagator_Base * Kstar1410 = new BreitWigner(LineShapes->Get(Flavour(kf_K_star_1410_plus)));
   p_TKstar1 = new Summed_Propagator();
@@ -1574,7 +1574,7 @@ void FS_0_KPiK::Construct(const FF_Parameters & params) {
   // T_omega, Eq.(36): omega(782)+eps phi(1020). phi(1020) confirmed
   // and registered (Omega_Decays.H/.C, kf_phi_1020=333).
   Complex eps = ReadComplexParam(params.p_model,
-				 "gammaMag_omegaphi_KS",0.05,"gammaPhase_omegaphi_KS");
+				 "gammaMag_omegaphi",0.05,"gammaPhase_omegaphi");
   Propagator_Base * omega782 = new BreitWigner(LineShapes->Get(Flavour(kf_omega_782)));
   p_Tomega = new Summed_Propagator();
   p_Tomega->Add(omega782, Complex(1.,0.));
@@ -1725,9 +1725,9 @@ void F1_0_KPiPi::Construct(const FF_Parameters & params) {
   // and F1_0_KPiK above - same physical rho(770)+rho(1450) and
   // K*(892)+K*(1410) mixes reused yet again.
   Complex gammaRho = ReadComplexParam(params.p_model,
-				      "gammaMag_pipi_KS",-0.145,"gammaPhase_pipi_KS");
+				      "gammaMag_pipi3",-0.145,"gammaPhase_pipi3");
   Complex gammaKst = ReadComplexParam(params.p_model,
-				      "gammaMag_Kpi_KS",-0.135,"gammaPhase_Kpi_KS");
+				      "gammaMag_Kpi_100",-0.135,"gammaPhase_Kpi_100");
   Propagator_Base * rho770  = new BreitWigner(LineShapes->Get(Flavour(kf_rho_770)));
   Propagator_Base * rho1450 = new BreitWigner(LineShapes->Get(Flavour(kf_rho_1450_plus)));
   p_Trho1 = new Summed_Propagator();
@@ -1790,7 +1790,7 @@ void F1_0_KPiPi::Construct(const FF_Parameters & params) {
     m_GK1_1400_CLEO = (*params.p_model)("GK1_1400_CLEO", 0.30);
 
     Complex gammaRho = ReadComplexParam(params.p_model,
-					"gammaMag_pipi_KS",-0.145,"gammaPhase_pipi_KS");
+					"gammaMag_pipi3",-0.145,"gammaPhase_pipi3");
     Propagator_Base * rho770  = new BreitWigner(LineShapes->Get(Flavour(kf_rho_770)));
     Propagator_Base * rho1450 = new BreitWigner(LineShapes->Get(Flavour(kf_rho_1450_plus)));
     p_Trho1 = new Summed_Propagator();
@@ -1895,9 +1895,9 @@ void FS_0_KPiPi::Construct(const FF_Parameters & params) {
   }
 
   Complex lambda = ReadComplexParam(params.p_model,
-				    "gammaMag_KpiK_vector_KS",-0.25,"gammaPhase_KpiK_vector_KS");
+				    "gammaMag_KpiK_vector",-0.25,"gammaPhase_KpiK_vector");
   Complex mu     = ReadComplexParam(params.p_model,
-				    "deltaMag_KpiK_vector_KS",-0.038,"deltaPhase_KpiK_vector_KS");
+				    "deltaMag_KpiK_vector",-0.038,"deltaPhase_KpiK_vector");
   Propagator_Base * Kstar892  = new BreitWigner(LineShapes->Get(Flavour(kf_K_star_892_plus)));
   Propagator_Base * Kstar1410 = new BreitWigner(LineShapes->Get(Flavour(kf_K_star_1410_plus)));
   p_TKstar2 = new Summed_Propagator();
@@ -1910,7 +1910,7 @@ void FS_0_KPiPi::Construct(const FF_Parameters & params) {
 		  <<"flag in FS_0_PiPlusPiZeroPiZero above.\n";
 
   Complex gammaRho = ReadComplexParam(params.p_model,
-				      "gammaMag_pipi_KS",-0.145,"gammaPhase_pipi_KS");
+				      "gammaMag_pipi3",-0.145,"gammaPhase_pipi3");
   Propagator_Base * rho770  = new BreitWigner(LineShapes->Get(Flavour(kf_rho_770_plus)));
   Propagator_Base * rho1450 = new BreitWigner(LineShapes->Get(Flavour(kf_rho_1450_plus)));
   p_Trho1 = new Summed_Propagator();
@@ -1925,7 +1925,7 @@ void FS_0_KPiPi::Construct(const FF_Parameters & params) {
   }
 
   Complex gammaKst = ReadComplexParam(params.p_model,
-				      "gammaMag_Kpi_KS",-0.135,"gammaPhase_Kpi_KS");
+				      "gammaMag_Kpi_100",-0.135,"gammaPhase_Kpi_100");
   Propagator_Base * Kstar892_1  = new BreitWigner(LineShapes->Get(Flavour(kf_K_star_892_plus)));
   Propagator_Base * Kstar1410_1 = new BreitWigner(LineShapes->Get(Flavour(kf_K_star_1410_plus)));
   p_TKstar1 = new Summed_Propagator();
@@ -2055,7 +2055,7 @@ void FS_0_EtaPiPi::Construct(const FF_Parameters & params) {
 		    (4.*sqr(M_PI)*sqr(fpi)), 0.);
 
   Complex gammaRho = ReadComplexParam(params.p_model,
-				      "gammaMag_pipi_KS",-0.145,"gammaPhase_pipi_KS");
+				      "gammaMag_pipi3",-0.145,"gammaPhase_pipi3");
   Propagator_Base * rho770_1  = new BreitWigner(LineShapes->Get(Flavour(kf_rho_770_plus)));
   Propagator_Base * rho1450_1 = new BreitWigner(LineShapes->Get(Flavour(kf_rho_1450_plus)));
   p_Trho1 = new Summed_Propagator();
@@ -2063,9 +2063,9 @@ void FS_0_EtaPiPi::Construct(const FF_Parameters & params) {
   p_Trho1->Add(rho1450_1, gammaRho);
 
   Complex lambda = ReadComplexParam(params.p_model,
-				    "gammaMag_KpiK_vector_KS",-0.25,"gammaPhase_KpiK_vector_KS");
+				    "gammaMag_KpiK_vector",-0.25,"gammaPhase_KpiK_vector");
   Complex mu     = ReadComplexParam(params.p_model,
-				    "deltaMag_KpiK_vector_KS",-0.038,"deltaPhase_KpiK_vector_KS");
+				    "deltaMag_KpiK_vector",-0.038,"deltaPhase_KpiK_vector");
   Propagator_Base * rho770_2  = new BreitWigner(LineShapes->Get(Flavour(kf_rho_770_plus)));
   Propagator_Base * rho1500   = new BreitWigner(LineShapes->Get(Flavour(kf_rho_1450_plus)));
   p_Trho2 = new Summed_Propagator();
