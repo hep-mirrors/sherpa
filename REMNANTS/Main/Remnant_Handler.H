@@ -41,7 +41,7 @@ namespace REMNANTS {
 
     std::set<ATOOLS::Blob *> m_treatedshowerblobs;
 
-    bool     m_check, m_output;
+    bool     m_check;
     long int m_fails;
 
     void InitializeRemnants(PDF::ISR_Handler* isr,YFS::YFS_Handler *yfs,
