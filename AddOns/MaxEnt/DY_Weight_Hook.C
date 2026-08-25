@@ -181,7 +181,10 @@ public:
 	size_t nout=proc->NOut();
 	if (proc->Get<MCatNLO_Process>()!=nullptr) --nout;
 	if (nout>3) w=svweight;
-	else w=exp(w-m_lss[i]);
+	else {
+	  double beta(Beta((l1+l2).PPerp()));
+	  w=beta*exp(w-m_lss[i])+(1.-beta)*svweight;
+	}
 	msg_Debugging()<<m_names[i]<<": w = "<<w<<" (n_{jet} = "<<nout-2
 		       <<") <-> "<<svweight<<" ("<<svname<<")\n";
       }
