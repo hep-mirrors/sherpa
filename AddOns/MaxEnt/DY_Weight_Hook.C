@@ -139,7 +139,17 @@ public:
 		   <<m_rt<<", \\Delta\\phi = "<<m_dphi<<"\n";
     Weights_Map &wmap = (*blobs->FindFirst(btp::Signal_Process))
       ["WeightsMap"]->Get<Weights_Map>();
-    Weights_Map::const_iterator wit(wmap.find("All"));
+    double wew(1.0);
+    Weights_Map::const_iterator wit(wmap.find("ASSOCIATED_CONTRIBUTIONS"));
+    if (wit!=wmap.end()) {
+      for (size_t l(0);l<wit->second.Size();++l)
+	if (wit->second.Name(l)=="EW") {
+	  wew=wit->second[l]/wit->second.Nominal();
+	  break;
+	}
+    }
+    msg_Debugging()<<"EW weight: "<<wew<<"\n";
+    wit=wmap.find("All");
     if (wit==wmap.end()) THROW(fatal_error,"Variation set 'All' not found");
     for (size_t k(0);k<wit->second.Size();++k)
       if (wit->second.Name(k).find("Nominal")==0) {
@@ -147,8 +157,6 @@ public:
 	break;
       }
     msg_Debugging()<<"nominal weight: "<<wnom<<"\n";
-    wit=wmap.find("Main");
-    if (wit==wmap.end()) THROW(fatal_error,"Variation set 'Main' not found");
     for (size_t i(0);i<m_calcs.size();++i) {
       double w=m_calcs[i]->Calculate()->Get<double>();
       msg_Debugging()<<m_names[i]<<": ln(w) = "<<w<<", shift = "<<m_lss[i]<<"\n";
@@ -157,7 +165,7 @@ public:
       if (m_vtags[i]!="") {
 	for (size_t k(0);k<wit->second.Size();++k)
 	  if (wit->second.Name(k).find(m_vtags[i])==0) {
-	    svweight=wit->second[k];
+	    svweight=wit->second[k]/wnom;
 	    svname=wit->second.Name(k);
 	    break;
 	  }
@@ -166,16 +174,7 @@ public:
       msg_Debugging()<<m_names[i]<<": w = "<<w<<" (\\beta = "<<beta
 		     <<") <-> "<<svweight<<" ("<<svname<<")\n";
       wmap["MaxEnt_QCD"][m_names[i]]=w;
-    }
-    wit=wmap.find("ASSOCIATED_CONTRIBUTIONS");
-    if (wit!=wmap.end()) {
-      Weights_Map::const_iterator mit(wmap.find("MaxEnt_QCD"));
-      for (size_t l(0);l<wit->second.Size();++l)
-	if (wit->second.Name(l)=="EW") {
-	  for (size_t k(1);k<mit->second.Size();++k)
-	    wmap["MaxEnt_EW"][mit->second.Name(k)]=
-	      mit->second[k]*wit->second[l];
-	}
+      wmap["MaxEnt_EW"][m_names[i]]=w*wew;
     }
     return Return_Value::Nothing;
   }
