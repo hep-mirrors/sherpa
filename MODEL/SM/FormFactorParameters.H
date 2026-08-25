@@ -134,6 +134,8 @@ namespace METOOLS {
     ResonanceParameters& Omega782();
     ResonanceParameters& Phi1020();
     ResonanceParameters& Jpsi();
+    ResonanceParameters& Omega1375();
+    ResonanceParameters& Omega1631();
     void ReadAll();
   } // namespace ThreePionFF
 

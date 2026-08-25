@@ -115,6 +115,35 @@ DEFINE_PARAM(K_phi1680,   "KAON_FORM_FACTOR", "phi(1680)",     "phi(1680)",  1.6
 DEFINE_PARAM(v_omega782,  "THREE_PION_FORM_FACTOR", "omega(782)", "omega(782)", 0.78266,  0.00868, 1.0,    0.0,   ResonanceType::FixedBreitWigner, kf_omega_782);
 DEFINE_PARAM(v_phi1020,   "THREE_PION_FORM_FACTOR", "phi(1020)",  "phi(1020)",  1.019461, 0.004249,0.042,  M_PI,  ResonanceType::FixedBreitWigner, kf_phi_1020);
 DEFINE_PARAM(v_jpsi,      "THREE_PION_FORM_FACTOR", "J/psi",      "J/psi",      3.0969,   0.0000926,0.001, 0.0,   ResonanceType::FixedBreitWigner, kf_J_psi_1S);
+// The two higher isoscalars of hep-ph/0512180 Eq. (10), which carry the
+// structure between roughly 1.1 and 2 GeV - without them the three-pion form
+// factor has nothing above the phi until the J/psi.
+//
+// Masses and widths are that paper's Table 1. Its omega(1375) and omega(1631)
+// are PDG's omega(1420) and omega(1650), whose kf codes are kf_omega_1420 and
+// kf_omega_1600 (30223 - registered in Hadron_Init.C under the name
+// "omega(1650)"; the symbol is the older omega(1600) spelling). The kaon
+// sector's own omega(1650) line above is commented out because it reaches for
+// a kf_omega_1650 that does not exist - kf_omega_1600 is the one to use.
+//
+// The flavour is only a label here: these are built as
+// FixedBreitWigner(NULL, m, Gamma), so the mass and width come from this table
+// and not from the particle entry, which differs slightly (1.670/0.31 there
+// against this fit's 1.631/0.245) and must not be substituted - the amplitudes
+// only mean anything with the masses they were fitted against.
+//
+// The amplitudes are ITS coefficients C and D divided by its A, because Eq.
+// (10) normalises to an absolute A = 18.20 whereas this block is relative to
+// omega(782) = 1:
+//     C/A = -0.77/18.20 = -0.0423     D/A = -1.12/18.20 = -0.0615
+// and, following phi(1020) above, a negative coefficient is written as a
+// positive amplitude with phase pi.
+//
+// Sanity check on the convention: the same reduction applied to that paper's
+// B gives B/A = -0.87/18.20 = -0.0478 for phi(1020), against the 0.042 tuned
+// here - so the two normalisations do line up.
+DEFINE_PARAM(v_omega1375, "THREE_PION_FORM_FACTOR", "omega(1375)","omega(1375)",1.3750,   0.2500,  0.042308, M_PI, ResonanceType::FixedBreitWigner, kf_omega_1420);
+DEFINE_PARAM(v_omega1631, "THREE_PION_FORM_FACTOR", "omega(1631)","omega(1631)",1.6310,   0.2450,  0.061538, M_PI, ResonanceType::FixedBreitWigner, kf_omega_1600);
 
 // ---------- Two-photon transition ----------
 // pi0
@@ -207,11 +236,15 @@ DEFINE_PARAM(Delta1600,"BARYON_FORM_FACTOR", "Δ(1600)",      "Δ(1600)",   1.60
     ResonanceParameters& Omega782() { return s_v_omega782; }
     ResonanceParameters& Phi1020() { return s_v_phi1020; }
     ResonanceParameters& Jpsi() { return s_v_jpsi; }
+    ResonanceParameters& Omega1375() { return s_v_omega1375; }
+    ResonanceParameters& Omega1631() { return s_v_omega1631; }
     void ReadAll()
     {
       Omega782().Read();
       Phi1020().Read();
       Jpsi().Read();
+      Omega1375().Read();
+      Omega1631().Read();
     }
   } // namespace ThreePionFF
 

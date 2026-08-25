@@ -290,6 +290,43 @@ void FFVMD::ConstructVectorPionFormFactor() {
               ThreePionFF::Jpsi().Mass(),
               ThreePionFF::Jpsi().Width()),
             ThreePionFF::Jpsi().Weight());
+  // The two higher isoscalars of hep-ph/0512180 Eq. (10) - see the note by
+  // their parameters in FormFactorParameters.C. They enter exactly like the
+  // omega and phi above, so this stays a sum of isoscalars in q^2 multiplying
+  // the rho chain built in ConstructThreePionFormFactor.
+  //
+  // NOTE what this does NOT add. Eq. (10) also has two terms in which an
+  // EXCITED rho chain is paired with one specific isoscalar - rho(1450) with
+  // phi(1020), rho(1700) with omega(1631), coefficients E and F. That is a sum
+  // of products, whereas this class computes a product of two sums, so those
+  // two terms cannot be expressed here by adding parameters: a rho added to
+  // the chain would multiply every isoscalar rather than just its partner.
+  // Reproducing the full Eq. (10) needs FF() restructured into a sum over
+  // (isoscalar x its own rho chain) terms.
+  //
+  // Measured against Belle 2024 (BELLE_2024_I2775022, chi2/ndf on d02-x01-y03,
+  // 4000 events per energy point):
+  //
+  //                       without   with   x0.5
+  //     1.85-3 GeV tail     419.2    5.2   81.4
+  //     1.1-2.0 GeV          68.1  616.0  150.8
+  //     1-3 GeV             216.6  398.4  135.4
+  //
+  // So these two do fix what they were added for - the tail runs away to
+  // 3-10 x data without them and lands on 0.9-1.6 x with them, which says the
+  // masses, widths and shape are right.  The 1.1-2.0 GeV damage is the missing
+  // E and F: C and D were fitted TOGETHER with them and lose a cancellation on
+  // their own.  Halving both amplitudes is the best single number over
+  // 1-3 GeV but trades the tail straight back, so it is a compromise and not a
+  // fix - the fix is structural.
+  m_props.Add(new METOOLS::FixedBreitWigner(NULL,
+              ThreePionFF::Omega1375().Mass(),
+              ThreePionFF::Omega1375().Width()),
+            ThreePionFF::Omega1375().Weight());
+  m_props.Add(new METOOLS::FixedBreitWigner(NULL,
+              ThreePionFF::Omega1631().Mass(),
+              ThreePionFF::Omega1631().Width()),
+            ThreePionFF::Omega1631().Weight());
 }
 
 Complex FFVMD::FF() {
