@@ -16,9 +16,10 @@ double RChL::Lambda_p(const double & F,const double & FA,const double & GV) {
   return sqr(F)/(2.*sqrt(2.)*FA*GV);
 }
 
-double RChL::Lambda_pp(const double & FV,const double & GV,
+double RChL::Lambda_pp(const double & F,const double & GV,
 		      const double & lambda_p) {
-  return -(1.-2.*sqr(GV)/sqr(FV))*lambda_p;
+  // Eq.(8): lambda'' = -(1 - 2 GV^2/F^2) lambda'.  F, not FV - see the header.
+  return -(1.-2.*sqr(GV)/sqr(F))*lambda_p;
 }
 
 Complex RChL::alpha2(const double & q2,const double & s1,const double & s2,

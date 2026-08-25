@@ -41,10 +41,17 @@ namespace METOOLS {
     double H(const double & x,const double & y,
 	    const double & lambda_p,const double & lambda_pp);
 
-    // lambda' = F^2/(2 sqrt(2) FA GV),  lambda'' = -(1-2GV^2/FV^2) lambda'
-    // (Eq.8), provided as a convenience so callers don't repeat this.
+    // Eq.(8) of [1203.3955]:
+    //   lambda'  = F^2 / (2 sqrt(2) FA GV)
+    //   lambda'' = -(1 - 2 GV^2 / F^2) lambda'
+    // NOTE the second denominator is F, the chiral decay constant - NOT FV.
+    // This used to take FV, which with the Table-4 values (F = 0.091337,
+    // FV = 0.168652) made lambda'' a factor 2.00 too large and hence both
+    // (lambda'+lambda'') and lambda0 = (lambda'+lambda'')/4 a factor 3.4 too
+    // SMALL. Those two drive the double-resonance term F1^RR, so the 3pi
+    // shape came out badly tilted while the integrated rate stayed close.
     double Lambda_p(const double & F,const double & FA,const double & GV);
-    double Lambda_pp(const double & FV,const double & GV,
+    double Lambda_pp(const double & F,const double & GV,
 		     const double & lambda_p);
 
     /////////////////////////////////////////////////////////////////////

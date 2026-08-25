@@ -259,6 +259,13 @@ Fplus_0_PiZeroPiPlus::Fplus_0_PiZeroPiPlus(const FF_Parameters & params)  :
   m_mpi2(sqr(Flavour(kf_pi_plus).HadMass())),
   m_mK2(sqr(Flavour(kf_K_plus).HadMass())),
   m_useCLEO(false),
+  // These were previously left uninitialised and set only inside the RChiPT
+  // branches, so the RChL2012 path read m_mV2 = 0 and its rho propagator
+  // collapsed - see Construct_PiPi/Construct_KK below. Initialised here as
+  // well, so a future model that forgets to set them fails visibly rather
+  // than silently losing its leading resonance.
+  m_mV(0.), m_mV2(0.), m_mVp(0.), m_mVp2(0.), m_mVpp(0.), m_mVpp2(0.),
+  m_GVp(0.), m_GVpp(0.),
   m_MKst_RChiPT(0.), m_MKst2_RChiPT(0.),
   m_MKstp_RChiPT(0.), m_MKstp2_RChiPT(0.), m_gammaKpi_RChiPT(0.,0.),
   p_GRho(NULL), p_GRhop(NULL), p_GRhopp(NULL), p_GKst(NULL), p_GKstp(NULL)
@@ -420,6 +427,16 @@ void Fplus_0_PiZeroPiPlus::Construct_PiPi(const FF_Parameters & params) {
     m_mu2_rchl = sqr(Flavour(kf_rho_770_plus).HadMass()); // mu=Mrho, fn.42
     m_mpi0_2   = sqr(Flavour(kf_pi).HadMass());
     m_mK0_2    = sqr(Flavour(kf_K).HadMass());
+    // The rho(770) itself, which FF_RChL2012's leading term needs. This used
+    // to be set only in the RChiPT branch above, leaving m_mV2 = 0 here, so
+    // the leading term degenerated from
+    //   (M^2 + s(gamma+delta)) / (M^2 - s - i M Gamma(s))  to  -(gamma+delta)
+    // - the rho propagator vanished outright. That put tau -> pi- pi0 a factor
+    // |gamma+delta|^2 = 3.8e-3 low (measured 0.001 x PDG), and K- K_S, where
+    // gamma = delta = 0 by construction, at EXACTLY zero.
+    m_mV       = (*params.p_model)("Mrho_rchl",
+				    Flavour(kf_rho_770_plus).HadMass());
+    m_mV2      = sqr(m_mV);
     m_mVp      = (*params.p_model)("Mrhop_rchl",
 				    Flavour(kf_rho_1450_plus).HadMass());
     m_mVp2     = sqr(m_mVp);
@@ -501,6 +518,13 @@ void Fplus_0_PiZeroPiPlus::Construct_KK(const FF_Parameters & params) {
     m_mu2_rchl = sqr(Flavour(kf_rho_770_plus).HadMass());
     m_mpi0_2   = sqr(Flavour(kf_pi).HadMass());
     m_mK0_2    = sqr(Flavour(kf_K).HadMass());
+    // See the identical note in Construct_PiPi: without this m_mV2 is 0 here
+    // too, and since gamma = delta = 0 for this channel the leading term
+    // becomes (0 + 0)/(0 - s) = 0, i.e. the whole form factor vanishes - which
+    // is why tau -> K- K_S integrated to EXACTLY zero on this model.
+    m_mV       = (*params.p_model)("Mrho_rchl",
+				    Flavour(kf_rho_770_plus).HadMass());
+    m_mV2      = sqr(m_mV);
     m_gammaRC  = ReadComplexParam(params.p_model,
 				  "gammaMag_KK_RChL2012",0.,"gammaPhase_KK_RChL2012",0.);
     m_deltaRC  = ReadComplexParam(params.p_model,

@@ -395,7 +395,7 @@ void F1_0_PiPlusPiZeroPiZero::Construct_3Pi(const FF_Parameters & params) {
     m_mpi2_iso   = sqr((Flavour(kf_pi).HadMass()*1.+
 			2.*Flavour(kf_pi_plus).HadMass())/3.);
     m_lambda_p   = RChL::Lambda_p(m_F_rchl,m_FA_rchl,m_GV_rchl);
-    m_lambda_pp  = RChL::Lambda_pp(m_FV_rchl,m_GV_rchl,m_lambda_p);
+    m_lambda_pp  = RChL::Lambda_pp(m_F_rchl,m_GV_rchl,m_lambda_p);
     if (m_mode==FF_0_PPP_mode::piM_piP_piP) {
       // Table I of 1310.1053: default (unscaled) sigma couplings.
       m_alphasigma = (*params.p_model)("alphasigma_rchl3pi",-8.795938);
