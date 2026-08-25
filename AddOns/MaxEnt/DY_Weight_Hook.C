@@ -3,24 +3,23 @@
 #include "SHERPA/Single_Events/Event_Handler.H"
 
 #include "ATOOLS/Phys/Weight_Info.H"
-#include <algorithm>
-#include "MODEL/Main/Running_AlphaS.H"
 #include "SHERPA/Main/Sherpa.H"
 #include "SHERPA/Initialization/Initialization_Handler.H"
-#include "CSSHOWER++/Main/CS_Shower.H"
-#include "PDF/Main/Shower_Base.H"
 #include "PHASIC++/Process/MCatNLO_Process.H"
+#include "PHASIC++/Process/Process_Base.H"
 
 #include <nlohmann/json.hpp>
 
 using json = nlohmann::json;
 using namespace ATOOLS;
+using namespace PHASIC;
 using namespace SHERPA;
 
 class DY_Weight_Hook : public Userhook_Base, public Tag_Replacer {
 private:
 
   Sherpa* p_sherpa;
+  int m_jetmode;
   double m_rt, m_lnrt, m_dphi, m_lndphi, m_gating[2];
   std::vector<double> m_lss;
   std::vector<ATOOLS::Algebra_Interpreter*> m_calcs;
@@ -34,7 +33,8 @@ public:
   {
     DEBUG_FUNC("");
     Settings& s = Settings::GetMainSettings();
-    std::string fname = s["DY_WEIGHT_FILE"].
+    m_jetmode=s["DY_JET_MODE"].SetDefault(0).Get<int>();
+    std::string fname=s["DY_WEIGHT_FILE"].
       SetDefault("lambda_export_variations.json").Get<std::string>();
     msg_Debugging()<<"DY_Weight user hook reading from '"
 		   <<fname<<"'."<<std::endl;
@@ -134,12 +134,11 @@ public:
       }
     m_lnrt=log(m_rt=(l1+l2).PPerp()/(l1+l2).Mass());
     m_lndphi=log(m_dphi=M_PI-l1.DPhi(l2));
-    double beta(Beta((l1+l2).PPerp())), wnom(1.0);
     msg_Debugging()<<"q_T = "<<(l1+l2).PPerp()<<", r_T = "
 		   <<m_rt<<", \\Delta\\phi = "<<m_dphi<<"\n";
     Weights_Map &wmap = (*blobs->FindFirst(btp::Signal_Process))
       ["WeightsMap"]->Get<Weights_Map>();
-    double wew(1.0);
+    double wnom(1.0), wew(1.0);
     Weights_Map::const_iterator wit(wmap.find("ASSOCIATED_CONTRIBUTIONS"));
     if (wit!=wmap.end()) {
       for (size_t l(0);l<wit->second.Size();++l)
@@ -170,9 +169,22 @@ public:
 	    break;
 	  }
       }
-      w=beta*exp(w-m_lss[i])+(1.-beta)*svweight;
-      msg_Debugging()<<m_names[i]<<": w = "<<w<<" (\\beta = "<<beta
-		     <<") <-> "<<svweight<<" ("<<svname<<")\n";
+      if (m_jetmode==1) {
+	double beta(Beta((l1+l2).PPerp()));
+	w=beta*exp(w-m_lss[i])+(1.-beta)*svweight;
+	msg_Debugging()<<m_names[i]<<": w = "<<w<<" (\\beta = "<<beta
+		       <<") <-> "<<svweight<<" ("<<svname<<")\n";
+      }
+      else {
+	Process_Base *proc=p_sherpa->GetInitHandler()->
+	  GetMatrixElementHandler()->Process()->Parent();
+	size_t nout=proc->NOut();
+	if (proc->Get<MCatNLO_Process>()!=nullptr) --nout;
+	if (nout>3) w=svweight;
+	else w=exp(w-m_lss[i]);
+	msg_Debugging()<<m_names[i]<<": w = "<<w<<" (n_{jet} = "<<nout-2
+		       <<") <-> "<<svweight<<" ("<<svname<<")\n";
+      }
       wmap["MaxEnt_QCD"][m_names[i]]=w;
       wmap["MaxEnt_EW"][m_names[i]]=w*wew;
     }
