@@ -26,7 +26,7 @@ Cluster_Param CS_Cluster_Definitions::Cluster(const Cluster_Config &ca)
 		       ca.p_ampl->Leg(ca.m_k),
 		       ca.m_mo,ca.p_ms,ca.m_kin,ca.m_mode|m_kmode));
   return Cluster_Param(this,cs.m_wk,cs.m_kt2,cs.m_mu2,cs.m_cpl,
-		       cs.m_kin,cs.m_kmode,cs.m_pijt,cs.m_pkt,cs.m_lt);
+		       cs.m_kin,cs.m_kmode,cs.m_pijt,cs.m_pkt,cs.m_lt,cs.m_asr);
 }
 
 Splitting_Function_Base *CS_Cluster_Definitions::GetSF
@@ -225,6 +225,9 @@ void CS_Cluster_Definitions::KernelWeight
   else if (cs.m_mode==2) eta=GetX(k,cdip)*(1.0-cs.m_y);
   else if (cs.m_mode==3) eta=GetX(i,cdip)*cs.m_z;
   cs.m_wk=(*cdip)(cs.m_z,cs.m_y,eta,-1.0,Q2)*Q2/cs.m_kt2;
+  cdip->Lorentz()->SetComp(1);
+  cs.m_asr=(*cdip)(cs.m_z,cs.m_y,eta,-1.0,Q2)*Q2/cs.m_kt2/cs.m_wk;
+  cdip->Lorentz()->SetComp(3);
   if (IsBad(cs.m_wk)) cs.m_wk=0.0;
   SF_Lorentz *lf = cdip->Lorentz();
   SF_Coupling *cf = cdip->Coupling();

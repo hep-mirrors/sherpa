@@ -35,7 +35,7 @@ namespace ATOOLS {
     DecayInfo_Vector  m_decs;
 
     size_t m_oew, m_oqcd, m_nin, m_new, m_ncl, m_kin, m_nlo, m_flag;
-    double m_mur2, m_muf2, m_muq2, m_mu2, m_kt2, m_z, m_phi, m_lkf;
+    double m_mur2, m_muf2, m_muq2, m_mu2, m_kt2, m_z, m_phi, m_lkf, m_asr;
     CI_Map m_cmap;
 
     void *p_jf, *p_ca, *p_proc, *p_procs, *p_iinfo, *p_dinfo;
@@ -201,8 +201,10 @@ namespace ATOOLS {
     inline double Phi() const { return m_phi; }
 
     inline void SetLKF(const double &lkf) { m_lkf=lkf; }
+    inline void SetAsR(const double &asr) { m_asr=asr; }
 
     inline double LKF() const { return m_lkf; }
+    inline double AsR() const { return m_asr; }
 
     inline CI_Map       &ColorMap()       { return m_cmap; }
     inline const CI_Map &ColorMap() const { return m_cmap; }

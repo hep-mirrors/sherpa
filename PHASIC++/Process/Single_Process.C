@@ -1169,7 +1169,9 @@ double Single_Process::MuR2(
           mu2 = Min(mu2, sqr(rpa->gen.Ecms()));
           const double mu2new(mu2 * showermu2fac);
           minmu2 = Min(minmu2, mu2new);
-          const double alphasnew(varparams.p_alphas->BoundedAlphaS(mu2new));
+          double alphasnew(varparams.p_alphas->BoundedAlphaS(mu2new));
+	  const double ct=alphasnew/M_PI*varparams.p_alphas->Beta0(mu2new)*log(showermu2fac);
+	  alphasnew *= 1.+ct*ampl->AsR();
           alphasnewproduct *= pow(alphasnew, oqcd);
           oqcdsum += oqcd;
         }

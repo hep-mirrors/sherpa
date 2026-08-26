@@ -18,7 +18,7 @@ bool Cluster_Config::operator<(const Cluster_Config &cc) const
 
 std::ostream &PDF::operator<<(std::ostream &str,const Cluster_Config &cc)
 {
-  return str<<"CC{ampl="<<cc.p_ampl<<",ms="<<cc.p_ms
+  return str<<"CC{ampl="<<(void*)cc.p_ampl<<",ms="<<cc.p_ms
 	    <<",i="<<cc.m_i<<",j="<<cc.m_j<<",k="<<cc.m_k<<",mo="<<cc.m_mo
 	    <<",kin="<<cc.m_kin<<",mode="<<ID(cc.m_mode)<<"}";
 }
@@ -28,7 +28,7 @@ std::ostream &PDF::operator<<(std::ostream &str,const Cluster_Param &cp)
   return str<<"CP{op="<<cp.m_op
 	    <<",kt="<<(cp.m_kt2<0.0?"-":"")<<sqrt(dabs(cp.m_kt2))
 	    <<",mu="<<(cp.m_mu2<0.0?"-":"")<<sqrt(dabs(cp.m_mu2))
-	    <<",cpl="<<cp.m_cpl<<",kin="<<cp.m_kin
+	    <<",cpl="<<cp.m_cpl<<",asr="<<cp.m_asr<<",kin="<<cp.m_kin
 	    <<",mode="<<cp.m_mode<<",stat="<<cp.m_stat<<"}";
 }
 
