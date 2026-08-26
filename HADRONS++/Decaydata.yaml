@@ -299,13 +299,27 @@ HADRON_DECAYS:
         IntResults: [1.0953e-14, 1.0953e-17, 9.2621e-13]
 
     #
-    # tau- -> nu_tau K_S pi- (Kpi_plus via K_S) - see the K pi note
-    # above; deliberately run with a DIFFERENT FORM_FACTOR (200, not
-    # 100) than the K_L entry below, specifically so the two can be
-    # compared as an independent-model cross-check rather than a
-    # trivial K_S/K_L identity (that comparison is instead done between
-    # this entry and the K^- pi^0 entry above, both nominally FM95/KS
-    # sharing gammaMag_Kpi_100 - wait: see note directly below).
+    # tau- -> nu_tau K_S pi- (Kpi_plus via K_S) - see the K pi note above.
+    #
+    # tau- -> nu_tau K_S pi- and tau- -> nu_tau pi- K_L are the two CP
+    # projections of the SINGLE decay tau- -> nu_tau K0bar pi-, each
+    # exactly half of it, so they MUST carry the same model and the same
+    # parameters and must predict the same width.
+    #
+    # They previously did not: this entry ran RChiPT/200 while the K_L
+    # entry below ran KS/100, deliberately, to get a two-model
+    # cross-check for free.  That does not belong here - this file
+    # generates events, and the mismatch put a 41% asymmetry
+    # (7.34e-15 vs 1.03e-14) between two halves of one decay into every
+    # sample, which is not physics.  Both now run 100.  Comparing two
+    # models on one channel is a job for a run card overriding
+    # FORM_FACTOR, which leaves this file consistent.
+    #
+    # Why 100 and not 200: against PDG (0.42%, = half of K0 pi-),
+    # 100 gives 1.084 x and 200 gives 0.771 x.  200 wins the shape
+    # marginally (chi2/ndf 5.00 vs 5.76 at 150k) but 100 is the one
+    # inside the 20% rate target, and it matches the K^- pi^0 and
+    # pi- K_L entries so the whole Kpi family is now consistent.
     #
       310,-211,16:
         BR: [0.0, 0.0] # [0.0042, 0.0042]
@@ -320,20 +334,17 @@ HADRON_DECAYS:
                 Type: VA_0_PiPi
                 Indices: [2, 1]
                 RUNNING_WIDTH: 1
-                FORM_FACTOR: 200
-                gammaMag_Kpi_200: -0.034
-                gammaPhase_Kpi_200: 0.
-        IntResults: [7.3375e-15, 7.3362e-18, 5.9658e-13]
+                FORM_FACTOR: 100
+                gammaMag_Kpi_100: -0.135
+                gammaPhase_Kpi_100: 0.
+        IntResults: [1.03186e-14, 1.03182e-17, 8.54277e-13]
 
     #
-    # tau- -> nu_tau pi- K_L (Kpi_plus via K_L) - run under FORM_FACTOR
-    # 100 (KS/FM95), matching the K^- pi^0 entry above (same model,
-    # same gammaMag_Kpi_100) - Gamma(K_S pi^-) vs Gamma(K_L pi^-) is
-    # therefore NOT a same-model comparison against the K_S entry
-    # directly above (that one runs RChiPT/200 instead); an exact
-    # K_S/K_L numerical match additionally requires setting both to the
-    # same FORM_FACTOR, or comparing rates computed under two
-    # independently-consistent models.
+    # tau- -> nu_tau pi- K_L (Kpi_plus via K_L) - FORM_FACTOR 100
+    # (KS/FM95), matching the K_S pi- entry above and the K^- pi^0 entry
+    # (same model, same gammaMag_Kpi_100).  Gamma(K_S pi^-) and
+    # Gamma(K_L pi^-) now agree to 0.07%, as they must - see the note on
+    # the K_S entry above for why they were previously allowed to differ.
     #
       -211,130,16:
         BR: [0.0, 0.0] # [0.0042, 0.0042]
