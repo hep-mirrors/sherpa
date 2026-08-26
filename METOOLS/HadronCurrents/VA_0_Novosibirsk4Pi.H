@@ -14,61 +14,26 @@ namespace METOOLS {
   // pi- pi- pi+ pi0 (a single class, mode determined from flavour
   // content at construction - see FixMode() below).
   //
-  // IMPORTANT DEPARTURE FROM THE SOURCE, per explicit instruction:
-  // wherever Sherpa already has a genuine, physically-motivated
-  // registered running width (Total_Width_Base, via LineShapes),
-  // THAT is used in place of Bondar's own analytic g_R(s) functions -
-  // this affects all four propagators D_rho, D_a1, D_sigma, D_omega.
-  // This is a deliberate, non-trivial choice:
-  //   - D_rho, D_omega: straightforward substitutions (Sherpa's
-  //     rho(770)+/omega(782) lineshapes are themselves built from
-  //     genuine rho->pipi / omega->rhopi->3pi decay channels).
-  //   - D_sigma: uses Sherpa's F_0_500_Lineshape (kf_f_0_600).
-  //   - D_a1: this ELIMINATES the single biggest implementation
-  //     blocker in the source note - Bondar's own g_a1(s) is DEFINED
-  //     as a 3-body phase-space integral of the a1->rho pi + sigma pi
-  //     decay amplitude itself (a genuinely self-referential
-  //     calculation the note says is normally handled by pre-
-  //     tabulating and interpolating). Sherpa's OWN registered
-  //     A1_1260_plus_Lineshape ALREADY implements essentially this
-  //     same kind of calculation (a1->{rho(770)+rho(1450)}pi and
-  //     a1->{f0(600)+f0(1370)}pi, via the V_PPP/V_PPP_scalar 3-body
-  //     partial-width machinery, pre-integrated over a 500-point
-  //     grid) - reusing it directly avoids re-deriving this from
-  //     scratch, at the cost of no longer numerically matching
-  //     Bondar's own specific g_a1(s) formula exactly.
-  // Pole masses M_R are ALSO taken from Sherpa's own registered
-  // Flavour().HadMass() for each resonance (not Bondar's own specific
-  // table values, e.g. Mrho=0.7761 GeV) - same "reuse everywhere
-  // possible" consistency choice, small numerical differences
-  // expected as a result.
+  // NORMALISATION AND WIDTHS - note a reversal of an earlier decision.
   //
-  // The a1 form factor F_a1(q) (Eq.4pi-Fa1, scale Lambda) and the
-  // sigma-pi/rho-pi amplitude ratio z (Eq., table value 1.269+0.591i)
-  // are kept exactly as given - these are not resonance widths, and
-  // have no lineshape-machinery equivalent to substitute.
+  // This class previously used Sherpa's registered running widths
+  // (Total_Width_Base via LineShapes) in place of Bondar's own g_R(s),
+  // deliberately and on instruction.  It cannot: Bondar's G tables were
+  // fitted against his own width functions, and with registered line
+  // shapes the published partial widths come out about 1e-5 too small.
+  // The widths therefore come from the parameterisation's own tabulated
+  // and analytic functions (Novosibirsk4pi_GTables).
   //
-  // The three G(Q^2) form factors (G_{+000}, G_{+-+0}, G^omega_{+-+0})
-  // are the hard-coded Bondar Appendix-B tables from
-  // Novosibirsk4pi_GTables.H - genuinely tabulated, not analytic, so
-  // there is no lineshape substitute for these either.
+  // POLE MASSES do still come from the particle database, like every
+  // other current here.  That costs about 6% against Bondar's own
+  // quoted widths - his sigma sits at 0.8 GeV where the database has
+  // f0(600) at 0.6 - and is a deliberate trade in favour of one shared
+  // registry entry per resonance.
   //
-  // Bose symmetrization: handled entirely by the explicit permutation
-  // sums in Eqs.(4pi-J000-rho/sigma) and (4pi-Jmix-rho/sigma/omega) -
-  // these sums are written such that ANY consistent assignment of
-  // "which identical pion is q1 vs q3" (mixed-charge mode) or "which
-  // is q2 vs q3 vs q4" (neutral mode) gives the same physical current,
-  // so FixMode() below does not need any special identical-particle
-  // handling beyond identifying the charge/flavour pattern itself.
+  // The propagators live in Propagator.H (Novo4Pi_Propagator) and the
+  // tables and width functions in Novosibirsk4pi_GTables.H; this
+  // class is the Lorentz assembly plus the per-mode normalisation.
   //
-  // TAUOLA convention note: the source states the published TAUOLA
-  // implementation treats the a1pi and omegapi pieces of the mixed-
-  // charge mode as INCOHERENT (added at the rate level, not the
-  // amplitude level), and that combining them coherently is a model
-  // change that "should be labelled as such". This class combines
-  // them COHERENTLY (a single summed amplitude, like every other
-  // current in this codebase) - a deliberate, flagged departure from
-  // the original TAUOLA convention for implementation simplicity.
   class VA_0_Novosibirsk4Pi : public Current_Base {
   private:
     enum class Mode { PiPi0Pi0Pi0, PiPiPiPi0, Unknown };
@@ -76,21 +41,40 @@ namespace METOOLS {
 
     double  m_Mrho, m_Ma1, m_Msigma, m_Momega;
     Total_Width_Base * p_rho_width, * p_a1_width, * p_sigma_width, * p_omega_width;
-    double  m_Lambda;
     Complex m_z;
-    Complex m_kappaF0;
     double  m_norm;
+    // Which piece of the mixed-charge current to return.  Bondar/TAUOLA
+    // treat a1pi and omegapi as DISTINCT modes and neglect their
+    // interference (note, after Eq.4pi-Jmix-omega): J = J_a1rho +
+    // J_a1sigma  OR  J_omegarho.  Adding them coherently, as this class
+    // did unconditionally, is a labelled model change.
+    //   0 = coherent sum of both (the model change)
+    //   1 = a1pi only  (rho + sigma)
+    //   2 = omegapi only
+    // 1 and 2 exist so the incoherent TAUOLA treatment can be obtained
+    // by running them separately and adding the two rates.
+    int     m_component;
+    // Follow binp.f rather than the paper.  Default ON: the paper alone
+    // cannot reproduce the published widths (see the tables header).
+    int     m_binp;
+    // Bondar's own parameter values (Table 1 of the paper, and the
+    // DATA statements of binp.f, which agree).  Deliberately NOT taken
+    // from the particle database: this current is a transcription of one
+    // specific published-and-coded model, and its G tables were fitted
+    // against these values.  Substituting database poles detunes them.
+    double  m_ScaleA;   // a1 form-factor scale; this is Lambda^2
 
-    Complex DR(const double & s,Total_Width_Base * width,const double & M) const;
-    // rho(770) tower PLUS an f0(500)/sigma admixture (Sec. request:
-    // "add a set of new models... plus the f0"). Bondar's own t1/t3
-    // only ever use a bare D_rho with no admixture at all - this adds
-    // one, reusing Sherpa's own registered f0(600) running width, the
-    // same "reuse lineshape machinery" choice as everywhere else in
-    // this class. NOT from the original paper; m_kappaF0's default is
-    // a guess (see SetModelParameters), retune against data.
-    Complex DRrho(const double & s) const;
-    double  Fa1sq(const double & s) const;
+
+    // ---- Bondar's parameterisation ----
+    // The propagators live in Propagator.H (Novo4Pi_Propagator) and the
+    // width/form-factor functions and tables in
+    // Novosibirsk4pi_GTables.H.  This class owns only the Lorentz
+    // assembly and the per-mode normalisation below, which is the one
+    // piece that is genuinely specific to this current.
+    Propagator_Base * p_bRho, * p_bSigma, * p_bA1, * p_bOmega;
+    // The per-mode overall factor; no counterpart anywhere in the
+    // paper, see the tables header.
+    double  Novo4PiModeFactor(const int mode,const double & Q) const;
     ATOOLS::Vec4C t1(const ATOOLS::Vec4D & q1,const ATOOLS::Vec4D & q2,
 		     const ATOOLS::Vec4D & q3,const ATOOLS::Vec4D & q4,
 		     const ATOOLS::Vec4D & Q) const;

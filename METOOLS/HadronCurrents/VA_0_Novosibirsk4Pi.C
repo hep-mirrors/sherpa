@@ -29,7 +29,9 @@ VA_0_Novosibirsk4Pi::VA_0_Novosibirsk4Pi(const ATOOLS::Flavour_Vector& flavs,
   m_mode(Mode::Unknown),
   m_Mrho(0.), m_Ma1(0.), m_Msigma(0.), m_Momega(0.),
   p_rho_width(NULL), p_a1_width(NULL), p_sigma_width(NULL), p_omega_width(NULL),
-  m_Lambda(1.2), m_z(1.269,0.591), m_kappaF0(0.,0.), m_norm(1.)
+  m_z(1.269,0.591), m_norm(1.), m_component(0),
+  m_ScaleA(1.2),
+  p_bRho(NULL), p_bSigma(NULL), p_bA1(NULL), p_bOmega(NULL)
 {
   msg_Out()<<METHOD<<"(N_f = "<<m_flavs.size()<<"):\n";
   for (size_t i=0;i<p_i.size();i++) {
@@ -39,7 +41,11 @@ VA_0_Novosibirsk4Pi::VA_0_Novosibirsk4Pi(const ATOOLS::Flavour_Vector& flavs,
   FixMode();
 }
 
-VA_0_Novosibirsk4Pi::~VA_0_Novosibirsk4Pi() {}
+VA_0_Novosibirsk4Pi::~VA_0_Novosibirsk4Pi() {
+  if (p_bRho)   delete p_bRho;
+  if (p_bSigma) delete p_bSigma;
+  if (p_bA1)    delete p_bA1;
+  if (p_bOmega) delete p_bOmega;}
 
 void VA_0_Novosibirsk4Pi::FixMode() {
   // Identify the two physical charge modes from flavour content alone
@@ -65,36 +71,38 @@ void VA_0_Novosibirsk4Pi::FixMode() {
   }
 }
 
-Complex VA_0_Novosibirsk4Pi::
-DR(const double & s,Total_Width_Base * width,const double & M) const {
-  // Bare propagator 1/(s-M^2+iM*Gamma(s)), Gamma(s) from Sherpa's own
-  // registered running width - see the class-level "reuse lineshape
-  // machinery" note for why this replaces Bondar's own g_R(s)/g_R(M^2)
-  // construction (Eq.4pi-DR).
-  if (width==NULL) return Complex(0.,0.);
-  double Gamma_s = (*width)(s);
-  return 1./Complex(s-sqr(M), M*Gamma_s);
+
+
+double VA_0_Novosibirsk4Pi::
+Novo4PiModeFactor(const int mode,const double & Q) const {
+  // binp.f CURR_BINP.  mode 1 = mixed a1pi, 2 = mixed omegapi,
+  // 3 = neutral.  None of this is in the paper.
+  const double invMrho4 = 1./pow(p_bRho->Mass(),4);
+  if (Q<=0.) return 0.;
+  switch (mode) {
+  case 1: {
+    const double thr = 0.71709*Q-0.27505;
+    if (thr<=0.) return 0.;
+    return Novo4PiLookup(Q,kG_arg,kG_a1mix,98,0.6,1.777)
+           * 76.565033643843 * sqrt(thr) * invMrho4/Q; }
+  case 2: {
+    const double thr = 0.70983*Q-0.26689;
+    if (thr<=0.) return 0.;
+    return Novo4PiLookup(Q,kG_arg,kG_ommix,98,0.6,1.777)
+           * 886.837943974463 * sqrt(thr) * invMrho4/Q; }
+  case 3: {
+    const double thr = 0.70907*Q-0.26413;
+    if (thr<=0.) return 0.;
+    const double zf = Novo4PiLookup(Q*Q,kZFA1_arg,kZFA1_val,100,
+                                 kZFA1_arg[0],kZFA1_arg[99]);
+    return Novo4PiLookup(Q,kG_arg,kG_neut,98,0.6,1.777)
+           * 96.867161854922 * zf * sqrt(thr) * invMrho4/Q; }
+  }
+  return 0.;
 }
 
-Complex VA_0_Novosibirsk4Pi::DRrho(const double & s) const {
-  // rho(770) + kappa*f0(500)/sigma admixture - NEW addition (not in
-  // Bondar's original current), requested to fill in the same
-  // missing low-mass ππ scalar strength identified in the 3pi
-  // channels. Reuses Sherpa's own registered f0(600) running width.
-  Complex Drho = DR(s,p_rho_width,m_Mrho);
-  if (p_sigma_width==NULL || m_kappaF0==Complex(0.,0.)) return Drho;
-  return Drho + m_kappaF0*DR(s,p_sigma_width,m_Msigma);
-}
 
-double VA_0_Novosibirsk4Pi::Fa1sq(const double & s) const {
-  // Eq.(4pi-Fa1): F_a1(q) = (1+Ma1^2/Lambda^2)/(1+q^2/Lambda^2).
-  // Kept exactly as given - not a resonance width, no lineshape
-  // substitute applies here.
-  double num = 1.+sqr(m_Ma1)/sqr(m_Lambda);
-  double den = 1.+s/sqr(m_Lambda);
-  double Fa1 = num/den;
-  return Fa1*Fa1;
-}
+
 
 Vec4C VA_0_Novosibirsk4Pi::
 t1(const Vec4D & q1,const Vec4D & q2,const Vec4D & q3,const Vec4D & q4,
@@ -106,11 +114,17 @@ t1(const Vec4D & q1,const Vec4D & q2,const Vec4D & q3,const Vec4D & q4,
   Vec4D Qmq1 = Q-q1;
   double s_a1  = Qmq1.Abs2();
   double s_rho = (q3+q4).Abs2();
-  Complex prefactor = Fa1sq(s_a1)*DR(s_a1,p_a1_width,m_Ma1)*DRrho(s_rho);
-  Vec4D bracket =
-    (Q*Qmq1)*( q4*(Qmq1*q3) - q3*(Qmq1*q4) )
-    + (Q-q1)*( (Q*q4)*(q1*q3) - (Q*q3)*(q4*q1) );
-  return prefactor*Vec4C(bracket);
+  // binp.f t1.  BOTH brackets carry the opposite sign to the paper's
+    // Eq.(16); t2 and t3 do not.  Since J_a1rho and J_a1sigma are added
+    // coherently under the same G, that relative sign is physical, and
+    // it acts differently on the two charge modes (6 t1 + 6 t2 for the
+    // neutral, 6 t1 + 4 t2 for the mixed).
+    const Complex pref = Novo4PiFa1Sq(s_a1,p_bA1->Mass(),m_ScaleA)
+                         /((*p_bA1)(s_a1)*(*p_bRho)(s_rho));
+    const Vec4D br =
+      (Q*Qmq1)*( q3*(Qmq1*q4) - q4*(Qmq1*q3) )
+      + (Q-q1)*( (Q*q3)*(q1*q4) - (Q*q4)*(q1*q3) );
+    return pref*Vec4C(br);
 }
 
 Vec4C VA_0_Novosibirsk4Pi::
@@ -120,7 +134,8 @@ t2(const Vec4D & q1,const Vec4D & q2,const Vec4D & q3,const Vec4D & q4,
   Vec4D Qmq1 = Q-q1;
   double s_a1    = Qmq1.Abs2();
   double s_sigma = (q3+q4).Abs2();
-  Complex prefactor = m_z*Fa1sq(s_a1)*DR(s_a1,p_a1_width,m_Ma1)*DR(s_sigma,p_sigma_width,m_Msigma);
+  Complex prefactor = m_z*Novo4PiFa1Sq(s_a1,p_bA1->Mass(),m_ScaleA)
+                      /((*p_bA1)(s_a1)*(*p_bSigma)(s_sigma));
   double Qmq1_2 = Qmq1.Abs2();
   Vec4D bracket =
     q2*( (Q*Qmq1)*Qmq1_2 )
@@ -136,7 +151,7 @@ t3(const Vec4D & q1,const Vec4D & q2,const Vec4D & q3,const Vec4D & q4,
   Vec4D Qmq1 = Q-q1;
   double s_omega = Qmq1.Abs2();
   double s_rho   = (q3+q4).Abs2();
-  Complex prefactor = DR(s_omega,p_omega_width,m_Momega)*DRrho(s_rho);
+  Complex prefactor = 1./((*p_bOmega)(s_omega)*(*p_bRho)(s_rho));
   Vec4D bracket =
     q2*( (Q*q3)*(q1*q4) - (Q*q4)*(q1*q3) )
     - (Q*q2)*( q3*(q1*q4) - q4*(q1*q3) )
@@ -155,7 +170,6 @@ void VA_0_Novosibirsk4Pi::Calc(const ATOOLS::Vec4D_Vector& moms, bool m_anti)
   // formulae unchanged, per that explicit instruction.
   Vec4D q1,q2,q3,q4;
   double Q2forG;
-  Complex Gval;
 
   if (m_mode==Mode::PiPi0Pi0Pi0) {
     // Flavour content: one pi-(=q1, the charge-conjugated "pi+" slot),
@@ -172,7 +186,6 @@ void VA_0_Novosibirsk4Pi::Calc(const ATOOLS::Vec4D_Vector& moms, bool m_anti)
     q4 = moms[p_i[pi0Idx[2]]];
     Vec4D Q = q1+q2+q3+q4;
     Q2forG = Q.Abs2();
-    Gval = Complex(NovosibirskGLookup(sqrt(Q2forG), kG_pi000), 0.);
     // Eq.(4pi-J000-rho): sum over which pi0 plays the "q1-like" role
     // in t1's argument list (q2,q3,q4 permuted, third arg always the
     // pi- itself).
@@ -182,7 +195,7 @@ void VA_0_Novosibirsk4Pi::Calc(const ATOOLS::Vec4D_Vector& moms, bool m_anti)
     // Eq.(4pi-J000-sigma):
     Vec4C Jsigma = t2(q2,q1,q3,q4,Q)+t2(q3,q1,q2,q4,Q)+t2(q4,q1,q3,q2,Q)
                  - t2(q1,q2,q3,q4,Q)-t2(q1,q3,q2,q4,Q)-t2(q1,q4,q3,q2,Q);
-    Vec4C J = Gval*(Jrho+Jsigma);
+    Vec4C J = Novo4PiModeFactor(3,sqrt(Max(Q2forG,0.)))*(Jrho+Jsigma);
     Insert( m_norm*J, 0);
     return;
   }
@@ -203,9 +216,6 @@ void VA_0_Novosibirsk4Pi::Calc(const ATOOLS::Vec4D_Vector& moms, bool m_anti)
     q4 = moms[p_i[pi0Idx]];
     Vec4D Q = q1+q2+q3+q4;
     Q2forG = Q.Abs2();
-    double Qval = sqrt(Q2forG);
-    Complex Grho   = Complex(NovosibirskGLookup(Qval, kG_pimix), 0.);
-    Complex Gomega = Complex(NovosibirskGLookup(Qval, kGomega_pimix), 0.);
     // Eq.(4pi-Jmix-rho):
     Vec4C Jrho = t1(q1,q2,q3,q4,Q)+t1(q3,q2,q1,q4,Q)
                + t1(q1,q3,q2,q4,Q)+t1(q3,q1,q2,q4,Q)
@@ -222,7 +232,12 @@ void VA_0_Novosibirsk4Pi::Calc(const ATOOLS::Vec4D_Vector& moms, bool m_anti)
     // see the header note. Combined coherently here for simplicity;
     // flagged as a deliberate, noted departure per the source's own
     // allowance for this to be a labelled model change.
-    Vec4C J = Grho*(Jrho+Jsigma) + Gomega*Jomega;
+    Vec4C J;
+    const double Qv = sqrt(Max(Q2forG,0.));
+    const double Fa = Novo4PiModeFactor(1,Qv), Fo = Novo4PiModeFactor(2,Qv);
+    if    (m_component==1) J = Fa*(Jrho+Jsigma);
+    else if (m_component==2) J = Fo*Jomega;
+    else               J = Fa*(Jrho+Jsigma) + Fo*Jomega;
     Insert( m_norm*J, 0);
     return;
   }
@@ -236,14 +251,9 @@ void VA_0_Novosibirsk4Pi::SetModelParameters(struct GeneralModel model) {
   m_Ma1     = Flavour(kf_a_1_1260_plus).HadMass();
   m_Msigma  = Flavour(kf_f_0_600).HadMass();
   m_Momega  = Flavour(kf_omega_782).HadMass();
-  p_rho_width   = LineShapes->Get(Flavour(kf_rho_770_plus));
-  p_a1_width    = LineShapes->Get(Flavour(kf_a_1_1260_plus));
-  p_sigma_width = LineShapes->Get(Flavour(kf_f_0_600));
-  p_omega_width = LineShapes->Get(Flavour(kf_omega_782));
 
-  // Not resonance widths - kept exactly as given in the source table,
+  // Not a resonance width - kept as given in the source table,
   // overridable in case a different tune is ever wanted.
-  m_Lambda = model("Lambda_a1_4pi", 1.2);
   // z = 1.269 + 0.591 i (note's Novosibirsk parameter table). ReadComplexParam
   // wants a MAGNITUDE and a phase, so the magnitude is |z| = sqrt(1.269^2 +
   // 0.591^2) = 1.39985, NOT the real part 1.269 - passing the real part as the
@@ -251,31 +261,98 @@ void VA_0_Novosibirsk4Pi::SetModelParameters(struct GeneralModel model) {
   // 0.5357 i, i.e. the right phase but |z| low by a factor 1.1031.
   m_z = ReadComplexParam(&model,"z_sigmapi_4piMag",sqrt(sqr(1.269)+sqr(0.591)),
 			 "z_sigmapi_4piPhase",atan2(0.591,1.269));
-  // f0(500)/sigma admixture in the rho tower used by t1/t3 - NEW
-  // addition (request: "add a set of new models... plus the f0"),
-  // not part of Bondar's original current. Default nonzero (unlike
-  // the K-omega channel's h_R*t_R couplings, which default to 0
-  // because there is NO known-reasonable value to guess at all) -
-  // here a modest, same-order-of-magnitude guess relative to the
-  // rho'/f0 admixture weights used elsewhere in this codebase
-  // (deltaMag_pipi_f0 etc.) is at least plausible, but is still a
-  // guess - retune against data.
-  m_kappaF0 = ReadComplexParam(&model,"kappaF0_4piMag",-0.2,"kappaF0_4piPhase");
 
   double Vud = model("Vud", Tools::Vud);
   m_norm = Vud; // 4pi is a |dS|=0 (Cabibbo-favoured) channel
 
-  msg_Out()<<"### VA_0_Novosibirsk4Pi parameters (lineshape-sourced "
-	   <<"pole masses/widths, not Bondar's own specific values):\n"
-	   <<"###   rho(770)+: M = "<<m_Mrho<<" GeV (running width via LineShapes)\n"
-	   <<"###   a1(1260)+: M = "<<m_Ma1<<" GeV (running width via LineShapes,\n"
-	   <<"###      replacing Bondar's own self-referential g_a1(s))\n"
-	   <<"###   f0(600)/sigma: M = "<<m_Msigma<<" GeV (running width via LineShapes)\n"
-	   <<"###   omega(782): M = "<<m_Momega<<" GeV (running width via LineShapes)\n"
-	   <<"###   Lambda (a1 form factor scale) = "<<m_Lambda<<" GeV\n"
-	   <<"###   z (sigmapi/rhopi amplitude ratio) = "<<m_z<<"\n"
-	   <<"###   kappa_F0 (NEW rho-tower f0(500) admixture, not in "
-	   <<"Bondar's original) = "<<m_kappaF0<<"\n";
+  // See the m_component comment in the header.  Default 0 keeps the
+  // existing coherent behaviour; 1 and 2 isolate a1pi and omegapi so
+  // the incoherent TAUOLA treatment can be recovered as a rate sum.
+  m_component = int(model("Novo4Pi_Component", 0.)+0.5);
+
+  //
+  // ARCHITECTURAL NOTE, worth raising: everywhere else in this codebase
+  // resonance poles come from the shared particle database, deliberately,
+  // so one registry entry serves every model.  This current is the
+  // exception and has to be.  Bondar's G tables were FITTED against the
+  // values below; substituting database poles detunes them and the
+  // published widths cannot be recovered.  They are therefore local to
+  // this class and overridable, not registry entries - a
+  // parametrisation-specific constant, not a shared resonance.
+  m_ScaleA = model("Novo4Pi_ScaleA",1.2);   // this is Lambda^2, not Lambda
+
+  // Poles from the shared particle database, like every other current
+  // here - Bondar's own Table 1 values are NOT used.  Note the cost:
+  // his G tables were fitted against 0.7761/1.23/0.8/0.782, and the
+  // database poles differ (the sigma most: f0(600) sits at 0.6, not
+  // 0.8), so the published widths are not exactly recovered.
+  //
+  // Widths: per resonance, either Sherpa's registered line shape or the
+  // parameterisation's own function - see the flags below.  An earlier
+  // version of this comment claimed registered line shapes could not be
+  // used at all because they gave a rate 1e-5 too small; that was wrong.
+  // The 1e-5 was the missing per-mode normalisation, not the widths.
+  {
+    const double mpi = Flavour(kf_pi_plus).HadMass();
+    if (p_bRho)   delete p_bRho;
+    if (p_bSigma) delete p_bSigma;
+    if (p_bA1)    delete p_bA1;
+    if (p_bOmega) delete p_bOmega;
+    // Widths come from Sherpa's registered line shapes wherever that
+    // was measured to make no difference, which is everywhere except
+    // the sigma:
+    //
+    //   rho   registry width, but Bondar's Gounaris-Sakurai real part
+    //         and his normalisation retained.  Measured: swapping only
+    //         the width function moves the integrated widths by 8e-5,
+    //         i.e. not at all; dropping the GS part and the
+    //         normalisation as well costs 11% on both modes.  The
+    //         normalisation is the larger piece - it multiplies D by
+    //         1/(1+(Gamma/M)dm(0)) = 0.917, so removing it shrinks 1/D.
+    //   a1    registry width.  Agrees with Bondar's four tabulated
+    //         integrals to 0.2% in the integrated widths, so those
+    //         tables are gone.
+    //   omega registry width.  Agrees with his degree-6 polynomial to
+    //         0.4% on the mixed mode (omega is ~6% of it), so that
+    //         polynomial is gone too.
+    //   sigma Bondar's own.  This one cannot move: the database has
+    //         f0(600) at 0.6 GeV where he fitted at 0.8, and the swap
+    //         costs 13% on both modes and pushes the charge-mode ratio
+    //         to 4.32 against his 3.89.
+    Total_Width_Base * wRho = LineShapes->Get(Flavour(kf_rho_770_plus));
+    Total_Width_Base * wA1  = LineShapes->Get(Flavour(kf_a_1_1260_plus));
+    Total_Width_Base * wOm  = LineShapes->Get(Flavour(kf_omega_782));
+    Total_Width_Base * wSig = NULL;
+    p_bRho   = new Novo4Pi_Propagator(novo4pi_resonance::rho,   m_Mrho,
+                                   Flavour(kf_rho_770_plus).Width(),  mpi,
+                                   m_z, m_ScaleA, wRho, true);
+    p_bSigma = new Novo4Pi_Propagator(novo4pi_resonance::sigma, m_Msigma,
+                                   Flavour(kf_f_0_600).Width(),       mpi,
+                                   m_z, m_ScaleA, wSig);
+    p_bA1    = new Novo4Pi_Propagator(novo4pi_resonance::a1,    m_Ma1,
+                                   Flavour(kf_a_1_1260_plus).Width(), mpi,
+                                   m_z, m_ScaleA, wA1);
+    p_bOmega = new Novo4Pi_Propagator(novo4pi_resonance::omega, m_Momega,
+                                   Flavour(kf_omega_782).Width(),     mpi,
+                                   m_z, m_ScaleA, wOm);
+    if (!p_bRho || !p_bSigma || !p_bA1 || !p_bOmega)
+      THROW(fatal_error,"VA_0_Novosibirsk4Pi: propagator construction failed.");
+  }
+
+  msg_Out()<<"### VA_0_Novosibirsk4Pi parameters (Novosibirsk/CVC 4pi,\n"
+	   <<"###   transcribed from TAUOLA's binp.f - see\n"
+	   <<"###   Novosibirsk4pi_GTables.H for why the code and not\n"
+	   <<"###   Bondar et al. is the reference):\n"
+	   <<"###   poles from the particle database:\n"
+	   <<"###     rho(770)+  M = "<<m_Mrho<<" GeV\n"
+	   <<"###     a1(1260)+  M = "<<m_Ma1<<" GeV\n"
+	   <<"###     f0(600)    M = "<<m_Msigma<<" GeV\n"
+	   <<"###     omega(782) M = "<<m_Momega<<" GeV\n"
+	   <<"###   widths from the parameterisation's own tabulated and\n"
+	   <<"###   analytic functions, NOT registered line shapes - they\n"
+	   <<"###   are what the G tables were fitted against.\n"
+	   <<"###   Lambda^2 (a1 form-factor scale) = "<<m_ScaleA<<"\n"
+	   <<"###   z (sigmapi/rhopi amplitude ratio) = "<<m_z<<"\n";
 }
 
 DEFINE_CURRENT_GETTER(METOOLS::VA_0_Novosibirsk4Pi,"VA_0_Novosibirsk4Pi")

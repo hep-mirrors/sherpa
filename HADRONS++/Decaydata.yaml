@@ -1364,7 +1364,7 @@ HADRON_DECAYS:
                 Type: VA_0_Novosibirsk4Pi
                 Indices: [1, 2, 3, 4]
         AlwaysIntegrate: 1
-        IntResults: [7.8624e-19, 7.8601e-22, 5.9286e-17]
+        IntResults: [2.6034e-14, 2.6031e-17, 3.1638e-12]
 
       -211,-211,211,111,16:
         BR: [0.33333333, 0.33333333]
@@ -1379,7 +1379,7 @@ HADRON_DECAYS:
                 Type: VA_0_Novosibirsk4Pi
                 Indices: [1, 2, 3, 4]
         AlwaysIntegrate: 1
-        IntResults: [1.7319e-18, 1.7312e-21, 1.5771e-16]
+        IntResults: [1.0112e-13, 1.0112e-16, 7.3573e-11]
 
 
     221:

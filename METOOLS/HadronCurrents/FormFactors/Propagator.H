@@ -92,6 +92,64 @@ namespace METOOLS {
     const double  Normalised2(const double & s);
   };
 
+  // ------------------------------------------------------------------
+  // Propagators of the Novosibirsk four-pion parameterisation, as
+  // TAUOLA implements them (tauola-factory/Binp/binp.f).
+  //
+  // These are NOT the BreitWigner above and NOT the paper's Eq.(18).
+  // Two differences matter:
+  //   * they are NORMALISED to be dimensionless - binp.f divides by
+  //     M^2 (and the rho additionally by 1 + (Gamma/M) dm(0)) - with
+  //     the dimensions restored by the current's overall 1/M_rho^4/Q;
+  //   * the rho carries a Gounaris-Sakurai dispersive real part dm(s).
+  //     That is the same physics as BreitWigner's resonance_type::GS,
+  //     but binp.f groups and normalises it differently, so reusing
+  //     ValueGS() here would not reproduce the published widths.
+  //
+  // They return D, not 1/D, matching binp.f's z_drho/z_dsigma/z_da1/
+  // z_domega - callers divide.  Which resonance is selected by the
+  // novo4pi_resonance tag rather than by four near-identical classes.
+  // ------------------------------------------------------------------
+  enum class novo4pi_resonance { rho, sigma, a1, omega };
+
+  class Novo4Pi_Propagator : public Propagator_Base {
+  private:
+    novo4pi_resonance m_res;
+    double         m_G;        // pole width
+    double         m_scaleA;   // a1 form-factor scale (this is Lambda^2)
+    Complex        m_z;        // sigma/rho mixing, needed by the a1 width
+    double         m_mdau;     // daughter mass, for the sigma phase space
+    double         m_rhonorm;  // cached 1/(1 + (Gamma/M) dm(0))
+    double         m_g1;       // cached width normalisation at the pole
+    bool           m_keepshape;
+  public:
+    // width may be NULL: these propagators use the parameterisation's
+    // own analytic/tabulated widths, not a registered line shape.
+    // width is normally NULL: these propagators use the
+    // parameterisation's own analytic/tabulated widths.  Passing a
+    // registered line shape instead makes the a1 use
+    //   D = s/M^2 - 1 + i Gamma(s)/M
+    // i.e. Bondar's form with his tabulated g_a1 replaced by Sherpa's
+    // running width.  Provided so the two can be compared; see the
+    // note in VA_0_Novosibirsk4Pi.H on why the tabulated one is the
+    // default.
+    Novo4Pi_Propagator(const novo4pi_resonance & res,
+                    const double & M,const double & G,
+                    const double & mdau=0.13957,
+                    const Complex & z=Complex(1.269,0.591),
+                    const double & scaleA=1.2,
+                    Total_Width_Base * width=NULL,
+                    // rho only: keep Bondar's Gounaris-Sakurai real part
+                    // and his normalisation, swapping ONLY the width
+                    // function for the registered one.  Exists to
+                    // isolate which of the three differences between
+                    // his propagator and a plain registry one matters.
+                    const bool & keepshape=false);
+    const Complex operator()(const double & s);
+    const Complex Normalised(const double & s);
+    const double  Normalised2(const double & s);
+  };
+
   class Summed_Propagator : public Propagator_Base {
   private:
     std::map<Propagator_Base *, Complex> m_props;

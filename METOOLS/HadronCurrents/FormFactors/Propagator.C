@@ -1,4 +1,5 @@
 #include "METOOLS/HadronCurrents/FormFactors/Propagator.H"
+#include "METOOLS/HadronCurrents/FormFactors/Novosibirsk4pi_GTables.H"
 #include "METOOLS/HadronCurrents/FormFactors/Resonance_Base.H"
 #include "ATOOLS/Phys/Flavour.H"
 #include "ATOOLS/Math/MyComplex.H"
@@ -308,4 +309,64 @@ void METOOLS::DumpPropagatorStructure(const std::string & label,
     return;
   }
   DumpPropagatorEntry(props, Complex(1.,0.), "", false);
+}
+
+// ====================================================================
+// Novo4Pi_Propagator - see Propagator.H for why these are not BreitWigner
+// with resonance_type::GS.
+// ====================================================================
+
+Novo4Pi_Propagator::Novo4Pi_Propagator(const novo4pi_resonance & res,
+                                 const double & M,const double & G,
+                                 const double & mdau,
+                                 const Complex & z,const double & scaleA,
+                                 Total_Width_Base * width,
+                                 const bool & keepshape) :
+  Propagator_Base(width,resonance_type::running),
+  m_res(res), m_G(G), m_scaleA(scaleA), m_z(z), m_mdau(mdau),
+  m_rhonorm(1.), m_g1(1.), m_keepshape(keepshape) {
+  m_M = M; m_M2 = M*M;
+  if (m_res==novo4pi_resonance::rho) {
+    const double d0 = Novo4PiDM(0.,m_M);
+    const double n  = 1.+m_G/m_M*d0;
+    m_rhonorm = (std::abs(n)>1.e-12) ? 1./n : 1.;
+  }
+}
+
+const Complex Novo4Pi_Propagator::operator()(const double & s) {
+  // A registered line shape gives the same dimensionless form for every
+  // resonance: Bondar's D with his g_R(s)/g_R(M^2) replaced by Sherpa's
+  // running width.  The pole width cancels in the ratio, leaving
+  // Gamma(s)/M.  For the rho this also drops the Gounaris-Sakurai
+  // dispersive real part, which binp.f carries and the paper does not.
+  if (p_width && m_keepshape && m_res==novo4pi_resonance::rho) {
+    // Bondar's rho with only the width function replaced.
+    Complex D(s-m_M2-Novo4PiDM(s,m_M)*m_G*m_M, m_M*(*p_width)(s));
+    return D/m_M2*m_rhonorm;
+  }
+  if (p_width) return Complex(s/m_M2-1., (*p_width)(s)/m_M);
+  // Only the sigma reaches here: every other resonance is constructed
+  // with a registered line shape and returns above.
+  switch (m_res) {
+  case novo4pi_resonance::sigma: {
+    // binp.f z_dsigma: equal daughter masses, so the two Kallen
+    // factors coincide.
+    const double d  = 1.-4.*sqr(m_mdau)/s;
+    const double d0 = 1.-4.*sqr(m_mdau)/m_M2;
+    const double pm  = sqrt(Max(d*d,1.e-16));
+    const double pm0 = sqrt(Max(d0*d0,1.e-16));
+    return Complex(s/m_M2-1., m_G/m_M*pm/pm0);
+  }
+  }
+  return Complex(1.,0.);
+}
+
+const Complex Novo4Pi_Propagator::Normalised(const double & s) {
+  // These are already dimensionless by construction; "normalised" here
+  // means the same thing, so nothing further to do.
+  return (*this)(s);
+}
+
+const double Novo4Pi_Propagator::Normalised2(const double & s) {
+  return norm((*this)(s));
 }
