@@ -2089,17 +2089,30 @@ void FS_0_EtaPiPi::Construct(const FF_Parameters & params) {
   if (m_ffmodel!=ff_model::KS) return;
   bool isPrime = (m_mode==FF_0_PPP_mode::EtaprimePiPi_pi0);
   double fpi = (*params.p_model)("fpi",0.1307)/sqrt(2.);
-  // FIXME: the note does not give a numeric value for the combined
-  // WZW-anomaly-normalization/eta-eta' mixing Clebsch N_WZW^eta(') -
-  // it only states that IF the master current's explicit 1/(4pi^2F^2)
-  // anomaly prefactor is used, only the channel mixing coefficient
-  // remains. Best-effort default below: a plausible 1/(4pi^2 fpi^2)
-  // anomaly-scale prefactor times a placeholder mixing coefficient
-  // (default 1, like N_Keta/N_Ketaprime elsewhere) - please supply the
-  // actual eta-eta' mixing convention/normalization you want used.
+  // The note's Eq.(PPPcurrent) writes the anomalous term as
+  // -i c5/(4 pi^2 F^2) eps^{mu nu rho sigma} p1 p2 p3 F5, INSIDE an
+  // overall normalization N.  This code has no separate N - everything
+  // is folded into m_norm - so transcribing that 1/(4 pi^2 F^2)
+  // literally drops the 1/F that N carries, which is what happened
+  // here: the prefactor used sqr(fpi) where it needs pow(fpi,3).
+  //
+  // The dimensional argument is internal to this codebase and does not
+  // depend on resolving the note's convention.  Every VA_0_XXX 3-meson
+  // current assembles m_norm*(F1*v1 + F2*v2 + F3*q + FS*v4) with
+  // v4 = cross(p1,p2,p3), so every FS_* feeding that same slot must
+  // share dimensions.  FS_0_PiPlusPiZeroPiZero uses
+  // Vus/(2 sqrt2 pi^2 fpi^3) (FM95 Eq.(25)); this one used fpi^2, two
+  // powers, and was therefore 1/fpi = 10.8x too small in amplitude.
+  //
+  // Effect: Gamma(tau- -> pi- pi0 eta nu) 2.917e-17 -> 3.415e-15 GeV,
+  // i.e. 0.0095x -> 1.12x the Belle measurement
+  // B = (1.35 +- 0.03 +- 0.07)e-3 [arXiv:0811.0088, Inami et al].
+  // N_etapipi stays a genuine O(1) mixing coefficient, default 1, as
+  // it should be - it was previously absorbing a factor of 10 that was
+  // never a mixing effect.
   double Nmix = (*params.p_model)(isPrime ? "N_etaprimepipi" : "N_etapipi", 1.);
   m_norm = Complex((*params.p_model)("Vud",Tools::Vud) * Nmix /
-		    (4.*sqr(M_PI)*sqr(fpi)), 0.);
+		    (4.*sqr(M_PI)*pow(fpi,3)), 0.);
 
   Complex gammaRho = ReadComplexParam(params.p_model,
 				      "gammaMag_pipi3",-0.145,"gammaPhase_pipi3");

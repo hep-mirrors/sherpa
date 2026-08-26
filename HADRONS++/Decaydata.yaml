@@ -1228,7 +1228,7 @@ HADRON_DECAYS:
     #
     # Available FORM_FACTOR options: none - no dedicated current exists.
     ######################################################
-        IntResults: [2.9168e-17, 2.5888e-20, 1.5536e-15]
+        IntResults: [3.41626e-15, 3.04616e-18, 1.74292e-13]
       221,221,-211,16:
         BR: [0.0, 0.0] # [0.0001, 0.0001]
         ME:
