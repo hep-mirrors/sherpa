@@ -74,7 +74,7 @@ bool CF_HV::SetCoupling(MODEL::Model_Base *md,
 
 double CF_HV::Coupling(const double &scale,const int pol)
 {
-  if (pol!=0) return 0.0;
+  if (pol==1) return 0.0;
   double scl(CplFac(scale)*scale);
   return m_last = (*p_cpl)(scl)*m_q;
 }

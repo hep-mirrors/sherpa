@@ -235,10 +235,10 @@ double LF_FFV_FF::operator()
   double mui2  = mi2/Q2;
   double muk2  = sqr(p_ms->Mass(m_flspec))/Q2;
   //the massless case
-  double massless = ( 2./(1.-z+z*y) - (1.+z) );
+  double massless = 1.-z, soft = 2./(1.-z+z*y) - 2.;
   if (muij2==0. && mui2==0. && muk2==0.) {
     double longpol = 0.5 * ( 1. - z );
-    double value = 2.0 * p_cf->Coupling(scale,0,sub) * massless + p_cf->Coupling(scale,1,sub) * longpol;
+    double value = 2.0 * (p_cf->Coupling(scale,0,sub) * massless + p_cf->Coupling(scale,2,sub) * soft) + p_cf->Coupling(scale,1,sub) * longpol;
     return value * JFF(y,0.0,0.0,0.0,0.0);
   }
   else {
@@ -249,10 +249,11 @@ double LF_FFV_FF::operator()
     vtijk=sqrt(vtijk)/(1.-muij2-muk2);
     vijk=sqrt(vijk)/((1.-mui2-muk2)*(1.-y));
     double pipj  = Q2*(1.0-mui2-muk2)*y/2.0;
-    double massive = ( 2./(1.-z+z*y) - vtijk/vijk * (1.+z + mi2/pipj) );
+    double massive = vtijk/vijk * (1.-z), soft = ( 2./(1.-z+z*y) - vtijk/vijk * (2. + mi2/pipj) );
     massive *= 1./((1.-mui2-muk2)+1./y*(mui2-muij2));
+    soft *= 1./((1.-mui2-muk2)+1./y*(mui2-muij2));
     double longpol = 0.5 * ( 1. - z );
-    double value = 2.0 * p_cf->Coupling(scale,0,sub) * massive + p_cf->Coupling(scale,1,sub) * longpol;
+    double value = 2.0 * (p_cf->Coupling(scale,0,sub) * massive + p_cf->Coupling(scale,2,sub) * soft) + p_cf->Coupling(scale,1,sub) * longpol;
     return value * JFF(y,mui2,0.0,muk2,muij2);
   } 
 }
@@ -280,18 +281,18 @@ double LF_FFV_FI::operator()
 {  
   double mi2 = sqr(p_ms->Mass(m_flavs[1]));
   //the massless case
-  double massless = ( 2.*z/(1.-z+y) + 1.-z );
+  double massless = 1.-z, soft = 2.*z/(1.-z+y);
   if (mi2==0.) {
     double longpol = 0.5 * ( 1. - z );
-    double value = 2.0 * p_cf->Coupling(scale,0,sub) * massless + p_cf->Coupling(scale,1,sub) * longpol;
+    double value = 2.0 * (p_cf->Coupling(scale,0,sub) * massless + p_cf->Coupling(scale,2,sub) * soft) + p_cf->Coupling(scale,1,sub) * longpol;
     return value * JFI(y,eta,scale,sub);
   }
   else {
     //the massive case
     double yt = y/(1.0-y), pipj = yt*(Q2+mi2)/2.0;
-    double massive = massless - mi2/pipj;
+    soft = soft - mi2/pipj;
     double longpol = 0.5 * ( 1. - z );
-    double value = 2.0 * p_cf->Coupling(scale,0,sub) * massive + p_cf->Coupling(scale,1,sub) * longpol;
+    double value = 2.0 * (p_cf->Coupling(scale,0,sub) * massless + p_cf->Coupling(scale,2,sub) * soft) + p_cf->Coupling(scale,1,sub) * longpol;
     return value * JFI(y,eta,scale,sub);
   }
 }
@@ -318,7 +319,7 @@ double LF_FFV_IF::operator()
   (const double z,const double y,const double eta,
    const double scale,const double Q2,Cluster_Amplitude *const sub)
 {
-  double value = 2.0 * p_cf->Coupling(scale,0,sub) * ( 2.*z/(1.-z+y) + (1.-z) )
+  double value = 2.0 * ( p_cf->Coupling(scale,2,sub) * 2.*z/(1.-z+y) + p_cf->Coupling(scale,0,sub) * (1.-z) )
     + p_cf->Coupling(scale,1,sub) * 0.5 * ( 1. - z );
   return value * JIF(z,y,eta,scale,sub);
 }
@@ -345,7 +346,7 @@ double LF_FFV_II::operator()
   (const double z,const double y,const double eta,
    const double scale,const double Q2,Cluster_Amplitude *const sub)
 {
-  double value = 2.0 * p_cf->Coupling(scale,0,sub) * ( 2.*(z+y)/(1.-z) + (1.-z-y) )
+  double value = 2.0 * ( p_cf->Coupling(scale,2,sub) * 2.*(z+y)/(1.-z) + p_cf->Coupling(scale,0,sub) * (1.-z-y) )
     + p_cf->Coupling(scale,1,sub) * 0.5 * ( 1. - z );
   return value * JII(z,y,eta,scale,sub);
 }
@@ -377,10 +378,10 @@ double LF_FVF_FF::operator()
   double muj2  = mj2/Q2;
   double muk2  = sqr(p_ms->Mass(m_flspec))/Q2;
   //the massless case
-  double massless = ( 2./(z+y-z*y) - 2. + z );
+  double massless = z, soft = 2./(z+y-z*y) - 2.;
   if (muij2==0. && muj2==0. && muk2==0.) {
     double longpol = 0.5 * z;
-    double value = 2.0 * p_cf->Coupling(scale,0,sub) * massless + p_cf->Coupling(scale,1,sub) * longpol;
+    double value = 2.0 * (p_cf->Coupling(scale,0,sub) * massless + p_cf->Coupling(scale,2,sub) * soft) + p_cf->Coupling(scale,1,sub) * longpol;
     return value * JFF(y,0.0,0.0,0.0,0.0);
   }
   else {
@@ -390,10 +391,11 @@ double LF_FVF_FF::operator()
     vtijk=sqrt(vtijk)/(1.-muij2-muk2);
     vijk=sqrt(vijk)/((1.-muj2-muk2)*(1.-y));
     double pipj  = Q2*(1.0-muj2-muk2)*y/2.0;
-    double massive = ( 2./(z+y-z*y) - vtijk/vijk * (2.-z + mj2/pipj) );
+    double massive = vtijk/vijk * z, soft = ( 2./(z+y-z*y) - vtijk/vijk * (2. + mj2/pipj) );
     massive *= 1./((1.-muj2-muk2)+1./y*(muj2-muij2));
+    soft *= 1./((1.-muj2-muk2)+1./y*(muj2-muij2));
     double longpol = 0.5 * z;
-    double value = 2.0 * p_cf->Coupling(scale,0,sub) * massive + p_cf->Coupling(scale,1,sub) * longpol;
+    double value = 2.0 * (p_cf->Coupling(scale,0,sub) * massive + p_cf->Coupling(scale,2,sub) * soft) + p_cf->Coupling(scale,1,sub) * longpol;
     return value * JFF(y,0.0,muj2,muk2,muij2);
   }
 }
@@ -419,18 +421,18 @@ double LF_FVF_FI::operator() (const double z,const double y,
 			      const double eta, const double scale,const double Q2,Cluster_Amplitude *const sub) {
   double mj2 = sqr(p_ms->Mass(m_flavs[2]));
   //the massless case
-  double massless = (2.*(1.-z)/(z+y) + z);
+  double massless = z, soft = 2.*(1.-z)/(z+y);
   if (mj2==0.) {
     double longpol = 0.5 * z;
-    double value = 2.0 * p_cf->Coupling(scale,0,sub) * massless + p_cf->Coupling(scale,1,sub) * longpol;
+    double value = 2.0 * (p_cf->Coupling(scale,0,sub) * massless + p_cf->Coupling(scale,2,sub) * soft) + p_cf->Coupling(scale,1,sub) * longpol;
     return value * JFI(y,eta,scale,sub);
   }
   else {
     //the massive case
     double yt = y/(1.0-y), pipj = yt*(Q2+mj2)/2.0;
-    double massive = massless - mj2/pipj;
+    soft = soft - mj2/pipj;
     double longpol = 0.5 * z;
-    double value = 2.0 * p_cf->Coupling(scale,0,sub) * massive + p_cf->Coupling(scale,1,sub) * longpol;
+    double value = 2.0 * (p_cf->Coupling(scale,0,sub) * massless + p_cf->Coupling(scale,2,sub) * soft) + p_cf->Coupling(scale,1,sub) * longpol;
     return value * JFI(y,eta,scale,sub);
   }
 }
