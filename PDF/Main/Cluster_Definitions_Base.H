@@ -32,7 +32,7 @@ namespace PDF {
 
   struct Cluster_Param {
     Cluster_Definitions_Base *p_ca;
-    double m_op, m_kt2, m_mu2;
+    double m_op, m_kt2, m_mu2, m_asr;
     int m_cpl, m_kin, m_mode, m_stat;
     ATOOLS::Vec4D m_pijt, m_pkt;
     ATOOLS::Poincare_Sequence m_lam;
@@ -43,8 +43,9 @@ namespace PDF {
 		  const ATOOLS::Vec4D &pijt=ATOOLS::Vec4D(),
 		  const ATOOLS::Vec4D &pkt=ATOOLS::Vec4D(),
 		  const ATOOLS::Poincare_Sequence &lam=
-		  ATOOLS::Poincare_Sequence()):
-      p_ca(ca), m_op(op), m_kt2(kt2), m_mu2(mu2),
+		  ATOOLS::Poincare_Sequence(),
+		  const double &asr=0.):
+      p_ca(ca), m_op(op), m_kt2(kt2), m_mu2(mu2), m_asr(asr),
       m_cpl(cpl), m_kin(kin), m_mode(mode), m_stat(0),
       m_pijt(pijt), m_pkt(pkt), m_lam(lam) {}
   };// end of struct Cluster_Param

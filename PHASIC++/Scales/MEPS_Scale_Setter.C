@@ -282,6 +282,7 @@ void MEPS_Scale_Setter::Combine
   if (ci.second.m_cpl==2) ampl.SetOrderQCD(ampl.OrderQCD()-2);
   ampl.SetOrderEW(ampl.OrderEW()-(ci.second.m_cpl?1:0));
   ampl.SetKin(ci.second.m_kin);
+  ampl.SetAsR(ci.second.m_asr);
 }
 
 double MEPS_Scale_Setter::Calculate

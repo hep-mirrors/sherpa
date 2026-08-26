@@ -10,7 +10,7 @@ namespace CSSHOWER {
   class Shower;
 
   struct CS_Parameters {
-    double m_kt2, m_z, m_y, m_phi, m_x, m_wk, m_q2, m_mu2;
+    double m_kt2, m_z, m_y, m_phi, m_x, m_wk, m_q2, m_mu2, m_asr;
     int m_mode, m_cpl, m_kin, m_col, m_kmode;
     Splitting_Function_Base *p_sf;
     ATOOLS::Vec4D m_pk, m_pijt, m_pkt;
@@ -20,7 +20,7 @@ namespace CSSHOWER {
 		  const double &x,const double &q2,
 		  const int mode,const int kin,const int kmode):
       m_kt2(kt2), m_z(z), m_y(y), m_phi(phi), m_x(x), m_wk(1.0),
-      m_q2(q2), m_mu2(kt2), m_mode(mode), m_cpl(-1),
+      m_q2(q2), m_mu2(kt2), m_asr(0.0), m_mode(mode), m_cpl(-1),
       m_kin(kin), m_col(0), m_kmode(kmode), p_sf(NULL) {}
   };// end of struct CS_Parameters
 
