@@ -99,7 +99,7 @@ double CF_QCD::Coupling(const double &scale,const int pol)
 #ifdef DEBUG__AlphaS
   DEBUG_FUNC("pol="<<pol);
 #endif
-  if (pol!=0) return 0.0;
+  if (pol==1) return 0.0;
   QCD_Coupling_Info cplinfo = CurrentCouplingInfo();
   if (scale<0.0) return (m_last = (*as)(sqr(rpa->gen.Ecms())))*m_q;
   double t(CplFac(scale)*scale), scl(CplFac(scale)*scale*cplinfo.RSF());
@@ -108,7 +108,7 @@ double CF_QCD::Coupling(const double &scale,const int pol)
   msg_Debugging()<<"t="<<t<<", \\mu_R^2="<<scl<<std::endl;
   msg_Debugging()<<"as(t)="<<cplinfo.Coupling()->BoundedAlphaS(t)<<std::endl;
 #endif
-  if (!IsEqual(scl,t)) {
+  if ((pol&2) && !IsEqual(scl,t)) {
 #ifdef DEBUG__AlphaS
     msg_Debugging()<<"as(\\mu_R^2)="<<cpl<<std::endl;
 #endif

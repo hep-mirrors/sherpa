@@ -174,11 +174,11 @@ double CF_QCD::CplMax(MODEL::Running_AlphaS * as, double rsf) const
 double CF_QCD::Coupling(const double &scale,const int pol,
 			Cluster_Amplitude *const sub)
 {
-  if (pol!=0) return 0.0;
+  if (pol==1) return 0.0;
   QCD_Coupling_Info cplinfo = CurrentCouplingInfo();
   double t(CplFac(scale)*scale), scl(sub?sub->MuR2():t*cplinfo.RSF());
   double cpl=cplinfo.Coupling()->BoundedAlphaS(scl);
-  if (sub==NULL && !IsEqual(scl,t)) {
+  if (sub==NULL && (pol&2) && !IsEqual(scl,t)) {
 #ifdef DEBUG__AlphaS
     msg_Debugging()<<"as(\\mu_R^2)="<<cpl<<std::endl;
 #endif

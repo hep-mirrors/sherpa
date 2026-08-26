@@ -235,11 +235,11 @@ double LF_FFV_FF::operator()
   double mk2   = sqr(p_ms->Mass(m_flspec));
   double mui2  = mi2/Q2, muk2 = mk2/Q2;
   //the massless case
-  double massless = 2./(1.-z+z*y) - 2.;
+  double massless = 0, soft = 2./(1.-z+z*y) - 2.;
   if (m_comp&2) massless += 1.-z;
   if (muij2==0. && mui2==0. && muk2==0.) {
     double longpol = 0.5 * ( 1. - z );
-    double value = 2.0 * p_cf->Coupling(scale,0) * massless + p_cf->Coupling(scale,1) * longpol;
+    double value = 2.0 * (p_cf->Coupling(scale,0) * massless + p_cf->Coupling(scale,2) * soft) + p_cf->Coupling(scale,1) * longpol;
     return value * JFF(y,0.0,0.0,0.0,0.0);
   }
   else {
@@ -252,12 +252,13 @@ double LF_FFV_FF::operator()
     vkji  = sqrt(vkji);
     double pipj  = Q2*(1.0-mui2-muk2)*y/2.0;
     double pkpj  = Q2*(1.0-mui2-muk2)*(1.-y)*(1.-z)/2.0;
-    double massive = 2./(1.-z+z*y) - vtijk/vijk * (2. + mi2/pipj*pkpj/(pipj+pkpj))
+    double massive = 0, soft = 2./(1.-z+z*y) - vtijk/vijk * (2. + mi2/pipj*pkpj/(pipj+pkpj))
       - vtijk/vkji * mk2/pkpj*pipj/(pipj+pkpj);
     if (m_comp&2) massive += vtijk/vijk * (1.-z);
     massive *= 1./((1.-mui2-muk2)+1./y*(mui2-muij2));
+    soft *= 1./((1.-mui2-muk2)+1./y*(mui2-muij2));
     double longpol = 0.5 * ( 1. - z );
-    double value = 2.0 * p_cf->Coupling(scale,0) * massive + p_cf->Coupling(scale,1) * longpol;
+    double value = 2.0 * (p_cf->Coupling(scale,0) * massive + p_cf->Coupling(scale,2) * soft) + p_cf->Coupling(scale,1) * longpol;
     return value * JFF(y,mui2,0.0,muk2,muij2);
   } 
 }
@@ -285,19 +286,19 @@ double LF_FFV_FI::operator()
 {  
   double mi2 = sqr(p_ms->Mass(m_flavs[1]));
   //the massless case
-  double massless = 2.*z/(1.-z+y);
+  double massless = 0, soft = 2.*z/(1.-z+y);
   if (m_comp&2) massless += 1.-z;
   if (mi2==0.) {
     double longpol = 0.5 * ( 1. - z );
-    double value = 2.0 * p_cf->Coupling(scale,0) * massless + p_cf->Coupling(scale,1) * longpol;
+    double value = 2.0 * (p_cf->Coupling(scale,0) * massless + p_cf->Coupling(scale,2) * soft) + p_cf->Coupling(scale,1) * longpol;
     return value * JFI(y,eta,scale);
   }
   else {
     //the massive case
     double yt = y/(1.0-y), pipj = yt*(Q2+mi2)/2.0;
-    double massive = massless - mi2/pipj;
+    soft = soft - mi2/pipj;
     double longpol = 0.5 * ( 1. - z );
-    double value = 2.0 * p_cf->Coupling(scale,0) * massive + p_cf->Coupling(scale,1) * longpol;
+    double value = 2.0 * (p_cf->Coupling(scale,0) * massless + p_cf->Coupling(scale,2) * soft) + p_cf->Coupling(scale,1) * longpol;
     return value * JFI(y,eta,scale);
   }
 }
@@ -324,7 +325,7 @@ double LF_FFV_IF::operator()
   (const double z,const double y,const double eta,
    const double scale,const double Q2)
 {
-  double value = 2.0 * p_cf->Coupling(scale,0) * ( 2.*z/(1.-z+y) + ( (m_comp&2) ? 1.-z : 0. ) )
+  double value = 2.0 * ( p_cf->Coupling(scale,2) * 2.*z/(1.-z+y) + p_cf->Coupling(scale,0) * ( (m_comp&2) ? 1.-z : 0. ) )
     + p_cf->Coupling(scale,1) * 0.5 * ( 1. - z );
   return value * JIF(z,y,eta,scale);
 }
@@ -351,7 +352,7 @@ double LF_FFV_II::operator()
   (const double z,const double y,const double eta,
    const double scale,const double Q2)
 {
-  double value = 2.0 * p_cf->Coupling(scale,0) * ( 2.*(z+y)/(1.-z) + ( (m_comp&2) ? 1.-z-y : 0. ) )
+  double value = 2.0 * ( p_cf->Coupling(scale,2) * 2.*(z+y)/(1.-z) + p_cf->Coupling(scale,0) * ( (m_comp&2) ? 1.-z-y : 0. ) )
     + p_cf->Coupling(scale,1) * 0.5 * ( 1. - z );
   return value * JII(z,y,eta,scale);
 }
@@ -383,11 +384,11 @@ double LF_FVF_FF::operator()
   double mk2   = sqr(p_ms->Mass(m_flspec));
   double muj2  = mj2/Q2, muk2 = mk2/Q2;
   //the massless case
-  double massless = 2./(z+y-z*y) - 2.;
+  double massless = 0, soft = 2./(z+y-z*y) - 2.;
   if (m_comp&2) massless += z;
   if (muij2==0. && muj2==0. && muk2==0.) {
     double longpol = 0.5 * z;
-    double value = 2.0 * p_cf->Coupling(scale,0) * massless + p_cf->Coupling(scale,1) * longpol;
+    double value = 2.0 * (p_cf->Coupling(scale,0) * massless + p_cf->Coupling(scale,2) * soft) + p_cf->Coupling(scale,1) * longpol;
     return value * JFF(y,0.0,0.0,0.0,0.0);
   }
   else {
@@ -400,12 +401,13 @@ double LF_FVF_FF::operator()
     vkij  = sqrt(vkij);
     double pipj  = Q2*(1.0-muj2-muk2)*y/2.0;
     double pkpi  = Q2*(1.0-muj2-muk2)*(1.-y)*z/2.0;
-    double massive = 2./(z+y-z*y) - vtijk/vijk * (2. + mj2/pipj*pkpi/(pipj+pkpi))
+    double massive = 0, soft = 2./(z+y-z*y) - vtijk/vijk * (2. + mj2/pipj*pkpi/(pipj+pkpi))
       - vtijk/vkij * mk2/pkpi*pipj/(pipj+pkpi);
     if (m_comp&2) massive += vtijk/vijk * z;
     massive *= 1./((1.-muj2-muk2)+1./y*(muj2-muij2));
+    soft *= 1./((1.-muj2-muk2)+1./y*(muj2-muij2));
     double longpol = 0.5 * z;
-    double value = 2.0 * p_cf->Coupling(scale,0) * massive + p_cf->Coupling(scale,1) * longpol;
+    double value = 2.0 * (p_cf->Coupling(scale,0) * massive + p_cf->Coupling(scale,2) * soft) + p_cf->Coupling(scale,1) * longpol;
     return value * JFF(y,0.0,muj2,muk2,muij2);
   }
 }
@@ -431,19 +433,19 @@ double LF_FVF_FI::operator() (const double z,const double y,
 			      const double eta, const double scale,const double Q2) {
   double mj2 = sqr(p_ms->Mass(m_flavs[2]));
   //the massless case
-  double massless = 2.*(1.-z)/(z+y);
+  double massless = 0, soft = 2.*(1.-z)/(z+y);
   if (m_comp&2) massless += z;
   if (mj2==0.) {
     double longpol = 0.5 * z;
-    double value = 2.0 * p_cf->Coupling(scale,0) * massless + p_cf->Coupling(scale,1) * longpol;
+    double value = 2.0 * (p_cf->Coupling(scale,0) * massless + p_cf->Coupling(scale,2) * soft) + p_cf->Coupling(scale,1) * longpol;
     return value * JFI(y,eta,scale);
   }
   else {
     //the massive case
     double yt = y/(1.0-y), pipj = yt*(Q2+mj2)/2.0;
-    double massive = massless - mj2/pipj;
+    soft = soft - mj2/pipj;
     double longpol = 0.5 * z;
-    double value = 2.0 * p_cf->Coupling(scale,0) * massive + p_cf->Coupling(scale,1) * longpol;
+    double value = 2.0 * (p_cf->Coupling(scale,0) * massless + p_cf->Coupling(scale,2) * soft) + p_cf->Coupling(scale,1) * longpol;
     return value * JFI(y,eta,scale);
   }
 }

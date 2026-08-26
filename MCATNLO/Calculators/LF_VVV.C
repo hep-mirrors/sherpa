@@ -164,9 +164,9 @@ double LF_VVV1_FF::operator()
 {
   double muk2  = sqr(p_ms->Mass(m_flspec))/Q2;
   //the massless case
-  double massless = 2. * ( 1./(1.-z+z*y) -1. + z*(1.-z)/2.0 );
+  double massless = z*(1.-z), soft = 2. * ( 1./(1.-z+z*y) -1. );
   if (muk2==0.) {
-    double value = 2.0 * p_cf->Coupling(scale,0,sub) * massless;
+    double value = 2.0 * (p_cf->Coupling(scale,0,sub) * massless + p_cf->Coupling(scale,2,sub) * soft);
     return value * JFF(y,0.0,0.0,0.0,0.0);
   }
   else {
@@ -176,9 +176,10 @@ double LF_VVV1_FF::operator()
     vijk=sqrt(vijk)/((1.-muk2)*(1.-y));
     double zm = 0.5*(1.- vijk);  
     double zp = 0.5*(1.+ vijk);
-    double massive = 2. * ( 1./(1.-z+z*y) + (z*(1.-z)/2. - (1.0-s_kappa)*zp*zm/2. - 1.)/vijk );
+    double massive = z*(1.-z), soft = 2. * ( 1./(1.-z+z*y) + ( - (1.0-s_kappa)*zp*zm/2. - 1.)/vijk );
     massive *= 1./(1.-muk2);
-    double value = 2.0 * p_cf->Coupling(scale,0,sub) * massive;
+    soft *= 1./(1.-muk2);
+    double value = 2.0 * (p_cf->Coupling(scale,0,sub) * massive + p_cf->Coupling(scale,2,sub) * soft);
     return value * JFF(y,0.0,0.0,muk2,0.0);
   }
 }
@@ -221,9 +222,9 @@ double LF_VVV2_FF::operator()
 {
   double muk2  = sqr(p_ms->Mass(m_flspec))/Q2;
   //the massless case
-  double massless = 2. * ( 1./(z+y-z*y) -1. + z*(1.-z)/2.0 );
+  double massless = z*(1.-z), soft = 2. * ( 1./(z+y-z*y) -1. );
   if (muk2==0.) {
-    double value = 2.0 * p_cf->Coupling(scale,0,sub) * massless;
+    double value = 2.0 * (p_cf->Coupling(scale,0,sub) * massless + p_cf->Coupling(scale,2,sub) * soft);
     return value * JFF(y,0.0,0.0,0.0,0.0);
   }
   else {
@@ -233,9 +234,10 @@ double LF_VVV2_FF::operator()
     vijk=sqrt(vijk)/((1.-muk2)*(1.-y));
     double zm = 0.5*(1.- vijk);  
     double zp = 0.5*(1.+ vijk);
-    double massive = 2. * ( 1./(z+y-z*y) + (z*(1.-z)/2. - (1.0-s_kappa)*zp*zm/2. - 1.)/vijk );
+    double massive = z*(1.-z), soft = 2. * ( 1./(z+y-z*y) + ( - (1.0-s_kappa)*zp*zm/2. - 1.)/vijk );
     massive *= 1./(1.-muk2);
-    double value = 2.0 * p_cf->Coupling(scale,0,sub) * massive;
+    soft *= 1./(1.-muk2);
+    double value = 2.0 * (p_cf->Coupling(scale,0,sub) * massive + p_cf->Coupling(scale,2,sub) * soft);
     return value * JFF(y,0.0,0.0,muk2,0.0);
   }
 }
@@ -276,7 +278,7 @@ double LF_VVV1_FI::operator()
   (const double z,const double y,const double eta,
    const double scale,const double Q2,Cluster_Amplitude *const sub)
 {
-  double value = 4.0*p_cf->Coupling(scale,0,sub) * ( z/(1.-z+y) + z*(1.-z)/2.0 );
+  double value = 4.0*( p_cf->Coupling(scale,2,sub) * z/(1.-z+y) + p_cf->Coupling(scale,0,sub) * z*(1.-z)/2.0 );
   return value * JFI(y,eta,scale,sub);
 }
 
@@ -308,7 +310,7 @@ double LF_VVV2_FI::operator()
   (const double z,const double y,const double eta,
    const double scale,const double Q2,Cluster_Amplitude *const sub)
 {
-  double value = 4.0*p_cf->Coupling(scale,0,sub) * ( (1.-z)/(z+y) + z*(1.-z)/2.0 );
+  double value = 4.0*( p_cf->Coupling(scale,2,sub) * (1.-z)/(z+y) + p_cf->Coupling(scale,0,sub) * z*(1.-z)/2.0 );
   return value * JFI(y,eta,scale,sub);
 }
 
@@ -341,16 +343,16 @@ double LF_VVV1_IF::operator()
    const double scale,const double Q2,Cluster_Amplitude *const sub)
 {
   double mk2 = p_ms->Mass2(m_flspec), muk2 = mk2/(Q2+mk2);
-  double massless = 2. * ( z/(1.-z+y) + (1.-z)/z/2.0);
+  double massless = (1.-z)/z, soft = 2. * ( z/(1.-z+y) );
   if (muk2==0.) {
     //the massless case
-    double value = 2.0 * p_cf->Coupling(scale,0,sub) * massless;
+    double value = 2.0 * (p_cf->Coupling(scale,0,sub) * massless + p_cf->Coupling(scale,2,sub) * soft);
     return value * JIF(z,y,eta,scale,sub);
   }
   else {
     //the massive case
-    double massive = massless - muk2*y/(1.-y);
-    double value = 2.0 * p_cf->Coupling(scale,0,sub) * massive;
+    soft = soft - muk2*y/(1.-y);
+    double value = 2.0 * (p_cf->Coupling(scale,0,sub) * massless + p_cf->Coupling(scale,2,sub) * soft);
     return value * JIF(z,y,eta,scale,sub);
   }
 }
@@ -438,7 +440,7 @@ double LF_VVV1_II::operator()
   (const double z,const double y,const double eta,
    const double scale,const double Q2,Cluster_Amplitude *const sub)
 {
-  double value = 4.0 * p_cf->Coupling(scale,0,sub) * ( (z+y)/(1.-z) + (1.-z-y)/(z+y)/2.0);
+  double value = 4.0 * ( p_cf->Coupling(scale,2,sub) * (z+y)/(1.-z) + p_cf->Coupling(scale,0,sub) * (1.-z-y)/(z+y)/2.0);
   return value * JII(z,y,eta,scale,sub);
 }
 
