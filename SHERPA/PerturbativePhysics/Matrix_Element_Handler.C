@@ -414,6 +414,10 @@ std::vector<Process_Base*> Matrix_Element_Handler::InitializeSingleProcess
       return procs;
     }
     else if (m_nlomode==nlo_mode::yfs){
+      if (p_yfs->Mode()==YFS::yfsmode::off)
+        THROW(fatal_error, "NLO_Mode is set to YFS, but YFS: MODE is Off. "
+              "Set YFS: MODE to a value other than Off (e.g. ISR, FSR or "
+              "ISRFSR) to enable YFS soft-photon resummation.");
       m_hasnlo=4;
       if (pmap==NULL) {
          m_pmaps.push_back(new NLOTypeStringProcessMap_Map());
