@@ -20,7 +20,7 @@ private:
 
   Sherpa* p_sherpa;
   int m_jetmode;
-  double m_rt, m_lnrt, m_dphi, m_lndphi, m_gating[2];
+  double m_rt, m_lnrt, m_dphi, m_lndphi, m_gating[2], m_wmax;
   std::vector<double> m_lss;
   std::vector<ATOOLS::Algebra_Interpreter*> m_calcs;
   std::vector<std::string> m_names, m_vtags;
@@ -33,7 +33,8 @@ public:
   {
     DEBUG_FUNC("");
     Settings& s = Settings::GetMainSettings();
-    m_jetmode=s["DY_JET_MODE"].SetDefault(0).Get<int>();
+    m_jetmode=s["DY_JET_MODE"].SetDefault(3).Get<int>();
+    m_wmax=s["DY_MAX_WEIGHT"].SetDefault(1.e3).Get<double>();
     std::string fname=s["DY_WEIGHT_FILE"].
       SetDefault("lambda_export_variations.json").Get<std::string>();
     msg_Debugging()<<"DY_Weight user hook reading from '"
@@ -156,6 +157,7 @@ public:
 	break;
       }
     msg_Debugging()<<"nominal weight: "<<wnom<<"\n";
+    bool firsterr(true);
     for (size_t i(0);i<m_calcs.size();++i) {
       double w=m_calcs[i]->Calculate()->Get<double>();
       msg_Debugging()<<m_names[i]<<": ln(w) = "<<w<<", shift = "<<m_lss[i]<<"\n";
@@ -169,13 +171,33 @@ public:
 	    break;
 	  }
       }
-      if (m_jetmode==1) {
+      if (m_jetmode&2) {
 	double beta(Beta((l1+l2).PPerp()));
 	w=beta*exp(w-m_lss[i])+(1.-beta)*svweight;
 	msg_Debugging()<<m_names[i]<<": w = "<<w<<" (\\beta = "<<beta
 		       <<") <-> "<<svweight<<" ("<<svname<<")\n";
+	if (dabs(w)<m_wmax) wmap["MaxEnt2_QCD"][m_names[i]]=w;
+	else {
+	  if (firsterr)
+	    msg_Error()<<METHOD<<"(): Event "
+		       <<rpa->gen.NumberOfGeneratedEvents()
+		       <<", Variation '"<<m_names[i]<<"' w = "
+		       <<w<<" > "<<m_wmax<<". Skip."<<std::endl;
+	  wmap["MaxEnt2_QCD"][m_names[i]]=1.;
+	  firsterr=false;
+	}
+	if (dabs(w*wew)<m_wmax) wmap["MaxEnt2_EW"][m_names[i]]=w*wew;
+	else {
+	  if (firsterr)
+	    msg_Error()<<METHOD<<"(): Event "
+		       <<rpa->gen.NumberOfGeneratedEvents()
+		       <<", Variation '"<<m_names[i]<<"' w = "<<w
+		       <<" * "<<wew<<" > "<<m_wmax<<". Skip."<<std::endl;
+	  wmap["MaxEnt2_EW"][m_names[i]]=1.;
+	  firsterr=false;
+	}
       }
-      else {
+      if (m_jetmode&1) {
 	Process_Base *proc=p_sherpa->GetInitHandler()->
 	  GetMatrixElementHandler()->Process()->Parent();
 	size_t nout=proc->NOut();
@@ -187,9 +209,27 @@ public:
 	}
 	msg_Debugging()<<m_names[i]<<": w = "<<w<<" (n_{jet} = "<<nout-2
 		       <<") <-> "<<svweight<<" ("<<svname<<")\n";
+	if (dabs(w)<m_wmax) wmap["MaxEnt_QCD"][m_names[i]]=w;
+	else {
+	  if (firsterr)
+	    msg_Error()<<METHOD<<"(): Event "
+		       <<rpa->gen.NumberOfGeneratedEvents()
+		       <<", Variation '"<<m_names[i]<<"' w = "
+		       <<w<<" > "<<m_wmax<<". Skip."<<std::endl;
+	  wmap["MaxEnt_QCD"][m_names[i]]=1.;
+	  firsterr=false;
+	}
+	if (dabs(w*wew)<m_wmax) wmap["MaxEnt_EW"][m_names[i]]=w*wew;
+	else {
+	  if (firsterr)
+	    msg_Error()<<METHOD<<"(): Event "
+		       <<rpa->gen.NumberOfGeneratedEvents()
+		       <<", Variation '"<<m_names[i]<<"' w = "<<w
+		       <<" * "<<wew<<" > "<<m_wmax<<". Skip."<<std::endl;
+	  wmap["MaxEnt_EW"][m_names[i]]=1.;
+	  firsterr=false;
+	}
       }
-      wmap["MaxEnt_QCD"][m_names[i]]=w;
-      wmap["MaxEnt_EW"][m_names[i]]=w*wew;
     }
     return Return_Value::Nothing;
   }
