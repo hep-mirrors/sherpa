@@ -197,7 +197,7 @@ void Run_Parameter::RegisterDefaults()
   s["BATCH_MODE"].SetDefault(logfile==""?1:3);
 
   s["CITATION_DEPTH"].SetDefault(1);
-  s["MPI_SEED_MODE"].SetDefault(0);
+  s["MPI_SEED_MODE"].SetDefault(1);
   s["MPI_EVENT_MODE"].SetDefault(0);
   s.DeclareVectorSettingsWithEmptyDefault({"EMULATE_MPI"});
 
