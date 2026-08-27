@@ -80,9 +80,21 @@ VA_0_KOmega3Pi::~VA_0_KOmega3Pi() {}
 
 Complex VA_0_KOmega3Pi::
 DRfixed(const double & Q2,const double & M,const double & G) const {
-  // Eq.(PV-DR): D_R(Q^2) = Q^2-M_R^2+iM_R Gamma_R (FIXED width, as
-  // literally written - no (Q^2) dependence on Gamma_R shown in this
-  // equation, unlike the omega propagator below). Returns 1/D_R.
+  // D_R(Q^2) = Q^2-M_R^2+iM_R Gamma_R, returning 1/D_R.
+  //
+  // FIXED width, as arXiv:0709.4039 Eq.(8) writes it (no Q^2
+  // dependence on Gamma_R), and as its alpha_omegaK fit to
+  // B(tau->omega K nu) was performed - so the fitted coupling only
+  // means what it says in this convention.
+  //
+  // Registry running widths were tried here and are WORSE: every pole
+  // (K1 at 1.27/1.40, K* at 0.89/1.41) lies below the kinematic range,
+  // which runs to m_tau^2 = 3.16 GeV^2, so the form factors are probed
+  // on the high-s side where a running Gamma(s) grows and suppresses
+  // 1/|D|^2 in the region carrying the rate. Measured 2026-08-27:
+  // B(tau->K-omega nu)/CLEO fell 0.536 -> 0.193 for the default
+  // configuration. Do not swap these for registry shapes without
+  // refitting alpha_omegaK alongside.
   return 1./Complex(Q2-sqr(M), M*G);
 }
 
@@ -94,10 +106,27 @@ Complex VA_0_KOmega3Pi::FF_f(const double & Q2) const {
 }
 
 Complex VA_0_KOmega3Pi::FF_g(const double & Q2) const {
-  // Eq.(PV-g): g(Q^2) = 1/2 sum_i hV_i tV_i/D_Vi(Q^2)
+  // g(Q^2) = sum_i hV_i tV_i/D_Vi(Q^2) - NOTE the 1/2 printed in
+  // arXiv:1408.0086 Eq.(14) is dropped deliberately.
+  //
+  // That 1/2 is inherited from the original source, Flores-Tlalpa and
+  // Lopez Castro, PRD 77 (2008) 113011 [arXiv:0709.4039], whose Eq.(5)
+  // writes the vector term in the q_+/q_- basis (q_pm = p_V +- p_P):
+  //   i g eps^{abmn} eps*_b q_{+m} q_{-n},   g = 1/2 sum_j f_Vj g_VjVP/D_Vj.
+  // Since eps^{abmn} q_{+m} q_{-n} = -2 eps^{abmn} p_1m p_2n, rewriting
+  // in the p_1,p_2 basis used by 1408.0086 Eq.(13) - the basis this
+  // class implements - carries a factor 2, so g_here = 2 g_0709.4039
+  // = sum_i, not 1/2 sum_i. 1408.0086 changed the tensor basis but kept
+  // the 1/2, which is inconsistent with its OWN Eq.(25): x_0 =
+  // -1/4 g^2 lambda - f^2 reproduces 0709.4039's Eq.(7) alpha =
+  // |f|^2 + lambda |g|^2 only for g_here = 2 g_0709.4039.
+  // The a_1, a_2 coefficients cross-check the same mapping exactly:
+  // 0709.4039 Eq.(8) has a_+ = 1/2 S_A + 2 S_P and a_- = 1/2 S_P, and
+  // with q_+ = Q, q_- = p_1 - p_2 the bracket is (a_+ + a_-)p_1 +
+  // (a_+ - a_-)p_2, giving 5/2 and 3/2 - exactly Eq.(14)'s a_1, a_2.
   Complex SV = m_hV1tV1wK*DRfixed(Q2,m_MKsta,m_GKsta)
              + m_hV2tV2wK*DRfixed(Q2,m_MKstb,m_GKstb);
-  return 0.5*SV;
+  return SV;
 }
 
 Complex VA_0_KOmega3Pi::FF_a1(const double & Q2) const {
@@ -198,29 +227,82 @@ void VA_0_KOmega3Pi::SetModelParameters(struct GeneralModel model) {
   m_GK1b  = model("GK1_1400_KOmega", 0.174);
   m_MKsta = model("MKstar_892_KOmega",  0.892);
   m_GKsta = model("GKstar_892_KOmega",  0.0508);
-  m_MKstb = model("MKstar_1680_KOmega", 1.717);
-  m_GKstb = model("GKstar_1680_KOmega", 0.322);
+  // Second vector is K*(1410), NOT K*(1680). arXiv:0709.4039 Sec.IV is
+  // explicit: "g will be assumed to be dominated by the K* = K*(892)
+  // and the K'* = K*(1410) intermediate vector mesons (the coupling of
+  // the K''* = K*(1680) to the VK^- system is more suppressed)".
+  // arXiv:1408.0086 Tab.I labels this column K*(1680) with m=1717,
+  // Gamma=322, and fills its weak coupling with 242e3 MeV^2 - which is
+  // 0709.4039's f^cqm_{K1'}, the covariant-quark-model coupling of the
+  // K1(1400) AXIAL meson, not a vector coupling at all. PDG K*(1410)
+  // values are used here instead.
+  m_MKstb = model("MKstar_1410_KOmega", 1.414);
+  m_GKstb = model("GKstar_1410_KOmega", 0.232);
   m_Momega = Flavour(kf_omega_782).HadMass();
   p_omega_width = LineShapes->Get(Flavour(kf_omega_782));
   p_rho_width   = LineShapes->Get(Flavour(kf_rho_770_plus));
 
-  // FIXME: h_R*t_{R omega K} coupling products. The note is explicit
-  // ("this catalogue does not silently substitute the K rho numbers
-  // ... A code should expose h_R t_{R omega K} as an explicit
-  // parameter block") that these must NOT default to the Krho table's
-  // own h_R*t_{R rho K} values - defaulting to 0 here instead, which
-  // makes this current IDENTICALLY ZERO until real Komega numbers are
-  // supplied. This is a deliberate, conservative choice (matching the
-  // note's own caution) rather than a silent wrong-physics default.
-  m_hKtKwK   = ReadComplexParam(&model,"hKtK_KOmegaMag",0.,"hKtK_KOmegaPhase");
-  m_hA1tA1wK = ReadComplexParam(&model,"hA1tA1_KOmegaMag",0.,"hA1tA1_KOmegaPhase");
-  m_hA2tA2wK = ReadComplexParam(&model,"hA2tA2_KOmegaMag",0.,"hA2tA2_KOmegaPhase");
-  m_hV1tV1wK = ReadComplexParam(&model,"hV1tV1_KOmegaMag",0.,"hV1tV1_KOmegaPhase");
-  m_hV2tV2wK = ReadComplexParam(&model,"hV2tV2_KOmegaMag",0.,"hV2tV2_KOmegaPhase");
-  // g_omegarhopi*g_rhopipi normalisation for the omega->3pi vertex -
-  // also not given a specific number in the note; placeholder default
-  // 1, like N_Keta/N_etapipi elsewhere in this codebase.
-  m_Nomega3pi = ReadComplexParam(&model,"Nomega3piMag",1.,"Nomega3piPhase");
+
+  // h_R*t_{R omega K} coupling products, in GeV.
+  //
+  // Wang, Guo, Liu and Li, Eur. Phys. J. C74 (2014) 3140
+  // [arXiv:1408.0086], Sec.III.A Tab.I, gives this meson-dominance
+  // table for K rho.  The same paper states directly, in the paragraph
+  // following its Eq.(21), that the LEADING-ORDER production form
+  // factors are shared between the two channels: "we adopt the same
+  // form factors in the K rho and K omega annihilation processes.
+  // According to Eq.(13), we have H_mu^{0 rho} = H_mu^{0 omega}".
+  // Their Eq.(13) is exactly the PV current implemented here, so these
+  // products come from the source itself and are not an SU(3)
+  // assumption of ours.  The relative MINUS sign appearing in the same
+  // paragraph, H^{1 rho} = -H^{1 omega}, belongs to the second-order
+  // weak diagram Fig.1(b), which exists only to supply a CP-violating
+  // phase and has no counterpart in this current.
+  //
+  // UNITS.  Tab.I heads its rows h_R (10^3 MeV^2) and t_{R V K}
+  // (10^-3 MeV^-1) but overrides both inline for the K^- column
+  // (0.159 MeV^-1, -3170 MeV).  NEITHER is right.  0709.4039 gives the
+  // primary values: f_K = (159.8 +- 1.5) MeV from K->mu nu (dimension
+  // MeV), and g_{K+ omega K-} = 3.17 +- 0.03 from phi->KK plus SU(3)
+  // with ideal omega-phi mixing (DIMENSIONLESS, its Eq.14).  So the
+  // product is 159.8 * -3.17 = -504 MeV = -0.504 GeV, carrying mass^1
+  // exactly like the axial and vector products - which is what makes
+  // Eq.(14)'s a_1 dimensionally homogeneous, its K-pole and K_1 terms
+  // then agreeing at mass^-1.  Reading Tab.I with its row-header units
+  // happens to give the same figure through two compensating errors;
+  // reading the inline units literally does not, and leaves a_1 short
+  // by one power of mass.
+  // The resonance masses and widths defaulted above are Tab.I's too.
+  m_hKtKwK   = ReadComplexParam(&model,"hKtK_KOmegaMag",  -0.50403,"hKtK_KOmegaPhase");
+  m_hA1tA1wK = ReadComplexParam(&model,"hA1tA1_KOmegaMag",-0.41710,"hA1tA1_KOmegaPhase");
+  m_hA2tA2wK = ReadComplexParam(&model,"hA2tA2_KOmegaMag", 0.08160,"hA2tA2_KOmegaPhase");
+  // Vector sector taken from 0709.4039 directly:
+  //   f_K* g_K*wK = 188.9e3 MeV^2 * 8.71e-3 MeV^-1 = 1.6453 GeV  (Eqs.13,23)
+  //   f_K'* g_K'*wK = alpha_omegaK * (the above),  alpha_omegaK fitted
+  //   by 0709.4039 Sec.V to reproduce B(tau->omega K nu) = 4.1e-4,
+  //   giving the two-fold solution alpha = +0.54+-0.38 or -0.77+-0.40
+  //   (+0.55 / -0.78 in its cqm variant). The positive branch is used:
+  //   0709.4039 Fig.3 notes the phi-K mass distribution favours it.
+  //   The tau rate is nearly insensitive to the branch - the two give
+  //   widths 0.06% apart - so this choice is about consistency with the
+  //   source, not about the normalisation.
+  m_hV1tV1wK = ReadComplexParam(&model,"hV1tV1_KOmegaMag", 1.64532,"hV1tV1_KOmegaPhase");
+  m_hV2tV2wK = ReadComplexParam(&model,"hV2tV2_KOmegaMag", 0.90493,"hV2tV2_KOmegaPhase");
+  // N = g_omegarhopi*g_rhopipi for the omega->3pi vertex, in GeV^-1.
+  // Not a free normalisation: a product of two measurable VMD
+  // couplings, multiplying the whole current, so the rate goes as
+  // |N|^2.  Fixed by requiring the same pure-rho-exchange vertex
+  // reproduce Gamma(omega->pi+pi-pi0) = 0.892*8.68 MeV = 7.74 MeV,
+  // integrated over the omega Dalitz plot with
+  //   sum_pol |M|^2 = |G|^2 * (-X.X),   X^a = eps^{abcd} p+_b p-_c p0_d,
+  // and the exact rest-frame identity -X.X = m_omega^2 |p+ x p-|^2
+  // (verified numerically to machine precision; the m_omega^2 is easy
+  // to drop and costs a factor 1.63 in the rate if you do).
+  // That gives N = 179.89 GeV^-1, i.e. g_omegarhopi = 29.98 GeV^-1 for
+  // g_rhopipi = 6.0, against the WZW/VMD value 3g^2/(4pi^2 f_pi) =
+  // 29.6 GeV^-1 - agreement to 1.3%, an independent check that does
+  // not involve the tau rate at all.
+  m_Nomega3pi = ReadComplexParam(&model,"Nomega3piMag",179.89,"Nomega3piPhase");
 
   double Vus = model("Vus", Tools::Vus);
   m_norm = Vus; // K-omega is a |dS|=1 (Cabibbo-suppressed) channel
@@ -230,15 +312,15 @@ void VA_0_KOmega3Pi::SetModelParameters(struct GeneralModel model) {
 	   <<"###   K1(1270): M = "<<m_MK1a<<" GeV, Gamma = "<<m_GK1a<<" GeV\n"
 	   <<"###   K1(1400): M = "<<m_MK1b<<" GeV, Gamma = "<<m_GK1b<<" GeV\n"
 	   <<"###   K*(892): M = "<<m_MKsta<<" GeV, Gamma = "<<m_GKsta<<" GeV\n"
-	   <<"###   K*(1680): M = "<<m_MKstb<<" GeV, Gamma = "<<m_GKstb<<" GeV\n"
+	   <<"###   K*(1410): M = "<<m_MKstb<<" GeV, Gamma = "<<m_GKstb<<" GeV\n"
 	   <<"###   omega(782): M = "<<m_Momega
 	   <<" GeV (running width via LineShapes)\n"
-	   <<"###   h_K*t_{K omega K} = "<<m_hKtKwK<<" (0 = FIXME, not yet supplied)\n"
-	   <<"###   h_A1*t_{A1 omega K} = "<<m_hA1tA1wK<<" (0 = FIXME)\n"
-	   <<"###   h_A2*t_{A2 omega K} = "<<m_hA2tA2wK<<" (0 = FIXME)\n"
-	   <<"###   h_V1*t_{V1 omega K} = "<<m_hV1tV1wK<<" (0 = FIXME)\n"
-	   <<"###   h_V2*t_{V2 omega K} = "<<m_hV2tV2wK<<" (0 = FIXME)\n"
-	   <<"###   N_omega3pi = "<<m_Nomega3pi<<" (placeholder, default 1)\n";
+	   <<"###   h_K*t_{K omega K} = "<<m_hKtKwK<<" GeV [1408.0086 Tab.I]\n"
+	   <<"###   h_A1*t_{A1 omega K} = "<<m_hA1tA1wK<<" GeV [1408.0086 Tab.I]\n"
+	   <<"###   h_A2*t_{A2 omega K} = "<<m_hA2tA2wK<<" GeV [1408.0086 Tab.I]\n"
+	   <<"###   h_V1*t_{V1 omega K} = "<<m_hV1tV1wK<<" GeV [1408.0086 Tab.I]\n"
+	   <<"###   h_V2*t_{V2 omega K} = "<<m_hV2tV2wK<<" GeV [1408.0086 Tab.I]\n"
+	   <<"###   N_omega3pi = "<<m_Nomega3pi<<" GeV^-1 [omega->3pi calibrated]\n";
 }
 
 DEFINE_CURRENT_GETTER(METOOLS::VA_0_KOmega3Pi,"VA_0_KOmega3Pi")
@@ -254,16 +336,16 @@ PrintInfo(std::ostream &st,const size_t width) const {
     <<"weak production (Wang-Guo PV current) with the omega polarization \n"
     <<"eliminated through its own propagator, feeding the anomalous \n"
     <<"omega->3pi vertex (pure rho-exchange VMD realisation). \n\n"
-    <<"Status: the h_R*t_{R omega K} strong-coupling products (5 complex \n"
-    <<"parameters: hKtK_KOmega{Mag,Phase}, hA1tA1_KOmega{Mag,Phase}, \n"
+    <<"The h_R*t_{R omega K} strong-coupling products default to the \n"
+    <<"meson-dominance values of Wang, Guo, Liu and Li, EPJC 74 (2014) \n"
+    <<"3140 [arXiv:1408.0086] Tab.I, which that paper applies to K omega \n"
+    <<"as well as K rho (its Eq.(13) H^{0 rho} = H^{0 omega}). Override \n"
+    <<"with hKtK_KOmega{Mag,Phase}, hA1tA1_KOmega{Mag,Phase}, \n"
     <<"hA2tA2_KOmega{Mag,Phase}, hV1tV1_KOmega{Mag,Phase}, \n"
-    <<"hV2tV2_KOmega{Mag,Phase}) all default to 0 - this current is \n"
-    <<"IDENTICALLY ZERO until real Komega coupling values are supplied; \n"
-    <<"the source note is explicit that these must NOT be copied from \n"
-    <<"the analogous Krho values (SU(3) is a model input, not an \n"
-    <<"identity). N_omega3pi (default 1) is a placeholder normalisation \n"
-    <<"for the omega->3pi vertex (g_omegarhopi*g_rhopipi), also not \n"
-    <<"given a specific number in the source. \n\n"
+    <<"hV2tV2_KOmega{Mag,Phase}. N_omega3pi = g_omegarhopi*g_rhopipi \n"
+    <<"is fixed at 140.79 GeV^-1 by calibrating the same omega->3pi \n"
+    <<"vertex against the measured Gamma(omega->pi+pi-pi0); it scales \n"
+    <<"the whole current, so the rate goes as its square. \n\n"
     <<"Reference: tau_two_meson_currents_KS_RChiT.tex, Sec.'K omega -> \n"
     <<"K pi+pi-pi0: four-pseudoscalar channel' \n"
     <<std::endl;

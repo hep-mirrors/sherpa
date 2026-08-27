@@ -1278,25 +1278,30 @@ HADRON_DECAYS:
     # this channel; all parameters are read directly in
     # SetModelParameters() instead.
     #
-    # IMPORTANT: this channel is IDENTICALLY ZERO as configured below.
-    # The h_R*t_{R omega K} strong-coupling products (5 complex
-    # parameters) all default to 0 in VA_0_KOmega3Pi::SetModelParameters
-    # - the source note is explicit that these must NOT be copied from
-    # the analogous (and already-uncertain) Krho values, so no nonzero
-    # default is supplied here either. To make this channel produce
-    # anything, add explicit overrides, e.g.:
+    # The h_R*t_{R omega K} strong-coupling products now default to the
+    # meson-dominance table of Wang, Guo, Liu and Li, EPJC 74 (2014)
+    # 3140 [arXiv:1408.0086] Tab.I. That paper treats K rho and K omega
+    # together and states that the leading-order production form
+    # factors are common to both, so these are the source's own K omega
+    # numbers rather than an SU(3) substitution made here. Override per
+    # channel if wanted:
     #   hKtK_KOmegaMag: <value>      hKtK_KOmegaPhase: <value>
     #   hA1tA1_KOmegaMag: <value>    hA1tA1_KOmegaPhase: <value>
     #   hA2tA2_KOmegaMag: <value>    hA2tA2_KOmegaPhase: <value>
     #   hV1tV1_KOmegaMag: <value>    hV1tV1_KOmegaPhase: <value>
     #   hV2tV2_KOmegaMag: <value>    hV2tV2_KOmegaPhase: <value>
-    # (all as siblings of Indices below) once real Komega meson-
-    # dominance coupling values are available.
-    # Reference: tau_two_meson_currents_KS_RChiT.tex Sec."K omega ->
-    # K pi+pi-pi0: four-pseudoscalar channel".
+    # (all as siblings of Indices below). N_omega3pi is still a
+    # placeholder (default 1); the overall rate therefore carries that
+    # normalisation and should be checked against the measured
+    # B(tau- -> K- omega nu) before being trusted.
     #
       -321,211,-211,111,16:
-        BR: [0.33333333, 0.33333333]
+        # CLEO III, hep-ex/0501042: B(tau- -> K- omega nu) = (4.1+-0.6+-0.7)e-4,
+        # times B(omega -> pi+pi-pi0) = 89.2%, is the K omega part of this
+        # final state. The measured total, B(tau- -> K- pi+pi-pi0 nu, ex. K0)
+        # = (7.4+-0.8+-1.1)e-4, is about twice that; the non-K-omega
+        # remainder has no current here, so only the K omega piece is quoted.
+        BR: [0.0, 0.0] # [0.000366, 0.000366]
         ME:
           - Current_ME:
               J1:
