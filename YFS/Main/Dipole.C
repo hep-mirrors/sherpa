@@ -1,4 +1,7 @@
 #include "YFS/Main/Dipole.H"
+#include "YFS/Main/FSR.H"
+#include "YFS/Main/ISR.H"
+#include "YFS/Main/Emission.H"
 
 #include "ATOOLS/Math/Poincare.H"
 #include "ATOOLS/Math/Random.H"
@@ -910,3 +913,62 @@ std::ostream &YFS::operator<<(std::ostream &ostr,const dipoletype::code &it)
   return ostr<<"UNKNOWN";
 }
 
+
+
+EmissionResult Dipole::GenerateEmissions(ISR *isr, FSR *fsr,
+                                         double born, double v,
+                                         Vec4D_Vector &me_acc) {
+  EmissionResult res;
+
+  if (m_type == dipoletype::ifi) return res;   // carries interference, does not radiate
+
+  if (m_type == dipoletype::initial) {
+    if (!isr) THROW(fatal_error, "No ISR generator for an initial-initial dipole");
+    isr->NPhotons();
+    isr->GeneratePhotonMomentum();
+    isr->Weight();
+    SetBorn(born);
+    const Vec4D_Vector k(isr->GetPhotons());
+    for (const Vec4D &g : k) res.photons.push_back(Photon(g, this));
+    res.me_photons = res.photons;   // ISR photons are not hidden
+    res.weight = isr->GetWeight();
+    res.photon_sum = isr->GetPhotonSum();
+    Vec4D_Vector kk(k);
+    AddPhotonsToDipole(kk);
+    Boost();
+    return res;
+  }
+
+  // dipoletype::final
+  if (!fsr) THROW(fatal_error, "No FSR generator for a final-final dipole");
+  fsr->Reset();
+  BoostToQFM(0);
+  SetBorn(born);
+  fsr->SetV(v);
+  if (!fsr->Initialize(*this)) { res.fail = EmissionResult::Failure::initialize; return res; }
+  if (!fsr->MakeFSR())         { res.fail = EmissionResult::Failure::makefsr;    return res; }
+
+  res.photon_sum = fsr->GetPhotonSum();
+
+  Vec4D_Vector k(fsr->GetPhotons());
+  // F() is the mass weight; a failure zeroes the FSR weight rather than only
+  // rejecting, which is why it is separated from the two exits above.
+  if (!fsr->F()) { res.fail = EmissionResult::Failure::masswgt; res.weight = 0.; return res; }
+
+  for (const Vec4D &g : k) {
+    me_acc.push_back(g);
+    res.me_photons.push_back(Photon(g, this));
+  }
+  AddPhotonsToDipole(k);
+  SetMEPhotons(me_acc);
+  Boost();
+  if (!fsr->YFS_FORM()) { res.fail = EmissionResult::Failure::formfactor; return res; }
+  fsr->HidePhotons();
+
+  Vec4D_Vector hidden(fsr->GetPhotons());
+  for (const Vec4D &g : hidden) res.photons.push_back(Photon(g, this));
+  AddPhotonsToDipole(hidden);
+  fsr->Weight();
+  res.weight = fsr->GetWeight();
+  return res;
+}
