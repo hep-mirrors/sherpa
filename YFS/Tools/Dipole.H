@@ -47,11 +47,13 @@ namespace YFS{
         std::vector<std::string> m_names;
         std::vector<double> m_pk1, m_pk2;
         double m_QiQj, m_Qi, m_Qj, m_thetai, m_thetaj, m_thetaij, m_sp, m_b1, m_b2, m_gamma, m_gammap, m_alp, m_alpi,m_rescale_alpha;
-        bool m_setBorn, m_setbeams=1,m_sameflav, m_irfinite, m_isduplicate;
+        bool m_setBorn, m_sameflav, m_irfinite, m_isduplicate;
         int m_Nphotons, m_resonance, m_betaorder, m_leftfl, m_rightfl, m_real_only;
         double m_ranPhi, m_ranTheta, m_born, m_photonscale, m_u,m_irscale;
         dipoletype::code m_type;
-        Vec4D_Vector m_momenta, m_bornmomenta, m_oldmomenta, m_newmomenta, m_ghost, m_beams, m_eikmomentum,m_mephotons;
+        // m_oldmomenta is the momenta as constructed, never written again.
+        // m_beams was a second, identical frozen copy under another name.
+        Vec4D_Vector m_momenta, m_bornmomenta, m_oldmomenta, m_newmomenta, m_ghost, m_eikmomentum,m_mephotons;
         Flavour_Vector m_flavs;
         Flavour m_ResFlav;
         Vec4D m_photonSum, m_QFrame, m_kcorr;
@@ -65,7 +67,6 @@ namespace YFS{
         inline Vec4D Momentum(int i) { return m_momenta[i]; }
         inline void SetMomentum(int i, Vec4D mom) { m_momenta[i] = mom; }
         inline void SetEikMomentum(int i, Vec4D mom) { m_eikmomentum[i] = mom; }
-        inline void SetBeams(int i, Vec4D mom) { m_beams[i] = mom; }
         void AddToGhosts(Vec4D &p);
         double Mass();
         double Eikonal(const Vec4D &k,const Vec4D &p1,const Vec4D &p2);

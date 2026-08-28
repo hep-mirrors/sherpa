@@ -66,11 +66,24 @@ namespace YFS {
     // initial-initial dipole from BuildInitial untouched.
     // born is the momenta before FSR. Callers normally pass the same vector as
     // momenta; it is explicit rather than assumed because not every caller does.
+    // After ISR, before FSR. Final-final dipoles only, plus the radiating
+    // selection.
     void BuildFinal(const ATOOLS::Flavour_Vector &flavs,
                     const ATOOLS::Vec4D_Vector   &momenta,
                     const ATOOLS::Vec4D_Vector   &born,
-                    double alpha, bool withIF,
+                    double alpha,
                     const ResonanceScore &score = ResonanceScore());
+
+    // Initial-final dipoles. Separate from BuildFinal because their initial
+    // legs are the BORN beams while their final legs are at m_plab: the
+    // interference is between radiation off the incoming particles and off the
+    // outgoing ones, so the initial leg is the physical beam, not the
+    // ISR-reduced one. Passing one vector for both also mixes frames once the
+    // beams are asymmetric. The caller supplies the combined vector.
+    void BuildIF(const ATOOLS::Flavour_Vector &flavs,
+                 const ATOOLS::Vec4D_Vector   &momenta,
+                 const ATOOLS::Vec4D_Vector   &born,
+                 double alpha);
 
     void Clear();
 

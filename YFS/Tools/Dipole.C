@@ -59,7 +59,6 @@ Dipole::Dipole(ATOOLS::Flavour_Vector const &fl, ATOOLS::Vec4D_Vector const &mom
     m_momenta.push_back(v);
     m_oldmomenta.push_back(v);
     m_newmomenta.push_back(v);
-    m_beams.push_back(v);
     m_ghost.push_back(v);
   }
   for (auto &v : born) m_bornmomenta.push_back(v);
@@ -384,7 +383,7 @@ void Dipole::RandomRotate(Vec4D &p){
 }
 
 void Dipole::BoostLab(){
-  Poincare p_boost(m_beams[0] + m_beams[1]);
+  Poincare p_boost(m_oldmomenta[0] + m_oldmomenta[1]);
   p_boost.BoostBack(m_newmomenta[0]);
   p_boost.BoostBack(m_newmomenta[1]);
   for(auto &k : m_dipolePhotons) p_boost.BoostBack(k);
@@ -769,7 +768,6 @@ void Dipole::Clean(){
   m_oldmomenta.clear();
   m_newmomenta.clear();
   m_bornmomenta.clear();
-  m_beams.clear();
   m_ghost.clear();
   m_dipolePhotons.clear();
   m_photonSum*=0;
