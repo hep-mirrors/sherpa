@@ -113,8 +113,14 @@ Virtual_ME2_Base *ATOOLS::Getter<PHASIC::Virtual_ME2_Base,PHASIC::Process_Info,O
 operator()(const PHASIC::Process_Info &pi) const
 {
   DEBUG_FUNC(pi);
-  if (pi.m_loopgenerator!="OpenLoops") return NULL;
-  if (!(pi.m_fi.m_nlotype==nlo_type::loop)) return NULL;
+  // Accept both the one-loop virtual and the real-virtual, each gated on its
+  // own generator setting: Loop_Generator for nlo_type::loop, RV_Generator for
+  // nlo_type::rvirt. Without the rvirt arm OpenLoops can never supply the
+  // real-virtual, so a card asking for it is silently refused.
+  if (pi.m_loopgenerator!="OpenLoops" && pi.m_rvgenerator!="OpenLoops") return NULL;
+  if (!(pi.Has(nlo_type::loop)) && !(pi.Has(nlo_type::rvirt))) return NULL;
+  if (pi.m_fi.m_nlotype==nlo_type::loop  && pi.m_loopgenerator!="OpenLoops") return NULL;
+  if (pi.m_fi.m_nlotype==nlo_type::rvirt && pi.m_rvgenerator!="OpenLoops") return NULL;
 
   DEBUG_VAR(pi.m_maxcpl[0]-pi.m_fi.m_nlocpl[0]);
   DEBUG_VAR(pi.m_fi.m_nlocpl[0]);

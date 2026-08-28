@@ -409,6 +409,10 @@ std::vector<Process_Base*> Matrix_Element_Handler::InitializeSingleProcess
       return procs;
     }
     else if (m_nlomode==nlo_mode::yfs){
+      if (p_yfs->Mode()==YFS::yfsmode::off)
+        THROW(fatal_error, "NLO_Mode is set to YFS, but YFS: MODE is Off. "
+              "Set YFS: MODE to a value other than Off (e.g. ISR, FSR or "
+              "ISRFSR) to enable YFS soft-photon resummation.");
       m_hasnlo=4;
       if (pmap==NULL) {
          m_pmaps.push_back(new NLOTypeStringProcessMap_Map());
@@ -877,6 +881,8 @@ void Matrix_Element_Handler::ReadFinalStateMultiSpecificProcessSettings(
     else if (subkey == "ME_Generator")       ExtractMPvalues(value, range, nf, args.pbi.m_vmegen);
     else if (subkey == "RS_ME_Generator")    ExtractMPvalues(value, range, nf, args.pbi.m_vrsmegen);
     else if (subkey == "Loop_Generator")     ExtractMPvalues(value, range, nf, args.pbi.m_vloopgen);
+    else if (subkey == "RV_Generator")       ExtractMPvalues(value, range, nf, args.pbi.m_rvloopgen);
+    else if (subkey == "VV_Generator")       ExtractMPvalues(value, range, nf, args.pbi.m_vvloopgen);
     else if (subkey == "Integrator")         ExtractMPvalues(value, range, nf, args.pbi.m_vint);
     else if (subkey == "RS_Integrator")      ExtractMPvalues(value, range, nf, args.pbi.m_vrsint);
     else if (subkey == "PSI_ItMin")          ExtractMPvalues(value, range, nf, args.pbi.m_vitmin);
@@ -1090,6 +1096,14 @@ void Matrix_Element_Handler::BuildSingleProcessList(
 	  m_gens.LoadGenerator(ds);
 	  cpi.m_loopgenerator=ds;
 	}
+  if (GetMPvalue(args.pbi.m_rvloopgen,nfs,pnid,ds)) {
+    m_gens.LoadGenerator(ds);
+    cpi.m_rvgenerator=ds;
+  }
+  if (GetMPvalue(args.pbi.m_vvloopgen,nfs,pnid,ds)) {
+    m_gens.LoadGenerator(ds);
+    cpi.m_vvgenerator=ds;
+  }
 	if (GetMPvalue(args.pbi.m_vint,nfs,pnid,ds)) cpi.m_integrator=ds;
 	if (GetMPvalue(args.pbi.m_vrsint,nfs,pnid,ds)) cpi.m_rsintegrator=ds;
 	else cpi.m_rsintegrator=cpi.m_integrator;
