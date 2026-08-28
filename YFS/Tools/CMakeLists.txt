@@ -1,7 +1,10 @@
 set(YFSTools_SOURCES Debug.C
+                 DipoleSet.C
                  Dipole.C)
 
 set(YFSTools_HEADERS  Debug.H
+                 Photon.H
+                 DipoleSet.H
                  Dipole.H)
 
 
