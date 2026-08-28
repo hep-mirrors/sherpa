@@ -50,7 +50,6 @@ namespace YFS{
         std::vector<double> m_masses, m_charges, m_theta, m_Q;
         Vec4D_Vector m_dipolePhotons, m_dipolePhotonsEEX;
         std::vector<std::string> m_names;
-        std::vector<double> m_pk1, m_pk2;
         double m_QiQj, m_Qi, m_Qj, m_thetai, m_thetaj, m_thetaij, m_sp, m_b1, m_b2, m_gamma, m_gammap, m_alp, m_alpi,m_rescale_alpha;
         bool m_setBorn, m_sameflav, m_irfinite, m_isduplicate;
         int m_Nphotons, m_resonance, m_betaorder, m_leftfl, m_rightfl, m_real_only;
@@ -142,7 +141,6 @@ namespace YFS{
         inline void SetResonance(bool res) { m_resonance=res;}
         inline bool IsSame() const {return m_sameflav;}
         inline double ChargeNorm() const {return -m_QiQj*m_thetaij;}
-        inline void SetSudakovs(std::vector<double> y, std::vector<double> z) {m_pk1 =y; m_pk2=z;}
         inline void SetPhotonScale(double &scale) {m_photonscale = scale;}
         inline void SetMEPhotons(Vec4D_Vector &k) {m_mephotons = k;}
         inline Vec4D_Vector GetMEPhotons() {return m_mephotons;}
