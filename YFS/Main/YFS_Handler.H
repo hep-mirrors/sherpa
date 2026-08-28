@@ -8,6 +8,7 @@
 #include "YFS/Main/Coulomb.H"
 #include "YFS/Main/Debug.H"
 #include "YFS/Main/Photon.H"
+#include "YFS/Main/Emission.H"
 #include "YFS/NLO/NLO_Base.H"
 // #include "BEAM/Main/Beam_Base.H"
 #include "BEAM/Main/Beam_Spectra_Handler.H"
@@ -106,6 +107,9 @@ namespace YFS {
         void InitializeCEEX(const ATOOLS::Flavour_Vector &fl);
         void CalculateBeta();
         void GenerateWeight();
+        //! Fills m_nlo_weightsmap with the YFS.* ratios. Defined next to
+        //! GenerateWeight, which supplies the two weights it compares.
+        void BuildNamedWeights(double w_lo, double w_full);
         void CreatMomentumMap();
         void MakeCEEX();
         void InitNLO();
