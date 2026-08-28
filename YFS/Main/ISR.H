@@ -88,8 +88,6 @@ public:
   inline double  GetGamma() { return m_g; }
   inline double  GetGammaPrime() { return m_gp; }
   inline int  GetCut() { return m_cut; }
-  inline std::vector<double>  GetSudakovY() { return m_yini; }
-  inline std::vector<double>  GetSudakovZ() { return m_zini; }
   void SetMinimalPhotonAngle(const double&);
 
 
