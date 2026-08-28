@@ -118,12 +118,12 @@ namespace YFS {
   void DipoleSet::BuildFinal(const Flavour_Vector &flavs,
                              const Vec4D_Vector   &momenta,
                              const Vec4D_Vector   &born,
-                             double alpha, bool withIF,
+                             double alpha,
                              const ResonanceScore &score) {
     if (momenta.size() != flavs.size() || born.size() != flavs.size())
       THROW(fatal_error, "Inconsistent vector sizes in DipoleSet::BuildFinal");
 
-    DropTypes(false, true, true);
+    DropTypes(false, true, false);
 
     const std::vector<Leg> in (ChargedLegs(flavs, momenta, born, 0, 2));
     const std::vector<Leg> out(ChargedLegs(flavs, momenta, born, 2, flavs.size()));
@@ -134,12 +134,24 @@ namespace YFS {
       for (std::size_t j(i + 1); j < out.size(); ++j)
         Add(out[i], out[j], dipoletype::final, alpha);
 
-    if (withIF)
-      for (std::size_t i(0); i < in.size(); ++i)
-        for (std::size_t j(0); j < out.size(); ++j)
-          Add(in[i], out[j], dipoletype::ifi, alpha);
-
     SelectRadiating(score);
+  }
+
+  void DipoleSet::BuildIF(const Flavour_Vector &flavs,
+                          const Vec4D_Vector   &momenta,
+                          const Vec4D_Vector   &born,
+                          double alpha) {
+    if (momenta.size() != flavs.size() || born.size() != flavs.size())
+      THROW(fatal_error, "Inconsistent vector sizes in DipoleSet::BuildIF");
+
+    DropTypes(false, false, true);
+
+    const std::vector<Leg> in (ChargedLegs(flavs, momenta, born, 0, 2));
+    const std::vector<Leg> out(ChargedLegs(flavs, momenta, born, 2, flavs.size()));
+
+    for (std::size_t i(0); i < in.size(); ++i)
+      for (std::size_t j(0); j < out.size(); ++j)
+        Add(in[i], out[j], dipoletype::ifi, alpha);
   }
 
   void DipoleSet::SelectRadiating(const ResonanceScore &score) {
