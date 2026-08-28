@@ -189,7 +189,7 @@ double Define_Dipoles::CalculateVirtualSubEps() {
   DivArrD sub(0);
   for (auto &D : m_set.ByType(dipoletype::initial)) {
     sub += D.ChargeNorm()*p_yfsFormFact->BVV_full_eps(D, sqrt(m_s) / 2., 3);
-  if(IsBad(sub.Finite())) msg_Error()<<"YFS subtraction is Nan For dipole:"<<D<<std::endl;
+    if(IsBad(sub.Finite())) msg_Error()<<"YFS subtraction is Nan For dipole:"<<D<<std::endl;
   }
   for (auto &D : m_set.FF()) {
     if(D.IsFinite()) continue;
