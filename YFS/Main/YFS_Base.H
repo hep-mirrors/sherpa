@@ -4,7 +4,6 @@
 #include "ATOOLS/Math/Vector.H"
 #include "ATOOLS/Math/MathTools.H"
 #include "ATOOLS/Phys/Flavour.H"
-#include "ATOOLS/Phys/FormFactor.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include <memory>
 
@@ -72,7 +71,6 @@ protected:
   // drives beta_1 negative wherever |F|^2>1. So dress the external ME here,
   // at the same Q^2 the Born is dressed at. Created on first use, since most
   // YFS_Base instances never need it.
-  std::unique_ptr<ATOOLS::FormFactor> p_pionff;
 
 public:
   YFS_Base();
