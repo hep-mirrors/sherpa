@@ -83,6 +83,27 @@ namespace METOOLS {
   // paper, each channel's code uses whichever convention is literally
   // printed for that channel's own equations - see FF_0_PPP.C's
   // comments at the point of use for which is which.
+
+  // FM95 Eq.(34): the NORMALIZED, CONSTANT-width Breit-Wigner that
+  // hep-ph/9503474 specifies for the K1 envelopes,
+  //     BW(s) = (-m^2 + i m G) / (s - m^2 + i m G),
+  // identical to Tools::BreitWignerFix(s,m^2,m*G).  This is deliberately NOT
+  // the running-width BreitWigner above: FM95 says "normalized Breit-Wigner
+  // propagators with constant widths", and a running Gamma(s) grows with s,
+  // which inflates the denominator and suppresses the high-mass tail that the
+  // K1(1400) is supposed to supply.  Mass and width are passed explicitly
+  // rather than taken from a Total_Width_Base, because the paper's Eq.(35)
+  // values are parameters of its own fit, not the flavour's PDG pole.
+  class FM95_Fixed_BW : public Propagator_Base {
+  private:
+    double m_G;
+  public:
+    FM95_Fixed_BW(const double & mass,const double & width);
+    const Complex operator()(const double & s);
+    const Complex Normalised(const double & s);
+    const double  Normalised2(const double & s);
+  };
+
   class RChL_BW : public Propagator_Base {
   public:
     RChL_BW(Total_Width_Base * width) :
@@ -145,6 +166,37 @@ namespace METOOLS {
                     // isolate which of the three differences between
                     // his propagator and a plain registry one matters.
                     const bool & keepshape=false);
+    const Complex operator()(const double & s);
+    const Complex Normalised(const double & s);
+    const double  Normalised2(const double & s);
+  };
+
+  // Two-channel Flatte, for a resonance sitting ON a threshold, where a
+  // Breit-Wigner - fixed OR running width - cannot work: the channel phase
+  // space must go IMAGINARY below threshold, which is the whole point.  The
+  // motivating case is K1(1270), whose pole is essentially on the K rho
+  // threshold (1.269 vs a 1.27 pole).
+  //
+  // TRAP, and it is a real one: the Flatte's BARE pole is NOT the PDG
+  // Breit-Wigner mass.  For K1(1270) the bare pole is 1.254 while PDG quotes
+  // 1.272, and 1.272 sits ABOVE the K rho threshold (~1.264), which INVERTS
+  // the sign of the dispersive term that makes the Flatte work.  They are
+  // different quantities; never substitute the registry mass here.
+  class Two_Channel_Flatte : public Propagator_Base {
+  private:
+    Complex m_g1, m_g2;
+    double m_m11, m_m12, m_m21, m_m22;
+    double m_gamma0;
+
+    Complex PhaseSpace(const double & s,const double & m1,
+                       const double & m2) const;
+
+  public:
+    Two_Channel_Flatte(Total_Width_Base * width,const double & mass,
+                       const Complex & g1,const double & m11,
+                       const double & m12,
+                       const Complex & g2,const double & m21,
+                       const double & m22,const double & gamma0=0.);
     const Complex operator()(const double & s);
     const Complex Normalised(const double & s);
     const double  Normalised2(const double & s);

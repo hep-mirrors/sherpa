@@ -685,7 +685,7 @@ HADRON_DECAYS:
     #
     # Available FORM_FACTOR options:
     #   100 = KS: only model implemented for this mode. Outer =
-    #         K1(1400)[weight 1]+K1(1270)[weight xiK1=0.33], inner =
+    #         K1(1400)[weight 1]+K1(1270)[weight xiK1Mag=0.33], inner =
     #         K*(892)[weight 1]+K*(1410)[weight betaKstar_pi0pi0K].
     # Reference: FM95 (hep-ph/9503474), Tab.I/II row 6.
     #
@@ -743,7 +743,7 @@ HADRON_DECAYS:
     # Available FORM_FACTOR options:
     #   100 = KS (FM95): gammaMag_Kpi_100 (shared with the 2-body Kpi
     #         entries above, see that section). T_K1a/T_K1b mix with
-    #         xiK1 admixture.
+    #         xiK1Mag/xiK1Phase admixture.
     #   102 = KS_CLEO: CLEO K1 data-driven alternative. A/B/C/D real
     #         weights (A=0.94,B=0,C=0.20,D=0.27 by default),
     #         MK1_1270_CLEO/GK1_1270_CLEO/MK1_1400_CLEO/GK1_1400_CLEO
@@ -775,7 +775,7 @@ HADRON_DECAYS:
                 Type: VA_0_KPiPi
                 Indices: [1, 3, 2]
                 RUNNING_WIDTH: 1
-                FORM_FACTOR: 104
+                FORM_FACTOR: 106
         # 2 K* combinations (K1(1270)/K1(1400) x bare K*(892), spectator
         # =2) + 3 pi-pi combinations (K1(1270) x rho(770)/rho(1450)/
         # f0(600), spectator=1) - 50/50 split between the two chains,

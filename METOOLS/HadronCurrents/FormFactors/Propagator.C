@@ -1,3 +1,4 @@
+#include "METOOLS/HadronCurrents/Tools.H"
 #include "METOOLS/HadronCurrents/FormFactors/Propagator.H"
 #include "METOOLS/HadronCurrents/FormFactors/Novosibirsk4pi_GTables.H"
 #include "METOOLS/HadronCurrents/FormFactors/Resonance_Base.H"
@@ -118,6 +119,24 @@ const Complex BreitWigner::Normalised(const double & s) {
 // RChL_BW: see the class comment in Propagator.H for the convention.
 //
 ///////////////////////////////////////////////////////////////////////////
+
+FM95_Fixed_BW::FM95_Fixed_BW(const double & mass,const double & width) :
+  Propagator_Base(NULL,resonance_type::fixed), m_G(width) {
+  m_M  = mass;
+  m_M2 = mass*mass;
+}
+
+const Complex FM95_Fixed_BW::operator()(const double & s) {
+  return Tools::BreitWignerFix(s,m_M2,m_M*m_G);
+}
+
+const Complex FM95_Fixed_BW::Normalised(const double & s) {
+  return (*this)(s);
+}
+
+const double FM95_Fixed_BW::Normalised2(const double & s) {
+  return norm((*this)(s));
+}
 
 const Complex RChL_BW::operator()(const double & s) {
   return 1./Complex(s-m_M2,-m_M*(*p_width)(s));
@@ -368,5 +387,51 @@ const Complex Novo4Pi_Propagator::Normalised(const double & s) {
 }
 
 const double Novo4Pi_Propagator::Normalised2(const double & s) {
+  return norm((*this)(s));
+}
+
+Two_Channel_Flatte::Two_Channel_Flatte(Total_Width_Base * width,
+                                       const double & mass,
+                                       const Complex & g1,const double & m11,
+                                       const double & m12,
+                                       const Complex & g2,const double & m21,
+                                       const double & m22,
+                                       const double & gamma0) :
+  Propagator_Base(width,resonance_type::bespoke),
+  m_g1(g1), m_m11(m11), m_m12(m12),
+  m_g2(g2), m_m21(m21), m_m22(m22),
+  m_gamma0(gamma0)
+{
+  m_M  = mass;
+  m_M2 = sqr(m_M);
+}
+
+Complex Two_Channel_Flatte::PhaseSpace(const double & s,const double & m1,
+                                       const double & m2) const {
+  if (s==0.) return Complex(0.,0.);
+  const double splus  = sqr(m1+m2);
+  const double sminus = sqr(m1-m2);
+  // Complex sqrt on purpose: below threshold this is imaginary, which is
+  // exactly what a Flatte needs and what a running width cannot express.
+  return sqrt(Complex((s-splus)*(s-sminus)/(s*s),0.));
+}
+
+const Complex Two_Channel_Flatte::operator()(const double & s) {
+  const Complex sigma =
+    m_g1*PhaseSpace(s,m_m11,m_m12) +
+    m_g2*PhaseSpace(s,m_m21,m_m22);
+  // gamma0 carries residual modes not represented by the two explicit
+  // threshold channels.  The complex g_i have dimensions of GeV^2 and allow
+  // phenomenological relative phases between the coupled channels.
+  const Complex denom =
+    Complex(m_M2-s,0.)-Complex(0.,1.)*(sqrt(s)*m_gamma0+sigma);
+  return m_M2/denom;
+}
+
+const Complex Two_Channel_Flatte::Normalised(const double & s) {
+  return (*this)(s);
+}
+
+const double Two_Channel_Flatte::Normalised2(const double & s) {
   return norm((*this)(s));
 }
