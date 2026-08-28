@@ -302,7 +302,8 @@ void Single_Process::AddISR(ATOOLS::Cluster_Sequence_Info &csi,
   DEBUG_FUNC(Name());
   if(p_int->YFS()->Mode()!=YFS::yfsmode::off){
     //need to set born for YFS subtraction
-    p_int->YFS()->SetBorn(m_lastxs);
+    double yfsborn(m_lastxs);
+    p_int->YFS()->SetBorn(yfsborn);
     p_int->YFS()->GenerateWeight();
     double yfsW = p_int->YFS()->GetWeight();
     if(IsBad(yfsW)){
@@ -558,12 +559,18 @@ Weights_Map Single_Process::Differential(const Vec4D_Vector& p,
                                          Variations_Mode varmode)
 {
   DEBUG_FUNC(Name()<<", RS:"<<GetSubevtList());
-
   ResetResultsForDifferential(varmode);
   InitMEWeightInfo();
   UpdateIntegratorMomenta(p);
   CalculateFlux(p);
-
+  if(p_int->YFS()->Mode()!=YFS::yfsmode::off && p_int->YFS()->NLO()){
+    if(p_int->YFS()->NLO()->HasReal()){
+      if(this==p_int->YFS()->NLO()->p_real->p_realproc) return YFSDifferential(p,varmode);
+    }
+    if(p_int->YFS()->NLO()->HasRR()){
+      if(this==p_int->YFS()->NLO()->p_realreal->p_rrproc) return YFSDifferential(p,varmode);
+    }
+  }
   if (m_zero) {
     m_last = 0.0;
     return 0.0;
@@ -722,6 +729,8 @@ Weights_Map Single_Process::Differential(const Vec4D_Vector& p,
 
   // perform on-the-fly QCD reweighting of BVI or RS events
   m_last *= nominal;
+  if (p_int->YFS()->Mode() != YFS::yfsmode::off)
+    m_last *= p_int->YFS()->GetNLOWeightsMap();
   if (varmode != Variations_Mode::nominal_only && s_variations->Size() > 0) {
     if (m_mewgtinfo.m_oqcd == NonfactorizingCoupling::WithoutCustomVariationWeight) {
       THROW(not_implemented,
@@ -771,8 +780,12 @@ Weights_Map Single_Process::Differential(const Vec4D_Vector& p,
   // will be populated with it)
   p_int->ISR()->SetMuF2(facscale, 0);
   p_int->ISR()->SetMuF2(facscale, 1);
-
   return m_last;
+}
+
+Weights_Map Single_Process::YFSDifferential(const Vec4D_Vector &p,  ATOOLS::Variations_Mode varmode){
+  Partonic(p);
+  return m_lastxs;
 }
 
 void Single_Process::ResetResultsForDifferential(Variations_Mode varmode)
