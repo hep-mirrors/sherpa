@@ -250,17 +250,18 @@ void Debug::FillHist(const Vec4D_Vector &plab, YFS::ISR *p_isr, YFS::FSR *p_fsr,
 		if (p_isr->m_cut == 0) m_histograms_ISR["Cutflow"]->Insert(0.1,W);
 		else m_histograms_ISR["Cutflow"]->Insert(1.1,W);
 		std::vector<double> cos   = p_isr->m_cos;
-		std::vector<double> jac   = p_isr->m_jacvec;
-		std::vector<double> scale = p_isr->m_scale;
-		std::vector<double> AA = p_isr->m_AA;
-		std::vector<double> K2 = p_isr->m_K2;
-		std::vector<double> ptk = p_isr->m_PTK;
+
 		for (auto c : cos)   m_histograms_ISR["cos(theta)"]->Insert(c,W);
-		for (auto j : jac)   m_histograms_ISR["jacobian"]->Insert(j,W);
-		for (auto s : scale) m_histograms_ISR["lam"]->Insert(s,W);
-		for (auto A : AA) m_histograms_ISR["A"]->Insert(A,W);
-		for (auto k : K2) m_histograms_ISR["K2"]->Insert(k,W);
-		for (auto p : ptk) m_histograms_ISR["ptk"]->Insert(p,W);
+		// Per-event scalars now, not vectors. The four below are only set on
+		// the m_n != 1 branch of MapPhotonMomentun; previously their vectors
+		// were simply left empty, so the loop inserted nothing.
+		m_histograms_ISR["jacobian"]->Insert(p_isr->m_jacvec,W);
+		if (p_isr->GetN() != 1) {
+			m_histograms_ISR["lam"]->Insert(p_isr->m_scale,W);
+			m_histograms_ISR["A"]->Insert(p_isr->m_AA,W);
+			m_histograms_ISR["K2"]->Insert(p_isr->m_K2,W);
+			m_histograms_ISR["ptk"]->Insert(p_isr->m_PTK,W);
+		}
 	}
 }
 
