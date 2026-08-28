@@ -3,6 +3,7 @@
 
 #include "ATOOLS/Phys/Particle.H"
 #include "YFS/Tools/Dipole.H"
+#include "YFS/Tools/DipoleSet.H"
 #include "YFS/Main/YFS_Base.H"
 #include "YFS/Main/YFS_Form_Factor.H"
 
@@ -64,10 +65,6 @@ namespace YFS {
         dipoletype::code type) const;
     
     // Dipole creation by type
-    void CreateInitialDipoles(const std::vector<ParticleInfo>& initial_particles);
-    void CreateFinalDipoles(const std::vector<ParticleInfo>& final_particles);
-    void CreateInitialFinalDipoles(const std::vector<ParticleInfo>& initial_particles,
-                                   const std::vector<ParticleInfo>& final_particles);
     
     // Individual dipole creation
     void CreateFinalStateDipole(const ParticleInfo& particle1,
@@ -76,7 +73,6 @@ namespace YFS {
                              const ParticleInfo& particle2);
     
     // State management
-    void ResetAllDipoleState();
     // public:
       bool                    m_success;
       bool                    m_photonsadded;
@@ -90,7 +86,7 @@ namespace YFS {
       ATOOLS::Vec4D_Vector m_neutraloutparticles;
       ATOOLS::Vec4D_Vector m_softphotons, m_bornmomenta;
       ATOOLS::Vec4D m_softphotonSum;
-      Dipole_Vector m_dipoles, m_olddipoles, m_newdipoles, m_dipolesII, m_dipolesFF, m_dipolesIF;
+      YFS::DipoleSet m_set;
       std::vector<std::vector<int>> m_dip;
       std::map<std::string,MODEL::Vertex_List> m_proc_restab_map;
       YFS::YFS_Form_Factor *p_yfsFormFact;
@@ -107,18 +103,13 @@ namespace YFS {
 
       ATOOLS::Flavour_Vector m_dipoleFlav;
       ATOOLS::Vec4D_Vector m_dipoleMom;
-      void CreateAllDipoles(const ATOOLS::Flavour_Vector& flavors,
-                         const ATOOLS::Vec4D_Vector& momenta,
-                         const ATOOLS::Vec4D_Vector& born_momenta);
     
       void AddRadiation();
       void MakeDipolesII(ATOOLS::Flavour_Vector const &fl, ATOOLS::Vec4D_Vector const &mom, ATOOLS::Vec4D_Vector const &born);
       void MakeDipolesIF(ATOOLS::Flavour_Vector const &fl, ATOOLS::Vec4D_Vector const mom, ATOOLS::Vec4D_Vector const born);
       void MakeDipoles(ATOOLS::Flavour_Vector const &fl, ATOOLS::Vec4D_Vector const &mom,  ATOOLS::Vec4D_Vector const &born);
       void MakeDipolesFF(ATOOLS::Flavour_Vector const &fl, ATOOLS::Vec4D_Vector const &mom,ATOOLS::Vec4D_Vector const &born);
-      void Dipole_II(ATOOLS::Flavour_Vector const &fl, ATOOLS::Vec4D_Vector const &mom);
       void Dipole_FF(ATOOLS::Flavour_Vector const &fl, ATOOLS::Vec4D_Vector const &mom);
-      void Dipole_IF(ATOOLS::Flavour_Vector const &fl, ATOOLS::Vec4D_Vector const &mom, ATOOLS::Vec4D_Vector const &born);
       void CleanInParticles();
       void CleanOutParticles();
       // void Get4Mom(ATOOLS::Flavour_Vector const &fl,ATOOLS::Vec4D_Vector mom, std::vector<int> v);
@@ -128,7 +119,6 @@ namespace YFS {
       bool IsResonant();
       // Flags the subset of m_dipolesFF that may radiate: a matching of the
       // charged final state, so each leg enters FSR exactly once.
-      void SelectResonantDipoles();
       double ResonanceWidthDistance(YFS::Dipole &D);
       bool CheckResonant(YFS::Dipole &D);
       bool CheckResonant();
@@ -169,11 +159,10 @@ namespace YFS {
       inline bool DoneSuccessfully()     { return m_success; }
       inline bool AddedAnything()        { return m_photonsadded; }
       inline void AddSoftPhotons(ATOOLS::Vec4D k) { m_softphotonSum +=k; }
-      inline Dipole_Vector Old() { return m_olddipoles; }
-      inline Dipole_Vector New() { return m_newdipoles; }
-      inline Dipole * GetDipoleII() { return &m_dipolesII[0]; }
-      inline Dipole_Vector * GetDipoleFF() { return &m_dipolesFF; }
-      inline Dipole_Vector * GetDipoleIF() { return &m_dipolesIF; }
+      inline bool HasDipoleII() const { return m_set.HasII(); }
+      inline Dipole & GetDipoleII() { return m_set.II(); }
+      inline YFS::DipoleView GetDipoleFF() { return m_set.FF(); }
+      inline YFS::DipoleView GetDipoleIF() { return m_set.IF(); }
       inline void SetProcResMap(std::map<std::string,MODEL::Vertex_List> map) {m_proc_restab_map=map;}
       inline double Get_Finite() {return m_virtSub.GetFinite();}
       inline double Get_E1() {return m_virtSub.GetIR();}

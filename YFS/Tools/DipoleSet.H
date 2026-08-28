@@ -4,6 +4,7 @@
 #include "YFS/Tools/Dipole.H"
 
 #include <functional>
+#include <memory>
 #include <vector>
 #include <cstddef>
 
@@ -15,31 +16,32 @@ namespace YFS {
   public:
     class iterator {
     public:
-      iterator(std::vector<Dipole> *d, const std::vector<std::size_t> *i,
+      iterator(std::vector<std::unique_ptr<Dipole> > *d,
+               const std::vector<std::size_t> *i,
                std::size_t n) : p_d(d), p_i(i), m_n(n) {}
-      Dipole &operator*()  const { return (*p_d)[(*p_i)[m_n]]; }
-      Dipole *operator->() const { return &(*p_d)[(*p_i)[m_n]]; }
+      Dipole &operator*()  const { return *(*p_d)[(*p_i)[m_n]]; }
+      Dipole *operator->() const { return (*p_d)[(*p_i)[m_n]].get(); }
       iterator &operator++() { ++m_n; return *this; }
       bool operator!=(const iterator &o) const { return m_n != o.m_n; }
       bool operator==(const iterator &o) const { return m_n == o.m_n; }
     private:
-      std::vector<Dipole>            *p_d;
-      const std::vector<std::size_t> *p_i;
-      std::size_t                     m_n;
+      std::vector<std::unique_ptr<Dipole> > *p_d;
+      const std::vector<std::size_t>       *p_i;
+      std::size_t                           m_n;
     };
 
-    DipoleView(std::vector<Dipole> &d, const std::vector<std::size_t> &i)
-      : p_d(&d), p_i(&i) {}
+    DipoleView(std::vector<std::unique_ptr<Dipole> > &d,
+               const std::vector<std::size_t> &i) : p_d(&d), p_i(&i) {}
 
     iterator begin() const { return iterator(p_d, p_i, 0); }
     iterator end()   const { return iterator(p_d, p_i, p_i->size()); }
     std::size_t size()  const { return p_i->size(); }
     bool        empty() const { return p_i->empty(); }
-    Dipole &operator[](std::size_t n) const { return (*p_d)[(*p_i)[n]]; }
+    Dipole &operator[](std::size_t n) const { return *(*p_d)[(*p_i)[n]]; }
 
   private:
-    std::vector<Dipole>            *p_d;
-    const std::vector<std::size_t> *p_i;
+    std::vector<std::unique_ptr<Dipole> > *p_d;
+    const std::vector<std::size_t>       *p_i;
   };
 
   class DipoleSet {
@@ -62,8 +64,11 @@ namespace YFS {
     // After ISR, before FSR. Builds the final-final and initial-final dipoles
     // with born = momenta, and selects the radiating FF subset. Leaves any
     // initial-initial dipole from BuildInitial untouched.
+    // born is the momenta before FSR. Callers normally pass the same vector as
+    // momenta; it is explicit rather than assumed because not every caller does.
     void BuildFinal(const ATOOLS::Flavour_Vector &flavs,
                     const ATOOLS::Vec4D_Vector   &momenta,
+                    const ATOOLS::Vec4D_Vector   &born,
                     double alpha, bool withIF,
                     const ResonanceScore &score = ResonanceScore());
 
@@ -73,11 +78,9 @@ namespace YFS {
     std::size_t size() const { return m_dipoles.size(); }
     bool empty()       const { return m_dipoles.empty(); }
 
-    Dipole       &operator[](std::size_t i)       { return m_dipoles[i]; }
-    const Dipole &operator[](std::size_t i) const { return m_dipoles[i]; }
+    Dipole       &operator[](std::size_t i)       { return *m_dipoles[i]; }
+    const Dipole &operator[](std::size_t i) const { return *m_dipoles[i]; }
 
-    std::vector<Dipole>       &All()       { return m_dipoles; }
-    const std::vector<Dipole> &All() const { return m_dipoles; }
 
     const std::vector<std::size_t> &Index(dipoletype::code t) const;
 
@@ -88,8 +91,13 @@ namespace YFS {
     DipoleView IF() { return DipoleView(m_dipoles, m_idxIF); }
     DipoleView Radiating() { return DipoleView(m_dipoles, m_idxRad); }
 
-    Dipole       *II();
-    const Dipole *II() const;
+    // There is at most one initial-initial dipole, so this is a reference and
+    // not a range. Its absence whenever ISR is on is a setup error, not a case
+    // to handle, so II() throws rather than handing back a pointer that ten
+    // call sites would have to check and none did.
+    bool HasII() const { return !m_idxII.empty(); }
+    Dipole       &II();
+    const Dipole &II() const;
 
   private:
     // One charged leg, with its position in the event's flavour/momentum vectors.
@@ -103,10 +111,16 @@ namespace YFS {
                                         const ATOOLS::Vec4D_Vector &momenta,
                                         const ATOOLS::Vec4D_Vector &born,
                                         std::size_t first, std::size_t last);
+    // Drop the named subsets, keeping the others. Lets BuildInitial and
+    // BuildFinal be called in either order without clobbering each other.
+    void DropTypes(bool dropII, bool dropFF, bool dropIF);
     void Add(const Leg &a, const Leg &b, dipoletype::code t, double alpha);
     void SelectRadiating(const ResonanceScore &score);
 
-    std::vector<Dipole>      m_dipoles;
+    // unique_ptr so that a Dipole keeps its address for the whole run.
+    // ISR::SetIncoming caches a Dipole* on the first event and holds it
+    // thereafter, so rebuilding this vector must not move the objects.
+    std::vector<std::unique_ptr<Dipole> > m_dipoles;
     std::vector<std::size_t> m_idxII, m_idxFF, m_idxIF, m_idxRad;
   };
 
