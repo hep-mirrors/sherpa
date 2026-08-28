@@ -193,10 +193,10 @@ void ISR::MapPhotonMomentun() {
     double K0 = m_photonSum[0];
     double PK = 2.*K0;
     double K2 = m_photonSum.Abs2();
-    m_K2.push_back(K2);
-    m_PTK.push_back(m_photonSum.PPerp());
+    m_K2 = K2;
+    m_PTK = m_photonSum.PPerp();
     A = K2 * P2 /PK / PK;
-    m_AA.push_back(A);
+    m_AA = A;
     m_lam  =  (m_v) * P2 / (PK) / (1. + sqrt(1. - A * m_v));
     if(IsBad(m_lam)){
       PRINT_VAR(m_v);
@@ -209,13 +209,13 @@ void ISR::MapPhotonMomentun() {
       PRINT_VAR(m_b2);
     }
     m_lam0 = PK / P2 / m_v * (1. + sqrt(1. - m_v * A));
-    m_scale.push_back(m_lam);
+    m_scale = m_lam;
     m_diljac  = 0.5 * (1. + 1. / sqrt(1. - m_v * A));
   }
   
   m_diljac0 = 0.5 * (1. + pow(1. - m_v, -0.5));
   m_jacW = m_diljac / m_diljac0;
-  m_jacvec.push_back(m_jacW);
+  m_jacvec = m_jacW;
   m_photonSum *= m_lam * sqrt(m_s) / 2.;
 
   for (size_t i = 0; i < m_photons.size(); ++i)
@@ -308,11 +308,6 @@ void ISR::Clean() {
   m_diljac0 = 1.0;
   m_diljac = 1.0;
   m_cos.clear();
-  m_scale.clear();
-  m_jacvec.clear();
-  m_AA.clear();
-  m_K2.clear();
-  m_PTK.clear();
 }
 
 

@@ -37,8 +37,14 @@ public:
   bool m_setmass;
   double m_nsuccess, m_nfail, m_ntotal;
   // ATOOLS::Particle *p_photon;
-  std::vector<double> m_yini, m_AA, m_K2, m_PTK, m_del1, m_del2;
-  std::vector<double> m_zini, m_cos, m_jacvec, m_scale;
+  // Genuinely per-photon, indexed alongside m_photons.
+  std::vector<double> m_yini, m_del1, m_del2, m_zini, m_cos;
+  // Per-EVENT quantities, built from m_photonSum rather than from any one
+  // photon. These were vectors that were cleared each event and pushed to
+  // exactly once, so they only ever held a single element. m_AA, m_K2, m_PTK
+  // and m_scale are set only on the m_n != 1 branch of MapPhotonMomentun;
+  // m_jacvec is always set.
+  double m_AA = 0., m_K2 = 0., m_PTK = 0., m_jacvec = 0., m_scale = 0.;
   Vec4D m_pvec1, m_pvec2, m_qvec1, m_qvec2, m_photon, m_photonSum;
   Vec4D_Vector m_photons;
   void GeneratePhotonAngleMassless();
@@ -67,8 +73,6 @@ public:
   void D2(Vec4D, double, double, double);
   void MapPhotonMomentun();
   void MapMomenta(Vec4D_Vector p, Vec4D_Vector q, Vec4D_Vector k);
-  void Sort(Vec4D_Vector &p);
-  void Sort(std::vector<double> &p);
   void GenerateAnglesForMassless();
   double Flux();
   void Clean();
