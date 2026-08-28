@@ -24,7 +24,7 @@
 #include "ATOOLS/Phys/Flavour.H"
 #include "ATOOLS/Phys/KF_Table.H"
 #include "PDF/Main/PDF_Base.H"
-#include "YFS/Tools/Dipole.H"
+#include "YFS/Main/Dipole.H"
 #include "YFS/Main/YFS_Form_Factor.H"
 #include "MODEL/Main/Model_Base.H"
 #include <iostream>

@@ -1,4 +1,7 @@
 set(YFSMain_SOURCES Coulomb.C
+                 Dipole.C
+                 DipoleSet.C
+                 Debug.C
                  Define_Dipoles.C
                  FSR.C
                  ISR.C
@@ -9,6 +12,10 @@ set(YFSMain_SOURCES Coulomb.C
                  YFS_Handler.C)
 
 set(YFSMain_HEADERS Coulomb.H
+                 Dipole.H
+                 DipoleSet.H
+                 Photon.H
+                 Debug.H
                  Define_Dipoles.H
                  FSR.H
                  ISR.H
