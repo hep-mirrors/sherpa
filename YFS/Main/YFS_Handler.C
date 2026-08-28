@@ -298,21 +298,17 @@ bool YFS_Handler::CalculateISR() {
   // they never move.
   if (m_isrinital) p_isr->SetIncoming(&p_dipoles->GetDipoleII());
   m_isrinital = false;
-  p_isr->NPhotons();
-  p_isr->GeneratePhotonMomentum();
-  p_isr->Weight();
   m_g=p_dipoles->GetDipoleII().m_gamma;
   m_gp=p_dipoles->GetDipoleII().m_gamma;
-  p_dipoles->GetDipoleII().SetBorn(m_born);
-  m_photonSumISR = p_isr->GetPhotonSum();
-  m_ISRPhotons   = p_isr->GetPhotons();
-  m_isrphotonsforME = m_ISRPhotons; 
-  m_isrWeight = p_isr->GetWeight();
-  m_photons.clear();
-  for (const Vec4D &k : m_ISRPhotons)
-    m_photons.push_back(YFS::Photon(k, &p_dipoles->GetDipoleII()));
-  p_dipoles->GetDipoleII().AddPhotonsToDipole(m_ISRPhotons);
-  p_dipoles->GetDipoleII().Boost();
+  Vec4D_Vector me_acc;   // ISR photons are not hidden, so nothing accumulates here
+  const YFS::EmissionResult res(
+      p_dipoles->GetDipoleII().GenerateEmissions(p_isr, p_fsr, m_born, m_v, me_acc));
+  m_photonSumISR = res.photon_sum;
+  m_ISRPhotons.clear();
+  for (const YFS::Photon &k : res.photons) m_ISRPhotons.push_back(k.K());
+  m_isrphotonsforME = m_ISRPhotons;
+  m_isrWeight = res.weight;
+  m_photons = res.photons;
   for(size_t i = 0; i < 2; ++i) {
     m_plab[i] = p_dipoles->GetDipoleII().GetNewMomenta(i); 
     ToLab(m_plab[i]);
@@ -415,38 +411,29 @@ bool YFS_Handler::CalculateFSR(Vec4D_Vector & p) {
   YFS::DipoleView ffdip(p_dipoles->GetDipoleFF());
   for (auto Dip = ffdip.begin(); Dip != ffdip.end(); ++Dip) {
     if(!Dip->IsResonance()) continue;
-    p_fsr->Reset();
-    Dip->BoostToQFM(0);
-    Dip->SetBorn(m_born);
-    p_fsr->SetV(m_v);
-    if (!p_fsr->Initialize(*Dip)) {
+    const YFS::EmissionResult res(
+        Dip->GenerateEmissions(p_isr, p_fsr, m_born, m_v, m_fsrphotonsforME));
+    switch (res.fail) {
+    case YFS::EmissionResult::Failure::initialize:
       Reset();
       return false;
-    }
-    if (!p_fsr->MakeFSR()) {
+    case YFS::EmissionResult::Failure::makefsr:
       Reset();
       if (m_fsr_debug) p_debug->FillHist(m_plab, p_isr, p_fsr);
       return false;
-    }
-    m_photonSumFSR = p_fsr->GetPhotonSum();
-    m_FSRPhotons   = p_fsr->GetPhotons();
-    if (!p_fsr->F()) {
+    case YFS::EmissionResult::Failure::masswgt:
       m_fsrWeight = 0;
       if (m_fsr_debug) p_debug->FillHist(m_plab, p_isr, p_fsr);
       return false;
-    } 
-
-    // m_fsrphotonsforME = m_FSRPhotons;
-    for(auto &k: m_FSRPhotons) m_fsrphotonsforME.push_back(k);
-    Dip->AddPhotonsToDipole(m_FSRPhotons);
-    Dip->SetMEPhotons(m_fsrphotonsforME);
-    Dip->Boost();
-    if(!p_fsr->YFS_FORM()) return false;
-    p_fsr->HidePhotons();
-    m_FSRPhotons = p_fsr->GetPhotons();
-    Dip->AddPhotonsToDipole(m_FSRPhotons);
-    p_fsr->Weight();
-    m_fsrWeight *= p_fsr->GetWeight();
+    case YFS::EmissionResult::Failure::formfactor:
+      return false;
+    case YFS::EmissionResult::Failure::none:
+      break;
+    }
+    m_photonSumFSR = res.photon_sum;
+    m_FSRPhotons.clear();
+    for (const YFS::Photon &k : res.photons) m_FSRPhotons.push_back(k.K());
+    m_fsrWeight *= res.weight;
     m_plab[Dip->Left()]  =  Dip->GetNewMomenta(0);
     m_plab[Dip->Right()] =  Dip->GetNewMomenta(1);
     if(!IsEqual(m_flavs[Dip->Left()].Mass(), m_plab[Dip->Left()].Mass(),1e-5)){
@@ -687,6 +674,16 @@ void YFS_Handler::GenerateWeight() {
     m_negskip++;
   }
 
+  BuildNamedWeights(w_lo, w_full);
+}
+
+// The YFS.* named weights: each is a ratio that turns the nominal weight into
+// one of the truncated or reordered matchings. Split out of GenerateWeight,
+// which was 216 lines with more than half of them here.
+//
+// w_lo   : the Born-level YFS weight, before any NLO correction
+// w_full : the weight the event actually carries, before the clamps below
+void YFS_Handler::BuildNamedWeights(double w_lo, double w_full) {
   // Build named NLO sub-weights. base_weight=1 so the nominal is unchanged.
   // YFSNLO  — Real + Virtual only (NLO denominator).
   // YFSNNLO — Real + Virtual + RealVirtual + RealReal (full NNLO denominator).
@@ -844,6 +841,7 @@ void YFS_Handler::GenerateWeight() {
     m_nlo_weightsmap["YFS"] = wyfsnlo;
   }
 }
+
 
 void YFS_Handler::YFSDebug(double W){
   p_debug->FillHist(m_plab, p_isr, p_fsr, W);
