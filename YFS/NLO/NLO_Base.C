@@ -398,8 +398,8 @@ double NLO_Base::CalculateReal() {
     if (m_isr_debug || m_fsr_debug) {
       contrib = CalculateReal(k);
       real += contrib;
-      double coll = p_dipoles->GetDipoleII()[0].Beta1(k);
-      coll /= p_dipoles->GetDipoleII()[0].Eikonal(k);
+      double coll = p_dipoles->GetDipoleII().Beta1(k);
+      coll /= p_dipoles->GetDipoleII().Eikonal(k);
       if (contrib != 0)
         m_histograms2d["REAL_COLL_RATIO"]->Insert(k.E(),
                                                   coll * m_born / contrib);
@@ -483,8 +483,8 @@ double NLO_Base::CalculateReal(Vec4D k, int fsrcount) {
     msg_Debugging() << METHOD << " FSR branch, fluxtype=" << fluxtype << "\n";
     if (!HasFSR() && m_borngamma.size() == 0)
       msg_Error() << "Wrong dipole type in " << METHOD << "\n";
-    for (Dipole_Vector::iterator Dip = p_nlodipoles->GetDipoleFF()->begin();
-         Dip != p_nlodipoles->GetDipoleFF()->end(); ++Dip) {
+    YFS::DipoleView Dip_view1(p_nlodipoles->GetDipoleFF());
+    for (auto Dip = Dip_view1.begin(); Dip != Dip_view1.end(); ++Dip) {
       double scalek = p_fsr->ScalePhoton(k);
       Dip->SetPhotonScale(scalek);
       Dip->AddPhotonToDipole(k);
@@ -679,7 +679,7 @@ double NLO_Base::CalculateReal(Vec4D k, int fsrcount) {
     m_histograms1d["Real_diff"]->Insert(diff);
     if (m_isr_debug)
       m_histograms2d["Real_Flux"]->Insert(
-          flux, sqrt(p_dipoles->GetDipoleII()->Sprime()));
+          flux, sqrt(p_dipoles->GetDipoleII().Sprime()));
   }
 
   if (m_no_subtraction) {
@@ -825,8 +825,8 @@ double NLO_Base::CalculateRealVirtual(Vec4D k, int fsrcount) {
   if (fsrcount) {
     if (!HasFSR())
       msg_Error() << "Wrong dipole type in " << METHOD << endl;
-    for (Dipole_Vector::iterator Dip = p_nlodipoles->GetDipoleFF()->begin();
-         Dip != p_nlodipoles->GetDipoleFF()->end(); ++Dip) {
+    YFS::DipoleView Dip_view2(p_nlodipoles->GetDipoleFF());
+    for (auto Dip = Dip_view2.begin(); Dip != Dip_view2.end(); ++Dip) {
       double scalek = p_fsr->ScalePhoton(k);
       Dip->SetPhotonScale(scalek);
       Dip->AddPhotonToDipole(k);
@@ -1143,8 +1143,8 @@ double NLO_Base::CalculateRealReal(Vec4D k1, Vec4D k2, int fsr1, int fsr2) {
     msg_Debugging() << METHOD << " FSR branch: k1 only\n";
     if (!HasFSR())
       msg_Error() << "Wrong dipole type in " << METHOD << "\n";
-    for (Dipole_Vector::iterator Dip = p_nlodipoles->GetDipoleFF()->begin();
-         Dip != p_nlodipoles->GetDipoleFF()->end(); ++Dip) {
+    YFS::DipoleView Dip_view3(p_nlodipoles->GetDipoleFF());
+    for (auto Dip = Dip_view3.begin(); Dip != Dip_view3.end(); ++Dip) {
       Dip->ClearPhotons();
       double scalek = p_fsr->ScalePhoton(k1);
       Dip->SetPhotonScale(scalek);
@@ -1164,8 +1164,8 @@ double NLO_Base::CalculateRealReal(Vec4D k1, Vec4D k2, int fsr1, int fsr2) {
     msg_Debugging() << METHOD << " FSR branch: k2 only\n";
     if (!HasFSR())
       msg_Error() << "Wrong dipole type in " << METHOD << "\n";
-    for (Dipole_Vector::iterator Dip = p_nlodipoles->GetDipoleFF()->begin();
-         Dip != p_nlodipoles->GetDipoleFF()->end(); ++Dip) {
+    YFS::DipoleView Dip_view4(p_nlodipoles->GetDipoleFF());
+    for (auto Dip = Dip_view4.begin(); Dip != Dip_view4.end(); ++Dip) {
       double scalek = p_fsr->ScalePhoton(k2);
       Dip->SetPhotonScale(scalek);
       Dip->AddPhotonToDipole(k2);
@@ -1184,8 +1184,8 @@ double NLO_Base::CalculateRealReal(Vec4D k1, Vec4D k2, int fsr1, int fsr2) {
     msg_Debugging() << METHOD << " FSR branch: k1+k2\n";
     if (!HasFSR())
       msg_Error() << "Wrong dipole type in " << METHOD << "\n";
-    for (Dipole_Vector::iterator Dip = p_nlodipoles->GetDipoleFF()->begin();
-         Dip != p_nlodipoles->GetDipoleFF()->end(); ++Dip) {
+    YFS::DipoleView Dip_view5(p_nlodipoles->GetDipoleFF());
+    for (auto Dip = Dip_view5.begin(); Dip != Dip_view5.end(); ++Dip) {
       Dip->ClearPhotons();
       double scale = p_fsr->ScalePhoton(k1) + p_fsr->ScalePhoton(k2);
       Dip->SetPhotonScale(scale);

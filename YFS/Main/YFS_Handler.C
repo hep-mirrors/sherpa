@@ -290,25 +290,28 @@ void YFS_Handler::CalculateWWForm() {
 
 bool YFS_Handler::CalculateISR() {
   if (m_mode==yfsmode::fsr) return true;
-  if (p_dipoles->GetDipoleII()->size() != 2) {
+  if (p_dipoles->GetDipoleII().size() != 2) {
     THROW(fatal_error, "Wrong dipole size for ISR");
   }
-  if (m_isrinital) p_isr->SetIncoming(p_dipoles->GetDipoleII());
+  // Address-of is deliberate: ISR keeps this pointer for the whole run (see
+  // m_isrinital), which is why DipoleSet holds its dipoles by unique_ptr so
+  // they never move.
+  if (m_isrinital) p_isr->SetIncoming(&p_dipoles->GetDipoleII());
   m_isrinital = false;
   p_isr->NPhotons();
   p_isr->GeneratePhotonMomentum();
   p_isr->Weight();
-  m_g=p_dipoles->GetDipoleII()->m_gamma;
-  m_gp=p_dipoles->GetDipoleII()->m_gamma;
-  p_dipoles->GetDipoleII()->SetBorn(m_born);
+  m_g=p_dipoles->GetDipoleII().m_gamma;
+  m_gp=p_dipoles->GetDipoleII().m_gamma;
+  p_dipoles->GetDipoleII().SetBorn(m_born);
   m_photonSumISR = p_isr->GetPhotonSum();
   m_ISRPhotons   = p_isr->GetPhotons();
   m_isrphotonsforME = m_ISRPhotons; 
   m_isrWeight = p_isr->GetWeight();
-  p_dipoles->GetDipoleII()->AddPhotonsToDipole(m_ISRPhotons);
-  p_dipoles->GetDipoleII()->Boost();
+  p_dipoles->GetDipoleII().AddPhotonsToDipole(m_ISRPhotons);
+  p_dipoles->GetDipoleII().Boost();
   for(size_t i = 0; i < 2; ++i) {
-    m_plab[i] = p_dipoles->GetDipoleII()->GetNewMomenta(i); 
+    m_plab[i] = p_dipoles->GetDipoleII().GetNewMomenta(i); 
     ToLab(m_plab[i]);
   }
   double sp = (m_plab[0] + m_plab[1]).Abs2();
@@ -317,7 +320,7 @@ bool YFS_Handler::CalculateISR() {
                 << " is " << sp << " and should be "
                 << m_sp << std::endl << "Diff = " <<
                 m_sp - sp << std::endl << " Event with "
-                << " N=" << p_dipoles->GetDipoleII()->GetPhotons().size() << " photons" << std::endl
+                << " N=" << p_dipoles->GetDipoleII().GetPhotons().size() << " photons" << std::endl
                 << " V = " << m_v << std::endl
                 << " Vmin = " << m_isrcut << std::endl
                 << "ISR NPHotons = " << m_ISRPhotons.size() << std::endl;
@@ -406,8 +409,8 @@ bool YFS_Handler::CalculateFSR(Vec4D_Vector & p) {
     ifmom[1] = m_bornMomenta[1];
     p_dipoles->MakeDipolesIF(m_flavs, ifmom, ifmom);
   }
-  for (Dipole_Vector::iterator Dip = p_dipoles->GetDipoleFF()->begin();
-       Dip != p_dipoles->GetDipoleFF()->end(); ++Dip) {
+  YFS::DipoleView ffdip(p_dipoles->GetDipoleFF());
+  for (auto Dip = ffdip.begin(); Dip != ffdip.end(); ++Dip) {
     if(!Dip->IsResonance()) continue;
     p_fsr->Reset();
     Dip->BoostToQFM(0);
@@ -464,8 +467,8 @@ bool YFS_Handler::CalculateFSR(Vec4D_Vector & p) {
   // get all photons
   m_FSRPhotons.clear();
   m_fsrphotonsforME.clear();
-  for (Dipole_Vector::iterator Dip = p_dipoles->GetDipoleFF()->begin();
-         Dip != p_dipoles->GetDipoleFF()->end(); ++Dip) {
+  YFS::DipoleView ffcollect(p_dipoles->GetDipoleFF());
+  for (auto Dip = ffcollect.begin(); Dip != ffcollect.end(); ++Dip) {
     for(auto &k: Dip->GetPhotons()) m_FSRPhotons.push_back(k);
     for(auto &k: Dip->GetMEPhotons()) m_fsrphotonsforME.push_back(k);
   }
@@ -917,10 +920,9 @@ Vec4D_Vector YFS_Handler::GetPhotons(){
 }
 
 void YFS_Handler::CheckResonance(){
-  for (Dipole_Vector::iterator D1 = p_dipoles->GetDipoleFF()->begin();
-         D1 != p_dipoles->GetDipoleFF()->end(); ++D1) {
-    for (Dipole_Vector::iterator D2 = p_dipoles->GetDipoleFF()->begin();
-       D2 != p_dipoles->GetDipoleFF()->end(); ++D2) {
+  YFS::DipoleView ffres(p_dipoles->GetDipoleFF());
+  for (auto D1 = ffres.begin(); D1 != ffres.end(); ++D1) {
+    for (auto D2 = ffres.begin(); D2 != ffres.end(); ++D2) {
       if(D1==D2) continue;
       // Only two dipoles that both still radiate can double count a leg.
       // Without this, an overlapping non-resonant pair could switch off a
