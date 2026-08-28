@@ -450,6 +450,22 @@ bool FSR::YFS_FORM(){
   m_r1 = p_dipole->GetGhost(0);
   m_r2 = p_dipole->GetGhost(1);
   m_sQ = m_Q*m_Q;
+
+  // Rest-frame energies of the GHOSTS, built from the ghost masses that are
+  // passed alongside them below. Using energies derived from m_mass[] (the
+  // flavour masses) with m_r1/m_r2's own masses mixes two sources, and then
+  // E^2 - m^2 can go negative -- which is impossible for a single four-vector,
+  // and is what A4()'s sqrt(En2^2 - mass2^2) turns into a NaN.
+  //
+  // Falls back to the symmetric sqrt(sQ)/2 below threshold, where the pair
+  // rest frame does not exist. That is the pre-existing behaviour and is at
+  // least finite; a dipole with sQ < (m1+m2)^2 is a separate problem.
+  const double mr1(m_r1.Mass()), mr2(m_r2.Mass());
+  double Er1(0.5*sqrt(m_sQ)), Er2(0.5*sqrt(m_sQ));
+  if (m_sQ > sqr(mr1 + mr2)) {
+    Er1 = (m_sQ + mr1*mr1 - mr2*mr2)/(2.*sqrt(m_sQ));
+    Er2 = (m_sQ + mr2*mr2 - mr1*mr1)/(2.*sqrt(m_sQ));
+  }
   CalculateBetaBar();
   m_q1q2 = m_dipole[0]*m_dipole[1];
   double Eqq = 0.5*sqrt(m_sQ);
@@ -475,7 +491,7 @@ bool FSR::YFS_FORM(){
       // KKMC to only ~1.8e-6 at soft-photon kinematics, growing to ~6.3e-5 at
       // harder/more asymmetric photon configurations, while Eqq,Eqq matches
       // to 9 sig figs at both (2026-08-05).
-      m_BtiQcru = p_fsrFormFact->BVR_cru(m_r1 * m_r2, Eq1, Eq2, m_r1.Mass(), m_r2.Mass(), m_EminQ);
+      m_BtiQcru = p_fsrFormFact->BVR_cru(m_r1 * m_r2, Er1, Er2, mr1, mr2, m_EminQ);
     }
   }
   else {
@@ -487,7 +503,7 @@ bool FSR::YFS_FORM(){
       m_BtiXcru = p_fsrFormFact->BVR_full(m_r1 * m_r2, m_r1[0], m_r2[0], m_r1.Mass(), m_r2.Mass(), m_Emin, m_photonMass, 0);
       // Same EQQ,EQQ convention fix as the BVR_cru branch above - see its comment.
       // Same Eq1/Eq2 reasoning as the BVR_cru branch above.
-      m_BtiQcru = p_fsrFormFact->BVR_full(m_r1 * m_r2, Eq1, Eq2, m_r1.Mass(), m_r2.Mass(), m_EminQ, m_photonMass, 0);
+      m_BtiQcru = p_fsrFormFact->BVR_full(m_r1 * m_r2, Er1, Er2, mr1, mr2, m_EminQ, m_photonMass, 0);
     }
   }
   m_volmc = m_gp*log(1./m_fsrcut);
