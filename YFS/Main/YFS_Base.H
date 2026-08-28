@@ -4,7 +4,9 @@
 #include "ATOOLS/Math/Vector.H"
 #include "ATOOLS/Math/MathTools.H"
 #include "ATOOLS/Phys/Flavour.H"
+#include "ATOOLS/Phys/FormFactor.H"
 #include "ATOOLS/Org/Run_Parameter.H"
+#include <memory>
 
 
 using namespace ATOOLS;
@@ -36,12 +38,25 @@ struct wgt {
   };
 };
 
+struct fixed_order {
+  enum code {
+    off       = 0,
+    full      = 1,
+    lo        = 2,
+    nlo       = 3,
+    nnlo      = 4,
+  };
+};
+
+
 
 std::istream &operator>>(std::istream &str, submode::code &sm);
 std::istream &operator>>(std::istream &str, yfsmode::code &sm);
 std::istream &operator>>(std::istream &str, wgt::code &sm);
+std::istream &operator>>(std::istream &str, fixed_order::code &sm);
 std::ostream &operator<<(std::ostream &str, const yfsmode::code &sm);
 std::ostream &operator<<(std::ostream &str, const wgt::code &sm);
+std::ostream &operator<<(std::ostream &str, const fixed_order::code &sm);
 
 class YFS_Base {
 protected:
@@ -49,33 +64,115 @@ protected:
   double m_exponent, m_xmax;
   bool   m_on;
 
+  // Matrix elements from external providers (OpenLoops, Recola, ...) are
+  // pointlike sQED: they know nothing about the pion form factor, while the
+  // Born YFS subtracts against is dressed - by the Comix vertex in Vertex mode,
+  // by Single_Process in Factored mode. Subtracting a dressed S~*B from an
+  // undressed R leaves a residual (1-|F|^2)*S~*B that diverges as k->0 and
+  // drives beta_1 negative wherever |F|^2>1. So dress the external ME here,
+  // at the same Q^2 the Born is dressed at. Created on first use, since most
+  // YFS_Base instances never need it.
+  std::unique_ptr<ATOOLS::FormFactor> p_pionff;
+
 public:
   YFS_Base();
   virtual ~YFS_Base();
 
   bool On() const   { return m_on;   }
 
+  // |F((sum p_pi)^2)|^2, or 1 if no form factor is configured.
+  double ExternalFormFactor(const ATOOLS::Vec4D_Vector &p,
+                            const ATOOLS::Flavour_Vector &fl,
+                            const size_t &nin=2);
+
   double m_mass2[2];
-  double m_s;
+  double m_s,m_irscale;
   double m_v, m_vmin, m_vmax, m_isrcut, m_sp;
   double m_alpha, m_alpi, m_hardmin, m_gp, m_g;
   bool m_CalForm, m_fillblob, m_isr_debug, m_fsr_debug, m_coulomb, m_setparticles;
   double m_photonMass, m_oneloop, m_born, m_isrWeight, m_fsrWeight, m_rescale_alpha;
   double m_nbar, m_deltacut, m_betatWW, m_eps, m_fixed_weight, m_resonace_max;
-  
+  double m_rv_test_x, m_rv_test_theta, m_rv_test_phi;
+  double m_rv_soft_cut; // soft-photon energy fraction below which RV is skipped
+  // Same coarse soft-photon gate for the double-real beta_2^2, applied to each
+  // of the two photons: the RR residual vanishes when either photon goes soft,
+  // while the ME and its subtraction both diverge like S~(k1)*S~(k2), so the
+  // pair is roundoff-dominated long before it is physically relevant. Energy
+  // fraction E/sqrt(s); <=0 disables.
+  double m_rr_soft_cut;
+  // Relative-cancellation threshold for the RV beta_1^1. The RV matrix element
+  // m_rv and its subtraction m_rvsub each diverge like S(k)~1/k^2 and cancel to
+  // form d1; when |d1| drops below m_rv_cancel_eps*max(|m_rv|,|m_rvsub|) the
+  // result is roundoff-dominated (and, being that small, physically
+  // negligible), so the photon is skipped. <=0 disables. This is the
+  // process-independent replacement for the flat RV_SOFT_CUT energy gate.
+  double m_rv_cancel_eps;
+  // Matrix-element stability guard for the RV. The one-loop provider is
+  // numerically unstable for soft, beam-collinear (ISR) photons, returning a
+  // real-virtual ME rv up to ~1e30x larger than the scale its own subtraction
+  // predicts (max(|rvsub|,|aB|)); the failures are confined to soft/collinear
+  // (verified: hard wide-angle photons are always stable), so skipping them
+  // loses negligible physics. Skip when |rv| > m_rv_me_max_ratio*subscale.
+  // Recommended O(1e6) - the healthy/unstable ratio gap spans 1e4..1e25.
+  // <=0 disables.
+  double m_rv_me_max_ratio;
+
   int  m_order, m_betaorder, m_fullform, m_formWW, m_ifisub;
-  int  m_check_mass_reg, m_check_poles, m_check_real;
-  int m_rmode, m_qedmode, m_kkmcAngles;
-  int m_no_born, m_check_real_sub, m_no_subtraction, m_tchannel, m_check_virt_born, m_noflux, m_massless_sub;
+  // Emission-side IFI: reweight generated photons by the IF radiation function
+  // and drop the IF form factor's cutoff to m_ifiomega. Both or neither.
+  int    m_ifireal;
+  double m_ifiomega;
+  // Per-photon IF reweight factors outside [m_ifi_rclip, 1/m_ifi_rclip] are
+  // dropped, and counted here so the rate is reportable rather than silent.
+  double m_ifi_rclip;
+  long   m_ifi_clipped;
+  // One-shot beta_0/beta_1 dump at a fixed phase-space point, for the
+  // number-for-number comparison against KKMC's CEEX. See
+  // NLO_Base::CEEXComparePoint().
+  int  m_ceex_compare;
+  // Scale at which Delta_alpha is evaluated for the vacuum-polarisation
+  // double-counting subtraction in Virtual/RealVirtual/VirtualVirtual.
+  // 0 = photon virtuality (s' or t) - the scale the loop ME itself uses for the
+  //     photon self-energy, and therefore the only choice that actually cancels
+  //     it. 1 = the runcard mu_R (SCALES), correct only if SCALES is set to that
+  //     same virtuality.
+  // Fractional envelope on the EEX estimate of the missing double-virtual
+  // (YFS_Handler::GenerateWeight): the band is (1 +/- this) * VV_EEX. Default 1
+  // = from "no VV at all" to "twice the estimate". Values > 1 make the down
+  // variation flip the sign of the term rather than remove it, which is a claim
+  // rather than an envelope.
+  double m_vv_approx_unc;
+  // When set, fill the in-run RV plateau-scan histograms (RV contribution
+  // binned by log10 cancellation ratio and by photon energy fraction) so a
+  // single production run yields RV_total(cut) and the cut can be validated.
+  int  m_rv_cancel_hist;
+  int  m_check_mass_reg, m_check_poles, m_check_real, m_check_rr, m_check_rv, m_rv_hard_photon;
+  int m_rmode, m_qedmode, m_kkmcAngles, m_virt_sub,m_mingammaN;
+  // m_no_born_setting is the card value (YFS: No_Born), a global override.
+  // m_no_born is the effective flag: the override OR'd with the per-process
+  // request from SetNoBorn(), since one handler is shared by all processes.
+  int m_no_born_setting;
+  // The YFS.* named weights carry a full per-order breakdown (Real, Virtual,
+  // RealReal, the *_1g/_2g multiplicity truncations, the VV band, ...), which
+  // is a lot of columns to write for every event. Off by default: only the
+  // headline YFS.LO / YFS.NLO / YFS.NNLO are emitted. Set the card option
+  // YFS: NLO_Weight_Breakdown: 1 to get the individual contributions back.
+  int m_nlo_weight_breakdown;
+  int m_no_born, m_check_real_sub, m_check_rr_sub, m_no_subtraction, m_tchannel, m_check_virt_born, m_noflux, m_massless_sub;
   
-  bool m_looptool, m_virtual_only, m_real_only, m_use_model_alpha;
-  bool m_isrinital, m_realtool, m_realvirt, m_useceex, m_coll_real;
-  int m_flux_mode, m_hidephotons, m_photon_split, m_int_nlo;
+  bool m_looptool, m_virtual_only, m_real_only, m_use_model_alpha,m_failcut,m_nlocuts;
+  bool m_isrinital, m_realtool, m_realvirt, m_useceex, m_coll_real, m_rrtool, m_vvtool, m_dim_reg;
+  bool m_skipNegWeights;
+  bool m_nlo_fsr_photons;
+  bool m_fb_analysis;
+  int m_fb_kf;
+  int m_flux_mode, m_hidephotons, m_photon_split, m_int_nlo, m_eex_virt;
   std::string m_name, m_type, m_debugDIR_ISR, m_debugDIR_FSR, m_debugDIR_NLO;
   Vec4D m_beam1, m_beam2;
 
   submode::code m_submode;
   yfsmode::code m_mode;
+  fixed_order::code m_fixedOrder;
 
 
   void RegisterSettings();
@@ -84,6 +181,7 @@ public:
   double EikonalMassless(const Vec4D &k, const Vec4D &p1, const Vec4D &p2);
   inline bool  HasISR()   const {return (m_mode != yfsmode::off && m_mode != yfsmode::fsr); }
   inline bool  HasFSR()   const {return (m_mode != yfsmode::off && m_mode != yfsmode::isr); }
+  inline fixed_order::code FixedOrder()  const {return m_fixedOrder;}
 
 };
 }

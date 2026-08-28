@@ -2,15 +2,21 @@
 #define YFS_NLO_BASE_H
 
 #include "YFS/Main/YFS_Base.H"
+#include "YFS/Main/FSR.H"
 #include "YFS/NLO/Virtual.H"
 #include "YFS/NLO/Real.H"
+#include "YFS/NLO/RealReal.H"
+#include "YFS/NLO/RealVirtual.H"
+#include "YFS/NLO/VirtualVirtual.H"
 #include "YFS/Main/YFS_Form_Factor.H"
 #include "YFS/Main/Define_Dipoles.H"
 #include "ATOOLS/Math/Histogram_2D.H"
+#include <fstream>
 #include "ATOOLS/Math/Histogram.H"
 
 #include "PHASIC++/Process/Single_Process.H"
 #include "ATOOLS/Phys/Momenta_Stretcher.H"
+#include "PHASIC++/Channels/Multi_Channel.H"
 
 
 
@@ -21,46 +27,159 @@ typedef std::map<std::string, ATOOLS::Histogram *> histograms1d;
 
 class NLO_Base : YFS_Base {
 public:
+  // subloc/subb seen by the IFI_Real restoration, accumulated so the tail that
+  // drives the MC error is reportable instead of inferred from sigma.
+  long   m_ifi_n = 0;
+  double m_ifi_sum = 0., m_ifi_min = 1e300, m_ifi_max = -1e300, m_ifi_sum2 = 0.;
+  // prod_i subloc(k_i)/subb(k_i) over one event's photons.
+  double m_ifi_prod = 1.;
+  // Profiled in photon energy fraction x = E_gamma/sqrt(s), 5 bins of 0.1.
+  // m_ifi_x_r  : the reweight actually applied, 1 + S_IF/S_crude at BORN momenta
+  // m_ifi_x_e  : the "exact-cancellation" ratio subloc/subb, at MAPPED momenta
+  // Their difference per bin IS the residue left by using the consistent pair
+  // instead of the cancelling one, and it should grow with x if that is what
+  // distorts the E_gamma spectrum above the cut cliff.
+  long   m_ifi_x_n[5] = {0,0,0,0,0};
+  double m_ifi_x_r[5] = {0.,0.,0.,0.,0.};
+  double m_ifi_x_e[5] = {0.,0.,0.,0.,0.};
+
 
   NLO_Base();
   ~NLO_Base();
 
   YFS::Virtual     *p_virt;
   YFS::Real        *p_real;
+  YFS::RealReal    *p_realreal;
+  YFS::RealVirtual *p_realvirt;
+  YFS::VirtualVirtual *p_vv;
   YFS::Define_Dipoles *p_nlodipoles;
   YFS::YFS_Form_Factor *p_yfsFormFact;
+  YFS::FSR  *p_fsr;
   PHASIC::Single_Process *p_born;
   YFS::Define_Dipoles *p_dipoles;
-  Vec4D_Vector m_plab, m_reallab, m_FSRPhotons, m_ISRPhotons, m_bornMomenta, m_eikmom;
-  Vec4D m_nvec;
+  Vec4D_Vector m_plab, m_reallab, m_FSRPhotons, m_ISRPhotons, m_bornMomenta, m_eikmom, m_borngamma;
+  Vec4D m_nvec, m_realsum, m_ksum;
   ATOOLS::Flavour_Vector m_flavs;
+  std::ofstream m_subscatter;  // accumulating sub-check angle/energy scatter
   histograms2d m_histograms2d;
   histograms1d m_histograms1d;
   ATOOLS::Momenta_Stretcher m_stretcher;
+  PHASIC::Multi_Channel *p_fsrchannel;
+  PHASIC::Cut_Data *p_cuts;
 
-  double m_evts, m_recola_evts, m_ranTheta, m_ranPhi;
-  int m_is_isr;
+  double m_evts, m_recola_evts, m_ranTheta, m_ranPhi, m_real,m_ravg, m_rv, m_rvsub, m_eikeex, m_subloc;
+  // Per-nominal-call contributions of the hardest photon(s), captured
+  // inline while CalculateReal/CalculateRealVirtual/CalculateRealReal sum
+  // over the full photon multiplicity - no separate recomputation needed.
+  // *_hard1 = contribution of the single hardest photon; *_hard2 = sum over
+  // the two hardest photons (m_rr_hard2 is the single pair formed by them).
+  // Used to report the matching truncated to 1 or 2 photons.
+  double m_real_hard1, m_rv_hard1, m_rr_hard2;
+  double m_real_hard2, m_rv_hard2;
+  // Product of the two per-photon crude eikonal factors S~(k1)*S~(k2) by which
+  // the last CalculateRealReal(k1,k2) divided its result (line "tot = .../sub1/sub2").
+  // Recorded alongside the RR residual so the 1/S~ blow-up for hard wide-angle
+  // photons can be separated from the physical (eikonal-weighted) contribution.
+  double m_rr_eik;
+  int m_is_isr, m_zeroV, m_zeroRV, m_zeroRR, m_nonZeroRR, m_nonZeroRV;
+  // Counts photons whose RV beta_1^1 was skipped as numerically unreliable:
+  // either softer than the coarse RV_SOFT_CUT energy pre-filter, or (primary
+  // gate) failing the RV_CANCEL_EPS relative-cancellation test. Their
+  // contribution is negligible but roundoff-dominated.
+  int m_softRV;
+  // Counts double-real photon pairs skipped by the RR_SOFT_CUT energy
+  // pre-filter, i.e. where at least one of the two photons was too soft for
+  // the beta_2^2 residual to be computed reliably.
+  int m_softRR;
+  // Counts RV photons skipped by the matrix-element stability guard
+  // (RV_ME_MAX_RATIO): |rv| grossly exceeds the scale its subtraction predicts,
+  // i.e. the one-loop provider is unstable. Always active in production when
+  // RV_ME_MAX_RATIO > 0 (independent of the RV_CANCEL_HIST diagnostics).
+  int m_rvUnstable;
+  // RV blow-up mechanism diagnostics, filled only when RV_CANCEL_HIST is set.
+  // m_rvHiC: photons with cancellation C>=1 (subtraction not cancelling).
+  // m_rvBlowup: photons with grossly unphysical |tot| (> 1e3*|Born|).
+  // m_rvBlowupRtree0/HiC/Soft: of those, how many had a zero real-emission ME
+  // (rtree==0), C>=1, or were soft (E/sqrt(s)<0.01) - to test whether the
+  // blow-ups are exactly the rtree==0 soft photons.
+  // m_rvBlowupHardWide: of the blow-ups, how many were hard AND wide-angle
+  // (E/sqrt(s)>0.1, no charged leg within ~26deg). If this stays 0, the loop-ME
+  // instability is confined to soft/collinear photons and skipping them is safe.
+  int m_rvHiC, m_rvBlowup, m_rvBlowupRtree0, m_rvBlowupHiC, m_rvBlowupSoft,
+      m_rvBlowupHardWide;
+  // Counts CalculateReal(k,fsrcount) calls where the raw real-emission
+  // amplitude p_real->Calc_R(p) itself came back zero, before any cut or
+  // subtraction logic runs - covers both the standalone NLO real correction
+  // and the real1/real2 sub-calls embedded in CalculateRealReal.
+  int m_zero_real_amp;
+  bool m_failcut;
+
 
   void Init(Flavour_Vector &flav, Vec4D_Vector &plab, Vec4D_Vector &born);
-  void InitializeVirtual(const PHASIC::Process_Info& pi);
-  void InitializeReal(const PHASIC::Process_Info& pi);
+  /*!
+   * Point this (process-agnostic) handler at the ME providers of the process
+   * that is currently selected. The providers are owned by the YFS_Process
+   * they were built for -- a single YFS_Handler, and hence a single NLO_Base,
+   * is shared by every process in the run card, so anything built from a
+   * Process_Info must not be stored here permanently. Call this whenever the
+   * active process changes, alongside YFS_Handler::SetFlavours.
+   * Null arguments are allowed and simply mean "this process has no such
+   * correction". Ownership is never taken.
+   */
+  void SetProviders(YFS::Virtual *virt, YFS::Real *real,
+                    YFS::RealVirtual *realvirt, YFS::RealReal *realreal,
+                    YFS::VirtualVirtual *vv);
+  /// whether a loop-ME provider should be built at all (EEX virtual replaces it)
+  inline bool NeedsVirtualProvider() const { return !m_eex_virt; }
+  /// whether a real-ME provider should be built at all (collinear approx replaces it)
+  inline bool NeedsRealProvider() const { return !m_coll_real; }
   double CalculateVirtual();
   double CalculateReal();
+  double CalculateRealReal();
   double CalculateReal(Vec4D k, int submode=0);
+  double CalculateRealReal(Vec4D k1, Vec4D k2, int fsrmode1=0, int fsrmode2=0);
+  double CalculateRealVirtual();
+  double CalculateRealVirtual(Vec4D k, int submode=0);
+  double CalculateVV();
   void MakeHardMomenta();
   void MapMomenta(ATOOLS::Vec4D_Vector &p, ATOOLS::Vec4D &k);
+  void MapMomenta(ATOOLS::Vec4D_Vector &p, ATOOLS::Vec4D &k1, ATOOLS::Vec4D &k2);
+  void MapInitial(ATOOLS::Vec4D_Vector &p);
   void CheckMassReg();
   double CalculateNLO();
   bool CheckPhotonForReal(const Vec4D &k);
+  bool CheckPhotonForReal(const Vec4D &k, const Vec4D_Vector &p);
   void CheckMasses(Vec4D_Vector &p, int realmode=0);
   bool CheckMomentumConservation(Vec4D_Vector p);
-  void CheckRealSub(Vec4D k);
+  void CheckRealSub(Vec4D k, int mode);
+  void CheckRealVirtualSub(Vec4D k);
+  void CheckRealRealSub(Vec4D k1, Vec4D k2, int fsr1, int fsr2);
+  // Accumulating (non-exiting) sub-check scatter: for each real photon record
+  // its energy, pT, opening angle to the nearest charged particle, and the
+  // subtracted residual, so large residuals for energetic photons can be
+  // checked for collinear enhancement. Enabled by m_check_real_sub / m_check_rr_sub == 2.
+  void RecordSubScatter(const ATOOLS::Vec4D &k, double residual,
+                        const std::string &tag, double eik = 1.0);
   void RandomRotate(Vec4D &k);
-
+  void RescaleMasses(Vec4D_Vector &p, std::vector<double> masses);
   inline void SetBorn(double b) { m_born = b;}
   inline void SetMomentum(Vec4D_Vector &p) { m_plab = p;}
   inline void SetBornProc(PHASIC::Single_Process *p) {p_born = p;}
-
+  inline void SetFSR(YFS::FSR *p) {p_fsr = p;}
+  inline bool HasVirtual() {return m_looptool;}
+  inline bool HasReal() {return m_realtool;}
+  inline bool HasRR() {return m_rrtool;}
+  inline bool HasNLO()  {return m_realtool || m_looptool;}
+  inline bool HasNNLO() {return m_rrtool   || m_realvirt;}
+  Vec4D MostEnergeticPhoton() const;
+  Vec4D FixedTestPhoton() const;
+  // One-shot dump of beta_0 and beta_1 on a single, fully specified phase-space
+  // point, for the number-for-number comparison against KKMC's CEEX. Enabled
+  // with YFS: CEEX_Compare: 1. See Test/SherpaCompare/kkmc_ceex_crosscheck.cxx
+  // in the KKMC repo for the other half; the momenta printed here are meant to
+  // be fed to it so both sides evaluate at exactly the same point.
+  void CEEXComparePoint();
+  bool m_ceex_done;
 };
 
 

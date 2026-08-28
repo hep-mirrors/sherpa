@@ -1,20 +1,10 @@
 #include "YFS/Main/ISR.H"
-#include "ATOOLS/Org/MyStrStream.H"
-#include "MODEL/Main/Running_AlphaQED.H"
-#include "ATOOLS/Org/Scoped_Settings.H"
 
-#include "ATOOLS/Math/Poincare.H"
-#include "ATOOLS/Phys/Particle.H"
 #include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Math/Vector.H"
 #include "ATOOLS/Org/Message.H"
-#include "ATOOLS/Org/Run_Parameter.H"
-#include "ATOOLS/Phys/Particle.H"
-#include "MODEL/Main/Running_AlphaQED.H"
-#include "MODEL/Main/Model_Base.H"
 
 #include <iostream>
-#include <fstream>
 
 
 #include <algorithm>
@@ -75,7 +65,8 @@ void ISR::NPhotons() {
     sum += log(ran->Get());
     if (sum <= -m_nbar) break;
   }
-  m_n = N;
+  if(FixedOrder()==fixed_order::nlo)  m_n = min(N,1);
+  else m_n = N;
   if (m_n < 0) msg_Error() << METHOD << std::endl << "Nphotons < 0!!" << std::endl;
 }
 
@@ -85,7 +76,7 @@ void ISR::GenerateAngles()
 {
   // Generation of theta for two massive particles
   double weight = 1;
-  if (m_kkmcAngles == 0) {
+  if (m_kkmcAngles != 1) {
     double P = log((1.+m_b1)/(1.-m_b1))
                 /(log((1.+m_b1)/(1.-m_b1))+log((1.+m_b2)/(1.-m_b2)));
     while (true) {
@@ -252,10 +243,12 @@ void ISR::Weight() {
   else {
     // m_massW = 1.0;
     // m_jacW = 1.0;
+    //todo correction is constant for given m_isrcut & m_deltacut
+    // only calculate once!
     m_weight = m_g * pow(m_v, m_g - 1);
     double B = pow(m_isrcut, m_g) * (-m_g * m_isrcut + m_g + 1.) / (m_g + 1.);
     double D = pow(m_deltacut, m_g) * (-m_g * m_deltacut + m_g + 1.) / (m_g + 1.);
-    corrW = 1. / (1. - D / B);
+    corrW = 1.0 / (1. - D / B);
     m_weight *= corrW;
   }
   m_weight *= m_cut * m_massW * m_jacW * m_angleWeight;

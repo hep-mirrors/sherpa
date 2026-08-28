@@ -4,6 +4,7 @@
 
 #include <cmath>
 #include <cstdlib>
+#include <iomanip>
 
 #include "ATOOLS/Math/MyComplex.H"
 
@@ -80,6 +81,7 @@ namespace ATOOLS {
   Complex DiLog(const Complex& x);
 
   int Factorial(const int n);
+  int countMatchingDigits(const double num1, const double num2, const int precision = 16);
 
   double ExpIntegral(int n, double x);
 

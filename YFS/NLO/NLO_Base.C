@@ -1,386 +1,2133 @@
-// #include "PHASIC++/Channels/Channel_Elements.H"
+#include "ATOOLS/Math/MathTools.H"
 #include "ATOOLS/Math/Random.H"
-#include "YFS/NLO/NLO_Base.H"
+#include "ATOOLS/Math/Vector.H"
+#include "ATOOLS/Org/Exception.H"
+#include "ATOOLS/Org/Message.H"
+#include "ATOOLS/Org/My_MPI.H"
+#include "ATOOLS/Phys/Flavour.H"
 #include "MODEL/Main/Running_AlphaQED.H"
-
+#include "YFS/NLO/NLO_Base.H"
+#include "YFS/NLO/Virtual.H"
+#include "YFS/NLO/VirtualVirtual.H"
+#include <cmath>
+#include <algorithm>
+#include <utility>
+#include <vector>
+#include <fstream>
+#include <iomanip>
+#include <string>
 
 using namespace YFS;
 using namespace MODEL;
+using namespace ATOOLS;
 using namespace std;
+
+double massmin = 2220;
+double rcount = 1;
+double sumw = 0;
 
 std::ofstream out_recola;
 std::ofstream out_sub, out_real, out_finite;
 
-static double SqLam(double x,double y,double z)
-{
-  return abs(x*x+y*y+z*z-2.*x*y-2.*x*z-2.*y*z);
+// Lambda (Kaellen function) now lives once in YFS/Tools/Dipole.H.
+
+// Given (photon energy, per-photon matching contribution) pairs, return the
+// contribution of the single hardest photon (h1) and the sum over the two
+// hardest photons (h2). Used to report the matching truncated to 1 or 2
+// photons, independent of the order the photons were generated in.
+static void HardestSums(std::vector<std::pair<double, double>> c,
+                        double &h1, double &h2) {
+  std::sort(c.begin(), c.end(),
+            [](const std::pair<double, double> &a,
+               const std::pair<double, double> &b) { return a.first > b.first; });
+  h1 = c.empty() ? 0. : c[0].second;
+  h2 = h1 + (c.size() < 2 ? 0. : c[1].second);
 }
 
 NLO_Base::NLO_Base() {
   p_yfsFormFact = new YFS::YFS_Form_Factor();
   p_nlodipoles = new YFS::Define_Dipoles();
+  p_real = NULL;
+  p_virt = NULL;
+  p_realvirt = NULL;
+  p_vv = NULL;
   m_evts = 0;
   m_recola_evts = 0;
   m_realtool = 0;
+  m_realvirt = 0;
   m_looptool = 0;
-  if(m_isr_debug || m_fsr_debug){
-  	m_histograms2d["IFI_EIKONAL"] = new Histogram_2D(0, -1., 1., 20, 0, 5., 20 );
-  	m_histograms1d["Real_diff"] = new Histogram(0, -1, 1, 100);
-  	m_histograms1d["Real_Flux"] = new Histogram(0, 0, 1, 100);
-  	if (!ATOOLS::DirectoryExists(m_debugDIR_NLO)) {
-			ATOOLS::MakeDir(m_debugDIR_NLO);
-		}
+  m_rrtool = 0;
+  m_vvtool = 0;
+  m_zeroRV = 0;
+  m_zeroRR = 0;
+  m_nonZeroRR = 0;
+  m_zeroV = 0;
+  m_nonZeroRV=0;
+  m_real_hard1 = 0.;
+  m_rv_hard1 = 0.;
+  m_rr_hard2 = 0.;
+  m_real_hard2 = 0.;
+  m_rv_hard2 = 0.;
+  m_zero_real_amp = 0;
+  m_ceex_done = false;
+  m_softRV = 0;
+  m_softRR = 0;
+  m_rvUnstable = 0;
+  m_rvHiC = 0;
+  m_rvBlowup = 0;
+  m_rvBlowupRtree0 = 0;
+  m_rvBlowupHiC = 0;
+  m_rvBlowupSoft = 0;
+  m_rvBlowupHardWide = 0;
+  if (m_isr_debug || m_fsr_debug) {
+    m_histograms2d["IFI_EIKONAL"] = new Histogram_2D(0, -1., 1., 20, 0, 5., 20);
+    m_histograms2d["REAL_SUB"] =
+        new Histogram_2D(0, 0, sqrt(m_s), 200, 0, sqrt(m_s) / 2., 20);
+    m_histograms2d["REAL_COLL_RATIO"] =
+        new Histogram_2D(0, 0, 2. * M_PI, 20, 0, sqrt(m_s) / 2., 125);
+    m_histograms2d["REAL_COLL_RATIO"] =
+        new Histogram_2D(0, 0, sqrt(m_s) / 2., 125, 0, 10, 20);
+    m_histograms2d["REAL_RATIO"] =
+        new Histogram_2D(0, 0, 15, 16, 0, sqrt(m_s) / 2., 200);
+    m_histograms1d["Real_diff"] = new Histogram(0, -1, 1, 100);
+    m_histograms2d["Real_Flux"] = new Histogram_2D(0, 0, 1.1, 50, 80, 100, 100);
+    m_histograms1d["k_E"] = new Histogram(0, 0, sqrt(m_s) / 2, sqrt(m_s) / 2);
+    m_histograms1d["k_pt"] = new Histogram(0, 0, sqrt(m_s) / 2, sqrt(m_s) / 2);
+    m_histograms1d["dip_mass"] = new Histogram(0, 0, sqrt(m_s), sqrt(m_s));
+    m_histograms1d["k_E_pass"] =
+        new Histogram(0, 0, sqrt(m_s) / 2, sqrt(m_s) / 2);
+    m_histograms1d["k_pt_pass"] =
+        new Histogram(0, 0, sqrt(m_s) / 2, sqrt(m_s) / 2);
+    m_histograms1d["dip_mass_pass"] = new Histogram(0, 0, sqrt(m_s), sqrt(m_s));
+    if (!ATOOLS::DirectoryExists(m_debugDIR_NLO))
+      ATOOLS::MakeDir(m_debugDIR_NLO);
+  }
+  if (m_check_poles == 1) {
+    if (!ATOOLS::DirectoryExists(m_debugDIR_NLO))
+      ATOOLS::MakeDir(m_debugDIR_NLO);
+    m_histograms1d["SinglePoleCD"] = new Histogram(0, 0, 25, 25);
+    m_histograms1d["SinglePoleVV"] = new Histogram(0, 0, 25, 25);
+    m_histograms1d["DoublePoleVV"] = new Histogram(0, 0, 25, 25);
+    m_histograms1d["OneLoopEpsLP"] = new Histogram(0, -1.5, -0.5, 50);
+    m_histograms1d["OneLoopEpsYFS"] = new Histogram(0, -1.5, -0.5, 50);
+    m_histograms1d["RealLoopEpsLP"] = new Histogram(0, -5, 0.0, 50);
+    m_histograms1d["RealLoopEpsYFS"] = new Histogram(0, -5, 0.0, 50);
+    m_histograms1d["relativediff"] = new Histogram(0, -20., -5.0, 50);
+    m_histograms1d["RVSinglePoleCD"] = new Histogram(0, 0, 25, 25);
+    m_histograms2d["REAL_SUB"] =
+        new Histogram_2D(0, 0, sqrt(m_s) / 2., 200, 0, 2 * M_PI, 20);
+    m_histograms2d["REAL"] =
+        new Histogram_2D(0, 0, sqrt(m_s) / 2., 200, 0, 2 * M_PI, 20);
+  }
+  if (m_rv_cancel_hist) {
+    if (!ATOOLS::DirectoryExists(m_debugDIR_NLO))
+      ATOOLS::MakeDir(m_debugDIR_NLO);
+    // Plateau-scan diagnostics for the RV soft/cancellation cut. Each RV photon
+    // that reaches the beta_1^1 (i.e. passes the coarse energy pre-filter) is
+    // filled here BEFORE the cancellation guard, weighted by its contribution
+    // tot. Summing the weight from the hard side down to a given bin gives
+    // RV_total(cut): a plateau followed by jitter marks where physics ends and
+    // roundoff begins - the safe placement for RV_CANCEL_EPS / RV_SOFT_CUT.
+    // *_w = weighted by tot (the integrand); *_n = unweighted counts per bin.
+    m_histograms1d["RV_tot_by_logC_w"] = new Histogram(0, -16., 0., 80);
+    m_histograms1d["RV_tot_by_logC_n"] = new Histogram(0, -16., 0., 80);
+    m_histograms1d["RV_tot_by_Efrac_w"] = new Histogram(0, 0., 0.5, 100);
+    m_histograms1d["RV_tot_by_Efrac_n"] = new Histogram(0, 0., 0.5, 100);
+    // Matrix-element stability ratio log10(|rv| / subtraction-scale) for every
+    // RV photon. ~0 when healthy (rv tracks its subtraction), large when the
+    // one-loop provider is unstable. "_all" is the full sample; "_hardwide" is
+    // restricted to energetic, well-separated photons (E/sqrt(s)>0.1, no charged
+    // leg within ~26deg). A tail at large log10 in "_hardwide" means the
+    // instability reaches hard wide-angle (cannot simply skip); if only "_all"
+    // has the tail, the failures are purely soft/collinear (safe to skip).
+    m_histograms1d["RV_MEstab_all"] = new Histogram(0, -2., 40., 84);
+    m_histograms1d["RV_MEstab_hardwide"] = new Histogram(0, -2., 40., 84);
+    // Same binning but weighted by the contribution tot, so cumulative-from-low
+    // gives RV_total(cut) as a function of the RV_ME_MAX_RATIO threshold: the
+    // physical RV is the plateau reached before the instability shoulder/spike
+    // starts inflating the integral. Answers "how much does the surviving
+    // ratio=1e2..1e4 shoulder inflate RV?" from a single run.
+    m_histograms1d["RV_tot_by_MEstab_w"] = new Histogram(0, -2., 40., 84);
   }
 }
-
 
 NLO_Base::~NLO_Base() {
-  if(m_isr_debug || m_fsr_debug || m_check_real_sub){
-		Histogram_2D * histo2d;
-		string name;
-		for (map<string, Histogram_2D *>::iterator hit = m_histograms2d.begin();
-		        hit != m_histograms2d.end(); hit++) {
-			histo2d = hit->second;
-			name  = string(m_debugDIR_NLO) + "/" + hit->first + string(".dat");
-			// histo2d->MPISync();
-			histo2d->Finalize();
-			histo2d->Output(name);
-			delete histo2d;
-		}
-		Histogram * histo1d;
-		for (map<string, Histogram *>::iterator hit = m_histograms1d.begin();
-		        hit != m_histograms1d.end(); hit++) {
-			histo1d = hit->second;
-			name  = string(m_debugDIR_NLO) +  "/" + hit->first + string(".dat");
-			histo1d->MPISync();
-			histo1d->Finalize();
-			histo1d->Output(name);
-			delete histo1d;
-		}
-	}
-	if(p_yfsFormFact) delete p_yfsFormFact;
-	if(p_nlodipoles) delete p_nlodipoles;
-	// if(p_real) delete p_real;
-	// if(p_virt) delete p_virt;
+  if (m_isr_debug || m_fsr_debug || m_check_real_sub || m_check_poles ||
+      m_rv_cancel_hist) {
+    Histogram_2D *histo2d;
+    string name;
+    for (map<string, Histogram_2D *>::iterator hit = m_histograms2d.begin();
+         hit != m_histograms2d.end(); hit++) {
+      histo2d = hit->second;
+      name = string(m_debugDIR_NLO) + "/" + hit->first + string(".dat");
+      // histo2d->MPISync();
+      histo2d->Finalize();
+      histo2d->Output(name);
+      delete histo2d;
+    }
+    Histogram *histo1d;
+    for (map<string, Histogram *>::iterator hit = m_histograms1d.begin();
+         hit != m_histograms1d.end(); hit++) {
+      histo1d = hit->second;
+      name = string(m_debugDIR_NLO) + "/" + hit->first + string(".dat");
+      histo1d->MPISync();
+      histo1d->Finalize();
+      histo1d->Output(name);
+      delete histo1d;
+    }
+  }
+  // PRINT_VAR(massmin)
+  if (p_yfsFormFact)
+    delete p_yfsFormFact;
+  if (p_nlodipoles)
+    delete p_nlodipoles;
+  // p_virt, p_real, p_realvirt, p_realreal and p_vv are NOT deleted here: they
+  // are owned by the YFS_Process they were built for (see SetProviders), since
+  // one NLO_Base is shared by every process in the run card.
+  msg_Out()<<"Total zero V: "<<m_zeroV<<std::endl;
+  msg_Out()<<"Total zero RV: "<<m_zeroRV<<std::endl;
+  msg_Out()<<"Total zero RR: "<<m_zeroRR<<std::endl;
+  msg_Out()<<"Total non-zero RR: "<<m_nonZeroRR<<std::endl;
+  msg_Out()<<"Total non-zero RV: "<<m_nonZeroRV<<std::endl;
+  // Job-wide totals for the production RV guards. These are plain ints printed
+  // only on rank 0, so Allreduce them (collective: every rank runs this
+  // destructor and reaches the call). Always on - independent of the
+  // RV_CANCEL_HIST diagnostics below.
+#ifdef USING__MPI
+  if (mpi->Size() > 1) {
+    int gbuf[3] = {m_softRV, m_rvUnstable, m_softRR};
+    mpi->Allreduce(gbuf, 3, MPI_INT, MPI_SUM);
+    m_softRV = gbuf[0];
+    m_rvUnstable = gbuf[1];
+    m_softRR = gbuf[2];
+  }
+#endif
+  msg_Out()<<"Total soft RV skipped: "<<m_softRV<<std::endl;
+  msg_Out()<<"Total unstable-ME RV skipped (RV_ME_MAX_RATIO): "<<m_rvUnstable<<std::endl;
+  msg_Out()<<"Total soft RR pairs skipped: "<<m_softRR<<std::endl;
+  if (m_rv_cancel_hist) {
+    // Sum the per-rank diagnostic counters across all ranks. Unlike the
+    // histograms (Allreduced in MPISync), these are plain ints printed only on
+    // rank 0, so without this a blow-up landing on a non-zero rank would be
+    // invisible. Collective: every rank runs this destructor and m_rv_cancel_hist
+    // is read identically everywhere, so all ranks reach the Allreduce together.
+#ifdef USING__MPI
+    if (mpi->Size() > 1) {
+      int buf[6] = {m_rvHiC,      m_rvBlowup,    m_rvBlowupRtree0,
+                    m_rvBlowupHiC, m_rvBlowupSoft, m_rvBlowupHardWide};
+      mpi->Allreduce(buf, 6, MPI_INT, MPI_SUM);
+      m_rvHiC = buf[0];
+      m_rvBlowup = buf[1];
+      m_rvBlowupRtree0 = buf[2];
+      m_rvBlowupHiC = buf[3];
+      m_rvBlowupSoft = buf[4];
+      m_rvBlowupHardWide = buf[5];
+    }
+#endif
+    msg_Out()<<"RV photons with C>=1 (subtraction not cancelling): "<<m_rvHiC<<std::endl;
+    msg_Out()<<"RV blow-ups |tot|>1e3*|Born|: "<<m_rvBlowup
+             <<"  (of these: rtree==0: "<<m_rvBlowupRtree0
+             <<", C>=1: "<<m_rvBlowupHiC
+             <<", soft E/sqrt(s)<0.01: "<<m_rvBlowupSoft
+             <<", HARD WIDE-ANGLE: "<<m_rvBlowupHardWide<<")"<<std::endl;
+    if (m_rvBlowup>0)
+      msg_Out()<<"  -> hard wide-angle fraction of blow-ups: "
+               <<(100.*m_rvBlowupHardWide/m_rvBlowup)<<"%"
+               <<" (if >0, instability is NOT confined to soft/collinear)"<<std::endl;
+    if (m_rvBlowup>0)
+      msg_Out()<<"  -> rtree==0 fraction of blow-ups: "
+               <<(100.*m_rvBlowupRtree0/m_rvBlowup)<<"%"
+               <<" (mechanism confirmed if ~100%)"<<std::endl;
+  }
+  msg_Out()<<"Total zero real amplitudes: "<<m_zero_real_amp<<std::endl;
+  msg_Out()<<"Total events : "<<m_evts<<std::endl;
 }
 
-
-void NLO_Base::InitializeVirtual(const PHASIC::Process_Info& pi) {
-	p_virt = new YFS::Virtual(pi);
-	m_looptool = true;
+void NLO_Base::SetProviders(YFS::Virtual *virt, YFS::Real *real,
+                            YFS::RealVirtual *realvirt, YFS::RealReal *realreal,
+                            YFS::VirtualVirtual *vv) {
+  // Non-owning: the providers belong to the YFS_Process they were built for.
+  // The "has this correction" flags follow the pointers, so switching process
+  // switches the available corrections consistently.
+  p_virt     = virt;
+  p_real     = real;
+  p_realvirt = realvirt;
+  p_realreal = realreal;
+  p_vv       = vv;
+  m_looptool = (p_virt     != NULL);
+  m_realtool = (p_real     != NULL);
+  m_realvirt = (p_realvirt != NULL);
+  m_rrtool   = (p_realreal != NULL);
+  m_vvtool   = (p_vv       != NULL);
 }
 
-void NLO_Base::InitializeReal(const PHASIC::Process_Info& pi) {
-	p_real = new YFS::Real(pi);
-	m_realtool = true;
+void NLO_Base::Init(Flavour_Vector &flavs, Vec4D_Vector &plab,
+                    Vec4D_Vector &born) {
+  m_flavs = flavs;
+  m_plab = plab;
+  m_bornMomenta = born;
+  m_borngamma.clear();
+  for (int i = 0; i < flavs.size(); i++) {
+    if (m_flavs[i].IsPhoton())
+      m_borngamma.push_back(m_plab[i]);
+  }
 }
-
-void NLO_Base::Init(Flavour_Vector &flavs, Vec4D_Vector &plab, Vec4D_Vector &born) {
-	m_flavs = flavs;
-	m_plab = plab;
-	m_bornMomenta = born;
-}
-
 
 double NLO_Base::CalculateNLO() {
-	double result{0.0};
-	result += CalculateVirtual();
-	result += CalculateReal();
-	return result;
+  m_failcut = false;
+  double result{0.0};
+  // PRINT_VAR(m_looptool);
+  result += CalculateReal();
+  result += CalculateVirtual();
+  result += CalculateRealReal();
+  result += CalculateRealVirtual();
+  result += CalculateVV();
+  if(result>1e10){
+    msg_Error()<<"Perturbative corrections to large!"<<std::endl;
+    return 0;
+  }
+  return result;
 }
-
 
 double NLO_Base::CalculateVirtual() {
-	if (!m_looptool && !m_realvirt) return 0;
-	double virt;
-	double sub;
-	Vec4D_Vector p = m_plab;
-	CheckMassReg();
-	// for(auto pp: m_plab) PRINT_VAR(pp.Mass());
-	if(!HasISR()) virt = p_virt->Calc(m_bornMomenta, m_born);
-	else virt = p_virt->Calc(p, m_born);
-	if(m_check_virt_born) {
-			if (!IsEqual(m_born, p_virt->p_loop_me->ME_Born(), 1e-6)) {
-			msg_Error() << METHOD << "\n Warning! Loop provider's born is different! YFS Subtraction likely fails\n"
-									<< "Loop Provider " << ":  "<<p_virt->p_loop_me->ME_Born()
-									<< "\nSherpa" << ":  "<<m_born<<std::endl
-									<<"PhaseSpace Point = ";
-			for(auto _p: m_plab) msg_Error()<<_p<<std::endl;
-		}
-	}	
-	sub = p_dipoles->CalculateVirtualSub();
-	m_oneloop = (virt - sub * m_born);
-	if(IsBad(m_oneloop)){
-		msg_Error()<<"YFS Virtual is NaN"<<std::endl
-							 <<"Virtual:  "<<m_oneloop<<std::endl
-							 <<"Subtraction: "<<sub*m_born<<std::endl;
-	}
-	return m_oneloop;
+  if (m_eex_virt) {
+    // subtract born to avoid double counting
+    // already present in eex!!
+    return p_dipoles->CalculateEEXVirtual() * m_born - m_born;
+  }
+  if (!m_looptool)
+    return 0;
+  double virt;
+  double sub;
+  p_dipoles->p_yfsFormFact->p_virt = p_virt->p_loop_me;
+  CheckMassReg();
+  if (!HasISR())
+    virt = p_virt->Calc(m_plab, m_born);
+  else
+    virt = p_virt->Calc(m_plab, m_born);
+  if (m_check_virt_born) {
+    // the provider's Born is pointlike, m_born is dressed with the pion form
+    // factor, so compare against the dressed provider Born
+    if (!IsEqual(m_born, p_virt->p_loop_me->ME_Born()
+                         * ExternalFormFactor(m_plab, m_flavs), 1e-6)) {
+      msg_Error() << METHOD
+                  << "\n Warning! Loop provider's born is different! YFS "
+                     "Subtraction likely fails\n"
+                  << "Loop Provider " << ":  " << p_virt->p_loop_me->ME_Born()
+                  << "\nSherpa" << ":  " << m_born << std::endl
+                  << "PhaseSpace Point = ";
+      for (auto _p : m_plab)
+        msg_Error() << _p << std::endl;
+    }
+  }
+  if (p_virt->FailCut())
+    return 0;
+  if (m_virt_sub && p_virt->p_loop_me->Mode() != 1)
+    sub = p_dipoles->CalculateVirtualSub();
+  else
+    sub = 0;
+  m_oneloop = (virt - sub * m_born / m_rescale_alpha);
+  if (IsZero(virt)){
+    m_zeroV++;
+    return 0;
+  }
+  if (p_virt->p_loop_me->Mode() == 1)
+    m_oneloop /= m_rescale_alpha;
+  if (IsBad(m_oneloop) || IsBad(sub)) {
+    msg_Error() << "YFS Virtual is NaN" << std::endl
+                << "Virtual:  " << virt << std::endl
+                << "Subtraction: " << sub * m_born << std::endl
+                << "PhaseSpace Point: " << std::endl
+                << m_plab << std::endl;
+  }
+  if (m_check_poles == 1) {
+    if (m_virt_sub == 0)
+      sub = p_dipoles->CalculateVirtualSub();
+    double p1 = p_virt->p_loop_me->ME_E1() * p_virt->m_factor;
+    double yfspole = p_dipoles->Get_E1();
+    int ncorrect = ::countMatchingDigits(p1, -yfspole);
+    double reldiff = (p1 + yfspole) / p1;
+    if (!IsEqual(p1, -yfspole, 1e-4)) {
+      msg_Error() << "Poles do not cancel in YFS Virtuals" << std::endl
+                  << "Correct digits =  " << ncorrect << std::endl
+                  << "Relative diff =  " << reldiff
+                  << std::endl
+                  // <<"Process =  "<<p_virt->p_loop_me->Name()<<std::endl
+                  << "One-Loop Provider V eps^{-1}  = " << p1 << std::endl
+                  << "Sherpa V eps^{-1} = " << yfspole << std::endl
+                  << "Sherpa/One-Loop = " << yfspole / p1 << std::endl;
+      return 0;
+    } else {
+      int i = 0;
+      msg_Debugging() << std::setprecision(32);
+      msg_Debugging() << "Poles cancel in YFS Virtuals to " << ncorrect
+                      << " digits" << std::endl
+                      << "Relative diff =  " << reldiff << std::endl;
+      m_histograms1d["SinglePoleCD"]->Insert(ncorrect);
+      m_histograms1d["OneLoopEpsYFS"]->Insert(log10(fabs(yfspole)));
+      m_histograms1d["OneLoopEpsLP"]->Insert(log10(fabs(p1)));
+      m_histograms1d["relativediff"]->Insert(log10(fabs(reldiff)));
+      msg_Debugging() << std::setprecision(32)
+                      << "One-Loop Provider V eps^{-1}  = " << p1 << std::endl
+                      << "Sherpa V eps^{-1}  = " << yfspole << std::endl;
+    }
+  }
+  return m_oneloop;
 }
-
 
 double NLO_Base::CalculateReal() {
-	if (!m_realtool) return 0;
-	double real(0);
-	if(m_coll_real) return p_dipoles->CalculateEEX()*m_born;
-	for (auto k : m_ISRPhotons) {
-		if(m_check_real_sub) {
-			if(k.E() < 0.2*sqrt(m_s)) continue;
-				CheckRealSub(k);
-		}
-		real+=CalculateReal(k);
-	}
-	for (auto k : m_FSRPhotons) {
-		if(m_check_real_sub) {
-			if(k.E() < 0.2*sqrt(m_s)) continue;
-				CheckRealSub(k);
-		}
-		real+=CalculateReal(k,1);
-	}
-	if(IsBad(real)){
-		msg_Error()<<"YFS Real is NaN"<<std::endl;
-	}
-	return real;
+  if (m_coll_real)
+    return p_dipoles->CalculateEEX() * m_born;
+  if (!m_realtool)
+    return 0;
+  double real(0);
+  m_real_hard1 = 0.;
+  m_real_hard2 = 0.;
+  m_ifi_prod = 1.;
+  // Collect (photon energy, per-photon contribution) so the matching can be
+  // reported truncated to the 1 or 2 hardest photons (see HardestSums).
+  std::vector<std::pair<double, double>> contribs;
+  // double collreal = p_dipoles->CalculateEEX() * m_born;
+  for (auto k : m_ISRPhotons) {
+    if (m_check_real_sub == 1 && !HasFSR()) {
+      if (k.E() < 0.2 * sqrt(m_s))
+        continue;
+      CheckRealSub(k, 0);
+    }
+    double contrib;
+    if (m_isr_debug || m_fsr_debug) {
+      contrib = CalculateReal(k);
+      real += contrib;
+      double coll = p_dipoles->GetDipoleII()[0].Beta1(k);
+      coll /= p_dipoles->GetDipoleII()[0].Eikonal(k);
+      if (contrib != 0)
+        m_histograms2d["REAL_COLL_RATIO"]->Insert(k.E(),
+                                                  coll * m_born / contrib);
+    } else {
+      // if (k.E() > m_hardmin)
+      contrib = CalculateReal(k, 0);
+      real += contrib;
+    }
+    if (m_check_real_sub == 2) RecordSubScatter(k, contrib, "realISR", m_eikeex);
+    contribs.emplace_back(k.E(), contrib);
+  }
+  for (auto k : m_FSRPhotons) {
+    if (m_check_real_sub == 1) {
+      if (k.E() < 0.2 * sqrt(m_s))
+        continue;
+      CheckRealSub(k, 0);
+    }
+    // The second argument is the "this photon is FSR" flag that
+    // CalculateReal(k, fsrcount) branches on: 1 selects the FF-dipole
+    // BoostNLO() recoil (photon taken off the final-state pair) plus the
+    // MapInitial() beam rebuild, 0 selects the ISR mapping MapMomenta() (photon
+    // taken off the beams, beam energies reduced). It used to be hardcoded to 0
+    // here while a local fsrcount was incremented and then never used, so every
+    // FSR real photon was recoiled as if it came from the initial state and
+    // MapInitial() was never reached from anywhere. That is an O(alpha)-only
+    // error -- invisible at LO, and it distorts the lepton angular distribution
+    // once NLO_Part includes R. Semantics confirmed by CalculateRealReal(k1,k2,
+    // fsr1,fsr2), whose four-way fsr1/fsr2 branch only makes sense for a
+    // per-photon boolean.
+    double contrib = CalculateReal(k, 0);
+    real += contrib;
+    if (m_check_real_sub == 2) RecordSubScatter(k, contrib, "realFSR", m_eikeex);
+    contribs.emplace_back(k.E(), contrib);
+  }
+  HardestSums(contribs, m_real_hard1, m_real_hard2);
+  // beta_0's IFI reweight, applied once for the whole event. Deliberately not
+  // in contribs: it is a beta_0 effect, so it must not enter the
+  // hardest-1/hardest-2 truncated matching sums, which are beta_1 only.
+  if (m_ifireal && !IsBad(m_ifi_prod)) real += m_born*(m_ifi_prod - 1.);
+  // for (auto k : m_borngamma) {
+  //   double contrib = CalculateReal(k, 0);
+  //   real += contrib;
+  //   fsrcount++;
+  //   contribs.emplace_back(k.E(), contrib);
+  // // 	if(m_check_real_sub) {
+  // // 		if(k.E() < 0.2*sqrt(m_s)) continue;
+  // // 			CheckRealSub(k,1);
+  // 	}
+  // 	if(k.E() > m_hardmin){
+  // 		real+=CalculateReal(k, 1);
+  // 		fsrcount++;
+  // 	}
+  // }
+  return real;
+}
+double NLO_Base::CalculateReal(Vec4D k, int fsrcount) {
+  double norm = 2. * pow(2 * M_PI, 3);
+  Vec4D_Vector p(m_plab), pi(m_bornMomenta), pf(m_bornMomenta);
+  dipoletype::code fluxtype;
+  Vec4D kk = k;
+  m_evts += 1;
+
+  msg_Debugging() << METHOD << " fsrcount=" << fsrcount
+                  << " k=" << k << " E=" << k.E() << " pt=" << k.PPerp() << "\n";
+
+  // Order matters. MakeDipolesII and MakeDipolesFF both clear m_flav_label
+  // (Define_Dipoles.C:45), and only MakeDipoles repopulates it - so it has to
+  // come LAST, or the FSR recoil loop below indexes an empty map and
+  // std::map::operator[] silently returns 0 for every flavour, writing both
+  // recoiled final-state momenta into p[0] (a beam) and leaving the muons at
+  // their Born momenta. MakeDipolesFF must not be used here at all: it clears
+  // m_dipolesFF and then calls Dipole_FF(), which only sorts particles into
+  // charged/neutral lists and never constructs a Dipole, so the FF list came
+  // out empty and the recoil loop was a no-op.
+  p_nlodipoles->MakeDipolesII(m_flavs, m_plab, m_plab);
+  p_nlodipoles->MakeDipolesIF(m_flavs, m_plab, m_plab);
+  p_nlodipoles->MakeDipoles(m_flavs, m_plab, m_plab);
+  fluxtype = p_nlodipoles->WhichResonant(k);
+
+  if (fsrcount == 1 || fsrcount == 4) {
+    msg_Debugging() << METHOD << " FSR branch, fluxtype=" << fluxtype << "\n";
+    if (!HasFSR() && m_borngamma.size() == 0)
+      msg_Error() << "Wrong dipole type in " << METHOD << "\n";
+    for (Dipole_Vector::iterator Dip = p_nlodipoles->GetDipoleFF()->begin();
+         Dip != p_nlodipoles->GetDipoleFF()->end(); ++Dip) {
+      double scalek = p_fsr->ScalePhoton(k);
+      Dip->SetPhotonScale(scalek);
+      Dip->AddPhotonToDipole(k);
+      if (!Dip->BoostNLO()) {
+        msg_Debugging() << METHOD << " BoostNLO failed, returning 0\n";
+        return 0;
+      }
+      int i(0);
+      for (auto f : Dip->m_flavs) {
+        p[p_nlodipoles->m_flav_label[f]] = Dip->GetNewMomenta(i++);
+      }
+    }
+  } else {
+    msg_Debugging() << METHOD << " ISR branch, fluxtype=" << fluxtype << "\n";
+    MapMomenta(p, k);
+  }
+
+  p.push_back(k);
+  if (fsrcount == 1 || fsrcount == 4)
+    MapInitial(p);
+  CheckMasses(p, 1);
+
+  Vec4D_Vector pp = p;
+  pp.pop_back();
+  p_nlodipoles->MakeDipolesII(m_flavs, pp, m_plab);
+  p_nlodipoles->MakeDipolesIF(m_flavs, pp, m_plab);
+  p_nlodipoles->MakeDipoles(m_flavs, pp, m_plab);
+
+  double r = p_real->Calc_R(p) / norm;
+  m_real = r;
+  if (p_real->FailCut()) m_failcut = true;
+
+  double flux;
+  if (m_flux_mode == 1)
+    flux = p_nlodipoles->CalculateFlux(k);
+  else if (m_flux_mode == 2)
+    flux = 0.5 * (p_nlodipoles->CalculateFlux(kk) + p_nlodipoles->CalculateFlux(k));
+  else
+    flux = p_dipoles->CalculateFlux(kk);
+
+  double subloc = p_nlodipoles->CalculateRealSub(k);
+  double subb   = p_dipoles->CalculateRealSubEEX(kk);
+  m_eikeex = subb;
+  m_subloc = subloc;
+
+  msg_Debugging() << METHOD << " r=" << r << " flux=" << flux
+                  << " (mode=" << m_flux_mode << ")"
+                  << " subloc=" << subloc << " subb=" << subb
+                  << " born=" << m_born << " alpha=" << m_rescale_alpha << "\n";
+
+  if (!CheckMomentumConservation(p)) {
+    msg_Debugging() << METHOD << " momentum conservation failed"
+                    << " k.E=" << k.E() << " dip_mass=" << (p[2]+p[3]).Mass() << "\n";
+    msg_Error() << "Momentum Conservation fails in " << METHOD << "\n";
+    if (m_isr_debug || m_fsr_debug) {
+      m_histograms1d["k_E"]->Insert(k.E());
+      m_histograms1d["k_pt"]->Insert(k.PPerp());
+      m_histograms1d["dip_mass"]->Insert((p[2] + p[3]).Mass());
+    }
+    return 0;
+  }
+
+  if ((p[2] + p[3]).Mass() < massmin)
+    massmin = (p[2] + p[3]).Mass();
+
+  if (m_isr_debug || m_fsr_debug) {
+    m_histograms1d["k_E_pass"]->Insert(k.E());
+    m_histograms1d["k_pt_pass"]->Insert(k.PPerp());
+    m_histograms1d["dip_mass_pass"]->Insert((p[2] + p[3]).Mass());
+  }
+
+  if (IsZero(r)) {
+    msg_Debugging() << METHOD << " r=0, returning 0\n";
+    m_zero_real_amp++;
+    return 0;
+  }
+  if (IsBad(r) || IsBad(flux)) {
+    msg_Debugging() << METHOD << " bad point: r=" << r << " flux=" << flux << "\n";
+    msg_Error() << "Bad point for YFS Real\n"
+                << "  Real ME : " << r << "\n"
+                << "  Flux    : " << flux << "\n";
+    return 0;
+  }
+
+  double tot, rcoll;
+  if (m_submode == submode::local)
+    tot = (r * flux - subloc * m_born / m_rescale_alpha) / subloc;
+  else if (m_submode == submode::global)
+    tot = (r * flux - subloc * m_born / m_rescale_alpha) / subb;
+  else if (m_submode == submode::off)
+    tot = (r * flux) / subb;
+  else
+    msg_Error() << METHOD << " unknown YFS subtraction mode " << m_submode << "\n";
+
+  // Emission-side IFI (IFI_Real), restored here rather than as a factor on the
+  // event weight. subloc is the COHERENT -alpha/(4pi^2) J^2, so it already
+  // contains the initial-final cross term, while the photon was generated from
+  // subb, the dipole-diagonal crude. The subtraction above therefore removes an
+  // interference the generation never supplied; this puts it back.
+  //
+  // The point of doing it here is that the cancellation becomes exact. The
+  // weight YFS_Handler builds is m_born*(1 + tot/m_born) = m_born + tot, so
+  // adding
+  //
+  //     X = m_born*( subloc/(m_rescale_alpha*subb) - 1 )
+  //
+  // gives m_born + tot + X = r*flux/subb identically - the exact real matrix
+  // element, at any photon energy, with no soft approximation and hence nothing
+  // to clamp.
+  //
+  // Doing it in YFS_Handler instead cannot achieve that: subloc comes from
+  // p_nlodipoles at the mapped momentum k while subb comes from p_dipoles at
+  // kk, so a ratio rebuilt outside this function is not the ratio that appears
+  // in tot, and the residue it leaves is worst for hard photons - which is what
+  // distorted m_mumu and E_gamma, and what clamping was papering over.
+  // Photons ABOVE the cutoff only. Everything below IFIOmega() is already held
+  // by the IF form factor, so reweighting it here counts that region twice -
+  // and the overlap grows with omega, which shows up directly as a
+  // cutoff-dependent cross-section. Measured: sigma moved 77.2951 -> 77.7450
+  // (+0.58%, 4.3 sigma) between two IFI_Omega values before this guard existed.
+  //
+  // RealIFWeight has carried the same condition since the FSR-band
+  // double-counting was found; this is the NLO path, which never got it.
+  // Whatever omega is, the exponent owns below it and these photons own above.
+  const bool ifi_above = (kk.E() > p_dipoles->IFIOmega());
+  if (m_ifireal && ifi_above && m_submode == submode::global &&
+      !IsZero(subb) && !IsBad(subloc) && !IsBad(subb)) {
+    // S_IF / (S_II + S_FF), both from p_dipoles at kk and both at BORN momenta:
+    // CalculateRealSubEEX reads GetBornMomenta, and the IF dipoles are built
+    // with mom == born (MakeDipolesIF is handed the same vector twice), so
+    // GetMomenta == GetBornMomenta for them. Numerator and denominator are
+    // therefore the same function of the same legs, which is what makes the
+    // ratio the 1 + small a crude-to-model reweight has to be.
+    //
+    // Two wrong pairings were measured on the way here, and the teardown line
+    // reporting this ratio identified each in one run:
+    //
+    //   subloc/subb            mean 0.9978  rms 4.63   range 2.6e-06 .. 1588
+    //     subloc is p_nlodipoles at the RESCALED, remapped photon (ScalePhoton
+    //     then MapMomenta above) while subb is p_dipoles at the original kk -
+    //     two different functions at two different momenta. Tempting because it
+    //     cancels tot's subtraction algebraically; not worth a weight that
+    //     fluctuates over nine orders of magnitude.
+    //
+    //   CalculateRealSub(kk)/CalculateRealSubEEX(kk)
+    //                          mean 0.7969  rms 0.457  range 2.8e-04 .. 2.22
+    //     Same object and momentum, but CalculateRealSub reads GetMomenta while
+    //     CalculateRealSubEEX reads GetBornMomenta, and for the FF dipole those
+    //     differ once Dipole::Boost() has applied the FSR recoil. A flat 20%
+    //     suppression of beta_0, i.e. a 20% hole in sigma.
+    //
+    // If the mean here is not ~1 with a small rms, do not adjust anything else
+    // until it is: it is measuring a kinematic mismatch, not the interference.
+    const double cru_gen = p_dipoles->CalculateRealSubEEX(kk);
+    const double if_gen  = p_dipoles->CalculateRealSubIF(kk);
+    const double ratio = (IsZero(cru_gen) || IsBad(cru_gen) || IsBad(if_gen))
+                       ? 1. : 1. + if_gen/cru_gen;
+    if (!IsBad(ratio)) {
+      // Accumulated as a PRODUCT over the event's photons and applied once by
+      // the caller - beta_0 is reweighted by prod_i S~_mod(k_i)/S~_crude(k_i),
+      // not by a sum of per-photon corrections. CalculateReal() sums this
+      // function over every ISR and FSR photon, so adding m_born*(ratio-1) to
+      // tot here would give sum_i (r_i - 1) instead of prod_i r_i - 1. With
+      // <r> < 1, which is what the generated region gives, the sum
+      // over-subtracts, and it does so worse the more photons an event has -
+      // dragging sigma down and inflating the MC error together.
+      m_ifi_prod *= ratio;
+      ++m_ifi_n; m_ifi_sum += ratio; m_ifi_sum2 += ratio*ratio;
+      {
+        const int ib = std::min(4, (int)(10.*kk.E()/sqrt(m_s)));
+        if (ib >= 0) {
+          ++m_ifi_x_n[ib];
+          m_ifi_x_r[ib] += ratio;
+          const double ex = subloc/(m_rescale_alpha*subb);
+          m_ifi_x_e[ib] += IsBad(ex) ? ratio : ex;
+        }
+      }
+      if (ratio < m_ifi_min) m_ifi_min = ratio;
+      if (ratio > m_ifi_max) m_ifi_max = ratio;
+    }
+    msg_Debugging() << METHOD << " IFI_Real ratio=" << ratio << "\n";
+  }
+
+  msg_Debugging() << METHOD << " submode=" << m_submode
+                  << " r*flux=" << r*flux
+                  << " sub=" << subloc * m_born / m_rescale_alpha
+                  << " tot=" << tot << "\n";
+
+  if (m_isr_debug || m_fsr_debug) {
+    double diff = ((r / subloc - m_born) - (rcoll / subb - m_born)) /
+                  ((r / subloc - m_born) + (rcoll / subb - m_born));
+    m_histograms1d["Real_diff"]->Insert(diff);
+    if (m_isr_debug)
+      m_histograms2d["Real_Flux"]->Insert(
+          flux, sqrt(p_dipoles->GetDipoleII()->Sprime()));
+  }
+
+  if (m_no_subtraction) {
+    msg_Debugging() << METHOD << " no_subtraction: returning r/subloc=" << r/subloc << "\n";
+    return r / subloc;
+  }
+
+  if (IsBad(tot)) {
+    msg_Debugging() << METHOD << " tot is NaN/Inf"
+                    << " r*flux=" << r*flux
+                    << " subloc*born=" << subloc*m_born
+                    << " subb=" << subb << "\n";
+    msg_Error() << "NLO real is NaN\n"
+                << "  R        : " << r << "\n"
+                << "  Local  S : " << subloc * m_born << "\n"
+                << "  Global S : " << subb << "\n";
+  }
+
+  if (m_isr_debug || m_fsr_debug) {
+    m_histograms2d["IFI_EIKONAL"]->Insert(k.Y(), k.PPerp(),
+                                          p_nlodipoles->CalculateRealSubIF(k));
+    m_histograms2d["REAL_SUB"]->Insert((p[0] + p[1]).Mass(), k.E(), tot / m_born);
+    m_histograms2d["REAL"]->Insert(k.E(), k.Theta(), r);
+    m_histograms2d["REAL_SUB"]->Insert(k.E(), k.Theta(), tot);
+  }
+
+  sumw += tot;
+  rcount += 1;
+  double avg = sumw / rcount;
+  if (rcount == 1000)
+    m_ravg = avg;
+  if (rcount > 1000) {
+    double diff = fabs(1. - m_ravg / avg) * 100;
+    if (diff > 10) {
+      msg_Debugging() << METHOD << " large weight jump: " << diff << "%"
+                      << " prev=" << m_ravg << " curr=" << avg
+                      << " n=" << rcount << "\n";
+      m_ravg = avg;
+    }
+  }
+
+  if (fsrcount >= 3) {
+    double raw = r * flux - subloc * m_born / m_rescale_alpha;
+    msg_Debugging() << METHOD << " fsrcount>=3: returning raw=" << raw << "\n";
+    return raw;
+  }
+
+  msg_Debugging() << METHOD << " returning tot=" << tot << "\n";
+  return tot;
 }
 
-
-double NLO_Base::CalculateReal(Vec4D k, int submode) {
-	double norm = 2.*pow(2 * M_PI, 3);
-	Vec4D_Vector p(m_plab),pi(m_bornMomenta), pf(m_bornMomenta);
-	Vec4D kk = k;
-	MapMomenta(p, k);
-	m_evts+=1;
-	p_nlodipoles->MakeDipoles(m_flavs,p,m_plab);
-	p_nlodipoles->MakeDipolesII(m_flavs,p,m_plab);
-	p_nlodipoles->MakeDipolesIF(m_flavs,p,m_plab);
-	
-	double flux;
-	if(m_flux_mode==1) flux = p_nlodipoles->CalculateFlux(k);
-	else if(m_flux_mode==2) flux = 0.5*(p_dipoles->CalculateFlux(kk)+p_nlodipoles->CalculateFlux(k));
-	else flux = p_dipoles->CalculateFlux(kk);
-	double tot,rcoll;
-	double subloc = p_nlodipoles->CalculateRealSub(k);
-	double subb   = p_dipoles->CalculateRealSubEEX(kk);
-	if(IsZero(subb)) return 0;
-	if(m_isr_debug || m_fsr_debug) m_histograms2d["IFI_EIKONAL"]->Insert(k.Y(),k.PPerp(), p_nlodipoles->CalculateRealSubIF(k));
-	p.push_back(k);
-	// if(submode!=1) flux = 1;
-	// CheckMasses(p,1);
-	CheckMomentumConservation(p);
-	double r = p_real->Calc_R(p) / norm * flux;
-	if(IsZero(r)) return 0;
-	if(IsBad(r) || IsBad(flux)) {
-		msg_Error()<<"Bad point for YFS Real"<<std::endl
-							 <<"Real ME is : "<<r<<std::endl
-							 <<"Flux is : "<<flux<<std::endl;
-		return 0;
-	}
-	m_recola_evts+=1;
-	// if(submode) tot = r-subloc*m_born;
-	// else tot =  (r-subloc*m_born)/subloc;
-	if(m_submode==submode::local) tot =  (r-subloc*m_born)/subloc;
-	else if(m_submode==submode::global) tot =  (r-subloc*m_born)/subb;
-	else if(m_submode==submode::off) tot =  (r)/subb;
-	else msg_Error()<<METHOD<<" Unknown YFS Subtraction Mode "<<m_submode<<std::endl;
-  if(m_isr_debug || m_fsr_debug){
-		double diff = ((r/subloc - m_born)-( rcoll/subb - m_born))/((r/subloc - m_born)+( rcoll/subb - m_born));
-		m_histograms1d["Real_diff"]->Insert(diff);
-		m_histograms1d["Real_Flux"]->Insert(flux);
+double NLO_Base::CalculateRealVirtual() {
+  if (!m_realvirt)
+    return 0;
+  m_rv_hard1 = 0.;
+  m_rv_hard2 = 0.;
+  if (m_rv_hard_photon==2) {
+    // Hard photons are rare in the YFS spectrum, so RV_Hard_Photon=1 means
+    // waiting many events for MostEnergeticPhoton() to clear the 0.2*sqrt(s)
+    // CHECK_RV threshold. RV_Hard_Photon=2 exercises the RV formula/
+    // subtraction on the same fixed photon every event instead.
+    Vec4D k = FixedTestPhoton();
+    if (m_check_rv) CheckRealVirtualSub(k);
+    m_rv_hard1 = CalculateRealVirtual(k, 0);
+    m_rv_hard2 = m_rv_hard1;  // single photon: 2-photon sum == 1-photon
+    return m_rv_hard1;
   }
-  if(m_no_subtraction) return r/subloc;
-  if(IsBad(tot)){
-  	msg_Error()<<"NLO real is NaN"<<std::endl
-  							<<"R = "<<r<<std::endl
-  							<<"Local  S = "<<subloc*m_born<<std::endl
-  							<<"GLobal S = "<<subb<<std::endl;
+  if (m_rv_hard_photon==1) {
+    Vec4D k = MostEnergeticPhoton();
+    if (k.E() == 0.) return 0;
+    if (m_check_rv) {
+      if (k.E() < 0.2 * sqrt(m_s)) return 0;
+      CheckRealVirtualSub(k);
+    }
+    m_rv_hard1 = CalculateRealVirtual(k, 0);
+    m_rv_hard2 = m_rv_hard1;  // single photon: 2-photon sum == 1-photon
+    return m_rv_hard1;
   }
-	return tot;// / flux;
+  double realvirtual(0);
+  m_rv_hard2 = 0.;
+  // Collect (photon energy, per-photon RV contribution) so the RV can be
+  // reported truncated to the 1 or 2 hardest photons (see HardestSums).
+  std::vector<std::pair<double, double>> contribs;
+  for (auto k : m_ISRPhotons) {
+    if (m_check_rv) {
+      if (k.E() < 0.2 * sqrt(m_s))
+        continue;
+      CheckRealVirtualSub(k);
+    }
+    double contrib = CalculateRealVirtual(k, 0);
+    realvirtual += contrib;
+    contribs.emplace_back(k.E(), contrib);
+    // else m_zeroRV++;
+  }
+  for (auto k : m_FSRPhotons) {
+    if (m_check_rv) {
+      if (k.E() < 0.2 * sqrt(m_s))
+        continue;
+      CheckRealVirtualSub(k);
+    }
+    double contrib = CalculateRealVirtual(k, 1);
+    realvirtual += contrib;
+    contribs.emplace_back(k.E(), contrib);
+  }
+  HardestSums(contribs, m_rv_hard1, m_rv_hard2);
+  return realvirtual;
 }
 
-void NLO_Base::RandomRotate(Vec4D &p){
+double NLO_Base::CalculateRealVirtual(Vec4D k, int fsrcount) {
+  if (!m_realvirt) return 0;
+  // Coarse soft-photon pre-filter. The real-virtual beta_1^1,
+  //   [RV - B_fin*R] - S(k)*[V - B_fin*Born],
+  // is a subtracted quantity that vanishes in the soft limit, so a photon
+  // with E << sqrt(s) contributes negligibly. Numerically, however, the RV
+  // matrix element and its subtraction each diverge like S(k) ~ 1/k^2 and
+  // cancel to poor precision - the main source of RV instability. This flat
+  // RV_SOFT_CUT (E/sqrt(s)) gate is a cheap pre-filter that skips obviously-
+  // soft photons before the expensive ME evaluation; the principled,
+  // process-independent gate is the RV_CANCEL_EPS cancellation-ratio test
+  // applied to d1 below. Disabled when RV_SOFT_CUT <= 0.
+  if (m_rv_soft_cut > 0. && k.E() < m_rv_soft_cut * sqrt(m_s)) {
+    m_softRV++;
+    msg_Debugging() << METHOD << " skipping soft photon: E=" << k.E()
+                    << " < RV_SOFT_CUT*sqrt(s)=" << m_rv_soft_cut * sqrt(m_s)
+                    << "\n";
+    return 0;
+  }
+  Vec4D_Vector p(m_plab), pi(m_bornMomenta), pf(m_bornMomenta);
+  double tot(0), sub(0);
+  double norm = 2 * pow(2 * M_PI, 3);
+  double flux(1);
+  Vec4D kk = k;
+  // Same ordering requirement as CalculateReal: MakeDipolesFF never builds a
+  // dipole (it only clears m_dipolesFF and sorts particles into charged/neutral
+  // lists), and both it and MakeDipolesII clear m_flav_label, which the FSR
+  // recoil loop below indexes. MakeDipoles must come last.
+  p_nlodipoles->MakeDipolesII(m_flavs, m_plab, m_plab);
+  p_nlodipoles->MakeDipolesIF(m_flavs, m_plab, m_plab);
+  p_nlodipoles->MakeDipoles(m_flavs, m_plab, m_plab);
+  // p_nlodipoles->CreateAllDipoles(m_flavs,m_plab,m_plab);
+  // dipoletype::code fluxtype = p_nlodipoles->WhichResonant(k);
+  // if(fluxtype==dipoletype::final){
+  if (fsrcount) {
+    if (!HasFSR())
+      msg_Error() << "Wrong dipole type in " << METHOD << endl;
+    for (Dipole_Vector::iterator Dip = p_nlodipoles->GetDipoleFF()->begin();
+         Dip != p_nlodipoles->GetDipoleFF()->end(); ++Dip) {
+      double scalek = p_fsr->ScalePhoton(k);
+      Dip->SetPhotonScale(scalek);
+      Dip->AddPhotonToDipole(k);
+      if (!Dip->BoostNLO()) {
+        msg_Error() << "NLO Boost Failed" << std::endl;
+        return 0;
+      }
+      int i(0);
+      for (auto f : Dip->m_flavs) {
+        p[p_nlodipoles->m_flav_label[f]] = Dip->GetNewMomenta(i);
+        i++;
+      }
+      // k = Dip->m_dipolePhotons[0];
+    }
+  } else {
+    MapMomenta(p, k);
+  }
+  double yfspole;
+  p.push_back(k);
+  if (fsrcount)
+    MapInitial(p);
+  CheckMasses(p, 1);
+  Vec4D_Vector pp = p;
+  pp.pop_back();
+  p_nlodipoles->MakeDipolesII(m_flavs, pp, m_plab);
+  p_nlodipoles->MakeDipoles(m_flavs, pp, m_plab);
+  p_nlodipoles->MakeDipolesIF(m_flavs, pp, m_plab);
+  p_nlodipoles->p_yfsFormFact->p_virt = p_realvirt->p_loop_me;
+  // Finite part of the virtual YFS B-hat at the reduced kinematics.
+  // This multiplies the *tree-level real-emission ME* in the subtraction,
+  // in exact analogy to CalculateVirtual(): oneloop = V - B_fin*Born.
+  double subloc = p_nlodipoles->CalculateRealVirtualSubEps(k);
+  yfspole = p_nlodipoles->Get_E1();
+  // Eikonal factor S(k) at the reduced kinematics.
+  const double eikloc = p_nlodipoles->CalculateRealSub(k);
+  const double aB = eikloc * m_oneloop;
+  if (m_flux_mode == 1)
+    flux = p_nlodipoles->CalculateFlux(k);
+  else if (m_flux_mode == 2)
+    flux = 0.5 *
+           (p_nlodipoles->CalculateFlux(kk) + p_nlodipoles->CalculateFlux(k));
+  else
+    flux = p_dipoles->CalculateFlux(kk);
+  // PRINT_VAR(yfspole);
+  double subb;
+
+  subb = (fsrcount != 1 ? p_dipoles->CalculateRealSubEEX(kk)
+                        : p_dipoles->CalculateRealSubEEX(kk));
+  if (p.size() != (m_flavs.size() + 1)) {
+    msg_Error() << "Mismatch in " << METHOD << std::endl;
+  }
+  double r = p_realvirt->Calc(p, m_born) / norm;
+  m_rv = r * flux;
+  if (p_realvirt->FailCut())
+    m_failcut = true;
+  ;
+  if (IsBad(r)) {
+    m_zeroRV++;
+    msg_Error() << "Real-Virtual is " << r << std::endl;
+    return 0;
+  }
+  if (IsZero(r,1e-30)) {
+    m_zeroRV++;
+    msg_Error() << "Real-Virtual is " << r << std::endl;
+    return 0;
+  }
+  // Tree-level real-emission ME at the same mapped kinematics; needed for
+  // the YFS virtual subtraction of the real-virtual, beta_1^1 =
+  // [RV - B_fin*R] - S(k)*[V - B_fin*Born].
+  double rtree(0.);
+  if (m_realtool)
+    rtree = p_real->Calc_R(p) / norm;
+  else
+    msg_Error() << METHOD << ": no real-emission ME available, "
+                << "RV YFS subtraction is incomplete.\n";
+  m_rvsub = (subloc * rtree * flux + aB) / m_rescale_alpha;
+  const double d1 = r * flux - m_rvsub;
+  msg_Debugging() << METHOD << " r*flux=" << r * flux
+                  << " rtree*flux=" << rtree * flux
+                  << " B_fin=" << subloc << " S(k)=" << eikloc
+                  << " oneloop=" << m_oneloop << " d1=" << d1 << "\n";
+  if (m_submode == submode::local)
+    tot = d1 / eikloc;
+  else if (m_submode == submode::global)
+    tot = d1 / subb;
+  else if (m_submode == submode::off)
+    tot = (r * flux) / subb;
+  // Relative cancellation of the two diverging RV pieces. C -> 0 in the soft
+  // limit, simultaneously flagging roundoff dominance and physical
+  // negligibility (both scale with V - B_fin*Born times the residual flux).
+  const double rvmax = ATOOLS::Max(fabs(m_rv), fabs(m_rvsub));
+  const double C = (rvmax > 0.) ? fabs(d1) / rvmax : 0.;
+  if (m_rv_cancel_hist) {
+    // Fill BEFORE the guard so the histograms record the full spectrum and the
+    // cut can be validated post-run. Weight by the contribution tot (integrand)
+    // and, separately, by 1 to see the per-bin population.
+    if (C > 0.) {
+      const double logC = ATOOLS::Max(-16., log10(C));
+      m_histograms1d["RV_tot_by_logC_w"]->Insert(logC, tot);
+      m_histograms1d["RV_tot_by_logC_n"]->Insert(logC, 1.);
+    }
+    const double efrac = k.E() / sqrt(m_s);
+    m_histograms1d["RV_tot_by_Efrac_w"]->Insert(efrac, tot);
+    m_histograms1d["RV_tot_by_Efrac_n"]->Insert(efrac, 1.);
+    // Angular classification, to locate WHERE the loop-ME instability lives.
+    // costh_beam -> +-1 for beam(ISR)-collinear photons; maxcos_leg -> 1 for a
+    // photon collinear to any charged leg (ISR or FSR). "hard wide-angle" =
+    // energetic and well separated from every charged leg.
+    const double costh_beam = k.CosTheta();
+    double maxcos_leg = -1.;
+    for (size_t i = 0; i < m_flavs.size(); ++i) {
+      if (m_flavs[i].Charge() == 0.) continue;
+      maxcos_leg = ATOOLS::Max(maxcos_leg, k.CosTheta(m_plab[i]));
+    }
+    const bool hardwide = (efrac > 0.1) && (maxcos_leg < 0.9);
+    // Matrix-element stability ratio: |rv| vs the scale its own subtraction
+    // predicts (~1 healthy, huge when the loop provider is unstable). Split by
+    // region so the run itself answers whether hard wide-angle is ever affected.
+    const double subscale =
+        ATOOLS::Max(ATOOLS::Max(fabs(m_rvsub), fabs(aB)), 1e-300);
+    const double lr = log10(ATOOLS::Max(fabs(m_rv) / subscale, 1e-300));
+    m_histograms1d["RV_MEstab_all"]->Insert(lr, 1.);
+    m_histograms1d["RV_tot_by_MEstab_w"]->Insert(lr, tot);
+    if (hardwide) m_histograms1d["RV_MEstab_hardwide"]->Insert(lr, 1.);
+    // Mechanism check for the C>=1 blow-ups. Hypothesis: the grossly unphysical
+    // tot values are exactly the photons whose real-emission ME came back zero
+    // (Calc_R failed/cut), so rvsub loses its B_fin*rtree*flux piece and can no
+    // longer cancel the S(k)~1/k^2 divergence in rv -> d1 ~ rv -> tot blows up.
+    // If m_rvBlowupRtree0 ~ m_rvBlowup at end of run, the hypothesis holds.
+    if (C >= 1.) m_rvHiC++;
+    const double bscale = ATOOLS::Max(fabs(m_born), 1e-30);
+    if (fabs(tot) > 1.e3 * bscale) {
+      m_rvBlowup++;
+      if (rtree == 0.) m_rvBlowupRtree0++;
+      if (C >= 1.) m_rvBlowupHiC++;
+      if (efrac < 0.01) m_rvBlowupSoft++;
+      if (hardwide) m_rvBlowupHardWide++;
+      // Full term breakdown for each blow-up, to identify which piece is
+      // anomalous (numerator rv/rvsub mismatch vs a small subb/eikloc
+      // denominator). Written to a per-rank file because msg_Out is rank-0
+      // only and blow-ups land on all ranks. Blow-ups are rare (~tens/run),
+      // so open-append-close per event is fine.
+      int rank = 0;
+#ifdef USING__MPI
+      if (mpi->Size() > 1) rank = mpi->Rank();
+#endif
+      std::ofstream bf(std::string(m_debugDIR_NLO) + "/RV_blowups_rank" +
+                           std::to_string(rank) + ".txt",
+                       std::ios_base::app);
+      bf << std::setprecision(10)
+         << "E=" << k.E() << " Efrac=" << efrac
+         << " costh_beam=" << costh_beam << " maxcos_leg=" << maxcos_leg
+         << " pT=" << k.PPerp() << " hardwide=" << (hardwide ? 1 : 0)
+         << " tot=" << tot << " d1=" << d1 << " C=" << C
+         << " | rv(r*flux)=" << (r * flux) << " rvsub=" << m_rvsub
+         << " rtree*flux=" << (rtree * flux) << " subloc(Bfin)=" << subloc
+         << " aB(eik*oneloop)=" << aB << " eikloc(S_k)=" << eikloc
+         << " subb=" << subb << " flux=" << flux << " oneloop=" << m_oneloop
+         << " rescale=" << m_rescale_alpha << " submode=" << (int)m_submode
+         << "\n";
+    }
+  }
+  // Matrix-element stability guard. The one-loop provider is numerically
+  // unstable for soft, beam-collinear (ISR) photons, returning rv up to ~1e30x
+  // the scale its own subtraction predicts (max(|rvsub|,|aB|)); the healthy and
+  // unstable populations are cleanly separated (ratio gap 1e4..1e25) and the
+  // failures never reach hard wide-angle photons (verified), so skipping them
+  // discards only negligible soft/collinear physics. Placed after the
+  // diagnostic block so RV_CANCEL_HIST still records the full spectrum.
+  if (m_rv_me_max_ratio > 0.) {
+    const double subscale_g =
+        ATOOLS::Max(ATOOLS::Max(fabs(m_rvsub), fabs(aB)), 1e-300);
+    if (fabs(m_rv) > m_rv_me_max_ratio * subscale_g) {
+      m_rvUnstable++;
+      msg_Debugging() << METHOD << " skipping RV, unstable loop ME: |rv|="
+                      << fabs(m_rv) << " > " << m_rv_me_max_ratio
+                      << "*max(|rvsub|,|aB|)=" << (m_rv_me_max_ratio * subscale_g)
+                      << " (E=" << k.E() << ", d1=" << d1 << ")\n";
+      return 0;
+    }
+  }
+  // Cancellation-ratio guard: drop points dominated by roundoff. This is the
+  // process-independent gate; the coarse RV_SOFT_CUT energy pre-filter above
+  // only avoids the ME evaluation for obviously-soft photons.
+  if (m_rv_cancel_eps > 0. && fabs(d1) < m_rv_cancel_eps * rvmax) {
+    m_softRV++;
+    msg_Debugging() << METHOD << " skipping RV, cancellation C=" << C
+                    << " < RV_CANCEL_EPS=" << m_rv_cancel_eps
+                    << " (d1=" << d1 << ", max(|rv|,|rvsub|)=" << rvmax << ")\n";
+    return 0;
+  }
+  if (m_check_poles == 1 && r != 0) {
+    double pr1 =
+        p_realvirt->p_loop_me->ME_E1() * p_realvirt->m_factor * flux / norm;
+    double pr2 = p_realvirt->p_loop_me->ME_E1() * p_realvirt->m_factor;
+    // p_nlodipoles->CalculateRealSub(k)*
+    const double correctdigit =
+        ::countMatchingDigits(pr2, -p_nlodipoles->Get_E1());
+    m_histograms1d["RVSinglePoleCD"]->Insert(correctdigit);
+    m_histograms1d["RealLoopEpsLP"]->Insert(log10(fabs(pr1)));
+    m_histograms1d["RealLoopEpsYFS"]->Insert(log10(fabs(yfspole)));
+    if (!IsEqual(pr2, -yfspole, 1e-4)) {
+      msg_Out() << "Poles do not cancel in YFS Real-Virtuals" << std::endl
+                << "Process =  " << p_realvirt->p_loop_me->Name() << std::endl
+                << "Correct Digits =  " << correctdigit << std::endl
+                << "One-Loop Provider RV eps^{-1}  = " << pr2 << std::endl
+                << "Sherpa RV eps^{-1} = " << -yfspole << std::endl
+                << "Sherpa/One-Loop = " << -yfspole / pr2 << std::endl;
+      return 0;
+    } else {
+      msg_Debugging() << std::setprecision(16)
+                      << "Poles cancel in YFS Real-Virtuals" << std::endl
+                      << "Process =  " << p_realvirt->p_loop_me->Name()
+                      << std::endl
+                      << "Correct Digits =  " << correctdigit << std::endl
+                      << "One-Loop Provider RV eps^{-1}  = " << pr2 << std::endl
+                      << "Sherpa RV eps^{-1} = " << p_nlodipoles->Get_E1()
+                      << std::endl;
+    }
+  }
+  if (IsZero(tot)) m_zeroRV++;
+  else m_nonZeroRV++;
+  return tot;
+}
+
+double NLO_Base::CalculateRealReal() {
+  if (!m_rrtool)
+    return 0;
+  double rr(0);
+  m_rr_hard2 = 0.;
+  Vec4D_Vector photons;
+  for (auto k : m_ISRPhotons)
+    photons.push_back(k);
+  for (auto k : m_FSRPhotons)
+    photons.push_back(k);
+  if (photons.size() == 0)
+    return 0;
+  size_t nISR = m_ISRPhotons.size();
+  size_t nFSR = m_FSRPhotons.size();
+  // Identify the indices of the two hardest photons up front (energy
+  // compare only) so their pair contribution can be captured inline below,
+  // without a second, duplicate CalculateRealReal(k1,k2,...) call.
+  int i0 = -1, j0 = -1;
+  if (photons.size() >= 2) {
+    size_t a = 0, b = 1;
+    if (photons[1].E() > photons[0].E()) { a = 1; b = 0; }
+    for (size_t n = 2; n < photons.size(); ++n) {
+      if (photons[n].E() > photons[a].E()) { b = a; a = n; }
+      else if (photons[n].E() > photons[b].E()) { b = n; }
+    }
+    i0 = (int)Min(a, b);
+    j0 = (int)Max(a, b);
+  }
+  for (int i = 0; i < photons.size(); ++i) {
+    for (int j = i + 1; j < photons.size(); ++j) {
+      Vec4D k = photons[i];
+      Vec4D kk = photons[j];
+      const int isFSR_i = (i >= nISR) ? 1 : 0;
+      const int isFSR_j = (j >= nISR) ? 1 : 0;
+      double contrib = CalculateRealReal(k, kk, isFSR_i, isFSR_j);
+      rr += contrib;
+      if (i == i0 && j == j0) m_rr_hard2 = contrib;
+      if (m_check_rr_sub == 2) {
+        // accumulating scatter: record each photon of the pair with the pair
+        // residual, so energetic collinear photons in large residuals show up
+        RecordSubScatter(k,  contrib, "rr", m_rr_eik);
+        RecordSubScatter(kk, contrib, "rr", m_rr_eik);
+      }
+      if (m_check_rr_sub == 1) {
+        // k*=2;
+        // kk*=2;
+        if (k.E() < 0.2 * sqrt(m_s))
+          continue;
+        if (kk.E() < 0.2 * sqrt(m_s))
+          continue;
+        if (!m_failcut)
+          CheckRealRealSub(k, kk, isFSR_i, isFSR_j);
+      }
+    }
+  }
+  return rr;
+}
+
+double NLO_Base::CalculateRealReal(Vec4D k1, Vec4D k2, int fsr1, int fsr2) {
+  // Coarse soft-photon pre-filter, the double-real counterpart of the
+  // RV_SOFT_CUT gate in CalculateRealVirtual. The beta_2^2 residual vanishes
+  // when either photon goes soft, but the RR matrix element and its
+  // subtraction each diverge like S~(k1)*S~(k2) and the result is divided by
+  // that same product (see m_rr_eik), so a pair containing one soft photon is
+  // roundoff-dominated while contributing negligibly. Gate on the softer of
+  // the two, before any boosting or ME evaluation. Disabled when
+  // RR_SOFT_CUT <= 0.
+  if (m_rr_soft_cut > 0.) {
+    const double emin = Min(k1.E(), k2.E());
+    if (emin < m_rr_soft_cut * sqrt(m_s)) {
+      m_softRR++;
+      msg_Debugging() << METHOD << " skipping soft photon pair: min(E1,E2)="
+                      << emin << " < RR_SOFT_CUT*sqrt(s)="
+                      << m_rr_soft_cut * sqrt(m_s) << "\n";
+      return 0;
+    }
+  }
+  const double norm = 2. * pow(2 * M_PI, 6);// * (m_borngamma.size()==1?1:m_borngamma.size());
+  m_rr_eik = 0.;  // reset; set once the crude eikonals are computed below
+  Vec4D_Vector p(m_plab);
+  Vec4D_Vector pp = p;
+  Vec4D kk1 = k1, kk2 = k2;
+
+  msg_Debugging() << METHOD << " fsr1=" << fsr1 << " fsr2=" << fsr2
+                  << " k1=" << k1 << " E1=" << k1.E() << " pt1=" << k1.PPerp()
+                  << " k2=" << k2 << " E2=" << k2.E() << " pt2=" << k2.PPerp() << "\n";
+
+  if (fsr1 && !fsr2) {
+    msg_Debugging() << METHOD << " FSR branch: k1 only\n";
+    if (!HasFSR())
+      msg_Error() << "Wrong dipole type in " << METHOD << "\n";
+    for (Dipole_Vector::iterator Dip = p_nlodipoles->GetDipoleFF()->begin();
+         Dip != p_nlodipoles->GetDipoleFF()->end(); ++Dip) {
+      Dip->ClearPhotons();
+      double scalek = p_fsr->ScalePhoton(k1);
+      Dip->SetPhotonScale(scalek);
+      Dip->AddPhotonToDipole(k1);
+      if (!Dip->BoostNLO()) {
+        msg_Debugging() << METHOD << " BoostNLO failed (fsr1), returning 0\n";
+        msg_Error() << "NLO boost failed\n";
+        return 0;
+      }
+      int i(0);
+      for (auto f : Dip->m_flavs)
+        p[p_nlodipoles->m_flav_label[f]] = Dip->GetNewMomenta(i++);
+    }
+  }
+
+  if (!fsr1 && fsr2) {
+    msg_Debugging() << METHOD << " FSR branch: k2 only\n";
+    if (!HasFSR())
+      msg_Error() << "Wrong dipole type in " << METHOD << "\n";
+    for (Dipole_Vector::iterator Dip = p_nlodipoles->GetDipoleFF()->begin();
+         Dip != p_nlodipoles->GetDipoleFF()->end(); ++Dip) {
+      double scalek = p_fsr->ScalePhoton(k2);
+      Dip->SetPhotonScale(scalek);
+      Dip->AddPhotonToDipole(k2);
+      if (!Dip->BoostNLO()) {
+        msg_Debugging() << METHOD << " BoostNLO failed (fsr2), returning 0\n";
+        msg_Error() << "NLO boost failed\n";
+        return 0;
+      }
+      int i(0);
+      for (auto f : Dip->m_flavs)
+        p[p_nlodipoles->m_flav_label[f]] = Dip->GetNewMomenta(i++);
+    }
+  }
+
+  if (fsr1 && fsr2) {
+    msg_Debugging() << METHOD << " FSR branch: k1+k2\n";
+    if (!HasFSR())
+      msg_Error() << "Wrong dipole type in " << METHOD << "\n";
+    for (Dipole_Vector::iterator Dip = p_nlodipoles->GetDipoleFF()->begin();
+         Dip != p_nlodipoles->GetDipoleFF()->end(); ++Dip) {
+      Dip->ClearPhotons();
+      double scale = p_fsr->ScalePhoton(k1) + p_fsr->ScalePhoton(k2);
+      Dip->SetPhotonScale(scale);
+      Dip->AddPhotonToDipole(k1);
+      Dip->AddPhotonToDipole(k2);
+      if (!Dip->BoostNLO()) {
+        msg_Debugging() << METHOD << " BoostNLO failed (fsr1+fsr2), returning 0\n";
+        msg_Error() << "NLO boost failed\n";
+        return 0;
+      }
+      int i(0);
+      for (auto f : Dip->m_flavs)
+        p[p_nlodipoles->m_flav_label[f]] = Dip->GetNewMomenta(i++);
+    }
+  }
+
+  if (!fsr1 && !fsr2) {
+    msg_Debugging() << METHOD << " ISR branch: mapping momenta\n";
+    MapMomenta(p, k1, k2);
+  }
+
+  p.push_back(k1);
+  p.push_back(k2);
+  if (fsr1 || fsr2)
+    MapInitial(p);
+
+  Vec4D_Vector _p = p;
+  _p.pop_back();
+  _p.pop_back();
+  p_nlodipoles->MakeDipolesII(m_flavs, _p, m_plab);
+  p_nlodipoles->MakeDipoles(m_flavs, _p, m_plab);
+  p_nlodipoles->MakeDipolesIF(m_flavs, _p, m_plab);
+
+  const double subloc1 = p_nlodipoles->CalculateRealSub(k1);
+  const double subloc2 = p_nlodipoles->CalculateRealSub(k2);
+
+  double flux;
+  if (m_flux_mode == 1)
+    flux = p_nlodipoles->CalculateFlux(k1 + k2);
+  else
+    flux = p_dipoles->CalculateFlux(k1) * p_dipoles->CalculateFlux(k2);
+
+  msg_Debugging() << METHOD << " subloc1=" << subloc1 << " subloc2=" << subloc2
+                  << " flux=" << flux << " (mode=" << m_flux_mode << ")\n";
+
+  if (!CheckMomentumConservation(p)) {
+    msg_Debugging() << METHOD << " momentum conservation failed, returning 0\n";
+    m_zeroRR++;
+    return 0;
+  }
+
+  double r = p_realreal->Calc_R(p) / norm;
+  if (p_realreal->FailCut()) {
+    msg_Debugging() << METHOD << " FailCut triggered, returning 0\n";
+    m_failcut = true;
+    m_zeroRR++;
+    return 0;
+  }
+  if (IsBad(r) || IsBad(flux)) {
+    msg_Debugging() << METHOD << " bad point: r=" << r << " flux=" << flux << "\n";
+    m_zeroRR++;
+    return 0;
+  }
+
+  p_nlodipoles->MakeDipolesII(m_flavs, m_plab, m_plab);
+  p_nlodipoles->MakeDipolesIF(m_flavs, m_plab, m_plab);
+  p_nlodipoles->MakeDipoles(m_flavs, m_plab, m_plab);
+
+
+  const double sub1  = p_dipoles->CalculateRealSubEEX(kk1);
+  const double sub2  = p_dipoles->CalculateRealSubEEX(kk2);
+  // crude eikonal product this pair is divided by (see tot below); exposed so
+  // the accumulating scatter can separate the 1/S~ blow-up from the physical
+  // contribution (residual*m_rr_eik = r*flux + fullsub).
+  m_rr_eik = sub1 * sub2;
+  // Vec4D_Vector r1(m_plab),r2(m_plab);
+  // MapMomenta(r1, kk1);
+  // MapMomenta(r2, kk2);
+  // r1.push_back(kk1);
+  // r2.push_back(kk2);
+  // const double norm1 =  2. * pow(2 * M_PI, 3);
+  // const double fl1 = p_nlodipoles->CalculateFlux(kk1);
+  // const double fl2 = p_nlodipoles->CalculateFlux(kk2);
+  const double real1 = CalculateReal(kk1, 3 + fsr1);//p_real->Calc_R(r1)/norm1-m_born*p_dipoles->CalculateRealSub(kk1);// CalculateReal(kk1, 3 + fsr1);
+  const double real2 = CalculateReal(kk2, 3 + fsr2);//p_real->Calc_R(r2)/norm1-m_born*p_dipoles->CalculateRealSub(kk2); //CalculateReal(kk2, 3 + fsr2);
+  // const double real1 = fl1*p_real->Calc_R(r1)/norm1-m_born*p_nlodipoles->CalculateRealSub(k1);// CalculateReal(kk1, 3 + fsr1);
+  // const double real2 = fl2*p_real->Calc_R(r2)/norm1-m_born*p_nlodipoles->CalculateRealSub(k2); //CalculateReal(kk2, 3 + fsr2);
+  m_recola_evts += 1;
+
+  msg_Debugging() << METHOD << " r=" << r
+                  << " sub1=" << sub1 << " sub2=" << sub2
+                  << " real1=" << real1 << " real2=" << real2
+                  << " born=" << m_born << "\n";
+
+  if (IsZero(real1) || IsZero(real2)) {
+    msg_Debugging() << METHOD << " real1 or real2 is zero, returning 0\n";
+    m_zeroRR++;
+    return 0;
+  }
+
+  const double fullsub = -subloc2 * real1 - subloc1 * real2 - subloc1 * subloc2 * m_born;
+  const double tot     = (r * flux + fullsub / m_rescale_alpha) / sub1 / sub2;
+
+  msg_Debugging() << METHOD << " fullsub=" << fullsub
+                  << " r*flux=" << r * flux
+                  << " tot=" << tot << "\n";
+
+  if (IsBad(tot))
+    msg_Error() << METHOD << " NNLO RR is NaN: r=" << r << " flux=" << flux
+                << " fullsub=" << fullsub << " sub1=" << sub1 << " sub2=" << sub2 << "\n";
+
+  if (!IsZero(tot)) m_nonZeroRR++;
+  return tot;
+}
+
+double NLO_Base::CalculateVV() {
+  if (!m_vvtool)
+    return 0;
+  if (m_eex_virt) {
+    return p_dipoles->CalculateEEXVirtual() * m_born - m_born;
+  }
+  double virt;
+  double sub;
+  // CheckMassReg();
+  if (!HasISR())
+    virt = p_vv->Calc(m_bornMomenta, m_born);
+  else
+    virt = p_vv->Calc(m_plab, m_born);
+  if (m_check_virt_born) {
+    // the provider's Born is pointlike, m_born is dressed with the pion form
+    // factor, so compare against the dressed provider Born
+    if (!IsEqual(m_born, p_virt->p_loop_me->ME_Born()
+                         * ExternalFormFactor(m_plab, m_flavs), 1e-6)) {
+      msg_Error() << METHOD
+                  << "\n Warning! Loop provider's born is different! YFS "
+                     "Subtraction likely fails\n"
+                  << "Loop Provider " << ":  " << p_virt->p_loop_me->ME_Born()
+                  << "\nSherpa" << ":  " << m_born << std::endl
+                  << "PhaseSpace Point = ";
+      for (auto _p : m_plab)
+        msg_Error() << _p << std::endl;
+    }
+  }
+  if (p_vv->FailCut())
+    return 0;
+  if (m_virt_sub && p_virt->p_loop_me->Mode() != 1)
+    sub = p_dipoles->CalculateVirtualSub();
+  else
+    sub = 0;
+  double sub2 = p_dipoles->CalculateVVSubEps();
+  // m_oneloop = (virt- sub * m_born/m_rescale_alpha );
+  m_oneloop = (virt - sub * CalculateVirtual() / m_rescale_alpha -
+               0.5 * sub * sub * m_born / m_rescale_alpha);
+  if (p_virt->p_loop_me->Mode() == 1) {
+    m_oneloop /= m_rescale_alpha;
+    // PRINT_VAR(m_rescale_alpha);
+  }
+  if (IsBad(m_oneloop) || IsBad(sub)) {
+    msg_Error() << "YFS Virtual is NaN" << std::endl
+                << "Virtual:  " << virt << std::endl
+                << "Subtraction: " << sub * m_born << std::endl
+                << "PhaseSpace Point: " << std::endl
+                << m_plab << std::endl;
+  }
+  double loope1 =
+      p_vv->p_loop_me->ME_E1() *
+      p_vv->m_factor; //*p_vv->m_factor;//+p_virt->p_loop_me->ME_E1()*p_virt->m_factor;;
+  double loope2 =
+      2. * p_vv->p_loop_me->ME_E2() * p_vv->m_factor * p_vv->m_factor;
+  double yfse1 = p_dipoles->Get_E1();
+  double yfse2 = p_dipoles->GetVV_E2();
+  // PRINT_VAR(::countMatchingDigits(loope1, yfse1));
+  // PRINT_VAR(::countMatchingDigits(loope2, -yfse2));
+  // PRINT_VAR(loope1);
+  // PRINT_VAR(loope1);
+  // PRINT_VAR(loope1/yfse1);
+  // PRINT_VAR(loope2);
+  // PRINT_VAR(yfse2);
+  // PRINT_VAR(loope2/yfse2);
+  // PRINT_VAR(m_born);
+  // PRINT_VAR(1./m_born);
+  // PRINT_VAR(p_dipoles->Get_E1()+0.5*pow(p_dipoles->Get_E1(),2));
+  if (m_check_poles == 1) {
+    if (m_virt_sub == 0)
+      sub = p_dipoles->CalculateVirtualSub();
+    const double p1 = p_vv->p_loop_me->ME_E1() * p_vv->m_factor;
+    const double p2 =
+        2. * p_vv->p_loop_me->ME_E2() * p_vv->m_factor * p_vv->m_factor;
+    const double yfspole1 = (p_dipoles->Get_E1());
+    const double yfspole2 = p_dipoles->GetVV_E2();
+    PRINT_VAR(p1 / yfspole1);
+    int ncorrect1 = ::countMatchingDigits(p1, yfspole1, 32);
+    int ncorrect2 = ::countMatchingDigits(p2, -yfspole2, 32);
+    if (!IsEqual(p2, -yfspole2, 1e-6) || ncorrect1 < 10) {
+      msg_Error() << "Poles do not cancel in YFS Double Virtuals" << std::endl
+                  << "Correct digits \epsion^{-1} =  " << ncorrect1 << std::endl
+                  << "Correct digits \epsion^{-2} =  " << ncorrect2
+                  << std::endl;
+      return 0;
+    } else {
+      int i = 0;
+      msg_Debugging() << std::setprecision(32);
+      msg_Out() << "Poles cancel in YFS double Virtuals to " << ncorrect2
+                << " digits" << std::endl;
+      m_histograms1d["SinglePoleVV"]->Insert(ncorrect1);
+      m_histograms1d["DoublePoleVV"]->Insert(ncorrect2);
+    }
+  }
+  return 0;
+}
+
+void NLO_Base::RandomRotate(Vec4D &p) {
   Vec4D t1 = p;
   // rotate around x
-  p[2] = cos(m_ranTheta)*t1[2] - sin(m_ranTheta)*t1[3];
-  p[3] = sin(m_ranTheta)*t1[2] + cos(m_ranTheta)*t1[3];
+  p[2] = cos(m_ranTheta) * t1[2] - sin(m_ranTheta) * t1[3];
+  p[3] = sin(m_ranTheta) * t1[2] + cos(m_ranTheta) * t1[3];
   t1 = p;
   // rotate around z
-  p[1] = cos(m_ranPhi)*t1[1]-sin(m_ranPhi)*t1[2];
-  p[2] = sin(m_ranPhi)*t1[1]+cos(m_ranPhi)*t1[2];
+  p[1] = cos(m_ranPhi) * t1[1] - sin(m_ranPhi) * t1[2];
+  p[2] = sin(m_ranPhi) * t1[1] + cos(m_ranPhi) * t1[2];
 }
 
 void NLO_Base::MapMomenta(Vec4D_Vector &p, Vec4D &k) {
-	Vec4D Q;
-	Vec4D QQ, PP;
-	Poincare boostLab(m_bornMomenta[0] + m_bornMomenta[1]);
-  double s = (m_plab[0]+m_plab[1]).Abs2();
-  double t = (m_plab[0]-m_plab[2]).Abs2();
-  m_ranTheta = acos(1.+2.*t/s);
-	m_ranPhi = ran->Get()*2.*M_PI;
-	// Poincare boostLab(p[0] + p[1]);
-	for (int i = 2; i < p.size(); ++i)
-	{
-		Q += p[i];
-	}
-	Q += k;
-	double sq = Q.Abs2();
-	Poincare boostQ(Q);
+  Vec4D Q;
+  Vec4D QQ, PP;
+  Poincare boostLab(m_bornMomenta[0] + m_bornMomenta[1]);
+  for (int i = 2; i < p.size(); ++i) {
+    Q += p[i];
+  }
+  Q += k;
+  double sq = Q.Abs2();
+  Poincare boostQ(Q);
   Poincare pRot(m_bornMomenta[0], Vec4D(0., 0., 0., 1.));
-	for (int i = 2; i < p.size(); ++i) {
-		boostQ.Boost(p[i]);
-		// pRot.Rotate(p[i]);
-		// RandomRotate(p[i]);
-	}
-	boostQ.Boost(k);
-	// pRot.Rotate(k);
-	// RandomRotate(k);
-	double qx(0), qy(0), qz(0);
-	for (int i = 2; i < p.size(); ++i)
-	{
-		qx += p[i][1];
-		qy += p[i][2];
-		qz += p[i][3];
-	}
-	if (!IsEqual(k[1], -qx, 1e-5) || !IsEqual(k[2], -qy, 1e-5) || !IsEqual(k[3], -qz, 1e-5) ) {
-		if( k[1]> 1e-6 && k[2]> 1e-6 && k[3]> 1e-6 ){
-			msg_Error() << "YFS Mapping has failed for ISR\n";
-			msg_Error() << " Photons px = " << k[1] << "\n Qx = " << -qx << std::endl;
-			msg_Error() << " Photons py = " << k[2] << "\n Qy = " << -qy << std::endl;
-			msg_Error() << " Photons pz = " << k[3] << "\n Qz = " << -qz << std::endl;
-		}
-		}
-	for (int i = 2; i < p.size(); ++i)
-	{
-		QQ += p[i];
-	}
-	QQ+=k;
-	double sqq = QQ.Abs2();
-	if (!IsEqual(sqq, sq, 1e-8))
-	{
-		msg_Error() << "YFS Real mapping not conserving momentum in " << METHOD << std::endl;
-	}
-	// if(m_is_isr) QQ = p[0]+p[1];
+  for (int i = 0; i < p.size(); ++i) {
+    pRot.RotateBack(p[i]);
+    boostQ.Boost(p[i]);
+  }
+  pRot.RotateBack(k);
+  boostQ.Boost(k);
+  double qx(0), qy(0), qz(0);
+  for (int i = 2; i < p.size(); ++i) {
+    qx += p[i][1];
+    qy += p[i][2];
+    qz += p[i][3];
+  }
+  if (!IsEqual(k[1], -qx, 1e-5) || !IsEqual(k[2], -qy, 1e-5) ||
+      !IsEqual(k[3], -qz, 1e-5)) {
+    if (k[1] > 1e-6 && k[2] > 1e-6 && k[3] > 1e-6) {
+      msg_Error() << "YFS Mapping has failed for ISR\n";
+      msg_Error() << " Photons px = " << k[1] << "\n Qx = " << -qx << std::endl;
+      msg_Error() << " Photons py = " << k[2] << "\n Qy = " << -qy << std::endl;
+      msg_Error() << " Photons pz = " << k[3] << "\n Qz = " << -qz << std::endl;
+    }
+  }
+  for (int i = 2; i < p.size(); ++i) {
+    QQ += p[i];
+  }
+  QQ += k;
+  double sqq = QQ.Abs2();
+  if (!IsEqual(sqq, sq, 1e-6)) {
+    msg_Error() << "YFS Real mapping not conserving momentum in " << METHOD
+                << std::endl;
+  }
+  // if(m_is_isr) QQ = p[0]+p[1];
   // double zz = sqrt(sqq) / 2.;
-	// double z = zz * sqrt((sqq - sqr(m_flavs[0].Mass() - m_flavs[1].Mass())) * (sqq - sqr(m_flavs[0].Mass() + m_flavs[1].Mass()))) / sqq;
-	double sign_z = (p[0][3] < 0 ? -1 : 1);
-	// p[0] = {zz, 0, 0, z};
-	// p[1] = {zz, 0, 0, -z};
+  // double z = zz * sqrt((sqq - sqr(m_flavs[0].Mass() - m_flavs[1].Mass())) *
+  // (sqq - sqr(m_flavs[0].Mass() + m_flavs[1].Mass()))) / sqq;
+  // Anchor the beam-0 z-orientation to the FIXED Born beam, not to p[0] after
+  // boostQ. boostQ is built from Q = p[2..]+k, and p[2..] are still the Born
+  // back-to-back pair here, so Q carries the photon's full transverse momentum:
+  // the boost is fully 3D and p[0][3] becomes a smooth function of the photon
+  // direction, flipping sign once the recoil against beam 0 is hard enough
+  // (p_z' = gamma*(p_z - beta*E)). That silently swapped beams 0/1 for those
+  // events, mirroring the real ME's forward-backward asymmetry and showing up
+  // as an excess AFB in cos(theta) of the outgoing leptons. Matches the
+  // convention Dipole::BoostNLO() uses for the subtraction terms
+  // (Dipole.C:245), which anchors to m_bornmomenta[0][3] with no boost
+  // involved -- so numerator and subtraction now agree on beam labelling.
+  double sign_z = (m_bornMomenta[0][3] < 0 ? -1 : 1);
+  // p[0] = {zz, 0, 0, z};
+  // p[1] = {zz, 0, 0, -z};
   double m1 = m_flavs[0].Mass();
   double m2 = m_flavs[1].Mass();
-  double lamCM = 0.5*sqrt(SqLam(sqq,m1*m1,m2*m2)/sqq);
-  double E1 = lamCM*sqrt(1+m1*m1/sqr(lamCM));
-  double E2 = lamCM*sqrt(1+m2*m2/sqr(lamCM));
- 	p[0] = {E1, 0, 0, sign_z*lamCM};
-  p[1] = {E2, 0, 0, -sign_z*lamCM};
-  Poincare pRot2(m_bornMomenta[0], Vec4D(0., 	0., 0, 1.));
-	for (int i = 0; i < p.size(); ++i)
-	{
-		pRot2.Rotate(p[i]);
-		boostLab.Boost(p[i]);
-	}
-	pRot2.Rotate(k);
-	boostLab.Boost(k);
+  double lamRaw = sqq*sqq + sqr(m1*m1) + sqr(m2*m2)
+                  - 2.*sqq*m1*m1 - 2.*sqq*m2*m2 - 2.*m1*m1*m2*m2;
+  if (lamRaw < 0.)
+    msg_Error()<<METHOD<<"(): below-threshold Kaellen argument = "<<lamRaw
+               <<" (sqq = "<<sqq<<", threshold = "<<sqr(m1+m2)<<")"<<std::endl;
+  double lamCM = 0.5 * sqrt(Lambda(sqq, m1 * m1, m2 * m2) / sqq);
+  double E1 = lamCM * sqrt(1 + m1 * m1 / sqr(lamCM));
+  double E2 = lamCM * sqrt(1 + m2 * m2 / sqr(lamCM));
+  p[0] = {E1, 0, 0, sign_z * lamCM};
+  p[1] = {E2, 0, 0, -sign_z * lamCM};
+  Poincare pRot2(m_bornMomenta[0], Vec4D(0., 0., 0, 1.));
+  for (int i = 0; i < p.size(); ++i) {
+    pRot2.Rotate(p[i]);
+    boostLab.BoostBack(p[i]);
+  }
+  pRot2.Rotate(k);
+  boostLab.BoostBack(k);
 }
 
+void NLO_Base::MapMomenta(Vec4D_Vector &p, Vec4D &k1, Vec4D &k2) {
+  Vec4D Q;
+  Vec4D QQ, PP;
+  Poincare boostLab(m_bornMomenta[0] + m_bornMomenta[1]);
+  for (int i = 2; i < p.size(); ++i) {
+    Q += p[i];
+  }
+  Q += k1 + k2;
+  double sq = Q.Abs2();
+  Poincare boostQ(Q);
+  Poincare pRot(m_bornMomenta[0], Vec4D(0., 0., 0., 1.));
+  for (int i = 0; i < p.size(); ++i) {  
+    pRot.RotateBack(p[i]);
+    boostQ.Boost(p[i]);
+  }
+  pRot.RotateBack(k1);
+  boostQ.Boost(k1);
+  pRot.RotateBack(k2);
+  boostQ.Boost(k2);
+  double qx(0), qy(0), qz(0);
+  for (int i = 2; i < p.size(); ++i) {
+    qx += p[i][1];
+    qy += p[i][2];
+    qz += p[i][3];
+  }
+  // if (!IsEqual(k[1], -qx, 1e-5) || !IsEqual(k[2], -qy, 1e-5) ||
+  // !IsEqual(k[3], -qz, 1e-5) ) { 	if( k[1]> 1e-6 && k[2]> 1e-6 && k[3]> 1e-6 ){
+  // 		msg_Error() << "YFS Mapping has failed for ISR\n";
+  // 		msg_Error() << " Photons px = " << k[1] << "\n Qx = " << -qx <<
+  // std::endl; 		msg_Error() << " Photons py = " << k[2] << "\n Qy = " << -qy <<
+  // std::endl; 		msg_Error() << " Photons pz = " << k[3] << "\n Qz = " << -qz <<
+  // std::endl;
+  // 	}
+  // 	}
+  for (int i = 2; i < p.size(); ++i) {
+    QQ += p[i];
+  }
+  QQ += k1 + k2;
+  double sqq = QQ.Abs2();
+  if (!IsEqual(sqq, sq, 1e-6)) {
+    msg_Error() << "YFS Real mapping not conserving momentum in " << METHOD
+                << std::endl;
+  }
+  // if(m_is_isr) QQ = p[0]+p[1];
+  // double zz = sqrt(sqq) / 2.;
+  // double z = zz * sqrt((sqq - sqr(m_flavs[0].Mass() - m_flavs[1].Mass())) *
+  // (sqq - sqr(m_flavs[0].Mass() + m_flavs[1].Mass()))) / sqq;
+  // Anchor the beam-0 z-orientation to the FIXED Born beam, not to p[0] after
+  // boostQ. boostQ is built from Q = p[2..]+k, and p[2..] are still the Born
+  // back-to-back pair here, so Q carries the photon's full transverse momentum:
+  // the boost is fully 3D and p[0][3] becomes a smooth function of the photon
+  // direction, flipping sign once the recoil against beam 0 is hard enough
+  // (p_z' = gamma*(p_z - beta*E)). That silently swapped beams 0/1 for those
+  // events, mirroring the real ME's forward-backward asymmetry and showing up
+  // as an excess AFB in cos(theta) of the outgoing leptons. Matches the
+  // convention Dipole::BoostNLO() uses for the subtraction terms
+  // (Dipole.C:245), which anchors to m_bornmomenta[0][3] with no boost
+  // involved -- so numerator and subtraction now agree on beam labelling.
+  double sign_z = (m_bornMomenta[0][3] < 0 ? -1 : 1);
+  // p[0] = {zz, 0, 0, z};
+  // p[1] = {zz, 0, 0, -z};
+  double m1 = m_flavs[0].Mass();
+  double m2 = m_flavs[1].Mass();
+  double lamRaw = sqq*sqq + sqr(m1*m1) + sqr(m2*m2)
+                  - 2.*sqq*m1*m1 - 2.*sqq*m2*m2 - 2.*m1*m1*m2*m2;
+  if (lamRaw < 0.)
+    msg_Error()<<METHOD<<"(): below-threshold Kaellen argument = "<<lamRaw
+               <<" (sqq = "<<sqq<<", threshold = "<<sqr(m1+m2)<<")"<<std::endl;
+  double lamCM = 0.5 * sqrt(Lambda(sqq, m1 * m1, m2 * m2) / sqq);
+  double E1 = lamCM * sqrt(1 + m1 * m1 / sqr(lamCM));
+  double E2 = lamCM * sqrt(1 + m2 * m2 / sqr(lamCM));
+  p[0] = {E1, 0, 0, sign_z * lamCM};
+  p[1] = {E2, 0, 0, -sign_z * lamCM};
+  Poincare pRot2(m_bornMomenta[0], Vec4D(0., 0., 0, 1.));
+  for (int i = 0; i < p.size(); ++i) {
+    pRot2.Rotate(p[i]);
+    boostLab.BoostBack(p[i]);
+  }
+  pRot2.Rotate(k1);
+  pRot2.Rotate(k2);
+  boostLab.BoostBack(k1);
+  boostLab.BoostBack(k2);
+}
 
-void NLO_Base::CheckMasses(Vec4D_Vector &p, int realmode){
-	bool allonshell=true;
-	std::vector<double> masses;
-	Flavour_Vector flavs = m_flavs;
-	if(realmode) flavs.push_back(Flavour(kf_photon));
-	for (int i = 0; i < p.size(); ++i)
-	{
-		masses.push_back(flavs[i].Mass());
-		if(!IsEqual(p[i].Mass(),flavs[i].Mass(),1e-6)){
-			msg_Debugging()<<"Wrong particle masses in YFS Mapping"<<std::endl
-								 <<"Flavour = "<<flavs[i]<<", with mass = "<<flavs[i].Mass()<<std::endl
-								 <<"Four momentum = "<<p[i]<<", with mass = "<<p[i].Mass()<<std::endl;
-			allonshell = false;
+void NLO_Base::MapInitial(Vec4D_Vector &p) {
+  Vec4D QQ;
+  Vec4D_Vector born = p;
+  for (int i = 2; i < p.size(); ++i) {
+    QQ += p[i];
+  }
+  double sqq = QQ.Abs2();
+  double sign_z = (p[0][3] > 0 ? -1 : 1);
+  double m1 = m_flavs[0].Mass();
+  double m2 = m_flavs[1].Mass();
+  double lamCM = 0.5 * sqrt(Lambda(sqq, m1 * m1, m2 * m2) / sqq);
+  double E1 = lamCM * sqrt(1 + m1 * m1 / sqr(lamCM));
+  double E2 = lamCM * sqrt(1 + m2 * m2 / sqr(lamCM));
+  p[0] = {E1, 0, 0, sign_z * lamCM};
+  p[1] = {E2, 0, 0, -sign_z * lamCM};
+  Poincare boostLab(QQ);
+  Poincare pRot = Poincare(p[0], Vec4D(0., 0., 0., 1.));
+  for (int i = 0; i < 2; ++i) {
+    pRot.Rotate(p[i]);
+    boostLab.BoostBack(p[i]);
+    // pRot2.Rotate(p[i]);
+  }
+}
 
-		}
-	}
-	if(!allonshell) m_stretcher.StretchMomenta(p, masses);
-	// return true;
+void NLO_Base::CheckMasses(Vec4D_Vector &p, int realmode) {
+  bool allonshell = true;
+  std::vector<double> masses;
+  Flavour_Vector flavs = m_flavs;
+  if (realmode >= 1)
+    flavs.push_back(Flavour(kf_photon));
+  if (realmode >= 2)
+    flavs.push_back(Flavour(kf_photon));
+  if (p.size() != flavs.size())
+    msg_Error() << "Mismatch between mass and flavour vectors in " << METHOD
+                << std::endl;
+  for (int i = 0; i < p.size(); ++i) {
+    masses.push_back(flavs[i].Mass());
+    if (!IsEqual(p[i].Mass(), flavs[i].Mass()) && flavs[i].Mass() != 0) {
+      // msg_Debugging() << "Wrong particle masses in YFS Mapping" << std::endl
+      //                 << "Flavour = " << flavs[i]
+      //                 << ", with mass = " << flavs[i].Mass() << std::endl
+      //                 << "Four momentum = " << p[i]
+      //                 << ", with mass = " << p[i].Mass() << std::endl;
+      allonshell = false;
+    }
+  }
+  if (!allonshell) {
+    m_stretcher.StretchMomenta(p, masses);
+    // for (int i = 0; i < p.size(); ++i) {
+      // msg_Debugging() << "Flavour = " << flavs[i]
+      //                 << ", with mass = " << flavs[i].Mass() << std::endl
+      //                 << "Four momentum = " << p[i]
+      //                 << ", with new mass = " << p[i].Mass() << std::endl;
+    // }
+  }
+}
+
+void NLO_Base::RescaleMasses(Vec4D_Vector &p, std::vector<double> masses) {
+  bool allonshell = true;
+  if (p.size() != masses.size())
+    msg_Error() << "Mismatch between mass and vectors in " << METHOD
+                << std::endl;
+  m_stretcher.StretchMomenta(p, masses);
+  // return true;
 }
 
 bool NLO_Base::CheckPhotonForReal(const Vec4D &k) {
-	for (int i = 0; i < m_plab.size(); ++i)
-	{
-		if (m_flavs[i].IsChargedLepton()) {
-			double sik = (k + m_plab[i]).Abs2();
-			if (sik < m_hardmin ) {
-				return false;
-			}
-		}
-	}
-	return true;
-}
-
-
-bool NLO_Base::CheckMomentumConservation(Vec4D_Vector p){
-  Vec4D incoming = p[0]+p[1];
-  Vec4D outgoing;
-  for (int i = 2; i < p.size(); ++i)
-  {
-    outgoing+=p[i];
-  }
-  Vec4D diff = incoming - outgoing;
-  if(!IsEqual(incoming,outgoing, 1e-5)){
-    msg_Error()<<METHOD<<std::endl<<"Momentum not conserverd in YFS"<<std::endl
-               <<"Incoming momentum = "<<incoming<<std::endl
-               <<"Outgoing momentum = "<<outgoing<<std::endl
-               <<"Difference = "<<diff<<std::endl
-               <<"Vetoing Event "<<std::endl;
+  for (int i = 0; i < m_plab.size(); ++i) {
+    if (m_flavs[i].IsChargedLepton()) {
+      double sik = (k + m_plab[i]).Abs2();
+      if (sik  < m_hardmin*m_plab[i].Abs2()) {
+        msg_Out() << "Rejecting photon k = " << k << std::endl
+                  << "sik = " << sik << std::endl;
+        return false;
+      }
+    }
   }
   return true;
 }
 
-void NLO_Base::CheckMassReg(){
-	double virt;
-	if (m_check_mass_reg==1 && !m_realvirt) {
-		out_sub.open("yfs-sub.txt", std::ios_base::app);
-		out_recola.open("recola-res.txt", std::ios_base::app); // append instead of overwrite
-		out_finite.open("yfs-finite.txt", std::ios_base::app);
-		if(!HasISR()) virt = p_virt->Calc(m_bornMomenta, m_born);
-		else virt = p_virt->Calc(m_plab, m_born);
-		if (!IsEqual(m_born, p_virt->p_loop_me->ME_Born(), 1e-6)) {
-			msg_Error() << METHOD << "\n Warning! Loop provider's born is different! YFS Subtraction likely fails\n"
-									<< "Loop Provider " << ":  "<<p_virt->p_loop_me->ME_Born()
-									<< "Sherpa" << ":  "<<m_born;
-		}
-		double sub = p_dipoles->CalculateVirtualSub();
-		std::cout << setprecision(15);
-		out_sub<< setprecision(15) << m_photonMass << "," << -sub*m_born << std::endl;
-		out_recola<< setprecision(15) << m_photonMass << "," << virt << std::endl;
-		out_finite<< setprecision(15) << m_photonMass << "," << virt - sub*m_born << std::endl;
-		out_sub.close();
-		out_recola.close();
-		exit(0);
-	}
+bool NLO_Base::CheckPhotonForReal(const Vec4D &k, const Vec4D_Vector &p) {
+  for (int i = 0; i < p.size(); ++i) {
+    if (m_flavs[i].IsChargedLepton()) {
+      double sik = (k + p[i]).Abs2();
+      if (sik < m_hardmin * p[i].Abs2()) {
+        msg_Out() << "Rejecting photon k = " << k << std::endl
+                  << "sik = " << sik << std::endl;
+        return false;
+      }
+      // if(p[i].PPerp() < m_hardmin) return false;
+    }
+  }
+  // if(k.PPerp() < m_hardmin) return false;
+  return true;
 }
 
+bool NLO_Base::CheckMomentumConservation(Vec4D_Vector p) {
+  Vec4D incoming = p[0] + p[1];
+  Vec4D outgoing;
+  for (int i = 2; i < p.size(); ++i) {
+    if (p[i].E() < 0 || IsBad(p[i].E())) {
+      msg_Error() << "Energy less than zero!: " << p[i] << std::endl;
+      return false;
+    }
+    outgoing += p[i];
+  }
+  Vec4D diff = incoming - outgoing;
+  if (!IsEqual(incoming, outgoing, 1e-8)) {
+    msg_Error() << METHOD << std::endl
+                << "Momentum not conserverd in YFS NLO" << std::endl
+                << "Incoming momentum = " << incoming << std::endl
+                << "Outgoing momentum = " << outgoing << std::endl
+                << "Difference = " << diff << std::endl
+                << "Vetoing Event " << std::endl;
+    return false;
+  }
+  return true;
+}
 
-void NLO_Base::CheckRealSub(Vec4D k){
-		// if(k.E() < 20) return;
-		// k*=100;
-		double real;
-		std::string filename="Real_subtracted_";
-		for(auto f: m_flavs) {
-			filename+=f.IDName();
-			filename+="_";
-		}
-		filename+=".txt";
-		if(ATOOLS::FileExists(filename))  ATOOLS::Remove(filename);
-		out_sub.open(filename, std::ios_base::app);
-		// if(k.E() < 0.8*sqrt(m_s)/2.) return;
-		for (double i = 1; i < 20 ; i+=0.005)
-		{
-			k=k/i;
-			real=CalculateReal(k);
-			out_sub<<k.E()<<","<<fabs(real)<<std::endl;
-			if(k.E() < 1e-10 || real==0) break;
-			// m_histograms2d["Real_me_sub"]->Insert(k.E(),fabs(real), 1);
-		}
-		out_sub.close();
-		exit(0);
+void NLO_Base::CheckMassReg() {
+  double virt;
+  if (m_check_mass_reg == 1 && !m_realvirt) {
+    out_sub.open("yfs-sub.txt", std::ios_base::app);
+    out_recola.open("virtual-res.txt",
+                    std::ios_base::app); // append instead of overwrite
+    out_finite.open("yfs-finite.txt", std::ios_base::app);
+    if (!HasISR())
+      virt = p_virt->Calc(m_bornMomenta, m_born);
+    else
+      virt = p_virt->Calc(m_plab, m_born);
+    if (!IsEqual(m_born, p_virt->p_loop_me->ME_Born() * m_rescale_alpha,
+                 1e-6)) {
+      msg_Error() << METHOD
+                  << "\n Warning! Loop provider's born is different! YFS "
+                     "Subtraction likely fails\n"
+                  << "Loop Provider " << ":  " << p_virt->p_loop_me->ME_Born()
+                  << "Sherpa" << ":  " << m_born;
+    }
+    double sub = p_dipoles->CalculateVirtualSub();
+    std::cout << setprecision(15);
+    out_sub << setprecision(15) << m_photonMass << ","
+            << -sub * m_born / m_rescale_alpha << std::endl;
+    out_recola << setprecision(15) << m_photonMass << "," << virt << std::endl;
+    out_finite << setprecision(15) << m_photonMass << ","
+               << virt - sub * m_born / m_rescale_alpha << std::endl;
+    out_sub.close();
+    out_recola.close();
+    exit(0);
+  }
+}
+
+namespace {
+// Accumulates a soft-photon subtraction scan (energy vs |residual|/Born) and
+// prints a convergence summary - the residual must vanish as the photon(s)
+// soften; this is the pass/fail signal the raw per-point dump doesn't give
+// you without plotting it first.
+struct SubCheckAccumulator {
+  size_t n = 0;
+  double e_first = 0, e_last = 0, r_first = 0, r_last = 0, r_min = 0, r_max = 0;
+  // Optional RV cancellation tracking. For each candidate relative threshold,
+  // e_below[t] is the largest photon energy at which the cancellation ratio
+  // C = |d1|/max(|rv|,|rvsub|) has already fallen below thr[t]. Since C shrinks
+  // as the photon softens, a cut placed at e_below[t] removes exactly the
+  // region where fewer than ~-log10(thr[t]) digits survive - the safe home for
+  // RV_CANCEL_EPS (=thr[t]) or an equivalent RV_SOFT_CUT.
+  bool track_cancel = false;
+  static const int NTHR = 4;
+  double thr[NTHR] = {1e-8, 1e-10, 1e-12, 1e-14};
+  double e_below[NTHR] = {0, 0, 0, 0};
+  double c_first = 0, c_last = 0;
+  void Add(double e, double r) {
+    if (n == 0) {
+      e_first = e;
+      r_first = r;
+      r_min = r_max = r;
+    }
+    e_last = e;
+    r_last = r;
+    r_min = ATOOLS::Min(r_min, r);
+    r_max = ATOOLS::Max(r_max, r);
+    ++n;
+  }
+  void AddCancel(double e, double C) {
+    if (!track_cancel) { c_first = C; track_cancel = true; }
+    c_last = C;
+    for (int t = 0; t < NTHR; ++t)
+      if (C < thr[t] && e > e_below[t]) e_below[t] = e;
+  }
+  void Print(const std::string &label, double roots = 0.) const {
+    if (n == 0) {
+      msg_Info() << om::brown << label << ": no points evaluated." << om::reset << "\n";
+      return;
+    }
+    const bool converged = r_last < 1e-3 * ATOOLS::Max(r_first, 1e-300);
+    msg_Info() << om::bold << "=== " << label << " ===" << om::reset << "\n"
+               << "  points             : " << n << "\n"
+               << "  photon energy      : " << e_first << " -> " << e_last << "\n"
+               << "  |residual|/Born    : " << (converged ? om::green : om::red)
+               << r_first << " -> " << r_last << om::reset
+               << "  (range [" << r_min << ", " << r_max << "])\n";
+    if (r_first > 0. && !IsZero(r_last))
+      msg_Info() << "  suppression factor : " << (r_first / r_last) << "x\n";
+    msg_Info() << "  " << (converged ? om::green : om::red) << om::bold
+               << (converged
+                       ? "OK: residual -> 0 in the soft limit"
+                       : "WARNING: residual does not appear to vanish in the "
+                         "soft limit - check the subtraction!")
+               << om::reset << "\n";
+    if (track_cancel) {
+      msg_Info() << "  cancellation C     : " << c_first << " -> " << c_last
+                 << "  (C = |d1|/max(|rv|,|rvsub|))\n"
+                 << "  suggested RV cut placement (keep ~-log10(eps) digits):\n";
+      for (int t = 0; t < NTHR; ++t) {
+        msg_Info() << "    RV_CANCEL_EPS=" << thr[t] << "  -> cut at E >= "
+                   << e_below[t];
+        if (roots > 0.)
+          msg_Info() << "  (RV_SOFT_CUT ~ " << e_below[t] / roots << ")";
+        if (e_below[t] == 0.)
+          msg_Info() << "  [C never fell below this in the scanned range]";
+        msg_Info() << "\n";
+      }
+    }
+  }
+};
+}
+
+void NLO_Base::RecordSubScatter(const Vec4D &k, double residual,
+                                const std::string &tag, double eik) {
+  if (!m_subscatter.is_open()) {
+    // per-rank filename: every MPI rank accumulates its own file (concatenate
+    // for plotting) so ranks do not clobber a shared file.
+    int rank = 0;
+#ifdef USING__MPI
+    if (mpi->Size() > 1) rank = mpi->Rank();
+#endif
+    std::string fn = "sub_angle_energy";
+    for (auto f : m_flavs) { fn += "_"; fn += f.IDName(); }
+    fn += "_rank" + std::to_string(rank) + ".txt";
+    if (ATOOLS::FileExists(fn)) ATOOLS::Remove(fn);
+    m_subscatter.open(fn.c_str(), std::ios_base::app);
+    m_subscatter << "# tag  E_gamma  pT_gamma  theta_charged[rad]  nearest_kf  "
+                 << "residual  eik(S~product)\n";
+  }
+  // angle of the photon k to the nearest charged particle
+  const Vec4D_Vector &mom =
+      (m_reallab.size() >= m_flavs.size() ? m_reallab : m_plab);
+  double th(-1.);
+  int ni(-1);
+  for (size_t j(0); j < m_flavs.size() && j < mom.size(); ++j) {
+    if (m_flavs[j].IntCharge() == 0) continue;
+    double t = k.Theta(mom[j]);
+    if (th < 0. || t < th) { th = t; ni = j; }
+  }
+  m_subscatter << std::setprecision(10) << tag << " " << k.E() << " "
+               << k.PPerp() << " " << th << " "
+               << (ni >= 0 ? (m_flavs[ni].IsAnti() ? -(long)m_flavs[ni].Kfcode()
+                                                   : (long)m_flavs[ni].Kfcode())
+                           : 0)
+               << " " << residual << " " << eik << "\n";
+}
+
+void NLO_Base::CheckRealSub(Vec4D k, int mode) {
+  // if(k.E() < 20) return;
+  // k*=100;
+  double real;
+  std::string filename = "Real_subtracted_";
+  std::string filename1 = "Sub_term_";
+  std::string filename2 = "Real_ME_";
+  for (auto f : m_flavs) {
+    filename += f.IDName();
+    filename += "_";
+    filename1 += f.IDName();
+    filename1 += "_";
+    filename2 += f.IDName();
+    filename2 += "_";
+  }
+  filename += ".txt";
+  filename1 += ".txt";
+  filename2 += ".txt";
+  if (ATOOLS::FileExists(filename))
+    ATOOLS::Remove(filename);
+  if (ATOOLS::FileExists(filename1))
+    ATOOLS::Remove(filename1);
+  if (ATOOLS::FileExists(filename2))
+    ATOOLS::Remove(filename2);
+  out_finite.open(filename, std::ios_base::app);
+  out_sub.open(filename1, std::ios_base::app);
+  out_real.open(filename2, std::ios_base::app);
+  SubCheckAccumulator acc;
+  for (double i = 1; i < 20; i += 0.1) {
+    k = k / i;
+    real = CalculateReal(k, mode);
+    if (k.E() <= 1e-16)
+      break;
+    out_finite << k.E() << "," << fabs(real) / m_born << std::endl;
+    out_real << k.E() << "," << (m_real)*p_nlodipoles->CalculateFlux(k)
+             << std::endl;
+    out_sub << k.E() << "," << m_subloc * m_born / m_rescale_alpha << std::endl;
+    acc.Add(k.E(), fabs(real) / m_born);
+  }
+  acc.Print("Real subtraction check (" + filename + ")");
+  out_finite.close();
+  out_real.close();
+  out_sub.close();
+  exit(0);
+}
+
+void NLO_Base::CheckRealVirtualSub(Vec4D k) {
+  // if(k.E() < 20) return;
+  // k*=100;
+  double real;
+  std::string filename = "RealVirtual_subtracted";
+  std::string filename1 = "SubRV_term";
+  std::string filename2 = "RV_ME";
+  for (auto f : m_flavs) {
+    filename += "_";
+    filename += f.IDName();
+    filename1 += "_";
+    filename1 += f.IDName();
+    filename2 += "_";
+    filename2 += f.IDName();
+  }
+  filename += ".txt";
+  filename1 += ".txt";
+  filename2 += ".txt";
+  if (ATOOLS::FileExists(filename))
+    ATOOLS::Remove(filename);
+  if (ATOOLS::FileExists(filename1))
+    ATOOLS::Remove(filename1);
+  if (ATOOLS::FileExists(filename2))
+    ATOOLS::Remove(filename2);
+  out_finite.open(filename, std::ios_base::app);
+  out_sub.open(filename1, std::ios_base::app);
+  out_real.open(filename2, std::ios_base::app);
+  // if(k.E() < 0.8*sqrt(m_s)/2.) return;
+  SubCheckAccumulator acc;
+  for (double i = 1; i < 20; i += 0.01) {
+    k = k / i;
+    if (k.E() <= m_isrcut*sqrt(m_s))
+      break;
+    // Run this tuning scan with RV_CANCEL_EPS/RV_SOFT_CUT disabled so soft
+    // points are not skipped - CalculateRealVirtual still fills m_rv/m_rvsub
+    // before any guard, but a guard would zero the returned residual here.
+    real = CalculateRealVirtual(k, 0);
+    if( IsBad(real) || IsBad(m_rv) || IsBad(m_rvsub) ) continue;
+    // Relative cancellation of the two diverging RV pieces at this energy.
+    const double rvmax = ATOOLS::Max(fabs(m_rv), fabs(m_rvsub));
+    const double C = (rvmax > 0.) ? fabs(m_rv - m_rvsub) / rvmax : 0.;
+    // PRINT_VAR(real);
+    out_finite << std::setprecision(16) << k.E() << "," << fabs(real) / m_born
+               << "," << C << std::endl;
+    out_real << std::setprecision(16) << k.E() << "," << m_rv << std::endl;
+    out_sub << std::setprecision(16) << k.E() << "," << m_rvsub << std::endl;
+    acc.Add(k.E(), fabs(real) / m_born);
+    if (C > 0.) acc.AddCancel(k.E(), C);
+  }
+  acc.Print("Real-Virtual subtraction check (" + filename + ")", sqrt(m_s));
+  out_finite.close();
+  out_sub.close();
+  out_real.close();
+  exit(0);
+}
+
+void NLO_Base::CheckRealRealSub(Vec4D k1, Vec4D k2, int fsr1, int fsr2) {
+  // if(k.E() < 20) return;
+  // k*=100;
+  double real;
+  Vec4D _k1 = k1;
+  Vec4D _k2 = k2;
+  std::string filename1 = "RealReal_k1_subtracted_";
+  std::string filename2 = "RealReal_k2_subtracted_";
+  std::string filename3 = "RealReal_k1_k2_subtracted_";
+  for (auto f : m_flavs) {
+    filename1 += f.IDName();
+    filename2 += f.IDName();
+    filename3 += f.IDName();
+    // filename1 += "_";
+    // filename2 += "_";
+    // filename3 += "_";
+  }
+  filename1 += ".txt";
+  filename2 += ".txt";
+  filename3 += ".txt";
+  if (ATOOLS::FileExists(filename1))
+    ATOOLS::Remove(filename1);
+  if (ATOOLS::FileExists(filename2))
+    ATOOLS::Remove(filename2);
+  if (ATOOLS::FileExists(filename3))
+    ATOOLS::Remove(filename3);
+  out_sub.open(filename1, std::ios_base::app);
+  // if(k.E() < 0.8*sqrt(m_s)/2.) return;
+  // Run these soft-limit scans with RR_SOFT_CUT disabled, as for
+  // RV_CANCEL_EPS/RV_SOFT_CUT in CheckRealVirtualSub: the whole point here is
+  // to walk the photons into the soft region, which is exactly what the guard
+  // skips. With it on, CalculateRealReal returns 0 for the soft points, and the
+  // third loop below (which breaks on real==0) would terminate immediately.
+  SubCheckAccumulator acc1, acc2, acc12;
+  for (double i = 1; i < 20; i += 0.02) {
+    k1 = k1 / i;
+    if(k1.E()< m_isrcut*sqrt(m_s)) break;
+    real = CalculateRealReal(k1, k2, fsr1, fsr2);
+    out_sub << k1.E() << "," << fabs(real) / m_born << std::endl;
+    acc1.Add(k1.E(), fabs(real) / m_born);
+    // if (k1.E() <= 1e-16)
+    //   break;
+    // m_histograms2d["Real_me_sub"]->Insert(k.E(),fabs(real), 1);
+  }
+  acc1.Print("RealReal subtraction check, k1 -> 0 (" + filename1 + ")");
+  out_sub.close();
+  out_sub.open(filename2, std::ios_base::app);
+  k2 = _k2;
+  k1 = _k1;
+  for (double i = 1; i < 20; i += 0.02) {
+    k2 = k2 / i;
+    // if(k2.E() <= 1e-16 ) break;
+    if(k2.E()< m_isrcut*sqrt(m_s)) break;
+    real = CalculateRealReal(k1, k2, fsr1, fsr2);
+    out_sub << k2.E() << "," << fabs(real) / m_born << std::endl;
+    acc2.Add(k2.E(), fabs(real) / m_born);
+    // if(IsZero(real)) break;
+    // m_histograms2d["Real_me_sub"]->Insert(k.E(),fabs(real), 1);
+  }
+  acc2.Print("RealReal subtraction check, k2 -> 0 (" + filename2 + ")");
+  out_sub.close();
+  out_sub.open(filename3, std::ios_base::app);
+  k2 = _k2;
+  k1 = _k1;
+  for (double i = 1; i < 20; i += 0.02) {
+    k2 = k2 / i;
+    k1 = k1 / i;
+    if(k1.E()< m_isrcut*sqrt(m_s)) break;
+    real = CalculateRealReal(k1, k2, fsr1, fsr2);
+    out_sub << k1.E() << "," << fabs(real) / m_born << std::endl;
+    acc12.Add(k1.E(), fabs(real) / m_born);
+    if (k1.E() <= 1e-16 || real == 0 && !m_failcut)
+      break;
+    // if(IsZero(real)) break;
+    // m_histograms2d["Real_me_sub"]->Insert(k.E(),fabs(real), 1);
+  }
+  acc12.Print("RealReal subtraction check, k1&k2 -> 0 (" + filename3 + ")");
+  out_sub.close();
+  exit(0);
+}
+
+Vec4D NLO_Base::MostEnergeticPhoton() const {
+  Vec4D hardest;
+  for (const auto &k : m_ISRPhotons)
+    if (k.E() > hardest.E()) hardest = k;
+  for (const auto &k : m_FSRPhotons)
+    if (k.E() > hardest.E()) hardest = k;
+  return hardest;
+}
+
+// Deterministic stand-in for MostEnergeticPhoton(), for CHECK_RV validation:
+// hard photons are rare in the YFS spectrum, so selecting on
+// MostEnergeticPhoton() means waiting many events for one hard enough to
+// exercise CalculateRealVirtual()/CheckRealVirtualSub(). This instead builds
+// a photon of fixed energy fraction (RV_TEST_PHOTON_X, of sqrt(s)/2) and
+// direction (RV_TEST_PHOTON_THETA/PHI) in the Born CMS, then rotates/boosts
+// it into the same frame as m_bornMomenta, matching the tail of MapMomenta.
+// One-shot dump of beta_0 and beta_1 at a single, fully specified phase-space
+// point, for the number-for-number comparison against KKMC's CEEX
+// (Test/SherpaCompare/kkmc_ceex_crosscheck.cxx in the KKMC repo). Enabled with
+// YFS: CEEX_Compare: 1.
+//
+// Why a hook inside a running Sherpa rather than a standalone driver: unlike
+// YFS_Form_Factor and Dipole (pure functions of their arguments, hence the
+// FSR/IFI harnesses), beta_1 needs p_real and p_virt wired to real ME
+// providers, which means the whole process/model/generator stack. Reusing the
+// live wiring is far cheaper and cannot drift from what production does.
+//
+// The Born configuration is whatever the phase-space generator produced for
+// this event, so the momenta are PRINTED - feed them to the KKMC driver so both
+// sides evaluate at exactly the same point. Only the photon is deterministic
+// (FixedTestPhoton, from RV_TEST_PHOTON_X/THETA/PHI).
+void NLO_Base::CEEXComparePoint() {
+  if (!m_ceex_compare || m_ceex_done) return;
+  if (!m_realtool || !m_looptool) {
+    msg_Error() << METHOD << ": CEEX_Compare needs both a real and a loop "
+                << "provider (NLO_Part: BVR); got real=" << m_realtool
+                << " loop=" << m_looptool << "\n";
+    m_ceex_done = true;
+    return;
+  }
+  m_ceex_done = true;
+
+  Vec4D k = FixedTestPhoton();
+  msg_Out() << std::setprecision(15)
+            << "\n=== Sherpa YFS NLO point for the KKMC CEEX comparison ===\n";
+  for (size_t i(0); i < m_bornMomenta.size(); ++i)
+    msg_Out() << "  born[" << i << "] (" << m_flavs[i] << ") = "
+              << m_bornMomenta[i] << "\n";
+
+  // The REAL-EMISSION configuration is what has to be handed to KKMC, not the
+  // Born momenta plus a photon: CalculateReal maps the Born configuration onto
+  // one that accommodates k (MapMomenta reduces the beams for an ISR photon),
+  // and born+k does not conserve momentum. Reproduce that mapping here purely
+  // so the point can be printed; CalculateReal below redoes it internally.
+  Vec4D_Vector pmap(m_plab);
+  MapMomenta(pmap, k);
+  pmap.push_back(k);
+  msg_Out() << "  --- real-emission momenta actually used (feed THESE to KKMC) ---\n";
+  for (size_t i(0); i < pmap.size(); ++i)
+    msg_Out() << "  p[" << i << "] = " << pmap[i] << "\n";
+  Vec4D bal(pmap[0]+pmap[1]);
+  for (size_t i(2); i < pmap.size(); ++i) bal -= pmap[i];
+  msg_Out() << "  balance (in - out) = " << bal
+            << "   max|component| = "
+            << Max(Max(dabs(bal[0]),dabs(bal[1])),Max(dabs(bal[2]),dabs(bal[3])))
+            << "\n";
+  // Machine-readable copy so the KKMC driver can consume the point directly
+  // instead of it being transcribed by hand.
+  std::ofstream pt("ceex_point.dat");
+  pt << std::setprecision(17);
+  for (size_t i(0); i < pmap.size(); ++i)
+    pt << pmap[i][0] << " " << pmap[i][1] << " "
+       << pmap[i][2] << " " << pmap[i][3] << "\n";
+
+  // beta_0 is the Born; beta_1 the O(alpha) real + virtual on top of it. These
+  // are the same calls the nominal weight uses, so nothing here is a
+  // re-derivation of the physics.
+  const double b0    = m_born;
+  const double real  = CalculateReal(k, 0);
+  const double virt  = CalculateVirtual();
+  const double beta1 = real + virt;
+
+  msg_Out() << "  beta_0  (Born)                = " << b0    << "\n"
+            << "  real    (CalculateReal)       = " << real  << "\n"
+            << "  virtual (CalculateVirtual)    = " << virt  << "\n"
+            << "  beta_1  = real + virtual      = " << beta1 << "\n"
+            << "  beta_0 + beta_1               = " << b0+beta1 << "\n"
+            << "\n  KKMC counterpart (kkmc_ceex_crosscheck):\n"
+            << "    beta_0        <-> RhoExp0\n"
+            << "    beta_0+beta_1 <-> RhoExp1\n"
+            << "    beta_1        <-> RhoExp1 - RhoExp0\n"
+            << "    real  only    <-> the 'Born+real' row minus its RhoExp0\n"
+            << "    virt  only    <-> the 'Born+virtual' row minus its RhoExp0\n"
+            << "  NB both sides carry their own overall normalisation (Sherpa's\n"
+            << "  beta_0 is the Born ME, KKMC's RhoExp0 the CEEX distribution),\n"
+            << "  so compare the RATIOS beta_1/beta_0 vs (RhoExp1-RhoExp0)/RhoExp0,\n"
+            << "  not the absolute numbers.\n";
+  msg_Out() << "  beta_1/beta_0 = " << (IsZero(b0) ? 0. : beta1/b0) << "\n\n";
+  pt << "# beta0 real virtual\n"
+     << b0 << " " << real << " " << virt << "\n";
+  pt.close();
+}
+
+Vec4D NLO_Base::FixedTestPhoton() const {
+  double E = m_rv_test_x * sqrt(m_s) / 2.;
+  double st = sin(m_rv_test_theta), ct = cos(m_rv_test_theta);
+  Vec4D k(E, E * st * cos(m_rv_test_phi), E * st * sin(m_rv_test_phi),
+         E * ct);
+  Poincare pRot(m_bornMomenta[0], Vec4D(0., 0., 0., 1.));
+  Poincare boostLab(m_bornMomenta[0] + m_bornMomenta[1]);
+  pRot.Rotate(k);
+  boostLab.BoostBack(k);
+  return k;
 }
 
