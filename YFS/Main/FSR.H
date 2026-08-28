@@ -20,7 +20,8 @@ namespace YFS {
       ~FSR();
       ATOOLS::Poincare *p_rot;
       double m_u, m_fsrcut, m_Kmin, m_Kmax, m_sQ,m_sprim, m_dip_sp, m_sqtest, m_sX, m_Emin, m_QF2, m_Q1, m_Q2;
-      double m_phi, m_theta, m_c, m_eta1, m_eta2, m_EminQ, m_mass1, m_mass2,m_q1q2, m_st, m_p1p2;
+      // m_mass2 removed: shadowed YFS_Base's double[2] with a scalar, unused.
+      double m_phi, m_theta, m_c, m_eta1, m_eta2, m_EminQ, m_mass1, m_q1q2, m_st, m_p1p2;
       double m_beta, m_beta1, m_beta2, m_mu1, m_mu2, m_g, m_gp, m_EQ, m_betaf, m_omegaF, m_volmc, m_gpBar, m_gBar;
       double m_massW, m_hideW, m_expf, m_wt2, m_amc2, m_amfin, m_EminPP, m_f, m_fbar,m_bvrA,m_pT,m_yy,m_xfact;
       double  m_fsrform, m_nbar, m_betaBar,m_YFS_IR, m_btil, m_btilStar, m_volumc, m_delvol, m_DelYFS,m_delta1,m_cut;
@@ -28,7 +29,7 @@ namespace YFS {
       double m_scalek;
       std::vector<double> m_mass, m_MassWls, m_cos, m_sin, m_dist1, m_dist2, m_del1, m_del2, m_yini, m_zini, m_phi_vec, m_k0, m_fvev, m_fbarvec, m_kscale;
       int m_n, m_N, m_NRemoved, m_eikonal_mode, m_use_crude, m_fixed_ngamma;
-      bool m_use_massive_nbar, m_failed, m_use_model_alpha;
+      bool m_use_massive_nbar, m_failed;   // m_use_model_alpha shadowed YFS_Base's, unused here
     Vec4D_Vector m_photons, m_dipole, m_photonspreboost;
       Flavour_Vector m_dipoleFl;
       Vec4D m_photonSum, m_photonSumPreBoost, m_r1, m_r2, m_QFrame, m_Q, m_px;

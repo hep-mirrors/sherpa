@@ -65,7 +65,7 @@ public:
     ATOOLS::Vec4D m_wp, m_wm, m_p1, m_p2;
     PHASIC::Virtual_ME2_Base *p_virt;
     double m_xx1, m_xx2, m_m1, m_m2;
-    bool m_use_model_alpha;
+    // m_use_model_alpha removed: shadowed YFS_Base's and was never read here.
     inline void SetCharge(double ch) {
         m_alpha = m_alpha * ch;
         m_alpi = m_alpi * ch;
