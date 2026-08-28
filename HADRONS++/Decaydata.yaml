@@ -903,14 +903,25 @@ HADRON_DECAYS:
     # VA_0_PPP here would silently produce exactly zero rate).
     #
     # Available FORM_FACTOR options:
-    #   201 = RChL2012: only model implemented for this channel. Uses a
+    #   100 = KS (FM95), via VA_0_KPiK - the default below. Same model
+    #         and Current class as the other K K pi charge modes in
+    #         this file, so the whole family is now described
+    #         consistently. Note the mode is selected by the POSITION
+    #         of the pion in Indices, not by a key: FixMode() is
+    #         charge-blind, so (K,pi,K) picks FM95's KM_piM_KP while
+    #         (K,K,pi) picks RChL2012's KP_KM_piM.
+    #   201 = RChL2012, via VA_0_KKPi with Indices [1,2,3]. Uses a
     #         CUSTOM inline a1 width function (RChL::Gamma_a1_PionFit,
     #         M=1.12 GeV by default), not the standard registered
     #         a1(1260) lineshape used elsewhere in this file - the
     #         "a(1)(1260)+" name in the PhaseSpace block below is a
     #         best-effort importance-sampling approximation, not an
-    #         exact match to what this channel evaluates internally.
-    # Reference: RChL2012 as cited in FF_0_PPP.C's F1_0_KKPi/F5_0_KKPi.
+    #         exact match to what that model evaluates internally.
+    # FM95 is the default because it describes this channel better on
+    # both axes: rate 1.40 -> 1.13 x PDG, and a markedly better shape
+    # against the CLEO K+K-pi- spectrum.
+    # Reference: Finkemeier & Mirkes hep-ph/9503474 Tabs.I/II row 1;
+    # RChL2012 as cited in FF_0_PPP.C's F1_0_KKPi/F5_0_KKPi.
     ######################################################
         IntResults: [1.115e-14, 1.0245e-17, 7.247e-13]
       321,-321,-211,16:
@@ -923,18 +934,29 @@ HADRON_DECAYS:
                 v: 1.
                 a: -1.
               J2:
-                Type: VA_0_KKPi
-                Indices: [1, 2, 3]
+                Type: VA_0_KPiK
+                Indices: [2, 3, 1]
                 RUNNING_WIDTH: 1
-                FORM_FACTOR: 201
-        # 2 regions (propRho on the K+K- pair, propKst on the K+pi-
-        # pair), each paired with the same outer a1 proxy, spectator =
-        # the third particle in each case.
+                FORM_FACTOR: 100
+        # Indices are FM95's own q1,q2,q3 = K^-(idx2), pi^-(idx3),
+        # K^+(idx1). PhaseSpace below names PARTICLE indices, which are
+        # unaffected by that reordering:
+        #   rho region:  K+(idx1)+K-(idx2),  spectator=pi-(idx3)
+        #   K* region A: K+(idx1)+pi-(idx3), spectator=K-(idx2)
+        #   K* region B: K-(idx2)+pi-(idx3), spectator=K+(idx1)
         PhaseSpace:
           - TwoResonances_a(1)(1260)+_3_rho(770)+_12:
-              Weight: 0.5
+              Weight: 0.166667
+          - TwoResonances_a(1)(1260)+_3_rho(1450)+_12:
+              Weight: 0.166667
           - TwoResonances_a(1)(1260)+_2_K*(892)+_13:
-              Weight: 0.5
+              Weight: 0.166667
+          - TwoResonances_a(1)(1260)+_2_K*(1410)+_13:
+              Weight: 0.166667
+          - TwoResonances_a(1)(1260)+_1_K*(892)+_23:
+              Weight: 0.166667
+          - TwoResonances_a(1)(1260)+_1_K*(1410)+_23:
+              Weight: 0.166667
         AlwaysIntegrate: 1
 
     ##### K Kbar pi0 (K^- pi^0 K0bar, FM95 Tab.I/II row 5 = KM_pi0_K0) #####
@@ -1328,20 +1350,12 @@ HADRON_DECAYS:
     # Available FORM_FACTOR options: none in the usual sense - self-
     # contained current, not built on FF_0_PPP.C's getter dispatch.
     #
-    # IMPORTANT departures from the source, both deliberate and flagged
+    # IMPORTANT model convention
     # (see VA_0_Novosibirsk4Pi.H for the full note):
-    #  - Reuses Sherpa's own registered running widths for rho(770)+,
-    #    a1(1260)+, f0(600), omega(782) in place of Bondar's own
-    #    analytic g_R(s) functions - most notably eliminating a1's
-    #    self-referential 3-body phase-space g_a1(s) integral (which
-    #    the source note says is normally only tractable by pre-
-    #    tabulating). Pole masses are ALSO taken from Sherpa's own
-    #    particle database rather than Bondar's specific fit values
-    #    (e.g. Mrho=0.7761 GeV) - NOT numerically identical to the
-    #    original paper as a result. The three G(Q^2) form factors
-    #    themselves ARE the genuine tabulated Bondar values
-    #    (Novosibirsk4pi_GTables.H), since those have no lineshape
-    #    equivalent to substitute.
+    #  - Uses the fitted pole parameters and TAUOLA's analytic/tabulated
+    #    running widths together with the three G(Q^2) tables. Replacing
+    #    any of them by a shared registry line shape creates a hybrid
+    #    model because the G tables were fitted with this complete set.
     #  - The mixed-charge mode's a1pi and omegapi pieces are combined
     #    COHERENTLY here, unlike the published TAUOLA implementation
     #    (incoherent/rate-level).
