@@ -156,6 +156,8 @@ public:
   // headline YFS.LO / YFS.NLO / YFS.NNLO are emitted. Set the card option
   // YFS: NLO_Weight_Breakdown: 1 to get the individual contributions back.
   int m_nlo_weight_breakdown;
+  //! YFS: CHECK_INVARIANTS - run YFS_Handler::CheckInvariants each event.
+  bool m_check_invariants;
   int m_no_born, m_check_real_sub, m_check_rr_sub, m_no_subtraction, m_tchannel, m_check_virt_born, m_noflux, m_massless_sub;
   
   bool m_looptool, m_virtual_only, m_real_only, m_use_model_alpha,m_failcut,m_nlocuts;

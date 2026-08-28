@@ -15,6 +15,7 @@ set(YFSMain_HEADERS Coulomb.H
                  Dipole.H
                  DipoleSet.H
                  Photon.H
+                 Leg.H
                  Debug.H
                  Define_Dipoles.H
                  FSR.H

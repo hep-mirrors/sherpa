@@ -1,4 +1,6 @@
 #include "YFS/Main/YFS_Form_Factor.H"
+
+#include <algorithm>
 #include "ATOOLS/Math/MathTools.H"
 #include "ATOOLS/Org/Scoped_Settings.H"
 
@@ -46,16 +48,16 @@ double YFS_Form_Factor::BVR_full(double p1p2, double E1, double E2,
   double rho = sqrt(1 - sqr(m12 / p1p2));
   t1 = (p1p2 * A(p1p2, Mas1, Mas2) - 1) * log(4 * sqr(Kmax / MasPhot));
   if ( mode == 0 ) {
-    t2 = p1p2 * A4(p1p2, E1, E2, Mas1, Mas2);
+    t2 = p1p2 * A4(p1p2, Leg(E1, Mas1), Leg(E2, Mas2));
   }
   else if(mode==1) {
     // alpi = 1./137.03599976000001/M_PI;
     t1 = (p1p2 * A(p1p2, Mas1, Mas2)) * log(4 * sqr(Kmax / MasPhot));
-    t2 = p1p2 * A4(p1p2, E1, E2, Mas1, Mas2);
+    t2 = p1p2 * A4(p1p2, Leg(E1, Mas1), Leg(E2, Mas2));
     
     }
     else {
-      AA4 = A4(p1p2, E1, E2, Mas1, Mas2);
+      AA4 = A4(p1p2, Leg(E1, Mas1), Leg(E2, Mas2));
       t2 = AA4 * p1p2;
   }
   double t3 = Mas1 * Mas1 * A4_eq(E1, Mas1) + Mas2 * Mas2 * A4_eq(E2, Mas2);
@@ -102,15 +104,15 @@ DivArrD YFS_Form_Factor::BVR_full_eps(YFS::Dipole &d,  double Kmax, int mode) {
   DivArrD massph(0,-1,0,0,0,0);
   t1 = (p1p2 * A(p1p2, Mas1, Mas2) - 1) * (massph-log(4.*M_PI*sqr(irloop)/4./Kmax/epsloop));
   if ( mode == 0 ) {
-    t2 = p1p2 * A4(p1p2, E1, E2, Mas1, Mas2);
+    t2 = p1p2 * A4(p1p2, Leg(E1, Mas1), Leg(E2, Mas2));
   }
   else if(mode==1) {
     t1 = (p1p2 * A(p1p2, Mas1, Mas2)) * (massph-log(4.*M_PI*sqr(irloop)/4./Kmax/epsloop));
-    t2 = p1p2 * A4(p1p2, E1, E2, Mas1, Mas2);
+    t2 = p1p2 * A4(p1p2, Leg(E1, Mas1), Leg(E2, Mas2));
     
     }
     else {
-      AA4 = A4(p1p2, E1, E2, Mas1, Mas2);
+      AA4 = A4(p1p2, Leg(E1, Mas1), Leg(E2, Mas2));
       t2 = AA4 * p1p2;
   }
   double t3 = Mas1 * Mas1 * A4_eq(E1, Mas1) + Mas2 * Mas2 * A4_eq(E2, Mas2);
@@ -214,11 +216,12 @@ double YFS_Form_Factor::BVR_full(Vec4D p1, Vec4D p2, double omega) {
   return (R+V);
 }
 
-double YFS_Form_Factor::BVR_cru(double p1p2, double E1, double E2,
-                                double Mas1, double Mas2, double Kmax) {
+double YFS_Form_Factor::BVR_cru(double p1p2, const Leg &l1, const Leg &l2,
+                                double Kmax) {
+  const double E1 = l1.E, E2 = l2.E, Mas1 = l1.m, Mas2 = l2.m;
   // m_btilcru = m_alpi*(p1p2*BVR_A(p1p2,Mas1,Mas2))
   double t1 = (p1p2 * A(p1p2, Mas1, Mas2)) * log(4.*sqr(Kmax / m_photonMass));
-  double t2 = p1p2 * A4(p1p2, E1, E2, Mas1, Mas2);
+  double t2 = p1p2 * A4(p1p2, Leg(E1, Mas1), Leg(E2, Mas2));
   if (IsBad(t1) || IsBad(t2)) {
     msg_Error() << METHOD << "\n" << "YFS Form Factor is NaN"
                 << "\n T1    = " << t1
@@ -236,7 +239,7 @@ double YFS_Form_Factor::BVR_cru(double p1p2, double E1, double E2,
 double YFS_Form_Factor::BVR_cru(Vec4D p1, Vec4D p2, double Kmax) {
   // m_btilcru = m_alpi*(p1p2*BVR_A(p1p2,Mas1,Mas2))
   double t1 = (p1*p2 * A(p1,p2)) * log(4.*sqr(Kmax / m_photonMass));
-  double t2 = p1*p2 * A4(p1*p2, p1.E(), p2.E(), p1.Mass(), p2.Mass());
+  double t2 = p1*p2 * A4(p1*p2, Leg(p1), Leg(p2));
   if (IsBad(t1) || IsBad(t2)) {
     msg_Error() << METHOD << "\n" << "YFS Form Factor is NaN"
                 << "\n T1    = " << t1
@@ -305,18 +308,13 @@ double YFS_Form_Factor::Zij(double eta, double yi, double yj) {
 }
 
 
-double YFS_Form_Factor::A4(double p1p2, double En1, double En2,
-                           double mass1, double mass2) {
-  double p1s = En1 * En1 - mass1 * mass1;
-  double p2s = En2 * En2 - mass2 * mass2;
-  if (p1s < p2s ) {
-    double tempM1 = mass1;
-    double tempE1 = En1;
-    En1 = En2;
-    mass1 = mass2;
-    En2 = tempE1;
-    mass2 = tempM1;
-  }
+double YFS_Form_Factor::A4(double p1p2, Leg l1, Leg l2) {
+  // Order by |p|^2, which Leg guarantees is non-negative. Swapping whole Legs
+  // keeps each energy with its own mass; the old code swapped four loose
+  // doubles by hand.
+  if (l1.P2() < l2.P2()) std::swap(l1, l2);
+  const double En1 = l1.E, mass1 = l1.m;
+  const double En2 = l2.E, mass2 = l2.m;
   double Ep = En1 + En2;
   double Em = En1 - En2;
   double sm = mass1 + mass2;

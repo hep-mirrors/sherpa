@@ -3,6 +3,7 @@
 #include "ATOOLS/Math/Vector.H"
 #include "YFS/Main/YFS_Base.H"
 #include "YFS/Main/Dipole.H"
+#include "YFS/Main/Leg.H"
 #include "YFS/NLO/Virtual.H"
 #include "METOOLS/Loops/Divergence_Array.H"
 
@@ -20,15 +21,13 @@ public:
     double BVR_full(YFS::Dipole &d, double omega);
     DivArrD BVR_full_eps(YFS::Dipole &d,  double Kmax, int mode);
     double BVR_full(ATOOLS::Vec4D p1, ATOOLS::Vec4D p2, double omega);
-    double BVR_cru(double p1p2, double E1, double E2,
-                   double Mas1, double Mas2, double Kmax);
+    double BVR_cru(double p1p2, const Leg &l1, const Leg &l2, double Kmax);
     double BVR_cru(ATOOLS::Vec4D p1, ATOOLS::Vec4D p2, double E2);
     double A(double p1p2, double mass1, double mass2);
     double A(ATOOLS::Vec4D p1, ATOOLS::Vec4D p2);
     double A1(const ATOOLS::Vec4D &p1, const ATOOLS::Vec4D &p2);
     double A2(const ATOOLS::Vec4D &p1, const ATOOLS::Vec4D &p2);
-    double A4(double p1p2, double En1, double En2,
-              double mass1, double mass2);
+    double A4(double p1p2, Leg l1, Leg l2);
     double A4_eq(double E, double mass);
     double YijEta(double eta, double y1, double y2, double y3, double y4);
     double Zij(double eta, double yi, double yj);

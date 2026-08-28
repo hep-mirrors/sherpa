@@ -113,6 +113,13 @@ namespace YFS {
         //! Fills m_nlo_weightsmap with the YFS.* ratios. Defined next to
         //! GenerateWeight, which supplies the two weights it compares.
         void BuildNamedWeights(double w_lo, double w_full);
+
+        //! Per-event assertions for the invariants that could not be made
+        //! structural. Each one corresponds to a bug that reached a physics
+        //! result before being noticed, so the point is to fail where the
+        //! invariant breaks rather than several frames downstream. Off unless
+        //! YFS: CHECK_INVARIANTS is set.
+        void CheckInvariants() const;
         void CreatMomentumMap();
         void MakeCEEX();
         void InitNLO();
