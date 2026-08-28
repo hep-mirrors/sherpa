@@ -32,10 +32,10 @@ double YFS_Base::ExternalFormFactor(const Vec4D_Vector &p,
                                     const Flavour_Vector &fl,
                                     const size_t &nin)
 {
-  if (p_pionff==nullptr)
-    p_pionff = std::unique_ptr<ATOOLS::FormFactor>(new ATOOLS::FormFactor());
-  if (!p_pionff->On()) return 1.;
-  return p_pionff->Eval(p,fl,nin);
+  // Stub. The pion form factor lands in its own merge request; until then this
+  // is the identity, which is what the real implementation returns whenever the
+  // form factor is switched off.
+  return 1.;
 }
 
 

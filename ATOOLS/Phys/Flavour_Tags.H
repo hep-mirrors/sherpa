@@ -41,9 +41,6 @@
 #define      kf_DM_vector                 53
 #define      kf_DM_mediator_scalar        54
 #define      kf_DM_mediator_vector        55
-// ISR/FSR bosons
-#define      kf_ISR_photon                56
-#define      kf_FSR_photon                57
 // internal
 #define      kf_shgluon                   89
 #define      kf_lepton                    90
@@ -326,18 +323,8 @@
 #define      kf_f_0_1500                  9020221
 #define      kf_psi_4415                  9020443
 #define      kf_f_J_1710                  9030221
-// rho(2150) is OMITTED FROM SUMMARY TABLE in the PDG listings - it has no
-// official Monte Carlo number.  9040113/9040213 continues the neighbouring
-// "further states" 90X0YYY block (9030221, 9050225, ...) and follows this
-// file's own neutral/charged suffix convention (113/213, cf. rho_1700 just
-// above) rather than colliding with kf_rho_1700_plus, which the previous
-// kf_rho_2150_plus=30213 here did.
-#define      kf_rho_2150                  9040113
-#define      kf_rho_2150_plus             9040213
 #define      kf_f_2_2300                  9050225
 #define      kf_f_2_2340                  9060225
-#define      kf_rho_2150                  9040113
-#define      kf_rho_2150_plus             9040213
 #define      kf_n                         2112
 #define      kf_p_plus                    2212
 #define      kf_Sigma_minus               3112
