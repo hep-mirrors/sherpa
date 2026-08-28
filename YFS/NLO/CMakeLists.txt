@@ -1,4 +1,5 @@
 set(YFSNLO_SOURCES NLO_Base.C
+                 NLO_Checks.C
                  ME_Compare.C
                  Real.C
                  RealReal.C

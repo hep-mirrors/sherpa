@@ -61,6 +61,9 @@ public:
   Vec4D_Vector m_plab, m_reallab, m_FSRPhotons, m_ISRPhotons, m_bornMomenta, m_eikmom, m_borngamma;
   // m_ISRPhotons ++ m_FSRPhotons, each carrying the dipole it came from.
   YFS::Photon_Vector m_photons;
+  // One entry per photon pair, carrying that pair's beta20. Holds references
+  // into m_photons, which must not be rebuilt while these are alive.
+  std::vector<YFS::PhotonPair> m_photon_pairs;
   Vec4D m_nvec, m_realsum, m_ksum;
   ATOOLS::Flavour_Vector m_flavs;
   std::ofstream m_subscatter;  // accumulating sub-check angle/energy scatter
@@ -110,7 +113,7 @@ public:
   // instability is confined to soft/collinear photons and skipping them is safe.
   int m_rvHiC, m_rvBlowup, m_rvBlowupRtree0, m_rvBlowupHiC, m_rvBlowupSoft,
       m_rvBlowupHardWide;
-  // Counts CalculateReal(k,fsrcount) calls where the raw real-emission
+  // Counts CalculateReal(k,raw,...) calls where the raw real-emission
   // amplitude p_real->Calc_R(p) itself came back zero, before any cut or
   // subtraction logic runs - covers both the standalone NLO real correction
   // and the real1/real2 sub-calls embedded in CalculateRealReal.
@@ -139,15 +142,20 @@ public:
   double CalculateVirtual();
   double CalculateReal();
   double CalculateRealReal();
-  double CalculateReal(Vec4D k, int submode=0);
-  double CalculateRealReal(Vec4D k1, Vec4D k2, int fsrmode1=0, int fsrmode2=0);
+  // raw: return the unsubtracted value (real-real subtracts for itself).
+  double CalculateReal(Vec4D k, bool raw=false);
+  double CalculateRealReal(Vec4D k1, Vec4D k2);
   double CalculateRealVirtual();
-  double CalculateRealVirtual(Vec4D k, int submode=0);
+  double CalculateRealVirtual(Vec4D k);
   double CalculateVV();
   void MakeHardMomenta();
   void MapMomenta(ATOOLS::Vec4D_Vector &p, ATOOLS::Vec4D &k);
   void MapMomenta(ATOOLS::Vec4D_Vector &p, ATOOLS::Vec4D &k1, ATOOLS::Vec4D &k2);
   void MapInitial(ATOOLS::Vec4D_Vector &p);
+  // Defined in NLO_Checks.C, along with the other *Sub checks and the
+  // debug histograms.
+  void BookHistograms();
+  void WriteHistograms();
   void CheckMassReg();
   double CalculateNLO();
   bool CheckPhotonForReal(const Vec4D &k);
@@ -156,7 +164,7 @@ public:
   bool CheckMomentumConservation(Vec4D_Vector p);
   void CheckRealSub(Vec4D k, int mode);
   void CheckRealVirtualSub(Vec4D k);
-  void CheckRealRealSub(Vec4D k1, Vec4D k2, int fsr1, int fsr2);
+  void CheckRealRealSub(Vec4D k1, Vec4D k2);
   // Accumulating (non-exiting) sub-check scatter: for each real photon record
   // its energy, pT, opening angle to the nearest charged particle, and the
   // subtracted residual, so large residuals for energetic photons can be
