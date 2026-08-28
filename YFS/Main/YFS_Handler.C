@@ -299,7 +299,7 @@ bool YFS_Handler::CalculateISR() {
   if (m_isrinital) p_isr->SetIncoming(&p_dipoles->GetDipoleII());
   m_isrinital = false;
   m_g=p_dipoles->GetDipoleII().m_gamma;
-  m_gp=p_dipoles->GetDipoleII().m_gamma;
+  m_gp=p_dipoles->GetDipoleII().m_gammap;
   Vec4D_Vector me_acc;   // ISR photons are not hidden, so nothing accumulates here
   const YFS::EmissionResult res(
       p_dipoles->GetDipoleII().GenerateEmissions(p_isr, p_fsr, m_born, m_v, me_acc));
@@ -639,6 +639,7 @@ void YFS_Handler::GenerateWeight() {
   const double w_lo = m_yfsweight * m_formfactor * (1.-m_v);
   m_yfsweight *= m_real + (wif - 1.);
   m_yfsweight *= m_formfactor*(1.-m_v);
+  CheckInvariants();
   // Captured before the IsBad/negative-weight clamps below, since the named
   // weights are ratios against the weight the event actually carries.
   const double w_full = m_yfsweight;
@@ -945,9 +946,6 @@ void YFS_Handler::CheckResonance(){
   for (auto D1 = ffres.begin(); D1 != ffres.end(); ++D1) {
     for (auto D2 = ffres.begin(); D2 != ffres.end(); ++D2) {
       if(D1==D2) continue;
-      // Only two dipoles that both still radiate can double count a leg.
-      // Without this, an overlapping non-resonant pair could switch off a
-      // dipole that Define_Dipoles::SelectResonantDipoles picked.
       if(!D1->IsResonance() || !D2->IsResonance()) continue;
       if(D1->Right() == D2->Right() ||  D1->Right() == D2->Left()|| 
         D1->Left() == D2->Right()||  D1->Left() == D2->Left()){
@@ -957,3 +955,36 @@ void YFS_Handler::CheckResonance(){
       }
     }
   }
+
+void YFS_Handler::CheckInvariants() const {
+  if (!m_check_invariants) return;
+
+  // Every photon knows the dipole it came from. A null one means a Photon was
+  // built without it, and IsISR()/IsFSR() would dereference null.
+  for (const YFS::Photon &k : m_photons)
+    if (!k.Dip())
+      msg_Error() << METHOD << ": photon with no dipole; its origin cannot be "
+                  << "determined." << std::endl;
+
+  // E^2 >= m^2 for every dipole leg. Violated when an energy is paired with a
+  // mass from a different source, which is what produced the WW NaN in
+  // YFS_Form_Factor::A4 via sqrt(E^2 - m^2).
+  YFS::DipoleView ffchk(p_dipoles->GetDipoleFF());
+  for (auto D = ffchk.begin(); D != ffchk.end(); ++D)
+    for (int i(0); i < 2; ++i) {
+      const ATOOLS::Vec4D p(D->GetBornMomenta(i));
+      if (p[0]*p[0] + 1e-9 < p.Abs2())
+        msg_Error() << METHOD << ": dipole leg with E^2 < m^2, E=" << p[0]
+                    << " m^2=" << p.Abs2() << std::endl;
+    }
+
+  // The weight the event carries must be a number. Catching it here names the
+  // event; downstream it only shows up as a NaN cross section.
+  if (ATOOLS::IsBad(m_yfsweight))
+    msg_Error() << METHOD << ": YFS weight is " << m_yfsweight
+                << " (isr=" << m_isrWeight << " fsr=" << m_fsrWeight
+                << " form=" << m_formfactor << " real=" << m_real << ")"
+                << std::endl;
+  if (ATOOLS::IsBad(m_formfactor))
+    msg_Error() << METHOD << ": form factor is " << m_formfactor << std::endl;
+}
