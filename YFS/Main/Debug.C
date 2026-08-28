@@ -1,4 +1,4 @@
-#include "YFS/Tools/Debug.H"
+#include "YFS/Main/Debug.H"
 #include "ATOOLS/Org/My_File.H"
 #include "ATOOLS/Org/Data_Reader.H"
 #include "ATOOLS/Org/Exception.H"

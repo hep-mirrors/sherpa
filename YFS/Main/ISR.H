@@ -6,7 +6,7 @@
 #include "ATOOLS/Math/Histogram.H"
 
 #include "YFS/Main/YFS_Base.H"
-#include "YFS/Tools/Dipole.H"
+#include "YFS/Main/Dipole.H"
 
 using namespace ATOOLS;
 namespace BEAM   { class Beam_Base;      }

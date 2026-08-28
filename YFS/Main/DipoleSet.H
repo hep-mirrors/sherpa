@@ -1,7 +1,7 @@
 #ifndef YFS_Tools_DipoleSet_H
 #define YFS_Tools_DipoleSet_H
 
-#include "YFS/Tools/Dipole.H"
+#include "YFS/Main/Dipole.H"
 
 #include <functional>
 #include <memory>

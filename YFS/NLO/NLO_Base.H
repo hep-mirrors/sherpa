@@ -9,6 +9,7 @@
 #include "YFS/NLO/RealVirtual.H"
 #include "YFS/NLO/VirtualVirtual.H"
 #include "YFS/Main/YFS_Form_Factor.H"
+#include "YFS/Main/Photon.H"
 #include "YFS/Main/Define_Dipoles.H"
 #include "ATOOLS/Math/Histogram_2D.H"
 #include <fstream>
@@ -58,6 +59,8 @@ public:
   PHASIC::Single_Process *p_born;
   YFS::Define_Dipoles *p_dipoles;
   Vec4D_Vector m_plab, m_reallab, m_FSRPhotons, m_ISRPhotons, m_bornMomenta, m_eikmom, m_borngamma;
+  // m_ISRPhotons ++ m_FSRPhotons, each carrying the dipole it came from.
+  YFS::Photon_Vector m_photons;
   Vec4D m_nvec, m_realsum, m_ksum;
   ATOOLS::Flavour_Vector m_flavs;
   std::ofstream m_subscatter;  // accumulating sub-check angle/energy scatter

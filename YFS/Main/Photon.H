@@ -1,7 +1,7 @@
 #ifndef YFS_Tools_Photon_H
 #define YFS_Tools_Photon_H
 
-#include "YFS/Tools/Dipole.H"
+#include "YFS/Main/Dipole.H"
 
 #include <vector>
 

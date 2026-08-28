@@ -2,7 +2,7 @@
 #define YFS_Main_FORM_H
 #include "ATOOLS/Math/Vector.H"
 #include "YFS/Main/YFS_Base.H"
-#include "YFS/Tools/Dipole.H"
+#include "YFS/Main/Dipole.H"
 #include "YFS/NLO/Virtual.H"
 #include "METOOLS/Loops/Divergence_Array.H"
 

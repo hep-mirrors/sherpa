@@ -1,4 +1,4 @@
-#include "YFS/Tools/DipoleSet.H"
+#include "YFS/Main/DipoleSet.H"
 
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/Message.H"
