@@ -39,12 +39,42 @@ namespace YFS {
     return m_idxII;
   }
 
-  Dipole *DipoleSet::II() {
-    return m_idxII.empty() ? nullptr : &m_dipoles[m_idxII.front()];
+  Dipole &DipoleSet::II() {
+    if (m_idxII.empty())
+      THROW(fatal_error, "No initial-initial dipole; DipoleSet::BuildInitial "
+                         "has not run, or the initial state carries no charge.");
+    return *m_dipoles[m_idxII.front()];
   }
 
-  const Dipole *DipoleSet::II() const {
-    return m_idxII.empty() ? nullptr : &m_dipoles[m_idxII.front()];
+  const Dipole &DipoleSet::II() const {
+    if (m_idxII.empty())
+      THROW(fatal_error, "No initial-initial dipole; DipoleSet::BuildInitial "
+                         "has not run, or the initial state carries no charge.");
+    return *m_dipoles[m_idxII.front()];
+  }
+
+  void DipoleSet::DropTypes(bool dropII, bool dropFF, bool dropIF) {
+    // Move the survivors, so every kept Dipole keeps its address.
+    std::vector<std::unique_ptr<Dipole> > keep;
+    std::vector<dipoletype::code> kind;
+    auto take=[&](const std::vector<std::size_t> &idx, bool drop, dipoletype::code t){
+      if (drop) return;
+      for (std::size_t i : idx) { keep.push_back(std::move(m_dipoles[i])); kind.push_back(t); }
+    };
+    take(m_idxII, dropII, dipoletype::initial);
+    take(m_idxFF, dropFF, dipoletype::final);
+    take(m_idxIF, dropIF, dipoletype::ifi);
+    Clear();
+    for (std::size_t n(0); n < keep.size(); ++n) {
+      m_dipoles.push_back(std::move(keep[n]));
+      const std::size_t i(m_dipoles.size() - 1);
+      switch (kind[n]) {
+      case dipoletype::initial: m_idxII.push_back(i); break;
+      case dipoletype::final:   m_idxFF.push_back(i);
+                                if (m_dipoles[i]->IsResonance()) m_idxRad.push_back(i); break;
+      case dipoletype::ifi:     m_idxIF.push_back(i); break;
+      }
+    }
   }
 
   void DipoleSet::Add(const Leg &a, const Leg &b, dipoletype::code t,
@@ -52,9 +82,9 @@ namespace YFS {
     Flavour_Vector fl{a.flav, b.flav};
     Vec4D_Vector   mo{a.mom,  b.mom};
     Vec4D_Vector   bo{a.born, b.born};
-    Dipole D(fl, mo, bo, t, alpha);
-    D.SetFlavLab((int)a.idx, (int)b.idx);
-    m_dipoles.push_back(D);
+    std::unique_ptr<Dipole> D(new Dipole(fl, mo, bo, t, alpha));
+    D->SetFlavLab((int)a.idx, (int)b.idx);
+    m_dipoles.push_back(std::move(D));
     const std::size_t i(m_dipoles.size() - 1);
     switch (t) {
     case dipoletype::initial: m_idxII.push_back(i); break;
@@ -72,7 +102,7 @@ namespace YFS {
     if (flavs.size() < 2)
       THROW(fatal_error, "DipoleSet::BuildInitial needs at least two particles");
 
-    Clear();
+    DropTypes(true, false, false);
 
     const std::vector<Leg> in (ChargedLegs(flavs, momenta, born, 0, 2));
     if (in.size() != 2) {
@@ -87,24 +117,16 @@ namespace YFS {
 
   void DipoleSet::BuildFinal(const Flavour_Vector &flavs,
                              const Vec4D_Vector   &momenta,
+                             const Vec4D_Vector   &born,
                              double alpha, bool withIF,
                              const ResonanceScore &score) {
-    if (momenta.size() != flavs.size())
+    if (momenta.size() != flavs.size() || born.size() != flavs.size())
       THROW(fatal_error, "Inconsistent vector sizes in DipoleSet::BuildFinal");
 
-    // Keep the initial-initial dipole built before ISR; drop and rebuild
-    // everything downstream of it.
-    std::vector<Dipole> keep;
-    for (std::size_t i : m_idxII) keep.push_back(m_dipoles[i]);
-    Clear();
-    for (const Dipole &D : keep) {
-      m_dipoles.push_back(D);
-      m_idxII.push_back(m_dipoles.size() - 1);
-    }
+    DropTypes(false, true, true);
 
-    // born = momenta: these dipoles have not radiated yet.
-    const std::vector<Leg> in (ChargedLegs(flavs, momenta, momenta, 0, 2));
-    const std::vector<Leg> out(ChargedLegs(flavs, momenta, momenta, 2, flavs.size()));
+    const std::vector<Leg> in (ChargedLegs(flavs, momenta, born, 0, 2));
+    const std::vector<Leg> out(ChargedLegs(flavs, momenta, born, 2, flavs.size()));
 
     // Every unique charged pair: the virtual and form-factor sums need all of
     // them. Which ones radiate is decided by SelectRadiating.
@@ -122,13 +144,13 @@ namespace YFS {
 
   void DipoleSet::SelectRadiating(const ResonanceScore &score) {
     m_idxRad.clear();
-    for (std::size_t i : m_idxFF) m_dipoles[i].SetResonance(false);
+    for (std::size_t i : m_idxFF) m_dipoles[i]->SetResonance(false);
 
     std::set<int> used;
     for (int pass(0); pass < 2; ++pass) {
       std::vector<std::pair<double, std::size_t> > cand;
       for (std::size_t i : m_idxFF) {
-        Dipole &D(m_dipoles[i]);
+        Dipole &D(*m_dipoles[i]);
         if (D.m_QiQj >= 0) continue;                    // opposite charges only
         if (pass == 0 && !D.IsDecayAllowed()) continue;  // same flavour first
         if (used.count(D.Left()) || used.count(D.Right())) continue;
@@ -137,7 +159,7 @@ namespace YFS {
       }
       std::stable_sort(cand.begin(), cand.end());
       for (std::size_t c(0); c < cand.size(); ++c) {
-        Dipole &D(m_dipoles[cand[c].second]);
+        Dipole &D(*m_dipoles[cand[c].second]);
         if (used.count(D.Left()) || used.count(D.Right())) continue;
         D.SetResonance(true);
         m_idxRad.push_back(cand[c].second);
@@ -152,8 +174,8 @@ namespace YFS {
 
     std::set<int> legs;
     for (std::size_t i : m_idxFF) {
-      legs.insert(m_dipoles[i].Left());
-      legs.insert(m_dipoles[i].Right());
+      legs.insert(m_dipoles[i]->Left());
+      legs.insert(m_dipoles[i]->Right());
     }
     for (int l : legs) {
       if (used.count(l)) continue;

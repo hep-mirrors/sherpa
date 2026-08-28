@@ -32,344 +32,57 @@ Define_Dipoles::~Define_Dipoles() {
 
 void Define_Dipoles::MakeDipolesII(ATOOLS::Flavour_Vector const &fl, ATOOLS::Vec4D_Vector const &mom, ATOOLS::Vec4D_Vector const &born) {
   m_N_born_Gamma=1;
+  for(auto f: fl) if(f.IsPhoton()) m_N_born_Gamma+=1;
   if(!HasISR()) return;
-  if ((mom.size() < 2 || fl.size() < 2) ) {
-    msg_Out()<<"Dipole type is  =  "<<dipoletype::initial<<std::endl
-             <<" mom.size() =  "<<mom.size()<<std::endl
-             <<" fl.size() =  "<<fl.size()<<std::endl
-             <<" born.size() =  "<<born.size()<<std::endl;
-    THROW(fatal_error, "Incorrect dipole size in YFS for initial-initial dipole");
-  }
-  ATOOLS::Flavour_Vector dipoleFlav;
-  ATOOLS::Vec4D_Vector dipoleMom;
-  Dipole_Vector dipoles;
   m_test_dip.clear();
   m_flav_label.clear();
+  for(size_t i(0); i<fl.size(); ++i) m_flav_label[fl[i]] = i;
   m_softphotonSum *= 0;
   m_out = fl.size() - m_in;
-  m_olddipoles.clear();
-  m_dipolesII.clear();
   m_bornmomenta = born;
-  Dipole_II(fl, mom);
-  for(auto f: fl) if(f.IsPhoton()) m_N_born_Gamma+=1;  
+  m_set.BuildInitial(fl, mom, born, m_alpha);
+  // BuildInitial leaves no dipole if the initial state carries no charge.
+  if (m_set.HasII()) { m_g = m_set.II().m_gamma; m_gp = m_set.II().m_gammap; }
 }
 
 
 void Define_Dipoles::MakeDipolesIF(ATOOLS::Flavour_Vector const &fl, ATOOLS::Vec4D_Vector const mom, ATOOLS::Vec4D_Vector const born) {
-  if(m_mode==yfsmode::fsr) return;
-  if ((mom.size() != fl.size())) {
-    msg_Out()<<"Dipole type is  =  "<<dipoletype::ifi<<std::endl
-             <<" mom.size() =  "<<mom.size()<<std::endl
-             <<" fl.size() =  "<<fl.size()<<std::endl
-             <<" born.size() =  "<<born.size()<<std::endl;
-    THROW(fatal_error, "Incorrect dipole size in YFS for initial-final dipole");
-  }
-  if (!HasFSR() ) return;
-  ATOOLS::Flavour_Vector dipoleFlav;
-  ATOOLS::Vec4D_Vector dipoleMom;
-  Dipole_Vector dipoles;
-  m_out = fl.size() - m_in;
-  m_dipolesIF.clear();
-  Dipole_IF(fl, mom, born);
+  // Initial-final dipoles are built by MakeDipoles, which delegates to
+  // DipoleSet::BuildFinal. Kept so existing call sites still compile.
 }
 
 void Define_Dipoles::MakeDipolesFF(ATOOLS::Flavour_Vector const &fl, ATOOLS::Vec4D_Vector const &mom, ATOOLS::Vec4D_Vector const &born) {
-  if ((mom.size() != fl.size())) {
-    msg_Out()<<"Dipole type is  =  "<<dipoletype::ifi<<std::endl
-             <<" mom.size() =  "<<mom.size()<<std::endl
-             <<" fl.size() =  "<<fl.size()<<std::endl
-             <<" born.size() =  "<<born.size()<<std::endl;
-    THROW(fatal_error, "Incorrect dipole size in YFS for final-final dipole");
-  }
-  ATOOLS::Flavour_Vector dipoleFlav;
-  ATOOLS::Vec4D_Vector dipoleMom;
-  Dipole_Vector dipoles;
-  m_test_dip.clear();
-  m_flav_label.clear();
-  m_softphotonSum *= 0;
-  m_out = fl.size() - m_in;
-  m_olddipoles.clear();
-  m_dipolesFF.clear();
-  m_bornmomenta = born;
+  // Never built FF dipoles - only the charged/neutral bookkeeping, which is
+  // reported by operator<< and used nowhere else. MakeDipoles builds them.
   Dipole_FF(fl, mom);
 }
 
 void Define_Dipoles::MakeDipoles(ATOOLS::Flavour_Vector const &fl, ATOOLS::Vec4D_Vector const &mom, ATOOLS::Vec4D_Vector const &born ) {
-  if ((mom.size() != fl.size()) || (born.size() != fl.size())) {
-    msg_Out()<<"Dipole type is  =  "<<dipoletype::final<<std::endl
-             <<" mom.size() =  "<<mom.size()<<std::endl
-             <<" fl.size() =  "<<fl.size()<<std::endl
-             <<" born.size() =  "<<born.size()<<std::endl;
-    THROW(fatal_error, "Incorrect dipole size in YFS for final-final dipole");
-  }
-  ATOOLS::Flavour_Vector dipoleFlav;
-  ATOOLS::Vec4D_Vector dipoleMom;
-  Dipole_Vector dipoles;
+  if ((mom.size() != fl.size()) || (born.size() != fl.size()))
+    THROW(fatal_error, "Incorrect dipole size in YFS for final-state dipoles");
   m_test_dip.clear();
   m_flav_label.clear();
-  m_softphotonSum *= 0;
+  for(size_t i(0); i<fl.size(); ++i) m_flav_label[fl[i]] = i;
   m_bornmomenta = born;
   m_out = fl.size() - m_in;
-  m_olddipoles.clear();
-  m_dipolesFF.clear();
-  int fsrc=0;
-  for (int i = 2; i < fl.size(); ++i) if(fl[i].Charge()!=0) fsrc++;
-  // m_dipolesIF.clear();
-  for(size_t i = 0; i < fl.size(); ++i)
-  {
-    m_flav_label[fl[i]] = i;
-  }
-  if (!HasFSR() ) return;
-  if (fl.size() == 4) {
-    Flavour_Vector ff;
-    Vec4D_Vector mm, bm;
-    m_flav_label[fl[2]] = 2;
-    m_flav_label[fl[3]] = 3;
-    for(size_t i = 2; i < fl.size(); i++) {
-      if(fl[i].IntCharge()!=0){
-        ff.push_back(fl[i]);
-        mm.push_back(mom[i]);
-        bm.push_back(m_bornmomenta[i]);
-      }
-    }
-    if(ff.size()==0) return;
-    Dipole D(ff, mm, bm, dipoletype::final,m_alpha);
-    D.SetResonance(true);
-    D.SetFlavLab(2,3);
-    Dipole_FF(ff, mm);
-    m_dipolesFF.push_back(D);
-    return;
-  }
-  map<ATOOLS::Flavour, ATOOLS::Vec4D>::iterator itr;
-  if (m_dip.size() != 0) {
-    for (auto a : m_dip) {
-      Get4Mom(fl, mom); // makes map for flavour momentum
-      Flavour_Vector ff;
-      Flavour f;
-      Vec4D_Vector mm, bm;
-      for(size_t i = 2; i < fl.size(); ++i)
-      {
-        f = fl[i];
-        if (f.Charge()!=0) {
-          ff.push_back(f);
-          mm.push_back(m_test_dip[f]);
-          bm.push_back(m_born_dip[f]);
-          m_flav_label[f] = i;
-          if (!IsEqual(f.Mass(), m_test_dip[f].Mass(), 1e-5)) {
-            msg_Error() << "Incorrect mass mapping in dipole" << std::endl
-                        << "Flavour mass is " << f.Mass() << std::endl
-                        << "Four-Momentum mass is " << m_test_dip[f].Mass() << std::endl;
-          }
-          if (ff.size() == 2) break;
-        }
-      }
-      Dipole D(ff, mm, bm, dipoletype::final,m_alpha);
-      Dipole_FF(ff, mm);
-      if(fsrc==2)  {
-        D.SetResonance(true);
-        D.SetFlavLab(2,3);
-      }
-      else IsResonant(D);
-      m_dipolesFF.push_back(D);
-      msg_Debugging() << "Added " << ff << " to dipole " << a << std::endl;
-    }
-  }
-  else {
-    Get4Mom(fl, mom);
-    int N = 0; // number of leptons minus the inital state
-    for(int i=2; i < fl.size(); i++){
-      if (fl[i].Charge()!=0) N += 1;
-    }
-    if (N == 2) {
-      //only two leptons in final state
-      // one dipole
-      Flavour_Vector ff;
-      Vec4D_Vector mm, bm;
-      std::vector<int> id;
-      for(size_t i = 2; i < fl.size(); i++) {
-        if (fl[i].Charge()!=0) {
-          ff.push_back(fl[i]);
-          mm.push_back(mom[i]);
-          bm.push_back(m_bornmomenta[i]);
-          id.push_back(i);
-        }
-      }
-      Dipole D(ff, mm, bm, dipoletype::final,m_alpha);
-      if(fsrc==2)  D.SetResonance(true);
-      else IsResonant(D);
-      Dipole_FF(ff, mm);
-      D.SetFlavLab(id[0],id[1]);
-      m_dipolesFF.push_back(D);
-      return;
-    }
-    // N > 2 charged final-state particles: one dipole per unique pair, each
-    // built exactly once. The labels are positions in fl/mom, so neutral
-    // final-state particles cannot shift the mapping, and an odd N is treated
-    // like any other (the previous perfect-matching enumeration returned no
-    // pairings at all for odd N, and duplicated every pair three times for
-    // N = 6).
-    std::vector<int> charged_id;
-    for(int i = 2; i < fl.size(); i++) {
-      if (fl[i].Charge()!=0) charged_id.push_back(i);
-    }
-    for(size_t a = 0; a < charged_id.size(); a++) {
-      for(size_t b = a+1; b < charged_id.size(); b++) {
-        const int d1(charged_id[a]), d2(charged_id[b]);
-        Flavour_Vector ff{fl[d1], fl[d2]};
-        Vec4D_Vector mm{mom[d1], mom[d2]};
-        Vec4D_Vector bm{m_bornmomenta[d1], m_bornmomenta[d2]};
-        Dipole D(ff, mm, bm, dipoletype::final,m_alpha);
-        D.SetFlavLab(d1,d2);
-        m_dipolesFF.push_back(D);
-        msg_Debugging() << "Added " << ff << " to dipole (" << d1 << "," << d2 << ")" << std::endl;
-      }
-    }
-    // Every pair is needed for the virtual/form-factor sums, but a charged
-    // particle may enter photon generation and the real eikonal current only
-    // once. The radiating subset is flagged here.
-    SelectResonantDipoles();
-    // The charged/neutral out-particle lists describe the final state, not an
-    // individual pair, so fill them once. Dipole_FF clears them on entry, so
-    // the old per-dipole call left only the last pair behind.
-    Flavour_Vector fsflav;
-    Vec4D_Vector fsmom;
-    for(int i = 2; i < fl.size(); i++) {
-      fsflav.push_back(fl[i]);
-      fsmom.push_back(mom[i]);
-    }
-    Dipole_FF(fsflav, fsmom);
-  }
+  if (!HasFSR()) return;
+  const bool withIF(m_mode != yfsmode::fsr);
+  m_set.BuildFinal(fl, mom, born, m_alpha, withIF,
+                   [this](const YFS::Dipole &D) {
+                     return ResonanceWidthDistance(const_cast<YFS::Dipole&>(D));
+                   });
+  Dipole_FF(fl, mom);
 }
 
-void Define_Dipoles::CreateAllDipoles(
-    const ATOOLS::Flavour_Vector& flavors,
-    const ATOOLS::Vec4D_Vector& momenta,
-    const ATOOLS::Vec4D_Vector& born_momenta) {
-    
-    if (momenta.size() != flavors.size() || momenta.size() != born_momenta.size()) {
-        THROW(fatal_error, "Inconsistent vector sizes in CreateAllDipoles");
-    }
-    
-    ResetAllDipoleState();
-    m_bornmomenta = born_momenta;
-    m_out = flavors.size() - INITIAL_STATE_PARTICLES;
-    
-    for (size_t i = 0; i < flavors.size(); ++i) {
-        m_flav_label[flavors[i]] = i;
-    }
-    
-    auto initial_particles = ExtractInitialStateCharged(flavors, momenta, born_momenta);
-    auto final_particles = ExtractFinalStateCharged(flavors, momenta, born_momenta);
-    
-    if (HasISR() && initial_particles.size() >= 2) {
-        CreateInitialDipoles(initial_particles);
-    }
-    
-    if (HasFSR() && final_particles.size() >= 2) {
-        CreateFinalDipoles(final_particles);
-    }
-    
-    if (HasISR() && HasFSR()) {
-        CreateInitialFinalDipoles(initial_particles, final_particles);
-    }
-}
 
-void Define_Dipoles::CreateInitialDipoles(
-    const std::vector<ParticleInfo>& initial_particles) {
-    
-    CleanInParticles();
-    m_dipolesII.clear();
-    
-    if (initial_particles.size() != 2) {
-        msg_Error() << "Expected exactly 2 initial particles for II dipole, got "
-                   << initial_particles.size() << std::endl;
-        return;
-    }
-    
-    Dipole dipole = CreateDipole(
-        initial_particles[0],
-        initial_particles[1],
-        dipoletype::initial);
-    
-    m_g = dipole.m_gamma;
-    m_gp = dipole.m_gammap;
-    
-    m_dipolesII.push_back(dipole);
-    m_olddipoles.push_back(dipole);
-}
 
-void Define_Dipoles::CreateFinalDipoles(
-    const std::vector<ParticleInfo>& final_particles) {
-    
-    CleanOutParticles();
-    m_dipolesFF.clear();
-    
-    // Special handling for exactly 2 final-state particles
-    bool is_two_body = (final_particles.size() == 2);
-    
-    // Create all unique pairs
-    for (size_t i = 0; i < final_particles.size(); ++i) {
-        for (size_t j = i + 1; j < final_particles.size(); ++j) {
-            
-            Dipole dipole = CreateDipole(
-                final_particles[i],
-                final_particles[j],
-                dipoletype::final);
-            
-            // Set resonance
-            if (is_two_body) {
-                dipole.SetResonance(true);
-            } else {
-                IsResonant(dipole);
-            }
-            
-            // Update bookkeeping
-            ATOOLS::Flavour_Vector flavors = {
-                final_particles[i].flavor,
-                final_particles[j].flavor
-            };
-            ATOOLS::Vec4D_Vector momenta = {
-                final_particles[i].momentum,
-                final_particles[j].momentum
-            };
-            // Dipole_FF(flavors, momenta);
-            
-            m_dipolesFF.push_back(dipole);
-        }
-    }
-}
 
-void Define_Dipoles::CreateInitialFinalDipoles(
-    const std::vector<ParticleInfo>& initial_particles,
-    const std::vector<ParticleInfo>& final_particles) {
-    
-    CleanInParticles();
-    m_dipolesIF.clear();
-    
-    // Create all initial-final combinations
-    for (const auto& initial : initial_particles) {
-        for (const auto& final : final_particles) {
-            
-            Dipole dipole = CreateDipole(
-                initial,
-                final,
-                dipoletype::ifi);
-            
-            dipole.SetResonance(false);  // IF dipoles are never resonant
-            m_dipolesIF.push_back(dipole);
-        }
-    }
-}
 
-void Define_Dipoles::ResetAllDipoleState() {
-    m_test_dip.clear();
-    m_flav_label.clear();
-    m_softphotonSum *= 0;
-    m_olddipoles.clear();
-    m_dipolesII.clear();
-    m_dipolesFF.clear();
-    m_dipolesIF.clear();
-}
+
+
+
+
+
 
 void Define_Dipoles::Get4Mom(ATOOLS::Flavour_Vector const &fl, ATOOLS::Vec4D_Vector mom) {
   Vec4D_Vector P;
@@ -388,22 +101,7 @@ void Define_Dipoles::Get4Mom(ATOOLS::Flavour_Vector const &fl, ATOOLS::Vec4D_Vec
 }
 
 
-void Define_Dipoles::Dipole_II(ATOOLS::Flavour_Vector const &fl, ATOOLS::Vec4D_Vector const &mom) {
-  CleanInParticles();
-  Flavour_Vector ff;
-  Vec4D_Vector mm, bm;
-  for(size_t i = 0; i < 2; i++) {
-    ff.push_back(fl[i]);
-    mm.push_back(mom[i]);
-    bm.push_back(m_bornmomenta[i]);
-  }
-  Dipole D(ff, mm, bm, dipoletype::initial,m_alpha);
-  m_g=D.m_gamma;
-  m_gp=D.m_gammap;
-  D.SetFlavLab(0, 1);
-  m_olddipoles.push_back(D);
-  m_dipolesII.push_back(D);
-}
+
 
 
 void Define_Dipoles::Dipole_FF(ATOOLS::Flavour_Vector const &fl, ATOOLS::Vec4D_Vector const &mom) {
@@ -427,38 +125,7 @@ void Define_Dipoles::Dipole_FF(ATOOLS::Flavour_Vector const &fl, ATOOLS::Vec4D_V
 
 
 
-void Define_Dipoles::Dipole_IF(ATOOLS::Flavour_Vector const &fl, ATOOLS::Vec4D_Vector const &mom, ATOOLS::Vec4D_Vector const &born) {
-  CleanInParticles();
-  if (fl.size() != mom.size()) {
-    THROW(fatal_error, "Inconsistent flavour vector for Dipole_IF Momenta");
-  }
-  Flavour_Vector ff;
-  Vec4D_Vector mm, bm;
-  //create IF dipoles
-    for(size_t i = 0; i < 2; ++i)
-    {
-      for(size_t j = 2; j < fl.size(); ++j)
-      {
-        if(fl[i].IntCharge()==0) continue;
-        if(fl[j].IntCharge()==0) continue;
-        ff.clear();
-        mm.clear();
-        bm.clear();
-        ff.push_back(fl[i]);
-        ff.push_back(fl[j]);
 
-        mm.push_back(mom[i]);
-        mm.push_back(mom[j]);
-
-
-        bm.push_back(born[i]);
-        bm.push_back(born[j]);
-        Dipole D(ff, mm, bm, dipoletype::ifi,m_alpha);
-        D.SetResonance(false);
-        m_dipolesIF.push_back(D);
-      }
-    }
-}
 
 
 
@@ -466,14 +133,14 @@ double Define_Dipoles::CalculateRealSub(const Vec4D &k) {
   double sub(0);
   // if(FixedOrder()!=fixed_order::full) return sub;
   Vec4D eik{0.,0.,0.,0.};
-  for (auto &D : m_dipolesII) {
+  for (auto &D : m_set.ByType(dipoletype::initial)) {
     for(size_t i = 0; i < D.GetBornMomenta().size(); ++i)
     {
        Vec4D p = D.GetMomenta(i);
       eik += D.m_Q[i]*p/(p*k);
     }
   }
-  for (auto &D : m_dipolesFF) {
+  for (auto &D : m_set.FF()) {
      if(!D.IsResonance()) continue;
     for(size_t i = 0; i < D.GetBornMomenta().size(); ++i)
     {
@@ -487,7 +154,7 @@ double Define_Dipoles::CalculateRealSub(const Vec4D &k) {
 
 double Define_Dipoles::CalculateRealSubIF(const Vec4D &k) {
   double sub(0);
-  for (auto &D : m_dipolesIF){
+  for (auto &D : m_set.IF()){
     if(m_massless_sub) sub += D.EikonalMassless(k, D.GetMomenta(0), D.GetMomenta(1));
     else sub +=  D.Eikonal(k, D.GetMomenta(0), D.GetMomenta(1));
   }
@@ -499,15 +166,15 @@ double Define_Dipoles::CalculateVirtualSub() {
   double sub(0);
   if(m_tchannel>=2) return CalculateVirtualSubTchannel();
   if(m_dim_reg==1) return CalculateVirtualSubEps();
-  for (auto &D : m_dipolesII) {
+  for (auto &D : m_set.ByType(dipoletype::initial)) {
     sub += D.ChargeNorm()*p_yfsFormFact->BVirtGeneral(D, sqrt(m_s) / 2.);
   }
-  for (auto &D : m_dipolesFF) {
+  for (auto &D : m_set.FF()) {
     if(m_mode==yfsmode::fsr) sub += -D.m_QiQj*p_yfsFormFact->BVV_full(D, m_photonMass, sqrt(m_s) / 2., 3);
     else sub += D.ChargeNorm()*p_yfsFormFact->BVirtGeneral(D, sqrt(m_s) / 2.);
   }
 
-  for (auto &D : m_dipolesIF){
+  for (auto &D : m_set.IF()){
     // change to + for IFI terms
     // Note Born momenta are redifined
     // for IFI terms.
@@ -518,18 +185,18 @@ double Define_Dipoles::CalculateVirtualSub() {
 
 double Define_Dipoles::CalculateVirtualSubEps() {
   DivArrD sub(0);
-  for (auto &D : m_dipolesII) {
+  for (auto &D : m_set.ByType(dipoletype::initial)) {
     sub += D.ChargeNorm()*p_yfsFormFact->BVV_full_eps(D, sqrt(m_s) / 2., 3);
   if(IsBad(sub.Finite())) msg_Error()<<"YFS subtraction is Nan For dipole:"<<D<<std::endl;
   }
-  for (auto &D : m_dipolesFF) {
+  for (auto &D : m_set.FF()) {
     if(D.IsFinite()) continue;
     if(m_mode==yfsmode::fsr) sub += -D.m_QiQj*p_yfsFormFact->BVV_full_eps(D, sqrt(m_s) / 2., 3);
     else sub += D.ChargeNorm()*p_yfsFormFact->BVV_full_eps(D, sqrt(m_s) / 2., 3);
     if(IsBad(sub.Finite())) msg_Error()<<"YFS subtraction is Nan For dipole:"<<D<<std::endl;
   }
 
-  for (auto &D : m_dipolesIF){
+  for (auto &D : m_set.IF()){
     if(D.IsFinite()) continue;
     sub += D.ChargeNorm()*p_yfsFormFact->BVV_full_eps(D, sqrt(m_s) / 2., 3);
     if(IsBad(sub.Finite())) {
@@ -543,18 +210,18 @@ double Define_Dipoles::CalculateVirtualSubEps() {
 
 double Define_Dipoles::CalculateVVSubEps() {
   DivArrD sub(0);
-  for (auto &D : m_dipolesII) {
+  for (auto &D : m_set.ByType(dipoletype::initial)) {
     sub += D.ChargeNorm()*p_yfsFormFact->BVV_full_eps(D, sqrt(m_s) / 2., 3);
   if(IsBad(sub.Finite())) msg_Error()<<"YFS subtraction is Nan For dipole:"<<D<<std::endl;
   }
-  for (auto &D : m_dipolesFF) {
+  for (auto &D : m_set.FF()) {
     if(D.IsFinite()) continue;
     if(m_mode==yfsmode::fsr) sub += -D.m_QiQj*p_yfsFormFact->BVV_full_eps(D, sqrt(m_s) / 2., 3);
     else sub += D.ChargeNorm()*p_yfsFormFact->BVV_full_eps(D, sqrt(m_s) / 2., 3);
     if(IsBad(sub.Finite())) msg_Error()<<"YFS subtraction is Nan For dipole:"<<D<<std::endl;
   }
 
-  for (auto &D : m_dipolesIF){
+  for (auto &D : m_set.IF()){
     if(D.IsFinite()) continue;
     sub += D.ChargeNorm()*p_yfsFormFact->BVV_full_eps(D, sqrt(m_s) / 2., 3);
     if(IsBad(sub.Finite())) {
@@ -574,16 +241,16 @@ double Define_Dipoles::CalculateRealVirtualSubEps(const Vec4D &k) {
   // otherwise beta_1^1 does not vanish in the soft limit.
   DivArrD sub(0);
   if(m_tchannel>=2) return CalculateVirtualSubTchannel();
-  for (auto &D : m_dipolesII) {
+  for (auto &D : m_set.ByType(dipoletype::initial)) {
     sub += D.ChargeNorm()*p_yfsFormFact->BVV_full_eps(D, sqrt(m_s) / 2., 3);
   }
-  for (auto &D : m_dipolesFF) {
+  for (auto &D : m_set.FF()) {
     if(D.IsFinite()) continue;
     if(m_mode==yfsmode::fsr) sub += -D.m_QiQj*p_yfsFormFact->BVV_full_eps(D, sqrt(m_s) / 2., 3);
     else sub += D.ChargeNorm()*p_yfsFormFact->BVV_full_eps(D, sqrt(m_s) / 2., 3);
   }
 
-  for (auto &D : m_dipolesIF){
+  for (auto &D : m_set.IF()){
     // change to + for IFI terms
     // Note Born momenta are redifined
     // for IFI terms.
@@ -599,11 +266,11 @@ double Define_Dipoles::CalculateRealVirtualSubEps(const Vec4D &k) {
 double Define_Dipoles::FormFactorSum(){
   double form = 0;
 
-  for(auto &D: m_dipolesII){
+  for(auto &D: m_set.ByType(dipoletype::initial)){
     form+= D.ChargeNorm()*p_yfsFormFact->BVR_full(D, sqrt(m_s)/2);
   }
   // if(!m_hidephotons){
-      for(auto &D: m_dipolesFF){
+      for(auto &D: m_set.FF()){
         form+= D.ChargeNorm()*p_yfsFormFact->BVR_full(D, sqrt(D.Sprime())/2); 
       }
     // }
@@ -640,7 +307,7 @@ double Define_Dipoles::FormFactorSum(){
     // KKMC gets from summing over photon partitions in the CEEX amplitude and
     // which Sherpa can only get on the emission side -- see RealIFWeight() and
     // the IFI_Real switch.
-    for(auto &D: m_dipolesIF){
+    for(auto &D: m_set.IF()){
       form += D.ChargeNorm()*p_yfsFormFact->IFForFac(D, IFIOmega());
     }
   }
@@ -714,7 +381,7 @@ double Define_Dipoles::RealIFWeight(const ATOOLS::Vec4D_Vector &photons) {
   // Yisr, Yfsr and Yint. Still scan IFI_Omega and check the answer is flat
   // before believing a number: that is the observable statement that the
   // exponent and these photons are cancelling each other.
-  if (!m_ifireal || m_dipolesIF.empty()) return 1.;
+  if (!m_ifireal || m_set.IF().empty()) return 1.;
   const double omega = IFIOmega();
   double w(1.);
   for (const auto &k : photons) {
@@ -757,10 +424,10 @@ double Define_Dipoles::FormFactor(){
 
 double Define_Dipoles::TFormFactor(){
   double form = 0;
-  for(auto &D: m_dipolesII){
+  for(auto &D: m_set.ByType(dipoletype::initial)){
     form+= D.ChargeNorm()*p_yfsFormFact->R1(D);
   }
-    for(auto &D: m_dipolesFF){
+    for(auto &D: m_set.FF()){
       form += D.ChargeNorm()*p_yfsFormFact->R1(D);
   }
   if(m_ifisub==1){
@@ -771,7 +438,7 @@ double Define_Dipoles::TFormFactor(){
     // whenever TChannel changed, which is why the IF treatment appeared entangled
     // with a switch that has nothing to do with it. Both FormFactorSum() and
     // TFormFactor() now give the IF dipoles the same object.
-    for(auto &D: m_dipolesIF){
+    for(auto &D: m_set.IF()){
       form += D.ChargeNorm()*p_yfsFormFact->IFForFac(D, IFIOmega());
     }
   }
@@ -790,18 +457,18 @@ double Define_Dipoles::CalculateVirtualSubTchannel(){
   double sub(0);
   // Vec4D_Vector pvirt;
   // std::vector<double> z,th;
-  // pvirt.push_back(m_dipolesII[0].GetNewMomenta(0));
-  // pvirt.push_back(m_dipolesII[0].GetNewMomenta(1));
-  // pvirt.push_back(m_dipolesFF[0].GetBornMomenta(0));
-  // pvirt.push_back(m_dipolesFF[0].GetBornMomenta(1));
+  // pvirt.push_back((*m_set.II()).GetNewMomenta(0));
+  // pvirt.push_back((*m_set.II()).GetNewMomenta(1));
+  // pvirt.push_back(m_set.FF()[0].GetBornMomenta(0));
+  // pvirt.push_back(m_set.FF()[0].GetBornMomenta(1));
   // th.push_back(1);
   // th.push_back(1);
   // th.push_back(-1);
   // th.push_back(-1);
-  // z.push_back(m_dipolesII[0].m_Qi);
-  // z.push_back(m_dipolesII[0].m_Qj);
-  // z.push_back(m_dipolesFF[0].m_Qi);
-  // z.push_back(m_dipolesFF[0].m_Qj);
+  // z.push_back((*m_set.II()).m_Qi);
+  // z.push_back((*m_set.II()).m_Qj);
+  // z.push_back(m_set.FF()[0].m_Qi);
+  // z.push_back(m_set.FF()[0].m_Qj);
   // // double m1 = pvirt[0].Mass();
   // // double m2 = pvirt[1].Mass();
   // // double m3 = pvirt[2].Mass();
@@ -840,13 +507,13 @@ double Define_Dipoles::CalculateVirtualSubTchannel(){
   //   }
   // }
   // PRINT_VAR(count);
-  for (auto &D : m_dipolesII){
+  for (auto &D : m_set.ByType(dipoletype::initial)){
     sub += D.ChargeNorm()*p_yfsFormFact->BVirtT(D,sqrt(m_s) / 2.);
   }
-  for (auto &D : m_dipolesFF){
+  for (auto &D : m_set.FF()){
     sub += D.ChargeNorm()*p_yfsFormFact->BVirtT(D,sqrt(m_s) / 2.);
   }
-  for (auto &D : m_dipolesIF){
+  for (auto &D : m_set.IF()){
     sub += D.ChargeNorm()*p_yfsFormFact->BVirtT(D,sqrt(m_s) / 2.);
   }
   // clearcache();
@@ -856,7 +523,7 @@ double Define_Dipoles::CalculateVirtualSubTchannel(){
 double Define_Dipoles::CalculateVirtualSubTchannelEps() {
   DivArrD sub(0);
   DivArrD massph(0,-1.,0,0,0,0);
-  for (auto &D : m_dipolesII) {
+  for (auto &D : m_set.ByType(dipoletype::initial)) {
     sub += D.ChargeNorm()*p_yfsFormFact->BVirtTEps(D,sqrt(m_s) / 2.);
     #ifdef USING__LOOPTOOLS
       //ii term
@@ -869,12 +536,12 @@ double Define_Dipoles::CalculateVirtualSubTchannelEps() {
       DivArrD c0 = (-massph-log(4.*M_PI*sqr(irloop)/m1/m2/epsloop));
     #endif
   }
-  for (auto &D : m_dipolesFF) {
+  for (auto &D : m_set.FF()) {
     if(m_mode==yfsmode::fsr) sub += -D.m_QiQj*p_yfsFormFact->BVirtTEps(D,sqrt(m_s) / 2.);
     else sub += D.ChargeNorm()*p_yfsFormFact->BVirtTEps(D,sqrt(m_s) / 2.);
   }
 
-  for (auto &D : m_dipolesIF){
+  for (auto &D : m_set.IF()){
     // change to + for IFI terms
     // Note Born momenta are redifined
     // for IFI terms.
@@ -896,15 +563,15 @@ double Define_Dipoles::CalculateVirtualSubTchannelEps() {
 
 double Define_Dipoles::CalculateRealVirtualSub(const Vec4D & k) {
   double sub(0);
-  for (auto &D : m_dipolesII) {
+  for (auto &D : m_set.ByType(dipoletype::initial)) {
     sub += -D.m_QiQj*p_yfsFormFact->BVV_full(D.GetNewMomenta(0), D.GetNewMomenta(1), m_photonMass, sqrt(m_s) / 2., 3);
   }
-  for (auto &D : m_dipolesFF) {
+  for (auto &D : m_set.FF()) {
     sub += -D.m_QiQj*p_yfsFormFact->BVV_full(D.GetOldMomenta(0), D.GetOldMomenta(1), m_photonMass, sqrt(m_s) / 2., 3);
 
   }
 
-  for (auto &D : m_dipolesIF){
+  for (auto &D : m_set.IF()){
     // change to + for IFI terms
     // Note Born momenta are redifined
     // for IFI terms.
@@ -916,15 +583,15 @@ double Define_Dipoles::CalculateRealVirtualSub(const Vec4D & k) {
 
 double Define_Dipoles::CalculateEEX(){
   double eex=0;
-  for (auto &D: m_dipolesII){
+  for (auto &D: m_set.ByType(dipoletype::initial)){
     D.SetRealOnly(m_real_only);
     eex += D.EEX(m_betaorder);
   }
-  for (auto &D: m_dipolesFF){
+  for (auto &D: m_set.FF()){
     D.SetRealOnly(m_real_only);
     eex += D.EEX(m_betaorder);
   }
-  for (auto &D: m_dipolesIF){
+  for (auto &D: m_set.IF()){
     D.SetRealOnly(m_real_only);
     eex += D.EEX(m_betaorder);
   }
@@ -942,10 +609,10 @@ double Define_Dipoles::CalculateEEXVirtual(){
 // YFS_Handler::GenerateWeight when no exact VV provider exists.
 double Define_Dipoles::CalculateEEXVirtual(int betaorder){
   double vint{1.}, vfin{1};
-  for (auto &D: m_dipolesII){
+  for (auto &D: m_set.ByType(dipoletype::initial)){
     vint*=1+D.VirtualEEX(betaorder);
   }
-  for (auto &D: m_dipolesFF){
+  for (auto &D: m_set.FF()){
     vfin*=1+D.VirtualEEX(betaorder);
   }
   return vint*vfin;
@@ -953,15 +620,15 @@ double Define_Dipoles::CalculateEEXVirtual(int betaorder){
 
 double Define_Dipoles::EEXRealVirtual(const Vec4D &k){
   double eex = 0;
-  for(auto &D: m_dipolesII){
+  for(auto &D: m_set.ByType(dipoletype::initial)){
     D.m_betaorder = 2;
     eex += D.Beta1(k)/D.Eikonal(k);
   }
-  for(auto &D: m_dipolesFF){
+  for(auto &D: m_set.FF()){
     D.m_betaorder = 2;
     eex += D.Beta1(k)/D.Eikonal(k);
   }
-  // for(auto &D: m_dipolesIF){
+  // for(auto &D: m_set.IF()){
   //   D.m_betaorder = 2;
   //   eex += D.Beta1(k)/D.Eikonal(k);
   // }
@@ -971,13 +638,13 @@ double Define_Dipoles::EEXRealVirtual(const Vec4D &k){
 
 double Define_Dipoles::CalculateRealSubEEX(const Vec4D &k) {
   double sub(0);
-  for (auto &D : m_dipolesII) {
+  for (auto &D : m_set.ByType(dipoletype::initial)) {
     sub += D.Eikonal(k, D.GetBornMomenta(0), D.GetBornMomenta(1));
   }
-  for (auto &D : m_dipolesFF) {
+  for (auto &D : m_set.FF()) {
     sub += D.Eikonal(k, D.GetBornMomenta(0), D.GetBornMomenta(1));
   }
-  // for (auto &D : m_dipolesIF) {
+  // for (auto &D : m_set.IF()) {
   //   sub += D.Eikonal(k, D.GetBornMomenta(0), D.GetBornMomenta(1));
   // }
 
@@ -1000,7 +667,6 @@ void Define_Dipoles::CleanOutParticles() {
 }
 
 void Define_Dipoles::CleanUp() {
-  m_dipoles.clear();
 }
 
 double Define_Dipoles::CalculateFlux(const Vec4D &k){
@@ -1023,7 +689,7 @@ double Define_Dipoles::CalculateFlux(const Vec4D &k){
     msg_Error()<<"Unknown dipole type in "<<METHOD<<std::endl;
   }
   if(fluxtype==dipoletype::initial){
-    for (auto &D : m_dipolesII) {
+    for (auto &D : m_set.ByType(dipoletype::initial)) {
       QX = D.GetNewMomenta(0)+D.GetNewMomenta(1);
       Q =  D.GetBornMomenta(0)+D.GetBornMomenta(1);
       sq = (QX).Abs2(); 
@@ -1035,7 +701,7 @@ double Define_Dipoles::CalculateFlux(const Vec4D &k){
   }
   if(fluxtype==dipoletype::final){
     flux=0;
-    for (auto &D : m_dipolesFF) {
+    for (auto &D : m_set.FF()) {
       Q  = D.GetBornMomenta(0)+D.GetBornMomenta(1);
       QX = D.GetNewMomenta(0)+D.GetNewMomenta(1);
       sq = (Q).Abs2();
@@ -1043,7 +709,7 @@ double Define_Dipoles::CalculateFlux(const Vec4D &k){
       flux += (sq/sx);
       // flux = Propagator(sx)/Propagator(sq);
     }
-    return flux/m_dipolesFF.size();
+    return flux/m_set.FF().size();
   }
   return flux;
 }
@@ -1054,7 +720,7 @@ double Define_Dipoles::CalculateFlux(const Vec4D &k, dipoletype::code &fluxtype)
   Vec4D Q,QX;
   if(m_noflux==1) return 1;
   if(fluxtype==dipoletype::initial){
-    for (auto &D : m_dipolesII) {
+    for (auto &D : m_set.ByType(dipoletype::initial)) {
       QX = D.GetNewMomenta(0)+D.GetNewMomenta(1);
       Q =  D.GetMomenta(0)+D.GetMomenta(1);
       sq = (Q).Abs2(); 
@@ -1066,7 +732,7 @@ double Define_Dipoles::CalculateFlux(const Vec4D &k, dipoletype::code &fluxtype)
   }
   if(fluxtype==dipoletype::final){
     flux=0;
-    for (auto &D : m_dipolesFF) {
+    for (auto &D : m_set.FF()) {
       Q  = D.GetBornMomenta(0)+D.GetBornMomenta(1);
       QX = D.GetNewMomenta(0)+D.GetNewMomenta(1);
       sq = (Q).Abs2();
@@ -1074,7 +740,7 @@ double Define_Dipoles::CalculateFlux(const Vec4D &k, dipoletype::code &fluxtype)
       flux += (sq/sx);
       // flux = Propagator(sx)/Propagator(sq);
     }
-    return flux/m_dipolesFF.size();
+    return flux/m_set.FF().size();
   }
   return flux;
 }
@@ -1088,7 +754,7 @@ double Define_Dipoles::CalculateFlux(const Vec4D &k, const Vec4D &kk){
   fluxtype1 = WhichResonant(k);
   fluxtype2 = WhichResonant(kk);
   if(fluxtype1==dipoletype::initial && fluxtype2==dipoletype::initial){
-    for (auto &D : m_dipolesII) {
+    for (auto &D : m_set.ByType(dipoletype::initial)) {
       QX = D.GetNewMomenta(0)+D.GetNewMomenta(1);
       Q =  D.GetMomenta(0)+D.GetMomenta(1);
       sq = Q.Abs2();
@@ -1098,7 +764,7 @@ double Define_Dipoles::CalculateFlux(const Vec4D &k, const Vec4D &kk){
     }
   }
   else if(fluxtype1==dipoletype::final && fluxtype2==dipoletype::final){
-    for (auto &D : m_dipolesFF) {
+    for (auto &D : m_set.FF()) {
       Q = D.GetBornMomenta(0)+D.GetBornMomenta(1);
       QX = D.GetMomenta(0)+D.GetMomenta(1);
       sq = (Q).Abs2();
@@ -1108,14 +774,14 @@ double Define_Dipoles::CalculateFlux(const Vec4D &k, const Vec4D &kk){
     return flux;
   }
   else if(fluxtype1==dipoletype::initial && fluxtype2==dipoletype::final){
-    for (auto &D : m_dipolesII) {
+    for (auto &D : m_set.ByType(dipoletype::initial)) {
       QX = D.GetNewMomenta(0)+D.GetNewMomenta(1);
       Q =  D.GetMomenta(0)+D.GetMomenta(1);
       sq = Q.Abs2();
       sx = (Q-k).Abs2();
       flux = sx/sq;
     }
-    for (auto &D : m_dipolesFF) {
+    for (auto &D : m_set.FF()) {
       Q = D.GetBornMomenta(0)+D.GetBornMomenta(1);
       QX = D.GetMomenta(0)+D.GetMomenta(1);
       sq = (Q).Abs2();
@@ -1124,14 +790,14 @@ double Define_Dipoles::CalculateFlux(const Vec4D &k, const Vec4D &kk){
    }
   }
   else if(fluxtype1==dipoletype::final && fluxtype2==dipoletype::initial){
-    for (auto &D : m_dipolesII) {
+    for (auto &D : m_set.ByType(dipoletype::initial)) {
       QX = D.GetNewMomenta(0)+D.GetNewMomenta(1);
       Q =  D.GetMomenta(0)+D.GetMomenta(1);
       sq = Q.Abs2();
       sx = (Q-kk).Abs2();
       flux = sx/sq;
     }
-    for (auto &D : m_dipolesFF) {
+    for (auto &D : m_set.FF()) {
       Q = D.GetBornMomenta(0)+D.GetBornMomenta(1);
       QX = D.GetMomenta(0)+D.GetMomenta(1);
       sq = (Q).Abs2();
@@ -1174,63 +840,7 @@ double Define_Dipoles::ResonanceWidthDistance(YFS::Dipole &D) {
   return mdist;
 }
 
-void Define_Dipoles::SelectResonantDipoles() {
-  // m_dipolesFF holds every unique pair of charged final-state particles, which
-  // is what the virtual and form-factor sums want. Photon generation
-  // (YFS_Handler::CalculateFSR) and the real eikonal current
-  // (CalculateRealSub) must instead see each charged particle exactly once,
-  // otherwise a leg radiates -- and is boosted -- more than once. So the
-  // radiating subset has to be a matching of the charged final state, and that
-  // is what IsResonance() flags.
-  //
-  // Selection is greedy over two passes. Same-flavour opposite-charge pairs are
-  // the physical dipoles and are matched first, most resonant first, so that
-  // with several candidates of one flavour the pairing closest to a resonance
-  // of the process wins. A second pass pairs whatever is left by opposite
-  // charge alone, so no charged leg is dropped when the flavours do not pair up.
-  for (auto &D : m_dipolesFF) D.SetResonance(false);
-  std::set<int> used;
-  for (int pass(0); pass < 2; ++pass) {
-    std::vector<std::pair<double, size_t> > cand;
-    for (size_t i(0); i < m_dipolesFF.size(); ++i) {
-      Dipole &D(m_dipolesFF[i]);
-      if (D.m_QiQj >= 0) continue;                      // opposite charges only
-      if (pass == 0 && !D.IsDecayAllowed()) continue;    // same flavour first
-      if (used.count(D.Left()) || used.count(D.Right())) continue;
-      cand.push_back(std::make_pair(ResonanceWidthDistance(D), i));
-    }
-    std::stable_sort(cand.begin(), cand.end());
-    for (size_t c(0); c < cand.size(); ++c) {
-      Dipole &D(m_dipolesFF[cand[c].second]);
-      if (used.count(D.Left()) || used.count(D.Right())) continue;
-      D.SetResonance(true);
-      used.insert(D.Left());
-      used.insert(D.Right());
-      msg_Debugging() << METHOD << "(): radiating dipole (" << D.Left() << ","
-                      << D.Right() << ") " << D.m_flavs[0] << D.m_flavs[1]
-                      << " pass=" << pass << " |m-M|/Gamma=" << cand[c].first
-                      << std::endl;
-    }
-  }
-  std::set<int> legs;
-  for (auto &D : m_dipolesFF) {
-    legs.insert(D.Left());
-    legs.insert(D.Right());
-  }
-  for (auto l : legs) {
-    if (used.count(l)) continue;
-    static bool warned(false);
-    if (!warned) {
-      msg_Error() << METHOD << "(): charged final-state particle at position "
-                  << l << " enters no radiating dipole, so the final-state "
-                  << "eikonal current does not conserve charge. This is "
-                  << "expected for an odd number of charged final-state "
-                  << "particles. Further warnings suppressed." << std::endl;
-      warned = true;
-    }
-    msg_Debugging() << METHOD << "(): unpaired charged leg at " << l << std::endl;
-  }
-}
+
 
 void Define_Dipoles::IsResonant(YFS::Dipole &D) {
 double mass_d = (D.GetBornMomenta(0) + D.GetBornMomenta(1)).Mass();
@@ -1273,7 +883,7 @@ bool Define_Dipoles::CheckResonant(YFS::Dipole &D) {
 }
 
 bool Define_Dipoles::IsResonant() {
-  for(auto &D: m_dipolesFF){
+  for(auto &D: m_set.FF()){
     double mass_d = (D.GetBornMomenta(0) + D.GetBornMomenta(1)).Mass();
     double mdist;
     for (auto it = m_proc_restab_map.begin(); it != m_proc_restab_map.end(); ++it) {
@@ -1290,10 +900,10 @@ bool Define_Dipoles::IsResonant() {
 
 bool Define_Dipoles::CheckResonant(){
   bool isres = false;
-  for(auto &D: m_dipolesII){
+  for(auto &D: m_set.ByType(dipoletype::initial)){
     if(CheckResonant(D)) isres=true;
   }
-  for(auto &D: m_dipolesFF){
+  for(auto &D: m_set.FF()){
     if(CheckResonant(D)) isres=true;
   }
   return isres;
@@ -1337,12 +947,12 @@ dipoletype::code Define_Dipoles::WhichResonant(const Vec4D &k){
   double mdistisr(10000), mdistfsr(100000),mdistifi(100000);
   double mindis(10000);
   dipoletype::code min(dipoletype::initial);
-  for(auto &D: m_dipolesII){
+  for(auto &D: m_set.ByType(dipoletype::initial)){
     mdistisr = ResonantDist(D,k);
     mindis = mdistisr;
     min = dipoletype::initial;
   }
-  for(auto &D: m_dipolesFF){
+  for(auto &D: m_set.FF()){
     mdistfsr = ResonantDist(D,k);  
     if(mdistfsr < mdistisr){
       min = dipoletype::final;
