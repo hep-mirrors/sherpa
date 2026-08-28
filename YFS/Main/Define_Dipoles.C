@@ -47,8 +47,11 @@ void Define_Dipoles::MakeDipolesII(ATOOLS::Flavour_Vector const &fl, ATOOLS::Vec
 
 
 void Define_Dipoles::MakeDipolesIF(ATOOLS::Flavour_Vector const &fl, ATOOLS::Vec4D_Vector const mom, ATOOLS::Vec4D_Vector const born) {
-  // Initial-final dipoles are built by MakeDipoles, which delegates to
-  // DipoleSet::BuildFinal. Kept so existing call sites still compile.
+  if (m_mode == yfsmode::fsr) return;
+  if (!HasFSR()) return;
+  if (mom.size() != fl.size())
+    THROW(fatal_error, "Incorrect dipole size in YFS for initial-final dipoles");
+  m_set.BuildIF(fl, mom, born, m_alpha);
 }
 
 void Define_Dipoles::MakeDipolesFF(ATOOLS::Flavour_Vector const &fl, ATOOLS::Vec4D_Vector const &mom, ATOOLS::Vec4D_Vector const &born) {
@@ -66,8 +69,7 @@ void Define_Dipoles::MakeDipoles(ATOOLS::Flavour_Vector const &fl, ATOOLS::Vec4D
   m_bornmomenta = born;
   m_out = fl.size() - m_in;
   if (!HasFSR()) return;
-  const bool withIF(m_mode != yfsmode::fsr);
-  m_set.BuildFinal(fl, mom, born, m_alpha, withIF,
+  m_set.BuildFinal(fl, mom, born, m_alpha,
                    [this](const YFS::Dipole &D) {
                      return ResonanceWidthDistance(const_cast<YFS::Dipole&>(D));
                    });
