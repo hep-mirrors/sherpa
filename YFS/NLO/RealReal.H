@@ -1,5 +1,5 @@
-#ifndef YFS_REAL_H
-#define YFS_REAL_H
+#ifndef YFS_REAL_REAL_H
+#define YFS_REAL_REAL_H
 
 
 #include "PHASIC++/Process/Tree_ME2_Base.H"
@@ -24,17 +24,16 @@ class Dipole_Wrapper_Process;
 }
 namespace YFS {
 
-class Real : public YFS_Base {
-
+class RealReal : public YFS_Base {
 public:
 
-  Real(const PHASIC::Process_Info& pi);
+  RealReal(const PHASIC::Process_Info& pi);
 
-  ~Real();
+  ~RealReal();
   // void InitME(MODEL::Model_Base *const model);
   double Calc(const ATOOLS::Vec4D_Vector momenta);
-   PHASIC::Tree_ME2_Base     *p_real_me;
-   PHASIC::Tree_ME2_Base     *p_real_me2;
+  PHASIC::Tree_ME2_Base     *p_real_me;
+  PHASIC::Tree_ME2_Base     *p_real_me2;
   double Calc_R(const ATOOLS::Vec4D_Vector& p);
   double Calc_External(const ATOOLS::Vec4D_Vector& p);
   MODEL::Coupling_Map m_cpls;
@@ -47,12 +46,13 @@ public:
 
   ME_Compare *p_cmp;
 
-  PHASIC::Process_Base *p_realproc;
+  PHASIC::Process_Base *p_rrproc;
   ATOOLS::Cluster_Amplitude *p_ampl;
-  inline bool FailCut() {return m_failcut;}
-  inline void SetProc(PHASIC::Process_Base *realproc) {p_realproc=realproc;}
+
+  inline void SetProc(PHASIC::Process_Base *realproc) {p_rrproc=realproc;}
    ATOOLS::Cluster_Amplitude *CreateAmplitude
     (const ATOOLS::Vec4D_Vector &p) const;
+  inline bool FailCut() {return m_failcut;}
 };
 }
 

@@ -1,5 +1,5 @@
- #ifndef YFS_Virtual_H
-#define YFS_Virtual_H
+#ifndef YFS_Virtual_Virtual_H
+#define YFS_Virtual_Virtual_H
 #include "PHASIC++/Process/Virtual_ME2_Base.H"
 #include "PHASIC++/Process/Tree_ME2_Base.H"
 #include "PHASIC++/Process/Color_Correlated_ME2.H"
@@ -12,11 +12,11 @@
 
 namespace YFS{
 
-    class Virtual : public YFS_Base
+    class VirtualVirtual : public YFS_Base
     {
     public:
-        Virtual(const PHASIC::Process_Info& pi);
-        ~Virtual();
+        VirtualVirtual(const PHASIC::Process_Info& pi);
+        ~VirtualVirtual();
         double Calc(const ATOOLS::Vec4D_Vector momenta, double b);    
         PHASIC::Virtual_ME2_Base     *p_loop_me;
         PHASIC::Color_Correlated_ME2* p_corr_me;

@@ -37,17 +37,15 @@ double MySqLam(double x,double y,double z)
 FSR::FSR()
 {
   Scoped_Settings s{ Settings::GetMainSettings()["YFS"] };
-  s["FSR_EMIN"].SetDefault(1e-2*m_isrcut);
   s["FSR_FCUT"].SetDefault(0);
   s["FSR_NBAR"].SetDefault(0);
   s["MASSIVE_NBAR"].SetDefault(0);
   s["FSR_EIK"].SetDefault(0);
-  s["FSR_CRU"].SetDefault(0);
+  s["FSR_CRU"].SetDefault(1);
   s["FSR_NGAMMA"].SetDefault(-1);
   s["FSR_CUT"].SetDefault(1e-2*m_isrcut);
-  m_Edelta = s["FSR_EMIN"].Get<double>();
   m_fsrcut = s["FSR_CUT"].Get<double>();
-  // m_fsrcut /= sqrt(m_s);
+  m_fsrcut /= sqrt(m_s);
   m_fsrcutF = s["FSR_FCUT"].Get<double>();
   m_nbar = s["FSR_NBAR"].Get<double>();
   m_use_massive_nbar = s["MASSIVE_NBAR"].Get<bool>();
@@ -72,6 +70,8 @@ bool FSR::Initialize(YFS::Dipole &dipole) {
   m_dipoleFl.push_back(p_dipole->GetFlav(0));
   m_dipoleFl.push_back(p_dipole->GetFlav(1));
   m_QFrame = m_dipole[0] + m_dipole[1];
+  m_beta1 = CalculateBeta(m_dipole[0]);
+  m_beta2 = CalculateBeta(m_dipole[1]);
   BoostToXFM();
   p_dipole->SetEikMomentum(0, m_dipole[0]);
   p_dipole->SetEikMomentum(1, m_dipole[1]);
@@ -83,9 +83,23 @@ bool FSR::Initialize(YFS::Dipole &dipole) {
   m_Q1 = p_dipole->m_charges[0];
   m_Q2 = p_dipole->m_charges[1];
   m_QF2 = m_Q1 * m_Q2;
-  m_dip_sp = p_dipole->Sprime();
+  m_dip_sp = (m_dipole[0]+m_dipole[1]).Abs2();
   if(IsBad(m_dip_sp)) return false;
   m_EQ = sqrt(m_dip_sp) / 2.;
+  // KKMC: m_Emin = CMSene/2 * vvmin (KKarFin.cxx:56). m_isrcut is Sherpa's
+  // vvmin - a dimensionless energy fraction, IR_CUTOFF already divided by
+  // sqrt(s) in YFS_Base::RegisterSettings() - so the nominal-CMS soft cutoff is
+  // sqrt(s)/2 * m_isrcut, which is just IR_CUTOFF/2, i.e. the same photon
+  // energy the ISR generation cuts on. It was 0.5*m_s*m_isrcut, a factor
+  // sqrt(s) larger, so the two agreed only at sqrt(s) = 1 GeV.
+  //
+  // This is the single nominal scale the Piatek term m_DelYFS translates the
+  // Q-frame bookkeeping onto, and KKMC uses that same Emin for Yisr, Yfsr and
+  // Yint alike - so it also sets where Define_Dipoles::IFIOmega() has to sit.
+  // FSR_KKMC_CrossCheck.C prints both forms side by side; note the discrepancy
+  // shows with the dipole at rest just as much as with ISR on, so a KKMC
+  // comparison only catches it if the KKMC side derives Emin from vvmin itself
+  // rather than being handed Sherpa's value.
   m_Emin = 0.5 * sqrt(m_s) * m_isrcut;
   m_Kmax = sqrt(m_dip_sp) / 2.;
   m_hideW = 1.;
@@ -93,15 +107,12 @@ bool FSR::Initialize(YFS::Dipole &dipole) {
     THROW(fatal_error, "Dipole size incorrect in YFS FSR")
   }
   m_p1p2 = m_dipole[0] * m_dipole[1];
-  m_beta1 = CalculateBeta(m_dipole[0]);
-  m_beta2 = CalculateBeta(m_dipole[1]);
   m_mu1 = 1. - sqr(m_beta1);
   m_mu2 = 1. - sqr(m_beta2);
   m_g  = p_dipole->m_gamma;
   m_gp = p_dipole->m_gammap;
   if (m_use_massive_nbar) m_nbar = -m_g * log(m_fsrcut);
   else m_nbar = -m_gp * log(m_fsrcut);
-
   if (IsBad(m_nbar)) {
     PRINT_VAR(m_dipole);
     PRINT_VAR(m_g);
@@ -122,7 +133,6 @@ bool FSR::Initialize(YFS::Dipole &dipole) {
 double FSR::CalculateBeta(const Vec4D& p) {
   return Vec3D(p).Abs() / p[0];
 }
-
 void FSR::CalculateBetaBar() {
   m_betaBar = m_dip_sp - sqr(m_mass[0] - m_mass[1]);
   m_betaBar *= m_dip_sp - sqr(m_mass[0] + m_mass[1]);
@@ -198,7 +208,14 @@ void FSR::GenerateAngles() {
   }
   m_cos.push_back(m_c);
   m_sin.push_back(m_st);
-  m_fbarvec.push_back(1. / (del1 * del2) * (1. + m_beta1*m_beta2)/(m_beta1+m_beta2));
+  // Must match the density that actually generated costhg/sinthg above (the
+  // crude, am2/beta-based del1,del2 - algebraically del1==1-beta1*m_c and
+  // del2==1+beta2*m_c here since del2-del1==2*beta*costhg by construction).
+  // The extra /(m_beta1+m_beta2) instead of /2 multiplied every FSR photon's
+  // mass-weight by an extra factor of beta (KKMC's crude density is
+  // (1-am2/2) == (1+beta1*beta2)/2 for beta1==beta2), confirmed against
+  // KKarFin::AngBre()/YFSfin() via a fixed-kinematics cross-check harness.
+  m_fbarvec.push_back(1. / (del1 * del2) * (1. + m_beta1*m_beta2)/2.);
   if(abs(m_c)>1){
       msg_Error()<<"Photon angel out of bounds with cos(theta) = "<<m_c<<std::endl;
   }
@@ -222,8 +239,9 @@ void FSR::NPhotons() {
     sum += log(ran->Get());
     if (sum <= -m_nbar) break;
   }
-  m_n = N - 1;
-  m_N = m_n;
+  if(FixedOrder()==fixed_order::nlo) m_n = min(N-1, 1);
+  else  m_n = N - 1;
+  m_N=m_n;
   p_dipole->SetNPhoton(m_N);
   if (m_n < 0) msg_Error() << METHOD << std::endl << "Nphotons < 0!!" << std::endl;
 }
@@ -255,6 +273,7 @@ void FSR::GeneratePhotonMomentum() {
     m_photonSum += photon;
     m_k0.push_back(k0);
   }
+  m_photonspreboost = m_photons;
 }
 
 
@@ -277,7 +296,7 @@ bool FSR::MakeFSR() {
     m_sQ = m_sprim;
   }
   else {
-    if (m_photonSum.E() >= 1) {
+    if (m_photonSum.E() > 1) {
       RejectEvent();
       m_cut = 2;
       return false;
@@ -298,16 +317,20 @@ bool FSR::MakeFSR() {
   MakePair(sqrt(m_sprim), m_dipole[0], m_dipole[1]);
   m_px = m_dipole[0] + m_dipole[1] + m_photonSum;
   m_Q = m_dipole[0] + m_dipole[1];
+  // CE.Isotropic2Momenta(m_Q, sqr(m_mass[0]), sqr(m_mass[0]), m_dipole[0], m_dipole[1], ran->Get(), ran->Get(), -1, 1);
 
   double masc1 = m_mass[0] * sqrt(m_sQ / m_dip_sp);
   double masc2 = m_mass[1] * sqrt(m_sQ / m_dip_sp);
-  CE.Isotropic2Momenta(m_Q, sqr(masc1), sqr(masc2), m_r1, m_r2, ran->Get(), ran->Get(), -1, 1);
+  // CE.Isotropic2Momenta(m_Q, sqr(masc1), sqr(masc2), m_r1, m_r2, ran->Get(), ran->Get(), -1, 1);
+  double eta1;
+  double eta2;
+  MakePair(sqrt(m_sprim), m_r1, m_r2, masc1, masc2, eta1, eta2);
+
   CalculateBetaBar();
   p_dipole->AddToGhosts(m_r1);
   p_dipole->AddToGhosts(m_r2);
   for (int i = 0; i < 2; ++i) {
     p_dipole->SetMomentum(i, m_dipole[i]);
-    p_dipole->SetEikMomentum(i, m_dipole[i]);
   }
   m_photonSumPreBoost = m_photonSum;
   if (m_cut != 0) return true;
@@ -321,25 +344,49 @@ void FSR::RescalePhotons() {
   m_yy = 1. / (1. + m_photonSum[0] + 0.25 * m_photonSum.Abs2());
   m_wt2 = m_yy * (1. + m_photonSum[0]);
   m_sprim = m_dip_sp * m_yy;
-
-  // Rescale all photons
   double ener = sqrt(m_sprim) / 2.;
+  m_scalek = ener;
   for (size_t i = 0; i < m_photons.size(); ++i) {
     m_photons[i] *= ener;
-    m_photonspreboost.push_back(m_photons[i]);
   }
-  // p_dipole->AddPhotonsToDipole(m_photons);
   m_photonSum *= ener;
+  m_scalek = ener;
+  p_dipole->SetPhotonScale(m_scalek);
   for (auto k : m_photons) {
     msg_Debugging() << k << std::endl;
-  }
+  } 
 }
+
+Vec4D FSR::ScalePhoton(const int &i) {
+  Vec4D k = m_photonspreboost[i];
+  Vec4D sumk;
+  for(auto _k: m_photonspreboost) sumk+=_k;
+  double x = 1. / (1. - k[0]);
+  double yy = 1. / (1. + k[0]*m_xfact);
+  double sprim = m_dip_sp * yy;
+  double ener = sqrt(sprim) / 2.;
+  return k*ener*x;
+}
+
+double FSR::ScalePhoton(const Vec4D & _k) {
+  // HidePhotons(m_photonspreboost);
+  Vec4D k = _k;
+  k = k/m_scalek;
+  double x;
+  double yy = 1. / (1. + k[0]);
+  double sprim = m_dip_sp * yy;
+  double ener = sqrt(sprim) / 2.;
+  return ener;
+}
+
 
 bool FSR::F() {
   double del1, del2;
   double ener = sqrt(m_sprim) / 2.;
-  double am1 = 1-m_betaBar1*m_betaBar1;
-  double am2 = 1-m_betaBar2*m_betaBar2;
+  // double am1 = 1-m_betaBar1*m_betaBar1;
+  // double am2 = 1-m_betaBar2*m_betaBar2;
+  double am1 = sqr(m_mass[0]/ener);
+  double am2 = sqr(m_mass[1]/ener);
   m_eta1 = (m_sprim + m_dipole[0].Abs2() - m_dipole[1].Abs2()) / m_sprim;
   m_eta2 = (m_sprim - m_dipole[0].Abs2() + m_dipole[1].Abs2()) / m_sprim;
   Vec4D p1 = m_dipole[0];
@@ -348,7 +395,7 @@ bool FSR::F() {
   CalculateBetaBar();
   for (size_t i = 0; i < m_photons.size(); ++i)
   {
-    if (m_cos[i] > 0.) {
+    if (m_cos[i] < 0.) {
       del1 = am1 / (m_eta1 + betan) + betan * sqr(m_sin[i]) / (1. + m_cos[i]);
       del2 = m_eta2 + betan * m_cos[i];
     }
@@ -361,7 +408,7 @@ bool FSR::F() {
     if (m_eikonal_mode == 1) {
       m_f    = Eikonal(m_photons[i]);
       m_fbar = EikonalInterferance(m_photons[i]);
-      m_fbar *= m_sprim/m_sQ;
+      // m_fbar *= m_sprim/m_sQ;
       // m_fbar = m_alpi / (2  * M_PI) * m_fbarvec[i];
 
     }
@@ -378,7 +425,7 @@ bool FSR::F() {
       PRINT_VAR(sqrt(m_sQ));
       m_f = 0;
     }
-    m_MassWls[i] *= m_f / m_fbar;
+    m_MassWls[i] *= m_f / m_fbar;// * m_sQ/m_sprim;
     m_dist1.push_back(m_f);
     m_dist2.push_back(m_fbar);
     if (IsBad(m_massW)) {
@@ -415,8 +462,21 @@ bool FSR::YFS_FORM(){
   double YFS_IR = -2.*m_alpi*abs(m_QF2)*(m_q1q2*p_fsrFormFact->A(m_dipole[0],m_dipole[1])-1.)*log(1/Delta);
 
   if (m_use_crude) {
-    m_BtiXcru = p_fsrFormFact->BVR_cru(m_r1 * m_r2, m_r1[0], m_r2[0], m_r1.Mass(), m_r2.Mass(), m_Emin);
-    m_BtiQcru = p_fsrFormFact->BVR_cru(m_r1 * m_r2, Eqq, Eqq, m_r1.Mass(), m_r2.Mass(), m_EminQ);
+    if(m_tchannel!=0){
+      m_BtiXcru = p_fsrFormFact->BVirtT(m_r1, m_r2);
+      m_BtiQcru = p_fsrFormFact->BVirtT(m_r1, m_r2);
+    } 
+    else{
+      m_BtiXcru = p_fsrFormFact->BVR_cru(m_r1 * m_r2, m_r1[0], m_r2[0], m_r1.Mass(), m_r2.Mass(), m_Emin);
+      // Jadach always uses the symmetric EQQ=0.5*sqrt(svarQ) for
+      // BOTH particles' energy in the Q-scale crude evaluation, not the
+      // ghosts' own (recoil-asymmetric) energies - confirmed via
+      // YFS/Tools/FSR_KKMC_CrossCheck.C: using m_r1[0]/m_r2[0] here matched
+      // KKMC to only ~1.8e-6 at soft-photon kinematics, growing to ~6.3e-5 at
+      // harder/more asymmetric photon configurations, while Eqq,Eqq matches
+      // to 9 sig figs at both (2026-08-05).
+      m_BtiQcru = p_fsrFormFact->BVR_cru(m_r1 * m_r2, Eqq, Eqq, m_r1.Mass(), m_r2.Mass(), m_EminQ);
+    }
   }
   else {
      if(m_tchannel){
@@ -425,10 +485,19 @@ bool FSR::YFS_FORM(){
     }
     else{
       m_BtiXcru = p_fsrFormFact->BVR_full(m_r1 * m_r2, m_r1[0], m_r2[0], m_r1.Mass(), m_r2.Mass(), m_Emin, m_photonMass, 0);
+      // Same EQQ,EQQ convention fix as the BVR_cru branch above - see its comment.
       m_BtiQcru = p_fsrFormFact->BVR_full(m_r1 * m_r2, Eqq, Eqq, m_r1.Mass(), m_r2.Mass(), m_EminQ, m_photonMass, 0);
     }
   }
   m_volmc = m_gp*log(1./m_fsrcut);
+  // Reset before the branch. m_DelYFS and m_delvol are only assigned inside
+  // the m_hidephotons==1 arm, but m_YFS_IR below reads m_DelYFS
+  // unconditionally, so with HIDE_PHOTONS != 1 it used to pick up whatever the
+  // previous event left behind (or uninitialised memory on the first one).
+  // Zero is the right value there: it reproduces KKMC's KeyPia == 0 branch,
+  // which applies exp(YFS_IRfin) with no DelYFS at all (KKceex.cxx:294-298).
+  m_DelYFS = 0.;
+  m_delvol = 0.;
    if(m_hidephotons==1){
     if(m_tchannel){
       m_btilStar = p_fsrFormFact->BVirtT(m_dipole[0],m_dipole[1],m_Emin*m_Emin);
@@ -444,6 +513,11 @@ bool FSR::YFS_FORM(){
   }
   else m_hideW=exp(YFS_IR  +  m_volmc);
   m_YFS_IR = exp(YFS_IR+m_DelYFS);
+  if(FixedOrder()==fixed_order::nlo){
+    m_YFS_IR = 1;//+YFS_IR+m_DelYFS;
+    m_hideW  = 1;//+YFS_IR + m_DelYFS + m_volmc - m_delvol;
+    return true;
+  }
   return true;
 }
 
@@ -466,7 +540,7 @@ void FSR::HidePhotons() {
   m_massW =1;// m_MassWls[0];
   m_yini.clear();
   m_zini.clear();
-  Vec4D_Vector ph;
+  Vec4D_Vector ph, phboost;
   std::vector<int> mark;
   m_photonSum *= 0;
   // mark photons for removal
@@ -479,6 +553,7 @@ void FSR::HidePhotons() {
     else {
       m_massW *= m_MassWls[i];
       ph.push_back(m_photons[i]);
+      phboost.push_back(m_photonspreboost[i]);
       del1.push_back(m_del1[i]);
       del2.push_back(m_del2[i]);
     }
@@ -492,6 +567,7 @@ void FSR::HidePhotons() {
   }
   p_dipole->SetNPhoton(ph.size());
   m_photons = ph;
+  // m_photonspreboost = phboost;
   p_dipole->AddPhotonsToDipole(m_photons);
   p_dipole->SetSudakovs(m_yini,m_zini);
 }
@@ -577,15 +653,6 @@ void FSR::MakePair(double cms, Vec4D &p1, Vec4D &p2) {
   }
 }
 
-void FSR::BoostDipole(Vec4D_Vector &dipole) {
-  Vec4D QMS = dipole[0] + dipole[1] + m_photonSum;
-  ATOOLS::Poincare poin(QMS);
-  poin.Boost(dipole[0]);
-  poin.Rotate(dipole[0]);
-  poin.Boost(dipole[1]);
-  poin.Rotate(dipole[1]);
-}
-
 void FSR::Weight() {
   CalculateBetaBar();
   if (m_photons.size() == 0) m_sprim = m_sX;
@@ -624,7 +691,7 @@ void FSR::Weight() {
     m_fsrWeight = 0;
   }
   DEBUG_FUNC("FSR for Dipole  = " << m_dipoleFl
-             << "\n N Photons = " << m_N
+             << "\n N Photons = " << m_n
              << "\n N Photons removed = " << m_NRemoved
              << "\n Eprime = " << sqrt(m_dip_sp)
              << "\n Eq = " << sqrt(m_sQ)
@@ -653,12 +720,16 @@ void FSR::Weight() {
 
 
 void FSR::BoostToXFM() {
-  // p_rot   = new Poincare(m_dipole[0],Vec4D(0.,0.,0.,1.));
+  Poincare p_rot;
   Vec4D Q = m_dipole[0] + m_dipole[1];
   ATOOLS::Poincare poin(Q);
-  for (auto &p : m_dipole) {
-    poin.Boost(p);
+  for (int i=0; i<2; i++) {
+    poin.Boost(m_dipole[i]);
+    if(i==0) p_rot = Poincare(m_dipole[i],Vec4D(0.,0.,0.,1.));
+    p_rot.Rotate(m_dipole[i]);
   }
+  p_dipole->SetRotate(p_rot);
+  p_dipole->SetBoost(poin);
 }
 
 void FSR::RotateDipole() {
@@ -766,8 +837,8 @@ double FSR::Eikonal(const Vec4D &k) {
 }
 
 double FSR::EikonalInterferance(const Vec4D &k) {
-  Vec4D p1=m_dipole[0];
-  Vec4D p2 = m_dipole[1];
+  Vec4D p1 = p_dipole->GetOldMomenta(0);
+  Vec4D p2 = p_dipole->GetOldMomenta(1);
   MakePair(sqrt(m_dip_sp),p1,p2);
   return m_alpi / (4.*M_PI) * 2.*p1 * p2  / ((k * p1) * (k * p2));
 }

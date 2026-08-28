@@ -8,6 +8,7 @@
 #include "MODEL/Main/Model_Base.H"
 #include "MODEL/Main/Running_AlphaQED.H"
 #include "ATOOLS/Org/Run_Parameter.H" 
+#include "PHASIC++/Channels/Channel_Elements.H"
 
 
 
@@ -20,13 +21,8 @@ using namespace YFS;
 double delf = 0;
 double deli = 0;
 int order = 0;
-static double SqLam(double x,double y,double z)
-{
-  return std::abs(x*x+y*y+z*z-2.*x*y-2.*x*z-2.*y*z);
-  // double arg(sqr(s-s1-s2)-4.*s1*s2);
-  // if (arg>0.) return sqrt(arg)/s;
-  // return 0.;
-}
+ 
+// Lambda (Kaellen function) now lives once in YFS/Tools/Dipole.H.
 
 
 Dipole::Dipole(ATOOLS::Flavour_Vector const &fl, ATOOLS::Vec4D_Vector const &mom, 
@@ -34,18 +30,21 @@ Dipole::Dipole(ATOOLS::Flavour_Vector const &fl, ATOOLS::Vec4D_Vector const &mom
   m_type(ty), m_alp(alpha)
 {
   if ((mom.size() != fl.size()) || fl.size() != 2 || mom.size() != 2 || born.size()!=2) {
-    msg_Out()<<"Dipole type is  =  "<<ty<<std::endl
-             <<" mom.size() =  "<<mom.size()<<std::endl
-             <<" fl.size() =  "<<fl.size()<<std::endl
-             <<" born.size() =  "<<born.size()<<std::endl;
+    msg_Out()<<"Dipole type is  = "<<ty<<std::endl
+             <<" mom.size() = "<<mom.size()<<std::endl
+             <<" fl.size() = "<<fl.size()<<std::endl
+             <<" born.size() = "<<born.size()<<std::endl
+             <<"Flavours = "<<fl<<std::endl;
     THROW(fatal_error, "Incorrect dipole size in YFS for dipoletype");
   }
   Clean();
   // todo get alpha from YFS_BASE
+  m_irfinite = false;
   m_alpi = m_alp/M_PI;
   m_sp = (mom[0]+mom[1]).Abs2();
   m_Qi = fl[0].Charge();
   m_Qj = fl[1].Charge();
+  // if(fl[0].IsBoson() || fl[1].IsBoson()) m_irfinite = true;// Case for on shell ww
   m_QiQj = m_Qi*m_Qj;
   if(IsEqual(fl[0],fl[1])) m_sameflav = 1;
   else m_sameflav = 0;
@@ -66,26 +65,10 @@ Dipole::Dipole(ATOOLS::Flavour_Vector const &fl, ATOOLS::Vec4D_Vector const &mom
   for (auto &v : born) m_bornmomenta.push_back(v);
   m_eikmomentum = m_bornmomenta;
   if (ty == dipoletype::code::initial) {
-    if(fl[0].IsAnti()) m_thetai = -1;
-    else m_thetai = 1;
-    if(fl[1].IsAnti()) m_thetaj = 1;
-      else m_thetaj = -1;
-    if(IsEqual(m_Qi,m_Qj)){
-      m_thetai = m_thetaj = -1;
-    }
-    // m_thetai = m_thetaj = -1;
-    // for (int i = 0; i < 2; ++i) m_beams.push_back(m_bornmomenta[i]);
+    m_thetai = m_thetaj = 1;
   }
   else if (ty == dipoletype::code::final) {
-    if(fl[0].IsAnti()) m_thetai = 1;
-    else m_thetai = -1;
-    if(fl[1].IsAnti()) m_thetaj = -1;
-      else m_thetaj = 1;
-    if(IsEqual(m_Qi,m_Qj)){
-      m_thetai = m_thetaj = 1;
-    }
-    // m_thetai = m_thetaj = 1;
-
+    m_thetai = m_thetaj = -1;
   }
   else if (ty == dipoletype::code::ifi) {
     m_thetai = -1;
@@ -96,8 +79,6 @@ Dipole::Dipole(ATOOLS::Flavour_Vector const &fl, ATOOLS::Vec4D_Vector const &mom
   }
   if (ty == dipoletype::code::final) {
     m_ghost.clear();
-    // p_boost  = new Poincare(m_bornmomenta[0] + m_bornmomenta[1]);
-    // p_rotate = new Poincare(m_bornmomenta[0], Vec4D(0., 0., 0., 1.));
   }
   m_thetaij = m_thetai*m_thetaj;
   m_theta.push_back(m_thetai);
@@ -105,6 +86,7 @@ Dipole::Dipole(ATOOLS::Flavour_Vector const &fl, ATOOLS::Vec4D_Vector const &mom
   m_Q.push_back(m_Qi);
   m_Q.push_back(m_Qj);
   CalculateGamma();
+  m_isduplicate=false;
 }
 
 
@@ -156,7 +138,8 @@ void Dipole::Boost() {
     double m2 = m_masses[1];
     // m_newmomenta[0] = {zz, 0, 0, z};
     // m_newmomenta[1] = {zz, 0, 0, -z};
-    double lamCM = 0.5*sqrt(SqLam(Q.Abs2(),m1*m1,m2*m2)/Q.Abs2());
+    double signz = m_bornmomenta[0][3]>0?1:-1;
+    double lamCM = 0.5*sqrt(Lambda(Q.Abs2(),m1*m1,m2*m2)/Q.Abs2());
     double E1 = lamCM*sqrt(1+m1*m1/sqr(lamCM));
     double E2 = lamCM*sqrt(1+m2*m2/sqr(lamCM));
     m_newmomenta[0] = {E1, 0, 0, lamCM};
@@ -172,11 +155,17 @@ void Dipole::Boost() {
       pRot.RotateBack(m_newmomenta[i]);
       poin.BoostBack(m_newmomenta[i]);
     }
+    m_sp = (m_newmomenta[0]+m_newmomenta[1]).Abs2();
   }
   else if (Type() == dipoletype::final) {
     if (m_dipolePhotons.size() == 0) return;
     if (m_dipolePhotons.size() != m_Nphotons){
-      msg_Error()<<"Wrong Photon multiplicity in Boost \n";
+      msg_Error()<<"Wrong Photon multiplicity in Boost \n"
+                 <<"Photon vector size: "<<m_dipolePhotons.size()<<std::endl
+                 <<"Photons Generated: "<<m_Nphotons<<std::endl;
+    }
+    if(!IsResonance()){
+      msg_Error()<<"Trying to boost a non-resonant dipole"<<std::endl;
     }
     // Check that the final state fermions
     // are in their own restframe;
@@ -190,20 +179,16 @@ void Dipole::Boost() {
         msg_Error()<<"Dipole ghost is in the wrong frame";
       }
     }
-    m_ranPhi = ran->Get()*2.*M_PI;
     // sqr(1.+2.*t/s)
     // m_eikmomentum = m_momenta;
-    double s = (m_bornmomenta[0]+m_bornmomenta[1]).Abs2();
-    double t = (m_beams[0]-m_bornmomenta[0]).Abs2();
-    m_ranTheta = acos(1.+2.*t/s);
-    // m_ranTheta = m_beams[0].Theta();
+    double s = (m_bornmomenta[2]+m_bornmomenta[3]).Abs2();
+    double t = (m_bornmomenta[0]-m_bornmomenta[2]).Abs2();
+    // m_ranTheta = acos(1.+2.*t/s);
+    m_ranTheta = acos(1.-2.*ran->Get());
+    m_ranPhi = ran->Get()*2.*M_PI;
     Vec4D qqk = m_momenta[0] + m_momenta[1] + m_photonSum;
     p_Pboost = new Poincare(qqk);
-    p_boost  = new Poincare(m_bornmomenta[0] + m_bornmomenta[1]);
-
-    p_rotate = new Poincare(m_bornmomenta[0], Vec4D(0., 0.,  0., 1.));
-    p_rotatey = new Poincare(m_bornmomenta[0], Vec4D(0., 0., 1., 0.));
-    p_rotatex = new Poincare(m_bornmomenta[0], Vec4D(0., 1., 0., 0.));
+    m_eikmomentum = m_bornmomenta;
     for (size_t i = 0; i < 2; ++i)
     {
       Boost(m_momenta[i]);
@@ -215,35 +200,187 @@ void Dipole::Boost() {
     m_photonSum*=0.;
     // m_dipolePhotonsEEX.clear();
     for (auto &k : m_dipolePhotons) {
-      // Boost(k);
       m_dipolePhotonsEEX.push_back(k);
-      p_Pboost->Boost(k);
-      p_rotate->RotateBack(k);
-      p_boost->BoostBack(k);
+      Boost(k);
       m_photonSum+=k;
     }
-    if (p_rotate) delete p_rotate;
-    if (p_rotatex) delete p_rotatey;
-    if (p_rotatey) delete p_rotatex;
     if (p_Pboost) delete p_Pboost;
-    if (p_boost) delete p_boost;
   }
+}
+
+void Dipole::BoostNLO(ATOOLS::Vec4D &p) {
+  p_Pboost->Boost(p);
+  p_rotate.RotateBack(p);
+  // RandomRotate(p);
+  p_boost.BoostBack(p);
+  // PRINT_VAR(p_boost.PL());
 }
 
 void Dipole::Boost(ATOOLS::Vec4D &p) {
   p_Pboost->Boost(p);
-  p_rotate->RotateBack(p);
-  p_boost->BoostBack(p);
+  p_rotate.RotateBack(p);
+  p_boost.BoostBack(p);
+  // PRINT_VAR(p_boost.PL());
 }
 
+bool Dipole::BoostNLO() {
+  if (Type() == dipoletype::initial) {
+    m_dipolePhotonsEEX=m_dipolePhotons;
+    m_eikmomentum = m_bornmomenta;
+    if (m_dipolePhotons.size() == 0) {
+      DEBUG_FUNC("No ISR Photons, skipping boost");
+      for (int i = 0; i < 2; ++i) m_newmomenta[i]=m_bornmomenta[i];
+      return true;
+    }
+    Vec4D Q;
+    Q = m_bornmomenta[0] + m_bornmomenta[1] - m_photonSum;
+    // if(Q.Abs2() > )
+    double sp = Q * Q;
+    double zz = sqrt(sp) / 2.;
+    double z = zz * sqrt((sp - sqr(m_masses[0] - m_masses[1])) * (sp - sqr(m_masses[0] + m_masses[1]))) / sp;
+    double m1 = m_masses[0];
+    double m2 = m_masses[1];
+    // m_newmomenta[0] = {zz, 0, 0, z};
+    // m_newmomenta[1] = {zz, 0, 0, -z};
+    double signz = m_bornmomenta[0][3]>0?1:-1;
+    double lamCM = 0.5*sqrt(Lambda(Q.Abs2(),m1*m1,m2*m2)/Q.Abs2());
+    double E1 = lamCM*sqrt(1+m1*m1/sqr(lamCM));
+    double E2 = lamCM*sqrt(1+m2*m2/sqr(lamCM));
+    m_newmomenta[0] = {E1, 0, 0, signz*lamCM};
+    m_newmomenta[1] = {E2, 0, 0, -signz*lamCM};
+    m_ranPhi = ran->Get()*2.*M_PI;
+    // sqr(1.+2.*t/s)
+    double s = (m_newmomenta[0]+m_newmomenta[1]).Abs2();
+    double t = (m_newmomenta[0]-m_newmomenta[0]).Abs2();
+    m_ranTheta = acos(1.+2.*t/s);
+    ATOOLS::Poincare poin(Q);
+    Poincare pRot(m_bornmomenta[0], Vec4D(0., 0., 0., signz*1.));
+    for (int i = 0; i < 2; ++i) {
+      pRot.Rotate(m_newmomenta[i]);
+      poin.BoostBack(m_newmomenta[i]);
+    }
+    m_sp = (m_newmomenta[0]+m_newmomenta[1]).Abs2();
+    m_eikmomentum=m_newmomenta;
+  }
+  else if (Type() == dipoletype::final) {
+    if (m_dipolePhotons.size() == 0) return true;
+    m_photonSum*=0;
+    for(auto &k: m_dipolePhotons) m_photonSum+=k;
+    // if (m_dipolePhotons.size() != 1){
+    //   msg_Error()<<"Wrong Photon multiplicity in BoostNLO \n"
+    //              <<"Photon vector size: "<<m_dipolePhotons.size()<<std::endl
+    //              <<"Photons Generated: "<<m_Nphotons<<std::endl;
+    // }
+    // if(!IsEqual(m_dipolePhotons[0],m_photonSum)){
+    //   msg_Error()<<"Wrong photon momentum in "<<METHOD<<std::endl;
+    // }
+    // Check that the final state fermions
+    // are in their own restframe;
+    // m_ranTheta = acos(0.99999*(1.-2.*ran->Get()));
+    m_ranPhi = ran->Get()*2.*M_PI;
+    double s = (m_momenta[0]+m_momenta[1]).Abs2();
+    double t = (m_momenta[0]-m_momenta[0]).Abs2();
+    Vec4D Q = m_bornmomenta[0]+m_bornmomenta[1];
+    m_ranTheta = acos((m_bornmomenta[0]+m_bornmomenta[1]).CosTheta());
+    Poincare boost(m_bornmomenta[0]+m_bornmomenta[1]);
+    // Poincare boost(m_newmomenta[0]+m_newmomenta[1]);
+    // boost.Boost(m_photonSum);
+    double x = 1./(1-m_photonSum.E());
+    double y = 1./(1. + m_photonSum.E()/m_photonscale + 0.25*m_photonSum*m_photonSum/m_photonscale/m_photonscale);
+    double sprim =(Q).Abs2()*y;
+    Vec4D preboostk = m_photonSum;
+    // if(IsBad(sprim)) return  false;
+    // double m1 = m_momenta[0].Mass();
+    // double m2 = m_momenta[1].Mass();
+    // Vec4D rref = Q-m_photonSum;
+    MakePair(sqrt(sprim), m_momenta[0], m_momenta[1]);
+    // PHASIC::CE.Isotropic2Momenta(rref, m1*m1, m2*m2,m_momenta[0], m_momenta[1],ran->Get(), ran->Get());
+    Vec4D qqk = m_momenta[0] + m_momenta[1] + m_photonSum;
+    p_Pboost = new Poincare(qqk);
+    Vec4D ref = m_bornmomenta[0];
+    boost.Boost(ref);
+    Poincare rot(ref, Vec4D(0,0,0,1));
+    SetBoost(boost);
+    SetRotate(rot);
+    for (size_t i = 0; i < 2; ++i)
+    {
+      BoostNLO(m_momenta[i]);
+      // p_boost.Boost(m_momenta[i]);
+      // p_rotate.Rotate(m_momenta[i]);
+      m_newmomenta[i]=m_momenta[i];
+    }
+    // m_eikmomentum = m_momenta;
+    m_photonSum*=0.;
+    for (auto &k : m_dipolePhotons) {
+      BoostNLO(k);
+      // p_Pboost->Boost(k);
+      // // p_rotate.Rotate(k);
+      // p_boost.BoostBack(k);
+      m_photonSum+=k;
+    }
+    if (p_Pboost) delete p_Pboost;
+    for (int i = 0; i < 2; ++i)
+    {
+      for(int j = 0; j < 4; ++j){
+        double k = m_newmomenta[i][j];
+        if(IsBad(k)){
+         msg_Error()<<"NLO Boost Failed"<<std::endl;
+         return false; 
+        }
+      }
+    }
+    // if(IsBad(m_newmomenta[0]) || IsBad(m_newmomenta[1]) ){
+    //   msg_Error()<<"NLO Boost Failed"<<std::endl;
+    //   return false;
+    // }
+    return true;
+  }
+  return true;
+}
+
+
+void Dipole::MakePair(double cms, Vec4D &p1, Vec4D &p2) {
+  double E = cms / 2.;
+  double s = sqr(cms);
+  Vec4D P = {cms,0,0,0};
+  double mass1 = p1.Mass();
+  double mass2 = p2.Mass();
+  double beta2 = (s - sqr(mass1 - mass2)) * (s - sqr(mass1 + mass2)) / (s * s);
+  double beta =  sqrt(beta2);
+  double eta1 = (s + sqr(mass1) - sqr(mass2)) / s;
+  double eta2 = (s - sqr(mass1) + sqr(mass2)) / s;
+  // p1 = {E * eta1, 0, 0, beta * E};
+  // p2 = {E * eta2, 0, 0, -beta * E};
+  double lamCM = 0.5*sqrt(Lambda(s,mass1*mass1,mass2*mass2)/s);
+  double E1 = lamCM*sqrt(1+mass1*mass1/sqr(lamCM));
+  double E2 = lamCM*sqrt(1+mass2*mass2/sqr(lamCM));
+  p1 = {E1, 0, 0, lamCM};
+  p2 =  {E2, 0, 0, -lamCM};
+  Poincare boost(p1+p2);
+  boost.Boost(m_photonSum);
+  // p2 = P-p1;
+}
+
+
 void Dipole::RandomRotate(Vec4D &p){
-  Vec4D t1 = p;
-  // rotate around x
-  p[2] = cos(m_ranTheta)*t1[2] - sin(m_ranTheta)*t1[3];
-  p[3] = sin(m_ranTheta)*t1[2] + cos(m_ranTheta)*t1[3];
-  t1 = p;
-  p[1] = cos(m_ranPhi)*t1[1]-sin(m_ranPhi)*t1[2];
-  p[2] = sin(m_ranPhi)*t1[1]+cos(m_ranPhi)*t1[2];
+    double x = p[1], y = p[2], z = p[3];
+
+  // --- First: Rotate around X-axis (θ = m_ranTheta)
+  // Affects Y and Z
+  double cx = cos(m_ranTheta), sx = sin(m_ranTheta);
+  double y1 = cx * y - sx * z;
+  double z1 = sx * y + cx * z;
+
+  // --- Then: Rotate around Z-axis (ϕ = m_ranPhi)
+  // Affects X and new Y
+  double cz = cos(m_ranPhi), sz = sin(m_ranPhi);
+  double x1 = cz * x - sz * y1;
+  double y2 = sz * x + cz * y1;
+
+  // Set rotated components back into the vector
+  p[1] = x1;
+  p[2] = y2;
+  p[3] = z1; // from the X rotation
 }
 
 void Dipole::BoostLab(){
@@ -254,15 +391,15 @@ void Dipole::BoostLab(){
   // if (p_boost) delete p_boost;
 }
 
-void Dipole::BoostToCMS(Vec4D_Vector &k, bool boostback){
+void Dipole::BoostToCMS(){
   Vec4D CMSFrame=m_bornmomenta[0] + m_bornmomenta[1];
-  ATOOLS::Poincare poin(m_QFrame);
-  for (auto &p : k) {
-    if(boostback) poin.BoostBack(p);
-    else poin.Boost(p);
+  Poincare rot;
+  ATOOLS::Poincare poin(CMSFrame);
+  for (int i=0; i<2; i++) {
+    poin.Boost(m_bornmomenta[i]);
+    if(i==0) rot = Poincare(m_bornmomenta[i],Vec4D(0.,0.,0.,1.));
+    rot.Rotate(m_bornmomenta[i]);
   }
-  poin.Boost(m_eikmomentum[0]);
-  poin.Boost(m_eikmomentum[1]);
 }
 
 
@@ -279,8 +416,8 @@ void Dipole::BoostToQFM(bool boostback) {
 
 
 void Dipole::CalculateGamma(){
-  m_b1 = (Vec3D(m_eikmomentum[0]).Abs() / m_eikmomentum[0].E());
-  m_b2 = (Vec3D(m_eikmomentum[1]).Abs() / m_eikmomentum[1].E());
+  m_b1 = (Vec3D(m_bornmomenta[0]).Abs() / m_bornmomenta[0].E());
+  m_b2 = (Vec3D(m_bornmomenta[1]).Abs() / m_bornmomenta[1].E());
   double logarg = (1+m_b1)*(1+m_b2);
   logarg /= (1-m_b1)*(1-m_b2);
   m_gamma  = (1.+m_b1*m_b2)/(m_b1+m_b2)*(log(logarg)-2);
@@ -290,6 +427,7 @@ void Dipole::CalculateGamma(){
   m_gammap *= m_alpi*std::abs(ChargeNorm());
   if(Type()==dipoletype::final)   delf = 0.5*m_gamma;
   if(Type()==dipoletype::initial) deli = 0.5*m_gamma;
+  if(RealOnly()) delf=deli=0;
 }
 
 void Dipole::AddPhotonsToDipole(ATOOLS::Vec4D_Vector &Photons) {
@@ -332,11 +470,15 @@ void Dipole::AddToGhosts(ATOOLS::Vec4D &p) {
 
 double Dipole::EEX(const int betaorder){
   double real=0;
+  // msg_Out()<<"================================="<<std::endl;
   if(m_dipolePhotonsEEX.size()==0) return real;
   CalculateGamma();
+  // Poincare boost(m_eikmomentum[0]+m_eikmomentum[1]);
+  // boost.Boost(m_eikmomentum[0]);
+  // boost.Boost(m_eikmomentum[1]);
   m_betaorder = betaorder;
-  if(betaorder >= 1 && Type()!=dipoletype::ifi) {
-    for(auto &k: m_dipolePhotonsEEX){
+  if(betaorder >= 1) {
+    for(auto k: m_dipolePhotons){
      real += Beta1(k)/Eikonal(k);
     }
   }
@@ -370,11 +512,14 @@ double Dipole::EEX(const int betaorder){
   if(IsNan(real)){
     msg_Error()<<"YFS EEX is NaN at order "<<betaorder<<std::endl;
   }
+  // msg_Out()<<"================================="<<xstd::endl;;
   return real;//+virt;
 }
 
 double Dipole::Beta1(const Vec4D &k){
   double b1=0;
+  b1 = Hard(k);
+  // msg_Out()<<"EEXReal for k is = "<<b1<<std::endl;
   if(Type()==dipoletype::initial) {
   //   // beta11
     if(m_betaorder==2) b1 = Hard(k)*(1+delf)-Eikonal(k)*(1+deli)*(1+delf);
@@ -440,6 +585,7 @@ double Dipole::VirtualEEX(const int betaorder){
 }
 
 double Dipole::Hard(const Vec4D &k, int i){
+  // msg_Out()<<"Dipole momentum is "<<m_eikmomentum<<std::endl;
   double p1p2 = m_eikmomentum[0]*m_eikmomentum[1];
   double a = k*m_eikmomentum[0]/p1p2;
   double b = k*m_eikmomentum[1]/p1p2;
@@ -448,7 +594,7 @@ double Dipole::Hard(const Vec4D &k, int i){
   double delta = 0;
   if (Type() == dipoletype::initial) {
     double z = (1-a)*(1-b);
-    if(m_betaorder>=2){
+    if(m_betaorder>=2 && !RealOnly()){
       delta += 0.5*m_gamma
               +m_alpi*(log(a)*log(1-b)+log(b)*log(1-a)
                       +DiLog(a) + DiLog(b)
@@ -612,6 +758,8 @@ double Dipole::xi(const double &alp, const double &a1, const double &b1, const d
   return 0.125*sqr(1.-alp)*(sqr(1.-a1)+sqr(1.-b1))*(sqr(1.-a2)+sqr(1.-b2));
 }
 
+
+
 void Dipole::Clean(){
   m_masses.clear();
   m_charges.clear();
@@ -621,14 +769,10 @@ void Dipole::Clean(){
   m_oldmomenta.clear();
   m_newmomenta.clear();
   m_bornmomenta.clear();
-  m_eikmomentum.clear();
   m_beams.clear();
   m_ghost.clear();
   m_dipolePhotons.clear();
-  m_dipolePhotonsEEX.clear();
   m_photonSum*=0;
-  m_theta.clear();
-  m_Q.clear();
 }
 
 bool Dipole::IsDecayAllowed(){
@@ -646,6 +790,20 @@ bool Dipole::IsDecayAllowed(){
 
 
 double Dipole::Eikonal(const Vec4D &k,const Vec4D &p1,const Vec4D &p2) {
+  // No extra sign for like-charge pairs. The dipole decomposition of the YFS
+  // radiation function -alpha/(4pi^2) (sum_i theta_i Q_i p_i/(p_i.k))^2 gives
+  // every unordered pair the coefficient Q_iQ_j theta_i theta_j and nothing
+  // else - the mass terms then resum correctly by charge conservation. An
+  // extra -1 whenever m_Qi == m_Qj double-counts the charge sign.
+  //
+  // It only ever fired on IF dipoles: II is (e-,e+) and FF is (f,fbar), both
+  // opposite-charge, whereas an initial-final pair is like-charge half the
+  // time. The effect was to give all four IF pairs the same sign, turning the
+  // interference into a coherent sum: integrating CalculateRealSubIF() over
+  // photon phase space came out 8.1x the Btilda difference it has to match,
+  // instead of matching it to 4+ digits. See YFS/Tools/IFI_Budget.C.
+  //
+  // The Eikonal(k) overload below never had the flag, so the two disagreed.
   return m_QiQj*m_thetaij*m_alp / (4 * M_PI * M_PI) * (p1 / (p1 * k) - p2 / (p2 * k)).Abs2();
 }
 
@@ -667,7 +825,52 @@ double Dipole::EikonalInterferance(const Vec4D &k) {
   return -m_QiQj*m_thetaij*m_alp / (2 * M_PI * M_PI) * (p1*p2 / (p1 * k)/(p2 * k));
 }
 
+METOOLS::DivArrD Dipole::BVV_full_eps(const ATOOLS::Vec4D p1, const ATOOLS::Vec4D p2, double Kmax, int mode) {
+  // for dim-reg
+  // DivArrc {UV, IR, IR^2, finite, eps, eps^2, 0}
+  double muf = 91.2*91.2;
+  double mur = 91.2*91.2;
+  double t2, t3;
+  METOOLS::DivArrD t1;
+  // double alpi = m_alpha / M_PI;
+  METOOLS::DivArrD massph(0,-1,0,0,0,0);
+  double Mas1 = m_masses[0];
+  double Mas2 = m_masses[1];
+  double m12 = Mas1*Mas2;
+  double E1 = p1.E();
+  double E2 = p2.E();
+  double p1p2 = p1 * p2;
+  // double rho = sqrt(1. - sqr(m12 / p1p2));
+  double rho = sqrt((p1p2 - m12) * (p1p2 + m12)) / p1p2;
+  double s = (p1 + p2).Abs2();
+  double zeta1 = 2 * p1p2 * rho / (sqr(Mas1) + p1p2 * (1. + rho));
+  double zeta2 = 2 * p1p2 * rho / (sqr(Mas2) + p1p2 * (1. + rho));
+  double beta1 = sqrt(1. - sqr(Mas1 / E1));
+  double beta2 = sqrt(1. - sqr(Mas2 / E2));
+  double betat = 0.382;
+  double beta  = sqrt(1. - 2 * (Mas1 + Mas2) / s + sqr((Mas1 - Mas2) / s));
+  // t1 = (1./rho*A(p1p2,Mas1,Mas2)-1.)*2.*log(2.*Kmax/MasPhot);
+  double irloop = m_irscale; //p_virt->IRscale();
+  double epsloop = 4.*M_PI; //p_virt->Eps_Scheme_Factor({p1,p2});
+  double logarg = (p1p2 * (1. + rho) / m12) / rho;
+  
+  t1 = (log1p(logarg-1) -1.) *  (massph+log(4.*M_PI*sqr(irloop)/m12/epsloop));
+  // else t1 = (log(logarg) - 1.) *  (massph+log(4.*M_PI*sqr(irloop)/m12/epsloop));
+  // t1 = (log(sqr(MasPhot)/sqr(250)));
+  t2 = p1p2 * rho / s * log(p1p2 * (1. + rho) / m12) + (Mas1 * Mas1 - Mas2 * Mas2) / (2.*s) * log(Mas1 / Mas2) - 1;
 
+  t3 =  -0.5 * log(p1p2 * (1. + rho) / sqr(Mas1)) * log(p1p2 * (1. + rho) / sqr(Mas2))
+        - 0.5 * sqr(log((sqr(Mas1) + p1p2 * (1. + rho)) / (sqr(Mas2) + p1p2 * (1. + rho))));
+  t3 -= DiLog(zeta1) + DiLog(zeta2);
+  t3 += sqr(M_PI);
+  t3 /= rho;
+  return (t1 + t2 + t3);
+}
+
+void Dipole::SetFlavLab(int i, int j){
+  m_leftfl = i;
+  m_rightfl = j;
+}
 
 std::ostream& YFS::operator<<(std::ostream &out, const Dipole &Dip) {
   out << " Dipole Type is "<<Dip.m_type
@@ -677,13 +880,23 @@ std::ostream& YFS::operator<<(std::ostream &out, const Dipole &Dip) {
   {
     out << "Mass of " << Dip.m_names[i] << " = " << Dip.m_masses[i] << std::endl
         << "Charge of " << Dip.m_names[i] << " = " << Dip.m_charges[i] << std::endl
-        << "Momentum of " << Dip.m_names[i] << " = " << Dip.m_momenta[i] << std::endl;
+        << "Momentum of " << Dip.m_names[i] << " = " << Dip.m_momenta[i] << std::endl
+        << "Born Momentum of " << Dip.m_names[i] << " = " << Dip.m_bornmomenta[i] << std::endl;
   }
   out << "Invarinat mass " << " = " << (Dip.m_momenta[0]+Dip.m_momenta[1]).Mass() << std::endl
       <<"Sum of Photons = "<< Dip.m_photonSum << std::endl
       << "Q+sum_i K_i = "<< Dip.m_photonSum+Dip.m_momenta[0]+Dip.m_momenta[1]<<std::endl
+      << "Born Qi+Qj = "<< Dip.m_bornmomenta[0]+Dip.m_bornmomenta[0]<<std::endl
+      << "Left ID " << Dip.Left() << std::endl
+      << "Right ID " <<Dip.Right() << std::endl
+      << "Left Fl " << Dip.GetFlav(0) << std::endl
+      << "Right Fl " << Dip.GetFlav(1) << std::endl
       << "Mass of photon-fermion system = "
       << (Dip.m_photonSum+Dip.m_newmomenta[0]+Dip.m_newmomenta[1]).Mass()<<std::endl;
+  for (int i = 0; i < Dip.m_dipolePhotons.size(); ++i)
+  {
+    out<<" Photon["<<i<<"] = "<<Dip.m_dipolePhotons[i]<<std::endl;
+  }
   if(Dip.m_type==dipoletype::final){
     std::string isres = (Dip.m_resonance)?"Yes":"No";
     out << "Is Resonance: "<< isres << std::endl;
