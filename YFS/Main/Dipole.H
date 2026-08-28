@@ -13,6 +13,11 @@ using namespace ATOOLS;
 
 namespace YFS{
 
+    class ISR;
+    class FSR;
+    struct EmissionResult;
+
+
     // Kaellen (triangle) function lambda(x,y,z) = x^2+y^2+z^2-2(xy+xz+yz),
     // returned as |lambda| so callers evaluating sqrt(Lambda(...)/s) stay real
     // below threshold / against rounding. Single canonical definition: the
@@ -60,6 +65,18 @@ namespace YFS{
         Poincare *p_Pboost, *p_Qboost;
         Poincare p_rotate, p_boost;
         PHASIC::Virtual_ME2_Base *p_virt;
+        // Radiate. Dispatches on m_type: the initial-initial dipole samples ISR,
+        // final-final dipoles sample FSR, and initial-final dipoles carry the
+        // interference but do not radiate. The samplers stay in ISR/FSR; this
+        // only decides which one applies and drives it.
+        //
+        // me_acc is the caller's running list of ME photons across dipoles.
+        // SetMEPhotons is handed that accumulated list, not just this dipole's
+        // photons, so it has to be threaded through to preserve behaviour.
+        EmissionResult GenerateEmissions(ISR *isr, FSR *fsr,
+                                         double born, double v,
+                                         Vec4D_Vector &me_acc);
+
         void PrintInfo();
         void AddPhotonsToDipole(Vec4D_Vector &Photons);
         void AddPhotonToDipole(Vec4D &Photon);
