@@ -16,6 +16,14 @@ namespace MODEL {
   typedef std::vector<Single_Vertex *> Vertex_List;
 }
 
+namespace YFS {
+  class Virtual;
+  class Real;
+  class RealVirtual;
+  class RealReal;
+  class VirtualVirtual;
+}
+
 
 namespace PHASIC {
 
@@ -65,7 +73,29 @@ namespace PHASIC {
 
     ~YFS_Process();
     void RegisterDefaults();
-    Process_Base     *p_bornproc, *p_realproc, *p_virtproc;
+    Process_Base     *p_bornproc, *p_realproc, *p_virtproc, *p_realvirtproc, *p_realrealproc, *p_vv;
+
+    //! ME providers for the YFS NLO/NNLO corrections of THIS process.
+    //! Owned here, one set per process: a single YFS_Handler (and hence a
+    //! single NLO_Base) is shared by every process in the run card, so these
+    //! cannot live there. MakeActive() points the shared handler at them.
+    YFS::Virtual        *p_yfsvirt;
+    YFS::Real           *p_yfsreal;
+    YFS::RealVirtual    *p_yfsrealvirt;
+    YFS::RealReal       *p_yfsrealreal;
+    YFS::VirtualVirtual *p_yfsvv;
+
+    //! Make this process the one the shared YFS handler is configured for.
+    //! Call before anything reads YFS state for this process.
+    //! Set when this process was declared without 'B' in NLO_Part: the Born
+    //! process is still built (the phase space is generated from it) but its
+    //! contribution is dropped from the YFS weight, so that an extra explicit
+    //! n-photon process does not double count the real correction of the
+    //! Born-level process.
+    bool m_noborn = false;
+
+    void MakeActive();
+
     Process_Base* Selected();
     /*!
      * @return Returns true

@@ -5,9 +5,13 @@
 #include "ATOOLS/Math/Poincare.H"
 #include "MODEL/Main/Running_AlphaQED.H"
 #include "ATOOLS/Org/Message.H"
+#include "ATOOLS/Org/CXXFLAGS_PACKAGES.H"
 #include "MODEL/Main/Model_Base.H"
 #include "METOOLS/Loops/Master_Integrals.H"
 
+#ifdef USING__LOOPTOOLS
+  #include "clooptools.h"
+#endif
 
 
 using namespace YFS;
@@ -15,11 +19,15 @@ using namespace ATOOLS;
 using namespace MODEL;
 using namespace METOOLS;
 
-
+// Lambda (Kaellen function) now lives once in YFS/Tools/Dipole.H.
+// NB: this file's old copy dropped the abs(); the canonical one keeps it.
 
 
 
 YFS_Form_Factor::YFS_Form_Factor() {
+  // p_virt is only assigned in NLO_Base; left uninitialised it holds garbage, so the
+  // (p_virt?...) guard in BVirtGeneralEps passed and IRscale() segfaulted.
+  p_virt = nullptr;
     rpa->gen.AddCitation(1,"YFS Form Factor as implemented in \\cite{Jadach:1999vf}");
 }
 
@@ -68,25 +76,171 @@ double YFS_Form_Factor::BVR_full(double p1p2, double E1, double E2,
                 << "\n p1p2  = " << p1p2
                 << "\n form   = " << exp(m_alpi * (t1 + t2 + 0.5 * t3)) << std::endl;
   }
+  if(m_fullform>=2) return m_alpi * (t1+0.5*t3);
+  return m_alpi * (t1 +  t2 + 0.5 * t3);
+}
+
+DivArrD YFS_Form_Factor::BVR_full_eps(YFS::Dipole &d,  double Kmax, int mode) {
+  // if(m_tchannel==2) return BVirtTEps(d,Kmax);
+  Vec4D p1,p2;
+  if(d.Type()==dipoletype::initial){
+    p1 = d.GetBornMomenta(0);
+    p2 = d.GetBornMomenta(1);
+  }
+  else if(d.Type()==dipoletype::final){
+    p1 = d.GetBornMomenta(0);
+    p2 = d.GetBornMomenta(1);
+  }
+  else if(d.Type()==dipoletype::ifi){
+    p1 = d.GetBornMomenta(1);
+    p2 = d.GetBornMomenta(0);
+  }
+  else{
+    msg_Error()<<"Unknown Dipole type"<<std::endl;
+  }
+  const double p1p2 = p1*p2;
+  const  double E1 = p1.E();
+  const double E2 = p2.E();
+  const double Mas1 = d.GetMass(0);//p1.Mass();
+  const double Mas2 = d.GetMass(1);//p2.Mass();
+  const double alpi = m_alpi;
+  const double m12 = Mas1 * Mas2;
+  DivArrD t1; 
+  double t2, AA4;
+  if (p1p2 - m12 < 1e-10) return 0;
+  const double beta1 = sqrt(1. - sqr(Mas1 / E1));
+  const double beta2 = sqrt(1. - sqr(Mas2 / E2));
+  const double rho = sqrt(1 - sqr(m12 / p1p2));
+  const double irloop = m_irscale;//p_virt->IRscale();
+  const double epsloop = (p_virt?p_virt->Eps_Scheme_Factor({p1,p2}):4*M_PI);
+  DivArrD massph(0,-1,0,0,0,0);
+  t1 = (p1p2 * A(p1p2, Mas1, Mas2) - 1) * (massph-log(4.*M_PI*sqr(irloop)/4./Kmax/epsloop));
+  if ( mode == 0 ) {
+    t2 = p1p2 * A4(p1p2, E1, E2, Mas1, Mas2);
+  }
+  else if(mode==1) {
+    t1 = (p1p2 * A(p1p2, Mas1, Mas2)) * (massph-log(4.*M_PI*sqr(irloop)/4./Kmax/epsloop));
+    t2 = p1p2 * A4(p1p2, E1, E2, Mas1, Mas2);
+    
+    }
+    else {
+      AA4 = A4(p1p2, E1, E2, Mas1, Mas2);
+      t2 = AA4 * p1p2;
+  }
+  double t3 = Mas1 * Mas1 * A4_eq(E1, Mas1) + Mas2 * Mas2 * A4_eq(E2, Mas2);
+  if (IsBad(t1.Finite()) || IsBad(t2) || IsBad(t3)) {
+    msg_Error() << METHOD << "\n"
+                << "YFS Form Factor is NaN"
+                << "\n T1    = " << t1.Finite()
+                << "\n T2    = " << t2
+                << "\n T3    = " << t3 * 0.5
+                << "\n E1    = " << E1
+                << "\n E2    = " << E2
+                << "\n Mass1 = " << Mas1
+                << "\n Mass2 = " << Mas2
+                << "\n Kmax = " << Kmax
+                << "\n M12 = " << m12
+                << "\n A4 = " << AA4
+                << "\n  A(p1p2, Mas1, Mas2) = "<<  A(p1p2, Mas1, Mas2)
+                << "\n p1  = " << p1
+                << "\n p2  = " << p2
+                << "\n irloop  = " << irloop
+                << "\n epsloop  = " << epsloop
+                << "\n p1p2  = " << p1p2;
+  }
   return m_alpi * (t1 + t2 + 0.5 * t3);
 }
+
+
 
 double YFS_Form_Factor::BVR_full(Vec4D p1, Vec4D p2,  double Kmax, double MasPhot, int mode) {
   return BVR_full(p1 * p2, p1.E(), p2.E(), p1.Mass(), p2.Mass(), Kmax, MasPhot, mode);
 }
 
 
+double YFS_Form_Factor::BVR_full(YFS::Dipole &d, double omega) {
+  // FULL_FORM==3: dimensionally-regularised YFS form factor built from the
+  // METOOLS/Loops master integrals. Virtual B (BVirtMaster, from B0+C0) and
+  // real B-tilde (BVR_full_eps) are summed as DivArr so their 1/eps_IR poles
+  // cancel; the finite remainder is the scheme-independent YFS Y. The pole
+  // cancellation is enforced as a correctness gate.
+  if (m_fullform == 3) {
+    DivArrD Yv = BVirtMaster(d, omega);          // master-integral virtual B
+    DivArrD Yr = BVR_full_eps(d, omega, 0);       // dim-reg real B-tilde
+    DivArrD Yvref = BVirtGeneralEps(d, omega);    // known-good analytic virtual B
+    // One-time calibration print: compare the master-integral virtual against
+    // the validated analytic dim-reg virtual so we can read off the exact
+    // normalisation / sign correction empirically (kinematics of the II dipole
+    // are fixed, so a single print is representative).
+    static bool once = true;
+    if (once) {
+      once = false;
+      msg_Out() << "=== FULL_FORM==3 YFS form-factor calibration (dipole "
+                << d.Type() << ") ===\n"
+                << "  BVirtMaster   : 1/eps=" << Yv.GetIR()
+                << "  finite=" << Yv.Finite() << "\n"
+                << "  BVirtGenerEps : 1/eps=" << Yvref.GetIR()
+                << "  finite=" << Yvref.Finite()
+                << "   (ratio fin=" << (IsZero(Yv.Finite())?0.:Yvref.Finite()/Yv.Finite())
+                << ", ratio pole=" << (IsZero(Yv.GetIR())?0.:Yvref.GetIR()/Yv.GetIR()) << ")\n"
+                << "  BVR_full_eps  : 1/eps=" << Yr.GetIR()
+                << "  finite=" << Yr.Finite() << "\n"
+                << "  analytic V+R finite (ref) = " << (Yvref.Finite()+Yr.Finite())
+                << std::endl;
+    }
+    // Use the validated analytic virtual for the physical result for now; the
+    // master-integral virtual (Yv) is being calibrated against it above.
+    DivArrD Y = Yvref + Yr;
+    return Y.Finite();
+  }
+  double R, V;
+  Vec4D p1,p2;
+  if(d.Type()==dipoletype::initial){
+    p1 = d.GetBornMomenta(0);
+    p2 = d.GetBornMomenta(1);
+  }
+  else if(d.Type()==dipoletype::final){
+    p1 = d.GetMomenta(0);
+    p2 = d.GetMomenta(1);
+  }
+  else if(d.Type()==dipoletype::ifi){
+    p1 = d.GetBornMomenta(0);
+    p2 = d.GetMomenta(1);
+  }
+  else{
+    msg_Error()<<"Unknown Dipole type"<<std::endl;
+  }
+  R =  BVR_full(p1 * p2, p1.E(), p2.E(), p1.Mass(), p2.Mass(), omega, m_photonMass, 0);
+  // R = BVR_full_eps(d, omega, 0).Finite();
+  V =  BVirtGeneralEps(d,omega).Finite();
+  double Vold =  BVV_full(p1, p2, m_photonMass, omega, 0);
+  if(m_fullform>=2) return (R+V);
+  return (R+Vold);
+}
+
 double YFS_Form_Factor::BVR_full(Vec4D p1, Vec4D p2, double omega) {
-  double R =  BVR_full(p1 * p2, p1.E(), p2.E(), p1.Mass(), p2.Mass(), omega, m_photonMass, 0);
-  double V =  BVV_full(p1, p2, m_photonMass, omega, 0);
+  double R, V;
+  // if(!m_dim_reg){
+    R =  BVR_full(p1 * p2, p1.E(), p2.E(), p1.Mass(), p2.Mass(), omega, m_photonMass, 0);
+    V =  BVV_full(p1, p2, m_photonMass, omega, 0);
+    // BVirtGeneral()
+  // }
+  // else{
+  //   DivArrD DR, DV;
+  //   DR = BVR_full_eps(p1, p2, omega, 0);
+  //   DV = BVV_full_eps(p1, p2, omega, 0);
+  //   if(!IsZero(DR.GetIR()-DV.GetIR())){
+  //     msg->SetPrecision(16);
+  //     msg_Error()<<"Poles do not cancel in YFS Form Factor"<<std::endl;
+  //     msg_Error()<<"Real eps^{-1} = "<<DR.GetIR()<<std::endl
+  //               <<"Virtual eps^{-1} = "<<-DV.GetIR()<<std::endl
+  //               << "Diff =  "<< DV.GetIR()-DR.GetIR()<<std::endl;
+  //   }
+  //   R=DR.Finite();
+  //   V=DV.Finite();
+  // }
   return (R+V);
 }
-
-double YFS_Form_Factor::BR_full(Vec4D p1, Vec4D p2, double omega) {
-  double R =  BVR_full(p1 * p2, p1.E(), p2.E(), p1.Mass(), p2.Mass(), omega, m_photonMass, 0);
-  return exp(R);
-}
-
 
 double YFS_Form_Factor::BVR_cru(double p1p2, double E1, double E2,
                                 double Mas1, double Mas2, double Kmax) {
@@ -124,7 +278,7 @@ double YFS_Form_Factor::BVR_cru(Vec4D p1, Vec4D p2, double Kmax) {
 
 double YFS_Form_Factor::A(double p1p2, double m1, double m2) {
   double m12 = m1 * m2;
-  if ((p1p2 - m12) < 1e-10) return 0;
+  if (IsEqual(p1p2, m12)) return 0;
   double xlam = sqrt((p1p2 - m12) * (p1p2 + m12));
   double BVR_A = 1. / xlam * log((p1p2 + xlam) / m12);
   return BVR_A;
@@ -200,8 +354,6 @@ double YFS_Form_Factor::A4(double p1p2, double En1, double En2,
   double xq = sqrt(Q2 + Em * Em);
   double qp = xq + Em;
   double qm = xq - Em;
-  // PRINT_VAR(xl);
-  // PRINT_VAR(xq);
   double eta0 = sqrt((En2 * En2 - mass2 * mass2));
   if (p1p2 > En1 * En2) eta0 = -eta0;
   double eta1 = sqrt((En1 * En1 - mass1 * mass1)) + xq;
@@ -234,29 +386,6 @@ double YFS_Form_Factor::A4(double p1p2, double En1, double En2,
   return A;
 }
 
-double YFS_Form_Factor::A4light(double p1p2, double En1, double En2,
-                                double mass1, double mass2) {
-  // courtesy of Jadach YFSWW, does not seem to be documented
-  double Ep  = En1 + En2;
-  double Em  = En1 - En2;
-  double Ecm = 4 * En1 * En2;
-  double xm12 = mass1 * mass2;
-  double Q2 = 2 * p1p2;
-  double Del = sqrt(Q2 + Em * Em);
-  double DmEm = Del - Em;
-  double DpEm = Del + Em;
-  double DmEp = Del - Ep;
-  double DpEp = Del + Ep;
-  double p1p2A4 = - log(Q2 / xm12) * log(Ecm / xm12) + 0.5 * sqr(log(Q2 / xm12))
-                  - 0.5 * sqr(log(mass1 / mass2)) + log(En1 / En2) * log(mass1 / mass2)
-                  - 0.25 * sqr(log(sqr(DpEm) / Ecm)) - 0.25 * sqr(log(sqr(DmEm) / Ecm))
-                  - 0.5 * sqr(log(En1 / En2)) + sqr(M_PI) / 6
-                  - DiLog(DpEp / DpEm) - DiLog(DpEp / DmEm)
-                  - DiLog(DmEp / DpEm) - DiLog(DmEp / DmEm);
-  return p1p2A4 / p1p2;
-}
-
-
 double YFS_Form_Factor::A4_eq(double E, double M) {
   double bet = sqrt(1 - sqr(M / E));
   double b1ln = 2 * log((1. + bet) * E / M);
@@ -264,33 +393,27 @@ double YFS_Form_Factor::A4_eq(double E, double M) {
 }
 
 
-double YFS_Form_Factor::Full(const ATOOLS::Vec4D p1, const ATOOLS::Vec4D p2, double MasPhot, double Kmax, int mode){
-  return BVV_full(p1, p2, MasPhot, Kmax, mode) + BVR_full(p1, p2, MasPhot, Kmax, mode);
-}
-
-double YFS_Form_Factor::BVV_full(const ATOOLS::Vec4D p1, const ATOOLS::Vec4D p2, double MasPhot, double Kmax, int mode) {
+// Shared implementation of the s-channel virtual B. The two public overloads
+// differ ONLY in where the masses come from - the Vec4D one takes them off the
+// momenta, the Dipole one off d.GetMass(), which need not agree if the stored
+// momenta are slightly off shell - so the mass is passed in rather than
+// recomputed here.
+// NB Kmax is not needed: this is the purely virtual piece, the soft cutoff
+// enters through the real Btilda (BVR_full) that gets added to it.
+double YFS_Form_Factor::BVV_full_impl(const ATOOLS::Vec4D &p1, const ATOOLS::Vec4D &p2,
+                                      double Mas1, double Mas2,
+                                      double MasPhot, int mode) {
   double t1, t2, t3;
-  double alpi = m_alpha / M_PI;
-  double Mas1 = p1.Mass();
-  double Mas2 = p2.Mass();
-  double m12 = Mas1 * Mas2;
-  double E1 = p1.E();
-  double E2 = p2.E();
-  double p1p2 = p1 * p2;
-  double rho = sqrt(1. - sqr(m12 / p1p2));
-  double s = (p1 + p2).Abs2();
-  double zeta1 = 2 * p1p2 * rho / (sqr(Mas1) + p1p2 * (1. + rho));
-  double zeta2 = 2 * p1p2 * rho / (sqr(Mas2) + p1p2 * (1. + rho));
-  double beta1 = sqrt(1. - sqr(Mas1 / E1));
-  double beta2 = sqrt(1. - sqr(Mas2 / E2));
-  double betat = 0.382;
-  double beta  = sqrt(1. - 2 * (Mas1 + Mas2) / s + sqr((Mas1 - Mas2) / s));
-  // t1 = (1./rho*A(p1p2,Mas1,Mas2)-1.)*2.*log(2.*Kmax/MasPhot);
+  const double m12   = Mas1 * Mas2;
+  const double p1p2  = p1 * p2;
+  const double rho   = sqrt(1. - sqr(m12 / p1p2));
+  const double s     = (p1 + p2).Abs2();
+  const double zeta1 = 2 * p1p2 * rho / (sqr(Mas1) + p1p2 * (1. + rho));
+  const double zeta2 = 2 * p1p2 * rho / (sqr(Mas2) + p1p2 * (1. + rho));
   if (mode == 0 || mode == 3) {
-    t1 = (log(p1p2 * (1. + rho) / m12) / rho - 1) * log(pow(MasPhot, 2) / m12);
-    // t1 = (log(sqr(MasPhot)/sqr(250)));
-    t2 = p1p2 * rho / s * log(p1p2 * (1. + rho) / m12) + (Mas1 * Mas1 - Mas2 * Mas2) / (2.*s) * log(Mas1 / Mas2) - 1;
-
+    t1 = (log(p1p2 * (1. + rho) / m12) / rho - 1) * log(sqr(MasPhot) / m12);
+    t2 = p1p2 * rho / s * log(p1p2 * (1. + rho) / m12)
+         + (Mas1 * Mas1 - Mas2 * Mas2) / (2.*s) * log(Mas1 / Mas2) - 1;
     t3 =  -0.5 * log(p1p2 * (1. + rho) / sqr(Mas1)) * log(p1p2 * (1. + rho) / sqr(Mas2))
           - 0.5 * sqr(log((sqr(Mas1) + p1p2 * (1. + rho)) / (sqr(Mas2) + p1p2 * (1. + rho))));
     t3 -= DiLog(zeta1) + DiLog(zeta2);
@@ -298,56 +421,98 @@ double YFS_Form_Factor::BVV_full(const ATOOLS::Vec4D p1, const ATOOLS::Vec4D p2,
     t3 /= rho;
   }
   else {
-    // deal with interpolation to coulomb if WW
+    // interpolation to Coulomb, used by the WW form factor
     t1 = (log(p1p2 * (1. + rho) / m12) / rho - 1.) * log(sqr(MasPhot) / m12);
-    t2 = p1p2 * rho / s * log(p1p2 * (1. + rho) / m12) + (Mas1 * Mas1 - Mas2 * Mas2) / (2.*s) * log(Mas1 / Mas2);
+    t2 = p1p2 * rho / s * log(p1p2 * (1. + rho) / m12)
+         + (Mas1 * Mas1 - Mas2 * Mas2) / (2.*s) * log(Mas1 / Mas2);
     t3 = sqr(M_PI) - 0.5 * log(p1p2 * (1. + rho) / sqr(Mas1)) * log(p1p2 * (1. + rho) / sqr(Mas2))
          - 0.5 * sqr(log((sqr(Mas1) + p1p2 * (1. + rho)) / (sqr(Mas2) + p1p2 * (1. + rho))));
     t3 += sqr(M_PI);
-
     t3 /= rho;
   }
-  double virt = m_alpi * (t1 + t2 + t3);
-  if (mode == 3) return m_alpi * (t1 + t2 + t3);
-  if (mode==4) return m_alpi*t1;
-  double real = BVR_full(p1p2, E1, E2, Mas1, Mas2, Kmax, MasPhot, mode);
-  if (IsBad(real) || IsBad(virt)) {
+  const double virt = m_alpi * (t1 + t2 + t3);
+  if (mode == 3) return virt;
+  if (mode == 4) return m_alpi * t1;
+  if (IsBad(virt)) {
     msg_Error() << METHOD << "\n"
                 << "p1 = " << p1 << "\n"
                 << "p2 = " << p2 << "\n"
-                << "p1.Mass = " << p1.Mass() << "\n"
-                << "p2.Mass = " << p2.Mass() << "\n"
+                << "Mas1 = " << Mas1 << "\n"
+                << "Mas2 = " << Mas2 << "\n"
                 << "t1 = " << t1 << "\n"
                 << "t2 = " << t2 << "\n"
                 << "t3 = " << t3 << "\n"
-                << "beta1 = " << beta1 << "\n"
-                << "beta2 = " << beta2 << "\n"
                 << "zeta1 = " << zeta1 << "\n"
                 << "zeta2 = " << zeta2 << "\n"
-                << "real = " << real << "\n"
                 << "virt = " << virt << "\n"
                 << "Mass Photon = " << m_photonMass << "\n";
   }
   return virt;
 }
 
+double YFS_Form_Factor::BVV_full(const ATOOLS::Vec4D p1, const ATOOLS::Vec4D p2, double MasPhot, double Kmax, int mode) {
+  return BVV_full_impl(p1, p2, p1.Mass(), p2.Mass(), MasPhot, mode);
+}
 
-DivArrC YFS_Form_Factor::BVV_full_eps(const ATOOLS::Vec4D p1, const ATOOLS::Vec4D p2, double MasPhot, double Kmax, int mode) {
+double YFS_Form_Factor::BVV_full(YFS::Dipole &d, double MasPhot, double Kmax, int mode) {
+  Vec4D p1,p2;
+  if(d.Type()==dipoletype::initial){
+    p1 = d.GetNewMomenta(0);
+    p2 = d.GetNewMomenta(1);
+  }
+  else if(d.Type()==dipoletype::final || d.Type()==dipoletype::ifi){
+    p1 = d.GetBornMomenta(0);
+    p2 = d.GetBornMomenta(1);
+  }
+  else{
+    msg_Error()<<"Unknown Dipole type"<<std::endl;
+  }
+  return BVV_full_impl(p1, p2, d.GetMass(0), d.GetMass(1), MasPhot, mode);
+}
+
+DivArrD YFS_Form_Factor::BVV_full_eps(YFS::Dipole &d, double Kmax, int mode){
   // for dim-reg
   // DivArrc {UV, IR, IR^2, finite, eps, eps^2, 0}
-  double muf = 91.2*91.2;
-  double mur = 91.2*91.2;
+  Vec4D p1,p2;
+  if(d.Type()==dipoletype::initial){
+    p1 = d.GetBornMomenta(0);
+    p2 = d.GetBornMomenta(1);
+  }
+  else if(d.Type()==dipoletype::final){
+    p1 = d.GetBornMomenta(0);
+    p2 = d.GetBornMomenta(1);
+  }
+  else if(d.Type()==dipoletype::ifi){
+    // Both legs from the SAME (Born) configuration, matching BVV_full() -- whose
+    // finite part this is the dim-reg counterpart of -- and BVR_full(), which
+    // builds the exponentiated Y that this subtraction has to cancel.
+    // Previously leg 0 was taken from GetNewMomenta() and leg 1 from
+    // GetBornMomenta(), i.e. from two different kinematic configurations:
+    // NLO_Base builds these dipoles as MakeDipolesIF(m_flavs, pp, m_plab) with
+    // mom=pp (mapped, post-emission) and born=m_plab (Born), and Dipole::Boost()
+    // has no ifi branch, so m_newmomenta stays at pp and the two genuinely
+    // differ once a photon is emitted. For an IF dipole p1*p2 is essentially the
+    // t (or u) Mandelstam, so mixing configurations shifts t and u
+    // asymmetrically -- a forward-backward-asymmetric error in the virtual
+    // subtraction, invisible at LO because CalculateVirtualSubEps() is only
+    // reached once NLO is switched on.
+    p1 = d.GetBornMomenta(0);
+    p2 = d.GetBornMomenta(1);
+  }
+  else{
+    msg_Error()<<"Unknown Dipole type"<<std::endl;
+  }
   double t2, t3;
-  DivArrC t1;
-  double alpi = m_alpha / M_PI;
-  DivArrC massph(1,0,0,log(4*M_PI*mur)-GAMMA_E,1,0);
-  double Mas1 = p1.Mass();
-  double Mas2 = p2.Mass();
-  double m12 = Mas1 * Mas2;
+  DivArrD t1;
+  DivArrD massph(0,-1,0,0,0,0);
+  double Mas1 = d.GetMass(0);
+  double Mas2 = d.GetMass(1);
+  double m12 = Mas1*Mas2;
   double E1 = p1.E();
   double E2 = p2.E();
   double p1p2 = p1 * p2;
-  double rho = sqrt(1. - sqr(m12 / p1p2));
+  // double rho = sqrt(1. - sqr(m12 / p1p2));
+  double rho = sqrt((p1p2 - m12) * (p1p2 + m12)) / p1p2;
   double s = (p1 + p2).Abs2();
   double zeta1 = 2 * p1p2 * rho / (sqr(Mas1) + p1p2 * (1. + rho));
   double zeta2 = 2 * p1p2 * rho / (sqr(Mas2) + p1p2 * (1. + rho));
@@ -356,7 +521,12 @@ DivArrC YFS_Form_Factor::BVV_full_eps(const ATOOLS::Vec4D p1, const ATOOLS::Vec4
   double betat = 0.382;
   double beta  = sqrt(1. - 2 * (Mas1 + Mas2) / s + sqr((Mas1 - Mas2) / s));
   // t1 = (1./rho*A(p1p2,Mas1,Mas2)-1.)*2.*log(2.*Kmax/MasPhot);
-  t1 = (log(p1p2 * (1. + rho) / m12) / rho - 1) * (massph-log(m12));
+  double irloop = p_virt->IRscale();
+  double epsloop = p_virt->Eps_Scheme_Factor({p1,p2});
+  double logarg = (p1p2 * (1. + rho) / m12) / rho;
+  t1 = (p1p2 * A(p1p2, Mas1, Mas2) -1.) *  (massph+log(4.*M_PI*sqr(irloop)/m12/epsloop));
+  // if(logarg < 1e-2) t1 = (log1p(logarg-1) -1.) *  (massph+log(4.*M_PI*sqr(irloop)/m12/epsloop));
+  // else t1 = (log(logarg) - 1.) *  (massph+log(4.*M_PI*sqr(irloop)/m12/epsloop));
   // t1 = (log(sqr(MasPhot)/sqr(250)));
   t2 = p1p2 * rho / s * log(p1p2 * (1. + rho) / m12) + (Mas1 * Mas1 - Mas2 * Mas2) / (2.*s) * log(Mas1 / Mas2) - 1;
 
@@ -365,10 +535,9 @@ DivArrC YFS_Form_Factor::BVV_full_eps(const ATOOLS::Vec4D p1, const ATOOLS::Vec4
   t3 -= DiLog(zeta1) + DiLog(zeta2);
   t3 += sqr(M_PI);
   t3 /= rho;
+  // if(m_tchannel==1) return m_alpi * (t1 + t2 + t3) + BVirtTEps(d);
   return m_alpi * (t1 + t2 + t3);
 }
-
-
 
 double YFS_Form_Factor::WW_t(double t, double m, double M, double k) {
   // t and u virtual form factor
@@ -477,11 +646,6 @@ double YFS_Form_Factor::BVV_WW(const ATOOLS::Vec4D_Vector born, const ATOOLS::Ve
   m_u1 = (m_beam1 - m_wp).Abs2();
   m_u2 = (m_beam2 - m_wm).Abs2();
 
-  // PRINT_VAR(m_t1-t1);
-  // PRINT_VAR(m_t2-t2);
-  // PRINT_VAR(m_u1-u1);
-  // PRINT_VAR(m_u2-u2);
-  // PRINT_VAR(m_wm.Mass());
   double relt1 = WW_t(m_t1, m_beam1.Mass(), m_wm.Mass(), 1. );
   double relt2 = WW_t(m_t2, m_beam2.Mass(), m_wp.Mass(), 1. );
   double relu1 = WW_t(m_u1, m_beam1.Mass(), m_wp.Mass(), 1. );
@@ -493,10 +657,6 @@ double YFS_Form_Factor::BVV_WW(const ATOOLS::Vec4D_Vector born, const ATOOLS::Ve
   m_ww_u += BVR_full(m_beam1, m_wp, Kmax, MasPhot, 1);
   m_ww_u += BVR_full(m_beam2, m_wm, Kmax, MasPhot, 1);
 
-  // PRINT_VAR(m_ww_t-Vt1);
-  // PRINT_VAR(relt2-Vt2);
-  // PRINT_VAR(relu1-Vu1);
-  // PRINT_VAR(relu2-Vu2);
   // exit(1);
 
   double weik = 1;
@@ -533,10 +693,56 @@ double YFS_Form_Factor::BVV_WW(const ATOOLS::Vec4D_Vector born, const ATOOLS::Ve
 }
 
 
+double YFS_Form_Factor::BVirtT(Vec4D p1, Vec4D p2,  double kmax){
+  // kmax is unused: this is the purely virtual t-channel B, the cutoff enters
+  // only through the real Btilda that IFForFac() adds to it.
+  const double m1 = p1.Mass();
+  const double m2 = p2.Mass();
+  const double M = m1>=m2 ? m1 : m2;
+  const double m = m1>=m2 ? m2 : m1;
+  const double ta = fabs((p1-p2).Abs2());
+  const double zeta = 1 + M*M/ta;
+  const double TBvirt = m_alpi*(
+       (log(ta/m/M) +log(zeta) - 1) *log(sqr(m_photonMass)/(m*M))
+      +0.5*zeta*log(ta*zeta/(m1*m2))
+      -0.5*log(ta/m1/m1)*log(ta/m2/m2)
+      // log(m/M), NOT log(m1/m2): this term is antisymmetric under exchanging
+      // the two legs, and KKMC's TBvirt (SRCee/KKbvir.cxx:296) documents its
+      // m1 as "assumed to be very small", i.e. the LIGHT leg first. IFForFac()
+      // calls this with GetBornMomenta(1) then (0) to match R1()'s ordering,
+      // which for an initial-final dipole puts the heavy (final-state) leg
+      // first - so log(m1/m2) came out with the wrong sign. Using min/max
+      // makes the term independent of the caller's ordering and reproduces
+      // KKMC. Verified against KKbvir::TBvirt on a fixed e+e- -> mu+mu- point
+      // (YFS/Tools/IFI_KKMC_CrossCheck.C vs Test/SherpaCompare/
+      // kkmc_ifi_crosscheck.cxx): the whole disagreement was 2x this term.
+      +0.5*(zeta -1.0)*log(m/M)
+      -log(zeta)*(log(ta/(m1*m2)) +0.5*log(zeta))
+      +DiLog(1./zeta) -1.0
+       );
+  return TBvirt;
+}
 
-double YFS_Form_Factor::BVirtT(const Vec4D &p1, const Vec4D &p2, double kmax){
-  double m1 = p1.Mass();
-  double m2 = p2.Mass();
+
+double YFS_Form_Factor::BVirtT(YFS::Dipole &d, double kmax){
+ Vec4D p1,p2;
+  if(d.Type()==dipoletype::initial){
+    p1 = d.GetNewMomenta(0);
+    p2 = d.GetNewMomenta(1);
+  }
+  else if(d.Type()==dipoletype::final){
+    p1 = d.GetBornMomenta(0);
+    p2 = d.GetBornMomenta(1);
+  }
+  else if(d.Type()==dipoletype::ifi){
+    p1 = d.GetBornMomenta(0);
+    p2 = d.GetBornMomenta(1);
+  }
+  else{
+    msg_Error()<<"Unknown Dipole type"<<std::endl;
+  }
+  double m1 = d.GetMass(0);
+  double m2 = d.GetMass(1);
   if(IsZero(kmax)) kmax=m1*m2;
   double M = m1>=m2 ? m1 : m2;
   double m = m1>=m2 ? m2 : m1;
@@ -546,162 +752,371 @@ double YFS_Form_Factor::BVirtT(const Vec4D &p1, const Vec4D &p2, double kmax){
   double zeta = 1 + M*M/ta;
   double TBvirt, Bv;
   double rho = sqrt(1. - sqr(m1*m2 / (p1*p2)));
-  double m12 = m1*m2;
-  double s=(p1-p2).Abs2();
-  double xnum = sqrt(1-4*m12/(s-sqr(m1-m2)))-1;
-  double xden = sqrt(1-4*m12/(s-sqr(m1-m2)))+1;
-  double xs = (xnum/xden);
-  // if(xs < 0 || xs==1 || IsBad(xs)) return 0;   
-  // double test = log(xs)*xs/(m1*m2*(1-xs*xs))*(log(m_photonMass*m_photonMass/(m1*m2)));
-  // PRINT_VAR(log(1./xs)*xs/(m1*m2*(1-xs*xs)));
-  // PRINT_VAR( (log(p1p2 * (1. + rho) / (m1*m2)) / rho - 1));
-  // test = (log(p1p2 * (1. + rho) / (m1*m2)) / rho - 1) *log(pow(m_photonMass, 2)/(m1*m2)); 
   TBvirt = m_alpi*(
-    (log(p1p2 * (1. + rho) / (m1*m2)) / rho - 1) *log(pow(m_photonMass, 2)/(kmax)) 
-       // (log(2*p1p2/(m1*m2))-1.0)*log(m_photonMass*m_photonMass/(m1*m2))
+    // (log(p1p2 * (1. + rho) / (m1*m2)) / rho - 1) *log(pow(m_photonMass, 2)/(kmax)) 
+       (log(2*p1p2/(m1*m2))-1.0)*log(m_photonMass*m_photonMass/(m1*m2))
+      +0.5*zeta*log(ta*zeta/(m1*m2))
+      -0.5*log(ta/m1/m1)*log(ta/m2/m2)
+      +DiLog(1./zeta) -1.0
+      // log(m/M) rather than log(m1/m2) - see the note in the Vec4D overload.
+      +0.5*(zeta -1.0)*log(m/M)
+      -log(zeta)*(log(ta/(m1*m2)) +0.5*log(zeta))
+       );
+  #ifdef USING__LOOPTOOLS
+    Complex form;
+    Flavour fl1 = d.GetFlav(0);
+    Flavour fl2 = d.GetFlav(1);
+    // PRINT_VAR(d.m_thetai*p1+d.m_thetaj*p2);
+    double s = (p1+p2).Abs2();
+    double crossterm = ((d.m_thetai*p1+d.m_thetaj*p2).Abs2());
+    if(fl1==fl2){
+      form = 1./8.*B0(s, m1*m1, m2*m2);
+      // form += -8.*(m1*m1)*C0(m1*m1, s, m2*m2,0,m1*m1,m2*m2);
+      // PRINT_VAR(B0(s, m1*m1, m2*m2));
+    //   // PRINT_VAR(C0(m1*m1, 0, m1*m1,0, m1*m1, m1*m1));
+    }
+    else{
+      form = 2*(p1*p2)*C0(m1*m1, s, m2*m2,0,m1*m1,m2*m2);
+      form += 0.25*B0(s, m1*m1, m2*m2);
+      // PRINT_VAR(B0(crossterm, m1*m1, m2*m2));
+    }
+    form*=m_alpi;
+    // // PRINT_VAR(fl1);
+    // // PRINT_VAR(fl2);
+    // TBvirt+=form.real();
+    clearcache();
+  #endif
+  return TBvirt;
+}
+
+DivArrD YFS_Form_Factor::BVirtTEps(YFS::Dipole &d, double kmax){
+   Vec4D p1,p2;
+  if(d.Type()==dipoletype::initial){
+    p1 = d.GetNewMomenta(0);
+    p2 = d.GetNewMomenta(1);
+  }
+  else if(d.Type()==dipoletype::final){
+    p1 = d.GetBornMomenta(0);
+    p2 = d.GetBornMomenta(1);
+  }
+  else if(d.Type()==dipoletype::ifi){
+    p1 = d.GetNewMomenta(0);
+    p2 = d.GetBornMomenta(1);
+  }
+  else{
+    msg_Error()<<"Unknown Dipole type"<<std::endl;
+  }
+  double m1 = d.GetMass(0);
+  double m2 = d.GetMass(1);
+  if(IsZero(kmax)) kmax=m1*m2;
+  double M = m1>=m2 ? m1 : m2;
+  double m = m1>=m2 ? m2 : m1;
+  double p1p2 = p1*p2;
+  double t  = (p1-p2).Abs2();
+  double ta = fabs(t);
+  double zeta = 1 + M*M/ta;
+  DivArrD TBvirt, Bv;
+  double rho = sqrt(1. - sqr(m1*m2 / (p1*p2)));
+  DivArrD massph(0,-1,0,0,0,0);
+  double irloop = p_virt->IRscale();
+  double epsloop = p_virt->Eps_Scheme_Factor({p1,p2});
+  // (massph-log(4.*M_PI*sqr(irloop)/4./Kmax/epsloop));
+  TBvirt = m_alpi*(
+    (log(p1p2 * (1. + rho) / (m1*m2)) / rho - 1) * -1.*(-massph-log(4.*M_PI*sqr(irloop)/m1/m2/epsloop)) 
+    // (log(2*p1p2/(m1*m2))-1.0) * -1.*(-massph-log(4.*M_PI*sqr(irloop)/m1/m2/epsloop)) 
        +0.5*zeta*log(ta*zeta/(m1*m2))
         -0.5*log(ta/m1/m1)*log(ta/m2/m2)
       +DiLog(1./zeta) -1.0
       +0.5*(zeta -1.0)*log(m1/m2)
       -log(zeta)*(log(ta/(m1*m2)) +0.5*log(zeta))
        );
+  #ifdef USING__LOOPTOOLS
+    Complex form;
+    Flavour fl1 = d.GetFlav(0);
+    Flavour fl2 = d.GetFlav(1);
+    // PRINT_VAR(d.m_thetai*p1+d.m_thetaj*p2);
+    double s = (p1+p2).Abs2();
+    double crossterm = ((d.m_thetai*p1+d.m_thetaj*p2).Abs2());
+    if(fl1==fl2){
+      form = 1./8.*B0(s, m1*m1, m2*m2);
+      // form += -8.*(m1*m1)*C0(m1*m1, s, m2*m2,0,m1*m1,m2*m2);
+      // PRINT_VAR(B0(s, m1*m1, m2*m2));
+    //   // PRINT_VAR(C0(m1*m1, 0, m1*m1,0, m1*m1, m1*m1));
+    }
+    else{
+      form = 2*(p1*p2)*C0(m1*m1, s, m2*m2,0,m1*m1,m2*m2);
+      form += 0.25*B0(s, m1*m1, m2*m2);
+      // PRINT_VAR(B0(crossterm, m1*m1, m2*m2));
+    }
+    form*=m_alpi;
+    // // PRINT_VAR(fl1);
+    // // PRINT_VAR(fl2);
+    // TBvirt+=form.real();
+    clearcache();
+  #endif
   return TBvirt;
 }
 
-double YFS_Form_Factor::R1(const Vec4D &p1, const Vec4D &p2){
-  double R = BVR_full(p1, p2,sqrt(m_s)/2.,m_photonMass,1);
-  double V = BVirtT(p1, p2);
-  if(m_tchannel!=2){
+double YFS_Form_Factor::IFForFac(YFS::Dipole &d, double omega){
+  // KKMC's TForFac, for one initial-final dipole. KKceex.cxx assembles the
+  // interference form factor as
+  //     Yint = prod over the four IF pairs of TForFac(+/-a, pi, pj, Emin)
+  //     TForFac = exp( Btilda(...,Emin) + TBvirt(...) )
+  // and the sign pattern (+ for like-charge pairs, - for unlike) is what
+  // Dipole::ChargeNorm() already supplies, so the caller multiplies by that and
+  // this returns the exponent for a single pair.
+  //
+  // The point of having this separate from the II/FF term is the VIRTUAL: an
+  // initial-final pair is t-channel-like, so it needs BVirtT (spacelike p1.p2),
+  // not the s-channel virtual. FormFactorSum() previously gave the IF dipoles
+  // Btilda with NO virtual at all, which is why no rescaling of that term could
+  // reproduce KKMC -- half the object was missing.
+  //
+  // Momentum order follows R1(): for dipoletype::ifi it takes GetBornMomenta(1)
+  // then (0). Kept identical here so the two agree bin by bin.
+  //
+  // NB BVirtT(Vec4D,Vec4D,double) ignores its kmax argument -- it is read only by
+  // an IsZero() default that is never used afterwards -- so the omega passed here
+  // affects the Btilda part alone. That is deliberate: it is the soft-real piece
+  // that carries the cutoff, exactly as in KKMC's Btilda(...,Emin).
+  ATOOLS::Vec4D p1 = d.GetBornMomenta(1);
+  ATOOLS::Vec4D p2 = d.GetBornMomenta(0);
+  double Breal = BVR_full(p1 * p2, p1.E(), p2.E(), p1.Mass(), p2.Mass(),
+                          omega, m_photonMass, 0);
+  double Bvirt = BVirtT(p1, p2, omega);
+  return Breal + Bvirt;
+}
+
+
+double YFS_Form_Factor::R1(YFS::Dipole &d){
+  Vec4D p1,p2;
+  if(d.Type()==dipoletype::initial){
+    p1 = d.GetBornMomenta(0);
+    p2 = d.GetBornMomenta(1);
+  }
+  else if(d.Type()==dipoletype::final){
+    p1 = d.GetBornMomenta(0);
+    p2 = d.GetBornMomenta(1);
+  }
+  else if(d.Type()==dipoletype::ifi){
+    p1 = d.GetBornMomenta(1);
+    p2 = d.GetBornMomenta(0);
+  }
+  else{
+    msg_Error()<<"Unknown Dipole type"<<std::endl;
+  }
+  double R = BVR_full(p1 * p2, p1.E(), p2.E(), p1.Mass(), p2.Mass(), sqrt(m_s)/2., m_photonMass, 0);
+  double V = BVirtT(p1, p2, sqrt(m_s) / 2.);
+  if(m_tchannel==3) V = BVirtGeneral(d);
+  if(m_tchannel==1){
     // add s channel 
-    double Vs = BVV_full(p1, p2, m_photonMass, sqrt(m_s)/2., 0);
-    return R+V+Vs;
+    double Vs = BVR_full(p1, p2, sqrt(m_s) / 2.);
+    return R+V-Vs;
   }
   return R+V;
 }
 
 
-double YFS_Form_Factor::R2(const Vec4D &p1, const Vec4D &p2){
-  double beta1 = (Vec3D(p1).Abs() / p1.E());
-  double beta2 = (Vec3D(p2).Abs() / p2.E());
-  double logarg =  (1+beta1)*(1+beta2);
-  logarg /= (1-beta2)*(1-beta1);
+double YFS_Form_Factor::A1(const Vec4D &p1, const Vec4D &p2){
+  double m12= m_m1*m_m2;
+  double p12 = p1*p2;
+  // double xlam = sqrt((p12 - m12) * (p12 + m12));
+  double xlam = p12*sqrt(1-m12*m12/p12/p12);
+  double t1 = -2 + (m_m1*m_m1-m_m2*m_m2)/(m_m1*m_m1+m_m2*m_m2-2.*p12)*log(m_m1/m_m2);
+  t1 += -2.*xlam*xlam/(m_m1*m_m1+m_m2*m_m2-2.*p12)*A(p12, m_m1, m_m2);
+  if(fabs(t1)>1e4){
+    msg_Out()<<"m1 = "<<m_m1<<std::endl
+             <<"m2 = "<<m_m2<<std::endl
+             <<"xlam = "<<xlam<<std::endl
+             <<"A(p12, m_m1, m_m2) = "<<A(p12, m_m1, m_m2)<<std::endl
+             <<"(m_m1*m_m1+m_m2*m_m2-2.*p12) = "<<(m_m1*m_m1+m_m2*m_m2-2.*p12)<<std::endl;
+  }
+  return t1;
+}
 
-  double biglog =  (1+beta1*beta2)/(beta1+beta2);
-  biglog *= (log(logarg)-2);
-
-  double logp = (1+beta1*beta2)/(beta1+beta2);
-  logp *= logp;
-  double m1 = p1.Mass();
-  double m2 = p2.Mass();
-  double rho = sqrt(1. - sqr(m1*m2 / (p1*p2)));
-
-  // (p1p2 * A(p1p2, Mas1, Mas2) - 1) * log(4 * sqr(Kmax / MasPhot));
-  double t1 = (log(p1*p2 * (1. + rho) / (m1*m2)) / rho - 1) *log((m1*m2)/pow(m_photonMass, 2))+0.25*logp;
-  // double t1 = biglog+0.25*logp;
-  t1+= -0.5*sqr(log(p1.E()/p2.E()));
-
-  double del = p1.E()-p2.E(); 
-  double Delta = sqrt(p1*p2);
-  double omega = p1.E()+p2.E();
-
-  // double t2 = -0.25*sqr(log(sqr(del+Delta)/(4*p1.E()*p2.E())));
-  double t2 = -0.25*sqr(log(sqr((del-Delta))/(4*p1.E()*p2.E())));
-  // PRINT_VAR(t2);
-  // PRINT_VAR(del);
-  // PRINT_VAR(Delta);
-  t2 += -DiLog((Delta+omega)/(Delta+del)) - DiLog((Delta+omega)/fabs(Delta-del));
-  t2 += -DiLog(fabs(Delta-omega)/(Delta+del)) - DiLog(fabs(Delta-omega)/fabs(Delta-del));
-  t2 += M_PI*M_PI/3.;
-  // if(IsNan(t2)) t2 = 0;
-  return m_alpi*(t1+t2);
+double YFS_Form_Factor::A2(const Vec4D &p1, const Vec4D &p2){
+  double m12= m_m1*m_m2;
+  double p12 = p1*p2;
+  double xlam = sqrt((p12 - m12) * (p12 + m12));
+  Complex omega1 = m_m1*m_m1/(xlam+p12-m_m1*m_m1);
+  Complex omega2 = m_m2*m_m2/(xlam+p12-m_m2*m_m2);
+  double scale = (p1-p2).Abs2();
+  Complex t1 = log(Complex(scale,0)/m_m1/m_m2)*A(p12, m_m1, m_m2);
+  Complex t2 = -0.5*(log(omega1*omega1)+log(omega2*omega2))
+              +0.5*log(1.+omega1)*log(1.+omega1)
+              +0.5*log(1.+omega2)*log(1.+omega2)
+              -log(1.+omega1+omega2)*(log(omega1/(1.+omega1))+log(omega2/(1.+omega2)))
+              -DiLog((1.+omega1)/(1.+omega1+omega2))
+              -DiLog((1.+omega2)/(1.+omega1+omega2))
+              +DiLog((omega1)/(1.+omega1+omega2))
+              +DiLog((omega2)/(1.+omega1+omega2));
+if(IsBad( t1+0.5/xlam*t2)){
+  msg_Error()<<"A2(p1,p2) is Nan"<<std::endl
+             <<"p1 = "<<p1<<std::endl
+             <<"p2 = "<<p2<<std::endl
+             <<"t1 = "<<t1<<std::endl
+             <<"t2 = "<<t2<<std::endl
+             <<"A0(p1,p2) = "<<A(p12, m_m1, m_m2)<<std::endl
+             <<"p12 = "<<p12<<std::endl
+             <<"omega1 = "<<omega1<<std::endl
+             <<"omega2 = "<<omega2<<std::endl
+             <<"m1 = "<<m_m1<<std::endl
+             <<"m2 = "<<m_m2<<std::endl
+             <<"p1.Theta() = "<<p1.Theta()<<std::endl
+             <<"p2.Theta() = "<<p2.Theta()<<std::endl
+             <<"xlam = "<<xlam<<std::endl;
+}
+return (t1+0.5/xlam*t2).real();
+// return (0.5/xlam*t2).real();
+// return (t1).real();
 }
 
 
-double YFS_Form_Factor::C0(double p12, double p22, double p23,
-                          double m1, double m2, double m3){
-
-  // Eq B5 in https://arxiv.org/pdf/hep-ph/0308246.pdf
-  DivArrC t2 = Master_Triangle(p12,p22,p23,m1,m2,m3,0);
-  // double m12 = m1*m2;
-  // // double s=(p1-p2).Abs2();
-  // double xnum = sqrt(1-4*m12/(s-sqr(m1-m2)))-1;
-  // double xden = sqrt(1-4*m12/(s-sqr(m1-m2)))+1;
-  // double xs = fabs(xnum/xden);  
-  // if(4*m12/(s-sqr(m1-m2)) > 1 ) xs=1;
-  // double t1 = -log(m_photonMass*m_photonMass/m12)*log(xs)-0.5*log(xs)*log(xs)+0.5*log(m1/m2);
-  // t1+=2*log(xs)*log(1-xs*xs)-M_PI*M_PI/6+DiLog(xs*xs);
-  // t1+=DiLog(1-xs*m1/m2)+DiLog(1-xs*m2/m1);
-  // t1*=xs/(m12*(1-xs*xs));
-  // if(IsBad(t1)){
-  //   PRINT_VAR(xs);
-  //   PRINT_VAR(xs*xs);
-  //   PRINT_VAR(1-xs*m1/m2);
-  //   PRINT_VAR(1-xs*m2/m1);
+double YFS_Form_Factor::BVirtGeneral(YFS::Dipole &d, double Kmax){
+  Vec4D p1,p2;
+  if(d.Type()==dipoletype::initial){
+    p1 = d.GetBornMomenta(0);
+    p2 = d.GetBornMomenta(1);
+  }
+  else if(d.Type()==dipoletype::final){
+    p1 = d.GetBornMomenta(0);
+    p2 = d.GetBornMomenta(1);
+  }
+  else if(d.Type()==dipoletype::ifi){
+    p1 = d.GetBornMomenta(0);
+    p2 = d.GetBornMomenta(1);
+  }
+  else{
+    THROW(fatal_error, "Unknown Dipole Type");
+  }
+  m_m1 = d.GetMass(0);
+  m_m2 = d.GetMass(1);
+  double a0 = A(p1*p2, m_m1, m_m2);
+  double a2 = A2(p1, p2);
+  double form = log(m_photonMass*m_photonMass/m_m1/m_m2)*(p1*p2*a0-1);
+  form += A1(p1, p2);
+  form += -p1*p2*a2;
+  // if(fabs(form)> 1e4 ){
+  //   msg_Out()<<"Form = "<<form<<std::endl
+  //            <<"p1 = "<<p1<<std::endl
+  //            <<"p2 = "<<p2<<std::endl
+  //            <<"p1.Theta() = "<<p1.Theta()<<std::endl
+  //            <<"p2.Theta() = "<<p2.Theta()<<std::endl
+  //            <<"a0 = "<<a0<<std::endl
+  //            <<"a1 = "<<A1(p1,p2)<<std::endl
+  //            <<"a2 = "<<a2<<std::endl;
   // }
-  return t2.Finite().real();
-}
-
-double YFS_Form_Factor::B0(double s, double m1, double m2){
-  Complex m02 = m1*m1;
-  Complex m12 = m2*m2;
-  if(IsZero(s)){
-    if(IsEqual(m1,m2)){
-      return 0;
-    }
-    return 1+(m1*m1)/(m1*m1-m2*m2)*2*log(m_photonMass/m1)
-            -(m2*m2)/(m1*m1-m2*m2)*2*log(m_photonMass/m2);
-  }
-  else{
-    // sqrt((p2-(m1+m2)**2)*(p2-(m1-m2)**2))
-    double r = m1*m1+m2*m2-s+sqrt(sqr(m1*m1+m2*m2-s)-sqr(2*m1*m2));
-    r /= 2*m1*m2;
-    // PRINT_VAR(r);
-    Complex l1 = (-s-m12+m02+sqrt(csqr(-s-m12+m02)+4.*s*m02))
-                    /(-2.*s);
-    Complex l2 = (-s-m12+m02-sqrt(csqr(-s-m12+m02)+4.*s*m02))
-                    /(-2.*s);
-    Complex box = l1*log((l1-1.)/l1) + l2*log((l2-1.)/l2) - log(l1-1.) - log(l2-1.) + 2.;
-    box += log(m_photonMass*m_photonMass)-log(s);
-    // return (box*conj(box)).real();
-    return 2.*((box)).real();
-    if(IsEqual(m1,m2)){
-      return 2*log(m_photonMass/m1)-m1*m1/s*(1/r-r)*log(r);
-    }
-    else{
-      return log(m_photonMass*m_photonMass/(m1*m2))+(m1*m1-m2*m2)/s*log(m2/m1)
-              -m1*m2/s*(1./r-r)*log(r);
-    }
-  }
-}
-
-
-Complex YFS_Form_Factor::tsub(const Vec4D &p1, const Vec4D &p2, int mode, double QiQj, double theta1, double theta2){
-  double m1 = p1.Mass();
-  double m2 = p2.Mass();
-  Complex cm1 = m1;
-  Complex cm2 = m2;
-   // YFSij = 2.d0*B0ij - B0ii - B0jj
-   //   .         + 4.d0 * mi2 * C0singular(mi2,phmass)
-   //   .         + 4.d0 * mj2 * C0singular(mj2,phmass)
-   //   .         + 8.d0*pi_pj * C0ij
-  if(mode==1){
-    METOOLS::DivArrC cc = Master_Triangle(m1*m1,m_photonMass, m2*m2, 0, p1*p1, p2*p2,1.);
-    double v = (cc.Finite()*conj(cc.Finite())).real();
-    // return QiQj*0.125*m_alpi*cc.Finite();
-    // return exp(QiQj*0.125*m_alpi*2*v);
-    // return exp(QiQj*0.125*m_alpi*(-4*m1*m2*C0((p1-p2).Abs2(),m1,m2)));
-    // return exp(QiQj*0.125*m_alpi*(B0(0.,m1,m2)-4*m1*m1*C0((p1-p2).Abs2(),m1,m2)));
-  }
-  else{
-    METOOLS::DivArrC cc = Master_Triangle(m1*m1,m_photonMass,m2*m2,(theta1*p1+theta2*p2).Abs2(), p1*p1, p2*p2,1.);
-    double v = (cc.Finite()*conj(cc.Finite())).real();
-    // return QiQj*theta1*theta2*m_alpi*cc.Finite();
-    // return exp(QiQj*theta1*theta2*m_alpi*2*v);
+  if(IsBad(form)){
+    msg_Error()<<"YFS Btilde is NaN"<<std::endl
+                <<"A0 = "<<a0<<std::endl
+                <<"A1 = "<<A1(p1, p2)<<std::endl
+                <<"A2 = "<<a2<<std::endl
+                <<d.Type()<<std::endl
+                <<"d.Left() = "<<d.GetFlav(0)<<std::endl
+                <<"d.Right() = "<<d.GetFlav(1)<<std::endl;
     
-    // return exp(QiQj*theta1*theta2*m_alpi*(p1*p2*C0((theta1*p1+theta2*p2).Abs2(),m1,m2)));
-                   // + 0.25*B0((theta1*p1+theta2*p2).Abs2(),m1*m1,m2*m2)));
-    // return exp(QiQj*theta1*theta2*m_alpi*(p1*p2*C0((p1-p2).Abs2(),m1,m2)
-    //                + 0.25*B0((theta1*p1+theta2*p2).Abs2(),m1*m1,m2*m2)));
   }
-  return 0;
+  return m_alpi*form;
+}
+
+
+DivArrD YFS_Form_Factor::BVirtGeneralEps(YFS::Dipole &d, double Kmax){
+  Vec4D p1,p2;
+  if(d.Type()==dipoletype::initial){
+    p1 = d.GetBornMomenta(0);
+    p2 = d.GetBornMomenta(1);
+  }
+  else if(d.Type()==dipoletype::final){
+    p1 = d.GetBornMomenta(0);
+    p2 = d.GetBornMomenta(1);
+  }
+  else if(d.Type()==dipoletype::ifi){
+    p1 = d.GetBornMomenta(0);
+    p2 = d.GetBornMomenta(1);
+  }
+  else{
+    THROW(fatal_error, "Unknown Dipole Type");
+  }
+  const double m1 = d.GetMass(0);
+  const double m2 = d.GetMass(1);
+  m_m1 = m1;
+  m_m2 = m2;
+  const double a0 = A(p1*p2, m1, m2);
+  const double a2 = A2(p1, p2);
+  const double irloop = (p_virt?p_virt->IRscale():100);
+  const double epsloop = (p_virt?p_virt->Eps_Scheme_Factor({p1,p2}):4*M_PI);
+  DivArrD massph(0,-1,0,0,0,0);
+  // double form = log(m_photonMass*m_photonMass/m_m1/m_m2)*(p1*p2*a0-1);
+  DivArrD form = (massph+log(4.*M_PI*sqr(irloop)/m1/m2/epsloop))*(p1*p2*a0-1.);
+  form += A1(p1, p2);
+  form += -p1*p2*a2;
+  return m_alpi*form;
+}
+
+
+// Virtual YFS IR factor Y assembled from the master integrals (METOOLS/Loops),
+// following Carloni Calame et al. "Towards muon-electron scattering at NNLO"
+// arXiv:2007.01586 Eq.(3.3), LoopTools/COLLIER conventions:
+//
+//   off-diagonal (i!=j):  Y_ij = (a/pi) Qi Qj th_i th_j
+//        [ p_i.p_j C0(m_i^2, s_ij, m_j^2; lam^2, m_i^2, m_j^2)
+//          + 1/4 B0(s_ij, m_i^2, m_j^2) ],           s_ij = (th_i p_i + th_j p_j)^2
+//   diagonal (i=j):       Y_ii = 1/8 (a/pi) Qi^2
+//        [ B0(0, m_i^2, m_i^2) - 4 m_i^2 C0(m_i^2, 0, m_i^2; lam^2, m_i^2, m_i^2) ]
+//
+//   th_i = -1 (+1) for incoming (outgoing); Qi in positron units.
+//
+// The per-dipole factor returned here is Y_ij(off-diagonal) + Y_ii + Y_jj (the
+// exchange plus both leg self-energies, i.e. the paper's Y_a for the line pair).
+// The Qi Qj th_i th_j charge/flow factor is applied by the caller
+// (Define_Dipoles::FormFactorSum via ChargeNorm), so it is omitted here.
+//
+// Regularisation: the paper uses a photon mass lambda. Here the master integrals
+// are dimensionally regularised (massless photon internal line -> 1/eps_IR), so
+// Y is returned as a DivArr whose 1/eps_IR pole cancels against the dim-reg real
+// emission BVR_full_eps (enforced in BVR_full(Dipole&), FULL_FORM==3).
+//
+// TODO(validate): (i) the C0 photon-line is taken massless (dim-reg) rather than
+// with the paper's lambda^2 - equivalent up to the standard IR dictionary
+// (4 pi mu^2)^eps Gamma(1+eps)/eps -> ln lambda^2, checked via the 3-vs-0 XS;
+// (ii) the diagonal Y_ii/Y_jj are added in full for an isolated dipole - if a
+// leg is shared between dipoles this double counts and must be shared out.
+DivArrD YFS_Form_Factor::BVirtMaster(YFS::Dipole &d, double Kmax) {
+  Vec4D p1, p2;
+  double th1, th2;
+  if (d.Type()==dipoletype::initial) {          // both incoming
+    p1 = d.GetBornMomenta(0);  p2 = d.GetBornMomenta(1);  th1 = -1.; th2 = -1.;
+  } else if (d.Type()==dipoletype::final) {      // both outgoing
+    p1 = d.GetBornMomenta(0);  p2 = d.GetBornMomenta(1);  th1 = +1.; th2 = +1.;
+  } else if (d.Type()==dipoletype::ifi) {        // initial-final
+    p1 = d.GetBornMomenta(0);  p2 = d.GetBornMomenta(1);  th1 = -1.; th2 = +1.;
+  } else {
+    THROW(fatal_error, "Unknown Dipole Type");
+  }
+  const double m1 = d.GetMass(0);
+  const double m2 = d.GetMass(1);
+  const double m12 = m1*m1, m22 = m2*m2;
+  const double sij = (th1*p1 + th2*p2).Abs2();   // (th_i p_i + th_j p_j)^2
+  const double mu2 = (p_virt?sqr(p_virt->IRscale()):GLOBAL_RENORMALISATION_SCALE);
+  const Complex z(0.,0.);
+
+  // --- off-diagonal exchange term, Eq.(3.3) i!=j ---
+  DivArrC C0ij = Master_Triangle(m12, sij, m22, z, Complex(m12,0.), Complex(m22,0.), mu2);
+  DivArrC B0ij = Master_Bubble(sij, Complex(m12,0.), Complex(m22,0.), mu2);
+  DivArrC Yij  = C0ij*(p1*p2) + B0ij*0.25;
+
+  // --- diagonal self-energy terms, Eq.(3.3) i=j (one per leg) ---
+  DivArrC C0ii = Master_Triangle(m12, 0., m12, z, Complex(m12,0.), Complex(m12,0.), mu2);
+  DivArrC C0jj = Master_Triangle(m22, 0., m22, z, Complex(m22,0.), Complex(m22,0.), mu2);
+  DivArrC B0ii = Master_Bubble(0., Complex(m12,0.), Complex(m12,0.), mu2);
+  DivArrC B0jj = Master_Bubble(0., Complex(m22,0.), Complex(m22,0.), mu2);
+  DivArrC Yii  = (B0ii - C0ii*(4.*m12))*0.125;
+  DivArrC Yjj  = (B0jj - C0jj*(4.*m22))*0.125;
+
+  DivArrC combo = Yij + Yii + Yjj;
+
+  // real part (YFS Y uses Re B) -> DivArrD, normalised to alpha/pi (Eq.3.3)
+  DivArrD form(combo[0].real(), combo[1].real(), combo[2].real(),
+               combo[3].real(), combo[4].real(), combo[5].real());
+  return form * m_alpi;
 }

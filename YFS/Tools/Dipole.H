@@ -1,13 +1,28 @@
 #ifndef YFS_Main_Dipole_H
 #define YFS_Main_Dipole_H
 
+#include "ATOOLS/Phys/Flavour.H"
 #include "ATOOLS/Phys/Particle.H"
 #include "ATOOLS/Math/Poincare.H"
-// #include "YFS/Main/YFS_Handler.H"
+#include "METOOLS/Loops/Divergence_Array.H"
+#include "YFS/NLO/Virtual.H"
+#include <vector>
+#include <cmath>
 
 using namespace ATOOLS;
 
 namespace YFS{
+
+    // Kaellen (triangle) function lambda(x,y,z) = x^2+y^2+z^2-2(xy+xz+yz),
+    // returned as |lambda| so callers evaluating sqrt(Lambda(...)/s) stay real
+    // below threshold / against rounding. Single canonical definition: the
+    // per-file copies in Dipole.C, NLO_Base.C and YFS_Form_Factor.C used to
+    // disagree (two dropped the abs) and, with external linkage, collided
+    // across the YFS shared libraries - which copy won depended on load order
+    // (ELF symbol interposition), giving platform-dependent NaN.
+    inline double Lambda(double x, double y, double z) {
+      return std::abs(x * x + y * y + z * z - 2. * x * y - 2. * x * z - 2. * y * z);
+    }
 
     struct dipoletype {
     enum code {
@@ -32,14 +47,17 @@ namespace YFS{
         std::vector<std::string> m_names;
         std::vector<double> m_pk1, m_pk2;
         double m_QiQj, m_Qi, m_Qj, m_thetai, m_thetaj, m_thetaij, m_sp, m_b1, m_b2, m_gamma, m_gammap, m_alp, m_alpi,m_rescale_alpha;
-        bool m_setBorn, m_setbeams=1,m_sameflav;
-        int m_Nphotons, m_resonance, m_betaorder;
-        double m_ranPhi, m_ranTheta, m_born;
+        bool m_setBorn, m_setbeams=1,m_sameflav, m_irfinite, m_isduplicate;
+        int m_Nphotons, m_resonance, m_betaorder, m_leftfl, m_rightfl, m_real_only;
+        double m_ranPhi, m_ranTheta, m_born, m_photonscale, m_u,m_irscale;
         dipoletype::code m_type;
-        Vec4D_Vector m_momenta, m_bornmomenta, m_oldmomenta, m_newmomenta, m_ghost, m_beams, m_eikmomentum;
+        Vec4D_Vector m_momenta, m_bornmomenta, m_oldmomenta, m_newmomenta, m_ghost, m_beams, m_eikmomentum,m_mephotons;
         Flavour_Vector m_flavs;
-        Vec4D m_photonSum, m_QFrame;
-        Poincare *p_boost, *p_rotate, *p_rotatex, *p_rotatey, *p_Pboost, *p_Qboost;
+        Flavour m_ResFlav;
+        Vec4D m_photonSum, m_QFrame, m_kcorr;
+        Poincare *p_Pboost, *p_Qboost;
+        Poincare p_rotate, p_boost;
+        PHASIC::Virtual_ME2_Base *p_virt;
         void PrintInfo();
         void AddPhotonsToDipole(Vec4D_Vector &Photons);
         void AddPhotonToDipole(Vec4D &Photon);
@@ -65,15 +83,20 @@ namespace YFS{
         double xi(const double &alp, const double &beta, const double &gamma);
         double xi(const double &alp, const double &a1, const double &b1, const double &a2, const double &b2);
         void Boost();
+        bool BoostNLO();
+        void MakePair(double cms, Vec4D &p1, Vec4D &p2);
         void BoostLab();
         void Boost(Vec4D &p);
+        void BoostNLO(Vec4D &p);
         void RandomRotate(Vec4D &p);
         void BoostToQFM(bool boostback);
-        void BoostToCMS(Vec4D_Vector &k, bool boostback=false);
+        void BoostToCMS();
         void CalculateGamma();
         void Clean();
         bool IsDecayAllowed();
+        void SetFlavLab(int i, int j);
         Vec4D Sum();
+        METOOLS::DivArrD BVV_full_eps(const ATOOLS::Vec4D p1, const ATOOLS::Vec4D p2, double Kmax, int mode);
         inline int size() {return m_momenta.size();}
         inline Vec4D GetBornMomenta(int i) { return m_bornmomenta[i];}
         inline Vec4D_Vector GetBornMomenta() { return m_bornmomenta;}
@@ -83,21 +106,36 @@ namespace YFS{
         inline Vec4D_Vector GetNewMomenta() { return m_newmomenta;}
         inline Vec4D GetOldMomenta(int i) { return m_oldmomenta[i];}
         inline Vec4D GetEikMomenta(int i) { return m_eikmomentum[i];}
-        inline Flavour GetFlav(int i) { return m_flavs[i];}
-        inline Vec4D_Vector GetPhotons() { return m_dipolePhotons;}
-        inline Vec4D GetPhotonSum() { return m_photonSum;}
-        inline Vec4D GetGhost(int i) { return m_ghost[i];}
-        inline dipoletype::code Type() {return m_type;}
+        const inline double GetMass(int i) { return m_masses[i];}
+        inline Flavour GetFlav(int i) const { return m_flavs[i];}
+        inline Flavour_Vector GetFlavors() const { return m_flavs;}
+        inline Vec4D_Vector GetPhotons() const { return m_dipolePhotons;}
+        inline Vec4D GetPhotonSum() const { return m_photonSum;}
+        inline Vec4D GetGhost(int i) const { return m_ghost[i];}
+        inline void SetRotate(Poincare &rot) { p_rotate = rot;}
+        inline void SetBoost(Poincare &boost) { p_boost = boost;}
+        inline dipoletype::code Type() const {return m_type;}
         inline void AddPhotonsSumToDipole(Vec4D k) {m_photonSum = k;}
-        inline double Sprime() {return m_sp;}
+        inline double Sprime() const {return m_sp;}
         inline void SetAlpha(double alp) { m_alp=alp; m_alpi=alp/M_PI;}
         inline void SetNPhoton(int N) {m_Nphotons = N; }
         inline void SetBorn(double B) {m_born = B; }
-        inline bool IsResonance() {return m_resonance;}
+      inline bool IsResonance() const {return m_resonance;}
         inline void SetResonance(bool res) { m_resonance=res;}
-        inline bool IsSame() {return m_sameflav;}
-        inline double ChargeNorm() {return -m_QiQj*m_thetaij;}
+        inline bool IsSame() const {return m_sameflav;}
+        inline double ChargeNorm() const {return -m_QiQj*m_thetaij;}
         inline void SetSudakovs(std::vector<double> y, std::vector<double> z) {m_pk1 =y; m_pk2=z;}
+        inline void SetPhotonScale(double &scale) {m_photonscale = scale;}
+        inline void SetMEPhotons(Vec4D_Vector &k) {m_mephotons = k;}
+        inline Vec4D_Vector GetMEPhotons() {return m_mephotons;}
+        inline bool IsFinite() {return m_irfinite;}
+        inline void SetDuplicate(bool dub) {m_isduplicate=dub;}
+        inline void SetResonaceFlavour(Flavour &fl) {m_ResFlav = fl;}
+        inline int Left() const {return m_leftfl;}
+        inline int Right() const {return m_rightfl;}
+        inline std::pair<int, int> GetFlavourLabels() const {return {m_leftfl,m_rightfl};}
+        inline bool RealOnly() const {return m_real_only;}
+        inline void SetRealOnly(int real) {m_real_only=real;}
 
     };
 

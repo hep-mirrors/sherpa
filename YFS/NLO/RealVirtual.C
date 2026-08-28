@@ -1,0 +1,95 @@
+#include "ATOOLS/Math/Random.H"
+#include "ATOOLS/Org/Run_Parameter.H"
+#include "YFS/NLO/RealVirtual.H"
+
+#include "EXTAMP/External_ME_Interface.H"
+#include "MODEL/Main/Running_AlphaQED.H"
+#include "PHASIC++/Process/External_ME_Args.H"
+#include "PHASIC++/Process/Process_Base.H"
+#include "PHASIC++/Process/Process_Info.H"
+#include "PHASIC++/Scales/Scale_Setter_Base.H"
+
+using namespace MODEL;
+using namespace YFS;
+
+RealVirtual::RealVirtual(const PHASIC::Process_Info &pi) {
+  /* Load loop ME */
+  PHASIC::Process_Info rv_pi(pi);
+  rv_pi.m_fi.m_nlotype = ATOOLS::nlo_type::rvirt;
+  rv_pi.m_mincpl[0] = pi.m_mincpl[0];
+  rv_pi.m_maxcpl[0] = pi.m_maxcpl[0];
+  rv_pi.m_mincpl[1] = pi.m_mincpl[1] + 1;
+  rv_pi.m_maxcpl[1] = pi.m_maxcpl[1] + 1;
+  p_loop_me = PHASIC::Virtual_ME2_Base::GetME2(rv_pi);
+  if (!p_loop_me)
+    THROW(not_implemented, "Couldn't find RealVirtual ME for this process.");
+  MODEL::s_model->GetCouplings(m_cpls);
+  p_loop_me->SetSubType(ATOOLS::sbt::qed);
+  /* Load color-correlated ME. TODO: orders */
+  PHASIC::External_ME_Args args(rv_pi.m_ii.GetExternal(),
+                                rv_pi.m_fi.GetExternal(), rv_pi.m_maxcpl);
+  p_loop_me->SetCouplings(m_cpls);
+  for (auto f: args.m_inflavs)  m_flavs.push_back(f);
+  for (auto f: args.m_outflavs) m_flavs.push_back(f);
+  m_sym = ATOOLS::Flavour::FSSymmetryFactor(args.m_outflavs);
+  m_sym *= ATOOLS::Flavour::ISSymmetryFactor(args.m_inflavs);
+  Flavour_Vector bornfs;
+  for(size_t i=0; i<args.m_outflavs.size()-1; i++) bornfs.push_back(args.m_outflavs[i]);
+  double bornsym = ATOOLS::Flavour::FSSymmetryFactor(bornfs) * ATOOLS::Flavour::ISSymmetryFactor(args.m_inflavs);
+  // m_sym = bornsym;
+  m_factor =  p_loop_me->AlphaQED() / 2. / M_PI;
+  // p_loop_me->SwitchMode(1);
+}
+
+RealVirtual::~RealVirtual() {
+  if (p_loop_me)
+    delete p_loop_me;
+}
+
+double RealVirtual::Calc(const ATOOLS::Vec4D_Vector &momenta, double born) {\
+  return Calc_V(momenta, born, sqr(rpa->gen.Ecms()));
+}
+
+double RealVirtual::Calc_V(const ATOOLS::Vec4D_Vector &p, const double B,
+                           const double mur) {
+  double V(0.0), run_corr(0.0), scale(0.0);
+  m_failcut = false;
+  if (m_nlocuts && !p_rvproc->Trigger(p)) {
+    m_failcut = true;
+    return 0;
+  }
+  // p_loop_me->SetRenScale(mur);
+  if (aqed->m_mode != vpmode::off) {
+    if (m_tchannel)
+      scale = -(p[0] - p[2]).Abs2();
+    else
+      scale = (p[0] + p[1]).Abs2();
+    const double dalpha = ((*aqed)(scale)-aqed->AqedThomson());
+    run_corr = 4. * dalpha * B;
+  }
+  p_loop_me->Calc(p);
+  // const double gammaborn = p_loop_me->ME_Born() * p_loop_me->AlphaQED() * B / m_sym;// * p_loop_me->AlphaQED() / 2. / M_PI;
+  const double gammaborn = p_loop_me->ME_Born();
+  switch (p_loop_me->Mode()) {
+  case 0:
+    // gammaborn is the provider's own Born, i.e. pointlike - unlike
+    // Virtual::Calc_V, which inherits the dressing through Sherpa's B. Dress
+    // it here so RV matches the S~*V it is subtracted against.
+    V = m_factor * p_loop_me->ME_Finite() * gammaborn
+        * ExternalFormFactor(p,m_flavs);
+    break;
+
+  case 1:
+    // V = m_factor * p_loop_me->ME_Finite();
+    THROW(not_implemented, "No Real-Virtuals implemented for this mode");
+    break;
+  case 2:
+    // For Griffin
+    THROW(not_implemented, "No Real-Virtuals implemented for this mode");
+    break;
+  default:
+    THROW(not_implemented, "Loop ME mode not implemented: " +
+                               ATOOLS::ToString(p_loop_me->Mode()));
+  }
+  return V;
+}
