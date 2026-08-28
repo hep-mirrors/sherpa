@@ -180,6 +180,8 @@ namespace PHASIC {
     void ReweightBVI(ATOOLS::ClusterAmplitude_Vector&);
     void ReweightRS(ATOOLS::ClusterAmplitude_Vector&);
     void CalculateAssociatedContributionVariations();
+    ATOOLS::Weights_Map YFSDifferential(const ATOOLS::Vec4D_Vector&,
+                                     ATOOLS::Variations_Mode); 
 
     std::vector<ATOOLS::Hard_Process_Variation_Generator_Base*>
       m_hard_process_variation_generators;
