@@ -90,6 +90,7 @@ void YFS_Base::RegisterDefaults(){
   s["CLUSTERING_THRESHOLD"].SetDefault(10);
   s["TChannel"].SetDefault(0);
   s["NLO_Weight_Breakdown"].SetDefault(0);
+  s["CHECK_INVARIANTS"].SetDefault(0);
   s["No_Born"].SetDefault(0);
   s["No_Sub"].SetDefault(0);
   s["Sub_Mode"].SetDefault(submode::global);
@@ -193,6 +194,7 @@ void YFS_Base::RegisterSettings(){
   m_coll_real = s["Collinear_Real"].Get<bool>();
   m_resonace_max = s["CLUSTERING_THRESHOLD"].Get<double>();
   m_nlo_weight_breakdown = s["NLO_Weight_Breakdown"].Get<int>();
+  m_check_invariants = s["CHECK_INVARIANTS"].Get<bool>();
   m_no_born_setting = s["No_Born"].Get<int>();
   m_no_born = m_no_born_setting;
   m_no_subtraction = s["No_Sub"].Get<int>();
