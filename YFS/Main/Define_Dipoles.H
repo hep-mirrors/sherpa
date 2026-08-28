@@ -92,7 +92,8 @@ namespace YFS {
       YFS::YFS_Form_Factor *p_yfsFormFact;
       DivArrD m_virtSub, m_vvSub;
 
-      YFS::dipoletype     m_type;
+      // m_type removed: shadowed YFS_Base's std::string m_type with a
+      // different type entirely, and was never read.
       Define_Dipoles();
       ~Define_Dipoles();
 
