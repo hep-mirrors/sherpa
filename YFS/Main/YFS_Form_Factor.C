@@ -83,21 +83,7 @@ double YFS_Form_Factor::BVR_full(double p1p2, double E1, double E2,
 DivArrD YFS_Form_Factor::BVR_full_eps(YFS::Dipole &d,  double Kmax, int mode) {
   // if(m_tchannel==2) return BVirtTEps(d,Kmax);
   Vec4D p1,p2;
-  if(d.Type()==dipoletype::initial){
-    p1 = d.GetBornMomenta(0);
-    p2 = d.GetBornMomenta(1);
-  }
-  else if(d.Type()==dipoletype::final){
-    p1 = d.GetBornMomenta(0);
-    p2 = d.GetBornMomenta(1);
-  }
-  else if(d.Type()==dipoletype::ifi){
-    p1 = d.GetBornMomenta(1);
-    p2 = d.GetBornMomenta(0);
-  }
-  else{
-    msg_Error()<<"Unknown Dipole type"<<std::endl;
-  }
+  d.LegsBeforeRadiation(p1, p2);
   const double p1p2 = p1*p2;
   const  double E1 = p1.E();
   const double E2 = p2.E();
@@ -195,21 +181,7 @@ double YFS_Form_Factor::BVR_full(YFS::Dipole &d, double omega) {
   }
   double R, V;
   Vec4D p1,p2;
-  if(d.Type()==dipoletype::initial){
-    p1 = d.GetBornMomenta(0);
-    p2 = d.GetBornMomenta(1);
-  }
-  else if(d.Type()==dipoletype::final){
-    p1 = d.GetMomenta(0);
-    p2 = d.GetMomenta(1);
-  }
-  else if(d.Type()==dipoletype::ifi){
-    p1 = d.GetBornMomenta(0);
-    p2 = d.GetMomenta(1);
-  }
-  else{
-    msg_Error()<<"Unknown Dipole type"<<std::endl;
-  }
+  d.LegsBeforeRadiation(p1, p2);
   R =  BVR_full(p1 * p2, p1.E(), p2.E(), p1.Mass(), p2.Mass(), omega, m_photonMass, 0);
   // R = BVR_full_eps(d, omega, 0).Finite();
   V =  BVirtGeneralEps(d,omega).Finite();
@@ -456,17 +428,7 @@ double YFS_Form_Factor::BVV_full(const ATOOLS::Vec4D p1, const ATOOLS::Vec4D p2,
 
 double YFS_Form_Factor::BVV_full(YFS::Dipole &d, double MasPhot, double Kmax, int mode) {
   Vec4D p1,p2;
-  if(d.Type()==dipoletype::initial){
-    p1 = d.GetNewMomenta(0);
-    p2 = d.GetNewMomenta(1);
-  }
-  else if(d.Type()==dipoletype::final || d.Type()==dipoletype::ifi){
-    p1 = d.GetBornMomenta(0);
-    p2 = d.GetBornMomenta(1);
-  }
-  else{
-    msg_Error()<<"Unknown Dipole type"<<std::endl;
-  }
+  d.LegsBeforeRadiation(p1, p2);
   return BVV_full_impl(p1, p2, d.GetMass(0), d.GetMass(1), MasPhot, mode);
 }
 
@@ -474,21 +436,7 @@ DivArrD YFS_Form_Factor::BVV_full_eps(YFS::Dipole &d, double Kmax, int mode){
   // for dim-reg
   // DivArrc {UV, IR, IR^2, finite, eps, eps^2, 0}
   Vec4D p1,p2;
-  if(d.Type()==dipoletype::initial){
-    p1 = d.GetBornMomenta(0);
-    p2 = d.GetBornMomenta(1);
-  }
-  else if(d.Type()==dipoletype::final){
-    p1 = d.GetBornMomenta(0);
-    p2 = d.GetBornMomenta(1);
-  }
-  else if(d.Type()==dipoletype::ifi){
-    p1 = d.GetBornMomenta(0);
-    p2 = d.GetBornMomenta(1);
-  }
-  else{
-    msg_Error()<<"Unknown Dipole type"<<std::endl;
-  }
+  d.LegsBeforeRadiation(p1, p2);
   double t2, t3;
   DivArrD t1;
   DivArrD massph(0,-1,0,0,0,0);
@@ -713,21 +661,7 @@ double YFS_Form_Factor::BVirtT(Vec4D p1, Vec4D p2,  double kmax){
 
 double YFS_Form_Factor::BVirtT(YFS::Dipole &d, double kmax){
  Vec4D p1,p2;
-  if(d.Type()==dipoletype::initial){
-    p1 = d.GetNewMomenta(0);
-    p2 = d.GetNewMomenta(1);
-  }
-  else if(d.Type()==dipoletype::final){
-    p1 = d.GetBornMomenta(0);
-    p2 = d.GetBornMomenta(1);
-  }
-  else if(d.Type()==dipoletype::ifi){
-    p1 = d.GetBornMomenta(0);
-    p2 = d.GetBornMomenta(1);
-  }
-  else{
-    msg_Error()<<"Unknown Dipole type"<<std::endl;
-  }
+ d.LegsBeforeRadiation(p1, p2);
   double m1 = d.GetMass(0);
   double m2 = d.GetMass(1);
   if(IsZero(kmax)) kmax=m1*m2;
@@ -778,21 +712,7 @@ double YFS_Form_Factor::BVirtT(YFS::Dipole &d, double kmax){
 
 DivArrD YFS_Form_Factor::BVirtTEps(YFS::Dipole &d, double kmax){
    Vec4D p1,p2;
-  if(d.Type()==dipoletype::initial){
-    p1 = d.GetNewMomenta(0);
-    p2 = d.GetNewMomenta(1);
-  }
-  else if(d.Type()==dipoletype::final){
-    p1 = d.GetBornMomenta(0);
-    p2 = d.GetBornMomenta(1);
-  }
-  else if(d.Type()==dipoletype::ifi){
-    p1 = d.GetNewMomenta(0);
-    p2 = d.GetBornMomenta(1);
-  }
-  else{
-    msg_Error()<<"Unknown Dipole type"<<std::endl;
-  }
+   d.LegsBeforeRadiation(p1, p2);
   double m1 = d.GetMass(0);
   double m2 = d.GetMass(1);
   if(IsZero(kmax)) kmax=m1*m2;
@@ -877,21 +797,7 @@ double YFS_Form_Factor::IFForFac(YFS::Dipole &d, double omega){
 
 double YFS_Form_Factor::R1(YFS::Dipole &d){
   Vec4D p1,p2;
-  if(d.Type()==dipoletype::initial){
-    p1 = d.GetBornMomenta(0);
-    p2 = d.GetBornMomenta(1);
-  }
-  else if(d.Type()==dipoletype::final){
-    p1 = d.GetBornMomenta(0);
-    p2 = d.GetBornMomenta(1);
-  }
-  else if(d.Type()==dipoletype::ifi){
-    p1 = d.GetBornMomenta(1);
-    p2 = d.GetBornMomenta(0);
-  }
-  else{
-    msg_Error()<<"Unknown Dipole type"<<std::endl;
-  }
+  d.LegsBeforeRadiation(p1, p2);
   double R = BVR_full(p1 * p2, p1.E(), p2.E(), p1.Mass(), p2.Mass(), sqrt(m_s)/2., m_photonMass, 0);
   double V = BVirtT(p1, p2, sqrt(m_s) / 2.);
   if(m_tchannel==3) V = BVirtGeneral(d);
@@ -961,21 +867,7 @@ return (t1+0.5/xlam*t2).real();
 
 double YFS_Form_Factor::BVirtGeneral(YFS::Dipole &d, double Kmax){
   Vec4D p1,p2;
-  if(d.Type()==dipoletype::initial){
-    p1 = d.GetBornMomenta(0);
-    p2 = d.GetBornMomenta(1);
-  }
-  else if(d.Type()==dipoletype::final){
-    p1 = d.GetBornMomenta(0);
-    p2 = d.GetBornMomenta(1);
-  }
-  else if(d.Type()==dipoletype::ifi){
-    p1 = d.GetBornMomenta(0);
-    p2 = d.GetBornMomenta(1);
-  }
-  else{
-    THROW(fatal_error, "Unknown Dipole Type");
-  }
+  d.LegsBeforeRadiation(p1, p2);
   m_m1 = d.GetMass(0);
   m_m2 = d.GetMass(1);
   double a0 = A(p1*p2, m_m1, m_m2);
@@ -1009,21 +901,7 @@ double YFS_Form_Factor::BVirtGeneral(YFS::Dipole &d, double Kmax){
 
 DivArrD YFS_Form_Factor::BVirtGeneralEps(YFS::Dipole &d, double Kmax){
   Vec4D p1,p2;
-  if(d.Type()==dipoletype::initial){
-    p1 = d.GetBornMomenta(0);
-    p2 = d.GetBornMomenta(1);
-  }
-  else if(d.Type()==dipoletype::final){
-    p1 = d.GetBornMomenta(0);
-    p2 = d.GetBornMomenta(1);
-  }
-  else if(d.Type()==dipoletype::ifi){
-    p1 = d.GetBornMomenta(0);
-    p2 = d.GetBornMomenta(1);
-  }
-  else{
-    THROW(fatal_error, "Unknown Dipole Type");
-  }
+  d.LegsBeforeRadiation(p1, p2);
   const double m1 = d.GetMass(0);
   const double m2 = d.GetMass(1);
   m_m1 = m1;

@@ -115,6 +115,21 @@ namespace YFS{
         Vec4D Sum();
         METOOLS::DivArrD BVV_full_eps(const ATOOLS::Vec4D p1, const ATOOLS::Vec4D p2, double Kmax, int mode);
         inline int size() {return m_momenta.size();}
+        //! The legs as they were BEFORE this dipole radiated, which is what
+        //! enters the form factor. DipoleSet maintains that invariant: the
+        //! initial-initial dipole is built with the process born momenta, the
+        //! final-state dipoles after ISR and before FSR, the initial-final
+        //! ones with born initial legs and post-ISR final legs.
+        //!
+        //! Use this rather than choosing between born / current / new at the
+        //! call site. Doing that by hand gave five different conventions
+        //! across the form factors, including counterparts like BVV_full and
+        //! BVV_full_eps - the same quantity in massive- and dim-reg -
+        //! disagreeing about which momenta they were evaluated on.
+        inline void LegsBeforeRadiation(Vec4D &p1, Vec4D &p2) const {
+          p1 = m_bornmomenta[0];
+          p2 = m_bornmomenta[1];
+        }
         inline Vec4D GetBornMomenta(int i) { return m_bornmomenta[i];}
         inline Vec4D_Vector GetBornMomenta() { return m_bornmomenta;}
         inline Vec4D GetMomenta(int i) { return m_momenta[i];}
