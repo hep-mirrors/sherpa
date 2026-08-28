@@ -569,7 +569,6 @@ void FSR::HidePhotons() {
   m_photons = ph;
   // m_photonspreboost = phboost;
   p_dipole->AddPhotonsToDipole(m_photons);
-  p_dipole->SetSudakovs(m_yini,m_zini);
 }
 
 void FSR::HidePhotons(Vec4D_Vector &k){
