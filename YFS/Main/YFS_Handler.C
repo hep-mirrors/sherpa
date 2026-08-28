@@ -14,7 +14,7 @@ YFS_Handler::YFS_Handler()
 {
   if(Mode()!=YFS::yfsmode::off){
     p_dipoles = new Define_Dipoles();
-    p_coulomb = new Coulomb();
+    p_coulomb = new Coulomb(m_coulomb);
     p_fsr = new FSR();
     p_debug = new Debug();
     p_yfsFormFact = new YFS::YFS_Form_Factor();

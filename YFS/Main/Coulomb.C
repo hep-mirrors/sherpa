@@ -9,7 +9,8 @@
 using namespace MODEL;
 using namespace YFS;
 
-Coulomb::Coulomb(){
+Coulomb::Coulomb(bool enabled) : m_coulomb(enabled) {
+  m_s = sqr(rpa->gen.Ecms());
   m_MW = Flavour(kf_Wplus).Mass();
   m_GW = Flavour(kf_Wplus).Width();
   m_cms = rpa->gen.Ecms();
