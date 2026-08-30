@@ -19,6 +19,8 @@ public:
                     double Mas1, double Mas2, double Kmax, double MasPhot, int mode);
     double BVR_full(ATOOLS::Vec4D p1, ATOOLS::Vec4D p2,  double Kmax, double MasPhot, int mode);
     double BVR_full(YFS::Dipole &d, double omega);
+    double BVR_decay(double M, double ml, double ks);
+
     DivArrD BVR_full_eps(YFS::Dipole &d,  double Kmax, int mode);
     double BVR_full(ATOOLS::Vec4D p1, ATOOLS::Vec4D p2, double omega);
     double BVR_cru(double p1p2, const Leg &l1, const Leg &l2, double Kmax);

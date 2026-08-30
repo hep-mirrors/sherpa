@@ -1,4 +1,5 @@
 #include "YFS/Main/Define_Dipoles.H"
+#include "ATOOLS/Math/Poincare.H"
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Phys/Blob.H"
@@ -8,6 +9,7 @@
 #include "MODEL/Main/Single_Vertex.H"
 #include "ATOOLS/Org/CXXFLAGS_PACKAGES.H"
 #include <algorithm>
+#include <iomanip>
 #include <limits>
 #include <set>
 #ifdef USING__LOOPTOOLS
@@ -26,6 +28,14 @@ Define_Dipoles::Define_Dipoles() {
 }
 
 Define_Dipoles::~Define_Dipoles() {
+  if (m_pole_tried > 0)
+    msg_Info() << "YFS WW pole expansion: " << m_pole_built << " / "
+               << m_pole_tried << " events inside the leading-pole window ("
+               << (100.*m_pole_built)/m_pole_tried << " %); the rest used the "
+               << "flat four-fermion dipoles.\n";
+  if (m_recoil_tried > 0)
+    msg_Info() << "YFS WW production recoil: " << m_recoil_massfail << " / "
+               << m_recoil_tried << " rejected on the W-mass check.\n";
   if(p_yfsFormFact) delete p_yfsFormFact;
 }
 
@@ -74,6 +84,56 @@ void Define_Dipoles::MakeDipoles(ATOOLS::Flavour_Vector const &fl, ATOOLS::Vec4D
                      return ResonanceWidthDistance(const_cast<YFS::Dipole&>(D));
                    });
   Dipole_FF(fl, mom);
+}
+
+bool Define_Dipoles::MakeDipolesPole(ATOOLS::Flavour_Vector const &fl,
+                                     ATOOLS::Vec4D_Vector const &mom,
+                                     ATOOLS::Vec4D_Vector const &born) {
+  if (m_wwscheme != wwscheme::pole) return false;
+  if (!HasFSR()) return false;
+  const bool built(m_set.BuildPole(fl, mom, born, m_alpha, m_wwonshell != 0,
+                                   m_resonace_max, m_wwpoleemission != 0));
+  ++m_pole_tried;
+  if (built) ++m_pole_built;
+  m_pole_active = built;
+  return built;
+}
+
+
+bool Define_Dipoles::ApplyPoleRecoil(ATOOLS::Vec4D_Vector &plab) {
+  if (!m_pole_active) return false;
+  ++m_recoil_tried;
+  YFS::DipoleView ff(m_set.FF());
+  if (ff.size() != 1) return false;
+  Dipole &D(ff[0]);
+  const DipoleSet::WWLegs &w(m_set.WW());
+
+  // BuildPole adds the pair as (W-, W+), so leg 0 carries w.lm/w.nm and leg 1
+  // carries w.lp/w.np.
+  const Vec4D oldw[2] = {D.GetMomenta(0),    D.GetMomenta(1)};
+  const Vec4D neww[2] = {D.GetNewMomenta(0), D.GetNewMomenta(1)};
+  const std::size_t dau[2][2] = {{w.lm, w.nm}, {w.lp, w.np}};
+
+  for (int i(0); i < 2; ++i) {
+    const double m2o(oldw[i].Abs2()), m2n(neww[i].Abs2());
+    if (m2o <= 0. || m2n <= 0.) return false;
+    if (!IsEqual(sqrt(m2o), sqrt(m2n), 1e-6)) {
+      ++m_recoil_massfail;
+      if (m_recoil_massfail < 4)
+        msg_Error() << METHOD << ": W mass not preserved by the dipole recoil, "
+                    << sqrt(m2o) << " -> " << sqrt(m2n)
+                    << " GeV; rejecting the event.\n";
+      return false;
+    }
+    Poincare toRest(oldw[i]), fromNew(neww[i]);
+    for (int j(0); j < 2; ++j) {
+      Vec4D p(plab[dau[i][j]]);
+      toRest.Boost(p);        // into the pre-emission W rest frame
+      fromNew.BoostBack(p);   // out along the post-emission W
+      plab[dau[i][j]] = p;
+    }
+  }
+  return true;
 }
 
 
@@ -274,47 +334,174 @@ double Define_Dipoles::FormFactorSum(){
   // if(!m_hidephotons){
       for(auto &D: m_set.FF()){
         form+= D.ChargeNorm()*p_yfsFormFact->BVR_full(D, sqrt(D.Sprime())/2); 
+        form-= CoulombSubtraction(D);
       }
     // }
-  if(m_ifisub==1){
-    // IFForFac = Btilda + t-channel virtual, i.e. KKMC's TForFac, and
-    // ChargeNorm() = -QiQj*thetaij reproduces KKMC's +/- pattern across its
-    // four TForFac calls (KKceex.cxx:315). +ChargeNorm is also what
-    // TFormFactor() and every CalculateVirtualSub*() use on these same
-    // dipoles, so at NLO the exponentiated IF form factor and the IF virtual
-    // subtracted from the one-loop ME now carry the same sign.
-    //
-    // omega is sqrt(s)/2 -- one cutoff shared by all four pairs, as in KKMC,
-    // and the same maximal choice the II term above makes. It was
-    // sqrt(D.Sprime())/2, which for an initial-final pair is
-    // (s/2)(1 -+ beta cos theta) and so is ANGLE-DEPENDENT: a soft cutoff odd
-    // in cos(theta) manufactures A_FB by construction. That, not the
-    // interference, was supplying essentially all of Sherpa's asymmetry.
-    // Measured standalone at 0.7 GeV, |cos| < 0.55 (YFS/Tools/IFI_Budget.C):
-    //
-    //   assembly                              A_FB(mu+)
-    //   -ChargeNorm, omega = sqrt(Sprime)/2    -0.01614   <- was live here
-    //   +ChargeNorm, omega = sqrt(Sprime)/2    +0.01614
-    //   +ChargeNorm, omega = sqrt(s)/2         -0.00056   <- this line
-    //   KKMC CEEX2 / BabaYaga measured         -0.0103 / -0.0110
-    //   Sherpa measured, before this change    -0.01605
-    //
-    // The -0.01614 reproduces the measured -0.01605, i.e. the whole of the old
-    // asymmetry came from this one line, and it was a cutoff artifact whose
-    // sign had been flipped to make it land near KKMC.
-    //
-    // A_FB is exactly linear in log(omega) and crosses KKMC's -0.0103 at
-    // omega ~ 56 MeV, which is not a scale in the problem: no common cutoff is
-    // a prediction. The remaining gap to KKMC is the real interference, which
-    // KKMC gets from summing over photon partitions in the CEEX amplitude and
-    // which Sherpa can only get on the emission side -- see RealIFWeight() and
-    // the IFI_Real switch.
-    for(auto &D: m_set.IF()){
-      form += D.ChargeNorm()*p_yfsFormFact->IFForFac(D, IFIOmega());
-    }
+  form += FormFactorSumIF();
+  form += FormFactorSumDecay();
+  return form;
+}
+
+// The decay-stage term of the pole expansion: one (W, charged lepton) dipole
+// per W, each evaluated at half that W's own invariant mass. Empty in the flat
+// scheme, where there is no decay stage.
+//
+// The cutoff is sqrt(D.Sprime())/2 -- the maximum photon energy in the decaying
+// W's rest frame -- which is what makes this reproduce eq (12) of
+// hep-ph/0302065 rather than an arbitrary fraction of it. The production stage
+// above uses sqrt(s)/2 for the same reason: each stage's soft integral runs to
+// its own kinematic limit, and the two stages are separately charge conserving,
+// so each is separately free of the photon mass.
+double Define_Dipoles::CoulombSubtraction(YFS::Dipole &D){
+  // eq (9) of hep-ph/9606429. The YFS virtual B for a pair of massive charged
+  // particles contains the Coulomb singularity: as their relative velocity
+  // beta -> 0 it diverges like pi/(4 beta), so exp(2a ReB) is unbounded near
+  // threshold. That regime is not something the exponentiation can describe --
+  // it is resummed separately, here by YFS::Coulomb using the width-regulated
+  // Fadin-Khoze-Martin-Stirling form -- so the singular piece is removed from
+  // the exponent to avoid both the divergence and the double counting:
+  //
+  //   B'(beta) = B(beta) - (pi/4beta) theta(beta_t - beta)
+  //
+  // The exponent this sum builds is 2a ReB + 2a Btilde, so the amount to
+  // remove is 2a * pi/(4 beta) = a pi / (2 beta).
+  //
+  // beta_t = 0.382 (YFS: WW_BETAT) is the paper's transition velocity, fixed by
+  // requiring the O(a^2) Coulomb term (pi a/beta)^2/12 to stay below 0.03%
+  // above it. Above beta_t the Coulomb series is an ordinary part of the
+  // perturbative expansion and needs no special treatment.
+  //
+  // Only for a pair of massive charged vector bosons, i.e. only in the pole
+  // expansion: in the flat scheme the final-state pair is light fermions, this
+  // regime never arises, and subtracting would remove something real.
+  if (m_wwscheme != wwscheme::pole) return 0.;
+  if (!D.GetFlav(0).IsVector() || !D.GetFlav(1).IsVector()) return 0.;
+  const double sp(D.Sprime());
+  if (sp <= 0.) return 0.;
+  const double m1s(sqr(D.GetMass(0))), m2s(sqr(D.GetMass(1)));
+  const double arg(1. - 2.*(m1s + m2s)/sp + sqr((m1s - m2s)/sp));
+  if (arg <= 0.) return 0.;
+  const double beta(sqrt(arg));
+  if (beta >= m_betatWW || beta <= 0.) return 0.;
+  return m_alpha*M_PI/(2.*beta);
+}
+
+
+double Define_Dipoles::FormFactorSumDecay(){
+  double form = 0;
+  for(auto &D: m_set.Decay()){
+    // Leg 0 is the resonance, leg 1 its charged daughter -- BuildPole adds
+    // them in that order.
+    const double M(D.GetMass(0)), ml(D.GetMass(1));
+    // Soft cutoff: the largest photon energy this decay can produce in the
+    // resonance rest frame, (M^2 - ml^2)/2M. The whole soft integral then sits
+    // in the exponent, matching what the production stage does with sqrt(s)/2.
+    if (M <= ml) continue;
+    const double ks((M*M - ml*ml)/(2.*M));
+    form += fabs(D.m_QiQj)*p_yfsFormFact->BVR_decay(M, ml, ks);
   }
   return form;
 }
+
+void Define_Dipoles::DumpDipoles(){
+  static bool done_pole(false), done_flat(false);
+  bool &done(m_pole_active ? done_pole : done_flat);
+  if (done) return;
+  done = true;
+
+  auto line = [this](YFS::Dipole &D, const std::string &type, double omega) {
+    double y(0.);
+    if (type == "DEC") {
+      const double M(D.GetMass(0)), ml(D.GetMass(1));
+      if (M > ml) y = fabs(D.m_QiQj)*p_yfsFormFact->BVR_decay(M, ml, omega);
+    } else if (type == "IF") {
+      y = m_ifisub == 1
+              ? D.ChargeNorm()*p_yfsFormFact->IFForFac(D, IFIOmega()) : 0.;
+    } else {
+      y = D.ChargeNorm()*p_yfsFormFact->BVR_full(D, omega);
+    }
+    msg_Info() << "  " << std::setw(3) << type
+               << "  (" << D.GetFlav(0) << "," << D.GetFlav(1) << ")"
+               << "  legs=(" << D.Left() << "," << D.Right() << ")"
+               << "  QiQj=" << D.m_QiQj
+               << "  ChargeNorm=" << D.ChargeNorm()
+               << "  decay=" << (D.IsDecayAllowed() ? "yes" : "no ")
+               << "  radiates=" << (type == "FF" ? (D.IsResonance() ? "yes" : "no ") : "n/a")
+               << "  omega=" << omega << " GeV"
+               << "  Y=" << y
+               << std::endl;
+  };
+
+  msg_Info() << "YFS dipole set (YFS: Dump_Dipoles), " << m_set.size()
+             << " dipoles"
+             << (m_wwscheme == wwscheme::pole
+                     ? (m_pole_active ? " [pole applied]" : " [fell back to flat]")
+                     : "")
+             << ":" << std::endl;
+  msg_Info() << "  scheme: " << m_wwscheme
+             << (m_wwscheme == wwscheme::pole && m_wwonshell ? " (W's on shell)" : "")
+             << std::endl;
+  for (auto &D : m_set.ByType(dipoletype::initial)) line(D, "II", sqrt(m_s)/2.);
+  for (auto &D : m_set.FF())                        line(D, "FF", sqrt(D.Sprime())/2.);
+  for (auto &D : m_set.Decay()) {
+    const double M(D.GetMass(0)), ml(D.GetMass(1));
+    line(D, "DEC", M > ml ? (M*M - ml*ml)/(2.*M) : 0.);
+    msg_Info() << "        (M=" << M << " GeV, m_l=" << ml << " GeV)"
+               << std::endl;
+  }
+  // IF dipoles only contribute to the form factor when IFI_Sub is on, so say
+  // so rather than printing a cutoff that is not being used.
+  for (auto &D : m_set.IF())
+    line(D, "IF", m_ifisub == 1 ? IFIOmega() : 0.);
+  if (m_set.FF().empty())
+    msg_Info() << "  (no final-state dipoles: fewer than two charged out-legs)"
+               << std::endl;
+  msg_Info() << "  sum Y = " << FormFactorSum()
+             << "   form factor = " << FormFactor() << std::endl;
+}
+
+
+double Define_Dipoles::FormFactorSumIF(){
+  if(m_ifisub!=1) return 0.;
+  double form = 0;
+  // IFForFac = Btilda + t-channel virtual, i.e. KKMC's TForFac, and
+  // ChargeNorm() = -QiQj*thetaij reproduces KKMC's +/- pattern across its
+  // four TForFac calls (KKceex.cxx:315). +ChargeNorm is also what
+  // TFormFactor() and every CalculateVirtualSub*() use on these same
+  // dipoles, so at NLO the exponentiated IF form factor and the IF virtual
+  // subtracted from the one-loop ME now carry the same sign.
+  //
+  // omega is sqrt(s)/2 -- one cutoff shared by all four pairs, as in KKMC,
+  // and the same maximal choice the II term above makes. It was
+  // sqrt(D.Sprime())/2, which for an initial-final pair is
+  // (s/2)(1 -+ beta cos theta) and so is ANGLE-DEPENDENT: a soft cutoff odd
+  // in cos(theta) manufactures A_FB by construction. That, not the
+  // interference, was supplying essentially all of Sherpa's asymmetry.
+  // Measured standalone at 0.7 GeV, |cos| < 0.55 (YFS/Tools/IFI_Budget.C):
+  //
+  //   assembly                              A_FB(mu+)
+  //   -ChargeNorm, omega = sqrt(Sprime)/2    -0.01614   <- was live here
+  //   +ChargeNorm, omega = sqrt(Sprime)/2    +0.01614
+  //   +ChargeNorm, omega = sqrt(s)/2         -0.00056   <- this line
+  //   KKMC CEEX2 / BabaYaga measured         -0.0103 / -0.0110
+  //   Sherpa measured, before this change    -0.01605
+  //
+  // The -0.01614 reproduces the measured -0.01605, i.e. the whole of the old
+  // asymmetry came from this one line, and it was a cutoff artifact whose
+  // sign had been flipped to make it land near KKMC.
+  //
+  // A_FB is exactly linear in log(omega) and crosses KKMC's -0.0103 at
+  // omega ~ 56 MeV, which is not a scale in the problem: no common cutoff is
+  // a prediction. The remaining gap to KKMC is the real interference, which
+  // KKMC gets from summing over photon partitions in the CEEX amplitude and
+  // which Sherpa can only get on the emission side -- see RealIFWeight() and
+  // the IFI_Real switch.
+  for(auto &D: m_set.IF()){
+    form += D.ChargeNorm()*p_yfsFormFact->IFForFac(D, IFIOmega());
+  }
+  return form;
+}
+
 
 double Define_Dipoles::IFIOmega() const {
   // Soft cutoff for the IF form factor. It must be ONE scale for all four

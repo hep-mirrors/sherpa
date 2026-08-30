@@ -60,6 +60,23 @@ void YFS_Base::RegisterDefaults(){
   s["HIDE_PHOTONS"].SetDefault(1);
   s["FULL_FORM"].SetDefault(1);
   s["WW_FORM"].SetDefault(0);
+  // Which YFS scheme to use for a W+W- -> 4f final state.
+  //   flat : exponentiate the four external fermions. Correct for photons
+  //          softer than Gamma_W, where the W lives too briefly to be resolved.
+  //   pole : exponentiate the pole expansion -- a production stage with the
+  //          W's as charged emitters and a decay stage per W. Correct for
+  //          photons harder than Gamma_W. This is the YFSWW3 picture.
+  s["WW_Scheme"].SetDefault(wwscheme::flat);
+  // Put the W's exactly on M_W before building the pole-expansion dipoles,
+  // rather than letting them carry the invariant mass of their own decay
+  // products. The leading-pole approximation strictly wants on shell; the
+  // difference is an LPA ambiguity worth measuring rather than choosing.
+  s["WW_OnShell"].SetDefault(0);
+  // Whether the pole expansion also drives photon emission, or only the form
+  // factor. With it off the production-stage W pair does not radiate, so the
+  // pole scheme changes the exponent alone and the two halves of the scheme
+  // can be measured separately. Only read when WW_Scheme is pole.
+  s["WW_Pole_Emission"].SetDefault(1);
   s["WW_BETAT"].SetDefault(0.382);
   s["CHECK_MASS_REG"].SetDefault(0);
   s["CHECK_POLES"].SetDefault(0);
@@ -90,6 +107,8 @@ void YFS_Base::RegisterDefaults(){
   s["CLUSTERING_THRESHOLD"].SetDefault(10);
   s["TChannel"].SetDefault(0);
   s["NLO_Weight_Breakdown"].SetDefault(0);
+  s["Ladder_Weights"].SetDefault(0);
+  s["Dump_Dipoles"].SetDefault(0);
   s["CHECK_INVARIANTS"].SetDefault(0);
   s["No_Born"].SetDefault(0);
   s["No_Sub"].SetDefault(0);
@@ -158,6 +177,9 @@ void YFS_Base::RegisterSettings(){
   m_hidephotons=s["HIDE_PHOTONS"].Get<int>();
   m_fullform = s["FULL_FORM"].Get<int>();
   m_formWW = s["WW_FORM"].Get<int>();
+  m_wwscheme = s["WW_Scheme"].Get<wwscheme::code>();
+  m_wwonshell = s["WW_OnShell"].Get<int>();
+  m_wwpoleemission = s["WW_Pole_Emission"].Get<int>();
   m_betatWW = s["WW_BETAT"].Get<double>();
   m_check_mass_reg = s["CHECK_MASS_REG"].Get<int>();
   m_check_poles = s["CHECK_POLES"].Get<int>();
@@ -194,6 +216,8 @@ void YFS_Base::RegisterSettings(){
   m_coll_real = s["Collinear_Real"].Get<bool>();
   m_resonace_max = s["CLUSTERING_THRESHOLD"].Get<double>();
   m_nlo_weight_breakdown = s["NLO_Weight_Breakdown"].Get<int>();
+  m_ladder_weights = s["Ladder_Weights"].Get<int>();
+  m_dump_dipoles = s["Dump_Dipoles"].Get<int>();
   m_check_invariants = s["CHECK_INVARIANTS"].Get<bool>();
   m_no_born_setting = s["No_Born"].Get<int>();
   m_no_born = m_no_born_setting;
@@ -244,6 +268,26 @@ void YFS_Base::RegisterSettings(){
   if (m_use_model_alpha) m_rescale_alpha = 1.;//m_rescale_alpha = alpha0/m_alpha;
   else m_rescale_alpha = m_alpha / s_model->ScalarConstant("alpha_QED");
   m_alpi = m_alpha/M_PI;
+}
+
+std::istream &YFS::operator>>(std::istream &str, wwscheme::code &sc)
+{
+  std::string tag;
+  str>>tag;
+  sc=wwscheme::flat;
+  if      (tag.find("Pole")!=std::string::npos) sc=wwscheme::pole;
+  else if (tag.find("pole")!=std::string::npos) sc=wwscheme::pole;
+  else if (tag.find("1")!=std::string::npos)    sc=wwscheme::pole;
+  else if (tag.find("Flat")!=std::string::npos) sc=wwscheme::flat;
+  else if (tag.find("flat")!=std::string::npos) sc=wwscheme::flat;
+  else if (tag.find("0")!=std::string::npos)    sc=wwscheme::flat;
+  else THROW(fatal_error, "Unknown YFS WW_Scheme '"+tag+"'; use flat or pole.");
+  return str;
+}
+
+std::ostream &YFS::operator<<(std::ostream &str, const wwscheme::code &sc)
+{
+  return str<<(sc==wwscheme::pole?"pole":"flat");
 }
 
 std::istream &YFS::operator>>(std::istream &str,submode::code &sub)
