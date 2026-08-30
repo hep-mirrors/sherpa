@@ -139,6 +139,7 @@ namespace YFS{
         inline Vec4D GetOldMomenta(int i) { return m_oldmomenta[i];}
         inline Vec4D GetEikMomenta(int i) { return m_eikmomentum[i];}
         const inline double GetMass(int i) { return m_masses[i];}
+        inline void SetMass(int i, double m) { m_masses[i] = m; }
         inline Flavour GetFlav(int i) const { return m_flavs[i];}
         inline Flavour_Vector GetFlavors() const { return m_flavs;}
         inline Vec4D_Vector GetPhotons() const { return m_dipolePhotons;}

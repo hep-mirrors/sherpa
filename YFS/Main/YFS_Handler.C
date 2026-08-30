@@ -280,10 +280,12 @@ void YFS_Handler::MakeCEEX() {
 void YFS_Handler::CalculateWWForm() {
   if (m_formWW) {
     MakeWWVecs(m_bornMomenta);
-    m_ww_formfact = p_yfsFormFact->BVV_WW(m_plab, m_ISRPhotons, m_Wp, m_Wm, 1e-60, sqrt(m_sp) / 2.);
-    if (m_ww_formfact < 0) PRINT_VAR(m_ww_formfact);
-    if (IsBad(m_formfactor)) {
-      THROW(fatal_error, "YFS Form Factor is NaN");
+    m_ww_formfact = p_yfsFormFact->BVV_WW(m_plab, m_ISRPhotons, m_Wp, m_Wm,
+                                          m_photonMass, sqrt(m_sp) / 2.);
+    if (IsBad(m_ww_formfact) || m_ww_formfact < 0) {
+      msg_Error() << METHOD << ": BVV_WW returned " << m_ww_formfact
+                  << "; setting it to 1. Use WW_Scheme: pole instead.\n";
+      m_ww_formfact = 1.;
     }
   }
 }
@@ -408,6 +410,14 @@ bool YFS_Handler::CalculateFSR(Vec4D_Vector & p) {
     ifmom[1] = m_bornMomenta[1];
     p_dipoles->MakeDipolesIF(m_flavs, ifmom, ifmom);
   }
+  {
+    Vec4D_Vector polemom(m_plab);
+    if (polemom.size() > 1) {
+      polemom[0] = m_bornMomenta[0];
+      polemom[1] = m_bornMomenta[1];
+    }
+    p_dipoles->MakeDipolesPole(m_flavs, polemom, polemom);
+  }
   YFS::DipoleView ffdip(p_dipoles->GetDipoleFF());
   for (auto Dip = ffdip.begin(); Dip != ffdip.end(); ++Dip) {
     if(!Dip->IsResonance()) continue;
@@ -434,6 +444,18 @@ bool YFS_Handler::CalculateFSR(Vec4D_Vector & p) {
     m_FSRPhotons.clear();
     for (const YFS::Photon &k : res.photons) m_FSRPhotons.push_back(k.K());
     m_fsrWeight *= res.weight;
+    if (p_dipoles->PoleActive()) {
+      // The radiating dipole is the W pair, and the W's are not entries in the
+      // event record -- Left()/Right() point at the charged leptons they
+      // decayed to. Writing the new W momenta there would put an 80 GeV
+      // momentum in the muon's slot. Carry the recoil down to the four
+      // fermions instead.
+      if (!p_dipoles->ApplyPoleRecoil(m_plab)) {
+        Reset();
+        return false;
+      }
+      continue;
+    }
     m_plab[Dip->Left()]  =  Dip->GetNewMomenta(0);
     m_plab[Dip->Right()] =  Dip->GetNewMomenta(1);
     if(!IsEqual(m_flavs[Dip->Left()].Mass(), m_plab[Dip->Left()].Mass(),1e-5)){
@@ -617,6 +639,7 @@ double YFS_Handler::CalculateNLO(){
 
 
 void YFS_Handler::GenerateWeight() {
+  if (m_dump_dipoles) p_dipoles->DumpDipoles();
   AddFormFactor();
   if (m_mode == yfsmode::isrfsr) m_yfsweight = m_isrWeight * m_fsrWeight;
   else if (m_mode == yfsmode::fsr) m_yfsweight = m_fsrWeight;
@@ -689,6 +712,37 @@ void YFS_Handler::BuildNamedWeights(double w_lo, double w_full) {
   // YFSNLO  — Real + Virtual only (NLO denominator).
   // YFSNNLO — Real + Virtual + RealVirtual + RealReal (full NNLO denominator).
   m_nlo_weightsmap = Weights_Map{1.0};
+  Weights wyfs{1.0};
+  bool any(false);
+
+  {
+    std::vector<std::string> names;
+    const bool hasnlo (p_nlo && p_nlo->HasNLO());
+    const bool hasnnlo(p_nlo && p_nlo->HasNNLO());
+    if (m_nlotype != nlo_type::born && (hasnlo || hasnnlo)) {
+      if (hasnlo)  names.push_back("LO"), names.push_back("NLO");
+      if (hasnnlo) names.push_back("NNLO");
+      if (m_nlo_weight_breakdown) {
+        if (hasnlo)
+          for (const char *n : {"Real","Virtual","BR","BV","EEX","NLO_1g",
+                                "NLO_2g","NLO_FixedOrder"})
+            names.push_back(n);
+        if (hasnnlo)
+          for (const char *n : {"RealVirtual","RealReal","NLO+RR","NLO+RV",
+                                "NNLO_1g","NNLO_2g","NNLO_FixedOrder",
+                                "VV_EEX","NNLO_VV","NNLO_VV_up","NNLO_VV_down"})
+            names.push_back(n);
+      }
+    }
+    if (m_ladder_weights) {
+      if (m_coulomb && p_coulomb) names.push_back("NoCoulomb");
+      if (m_ifisub == 1 && m_fullform >= 1 && m_tchannel == 0 &&
+          FixedOrder() != fixed_order::nlo && p_dipoles)
+        names.push_back("NoIFI");
+    }
+    for (const std::string &n : names) wyfs[n] = 1.;
+    if (!names.empty()) any = true;
+  }
   if (m_nlo_current && m_nlotype != nlo_type::born && !IsZero(m_real) &&
       (p_nlo->HasNLO() || p_nlo->HasNNLO())) {
     auto make_ratio = [this](double term, double denom) -> double {
@@ -698,13 +752,11 @@ void YFS_Handler::BuildNamedWeights(double w_lo, double w_full) {
       return term / denom;
     };
 
-    Weights wyfsnlo{1.0};
-
-    auto emit = [this, &wyfsnlo](const std::string &name, double value) {
+    auto emit = [this, &wyfs](const std::string &name, double value) {
       if (!m_nlo_weight_breakdown &&
           name != "LO" && name != "NLO" && name != "NNLO")
         return;
-      wyfsnlo[name] = value;
+      if (!IsBad(value)) wyfs[name] = value;
     };
 
     const bool have_fixed_order_ff =
@@ -729,7 +781,7 @@ void YFS_Handler::BuildNamedWeights(double w_lo, double w_full) {
         // LO = (Born-level YFS weight) / (full weight), so that
         // nominal * YFS.LO == w_lo identically. Algebraically 1/m_real, but
         // built from the two weights themselves.
-        // if (!IsZero(w_full)) emit("LO", w_lo/w_full);
+        if (!IsZero(w_full)) emit("LO", w_lo/w_full);
         emit("EEX", ratio(m_eex, m_real));
         // Matching truncated to a fixed real-photon multiplicity, to see the
         // result "as if" only the 1 or 2 hardest photons were used in the
@@ -834,13 +886,34 @@ void YFS_Handler::BuildNamedWeights(double w_lo, double w_full) {
       }
     }
 
-    // Emit forward/backward variants of each named contribution so they flow
-    // through the normal multiweight machinery (Single_Process multiplies in
-    // the universal ME x PDF x flux factors). Must run before the assignment.
-    if (p_fb) p_fb->SplitWeights(wyfsnlo, m_plab, m_flavs);
-
-    m_nlo_weightsmap["YFS"] = wyfsnlo;
+    if (p_fb) p_fb->SplitWeights(wyfs, m_plab, m_flavs);
+    any = true;
   }
+
+  if (BuildLadderWeights(wyfs)) any = true;
+
+  if (any) m_nlo_weightsmap["YFS"] = wyfs;
+}
+
+
+bool YFS_Handler::BuildLadderWeights(ATOOLS::Weights &w) {
+  if (!m_ladder_weights) return false;
+  // Names are registered by BuildNamedWeights; this fills values only. An
+  // event that cannot supply one leaves it at 1.0.
+  bool any(false);
+
+  if (m_coulomb && p_coulomb) {
+    const double wc(p_coulomb->GetWeight());
+    if (!IsZero(wc) && !IsBad(wc)) { w["NoCoulomb"] = 1./wc; any = true; }
+  }
+
+  if (m_ifisub == 1 && m_fullform >= 1 && m_tchannel == 0 &&
+      FixedOrder() != fixed_order::nlo && p_dipoles) {
+    const double fif(p_dipoles->FormFactorSumIF());
+    if (!IsBad(fif)) { w["NoIFI"] = exp(-fif); any = true; }
+  }
+
+  return any;
 }
 
 
