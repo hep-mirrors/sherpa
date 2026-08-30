@@ -147,6 +147,40 @@ namespace YFS {
       double CalculateVirtualSubTchannelEps();
       double FormFactor();
       double FormFactorSum();
+      //! Just the initial-final term of FormFactorSum(), i.e. the piece
+      //! IFI_Sub=1 adds and IFI_Sub=0 leaves out. Zero when IFI_Sub is off.
+      //! Lets the IFI rung be undone exactly as exp(-FormFactorSumIF())
+      //! instead of costing a separate production run.
+      double FormFactorSumIF();
+      //! The decay-stage term of the WW pole expansion. Zero in the flat
+      //! scheme.
+      double FormFactorSumDecay();
+      //! The Coulomb singularity removed from a massive-vector-pair dipole's
+      //! form factor, eq (9) of hep-ph/9606429. Zero unless the pole
+      //! expansion is active and the pair is slow.
+      double CoulombSubtraction(YFS::Dipole &D);
+      //! Replace the final-state and interference dipoles with the WW pole
+      //! expansion. Returns whether it applied.
+      //! How often the pole expansion was attempted and how often the event
+      //! was inside the leading-pole window. Reported at the end of the run.
+      long m_pole_tried = 0, m_pole_built = 0;
+      bool m_pole_active = false;
+      long m_recoil_tried = 0, m_recoil_massfail = 0;
+      //! Whether the pole expansion is live for the current event.
+      inline bool PoleActive() const { return m_pole_active; }
+      //! Carry the production-stage recoil from the W's down to the four
+      //! fermions. Must be called after the W-pair dipole has radiated and
+      //! instead of writing its new momenta straight into the event, since the
+      //! W's are not entries in the event record.
+      bool ApplyPoleRecoil(ATOOLS::Vec4D_Vector &plab);
+      bool MakeDipolesPole(ATOOLS::Flavour_Vector const &fl,
+                           ATOOLS::Vec4D_Vector const &mom,
+                           ATOOLS::Vec4D_Vector const &born);
+      //! One-shot dump of the dipole set as it was actually constructed:
+      //! flavours, charges, which pairs radiate, and the soft cutoff each
+      //! form factor uses. Prints on the first call and never again. Gated by
+      //! the caller on YFS: Dump_Dipoles.
+      void DumpDipoles();
       double IFIOmega() const;
       double RealIFWeight(const ATOOLS::Vec4D_Vector &photons);
       // YFS_Base is inherited privately, so expose what the handler reports.

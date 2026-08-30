@@ -27,6 +27,15 @@ struct yfsmode {
   };
 };
 
+// How a W+W- -> 4f final state is exponentiated. See the WW_Scheme comment in
+// YFS_Base::RegisterDefaults.
+struct wwscheme {
+  enum code {
+    flat = 0,   // the four external fermions are the emitters
+    pole = 1    // production stage (W's emit) + one decay stage per W
+  };
+};
+
 struct wgt {
   enum code {
     off       = 0,
@@ -49,6 +58,8 @@ struct fixed_order {
 
 
 
+std::istream &operator>>(std::istream &str, wwscheme::code &sm);
+std::ostream &operator<<(std::ostream &str, const wwscheme::code &sm);
 std::istream &operator>>(std::istream &str, submode::code &sm);
 std::istream &operator>>(std::istream &str, yfsmode::code &sm);
 std::istream &operator>>(std::istream &str, wgt::code &sm);
@@ -116,6 +127,8 @@ public:
   double m_rv_me_max_ratio;
 
   int  m_order, m_betaorder, m_fullform, m_formWW, m_ifisub;
+  wwscheme::code m_wwscheme;
+  int  m_wwonshell, m_wwpoleemission;
   // Emission-side IFI: reweight generated photons by the IF radiation function
   // and drop the IF form factor's cutoff to m_ifiomega. Both or neither.
   int    m_ifireal;
@@ -156,6 +169,8 @@ public:
   // headline YFS.LO / YFS.NLO / YFS.NNLO are emitted. Set the card option
   // YFS: NLO_Weight_Breakdown: 1 to get the individual contributions back.
   int m_nlo_weight_breakdown;
+  int m_ladder_weights;
+  int m_dump_dipoles;
   //! YFS: CHECK_INVARIANTS - run YFS_Handler::CheckInvariants each event.
   bool m_check_invariants;
   int m_no_born, m_check_real_sub, m_check_rr_sub, m_no_subtraction, m_tchannel, m_check_virt_born, m_noflux, m_massless_sub;

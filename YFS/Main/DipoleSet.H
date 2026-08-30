@@ -74,6 +74,34 @@ namespace YFS {
                     double alpha,
                     const ResonanceScore &score = ResonanceScore());
 
+    // -- pole expansion (WW) ------------------------------------------------
+    // The four-fermion final state of e+e- -> W+W- -> 4f, resolved into the two
+    // W's and the charged lepton each one decayed to. Reconstructed by pairing
+    // each charged lepton with its own partner neutrino (|kf| differing by one,
+    // opposite sign), not by summing charges: the charge heuristic cannot tell
+    // which neutrino belongs to which W once both W's decay to the same
+    // generation, and it says nothing about the lepton/W pairing the decay
+    // dipoles need.
+    struct WWLegs {
+      bool ok = false;                  //!< false => not a W+W- -> 4f state
+      ATOOLS::Vec4D wm, wp;             //!< W-, W+ four-momenta (off-shell)
+      std::size_t lm = 0, lp = 0;       //!< positions of the two charged leptons
+      std::size_t nm = 0, np = 0;       //!< positions of the two neutrinos
+    };
+
+    static WWLegs FindWW(const ATOOLS::Flavour_Vector &flavs,
+                         const ATOOLS::Vec4D_Vector   &momenta);
+
+    bool BuildPole(const ATOOLS::Flavour_Vector &flavs,
+                   const ATOOLS::Vec4D_Vector   &momenta,
+                   const ATOOLS::Vec4D_Vector   &born,
+                   double alpha, bool onshell, double maxdist,
+                   bool emission);
+
+    DipoleView Decay() { return DipoleView(m_dipoles, m_idxDec); }
+
+    const WWLegs &WW() const { return m_ww; }
+
     // Initial-final dipoles. Separate from BuildFinal because their initial
     // legs are the BORN beams while their final legs are at m_plab: the
     // interference is between radiation off the incoming particles and off the
@@ -128,13 +156,18 @@ namespace YFS {
     // BuildFinal be called in either order without clobbering each other.
     void DropTypes(bool dropII, bool dropFF, bool dropIF);
     void Add(const Leg &a, const Leg &b, dipoletype::code t, double alpha);
+    // Add() for a pair that may contain a W leg; see the definition.
+    void AddW(const Leg &a, const Leg &b, dipoletype::code t, double alpha,
+              bool onshell, double MW);
+    static void ProjectOnShell(ATOOLS::Vec4D &wm, ATOOLS::Vec4D &wp, double MW);
     void SelectRadiating(const ResonanceScore &score);
 
     // unique_ptr so that a Dipole keeps its address for the whole run.
     // ISR::SetIncoming caches a Dipole* on the first event and holds it
     // thereafter, so rebuilding this vector must not move the objects.
     std::vector<std::unique_ptr<Dipole> > m_dipoles;
-    std::vector<std::size_t> m_idxII, m_idxFF, m_idxIF, m_idxRad;
+    std::vector<std::size_t> m_idxII, m_idxFF, m_idxIF, m_idxRad, m_idxDec;
+    WWLegs m_ww;
   };
 
 }// end of namespace YFS

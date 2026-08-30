@@ -141,6 +141,13 @@ DivArrD YFS_Form_Factor::BVR_full_eps(YFS::Dipole &d,  double Kmax, int mode) {
 
 
 
+double YFS_Form_Factor::BVR_decay(double M, double ml, double ks) {
+  if (M <= 0. || ml <= 0. || ks <= 0.) return 0.;
+  const double L = log(M/ml);
+  return m_alpi*( 2.*(L - 1.)*log(2.*ks/M) + 1.5*L - sqr(M_PI)/6. + 1. );
+}
+
+
 double YFS_Form_Factor::BVR_full(Vec4D p1, Vec4D p2,  double Kmax, double MasPhot, int mode) {
   return BVR_full(p1 * p2, p1.E(), p2.E(), p1.Mass(), p2.Mass(), Kmax, MasPhot, mode);
 }
@@ -621,6 +628,20 @@ double YFS_Form_Factor::BVV_WW(const ATOOLS::Vec4D_Vector born, const ATOOLS::Ve
       eikif = 2 * (m_beam1 / p1k - m_beam2 / p2k) * (m_wm / q1k - m_wp / q2k);
       weik *= 1 + (eikif) / (eikii + eikff);
     }
+  }
+  static bool once(true);
+  if (once && msg_LevelIsDebugging()) {
+    once = false;
+    msg_Out() << "=== BVV_WW breakdown (MasPhot=" << MasPhot
+              << ", Kmax=" << Kmax << ") ===\n"
+              << "  m_ww_s (exp(B(W-,W+)) * WW_s) = " << m_ww_s << "\n"
+              << "  rel (WW_t t/u combination)    = " << rel << "\n"
+              << "  m_ww_t                        = " << m_ww_t << "\n"
+              << "  m_ww_u                        = " << m_ww_u << "\n"
+              << "  exp(rel + t - u)              = " << exp(rel + m_ww_t - m_ww_u) << "\n"
+              << "  weik (real-photon eikonal)    = " << weik << "\n"
+              << "  product                       = "
+              << m_ww_s * exp(rel + m_ww_t - m_ww_u) * weik << std::endl;
   }
   return m_ww_s * exp(rel + m_ww_t - m_ww_u) * weik;
 }
