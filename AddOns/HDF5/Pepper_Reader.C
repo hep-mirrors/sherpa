@@ -1115,7 +1115,26 @@ namespace LHEH5 {
                    << m_process_spec << "\" set to " << m_ncache
                    << " events (overriding PEPPER_CACHE_SIZE).\n";
       }
-      p_process = std::make_unique<Pepper::Process>(m_process_spec);
+      // Sherpa's `Max_N_Quarks` is a per-multiplicity limit on the total
+      // number of quarks in the process, counting the initial and the final
+      // state alike (see Process_Group::CheckFlavours). Pepper applies the
+      // same restriction, but counts quark pairs, so halve the value; an odd
+      // limit of 2n+1 quarks admits the same channels as 2n does, since
+      // quarks only ever appear in pairs here. Only forward a limit that
+      // actually restricts something -- Sherpa's default (99) exceeds any
+      // real multiplicity, and passing it on would needlessly override
+      // Pepper's own `[main] n_max_quark_pairs` setting.
+      if (m_nmaxq < m_flavours.size()) {
+        const int n_max_quark_pairs {static_cast<int>(m_nmaxq / 2)};
+        msg_Info() << "Pepper_Interface: quark-pair limit for process \""
+                   << m_process_spec << "\" set to " << n_max_quark_pairs
+                   << " (from Max_N_Quarks: " << m_nmaxq << ").\n";
+        p_process = std::make_unique<Pepper::Process>(m_process_spec,
+                                                     n_max_quark_pairs);
+      }
+      else {
+        p_process = std::make_unique<Pepper::Process>(m_process_spec);
+      }
 
       // The pipeline is primed lazily in WarmUp(), so that Pepper's
       // integration-grid optimisation and weight-maximum determination

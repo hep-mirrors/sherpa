@@ -7,6 +7,7 @@
 
 #include <vector>
 #include <string>
+#include <limits>
 
 namespace PHASIC {
 
@@ -18,6 +19,13 @@ namespace PHASIC {
     // or, equivalently, `Event_Source: <type>[<args>]`.
     std::vector<long int> m_flavours;
     std::size_t m_nin {0};
+    // Resolved, multiplicity-specific `Max_N_Quarks` of the process, i.e.
+    // the upper limit on the total number of quarks it may contain,
+    // counting the initial and the final state alike. Readers that steer a
+    // backend generating its own flavour channels (e.g. Pepper) have to
+    // forward this, or the backend would include channels that Sherpa
+    // itself excludes. A value of at least nin + nout means "no limit".
+    std::size_t m_nmaxq {std::numeric_limits<std::size_t>::max()};
   };// end of struct Event_Reader_Key
 
   class Event_Reader {
@@ -29,6 +37,7 @@ namespace PHASIC {
     std::vector<std::string> m_files;
     std::vector<long int> m_flavours;
     std::size_t m_nin;
+    std::size_t m_nmaxq;
 
     double m_totalxs, m_unitwgt;
     int    m_compute;
@@ -42,6 +51,7 @@ namespace PHASIC {
 
     inline Event_Reader(const Event_Reader_Key &key):
       m_files(key.m_files), m_flavours(key.m_flavours), m_nin(key.m_nin),
+      m_nmaxq(key.m_nmaxq),
       m_compute(1), p_ampl(NULL), p_sub(NULL) {}
     virtual ~Event_Reader() = default;
 
