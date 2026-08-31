@@ -171,9 +171,9 @@ public:
 	    break;
 	  }
       }
+      double beta(Beta((l1+l2).PPerp()));
+      w=beta*exp(w-m_lss[i])+(1.-beta)*svweight;
       if (m_jetmode&2) {
-	double beta(Beta((l1+l2).PPerp()));
-	w=beta*exp(w-m_lss[i])+(1.-beta)*svweight;
 	msg_Debugging()<<m_names[i]<<": w = "<<w<<" (\\beta = "<<beta
 		       <<") <-> "<<svweight<<" ("<<svname<<")\n";
 	if (dabs(w)<m_wmax) wmap["MaxEnt2_QCD"][m_names[i]]=w;
@@ -203,10 +203,6 @@ public:
 	size_t nout=proc->NOut();
 	if (proc->Get<MCatNLO_Process>()!=nullptr) --nout;
 	if (nout>3) w=svweight;
-	else {
-	  double beta(Beta((l1+l2).PPerp()));
-	  w=beta*exp(w-m_lss[i])+(1.-beta)*svweight;
-	}
 	msg_Debugging()<<m_names[i]<<": w = "<<w<<" (n_{jet} = "<<nout-2
 		       <<") <-> "<<svweight<<" ("<<svname<<")\n";
 	if (dabs(w)<m_wmax) wmap["MaxEnt_QCD"][m_names[i]]=w;
