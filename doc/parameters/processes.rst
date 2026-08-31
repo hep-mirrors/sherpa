@@ -904,6 +904,14 @@ the heavy-particle pole masses and widths,
 and the lepton-pair invariant-mass cuts implied by
 :option:`SELECTOR` ``Mass`` entries
 are all forwarded to Pepper at startup.
+:ref:`Max_N_Quarks` is forwarded per process,
+so that a limit set for one jet multiplicity
+applies to that multiplicity alone,
+just as it does on the Sherpa side.
+Pepper counts quark pairs rather than quarks,
+so the value is halved on the way;
+if Pepper's own ``main.n_max_quark_pairs`` is stricter,
+that setting still wins.
 Sherpa's ``SCALES`` choice is also best-effort aligned
 with Pepper's hard-coded :math:`\mu^2` setters
 (see Pepper's ``main.mu2``);

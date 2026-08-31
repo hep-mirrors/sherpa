@@ -335,6 +335,7 @@ bool Process_Base::SetupEventReader(const std::string &fnames)
   // input identifiers (e.g. Pepper, which builds a process spec from
   // flavours) can do so when the user has not passed an explicit `[...]`.
   key.m_nin = m_nin;
+  key.m_nmaxq = m_pinfo.m_nmaxq;
   key.m_flavours.reserve(m_flavs.size());
   for (const auto &fl : m_flavs)
     key.m_flavours.push_back(static_cast<long int>(fl));
