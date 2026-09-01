@@ -5,7 +5,7 @@ using namespace SHERPA;
 using namespace ATOOLS;
 
 Beam_Remnants::Beam_Remnants(Beam_Remnant_Handler* _beamremnant)
-    : m_ana(false), m_boostedtolab(false), p_beamremnanthandler(_beamremnant)
+    : m_ana(false), p_beamremnanthandler(_beamremnant)
 {
   m_name = "Beam_Remnants:" + (p_beamremnanthandler->Fill()==1 ?
 			       p_beamremnanthandler->Name() :
@@ -44,22 +44,6 @@ Return_Value::code Beam_Remnants::StandardTreatment(Blob_List*  bloblist,
 {
   Return_Value::code rv =
     p_beamremnanthandler->FillBeamAndBunchBlobs(bloblist, onlyBunch);
-  Poincare * labboost = p_beamremnanthandler->GetRemnants()->GetLabBoost();
-  // This boost undoes the single CMS boost that Signal_Processes::FillBlob
-  // applies to the signal blob, so it has to happen exactly once per event.
-  // Treat() can be reached more than once, though: Event_Handler re-iterates
-  // the phase list whenever any phase reports success, and EstablishNeed()
-  // keeps returning 2 here because its "beam blob already there" early return
-  // never fires when the remnant handler does not fill beam blobs
-  // (BEAM_REMNANTS off -> TreatNoFill). The treateds set only prevents double
-  // counting within one call, so without m_boostedtolab the second pass
-  // boosted the whole event a second time and left every momentum scaled by
-  // ~2*gamma of the beam CMS (visible for asymmetric beams, e.g. fixed target).
-  if (labboost!=nullptr && !m_boostedtolab) {
-    std::set<Particle*> treateds;
-    bloblist->Boost(*labboost, &treateds);
-    m_boostedtolab = true;
-  }
   if (m_ana) Analyse(bloblist);
   return rv;
 }
@@ -156,7 +140,6 @@ size_t Beam_Remnants::CountBunchCandidates(Blob * blob) {
 
 void Beam_Remnants::CleanUp(const size_t& mode)
 {
-  m_boostedtolab = false;
   p_beamremnanthandler->CleanUp(mode);
 }
 
