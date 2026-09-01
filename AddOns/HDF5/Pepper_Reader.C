@@ -339,6 +339,7 @@ namespace LHEH5 {
 
     size_t m_ievt, m_iblock, m_trials, m_ncurrent, m_ncache;
     bool m_finished;
+    bool m_warmed_up;
 
     Vec4D_Vector m_ctmoms;
 
@@ -465,7 +466,7 @@ namespace LHEH5 {
     Pepper_Reader(const Event_Reader_Key &key):
       Event_Reader(key), p_pepper(Pepper_Interface::Acquire()),
       m_ievt(0), m_iblock(0), m_trials(0),
-      m_ncurrent(0), m_ncache(0), m_finished(false)
+      m_ncurrent(0), m_ncache(0), m_finished(false), m_warmed_up(false)
     {
       Settings& s {Settings::GetMainSettings()};
       m_ncache = s["PEPPER_CACHE_SIZE"].SetDefault(10000).Get<int>();
@@ -479,13 +480,10 @@ namespace LHEH5 {
               "(e.g. \"p p -> j j\") as the first entry in EVENT_INPUT.");
       p_process = std::make_unique<Pepper::Process>(m_files.front());
 
-      // Prime the pipeline: fill the first buffer, promote it to
-      // current, then fill the look-ahead buffer for the next swap.
-      if (FillNextBuffer() == 0) {
-        m_finished = true;
-      } else {
-        Advance();
-      }
+      // The pipeline is primed lazily in WarmUp(), so that Pepper's
+      // integration-grid optimisation and weight-maximum determination
+      // run from the same hook that Sherpa uses for its own warm-up,
+      // i.e. Matrix_Element_Handler::CalculateTotalXSecs.
 
       // Guard against a setting that will, in general, cause synchronization
       // to break in MPI runs, such that the entire run stalls.
@@ -501,6 +499,23 @@ namespace LHEH5 {
     {
       if (p_ampl) p_ampl->Delete();
       delete p_sub;
+    }
+
+    // Drive Pepper's integration-grid optimisation and unit-weight
+    // determination. Called once per process from Sherpa's cross-section
+    // calculation step. Pepper performs its optimisation phases lazily
+    // inside fill_lheh5_buffer on first use, so priming the double-buffered
+    // pipeline here implicitly drives warm-up. Cached Pepper results are
+    // reused on subsequent runs (Pepper handles its own cache).
+    void WarmUp() override
+    {
+      if (m_warmed_up) return;
+      m_warmed_up = true;
+      if (FillNextBuffer() == 0) {
+        m_finished = true;
+      } else {
+        Advance();
+      }
     }
 
     void PrintStatistics(std::ostream& o)

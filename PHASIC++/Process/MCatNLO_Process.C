@@ -783,7 +783,10 @@ bool MCatNLO_Process::CalculateTotalXSec(const std::string &resultpath,
   p_rsproc->SetEventReader(p_read);
   if (!p_rsproc->CalculateTotalXSec(resultpath,create)) res=false;
   p_rsproc->SetEventReader(NULL);
-  if (p_read) p_int->SetMax(p_read->UnitWeight()/rpa->Picobarn());
+  if (p_read) {
+    p_read->WarmUp();
+    p_int->SetMax(p_read->UnitWeight()/rpa->Picobarn());
+  }
   for (size_t i(0);i<p_bviproc->Size();++i)
     (*p_bproc)[i]->Integrator()->SetMax
       ((*p_bviproc)[i]->Integrator()->Max());

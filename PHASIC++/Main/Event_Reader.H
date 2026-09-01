@@ -38,6 +38,14 @@ namespace PHASIC {
 
     virtual void PrintStatistics(std::ostream&) {};
 
+    // Hook for readers that need a one-shot warm-up phase before the
+    // first event can be read. Called by Sherpa's cross-section
+    // calculation step (i.e. Matrix_Element_Handler::CalculateTotalXSecs)
+    // in place of running its own integration. Readers are expected to
+    // make this idempotent so that recursive calls from composite
+    // processes (e.g. MC@NLO) only trigger the underlying warm-up once.
+    virtual void WarmUp() {}
+
     virtual ATOOLS::Cluster_Amplitude *ReadEvent() = 0;
     virtual void StepBackward() = 0;
 
