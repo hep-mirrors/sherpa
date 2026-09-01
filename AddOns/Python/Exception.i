@@ -14,12 +14,11 @@ namespace ATOOLS {
   public:
     %extend {
       PyObject* __str__() {
-	MyStrStream conv;
-	conv<<*self;
-	return PyString_FromString(conv.str().c_str());
+        MyStrStream conv;
+        conv << *self;
+        return PyUnicode_FromString(conv.str().c_str());
       };
     };
-
   };
-  
+
 }
