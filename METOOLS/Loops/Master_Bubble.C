@@ -31,17 +31,21 @@ METOOLS::Master_Bubble(const double& s,
   }
   //! one massless internal line
   else if (IsZero (m02) || IsZero(m12)) {
+    //! with one line massless the physical internal mass^2 is the full
+    //! (m02+m12) = 2*m2, NOT the average m2 = 0.5*(m02+m12).
+    Complex mm2 = m02 + m12;
     //! B_0(0;0,m^2) = 1/epsUV + ln(mu^2/m^2) + 1
     if (IsZero(s))
-      return DivArrC(1.,0.,0.,log(mu2/(2.*m2))+1.,0.,0.);
+      return DivArrC(1.,0.,0.,log(mu2/mm2)+1.,0.,0.);
     //! B_0(s;0,m^2)
     else {
-      //! a) B_0(m^2;0,m^2) = 1/epsUV + ln(mu^2/m^2) + 2
-      if (IsEqual(s,m2))
-        return DivArrC(1.,0.,0.,log(mu2/(2.*m2))+2.,0.,0.);
-      //! b) B_0(s;0,m^2) = 1/epsUV + ln (mu^2/m^2) + (s+m^2)/s*ln((s+m^2)/s) + 2
+      //! a) B_0(m^2;0,m^2) = 1/epsUV + ln(mu^2/m^2) + 2   (on-shell point s=m^2)
+      if (IsEqual(s,mm2))
+        return DivArrC(1.,0.,0.,log(mu2/mm2)+2.,0.,0.);
+      //! b) B_0(s;0,m^2) = 1/epsUV + ln(mu^2/m^2) + 2 + (m^2-s)/s*ln((m^2-s)/m^2)
+      //!    (s+i0 branch via complex log for timelike s>m^2)
       else
-        return DivArrC(1.,0.,0.,log(mu2/m2) + 2. + (s+m2)/s*log(m2/(s+m2)),0.,0.);
+        return DivArrC(1.,0.,0.,log(mu2/mm2) + 2. + (mm2-s)/s*log((mm2-s)/mm2),0.,0.);
     }
   }
   //! no massless internal line

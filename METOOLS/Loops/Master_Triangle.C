@@ -107,12 +107,15 @@ METOOLS::Master_Triangle(const double&  p12, const double&  p22, const double&  
       else
         return -1./(m2-p12)*DivArrC(0.,0.,0.,M_PI*M_PI/6. - DiLog(p12/m2),0.,0.);
     }
-    //! C_0(m2,s,m2;0,m2,m2) = 1/sb*(1/epsIR*ln x + ln x *ln(mu2/m2) + ln2((b-1)/2b) 
-    //!                                           - 1/2*ln2 x - 2*DiLog((b-1)/2b) - pi2/6)     s < 0
-    //! no s-channel expression found
+    //! C_0(m2,s,m2;0,m2,m2) = 1/sb*(1/epsIR*ln x + ln x *ln(mu2/m2) + ln2((b-1)/2b)
+    //!                                           - 1/2*ln2 x - 2*DiLog((b-1)/2b) - pi2/6)
+    //! Valid for both spacelike (s<0) and timelike (s>0): the s+i0 Feynman
+    //! prescription below selects the correct branch of b/log for s>0 (where
+    //! the C0 develops an absorptive part) and is a harmless no-op for s<0.
     else if (IsEqual(p12,m22) && IsEqual(p32,m32) && IsEqual(m22,m32)) {
       Complex m2 = 0.5*(m22+m32);
-      Complex b  = sqrt(1.-4.*m2/p22);
+      Complex s  = Complex(p22, std::abs(p22)*1.e-12 + 1.e-30); // s + i0
+      Complex b  = sqrt(1.-4.*m2/s);
       Complex x  = (b-1.)/(b+1.);
       return 1./(p22*b)*DivArrC(0.,
                                 log(x),
@@ -125,19 +128,21 @@ METOOLS::Master_Triangle(const double&  p12, const double&  p22, const double&  
     //!                                                     + 1/2ln2(-gp) - 1/2ln2(1-gp)
     //!                                                     - 1/2ln2(gm) + 1/2ln2(gm-1)
     //!                                                     - DiLog((1-gm)/b) - DiLog(gp/b)
-    //!                                                     + DiLog((gp-1)/b) + DiLog(-gm/b))  s < 0
-    //! no s-channel expression found
+    //!                                                     + DiLog((gp-1)/b) + DiLog(-gm/b))
+    //! Valid for spacelike (s<0) and timelike (s>0): the s+i0 prescription
+    //! selects the correct branch for s>0 and is a no-op for s<0.
     else if (IsEqual(p12,m22) && IsEqual(p32,m32)) {
-      Complex b  = sqrt(sqr(-p22+m22+m32)-4.*m22*m32)/p22;
-      Complex g0 = (m32-m22+p22)/p22;
+      Complex s  = Complex(p22, std::abs(p22)*1.e-12 + 1.e-30); // s + i0
+      Complex b  = sqrt(sqr(-s+m22+m32)-4.*m22*m32)/s;
+      Complex g0 = (m32-m22+s)/s;
       Complex gp = 0.5*(g0+b);
       Complex gm = 0.5*(g0-b);
       Complex xp = (gp-1.)/gp;
       Complex xm = -gm/(1.-gm);
-      return 0.5/(b*p22)*DivArrC(0.,
+      return 0.5/(b*s)*DivArrC(0.,
                                  log(xp*xm),
                                  0.,
-                                 log(mu2/(b*p22))*log(xp*xm)
+                                 log(mu2/(b*s))*log(xp*xm)
                                  + 0.5*sqr(log(-gp)) - 0.5*sqr(log(1.-gp))
                                  - 0.5*sqr(log(gm)) + 0.5*sqr(log(gm-1.))
                                  - DiLog((1.-gm)/b) - DiLog(gp/b)
