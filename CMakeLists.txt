@@ -745,7 +745,7 @@ if (SHERPA_ENABLE_MERGED_LIBS)
     ExtraXSCore
     ExtAmp
     METools
-    ModelUFO ModelMain
+    ModelUFO ModelMain ModelVariations
     PDF
     Beam
     ATOOLSCore
@@ -770,7 +770,7 @@ else()
     Amegic DipoleSubtraction Amplitude AmegicPSGen
     String Zfunctions
     ExtAmp ExtraXSNLO ExtraXSSpecial ExtraXS2_2 ExtraXS1_2 ExtraXS1_3 ExtraXS
-    METoolsExplicit METoolsCurrents METoolsVertices METoolsColors METoolsSpinCorrelations METoolsLoops METoolsMain METoolsFormFactors ModelUFO ModelMain
+    METoolsExplicit METoolsCurrents METoolsVertices METoolsColors METoolsSpinCorrelations METoolsLoops METoolsMain METoolsFormFactors ModelUFO ModelMain ModelVariations
     PDF
     BeamMain BeamSpectra
     ToolsPhys ToolsMath ToolsYaml ToolsOrg
